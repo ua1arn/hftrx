@@ -70,8 +70,6 @@ void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 
 #endif /* ! LCDMODE_LTDC_L24 */
 
-	//COLORPIP_SELECTOR(byte2runpip);
-
 }
 
 void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
@@ -131,8 +129,8 @@ void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t
 
 // большие и средние цифры (частота)
 uint_fast16_t display_wrdatabig_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
-uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
+uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc);
+uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc);
 void display_wrdatabig_end(const gxdrawb_t * db);
 // обычный шрифт
 uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
@@ -142,8 +140,8 @@ void display_wrdata_end(const gxdrawb_t * db);
 
 // большие и средние цифры (частота)
 uint_fast16_t render_wrdatabig_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
-uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf);
+uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc);
+uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc);
 void render_wrdatabig_end(const gxdrawb_t * db);
 
 // самый маленький шрифт
@@ -765,7 +763,7 @@ uint_fast16_t display_wrdatabig_begin(const gxdrawb_t * db, uint_fast8_t xcell, 
 }
 
 // большой шрифт
-uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
@@ -776,7 +774,7 @@ uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_f
 	return ltdc_put_char_big(db, x, y, ci, width);
 }
 
-uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, uint_fast8_t lowhalf)
+uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc)
 {
 	const uint_fast8_t width = halffont_width(cc);
 	const uint_fast8_t ci = halffont_decode(cc);
@@ -824,7 +822,7 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
 }
 
 static void
-display_string3(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char * s, uint_fast8_t lowhalf)
+display_string3(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char * s)
 {
 	char c;
 //	ltdc_secondoffs = 0;
@@ -851,12 +849,8 @@ colpip_string3_at_xy(
 void
 display_string3_at_xy(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char * __restrict s, COLORPIP_T fg, COLORPIP_T bg)
 {
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	colmain_setcolors(fg, bg);
-	do
-	{
-		display_string3(db, x, y + lowhalf, s, lowhalf);
-	} while (lowhalf --);
+	display_string3(db, x, y, s);
 }
 
 #endif /* SMALLCHARH3 */
@@ -953,7 +947,7 @@ void render_wrdatabig_end(const gxdrawb_t * db)
 {
 }
 
-uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
+uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc)
 {
 	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
@@ -979,7 +973,7 @@ uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fas
 	return xpix + width;
 }
 
-uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, uint_fast8_t lowhalf)
+uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc)
 {
     const uint_fast8_t width = halffont_width(cc);
 	const uint_fast8_t ci = halffont_decode(cc);
@@ -1204,6 +1198,7 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 void
 display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan)
 {
+	size_t len;
 	char c;
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(db, xcell, ycell, & ypix);
@@ -1215,8 +1210,6 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	lv_layer_t * const layer = (lv_layer_t *) db->layerv;
 	if (layer)
 	{
-		const size_t len = strlen(s);
-		unsigned w = xspan < len ? len : xspan;
 		w = xspan;
 		//PRINTF("x/y=%d/%d '%s'\n", xpix, ypix, s);
 		lv_draw_rect_dsc_t d;
@@ -1239,11 +1232,19 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	}
 #endif
 
-	size_t len = strlen(s);
+
+#if 1
 	for (len = strlen(s); len < xspan; ++ len)
 		xpix = display_put_char_small(db, xpix, ypix, ' ');
 	while((c = * s ++) != '\0' && xspan --)
 		xpix = display_put_char_small(db, xpix, ypix, c);
+#else
+	colpip_fillrect(db, xpix, ypix, GRID2X(CHARS2GRID(xspan)), SMALLCHARH, ltdc_bg);
+	for (len = strlen(s); len < xspan; ++ len)
+		xpix = colorpip_put_char_small_tbg(db, xpix, ypix, ' ', ltdc_fg);
+	while((c = * s ++) != '\0' && xspan --)
+		xpix = colorpip_put_char_small_tbg(db, xpix, ypix, c, ltdc_fg);
+#endif
 
 	display_wrdata_end(db);
 }
@@ -1304,8 +1305,7 @@ pix_display_value_big(const gxdrawb_t * db,
 	uint_fast8_t rj,	// = 1;		// right truncated
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf,		// 0 - только большие цифры
-	uint_fast8_t lowhalf		// lower half
+	uint_fast8_t withhalf		// 0 - только большие цифры
 	)
 {
 	//	if (width > ARRAY_SIZE(vals10))
@@ -1323,13 +1323,13 @@ pix_display_value_big(const gxdrawb_t * db,
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = display_put_char_big(db, xpix, ypix, (z == 0) ? '.' : '#', lowhalf);	// '#' - узкий пробел. Точка всегда узкая
+			xpix = display_put_char_big(db, xpix, ypix, (z == 0) ? '.' : '#');	// '#' - узкий пробел. Точка всегда узкая
 		}
 		else if (comma == g)
 		{
 			z = 0;
 			half = withhalf;
-			xpix = display_put_char_big(db, xpix, ypix, '.', lowhalf);
+			xpix = display_put_char_big(db, xpix, ypix, '.');
 		}
 
 		if (blinkpos == g)
@@ -1338,19 +1338,19 @@ pix_display_value_big(const gxdrawb_t * db,
 			// эта позиция редактирования частоты. Справа от неё включаем все нули
 			z = 0;
 			if (half)
-				xpix = display_put_char_half(db, xpix, ypix, bc, lowhalf);
+				xpix = display_put_char_half(db, xpix, ypix, bc);
 			else
-				xpix = display_put_char_big(db, xpix, ypix, bc, lowhalf);
+				xpix = display_put_char_big(db, xpix, ypix, bc);
 		}
 		else if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_big(db, xpix, ypix, ' ', lowhalf);	// supress zero
+			xpix = display_put_char_big(db, xpix, ypix, ' ');	// supress zero
 		else
 		{
 			z = 0;
 			if (half)
-				xpix = display_put_char_half(db, xpix, ypix, '0' + res.quot, lowhalf);
+				xpix = display_put_char_half(db, xpix, ypix, '0' + res.quot);
 			else
-				xpix = display_put_char_big(db, xpix, ypix, '0' + res.quot, lowhalf);
+				xpix = display_put_char_big(db, xpix, ypix, '0' + res.quot);
 		}
 		freq = res.rem;
 	}
@@ -1369,14 +1369,13 @@ display_value_big(const gxdrawb_t * db,
 	uint_fast8_t rj,	// = 1;		// right truncated
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf,		// 0 - только большие цифры
-	uint_fast8_t lowhalf		// lower half
+	uint_fast8_t withhalf		// 0 - только большие цифры
 	)
 {
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdatabig_begin(db, xcell, ycell, & ypix);
-	pix_display_value_big(db, xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, lowhalf);
+	pix_display_value_big(db, xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf);
 	display_wrdatabig_end(db);
 }
 
@@ -1397,8 +1396,7 @@ pix_render_value_big(const gxdrawb_t * db,
 	uint_fast8_t rj,	// = 1;		// right truncated
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf,		// 0 - только большие цифры
-	uint_fast8_t lowhalf		// lower half
+	uint_fast8_t withhalf		// 0 - только большие цифры
 	)
 {
 	//	if (width > ARRAY_SIZE(vals10))
@@ -1416,13 +1414,13 @@ pix_render_value_big(const gxdrawb_t * db,
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = render_char_big(db, xpix, ypix, (z == 0) ? '.' : '#', lowhalf);	// '#' - узкий пробел. Точка всегда узкая
+			xpix = render_char_big(db, xpix, ypix, (z == 0) ? '.' : '#');	// '#' - узкий пробел. Точка всегда узкая
 		}
 		else if (comma == g)
 		{
 			z = 0;
 			half = withhalf;
-			xpix = render_char_big(db, xpix, ypix, '.', lowhalf);
+			xpix = render_char_big(db, xpix, ypix, '.');
 		}
 
 		if (blinkpos == g)
@@ -1431,20 +1429,20 @@ pix_render_value_big(const gxdrawb_t * db,
 			// эта позиция редактирования частоты. Справа от неё включаем все нули
 			z = 0;
 			if (half)
-				xpix = render_char_half(db, xpix, ypix, bc, lowhalf);
+				xpix = render_char_half(db, xpix, ypix, bc);
 			else
-				xpix = render_char_big(db, xpix, ypix, bc, lowhalf);
+				xpix = render_char_big(db, xpix, ypix, bc);
 		}
 		else if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = render_char_big(db, xpix, ypix, ' ', lowhalf);	// supress zero
+			xpix = render_char_big(db, xpix, ypix, ' ');	// supress zero
 		else
 		{
 			z = 0;
 			if (half)
-				xpix = render_char_half(db, xpix, ypix, '0' + res.quot, lowhalf);
+				xpix = render_char_half(db, xpix, ypix, '0' + res.quot);
 
 			else
-				xpix = render_char_big(db, xpix, ypix, '0' + res.quot, lowhalf);
+				xpix = render_char_big(db, xpix, ypix, '0' + res.quot);
 		}
 		freq = res.rem;
 	}
@@ -1464,14 +1462,13 @@ render_value_big(const gxdrawb_t * db,
 	uint_fast8_t rj,	// = 1;		// right truncated
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf,		// 0 - только большие цифры
-	uint_fast8_t lowhalf		// lower half
+	uint_fast8_t withhalf		// 0 - только большие цифры
 	)
 {
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = render_wrdatabig_begin(db, xcell, ycell, & ypix);
-	pix_render_value_big(db, xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, lowhalf);
+	pix_render_value_big(db, xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf);
 	render_wrdatabig_end(db);
 }
 
@@ -1505,15 +1502,15 @@ display_value_lower(const gxdrawb_t * db,
 		if (comma == g || comma + 3 == g)
 		{
 			z = 0;
-			xpix = display_put_char_big(db, xpix, ypix, '.', 0);
+			xpix = display_put_char_big(db, xpix, ypix, '.');
 		}
 
 		if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_big(db, xpix, ypix, ' ', 0);	// supress zero
+			xpix = display_put_char_big(db, xpix, ypix, ' ');	// supress zero
 		else
 		{
 			z = 0;
-			xpix = display_put_char_half(db, xpix, ypix, '0' + res.quot, 0);
+			xpix = display_put_char_half(db, xpix, ypix, '0' + res.quot);
 		}
 		freq = res.rem;
 	}
@@ -1529,8 +1526,7 @@ display_value_small(const gxdrawb_t * db,
 	uint_fast8_t width,	// full width (if >= 128 - display with sign)
 	uint_fast8_t comma,		// comma position (from right, inside width)
 	uint_fast8_t comma2,
-	uint_fast8_t rj,		// right truncated
-	uint_fast8_t lowhalf
+	uint_fast8_t rj		// right truncated
 	)
 {
 //	if (width > ARRAY_SIZE(vals10))

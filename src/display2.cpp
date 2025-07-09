@@ -2402,11 +2402,7 @@ static void display_freqXbig_a(const gxdrawb_t * db,
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
 
-		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
-		do
-		{
-			display_value_big(db, x, y + lowhalf, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 0, lowhalf);	// отрисовываем верхнюю часть строки
-		} while (lowhalf --);
+		display_value_big(db, x, y, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 0);	// отрисовываем верхнюю часть строки
 #endif /* WITHDIRECTFREQENER */
 	}
 	else
@@ -2415,11 +2411,7 @@ static void display_freqXbig_a(const gxdrawb_t * db,
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
-		do
-		{
-			display_value_big(db, x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0, lowhalf);	// отрисовываем верхнюю часть строки
-		} while (lowhalf --);
+		display_value_big(db, x, y, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -2454,15 +2446,11 @@ static void display2_freqX_a(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t 
 	{
 #if WITHDIRECTFREQENER
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
-		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
-		do
-		{
-#if WITHPRERENDER
-			render_value_big(db, x, y + lowhalf, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
-#else /* WITHPRERENDER */
-			display_value_big(db, x, y + lowhalf, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
-#endif /* WITHPRERENDER */
-		} while (lowhalf --);
+	#if WITHPRERENDER
+		render_value_big(db, x, y, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
+	#else /* WITHPRERENDER */
+		display_value_big(db, x, y, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
+	#endif /* WITHPRERENDER */
 #endif /* WITHDIRECTFREQENER */
 	}
 	else
@@ -2471,15 +2459,11 @@ static void display2_freqX_a(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t 
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
-		do
-		{
-#if WITHPRERENDER
-			render_value_big(db, x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
-#else /* WITHPRERENDER */
-			display_value_big(db, x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
-#endif /* WITHPRERENDER */
-		} while (lowhalf --);
+	#if WITHPRERENDER
+		render_value_big(db, x, y, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+	#else /* WITHPRERENDER */
+		display_value_big(db, x, y, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+	#endif /* WITHPRERENDER */
 	}
 }
 
@@ -2515,11 +2499,7 @@ static void display_freqchr_a(const gxdrawb_t * db,
 #if WITHDIRECTFREQENER
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
-		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
-		do
-		{
-			display_value_big(db, xcell, ycell + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
-		} while (lowhalf --);
+		display_value_big(db, xcell, ycell, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
 #endif /* WITHDIRECTFREQENER */
 	}
 	else
@@ -2528,11 +2508,7 @@ static void display_freqchr_a(const gxdrawb_t * db,
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
-		do
-		{
-			display_value_big(db, xcell, ycell + lowhalf, freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
-		} while (lowhalf --);
+		display_value_big(db, xcell, ycell, freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -2558,11 +2534,7 @@ static void display_freqchr_b(const gxdrawb_t * db,
 #if WITHDIRECTFREQENER
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
-		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
-		do
-		{
-			display_value_big(db, xcell, ycell + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
-		} while (lowhalf --);
+		display_value_big(db, xcell, ycell, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
 #endif /* WITHDIRECTFREQENER */
 	}
 	else
@@ -2571,11 +2543,7 @@ static void display_freqchr_b(const gxdrawb_t * db,
 
 		const uint_fast32_t freq = hamradio_get_freq_b();
 
-		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
-		do
-		{
-			display_value_big(db, xcell, ycell + lowhalf, freq, fullwidth, comma, 255, 1, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
-		} while (lowhalf --);
+		display_value_big(db, xcell, ycell, freq, fullwidth, comma, 255, 1, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -2596,11 +2564,7 @@ static void display2_freqX_b(const gxdrawb_t * db,
 	const uint_fast32_t freq = hamradio_get_freq_b();
 
 	colmain_setcolors(colors_2freqB [state].fg, colors_2freqB [state].bg);
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_value_small(db, xcell, ycell + lowhalf, freq, fullwidth, comma, comma + 3, rj, lowhalf);
-	} while (lowhalf --);
+	display_value_small(db, xcell, ycell, freq, fullwidth, comma, comma + 3, rj);
 }
 
 // отладочная функция измерителя опорной частоты
@@ -2833,7 +2797,10 @@ void display2_midlabel(const gxdrawb_t * db,
 	const uint_fast8_t width = 5;
 	uint_fast8_t section;
 	for (section = 0; section < 8; ++ section)
-		display2_midlabelX(db, x + CHARS2GRID(6) * section, y, pctx, section, width);
+	{
+		const uint_fast8_t last = section == 7;
+		display2_midlabelX(db, x + CHARS2GRID(6) * section, y, pctx, section, last ? 8 : width);
+	}
 }
 
 void display2_midvalue(const gxdrawb_t * db,
@@ -2847,7 +2814,10 @@ void display2_midvalue(const gxdrawb_t * db,
 	const uint_fast8_t width = 5;
 	uint_fast8_t section;
 	for (section = 0; section < 8; ++ section)
-		display2_midvalueX(db, x + CHARS2GRID(6) * section, y, pctx, section, width);
+	{
+		const uint_fast8_t last = section == 7;
+		display2_midvalueX(db, x + CHARS2GRID(6) * section, y, pctx, section, last ? 8 : width);
+	}
 }
 
 
@@ -3795,11 +3765,7 @@ static void display2_voltlevelV5(const gxdrawb_t * db,
 	uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 	//PRINTF("display2_voltlevelV5: volt=%u\n", volt);
 	colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_value_small(db, x + CHARS2GRID(0), y + lowhalf, volt, 3, 1, 255, 0, lowhalf);
-	} while (lowhalf --);
+	display_value_small(db, x + CHARS2GRID(0), y, volt, 3, 1, 255, 0);
 	display_text(db, x + CHARS2GRID(4), y, PSTR("V"), 1);
 #endif /* WITHVOLTLEVEL */
 }
@@ -3818,11 +3784,7 @@ static void display_voltlevel4(const gxdrawb_t * db,
 	//PRINTF("display_voltlevel4: volt=%u\n", volt);
 
 	colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_value_small(db, x, y + lowhalf, volt, 3, 1, 255, 0, lowhalf);
-	} while (lowhalf --);
+	display_value_small(db, x, y, volt, 3, 1, 255, 0);
 #endif /* WITHVOLTLEVEL */
 }
 
@@ -3856,11 +3818,7 @@ static void display2_thermo4(const gxdrawb_t * db,
 	else
 		colmain_setcolors(COLORPIP_GREEN, display2_getbgcolor());
 
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_value_small(db, x + CHARS2GRID(0), y + lowhalf, tempv, 3, 1, 255, 0, lowhalf);
-	} while (lowhalf --);
+	display_value_small(db, x + CHARS2GRID(0), y, tempv, 3, 1, 255, 0);
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 }
 
@@ -3894,11 +3852,7 @@ static void display2_thermo5(const gxdrawb_t * db,
 	else
 		colmain_setcolors(COLORPIP_GREEN, display2_getbgcolor());
 
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_value_small(db, x + CHARS2GRID(0), y + lowhalf, tempv, 3, 1, 255, 0, lowhalf);
-	} while (lowhalf --);
+	display_value_small(db, x + CHARS2GRID(0), y, tempv, 3, 1, 255, 0);
 	display_text(db, x + CHARS2GRID(4), y, PSTR("C"), 1);
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 }
@@ -3920,11 +3874,7 @@ static void display2_currlevelA6(const gxdrawb_t * db,
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-		do
-		{
-			display_value_small(db, x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 1, 255, 1, lowhalf);
-		} while (lowhalf --);
+		display_value_small(db, x + CHARS2GRID(0), y, drain, 3 | WMINUSFLAG, 1, 255, 1);
 		// last character
 		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1);
 
@@ -3933,11 +3883,7 @@ static void display2_currlevelA6(const gxdrawb_t * db,
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-		do
-		{
-			display_value_small(db, x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
-		} while (lowhalf --);
+		display_value_small(db, x + CHARS2GRID(0), y, drain, 3 | WMINUSFLAG, 2, 255, 0);
 		// last character
 		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1);
 
@@ -3961,11 +3907,7 @@ static void display2_currlevel5(const gxdrawb_t * db,
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-		do
-		{
-			display_value_small(db, x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 1, 255, 1, lowhalf);
-		} while (lowhalf --);
+		display_value_small(db, x + CHARS2GRID(0), y, drain, 3 | WMINUSFLAG, 1, 255, 1);
 		//display_text(db, x + CHARS2GRID(5), y, PSTR("A"));
 
 	#else /* WITHCURRLEVEL_ACS712_30A */
@@ -3973,11 +3915,7 @@ static void display2_currlevel5(const gxdrawb_t * db,
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
 		colmain_setcolors(colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-		do
-		{
-			display_value_small(db, x + CHARS2GRID(0), y + lowhalf, drain, 3 | WMINUSFLAG, 2, 255, 0, lowhalf);
-		} while (lowhalf --);
+		display_value_small(db, x + CHARS2GRID(0), y, drain, 3 | WMINUSFLAG, 2, 255, 0);
 		//display_text(db, x + CHARS2GRID(5), y, PSTR("A"));
 
 	#endif /* WITHCURRLEVEL_ACS712_30A */
@@ -4196,11 +4134,7 @@ static void display2_freqdelta8(const gxdrawb_t * db,
 	colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
 	if (f != 0)
 	{
-		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-		do
-		{
-			display_value_small(db, x, y + lowhalf, deltaf, 6 | WSIGNFLAG, 1, 255, 0, lowhalf);
-		} while (lowhalf --);
+		display_value_small(db, x, y, deltaf, 6 | WSIGNFLAG, 1, 255, 0);
 	}
 	else
 	{
@@ -4225,11 +4159,7 @@ static void display_samfreqdelta8(const gxdrawb_t * db,
 	colmain_setcolors(colors_1state [0].fg, colors_1state [0].bg);
 	if (f != 0)
 	{
-		uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-		do
-		{
-			display_value_small(db, x, y + lowhalf, deltaf, 6 | WSIGNFLAG, 1, 255, 0, lowhalf);
-		} while (lowhalf --);
+		display_value_small(db, x, y, deltaf, 6 | WSIGNFLAG, 1, 255, 0);
 	}
 	else
 	{
@@ -4253,11 +4183,7 @@ static void display_amfmhighcut4(const gxdrawb_t * db,
 	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
 
 	colmain_setcolors(colors_2state [flag].fg, colors_2state [flag].bg);
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_value_small(db, x, y, v, 3, 2, 255, 0, lowhalf);
-	} while (lowhalf --);
+	display_value_small(db, x, y, v, 3, 2, 255, 0);
 #endif /* WITHAMHIGHKBDADJ */
 }
 
@@ -4276,11 +4202,7 @@ static void display_amfmhighcut5(const gxdrawb_t * db,
 	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
 
 	colmain_setcolors(colors_2state [flag].fg, colors_2state [flag].bg);
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	do
-	{
-		display_value_small(db, x, y, v, 4, 2, 255, 0, lowhalf);
-	} while (lowhalf --);
+	display_value_small(db, x, y, v, 4, 2, 255, 0);
 #endif /* WITHAMHIGHKBDADJ */
 }
 
@@ -9187,15 +9109,11 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
-		do
-		{
 #if WITHPRERENDER
-			pix_render_value_big(db, layer.border_box.left(), layer.border_box.top() + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			pix_render_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 #else /* WITHPRERENDER */
-			pix_display_value_big(db, layer.border_box.left(), layer.border_box.top() + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 #endif /* WITHPRERENDER */
-		} while (lowhalf --);
 	}
 	else if (! strcmp(url.c_str(), "waterfal"))
 	{

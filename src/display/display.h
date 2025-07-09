@@ -725,8 +725,7 @@ display_value_big(
 	uint_fast8_t rj,	// = 1;		// right truncated
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf,		// 0 - только большие цифры
-	uint_fast8_t lowhalf		// lower half
+	uint_fast8_t withhalf		// 0 - только большие цифры
 	);
 
 void
@@ -741,8 +740,7 @@ pix_display_value_big(
 	uint_fast8_t rj,	// = 1;		// right truncated
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf,		// 0 - только большие цифры
-	uint_fast8_t lowhalf		// lower half
+	uint_fast8_t withhalf		// 0 - только большие цифры
 	);
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
@@ -759,8 +757,7 @@ render_value_big(
 	uint_fast8_t rj,	// = 1;		// right truncated
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf,		// 0 - только большие цифры
-	uint_fast8_t lowhalf		// lower half
+	uint_fast8_t withhalf		// 0 - только большие цифры
 	);
 
 void
@@ -775,8 +772,7 @@ pix_render_value_big(
 	uint_fast8_t rj,	// = 1;		// right truncated
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf,		// 0 - только большие цифры
-	uint_fast8_t lowhalf		// lower half
+	uint_fast8_t withhalf		// 0 - только большие цифры
 	);
 
 void render_value_big_initialize(void);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
@@ -801,8 +797,7 @@ display_value_small(
 	uint_fast8_t width,	// full width (if >= 128 - display with sign)
 	uint_fast8_t comma,		// comma position (from right, inside width)
 	uint_fast8_t comma2,
-	uint_fast8_t rj,		// right truncated
-	uint_fast8_t lowhalf
+	uint_fast8_t rj		// right truncated
 	);
 
 void display_floodfill(
