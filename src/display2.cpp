@@ -2378,7 +2378,7 @@ static void display_freqXbig_a(const gxdrawb_t * db,
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
+	colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
@@ -2411,8 +2411,8 @@ static void display2_freqX_a_init(
 {
 #if WITHPRERENDER
 	/* valid chars: "0123456789 #._" */
-	colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
-	render_value_big_initialize();
+	colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
+	rendered_value_big_initialize();
 #endif /* WITHPRERENDER */
 }
 
@@ -2423,14 +2423,14 @@ static void display2_freqX_a(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t 
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 #if ! WITHPRERENDER
-	colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
+	colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
 #endif /* ! WITHPRERENDER */
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 	#if WITHPRERENDER
-		render_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
+		rendered_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
 	#else /* WITHPRERENDER */
 		display_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
 	#endif /* WITHPRERENDER */
@@ -2443,7 +2443,7 @@ static void display2_freqX_a(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
 	#if WITHPRERENDER
-		render_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+		rendered_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 	#else /* WITHPRERENDER */
 		display_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 	#endif /* WITHPRERENDER */
@@ -2458,7 +2458,7 @@ static void display2_freqx_a(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t
 	const uint_fast8_t comma = 3 - rj;
 	const uint_fast32_t freq = hamradio_get_freq_a();
 
-	colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
+	colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
 	display_value_lower(db, x0, y0, colspan, rowspan, freq, fullwidth, comma, rj);
 }
 
@@ -2476,7 +2476,7 @@ static void display_freqchr_a(const gxdrawb_t * db,
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
+	colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
@@ -2511,7 +2511,7 @@ static void display_freqchr_b(const gxdrawb_t * db,
 	uint_fast8_t state;
 	hamradio_get_vfomode3_value(& state);	// state - признак активного SPLIT (0/1)
 
-	colmain_setcolors3(colors_2freqB [state].fg, colors_2freqB [state].bg, colors_2freqB [state].fg);
+	colmain_setcolors(colors_2freqB [state].fg, colors_2freqB [state].bg);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
@@ -9086,14 +9086,14 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 		uint_fast8_t fullwidth = display_getfreqformat(& rj);
 		const uint_fast8_t comma = 3 - rj;
 
-		colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
+		colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
 
 		enum { blinkpos = 255, blinkstate = 0 };
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
 #if WITHPRERENDER
-			pix_render_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+			pix_rendered_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 #else /* WITHPRERENDER */
 			pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 #endif /* WITHPRERENDER */

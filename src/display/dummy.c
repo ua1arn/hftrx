@@ -28,10 +28,6 @@ colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
 {
 }
 
-void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T fgbg)
-{
-}
-
 uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast16_t * yp)
 {
 	* yp = GRID2Y(y);
@@ -57,14 +53,14 @@ display_wrdatabar_end(const gxdrawb_t * db)
 
 /* вызывается между вызовами display_wrdatabig_begin() и display_wrdatabig_end() */
 uint_fast16_t
-display_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char c)
+display_put_char_big_tbg(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char c)
 {
 	return xpix + 1;
 }
 
 /* вызывается между вызовами display_wrdatabig_begin() и display_wrdatabig_end() */
 uint_fast16_t
-display_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char c)
+display_put_char_half_tbg(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char c)
 {
 	return xpix + 1;
 }

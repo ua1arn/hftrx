@@ -221,7 +221,6 @@ void panel_deinitialize(void);
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(const gxdrawb_t * db);	// Заполниить цветом фона
 void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg);
-void colmain_setcolors3(COLORPIP_T fg, COLORPIP_T bg, COLORPIP_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
 
 // полоса индикатора - рисуется display_bar
 uint_fast16_t display_wrdatabar_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
@@ -729,7 +728,7 @@ pix_display_value_big(
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 /* из предварительно подготовленных буферов */
 void
-render_value_big(
+rendered_value_big(
 	const gxdrawb_t * db,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
@@ -746,7 +745,7 @@ render_value_big(
 	);
 
 void
-pix_render_value_big(
+pix_rendered_value_big(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
@@ -760,7 +759,7 @@ pix_render_value_big(
 	uint_fast8_t withhalf		// 0 - только большие цифры
 	);
 
-void render_value_big_initialize(void);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
+void rendered_value_big_initialize(void);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
 
 void
 display_value_lower(
