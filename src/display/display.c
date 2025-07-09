@@ -575,25 +575,6 @@ colpip_string_tbg(
 		x = colorpip_put_char_small_tbg(db, x, y, c, fg);
 	}
 }
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void
-colpip_string_x2_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLORPIP_T fg		// цвет вывода текста
-	)
-{
-	char c;
-
-	ASSERT(s != NULL);
-	while ((c = * s ++) != '\0')
-	{
-		x = colorpip_x2_put_char_small_tbg(db, x, y, c, fg);
-	}
-}
 
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
@@ -633,33 +614,6 @@ colpip_text_x2(
 	}
 }
 
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void
-colpip_string_x2ra90_count(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T fg,		// цвет вывода текста
-	COLORPIP_T bg,		// цвет вывода текста
-	const char * s,		// строка для вывода
-	size_t len			// количество символов
-	)
-{
-	enum { TDX = SMALLCHARW * 2, TDY = SMALLCHARH * 2 };
-	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T scratch [GXSIZE(TDX, TDY)] ALIGNX_END;
-	gxdrawb_t sdbv;
-	gxdrawb_initialize(& sdbv, scratch, TDX, TDY);
-	ASSERT(s != NULL);
-	while (len --)
-	{
-		const char c = * s ++;
-		colpip_fillrect(& sdbv, 0, 0, TDX, TDY, bg);
-		colorpip_x2_put_char_small_tbg(& sdbv, 0, 0, c, fg);
-		hwaccel_ra90(db, x, y, & sdbv);
-		y += TDX;
-	}
-}
 #endif /* defined (SMALLCHARW) */
 
 #if defined (SMALLCHARW2)

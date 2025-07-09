@@ -1671,23 +1671,6 @@ static const COLORPAIR_T colors_1mode [1] =
 	{	DSGN_BIGCOLOR,	DSGN_LABELBACK,	},
 };
 
-#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || (WITHAFSPECTRE && ! LCDMODE_DUMMY)
-
-// Тестовая функция - прототип для элементов отображения
-static void
-display2_testvidget(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
-{
-	const uint_fast16_t x = GRID2X(x0);
-	const uint_fast16_t y = GRID2X(y0);
-	//colpip_fillrect(db, x, y, 100, 100, COLORPIP_GREEN);
-
-	colpip_string_tbg(db, x, y + 0, "Hello", COLORPIP_WHITE);
-	colpip_string_x2_tbg(db, x, y + 20, "Test", COLORPIP_WHITE);
-	colpip_string_tbg(db, x, y + 50, "Test", COLORPIP_WHITE);
-
-}
-#endif /* (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
-
 // Параметры отображения спектра и водопада
 
 #if 1
