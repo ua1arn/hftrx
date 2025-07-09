@@ -65,6 +65,8 @@ SECTIONS
  		*(.dtors)
 
 		*(.rodata*)
+		*(.gcc_except_table*)
+		
 		. = ALIGN(64);
 		KEEP(*(.isr_vector))
 		__Vectors_End = .;
@@ -197,6 +199,13 @@ SECTIONS
 		__end__ = .;
 		PROVIDE(end = __end__);
 	} > DDR3
+
+	.debugs 0 (NOLOAD):
+	{
+		*(.debug*)
+		*(.comment*)
+		*(.ARM.attributes*)
+	} : NONE
 
 	__StackTop = ORIGIN(DDR3) + LENGTH(DDR3);
 	PROVIDE(__stack = __StackTop);

@@ -62,6 +62,7 @@ SECTIONS
  		*(.dtors)
 
 		*(.rodata*)
+		*(.gcc_except_table*)
 
 		KEEP(*(.eh_frame*))
 
@@ -191,6 +192,13 @@ SECTIONS
 		__end__ = .;
 		PROVIDE(end = __end__);
 	} > RAM
+
+	.debugs 0 (NOLOAD):
+	{
+		*(.debug*)
+		*(.comment*)
+		*(.ARM.attributes*)
+	} : NONE
 
 	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	PROVIDE(__stack = __StackTop);
