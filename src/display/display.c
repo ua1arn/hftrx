@@ -252,6 +252,7 @@ ltdc_put_char_unified_tbg(
 }
 
 /* valid chars: "0123456789 #._" */
+// Возвращает индекс символа в знакогенераторе
 static uint_fast8_t
 bigfont_decode(char cc)
 {
@@ -269,6 +270,7 @@ bigfont_decode(char cc)
 }
 
 /* valid chars: "0123456789 #._" */
+// Возвращает индекс символа в знакогенераторе
 static uint_fast8_t
 halffont_decode(char cc)
 {
@@ -285,6 +287,7 @@ halffont_decode(char cc)
 	return c - '0';		// остальные - цифры 0..9
 }
 
+// Возвращает индекс символа в знакогенераторе
 static uint_fast8_t
 smallfont_decode(char cc)
 {
@@ -316,22 +319,6 @@ uint_fast8_t smallfont_width(char cc)
 	return SMALLCHARW;	// полная ширина символа в пикселях
 }
 #endif /* defined (SMALLCHARW) */
-
-#if defined (SMALLCHARH2)
-uint_fast8_t smallfont2_width(char cc)
-{
-	(void) cc;
-	return SMALLCHARW2;	// полная ширина символа в пикселях
-}
-#endif /* defined (SMALLCHARH2) */
-
-#if defined (SMALLCHARH3)
-uint_fast8_t smallfont3_width(char cc)
-{
-	(void) cc;
-	return SMALLCHARW3;	// полная ширина символа в пикселях
-}
-#endif /* defined (SMALLCHARH3) */
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
 // return new x coordinate
@@ -423,7 +410,13 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_x2_put_char_small_tbg(
 
 #endif /* defined (SMALLCHARW) */
 
-#if defined (SMALLCHARW2)
+
+#if defined (SMALLCHARH2)
+uint_fast8_t smallfont2_width(char cc)
+{
+	(void) cc;
+	return SMALLCHARW2;	// полная ширина символа в пикселях
+}
 
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
@@ -477,7 +470,15 @@ uint_fast16_t strwidth2(
 
 #endif /* defined (SMALLCHARW2) */
 
-#if SMALLCHARW3
+
+#if defined (SMALLCHARH3)
+
+uint_fast8_t smallfont3_width(char cc)
+{
+	(void) cc;
+	return SMALLCHARW3;	// полная ширина символа в пикселях
+}
+
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
