@@ -228,7 +228,6 @@ uint_fast16_t display_wrdatabar_begin(const gxdrawb_t * db, uint_fast8_t xcell, 
 void display_wrdatabar_end(const gxdrawb_t * db);
 
 // Заполнение буфера сполшным цветом
-// Формат RGB565
 // Эта функция используется только в тесте
 void colpip_fill(
 	const gxdrawb_t * db,
@@ -515,7 +514,7 @@ colpip_radius(
 
 void
 colpip_segm(
-		const gxdrawb_t * db,
+	const gxdrawb_t * db,
 	int xc, int yc,
 	unsigned gs, unsigned ge,
 	unsigned r, int step,
@@ -527,30 +526,28 @@ colpip_segm(
 void
 colpip_xor_vline(
 	const gxdrawb_t * db,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row0,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	COLORPIP_T color
 	);
 
 // Нарисовать вертикальную цветную полосу
-// Формат RGB565
 void
 colpip_set_vline(
-		const gxdrawb_t * db,
-	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
-	uint_fast16_t row0,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
+	const gxdrawb_t * db,
+	uint_fast16_t x,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
 	uint_fast16_t h,	// высота
 	COLORPIP_T color
 	);
 
 // Нарисовать горизонтальную цветную полосу
-// Формат RGB565
 void
 colpip_set_hline(
 	const gxdrawb_t * db,
-	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
-	uint_fast16_t row0,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
+	uint_fast16_t x,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
 	uint_fast16_t w,	// ширина
 	COLORPIP_T color
 	);
