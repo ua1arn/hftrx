@@ -2421,9 +2421,6 @@ static void display2_freqX_a(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t 
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
-#if ! WITHPRERENDER
-	colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
-#endif /* ! WITHPRERENDER */
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
@@ -2431,6 +2428,7 @@ static void display2_freqX_a(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t 
 	#if WITHPRERENDER
 		rendered_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
 	#else /* WITHPRERENDER */
+		colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
 		display_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
 	#endif /* WITHPRERENDER */
 #endif /* WITHDIRECTFREQENER */
@@ -2444,6 +2442,7 @@ static void display2_freqX_a(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t 
 	#if WITHPRERENDER
 		rendered_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 	#else /* WITHPRERENDER */
+		colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
 		display_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 	#endif /* WITHPRERENDER */
 	}
@@ -9068,29 +9067,29 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 	{
 
 	}
-	else if (! strcmp(url.c_str(), "smeter"))
+	else if (! strcmp(url.c_str(), dzi_smtr2.id))
 	{
 		pix_display2_smeter15(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height);
 	}
-	else if (! strcmp(url.c_str(), "bigfreq"))
+	else if (! strcmp(url.c_str(), dzi_freqa.id))
 	{
 		uint_fast8_t rj;
 		uint_fast8_t fullwidth = display_getfreqformat(& rj);
 		const uint_fast8_t comma = 3 - rj;
 
-		colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
 
 		enum { blinkpos = 255, blinkstate = 0 };
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
 #if WITHPRERENDER
-			pix_rendered_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+		pix_rendered_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 #else /* WITHPRERENDER */
-			pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+		colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
+		pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 #endif /* WITHPRERENDER */
 	}
-	else if (! strcmp(url.c_str(), "waterfal"))
+	else if (! strcmp(url.c_str(), dzi_gcombo.id))
 	{
 		uint_fast8_t x = layer.border_box.left() / 16;
 		uint_fast8_t y = layer.border_box.top() / 5;
