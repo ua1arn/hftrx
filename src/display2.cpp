@@ -2411,8 +2411,7 @@ static void display2_freqX_a_init(
 {
 #if WITHPRERENDER
 	/* valid chars: "0123456789 #._" */
-	colmain_setcolors(colors_1freq [0].fg, colors_1freq [0].bg);
-	rendered_value_big_initialize();
+	rendered_value_big_initialize(colors_1freq [0].fg, colors_1freq [0].bg);
 #endif /* WITHPRERENDER */
 }
 

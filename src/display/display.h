@@ -759,7 +759,7 @@ pix_rendered_value_big(
 	uint_fast8_t withhalf		// 0 - только большие цифры
 	);
 
-void rendered_value_big_initialize(void);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
+void rendered_value_big_initialize(COLORPIP_T fg, COLORPIP_T bg);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
 
 void
 display_value_lower(

@@ -659,16 +659,15 @@ static gxdrawb_t dbvhalf;
 
 // Подготовка отображения больщих символов
 /* valid chars: "0123456789 #._" */
-void rendered_value_big_initialize(void)
+void rendered_value_big_initialize(COLORPIP_T fg, COLORPIP_T bg)
 {
 	COLORPIP_T keycolor = COLORPIP_KEY;
 	unsigned picalpha = 255;
 	gxdrawb_initialize(& dbvbig, rendered_big, picx_big, picy_big);
 	gxdrawb_initialize(& dbvhalf, rendered_half, picx_half, picy_half);
 
-	const COLORPIP_T fg = ltdc_fg;	// цвет цифр
-	colpip_fillrect(& dbvbig, 0, 0, picx_big, picy_big, ltdc_bg);	/* при alpha==0 все биты цвета становятся 0 */
-	colpip_fillrect(& dbvhalf, 0, 0, picx_half, picy_half, ltdc_bg);	/* при alpha==0 все биты цвета становятся 0 */
+	colpip_fillrect(& dbvbig, 0, 0, picx_big, picy_big, bg);	/* при alpha==0 все биты цвета становятся 0 */
+	colpip_fillrect(& dbvhalf, 0, 0, picx_half, picy_half, bg);	/* при alpha==0 все биты цвета становятся 0 */
 
 	uint_fast8_t ci;
 
