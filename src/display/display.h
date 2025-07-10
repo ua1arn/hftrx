@@ -222,9 +222,6 @@ void panel_deinitialize(void);
 void display_clear(const gxdrawb_t * db);	// Заполниить цветом фона
 void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg);
 
-// полоса индикатора - рисуется display_bar
-uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-
 // Заполнение буфера сполшным цветом
 // Эта функция используется только в тесте
 void colpip_fill(
@@ -339,8 +336,6 @@ uint_fast16_t strheight(
 	const char * s
 	);
 
-// Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
-// display_wrdata_begin() и display_wrdatabar_end().
 void display_bar(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,
@@ -360,7 +355,7 @@ void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, 
 
 
 // большие и средние цифры (частота)
-uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
+uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
 uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, COLORPIP_T fg);
 uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, COLORPIP_T fg);
 // большие и средние цифры (частота)

@@ -596,7 +596,7 @@ uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_
 }
 
 // обычный шрифт
-uint_fast16_t display_wrdata_begin(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
@@ -689,7 +689,7 @@ void rendered_value_big_initialize(COLORPIP_T fg, COLORPIP_T bg)
 	/* big-size characters */
 	{
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(& dbvbig, 0, 0, & ypix);
+		uint_fast16_t xpix = display_wrdata_begin(0, 0, & ypix);
 		for (ci = 0; ci < RENDERCHARS; ++ ci)
 		{
 			/* формирование изображений символов, возможно с эффектами антиалиасинга */
@@ -704,7 +704,7 @@ void rendered_value_big_initialize(COLORPIP_T fg, COLORPIP_T bg)
 	/* half-size characters */
 	{
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(& dbvhalf, 0, 0, & ypix);
+		uint_fast16_t xpix = display_wrdata_begin(0, 0, & ypix);
 		for (ci = 0; ci < RENDERCHARS; ++ ci)
 		{
 			/* формирование изображений символов, возможно с эффектами антиалиасинга */
@@ -972,7 +972,7 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	size_t len;
 	char c;
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(db, xcell, ycell, & ypix);
+	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
 
 	savestring = s;
 	savewhere = __func__;
@@ -1139,7 +1139,7 @@ display_value_big(const gxdrawb_t * db,
 {
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(db, xcell, ycell, & ypix);
+	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
 //	const uint_fast16_t x = GRID2X(xcell);
 //	const uint_fast16_t y = GRID2Y(ycell);
 	const uint_fast16_t w = GRID2X(xspan);
@@ -1237,7 +1237,7 @@ rendered_value_big(const gxdrawb_t * db,
 {
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(db, xcell, ycell, & ypix);
+	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
 	pix_rendered_value_big(db, xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf);
 }
 
@@ -1264,7 +1264,7 @@ display_value_lower(const gxdrawb_t * db,
 	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(db, xcell, ycell, & ypix);
+	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
 	const uint_fast16_t w = GRID2X(xspan);
 	const uint_fast16_t h = GRID2Y(yspan);
 	colpip_fillrect(db, xpix, ypix, w, h, ltdc_bg);
@@ -1313,7 +1313,7 @@ display_value_small(const gxdrawb_t * db,
 	uint_fast8_t z = 1;	// если в позиции встретился '0' - не отоображать
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(db, x, y, & ypix);
+	uint_fast16_t xpix = display_wrdata_begin(x, y, & ypix);
 //    const uint_fast16_t x = GRID2X(xcell);
 //    const uint_fast16_t y = GRID2Y(ycell);
 	const uint_fast16_t w = GRID2X(xspan);

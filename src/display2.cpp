@@ -4450,14 +4450,14 @@ void display_swrmeter(const gxdrawb_t * db,
 	colmain_setcolors(SWRCOLOR, BGCOLOR);
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(db, display_bars_x_swr(x, CHARS2GRID(0)), y, & ypix);
+	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_swr(x, CHARS2GRID(0)), y, & ypix);
 	display_bar(db, xpix, ypix, BDTH_ALLSWR, mapleftval, fullscale, fullscale, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);
 
 	if (BDTH_SPACESWR != 0)
 	{
 		// заполняем пустое место за индикаторм КСВ
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(db, display_bars_x_swr(x, CHARS2GRID(BDTH_ALLSWR)), y, & ypix);
+		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_swr(x, CHARS2GRID(BDTH_ALLSWR)), y, & ypix);
 		display_bar(db, xpix, ypix, BDTH_SPACESWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 	}
 
@@ -4488,14 +4488,14 @@ void display_pwrmeter(const gxdrawb_t * db,
 	colmain_setcolors(PWRCOLOR, BGCOLOR);
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(db, display_bars_x_pwr(x, CHARS2GRID(0)), y, & ypix);
+	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(0)), y, & ypix);
 	display_bar(db, xpix, ypix, BDTH_ALLPWR, mapleftval, mapleftmax, fullscale, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);
 
 	if (BDTH_SPACEPWR != 0)
 	{
 		// заполняем пустое место за индикаторм мощности
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(db, display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLPWR)), y, & ypix);
+		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLPWR)), y, & ypix);
 		display_bar(db, xpix, ypix, BDTH_SPACEPWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 	}
 
@@ -4523,18 +4523,18 @@ void display_smeter(const gxdrawb_t * db,
 
 	colmain_setcolors(LCOLOR, BGCOLOR);
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(db, display_bars_x_rx(x, CHARS2GRID(0)), y, & ypix);
+	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_rx(x, CHARS2GRID(0)), y, & ypix);
 	display_bar(db, xpix, ypix, BDTH_LEFTRX, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);		//ниже 9 баллов ничего
 	//
 	colmain_setcolors(RCOLOR, BGCOLOR);
 	uint_fast16_t ypix2;
-	uint_fast16_t xpix2 = display_wrdata_begin(db, display_bars_x_rx(x, CHARS2GRID(BDTH_LEFTRX)), y, & ypix2);
+	uint_fast16_t xpix2 = display_wrdata_begin(display_bars_x_rx(x, CHARS2GRID(BDTH_LEFTRX)), y, & ypix2);
 	display_bar(db, xpix2, ypix2, BDTH_RIGHTRX, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);		// выше 9 баллов ничего нет.
 
 	if (BDTH_SPACERX != 0)
 	{
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(db, display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLRX)), y, & ypix);
+		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLRX)), y, & ypix);
 		display_bar(db, xpix, ypix, BDTH_SPACERX, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 	}
 
@@ -9892,7 +9892,7 @@ void display2_initialize(void)
 					continue;
 				if (dzp->colspan == 0 || dzp->rowspan == 0)
 					continue;
-				PRINTF(" <div id=\"%d\" style=\"background-color:blue; color:black;\">%*.*s</div>\n",
+				PRINTF(" <div id=\"id%d\" style=\"background-color:blue; color:black;\">%*.*s</div>\n",
 						(int) i,
 						dzp->colspan, dzp->colspan, "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
 						);
