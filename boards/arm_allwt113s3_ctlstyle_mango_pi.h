@@ -514,6 +514,9 @@
 	#if 0
 		#define WITHLVGL 1		/* bare-metal config of LVGL */
 	#endif
+	#if 0
+		#define WITHRENDERHTML	1	/* Использование библиотеки litehtml для формирования изображения на дисплее */
+	#endif
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
 	//#define WITHFANPWM		1	/* есть управление скоростью вентилятора */

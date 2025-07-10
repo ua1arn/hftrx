@@ -567,10 +567,10 @@
 #define LV_ATTRIBUTE_MEM_ALIGN __ALIGNED(4)
 
 /** Attribute to mark large constant arrays, for example for font bitmaps */
-#define LV_ATTRIBUTE_LARGE_CONST
+#define LV_ATTRIBUTE_LARGE_CONST const
 
 /** Compiler prefix for a large array declaration in RAM */
-#define LV_ATTRIBUTE_LARGE_RAM_ARRAY
+#define LV_ATTRIBUTE_LARGE_RAM_ARRAY RAMFRAMEBUFF
 
 /** Place performance critical functions into a faster memory (e.g RAM) */
 #define LV_ATTRIBUTE_FAST_MEM
@@ -651,7 +651,7 @@
 /** Enable handling large font and/or fonts with a lot of characters.
  *  The limit depends on the font size, font face and bpp.
  *  A compiler error will be triggered if a font needs it. */
-#define LV_FONT_FMT_TXT_LARGE 0
+#define LV_FONT_FMT_TXT_LARGE 1
 
 /** Enables/disables support for compressed fonts. */
 #define LV_USE_FONT_COMPRESSED 0

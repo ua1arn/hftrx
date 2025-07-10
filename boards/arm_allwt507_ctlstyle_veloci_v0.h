@@ -226,7 +226,6 @@
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	//#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
 
-	//#define WITHRENDERHTML	1	/* Использование библиотеки litehtml для формирования изображения на дисплее */
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 	#define COLORSTYLE_GREEN	1
 	//#define COLORSTYLE_BLUE	1
@@ -478,6 +477,9 @@
 	#if 0
 		#define WITHLVGL 1		/* bare-metal config of LVGL */
 		//#define WITHLVGLINDEV 1	/* обработку событий от органов управления делает LVGL */
+	#endif
+	#if 0
+		#define WITHRENDERHTML	1	/* Использование библиотеки litehtml для формирования изображения на дисплее */
 	#endif
 
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
