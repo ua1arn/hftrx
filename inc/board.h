@@ -148,7 +148,6 @@ void board_set_attvalue(uint_fast8_t v);		/* установить значени
 void prog_dac1_a_value(uint_fast8_t v);
 void prog_dac1_b_value(uint_fast8_t v);
 void board_set_affilter(uint_fast8_t v);
-void board_set_loudspeaker(uint_fast8_t v);
 void board_set_dsploudspeaker(uint_fast8_t v);
 void board_set_digigainmax(uint_fast8_t v);		/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 void board_set_gainnfmrx(int_fast16_t n);	/* дополнительное усиление по НЧ в режиме приёма NFM */

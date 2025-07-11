@@ -12016,7 +12016,6 @@ updateboardZZZ(
 	#endif /* WITHNBONOFF */
 
 	#if WITHSPKMUTE
-		board_set_loudspeaker(gmutespkr); /*  выключение динамика */
 		board_set_dsploudspeaker(gmutespkr); /*  выключение динамика (управление кодеком) */
 	#endif /* WITHSPKMUTE */
 

@@ -58,7 +58,6 @@ static uint_fast8_t dds3_profile;		/* информация о последнем
 ////////////////
 // board specific functions
 
-static uint_fast8_t		glob_loudspeaker_off;
 static uint_fast8_t 	glob_opowerlevel = BOARDPOWERMAX;	/* BOARDPOWERMIN..BOARDPOWERMAX */
 
 static uint_fast8_t 	glob_tx;			// находимся в режиме передачи
@@ -2240,7 +2239,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		//RBBIT(0013, 0);			/* D3: unused */
 		RBBIT(0012, (glob_bandf == 0));		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
 		RBBIT(0011, (glob_bandf == 0));		// D1: средневолновый ФНЧ - управление реле на входе фильтров
-		RBBIT(0010, ! glob_loudspeaker_off);		// D0: 1 - снять SHUTDOWN с усилителя PAM8406
+		RBBIT(0010, 1);						// D0: 1 - снять SHUTDOWN с усилителя LM4950/PAM8406
 
 		// RF BOARD DD20 SN74HC595PW
 		RBBIT(0005, glob_tx);		// PTT_OUT
@@ -3581,18 +3580,6 @@ board_set_affilter(uint_fast8_t v)
 		glob_affilter = n;
 		board_ctlreg1changed();
 		board_dsp1regchanged();
-	}
-}
-
-/*  */
-void
-board_set_loudspeaker(uint_fast8_t v)	
-{
-	const uint_fast8_t n = v != 0;
-	if (glob_loudspeaker_off != n)
-	{
-		glob_loudspeaker_off = n;
-		board_ctlreg1changed();
 	}
 }
 
