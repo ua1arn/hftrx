@@ -951,7 +951,7 @@ static const dzitem_t dzi_default =
 static const dzitem_t dzi_compat =
 {
 	.lvelementcreate = LVCREATE(dzi_create_compat),
-	.id = "compat"
+	//.id = "compat"
 };
 
 static const dzitem_t dzi_menu =
@@ -9903,9 +9903,9 @@ void display2_initialize(void)
 					continue;
 				if (dzp->dzip != NULL && dzp->dzip->id != NULL)
 				{
-					PRINTF(" <div id=\"%s\" style=\"background-color:blue; color:black;\">%*.*s</div>\n",
+					PRINTF(" <div id=\"%s\" style=\"background-color:blue; color:black;\"><img src='%s'/></div>\n",
 							dzp->dzip->id,
-							dzp->colspan, dzp->colspan, "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+							dzp->dzip->id
 							);
 				}
 				else

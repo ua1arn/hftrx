@@ -245,7 +245,7 @@ R"##(
  <div id="id7" style="background-color:blue; color:black;">WWWW</div>
  <div id="id8" style="background-color:blue; color:black;">WWW</div>
  <div id="id10" style="background-color:blue; color:black;">WWWWWWWWWWWWWWW</div>
- <div id="freq-a" style="background-color:blue; color:black;">WWWWWWWWWWWWWWWWWWWWW</div>
+ <div id="freq-a" style="background-color:blue; color:black;"><img src='freq-a'/></div>
  <div id="id13" style="background-color:blue; color:black;">WWWWWWWWW</div>
  <div id="id14" style="background-color:blue; color:black;">WWWWWWWWW</div>
  <div id="id15" style="background-color:blue; color:black;">WWW</div>
