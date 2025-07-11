@@ -993,7 +993,6 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	    l.align = LV_TEXT_ALIGN_RIGHT;
 	    l.flag = LV_TEXT_FLAG_EXPAND | LV_TEXT_FLAG_FIT;
 	    l.text = s;
-	    l.font = & Epson_LTDC_small2; //DISPLAY_AT_FONT;
 	    l.font = & Epson_LTDC_small; //DISPLAY_AT_FONT;
 	    //PRINTF("display_string: x/y=%d/%d '%s'\n", (int) xpix, (int) xpix, s);
 		lv_draw_rect(layer, & d, & coords);

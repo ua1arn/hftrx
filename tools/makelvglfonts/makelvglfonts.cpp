@@ -70,26 +70,36 @@ const unsigned char revbittable [256] =
 	0x0F, 0x8F, 0x4F, 0xCF, 0x2F, 0xAF, 0x6F, 0xEF, 0x1F, 0x9F, 0x5F, 0xDF, 0x3F, 0xBF, 0x7F, 0xFF,
 };
 
-static unsigned getbit(const uint8_t * data, unsigned bitpos)
+static unsigned getbit(const uint8_t * data, unsigned bitpos, unsigned w, unsigned h)
 {
-	return (data [bitpos / 8] >> (bitpos % 8)) & 0x01;
+	if (bitpos >= (w * h))
+		return 0;
+	return (data [bitpos / 8] >> (7 - bitpos % 8)) & 0x01;
 }
 
-static unsigned getrasterbyte(const uint8_t * data, unsigned bytepos, unsigned hbytes, unsigned rows)
+static unsigned getrasterbyte(const uint8_t * data, unsigned bytepos, unsigned w, unsigned h)
 {
+	unsigned r = 0;
 	//unsigned row = bytepos / hbytes;
 	//unsigned rowbypepos = bytepos % hbytes;
-	return revbittable [data [bytepos]];
+	r |= (1u << 0) * getbit(data, bytepos * 8 + 0, w, h);
+	r |= (1u << 1) * getbit(data, bytepos * 8 + 1, w, h);
+	r |= (1u << 2) * getbit(data, bytepos * 8 + 2, w, h);
+	r |= (1u << 3) * getbit(data, bytepos * 8 + 3, w, h);
+	r |= (1u << 4) * getbit(data, bytepos * 8 + 4, w, h);
+	r |= (1u << 5) * getbit(data, bytepos * 8 + 5, w, h);
+	r |= (1u << 6) * getbit(data, bytepos * 8 + 6, w, h);
+	r |= (1u << 7) * getbit(data, bytepos * 8 + 7, w, h);
+	return r;
 }
 
 static void createrasterchunk(FILE * fp, int ch, unsigned offset, const uint8_t * raster, int w, int h)
 {
 	unsigned hbytes = (w + 7) / 8;
-	unsigned rows = h;
-	unsigned dumppos = 0;
 	unsigned i;
-	unsigned fullsize = hbytes * rows;
+	unsigned fullsize = hbytes * h;
 	unsigned charsinrow = 16;
+	unsigned dumppos = 0;
 
 	fprintf(fp, "\t" "/* ch offset = %u, code = 0x%02X */\n", offset, (unsigned) ch);
 	for (i = 0; i < fullsize; ++ i)
@@ -98,7 +108,7 @@ static void createrasterchunk(FILE * fp, int ch, unsigned offset, const uint8_t 
 			fprintf(fp, "\t");
 		int endofline = (i + 1) >= fullsize || (dumppos + 1) >= charsinrow;
 
-		fprintf(fp, "0x%02X,%s", getrasterbyte(raster, i, hbytes, rows), endofline ? "\n" : " ");
+		fprintf(fp, "0x%02X,%s", getrasterbyte(raster, i, w, h), endofline ? "\n" : " ");
 		if (++ dumppos >= charsinrow)
 		{
 			dumppos = 0;
