@@ -4,11 +4,11 @@
 #include "lvgl/lvgl.h"
 #endif
 
-#ifndef LTDC_CENTURYGOTHIC_BIG
-#define LTDC_CENTURYGOTHIC_BIG 1
+#ifndef LV_FONT_LTDC_CENTURYGOTHIC_BIG
+#define LV_FONT_LTDC_CENTURYGOTHIC_BIG 1
 #endif
 
-#if LTDC_CENTURYGOTHIC_BIG
+#if LV_FONT_LTDC_CENTURYGOTHIC_BIG
 
 /*-----------------
  *    BITMAPS
@@ -354,5 +354,5 @@ lv_font_t ltdc_CenturyGothic_big = {
     .user_data = NULL,
 };
 
-#endif /* LTDC_CENTURYGOTHIC_BIG */
+#endif /* LV_FONT_LTDC_CENTURYGOTHIC_BIG */
 

@@ -4,11 +4,11 @@
 #include "lvgl/lvgl.h"
 #endif
 
-#ifndef LTDC_CENTURYGOTHIC_HALF
-#define LTDC_CENTURYGOTHIC_HALF 1
+#ifndef LV_FONT_LTDC_CENTURYGOTHIC_HALF
+#define LV_FONT_LTDC_CENTURYGOTHIC_HALF 1
 #endif
 
-#if LTDC_CENTURYGOTHIC_HALF
+#if LV_FONT_LTDC_CENTURYGOTHIC_HALF
 
 /*-----------------
  *    BITMAPS
@@ -302,5 +302,5 @@ lv_font_t ltdc_CenturyGothic_half = {
     .user_data = NULL,
 };
 
-#endif /* LTDC_CENTURYGOTHIC_HALF */
+#endif /* LV_FONT_LTDC_CENTURYGOTHIC_HALF */
 

@@ -4,11 +4,11 @@
 #include "lvgl/lvgl.h"
 #endif
 
-#ifndef EPSON_LTDC_SMALL
-#define EPSON_LTDC_SMALL 1
+#ifndef LV_FONT_EPSON_LTDC_SMALL
+#define LV_FONT_EPSON_LTDC_SMALL 1
 #endif
 
-#if EPSON_LTDC_SMALL
+#if LV_FONT_EPSON_LTDC_SMALL
 
 /*-----------------
  *    BITMAPS
@@ -478,5 +478,5 @@ lv_font_t Epson_LTDC_small = {
     .user_data = NULL,
 };
 
-#endif /* EPSON_LTDC_SMALL */
+#endif /* LV_FONT_EPSON_LTDC_SMALL */
 
