@@ -314,7 +314,7 @@ void makefont(const char * fontname, const unsigned char * rasterarray, int ncha
 //LV_FONT_DECLARE(ltdc_CenturyGothic_half)		// width=28, height=56
 //LV_FONT_DECLARE(Epson_LTDC_big)			// width=36, height=56
 //LV_FONT_DECLARE(Epson_LTDC_half)		// width=28, height=56
-//LV_FONT_DECLARE(Epson_LTDC_small_RU)	// width=16, height=15
+//LV_FONT_DECLARE(Epson_LTDC_small_RU)	// width=10, height=15
 //LV_FONT_DECLARE(Epson_LTDC_small)		// width=16, height=15
 //LV_FONT_DECLARE(Epson_LTDC_small2)		// width=10, height=16
 //LV_FONT_DECLARE(Epson_LTDC_small3)		// width=8, height=8
@@ -324,6 +324,7 @@ void makefont(const char * fontname, const unsigned char * rasterarray, int ncha
 #include "S1D13781_font_big_LTDC.h"
 #include "S1D13781_font_half_LTDC.h"
 #include "S1D13781_font_small_LTDC.h"
+#include "S1D13781_font_small_RU_LTDC.h"
 #include "S1D13781_font_small2_LTDC.h"
 #include "S1D13781_font_small3_LTDC.h"
 
@@ -337,6 +338,7 @@ int main(int argc, char* argv[])
 	makefont("Epson_LTDC_big", S1D13781_bigfont_LTDC [0][0],  ARRAY_SIZE(S1D13781_bigfont_LTDC), PREFIX "Epson_LTDC_big.c", 36, 56, 0, symbols, strlen(symbols));
 	makefont("Epson_LTDC_half", ltdc_CenturyGothic_half [0][0], ARRAY_SIZE(ltdc_CenturyGothic_half), PREFIX "Epson_LTDC_half.c", 28, 56, 0, symbols, strlen(symbols));
 	makefont("Epson_LTDC_small", S1D13781_smallfont_LTDC [0][0], ARRAY_SIZE(S1D13781_smallfont_LTDC), PREFIX "Epson_LTDC_small.c", 16, 15, 0x20, NULL, 0);
+	makefont("Epson_LTDC_small_RU", S1D13781_smallfont_RU_LTDC [0][0], ARRAY_SIZE(S1D13781_smallfont_RU_LTDC), PREFIX "Epson_LTDC_small_RU.c", 10, 15, 0x20, NULL, 0);
 	makefont("Epson_LTDC_small2", S1D13781_smallfont2_LTDC [0][0], ARRAY_SIZE(S1D13781_smallfont2_LTDC), PREFIX "Epson_LTDC_small2.c", 10, 16, 0x20, NULL, 0);
 	makefont("Epson_LTDC_small3", S1D13781_smallfont3_LTDC [0], ARRAY_SIZE(S1D13781_smallfont3_LTDC), PREFIX "Epson_LTDC_small3.c", 8, 8, 0x20, NULL, 0);
 	return 0;

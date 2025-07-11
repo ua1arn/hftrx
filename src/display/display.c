@@ -987,11 +987,11 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 		lv_area_t coords;
 	    lv_draw_label_dsc_init(& l);
 		lv_draw_rect_dsc_init(& d);
-		lv_area_set(& coords, xpix, ypix, xpix + GRID2X(CHARS2GRID(xspan)) - 1, ypix + DISPLAY_AT_H - 1);
+		lv_area_set(& coords, xpix, ypix, xpix + GRID2X(xspan) - 1, ypix + DISPLAY_AT_H - 1);
 	    d.bg_color = display_lvlcolor(ltdc_bg);
 	    l.color = display_lvlcolor(ltdc_fg);
 	    l.align = LV_TEXT_ALIGN_RIGHT;
-	    l.flag = LV_TEXT_FLAG_EXPAND | LV_TEXT_FLAG_FIT;
+	    l.flag = 0*LV_TEXT_FLAG_EXPAND | LV_TEXT_FLAG_FIT;
 	    l.text = s;
 	    l.font = & Epson_LTDC_small; //DISPLAY_AT_FONT;
 	    //PRINTF("display_string: x/y=%d/%d '%s'\n", (int) xpix, (int) xpix, s);
