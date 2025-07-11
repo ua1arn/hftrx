@@ -9876,9 +9876,18 @@ void display2_initialize(void)
 				if (dzp->colspan == 0 || dzp->rowspan == 0)
 					continue;
 				//
-				PRINTF(" #id%d { position:absolute; left:%dpx; top:%dpx; width:%dpx; height:%dpx; }\n",
-						(int) i,
-						(int) GRID2X(dzp->x), (int) GRID2Y(dzp->y), (int) GRID2X(dzp->colspan), (int) GRID2Y(dzp->rowspan));
+				if (dzp->dzip != NULL && dzp->dzip->id != NULL)
+				{
+					PRINTF(" #%s { position:absolute; left:%dpx; top:%dpx; width:%dpx; height:%dpx; }\n",
+							dzp->dzip->id,
+							(int) GRID2X(dzp->x), (int) GRID2Y(dzp->y), (int) GRID2X(dzp->colspan), (int) GRID2Y(dzp->rowspan));
+				}
+				else
+				{
+					PRINTF(" #id%d { position:absolute; left:%dpx; top:%dpx; width:%dpx; height:%dpx; }\n",
+							(int) i,
+							(int) GRID2X(dzp->x), (int) GRID2Y(dzp->y), (int) GRID2X(dzp->colspan), (int) GRID2Y(dzp->rowspan));
+				}
 			}
 			PRINTF("</style>\n");
 			PRINTF("</head>\n");
@@ -9892,10 +9901,20 @@ void display2_initialize(void)
 					continue;
 				if (dzp->colspan == 0 || dzp->rowspan == 0)
 					continue;
-				PRINTF(" <div id=\"id%d\" style=\"background-color:blue; color:black;\">%*.*s</div>\n",
-						(int) i,
-						dzp->colspan, dzp->colspan, "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-						);
+				if (dzp->dzip != NULL && dzp->dzip->id != NULL)
+				{
+					PRINTF(" <div id=\"%s\" style=\"background-color:blue; color:black;\">%*.*s</div>\n",
+							dzp->dzip->id,
+							dzp->colspan, dzp->colspan, "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+							);
+				}
+				else
+				{
+					PRINTF(" <div id=\"id%d\" style=\"background-color:blue; color:black;\">%*.*s</div>\n",
+							(int) i,
+							dzp->colspan, dzp->colspan, "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+							);
+				}
 			}
 			PRINTF("</body>\n");
 
