@@ -52,37 +52,39 @@ static void createbitmapend(FILE * fp)
 
 static unsigned getbit(const uint8_t * data, unsigned bitpos, unsigned w, unsigned h)
 {
+	const unsigned origrow = bitpos / w;	// vertical point
+	const unsigned origbit = bitpos % w;	// horisontal point
+	const unsigned origbytesinrow = (w + 7) / 8;
+
 	if (bitpos >= (w * h))
 		return 0;
-	unsigned origbytesinrow = (w + 7) / 8;
-	unsigned origrow = bitpos / w;	// vertical point
-	unsigned origbit = bitpos % w;	// horisontal point
-	return (data [origrow * origbytesinrow + origbit / 8] >> (7 - origbit % 8)) & 0x01;
+	return (data [origrow * origbytesinrow + origbit / 8] >> (origbit % 8)) & 0x01;
 }
 
+// Collect byte
 static unsigned getrasterbyte(const uint8_t * data, unsigned bytepos, unsigned w, unsigned h)
 {
 	unsigned r = 0;
 	//unsigned row = bytepos / hbytes;
 	//unsigned rowbypepos = bytepos % hbytes;
-	r |= (1u << 0) * !! getbit(data, bytepos * 8 + 0, w, h);
-	r |= (1u << 1) * !! getbit(data, bytepos * 8 + 1, w, h);
-	r |= (1u << 2) * !! getbit(data, bytepos * 8 + 2, w, h);
-	r |= (1u << 3) * !! getbit(data, bytepos * 8 + 3, w, h);
-	r |= (1u << 4) * !! getbit(data, bytepos * 8 + 4, w, h);
-	r |= (1u << 5) * !! getbit(data, bytepos * 8 + 5, w, h);
-	r |= (1u << 6) * !! getbit(data, bytepos * 8 + 6, w, h);
-	r |= (1u << 7) * !! getbit(data, bytepos * 8 + 7, w, h);
+	r |= (1u << 7) * !! getbit(data, bytepos * 8 + 0, w, h);
+	r |= (1u << 6) * !! getbit(data, bytepos * 8 + 1, w, h);
+	r |= (1u << 5) * !! getbit(data, bytepos * 8 + 2, w, h);
+	r |= (1u << 4) * !! getbit(data, bytepos * 8 + 3, w, h);
+	r |= (1u << 3) * !! getbit(data, bytepos * 8 + 4, w, h);
+	r |= (1u << 2) * !! getbit(data, bytepos * 8 + 5, w, h);
+	r |= (1u << 1) * !! getbit(data, bytepos * 8 + 6, w, h);
+	r |= (1u << 0) * !! getbit(data, bytepos * 8 + 7, w, h);
 	return r;
 }
 
 static void createrasterchunk(FILE * fp, int ch, unsigned offset, const uint8_t * raster, int w, int h)
 {
-	unsigned hbytes = (w + 7) / 8;
-	unsigned i;
-	unsigned fullsize = hbytes * h;
-	unsigned charsinrow = 16;
+	const unsigned hbytes = (w + 7) / 8;
+	const unsigned fullsize = hbytes * h;
+	const unsigned charsinrow = 16;
 	unsigned dumppos = 0;
+	unsigned i;
 
 	fprintf(fp, "\t" "/* ch offset = %u, code = 0x%02X */\n", offset, (unsigned) ch);
 	for (i = 0; i < fullsize; ++ i)
