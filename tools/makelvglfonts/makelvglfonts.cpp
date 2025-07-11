@@ -63,7 +63,7 @@ static unsigned getbit(const uint8_t * data, unsigned bitpos, unsigned w, unsign
 }
 
 // return number of packed bytes
-unsigned createrasterchunk(FILE * fp, int ch, unsigned offset, const uint8_t * raster, int w, int vieww, int h)
+unsigned createrasterchunk(FILE * fp, int vch, unsigned voffset, const uint8_t * raster, int w, int vieww, int h)
 {
 	const unsigned fullbitsize = vieww * h;	// output raster capacity
 	const unsigned charsinrow = 16;
@@ -73,7 +73,7 @@ unsigned createrasterchunk(FILE * fp, int ch, unsigned offset, const uint8_t * r
 
 	unsigned acc = 0;
 	unsigned accbits = 0;
-	fprintf(fp, "\t" "/* ch offset = %u, code = 0x%02X */\n", offset, ch);
+	fprintf(fp, "\t" "/* ch offset = %u, code = 0x%02X */\n", voffset, vch);
 	for (i = 0; i < fullbitsize; ++ i)
 	{
 		acc = (acc << 1) | getbit(raster, i, w, vieww, h);	// peek original raster bit
@@ -217,10 +217,16 @@ static void createcformatdesc(FILE * fp)
 	writestrings(fp, strings, ARRAY_SIZE(strings));
 }
 
+struct sortpair
+{
+	unsigned char c;
+	unsigned char ix;
+};
+
 static int compchar(const void * left, const void * right)
 {
-	unsigned l = * (const unsigned char *) left;
-	unsigned r = * (const unsigned char *) right;
+	unsigned l = ((const struct sortpair *) left)->c;
+	unsigned r = ((const struct sortpair *) right)->c;
 
 	if (l > r)
 		return 1;
@@ -235,7 +241,7 @@ void makefont(const char * keysymbol, const char * fontname, const unsigned char
 	  unsigned (* wxlate)(char cc)
 	  )
 {
-	char * symbols = NULL;
+	struct sortpair * symbols = NULL;
 	unsigned startchar = 0x20;
 	if (nssymbols != NULL && strlen(nssymbols) != nchars)
 	{
@@ -252,10 +258,15 @@ void makefont(const char * keysymbol, const char * fontname, const unsigned char
 
 	if (nssymbols != NULL)
 	{
-		symbols = (char * ) calloc(nchars, sizeof (char));
-		memcpy(symbols, nssymbols, sizeof (char) * nchars);
-		qsort(symbols, nchars, sizeof (char), compchar); 
-		startchar = symbols [0];
+		symbols = (struct sortpair * ) calloc(nchars, sizeof (struct sortpair));
+		unsigned i;
+		for (i = 0; i < nchars; ++ i)
+		{
+			symbols [i].c = nssymbols [i];
+			symbols [i].ix = i;
+		}
+		qsort(symbols, nchars, sizeof (struct sortpair), compchar); 
+		startchar = symbols [0].c;
 	}
 
 	createfileheader(fp);
@@ -273,14 +284,15 @@ void makefont(const char * keysymbol, const char * fontname, const unsigned char
 	unsigned * offsets = (unsigned *) calloc(sizeof (unsigned), nchars);
 	unsigned i;
 	unsigned dstoffset = 0;
+	
 	for (i = 0; i < nchars; ++ i)
 	{
-		const int srcbytes = (w + 7) / 8;
+		const int srcrowbytes = (w + 7) / 8;
 		const int srcrows = h;
-		const unsigned c = symbols ? (unsigned char) symbols [i] : startchar + i;
+		const unsigned c = symbols ? symbols [i].c : startchar + i;
 		const unsigned vieww = wxlate ? (* wxlate)(c) : w;
-		const unsigned srcoffset = (c - startchar) * srcbytes * srcrows;
-
+		const unsigned srcindex = symbols ? symbols [i].ix : i;
+		const unsigned srcoffset = srcindex * srcrowbytes * srcrows;
 		offsets [i] = dstoffset;
 		dstoffset += createrasterchunk(fp, c, dstoffset, rasterarray + srcoffset, w, vieww, h);
 	}
@@ -291,7 +303,7 @@ void makefont(const char * keysymbol, const char * fontname, const unsigned char
 	createglyphdesc(fp, 0, 0, 0, 0, EOF);
 	for (i = 0; i < nchars; ++ i)
 	{
-		const unsigned c = symbols ? (unsigned char) symbols [i] : startchar + i;
+		const unsigned c = symbols ? symbols [i].c : startchar + i;
 		const unsigned vieww = wxlate ? (* wxlate)(c) : w;
 		createglyphdesc(fp, i + 1, offsets [i], vieww, h, c);
 	}
@@ -309,7 +321,7 @@ void makefont(const char * keysymbol, const char * fontname, const unsigned char
 		unsigned i;
 		for (i = 0; i < nchars; ++ i)
 		{
-			const unsigned c = (unsigned char) symbols [i];
+			const unsigned c = symbols [i].c;
 			fprintf(fp, "\t" "0x%02X," "\n", c - startchar);
 		}
 
@@ -326,7 +338,7 @@ void makefont(const char * keysymbol, const char * fontname, const unsigned char
 	}
 	else
 	{
-		fprintf(fp, "\t" "\t" ".range_start = 0x%02X, .range_length = %d, .glyph_id_start = 1," "\n", startchar, (unsigned char) symbols [nchars - 1] - startchar + 1);
+		fprintf(fp, "\t" "\t" ".range_start = 0x%02X, .range_length = %d, .glyph_id_start = 1," "\n", startchar, symbols [nchars - 1].c - startchar + 1);
 		fprintf(fp, "\t" "\t" ".unicode_list = unicode_list_0, .glyph_id_ofs_list = NULL, .list_length = %u, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY" "\n", nchars);
 	}
 	createcharmappingend(fp);
@@ -372,6 +384,7 @@ void makefont(const char * keysymbol, const char * fontname, const unsigned char
 	fclose(fp);
 	free(symbols);
 	free(offsets);
+	fprintf(stderr, "%s\n", fontname);
 }
 
 //LV_FONT_DECLARE(ltdc_CenturyGothic_big)			// width=36, height=56
