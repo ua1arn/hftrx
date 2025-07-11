@@ -62,45 +62,50 @@ static unsigned getbit(const uint8_t * data, unsigned bitpos, unsigned w, unsign
 	return (data [origrow * origbytesinrow + origbit / 8] >> (origbit % 8)) & 0x01;
 }
 
-// Collect byte
-static unsigned getrasterbyte(const uint8_t * data, unsigned bytepos, unsigned w, unsigned h)
+static void createrasterchunk(FILE * fp, int ch, unsigned offset, const uint8_t * raster, int w, int vieww, int h)
 {
-	unsigned r = 0;
-	//unsigned row = bytepos / hbytes;
-	//unsigned rowbypepos = bytepos % hbytes;
-	r |= (1u << 7) * !! getbit(data, bytepos * 8 + 0, w, h);
-	r |= (1u << 6) * !! getbit(data, bytepos * 8 + 1, w, h);
-	r |= (1u << 5) * !! getbit(data, bytepos * 8 + 2, w, h);
-	r |= (1u << 4) * !! getbit(data, bytepos * 8 + 3, w, h);
-	r |= (1u << 3) * !! getbit(data, bytepos * 8 + 4, w, h);
-	r |= (1u << 2) * !! getbit(data, bytepos * 8 + 5, w, h);
-	r |= (1u << 1) * !! getbit(data, bytepos * 8 + 6, w, h);
-	r |= (1u << 0) * !! getbit(data, bytepos * 8 + 7, w, h);
-	return r;
-}
-
-static void createrasterchunk(FILE * fp, int ch, unsigned offset, const uint8_t * raster, int w, int h)
-{
-	const unsigned hbytes = (w + 7) / 8;
-	const unsigned fullsize = hbytes * h;
+	const unsigned fullbitsize = vieww * h;	// output raster capacity
 	const unsigned charsinrow = 16;
 	unsigned dumppos = 0;
 	unsigned i;
 
-	fprintf(fp, "\t" "/* ch offset = %u, code = 0x%02X */\n", offset, (unsigned) ch);
-	for (i = 0; i < fullsize; ++ i)
+	unsigned acc = 0;
+	unsigned accbits = 0;
+	fprintf(fp, "\t" "/* ch offset = %u, code = 0x%02X */\n", offset, ch);
+	for (i = 0; i < fullbitsize; ++ i)
 	{
+		acc = acc * 2 | getbit(raster, i, w, h);	// peek original raster bit
+		if (++ accbits >= 8)
+		{
+			if (dumppos == 0)
+				fprintf(fp, "\t");
+			int endofline = (dumppos + 1) >= charsinrow;
+			fprintf(fp, "0x%02X,%s", acc, endofline ? "\n" : " ");
+			if (++ dumppos >= charsinrow)
+			{
+				dumppos = 0;
+			}
+			acc = 0;
+			accbits = 0;
+		}
+	}	
+	if (accbits != 0)
+	{
+		accbits <<= 8 - accbits;
 		if (dumppos == 0)
 			fprintf(fp, "\t");
-		int endofline = (i + 1) >= fullsize || (dumppos + 1) >= charsinrow;
-
-		fprintf(fp, "0x%02X,%s", getrasterbyte(raster, i, w, h), endofline ? "\n" : " ");
+		int endofline = 1;
+		fprintf(fp, "0x%02X,%s", acc, endofline ? "\n" : " ");
 		if (++ dumppos >= charsinrow)
 		{
 			dumppos = 0;
 		}
-		
-	}	
+	}
+	else if (dumppos != 0)
+	{
+		fprintf(fp, "\n");
+	}
+
 }
 
 static void createglyphdescbegin(FILE * fp)
@@ -219,7 +224,8 @@ static void createcfonrdescend(FILE * fp)
 void makefont(const char * keysymbol, const char * fontname, const unsigned char * rasterarray, int nchars, const char * outfilename, 
 	  int w, int h, 
 	  int startchar,
-	  const char * symbols, int nsymbols
+	  const char * symbols, int nsymbols,
+	  unsigned (* wxlate)(char cc)
 	  )
 {
 	if (symbols != NULL && nsymbols != nchars)
@@ -250,18 +256,14 @@ void makefont(const char * keysymbol, const char * fontname, const unsigned char
 	int i;
 	for (i = 0; i < nchars; ++ i)
 	{
-		int hbytes = (w + 7) / 8;
-		int rows = h;
-		unsigned offset = i * hbytes * rows;
-		offsets [i] = offset;
-		if (symbols != NULL)
-		{
-			createrasterchunk(fp, symbols [i], offset, rasterarray + offset, w, h);
-		}
-		else
-		{
-			createrasterchunk(fp, startchar + i, offset, rasterarray + offset, w, h);
-		}
+		const int hbytes = (w + 7) / 8;
+		const int rows = h;
+		const unsigned srcoffset = i * hbytes * rows;
+		const unsigned c = symbols ? (unsigned char) symbols [i] : startchar + i;
+		const unsigned vieww = wxlate ? (* wxlate)(c) : w;
+
+		offsets [i] = srcoffset;
+		createrasterchunk(fp, c, srcoffset, rasterarray + srcoffset, w, vieww, h);
 	}
 	createbitmapend(fp);
 
@@ -377,15 +379,33 @@ void makefont(const char * keysymbol, const char * fontname, const unsigned char
 #define PREFIX "../../src/display/fonts/LVGL/"
 
 static const char symbols [] = "0123456789_ .";
+
+
+#if defined (BIGCHARW_NARROW) && defined (BIGCHARW)
+unsigned bigfont_width(char cc)
+{
+	return (cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW;	// полная ширина символа в пикселях
+}
+#endif /* defined (BIGCHARW_NARROW) && defined (BIGCHARW) */
+
+#if defined (HALFCHARW)
+unsigned halffont_width(char cc)
+{
+	(void) cc;
+	return HALFCHARW;	// полная ширина символа в пикселях
+}
+#endif /* defined (HALFCHARW) */
+
+
 int main(int argc, char* argv[])
 {
-	makefont("LV_FONT_LTDC_CENTURYGOTHIC_BIG", "ltdc_CenturyGothic_big", ltdc_CenturyGothic_big [0][0],  ARRAY_SIZE(ltdc_CenturyGothic_big), PREFIX "ltdc_CenturyGothic_big.c", 36, 56, 0, symbols, strlen(symbols));
-	makefont("LV_FONT_LTDC_CENTURYGOTHIC_HALF", "ltdc_CenturyGothic_half", ltdc_CenturyGothic_half [0][0], ARRAY_SIZE(ltdc_CenturyGothic_half), PREFIX "ltdc_CenturyGothic_half.c", 28, 56, 0, symbols, strlen(symbols));
-	makefont("LV_FONT_EPSON_LTDC_BIG", "Epson_LTDC_big", S1D13781_bigfont_LTDC [0][0],  ARRAY_SIZE(S1D13781_bigfont_LTDC), PREFIX "Epson_LTDC_big.c", 36, 56, 0, symbols, strlen(symbols));
-	makefont("LV_FONT_EPSON_LTDC_HALF", "Epson_LTDC_half", ltdc_CenturyGothic_half [0][0], ARRAY_SIZE(ltdc_CenturyGothic_half), PREFIX "Epson_LTDC_half.c", 28, 56, 0, symbols, strlen(symbols));
-	makefont("LV_FONT_EPSON_LTDC_SMALL", "Epson_LTDC_small", S1D13781_smallfont_LTDC [0][0], ARRAY_SIZE(S1D13781_smallfont_LTDC), PREFIX "Epson_LTDC_small.c", 16, 15, 0x20, NULL, 0);
-	makefont("LV_FONT_EPSON_LTDC_SMALL_RU", "Epson_LTDC_small_RU", S1D13781_smallfont_RU_LTDC [0][0], ARRAY_SIZE(S1D13781_smallfont_RU_LTDC), PREFIX "Epson_LTDC_small_RU.c", 10, 15, 0x20, NULL, 0);
-	makefont("LV_FONT_EPSON_LTDC_SMALL2", "Epson_LTDC_small2", S1D13781_smallfont2_LTDC [0][0], ARRAY_SIZE(S1D13781_smallfont2_LTDC), PREFIX "Epson_LTDC_small2.c", 10, 16, 0x20, NULL, 0);
-	makefont("LV_FONT_EPSON_LTDC_SMALL3", "Epson_LTDC_small3", S1D13781_smallfont3_LTDC [0], ARRAY_SIZE(S1D13781_smallfont3_LTDC), PREFIX "Epson_LTDC_small3.c", 8, 8, 0x20, NULL, 0);
+	makefont("LV_FONT_LTDC_CENTURYGOTHIC_BIG", "ltdc_CenturyGothic_big", ltdc_CenturyGothic_big [0][0],  ARRAY_SIZE(ltdc_CenturyGothic_big), PREFIX "ltdc_CenturyGothic_big.c", 36, 56, 0, symbols, strlen(symbols), bigfont_width);
+	makefont("LV_FONT_LTDC_CENTURYGOTHIC_HALF", "ltdc_CenturyGothic_half", ltdc_CenturyGothic_half [0][0], ARRAY_SIZE(ltdc_CenturyGothic_half), PREFIX "ltdc_CenturyGothic_half.c", 28, 56, 0, symbols, strlen(symbols), halffont_width);
+	makefont("LV_FONT_EPSON_LTDC_BIG", "Epson_LTDC_big", S1D13781_bigfont_LTDC [0][0],  ARRAY_SIZE(S1D13781_bigfont_LTDC), PREFIX "Epson_LTDC_big.c", 36, 56, 0, symbols, strlen(symbols), bigfont_width);
+	makefont("LV_FONT_EPSON_LTDC_HALF", "Epson_LTDC_half", ltdc_CenturyGothic_half [0][0], ARRAY_SIZE(ltdc_CenturyGothic_half), PREFIX "Epson_LTDC_half.c", 28, 56, 0, symbols, strlen(symbols), halffont_width);
+	makefont("LV_FONT_EPSON_LTDC_SMALL", "Epson_LTDC_small", S1D13781_smallfont_LTDC [0][0], ARRAY_SIZE(S1D13781_smallfont_LTDC), PREFIX "Epson_LTDC_small.c", 16, 15, 0x20, NULL, 0, NULL);
+	makefont("LV_FONT_EPSON_LTDC_SMALL_RU", "Epson_LTDC_small_RU", S1D13781_smallfont_RU_LTDC [0][0], ARRAY_SIZE(S1D13781_smallfont_RU_LTDC), PREFIX "Epson_LTDC_small_RU.c", 10, 15, 0x20, NULL, 0, NULL);
+	makefont("LV_FONT_EPSON_LTDC_SMALL2", "Epson_LTDC_small2", S1D13781_smallfont2_LTDC [0][0], ARRAY_SIZE(S1D13781_smallfont2_LTDC), PREFIX "Epson_LTDC_small2.c", 10, 16, 0x20, NULL, 0, NULL);
+	makefont("LV_FONT_EPSON_LTDC_SMALL3", "Epson_LTDC_small3", S1D13781_smallfont3_LTDC [0], ARRAY_SIZE(S1D13781_smallfont3_LTDC), PREFIX "Epson_LTDC_small3.c", 8, 8, 0x20, NULL, 0, NULL);
 	return 0;
 }
