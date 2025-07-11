@@ -131,10 +131,18 @@ static void createcharmappingend(FILE * fp)
 	writestrings(fp, strings, ARRAY_SIZE(strings));
 }
 
-static void createcharmapping(FILE * fp, int rangestart, int rangelength)
+static void createcharmapping(FILE * fp, int rangestart, int rangelength, const char * symbols, int nsymbols)
 {
-	fprintf(fp, "\t" "\t" ".range_start = %d, .range_length = %d, .glyph_id_start = 1," "\n", rangestart, rangelength);
-	fprintf(fp, "\t" "\t" ".unicode_list = NULL, .glyph_id_ofs_list = NULL, .list_length = 0, .type = LV_FONT_FMT_TXT_CMAP_FORMAT0_TINY" "\n");
+	if (symbols == NULL)
+	{
+		fprintf(fp, "\t" "\t" ".range_start = %d, .range_length = %d, .glyph_id_start = 1," "\n", rangestart, rangelength);
+		fprintf(fp, "\t" "\t" ".unicode_list = NULL, .glyph_id_ofs_list = NULL, .list_length = 0, .type = LV_FONT_FMT_TXT_CMAP_FORMAT0_TINY" "\n");
+	}
+	else
+	{
+		fprintf(fp, "\t" "\t" ".range_start = %d, .range_length = %d, .glyph_id_start = 1," "\n", rangestart, rangelength);
+		fprintf(fp, "\t" "\t" ".unicode_list = NULL, .glyph_id_ofs_list = NULL, .list_length = 0, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY" "\n");
+	}
 }
 
 
@@ -231,7 +239,7 @@ void makefont(const char * fontname, const unsigned char * rasterarray, int ncha
 
 	/* Collect the unicode lists and glyph_id offsets */
 	createcharmappingbegin(fp);
-	createcharmapping(fp, startchar, nchars);
+	createcharmapping(fp, startchar, nchars, symbols, nsymbols);
 	createcharmappingend(fp);
 
 	createcformatdesc(fp);
