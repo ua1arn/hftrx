@@ -126,7 +126,7 @@ static void createcharmappingend(FILE * fp)
 	{
 		"\t" "},",
 		"};",
-
+		"",
 	};
 	writestrings(fp, strings, ARRAY_SIZE(strings));
 }
@@ -138,14 +138,66 @@ static void createcharmapping(FILE * fp, int rangestart, int rangelength)
 }
 
 
-void makefont(const char * name, const unsigned char * rasterarray, int nchars, const char * outfilename, int w, int h, int startchar)
+static void createcformatdesc(FILE * fp)
 {
+	static const char * const strings [] =
+	{
+		"/*--------------------",
+		" *  ALL CUSTOM DATA",
+		" *--------------------*/",
+		"",
+		"#if LVGL_VERSION_MAJOR == 8",
+		"/*Store all the custom data of the font*/",
+		"static  lv_font_fmt_txt_glyph_cache_t cache;",
+		"#endif",
+		"",
+		"#if LVGL_VERSION_MAJOR >= 8",
+		"static const lv_font_fmt_txt_dsc_t font_dsc = {",
+		"#else",
+		"static lv_font_fmt_txt_dsc_t font_dsc = {",
+		"#endif",
+		"    .glyph_bitmap = glyph_bitmap,",
+		"    .glyph_dsc = glyph_dsc,",
+		"    .cmaps = cmaps,",
+		"    .kern_dsc = NULL,",
+		"    .kern_scale = 0,",
+		"    .cmap_num = 1,",
+		"    .bpp = 1,",
+		"    .kern_classes = 0,",
+		"    .bitmap_format = 0,",
+		"#if LVGL_VERSION_MAJOR == 8",
+		"    .cache = &cache",
+		"#endif",
+		"};",
+	};
+	writestrings(fp, strings, ARRAY_SIZE(strings));
+}
+
+static void createcfonrdescbegin(FILE * fp)
+{
+}
+
+static void createcfonrdescend(FILE * fp)
+{
+}
+
+void makefont(const char * fontname, const unsigned char * rasterarray, int nchars, const char * outfilename, 
+	  int w, int h, 
+	  int startchar,
+	  const char * symbols, int nsymbols
+	  )
+{
+	if (symbols != NULL && nsymbols != nchars)
+	{
+		fprintf(stderr, "Wrong number of charsacters (bitmap %u, set %u)\n", nchars, nsymbols);
+		return;
+	}
+
 	FILE * fp = fopen(outfilename, "wt");
 	if (fp == NULL)
 	{
 		fprintf(stderr, "Can not open output file '%s'\n", outfilename);
-
-
+		return;
 	}
 	createfileheader(fp);
 	createbitmapbegin(fp);
@@ -157,22 +209,68 @@ void makefont(const char * name, const unsigned char * rasterarray, int nchars, 
 		int rows = h;
 		unsigned offset = i * hbytes * rows;
 		offsets [i] = offset;
-		createrasterchunk(fp, startchar + i, offset, rasterarray + offset, w, h);
+		if (symbols != NULL)
+		{
+			createrasterchunk(fp, symbols [i], offset, rasterarray + offset, w, h);
+		}
+		else
+		{
+			createrasterchunk(fp, startchar + i, offset, rasterarray + offset, w, h);
+		}
 	}
 	createbitmapend(fp);
 
+	/* GLYPH DESCRIPTION */
 	createglyphdescbegin(fp);
 	createglyphdesc(fp, 0, 0, w, h);
 	for (i = 0; i < nchars; ++ i)
 	{
 		createglyphdesc(fp, i + 1, offsets [i], w, h);
 	}
-
 	createglyphdescend(fp);
 
+	/* Collect the unicode lists and glyph_id offsets */
 	createcharmappingbegin(fp);
 	createcharmapping(fp, startchar, nchars);
 	createcharmappingend(fp);
+
+	createcformatdesc(fp);
+
+	createcfonrdescbegin(fp);
+	//createcfonrdesc(fp, startchar, nchars);
+	createcfonrdescend(fp);
+
+#if 1
+
+	fprintf(fp, "/*-----------------" "\n");
+	fprintf(fp, " *  PUBLIC FONT" "\n");
+	fprintf(fp, " *----------------*/" "\n");
+	fprintf(fp, "" "\n");
+	fprintf(fp, "/*Initialize a public general font descriptor*/" "\n");
+	fprintf(fp, "#if LVGL_VERSION_MAJOR >= 8" "\n");
+	fprintf(fp, "const lv_font_t %s = {" "\n", fontname);
+	fprintf(fp, "#else" "\n");
+	fprintf(fp, "lv_font_t %s = {" "\n", fontname);
+	fprintf(fp, "#endif" "\n");
+	fprintf(fp, "    .get_glyph_dsc = lv_font_get_glyph_dsc_fmt_txt,    /*Function pointer to get glyph's data*/" "\n");
+	fprintf(fp, "    .get_glyph_bitmap = lv_font_get_bitmap_fmt_txt,    /*Function pointer to get glyph's bitmap*/" "\n");
+	fprintf(fp, "    .line_height = %d,          /*The maximum line height required by the font*/" "\n", h);
+	fprintf(fp, "    .base_line = 0,             /*Baseline measured from the bottom of the line*/" "\n");
+	fprintf(fp, "#if !(LVGL_VERSION_MAJOR == 6 && LVGL_VERSION_MINOR == 0)" "\n");
+	fprintf(fp, "    .subpx = LV_FONT_SUBPX_NONE," "\n");
+	fprintf(fp, "#endif" "\n");
+	fprintf(fp, "#if LV_VERSION_CHECK(7, 4, 0) || LVGL_VERSION_MAJOR >= 8" "\n");
+	fprintf(fp, "    .underline_position = 0," "\n");
+	fprintf(fp, "    .underline_thickness = 0," "\n");
+	fprintf(fp, "#endif" "\n");
+	fprintf(fp, "    .dsc = &font_dsc,          /*The custom font data. Will be accessed by `get_glyph_bitmap/dsc` */" "\n");
+	fprintf(fp, "#if LV_VERSION_CHECK(8, 2, 0) || LVGL_VERSION_MAJOR >= 9" "\n");
+	fprintf(fp, "    .fallback = NULL," "\n");
+	fprintf(fp, "#endif" "\n");
+	fprintf(fp, "    .user_data = NULL," "\n");
+	fprintf(fp, "};" "\n");
+	fprintf(fp, "" "\n");
+#endif
 	fclose(fp);
 	free(offsets);
 }
@@ -195,14 +293,16 @@ void makefont(const char * name, const unsigned char * rasterarray, int nchars, 
 #include "S1D13781_font_small3_LTDC.h"
 
 #define PREFIX "../../src/display/fonts/"
+
+static const char symbols [] = "0123456789_ .";
 int main(int argc, char* argv[])
 {
-	makefont("ltdc_CenturyGothic_big", ltdc_CenturyGothic_big [0][0],  ARRAY_SIZE(ltdc_CenturyGothic_big), PREFIX "ltdc_CenturyGothic_big.c", 36, 56, 0);
-	makefont("ltdc_CenturyGothic_half", ltdc_CenturyGothic_half [0][0], ARRAY_SIZE(ltdc_CenturyGothic_half), PREFIX "ltdc_CenturyGothic_half.c", 28, 56, 0);
-	makefont("Epson_LTDC_big", S1D13781_bigfont_LTDC [0][0],  ARRAY_SIZE(S1D13781_bigfont_LTDC), PREFIX "Epson_LTDC_big.c", 36, 56, 0);
-	makefont("Epson_LTDC_half", ltdc_CenturyGothic_half [0][0], ARRAY_SIZE(ltdc_CenturyGothic_half), PREFIX "Epson_LTDC_half.c", 28, 56, 0);
-	makefont("Epson_LTDC_small", S1D13781_smallfont_LTDC [0][0], ARRAY_SIZE(S1D13781_smallfont_LTDC), PREFIX "Epson_LTDC_small.c", 16, 15, 0x20);
-	makefont("Epson_LTDC_small2", S1D13781_smallfont2_LTDC [0][0], ARRAY_SIZE(S1D13781_smallfont2_LTDC), PREFIX "Epson_LTDC_small2.c", 10, 16, 0x20);
-	makefont("Epson_LTDC_small3", S1D13781_smallfont3_LTDC [0], ARRAY_SIZE(S1D13781_smallfont3_LTDC), PREFIX "Epson_LTDC_small3.c", 8, 8, 0x20);
+	makefont("ltdc_CenturyGothic_big", ltdc_CenturyGothic_big [0][0],  ARRAY_SIZE(ltdc_CenturyGothic_big), PREFIX "ltdc_CenturyGothic_big.c", 36, 56, 0, symbols, strlen(symbols));
+	makefont("ltdc_CenturyGothic_half", ltdc_CenturyGothic_half [0][0], ARRAY_SIZE(ltdc_CenturyGothic_half), PREFIX "ltdc_CenturyGothic_half.c", 28, 56, 0, symbols, strlen(symbols));
+	makefont("Epson_LTDC_big", S1D13781_bigfont_LTDC [0][0],  ARRAY_SIZE(S1D13781_bigfont_LTDC), PREFIX "Epson_LTDC_big.c", 36, 56, 0, symbols, strlen(symbols));
+	makefont("Epson_LTDC_half", ltdc_CenturyGothic_half [0][0], ARRAY_SIZE(ltdc_CenturyGothic_half), PREFIX "Epson_LTDC_half.c", 28, 56, 0, symbols, strlen(symbols));
+	makefont("Epson_LTDC_small", S1D13781_smallfont_LTDC [0][0], ARRAY_SIZE(S1D13781_smallfont_LTDC), PREFIX "Epson_LTDC_small.c", 16, 15, 0x20, NULL, 0);
+	makefont("Epson_LTDC_small2", S1D13781_smallfont2_LTDC [0][0], ARRAY_SIZE(S1D13781_smallfont2_LTDC), PREFIX "Epson_LTDC_small2.c", 10, 16, 0x20, NULL, 0);
+	makefont("Epson_LTDC_small3", S1D13781_smallfont3_LTDC [0], ARRAY_SIZE(S1D13781_smallfont3_LTDC), PREFIX "Epson_LTDC_small3.c", 8, 8, 0x20, NULL, 0);
 	return 0;
 }
