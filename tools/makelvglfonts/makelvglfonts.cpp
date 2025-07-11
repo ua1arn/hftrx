@@ -126,11 +126,24 @@ static void createglyphdescend(FILE * fp)
 	writestrings(fp, strings, ARRAY_SIZE(strings));
 }
 
-static void createglyphdesc(FILE * fp, int id, unsigned offset, int w, int h)
+static void createglyphdesc(FILE * fp, int id, unsigned offset, int w, int h, int ch)
 {
     //{.bitmap_index = 0, .adv_w = 29, .box_w = 0, .box_h = 0, .ofs_x = 0, .ofs_y = 0},
-    fprintf(fp, "\t" "{.bitmap_index = %u, .adv_w = %u, .box_w = %d, .box_h = %u, .ofs_x = 0, .ofs_y = 0}," "\n",
-		offset, w * 16, w, h);
+	if (ch == EOF)
+	{
+		fprintf(fp, "\t" "{.bitmap_index = %u, .adv_w = %u, .box_w = %d, .box_h = %u, .ofs_x = 0, .ofs_y = 0}," "\n",
+			offset, w * 16, w, h);
+	}
+	else if (isprint(ch))
+	{
+		fprintf(fp, "\t" "{.bitmap_index = %u, .adv_w = %u, .box_w = %d, .box_h = %u, .ofs_x = 0, .ofs_y = 0}, /* ch='%c' */" "\n",
+			offset, w * 16, w, h, ch);
+	}
+	else
+	{
+		fprintf(fp, "\t" "{.bitmap_index = %u, .adv_w = %u, .box_w = %d, .box_h = %u, .ofs_x = 0, .ofs_y = 0}, /* ch=0x%02X */" "\n",
+			offset, w * 16, w, h, ch);
+	}
 }
 
 static void createcharmappingbegin(FILE * fp)
@@ -157,20 +170,6 @@ static void createcharmappingend(FILE * fp)
 		"",
 	};
 	writestrings(fp, strings, ARRAY_SIZE(strings));
-}
-
-static void createcharmapping(FILE * fp, int rangestart, int rangelength, const char * symbols, int nsymbols)
-{
-	if (symbols == NULL)
-	{
-		fprintf(fp, "\t" "\t" ".range_start = %d, .range_length = %d, .glyph_id_start = 1," "\n", rangestart, rangelength);
-		fprintf(fp, "\t" "\t" ".unicode_list = NULL, .glyph_id_ofs_list = NULL, .list_length = 0, .type = LV_FONT_FMT_TXT_CMAP_FORMAT0_TINY" "\n");
-	}
-	else
-	{
-		fprintf(fp, "\t" "\t" ".range_start = %d, .range_length = %d, .glyph_id_start = 1," "\n", rangestart, rangelength);
-		fprintf(fp, "\t" "\t" ".unicode_list = NULL, .glyph_id_ofs_list = NULL, .list_length = 0, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY" "\n");
-	}
 }
 
 
@@ -268,16 +267,47 @@ void makefont(const char * keysymbol, const char * fontname, const unsigned char
 
 	/* GLYPH DESCRIPTION */
 	createglyphdescbegin(fp);
-	createglyphdesc(fp, 0, 0, w, h);
+	createglyphdesc(fp, 0, 0, w, h, EOF);
 	for (i = 0; i < nchars; ++ i)
 	{
-		createglyphdesc(fp, i + 1, offsets [i], w, h);
+		if (symbols != NULL)
+		{
+			createglyphdesc(fp, i + 1, offsets [i], w, h, symbols [i]);
+		}
+		else
+		{
+			createglyphdesc(fp, i + 1, offsets [i], w, h, startchar + i);
+		}
 	}
 	createglyphdescend(fp);
 
+	if (symbols != NULL)
+	{
+		/* sparce text */
+		fprintf(fp, "/*---------------------" "\n");
+ 		fprintf(fp, "*  CHARACTER MAPPING" "\n");
+ 		fprintf(fp, "*--------------------*/" "\n");
+		fprintf(fp, "" "\n");
+		fprintf(fp, "static const uint16_t unicode_list_0[] = {" "\n");
+		fprintf(fp, "    0x0, 0x1, 0xb, 0xc, 0xd, 0xe, 0x10, 0x11," "\n");
+		fprintf(fp, "    0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19," "\n");
+		fprintf(fp, "    0x3f" "\n");
+		fprintf(fp, "};" "\n");
+		fprintf(fp, "" "\n");
+	}
+
 	/* Collect the unicode lists and glyph_id offsets */
 	createcharmappingbegin(fp);
-	createcharmapping(fp, startchar, nchars, symbols, nsymbols);
+	if (symbols == NULL)
+	{
+		fprintf(fp, "\t" "\t" ".range_start = %d, .range_length = %d, .glyph_id_start = 1," "\n", startchar, nchars);
+		fprintf(fp, "\t" "\t" ".unicode_list = NULL, .glyph_id_ofs_list = NULL, .list_length = 0, .type = LV_FONT_FMT_TXT_CMAP_FORMAT0_TINY" "\n");
+	}
+	else
+	{
+		fprintf(fp, "\t" "\t" ".range_start = %d, .range_length = %d, .glyph_id_start = 1," "\n", startchar, nchars);
+		fprintf(fp, "\t" "\t" ".unicode_list = unicode_list_0, .glyph_id_ofs_list = NULL, .list_length = 0, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY" "\n");
+	}
 	createcharmappingend(fp);
 
 	createcformatdesc(fp);
