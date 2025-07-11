@@ -388,7 +388,7 @@ uint_fast8_t smallfont2_width(char cc)
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small2_tbg(
+static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small2(
 	const gxdrawb_t * db,
 	uint_fast16_t x,
 	uint_fast16_t y,
@@ -422,7 +422,7 @@ colpip_string2_tbg(
 	ASSERT(s != NULL);
 	while ((c = * s ++) != '\0')
 	{
-		x = colorpip_put_char_small2_tbg(db, x, y, c, fg);
+		x = colorpip_put_char_small2(db, x, y, c, fg);
 	}
 }
 
@@ -991,7 +991,9 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	    d.bg_color = display_lvlcolor(ltdc_bg);
 	    l.color = display_lvlcolor(ltdc_fg);
 	    l.align = LV_TEXT_ALIGN_RIGHT;
+	    l.flag = LV_TEXT_FLAG_EXPAND | LV_TEXT_FLAG_FIT;
 	    l.text = s;
+	    l.font = & Epson_LTDC_small2; //DISPLAY_AT_FONT;
 	    l.font = & Epson_LTDC_small; //DISPLAY_AT_FONT;
 	    //PRINTF("display_string: x/y=%d/%d '%s'\n", (int) xpix, (int) xpix, s);
 		lv_draw_rect(layer, & d, & coords);
