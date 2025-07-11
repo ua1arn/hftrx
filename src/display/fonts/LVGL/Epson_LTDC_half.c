@@ -249,7 +249,7 @@ static const uint16_t unicode_list_0[] = {
 static const lv_font_fmt_txt_cmap_t cmaps[] =
 {
 	{
-		.range_start = 0x20, .range_length = 64, .glyph_id_start = 1,
+		.range_start = 0x20, .range_length = 0x40, .glyph_id_start = 1,
 		.unicode_list = unicode_list_0, .glyph_id_ofs_list = NULL, .list_length = 13, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY
 	},
 };

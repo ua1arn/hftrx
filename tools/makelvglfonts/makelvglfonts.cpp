@@ -338,7 +338,7 @@ void makefont(const char * keysymbol, const char * fontname, const unsigned char
 	}
 	else
 	{
-		fprintf(fp, "\t" "\t" ".range_start = 0x%02X, .range_length = %d, .glyph_id_start = 1," "\n", startchar, symbols [nchars - 1].c - startchar + 1);
+		fprintf(fp, "\t" "\t" ".range_start = 0x%02X, .range_length = 0x%02X, .glyph_id_start = 1," "\n", startchar, symbols [nchars - 1].c - startchar + 1);
 		fprintf(fp, "\t" "\t" ".unicode_list = unicode_list_0, .glyph_id_ofs_list = NULL, .list_length = %u, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY" "\n", nchars);
 	}
 	createcharmappingend(fp);
