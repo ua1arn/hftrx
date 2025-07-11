@@ -255,9 +255,8 @@ static const lv_font_fmt_txt_glyph_dsc_t glyph_dsc[] = {
 *--------------------*/
 
 static const uint16_t unicode_list_0[] = {
-    0x0, 0x1, 0xb, 0xc, 0xd, 0xe, 0x10, 0x11,
-    0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
-    0x3f
+	0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
+	0x3f, 0x00, 0x0E
 };
 
 /*---------------------
@@ -268,8 +267,8 @@ static const uint16_t unicode_list_0[] = {
 static const lv_font_fmt_txt_cmap_t cmaps[] =
 {
 	{
-		.range_start = 0, .range_length = 13, .glyph_id_start = 1,
-		.unicode_list = unicode_list_0, .glyph_id_ofs_list = NULL, .list_length = 0, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY
+		.range_start = 0x20, .range_length = 64, .glyph_id_start = 1,
+		.unicode_list = unicode_list_0, .glyph_id_ofs_list = NULL, .list_length = 13, .type = LV_FONT_FMT_TXT_CMAP_SPARSE_TINY
 	},
 };
 
