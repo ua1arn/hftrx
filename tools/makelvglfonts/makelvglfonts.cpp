@@ -328,7 +328,7 @@ void makefont(const char * fontname, const unsigned char * rasterarray, int ncha
 #include "S1D13781_font_small2_LTDC.h"
 #include "S1D13781_font_small3_LTDC.h"
 
-#define PREFIX "../../src/display/fonts/"
+#define PREFIX "../../src/display/fonts/LVGL/"
 
 static const char symbols [] = "0123456789_ .";
 int main(int argc, char* argv[])
