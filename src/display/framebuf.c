@@ -2021,7 +2021,7 @@ void lvglhw_initialize(void)
 	}
 #endif /* defined (G2D_MIXER) */
 #if defined (G2D_ROT)
-	if (0)
+	if (1)
 	{
 		PRINTF("lvglhw_initialize: Enable G2D_ROT hw accelerate for LVGL\n");
 		// Блок позволяет копировать прямоугольники без изменения формата и размеров,
