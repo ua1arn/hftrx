@@ -311,7 +311,7 @@ static LV_ATTRIBUTE_LARGE_CONST const uint8_t glyph_bitmap[] = {
  *--------------------*/
 
 static const lv_font_fmt_txt_glyph_dsc_t glyph_dsc[] = {
-	{.bitmap_index = 0, .adv_w = 256, .box_w = 16, .box_h = 15, .ofs_x = 0, .ofs_y = 0},
+	{.bitmap_index = 0, .adv_w = 0, .box_w = 0, .box_h = 0, .ofs_x = 0, .ofs_y = 0},
 	{.bitmap_index = 0, .adv_w = 256, .box_w = 16, .box_h = 15, .ofs_x = 0, .ofs_y = 0}, /* ch=' ' */
 	{.bitmap_index = 30, .adv_w = 256, .box_w = 16, .box_h = 15, .ofs_x = 0, .ofs_y = 0}, /* ch='!' */
 	{.bitmap_index = 60, .adv_w = 256, .box_w = 16, .box_h = 15, .ofs_x = 0, .ofs_y = 0}, /* ch='"' */

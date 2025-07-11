@@ -51,10 +51,10 @@ static void createbitmapend(FILE * fp)
 	writestrings(fp, strings, ARRAY_SIZE(strings));
 }
 
-static unsigned getbit(const uint8_t * data, unsigned bitpos, unsigned w, unsigned h)
+static unsigned getbit(const uint8_t * data, unsigned bitpos, unsigned w, unsigned vieww, unsigned h)
 {
-	const unsigned origrow = bitpos / w;	// vertical point
-	const unsigned origbit = bitpos % w;	// horisontal point
+	const unsigned origrow = bitpos / vieww;	// vertical point
+	const unsigned origbit = bitpos % vieww;	// horisontal point
 	const unsigned origbytesinrow = (w + 7) / 8;
 
 	if (bitpos >= (w * h))
@@ -62,25 +62,28 @@ static unsigned getbit(const uint8_t * data, unsigned bitpos, unsigned w, unsign
 	return (data [origrow * origbytesinrow + origbit / 8] >> (origbit % 8)) & 0x01;
 }
 
-static void createrasterchunk(FILE * fp, int ch, unsigned offset, const uint8_t * raster, int w, int vieww, int h)
+// return number of packed bytes
+unsigned createrasterchunk(FILE * fp, int ch, unsigned offset, const uint8_t * raster, int w, int vieww, int h)
 {
 	const unsigned fullbitsize = vieww * h;	// output raster capacity
 	const unsigned charsinrow = 16;
 	unsigned dumppos = 0;
 	unsigned i;
+	unsigned bytes = 0;
 
 	unsigned acc = 0;
 	unsigned accbits = 0;
 	fprintf(fp, "\t" "/* ch offset = %u, code = 0x%02X */\n", offset, ch);
 	for (i = 0; i < fullbitsize; ++ i)
 	{
-		acc = acc * 2 | getbit(raster, i, w, h);	// peek original raster bit
+		acc = (acc << 1) | getbit(raster, i, w, vieww, h);	// peek original raster bit
 		if (++ accbits >= 8)
 		{
 			if (dumppos == 0)
 				fprintf(fp, "\t");
 			int endofline = (dumppos + 1) >= charsinrow;
 			fprintf(fp, "0x%02X,%s", acc, endofline ? "\n" : " ");
+			++ bytes;
 			if (++ dumppos >= charsinrow)
 			{
 				dumppos = 0;
@@ -96,6 +99,7 @@ static void createrasterchunk(FILE * fp, int ch, unsigned offset, const uint8_t 
 			fprintf(fp, "\t");
 		int endofline = 1;
 		fprintf(fp, "0x%02X,%s", acc, endofline ? "\n" : " ");
+		++ bytes;
 		if (++ dumppos >= charsinrow)
 		{
 			dumppos = 0;
@@ -105,7 +109,7 @@ static void createrasterchunk(FILE * fp, int ch, unsigned offset, const uint8_t 
 	{
 		fprintf(fp, "\n");
 	}
-
+	return bytes;
 }
 
 static void createglyphdescbegin(FILE * fp)
@@ -254,32 +258,28 @@ void makefont(const char * keysymbol, const char * fontname, const unsigned char
 	createbitmapbegin(fp);
 	unsigned * offsets = (unsigned *) calloc(sizeof (unsigned), nchars);
 	int i;
+	unsigned dstoffset = 0;
 	for (i = 0; i < nchars; ++ i)
 	{
-		const int hbytes = (w + 7) / 8;
+		const int srcbytes = (w + 7) / 8;
 		const int rows = h;
-		const unsigned srcoffset = i * hbytes * rows;
 		const unsigned c = symbols ? (unsigned char) symbols [i] : startchar + i;
 		const unsigned vieww = wxlate ? (* wxlate)(c) : w;
+		const unsigned srcoffset = i * srcbytes * rows;
 
-		offsets [i] = srcoffset;
-		createrasterchunk(fp, c, srcoffset, rasterarray + srcoffset, w, vieww, h);
+		offsets [i] = dstoffset;
+		dstoffset += createrasterchunk(fp, c, dstoffset, rasterarray + srcoffset, w, vieww, h);
 	}
 	createbitmapend(fp);
 
 	/* GLYPH DESCRIPTION */
 	createglyphdescbegin(fp);
-	createglyphdesc(fp, 0, 0, w, h, EOF);
+	createglyphdesc(fp, 0, 0, 0, 0, EOF);
 	for (i = 0; i < nchars; ++ i)
 	{
-		if (symbols != NULL)
-		{
-			createglyphdesc(fp, i + 1, offsets [i], w, h, symbols [i]);
-		}
-		else
-		{
-			createglyphdesc(fp, i + 1, offsets [i], w, h, startchar + i);
-		}
+		const unsigned c = symbols ? (unsigned char) symbols [i] : startchar + i;
+		const unsigned vieww = wxlate ? (* wxlate)(c) : w;
+		createglyphdesc(fp, i + 1, offsets [i], vieww, h, c);
 	}
 	createglyphdescend(fp);
 
