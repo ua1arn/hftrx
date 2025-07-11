@@ -3,6 +3,13 @@
 #else
 #include "lvgl/lvgl.h"
 #endif
+
+#ifndef EPSON_LTDC_SMALL3
+#define EPSON_LTDC_SMALL3 1
+#endif
+
+#if EPSON_LTDC_SMALL3
+
 /*-----------------
  *    BITMAPS
  *----------------*/
@@ -374,4 +381,6 @@ lv_font_t Epson_LTDC_small3 = {
 #endif
     .user_data = NULL,
 };
+
+#endif /* EPSON_LTDC_SMALL3 */
 

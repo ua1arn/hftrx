@@ -3,6 +3,13 @@
 #else
 #include "lvgl/lvgl.h"
 #endif
+
+#ifndef LTDC_CENTURYGOTHIC_HALF
+#define LTDC_CENTURYGOTHIC_HALF 1
+#endif
+
+#if LTDC_CENTURYGOTHIC_HALF
+
 /*-----------------
  *    BITMAPS
  *----------------*/
@@ -294,4 +301,6 @@ lv_font_t ltdc_CenturyGothic_half = {
 #endif
     .user_data = NULL,
 };
+
+#endif /* LTDC_CENTURYGOTHIC_HALF */
 

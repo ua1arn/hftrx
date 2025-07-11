@@ -3,6 +3,13 @@
 #else
 #include "lvgl/lvgl.h"
 #endif
+
+#ifndef LTDC_CENTURYGOTHIC_BIG
+#define LTDC_CENTURYGOTHIC_BIG 1
+#endif
+
+#if LTDC_CENTURYGOTHIC_BIG
+
 /*-----------------
  *    BITMAPS
  *----------------*/
@@ -346,4 +353,6 @@ lv_font_t ltdc_CenturyGothic_big = {
 #endif
     .user_data = NULL,
 };
+
+#endif /* LTDC_CENTURYGOTHIC_BIG */
 

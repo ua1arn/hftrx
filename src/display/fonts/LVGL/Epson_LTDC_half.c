@@ -3,6 +3,13 @@
 #else
 #include "lvgl/lvgl.h"
 #endif
+
+#ifndef EPSON_LTDC_HALF
+#define EPSON_LTDC_HALF 1
+#endif
+
+#if EPSON_LTDC_HALF
+
 /*-----------------
  *    BITMAPS
  *----------------*/
@@ -294,4 +301,6 @@ lv_font_t Epson_LTDC_half = {
 #endif
     .user_data = NULL,
 };
+
+#endif /* EPSON_LTDC_HALF */
 
