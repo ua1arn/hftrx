@@ -213,6 +213,7 @@ static void createcformatdesc(FILE * fp)
 		"    .cache = &cache",
 		"#endif",
 		"};",
+		"",
 	};
 	writestrings(fp, strings, ARRAY_SIZE(strings));
 }
