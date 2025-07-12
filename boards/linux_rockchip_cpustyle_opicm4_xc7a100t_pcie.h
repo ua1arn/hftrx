@@ -40,7 +40,7 @@
 
 #define LINUX_XDMA_IQ_EVENT_FILE	"/dev/xdma0_events_0"
 //#define LINUX_STREAM_INT_FILE		"/dev/xdma0_events_1"
-//#define LINUX_AD936X_INT_FILE		"/dev/xdma0_events_2"
+#define LINUX_AD936X_INT_FILE		"/dev/xdma0_events_2"
 #define LINUX_I2C_FILE				"/dev/i2c-3"
 #define LINUX_FB_FILE				"/dev/fb0"
 #define LINUX_TTY_FILE				"/dev/tty0"

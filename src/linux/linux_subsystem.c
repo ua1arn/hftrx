@@ -36,6 +36,7 @@
 #include <dirent.h>
 #include "lvgl/lvgl.h"
 #include "pcie_dev.h"
+#include "common.h"
 
 void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
 void linux_cancel_thread(pthread_t tid);
@@ -897,7 +898,6 @@ void * iq_rx_blkmem;
 volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_rx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
 volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0;
 volatile static uint8_t fir_load_rst = 0, iq_test = 0, wnb_state = 0, resetn_stream = 0;
-const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 32;
 int fd_int = 0;
 
 uint8_t rxbuf[SIZERX8] = { 0 };

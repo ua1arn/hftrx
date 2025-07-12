@@ -15,6 +15,7 @@
 
 #include "lvgl_gui.h"
 #include "windows.h"
+#include "linux/common.h"
 
 void win_modes_handler(lv_event_t * e)
 {
@@ -709,7 +710,7 @@ void win_freq_handler(lv_event_t * e)
 			break;
 
 		default:
-			if (editfreq.num < 6)
+			if (editfreq.num < 7)
 			{
 				editfreq.val  = editfreq.val * 10 + editfreq.key;
 				if (editfreq.val)
@@ -730,6 +731,8 @@ void win_freq_handler(lv_event_t * e)
 void win_ad936xdev_handler(lv_event_t * e)
 {
 #if WITHAD936XDEV
+	static lv_obj_t * slider_cic, * slider_fir, * lbl_cic, * lbl_fir;
+
 	if (! e) // init window
 	{
 		lv_obj_t * cont = gui_win_get_content();
@@ -737,7 +740,32 @@ void win_ad936xdev_handler(lv_event_t * e)
 		uint8_t s = get_ad936x_stream_status();
 		static user_t ext[2];
 
+		lbl_cic = lv_label_create(cont);
+		lv_obj_add_style(lbl_cic, & winlblst, 0);
+		lv_obj_align(lbl_cic, LV_ALIGN_TOP_LEFT, 0, 0);
+		lv_label_set_text_fmt(lbl_cic, "CIC %d", ad936x_iq_shift_cic_rx(0));
+
+		slider_cic = lv_slider_create(cont);
+		lv_obj_align_to(slider_cic, lbl_cic, LV_ALIGN_OUT_RIGHT_MID, 50, 0);
+		lv_obj_set_style_anim_duration(slider_cic, 2000, 0);
+		lv_slider_set_value(slider_cic, ad936x_iq_shift_cic_rx(0), 0);
+		lv_slider_set_range(slider_cic, rx_cic_shift_min, rx_cic_shift_max);
+		lv_obj_add_event_cb(slider_cic, win_ad936xdev_handler, LV_EVENT_VALUE_CHANGED, NULL);
+
+		lbl_fir = lv_label_create(cont);
+		lv_obj_add_style(lbl_fir, & winlblst, 0);
+		lv_obj_align_to(lbl_fir, lbl_cic, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 30);
+		lv_label_set_text_fmt(lbl_fir, "FIR %d", ad936x_iq_shift_fir_rx(0));
+
+		slider_fir = lv_slider_create(cont);
+		lv_obj_align_to(slider_fir, slider_cic, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 30);
+		lv_obj_set_style_anim_duration(slider_fir, 2000, 0);
+		lv_slider_set_value(slider_fir, ad936x_iq_shift_fir_rx(0), 0);
+		lv_slider_set_range(slider_fir, rx_fir_shift_min, rx_fir_shift_max);
+		lv_obj_add_event_cb(slider_fir, win_ad936xdev_handler, LV_EVENT_VALUE_CHANGED, NULL);
+
 		lv_obj_t * btn_sw = add_button(cont, ext, 0, "", s100x44, win_ad936xdev_handler);
+		lv_obj_align_to(btn_sw, lbl_fir, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 30);
 
 		if (s)
 			button_set_text(btn_sw, "Switch\nto HF");
@@ -756,41 +784,55 @@ void win_ad936xdev_handler(lv_event_t * e)
 		return;
 	}
 
-	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
-	user_t * ext = lv_obj_get_user_data(btn);
+	lv_obj_t * obj = (lv_obj_t *) lv_event_get_target(e);
+	user_t * ext = lv_obj_get_user_data(obj);
 	static uint32_t freq = 7012000;
 
-	if (ext->is_clicked)
+	if (lv_obj_check_type(obj, & lv_button_class))
 	{
-		switch (ext->index)
+		if (ext->is_clicked)
 		{
-		case 0:
-			if (get_ad936x_stream_status())
+			switch (ext->index)
 			{
-				button_set_text(btn, "Switch\nto UHF");
-				ad936xdev_sleep();
-				hamradio_set_freq(freq);
+			case 0:
+				if (get_ad936x_stream_status())
+				{
+					button_set_text(obj, "Switch\nto UHF");
+					ad936xdev_sleep();
+					hamradio_set_freq(freq);
+				}
+				else
+				{
+					button_set_text(obj, "Switch\nto HF");
+					ad936xdev_wake();
+					freq = hamradio_get_freq_rx();
+					hamradio_set_freq(433000000);
+				}
+
+				win_close();
+				break;
+
+			case 1:
+				ext->payload = ! ext->payload;
+				ad936xdev_set_fir_state(ext->payload);
+				button_set_lock(obj, ext->payload);
+				break;
+
+			default:
+				break;
 			}
-			else
-			{
-				button_set_text(btn, "Switch\nto HF");
-				ad936xdev_wake();
-				freq = hamradio_get_freq_rx();
-				hamradio_set_freq(433000000);
-			}
-
-			win_close();
-			break;
-
-		case 1:
-			ext->payload = ! ext->payload;
-			ad936xdev_set_fir_state(ext->payload);
-			button_set_lock(btn, ext->payload);
-			break;
-
-		default:
-			break;
 		}
+	}
+	else if (lv_obj_check_type(obj, & lv_slider_class))
+	{
+		uint8_t cic_shift = lv_slider_get_value(slider_cic);
+		uint8_t fir_shift = lv_slider_get_value(slider_fir);
+
+		ad936x_iq_shift_cic_rx(cic_shift);
+		ad936x_iq_shift_fir_rx(fir_shift);
+
+		lv_label_set_text_fmt(lbl_cic, "CIC %d", cic_shift);
+		lv_label_set_text_fmt(lbl_fir, "FIR %d", fir_shift);
 	}
 #endif /* WITHAD936XDEV */
 }
