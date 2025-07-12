@@ -6207,9 +6207,9 @@ uint_fast8_t board_getpwrmeter(
 	uint_fast8_t * toptrace	// peak hold
 	)
 {
-	const uint_fast8_t f = board_getadc_unfiltered_u8(PWRMRRIX, 0, UINT8_MAX);
-	* toptrace = f;
-	return f;
+	const uint_fast8_t v = board_getadc_unfiltered_u8(PWRMRRIX, 0, UINT8_MAX);
+	* toptrace = v;
+	return v;
 }
 
 #else
