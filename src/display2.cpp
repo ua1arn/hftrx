@@ -180,7 +180,7 @@ static void lvstales_initialize(void)
 	    lv_style_set_bg_color(s, display_lvlcolor(display2_getbgcolor()));
 	    lv_style_set_text_align(s, LV_TEXT_ALIGN_RIGHT);
 	    lv_style_set_pad_ver(s, 15);
-	    lv_style_set_text_font(s, & eurostyle_56w);
+	    lv_style_set_text_font(s, & Epson_LTDC_big);
 	    //lv_style_set_text_letter_space(s, 5);
 		lv_style_set_border_width(s, 0);
 
@@ -4475,13 +4475,8 @@ void display_pwrmeter(const gxdrawb_t * db,
 {
 #if WITHBARS
 	const uint_fast16_t fullscale = display_getpwrfullwidth();	// количество точек в отображении мощности на диспле
-#if WITHPWRLIN
-	uint_fast8_t v = (uint_fast32_t) value * fullscale / ((uint_fast32_t) maxpwrcali);
-	uint_fast8_t t = (uint_fast32_t) tracemax * fullscale / ((uint_fast32_t) maxpwrcali);
-#else /* WITHPWRLIN */
 	uint_fast8_t v = (uint_fast32_t) value * value * fullscale / ((uint_fast32_t) maxpwrcali * maxpwrcali);
 	uint_fast8_t t = (uint_fast32_t) tracemax * tracemax * fullscale / ((uint_fast32_t) maxpwrcali * maxpwrcali);
-#endif /* WITHPWRLIN */
 	const uint_fast8_t mapleftval = display_mapbar(v, 0, fullscale, 0, v, fullscale);
 	const uint_fast8_t mapleftmax = display_mapbar(t, 0, fullscale, fullscale, t, fullscale); // fullscale - invisible
 
@@ -4577,8 +4572,6 @@ static void display2_legend_tx(const gxdrawb_t * db,
 				else
 					display_text(db, x, y, PSTR(POWERMAP), xspan);
 		#endif
-	#elif WITHPWRMTR
-				display_text(db, x, y, PSTR(POWERMAP), xspan);
 	#else
 		#warning No TX indication
 	#endif
@@ -10048,10 +10041,6 @@ display2_bars_tx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast
 			else
 				display_pwrmeter(db, x, y, pwr, pwrtrace, maxpwrcali);
 		#endif
-	#elif WITHPWRMTR
-		uint_fast8_t pwrtrace;
-		const uint_fast8_t pwr = board_getpwrmeter(& pwrtrace);
-		display_pwrmeter(db, x, y, pwr, pwrtrace, maxpwrcali);
 	#endif
 
 #endif /* WITHTX */

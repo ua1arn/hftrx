@@ -298,8 +298,8 @@
 	//#define WITHVOX		1	/* используется VOX */
 	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 	//#define WITHSWRMTR	1	/* Измеритель КСВ */
-	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
-	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
+	
+	
 	#define WITHBARS	1	/* отображение S-метра и SWR-метра */
 	//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */

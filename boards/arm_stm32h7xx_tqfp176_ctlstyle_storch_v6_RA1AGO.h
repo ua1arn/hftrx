@@ -331,8 +331,8 @@
 
 		#define WITHSWRMTR	1		/* Измеритель КСВ */
 		#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-		//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
-		//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
+		
+		
 
 	#endif
 

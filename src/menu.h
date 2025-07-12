@@ -3089,18 +3089,6 @@ static const struct menudef menutable [] =
 	& xmaxpwrcali,
 	& xgswrprot,
 	& xgdownatcwtune,
-	
-#elif WITHPWRMTR
-	(const struct paramdefdef [1]) {
-		QLABEL("PWR CALI"), 7, 0, 0,	ISTEP1,		/* калибровка PWR-метра */
-		ITEM_VALUE,
-		10, 255,
-		OFFSETOF(struct nvmap, maxpwrcali),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& maxpwrcali,
-		getzerobase,
-	},
 #endif
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	(const struct paramdefdef [1]) {

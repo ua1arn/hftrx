@@ -6212,17 +6212,6 @@ uint_fast8_t board_getpwrmeter(
 	return f;
 }
 
-#elif WITHTX && WITHPWRMTR
-
-uint_fast8_t board_getpwrmeter(
-	uint_fast8_t * toptrace		// peak hold
-	)
-{
-	const uint_fast8_t f = board_getadc_unfiltered_u8(PWRMRRIX, 0, UINT8_MAX);
-	* toptrace = f;
-	return f;
-}
-
 #else
 
 // нет такой функции
@@ -6639,8 +6628,6 @@ static const uint8_t adcinputs [] =
 		PWRI,		// Индикатор мощности передатчика
 		FWD,
 		REF,
-	#elif WITHPWRMTR
-		PWRI,		// Индикатор мощности передатчика
 	#endif
 #endif /* WITHBARS */
 
@@ -7131,14 +7118,14 @@ adcfilters_initialize(void)
 		hardware_set_adc_filter(SMETERIX, BOARD_ADCFILTER_TRACETOP3S);
 	#endif /* WITHBARS && ! WITHINTEGRATEDDSP */
 
-	#if WITHTX && (WITHSWRMTR || WITHPWRMTR)
+	#if WITHTX && (WITHSWRMTR)
 		{
 			static lpfdata_t pwr;
 
 			hardware_set_adc_filterLPF(PWRI, & pwr);	// Включить фильтр
 			//hardware_set_adc_filter(PWRI, BOARD_ADCFILTER_DIRECT);		// Отключить фильтр
 		}
-	#endif /* WITHTX && (WITHSWRMTR || WITHPWRMTR) */
+	#endif /* WITHTX && (WITHSWRMTR) */
 
 	#if WITHCURRLEVEL2
 		{
@@ -7172,7 +7159,7 @@ adcfilters_initialize(void)
 		}
 	#endif /* WITHTHERMOLEVEL */
 
-	#if WITHSWRMTR || WITHPWRMTR
+	#if WITHSWRMTR
 		{
 			static lpfdata_t fwd;
 			static lpfdata_t ref;
@@ -7180,7 +7167,7 @@ adcfilters_initialize(void)
 			hardware_set_adc_filterLPF(REFMRRIX, & ref);	// Включить фильтр с параметром 0.03
 			hardware_set_adc_filterLPF(FWDMRRIX, & fwd);	// Включить фильтр с параметром 0.03
 		}
-	#endif /* WITHSWRMTR || WITHPWRMTR */
+	#endif /* WITHSWRMTR */
 }
 
 

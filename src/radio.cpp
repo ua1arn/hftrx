@@ -5430,7 +5430,7 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 		uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
 	#endif /* WITHSWRCALI */
 
-	#if WITHPWRMTR || WITHSWRMTR
+	#if WITHSWRMTR
 		#if WITHMAXPWRCALI
 			uint_fast8_t maxpwrcali = WITHMAXPWRCALI;	/* калибровочный параметр PWR-метра */
 		#else
@@ -5438,12 +5438,10 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 		#endif
 	#else
 		uint_fast8_t maxpwrcali = 255;	/* калибровочный параметр PWR-метра */
-	#endif /* WITHPWRMTR || WITHSWRMTR */
+	#endif /* WITHSWRMTR */
 
 	#if WITHSWRMTR && ! WITHSHOWSWRPWR
 		uint_fast8_t swrmode = 1;
-	#elif WITHPWRMTR
-		uint_fast8_t swrmode = 0;
 	#else
 		//static const uint_fast8_t swrmode = 0;
 	#endif
@@ -5544,6 +5542,8 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 		& gdownatcwtune,
 		getzerobase,
 	};
+
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
 	static const struct paramdefdef xgswrprot =
 	{
 			QLABEL("SWR PROT"), 7, 0, RJ_ON,	ISTEP1,
@@ -5577,6 +5577,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 		& maxpwrcali,
 		getzerobase,
 	};
+#endif /* */
 
 #else /* WITHTX */
 
@@ -13724,9 +13725,7 @@ display2_redrawbarstimed(
 			board_adc_store_data(FWDMRRIX, board_getadc_unfiltered_truevalue(FWD));
 			board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
 		}
-	#elif WITHPWRMTR && WITHTX
-		board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
-	#endif /* WITHSWRMTR || WITHPWRMTR */
+	#endif /* WITHSWRMTR */
 	#if WITHCURRLEVEL2
 		board_adc_store_data(PASENSEMRRIX2, board_getadc_unfiltered_truevalue(PASENSEIX2));
 		board_adc_store_data(PAREFERMRRIX2, board_getadc_unfiltered_truevalue(PAREFERIX2));
