@@ -596,10 +596,10 @@
 		PASENSEMRRIX = BOARD_ADCMRRIN(2),	// кеш - индекc не должен повторяться в конфигурации
 		REFMRRIX = BOARD_ADCMRRIN(3),
 		FWDMRRIX = BOARD_ADCMRRIN(4),
-		PWRMRRIX = FWDMRRIX,
-		VOLTMRRIX = BOARD_ADCMRRIN(5),	// кеш - индекc не должен повторяться в конфигурации
-		PASENSEMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
-		PAREFERMRRIX2 = BOARD_ADCMRRIN(7),		// кеш - индекc не должен повторяться в конфигурации
+		PWRMRRIX = BOARD_ADCMRRIN(5),
+		VOLTMRRIX = BOARD_ADCMRRIN(6),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX2 = BOARD_ADCMRRIN(7),		// кеш - индекc не должен повторяться в конфигурации
+		PAREFERMRRIX2 = BOARD_ADCMRRIN(8),		// кеш - индекc не должен повторяться в конфигурации
 
 		// клавиатура на АЦП MCP3208
 		KI0 = BOARD_ADCXKIN(0),

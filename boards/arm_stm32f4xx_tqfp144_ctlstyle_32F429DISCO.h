@@ -415,8 +415,8 @@
 	PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 	REFMRRIX = BOARD_ADCMRRIN(2),
 	FWDMRRIX = BOARD_ADCMRRIN(3),
-	PWRMRRIX = FWDMRRIX,
-	VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+	PWRMRRIX = BOARD_ADCMRRIN(4),
+	VOLTMRRIX = BOARD_ADCMRRIN(5),	// кеш - индекc не должен повторяться в конфигурации
 
 	KI0 = 5, KI1 = 13, KI2 = 15	// PA5, PC3, PC5 клавиатура
 
