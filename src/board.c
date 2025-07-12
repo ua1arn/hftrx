@@ -6625,7 +6625,6 @@ static const uint8_t adcinputs [] =
 		SMETERIX,		// вход S-метра
 	#endif /* ! WITHINTEGRATEDDSP */
 	#if WITHTX && WITHSWRMTR
-		PWRI,		// Индикатор мощности передатчика
 		FWD,
 		REF,
 	#endif
@@ -7122,8 +7121,8 @@ adcfilters_initialize(void)
 		{
 			static lpfdata_t pwr;
 
-			hardware_set_adc_filterLPF(PWRI, & pwr);	// Включить фильтр
-			//hardware_set_adc_filter(PWRI, BOARD_ADCFILTER_DIRECT);		// Отключить фильтр
+			hardware_set_adc_filterLPF(PWRMRRIX, & pwr);	// Включить фильтр
+			//hardware_set_adc_filter(PWRMRRIX, BOARD_ADCFILTER_DIRECT);		// Отключить фильтр
 		}
 	#endif /* WITHTX && (WITHSWRMTR) */
 

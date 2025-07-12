@@ -482,7 +482,6 @@
 	#endif /* WITHCURRLEVEL */
 
 	#if WITHSWRMTR
-		PWRI = 14,			// PC4
 		FWD = 14, REF = 15,	// PC5	SWR-meter
 	#endif /* WITHSWRMTR */
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 13, KI4 = 0	// клавиатура

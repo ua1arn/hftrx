@@ -408,7 +408,6 @@
 	//#endif /* WITHVOLTLEVEL */
 
 	//#if WITHSWRMTR
-	//	PWRI = 0,
 	//	FWD = 0, REF = 0,	// SWR-meter
 	//#endif
 

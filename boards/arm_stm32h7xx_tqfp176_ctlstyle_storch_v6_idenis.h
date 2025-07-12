@@ -530,7 +530,7 @@
 
 		#if WITHSWRMTR
 			FWD = BOARD_ADCMRRIN(6), REF = BOARD_ADCMRRIN(7),	// PC5	SWR-meter
-			PWRI = FWD,
+			
 
 			REFMRRIX = BOARD_ADCMRRIN(8),	// кеш
 			FWDMRRIX = BOARD_ADCMRRIN(9),	// кеш
@@ -588,7 +588,6 @@
 		#endif /* WITHCURRLEVEL */
 
 		#if WITHSWRMTR
-			PWRI = 14,			// PC4
 			FWD = 14, REF = 15,	// PC5	SWR-meter
 			REFMRRIX = BOARD_ADCMRRIN(2),
 			FWDMRRIX = BOARD_ADCMRRIN(3),

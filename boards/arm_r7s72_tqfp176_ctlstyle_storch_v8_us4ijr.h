@@ -532,7 +532,7 @@
 		//PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
 
 		FWD = 0, REF = 1,	// PB0	SWR-meter
-		PWRI = FWD,			// PB1
+					// PB1
 
 
 		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
@@ -549,7 +549,7 @@
 
 		FWD = BOARD_ADCX2IN(2),
 		REF = BOARD_ADCX2IN(3),
-		PWRI = FWD,
+		
 
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 		//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
@@ -566,7 +566,6 @@
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHSWRMTR
-			PWRI = 0,			// PB1
 			FWD = 0, REF = 1,	// PB0	SWR-meter
 		#endif /* WITHSWRMTR */
 

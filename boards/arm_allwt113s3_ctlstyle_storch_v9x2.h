@@ -562,7 +562,7 @@
 
 		FWD = BOARD_ADCX2IN(0),
 		REF = BOARD_ADCX2IN(1),
-		PWRI = FWD,
+		
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		PASENSEIX2 = BOARD_ADCX2IN(2),	// DRAIN
@@ -595,7 +595,7 @@
 
 		#if WITHSWRMTR
 			FWD = BOARD_ADCX1IN(5), REF = BOARD_ADCX1IN(4),	// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
-			PWRI = FWD,
+			
 		#endif /* WITHSWRMTR */
 
 		VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
@@ -606,7 +606,7 @@
 
 		FWD = BOARD_ADCX2IN(3),
 		REF = BOARD_ADCX2IN(2),
-		PWRI = FWD,
+		
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
@@ -631,7 +631,7 @@
 
 		#if WITHSWRMTR
 			FWD = BOARD_ADCX1IN(5), REF = BOARD_ADCX1IN(4),	// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
-			PWRI = FWD,
+			
 		#endif /* WITHSWRMTR */
 	#endif
 

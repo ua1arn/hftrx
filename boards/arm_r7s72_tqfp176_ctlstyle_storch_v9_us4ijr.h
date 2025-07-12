@@ -514,7 +514,7 @@
 		//PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
 
 		FWD = 0, REF = 1,	// PB0	SWR-meter
-		PWRI = FWD,			// PB1
+					// PB1
 
 
 		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
@@ -539,7 +539,7 @@
 
 		FWD = BOARD_ADCX2IN(2),
 		REF = BOARD_ADCX2IN(3),
-		PWRI = FWD,
+		
 
 		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
 		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 питания ACS712ELCTR-30B-T).
@@ -559,7 +559,7 @@
 		POTWPM = WPM_POTIX,
 		PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
 		FWD = 0, REF = 1,	// PB0	SWR-meter
-		PWRI = FWD,			// PB1
+					// PB1
 		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 	#endif /* WITHAUTOTUNER_AVBELNN */
 

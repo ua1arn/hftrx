@@ -5424,7 +5424,7 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 	#endif
 
 	uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 32;
-	uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
+	uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра 1.00 */
 
 	#if WITHSWRMTR
 		#if WITHMAXPWRCALI
@@ -6120,19 +6120,12 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 	const uint_fast8_t fs = fullscale - TUS_SWRMIN;
 	adcvalholder_t r;
 	const adcvalholder_t f = board_getswrpair_filtered_tuner(& r, swrcalibr);
+
 #if WITHSWRMTR
 	// обновить кеш данных для дисплея
-	if (FWD == PWRI)
-	{
-		board_adc_store_data(PWRMRRIX, f);
-		board_adc_store_data(FWDMRRIX, f);
-		board_adc_store_data(REFMRRIX, r);
-	}
-	else
-	{
-		board_adc_store_data(FWDMRRIX, f);
-		board_adc_store_data(REFMRRIX, r);
-	}
+	board_adc_store_data(PWRMRRIX, f);
+	board_adc_store_data(FWDMRRIX, f);
+	board_adc_store_data(REFMRRIX, r);
 #endif /* WITHSWRMTR */
 
 	* pr = r;
@@ -6248,14 +6241,8 @@ unsigned n7ddc_get_swr(void)
 	const adcvalholder_t f = board_getswrpair_filtered_tuner(& r, swrcalibr);
 
 	// обновить кеш данных для дисплея
-	if (FWD == PWRI)
 	{
 		board_adc_store_data(PWRMRRIX, f);
-		board_adc_store_data(FWDMRRIX, f);
-		board_adc_store_data(REFMRRIX, r);
-	}
-	else
-	{
 		board_adc_store_data(FWDMRRIX, f);
 		board_adc_store_data(REFMRRIX, r);
 	}
@@ -13708,17 +13695,10 @@ display2_redrawbarstimed(
 		/* быстро меняющиеся значения с частым опорсом */
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 	#if WITHSWRMTR && WITHTX
-		if (FWD == PWRI)
 		{
 			const adcvalholder_t f = board_getadc_unfiltered_truevalue(FWD);
 			board_adc_store_data(PWRMRRIX, f);
 			board_adc_store_data(FWDMRRIX, f);
-			board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
-		}
-		else
-		{
-			board_adc_store_data(PWRMRRIX, board_getadc_unfiltered_truevalue(PWRI));
-			board_adc_store_data(FWDMRRIX, board_getadc_unfiltered_truevalue(FWD));
 			board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
 		}
 	#endif /* WITHSWRMTR */

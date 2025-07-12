@@ -510,7 +510,6 @@
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHSWRMTR
-			PWRI = 0,			// PB1
 			FWD = 0, REF = 1,	// PB0	SWR-meter
 			REFMRRIX = BOARD_ADCMRRIN(2),
 			FWDMRRIX = BOARD_ADCMRRIN(3),
@@ -531,7 +530,7 @@
 
 		FWD = BOARD_ADCX2IN(2),
 		REF = BOARD_ADCX2IN(3),
-		PWRI = FWD,
+		
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip

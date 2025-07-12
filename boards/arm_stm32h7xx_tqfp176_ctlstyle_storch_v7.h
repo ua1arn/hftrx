@@ -514,7 +514,7 @@
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
 			FWD = 14, REF = 15,	// PC5	SWR-meter
-			PWRI = FWD,			// PC4
+						// PC4
 		#endif /* WITHSWRMTR */
 
 		PASENSEMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
@@ -530,7 +530,7 @@
 
 		FWD = BOARD_ADCX2IN(3),
 		REF = BOARD_ADCX2IN(2),
-		PWRI = FWD,
+		
 		PWRMRRIX = BOARD_ADCMRRIN(2),
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
@@ -559,7 +559,7 @@
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
 			FWD = 14, REF = 15,	// PC5	SWR-meter
-			PWRI = FWD,			// PC4
+						// PC4
 			REFMRRIX = BOARD_ADCMRRIN(2),
 			FWDMRRIX = BOARD_ADCMRRIN(3),
 			PWRMRRIX = BOARD_ADCMRRIN(4),

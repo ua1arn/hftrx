@@ -473,7 +473,7 @@
 	#if WITHSWRMTR
 		//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
 		FWD = 14, REF = 15,	// PC5	SWR-meter
-		PWRI = FWD,			// PC4
+					// PC4
 	#endif /* WITHSWRMTR */
 
 		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации

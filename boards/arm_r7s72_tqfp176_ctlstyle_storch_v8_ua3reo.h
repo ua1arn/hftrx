@@ -475,7 +475,6 @@
 	#endif /* WITHVOLTLEVEL */
 
 	#if WITHSWRMTR
-		PWRI = 0,			// PB1
 		FWD = 0, REF = 1,	// PB0	SWR-meter
 	#endif /* WITHSWRMTR */
 

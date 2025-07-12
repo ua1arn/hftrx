@@ -447,7 +447,6 @@
 	#endif /* WITHCURRLEVEL */
 
 	#if WITHSWRMTR
-		PWRI = 0,			// PC4
 		FWD = 0, REF = 0,	// PC5	SWR-meter
 	#endif /* WITHSWRMTR */
 

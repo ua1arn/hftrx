@@ -718,7 +718,7 @@
 
 		FWD = BOARD_ADCX2IN(0),
 		REF = BOARD_ADCX2IN(1),
-		PWRI = FWD,
+		
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		PASENSEIX2 = BOARD_ADCX2IN(2),	// DRAIN
@@ -754,7 +754,7 @@
 			// FWD: PF12 - ADC1_INP6, ADC1_INN2
 			// REF: PF14 - ADC2_INP6, ADC2_INN2
 			FWD = 17, REF = 19,	// PF12, PF14	SWR-meter
-			PWRI = FWD,
+			
 		#endif /* WITHSWRMTR */
 
 		VOLTSOURCE = BOARD_ADCX1IN(7),		// main board MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
@@ -765,7 +765,7 @@
 
 		FWD = BOARD_ADCX2IN(3),
 		REF = BOARD_ADCX2IN(2),
-		PWRI = FWD,
+		
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
@@ -794,7 +794,7 @@
 			// FWD: PF12 - ADC1_INP6, ADC1_INN2
 			// REF: PF14 - ADC2_INP6, ADC2_INN2
 			FWD = 17, REF = 19,	// PF12, PF14	SWR-meter
-			PWRI = FWD,
+			
 		#endif /* WITHSWRMTR */
 	#endif
 
