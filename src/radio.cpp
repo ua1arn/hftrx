@@ -5424,11 +5424,7 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 	#endif
 
 	uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 32;
-	#if WITHSWRCALI
-		uint_fast8_t swrcalibr = WITHSWRCALI;	/* калибровочный параметр SWR-метра */
-	#else /* WITHSWRCALI */
-		uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
-	#endif /* WITHSWRCALI */
+	uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра */
 
 	#if WITHSWRMTR
 		#if WITHMAXPWRCALI

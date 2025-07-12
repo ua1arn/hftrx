@@ -336,7 +336,6 @@
 	#define WITHSPECBETA_DEFAULT	30
 
 	#define WITHMAXPWRCALI		150	/* калибровочный параметр PWR-метра */
-	#define WITHSWRCALI			150	/* калибровочный параметр SWR-метра */
 
 //	#define WITHTOUCHGUI		1
 //	#define WITHALPHA			64
