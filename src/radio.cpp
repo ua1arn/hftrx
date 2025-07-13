@@ -15249,6 +15249,11 @@ catscanint(
 	return v;
 }
 
+static unsigned packcmd2(uint_fast8_t c1, uint_fast8_t c2)
+{
+	return 256 * (uint8_t) c1 + (uint8_t) c2;
+}
+
 /* возврат ненуля - была какая-либо команда
 	требуется обновление дисплея */
 static uint_fast8_t
@@ -15262,12 +15267,11 @@ processcatmsg(
 	)
 {
 	//PRINTF(PSTR("processcatmsg: c1=%02X, c2=%02X, chp=%d, cp=%lu\n"), catcommand1, catcommand2, cathasparam, catparam);
-	#define match2(ch1, ch2) (catcommand1 == (ch1) && catcommand2 == (ch2))
 	uint_fast8_t rc = 0;
 	const uint_fast32_t catparam = catscanint(catp, catpcount);
-
+	const uint_fast16_t pcmd = packcmd2(catcommand1, catcommand2);
 #if WITHCAT
-	if (match2('I', 'D'))
+	if (pcmd == packcmd2('I', 'D'))
 	{
 		if (cathasparam != 0)
 		{
@@ -15278,7 +15282,7 @@ processcatmsg(
 			cat_answer_request(CAT_ID_INDEX);
 		}
 	}
-	else if (match2('F', 'V'))
+	else if (pcmd == packcmd2('F', 'V'))
 	{
 		if (cathasparam != 0)
 		{
@@ -15289,7 +15293,7 @@ processcatmsg(
 			cat_answer_request(CAT_FV_INDEX);
 		}
 	}
-	else if (match2('D', 'A'))
+	else if (pcmd == packcmd2('D', 'A'))
 	{
 		if (cathasparam != 0)
 		{
@@ -15313,7 +15317,7 @@ processcatmsg(
 	}
 	// parse receieved command
 	//
-	else if (match2('A', 'I'))
+	else if (pcmd == packcmd2('A', 'I'))
 	{
 		if (cathasparam != 0)
 		{
@@ -15337,7 +15341,7 @@ processcatmsg(
 			cat_answer_request(CAT_AI_INDEX);
 		}
 	}
-	else if (match2('F', 'A'))
+	else if (pcmd == packcmd2('F', 'A'))
 	{
 		if (cathasparam != 0)
 		{
@@ -15353,7 +15357,7 @@ processcatmsg(
 			cat_answer_request(CAT_FA_INDEX);
 		}
 	}
-	else if (match2('F', 'B'))
+	else if (pcmd == packcmd2('F', 'B'))
 	{
 		if (cathasparam != 0)
 		{
@@ -15369,7 +15373,7 @@ processcatmsg(
 			cat_answer_request(CAT_FB_INDEX);
 		}
 	}
-	else if (match2('P', 'T'))
+	else if (pcmd == packcmd2('P', 'T'))
 	{
 		if (cathasparam != 0)
 		{
@@ -15384,7 +15388,7 @@ processcatmsg(
 			cat_answer_request(CAT_PT_INDEX);
 		}
 	}
-	else if (match2('M', 'D'))
+	else if (pcmd == packcmd2('M', 'D'))
 	{
 		if (cathasparam != 0)
 		{
@@ -15406,7 +15410,7 @@ processcatmsg(
 			cat_answer_request(CAT_MD_INDEX);
 		}
 	}
-	else if (match2('I', 'F'))
+	else if (pcmd == packcmd2('I', 'F'))
 	{
 		if (cathasparam)
 		{
@@ -15417,18 +15421,18 @@ processcatmsg(
 		}
 	}
 #if WITHIF4DSP
-	else if (match2('B', 'C'))
+	else if (pcmd == packcmd2('B', 'C'))
 	{
 		// Sets and reads the Beat Cancel function status.
 		// Auto Notch
 		cat_answer_request(CAT_BADCOMMAND_INDEX);
 	}
-	else if (match2('R', 'L'))
+	else if (pcmd == packcmd2('R', 'L'))
 	{
 		// откуда взялось?
 		cat_answer_request(CAT_BADCOMMAND_INDEX);
 	}
-	else if (match2('N', 'R'))
+	else if (pcmd == packcmd2('N', 'R'))
 	{
 		// откуда взялось?
 		if (cathasparam != 0)
@@ -15450,7 +15454,7 @@ processcatmsg(
 	}
 #endif /* WITHIF4DSP */
 #if WITHSPLITEX
-	else if (match2('S', 'P'))
+	else if (pcmd == packcmd2('S', 'P'))
 	{
 		if (cathasparam != 0)
 		{
@@ -15474,7 +15478,7 @@ processcatmsg(
 			cat_answer_request(CAT_SP_INDEX);	// spanswer()
 		}
 	}
-	else if (match2('F', 'R'))
+	else if (pcmd == packcmd2('F', 'R'))
 	{
 		if (cathasparam != 0)
 		{
@@ -15503,7 +15507,7 @@ processcatmsg(
 			cat_answer_request(CAT_FR_INDEX);
 		}
 	}
-	else if (match2('F', 'T'))
+	else if (pcmd == packcmd2('F', 'T'))
 	{
 		if (cathasparam != 0)
 		{
@@ -15532,17 +15536,17 @@ processcatmsg(
 #endif /* WITHSPLITEX */
 #if WITHCATEXT
 #if WITHIF4DSP
-	else if (match2('N', 'T'))
+	else if (pcmd == packcmd2('N', 'T'))
 	{
 		// Sets and reads the Notch Filter status.
 		cat_answer_request(CAT_BADCOMMAND_INDEX);
 	}
-	else if (match2('B', 'P'))
+	else if (pcmd == packcmd2('B', 'P'))
 	{
 		// Adjusts the Notch Frequency of the Manual Notch Filter.
 		cat_answer_request(CAT_BADCOMMAND_INDEX);
 	}
-	else if (match2('S', 'Q'))
+	else if (pcmd == packcmd2('S', 'Q'))
 	{
 		// Squelch level set/report
 		if (cathasparam != 0)
@@ -15574,7 +15578,7 @@ processcatmsg(
 			cat_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
-	else if (match2('A', 'G'))
+	else if (pcmd == packcmd2('A', 'G'))
 	{
 		// AF gain level set/report
 		if (cathasparam != 0)
@@ -15607,7 +15611,7 @@ processcatmsg(
 			cat_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
-	else if (match2('R', 'G'))
+	else if (pcmd == packcmd2('R', 'G'))
 	{
 		// RF gain level set/report
 		if (cathasparam != 0)
@@ -15626,7 +15630,7 @@ processcatmsg(
 		}
 	}
 #if WITHPOWERTRIM && WITHTX
-	else if (match2('P', 'C'))
+	else if (pcmd == packcmd2('P', 'C'))
 	{
 		// May be: CG Sets and reads the Carrier Level.
 		// Sets and reads the output power
@@ -15658,7 +15662,7 @@ processcatmsg(
 	}
 #endif /* WITHPOWERTRIM && WITHTX */
 #endif /* WITHIF4DSP */
-	else if (match2('R', 'A'))
+	else if (pcmd == packcmd2('R', 'A'))
 	{
 		// Attenuator status set/query
 		if (cathasparam /* && (catparam == 0 || catparam == 1) */)
@@ -15674,7 +15678,7 @@ processcatmsg(
 			cat_answer_request(CAT_RA_INDEX);
 		}
 	}
-	else if (match2('P', 'A'))
+	else if (pcmd == packcmd2('P', 'A'))
 	{
 		// Preamplifier status set/query
 		if (cathasparam /* && (catparam == 0 || catparam == 1) */)
@@ -15693,7 +15697,7 @@ processcatmsg(
 		}
 	}
 #if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX
-	else if (match2('A', 'N'))
+	else if (pcmd == packcmd2('A', 'N'))
 	{
 		// in differencies from documentation, ant1=1, ant2=2
 		// antenna selection set/query
@@ -15749,7 +15753,7 @@ processcatmsg(
 		}
 	}
 #endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX */
-	else if (match2('P', 'S'))
+	else if (pcmd == packcmd2('P', 'S'))
 	{
 		if (cathasparam)
 		{
@@ -15762,7 +15766,7 @@ processcatmsg(
 			cat_answer_request(CAT_PS_INDEX);
 		}
 	}
-	else if (match2('S', 'M'))
+	else if (pcmd == packcmd2('S', 'M'))
 	{
 		// The SM command reads the S-meter during reception and the RF (power) meter during transmission.
 		if (cathasparam && catparam == 0)
@@ -15778,7 +15782,7 @@ processcatmsg(
 			cat_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
-	else if (match2('U', 'P'))
+	else if (pcmd == packcmd2('U', 'P'))
 	{
 		if (cathasparam)
 		{
@@ -15786,7 +15790,7 @@ processcatmsg(
 			encoderA_pushback(steps, genc1div);
 		}
 	}
-	else if (match2('D', 'N'))
+	else if (pcmd == packcmd2('D', 'N'))
 	{
 		if (cathasparam)
 		{
@@ -15795,7 +15799,7 @@ processcatmsg(
 		}
 	}
 #if 0
-	else if (match2('E', 'X'))
+	else if (pcmd == packcmd2('E', 'X'))
 	{
 		if (cathasparam)
 		{
@@ -15810,7 +15814,7 @@ processcatmsg(
 #endif
 #endif /* WITHCATEXT */
 #if WITHTX
-	else if (match2('T', 'X'))
+	else if (pcmd == packcmd2('T', 'X'))
 	{
 		if (cathasparam != 0)
 		{
@@ -15841,7 +15845,7 @@ processcatmsg(
 				cat_answer_request(CAT_TX_INDEX);
 		}
 	}
-	else if (match2('R', 'X'))
+	else if (pcmd == packcmd2('R', 'X'))
 	{
 		if (cathasparam != 0)
 		{
@@ -15861,7 +15865,7 @@ processcatmsg(
 		}
 	}
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) && WITHCATEXT
-	else if (match2('R', 'M'))
+	else if (pcmd == packcmd2('R', 'M'))
 	{
 		// Get SWR, COMP or ALC- meter information
 		if (cathasparam != 0)
@@ -15897,7 +15901,7 @@ processcatmsg(
 	}
 #endif /*  WITHTX && WITHSWRMTR && WITHCATEXT */
 #if WITHTX && WITHAUTOTUNER
-	else if (match2('A', 'C'))
+	else if (pcmd == packcmd2('A', 'C'))
 	{
 		if (cathasparam != 0)
 		{
@@ -15936,7 +15940,7 @@ processcatmsg(
 	}
 #endif /* WITHTX && WITHAUTOTUNER */
 #endif /*  WITHTX */
-	else if (match2('F', 'W'))
+	else if (pcmd == packcmd2('F', 'W'))
 	{
 		// filter width
 		if (cathasparam != 0)
@@ -15953,7 +15957,7 @@ processcatmsg(
 		}
 	}
 #if WITHCATEXT && WITHELKEY
-	else if (match2('K', 'S'))
+	else if (pcmd == packcmd2('K', 'S'))
 	{
 		// keyer speed
 		if (cathasparam != 0)
@@ -15972,7 +15976,7 @@ processcatmsg(
 	}
 #endif	/* WITHCATEXT */
 #if WITHIF4DSP
-	else if (match2('Z', 'Y'))
+	else if (pcmd == packcmd2('Z', 'Y'))
 	{
 		if (cathasparam != 0)
 		{
@@ -16011,7 +16015,7 @@ processcatmsg(
 			cat_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
-	else if (match2('Z', 'Z'))
+	else if (pcmd == packcmd2('Z', 'Z'))
 	{
 		if (cathasparam != 0)
 		{
