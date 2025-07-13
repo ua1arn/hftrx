@@ -12090,12 +12090,12 @@ updateboard_noui(
 				// для учёта боковой и смещения частоты для алгоритма Уивера.
 				// Пока, передаём dial frequency
 
-	#if LINUX_SUBSYSTEM && WITHAD936XIIO
-			if (get_ad936x_stream_status())
-				ad936x_set_freq(freq);
-	#elif LINUX_SUBSYSTEM && WITHAD936XDEV
-			ad936xdev_set_freq(freq);
-	#endif /* #if LINUX_SUBSYSTEM && WITHAD936XIIO */
+		#if LINUX_SUBSYSTEM && WITHAD936XIIO
+				if (get_ad936x_stream_status())
+					ad936x_set_freq(freq);
+		#elif LINUX_SUBSYSTEM && WITHAD936XDEV
+				ad936xdev_set_freq(freq);
+		#endif /* #if LINUX_SUBSYSTEM && WITHAD936XIIO */
 
 			}
 		}
