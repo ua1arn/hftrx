@@ -13511,7 +13511,7 @@ static uint_fast8_t processpots(void)
 	return changed;
 }
 
-static uint_fast8_t processencoders(void)
+static uint_fast8_t processmainloopencoders(void)
 {
 	const uint_fast8_t bi = getbankindex_ab(0);
 	const uint_fast8_t submode = getsubmode(bi);
@@ -13814,10 +13814,7 @@ display_redrawfreqstimed(
 }
 
 static void
-directctlupdate(
-	uint_fast8_t inmenu,
-	const struct menudef * mp
-	)
+processglobaltxrx(void)
 {
 	uint_fast8_t changedtx = 0;
 #if WITHTX
@@ -16333,7 +16330,7 @@ void app_processing(
 	{
 		//display2_bgprocess(0, actpageix(), NULL);			/* выполнение шагов state machine отображения дисплея */
 	}
-	directctlupdate(0, NULL);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
+	processglobaltxrx();		/* прием/передача */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 	// обработать запрос на обновление состояния аппаратуры из user mode программы
 	if (dimmflagch != 0)
@@ -17447,7 +17444,7 @@ modifysettings(
 		uint_fast8_t kbch, kbready;
 
 		processpots();
-		//processencoders(); // решить проблему с енкодером - перемешение по меню.
+		//processmainloopencoders(); // решить проблему с енкодером - перемешение по меню.
 		processmessages(& kbch, & kbready, 1, mp);
 		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
 
@@ -18490,7 +18487,7 @@ void playhandler(uint8_t code)
 /* возврат ненуля - было какое-либо нажатие,
 	требуется обновление дисплея и состояния аппаратуры */
 static uint_fast8_t
-processkeyboard(uint_fast8_t kbch)
+processmainloopkeyboard(uint_fast8_t kbch)
 {
 #if WITHTOUCHGUI
 	if (keyboard_redirect)
@@ -18691,7 +18688,7 @@ processkeyboard(uint_fast8_t kbch)
 #else /* WITHKEYBOARD */
 
 static uint_fast8_t
-processkeyboard(uint_fast8_t kbch)
+processmainloopkeyboard(uint_fast8_t kbch)
 {
 	return 0;
 }
@@ -19306,7 +19303,7 @@ static void hamradio_main_initialize(void)
 	gfreqs [getbankindex_raw(1] = 434085900UL;
 #endif /* FQMODEL_GEN500 */
 
-	directctlupdate(0, NULL);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
+	processglobaltxrx();		/* прием/передача */
 	updateboard();	/* полная перенастройка (как после смены режима) - режим приема */
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 	//display2_needupdate();
@@ -19420,7 +19417,7 @@ static void keyspoolprocess(void * ctx)
 
 /* Возвращаем не-0, если было изменение частоты настройки */
 static uint_fast8_t
-processtuneknobs(void)
+processmainlooptuneknobs(void)
 {
 	uint_fast8_t freqchanged = 0;
 	const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
@@ -19527,6 +19524,7 @@ hamradio_main_step(void)
 	switch (sthrl)
 	{
 	case STHRL_MENU:
+		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
 		if (hamradio_menu_step() == STTE_OK)
 			sthrl = STHRL_RXTX;
 		break;
@@ -19615,7 +19613,7 @@ hamradio_main_step(void)
 			processmessages(& kbch, & kbready, 0, NULL);
 
 		#if WITHKEYBOARD
-			if (kbready != 0 && processkeyboard(kbch))
+			if (kbready != 0 && processmainloopkeyboard(kbch))
 			{
 				/* обновление индикатора без сохранения состояния диапазона */
 				encoders_clear();				/* при возможном уменьшении шага исключение случайного накопления */
@@ -19628,7 +19626,7 @@ hamradio_main_step(void)
 		#endif /* WITHKEYBOARD */
 		}
 
-		if (processpots() || processencoders())
+		if (processpots() || processmainloopencoders())
 		{
 			/* обновление индикатора без сохранения состояния диапазона */
 	#if WITHTOUCHGUI
@@ -19643,7 +19641,7 @@ hamradio_main_step(void)
 		} // end keyboard processing
 
 		// Knobs rotation processing
-		if (processtuneknobs())
+		if (processmainlooptuneknobs())
 		{
 			updateboard_freq();	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 			// Ограничение по скорости обновления дисплея уже заложено в него
