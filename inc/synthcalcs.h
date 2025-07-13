@@ -71,8 +71,6 @@ uint_fast32_t synth_freq2lo1(
 	uint_fast8_t fi		/* номер тракта: 0/1: main/sub */
 	);
 
-void testlfm(void);	/* user mode. вызывается из основного цикла - возможно перестрйока входных фильтров */
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

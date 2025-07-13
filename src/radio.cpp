@@ -19571,7 +19571,6 @@ hamradio_main_step(void)
 
 			/* обновить настройку полосовых фильтров */
 			updateboard_freq();	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
-			testlfm();
 		}
 	#endif /* WITHLFM */
 		if (alignmode)
@@ -19604,12 +19603,8 @@ hamradio_main_step(void)
 				encoders_clear();				/* при возможном уменьшении шага исключение случайного накопления */
 		#if WITHTOUCHGUI
 				display_redrawfreqstimed(1);
-				display2_needupdate();
-
-		#else /* WITHTOUCHGUI */
-				display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
-
 		#endif /* WITHTOUCHGUI */
+				display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
 
 			} // end keyboard processing
 		#endif /* WITHKEYBOARD */
