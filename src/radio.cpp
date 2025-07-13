@@ -19422,7 +19422,10 @@ processtuneknobs(void)
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC_MAIN;
 #elif WITHENCODER2 && LINUX_SUBSYSTEM
+	int_least16_t nrotate_main = 0;	// ignore encoder
 	int_least16_t nrotate_sub = linux_get_enc2();
+	uint_fast16_t step_main = gstep_ENC_MAIN;
+	uint_fast16_t step_sub = gstep_ENC2;
 #elif WITHENCODER2
 	int_least16_t nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
 	int_least16_t nrotate_sub = getRotateHiRes_FN(& jumpsize_sub, genc2div);
