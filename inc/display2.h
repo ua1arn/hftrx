@@ -232,8 +232,8 @@ LV_FONT_DECLARE(Rubik_Medium_18_w2)
 
 // Усеченные наборы символов
 LV_FONT_DECLARE(eurostyle_56w)
-LV_FONT_DECLARE(ltdc_CenturyGothic_big)			// width=36, height=56
-LV_FONT_DECLARE(ltdc_CenturyGothic_half)		// width=28, height=56
+LV_FONT_DECLARE(lvgl_CenturyGothic_big)			// width=36, height=56
+LV_FONT_DECLARE(lvgl_CenturyGothic_half)		// width=28, height=56
 
 // Полные шрифты
 LV_FONT_DECLARE(Epson_LTDC_big)			// width=36, height=56
