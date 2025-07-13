@@ -389,7 +389,6 @@ static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при прием
 static uint_fast16_t rptroffshf1k = RPTOFFSHALF;		/* Repeater offset HF */
 static uint_fast16_t rptroffsuhf1k = RPTOFFSHALF;		/* Repeater offset UHF */
 
-
 static int_fast32_t getrptoffsbase(void)
 {
 	return - RPTOFFSHALF;
@@ -11232,16 +11231,7 @@ FLOAT_t local_log(FLOAT_t x)
 
 #endif /* WITHINTEGRATEDDSP */
 
-
 static ticker_t displatchticker;
-
-// User-mode function. Вызывается для выполнения latch спектра и панорамы
-static void dpc_displatch_timer_fn(void * arg)
-{
-	display2_latch();
-	display2_bgprocess(0, actpageix(), NULL);			/* выполнение шагов state machine отображения дисплея */
-}
-
 
 static void codec1_directupdate(void)
 {
@@ -13813,6 +13803,7 @@ display_redrawfreqstimed(
 	}
 }
 
+/* прием/передач, установка gtx */
 static void
 processglobaltxrx(void)
 {
@@ -16294,43 +16285,8 @@ int board_islfmmode(void)
 
 
 // TODO: перенести эти функции на выполнение по board_dpc_addentry
-void app_processing(
-	uint_fast8_t inmenu,
-	const struct menudef * mp
-)
+void app_processing(void)
 {
-	if (inmenu)
-	{
-		dctx_t dctx;
-		dctx.type = DCTX_MENU;
-		dctx.pv = mp;
-
-		//display2_bgprocess(inmenu, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
-	}
-#if WITHDIRECTFREQENER
-	else if (editfreqmode)
-	{
-		const uint_fast8_t bi = getbankindex_tx(gtx);
-		vindex_t vi = getvfoindex(bi);
-
-		editfreq2_t ef;
-
-		ef.freq = gfreqs [bi];
-		ef.blinkpos = blinkpos;
-		ef.blinkstate = blinkstate;
-
-		dctx_t dctx;
-		dctx.type = DCTX_FREQ;
-		dctx.pv = & ef;
-
-		//display2_bgprocess(0, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
-	}
-#endif
-	else
-	{
-		//display2_bgprocess(0, actpageix(), NULL);			/* выполнение шагов state machine отображения дисплея */
-	}
-	processglobaltxrx();		/* прием/передача */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 	// обработать запрос на обновление состояния аппаратуры из user mode программы
 	if (dimmflagch != 0)
@@ -16383,8 +16339,9 @@ processmessages(
 	watchdog_ping();
 #endif /* WITHWATCHDOG */
 
+	processglobaltxrx();		/* прием/передач, установка gtx */
 	// TODO: перенести эти функции на выполнение по board_dpc_addentry
-	app_processing(inmenu, mp);
+	app_processing();
 
 #if WITHLVGL && WITHLVGLINDEV
 
@@ -16750,6 +16707,9 @@ const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active)
 ///
 
 #include "menu.h"
+
+static uint_fast8_t ginmenu;
+static const struct menudef * gmp = menutable;
 
 #define MENUROW_COUNT (ARRAY_SIZE(menutable))
 
@@ -19267,10 +19227,6 @@ static STTE_t hamradio_tune_step(void)
 #endif /* WITHAUTOTUNER */
 }
 
-// инициализация машины состояний меню
-static void hamradio_menu_initialize(void)
-{
-}
 
 // работа в машине состояний меню
 static STTE_t hamradio_menu_step(void)
@@ -19303,7 +19259,7 @@ static void hamradio_main_initialize(void)
 	gfreqs [getbankindex_raw(1] = 434085900UL;
 #endif /* FQMODEL_GEN500 */
 
-	processglobaltxrx();		/* прием/передача */
+	processglobaltxrx();		/* прием/передач, установка gtx */
 	updateboard();	/* полная перенастройка (как после смены режима) - режим приема */
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 	//display2_needupdate();
@@ -21143,6 +21099,51 @@ static void siggen_mainloop(void)
 	}
 }
 #endif
+
+
+// User-mode function. Вызывается для выполнения latch спектра и панорамы
+static void dpc_displatch_timer_fn(void * arg)
+{
+	display2_latch();
+	if (0)
+	{
+
+	}
+#if WITHDIRECTFREQENER
+	else if (editfreqmode)
+	{
+		const uint_fast8_t bi = getbankindex_tx(gtx);
+		vindex_t vi = getvfoindex(bi);
+
+		editfreq2_t ef;
+
+		ef.freq = gfreqs [bi];
+		ef.blinkpos = blinkpos;
+		ef.blinkstate = blinkstate;
+
+		dctx_t dctx;
+		dctx.type = DCTX_FREQ;
+		dctx.pv = & ef;
+
+		display2_bgprocess(0, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
+	}
+#endif
+#if WITHMENU
+	else if (ginmenu)
+	{
+		dctx_t dctx;
+		dctx.type = DCTX_MENU;
+		dctx.pv = gmp;
+
+		display2_bgprocess(1, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
+	}
+#endif /* WITHMENU */
+	else
+	{
+		display2_bgprocess(0, actpageix(), NULL);			/* выполнение шагов state machine отображения дисплея */
+	}
+}
+
 
 /* вызывается при разрешённых прерываниях. */
 void
