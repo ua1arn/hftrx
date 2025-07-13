@@ -16068,7 +16068,6 @@ processcatmsg(
 
 #endif // WITHCAT
 	return rc;
-	#undef match2
 }
 
 // user-mode function
