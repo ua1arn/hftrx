@@ -17316,6 +17316,26 @@ static uint_fast16_t menulooklast(uint_fast16_t menupos)
 	return menupos - 1;
 }
 
+
+
+/* возврат ненуля - было какое-либо нажатие,
+	требуется обновление дисплея и состояния аппаратуры */
+static uint_fast8_t
+processmenukeyboard(uint_fast8_t kbch)
+{
+
+	return 0;
+}
+
+/* возврат ненуля - было какое-либо нажатие,
+	требуется обновление дисплея и состояния аппаратуры */
+static uint_fast8_t
+processmenuencoders(void)
+{
+
+	return 0;
+}
+
 /* работа с параметрами настройки. */
 static void
 modifysettings(
@@ -17655,6 +17675,8 @@ static void menu_print(void)
 }
 
 #else // WITHMENU
+
+static const uint_fast8_t ginmenu = 0;
 
 void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx), void * (* itemcb)(void * walkctx, void * groupctx))
 {
@@ -18463,6 +18485,8 @@ processmainloopkeyboard(uint_fast8_t kbch)
 	case KBD_CODE_MENU:
 		/* Вход в меню
 			 - не вызывает сохранение состояния диапазона */
+		ginmenu = 1;
+
 #if WITHMENU && ! WITHTOUCHGUI
 	#if WITHAUTOTUNER
 		if (reqautotune != 0)
@@ -18471,10 +18495,11 @@ processmainloopkeyboard(uint_fast8_t kbch)
 	#if defined (RTC1_TYPE)
 		getstamprtc();
 	#endif /* defined (RTC1_TYPE) */
-		modifysettings(0, MENUROW_COUNT - 1, ITEM_GROUP, RMT_GROUP_BASE, exitkey, 0);	/* выбор группы параметров для редактирования */
-		updateboard();
-		updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
-		//display2_needupdate();		/* возможно уже с новой цветовой схемой */
+//
+//		modifysettings(0, MENUROW_COUNT - 1, ITEM_GROUP, RMT_GROUP_BASE, exitkey, 0);	/* выбор группы параметров для редактирования */
+//		updateboard();
+//		updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
+//		//display2_needupdate();		/* возможно уже с новой цветовой схемой */
 		return 1;	// требуется обновление индикатора
 #elif WITHTOUCHGUI
 		gui_open_sys_menu();
@@ -19173,12 +19198,15 @@ static STTE_t hamradio_tune_step(void)
 #endif /* WITHAUTOTUNER */
 }
 
-
-// работа в машине состояний меню
-static STTE_t hamradio_menu_step(void)
-{
-	return STTE_OK;
-}
+//
+//// работа в машине состояний меню
+//// STTE_OK - вышли из меню.
+//// STTE_BUSY - продолжаем работу с мену
+//static STTE_t hamradio_menu_step(void)
+//{
+//	ginmenu = 0;
+//	return STTE_OK;
+//}
 
 enum
 {
@@ -19471,11 +19499,11 @@ hamradio_main_step(void)
 {
 	switch (sthrl)
 	{
-	case STHRL_MENU:
-		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
-		if (hamradio_menu_step() == STTE_OK)
-			sthrl = STHRL_RXTX;
-		break;
+//	case STHRL_MENU:
+//		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
+//		if (hamradio_menu_step() == STTE_OK)
+//			sthrl = STHRL_RXTX;
+//		break;
 
 	case STHRL_TUNE:
 		if (hamradio_tune_step() == STTE_OK)
@@ -19561,7 +19589,19 @@ hamradio_main_step(void)
 			processmessages(& kbch, & kbready, 0, NULL);
 
 		#if WITHKEYBOARD
-			if (kbready != 0 && processmainloopkeyboard(kbch))
+#if WITHMENU
+			if (ginmenu && kbready != 0 && processmenukeyboard(kbch))
+			{
+				/* обновление индикатора без сохранения состояния диапазона */
+				encoders_clear();				/* при возможном уменьшении шага исключение случайного накопления */
+		#if WITHTOUCHGUI
+				display_redrawfreqstimed(1);
+		#endif /* WITHTOUCHGUI */
+				//display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
+
+			}
+#endif /* WITHMENU */
+			if (! ginmenu && kbready != 0 && processmainloopkeyboard(kbch))
 			{
 				/* обновление индикатора без сохранения состояния диапазона */
 				encoders_clear();				/* при возможном уменьшении шага исключение случайного накопления */
@@ -19573,8 +19613,18 @@ hamradio_main_step(void)
 			} // end keyboard processing
 		#endif /* WITHKEYBOARD */
 		}
+		if (processpots())
+		{
+			/* обновление индикатора без сохранения состояния диапазона */
+	#if WITHTOUCHGUI
+			display_redrawfreqstimed(1);
+			//display2_needupdate();
+	#endif /* WITHTOUCHGUI */
 
-		if (processpots() || processmainloopencoders())
+		} // end potentiometers processing
+
+#if WITHMENU
+		if (ginmenu && processmenuencoders())
 		{
 			/* обновление индикатора без сохранения состояния диапазона */
 	#if WITHTOUCHGUI
@@ -19587,9 +19637,10 @@ hamradio_main_step(void)
 	#endif /* WITHTOUCHGUI */
 
 		} // end keyboard processing
+#endif /* WITHMENU */
 
 		// Knobs rotation processing
-		if (processmainlooptuneknobs())
+		if (! ginmenu && processmainlooptuneknobs())
 		{
 			updateboard_freq();	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 			// Ограничение по скорости обновления дисплея уже заложено в него
