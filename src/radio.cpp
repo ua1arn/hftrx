@@ -12078,10 +12078,26 @@ updateboard_noui(
 			const uint_fast8_t bi = getbankindex_pathi(pathi);
 			const int_fast32_t freq = gfreqs [bi];
 
-			/* частота первого гетеродина может оказхаться отрицательной */
+			/* частота первого гетеродина может оказаться отрицательной */
 			const uint_fast32_t lo1 = synth_freq2lo1(freq, pathi);
 			synth_lo1_setfreq(pathi, lo1, getlo1div(gtx)); /* установка частоты первого гетеродина */
 			synth_rts1_setfreq(pathi, getlo0(lo0hint) - freq);	// Установка центральной частоты панорамного индикатора
+
+			if (pathi == 0)
+			{
+				// Хотя, сюда правильнее было бы передавать то же что и в synth_lo1_setfreq - lo1
+				// Или, перенести туда
+				// для учёта боковой и смещения частоты для алгоритма Уивера.
+				// Пока, передаём dial frequency
+
+	#if LINUX_SUBSYSTEM && WITHAD936XIIO
+			if (get_ad936x_stream_status())
+				ad936x_set_freq(freq);
+	#elif LINUX_SUBSYSTEM && WITHAD936XDEV
+			ad936xdev_set_freq(freq);
+	#endif /* #if LINUX_SUBSYSTEM && WITHAD936XIIO */
+
+			}
 		}
 	}
 
@@ -12573,13 +12589,6 @@ uif_key_click_bandjump2(uint_fast32_t f, uint_fast8_t bandset_no_check)
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
 	updateboard();
-
-#if LINUX_SUBSYSTEM && WITHAD936XIIO
-		if (get_ad936x_stream_status())
-			ad936x_set_freq(f);
-#elif LINUX_SUBSYSTEM && WITHAD936XDEV
-		ad936xdev_set_freq(f);
-#endif /* #if LINUX_SUBSYSTEM && WITHAD936XIIO */
 }
 
 #if ! WITHAGCMODENONE
@@ -20063,12 +20072,6 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 		gfreqs [bi] = freq;
 		sthrl = STHRL_RXTX_FQCHANGED;
 		updateboard_freq();	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
-#if LINUX_SUBSYSTEM && WITHAD936XIIO
-		if (get_ad936x_stream_status())
-			ad936x_set_freq(freq);
-#elif LINUX_SUBSYSTEM && WITHAD936XDEV
-		ad936xdev_set_freq(freq);
-#endif /* #if LINUX_SUBSYSTEM && WITHAD936XIIO */
 		return 1;
 	}
 	return 0;
