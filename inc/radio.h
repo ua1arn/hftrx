@@ -3265,8 +3265,8 @@ extern uint_fast8_t swrcalibr;
 extern uint_fast8_t maxpwrcali;
 extern uint_fast8_t swrmode;
 
-#define updateboard(full, mute) do { updateboardZZZ((full), (mute), __FILE__, __LINE__); } while (0)
-void updateboardZZZ(uint_fast8_t full, uint_fast8_t mute, const char * file, int line);
+#define updateboard(full, mute) (updateboardZZZ((full), (mute), __FILE__, __LINE__))
+uint_fast8_t updateboardZZZ(uint_fast8_t full, uint_fast8_t mute, const char * file, int line);
 
 uint_fast8_t hamradio_get_tx(void);
 int_fast32_t hamradio_get_pbtvalue(void);	// Для отображения на дисплее

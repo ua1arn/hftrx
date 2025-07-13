@@ -11398,8 +11398,9 @@ encoder_flagne(const struct paramdefdef * pd, int_least16_t delta, uint_fast8_t 
  параметры:
  tx - не-0: переключение аппаратуры в режим передачи
  Учитывается состояние tunemode - режим настройки передатчика, при этом параметр tx не-ноль.
+ Возвращает не-0, если выяснилось, что требуется "полное" обновления
  */
-void
+uint_fast8_t
 updateboardZZZ(
 	uint_fast8_t full,
 	uint_fast8_t mute,
@@ -12082,6 +12083,8 @@ updateboardZZZ(
 	board_set_tx(gtx);		/* в конце выдаём сигнал разрешения передачи */
 	board_update();		/* вывести забуферированные изменения в регистры */
 #endif /* WITHTX */
+
+	return full2;
 }
 
 ///////////////////////////
