@@ -2514,7 +2514,7 @@ uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 //	{
 //		PRINTF("board_dpc_call: coreid=%d, fn=%p\n", (int) coreid, dp->fn);
 //	}
-	ASSERT(coreid == 0);
+//	ASSERT(coreid == 0);
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
 	IRQLSPINLOCK_t * const lock = & dpc->lock;
