@@ -9544,9 +9544,9 @@ void display2_bgprocess(
 #endif
 	const uint_fast8_t ix = getpageix(inmenu, menuset);	// требуемая страница для показа (включая меню и sleep)
 
-	if (redrawreq == 0)
-		return;
-	redrawreq = 0;
+//	if (redrawreq == 0)
+//		return;
+//	redrawreq = 0;
 
 #if WITHLVGL
 	// Отрисовка производится диспетчером LVGL

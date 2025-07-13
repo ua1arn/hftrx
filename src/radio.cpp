@@ -11240,6 +11240,12 @@ static void dpc_displatch_timer_fn(void * arg)
 {
 	display2_latch();
 }
+// User-mode function. Вызывается для перерисовки
+static void dpc_disprefresh_fn(void * arg)
+{
+	display2_bgprocess(0, actpageix(), NULL);			/* выполнение шагов state machine отображения дисплея */
+}
+
 
 static void codec1_directupdate(void)
 {
@@ -16294,7 +16300,7 @@ void app_processing(
 		dctx.type = DCTX_MENU;
 		dctx.pv = mp;
 
-		display2_bgprocess(inmenu, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
+		//display2_bgprocess(inmenu, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
 	}
 #if WITHDIRECTFREQENER
 	else if (editfreqmode)
@@ -16312,12 +16318,12 @@ void app_processing(
 		dctx.type = DCTX_FREQ;
 		dctx.pv = & ef;
 
-		display2_bgprocess(0, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
+		//display2_bgprocess(0, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
 	}
 #endif
 	else
 	{
-		display2_bgprocess(0, actpageix(), NULL);			/* выполнение шагов state machine отображения дисплея */
+		//display2_bgprocess(0, actpageix(), NULL);			/* выполнение шагов state machine отображения дисплея */
 	}
 	directctlupdate(0, NULL);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
@@ -16371,6 +16377,8 @@ processmessages(
 #if WITHWATCHDOG
 	watchdog_ping();
 #endif /* WITHWATCHDOG */
+
+	// TODO: перенести эти функции на выполнение по board_dpc_addentry
 	app_processing(inmenu, mp);
 
 #if WITHLVGL && WITHLVGLINDEV
@@ -21249,10 +21257,14 @@ application_initialize(void)
 
 	{
 		static dpcobj_t dpcobj;
+		static dpcobj_t dpcobjredraw;
 
 		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL);
-		ticker_initialize_user(& displatchticker, NTICKS(1000 / glatchfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_initialize_user2(& displatchticker, NTICKS(1000 / glatchfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
 		ticker_add(& displatchticker);
+
+		dpcobj_initialize(& dpcobjredraw, dpc_disprefresh_fn, NULL);
+		board_dpc_addentry(& dpcobjredraw, board_dpc_display_coreid());
 	}
 
 	{
