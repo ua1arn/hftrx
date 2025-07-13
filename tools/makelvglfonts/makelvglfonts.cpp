@@ -323,7 +323,11 @@ void makefont(const char * keysymbol, const char * fontname, const unsigned char
 		for (i = 0; i < nchars; ++ i)
 		{
 			const unsigned c = symbols [i].c;
-			fprintf(fp, "\t" "0x%02X," "\n", c - startchar);
+			if (isprint((unsigned char) c))
+				fprintf(fp, "\t" "0x%02X, /* '%c' */" "\n", c - startchar, (int) c);
+			else
+				fprintf(fp, "\t" "0x%02X, /* ch=0x%02X */" "\n", c - startchar, c);
+
 		}
 
 		fprintf(fp, "};" "\n");
@@ -414,7 +418,7 @@ static const char symbols [] = "0123456789_ .";
 #if defined (BIGCHARW_NARROW) && defined (BIGCHARW)
 unsigned bigfont_width(char cc)
 {
-	return (cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW;	// полная ширина символа в пикселях
+	return (cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW;	// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 }
 #endif /* defined (BIGCHARW_NARROW) && defined (BIGCHARW) */
 
@@ -422,7 +426,7 @@ unsigned bigfont_width(char cc)
 unsigned halffont_width(char cc)
 {
 	(void) cc;
-	return HALFCHARW;	// полная ширина символа в пикселях
+	return HALFCHARW;	// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 }
 #endif /* defined (HALFCHARW) */
 
