@@ -182,7 +182,7 @@ void add_element(const char * element_name, ...)
 	va_end(arg);
 }
 
-void gui_set_encoder2_rotate (int_fast8_t rotate)
+void gui_set_encoder2_rotate (int_least16_t rotate)
 {
 	if (rotate != 0)
 	{

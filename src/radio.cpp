@@ -7858,6 +7858,32 @@ getbankindex_ab_fordisplay(const uint_fast8_t ab)
 #endif /* WITHSPLIT */
 }
 
+static uint_fast8_t
+getbankindexmain(void)
+{
+#if 1//WITHSPLIT
+    const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);        /* состояние выбора банков может измениться */
+    const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);        /* состояние выбора банков может измениться */
+#elif WITHSPLITEX
+    const uint_fast8_t bi_main = getbankindex_ab(0);        /* состояние выбора банков может измениться */
+    const uint_fast8_t bi_sub = getbankindex_ab(1);        /* состояние выбора банков может измениться */
+#endif /* WITHSPLIT, WITHSPLITEX */
+	return bi_main;
+}
+
+static uint_fast8_t
+getbankindexsub(void)
+{
+#if 1//WITHSPLIT
+    const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);        /* состояние выбора банков может измениться */
+    const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);        /* состояние выбора банков может измениться */
+#elif WITHSPLITEX
+    const uint_fast8_t bi_main = getbankindex_ab(0);        /* состояние выбора банков может измениться */
+    const uint_fast8_t bi_sub = getbankindex_ab(1);        /* состояние выбора банков может измениться */
+#endif /* WITHSPLIT, WITHSPLITEX */
+	return bi_sub;
+}
+
 #if WITHUSEDUALWATCH
 
 static uint_fast8_t
@@ -8685,7 +8711,7 @@ uif_encoder2_rotate(
 
 #else /* WITHENCODER2 */
 
-/* заглушка */
+/* заглушка - возвращает 0, если не включена оьработка */
 static uint_fast8_t
 uif_encoder2_rotate(
 	int_least16_t nrotate	/* знаковое число - на сколько повернут валкодер */
@@ -11899,7 +11925,7 @@ updateboard_noui(
 		board_set_moniflag(gmoniflag);	/* разрешение самопрослушивания */
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
-			const uint8_t bi_main = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
+			const uint8_t bi_main = getbankindexmain();	/* VFO A modifications */
 			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbspe);		/* верхний предел FFT */
 			board_set_bottomdb(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdbspe);		/* нижний предел FFT */
 			board_set_topdbwf(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbwfl);		/* верхний предел FFT для водопада */
@@ -19365,16 +19391,109 @@ static void keyspoolprocess(void * ctx)
 }
 #endif /* WITHDEBUG */
 
+/* Возвращаем не-0, если было изменение частоты настройки */
+static uint_fast8_t
+processtuneknobs(void)
+{
+	uint_fast8_t freqchanged = 0;
+	const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
+	const uint_fast8_t bi_sub = getbankindexsub();		/* состояние выбора банков может измениться */
+	uint_fast8_t jumpsize_main;
+	uint_fast8_t jumpsize_sub;
+
+	/* переход по частоте - шаг берётся из gstep_ENC_MAIN */
+#if WITHBBOX && defined (WITHBBOXFREQ)
+	int_least16_t nrotate_main = 0;	// ignore encoder
+	int_least16_t nrotate_sub = 0;	// ignore encoder
+	uint_fast16_t step_main = gstep_ENC_MAIN;
+	uint_fast16_t step_sub = gstep_ENC2;
+#elif WITHENCODER_SUB
+	int_least16_t nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
+	int_least16_t nrotate_sub = getRotateHiRes(& encoder_sub, & jumpsize_sub, genc1div * gencderate);
+	uint_fast16_t step_main = gstep_ENC_MAIN;
+	uint_fast16_t step_sub = gstep_ENC_MAIN;
+#elif WITHENCODER2 && LINUX_SUBSYSTEM
+	int_least16_t nrotate_sub = linux_get_enc2();
+#elif WITHENCODER2
+	int_least16_t nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
+	int_least16_t nrotate_sub = getRotateHiRes_FN(& jumpsize_sub, genc2div);
+	uint_fast16_t step_main = gstep_ENC_MAIN;
+	uint_fast16_t step_sub = gstep_ENC2;
+#else
+	int_least16_t nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
+	int_least16_t nrotate_sub = 0;
+	uint_fast16_t step_main = gstep_ENC_MAIN;
+	uint_fast16_t step_sub = 0;
+#endif
+	(void) step_sub;
+
+	// обработка меню FN, если выключено - работает как перестройка частоты с крупным шагом
+	if (uif_encoder2_rotate(nrotate_sub))
+	{
+		nrotate_sub = 0;
+#if WITHTOUCHGUI
+		hamradio_gui_enc2_update();
+		display2_needupdate();
+#else /* WITHTOUCHGUI */
+		display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
+#endif /* WITHTOUCHGUI */
+	}
+
+	if (nrotate_main || nrotate_sub)
+	{
+		bring_tuneA();	// Начать отображение текущей частоты на водопаде
+		bring_tuneB();	// Начать отображение текущей частоты на водопаде
+	}
+
+	if (glock == 0)
+	{
+
+		/* Обработка накопленного количества импульсов от валкодера */
+		if (nrotate_main < 0)
+		{
+			/* Валкодер A: вращали "вниз" */
+			gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - ((uint_fast32_t) step_main * jumpsize_main * - nrotate_main), step_main, tune_bottom(bi_main));
+			freqchanged = 1;
+		}
+		else if (nrotate_main > 0)
+		{
+			/* Валкодер A: вращали "вверх" */
+			gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + ((uint_fast32_t) step_main * jumpsize_main * nrotate_main), step_main, tune_top(bi_main));
+			freqchanged = 1;
+		}
+
+#if ! WITHTOUCHGUI
+		/* Обработка накопленного количества импульсов от валкодера */
+		if (nrotate_sub < 0)
+		{
+			/* Валкодер B: вращали "вниз" */
+			gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - ((uint_fast32_t) step_sub * jumpsize_sub * - nrotate_sub), step_sub, tune_bottom(bi_sub));
+			freqchanged = 1;
+		}
+		else if (nrotate_sub > 0)
+		{
+			/* Валкодер B: вращали "вверх" */
+			gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + ((uint_fast32_t) step_sub * jumpsize_sub * nrotate_sub), step_sub, tune_top(bi_sub));
+			freqchanged = 1;
+		}
+#endif /* ! WITHTOUCHGUI */
+	}
+
+#if WITHTOUCHGUI && WITHENCODER2
+	gui_set_encoder2_rotate(nrotate_sub);
+	freqchanged = freqchanged || !! nrotate_sub;
+#endif /* WITHTOUCHGUI && WITHENCODER2 */
+
+#if 0 && CPUSTYLE_XC7Z		// тестовая прокрутка частоты
+	hamradio_set_freq(hamradio_get_freq_rx() + 1);
+	freqchanged = 1;
+#endif
+	return freqchanged;
+}
 // работа в главной машине состояний
 static STTE_t
 hamradio_main_step(void)
 {
-	//void r820t_spool(void);
-	//r820t_spool();
-	uint_fast8_t kbch, kbready;
-
-	processmessages(& kbch, & kbready, 0, NULL);
-
 	switch (sthrl)
 	{
 	case STHRL_MENU:
@@ -19388,146 +19507,85 @@ hamradio_main_step(void)
 		break;
 
 	case STHRL_RXTX_FQCHANGED:
-			/* валкодер перестал вращаться - если было изменение частоты - ообновляем отображение */
+			/* валкодер перестал вращаться - если было изменение частоты - сохраняем конфигурацию */
 			if (display_refreshenabled_freqs())
 			{
 				processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
-				#if 1//WITHSPLIT
-					const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);		/* состояние выбора банков может измениться */
-					const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);		/* состояние выбора банков может измениться */
-				#elif WITHSPLITEX
-					const uint_fast8_t bi_main = getbankindex_ab(0);		/* состояние выбора банков может измениться */
-					const uint_fast8_t bi_sub = getbankindex_ab(1);		/* состояние выбора банков может измениться */
-				#endif /* WITHSPLIT, WITHSPLITEX */
-			/* в случае внутренней памяти микроконтроллера - частоту не запоминать (очень мал ресурс). */
+				const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
+				const uint_fast8_t bi_sub = getbankindexsub();		/* состояние выбора банков может измениться */
+				/* в случае внутренней памяти микроконтроллера - частоту не запоминать (очень мал ресурс). */
 
 				storebandfreq(getvfoindex(bi_main), bi_main);		/* сохранение частоты в текущем VFO */
 				storebandfreq(getvfoindex(bi_sub), bi_sub);		/* сохранение частоты в текущем VFO */
 				sthrl = STHRL_RXTX;
 
 				board_wakeup();
-				break;
 			}
-			// проваливаемся дальше
+			else
+			{
+				// проваливаемся дальше, когда наступит время - display_refreshenabled_freqs -
+				// сохраним частоту и пеерйдём к состоянию STHRL_RXTX
+
+			}
 
 	case STHRL_RXTX:
 		// работа с пользователем
-		{
-			processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
-			#if WITHAUTOTUNER
-			if (reqautotune != 0 && gtx != 0)
-			{
-				sthrl = STHRL_TUNE;
-				break;
-			}
-			#endif /* WITHAUTOTUNER */
-			#if 1//WITHSPLIT
-				const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);		/* состояние выбора банков может измениться */
-				const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);		/* состояние выбора банков может измениться */
-			#elif WITHSPLITEX
-				const uint_fast8_t bi_main = getbankindex_ab(0);		/* состояние выбора банков может измениться */
-				const uint_fast8_t bi_sub = getbankindex_ab(1);		/* состояние выбора банков может измениться */
-			#endif /* WITHSPLIT, WITHSPLITEX */
 
-			display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
+		#if WITHAUTOTUNER
+		if (reqautotune != 0 && gtx != 0)
+		{
+			sthrl = STHRL_TUNE;
+			break;
+		}
+		#endif /* WITHAUTOTUNER */
+
+		display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 
 	#if WITHLFM && ! BOARD_PPSIN_BIT
-			if (lfmmode)
-			{
-				/*  проверяем секунды начала */
-					uint_fast8_t hour, minute, seconds;
+		if (lfmmode)
+		{
+			/*  проверяем секунды начала */
+				uint_fast8_t hour, minute, seconds;
 
-					board_rtc_cached_gettime(& hour, & minute, & seconds);
-					if (islfmstart(minute * 60 + seconds))
-					{
-						IRQL_t oldIrql;
-						RiseIrql(TICKER_IRQL, & oldIrql);
-						lfm_run();
-						LowerIrql(oldIrql);
-					}
+				board_rtc_cached_gettime(& hour, & minute, & seconds);
+				if (islfmstart(minute * 60 + seconds))
+				{
+					IRQL_t oldIrql;
+					RiseIrql(TICKER_IRQL, & oldIrql);
+					lfm_run();
+					LowerIrql(oldIrql);
+				}
 
-				/* обновить настройку полосовых фильтров */
-				updateboard_freq;	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
-				testlfm();
-			}
+			/* обновить настройку полосовых фильтров */
+			updateboard_freq;	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
+			testlfm();
+		}
 	#endif /* WITHLFM */
-			if (alignmode)
-			{
+		if (alignmode)
+		{
 	#if MULTIVFO
-				// вход в режим настройки ГУНов первого гетеродина
-				display2_needupdate();
-				vfoallignment();
-				display2_needupdate();
-				updateboard();	/* полная перенастройка (как после смены режима) */
+			// вход в режим настройки ГУНов первого гетеродина
+			display2_needupdate();
+			vfoallignment();
+			display2_needupdate();
+			updateboard();	/* полная перенастройка (как после смены режима) */
 	#endif // MULTIVFO
-				alignmode = 0;	// в nvram осталась не-0
-			}
+			alignmode = 0;	// в nvram осталась не-0
+		}
 	#if WITHUSEAUDIOREC
-			if (recmode)
-			{
-				recmode = 0;
-				sdcardrecord();
-			}
+		if (recmode)
+		{
+			recmode = 0;
+			sdcardrecord();
+		}
 	#endif /* WITHUSEAUDIOREC */
 
-			uint_fast8_t jumpsize_main;
-			uint_fast8_t jumpsize_sub;
-			int_least16_t nrotate_main;
-			int_least16_t nrotate_sub;
-			uint_fast16_t step_main;
-			uint_fast16_t step_sub;
+		{
+			uint_fast8_t kbch, kbready;
+			processmessages(& kbch, & kbready, 0, NULL);
 
-			/* переход по частоте - шаг берется из gstep_ENC_MAIN */
-			#if WITHBBOX && defined (WITHBBOXFREQ)
-				nrotate_main = 0;	// ignore encoder
-				nrotate_sub = 0;	// ignore encoder
-				step_main = gstep_ENC_MAIN;
-				step_sub = gstep_ENC2;
-			#elif WITHENCODER_SUB
-				nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
-				nrotate_sub = getRotateHiRes(& encoder_sub, & jumpsize_sub, genc1div * gencderate);
-				step_main = gstep_ENC_MAIN;
-				step_sub = gstep_ENC_MAIN;
-			#elif WITHENCODER2 && LINUX_SUBSYSTEM
-				nrotate_sub = linux_get_enc2();
-			#elif WITHENCODER2
-				nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
-				nrotate_sub = getRotateHiRes_FN(& jumpsize_sub, genc2div);
-				step_main = gstep_ENC_MAIN;
-				step_sub = gstep_ENC2;
-			#else
-				nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
-				nrotate_sub = 0;
-				step_main = gstep_ENC_MAIN;
-				step_sub = 0;
-			#endif
-			(void) step_sub;
-#if WITHENCODER2
-			if (uif_encoder2_rotate(nrotate_sub))
-			{
-				nrotate_sub = 0;
-#if WITHTOUCHGUI
-				hamradio_gui_enc2_update();
-				display2_needupdate();
-#else /* WITHTOUCHGUI */
-				display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
-#endif /* WITHTOUCHGUI */
-			}
-#endif /*WITHENCODER2 */
-			if (processpots() || processencoders())
-			{
-				/* обновление индикатора без сохранения состояния диапазона */
-		#if WITHTOUCHGUI
-				display_redrawfreqstimed(1);
-				display2_needupdate();
-
-		#else /* WITHTOUCHGUI */
-				display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
-
-		#endif /* WITHTOUCHGUI */
-
-			} // end keyboard processing
-	#if WITHKEYBOARD
+		#if WITHKEYBOARD
 			if (kbready != 0 && processkeyboard(kbch))
 			{
 				/* обновление индикатора без сохранения состояния диапазона */
@@ -19542,69 +19600,29 @@ hamradio_main_step(void)
 		#endif /* WITHTOUCHGUI */
 
 			} // end keyboard processing
-	#endif /* WITHKEYBOARD */
+		#endif /* WITHKEYBOARD */
+		}
 
-			if (nrotate_main || nrotate_sub)
-			{
-				bring_tuneA();	// Начать отображение текущей частоты на водопаде
-				bring_tuneB();	// Начать отображение текущей частоты на водопаде
-			}
+		if (processpots() || processencoders())
+		{
+			/* обновление индикатора без сохранения состояния диапазона */
+	#if WITHTOUCHGUI
+			display_redrawfreqstimed(1);
+			display2_needupdate();
 
-			if (glock == 0)
-			{
-				uint_fast8_t freqchanged = 0;
+	#else /* WITHTOUCHGUI */
+			display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
 
-				/* Обработка накопленного количества импульсов от валкодера */
-				if (nrotate_main < 0)
-				{
-					/* Валкодер A: вращали "вниз" */
-					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
-					gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - ((uint_fast32_t) step_main * jumpsize_main * - nrotate_main), step_main, tune_bottom(bi_main));
-					//gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - (jumpsize_main * - nrotate_main), gstep_ENC_MAIN, TUNE_BOTTOM);
-					freqchanged = 1;
-				}
-				else if (nrotate_main > 0)
-				{
-					/* Валкодер A: вращали "вверх" */
-					//const uint_fast32_t topfreq = bandsmap [b].top;
-					gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + ((uint_fast32_t) step_main * jumpsize_main * nrotate_main), step_main, tune_top(bi_main));
-					//gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + (jumpsize_main * nrotate_main), gstep_ENC_MAIN, TUNE_TOP);
-					freqchanged = 1;
-				}
+	#endif /* WITHTOUCHGUI */
 
-#if ! WITHTOUCHGUI
-				/* Обработка накопленного количества импульсов от валкодера */
-				if (nrotate_sub < 0)
-				{
-					/* Валкодер B: вращали "вниз" */
-					//const uint_fast32_t lowfreq = bandsmap [b].bottom;
-					gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - ((uint_fast32_t) step_sub * jumpsize_sub * - nrotate_sub), step_sub, tune_bottom(bi_sub));
-					freqchanged = 1;
-				}
-				else if (nrotate_sub > 0)
-				{
-					/* Валкодер B: вращали "вверх" */
-					//const uint_fast32_t topfreq = bandsmap [b].top;
-					gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + ((uint_fast32_t) step_sub * jumpsize_sub * nrotate_sub), step_sub, tune_top(bi_sub));
-					freqchanged = 1;
-				}
-#endif /* ! WITHTOUCHGUI */
+		} // end keyboard processing
 
-				if (freqchanged != 0)
-				{
-					// Ограничение по скорости обновления дисплея уже заложено в него
-					sthrl = STHRL_RXTX_FQCHANGED;
-					updateboard_freq();	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
-				}
-			}
-
-#if WITHTOUCHGUI && WITHENCODER2
-			gui_set_encoder2_rotate(nrotate_sub);
-#endif /* WITHTOUCHGUI && WITHENCODER2 */
-
-#if 0 && CPUSTYLE_XC7Z		// тестовая прокрутка частоты
-			hamradio_set_freq(hamradio_get_freq_rx() + 1);
-#endif
+		// Knobs rotation processing
+		if (processtuneknobs())
+		{
+			updateboard_freq();	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
+			// Ограничение по скорости обновления дисплея уже заложено в него
+			sthrl = STHRL_RXTX_FQCHANGED;
 		}
 		break;
 
