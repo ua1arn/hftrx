@@ -9480,12 +9480,12 @@ display_walktrough(
 	}
 }
 
-static int redrawreq;
-
-void display2_needupdate(void)
-{
-	redrawreq = 1;
-}
+//static int redrawreq;
+//
+//void display2_needupdate(void)
+//{
+//	redrawreq = 1;
+//}
 
 // Обработка событий тачскрина или мыши
 uint_fast8_t display2_mouse(uint_fast16_t xe, uint_fast16_t ye, unsigned evcode, uint_fast8_t inmenu, uint_fast8_t menuset, dctx_t * ctx)
@@ -9918,7 +9918,7 @@ void display2_initialize(void)
 #endif
 
 	display_walktrough(NULL, REDRSUBSET_INIT, NULL);// выполнение отрисовки всех элементов за раз.
-	redrawreq = 0;
+	//redrawreq = 0;
 
 #if WITHRENDERHTML
 	{
