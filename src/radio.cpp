@@ -16656,6 +16656,9 @@ const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active)
 
 static uint_fast8_t ginmenu;
 static const struct menudef * gmp = menutable;
+static uint_fast8_t gmenulevel;	// 0 - groups, 1 - inside group
+static uint_fast8_t gmenufirstpos [2];
+static uint_fast8_t gmenulastpos [2];
 
 #define MENUROW_COUNT (ARRAY_SIZE(menutable))
 
@@ -17323,6 +17326,156 @@ static uint_fast16_t menulooklast(uint_fast16_t menupos)
 static uint_fast8_t
 processmenukeyboard(uint_fast8_t kbch)
 {
+	const struct menudef * mp = gmp;
+	uint_fast8_t exitkey = getexitkey();
+	nvramaddress_t posnvram = MENUNONVRAM;
+	uint_fast16_t menupos = gmp - menutable;
+	multimenuwnd_t window;
+	uint_fast8_t itemmask = ITEM_VALUE;
+	uint_fast16_t firstitem = 1;
+	uint_fast16_t lastitem = MENUROW_COUNT - 1;
+
+	display2_getmultimenu(& window);
+
+	if (kbch == exitkey)
+	{
+		ginmenu = 0;
+		return 0;
+	}
+
+	switch (kbch)
+	{
+	default:
+		/* в случчае несовпадения - прожолжаем работать. */
+	case KBD_CODE_DISPMODE:
+	case KBD_ENC2_PRESS:
+		/* выход из меню */
+		if (posnvram != MENUNONVRAM)
+			save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
+		encoders_clear();	// сбросить информацию о повороте
+		ginmenu = 0;
+		return 0;
+
+	case KBD_CODE_MENU:
+	case KBD_ENC2_HOLD:
+		if (ismenukinddp(mp->pd, ITEM_GROUP))
+		{
+			/* вход в подменю */
+			const uint_fast16_t first = menupos + 1;	/* следующий за текущим пунктом */
+			const uint_fast16_t last = menulooklast(first);
+
+			if (ismenukind(& menutable [first], ITEM_VALUE))
+			{
+			#if defined (RTC1_TYPE)
+				getstamprtc();
+			#endif /* defined (RTC1_TYPE) */
+				// войти в подменю
+				//modifysettings(first, last, ITEM_VALUE, mp->pd->qnvram, exitkey, byname);
+				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+			}
+		}
+		return 1;	// требуется обновление индикатора
+
+	case KBD_CODE_LOCK:
+		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		uif_key_lockencoder();
+		display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		return 1;	// требуется обновление индикатора
+#if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
+	case KBD_CODE_LOCK_HOLDED:
+		/* запись видимого изображения */
+		display_snapshot_req();
+		return 1;	// требуется обновление индикатора
+#endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
+
+	case KBD_CODE_POWEROFF:
+		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		uif_pwbutton_press();
+		return 0;
+
+#if WITHTX
+	case KBD_CODE_MOX:
+		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		/* выключить режим настройки или приём/передача */
+		uif_key_tuneoff();
+		display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		return 1;	// требуется обновление индикатора
+
+	case KBD_CODE_TXTUNE:
+		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		/* выключить режим настройки или приём/передача */
+		uif_key_tune();
+		display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		return 1;	// требуется обновление индикатора
+
+#if WITHAUTOTUNER
+	case KBD_CODE_ATUSTART:
+		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		uif_key_atunerstart();
+		display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		return 1;	// требуется обновление индикатора
+
+	case KBD_CODE_ATUBYPASS:
+		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		uif_key_bypasstoggle();
+		display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		return 1;	// требуется обновление индикатора
+#endif /* WITHAUTOTUNER */
+
+#endif /* WITHTX */
+
+	case KBD_CODE_BAND_DOWN:
+#if WITHENCODER2
+		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
+		uif_key_click_banddown();
+		display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		return 1;	// требуется обновление индикатора
+#endif /* WITHENCODER2 */
+
+	case KBD_CODE_MENU_DOWN:
+		/* переход на предыдущий пункт меню */
+		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		do
+		{
+			/* проход по определённому типу элементов (itemmask) */
+			menupos = calc_dir(! window.reverse, menupos, firstitem, lastitem);
+			mp = & menutable [menupos];
+		}
+		while (! ismenukinddp(mp->pd, itemmask));
+		goto menuswitch;
+
+	case KBD_CODE_BAND_UP:
+#if WITHENCODER2
+		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
+		uif_key_click_bandup();
+		display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		return 1;	// требуется обновление индикатора
+#endif /* WITHENCODER2 */
+
+	case KBD_CODE_MENU_UP:
+		/* переход на следующий пункт меню */
+		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		do
+		{
+			/* если спецпункты запрещены - ищем обычный */
+			menupos = calc_dir(window.reverse, menupos, firstitem, lastitem);
+			mp = & menutable [menupos];
+		}
+		while (! ismenukinddp(mp->pd, itemmask));
+
+	menuswitch:
+	if (posnvram != MENUNONVRAM)
+		save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
+
+#if WITHDEBUG
+		PRINTF(PSTR("menu: ")); PRINTF(mp->pd->qlabel); PRINTF(PSTR("\n"));
+#endif /* WITHDEBUG */
+
+		display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		return 0;
+	}
 
 	return 0;
 }
@@ -17412,142 +17565,7 @@ modifysettings(
 #endif /* WITHENCODER2 */
 
 		if (kbready != 0)
-		{
-
-			switch (kbch)
-			{
-			default:
-				if (kbch != exitkey)
-					continue;
-				/* в случчае несовпадения - прожолжаем работать. */
-			case KBD_CODE_DISPMODE:
-			case KBD_ENC2_PRESS:
-				/* выход из меню */
-				if (posnvram != MENUNONVRAM)
-					save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
-				encoders_clear();	// сбросить информацию о повороте
-				return;
-
-			case KBD_CODE_MENU:
-			case KBD_ENC2_HOLD:
-				if (ismenukinddp(mp->pd, ITEM_GROUP))
-				{
-					/* вход в подменю */
-					const uint_fast16_t first = menupos + 1;	/* следующий за текущим пунктом */
-					const uint_fast16_t last = menulooklast(first);
-
-					if (ismenukind(& menutable [first], ITEM_VALUE))
-					{
-					#if defined (RTC1_TYPE)
-						getstamprtc();
-					#endif /* defined (RTC1_TYPE) */
-						modifysettings(first, last, ITEM_VALUE, mp->pd->qnvram, exitkey, byname);
-						display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-					}
-				}
-				continue;	// требуется обновление индикатора
-
-			case KBD_CODE_LOCK:
-				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
-				uif_key_lockencoder();
-				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-				continue;	// требуется обновление индикатора
-		#if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
-			case KBD_CODE_LOCK_HOLDED:
-				/* запись видимого изображения */
-				display_snapshot_req();
-				continue;	// требуется обновление индикатора
-		#endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
-
-			case KBD_CODE_POWEROFF:
-				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
-				uif_pwbutton_press();
-				return;
-
-#if WITHTX
-			case KBD_CODE_MOX:
-				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
-				/* выключить режим настройки или приём/передача */
-				uif_key_tuneoff();
-				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-				continue;	// требуется обновление индикатора
-
-			case KBD_CODE_TXTUNE:
-				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
-				/* выключить режим настройки или приём/передача */
-				uif_key_tune();
-				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-				continue;	// требуется обновление индикатора
-
-	#if WITHAUTOTUNER
-			case KBD_CODE_ATUSTART:
-				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
-				uif_key_atunerstart();
-				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-				continue;	// требуется обновление индикатора
-
-			case KBD_CODE_ATUBYPASS:
-				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
-				uif_key_bypasstoggle();
-				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-				continue;	// требуется обновление индикатора
-	#endif /* WITHAUTOTUNER */
-
-#endif /* WITHTX */
-
-			case KBD_CODE_BAND_DOWN:
-#if WITHENCODER2
-				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
-				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
-				uif_key_click_banddown();
-				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-				continue;	// требуется обновление индикатора
-#endif /* WITHENCODER2 */
-
-			case KBD_CODE_MENU_DOWN:
-				/* переход на предыдущий пункт меню */
-				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
-				do
-				{
-					/* проход по определённому типу элементов (itemmask) */
-					menupos = calc_dir(! window.reverse, menupos, firstitem, lastitem);
-					mp = & menutable [menupos];
-				}
-				while (! ismenukinddp(mp->pd, itemmask));
-				goto menuswitch;
-
-			case KBD_CODE_BAND_UP:
-#if WITHENCODER2
-				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
-				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
-				uif_key_click_bandup();
-				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-				continue;	// требуется обновление индикатора
-#endif /* WITHENCODER2 */
-
-			case KBD_CODE_MENU_UP:
-				/* переход на следующий пункт меню */
-				savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
-				do
-				{
-					/* если спецпункты запрещены - ищем обычный */
-					menupos = calc_dir(window.reverse, menupos, firstitem, lastitem);
-					mp = & menutable [menupos];
-				}
-				while (! ismenukinddp(mp->pd, itemmask));
-
-			menuswitch:
-			if (posnvram != MENUNONVRAM)
-				save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
-
-#if WITHDEBUG
-				PRINTF(PSTR("menu: ")); PRINTF(mp->pd->qlabel); PRINTF(PSTR("\n"));
-#endif /* WITHDEBUG */
-
-				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-				break;
-			}
-		}
+		{}
 #endif /* WITHKEYBOARD */
 
 #if WITHENCODER
