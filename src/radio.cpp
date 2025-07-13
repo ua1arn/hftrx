@@ -11401,11 +11401,9 @@ encoder_flagne(const struct paramdefdef * pd, int_least16_t delta, uint_fast8_t 
  Возвращает не-0, если выяснилось, что требуется "полное" обновления
  */
 uint_fast8_t
-updateboardZZZ(
+updateboard(
 	uint_fast8_t full,
-	uint_fast8_t mute,
-	const char * file,
-	int line
+	uint_fast8_t mute
 	)
 {
 	/* параметры, вычисляемые по updateboard(full=1) */
