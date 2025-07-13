@@ -11990,9 +11990,6 @@ updateboard_noui(
 		board_set_kblight((dimmflag || sleepflag || dimmmode) ? 0 : gkblight);			/* подсвтка клавиатуры */
 	#endif /* WITHKBDBACKLIGHT */
 		board_set_poweron(gpoweronhold);
-	#if WITHNBONOFF
-		board_set_nfmnbon(glock);	/* Включние noise blanker на SW2014FM */
-	#endif /* WITHNBONOFF */
 
 	#if WITHSPKMUTE
 		board_set_dsploudspeaker(gmutespkr); /*  выключение динамика (управление кодеком) */
