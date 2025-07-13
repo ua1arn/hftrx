@@ -179,7 +179,7 @@ static void lvstales_initialize(void)
 	    lv_style_set_text_color(s, display_lvlcolor(DSGN_BIGCOLOR));
 	    lv_style_set_bg_color(s, display_lvlcolor(display2_getbgcolor()));
 	    lv_style_set_text_align(s, LV_TEXT_ALIGN_RIGHT);
-	    lv_style_set_pad_ver(s, 15);
+	    lv_style_set_pad_all(s, 0);
 	    lv_style_set_text_font(s, & Epson_LTDC_big);
 	    //lv_style_set_text_letter_space(s, 5);
 		lv_style_set_border_width(s, 0);

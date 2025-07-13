@@ -110,8 +110,8 @@ static const dzone_t dzones [] =
 	{	0,	5,	15,	19,	display2_af_spectre15,			& dzi_compat, PGSPE, },
 #endif /* WITHAFSPECTRE */
 
-	{	15,	6,	0, 0, display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
-	{	15,	6,	21, 13,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+	{	15,	8,	0, 0, display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
+	{	15,	8,	21, 11,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
 
 	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
