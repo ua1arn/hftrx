@@ -3265,7 +3265,8 @@ extern uint_fast8_t swrcalibr;
 extern uint_fast8_t maxpwrcali;
 extern uint_fast8_t swrmode;
 
-uint_fast8_t updateboard(uint_fast8_t full);
+void updateboard(void);	/* полная перенастройка */
+void updateboard_freq(void);	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 
 uint_fast8_t hamradio_get_tx(void);
 int_fast32_t hamradio_get_pbtvalue(void);	// Для отображения на дисплее

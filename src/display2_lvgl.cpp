@@ -29,7 +29,7 @@ static void parameditor_slider_cb(lv_event_t * e)
 
 	int32_t v = lv_slider_get_value(s);
 	param_setvalue(pd, v);
-	updateboard(1);
+	updateboard();
 
 	lv_label_set_text_fmt(l, "%" PRIi32, v);
 }
@@ -44,7 +44,7 @@ static void parameditor_dropdown_cb(lv_event_t * e)
 
 	uint8_t v = lv_dropdown_get_selected(t);
 	param_setvalue(pd, v);
-	updateboard(1);
+	updateboard();
 }
 
 static void parameditor_switch_cb(lv_event_t * e)
@@ -57,7 +57,7 @@ static void parameditor_switch_cb(lv_event_t * e)
 
 	uint8_t v = lv_obj_has_state(sw, LV_STATE_CHECKED) ? 1 : 0;
 	param_setvalue(pd, v);
-	updateboard(1);
+	updateboard();
 }
 
 lv_obj_t * hamradio_walkmenu_getparameditor(const struct paramdefdef * pd, lv_obj_t * parent)

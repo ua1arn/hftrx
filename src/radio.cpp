@@ -318,7 +318,7 @@ void hamradio_set_lfmmode(uint_fast8_t v)
 {
 	lfmmode = v != 0;
 
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast16_t hamradio_get_lfmstop100k(void)
@@ -331,7 +331,7 @@ void hamradio_set_lfmstop100k(uint_fast16_t v)
 	if (v > 80 && v <= 350)
 		lfmstop100k = v;
 
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast16_t hamradio_get_lfmtoffset(void)
@@ -344,13 +344,13 @@ void hamradio_set_lfmtoffset(uint_fast16_t v)
 	if (v < 60)
 		lfmtoffset = v;
 
-	updateboard(1);
+	updateboard();
 }
 
 void hamradio_lfm_disable(void)
 {
 	lfm_disable();
-	updateboard(1);
+	updateboard();
 }
 
 #endif /* WITHLFM */
@@ -4884,7 +4884,7 @@ static const struct paramdefdef xcatenable =
 			ASSERT(gain <= AF_EQUALIZER_BASE * 2);
 			geqrxparams [index] = gain;
 			save_i8(OFFSETOF(struct nvmap, geqrxparams [index]), geqrxparams [index]);
-			updateboard(1);
+			updateboard();
 		}
 
 		uint_fast8_t hamradio_get_geqrx(void)
@@ -4896,7 +4896,7 @@ static const struct paramdefdef xcatenable =
 		{
 			geqrx = v != 0;
 			save_i8(OFFSETOF(struct nvmap, geqrx), geqrx);
-			updateboard(1);
+			updateboard();
 		}
 
 	#endif /* WITHAFEQUALIZER */
@@ -7220,14 +7220,14 @@ uif_key_click_amfmbandpassup(void)
 	case BWSET_SINGLE:
 		p->left10_width10 = nextfreq(p->left10_width10, p->left10_width10 + p->limits->granulationleft, p->limits->granulationleft, p->limits->left10_width10_high + 1);
 		save_i8(RMT_BWPROPSLEFT_BASE(p->bwpropi), p->left10_width10);	// верхний срез фильтра НЧ в сотнях герц
-		updateboard(1);
+		updateboard();
 		break;
 
 	default:
 	case BWSET_PAIR:
 		p->right100 = nextfreq(p->right100, p->right100 + p->limits->granulationright, p->limits->granulationright, p->limits->right100_high + 1);
 		save_i8(RMT_BWPROPSRIGHT_BASE(p->bwpropi), p->right100);	// верхний срез фильтра НЧ в сотнях герц
-		updateboard(1);
+		updateboard();
 		break;
 	}
 
@@ -7249,14 +7249,14 @@ uif_key_click_amfmbandpassdown(void)
 	case BWSET_SINGLE:
 		p->left10_width10 = prevfreq(p->left10_width10, p->left10_width10 - p->limits->granulationleft, p->limits->granulationleft, p->limits->left10_width10_low);
 		save_i8(RMT_BWPROPSLEFT_BASE(p->bwpropi), p->left10_width10);	// верхний срез фильтра НЧ в сотнях герц
-		updateboard(1);
+		updateboard();
 		break;
 
 	default:
 	case BWSET_PAIR:
 		p->right100 = prevfreq(p->right100, p->right100 - 1, p->limits->granulationright, p->limits->right100_low);
 		save_i8(RMT_BWPROPSRIGHT_BASE(p->bwpropi), p->right100);	// верхний срез фильтра НЧ в сотнях герц
-		updateboard(1);
+		updateboard();
 		break;
 	}
 
@@ -7289,7 +7289,7 @@ static void
 uif_pwbutton_press(void)
 {
 	gpoweronhold = 0;
-	updateboard(1);
+	updateboard();
 }
 
 // проверка, используется ли описатель диапазона с данным кодом в текущей конфигурации.
@@ -8673,7 +8673,7 @@ uif_encoder2_rotate(
 		if (nrotate != 0)
 		{
 			param_rotate(enc2menus [enc2pos], nrotate);	// изменение и сохранение значения параметра
-			updateboard(1);
+			updateboard();
 			return 1;
 		}
 
@@ -8936,7 +8936,7 @@ modemchangefreq(
 	//gpamps [bi] = loadvfy8up(RMT_PAMP_BASE(b), 0, PAMPMODE_COUNT - 1, DEFPREAMPSTATE);	/* вытаскиваем признак включения предусилителя */
 	//gatts [bi] = loadvfy8up(RMT_ATT_BASE(b), 0, ATTMODE_COUNT - 1, 0);	/* вытаскиваем признак включения аттенюатора */
 	//gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем код включённой антенны */
-	updateboard(1);	/* полная перенастройка (как после смены режима) */
+	updateboard();	/* полная перенастройка (как после смены режима) */
 }
 
 void
@@ -8951,7 +8951,7 @@ modemchangespeed(
 		if (speed100 == modembr2int100 [i])
 		{
 			gmodemspeed = i;
-			updateboard(1);	/* полная перенастройка (как после смены режима) */
+			updateboard();	/* полная перенастройка (как после смены режима) */
 			return;
 		}
 	}
@@ -8966,7 +8966,7 @@ modemchangemode(
 	if (modemmode < 2)	/* 0: BPSK, 1: QPSK */
 	{
 		gmodemmode = modemmode;
-		updateboard(1);	/* полная перенастройка (как после смены режима) */
+		updateboard();	/* полная перенастройка (как после смены режима) */
 	}
 }
 
@@ -11399,8 +11399,8 @@ encoder_flagne(const struct paramdefdef * pd, int_least16_t delta, uint_fast8_t 
  Учитывается состояние tunemode - режим настройки передатчика, при этом параметр tx не-ноль.
  Возвращает не-0, если выяснилось, что требуется "полное" обновления
  */
-uint_fast8_t
-updateboard(
+static uint_fast8_t
+updateboard_noui(
 	uint_fast8_t full
 	)
 {
@@ -11512,8 +11512,6 @@ updateboard(
 
 	if (full2)
 	{
-		gui_update();
-
 		/* Полная перенастройка. Изменился режим (или одно из значений hint). */
 		if (gtx == 0)
 		{
@@ -12073,6 +12071,21 @@ updateboard(
 	return full2;
 }
 
+/* полная перенастройка */
+void updateboard(void)
+{
+	updateboard_noui(1);
+	gui_update();
+}
+
+/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
+void updateboard_freq(void)
+{
+	if (updateboard_noui(0))
+		gui_update();
+}
+
+
 ///////////////////////////
 // обработчики кнопок клавиатуры
 
@@ -12083,7 +12096,7 @@ void uif_key_bkintoggle(void)
 {
 	bkinenable = calc_next(bkinenable, 0, 1);
 	save_i8(OFFSETOF(struct nvmap, bkinenable), bkinenable);
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_get_bkin_value(void)
@@ -12122,7 +12135,7 @@ uif_key_voxtoggle(void)
 {
 	gvoxenable = calc_next(gvoxenable, 0, 1);
 	save_i8(OFFSETOF(struct nvmap, gvoxenable), gvoxenable);
-	updateboard(1);
+	updateboard();
 }
 
 // текущее состояние VOX
@@ -12209,7 +12222,7 @@ uif_key_spliton(uint_fast8_t holded)
 	storebandfreq(tgvi, tgbi);
 
 	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
-	updateboard(1);
+	updateboard();
 
 #elif WITHSPLITEX
 
@@ -12227,7 +12240,7 @@ uif_key_spliton(uint_fast8_t holded)
 	gsplitmode = VFOMODES_VFOSPLIT;
 
 	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
-	updateboard(1);
+	updateboard();
 
 #else
 
@@ -12250,7 +12263,7 @@ uif_key_click_b_from_a(void)
 		copybankstate(sbi, tbi, 0);
 		storebandstate(tgvi, tbi); // записать все параметры настройки (кроме частоты) в область данных VFO */
 		storebandfreq(tgvi, tbi); // записать частоту в область данных VFO */
-		updateboard(1);
+		updateboard();
 	}
 
 #endif /* (WITHSPLIT || WITHSPLITEX) */
@@ -12265,7 +12278,7 @@ uif_key_splitoff(void)
 	gsplitmode = VFOMODES_VFOINIT;
 	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
 
-	updateboard(1);
+	updateboard();
 
 #endif /* (WITHSPLIT || WITHSPLITEX) */
 }
@@ -12279,7 +12292,7 @@ uif_key_click_a_ex_b(void)
 
 	gvfoab = ! gvfoab;	/* меняем текущий VFO на протвоположный */
 	save_i8(RMT_VFOAB_BASE, gvfoab);
-	updateboard(1);
+	updateboard();
 
 #endif /* (WITHSPLIT || WITHSPLITEX) */
 }
@@ -12296,7 +12309,7 @@ uif_key_click_a_ex_b(void)
 //while (repeat --)
 //	gsplitmode = calc_next(gsplitmode, 0, VFOMODES_COUNT - 1); /* (vfo/vfoa/vfob/mem) */
 //save_i8(RMT_SPLITMODE_BASE, gsplitmode);
-//updateboard(1);
+//updateboard();
 //}
 
 ///////////////////////////
@@ -12316,7 +12329,7 @@ uif_key_hold_modecol(void)
 	/* переустановка частот всех гетеродинов после смены режимов */
 	/* gband должен быть уже известен */
 	gsubmodechange(getsubmode(bi), bi); /* если надо - сохранение частоты в текущем VFO */
-	updateboard(1);
+	updateboard();
 }
 
 
@@ -12362,7 +12375,7 @@ uif_key_click_moderow(void)
 	/* переустановка частот всех гетеродинов после смены режимов */
 	/* gband должен быть уже известен */
 	gsubmodechange(getsubmode(bi), bi); /* если надо - сохранение частоты в текущем VFO */
-	updateboard(1);
+	updateboard();
 }
 
 ///////////////////////////
@@ -12406,7 +12419,7 @@ uif_key_click_moderows(uint_fast8_t moderow)
 	/* переустановка частот всех гетеродинов после смены режимов */
 	/* gband должен быть уже известен */
 	gsubmodechange(getsubmode(bi), bi); /* если надо - сохранение частоты в текущем VFO */
-	updateboard(1);
+	updateboard();
 }
 
 ///////////////////////////
@@ -12430,7 +12443,7 @@ uif_key_hold_modecols(uint_fast8_t moderow)
 	/* переустановка частот всех гетеродинов после смены режимов */
 	/* gband должен быть уже известен */
 	gsubmodechange(getsubmode(bi), bi); /* если надо - сохранение частоты в текущем VFO */
-	updateboard(1);
+	updateboard();
 }
 
 ///////////////////////////
@@ -12454,7 +12467,7 @@ uif_key_click_bandup(void)
 	storebandpos(bn);
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
-	updateboard(1);
+	updateboard();
 }
 ///////////////////////////
 // обработчики кнопок клавиатуры
@@ -12476,7 +12489,7 @@ uif_key_click_banddown(void)
 	storebandpos(bn);
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
-	updateboard(1);
+	updateboard();
 }
 
 
@@ -12514,7 +12527,7 @@ uif_key_click_bandjump(uint_fast32_t f)
 	loadnewband(bn, bi);	/* загрузка всех параметров (и частоты) нового режима */
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
-	updateboard(1);
+	updateboard();
 #endif /* WITHDIRECTBANDS */
 }
 
@@ -12536,7 +12549,7 @@ uif_key_click_bandjump2(uint_fast32_t f, uint_fast8_t bandset_no_check)
 	loadnewband(bn, bi);	/* загрузка всех параметров (и частоты) нового режима */
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
-	updateboard(1);
+	updateboard();
 
 #if LINUX_SUBSYSTEM && WITHAD936XIIO
 		if (get_ad936x_stream_status())
@@ -12554,7 +12567,7 @@ uif_key_click_agcmode(void)
 {
 	gagcmode = calc_next(gagcmode, 0, AGCMODE_COUNT - 1);
 	save_i8(RMT_AGC_BASE(submodes [gsubmode].mode), gagcmode);
-	updateboard(1);
+	updateboard();
 }
 #endif /* ! WITHAGCMODENONE */
 
@@ -12583,7 +12596,7 @@ uif_key_next_antenna(void)
 	gantenna = calc_next(gantenna, 0, ANTMODE_COUNT - 1);
 	loadbandgroup(bg, gantenna, grxantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
-	updateboard(1);
+	updateboard();
 }
 
 /* Antenna switch
@@ -12598,7 +12611,7 @@ uif_key_next_rxantenna(void)
 	grxantenna = calc_next(grxantenna, 0, RXANTMODE_COUNT - 1);
 	loadbandgroup(bg, gantenna, grxantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
-	updateboard(1);
+	updateboard();
 }
 
 #elif WITHANTSELECT2
@@ -12636,7 +12649,7 @@ uif_key_next_antenna(void)
 	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
 	loadbandgroup(bg, effantenna, effrxantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
-	updateboard(1);
+	updateboard();
 }
 
 /* ручной/автоматический выбор антенны */
@@ -12650,7 +12663,7 @@ uif_key_next_autoantmode(void)
 	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
 	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
 	loadbandgroup(bg, effantenna, effrxantenna);
-	updateboard(1);
+	updateboard();
 }
 
 #elif WITHANTSELECT
@@ -12678,7 +12691,7 @@ uif_key_next_antenna(void)
 	gantenna = calc_next(gantenna, 0, ANTMODE_COUNT - 1);
 	loadbandgroup(bg, gantenna, grxantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
-	updateboard(1);
+	updateboard();
 }
 
 #else
@@ -12708,7 +12721,7 @@ uif_key_click_pamp(void)
 
 	gpamp = calc_next(gpamp, 0, PAMPMODE_COUNT - 1);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
-	updateboard(1);
+	updateboard();
 }
 #endif /* ! WITHONEATTONEAMP */
 
@@ -12724,7 +12737,7 @@ uif_key_click_attenuator(void)
 
 	gatt = calc_next(gatt, 0, ATTMODE_COUNT - 1);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
-	updateboard(1);
+	updateboard();
 }
 
 #if WITHPOWERLPHP
@@ -12735,7 +12748,7 @@ uif_key_click_pwr(void)
 	gpwri = calc_next(gpwri, 0, PWRMODE_COUNT - 1);
 	save_i8(RMT_PWR_BASE, gpwri);
 
-	updateboard(1);
+	updateboard();
 }
 #endif /* WITHPOWERLPHP */
 
@@ -12747,7 +12760,7 @@ uif_key_click_notch(void)
 	gnotch = calc_next(gnotch, 0, 1);
 	save_i8(RMT_NOTCH_BASE, gnotch);
 
-	updateboard(1);
+	updateboard();
 }
 
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
@@ -12762,7 +12775,7 @@ uif_key_lockencoder(void)
 
 	glock = calc_next(glock, 0, 1);
 	save_i8(RMT_LOCKMODE_BASE(b), glock);
-	updateboard(1);
+	updateboard();
 }
 
 #if WITHBCBANDS
@@ -12772,7 +12785,7 @@ uif_key_genham(void)
 {
 	gbandsetbcast = calc_next(gbandsetbcast, 0, 1);
 	save_i8(OFFSETOF(struct nvmap, gbandsetbcast), gbandsetbcast);
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_get_genham_value(void)
@@ -12789,7 +12802,7 @@ uif_key_usefast(void)
 {
 	gusefast = calc_next(gusefast, 0, 1);
 	save_i8(RMT_USEFAST_BASE, gusefast);
-	updateboard(1);
+	updateboard();
 }
 #endif /* WITHUSEFAST */
 
@@ -12800,7 +12813,7 @@ static void
 uif_key_loudsp(void)
 {
 	param_keyclick(& xgmutespkr);
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_get_spkon_value(void)
@@ -12824,7 +12837,7 @@ uif_key_changebw(void)
 
 	bwsetpos [bwseti] = calc_next(bwsetpos [bwseti], 0, bwsetsc [bwseti].last);
 	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
-	updateboard(1);
+	updateboard();
 }
 
 /* Переключение шумоподавления
@@ -12835,7 +12848,7 @@ uif_key_changenr(void)
 {
 	gnoisereducts [gmode] = calc_next(gnoisereducts [gmode], 0, 1);
 	save_i8(RMT_NR_BASE(gmode), gnoisereducts [gmode]);
-	updateboard(1);
+	updateboard();
 }
 
 #if WITHUSBHW && WITHUSBUAC
@@ -12846,7 +12859,7 @@ uif_key_click_datamode(void)
 {
 	gdatamode = calc_next(gdatamode, 0, 1);
 	save_i8(RMT_DATAMODE_BASE, gdatamode);
-	updateboard(1);
+	updateboard();
 }
 
 #endif /* WITHUSBHW && WITHUSBUAC */
@@ -12860,7 +12873,7 @@ uif_key_changefilter(void)
 {
 	gfi = getsuitablerx(gmode, calc_next(gfi, 0, getgfasize() - 1));
 	save_i8(RMT_FILTER_BASE(gmode), gfi);	/* только здесь сохраняем новый фильтр для режима */
-	updateboard(1);
+	updateboard();
 }
 
 #endif /* WITHIF4DSP */
@@ -12899,7 +12912,7 @@ uif_key_tuneoff(void)
 	{
 		moxmode = calc_next(moxmode, 0, 1);
 	}
-	updateboard(1);
+	updateboard();
 }
 
 ///////////////////////////
@@ -12911,7 +12924,7 @@ static void
 uif_key_tune(void)
 {
 	tunemode = calc_next(tunemode, 0, 1);
-	updateboard(1);
+	updateboard();
 }
 
 #endif /* WITHTX */
@@ -12936,7 +12949,7 @@ uif_key_bypasstoggle(void)
 
 	if (tunerwork == 0)
 		reqautotune = 0;	// сброс идущей настройки
-	updateboard(1);
+	updateboard();
 }
 
 static void
@@ -12953,7 +12966,7 @@ uif_key_atunerstart(void)
 	// отработка перехода в режим передачи делается в основном цикле
 	tunerwork = 1;
 	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerwork), 1);
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t
@@ -13325,7 +13338,7 @@ static void
 uif_key_mainsubrx(void)
 {
 	param_keyclick(& xmainsubrxmode);		// Левый/правый, A - main RX, B - sub RX
-	updateboard(1);
+	updateboard();
 }
 
 // текущее состояние DUAL WATCH
@@ -13451,7 +13464,7 @@ static uint_fast8_t processpots(void)
 #endif /* WITHPOTNOTCH && WITHNOTCHFREQ */
 	// --- конец получения состояния органов управления */
 	if (changed != 0)
-		updateboard(1);	/* полная перенастройка (как после смены режима) */
+		updateboard();	/* полная перенастройка (как после смены режима) */
 	return changed;
 }
 
@@ -13555,7 +13568,7 @@ static uint_fast8_t processencoders(void)
 
 	// --- конец получения состояния органов управления */
 	if (changed != 0)
-		updateboard(1);	/* полная перенастройка (как после смены режима) */
+		updateboard();	/* полная перенастройка (как после смены режима) */
 	return changed;
 }
 
@@ -13771,7 +13784,7 @@ directctlupdate(
 	/* произошло изменение режима прием/передача */
 	if (changedtx != 0)
 	{
-		updateboard(1);	/* полная перенастройка (как после смены режима) */
+		updateboard();	/* полная перенастройка (как после смены режима) */
 		seq_ask_txstate(gtx);
 		display2_needupdate();	// Обновление дисплея - всё, включая частоту
 	}
@@ -15289,7 +15302,7 @@ processcatmsg(
 			vindex_t vi = getvfoindex(bi);
 			const uint_fast32_t v = catparam;
 			catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), bi);
-			updateboard(1);	/* полная перенастройка (как после смены режима) */
+			updateboard();	/* полная перенастройка (как после смены режима) */
 			rc = 1;
 		}
 		else
@@ -15305,7 +15318,7 @@ processcatmsg(
 			vindex_t vi = getvfoindex(bi);
 			const uint_fast32_t v = catparam;
 			catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), bi);
-			updateboard(1);	/* полная перенастройка (как после смены режима) */
+			updateboard();	/* полная перенастройка (как после смены режима) */
 			rc = 1;
 		}
 		else
@@ -15320,7 +15333,7 @@ processcatmsg(
 			const uint_fast32_t v = catparam;
 			// Минимальный тон телеграфа - 400 герц.
 			gcwpitch10 = vfy32up(v, 0, 14, 6) * 5 + 40;
-			updateboard(1);	/* полная перенастройка (как после смены режима) */
+			updateboard();	/* полная перенастройка (как после смены режима) */
 			rc = 1;
 		}
 		else
@@ -15341,7 +15354,7 @@ processcatmsg(
 			// todo: не очень хорошо, если locatesubmode не находит режима, она обнуляет row.
 			const uint_fast8_t defcol = locatesubmode(defsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
 			putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
-			updateboard(1);	/* полная перенастройка (как после смены режима) */
+			updateboard();	/* полная перенастройка (как после смены режима) */
 
 			rc = 1;
 		}
@@ -15381,7 +15394,7 @@ processcatmsg(
 			if (gnoisereducts [gmode] != p1)
 			{
 				gnoisereducts [gmode] = p1;
-				updateboard(1);	/* полная перенастройка (как после смены режима) */
+				updateboard();	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 			}
 			rc = 1;
@@ -15497,7 +15510,7 @@ processcatmsg(
 				const uint_fast32_t p2 = vfy32up(catscanint(catp + 1, 3), 0, SQUELCHMAX, 0);
 				if (flagne_u8(& gsquelch.value, p2))
 				{
-					updateboard(1);	/* полная перенастройка (как после смены режима) */
+					updateboard();	/* полная перенастройка (как после смены режима) */
 					rc = 1;
 				}
 			}
@@ -15530,7 +15543,7 @@ processcatmsg(
 				const unsigned p2board = p2 * (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) / 255 + BOARD_AFGAIN_MIN;	// масштабирование кода от CAT (0..255) во внутренний диапазоны
 				if (flagne_u16(& afgain1.value, p2board))
 				{
-					updateboard(1);	/* полная перенастройка (как после смены режима) */
+					updateboard();	/* полная перенастройка (как после смены режима) */
 					rc = 1;
 				}
 			}
@@ -15560,7 +15573,7 @@ processcatmsg(
 			const unsigned p2board = p2 * (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN) / 255 + BOARD_IFGAIN_MIN;	// масштабирование кода от CAT (0..255) во внутренний диапазон
 			if (flagne_u16(& rfgain1.value, p2board))
 			{
-				updateboard(1);	/* полная перенастройка (как после смены режима) */
+				updateboard();	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 			}
 		}
@@ -15584,13 +15597,13 @@ processcatmsg(
 			param_setvalue(& xgnormalpower, v);
 			if (v != vold)
 			{
-				updateboard(1);	/* полная перенастройка (как после смены режима) */
+				updateboard();	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 			}
 #else
 			if (flagne_u8(& gnormalpower.value, v))
 			{
-				updateboard(1);	/* полная перенастройка (как после смены режима) */
+				updateboard();	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 			}
 #endif
@@ -15608,7 +15621,7 @@ processcatmsg(
 		if (cathasparam /* && (catparam == 0 || catparam == 1) */)
 		{
 			gatt = vfy32up(catparam, 0, ATTMODE_COUNT - 1, 0);	/* 0..1 */;	// one step or fully attenuated
-			updateboard(1);	/* полная перенастройка (как после смены режима) */
+			updateboard();	/* полная перенастройка (как после смены режима) */
 			cat_answer_request(CAT_RA_INDEX);
 			rc = 1;
 		}
@@ -15625,7 +15638,7 @@ processcatmsg(
 		{
 #if ! WITHONEATTONEAMP
 			gpamp = vfy32up(catparam, 0, PAMPMODE_COUNT - 1, 0);	/* 0..1 */;	// one step or fully attenuated
-			updateboard(1);	/* полная перенастройка (как после смены режима) */
+			updateboard();	/* полная перенастройка (как после смены режима) */
 #endif /* ! WITHONEATTONEAMP */
 			cat_answer_request(CAT_PA_INDEX);
 			rc = 1;
@@ -15675,7 +15688,7 @@ processcatmsg(
 				#if WITHAUTOTUNER
 					loadtuner(bg, ant);
 				#endif /* WITHAUTOTUNER */
-					updateboard(1);	/* полная перенастройка (как после смены режима) */
+					updateboard();	/* полная перенастройка (как после смены режима) */
 
 				}
 				cat_answer_request(CAT_AN_INDEX);
@@ -15864,7 +15877,7 @@ processcatmsg(
 				reqautotune = p3;
 
 				storetuner(bg, ant);
-				updateboard(1);	/* полная перенастройка (как после смены режима) */
+				updateboard();	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 				cat_answer_request(CAT_AC_INDEX);
 			}
@@ -15889,7 +15902,7 @@ processcatmsg(
 			const uint_fast32_t width = vfy32up(catparam, 0, 9999, 3100);
 			const uint_fast8_t i = findfilter(gmode, gfi, width);	/* поиск фильтра, допустимого для данного режима */
 			gfi = getsuitablerx(gmode, i); /* при переключении через CAT сохранения в NVRAM не производится */
-			updateboard(1);	/* полная перенастройка (как после смены режима) */
+			updateboard();	/* полная перенастройка (как после смены режима) */
 		}
 		else
 		{
@@ -15906,7 +15919,7 @@ processcatmsg(
 			const uint_fast32_t p1 = vfy32up(catparam, CWWPMMIN, CWWPMMAX, 20);
 			if (flagne_u8(& elkeywpm.value, p1))
 			{
-				updateboard(1);	/* полная перенастройка (как после смены режима) */
+				updateboard();	/* полная перенастройка (как после смены режима) */
 			}
 		}
 		else
@@ -15934,7 +15947,7 @@ processcatmsg(
 					const uint_fast8_t mode = submodes [submode].mode;
 					gnoisereducts [mode] = vfy32up(catscanint(catp + 1, 1), 0, 1, 0);
 					gnoisereductvl = vfy32up(catscanint(catp + 2, 2), 0, NRLEVELMAX, gnoisereductvl);
-					updateboard(1);	/* полная перенастройка (как после смены режима) */
+					updateboard();	/* полная перенастройка (как после смены режима) */
 					rc = 1;
 				}
 			}
@@ -15979,7 +15992,7 @@ processcatmsg(
 					p->right100 = vfy32up(catscanint(catp + 5, 4), p->limits->right100_low, p->limits->right100_high, p->right100);
 					if (p->type == BWSET_PAIR)
 						p->afresponce = vfy32up(catscanint(catp + 9, 3), AFRESPONCEMIN, AFRESPONCEMAX, p->afresponce);
-					updateboard(1);	/* полная перенастройка (как после смены режима) */
+					updateboard();	/* полная перенастройка (как после смены режима) */
 					rc = 1;
 				}
 			}
@@ -16281,7 +16294,7 @@ void app_processing(
 	{
 		dimmflagch = 0;
 		display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-		updateboard(1);
+		updateboard();
 	}
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 #if WITHFANTIMER
@@ -16289,7 +16302,7 @@ void app_processing(
 	if (fanpaflagch != 0)
 	{
 		fanpaflagch = 0;
-		updateboard(1);
+		updateboard();
 	}
 #endif /* WITHFANTIMER */
 #if WITHSLEEPTIMER
@@ -16298,7 +16311,7 @@ void app_processing(
 	{
 		sleepflagch = 0;
 		display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-		updateboard(1);
+		updateboard();
 	}
 #endif /* WITHSLEEPTIMER */
 }
@@ -16317,7 +16330,7 @@ processmessages(
 	{
 		display_uninitialize();	// выключаем дисплей
 		gtx = 0;
-		updateboard(1);	// переходим на приём
+		updateboard();	// переходим на приём
 		for (;;)				// вешаемся...
 			;
 	}
@@ -16497,7 +16510,7 @@ processtxrequest(void)
 #endif	/* WITHCAT */
 		const uint_fast8_t f = setmoxtune(0, 0);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
 		if (f)
-			updateboard(1);
+			updateboard();
 #if WITHAUTOTUNER
 		reqautotune = 0;
 #endif /* WITHAUTOTUNER */
@@ -17575,7 +17588,7 @@ modifysettings(
 			param_rotate(mp->pd, nrotate);	// модификация и сохранение параметра
 			/* обновление отображения пункта */
 			board_wakeup();
-			updateboard(1);
+			updateboard();
 			display2_redrawbarstimed(1);		/* немедленное обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		}
 		else
@@ -17620,7 +17633,7 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 
 	modifysettings(menupos, menupos, ITEM_VALUE, MENUNONVRAM, exitkey, 1);
 
-	updateboard(1);
+	updateboard();
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 	display2_needupdate();		/* возможно уже с новой цветовой схемой */
 #endif /* WITHTOUCHGUI */
@@ -18333,7 +18346,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 		{
 			dimmmode = calc_next(dimmmode, 0, 1);
 			display2_needupdate();
-			updateboard(1);
+			updateboard();
 		}
 #endif /* WITHLCDBACKLIGHTOFF */
 		return 1;	/* клавиша уже обработана */
@@ -18462,7 +18475,7 @@ processkeyboard(uint_fast8_t kbch)
 		if (c == '#' && (int) blinkpos < DISPLAY_LEFTBLINKPOS)
 		{
 			blinkpos += 1;	/* перемещаемся на одну позицию левее */
-			updateboard(1);
+			updateboard();
 			return 1;
 		}
 		if (c >= '0' && c <= '9')
@@ -18479,7 +18492,7 @@ processkeyboard(uint_fast8_t kbch)
 				gfreqs [bi] = editfreq;
 				editfreqmode = 0;
 				storebandfreq(vi, bi);		/* сохранение частоты в текущем VFO */
-				updateboard(1);
+				updateboard();
 			}
 			else
 			{
@@ -18514,7 +18527,7 @@ processkeyboard(uint_fast8_t kbch)
 		getstamprtc();
 	#endif /* defined (RTC1_TYPE) */
 		modifysettings(0, MENUROW_COUNT - 1, ITEM_GROUP, RMT_GROUP_BASE, exitkey, 0);	/* выбор группы параметров для редактирования */
-		updateboard(1);
+		updateboard();
 		updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 		display2_needupdate();		/* возможно уже с новой цветовой схемой */
 		return 1;	// требуется обновление индикатора
@@ -18596,13 +18609,13 @@ processkeyboard(uint_fast8_t kbch)
 	case KBD_CODE_PLAYLOUD:	// громче
 		if (param_rotate(& xafgain1, + 1))
 		{
-			updateboard(1);
+			updateboard();
 		}
 		return 1;
 	case KBD_CODE_PLAYQUITE:	// тише
 		if (param_rotate(& xafgain1, - 1))
 		{
-			updateboard(1);
+			updateboard();
 		}
 		return 1;
 #endif /* ! WITHPOTAFGAIN */
@@ -19126,7 +19139,7 @@ static STTE_t hamradio_tune_step(void)
 	{
 	case TUNERSTATE_0:
 		display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-		updateboard(1);
+		updateboard();
 		auto_tune0_init();
 		tunerstate = TUNERSTATE_01;
 		break;
@@ -19184,7 +19197,7 @@ static STTE_t hamradio_tune_step(void)
 		display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 		auto_tune3();
 		reqautotune = 0;
-		updateboard(1);
+		updateboard();
 		tunerstate = TUNERSTATE_0;
 		{
 			// прочистить очередь сообщений
@@ -19200,7 +19213,7 @@ static STTE_t hamradio_tune_step(void)
 
 	case TUNERSTATE_DONE:
 		reqautotune = 0;
-		updateboard(1);
+		updateboard();
 		tunerstate = TUNERSTATE_0;
 		break;
 
@@ -19252,7 +19265,7 @@ static void hamradio_main_initialize(void)
 #endif /* FQMODEL_GEN500 */
 
 	directctlupdate(0, NULL);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
-	updateboard(1);	/* полная перенастройка (как после смены режима) - режим приема */
+	updateboard();	/* полная перенастройка (как после смены режима) - режим приема */
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 	display2_needupdate();
 
@@ -19445,7 +19458,7 @@ hamradio_main_step(void)
 					}
 
 				/* обновить настройку полосовых фильтров */
-				updateboard(0);	/* частичная перенастройка - без смены режима работы */
+				updateboard_freq;	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 				testlfm();
 			}
 	#endif /* WITHLFM */
@@ -19456,7 +19469,7 @@ hamradio_main_step(void)
 				display2_needupdate();
 				vfoallignment();
 				display2_needupdate();
-				updateboard(1);	/* полная перенастройка (как после смены режима) */
+				updateboard();	/* полная перенастройка (как после смены режима) */
 	#endif // MULTIVFO
 				alignmode = 0;	// в nvram осталась не-0
 			}
@@ -19592,7 +19605,7 @@ hamradio_main_step(void)
 				{
 					// Ограничение по скорости обновления дисплея уже заложено в него
 					sthrl = STHRL_RXTX_FQCHANGED;
-					updateboard(0);	/* частичная перенастройка - без смены режима работы */
+					updateboard_freq();	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 				}
 			}
 
@@ -19621,7 +19634,7 @@ uint_fast8_t hamradio_get_gmutespkr(void)
 void hamradio_set_gmutespkr(uint_fast8_t v)
 {
 	param_setvalue(& xgmutespkr, v);
-	updateboard(1);
+	updateboard();
 }
 #endif /* WITHSPKMUTE */
 
@@ -19636,7 +19649,7 @@ uint_fast16_t hamradio_get_afgain(void)
 void hamradio_set_afgain(uint_fast16_t v)
 {
 	param_setvalue(& xafgain1, v);
-	updateboard(1);
+	updateboard();
 }
 
 #endif /* ! WITHPOTAFGAIN */
@@ -19648,7 +19661,7 @@ void hamradio_set_afgain(uint_fast16_t v)
 void hamradio_set_tune(uint_fast8_t v)
 {
 	tunemode = v != 0;
-	updateboard(1);
+	updateboard();
 }
 
 #if WITHPOWERTRIM
@@ -19661,7 +19674,7 @@ void hamradio_set_tx_tune_power(uint_fast8_t v)
 	ASSERT(v <= WITHPOWERTRIMMAX);
 	gtunepower = v;
 	save_i8(OFFSETOF(struct nvmap, gtunepower), gtunepower);
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_get_tx_tune_power(void)
@@ -19677,7 +19690,7 @@ void hamradio_set_tx_power(uint_fast8_t v)
 	ASSERT(v <= WITHPOWERTRIMMAX);
 	gnormalpower.value = v;
 	save_i8(OFFSETOF(struct nvmap, gnormalpower), gnormalpower.value);
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_get_tx_power(void)
@@ -19728,7 +19741,7 @@ void hamradio_set_gvoxenable(uint_fast8_t v)
 {
 	gvoxenable = v != 0;
 	save_i8(OFFSETOF(struct nvmap, gvoxenable), gvoxenable);
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_get_gvoxenable(void)
@@ -19753,7 +19766,7 @@ void hamradio_set_vox_delay(uint_fast8_t v)
 	ASSERT(v <= WITHVOXDELAYMAX);
 	voxdelay = v;
 	save_i8(OFFSETOF(struct nvmap, voxdelay), voxdelay);
-	updateboard(1);
+	updateboard();
 }
 
 void hamradio_get_vox_level_limits(uint_fast8_t * min, uint_fast8_t * max)
@@ -19773,7 +19786,7 @@ void hamradio_set_vox_level(uint_fast8_t v)
 	ASSERT(v <= WITHVOXLEVELMAX);
 	gvoxlevel = v;
 	save_i8(OFFSETOF(struct nvmap, gvoxlevel), gvoxlevel);
-	updateboard(1);
+	updateboard();
 }
 
 void hamradio_get_antivox_delay_limits(uint_fast8_t * min, uint_fast8_t * max)
@@ -19793,7 +19806,7 @@ void hamradio_set_antivox_level(uint_fast8_t v)
 	ASSERT(v <= WITHAVOXLEVELMAX);
 	gavoxlevel = v;
 	save_i8(OFFSETOF(struct nvmap, gavoxlevel), gavoxlevel);
-	updateboard(1);
+	updateboard();
 }
 
 #endif /* WITHVOX && WITHTX */
@@ -19830,7 +19843,7 @@ void hamradio_set_reverb_delay(uint_fast8_t v)
 	ASSERT(v <= WITHREVERBDELAYMAX);
 	greverbdelay = v;
 	save_i8(OFFSETOF(struct nvmap, greverbdelay), greverbdelay);
-	updateboard(1);
+	updateboard();
 }
 
 void hamradio_set_reverb_loss(uint_fast8_t v)
@@ -19839,14 +19852,14 @@ void hamradio_set_reverb_loss(uint_fast8_t v)
 	ASSERT(v <= WITHREVERBLOSSMAX);
 	greverbloss = v;
 	save_i8(OFFSETOF(struct nvmap, greverbloss), greverbloss);
-	updateboard(1);
+	updateboard();
 }
 
 void hamradio_set_greverb(uint_fast8_t v)
 {
 	greverb = v != 0;
 	save_i8(OFFSETOF(struct nvmap, greverb), greverb);
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_get_greverb(void)
@@ -19860,7 +19873,7 @@ void hamradio_set_gmoniflag(uint_fast8_t v)
 {
 	gmoniflag = v != 0;
 	save_i8(OFFSETOF(struct nvmap, gmoniflag), gmoniflag);
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_get_gmoniflag(void)
@@ -19886,7 +19899,7 @@ void hamradio_set_gmikehclip(uint_fast8_t v)
 	ASSERT(v <= WITHMIKECLIPMAX);
 	gmikehclip = v;
 	save_i8(OFFSETOF(struct nvmap, gmikehclip), gmikehclip);
-	updateboard(1);
+	updateboard();
 }
 
 void hamradio_get_mic_level_limits(uint_fast8_t * min, uint_fast8_t * max)
@@ -19906,7 +19919,7 @@ void hamradio_set_mik1level(uint_fast8_t v)
 	ASSERT(v <= WITHMIKEINGAINMAX);
 	gmik1level = v;
 	save_i8(OFFSETOF(struct nvmap, gmik1level), gmik1level);
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_get_gmikeagc(void)
@@ -19918,7 +19931,7 @@ void hamradio_set_gmikeagc(uint_fast8_t v)
 {
 	gmikeagc = v != 0;
 	save_i8(OFFSETOF(struct nvmap, gmikeagc), gmikeagc);
-	updateboard(1);
+	updateboard();
 }
 
 void hamradio_get_mic_agc_limits(uint_fast8_t * min, uint_fast8_t * max)
@@ -19938,7 +19951,7 @@ void hamradio_set_gmikeagcgain(uint_fast8_t v)
 	ASSERT(v <= WITHMIKEINGAINMAX);
 	gmikeagcgain = v;
 	save_i8(OFFSETOF(struct nvmap, gmikeagcgain), gmikeagcgain);
-	updateboard(1);
+	updateboard();
 }
 
 #endif /* WITHIF4DSP */
@@ -19954,7 +19967,7 @@ void hamradio_set_gmikeboost20db(uint_fast8_t v)
 {
 	gmikeboost20db = v != 0;
 	save_i8(OFFSETOF(struct nvmap, gmikeboost20db), gmikeboost20db);
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_get_gmikeequalizer(void)
@@ -19965,7 +19978,7 @@ uint_fast8_t hamradio_get_gmikeequalizer(void)
 void hamradio_set_gmikeequalizer(uint_fast8_t v)
 {
 	param_setvalue(& xgmikeequalizer, v != 0);	// Установить значение параметра и сохранить в nvram
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i)
@@ -19980,7 +19993,7 @@ void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v)
 	ASSERT(v <= EQUALIZERBASE * 2);
 	gmikeequalizerparams [i] = v;
 	//save_i8(OFFSETOF(struct nvmap, gmoniflagxxx), gmoniflagxxx);
-	updateboard(1);
+	updateboard();
 }
 
 int_fast32_t hamradio_getequalizerbase(void)
@@ -20004,7 +20017,7 @@ int_fast16_t hamradio_if_shift(int_fast8_t step)
 			val = IFSHIFTMAX;
 
 		ifshifoffset.value = val;
-		updateboard(1);
+		updateboard();
 	}
 	return ifshifoffset.value + getifshiftbase();	// Добавить учет признака наличия сдвига
 
@@ -20031,7 +20044,7 @@ void hamradio_set_lock(uint_fast8_t lock)
 
 	glock = lock != 0;
 	save_i8(RMT_LOCKMODE_BASE(b), glock);
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
@@ -20042,7 +20055,7 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 		const uint_fast8_t bi = getbankindex_tx(gtx);
 		gfreqs [bi] = freq;
 		sthrl = STHRL_RXTX_FQCHANGED;
-		updateboard(0);
+		updateboard_freq();	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 #if LINUX_SUBSYSTEM && WITHAD936XIIO
 		if (get_ad936x_stream_status())
 			ad936x_set_freq(freq);
@@ -20064,7 +20077,7 @@ uint_fast8_t hamradio_get_gnotch(void)
 void hamradio_set_gnotch(uint_fast8_t v)
 {
 	gnotch = v != 0;
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_get_gnotchtype(void)
@@ -20075,7 +20088,7 @@ uint_fast8_t hamradio_get_gnotchtype(void)
 void hamradio_set_gnotchtype(uint_fast8_t v)
 {
 	gnotchtype = v;
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast16_t hamradio_notch_freq(int_fast8_t step)
@@ -20091,7 +20104,7 @@ uint_fast16_t hamradio_notch_freq(int_fast8_t step)
 			val = WITHNOTCHFREQMAX;
 
 		gnotchfreq.value = val;
-		updateboard(1);
+		updateboard();
 	}
 	return gnotchfreq.value;
 }
@@ -20109,7 +20122,7 @@ uint_fast16_t hamradio_notch_width(int_fast8_t step)
 			val = WITHNOTCHWIDTHMAX;
 
 		gnotchwidth.value = val;
-		updateboard(1);
+		updateboard();
 	}
 	return gnotchwidth.value;
 }
@@ -20208,7 +20221,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotat
 	const struct paramdefdef * const pd = menutable [index].pd;
 	if (param_rotate(pd, rotate))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{
-		updateboard(1);
+		updateboard();
 		display_redrawfreqstimed(1);
 		display2_needupdate();
 	}
@@ -20258,7 +20271,7 @@ uint_fast32_t hamradio_load_memory_cells(uint_fast8_t cell, uint_fast8_t set)
 			loadnewband(MBANDS_BASE + cell, bi);	/* загрузка всех параметров (и частоты) нового режима */
 			storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 			storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
-			updateboard(1);
+			updateboard();
 		}
 		return freq;
 	}
@@ -20339,7 +20352,7 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 		gmikeagcgain = mp->agcgain;
 		gmikehclip = mp->clip;
 
-		updateboard(1);
+		updateboard();
 	}
 	return mp->cell_saved;
 }
@@ -20441,7 +20454,7 @@ void hamradio_set_bw(uint_fast8_t v)
 	ASSERT(v <= bwsetsc [bwseti].last);
 	bwsetpos [bwseti] = v;
 	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
-	updateboard(1);
+	updateboard();
 }
 
 void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq)
@@ -20455,7 +20468,7 @@ void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_
 	else
 		storebandstate(getvfoindex(bi), bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 
-	updateboard(1);	/* полная перенастройка (как после смены режима) */
+	updateboard();	/* полная перенастройка (как после смены режима) */
 	display_redrawfreqstimed(1);
 	display2_needupdate();
 }
@@ -20481,7 +20494,7 @@ void hamradio_set_agc_fast(void)
 	gagc [agcseti].t4 = 50;
 	gagc [agcseti].thung10 = 1;
 
-	updateboard(1);
+	updateboard();
 }
 
 void hamradio_set_agc_slow(void)
@@ -20499,7 +20512,7 @@ void hamradio_set_agc_slow(void)
 	gagc [agcseti].t4 = 50;
 	gagc [agcseti].thung10 = 3;
 
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_get_agc_type(void)	// 0 - slow, 1 - fast
@@ -20545,7 +20558,7 @@ uint_fast8_t hamradio_get_low_bp(int_least16_t rotate)
 			if (rotate != 0 && (p->left10_width10 + rotate) > 0 && (p->left10_width10 + rotate) < p->right100 * 10)
 			{
 				p->left10_width10 += rotate;
-				updateboard(1);
+				updateboard();
 			}
 			low =  p->left10_width10;
 			break;
@@ -20556,12 +20569,12 @@ uint_fast8_t hamradio_get_low_bp(int_least16_t rotate)
 			if (rotate < 0)
 			{
 				p->left10_width10 = prevfreq(p->left10_width10, p->left10_width10 - p->limits->granulationleft, p->limits->granulationleft, p->limits->left10_width10_low);
-				updateboard(1);
+				updateboard();
 			}
 			if (rotate > 0)
 			{
 				p->left10_width10 = nextfreq(p->left10_width10, p->left10_width10 + p->limits->granulationleft, p->limits->granulationleft, p->limits->left10_width10_high);
-				updateboard(1);
+				updateboard();
 			}
 
 			low = p->left10_width10;
@@ -20586,7 +20599,7 @@ uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 		if (rotate != 0 && (p->right100 + rotate) * 10 > p->left10_width10 && (p->right100 + rotate) < 50)
 		{
 			p->right100 += rotate;
-			updateboard(1);
+			updateboard();
 		}
 		high =  p->right100;
 		break;
@@ -20597,7 +20610,7 @@ uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 		if (rotate != 0 && gcwpitch10 + rotate <= CWPITCHMAX10 && gcwpitch10 + rotate >= CWPITCHMIN10)
 		{
 			gcwpitch10 += rotate;
-			updateboard(1);
+			updateboard();
 		}
 		high = gcwpitch10;
 	}
@@ -20622,7 +20635,7 @@ int_fast8_t hamradio_afresponce(int_fast8_t v)
 	if (v != 0)
 	{
 		save_i8(RMT_BWPROPSAFRESPONCE_BASE(bwseti), p->afresponce);
-		updateboard(1);
+		updateboard();
 	}
 
 	return p->afresponce + getafresponcebase();
@@ -20643,7 +20656,7 @@ const char * hamradio_change_view_style(uint_fast8_t v)
 	if (v)
 	{
 		param_keyclick(& xgviewstyle);
-		updateboard(1);
+		updateboard();
 	}
 
 	return view_types [param_getvalue(& xgviewstyle)];
@@ -20658,7 +20671,7 @@ void hamradio_settemp_viewstyle(uint_fast8_t v)
 {
 	ASSERT(v < VIEW_count);
 	gviewstyle = v;
-	updateboard(1);
+	updateboard();
 }
 
 #if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
@@ -20671,7 +20684,7 @@ uint_fast8_t hamradio_get_gzoomxpow2(void)
 void hamradio_set_gzoomxpow2(uint_fast8_t v)
 {
 	param_setvalue(& xgzoomxpow2, v);	// Установить значение параметра и сохранить в nvram
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_get_gwflevelsep(void)
@@ -20682,14 +20695,14 @@ uint_fast8_t hamradio_get_gwflevelsep(void)
 void hamradio_set_gwflevelsep(uint_fast8_t v)
 {
 	param_setvalue(& xgwflevelsep, v != 0);
-	updateboard(1);
+	updateboard();
 }
 
 uint_fast8_t hamradio_gtopdbsp(int_least16_t v)
 {
 	if (param_rotate(& xgtopdbspe, v))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{
-		updateboard(1);
+		updateboard();
 	}
 	return param_getvalue(& xgtopdbspe);
 }
@@ -20698,7 +20711,7 @@ uint_fast8_t hamradio_gbottomdbsp(int_least16_t v)
 {
 	if (param_rotate(& xgbottomdbspe, v))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{
-		updateboard(1);
+		updateboard();
 	}
 	return param_getvalue(& xgbottomdbspe);
 }
@@ -20707,7 +20720,7 @@ uint_fast8_t hamradio_gtopdbwf(int_least16_t v)
 {
 	if (param_rotate(& xgtopdbwfl, v))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{
-		updateboard(1);
+		updateboard();
 	}
 	return param_getvalue(& xgtopdbwfl);
 }
@@ -20716,7 +20729,7 @@ uint_fast8_t hamradio_gbottomdbwf(int_least16_t v)
 {
 	if (param_rotate(& xgbottomdbwfl, v))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{
-		updateboard(1);
+		updateboard();
 	}
 	return param_getvalue(& xgbottomdbwfl);
 }
@@ -20724,13 +20737,13 @@ uint_fast8_t hamradio_gbottomdbwf(int_least16_t v)
 void hamradio_set_gbottomdbspe(uint8_t v)
 {
 	param_setvalue(& xgbottomdbspe, v);
-	updateboard(1);
+	updateboard();
 }
 
 void hamradio_set_gtopdbspe(uint8_t v)
 {
 	param_setvalue(& xgtopdbspe, v);
-	updateboard(1);
+	updateboard();
 }
 
 uint8_t hamradio_get_gbottomdbspe(void)
@@ -20789,7 +20802,7 @@ void hamradio_set_att_db(uint_fast8_t db)
 	verifyband(vi);
 	gatt = db;
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
-	updateboard(1);
+	updateboard();
 }
 
 void hamradio_change_att(void)
@@ -20811,7 +20824,7 @@ void hamradio_set_moxmode(uint_fast8_t mode)
 {
 	const uint_fast8_t f = setmoxtune(!! mode, tunemode);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
 	if (f)
-		updateboard(1);
+		updateboard();
 }
 
 uint_fast8_t hamradio_moxmode(uint_fast8_t v)
@@ -20896,7 +20909,7 @@ void display2_set_page_temp(uint_fast8_t page)
 void hamradio_set_gdactest(uint8_t v)
 {
 	gdactest = v != 0;
-	updateboard(1);
+	updateboard();
 }
 
 uint32_t hamradio_get_gadcrand(void)
@@ -21015,7 +21028,7 @@ hamradio_mainloop_beacon(void)
 	};
 
 	hardware_timer_initialize(1000);
-	updateboard(1);	/* полная перенастройка (как после смены режима) - режим приема */
+	updateboard();	/* полная перенастройка (как после смены режима) - режим приема */
 	for (ifreq = 0; ; )
 	{
 		ff256cycle(ffs [ifreq].freq, ffs [ifreq].period);
@@ -21068,7 +21081,7 @@ static void siggen_mainloop(void)
 	uint_fast8_t tx = 0;
 	// signal-generator tests
 	board_set_attvalue(0);
-	updateboard(1);
+	updateboard();
 	for (;;)
 	{
 		PRINTF(PSTR("Enter tx=%d, command (a#/g/n):\n"), tx);
@@ -21087,20 +21100,20 @@ static void siggen_mainloop(void)
 			if (value < 63)
 			{
 				board_set_attvalue(value);
-				updateboard(1);
+				updateboard();
 			}
 			break;
 		case 'g':
 			// generaton on
 			PRINTF(PSTR("RFSG output ON\n"));
 			tx = 1;
-			updateboard(1);
+			updateboard();
 			break;
 		case 'n':
 			// generator off
 			PRINTF(PSTR("RFSG output OFF\n"));
 			tx = 0;
-			updateboard(1);
+			updateboard();
 			break;
 		}
 	}
