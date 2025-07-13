@@ -2499,8 +2499,8 @@ uint_fast8_t board_dpc_display_coreid(void)
 {
 #if LINUX_SUBSYSTEM
 	return 0;
-#elif HARDWARE_NCORES > 2
-	return 2;
+#elif HARDWARE_NCORES > 1
+	return 1;
 #else /* LINUX_SUBSYSTEM */
 	return 0;
 #endif /* LINUX_SUBSYSTEM */
