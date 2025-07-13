@@ -13803,24 +13803,6 @@ display_redrawfreqstimed(
 	}
 }
 
-/* прием/передач, установка gtx */
-static void
-processglobaltxrx(void)
-{
-	uint_fast8_t changedtx = 0;
-#if WITHTX
-	changedtx |= flagne_u8(& gtx, seq_get_txstate());	// текущее состояние прием или передача
-#endif /* WITHTX */
-
-	/* произошло изменение режима прием/передача */
-	if (changedtx != 0)
-	{
-		updateboard();	/* полная перенастройка (как после смены режима) */
-		seq_ask_txstate(gtx);
-		//display2_needupdate();	// Обновление дисплея - всё, включая частоту
-	}
-}
-
 // *************************
 // CAT sequence parser
 
@@ -16283,38 +16265,6 @@ int board_islfmmode(void)
 #endif /* WITHLFM */
 }
 
-
-// TODO: перенести эти функции на выполнение по board_dpc_addentry
-void app_processing(void)
-{
-#if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
-	// обработать запрос на обновление состояния аппаратуры из user mode программы
-	if (dimmflagch != 0)
-	{
-		dimmflagch = 0;
-		display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-		updateboard();
-	}
-#endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
-#if WITHFANTIMER
-	// обработать запрос на обновление состояния аппаратуры из user mode программы
-	if (fanpaflagch != 0)
-	{
-		fanpaflagch = 0;
-		updateboard();
-	}
-#endif /* WITHFANTIMER */
-#if WITHSLEEPTIMER
-	// обработать запрос на обновление состояния аппаратуры из user mode программы
-	if (sleepflagch != 0)
-	{
-		sleepflagch = 0;
-		display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-		updateboard();
-	}
-#endif /* WITHSLEEPTIMER */
-}
-
 /* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
 void
 //NOINLINEAT
@@ -16338,10 +16288,6 @@ processmessages(
 #if WITHWATCHDOG
 	watchdog_ping();
 #endif /* WITHWATCHDOG */
-
-	processglobaltxrx();		/* прием/передач, установка gtx */
-	// TODO: перенести эти функции на выполнение по board_dpc_addentry
-	app_processing();
 
 #if WITHLVGL && WITHLVGLINDEV
 
@@ -19259,7 +19205,6 @@ static void hamradio_main_initialize(void)
 	gfreqs [getbankindex_raw(1] = 434085900UL;
 #endif /* FQMODEL_GEN500 */
 
-	processglobaltxrx();		/* прием/передач, установка gtx */
 	updateboard();	/* полная перенастройка (как после смены режима) - режим приема */
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 	//display2_needupdate();
@@ -19305,6 +19250,51 @@ static void hamradio_main_initialize(void)
 	/* начальное отображение */
 	//display2_needupdate();	// Обновление дисплея - всё, включая частоту
 
+}
+
+/* user-mode: вызываетя по DPC в главном цикле core 0 */
+static void appspoolprocess(void * ctx)
+{
+	{
+		uint_fast8_t changedtx = 0;
+	#if WITHTX
+		changedtx |= flagne_u8(& gtx, seq_get_txstate());	// текущее состояние прием или передача
+	#endif /* WITHTX */
+
+		/* произошло изменение режима прием/передача */
+		if (changedtx != 0)
+		{
+			updateboard();	/* полная перенастройка (как после смены режима) */
+			seq_ask_txstate(gtx);
+			//display2_needupdate();	// Обновление дисплея - всё, включая частоту
+		}
+	}
+#if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
+	// обработать запрос на обновление состояния аппаратуры из user mode программы
+	if (dimmflagch != 0)
+	{
+		dimmflagch = 0;
+		display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		updateboard();
+	}
+#endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
+#if WITHFANTIMER
+	// обработать запрос на обновление состояния аппаратуры из user mode программы
+	if (fanpaflagch != 0)
+	{
+		fanpaflagch = 0;
+		updateboard();
+	}
+#endif /* WITHFANTIMER */
+#if WITHSLEEPTIMER
+	// обработать запрос на обновление состояния аппаратуры из user mode программы
+	if (sleepflagch != 0)
+	{
+		sleepflagch = 0;
+		display2_redrawbarstimed(0);	/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+		updateboard();
+	}
+#endif /* WITHSLEEPTIMER */
 }
 
 #if WITHDEBUG
@@ -21298,6 +21288,12 @@ application_initialize(void)
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
 	}
 #endif
+	{
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, appspoolprocess, NULL);
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+	}
 }
 
 // LVGL interface functions
