@@ -248,9 +248,19 @@ static void ticker_trampoline(void * ctx)
 	board_dpc_call((dpcobj_t *) ctx, board_dpc_coreid());	// Запрос отложенного выполнения USER-MODE функции
 }
 
+static void ticker_trampoline2(void * ctx)
+{
+	board_dpc_call((dpcobj_t *) ctx, board_dpc_display_coreid());	// Запрос отложенного выполнения USER-MODE функции на ядре 1
+}
+
 void ticker_initialize_user(ticker_t * p, unsigned nticks, dpcobj_t * dpc)
 {
 	ticker_initialize(p, nticks, ticker_trampoline, dpc);
+}
+
+void ticker_initialize_user2(ticker_t * p, unsigned nticks, dpcobj_t * dpc)
+{
+	ticker_initialize(p, nticks, ticker_trampoline2, dpc);
 }
 
 void ticker_add(ticker_t * p)

@@ -271,6 +271,7 @@ void InitializeIrql(IRQL_t newIRQL);
 	void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg);
 	void board_dpc_processing(void);	// user-mode функция обработки списков запросов dpc на текущем процессоре
 	uint_fast8_t board_dpc_coreid(void);	// получить core id текушего потока
+	uint_fast8_t board_dpc_display_coreid(void);	// получить core id для UI потока
 	uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid);	// Запрос периодического вызова user-mode функциии (0 - уже помещён в список)
 	uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid); // Запрос отложенного вызова user-mode функции (0 - ранее запрошенный вызов еще не выполнился)
 	uint_fast8_t board_dpc_delentry(dpcobj_t * dp);	// Удаление периодического вызова
