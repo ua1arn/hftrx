@@ -3265,7 +3265,7 @@ extern uint_fast8_t swrcalibr;
 extern uint_fast8_t maxpwrcali;
 extern uint_fast8_t swrmode;
 
-uint_fast8_t updateboard(uint_fast8_t full, uint_fast8_t mute);
+uint_fast8_t updateboard(uint_fast8_t full);
 
 uint_fast8_t hamradio_get_tx(void);
 int_fast32_t hamradio_get_pbtvalue(void);	// Для отображения на дисплее
