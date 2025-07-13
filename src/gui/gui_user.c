@@ -559,7 +559,7 @@ static void window_infobar_menu_process(void)
 					close_all_windows();
 					window_t * const win2 = get_win(WINDOW_AF_EQ);
 					open_window(win2);
-					footer_buttons_state(DISABLED);
+					footer_buttons_state(DISABLED, NULL);
 				}
 			}
 				break;
@@ -578,7 +578,7 @@ static void window_infobar_menu_process(void)
 					close_all_windows();
 					window_t * const win2 = get_win(WINDOW_AF);
 					open_window(win2);
-					footer_buttons_state(DISABLED);
+					footer_buttons_state(DISABLED, NULL);
 				}
 				else
 				{
@@ -618,7 +618,7 @@ static void window_infobar_menu_process(void)
 			close_all_windows();
 			window_t * const win2 = get_win(WINDOW_TX_POWER);
 			open_window(win2);
-			footer_buttons_state(DISABLED);
+			footer_buttons_state(DISABLED, NULL);
 		}
 			break;
 
@@ -800,7 +800,7 @@ static void gui_main_process(void)
 				{
 					window_t * const win = get_win(WINDOW_INFOBAR_MENU);
 					open_window(win);
-					footer_buttons_state(DISABLED);
+					footer_buttons_state(DISABLED, NULL);
 				}
 			}
 		}
@@ -4383,7 +4383,7 @@ void gui_open_sys_menu(void)
 	{
 		window_t * const win = get_win(WINDOW_MENU);
 		open_window(win);
-		footer_buttons_state(DISABLED);
+		footer_buttons_state(DISABLED, NULL);
 	}
 }
 
