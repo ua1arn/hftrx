@@ -16654,13 +16654,13 @@ const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active)
 
 #include "menu.h"
 
+#define MENUROW_COUNT (ARRAY_SIZE(menutable))
+
 static uint_fast8_t ginmenu;
 static const struct menudef * gmp = menutable;
 static uint_fast8_t gmenulevel;	// 0 - groups, 1 - inside group
-static uint_fast8_t gmenufirstpos [2];
-static uint_fast8_t gmenulastpos [2];
-
-#define MENUROW_COUNT (ARRAY_SIZE(menutable))
+static uint_fast16_t gmenufirstitem [2] = { 0, 1 };
+static uint_fast16_t gmenulastitem [2] = { MENUROW_COUNT - 1, MENUROW_COUNT - 1 };
 
 /* Загрузка значений из NVRAM в переменные программы.
    Значением по умолчанию является то, на которое
@@ -17332,14 +17332,21 @@ processmenukeyboard(uint_fast8_t kbch)
 	uint_fast16_t menupos = gmp - menutable;
 	multimenuwnd_t window;
 	uint_fast8_t itemmask = ITEM_VALUE;
-	uint_fast16_t firstitem = 1;
-	uint_fast16_t lastitem = MENUROW_COUNT - 1;
+	uint_fast16_t firstitem = gmenufirstitem [gmenulevel];
+	uint_fast16_t lastitem = gmenulastitem [gmenulevel];
 
 	display2_getmultimenu(& window);
 
 	if (kbch == exitkey)
 	{
-		ginmenu = 0;
+		if (gmenulevel != 0)
+		{
+			-- gmenulevel;
+		}
+		else
+		{
+			ginmenu = 0;
+		}
 		return 0;
 	}
 
@@ -17358,7 +17365,7 @@ processmenukeyboard(uint_fast8_t kbch)
 
 	case KBD_CODE_MENU:
 	case KBD_ENC2_HOLD:
-		if (ismenukinddp(mp->pd, ITEM_GROUP))
+		if (gmenulevel == 0 && ismenukinddp(mp->pd, ITEM_GROUP))
 		{
 			/* вход в подменю */
 			const uint_fast16_t first = menupos + 1;	/* следующий за текущим пунктом */
@@ -17371,8 +17378,16 @@ processmenukeyboard(uint_fast8_t kbch)
 			#endif /* defined (RTC1_TYPE) */
 				// войти в подменю
 				//modifysettings(first, last, ITEM_VALUE, mp->pd->qnvram, exitkey, byname);
+				gmenulevel = 1;
+				gmenufirstitem [1] = first;
+				gmenulastitem [1] = last;
 				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 			}
+		}
+		else if (gmenulevel != 0)
+		{
+			gmenulevel = 0;
+
 		}
 		return 1;	// требуется обновление индикатора
 
@@ -17468,7 +17483,7 @@ processmenukeyboard(uint_fast8_t kbch)
 	menuswitch:
 	if (posnvram != MENUNONVRAM)
 		save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
-
+	gmp = mp;
 #if WITHDEBUG
 		PRINTF(PSTR("menu: ")); PRINTF(mp->pd->qlabel); PRINTF(PSTR("\n"));
 #endif /* WITHDEBUG */
