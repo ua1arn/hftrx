@@ -299,7 +299,6 @@ void gui_user_actions_after_close_window(void)
 {
 	hamradio_disable_encoder2_redirect();
 	hamradio_set_lock(0);
-	gui_update();
 }
 
 static void keyboard_edit_string(uintptr_t s, unsigned strlen, unsigned clean)

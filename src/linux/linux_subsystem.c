@@ -218,7 +218,6 @@ void as_tx(uint32_t * buf)
 		stop = 0;
 		as_state = AS_READY;
 		hamradio_set_moxmode(0);
-		gui_update();
 	}
 
 	pthread_mutex_unlock(& mutex_as);
