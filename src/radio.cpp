@@ -19252,9 +19252,11 @@ static void hamradio_main_initialize(void)
 
 }
 
-/* user-mode: вызываетя по DPC в главном цикле core 0 */
+// user-mode processing
+// вызывается по DPC в главном цикле core 0
 static void appspoolprocess(void * ctx)
 {
+	(void) ctx;
 	{
 		uint_fast8_t changedtx = 0;
 	#if WITHTX
