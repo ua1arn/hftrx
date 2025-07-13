@@ -11239,10 +11239,6 @@ static ticker_t displatchticker;
 static void dpc_displatch_timer_fn(void * arg)
 {
 	display2_latch();
-}
-// User-mode function. Вызывается для перерисовки
-static void dpc_disprefresh_fn(void * arg)
-{
 	display2_bgprocess(0, actpageix(), NULL);			/* выполнение шагов state machine отображения дисплея */
 }
 
@@ -12116,17 +12112,26 @@ updateboard_noui(
 	return full2;
 }
 
+static IRQLSPINLOCK_t boardupdatelock;
 /* полная перенастройка */
 void updateboard(void)
 {
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, IRQL_SYSTEM);
 	updateboard_noui(1);
+	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 	gui_update();
 }
 
 /* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 void updateboard_freq(void)
 {
-	if (updateboard_noui(0))
+	uint_fast8_t f;
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, IRQL_SYSTEM);
+	f = updateboard_noui(0);
+	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
+	if (f)
 		gui_update();
 }
 
@@ -21257,14 +21262,11 @@ application_initialize(void)
 
 	{
 		static dpcobj_t dpcobj;
-		static dpcobj_t dpcobjredraw;
 
+		IRQLSPINLOCK_INITIALIZE(& boardupdatelock);
 		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL);
 		ticker_initialize_user2(& displatchticker, NTICKS(1000 / glatchfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
 		ticker_add(& displatchticker);
-
-		dpcobj_initialize(& dpcobjredraw, dpc_disprefresh_fn, NULL);
-		board_dpc_addentry(& dpcobjredraw, board_dpc_display_coreid());
 	}
 
 	{
