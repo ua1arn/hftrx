@@ -17603,10 +17603,6 @@ modifysettings(
 static void
 uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 {
-#if LCDMODE_LTDC
-	gxdrawb_t dbv;
-	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-#endif /* LCDMODE_LTDC */
 	uint_fast16_t menupos;
 #if WITHAUTOTUNER
 	if (reqautotune != 0)
@@ -18446,10 +18442,6 @@ void playhandler(uint8_t code)
 static uint_fast8_t
 processkeyboard(uint_fast8_t kbch)
 {
-#if LCDMODE_LTDC
-	gxdrawb_t dbv;
-	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-#endif /* LCDMODE_LTDC */
 #if WITHTOUCHGUI
 	if (keyboard_redirect)
 	{
@@ -18820,7 +18812,7 @@ keyboard_test(void)
 void initialize2(void)
 {
 #if LCDMODE_LTDC
-	gxdrawb_t dbv;
+	gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 #endif /* LCDMODE_LTDC */
 	uint_fast8_t mclearnvram;
