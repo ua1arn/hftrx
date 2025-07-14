@@ -3372,19 +3372,19 @@ struct nvmap
 	uint8_t menuset;		/* набор функций кнопок и режим отображения на дисплее */
 
 	/* группы */
-	uint8_t ggroup;			/* последняя группа в менюю, с которой работали */
-	uint8_t	ggrpdisplay;	// последний посещённый пункт группы
-	uint8_t	ggrptxparam;		// последний посещённый пункт группы
-	uint8_t	ggrptxadj;		// последний посещённый пункт группы
-	uint8_t	ggrpsecial;		// последний посещённый пункт группы
-	uint8_t	ggrpaudio;		// последний посещённый пункт группы
+	uint16_t ggroup;			/* последняя группа в менюю, с которой работали */
+	uint16_t	ggrpdisplay;	// последний посещённый пункт группы
+	uint16_t	ggrptxparam;		// последний посещённый пункт группы
+	uint16_t	ggrptxadj;		// последний посещённый пункт группы
+	uint16_t	ggrpsecial;		// последний посещённый пункт группы
+	uint16_t	ggrpaudio;		// последний посещённый пункт группы
 #if WITHSUBTONES && WITHTX
 	uint8_t ggrpctcss;		// последний посещённый пункт группы
 #endif /* WITHSUBTONES && WITHTX */
 #if defined (RTC1_TYPE)
-	uint8_t	ggrpclock; // последний посещённый пункт группы
+	uint16_t	ggrpclock; // последний посещённый пункт группы
 #endif /* defined (RTC1_TYPE) */
-	uint8_t	ggrpabout;		// последний посещённый пункт группы
+	uint16_t	ggrpabout;		// последний посещённый пункт группы
 
 #if LO1MODE_HYBRID
 	uint8_t alignmode;			/* режимы для настройки аппаратной части (0-нормальная работа) */
@@ -3433,7 +3433,7 @@ struct nvmap
 	uint8_t ALCMNGAIN;// = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHTX
-	uint8_t	ggrptxparams; // последний посещённый пункт группы
+	uint16_t	ggrptxparams; // последний посещённый пункт группы
 	//uint8_t gfitx;		/* номер используемого фильтра на передачу */
 	uint8_t gbandf2adj_a [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика */
 	uint8_t gbandf2adj_b [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика */
@@ -3451,10 +3451,10 @@ struct nvmap
 #endif /* WITHTX */
 
 #if WITHNOTCHONOFF
-	uint8_t	ggrpnotch; // последний посещённый пункт группы
+	uint16_t	ggrpnotch; // последний посещённый пункт группы
 	uint8_t gnotch;
 #elif WITHNOTCHFREQ
-	uint8_t	ggrpnotch; // последний посещённый пункт группы
+	uint16_t	ggrpnotch; // последний посещённый пункт группы
 	uint8_t gnotch;		// on/off - кнопкой, не через меню
 	uint8_t gnotchtype;
 	uint16_t gnotchfreq;
@@ -3511,14 +3511,14 @@ struct nvmap
 	uint8_t stayfreq;	/* при изменении режимов кнопками - не меняем частоту */
 
 #if  WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN || WITHUSEUSBBT)
-	uint8_t	ggrpusb; // последний посещённый пункт группы
+	uint16_t	ggrpusb; // последний посещённый пункт группы
 #endif
 
 #if WITHIF4DSP
-	uint8_t	ggrpagc; // последний посещённый пункт группы
-	uint8_t	ggrpagcssb; // последний посещённый пункт группы
-	uint8_t	ggrpagccw; // последний посещённый пункт группы
-	uint8_t	ggrpagcdigi; // последний посещённый пункт группы
+	uint16_t	ggrpagc; // последний посещённый пункт группы
+	uint16_t	ggrpagcssb; // последний посещённый пункт группы
+	uint16_t	ggrpagccw; // последний посещённый пункт группы
+	uint16_t	ggrpagcdigi; // последний посещённый пункт группы
 
 	uint8_t gnoisereductvl;	// noise reduction level
 	uint8_t bwsetpos [BWSETI_count];	/* выбор одной из полос пропускания */
@@ -3592,7 +3592,7 @@ struct nvmap
 		uint8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 	#endif /* WITHAFCODEC1HAVEPROC */
 	#if WITHAFEQUALIZER
-		uint8_t	ggrpafeq;
+		uint16_t	ggrpafeq;
 		uint8_t geqtx;	// эквалайзер в режиме передачи
 		uint8_t geqrx;	// эквалайзер в режиме приема
 		uint8_t geqtxparams [AF_EQUALIZER_BANDS];
@@ -3603,14 +3603,14 @@ struct nvmap
 #endif /* WITHIF4DSP */
 
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
-	uint8_t	ggrprfadc; // последний посещённый пункт группы
+	uint16_t	ggrprfadc; // последний посещённый пункт группы
 	uint8_t gdither;	/* управление зашумлением в LTC2208 */
 	uint8_t gdactest;
 	uint8_t gshowovf;				/* Показ индикатора переполнения АЦП */
 #endif /* WITHDSPEXTDDC */
 
 #if WITHMODEM
-	uint8_t	ggrpmodem; // последний посещённый пункт группы
+	uint16_t	ggrpmodem; // последний посещённый пункт группы
 	uint8_t gmodemspeed;	// индекс в таблице скоростей передачи
 	uint8_t gmodemmode;		// применяемая модуляция
 #endif /* WITHMODEM */
@@ -3634,7 +3634,7 @@ struct nvmap
 	uint16_t ifshifoffset;	/* смещение частоты пропускания в режиме If SHIFT */
 #endif /* WITHIFSHIFT */
 
-	uint8_t	ggrpfilters; // последний посещённый пункт группы
+	uint16_t	ggrpfilters; // последний посещённый пункт группы
 
 #if (defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) && (IF3_MODEL != IF3_TYPE_BYPASS))
 
@@ -3643,7 +3643,7 @@ struct nvmap
 
 
 #if WITHPBT //&& (LO3_SIDE != LOCODE_INVALID)
-	uint8_t	ggrppbts; // последний посещённый пункт группы
+	uint16_t	ggrppbts; // последний посещённый пункт группы
 	uint16_t pbtoffset;	/* смещение частоты пропускания в режиме PBT */
 #endif /* WITHPBT && (LO3_SIDE != LOCODE_INVALID) */
 
@@ -3735,7 +3735,7 @@ struct nvmap
 #endif
 
 #if WITHCAT
-	uint8_t	ggrpcat; // последний посещённый пункт группы
+	uint16_t	ggrpcat; // последний посещённый пункт группы
 	uint8_t catenable;	/* удаленное управление разрешено */
 	uint8_t catbaudrate;	/* номер скорости работы по CAT */
 	#if WITHTX
@@ -3748,7 +3748,7 @@ struct nvmap
 #endif /* WITHCAT */
 
 #if WITHAUTOTUNER
-	uint8_t	ggrptuner; // последний посещённый пункт группы
+	uint16_t	ggrptuner; // последний посещённый пункт группы
 	uint8_t gtunerdelay;
 #if WITHAUTOTUNER_N7DDCALGO
 	uint8_t gn7ddclinearC;
@@ -3761,7 +3761,7 @@ struct nvmap
 		uint8_t gmuteall;	/* Отключить микрофон всегда. */
 	#endif /* WITHMUTEALL */
 	#if WITHVOX
-		uint8_t	ggrpvox; // последний посещённый пункт группы
+		uint16_t	ggrpvox; // последний посещённый пункт группы
 		uint8_t gvoxenable;	/* автоматическое управление передатчиком (от голоса) */
 		uint8_t gvoxlevel;	/* уровень срабатывания VOX */
 		uint8_t gavoxlevel;	/* уровень anti-VOX */
@@ -3809,7 +3809,7 @@ struct nvmap
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
 	uint16_t gipacali;
 #if WITHELKEY
-	uint8_t	ggrpelkey; // последний посещённый пункт группы
+	uint16_t	ggrpelkey; // последний посещённый пункт группы
 	uint8_t elkeywpm;	/* скорость электронного ключа */
 	uint8_t elkeymode;	/* режим электронного ключа - 0 - asf, 1 - paddle, 2 - keyer */
 	uint8_t dashratio;	/* отношение длителности тире к точке в десятках процентов */
@@ -3854,7 +3854,7 @@ struct nvmap
 #endif /* LO1PHASES */
 
 #if WITHLFM
-	uint8_t	ggrplfm; // последний посещённый пункт группы
+	uint16_t	ggrplfm; // последний посещённый пункт группы
 	uint16_t lfmtoffset;
 	uint16_t lfmtinterval;
 	uint8_t lfmmode;
@@ -17306,7 +17306,7 @@ static uint_fast16_t menulooklast(uint_fast16_t menupos)
 /* возврат ненуля - было какое-либо нажатие,
 	требуется обновление дисплея и состояния аппаратуры */
 static uint_fast8_t
-processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
+processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 {
 	uint_fast16_t firstitem = gmenufirstitem [gmenulevel];
 	uint_fast16_t lastitem = gmenulastitem [gmenulevel];
@@ -17406,14 +17406,14 @@ processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
 		{
 			/* выход из меню */
 			if (posnvram != MENUNONVRAM)
-				save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
+				save_i16(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
 			ginmenu = 0;
 		}
 		else if (gmenulevel != 0)
 		{
 			/* выход из подменю */
 			if (posnvram != MENUNONVRAM)
-				save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
+				save_i16(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
 
 			gmenulevel = 0;
 			do
@@ -17426,7 +17426,6 @@ processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
 			gmp = mp;
 
 		}
-		encoders_clear();	// сбросить информацию о повороте
 		return 0;
 
 	case KBD_CODE_MENU:
@@ -17446,7 +17445,7 @@ processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
 				// войти в подменю
 				gmenulevel = 1;
 				gposnvram = mp->pd->qnvram;	// место в мамяти с позицией в текущей группе
-				menupos = loadvfy8up(mp->pd->qnvram, first, last, first);
+				menupos = loadvfy16up(mp->pd->qnvram, first, last, first);
 				gmp = & menutable [menupos];
 				gmenufirstitem [1] = first;
 				gmenulastitem [1] = last;
@@ -17546,7 +17545,7 @@ processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
 
 	menuswitch:
 		if (posnvram != MENUNONVRAM)
-			save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
+			save_i16(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
 		gmp = mp;
 #if WITHDEBUG
 		PRINTF(PSTR("menu: ")); PRINTF(mp->pd->qlabel); PRINTF(PSTR("\n"));
@@ -17557,107 +17556,6 @@ processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
 	}
 
 	return 0;
-}
-
-/* работа с параметрами настройки. */
-static void
-modifysettings(
-	uint_fast16_t firstitem, uint_fast16_t lastitem,	/* диапазон от какого и до какого пункта меню работает */
-	uint_fast8_t itemmask,		/* по какому типу пунктов меню проходим */
-	nvramaddress_t posnvram,	/* где сохранена текущая позиция */
-	uint_fast8_t exitkey,		/* дополнительная клавиша, по которой происходит выход из меню на уровень выше (или KBD_CODE_MAX) */
-	uint_fast8_t byname			/* был выполнен прямой вход в меню */
-	)
-{
-	uint_fast16_t menupos = loadvfy8up(posnvram, firstitem, lastitem, firstitem);	/* начальное значение позиции */
-	const struct menudef * mp = & menutable [menupos];
-	multimenuwnd_t window;
-
-	display2_getmultimenu(& window);
-	/* функция для сохранения работы варианта без групп */
-	while (! ismenukinddp(mp->pd, itemmask))
-	{
-		/* проход по определённому типу элементов (itemmask) */
-		menupos = calc_next(menupos, firstitem, lastitem);
-		mp = & menutable [menupos];
-	}
-#if WITHDEBUG
-	PRINTF(PSTR("menu: ")); PRINTF(mp->pd->qlabel); PRINTF(PSTR("\n"));
-#endif /* WITHDEBUG */
-	display2_redrawbarstimed(1);
-	encoders_clear();
-
-	for (;;)
-	{
-		int nrotate;
-		uint_fast8_t kbch, kbready;
-
-		processpots();
-		//processmainloopencoders(); // решить проблему с енкодером - перемешение по меню.
-		processmessages(& kbch, & kbready, 1, mp);
-		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
-
-#if WITHKEYBOARD
-
-#if WITHENCODER_4F
-		if (kbready == 0)
-		{
-			const int_least16_t delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);  // перемещение по меню также с помощью 2го энкодера
-
-			if (delta > 0)
-			{
-				kbch = KBD_CODE_MENU_DOWN;
-				kbready = 1;
-			}
-			else if (delta < 0)
-			{
-				kbch = KBD_CODE_MENU_UP;
-				kbready = 1;
-			}
-		}
-#elif WITHENCODER2
-		if (kbready == 0)
-		{
-			uint_fast8_t js;
-			const int_least16_t nr2 = getRotateHiRes_FN(& js, genc2div);  // перемещение по меню также с помощью 2го энкодера
-
-			if (nr2 > 0)
-			{
-				kbch = KBD_CODE_MENU_DOWN;
-				kbready = 1;
-			}
-			else if (nr2 < 0)
-			{
-				kbch = KBD_CODE_MENU_UP;
-				kbready = 1;
-			}
-		}
-#endif /* WITHENCODER2 */
-
-		if (kbready != 0)
-		{}
-#endif /* WITHKEYBOARD */
-
-#if WITHENCODER
-		/* редактирование значения с помощью поворота валкодера. */
-		nrotate = getRotateLoRes_A(genc1div);
-//		if (glock != 0)
-//			nrotate = 0;	// ignore encoder
-
-		if (nrotate != 0 && ismenukinddp(mp->pd, ITEM_VALUE))
-		{
-			param_rotate(mp->pd, nrotate);	// модификация и сохранение параметра
-			/* обновление отображения пункта */
-			board_wakeup();
-			updateboard();
-			display2_redrawbarstimed(1);		/* немедленное обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-		}
-		else
-		{
-			display2_redrawbarstimed(0);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
-		}
-#endif /* WITHENCODER */
-	}
 }
 
 // Вызов конкретного пункта меню на редактирование
@@ -17688,7 +17586,7 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 	gui_uif_editmenu(name, menupos, exitkey);
 #else
 
-	modifysettings(menupos, menupos, ITEM_VALUE, MENUNONVRAM, exitkey, 1);
+	//modifysettings(menupos, menupos, ITEM_VALUE, MENUNONVRAM, exitkey, 1);
 
 	updateboard();
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
@@ -18584,11 +18482,6 @@ processmainloopkeyboard(uint_fast8_t kbch)
 	#if defined (RTC1_TYPE)
 		getstamprtc();
 	#endif /* defined (RTC1_TYPE) */
-//
-//		modifysettings(0, MENUROW_COUNT - 1, ITEM_GROUP, RMT_GROUP_BASE, exitkey, 0);	/* выбор группы параметров для редактирования */
-//		updateboard();
-//		updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
-//		//display2_needupdate();		/* возможно уже с новой цветовой схемой */
 		return 1;	// требуется обновление индикатора
 #elif WITHTOUCHGUI
 		gui_open_sys_menu();
@@ -19361,12 +19254,6 @@ static void hamradio_main_initialize(void)
 			;
 	}
 #endif /* FQMODEL_GEN500 */
-
-	encoders_clear();
-
-	/* начальное отображение */
-	//display2_needupdate();	// Обновление дисплея - всё, включая частоту
-
 }
 
 // user-mode processing
@@ -19679,10 +19566,8 @@ hamradio_main_step(void)
 
 		#if WITHKEYBOARD
 #if WITHMENU
-			if (ginmenu && processmenukeyboard(kbready, kbch))
+			if (ginmenu && processmenukeyandencoder(kbready, kbch))
 			{
-				/* обновление индикатора без сохранения состояния диапазона */
-				encoders_clear();				/* при возможном уменьшении шага исключение случайного накопления */
 		#if WITHTOUCHGUI
 				display_redrawfreqstimed(1);
 		#endif /* WITHTOUCHGUI */
@@ -19692,8 +19577,6 @@ hamradio_main_step(void)
 #endif /* WITHMENU */
 			if (! ginmenu && kbready != 0 && processmainloopkeyboard(kbch))
 			{
-				/* обновление индикатора без сохранения состояния диапазона */
-				encoders_clear();				/* при возможном уменьшении шага исключение случайного накопления */
 		#if WITHTOUCHGUI
 				display_redrawfreqstimed(1);
 		#endif /* WITHTOUCHGUI */
