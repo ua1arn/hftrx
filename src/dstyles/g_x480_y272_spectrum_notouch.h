@@ -81,7 +81,7 @@
 	// Main frequency indicator 56 lines height = 12 cells
 	static const dzone_t dzones [] =
 	{
-			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
+		{	0,	0,	0, 	0, 	display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 		{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		{	0,	0,	2,	4,	display_txrxstate2, & dzi_txrx, PGALL, },
 		{	3,	0,	5,	4,	display2_ant5,		& dzi_antenna, PGALL, },
@@ -102,8 +102,8 @@
 //		{	26,	16,	3,	4,	display2_agc3,		& dzi_default, PGALL, },	// AGC mode
 		{	26,	20,	3,	4,	display2_voxtune3,	& dzi_default, PGNOMEMU, },	// VOX
 
-		{	0,	4,	0,	0,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
-		{	0,	4,	0,	0,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+		{	0,	4,	21,	11,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
+		{	0,	4,	21,	11,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 		{	21,	8,	3,	4,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 		{	21,	12,	3,	4,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	26,	8,	3,	4,	display2_datamode3,	& dzi_default, PGALL, },	// DATA mode indicator

@@ -4548,7 +4548,9 @@ static void display2_legend_rx(const gxdrawb_t * db,
 {
 #if defined(SMETERMAP)
 	colmain_setcolors(DSGN_SMLABELTEXT, DSGN_SMLABELBACK);
-	display_text(db, x, y, SMETERMAP, xspan);
+	display_text(db, x + 0, y, SMETERMAP, BDTH_LEFTRX);
+	colmain_setcolors(DSGN_SMLABELPLKUSTEXT, DSGN_SMLABELPLKUSBACK);
+	display_text(db, x + BDTH_LEFTRX, y, SMETERMAP + BDTH_LEFTRX, xspan - BDTH_LEFTRX);
 #endif /* defined(SMETERMAP) */
 }
 
