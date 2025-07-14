@@ -12,7 +12,7 @@ static const struct menudef menutable [] =
 #if WITHAUTOTUNER && 1 // Tuner parameters debug
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL2("TUNER", "Tuner"), 0, 0, 0, 0,
+		QLABEL2("Tuner", "Tuner"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrptuner),
@@ -114,7 +114,7 @@ static const struct menudef menutable [] =
 #endif /* WITHAUTOTUNER */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL2("DISPLAY", "Display"), 0, 0, 0, 0,
+		QLABEL2("Display", "Display"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpdisplay),
@@ -282,7 +282,7 @@ static const struct menudef menutable [] =
 #if defined (RTC1_TYPE)
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL("CLOCK"), 0, 0, 0, 0,
+		QLABEL("Clock"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpclock),
@@ -355,7 +355,7 @@ static const struct menudef menutable [] =
 #endif /* defined (RTC1_TYPE) */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL2("FILTERS", "Filters"), 0, 0, 0, 0,
+		QLABEL2("Filters", "Filters"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpfilters),
@@ -1057,7 +1057,7 @@ static const struct menudef menutable [] =
 #if WITHNOTCHFREQ
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL("NOTCH"), 0, 0, 0, 0,
+		QLABEL("Notch"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpnotch),
@@ -1102,7 +1102,7 @@ static const struct menudef menutable [] =
 #elif WITHNOTCHONOFF
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL("NOTCH"), 0, 0, 0, 0,
+		QLABEL("Notch"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpnotch),
@@ -1128,7 +1128,7 @@ static const struct menudef menutable [] =
 #if ! WITHPOTPBT && WITHPBT // && (LO3_SIDE != LOCODE_INVALID)
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL("PBTS"), 0, 0, 0, 0,
+		QLABEL("PBT"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrppbts),
@@ -1154,7 +1154,7 @@ static const struct menudef menutable [] =
 #if WITHELKEY
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL("ELKEY"), 0, 0, 0, 0,
+		QLABEL("EL KEY"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpelkey),
@@ -1301,7 +1301,7 @@ static const struct menudef menutable [] =
 #endif /* WITHSUBTONES && WITHTX */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL("AUDIO"), 0, 0, 0, 0,
+		QLABEL("Audio"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpaudio),
@@ -2062,7 +2062,7 @@ static const struct menudef menutable [] =
 #if WITHMODEM
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL("MODEM"), 0, 0, 0, 0,
+		QLABEL("Modem"), 0, 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpmodem),
@@ -2841,7 +2841,7 @@ static const struct menudef menutable [] =
 /* settings page header */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL("SPECIAL"), 0, 0, 0, 0,
+		QLABEL("Special"), 0, 0, 0, 0,
 		ITEM_GROUP,
 		0, 0,
 		OFFSETOF(struct nvmap, ggrpsecial),
@@ -3352,7 +3352,7 @@ static const struct menudef menutable [] =
 
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL2("ABOUT", "About"), 0, 0, 0, 0,
+		QLABEL2("About", "About"), 0, 0, 0, 0,
 		ITEM_GROUP,
 		0, 0,
 		OFFSETOF(struct nvmap, ggrpabout),
