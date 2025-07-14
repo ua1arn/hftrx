@@ -4548,7 +4548,9 @@ static void display2_legend_rx(const gxdrawb_t * db,
 {
 #if defined(SMETERMAP)
 	colmain_setcolors(DSGN_SMLABELTEXT, DSGN_SMLABELBACK);
-	display_text(db, x, y, PSTR(SMETERMAP), xspan);
+	display_text(db, x + 0, y, SMETERMAP, BDTH_LEFTRX);
+	colmain_setcolors(DSGN_SMLABELPLKUSTEXT, DSGN_SMLABELPLKUSBACK);
+	display_text(db, x + BDTH_LEFTRX, y, SMETERMAP + BDTH_LEFTRX, xspan - BDTH_LEFTRX);
 #endif /* defined(SMETERMAP) */
 }
 
@@ -4562,15 +4564,15 @@ static void display2_legend_tx(const gxdrawb_t * db,
 		)
 {
 #if defined(SWRPWRMAP) && WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
-	colmain_setcolors(DSGN_LABELTEXT, DSGN_LABELBACK);
+	colmain_setcolors(DSGN_SMLABELTEXT, DSGN_SMLABELBACK);
 	#if WITHSWRMTR
 		#if WITHSHOWSWRPWR /* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-				display_text(db, x, y, PSTR(SWRPWRMAP), xspan);
+				display_text(db, x, y, SWRPWRMAP, xspan);
 		#else
 				if (swrmode) 	// Если TUNE то показываем шкалу КСВ
-					display_text(db, x, y, PSTR(SWRMAP), xspan);
+					display_text(db, x, y, SWRMAP, xspan);
 				else
-					display_text(db, x, y, PSTR(POWERMAP), xspan);
+					display_text(db, x, y, POWERMAP, xspan);
 		#endif
 	#else
 		#warning No TX indication

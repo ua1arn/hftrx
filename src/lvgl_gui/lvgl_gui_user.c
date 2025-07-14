@@ -771,7 +771,7 @@ void win_ad936xdev_handler(lv_event_t * e)
 			button_set_text(btn_sw, "Switch\nto HF");
 		else
 		{
-			button_set_text(btn_sw, p ? "Switch\nto UHF" : "AD936x\not found");
+			button_set_text(btn_sw, p ? "Switch\nto UHF" : "AD936x\nnot found");
 			lv_obj_set_state(btn_sw, LV_STATE_DISABLED, ! p);
 		}
 
@@ -833,6 +833,50 @@ void win_ad936xdev_handler(lv_event_t * e)
 
 		lv_label_set_text_fmt(lbl_cic, "CIC %d", cic_shift);
 		lv_label_set_text_fmt(lbl_fir, "FIR %d", fir_shift);
+	}
+#elif WITHAD936XIIO
+	const char * status_str[3] = { "AD936x found", "Error", "Streaming" };
+	const char * button_str[3] = { "Start", "Find", "Stop" };
+	const char * gainmode_str[2] = { "Gain|manual", "Gain|auto" };
+	const char uri[] = "usb:";
+	static uint8_t status = 10;
+	static lv_obj_t * lbl;
+
+	if (! e) // init window
+	{
+		lv_obj_t * cont = gui_win_get_content();
+		static user_t ext[1];
+		status = iio_ad936x_find(uri);
+
+		lbl = lv_label_create(cont);
+		lv_obj_add_style(lbl, & winlblst, 0);
+		lv_label_set_text_fmt(lbl, "State: %s", status_str[status]);
+		lv_obj_align(lbl, LV_ALIGN_TOP_MID, 0, 0);
+
+		lv_obj_t * btn_sw = add_button(cont, ext, 0, "", s100x44, win_ad936xdev_handler);
+		lv_obj_align_to(btn_sw, lbl, LV_ALIGN_OUT_BOTTOM_MID, 0, 20);
+		button_set_text(btn_sw, button_str[status]);
+
+		return;
+	}
+
+	lv_obj_t * obj = (lv_obj_t *) lv_event_get_target(e);
+	user_t * ext = lv_obj_get_user_data(obj);
+
+	if (lv_obj_check_type(obj, & lv_button_class))
+	{
+		if (ext->is_clicked)
+		{
+			if (status == 10 || status == 1)
+				status = iio_ad936x_find(uri);
+			else if (status == 0)
+				status = iio_ad936x_start(uri);
+			else if (status == 2)
+				status = iio_ad936x_stop();
+
+			lv_label_set_text_fmt(lbl, "State: %s", status_str[status]);
+			button_set_text(obj, button_str[status]);
+		}
 	}
 #endif /* WITHAD936XDEV */
 }
