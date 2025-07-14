@@ -12107,7 +12107,7 @@ static IRQLSPINLOCK_t boardupdatelock;
 void updateboard(void)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, IRQL_SYSTEM);
+	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 	updateboard_noui(1);
 	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 	gui_update();
@@ -12118,7 +12118,7 @@ void updateboard_freq(void)
 {
 	uint_fast8_t f;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, IRQL_SYSTEM);
+	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 	f = updateboard_noui(0);
 	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 	if (f)

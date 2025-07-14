@@ -250,9 +250,10 @@ void InitializeIrql(IRQL_t newIRQL);
 
 	#define USBSYS_IRQL IRQL_SYSTEM
 	#define CATSYS_IRQL IRQL_SYSTEM
+	#define TICKER_IRQL IRQL_SYSTEM
+	#define BRDSYS_IRQL IRQL_BOARD
 	#define LFMSYS_IRQL IRQL_REALTIME
 	#define DPCSYS_IRQL	IRQL_REALTIME
-	#define TICKER_IRQL IRQL_SYSTEM
 	#define ELKEY_IRQL 	IRQL_OVERREALTIME
 
 	typedef void (* udpcfn_t)(void *);
