@@ -16639,6 +16639,7 @@ const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active)
 
 static uint_fast8_t ginmenu;
 static const struct menudef * gmp = menutable;
+static nvramaddress_t gposnvram;	// место в мамяти с позицией в текущей группе
 static uint_fast8_t gmenulevel;	// 0 - groups, 1 - inside group
 static uint_fast16_t gmenufirstitem [2] = { 0, 1 };
 static uint_fast16_t gmenulastitem [2] = { MENUROW_COUNT - 1, MENUROW_COUNT - 1 };
@@ -16792,7 +16793,7 @@ void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcel
                	uint_fast16_t xpix = GRID2X(xcell);
                	uint_fast16_t ypix = GRID2Y(y_position_groups);
               	uint_fast16_t wpix = GRID2X(xspan);
-              	uint_fast16_t hpix = GRID2Y(window.ystep);
+              	uint_fast16_t hpix = smallfont_height() - 1;
               	display_line(db, xpix, ypix + hpix - 1, xpix + wpix - 1, ypix + hpix - 1, COLORPIP_WHITE);
             }
 
@@ -17310,7 +17311,7 @@ processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
 	uint_fast16_t firstitem = gmenufirstitem [gmenulevel];
 	uint_fast16_t lastitem = gmenulastitem [gmenulevel];
 	//uint_fast16_t menupos = loadvfy8up(gmenulevel == 0 ? RMT_GROUP_BASE : xxx , firstitem, lastitem, firstitem);	/* начальное значение позиции */
-	nvramaddress_t posnvram = gmenulevel == 0 ? RMT_GROUP_BASE : MENUNONVRAM;
+	nvramaddress_t posnvram = gmenulevel == 0 ? RMT_GROUP_BASE : gposnvram;
 	const struct menudef * mp = gmp;
 	uint_fast8_t exitkey = getexitkey();
 	uint_fast16_t menupos = gmp - menutable;
@@ -17319,19 +17320,19 @@ processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
 
 	display2_getmultimenu(& window);
 
-	if (kbready && kbch == exitkey)
-	{
-		if (gmenulevel != 0)
-		{
-			-- gmenulevel;
-		}
-		else
-		{
-			gmenulevel = 0;
-			ginmenu = 0;
-		}
-		return 0;
-	}
+//	if (kbready && kbch == exitkey)
+//	{
+//		if (gmenulevel != 0)
+//		{
+//			-- gmenulevel;
+//		}
+//		else
+//		{
+//			gmenulevel = 0;
+//			ginmenu = 0;
+//		}
+//		return 0;
+//	}
 
 #if WITHKEYBOARD
 
@@ -17397,6 +17398,8 @@ processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
 	{
 	default:
 		/* в случчае несовпадения - прожолжаем работать. */
+		return 0;
+
 	case KBD_CODE_DISPMODE:
 	case KBD_ENC2_PRESS:
 		if (gmenulevel == 0)
@@ -17419,7 +17422,7 @@ processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
 				menupos = calc_prev(menupos, 0, MENUROW_COUNT - 1);
 				mp = & menutable [menupos];
 			}
-			while (! ismenukinddp(mp->pd, ITEM_GROUP));
+			while (ismenukinddp(mp->pd, ITEM_VALUE));
 			gmp = mp;
 
 		}
@@ -17434,15 +17437,17 @@ processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
 			const uint_fast16_t first = menupos + 1;	/* следующий за текущим пунктом */
 			const uint_fast16_t last = menulooklast(first);
 
-			if (ismenukind(& menutable [first], ITEM_VALUE))
+
+			if (ismenukinddp(menutable [first].pd, ITEM_VALUE))
 			{
 			#if defined (RTC1_TYPE)
 				getstamprtc();
 			#endif /* defined (RTC1_TYPE) */
 				// войти в подменю
-				//modifysettings(first, last, ITEM_VALUE, mp->pd->qnvram, exitkey, byname);
 				gmenulevel = 1;
-				gmp = & menutable [first];	// todo: use saved position
+				gposnvram = mp->pd->qnvram;	// место в мамяти с позицией в текущей группе
+				menupos = loadvfy8up(mp->pd->qnvram, first, last, first);
+				gmp = & menutable [menupos];
 				gmenufirstitem [1] = first;
 				gmenulastitem [1] = last;
 				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
@@ -17508,7 +17513,7 @@ processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
 #endif /* WITHENCODER2 */
 
 	case KBD_CODE_MENU_DOWN:
-		/* переход на предыдущий пункт меню */
+		/* переход на предыдущий пункт/группу меню */
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		do
 		{
@@ -17529,7 +17534,7 @@ processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
 #endif /* WITHENCODER2 */
 
 	case KBD_CODE_MENU_UP:
-		/* переход на следующий пункт меню */
+		/* переход на следующий пункт/группу меню */
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		do
 		{
