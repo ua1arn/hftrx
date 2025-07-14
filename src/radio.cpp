@@ -3592,7 +3592,7 @@ struct nvmap
 		uint8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 	#endif /* WITHAFCODEC1HAVEPROC */
 	#if WITHAFEQUALIZER
-		uint16_t	ggrpafeq;
+		uint16_t	ggrpafeq;	// последний посещённый пункт группы
 		uint8_t geqtx;	// эквалайзер в режиме передачи
 		uint8_t geqrx;	// эквалайзер в режиме приема
 		uint8_t geqtxparams [AF_EQUALIZER_BANDS];
