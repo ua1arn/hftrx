@@ -17309,12 +17309,13 @@ processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
 {
 	uint_fast16_t firstitem = gmenufirstitem [gmenulevel];
 	uint_fast16_t lastitem = gmenulastitem [gmenulevel];
-	uint_fast16_t menupos = loadvfy8up(gmenulevel == 0 ? SSS : xxx , firstitem, lastitem, firstitem);	/* начальное значение позиции */
+	//uint_fast16_t menupos = loadvfy8up(gmenulevel == 0 ? RMT_GROUP_BASE : xxx , firstitem, lastitem, firstitem);	/* начальное значение позиции */
+	nvramaddress_t posnvram = gmenulevel == 0 ? RMT_GROUP_BASE : MENUNONVRAM;
 	const struct menudef * mp = gmp;
 	uint_fast8_t exitkey = getexitkey();
 	uint_fast16_t menupos = gmp - menutable;
 	multimenuwnd_t window;
-	uint_fast8_t itemmask = gmenulevel ? ITEM_VALUE : ITEM_GROUP;
+	const uint_fast8_t itemmask = gmenulevel ? ITEM_VALUE : ITEM_GROUP;
 
 	display2_getmultimenu(& window);
 
@@ -17398,11 +17399,31 @@ processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
 		/* в случчае несовпадения - прожолжаем работать. */
 	case KBD_CODE_DISPMODE:
 	case KBD_ENC2_PRESS:
-		/* выход из меню */
-		if (posnvram != MENUNONVRAM)
-			save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
+		if (gmenulevel == 0)
+		{
+			/* выход из меню */
+			if (posnvram != MENUNONVRAM)
+				save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
+			ginmenu = 0;
+		}
+		else if (gmenulevel != 0)
+		{
+			/* выход из подменю */
+			if (posnvram != MENUNONVRAM)
+				save_i8(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
+
+			gmenulevel = 0;
+			do
+			{
+				/* найти группу в которой находимся */
+				menupos = calc_prev(menupos, 0, MENUROW_COUNT - 1);
+				mp = & menutable [menupos];
+			}
+			while (! ismenukinddp(mp->pd, ITEM_GROUP));
+			gmp = mp;
+
+		}
 		encoders_clear();	// сбросить информацию о повороте
-		ginmenu = 0;
 		return 0;
 
 	case KBD_CODE_MENU:
@@ -17426,13 +17447,6 @@ processmenukeyboard(uint_fast8_t kbready, uint_fast8_t kbch)
 				gmenulastitem [1] = last;
 				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 			}
-		}
-		else if (gmenulevel != 0)
-		{
-			/* выход из подменю */
-			gmenulevel = 0;
-			gmp = & menutable [first];	// todo: use saved position
-
 		}
 		return 1;	// требуется обновление индикатора
 
