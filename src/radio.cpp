@@ -17688,7 +17688,7 @@ static void menu_print(void)
 
 #else // WITHMENU
 
-static const uint_fast8_t ginmenu = 0;
+static const uint_fast8_t ginmenu0 = 0;
 
 void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx), void * (* itemcb)(void * walkctx, void * groupctx))
 {
