@@ -13524,30 +13524,6 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
 	}
 #endif /* WITHENCODER_2F */
 #if WITHENCODER_3F
-	/* перемещение по middle bar */
-	if (! inmenu)
-	{
-		const int_least16_t delta = encoder_delta(& encoder_ENC3F, BOARD_ENC3F_DIVIDE);
-		if (delta)
-		{
-			unsigned middlerowsize;
-			mdt [mode].middlemenu(& middlerowsize);
-			gmiddlepos [mode] = calc_delta(gmiddlepos [mode], 0, middlerowsize - 1, delta);
-			save_i8(RMT_MIDDLEMENUPOS_BASE(mode), gmiddlepos [mode]);
-			changed = 1;
-		}
-//		if (delta)
-//			bring_enc3f();
-//		switch (enc3f_sel)
-//		{
-//		default:
-//			break;
-//		case 0:
-//			break;
-//		}
-	}
-#endif /* WITHENCODER_3F */
-#if WITHENCODER_4F
 	/* редактирование параметра в middle bar */
 	if (! inmenu)
 	{
@@ -13555,11 +13531,11 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
 		const unsigned apos = gmiddlepos [mode];
 		const struct paramdefdef * const pd = mdt [mode].middlemenu(& nitems) [gmiddlepos [mode]];
 
-		int_least16_t delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
+		int_least16_t delta = encoder_delta(& encoder_ENC3F, BOARD_ENC3F_DIVIDE);
 		changed |= param_rotate(pd, delta);	// модификация и сохранение параметра
 		if (delta)
-			bring_enc4f();
-//		switch (enc4f_sel)
+			bring_enc3f();
+//		switch (enc3f_sel)
 //		{
 //		default:
 //			break;
@@ -13576,6 +13552,30 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
 //				-- delta;
 //				changed = 1;
 //			}
+//			break;
+//		}
+	}
+#endif /* WITHENCODER_3F */
+#if WITHENCODER_4F
+	/* перемещение по middle bar */
+	if (! inmenu)
+	{
+		const int_least16_t delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
+		if (delta)
+		{
+			unsigned middlerowsize;
+			mdt [mode].middlemenu(& middlerowsize);
+			gmiddlepos [mode] = calc_delta(gmiddlepos [mode], 0, middlerowsize - 1, delta);
+			save_i8(RMT_MIDDLEMENUPOS_BASE(mode), gmiddlepos [mode]);
+			changed = 1;
+		}
+		if (delta)
+			bring_enc4f();
+//		switch (enc4f_sel)
+//		{
+//		default:
+//			break;
+//		case 0:
 //			break;
 //		}
 	}
