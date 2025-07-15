@@ -13482,7 +13482,7 @@ static uint_fast8_t processpots(void)
 	return changed;
 }
 
-static uint_fast8_t processmainloopencoders(void)
+static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
 {
 	const uint_fast8_t bi = getbankindex_ab(0);
 	const uint_fast8_t submode = getsubmode(bi);
@@ -13525,6 +13525,7 @@ static uint_fast8_t processmainloopencoders(void)
 #endif /* WITHENCODER_2F */
 #if WITHENCODER_3F
 	/* перемещение по middle bar */
+	if (! inmenu)
 	{
 		const int_least16_t delta = encoder_delta(& encoder_ENC3F, BOARD_ENC3F_DIVIDE);
 		if (delta)
@@ -13548,7 +13549,7 @@ static uint_fast8_t processmainloopencoders(void)
 #endif /* WITHENCODER_3F */
 #if WITHENCODER_4F
 	/* редактирование параметра в middle bar */
-
+	if (! inmenu)
 	{
 		unsigned nitems;
 		const unsigned apos = gmiddlepos [mode];
@@ -19620,6 +19621,13 @@ hamradio_main_step(void)
 
 		} // end potentiometers processing
 
+		if (processmainloopencoders(ginmenu0))
+		{
+	#if WITHTOUCHGUI
+			display_redrawfreqstimed(1);
+	#endif /* WITHTOUCHGUI */
+
+		}
 		// Knobs rotation processing
 		if (! ginmenu0 && processmainlooptuneknobs())
 		{
