@@ -16637,12 +16637,38 @@ const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active)
 
 #define MENUROW_COUNT (ARRAY_SIZE(menutable))
 
-static uint_fast8_t ginmenu;
-static const struct menudef * gmp = menutable;
+static uint_fast8_t ginmenu0;
+static const struct menudef * gmp0 = menutable;
+
 static nvramaddress_t gposnvram;	// место в мамяти с позицией в текущей группе
 static uint_fast8_t gmenulevel;	// 0 - groups, 1 - inside group
 static uint_fast16_t gmenufirstitem [2] = { 0, 1 };
 static uint_fast16_t gmenulastitem [2] = { MENUROW_COUNT - 1, MENUROW_COUNT - 1 };
+
+static void setinmenu(uint_fast8_t inmenu, const struct menudef * mp)
+{
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
+
+	ginmenu0 = inmenu;
+	gmp0 = mp;
+
+	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
+}
+
+static uint_fast8_t getinmenu(const struct menudef * * mp)
+{
+	uint_fast8_t f;
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
+
+	f = ginmenu0;
+	* mp = gmp0;
+
+	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
+
+	return f;
+}
 
 /* Загрузка значений из NVRAM в переменные программы.
    Значением по умолчанию является то, на которое
@@ -17312,9 +17338,9 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 	uint_fast16_t lastitem = gmenulastitem [gmenulevel];
 	//uint_fast16_t menupos = loadvfy8up(gmenulevel == 0 ? RMT_GROUP_BASE : xxx , firstitem, lastitem, firstitem);	/* начальное значение позиции */
 	nvramaddress_t posnvram = gmenulevel == 0 ? RMT_GROUP_BASE : gposnvram;
-	const struct menudef * mp = gmp;
+	const struct menudef * mp = gmp0;
 	uint_fast8_t exitkey = getexitkey();
-	uint_fast16_t menupos = gmp - menutable;
+	uint_fast16_t menupos = mp - menutable;
 	multimenuwnd_t window;
 	const uint_fast8_t itemmask = gmenulevel ? ITEM_VALUE : ITEM_GROUP;
 
@@ -17407,7 +17433,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 			/* выход из меню */
 			if (posnvram != MENUNONVRAM)
 				save_i16(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
-			ginmenu = 0;
+			setinmenu(0, NULL);
 		}
 		else if (gmenulevel != 0)
 		{
@@ -17423,8 +17449,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 				mp = & menutable [menupos];
 			}
 			while (ismenukinddp(mp->pd, ITEM_VALUE));
-			gmp = mp;
-
+			setinmenu(1, mp);
 		}
 		return 0;
 
@@ -17446,7 +17471,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 				gmenulevel = 1;
 				gposnvram = mp->pd->qnvram;	// место в мамяти с позицией в текущей группе
 				menupos = loadvfy16up(mp->pd->qnvram, first, last, first);
-				gmp = & menutable [menupos];
+				setinmenu(1, & menutable [menupos]);
 				gmenufirstitem [1] = first;
 				gmenulastitem [1] = last;
 				display2_redrawbarstimed(1);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
@@ -17546,7 +17571,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 	menuswitch:
 		if (posnvram != MENUNONVRAM)
 			save_i16(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
-		gmp = mp;
+		setinmenu(1, mp);
 #if WITHDEBUG
 		PRINTF(PSTR("menu: ")); PRINTF(mp->pd->qlabel); PRINTF(PSTR("\n"));
 #endif /* WITHDEBUG */
@@ -18473,7 +18498,7 @@ processmainloopkeyboard(uint_fast8_t kbch)
 			 - не вызывает сохранение состояния диапазона */
 
 #if WITHMENU && ! WITHTOUCHGUI
-		ginmenu = 1;
+		setinmenu(1, gmp0);
 		gmenulevel = 0;
 	#if WITHAUTOTUNER
 		if (reqautotune != 0)
@@ -19566,7 +19591,7 @@ hamradio_main_step(void)
 
 		#if WITHKEYBOARD
 #if WITHMENU
-			if (ginmenu && processmenukeyandencoder(kbready, kbch))
+			if (ginmenu0 && processmenukeyandencoder(kbready, kbch))
 			{
 		#if WITHTOUCHGUI
 				display_redrawfreqstimed(1);
@@ -19575,7 +19600,7 @@ hamradio_main_step(void)
 
 			}
 #endif /* WITHMENU */
-			if (! ginmenu && kbready != 0 && processmainloopkeyboard(kbch))
+			if (! ginmenu0 && kbready != 0 && processmainloopkeyboard(kbch))
 			{
 		#if WITHTOUCHGUI
 				display_redrawfreqstimed(1);
@@ -19596,7 +19621,7 @@ hamradio_main_step(void)
 		} // end potentiometers processing
 
 		// Knobs rotation processing
-		if (! ginmenu && processmainlooptuneknobs())
+		if (! ginmenu0 && processmainlooptuneknobs())
 		{
 			updateboard_freq();	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 			// Ограничение по скорости обновления дисплея уже заложено в него
@@ -21104,6 +21129,8 @@ static void siggen_mainloop(void)
 static void dpc_displatch_timer_fn(void * arg)
 {
 	display2_latch();
+
+	const struct menudef * mp;
 	if (0)
 	{
 
@@ -21128,11 +21155,11 @@ static void dpc_displatch_timer_fn(void * arg)
 	}
 #endif
 #if WITHMENU
-	else if (ginmenu)
+	else if (getinmenu(& mp))
 	{
 		dctx_t dctx;
 		dctx.type = DCTX_MENU;
-		dctx.pv = gmp;
+		dctx.pv = mp;
 
 		display2_bgprocess(1, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
 	}
