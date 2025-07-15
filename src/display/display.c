@@ -287,6 +287,12 @@ uint_fast8_t smallfont_width(char cc)
 	(void) cc;
 	return SMALLCHARW;	// полная ширина символа в пикселях
 }
+
+uint_fast8_t smallfont_height(void)
+{
+	return SMALLCHARH;
+}
+
 #endif /* defined (SMALLCHARW) */
 
 // return new x coordinate

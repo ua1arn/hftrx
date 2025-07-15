@@ -2499,8 +2499,8 @@ uint_fast8_t board_dpc_display_coreid(void)
 {
 #if LINUX_SUBSYSTEM
 	return 0;
-#elif HARDWARE_NCORES > 2
-	return 2;
+#elif HARDWARE_NCORES > 1
+	return 1;
 #else /* LINUX_SUBSYSTEM */
 	return 0;
 #endif /* LINUX_SUBSYSTEM */
@@ -2510,11 +2510,6 @@ uint_fast8_t board_dpc_display_coreid(void)
 /* добавить функцию для однократного вызова */
 uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 {
-//	if (coreid == 3)
-//	{
-//		PRINTF("board_dpc_call: coreid=%d, fn=%p\n", (int) coreid, dp->fn);
-//	}
-	ASSERT(coreid == 0);
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
 	IRQLSPINLOCK_t * const lock = & dpc->lock;
@@ -2540,10 +2535,6 @@ uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 /* добавить функцию для периодического вызова */
 uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid)
 {
-//	if (coreid == 3)
-//	{
-//		PRINTF("board_dpc_addentry: coreid=%d, fn=%p\n", (int) coreid, dp->fn);
-//	}
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
 	IRQLSPINLOCK_t * const lock = & dpc->lock;

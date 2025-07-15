@@ -771,6 +771,7 @@ extern "C" {
 	#define IRQL_USER 				0
 	#define IRQL_IPC 				0
 	#define IRQL_SYSTEM 			0
+	#define IRQL_BOARD	 			0
 	#define IRQL_REALTIME 			0
 	#define IRQL_OVERREALTIME 		0
 
@@ -787,6 +788,7 @@ extern "C" {
 	extern uint32_t gARM_OVERREALTIME_PRIORITY;
 	extern uint32_t gARM_REALTIME_PRIORITY;
 	extern uint32_t gARM_SYSTEM_PRIORITY;
+	extern uint32_t gARM_BOARD_PRIORITY;
 	extern uint32_t gARM_BASEPRI_ONLY_REALTIME;
 	extern uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
 	extern uint32_t gARM_BASEPRI_ALL_ENABLED;
@@ -797,6 +799,7 @@ extern "C" {
 	#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
 	#define IRQL_USER 0xFF	// TODO: verify value
+	#define IRQL_BOARD ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 3, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 	#define IRQL_SYSTEM ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 	#define IRQL_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 	#define IRQL_OVERREALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
@@ -824,6 +827,7 @@ extern "C" {
 		PRIOv_OVRT,
 		PRIOv_RT,
 		PRIOv_SYS,		/* таймеры, USB */
+		PRIOv_BRD,		/* папаметы фильттров, board_set_xxx */
 		PRIOv_USER,
 		//
 		PRIOv_count
@@ -851,6 +855,7 @@ extern "C" {
 	#define IRQL_OVERREALTIME 	(GICI_ENCODE_IRQL(PRIOv_OVRT))
 	#define IRQL_REALTIME	 	(GICI_ENCODE_IRQL(PRIOv_RT))
 	#define IRQL_SYSTEM 		(GICI_ENCODE_IRQL(PRIOv_SYS))
+	#define IRQL_BOARD			(GICI_ENCODE_IRQL(PRIOv_BRD))
 	#define IRQL_USER 			(GICI_ENCODE_IRQL(PRIOv_USER))
 
 	// A lower priority value indicating a higher priority
@@ -889,10 +894,11 @@ extern "C" {
 
 	typedef uint_xlen_t IRQL_t;
 
-	#define ARM_IPC_PRIORITY			4
-	#define ARM_OVERREALTIME_PRIORITY	3	/* валкодер и телеграф */
-	#define ARM_REALTIME_PRIORITY		2	/* звук */
-	#define ARM_SYSTEM_PRIORITY			1	/* таймеры, USB */
+	#define ARM_IPC_PRIORITY			5
+	#define ARM_OVERREALTIME_PRIORITY	4	/* валкодер и телеграф */
+	#define ARM_REALTIME_PRIORITY		3	/* звук */
+	#define ARM_SYSTEM_PRIORITY			2	/* таймеры, USB */
+	#define ARM_BOARD_PRIORITY			1	/* установка параметров */
 	#define ARM_USER_PRIORITY			0	/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
 
 	#define global_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
@@ -900,6 +906,7 @@ extern "C" {
 
 	#define IRQL_USER				ARM_USER_PRIORITY
 	#define IRQL_SYSTEM 			ARM_SYSTEM_PRIORITY
+	#define IRQL_BOARD				ARM_BOARD_PRIORITY
 	#define IRQL_REALTIME 			ARM_REALTIME_PRIORITY
 	#define IRQL_OVERREALTIME		ARM_OVERREALTIME_PRIORITY
 

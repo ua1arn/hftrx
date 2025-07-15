@@ -665,6 +665,7 @@ uint_fast8_t halffont_width(char cc);
 uint_fast8_t smallfont_width(char cc);
 uint_fast8_t smallfont2_width(char cc);
 uint_fast8_t smallfont3_width(char cc);
+uint_fast8_t smallfont_height(void);
 
 void
 display_string3(
