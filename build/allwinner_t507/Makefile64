@@ -119,15 +119,8 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
 
-ifeq (1, 1)
-# CMSIS_DSP
-SRCDIRS +=
-DINCDIR += \
-	$(CMSISDSPDIR)/Include \
-	$(CMSISDSPDIR)/ComputeLibrary/Include \
-	$(CMSISDSPDIR)/Source \
-	$(CMSISDSPDIR)/PrivateInclude
-endif
+# cmsis-dsp
+include ../cmsis_dsp.mak
 
 ifeq (1, 1)
 # ST USB DEVICE
@@ -143,12 +136,8 @@ DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
 
-ifeq (1, 1)
 # tinyusb
-# https://github.com/hathach/tinyusb.git
-SRCDIRS += $(PRJROOT)/lib/hftrx_tinyusb/src
-DINCDIR += $(PRJROOT)/lib/hftrx_tinyusb/src
-endif
+include ../tinyusb.mak
 
 # lvgl
 include ../lvgl.mak
