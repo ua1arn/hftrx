@@ -6158,7 +6158,7 @@ unsigned get_swr_cached(unsigned rangemax)
 	ASSERT(rangemax > SWRMIN);
 	forward = board_getswrmeter_cached(& reflected, swrcalibr);
 
-								// рассчитанное  значение
+	// рассчитанное  значение
 	if (forward < minforward)
 		swr10 = SWRMIN;				// SWR=1
 	else if (forward <= reflected)
@@ -13643,11 +13643,24 @@ static void doadcmirror(void)
 	/* быстро меняющиеся значения с частым опорсом */
 	/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 #if WITHSWRMTR && WITHTX
+	if (1)
 	{
-		const adcvalholder_t f = board_getadc_unfiltered_truevalue(FWD);
+		// Версия из тюнера
+		adcvalholder_t r;
+		const adcvalholder_t f = board_getswrpair_filtered_tuner(& r, swrcalibr);
+
+		// обновить кеш данных для дисплея
 		board_adc_store_data(PWRMRRIX, f);
 		board_adc_store_data(FWDMRRIX, f);
-		board_adc_store_data(REFMRRIX, board_getadc_unfiltered_truevalue(REF));
+		board_adc_store_data(REFMRRIX, r);
+	}
+	else
+	{
+		const adcvalholder_t f = board_getadc_unfiltered_truevalue(FWD);
+		const adcvalholder_t r = board_getadc_unfiltered_truevalue(REF);
+		board_adc_store_data(PWRMRRIX, f);
+		board_adc_store_data(FWDMRRIX, f);
+		board_adc_store_data(REFMRRIX, r);
 	}
 #endif /* WITHSWRMTR */
 #if WITHCURRLEVEL2
