@@ -6146,7 +6146,7 @@ void display2_swrsts20(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 		(unsigned) (swr + TUS_SWRMIN) % TUS_SWRMIN,
 		f,
 		r);
-	display_text(db, x, y, b, xspan);
+	display_text(db, x, y, b, xspan, yspan);
 }
 
 // Used with WITHMGLOOP
@@ -8705,13 +8705,13 @@ void display2_fnlabel9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 	switch (enc2state)
 	{
 	case ENC2STATE_INITIALIZE:
-		display_1fmenu(db, x, y, text_nul9_P);
+		display_1fmenu(db, x, y, text_nul9_P, xspan, yspan);
 		break;
 	case ENC2STATE_SELECTITEM:
-		display_2fmenus(db, x, y, 0, text, text);
+		display_2fmenus(db, x, y, 0, text, text, xspan, yspan);
 		break;
 	case ENC2STATE_EDITITEM:
-		display_2fmenus(db, x, y, 1, text, text);
+		display_2fmenus(db, x, y, 1, text, text, xspan, yspan);
 		break;
 	}
 #endif /* WITHENCODER2 && ! WITHTOUCHGUI */
@@ -8727,15 +8727,15 @@ void display2_fnvalue9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 	switch (enc2state)
 	{
 	case ENC2STATE_INITIALIZE:
-		display_1fmenu(db, x, y, "");
+		display_1fmenu(db, x, y, "", xspan, yspan);
 		break;
 	case ENC2STATE_SELECTITEM:
 		param_format(enc2menus [enc2pos], b, ARRAY_SIZE(b), param_getvalue(enc2menus [enc2pos]));
-		display_2fmenus(db, x, y, 0, b, b);
+		display_2fmenus(db, x, y, 0, b, b, xspan, yspan);
 		break;
 	case ENC2STATE_EDITITEM:
 		param_format(enc2menus [enc2pos], b, ARRAY_SIZE(b), param_getvalue(enc2menus [enc2pos]));
-		display_2fmenus(db, x, y, 1, b, b);
+		display_2fmenus(db, x, y, 1, b, b, xspan, yspan);
 		break;
 	}
 #endif /* WITHENCODER2 && ! WITHTOUCHGUI */
@@ -16730,26 +16730,24 @@ void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcel
 			if ((index_groups - menu_block_scroll_offset_groups) > window.multilinemenu_max_rows)
 				continue;
 
+			colmain_setcolors(MENUSELCOLOR, BGCOLOR);
 			if (el == selected_group_left_margin)
 			{
 				//подсвечиваем выбранный элемент
-				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_text(db, xcell_marker, y_position_groups, PSTR(">"), 1);
+				display_text(db, xcell_marker, y_position_groups, PSTR(">"), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 			}
 			else
 			{
 				//снять отметку
-				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_text(db, xcell_marker, y_position_groups, PSTR(" "), 1);
+				display_text(db, xcell_marker, y_position_groups, PSTR(" "), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 			}
-
 			display2_menu_group(db, xcell_text, y_position_groups, mv, xspan - 1, getlabel); // название группы
             if (el == selected_group_left_margin)
             {
                	uint_fast16_t xpix = GRID2X(xcell);
                	uint_fast16_t ypix = GRID2Y(y_position_groups);
               	uint_fast16_t wpix = GRID2X(xspan);
-              	uint_fast16_t hpix = smallfont_height() - 1;
+              	uint_fast16_t hpix = GRID2Y(window.ystep);
               	display_line(db, xpix, ypix + hpix - 1, xpix + wpix - 1, ypix + hpix - 1, COLORPIP_WHITE);
             }
 
@@ -16763,7 +16761,7 @@ void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcel
 			index_groups - menu_block_scroll_offset_groups < window.multilinemenu_max_rows;
 			++ index_groups, y_position_groups += window.ystep)
 	{
-		display_text(db, xcell_marker, y_position_groups, "", xspan);
+		display_text(db, xcell_marker, y_position_groups, "", xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 	}
 }
 
@@ -16829,17 +16827,16 @@ void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t xcel
 			if ((index_params - menu_block_scroll_offset_params) > window.multilinemenu_max_rows)
 				continue;
 
+			colmain_setcolors(MENUSELCOLOR, BGCOLOR);
 			if (el == index)
 			{
 				//подсвечиваем выбранный элемент
-				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_text(db, xcell_marker, y_position_params, PSTR(">"), 1);
+				display_text(db, xcell_marker, y_position_params, PSTR(">"), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 			}
 			else
 			{
 				//снять подсветку
-				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
-				display_text(db, xcell_marker, y_position_params, PSTR(" "), 1);
+				display_text(db, xcell_marker, y_position_params, PSTR(" "), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 			}
 			display2_menu_lblng(db, xcell_text, y_position_params, mv, xspan - 1, getlabel); // название редактируемого параметра
             if (el == index)
@@ -16862,7 +16859,7 @@ void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t xcel
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
 	{
-		display_text(db, xcell, y_position_params, "", xspan);
+		display_text(db, xcell, y_position_params, "", xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 	}
 }
 
@@ -16911,6 +16908,7 @@ void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uin
 	const uint_fast16_t menu_block_scroll_offset_params = window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
 
 	// выводим на экран блок с параметрами
+	colmain_setcolors(COLORPIP_WHITE, BGCOLOR);
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
 		const struct menudef * const mv = & menutable [el];
@@ -16948,7 +16946,7 @@ void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uin
 			++ index_params, y_position_params += window.ystep)
 	{
 		//display_menu_string(colorpip, x, y_position_params, nolabel, VALUEW, VALUEW);
-		display_text(db, x, y_position_params, "", xspan);
+		display_text(db, x, y_position_params, "", xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 	}
 }
 
@@ -16998,19 +16996,25 @@ void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint
 // если группа - ничего не отображаем
 static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, const char * (* getlabel)(const struct paramdefdef * pd))
 {
+	multimenuwnd_t window;
+
+	display2_getmultimenu(& window);
 	if (ismenukinddp(mp->pd, ITEM_VALUE) == 0)
 		return;
 	colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_text(db, xcell, ycell, mp->pd->label, xspan);
+	display_text(db, xcell, ycell, mp->pd->label, xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 }
 
 // группа, в которой находится редактируемый параметр
 static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, const char * (* getlabel)(const struct paramdefdef * pd))
 {
+	multimenuwnd_t window;
+
+	display2_getmultimenu(& window);
 	while (ismenukinddp(mp->pd, ITEM_GROUP) == 0)
 		-- mp;
 	colmain_setcolors(MENUGROUPCOLOR, BGCOLOR);
-	display_text(db, xcell, ycell, mp->pd->label, xspan);
+	display_text(db, xcell, ycell, mp->pd->label, xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 }
 
 static int_fast32_t iabs(int_fast32_t v)
@@ -17242,7 +17246,7 @@ static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t xcell, uint_f
 	char buff [xspan + 1];
 
 	param_format(mp->pd, buff, xspan + 1, param_getvalue(mp->pd));
-	display_text(db, xcell, ycell, buff, xspan);
+	display_text(db, xcell, ycell, buff, xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 }
 
 // --- menu support
@@ -17703,7 +17707,7 @@ static void dispvfocode(
 	uint_fast32_t freq = getvcoranges(vco, top);
 	synth_lo1_setfreq(0, freq, getlo1div(gtx));
 
-	display_text(db, 0, 1, label);
+	display_text(db, 0, 1, label, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 	display_menu_digit(db, 0, 0, freq, 9, 3, 0);
 
 }
@@ -18760,7 +18764,7 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 #if ! LCDMODE_DUMMY
 		display2_fillbg(& dbv);
-		display_text(& dbv, 0, 0, msg, strlen(msg));
+		display_text(& dbv, 0, 0, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 		colmain_nextfb();
 #endif /*  ! LCDMODE_DUMMY */
 		PRINTF(PSTR("KBD fault\n"));
@@ -18792,7 +18796,7 @@ void initialize2(void)
 		local_snprintf_P(msg, ARRAY_SIZE(msg), "TOO LARGE nvmap %d", (int) sizeof (struct nvmap));
 
 		display2_fillbg(& dbv);
-		display_text(& dbv, 0, 1, msg, strlen(msg));
+		display_text(& dbv, 0, 1, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 		colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -18808,7 +18812,7 @@ void initialize2(void)
 		static const char msg  [] = "nvmap size";
 
 		display_menu_digit(sizeof (struct nvmap), 9, 0, 0);
-		display_text(& dbv, 0, 0, msg, strlen(msg));
+		display_text(& dbv, 0, 0, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 		colmain_nextfb();
 
 
@@ -18861,7 +18865,7 @@ void initialize2(void)
 
 			static const char msg [] = "ERASE: Press SPL";
 			display2_fillbg(& dbv);
-			display_text(db, 0, 0, msg, strlen(msg));
+			display_text(db, 0, 0, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 			colmain_nextfb();
 
 			for (;;)
@@ -18905,8 +18909,8 @@ void initialize2(void)
 			char msg [32];
 			local_snprintf_P(msg, ARRAY_SIZE(msg), "NVRAM fault1 %d", (int) (NVRAM_END + 1));
 			display2_fillbg(& dbv);
-			display_text(& dbv, 0, 0, msg, strlen(msg));
-			display_text(& dbv, 10, 20, msg, strlen(msg));
+			display_text(& dbv, 0, 0, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
+			display_text(& dbv, 10, 20, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -18945,7 +18949,7 @@ void initialize2(void)
 #if ! LCDMODE_DUMMY
 			static const char msg [] = "ERASE: Press SPL";
 			display2_fillbg(& dbv);
-			display_text(& dbv, 0, 0, msg, strlen(msg));
+			display_text(& dbv, 0, 0, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -18988,8 +18992,8 @@ void initialize2(void)
 			char msg [32];
 			local_snprintf_P(msg, ARRAY_SIZE(msg), "NVRAM fault %d", (int) (NVRAM_END + 1));
 			display2_fillbg(& dbv);
-			display_text(& dbv, 0, 0, msg, strlen(msg));
-			display_text(& dbv, 10, 20, msg, strlen(msg));
+			display_text(& dbv, 0, 0, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
+			display_text(& dbv, 10, 20, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 

@@ -1079,7 +1079,7 @@ static const struct menudef menutable [] =
 	},
 	#if ! WITHPOTNOTCH
 	(const struct paramdefdef [1]) {
-		QLABEL("NTCH FRQ"), 7, 2, 1,	ISTEP50,		/* управление частотой NOTCH. */
+		QLABEL("NTCH FRQ"), 7, 3, 0,	ISTEP50,		/* управление частотой NOTCH. */
 		ITEM_VALUE,
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		OFFSETOF(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
@@ -1089,7 +1089,7 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("NTCH WDT"), 7, 0, 0,	ISTEP50,		/* полоса режекции NOTCH. */
+		QLABEL("NTCH WDT"), 7, 3, 0,	ISTEP50,		/* полоса режекции NOTCH. */
 		ITEM_VALUE,
 		WITHNOTCHWIDTHMIN, WITHNOTCHWIDTHMAX,
 		OFFSETOF(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */

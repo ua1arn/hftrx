@@ -349,9 +349,7 @@ void display_bar(
 	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
 	);
 
-#define DISPLAY_AT_H	20	// высота строки при работе в режиме совместимости на LVGL
-#define DISPLAY_AT_FONT (& Rubik_Medium_18_w2)	// Rubik_Medium_18_w2 lv_font_montserrat_14
-void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan);		// Выдача строки из ОЗУ в указанное место экрана.
+void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan);		// Выдача строки из ОЗУ в указанное место экрана.
 
 
 // большие и средние цифры (частота)

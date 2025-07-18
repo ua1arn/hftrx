@@ -142,14 +142,16 @@ void display_2fmenus(const gxdrawb_t * db,
 	uint_fast8_t y,
 	uint_fast8_t state,
 	const char * state1,	// активное
-	const char * state0
+	const char * state0,
+	uint_fast8_t xspan, uint_fast8_t yspan
 	);
 
 // параметры, не меняющие состояния цветом
 void display_1fmenu(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
-	const char * label
+	const char * label,
+	uint_fast8_t xspan, uint_fast8_t yspan
 	);
 
 

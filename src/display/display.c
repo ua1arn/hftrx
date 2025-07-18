@@ -973,12 +973,13 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 
 // Используется при выводе на графический индикатор,
 void
-display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan)
+display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan)
 {
 	size_t len;
 	char c;
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
+	const uint_fast16_t h = GRID2Y(yspan);
 
 	savestring = s;
 	savewhere = __func__;
@@ -999,7 +1000,7 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	    l.align = LV_TEXT_ALIGN_RIGHT;
 	    l.flag = 0*LV_TEXT_FLAG_EXPAND | LV_TEXT_FLAG_FIT;
 	    l.text = s;
-	    l.font = & Epson_LTDC_small; //DISPLAY_AT_FONT;
+	    l.font = & Epson_LTDC_small;
 	    //PRINTF("display_string: x/y=%d/%d '%s'\n", (int) xpix, (int) xpix, s);
 		lv_draw_rect(layer, & d, & coords);
         lv_draw_label(layer, & l, & coords);
@@ -1009,7 +1010,11 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 #endif
 
 
-	colpip_fillrect(db, xpix, ypix, GRID2X(CHARS2GRID(xspan)), SMALLCHARH, ltdc_bg);
+	colpip_fillrect(db, xpix, ypix, GRID2X(CHARS2GRID(xspan)), h, ltdc_bg);
+	if (h > smallfont_height())
+	{
+		ypix += (h - smallfont_height()) / 2;
+	}
 	for (len = strlen(s); len < xspan; ++ len)
 		xpix = colorpip_put_char_small(db, xpix, ypix, ' ', ltdc_fg);
 	while((c = * s ++) != '\0' && xspan --)
