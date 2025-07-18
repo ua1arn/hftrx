@@ -16569,7 +16569,8 @@ const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active)
 static uint_fast8_t ginmenu0;
 static const struct menudef * gmp0 = menutable;
 
-static nvramaddress_t gposnvram;	// место в мамяти с позицией в текущей группе
+static nvramaddress_t gposnvram = MENUNONVRAM;	// место в мамяти с позицией в текущей группе
+static const struct menudef * gmpgroup = menutable;
 static uint_fast8_t gmenulevel;	// 0 - groups, 1 - inside group
 static uint_fast16_t gmenufirstitem [2] = { 0, 1 };
 static uint_fast16_t gmenulastitem [2] = { MENUROW_COUNT - 1, MENUROW_COUNT - 1 };
@@ -17265,8 +17266,6 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 {
 	uint_fast16_t firstitem = gmenufirstitem [gmenulevel];
 	uint_fast16_t lastitem = gmenulastitem [gmenulevel];
-	//uint_fast16_t menupos = loadvfy8up(gmenulevel == 0 ? RMT_GROUP_BASE : xxx , firstitem, lastitem, firstitem);	/* начальное значение позиции */
-	nvramaddress_t posnvram = gmenulevel == 0 ? RMT_GROUP_BASE : gposnvram;
 	const struct menudef * mp = gmp0;
 	uint_fast8_t exitkey = getexitkey();
 	uint_fast16_t menupos = mp - menutable;
@@ -17288,8 +17287,6 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 //		}
 //		return 0;
 //	}
-
-#if WITHKEYBOARD
 
 #if WITHENCODER_4F
 	if (! kbready)
@@ -17325,14 +17322,11 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 		}
 	}
 #endif /* WITHENCODER2 */
-#endif /* WITHKEYBOARD */
 
 #if WITHENCODER
 	{
 		/* редактирование значения с помощью поворота валкодера. */
 		const int_least16_t nrotate = getRotateLoRes_A(genc1div);
-//		if (glock != 0)
-//			nrotate = 0;	// ignore encoder
 
 		if (nrotate != 0 && ismenukinddp(mp->pd, ITEM_VALUE))
 		{
@@ -17359,16 +17353,10 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 		if (gmenulevel == 0)
 		{
 			/* выход из меню */
-			if (posnvram != MENUNONVRAM)
-				save_i16(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
 			setinmenu(0, NULL);
 		}
 		else if (gmenulevel != 0)
 		{
-			/* выход из подменю */
-			if (posnvram != MENUNONVRAM)
-				save_i16(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
-
 			gmenulevel = 0;
 			do
 			{
@@ -17389,7 +17377,6 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 			const uint_fast16_t first = menupos + 1;	/* следующий за текущим пунктом */
 			const uint_fast16_t last = menulooklast(first);
 
-
 			if (ismenukinddp(menutable [first].pd, ITEM_VALUE))
 			{
 			#if defined (RTC1_TYPE)
@@ -17397,11 +17384,16 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 			#endif /* defined (RTC1_TYPE) */
 				// войти в подменю
 				gmenulevel = 1;
-				gposnvram = mp->pd->qnvram;	// место в мамяти с позицией в текущей группе
-				menupos = loadvfy16up(mp->pd->qnvram, first, last, first);
+				gmpgroup = mp;
+				gposnvram = mp->pd->qnvram;	// место в памяти с позицией в текущей группе
+				menupos = loadvfy16up(gposnvram, first, last, first);
 				setinmenu(1, & menutable [menupos]);
 				gmenufirstitem [1] = first;
 				gmenulastitem [1] = last;
+			}
+			else
+			{
+				// группа без пунктов?
 			}
 		}
 		return 1;	// требуется обновление индикатора
@@ -17489,8 +17481,18 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 		while (! ismenukinddp(mp->pd, itemmask));
 
 	menuswitch:
-		if (posnvram != MENUNONVRAM)
-			save_i16(posnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
+		if (gmenulevel == 0)
+		{
+			// проход по группам
+			ASSERT(ITEM_GROUP == itemmask);
+			save_i16(RMT_GROUP_BASE, menupos);
+		}
+		else
+		{
+			// проход по пунктам
+			ASSERT(ITEM_VALUE == itemmask);
+			save_i16(gposnvram, menupos);	/* сохраняем номер пункта меню, с которым работаем */
+		}
 		setinmenu(1, mp);
 #if WITHDEBUG
 		PRINTF(PSTR("menu: ")); PRINTF(mp->pd->qlabel); PRINTF(PSTR("\n"));
@@ -18416,8 +18418,14 @@ processmainloopkeyboard(uint_fast8_t kbch)
 			 - не вызывает сохранение состояния диапазона */
 
 #if WITHMENU && ! WITHTOUCHGUI
-		setinmenu(1, gmp0);
-		gmenulevel = 0;
+		ASSERT(ginmenu0 == 0);
+		{
+			nvramaddress_t menupos = loadvfy16up(RMT_GROUP_BASE, 0, MENUROW_COUNT - 1, 0);
+			const struct menudef * mpgroup = menutable + menupos;
+			gmenulevel = 0;
+			setinmenu(1, mpgroup);
+		}
+
 	#if WITHAUTOTUNER
 		if (reqautotune != 0)
 			return 1;
