@@ -101,6 +101,7 @@ extern "C" {
 #define WITHCOMPTHRESHOLDMIN 1	/* минимальный порог компрессии (db) */
 #define WITHCOMPTHRESHOLDMAX 20	/* максимальная порог компрессии (db) */
 
+#define NRLEVELMAX 60
 
 #if defined (DAC1_TYPE)
 	#define WITHDAC1VALMIN	0

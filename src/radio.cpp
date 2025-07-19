@@ -4019,8 +4019,8 @@ static uint_fast8_t gagcmode;
 
 
 #if WITHIF4DSP
-	static uint_fast8_t gnoisereducts [MODE_COUNT];	// noise reduction
-	static uint_fast8_t gnoisereductvl = 25;	// noise reduction
+static uint_fast8_t gnoisereducts [MODE_COUNT];	// noise reduction
+static uint_fast8_t gnoisereductvl = 25;	// noise reduction
 
 static const struct paramdefdef xgnoisereduct =
 {
@@ -4533,7 +4533,7 @@ static const struct paramdefdef xgwflevelsep =
 	enum { gkblight = 0 };
 #endif /* WITHKBDBACKLIGHT */
 
-	static uint_fast8_t gpoweronhold = 1;	/* выдать "1" на выход удержания питания включенным */
+static uint_fast8_t gpoweronhold = 1;	/* выдать "1" на выход удержания питания включенным */
 
 #if LCDMODE_COLORED
 	//static uint_fast8_t gbluebgnd;
@@ -4542,7 +4542,8 @@ static const struct paramdefdef xgwflevelsep =
 	enum { gbluebgnd = 0 };
 #endif /* LCDMODE_COLORED */
 
-	static uint_fast8_t gshowdbm = 1;	// Отображение уровня сигнала в dBm или S-memter
+static uint_fast8_t gshowdbm = 1;	// Отображение уровня сигнала в dBm или S-memter
+
 #if WITHAUTOTUNER
 
 enum
@@ -4942,7 +4943,6 @@ static const struct paramdefdef xcatenable =
 	uint_fast8_t hamradio_get_ft8cn(void) { return 0; }
 #endif /* WITHIF4DSP */
 
-#define NRLEVELMAX 60
 
 #if WITHAUTOTUNER
 	static uint_fast16_t tunercap;// = (CMAX - CMIN) / 2 + CMIN;
