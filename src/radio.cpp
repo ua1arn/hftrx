@@ -13705,7 +13705,7 @@ static std::atomic<uint32_t> counterupdatedvolume;
 	Вызывается из обработчика таймерного прерывания
 */
 static void
-display_event(void * ctx)
+refreshticker_cb(void * ctx)
 {
 	// таймер обновления частоты
 	{
@@ -13723,14 +13723,14 @@ display_event(void * ctx)
 
 // Проверка разрешения обновления дисплея (индикация частоты).
 static uint_fast8_t
-display_refreshenabled_freqs(void)
+refreshenabled_freqs(void)
 {
 	return counterupdatedfreqs == 0;		/* таймер дошёл до нуля - можно обновлять. */
 }
 
 // подтверждение выполненного обновления дисплея (индикация частоты).
 static void
-display_refreshperformed_freqs(void)
+refreshperformed_freqs(void)
 {
 	const uint_fast32_t n = UINTICKS(1000 / gdisplayfreqsfps);	// 50 ms - обновление с частотой 20 герц
 
@@ -13739,14 +13739,14 @@ display_refreshperformed_freqs(void)
 
 // Проверка разрешения обновления громкости.
 static uint_fast8_t
-display_refreshenabled_volume(void)
+refreshenabled_volume(void)
 {
 	return counterupdatedvolume == 0;		/* таймер дошёл до нуля - можно обновлять. */
 }
 
 // подтверждение выполненного обновления дисплея (индикация частоты).
 static void
-display_refreshperformed_volume(void)
+refreshperformed_volume(void)
 {
 	const uint_fast32_t n = UINTICKS(50);	// 50 ms - обновление с частотой 20 герц
 
@@ -13833,9 +13833,9 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 			/* установка громкости */
 			if (delta == 0)
 				break;
-			if (display_refreshenabled_volume())
+			if (refreshenabled_volume())
 			{
-				display_refreshperformed_volume();
+				refreshperformed_volume();
 				changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), bring_afvolume);
 			}
 			else
@@ -14020,10 +14020,10 @@ display_redrawfreqstimed(
 	uint_fast8_t immed	// Безусловная перерисовка изображения
 	)
 {
-	if (immed || display_refreshenabled_freqs())
+	if (immed || refreshenabled_freqs())
 	{
 		//display2_needupdate();	/* обновление показания частоты */
-		display_refreshperformed_freqs();
+		refreshperformed_freqs();
 	}
 }
 
@@ -19686,7 +19686,7 @@ hamradio_main_step(void)
 
 	case STHRL_RXTX_FQCHANGED:
 			/* валкодер перестал вращаться - если было изменение частоты - сохраняем конфигурацию */
-			if (display_refreshenabled_freqs())
+			if (refreshenabled_freqs())
 			{
 				processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
 				const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
@@ -19701,7 +19701,7 @@ hamradio_main_step(void)
 			}
 			else
 			{
-				// проваливаемся дальше, когда наступит время - display_refreshenabled_freqs -
+				// проваливаемся дальше, когда наступит время - refreshenabled_freqs -
 				// сохраним частоту и пеерйдём к состоянию STHRL_RXTX
 
 			}
@@ -21451,7 +21451,7 @@ application_initialize(void)
 	{
 		static ticker_t ticker;
 
-		ticker_initialize(& ticker, NTICKS(UI_TICKS_PERIOD), display_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		ticker_initialize(& ticker, NTICKS(UI_TICKS_PERIOD), refreshticker_cb, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 		ticker_add(& ticker);
 	}
 
@@ -21469,7 +21469,7 @@ application_initialize(void)
 
 		IRQLSPINLOCK_INITIALIZE(& boardupdatelock);
 		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL);
-		ticker_initialize_user2(& displatchticker, NTICKS(1000 / glatchfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_initialize_user_display(& displatchticker, NTICKS(1000 / glatchfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
 		ticker_add(& displatchticker);
 	}
 
