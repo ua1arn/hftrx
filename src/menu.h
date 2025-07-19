@@ -378,46 +378,10 @@ static const struct menudef menutable [] =
 	},
 #endif /* WITHIF4DSP */
 #if WITHIF4DSP
-	(const struct paramdefdef [1]) {
-		QLABEL("CW W WDT"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for WIDE
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
-		RMT_BWPROPSLEFT_BASE(BWPROPI_CWWIDE),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& bwprop_cwwide.left10_width10,
-		getzerobase, 
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("CW W SFT"), 7, 0, 0, 	ISTEP1,	// CW filter edges for WIDE
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
-		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWWIDE),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& bwprop_cwwide.fltsofter,
-		getzerobase,
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("CW N WDT"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for NARROW
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
-		RMT_BWPROPSLEFT_BASE(BWPROPI_CWNARROW),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& bwprop_cwnarrow.left10_width10,
-		getzerobase, 
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("CW N SFT"), 7, 0, 0, 	ISTEP1,	// CW filter edges for NARROW
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
-		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWNARROW),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& bwprop_cwnarrow.fltsofter,
-		getzerobase,
-	},
+	& xfltbw_cwwide,
+	& xfltsofter_cwwide,
+	& xfltbw_cwnarrow,
+	& xfltsofter_cwnarrow,
 	(const struct paramdefdef [1]) {
 		QLABEL("SSB W HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */

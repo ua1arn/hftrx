@@ -8650,6 +8650,60 @@ static const struct paramdefdef xgtxgate =
 
 #endif /* WITHTX */
 
+#if WITHIF4DSP
+// CW filter bandwidth for WIDE
+static const struct paramdefdef xfltbw_cwwide =
+{
+	QLABEL("CW W WDT"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for WIDE
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
+	RMT_BWPROPSLEFT_BASE(BWPROPI_CWWIDE),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_cwwide.left10_width10,
+	getzerobase,
+};
+// CW filter edges for WIDE
+static const struct paramdefdef xfltsofter_cwwide =
+{
+	QLABEL("CW W SFT"), 7, 0, 0, 	ISTEP1,	// CW filter edges for WIDE
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
+	RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWWIDE),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_cwwide.fltsofter,
+	getzerobase,
+};
+// CW filter bandwidth for NARROW
+static const struct paramdefdef xfltbw_cwnarrow =
+{
+	QLABEL("CW N WDT"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for NARROW
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
+	RMT_BWPROPSLEFT_BASE(BWPROPI_CWNARROW),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_cwnarrow.left10_width10,
+	getzerobase,
+};
+// CW filter edges for NARROW
+static const struct paramdefdef xfltsofter_cwnarrow =
+{
+	QLABELENC2("CW N SOFT"),	// CW filter edges for NARROW
+	0, 0,
+	RJ_UNSIGNED,		// rj
+	ISTEP1,
+	ITEM_VALUE,
+	WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
+	RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWNARROW),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_cwnarrow.fltsofter,
+	getzerobase, /* складывается со смещением и отображается */
+};
+#endif /* WITHIF4DSP */
+
 #if WITHENCODER2
 
 static const struct paramdefdef * enc2menus [] =
@@ -8661,19 +8715,7 @@ static const struct paramdefdef * enc2menus [] =
 #if ! WITHPOTIFGAIN
 	& xrfgain1,	// Усиление ПЧ/ВЧ в процентах
 #endif /* ! WITHPOTIFGAIN */
-	(const struct paramdefdef [1]) {
-		QLABELENC2("CW N SOFT"),	// CW filter edges for NARROW
-		0, 0,
-		RJ_UNSIGNED,		// rj
-		ISTEP1,
-		ITEM_VALUE,
-		WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
-		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWNARROW),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& bwprop_cwnarrow.fltsofter,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xfltsofter_cwnarrow,	// CW filter edges for NARROW
 #endif /* WITHIF4DSP */
 #if WITHELKEY && ! WITHPOTWPM
 	& xgelkeywpm,
@@ -16600,16 +16642,18 @@ const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 	#if WITHELKEY
 		& xgelkeywpm,
 	#endif /* WITHELKEY */
+		& xfltbw_cwnarrow,
+		& xfltsofter_cwnarrow,
 		& xgcwpitch10,
 	#if WITHTX && WITHELKEY
 		& xgbkinenable,
 	#endif /* WITHTX && WITHELKEY */
-	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
-		& xgzoomxpow2,
-	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
 	#if WITHUSEDUALWATCH
 		& xmainsubrxmode,
 	#endif /* WITHUSEDUALWATCH */
+	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
+		& xgzoomxpow2,
+	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
