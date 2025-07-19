@@ -389,12 +389,6 @@ static int_fast32_t getrptoffsbase(void)
 	return - RPTOFFSHALF;
 }
 
-#if WITHIF4DSP
-static dualctl8_t gsquelch = { 0, 0 };	/* squelch level */
-static uint_fast8_t gsquelchNFM;	/* squelch level for NFM */
-static uint_fast8_t ggainnfmrx10 = 30;	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
-#endif /* WITHIF4DSP */
-
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 
 #endif /* WITHDSPEXTDDC */
@@ -3729,6 +3723,7 @@ struct nvmap
 	uint16_t si570_xtall_offset;
 #endif
 
+
 #if WITHCAT
 	uint16_t	ggrpcat; // последний посещённый пункт группы
 	uint8_t catenable;	/* удаленное управление разрешено */
@@ -4053,6 +4048,52 @@ static const struct paramdefdef xmainsubrxmode =
 	getzerobase, /* складывается со смещением и отображается */
 };
 #endif /* WITHUSEDUALWATCH */
+
+#if WITHIF4DSP
+
+static dualctl8_t gsquelch = { 0, 0 };	/* squelch level */
+static const struct paramdefdef xgsquelch =
+{
+	QLABEL("SQUELCH"), 7, 0, 0,	ISTEP1,		/* squelch level */
+	ITEM_VALUE,
+	0, SQUELCHMAX,
+	OFFSETOF(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gsquelch.value,
+	getzerobase, /* складывается со смещением и отображается */
+};
+
+static uint_fast8_t gsquelchNFM;	/* squelch level for NFM */
+static const struct paramdefdef xgsquelchNFM =
+{
+	QLABELENC2("SQUELCHFM"),
+	0, 0,
+	RJ_UNSIGNED,		// rj
+	ISTEP1,		/* squelch level */
+	ITEM_VALUE,
+	0, SQUELCHMAX,
+	OFFSETOF(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gsquelchNFM,
+	getzerobase, /* складывается со смещением и отображается */
+};
+
+static uint_fast8_t ggainnfmrx10 = 30;	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+static const struct paramdefdef xggainnfmrx10 =
+{
+	QLABEL("NFM GAIN"), 7, 1, 0,	ISTEP1,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+	ITEM_VALUE,
+	10, 100,
+	OFFSETOF(struct nvmap, ggainnfmrx10),	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& ggainnfmrx10,
+	getzerobase, /* складывается со смещением и отображается */
+
+};
+#endif /* WITHIF4DSP */
 
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 #if WITHAFSPECTRE
@@ -8513,19 +8554,7 @@ static const struct paramdefdef * enc2menus [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #if ! WITHPOTNFMSQL
-	(const struct paramdefdef [1]) {
-		QLABELENC2("SQUELCHFM"),
-		0, 0,
-		RJ_UNSIGNED,		// rj
-		ISTEP1,		/* squelch level */
-		ITEM_VALUE,
-		0, SQUELCHMAX,
-		OFFSETOF(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gsquelchNFM,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgsquelchNFM,
 #endif /* ! WITHPOTNFMSQL */
 #if WITHSPECTRUMWF
 	& xgbottomdbspe,

@@ -1344,27 +1344,9 @@ static const struct menudef menutable [] =
 	},
 #endif /* WITHMUTEALL && WITHTX */
 #if WITHIF4DSP
-	(const struct paramdefdef [1]) {
-		QLABEL("SQUELCH"), 7, 0, 0,	ISTEP1,		/* squelch level */
-		ITEM_VALUE,
-		0, SQUELCHMAX, 
-		OFFSETOF(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gsquelch.value,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgsquelch,
 #if ! WITHPOTNFMSQL
-	(const struct paramdefdef [1]) {
-		QLABEL("SQUELNFM"), 7, 0, 0,	ISTEP1,		/* squelch level */
-		ITEM_VALUE,
-		0, SQUELCHMAX,
-		OFFSETOF(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gsquelchNFM,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgsquelchNFM,
 #endif /* ! WITHPOTNFMSQL */
 	(const struct paramdefdef [1]) {
 		QLABEL("SDTN LVL"), 7, 0, 0,	ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
@@ -2922,16 +2904,7 @@ static const struct menudef menutable [] =
 
 #if WITHTX
 #if WITHIF4DSP
-	(const struct paramdefdef [1]) {
-		QLABEL("NFM GAIN"), 7, 1, 0,	ISTEP1,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
-		ITEM_VALUE,
-		10, 100,
-		OFFSETOF(struct nvmap, ggainnfmrx10),	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& ggainnfmrx10,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xggainnfmrx10,
 #endif /* WITHIF4DSP */
 #if WITHIF4DSP
 	(const struct paramdefdef [1]) {
