@@ -27,9 +27,7 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	e->old_val = agetpins();
 	e->getpins = agetpins;
 	e->position = 0;
-	e->backup_position = 0;
 
-	e->backup_rotate = 0;
 	e->rotate = 0;
 	e->enchistindex = 0;
 	e->enchist [0] = e->enchist [1] = e->enchist [2] = e->enchist [3] = 0;
@@ -166,10 +164,8 @@ static void encoder_clear(encoder_t * e)
 	IRQLSPIN_LOCK(& e->enclock, & oldIrql2, ENCODER_IRQL);
 	e->old_val = e->getpins();
 	e->position = 0;
-	e->backup_position = 0;
 	IRQLSPIN_UNLOCK(& e->enclock, oldIrql2);
 	e->rotate = 0;
-	e->backup_rotate = 0;
 	e->rotate_kbd = 0;
 	e->enchist [0] = e->enchist [1] = e->enchist [2] = e->enchist [3] = 0;
 	ASSERT(HISTLEN == 4);
@@ -293,8 +289,6 @@ encoder_get_snapshotproportional(
 	hrotate = e->rotate;	/* работа в меню от клавиш - реагируем сразу */
 	e->rotate = 0;
 
-	int_least16_t v = hrotate + e->backup_rotate;
-	e->backup_rotate = 0;
 	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
 
 	// Расчёт скорости. Результат - (1 / ENCODER_NORMALIZED_RESOLUTION) долей оборота за секунду
@@ -302,7 +296,7 @@ encoder_get_snapshotproportional(
 	// ((s * ENCTICKS_FREQUENCY) / t) - результат в размерности "импульсов в секунду".
 	* speed = ((s * (uint_fast32_t) ENCTICKS_FREQUENCY * ENCODER_NORMALIZED_RESOLUTION) / (tdelta * (uint_fast32_t) encoder_get_actualresolution(e)));
 
-	return v;
+	return hrotate;
 }
 
 
@@ -317,9 +311,8 @@ encoder_get_delta(
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
 
-	position = e->position + e->backup_position;
+	position = e->position;
 	e->position = 0;
-	e->backup_position = 0;
 
 	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 
@@ -331,7 +324,7 @@ void encoder_pushback(encoder_t * const e, int outsteps)
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
 
-	e->backup_rotate += outsteps;
+	e->rotate += outsteps;
 
 	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
 }

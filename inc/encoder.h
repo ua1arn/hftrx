@@ -28,13 +28,11 @@ extern "C" {
 typedef struct encoder_tag
 {
 	int_least16_t position;	// обновляется по прерыванию
-	int_least16_t backup_position;	// остаток после деления разрашения
 	uint8_t old_val;
 	uint_fast8_t (* getpins)(void);
 	IRQLSPINLOCK_t enclock;
 	/* locked by encspeedlock */
 	int_least16_t rotate;
-	int_least16_t backup_rotate;	// остаток после деления разрашения
 
 	/* перенесено из глобальной области видимости */
 	IRQLSPINLOCK_t encspeedlock;
