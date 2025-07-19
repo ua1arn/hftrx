@@ -224,6 +224,10 @@ static void event_pushback_LoRes(knobevent_t * e, int_least16_t delta, int derat
 	encoder_pushback(e->enc, (int) delta * derate);
 }
 
+#else /* WITHENCODER */
+
+static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
+
 #endif /* WITHENCODER */
 
 static uint_fast8_t gtx;	/* текущее состояние прием или передача */
@@ -17463,7 +17467,7 @@ processmenukeyandencoder(inputevent_t * ev)
 	uint_fast16_t firstitem = gmenufirstitem [gmenulevel];
 	uint_fast16_t lastitem = gmenulastitem [gmenulevel];
 	const struct menudef * mp = gmp0;
-	uint_fast8_t exitkey = getexitkey();
+	//uint_fast8_t exitkey = getexitkey();
 	uint_fast16_t menupos = mp - menutable;
 	multimenuwnd_t window;
 	const uint_fast8_t itemmask = gmenulevel ? ITEM_VALUE : ITEM_GROUP;
