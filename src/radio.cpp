@@ -3622,7 +3622,7 @@ struct nvmap
 #if WITHUSEFAST
 	uint8_t gusefast;			/* переключение в режим крупного шага */
 #endif /* WITHUSEFAST */
-	uint8_t menuset;		/* набор функций кнопок и режим отображения на дисплее */
+	uint8_t gmenuset;		/* набор функций кнопок и режим отображения на дисплее */
 
 	/* группы */
 	uint16_t ggroup;			/* последняя группа в менюю, с которой работали */
@@ -4149,7 +4149,7 @@ struct nvmap
 
 /* константы, определяющие расположение параметров в FRAM */
 
-#define RMT_MENUSET_BASE OFFSETOF(struct nvmap, menuset)		/* набор функций кнопок и режим отображения на дисплее */
+#define RMT_MENUSET_BASE OFFSETOF(struct nvmap, gmenuset)		/* набор функций кнопок и режим отображения на дисплее */
 #define RMT_GROUP_BASE OFFSETOF(struct nvmap, ggroup)		/* байт - последняя группа меню, с которой работали */
 #define RMT_SIGNATURE_BASE(i) OFFSETOF(struct nvmap, signature [(i)])			/* расположение сигнатуры */
 #define RMT_LOCKMODE_BASE(b) OFFSETOF(struct nvmap, bands [(b)].glock)		/* признак блокировки валкодера */
@@ -5858,7 +5858,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 
 #endif /* WITHTX */
 
-static uint_fast8_t menuset; 	/* номер комплекта функций на кнопках (переключается кнопкой MENU) */
+static uint_fast8_t gmenuset; 	/* номер комплекта функций на кнопках (переключается кнопкой MENU) */
 static uint_fast8_t dimmflag;	/* не-0: притушить дисплей. */
 static uint_fast8_t sleepflag;	/* не-0: выключить дисплей и звук. */
 static uint_fast8_t gblinkphase;
@@ -5867,7 +5867,7 @@ uint_fast8_t actpageix(void)
 {
 	if ((dimmflag || sleepflag || dimmmode))
 		return display_getpagesleep();
-	return menuset;
+	return gmenuset;
 }
 
 /* состояние для мерцающих индикаторов на диспле */
@@ -9015,7 +9015,7 @@ loadsavedstate(void)
 	enc2state = loadvfy8up(RMT_ENC2STATE_BASE, ENC2STATE_INITIALIZE, ENC2STATE_COUNT - 1, enc2state);	/* вытаскиваем режим режактирования паарметров вторым валкодером */
 	enc2pos = loadvfy8up(RMT_ENC2POS_BASE, 0, ENC2POS_COUNT - 1, enc2pos);	/* вытаскиваем номер параметра для редактирования вторым валкодером */
 #endif /* WITHENCODER2 */
-	menuset = loadvfy8up(RMT_MENUSET_BASE, 0, display_getpagesmax(), menuset);		/* вытаскиваем номер субменю, с которым работаем сейчас */
+	gmenuset = loadvfy8up(RMT_MENUSET_BASE, 0, display_getpagesmax(), gmenuset);		/* вытаскиваем номер субменю, с которым работаем сейчас */
 #if WITHSPLIT
 	gsplitmode = loadvfy8up(RMT_SPLITMODE_BASE, 0, VFOMODES_COUNT - 1, gsplitmode); /* (vfo/vfoa/vfob/mem) */
 	gvfoab = loadvfy8up(RMT_VFOAB_BASE, 0, VFOS_COUNT - 1, gvfoab); /* (vfoa/vfob) */
@@ -17568,6 +17568,7 @@ processmenukeyandencoder(inputevent_t * ev)
 		{
 			/* выход из меню */
 			setinmenu(0, NULL);
+			encoders_clear();		// предотвратить переход по частоте после изменения паарметров (накопленные delta)
 		}
 		else if (gmenulevel != 0)
 		{
@@ -18690,8 +18691,8 @@ processmainloopkeyboard(inputevent_t * ev)
 		{
 			/* Альтернативные функции кнопок - "Fn"
 				 - не вызывает сохранение состояния диапазона */
-			menuset = calc_next(menuset, 0, display_getpagesmax());
-			save_i8(RMT_MENUSET_BASE, menuset);
+			gmenuset = calc_next(gmenuset, 0, display_getpagesmax());
+			save_i8(RMT_MENUSET_BASE, gmenuset);
 			//display2_needupdate();
 			ev->keyevent.kbready = 0;
 			return 1;	// требуется обновление индикатора
