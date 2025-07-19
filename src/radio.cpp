@@ -3368,7 +3368,7 @@ struct nvmap
 	uint16_t	ggrpsecial;		// последний посещённый пункт группы
 	uint16_t	ggrpaudio;		// последний посещённый пункт группы
 #if WITHSUBTONES && WITHTX
-	uint8_t ggrpctcss;		// последний посещённый пункт группы
+	uint16_t ggrpctcss;		// последний посещённый пункт группы
 #endif /* WITHSUBTONES && WITHTX */
 #if defined (RTC1_TYPE)
 	uint16_t	ggrpclock; // последний посещённый пункт группы
