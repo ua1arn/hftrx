@@ -160,11 +160,11 @@ void inputevent_initialize(inputevent_t * e)
 	mouseevent_initialize(& e->mouse);
 }
 
-#if WITHENCODER
-
 static uint_fast16_t gstep_ENC_MAIN;
 static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
 static uint_fast16_t gencderate = 1;
+
+#if WITHENCODER
 
 #if defined (ENCDIV_DEFAULT)
 	static uint_fast8_t genc1div = ENCDIV_DEFAULT;	/* во сколько раз уменьшаем разрешение валкодера. */
@@ -19531,6 +19531,8 @@ processmainlooptuneknobs(inputevent_t * ev)
 	uint_fast8_t jumpsize_main;
 	uint_fast8_t jumpsize_sub;
 
+#if WITHENCODER
+
 	/* переход по частоте - шаг берётся из gstep_ENC_MAIN */
 #if WITHBBOX && defined (WITHBBOXFREQ)
 	int_least16_t nrotate_main = 0;	// ignore encoder
@@ -19624,6 +19626,12 @@ processmainlooptuneknobs(inputevent_t * ev)
 	freqchanged = 1;
 #endif
 	return freqchanged;
+
+
+#else /* WITHENCODER */
+	return 0;
+
+#endif /* WITHENCODER */
 }
 // работа в главной машине состояний
 static STTE_t

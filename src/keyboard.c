@@ -64,7 +64,8 @@ getstablev16(const volatile uint_fast16_t * p)
 	return v1;
 
 }
-//static std::atomic<uint_fast16_t> catstateout(CATSTATEO_HALTED);
+
+//static std::atomic<uint_fast16_t> kbd_press;
 
 // сделаны по 8 бит - при 200 герц прерываний 600 мс всего 120 тиков.
 static volatile uint_fast16_t kbd_press;	/* время с момента нажатия */
