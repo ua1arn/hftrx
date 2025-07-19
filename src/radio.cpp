@@ -21028,7 +21028,7 @@ void hamradio_gui_set_reqautotune2(uint_fast8_t val)
 
 void display2_set_page_temp(uint_fast8_t page)
 {
-	menuset = page;
+	gmenuset = page;
 	//display2_needupdate();
 }
 
