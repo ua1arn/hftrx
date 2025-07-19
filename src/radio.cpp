@@ -202,7 +202,7 @@ static int_least16_t event_getRotateHiRes(knobevent_t * e, uint_fast8_t * jsize,
  */
 static int_least16_t event_getRotate_Menu(knobevent_t * e)
 {
-	int derate = encoder_get_actualresolution(e->enc) * genc1div / ENCODER_MENU_STEPS;
+	const int derate = encoder_get_actualresolution(e->enc) * genc1div / ENCODER_MENU_STEPS;
 	div_t d;
 	d = div(e->delta, derate);
 	encoder_pushback(e->enc, d.rem);
@@ -210,7 +210,7 @@ static int_least16_t event_getRotate_Menu(knobevent_t * e)
 	return d.quot;
 }
 
-static int_least16_t event_getRotate_LoRes(knobevent_t * e, unsigned derate)
+static int_least16_t event_getRotate_LoRes(knobevent_t * e, int derate)
 {
 	div_t d;
 	d = div(e->delta, derate);
@@ -219,9 +219,9 @@ static int_least16_t event_getRotate_LoRes(knobevent_t * e, unsigned derate)
 	return d.quot;
 }
 
-static void event_pushback_LoRes(knobevent_t * e, int_least16_t delta, unsigned derate)
+static void event_pushback_LoRes(knobevent_t * e, int_least16_t delta, int derate)
 {
-	encoder_pushback(e->enc, (int) delta * (int) derate);
+	encoder_pushback(e->enc, (int) delta * derate);
 }
 
 /* получить перемещение валкодера. Если есть - включить экран */
