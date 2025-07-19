@@ -292,7 +292,7 @@ static void input_encoder_read_cb(lv_indev_t * drv, lv_indev_data_t * data)
 	encoder_t * const e = (encoder_t *) lv_indev_get_driver_data(drv);
 	LV_ASSERT_NULL(e);
 	data->state = LV_INDEV_STATE_RELEASED;
-	data->enc_diff = encoder_get_delta(e, 1);
+	data->enc_diff = encoder_get_delta(e);
 //	if (data->enc_diff)
 //	{
 //		PRINTF("input_encoder_read_cb: delta=%d\n", (int) data->enc_diff);

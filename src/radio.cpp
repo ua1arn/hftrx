@@ -72,24 +72,26 @@ processcatmsg(uint_fast8_t catcommand1,
 
 typedef struct keyevent_tag
 {
-	uint_fast8_t keyready;
-	uint_fast8_t keycode;
+	uint_fast8_t kbready;
+	uint_fast8_t kbch;
 } keyevent_t;
 
 void keyevent_initialize(keyevent_t * e)
 {
-	e->keyready = 0;
+	e->kbready = 0;
 }
 
 typedef struct knobevent_tag
 {
+	encoder_t * enc;
 	int16_t delta;
-	uint_fast8_t jump;
+	uint_fast8_t jumpsize;
 } knobevent_t;
 
-void knobevent_initialize(knobevent_t * e)
+void knobevent_initialize(knobevent_t * e, encoder_t * aenc)
 {
 	e->delta = 0;
+	e->enc = aenc;
 }
 
 typedef struct mouseevent_tag
@@ -107,26 +109,54 @@ void mouseevent_initialize(mouseevent_t * e)
 typedef struct inputevent_tag
 {
 	keyevent_t keyevent;
+#if WITHENCODER
 	knobevent_t encMAIN;
+#if WITHENCODER_SUB
 	knobevent_t encSUB;
+#endif /* WITHENCODER_SUB */
+#if WITHENCODER2
 	knobevent_t encFN;
+#endif /* WITHENCODER2 */
+#if WITHENCODER_1F
 	knobevent_t encF1;
+#endif /* WITHENCODER_1F */
+#if WITHENCODER_2F
 	knobevent_t encF2;
+#endif /* WITHENCODER_2F */
+#if WITHENCODER_3F
 	knobevent_t encF3;
+#endif /* WITHENCODER_3F */
+#if WITHENCODER_4F
 	knobevent_t encF4;
+#endif /* WITHENCODER_4F */
+#endif /* WITHENCODER */
 	mouseevent_t mouse;
 } inputevent_t;
 
 void inputevent_initialize(inputevent_t * e)
 {
 	keyevent_initialize(& e->keyevent);
-	knobevent_initialize(& e->encMAIN);
-	knobevent_initialize(& e->encSUB);
-	knobevent_initialize(& e->encFN);
-	knobevent_initialize(& e->encF1);
-	knobevent_initialize(& e->encF2);
-	knobevent_initialize(& e->encF3);
-	knobevent_initialize(& e->encF4);
+#if WITHENCODER
+	knobevent_initialize(& e->encMAIN, & encoder1);
+#if WITHENCODER_SUB
+	knobevent_initialize(& e->encSUB, & encoder_sub);
+#endif /* WITHENCODER_SUB */
+#if WITHENCODER2
+	knobevent_initialize(& e->encFN, & encoder2);
+#endif /* WITHENCODER2 */
+#if WITHENCODER_1F
+	knobevent_initialize(& e->encF1, & encoder_ENC1F);
+#endif /* WITHENCODER_1F */
+#if WITHENCODER_2F
+	knobevent_initialize(& e->encF2, & encoder_ENC2F);
+#endif /* WITHENCODER_2F */
+#if WITHENCODER_3F
+	knobevent_initialize(& e->encF3, & encoder_ENC3F);
+#endif /* WITHENCODER_3F */
+#if WITHENCODER_4F
+	knobevent_initialize(& e->encF4, & encoder_ENC4F);
+#endif /* WITHENCODER_4F */
+#endif /* WITHENCODER */
 	mouseevent_initialize(& e->mouse);
 }
 
@@ -155,17 +185,51 @@ static uint_fast16_t gencderate = 1;
 static uint_fast8_t genc2dynamic = 0;
 
 
+
+static int_least16_t event_getRotateHiRes(knobevent_t * e, uint_fast8_t * jsize, unsigned derate)
+{
+	div_t d;
+	d = div(e->delta, derate);
+	encoder_pushback(e->enc, d.rem);
+	* jsize = e->jumpsize;
+	e->delta = 0;
+	return d.quot;
+}
+
+
+/* получение "редуцированного" количества прерываний от валкодера.
+ * То что осталось после деления на scale, остается в накопителе
+ */
+static int_least16_t event_getRotate_Menu(knobevent_t * e)
+{
+	int derate = encoder_get_actualresolution(e->enc) * genc1div / ENCODER_MENU_STEPS;
+	div_t d;
+	d = div(e->delta, derate);
+	encoder_pushback(e->enc, d.rem);
+	e->delta = 0;
+	return d.quot;
+}
+
+static int_least16_t event_getRotate_LoRes(knobevent_t * e, unsigned derate)
+{
+	div_t d;
+	d = div(e->delta, derate);
+	encoder_pushback(e->enc, d.rem);
+	e->delta = 0;
+	return d.quot;
+}
+
 /* получить перемещение валкодера. Если есть - включить экран */
+#if 0
 static int_least16_t
 encoder_delta(
-	encoder_t * e,
-	const uint_fast8_t derate
+	encoder_t * e
 	)
 {
 #if WITHLVGL && WITHLVGLINDEV
 	return 0;
 #else /* WITHLVGL && WITHLVGLINDEV */
-	const int_least16_t delta = encoder_get_delta(e, derate);
+	const int_least16_t delta = encoder_get_delta(e);
 	if (delta)
 	{
 		board_wakeup();
@@ -173,6 +237,8 @@ encoder_delta(
 	return delta;
 #endif /* WITHLVGL && WITHLVGLINDEV */
 }
+#endif
+
 #endif /* WITHENCODER */
 
 static uint_fast8_t gtx;	/* текущее состояние прием или передача */
@@ -244,30 +310,33 @@ processmessages(
 
 void inputevent_fill(inputevent_t * e)
 {
-	processmessages(& e->keyevent.keycode, & e->keyevent.keyready);
+	processmessages(& e->keyevent.kbch, & e->keyevent.kbready);
 
 #if WITHENCODER
 	// main encoder
 
-	e->encMAIN.delta = getRotateHiRes(& encoder1, & e->encMAIN.jump, genc1div * gencderate);
+	e->encMAIN.delta = encoder_getrotatehires(e->encMAIN.enc, & e->encMAIN.jumpsize);
 #if WITHENCODER_SUB
-	e->encSUB.delta = getRotateHiRes(& encoder_sub, & e->encSUB.jump, genc1div * gencderate);
+	e->encSUB.delta = encoder_getrotatehires(e->encSUB.enc, & e->encSUB.jumpsize);
 #endif /* WITHENCODER_SUB */
+#if WITHENCODER2
+	e->encFN.delta = encoder_getrotatehires(e->encFN.enc, & e->encFN.jumpsize);
+#endif /* WITHENCODER2 */
 #if WITHENCODER_1F
-	e->encF1.delta = encoder_delta(& encoder_ENC1F, BOARD_ENC1F_DIVIDE);
-	e->encF1.jump = 0;
+	e->encF1.delta = encoder_get_delta(e->encF1.enc);
+	e->encF1.jumpsize = 0;
 #endif /* WITHENCODER_1F */
 #if WITHENCODER_2F
-	e->encF2.delta = encoder_delta(& encoder_ENC2F, BOARD_ENC2F_DIVIDE);
-	e->encF2.jump = 0;
+	e->encF2.delta = encoder_get_delta(e->encF2.enc);
+	e->encF2.jumpsize = 0;
 #endif /* WITHENCODER_2F */
 #if WITHENCODER_3F
-	e->encF3.delta = encoder_delta(& encoder_ENC3F, BOARD_ENC3F_DIVIDE);
-	e->encF3.jump = 0;
+	e->encF3.delta = encoder_get_delta(e->encF3.enc);
+	e->encF3.jumpsize = 0;
 #endif /* WITHENCODER_3F */
 #if WITHENCODER_4F
-	e->encF4.delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
-	e->encF4.jump = 0;
+	e->encF4.delta = encoder_get_delta(e->encF4.enc);
+	e->encF4.jumpsize = 0;
 #endif /* WITHENCODER_4F */
 #endif /* WITHENCODER */
 }
@@ -10137,7 +10206,7 @@ static void
 updateboard2(void)
 {
 #if WITHENCODER
-	encoderA_set_resolution(encresols [genc1pulses], genc1dynamic);
+	encoder_set_resolution(& encoder1, encresols [genc1pulses], genc1dynamic);
 #endif /* WITHENCODER */
 	display2_setbgcolor(gbluebgnd ? COLORPIP_BLUE : COLORPIP_BLACK);
 }
@@ -13673,7 +13742,7 @@ static uint_fast8_t processpots(void)
 	return changed;
 }
 
-static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
+static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * ev)
 {
 	const uint_fast8_t bi = getbankindex_ab(0);
 	const uint_fast8_t submode = getsubmode(bi);
@@ -13682,7 +13751,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
 	// +++ получение состояния органов управления */
 #if WITHENCODER_1F
 	{
-		const int_least16_t delta = encoder_delta(& encoder_ENC1F, BOARD_ENC1F_DIVIDE);
+		const int_least16_t delta = event_getRotate_LoRes(& ev->encF1, BOARD_ENC1F_DIVIDE);
 		if (delta)
 			bring_enc1f();
 		switch (enc1f_sel)
@@ -13702,7 +13771,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
 #endif /* WITHENCODER_1F */
 #if WITHENCODER_2F
 	{
-		const int_least16_t delta = encoder_delta(& encoder_ENC2F, BOARD_ENC2F_DIVIDE);
+		const int_least16_t delta = event_getRotate_LoRes(& ev->encF2, BOARD_ENC2F_DIVIDE);
 		if (delta)
 			bring_enc2f();
 		switch (enc2f_sel)
@@ -13722,7 +13791,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
 		const unsigned apos = gmiddlepos [mode];
 		const struct paramdefdef * const pd = mdt [mode].middlemenu(& nitems) [gmiddlepos [mode]];
 
-		int_least16_t delta = encoder_delta(& encoder_ENC3F, BOARD_ENC3F_DIVIDE);
+		int_least16_t delta = event_getRotate_LoRes(& ev->encF3, BOARD_ENC3F_DIVIDE);
 		changed |= param_rotate(pd, delta);	// модификация и сохранение параметра
 		if (delta)
 			bring_enc3f();
@@ -13751,7 +13820,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
 	/* перемещение по middle bar */
 	if (! inmenu)
 	{
-		const int_least16_t delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
+		const int_least16_t delta = event_getRotate_LoRes(& ev->encF4, BOARD_ENC4F_DIVIDE);
 		if (delta)
 		{
 			unsigned middlerowsize;
@@ -15863,7 +15932,7 @@ processcatmsg(
 		if (cathasparam)
 		{
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoderA_pushback(steps, genc1div);
+			encoder_pushback(& encoder1, steps * (int) genc1div);
 		}
 	}
 	else if (pcmd == packcmd2('D', 'N'))
@@ -15871,7 +15940,7 @@ processcatmsg(
 		if (cathasparam)
 		{
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoderA_pushback(0 - steps, genc1div);
+			encoder_pushback(& encoder1, 0 - steps * (int) genc1div);
 		}
 	}
 #if 0
@@ -17387,7 +17456,7 @@ static uint_fast16_t menulooklast(uint_fast16_t menupos)
 /* возврат ненуля - было какое-либо нажатие,
 	требуется обновление дисплея и состояния аппаратуры */
 static uint_fast8_t
-processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
+processmenukeyandencoder(inputevent_t * ev)
 {
 	uint_fast16_t firstitem = gmenufirstitem [gmenulevel];
 	uint_fast16_t lastitem = gmenulastitem [gmenulevel];
@@ -17414,36 +17483,35 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 //	}
 
 #if WITHENCODER_4F
-	if (! kbready)
+	if (! ev->keyevent.kbready)
 	{
-		const int_least16_t delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);  // перемещение по меню также с помощью 2го энкодера
+		const int_least16_t delta = event_getRotate_LoRes(& ev->encF4, BOARD_ENC4F_DIVIDE);  // перемещение по меню также с помощью 2го энкодера
 
 		if (delta > 0)
 		{
-			kbch = KBD_CODE_MENU_DOWN;
-			kbready = 1;
+			ev->keyevent.kbch = KBD_CODE_MENU_DOWN;
+			ev->keyevent.kbready = 1;
 		}
 		else if (delta < 0)
 		{
-			kbch = KBD_CODE_MENU_UP;
-			kbready = 1;
+			ev->keyevent.kbch = KBD_CODE_MENU_UP;
+			ev->keyevent.kbready = 1;
 		}
 	}
 #elif WITHENCODER2
-	if (! kbready)
+	if (! ev->keyevent.kbready)
 	{
-		uint_fast8_t js;
-		const int_least16_t nr2 = getRotateHiRes_FN(& js, genc2div);  // перемещение по меню также с помощью 2го энкодера
+		const int_least16_t nr2 = event_getRotate_LoRes(& ev->encFN, genc2div);  // перемещение по меню также с помощью 2го энкодера
 
 		if (nr2 > 0)
 		{
-			kbch = KBD_CODE_MENU_DOWN;
-			kbready = 1;
+			ev->keyevent.kbch = KBD_CODE_MENU_DOWN;
+			ev->keyevent.kbready = 1;
 		}
 		else if (nr2 < 0)
 		{
-			kbch = KBD_CODE_MENU_UP;
-			kbready = 1;
+			ev->keyevent.kbch = KBD_CODE_MENU_UP;
+			ev->keyevent.kbready = 1;
 		}
 	}
 #endif /* WITHENCODER2 */
@@ -17451,7 +17519,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 #if WITHENCODER
 	{
 		/* редактирование значения с помощью поворота валкодера. */
-		const int_least16_t nrotate = getRotateLoRes_A(genc1div);
+		const int_least16_t nrotate = event_getRotate_Menu(& ev->encMAIN);
 
 		if (nrotate != 0 && ismenukinddp(mp->pd, ITEM_VALUE))
 		{
@@ -17464,14 +17532,13 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 	}
 #endif /* WITHENCODER */
 
-	if (! kbready)
+	if (! ev->keyevent.kbready)
 		return 0;
 
-	switch (kbch)
+	switch (ev->keyevent.kbch)
 	{
 	default:
-		/* в случчае несовпадения - прожолжаем работать. */
-		return 0;
+		break;
 
 	case KBD_CODE_DISPMODE:
 	case KBD_ENC2_PRESS:
@@ -17492,6 +17559,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 			while (ismenukinddp(mp->pd, ITEM_VALUE));
 			setinmenu(1, mp);
 		}
+		ev->keyevent.kbready = 0;
 		return 0;
 
 	case KBD_CODE_MENU:
@@ -17521,6 +17589,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 				// группа без пунктов?
 			}
 		}
+		ev->keyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 
 //	case KBD_CODE_LOCK:
@@ -17537,6 +17606,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 	case KBD_CODE_POWEROFF:
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		uif_pwbutton_press();
+		ev->keyevent.kbready = 0;
 		return 0;
 
 #if WITHTX
@@ -17544,6 +17614,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		/* выключить режим настройки или приём/передача */
 		uif_key_tuneoff();
+		ev->keyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_TXTUNE:
@@ -17556,11 +17627,13 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 	case KBD_CODE_ATUSTART:
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		uif_key_atunerstart();
+		ev->keyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_ATUBYPASS:
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		uif_key_bypasstoggle();
+		ev->keyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 #endif /* WITHAUTOTUNER */
 
@@ -17571,6 +17644,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 		uif_key_click_banddown();
+		ev->keyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER2 */
 
@@ -17591,6 +17665,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 		uif_key_click_bandup();
+		ev->keyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER2 */
 
@@ -17623,6 +17698,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 		PRINTF(PSTR("menu: ")); PRINTF(mp->pd->qlabel); PRINTF(PSTR("\n"));
 #endif /* WITHDEBUG */
 
+		ev->keyevent.kbready = 0;
 		return 0;
 	}
 
@@ -18471,16 +18547,19 @@ void playhandler(uint8_t code)
 /* возврат ненуля - было какое-либо нажатие,
 	требуется обновление дисплея и состояния аппаратуры */
 static uint_fast8_t
-processmainloopkeyboard(uint_fast8_t kbch)
+processmainloopkeyboard(inputevent_t * ev)
 {
 #if WITHTOUCHGUI
 	if (keyboard_redirect)
 	{
-		gui_put_keyb_code(kbch);
+		if (ev->keyevent.kbready == 0)
+			return 0;
+		ev->keyevent.kbready = 0;
+		gui_put_keyb_code(ev->keyevent.kbch);
 		return 0;
 	}
 #endif
-	const uint_fast8_t exitkey = getexitkey();	/* эта клавиша совмещена с menu - дополнительный код для выхода. */
+	//const uint_fast8_t exitkey = getexitkey();	/* эта клавиша совмещена с menu - дополнительный код для выхода. */
 
 #if WITHDIRECTFREQENER
 	uint_fast8_t rj;
@@ -18489,8 +18568,11 @@ processmainloopkeyboard(uint_fast8_t kbch)
 
 	if (editfreqmode != 0)
 	{
-		const uint_fast8_t c = kbd_getnumpad(kbch);
-		if (kbch == KBD_CODE_ENTERFREQDONE)
+		if (ev->keyevent.kbready == 0)
+			return 0;
+		ev->keyevent.kbready = 0;
+		const uint_fast8_t c = kbd_getnumpad(ev->keyevent.kbch);
+		if (ev->keyevent.kbch == KBD_CODE_ENTERFREQDONE)
 		{
 			editfreqmode = 0;
 			return 1;
@@ -18527,8 +18609,9 @@ processmainloopkeyboard(uint_fast8_t kbch)
 			return 1;
 		}
 	}
-	else if (kbch == KBD_CODE_ENTERFREQ)
+	else if (ev->keyevent.kbready && ev->keyevent.kbch == KBD_CODE_ENTERFREQ)
 	{
+		ev->keyevent.kbready = 0;
 		blinkpos = DISPLAY_LEFTBLINKPOS;		/* позиция курсора */
 		editfreqmode = 1;
 		editfreq = gfreqs [getbankindex_tx(gtx)];
@@ -18536,8 +18619,15 @@ processmainloopkeyboard(uint_fast8_t kbch)
 	}
 #endif /* WITHDIRECTFREQENER */
 
-	switch (kbch)
+	if (! ev->keyevent.kbready)
+		return 0;
+	ev->keyevent.kbready = 0;
+
+	switch (ev->keyevent.kbch)
 	{
+	default:
+		break;
+
 	case KBD_CODE_MENU:
 		/* Вход в меню
 			 - не вызывает сохранение состояния диапазона */
@@ -18581,6 +18671,7 @@ processmainloopkeyboard(uint_fast8_t kbch)
 			menuset = calc_next(menuset, 0, display_getpagesmax());
 			save_i8(RMT_MENUSET_BASE, menuset);
 			//display2_needupdate();
+			ev->keyevent.kbready = 0;
 			return 1;	// требуется обновление индикатора
 		}
 #endif /* ! WITHTOUCHGUI */
@@ -18596,20 +18687,8 @@ processmainloopkeyboard(uint_fast8_t kbch)
 		uif_key_click_menubyname("IF SHIFT", KBD_CODE_IFSHIFT);
 		return 1;	/* клавиша уже обработана */
 
-#elif KEYBSTYLE_SW2013SF_US2IT || KEYBSTYLE_SW2012CN5_UY5UM
-	case KBD_CODE_MENU_CWSPEED:
-		uif_key_click_menubyname("CW SPEED", KBD_CODE_MENU_CWSPEED);
-		return 1;	/* клавиша уже обработана */
-
-	case KBD_CODE_IFSHIFT:
-		uif_key_click_menubyname("IF SHIFT", KBD_CODE_IFSHIFT);
-		return 1;	/* клавиша уже обработана */
-
-#endif /* KEYBSTYLE_SW2013SF_US2IT || WITHIF4DSP */
+#endif /* WITHIF4DSP */
 #endif /* WITHMENU */
-
-	default:
-		break;
 	}
 
 #if WITHWAVPLAYER || WITHSENDWAV
@@ -18650,34 +18729,17 @@ processmainloopkeyboard(uint_fast8_t kbch)
 	}
 #endif /* WITHWAVPLAYER */
 
-	uint_fast8_t processed = 0;
-#if 1
-	processed |= process_key_menuset0(kbch);
-#else
-	switch (menuset)
-	{
-	default:
-	case DISPMODE_MAIN:
-		processed |= process_key_menuset0(kbch);
-		break;
-#if DSTYLE_SWITCHMODES2		// по кнопке управления переключается набор отображаемой информации
-	case DISPMODE_ALT:
-		processed |= process_key_menuset0(kbch);
-		break;
-#endif /* DSTYLE_SWITCHMODES2 */
-	}
-#endif
-	if (processed != 0)
+	if (process_key_menuset0(ev->keyevent.kbch))
 		return 1;
-	if (process_key_menuset_common(kbch))
-			return 1;	/* клавиша уже обработана */
+	if (process_key_menuset_common(ev->keyevent.kbch))
+		return 1;	/* клавиша уже обработана */
 	return 0;	// не требуется обновления индикатора
 }
 
 #else /* WITHKEYBOARD */
 
 static uint_fast8_t
-processmainloopkeyboard(uint_fast8_t kbch)
+processmainloopkeyboard(inputevent_t * ev)
 {
 	return 0;
 }
@@ -19439,7 +19501,7 @@ static void keyspoolprocess(void * ctx)
 
 /* Возвращаем не-0, если было изменение частоты настройки */
 static uint_fast8_t
-processmainlooptuneknobs(void)
+processmainlooptuneknobs(inputevent_t * ev)
 {
 	uint_fast8_t freqchanged = 0;
 	const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
@@ -19454,22 +19516,24 @@ processmainlooptuneknobs(void)
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC2;
 #elif WITHENCODER_SUB
-	int_least16_t nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
-	int_least16_t nrotate_sub = getRotateHiRes(& encoder_sub, & jumpsize_sub, genc1div * gencderate);
+	int_least16_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
+	int_least16_t nrotate_sub = event_getRotateHiRes(& ev->encSUB, & jumpsize_sub, genc1div * gencderate);
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC_MAIN;
 #elif WITHENCODER2 && LINUX_SUBSYSTEM
 	int_least16_t nrotate_main = 0;	// ignore encoder
+	jumpsize_main = 1;
+	jumpsize_sub = 1;
 	int_least16_t nrotate_sub = linux_get_enc2();
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC2;
 #elif WITHENCODER2
-	int_least16_t nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
-	int_least16_t nrotate_sub = getRotateHiRes_FN(& jumpsize_sub, genc2div);
+	int_least16_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
+	int_least16_t nrotate_sub = event_getRotateHiRes(& ev->encFN, & jumpsize_sub, genc2div);
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC2;
 #else
-	int_least16_t nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
+	int_least16_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
 	int_least16_t nrotate_sub = 0;
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = 0;
@@ -19543,9 +19607,10 @@ processmainlooptuneknobs(void)
 static STTE_t
 hamradio_main_step(void)
 {
-//	inputevent_t event;
-//	inputevent_initialize(& event);
-//	inputevent_fill(& event);
+	inputevent_t event;
+	inputevent_initialize(& event);
+	inputevent_fill(& event);
+
 	switch (sthrl)
 	{
 //	case STHRL_MENU:
@@ -19633,12 +19698,8 @@ hamradio_main_step(void)
 	#endif /* WITHUSEAUDIOREC */
 
 		{
-			uint_fast8_t kbch, kbready;
-			processmessages(& kbch, & kbready);
-
-		#if WITHKEYBOARD
 #if WITHMENU
-			if (ginmenu0 && processmenukeyandencoder(kbready, kbch))
+			if (ginmenu0 && processmenukeyandencoder(& event))
 			{
 		#if WITHTOUCHGUI
 				display_redrawfreqstimed(1);
@@ -19647,7 +19708,7 @@ hamradio_main_step(void)
 
 			}
 #endif /* WITHMENU */
-			if (! ginmenu0 && kbready != 0 && processmainloopkeyboard(kbch))
+			if (! ginmenu0 && processmainloopkeyboard(& event))
 			{
 		#if WITHTOUCHGUI
 				display_redrawfreqstimed(1);
@@ -19655,7 +19716,6 @@ hamradio_main_step(void)
 				//display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
 
 			} // end keyboard processing
-		#endif /* WITHKEYBOARD */
 		}
 		if (processpots())
 		{
@@ -19667,7 +19727,7 @@ hamradio_main_step(void)
 
 		} // end potentiometers processing
 
-		if (processmainloopencoders(ginmenu0))
+		if (processmainloopencoders(ginmenu0, & event))
 		{
 	#if WITHTOUCHGUI
 			display_redrawfreqstimed(1);
@@ -19675,7 +19735,7 @@ hamradio_main_step(void)
 
 		}
 		// Knobs rotation processing
-		if (! ginmenu0 && processmainlooptuneknobs())
+		if (! ginmenu0 && processmainlooptuneknobs(& event))
 		{
 			updateboard_freq();	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 			// Ограничение по скорости обновления дисплея уже заложено в него

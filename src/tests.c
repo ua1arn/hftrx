@@ -5352,10 +5352,10 @@ void looptests(void)
 	{
 		// Encoder tests
 		PRINTF("ef1=%+3d, ef2=%+3d, ef3=%+3d, ef4=%+3d\n",
-				(int) encoder_get_delta(& encoder_ENC1F, 1),
-				(int) encoder_get_delta(& encoder_ENC2F, 1),
-				(int) encoder_get_delta(& encoder_ENC3F, 1),
-				(int) encoder_get_delta(& encoder_ENC4F, 1)
+				(int) encoder_get_delta(& encoder_ENC1F),
+				(int) encoder_get_delta(& encoder_ENC2F),
+				(int) encoder_get_delta(& encoder_ENC3F),
+				(int) encoder_get_delta(& encoder_ENC4F)
 				);
 	}
 #endif
@@ -14037,7 +14037,7 @@ void hightests(void)
 		for (;;)
 		{
 			uint_fast8_t jumpsize;
-			int_least16_t nrotate = getRotateHiRes(& encoder1, & jumpsize, 1);
+			int_least16_t nrotate = encoder_getrotatehires(& encoder1, & jumpsize);
 			(void) nrotate;
 			//display_gotoxy(0, 1);		// курсор в начало второй строки
 			display_debug_digit(jumpsize, 7, 0, 0);
