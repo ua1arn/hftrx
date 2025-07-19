@@ -16679,11 +16679,8 @@ defaultsettings(void)
 //+++ menu support
 
 // Отображение многострочного меню для больших экранов (группы)
-// вызывается по dzones
-void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx, const char * (* getlabel)(const struct paramdefdef * pd))
+static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx, const char * (* getlabel)(const struct paramdefdef * pd))
 {
-	if (pctx == NULL || pctx->type != DCTX_MENU)
-		return;
 	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast16_t y_position_groups = ycell;
@@ -16766,11 +16763,8 @@ void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcel
 }
 
 // Отображение многострочного меню для больших экранов (параметры)
-// вызывается по dzones
-void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx, const char * (* getlabel)(const struct paramdefdef * pd))
+static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx, const char * (* getlabel)(const struct paramdefdef * pd))
 {
-	if (pctx == NULL || pctx->type != DCTX_MENU)
-		return;
 	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast8_t y_position_params = ycell;
@@ -16864,11 +16858,8 @@ void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t xcel
 }
 
 // Отображение многострочного меню для больших экранов (значения)
-// вызывается по dzones
-void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
-	if (pctx == NULL || pctx->type != DCTX_MENU)
-		return;
 	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - menutable);
 	uint_fast8_t y_position_params = y;
@@ -16953,6 +16944,8 @@ void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uin
 // вызывается по dzones
 void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
+	if (pctx == NULL || pctx->type != DCTX_MENU)
+		return;
 	multimenuwnd_t w;
 	const uint_fast8_t xcell_marker = xcell + 0;
 	const uint_fast8_t xcell_text = xcell + 1;
