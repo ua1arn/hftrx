@@ -13748,7 +13748,7 @@ display_refreshenabled_volume(void)
 static void
 display_refreshperformed_volume(void)
 {
-	const uint_fast32_t n = UINTICKS(100);	// 100 ms - обновление с частотой 10 герц
+	const uint_fast32_t n = UINTICKS(50);	// 50 ms - обновление с частотой 20 герц
 
 	counterupdatedvolume = n;
 }
