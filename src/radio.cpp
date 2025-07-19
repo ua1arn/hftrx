@@ -61,6 +61,216 @@ static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t xcell, uint_f
 // название параметра, если группа - ничего не отображаем
 static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, const char * (* getlabel)(const struct paramdefdef * pd));
 
+static uint_fast8_t board_wakeup(void);
+static uint_fast8_t
+processcatmsg(uint_fast8_t catcommand1,
+	uint_fast8_t catcommand2,
+	uint_fast8_t cathasparam,
+	uint_fast8_t catpcount,	// количество символов за кодом команды
+	const uint8_t * catp	// массив символов
+	);
+
+typedef struct keyevent_tag
+{
+	uint_fast8_t keyready;
+	uint_fast8_t keycode;
+} keyevent_t;
+
+void keyevent_initialize(keyevent_t * e)
+{
+	e->keyready = 0;
+}
+
+typedef struct knobevent_tag
+{
+	int16_t delta;
+	uint_fast8_t jump;
+} knobevent_t;
+
+void knobevent_initialize(knobevent_t * e)
+{
+	e->delta = 0;
+}
+
+typedef struct mouseevent_tag
+{
+	int8_t pressed;
+	uint16_t x;
+	uint16_t y;
+} mouseevent_t;
+
+void mouseevent_initialize(mouseevent_t * e)
+{
+	e->pressed = 0;
+}
+
+typedef struct inputevent_tag
+{
+	keyevent_t keyevent;
+	knobevent_t encMAIN;
+	knobevent_t encSUB;
+	knobevent_t encFN;
+	knobevent_t encF1;
+	knobevent_t encF2;
+	knobevent_t encF3;
+	knobevent_t encF4;
+	mouseevent_t mouse;
+} inputevent_t;
+
+void inputevent_initialize(inputevent_t * e)
+{
+	keyevent_initialize(& e->keyevent);
+	knobevent_initialize(& e->encMAIN);
+	knobevent_initialize(& e->encSUB);
+	knobevent_initialize(& e->encFN);
+	knobevent_initialize(& e->encF1);
+	knobevent_initialize(& e->encF2);
+	knobevent_initialize(& e->encF3);
+	knobevent_initialize(& e->encF4);
+	mouseevent_initialize(& e->mouse);
+}
+
+#if WITHENCODER
+
+static uint_fast16_t gstep_ENC_MAIN;
+static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
+static uint_fast16_t gencderate = 1;
+
+#if defined (ENCDIV_DEFAULT)
+	static uint_fast8_t genc1div = ENCDIV_DEFAULT;	/* во сколько раз уменьшаем разрешение валкодера. */
+#else /* defined (ENCDIV_DEFAULT) */
+	static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
+#endif /* defined (ENCDIV_DEFAULT) */
+#if defined (ENCDYNAMIC_DEFAULT)
+	static uint_fast8_t genc1dynamic = ENCDYNAMIC_DEFAULT;
+#else /* defined (ENCDYNAMIC_DEFAULT) */
+	static uint_fast8_t genc1dynamic = 1;
+#endif /* defined (ENCDYNAMIC_DEFAULT) */
+
+#if defined (BOARD_ENCODER2_DIVIDE)
+	static uint_fast8_t genc2div = BOARD_ENCODER2_DIVIDE;
+#else /* defined (BOARD_ENCODER2_DIVIDE) */
+	static uint_fast8_t genc2div = 2;	/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+#endif /* defined (BOARD_ENCODER2_DIVIDE) */
+static uint_fast8_t genc2dynamic = 0;
+
+
+/* получить перемещение валкодера. Если есть - включить экран */
+static int_least16_t
+encoder_delta(
+	encoder_t * e,
+	const uint_fast8_t derate
+	)
+{
+#if WITHLVGL && WITHLVGLINDEV
+	return 0;
+#else /* WITHLVGL && WITHLVGLINDEV */
+	const int_least16_t delta = encoder_get_delta(e, derate);
+	if (delta)
+	{
+		board_wakeup();
+	}
+	return delta;
+#endif /* WITHLVGL && WITHLVGLINDEV */
+}
+#endif /* WITHENCODER */
+
+static uint_fast8_t gtx;	/* текущее состояние прием или передача */
+
+/* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
+void
+processmessages(
+	uint_fast8_t * kbch,
+	uint_fast8_t * kbready
+	)
+{
+	if (hardware_getshutdown())	// признак провала питания
+	{
+		display_uninitialize();	// выключаем дисплей
+		gtx = 0;
+		updateboard();	// переходим на приём
+		for (;;)				// вешаемся...
+			;
+	}
+
+	board_dpc_processing();		// обработка отложенного вызова user mode функций
+#if WITHWATCHDOG
+	watchdog_ping();
+#endif /* WITHWATCHDOG */
+
+#if WITHLVGL && WITHLVGLINDEV
+
+	* kbch = KBD_CODE_MAX;
+	* kbready = 0;
+
+#else /* WITHLVGL && WITHLVGLINDEV */
+
+	if ((* kbready = kbd_scan(kbch)) != 0)
+	{
+		if (board_wakeup() && * kbch != KBD_CODE_POWEROFF)
+			* kbch = KBD_CODE_MAX;	// первое нажатие в спящем режиме игнорируеся и используется только для пробуждения
+	}
+	else
+		* kbch = KBD_CODE_MAX;
+
+#endif /* WITHLVGL && WITHLVGLINDEV */
+
+	uint8_t * buff;
+	switch (takemsgready(& buff))
+	{
+	case MSGT_EMPTY:
+		return;
+
+	case MSGT_CAT:
+		board_wakeup();
+#if WITHCAT
+		{
+			// check MSGBUFFERSIZE8 valie
+			// 12 bytes as parameter
+			//PRINTF(PSTR("processmessages: MSGT_CAT\n"));
+			if (processcatmsg(buff [0], buff [1], buff [2], buff [8], buff + 9))
+			{
+				//display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
+			}
+		}
+#endif /* WITHCAT */
+		break;
+
+	default:
+		break;
+	}
+	releasemsgbuffer(buff);
+}
+
+void inputevent_fill(inputevent_t * e)
+{
+	processmessages(& e->keyevent.keycode, & e->keyevent.keyready);
+
+#if WITHENCODER
+	// main encoder
+
+	e->encMAIN.delta = getRotateHiRes(& encoder1, & e->encMAIN.jump, genc1div * gencderate);
+#if WITHENCODER_SUB
+	e->encSUB.delta = getRotateHiRes(& encoder_sub, & e->encSUB.jump, genc1div * gencderate);
+#endif /* WITHENCODER_SUB */
+#if WITHENCODER_1F
+	e->encF1.delta = encoder_delta(& encoder_ENC1F, BOARD_ENC1F_DIVIDE);
+	e->encF1.jump = 0;
+#endif /* WITHENCODER_1F */
+#if WITHENCODER_2F
+	e->encF2.delta = encoder_delta(& encoder_ENC2F, BOARD_ENC2F_DIVIDE);
+	e->encF2.jump = 0;
+#endif /* WITHENCODER_2F */
+#if WITHENCODER_3F
+	e->encF3.delta = encoder_delta(& encoder_ENC3F, BOARD_ENC3F_DIVIDE);
+	e->encF3.jump = 0;
+#endif /* WITHENCODER_3F */
+#if WITHENCODER_4F
+	e->encF4.delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
+	e->encF4.jump = 0;
+#endif /* WITHENCODER_4F */
+#endif /* WITHENCODER */
+}
 
 // Определения для работ по оптимизации быстродействия
 #if WITHDEBUG && 0
@@ -378,7 +588,6 @@ uint_fast8_t edgepin_get(edgepin_t * egp)
 
 enum { RPTOFFSMIN = 0, RPTOFFSHALF = 900, RPTOFFSMAX = 2 * RPTOFFSHALF };
 
-static uint_fast8_t gtx;	/* текущее состояние прием или передача */
 static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при приеме телеграфа или самоконтроль (в десятках герц) */
 
 static uint_fast16_t rptroffshf1k = RPTOFFSHALF;		/* Repeater offset HF */
@@ -3985,9 +4194,6 @@ static uint_fast8_t gvfosplit [VFOS_COUNT];	// At index 0: RX VFO A or B, at ind
 static uint_fast8_t gsubmode;		/* код текущего режима */
 static uint_fast8_t gmode;		/* текущий код группы режимов */
 static uint_fast8_t gfi;			/* номер фильтра (сквозной) для текущего режима */
-static uint_fast16_t gstep_ENC_MAIN;
-static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
-static uint_fast16_t gencderate = 1;
 
 static unsigned nvramoffs_selector(unsigned * count)
 {
@@ -4167,31 +4373,12 @@ static const struct paramdefdef xgcwpitch10 =
 };
 
 #if WITHENCODER
-	static uint_fast8_t genc1pulses = ENCRES_DEFAULT;		/* 5: 128 индекс в таблице разрешений валкодера */
-	#if defined (ENCDIV_DEFAULT)
-		static uint_fast8_t genc1div = ENCDIV_DEFAULT;	/* во сколько раз уменьшаем разрешение валкодера. */
-	#else /* defined (ENCDIV_DEFAULT) */
-		static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
-	#endif /* defined (ENCDIV_DEFAULT) */
-	#if defined (ENCDYNAMIC_DEFAULT)
-		static uint_fast8_t genc1dynamic = ENCDYNAMIC_DEFAULT;
-	#else /* defined (ENCDYNAMIC_DEFAULT) */
-		static uint_fast8_t genc1dynamic = 1;
-	#endif /* defined (ENCDYNAMIC_DEFAULT) */
 	static uint_fast8_t gbigstep = (ENCRES_24 >= ENCRES_DEFAULT);	/* модифицируется через меню. */
-
-	#if defined (BOARD_ENCODER2_DIVIDE)
-		static uint_fast8_t genc2div = BOARD_ENCODER2_DIVIDE;
-	#else /* defined (BOARD_ENCODER2_DIVIDE) */
-		static uint_fast8_t genc2div = 2;	/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
-	#endif /* defined (BOARD_ENCODER2_DIVIDE) */
-	static uint_fast8_t genc2dynamic = 0;
-
+	static uint_fast8_t genc1pulses = ENCRES_DEFAULT;		/* 5: 128 индекс в таблице разрешений валкодера */
 
 #else
 	static const uint_fast8_t gbigstep = 0;
-	static const uint_fast8_t genc1div = 1;
-	static const uint_fast8_t genc2div = 1;
+
 #endif
 
 #if WITHOVFHIDE
@@ -6326,7 +6513,7 @@ static uint_fast8_t tuneabort(void)
 	// todo: не работает на дисплеях с off screen composition.
 	// счетчик перебора сбрасывается в 0 - и до обновления экрана дело не доходит.
 
-	processmessages(& kbch, & kbready, 0, NULL);
+	processmessages(& kbch, & kbready);
 	if (kbready != 0)
 	{
 		switch (kbch)
@@ -7134,25 +7321,6 @@ board_wakeup(void)
 	}
 #endif /* WITHSLEEPTIMER */
 	return r;
-}
-
-/* получить перемещение валкодера. Если есть - включить экран */
-static int_least16_t
-encoder_delta(
-	encoder_t * e,
-	const uint_fast8_t derate
-	)
-{
-#if WITHLVGL && WITHLVGLINDEV
-	return 0;
-#else /* WITHLVGL && WITHLVGLINDEV */
-	const int_least16_t delta = encoder_get_delta(e, derate);
-	if (delta)
-	{
-		board_wakeup();
-	}
-	return delta;
-#endif /* WITHLVGL && WITHLVGLINDEV */
 }
 
 /* получаем PBT offset для текущего режима работы */
@@ -15166,7 +15334,6 @@ static unsigned packcmd2(uint_fast8_t c1, uint_fast8_t c2)
 /* возврат ненуля - была какая-либо команда
 	требуется обновление дисплея */
 static uint_fast8_t
-//NOINLINEAT
 processcatmsg(
 	uint_fast8_t catcommand1,
 	uint_fast8_t catcommand2,
@@ -16202,74 +16369,6 @@ int board_islfmmode(void)
 #else /* WITHLFM */
 	return 0;
 #endif /* WITHLFM */
-}
-
-/* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
-void
-//NOINLINEAT
-processmessages(
-	uint_fast8_t * kbch,
-	uint_fast8_t * kbready,
-	uint_fast8_t inmenu,
-	const struct menudef * mp
-	)
-{
-	if (hardware_getshutdown())	// признак провала питания
-	{
-		display_uninitialize();	// выключаем дисплей
-		gtx = 0;
-		updateboard();	// переходим на приём
-		for (;;)				// вешаемся...
-			;
-	}
-
-	board_dpc_processing();		// обработка отложенного вызова user mode функций
-#if WITHWATCHDOG
-	watchdog_ping();
-#endif /* WITHWATCHDOG */
-
-#if WITHLVGL && WITHLVGLINDEV
-
-	* kbch = KBD_CODE_MAX;
-	* kbready = 0;
-
-#else /* WITHLVGL && WITHLVGLINDEV */
-
-	if ((* kbready = kbd_scan(kbch)) != 0)
-	{
-		if (board_wakeup() && * kbch != KBD_CODE_POWEROFF)
-			* kbch = KBD_CODE_MAX;	// первое нажатие в спящем режиме игнорируеся и используется только для пробуждения
-	}
-	else
-		* kbch = KBD_CODE_MAX;
-
-#endif /* WITHLVGL && WITHLVGLINDEV */
-
-	uint8_t * buff;
-	switch (takemsgready(& buff))
-	{
-	case MSGT_EMPTY:
-		return;
-
-	case MSGT_CAT:
-		board_wakeup();
-#if WITHCAT
-		{
-			// check MSGBUFFERSIZE8 valie
-			// 12 bytes as parameter
-			//PRINTF(PSTR("processmessages: MSGT_CAT\n"));
-			if (processcatmsg(buff [0], buff [1], buff [2], buff [8], buff + 9))
-			{
-				//display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
-			}
-		}
-#endif /* WITHCAT */
-		break;
-
-	default:
-		break;
-	}
-	releasemsgbuffer(buff);
 }
 
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
@@ -17744,7 +17843,7 @@ static void vfoallignment(void)
 	{
 		uint_fast8_t kbch, kbready;
 
-		processmessages(& kbch, & kbready, 1, NULL);
+		processmessages(& kbch, & kbready);
 
 		if (kbready != 0)
 		{
@@ -19129,7 +19228,7 @@ static STTE_t hamradio_tune_step(void)
 			for (;;)
 			{
 				uint_fast8_t kbch, kbready;
-				processmessages(& kbch, & kbready, 0, NULL);
+				processmessages(& kbch, & kbready);
 				if (kbready == 0)
 					break;
 			}
@@ -19444,6 +19543,9 @@ processmainlooptuneknobs(void)
 static STTE_t
 hamradio_main_step(void)
 {
+//	inputevent_t event;
+//	inputevent_initialize(& event);
+//	inputevent_fill(& event);
 	switch (sthrl)
 	{
 //	case STHRL_MENU:
@@ -19532,7 +19634,7 @@ hamradio_main_step(void)
 
 		{
 			uint_fast8_t kbch, kbready;
-			processmessages(& kbch, & kbready, 0, NULL);
+			processmessages(& kbch, & kbready);
 
 		#if WITHKEYBOARD
 #if WITHMENU

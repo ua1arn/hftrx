@@ -3987,7 +3987,7 @@ static void diskio_test(BYTE drv)
 
 		/* Обеспечение работы USER MODE DPC */
 		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0, NULL);
+		processmessages(& kbch, & kbready);
 
 		char c;
 		if (dbg_getchar(& c))
@@ -4122,7 +4122,7 @@ static void diskio_test(BYTE drv)
 						board_dpc_processing();		// обработка отложенного вызова user mode функций
 						/* Обеспечение работы USER MODE DPC */
 						uint_fast8_t kbch, kbready;
-						processmessages(& kbch, & kbready, 0, NULL);
+						processmessages(& kbch, & kbready);
 						// проверка прерывания работы с клавиатуры
 						char c;
 						if (dbg_getchar(& c))
@@ -4158,7 +4158,7 @@ static void diskio_test(BYTE drv)
 					{
 						/* Обеспечение работы USER MODE DPC */
 						uint_fast8_t kbch, kbready;
-						processmessages(& kbch, & kbready, 0, NULL);
+						processmessages(& kbch, & kbready);
 
 						if (dbg_getchar(& c))
 						{
@@ -4185,7 +4185,7 @@ static void diskio_test(BYTE drv)
 						{
 							/* Обеспечение работы USER MODE DPC */
 							uint_fast8_t kbch, kbready;
-							processmessages(& kbch, & kbready, 0, NULL);
+							processmessages(& kbch, & kbready);
 							// проверка прерывания работы с клавиатуры
 							char c;
 							if (dbg_getchar(& c))
@@ -4243,7 +4243,7 @@ static void fatfs_filesystest(int speedtest)
 	{
 		/* Обеспечение работы USER MODE DPC */
 		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0, NULL);
+		processmessages(& kbch, & kbready);
 		char c;
 		if (dbg_getchar(& c))
 		{
@@ -4494,7 +4494,7 @@ bootloaderFLASH(const char * volPrefix, BYTE targetDEV)
 	{
 		/* Обеспечение работы USER MODE DPC */
 		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0, NULL);
+		processmessages(& kbch, & kbready);
 		char c;
 		if (dbg_getchar(& c))
 		{
@@ -9771,7 +9771,7 @@ void vm41nandtest(void)
 	{
 		char c;
 		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0, NULL);
+		processmessages(& kbch, & kbready);
 		if (dbg_getchar(& c))
 		{
 			switch (c)
@@ -10391,7 +10391,7 @@ static void csrftest(void)
 	{
 		/* Обеспечение работы USER MODE DPC */
 		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0, NULL);
+		processmessages(& kbch, & kbready);
 
 		IRQL_t oldIrql;
 		uint_fast8_t f;
@@ -10597,7 +10597,7 @@ void hightests(void)
 			for (;;)
 			{
 				uint_fast8_t kbch, kbready;
-				processmessages(& kbch, & kbready, 0, NULL);
+				processmessages(& kbch, & kbready);
 				if (kbready)
 				{
 					switch (kbch)
@@ -12031,7 +12031,7 @@ void hightests(void)
 		{
 			/* Обеспечение работы USER MODE DPC */
 			uint_fast8_t kbch, kbready;
-			processmessages(& kbch, & kbready, 0, NULL);
+			processmessages(& kbch, & kbready);
 			char c;
 			if (dbg_getchar(& c))
 			{

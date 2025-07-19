@@ -529,7 +529,7 @@ void bootloader_mainloop(void)
 	for (;;)
 	{
 		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0, NULL);
+		processmessages(& kbch, & kbready);
 
 		if (kbready)
 			PRINTF("bkbch=%02x\n", kbch);
