@@ -224,26 +224,6 @@ static void event_pushback_LoRes(knobevent_t * e, int_least16_t delta, int derat
 	encoder_pushback(e->enc, (int) delta * derate);
 }
 
-/* получить перемещение валкодера. Если есть - включить экран */
-#if 0
-static int_least16_t
-encoder_delta(
-	encoder_t * e
-	)
-{
-#if WITHLVGL && WITHLVGLINDEV
-	return 0;
-#else /* WITHLVGL && WITHLVGLINDEV */
-	const int_least16_t delta = encoder_get_delta(e);
-	if (delta)
-	{
-		board_wakeup();
-	}
-	return delta;
-#endif /* WITHLVGL && WITHLVGLINDEV */
-}
-#endif
-
 #endif /* WITHENCODER */
 
 static uint_fast8_t gtx;	/* текущее состояние прием или передача */
@@ -19585,18 +19565,19 @@ processmainlooptuneknobs(inputevent_t * ev)
 
 	if (glock == 0)
 	{
-
+		uint_fast32_t * const pimain = & gfreqs [bi_main];
+		uint_fast32_t * const pisub = & gfreqs [bi_sub];
 		/* Обработка накопленного количества импульсов от валкодера */
 		if (nrotate_main < 0)
 		{
 			/* Валкодер A: вращали "вниз" */
-			gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - ((uint_fast32_t) step_main * jumpsize_main * - nrotate_main), step_main, tune_bottom(bi_main));
+			* pimain = prevfreq(* pimain, * pimain - ((uint_fast32_t) step_main * jumpsize_main * - nrotate_main), step_main, tune_bottom(bi_main));
 			freqchanged = 1;
 		}
 		else if (nrotate_main > 0)
 		{
 			/* Валкодер A: вращали "вверх" */
-			gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + ((uint_fast32_t) step_main * jumpsize_main * nrotate_main), step_main, tune_top(bi_main));
+			* pimain = nextfreq(* pimain, * pimain + ((uint_fast32_t) step_main * jumpsize_main * nrotate_main), step_main, tune_top(bi_main));
 			freqchanged = 1;
 		}
 
@@ -19605,13 +19586,13 @@ processmainlooptuneknobs(inputevent_t * ev)
 		if (nrotate_sub < 0)
 		{
 			/* Валкодер B: вращали "вниз" */
-			gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - ((uint_fast32_t) step_sub * jumpsize_sub * - nrotate_sub), step_sub, tune_bottom(bi_sub));
+			* pisub = prevfreq(* pisub, * pisub - ((uint_fast32_t) step_sub * jumpsize_sub * - nrotate_sub), step_sub, tune_bottom(bi_sub));
 			freqchanged = 1;
 		}
 		else if (nrotate_sub > 0)
 		{
 			/* Валкодер B: вращали "вверх" */
-			gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + ((uint_fast32_t) step_sub * jumpsize_sub * nrotate_sub), step_sub, tune_top(bi_sub));
+			* pisub = nextfreq(* pisub, * pisub + ((uint_fast32_t) step_sub * jumpsize_sub * nrotate_sub), step_sub, tune_top(bi_sub));
 			freqchanged = 1;
 		}
 #endif /* ! WITHTOUCHGUI */
