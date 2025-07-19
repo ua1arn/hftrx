@@ -219,6 +219,11 @@ static int_least16_t event_getRotate_LoRes(knobevent_t * e, unsigned derate)
 	return d.quot;
 }
 
+static void event_pushback_LoRes(knobevent_t * e, int_least16_t delta, unsigned derate)
+{
+	encoder_pushback(e->enc, (int) delta * (int) derate);
+}
+
 /* получить перемещение валкодера. Если есть - включить экран */
 #if 0
 static int_least16_t
@@ -502,25 +507,6 @@ typedef struct dualctl32_tag
 	uint_fast32_t value;	/* результирующее знаяение для формирования управляющего воздействия и инфопмирования по CAT */
 	uint_fast32_t potvalue;	/* значение после функции гистерезиса от потенциометра */
 } dualctl32_t;
-
-static uint_fast16_t
-getstablev16(const volatile uint_fast16_t * p)
-{
-	if (sizeof * p == 1)
-		return * p;
-	else
-	{
-		uint_fast8_t v1 = * p;
-		uint_fast8_t v2;
-		do
-		{
-			v2 = v1;
-			v1 = * p;
-		} while (v2 != v1);
-		return v1;
-	}
-}
-
 
 #define BRSCALE 1200U
 
@@ -13681,6 +13667,65 @@ display2_bars(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t
 #endif /* WITHBARS */
 }
 
+#include <atomic>
+static std::atomic<uint32_t> counterupdatedfreqs;
+static std::atomic<uint32_t> counterupdatedvolume;
+
+/*
+	отсчёт времени по запрещению обновления дисплея при вращении валкодера.
+	обновлению s-метра
+	обновлению вольтметра
+	обновлению режимов работы
+	Вызывается из обработчика таймерного прерывания
+*/
+static void
+display_event(void * ctx)
+{
+	// таймер обновления частоты
+	{
+		const uint_fast32_t t = counterupdatedfreqs;
+		if (t != 0)
+			counterupdatedfreqs = t - 1;
+	}
+	// таймер обновления громкости
+	{
+		const uint_fast32_t t = counterupdatedvolume;
+		if (t != 0)
+			counterupdatedvolume = t - 1;
+	}
+}
+
+// Проверка разрешения обновления дисплея (индикация частоты).
+static uint_fast8_t
+display_refreshenabled_freqs(void)
+{
+	return counterupdatedfreqs == 0;		/* таймер дошёл до нуля - можно обновлять. */
+}
+
+// подтверждение выполненного обновления дисплея (индикация частоты).
+static void
+display_refreshperformed_freqs(void)
+{
+	const uint_fast32_t n = UINTICKS(1000 / gdisplayfreqsfps);	// 50 ms - обновление с частотой 20 герц
+
+	counterupdatedfreqs = n;
+}
+
+// Проверка разрешения обновления громкости.
+static uint_fast8_t
+display_refreshenabled_volume(void)
+{
+	return counterupdatedvolume == 0;		/* таймер дошёл до нуля - можно обновлять. */
+}
+
+// подтверждение выполненного обновления дисплея (индикация частоты).
+static void
+display_refreshperformed_volume(void)
+{
+	const uint_fast32_t n = UINTICKS(100);	// 100 ms - обновление с частотой 10 герц
+
+	counterupdatedvolume = n;
+}
 
 static uint_fast8_t processpots(void)
 {
@@ -13760,9 +13805,21 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 			break;
 		case 0:
 			/* установка громкости */
-			changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), bring_afvolume);
+			if (delta == 0)
+				break;
+			if (display_refreshenabled_volume())
+			{
+				display_refreshperformed_volume();
+				changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), bring_afvolume);
+			}
+			else
+			{
+				event_pushback_LoRes(& ev->encF1, delta, BOARD_ENC1F_DIVIDE);
+			}
 			break;
 		case 1:
+			if (delta == 0)
+				break;
 			/* установка IF GAIN */
 			changed |= encoder_flagne(& xrfgain1, delta, CATINDEX(CAT_RG_INDEX), bring_rfvolume);
 			break;
@@ -13777,8 +13834,12 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 		switch (enc2f_sel)
 		{
 		default:
+			if (delta == 0)
+				break;
 			break;
 		case 0:
+			if (delta == 0)
+				break;
 			break;
 		}
 	}
@@ -13845,45 +13906,6 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 	if (changed != 0)
 		updateboard();	/* полная перенастройка (как после смены режима) */
 	return changed;
-}
-
-static volatile uint_fast16_t counterupdatedfreqs;
-
-/*
-	отсчёт времени по запрещению обновления дисплея при вращении валкодера.
-	обновлению s-метра
-	обновлению вольтметра
-	обновлению режимов работы
-	Вызывается из обработчика таймерного прерывания
-*/
-static void
-display_event(void * ctx)
-{
-	// таймер обновления частоты
-	{
-		const uint_fast16_t t = counterupdatedfreqs;
-		if (t != 0)
-			counterupdatedfreqs = t - 1;
-	}
-}
-
-// Проверка разрешения обновления дисплея (индикация частоты).
-static uint_fast8_t
-display_refreshenabled_freqs(void)
-{
-	return getstablev16(& counterupdatedfreqs) == 0;		/* таймер дошёл до нуля - можно обновлять. */
-}
-
-// подтверждение выполненного обновления дисплея (индикация частоты).
-static void
-display_refreshperformed_freqs(void)
-{
-	const uint_fast16_t n = UINTICKS(1000 / gdisplayfreqsfps);	// 50 ms - обновление с частотой 20 герц
-
-	IRQL_t oldIrql;
-	RiseIrql(TICKER_IRQL, & oldIrql);
-	counterupdatedfreqs = n;
-	LowerIrql(oldIrql);
 }
 
 dctx_t * display2_getcontext(void)
@@ -14001,7 +14023,7 @@ static uint_fast8_t sendmorsepos [2];
 
 static uint_fast8_t catstatein = CATSTATE_HALTED;
 
-static volatile uint_fast16_t catstateout = CATSTATEO_HALTED;
+static std::atomic<uint_fast16_t> catstateout(CATSTATEO_HALTED);
 static volatile const char * catsendptr;
 static volatile uint_fast8_t catsendcount;
 
@@ -14011,7 +14033,7 @@ static volatile uint_fast8_t catsendcount;
 static uint_fast8_t
 cat_getstateout(void)
 {
-	return getstablev16(& catstateout);
+	return catstateout;
 }
 
 /* вызывается из обработчика прерываний */
