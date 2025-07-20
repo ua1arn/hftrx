@@ -448,8 +448,6 @@ void bandf_calc_initialize(void)
 
 #elif \
 	CTLREGMODE_STORCH_V1 || \
-	CTLREGMODE_STORCH_V2 || \
-	CTLREGMODE_STORCH_V3 || \
 	CTLREGMODE_STORCH_V7 || \
 	CTLREGMODE_STORCH_V9 || \
 	CTLREGMODE_STORCH_V9A || \
@@ -473,7 +471,6 @@ void bandf_calc_initialize(void)
 	CTLREGMODE_RAVENDSP_V5 || \
 	CTLREGMODE_RAVENDSP_V6 || \
 	CTLREGMODE_RAVENDSP_V7 || \
-	CTLREGMODE_STORCH_V1_R4DR || \
 	CTLREGMODE_STORCH_V4 ||		/* modem only v2 */ \
 	CTLREGMODE_STORCH_V5 ||		/* mimni RX */ \
 	1 || \
