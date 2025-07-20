@@ -231,7 +231,7 @@
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 
-	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+	
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ

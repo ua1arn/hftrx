@@ -1421,57 +1421,10 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 /* строки, выводимые на индикатор для обозначения режимов.
  */
 
-#if CTLREGMODE24_RK4CI	/* управляющий регистр 24 бита - "Воробей" RK4CI */
+#if WITHAGCMODENONE
 	/* перечисление всех возможных режимов АРУ
 	 */
 	enum {
-		AGCMODE_LONG = 0,
-		AGCMODE_SLOW = 0,
-		AGCMODE_MED,
-		AGCMODE_FAST,
-		AGCMODE_OFF
-		//
-		};
-
-	static const struct {
-		uint_fast8_t code;
-		char label4 [5];
-		char label3 [4];
-	}  agcmodes [] =
-	{
-		{ BOARD_AGCCODE_SLOW, "SLOW", "SLO"  },	// 3
-		{ BOARD_AGCCODE_MED,  "MED", "MED" },	// 2
-		{ BOARD_AGCCODE_FAST, "FAST", "FST" },	// 1
-		{ BOARD_AGCCODE_OFF,  "AGC-", "OFF" },	// 4 ?
-	};
-#elif CTLREGMODE24_RK4CI_V1	/* управляющий регистр 32 бита (с 3*ULN2003) - "Воробей" RK4CI */
-	/* перечисление всех возможных режимов АРУ
-	 */
-	enum {
-		AGCMODE_LONG = 0,
-		AGCMODE_SLOW = 0,
-		AGCMODE_MED,
-		AGCMODE_FAST,
-		AGCMODE_OFF
-		//
-		};
-
-	static const struct {
-		uint_fast8_t code;
-		char label4 [5];
-		char label3 [4];
-	}  agcmodes [] =
-	{
-		{ BOARD_AGCCODE_SLOW, "SLOW", "SLO"  },	// 3
-		{ BOARD_AGCCODE_MED,  "MED", "MED" },	// 2
-		{ BOARD_AGCCODE_FAST, "FAST", "FST" },	// 1
-		{ BOARD_AGCCODE_OFF,  "AGC-", "OFF" },	// 4 ?
-	};
-#elif WITHAGCMODENONE
-	/* перечисление всех возможных режимов АРУ
-	 */
-	enum {
-		AGCMODE_LONG = 0,
 		AGCMODE_SLOW = 0,
 		AGCMODE_MED = 0,
 		AGCMODE_FAST = 0
@@ -1484,12 +1437,12 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 //	{
 //		{ BOARD_AGCCODE_ON, "", "" },
 //	};
+
 #elif WITHAGCMODEONOFF
+
 	/* перечисление всех возможных режимов АРУ
 	 */
 	enum {
-		AGCMODE_LONG = 0,
-		AGCMODE_SLOW = 0,
 		AGCMODE_MED = 0,
 		AGCMODE_FAST = 0,
 		//
@@ -1504,70 +1457,6 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 	{
 		{ BOARD_AGCCODE_ON,  "AGC", "AGC" },
 		{ BOARD_AGCCODE_OFF, "OFF", "OFF" },
-	};
-#elif WITHAGCMODESLOWFAST	/* среди режимов АРУ есть только быстро-медленно */
-	/* перечисление всех возможных режимов АРУ
-	 */
-	enum {
-		AGCMODE_LONG = 0,
-		AGCMODE_SLOW = 0,
-		AGCMODE_MED = 1,
-		AGCMODE_FAST = 1
-		};
-	static const struct {
-		uint_fast8_t code;
-		char label4 [5];
-		char label3 [4];
-	}  agcmodes [] =
-	{
-		{ BOARD_AGCCODE_SLOW, "SLOW", "SLO" },
-		{ BOARD_AGCCODE_FAST, "FAST", "FST" },
-	};
-#elif WITHAGCMODE4STAGES
-	/* перечисление всех возможных режимов АРУ
-	   выключенно не бывает
-	 */
-	enum {
-		AGCMODE_LONG,
-		AGCMODE_SLOW,
-		AGCMODE_MED,
-		AGCMODE_FAST,
-		AGCMODE_OFF
-		//
-		};
-	static const struct {
-		uint_fast8_t code;
-		char label4 [5];
-		char label3 [4];
-	}  agcmodes [] =
-	{
-		{ BOARD_AGCCODE_LONG, "LONG", "lng" },	// 4
-		{ BOARD_AGCCODE_SLOW, "SLOW", "slo" },	// 2
-		{ BOARD_AGCCODE_MED,  "MED", "med" },	// 1
-		{ BOARD_AGCCODE_FAST, "FAST", "fst" },	// 0
-	};
-#elif WITHAGCMODE5STAGES
-	/* перечисление всех возможных режимов АРУ
-	 */
-	enum {
-		AGCMODE_LONG,
-		AGCMODE_SLOW,
-		AGCMODE_MED,
-		AGCMODE_FAST,
-		AGCMODE_OFF
-		//
-		};
-	static const struct {
-		uint_fast8_t code;
-		char label4 [5];
-		char label3 [4];
-	}  agcmodes [] =
-	{
-		{ BOARD_AGCCODE_LONG, "LONG", "lng" },	// 4
-		{ BOARD_AGCCODE_SLOW, "SLOW", "slo" },	// 2
-		{ BOARD_AGCCODE_MED,  "MED", "med" },	// 1
-		{ BOARD_AGCCODE_FAST, "FAST", "fst" },	// 0
-		{ BOARD_AGCCODE_OFF,  "AGC-", "off" },	// 8
 	};
 #else
 	#error WITHAGCMODExxxx undefined
