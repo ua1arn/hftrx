@@ -18163,20 +18163,6 @@ process_key_menuset0(uint_fast8_t kbch)
 }
 #endif /* WITHKEYBOARD */
 
-
-// Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-void display2_keyboard_screen0(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
-{
-
-}
-
-// Обработка клавиатуры и валкодеров при нахождении в режиме меню
-void display2_keyboard_menu(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
-{
-
-}
-
-
 static int_fast32_t
 getpower10(uint_fast8_t pos)
 {

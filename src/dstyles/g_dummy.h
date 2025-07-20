@@ -65,12 +65,6 @@ static const dzone_t dzones [] =
 {
 		{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 	{	0,	0,	0, 0, display2_dummy,	& dzi_default,	REDRSUBSET_SLEEP | REDRSUBSET_MENU },
-#if WITHKEYBOARD
-	{	0,	0,	0, 0, display2_keyboard_screen0,	& dzi_default, REDRSUBSET_SLEEP | REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-#endif /* WITHKEYBOARD */
-#if WITHMENU
-	{	0,	0,	0, 0, display2_keyboard_menu,		& dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-#endif /* WITHMENU */
 	{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 };
 

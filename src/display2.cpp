@@ -1662,7 +1662,7 @@ static const COLORPAIR_T colors_2modeB [2] =
 // Параметры отображения частоты основного приемника
 static const COLORPAIR_T colors_1freq [1] =
 {
-	{	DSGN_BIGCOLOR,	DSGN_LABELBACK,	},
+	{	DSGN_BIGCOLOR,	DSGN_BIGCOLORBACK,	},
 };
 
 // Параметры отображения режима основного приемника

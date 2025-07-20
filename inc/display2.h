@@ -55,14 +55,6 @@ void display2_swrsts20(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 // вызывается по dzones
 void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
 
-void display2_keyboard_menu(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-
-// Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-void display2_keyboard_screen0(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-
-// Обработка клавиатуры и валкодеров при нахождении в режиме меню
-void display2_keyboard_menu(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
 uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)
@@ -133,8 +125,6 @@ uint_fast16_t normalize(
 		uint_fast16_t range		// включает выходное значение
 	);
 
-#define BGCOLOR (display2_getbgcolor())
-
 // FUNC menu
 
 void display_2fmenus(const gxdrawb_t * db,
@@ -182,28 +172,6 @@ int_fast32_t display2_zoomedbw(void);
 const char * display2_gethtml(uint_fast8_t page);
 
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
-
-// Цвета используемые для отображения
-// различных элементов на основном экране.
-
-#define LCOLOR	COLORPIP_GREEN		// цвет левой половины S-метра
-#define RCOLOR	COLORPIP_RED			// цвет правой половины S-метра
-#define PWRCOLOR	COLORPIP_RED		// цвет измерителя мощности
-#define SWRCOLOR	COLORPIP_YELLOW		// цвет SWR-метра
-
-#define OVFCOLOR COLORPIP_RED
-#define LOCKCOLOR COLORPIP_RED
-#define TXRXMODECOLOR COLORPIP_BLACK
-#define MODECOLORBG_TX COLORPIP_RED
-#define MODECOLORBG_RX	COLORPIP_GREEN
-
-#define MENUGROUPCOLOR COLORPIP_YELLOW
-#define MENUCOLOR COLORPIP_WHITE
-#define MNUVALCOLOR COLORPIP_WHITE
-#define MENUSELCOLOR	COLORPIP_GREEN
-
-//#define AFSPECTRE_COLOR COLORPIP_YELLOW
-#define AFSPECTRE_COLOR DSGN_SPECTRUMBG2
 
 
 #if WITHLVGL
@@ -358,6 +326,31 @@ typedef struct
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+
+// Цвета используемые для отображения
+// различных элементов на основном экране.
+
+#define BGCOLOR (display2_getbgcolor())
+
+#define LCOLOR	COLORPIP_GREEN		// цвет левой половины S-метра
+#define RCOLOR	COLORPIP_RED			// цвет правой половины S-метра
+#define PWRCOLOR	COLORPIP_RED		// цвет измерителя мощности
+#define SWRCOLOR	COLORPIP_YELLOW		// цвет SWR-метра
+
+#define OVFCOLOR COLORPIP_RED
+#define LOCKCOLOR COLORPIP_RED
+#define TXRXMODECOLOR COLORPIP_BLACK
+#define MODECOLORBG_TX COLORPIP_RED
+#define MODECOLORBG_RX	COLORPIP_GREEN
+
+#define MENUGROUPCOLOR COLORPIP_YELLOW
+#define MENUCOLOR COLORPIP_WHITE
+#define MNUVALCOLOR COLORPIP_WHITE
+#define MENUSELCOLOR	COLORPIP_GREEN
+
+//#define AFSPECTRE_COLOR COLORPIP_YELLOW
+#define AFSPECTRE_COLOR DSGN_SPECTRUMBG2
 
 #if defined (COLORPIP_SHADED)
 	// LCDMODE_MAIN_L8 also defied
@@ -526,6 +519,7 @@ typedef struct
 #if COLORSTYLE_RED
 	// "All-in-red": FT1000 inspired color scheme
 	#define DSGN_BIGCOLOR 			COLORPIP_RED 		// DARK RED
+	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
 	#define DSGN_BIGCOLORB 			COLORPIP_RED		// цвет частоты дополнительного приемника
 	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKRED
@@ -553,7 +547,8 @@ typedef struct
 
 #elif COLORSTYLE_GREEN
 	/* цветовая схема для эксперементов */
-	#define DSGN_BIGCOLOR 		COLORPIP_YELLOW 	// GOLD
+	#define DSGN_BIGCOLOR 			COLORPIP_YELLOW 	// GOLD
+	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
 	#define DSGN_BIGCOLORB 			COLORPIP_YELLOW		// цвет частоты и режима ополнительного приемника
 	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKGREEN
@@ -586,6 +581,7 @@ typedef struct
 #elif COLORSTYLE_BLUE
 
 	#define DSGN_BIGCOLOR 			COLORPIP_WHITE //COLORPIP_YELLOW 	// GOLD
+	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 	#define DSGN_BIGCOLORB 			COLORPIP_YELLOW //DSGN_SPECTRUMBG2		// цвет частоты дополнительного приемника
 	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKCYAN
 
@@ -625,6 +621,7 @@ typedef struct
 
 	#if LCDMODE_PALETTE256
 		#define DSGN_BIGCOLOR 			COLORPIP_WHITE //COLORPIP_YELLOW 	// GOLD
+		#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 		#define DSGN_BIGCOLORB 			COLORPIP_WHITE //DSGN_SPECTRUMBG2		// цвет частоты дополнительного приемника
 		#define DSGN_BIGCOLORBINACTIVE 	DSGN_SPECTRUMBG2
 
@@ -655,6 +652,7 @@ typedef struct
 
 	#else /* LCDMODE_PALETTE256 */
 		#define DSGN_BIGCOLOR 			COLORPIP_WHITE //COLORPIP_YELLOW 	// GOLD
+		#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 		#define DSGN_BIGCOLORB 			COLORPIP_WHITE //DSGN_SPECTRUMBG2		// цвет частоты дополнительного приемника
 		#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_GRAY
 
