@@ -1023,7 +1023,7 @@ void touch_zone_event_cb(lv_event_t * e)
     lv_obj_t * obj = lv_event_get_target(e);
     lv_point_t pos;
     lv_indev_get_point(lv_indev_get_act(), & pos);
-    static int16_t x_old = 0, v_x = 0;
+    static int16_t x_old = 0, x_old0 = 0, v_x = 0;
     static uint8_t is_long_press = 0;
 
     if(code == LV_EVENT_CLICKED)
@@ -1049,16 +1049,20 @@ void touch_zone_event_cb(lv_event_t * e)
 	}
     else if(code == LV_EVENT_PRESSING)
     {
-        int16_t x = pos.x / 3;
+    	int32_t offset_x = abs(pos.x - x_old0);
+    	int speed_level = 1 + (offset_x * 10) / 100;
+    	if (speed_level > 10) speed_level = 10;
+
+        int16_t x = pos.x / 2;
         v_x = x_old ? x - x_old : 0;
         x_old = x;
+        x_old0 = pos.x;
 
 		uint16_t step = 100;
 		uint32_t freq = hamradio_get_freq_rx();
 		uint32_t f_rem = freq % step;
 
-		hamradio_set_freq(freq - (step + f_rem) * v_x);
-
+		hamradio_set_freq(freq - (step + f_rem) * (v_x * speed_level));
 		is_long_press = is_long_press ? 1 : v_x != 0;
     }
     else if(code == LV_EVENT_RELEASED)
