@@ -58,7 +58,7 @@
 
 	#define ENCRES_DEFAULT ENCRES_128
 	#define WITHDIRECTFREQENER	1 // прямой ввод частоты с клавиш
-	
+	#define WITHENCODER		1
 //	#define WITHENCODER2	1		/* есть второй валкодер */
 //	#define ENCODER2_EVDEV	1		// Linux Input device
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */

@@ -130,30 +130,33 @@ void win_memory_handler(lv_event_t * e)
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
 	user_t * btnu = lv_obj_get_user_data(btn);
 
-	uint8_t idx = btnu->payload & 0xff;
-	uint8_t p = (btnu->payload >> 31) & 0xff;
+	if (lv_obj_check_type(btn, & lv_button_class))
+	{
+		uint8_t idx = btnu->payload & 0xff;
+		uint8_t p = (btnu->payload >> 31) & 0xff;
 
-	if (btnu->is_clicked && p)
-	{
-		load_mems(idx, 1);
-		win_close();
-	}
-	else if (btnu->is_long_pressed)
-	{
-		if (p)
+		if (btnu->is_clicked && p)
 		{
-			btnu->payload = (0 << 31) | idx;
-			clean_mems(idx);
-			lv_obj_t * label = lv_obj_get_child(btn, 0);
-			lv_label_set_text_fmt(label, "---");
+			load_mems(idx, 1);
+			win_close();
 		}
-		else
+		else if (btnu->is_long_pressed)
 		{
-			btnu->payload = (1 << 31) | idx;
-			uint32_t freq = hamradio_get_freq_rx();
-			write_mems(idx, freq);
-			lv_obj_t * label = lv_obj_get_child(btn, 0);
-			lv_label_set_text_fmt(label, "%dk", freq / 1000);
+			if (p)
+			{
+				btnu->payload = (0 << 31) | idx;
+				clean_mems(idx);
+				lv_obj_t * label = lv_obj_get_child(btn, 0);
+				lv_label_set_text_fmt(label, "---");
+			}
+			else
+			{
+				btnu->payload = (1 << 31) | idx;
+				uint32_t freq = hamradio_get_freq_rx();
+				write_mems(idx, freq);
+				lv_obj_t * label = lv_obj_get_child(btn, 0);
+				lv_label_set_text_fmt(label, "%dk", freq / 1000);
+			}
 		}
 	}
 }
@@ -189,10 +192,14 @@ void win_wnb_handler(lv_event_t * e)
 	lv_event_code_t code = lv_event_get_code(e);
 	if (code != LV_EVENT_VALUE_CHANGED) return;
 
-	wnb_set_threshold(lv_slider_get_value(slider));
+	lv_obj_t * obj = (lv_obj_t *) lv_event_get_target(e);
+	if (lv_obj_check_type(obj, & lv_slider_class))
+	{
+		wnb_set_threshold(lv_slider_get_value(slider));
 
-	lv_label_set_text_fmt(label, "%d", wnb_get_threshold());
-	lv_obj_align_to(label, slider, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
+		lv_label_set_text_fmt(label, "%d", wnb_get_threshold());
+		lv_obj_align_to(label, slider, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
+	}
 }
 
 // ***********************************************
@@ -264,17 +271,20 @@ void win_af_filter_handler(lv_event_t * e)
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
 	user_t * btnu = lv_obj_get_user_data(btn);
 
-	if (btnu->is_clicked)
+	if (lv_obj_check_type(btn, & lv_button_class))
 	{
-		if (strstr(btnu->name, "btns_h"))		// high
+		if (btnu->is_clicked)
 		{
-			uint8_t hh = hamradio_get_high_bp(btnu->payload);
-			lv_label_set_text_fmt(label_h, "%s: %d", label_text[bp_type][1], hh * h_mul);
-		}
-		else if (strstr(btnu->name, "btns_l"))	// low
-		{
-			uint8_t ll = hamradio_get_low_bp(btnu->payload * (bp_type ? 10 : 5));
-			lv_label_set_text_fmt(label_l, "%s: %d", label_text[bp_type][0], ll * 10);
+			if (strstr(btnu->name, "btns_h"))		// high
+			{
+				uint8_t hh = hamradio_get_high_bp(btnu->payload);
+				lv_label_set_text_fmt(label_h, "%s: %d", label_text[bp_type][1], hh * h_mul);
+			}
+			else if (strstr(btnu->name, "btns_l"))	// low
+			{
+				uint8_t ll = hamradio_get_low_bp(btnu->payload * (bp_type ? 10 : 5));
+				lv_label_set_text_fmt(label_l, "%s: %d", label_text[bp_type][0], ll * 10);
+			}
 		}
 	}
 }
@@ -314,42 +324,45 @@ void win_receive_handler(lv_event_t * e)
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
 	user_t * btnu = lv_obj_get_user_data(btn);
 
-	if (btnu->h)
+	if (lv_obj_check_type(btn, & lv_button_class))
 	{
-		btnu->h(btn);
-	}
-	else if (btnu->is_clicked)
-	{
-		switch(btnu->index)
+		if (btnu->h)
 		{
-		case 0:
-			hamradio_change_att();
-			break;
-
-		case 1:
-			button_set_lock(btn, hamradio_change_preamp(1));
-			break;
-
-		case 2:
-			button_set_lock(btn, hamradio_change_nr(1));
-			break;
-
-		case 3:
-			button_set_lock(btn, wnb_state_switch(1));
-			break;
-
-		case 4:
-			win_open(WIN_AF);
-			break;
-
-		default:
-			break;
+			btnu->h(btn);
 		}
-	}
-	else if (btnu->is_long_pressed)
-	{
-		if (btnu->index == 3)
-			win_open(WIN_WNB);
+		else if (btnu->is_clicked)
+		{
+			switch(btnu->index)
+			{
+			case 0:
+				hamradio_change_att();
+				break;
+
+			case 1:
+				button_set_lock(btn, hamradio_change_preamp(1));
+				break;
+
+			case 2:
+				button_set_lock(btn, hamradio_change_nr(1));
+				break;
+
+			case 3:
+				button_set_lock(btn, wnb_state_switch(1));
+				break;
+
+			case 4:
+				win_open(WIN_AF);
+				break;
+
+			default:
+				break;
+			}
+		}
+		else if (btnu->is_long_pressed)
+		{
+			if (btnu->index == 3)
+				win_open(WIN_WNB);
+		}
 	}
 }
 
@@ -398,11 +411,15 @@ void win_tx_power_handler(lv_event_t * e)
 	lv_event_code_t code = lv_event_get_code(e);
 	if (code != LV_EVENT_VALUE_CHANGED) return;
 
-	hamradio_set_tx_power(lv_slider_get_value(slider_tx));
-	hamradio_set_tx_tune_power(lv_slider_get_value(slider_tune));
+	lv_obj_t * obj = (lv_obj_t *) lv_event_get_target(e);
+	if (lv_obj_check_type(obj, & lv_slider_class))
+	{
+		hamradio_set_tx_power(lv_slider_get_value(slider_tx));
+		hamradio_set_tx_tune_power(lv_slider_get_value(slider_tune));
 
-	lv_label_set_text_fmt(lbl_tx, "TX %d\%%", hamradio_get_tx_power());
-	lv_label_set_text_fmt(lbl_tune, "Tune %d\%%", hamradio_get_tx_tune_power());
+		lv_label_set_text_fmt(lbl_tx, "TX %d\%%", hamradio_get_tx_power());
+		lv_label_set_text_fmt(lbl_tune, "Tune %d\%%", hamradio_get_tx_tune_power());
+	}
 }
 
 // ***********************************************
@@ -448,14 +465,17 @@ void win_settings_handler(lv_event_t * e)
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
 	user_t * btnu = lv_obj_get_user_data(btn);
 
-	if (btnu->payload == 100)
-		linux_exit();
-	else if (btnu->win_id)
-		win_open(btnu->win_id);
-	else if (btnu->h)
+	if (lv_obj_check_type(btn, & lv_button_class))
 	{
-		win_close();
-		btnu->h(btn);
+		if (btnu->payload == 100)
+			linux_exit();
+		else if (btnu->win_id)
+			win_open(btnu->win_id);
+		else if (btnu->h)
+		{
+			win_close();
+			btnu->h(btn);
+		}
 	}
 }
 
@@ -617,14 +637,17 @@ void win_bands_handler(lv_event_t * e)
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
 	user_t * btnu = lv_obj_get_user_data(btn);
 
-	if (btnu->payload == INT32_MAX)
+	if (lv_obj_check_type(btn, & lv_button_class))
 	{
-		win_open(WIN_FREQ);
-	}
-	else if (btnu->is_clicked)
-	{
-		hamradio_goto_band_by_freq(btnu->payload);
-		win_close();
+		if (btnu->payload == INT32_MAX)
+		{
+			win_open(WIN_FREQ);
+		}
+		else if (btnu->is_clicked)
+		{
+			hamradio_goto_band_by_freq(btnu->payload);
+			win_close();
+		}
 	}
 }
 
@@ -678,51 +701,54 @@ void win_freq_handler(lv_event_t * e)
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
 	user_t * btnu = lv_obj_get_user_data(btn);
 
-	if (btnu->is_clicked && editfreq.key == BUTTON_CODE_DONE)
-		editfreq.key = btnu->payload;
-
-	if (editfreq.key != BUTTON_CODE_DONE)
+	if (lv_obj_check_type(btn, & lv_button_class))
 	{
-		if (editfreq.error)
-		{
-			editfreq.val = 0;
-			editfreq.num = 0;
-		}
+		if (btnu->is_clicked && editfreq.key == BUTTON_CODE_DONE)
+			editfreq.key = btnu->payload;
 
-		editfreq.error = 0;
-
-		switch (editfreq.key)
+		if (editfreq.key != BUTTON_CODE_DONE)
 		{
-		case BUTTON_CODE_BK:
-			if (editfreq.num > 0)
+			if (editfreq.error)
 			{
-				editfreq.val /= 10;
-				editfreq.num --;
+				editfreq.val = 0;
+				editfreq.num = 0;
 			}
-			break;
 
-		case BUTTON_CODE_OK:
-			if (hamradio_set_freq(editfreq.val * 1000) || editfreq.val == 0)
-				win_close();
+			editfreq.error = 0;
+
+			switch (editfreq.key)
+			{
+			case BUTTON_CODE_BK:
+				if (editfreq.num > 0)
+				{
+					editfreq.val /= 10;
+					editfreq.num --;
+				}
+				break;
+
+			case BUTTON_CODE_OK:
+				if (hamradio_set_freq(editfreq.val * 1000) || editfreq.val == 0)
+					win_close();
+				else
+					editfreq.error = 1;
+
+				break;
+
+			default:
+				if (editfreq.num < 7)
+				{
+					editfreq.val  = editfreq.val * 10 + editfreq.key;
+					if (editfreq.val)
+						editfreq.num ++;
+				}
+			}
+			editfreq.key = BUTTON_CODE_DONE;
+
+			if (editfreq.error)
+				lv_label_set_text(label_freq, "ERROR");
 			else
-				editfreq.error = 1;
-
-			break;
-
-		default:
-			if (editfreq.num < 7)
-			{
-				editfreq.val  = editfreq.val * 10 + editfreq.key;
-				if (editfreq.val)
-					editfreq.num ++;
-			}
+				lv_label_set_text_fmt(label_freq, "%d k", (int) editfreq.val);
 		}
-		editfreq.key = BUTTON_CODE_DONE;
-
-		if (editfreq.error)
-			lv_label_set_text(label_freq, "ERROR");
-		else
-			lv_label_set_text_fmt(label_freq, "%d k", (int) editfreq.val);
 	}
 }
 
@@ -923,15 +949,18 @@ static void btn_footer_handler(lv_event_t * e)
 	lv_obj_t * btn = (lv_obj_t *) lv_event_get_target(e);
 	user_t * fb = lv_obj_get_user_data(btn);
 
-	if (fb->is_clicked)
+	if (lv_obj_check_type(btn, & lv_button_class))
 	{
-		if (fb->h)
+		if (fb->is_clicked)
+		{
+			if (fb->h)
+				fb->h(btn);
+			else
+				win_open(fb->win_id);
+		}
+		else if (fb->is_long_pressed && fb->h)
 			fb->h(btn);
-		else
-			win_open(fb->win_id);
 	}
-	else if (fb->is_long_pressed && fb->h)
-		fb->h(btn);
 }
 
 static void footer_buttons_init(lv_obj_t * p)
@@ -985,6 +1014,76 @@ static void footer_buttons_init(lv_obj_t * p)
 
 // ***********************************************
 
+void touch_zone_event_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code != LV_EVENT_CLICKED && code != LV_EVENT_PRESSING && code != LV_EVENT_RELEASED)
+    	return;
+
+    lv_obj_t * obj = lv_event_get_target(e);
+    lv_point_t pos;
+    lv_indev_get_point(lv_indev_get_act(), & pos);
+    static int16_t x_old = 0, v_x = 0;
+    static uint8_t is_long_press = 0;
+
+    if(code == LV_EVENT_CLICKED)
+	{
+		if (is_long_press)
+		{
+			is_long_press = 0;
+			return;
+		}
+
+		lv_area_t coords;
+		lv_obj_get_coords(obj, & coords);
+		int16_t center_x = (coords.x1 + coords.x2) / 2;
+		int16_t offset_x = pos.x - center_x;
+
+		uint32_t f = hamradio_get_freq_rx(), bw = display2_zoomedbw();
+		uint32_t fp = bw / DIM_X, fn = f + offset_x * fp;
+
+		uint16_t step = 1000;
+		uint32_t f_rem = fn % step;
+
+		hamradio_set_freq(fn + (step - f_rem));
+	}
+    else if(code == LV_EVENT_PRESSING)
+    {
+        int16_t x = pos.x / 3;
+        v_x = x_old ? x - x_old : 0;
+        x_old = x;
+
+		uint16_t step = 100;
+		uint32_t freq = hamradio_get_freq_rx();
+		uint32_t f_rem = freq % step;
+
+		hamradio_set_freq(freq - (step + f_rem) * v_x);
+
+		is_long_press = is_long_press ? 1 : v_x != 0;
+    }
+    else if(code == LV_EVENT_RELEASED)
+    {
+    	x_old = 0;
+    	v_x = 0;
+    }
+}
+
+void create_touch_zone(lv_obj_t * parent)
+{
+    lv_obj_t * touch_zone = lv_obj_create(parent);
+    lv_obj_set_size(touch_zone, DIM_X, 260);
+	lv_obj_set_pos(touch_zone, 0, 170);
+
+    lv_obj_set_style_bg_opa(touch_zone, LV_OPA_0, 0);
+    lv_obj_clear_flag(touch_zone, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_add_flag(touch_zone, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_border_width(touch_zone, 0, 0);
+
+    lv_obj_add_event_cb(touch_zone, touch_zone_event_cb, LV_EVENT_ALL, NULL);
+}
+
+// ***********************************************
+
 void gui_update(void)
 {
 	infobar_update();
@@ -998,6 +1097,7 @@ void lvgl_gui_init(lv_obj_t * parent)
 	gui_set_parent(parent);
 	footer_buttons_init(parent);
 	infobar_init(parent);
+	create_touch_zone(parent);
 }
 
 #endif /* WITHLVGL && LINUX_SUBSYSTEM */
