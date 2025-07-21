@@ -19526,17 +19526,17 @@ processmainlooptuneknobs(inputevent_t * ev)
 	freqchanged = freqchanged || !! nrotate_sub;
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
 
+
+#else /* WITHENCODER */
+
+#endif /* WITHENCODER */
+
 #if 0 && CPUSTYLE_XC7Z		// тестовая прокрутка частоты
 	hamradio_set_freq(hamradio_get_freq_rx() + 1);
 	freqchanged = 1;
 #endif
+
 	return freqchanged;
-
-
-#else /* WITHENCODER */
-	return 0;
-
-#endif /* WITHENCODER */
 }
 // работа в главной машине состояний
 static STTE_t
