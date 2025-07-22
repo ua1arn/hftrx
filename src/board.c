@@ -701,24 +701,6 @@ void nmeatuner_initialize(void)
 	};
 #endif /* WITHCPUDACHW */
 
-#if 0 && WITHDACOUTDSPAGC
-
-static void setagcattenuation(long code, uint_fast8_t tx)	// в кодах ЦАП
-{
-	if (tx != 0)
-		HARDWARE_DAC_AGC(0);
-	else
-		HARDWARE_DAC_AGC(dac_agc_highcode - ((code > dac_agc_coderange) ? dac_agc_coderange : code));
-}
-
-static void setlevelindicator(long code)	// в кодах ЦАП
-{
-	hardware_dac_ch2_setvalue((dacFScode - 1) > code ? (dacFScode - 1) : code);
-}
-
-
-#endif /* WITHDACOUTDSPAGC */
-
 /* вывод битов через PIO процессора, если они управляются напрямую без SPI */
 static void 
 prog_gpioreg(void)
