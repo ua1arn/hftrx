@@ -357,6 +357,8 @@ uint_fast32_t allwnr_t507_get_rtc_freq(void);
 void allwnr_t507_module_pll_spr(volatile uint32_t * reg, volatile uint32_t * pat);	// Set Spread Frequency Mode
 void allwnr_t507_module_pll_enable(volatile uint32_t * reg, unsigned N);
 
+uint_fast32_t allwnr_t507_sid_read(unsigned offs);
+
 #endif /* CPUSTYLE_T507 || CPUSTYLE_H616 */
 
 
@@ -523,31 +525,6 @@ calcdivider(
 		{ (0U << SPI2X), 	(1U << SPR1) | (0U << SPR0), }, 	/* /64 */
 		{ (0U << SPI2X), 	(1U << SPR1) | (1U << SPR0), }, 	/* /128 */
 	};
-
-#elif CPUSTYLE_ATXMEGA
-	// Параметры функции calcdivider().
-	enum
-	{
-		ATXMEGA_TIMER_WIDTH = 16,	ATXMEGA_TIMER_TAPS = (1024 | 256 | 64 | 8 | 4 | 2 | 1),
-		ATXMEGA_SPIBR_WIDTH = 0,	ATXMEGA_SPIBR_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2),
-		ATXMEGA_UBR_WIDTH = 12,
-			ATXMEGA_UBR_GRADE = 3, // Допустимы значения 0 (без дробного делителя), 1, 2 и 3 (с периодом 8)
-			ATXMEGA_UBR_TAPS = (16 | 8) >> ATXMEGA_UBR_GRADE, ATXMEGA_UBR_BSEL = (0 - ATXMEGA_UBR_GRADE),
-		//
-		ATXMEGA_fillPAD
-	};
-	static const uint_fast8_t spi_ctl [] =
-	{
-		(1U << SPI_CLK2X_bp) | 	SPI_PRESCALER_DIV4_gc,  /* /2 */
-		(0U << SPI_CLK2X_bp) | 	SPI_PRESCALER_DIV4_gc,  /* /4 */
-		(1U << SPI_CLK2X_bp) |	SPI_PRESCALER_DIV16_gc, 	/* /8 */
-		(0U << SPI_CLK2X_bp) |	SPI_PRESCALER_DIV16_gc, 	/* /16 */
-		(1U << SPI_CLK2X_bp) |	SPI_PRESCALER_DIV64_gc, 	/* /32 */
-		(0U << SPI_CLK2X_bp) |	SPI_PRESCALER_DIV64_gc, 	/* /64 */
-		(0U << SPI_CLK2X_bp) |	SPI_PRESCALER_DIV128_gc,	/* /128 */
-	};
-#elif CPUSTYLE_STM32F30X
-	#warning TODO: Add code for STM32F30X timers support
 
 #elif CPUSTYLE_R7S721
 

@@ -25,6 +25,10 @@ void board_init_chips2(void);
 uint_fast8_t boad_fpga_adcoverflow(void);	/* получения признака переполнения АЦП приёмного тракта */
 uint_fast8_t boad_mike_adcoverflow(void);	/* получения признака переполнения АЦП микрофонного тракта */
 
+typedef uint_least64_t ftw_t;	/* тип, подходящий по размерам для хранения промежуточных результатов вычислений */
+typedef uint_least64_t phase_t;
+
+extern const phase_t r1_ph; // = SYNTH_R1;
 
 uint_fast32_t getvcoranges(uint_fast8_t vco, uint_fast8_t top);	/* функция для настройки ГУН */
 
@@ -90,7 +94,6 @@ void board_set_bandf3(uint_fast8_t n);	/* управление через раз
 void board_set_bcdfreq100k(uint_fast16_t bcdfreq);	/* Для выбора диапазона - частота с дискретностью 100 кГц */
 void board_set_bcdfreq1k(uint_fast16_t bcdfreq);	/* Для выбора диапазона - частота с дискретностью 1 кГц */
 void board_set_pabias(uint_fast8_t n);	/* установить ток покоя выходного каскада передатчика */
-//void board_set_fltsofter(uint_fast8_t n);/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 void board_set_narrow(uint_fast8_t v);	/* установка режима према телеграфа (НЧ) */
 void board_set_notch(uint_fast8_t v);		/* не нулевой аргумент - включение НЧ режекторного фильтра */
 void board_set_notchnarrow(uint_fast8_t v);		/* не нулевой аргумент - включение НЧ режекторного фильтра в режиме CW */
@@ -145,7 +148,6 @@ void board_set_attvalue(uint_fast8_t v);		/* установить значени
 void prog_dac1_a_value(uint_fast8_t v);
 void prog_dac1_b_value(uint_fast8_t v);
 void board_set_affilter(uint_fast8_t v);
-void board_set_loudspeaker(uint_fast8_t v);
 void board_set_dsploudspeaker(uint_fast8_t v);
 void board_set_digigainmax(uint_fast8_t v);		/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 void board_set_gainnfmrx(int_fast16_t n);	/* дополнительное усиление по НЧ в режиме приёма NFM */
@@ -163,8 +165,16 @@ void board_lcd_rs(uint_fast8_t v);	// выставить уровень на с�
 void board_lcd_reset(uint_fast8_t v);	// выставить уровень на сигнале lcd reset
 void board_set_modem_mode(uint_fast8_t v);	// применяемая модуляция
 void board_set_nb_enable(uint_fast8_t pathi, uint_fast8_t v);	/* Управлением включением RX Noise Blanker */
+void board_set_displayfps(uint_fast8_t v);
 
-enum { BOARD_CATMUX_USB, BOARD_CATMUX_DIN8, BOARD_CATMUX_count };
+enum
+{
+	BOARD_CATMUX_USBCDC,
+	BOARD_CATMUX_BTSPP,
+	BOARD_CATMUX_DIN8,
+	BOARD_CATMUX_count
+};
+
 void board_set_catmux(uint_fast8_t n);	// выбор одного из каналов CAT
 uint_fast8_t board_get_catmux(void);
 
@@ -266,25 +276,9 @@ void board_get_compile_datetime(
 	);
 
 void board_get_serialnr(uint_fast32_t * sn);
-
-#if defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING)
-
-	void nvram_initialize(void);
-	void nvram_set_abytes(uint_fast8_t v);
-	#ifndef NVRAM_END
-		#error NVRAM_END required, may be missing NVRAM_TYPE
-	#endif
-	#if (NVRAM_END > 255)
-		typedef uint_least16_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
-	#else /* (NVRAM_END > 255) */
-		typedef uint_least8_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
-	#endif /* (NVRAM_END > 255) */
-
-#else /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
-
-	typedef uint_least16_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
-
-#endif /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
+void nvram_initialize(void);
+void nvram_set_abytes(uint_fast8_t v);
+typedef uint_least16_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
 
 #define MENUNONVRAM ((nvramaddress_t) ~ 0)		// такой адрес, что не соответствует ни одному настраиваемому параметру.
 

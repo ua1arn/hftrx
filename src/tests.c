@@ -52,7 +52,7 @@ static void showpos(uint_fast8_t pos)
 		PSTR("POS %2u"), (unsigned) pos
 		 );
 	display_gotoxy(0, 0);
-	display_at(buff, 0);
+	display_text(buff, 0);
 }
 
 #endif
@@ -3837,12 +3837,6 @@ static void fb_print(const struct fb * p, int x, int y, int selected)
 		PRINTF(PSTR("%8lu  %s\n"), p->fno.fsize, p->fno.fname);
 	}
 
-	//uint_fast8_t lowhalf = HALFCOUNT_SMALL2 - 1;
-	//do
-	//{
-	//	display_gotoxy(x, y + lowhalf);
-	//	display_string2(buff, lowhalf);		// печать буфера - маленьким шрифтом. 0=всегда для данного дисплея
-	//} while (lowhalf --);
 }
 #endif
 
@@ -3931,7 +3925,7 @@ static uint_fast64_t mmcCardSize(BYTE drv)
 	return st != RES_OK ? 0 : (uint_fast64_t) v * MMC_SECTORSIZE;
 }
 
-#if 1 && WITHDEBUG && WITHUSEFATFS
+#if 0 && WITHDEBUG && WITHUSEFATFS
 static void diskio_test(BYTE drv)
 {
 	const unsigned long MMC_SUCCESS2 = 0x00;
@@ -3993,7 +3987,7 @@ static void diskio_test(BYTE drv)
 
 		/* Обеспечение работы USER MODE DPC */
 		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0, NULL);
+		processmessages(& kbch, & kbready);
 
 		char c;
 		if (dbg_getchar(& c))
@@ -4128,7 +4122,7 @@ static void diskio_test(BYTE drv)
 						board_dpc_processing();		// обработка отложенного вызова user mode функций
 						/* Обеспечение работы USER MODE DPC */
 						uint_fast8_t kbch, kbready;
-						processmessages(& kbch, & kbready, 0, NULL);
+						processmessages(& kbch, & kbready);
 						// проверка прерывания работы с клавиатуры
 						char c;
 						if (dbg_getchar(& c))
@@ -4155,16 +4149,16 @@ static void diskio_test(BYTE drv)
 
 			case 'W':
 				{
-					unsigned nsect = mmcCardSize(drv) / MMC_SECTORSIZE;
-					//unsigned nsect = 256 * 1024 * 2;	// 10M
+					//unsigned nsect = mmcCardSize(drv) / MMC_SECTORSIZE;
+					unsigned nsect = 10 * 1024 * 2;	// 10M
 					// Wipe SD
-					PRINTF(PSTR("Wipe SD card - first %u sectors. Press 'y' for proceed\n"), nsect);
+					PRINTF(PSTR("Wipe SD card - first %u sectors (by previously prepared data). Press 'y' for proceed\n"), nsect);
 					char c = 0;
 					for (;;)
 					{
 						/* Обеспечение работы USER MODE DPC */
 						uint_fast8_t kbch, kbready;
-						processmessages(& kbch, & kbready, 0, NULL);
+						processmessages(& kbch, & kbready);
 
 						if (dbg_getchar(& c))
 						{
@@ -4191,7 +4185,7 @@ static void diskio_test(BYTE drv)
 						{
 							/* Обеспечение работы USER MODE DPC */
 							uint_fast8_t kbch, kbready;
-							processmessages(& kbch, & kbready, 0, NULL);
+							processmessages(& kbch, & kbready);
 							// проверка прерывания работы с клавиатуры
 							char c;
 							if (dbg_getchar(& c))
@@ -4249,7 +4243,7 @@ static void fatfs_filesystest(int speedtest)
 	{
 		/* Обеспечение работы USER MODE DPC */
 		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0, NULL);
+		processmessages(& kbch, & kbready);
 		char c;
 		if (dbg_getchar(& c))
 		{
@@ -4394,6 +4388,7 @@ static void fatfs_filesystest(int speedtest)
 }
 
 #if 1
+
 static int fatfs_filesyspeedstest(void)
 {
 	uint_fast16_t year;
@@ -4417,6 +4412,8 @@ static int fatfs_filesyspeedstest(void)
 	return dosaveblocks(testlog);
 }
 #endif
+
+#if CPUSTYLE_ALLWINNER
 
 static void programming(FIL * f, unsigned offset, BYTE targetDEV)
 {
@@ -4497,7 +4494,7 @@ bootloaderFLASH(const char * volPrefix, BYTE targetDEV)
 	{
 		/* Обеспечение работы USER MODE DPC */
 		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0, NULL);
+		processmessages(& kbch, & kbready);
 		char c;
 		if (dbg_getchar(& c))
 		{
@@ -4569,6 +4566,7 @@ startProgramming:
 	rc = f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
 	PRINTF("Done\n");
 }
+#endif /* CPUSTYLE_ALLWINNER */
 
 #endif
 
@@ -5354,10 +5352,10 @@ void looptests(void)
 	{
 		// Encoder tests
 		PRINTF("ef1=%+3d, ef2=%+3d, ef3=%+3d, ef4=%+3d\n",
-				(int) encoder_get_delta(& encoder_ENC1F, 1),
-				(int) encoder_get_delta(& encoder_ENC2F, 1),
-				(int) encoder_get_delta(& encoder_ENC3F, 1),
-				(int) encoder_get_delta(& encoder_ENC4F, 1)
+				(int) encoder_get_delta(& encoder_ENC1F),
+				(int) encoder_get_delta(& encoder_ENC2F),
+				(int) encoder_get_delta(& encoder_ENC3F),
+				(int) encoder_get_delta(& encoder_ENC4F)
 				);
 	}
 #endif
@@ -5510,12 +5508,12 @@ static void showstate(
 
 	local_snprintf_P(buff, 32, PSTR(" ON: %4u0 mS"), ontime);
 	display_gotoxy(0, 0);
-	display_at(buff, 0);
+	display_text(buff, 0);
 
 
 	local_snprintf_P(buff, 32, PSTR("OFF: %4u0 mS"), offtime);
 	display_gotoxy(0, 1);
-	display_at(buff, 0);
+	display_text(buff, 0);
 
 }
 
@@ -5583,7 +5581,7 @@ static void display_solidbar(
 		const uint_fast16_t t = y;
 		y = y2, y2 = t;
 	}
-	display_fillrect(& dbv, x, y, x2 - x, y2 - y, color);
+	colpip_fillrect(& dbv, x, y, x2 - x, y2 - y, color);
 }
 
 
@@ -5682,9 +5680,9 @@ GridTest(void)
 	// Тест порядка цветов в пикселе
 	const unsigned yrct0 = DIM_Y / 4;
 	const unsigned xrct0 = DIM_X / 4;
-	display_fillrect(& dbv, xrct0, yrct0 * 1, xrct0, yrct0, COLORPIP_RED);
-	display_fillrect(& dbv, xrct0, yrct0 * 2, xrct0, yrct0, COLORPIP_GREEN);
-	display_fillrect(& dbv, xrct0, yrct0 * 3, xrct0, yrct0, COLORPIP_BLUE);
+	colpip_fillrect(& dbv, xrct0, yrct0 * 1, xrct0, yrct0, COLORPIP_RED);
+	colpip_fillrect(& dbv, xrct0, yrct0 * 2, xrct0, yrct0, COLORPIP_GREEN);
+	colpip_fillrect(& dbv, xrct0, yrct0 * 3, xrct0, yrct0, COLORPIP_BLUE);
 /*
 	const unsigned yg0 = DIM_Y / 24;
 	const unsigned xg0 = DIM_X / 30;
@@ -5698,7 +5696,7 @@ GridTest(void)
 				 );
 */
 
-	display_fillrect(& dbv, xm * 4 / 10, 0, xm * 3 / 10, ym * 2 / 10, COLORPIP_WHITE);
+	colpip_fillrect(& dbv, xm * 4 / 10, 0, xm * 3 / 10, ym * 2 / 10, COLORPIP_WHITE);
 	display_line(& dbv, xm * 6 / 10,  0, xm * 6 / 10, ym,  COLORPIP_RED);
 
 	/* Interlase clocke test.	*/
@@ -9773,7 +9771,7 @@ void vm41nandtest(void)
 	{
 		char c;
 		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0, NULL);
+		processmessages(& kbch, & kbready);
 		if (dbg_getchar(& c))
 		{
 			switch (c)
@@ -10044,10 +10042,119 @@ static void lidar_parse(unsigned char c)
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
 
+<<<<<<< HEAD
 #if 1
 
 
 // Очереди символов для обмена
+=======
+#if WITHLVGL
+
+#include "lvgl.h"
+#include "../demos/lv_demos.h"
+#include "layouts/grid/lv_grid.h"
+//#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
+//#include "src/lvgl_gui/styles.h"
+
+/**
+ * Draw a line to the canvas
+ */
+static void lv_example_canvas_7(lv_obj_t * parent)
+{
+	enum { CANVAS_WIDTH = 300, CANVAS_HEIGHT = 300 };
+
+
+    lv_draw_rect_dsc_t rect_dsc;
+    lv_draw_rect_dsc_init(&rect_dsc);
+    rect_dsc.radius = 10;
+    rect_dsc.bg_opa = LV_OPA_COVER;
+    rect_dsc.bg_grad.dir = LV_GRAD_DIR_VER;
+    rect_dsc.bg_grad.stops[0].color = lv_palette_main(LV_PALETTE_RED);
+    rect_dsc.bg_grad.stops[0].opa = LV_OPA_100;
+    rect_dsc.bg_grad.stops[1].color = lv_palette_main(LV_PALETTE_BLUE);
+    rect_dsc.bg_grad.stops[1].opa = LV_OPA_50;
+    rect_dsc.border_width = 2;
+    rect_dsc.border_opa = LV_OPA_90;
+    rect_dsc.border_color = lv_color_white();
+    rect_dsc.shadow_width = 5;
+    rect_dsc.shadow_offset_x = 5;
+    rect_dsc.shadow_offset_y = 5;
+
+    lv_draw_label_dsc_t label_dsc;
+    lv_draw_label_dsc_init(&label_dsc);
+    label_dsc.color = lv_palette_main(LV_PALETTE_ORANGE);
+    label_dsc.text = "Some text on text canvas";
+    /*Create a buffer for the canvas*/
+//    LV_DRAW_BUF_DEFINE_STATIC(draw_buf_16bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_RGB565);
+//    LV_DRAW_BUF_INIT_STATIC(draw_buf_16bpp);
+	static RAMFRAMEBUFF __ALIGNED(64) uint8_t db1 [GXSIZE(CANVAS_WIDTH, CANVAS_HEIGHT) * 2];
+	static lv_draw_buf_t draw_buf_16bpp;
+    lv_draw_buf_init(& draw_buf_16bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_RGB565, 2 * GXADJ(CANVAS_WIDTH), db1, sizeof (db1)); \
+    lv_draw_buf_set_flag(& draw_buf_16bpp, LV_IMAGE_FLAGS_MODIFIABLE);
+
+    {
+        lv_obj_t * canvas1 = lv_canvas_create(parent);
+
+        lv_canvas_set_draw_buf(canvas1, & draw_buf_16bpp);
+        lv_obj_center(canvas1);
+        lv_canvas_fill_bg(canvas1, lv_palette_lighten(LV_PALETTE_GREY, 3), LV_OPA_COVER);
+
+        lv_layer_t layer;
+        lv_canvas_init_layer(canvas1, &layer);
+
+        lv_area_t coords_rect = {30, 20, 100, 70};
+        lv_draw_rect(&layer, &rect_dsc, &coords_rect);
+
+        lv_area_t coords_text = {40, 80, 100, 120};
+        lv_draw_label(&layer, &label_dsc, &coords_text);
+
+        lv_canvas_finish_layer(canvas1, &layer);
+
+        //lv_obj_delete(canvas1);
+		//lv_obj_set_flag(canvas1, LV_OBJ_FLAG_HIDDEN, 1);
+     }
+    /*Test the rotation. It requires another buffer where the original image is stored.
+     *So use previous canvas as image and rotate it to the new canvas*/
+//    LV_DRAW_BUF_DEFINE_STATIC(draw_buf_32bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_ARGB8888);
+//    LV_DRAW_BUF_INIT_STATIC(draw_buf_32bpp);
+	static RAMFRAMEBUFF __ALIGNED(64) uint8_t db2 [GXSIZE(CANVAS_WIDTH, CANVAS_HEIGHT) * 4];
+	static lv_draw_buf_t draw_buf_32bpp;
+    lv_draw_buf_init(& draw_buf_32bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_ARGB8888, 4 * GXADJ(CANVAS_WIDTH), db2, sizeof (db2)); \
+    lv_draw_buf_set_flag(& draw_buf_32bpp, LV_IMAGE_FLAGS_MODIFIABLE);
+    {
+        /*Create a canvas2 and initialize its palette*/
+        lv_obj_t * canvas2 = lv_canvas_create(parent);
+
+        lv_canvas_set_draw_buf(canvas2, &draw_buf_32bpp);
+        lv_canvas_fill_bg(canvas2, lv_color_hex3(0xccc), LV_OPA_COVER);
+        lv_obj_center(canvas2);
+
+        lv_canvas_fill_bg(canvas2, lv_palette_lighten(LV_PALETTE_GREY, 1), LV_OPA_COVER);
+
+        lv_layer_t layer;
+        lv_canvas_init_layer(canvas2, &layer);
+        lv_image_dsc_t img;
+        lv_draw_buf_to_image(&draw_buf_16bpp, &img);	// копируктся ранее нарисованный буфер
+        lv_draw_image_dsc_t img_dsc;
+        lv_draw_image_dsc_init(&img_dsc);
+        img_dsc.rotation = 120;
+        img_dsc.src = &img;
+        img_dsc.pivot.x = CANVAS_WIDTH / 2;
+        img_dsc.pivot.y = CANVAS_HEIGHT / 2;
+
+        lv_area_t coords_img = {0, 0, CANVAS_WIDTH - 1, CANVAS_HEIGHT - 1};
+        lv_draw_image(&layer, &img_dsc, &coords_img);
+
+        lv_canvas_finish_layer(canvas2, &layer);
+        //lv_obj_delete(canvas2);
+		//lv_obj_set_flag(canvas2, LV_OBJ_FLAG_HIDDEN, 1);
+
+    }
+}
+#endif /* WITHLVGL */
+
+#if 0
+>>>>>>> develop
 
 // Очередь символов для передачи в канал обмена
 static u8queue_t txq;
@@ -10270,7 +10377,11 @@ static void crsf_parser(const uint_fast8_t c)
 
 }
 
+<<<<<<< HEAD
 static void rctest(void)
+=======
+static void csrftest(void)
+>>>>>>> develop
 {
 	static uint8_t txb [512];
 	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
@@ -10291,7 +10402,11 @@ static void rctest(void)
 	{
 		/* Обеспечение работы USER MODE DPC */
 		uint_fast8_t kbch, kbready;
+<<<<<<< HEAD
 		processmessages(& kbch, & kbready, 0, NULL);
+=======
+		processmessages(& kbch, & kbready);
+>>>>>>> develop
 
 		IRQL_t oldIrql;
 		uint_fast8_t f;
@@ -10323,14 +10438,46 @@ void hightests(void)
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
-		display_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
-		display_at(& dbv, 0, 0, "Start...");
+		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
+		display_text(& dbv, 0, 0, "Start...", 10, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+<<<<<<< HEAD
 #if 1
 	{
 		rctest();
+=======
+
+#if 0 && WITHLVGL
+	{
+		lv_example_canvas_7(lv_screen_active());
+		for (;;)
+			lv_timer_handler();
+	}
+#endif
+#if 0
+	{
+		csrftest();
+	}
+#endif
+#if 0 && WITHLVGL && LV_BUILD_DEMOS
+	{
+		//lv_demo_vector_graphic_not_buffered();
+
+	//	//char s1 [] = "stress";
+	//	char s1 [] = "widgets";
+	//	char * demo [] = { s1, };
+	//    lv_demos_create(demo, 1);
+	//
+	    lv_demo_widgets();
+	    lv_demo_widgets_start_slideshow();
+	    for (;;)
+	    {
+	    	board_dpc_processing();
+	    	lv_timer_handler();
+	    }
+>>>>>>> develop
 	}
 #endif
 #if 0
@@ -10471,7 +10618,7 @@ void hightests(void)
 			for (;;)
 			{
 				uint_fast8_t kbch, kbready;
-				processmessages(& kbch, & kbready, 0, NULL);
+				processmessages(& kbch, & kbready);
 				if (kbready)
 				{
 					switch (kbch)
@@ -10527,19 +10674,19 @@ void hightests(void)
 		unsigned opaque;
 
 		opaque = 255;
-		colpip_fillrect2(buffer, dx, dy, 0, 0, DIM_X, DIM_Y, TFTALPHA(opaque, COLOR_RED), FILL_FLAG_NONE);
+		colpip_rectangle(buffer, dx, dy, 0, 0, DIM_X, DIM_Y, TFTALPHA(opaque, COLOR_RED), FILL_FLAG_NONE);
 		PRINTF("Background (opaque=%u)\n", opaque);
 		printhex32(0, buffer, 16);
-		//display_at_P(0, 0, "Start...");
-		//display_at_P(100 / GRID2X(1), 100 / GRID2Y(1), "test");
+		//display_text(0, 0, "Start...");
+		//display_text(100 / GRID2X(1), 100 / GRID2Y(1), "test");
 
 		opaque = 128;
-		colpip_fillrect2(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_BLUE), FILL_FLAG_MIXBG);
+		colpip_rectangle(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_BLUE), FILL_FLAG_MIXBG);
 		PRINTF("blue (opaque=%u)\n", opaque);
 		printhex32(0, buffer, 16);
 
 		opaque = 128;
-		colpip_fillrect2(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_GREEN), FILL_FLAG_MIXBG);
+		colpip_rectangle(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_GREEN), FILL_FLAG_MIXBG);
 		PRINTF("green (opaque=%u)\n", opaque);
 		printhex32(0, buffer, 16);
 		//colmain_nextfb();
@@ -10547,18 +10694,6 @@ void hightests(void)
 			;
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 0
-	{
-		// V3s clocks information print
-		PRINTF("allwnr_v3s_get_cpu_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_cpu_freq() / 1000 / 1000));
-		PRINTF("allwnr_v3s_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_axi_freq() / 1000 / 1000));
-		PRINTF("allwnr_v3s_get_sysapb_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_sysapb_freq() / 1000 / 1000));
-		PRINTF("allwnr_v3s_get_ahb2_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_ahb2_freq() / 1000 / 1000));
-		PRINTF("allwnr_v3s_get_ahb1_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_ahb1_freq() / 1000 / 1000));
-		PRINTF("allwnr_v3s_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_apb2_freq() / 1000 / 1000));
-		PRINTF("allwnr_v3s_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_apb1_freq() / 1000 / 1000));
-	}
-#endif
 #if 0 && ! WITHISBOOTLOADER
 	{
 		// Test lidar
@@ -11008,6 +11143,18 @@ void hightests(void)
 		PRINTF("chipid=%08X\n", (unsigned) allwnr_t113_get_chipid());
 	}
 #endif
+#if 0
+	{
+		//printhex32(SID_BASE, SID, 1024);
+		PRINTF("SID memory dump:\n");
+		unsigned offs;
+		for (offs = 0; offs < 256; offs += 4)
+		{
+			PRINTF("SID[0x%02X]=%08X\n", offs, (unsigned) allwnr_t507_sid_read(offs));
+		}
+
+	}
+#endif
 #if 0 && (CPUSTYLE_T113) && WITHDEBUG
 	{
 //		uint32_t midr;
@@ -11170,10 +11317,11 @@ void hightests(void)
 	{
 		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 		PRINTF("allwnr_t507_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_axi_freq() / 1000 / 1000));
+		PRINTF("allwnr_t507_get_apb_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb_freq() / 1000 / 1000));
+		PRINTF("allwnr_t507_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb1_freq() / 1000 / 1000));
+		PRINTF("allwnr_t507_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb2_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_mbus_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_mbus_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_psi_ahb1_ahb2_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_psi_ahb1_ahb2_freq() / 1000 / 1000));
-		PRINTF("allwnr_t507_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb2_freq() / 1000 / 1000));
-		PRINTF("allwnr_t507_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb1_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_pll_peri0_x1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_pll_peri0_x1_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_pll_peri1_x1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_pll_peri1_x1_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_ahbs_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_ahbs_freq() / 1000 / 1000));
@@ -11189,6 +11337,18 @@ void hightests(void)
 		PRINTF("allwnr_t113_get_ahb0_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_ahb0_freq() / 1000 / 1000));
 		PRINTF("allwnr_t113_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_apb1_freq() / 1000 / 1000));
 		PRINTF("allwnr_t113_get_apb0_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_apb0_freq() / 1000 / 1000));
+	}
+#endif
+#if 0 && CPUSTYLE_V3S
+	{
+		// V3s clocks information print
+		PRINTF("allwnr_v3s_get_cpu_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_cpu_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_axi_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_sysapb_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_sysapb_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_ahb2_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_ahb2_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_ahb1_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_ahb1_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_apb2_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_apb1_freq() / 1000 / 1000));
 	}
 #endif
 #if 0
@@ -11892,7 +12052,7 @@ void hightests(void)
 		{
 			/* Обеспечение работы USER MODE DPC */
 			uint_fast8_t kbch, kbready;
-			processmessages(& kbch, & kbready, 0, NULL);
+			processmessages(& kbch, & kbready);
 			char c;
 			if (dbg_getchar(& c))
 			{
@@ -12102,11 +12262,11 @@ void hightests(void)
 				//dsp3D_renderWireframe(dsp3dModel);
 //				char buff [64];
 //				snprintf(buff, 64, "normal : %d, %d, %d,", (int) buf [0], (int) buf [1], (int) buf [2]);
-//				display_at(20, 10, buff);
+//				display_text(20, 10, buff);
 //				snprintf(buff, 64, "normal : %d, %d, %d,", (int) buf2 [0], (int) buf2 [1], (int) buf2 [2]);
-//				display_at(20, 15, buff);
+//				display_text(20, 15, buff);
 //				snprintf(buff, 64, "normal : %d, %d, %d,", (int) buf3 [0], (int) buf3 [1], (int) buf3 [2]);
-//				display_at(20, 20, buff);
+//				display_text(20, 20, buff);
 				dsp3D_present();
 				local_delay_ms(25);
 				char c;
@@ -12640,13 +12800,13 @@ void hightests(void)
 #if 0
 	{
 		colmain_setcolors(COLOR_GREEN, COLOR_BLACK);
-		display_at_P(5, 0, PSTR("PT-Electronics 2015"));
+		display_text(5, 0, PSTR("PT-Electronics 2015"));
 
 		colmain_setcolors(COLOR_RED, COLOR_BLACK);
-		display_at_P(7, 3, PSTR("RENESAS"));
+		display_text(7, 3, PSTR("RENESAS"));
 
 		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-		display_at_P(9, 6, PSTR("2.7 inch TFT"));
+		display_text(9, 6, PSTR("2.7 inch TFT"));
 		
 		for (;;)
 			;
@@ -13143,7 +13303,7 @@ void hightests(void)
 		for (int i = 0; i <= 255; i++)
 		{
 
-			display_fillrect(x, y, wx - sepx, wy - sepy, i << 4);
+			colpip_fillrect(x, y, wx - sepx, wy - sepy, i << 4);
 
 			if (wx > 24)
 			{
@@ -13247,7 +13407,7 @@ void hightests(void)
 
 				display_gotoxy(0, 0 + lowhalf);
 				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-				display_at(buff, lowhalf);
+				display_text(buff, lowhalf);
 			} while (lowhalf --);
 			PRINTF(PSTR("CNT=%08lX\n"), i);
 		}
@@ -13279,7 +13439,7 @@ void hightests(void)
 			{
 				display_gotoxy(0, 0 + lowhalf);
 
-				display_at(buff, lowhalf);
+				display_text(buff, lowhalf);
 			} while (lowhalf --);
 		}
 	}
@@ -13368,14 +13528,14 @@ void hightests(void)
 
 				local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 					PSTR("V%d=%4d"), i, board_getadc_unfiltered_1 /* true */value(i));
-				display_at(COLWIDTH * (i % 2), i / 2, buff);
+				display_text(COLWIDTH * (i % 2), i / 2, buff);
 			}
 			if (0)
 			{
 				char buff [32];
 				local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 					PSTR("CNT=%08lX"), cnt); 
-				display_at(8 * (i % 2), i / 2, buff);
+				display_text(8 * (i % 2), i / 2, buff);
 			}
 		}
 	}
@@ -13396,7 +13556,7 @@ void hightests(void)
 #if 0 && WITHTX && WITHVOX && WITHDEBUG
 	// Отображение значений с выхода DSP модуля - уровень VOX
 	{
-		updateboard(1, 1);	/* полная перенастройка (как после смены режима) - режим приема */
+		updateboard();	/* полная перенастройка (как после смены режима) - режим приема */
 		updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 		for (;;)
 		{
@@ -13415,7 +13575,7 @@ void hightests(void)
 					PSTR("vox2=%3d"), vox2
 					 );
 				display_gotoxy(0, 0 + lowhalf);
-				display_at(buff, lowhalf);
+				display_text(buff, lowhalf);
 
 				//////////////////////////
 				// VOX2 level
@@ -13424,7 +13584,7 @@ void hightests(void)
 					PSTR("vox1=%5d"), vox1
 					 );
 				display_gotoxy(0, 1 + lowhalf);
-				display_at(buff, lowhalf);
+				display_text(buff, lowhalf);
 				*/
 				//////////////////////////
 				// A-VOX level
@@ -13432,7 +13592,7 @@ void hightests(void)
 					PSTR("avox=%3d"), avox
 					 );
 				display_gotoxy(11, 0 + lowhalf);
-				display_at(buff, lowhalf);
+				display_text(buff, lowhalf);
 
 			} while (lowhalf --);
 		}
@@ -13474,38 +13634,38 @@ void hightests(void)
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("af= %4d"), potaf
 			 );
-		display_at(0, 0 * HALFCOUNT_SMALL, buff);
+		display_text(0, 0 * HALFCOUNT_SMALL, buff);
 		// AF gain raw
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("aft=%4d"), potaft
 			 );
-		display_at(0, 1 * HALFCOUNT_SMALL, buff);
+		display_text(0, 1 * HALFCOUNT_SMALL, buff);
 		continue;
 #else
 		// IF gain
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("rf= %4d"), potrf
 			 );
-		display_at(0, 0 * HALFCOUNT_SMALL, buff);
+		display_text(0, 0 * HALFCOUNT_SMALL, buff);
 		// AF gain
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("af= %4d"), potaf
 			 );
-		display_at(0, 1 * HALFCOUNT_SMALL, buff);
+		display_text(0, 1 * HALFCOUNT_SMALL, buff);
 
 		// AUX1
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("A1= %4d"), aux1
 			 );
 		display_gotoxy(14, 0 + lowhalf);
-		display_at(buff, lowhalf);
+		display_text(buff, lowhalf);
 
 		// AUX2
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("A2= %4d"), aux2
 			 );
 		display_gotoxy(0, 1 + lowhalf);
-		display_at(buff, lowhalf);
+		display_text(buff, lowhalf);
 
 		// AUX3
 		/*
@@ -13513,7 +13673,7 @@ void hightests(void)
 			PSTR("A3=%3d"), aux3
 			 );
 		display_gotoxy(7, 1 + lowhalf);
-		display_at(buff, lowhalf);
+		display_text(buff, lowhalf);
 		*/
 #if WITHPOTWPM
 		// WPM
@@ -13521,7 +13681,7 @@ void hightests(void)
 			PSTR("cw=%3d"), wpm
 			 );
 		display_gotoxy(14, 1 + lowhalf);
-		display_at(buff, lowhalf);
+		display_text(buff, lowhalf);
 #endif /* WITHPOTWPM */
 
 		// IF gain raw
@@ -13529,13 +13689,13 @@ void hightests(void)
 			PSTR("rft=%4d"), potrft
 			 );
 		display_gotoxy(0, 2 + lowhalf);
-		display_at(buff, lowhalf);
+		display_text(buff, lowhalf);
 		// AF gain raw
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("aft=%4d"), potaft
 			 );
 		display_gotoxy(10, 2 + lowhalf);
-		display_at(buff, lowhalf);
+		display_text(buff, lowhalf);
 #endif
 
 
@@ -13561,7 +13721,7 @@ void hightests(void)
 
 				display_gotoxy(0, 0 + lowhalf);
 				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-				display_at(buff, lowhalf);
+				display_text(buff, lowhalf);
 			} while (lowhalf --);
 		}
 	}
@@ -13608,7 +13768,7 @@ void hightests(void)
 				display2_fillbg();
 				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
 				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-				display_at(0, 0, b);
+				display_text(0, 0, b);
 				colmain_nextfb();
 				local_delay_ms(50);
 			}
@@ -13618,7 +13778,7 @@ void hightests(void)
 				display2_fillbg();
 				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
 				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-				display_at(0, 0, b);
+				display_text(0, 0, b);
 				colmain_nextfb();
 				local_delay_ms(50);
 			}
@@ -13632,7 +13792,7 @@ void hightests(void)
 				display2_fillbg();
 				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("X%d"), c);
 				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-				display_at(0, 0, b);
+				display_text(0, 0, b);
 				colmain_nextfb();
 				local_delay_ms(2000);
 			}
@@ -13644,7 +13804,7 @@ void hightests(void)
 			display2_fillbg();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("R%d"), c + rSkip);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_at(0, 0, b);
+			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(2000);
 		}
@@ -13654,7 +13814,7 @@ void hightests(void)
 			display2_fillbg();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("G%d"), c + gSkip);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_at(0, 0, b);
+			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(2000);
 		}
@@ -13664,7 +13824,7 @@ void hightests(void)
 			display2_fillbg();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("B%d"), c + bSkip);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_at(0, 0, b);
+			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(2000);
 		}
@@ -13685,7 +13845,7 @@ void hightests(void)
 			display2_fillbg();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_at(0, 0, b);
+			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(50);
 		}
@@ -13695,7 +13855,7 @@ void hightests(void)
 			display2_fillbg();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_at(0, 0, b);
+			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(50);
 		}
@@ -13705,7 +13865,7 @@ void hightests(void)
 			display2_fillbg();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_at(0, 0, b);
+			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(50);
 		}
@@ -13715,7 +13875,7 @@ void hightests(void)
 			display2_fillbg();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_at(0, 0, b);
+			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(50);
 		}
@@ -13743,7 +13903,7 @@ void hightests(void)
 				//unsigned char v1, v2;
 				display_gotoxy(0, 4);
 				local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%10lu"), freq );
-				display_at(buff, 0);
+				display_text(buff, 0);
 				ITM_SendChar('a' + (cd ++) % 16);
 				//SWO_PrintChar('a' + (cd ++) % 16);
 
@@ -13766,13 +13926,13 @@ void hightests(void)
 		//v1 = si570_get_status();
 		display_gotoxy(0, 6);
 		local_snprintf_P(buff, 22, PSTR("he %08lX:%08lX"), 0x1726354aul, -7ul);
-		display_at(buff, 0);
+		display_text(buff, 0);
 
 		display_gotoxy(0, 7);
 		//unsigned long l1 = (unsigned long) (rftw >> 32);
 		//unsigned long l2 = (unsigned long) rftw;
 		local_snprintf_P(buff, 22, PSTR("he %08lx"), -4000000l);
-		display_at(buff, 0);
+		display_text(buff, 0);
 		for (;;)
 			;
 	}
@@ -13856,13 +14016,13 @@ void hightests(void)
 			PRINTF("tune=%u, ptt=%u, ptt2=%u, elkey=%u\n", tune1, ptt1, ptt2, elkey);
 			continue;
 
-			display_at(0, 0, ptt1 != 0 ? "ptt " : "    ");
-			display_at(0, 2, ptt2 != 0 ? "cptt " : "     ");
-			display_at(0, 4, ckey != 0 ? "ckey " : "     ");
+			display_text(0, 0, ptt1 != 0 ? "ptt " : "    ");
+			display_text(0, 2, ptt2 != 0 ? "cptt " : "     ");
+			display_text(0, 4, ckey != 0 ? "ckey " : "     ");
 
-			display_at(0, 6, (elkey & ELKEY_PADDLE_DIT) != 0 ? "dit " : "     ");
-			display_at(0, 8, (elkey & ELKEY_PADDLE_DASH) != 0 ? "dash" : "      ");
-			display_at(0, 10, (phase = ! phase) ? " test1" : " test2");
+			display_text(0, 6, (elkey & ELKEY_PADDLE_DIT) != 0 ? "dit " : "     ");
+			display_text(0, 8, (elkey & ELKEY_PADDLE_DASH) != 0 ? "dash" : "      ");
+			display_text(0, 10, (phase = ! phase) ? " test1" : " test2");
 
 		}
 	}
@@ -13898,7 +14058,7 @@ void hightests(void)
 		for (;;)
 		{
 			uint_fast8_t jumpsize;
-			int_least16_t nrotate = getRotateHiRes(& encoder1, & jumpsize, 1);
+			int_least16_t nrotate = encoder_getrotatehires(& encoder1, & jumpsize);
 			(void) nrotate;
 			//display_gotoxy(0, 1);		// курсор в начало второй строки
 			display_debug_digit(jumpsize, 7, 0, 0);
@@ -13939,7 +14099,7 @@ void hightests(void)
 			do
 			{
 				display_gotoxy(0, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
-				display_at("ADCx=", lowhalf);
+				display_text("ADCx=", lowhalf);
 				display_gotoxy(5, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
 				display2_menu_value(v0, 5, 255, 0, lowhalf);
 			} while (lowhalf --);
@@ -14130,7 +14290,7 @@ void hightests(void)
 				local_snprintf_P(buff, 17, fmt_1, v1);
 
 				display_gotoxy((i % 8) * 3, (i / 8) * 2);
-				display_at(buff, 0);
+				display_text(buff, 0);
 			}
 		}
 	#endif
@@ -14151,7 +14311,7 @@ void hightests(void)
 		char buff [17];
 		local_snprintf_P(buff, 17, fmt_1, v1);
 		display_gotoxy(0, 0);
-		display_at(buff, 0);
+		display_text(buff, 0);
 		local_delay_ms(100);
 	}
 
@@ -14181,7 +14341,7 @@ void hightests(void)
 		char buff [17];
 		local_snprintf_P(buff, 17, fmt_1, v);
 		display_gotoxy(0, 0);
-		display_at(buff);
+		display_text(buff);
 		local_delay_ms(100);
 	}
 #endif
@@ -14247,7 +14407,7 @@ void hightests(void)
 
 			local_snprintf_P(buff, 17, fmt_1, v ++);
 			display_gotoxy(0, 0);
-			display_at(buff, 0);
+			display_text(buff, 0);
 			
 		}
 	}
@@ -15019,7 +15179,7 @@ void lowtests(void)
 	lv_demo_keypad_encoder();
 
 	while(1) {
-		lv_task_handler();
+		lv_timer_handler();
 		usleep(10000);
 	}
 

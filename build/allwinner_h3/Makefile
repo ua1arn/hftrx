@@ -25,7 +25,7 @@ XFEL = ../../tools/xfel-windows-v1.3.2/xfel
 #UADEFS += -D"WITHSMPSYSTEM"
 
 PRJROOT := ../..
-OBJDIR = obj
+OBJDIR = o
 
 # Define project name here
 PROJECT = tc1_h3

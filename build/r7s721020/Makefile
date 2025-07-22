@@ -22,7 +22,7 @@ TRGT = $(TRGT2)-
 #UADEFS += -D"WITHSMPSYSTEM"
 
 PRJROOT := ../..
-OBJDIR = obj
+OBJDIR = o
 
 # Define project name here
 PROJECT = tc1_r7s721020

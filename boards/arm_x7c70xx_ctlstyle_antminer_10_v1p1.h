@@ -111,7 +111,7 @@
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 
-	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+	
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
@@ -138,15 +138,15 @@
 
 	//#define LCDMODE_V0	1	//* Обычная конфигурация одна страница без PIP с L8 на основном экране */
 
-	//#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
-	//#define LCDMODE_V2_2PAGE	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
+	//#define LCDMODE_PALETTE256	1	/* Экран с тремя видеобуферами, L8 */
+	//#define LCDMODE_PALETTE256	1	/* Экран с двумя видеобуферами, L8 */
 
-	//#define LCDMODE_V2A	1	/* только главный экран 16 бит (три страницы), без PIP */
-	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+	//#define LCDMODE_RGB565	1	/* Экран 16 бит (три страницы) */
+	//#define LCDMODE_RGB565 1	/* Экран 16 бит */
 
-//	#define LCDMODE_V5A	1	/* только главный экран с тремя видеобуферами 32 бит ARGB8888, без PIP */
+//	#define LCDMODE_ARGB8888	1	/* Экран с тремя видеобуферами 32 бит ARGB8888 */
 //
-//	//#define LCDMODE_V2B 1	/* только главный экран 16 бит RGB565 (одна страница), без PIP */
+//	
 //
 //	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 4.3" display */
 //	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
@@ -400,8 +400,8 @@
 		#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 		#define WITHSWRMTR	1		/* Измеритель КСВ */
 	#endif /* WITHTX */
-	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
-	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
+	
+	
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
@@ -546,7 +546,7 @@
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
 			FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
-			PWRI = FWD,
+			
 		#endif /* WITHSWRMTR */
 
 		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
@@ -557,7 +557,7 @@
 
 		FWD = BOARD_ADCX2IN(3),
 		REF = BOARD_ADCX2IN(2),
-		PWRI = FWD,
+		
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
@@ -584,7 +584,7 @@
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
 			FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
-			PWRI = FWD,
+			
 		#endif /* WITHSWRMTR */
 	#endif
 
@@ -592,7 +592,7 @@
 		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 		REFMRRIX = BOARD_ADCMRRIN(2),
 		FWDMRRIX = BOARD_ADCMRRIN(3),
-		PWRMRRIX = FWDMRRIX,
+		PWRMRRIX = BOARD_ADCMRRIN(7),
 		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
 		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации

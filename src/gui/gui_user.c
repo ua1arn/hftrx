@@ -299,7 +299,6 @@ void gui_user_actions_after_close_window(void)
 {
 	hamradio_disable_encoder2_redirect();
 	hamradio_set_lock(0);
-	gui_update();
 }
 
 static void keyboard_edit_string(uintptr_t s, unsigned strlen, unsigned clean)
@@ -500,7 +499,7 @@ static void window_infobar_menu_process(void)
 
 		case INFOBAR_DNR:
 
-			hamradio_change_nr();
+			hamradio_change_nr(1);
 			need_close = 1;
 			break;
 
@@ -559,7 +558,7 @@ static void window_infobar_menu_process(void)
 					close_all_windows();
 					window_t * const win2 = get_win(WINDOW_AF_EQ);
 					open_window(win2);
-					footer_buttons_state(DISABLED);
+					footer_buttons_state(DISABLED, NULL);
 				}
 			}
 				break;
@@ -578,7 +577,7 @@ static void window_infobar_menu_process(void)
 					close_all_windows();
 					window_t * const win2 = get_win(WINDOW_AF);
 					open_window(win2);
-					footer_buttons_state(DISABLED);
+					footer_buttons_state(DISABLED, NULL);
 				}
 				else
 				{
@@ -618,7 +617,7 @@ static void window_infobar_menu_process(void)
 			close_all_windows();
 			window_t * const win2 = get_win(WINDOW_TX_POWER);
 			open_window(win2);
-			footer_buttons_state(DISABLED);
+			footer_buttons_state(DISABLED, NULL);
 		}
 			break;
 
@@ -800,7 +799,7 @@ static void gui_main_process(void)
 				{
 					window_t * const win = get_win(WINDOW_INFOBAR_MENU);
 					open_window(win);
-					footer_buttons_state(DISABLED);
+					footer_buttons_state(DISABLED, NULL);
 				}
 			}
 		}
@@ -1226,7 +1225,7 @@ static void gui_main_process(void)
 				uint_fast16_t xx;
 
 				if (update)
-					z = display_zoomedbw() / 1000;
+					z = display2_zoomedbw() / 1000;
 				local_snprintf_P(buf, buflen, PSTR("SPAN"));
 				xx = current_place * infobar_label_width + infobar_label_width / 2;
 				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
@@ -4383,7 +4382,7 @@ void gui_open_sys_menu(void)
 	{
 		window_t * const win = get_win(WINDOW_MENU);
 		open_window(win);
-		footer_buttons_state(DISABLED);
+		footer_buttons_state(DISABLED, NULL);
 	}
 }
 
@@ -5249,7 +5248,7 @@ static void window_receive_process(void)
 			}
 			else if (bh == btn_preamp)
 			{
-				hamradio_change_preamp();
+				hamradio_change_preamp(1);
 			}
 			else if (bh == btn_AF)
 			{
@@ -5268,12 +5267,12 @@ static void window_receive_process(void)
 			}
 			else if (bh == btn_DNR)
 			{
-				hamradio_change_nr();
+				hamradio_change_nr(1);
 			}
 #if WITHWNB
 			else if (bh == btn_WNB)
 			{
-				btn_WNB->is_locked = wnb_state_switch();
+				btn_WNB->is_locked = wnb_state_switch(1);
 			}
 #endif /* WITHWNB */
 		}
@@ -5307,15 +5306,14 @@ static void window_receive_process(void)
 		local_snprintf_P(btn_att->text, ARRAY_SIZE(btn_att->text), PSTR("Att|%s"), a == NULL ? "off" : a);
 
 		button_t * btn_preamp = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_preamp");
-		const char * p = remove_start_line_spaces(hamradio_get_preamp_value());
-		local_snprintf_P(btn_preamp->text, ARRAY_SIZE(btn_preamp->text), PSTR("Preamp|%s"), p == NULL ? "off" : "on");
+		uint8_t p = hamradio_change_preamp(0);
+		local_snprintf_P(btn_preamp->text, ARRAY_SIZE(btn_preamp->text), PSTR("Preamp|%s"), p ? "on" : "off");
 
 		button_t * btn_AGC = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_AGC");
 		local_snprintf_P(btn_AGC->text, ARRAY_SIZE(btn_AGC->text), PSTR("AGC|%s"), btn_AGC->payload ? "fast" : "slow");
 
 		button_t * btn_DNR = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_DNR");
-		int_fast32_t grade = 0;
-		btn_DNR->is_locked = hamradio_get_nrvalue(& grade) != 0;
+		btn_DNR->is_locked = hamradio_change_nr(0) != 0;
 	}
 }
 

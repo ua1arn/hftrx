@@ -1,9 +1,9 @@
 ifeq (1, 0)
 # btstack
 # https://github.com/bluekitchen/btstack.git
-# forked to https://github.com/ua1arn/hftrx_btstack.git
 
-BTSTACK_ROOT := $(PRJROOT)/lib/hftrx_btstack
+# also need enable LwIP and (optionaly) remove  ${BTSTACK_ROOT}/3rd-party/lwip
+BTSTACK_ROOT := $(PRJROOT)/lib/btstack
 
 C_SOURCES =  \
 ${BTSTACK_ROOT}/3rd-party/hxcmod-player/hxcmod.c \
@@ -12,7 +12,6 @@ ${BTSTACK_ROOT}/3rd-party/micro-ecc/uECC.c \
 ${BTSTACK_ROOT}/3rd-party/yxml/yxml.c \
 ${BTSTACK_ROOT}/3rd-party/md5/md5.c \
 ${BTSTACK_ROOT}/chipset/cc256x/btstack_chipset_cc256x.c \
-${BTSTACK_ROOT}/example/sco_demo_util.c \
 ${BTSTACK_ROOT}/platform/embedded/btstack_audio_embedded.c \
 ${BTSTACK_ROOT}/platform/embedded/btstack_run_loop_embedded.c \
 ${BTSTACK_ROOT}/platform/embedded/btstack_stdin_embedded.c \
@@ -47,7 +46,6 @@ ${BTSTACK_ROOT}/src/classic/avrcp_browsing_controller.c \
 ${BTSTACK_ROOT}/src/classic/avrcp_controller.c \
 ${BTSTACK_ROOT}/src/classic/avrcp_media_item_iterator.c \
 ${BTSTACK_ROOT}/src/classic/avrcp_target.c \
-${BTSTACK_ROOT}/src/classic/bnep.c \
 ${BTSTACK_ROOT}/src/classic/btstack_cvsd_plc.c \
 ${BTSTACK_ROOT}/src/classic/btstack_link_key_db_tlv.c \
 ${BTSTACK_ROOT}/src/classic/btstack_sbc_decoder_bluedroid.c \
@@ -82,32 +80,9 @@ ${BTSTACK_ROOT}/src/hci_dump.c \
 ${BTSTACK_ROOT}/src/hci_transport_h4.c \
 ${BTSTACK_ROOT}/src/l2cap.c \
 ${BTSTACK_ROOT}/src/l2cap_signaling.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/def.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/inet_chksum.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/init.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ip.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/mem.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/memp.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/netif.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/pbuf.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/tcp.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/tcp_in.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/tcp_out.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/timeouts.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/udp.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/acd.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/dhcp.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/etharp.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/icmp.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/ip4.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/ip4_addr.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/ip4_frag.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/netif/ethernet.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/apps/http/altcp_proxyconnect.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/apps/http/fs.c \
-${BTSTACK_ROOT}/3rd-party/lwip/core/src/apps/http/httpd.c \
-${BTSTACK_ROOT}/3rd-party/lwip/dhcp-server/dhserver.c \
-${BTSTACK_ROOT}/platform/lwip/bnep_lwip.c
+
+#${BTSTACK_ROOT}/src/classic/bnep.c
+#${BTSTACK_ROOT}/platform/lwip/bnep_lwip.c
 
 SRCDIRS += ${BTSTACK_ROOT}/3rd-party/bluedroid/encoder/srce
 SRCDIRS += ${BTSTACK_ROOT}/3rd-party/bluedroid/decoder/srce
@@ -122,8 +97,6 @@ C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/bluedroid/decoder/include
 C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/bluedroid/encoder/include
 C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/hxcmod-player
 C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/hxcmod-player/mods
-C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/lwip/core/src/include
-C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/lwip/dhcp-server
 C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/md5
 C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/yxml
 C_INCLUDES += ${BTSTACK_ROOT}/3rd-party/segger-rtt

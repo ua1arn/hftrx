@@ -247,20 +247,28 @@ trap_\func:
 .endm
 
 	.global Reset_Handler
+   	.extern addr64_preparedata
+   	.extern SystemInit
+   	.extern _start
+   	.extern __stack
+
 .section ".startup0"
 .align 8
 Reset_Handler:
 	fill0_i64		/* set all integer registers to zero */
 
 	/* stack initilization */
-	la	sp, __stack
+	la	sp, local_stack
 	mv	ra, zero	// return address - link register
 	mv	gp, zero
     mv  a0, zero
     mv  a1, zero
+	//call addr64_preparedata	/* fill .bss and prepare constant data */
+	la	sp, __stack
 	call SystemInit
 	fill0_fp64		/* set all floating registers to zero */
-	call __riscv_start
+	call addr64_preparedata	/* fill .bss and prepare constant data */
+	call _start
     /* to let simulator know program end point */
     addi x1,x0,1
     addi x2,x0,-1
@@ -337,10 +345,6 @@ __Vectors:
     j trap_IRQ15
     .align 2
 
- //   .space (4096 - (16 + 16) * 4)
-
-	.section ".text"
-
 	mtrap_handler SYNCTRAP
 	mtrap_handler VMSI
 	mtrap_handler VMTI
@@ -364,5 +368,14 @@ __Vectors:
 	mtrap_handler IRQ15
 
 	mtrap_handler EMPTY
+
+ //   .space (4096 - (16 + 16) * 4)
+
+	.section ".noinit"
+	.align 3
+	.space	(4 * 512)
+local_stack = .
+	.word 0		/* fix non-zero size of this section */
+	.word 0		/* fix non-zero size of this section */
 
 

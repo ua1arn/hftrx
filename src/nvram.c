@@ -183,7 +183,6 @@ eeprom_a2_read(
 	prog_spi_io(target, NVRAM_SPISPEED, NVRAM_SPIMODE, cmd, ARRAY_SIZE(cmd), NULL, 0, data, len);
 }
 
-#if 0
 /* three bytes address 512K-byte chips */
 static void 
 eeprom_a3_write(
@@ -225,8 +224,6 @@ eeprom_a3_read(
 	prog_spi_io(target, NVRAM_SPISPEED, NVRAM_SPIMODE, cmd, ARRAY_SIZE(cmd), NULL, 0, data, len);
 }
 
-#endif
-
 static void
 eeprom_wait_until_ready(
 	spitarget_t target	/* addressing to chip */
@@ -246,14 +243,13 @@ eeprom_initialize(
 	// VDD(min) to First Access Start - 10 mS
 	local_delay_ms(20);
 
+	// принудительное "передёргивание" сигнала чипселект - решение проблемы с запуском.
+	//prog_spi_io(target, NVRAM_SPISPEED, NVRAM_SPIMODE, cmd_wren, ARRAY_SIZE(cmd_wren), NULL, 0, NULL, 0);
+	spi_cs_ping(target);
+
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования EEPROM */
 	eeprom_wait_until_ready(target);
-
-	// принудительное "передёргивание" сигнала чипселект - решение проблемы с запуском.
-	//prog_select(targetnvram);	/* done sending data to target chip */
-	//spi_unselect(targetnvram);	/* done sending data to target chip */
-
 
 	// +++ РАЗРЕШЕНИЕ ЗАПИСИ
 	static const uint8_t cmd_wren [] = { WREN }; /* set write-enable latch */
@@ -284,9 +280,9 @@ nvram_write_withinpage(uint_least16_t addr, const uint8_t * data, unsigned len)
 	case 1:
 		eeprom_a2_write(targetnvram,	addr, data, len);
 		break;
-	//case 2:
-	//	eeprom_a3_write(targetnvram,	addr, data, len);
-	//	break;
+	case 2:
+		eeprom_a3_write(targetnvram,	addr, data, len);
+		break;
 	}
 }
 
@@ -527,9 +523,9 @@ nvram_read(nvramaddress_t addr, uint8_t * data, unsigned len)
 	case 1:
 		eeprom_a2_read(targetnvram,	addr, data, len);
 		break;
-	//case 2:
-	//	eeprom_a3_read(targetnvram,	addr, data, len);
-	//	break;
+	case 2:
+		eeprom_a3_read(targetnvram,	addr, data, len);
+		break;
 	}
 
 #endif

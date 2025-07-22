@@ -43,6 +43,10 @@
 #ifndef SCO_DEMO_UTIL_H
 #define SCO_DEMO_UTIL_H
 
+#include "hardware.h"
+
+#if WITHUSEUSBBT
+
 #include "hci.h"
 
 #if defined __cplusplus
@@ -79,5 +83,7 @@ void sco_demo_close(void);
 #if defined __cplusplus
 }
 #endif
+
+#endif	/* WITHUSEUSBBT */
 
 #endif

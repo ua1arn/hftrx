@@ -194,7 +194,7 @@
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 
-	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+	
 	//#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
@@ -341,8 +341,8 @@
 	//#define WITHVOX			1	/* используется VOX */
 	//#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 	//#define WITHSWRMTR	1		/* Измеритель КСВ */
-	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
-	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
+	
+	
 	//#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
@@ -482,7 +482,6 @@
 	#endif /* WITHCURRLEVEL */
 
 	#if WITHSWRMTR
-		PWRI = 14,			// PC4
 		FWD = 14, REF = 15,	// PC5	SWR-meter
 	#endif /* WITHSWRMTR */
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 13, KI4 = 0	// клавиатура

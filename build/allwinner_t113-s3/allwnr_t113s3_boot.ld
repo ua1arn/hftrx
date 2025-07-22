@@ -128,7 +128,7 @@ SECTIONS
 
 		. = ALIGN(64);
 
-		*(.data*)
+		*(.data* .sdata*)
 		*(.dtcm*)
 
 		. = ALIGN(8);
@@ -163,14 +163,17 @@ SECTIONS
 	{
 		__bss_start__ = .;
 		. = ALIGN(64);
-		*(.bss*)
+		*(.sbss*)
+		*(.gnu.linkonce.sb.*)
+		*(.bss .bss.*)
+		*(.gnu.linkonce.b.*)
 		*(COMMON)
 		. = ALIGN(64);
 		__bss_end__ = .;
 		LONG(0xDEADBEEF)
 	} > RAM 
 
-	.noinit :
+	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
 		*(.noinit*)

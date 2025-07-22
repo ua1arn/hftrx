@@ -25,8 +25,8 @@ XFEL = ../../tools/xfel-windows-v1.3.2/xfel
 #UADEFS += -D"WITHSMPSYSTEM"
 
 PRJROOT := ../..
-OBJDIR = obj
-OBJDIR64 = obj64
+OBJDIR = o
+OBJDIR64 = x
 
 # Define project name here
 PROJECT = tc1_a64

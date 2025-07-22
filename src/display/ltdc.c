@@ -295,7 +295,7 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc, const videomode_t *
 #if LCDMODE_MAIN_L8
 	const unsigned grx_format_MAIN = 0x05;	// GRx_FORMAT 5: CLUT8
 	const unsigned grx_rdswa_MAIN = 0x07;	// GRx_RDSWA 111: (8) (7) (6) (5) (4) (3) (2) (1) [32-bit swap + 16-bit swap + 8-bit swap]
-#elif LCDMODE_MAIN_ARGB8888
+#elif LCDMODE_ARGB8888
 	const unsigned grx_format_MAIN = 0x04;	// GRx_FORMAT 4: ARGB8888, 1: RGB888
 	const unsigned grx_rdswa_MAIN = 0x04;	// GRx_RDSWA 100: (5) (6) (7) (8) (1) (2) (3) (4) [Swapped in 32-bit units]
 #else /* LCDMODE_MAIN_L8 */
@@ -1425,7 +1425,7 @@ hardware_ltdc_initialize(const videomode_t * vdmode)
 	/* LTDC Initialization -------------------------------------------------------*/
 	LTDCx_InitTypeDef LTDC_InitStruct;
 
-	pipparams_t mainwnd = { 0, 0, DIM_X, DIM_Y };
+	const pipparams_t mainwnd = { 0, 0, DIM_X, DIM_Y };
 
 	LTDC_InitStruct.LTDC_HSPolarity = vdmode->hsyncneg ? LTDC_HSPolarity_AL : LTDC_HSPolarity_AH;
 	//LTDC_InitStruct.LTDC_HSPolarity = LTDC_HSPolarity_AH;     
@@ -1478,7 +1478,7 @@ hardware_ltdc_initialize(const videomode_t * vdmode)
 
 	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORPIP_T));
 
-#elif LCDMODE_MAIN_ARGB8888
+#elif LCDMODE_ARGB8888
 
 	/* Без палитры */
 	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORPIP_T));
@@ -2584,10 +2584,10 @@ static DE_UIS_TypeDef * de3_getuis(int rtmixid, int uich)
 #define DE2_FORMAT_ARGB_1555	0x10
 #define DE2_FORMAT_ABGR_1555	0x11
 
-#if LCDMODE_MAIN_ARGB8888
+#if LCDMODE_ARGB8888
 	static const uint32_t ui_format = 0x00;	//  0x00: ARGB_8888
 	//const uint32_t ui_format = 0x04;	// 0x04: XRGB_8888
-#elif LCDMODE_MAIN_RGB565
+#elif LCDMODE_RGB565
 	static const uint32_t ui_format = 0x0A;	// 0x0A: RGB_565
 #else
 	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW

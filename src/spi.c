@@ -15,7 +15,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#if ! LINUX_SUBSYSTEM && ! (CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA)
+#if ! LINUX_SUBSYSTEM
 	#include <machine/endian.h>
 #endif /* ! LINUX_SUNSYSTEM */
 
@@ -33,6 +33,12 @@ void spidf_operate_unlock(IRQL_t irql);
 char nameDATAFLASH [64] = "NoChip";
 
 #if WITHSPIHW || WITHSPISW
+
+
+#ifndef FPGALOADER_SPISPEED
+#define FPGALOADER_SPISPEED SPIC_SPEEDFAST
+#endif
+#define FPGALOADER_SPIMODE SPIC_MODE0
 
 
 // Эти три функции должны использоваться везде, где надо работать с SPI.
@@ -68,22 +74,8 @@ void prog_spi_read_frame(
 	unsigned int size
 	);
 
-#if SPI_BIDIRECTIONAL
-
-	void prog_spi_to_read_impl(void);
-	void prog_spi_to_write_impl(void);
-
-	//void (prog_spi_to_read)(spitarget_t target);
-	//void (prog_spi_to_write)(spitarget_t target);
-
-	#define spi_to_read(target) do { prog_spi_to_read_impl(); } while (0)
-	#define spi_to_write(target) do { prog_spi_to_write_impl(); } while (0)
-
-
-#else
-	#define spi_to_read(target) do { } while (0)
-	#define spi_to_write(target) do { } while (0)
-#endif
+#define spi_to_read(target) do { } while (0)
+#define spi_to_write(target) do { } while (0)
 
 	// 8-ми битные функции обмена по SPI
 	#if WITHSPIHW && ! WITHSPISW
@@ -210,7 +202,7 @@ void prog_spi_read_frame(
 static void 
 spi_select255(void)
 {
-	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV
 		UC1608_CSP_PORT_S(UC1608_CSP);
 	#elif (CPUSTYLE_ATMEGA)
 		UC1608_CSP_PORT |= UC1608_CSP;
@@ -224,7 +216,7 @@ spi_select255(void)
 static void 
 spi_unselect255(void)
 {
-	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV
 		UC1608_CSP_PORT_C(UC1608_CSP);
 	#elif (CPUSTYLE_ATMEGA)
 		UC1608_CSP_PORT &= ~ UC1608_CSP;
@@ -237,7 +229,7 @@ spi_unselect255(void)
 static void 
 spi_hwinit255(void)
 {
-	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV
 		UC1608_CSP_INITIALIZE();
 	#elif (CPUSTYLE_ATMEGA)
 		UC1608_CSP_PORT &= ~ UC1608_CSP;	/* неактивное состояние */
@@ -256,16 +248,7 @@ spi_allcs_disable(void)
 
 	SPI_ALLCS_DISABLE();
 
-#elif CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
-
-	#if WITHSPISPLIT	
-		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
-		SPI0_TARGET_PORT_S(SPI0_CS_BIT);
-		SPI1_TARGET_PORT_S(SPI1_CS_BIT);
-		#if defined (SPI_CSEL2)
-			SPI2_TARGET_PORT_S(SPI2_CS_BIT);
-		#endif
-	#endif /* WITHSPISPLIT */
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 	#if SPI_ALLCS_BITS != 0 && SPI_ALLCS_BITSNEG != 0
 
@@ -346,7 +329,7 @@ spi_cs_enable(
 
 	SPI_CS_ASSERT(target);
 
-#elif CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 	#if WITHSPISPLIT
 		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
@@ -443,7 +426,7 @@ spi_setaddress(
 #if WITHSPICSEMIO
 	/* специфицеская конфигурация - управление сигналами CS SPI периферии выполняется через EMIO */
 
-#elif CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 	#if defined (SPI_NAEN_BIT)
 		if ((target & SPI_ALLCS_BITS) == 0)
@@ -485,7 +468,7 @@ prog_pulse_ioupdate(void)
 {
 	// SPI_IOUPDATE_PORT was SPI_TARGET_PORT
 #if defined (SPI_IOUPDATE_BIT)
-	#if CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 		SPI_IOUPDATE_PORT_C(SPI_IOUPDATE_BIT);
 		hardware_spi_io_delay();
@@ -509,26 +492,6 @@ prog_pulse_ioupdate(void)
 #endif
 }
 
-#if SPI_BIDIRECTIONAL
-
-/* переключение вывода SPI DATA на чтение */
-void 
-prog_spi_to_read_impl(void)
-{
-	SPIIO_MOSI_TO_INPUT();
-	hardware_spi_io_delay();  
-}
-
-/* переключение вывода SPI DATA на выдачу даннах. Состояне после инициализации порта */
-void 
-prog_spi_to_write_impl(void)
-{
-	SPIIO_MOSI_TO_OUTPUT();
-	hardware_spi_io_delay();  
-}
-
-#endif /* SPI_BIDIRECTIONAL */
-
 #if WITHSPISW
 
 #if ! WITHSPISPLIT
@@ -544,11 +507,9 @@ prog_spi_to_write_impl(void)
 
 		#if CPUSTYLE_XC7Z || CPUSTYLE_RK356X
 			return SPI_TARGET_MISO_PIN != 0;
-		#elif SPI_BIDIRECTIONAL
-			return (SPI_TARGET_MOSI_PIN & SPI_MOSI_BIT) != 0;
-		#else /* SPI_BIDIRECTIONAL */
+		#else /*  */
 			return (SPI_TARGET_MISO_PIN & SPI_MISO_BIT) != 0;
-		#endif /* SPI_BIDIRECTIONAL */
+		#endif /*  */
 	}
 
 	//////////////////////////
@@ -560,9 +521,7 @@ prog_spi_to_write_impl(void)
 		uint_fast8_t v = 0;
 		while (i --)
 		{
-		#if ! SPI_BIDIRECTIONAL
 			SDO_SET(bytetosend & 0x80);		// запись бита информации
-		#endif /*  ! SPI_BIDIRECTIONAL */
 			v = v * 2 + spi_pulse_clk();	// спадающий перепад на SPI CLK переключает FRAM в режим выдачи
 			bytetosend <<= 1;
 		}
@@ -728,6 +687,19 @@ static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t 
 static void spi_transfer_b16(spitarget_t target, const uint16_t * txbuff, uint16_t * rxbuff, int len, uint_fast8_t readnb);
 static void spi_transfer_b32(spitarget_t target, const uint32_t * txbuff, uint32_t * rxbuff, int len, uint_fast8_t readnb);
 
+void spi_cs_ping(spitarget_t target)
+{
+	IRQL_t oldIrql;
+
+	spi_operate_lock(& oldIrql);
+	prog_select(target);
+	SPI_CS_DELAY(target);	/* Perform delay after assert or de-assert specific CS line */
+	prog_unselect(target);
+
+	spi_operate_unlock(oldIrql);
+
+}
+
 static void spi_operate(lowspiio_t * iospi)
 {
 	const spitarget_t target = iospi->target;
@@ -813,8 +785,7 @@ static void spi_operate(lowspiio_t * iospi)
 				break;
 			}
 			break;
-#if SPI_BIDIRECTIONAL
-#else /* SPI_BIDIRECTIONAL */
+
 		case SPIIO_EXCHANGE:
 			switch (iospi->spiiosize)
 			{
@@ -836,7 +807,7 @@ static void spi_operate(lowspiio_t * iospi)
 				break;
 			}
 			break;
-#endif /* SPI_BIDIRECTIONAL */
+
 		default:
 			break;
 		}
@@ -1092,10 +1063,6 @@ prog_select_init(void)
 
 #if WITHSPIHW
 
-	#if SPI_BIDIRECTIONAL
-		#error WITHSPIHW and SPI_BIDIRECTIONAL can not be used together
-	#endif
-
 	#if CPUSTYLE_AT91SAM7S || CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 		static portholder_t spi_csr_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spi_csr_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 в режиме 16-ти битных слов. */
@@ -1110,11 +1077,6 @@ prog_select_init(void)
 	#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
 		static portholder_t spi_cr1_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spi_cr1_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
-	#elif CPUSTYLE_ATMEGA
-		static portholder_t spcr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
-		static portholder_t spsr_val [SPIC_SPEEDS_COUNT];
-	#elif CPUSTYLE_ATXMEGA
-		static portholder_t spi_ctl_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_R7S721
 		static portholder_t spi_spbr_val [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_spcmd0_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
@@ -1458,23 +1420,6 @@ void hardware_spi_master_initialize(void)
 
 	SPIHARD_PTR->SPI_IDR = ~ 0; /* Disable all interrupts */
     SPIHARD_PTR->SPI_CR = AT91C_SPI_SPIEN;
-
-#elif CPUSTYLE_ATMEGA
-
-	// SPI initialization
-	SPCR = 0x00;	/* отключить */
-
-    // setup PIO pins for SPI bus, disconnect from peripherials
-	SPIIO_INITIALIZE();
-
-
-#elif CPUSTYLE_ATXMEGA
-
-	// SPI initialization
-	TARGETHARD_SPI.CTRL = 0x00;	/* отключить */
-
-    // setup PIO pins for SPI bus, disconnect from peripherials
-	SPIIO_INITIALIZE();
 
 #elif CPUSTYLE_STM32F1XX
 
@@ -1828,6 +1773,46 @@ static void spidf_spi_read_rxbuf_b8(uint8_t * __restrict buf, int len)
 	}
 }
 
+#if 0
+// need fix
+static void spidf_spi_read_rxbuf_b32(volatile uint32_t * __restrict buf, int len4)
+{
+	if (buf != NULL)
+	{
+		while (len4 --)
+		{
+			__UNALIGNED_UINT32_WRITE(buf ++, __REV(SPIHARD_PTR->SPI_RXD));
+		}
+
+	}
+	else
+	{
+		while (len4 --)
+		{
+			(void) SPIHARD_PTR->SPI_RXD;
+		}
+	}
+}
+
+static void spidf_spi_write_txbuf_b32(volatile const uint32_t * __restrict buf, int len4)
+{
+    if (buf != NULL)
+    {
+		while (len4 --)
+		{
+            SPIHARD_PTR->SPI_TXD = __REV(__UNALIGNED_UINT32_READ(* buf ++));
+        }
+    }
+    else
+    {
+		while (len4 --)
+        {
+ 			SPIHARD_PTR->SPI_TXD = 0xFFFFFFFF;
+        }
+    }
+
+}
+#endif
 // readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
 static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t * rxbuff, int len, uint_fast8_t readnb)
 {
@@ -1845,10 +1830,13 @@ static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t 
 		{
 		default:
 		case SPDFIO_1WIRE:
-			spidf_spi_write_txbuf_b8(txbuff, chunk);
-			SPIHARD_PTR->SPI_MTC = chunk & UINT32_C(0xFFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
+//			if (chunk == MAXCHUNK)
+//				spidf_spi_write_txbuf_b32((const uint32_t *) txbuff, chunk / 4);
+//			else
+				spidf_spi_write_txbuf_b8(txbuff, chunk);
+			SPIHARD_PTR->SPI_MTC = chunk & UINT32_C(0x00FFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
 			// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-			SPIHARD_PTR->SPI_BCC = chunk & UINT32_C(0xFFFFFF);
+			SPIHARD_PTR->SPI_BCC = chunk & UINT32_C(0x00FFFFFF);
 			break;
 
 		case SPDFIO_4WIRE:
@@ -1856,8 +1844,11 @@ static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t 
 			if (txbuff != NULL)
 			{
 				// 4-wire write
-				spidf_spi_write_txbuf_b8(txbuff, chunk);
-				SPIHARD_PTR->SPI_MTC = chunk & UINT32_C(0xFFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
+//				if (chunk == MAXCHUNK)
+//					spidf_spi_write_txbuf_b32((const uint32_t *) txbuff, chunk / 4);
+//				else
+					spidf_spi_write_txbuf_b8(txbuff, chunk);
+				SPIHARD_PTR->SPI_MTC = chunk & UINT32_C(0x00FFFFFF);	// MWTC - Master Write Transmit Counter - bursts before dummy
 			}
 			else
 			{
@@ -1877,7 +1868,10 @@ static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t 
 			;
 		SPIHARD_PTR->SPI_BCC &= ~ (UINT32_C(1) << 29);	/* Quad_EN */
 
-		spidf_spi_read_rxbuf_b8(rxbuff, chunk);
+//		if (chunk == MAXCHUNK)
+//			spidf_spi_read_rxbuf_b32((uint32_t *) rxbuff, chunk / 4);
+//		else
+			spidf_spi_read_rxbuf_b8(rxbuff, chunk);
 
 		if (rxbuff != NULL)
 			rxbuff += chunk;
@@ -2006,34 +2000,6 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	spi_csr_val16w [spispeedindex][SPIC_MODE1] = csrbits16w;
 	spi_csr_val16w [spispeedindex][SPIC_MODE2] = csrbits16w | AT91C_SPI_CPOL | AT91C_SPI_NCPHA;
 	spi_csr_val16w [spispeedindex][SPIC_MODE3] = csrbits16w | AT91C_SPI_CPOL;
-
-#elif CPUSTYLE_ATMEGA
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, spispeed), ATMEGA_SPCR_WIDTH, ATMEGA_SPCR_TAPS, & value, 1);
-	const uint_fast8_t spcr = spcr_spsr [prei].spcr | (1U << SPE) | (1U << MSTR);
-	// С FRAM FM25L04 работает MODE3 и MODE0
-	spcr_val [spispeedindex][SPIC_MODE0] = (0U << CPOL) | (0U << CPHA) | spcr;
-	spcr_val [spispeedindex][SPIC_MODE1] = (0U << CPOL) | (1U << CPHA) | spcr;
-	spcr_val [spispeedindex][SPIC_MODE2] = (1U << CPOL) | (0U << CPHA) | spcr;
-	spcr_val [spispeedindex][SPIC_MODE3] = (1U << CPOL) | (1U << CPHA) | spcr;
-
-	spsr_val [spispeedindex] = spcr_spsr [prei].spsr;	// SPI2X bit
-
-#elif CPUSTYLE_ATXMEGA
-
-	// SPI initialization
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, spispeed), ATXMEGA_SPIBR_WIDTH, ATXMEGA_SPIBR_TAPS, & value, 1);
-	const uint_fast8_t ctl = spi_ctl [prei] | SPI_MASTER_bm | SPI_ENABLE_bm;
-	// С FRAM FM25L04 работает MODE3 и MODE0
-	spi_ctl_val [spispeedindex][SPIC_MODE0] = SPI_MODE_0_gc | ctl;	// SPI MODE0,
-	spi_ctl_val [spispeedindex][SPIC_MODE1] = SPI_MODE_1_gc | ctl;	// SPI MODE1,
-	spi_ctl_val [spispeedindex][SPIC_MODE2] = SPI_MODE_2_gc | ctl;	// SPI MODE2,
-	spi_ctl_val [spispeedindex][SPIC_MODE3] = SPI_MODE_3_gc | ctl;	// SPI MODE3,
 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
 
@@ -2346,26 +2312,6 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
-#elif CPUSTYLE_ATMEGA
-
-	SPSR = spsr_val [spispeedindex];		// D0 is SPI2X bit, other bits has no effect at write.
-	SPCR = spcr_val [spispeedindex][spimode];
-
-	HARDWARE_SPI_CONNECT();
-
-	(void) SPDR;	/* clear SPIF in status register */
-
-#elif CPUSTYLE_ATXMEGA
-
-	TARGETHARD_SPI.CTRL = spi_ctl_val [spispeedindex][spimode];
- 	/* MOSI and SCK as output, MISO as input. */
-	//SPI_TARGET_DDR_S  = SPI_MOSI_BIT | SPI_SCLK_BIT;
-	//SPI_TARGET_DDR_C  = SPI_MISO_BIT;
-
-	HARDWARE_SPI_CONNECT();
-
-	(void) TARGETHARD_SPI.DATA;	/* clear SPIF in status register */
-
 #elif CPUSTYLE_STM32F1XX
 
 	HARDWARE_SPI_CONNECT();
@@ -2488,14 +2434,6 @@ void hardware_spi_disconnect(void)
 
 	HARDWARE_SPI_DISCONNECT();
 
-#elif CPUSTYLE_ATMEGA
-
-	HARDWARE_SPI_DISCONNECT();
-
-#elif CPUSTYLE_ATXMEGA
-
-	HARDWARE_SPI_DISCONNECT();
-
 #elif CPUSTYLE_STM32H7XX
 
 	SPIHARD_PTR->CR1 |= SPI_CR1_CSUSP;
@@ -2573,20 +2511,6 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	while ((SPIHARD_PTR->SPI_SR & AT91C_SPI_RDRF) == 0)
 		;
 	return (SPIHARD_PTR->SPI_RDR & AT91C_SPI_TD);
-
-#elif CPUSTYLE_ATMEGA
-
-	/* дождаться завершения приёма/передачи */
-	while ((SPSR & (1U << SPIF)) == 0)
-		;
-	return SPDR;
-
-#elif CPUSTYLE_ATXMEGA
-
-	/* дождаться завершения приёма/передачи */
-	while ((TARGETHARD_SPI.STATUS & SPI_IF_bm) == 0)
-		;
-	return TARGETHARD_SPI.DATA;
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
@@ -2850,11 +2774,6 @@ hardware_spi_master_send_frame_8bpartial(
 
 	//xprog_spi_send_frame(target, buffer, size);
 
-#elif CPUSTYLE_ATXMEGA
-	#warning TODO: implement SPI over DMA
-
-	//xprog_spi_send_frame(target, buffer, size);
-
 #elif CPUSTYLE_R7S721
 
 	SPIHARD_PTR->SPBFCR |= RSPIn_SPBFCR_RXRST;		// Запретить прием
@@ -3014,11 +2933,6 @@ hardware_spi_master_send_frame_16bpartial(
 	//prog_spi_send_frame_b16(target, buffer, size);
 
 #elif CPUSTYLE_STM32F1XX
-	#warning TODO: implement SPI over DMA
-
-	//prog_spi_send_frame_b16(target, buffer, size);
-
-#elif CPUSTYLE_ATXMEGA
 	#warning TODO: implement SPI over DMA
 
 	//prog_spi_send_frame_b16(target, buffer, size);
@@ -3189,11 +3103,6 @@ hardware_spi_master_read_frame_16bpartial(
 
 	//prog_spi_read_frame(target, buffer, size);
 
-#elif CPUSTYLE_ATXMEGA
-	#warning TODO: implement SPI over DMA
-
-	//prog_spi_read_frame(target, buffer, size);
-
 #elif CPUSTYLE_R7S721
 	//#warning TODO: Add code for R7S721 SPI DMA support to hardware_spi_master_read_frame_16bpartial
 
@@ -3345,11 +3254,6 @@ hardware_spi_master_read_frame_8bpartial(
 	//prog_spi_read_frame(target, buffer, size);
 
 #elif CPUSTYLE_STM32F1XX
-	#warning TODO: implement SPI over DMA
-
-	//prog_spi_read_frame(target, buffer, size);
-
-#elif CPUSTYLE_ATXMEGA
 	#warning TODO: implement SPI over DMA
 
 	//prog_spi_read_frame(target, buffer, size);
@@ -3876,14 +3780,6 @@ void hardware_spi_b8_p1(
 
 	SPIHARD_PTR->SPI_TDR = v & AT91C_SPI_TD;
 
-#elif CPUSTYLE_ATMEGA
-
-	SPDR = v; // запуск передачи
-
-#elif CPUSTYLE_ATXMEGA
-
-	TARGETHARD_SPI.DATA = v; // запуск передачи
-
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	* (volatile uint8_t *) & SPIHARD_PTR->TXDR = v;	// prevent data packing feature
@@ -4295,8 +4191,9 @@ static void releaseDATAFLASH(IRQL_t setIRQL)
 enum { SPDIFIO_READ, SPDIFIO_WRITE };	// в случае пеердачи только команды используем write */
 //enum { SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE, SPDFIO_numwires };
 
-static uint8_t readxb [SPDFIO_numwires] = { 0x0b, 0x00, 0x00 };
-static uint8_t dmyb [SPDFIO_numwires];
+static uint8_t readxb [SPDFIO_numwires] = { 0x03, 0x00, 0x00 };
+static uint8_t dmyb [SPDFIO_numwires] = { 0, 0, 0 };
+static uint8_t gnab = 3;
 
 #if WIHSPIDFSW || WIHSPIDFOVERSPI
 
@@ -4509,7 +4406,7 @@ static IRQL_t spidf_iostart(
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
-	uint_fast32_t address
+	uint_fast32_t address, uint_fast8_t nab
 	)
 {
 	IRQL_t oldcsIRQL;
@@ -4520,6 +4417,8 @@ static IRQL_t spidf_iostart(
 
 	if (hasaddress)
 	{
+		if (nab >= 4)
+			spidf_progval8_p2(address >> 24);
 		spidf_progval8_p2(address >> 16);
 		spidf_progval8_p2(address >> 8);
 		spidf_progval8_p2(address >> 0);
@@ -4608,7 +4507,7 @@ static IRQL_t spidf_iostart(
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
-	uint_fast32_t address
+	uint_fast32_t address, uint_fast8_t nab
 	)
 {
 	IRQL_t oldcsIRQL;
@@ -4637,6 +4536,8 @@ static IRQL_t spidf_iostart(
 
 	if (hasaddress)
 	{
+		if (nab >= 4)
+			b [i ++] = address >> 24;
 		b [i ++] = address >> 16;
 		b [i ++] = address >> 8;
 		b [i ++] = address >> 0;
@@ -5201,7 +5102,7 @@ static IRQL_t spidf_iostart(
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
-	uint_fast32_t address
+	uint_fast32_t address, uint_fast8_t nab
 	)
 {
 	IRQL_t oldcsIRQL;
@@ -5229,6 +5130,8 @@ static IRQL_t spidf_iostart(
 
 	if (hasaddress)
 	{
+		if (nab >= 4)
+			spidf_progval8_p2(address >> 24);
 		spidf_progval8_p2(address >> 16);
 		spidf_progval8_p2(address >> 8);
 		spidf_progval8_p2(address >> 0);
@@ -5376,7 +5279,7 @@ static IRQL_t spidf_iostart(
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
-	uint_fast32_t address
+	uint_fast32_t address, uint_fast8_t nab
 	)
 {
 	IRQL_t oldcsIRQL;
@@ -5690,7 +5593,7 @@ static IRQL_t spidf_iostart(
 	uint_fast8_t ndummy,	// number of dummy bytes
 	uint_fast32_t size,
 	uint_fast8_t hasaddress,
-	uint_fast32_t address
+	uint_fast32_t address, uint_fast8_t nab
 	)
 {
 	IRQL_t oldcsIRQL;
@@ -5747,16 +5650,23 @@ static IRQL_t spidf_iostart(
 
 #endif /* WIHSPIDFHW */
 
+/* Enter 4-Byte Address Mode  - W25Q256JVEIQ */
+static void enter32bitaddrDATAFLASH(void)
+{
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0xB7, SPDFIO_1WIRE, 0, 0, 0, 0, 0);	/* 0xB7: Enter 4-Byte Address Mode */
+	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
+}
+
 /* снять защиту записи для следующей команды */
 static void writeEnableDATAFLASH(void)
 {
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x06, SPDFIO_1WIRE, 0, 0, 0, 0);	/* 0x06: write enable */
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x06, SPDFIO_1WIRE, 0, 0, 0, 0, 0);	/* 0x06: write enable */
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 }
 
 static void writeDisableDATAFLASH(void)
 {
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x04, SPDFIO_1WIRE, 0, 0, 0, 0);	/* 0x04: write disable */
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x04, SPDFIO_1WIRE, 0, 0, 0, 0, 0);	/* 0x04: write disable */
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 }
 
@@ -5774,7 +5684,7 @@ int fullEraseDATAFLASH(void)
 
 	writeEnableDATAFLASH();		/* write enable */
 
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x60, SPDFIO_1WIRE, 0, 0, 0, 0);	/*.2.18 Chip Erase (C7h / 60h) */
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x60, SPDFIO_1WIRE, 0, 0, 0, 0, 0);	/*.2.18 Chip Erase (C7h / 60h) */
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 
 	const uint_fast8_t rv = largetimed_dataflash_read_status();
@@ -5792,7 +5702,7 @@ uint_fast8_t dataflash_read_status(void)
 	uint8_t v;
 	enum { SPDIF_IOSIZE = sizeof v };
 
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x05, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read status register */
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x05, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000, 0);	/* read status register */
 	spidf_read(& v, SPDIF_IOSIZE, SPDFIO_1WIRE);
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 	//PRINTF("dataflash_read_status: v=%02X\n", v);
@@ -6044,7 +5954,7 @@ static void readFlashID(uint8_t * buff, unsigned size)
 	memcpy(buff, & ReadBuffer [1], size);
 
 #else
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, size, 0, 0x00000000);	/* read id register */
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, size, 0, 0x00000000, 0);	/* read id register */
 	spidf_read(buff, size, SPDFIO_1WIRE);
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 #endif /* CPUSTYLE_XC7Z */
@@ -6089,7 +5999,7 @@ static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigne
 	memcpy(buff, & ReadBuffer [5], size);
 
 #else
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x5A, SPDFIO_1WIRE, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x5A, SPDFIO_1WIRE, 1, size, 1, flashoffset, 3);	// READ SFDP (with dummy bytes)
 	spidf_read(buff, size, SPDFIO_1WIRE);
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 #endif /* CPUSTYLE_XC7Z */
@@ -6125,7 +6035,7 @@ static void modeDATAFLASH(uint_fast16_t dw, const char * title, int buswID)
 	{
 	case 0x00:
 	case 0xFF:
-		//PRINTF("SFDP: %s not supported\n", title);
+		PRINTF("SFDP: %s not supported\n", title);
 		readxb [buswID] = 0x00;	// opcode
 		break;
 	default:
@@ -6211,7 +6121,7 @@ int testchipDATAFLASH(void)
 		}
 		uint8_t buff32 [len4 * 4];
 		readSFDPDATAFLASH(ptp, buff32, len4 * 4);
-		//const uint_fast32_t dword1 = USBD_peek_u32(buff32 + 4 * 0);
+		const uint_fast32_t dword1 = USBD_peek_u32(buff32 + 4 * 0);
 		const uint_fast32_t dword2 = USBD_peek_u32(buff32 + 4 * 1);
 		const uint_fast32_t dword3 = USBD_peek_u32(buff32 + 4 * 2);
 		const uint_fast32_t dword4 = USBD_peek_u32(buff32 + 4 * 3);
@@ -6220,7 +6130,7 @@ int testchipDATAFLASH(void)
 		const uint_fast32_t dword7 = USBD_peek_u32(buff32 + 4 * 6);
 		const uint_fast32_t dword8 = USBD_peek_u32(buff32 + 4 * 7);
 		const uint_fast32_t dword9 = USBD_peek_u32(buff32 + 4 * 8);
-		//printhex(ptp, buff32, 256);
+		//printhex(ptp, buff32, len4 * 4);
 
 		///////////////////////////////////
 		/* Print density information. */
@@ -6228,16 +6138,17 @@ int testchipDATAFLASH(void)
 		{
 			const unsigned Kbi = (dword2 >> 10) + 1;
 			const unsigned MB = (dword2 >> 23) + 1;
-			//PRINTF("SFDP: density=%08X (%u Kbi, %u MB)\n", (unsigned) dword2, Kbi, MB);
+			PRINTF("SFDP: 1 density=%08X (%u Kbi, %u MB)\n", (unsigned) dword2, Kbi, MB);
 			chipSize = (dword2 >> 3) + UINT32_C(1);
 		}
 		else
 		{
 			const unsigned Mbi = 1u << ((dword2 & 0x7FFFFFFF) - 10);
 			const unsigned MB = 1u << ((dword2 & 0x7FFFFFFF) - 10 - 3);
-			//PRINTF("SFDP: density=%08X (%u Mbi, %u MB)\n", (unsigned) dword2, Mbi, MB);
+			PRINTF("SFDP: 2 density=%08X (%u Mbi, %u MB)\n", (unsigned) dword2, Mbi, MB);
 			chipSize = UINT32_C(1) << ((dword2 & 0x7FFFFFFF) - 3);
 		}
+		PRINTF("SFDP: chipSize=%u\n", (unsigned) chipSize);
 		///////////////////////////////////
 		// dword8, dword9 - 4KB Erase opcode, Sector size, Sector erase opcode
 		// Автоматическое определение наибольшего размера сектора
@@ -6264,11 +6175,34 @@ int testchipDATAFLASH(void)
 			sectorSize = UINT32_C(1) << (sctRESULT & 0xFF);
 			//PRINTF("SFDP: Selected Sector Erase opcode=0x%02X, size=%u\n", (unsigned) sectorEraseCmd, (unsigned) sectorSize);
 		}
+		// 6.4 JEDEC Flash Parameter Tables
+		// Table 1 — JEDEC Flash Parameters: 1st DWORD
+		// Number of bytes used in addressing flash array read, write and erase:
+		//	00: 3-Byte only addressing
+		//	01: 3- or 4-Byte addressing (e.g. defaults to 3-Byte mode; enters 4-Byte mode on command)
+		//	10: 4-Byte only addressing
+		const unsigned abc = ((dword1 >> 17) & 0x03);
+		//PRINTF("addr bits in commands: %02X\n", abc);
+
 		///////////////////////////////////
 		//PRINTF("SFDP: Sector Type 1 Size=%08X, Sector Type 1 Opcode=%02X\n", 1u << ((dword8 >> 0) & 0xFF), (unsigned) (dword8 >> 8) & 0xFF);
 		// установка кодов операции
 		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
 		modeDATAFLASH(dword4 >> 16, "(1-2-2) Fast Read", SPDFIO_2WIRE);
+		//modeDATAFLASH(dwordx >> 0, "(1-1-1) Fast Read", SPDFIO_1WIRE);
+
+		if ((abc == 1 || (abc == 2)) && chipSize > UINT32_C(16) * 1024 * 1024)
+		{
+			//enter32bitaddrDATAFLASH(); команды ранее работавшие с 24 бит адресом, начинают с 32 (количество dummy bytes корерктируется)
+			// Параметры для W25Q256JVEIQ
+			readxb [SPDFIO_4WIRE] = 0xEC;	// opcode
+			dmyb [SPDFIO_4WIRE] = 3;	// dummy bytes
+
+			readxb [SPDFIO_1WIRE] = 0x0C;	// opcode
+			dmyb [SPDFIO_1WIRE] = 1;	// dummy bytes
+
+			gnab = 4;
+		}
 	}
 	else
 	{
@@ -6310,7 +6244,7 @@ int prepareDATAFLASH(void)
 
 		uint8_t v = 0x00;	/* status register data */
 		// Write Status Register
-		const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x01, SPDFIO_1WIRE, 0, 1, 0, 0);	/* Write Status Register */
+		const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x01, SPDFIO_1WIRE, 0, 1, 0, 0, 0);	/* Write Status Register */
 		spidf_write(& v, 1, SPDFIO_1WIRE);
 		spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 
@@ -6353,7 +6287,7 @@ int sectoreraseDATAFLASH(unsigned long flashoffset)
 	writeEnableDATAFLASH();		/* write enable */
 
 	// start byte programm
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, sectorEraseCmd, SPDFIO_1WIRE, 0, 0, 1, flashoffset);
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, sectorEraseCmd, SPDFIO_1WIRE, 0, 0, 1, flashoffset, gnab);
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 	const uint_fast8_t rv = timed_dataflash_read_status();
 	releaseDATAFLASH(oldIrql);
@@ -6377,7 +6311,7 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 
 	// start byte programm
 
-	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x02, SPDFIO_1WIRE, 0, len, 1, flashoffset);		/* Page Program */
+	const IRQL_t spidfcsIRQL = spidf_iostart(SPDIFIO_WRITE, 0x02, SPDFIO_1WIRE, 0, len, 1, flashoffset, gnab);		/* Page Program */
 	spidf_write(data, len, SPDFIO_1WIRE);
 	spidf_unselect(spidfcsIRQL);	/* done sending data to target chip */
 
@@ -6416,20 +6350,20 @@ spdif_iostartread(unsigned long len, unsigned long flashoffset, IRQL_t * oldspid
 #if WIHSPIDFHW4BIT && ! WIHSPIDFOVERSPI
 	else if (readxb [SPDFIO_4WIRE] != 0x00)
 	{
-		* oldspidfcsIRQL = spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_4WIRE], SPDFIO_4WIRE, dmyb [SPDFIO_4WIRE], len, 1, flashoffset);	/* 0xEB: Fast Read Quad I/O */
+		* oldspidfcsIRQL = spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_4WIRE], SPDFIO_4WIRE, dmyb [SPDFIO_4WIRE], len, 1, flashoffset, gnab);	/* 0xEB: Fast Read Quad I/O */
 		return SPDFIO_4WIRE;
 	}
 #endif /* WIHSPIDFHW4BIT && ! WIHSPIDFOVERSPI */
 #if WIHSPIDFHW2BIT && ! WIHSPIDFOVERSPI
 	else if (readxb [SPDFIO_2WIRE] != 0x00)
 	{
-		* oldspidfcsIRQL = spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_2WIRE], SPDFIO_2WIRE, dmyb [SPDFIO_2WIRE], len, 1, flashoffset);	/* 0xBB: Fast Read Dual I/O */
+		* oldspidfcsIRQL = spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_2WIRE], SPDFIO_2WIRE, dmyb [SPDFIO_2WIRE], len, 1, flashoffset, gnab);	/* 0xBB: Fast Read Dual I/O */
 		return SPDFIO_2WIRE;
 	}
 #endif /* WIHSPIDFHW2BIT && ! WIHSPIDFOVERSPI */
 	else
 	{
-		* oldspidfcsIRQL = spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
+		* oldspidfcsIRQL = spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_1WIRE], SPDFIO_1WIRE, dmyb [SPDFIO_1WIRE], len, 1, flashoffset, gnab);	/* 0x03: sequential read block */
 		return SPDFIO_1WIRE;
 	}
 }
@@ -7258,19 +7192,19 @@ board_fpga_fir_connect(IRQL_t * oldIrql)
 {
 	spi_operate_lock(oldIrql);
 #if WITHSPI32BIT
-	hardware_spi_connect_b32(SPIC_SPEEDUFAST, SPIC_MODE3);
+	hardware_spi_connect_b32(FPGALOADER_SPISPEED, SPIC_MODE3);
 
 	hardware_spi_b32_p1(0x00000000);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b32();
 
 #elif WITHSPI16BIT
-	hardware_spi_connect_b16(SPIC_SPEEDUFAST, SPIC_MODE3);
+	hardware_spi_connect_b16(FPGALOADER_SPISPEED, SPIC_MODE3);
 
 	hardware_spi_b16_p1(0x0000);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b16();
 
 #elif WITHSPIHW
-	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE3);
+	hardware_spi_connect(FPGALOADER_SPISPEED, SPIC_MODE3);
 
 	hardware_spi_b8_p1(0x00);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b8();
@@ -7343,11 +7277,6 @@ static uint_fast8_t board_fpga_get_INIT_DONE(void)
 	return 1;
 #endif
 }
-
-#ifndef FPGALOADER_SPISPEED
-#define FPGALOADER_SPISPEED SPIC_SPEEDFAST
-#endif
-#define FPGALOADER_SPIMODE SPIC_MODE0
 
 void board_fpga_loader_initialize(void)
 {

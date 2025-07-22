@@ -8,6 +8,7 @@
 #define SYNTHCACS_H_INCLUDED
 
 #include "hardware.h"
+#include "board.h"
 
 //#include <stdbool.h>
 #include <stdint.h>
@@ -15,8 +16,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-extern const phase_t r1_ph; // = SYNTH_R1;
 
 void synth_setreference(
 	uint_fast32_t refclock 	/* частота опорника */
@@ -71,8 +70,6 @@ uint_fast32_t synth_freq2lo1(
 	uint_fast32_t freq,	/* частота на индикаторе устройства */
 	uint_fast8_t fi		/* номер тракта: 0/1: main/sub */
 	);
-
-void testlfm(void);	/* user mode. вызывается из основного цикла - возможно перестрйока входных фильтров */
 
 #ifdef __cplusplus
 }

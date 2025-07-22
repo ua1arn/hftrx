@@ -11,6 +11,7 @@
 #ifndef RADIO_H_INCLUDED
 #define RADIO_H_INCLUDED
 
+#include "board.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,8 +28,6 @@ extern "C" {
 	#define WITHUSBUACOUT	1
 #endif /* WITHUSBUAC */
 
-typedef uint_least64_t ftw_t;	/* тип, подходящий по размерам для хранения промежуточных результатов вычислений */
-typedef uint_least64_t phase_t;
 
 #if WITHBBOX && defined (WITHBBOXFREQ)
 	#define DEFAULTDIALFREQ	WITHBBOXFREQ
@@ -102,6 +101,7 @@ typedef uint_least64_t phase_t;
 #define WITHCOMPTHRESHOLDMIN 1	/* минимальный порог компрессии (db) */
 #define WITHCOMPTHRESHOLDMAX 20	/* максимальная порог компрессии (db) */
 
+#define NRLEVELMAX 60
 
 #if defined (DAC1_TYPE)
 	#define WITHDAC1VALMIN	0
@@ -396,18 +396,15 @@ const phase_t * getplo2r(
 enum
 {
 	BOARD_TXAUDIO_MIKE,	// "MIKE ",
-#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 	BOARD_TXAUDIO_LINE,	// "LINE ",
-#endif /* WITHAFCODEC1HAVELINEINLEVEL */
-#if WITHUSBHW && WITHUSBUACOUT
 	BOARD_TXAUDIO_USB,	// "USB AUDIO",
-#endif /* WITHUSBHW && WITHUSBUACOUT */
+	BOARD_TXAUDIO_BT,	// "BT AUDIO",
 	BOARD_TXAUDIO_2TONE,	// "2TONE",
 	BOARD_TXAUDIO_NOISE,	// "NOISE",
 	BOARD_TXAUDIO_1TONE,	// "1TONE",
 	BOARD_TXAUDIO_MUTE,		// no signal to tx
 	//
-	BOARD_TXAUDIO_count
+	BOARD_TXAUDIO_unused
 };
 
 enum
@@ -3261,8 +3258,6 @@ void spool_0p128(void);	// OPERA support
 #define IF3_FMASK_17P0	(1U << 14)	/* наличие фильтра 17.0 кГц	*/
 #define IF3_FMASK_120P0	(1U << 15)	/* наличие фильтра 120 кГц	*/
 
-
-
 extern uint_fast8_t s9level;		/* уровни калибровки S-метра */
 extern uint_fast8_t s9delta;		// 9 баллов - 8 интервалов - по 6 децибел каждый
 extern uint_fast8_t s9_60_delta;		// 60 dB
@@ -3270,6 +3265,9 @@ extern uint_fast16_t minforward;
 extern uint_fast8_t swrcalibr;
 extern uint_fast8_t maxpwrcali;
 extern uint_fast8_t swrmode;
+
+void updateboard(void);	/* полная перенастройка */
+void updateboard_freq(void);	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 
 uint_fast8_t hamradio_get_tx(void);
 int_fast32_t hamradio_get_pbtvalue(void);	// Для отображения на дисплее
@@ -3307,7 +3305,8 @@ const char * hamradio_get_hplp_value_P(void);	// HP/LP
 uint_fast8_t hamradio_get_rec_value(void);	// AUDIO recording state
 uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
 uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
-uint_fast8_t hamradio_get_usbh_active(void);
+uint_fast8_t hamradio_get_usbmsc_active(void);	// usb storage
+uint_fast8_t hamradio_get_usbbth_active(void);	// usb bt
 unsigned hamradio_get_getsoffreq(void);
 void hamradio_tick_sof(void);
 uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB AUDIO
@@ -3325,13 +3324,13 @@ uint_fast8_t hamradio_get_bringENC3F(void);	// Вращали 5-й валкод�
 uint_fast8_t hamradio_get_bringENC4F(void);	// Вращали 6-й валкодер (ENC4F)
 uint_fast8_t hamradio_get_bringSWR(const char * * label);	// Была ошибка SWR или что-то другое
 
-void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, int len);	/* получить надпись для отображения состояния ENC1F */
-void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, int len);	/* получить надпись для отображения состояняя ENC2F */
-void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, int len);	/* получить надпись для отображения состояния ENC3F */
-void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, int len);	/* получить надпись для отображения состояния ENC4F */
+void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC1F */
+void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояняя ENC2F */
+void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC3F */
+void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC4F */
 
-const char * hamradio_midlabel5(uint_fast8_t section, uint_fast8_t * active, unsigned width);
-const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active, unsigned width);
+const char * hamradio_midlabel5(uint_fast8_t section, uint_fast8_t * active);
+const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active);
 
 void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq);
 uint_fast8_t hamradio_get_low_bp(int_least16_t rotate);
@@ -3421,17 +3420,23 @@ void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max);
 
 uint_fast8_t hamradio_get_gmutespkr(void);
 void hamradio_set_gmutespkr(uint_fast8_t v);
+uint_fast16_t hamradio_get_afgain(void);
+void hamradio_set_afgain(uint_fast16_t v);
 
 uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
 const char * hamradio_get_att_value(void);
 const char * hamradio_get_preamp_value(void);
 void hamradio_change_att(void);
-void hamradio_change_preamp(void);
+uint_fast8_t hamradio_change_preamp(uint_fast8_t v);
+uint_fast8_t hamradio_change_nr(uint_fast8_t v);
 uint_fast8_t hamradio_moxmode(uint_fast8_t v);
 uint_fast8_t hamradio_tunemode(uint_fast8_t v);
 void hamradio_set_moxmode(uint_fast8_t mode);
 
-uint_fast8_t amenuset(void);
+void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem));
+int hamradio_walkmenu_getgroupanme(const void * groupitem, char * buff, size_t count);
+int hamradio_walkmenu_getparamanme(const void * paramitem, char * buff, size_t count);
+int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t count);
 
 /* выбор внешнего вида прибора - стрелочный или градусник */
 enum
@@ -3447,19 +3452,22 @@ enum
 	VIEW_LINE,		// ломаная линия
 	VIEW_FILL,		// залитый зеленым спектр
 	VIEW_COLOR,		// раскрашенный цветовым градиентом спектр
+	VIEW_DOTS,		// точки без соединения между ними
 #if WITHVIEW_3DSS
 	VIEW_3DSS,		// дизайн панорамы под 3DSS Yaesu
 #endif /* WITHVIEW_3DSS */
-	VIEW_COUNT
+	//
+	VIEW_count
 };
 
-static const char view_types [][6] =
+static const char * const view_types [VIEW_count] =
 	{
-		"LINE ",
-		"FILL ",
+		"LINE",
+		"FILL",
 		"COLOR",
+		"DOTS",
 #if WITHVIEW_3DSS
-		"3DSS ",
+		"3DSS",
 #endif /* WITHVIEW_3DSS */
 	};
 
@@ -3471,12 +3479,33 @@ enum
 };
 
 uint_fast8_t hamradio_get_gsmetertype(void);
-void display2_set_smetertype(uint_fast8_t v);
 
+#if WITHTX && WITHIF4DSP
 
-void display2_set_filter_spe(uint_fast8_t v);	/* парамеры видеофильтра спектра */
-void display2_set_filter_wfl(uint_fast8_t v);	/* парамеры видеофильтра водопада */
+static const struct {
+	uint_fast8_t code;
+	const char * label;
+}  txaudiosrcs [] =	// todo: remove
+{
+	{ BOARD_TXAUDIO_MIKE, 	"MIKE", },
+#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
+	{ BOARD_TXAUDIO_LINE, 	"LINE", },
+#endif /* WITHAFCODEC1HAVELINEINLEVEL */
+#if WITHUSBHW && WITHUSBUACOUT
+	{ BOARD_TXAUDIO_USB, 	"USB", },
+#endif /* WITHUSBHW && WITHUSBUACOUT */
+#if WITHUSBHW && WITHUSEUSBBT
+	{ BOARD_TXAUDIO_BT, 	"BT", },
+#endif /* WITHUSBHW && WITHUSEUSBBT */
+	{ BOARD_TXAUDIO_2TONE, 	"2TONE", },
+	{ BOARD_TXAUDIO_NOISE, 	"NOISE", },
+	{ BOARD_TXAUDIO_1TONE, 	"1TONE", },
+	{ BOARD_TXAUDIO_MUTE, 	"MUTE", },
+};
 
+#define TXAUDIOSRC_COUNT (ARRAY_SIZE(txaudiosrcs))
+
+#endif /* WITHTX && WITHIF4DSP */
 
 const char * get_band_label3(unsigned b); /* получение человекопонятного названия диапазона */
 
@@ -3513,7 +3542,6 @@ int board_islfmmode(void);
 uint_fast8_t islfmstart(unsigned now);
 
 void bt_initialize(void);
-void bt_enable(uint_fast8_t v);
 
 uint_fast8_t hamradio_get_ft8cn(void);
 
@@ -3527,6 +3555,178 @@ unsigned n7ddc_get_swr(void);
 
 unsigned get_swr_cached(unsigned rangemax);
 unsigned hamradio_get_pwr(void);
+
+void gui_update(void);
+
+typedef struct {
+	char label [10][10];
+} bws_t;
+
+typedef enum {
+	BAND_TYPE_HAM,
+	BAND_TYPE_BROADCAST
+} gui_band_type_t;
+
+typedef struct {
+	uint_fast32_t init_freq;
+	uint_fast8_t index;
+	gui_band_type_t type;
+	char name[10];
+} band_array_t;
+
+uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, uint_fast8_t is_bcast_need);
+uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band);
+void hamradio_goto_band_by_freq(uint_fast32_t f);
+
+// шаг изменения значения параметра
+enum
+{
+	ISTEP_RO = 0,
+	ISTEP1 = 1,
+	ISTEP2 = 2,
+	ISTEP3 = 3,
+	ISTEP5 = 5,
+	ISTEP10 = 10,
+	ISTEP50 = 50,
+	ISTEP100 = 100,
+	//ISTEPG,
+	//
+};
+
+// особые случаи отображения значения параметра
+enum
+{
+	RJ_BASE0,
+	RJ_YES = 128,	/* значение в поле rj, при котором отображаем как Yes/No */
+	RJ_ON,			/* значение в поле rj, при котором отображаем как On/Off */
+	RJ_CATSPEED,	/* отображение скорости CAT */
+	RJ_CATMUX,		/* выбор одного из каналов CAT */
+	RJ_CATSIG,		/* параметр - управляющие параметры PTT/KEY чкпкз CAT */
+	RJ_ELKEYMODE,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+	RJ_POW2,		/* параметр - степень двойки. Отображается результат */
+	RJ_ENCRES,		/* параметр - индекс в таблице разрешений валкодера */
+	RJ_SUBTONE,		/* параметр - индекс в таблице частот субтонов */
+	RJ_TXAUDIO,		/* параметр - источник звука для передачи */
+	RJ_MDMSPEED,	/* параметр - скорость модема */
+	RJ_MDMMODE,		/* параметр - тип модуляции модема */
+	RJ_MONTH,		/* параметр - месяц 1..12 */
+	RJ_POWER,		/* отображние мощности HP/LP */
+	RJ_SIGNED,		/* отображние знакового числа (меню на втором валкодере) */
+	RJ_UNSIGNED,		/* отображние знакового числа (меню на втором валкодере) */
+	RJ_SMETER,		/* выбор внешнего вида прибора - стрелочный или градусник */
+	RJ_NOTCH,		/* тип NOTCH фильтра - MANUAL/AUTO */
+	RJ_CPUTYPE,		/* текст типа процессора */
+	RJ_VIEW,		/* стиль отображения спектра и панорамы */
+	RJ_COMPILED,		/* текст даты компиляции */
+	RJ_SERIALNR,		/* текст серийного номера */
+	RJ_DUAL,			/* режим двойного прима */
+	//
+	RJ_notused
+};
+
+// WSIGNFLAG
+
+#define ITEM_VALUE	(UINT8_C(1) << 0)	/* пункт меню для редактирования параметра */
+#define ITEM_GROUP	(UINT8_C(1) << 1)	/* пункт меню без изменяемого значения - связан с подменю */
+
+#define ITEM_FILTERU	(UINT8_C(1) << 2)	/* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
+#define ITEM_FILTERL	(UINT8_C(1) << 3)	/* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
+
+#define ITEM_NOINITNVRAM	(UINT8_C(1) << 4)	/* значение этого пункта не используется при начальной инициализации NVRAM */
+
+#define QLABEL(s1) (s1), (s1), (s1)
+#define QLABEL2(s1, s2) (s1), (s2), (s2)
+#define QLABEL3(s1, s2, s3) (s1), (s2), (s3)
+#define QLABELENC2(s1) (s1), (s1), (s1)
+
+struct paramdefdef
+{
+	const char * qlabel;		/* текст - название пункта меню */
+	const char * label;
+	const char * enc2label;
+
+	uint8_t qwidth_unused, qcomma, qrj;
+	uint8_t qistep;
+	uint8_t qspecial;	/* признак к какому меню относится */
+
+	uint16_t qbottom, qupper;	/* ограничения на редактируемое значение (upper - включая) */
+
+	nvramaddress_t qnvram;				/* Если MENUNONVRAM - только меняем в памяти */
+	unsigned (* qselector)(unsigned * count);
+	nvramaddress_t (* qnvramoffs)(nvramaddress_t base, unsigned sel);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
+	ptrdiff_t (* valoffs)(unsigned sel);		/* индекс для работы с массивом переменных */
+
+	uint_fast16_t * apval16;			/* переменная, которую подстраиваем - если она 16 бит */
+	uint_fast8_t * apval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
+	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
+};
+
+uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit);
+void hamradio_set_bw(uint_fast8_t v);
+uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit);
+uint_fast8_t hamradio_get_att_db(void);
+void hamradio_set_att_db(uint_fast8_t db);
+void hamradio_set_gbottomdbspe(uint8_t v);
+void hamradio_set_gtopdbspe(uint8_t v);
+uint8_t hamradio_get_gbottomdbspe(void);
+uint8_t hamradio_get_gtopdbspe(void);
+
+// LVGL interface functions
+int infocb_modea(char * b, size_t len, int * pstate);
+int infocb_modeb(char * b, size_t len, int * pstate);
+int infocb_freqa(char * b, size_t len, int * pstate);
+int infocb_freqb(char * b, size_t len, int * pstate);
+int infocb_ant5(char * b, size_t len, int * pstate);
+int infocb_preamp_ovf(char * b, size_t len, int * pstate);
+int infocb_tune(char * b, size_t len, int * pstate);
+int infocb_bypass(char * b, size_t len, int * pstate);
+int infocb_rxbw(char * b, size_t len, int * pstate);
+int infocb_rxbwval(char * b, size_t len, int * pstate);
+int infocb_voltlevel(char * b, size_t len, int * pstate);
+int infocb_datetime12(char * b, size_t len, int * pstate);
+int infocb_currlevel(char * b, size_t len, int * pstate);
+int infocb_thermo(char * b, size_t len, int * pstate);
+int infocb_siglevel(char * b, size_t len, int * pstate);
+int infocb_attenuator(char * b, size_t len, int * pstate);
+int infocb_bkin(char * b, size_t len, int * pstate);
+int infocb_wpm(char * b, size_t len, int * pstate);
+int infocb_spk(char * b, size_t len, int * pstate);
+int infocb_rxbw(char * b, size_t len, int * pstate);
+int infocb_rec(char * b, size_t len, int * pstate);
+int infocb_usbact(char * b, size_t len, int * pstate);
+int infocb_btact(char * b, size_t len, int * pstate);
+int infocb_nr(char * b, size_t len, int * pstate);
+int infocb_classa(char * b, size_t len, int * pstate);
+int infocb_datamode(char * b, size_t len, int * pstate);
+int infocb_voxtune(char * b, size_t len, int * pstate);
+int infocb_vfomode(char * b, size_t len, int * pstate);
+int infocb_lock(char * b, size_t len, int * pstate);
+int infocb_agc(char * b, size_t len, int * pstate);
+int infocb_notch(char * b, size_t len, int * pstate);
+int infocb_txrx(char * b, size_t len, int * pstate);
+
+size_t
+param_format(
+	const struct paramdefdef * pd,
+	char * buff,
+	size_t count,	// размер буфера
+	int_fast32_t value
+	);
+void
+param_setvalue(
+	const struct paramdefdef * pd,
+	int_fast32_t v
+	);
+int_fast32_t
+param_getvalue(
+	const struct paramdefdef * pd
+	);
+void
+param_load(
+	const struct paramdefdef * pd
+	);
+
+
 
 #ifdef __cplusplus
 }

@@ -81,8 +81,7 @@
 	//#define SMALLCHARW 16 /* Font width */
 	static const dzone_t dzones [] =
 	{
-			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
-		{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+		{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 		//{	10,	0,	6,	0,	display2_rxbwval6alt,	& dzi_default, PGALL, },	// RX BW value
 		{	17,	0,	5,	0,	display_txrxstate5alt, & dzi_default, PGALL, },
 		{	21,	0,	7,	0,	display2_ant7alt,		& dzi_default, PGALL, },
@@ -97,7 +96,7 @@
 		{	46, 20,	3,	0,	display2_rec3,		& dzi_default, PGALL, },	// Отображение режима записи аудио фрагмента
 #if WITHBARS
 		{    0, 4,  0,	0,	display2_smeter15_init,& dzi_default, PGINI, },	//  Инициализация стрелочного прибора
-		{    0, 4,  15,	20,	display2_smeter15, 	& dzi_smeter, PGALL, },	// Изображение стрелочного прибора
+		{    0, 4,  15,	20,	display2_smeter15, 	& dzi_compat, PGALL, },	// Изображение стрелочного прибора
 #endif /* WITHBARS */
 #if WITHAFSPECTRE
 		{	0,	4,	0,	0,	display2_af_spectre15_init,	& dzi_default, PGINI, },
@@ -116,14 +115,13 @@
 		{	17,	7,	0,	0,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
 		{	17,	7,	0,	0,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 		{	38, 10,	3,	0,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
-		{	42, 10,	3,	0,	display2_rxbw3,		& dzi_default, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	42, 10,	3,	0,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	46, 10,	3,	0,	display2_nr3,		& dzi_default, PGALL, },	// NR : was: AGC
 		{	38, 15,	3,	0,	display2_mainsub3,	& dzi_default, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
 		{	42,	15,	5,	0,	display2_vfomode5alt,	& dzi_default, PGALL, },	// SPLIT
 		{	26,	20,	0,	0,	display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ
 		{	38, 20,	3,	0,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
-		{	0,	0,	0,	0,	display2_keyboard_menu,					& dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
 
 #if 1
 		// на освободившеемя место добавить статусную строку с различной информацией
@@ -144,8 +142,8 @@
 	#endif /* WITHAMHIGHKBDADJ */
 		//{	XX,	DLE1,	8,	0,	display_samfreqdelta8, & dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		// sleep mode display
-		{	5,	25,	12,	0,	display2_datetime12,	& dzi_default, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 25,	5,	0,	display2_voltlevelV5, & dzi_default, PGSLP, },	// voltmeter with "V"
+		{	5,	25,	12,	0,	display2_datetime12,	& dzi_datetime12, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+		{	20, 25,	5,	0,	display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
 		{	0,	DLES,	0,	BDCV_ALLRX,	gui_WM_walkthrough,	& dzi_default, PGWFL | PGSPE | PGGUI, },
 
 		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
@@ -158,6 +156,7 @@
 		p->ystep = 4;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;
 		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
+		p->xspan = BDTH_ALLRX;	/* количество знакомест по горизонтали, отдаваемое под меню */
 	}
 #endif /* WITHMENU */
 

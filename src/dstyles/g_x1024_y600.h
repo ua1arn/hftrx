@@ -76,20 +76,18 @@
 	{
 			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 
-		{	0,	0,	0, 0, display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-
-		{	0,	0, 	7, 0, display_siglevel7, 	& dzi_default, PGALL, },	// signal level dBm
+		{	0,	0, 	7, 0, display_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
 		//{	0,	0, 	5, 0, display2_smeors5, 	& dzi_default, PGALL, },	// уровень сигнала в баллах S или dBm
-		{	10,	0,	4, 0, display2_rxbwval4,	& dzi_default, PGALL, },	// RX BW value
+		{	10,	0,	4, 0, display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
 		{	15,	0,	2, 0, display_txrxstate2, 	& dzi_txrx, PGALL, },
-		{	18, 0,	3, 0, display2_atu3,		& dzi_default, PGALL, },	// TUNER state (optional)
-		{	22, 0,	3, 0, display2_byp3,		& dzi_default, PGALL, },	// TUNER BYPASS state (optional)
-		{	26,	0,	5, 0, display2_ant5,		& dzi_default, PGALL, },
-		{	32,	0,	4, 0, display2_att4,		& dzi_default, PGALL, },
-		{	37,	0,	3, 0, display2_preovf3,		& dzi_default, PGALL, },
+		{	18, 0,	3, 0, display2_atu3,		& dzi_tune, PGALL, },	// TUNER state (optional)
+		{	22, 0,	3, 0, display2_byp3,		& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
+		{	26,	0,	5, 0, display2_ant5,		& dzi_antenna, PGALL, },
+		{	32,	0,	4, 0, display2_att4,		& dzi_attenuator, PGALL, },
+		{	37,	0,	3, 0, display2_preovf3,		& dzi_preamp_ovf, PGALL, },
 	#if WITHBARS
 		{   0, 	4,  0, 0, display2_smeter15_init,& dzi_default, PGINI, },	//  Инициализация стрелочного прибора
-		{   0, 	4,	15, 20, display2_smeter15, 	& dzi_smeter, PGALL, },	// Изображение стрелочного прибора
+		{   0, 	4,	15, 20, display2_smeter15, 	& dzi_smtr2, PGALL, },	// Изображение стрелочного прибора
 	#endif /* WITHBARS */
 	#if WITHAFSPECTRE
 		{	0,	4,	0, 0, display2_af_spectre15_init,	& dzi_default, PGINI, },
@@ -104,7 +102,7 @@
 		{	41,	4,	9, 0, display2_fnvalue9,	& dzi_default, PGALL, },	// FUNC item value
 
 		{	37, 10,	3, 0, display2_mode3_a,		& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
-		{	41, 10,	3, 0, display2_rxbw3,		& dzi_default, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	41, 10,	3, 0, display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	46, 10,	3, 0, display2_agc3,		& dzi_default, PGALL, },	// AGC mode
 
 		{	37, 15,	3, 0, display2_nr3,			& dzi_default, PGALL, },	// NR : was: AGC
@@ -119,8 +117,8 @@
 		{	45,	20,	4, 0, display2_lockstate4, & dzi_default, PGALL, },	// LOCK
 
 		// размещены под S-метром (15 ячеек)
-		{	1, 	25,	5, 0, display2_voltlevelV5, & dzi_default, PGALL, },	// voltmeter with "V"
-		{	7, 	25,	6, 0, display2_currlevelA6, & dzi_default, PGALL, },	// PA drain current d.dd with "A"
+		{	1, 	25,	5, 0, display2_voltlevelV5, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
+		{	7, 	25,	6, 0, display2_currlevelA6, & dzi_currlevel, PGALL, },	// PA drain current d.dd with "A"
 
 		//{	14, 25, 0, 0,
 		//{	19, 25, 0, 0,
@@ -140,29 +138,23 @@
 		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX, display2_combo,	& dzi_default, PGSPE, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 
-		{	0,	DLE1,	12, 0, display2_datetime12,	& dzi_default, PGALL,	},	// DATE&TIME Jan-01 13:40
+		{	0,	DLE1,	12, 0, display2_datetime12,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	9, 0, display2_span9,		& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	4, 0, display2_thermo4,	& dzi_default, PGALL, },	// thermo sensor
 		{	28, DLE1,	3, 0, display2_usbsts3,		& dzi_default, PG0, },	// USB host status
-		{	32, DLE1,	7, 0, display2_classa7,		& dzi_default, PGALL, },	// Class-A power amplifier
+		{	32, DLE1,	7, 0, display2_classa7,		& dzi_default, PG0, },	// Class-A power amplifier
 		//{	28, DLE1,	10, 0, display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
-		{	0,				0,		0, 0, display2_keyboard_menu,					& dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-		{	3,				DLES,	0, 0, display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 5,		DLES,	0, 0, display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW*2 + 6,	DLES,	0, 0, display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	0,				DLES,	BDTH_ALLRX, (DLE1 - DLES) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 	#if WITHAUTOTUNER
-		{	28, 			DLE1,	0, 0, display2_swrsts22,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
+		{	28, 			DLE1,	20, 0, display2_swrsts20,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
 	#endif /* WITHAUTOTUNER */
 	#endif /* WITHMENU */
 
 		// sleep mode display
-		{	5,	25,	12, 0, display2_datetime12,	& dzi_default, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 25,	5, 0, display2_voltlevelV5, & dzi_default, PGSLP, },	// voltmeter with "V"
-	#if WITHMENU
-		{	15, 25,	0, 0, display2_popup,		& dzi_default, PG0, },	// Всплывающие меню. В конце массива для перекрытия всего что под ним
-	#endif /* WITHMENU */
+		{	5,	25,	12, 0, display2_datetime12,	& dzi_datetime12, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+		{	20, 25,	5, 0, display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
 
 	#if 0
 		{	0,	0,	0, 0, display2_vtty_init,	& dzi_default,	PGINI, },	// Подготовка видеобуфера окна протокола
@@ -181,6 +173,7 @@
 		p->ystep = YSTEP;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;
 		p->valuew = 10;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
+		з->xspan = BDTH_ALLRX;	/* количество знакомест по горизонтали, отдаваемое под меню */
 	}
 #endif /* WITHMENU */
 

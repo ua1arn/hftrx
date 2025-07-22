@@ -720,7 +720,7 @@ extern "C" {
 
 #ifndef DMABUFCLUSTER
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
-#define DMABUFCLUSTER	33	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
+#define DMABUFCLUSTER	21	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
 #endif /* DMABUFCLUSTER */
 #ifndef DMABUFSCALE
 #define DMABUFSCALE		2	// внутрений параметр, указывает, на сколько реже будут происходить прерывания по обмену буфрами от остальны каналов по отношению к приему от FPGA
@@ -745,6 +745,8 @@ extern "C" {
 
 #define DMABUFFSIZEHDMI48TX	(DMABUFCLUSTER * DMABUFFSTEPHDMI48TX * DMABUFSCALE)		/* HDMI OUT */
 #define DMABUFFSTEPHDMI48TX 2
+
+#define BTSSCALE 12
 
 // Buffers interface functions
 void buffers_initialize(void);
@@ -984,6 +986,7 @@ void buffers_set_uacinalt(uint_fast8_t v);	/* выбор альтернатив�
 void buffers_set_uacoutalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC OUT interface */
 void buffers_set_uacinrtsalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
 uint_fast8_t buffers_get_uacoutactive(void);
+uint_fast8_t buffers_get_btoutactive(void);
 
 void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep);
 void DMAC_USB_TX_initialize_UACIN48(uint32_t ep);

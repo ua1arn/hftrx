@@ -8,9 +8,9 @@
 
 #typeend;
 
-#type; R_RSB
-#base; R_RSB	0x07083000
-#irq; R_RSB 141
+##type; R_RSB
+##base; R_RSB	0x07083000
+##irq; R_RSB 141
 
 #typeend;
 

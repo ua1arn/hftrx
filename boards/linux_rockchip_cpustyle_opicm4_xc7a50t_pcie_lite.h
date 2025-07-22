@@ -31,7 +31,7 @@
 #define	AXI_LITE_MODEM_CONTROL		0x00004000
 #define	AXI_LITE_WNB_CONFIG			0x00005000
 #define	AXI_LITE_DDS_FTW_SUB		0x00006000
-#define	AXI_LITE_IQ_FX_FIFO			0x00007000
+#define	AXI_LITE_IQ_TX_FIFO			0x00007000
 #define	AXI_LITE_STREAM_RATE		0x00008000
 #define	AXI_LITE_STREAM_POS			0x00009000
 #define	AXI_LITE_FIR_COEFFS			0x0000A000
@@ -87,8 +87,8 @@ enum {
 #define ENCODER2_EVENT_NAME		"rotary-encoder2"
 #define KEYBOARD_EVENT_NAME		"gpio-keys"
 #define MOUSE_EVENT_NAME		"Mouse"
-#define MEMORYCELLS_DB_FILE		"hftrx_data/memory_cells.db"
-#define NVRAM_DB_FILE			"hftrx_data/nvram.db"
+#define MEMORYCELLS_DB_FILE		"/usr/hftrx_data/memory_cells.db"
+#define NVRAM_DB_FILE			"/usr/hftrx_data/nvram.db"
 
 #define WITHLTDCHW			1	/* Наличие контроллера дисплея с framebuffer-ом */
 //#define RTMIXIDLCD			0

@@ -119,7 +119,7 @@ SECTIONS
 		__data_start__ = .;
 		. = ALIGN(64);
 
-		*(.data*)
+		*(.data* .sdata*)
 		. = ALIGN(64);
 		KEEP(*(.isr_vector))
 		__Vectors_End = .;
@@ -162,7 +162,10 @@ SECTIONS
 	{
 		__bss_start__ = .;
 		. = ALIGN(64);
-		*(.bss*)
+		*(.sbss*)
+		*(.gnu.linkonce.sb.*)
+		*(.bss .bss.*)
+		*(.gnu.linkonce.b.*)
 		*(COMMON)
 		. = ALIGN(64);
 		__bss_end__ = .;

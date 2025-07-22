@@ -248,9 +248,20 @@ static void ticker_trampoline(void * ctx)
 	board_dpc_call((dpcobj_t *) ctx, board_dpc_coreid());	// Запрос отложенного выполнения USER-MODE функции
 }
 
+static void ticker_trampoline_display(void * ctx)
+{
+	board_dpc_call((dpcobj_t *) ctx, board_dpc_display_coreid());	// Запрос отложенного выполнения USER-MODE функции на ядре 1
+}
+
 void ticker_initialize_user(ticker_t * p, unsigned nticks, dpcobj_t * dpc)
 {
 	ticker_initialize(p, nticks, ticker_trampoline, dpc);
+}
+
+// DPC будет вызываться на ядре board_dpc_display_coreid()
+void ticker_initialize_user_display(ticker_t * p, unsigned nticks, dpcobj_t * dpc)
+{
+	ticker_initialize(p, nticks, ticker_trampoline_display, dpc);
 }
 
 void ticker_add(ticker_t * p)
@@ -434,6 +445,11 @@ uint32_t sys_now(void)
 uint32_t board_millis(void)
 {
 	return sys_now_counter;
+}
+
+uint32_t tusb_time_millis_api(void)
+{
+  return board_millis();
 }
 
 //#include "hal_time_ms.h"
@@ -716,45 +732,6 @@ RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 				{
 					ADMUX = hardware_atmega_admux(adci);
 					ADCSRA |= (1U << ADSC);			// Start the AD conversion
-					break;
-				}
-			}
-		}
-	}
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	#warning TODO: write atxmega code for ADC interrupt handler
-
-
-	// adc
-	ISR(ADCA_CH0_vect)
-	{
-			// на этом цикле используем результат
-		#if HARDWARE_ADCBITS == 8
-			// Select next ADC input
-			// Read the 8 most significant bits
-			// of the AD conversion result
-			board_adc_store_data(board_get_adcch(adc_input), ADCA.CH0.RESH);
-		#else
-			// Read the AD conversion result
-			board_adc_store_data(board_get_adcch(adc_input), ADCA.CH0.RESH * 256 + ADCA.CH0.RESL);
-		#endif 
-		// Select next ADC input
-		for (;;)
-		{
-			if (++ adc_input >= board_get_adcinputs())
-			{
-				spool_adcdonebundle();
-				break;
-			}
-			else
-			{
-				// Select next ADC input (only one)
-				const uint_fast8_t adci = board_get_adcch(adc_input);
-				if (isadchw(adci))
-				{
-					ADCA.CH0.MUXCTRL = adci;
-					ADCA.CH0.CTRL |= (1U << ADC_CH_START_bp);			// Start the AD conversion
 					break;
 				}
 			}
@@ -1170,19 +1147,6 @@ hardware_adc_startonescan(void)
 	AT91C_BASE_ADC->ADC_CHDR = ~ mask; /* disable ADC inputs */
 	AT91C_BASE_ADC->ADC_CHER = mask; /* enable ADC */
 	AT91C_BASE_ADC->ADC_CR = AT91C_ADC_START;	// Start the AD conversion
-
-#elif CPUSTYLE_ATMEGA
-
-	ADMUX = hardware_atmega_admux(board_get_adcch(adc_input));
-	// Start the AD conversion
-	ADCSRA |= (1U << ADSC);
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	#warning TODO: write atxmega code - ADC start
-	ADCA.CH0.MUXCTRL = board_get_adcch(adc_input);
-	// Start the AD conversion
-	ADCA.CH0.CTRL |= (1U << ADC_CH_START_bp);			// Start the AD conversion
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// Установить следующий вход (блок ADC может измениться)
@@ -2945,7 +2909,7 @@ sysinit_ttbr_initialize(void)
 			(((uintptr_t) ttb0_base >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
 			0;
 	csr_write_satp(satp);
-	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
+//	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
 
 //	mmu_write_satp(satp);
 //	mmu_flush_cache();
@@ -3643,10 +3607,10 @@ SystemInit(void)
 #ifdef BOARD_BLINK_INITIALIZE
 	BOARD_BLINK_INITIALIZE();
 #endif
+	sysinit_pmic_initialize();
 	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
 	sysinit_debug_initialize();
 	local_delay_initialize();
-	sysinit_pmic_initialize();
 	sysinit_sdram_initialize();
 	sysinit_mmu_tables();			// Инициализация таблиц. */
 	sysinit_cache_initialize();		// caches iniitialize
@@ -4271,6 +4235,12 @@ void arm_hardware_reset(void)
 void watchdog_initialize(void)
 {
 #if CPUSTYLE_STM32MP1
+#elif CPUSTYLE_ALLWINNER
+	TIMER->WDOG_MODE_REG =
+		0x07 * (UINT32_C(1) << 4) |	// 0111: 256000 cycles (8s)
+		0x01 * (UINT32_C(1) << 0) | // WDOG_EN
+		0;
+	TIMER->WDOG_CFG_REG = 0x01;	// To whole system
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
@@ -4278,5 +4248,10 @@ void watchdog_initialize(void)
 void watchdog_ping(void)
 {
 #if CPUSTYLE_STM32MP1
+#elif CPUSTYLE_ALLWINNER
+	TIMER->WDOG_CTRL_REG =
+		0xA57 * (UINT32_C(1) << 1) |
+		0x01 * (UINT32_C(1) << 0) |
+		0;
 #endif /* CPUSTYLE_STM32MP1 */
 }

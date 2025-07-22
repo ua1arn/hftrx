@@ -200,7 +200,7 @@
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
 
 	#define WITHNETRESOURCE 1	// поддержка ресурсного протокола
-	#define LCDMODE_V2A	1	/* только главный экран с тремя видеобуферами RGB565, без PIP */
+	#define LCDMODE_RGB565	1	/* Экран с тремя видеобуферами RGB565 */
 	//#define LCDMODE_H497TLB01P4 1	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
 	//#define LCDMODETX_TC358778XBG 1	/* Toshiba TC358778XBG chip */
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
@@ -258,19 +258,15 @@
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 
-	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+	
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	#define CTLREGMODE_NOCTLREG	1
-	
-	
-	
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
 
 	#define WITHNOATTNOPREAMP 1
-	#define WITHAGCMODEONOFF 1
 	#define WITHMODESETFULLNFM 1
 	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
 

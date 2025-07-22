@@ -204,6 +204,12 @@ gotosleep:
    ldr   sp, =__stack_cpu0_sys_end
    mov   lr, #0
 
+#if 1
+	ldr   r2, =fill_bss
+	mov   lr, pc
+	bx    r2     /* And jump... */
+#endif
+
 	/* low-level CPU peripherials init */
 
 	ldr   r2, =SystemInit
@@ -211,6 +217,14 @@ gotosleep:
 	bx    r2     /* And jump... */
 
 	ldr   sp, =__stack	/* New stack may be placed in DDR RAM */
+
+	ldr   r2, =fill_bss
+	mov   lr, pc
+	bx    r2     /* And jump... */
+
+	ldr   r2, =_start
+	mov   lr, pc
+	bx    r2     /* And jump... */
 
 /*  Firstly it copies data from read only memory to RAM. There are two schemes
  *  to copy. One can copy more than one sections. Another can only copy
@@ -228,6 +242,7 @@ gotosleep:
  *
  *  All addresses must be aligned to 4 bytes boundary.
  */
+ fill_bss:
 	ldr	r4, =__copy_table_start__
 	ldr	r5, =__copy_table_end__
 
@@ -287,10 +302,7 @@ gotosleep:
 	adds	r3, #8
 	b	.L_loop2
 .L_loop2_done:
-
-	ldr   r2, =_start
-	mov   lr, pc
-	bx    r2     /* And jump... */
+	bx lr
                        
 ExitFunction:
    nop

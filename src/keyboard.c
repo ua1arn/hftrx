@@ -54,8 +54,8 @@ getstablev8(const volatile uint_fast8_t * p)
 static uint_fast16_t
 getstablev16(const volatile uint_fast16_t * p)
 {
-	uint_fast8_t v1 = * p;
-	uint_fast8_t v2;
+	uint_fast16_t v1 = * p;
+	uint_fast16_t v2;
 	do
 	{
 		v2 = v1;
@@ -64,6 +64,8 @@ getstablev16(const volatile uint_fast16_t * p)
 	return v1;
 
 }
+
+//static std::atomic<uint_fast16_t> kbd_press;
 
 // сделаны по 8 бит - при 200 герц прерываний 600 мс всего 120 тиков.
 static volatile uint_fast16_t kbd_press;	/* время с момента нажатия */

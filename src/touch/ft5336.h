@@ -3,6 +3,10 @@
 
 #include "hardware.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define FT5336_MAX_DETECTABLE_TOUCH      ((uint8_t)0x05)
 #define TS_NO_IRQ_PENDING               ((uint8_t) 0)
 #define TS_IRQ_PENDING                  ((uint8_t) 1)
@@ -271,5 +275,8 @@ uint8_t ft5336_GetState(TS_StateTypeDef *TS_State);
 
   /* Current operating mode the FT5336 system is in (R) */
 #define FT5336_STATE_REG                    ((uint8_t)0xBC)
+#ifdef __cplusplus
+ }
+#endif
 
 #endif /* FT5336_H_INCLUDED */

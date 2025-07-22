@@ -54,7 +54,7 @@
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
-	#define BOARD_CONFIG_DRAM_CLK 672//792
+	#define BOARD_CONFIG_DRAM_CLK 792
 	#define CONFIG_SUNXI_DRAM_H616_LPDDR4 1
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
@@ -659,9 +659,9 @@
 
 	#if WITHSPIHW
 		#define SPIIO_INITIALIZE() do { \
-			arm_hardware_pioh_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
-			arm_hardware_pioh_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
-			arm_hardware_pioh_altfn50(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
+			arm_hardware_pioh_altfn20(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
+			arm_hardware_pioh_altfn20(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
+			arm_hardware_pioh_altfn20(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
 		} while (0)
 
 	#elif WITHSPISW

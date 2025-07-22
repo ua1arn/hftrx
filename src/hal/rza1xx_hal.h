@@ -140,7 +140,9 @@ typedef enum
 } HAL_LockTypeDef;
 
 
+#ifndef UNUSED
 #define UNUSED(x) ((void)(sizeof(x)))	/* To avoid gcc/g++ warnings */
+#endif
 
 #define HAL_MAX_DELAY      0xFFFFFFFFU
 

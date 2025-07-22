@@ -128,7 +128,7 @@
 	#define WITHPREAMPATT2_6DB 1	/* LTC2208 Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 
-	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+	
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
@@ -178,7 +178,7 @@
 	//#define LCDMODE_ST7565S_TOPDOWN	1	/* LCDMODE_ST7565S - перевернуть изображение (для выводов сверху) */
 	//#define LCDMODE_ILI9320	1	/* Индикатор 248*320 с контроллером ILI9320 */
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
-	#define LCDMODE_V2			 1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	#define LCDMODE_PALETTE256			 1	/* Экран с тремя видеобуферами, L8 */
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 
 	#define ENCRES_DEFAULT ENCRES_128
@@ -314,8 +314,8 @@
 	//#define WITHVOX			1	/* используется VOX */
 	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 	//#define WITHSWRMTR	1		/* Измеритель КСВ */
-	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
-	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
+	
+	
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
@@ -447,7 +447,6 @@
 	#endif /* WITHCURRLEVEL */
 
 	#if WITHSWRMTR
-		PWRI = 0,			// PC4
 		FWD = 0, REF = 0,	// PC5	SWR-meter
 	#endif /* WITHSWRMTR */
 
@@ -455,7 +454,7 @@
 		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 		REFMRRIX = BOARD_ADCMRRIN(2),
 		FWDMRRIX = BOARD_ADCMRRIN(3),
-		PWRMRRIX = FWDMRRIX,
+		PWRMRRIX = BOARD_ADCMRRIN(7),
 		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
 		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации

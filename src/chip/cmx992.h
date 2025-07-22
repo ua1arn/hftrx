@@ -319,16 +319,16 @@ void prog_cmx992_print(spitarget_t target)
 		const struct state * const s = & states [i];
 		char buff [5];
 		//unsigned char v1, v2;
-		display_at(s->x, s->y, s->name);
+		display_text(s->x, s->y, s->name);
 		switch (s->bytes)
 		{
 		case 1:
 			local_snprintf_P(buff, 5, PSTR("%02X"), prog_cmx992_read_reg(target, s->addr));
-			display_at(s->x + 9, s->y, buff);
+			display_text(s->x + 9, s->y, buff);
 			break;
 		case 2:
 			local_snprintf_P(buff, 5, PSTR("%02X%02X"), prog_cmx992_read_reg(target, s->addr + 1), prog_cmx992_read_reg(target, s->addr + 0));
-			display_at(s->x + 9, s->y, buff);
+			display_text(s->x + 9, s->y, buff);
 			break;
 		}
 	}

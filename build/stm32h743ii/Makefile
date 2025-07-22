@@ -76,6 +76,7 @@ DINCDIR = \
 	$(HALDIR)/Inc \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
+	$(MDLWHOSTDIR) \
 	$(USBXDIR) \
 	$(CMSISDIR)/Core/Include \
 	$(RTOSXDIR)/Include \

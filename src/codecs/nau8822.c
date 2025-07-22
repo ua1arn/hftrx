@@ -20,7 +20,7 @@
 #include "audio.h"
 #include "nau8822.h"
 
-//#define NAU8822_USE_SPI4	1	// SPI 4-Wire 24-bit Write and 32-bit Read Operation
+#define NAU8822_USE_SPI4	1	// SPI 4-Wire 24-bit Write and 32-bit Read Operation
 //#define CODEC_TYPE_NAU8822_NO_BTL 1		// Выходы SPK кодека не используются как мостовой выход, а идут к следующему каскаду усиления (отключаем инверсию правого канала)
 
 // Зависит от аппаратуры - может быть переопределено в custom configuration
@@ -95,14 +95,15 @@ static void nau8822_setreg_16(
 }
 
 /* Запись двух регистров на смежных адресах */
+// need investigations (for spi2 && I2C)
 static void nau8822_setreg_16_2(
 	uint_fast8_t regv,			/* 7 bit register address */
 	uint_fast16_t datav1,			/* 9 bit value */
 	uint_fast16_t datav2			/* 9 bit value */
 	)
 {
-	const uint_fast16_t fulldata1 = regv ++ * (UINT32_C(1) << 9) | (datav1 & 0x1ff);
-	const uint_fast16_t fulldata2 = regv ++ * (UINT32_C(1) << 9) | (datav2 & 0x1ff);
+	const uint_fast16_t fulldata1 = (regv + 0) * (UINT32_C(1) << 9) | (datav1 & 0x1ff);
+	const uint_fast16_t fulldata2 = (regv + 1) * (UINT32_C(1) << 9) | (datav2 & 0x1ff);
 	//PRINTF("nau8822_setreg: regv=%02X, datav=%03X\n", (unsigned) regv, (unsigned) datav);
 
 #if CODEC_TYPE_NAU8822_USE_SPI
@@ -169,8 +170,8 @@ static void nau8822_setreg_24_2(
 	)
 {
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
-	const uint_fast32_t fulldata1 = regv ++ * (UINT32_C(1) << 9) | (datav1 & 0x1ff);
-	const uint_fast32_t fulldata2 = regv ++ * (UINT32_C(1) << 9) | (datav2 & 0x1ff);
+	const uint_fast32_t fulldata1 = (regv + 0) * (UINT32_C(1) << 9) | (datav1 & 0x1ff);
+	const uint_fast32_t fulldata2 = (regv + 1) * (UINT32_C(1) << 9) | (datav2 & 0x1ff);
 	const uint8_t txbuf [] =
 	{
 		0x10,
@@ -236,6 +237,9 @@ void nau8822_setreg2(
 #if NAU8822_USE_SPI4_ACTUAL
 	nau8822_setreg_24_2(regv, datav1, datav2);
 #else /* NAU8822_USE_SPI4_ACTUAL */
+	nau8822_setreg_16(regv + 0, datav1);
+	nau8822_setreg_16(regv + 1, datav2);
+	return;
 	nau8822_setreg_16_2(regv, datav1, datav2);
 #endif /* NAU8822_USE_SPI4_ACTUAL */
 }

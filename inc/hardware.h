@@ -128,29 +128,6 @@ extern "C" {
 	#define ALIGNX_BEGIN /* __ALIGNED(64)  */
 	#define ALIGNX_END /* nothing */
 
-#elif \
-	defined (__AVR_ATxmega32A4__) || \
-	defined (__AVR_ATxmega32A4U__) || \
-	defined (__AVR_ATxmega128A4U__) || \
-	0
-
-	#define CPUSTYLE_ATXMEGA	1
-	#define CPUSTYLE_ATXMEGAXXXA4	1
-	
-	#ifndef F_CPU
-	#define F_CPU 32000000uL
-	#endif
-
-	#include <avr/io.h>			/* Pin manipulation functions */
-	#include <avr/pgmspace.h>
-	#include <avr/eeprom.h>		/* только для случая использования внутренней памяти процессора */
-	#include <avr/interrupt.h>
-	#include <avr/cpufunc.h>
-	#include <util/delay.h>
-
-	#define ALIGNX_BEGIN /* __ALIGNED(64)  */
-	#define ALIGNX_END /* nothing */
-
 #elif CPUSTYLE_STM32H7XX
 	// STM32H743ZIT6 processors, up to 400 MHz
 
@@ -517,6 +494,7 @@ void hardware_timer_initialize(uint_fast32_t ticksfreq);
 
 void gt911_interrupt_handler(void * ctx);
 void stmpe811_interrupt_handler(void * ctx);
+void xpt2406_interrupt_handler(void * ctx);
 
 void hardware_adc_initialize(void);
 
@@ -567,39 +545,6 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 	void local_delay_ms(int timeMS);
 	void local_delay_ms_nocache(int timeMS);	// задержка до того как включили MMU и cache */
 	void local_delay_initialize(void);
-
-#elif CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
-	// ATMega, ATXMega target
-
-	/* тип для передачи параметра "адрес устройства на SPI шине" */
-	/* это может быть битовая маска в порту ввода-вывода */
-	typedef uint_fast8_t spitarget_t;
-	/* тип для хранения данных, считанный из порта ввода-вывода или для формируемого значения */
-	typedef uint_fast8_t portholder_t;		
-
-	#define local_delay_us(t) do { if ((t) <= 1) _delay_us(0); else if ((t <= 10)) _delay_us(10); else _delay_us(100); } while (0)
-	#define local_delay_ms(t) do { if ((t) <= 1) _delay_ms(0); else if ((t <= 10)) _delay_ms(10); else _delay_ms(100); } while (0)
- 
-	#if (FLASHEND > 0x7FFF)	
-		// нет нужды экономить память FLASH
-		#define NOINLINEAT // __attribute__((noinline))
-		#define RAMFUNC_NONILINE // __attribute__((noinline))
-		#define RAMFUNC // __attribute__((__section__(".ramfunc"), noinline))
-	#else
-		#define NOINLINEAT __attribute__((noinline))	// On small FLASH ATMega CPUs
-		#define RAMFUNC_NONILINE __attribute__((noinline))	// On small FLASH ATMega CPUs
-		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
-	#endif
-
-	#define ATTRWEAK __attribute__ ((weak))
-	#define __WEAK __attribute__ ((weak))
-	#define __NO_RETURN	__attribute__((__noreturn__))
-
-	/* stubs */
-
-	#define IRQL_SYSTEM 			1
-	#define IRQL_REALTIME 			1
-	#define IRQL_OVERREALTIME 		1
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -873,6 +818,7 @@ typedef struct ticker_tag
 struct dpcobj_tag;
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
 void ticker_initialize_user(ticker_t * p, unsigned nticks, struct dpcobj_tag * dpc);
+void ticker_initialize_user_display(ticker_t * p, unsigned nticks, struct dpcobj_tag * dpc);	// DPC будет вызываться на ядре board_dpc_display_coreid()
 void ticker_initialize_ext(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx, enum ticker_mode mode);
 void ticker_setperiod(ticker_t * p, unsigned nticks);	/* изменение периода запущенного тикера */
 void ticker_start(ticker_t * p);	/* начало интервала в случае TICKERMD_MANUAL */
@@ -1018,15 +964,7 @@ int main(void);
 int blinky_main(void);
 #define GTIM_IRQ_NUM SecurePhysicalTimer_IRQn
 
-struct menudef;
-void
-//NOINLINEAT
-processmessages(
-	uint_fast8_t * kbch,
-	uint_fast8_t * kbready,
-	uint_fast8_t inmenu,
-	const struct menudef * mp
-	);
+void processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready);
 
 
 uintptr_t getRamDiskBase(void);
@@ -1109,5 +1047,68 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
 // Substitutions for t507 ddr ram init
 //#define i2c_read local_i2c_read
 //#define i2c_write local_i2c_write
+
+#if CPUSTYLE_R7S721
+	#include "rza1xx_hal.h"
+
+#elif CPUSTYLE_STM32MP1
+	#include "stm32mp1xx.h"
+	#include "stm32mp1xx_hal.h"
+
+#elif CPUSTYLE_STM32H7XX
+	#include "stm32h7xx.h"
+	#include "stm32h7xx_hal.h"
+
+#elif CPUSTYLE_STM32F7XX
+	#include "stm32f7xx.h"
+	#include "stm32f7xx_hal.h"
+
+#elif CPUSTYLE_STM32F4XX
+	#include "stm32f4xx.h"
+	#include "stm32f4xx_hal.h"
+
+#elif CPUSTYLE_XC7Z
+
+	#include "zynq7000_hal.h"
+
+#elif CPUSTYLE_ALLWINNER
+
+	#include "t113s3_hal.h"
+
+#endif
+
+#if CPUSTYLE_R7S721
+	#include "rza1xx_hal.h"
+	#include "rza1xx_hal_usb.h"
+
+#elif CPUSTYLE_STM32MP1
+	#include "stm32mp1xx.h"
+	#include "stm32mp1xx_hal.h"
+	#include "stm32mp1xx_ll_pwr.h"
+
+#elif CPUSTYLE_STM32H7XX
+	#include "stm32h7xx.h"
+	#include "stm32h7xx_hal.h"
+	#include "stm32h7xx_ll_pwr.h"
+
+#elif CPUSTYLE_STM32F7XX
+	#include "stm32f7xx.h"
+	#include "stm32f7xx_hal.h"
+	#include "stm32f7xx_ll_pwr.h"
+
+#elif CPUSTYLE_STM32F4XX
+	#include "stm32f4xx.h"
+	#include "stm32f4xx_hal.h"
+	#include "stm32f4xx_ll_pwr.h"
+
+#elif CPUSTYLE_XC7Z
+
+	#include "zynq7000_hal.h"
+
+#elif CPUSTYLE_ALLWINNER
+
+	#include "t113s3_hal.h"
+
+#endif
 
 #endif // HARDWARE_H_INCLUDED

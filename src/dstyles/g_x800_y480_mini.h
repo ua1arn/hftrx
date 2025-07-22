@@ -82,8 +82,8 @@
 	//#define SMALLCHARW 16 /* Font width */
 	static const dzone_t dzones [] =
 	{
-			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
-		{	0,	0,	0,	0,	display2_keyboard_screen0,	REDRM_KEYB, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+		{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
+
 		{	0,	0,	2,	0,	display_txrxstate2, * dzi_txrx, PGALL, },
 		{	3,	0,	5,	0,	display2_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	4,	0,	display2_att4,		REDRM_MODE, PGALL, },
@@ -153,10 +153,7 @@
 		//{	XX,	DLE1,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 
 	#if WITHMENU
-		{	0,				0,		0,	0,	display2_keyboard_menu,					REDRM_KEYB, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
-		{	3,				30,	0,	0,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 5,		30,	0,	0,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW*2 + 6,	30,	0,	0,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+		{	0,				30,	BDTH_ALLRX, (DLE1 - DLES) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 	#endif /* WITHMENU */
 
 		// sleep mode display
@@ -173,6 +170,7 @@
 		p->ystep = 4;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;
 		p->valuew = 10;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
+		p->xspan = BDTH_ALLRX;	/* количество знакомест по горизонтали, отдаваемое под меню */
 	}
 #endif /* WITHMENU */
 

@@ -134,13 +134,6 @@ static long int lfm_start;	// начальная частота
 static long int lfm_stop;	// конечная частота
 static long int lfm_lo1div;	// делитель перед подачей на смеситель
 
-/* user mode. вызывается из основного цикла - возможно перестрйока входных фильтров */
-void 
-testlfm(void)
-{
-	const uint_fast32_t f = rlfm_currfreqX / LFMTICKSFREQ;
-}
-
 void synth_lfm_setparams(uint_fast32_t astart, uint_fast32_t astop, uint_fast32_t aspeed, uint_fast8_t od)
 {
 	if (rlfm_isrunning == 0)

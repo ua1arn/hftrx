@@ -22,6 +22,15 @@
 #include <string.h>
 
 
+#if WITHLVGL
+
+#include "draw/lv_draw_private.h"
+#include "draw/lv_draw_image_private.h"
+
+//#include "src/lvgl_gui/styles.h"
+
+#endif /* WITHLVGL */
+
 static void softfill(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
@@ -65,13 +74,13 @@ static void softfill(
 		xG2D_MIXER_ALPHA,
 	} xg2d_alpha_mode_enh;
 
-#if LCDMODE_MAIN_ARGB8888
+#if LCDMODE_ARGB8888
 	#define VI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define ROT_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define UI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define WB_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 
-#elif LCDMODE_MAIN_RGB565
+#elif LCDMODE_RGB565
 	#define VI_ImageFormat 0x0A
 	#define ROT_ImageFormat 0x0A
 	#define UI_ImageFormat 0x0A
@@ -88,7 +97,75 @@ static unsigned awxx_get_srcformat(unsigned keyflag)
 	return (keyflag & BITBLT_FLAG_SRC_ABGR8888) ? 0x01 : VI_ImageFormat;
 }
 
+static unsigned awxx_g2d_get_ui_attr(unsigned srcFormat)
+{
+	unsigned ui_attr = 0;
+	ui_attr = UINT32_C(255) << 24;
+	//	if (img->bpremul)
+	//		vi_attr |= 0x2 << 16;	/* LAY_PREMUL_CTL */
+	ui_attr |= srcFormat << 8;
+	//ui_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	ui_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	//ui_attr |= (UINT32_C(1) << 4);	/* Use FILLC register */
+	ui_attr |= 1;
+	return ui_attr;
+}
+
+static unsigned awxx_g2d_get_vi_attr(unsigned srcFormat)
+{
+	unsigned vi_attr = 0;
+	vi_attr = UINT32_C(255) << 24;
+	vi_attr |= srcFormat << 8;
+	vi_attr |= UINT32_C(1) << 15;
+	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	vi_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	//vi_attr |= (UINT32_C(1) << 4);	/* Use FILLC register */
+	vi_attr |= 1;
+	return vi_attr;
+}
+
+/* Получение RGB888, который нужен для работы функций сравынния ключевого цвета.
+ * Должно совпадать с алгоритмом выборки из памяти UIx_ и VI0_
+ * */
+static COLOR24_T awxx_key_color_conversion(COLORPIP_T color)
+{
+//	PRINTF("awxx_key_color_conversion: color=%08" PRIXFAST32 "\n", (uint_fast32_t) color);
+//	PRINTF("awxx_key_color_conversion: r=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_R(color));
+//	PRINTF("awxx_key_color_conversion: g=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_G(color));
+//	PRINTF("awxx_key_color_conversion: b=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_B(color));
+	return COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
+}
+
+/* Создание режима блендера BLD_CTL */
+// 5.10.9.9 BLD control register
+
+static uint_fast32_t awxx_bld_ctl(
+	uint_fast32_t afd,	// Specifies the coefficient that used in destination alpha data Qd.
+	uint_fast32_t afs,	// Specifies the coefficient that used in source alpha data Qs.
+	uint_fast32_t pfd,	// Specifies the coefficient that used in destination pixel data Qs.
+	uint_fast32_t pfs	// Specifies the coefficient that used in source pixel data Qs.
+	)
+{
+	return
+		(afd << 24) |	// BLEND_AFD Specifies the coefficient that used in destination alpha data Qd.
+		(afs << 16) |	// BLEND_AFS Specifies the coefficient that used in source alpha data Qs.
+		(pfd << 8) |	// BLEND_PFD Specifies the coefficient that used in destination pixel data Qs.
+		(pfs << 0) |	// BLEND_PFS Specifies the coefficient that used in source pixel data Qs.
+		0;
+}
+static uint_fast32_t awxx_bld_ctl2(
+	uint_fast32_t fd,	// Specifies the coefficient that used in destination data Qd.
+	uint_fast32_t fs	// Specifies the coefficient that used in source data Qs.
+	)
+{
+	return awxx_bld_ctl(fd, fs, fd, fs);
+}
+
 #if defined (G2D_MIXER)
+
+static void aw_g2d_initialize(void)
+{
+}
 
 /* Отключаем все источники */
 static void awxx_g2d_mixer_reset(void)
@@ -168,6 +245,125 @@ static void awxx_g2d_rtmix_startandwait(void)
 		ASSERT(0);
 	}
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
+}
+
+
+static void
+awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
+		unsigned srcFormat, unsigned sstride,
+		uint_fast32_t ssizehw, uintptr_t saddr,
+		unsigned tstride, uint_fast32_t tsizehw,
+		uintptr_t taddr
+		)
+{
+	//	memset(G2D_V0, 0, sizeof * G2D_V0);
+	//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
+	//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
+	//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
+	//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
+	//	memset(G2D_WB, 0, sizeof * G2D_WB);
+	//	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
+	//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
+	awxx_g2d_mixer_reset(); /* Отключаем все источники */
+	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
+	{
+		const COLOR24_T keycolor24 = awxx_key_color_conversion(keycolor);
+		/* 5.10.9.10 BLD color key control register */
+		//G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
+		G2D_BLD->BLD_KEY_CTL = (0x01u << 1) |// KEY0_MATCH_DIR 1: when the pixel value matches source image, it displays the pixel form destination image.
+				(UINT32_C(1) << 0) |// KEY0_EN 1: enable color key in Alpha Blender0.
+				0;
+		/* 5.10.9.11 BLD color key configuration register */
+		G2D_BLD->BLD_KEY_CON = 0 * (UINT32_C(1) << 2) |// KEY0R_MATCH 0: match color if value inside keys range
+				0 * (UINT32_C(1) << 1) |// KEY0G_MATCH 0: match color if value inside keys range
+				0 * (UINT32_C(1) << 0) |// KEY0B_MATCH 0: match color if value inside keys range
+				0;
+		G2D_BLD->BLD_KEY_MAX = keycolor24;
+		G2D_BLD->BLD_KEY_MIN = keycolor24;
+		/* установка поверхности - источника (анализируется) */
+		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(srcFormat);
+		G2D_UI2->UI_PITCH = sstride;
+		G2D_UI2->UI_FILLC = 0;
+		G2D_UI2->UI_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
+		G2D_UI2->UI_SIZE = ssizehw; // параметры окна исходного буфера
+		G2D_UI2->UI_LADD = ptr_lo32(saddr);
+		G2D_UI2->UI_HADD = ptr_hi32(saddr);
+		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
+		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(VI_ImageFormat);
+		G2D_V0->V0_PITCH0 = tstride;
+		G2D_V0->V0_FILLC = 0;
+		G2D_V0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_V0->V0_MBSIZE = tsizehw; // сколько брать от исходного буфера
+		G2D_V0->V0_SIZE = tsizehw; // параметры окна исходного буфера
+		G2D_V0->V0_LADD0 = ptr_lo32(taddr);
+		G2D_V0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
+		G2D_BLD->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
+		/* источник когда есть совпадние */
+		G2D_BLD->BLD_CH_ISIZE[0] = tsizehw;
+		G2D_BLD->BLD_CH_OFFSET[0] = 0; // ((row) << 16) | ((col) << 0);
+		/* источник для анализа */
+		G2D_BLD->BLD_CH_ISIZE[1] = tsizehw;
+		G2D_BLD->BLD_CH_OFFSET[1] = 0; // ((row) << 16) | ((col) << 0);
+		G2D_BLD->BLD_FILL_COLOR_CTL = (UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable
+				(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable
+				0;
+		G2D_BLD->ROP_CTL = 0x00F0; // 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+		G2D_BLD->ROP_INDEX[0] = 0; // ? зависят от ROP_CTL
+		G2D_BLD->ROP_INDEX[1] = 0;
+		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
+	}
+	else
+	{
+		/* без keycolor */
+		/* установка поверхности - источника (безусловно) */
+		//		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr();
+		//		G2D_UI2->UI_PITCH = sstride;
+		//		G2D_UI2->UI_FILLC = 0;
+		//		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		//		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
+		//		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
+		//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
+		//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
+		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
+		G2D_V0->V0_PITCH0 = sstride;
+		G2D_V0->V0_FILLC = 0; //TFTRGB(255, 0, 0);    // unused
+		G2D_V0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_V0->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера
+		G2D_V0->V0_SIZE = ssizehw; // параметры окна исходного буфера
+		G2D_V0->V0_LADD0 = ptr_lo32(saddr);
+		G2D_V0->V0_HADD = ptr_hi32(saddr);
+		G2D_BLD->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
+		G2D_BLD->BLD_CH_ISIZE[0] = ssizehw;
+		G2D_BLD->BLD_CH_OFFSET[0] = 0; // ((row) << 16) | ((col) << 0);
+		G2D_BLD->BLD_CH_ISIZE[1] = ssizehw;
+		G2D_BLD->BLD_CH_OFFSET[1] = 0; // ((row) << 16) | ((col) << 0);
+		G2D_BLD->BLD_KEY_CTL = 0;
+		G2D_BLD->BLD_KEY_CON = 0;
+		G2D_BLD->BLD_FILL_COLOR_CTL = (UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable - VI0
+				//(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable - UI2
+				0;
+		G2D_BLD->ROP_CTL = 0x00F0; // 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+		G2D_BLD->ROP_INDEX[0] = 0; // ? зависят от ROP_CTL
+		G2D_BLD->ROP_INDEX[1] = 0;
+		//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
+		//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
+		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
+	}
+	//G2D_BLD->BLD_FILLC0 = ~ 0;
+	//G2D_BLD->BLD_PREMUL_CTL |= (UINT32_C(1) << 0);	// 0 or 1 - sel 1 or sel 0
+	G2D_BLD->BLD_OUT_COLOR = 0x00000000; /* 0x00000000 */
+	G2D_BLD->BLD_CSC_CTL = 0x00000000; /* 0x00000000 */
+	G2D_BLD->BLD_BK_COLOR = 0;
+	G2D_BLD->BLD_PREMUL_CTL = 0x00000000; /* 0x00000000 */
+	/* Write-back settings */
+	G2D_WB->WB_ATT = WB_ImageFormat;
+	G2D_WB->WB_SIZE = tsizehw;
+	G2D_WB->WB_PITCH0 = tstride; /* taddr buffer stride */
+	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
+	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
+	awxx_g2d_rtmix_startandwait(); /* Запускаем и ждём завершения обработки */
 }
 
 #endif /* defined (G2D_MIXER) */
@@ -256,7 +452,7 @@ hwaccel_rotcopy(
 //	G2D_ROT->ROT_OLADD2 = ptr_lo32(taddr);
 //	G2D_ROT->ROT_OHADD2 = ptr_hi32(taddr) & 0xff;
 
-	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 7);	// flip horisontal
+	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 7);	// flip horizontal
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 6);	// flip vertical
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg, 2: 180deg, 3: 270deg) CW
 	G2D_ROT->ROT_CTL = rot_ctl;
@@ -285,7 +481,7 @@ static void aw_g2d_initialize(void)
 }
 
 
-static void t113_fillrect(
+static void hwaccel_fillrect(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uintptr_t taddr,
@@ -313,73 +509,6 @@ static void t113_fillrect(
 
 #else
 
-static void aw_g2d_initialize(void)
-{
-}
-
-static unsigned awxx_g2d_get_ui_attr(unsigned srcFormat)
-{
-	unsigned ui_attr = 0;
-	ui_attr = UINT32_C(255) << 24;
-	//	if (img->bpremul)
-	//		vi_attr |= 0x2 << 16;	/* LAY_PREMUL_CTL */
-	ui_attr |= srcFormat << 8;
-	//ui_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	ui_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	//ui_attr |= (UINT32_C(1) << 4);	/* Use FILLC register */
-	ui_attr |= 1;
-	return ui_attr;
-}
-
-static unsigned awxx_g2d_get_vi_attr(unsigned srcFormat)
-{
-	unsigned vi_attr = 0;
-	vi_attr = UINT32_C(255) << 24;
-	vi_attr |= srcFormat << 8;
-	vi_attr |= UINT32_C(1) << 15;
-	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	vi_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	//vi_attr |= (UINT32_C(1) << 4);	/* Use FILLC register */
-	vi_attr |= 1;
-	return vi_attr;
-}
-
-/* Получение RGB888, который нужен для работы функций сравынния ключевого цвета.
- * Должно совпадать с алгоритмом выборки из памяти UIx_ и VI0_
- * */
-static COLOR24_T awxx_key_color_conversion(COLORPIP_T color)
-{
-//	PRINTF("awxx_key_color_conversion: color=%08" PRIXFAST32 "\n", (uint_fast32_t) color);
-//	PRINTF("awxx_key_color_conversion: r=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_R(color));
-//	PRINTF("awxx_key_color_conversion: g=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_G(color));
-//	PRINTF("awxx_key_color_conversion: b=%08" PRIXFAST32 "\n", (uint_fast32_t) COLORPIP_B(color));
-	return COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
-}
-
-/* Создание режима блендера BLD_CTL */
-// 5.10.9.9 BLD control register
-
-static uint_fast32_t awxx_bld_ctl(
-	uint_fast32_t afd,	// Specifies the coefficient that used in destination alpha data Qd.
-	uint_fast32_t afs,	// Specifies the coefficient that used in source alpha data Qs.
-	uint_fast32_t pfd,	// Specifies the coefficient that used in destination pixel data Qs.
-	uint_fast32_t pfs	// Specifies the coefficient that used in source pixel data Qs.
-	)
-{
-	return
-		(afd << 24) |	// BLEND_AFD Specifies the coefficient that used in destination alpha data Qd.
-		(afs << 16) |	// BLEND_AFS Specifies the coefficient that used in source alpha data Qs.
-		(pfd << 8) |	// BLEND_PFD Specifies the coefficient that used in destination pixel data Qs.
-		(pfs << 0) |	// BLEND_PFS Specifies the coefficient that used in source pixel data Qs.
-		0;
-}
-static uint_fast32_t awxx_bld_ctl2(
-	uint_fast32_t fd,	// Specifies the coefficient that used in destination data Qd.
-	uint_fast32_t fs	// Specifies the coefficient that used in source data Qs.
-	)
-{
-	return awxx_bld_ctl(fd, fs, fd, fs);
-}
 
 #define VSU_ZOOM0_SIZE	1
 #define VSU_ZOOM1_SIZE	8
@@ -614,7 +743,7 @@ static void vsu_fir_bytable(volatile uint32_t * p, unsigned offset)
 //		} bits;
 //	};
 
-static void t113_fillrect(
+static void hwaccel_fillrect(
 	PACKEDCOLORPIP_T * __restrict buffer_UNUSED,
 	uint_fast16_t dx_UNUSED,	// ширина буфера
 	uintptr_t taddr,
@@ -723,17 +852,17 @@ static void t113_fillrect(
 	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
 	//#define DMA2D_OPFCCR_CM_VALUE_MAIN	(1 * DMA2D_OPFCCR_CM_0)	/* 001: RGB888 */
 
-#elif LCDMODE_MAIN_L8
+#elif LCDMODE_PALETTE256
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(5 * DMA2D_FGPFCCR_CM_0)	/* 0101: L8 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
 	////#define DMA2D_OPFCCR_CM_VALUE	(x * DMA2D_OPFCCR_CM_0)	/* not supported */
 
-#elif LCDMODE_MAIN_ARGB8888
+#elif LCDMODE_ARGB8888
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(0 * DMA2D_FGPFCCR_CM_0)	/* 0000: ARGB8888 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x02	// 10: Word (32-bit)
 	#define DMA2D_OPFCCR_CM_VALUE_MAIN		(0 * DMA2D_OPFCCR_CM_0)	/* 0: 000: ARGB8888 */
 
-#elif LCDMODE_MAIN_RGB565
+#elif LCDMODE_RGB565
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x01	// 2 byte
 	#define DMA2D_OPFCCR_CM_VALUE_MAIN		(2 * DMA2D_OPFCCR_CM_0)	/* 010: RGB565 */
@@ -741,7 +870,7 @@ static void t113_fillrect(
 	#define DMA2D_FGPFCCR_CM_VALUE_MAIN		(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
 	#define MDMA_CTCR_xSIZE_MAIN			0x00	// 1 byte
 
-#endif /* LCDMODE_MAIN_L8 */
+#endif /* LCDMODE_PALETTE256 */
 
 #if 1
 
@@ -749,7 +878,7 @@ static void t113_fillrect(
 	#define DMA2D_OPFCCR_CM_VALUE_PIP	DMA2D_OPFCCR_CM_VALUE_MAIN
 	#define MDMA_CTCR_xSIZE_PIP			MDMA_CTCR_xSIZE_MAIN
 
-#endif /* LCDMODE_MAIN_L8 */
+#endif /* LCDMODE_PALETTE256 */
 
 //#define DMA2D_FGPFCCR_CM_VALUE_L24	(1 * DMA2D_FGPFCCR_CM_0)	/* 0001: RGB888 */
 //#define DMA2D_FGPFCCR_CM_VALUE_L16	(2 * DMA2D_FGPFCCR_CM_0)	/* 0010: RGB565 */
@@ -924,6 +1053,17 @@ void arm_hardware_mdma_initialize(void)
 #endif /* CPUSTYLE_STM32H7XX */
 }
 
+// Add custom draw unit
+#if WITHLVGL
+
+// Add custom draw unit
+void lvglhw_initialize(void)
+{
+
+}
+
+#endif /* WITHLVGL */
+
 #elif WITHMDMAHW & CPUSTYLE_ALLWINNER
 
 /* Использование G2D для формирования изображений */
@@ -1073,9 +1213,7 @@ void arm_hardware_mdma_initialize(void)
 
 #if WITHLVGL
 
-#include "lvgl.h"
-#include "draw/lv_draw_private.h"
-#include "draw/lv_draw_image_private.h"
+#include "misc/lv_area_private.h"
 
 #define DRAW_UNIT_ID_AWG2D 77
 #define DRAW_UNIT_ID_AWROT 78
@@ -1084,74 +1222,175 @@ void arm_hardware_mdma_initialize(void)
 
 typedef struct _draw_awg2d_unit_t {
     lv_draw_unit_t base_unit;
-#if LV_USE_OS
-    lv_draw_sw_thread_dsc_t thread_dscs[LV_DRAW_AWG2D_DRAW_UNIT_CNT];
-#else
-    lv_draw_task_t * task_act;
-#endif
 } draw_awg2d_unit_t;
 
 typedef struct _draw_awrot_unit_t {
     lv_draw_unit_t base_unit;
-#if LV_USE_OS
-    lv_draw_sw_thread_dsc_t thread_dscs[LV_DRAW_AWG2D_DRAW_UNIT_CNT];
-#else
-    lv_draw_task_t * task_act;
-#endif
 } draw_awrot_unit_t;
 
 
 #if defined (G2D_MIXER)
 
-static void awg2d_execute_drawing(lv_draw_task_t * t)
+static void
+awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
+		unsigned srcFormat, unsigned sstride,
+		uint_fast32_t ssizehw, uintptr_t saddr,
+		unsigned tstride, uint_fast32_t tsizehw,
+		uintptr_t taddr);
+
+// на t113 пока не работает правильно (чёрный квадрат под Emma Smith)
+static void
+draw_awg2d_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_area_t * area, lv_layer_t * layer)
 {
-    LV_PROFILER_DRAW_BEGIN;
-    /*Render the draw task*/
-    switch(t->type) {
-//        case LV_DRAW_TASK_TYPE_FILL:
-//            lv_draw_awg2d_fill(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_BORDER:
-//            lv_draw_awg2d_border(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_BOX_SHADOW:
-//            lv_draw_awg2d_box_shadow(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LETTER:
-//            lv_draw_awg2d_letter(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LABEL:
-//            lv_draw_awg2d_label(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_IMAGE:
-//            lv_draw_awg2d_image(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_ARC:
-//            lv_draw_awg2d_arc(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LINE:
-//            lv_draw_awg2d_line(t, t->draw_dsc);
-//            break;
-//        case LV_DRAW_TASK_TYPE_TRIANGLE:
-//            lv_draw_awg2d_triangle(t, t->draw_dsc);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LAYER:
-//            lv_draw_awg2d_layer(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_MASK_RECTANGLE:
-//            lv_draw_awg2d_mask_rect(t, t->draw_dsc);
-//            break;
-//#if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
-//        case LV_DRAW_TASK_TYPE_VECTOR:
-//            lv_draw_awg2d_vector(t, t->draw_dsc);
-//            break;
-//#endif
-        default:
-            break;
+	//PRINTF("draw_awg2d_image\n");
+	// Copy rectangle
+	ASSERT(lv_area_get_width(& dsc->image_area) == lv_area_get_width(area));
+	ASSERT(lv_area_get_height(& dsc->image_area) == lv_area_get_height(area));
+//	PRINTF("draw_awg2d_image: tw/th=%d/%d, x/y=%d/%d, w/h=%d/%d\n",
+//			(int) lv_area_get_width(& dsc->image_area), (int) lv_area_get_height(& dsc->image_area),
+//			(int) area->x1, (int) area->y1, (int) lv_area_get_width(area), (int) lv_area_get_height(area));
+
+
+    const lv_area_t * coords = &t->area;
+    lv_area_t clipped_coords;
+    if(!lv_area_intersect(&clipped_coords, coords, &t->clip_area)) {
+        return ;//LV_DRAW_UNIT_IDLE;
     }
 
+    void * const dest = lv_draw_layer_go_to_xy(layer,
+                                         clipped_coords.x1 - layer->buf_area.x1,
+                                         clipped_coords.y1 - layer->buf_area.y1);
+//    ASSERT(dest);
+//    PRINTF("dest=%p (base=%p)\n", dest, layer->draw_buf->data);	// правильный адрес получателя
 
-    LV_PROFILER_DRAW_END;
+//    // Где источник?
+//    PRINTF("src=%p\n", dsc->src);
+    const lv_draw_buf_t * dbf = dsc->src;
+    ASSERT(LV_IMAGE_SRC_VARIABLE == lv_image_src_get_type(dbf));
+
+    const uint_fast16_t sw = lv_area_get_width(area);
+    const uint_fast16_t sh = lv_area_get_height(area);
+//    PRINTF("sw/sh=%d/%d\n", (int) sw, (int) sh);
+
+    const unsigned keyflag = 0;
+    const COLORPIP_T keycolor = 0;
+	const unsigned srcFormat = awxx_get_srcformat(keyflag);
+	const unsigned tstride = lv_draw_buf_width_to_stride(lv_area_get_width(&layer->buf_area), dsc->base.layer->color_format);
+	const unsigned sstride = dbf->header.stride;
+	const uintptr_t taddr = (uintptr_t) dest;
+	//const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, dsc->image_area.x1, dsc->image_area.y1);
+	const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, 0, 0);
+	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
+	const uint_fast32_t tsizehw = ((sh - 1) << 16) | ((sw - 1) << 0);		/* размер совпадающий с источником - просто для удобства */
+
+	const uintptr_t dstinvalidateaddr = (uintptr_t) layer->draw_buf->data;
+	const int_fast32_t dstinvalidatesize = layer->draw_buf->data_size;
+	const uintptr_t srcinvalidateaddr = (uintptr_t) dbf->data;
+	const int_fast32_t srcinvalidatesize = dbf->data_size;
+
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
+
+	awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride,
+			tsizehw, taddr);
+}
+
+static void
+draw_awg2d_layer(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_area_t * area, lv_layer_t * layer)
+{
+	//PRINTF("draw_awg2d_layer\n");
+	// Copy rectangle
+	ASSERT(lv_area_get_width(& dsc->image_area) == lv_area_get_width(area));
+	ASSERT(lv_area_get_height(& dsc->image_area) == lv_area_get_height(area));
+//	PRINTF("draw_awg2d_image: tw/th=%d/%d, x/y=%d/%d, w/h=%d/%d\n",
+//			(int) lv_area_get_width(& dsc->image_area), (int) lv_area_get_height(& dsc->image_area),
+//			(int) area->x1, (int) area->y1, (int) lv_area_get_width(area), (int) lv_area_get_height(area));
+
+
+    const lv_area_t * coords = &t->area;
+    lv_area_t clipped_coords;
+    if(!lv_area_intersect(&clipped_coords, coords, &t->clip_area)) {
+        return ;//LV_DRAW_UNIT_IDLE;
+    }
+
+    void * const dest = lv_draw_layer_go_to_xy(layer,
+                                         clipped_coords.x1 - layer->buf_area.x1,
+                                         clipped_coords.y1 - layer->buf_area.y1);
+//    ASSERT(dest);
+//    PRINTF("dest=%p (base=%p)\n", dest, layer->draw_buf->data);	// правильный адрес получателя
+
+//    // Где источник?
+//    PRINTF("src=%p\n", dsc->src);
+    const lv_draw_buf_t * dbf = dsc->src;
+    ASSERT(LV_IMAGE_SRC_VARIABLE == lv_image_src_get_type(dbf));
+
+    const uint_fast16_t sw = lv_area_get_width(area);
+    const uint_fast16_t sh = lv_area_get_height(area);
+//    PRINTF("sw/sh=%d/%d\n", (int) sw, (int) sh);
+
+    const unsigned keyflag = 0;
+    const COLORPIP_T keycolor = 0;
+	const unsigned srcFormat = awxx_get_srcformat(keyflag);
+	const unsigned tstride = lv_draw_buf_width_to_stride(lv_area_get_width(&layer->buf_area), dsc->base.layer->color_format);
+	const unsigned sstride = dbf->header.stride;
+	const uintptr_t taddr = (uintptr_t) dest;
+	//const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, dsc->image_area.x1, dsc->image_area.y1);
+	const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, 0, 0);
+	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
+	const uint_fast32_t tsizehw = ((sh - 1) << 16) | ((sw - 1) << 0);		/* размер совпадающий с источником - просто для удобства */
+
+	const uintptr_t dstinvalidateaddr = (uintptr_t) layer->draw_buf->data;
+	const int_fast32_t dstinvalidatesize = layer->draw_buf->data_size;
+	const uintptr_t srcinvalidateaddr = (uintptr_t) dbf->data;
+	const int_fast32_t srcinvalidatesize = dbf->data_size;
+
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
+
+	awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride,
+			tsizehw, taddr);
+}
+
+static void
+draw_awg2d_fill(lv_draw_task_t * t, const lv_draw_fill_dsc_t * dsc, const lv_area_t * area, lv_layer_t * layer)
+{
+	//PRINTF("draw_awg2d_fill\n");
+	// Fill rectangle
+//	PRINTF("draw_awg2d_fill: x/y=%d/%d, w/h=%d/%d, color=%08X\n",
+//			(int) area->x1, (int) area->y1,
+//			(int) lv_area_get_width(area), (int) lv_area_get_height(area),
+//			(unsigned) COLOR24(dsc->color.red, dsc->color.green, dsc->color.blue)
+//			);
+
+    const lv_area_t * coords = &t->area;
+    lv_area_t clipped_coords;
+    if(!lv_area_intersect(&clipped_coords, coords, &t->clip_area)) {
+        return;// LV_DRAW_UNIT_IDLE;
+    }
+
+    void * dest = lv_draw_layer_go_to_xy(layer,
+                                         clipped_coords.x1 - layer->buf_area.x1,
+                                         clipped_coords.y1 - layer->buf_area.y1);
+
+	const uint_fast16_t x = area->x1;
+	const uint_fast16_t y = area->y1;
+	const uint_fast16_t w = lv_area_get_width(area);
+	const uint_fast16_t h = lv_area_get_height(area);
+
+	COLORPIP_T color = TFTALPHA(dsc->opa * 255 / LV_OPA_COVER, TFTRGB(dsc->color.red, dsc->color.green, dsc->color.blue));
+	//const COLOR24_T color = COLOR24(dsc->color.red, dsc->color.green, dsc->color.blue);
+	const uint_fast16_t dx = lv_area_get_width(& layer->buf_area);
+	PACKEDCOLORPIP_T * buffer = (PACKEDCOLORPIP_T *) dest;
+	const uintptr_t dstinvalidateaddr = (uintptr_t) layer->draw_buf->data;	// параметры invalidate получателя
+	const int_fast32_t dstinvalidatesize = layer->draw_buf->data_size;
+	const unsigned fillmask = dsc->opa != LV_OPA_COVER ? FILL_FLAG_MIXBG : FILL_FLAG_NONE;
+	const uintptr_t taddr = (uintptr_t) buffer;
+	const unsigned tstride = layer->draw_buf->header.stride;
+	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
+
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	hwaccel_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, fillmask);
+
 }
 
 /**
@@ -1173,93 +1412,69 @@ static int32_t awg2d_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
     LV_PROFILER_DRAW_BEGIN;
     draw_awg2d_unit_t * draw_awg2d_unit = (draw_awg2d_unit_t *) draw_unit;
 
-#if LV_USE_OS
-    uint32_t i;
-    uint32_t taken_cnt = 0;
-    /* All idle (couldn't take any tasks): return LV_DRAW_UNIT_IDLE;
-     * All busy: return 0; as 0 tasks were taken
-     * Otherwise return taken_cnt;
-     */
-
-    /*If at least one is busy, it's not all idle*/
-    bool all_idle = true;
-    for(i = 0; i < LV_DRAW_AWG2D_DRAW_UNIT_CNT; i++) {
-        if(draw_awg2d_unit->thread_dscs[i].task_act) {
-            all_idle = false;
-            break;
-        }
-    }
-
-    lv_draw_task_t * t = NULL;
-    for(i = 0; i < LV_DRAW_AWG2D_DRAW_UNIT_CNT; i++) {
-        lv_draw_sw_thread_dsc_t * thread_dsc = &draw_awg2d_unit->thread_dscs[i];
-
-        /*Do nothing if busy*/
-        if(thread_dsc->task_act) continue;
-
-        /*Find an available task. Start from the previously taken task.*/
-        t = lv_draw_get_next_available_task(layer, t, DRAW_UNIT_ID_SW);
-
-        /*If there is not available task don't try other threads as there won't be available
-         *tasks for then either*/
-        if(t == NULL) {
-            LV_PROFILER_DRAW_END;
-            if(all_idle) return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
-            else return taken_cnt;
-        }
-
-        /*Allocate a buffer if not done yet.*/
-        void * buf = lv_draw_layer_alloc_buf(layer);
-        /*Do not return is failed. The other thread might already have a buffer can do something. */
-        if(buf == NULL) continue;
-
-        /*Take the task*/
-        all_idle = false;
-        taken_cnt++;
-        t->state = LV_DRAW_TASK_STATE_IN_PROGRESS;
-        thread_dsc->task_act = t;
-
-        /*Let the render thread work*/
-        if(thread_dsc->inited) lv_thread_sync_signal(&thread_dsc->sync);
-    }
-
-    if(all_idle) return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
-    else return taken_cnt;
-
-#else
-    /*Return immediately if it's busy with draw task*/
-    if(draw_awg2d_unit->task_act) {
-        LV_PROFILER_DRAW_END;
-        return 0;
-    }
-
-    lv_draw_task_t * t = NULL;
-    t = lv_draw_get_available_task(layer, NULL, DRAW_UNIT_ID_AWG2D);
+    lv_draw_task_t * const t = lv_draw_get_available_task(layer, NULL, DRAW_UNIT_ID_AWG2D);
     if(t == NULL) {
-        LV_PROFILER_DRAW_END;
-        return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
-    }
-
-    void * buf = lv_draw_layer_alloc_buf(layer);
-    if(buf == NULL) {
-        LV_PROFILER_DRAW_END;
-        return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
+		//TP();
+		LV_PROFILER_DRAW_END;
+		return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
     }
 
     t->state = LV_DRAW_TASK_STATE_IN_PROGRESS;
-    draw_awg2d_unit->task_act = t;
 
-    awg2d_execute_drawing(t);
-    draw_awg2d_unit->task_act->state = LV_DRAW_TASK_STATE_READY;
-    draw_awg2d_unit->task_act = NULL;
+    {
+        /*Render the draw task*/
+        switch(t->type)
+        {
+        default:
+        	PRINTF("awrot_execute_drawing: t->type=%d\n", (int) t->type);
+        	break;
+        case LV_DRAW_TASK_TYPE_LAYER:
+    		draw_awg2d_layer(t, (lv_draw_image_dsc_t *) t->draw_dsc, &t->area, layer);
+    		break;
+    	case LV_DRAW_TASK_TYPE_IMAGE:
+    		draw_awg2d_image(t, (lv_draw_image_dsc_t *) t->draw_dsc, &t->area, layer);
+    		break;
+    	case LV_DRAW_TASK_TYPE_FILL:
+    		draw_awg2d_fill(t, (lv_draw_fill_dsc_t *) t->draw_dsc, &t->area, layer);
+    		break;
+    //	case LV_DRAW_TASK_TYPE_BORDER:
+    //		lv_draw_awg2d_border(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_BOX_SHADOW:
+    //		lv_draw_awg2d_box_shadow(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_LETTER:
+    //		lv_draw_awg2d_letter(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_LABEL:
+    //		lv_draw_awg2d_label(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_ARC:
+    //		lv_draw_awg2d_arc(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_LINE:
+    //		lv_draw_awg2d_line(t, t->draw_dsc);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_TRIANGLE:
+    //		lv_draw_awg2d_triangle(t, t->draw_dsc);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_MASK_RECTANGLE:
+    //		lv_draw_awg2d_mask_rect(t, t->draw_dsc);
+    //		break;
+    //#if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
+    //	case LV_DRAW_TASK_TYPE_VECTOR:
+    //		lv_draw_awg2d_vector(t, t->draw_dsc);
+    //		break;
+    //#endif
+		}
+    }
+    t->state = LV_DRAW_TASK_STATE_READY;
 
     /*The draw unit is free now. Request a new dispatching as it can get a new task*/
     lv_draw_dispatch_request();
 
     LV_PROFILER_DRAW_END;
     return 1;
-#endif
-
 }
 
 
@@ -1273,33 +1488,88 @@ static int32_t awg2d_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
 static int32_t awg2d_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
 {
     LV_UNUSED(draw_unit);
-    switch(task->type) {
-        case LV_DRAW_TASK_TYPE_IMAGE:
-        case LV_DRAW_TASK_TYPE_LAYER:
-        	{
+    switch(task->type)
+    {
+    	case LV_DRAW_TASK_TYPE_IMAGE:	// на t113 пока не работает правильно (чёрный квадрат под Emma Smith)
+    		return 0;
+    	case LV_DRAW_TASK_TYPE_LAYER:
+       	{
                 lv_draw_image_dsc_t * draw_dsc = (lv_draw_image_dsc_t *) task->draw_dsc;
+                //return 0;
 
+                /* not support opaque */
+                // also see draw_dsc->blend_mode
+                if (draw_dsc->opa != LV_OPA_COVER)
+                {
+                    return 0;
+                }
+                if (draw_dsc->clip_radius != 0)
+                {
+                    return 0;
+                }
+                if (lv_color_to_int(draw_dsc->recolor) != lv_color_to_int(lv_color_black()))
+                {
+                    return 0;
+                }
                 /* not support skew */
-                if (draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0) {
+                if (draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0)
+                {
                     return 0;
                 }
                 /* not support scale */
-                if (draw_dsc->scale_x != LV_SCALE_NONE || draw_dsc->scale_y != LV_SCALE_NONE) {
+                if (draw_dsc->scale_x != LV_SCALE_NONE || draw_dsc->scale_y != LV_SCALE_NONE)
+                {
                     return 0;
                 }
-
+                /* not support rotation */
+                if (draw_dsc->rotation != 0)
+                {
+                    return 0;
+                }
+                if (lv_area_get_width(& draw_dsc->image_area) == 0 || lv_area_get_height(& draw_dsc->image_area) == 0)
+                {
+                    return 0;
+                }
+                if (lv_area_get_width(& draw_dsc->image_area) < 2 || lv_area_get_height(& draw_dsc->image_area) < 2)
+                {
+                    return 0;
+                }
                 bool masked = draw_dsc->bitmap_mask_src != NULL;
-
-                lv_color_format_t cf = (lv_color_format_t) draw_dsc->header.cf;
-                if(masked && (cf == LV_COLOR_FORMAT_A8 || cf == LV_COLOR_FORMAT_RGB565A8)) {
+                if (masked)
+                {
                     return 0;
                 }
-
-                if(cf >= LV_COLOR_FORMAT_PROPRIETARY_START) {
+                lv_color_format_t cf = (lv_color_format_t) draw_dsc->header.cf;
+                if (cf != display_get_lvformat())
+                {
+                    return 0;
+                }
+                if (masked && (cf == LV_COLOR_FORMAT_A8 || cf == LV_COLOR_FORMAT_RGB565A8))
+                {
+                    return 0;
+                }
+                if (cf >= LV_COLOR_FORMAT_PROPRIETARY_START)
+                {
                     return 0;
                 }
             }
             break;
+        case LV_DRAW_TASK_TYPE_FILL:
+        	{
+                lv_draw_fill_dsc_t * dsc = task->draw_dsc;
+                if (lv_area_get_width(& task->area) < 2 || lv_area_get_height(& task->area) < 2)
+                	return 0;
+                if(!(dsc->radius == 0
+                     && dsc->grad.dir == LV_GRAD_DIR_NONE
+                     && (dsc->base.layer->color_format == LV_COLOR_FORMAT_ARGB8888
+                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_XRGB8888
+                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB888
+                         || dsc->base.layer->color_format == LV_COLOR_FORMAT_RGB565))) {
+                    return 0;
+                }
+            }
+            break;
+
 #if LV_USE_3DTEXTURE
         case LV_DRAW_TASK_TYPE_3D:
             return 0;
@@ -1395,259 +1665,81 @@ static int32_t draw_awg2d_delete(lv_draw_unit_t * draw_unit)
 
 #if defined (G2D_ROT)
 
-lv_result_t lv_draw_sw_image_awrot(
-	bool is_transform,
-	lv_color_format_t src_cf,
-	const uint8_t *src_buf,
-	const lv_area_t * img_coords,
-	int32_t src_stride,
-	const lv_area_t * des_area,	// __blend_area
-	const lv_draw_task_t * draw_task,
-	const lv_draw_image_dsc_t * draw_dsc)
+static void
+draw_awrot_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_area_t * area, lv_layer_t * layer)
 {
-//	if (is_transform)
-//	{
-//		PRINTF("transform not supported: rotation=%u, scale_x=%u, scale_y=%u\n", (unsigned) draw_dsc->rotation, (unsigned) draw_dsc->scale_x, (unsigned) draw_dsc->scale_y);
-//		return LV_RESULT_INVALID;
-//	}
+	//PRINTF("draw_awrot_image\n");
+#if 0
+	PRINTF("draw src x=%d,y=%d,w=%d,h=%d\n", dsc->image_area.x1, dsc->image_area.y1,
+			lv_area_get_width(& dsc->image_area),
+			lv_area_get_height(& dsc->image_area));
+#endif
+	// Copy rectangle
+	ASSERT(lv_area_get_width(& dsc->image_area) == lv_area_get_width(area));
+	ASSERT(lv_area_get_height(& dsc->image_area) == lv_area_get_height(area));
+//	PRINTF("draw_awg2d_image: tw/th=%d/%d, x/y=%d/%d, w/h=%d/%d\n",
+//			(int) lv_area_get_width(& dsc->image_area), (int) lv_area_get_height(& dsc->image_area),
+//			(int) area->x1, (int) area->y1, (int) lv_area_get_width(area), (int) lv_area_get_height(area));
 
-	if (draw_dsc->scale_x != LV_SCALE_NONE || draw_dsc->scale_y != LV_SCALE_NONE)
-		return LV_RESULT_INVALID;
+    const lv_area_t * coords = &t->area;
+    lv_area_t clipped_coords;
+    if(!lv_area_intersect(&clipped_coords, coords, &t->clip_area)) {
+        return ;//LV_DRAW_UNIT_IDLE;
+    }
 
-	if ((draw_dsc->rotation % 900) != 0)
-		return LV_RESULT_INVALID;
+    void * const dest = lv_draw_layer_go_to_xy(layer,
+                                         clipped_coords.x1 - layer->buf_area.x1,
+                                         clipped_coords.y1 - layer->buf_area.y1);
+//    ASSERT(dest);
+//    PRINTF("dest=%p (base=%p)\n", dest, layer->draw_buf->data);	// правильный адрес получателя
 
-	if (src_cf != draw_dsc->header.cf)
+//    // Где источник?
+//    PRINTF("src=%p\n", dsc->src);
+    const lv_draw_buf_t * dbf = dsc->src;
+    ASSERT(LV_IMAGE_SRC_VARIABLE == lv_image_src_get_type(dbf));
+
+    const uint_fast16_t w = lv_area_get_width(area);
+    const uint_fast16_t h = lv_area_get_height(area);//    PRINTF("sw/sh=%d/%d\n", (int) sw, (int) sh);
+
+    if (h == 0 || w == 0)
+    	return;
+    const unsigned keyflag = 0;
+    const COLORPIP_T keycolor = 0;
+	const unsigned srcFormat = awxx_get_srcformat(keyflag);
+	const unsigned tstride = lv_draw_buf_width_to_stride(lv_area_get_width(&layer->buf_area), dsc->base.layer->color_format);
+	const unsigned sstride = dbf->header.stride;
+	const uintptr_t taddr = (uintptr_t) dest;
+	//const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, dsc->image_area.x1, dsc->image_area.y1);
+	const uintptr_t saddr = (uintptr_t) lv_draw_buf_goto_xy(dbf, 0, 0);
+
+	const uintptr_t dstinvalidateaddr = (uintptr_t) layer->draw_buf->data;
+	const int_fast32_t dstinvalidatesize = layer->draw_buf->data_size;
+	const uintptr_t srcinvalidateaddr = (uintptr_t) dbf->data;
+	const int_fast32_t srcinvalidatesize = dbf->data_size;
+
+	// target size для 4-х квадрантов
+	// похоже, поворот учитывать не требуется. Но просто для "красоты" оставлю четыре варианта.
+	const uint_fast32_t tsizehw4 [4] =
 	{
-		PRINTF("color format transform not supported (%u -> %u)\n", (unsigned) src_cf, (unsigned) draw_dsc->header.cf);
-		return LV_RESULT_INVALID;
-	}
-	//TP();
-	return LV_RESULT_INVALID;
-	const lv_area_t * const dst_coords = & draw_task->target_layer->buf_area;
-	PRINTF("src coords: x/y=%u/%u, dx/dy=%u/%u\n", (unsigned) img_coords->x1, (unsigned) img_coords->y1, (unsigned) draw_dsc->header.w, (unsigned) draw_dsc->header.h);
-	PRINTF("dst coords: x/y=%u/%u, dx/dy=%u/%u\n", (unsigned) dst_coords->x1, (unsigned) dst_coords->y1, (unsigned) lv_area_get_width(dst_coords), (unsigned) lv_area_get_height(dst_coords));
-	//return LV_RESULT_OK;
-    uint8_t *des_buf = (uint8_t *)lv_draw_layer_go_to_xy(draw_task->target_layer, 0, 0);
-    gxdrawb_t tdbv;
-    gxdrawb_t sdbv;
-    gxdrawb_initialize(& tdbv, (void *) des_buf, lv_area_get_width(dst_coords), lv_area_get_height(dst_coords));
-    gxdrawb_initialize(& sdbv, (void *) src_buf, lv_area_get_width(img_coords), lv_area_get_height(img_coords));
-	colpip_copyrotate(
-		tdbv.cachebase, tdbv.cachesize,
-		& tdbv,	// получатель
-		dst_coords->x1, dst_coords->y1,	// получатель Позиция
-		sdbv.cachebase, sdbv.cachesize,
-		& sdbv,	// источника
-		0, 0, //0, 0,	// координаты окна источника
-		lv_area_get_width(img_coords), lv_area_get_height(img_coords), //picx, picy, // размер окна источника
-		0,	// X mirror flag
-		0,	// Y mirror flag
-		(360 - (draw_dsc->rotation / 10)) % 360	// positive CCW angle
-		);
+		((h - 1) << 16) | ((w - 1) << 0),	// target size if 0 CCW
+		((w - 1) << 16) | ((h - 1) << 0),	// target size if 90 CCW
+		((h - 1) << 16) | ((w - 1) << 0),	// target size if 180 CCW
+		((w - 1) << 16) | ((h - 1) << 0),	// target size if 270 CCW
+	};
 
-	return LV_RESULT_OK;
+	const int mx = 0;
+	const int my = 0;
+	unsigned quadrant = 0;
+	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0); // source size
+	const uint_fast32_t tsizehw = tsizehw4 [quadrant];
+	uint_fast32_t rot_ctl = 0;
+	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horizontal
+	rot_ctl |= !! my * (UINT32_C(1) << 6);	// flip vertical
+	rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
 
-}
-
-static void img_draw_core(lv_draw_task_t * t, const lv_draw_image_dsc_t * draw_dsc,
-                          const lv_image_decoder_dsc_t * decoder_dsc, lv_draw_image_sup_t * sup,
-                          const lv_area_t * img_coords, const lv_area_t * clipped_img_area)
-{
-//
-//	lv_layer_t * layer_to_draw = (lv_layer_t *) t->draw_dsc->src;
-//
-//	/*It can happen that nothing was draw on a layer and therefore its buffer is not allocated.
-//	 *In this case just return. */
-//	if(layer_to_draw->draw_buf == NULL) return;
-
-//				if(t->draw_dsc->bitmap_mask_src) {
-//					bool visible = apply_mask(t->draw_dsc);
-//					if(!visible) return;
-//				}
-
-//	/*The source should be a draw_buf, not a layer*/
-//	lv_draw_image_dsc_t new_draw_dsc = *draw_dsc;
-//	new_draw_dsc.src = layer_to_draw->draw_buf;
-//
-//	lv_draw_sw_image(t, &new_draw_dsc, coords);
-
-
-//
-//	colpip_copyrotate(
-//		t->(uintptr_t) layer0, GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE,
-//		layer0, DIM_X, DIM_Y,
-//		x + 1, y + 1,	// получатель Позиция
-//		(uintptr_t) fgpic, GXSIZE(picx, picy) * LCDMODE_PIXELSIZE,
-//		fgpic, picx, picy,	// буфер источника
-//		0, 0,	// координаты окна источника
-//		lv_area_get_width(& t->area), lv_area_get_height(& t->area), //picx, picy, // размер окна источника
-//		0,	// X mirror flag
-//		0,	// Y mirror flag
-//		0	// positive CCW angle
-//		);
-}
-
-
-void lv_draw_awrot_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * draw_dsc,
-                      const lv_area_t * coords)
-{
-    if(!draw_dsc->tile) {
-        lv_draw_image_normal_helper(t, draw_dsc, coords, img_draw_core);
-    }
-    else {
-        lv_draw_image_tiled_helper(t, draw_dsc, coords, img_draw_core);
-    }
-}
-
-void lv_draw_awrot_layer(lv_draw_task_t * t, const lv_draw_image_dsc_t * draw_dsc, const lv_area_t * coords)
-{
-    lv_layer_t * layer_to_draw = (lv_layer_t *)draw_dsc->src;
-
-    /*It can happen that nothing was draw on a layer and therefore its buffer is not allocated.
-     *In this case just return. */
-    if(layer_to_draw->draw_buf == NULL) return;
-
-//    if(draw_dsc->bitmap_mask_src) {
-//        bool visible = apply_mask(draw_dsc);
-//        if(!visible) return;
-//    }
-
-    /*The source should be a draw_buf, not a layer*/
-    lv_draw_image_dsc_t new_draw_dsc = *draw_dsc;
-    new_draw_dsc.src = layer_to_draw->draw_buf;
-
-    lv_draw_awrot_image(t, &new_draw_dsc, coords);
-
-#if LV_USE_LAYER_DEBUG || LV_USE_PARALLEL_DRAW_DEBUG
-    lv_area_t area_rot;
-    lv_area_copy(&area_rot, coords);
-    if(draw_dsc->rotation || draw_dsc->scale_x != LV_SCALE_NONE || draw_dsc->scale_y != LV_SCALE_NONE) {
-        int32_t w = lv_area_get_width(coords);
-        int32_t h = lv_area_get_height(coords);
-
-        lv_image_buf_get_transformed_area(&area_rot, w, h, draw_dsc->rotation, draw_dsc->scale_x, draw_dsc->scale_y,
-                                          &draw_dsc->pivot);
-
-        area_rot.x1 += coords->x1;
-        area_rot.y1 += coords->y1;
-        area_rot.x2 += coords->x1;
-        area_rot.y2 += coords->y1;
-    }
-    lv_area_t draw_area;
-    if(!lv_area_intersect(&draw_area, &area_rot, &t->clip_area)) return;
-#endif
-
-#if LV_USE_LAYER_DEBUG
-    {
-        lv_draw_fill_dsc_t fill_dsc;
-        lv_draw_fill_dsc_init(&fill_dsc);
-        fill_dsc.color = lv_color_hex(layer_to_draw->color_format == LV_COLOR_FORMAT_ARGB8888 ? 0xff0000 : 0x00ff00);
-        fill_dsc.opa = LV_OPA_20;
-        lv_draw_awrot_fill(t, &fill_dsc, &area_rot);
-
-        lv_draw_border_dsc_t border_dsc;
-        lv_draw_border_dsc_init(&border_dsc);
-        border_dsc.color = fill_dsc.color;
-        border_dsc.opa = LV_OPA_60;
-        border_dsc.width = 2;
-        lv_draw_awrot_border(t, &border_dsc, &area_rot);
-    }
-
-#endif
-
-#if LV_USE_PARALLEL_DRAW_DEBUG
-    {
-        int32_t idx = t->draw_unit->idx;
-
-        lv_draw_fill_dsc_t fill_dsc;
-        lv_draw_fill_dsc_init(&fill_dsc);
-        fill_dsc.color = lv_palette_main(idx % LV_PALETTE_LAST);
-        fill_dsc.opa = LV_OPA_10;
-        lv_draw_awrot_fill(t, &fill_dsc, &area_rot);
-
-        lv_draw_border_dsc_t border_dsc;
-        lv_draw_border_dsc_init(&border_dsc);
-        border_dsc.color = lv_palette_main(idx % LV_PALETTE_LAST);
-        border_dsc.opa = LV_OPA_60;
-        border_dsc.width = 1;
-        lv_draw_awrot_border(t, &border_dsc, &area_rot);
-
-        lv_point_t txt_size;
-        lv_text_get_size(&txt_size, "W", LV_FONT_DEFAULT, 0, 0, 100, LV_TEXT_FLAG_NONE);
-
-        lv_area_t txt_area;
-        txt_area.x1 = draw_area.x1;
-        txt_area.x2 = draw_area.x1 + txt_size.x - 1;
-        txt_area.y2 = draw_area.y2;
-        txt_area.y1 = draw_area.y2 - txt_size.y + 1;
-
-        lv_draw_fill_dsc_init(&fill_dsc);
-        fill_dsc.color = lv_color_black();
-        lv_draw_awrot_fill(t, &fill_dsc, &txt_area);
-
-        char buf[8];
-        lv_snprintf(buf, sizeof(buf), "%d", idx);
-        lv_draw_label_dsc_t label_dsc;
-        lv_draw_label_dsc_init(&label_dsc);
-        label_dsc.color = lv_color_white();
-        label_dsc.text = buf;
-        lv_draw_awrot_label(t, &label_dsc, &txt_area);
-    }
-#endif
-}
-
-static void awrot_execute_drawing(lv_draw_task_t * t)
-{
-    LV_PROFILER_DRAW_BEGIN;
-    TP();
-    /*Render the draw task*/
-    switch(t->type) {
-        case LV_DRAW_TASK_TYPE_IMAGE:
-            lv_draw_awrot_image(t, t->draw_dsc, &t->area);
-            break;
-        case LV_DRAW_TASK_TYPE_LAYER:
-            lv_draw_awrot_layer(t, t->draw_dsc, &t->area);
-            break;
-//        case LV_DRAW_TASK_TYPE_FILL:
-//            lv_draw_awrot_fill(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_BORDER:
-//            lv_draw_awrot_border(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_BOX_SHADOW:
-//            lv_draw_awrot_box_shadow(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LETTER:
-//            lv_draw_awrot_letter(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LABEL:
-//            lv_draw_awrot_label(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_ARC:
-//            lv_draw_awrot_arc(t, t->draw_dsc, &t->area);
-//            break;
-//        case LV_DRAW_TASK_TYPE_LINE:
-//            lv_draw_awrot_line(t, t->draw_dsc);
-//            break;
-//        case LV_DRAW_TASK_TYPE_TRIANGLE:
-//            lv_draw_awrot_triangle(t, t->draw_dsc);
-//            break;
-//        case LV_DRAW_TASK_TYPE_MASK_RECTANGLE:
-//            lv_draw_awrot_mask_rect(t, t->draw_dsc);
-//            break;
-//#if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
-//        case LV_DRAW_TASK_TYPE_VECTOR:
-//            lv_draw_awrot_vector(t, t->draw_dsc);
-//            break;
-//#endif
-        default:
-        	TP();
-            break;
-    }
-
-
-    LV_PROFILER_DRAW_END;
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
+	hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, rot_ctl);
 }
 
 /**
@@ -1667,15 +1759,25 @@ static int32_t awrot_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
         case LV_DRAW_TASK_TYPE_LAYER:
         	{
                 lv_draw_image_dsc_t * draw_dsc = (lv_draw_image_dsc_t *) task->draw_dsc;
+//        		PRINTF("ev src x=%d,y=%d,w=%d,h=%d\n", draw_dsc->image_area.x1, draw_dsc->image_area.y1,
+//        				lv_area_get_width(& draw_dsc->image_area),
+//						lv_area_get_height(& draw_dsc->image_area));
 
                 /* not support skew */
                 if (draw_dsc->skew_x != 0 || draw_dsc->skew_y != 0) {
+                    return 0;
+                }
+                /* not support rotation */
+                if (draw_dsc->rotation != 0)
+                {
                     return 0;
                 }
                 /* not support scale */
                 if (draw_dsc->scale_x != LV_SCALE_NONE || draw_dsc->scale_y != LV_SCALE_NONE) {
                     return 0;
                 }
+                if (lv_area_get_width(& draw_dsc->image_area) == 0 || lv_area_get_height(& draw_dsc->image_area) == 0)
+                	return 0;
 
                 /* not support tile */
                 if (draw_dsc->tile) {
@@ -1687,8 +1789,11 @@ static int32_t awrot_evaluate(lv_draw_unit_t * draw_unit, lv_draw_task_t * task)
                 }
 
                 bool masked = draw_dsc->bitmap_mask_src != NULL;
-
+                if (masked)
+                	return 0;
                 lv_color_format_t cf = (lv_color_format_t) draw_dsc->header.cf;
+                if (cf != display_get_lvformat())
+                	return 0;
                 if (masked && (cf == LV_COLOR_FORMAT_A8 || cf == LV_COLOR_FORMAT_RGB565A8)) {
                     return 0;
                 }
@@ -1730,97 +1835,68 @@ static int32_t awrot_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
 {
     LV_PROFILER_DRAW_BEGIN;
     draw_awrot_unit_t * draw_awrot_unit = (draw_awrot_unit_t *) draw_unit;
-    LV_PROFILER_DRAW_END;
-    return 0;
-    return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
 
-#if LV_USE_OS
-    uint32_t i;
-    uint32_t taken_cnt = 0;
-    /* All idle (couldn't take any tasks): return LV_DRAW_UNIT_IDLE;
-     * All busy: return 0; as 0 tasks were taken
-     * Otherwise return taken_cnt;
-     */
-
-    /*If at least one is busy, it's not all idle*/
-    bool all_idle = true;
-    for(i = 0; i < LV_DRAW_AWG2D_DRAW_UNIT_CNT; i++) {
-        if(draw_awrot_unit->thread_dscs[i].task_act) {
-            all_idle = false;
-            break;
-        }
-    }
-
-    lv_draw_task_t * t = NULL;
-    for(i = 0; i < LV_DRAW_AWG2D_DRAW_UNIT_CNT; i++) {
-        lv_draw_sw_thread_dsc_t * thread_dsc = &draw_awrot_unit->thread_dscs[i];
-
-        /*Do nothing if busy*/
-        if(thread_dsc->task_act) continue;
-
-        /*Find an available task. Start from the previously taken task.*/
-        t = lv_draw_get_next_available_task(layer, t, DRAW_UNIT_ID_SW);
-
-        /*If there is not available task don't try other threads as there won't be available
-         *tasks for then either*/
-        if(t == NULL) {
-            LV_PROFILER_DRAW_END;
-            if(all_idle) return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
-            else return taken_cnt;
-        }
-
-        /*Allocate a buffer if not done yet.*/
-        void * buf = lv_draw_layer_alloc_buf(layer);
-        /*Do not return is failed. The other thread might already have a buffer can do something. */
-        if(buf == NULL) continue;
-
-        /*Take the task*/
-        all_idle = false;
-        taken_cnt++;
-        t->state = LV_DRAW_TASK_STATE_IN_PROGRESS;
-        thread_dsc->task_act = t;
-
-        /*Let the render thread work*/
-        if(thread_dsc->inited) lv_thread_sync_signal(&thread_dsc->sync);
-    }
-
-    if(all_idle) return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
-    else return taken_cnt;
-
-#else
-    /*Return immediately if it's busy with draw task*/
-    if(draw_awrot_unit->task_act) {
-        LV_PROFILER_DRAW_END;
-        return 0;
-    }
-
-    lv_draw_task_t * t = NULL;
-    t = lv_draw_get_available_task(layer, NULL, DRAW_UNIT_ID_AWROT);
+    lv_draw_task_t * const t = lv_draw_get_available_task(layer, NULL, DRAW_UNIT_ID_AWROT);
     if(t == NULL) {
-        LV_PROFILER_DRAW_END;
-        return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
-    }
-
-    void * buf = lv_draw_layer_alloc_buf(layer);
-    if(buf == NULL) {
-        LV_PROFILER_DRAW_END;
-        return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
+		//TP();
+		LV_PROFILER_DRAW_END;
+		return LV_DRAW_UNIT_IDLE;  /*Couldn't start rendering*/
     }
 
     t->state = LV_DRAW_TASK_STATE_IN_PROGRESS;
-    draw_awrot_unit->task_act = t;
 
-    awrot_execute_drawing(t);
-    draw_awrot_unit->task_act->state = LV_DRAW_TASK_STATE_READY;
-    draw_awrot_unit->task_act = NULL;
+    {
+        /*Render the draw task*/
+        switch(t->type)
+        {
+        default:
+        	PRINTF("awrot_execute_drawing: t->type=%d\n", (int) t->type);
+        	break;
+        case LV_DRAW_TASK_TYPE_LAYER:
+    	case LV_DRAW_TASK_TYPE_IMAGE:
+    		draw_awrot_image(t, (lv_draw_image_dsc_t *) t->draw_dsc, &t->area, layer);
+    		break;
+//    	case LV_DRAW_TASK_TYPE_FILL:
+//    		draw_awrot_fill(t, (lv_draw_fill_dsc_t *) t->draw_dsc, &t->area, layer);
+//    		break;
+    //	case LV_DRAW_TASK_TYPE_BORDER:
+    //		lv_draw_awrot_border(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_BOX_SHADOW:
+    //		lv_draw_awrot_box_shadow(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_LETTER:
+    //		lv_draw_awrot_letter(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_LABEL:
+    //		lv_draw_awrot_label(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_ARC:
+    //		lv_draw_awrot_arc(t, t->draw_dsc, &t->area);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_LINE:
+    //		lv_draw_awrot_line(t, t->draw_dsc);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_TRIANGLE:
+    //		lv_draw_awrot_triangle(t, t->draw_dsc);
+    //		break;
+    //	case LV_DRAW_TASK_TYPE_MASK_RECTANGLE:
+    //		lv_draw_awrot_mask_rect(t, t->draw_dsc);
+    //		break;
+    //#if LV_USE_VECTOR_GRAPHIC && LV_USE_THORVG
+    //	case LV_DRAW_TASK_TYPE_VECTOR:
+    //		lv_draw_awrot_vector(t, t->draw_dsc);
+    //		break;
+    //#endif
+		}
+    }
+    t->state = LV_DRAW_TASK_STATE_READY;
 
     /*The draw unit is free now. Request a new dispatching as it can get a new task*/
     lv_draw_dispatch_request();
 
     LV_PROFILER_DRAW_END;
     return 1;
-#endif
-
 }
 /**
  * Called to signal the unit to complete all tasks in order to return their ready status.
@@ -1904,10 +1980,11 @@ static int32_t draw_awrot_delete(lv_draw_unit_t * draw_unit)
 // Add custom draw unit
 void lvglhw_initialize(void)
 {
+//	return;
 #if defined (G2D_MIXER)
-	if (0)
+	if (1)
 	{
-
+		PRINTF("lvglhw_initialize: Enable G2D_MIXER hw accelerate for LVGL\n");
 		//#if LV_DRAW_SW_COMPLEX == 1
 		//    lv_draw_sw_mask_init();
 		//#endif
@@ -1944,8 +2021,9 @@ void lvglhw_initialize(void)
 	}
 #endif /* defined (G2D_MIXER) */
 #if defined (G2D_ROT)
-	if (0)
+	if (1)
 	{
+		PRINTF("lvglhw_initialize: Enable G2D_ROT hw accelerate for LVGL\n");
 		// Блок позволяет копировать прямоугольники без изменения формата и размеров,
 		// возможен поворот на углы кратные 90 градусам
 
@@ -1998,28 +2076,33 @@ void draw_awg2d_deinit(void)
 #endif
 }
 
+#endif /* WITHLVGL */
+
+#endif /* WITHMDMAHW */
+
+
+#if ! (LCDMODE_DUMMY)
+
+
+#if WITHLVGL
+
 uint32_t display_get_lvformat(void)
 {
 #if LCDMODE_LTDC
 	#if LCDMODE_LTDC_L24
     	return LV_COLOR_FORMAT_NATIVE;
-	#elif LCDMODE_MAIN_L8
+	#elif LCDMODE_PALETTE256
     	return LV_COLOR_FORMAT_L8;
-	#elif LCDMODE_MAIN_ARGB8888
+	#elif LCDMODE_ARGB8888
     	return LV_COLOR_FORMAT_ARGB8888;
-	#elif LCDMODE_MAIN_RGB565
+	#elif LCDMODE_RGB565
     	return LV_COLOR_FORMAT_RGB565;
 	#endif
-#else
+#else /* LCDMODE_LTDC */
     	return LV_COLOR_FORMAT_ARGB8888;
-#endif
+#endif /* LCDMODE_LTDC */
 }
-
 #endif /* WITHLVGL */
-
-#endif /* WITHMDMAHW */
-
-#if ! (LCDMODE_DUMMY)
 
 #if LCDMODE_PIXELSIZE == 1
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
@@ -2274,7 +2357,7 @@ hwaccel_rect_u16(
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	t113_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), w, h, color, FILL_FLAG_NONE);
+	hwaccel_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), w, h, color, FILL_FLAG_NONE);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 
@@ -2557,7 +2640,7 @@ hwaccel_rect_u32(
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	t113_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, fillmask);
+	hwaccel_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, fillmask);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 
@@ -2662,7 +2745,7 @@ colpip_set_hline(
 
 uint_fast8_t colpip_hasalpha(void)
 {
-#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && LCDMODE_MAIN_ARGB8888
+#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && LCDMODE_ARGB8888
 	return 1;
 #else
 	return 0;
@@ -2679,37 +2762,14 @@ void colpip_fillrect(
 	COLORPIP_T color	// цвет
 	)
 {
-	//PACKEDCOLORPIP_T * const buffer = db->buffer;
-	const uint_fast16_t dx = db->dx;
-	const uint_fast16_t dy = db->dy;
-	ASSERT(x < dx);
-	ASSERT((x + w) <= dx);
-	ASSERT(y < dy);
-	ASSERT((y + h) <= dy);
-	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y);
-	const uintptr_t dstinvalidateaddr = (uintptr_t) db->buffer;	// параметры invalidate получателя
-	const int_fast32_t dstinvalidatesize = GXSIZE(dx, dy) * sizeof (PACKEDCOLORPIP_T);
-
-#if LCDMODE_MAIN_L8
-	hwaccel_rect_u8(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
-
-#elif LCDMODE_MAIN_RGB565
-	hwaccel_rect_u16(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
-
-#elif LCDMODE_MAIN_L24
-	hwaccel_rect_u24(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
-
-#elif LCDMODE_MAIN_ARGB8888
-	hwaccel_rect_u32(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color, FILL_FLAG_NONE);
-
-#endif
+	colpip_rectangle(db, x, y, w, h, color, FILL_FLAG_NONE);
 }
 
 //#define FILL_FLAG_NONE		0x00
 //#define FILL_FLAG_MIXBG		0x01	// alpha со старым содержимым буферв
 
 // заполнение прямоугольной области в видеобуфере
-void colpip_fillrect2(
+void colpip_rectangle(
 	const gxdrawb_t * db,
 	uint_fast16_t x,	// начальная координата
 	uint_fast16_t y,	// начальная координата
@@ -2730,16 +2790,16 @@ void colpip_fillrect2(
 	const uintptr_t dstinvalidateaddr = (uintptr_t) db->buffer;	// параметры invalidate получателя
 	const int_fast32_t dstinvalidatesize = GXSIZE(dx, dy) * sizeof (PACKEDCOLORPIP_T);
 
-#if LCDMODE_MAIN_L8
+#if LCDMODE_PALETTE256
 	hwaccel_rect_u8(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
 
-#elif LCDMODE_MAIN_RGB565
+#elif LCDMODE_RGB565
 	hwaccel_rect_u16(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
 
 #elif LCDMODE_MAIN_L24
 	hwaccel_rect_u24(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
 
-#elif LCDMODE_MAIN_ARGB8888
+#elif LCDMODE_ARGB8888
 	hwaccel_rect_u32(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color, fillmask);
 
 #endif
@@ -2785,7 +2845,7 @@ void colpip_copyrotate(
 	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0); // source size
 	const uint_fast32_t tsizehw = tsizehw4 [quadrant];
 	uint_fast32_t rot_ctl = 0;
-	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horisontal
+	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horizontal
 	rot_ctl |= !! my * (UINT32_C(1) << 6);	// flip vertical
 	rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
 
@@ -2965,16 +3025,16 @@ void colpip_fill(
 
 	const uintptr_t dstinvalidateaddr = (uintptr_t) buffer;	// параметры invalidate получателя
 	const int_fast32_t dstinvalidatesize = GXSIZE(dx, dy) * sizeof * buffer;
-#if LCDMODE_MAIN_L8
+#if LCDMODE_PALETTE256
 	hwaccel_rect_u8(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
 
-#elif LCDMODE_MAIN_RGB565
+#elif LCDMODE_RGB565
 	hwaccel_rect_u16(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
 
 #elif LCDMODE_MAIN_L24
 	hwaccel_rect_u24(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
 
-#elif LCDMODE_MAIN_ARGB8888
+#elif LCDMODE_ARGB8888
 	hwaccel_rect_u32(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color, FILL_FLAG_NONE);
 
 #endif
@@ -3158,130 +3218,8 @@ void hwaccel_bitblt(
 //	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
-	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
-
-	awxx_g2d_mixer_reset(); /* Отключаем все источники */
-
-	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
-	{
-		const COLOR24_T keycolor24 = awxx_key_color_conversion(keycolor);
-		/* 5.10.9.10 BLD color key control register */
-		//G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
-		G2D_BLD->BLD_KEY_CTL =
-			(0x01u << 1) |		// KEY0_MATCH_DIR 1: when the pixel value matches source image, it displays the pixel form destination image.
-			(UINT32_C(1) << 0) |			// KEY0_EN 1: enable color key in Alpha Blender0.
-			0;
-
-		/* 5.10.9.11 BLD color key configuration register */
-		G2D_BLD->BLD_KEY_CON =
-			0 * (UINT32_C(1) << 2) |		// KEY0R_MATCH 0: match color if value inside keys range
-			0 * (UINT32_C(1) << 1) |		// KEY0G_MATCH 0: match color if value inside keys range
-			0 * (UINT32_C(1) << 0) |		// KEY0B_MATCH 0: match color if value inside keys range
-			0;
-
-		G2D_BLD->BLD_KEY_MAX = keycolor24;
-		G2D_BLD->BLD_KEY_MIN = keycolor24;
-
-		/* установка поверхности - источника (анализируется) */
-		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(srcFormat);
-		G2D_UI2->UI_PITCH = sstride;
-		G2D_UI2->UI_FILLC = 0;
-		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
-		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
-		G2D_UI2->UI_LADD = ptr_lo32(saddr);
-		G2D_UI2->UI_HADD = ptr_hi32(saddr);
-
-		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
-		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(VI_ImageFormat);
-		G2D_V0->V0_PITCH0 = tstride;
-		G2D_V0->V0_FILLC = 0;
-		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		G2D_V0->V0_MBSIZE = tsizehw; 	// сколько брать от исходного буфера
-		G2D_V0->V0_SIZE = tsizehw;		// параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = ptr_lo32(taddr);
-		G2D_V0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
-
-		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера после scaler
-		/* источник когда есть совпадние */
-		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
-		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
-		/* источник для анализа */
-		G2D_BLD->BLD_CH_ISIZE [1] = tsizehw;
-		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
-
-		G2D_BLD->BLD_FILL_COLOR_CTL =
-			(UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable
-			(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable
-			0;
-
-		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
-		G2D_BLD->ROP_INDEX [0] = 0;		// ? зависят от ROP_CTL
-		G2D_BLD->ROP_INDEX [1] = 0;
-
-		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
-	}
-	else
-	{
-		/* без keycolor */
-		/* установка поверхности - источника (безусловно) */
-//		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr();
-//		G2D_UI2->UI_PITCH = sstride;
-//		G2D_UI2->UI_FILLC = 0;
-//		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-//		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
-//		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
-//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
-//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
-
-        G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
-        G2D_V0->V0_PITCH0 = sstride;
-        G2D_V0->V0_FILLC = 0;//TFTRGB(255, 0, 0);    // unused
-        G2D_V0->V0_COOR = 0;            // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-        G2D_V0->V0_MBSIZE = ssizehw;     // сколько брать от исходного буфера
-        G2D_V0->V0_SIZE = ssizehw;        // параметры окна исходного буфера
-        G2D_V0->V0_LADD0 = ptr_lo32(saddr);
-        G2D_V0->V0_HADD = ptr_hi32(saddr);
-
-		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера после scaler
-		G2D_BLD->BLD_CH_ISIZE [0] = ssizehw;
-		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
-		G2D_BLD->BLD_CH_ISIZE [1] = ssizehw;
-		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
-
-		G2D_BLD->BLD_KEY_CTL = 0;
-		G2D_BLD->BLD_KEY_CON = 0;
-
-		G2D_BLD->BLD_FILL_COLOR_CTL =
-			(UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable - VI0
-			//(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable - UI2
-			0;
-
-		G2D_BLD->ROP_CTL = 0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
-		G2D_BLD->ROP_INDEX [0] = 0;		// ? зависят от ROP_CTL
-		G2D_BLD->ROP_INDEX [1] = 0;
-
-		//G2D_BLD->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
-		//G2D_BLD->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
-		G2D_BLD->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
-	}
-
-
-	//G2D_BLD->BLD_FILLC0 = ~ 0;
-	//G2D_BLD->BLD_PREMUL_CTL |= (UINT32_C(1) << 0);	// 0 or 1 - sel 1 or sel 0
-	G2D_BLD->BLD_OUT_COLOR=0x00000000; /* 0x00000000 */
-	G2D_BLD->BLD_CSC_CTL=0x00000000; /* 0x00000000 */
-	G2D_BLD->BLD_BK_COLOR = 0;
-	G2D_BLD->BLD_PREMUL_CTL=0x00000000; /* 0x00000000 */
-
-	/* Write-back settings */
-	G2D_WB->WB_ATT = WB_ImageFormat;//G2D_FMT_RGB565; //G2D_FMT_XRGB8888;
-	G2D_WB->WB_SIZE = tsizehw;
-	G2D_WB->WB_PITCH0 = tstride;	/* taddr buffer stride */
-	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
-	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
-
-	awxx_g2d_rtmix_startandwait();		/* Запускаем и ждём завершения обработки */
+	awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride,
+			tsizehw, taddr);
 
 #else
 	// программная реализация
@@ -3688,10 +3626,11 @@ void colpip_rect(
 	}
 	else
 	{
-		colpip_line(db, x1, y1, x2, y1, color, 0);		// верхняя горизонталь
-		colpip_line(db, x1, y2, x2, y2, color, 0);		// нижняя горизонталь
-		colpip_line(db, x1, y1, x1, y2, color, 0);		// левая вертикаль
-		colpip_line(db, x2, y1, x2, y2, color, 0);		// правая вертикаль
+		int antialiasing = 0;
+		colpip_line(db, x1, y1, x2, y1, color, antialiasing);		// верхняя горизонталь
+		colpip_line(db, x1, y2, x2, y2, color, antialiasing);		// нижняя горизонталь
+		colpip_line(db, x1, y1, x1, y2, color, antialiasing);		// левая вертикаль
+		colpip_line(db, x2, y1, x2, y2, color, antialiasing);		// правая вертикаль
 	}
 }
 
@@ -3728,447 +3667,6 @@ void display_snapshot_req(void)
 {
 }
 #endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
-
-// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-#if 0
-// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
-static void RAMFUNC colorpip_pixels(
-	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
-	const FLASHMEM uint8_t * __restrict raster,
-	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
-	)
-{
-	uint_fast16_t col;
-	uint_fast16_t w = width;
-
-	for (col = 0; w >= 8; col += 8, w -= 8)
-	{
-		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runpip) [* raster ++];
-		memcpy(tgr + col, pcl, sizeof (* tgr) * 8);
-	}
-	if (w != 0)
-	{
-		const FLASHMEM PACKEDCOLORPIP_T * const pcl = (* byte2runpip) [* raster];
-		memcpy(tgr + col, pcl, sizeof (* tgr) * w);
-	}
-	// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
-	//dcache_clean((uintptr_t) tgr, sizeof (* tgr) * width);
-}
-#endif
-
-// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
-// Фон не трогаем
-static void RAMFUNC ltdcmain_horizontal_pixels_tbg(
-	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
-	const FLASHMEM uint8_t * __restrict raster,
-	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
-	COLORPIP_T fg
-	)
-{
-	uint_fast16_t w = width;
-
-	for (; w >= 8; w -= 8, tgr += 8)
-	{
-		const uint_fast8_t v = * raster ++;
-		if (v & 0x01)	tgr [0] = fg;
-		if (v & 0x02)	tgr [1] = fg;
-		if (v & 0x04)	tgr [2] = fg;
-		if (v & 0x08)	tgr [3] = fg;
-		if (v & 0x10)	tgr [4] = fg;
-		if (v & 0x20)	tgr [5] = fg;
-		if (v & 0x40)	tgr [6] = fg;
-		if (v & 0x80)	tgr [7] = fg;
-	}
-	if (w != 0)
-	{
-		uint_fast8_t vlast = * raster;
-		do
-		{
-			if (vlast & 0x01)
-				* tgr = fg;
-			++ tgr;
-			vlast >>= 1;
-		} while (-- w);
-	}
-}
-
-// функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
-// Фон не трогаем
-// удвоенный по ширине растр
-static void RAMFUNC ltdcmain_horizontal_x2_pixels_tbg(
-	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
-	const FLASHMEM uint8_t * __restrict raster,
-	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
-	COLORPIP_T fg
-	)
-{
-	uint_fast16_t w = width;
-
-	for (; w >= 8; w -= 8, tgr += 16)
-	{
-		const uint_fast8_t v = * raster ++;
-		if (v & 0x01)	{ tgr [ 0] = tgr [ 1] = fg; }
-		if (v & 0x02)	{ tgr [ 2] = tgr [ 3] = fg; }
-		if (v & 0x04)	{ tgr [ 4] = tgr [ 5] = fg; }
-		if (v & 0x08)	{ tgr [ 6] = tgr [ 7] = fg; }
-		if (v & 0x10)	{ tgr [ 8] = tgr [ 9] = fg; }
-		if (v & 0x20)	{ tgr [10] = tgr [11] = fg; }
-		if (v & 0x40)	{ tgr [12] = tgr [13] = fg; }
-		if (v & 0x80)	{ tgr [14] = tgr [15] = fg; }
-	}
-	if (w != 0)
-	{
-		uint_fast8_t vlast = * raster;
-		do
-		{
-			if (vlast & 0x01)
-				tgr [ 0] = tgr [ 1] = fg;
-			tgr += 2;
-			vlast >>= 1;
-		} while (-- w);
-	}
-}
-
-#if 0//SMALLCHARW
-// return new x coordinate
-static uint_fast16_t
-RAMFUNC_NONILINE
-ltdcmain_horizontal_put_char_small(
-	PACKEDCOLORPIP_T * __restrict buffer,
-	uint_fast16_t dx,
-	uint_fast16_t dy,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	char cc
-	)
-{
-	const uint_fast8_t width = SMALLCHARW;
-	const uint_fast8_t c = smallfont_decode(cc);
-	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
-	{
-		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
-		colorpip_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
-	}
-	return x + width;
-}
-#endif /* SMALLCHARW */
-
-#if defined (SMALLCHARW)
-// возвращаем на сколько пикселей вправо занимет отрисованный символ
-// Фон не трогаем
-// return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	char cc,
-	COLOR565_T fg
-	)
-{
-	const uint_fast8_t width = SMALLCHARW;
-	const uint_fast8_t c = smallfont_decode(cc);
-	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
-	{
-		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
-		ltdcmain_horizontal_pixels_tbg(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
-	}
-	return x + width;
-}
-
-// возвращаем на сколько пикселей вправо занимет отрисованный символ
-// Фон не трогаем
-// return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE colorpip_x2_put_char_small_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	char cc,
-	COLOR565_T fg
-	)
-{
-	const uint_fast8_t width = SMALLCHARW;
-	const uint_fast8_t c = smallfont_decode(cc);
-	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
-	{
-		PACKEDCOLORPIP_T * const tgr0 = colpip_mem_at(db, x, y + cgrow * 2 + 0);
-		ltdcmain_horizontal_x2_pixels_tbg(tgr0, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
-		PACKEDCOLORPIP_T * const tgr1 = colpip_mem_at(db, x, y + cgrow * 2 + 1);
-		ltdcmain_horizontal_x2_pixels_tbg(tgr1, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
-	}
-	return x + width * 2;
-}
-
-uint_fast16_t display_put_char_small_xy(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char c, COLOR565_T fg)
-{
-	return colorpip_put_char_small_tbg(db, x, y, c, fg);
-}
-#endif /* defined (SMALLCHARW) */
-
-#if SMALLCHARW2
-// возвращаем на сколько пикселей вправо занимет отрисованный символ
-// Фон не трогаем
-// return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small2_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	char cc,
-	COLORPIP_T fg
-	)
-{
-	const uint_fast8_t width = SMALLCHARW2;
-	const uint_fast8_t c = smallfont_decode(cc);
-	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < SMALLCHARH2; ++ cgrow)
-	{
-		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
-		ltdcmain_horizontal_pixels_tbg(tgr, S1D13781_smallfont2_LTDC [c] [cgrow], width, fg);
-	}
-	return x + width;
-}
-#endif /* SMALLCHARW2 */
-
-#if SMALLCHARW3
-// возвращаем на сколько пикселей вправо занимет отрисованный символ
-// Фон не трогаем
-// return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small3_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	char cc,
-	COLORPIP_T fg
-	)
-{
-	const uint_fast8_t width = SMALLCHARW3;
-	const uint_fast8_t c = smallfont_decode(cc);
-	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
-	{
-		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
-		ltdcmain_horizontal_pixels_tbg(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width, fg);
-	}
-	return x + width;
-}
-#endif /* SMALLCHARW3 */
-
-
-
-#if defined (SMALLCHARW)
-
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void
-colpip_string_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLORPIP_T fg		// цвет вывода текста
-	)
-{
-	char c;
-
-	ASSERT(s != NULL);
-	while ((c = * s ++) != '\0')
-	{
-		x = colorpip_put_char_small_tbg(db, x, y, c, fg);
-	}
-}
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void
-colpip_string_x2_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLORPIP_T fg		// цвет вывода текста
-	)
-{
-	char c;
-
-	ASSERT(s != NULL);
-	while ((c = * s ++) != '\0')
-	{
-		x = colorpip_x2_put_char_small_tbg(db, x, y, c, fg);
-	}
-}
-
-// Используется при выводе на графический индикатор,
-// с поворотом
-void
-colpip_string_x2ra90_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLORPIP_T fg,		// цвет вывода текста
-	COLORPIP_T bg		// цвет фона
-	)
-{
-	char c;
-	enum { TDX = SMALLCHARW * 2, TDY = SMALLCHARH * 2 };
-	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T scratch [GXSIZE(TDX, TDY)] ALIGNX_END;
-	gxdrawb_t sdbv;
-	gxdrawb_initialize(& sdbv, scratch, TDX, TDY);
-
-	ASSERT(s != NULL);
-	while ((c = * s ++) != '\0')
-	{
-		colpip_fillrect(& sdbv, 0, 0, TDX, TDY, bg);
-		colorpip_x2_put_char_small_tbg(& sdbv, 0, 0, c, fg);
-		hwaccel_ra90(db, x, y, & sdbv);
-		y += TDX;
-	}
-}
-
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void
-colpip_text(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T fg,		// цвет вывода текста
-	const char * s,		// строка для вывода
-	size_t len			// количество символов
-	)
-{
-	ASSERT(s != NULL);
-	while (len --)
-	{
-		const char c = * s ++;
-		x = colorpip_put_char_small_tbg(db, x, y, c, fg);
-	}
-}
-// Используется при выводе на графический индикатор,
-void
-colpip_text_x2(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T fg,		// цвет вывода текста
-	const char * s,		// строка для вывода
-	size_t len			// количество символов
-	)
-{
-	ASSERT(s != NULL);
-	while (len --)
-	{
-		const char c = * s ++;
-		x = colorpip_x2_put_char_small_tbg(db, x, y, c, fg);
-	}
-}
-
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void
-colpip_string_x2ra90_count(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T fg,		// цвет вывода текста
-	COLORPIP_T bg,		// цвет вывода текста
-	const char * s,		// строка для вывода
-	size_t len			// количество символов
-	)
-{
-	enum { TDX = SMALLCHARW * 2, TDY = SMALLCHARH * 2 };
-	static RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORPIP_T scratch [GXSIZE(TDX, TDY)] ALIGNX_END;
-	gxdrawb_t sdbv;
-	gxdrawb_initialize(& sdbv, scratch, TDX, TDY);
-	ASSERT(s != NULL);
-	while (len --)
-	{
-		const char c = * s ++;
-		colpip_fillrect(& sdbv, 0, 0, TDX, TDY, bg);
-		colorpip_x2_put_char_small_tbg(& sdbv, 0, 0, c, fg);
-		hwaccel_ra90(db, x, y, & sdbv);
-		y += TDX;
-	}
-}
-#endif /* defined (SMALLCHARW) */
-
-#if defined (SMALLCHARW2)
-
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void
-colpip_string2_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLORPIP_T fg		// цвет вывода текста
-	)
-{
-	char c;
-	ASSERT(s != NULL);
-	while ((c = * s ++) != '\0')
-	{
-		x = colorpip_put_char_small2_tbg(db, x, y, c, fg);
-	}
-}
-
-// Возвращает ширину строки в пикселях
-uint_fast16_t strwidth2(
-	const char * s
-	)
-{
-	ASSERT(s != NULL);
-	return SMALLCHARW2 * strlen(s);
-}
-
-#endif /* defined (SMALLCHARW2) */
-
-#if defined (SMALLCHARW3)
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void
-colpip_string3_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLORPIP_T fg		// цвет вывода текста
-	)
-{
-	char c;
-
-	ASSERT(s != NULL);
-	while ((c = * s ++) != '\0')
-	{
-		x = colorpip_put_char_small3_tbg(db, x, y, c, fg);
-	}
-}
-
-// Возвращает ширину строки в пикселях
-uint_fast16_t strwidth3(
-	const char * s
-	)
-{
-	ASSERT(s != NULL);
-	return SMALLCHARW3 * strlen(s);
-}
-
-#endif /* defined (SMALLCHARW3) */
-
-
-#if defined (SMALLCHARW) && defined (SMALLCHARH)
-// Возвращает ширину строки в пикселях
-uint_fast16_t strwidth(
-	const char * s
-	)
-{
-	ASSERT(s != NULL);
-	return SMALLCHARW * strlen(s);
-}
-
-#endif /* defined (SMALLCHARW) && defined (SMALLCHARH) */
 
 // скоприовать прямоугольник без изменения размера
 void colpip_bitblt(
@@ -4253,67 +3751,6 @@ void colpip_bitblt_ra90(
 }
 
 
-#if SMALLCHARH3
-
-static uint_fast16_t
-RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
-	const gxdrawb_t * db,
-	uint_fast16_t x, uint_fast16_t y,
-	char cc
-	)
-{
-	const uint_fast8_t ci = smallfont_decode(cc);
-	ltdc_put_char_unified(S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0], db, x, y, ci, SMALLCHARW3);
-	return x + SMALLCHARW3;
-//	const uint_fast8_t width = SMALLCHARW3;
-//	const uint_fast8_t c = smallfont_decode(cc);
-//	uint_fast8_t cgrow;
-//	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
-//	{
-//		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
-//		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
-//	}
-//	return x + width;
-}
-
-static void
-display_string3(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char * s, uint_fast8_t lowhalf)
-{
-	char c;
-//	ltdc_secondoffs = 0;
-//	ltdc_h = SMALLCHARH3;
-	while ((c = * s ++) != '\0')
-		x = ltdc_horizontal_put_char_small3(db, x, y, c);
-}
-
-void
-colpip_string3_at_xy(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	const char * __restrict s
-	)
-{
-	char c;
-//	ltdc_secondoffs = 0;
-//	ltdc_h = SMALLCHARH3;
-	while ((c = * s ++) != '\0')
-		x = ltdc_horizontal_put_char_small3(db, x, y, c);
-}
-
-void
-display_string3_at_xy(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char * __restrict s, COLORPIP_T fg, COLORPIP_T bg)
-{
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-	colmain_setcolors(fg, bg);
-	do
-	{
-		display_string3(db, x, y + lowhalf, s, lowhalf);
-	} while (lowhalf --);
-}
-
-#endif /* SMALLCHARH3 */
-
 
 #if LCDMODE_COLORED
 
@@ -4382,7 +3819,7 @@ COLORPIP_T getshadedcolor(
 
 	return dot |= COLORPIP_SHADED;
 
-#elif LCDMODE_MAIN_RGB565
+#elif LCDMODE_RGB565
 
 	if (dot == COLORPIP_BLACK)
 	{
@@ -4399,7 +3836,7 @@ COLORPIP_T getshadedcolor(
 		return TFTRGB((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
 
-#elif LCDMODE_MAIN_ARGB8888 && CPUSTYLE_XC7Z && ! WITHTFT_OVER_LVDS
+#elif LCDMODE_ARGB8888 && CPUSTYLE_XC7Z && ! WITHTFT_OVER_LVDS
 
 	if (dot == COLORPIP_BLACK)
 	{
@@ -4417,7 +3854,7 @@ COLORPIP_T getshadedcolor(
 	}
 
 
-#elif LCDMODE_MAIN_ARGB8888
+#elif LCDMODE_ARGB8888
 
 	if (dot == COLORPIP_BLACK)
 	{
@@ -4723,7 +4160,7 @@ void gpu_fillrect(
 		* buffer = TFTALPHA(alpha, color24);
 		return;
 	}
-	//t113_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color);
+	//hwaccel_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, FILL_FLAG_NONE);
 	int32_t triangle0 [3] [2] = { { 0, 0 }, { 0, h - 1}, { w - 1, 0 } };
 	int32_t triangle1 [3] [2] = { { w - 1, h - 1 }, { 0, h - 1}, { w - 1, 0 } };
 }

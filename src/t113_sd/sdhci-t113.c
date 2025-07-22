@@ -156,7 +156,6 @@ enum {
 #define SDXC_CARD_INSERT			(UINT32_C(1) << 30)
 #define SDXC_CARD_REMOVE			(UINT32_C(1) << 31)
 
-//#define SDXC_INTERRUPT_ERROR_BIT    (SDXC_RESP_ERROR | SDXC_RESP_CRC_ERROR | 0*SDXC_DATA_CRC_ERROR | SDXC_RESP_TIMEOUT | SDXC_DATA_TIMEOUT | SDXC_FIFO_RUN_ERROR | SDXC_HARD_WARE_LOCKED | SDXC_START_BIT_ERROR | 0*SDXC_END_BIT_ERROR)
 #define SDXC_INTERRUPT_ERROR_BIT	(SDXC_RESP_ERROR | SDXC_RESP_CRC_ERROR | SDXC_DATA_CRC_ERROR | SDXC_RESP_TIMEOUT | SDXC_DATA_TIMEOUT | SDXC_FIFO_RUN_ERROR | SDXC_HARD_WARE_LOCKED | SDXC_START_BIT_ERROR | SDXC_END_BIT_ERROR)
 
 #define SDXC_INTERRUPT_DONE_BIT		(SDXC_AUTO_COMMAND_DONE | SDXC_DATA_OVER | SDXC_COMMAND_DONE | SDXC_VOLTAGE_CHANGE_DONE)
@@ -500,11 +499,11 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 //	uint32_t ratio = udiv32( clk_get_rate(pdat->pclk) + 2 * clock - 1, (2 * clock));
 	uint32_t ratio;
 
-	if (sdhci->instance == SMHC2)
-	{
-		if (clock > 1000000)
-			clock = 1000000;
-	}
+//	if (sdhci->instance == SMHC2)
+//	{
+//		if (clock > 1000000)
+//			clock = 1000000;
+//	}
 
     ratio = SMHCHARD_FREQ / (4 * clock);	// Измерения частоты сигнала CLK показали, что деление на 4 а не на 2
 

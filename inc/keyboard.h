@@ -18,7 +18,7 @@ extern "C" {
 
 enum
 {
-	KBD_CODE_SPLIT = 0, 
+	KBD_CODE_SPLIT = 128, 	// lvgl lv_key_t использует коды до 127
 	KBD_CODE_SPLIT_HOLDED,
 	KBD_CODE_A_EX_B,		// A/B symbol on key
 	KBD_CODE_A_EQ_B,		// A=B symbol on key

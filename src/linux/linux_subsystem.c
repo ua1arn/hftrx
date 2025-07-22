@@ -36,6 +36,7 @@
 #include <dirent.h>
 #include "lvgl/lvgl.h"
 #include "pcie_dev.h"
+#include "common.h"
 
 void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
 void linux_cancel_thread(pthread_t tid);
@@ -217,7 +218,6 @@ void as_tx(uint32_t * buf)
 		stop = 0;
 		as_state = AS_READY;
 		hamradio_set_moxmode(0);
-		gui_update();
 	}
 
 	pthread_mutex_unlock(& mutex_as);
@@ -891,13 +891,12 @@ void prog_spi_exchange(
 
 /*************************************************************/
 
-#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
 
 void * iq_rx_blkmem;
 volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_rx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
 volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0;
 volatile static uint8_t fir_load_rst = 0, iq_test = 0, wnb_state = 0, resetn_stream = 0;
-const uint8_t rx_cic_shift_min = 32, rx_cic_shift_max = 64, rx_fir_shift_min = 32, rx_fir_shift_max = 56, tx_shift_min = 16, tx_shift_max = 32;
 int fd_int = 0;
 
 uint8_t rxbuf[SIZERX8] = { 0 };
@@ -911,7 +910,7 @@ void update_modem_ctrl(void)
 			| (!! wnb_state << wnb_pos)							| (!! resetn_stream << stream_reset_pos)
 			| (!! fir_load_rst << fir_load_reset_pos)			| 0;
 
-#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	* modem_ctrl = v;
 #elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_write_user(AXI_LITE_MODEM_CONTROL, v);
@@ -924,7 +923,7 @@ void fir_load_reset(uint8_t val)
 	update_modem_ctrl();
 }
 
-void xcz_resetn_modem(uint8_t val)
+void modem_reset(uint8_t val)
 {
 	resetn_modem = val != 0;
 	update_modem_ctrl();
@@ -935,7 +934,7 @@ void xcz_dds_rts(const uint_least64_t * val)
 	uint32_t v = * val;
     mirror_ncorts = v;
 
-#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	* rts = v;
 #elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_write_user(AXI_LITE_DDS_RTS, v);
@@ -947,7 +946,7 @@ void xcz_dds_ftw(const uint_least64_t * val)
 	uint32_t v = * val;
     mirror_nco1 = v;
 
-#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
     * ftw = v;
 #elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
     xdma_write_user(AXI_LITE_DDS_FTW, v);
@@ -959,7 +958,7 @@ void xcz_dds_ftw_sub(const uint_least64_t * val)
 	uint32_t v = * val;
 	mirror_nco2 = v;
 
-#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL && WITHUSEDUALWATCH
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL) && WITHUSEDUALWATCH
 	* ftw_sub = v;
 #elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA) && WITHUSEDUALWATCH
 	xdma_write_user(AXI_LITE_DDS_FTW_SUB, v);
@@ -1002,9 +1001,11 @@ uint8_t iq_shift_tx(uint8_t val)
 	return tx_shift;
 }
 
-uint8_t wnb_state_switch(void)
+uint8_t wnb_state_switch(uint8_t v)
 {
-	wnb_state = wnb_state ? 0 : 1;
+	if (v)
+		wnb_state = wnb_state ? 0 : 1;
+
 	update_modem_ctrl();
 
 	return wnb_state;
@@ -1034,7 +1035,7 @@ static uint32_t threshold = 30;
 
 static void wnb_update(void)
 {
-#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	reg_write(XPAR_IQ_MODEM_WNB_CONFIG, threshold);
 #elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_write_user(AXI_LITE_WNB_CONFIG, threshold);
@@ -1048,6 +1049,13 @@ void wnb_set_threshold(uint16_t v)
 		threshold = v;
 		wnb_update();
 	}
+}
+
+void wnb_get_limits(uint16_t * min, uint16_t * max)
+{
+	ASSERT(min || max);
+	* min = threshold_min;
+	* max = threshold_max;
 }
 
 uint16_t wnb_get_threshold(void)
@@ -1082,13 +1090,13 @@ enum {
 	STREAM_RATE_768K = REFERENCE_FREQ / 768000 / 2,
 };
 
-#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 volatile uint32_t * stream_rate, * stream_data, * stream_pos;
 #endif /* DDS1_TYPE == DDS_TYPE_ZYNQ_PL */
 
 void set_stream_rate(uint32_t v)
 {
-#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	* stream_rate = v;
 #elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_write_user(AXI_LITE_STREAM_RATE, v);
@@ -1097,7 +1105,7 @@ void set_stream_rate(uint32_t v)
 
 uint32_t get_stream_pos(void)
 {
-#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	return * stream_pos;
 #elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	return xdma_read_user(AXI_LITE_STREAM_POS);
@@ -1106,7 +1114,7 @@ uint32_t get_stream_pos(void)
 
 void stream_receive(uint8_t * buf, uint16_t offset)
 {
-#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	memcpy(buf, (uint8_t *) stream_data + offset, 4096);
 #elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_c2h_transfer(AXI_IQ_STREAM_BRAM + offset, 4096, buf);
@@ -1581,7 +1589,7 @@ static void iq_proccessing(uint8_t * buf, uint32_t len)
 
 void linux_iq_init(void)
 {
-#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	ftw = 			(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_AXI_DDS_FTW_BASEADDR);
 	ftw_sub = 		(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_AXI_DDS_FTW_SUB_BASEADDR);
 	rts = 			(uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_AXI_DDS_RTS_BASEADDR);
@@ -1599,7 +1607,7 @@ void linux_iq_init(void)
 		perror("pcie init");
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 #if WITHEXTIO_LAN
-#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	stream_rate = (uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_STREAM_RATE);
 	stream_pos = (uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_STREAM_COUNT);
 	stream_data = (uint32_t *) get_blockmem_ptr(XPAR_IQ_MODEM_STREAM_DATA, 2);
@@ -1632,9 +1640,9 @@ pthread_t xdma_t;
 
 void xdma_iq_event_handler(void)
 {
-#if WITHAD936XIIO
+#if WITHAD936XIIO || WITHAD936XDEV
 	if (get_ad936x_stream_status()) return;
-#endif /* WITHAD936XIIO */
+#endif /* WITHAD936XIIO || WITHAD936XDEV */
 
 	uint16_t position = xdma_read_user(AXI_LITE_IQ_RX_BRAM_CNT);
 	uint16_t offset = position >= DMABUFFSIZE32RX ? 0 : SIZERX8;
@@ -1648,7 +1656,7 @@ void xdma_iq_event_handler(void)
 	uint32_t * t = (uint32_t *) addr32tx;
 
 	for (uint16_t i = 0; i < DMABUFFSIZE32TX / 2; i ++)				// 16 bit
-		xdma_write_user(AXI_LITE_IQ_FX_FIFO, t[i]);
+		xdma_write_user(AXI_LITE_IQ_TX_FIFO, t[i]);
 
 	release_dmabuffer32tx(addr32tx);
 
@@ -1746,6 +1754,9 @@ irq_channel_t channels[] = {
 #if defined (LINUX_XDMA_UART_FILE)
 		{ LINUX_XDMA_UART_FILE, uartlite_event_handler, -1 },
 #endif /* defined (LINUX_XDMA_UART_FILE) */
+#if defined (LINUX_AD936X_INT_FILE)
+		{ LINUX_AD936X_INT_FILE, ad936xdev_int_handler, -1 },
+#endif /* defined (LINUX_XDMA_IQ_EVENT_FILE) */
 };
 
 #define NUM_CHANNELS (sizeof(channels) / sizeof(channels[0]))
@@ -1817,11 +1828,11 @@ void xdma_iq_init(void)
 	if(pcie_status < 0)
 		return;
 
-	xcz_resetn_modem(0);
+	modem_reset(0);
+	usleep(100);
+	modem_reset(1);
 
 	linux_create_thread(& xdma_t, xdma_event_thread, 95, iq_thread_core);
-
-	xcz_resetn_modem(1);
 	linux_init_cond(& ct_iq);
 }
 
@@ -1833,7 +1844,7 @@ void xdma_close(void)
 
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 
-#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 
 void linux_iq_thread(void)
 {
@@ -1960,7 +1971,7 @@ void * audio_interrupt_thread(void * args)
 
 void zynq_pl_init(void)
 {
-	xcz_resetn_modem(0);
+	modem_reset(0);
 
 #if WITHAUDIOSAMPLESREC
 	pthread_mutex_init(& mutex_as, NULL);
@@ -1989,7 +2000,7 @@ void zynq_pl_init(void)
 	}
 #endif /* WITHCPUFANPWM */
 
-	xcz_resetn_modem(1);
+	modem_reset(1);
 
 	linux_init_cond(& ct_iq);
 }
@@ -2135,9 +2146,6 @@ void linux_cancel_thread(pthread_t tid)
 static void handle_sig(int sig)
 {
 	printf("Waiting for process to finish... Got signal %d\n", sig);
-#if WITHAD936XIIO
-	iio_stop_stream();
-#endif /* WITHAD936XIIO */
 	linux_exit();
 }
 
@@ -2204,9 +2212,9 @@ void linux_subsystem_init(void)
 #if WITHSPIDEV
 	spidev_init();
 #endif /* WITHSPIDEV */
-#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
 	linux_iq_init();
-#endif /* (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA) */
+#endif /* defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA) */
 #if WITHIQSHIFT
 	iq_shift_cic_rx(CALIBRATION_IQ_CIC_RX_SHIFT);
 	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
@@ -2218,9 +2226,11 @@ void linux_user_init(void)
 {
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, spool_thread_core);
 
-#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
+	evdev_initialize();
+
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	zynq_pl_init();
-#elif (DDS1_TYPE == DDS_TYPE_XDMA)
+#elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_iq_init();
 #if defined(AXI_LITE_UARTLITE)
 	uartlite_reset();
@@ -2228,15 +2238,18 @@ void linux_user_init(void)
 #if defined(HARDWARE_NMEA_INITIALIZE) && WITHNMEA
 	HARDWARE_NMEA_INITIALIZE();
 #endif /* defined(HARDWARE_NMEA_INITIALIZE()) && WITHNMEA*/
-#endif /* (DDS1_TYPE == DDS_TYPE_XDMA) */
+#endif /* defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA) */
 #if WITHNMEA && WITHLFM && CPUSTYLE_XC7Z
 	linux_create_thread(& nmea_t, linux_nmea_spool, 50, nmea_thread_core);
 	linux_create_thread(& pps_t, linux_pps_thread, 90, nmea_thread_core);
 #endif /* WITHNMEA && WITHLFM && CPUSTYLE_XC7Z*/
-#if WITHLVGL
-	//lvgl_test();
-#endif /* WITHLVGL */
-	evdev_initialize();
+#if WITHLVGL && 1
+	lvgl_gui_init(lv_screen_active());
+#endif
+#if WITHAD936XDEV
+	if (pcie_status)
+		ad936xdev_init();
+#endif /* WITHAD936XDEV */
 }
 
 /****************************************************************/
@@ -2566,7 +2579,7 @@ void get_mouse_events(uint_fast16_t * xr, uint_fast16_t * yr)
 
 #endif /* MOUSE_EVDEV */
 
-#if (TSC1_TYPE == TSC_TYPE_EVDEV) && ! WITHLVGL
+#if (TSC1_TYPE == TSC_TYPE_EVDEV)
 
 int evdev_touch_fd = -1;
 
@@ -2697,12 +2710,18 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 
 void linux_exit(void)
 {
+#if WITHAD936XIIO
+	iio_stop_stream();
+#endif /* WITHAD936XIIO */
+#if WITHAD936XDEV
+	ad936xdev_off();
+#endif /* WITHAD936XDEV */
 #if WITHFBDEV && ! WITHLVGL
 	framebuffer_close();
 #elif WITHSDL2VIDEO && ! WITHLVGL
 	sdl2_render_close();
 #endif /* WITHFBDEV && ! WITHLVGL */
-
+	modem_reset(0);
 #if 0
 	linux_cancel_thread(timer_spool_t);
 	linux_cancel_thread(iq_interrupt_t);
@@ -2732,14 +2751,15 @@ void linux_exit(void)
 	munmap((void *) fir_reload, sysconf(_SC_PAGESIZE));
 #endif /* WITHDSPEXTFIR */
 #endif
-
 #if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_close();
 #endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA) */
-
 #if defined(CODEC1_TYPE) && CODEC1_TYPE == CODEC_TYPE_ALSA
 	alsa_close();
 #endif /* CODEC1_TYPE == CODEC_TYPE_ALSA */
+#if WITHLVGL
+	lv_deinit();
+#endif /* WITHLVGL */
 
 	unlink(PIDFILE);
 	exit(EXIT_SUCCESS);
@@ -2778,7 +2798,7 @@ void iq_stream_stop(void)
 {
 #if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	linux_cancel_thread(xdma_t);
-#elif DDS1_TYPE == DDS_TYPE_ZYNQ_PL
+#elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	linux_cancel_thread(iq_interrupt_t);
 #endif
 }

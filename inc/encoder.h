@@ -28,13 +28,11 @@ extern "C" {
 typedef struct encoder_tag
 {
 	int_least16_t position;	// обновляется по прерыванию
-	int_least16_t backup_position;	// остаток после деления разрашения
 	uint8_t old_val;
 	uint_fast8_t (* getpins)(void);
 	IRQLSPINLOCK_t enclock;
 	/* locked by encspeedlock */
 	int_least16_t rotate;
-	int_least16_t backup_rotate;	// остаток после деления разрашения
 
 	/* перенесено из глобальной области видимости */
 	IRQLSPINLOCK_t encspeedlock;
@@ -46,43 +44,26 @@ typedef struct encoder_tag
 
 void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void));
 
-int_least16_t
-encoder_get_delta(
-	encoder_t * e,
-	const uint_fast8_t derate
-	);
-int_least16_t
-encoder_get_snapshotproportional(
-	encoder_t * e,
-	unsigned * speed,
-	const uint_fast8_t derate
-	);
+int_least16_t encoder_get_delta(encoder_t * e);
+void encoder_pushback(encoder_t * const e, int outsteps);
 
 int_least16_t
-getRotateHiRes(
+encoder_getrotatehires(
 	encoder_t * const e,
-	uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
-	uint_fast8_t hiresdiv
+	uint_fast8_t * jumpsize	/* jumpsize - во сколько раз увеличивается скорость перестройки */
 	);
-
-int_least16_t getRotateHiRes_FN(
-		uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
-		uint_fast8_t derateFN
-		);	/* получение накопленных значений прерываний от валкодера. накопитель сбрасывается */
 
 void encoders_clear(void);	/* накопитель сбрасывается */
 
-int_least16_t getRotateLoRes_A(uint_fast8_t derate); /* получение "редуцированного" количества прерываний от валкодера #1. */
-int_least16_t getRotateLoRes_B(uint_fast8_t derate); /* получение "редуцированного" количества прерываний от валкодера #2. */
-
 void encoders_initialize(void);
-void encoderA_pushback(int outsteps, uint_fast8_t hiresdiv);
+
 void encoder_kbdctl(
 	uint_fast8_t code, 		// код клавиши
 	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор
 	);
 
-void encoderA_set_resolution(uint_fast8_t resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.
+void encoder_set_resolution(encoder_t * e, uint_fast8_t resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.
+unsigned encoder_get_actualresolution(encoder_t * e);	// возвращает количество инкрементов на оборот
 
 #define ENCODER_NORMALIZED_RESOLUTION (1440)	// виртуальных импульсов за оборот в секунду - нормализованная скорость
 //#define ENCODER_NORMALIZED_RESOLUTION (144)	// виртуальных импульсов за оборот в секунду - нормализованная скорость

@@ -450,101 +450,125 @@
 		} while (0)
 
 	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния RTS
-	#define HARDWARE_CAT_GET_RTS() (board_get_catmux() == BOARD_CATMUX_USB ? usbd_cdc1_getrts() : 0)
+	#define HARDWARE_CAT_GET_RTS() (board_get_catmux() == BOARD_CATMUX_USBCDC ? usbd_cdc1_getrts() : 0)
 	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния DTR
-	#define HARDWARE_CAT_GET_DTR() (board_get_catmux() == BOARD_CATMUX_USB ? usbd_cdc1_getdtr() : 0)
+	#define HARDWARE_CAT_GET_DTR() (board_get_catmux() == BOARD_CATMUX_USBCDC ? usbd_cdc1_getdtr() : 0)
 	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния RTS
-	#define HARDWARE_CAT2_GET_RTS() (board_get_catmux() == BOARD_CATMUX_USB ? usbd_cdc2_getrts() : 0)
+	#define HARDWARE_CAT2_GET_RTS() (board_get_catmux() == BOARD_CATMUX_USBCDC ? usbd_cdc2_getrts() : 0)
 	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния DTR
-	#define HARDWARE_CAT2_GET_DTR() (board_get_catmux() == BOARD_CATMUX_USB ? usbd_cdc2_getdtr() : 0)
+	#define HARDWARE_CAT2_GET_DTR() (board_get_catmux() == BOARD_CATMUX_USBCDC ? usbd_cdc2_getdtr() : 0)
 
 	// вызывается из обработчика прерываний UART5
 	// с принятым символом
 	#define HARDWARE_UART5_ONRXCHAR(c) do { \
-			if (board_get_catmux() == BOARD_CATMUX_USB) { \
-				hardware_uart5_enablerx(0); \
-			} else { \
-				cat2_parsechar(c); \
-			} \
-		} while (0)
+		if (board_get_catmux() == BOARD_CATMUX_DIN8) { \
+			cat2_parsechar(c); \
+		} else { \
+			hardware_uart5_enablerx(0); \
+		} \
+	} while (0)
 	// вызывается из обработчика прерываний UART5
 	#define HARDWARE_UART5_ONOVERFLOW() do { \
-		if (board_get_catmux() == BOARD_CATMUX_USB) \
-			hardware_uart5_enablerx(0); \
-		else \
+		if (board_get_catmux() == BOARD_CATMUX_DIN8) { \
 			cat2_rxoverflow(); \
-		} while (0)
+		} else { \
+			hardware_uart5_enablerx(0); \
+		} \
+	} while (0)
 	// вызывается из обработчика прерываний UART5
 	// по готовности передатчика
 	#define HARDWARE_UART5_ONTXCHAR(ctx) do { \
-		if (board_get_catmux() == BOARD_CATMUX_USB) { \
-			hardware_uart5_enabletx(0); \
-		} else { \
+		if (board_get_catmux() == BOARD_CATMUX_DIN8) { \
 			cat2_sendchar(ctx); \
+		} else { \
+			hardware_uart5_enabletx(0); \
 		} \
 	} while (0)
 	// вызывается из обработчика прерываний UART5
 	// по окончании передачи (сдвиговый регистр передатчика пуст)
 	#define HARDWARE_UART5_ONTXDONE(ctx) do { \
-		if (board_get_catmux() == BOARD_CATMUX_USB) \
-			; \
-		else \
+		if (board_get_catmux() == BOARD_CATMUX_DIN8) { \
 			cat2_txdone(ctx); \
+		} \
 	} while (0)
 	////////////////////////////////////
 	// CAT функции работают через виртуальный USB последовательный порт
 	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
 	// для управления разрешением последующих вызовов прерывания
 	#define HARDWARE_CAT_ENABLETX(v) do { \
-			if (board_get_catmux() == BOARD_CATMUX_USB) { \
-				hardware_uart5_enabletx(0); \
-				usbd_cdc_enabletx(v); \
-			} else { \
-				usbd_cdc_enabletx(0); \
-				hardware_uart5_enabletx(v); \
-			} \
-		} while (0)
+		if (board_get_catmux() == BOARD_CATMUX_USBCDC) { \
+			hardware_uart5_enabletx(0); \
+			usbd_cdc_enabletx(v); \
+		} else if (board_get_catmux() == BOARD_CATMUX_BTSPP) { \
+			hardware_uart5_enabletx(0); \
+			btspp_enabletx(v); \
+		} else { \
+			usbd_cdc_enabletx(0); \
+			hardware_uart5_enabletx(v); \
+		} \
+	} while (0)
 	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
 	// для управления разрешением последующих вызовов прерывания
 	#define HARDWARE_CAT_ENABLERX(v) do { \
-			if (board_get_catmux() == BOARD_CATMUX_USB) { \
-				hardware_uart5_enablerx(0); \
-				usbd_cdc_enablerx(v); \
-			} else { \
-				usbd_cdc_enablerx(0); \
-				hardware_uart5_enablerx(v); \
-			} \
-		} while (0)
+		usbd_cdc_enablerx(v); \
+		btspp_enablerx(v); \
+		hardware_uart5_enablerx(v); \
+	} while (0)
 	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
 	// для передачи символа
 	#define HARDWARE_CAT_TX(ctx, c) do { \
-			if (board_get_catmux() == BOARD_CATMUX_USB) { \
-				usbd_cdc_tx((ctx), (c)); \
-				hardware_uart5_enabletx(0); \
-			} else { \
-				usbd_cdc_enabletx(0); \
-				hardware_uart5_tx((ctx), (c)); \
-			} \
-		} while (0)
+		if (board_get_catmux() == BOARD_CATMUX_USBCDC) { \
+			usbd_cdc_tx((ctx), (c)); \
+			hardware_uart5_enabletx(0); \
+		} else if (board_get_catmux() == BOARD_CATMUX_BTSPP) { \
+			btspp_tx((ctx), (c)); \
+			hardware_uart5_enabletx(0); \
+		} else { \
+			usbd_cdc_enabletx(0); \
+			hardware_uart5_tx((ctx), (c)); \
+		} \
+	} while (0)
 
 	// вызывается из обработчика прерываний CDC
 	// с принятым символом
 	#define HARDWARE_CDC_ONRXCHAR(offset, c) do { \
-		if (board_get_catmux() == BOARD_CATMUX_USB) \
+		if (board_get_catmux() == BOARD_CATMUX_USBCDC) \
 			cat2_parsechar(c); \
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// произошёл разрыв связи при работе по USB CDC
 	#define HARDWARE_CDC_ONDISCONNECT() do { \
-		if (board_get_catmux() == BOARD_CATMUX_USB) \
+		if (board_get_catmux() == BOARD_CATMUX_USBCDC) \
 			cat2_disconnect(); \
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// по готовности передатчика
 	#define HARDWARE_CDC_ONTXCHAR(offset, ctx) do { \
-		if (board_get_catmux() == BOARD_CATMUX_USB) \
+		if (board_get_catmux() == BOARD_CATMUX_USBCDC) \
 			cat2_sendchar(ctx); \
 		} while (0)
+
+	////////////////////////////////////
+
+	// вызывается из обработчика прерываний BTSPP
+	// с принятым символом
+	#define HARDWARE_BTSPP_ONRXCHAR(offset, c) do { \
+		if (board_get_catmux() == BOARD_CATMUX_BTSPP) \
+			cat2_parsechar(c); \
+		} while (0)
+	// вызывается из обработчика прерываний BTSPP
+	// произошёл разрыв связи при работе по USB BTSPP
+	#define HARDWARE_BTSPP_ONDISCONNECT() do { \
+		if (board_get_catmux() == BOARD_CATMUX_BTSPP) \
+			cat2_disconnect(); \
+		} while (0)
+	// вызывается из обработчика прерываний BTSPP
+	// по готовности передатчика
+	#define HARDWARE_BTSPP_ONTXCHAR(offset, ctx) do { \
+		if (board_get_catmux() == BOARD_CATMUX_BTSPP) \
+			cat2_sendchar(ctx); \
+		} while (0)
+
 	////////////////////////////////////
 	/* манипуляция от виртуального CDC порта */
 	#define FROMCAT_DTR_INITIALIZE() do { \
@@ -689,21 +713,23 @@
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC2_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
 	#define SMHCHARD_FREQ (allwnr_t507_get_smhc2_freq())
 	#define WITHSDHCHW8BIT	1	/* Hardware SD HOST CONTROLLER в 8-bit bus width */
-	#define WITHSDHCHW1P8V	1	/* 1.8 volt interface */
+	#define WITHSDHCHW1P8V	1	/* 1.8 volt interface - ALDO1 powered VCC-PC */
 
 	#define HARDWARE_SDIO_INITIALIZE() do { \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 6, GPIO_CFG_AF3);	/* PC6 - SDC2_CMD	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF3);	/* PC5 - SDC2_CLK	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF3);	/* PC10 - SDC2_D0	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF3);	/* PC13 - SDC2_D1	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF3);	/* PC15 - SDC2_D2	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF3);	/* PC8 - SDC2_D3	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF3);	/* PC9 - SDC2_D4	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF3);	/* PC11 - SDC2_D5	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF3);	/* PC14 - SDC2_D6	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 16, GPIO_CFG_AF3);	/* PC16 - SDC2_D7	*/ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF3); /* PC0 - SDC2_DS */ \
-		arm_hardware_pioc_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF3); /* PC1 - SDC2_RST */ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 6, GPIO_CFG_AF3);	/* PC6 - SDC2_CMD	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 5, GPIO_CFG_AF3);	/* PC5 - SDC2_CLK	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 10, GPIO_CFG_AF3);	/* PC10 - SDC2_D0	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 13, GPIO_CFG_AF3);	/* PC13 - SDC2_D1	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 15, GPIO_CFG_AF3);	/* PC15 - SDC2_D2	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 8, GPIO_CFG_AF3);	/* PC8 - SDC2_D3	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 9, GPIO_CFG_AF3);	/* PC9 - SDC2_D4	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 11, GPIO_CFG_AF3);	/* PC11 - SDC2_D5	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 14, GPIO_CFG_AF3);	/* PC14 - SDC2_D6	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 16, GPIO_CFG_AF3);	/* PC16 - SDC2_D7	*/ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 0, GPIO_CFG_AF3); /* PC0 - SDC2_DS */ \
+		arm_hardware_pioc_altfn20(UINT32_C(1) << 1, GPIO_CFG_AF3); /* PC1 - SDC2_RST */ \
+		arm_hardware_piof_updown(UINT32_C(1) << 10, 1 * UINT32_C(1) << 6, 0 * UINT32_C(1) << 6);	/* PC10 - SDC2_D0	*/ \
+		arm_hardware_piof_updown(UINT32_C(1) << 6, 1 * UINT32_C(1) << 6, 0 * UINT32_C(1) << 6);	/* PC6 - SDC2_CMD	*/ \
 	} while (0)
 	/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управления. */
 	#define HARDWARE_SDIO_HANGOFF()	do { \
@@ -810,7 +836,7 @@
 	#define OE_CTL1_BIT	(UINT32_C(1) << 16)	/* PI16 */
 	//#define targetdataflash 0xFF
 	#define targetnone 0x00
-	#define FPGALOADER_SPISPEED SPIC_SPEEDUFAST
+	#define FPGALOADER_SPISPEED SPIC_SPEEDFAST
 	#define SPIDF_SPEEDC SPIC_SPEEDFAST
 
 	#define targetctl1		(UINT32_C(1) << 22)		// PE22 board control registers chain
@@ -855,16 +881,15 @@
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
-		/*arm_hardware_pioc_outputs(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
-		arm_hardware_pioi_outputs(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
-		arm_hardware_pioe_outputs(targettsc1, 1 * targettsc1); /*  */ \
-		arm_hardware_pioe_outputs(targetnvram, 1 * targetnvram); /*  */ \
-		arm_hardware_pioe_outputs(targetctl1, 1 * targetctl1); /*  */ \
-		arm_hardware_pioe_outputs(targetcodec1, 1 * targetcodec1); /*  */ \
-		arm_hardware_pioe_outputs(targetfpga1, 1 * targetfpga1); /*  */ \
-		arm_hardware_pioe_outputs(targetadck, 1 * targetadck); /*  */ \
-		arm_hardware_pioe_outputs(targetxad2, 1 * targetxad2); /*  */ \
-		local_delay_us(1); \
+		/*arm_hardware_pioc_outputs2m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
+		arm_hardware_pioi_outputs2m(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
+		arm_hardware_pioe_outputs2m(targettsc1, 1 * targettsc1); /*  */ \
+		arm_hardware_pioe_outputs2m(targetnvram, 1 * targetnvram); /*  */ \
+		arm_hardware_pioe_outputs2m(targetctl1, 1 * targetctl1); /*  */ \
+		arm_hardware_pioe_outputs2m(targetcodec1, 1 * targetcodec1); /*  */ \
+		arm_hardware_pioe_outputs2m(targetfpga1, 1 * targetfpga1); /*  */ \
+		arm_hardware_pioe_outputs2m(targetadck, 1 * targetadck); /*  */ \
+		arm_hardware_pioe_outputs2m(targetxad2, 1 * targetxad2); /*  */ \
 	} while (0)
 
 	// MOSI & SCK port
@@ -895,10 +920,9 @@
 
 	#if WITHSPIHW
 		#define SPIIO_INITIALIZE() do { \
-			arm_hardware_pioh_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
-			arm_hardware_pioh_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
-			arm_hardware_pioh_altfn50(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
-			local_delay_us(1); \
+			arm_hardware_pioh_altfn20(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
+			arm_hardware_pioh_altfn20(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
+			arm_hardware_pioh_altfn20(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
 		} while (0)
 
 	#elif WITHSPISW
@@ -907,7 +931,6 @@
 			arm_hardware_pioh_outputs(SPI_SCLK_BIT, 1 * SPI_SCLK_BIT); 	/* PH6 SPI1_CLK */ \
 			arm_hardware_pioh_outputs(SPI_MOSI_BIT, 1 * SPI_MOSI_BIT); 	/* PH7 SPI1_MOSI */ \
 			arm_hardware_pioh_inputs(SPI_MISO_BIT); 	/* PH8 SPI1_MISO */ \
-			local_delay_us(1); \
 		} while (0)
 	#endif
 	#define HARDWARE_SPI_CONNECT() do { \
@@ -1415,9 +1438,14 @@
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_XPT2046)
 
 	#define BOARD_XPT2046_INT_PIN (UINT32_C(1) << 7)		/* PE7 : tsc interrupt */
-	#define BOARD_XPT2046_INT_GET() (!! (gpioX_getinputs(GPIOE) & BOARD_XPT2046_INT_PIN))
+	//#define BOARD_XPT2046_INT_GET() (!! (gpioX_getinputs(GPIOE) & BOARD_XPT2046_INT_PIN))
 	#define BOARD_XPT2046_INT_CONNECT() do { \
+		static einthandler_t h; \
+		einthandler_initialize(& h, BOARD_XPT2046_INT_PIN, xpt2406_interrupt_handler, NULL); \
 		arm_hardware_pioe_inputs(BOARD_XPT2046_INT_PIN); \
+		arm_hardware_pioe_altfn2(BOARD_XPT2046_INT_PIN, GPIO_CFG_EINT); \
+		arm_hardware_pioe_updown(BOARD_XPT2046_INT_PIN, BOARD_XPT2046_INT_PIN, 0); \
+		arm_hardware_pioe_onchangeinterrupt(BOARD_XPT2046_INT_PIN, 0 * BOARD_XPT2046_INT_PIN, 1 * BOARD_XPT2046_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); /* Low level active */ \
 	} while (0)
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_XPT2046) */

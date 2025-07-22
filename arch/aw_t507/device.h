@@ -74,7 +74,9 @@ typedef enum IRQn
     SMHC2_IRQn = 69,                                  /*!< SMHC SD-MMC Host Controller */
     CLK_DET_IRQn = 73,                                /*!< CCU Clock Controller Unit (CCU) */
     DMAC_IRQn = 74,                                   /*!< DMAC  */
-    GPIOE_IRQn = 75,                                  /*!< GPIOINT GPIOE interrupt (vector bunber not sequential) */
+    GPIOE_IRQn = 75,                                  /*!< GPIOINT GPIOE interrupt (vector number not sequential) */
+    HSTIMER0_IRQn = 77,                               /*!< HSTIMER High Speed Timer (HSTimer) */
+    HSTIMER1_IRQn = 78,                               /*!< HSTIMER High Speed Timer (HSTimer) */
     SMC_IRQn = 79,                                    /*!< SMC  */
     TIMER0_IRQn = 80,                                 /*!< TIMER  */
     TIMER1_IRQn = 81,                                 /*!< TIMER  */
@@ -88,7 +90,6 @@ typedef enum IRQn
     GPIOI_IRQn = 89,                                  /*!< GPIOINT GPIOI interrupt */
     AudioCodec_DAC_IRQn = 90,                         /*!< AUDIO_CODEC AudioCodec_DAC interrupt */
     IOMMU_IRQn = 93,                                  /*!< IOMMU IOMMU */
-    SMCARD_IRQn = 94,                                 /*!< SCR Smart Card Reader */
     HDMI_TX0_IRQn = 95,                               /*!< HDMI_TX  */
     TCON_LCD0_IRQn = 96,                              /*!< TCON_LCD TCON_LCD0 interrupt */
     TCON_LCD1_IRQn = 97,                              /*!< TCON_LCD TCON_LCD1 interrupt */
@@ -106,8 +107,6 @@ typedef enum IRQn
     GPU_IRQn = 129,                                   /*!< GPU GPU interrupt */
     ALARM0_IRQn = 136,                                /*!< RTC Real Time Clock */
     S_TWI0_IRQn = 137,                                /*!< TWI  */
-    TWD_IRQn = 140,                                   /*!< TWD Trust Watchdog */
-    R_RSB_IRQn = 141,                                 /*!< R_RSB  */
     R_UART_IRQn = 144,                                /*!< UART R_UART */
     C0_CTI0_IRQn = 160,                               /*!< C0_CPUX_CFG_T507 C0_CTI0 Interrupt */
     C0_CTI1_IRQn = 161,                               /*!< C0_CPUX_CFG_T507 C0_CTI1 Interrupt */
@@ -205,6 +204,7 @@ typedef enum IRQn
 #define SYS_CFG_BASE ((uintptr_t) 0x03000000)         /*!< SYS_CFG  Base */
 #define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU Clock Controller Unit (CCU) Base */
 #define DMAC_BASE ((uintptr_t) 0x03002000)            /*!< DMAC  Base */
+#define HSTIMER_BASE ((uintptr_t) 0x03005000)         /*!< HSTIMER High Speed Timer (HSTimer) Base */
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID  Base */
 #define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC  Base */
 #define SPC_BASE ((uintptr_t) 0x03008000)             /*!< SPC  Base */
@@ -248,7 +248,6 @@ typedef enum IRQn
 #define TWI2_BASE ((uintptr_t) 0x05002800)            /*!< TWI  Base */
 #define TWI3_BASE ((uintptr_t) 0x05002C00)            /*!< TWI  Base */
 #define TWI4_BASE ((uintptr_t) 0x05003000)            /*!< TWI  Base */
-#define SCR_BASE ((uintptr_t) 0x05005000)             /*!< SCR Smart Card Reader Base */
 #define SPI0_BASE ((uintptr_t) 0x05010000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI1_BASE ((uintptr_t) 0x05011000)            /*!< SPI Serial Peripheral Interface Base */
 #define EMAC0_BASE ((uintptr_t) 0x05020000)           /*!< EMAC The Ethernet Medium Access Controller (EMAC) enables a host to transmi Base */
@@ -301,7 +300,6 @@ typedef enum IRQn
 #define R_TWI_BASE ((uintptr_t) 0x07081400)           /*!< TWI  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
 #define R_CAN0_BASE ((uintptr_t) 0x07082000)          /*!< R_CAN Car Area Network controller Base */
-#define R_RSB_BASE ((uintptr_t) 0x07083000)           /*!< R_RSB  Base */
 #define CPU_SUBSYS_CTRL_H616_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List Base */
 #define CPU_SUBSYS_CTRL_T507_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_T507 T507 CPU Subsystem Control Register List Base */
 #define C0_CPUX_CFG_H616_BASE ((uintptr_t) 0x09010000)/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List Base */
@@ -626,8 +624,7 @@ typedef struct CCU_Type
     __IO uint32_t UART_BGR_REG;                       /*!< Offset 0x90C UART Bus Gating Reset Register */
          RESERVED(0x910[0x091C - 0x0910], uint8_t)
     __IO uint32_t TWI_BGR_REG;                        /*!< Offset 0x91C TWI Bus Gating Reset Register */
-         RESERVED(0x920[0x093C - 0x0920], uint8_t)
-    __IO uint32_t SCR_BGR_REG;                        /*!< Offset 0x93C SCR Bus Gating Reset Register */
+         RESERVED(0x920[0x0940 - 0x0920], uint8_t)
     __IO uint32_t SPI0_CLK_REG;                       /*!< Offset 0x940 SPI0 Clock Register */
     __IO uint32_t SPI1_CLK_REG;                       /*!< Offset 0x944 SPI1 Clock Register */
          RESERVED(0x948[0x096C - 0x0948], uint8_t)
@@ -2002,6 +1999,28 @@ typedef struct HDMI_TX_Type
     __IO uint8_t  HDMI_I2CM_FS_SCL_LCNT_0_ADDR;       /*!< Offset 0x7E12  */
 } HDMI_TX_TypeDef; /* size of structure = 0x7E13 */
 /*
+ * @brief HSTIMER
+ */
+/*!< HSTIMER High Speed Timer (HSTimer) */
+typedef struct HSTIMER_Type
+{
+    __IO uint32_t HS_TMR_IRQ_EN_REG;                  /*!< Offset 0x000 HS Timer IRQ Enable Register */
+    __IO uint32_t HS_TMR_IRQ_STAS_REG;                /*!< Offset 0x004 HS Timer Status Register */
+         RESERVED(0x008[0x0020 - 0x0008], uint8_t)
+    __IO uint32_t HS_TMR0_CTRL_REG;                   /*!< Offset 0x020 HS Timer0 Control Register */
+    __IO uint32_t HS_TMR0_INTV_LO_REG;                /*!< Offset 0x024 HS Timer0 Interval Value Low Register */
+    __IO uint32_t HS_TMR0_INTV_HI_REG;                /*!< Offset 0x028 HS Timer0 Interval Value High Register */
+    __IO uint32_t HS_TMR0_CURNT_LO_REG;               /*!< Offset 0x02C HS Timer0 Current Value Low Register */
+    __IO uint32_t HS_TMR0_CURNT_HI_REG;               /*!< Offset 0x030 HS Timer0 Current Value High Register */
+         RESERVED(0x034[0x0040 - 0x0034], uint8_t)
+    __IO uint32_t HS_TMR1_CTRL_REG;                   /*!< Offset 0x040 HS Timer1 Control Register */
+    __IO uint32_t HS_TMR1_INTV_LO_REG;                /*!< Offset 0x044 HS Timer1 Interval Value Low Register */
+    __IO uint32_t HS_TMR1_INTV_HI_REG;                /*!< Offset 0x048 HS Timer1 Interval Value High Register */
+    __IO uint32_t HS_TMR1_CURNT_LO_REG;               /*!< Offset 0x04C HS Timer1 Current Value Low Register */
+    __IO uint32_t HS_TMR1_CURNT_HI_REG;               /*!< Offset 0x050 HS Timer1 Current Value High Register */
+         RESERVED(0x054[0x1000 - 0x0054], uint8_t)
+} HSTIMER_TypeDef; /* size of structure = 0x1000 */
+/*
  * @brief I2S_PCM
  */
 /*!< I2S_PCM  */
@@ -2402,38 +2421,18 @@ typedef struct R_CAN_Type
     __IO uint32_t CAN_RBUF_RBACK [0x030];             /*!< Offset 0x180 CAN transmit buffer for read back register (0x0180 ~0x1b0) */
 } R_CAN_TypeDef; /* size of structure = 0x240 */
 /*
- * @brief SCR
- */
-/*!< SCR Smart Card Reader */
-typedef struct SCR_Type
-{
-    __IO uint32_t SCR_CSR;                            /*!< Offset 0x000 Smart Card Reader Control and Status Register */
-    __IO uint32_t SCR_INTEN;                          /*!< Offset 0x004 Smart Card Reader Interrupt Enable Register 1 */
-    __IO uint32_t SCR_INTST;                          /*!< Offset 0x008 Smart Card Reader Interrupt Status Register 1 */
-    __IO uint32_t SCR_FCSR;                           /*!< Offset 0x00C Smart Card Reader FIFO Control and Status Register */
-    __IO uint32_t SCR_FCNT;                           /*!< Offset 0x010 Smart Card Reader RX and TX FIFO Counter Register */
-    __IO uint32_t SCR_RPT;                            /*!< Offset 0x014 Smart Card Reader RX and TX Repeat Register */
-    __IO uint32_t SCR_DIV;                            /*!< Offset 0x018 Smart Card Reader Clock and Baud Divisor Register */
-    __IO uint32_t SCR_LTIM;                           /*!< Offset 0x01C Smart Card Reader Line Time Register */
-    __IO uint32_t SCR_CTIM;                           /*!< Offset 0x020 Smart Card Reader Character Time Register */
-         RESERVED(0x024[0x0030 - 0x0024], uint8_t)
-    __IO uint32_t SCR_LCTLR;                          /*!< Offset 0x030 Smart Card Reader Line Control Register */
-         RESERVED(0x034[0x003C - 0x0034], uint8_t)
-    __IO uint32_t SCR_FSM;                            /*!< Offset 0x03C Smart Card Reader FSM Register */
-    __IO uint32_t SCR_DT;                             /*!< Offset 0x040 Smart Card Reader Debounce Time Register */
-         RESERVED(0x044[0x0100 - 0x0044], uint8_t)
-    __IO uint32_t SCR_FIFO;                           /*!< Offset 0x100 Smart Card Reader RX and TX FIFO Access Point */
-         RESERVED(0x104[0x0400 - 0x0104], uint8_t)
-} SCR_TypeDef; /* size of structure = 0x400 */
-/*
  * @brief SID
  */
 /*!< SID  */
 typedef struct SID_Type
 {
-         RESERVED(0x000[0x0200 - 0x0000], uint8_t)
-    __IO uint32_t SID_DATA [0x004];                   /*!< Offset 0x200 SID data (xfel display as 'sid' replay) */
-         RESERVED(0x210[0x1000 - 0x0210], uint8_t)
+         RESERVED(0x000[0x0040 - 0x0000], uint8_t)
+    __IO uint32_t SID_PRCTL;                          /*!< Offset 0x040  */
+         RESERVED(0x044[0x0060 - 0x0044], uint8_t)
+    __IO uint32_t SID_RDKEY;                          /*!< Offset 0x060  */
+         RESERVED(0x064[0x0200 - 0x0064], uint8_t)
+    __IO uint32_t SID_DATA [0x100];                   /*!< Offset 0x200 SID data (xfel display as 'sid' replay) */
+         RESERVED(0x600[0x1000 - 0x0600], uint8_t)
 } SID_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief SMC
@@ -3537,6 +3536,7 @@ typedef struct VE_Type
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
+#define HSTIMER ((HSTIMER_TypeDef *) HSTIMER_BASE)    /*!< HSTIMER High Speed Timer (HSTimer) register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID  register set access pointer */
 #define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC  register set access pointer */
 #define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC  register set access pointer */
@@ -3577,7 +3577,6 @@ typedef struct VE_Type
 #define TWI2 ((TWI_TypeDef *) TWI2_BASE)              /*!< TWI2  register set access pointer */
 #define TWI3 ((TWI_TypeDef *) TWI3_BASE)              /*!< TWI3  register set access pointer */
 #define TWI4 ((TWI_TypeDef *) TWI4_BASE)              /*!< TWI4  register set access pointer */
-#define SCR ((SCR_TypeDef *) SCR_BASE)                /*!< SCR Smart Card Reader register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define EMAC0 ((EMAC_TypeDef *) EMAC0_BASE)           /*!< EMAC0 The Ethernet Medium Access Controller (EMAC) enables a host to transmi register set access pointer */

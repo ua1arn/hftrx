@@ -47,10 +47,10 @@
 	#define WITHPREAMPATT2_6DB 1	/* LTC2208 Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
-	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+	
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
-	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
+	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 	#define WITHTFT_OVER_LVDS	1	// LVDS receiver THC63LVDF84B
 
@@ -62,7 +62,7 @@
 	#define ENCODER2_EVDEV	1		// Linux Input device
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
-	#define CODEC1_TYPE CODEC_TYPE_ALSA
+//	#define CODEC1_TYPE CODEC_TYPE_ALSA
 	#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма
 	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
@@ -93,7 +93,7 @@
 	#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHALPHA				42
 	#define FORMATFROMLIBRARY 		1
-	#define WITHAFGAINDEFAULT		14
+	#define WITHAFGAINDEFAULT		0 //14
 //	#define WITHAFEQUALIZER			1
 	#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 	#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
@@ -112,13 +112,13 @@
 	#define WITHAUDIOSAMPLESREC		1	// запись и воспроизведение коротких фрагментов звука из эфира
 	#define REALREFERENCE_FREQ 		61443000L
 	#define MOUSE_EVDEV				1
-	#define MOUSE_CURSOR_PATH		"./arrow.png"
+	#define MOUSE_CURSOR_PATH		"/usr/hftrx_data/arrow.png"
 //	#define BLUETOOTH_ALSA			1
 	#define WITHSWRSCAN				1
 
-#if 0
+#if 1
 	#define WITHLVGL				1
-	#define BOARD_DSTYLE_LVGL 		"g_x800_y480_lvgl.h"
+	#define BOARD_DSTYLE_LVGL 		"g_x800_y480_linux_lvgl.h"
 #else
 	#define WITHTOUCHGUI			1
 #endif
@@ -200,7 +200,7 @@
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
 			FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
-			PWRI = FWD,
+			
 		#endif /* WITHSWRMTR */
 
 
@@ -208,7 +208,7 @@
 		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 		REFMRRIX = BOARD_ADCMRRIN(2),
 		FWDMRRIX = BOARD_ADCMRRIN(3),
-		PWRMRRIX = FWDMRRIX,
+		PWRMRRIX = BOARD_ADCMRRIN(7),
 		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
 		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
