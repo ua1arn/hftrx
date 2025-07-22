@@ -764,7 +764,7 @@ void win_ad936xdev_handler(lv_event_t * e)
 		lv_obj_t * cont = gui_win_get_content();
 		uint8_t p = ad936xdev_present();
 		uint8_t s = get_ad936x_stream_status();
-		static user_t ext[2];
+		static user_t ext[3];
 
 		lbl_cic = lv_label_create(cont);
 		lv_obj_add_style(lbl_cic, & winlblst, 0);
@@ -807,6 +807,12 @@ void win_ad936xdev_handler(lv_event_t * e)
 		lv_obj_set_state(btn_fir, LV_STATE_DISABLED, ! s);
 		lv_obj_align_to(btn_fir, btn_sw, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
 
+		lv_obj_t * btn_tune = add_button(cont, ext, 2, "RTS tune", s100x44, win_ad936xdev_handler);
+		lv_obj_align_to(btn_tune, btn_fir, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+		ext[2].payload = ad936x_get_rtstune();
+		button_set_lock(btn_tune, ext[2].payload);
+		lv_obj_set_state(btn_tune, LV_STATE_DISABLED, ! s);
+
 		return;
 	}
 
@@ -842,6 +848,13 @@ void win_ad936xdev_handler(lv_event_t * e)
 				ext->payload = ! ext->payload;
 				ad936xdev_set_fir_state(ext->payload);
 				button_set_lock(obj, ext->payload);
+				break;
+
+			case 2:
+				ext->payload = ! ext->payload;
+				ad936x_set_rtstune(ext->payload);
+				button_set_lock(obj, ext->payload);
+				touch_zone_update();
 				break;
 
 			default:
@@ -1014,6 +1027,10 @@ static void footer_buttons_init(lv_obj_t * p)
 
 // ***********************************************
 
+lv_obj_t * touch_zone = NULL, * sp_rect = NULL;
+uint16_t x_sp = 0, w_sp = 0;
+uint32_t center_freq_px = DIM_X / 2;
+
 void touch_zone_event_cb(lv_event_t * e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -1034,10 +1051,7 @@ void touch_zone_event_cb(lv_event_t * e)
 			return;
 		}
 
-		lv_area_t coords;
-		lv_obj_get_coords(obj, & coords);
-		int16_t center_x = (coords.x1 + coords.x2) / 2;
-		int16_t offset_x = pos.x - center_x;
+		int16_t offset_x = pos.x - DIM_X / 2;
 
 		uint32_t f = hamradio_get_freq_rx(), bw = display2_zoomedbw();
 		uint32_t fp = bw / DIM_X, fn = f + offset_x * fp;
@@ -1045,7 +1059,19 @@ void touch_zone_event_cb(lv_event_t * e)
 		uint16_t step = 1000;
 		uint32_t f_rem = fn % step;
 
-		hamradio_set_freq(fn + (step - f_rem));
+#if WITHAD936XDEV
+		if (ad936x_get_rtstune())
+		{
+			center_freq_px = pos.x;
+			ad936x_set_rtstune_offset(offset_x * fp);
+			touch_zone_update();
+		}
+		else
+#endif /* WITHAD936XDEV */
+		{
+			center_freq_px = DIM_X / 2;
+			hamradio_set_freq(fn + (step - f_rem));
+		}
 	}
     else if(code == LV_EVENT_PRESSING)
     {
@@ -1074,16 +1100,62 @@ void touch_zone_event_cb(lv_event_t * e)
 
 void create_touch_zone(lv_obj_t * parent)
 {
-    lv_obj_t * touch_zone = lv_obj_create(parent);
+    touch_zone = lv_obj_create(parent);
     lv_obj_set_size(touch_zone, DIM_X, 260);
 	lv_obj_set_pos(touch_zone, 0, 170);
 
     lv_obj_set_style_bg_opa(touch_zone, LV_OPA_0, 0);
     lv_obj_clear_flag(touch_zone, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
     lv_obj_add_flag(touch_zone, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_clear_flag(touch_zone, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_border_width(touch_zone, 0, 0);
+    lv_obj_set_style_pad_all(touch_zone, 0, 0);
 
     lv_obj_add_event_cb(touch_zone, touch_zone_event_cb, LV_EVENT_ALL, NULL);
+}
+
+void touch_zone_update(void)
+{
+	if (! touch_zone) return;
+
+	if (! sp_rect)
+	{
+		sp_rect = lv_obj_create(touch_zone);
+		lv_obj_clear_flag(sp_rect, LV_OBJ_FLAG_CLICKABLE);
+		lv_obj_clear_flag(sp_rect, LV_OBJ_FLAG_SCROLLABLE);
+		lv_obj_clear_flag(sp_rect, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+		lv_obj_set_style_bg_color(sp_rect, lv_palette_main(LV_PALETTE_YELLOW), 0);
+		lv_obj_set_style_radius(sp_rect, 3, 0);
+		lv_obj_set_style_border_width(sp_rect, 0, 0);
+		lv_obj_set_style_bg_opa(sp_rect, LV_OPA_50, 0);
+	}
+
+	uint32_t fp = display2_zoomedbw() / DIM_X;
+	int bp_left = hamradio_getleft_bp(0) / fp;
+	int bp_right = hamradio_getright_bp(0) / fp;
+	int16_t x_sp, w_sp;
+
+	if (bp_right > 0)
+	{
+		x_sp = center_freq_px + bp_left;
+		w_sp = bp_right - bp_left;
+	}
+	else
+	{
+		x_sp = center_freq_px + bp_left + bp_right;
+		w_sp = - bp_right - bp_left;
+	}
+
+	if (hamradio_get_viewstyle() == VIEW_3DSS)
+	{
+		lv_obj_set_pos(sp_rect, x_sp, 174);
+		lv_obj_set_size(sp_rect, w_sp, 73);
+	}
+	else
+	{
+		lv_obj_set_pos(sp_rect, x_sp, 0);
+		lv_obj_set_size(sp_rect, w_sp, 110);
+	}
 }
 
 // ***********************************************
@@ -1091,6 +1163,7 @@ void create_touch_zone(lv_obj_t * parent)
 void gui_update(void)
 {
 	infobar_update();
+	touch_zone_update();
 }
 
 // ***********************************************

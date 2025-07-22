@@ -72,8 +72,8 @@
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
+	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
+	#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHDSPLOCALTXFIR 1
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
@@ -84,7 +84,7 @@
 	#define WITHFFTSIZEWIDE 		1024		/* Отображение спектра и волопада */
 	#define WITHVIEW_3DSS			1
 	#define WITHDEFAULTVIEW			VIEW_3DSS
-	#define WITHVIEW_3DSS_MARK		1
+//	#define WITHVIEW_3DSS_MARK		1
 	#define WITHDISPLAY_FPS			30
 	#define WITHDISPLAYSWR_FPS		30
 	#define WITHSPECBETA_DEFAULT	30

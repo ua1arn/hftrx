@@ -57,6 +57,7 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	#define WITHDIRECTFREQENER	1 // прямой ввод частоты с клавиш
 	
+	#define WITHENCODER		1
 	#define WITHENCODER2	1		/* есть второй валкодер */
 	#define ENCODER2_EVDEV	1		// Linux Input device
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
@@ -113,13 +114,13 @@
 	#define WITHAUDIOSAMPLESREC		1	// запись и воспроизведение коротких фрагментов звука из эфира
 //	#define REALREFERENCE_FREQ 		61443000L
 	#define MOUSE_EVDEV				1
-	#define MOUSE_CURSOR_PATH		"./arrow.png"
+	#define MOUSE_CURSOR_PATH		"/usr/hftrx_data/arrow.png"
 //	#define BLUETOOTH_ALSA			1
 	#define WITHSWRSCAN				1
 
-#if 0
+#if 1
 	#define WITHLVGL				1
-	#define BOARD_DSTYLE_LVGL 		"g_x800_y480_lvgl.h"
+	#define BOARD_DSTYLE_LVGL 		"g_x800_y480_linux_lvgl.h"
 #else
 	#define WITHTOUCHGUI			1
 #endif
@@ -151,6 +152,8 @@
 	/* Board hardware configuration */
 	#define DDS1_TYPE 		DDS_TYPE_XDMA
 	#define TSC1_TYPE 		TSC_TYPE_EVDEV
+	#define TSC_EVDEV_RAWX	2048
+	#define TSC_EVDEV_RAWY	2048
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
