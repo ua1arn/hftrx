@@ -5891,20 +5891,6 @@ prog_dsplreg(void)
 	const uint_fast8_t tprofile = ! gwagcproftx;	// индекс профиля, который станет рабочим
 	txparam_update(tprofile);
 	gwagcproftx = tprofile;
-
-#if (CTLSTYLE_RAVENDSP_V1 || CTLSTYLE_DSPV1A)
-	if (isdspmoderx(glob_dspmodes [0]))
-	{
-		// усиление тракта ПЧ (AD605)
-		HARDWARE_DAC_AGC((glob_gvad605 * dac_agc_coderange) / UINT8_MAX + dac_agc_lowcode);
-	}
-	else
-	{
-		// при передаче закрыть
-		HARDWARE_DAC_AGC(0);
-	}
-#endif /* (CTLSTYLE_RAVENDSP_V1 || CTLSTYLE_DSPV1A) */
-
 }
 
 void 

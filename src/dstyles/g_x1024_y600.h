@@ -76,8 +76,6 @@
 	{
 			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 
-		{	0,	0,	0, 0, display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-
 		{	0,	0, 	7, 0, display_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
 		//{	0,	0, 	5, 0, display2_smeors5, 	& dzi_default, PGALL, },	// уровень сигнала в баллах S или dBm
 		{	10,	0,	4, 0, display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value

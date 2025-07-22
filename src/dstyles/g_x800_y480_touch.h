@@ -80,7 +80,6 @@
 	static const dzone_t dzones [] =
 	{
 			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
-		{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
 		//{	10,	0,	6,	0,	display2_rxbwval6alt,	& dzi_default, PGALL, },	// RX BW value
 		{	17,	0,	2,	0,	display_txrxstate2, & dzi_txrx, PGALL, },
 		{	20,	0,	5,	0,	display2_ant5,		& dzi_antenna, PGALL, },
@@ -153,8 +152,6 @@
 		{	5,	25,	12,	0,	display2_datetime12, & dzi_default, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	5,	0,	display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
 		{	0,	DLES, 0,	0,	gui_WM_walkthrough, & dzi_default, PGWFL | PGSPE, },
-
-		{	0,	0, 0,	0,	display2_keyboard_menu, & dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
 
 		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 	};

@@ -881,16 +881,15 @@
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
-		/*arm_hardware_pioc_outputs(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
-		arm_hardware_pioi_outputs(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
-		arm_hardware_pioe_outputs(targettsc1, 1 * targettsc1); /*  */ \
-		arm_hardware_pioe_outputs(targetnvram, 1 * targetnvram); /*  */ \
-		arm_hardware_pioe_outputs(targetctl1, 1 * targetctl1); /*  */ \
-		arm_hardware_pioe_outputs(targetcodec1, 1 * targetcodec1); /*  */ \
-		arm_hardware_pioe_outputs(targetfpga1, 1 * targetfpga1); /*  */ \
-		arm_hardware_pioe_outputs(targetadck, 1 * targetadck); /*  */ \
-		arm_hardware_pioe_outputs(targetxad2, 1 * targetxad2); /*  */ \
-		local_delay_us(1); \
+		/*arm_hardware_pioc_outputs2m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
+		arm_hardware_pioi_outputs2m(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
+		arm_hardware_pioe_outputs2m(targettsc1, 1 * targettsc1); /*  */ \
+		arm_hardware_pioe_outputs2m(targetnvram, 1 * targetnvram); /*  */ \
+		arm_hardware_pioe_outputs2m(targetctl1, 1 * targetctl1); /*  */ \
+		arm_hardware_pioe_outputs2m(targetcodec1, 1 * targetcodec1); /*  */ \
+		arm_hardware_pioe_outputs2m(targetfpga1, 1 * targetfpga1); /*  */ \
+		arm_hardware_pioe_outputs2m(targetadck, 1 * targetadck); /*  */ \
+		arm_hardware_pioe_outputs2m(targetxad2, 1 * targetxad2); /*  */ \
 	} while (0)
 
 	// MOSI & SCK port

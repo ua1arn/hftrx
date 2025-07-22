@@ -77,7 +77,7 @@
 	{
 #if ! WITHLVGL
 			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
-		{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PG0, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+
 		//{	10,	0,	6,	0,	display2_rxbwval6alt,	& dzi_default, PG0, },	// RX BW value
 		{	17,	0,	5,	0,	display_txrxstate5alt, & dzi_default, PG0, },
 		{	21,	0,	7,	0,	display2_ant7alt,		& dzi_default, PG0, },

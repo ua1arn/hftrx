@@ -81,8 +81,7 @@
 	//#define SMALLCHARW 16 /* Font width */
 	static const dzone_t dzones [] =
 	{
-			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
-		{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PGALL | REDRSUBSET_SLEEP, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+		{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 		//{	10,	0,	6,	0,	display2_rxbwval6alt,	& dzi_default, PGALL, },	// RX BW value
 		{	17,	0,	5,	0,	display_txrxstate5alt, & dzi_default, PGALL, },
 		{	21,	0,	7,	0,	display2_ant7alt,		& dzi_default, PGALL, },
@@ -123,7 +122,6 @@
 		{	42,	15,	5,	0,	display2_vfomode5alt,	& dzi_default, PGALL, },	// SPLIT
 		{	26,	20,	0,	0,	display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ
 		{	38, 20,	3,	0,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
-		{	0,	0,	0,	0,	display2_keyboard_menu,					& dzi_default, REDRSUBSET_MENU, }, // Обработка клавиатуры и валкодеров при нахождении в режиме меню
 
 #if 1
 		// на освободившеемя место добавить статусную строку с различной информацией

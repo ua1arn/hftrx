@@ -818,7 +818,7 @@ typedef struct ticker_tag
 struct dpcobj_tag;
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
 void ticker_initialize_user(ticker_t * p, unsigned nticks, struct dpcobj_tag * dpc);
-void ticker_initialize_user2(ticker_t * p, unsigned nticks, struct dpcobj_tag * dpc);
+void ticker_initialize_user_display(ticker_t * p, unsigned nticks, struct dpcobj_tag * dpc);	// DPC будет вызываться на ядре board_dpc_display_coreid()
 void ticker_initialize_ext(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx, enum ticker_mode mode);
 void ticker_setperiod(ticker_t * p, unsigned nticks);	/* изменение периода запущенного тикера */
 void ticker_start(ticker_t * p);	/* начало интервала в случае TICKERMD_MANUAL */

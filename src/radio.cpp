@@ -72,24 +72,26 @@ processcatmsg(uint_fast8_t catcommand1,
 
 typedef struct keyevent_tag
 {
-	uint_fast8_t keyready;
-	uint_fast8_t keycode;
+	uint_fast8_t kbready;
+	uint_fast8_t kbch;
 } keyevent_t;
 
 void keyevent_initialize(keyevent_t * e)
 {
-	e->keyready = 0;
+	e->kbready = 0;
 }
 
 typedef struct knobevent_tag
 {
+	encoder_t * enc;
 	int16_t delta;
-	uint_fast8_t jump;
+	uint_fast8_t jumpsize;
 } knobevent_t;
 
-void knobevent_initialize(knobevent_t * e)
+void knobevent_initialize(knobevent_t * e, encoder_t * aenc)
 {
 	e->delta = 0;
+	e->enc = aenc;
 }
 
 typedef struct mouseevent_tag
@@ -107,34 +109,62 @@ void mouseevent_initialize(mouseevent_t * e)
 typedef struct inputevent_tag
 {
 	keyevent_t keyevent;
+#if WITHENCODER
 	knobevent_t encMAIN;
+#if WITHENCODER_SUB
 	knobevent_t encSUB;
+#endif /* WITHENCODER_SUB */
+#if WITHENCODER2
 	knobevent_t encFN;
+#endif /* WITHENCODER2 */
+#if WITHENCODER_1F
 	knobevent_t encF1;
+#endif /* WITHENCODER_1F */
+#if WITHENCODER_2F
 	knobevent_t encF2;
+#endif /* WITHENCODER_2F */
+#if WITHENCODER_3F
 	knobevent_t encF3;
+#endif /* WITHENCODER_3F */
+#if WITHENCODER_4F
 	knobevent_t encF4;
+#endif /* WITHENCODER_4F */
+#endif /* WITHENCODER */
 	mouseevent_t mouse;
 } inputevent_t;
 
 void inputevent_initialize(inputevent_t * e)
 {
 	keyevent_initialize(& e->keyevent);
-	knobevent_initialize(& e->encMAIN);
-	knobevent_initialize(& e->encSUB);
-	knobevent_initialize(& e->encFN);
-	knobevent_initialize(& e->encF1);
-	knobevent_initialize(& e->encF2);
-	knobevent_initialize(& e->encF3);
-	knobevent_initialize(& e->encF4);
+#if WITHENCODER
+	knobevent_initialize(& e->encMAIN, & encoder1);
+#if WITHENCODER_SUB
+	knobevent_initialize(& e->encSUB, & encoder_sub);
+#endif /* WITHENCODER_SUB */
+#if WITHENCODER2
+	knobevent_initialize(& e->encFN, & encoder2);
+#endif /* WITHENCODER2 */
+#if WITHENCODER_1F
+	knobevent_initialize(& e->encF1, & encoder_ENC1F);
+#endif /* WITHENCODER_1F */
+#if WITHENCODER_2F
+	knobevent_initialize(& e->encF2, & encoder_ENC2F);
+#endif /* WITHENCODER_2F */
+#if WITHENCODER_3F
+	knobevent_initialize(& e->encF3, & encoder_ENC3F);
+#endif /* WITHENCODER_3F */
+#if WITHENCODER_4F
+	knobevent_initialize(& e->encF4, & encoder_ENC4F);
+#endif /* WITHENCODER_4F */
+#endif /* WITHENCODER */
 	mouseevent_initialize(& e->mouse);
 }
-
-#if WITHENCODER
 
 static uint_fast16_t gstep_ENC_MAIN;
 static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
 static uint_fast16_t gencderate = 1;
+
+#if WITHENCODER
 
 #if defined (ENCDIV_DEFAULT)
 	static uint_fast8_t genc1div = ENCDIV_DEFAULT;	/* во сколько раз уменьшаем разрешение валкодера. */
@@ -155,24 +185,49 @@ static uint_fast16_t gencderate = 1;
 static uint_fast8_t genc2dynamic = 0;
 
 
-/* получить перемещение валкодера. Если есть - включить экран */
-static int_least16_t
-encoder_delta(
-	encoder_t * e,
-	const uint_fast8_t derate
-	)
+
+static int_least16_t event_getRotateHiRes(knobevent_t * e, uint_fast8_t * jsize, unsigned derate)
 {
-#if WITHLVGL && WITHLVGLINDEV
-	return 0;
-#else /* WITHLVGL && WITHLVGLINDEV */
-	const int_least16_t delta = encoder_get_delta(e, derate);
-	if (delta)
-	{
-		board_wakeup();
-	}
-	return delta;
-#endif /* WITHLVGL && WITHLVGLINDEV */
+	div_t d;
+	d = div(e->delta, derate);
+	encoder_pushback(e->enc, d.rem);
+	* jsize = e->jumpsize;
+	e->delta = 0;
+	return d.quot;
 }
+
+
+/* получение "редуцированного" количества прерываний от валкодера.
+ * То что осталось после деления на scale, остается в накопителе
+ */
+static int_least16_t event_getRotate_Menu(knobevent_t * e)
+{
+	const int derate = encoder_get_actualresolution(e->enc) * genc1div / ENCODER_MENU_STEPS;
+	div_t d;
+	d = div(e->delta, derate);
+	encoder_pushback(e->enc, d.rem);
+	e->delta = 0;
+	return d.quot;
+}
+
+static int_least16_t event_getRotate_LoRes(knobevent_t * e, int derate)
+{
+	div_t d;
+	d = div(e->delta, derate);
+	encoder_pushback(e->enc, d.rem);
+	e->delta = 0;
+	return d.quot;
+}
+
+static void event_pushback_LoRes(knobevent_t * e, int_least16_t delta, int derate)
+{
+	encoder_pushback(e->enc, (int) delta * derate);
+}
+
+#else /* WITHENCODER */
+
+static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
+
 #endif /* WITHENCODER */
 
 static uint_fast8_t gtx;	/* текущее состояние прием или передача */
@@ -244,30 +299,33 @@ processmessages(
 
 void inputevent_fill(inputevent_t * e)
 {
-	processmessages(& e->keyevent.keycode, & e->keyevent.keyready);
+	processmessages(& e->keyevent.kbch, & e->keyevent.kbready);
 
 #if WITHENCODER
 	// main encoder
 
-	e->encMAIN.delta = getRotateHiRes(& encoder1, & e->encMAIN.jump, genc1div * gencderate);
+	e->encMAIN.delta = encoder_getrotatehires(e->encMAIN.enc, & e->encMAIN.jumpsize);
 #if WITHENCODER_SUB
-	e->encSUB.delta = getRotateHiRes(& encoder_sub, & e->encSUB.jump, genc1div * gencderate);
+	e->encSUB.delta = encoder_getrotatehires(e->encSUB.enc, & e->encSUB.jumpsize);
 #endif /* WITHENCODER_SUB */
+#if WITHENCODER2
+	e->encFN.delta = encoder_getrotatehires(e->encFN.enc, & e->encFN.jumpsize);
+#endif /* WITHENCODER2 */
 #if WITHENCODER_1F
-	e->encF1.delta = encoder_delta(& encoder_ENC1F, BOARD_ENC1F_DIVIDE);
-	e->encF1.jump = 0;
+	e->encF1.delta = encoder_get_delta(e->encF1.enc);
+	e->encF1.jumpsize = 0;
 #endif /* WITHENCODER_1F */
 #if WITHENCODER_2F
-	e->encF2.delta = encoder_delta(& encoder_ENC2F, BOARD_ENC2F_DIVIDE);
-	e->encF2.jump = 0;
+	e->encF2.delta = encoder_get_delta(e->encF2.enc);
+	e->encF2.jumpsize = 0;
 #endif /* WITHENCODER_2F */
 #if WITHENCODER_3F
-	e->encF3.delta = encoder_delta(& encoder_ENC3F, BOARD_ENC3F_DIVIDE);
-	e->encF3.jump = 0;
+	e->encF3.delta = encoder_get_delta(e->encF3.enc);
+	e->encF3.jumpsize = 0;
 #endif /* WITHENCODER_3F */
 #if WITHENCODER_4F
-	e->encF4.delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
-	e->encF4.jump = 0;
+	e->encF4.delta = encoder_get_delta(e->encF4.enc);
+	e->encF4.jumpsize = 0;
 #endif /* WITHENCODER_4F */
 #endif /* WITHENCODER */
 }
@@ -433,25 +491,6 @@ typedef struct dualctl32_tag
 	uint_fast32_t value;	/* результирующее знаяение для формирования управляющего воздействия и инфопмирования по CAT */
 	uint_fast32_t potvalue;	/* значение после функции гистерезиса от потенциометра */
 } dualctl32_t;
-
-static uint_fast16_t
-getstablev16(const volatile uint_fast16_t * p)
-{
-	if (sizeof * p == 1)
-		return * p;
-	else
-	{
-		uint_fast8_t v1 = * p;
-		uint_fast8_t v2;
-		do
-		{
-			v2 = v1;
-			v1 = * p;
-		} while (v2 != v1);
-		return v1;
-	}
-}
-
 
 #define BRSCALE 1200U
 
@@ -1382,57 +1421,10 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 /* строки, выводимые на индикатор для обозначения режимов.
  */
 
-#if CTLREGMODE24_RK4CI	/* управляющий регистр 24 бита - "Воробей" RK4CI */
+#if WITHAGCMODENONE
 	/* перечисление всех возможных режимов АРУ
 	 */
 	enum {
-		AGCMODE_LONG = 0,
-		AGCMODE_SLOW = 0,
-		AGCMODE_MED,
-		AGCMODE_FAST,
-		AGCMODE_OFF
-		//
-		};
-
-	static const struct {
-		uint_fast8_t code;
-		char label4 [5];
-		char label3 [4];
-	}  agcmodes [] =
-	{
-		{ BOARD_AGCCODE_SLOW, "SLOW", "SLO"  },	// 3
-		{ BOARD_AGCCODE_MED,  "MED", "MED" },	// 2
-		{ BOARD_AGCCODE_FAST, "FAST", "FST" },	// 1
-		{ BOARD_AGCCODE_OFF,  "AGC-", "OFF" },	// 4 ?
-	};
-#elif CTLREGMODE24_RK4CI_V1	/* управляющий регистр 32 бита (с 3*ULN2003) - "Воробей" RK4CI */
-	/* перечисление всех возможных режимов АРУ
-	 */
-	enum {
-		AGCMODE_LONG = 0,
-		AGCMODE_SLOW = 0,
-		AGCMODE_MED,
-		AGCMODE_FAST,
-		AGCMODE_OFF
-		//
-		};
-
-	static const struct {
-		uint_fast8_t code;
-		char label4 [5];
-		char label3 [4];
-	}  agcmodes [] =
-	{
-		{ BOARD_AGCCODE_SLOW, "SLOW", "SLO"  },	// 3
-		{ BOARD_AGCCODE_MED,  "MED", "MED" },	// 2
-		{ BOARD_AGCCODE_FAST, "FAST", "FST" },	// 1
-		{ BOARD_AGCCODE_OFF,  "AGC-", "OFF" },	// 4 ?
-	};
-#elif WITHAGCMODENONE
-	/* перечисление всех возможных режимов АРУ
-	 */
-	enum {
-		AGCMODE_LONG = 0,
 		AGCMODE_SLOW = 0,
 		AGCMODE_MED = 0,
 		AGCMODE_FAST = 0
@@ -1445,12 +1437,12 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 //	{
 //		{ BOARD_AGCCODE_ON, "", "" },
 //	};
+
 #elif WITHAGCMODEONOFF
+
 	/* перечисление всех возможных режимов АРУ
 	 */
 	enum {
-		AGCMODE_LONG = 0,
-		AGCMODE_SLOW = 0,
 		AGCMODE_MED = 0,
 		AGCMODE_FAST = 0,
 		//
@@ -1465,70 +1457,6 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 	{
 		{ BOARD_AGCCODE_ON,  "AGC", "AGC" },
 		{ BOARD_AGCCODE_OFF, "OFF", "OFF" },
-	};
-#elif WITHAGCMODESLOWFAST	/* среди режимов АРУ есть только быстро-медленно */
-	/* перечисление всех возможных режимов АРУ
-	 */
-	enum {
-		AGCMODE_LONG = 0,
-		AGCMODE_SLOW = 0,
-		AGCMODE_MED = 1,
-		AGCMODE_FAST = 1
-		};
-	static const struct {
-		uint_fast8_t code;
-		char label4 [5];
-		char label3 [4];
-	}  agcmodes [] =
-	{
-		{ BOARD_AGCCODE_SLOW, "SLOW", "SLO" },
-		{ BOARD_AGCCODE_FAST, "FAST", "FST" },
-	};
-#elif WITHAGCMODE4STAGES
-	/* перечисление всех возможных режимов АРУ
-	   выключенно не бывает
-	 */
-	enum {
-		AGCMODE_LONG,
-		AGCMODE_SLOW,
-		AGCMODE_MED,
-		AGCMODE_FAST,
-		AGCMODE_OFF
-		//
-		};
-	static const struct {
-		uint_fast8_t code;
-		char label4 [5];
-		char label3 [4];
-	}  agcmodes [] =
-	{
-		{ BOARD_AGCCODE_LONG, "LONG", "lng" },	// 4
-		{ BOARD_AGCCODE_SLOW, "SLOW", "slo" },	// 2
-		{ BOARD_AGCCODE_MED,  "MED", "med" },	// 1
-		{ BOARD_AGCCODE_FAST, "FAST", "fst" },	// 0
-	};
-#elif WITHAGCMODE5STAGES
-	/* перечисление всех возможных режимов АРУ
-	 */
-	enum {
-		AGCMODE_LONG,
-		AGCMODE_SLOW,
-		AGCMODE_MED,
-		AGCMODE_FAST,
-		AGCMODE_OFF
-		//
-		};
-	static const struct {
-		uint_fast8_t code;
-		char label4 [5];
-		char label3 [4];
-	}  agcmodes [] =
-	{
-		{ BOARD_AGCCODE_LONG, "LONG", "lng" },	// 4
-		{ BOARD_AGCCODE_SLOW, "SLOW", "slo" },	// 2
-		{ BOARD_AGCCODE_MED,  "MED", "med" },	// 1
-		{ BOARD_AGCCODE_FAST, "FAST", "fst" },	// 0
-		{ BOARD_AGCCODE_OFF,  "AGC-", "off" },	// 8
 	};
 #else
 	#error WITHAGCMODExxxx undefined
@@ -3567,7 +3495,7 @@ struct nvmap
 #if WITHUSEFAST
 	uint8_t gusefast;			/* переключение в режим крупного шага */
 #endif /* WITHUSEFAST */
-	uint8_t menuset;		/* набор функций кнопок и режим отображения на дисплее */
+	uint8_t gmenuset;		/* набор функций кнопок и режим отображения на дисплее */
 
 	/* группы */
 	uint16_t ggroup;			/* последняя группа в менюю, с которой работали */
@@ -4094,7 +4022,7 @@ struct nvmap
 
 /* константы, определяющие расположение параметров в FRAM */
 
-#define RMT_MENUSET_BASE OFFSETOF(struct nvmap, menuset)		/* набор функций кнопок и режим отображения на дисплее */
+#define RMT_MENUSET_BASE OFFSETOF(struct nvmap, gmenuset)		/* набор функций кнопок и режим отображения на дисплее */
 #define RMT_GROUP_BASE OFFSETOF(struct nvmap, ggroup)		/* байт - последняя группа меню, с которой работали */
 #define RMT_SIGNATURE_BASE(i) OFFSETOF(struct nvmap, signature [(i)])			/* расположение сигнатуры */
 #define RMT_LOCKMODE_BASE(b) OFFSETOF(struct nvmap, bands [(b)].glock)		/* признак блокировки валкодера */
@@ -5803,7 +5731,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 
 #endif /* WITHTX */
 
-static uint_fast8_t menuset; 	/* номер комплекта функций на кнопках (переключается кнопкой MENU) */
+static uint_fast8_t gmenuset; 	/* номер комплекта функций на кнопках (переключается кнопкой MENU) */
 static uint_fast8_t dimmflag;	/* не-0: притушить дисплей. */
 static uint_fast8_t sleepflag;	/* не-0: выключить дисплей и звук. */
 static uint_fast8_t gblinkphase;
@@ -5812,7 +5740,7 @@ uint_fast8_t actpageix(void)
 {
 	if ((dimmflag || sleepflag || dimmmode))
 		return display_getpagesleep();
-	return menuset;
+	return gmenuset;
 }
 
 /* состояние для мерцающих индикаторов на диспле */
@@ -8611,6 +8539,60 @@ static const struct paramdefdef xgtxgate =
 
 #endif /* WITHTX */
 
+#if WITHIF4DSP
+// CW filter bandwidth for WIDE
+static const struct paramdefdef xfltbw_cwwide =
+{
+	QLABEL("CW W WDT"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for WIDE
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
+	RMT_BWPROPSLEFT_BASE(BWPROPI_CWWIDE),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_cwwide.left10_width10,
+	getzerobase,
+};
+// CW filter edges for WIDE
+static const struct paramdefdef xfltsofter_cwwide =
+{
+	QLABEL("CW W SFT"), 7, 0, 0, 	ISTEP1,	// CW filter edges for WIDE
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
+	RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWWIDE),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_cwwide.fltsofter,
+	getzerobase,
+};
+// CW filter bandwidth for NARROW
+static const struct paramdefdef xfltbw_cwnarrow =
+{
+	QLABEL("CW N WDT"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for NARROW
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
+	RMT_BWPROPSLEFT_BASE(BWPROPI_CWNARROW),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_cwnarrow.left10_width10,
+	getzerobase,
+};
+// CW filter edges for NARROW
+static const struct paramdefdef xfltsofter_cwnarrow =
+{
+	QLABELENC2("CW N SOFT"),	// CW filter edges for NARROW
+	0, 0,
+	RJ_UNSIGNED,		// rj
+	ISTEP1,
+	ITEM_VALUE,
+	WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
+	RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWNARROW),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_cwnarrow.fltsofter,
+	getzerobase, /* складывается со смещением и отображается */
+};
+#endif /* WITHIF4DSP */
+
 #if WITHENCODER2
 
 static const struct paramdefdef * enc2menus [] =
@@ -8622,19 +8604,7 @@ static const struct paramdefdef * enc2menus [] =
 #if ! WITHPOTIFGAIN
 	& xrfgain1,	// Усиление ПЧ/ВЧ в процентах
 #endif /* ! WITHPOTIFGAIN */
-	(const struct paramdefdef [1]) {
-		QLABELENC2("CW N SOFT"),	// CW filter edges for NARROW
-		0, 0,
-		RJ_UNSIGNED,		// rj
-		ISTEP1,
-		ITEM_VALUE,
-		WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
-		RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWNARROW),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& bwprop_cwnarrow.fltsofter,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xfltsofter_cwnarrow,	// CW filter edges for NARROW
 #endif /* WITHIF4DSP */
 #if WITHELKEY && ! WITHPOTWPM
 	& xgelkeywpm,
@@ -8960,7 +8930,7 @@ loadsavedstate(void)
 	enc2state = loadvfy8up(RMT_ENC2STATE_BASE, ENC2STATE_INITIALIZE, ENC2STATE_COUNT - 1, enc2state);	/* вытаскиваем режим режактирования паарметров вторым валкодером */
 	enc2pos = loadvfy8up(RMT_ENC2POS_BASE, 0, ENC2POS_COUNT - 1, enc2pos);	/* вытаскиваем номер параметра для редактирования вторым валкодером */
 #endif /* WITHENCODER2 */
-	menuset = loadvfy8up(RMT_MENUSET_BASE, 0, display_getpagesmax(), menuset);		/* вытаскиваем номер субменю, с которым работаем сейчас */
+	gmenuset = loadvfy8up(RMT_MENUSET_BASE, 0, display_getpagesmax(), gmenuset);		/* вытаскиваем номер субменю, с которым работаем сейчас */
 #if WITHSPLIT
 	gsplitmode = loadvfy8up(RMT_SPLITMODE_BASE, 0, VFOMODES_COUNT - 1, gsplitmode); /* (vfo/vfoa/vfob/mem) */
 	gvfoab = loadvfy8up(RMT_VFOAB_BASE, 0, VFOS_COUNT - 1, gvfoab); /* (vfoa/vfob) */
@@ -10137,7 +10107,7 @@ static void
 updateboard2(void)
 {
 #if WITHENCODER
-	encoderA_set_resolution(encresols [genc1pulses], genc1dynamic);
+	encoder_set_resolution(& encoder1, encresols [genc1pulses], genc1dynamic);
 #endif /* WITHENCODER */
 	display2_setbgcolor(gbluebgnd ? COLORPIP_BLUE : COLORPIP_BLACK);
 }
@@ -13612,6 +13582,65 @@ display2_bars(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t
 #endif /* WITHBARS */
 }
 
+#include <atomic>
+static std::atomic<uint32_t> counterupdatedfreqs;
+static std::atomic<uint32_t> counterupdatedvolume;
+
+/*
+	отсчёт времени по запрещению обновления дисплея при вращении валкодера.
+	обновлению s-метра
+	обновлению вольтметра
+	обновлению режимов работы
+	Вызывается из обработчика таймерного прерывания
+*/
+static void
+refreshticker_cb(void * ctx)
+{
+	// таймер обновления частоты
+	{
+		const uint_fast32_t t = counterupdatedfreqs;
+		if (t != 0)
+			counterupdatedfreqs = t - 1;
+	}
+	// таймер обновления громкости
+	{
+		const uint_fast32_t t = counterupdatedvolume;
+		if (t != 0)
+			counterupdatedvolume = t - 1;
+	}
+}
+
+// Проверка разрешения обновления дисплея (индикация частоты).
+static uint_fast8_t
+refreshenabled_freqs(void)
+{
+	return counterupdatedfreqs == 0;		/* таймер дошёл до нуля - можно обновлять. */
+}
+
+// подтверждение выполненного обновления дисплея (индикация частоты).
+static void
+refreshperformed_freqs(void)
+{
+	const uint_fast32_t n = UINTICKS(1000 / gdisplayfreqsfps);	// 50 ms - обновление с частотой 20 герц
+
+	counterupdatedfreqs = n;
+}
+
+// Проверка разрешения обновления громкости.
+static uint_fast8_t
+refreshenabled_volume(void)
+{
+	return counterupdatedvolume == 0;		/* таймер дошёл до нуля - можно обновлять. */
+}
+
+// подтверждение выполненного обновления дисплея (индикация частоты).
+static void
+refreshperformed_volume(void)
+{
+	const uint_fast32_t n = UINTICKS(50);	// 50 ms - обновление с частотой 20 герц
+
+	counterupdatedvolume = n;
+}
 
 static uint_fast8_t processpots(void)
 {
@@ -13673,7 +13702,7 @@ static uint_fast8_t processpots(void)
 	return changed;
 }
 
-static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
+static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * ev)
 {
 	const uint_fast8_t bi = getbankindex_ab(0);
 	const uint_fast8_t submode = getsubmode(bi);
@@ -13682,7 +13711,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
 	// +++ получение состояния органов управления */
 #if WITHENCODER_1F
 	{
-		const int_least16_t delta = encoder_delta(& encoder_ENC1F, BOARD_ENC1F_DIVIDE);
+		const int_least16_t delta = event_getRotate_LoRes(& ev->encF1, BOARD_ENC1F_DIVIDE);
 		if (delta)
 			bring_enc1f();
 		switch (enc1f_sel)
@@ -13691,9 +13720,21 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
 			break;
 		case 0:
 			/* установка громкости */
-			changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), bring_afvolume);
+			if (delta == 0)
+				break;
+			if (refreshenabled_volume())
+			{
+				refreshperformed_volume();
+				changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), bring_afvolume);
+			}
+			else
+			{
+				event_pushback_LoRes(& ev->encF1, delta, BOARD_ENC1F_DIVIDE);
+			}
 			break;
 		case 1:
+			if (delta == 0)
+				break;
 			/* установка IF GAIN */
 			changed |= encoder_flagne(& xrfgain1, delta, CATINDEX(CAT_RG_INDEX), bring_rfvolume);
 			break;
@@ -13702,14 +13743,18 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
 #endif /* WITHENCODER_1F */
 #if WITHENCODER_2F
 	{
-		const int_least16_t delta = encoder_delta(& encoder_ENC2F, BOARD_ENC2F_DIVIDE);
+		const int_least16_t delta = event_getRotate_LoRes(& ev->encF2, BOARD_ENC2F_DIVIDE);
 		if (delta)
 			bring_enc2f();
 		switch (enc2f_sel)
 		{
 		default:
+			if (delta == 0)
+				break;
 			break;
 		case 0:
+			if (delta == 0)
+				break;
 			break;
 		}
 	}
@@ -13722,7 +13767,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
 		const unsigned apos = gmiddlepos [mode];
 		const struct paramdefdef * const pd = mdt [mode].middlemenu(& nitems) [gmiddlepos [mode]];
 
-		int_least16_t delta = encoder_delta(& encoder_ENC3F, BOARD_ENC3F_DIVIDE);
+		int_least16_t delta = event_getRotate_LoRes(& ev->encF3, BOARD_ENC3F_DIVIDE);
 		changed |= param_rotate(pd, delta);	// модификация и сохранение параметра
 		if (delta)
 			bring_enc3f();
@@ -13751,7 +13796,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
 	/* перемещение по middle bar */
 	if (! inmenu)
 	{
-		const int_least16_t delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);
+		const int_least16_t delta = event_getRotate_LoRes(& ev->encF4, BOARD_ENC4F_DIVIDE);
 		if (delta)
 		{
 			unsigned middlerowsize;
@@ -13776,45 +13821,6 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu)
 	if (changed != 0)
 		updateboard();	/* полная перенастройка (как после смены режима) */
 	return changed;
-}
-
-static volatile uint_fast16_t counterupdatedfreqs;
-
-/*
-	отсчёт времени по запрещению обновления дисплея при вращении валкодера.
-	обновлению s-метра
-	обновлению вольтметра
-	обновлению режимов работы
-	Вызывается из обработчика таймерного прерывания
-*/
-static void
-display_event(void * ctx)
-{
-	// таймер обновления частоты
-	{
-		const uint_fast16_t t = counterupdatedfreqs;
-		if (t != 0)
-			counterupdatedfreqs = t - 1;
-	}
-}
-
-// Проверка разрешения обновления дисплея (индикация частоты).
-static uint_fast8_t
-display_refreshenabled_freqs(void)
-{
-	return getstablev16(& counterupdatedfreqs) == 0;		/* таймер дошёл до нуля - можно обновлять. */
-}
-
-// подтверждение выполненного обновления дисплея (индикация частоты).
-static void
-display_refreshperformed_freqs(void)
-{
-	const uint_fast16_t n = UINTICKS(1000 / gdisplayfreqsfps);	// 50 ms - обновление с частотой 20 герц
-
-	IRQL_t oldIrql;
-	RiseIrql(TICKER_IRQL, & oldIrql);
-	counterupdatedfreqs = n;
-	LowerIrql(oldIrql);
 }
 
 dctx_t * display2_getcontext(void)
@@ -13903,10 +13909,10 @@ display_redrawfreqstimed(
 	uint_fast8_t immed	// Безусловная перерисовка изображения
 	)
 {
-	if (immed || display_refreshenabled_freqs())
+	if (immed || refreshenabled_freqs())
 	{
 		//display2_needupdate();	/* обновление показания частоты */
-		display_refreshperformed_freqs();
+		refreshperformed_freqs();
 	}
 }
 
@@ -13932,7 +13938,7 @@ static uint_fast8_t sendmorsepos [2];
 
 static uint_fast8_t catstatein = CATSTATE_HALTED;
 
-static volatile uint_fast16_t catstateout = CATSTATEO_HALTED;
+static std::atomic<uint_fast16_t> catstateout(CATSTATEO_HALTED);
 static volatile const char * catsendptr;
 static volatile uint_fast8_t catsendcount;
 
@@ -13942,7 +13948,7 @@ static volatile uint_fast8_t catsendcount;
 static uint_fast8_t
 cat_getstateout(void)
 {
-	return getstablev16(& catstateout);
+	return catstateout;
 }
 
 /* вызывается из обработчика прерываний */
@@ -15863,7 +15869,7 @@ processcatmsg(
 		if (cathasparam)
 		{
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoderA_pushback(steps, genc1div);
+			encoder_pushback(& encoder1, steps * (int) genc1div);
 		}
 	}
 	else if (pcmd == packcmd2('D', 'N'))
@@ -15871,7 +15877,7 @@ processcatmsg(
 		if (cathasparam)
 		{
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoderA_pushback(0 - steps, genc1div);
+			encoder_pushback(& encoder1, 0 - steps * (int) genc1div);
 		}
 	}
 #if 0
@@ -16525,16 +16531,18 @@ const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 	#if WITHELKEY
 		& xgelkeywpm,
 	#endif /* WITHELKEY */
+		& xfltbw_cwnarrow,
+		& xfltsofter_cwnarrow,
 		& xgcwpitch10,
 	#if WITHTX && WITHELKEY
 		& xgbkinenable,
 	#endif /* WITHTX && WITHELKEY */
-	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
-		& xgzoomxpow2,
-	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
 	#if WITHUSEDUALWATCH
 		& xmainsubrxmode,
 	#endif /* WITHUSEDUALWATCH */
+	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
+		& xgzoomxpow2,
+	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -17387,12 +17395,12 @@ static uint_fast16_t menulooklast(uint_fast16_t menupos)
 /* возврат ненуля - было какое-либо нажатие,
 	требуется обновление дисплея и состояния аппаратуры */
 static uint_fast8_t
-processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
+processmenukeyandencoder(inputevent_t * ev)
 {
 	uint_fast16_t firstitem = gmenufirstitem [gmenulevel];
 	uint_fast16_t lastitem = gmenulastitem [gmenulevel];
 	const struct menudef * mp = gmp0;
-	uint_fast8_t exitkey = getexitkey();
+	//uint_fast8_t exitkey = getexitkey();
 	uint_fast16_t menupos = mp - menutable;
 	multimenuwnd_t window;
 	const uint_fast8_t itemmask = gmenulevel ? ITEM_VALUE : ITEM_GROUP;
@@ -17414,36 +17422,35 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 //	}
 
 #if WITHENCODER_4F
-	if (! kbready)
+	if (! ev->keyevent.kbready)
 	{
-		const int_least16_t delta = encoder_delta(& encoder_ENC4F, BOARD_ENC4F_DIVIDE);  // перемещение по меню также с помощью 2го энкодера
+		const int_least16_t delta = event_getRotate_LoRes(& ev->encF4, BOARD_ENC4F_DIVIDE);  // перемещение по меню также с помощью 2го энкодера
 
 		if (delta > 0)
 		{
-			kbch = KBD_CODE_MENU_DOWN;
-			kbready = 1;
+			ev->keyevent.kbch = KBD_CODE_MENU_DOWN;
+			ev->keyevent.kbready = 1;
 		}
 		else if (delta < 0)
 		{
-			kbch = KBD_CODE_MENU_UP;
-			kbready = 1;
+			ev->keyevent.kbch = KBD_CODE_MENU_UP;
+			ev->keyevent.kbready = 1;
 		}
 	}
 #elif WITHENCODER2
-	if (! kbready)
+	if (! ev->keyevent.kbready)
 	{
-		uint_fast8_t js;
-		const int_least16_t nr2 = getRotateHiRes_FN(& js, genc2div);  // перемещение по меню также с помощью 2го энкодера
+		const int_least16_t nr2 = event_getRotate_LoRes(& ev->encFN, genc2div);  // перемещение по меню также с помощью 2го энкодера
 
 		if (nr2 > 0)
 		{
-			kbch = KBD_CODE_MENU_DOWN;
-			kbready = 1;
+			ev->keyevent.kbch = KBD_CODE_MENU_DOWN;
+			ev->keyevent.kbready = 1;
 		}
 		else if (nr2 < 0)
 		{
-			kbch = KBD_CODE_MENU_UP;
-			kbready = 1;
+			ev->keyevent.kbch = KBD_CODE_MENU_UP;
+			ev->keyevent.kbready = 1;
 		}
 	}
 #endif /* WITHENCODER2 */
@@ -17451,7 +17458,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 #if WITHENCODER
 	{
 		/* редактирование значения с помощью поворота валкодера. */
-		const int_least16_t nrotate = getRotateLoRes_A(genc1div);
+		const int_least16_t nrotate = event_getRotate_Menu(& ev->encMAIN);
 
 		if (nrotate != 0 && ismenukinddp(mp->pd, ITEM_VALUE))
 		{
@@ -17464,14 +17471,13 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 	}
 #endif /* WITHENCODER */
 
-	if (! kbready)
+	if (! ev->keyevent.kbready)
 		return 0;
 
-	switch (kbch)
+	switch (ev->keyevent.kbch)
 	{
 	default:
-		/* в случчае несовпадения - прожолжаем работать. */
-		return 0;
+		break;
 
 	case KBD_CODE_DISPMODE:
 	case KBD_ENC2_PRESS:
@@ -17479,6 +17485,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 		{
 			/* выход из меню */
 			setinmenu(0, NULL);
+			encoders_clear();		// предотвратить переход по частоте после изменения паарметров (накопленные delta)
 		}
 		else if (gmenulevel != 0)
 		{
@@ -17492,6 +17499,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 			while (ismenukinddp(mp->pd, ITEM_VALUE));
 			setinmenu(1, mp);
 		}
+		ev->keyevent.kbready = 0;
 		return 0;
 
 	case KBD_CODE_MENU:
@@ -17521,6 +17529,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 				// группа без пунктов?
 			}
 		}
+		ev->keyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 
 //	case KBD_CODE_LOCK:
@@ -17537,6 +17546,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 	case KBD_CODE_POWEROFF:
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		uif_pwbutton_press();
+		ev->keyevent.kbready = 0;
 		return 0;
 
 #if WITHTX
@@ -17544,6 +17554,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		/* выключить режим настройки или приём/передача */
 		uif_key_tuneoff();
+		ev->keyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_TXTUNE:
@@ -17556,11 +17567,13 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 	case KBD_CODE_ATUSTART:
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		uif_key_atunerstart();
+		ev->keyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_ATUBYPASS:
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		uif_key_bypasstoggle();
+		ev->keyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 #endif /* WITHAUTOTUNER */
 
@@ -17571,6 +17584,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 		uif_key_click_banddown();
+		ev->keyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER2 */
 
@@ -17591,6 +17605,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 		uif_key_click_bandup();
+		ev->keyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER2 */
 
@@ -17623,6 +17638,7 @@ processmenukeyandencoder(uint_fast8_t kbready, uint_fast8_t kbch)
 		PRINTF(PSTR("menu: ")); PRINTF(mp->pd->qlabel); PRINTF(PSTR("\n"));
 #endif /* WITHDEBUG */
 
+		ev->keyevent.kbready = 0;
 		return 0;
 	}
 
@@ -18035,20 +18051,6 @@ process_key_menuset0(uint_fast8_t kbch)
 	}
 }
 #endif /* WITHKEYBOARD */
-
-
-// Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-void display2_keyboard_screen0(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
-{
-
-}
-
-// Обработка клавиатуры и валкодеров при нахождении в режиме меню
-void display2_keyboard_menu(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
-{
-
-}
-
 
 static int_fast32_t
 getpower10(uint_fast8_t pos)
@@ -18471,16 +18473,19 @@ void playhandler(uint8_t code)
 /* возврат ненуля - было какое-либо нажатие,
 	требуется обновление дисплея и состояния аппаратуры */
 static uint_fast8_t
-processmainloopkeyboard(uint_fast8_t kbch)
+processmainloopkeyboard(inputevent_t * ev)
 {
 #if WITHTOUCHGUI
 	if (keyboard_redirect)
 	{
-		gui_put_keyb_code(kbch);
+		if (ev->keyevent.kbready == 0)
+			return 0;
+		ev->keyevent.kbready = 0;
+		gui_put_keyb_code(ev->keyevent.kbch);
 		return 0;
 	}
 #endif
-	const uint_fast8_t exitkey = getexitkey();	/* эта клавиша совмещена с menu - дополнительный код для выхода. */
+	//const uint_fast8_t exitkey = getexitkey();	/* эта клавиша совмещена с menu - дополнительный код для выхода. */
 
 #if WITHDIRECTFREQENER
 	uint_fast8_t rj;
@@ -18489,8 +18494,11 @@ processmainloopkeyboard(uint_fast8_t kbch)
 
 	if (editfreqmode != 0)
 	{
-		const uint_fast8_t c = kbd_getnumpad(kbch);
-		if (kbch == KBD_CODE_ENTERFREQDONE)
+		if (ev->keyevent.kbready == 0)
+			return 0;
+		ev->keyevent.kbready = 0;
+		const uint_fast8_t c = kbd_getnumpad(ev->keyevent.kbch);
+		if (ev->keyevent.kbch == KBD_CODE_ENTERFREQDONE)
 		{
 			editfreqmode = 0;
 			return 1;
@@ -18527,8 +18535,9 @@ processmainloopkeyboard(uint_fast8_t kbch)
 			return 1;
 		}
 	}
-	else if (kbch == KBD_CODE_ENTERFREQ)
+	else if (ev->keyevent.kbready && ev->keyevent.kbch == KBD_CODE_ENTERFREQ)
 	{
+		ev->keyevent.kbready = 0;
 		blinkpos = DISPLAY_LEFTBLINKPOS;		/* позиция курсора */
 		editfreqmode = 1;
 		editfreq = gfreqs [getbankindex_tx(gtx)];
@@ -18536,8 +18545,15 @@ processmainloopkeyboard(uint_fast8_t kbch)
 	}
 #endif /* WITHDIRECTFREQENER */
 
-	switch (kbch)
+	if (! ev->keyevent.kbready)
+		return 0;
+	ev->keyevent.kbready = 0;
+
+	switch (ev->keyevent.kbch)
 	{
+	default:
+		break;
+
 	case KBD_CODE_MENU:
 		/* Вход в меню
 			 - не вызывает сохранение состояния диапазона */
@@ -18578,9 +18594,10 @@ processmainloopkeyboard(uint_fast8_t kbch)
 		{
 			/* Альтернативные функции кнопок - "Fn"
 				 - не вызывает сохранение состояния диапазона */
-			menuset = calc_next(menuset, 0, display_getpagesmax());
-			save_i8(RMT_MENUSET_BASE, menuset);
+			gmenuset = calc_next(gmenuset, 0, display_getpagesmax());
+			save_i8(RMT_MENUSET_BASE, gmenuset);
 			//display2_needupdate();
+			ev->keyevent.kbready = 0;
 			return 1;	// требуется обновление индикатора
 		}
 #endif /* ! WITHTOUCHGUI */
@@ -18596,20 +18613,8 @@ processmainloopkeyboard(uint_fast8_t kbch)
 		uif_key_click_menubyname("IF SHIFT", KBD_CODE_IFSHIFT);
 		return 1;	/* клавиша уже обработана */
 
-#elif KEYBSTYLE_SW2013SF_US2IT || KEYBSTYLE_SW2012CN5_UY5UM
-	case KBD_CODE_MENU_CWSPEED:
-		uif_key_click_menubyname("CW SPEED", KBD_CODE_MENU_CWSPEED);
-		return 1;	/* клавиша уже обработана */
-
-	case KBD_CODE_IFSHIFT:
-		uif_key_click_menubyname("IF SHIFT", KBD_CODE_IFSHIFT);
-		return 1;	/* клавиша уже обработана */
-
-#endif /* KEYBSTYLE_SW2013SF_US2IT || WITHIF4DSP */
+#endif /* WITHIF4DSP */
 #endif /* WITHMENU */
-
-	default:
-		break;
 	}
 
 #if WITHWAVPLAYER || WITHSENDWAV
@@ -18650,34 +18655,17 @@ processmainloopkeyboard(uint_fast8_t kbch)
 	}
 #endif /* WITHWAVPLAYER */
 
-	uint_fast8_t processed = 0;
-#if 1
-	processed |= process_key_menuset0(kbch);
-#else
-	switch (menuset)
-	{
-	default:
-	case DISPMODE_MAIN:
-		processed |= process_key_menuset0(kbch);
-		break;
-#if DSTYLE_SWITCHMODES2		// по кнопке управления переключается набор отображаемой информации
-	case DISPMODE_ALT:
-		processed |= process_key_menuset0(kbch);
-		break;
-#endif /* DSTYLE_SWITCHMODES2 */
-	}
-#endif
-	if (processed != 0)
+	if (process_key_menuset0(ev->keyevent.kbch))
 		return 1;
-	if (process_key_menuset_common(kbch))
-			return 1;	/* клавиша уже обработана */
+	if (process_key_menuset_common(ev->keyevent.kbch))
+		return 1;	/* клавиша уже обработана */
 	return 0;	// не требуется обновления индикатора
 }
 
 #else /* WITHKEYBOARD */
 
 static uint_fast8_t
-processmainloopkeyboard(uint_fast8_t kbch)
+processmainloopkeyboard(inputevent_t * ev)
 {
 	return 0;
 }
@@ -19439,13 +19427,15 @@ static void keyspoolprocess(void * ctx)
 
 /* Возвращаем не-0, если было изменение частоты настройки */
 static uint_fast8_t
-processmainlooptuneknobs(void)
+processmainlooptuneknobs(inputevent_t * ev)
 {
 	uint_fast8_t freqchanged = 0;
 	const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
 	const uint_fast8_t bi_sub = getbankindexsub();		/* состояние выбора банков может измениться */
 	uint_fast8_t jumpsize_main;
 	uint_fast8_t jumpsize_sub;
+
+#if WITHENCODER
 
 	/* переход по частоте - шаг берётся из gstep_ENC_MAIN */
 #if WITHBBOX && defined (WITHBBOXFREQ)
@@ -19454,22 +19444,24 @@ processmainlooptuneknobs(void)
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC2;
 #elif WITHENCODER_SUB
-	int_least16_t nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
-	int_least16_t nrotate_sub = getRotateHiRes(& encoder_sub, & jumpsize_sub, genc1div * gencderate);
+	int_least16_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
+	int_least16_t nrotate_sub = event_getRotateHiRes(& ev->encSUB, & jumpsize_sub, genc1div * gencderate);
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC_MAIN;
 #elif WITHENCODER2 && LINUX_SUBSYSTEM
 	int_least16_t nrotate_main = 0;	// ignore encoder
+	jumpsize_main = 1;
+	jumpsize_sub = 1;
 	int_least16_t nrotate_sub = linux_get_enc2();
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC2;
 #elif WITHENCODER2
-	int_least16_t nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
-	int_least16_t nrotate_sub = getRotateHiRes_FN(& jumpsize_sub, genc2div);
+	int_least16_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
+	int_least16_t nrotate_sub = event_getRotateHiRes(& ev->encFN, & jumpsize_sub, genc2div);
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC2;
 #else
-	int_least16_t nrotate_main = getRotateHiRes(& encoder1, & jumpsize_main, genc1div * gencderate);
+	int_least16_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
 	int_least16_t nrotate_sub = 0;
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = 0;
@@ -19496,18 +19488,19 @@ processmainlooptuneknobs(void)
 
 	if (glock == 0)
 	{
-
+		uint_fast32_t * const pimain = & gfreqs [bi_main];
+		uint_fast32_t * const pisub = & gfreqs [bi_sub];
 		/* Обработка накопленного количества импульсов от валкодера */
 		if (nrotate_main < 0)
 		{
 			/* Валкодер A: вращали "вниз" */
-			gfreqs [bi_main] = prevfreq(gfreqs [bi_main], gfreqs [bi_main] - ((uint_fast32_t) step_main * jumpsize_main * - nrotate_main), step_main, tune_bottom(bi_main));
+			* pimain = prevfreq(* pimain, * pimain - ((uint_fast32_t) step_main * jumpsize_main * - nrotate_main), step_main, tune_bottom(bi_main));
 			freqchanged = 1;
 		}
 		else if (nrotate_main > 0)
 		{
 			/* Валкодер A: вращали "вверх" */
-			gfreqs [bi_main] = nextfreq(gfreqs [bi_main], gfreqs [bi_main] + ((uint_fast32_t) step_main * jumpsize_main * nrotate_main), step_main, tune_top(bi_main));
+			* pimain = nextfreq(* pimain, * pimain + ((uint_fast32_t) step_main * jumpsize_main * nrotate_main), step_main, tune_top(bi_main));
 			freqchanged = 1;
 		}
 
@@ -19516,13 +19509,13 @@ processmainlooptuneknobs(void)
 		if (nrotate_sub < 0)
 		{
 			/* Валкодер B: вращали "вниз" */
-			gfreqs [bi_sub] = prevfreq(gfreqs [bi_sub], gfreqs [bi_sub] - ((uint_fast32_t) step_sub * jumpsize_sub * - nrotate_sub), step_sub, tune_bottom(bi_sub));
+			* pisub = prevfreq(* pisub, * pisub - ((uint_fast32_t) step_sub * jumpsize_sub * - nrotate_sub), step_sub, tune_bottom(bi_sub));
 			freqchanged = 1;
 		}
 		else if (nrotate_sub > 0)
 		{
 			/* Валкодер B: вращали "вверх" */
-			gfreqs [bi_sub] = nextfreq(gfreqs [bi_sub], gfreqs [bi_sub] + ((uint_fast32_t) step_sub * jumpsize_sub * nrotate_sub), step_sub, tune_top(bi_sub));
+			* pisub = nextfreq(* pisub, * pisub + ((uint_fast32_t) step_sub * jumpsize_sub * nrotate_sub), step_sub, tune_top(bi_sub));
 			freqchanged = 1;
 		}
 #endif /* ! WITHTOUCHGUI */
@@ -19533,19 +19526,26 @@ processmainlooptuneknobs(void)
 	freqchanged = freqchanged || !! nrotate_sub;
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
 
+
+#else /* WITHENCODER */
+
+#endif /* WITHENCODER */
+
 #if 0 && CPUSTYLE_XC7Z		// тестовая прокрутка частоты
 	hamradio_set_freq(hamradio_get_freq_rx() + 1);
 	freqchanged = 1;
 #endif
+
 	return freqchanged;
 }
 // работа в главной машине состояний
 static STTE_t
 hamradio_main_step(void)
 {
-//	inputevent_t event;
-//	inputevent_initialize(& event);
-//	inputevent_fill(& event);
+	inputevent_t event;
+	inputevent_initialize(& event);
+	inputevent_fill(& event);
+
 	switch (sthrl)
 	{
 //	case STHRL_MENU:
@@ -19561,7 +19561,7 @@ hamradio_main_step(void)
 
 	case STHRL_RXTX_FQCHANGED:
 			/* валкодер перестал вращаться - если было изменение частоты - сохраняем конфигурацию */
-			if (display_refreshenabled_freqs())
+			if (refreshenabled_freqs())
 			{
 				processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
 				const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
@@ -19576,7 +19576,7 @@ hamradio_main_step(void)
 			}
 			else
 			{
-				// проваливаемся дальше, когда наступит время - display_refreshenabled_freqs -
+				// проваливаемся дальше, когда наступит время - refreshenabled_freqs -
 				// сохраним частоту и пеерйдём к состоянию STHRL_RXTX
 
 			}
@@ -19633,12 +19633,8 @@ hamradio_main_step(void)
 	#endif /* WITHUSEAUDIOREC */
 
 		{
-			uint_fast8_t kbch, kbready;
-			processmessages(& kbch, & kbready);
-
-		#if WITHKEYBOARD
 #if WITHMENU
-			if (ginmenu0 && processmenukeyandencoder(kbready, kbch))
+			if (ginmenu0 && processmenukeyandencoder(& event))
 			{
 		#if WITHTOUCHGUI
 				display_redrawfreqstimed(1);
@@ -19647,7 +19643,7 @@ hamradio_main_step(void)
 
 			}
 #endif /* WITHMENU */
-			if (! ginmenu0 && kbready != 0 && processmainloopkeyboard(kbch))
+			if (! ginmenu0 && processmainloopkeyboard(& event))
 			{
 		#if WITHTOUCHGUI
 				display_redrawfreqstimed(1);
@@ -19655,7 +19651,6 @@ hamradio_main_step(void)
 				//display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
 
 			} // end keyboard processing
-		#endif /* WITHKEYBOARD */
 		}
 		if (processpots())
 		{
@@ -19667,7 +19662,7 @@ hamradio_main_step(void)
 
 		} // end potentiometers processing
 
-		if (processmainloopencoders(ginmenu0))
+		if (processmainloopencoders(ginmenu0, & event))
 		{
 	#if WITHTOUCHGUI
 			display_redrawfreqstimed(1);
@@ -19675,7 +19670,7 @@ hamradio_main_step(void)
 
 		}
 		// Knobs rotation processing
-		if (! ginmenu0 && processmainlooptuneknobs())
+		if (! ginmenu0 && processmainlooptuneknobs(& event))
 		{
 			updateboard_freq();	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 			// Ограничение по скорости обновления дисплея уже заложено в него
@@ -20956,7 +20951,7 @@ void hamradio_gui_set_reqautotune2(uint_fast8_t val)
 
 void display2_set_page_temp(uint_fast8_t page)
 {
-	menuset = page;
+	gmenuset = page;
 	//display2_needupdate();
 }
 
@@ -21331,7 +21326,7 @@ application_initialize(void)
 	{
 		static ticker_t ticker;
 
-		ticker_initialize(& ticker, NTICKS(UI_TICKS_PERIOD), display_event, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		ticker_initialize(& ticker, NTICKS(UI_TICKS_PERIOD), refreshticker_cb, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 		ticker_add(& ticker);
 	}
 
@@ -21349,7 +21344,7 @@ application_initialize(void)
 
 		IRQLSPINLOCK_INITIALIZE(& boardupdatelock);
 		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL);
-		ticker_initialize_user2(& displatchticker, NTICKS(1000 / glatchfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_initialize_user_display(& displatchticker, NTICKS(1000 / glatchfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
 		ticker_add(& displatchticker);
 	}
 
