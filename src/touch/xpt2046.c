@@ -16,6 +16,7 @@
 #include "xpt2046.h"
 
 // Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO.,LTD http://www.xptek.com.cn
+// TI TSC2046
 // SPI interface used
 
 // При необходимости разместить в файле конфигурации платы.
@@ -67,11 +68,12 @@ xpt2046_read4(
 	uint_fast16_t * z2
 	)
 {
-	enum { PDx = XPT2046_PD0 };	// Reference is off and ADC is on.
+	enum { PDx = 0*XPT2046_PD1 | 0*XPT2046_PD0 };
 	static const uint8_t txbuf [] =
 	{
 		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_X, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_X, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_Z1, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,
@@ -90,9 +92,9 @@ xpt2046_read4(
 	for (i = 0; i < 1; ++ i)
 	{
 		yv += USBD_peek_u16_BE(rxbuf + (i * 8) + 3) / 8;
-		xv += USBD_peek_u16_BE(rxbuf + (i * 8) + 5) / 8;
-		z1v += USBD_peek_u16_BE(rxbuf + (i * 8) + 7) / 8;
-		z2v += USBD_peek_u16_BE(rxbuf + (i * 8) + 9) / 8;
+		xv += USBD_peek_u16_BE(rxbuf + (i * 8) + 7) / 8;
+		z1v += USBD_peek_u16_BE(rxbuf + (i * 8) + 9) / 8;
+		z2v += USBD_peek_u16_BE(rxbuf + (i * 8) + 11) / 8;
 	}
 	* y = yv / i;
 	* x = xv / i;
