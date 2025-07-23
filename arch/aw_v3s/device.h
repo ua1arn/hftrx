@@ -95,11 +95,7 @@ typedef enum IRQn
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x01C81000) /*!< GIC_DISTRIBUTOR GIC DISTRIBUTOR Base */
 #define GIC_INTERFACE_BASE ((uintptr_t) 0x01C82000)   /*!< GIC_INTERFACE GIC CPU IF Base */
 
-#if __aarch64__
-    #include <core_ca53.h>
-#else
     #include <core_ca.h>
-#endif
 
 /*
  * @brief CCU

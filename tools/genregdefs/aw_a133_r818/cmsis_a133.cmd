@@ -1,6 +1,6 @@
 @rem CONFIG_MACH_SUN50IW9
 
-SET CONVERTER=..\Debug\genregdefs.exe --guid "{9E291677-B6C7-4f4a-BBFD-D0F40B363F83}"
+SET CONVERTER=..\Debug\genregdefs.exe --cortexa5x --guid "{9E291677-B6C7-4f4a-BBFD-D0F40B363F83}"
 SET OUTFILE=..\..\..\arch\aw_a133\device.h
 SET FILELIST= ^
 	ccu.csv sid.csv prcm.csv gic.csv gpio.csv ^

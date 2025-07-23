@@ -266,11 +266,7 @@ typedef enum IRQn
 #define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL  Base */
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG  Base */
 
-#if __aarch64__
-    #include <core_ca53.h>
-#else
     #include <core_ca.h>
-#endif
 
 /*
  * @brief AUDIO_CODEC

@@ -306,7 +306,7 @@ typedef enum IRQn
 #define C0_CPUX_CFG_T507_BASE ((uintptr_t) 0x09010000)/*!< C0_CPUX_CFG_T507 T507 Cluster 0 Configuration Register List Base */
 
 #if __aarch64__
-    #include <core_ca53.h>
+    #include <core64_ca.h>
 #else
     #include <core_ca.h>
 #endif

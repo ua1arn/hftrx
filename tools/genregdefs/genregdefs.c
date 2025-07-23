@@ -20,6 +20,7 @@ static int flag_debug = 0;
 static int flag_cortexm3 = 0;
 static int flag_cortexm4 = 0;
 static int flag_cortexm7 = 0;
+static int flag_cortexa5x = 0;
 static const char *guardstring = "00003039";
 /* debug stuff */
 #if 0
@@ -1670,13 +1671,17 @@ static void generate_cmsis(void)
 		{
 			emitline(0, "#include <core_cm3.h>\n");
 		}
-		else
+		else if (flag_cortexa5x)
 		{
 			emitline(0, "#if __aarch64__\n");
-			emitline(4, "#include <core_ca53.h>\n");
+			emitline(4, "#include <core64_ca.h>\n");
 			emitline(0, "#else\n");
 			emitline(4, "#include <core_ca.h>\n");
 			emitline(0, "#endif\n");
+		}
+		else
+		{
+			emitline(4, "#include <core_ca.h>\n");
 		}
 
 		//emitline(0, "#include <stdint.h>\n");
@@ -1766,50 +1771,62 @@ static void generate_cmsis(void)
 
 int main(int argc, char *argv[], char *envp[])
 {
-	//struct parsedfile pfls [MAXPARSEDFILES];
 	int i = 1;
 
-	if (argc > 2 && strcmp(argv[1], "--guid") == 0)
+	while (argc > 1)
 	{
-		guardstring = argv[2];
-		argc -= 2;
-		argv += 2;
-	}
-	if (argc > 1 && strcmp(argv[1], "--riscv") == 0)
-	{
-		flag_riscv = 1;
-		--argc;
-		++argv;
-	}
-	if (argc > 1 && strcmp(argv[1], "--cortexm3") == 0)
-	{
-		flag_cortexm3 = 1;
-		--argc;
-		++argv;
-	}
-	if (argc > 1 && strcmp(argv[1], "--cortexm4") == 0)
-	{
-		flag_cortexm4 = 1;
-		--argc;
-		++argv;
-	}
-	if (argc > 1 && strcmp(argv[1], "--cortexm7") == 0)
-	{
-		flag_cortexm7 = 1;
-		--argc;
-		++argv;
-	}
-	if (argc > 1 && strcmp(argv[1], "--svd") == 0)
-	{
-		flag_svd = 1;
-		--argc;
-		++argv;
-	}
-	if (argc > 1 && strcmp(argv[1], "--debug") == 0)
-	{
-		flag_debug = 1;
-		--argc;
-		++argv;
+		if (argc > 1 && strcmp(argv[1], "--riscv") == 0)
+		{
+			flag_riscv = 1;
+			--argc;
+			++argv;
+		}
+		else if (argc > 1 && strcmp(argv[1], "--cortexm3") == 0)
+		{
+			flag_cortexm3 = 1;
+			--argc;
+			++argv;
+		}
+		else if (argc > 1 && strcmp(argv[1], "--cortexm4") == 0)
+		{
+			flag_cortexm4 = 1;
+			--argc;
+			++argv;
+		}
+		else if (argc > 1 && strcmp(argv[1], "--cortexm7") == 0)
+		{
+			flag_cortexm7 = 1;
+			--argc;
+			++argv;
+		}
+		else if (argc > 1 && strcmp(argv[1], "--cortexa5x") == 0)
+		{
+			flag_cortexa5x = 1;
+			--argc;
+			++argv;
+		}
+		else if (argc > 1 && strcmp(argv[1], "--debug") == 0)
+		{
+			flag_debug = 1;
+			--argc;
+			++argv;
+		}
+		else if (argc > 2 && strcmp(argv[1], "--guid") == 0)
+		{
+			guardstring = argv[2];
+			argc -= 2;
+			argv += 2;
+		}
+		else if (argc > 1 && strcmp(argv[1], "--svd") == 0)
+		{
+			flag_svd = 1;
+			--argc;
+			++argv;
+		}
+		else
+		{
+			break;
+		}
 	}
 
 	if (argc < 2)

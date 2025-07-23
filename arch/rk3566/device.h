@@ -70,7 +70,7 @@ typedef enum IRQn
 #define UART9_BASE ((uintptr_t) 0xFE6D0000)           /*!< UART  Base */
 
 #if __aarch64__
-    #include <core_ca53.h>
+    #include <core64_ca.h>
 #else
     #include <core_ca.h>
 #endif

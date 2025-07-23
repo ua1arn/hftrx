@@ -225,7 +225,7 @@ typedef enum IRQn
 #define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL  Base */
 
 #if __aarch64__
-    #include <core_ca53.h>
+    #include <core64_ca.h>
 #else
     #include <core_ca.h>
 #endif
