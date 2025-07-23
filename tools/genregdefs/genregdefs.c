@@ -1681,7 +1681,7 @@ static void generate_cmsis(void)
 		}
 		else
 		{
-			emitline(4, "#include <core_ca.h>\n");
+			emitline(0, "#include <core_ca.h>\n");
 		}
 
 		//emitline(0, "#include <stdint.h>\n");
