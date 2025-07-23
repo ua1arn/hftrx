@@ -17,6 +17,18 @@
 #include "windows.h"
 #include "linux/common.h"
 
+void touch_zone_update(void);
+
+#if WITHAD936XDEV
+uint8_t ad936x_iq_shift_cic_rx(uint8_t val);
+uint8_t ad936x_iq_shift_fir_rx(uint8_t val);
+uint8_t ad936x_get_rtstune(void);
+void ad936x_set_rtstune_offset(int32_t offs);
+void ad936x_set_rtstune(uint8_t v);
+#endif /* WITHAD936XDEV */
+
+uint16_t x_sp = 0, w_sp = 0, center_freq_px = DIM_X / 2;
+
 void win_modes_handler(lv_event_t * e)
 {
 	enum { btn_num = 8 };
@@ -832,6 +844,8 @@ void win_ad936xdev_handler(lv_event_t * e)
 					button_set_text(obj, "Switch\nto UHF");
 					ad936xdev_sleep();
 					hamradio_set_freq(freq);
+					center_freq_px = DIM_X / 2;
+					touch_zone_update();
 				}
 				else
 				{
@@ -839,6 +853,9 @@ void win_ad936xdev_handler(lv_event_t * e)
 					ad936xdev_wake();
 					freq = hamradio_get_freq_rx();
 					hamradio_set_freq(433000000);
+					ad936x_set_rtstune_offset(0);
+					center_freq_px = DIM_X / 2;
+					touch_zone_update();
 				}
 
 				win_close();
@@ -854,6 +871,8 @@ void win_ad936xdev_handler(lv_event_t * e)
 				ext->payload = ! ext->payload;
 				ad936x_set_rtstune(ext->payload);
 				button_set_lock(obj, ext->payload);
+				center_freq_px = DIM_X / 2;
+				ad936x_set_rtstune_offset(0);
 				touch_zone_update();
 				break;
 
@@ -1028,8 +1047,6 @@ static void footer_buttons_init(lv_obj_t * p)
 // ***********************************************
 
 lv_obj_t * touch_zone = NULL, * sp_rect = NULL;
-uint16_t x_sp = 0, w_sp = 0;
-uint32_t center_freq_px = DIM_X / 2;
 
 void touch_zone_event_cb(lv_event_t * e)
 {
@@ -1053,14 +1070,14 @@ void touch_zone_event_cb(lv_event_t * e)
 
 		int16_t offset_x = pos.x - DIM_X / 2;
 
-		uint32_t f = hamradio_get_freq_rx(), bw = display2_zoomedbw();
-		uint32_t fp = bw / DIM_X, fn = f + offset_x * fp;
+		uint32_t f = hamradio_get_freq_rx();
+		uint32_t fp = display2_zoomedbw() / DIM_X, fn = f + offset_x * fp;
 
 		uint16_t step = 1000;
 		uint32_t f_rem = fn % step;
 
 #if WITHAD936XDEV
-		if (ad936x_get_rtstune())
+		if (ad936x_get_rtstune() && get_ad936x_stream_status())
 		{
 			center_freq_px = pos.x;
 			ad936x_set_rtstune_offset(offset_x * fp);
