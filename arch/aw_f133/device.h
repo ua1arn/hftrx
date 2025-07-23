@@ -2843,7 +2843,7 @@ typedef struct SPI_Type
     __IO uint32_t SPI_FCR;                            /*!< Offset 0x018 SPI FIFO Control Register */
     __IO uint32_t SPI_FSR;                            /*!< Offset 0x01C SPI FIFO Status Register */
     __IO uint32_t SPI_WCR;                            /*!< Offset 0x020 SPI Wait Clock Register */
-         RESERVED(0x024[0x0028 - 0x0024], uint8_t)
+    __IO uint32_t SPI_CCR;                            /*!< Offset 0x024 SPI Clock Control Register (not documented) */
     __IO uint32_t SPI_SAMP_DL;                        /*!< Offset 0x028 SPI Sample Delay Control Register */
          RESERVED(0x02C[0x0030 - 0x002C], uint8_t)
     __IO uint32_t SPI_MBC;                            /*!< Offset 0x030 SPI Master Burst Counter Register */
