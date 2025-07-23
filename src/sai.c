@@ -4062,7 +4062,7 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 		clk = allwnr_a64_get_audiopll_freq();
 		break;
 	}
-
+	(void) clk;
 	PRINTF("i2s%u: preimclkf=%u, (clk from CCU=%u)\n", ix, mclkf, (unsigned) clk);
 
 //	PRINTF("i2s%u: mclkf=%u, bclkf=%u, clk=%u\n", ix, mclkf, bclkf, (unsigned) clk);
