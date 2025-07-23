@@ -15,7 +15,7 @@
 #include "spi.h"
 #include "xpt2046.h"
 
-// Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO.,LTD http://www.xptek.com.cn
+// XPT2046 Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO.,LTD http://www.xptek.com.cn
 // TI TSC2046
 // SPI interface used
 
@@ -23,7 +23,7 @@
 //#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
 //#define BOARD_TSC1_YMIRROR 1	// Зеркалируем тачскрин по вертикали.
 
-#define tscspeed SPIC_SPEED1M
+#define tscspeed SPIC_SPEED100k
 #define tscmode SPIC_MODE0
 
 #define XPT2046_DFR_MODE 	0x00
@@ -55,6 +55,7 @@ enum XPTCoordinate
 // https://github.com/Bodmer/TFT_Touch/blob/master/TFT_Touch.cpp
 // https://github.com/MarlinFirmware/Marlin/blob/2.0.x/Marlin/src/lcd/touch/touch_buttons.cpp
 // MKS Robin Mini/firmware/Marlin2.0-MKS-Robin_mini/Marlin/src/HAL/HAL_STM32F1/xpt2046.h
+// https://github.com/d-qoi/TSC2046_kernel_driver/blob/master/TSC2046_driver.c
 
 #if WITHSPIHW || WITHSPISW
 
