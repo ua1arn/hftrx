@@ -210,7 +210,6 @@ typedef enum IRQn
 #define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< UART  Base */
 #define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK  Base */
 #define GPIOL_BASE ((uintptr_t) 0x01F02C00)           /*!< GPIO  Base */
-#define R_PIO_BASE ((uintptr_t) 0x01F02C00)           /*!< R_PIO  Base */
 #define R_RSB_BASE ((uintptr_t) 0x01F03400)           /*!< R_RSB Reduced Serial Bus Host Controller Base */
 #define R_PWM_BASE ((uintptr_t) 0x01F03800)           /*!< R_PWM  Base */
 #define SPC_BASE ((uintptr_t) 0x02000800)             /*!< SPC  Base */

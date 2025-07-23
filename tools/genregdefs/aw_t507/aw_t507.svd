@@ -5653,10 +5653,6 @@
   <baseAddress>0x0300B120</baseAddress>
   </peripheral>
   <peripheral derivedFrom="GPIOA">
-  <name>R_PIO</name>
-  <baseAddress>0x07022000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="GPIOA">
   <name>GPIOL</name>
   <baseAddress>0x07022000</baseAddress>
   </peripheral>

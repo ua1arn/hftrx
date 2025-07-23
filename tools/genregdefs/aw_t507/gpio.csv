@@ -10,7 +10,7 @@
 #base; GPIOH 	0x0300B0FC
 #base; GPIOI 	0x0300B120
 
-#base; R_PIO	0x07022000; GPIOL
+##base; R_PIO	0x07022000; GPIOL
 #base; GPIOL 	0x07022000; R_PIO
 
 #regdef; CFG; 0x000 4; Configure Register

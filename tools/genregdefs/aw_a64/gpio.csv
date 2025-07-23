@@ -53,3 +53,4 @@
 #regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
 #regdef; padding 0; 0x020; fill space up to 0x20 bytes
 #typeend;
+
