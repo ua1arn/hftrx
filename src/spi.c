@@ -2252,7 +2252,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 	unsigned divider2;
 	unsigned divpower2 = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, spispeed), 8, 0x1E, & divider2, 1);
-	PRINTF("hardware_spi_master_setfreq 2: spispeed=%u, divpower2=%u, divider2=%u, HW=%u\n", (unsigned) spispeed, (unsigned) divpower2, (unsigned) divider2, (unsigned) HARDWARE_SPI_FREQ);
+	//PRINTF("hardware_spi_master_setfreq 2: spispeed=%u, divpower2=%u, divider2=%u, HW=%u\n", (unsigned) spispeed, (unsigned) divpower2, (unsigned) divider2, (unsigned) HARDWARE_SPI_FREQ);
 	/* В случае переключения на делитель со степенями, точный делитель игнорируется */
 	const portholder_t ccr_reg =
 		! divpower2 * (UINT32_C(1) << 12) |		// DRS 1: Select Clock Divide Rate 2
