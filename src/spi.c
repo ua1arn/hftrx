@@ -2204,21 +2204,22 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 	};
 
-	// T507 have different codes
-	/* CLK_SRC_SEL: 000: OSC24M 001: PLL_PERI0(1X) 010: PLL_PERI1 (1X) 011: PLL_PERI0(2X) 100: PLL_PERI1 (2X) */
+	// T113 CLK_SRC_SEL:
+	/* 000: HOSC 001: PLL_PERI(1X) 010: PLL_PERI(2X) 011: PLL_AUDIO1(DIV2) 100: PLL_AUDIO1(DIV5) */
+	// T507  CLK_SRC_SEL: have different codes
+	/* 000: OSC24M 001: PLL_PERI0(1X) 010: PLL_PERI1 (1X) 011: PLL_PERI0(2X) 100: PLL_PERI1 (2X) */
 	const portholder_t clk_src = 0x03;
 
-	SPIHARD_CCU_CLK_REG = //(SPIHARD_CCU_CLK_REG & ~ (0x03u << 24)) |
-			clk_src * (UINT32_C(1) << 24) |	/* CLK_SRC_SEL */
+	SPIHARD_CCU_CLK_REG =
+		clk_src * (UINT32_C(1) << 24) |	/* CLK_SRC_SEL */
 		0;
 	(void) SPIHARD_CCU_CLK_REG;
 	SPIHARD_CCU_CLK_REG |= (UINT32_C(1) << 31);	// 1: Clock is ON - Allwinner all
 	(void) SPIHARD_CCU_CLK_REG;
-	//TP();
+
 	// SCLK = Clock Source/M/N.
 	unsigned value;
-	const int_fast32_t speefence = 48000000;	// Для частот менее 8 МГц - входная частота SPI делится дополнительно SPI_CCR
-	const int_fast32_t upspeed = ulmax32(spispeed, speefence);	// 8 MHz
+	const int_fast32_t upspeed = ulmax32(spispeed, 50000000);	// 50 MHz
 	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, upspeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
 	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%u)\n", prei, value, (unsigned) spispeed, HARDWARE_SPI_FREQ);
 	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
