@@ -14866,16 +14866,16 @@ void midtests(void)
 		PRINTF("SPI speed test.\n");
 		uint8_t buff [64];
 		memset(buff, 0xFF, sizeof buff);
-		__disable_irq();
+		//__disable_irq();
 		for (;;)
 		{
 			//prog_spi_io(targetnvram, SPIC_SPEEDUFAST, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 24 M
 			//prog_spi_io(targetnvram, SPIC_SPEEDFAST, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 12 M
-			//prog_spi_io(targetnvram, SPIC_SPEED100k, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 100 kHz
+			prog_spi_io(targetnvram, SPIC_SPEED100k, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 100 kHz
 			//prog_spi_io(targetnvram, SPIC_SPEED400k, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 400 kHz
 			//prog_spi_io(targetnvram, SPIC_SPEED1M, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 1 M
 			//prog_spi_io(targetnvram, SPIC_SPEED4M, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 4 M
-			//prog_spi_io(targetnvram, SPIC_SPEED10M, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 4 M
+			//prog_spi_io(targetnvram, SPIC_SPEED10M, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 10 M
 		}
 	}
 #endif

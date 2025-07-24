@@ -2208,7 +2208,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	/* 000: HOSC 001: PLL_PERI(1X) 010: PLL_PERI(2X) 011: PLL_AUDIO1(DIV2) 100: PLL_AUDIO1(DIV5) */
 	// T507  CLK_SRC_SEL: have different codes
 	/* 000: OSC24M 001: PLL_PERI0(1X) 010: PLL_PERI1 (1X) 011: PLL_PERI0(2X) 100: PLL_PERI1 (2X) */
-	const portholder_t clk_src = 0x03;
+	const portholder_t clk_src = SPIHARD_CCU_CLK_SRC_SEL_VAL;
 
 	SPIHARD_CCU_CLK_REG =
 		clk_src * (UINT32_C(1) << 24) |	/* CLK_SRC_SEL */

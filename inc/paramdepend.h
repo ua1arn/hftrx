@@ -518,7 +518,6 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
 	#define CPU_FREQ	(allwnr_t507_get_cpux_freq())
-	//#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
 	#define HARDWARE_UART_FREQ (allwnr_t507_get_uart_freq())
 
 	#define CPU_PL1_FREQ (allwnr_t507_get_hosc_freq())	/* PL1 times source frequency */
