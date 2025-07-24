@@ -240,6 +240,7 @@
 	// +++ заглушки для плат с DSP обработкой
 	#define	BOARD_AGCCODE_ON	0x00
 	#define	BOARD_AGCCODE_OFF	0x01
+	#define WITHAGCMODENONE 1
 
 	#define BOARD_DETECTOR_AM 	0		// Заглушка
 	#define BOARD_DETECTOR_FM 	0		// Заглушка
@@ -276,7 +277,7 @@
 	//#define WITHDIRECTFREQENER	1
 	//#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	
-	
+	#define WITHAGCMODENONE 1
 	//#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
@@ -491,7 +492,7 @@
 	//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
 
-	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
+	//#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
 	//#define WITHBCBANDS		1		/* в таблице диапазонов присутствуют вещательные диапазоны */
