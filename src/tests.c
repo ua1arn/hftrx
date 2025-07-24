@@ -10412,6 +10412,90 @@ static void csrftest(void)
 
 #endif
 
+#if 0
+
+static uint8_t data [6];
+static volatile uint_fast32_t pv;
+static volatile uint_fast32_t crc;
+
+// callback по принятому символу. сохранить в очередь для обработки в user level
+void user_uart1_onrxchar(uint_fast8_t c)
+{
+	static int state = 0;
+	if (c & 0x80)
+		state = 0;
+
+	data [state ++] = c;
+	if (state >= 6)
+	{
+		state = 0;
+
+		pv =
+			(data [0] & 0x07) * (UINT32_C(1) << 19) +
+			(data [1] & 0x7F) * (UINT32_C(1) << 12) +
+			(data [2] & 0x7F) * (UINT32_C(1) << 5) +
+			((data [3] >> 2) & 0x3F) * (UINT32_C(1) << 0) +
+			0;
+		crc =
+			(data [3] & 0x03) * (UINT32_C(1) << 14) +
+			(data [4] & 0x7F) * (UINT32_C(1) << 7) +
+			(data [5] & 0x7F) * (UINT32_C(1) << 0) +
+			0;
+	}
+}
+
+// callback по готовности последовательного порта к пердаче
+void user_uart1_ontxchar(void * ctx)
+{
+	hardware_uart1_enabletx(0);
+}
+
+//	C0 03 2C 13 62 0B
+//	C0 03 2C 13 62 0B
+//	C0 03 2C 13 62 0B
+//	C0 03 2C 13 62 0B
+
+static void enctest(void)
+{
+	const uint_fast32_t baudrate = 230400;
+	hardware_uart1_initialize(0, baudrate, 8, 0, 0);
+	hardware_uart1_set_speed(baudrate);
+
+
+
+	hardware_uart1_enablerx(1);
+	hardware_uart1_enabletx(0);
+
+	PRINTF("Test device\n");
+	for (;;)
+	{
+		/* Обеспечение работы USER MODE DPC */
+		uint_fast8_t kbch, kbready;
+		processmessages(& kbch, & kbready);
+
+		IRQL_t oldIrql;
+		uint_fast8_t f;
+		uint_fast8_t c;
+		/* Отладочные функции */
+		if (kbready)
+			PRINTF("bkbch=%02x\n", kbch);
+
+		unsigned angle100 = 36000 * (pv & 0x3FFF) / 16384;
+		PRINTF("pv=%08X angle=%3u.%02u\n", (unsigned) pv, angle100 / 100, angle100 % 100);
+//		RiseIrql(IRQL_SYSTEM, & oldIrql);
+//		f = uint8_queue_get(& rxq, & c);
+//		LowerIrql(oldIrql);
+//		if (f)
+//		{
+//			PRINTF("%02X ", c & 0xFF);
+//			//crsf_parser(c);
+//		}
+	}
+}
+
+#endif
+
+
 void hightests(void)
 {
 #if LCDMODE_LTDC
@@ -10428,7 +10512,11 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-
+#if 0
+	{
+		enctest();
+	}
+#endif
 #if 0 && WITHLVGL
 	{
 		lv_example_canvas_7(lv_screen_active());
