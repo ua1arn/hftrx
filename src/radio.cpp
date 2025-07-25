@@ -1421,24 +1421,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 /* строки, выводимые на индикатор для обозначения режимов.
  */
 
-#if WITHAGCMODENONE
-	/* перечисление всех возможных режимов АРУ
-	 */
-	enum {
-		AGCMODE_SLOW = 0,
-		AGCMODE_MED = 0,
-		AGCMODE_FAST = 0
-		};
-//	static const struct {
-//		uint_fast8_t code;
-//		char label4 [5];
-//		char label3 [4];
-//	}  agcmodes [] =
-//	{
-//		{ BOARD_AGCCODE_ON, "", "" },
-//	};
-
-#elif WITHAGCMODEONOFF
+#if WITHAGCMODEONOFF
 
 	/* перечисление всех возможных режимов АРУ
 	 */
@@ -1458,8 +1441,24 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 		{ BOARD_AGCCODE_ON,  "AGC", "AGC" },
 		{ BOARD_AGCCODE_OFF, "OFF", "OFF" },
 	};
+
 #else
-	#error WITHAGCMODExxxx undefined
+	#define WITHAGCMODENONE 1
+	/* перечисление всех возможных режимов АРУ
+	 */
+	enum {
+		AGCMODE_SLOW = 0,
+		AGCMODE_MED = 0,
+		AGCMODE_FAST = 0
+		};
+//	static const struct {
+//		uint_fast8_t code;
+//		char label4 [5];
+//		char label3 [4];
+//	}  agcmodes [] =
+//	{
+//		{ BOARD_AGCCODE_ON, "", "" },
+//	};
 #endif
 
 #if WITHANTSELECT1RX
