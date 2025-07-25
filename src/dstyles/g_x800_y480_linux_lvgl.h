@@ -80,16 +80,15 @@
 		{	26,	0,	5, 5, display2_ant5,		& dzi_antenna, PGALL, },
 		{	31,	0,	5, 5, display2_att4,		& dzi_attenuator, PGALL, },
 		{	36,	0,	5, 5, display2_preovf3,		& dzi_preamp_ovf, PGALL, },
-	#if WITHBARS
+#if WITHBARS
 		{   0, 	5,  0, 0, display2_smeter15_init, & dzi_default, PGINI, },	//  Инициализация стрелочного прибора
-//		{   0, 	5,	15, 20, display2_smeter15, 	& dzi_compat, PGALL, },	// Изображение стрелочного прибора
-		{   0, 	5,	15, 20, display2_smeter15, 	& dzi_smtr2, PGALL, },
-	#endif /* WITHBARS */
+		{   0, 	5,	15, 20, display2_smeter15, 	& dzi_compat, PG0, },	// Изображение стрелочного прибора
+#endif /* WITHBARS */
 	#if WITHAFSPECTRE
 		{	0,	5,	0, 0, display2_af_spectre15_init,	& dzi_default, PGINI, },
 		{	0,	5,	0, 0, display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
-		{	0,	5,	15, 20, display2_af_spectre15,		& dzi_default, PG0, },
-	#endif /* WITHAFSPECTRE */
+		{	0,	5,	15, 20, display2_af_spectre15,		& dzi_compat, PG0, },
+#endif /* WITHAFSPECTRE */
 
 		{	15,	5,	0, 0, display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
 		{	15,	5,	21, 15, display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.

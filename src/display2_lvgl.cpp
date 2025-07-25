@@ -83,7 +83,7 @@ lv_obj_t * hamradio_walkmenu_getparameditor(const struct paramdefdef * pd, lv_ob
 		else if (pd->qrj == RJ_TXAUDIO)
 			for (unsigned int i = 0; i < TXAUDIOSRC_COUNT; i ++)
 				lv_dropdown_add_option(dd, txaudiosrcs[i].label, LV_DROPDOWN_POS_LAST);
-		else if (pd->qrj == RJ_SMETER)
+		else if (pd->qrj == RJ_VIEW)
 			for (int i = 0; i < VIEW_count; i ++)
 				lv_dropdown_add_option(dd, view_types[i], LV_DROPDOWN_POS_LAST);
 
