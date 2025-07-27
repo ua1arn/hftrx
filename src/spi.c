@@ -1090,8 +1090,6 @@ prog_select_init(void)
 		static portholder_t spi_wcr_reg_val [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_ccr_reg_val [SPIC_SPEEDS_COUNT];
 		//static portholder_t spi_samp_dl_reg_val [SPIC_SPEEDS_COUNT];
-		static unsigned spi_bdelay [SPIC_SPEEDS_COUNT];
-		static unsigned bdelay;
 	#else
 		#error Undefined CPUSTYLE_xxx
 	#endif /* CPUSTYLE_STM32F1XX */
@@ -1863,7 +1861,6 @@ static void spi_transfer_b8(spitarget_t target, const uint8_t * txbuff, uint8_t 
 			break;
 		}
 
-		local_delay_us(bdelay);
 		SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
 		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 		while ((SPIHARD_PTR->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
@@ -2204,28 +2201,20 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 	};
 
-	// T113 CLK_SRC_SEL:
-	/* 000: HOSC 001: PLL_PERI(1X) 010: PLL_PERI(2X) 011: PLL_AUDIO1(DIV2) 100: PLL_AUDIO1(DIV5) */
-	// T507  CLK_SRC_SEL: have different codes
-	/* 000: OSC24M 001: PLL_PERI0(1X) 010: PLL_PERI1 (1X) 011: PLL_PERI0(2X) 100: PLL_PERI1 (2X) */
-	const portholder_t clk_src = SPIHARD_CCU_CLK_SRC_SEL_VAL;
-
 	SPIHARD_CCU_CLK_REG =
-		clk_src * (UINT32_C(1) << 24) |	/* CLK_SRC_SEL */
+		SPIHARD_CCU_CLK_SRC_SEL_VAL * (UINT32_C(1) << 24) |	/* CLK_SRC_SEL */
 		0;
-	(void) SPIHARD_CCU_CLK_REG;
 	SPIHARD_CCU_CLK_REG |= (UINT32_C(1) << 31);	// 1: Clock is ON - Allwinner all
-	(void) SPIHARD_CCU_CLK_REG;
 
 	// SCLK = Clock Source/M/N.
 	unsigned value;
-	const int_fast32_t upspeed = ulmax32(spispeed, 50000000);	// 50 MHz
+	const int_fast32_t upspeed = ulmax32(spispeed, SPISPEEDUFAST * 2);	// 50 MHz
 	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, upspeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
 	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%u)\n", prei, value, (unsigned) spispeed, HARDWARE_SPI_FREQ);
 	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
 	const uint_fast32_t ccu_spi_clk_reg =
-		clk_src * (UINT32_C(1) << 24) |	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+		SPIHARD_CCU_CLK_SRC_SEL_VAL * (UINT32_C(1) << 24) |
 		factorN * (UINT32_C(1) << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 		factorM * (UINT32_C(1) << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
 		(UINT32_C(1) << 31) |	// 1: Clock is ON
@@ -2240,15 +2229,12 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 			//(UINT32_C(1) << 7) |		// SS_LEVEL: 1: Set SS to high
 			0;
 
-	// TODO: разобравться, почем требуется задержка
-	spi_bdelay [spispeedindex] = (spispeed < 4000000) ? ((spispeed < 1000000) ? 4 : 1) : 0;
 //	tcr &= ~((0x3 << 4) | (0x1 << 7));
 //	tcr |= ((0 & 0x3) << 4) | (0x0 << 7);	// SS=0
 
-	const portholder_t wcr_reg = 0;//(spispeed < 400000) ? 0x00FF : 0x00000000;
+	const portholder_t wcr_reg = 0;
 
 	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
-	(void) SPIHARD_CCU_CLK_REG;
 
 	unsigned divider2;
 	unsigned divpower2 = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, spispeed), 8, 0x1E, & divider2, 1);
@@ -2427,13 +2413,10 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 #elif CPUSTYLE_ALLWINNER
 
 	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
-	(void) SPIHARD_CCU_CLK_REG;
-
 	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 	SPIHARD_PTR->SPI_WCR = spi_wcr_reg_val [spispeedindex];
 	SPIHARD_PTR->SPI_CCR = spi_ccr_reg_val [spispeedindex];
 	//SPIHARD_PTR->SPI_SAMP_DL = spi_samp_dl_reg_val [spispeedindex];
-	bdelay = spi_bdelay [spispeedindex];
 //	{
 //		unsigned val = SPIHARD_PTR->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
@@ -3502,13 +3485,10 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 #elif CPUSTYLE_ALLWINNER
 
 	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
-	(void) SPIHARD_CCU_CLK_REG;
-
 	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 	SPIHARD_PTR->SPI_WCR = spi_wcr_reg_val [spispeedindex];
 	SPIHARD_PTR->SPI_CCR = spi_ccr_reg_val [spispeedindex];
 	//SPIHARD_PTR->SPI_SAMP_DL = CPUSTYLE_ALLWINNER [spispeedindex];
-	bdelay = spi_bdelay [spispeedindex];
 //	{
 //		unsigned val = SPI0->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
@@ -3619,7 +3599,6 @@ void RAMFUNC hardware_spi_b16_p1(
 
 	* (volatile uint16_t *) & SPIHARD_PTR->SPI_TXD = __REV16(v);	/* 16bit access */
 
-	local_delay_us(bdelay);
 	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
 
 #else
@@ -3690,13 +3669,10 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 #elif CPUSTYLE_ALLWINNER
 
 	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
-	(void) SPIHARD_CCU_CLK_REG;
-
 	SPIHARD_PTR->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 	SPIHARD_PTR->SPI_WCR = spi_wcr_reg_val [spispeedindex];
 	SPIHARD_PTR->SPI_CCR = spi_ccr_reg_val [spispeedindex];
 	//SPIHARD_PTR->SPI_SAMP_DL = spi_samp_dl_reg_val [spispeedindex];
-	bdelay = spi_bdelay [spispeedindex];
 //	{
 //		unsigned val = SPIHARD_PTR->SPI_TCR;
 //		val &= ~((0x3 << 4) | (0x1 << 7));
@@ -3768,7 +3744,6 @@ void hardware_spi_b32_p1(
 
 	SPIHARD_PTR->SPI_TXD = __REV(v);	/* 32bit access */
 
-	local_delay_us(bdelay);
 	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
 
 #else
@@ -3844,7 +3819,6 @@ void hardware_spi_b8_p1(
 
 	* (volatile uint8_t *) & SPIHARD_PTR->SPI_TXD = v; /* 8bit access */
 
-	local_delay_us(bdelay);
 	SPIHARD_PTR->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
 
 #else
