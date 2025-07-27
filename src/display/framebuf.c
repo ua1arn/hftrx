@@ -496,12 +496,28 @@ static void hwaccel_fillrect(
 	unsigned fillmask
 	)
 {
-	if (w > 1 && h > 1 && color == bgcolor)
+	enum { wf = 64 };
+	enum { hf = 64 };
+	if (0)
+	{
+	}
+//	else if (w >= wf && h >= hf)
+//	{
+//		static RAMNC PACKEDCOLORPIP_T colorscreen [GXSIZE(wf, hf)];
+//		unsigned i;
+//		for (i = 0; i < ARRAY_SIZE(colorscreen); ++ i)
+//			colorscreen [i] = color;
+//
+//		const uint_fast32_t ssizehw = ((hf - 1) << 16) | ((wf - 1) << 0);
+//		// valid rot_ctl bits 400001F2
+//		const uint_fast32_t flag = (UINT32_C(1) << 8) | 0*(UINT32_C(1) << 1);
+//		hwaccel_rotcopy((uintptr_t) colorscreen, GXADJ(hf) * sizeof (PACKEDCOLORPIP_T), ssizehw, taddr, tstride, tsizehw, flag);
+//	}
+	else if (w > 1 && h > 1 && color == bgcolor)
 	{
 		//const uint_fast32_t ssizehw = ((DIM_Y - 1) << 16) | ((DIM_X - 1) << 0);	// вызывает странные записи в память если ширниа одинаковая а высота получателя меньше.
 		const uint_fast32_t ssizehw = tsizehw;
 		hwaccel_rotcopy((uintptr_t) bgscreen, GXADJ(DIM_X) * sizeof (PACKEDCOLORPIP_T), ssizehw, taddr, tstride, tsizehw, 0);
-		// valid rot_ctl bits 400001F2
 	}
 	else
 	{
@@ -1103,7 +1119,7 @@ void arm_hardware_mdma_initialize(void)
 			0;
 		CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// G2D_CLK_GATING
 		local_delay_us(10);
-		//PRINTF("allwnr_t507_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_g2d_freq() / 1000 / 1000));
+		PRINTF("allwnr_t507_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_g2d_freq() / 1000 / 1000));
 
 		//CCU->G2D_BGR_REG = 0;
 		CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		/* Enable gating clock for G2D 1: Pass */
@@ -1111,7 +1127,7 @@ void arm_hardware_mdma_initialize(void)
 		CCU->G2D_BGR_REG |= (UINT32_C(1) << 16);	/* G2D reset 1: De-assert */
 		local_delay_us(10);
 
-		/* на Allwinner T597 модифицируемы только младшие 8 бит */
+		/* на Allwinner T507 модифицируемы только младшие 8 бит */
 		G2D_TOP->G2D_SCLK_DIV = (G2D_TOP->G2D_SCLK_DIV & ~ 0xFF) |
 			divider * (UINT32_C(1) << 4) |	// ROT divider (looks like power of 2) CORE1_SCLK_DIV
 			divider * (UINT32_C(1) << 0) |	// MIXER divider (looks like power of 2) CORE0_SCLK_DIV
