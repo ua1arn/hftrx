@@ -861,7 +861,7 @@
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
 		switch (target) { \
-		case targetcodec1:  { gpioX_setstate(GPIOE, targetcodec1, 0 * targetcodec1); local_delay_us(1); gpioX_setstate(GPIOE, targetcodec1, 1 * targetcodec1); } break; /* on-board codec1 NAU8822L */ \
+		case targetcodec1:  { gpioX_setstate(GPIOE, targetcodec1, 0 * targetcodec1); gpioX_setstate(GPIOE, targetcodec1, 1 * targetcodec1); } break; /* on-board codec1 NAU8822L */ \
 		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); } break; *//* PC3 SPI0_CS */ \
 		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 0 * (target)); } break; */\
 		case targetctl1: { gpioX_setstate(GPIOE, targetctl1, 1 * targetctl1); gpioX_setstate(GPIOI, OE_CTL1_BIT, 0 * OE_CTL1_BIT); } break; \
