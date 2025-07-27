@@ -501,6 +501,7 @@ static void hwaccel_fillrect(
 		//const uint_fast32_t ssizehw = ((DIM_Y - 1) << 16) | ((DIM_X - 1) << 0);	// вызывает странные записи в память если ширниа одинаковая а высота получателя меньше.
 		const uint_fast32_t ssizehw = tsizehw;
 		hwaccel_rotcopy((uintptr_t) bgscreen, GXADJ(DIM_X) * sizeof (PACKEDCOLORPIP_T), ssizehw, taddr, tstride, tsizehw, 0);
+		// valid rot_ctl bits 400001F2
 	}
 	else
 	{
