@@ -14,6 +14,7 @@
 
 #include "board.h"
 #include "display.h"
+#include "clocks.h"
 #include "formats.h"
 #include "spi.h"	// hardware_spi_master_send_frame
 #include "utils.h"
@@ -1078,8 +1079,11 @@ void arm_hardware_mdma_initialize(void)
 {
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 	{
+		// AW_G2D_开发指南.pdf 图2‑1: design_spec0
+		// G2D101r1p0
+		// 300 MHz clock
 		//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
-		unsigned M = 5;	/* M = 1..32 */
+		unsigned M = 4;	/* M = 1..32 */
 		unsigned divider = 0;
 
 		CCU->MBUS_CFG_REG |= (UINT32_C(1) << 30);				// MBUS Reset 1: De-assert reset
