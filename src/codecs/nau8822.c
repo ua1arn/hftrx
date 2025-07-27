@@ -20,7 +20,7 @@
 #include "audio.h"
 #include "nau8822.h"
 
-#define NAU8822_USE_SPI4	1	// SPI 4-Wire 24-bit Write and 32-bit Read Operation
+//#define NAU8822_USE_SPI4	1	// SPI 4-Wire 24-bit Write and 32-bit Read Operation
 //#define CODEC_TYPE_NAU8822_NO_BTL 1		// Выходы SPK кодека не используются как мостовой выход, а идут к следующему каскаду усиления (отключаем инверсию правого канала)
 
 // Зависит от аппаратуры - может быть переопределено в custom configuration
@@ -61,7 +61,7 @@ static void nau8822_setreg_16(
 	uint_fast16_t datav			/* 9 bit value */
 	)
 {
-	const uint_fast16_t fulldata = regv * (UINT32_C(1) << 9) | (datav & 0x1ff);
+	const uint_fast16_t fulldata = (0x7F & regv) * (UINT32_C(1) << 9) | (datav & 0x1ff);
 	//PRINTF("nau8822_setreg: regv=%02X, datav=%03X\n", (unsigned) regv, (unsigned) datav);
 
 #if CODEC_TYPE_NAU8822_USE_SPI
@@ -102,8 +102,8 @@ static void nau8822_setreg_16_2(
 	uint_fast16_t datav2			/* 9 bit value */
 	)
 {
-	const uint_fast16_t fulldata1 = (regv + 0) * (UINT32_C(1) << 9) | (datav1 & 0x1ff);
-	const uint_fast16_t fulldata2 = (regv + 1) * (UINT32_C(1) << 9) | (datav2 & 0x1ff);
+	const uint_fast16_t fulldata1 = ((0x7F & regv) + 0) * (UINT32_C(1) << 9) | (datav1 & 0x1ff);
+	const uint_fast16_t fulldata2 = ((0x7F & regv) + 1) * (UINT32_C(1) << 9) | (datav2 & 0x1ff);
 	//PRINTF("nau8822_setreg: regv=%02X, datav=%03X\n", (unsigned) regv, (unsigned) datav);
 
 #if CODEC_TYPE_NAU8822_USE_SPI
@@ -152,7 +152,7 @@ static void nau8822_setreg_24(
 	)
 {
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
-	const uint_fast32_t fulldata = regv * (UINT32_C(1) << 9) | (datav & 0x1ff);
+	const uint_fast32_t fulldata = (0x7F & regv) * (UINT32_C(1) << 9) | (datav & 0x1ff);
 	const uint8_t txbuf [] =
 	{
 		0x10,
@@ -170,8 +170,8 @@ static void nau8822_setreg_24_2(
 	)
 {
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
-	const uint_fast32_t fulldata1 = (regv + 0) * (UINT32_C(1) << 9) | (datav1 & 0x1ff);
-	const uint_fast32_t fulldata2 = (regv + 1) * (UINT32_C(1) << 9) | (datav2 & 0x1ff);
+	const uint_fast32_t fulldata1 = ((0x7F & regv) + 0) * (UINT32_C(1) << 9) | (datav1 & 0x1ff);
+	const uint_fast32_t fulldata2 = ((0x7F & regv) + 1) * (UINT32_C(1) << 9) | (datav2 & 0x1ff);
 	const uint8_t txbuf [] =
 	{
 		0x10,
@@ -187,7 +187,7 @@ static uint_fast16_t nau8822_getreg_32(
 	)
 {
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
-	const uint_fast32_t fulldata = regv * (UINT32_C(1) << 9);
+	const uint_fast32_t fulldata = (0x7F & regv) * (UINT32_C(1) << 9);
 	const uint8_t txbuf [] =
 	{
 		0x20,
@@ -535,7 +535,7 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 
 	nau8822_setreg_universal(0x73, 0x000);	//	REG SPI3 0x73	0x129
 	nau8822_setreg_universal(0x57, 0x000);	//	REG SPI1 0x57	0x115
-	nau8822_setreg_universal(0x6C, 0x000);	//	REG SPI2 0x6C	0x008	0x3b recommended???
+	nau8822_setreg_universal(0x6C, 0x03B);	//	REG SPI2 0x6C	0x008	0x3b recommended???
 	nau8822_setreg_universal(0x08, 0x000);	//	REG GPIO 0x08	0x100
 #endif /* NAU8822_USE_SPI4_ACTUAL */
 

@@ -24,6 +24,7 @@
 #include "bootloader.h"
 
 #include "dspdefines.h"
+#include <atomic>
 
 #define UI_TICKS_PERIOD 50	// ms
 #define UINTICKS(v) (((v) + (UI_TICKS_PERIOD - 1)) / UI_TICKS_PERIOD)
@@ -13581,9 +13582,8 @@ display2_bars(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t
 #endif /* WITHBARS */
 }
 
-#include <atomic>
 static std::atomic<uint32_t> counterupdatedfreqs;
-static std::atomic<uint32_t> counterupdatedvolume;
+//static std::atomic<uint32_t> counterupdatedvolume;
 
 /*
 	отсчёт времени по запрещению обновления дисплея при вращении валкодера.
@@ -13602,11 +13602,11 @@ refreshticker_cb(void * ctx)
 			counterupdatedfreqs = t - 1;
 	}
 	// таймер обновления громкости
-	{
-		const uint_fast32_t t = counterupdatedvolume;
-		if (t != 0)
-			counterupdatedvolume = t - 1;
-	}
+//	{
+//		const uint_fast32_t t = counterupdatedvolume;
+//		if (t != 0)
+//			counterupdatedvolume = t - 1;
+//	}
 }
 
 // Проверка разрешения обновления дисплея (индикация частоты).
@@ -13625,21 +13625,21 @@ refreshperformed_freqs(void)
 	counterupdatedfreqs = n;
 }
 
-// Проверка разрешения обновления громкости.
-static uint_fast8_t
-refreshenabled_volume(void)
-{
-	return counterupdatedvolume == 0;		/* таймер дошёл до нуля - можно обновлять. */
-}
-
-// подтверждение выполненного обновления дисплея (индикация частоты).
-static void
-refreshperformed_volume(void)
-{
-	const uint_fast32_t n = UINTICKS(50);	// 50 ms - обновление с частотой 20 герц
-
-	counterupdatedvolume = n;
-}
+//// Проверка разрешения обновления громкости.
+//static uint_fast8_t
+//refreshenabled_volume(void)
+//{
+//	return counterupdatedvolume == 0;		/* таймер дошёл до нуля - можно обновлять. */
+//}
+//
+//// подтверждение выполненного обновления дисплея (индикация частоты).
+//static void
+//refreshperformed_volume(void)
+//{
+//	const uint_fast32_t n = UINTICKS(50);	// 50 ms - обновление с частотой 20 герц
+//
+//	counterupdatedvolume = n;
+//}
 
 static uint_fast8_t processpots(void)
 {
@@ -13721,15 +13721,16 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 			/* установка громкости */
 			if (delta == 0)
 				break;
-			if (refreshenabled_volume())
-			{
-				refreshperformed_volume();
-				changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), bring_afvolume);
-			}
-			else
-			{
-				event_pushback_LoRes(& ev->encF1, delta, BOARD_ENC1F_DIVIDE);
-			}
+			changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), bring_afvolume);
+//			if (refreshenabled_volume())
+//			{
+//				refreshperformed_volume();
+//				changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), bring_afvolume);
+//			}
+//			else
+//			{
+//				event_pushback_LoRes(& ev->encF1, delta, BOARD_ENC1F_DIVIDE);
+//			}
 			break;
 		case 1:
 			if (delta == 0)
@@ -13937,7 +13938,7 @@ static uint_fast8_t sendmorsepos [2];
 
 static uint_fast8_t catstatein = CATSTATE_HALTED;
 
-static std::atomic<uint_fast16_t> catstateout(CATSTATEO_HALTED);
+static std::atomic<uint_fast8_t> catstateout(CATSTATEO_HALTED);
 static volatile const char * catsendptr;
 static volatile uint_fast8_t catsendcount;
 

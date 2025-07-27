@@ -836,12 +836,12 @@
 	#define OE_CTL1_BIT	(UINT32_C(1) << 16)	/* PI16 */
 	//#define targetdataflash 0xFF
 	#define targetnone 0x00
-	#define FPGALOADER_SPISPEED SPIC_SPEEDFAST
+	#define FPGALOADER_SPISPEED SPIC_SPEEDUFAST
 	#define SPIDF_SPEEDC SPIC_SPEEDFAST
 
 	#define targetctl1		(UINT32_C(1) << 22)		// PE22 board control registers chain
 	#define targettsc1		(UINT32_C(1) << 19)		// PE19 XPT2046 SPI chip select signal - CSEXT1
-	#define targetnvram		(UINT32_C(1) << 18)		// PE18 nvram FM25W356
+	#define targetnvram		(UINT32_C(1) << 18)		// PE18 NVRAM FM25W256
 	#define targetcodec1	(UINT32_C(1) << 20)		// PE20 on-board codec1 NAU8822L
 	#define targetfpga1		(UINT32_C(1) << 17)		// PE17 FPGA control registers CS1
 	#define targetadck		(UINT32_C(1) << 21)		// PE21 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADC2CS
@@ -871,10 +871,12 @@
 	/* Perform delay after assert or de-assert specific CS line */
 	#define SPI_CS_DELAY(target) do { \
 		switch (target) { \
+		case targetnvram: break; /* NVRAM FM25W256 */ \
+		case targetcodec1: break; /* on-board codec1 NAU8822L */ \
+		case targetfpga1: break; /* FPGA control registers CS1 */ \
+		case targettsc1: /*local_delay_us(1); */ break; /* XPT2046 SPI chip select signal */ \
 		case targetxad2: local_delay_us(5); break; /* external SPI device (PA BOARD ADC) */ \
 		case targetctl1: local_delay_us(5); break; /* board control registers chain */ \
-		case targettsc1: local_delay_us(1); break; /* XPT2046 SPI chip select signal */ \
-		case targetfpga1: local_delay_us(1); break; /* FPGA control registers CS1 */ \
 		default: local_delay_us(1); break; \
 		} \
 	} while (0)
