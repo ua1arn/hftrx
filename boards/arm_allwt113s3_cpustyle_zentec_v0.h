@@ -710,6 +710,11 @@
 
 	#define	USBD_HS_ULPI_INITIALIZE() do { \
 		} while (0)
+#else
+
+	#define	USBD_USBVDD_INITIALIZE() do { \
+		arm_hardware_piob_outputs(UINT32_C(1) << 4, 0 * (UINT32_C(1) << 4)); /* PB4 USB_EN SY6280AAC EN input */ \
+		} while (0)
 #endif /* WITHUSBHW */
 
 #if WITHDCDCFREQCTL

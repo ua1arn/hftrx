@@ -3298,7 +3298,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 			return 1;
 		}
 		PRINTF(PSTR("sdhost_sdcard_identification: SD_CMD_APP_SD_SET_BUSWIDTH 4 okay\n"));
-		hardware_sdhost_setbuswidth(1);		// 4-bit width
+		hardware_sdhost_setbuswidth(4);		// 4-bit width
 	}
 	else if (bussupport1b != 0)
 	{
@@ -3309,7 +3309,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 			return 1;
 		}
 		PRINTF(PSTR("sdhost_sdcard_identification: SD_CMD_APP_SD_SET_BUSWIDTH 1 okay\n"));
-		hardware_sdhost_setbuswidth(0);		// 1-bit width
+		hardware_sdhost_setbuswidth(1);		// 1-bit width
 	}
 	else
 	{
@@ -3328,7 +3328,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 			return 1;
 		}
 		PRINTF(PSTR("sdhost_sdcard_identification: SD_CMD_APP_SD_SET_BUSWIDTH 1 okay\n"));
-		hardware_sdhost_setbuswidth(0);		// 1-bit width
+		hardware_sdhost_setbuswidth(1);		// 1-bit width
 	}
 	else
 	{
@@ -3377,7 +3377,7 @@ char sd_initialize2(void)
 
 	PRINTF(PSTR("hardware_sdhost_setspeed to 400 kHz\n"));
 	hardware_sdhost_setspeed(400000uL);
-	hardware_sdhost_setbuswidth(0);		// 1-bit width
+	hardware_sdhost_setbuswidth(1);		// 1-bit width
 	if (sdhost_sdcard_poweron() == 0)
 	{
 		if (sdhost_sdcard_identification() == 0)
@@ -4778,17 +4778,13 @@ void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
 
 #if WITHSDHCHW
 
-void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
+void hardware_sdhost_setbuswidth(uint_fast8_t useNBits)
 {
-	//PRINTF(PSTR("hardware_sdhost_setbuswidth: use4bit=%u\n"), (unsigned) use4bit);
-
-#if ! WITHSDHCHW4BIT
-	use4bit = 0;
-#endif /* ! WITHSDHCHW4BIT */
+	//PRINTF(PSTR("hardware_sdhost_setbuswidth: useNBits=%u\n"), (unsigned) useNBits);
 
 #if CPUSTYLE_R7S721
 
-	if (use4bit != 0)
+	if (useNBits == 4)
 		SDHI0.SD_OPTION &= ~ (1U << 15);	// WIDTH 0: 4-bit width
 	else
 		SDHI0.SD_OPTION |= (1U << 15);		// WIDTH 1: 1-bit width
@@ -4796,30 +4792,24 @@ void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 #elif CPUSTYLE_STM32F4XX
 
 	SDIO->CLKCR = (SDIO->CLKCR & ~ (SDIO_CLKCR_WIDBUS)) |
-		(use4bit != 0 ? 0x01 : 0x00) * SDIO_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
+		(useNBits == 4 ? 0x01 : 0x00) * SDIO_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
 		0;
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_WIDBUS)) |
-		(use4bit != 0 ? 0x01 : 0x00) * SDMMC_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
+		(useNBits == 4 ? 0x01 : 0x00) * SDMMC_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
 		0;
 
 #elif CPUSTYLE_XC7Z
 
 	SD0->HOST_CTRL_BLOCK_GAP_CTRL = (SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x02uL)) |
-				(use4bit != 0) * 0x02uL |	// Data_Transfer_Width_SD1_or_SD4
+				(useNBits == 4) * 0x02uL |	// Data_Transfer_Width_SD1_or_SD4
 				0;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-	//#warning CPUSTYLE_T113 or CPUSTYLE_F133 to be implemented
-	SMHCHARD_PTR->SMHC_CTYPE = (SMHCHARD_PTR->SMHC_CTYPE & ~ UINT32_C(0x03)) |
-		(use4bit ? UINT32_C(0x01) : UINT32_C(0x00)) |	// 00: 1-bit width, 01: 4-biut width
-		0;
+#elif CPUSTYLE_ALLWINNER
 
-#elif CPUSTYLE_T507 || CPUSTYLE_A64 || CPUSTYLE_A133
-
-	switch(use4bit ? 4 : 1)
+	switch (useNBits)
 	{
 	case 1:
 		SMHCHARD_PTR->SMHC_CTYPE = 0;
@@ -5026,7 +5016,7 @@ void hardware_sdhost_initialize(void)
 	SDHI0.SOFT_RST = 0x0000;	// SDRST 0: Reset
 	SDHI0.SOFT_RST = 0x0001;	// SDRST 1: Reset released
 
-	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setbuswidth(1);
 	hardware_sdhost_setspeed(400000uL);
 
     arm_hardware_set_handler_system(DMAINT14_IRQn, r7s721_sdhi0_dma_handler);
@@ -5047,7 +5037,7 @@ void hardware_sdhost_initialize(void)
 		1 * SDIO_CLKCR_PWRSAV |		// выключается clock без обращений
 		0;
 
-	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setbuswidth(1);
 	hardware_sdhost_setspeed(400000uL);
 
 	arm_hardware_set_handler_system(SDIO_IRQn, SDIO_IRQHandler);
@@ -5071,7 +5061,7 @@ void hardware_sdhost_initialize(void)
 		1 * SDMMC_CLKCR_PWRSAV |		// выключается clock без обращений
 		0;
 
-	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setbuswidth(1);
 	hardware_sdhost_setspeed(400000uL);
 
 	arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
@@ -5098,7 +5088,7 @@ void hardware_sdhost_initialize(void)
 		1 * SDMMC_CLKCR_PWRSAV |		// выключается clock без обращений
 		0;
 
-	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setbuswidth(1);
 	hardware_sdhost_setspeed(400000uL);
 
 	arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
@@ -5133,7 +5123,7 @@ void hardware_sdhost_initialize(void)
 		1 * SDMMC_CLKCR_PWRSAV |		// выключается clock без обращений
 		0;
 
-	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setbuswidth(1);
 	hardware_sdhost_setspeed(400000uL);
 
 	arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
@@ -5187,7 +5177,7 @@ void hardware_sdhost_initialize(void)
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 	ASSERT(((SD0->Vendor_Version_Number & 0xFFFF0000uL) >> 16) == 0x8901uL);
 
-	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setbuswidth(1);
 	hardware_sdhost_setspeed(400000uL);
 
 //	PRINTF("SD0->CAPABILITIES=%08X\n", SD0->CAPABILITIES);
@@ -5225,7 +5215,7 @@ void hardware_sdhost_initialize(void)
 
 	//PRINTF("SMHCHARD_FREQ=%u MHz\n", (unsigned) (SMHCHARD_FREQ / 1000 / 1000));
 
-	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setbuswidth(1);
 	hardware_sdhost_setspeed(400000uL);
 
 	HARDWARE_SDIOSENSE_INITIALIZE();
@@ -5259,7 +5249,7 @@ void hardware_sdhost_initialize(void)
 
 	//PRINTF("SMHCHARD_FREQ=%u MHz\n", (unsigned) (SMHCHARD_FREQ / 1000 / 1000));
 
-	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setbuswidth(1);
 	hardware_sdhost_setspeed(400000uL);
 
 	HARDWARE_SDIOSENSE_INITIALIZE();
@@ -5294,7 +5284,7 @@ void hardware_sdhost_initialize(void)
 
 	//PRINTF("SMHCHARD_FREQ=%u MHz\n", (unsigned) (SMHCHARD_FREQ / 1000 / 1000));
 
-	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setbuswidth(1);
 	hardware_sdhost_setspeed(400000uL);
 
 	HARDWARE_SDIOSENSE_INITIALIZE();

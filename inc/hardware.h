@@ -775,7 +775,7 @@ void cpu_stm32f1xx_setmapr(unsigned long bits);
 
 void hardware_sdhost_initialize(void);
 void hardware_sdhost_setspeed(unsigned long ticksfreq);
-void hardware_sdhost_setbuswidth(uint_fast8_t use4bit);
+void hardware_sdhost_setbuswidth(uint_fast8_t useNBits);
 void hardware_sdhost_detect(uint_fast8_t present);		// в ответ на прерывание изменения состояния card detect
 
 void lowtests(void);
