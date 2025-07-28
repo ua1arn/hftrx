@@ -836,7 +836,7 @@
 	#define OE_CTL1_BIT	(UINT32_C(1) << 16)	/* PI16 */
 	//#define targetdataflash 0xFF
 	#define targetnone 0x00
-	#define FPGALOADER_SPISPEED SPIC_SPEEDUFAST
+	#define FPGALOADER_SPISPEED SPIC_SPEEDFAST
 	#define SPIDF_SPEEDC SPIC_SPEEDFAST
 
 	#define targetctl1		(UINT32_C(1) << 22)		// PE22 board control registers chain
