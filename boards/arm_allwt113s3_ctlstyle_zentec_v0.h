@@ -313,8 +313,8 @@
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 
 	//#define WITHUSEUSBBT		1	// Включение поддержки USB BT stick
-	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
 	//#define WITHUSERAMDISKSIZEKB	(16uL * 1024)	// размр в килобайтах FATFS диска в озу
 
@@ -323,41 +323,6 @@
 
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
-	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
-	//#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-	#if 0
-		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define WITHTPA100W_UA1CEI_V2 1
-	#elif 0
-		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
-		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
-		#define FULLSET8	1
-		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
-		#define WITHANTSELECT	1	/* Управление переключением антенн */
-	#elif 0
-		/* TUNER by R3KBL */
-		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
-		#define FULLSET7	1
-	#endif
-	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
-
-
-	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
-	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
-	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
-	//#define WITHCAT		1	/* используется CAT */
-	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
-	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
-	//
-	//#define WITHBEACON	1	/* Используется режим маяка */
-	#if WITHTX
-		#define WITHVOX			1	/* используется VOX */
-		#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-		#define WITHSWRMTR	1		/* Измеритель КСВ */
-	#endif /* WITHTX */
-	
 	
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
