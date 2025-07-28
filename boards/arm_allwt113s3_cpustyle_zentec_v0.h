@@ -40,11 +40,13 @@
 //#define WITHUART5HW	1	/* 485xx4 	TX=PE5 RX=PE6 UART5 */
 // WITHUART2HW
 #define HARDWARE_UART2_INITIALIZE() do { \
-		const portholder_t TXMASK = (UINT32_C(1) << 2); /* PE2 UART2-TX */ \
-		const portholder_t RXMASK = (UINT32_C(1) << 3); /* PE3 UART2-RX - pull-up RX data */  \
+		const portholder_t TX485 = (UINT32_C(1) << 19); /* PE10 - 485_TR3 */ \
+		const portholder_t TXMASK = (UINT32_C(1) << 2); /* PE2 UART2-TX 485_TX3 */ \
+		const portholder_t RXMASK = (UINT32_C(1) << 3); /* PE3 UART2-RX - pull-up RX data 485_RX3 */  \
 		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioe_updown(RXMASK, RXMASK, 0); \
+		arm_hardware_pioe_outputs(TX485, 0 * TX485); /*  */ \
 	} while (0)
 
 // WITHUART4HW
@@ -58,11 +60,13 @@
 
 // WITHUART5HW
 #define HARDWARE_UART5_INITIALIZE() do { \
-		const portholder_t TXMASK = (UINT32_C(1) << 6); /* PE6 UART5-TX  */ \
-		const portholder_t RXMASK = (UINT32_C(1) << 7); /* PE7 UART5-RX  - pull-up RX data */  \
+		const portholder_t TX485 = (UINT32_C(1) << 9); /* PE9 - 485_TR4 */ \
+		const portholder_t TXMASK = (UINT32_C(1) << 6); /* PE6 UART5-TX 485_TX4 */ \
+		const portholder_t RXMASK = (UINT32_C(1) << 7); /* PE7 UART5-RX  - pull-up RX data 485_RX4 */  \
 		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioe_updown(RXMASK, RXMASK, 0); \
+		arm_hardware_pioe_outputs(TX485, 0 * TX485); /*  */ \
 	} while (0)
 
 // OHCI at USB1HSFSP2_BASE
@@ -362,78 +366,6 @@
 
 
 #endif /* WITHSDHCHW && WITHSDHC0HW */
-
-#if WITHTX
-
-	// +++
-	// TXDISABLE input - PD10
-	#define TXDISABLE_TARGET_PIN				(GPIOD->DATA)
-	#define TXDISABLE_BIT_TXDISABLE				0//(UINT32_C(1) << 10)		// PD10 - TX INHIBIT
-	// получить бит запрета передачи (от усилителя мощности)
-	#define HARDWARE_GET_TXDISABLE() (0) //((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
-	#define TXDISABLE_INITIALIZE() do { \
-			arm_hardware_piod_inputs(TXDISABLE_BIT_TXDISABLE); \
-			arm_hardware_piod_updown(TXDISABLE_BIT_TXDISABLE, 0, TXDISABLE_BIT_TXDISABLE); \
-		} while (0)
-	// ---
-
-	// +++
-	// PTT input - PD10
-	// PTT2 input - PD9
-	#define PTT_TARGET_PIN				(GPIOD->DATA)
-	#define PTT_BIT_PTT					(0 * UINT32_C(1) << 10)		// PD10 - PTT
-	#define PTT2_TARGET_PIN				(GPIOD->DATA)
-	#define PTT2_BIT_PTT				(0 * UINT32_C(1) << 9)		// PD9 - PTT2
-	// получить бит запроса оператором перехода на пердачу
-	#define HARDWARE_GET_PTT() (0) //((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
-	#define PTT_INITIALIZE() do { \
-			arm_hardware_piod_inputs(PTT_BIT_PTT); \
-			arm_hardware_piod_updown(PTT_BIT_PTT, PTT_BIT_PTT, 0); \
-			arm_hardware_piod_inputs(PTT2_BIT_PTT); \
-			arm_hardware_piod_updown(PTT2_BIT_PTT, PTT2_BIT_PTT, 0); \
-		} while (0)
-	// ---
-	// TUNE input - PD11
-	#define TUNE_TARGET_PIN				(GPIOD->DATA)
-	#define TUNE_BIT_TUNE				(0 * UINT32_C(1) << 11)		// PD11
-	#define HARDWARE_GET_TUNE() 0//((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
-	#define TUNE_INITIALIZE() do { \
-			arm_hardware_piod_inputs(TUNE_BIT_TUNE); \
-			arm_hardware_piod_updown(TUNE_BIT_TUNE, TUNE_BIT_TUNE, 0); \
-		} while (0)
-
-#else /* WITHTX */
-
-	#define TXDISABLE_INITIALIZE() do { \
-		} while (0)
-	#define PTT_INITIALIZE() do { \
-		} while (0)
-	#define TUNE_INITIALIZE() do { \
-		} while (0)
-#endif /* WITHTX */
-
-#if WITHELKEY
-	// Electronic key inputs
-	#define ELKEY_BIT_LEFT				(UINT32_C(1) << 4)		// PB4
-	#define ELKEY_BIT_RIGHT				(UINT32_C(1) << 5)		// PB5
-
-	#define ELKEY_TARGET_PIN			(GPIOB->DATA)
-
-	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
-	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
-
-
-	#define ELKEY_INITIALIZE() do { \
-			arm_hardware_piob_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
-			arm_hardware_piob_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
-		} while (0)
-
-#endif /* WITHELKEY */
-
-// IOUPDATE = PA15
-//#define SPI_IOUPDATE_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); (void) GPIOA->BSRR; } while (0)
-//#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); (void) GPIOA->BSRR; } while (0)
-//#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
 #if WITHSPIHW || WITHSPISW
 	// Набор определений для работы без внешнего дешифратора
@@ -755,21 +687,8 @@
 	PA12     ------> USB_OTG_FS_DP 
 	*/
 
-	#define	USBD_EHCI_INITIALIZE() do { \
-		RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_USBPHYEN; \
-		(void) RCC->MP_APB4ENSETR; \
-		RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_USBPHYLPEN; \
-		(void) RCC->MP_APB4LPENSETR; \
-		/* STM32_USBPHYC_MISC bit fields */ \
-		/*	SWITHOST 0: Select OTG controller for 2nd PHY port */ \
-		/*	SWITHOST 1: Select Host controller for 2nd PHY port */ \
-		/*	EHCI controller hard wired to 1st PHY port */ \
-		USBPHYC->MISC = (USBPHYC->MISC & ~ (USBPHYC_MISC_SWITHOST_Msk | USBPHYC_MISC_PPCKDIS_Msk)) | \
-			(USBPHYC_MISC_SWITHOST_VAL << USBPHYC_MISC_SWITHOST_Pos) |	/* 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port */ \
-			(USBPHYC_MISC_PPCKDIS_VAL << USBPHYC_MISC_PPCKDIS_Pos) | \
-			0; \
-		(void) USBPHYC->MISC; \
-		arm_hardware_piod_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); /* PD2 */ \
+	#define	USBD_USBVDD_INITIALIZE() do { \
+		arm_hardware_piob_outputs(UINT32_C(1) << 4, 0 * (UINT32_C(1) << 4)); /* PB4 USB_EN SY6280AAC EN input */ \
 		} while (0)
 
 	#define TARGET_USBFS_VBUSON_SET(on)	do { \
@@ -896,25 +815,7 @@
 		arm_hardware_piod_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF3); 	/* PD7 LVDS0_CKN */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF3); 	/* PD8 LVDS0_V3P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
-	} while (0)
-
-	// PD0..PD9: mipi-dsi connect
-	// PD20 - TWI2-SCK
-	// PD21 - TWI2-SDA
-	#define HARDWARE_MIPIDSI_INITIALIZE() do { \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF4); 	/* PD0 DSI-D0P */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF4); 	/* PD1 DSI-D0N */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF4); 	/* PD2 DSI-D1P */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF4); 	/* PD3 DSI-D1N */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 4, GPIO_CFG_AF4); 	/* PD4 DSI-CKP */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF4); 	/* PD5 DSI-CKN */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 6, GPIO_CFG_AF4); 	/* PD6 DSI-D2P */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF4); 	/* PD7 DSI-D2N */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF4); 	/* PD8 DSI-D3P */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF4); 	/* PD9 DSI-D3N */ \
-		/* I2C control */ \
-		/*arm_hardware_piod_altfn2(UINT32_C(1) << 20, GPIO_CFG_AF3);*/	/* PD20 TWI2-SCK SCL */ \
-		/*arm_hardware_piod_altfn2(UINT32_C(1) << 21, GPIO_CFG_AF3);	*//* PD21 TWI2-SDA SDA */ \
+		arm_hardware_piod_outputs(UINT32_C(1) << 16, 1 * (UINT32_C(1) << 16)); /* LVDS_EN SY6280AAC EN input */ \
 	} while (0)
 
 #endif /* WITHLTDCHW */
@@ -1032,12 +933,6 @@
 	/* запрос на вход в режим загрузчика */
 	//#define BOARD_USERBOOT_BIT	(UINT32_C(1) << 1)	/* PB1: ~USER_BOOT */
 	#define BOARD_IS_USERBOOT() 0//(((GPIOB->DATA) & BOARD_USERBOOT_BIT) == 0 || ((GPIOE->DATA) & TARGET_ENC2BTN_BIT) == 0)
-	#define BOARD_USERBOOT_INITIALIZE() do { \
-			/*arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); *//* set as input with pull-up */ \
-			/*arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT);*/ /* set as input with pull-up */ \
-		} while (0)
-	#define BOARD_USERBOOT_INITIALIZE() do { \
-		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
@@ -1046,10 +941,7 @@
 		/*HARDWARE_DAC_INITIALIZE(); */\
 		HARDWARE_BL_INITIALIZE(); \
 		HARDWARE_DCDC_INITIALIZE(); \
-		TXDISABLE_INITIALIZE(); \
-		TUNE_INITIALIZE(); \
-		BOARD_USERBOOT_INITIALIZE(); \
-		/*USBD_EHCI_INITIALIZE(); */\
+		USBD_USBVDD_INITIALIZE(); \
 	} while (0)
 
 	// TUSB parameters
