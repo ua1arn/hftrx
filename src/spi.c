@@ -2195,11 +2195,8 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 #elif CPUSTYLE_ALLWINNER
 
-	enum
-	{
-		ALLWNT113_SPI_BR_WIDTH = 4, ALLWNT113_SPI_BR_TAPS = ( 8 | 4 | 2 | 1)
-
-	};
+	enum { ALLWNT_SPI_CLK_WIDTH = 4, ALLWNT_SPI_CLK_TAPS = ( 8 | 4 | 2 | 1) };	// CCU register
+	enum { ALLWNT_SPI_CCI_WIDTH = 8, ALLWNT_SPI_CCI_TAPS = 1 };		// SPI register
 
 	SPIHARD_CCU_CLK_REG =
 		SPIHARD_CCU_CLK_SRC_SEL_VAL * (UINT32_C(1) << 24) |	/* CLK_SRC_SEL */
@@ -2209,7 +2206,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	// SCLK = Clock Source/M/N.
 	unsigned value;
 	const int_fast32_t upspeed = ulmax32(spispeed, SPISPEEDUFAST * 2);	// 50 MHz
-	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, upspeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, upspeed), ALLWNT_SPI_CLK_WIDTH, ALLWNT_SPI_CLK_TAPS, & value, 1);
 	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%u)\n", prei, value, (unsigned) spispeed, HARDWARE_SPI_FREQ);
 	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
@@ -2234,17 +2231,17 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 	const portholder_t wcr_reg = 0;
 
-	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];	// чтобы работал HARDWARE_SPI_FREQ
 
 	unsigned divider2;
-	unsigned divpower2 = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, spispeed), 8, 0x1E, & divider2, 1);
-	//PRINTF("hardware_spi_master_setfreq 2: spispeed=%u, divpower2=%u, divider2=%u, HW=%u\n", (unsigned) spispeed, (unsigned) divpower2, (unsigned) divider2, (unsigned) HARDWARE_SPI_FREQ);
+	unsigned divpower2 = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, spispeed * 2), ALLWNT_SPI_CCI_WIDTH, ALLWNT_SPI_CCI_TAPS, & divider2, 1);
 	/* В случае переключения на делитель со степенями, точный делитель игнорируется */
 	const portholder_t ccr_reg =
-		! divpower2 * (UINT32_C(1) << 12) |		// DRS 1: Select Clock Divide Rate 2
-		(0x0F & divpower2) * (UINT32_C(1) << 8) |		// CDR1_N: SPI_CLK = Source_CLK / (2^CDR1_M).
+		1 * (UINT32_C(1) << 12) |		// DRS 1: Select Clock Divide Rate 2
+		//(0x0F & divpower2) * (UINT32_C(1) << 8) |		// CDR1_N: SPI_CLK = Source_CLK / (2^CDR1_M).
 		(0xFF & divider2) * (UINT32_C(1) << 0) |		// CDR2_N: SPI_CLK = Source_CLK / (2*(CDR2_N + 1)).
 		0;
+	//PRINTF("hardware_spi_master_setfreq 2: spispeed=%u, divpower2=%u, divider2=%u, HW=%u\n", (unsigned) spispeed, (unsigned) divpower2, (unsigned) divider2, (unsigned) HARDWARE_SPI_FREQ);
 
 	// SPI Transfer Control Register (Default Value: 0x0000_0087)
 	// CPOL at bit 1, CPHA at bit 0
