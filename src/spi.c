@@ -1145,7 +1145,7 @@ static void spi_transfer_b32(SPI_t * spi, spitarget_t target, const uint32_t * t
 /* инициализация и перевод в состояние "отключено" */
 void hardware_spi_master_initialize(void)
 {
-	SPI_t * spi = SPIHARD_PTR;
+	SPI_t * const spi = SPIHARD_PTR;
 	//PRINTF("hardware_spi_master_initialize\n");
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
