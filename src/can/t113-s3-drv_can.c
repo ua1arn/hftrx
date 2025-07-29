@@ -1,6 +1,7 @@
 #include "hardware.h"
 #include "gpio.h"
 #include "formats.h"
+#include "clocks.h"
 
 #define CAN_ID_STD	0
 #define CAN_ID_EXT	1

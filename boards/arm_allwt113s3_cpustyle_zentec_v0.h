@@ -11,9 +11,9 @@
 #ifndef ARM_ALLW_F1333_CPUSTYLE_MANGO_PI_H_INCLUDED
 #define ARM_ALLW_F1333_CPUSTYLE_MANGO_PI_H_INCLUDED 1
 
-#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
-#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
@@ -28,16 +28,25 @@
 //#define WITHCAN0HW 1
 //#define WITHCAN1HW 1
 
+#define WITHUART1HW	1	/* 485xx2 	TX=PG6 RX=PG7 UART1 */
 #define WITHUART2HW	1	/* 485xx3 	TX=PE2 RX=PE3 UART2 */
+#define WITHUART3HW	1	/* 485xx1 	TX=PG8 RX=PG9 UART3 */
 #define WITHUART4HW	1	/* MODEM_xx TX=PE4 RX=PE5 UART4 */
 #define WITHUART5HW	1	/* 485xx4 	TX=PE5 RX=PE6 UART5 */
 
 #define WITHDEBUG_UART4	1
 
+// WITHUART1HW
+#define HARDWARE_UART1_INITIALIZE() do { \
+		const portholder_t TX485 = (UINT32_C(1) << 12); /* PE12 - 485_TR2 */ \
+		const portholder_t TXMASK = (UINT32_C(1) << 6); /* PG6 UART1-TX 485_TX2 */ \
+		const portholder_t RXMASK = (UINT32_C(1) << 7); /* PG7 UART1-RX - pull-up RX data 485_RX2 */  \
+		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piog_updown(RXMASK, RXMASK, 0); \
+		arm_hardware_pioe_outputs(TX485, 0 * TX485); /*  */ \
+	} while (0)
 
-//#define WITHUART2HW	1	/* 485xx3 	TX=PE2 RX=PE3 UART2 */
-//#define WITHUART4HW	1	/* MODEM_xx TX=PE4 RX=PE5 UART4 */
-//#define WITHUART5HW	1	/* 485xx4 	TX=PE5 RX=PE6 UART5 */
 // WITHUART2HW
 #define HARDWARE_UART2_INITIALIZE() do { \
 		const portholder_t TX485 = (UINT32_C(1) << 19); /* PE10 - 485_TR3 */ \
@@ -58,6 +67,17 @@
 		arm_hardware_pioe_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
+// WITHUART3HW
+#define HARDWARE_UART3_INITIALIZE() do { \
+		const portholder_t TX485 = (UINT32_C(1) << 13); /* PE13 - 485_TR1 */ \
+		const portholder_t TXMASK = (UINT32_C(1) << 8); /* PG8 UART3-TX 485_TX1 */ \
+		const portholder_t RXMASK = (UINT32_C(1) << 9); /* PG9 UART3-RX - pull-up RX data 485_RX1 */  \
+		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF5); \
+		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF5); \
+		arm_hardware_piog_updown(RXMASK, RXMASK, 0); \
+		arm_hardware_pioe_outputs(TX485, 0 * TX485); /*  */ \
+	} while (0)
+
 // WITHUART5HW
 #define HARDWARE_UART5_INITIALIZE() do { \
 		const portholder_t TX485 = (UINT32_C(1) << 9); /* PE9 - 485_TR4 */ \
@@ -67,6 +87,18 @@
 		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioe_updown(RXMASK, RXMASK, 0); \
 		arm_hardware_pioe_outputs(TX485, 0 * TX485); /*  */ \
+	} while (0)
+
+#define WITHCAN0HW 1
+
+// WITHCAN0HW
+#define HARDWARE_CAN0_INITIALIZE() do { \
+		const portholder_t TXMASK = UINT32_C(1) << 2; /* PB2 CAN0_TX */ \
+		const portholder_t RXMASK = UINT32_C(1) << 3; /* PB3 CAN0_RX - pull-up RX data */  \
+		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF8); \
+		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF8); \
+		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
+		arm_hardware_pioe_outputs(UINT32_C(1) << 11, 1 * UINT32_C(1) << 11); /* PE11 CAN_TR */ \
 	} while (0)
 
 // OHCI at USB1HSFSP2_BASE
