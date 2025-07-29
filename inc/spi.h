@@ -19,10 +19,11 @@ extern "C" {
 
 
 #define SPIBASEconcat(base, index) base ## index
+#define QSPIBASEconcat(base, index) base ## index
 
 #if CPUSTYLE_R7S721
 	typedef struct st_rspi SPI_t;
-	#define SPIBASENAME(port) SPIBASEconcat(& SCIF, port)
+	#define SPIBASENAME(port) SPIBASEconcat(& RSPI, port)
 #elif CPUSTYLE_ALLWINNER
 	typedef SPI_TypeDef SPI_t;
 	#define SPIBASENAME(port) SPIBASEconcat(SPI, port)
@@ -31,15 +32,19 @@ extern "C" {
 	#define SPIBASENAME(port) SPIBASEconcat(SPI, port)
 #elif CPUSTYLE_STM32MP1
 	typedef SPI_TypeDef SPI_t;
-	#define SPIBASENAME(port) SPIBASEconcat(USART, port)
+	#define SPIBASENAME(port) SPIBASEconcat(SPI, port)
 #elif CPUSTYLE_ROCKCHIP
 	typedef SPI_TypeDef SPI_t;
 	#define SPIBASENAME(port) SPIBASEconcat(SPI, port)
 #elif CPUSTYLE_XC7Z
-	typedef XSPIPS_Registers SPI_t;
+	#define SPIHARD_PTR SPI0	// TODO: move to cpu config
+	#define SPIDFHARD_PTR QSPI	// TODO: move to cpu config
+	typedef SPI_Registers SPI_t;
+	typedef XQSPIPS_Registers QSPI_t;
 	#define SPIBASENAME(port) SPIBASEconcat(SPI, port)
 #else
 	typedef void SPI_t;
+	typedef void QSPI_t;
 #endif
 
 void spi_initialize(void);	// отдельно инициализация SPI
