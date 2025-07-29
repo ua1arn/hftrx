@@ -817,11 +817,11 @@
 
 
 	#define ELKEY_INITIALIZE() do { \
-			arm_hardware_pioa_inputs(ELKEY_BIT_LEFT); \
-			arm_hardware_pioa_inputs(ELKEY_BIT_RIGHT); \
-			arm_hardware_pioa_updown(ELKEY_BIT_LEFT, ELKEY_BIT_LEFT, 0); \
-			arm_hardware_pioa_updown(ELKEY_BIT_RIGHT, ELKEY_BIT_RIGHT, 0); \
-		} while (0)
+		arm_hardware_pioa_inputs(ELKEY_BIT_LEFT); \
+		arm_hardware_pioa_inputs(ELKEY_BIT_RIGHT); \
+		arm_hardware_pioa_updown(ELKEY_BIT_LEFT, ELKEY_BIT_LEFT, 0); \
+		arm_hardware_pioa_updown(ELKEY_BIT_RIGHT, ELKEY_BIT_RIGHT, 0); \
+	} while (0)
 
 #endif /* WITHELKEY */
 
@@ -830,9 +830,8 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); (void) GPIOA->BSRR; } while (0)
 //#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 	// Набор определений для работы без внешнего дешифратора
-
 	#define OE_CTL1_BIT	(UINT32_C(1) << 16)	/* PI16 */
 	//#define targetdataflash 0xFF
 	#define targetnone 0x00
@@ -909,53 +908,27 @@
 	//#define SPDIF_D2_BIT (UINT32_C(1) << 6)		// PC6 SPI0_WP/D2
 	//#define SPDIF_D3_BIT (UINT32_C(1) << 7)		// PC7 SPI0_HOLD/D3
 
-	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpioX_setstate(GPIOH, (v), !! (0) * (v)); local_delay_us(1); } while (0)
-	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpioX_setstate(GPIOH, (v), !! (1) * (v)); local_delay_us(1); } while (0)
-
-	#define SPI_TARGET_MOSI_PORT_C(v)	do { gpioX_setstate(GPIOH, (v), !! (0) * (v)); local_delay_us(1); } while (0)
-	#define SPI_TARGET_MOSI_PORT_S(v)	do { gpioX_setstate(GPIOH, (v), !! (1) * (v)); local_delay_us(1); } while (0)
-
-	#define SPI_TARGET_MISO_PIN		gpioX_getinputs(GPIOH)
-
 	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
 	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0x03	/* t507: 000: OSC24M 001: PLL_PERI0(1X) 010: PLL_PERI1 (1X) 011: PLL_PERI0(2X) 100: PLL_PERI1 (2X) */
 	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
 
-	#if WITHSPIHW
-		#define SPIIO_INITIALIZE() do { \
-			arm_hardware_pioh_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
-			arm_hardware_pioh_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
-			arm_hardware_pioh_altfn2(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
-		} while (0)
+	#define WITHSPI1HW	1	// Use SPI1
+	#define HARDWARE_SPI1_INITIALIZE() do { \
+		arm_hardware_pioh_altfn20(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
+		arm_hardware_pioh_altfn20(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
+		arm_hardware_pioh_altfn20(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
+	} while (0)
 
-	#elif WITHSPISW
+	#define SPIIO_INITIALIZE() do { \
+		HARDWARE_SPI1_INITIALIZE(); \
+	} while (0)
 
-		#define SPIIO_INITIALIZE() do { \
-			arm_hardware_pioh_outputs(SPI_SCLK_BIT, 1 * SPI_SCLK_BIT); 	/* PH6 SPI1_CLK */ \
-			arm_hardware_pioh_outputs(SPI_MOSI_BIT, 1 * SPI_MOSI_BIT); 	/* PH7 SPI1_MOSI */ \
-			arm_hardware_pioh_inputs(SPI_MISO_BIT); 	/* PH8 SPI1_MISO */ \
-		} while (0)
-	#endif
 	#define HARDWARE_SPI_CONNECT() do { \
 	} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 	} while (0)
-	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-	} while (0)
-	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-	} while (0)
-
-#else /* WITHSPIHW || WITHSPISW */
-
-	#define targetext1		(0)		// PE8 ext1 on front panel
-	#define targetxad2		(0)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
-	#define targetnvram		(0)		// PE0 nvmem FM25L16B
-	#define targetctl1		(0)		// PE1 board control registers chain
-	#define targetcodec1	(0)		// PE2 on-board codec1 NAU8822L
-	#define targetadc2		(0) 		// PE9 ADC MCP3208-BI/SL chip select (potentiometers)
-	#define targetfpga1		(0)		// PE10 FPGA control registers CS1
 
 #endif /* WITHSPIHW || WITHSPISW */
 
@@ -1004,6 +977,7 @@
 	// I2C/TWI
 	// BOOTLOASER version
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	#define WITHSTWI0HW 	1	/* Использование аппаратного контроллера S_TWI0 (I2C) */
 	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 	// PL0 S-TWI0-SCK - На плате нет pull-up резисторов
 	// PL1 S-TWI0-SDA - На плате нет pull-up резисторов
@@ -1030,12 +1004,18 @@
 	} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_INITIALIZE() do { \
+	#define	HARDWARE_S_TWI0_INITIALIZE() do { \
 		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
 		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
 		arm_hardware_piol_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_piol_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 	} while (0)
+	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
+	// присоединение выводов к периферийному устройству
+	#define	TWIHARD_INITIALIZE() do { \
+		HARDWARE_S_TWI0_INITIALIZE(); \
+	} while (0)
+
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnr_t507_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
@@ -1044,6 +1024,7 @@
 	// I2C/TWI
 	/* Not WITHISBOOTLOADER */
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	#define WITHTWI0HW 	1	/* Использование аппаратного контроллера TWI0 (I2C) */
 	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 	// PA0 - TWI0_SCL
 	// PA1 - TWI0_SDA
@@ -1068,11 +1049,14 @@
 		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_INITIALIZE() do { \
+	#define	HARDWARE_TWI0_INITIALIZE() do { \
 			arm_hardware_pioa_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* PA0 - TWI0_SCL */ \
 			arm_hardware_pioa_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* PA1 - TWI0_SDA */ \
 			arm_hardware_pioa_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 			arm_hardware_pioa_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
+		} while (0)
+	#define	TWIHARD_INITIALIZE() do { \
+			HARDWARE_TWI0_INITIALIZE(); \
 		} while (0) 
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI0	/* 0 - TWI0, 1: TWI1... */
