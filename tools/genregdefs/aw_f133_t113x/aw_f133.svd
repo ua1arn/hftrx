@@ -5695,6 +5695,15 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
+    <name>DMA_SEC_REG</name>
+    <displayName>DMA_SEC_REG</displayName>
+    <description>DMA Security Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>DMAC_AUTO_GATE_REG</name>
     <displayName>DMAC_AUTO_GATE_REG</displayName>
     <description>DMAC Auto Gating Register</description>

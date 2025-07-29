@@ -1184,7 +1184,9 @@ typedef struct DMAC_Type
          RESERVED(0x008[0x0010 - 0x0008], uint8_t)
     __IO uint32_t DMAC_IRQ_PEND_REG0;                 /*!< Offset 0x010 DMAC IRQ Pending Register 0 */
     __IO uint32_t DMAC_IRQ_PEND_REG1;                 /*!< Offset 0x014 DMAC IRQ Pending Register 1 */
-         RESERVED(0x018[0x0028 - 0x0018], uint8_t)
+         RESERVED(0x018[0x0020 - 0x0018], uint8_t)
+    __IO uint32_t DMA_SEC_REG;                        /*!< Offset 0x020 DMA Security Register */
+         RESERVED(0x024[0x0028 - 0x0024], uint8_t)
     __IO uint32_t DMAC_AUTO_GATE_REG;                 /*!< Offset 0x028 DMAC Auto Gating Register */
          RESERVED(0x02C[0x0030 - 0x002C], uint8_t)
     __I  uint32_t DMAC_STA_REG;                       /*!< Offset 0x030 DMAC Status Register */
