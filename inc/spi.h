@@ -189,11 +189,11 @@ void board_reload_fir_artix7_p2(spitarget_t target, uint_fast8_t v1, uint_fast32
 void board_reload_fir_artix7_spistart(IRQL_t * irql);
 void board_reload_fir_artix7_spidone(IRQL_t irql);
 
-void board_fpga_fir_coef_p1(int_fast32_t v);	// Передача одного (первого) 32-битного значения и формирование строба.
-void board_fpga_fir_coef_p2(int_fast32_t v);	// Передача одного (последующего) 32-битного значения и формирование строба.
-void board_fpga_fir_complete(void);
-void board_fpga_fir_connect(IRQL_t * oldIrql);
-void board_fpga_fir_disconnect(IRQL_t irql);
+void board_fpga_fir_coef_p1(SPI_t * spi, int_fast32_t v);	// Передача одного (первого) 32-битного значения и формирование строба.
+void board_fpga_fir_coef_p2(SPI_t * spi, int_fast32_t v);	// Передача одного (последующего) 32-битного значения и формирование строба.
+void board_fpga_fir_complete(SPI_t * spi);
+void board_fpga_fir_connect(SPI_t * spi, IRQL_t * oldIrql);
+void board_fpga_fir_disconnect(SPI_t * spi, IRQL_t irql);
 
 // Serial flash (boot memory) interface
 void spidf_initialize(void);
