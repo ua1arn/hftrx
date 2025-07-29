@@ -10412,10 +10412,12 @@ static void csrftest(void)
 
 #endif
 
-#if 0
+#if 1
 
 static uint8_t data [6];
+static volatile uint_fast32_t pd;
 static volatile uint_fast32_t pv;
+static volatile uint_fast32_t zpd;
 static volatile uint_fast32_t crc;
 
 // callback по принятому символу. сохранить в очередь для обработки в user level
@@ -10429,8 +10431,9 @@ void user_uart1_onrxchar(uint_fast8_t c)
 	if (state >= 6)
 	{
 		state = 0;
-
-		pv =
+		pv = (data [0] >> 6) & 0x01;
+		zpd = (data [0] >> 5) & 0x01;
+		pd =
 			(data [0] & 0x07) * (UINT32_C(1) << 19) +
 			(data [1] & 0x7F) * (UINT32_C(1) << 12) +
 			(data [2] & 0x7F) * (UINT32_C(1) << 5) +
@@ -10480,8 +10483,8 @@ static void enctest(void)
 		if (kbready)
 			PRINTF("bkbch=%02x\n", kbch);
 
-		unsigned angle100 = 36000 * (pv & 0x3FFF) / 16384;
-		PRINTF("pv=%08X angle=%3u.%02u\n", (unsigned) pv, angle100 / 100, angle100 % 100);
+		unsigned angle100 = 36000 * (pd & 0x3FFF) / 16384;
+		PRINTF("pv=%u zpd=%u pd=%04X angle=%3u.%02u\n", (unsigned) pv, (unsigned) zpd, (unsigned) pd, angle100 / 100, angle100 % 100);
 //		RiseIrql(IRQL_SYSTEM, & oldIrql);
 //		f = uint8_queue_get(& rxq, & c);
 //		LowerIrql(oldIrql);
