@@ -965,6 +965,8 @@
 				arm_hardware_pio4_inputs(0xFC); /* Отключить процессор от SERIAL FLASH */ \
 			} while (0)
 
+		#define SPIDFHARD_PTR (& SPIBSC0)
+
 	#endif /* WIHSPIDFSW */
 
 	#if WITHRTS192

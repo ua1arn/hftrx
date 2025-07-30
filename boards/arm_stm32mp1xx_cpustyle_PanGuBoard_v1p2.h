@@ -1015,6 +1015,8 @@
 	#define SPDIF_SCLK_BIT (1u << 10)	// PF10	QUADSPI_CLK
 	#define SPDIF_NCS_BIT (1u << 6)		// PB6	QUADSPI_BK1_NCS
 
+	#define SPIDFHARD_PTR QUADSPI
+
 	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 	#define SPIDF_HANGOFF() do { \
 			arm_hardware_piob_inputs(SPDIF_NCS_BIT); \

@@ -25,7 +25,6 @@ extern "C" {
 	typedef struct st_rspi SPI_t;
 	typedef struct st_spibsc QSPI_t;
 	#define SPIBASENAME(port) SPIBASEconcat(& RSPI, port)
-	#define SPIDFHARD_PTR (& SPIBSC0)	// TODO: move to cpu configuration
 #elif CPUSTYLE_ALLWINNER
 	typedef SPI_TypeDef SPI_t;
 	typedef SPI_TypeDef QSPI_t;
@@ -40,7 +39,6 @@ extern "C" {
 	typedef SPI_TypeDef SPI_t;
 	typedef QUADSPI_TypeDef QSPI_t;
 	#define SPIBASENAME(port) SPIBASEconcat(SPI, port)
-	#define SPIDFHARD_PTR QUADSPI	// TODO: move to cpu configuration
 #elif CPUSTYLE_ROCKCHIP
 	typedef SPI_TypeDef SPI_t;
 	typedef QSPI_TypeDef QSPI_t;
