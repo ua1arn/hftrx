@@ -23,7 +23,9 @@ extern "C" {
 
 #if CPUSTYLE_R7S721
 	typedef struct st_rspi SPI_t;
+	typedef struct st_spibsc QSPI_t;
 	#define SPIBASENAME(port) SPIBASEconcat(& RSPI, port)
+	#define SPIDFHARD_PTR (& SPIBSC0)	// TODO: move to cpu configuration
 #elif CPUSTYLE_ALLWINNER
 	typedef SPI_TypeDef SPI_t;
 	typedef SPI_TypeDef QSPI_t;
@@ -31,21 +33,25 @@ extern "C" {
 	#define QSPIBASENAME(port) QSPIBASEconcat(SPI, port)
 #elif CPUSTYLE_STM32F
 	typedef SPI_TypeDef SPI_t;
+	typedef QUADSPI_TypeDef QSPI_t;
 	#define SPIBASENAME(port) SPIBASEconcat(SPI, port)
+	#define SPIDFHARD_PTR QUADSPI	// TODO: move to cpu configuration
 #elif CPUSTYLE_STM32MP1
 	typedef SPI_TypeDef SPI_t;
+	typedef QUADSPI_TypeDef QSPI_t;
 	#define SPIBASENAME(port) SPIBASEconcat(SPI, port)
+	#define SPIDFHARD_PTR QUADSPI	// TODO: move to cpu configuration
 #elif CPUSTYLE_ROCKCHIP
 	typedef SPI_TypeDef SPI_t;
 	typedef QSPI_TypeDef QSPI_t;
 	#define SPIBASENAME(port) SPIBASEconcat(SPI, port)
 	#define QSPIBASENAME(port) QSPIBASEconcat(QSPI, port)
 #elif CPUSTYLE_XC7Z
-	#define SPIHARD_PTR SPI0	// TODO: move to cpu configuration
-	#define SPIDFHARD_PTR QSPI	// TODO: move to cpu configuration
 	typedef SPI_Registers SPI_t;
 	typedef XQSPIPS_Registers QSPI_t;
 	#define SPIBASENAME(port) SPIBASEconcat(SPI, port)
+	#define SPIHARD_PTR SPI0	// TODO: move to cpu configuration
+	#define SPIDFHARD_PTR QSPI	// TODO: move to cpu configuration
 #else
 	typedef void SPI_t;
 	typedef void QSPI_t;
