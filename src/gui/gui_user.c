@@ -277,9 +277,9 @@ static window_t windows [] = {
 #if WITHWNB
 	{ WINDOW_WNBCONFIG, 	 WINDOW_RECEIVE,		ALIGN_CENTER_X,  "WNB config", 			 1, window_wnbconfig_process, },
 #endif /* WITHWNB */
-#if WITHAD936XIIO
-	{ WINDOW_IIOCONFIG,  	 WINDOW_OPTIONS,		ALIGN_CENTER_X,  "AD936x IIO config", 	 1, window_iioconfig_process, },
-#endif /* WITHAD936XIIO */
+#if WITHAD936XIIO || WITHAD936XDEV
+	{ WINDOW_AD936X,  	 	WINDOW_OPTIONS,		ALIGN_CENTER_X,  "AD936x config", 	     	 1, window_ad936x_process, },
+#endif /* WITHAD936XIIO || WITHAD936XDEV */
 #if WITHAUDIOSAMPLESREC
 	{ WINDOW_AS,  	 		NO_PARENT_WINDOW,		ALIGN_CENTER_X,  "AF samples",			 1, window_as_process, },
 #endif /* WITHAUDIOSAMPLESREC */
@@ -1594,11 +1594,11 @@ static void window_bands_process(void)
 			if (hamradio_check_current_freq_by_band(bands [i].index))
 				bh->is_locked = BUTTON_LOCKED;
 
-#if WITHAD936XIIO
+#if WITHAD936XIIO || WITHAD936XDEV
 			if ((get_ad936x_stream_status() && bh->payload < NOXVRTUNE_TOP) ||
 					(! get_ad936x_stream_status() && bh->payload > NOXVRTUNE_TOP))
 				bh->state = DISABLED;
-#endif /* WITHAD936XIIO */
+#endif /* WITHAD936XIIO || WITHAD936XDEV */
 
 			x = x + interval + bh->w;
 			if (r >= row_count)
@@ -1636,11 +1636,11 @@ static void window_bands_process(void)
 			if (hamradio_check_current_freq_by_band(bands [i - 1].index))
 				bh->is_locked = BUTTON_LOCKED;
 
-#if WITHAD936XIIO
+#if WITHAD936XIIO || WITHAD936XDEV
 			if ((get_ad936x_stream_status() && bh->payload < NOXVRTUNE_TOP) ||
 					(! get_ad936x_stream_status() && bh->payload > NOXVRTUNE_TOP))
 				bh->state = DISABLED;
-#endif /* WITHAD936XIIO */
+#endif /* WITHAD936XIIO || WITHAD936XDEV */
 
 			x = x + interval + bh->w;
 			if (r >= row_count)
@@ -1707,9 +1707,9 @@ static void window_options_process(void)
 		add_element("btn_Display", 100, 44, 0, 0, "Display|settings");
 		add_element("btn_gui", 	   100, 44, 0, 0, "GUI|settings");
 		add_element("btn_Utils",   100, 44, 0, 0, "Utils");
-#if WITHAD936XIIO
-		add_element("btn_936x",    100, 44, 0, 0, "AD936x|IIO");
-#endif /* WITHAD936XIIO */
+#if WITHAD936XIIO || WITHAD936XDEV
+		add_element("btn_936x",    100, 44, 0, 0, "AD936x");
+#endif /* WITHAD936XIIO || WITHAD936XDEV */
 #if defined (RTC1_TYPE)
 		add_element("btn_Time",    100, 44, 0, 0, "Set time|& date");
 #endif /* defined (RTC1_TYPE) */
@@ -1803,12 +1803,12 @@ static void window_options_process(void)
 				linux_exit();		// Terminate all
 			}
 #endif /* LINUX_SUBSYSTEM */
-#if WITHAD936XIIO
+#if WITHAD936XIIO || WITHAD936XDEV
 			else if (bh == (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_936x"))
 			{
-				open_window(get_win(WINDOW_IIOCONFIG));
+				open_window(get_win(WINDOW_AD936X));
 			}
-#endif /* WITHAD936XIIO */
+#endif /* WITHAD936XIIO || WITHAD936XDEV*/
 		}
 		break;
 
@@ -6597,9 +6597,9 @@ static void window_wnbconfig_process(void)
 
 #if WITHAD936XIIO
 
-static void window_iioconfig_process(void)
+static void window_ad936x_process(void)
 {
-	window_t * const win = get_win(WINDOW_IIOCONFIG);
+	window_t * const win = get_win(WINDOW_AD936X);
 	static unsigned update = 0;
 	static int status = 10, gain_mode = 0, gain_val = 20;
 
@@ -6764,6 +6764,68 @@ static void window_iioconfig_process(void)
 }
 
 #endif /* WITHAD936XIIO */
+
+#if WITHAD936XDEV
+static void window_ad936x_process(void)
+{
+	window_t * const win = get_win(WINDOW_AD936X);
+	static uint32_t freq = 7012000;
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+		uint8_t p = ad936xdev_present();
+		uint8_t s = get_ad936x_stream_status();
+
+		add_element("btn_switch", 100, 40, 0, 0, "");
+
+		button_t * btn_switch = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_switch");
+		btn_switch->visible = VISIBLE;
+
+		if (s)
+			local_snprintf_P(btn_switch->text, ARRAY_SIZE(btn_switch->text), "Switch|to HF");
+		else
+		{
+			local_snprintf_P(btn_switch->text, ARRAY_SIZE(btn_switch->text), "%s", p ? "Switch|to UHF" : "AD936x|not found");
+			btn_switch->state = p ? CANCELLED : DISABLED;
+		}
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			button_t * btn_switch = (button_t *) find_gui_element(TYPE_BUTTON, win, "btn_switch");
+
+			if (bh == btn_switch)
+			{
+				if (get_ad936x_stream_status())
+				{
+					local_snprintf_P(btn_switch->text, ARRAY_SIZE(btn_switch->text), "Switch|to UHF");
+					ad936xdev_sleep();
+					hamradio_set_freq(freq);
+				}
+				else
+				{
+					local_snprintf_P(btn_switch->text, ARRAY_SIZE(btn_switch->text), "Switch|to HF");
+					ad936xdev_wake();
+					freq = hamradio_get_freq_rx();
+					hamradio_set_freq(433000000);
+					ad936x_set_rtstune_offset(0);
+				}
+			}
+		}
+
+	default:
+		break;
+	}
+}
+#endif /* WITHAD936XDEV */
 
 #if WITHAUDIOSAMPLESREC
 

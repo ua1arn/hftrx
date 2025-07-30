@@ -46,7 +46,7 @@ static void window_lfm_process(void);
 static void window_lfm_spectre_process(void);
 static void window_stream_process(void);
 static void window_wnbconfig_process(void);
-static void window_iioconfig_process(void);
+static void window_ad936x_process(void);
 static void window_as_process(void);
 
 enum {
@@ -102,9 +102,9 @@ enum {
 #if WITHWNB
 	WINDOW_WNBCONFIG,
 #endif /* WITHWNB */
-#if LINUX_SUBSYSTEM && WITHAD936XIIO
-	WINDOW_IIOCONFIG,
-#endif /* LINUX_SUBSYSTEM && WITHAD936XIIO */
+#if WITHAD936XIIO || WITHAD936XDEV
+	WINDOW_AD936X,
+#endif /* WITHAD936XIIO || WITHAD936XDEV */
 #if WITHAUDIOSAMPLESREC
 	WINDOW_AS,
 #endif /* WITHAUDIOSAMPLESREC */
