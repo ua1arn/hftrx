@@ -2243,9 +2243,6 @@ void linux_user_init(void)
 	linux_create_thread(& nmea_t, linux_nmea_spool, 50, nmea_thread_core);
 	linux_create_thread(& pps_t, linux_pps_thread, 90, nmea_thread_core);
 #endif /* WITHNMEA && WITHLFM && CPUSTYLE_XC7Z*/
-#if WITHLVGL && 1
-	lvgl_gui_init(lv_screen_active());
-#endif
 #if WITHAD936XDEV
 	if (pcie_status)
 		ad936xdev_init();
@@ -2757,9 +2754,6 @@ void linux_exit(void)
 #if defined(CODEC1_TYPE) && CODEC1_TYPE == CODEC_TYPE_ALSA
 	alsa_close();
 #endif /* CODEC1_TYPE == CODEC_TYPE_ALSA */
-#if WITHLVGL
-	lv_deinit();
-#endif /* WITHLVGL */
 
 	unlink(PIDFILE);
 	exit(EXIT_SUCCESS);

@@ -91,6 +91,7 @@
 	#define WITHSPECBETA_DEFAULT	30
 	#define WITHAFSPECTRE			1		/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHFFTSIZEAF 			512		/* Отображение спектра НЧ сигнвлв */
+	#define WITHTOUCHGUI			1
 	#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 	#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHALPHA				42
@@ -117,13 +118,6 @@
 	#define MOUSE_CURSOR_PATH		"/usr/hftrx_data/arrow.png"
 //	#define BLUETOOTH_ALSA			1
 	#define WITHSWRSCAN				1
-
-#if 1
-	#define WITHLVGL				1
-	#define BOARD_DSTYLE_LVGL 		"g_x800_y480_linux_lvgl.h"
-#else
-	#define WITHTOUCHGUI			1
-#endif
 
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 

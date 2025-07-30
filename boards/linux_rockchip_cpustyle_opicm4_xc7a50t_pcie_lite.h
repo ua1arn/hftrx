@@ -128,5 +128,6 @@ enum {
 /* макроопределение, которое должно включить в себя все инициализации */
 #define	HARDWARE_INITIALIZE()   do {} while (0)
 #define HARDWARE_DEBUG_FLUSH()	do {} while (0)
+#define ENCODER_INITIALIZE()	do {} while (0)
 
 #endif /* LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A50T_PCIE_LITE_H_INCLUDED */
