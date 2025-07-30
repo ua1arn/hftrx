@@ -4678,7 +4678,7 @@ static void sendbatch(uint_fast8_t ifir)
 // two banks, symmetrical 961:
 // coef_seq.exe fir_normalized_coeff961_lpf_1550.txt fir_normalized_coeff961_lpf_1550_reseq_b.txt MCV M4K MSYM 128 2 SGL 1 32
 //
-static void single_rate_out_write_mcv(const FLOAT_t * kf, int coef_length, int coef_bit_width)
+static void single_rate_out_write_mcv(SPI_t * spi, const FLOAT_t * kf, int coef_length, int coef_bit_width)
 {
 
 	enum coef_store_type { LC, M512, M4K, DUMMY, AUTO };
@@ -4817,7 +4817,7 @@ static void single_rate_out_write_mcv(const FLOAT_t * kf, int coef_length, int c
 			for (i = 0; i < (num_mac + mcv_reload_zero_insert) * num_cycles; ++ i)
 			{
 				//coef[i] = tmp_coef[i] ;
-				board_fpga_fir_coef_p2(tmp_coef [i]);
+				board_fpga_fir_coef_p2(spi, tmp_coef [i]);
 			}
 		}
 		else
@@ -4826,7 +4826,7 @@ static void single_rate_out_write_mcv(const FLOAT_t * kf, int coef_length, int c
 			for (i = 0; i < (num_mac + mcv_reload_zero_insert) * num_cycles; ++i)
 			{
 				//coef[i] = wrk_coef[i] ;
-				board_fpga_fir_coef_p2(wrk_coef [i]);
+				board_fpga_fir_coef_p2(spi, wrk_coef [i]);
 			}
 		}
 	}
@@ -4840,14 +4840,15 @@ board_fpga_fir_send(
 	const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth
 	)
 {
+	SPI_t * spi = SPIHARD_PTR;
 	//ASSERT(CWidth <= 24);
 	//PRINTF(PSTR("board_fpga_fir_send: ifir=%u, Ntap=%u\n"), ifir, Ntap);
 	IRQL_t irql;
-	board_fpga_fir_connect(& irql);
+	board_fpga_fir_connect(spi, & irql);
 
 	// strobe
-	board_fpga_fir_coef_p1(0x00000000);	// one strobe before, without WE required
-	board_fpga_fir_complete();
+	board_fpga_fir_coef_p1(spi, 0x00000000);	// one strobe before, without WE required
+	board_fpga_fir_complete(spi);
 
 	switch (ifir)
 	{
@@ -4862,14 +4863,14 @@ board_fpga_fir_send(
 		break;
 	}
 
-	board_fpga_fir_coef_p1(0x00000000);	// 1-st dummy
-	board_fpga_fir_coef_p2(0x00000000);	// 2-nd dummy
+	board_fpga_fir_coef_p1(spi, 0x00000000);	// 1-st dummy
+	board_fpga_fir_coef_p2(spi, 0x00000000);	// 2-nd dummy
 
 	//single_rate_out_write_ser(kf, Ntap / 2 + 1); // NtapCoeffs(Ntap);
-	single_rate_out_write_mcv(kf, Ntap, CWidth); // NtapCoeffs(Ntap);
+	single_rate_out_write_mcv(spi, kf, Ntap, CWidth); // NtapCoeffs(Ntap);
 	//sendbatch();
 
-	board_fpga_fir_complete();
+	board_fpga_fir_complete(spi);
 	switch (ifir)
 	{
 	case 0:
@@ -4882,12 +4883,11 @@ board_fpga_fir_send(
 		ASSERT(0);
 		break;
 	}
-
 	// strobe
-	board_fpga_fir_coef_p1(0x00000000);	// one strobe after, without WE required
-	board_fpga_fir_complete();
+	board_fpga_fir_coef_p1(spi, 0x00000000);	// one strobe after, without WE required
+	board_fpga_fir_complete(spi);
 
-	board_fpga_fir_disconnect(irql);
+	board_fpga_fir_disconnect(spi, irql);
 }
 
 /* поменять местами значение загружаемого профиля FIR фильтра в FPGA */
