@@ -15491,36 +15491,6 @@ void lowtests(void)
 #endif
 #if 0
 	{
-		// "бегающие огоньки" на светодиодах - 74HC595
-		//arm_hardware_pio1_inputs(0xFF00);
-		// тестирование SPI
-		spi_initialize();
-
-		uint_fast8_t i = 0;
-		for (;;)
-		{
-			const uint_fast8_t timev = 1; //(~ GPIO.PPR1 >> 8) & 0xFF;
-			const spitarget_t target = targetext1;
-			uint_fast8_t v;
-			//
-			//TP();
-			spi_select2(target, SPIC_MODE3, SPIC_SPEEDFAST);	// В FPGA регистр тактируется не в прямую
-			spi_progval8_p1(target, 0xFF);		/* read status register */
-			spi_complete(target);
-
-			spi_to_read(target);
-			v = spi_read_byte(target, 0xff);
-			spi_to_write(target);
-
-			spi_unselect(target);	/* done sending data to target chip */
-
-			//local_delay_ms(10 * timev);
-			++ i;
-		}
-	}
-#endif /*  */
-#if 0
-	{
 		// FPU test
 		HARDWARE_DEBUG_INITIALIZE();
 		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
