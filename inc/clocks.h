@@ -159,6 +159,8 @@ unsigned long hardware_get_apb2_tim_freq(void);
 // Allwinner V3s
 
 uint_fast32_t allwnr_v3s_get_hosc_freq(void);
+uint_fast32_t allwnr_v3s_get_uart_freq(void);
+uint_fast32_t allwnr_v3s_get_twi_freq(void);
 
 #endif /* (CPUSTYLE_V3S) */
 

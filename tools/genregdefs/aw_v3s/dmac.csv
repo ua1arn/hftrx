@@ -5,7 +5,6 @@
 
 #regdef; DMAC_IRQ_EN_REG; 0x0000; DMAC IRQ Enable Register
 #regdef; DMAC_IRQ_PEND_REG; 0x0010; DMAC IRQ Pending Register
-#regdef; DMA_SEC_REG; 0x0020; DMA Security Register
 #regdef; DMAC_AUTO_GATE_REG; 0x0020; DMAC Auto Gating Register
 #regdefr; DMAC_STA_REG; 0x0030; DMAC Status Register
 

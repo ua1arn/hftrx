@@ -212,10 +212,8 @@ typedef struct DMAC_Type
          RESERVED(0x004[0x0010 - 0x0004], uint8_t)
     __IO uint32_t DMAC_IRQ_PEND_REG;                  /*!< Offset 0x010 DMAC IRQ Pending Register */
          RESERVED(0x014[0x0020 - 0x0014], uint8_t)
-    __IO uint32_t DMA_SEC_REG;                        /*!< Offset 0x020 DMA Security Register */
-#error Need offset 0x024 of field 'DMAC_AUTO_GATE_REG' type 'uint32_t' at (0x020)
     __IO uint32_t DMAC_AUTO_GATE_REG;                 /*!< Offset 0x020 DMAC Auto Gating Register */
-         RESERVED(0x028[0x0030 - 0x0028], uint8_t)
+         RESERVED(0x024[0x0030 - 0x0024], uint8_t)
     __I  uint32_t DMAC_STA_REG;                       /*!< Offset 0x030 DMAC Status Register */
          RESERVED(0x034[0x0100 - 0x0034], uint8_t)
     struct
