@@ -12383,64 +12383,6 @@ void hightests(void)
 		PRINTF("zynq pin & bank calculations test passed.\n");
 	}
 #endif
-#if 0 && (WITHTWIHW || WITHTWISW)
-	{
-		unsigned i;
-		for (i = 1; i < 127; ++ i)
-		{
-			uint8_t v;
-			unsigned addrw = i * 2;
-			unsigned addrr = addrw + 1;
-			////%%TP();
-			i2c_start(addrw);
-			i2c_write_withrestart(0x1B);
-			i2c_start(addrr);
-			i2c_read(& v, I2C_READ_ACK_NACK);
-			////%%TP();
-			PRINTF("I2C addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
-		}
-	}
-#endif
-#if 0 && (WITHTWIHW || WITHTWISW)
-	{
-		// i2c bus test i2c test twi bus test twi test
-
-		unsigned i;
-		for (i = 1; i < 127; ++ i)
-		{
-			uint8_t v;
-			unsigned addrw = i * 2;
-			unsigned addrr = addrw + 1;
-			////%%TP();
-			i2c2_start(addrw);
-			i2c2_write_withrestart(0x1B);
-			i2c2_start(addrr);
-			i2c2_read(& v, I2C_READ_ACK_NACK);
-			////%%TP();
-			PRINTF("I2C2 addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
-		}
-	}
-#endif
-#if 0 && (WITHTWIHW || WITHTWISW)
-	{
-		// i2c bus test i2c test twi bus test twi test
-
-		unsigned i;
-		for (i = 1; i < 127; ++ i)
-		{
-			uint8_t v;
-			unsigned addrw = i * 2;
-			unsigned addrr = addrw + 1;
-			////%%TP();
-			i2c_start(addrw);
-			i2c_write_withrestart(0x1B);
-			i2c_start(addrr);
-			i2c_read(& v, I2C_READ_ACK_NACK);
-			////%%TP();
-			PRINTF("I2C1 addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
-		}
-	}
-#endif
 #if 0 && CPUSTYLE_STM32MP1
 	{
 		//	This register is used by the MPU to check the reset source. This register is updated by the
@@ -12450,34 +12392,6 @@ void hightests(void)
 		RCC->MP_RSTSCLRR = RCC->MP_RSTSCLRR;
 		PRINTF(PSTR("MP_RSTSCLRR=%08lX\n"), (unsigned long) RCC->MP_RSTSCLRR);
 		PRINTF(PSTR("ACTLR=%08lX\n"), (unsigned long) __get_ACTLR());
-	}
-#endif
-#if 0 && CPUSTYLE_STM32MP1
-	{
-
-		RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_BSECEN;
-		(void) RCC->MP_APB5ENSETR;
-	//	0x24: STM32MP153Cx
-	//	0x25: STM32MP153Ax
-	//	0xA4: STM32MP153Fx
-	//	0xA5: STM32MP153Dx
-	//	0x00: STM32MP157Cx
-	//	0x01: STM32MP157Ax
-	//	0x80: STM32MP157Fx
-	//	0x81: STM32MP157Dx
-		const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
-		switch (rpn)
-		{
-		case 0x24: PRINTF(PSTR("STM32MP153Cx\n")); break;
-		case 0x25: PRINTF(PSTR("STM32MP153Ax\n")); break;
-		case 0xA4: PRINTF(PSTR("STM32MP153Fx\n")); break;
-		case 0xA5: PRINTF(PSTR("STM32MP153Dx\n")); break;
-		case 0x00: PRINTF(PSTR("STM32MP157Cx\n")); break;
-		case 0x01: PRINTF(PSTR("STM32MP157Ax\n")); break;
-		case 0x80: PRINTF(PSTR("STM32MP157Fx\n")); break;
-		case 0x81: PRINTF(PSTR("STM32MP157Dx\n")); break;
-		default: PRINTF(PSTR("STN32MP1 RPN=%02X\n"), rpn); break;
-		}
 	}
 #endif
 #if 0 && defined (TZC) && WITHDEBUG

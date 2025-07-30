@@ -1850,48 +1850,11 @@ void hardware_spi_connect(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes_t s
 
 	HARDWARE_SPI_CONNECT();
 
-#elif CPUSTYLE_STM32F1XX
-
-	HARDWARE_SPI_CONNECT();
-
-	#if WITHTWIHW
-		// Silicon errata:
-		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
-		// Workaround:
-		// When using SPI1 remapped, the I2C1 clock must be disabled.
-		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
-		__DSB();
-	#endif
-	spi->CR1 = spi_cr1_val8w [spispeedindex][spimode];
-
-#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
+#elif CPUSTYLE_STM32F7XX
 
 	// В этих процессорах и входы и выходы переключаются на ALT FN
 	HARDWARE_SPI_CONNECT();
 
-	#if WITHTWIHW
-		// Silicon errata:
-		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
-		// Workaround:
-		// When using SPI1 remapped, the I2C1 clock must be disabled.
-		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
-		__DSB();
-	#endif
-	spi->CR1 = spi_cr1_val8w [spispeedindex][spimode];
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
-
-	// В этих процессорах и входы и выходы переключаются на ALT FN
-	HARDWARE_SPI_CONNECT();
-
-	#if WITHTWIHW
-		// Silicon errata:
-		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
-		// Workaround:
-		// When using SPI1 remapped, the I2C1 clock must be disabled.
-		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
-		__DSB();
-	#endif
 	spi->CR1 = spi_cr1_val8w [spispeedindex][spimode];
 	spi->CR2 = (spi->CR2 & ~ (SPI_CR2_DS)) |
 		7 * SPI_CR2_DS_0 |	// 8 bit word length
@@ -1983,15 +1946,6 @@ void hardware_spi_disconnect(SPI_t * spi)
 #elif CPUSTYLE_STM32F
 
 	spi->CR1 &= ~ SPI_CR1_SPE;
-
-	#if WITHTWIHW && ! CPUSTYLE_STM32H7XX
-		// Silicon errata:
-		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
-		// Workaround:
-		// When using SPI1 remapped, the I2C1 clock must be disabled.
-		RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); // вкл тактирование контроллера I2C
-		__DSB();
-	#endif
 
 	// connect back to GPIO
 	HARDWARE_SPI_DISCONNECT();
@@ -2120,35 +2074,7 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 	(void) spi->SPI_RDR;		/* clear AT91C_SPI_RDRF in status register */
 	HARDWARE_SPI_CONNECT();
 
-#elif CPUSTYLE_STM32F1XX
-
-	HARDWARE_SPI_CONNECT();
-	spi->CR1 = spi_cr1_val16w [spispeedindex] [spimode];
-	#if WITHTWIHW
-		// Silicon errata:
-		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
-		// Workaround:
-		// When using SPI1 remapped, the I2C1 clock must be disabled.
-		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
-		__DSB();
-	#endif
-
-#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
-
-	// В этих процессорах и входы и выходы переключаются на ALT FN
-	HARDWARE_SPI_CONNECT();
-
-	spi->CR1 = spi_cr1_val16w [spispeedindex][spimode];
-	#if WITHTWIHW
-		// Silicon errata:
-		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
-		// Workaround:
-		// When using SPI1 remapped, the I2C1 clock must be disabled.
-		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
-		__DSB();
-	#endif
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F7XX
 
 	// В этих процессорах и входы и выходы переключаются на ALT FN
 	HARDWARE_SPI_CONNECT();
@@ -2158,14 +2084,6 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 		15 * SPI_CR2_DS_0 |	// 16 bit word length
 		0 * SPI_CR2_FRXTH |			// RXFIFO threshold is set to 16 bits (FRXTH=0).
 		0;
-	#if WITHTWIHW
-		// Silicon errata:
-		// 2.6.7 I2C1 with SPI1 remapped and used in master mode
-		// Workaround:
-		// When using SPI1 remapped, the I2C1 clock must be disabled.
-		RCC->APB1ENR &= ~ (RCC_APB1ENR_I2C1EN); // выкл тактирование контроллера I2C
-		__DSB();
-	#endif
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
