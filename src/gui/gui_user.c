@@ -30,6 +30,7 @@
 #include "gui_system.h"
 #include "gui_structs.h"
 #include "gui_settings.h"
+#include "gui_windows.h"
 
 val_step_t enc2step [] = {
 	{ 100, "100 Hz", },
@@ -223,78 +224,6 @@ void gui_open_debug_window(void)
 }
 #endif /* WITHGUIDEBUG */
 
-static window_t windows [] = {
-//     window_id,   		 parent_id, 			align_mode,     title,     				is_close, onVisibleProcess
-	{ WINDOW_MAIN, 			 NO_PARENT_WINDOW, 		ALIGN_LEFT_X,	"",  	   	   			 0, gui_main_process, },
-	{ WINDOW_MODES, 		 WINDOW_RECEIVE, 		ALIGN_CENTER_X, "Select mode", 			 1, window_mode_process, },
-	{ WINDOW_AF,    		 WINDOW_RECEIVE,		ALIGN_CENTER_X, "AF settings",    		 1, window_af_process, },
-	{ WINDOW_FREQ,  		 WINDOW_BANDS,			ALIGN_CENTER_X, "Freq:", 	   			 1, window_freq_process, },
-	{ WINDOW_MENU,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Settings",	   		 	 1, window_menu_process, },
-	{ WINDOW_MENU_PARAMS,    WINDOW_MENU,		    ALIGN_CENTER_X, "Settings",	   		 	 1, window_menu_params_process, },
-	{ WINDOW_UIF, 			 NO_PARENT_WINDOW, 		ALIGN_LEFT_X, 	"",   		   	 		 0, window_uif_process, },
-#if WITHSWRSCAN
-	{ WINDOW_SWR_SCANNER,	 WINDOW_UTILS, 			ALIGN_CENTER_X, "SWR band scanner",		 0, window_swrscan_process, },
-#endif /* WITHSWRSCAN */
-	{ WINDOW_AUDIOSETTINGS,  WINDOW_OPTIONS,		ALIGN_CENTER_X, "Audio settings", 		 1, window_audiosettings_process, },
-	{ WINDOW_AP_MIC_EQ, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, "MIC TX equalizer",		 1, window_ap_mic_eq_process, },
-#if WITHREVERB
-	{ WINDOW_AP_REVERB_SETT, WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, "Reverberator settings", 1, window_ap_reverb_process, },
-#endif /* WITHREVERB */
-	{ WINDOW_AP_MIC_SETT, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, "Microphone settings", 	 1, window_ap_mic_process, },
-	{ WINDOW_AP_MIC_PROF, 	 WINDOW_AUDIOSETTINGS, 	ALIGN_CENTER_X, "Microphone profiles", 	 1, window_ap_mic_prof_process, },
-	{ WINDOW_TX_SETTINGS, 	 WINDOW_OPTIONS, 		ALIGN_CENTER_X, "Transmit settings", 	 1, window_tx_process, },
-	{ WINDOW_TX_VOX_SETT, 	 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, "VOX settings", 	 	 1, window_tx_vox_process, },
-	{ WINDOW_TX_POWER, 		 WINDOW_TX_SETTINGS, 	ALIGN_CENTER_X, "TX power", 	 	 	 1, window_tx_power_process, },
-	{ WINDOW_OPTIONS, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X,	"Options",  	   	   	 1, window_options_process, },
-	{ WINDOW_UTILS, 		 WINDOW_OPTIONS,		ALIGN_CENTER_X,	"Utilites",  	   	   	 1, window_utilites_process, },
-	{ WINDOW_BANDS, 		 NO_PARENT_WINDOW,		ALIGN_CENTER_X,	"Bands",  	   	   	 	 1,	window_bands_process, },
-	{ WINDOW_MEMORY, 		 NO_PARENT_WINDOW,		ALIGN_CENTER_X,	"Memory",  	   	   	 	 1, window_memory_process, },
-	{ WINDOW_DISPLAY, 		 WINDOW_OPTIONS,		ALIGN_CENTER_X,	"Display settings",  	 1, window_display_process, },
-	{ WINDOW_RECEIVE, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X, "Receive settings", 	 1, window_receive_process, },
-	{ WINDOW_NOTCH, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X, "Notch", 	 	 		 1, window_notch_process, },
-	{ WINDOW_GUI_SETTINGS, 	 WINDOW_OPTIONS, 		ALIGN_CENTER_X, "GUI settings",	 		 1, window_gui_settings_process, },
-#if WITHFT8
-	{ WINDOW_FT8, 			 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "FT8 terminal",		 	 1, window_ft8_process, },
-	{ WINDOW_FT8_BANDS, 	 WINDOW_FT8,			ALIGN_CENTER_X, "FT8 bands",		 	 0, window_ft8_bands_process, },
-	{ WINDOW_FT8_SETTINGS, 	 WINDOW_FT8,			ALIGN_CENTER_X, "FT8 settings",		 	 0, window_ft8_settings_process, },
-#endif /* #if WITHFT8 */
-	{ WINDOW_INFOBAR_MENU, 	 NO_PARENT_WINDOW,		ALIGN_MANUAL,   "",		 				 0, window_infobar_menu_process, },
-	{ WINDOW_AF_EQ, 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "AF equalizer",			 1, window_af_eq_process, },
-#if WITHIQSHIFT
-	{ WINDOW_SHIFT, 	 	 WINDOW_UTILS,			ALIGN_CENTER_X, "IQ shift",				 1, window_shift_process, },
-#endif /* WITHIQSHIFT */
-	{ WINDOW_TIME, 	 	 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Date & time set",		 1, window_time_process, },
-	{ WINDOW_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "Keyboard",		 		 0, window_kbd_process, },
-	{ WINDOW_KBD_TEST, 		 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_process, },
-	{ WINDOW_3D, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Donut 3d ASCII demo",	 1, window_3d_process, },
-#if WITHLFM
-	{ WINDOW_LFM, 		 	 WINDOW_UTILS,			ALIGN_RIGHT_X,  "LFM",			 		 1, window_lfm_process, },
-	{ WINDOW_LFM_SPECTRE, 	 WINDOW_LFM,			ALIGN_CENTER_X, "LFM spectre draw",	 	 1, window_lfm_spectre_process, },
-#endif /* WITHLFM  */
-#if WITHEXTIO_LAN
-	{ WINDOW_EXTIOLAN, 		 WINDOW_UTILS,			ALIGN_CENTER_X,  "LAN IQ Stream server", 1, window_stream_process, },
-#endif /* WITHEXTIO_LAN */
-#if WITHWNB
-	{ WINDOW_WNBCONFIG, 	 WINDOW_RECEIVE,		ALIGN_CENTER_X,  "WNB config", 			 1, window_wnbconfig_process, },
-#endif /* WITHWNB */
-#if WITHAD936XIIO || WITHAD936XDEV
-	{ WINDOW_AD936X,  	 	WINDOW_OPTIONS,		ALIGN_CENTER_X,  "AD936x config", 	     	 1, window_ad936x_process, },
-#endif /* WITHAD936XIIO || WITHAD936XDEV */
-#if WITHAUDIOSAMPLESREC
-	{ WINDOW_AS,  	 		NO_PARENT_WINDOW,		ALIGN_CENTER_X,  "AF samples",			 1, window_as_process, },
-#endif /* WITHAUDIOSAMPLESREC */
-};
-
-/* Возврат ссылки на окно */
-window_t * get_win(uint8_t window_id)
-{
-	if (window_id == NO_PARENT_WINDOW)	//	костыль
-		return & windows [0];
-
-	ASSERT(window_id < WINDOWS_COUNT);
-	return & windows [window_id];
-}
-
 void gui_user_actions_after_close_window(void)
 {
 	hamradio_disable_encoder2_redirect();
@@ -323,7 +252,7 @@ static void keyboard_edit_digits(uint32_t * val)
 
 // *********************************************************************************************************************************************************************
 
-static void window_infobar_menu_process(void)
+void window_infobar_menu_process(void)
 {
 #if GUI_SHOW_INFOBAR
 	window_t * const win = get_win(WINDOW_INFOBAR_MENU);
@@ -633,7 +562,7 @@ static void window_infobar_menu_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void gui_main_process(void)
+void gui_main_process(void)
 {
 	window_t * const win = get_win(WINDOW_MAIN);
 
@@ -1408,7 +1337,7 @@ static void write_mems(uint_fast8_t cell)
 #endif /* LINUX_SUBSYSTEM */
 }
 
-static void window_memory_process(void)
+void window_memory_process(void)
 {
 	window_t * const win = get_win(WINDOW_MEMORY);
 
@@ -1525,7 +1454,7 @@ static void window_memory_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_bands_process(void)
+void window_bands_process(void)
 {
 	window_t * const win = get_win(WINDOW_BANDS);
 	static band_array_t * bands = NULL;
@@ -1692,7 +1621,7 @@ static void window_bands_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_options_process(void)
+void window_options_process(void)
 {
 	window_t * const win = get_win(WINDOW_OPTIONS);
 
@@ -1820,7 +1749,7 @@ static void window_options_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_display_process(void)
+void window_display_process(void)
 {
 #if WITHSPECTRUMWF && WITHMENU
 	window_t * const win = get_win(WINDOW_DISPLAY);
@@ -2073,7 +2002,7 @@ static void window_display_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_utilites_process(void)
+void window_utilites_process(void)
 {
 	window_t * const win = get_win(WINDOW_UTILS);
 
@@ -2179,7 +2108,7 @@ static void window_utilites_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_swrscan_process(void)
+void window_swrscan_process(void)
 {
 #if WITHSWRSCAN
 	uint_fast16_t gr_w = 500, gr_h = 200;							// размеры области графика
@@ -2383,7 +2312,7 @@ static void window_swrscan_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_tx_process(void)
+void window_tx_process(void)
 {
 	window_t * const win = get_win(WINDOW_TX_SETTINGS);
 	unsigned update = 0;
@@ -2489,7 +2418,7 @@ static void window_tx_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_tx_vox_process(void)
+void window_tx_vox_process(void)
 {
 #if WITHVOX
 	window_t * const win = get_win(WINDOW_TX_VOX_SETT);
@@ -2684,7 +2613,7 @@ static void window_tx_vox_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_tx_power_process(void)
+void window_tx_power_process(void)
 {
 #if WITHPOWERTRIM && WITHTX
 	window_t * const win = get_win(WINDOW_TX_POWER);
@@ -2837,7 +2766,7 @@ static void window_tx_power_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_audiosettings_process(void)
+void window_audiosettings_process(void)
 {
 	window_t * const win = get_win(WINDOW_AUDIOSETTINGS);
 	unsigned update = 0;
@@ -3001,7 +2930,7 @@ static void window_audiosettings_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_ap_reverb_process(void)
+void window_ap_reverb_process(void)
 {
 #if WITHREVERB
 	window_t * const win = get_win(WINDOW_AP_REVERB_SETT);
@@ -3149,7 +3078,7 @@ static void window_ap_reverb_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_ap_mic_eq_process(void)
+void window_ap_mic_eq_process(void)
 {
 #if WITHAFCODEC1HAVEPROC
 	window_t * const win = get_win(WINDOW_AP_MIC_EQ);
@@ -3303,7 +3232,7 @@ static void window_ap_mic_eq_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_af_eq_process(void)
+void window_af_eq_process(void)
 {
 #if WITHAFEQUALIZER
 	window_t * const win = get_win(WINDOW_AF_EQ);
@@ -3477,7 +3406,7 @@ static void window_af_eq_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_ap_mic_process(void)
+void window_ap_mic_process(void)
 {
 	window_t * const win = get_win(WINDOW_AP_MIC_SETT);
 
@@ -3701,7 +3630,7 @@ static void window_ap_mic_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_ap_mic_prof_process(void)
+void window_ap_mic_prof_process(void)
 {
 	window_t * const win = get_win(WINDOW_AP_MIC_PROF);
 
@@ -3801,7 +3730,7 @@ static void window_ap_mic_prof_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_notch_process(void)
+void window_notch_process(void)
 {
 	window_t * const win = get_win(WINDOW_NOTCH);
 	static enc_var_t notch;
@@ -3980,7 +3909,7 @@ static void window_notch_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_gui_settings_process(void)
+void window_gui_settings_process(void)
 {
 	window_t * const win = get_win(WINDOW_GUI_SETTINGS);
 	unsigned update = 0;
@@ -4078,7 +4007,7 @@ static void window_gui_settings_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_shift_process(void)
+void window_shift_process(void)
 {
 #if WITHIQSHIFT
 	window_t * const win = get_win(WINDOW_SHIFT);
@@ -4262,7 +4191,7 @@ void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exi
 	}
 }
 
-static void window_uif_process(void)
+void window_uif_process(void)
 {
 	static label_t * lbl_uif_val;
 	static button_t * button_up, * button_down;
@@ -4434,7 +4363,7 @@ static void parse_ft8_answer(char * str, COLORPIP_T * color, unsigned * cq_flag)
 	}
 }
 
-static void window_ft8_bands_process(void)
+void window_ft8_bands_process(void)
 {
 	window_t * const win = get_win(WINDOW_FT8_BANDS);
 
@@ -4500,7 +4429,7 @@ static void window_ft8_bands_process(void)
 	}
 }
 
-static void window_ft8_settings_process(void)
+void window_ft8_settings_process(void)
 {
 	window_t * const win = get_win(WINDOW_FT8_SETTINGS);
 
@@ -4612,7 +4541,7 @@ static void window_ft8_settings_process(void)
 	}
 }
 
-static void window_ft8_process(void)
+void window_ft8_process(void)
 {
 	window_t * const win = get_win(WINDOW_FT8);
 	static unsigned win_x = 0, win_y = 0, x, y, update = 0, selected_label_cq = 255, selected_label_tx = 0;
@@ -4903,7 +4832,7 @@ static void window_ft8_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_af_process(void)
+void window_af_process(void)
 {
 	window_t * const win = get_win(WINDOW_AF);
 	static enc_var_t bp_t;
@@ -5105,7 +5034,7 @@ static void window_af_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_mode_process(void)
+void window_mode_process(void)
 {
 	window_t * const win = get_win(WINDOW_MODES);
 
@@ -5175,7 +5104,7 @@ static void window_mode_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_receive_process(void)
+void window_receive_process(void)
 {
 	window_t * const win = get_win(WINDOW_RECEIVE);
 	unsigned update = 0;
@@ -5319,7 +5248,7 @@ static void window_receive_process(void)
 
 // *********************************************************************************************
 
-static void window_freq_process (void)
+void window_freq_process (void)
 {
 	static label_t * lbl_freq;
 	static editfreq_t editfreq;
@@ -5453,7 +5382,7 @@ static void window_freq_process (void)
 
 // *****************************************************************************************************************************
 
-static void window_time_process(void)
+void window_time_process(void)
 {
 #if defined (RTC1_TYPE)
 	window_t * const win = get_win(WINDOW_TIME);
@@ -5619,7 +5548,7 @@ static void window_time_process(void)
 #endif /* defined (RTC1_TYPE) */
 }
 
-static void window_kbd_process(void)
+void window_kbd_process(void)
 {
 	window_t * const win = get_win(WINDOW_KBD);
 	static unsigned update = 0, is_shift = 0;
@@ -5812,7 +5741,7 @@ static void window_kbd_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_kbd_test_process(void)
+void window_kbd_test_process(void)
 {
 	window_t * const win = get_win(WINDOW_KBD_TEST);
 	static uint32_t num_lbl1 = 12345;
@@ -5891,7 +5820,7 @@ static void window_kbd_test_process(void)
 
 /* https://www.a1k0n.net/2011/07/20/donut-math.html */
 
-static void window_3d_process(void)
+void window_3d_process(void)
 {
 	window_t * const win = get_win(WINDOW_3D);
 	static text_field_t * tf_3d = NULL;
@@ -5961,7 +5890,7 @@ static void window_3d_process(void)
 #define MENU_PARAMS_MAX	50
 static unsigned index_param = 0;
 
-static void window_menu_params_process(void)
+void window_menu_params_process(void)
 {
 	window_t * const win = get_win(WINDOW_MENU_PARAMS);
 	static menu_names_t menup [MENU_PARAMS_MAX], menuv;
@@ -6082,7 +6011,7 @@ static void window_menu_params_process(void)
 	}
 }
 
-static void window_menu_process(void)
+void window_menu_process(void)
 {
 	window_t * const win = get_win(WINDOW_MENU);
 
@@ -6151,7 +6080,7 @@ static void window_menu_process(void)
 
 // *****************************************************************************************************************************
 
-static void window_lfm_process(void)
+void window_lfm_process(void)
 {
 #if WITHLFM
 	window_t * const win = get_win(WINDOW_LFM);
@@ -6346,7 +6275,7 @@ static void window_lfm_process(void)
 #endif /* WITHLFM  */
 }
 
-static void window_lfm_spectre_process(void)
+void window_lfm_spectre_process(void)
 {
 #if WITHLFM
 	enum { xmax = 600, ymax = 200, i1 = (800 / 2) - 100, i2 = (800 / 2) + 100 };
@@ -6411,7 +6340,7 @@ void stream_log(char * str)
 	}
 }
 
-static void window_stream_process(void)
+void window_stream_process(void)
 {
 	window_t * const win = get_win(WINDOW_EXTIOLAN);
 	static uint8_t update = 0;
@@ -6480,12 +6409,13 @@ static void window_stream_process(void)
 	}
 }
 
+#else
+void window_stream_process(void) {}
 #endif /* # WITHEXTIO_LAN */
 
-#if WITHWNB
-
-static void window_wnbconfig_process(void)
+void window_wnbconfig_process(void)
 {
+#if WITHWNB
 	window_t * const win = get_win(WINDOW_WNBCONFIG);
 	static unsigned update = 0;
 	static enc_var_t enc;
@@ -6591,13 +6521,11 @@ static void window_wnbconfig_process(void)
 		label_t * lbl_wnbthreshold_val = (label_t *) find_gui_element(TYPE_LABEL, win, "lbl_wnbthreshold_val");
 		local_snprintf_P(lbl_wnbthreshold_val->text, ARRAY_SIZE(lbl_wnbthreshold_val->text), "%d", wnb_get_threshold());
 	}
+#endif /* WITHWNB */
 }
 
-#endif /* WITHWNB */
-
 #if WITHAD936XIIO
-
-static void window_ad936x_process(void)
+void window_ad936x_process(void)
 {
 	window_t * const win = get_win(WINDOW_AD936X);
 	static unsigned update = 0;
@@ -6762,11 +6690,8 @@ static void window_ad936x_process(void)
 		}
 	}
 }
-
-#endif /* WITHAD936XIIO */
-
-#if WITHAD936XDEV
-static void window_ad936x_process(void)
+#elif WITHAD936XDEV
+void window_ad936x_process(void)
 {
 	window_t * const win = get_win(WINDOW_AD936X);
 	static uint32_t freq = 7012000;
@@ -6825,12 +6750,13 @@ static void window_ad936x_process(void)
 		break;
 	}
 }
+#else
+void window_ad936x_process(void) {}
 #endif /* WITHAD936XDEV */
 
-#if WITHAUDIOSAMPLESREC
-
-static void window_as_process(void)
+void window_as_process(void)
 {
+#if WITHAUDIOSAMPLESREC
 	window_t * const win = get_win(WINDOW_AS);
 	static unsigned update = 0;
 	enum { len = 320, lim = 25 };
@@ -6960,8 +6886,7 @@ static void window_as_process(void)
 
 		olds = s;
 	}
-}
-
 #endif /* WITHAUDIOSAMPLESREC */
+}
 
 #endif /* WITHTOUCHGUI */

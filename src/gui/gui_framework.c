@@ -23,11 +23,11 @@
 #include "gui_system.h"
 #include "gui_structs.h"
 #include "gui_settings.h"
+#include "gui_windows.h"
 
 #if WITHTOUCHGUI
 
 static void update_gui_elements_list(void);
-window_t * get_win(uint8_t window_id);
 void close_window(uint_fast8_t parent);
 void open_window(window_t * win);
 void close_all_windows(void);
@@ -719,7 +719,7 @@ void elements_state (window_t * win)
 			ASSERT(gui_element_count >= gui.footer_buttons_count);
 		}
 	}
-//	PRINTF("line %d: %s gui_element_count: %d %+d\n", __LINE__, win->tite, gui_element_count, debug_num);
+//	PRINTF("line %d: %s gui_element_count: %d %+d\n", __LINE__, win->title, gui_element_count, debug_num);
 	clean_wm_queue(win);
 }
 
@@ -780,9 +780,8 @@ void close_window(uint_fast8_t parent_action) // 0 - не открывать par
 		gui.win [1] = NO_PARENT_WINDOW;
 
 		if (win->parent_id != NO_PARENT_WINDOW && parent_action)	// При закрытии child window открыть parent window, если есть и если разрешено
-		{
 			open_window(get_win(win->parent_id));
-		}
+
 		gui_user_actions_after_close_window();
 	}
 }
@@ -791,9 +790,7 @@ void close_window(uint_fast8_t parent_action) // 0 - не открывать par
 void open_window(window_t * win)
 {
 	if (win->parent_id != NO_PARENT_WINDOW && gui.win [1] == win->parent_id)	// Если открыто parent window, закрыть его и оставить child window
-	{
 		close_window(0);
-	}
 
 	win->state = VISIBLE;
 	win->first_call = 1;
