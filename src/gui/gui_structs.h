@@ -299,6 +299,7 @@ typedef struct {
 	int16_t vector_move_y;
 	uint8_t win[WIN_GUI_COUNT];		// на экране не более 2х окон, одно из которых - основное на весь экран
 	uint8_t footer_buttons_count;
+	const gxdrawb_t * gdb;
 } gui_t;
 
 #endif /* WITHTOUCHGUI */

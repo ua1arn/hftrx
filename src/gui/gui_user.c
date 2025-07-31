@@ -562,6 +562,46 @@ void window_infobar_menu_process(void)
 
 // *********************************************************************************************************************************************************************
 
+/* Установки статуса основных кнопок */
+/* При DISABLED в качестве необязательного параметра передать указатель на активную кнопку или NULL для блокирования всех */
+void footer_buttons_state (uint_fast8_t state, ...)
+{
+	window_t * win = get_win(WINDOW_MAIN);
+	va_list arg;
+	button_t * bt = NULL;
+	uint_fast8_t is_name;
+	static uint_fast16_t bitmask_locked_buttons = 0;
+
+	if (state == DISABLED)
+	{
+		va_start(arg, state);
+		bt = va_arg(arg, button_t *);
+		va_end(arg);
+	}
+
+	if (state == DISABLED && bt != NULL)
+		bitmask_locked_buttons = 0;
+
+	for (uint_fast8_t i = 0; i < win->bh_count; i ++)
+	{
+		button_t * bh = & win->bh_ptr [i];
+
+		if (state == DISABLED && bt != NULL)
+			bitmask_locked_buttons |= bh->is_locked << i;
+
+		if (state == DISABLED)
+		{
+			bh->state = bh == bt ? CANCELLED : DISABLED;
+			bh->is_locked = bh->state == CANCELLED ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+		}
+		else if (state == CANCELLED && check_for_parent_window() == NO_PARENT_WINDOW)
+		{
+			bh->state = CANCELLED;
+			bh->is_locked = ((bitmask_locked_buttons >> i) & 1) ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+		}
+	}
+}
+
 void gui_main_process(void)
 {
 	window_t * const win = get_win(WINDOW_MAIN);

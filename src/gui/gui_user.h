@@ -9,6 +9,7 @@
 #include "src/gui/gui_structs.h"
 
 void gui_user_actions_after_close_window(void);
+void footer_buttons_state (uint_fast8_t state, ...);
 
 enum {
 	MENU_OFF,

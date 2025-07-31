@@ -17,6 +17,7 @@
 #include "display/fontmaps.h"
 
 #include "gui.h"
+#include "gui_user.h"
 #include "gui_system.h"
 #include "gui_structs.h"
 #include "gui_settings.h"
@@ -24,47 +25,6 @@
 #include "window_list.h"
 
 #if WITHTOUCHGUI
-
-void gui_main_process(void);
-void window_mode_process(void);
-void window_af_process(void);
-void window_freq_process (void);
-void window_swrscan_process(void);
-void window_tx_process(void);
-void window_tx_vox_process(void);
-void window_tx_power_process(void);
-void window_audiosettings_process(void);
-void window_ap_reverb_process(void);
-void window_ap_mic_eq_process(void);
-void window_ap_mic_process(void);
-void window_ap_mic_prof_process(void);
-void window_menu_process(void);
-void window_uif_process(void);
-void window_options_process(void);
-void window_utilites_process(void);
-void window_bands_process(void);
-void window_memory_process(void);
-void window_display_process(void);
-void window_receive_process(void);
-void window_notch_process(void);
-void window_gui_settings_process(void);
-void window_ft8_process(void);
-void window_ft8_bands_process(void);
-void window_ft8_settings_process(void);
-void window_infobar_menu_process(void);
-void window_af_eq_process(void);
-void window_shift_process(void);
-void window_menu_params_process(void);
-void window_time_process(void);
-void window_kbd_process(void);
-void window_kbd_test_process(void);
-void window_3d_process(void);
-void window_lfm_process(void);
-void window_lfm_spectre_process(void);
-void window_stream_process(void);
-void window_wnbconfig_process(void);
-void window_ad936x_process(void);
-void window_as_process(void);
 
 void gui_user_actions_after_close_window(void);
 

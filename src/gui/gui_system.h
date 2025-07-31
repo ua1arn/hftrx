@@ -15,7 +15,6 @@ void add_element(const char * element_name, ...);
 void * find_gui_element(element_type_t type, window_t * win, const char * name);
 uint_fast8_t get_label_width(const label_t * const lh);
 uint_fast8_t get_label_height(const label_t * const lh);
-void footer_buttons_state (uint_fast8_t state, ...);
 void elements_state (window_t * win);
 void remove_end_line_spaces(char * str);
 const char * remove_start_line_spaces(const char * str);
