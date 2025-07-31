@@ -1,6 +1,3 @@
-#ifndef WINDOW_LIST_H
-#define WINDOW_LIST_H
-
 #define WINDOW_LIST(X) 																									\
     X(MAIN,              DUMMY,    	    ALIGN_LEFT_X,   "",                          0, gui_main_process) 				\
     X(MODES,             RECEIVE,       ALIGN_CENTER_X, "Select mode",               1, window_mode_process) 			\
@@ -42,5 +39,3 @@
 	X(WNBCONFIG,         RECEIVE,       ALIGN_CENTER_X, "WNB config",                1, window_wnbconfig_process) 		\
 	X(AD936X,            OPTIONS,       ALIGN_CENTER_X, "AD936x config",             1, window_ad936x_process) 			\
 	X(AS,                DUMMY,         ALIGN_CENTER_X, "AF samples",                1, window_as_process)
-
-#endif /* WINDOW_LIST_H */
