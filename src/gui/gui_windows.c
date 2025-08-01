@@ -22,7 +22,6 @@
 #include "gui_structs.h"
 #include "gui_settings.h"
 #include "gui_windows.h"
-#include "window_list.h"
 
 #if WITHTOUCHGUI
 
@@ -31,8 +30,10 @@ void gui_user_actions_after_close_window(void);
 static window_t windows[] = {
 	#define X(window_id, parent_id, align_mode, title, is_close, onVisibleProcess) \
 		{ WINDOW_##window_id, WINDOW_##parent_id, align_mode, title, is_close, onVisibleProcess, },
+	#include "window_list.h"
 	WINDOW_LIST(X)
 	#undef X
+	#undef WINDOW_LIST
 };
 
 /* Возврат ссылки на окно */
@@ -48,15 +49,15 @@ window_t * get_win(uint8_t window_id)
 /* Открыть окно */
 void open_window(window_t * win)
 {
-	gui_t * gui = get_gui_ptr();
+	uint8_t pwin = get_parent_window();
 
-	if (win->parent_id != NO_PARENT_WINDOW && gui->win [1] == win->parent_id)	// Если открыто parent window, закрыть его и оставить child window
+	if (win->parent_id != NO_PARENT_WINDOW && pwin == win->parent_id)	// Если открыто parent window, закрыть его и оставить child window
 		close_window(0);
 
 	win->state = VISIBLE;
 	win->first_call = 1;
 	win->is_moving = 0;
-	gui->win [1] = win->window_id;
+	set_parent_window(win->window_id);
 }
 
 /* Освободить выделенную память в куче и обнулить счетчики элементов окна */
@@ -85,11 +86,11 @@ static void free_win_ptr (window_t * win)
 /* Установка признака видимости окна */
 void close_window(uint_fast8_t parent_action) // 0 - не открывать parent window, 1 - открыть
 {
-	gui_t * gui = get_gui_ptr();
+	uint8_t pwin = get_parent_window();
 
-	if(gui->win [1] != NO_PARENT_WINDOW)
+	if(pwin != NO_PARENT_WINDOW)
 	{
-		window_t * win = get_win(gui->win [1]);
+		window_t * win = get_win(pwin);
 		win->state = NON_VISIBLE;
 		elements_state(win);
 
@@ -99,7 +100,7 @@ void close_window(uint_fast8_t parent_action) // 0 - не открывать par
 			dump_queue(win);
 
 		free_win_ptr(win);
-		gui->win [1] = NO_PARENT_WINDOW;
+		set_parent_window(NO_PARENT_WINDOW);
 
 		if (win->parent_id != NO_PARENT_WINDOW && parent_action)	// При закрытии child window открыть parent window, если есть и если разрешено
 			open_window(get_win(win->parent_id));

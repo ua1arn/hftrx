@@ -237,7 +237,7 @@ static void keyboard_edit_string(uintptr_t s, unsigned strlen, unsigned clean)
 	gui_keyboard.max_len = strlen;
 	gui_keyboard.digits_only = 0;
 	window_t * win_kbd = get_win(WINDOW_KBD);
-	win_kbd->parent_id = check_for_parent_window();
+	win_kbd->parent_id = get_parent_window();
 	open_window(win_kbd);
 }
 
@@ -246,7 +246,7 @@ static void keyboard_edit_digits(uint32_t * val)
 	gui_keyboard.num = val;
 	gui_keyboard.digits_only = 1;
 	window_t * win_kbd = get_win(WINDOW_KBD);
-	win_kbd->parent_id = check_for_parent_window();
+	win_kbd->parent_id = get_parent_window();
 	open_window(win_kbd);
 }
 
@@ -594,7 +594,7 @@ void footer_buttons_state (uint_fast8_t state, ...)
 			bh->state = bh == bt ? CANCELLED : DISABLED;
 			bh->is_locked = bh->state == CANCELLED ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		}
-		else if (state == CANCELLED && check_for_parent_window() == NO_PARENT_WINDOW)
+		else if (state == CANCELLED && get_parent_window() == NO_PARENT_WINDOW)
 		{
 			bh->state = CANCELLED;
 			bh->is_locked = ((bitmask_locked_buttons >> i) & 1) ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
@@ -737,7 +737,7 @@ void gui_main_process(void)
 			touch_area_t * th = (touch_area_t *) ptr;
 			touch_area_t * ta_freq = (touch_area_t *) find_gui_element(TYPE_TOUCH_AREA, win, "ta_freq");
 
-			if (th == ta_freq && gui_nvram.freq_swipe_enable && check_for_parent_window() == NO_PARENT_WINDOW)
+			if (th == ta_freq && gui_nvram.freq_swipe_enable && get_parent_window() == NO_PARENT_WINDOW)
 			{
 				int_fast16_t move_x = 0, move_y = 0;
 				get_gui_tracking(& move_x, & move_y);
@@ -759,12 +759,12 @@ void gui_main_process(void)
 
 			if (infobar != INFOBAR_EMPTY && ! ((infobar & INFOBAR_NOACTION) >> INFOBAR_NOACTION_POS))
 			{
-				if (check_for_parent_window() == WINDOW_INFOBAR_MENU)
+				if (get_parent_window() == WINDOW_INFOBAR_MENU)
 				{
 					close_window(DONT_OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 				}
-				else if (check_for_parent_window() == NO_PARENT_WINDOW)
+				else if (get_parent_window() == NO_PARENT_WINDOW)
 				{
 					window_t * const win = get_win(WINDOW_INFOBAR_MENU);
 					open_window(win);
@@ -797,7 +797,7 @@ void gui_main_process(void)
 #if WITHFT8
 			else if (bh == btn_ft8)
 			{
-				if (check_for_parent_window() != NO_PARENT_WINDOW)
+				if (get_parent_window() != NO_PARENT_WINDOW)
 				{
 					close_window(OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
@@ -819,7 +819,7 @@ void gui_main_process(void)
 #endif /* #if WITHSPKMUTE */
 			else if (bh == btn_Bands)
 			{
-				if (check_for_parent_window() != NO_PARENT_WINDOW)
+				if (get_parent_window() != NO_PARENT_WINDOW)
 				{
 					close_window(OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
@@ -847,7 +847,7 @@ void gui_main_process(void)
 			}
 			else if (bh == btn_Options)
 			{
-				if (check_for_parent_window() != NO_PARENT_WINDOW)
+				if (get_parent_window() != NO_PARENT_WINDOW)
 				{
 					close_window(OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
@@ -863,7 +863,7 @@ void gui_main_process(void)
 			}
 			else if (bh == btn_Receive)
 			{
-				if (check_for_parent_window() != NO_PARENT_WINDOW)
+				if (get_parent_window() != NO_PARENT_WINDOW)
 				{
 					close_window(OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
@@ -1013,12 +1013,12 @@ void gui_main_process(void)
 
 #if GUI_SHOW_INFOBAR
 
-	const window_t * const pwin = get_win(check_for_parent_window());
+	const window_t * const pwin = get_win(get_parent_window());
 	if (pwin->size_mode != WINDOW_POSITION_FULLSCREEN)
 	{
 		// разметка инфобара
 		const unsigned y_mid = infobar_1st_str_y + (infobar_2nd_str_y - infobar_1st_str_y) / 2;
-		const unsigned infobar_hl = (infobar_selected < infobar_num_places) && (check_for_parent_window() == WINDOW_INFOBAR_MENU);
+		const unsigned infobar_hl = (infobar_selected < infobar_num_places) && (get_parent_window() == WINDOW_INFOBAR_MENU);
 
 		for(unsigned i = 1; i < infobar_num_places; i++)
 		{
@@ -4342,7 +4342,7 @@ void window_uif_process(void)
 
 void gui_open_sys_menu(void)
 {
-	if (check_for_parent_window() != NO_PARENT_WINDOW)
+	if (get_parent_window() != NO_PARENT_WINDOW)
 	{
 		close_window(OPEN_PARENT_WINDOW);
 		footer_buttons_state(CANCELLED);
@@ -6373,7 +6373,7 @@ static text_field_t * tf_log = NULL;
 
 void stream_log(char * str)
 {
-	if (tf_log && check_for_parent_window() == WINDOW_EXTIOLAN)
+	if (tf_log && get_parent_window() == WINDOW_EXTIOLAN)
 	{
 		textfield_add_string(tf_log, str, COLORPIP_WHITE);
 		put_to_wm_queue(get_win(WINDOW_EXTIOLAN), WM_MESSAGE_UPDATE);

@@ -41,9 +41,14 @@ const text_field_t tf_default = { 0, 0, CANCELLED, 0, NON_VISIBLE, UP, NULL, "",
 const touch_area_t ta_default = { 0, 0, 0, 0, 0, "", 0, 0, 0, 0, 0, };
 
 /* Возврат id parent window */
-uint_fast8_t check_for_parent_window(void)
+uint_fast8_t get_parent_window(void)
 {
 	return gui.win [1];
+}
+
+void set_parent_window(uint8_t p)
+{
+	gui.win [1] = p;
 }
 
 static element_type_t parse_element_name(const char * name)
@@ -182,7 +187,7 @@ void gui_set_encoder2_rotate (int_least16_t rotate)
 	if (rotate != 0)
 	{
 		// информация о вращении 2-го энкодера направляется только в активное окно
-		if (check_for_parent_window() == NO_PARENT_WINDOW)
+		if (get_parent_window() == NO_PARENT_WINDOW)
 			put_to_wm_queue(get_win(WINDOW_MAIN), WM_MESSAGE_ENC2_ROTATE, rotate);
 		else
 			put_to_wm_queue(get_win(gui.win [1]), WM_MESSAGE_ENC2_ROTATE, rotate);
@@ -384,7 +389,7 @@ void gui_update(void)
 {
 	put_to_wm_queue(get_win(WINDOW_MAIN), WM_MESSAGE_UPDATE);	// главное окно всегда нужно обновлять
 
-	uint_fast8_t win2 = check_for_parent_window();
+	uint_fast8_t win2 = get_parent_window();
 	if (win2 != NO_PARENT_WINDOW)								// если открыто второе окно,
 	{
 		put_to_wm_queue(get_win(win2), WM_MESSAGE_UPDATE);		// добавить сообщение на обновление в его очередь
@@ -663,7 +668,7 @@ void elements_state (window_t * win)
 void gui_put_keyb_code (uint_fast8_t kbch)
 {
 	// перенаправить код нажатой аппаратной кнопки в активное окно
-	if (check_for_parent_window() == NO_PARENT_WINDOW)
+	if (get_parent_window() == NO_PARENT_WINDOW)
 		put_to_wm_queue(get_win(WINDOW_MAIN), WM_MESSAGE_KEYB_CODE, kbch);
 	else
 		put_to_wm_queue(get_win(gui.win [1]), WM_MESSAGE_KEYB_CODE, kbch);

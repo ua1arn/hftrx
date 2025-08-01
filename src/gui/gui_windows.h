@@ -6,7 +6,6 @@
 #if WITHTOUCHGUI
 
 #include "src/gui/gui_structs.h"
-#include "window_list.h"
 
 window_t * get_win(uint8_t window_id);
 void move_window(window_t * win, int_fast16_t ax, int_fast16_t ay);
@@ -19,8 +18,10 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...);
 
 typedef enum {
     #define X(window_id, parent_id, align_mode, title, is_close, onVisibleProcess) WINDOW_##window_id,
+	#include "window_list.h"
     WINDOW_LIST(X)
     #undef X
+	#undef WINDOW_LIST
     WINDOWS_COUNT
 } window_index_t;
 

@@ -21,7 +21,7 @@
 
 void gui_drawstring(uint_fast16_t x, uint_fast16_t y, const char * str, font_size_t font, COLORPIP_T color)
 {
-	window_t * win = get_win(check_for_parent_window());
+	window_t * win = get_win(get_parent_window());
 	const gxdrawb_t * gdb = gui_get_drawbuf();
 
 	const uint_fast16_t x1 = x + win->draw_x1;
@@ -40,20 +40,20 @@ void gui_drawstring(uint_fast16_t x, uint_fast16_t y, const char * str, font_siz
 
 uint_fast16_t gui_get_window_draw_width(void)
 {
-	window_t * win = get_win(check_for_parent_window());
+	window_t * win = get_win(get_parent_window());
 	return win->draw_x2 - win->draw_x1;
 }
 
 uint_fast16_t gui_get_window_draw_height(void)
 {
-	window_t * win = get_win(check_for_parent_window());
+	window_t * win = get_win(get_parent_window());
 	return win->draw_y2 - win->draw_y1;
 }
 
 // Нарисовать линию в границах окна
 void gui_drawline(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORPIP_T color)
 {
-	window_t * win = get_win(check_for_parent_window());
+	window_t * win = get_win(get_parent_window());
 	const gxdrawb_t * gdb = gui_get_drawbuf();
 
 	const uint_fast16_t xn = x1 + win->draw_x1;
@@ -71,7 +71,7 @@ void gui_drawline(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fas
 
 void gui_drawrect(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORPIP_T color, uint_fast8_t fill)
 {
-	window_t * win = get_win(check_for_parent_window());
+	window_t * win = get_win(get_parent_window());
 	const gxdrawb_t * gdb = gui_get_drawbuf();
 
 	const uint_fast16_t xn = x1 + win->draw_x1;
@@ -89,7 +89,7 @@ void gui_drawrect(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fas
 
 void gui_drawpoint(uint_fast16_t x1, uint_fast16_t y1, COLORPIP_T color)
 {
-	window_t * win = get_win(check_for_parent_window());
+	window_t * win = get_win(get_parent_window());
 	const gxdrawb_t * gdb = gui_get_drawbuf();
 
 	const uint_fast16_t xp = x1 + win->draw_x1;
@@ -104,7 +104,7 @@ void gui_drawpoint(uint_fast16_t x1, uint_fast16_t y1, COLORPIP_T color)
 
 void gui_print_UB(uint16_t x, uint16_t y, const char * text, const UB_Font * font, COLORPIP_T color)
 {
-	window_t * win = get_win(check_for_parent_window());
+	window_t * win = get_win(get_parent_window());
 	const gxdrawb_t * gdb = gui_get_drawbuf();
 
 	const uint_fast16_t xn = x + win->draw_x1;
