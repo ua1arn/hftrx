@@ -171,6 +171,34 @@ void gui_obj_align_to(const char * name1, const char * name2, object_alignment_t
 	}
 }
 
+int gui_obj_get_int_prop(const char * name, object_prop_t prop)
+{
+	window_t * win = get_win(get_parent_window());
+	obj_type_t type = parse_obj_name(name);
+	void * obj = find_gui_obj(type, win, name);
+
+	switch(type)
+	{
+	case TYPE_LABEL:
+		label_t * lh = (label_t *) obj;
+		if (prop == GUI_OBJ_VISIBLE) return lh->visible;
+		else if (prop == GUI_OBJ_POS_X) return lh->x;
+		else if (prop == GUI_OBJ_POS_Y) return lh->y;
+		else if (prop == GUI_OBJ_STATE) return lh->state;
+		break;
+	case TYPE_BUTTON:
+		button_t * bh = (button_t *) obj;
+		if (prop == GUI_OBJ_VISIBLE) return bh->visible;
+		else if (prop == GUI_OBJ_POS_X) return bh->x1;
+		else if (prop == GUI_OBJ_POS_Y) return bh->y1;
+		else if (prop == GUI_OBJ_PAYLOAD) return bh->payload;
+		else if (prop == GUI_OBJ_STATE) return bh->state;
+		break;
+	default:
+		break;
+	}
+}
+
 void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 {
 	window_t * win = get_win(get_parent_window());
@@ -189,6 +217,7 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_POS) { lh->x = va_arg(arg, int); lh->y = va_arg(arg, int); }
 		else if (prop == GUI_OBJ_TEXT) strncpy(lh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
 		else if (prop == GUI_OBJ_TEXT_FMT) vsnprintf(lh->text, TEXT_ARRAY_SIZE - 1, va_arg(arg, char *), arg);
+		else if (prop == GUI_OBJ_STATE) lh->state = va_arg(arg, int);
 		break;
 	case TYPE_BUTTON:
 		button_t * bh = (button_t *) obj;
@@ -199,12 +228,35 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_PAYLOAD) bh->payload = va_arg(arg, int);
 		else if (prop == GUI_OBJ_TEXT) strncpy(bh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
 		else if (prop == GUI_OBJ_TEXT_FMT) vsnprintf(bh->text, TEXT_ARRAY_SIZE - 1, va_arg(arg, char *), arg);
+		else if (prop == GUI_OBJ_STATE) bh->state = va_arg(arg, int);
 		break;
 	default:
 		break;
 	}
 
 	va_end(arg);
+}
+
+uint8_t gui_check_obj(uintptr_t ptr, const char * name)
+{
+	window_t * win = get_win(get_parent_window());
+	obj_type_t type = parse_obj_name(name);
+	void * obj = find_gui_obj(type, win, name);
+
+	switch(type)
+	{
+	case TYPE_LABEL:
+		if ((label_t *) obj == (label_t *) ptr)
+			return 1;
+		break;
+	case TYPE_BUTTON:
+		if ((button_t *) obj == (button_t *) ptr)
+			return 1;
+	default:
+		break;
+	}
+
+	return 0;
 }
 
 #endif /* WITHTOUCHGUI */

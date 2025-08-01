@@ -18,6 +18,8 @@ void textfield_clean(text_field_t * tf);
 
 void gui_obj_align_to(const char * name1, const char * name2, object_alignment_t align, uint16_t offset);
 void gui_obj_set_prop(const char * name, object_prop_t prop, ...);
+int gui_obj_get_int_prop(const char * name, object_prop_t prop);
+uint8_t gui_check_obj(uintptr_t ptr, const char * name);
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_OBJECTS_H_INCLUDED */

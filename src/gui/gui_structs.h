@@ -106,6 +106,7 @@ typedef enum {
 	GUI_OBJ_POS_Y,
 	GUI_OBJ_POS,
 	GUI_OBJ_PAYLOAD,
+	GUI_OBJ_STATE,
 } object_prop_t;
 
 typedef struct {

@@ -22,6 +22,7 @@
 #include "gui_structs.h"
 #include "gui_settings.h"
 #include "gui_windows.h"
+#include "gui_objects.h"
 
 #if WITHTOUCHGUI
 

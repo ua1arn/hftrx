@@ -6636,13 +6636,11 @@ void window_ad936x_process(void)
 
 	if (IS_BUTTON_PRESS)
 	{
-		button_t * bh = (button_t *) ptr;
-
-		if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_uri_edit"))
+		if (gui_check_obj(ptr, "btn_uri_edit"))
 		{
 			keyboard_edit_string((uintptr_t) & uri, ARRAY_SIZE(uri), 0);
 		}
-		else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_action"))
+		else if (gui_check_obj(ptr, "btn_action"))
 		{
 			if (status == 10 || status == 1)
 				status = iio_ad936x_find(uri);
@@ -6653,22 +6651,26 @@ void window_ad936x_process(void)
 
 			update = 1;
 		}
-		else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_gain_type"))
+		else if (gui_check_obj(ptr, "btn_gain_type"))
 		{
 			gain_mode = ! gain_mode;
 			iio_ad936x_set_gain(gain_mode, gain_val);
 			update = 1;
 		}
-		else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_gain_add") ||
-				bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_gain_sub"))
+		else if (gui_check_obj(ptr, "btn_gain_add") || gui_check_obj(ptr, "btn_gain_sub"))
 		{
-			if (gain_val + bh->payload > 3 || gain_val + bh->payload < 70)
+			int p;
+			if (gui_check_obj(ptr, "btn_gain_add"))
+				p = gui_obj_get_int_prop("btn_gain_add", GUI_OBJ_PAYLOAD);
+			else if ((gui_check_obj(ptr, "btn_gain_sub")))
+				p = gui_obj_get_int_prop("btn_gain_sub", GUI_OBJ_PAYLOAD);
+
+			if (gain_val + p > 3 || gain_val + p < 70)
 			{
-				gain_val += bh->payload;
+				gain_val += p;
 				iio_ad936x_set_gain(gain_mode, gain_val);
 				update = 1;
 			}
-
 		}
 	}
 
@@ -6687,29 +6689,20 @@ void window_ad936x_process(void)
 	{
 		update = 0;
 
-		label_t * lbl_iio_val = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_iio_val");
-		local_snprintf_P(lbl_iio_val->text, ARRAY_SIZE(lbl_iio_val->text), "%s", uri);
+		gui_obj_set_prop("lbl_iio_val", GUI_OBJ_TEXT_FMT, "%s", uri);
+		gui_obj_set_prop("btn_gain_type", GUI_OBJ_STATE, status != 2 ? DISABLED : CANCELLED);
+		gui_obj_set_prop("btn_gain_add", GUI_OBJ_STATE, (status == 2 && ! gain_mode) ? CANCELLED : DISABLED);
+		gui_obj_set_prop("btn_gain_sub", GUI_OBJ_STATE, (status == 2 && ! gain_mode) ? CANCELLED : DISABLED);
 
-		button_t * btn_gain_type = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_gain_type");
-		btn_gain_type->state = status != 2 ? DISABLED : CANCELLED;
 		if (gain_mode)
-			local_snprintf_P(btn_gain_type->text, ARRAY_SIZE(btn_gain_type->text), "Gain|auto");
+			gui_obj_set_prop("btn_gain_type", GUI_OBJ_TEXT, "Gain|auto");
 		else
-			local_snprintf_P(btn_gain_type->text, ARRAY_SIZE(btn_gain_type->text), "Gain|%d dB", gain_val);
-
-		button_t * btn_gain_add = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_gain_add");
-		btn_gain_add->state = (status == 2 && ! gain_mode) ? CANCELLED : DISABLED;
-
-		button_t * btn_gain_sub = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_gain_sub");
-		btn_gain_sub->state = (status == 2 && ! gain_mode) ? CANCELLED : DISABLED;
+			gui_obj_set_prop("btn_gain_type", GUI_OBJ_TEXT_FMT, "Gain|%d dB", gain_val);
 
 		if (status < 10)
 		{
-			label_t * lbl_status_str = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_status_str");
-			local_snprintf_P(lbl_status_str->text, ARRAY_SIZE(lbl_status_str->text), "%s",  status_str[status]);
-
-			button_t * btn_action = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_action");
-			local_snprintf_P(btn_action->text, ARRAY_SIZE(btn_action->text), "%s", button_str[status]);
+			gui_obj_set_prop("lbl_status_str", GUI_OBJ_TEXT_FMT, "%s",  status_str[status]);
+			gui_obj_set_prop("btn_action", GUI_OBJ_TEXT_FMT, "%s", button_str[status]);
 		}
 	}
 }
