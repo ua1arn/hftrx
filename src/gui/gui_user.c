@@ -6719,16 +6719,14 @@ void window_ad936x_process(void)
 		uint8_t s = get_ad936x_stream_status();
 
 		gui_obj_create("btn_switch", 100, 40, 0, 0, "");
-
-		button_t * btn_switch = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_switch");
-		btn_switch->visible = VISIBLE;
+		gui_obj_set_prop("btn_switch", GUI_OBJ_VISIBLE, 1);
 
 		if (s)
-			local_snprintf_P(btn_switch->text, ARRAY_SIZE(btn_switch->text), "Switch|to HF");
+			gui_obj_set_prop("btn_switch", GUI_OBJ_TEXT, "Switch|to HF");
 		else
 		{
-			local_snprintf_P(btn_switch->text, ARRAY_SIZE(btn_switch->text), "%s", p ? "Switch|to UHF" : "AD936x|not found");
-			btn_switch->state = p ? CANCELLED : DISABLED;
+			gui_obj_set_prop("btn_switch", GUI_OBJ_TEXT_FMT, "%s", p ? "Switch|to UHF" : "AD936x|not found");
+			gui_obj_set_prop("btn_switch", GUI_OBJ_STATE, p ? CANCELLED : DISABLED);
 		}
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -6740,20 +6738,17 @@ void window_ad936x_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_switch = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_switch");
-
-			if (bh == btn_switch)
+			if (gui_check_obj(ptr, "btn_switch"))
 			{
 				if (get_ad936x_stream_status())
 				{
-					local_snprintf_P(btn_switch->text, ARRAY_SIZE(btn_switch->text), "Switch|to UHF");
+					gui_obj_set_prop("btn_switch", GUI_OBJ_TEXT, "Switch|to UHF");
 					ad936xdev_sleep();
 					hamradio_set_freq(freq);
 				}
 				else
 				{
-					local_snprintf_P(btn_switch->text, ARRAY_SIZE(btn_switch->text), "Switch|to HF");
+					gui_obj_set_prop("btn_switch", GUI_OBJ_TEXT, "Switch|to HF");
 					ad936xdev_wake();
 					freq = hamradio_get_freq_rx();
 					hamradio_set_freq(433000000);
@@ -6787,24 +6782,14 @@ void window_as_process(void)
 		gui_obj_create("btn_play", 100, 40, 0, 0, "Play");
 		gui_obj_create("btn_tx", 100, 40, 0, 0, "Transmit");
 
-		button_t * btn_rec = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_rec");
-		btn_rec->x1 = x;
-		btn_rec->y1 = y;
-		btn_rec->visible = VISIBLE;
+		gui_obj_set_prop("btn_rec", GUI_OBJ_POS, x, y);
+		gui_obj_set_prop("btn_rec", GUI_OBJ_VISIBLE, 1);
 
-		x += btn_rec->w + interval;
+		gui_obj_align_to("btn_play", "btn_rec", ALIGN_RIGHT_UP, interval);
+		gui_obj_set_prop("btn_play", GUI_OBJ_VISIBLE, 1);
 
-		button_t * btn_play = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_play");
-		btn_play->x1 = x;
-		btn_play->y1 = y;
-		btn_play->visible = VISIBLE;
-
-		x += btn_play->w + interval;
-
-		button_t * btn_tx = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_tx");
-		btn_tx->x1 = x;
-		btn_tx->y1 = y;
-		btn_tx->visible = VISIBLE;
+		gui_obj_align_to("btn_tx", "btn_play", ALIGN_RIGHT_UP, interval);
+		gui_obj_set_prop("btn_tx", GUI_OBJ_VISIBLE, 1);
 
 		if (as_get_state() == AS_IDLE)
 			memset(d, 0, ARRAY_SIZE(d));
@@ -6829,22 +6814,17 @@ void window_as_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_rec = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_rec");
-			button_t * btn_play = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_play");
-			button_t * btn_tx = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_tx");
-
-			if (bh == btn_rec)
+			if (gui_check_obj(ptr, "btn_rec"))
 			{
 				as_toggle_record();
 				update = 1;
 			}
-			else if (bh == btn_play)
+			else if (gui_check_obj(ptr, "btn_play"))
 			{
 				as_toggle_play();
 				update = 1;
 			}
-			else if (bh == btn_tx)
+			else if (gui_check_obj(ptr, "btn_tx"))
 			{
 				as_toggle_trx();
 				update = 1;
@@ -6863,37 +6843,27 @@ void window_as_process(void)
 	if (update)
 	{
 		update = 0;
-
-		button_t * btn_rec = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_rec");
-		button_t * btn_play = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_play");
-		button_t * btn_tx = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_tx");
 		uint8_t s = as_get_state();
 		char buf[20];
 
-		btn_rec->state = (s == AS_PLAYING || s == AS_TX) ? DISABLED : CANCELLED;
-		btn_play->state = (s == AS_PLAYING || s == AS_READY) ? CANCELLED : DISABLED;
-		btn_tx->state = (s == AS_PLAYING || s == AS_RECORDING || s == AS_IDLE) ? DISABLED : CANCELLED;
+		gui_obj_set_prop("btn_rec", GUI_OBJ_STATE, (s == AS_PLAYING || s == AS_TX) ? DISABLED : CANCELLED);
+		gui_obj_set_prop("btn_play", GUI_OBJ_STATE, (s == AS_PLAYING || s == AS_READY) ? CANCELLED : DISABLED);
+		gui_obj_set_prop("btn_tx", GUI_OBJ_STATE, (s == AS_PLAYING || s == AS_RECORDING || s == AS_IDLE) ? DISABLED : CANCELLED);
 
 		if (s == AS_PLAYING)
-			local_snprintf_P(buf, ARRAY_SIZE(buf), "Playing...|%d%%", as_get_progress());
+			gui_obj_set_prop("btn_play", GUI_OBJ_TEXT_FMT, "Playing...|%d%%", as_get_progress());
 		else
-			local_snprintf_P(buf, ARRAY_SIZE(buf), "Play");
-
-		local_snprintf_P(btn_play->text, ARRAY_SIZE(btn_play->text), "%s", buf);
+			gui_obj_set_prop("btn_play", GUI_OBJ_TEXT, "Play");
 
 		if (s == AS_RECORDING)
-			local_snprintf_P(buf, ARRAY_SIZE(buf), "Recording...|%d%%", as_get_progress());
+			gui_obj_set_prop("btn_rec", GUI_OBJ_TEXT_FMT, "Recording...|%d%%", as_get_progress());
 		else
-			local_snprintf_P(buf, ARRAY_SIZE(buf), "Record");
-
-		local_snprintf_P(btn_rec->text, ARRAY_SIZE(btn_rec->text), "%s", buf);
+			gui_obj_set_prop("btn_rec", GUI_OBJ_TEXT, "Record");
 
 		if (s == AS_TX)
-			local_snprintf_P(buf, ARRAY_SIZE(buf), "Transmit...|%d%%", as_get_progress());
+			gui_obj_set_prop("btn_tx", GUI_OBJ_TEXT_FMT, "Transmit...|%d%%", as_get_progress());
 		else
-			local_snprintf_P(buf, ARRAY_SIZE(buf), "Transmit");
-
-		local_snprintf_P(btn_tx->text, ARRAY_SIZE(btn_tx->text), "%s", buf);
+			gui_obj_set_prop("btn_tx", GUI_OBJ_TEXT, "Transmit");
 
 		static uint8_t olds = AS_IDLE;
 

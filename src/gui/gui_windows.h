@@ -25,7 +25,5 @@ typedef enum {
     WINDOWS_COUNT
 } window_index_t;
 
-#undef WINDOW_LIST
-
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_WINDOWS_H */
