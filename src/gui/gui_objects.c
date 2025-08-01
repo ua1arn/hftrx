@@ -95,9 +95,21 @@ void textfield_update_size(text_field_t * tf)
 }
 
 /* Добавить строку в текстовое поле */
-void textfield_add_string(text_field_t * tf, const char * str, COLORPIP_T color)
+void textfield_add_string_old(text_field_t * tf, const char * str, COLORPIP_T color)
 {
 	ASSERT(tf != NULL);
+
+	tf_entry_t * rec = &  tf->string [tf->index];
+	strncpy(rec->text, str, TEXT_ARRAY_SIZE - 1);
+	rec->color_line = color;
+	tf->index ++;
+	tf->index = tf->index >= tf->h_str ? 0 : tf->index;
+}
+
+void textfield_add_string(const char * name, const char * str, COLORPIP_T color)
+{
+	window_t * win = get_win(get_parent_window());
+	text_field_t * tf = (text_field_t *) find_gui_obj(TYPE_TEXT_FIELD, win, name);
 
 	tf_entry_t * rec = &  tf->string [tf->index];
 	strncpy(rec->text, str, TEXT_ARRAY_SIZE - 1);
@@ -144,6 +156,14 @@ void gui_obj_align_to(const char * name1, const char * name2, object_alignment_t
 		h2 = bh2->h;
 		break;
 
+	case TYPE_TEXT_FIELD:
+		text_field_t * tf2 = (text_field_t *) oh2;
+		x2 = tf2->x1;
+		y2 = tf2->y1;
+		w2 = tf2->w;
+		h2 = tf2->h;
+		break;
+
 	default:
 		break;
 	}
@@ -157,6 +177,7 @@ void gui_obj_align_to(const char * name1, const char * name2, object_alignment_t
 		else if (align == ALIGN_RIGHT_UP_MID) { lh1->x = x2 + w2 + offset; lh1->y = y2 + (h2 / 2 - get_label_height(lh1) / 2); }
 		else if (align == ALIGN_LEFT_UP)  { lh1->x = x2 - get_label_width(lh1) - offset; lh1->y = y2; }
 		else if (align == ALIGN_DOWN_LEFT) { lh1->x = x2; lh1->y = y2 + h2 + offset; }
+		else if (align == ALIGN_DOWN_MID) { lh1->x = x2 + w2 / 2 - get_label_width(lh1) / 2; lh1->y = y2 + h2 + offset; }
 		break;
 
 	case TYPE_BUTTON:
@@ -166,6 +187,7 @@ void gui_obj_align_to(const char * name1, const char * name2, object_alignment_t
 		else if (align == ALIGN_RIGHT_UP_MID) { bh1->x1 = x2 + w2 + offset; bh1->y1 = y2 + (h2 / 2 - bh1->h / 2); }
 		else if (align == ALIGN_LEFT_UP)  { bh1->x1 = x2 - bh1->w - offset; bh1->y1 = y2; }
 		else if (align == ALIGN_DOWN_LEFT) { bh1->x1 = x2; bh1->y1 = y2 + h2 + offset; }
+		else if (align == ALIGN_DOWN_MID) { bh1->x1 = x2 + w2 / 2 - bh1->w / 2; bh1->y1 = y2 + h2 + offset; }
 		break;
 
 	default:
@@ -217,6 +239,7 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_POS_X) lh->x = va_arg(arg, int);
 		else if (prop == GUI_OBJ_POS_Y) lh->y = va_arg(arg, int);
 		else if (prop == GUI_OBJ_POS) { lh->x = va_arg(arg, int); lh->y = va_arg(arg, int); }
+		else if (prop == GUI_OBJ_PAYLOAD) lh->payload = va_arg(arg, int);
 		else if (prop == GUI_OBJ_TEXT) strncpy(lh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
 		else if (prop == GUI_OBJ_TEXT_FMT) vsnprintf(lh->text, TEXT_ARRAY_SIZE - 1, va_arg(arg, char *), arg);
 		else if (prop == GUI_OBJ_STATE) lh->state = va_arg(arg, int);

@@ -205,7 +205,7 @@ void gui_add_debug(char d)
 	{
 		i = 0;
 		if (tf_debug)
-			textfield_add_string(tf_debug, str, COLORPIP_WHITE);
+			textfield_add_string_old(tf_debug, str, COLORPIP_WHITE);
 		else
 		{
 			if (tmpstr_index < TEXT_ARRAY_SIZE)
@@ -724,7 +724,7 @@ void gui_main_process(void)
 #if WITHGUIDEBUG
 		for (unsigned i = 0; i < tmpstr_index; i ++)
 		{
-			textfield_add_string(tf_debug, tmpbuf[i].text, COLORPIP_WHITE);
+			textfield_add_string_old(tf_debug, tmpbuf[i].text, COLORPIP_WHITE);
 		}
 #endif /* WITHGUIDEBUG */
 	}
@@ -1974,7 +1974,7 @@ void window_display_process(void)
 		{
 			label_t * lh = (label_t *) ptr;
 
-			display_t.select = lh->index;
+			display_t.select = lh->payload;
 			display_t.change = 0;
 			display_t.updated = 1;
 		}
@@ -2687,13 +2687,13 @@ void window_tx_power_process(void)
 		lbl_tx_power->x = 0;
 		lbl_tx_power->y = 10;
 		lbl_tx_power->visible = VISIBLE;
-		lbl_tx_power->index = 0;
+		lbl_tx_power->payload = 0;
 		local_snprintf_P(lbl_tx_power->text, ARRAY_SIZE(lbl_tx_power->text), PSTR("TX power  : %3d"), power_full);
 
 		lbl_tune_power->x = lbl_tx_power->x;
 		lbl_tune_power->y = lbl_tx_power->y + interval;
 		lbl_tune_power->visible = VISIBLE;
-		lbl_tune_power->index = 1;
+		lbl_tune_power->payload = 1;
 		local_snprintf_P(lbl_tune_power->text, ARRAY_SIZE(lbl_tune_power->text), PSTR("Tune power: %3d"), power_tune);
 
 		button_t * btn_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_p");
@@ -2740,7 +2740,7 @@ void window_tx_power_process(void)
 		else if (IS_LABEL_PRESS)
 		{
 			label_t * lh = (label_t *) ptr;
-			pw.select = lh->index;
+			pw.select = lh->payload;
 			pw.change = 0;
 			pw.updated = 1;
 		}
@@ -4080,7 +4080,7 @@ void window_shift_process(void)
 
 			lh->x = x;
 			lh->y = y;
-			lh->index = i;
+			lh->payload = i;
 			lh->visible = VISIBLE;
 			lh->state = CANCELLED;
 
@@ -4113,7 +4113,7 @@ void window_shift_process(void)
 		if (IS_LABEL_PRESS)
 		{
 			label_t * lh = (label_t *) ptr;
-			enc.select = lh->index;
+			enc.select = lh->payload;
 			enc.change = 0;
 			enc.updated = 1;
 		}
@@ -4654,7 +4654,7 @@ void window_ft8_process(void)
 			lh = (label_t *) find_gui_obj(TYPE_LABEL, win, lh_name);
 			lh->x = x;
 			lh->y = y;
-			lh->index = i;
+			lh->payload = i;
 			y += interval;
 			lh_array_cq [i] = lh;
 		}
@@ -4674,7 +4674,7 @@ void window_ft8_process(void)
 			lh = (label_t *) find_gui_obj(TYPE_LABEL, win, lh_name);
 			lh->x = x;
 			lh->y = y;
-			lh->index = 10 + i;
+			lh->payload = 10 + i;
 			lh->visible = VISIBLE;
 			y += interval;
 			lh_array_tx [i] = lh;
@@ -4743,10 +4743,10 @@ void window_ft8_process(void)
 			if (cq_filter)
 			{
 				if (cq_flag)
-					textfield_add_string(tf_ft8, msg, colorline);
+					textfield_add_string_old(tf_ft8, msg, colorline);
 			}
 			else
-				textfield_add_string(tf_ft8, msg, colorline);
+				textfield_add_string_old(tf_ft8, msg, colorline);
 		}
 
 		update = 1;
@@ -4791,13 +4791,13 @@ void window_ft8_process(void)
 		else if (IS_LABEL_PRESS)
 		{
 			label_t * lh = (label_t *) ptr;
-			if (lh->index < 10)
+			if (lh->payload < 10)
 			{
-				selected_label_cq = lh->index;
+				selected_label_cq = lh->payload;
 				labels_tx_update = 1;
 			}
 			else
-				selected_label_tx = lh->index - 10;
+				selected_label_tx = lh->payload - 10;
 			update = 1;
 		}
 
@@ -4842,7 +4842,7 @@ void window_ft8_process(void)
 				strcpy(lh->text, cq_call [i]);
 				lh->visible = VISIBLE;
 
-				if (lh->index == selected_label_cq)
+				if (lh->payload == selected_label_cq)
 					lh->color = COLORPIP_YELLOW;
 			}
 		}
@@ -5003,7 +5003,7 @@ void window_af_process(void)
 		else if (IS_LABEL_PRESS)
 		{
 			label_t * lh = (label_t *) ptr;
-			bp_t.select = lh->index;
+			bp_t.select = lh->payload;
 			bp_t.change = 0;
 			bp_t.updated = 1;
 		}
@@ -5912,7 +5912,7 @@ void window_3d_process(void)
 
 		textfield_clean(tf_3d);
 		for (int k = 0; k < 22; k ++)
-			textfield_add_string(tf_3d, b[k], COLORPIP_WHITE);
+			textfield_add_string_old(tf_3d, b[k], COLORPIP_WHITE);
 
 		A += 0.08;
 		B += 0.04;
@@ -6233,7 +6233,7 @@ void window_lfm_process(void)
 		else if (IS_LABEL_PRESS)
 		{
 			label_t * lh = (label_t *) ptr;
-			enc.select = lh->index;
+			enc.select = lh->payload;
 			enc.change = 0;
 			enc.updated = 1;
 		}
@@ -6370,13 +6370,11 @@ void window_lfm_spectre_process(void)
 
 #if WITHEXTIO_LAN
 
-static text_field_t * tf_log = NULL;
-
 void stream_log(char * str)
 {
-	if (tf_log && get_parent_window() == WINDOW_EXTIOLAN)
+	if (get_parent_window() == WINDOW_EXTIOLAN)
 	{
-		textfield_add_string(tf_log, str, COLORPIP_WHITE);
+		textfield_add_string("tf_log", str, COLORPIP_WHITE);
 		put_to_wm_queue(get_win(WINDOW_EXTIOLAN), WM_MESSAGE_UPDATE);
 	}
 }
@@ -6393,16 +6391,8 @@ void window_stream_process(void)
 		gui_obj_create("tf_log", 50, 15, DOWN, & gothic_11x13);
 		gui_obj_create("btn_state", 130, 40, 0, 0, "");
 
-		tf_log = (text_field_t *) find_gui_obj(TYPE_TEXT_FIELD, win, "tf_log");
-		textfield_update_size(tf_log);
-		tf_log->x1 = 0;
-		tf_log->y1 = 0;
-		tf_log->visible = VISIBLE;
-
-		button_t * btn_state = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_state");
-		btn_state->x1 = tf_log->w / 2 - btn_state->w / 2;
-		btn_state->y1 = tf_log->h + 10;
-		btn_state->visible = VISIBLE;
+		gui_obj_set_prop("tf_log", GUI_OBJ_POS, 0, 0);
+		gui_obj_align_to("btn_state", "tf_log", ALIGN_DOWN_MID, 10);
 
 		update = 1;
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -6415,16 +6405,12 @@ void window_stream_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-
-			if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_state"))
+			if (gui_check_obj(ptr, "btn_state"))
 			{
-				uint8_t state = stream_get_state();
-
-				if (state == 0)
-					server_start();
-				else
+				if (stream_get_state())
 					server_stop();
+				else
+					server_start();
 			}
 			update = 1;
 		}
@@ -6444,9 +6430,8 @@ void window_stream_process(void)
 	{
 		update = 0;
 
-		button_t * btn_state = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_state");
 		const char * states[] = { "Start server", "Stop listening", "Disconnect &|stop server", };
-		local_snprintf_P(btn_state->text, ARRAY_SIZE(btn_state->text), states[stream_get_state()]);
+		gui_obj_set_prop("btn_state", GUI_OBJ_TEXT, states[stream_get_state()]);
 	}
 }
 

@@ -97,6 +97,7 @@ typedef enum {
 	ALIGN_RIGHT_UP_MID,
 	ALIGN_LEFT_UP,
 	ALIGN_DOWN_LEFT,
+	ALIGN_DOWN_MID,
 } object_alignment_t;
 
 typedef enum {
@@ -188,7 +189,7 @@ typedef struct {
 	char text [TEXT_ARRAY_SIZE];
 	font_size_t font_size;
 	PACKEDCOLORPIP_T color;
-	uint8_t index;
+	int32_t payload;
 	uint8_t width;			// ширина в символах
 	uint16_t width_pix;		// ширина в пикселях
 	uint16_t x;

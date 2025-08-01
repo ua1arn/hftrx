@@ -159,6 +159,8 @@ void gui_obj_create(const char * obj_name, ...)
 		strncpy(tf->name, obj_name, NAME_ARRAY_SIZE - 1);
 		tf->visible = 1;
 
+		textfield_update_size(tf);
+
 		win->tf_count ++;
 		break;
 	}
