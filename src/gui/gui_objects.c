@@ -128,7 +128,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	}
 }
 
-void elements_init(void)
+void objects_init(void)
 {
 	// Buttons background init
 	for (int i = 0; i < BG_COUNT; i ++)
@@ -243,6 +243,8 @@ void draw_button(const button_t * const bh)
 	}
 }
 
+
+
 // *************** Labels ***************
 
 /* Получение ширины метки в пикселях  */
@@ -267,6 +269,84 @@ uint_fast8_t get_label_height(const label_t * const lh)
 	else if (lh->font_size == FONT_SMALL)
 		return SMALLCHARH3;
 	return 0;
+}
+
+uint_fast8_t get_label_width2(const char * name)
+{
+	window_t * win = get_win(get_parent_window());
+	label_t * lh = (label_t *) find_gui_obj(TYPE_LABEL, win, name);
+
+	if (lh->font_size == FONT_LARGE)
+		return strlen(lh->text) * SMALLCHARW;
+	else if (lh->font_size == FONT_MEDIUM)
+		return strlen(lh->text) * SMALLCHARW2;
+	else if (lh->font_size == FONT_SMALL)
+		return strlen(lh->text) * SMALLCHARW3;
+	return 0;
+}
+
+uint_fast8_t get_label_height2(const char * name)
+{
+	window_t * win = get_win(get_parent_window());
+	label_t * lh = (label_t *) find_gui_obj(TYPE_LABEL, win, name);
+
+	if (lh->font_size == FONT_LARGE)
+		return SMALLCHARH;
+	else if (lh->font_size == FONT_MEDIUM)
+		return SMALLCHARH2;
+	else if (lh->font_size == FONT_SMALL)
+		return SMALLCHARH3;
+	return 0;
+}
+
+void label_set_coords(const char * name, uint16_t x, uint16_t y)
+{
+	window_t * win = get_win(get_parent_window());
+	label_t * lh = (label_t *) find_gui_obj(TYPE_LABEL, win, name);
+	lh->x = x;
+	lh->y = y;
+}
+
+void label_set_pos_x(const char * name, uint16_t x)
+{
+	window_t * win = get_win(get_parent_window());
+	label_t * lh = (label_t *) find_gui_obj(TYPE_LABEL, win, name);
+	lh->x = x;
+}
+
+void label_set_pos_y(const char * name, uint16_t y)
+{
+	window_t * win = get_win(get_parent_window());
+	label_t * lh = (label_t *) find_gui_obj(TYPE_LABEL, win, name);
+	lh->y = y;
+}
+
+uint16_t label_get_pos_x(const char * name)
+{
+	window_t * win = get_win(get_parent_window());
+	label_t * lh = (label_t *) find_gui_obj(TYPE_LABEL, win, name);
+	return lh->x;
+}
+
+uint16_t label_get_pos_y(const char * name)
+{
+	window_t * win = get_win(get_parent_window());
+	label_t * lh = (label_t *) find_gui_obj(TYPE_LABEL, win, name);
+	return lh->y;
+}
+
+void label_set_visible(const char * name, uint8_t v)
+{
+	window_t * win = get_win(get_parent_window());
+	label_t * lh = (label_t *) find_gui_obj(TYPE_LABEL, win, name);
+	lh->visible = v != 0;
+}
+
+void label_set_text(const char * name, const char * text)
+{
+	window_t * win = get_win(get_parent_window());
+	label_t * lh = (label_t *) find_gui_obj(TYPE_LABEL, win, name);
+	strncpy(lh->text, text, TEXT_ARRAY_SIZE - 1);
 }
 
 // *************** Text fields ***************

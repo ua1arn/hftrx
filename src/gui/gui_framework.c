@@ -27,12 +27,12 @@
 
 #if WITHTOUCHGUI
 
-void elements_init(void);
+void objects_init(void);
 void draw_button(const button_t * const bh);
 
 static gui_t gui = { 0, 0, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, };
-static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
-static uint_fast8_t gui_element_count = 0;
+static gui_object_t gui_objects [GUI_OBJECTS_ARRAY_SIZE];
+static uint_fast8_t gui_object_count = 0;
 static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, INT32_MAX, "btс_close", "", };
 
 const label_t label_default = 	{ 0, CANCELLED, 0, NON_VISIBLE, "", "", FONT_MEDIUM, COLORPIP_WHITE, };
@@ -51,7 +51,7 @@ void set_parent_window(uint8_t p)
 	gui.win [1] = p;
 }
 
-static element_type_t parse_element_name(const char * name)
+static obj_type_t parse_obj_name(const char * name)
 {
 	if (! strncmp(name, "btn_", 4))
 		return TYPE_BUTTON;
@@ -67,7 +67,7 @@ static element_type_t parse_element_name(const char * name)
 		return TYPE_TEXT_FIELD;
 	else
 	{
-		PRINTF("unrecognized element type: %s\n", name);
+		PRINTF("Unrecognized GUI object type: %s\n", name);
 		ASSERT(0);
 		return TYPE_DUMMY;
 	}
@@ -78,13 +78,13 @@ static element_type_t parse_element_name(const char * name)
 // text_field: w_sim, h_str, direction, font *
 // touch area: x, y, w, h, is_trackable
 
-void add_element(const char * element_name, ...)
+void gui_obj_create(const char * obj_name, ...)
 {
 	uint_fast8_t window_id = gui.win [1] == NO_PARENT_WINDOW ? WINDOW_MAIN : gui.win [1];
 	window_t * win = get_win(window_id);
-	element_type_t type = parse_element_name(element_name);
+	obj_type_t type = parse_obj_name(obj_name);
 	va_list arg;
-	va_start(arg, element_name);
+	va_start(arg, obj_name);
 
 	switch (type)
 	{
@@ -101,7 +101,7 @@ void add_element(const char * element_name, ...)
 		lh->font_size = (font_size_t) va_arg(arg, int);
 		lh->color = va_arg(arg, COLORPIP_T);
 
-		strncpy(lh->name, element_name, NAME_ARRAY_SIZE - 1);
+		strncpy(lh->name, obj_name, NAME_ARRAY_SIZE - 1);
 		lh->width = va_arg(arg, uint32_t);
 		memset(lh->text, '*', lh->width);		// для совместимости, потом убрать
 
@@ -129,7 +129,7 @@ void add_element(const char * element_name, ...)
 		bh->h = va_arg(arg, uint_fast16_t);
 		bh->is_repeating = va_arg(arg, uint32_t);
 		bh->is_long_press = va_arg(arg, uint32_t);
-		strncpy(bh->name, element_name, NAME_ARRAY_SIZE - 1);
+		strncpy(bh->name, obj_name, NAME_ARRAY_SIZE - 1);
 		strncpy(bh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
 
 		win->bh_count ++;
@@ -149,7 +149,7 @@ void add_element(const char * element_name, ...)
 		tf->h_str = va_arg(arg, uint32_t);
 		tf->direction = (tf_direction_t) va_arg(arg, uint32_t);
 		tf->font = va_arg(arg, UB_Font *);
-		strncpy(tf->name, element_name, NAME_ARRAY_SIZE - 1);
+		strncpy(tf->name, obj_name, NAME_ARRAY_SIZE - 1);
 
 		win->tf_count ++;
 		break;
@@ -169,7 +169,7 @@ void add_element(const char * element_name, ...)
 		ta->w = va_arg(arg, uint_fast16_t);
 		ta->h = va_arg(arg, uint_fast16_t);
 		ta->is_trackable = va_arg(arg, uint_fast16_t);
-		strncpy(ta->name, element_name, NAME_ARRAY_SIZE - 1);
+		strncpy(ta->name, obj_name, NAME_ARRAY_SIZE - 1);
 
 		win->ta_count ++;
 		break;
@@ -213,7 +213,7 @@ void dump_queue(window_t * win)
 			break;
 
 		case WM_MESSAGE_ACTION:
-			PRINTF("%d: WM_MESSAGE_ACTION: element type - %d, action - %d\n", i, win->queue.data[i].type, win->queue.data[i].action);
+			PRINTF("%d: WM_MESSAGE_ACTION: object type - %d, action - %d\n", i, win->queue.data[i].type, win->queue.data[i].action);
 			break;
 
 		case WM_MESSAGE_ENC2_ROTATE:
@@ -231,7 +231,7 @@ void dump_queue(window_t * win)
 	}
 }
 
-// WM_MESSAGE_ACTION: 		element_type type, uintptr_t element_ptr, int action
+// WM_MESSAGE_ACTION: 		obj_type_t type, uintptr_t obj_ptr, int action
 // WM_MESSAGE_ENC2_ROTATE:  int_fast8_t rotate
 // WM_MESSAGE_KEYB_CODE:	int_fast8_t keyb_code
 // WM_MESSAGE_UPDATE: 		nothing
@@ -263,7 +263,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		else
 		{
 			win->queue.data [win->queue.size].message = WM_MESSAGE_ACTION;
-			win->queue.data [win->queue.size].type = (element_type_t) type;
+			win->queue.data [win->queue.size].type = (obj_type_t) type;
 			win->queue.data [win->queue.size].ptr = ptr;
 			win->queue.data [win->queue.size].action = action;
 			win->queue.size ++;
@@ -287,7 +287,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		else
 		{
 			win->queue.data [win->queue.size].message = WM_MESSAGE_ENC2_ROTATE;
-			win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
+			win->queue.data [win->queue.size].type = (obj_type_t) UINT8_MAX;
 			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data [win->queue.size].action = r;
 			win->queue.size ++;
@@ -302,7 +302,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		va_start(arg, message);
 
 		win->queue.data [win->queue.size].message = WM_MESSAGE_KEYB_CODE;
-		win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
+		win->queue.data [win->queue.size].type = (obj_type_t) UINT8_MAX;
 		win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 		win->queue.data [win->queue.size].action = va_arg(arg, int32_t);
 		win->queue.size ++;
@@ -319,7 +319,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		if (win->queue.data [ind].message != WM_MESSAGE_UPDATE)		// предотвращение дублей сообщения WM_MESSAGE_UPDATE
 		{
 			win->queue.data [win->queue.size].message = WM_MESSAGE_UPDATE;
-			win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
+			win->queue.data [win->queue.size].type = (obj_type_t) UINT8_MAX;
 			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data [win->queue.size].action = INT8_MAX;
 			win->queue.size ++;
@@ -334,7 +334,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		if (win->queue.data [ind].message != WM_MESSAGE_CLOSE)		// предотвращение дублей сообщения WM_MESSAGE_CLOSE
 		{
 			win->queue.data [win->queue.size].message = WM_MESSAGE_CLOSE;
-			win->queue.data [win->queue.size].type = (element_type_t) UINT8_MAX;
+			win->queue.data [win->queue.size].type = (obj_type_t) UINT8_MAX;
 			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data [win->queue.size].action = INT8_MAX;
 			win->queue.size ++;
@@ -407,7 +407,7 @@ void get_gui_tracking(int_fast16_t * x, int_fast16_t * y)
 }
 
 /* Возврат ссылки на запись в структуре по названию и типу окна */
-void * find_gui_element(element_type_t type, window_t * win, const char * name)
+void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 {
 	ASSERT(win);
 	ASSERT(name);
@@ -421,7 +421,7 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 			if (! strcmp(bh->name, name))
 				return (button_t *) bh;
 		}
-		PRINTF("find_gui_element: button '%s' not found\n", name);
+		PRINTF("find_gui_obj: button '%s' not found\n", name);
 		ASSERT(0);
 		return NULL;
 		break;
@@ -433,7 +433,7 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 			if (! strcmp(lh->name, name))
 				return (label_t *) lh;
 		}
-		PRINTF("find_gui_element: label '%s' not found\n", name);
+		PRINTF("find_gui_obj: label '%s' not found\n", name);
 		ASSERT(0);
 		return NULL;
 		break;
@@ -445,7 +445,7 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 			if (! strcmp(sh->name, name))
 				return (slider_t *) sh;
 		}
-		PRINTF("find_gui_element: slider '%s' not found\n", name);
+		PRINTF("find_gui_obj: slider '%s' not found\n", name);
 		ASSERT(0);
 		return NULL;
 		break;
@@ -457,7 +457,7 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 			if (! strcmp(ta->name, name))
 				return (touch_area_t *) ta;
 		}
-		PRINTF("find_gui_element: touch_area '%s' not found\n", name);
+		PRINTF("find_gui_obj: touch_area '%s' not found\n", name);
 		ASSERT(0);
 		return NULL;
 		break;
@@ -469,13 +469,13 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 			if (! strcmp(tf->name, name))
 				return (text_field_t *) tf;
 		}
-		PRINTF("find_gui_element: text_field '%s' not found\n", name);
+		PRINTF("find_gui_obj: text_field '%s' not found\n", name);
 		ASSERT(0);
 		return NULL;
 		break;
 
 	default:
-		PRINTF("find_gui_element: undefined type %d\n", type);
+		PRINTF("find_gui_obj: undefined type %d\n", type);
 		ASSERT(0);
 		return NULL;
 	}
@@ -492,7 +492,7 @@ gui_t * get_gui_ptr(void)
 }
 
 /* Установка статуса элементов после инициализации */
-void elements_state (window_t * win)
+void objects_state (window_t * win)
 {
 	ASSERT(win != NULL);
 	int debug_num = 0;
@@ -510,19 +510,19 @@ void elements_state (window_t * win)
 					PRINTF("ERROR: invalid combination of properties 'is_long_press' and 'is_repeating' on button %s\n", bh->name);
 					ASSERT(0);
 				}
-				ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
-				gui_elements [gui_element_count].link = bh;
-				gui_elements [gui_element_count].win = win;
-				gui_elements [gui_element_count].type = TYPE_BUTTON;
-				gui_element_count ++;
+				ASSERT(gui_object_count < GUI_OBJECTS_ARRAY_SIZE);
+				gui_objects [gui_object_count].link = bh;
+				gui_objects [gui_object_count].win = win;
+				gui_objects [gui_object_count].type = TYPE_BUTTON;
+				gui_object_count ++;
 				debug_num ++;
 			}
 			else
 			{
 				debug_num --;
-				gui_element_count --;
+				gui_object_count --;
 				bh->visible = NON_VISIBLE;
-				ASSERT(gui_element_count >= gui.footer_buttons_count);
+				ASSERT(gui_object_count >= gui.footer_buttons_count);
 			}
 		}
 	}
@@ -535,19 +535,19 @@ void elements_state (window_t * win)
 			label_t * lh = & l [i];
 			if (win->state)
 			{
-				ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
-				gui_elements [gui_element_count].link = lh;
-				gui_elements [gui_element_count].win = win;
-				gui_elements [gui_element_count].type = TYPE_LABEL;
-				gui_element_count ++;
+				ASSERT(gui_object_count < GUI_OBJECTS_ARRAY_SIZE);
+				gui_objects [gui_object_count].link = lh;
+				gui_objects [gui_object_count].win = win;
+				gui_objects [gui_object_count].type = TYPE_LABEL;
+				gui_object_count ++;
 				debug_num ++;
 			}
 			else
 			{
 				debug_num --;
-				gui_element_count --;
+				gui_object_count --;
 				lh->visible = NON_VISIBLE;
-				ASSERT(gui_element_count >= gui.footer_buttons_count);
+				ASSERT(gui_object_count >= gui.footer_buttons_count);
 			}
 		}
 	}
@@ -560,19 +560,19 @@ void elements_state (window_t * win)
 			slider_t * sh = & s [i];
 			if (win->state)
 			{
-				ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
-				gui_elements [gui_element_count].link = (slider_t *) sh;
-				gui_elements [gui_element_count].win = win;
-				gui_elements [gui_element_count].type = TYPE_SLIDER;
-				gui_element_count ++;
+				ASSERT(gui_object_count < GUI_OBJECTS_ARRAY_SIZE);
+				gui_objects [gui_object_count].link = (slider_t *) sh;
+				gui_objects [gui_object_count].win = win;
+				gui_objects [gui_object_count].type = TYPE_SLIDER;
+				gui_object_count ++;
 				debug_num ++;
 			}
 			else
 			{
 				debug_num --;
-				gui_element_count --;
+				gui_object_count --;
 				sh->visible = NON_VISIBLE;
-				ASSERT(gui_element_count >= gui.footer_buttons_count);
+				ASSERT(gui_object_count >= gui.footer_buttons_count);
 			}
 		}
 	}
@@ -585,19 +585,19 @@ void elements_state (window_t * win)
 			touch_area_t * ta = & t [i];
 			if (win->state)
 			{
-				ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
-				gui_elements [gui_element_count].link = (touch_area_t *) ta;
-				gui_elements [gui_element_count].win = win;
-				gui_elements [gui_element_count].type = TYPE_TOUCH_AREA;
-				gui_element_count ++;
+				ASSERT(gui_object_count < GUI_OBJECTS_ARRAY_SIZE);
+				gui_objects [gui_object_count].link = (touch_area_t *) ta;
+				gui_objects [gui_object_count].win = win;
+				gui_objects [gui_object_count].type = TYPE_TOUCH_AREA;
+				gui_object_count ++;
 				debug_num ++;
 			}
 			else
 			{
 				debug_num --;
-				gui_element_count --;
+				gui_object_count --;
 				ta->visible = NON_VISIBLE;
-				ASSERT(gui_element_count >= gui.footer_buttons_count);
+				ASSERT(gui_object_count >= gui.footer_buttons_count);
 			}
 		}
 	}
@@ -610,11 +610,11 @@ void elements_state (window_t * win)
 			text_field_t * tff = & tf [i];
 			if (win->state)
 			{
-				ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
-				gui_elements [gui_element_count].link = (text_field_t *) tff;
-				gui_elements [gui_element_count].win = win;
-				gui_elements [gui_element_count].type = TYPE_TEXT_FIELD;
-				gui_element_count ++;
+				ASSERT(gui_object_count < GUI_OBJECTS_ARRAY_SIZE);
+				gui_objects [gui_object_count].link = (text_field_t *) tff;
+				gui_objects [gui_object_count].win = win;
+				gui_objects [gui_object_count].type = TYPE_TEXT_FIELD;
+				gui_object_count ++;
 				debug_num ++;
 				tff->string = (tf_entry_t *) calloc(tff->h_str, sizeof(tf_entry_t));
 				GUI_MEM_ASSERT(tff->string);
@@ -623,11 +623,11 @@ void elements_state (window_t * win)
 			else
 			{
 				debug_num --;
-				gui_element_count --;
+				gui_object_count --;
 				tff->visible = NON_VISIBLE;
 				free(tff->string);
 				tff->string = NULL;
-				ASSERT(gui_element_count >= gui.footer_buttons_count);
+				ASSERT(gui_object_count >= gui.footer_buttons_count);
 			}
 		}
 	}
@@ -645,22 +645,22 @@ void elements_state (window_t * win)
 			close_button.visible = VISIBLE;
 			close_button.state = CANCELLED;
 
-			ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
-			gui_elements [gui_element_count].link = (button_t *) & close_button;
-			gui_elements [gui_element_count].win = win;
-			gui_elements [gui_element_count].type = TYPE_CLOSE_BUTTON;
-			gui_element_count ++;
+			ASSERT(gui_object_count < GUI_OBJECTS_ARRAY_SIZE);
+			gui_objects [gui_object_count].link = (button_t *) & close_button;
+			gui_objects [gui_object_count].win = win;
+			gui_objects [gui_object_count].type = TYPE_CLOSE_BUTTON;
+			gui_object_count ++;
 			debug_num ++;
 		}
 		else
 		{
 			debug_num --;
-			gui_element_count --;
+			gui_object_count --;
 			close_button.visible = NON_VISIBLE;
-			ASSERT(gui_element_count >= gui.footer_buttons_count);
+			ASSERT(gui_object_count >= gui.footer_buttons_count);
 		}
 	}
-//	PRINTF("line %d: %s gui_element_count: %d %+d\n", __LINE__, win->title, gui_element_count, debug_num);
+//	PRINTF("line %d: %s gui_object_count: %d %+d\n", __LINE__, win->title, gui_object_count, debug_num);
 	clean_wm_queue(win);
 }
 
@@ -775,15 +775,15 @@ void gui_initialize (void)
 	gui.win [1] = NO_PARENT_WINDOW;
 	gui.footer_buttons_count = win->bh_count;
 
-	elements_init();
+	objects_init();
 }
 
 /* Обновление данных в массиве элементов открытых окон */
-static void update_gui_elements_list(void)
+static void update_gui_objects_list(void)
 {
-	for (uint_fast8_t i = 0; i < gui_element_count; i ++)
+	for (uint_fast8_t i = 0; i < gui_object_count; i ++)
 	{
-		gui_element_t * p = & gui_elements [i];
+		gui_object_t * p = & gui_objects [i];
 		if (p->type == TYPE_BUTTON || p->type == TYPE_CLOSE_BUTTON)
 		{
 			button_t * bh = (button_t *) p->link;
@@ -853,7 +853,7 @@ static void update_gui_elements_list(void)
 }
 
 /* Селектор запуска функций обработки событий */
-static void set_state_record(gui_element_t * val)
+static void set_state_record(gui_object_t * val)
 {
 	ASSERT(val != NULL);
 	switch (val->type)
@@ -982,7 +982,7 @@ static void process_gui(void)
 {
 	uint_fast16_t tx, ty;
 	static uint_fast16_t x_old = 0, y_old = 0, long_press_counter = 0;
-	static gui_element_t * p = NULL;
+	static gui_object_t * p = NULL;
 	static window_t * w = NULL;
 	const uint_fast8_t long_press_limit = 20;
 	static uint_fast8_t is_long_press = 0;		// 1 - долгое нажатие уже обработано
@@ -994,7 +994,7 @@ static void process_gui(void)
 		gui.last_pressed_y = ty;
 		gui.is_touching_screen = 1;
 //		PRINTF(PSTR("last x/y=%d/%d\n"), gui.last_pressed_x, gui.last_pressed_y);
-		update_gui_elements_list();
+		update_gui_objects_list();
 	}
 	else
 	{
@@ -1002,16 +1002,16 @@ static void process_gui(void)
 		gui.is_after_touch = 0;
 	}
 
-	if (gui_element_count == 0)
+	if (gui_object_count == 0)
 		return;
 
 	if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
 	{
-		ASSERT(gui_element_count != 0);
-		for (int i = gui_element_count - 1; i >= 0; i --)
+		ASSERT(gui_object_count != 0);
+		for (int i = gui_object_count - 1; i >= 0; i --)
 		{
-			ASSERT(i < ARRAY_SIZE(gui_elements));
-			p = & gui_elements [i];
+			ASSERT(i < ARRAY_SIZE(gui_objects));
+			p = & gui_objects [i];
 			w = p->win;
 			ASSERT(w != NULL);
 			uint_fast16_t x1 = p->x1 + w->x1, y1 = p->y1 + w->y1;
@@ -1213,9 +1213,9 @@ void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, ui
 				}
 
 				// отрисовка принадлежащих окну элементов
-				for (uint_fast8_t i = 0; i < gui_element_count; i ++)
+				for (uint_fast8_t i = 0; i < gui_object_count; i ++)
 				{
-					gui_element_t * p = & gui_elements [i];
+					gui_object_t * p = & gui_objects [i];
 
 					if (p->type == TYPE_BUTTON)
 					{

@@ -92,7 +92,7 @@ void close_window(uint_fast8_t parent_action) // 0 - не открывать par
 	{
 		window_t * win = get_win(pwin);
 		win->state = NON_VISIBLE;
-		elements_state(win);
+		objects_state(win);
 
 		if (put_to_wm_queue(win, WM_MESSAGE_CLOSE))
 			win->onVisibleProcess();
@@ -368,14 +368,14 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 
 	if (win->is_moving)
 	{
-		add_element("ta_winmove", 0, 0, win->w - window_close_button_size, window_title_height, 1);
-		touch_area_t * tm = (touch_area_t *) find_gui_element(TYPE_TOUCH_AREA, win, "ta_winmove");
+		gui_obj_create("ta_winmove", 0, 0, win->w - window_close_button_size, window_title_height, 1);
+		touch_area_t * tm = (touch_area_t *) find_gui_obj(TYPE_TOUCH_AREA, win, "ta_winmove");
 		tm->visible = VISIBLE;
 		tm->state = CANCELLED;
 	}
 
 	//PRINTF("%d %d %d %d\n", win->x1, win->y1, win->h, win->w);
-	elements_state(win);
+	objects_state(win);
 }
 
 void window_set_title_align(window_t * win, title_align_t align)

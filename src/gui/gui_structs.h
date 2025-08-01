@@ -28,7 +28,7 @@ typedef enum {
 	TYPE_CLOSE_BUTTON,
 	TYPE_TOUCH_AREA,
 	TYPE_TEXT_FIELD
-} element_type_t;
+} obj_type_t;
 
 enum {
 	PRESSED,						// нажато
@@ -84,13 +84,18 @@ enum {
 	NAME_ARRAY_SIZE = 40,
 	MENU_ARRAY_SIZE = 50,
 	TEXT_ARRAY_SIZE = 70,
-	GUI_ELEMENTS_ARRAY_SIZE = 60
+	GUI_OBJECTS_ARRAY_SIZE = 60
 };
 
 typedef enum {
 	UP,
 	DOWN,
 } tf_direction_t;
+
+typedef enum {
+	ALIGN_RIGHT,
+	ALIGN_DOWN,
+} object_alignment_t;
 
 typedef struct {
 	uint16_t w;
@@ -226,7 +231,7 @@ typedef enum {
 
 typedef struct {
 	wm_message_t message;			// тип сообщения
-	element_type_t type;			// тип элемента
+	obj_type_t type;			// тип элемента
 	uintptr_t ptr;
 	int_fast8_t action;
 } wm_data_t;
@@ -272,7 +277,7 @@ typedef struct {
 } window_t;
 
 typedef struct {
-	element_type_t type;			// тип элемента, поддерживающего реакцию на касания
+	obj_type_t type;			// тип элемента, поддерживающего реакцию на касания
 	window_t * win;					// указатель на parent window
 	void * link;					// указатель на запись массива окна с описанием элемента
 	uint8_t state;					// текущее состояние элемента
@@ -284,13 +289,13 @@ typedef struct {
 	uint16_t y1;
 	uint16_t x2;
 	uint16_t y2;
-} gui_element_t;
+} gui_object_t;
 
 typedef struct {
 	uint16_t last_pressed_x; 	  	// последняя точка касания экрана
 	uint16_t last_pressed_y;
-	element_type_t selected_type; 	// тип последнего выбранного элемента
-	gui_element_t * selected_link;	// ссылка на выбранный элемент
+	obj_type_t selected_type; 	// тип последнего выбранного элемента
+	gui_object_t * selected_link;	// ссылка на выбранный элемент
 	uint8_t state;				  	// последнее состояние
 	uint8_t is_touching_screen;   	// есть ли касание экрана в данный момент
 	uint8_t is_after_touch; 	  	// есть ли касание экрана после выхода точки касания из элемента (при is_tracking == 0)

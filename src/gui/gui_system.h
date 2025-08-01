@@ -11,11 +11,20 @@
 		for (;;) ; \
 		} } while (0)
 
-void add_element(const char * element_name, ...);
-void * find_gui_element(element_type_t type, window_t * win, const char * name);
+void gui_obj_create(const char * obj_name, ...);
+void * find_gui_obj(obj_type_t type, window_t * win, const char * name);
 uint_fast8_t get_label_width(const label_t * const lh);
 uint_fast8_t get_label_height(const label_t * const lh);
-void elements_state (window_t * win);
+uint_fast8_t get_label_width2(const char * name);
+uint_fast8_t get_label_height2(const char * name);
+void label_set_coords(const char * name, uint16_t x, uint16_t y);
+void label_set_visible(const char * name, uint8_t v);
+void label_set_text(const char * name, const char * text);
+void label_set_pos_x(const char * name, uint16_t x);
+void label_set_pos_y(const char * name, uint16_t y);
+uint16_t label_get_pos_x(const char * name);
+uint16_t label_get_pos_y(const char * name);
+void objects_state (window_t * win);
 void remove_end_line_spaces(char * str);
 const char * remove_start_line_spaces(const char * str);
 uint_fast8_t get_parent_window(void);
