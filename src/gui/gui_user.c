@@ -31,6 +31,7 @@
 #include "gui_structs.h"
 #include "gui_settings.h"
 #include "gui_windows.h"
+#include "gui_objects.h"
 
 val_step_t enc2step [] = {
 	{ 100, "100 Hz", },
@@ -6592,55 +6593,37 @@ void window_ad936x_process(void)
 		gui_obj_create("btn_gain_add", 44, 44, 0, 0, "+");
 		gui_obj_create("btn_gain_sub", 44, 44, 0, 0, "-");
 
-		label_t * lbl_status = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_status");
+		gui_obj_set_prop("lbl_status", GUI_OBJ_POS, 0, 0);
+		gui_obj_set_prop("lbl_status", GUI_OBJ_VISIBLE, 1);
+		gui_obj_set_prop("lbl_status", GUI_OBJ_TEXT, "Status: ");
 
-		label_set_coords("lbl_status", 0, 0);
-		label_set_visible("lbl_status", 1);
-		label_set_text("lbl_status", "Status: ");
+		gui_obj_align_to("lbl_status_str", "lbl_status", ALIGN_RIGHT_UP, 10);
+		gui_obj_set_prop("lbl_status_str", GUI_OBJ_VISIBLE, 1);
+		gui_obj_set_prop("lbl_status_str", GUI_OBJ_TEXT, "");
 
-		label_t * lbl_status_str = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_status_str");
+		gui_obj_align_to("lbl_iio_name", "lbl_status", ALIGN_DOWN_LEFT, 10);
+		gui_obj_set_prop("lbl_iio_name", GUI_OBJ_VISIBLE, 1);
+		gui_obj_set_prop("lbl_iio_name", GUI_OBJ_TEXT, "URI:    ");
 
-		label_set_coords("lbl_status_str", get_label_width2("lbl_status") + 10, label_get_pos_y("lbl_status"));
-		label_set_visible("lbl_status_str", 1);
-		label_set_text("lbl_status_str", "");
+		gui_obj_align_to("lbl_iio_val", "lbl_iio_name", ALIGN_RIGHT_UP, 10);
+		gui_obj_set_prop("lbl_iio_val", GUI_OBJ_VISIBLE, 1);
 
-		label_t * lbl_iio_name = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_iio_name");
-		lbl_iio_name->x = 0;
-		lbl_iio_name->y = get_label_height(lbl_status) + 10;
-		lbl_iio_name->visible = VISIBLE;
-		local_snprintf_P(lbl_iio_name->text, ARRAY_SIZE(lbl_iio_name->text), "URI:    ");
+		gui_obj_align_to("btn_uri_edit", "lbl_iio_name", ALIGN_DOWN_LEFT, 10);
+		gui_obj_set_prop("btn_uri_edit", GUI_OBJ_VISIBLE, 1);
 
-		label_t * lbl_iio_val = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_iio_val");
-		lbl_iio_val->x = get_label_width(lbl_iio_name) + 10;
-		lbl_iio_val->y = lbl_iio_name->y;
-		lbl_iio_val->visible = VISIBLE;
+		gui_obj_align_to("btn_action", "btn_uri_edit", ALIGN_RIGHT_UP, 10);
+		gui_obj_set_prop("btn_action", GUI_OBJ_VISIBLE, 1);
 
-		button_t * btn_uri_edit = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_uri_edit");
-		btn_uri_edit->x1 = 0;
-		btn_uri_edit->y1 = lbl_iio_name->y + get_label_height(lbl_iio_name) + 10;
-		btn_uri_edit->visible = VISIBLE;
+		gui_obj_align_to("btn_gain_type", "btn_action", ALIGN_DOWN_LEFT, 10);
+		gui_obj_set_prop("btn_gain_type", GUI_OBJ_VISIBLE, 1);
 
-		button_t * btn_action = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_action");
-		btn_action->x1 = btn_uri_edit->x1 + btn_uri_edit->w + 10;
-		btn_action->y1 = btn_uri_edit->y1;
-		btn_action->visible = VISIBLE;
+		gui_obj_align_to("btn_gain_sub", "btn_gain_type", ALIGN_LEFT_UP, 10);
+		gui_obj_set_prop("btn_gain_sub", GUI_OBJ_VISIBLE, 1);
+		gui_obj_set_prop("btn_gain_sub", GUI_OBJ_PAYLOAD, -1);
 
-		button_t * btn_gain_type = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_gain_type");
-		btn_gain_type->x1 = btn_action->x1;
-		btn_gain_type->y1 = btn_action->y1 + btn_action->h + 10;
-		btn_gain_type->visible = VISIBLE;
-
-		button_t * btn_gain_sub = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_gain_sub");
-		btn_gain_sub->x1 = btn_gain_type->x1 - btn_gain_sub->w - 10;
-		btn_gain_sub->y1 = btn_gain_type->y1;
-		btn_gain_sub->visible = VISIBLE;
-		btn_gain_sub->payload = -1;
-
-		button_t * btn_gain_add = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_gain_add");
-		btn_gain_add->x1 = btn_gain_type->x1 + btn_gain_type->w + 10;
-		btn_gain_add->y1 = btn_gain_type->y1;
-		btn_gain_add->visible = VISIBLE;
-		btn_gain_add->payload = 1;
+		gui_obj_align_to("btn_gain_add", "btn_gain_type", ALIGN_RIGHT_UP, 10);
+		gui_obj_set_prop("btn_gain_add", GUI_OBJ_VISIBLE, 1);
+		gui_obj_set_prop("btn_gain_add", GUI_OBJ_PAYLOAD, 1);
 
 		enable_window_move(win);
 		calculate_window_position(win, WINDOW_POSITION_AUTO);

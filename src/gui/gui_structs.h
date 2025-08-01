@@ -93,9 +93,20 @@ typedef enum {
 } tf_direction_t;
 
 typedef enum {
-	ALIGN_RIGHT,
-	ALIGN_DOWN,
+	ALIGN_RIGHT_UP,
+	ALIGN_LEFT_UP,
+	ALIGN_DOWN_LEFT,
 } object_alignment_t;
+
+typedef enum {
+	GUI_OBJ_VISIBLE,
+	GUI_OBJ_TEXT,
+	GUI_OBJ_TEXT_FMT,
+	GUI_OBJ_POS_X,
+	GUI_OBJ_POS_Y,
+	GUI_OBJ_POS,
+	GUI_OBJ_PAYLOAD,
+} object_prop_t;
 
 typedef struct {
 	uint16_t w;
