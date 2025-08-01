@@ -105,6 +105,7 @@ void gui_obj_create(const char * obj_name, ...)
 		lh->is_trackable = va_arg(arg, uint32_t);
 		lh->font_size = (font_size_t) va_arg(arg, int);
 		lh->color = va_arg(arg, COLORPIP_T);
+		lh->visible = 1;
 
 		strncpy(lh->name, obj_name, NAME_ARRAY_SIZE - 1);
 		lh->width = va_arg(arg, uint32_t);
@@ -136,6 +137,7 @@ void gui_obj_create(const char * obj_name, ...)
 		bh->is_long_press = va_arg(arg, uint32_t);
 		strncpy(bh->name, obj_name, NAME_ARRAY_SIZE - 1);
 		strncpy(bh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
+		bh->visible = 1;
 
 		win->bh_count ++;
 		break;
@@ -155,6 +157,7 @@ void gui_obj_create(const char * obj_name, ...)
 		tf->direction = (tf_direction_t) va_arg(arg, uint32_t);
 		tf->font = va_arg(arg, UB_Font *);
 		strncpy(tf->name, obj_name, NAME_ARRAY_SIZE - 1);
+		tf->visible = 1;
 
 		win->tf_count ++;
 		break;
@@ -175,6 +178,7 @@ void gui_obj_create(const char * obj_name, ...)
 		ta->h = va_arg(arg, uint_fast16_t);
 		ta->is_trackable = va_arg(arg, uint_fast16_t);
 		strncpy(ta->name, obj_name, NAME_ARRAY_SIZE - 1);
+		ta->visible = 1;
 
 		win->ta_count ++;
 		break;

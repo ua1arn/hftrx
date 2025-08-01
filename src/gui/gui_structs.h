@@ -94,6 +94,7 @@ typedef enum {
 
 typedef enum {
 	ALIGN_RIGHT_UP,
+	ALIGN_RIGHT_UP_MID,
 	ALIGN_LEFT_UP,
 	ALIGN_DOWN_LEFT,
 } object_alignment_t;

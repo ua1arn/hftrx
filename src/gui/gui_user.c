@@ -6466,53 +6466,15 @@ void window_wnbconfig_process(void)
 		win->first_call = 0;
 		unsigned x = 0, y = 0, interval = 24;
 
-		static const button_t buttons [] = {
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_WNBCONFIG, NON_VISIBLE, -1, "btn_-",  "-", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_WNBCONFIG, NON_VISIBLE, 1,  "btn_+",  "+", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
+		gui_obj_create("btn_add", 40, 40, 0, 0, "+");
+		gui_obj_create("btn_sub", 40, 40, 0, 0, "-");
+		gui_obj_create("lbl_val", 0, FONT_MEDIUM, COLORPIP_WHITE, 14);
 
-		static const label_t labels [] = {
-			{ WINDOW_WNBCONFIG, CANCELLED, 0, VISIBLE, "lbl_wnbthreshold_name", "Threshold:  ", FONT_MEDIUM, COLORPIP_YELLOW, 0, },
-			{ WINDOW_WNBCONFIG, CANCELLED, 0, VISIBLE, "lbl_wnbthreshold_val",  "xxxxx", 		FONT_MEDIUM, COLORPIP_YELLOW, 1, },
-		};
-
-		win->lh_count = ARRAY_SIZE(labels);
-		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t *) malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
-
-		for (unsigned i = 0; i < win->lh_count; i += 2)
-		{
-			label_t * lh1 = & win->lh_ptr [i];
-			label_t * lh2 = & win->lh_ptr [i + 1];
-
-			lh1->x = x;
-			lh1->y = y;
-			lh1->visible = VISIBLE;
-
-			lh2->x = x + 130;
-			lh2->y = y;
-			lh2->visible = VISIBLE;
-
-			y = y + get_label_height(lh1) + interval;
-		}
-
-		button_t * btn_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_+");
-		button_t * btn_n = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_-");
-
-		btn_p->x1 = 0;
-		btn_p->y1 = 20;
-		btn_p->visible = VISIBLE;
-
-		btn_n->x1 = btn_p->x1 + btn_p->w + 20;
-		btn_n->y1 = 20;
-		btn_n->visible = VISIBLE;
+		gui_obj_set_prop("lbl_val", GUI_OBJ_POS, 0, 15);
+		gui_obj_align_to("btn_sub", "lbl_val", ALIGN_RIGHT_UP_MID, 10);
+		gui_obj_set_prop("btn_sub", GUI_OBJ_PAYLOAD, -1);
+		gui_obj_align_to("btn_add", "btn_sub", ALIGN_RIGHT_UP, 10);
+		gui_obj_set_prop("btn_add", GUI_OBJ_PAYLOAD, 1);
 
 		hamradio_enable_encoder2_redirect();
 		enable_window_move(win);
@@ -6525,8 +6487,11 @@ void window_wnbconfig_process(void)
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			enc.change = bh->payload;
+			if (gui_check_obj(ptr, "btn_gain_add"))
+				enc.change = gui_obj_get_int_prop("btn_gain_add", GUI_OBJ_PAYLOAD);
+			else if ((gui_check_obj(ptr, "btn_gain_sub")))
+				enc.change = gui_obj_get_int_prop("btn_gain_sub", GUI_OBJ_PAYLOAD);
+
 			enc.updated = 1;
 		}
 		break;
@@ -6559,8 +6524,7 @@ void window_wnbconfig_process(void)
 	{
 		update = 0;
 
-		label_t * lbl_wnbthreshold_val = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_wnbthreshold_val");
-		local_snprintf_P(lbl_wnbthreshold_val->text, ARRAY_SIZE(lbl_wnbthreshold_val->text), "%d", wnb_get_threshold());
+		gui_obj_set_prop("lbl_val", GUI_OBJ_TEXT_FMT, "Threshold: %d", wnb_get_threshold());
 	}
 #endif /* WITHWNB */
 }
@@ -6586,7 +6550,6 @@ void window_ad936x_process(void)
 		gui_obj_create("lbl_status_str", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
 		gui_obj_create("lbl_iio_name", 0, FONT_MEDIUM, COLORPIP_WHITE, 9);
 		gui_obj_create("lbl_iio_val", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
-
 		gui_obj_create("btn_uri_edit", 86, 44, 0, 0, "Edit...");
 		gui_obj_create("btn_action", 86, 44, 0, 0, "Find");
 		gui_obj_create("btn_gain_type", 86, 44, 0, 0, "Gain|manual");
@@ -6594,35 +6557,18 @@ void window_ad936x_process(void)
 		gui_obj_create("btn_gain_sub", 44, 44, 0, 0, "-");
 
 		gui_obj_set_prop("lbl_status", GUI_OBJ_POS, 0, 0);
-		gui_obj_set_prop("lbl_status", GUI_OBJ_VISIBLE, 1);
 		gui_obj_set_prop("lbl_status", GUI_OBJ_TEXT, "Status: ");
-
 		gui_obj_align_to("lbl_status_str", "lbl_status", ALIGN_RIGHT_UP, 10);
-		gui_obj_set_prop("lbl_status_str", GUI_OBJ_VISIBLE, 1);
 		gui_obj_set_prop("lbl_status_str", GUI_OBJ_TEXT, "");
-
 		gui_obj_align_to("lbl_iio_name", "lbl_status", ALIGN_DOWN_LEFT, 10);
-		gui_obj_set_prop("lbl_iio_name", GUI_OBJ_VISIBLE, 1);
 		gui_obj_set_prop("lbl_iio_name", GUI_OBJ_TEXT, "URI:    ");
-
 		gui_obj_align_to("lbl_iio_val", "lbl_iio_name", ALIGN_RIGHT_UP, 10);
-		gui_obj_set_prop("lbl_iio_val", GUI_OBJ_VISIBLE, 1);
-
 		gui_obj_align_to("btn_uri_edit", "lbl_iio_name", ALIGN_DOWN_LEFT, 10);
-		gui_obj_set_prop("btn_uri_edit", GUI_OBJ_VISIBLE, 1);
-
 		gui_obj_align_to("btn_action", "btn_uri_edit", ALIGN_RIGHT_UP, 10);
-		gui_obj_set_prop("btn_action", GUI_OBJ_VISIBLE, 1);
-
 		gui_obj_align_to("btn_gain_type", "btn_action", ALIGN_DOWN_LEFT, 10);
-		gui_obj_set_prop("btn_gain_type", GUI_OBJ_VISIBLE, 1);
-
 		gui_obj_align_to("btn_gain_sub", "btn_gain_type", ALIGN_LEFT_UP, 10);
-		gui_obj_set_prop("btn_gain_sub", GUI_OBJ_VISIBLE, 1);
 		gui_obj_set_prop("btn_gain_sub", GUI_OBJ_PAYLOAD, -1);
-
 		gui_obj_align_to("btn_gain_add", "btn_gain_type", ALIGN_RIGHT_UP, 10);
-		gui_obj_set_prop("btn_gain_add", GUI_OBJ_VISIBLE, 1);
 		gui_obj_set_prop("btn_gain_add", GUI_OBJ_PAYLOAD, 1);
 
 		enable_window_move(win);
@@ -6719,7 +6665,6 @@ void window_ad936x_process(void)
 		uint8_t s = get_ad936x_stream_status();
 
 		gui_obj_create("btn_switch", 100, 40, 0, 0, "");
-		gui_obj_set_prop("btn_switch", GUI_OBJ_VISIBLE, 1);
 
 		if (s)
 			gui_obj_set_prop("btn_switch", GUI_OBJ_TEXT, "Switch|to HF");
@@ -6783,13 +6728,8 @@ void window_as_process(void)
 		gui_obj_create("btn_tx", 100, 40, 0, 0, "Transmit");
 
 		gui_obj_set_prop("btn_rec", GUI_OBJ_POS, x, y);
-		gui_obj_set_prop("btn_rec", GUI_OBJ_VISIBLE, 1);
-
 		gui_obj_align_to("btn_play", "btn_rec", ALIGN_RIGHT_UP, interval);
-		gui_obj_set_prop("btn_play", GUI_OBJ_VISIBLE, 1);
-
 		gui_obj_align_to("btn_tx", "btn_play", ALIGN_RIGHT_UP, interval);
-		gui_obj_set_prop("btn_tx", GUI_OBJ_VISIBLE, 1);
 
 		if (as_get_state() == AS_IDLE)
 			memset(d, 0, ARRAY_SIZE(d));
