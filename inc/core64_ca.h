@@ -1570,6 +1570,20 @@ __STATIC_FORCEINLINE uint32_t __get_ACTLR_EL3(void)
 	return result;
 }
 
+// PMCCNTR_EL0, Performance Monitors Cycle Count Register
+__STATIC_FORCEINLINE void __set_PMCCNTR_EL0(uint64_t value)
+{
+	__set_RG64("PMCCNTR_EL0", value);
+}
+
+__STATIC_FORCEINLINE uint64_t __get_PMCCNTR_EL0(void)
+{
+	uint64_t result;
+	// MRS <Xt>, SCTLR_EL3 ; Read SCTLR_EL3 into Xt
+	__get_RG64("PMCCNTR_EL0", result);
+	return result;
+}
+
 ///////////////
 ///
 __STATIC_FORCEINLINE void __set_CPACR_EL1(uint32_t value)

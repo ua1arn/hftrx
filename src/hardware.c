@@ -2146,41 +2146,6 @@ int_fast32_t icache_rowsize(void)
 
 #endif /* CPUSTYLE_ARM_CM7 */
 
-// получение частоты, с которой инкрементируется счетчик
-uint_fast32_t cpu_getdebugticksfreq(void)
-{
-	return CPU_FREQ;
-}
-
-// получение из аппаратного счетчика монотонно увеличивающегося кода
-// see SystemInit() in hardware.c
-uint_fast32_t cpu_getdebugticks(void)
-{
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
-	return DWT->CYCCNT;	// use TIMESTAMP_GET();
-#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
-	{
-		uint32_t result;
-		// Read CCNT Register
-		//	MRC p15, 0, <Rt>, c9, c13, 0 : Read PMCCNTR into Rt
-		//	MCR p15, 0, <Rt>, c9, c13, 0 : Write Rt to PMCCNTR
-		//asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(value));  
-		__get_CP(15, 0, result, 9, 13, 0);
-		return(result);
-	}
-
-#elif defined(__riscv)
-
-	uint64_t v = csr_read_mcycle();
-	return v;
-
-#else
-	//#warning Wromg CPUSTYLE_xxx - cpu_getdebugticks not work
-	return 0;
-#endif
-}
-
-
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
 
 
@@ -3122,6 +3087,46 @@ sysinit_debug_initialize(void)
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
+#if defined(__aarch64__)
+#endif /* defined(__aarch64__) */
+
+// получение частоты, с которой инкрементируется счетчик
+uint_fast32_t cpu_getdebugticksfreq(void)
+{
+	return CPU_FREQ;
+}
+
+// получение из аппаратного счетчика монотонно увеличивающегося кода
+// see sysinit_perfmeter_initialize() in hardware.c
+uint_fast32_t cpu_getdebugticks(void)
+{
+#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
+	return DWT->CYCCNT;	// use TIMESTAMP_GET();
+#elif defined(__aarch64__)
+	return __get_PMCCNTR_EL0();
+
+#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
+	{
+		uint32_t result;
+		// Read CCNT Register
+		//	MRC p15, 0, <Rt>, c9, c13, 0 : Read PMCCNTR into Rt
+		//	MCR p15, 0, <Rt>, c9, c13, 0 : Write Rt to PMCCNTR
+		//asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(value));
+		__get_CP(15, 0, result, 9, 13, 0);
+		return(result);
+	}
+
+#elif defined(__riscv)
+
+	uint64_t v = csr_read_mcycle();
+	return v;
+
+#else
+	//#warning Wromg CPUSTYLE_xxx - cpu_getdebugticks not work
+	return 0;
+#endif
+}
+
 static void
 sysinit_perfmeter_initialize(void)
 {
@@ -3137,7 +3142,9 @@ sysinit_perfmeter_initialize(void)
 
 #endif /* __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U */
 
-#if ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
+#if defined(__aarch64__)
+
+#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
 
 	#if WITHDEBUG || 1
 //	{
