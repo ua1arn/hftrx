@@ -5931,12 +5931,59 @@ void window_3d_process(void)
 #define MENU_PARAMS_MAX	50
 static unsigned index_param = 0;
 
+void split_string(char * str, char ch)
+{
+    int len = strlen(str);
+    int mid = len / 2;
+    int pos = -1;
+    int min_dist = len;
+
+    for (int i = mid; i < len; i++)
+    {
+        if (str[i] == ' ')
+        {
+            int dist = i - mid;
+            if (dist < min_dist)
+            {
+                min_dist = dist;
+                pos = i;
+            }
+        }
+    }
+
+    if (pos == -1)
+    {
+        for (int i = mid - 1; i >= 0; i--)
+        {
+            if (str[i] == ' ')
+            {
+                int dist = mid - i;
+                if (dist < min_dist)
+                {
+                    min_dist = dist;
+                    pos = i;
+                }
+            }
+        }
+    }
+
+    if (pos != -1)
+    {
+        for (int i = len; i > pos; i--)
+            str[i] = str[i - 1];
+
+        str[pos] = ch;
+    }
+}
+
 void window_menu_params_process(void)
 {
 	window_t * const win = get_win(WINDOW_MENU_PARAMS);
 	static menu_names_t menup [MENU_PARAMS_MAX], menuv;
-	static button_t * bh_sel = NULL;
 	static unsigned sel = 0;
+	char btn_to_align[TEXT_ARRAY_SIZE] = "btn_params_00";
+	char btn_name[TEXT_ARRAY_SIZE];
+	static char btn_selected[NAME_ARRAY_SIZE];
 
 	if (win->first_call)
 	{
@@ -5944,64 +5991,45 @@ void window_menu_params_process(void)
 		sel = 0;
 
 		unsigned interval = 6, x = 0, y = 0, xmax = 0;
-		button_t * bh = NULL;
-
 		const unsigned count = hamradio_get_multilinemenu_block_params(menup, index_param, MENU_PARAMS_MAX);
 		unsigned cols = count <= 16 ? 4 : 5;
 
-		win->bh_count = count;
-		unsigned buttons_size = win->bh_count * sizeof (button_t);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-
-		for (unsigned i = 0; i < win->bh_count; i ++)
+		for (unsigned i = 0; i < count; i ++)
 		{
-			bh = & win->bh_ptr [i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->w = 130;
-			bh->h = 35;
-			bh->state = CANCELLED;
-			bh->visible = VISIBLE;
-			bh->parent = WINDOW_MENU_PARAMS;
-			bh->index = i;
-			bh->is_long_press = 0;
-			bh->is_repeating = 0;
-			bh->is_locked = BUTTON_NON_LOCKED;
-			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_params_%02d"), i);
+			local_snprintf_P(btn_name, TEXT_ARRAY_SIZE, "btn_params_%02d", i);
 			remove_end_line_spaces(menup[i].name);
-			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), menup[i].name);
-			bh->payload = menup[i].index;
 
-			xmax = x > xmax ? x : xmax;
+			if (getwidth_Pstring(menup[i].name, & FONT_BUTTONS) > 110)
+				split_string(menup[i].name, '|');
 
-			x = x + interval + bh->w;
-			if ((i + 1) % cols == 0)
+			gui_obj_create(btn_name, 120, 40, 0, 0, menup[i].name);
+			gui_obj_set_prop(btn_name, GUI_OBJ_PAYLOAD, menup[i].index);
+
+			if (i % cols == 0 && i)
 			{
-				x = 0;
-				y = y + bh->h + interval;
+				local_snprintf_P(btn_to_align, TEXT_ARRAY_SIZE, "btn_params_%02d", i - cols);
+				gui_obj_align_to(btn_name, btn_to_align, ALIGN_DOWN_LEFT, interval);
+				local_snprintf_P(btn_to_align, TEXT_ARRAY_SIZE, "btn_params_%02d", i);
 			}
+			else
+			{
+				gui_obj_align_to(btn_name, btn_to_align, ALIGN_RIGHT_UP, interval);
+				strncpy(btn_to_align, btn_name, TEXT_ARRAY_SIZE - 1);
+			}
+
 		}
 
 #if 1	// Добавить экранные кнопки "+" и "-" при необходимости
-		gui_obj_create("btn_p", 35, 35, 0, 0, "+");
-		gui_obj_create("btn_m", 35, 35, 0, 0, "-");
+		gui_obj_create("btn_p", 40, 40, 1, 0, "+");
+		gui_obj_create("btn_m", 40, 40, 1, 0, "-");
 
-		button_t * btn_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_p");
-		btn_p->x1 = xmax + 130 + interval;
-		btn_p->y1 = 0;
-		btn_p->visible = VISIBLE;
-		btn_p->is_repeating = 1;
-		btn_p->payload = 1;
-		btn_p->index = 90;
+		char buf[TEXT_ARRAY_SIZE];
+		local_snprintf_P(buf, TEXT_ARRAY_SIZE, "btn_params_%02d", count < cols ? count - 1 : cols - 1);
 
-		button_t * btn_m = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_m");
-		btn_m->x1 = xmax + 130 + interval;
-		btn_m->y1 = 40;
-		btn_m->visible = VISIBLE;
-		btn_m->is_repeating = 1;
-		btn_m->payload = -1;
-		btn_m->index = 91;
+		gui_obj_align_to("btn_p", buf, ALIGN_RIGHT_UP, interval);
+		gui_obj_set_prop("btn_p", GUI_OBJ_PAYLOAD, 1);
+		gui_obj_align_to("btn_m", "btn_p", ALIGN_DOWN_LEFT, interval);
+		gui_obj_set_prop("btn_m", GUI_OBJ_PAYLOAD, -1);
 #endif
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -6015,23 +6043,23 @@ void window_menu_params_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-
-			if (bh->index < 90)
+			if (gui_check_obj(name, "btn_p") || gui_check_obj(name, "btn_m"))
+				gui_set_encoder2_rotate(gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD));
+			else
 			{
-				if (bh_sel)
-					bh_sel->is_locked = BUTTON_NON_LOCKED;
+				if (sel)
+					gui_obj_set_prop(btn_selected, GUI_OBJ_LOCK, 0);
 
-				bh->is_locked = BUTTON_LOCKED;
-				bh_sel = bh;
+				strncpy(btn_selected, name, NAME_ARRAY_SIZE - 1);
+				gui_obj_set_prop(btn_selected, GUI_OBJ_LOCK, 1);
 				sel = 1;
 
-				hamradio_get_multilinemenu_block_vals(& menuv, bh->payload, 1);
+				hamradio_get_multilinemenu_block_vals(& menuv, gui_obj_get_int_prop(btn_selected, GUI_OBJ_PAYLOAD), 1);
 				remove_end_line_spaces(menuv.name);
-				local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s: %s", bh_sel->text, menuv.name);
+				local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s: %s",
+						gui_obj_get_string_prop(btn_selected, GUI_OBJ_TEXT), menuv.name);
+
 			}
-			else if (bh->index == 90 || bh->index == 91)
-				gui_set_encoder2_rotate(bh->payload);
 		}
 		break;
 
@@ -6042,7 +6070,8 @@ void window_menu_params_process(void)
 		{
 			strcpy(edit_val, hamradio_gui_edit_menu_item(menuv.index, action));
 			remove_end_line_spaces(edit_val);
-			local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s: %s", bh_sel->text, edit_val);
+			local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s: %s",
+					gui_obj_get_string_prop(btn_selected, GUI_OBJ_TEXT), edit_val);
 		}
 	}
 		break;
@@ -6063,39 +6092,33 @@ void window_menu_process(void)
 		button_t * bh = NULL;
 		menu_names_t menu [MENU_GROUPS_MAX];
 		const unsigned cols = 4, interval = 6;
+		char btn_to_align[TEXT_ARRAY_SIZE] = "btn_groups_00";
+		char btn_name[TEXT_ARRAY_SIZE];
 
 		const unsigned count = hamradio_get_multilinemenu_block_groups(menu);
 		ASSERT(count < MENU_GROUPS_MAX);
 
-		win->bh_count = count;
-		unsigned buttons_size = win->bh_count * sizeof (button_t);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-
-		for (unsigned i = 0; i < win->bh_count; i ++)
+		for (unsigned i = 0; i < count; i ++)
 		{
-			bh = & win->bh_ptr [i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->w = 130;
-			bh->h = 35;
-			bh->state = CANCELLED;
-			bh->visible = VISIBLE;
-			bh->parent = WINDOW_MENU;
-			bh->index = i;
-			bh->is_long_press = 0;
-			bh->is_repeating = 0;
-			bh->is_locked = BUTTON_NON_LOCKED;
-			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_groups_%02d"), i);
+			local_snprintf_P(btn_name, TEXT_ARRAY_SIZE, "btn_groups_%02d", i);
 			remove_end_line_spaces(menu[i].name);
-			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), menu[i].name);
-			bh->payload = menu[i].index;
 
-			x = x + interval + bh->w;
-			if ((i + 1) % cols == 0)
+			if (getwidth_Pstring(menu[i].name, & FONT_BUTTONS) > 110)
+				split_string(menu[i].name, '|');
+
+			gui_obj_create(btn_name, 120, 40, 0, 0, menu[i].name);
+			gui_obj_set_prop(btn_name, GUI_OBJ_PAYLOAD, menu[i].index);
+
+			if (i % cols == 0 && i)
 			{
-				x = 0;
-				y = y + bh->h + interval;
+				local_snprintf_P(btn_to_align, TEXT_ARRAY_SIZE, "btn_groups_%02d", i - cols);
+				gui_obj_align_to(btn_name, btn_to_align, ALIGN_DOWN_LEFT, interval);
+				local_snprintf_P(btn_to_align, TEXT_ARRAY_SIZE, "btn_groups_%02d", i);
+			}
+			else
+			{
+				gui_obj_align_to(btn_name, btn_to_align, ALIGN_RIGHT_UP, interval);
+				strncpy(btn_to_align, btn_name, TEXT_ARRAY_SIZE - 1);
 			}
 		}
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -6107,8 +6130,7 @@ void window_menu_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			index_param = bh->payload;
+			index_param = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
 			window_t * const win = get_win(WINDOW_MENU_PARAMS);
 			open_window(win);
 		}
@@ -6405,7 +6427,7 @@ void window_stream_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			if (gui_check_obj(ptr, "btn_state"))
+			if (gui_check_obj(name, "btn_state"))
 			{
 				if (stream_get_state())
 					server_stop();
@@ -6472,9 +6494,9 @@ void window_wnbconfig_process(void)
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
 		{
-			if (gui_check_obj(ptr, "btn_gain_add"))
+			if (gui_check_obj(name, "btn_gain_add"))
 				enc.change = gui_obj_get_int_prop("btn_gain_add", GUI_OBJ_PAYLOAD);
-			else if ((gui_check_obj(ptr, "btn_gain_sub")))
+			else if ((gui_check_obj(name, "btn_gain_sub")))
 				enc.change = gui_obj_get_int_prop("btn_gain_sub", GUI_OBJ_PAYLOAD);
 
 			enc.updated = 1;
@@ -6567,11 +6589,11 @@ void window_ad936x_process(void)
 
 	if (IS_BUTTON_PRESS)
 	{
-		if (gui_check_obj(ptr, "btn_uri_edit"))
+		if (gui_check_obj(name, "btn_uri_edit"))
 		{
 			keyboard_edit_string((uintptr_t) & uri, ARRAY_SIZE(uri), 0);
 		}
-		else if (gui_check_obj(ptr, "btn_action"))
+		else if (gui_check_obj(name, "btn_action"))
 		{
 			if (status == 10 || status == 1)
 				status = iio_ad936x_find(uri);
@@ -6582,18 +6604,18 @@ void window_ad936x_process(void)
 
 			update = 1;
 		}
-		else if (gui_check_obj(ptr, "btn_gain_type"))
+		else if (gui_check_obj(name, "btn_gain_type"))
 		{
 			gain_mode = ! gain_mode;
 			iio_ad936x_set_gain(gain_mode, gain_val);
 			update = 1;
 		}
-		else if (gui_check_obj(ptr, "btn_gain_add") || gui_check_obj(ptr, "btn_gain_sub"))
+		else if (gui_check_obj(name, "btn_gain_add") || gui_check_obj(name, "btn_gain_sub"))
 		{
 			int p;
-			if (gui_check_obj(ptr, "btn_gain_add"))
+			if (gui_check_obj(name, "btn_gain_add"))
 				p = gui_obj_get_int_prop("btn_gain_add", GUI_OBJ_PAYLOAD);
-			else if ((gui_check_obj(ptr, "btn_gain_sub")))
+			else if ((gui_check_obj(name, "btn_gain_sub")))
 				p = gui_obj_get_int_prop("btn_gain_sub", GUI_OBJ_PAYLOAD);
 
 			if (gain_val + p > 3 || gain_val + p < 70)
@@ -6668,7 +6690,7 @@ void window_ad936x_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			if (gui_check_obj(ptr, "btn_switch"))
+			if (gui_check_obj(name, "btn_switch"))
 			{
 				if (get_ad936x_stream_status())
 				{
@@ -6739,17 +6761,17 @@ void window_as_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			if (gui_check_obj(ptr, "btn_rec"))
+			if (gui_check_obj(name, "btn_rec"))
 			{
 				as_toggle_record();
 				update = 1;
 			}
-			else if (gui_check_obj(ptr, "btn_play"))
+			else if (gui_check_obj(name, "btn_play"))
 			{
 				as_toggle_play();
 				update = 1;
 			}
-			else if (gui_check_obj(ptr, "btn_tx"))
+			else if (gui_check_obj(name, "btn_tx"))
 			{
 				as_toggle_trx();
 				update = 1;

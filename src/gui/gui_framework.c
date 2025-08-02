@@ -58,6 +58,8 @@ void set_parent_window(uint8_t p)
 
 obj_type_t parse_obj_name(const char * name)
 {
+	ASSERT(name);
+
 	if (! strncmp(name, "btn_", 4))
 		return TYPE_BUTTON;
 	else if (! strncmp(name, "lbl_", 4))
@@ -106,6 +108,8 @@ void gui_obj_create(const char * obj_name, ...)
 		lh->font_size = (font_size_t) va_arg(arg, int);
 		lh->color = va_arg(arg, COLORPIP_T);
 		lh->visible = 1;
+		lh->x = 0;
+		lh->y = 0;
 
 		strncpy(lh->name, obj_name, NAME_ARRAY_SIZE - 1);
 		lh->width = va_arg(arg, uint32_t);
@@ -138,6 +142,8 @@ void gui_obj_create(const char * obj_name, ...)
 		strncpy(bh->name, obj_name, NAME_ARRAY_SIZE - 1);
 		strncpy(bh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
 		bh->visible = 1;
+		bh->x1 = 0;
+		bh->y1 = 0;
 
 		win->bh_count ++;
 		break;
@@ -158,6 +164,8 @@ void gui_obj_create(const char * obj_name, ...)
 		tf->font = va_arg(arg, UB_Font *);
 		strncpy(tf->name, obj_name, NAME_ARRAY_SIZE - 1);
 		tf->visible = 1;
+		tf->x1 = 0;
+		tf->y1 = 0;
 
 		textfield_update_size(tf);
 
@@ -242,7 +250,7 @@ void dump_queue(window_t * win)
 	}
 }
 
-// WM_MESSAGE_ACTION: 		obj_type_t type, uintptr_t obj_ptr, int action
+// WM_MESSAGE_ACTION: 		obj_type_t type, uintptr_t obj_ptr, int action, char * name
 // WM_MESSAGE_ENC2_ROTATE:  int_fast8_t rotate
 // WM_MESSAGE_KEYB_CODE:	int_fast8_t keyb_code
 // WM_MESSAGE_UPDATE: 		nothing
@@ -265,6 +273,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		uint32_t type = va_arg(arg, uint32_t);
 		uintptr_t ptr = va_arg(arg, uintptr_t);
 		int32_t action = va_arg(arg, int32_t);
+		char * name = va_arg(arg, char *);
 
 		va_end(arg);
 
@@ -277,6 +286,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			win->queue.data [win->queue.size].type = (obj_type_t) type;
 			win->queue.data [win->queue.size].ptr = ptr;
 			win->queue.data [win->queue.size].action = action;
+			strncpy(win->queue.data [win->queue.size].name, name, NAME_ARRAY_SIZE - 1);
 			win->queue.size ++;
 		}
 
@@ -365,7 +375,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	return 0;
 }
 
-wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * ptr, int_fast8_t * action)
+wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * ptr, int_fast8_t * action, char * name)
 {
 	if (! win->queue.size)
 		return WM_NO_MESSAGE;							// очередь сообщений пустая
@@ -375,6 +385,7 @@ wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * 
 	* type = win->queue.data [win->queue.size].type;
 	* ptr = win->queue.data [win->queue.size].ptr;
 	* action = win->queue.data [win->queue.size].action;
+	strncpy(name, win->queue.data [win->queue.size].name, NAME_ARRAY_SIZE - 1);
 
 //	if (win->window_id != WINDOW_MAIN)
 //		PRINTF("get_from_wm_queue: win - %s, message - %d, size - %d\n", win->title, win->queue.data [win->queue.size].message, win->queue.size);
@@ -385,6 +396,7 @@ wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * 
 	win->queue.data [win->queue.size].type = TYPE_DUMMY;
 	win->queue.data [win->queue.size].ptr = 0;
 	win->queue.data [win->queue.size].action = 0;
+	memset(win->queue.data [win->queue.size].name, 0, NAME_ARRAY_SIZE);
 
 	return m;
 }
@@ -1096,7 +1108,7 @@ static void set_state_record(gui_object_t * val)
 			bh->state = val->state;
 			if (bh->state == RELEASED || bh->state == LONG_PRESSED || bh->state == PRESS_REPEATING)
 			{
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh, bh->state == LONG_PRESSED ? LONG_PRESSED : PRESSED))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh, bh->state == LONG_PRESSED ? LONG_PRESSED : PRESSED, bh->name))
 					dump_queue(val->win);
 			}
 		}
@@ -1111,12 +1123,12 @@ static void set_state_record(gui_object_t * val)
 			lh->state = val->state;
 			if (lh->state == RELEASED)
 			{
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, PRESSED))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, PRESSED, lh->name))
 					dump_queue(val->win);
 			}
 			else if (lh->state == PRESSED && lh->is_trackable)
 			{
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, MOVING))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, MOVING, lh->name))
 					dump_queue(val->win);
 			}
 		}
@@ -1132,7 +1144,7 @@ static void set_state_record(gui_object_t * val)
 			if (sh->state == PRESSED)
 			{
 				slider_process(sh);
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_SLIDER, sh, PRESSED))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_SLIDER, sh, PRESSED, sh->name))
 					dump_queue(val->win);
 			}
 		}
@@ -1147,7 +1159,7 @@ static void set_state_record(gui_object_t * val)
 			ta->state = val->state;
 			if (ta->state == RELEASED)
 			{
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, PRESSED))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, PRESSED, ta->name))
 					dump_queue(val->win);
 			}
 			else if (ta->state == PRESSED && ta->is_trackable)
@@ -1158,7 +1170,7 @@ static void set_state_record(gui_object_t * val)
 					gui.vector_move_x = 0;
 					gui.vector_move_y = 0;
 				}
-				else if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, MOVING))
+				else if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, MOVING, ta->name))
 					dump_queue(val->win);
 			}
 		}

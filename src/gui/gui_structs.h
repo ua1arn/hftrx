@@ -18,7 +18,8 @@
 #define GET_FROM_WM_QUEUE		uint_fast8_t type;	\
 								int_fast8_t action;	\
 								uintptr_t ptr;		\
-								switch (get_from_wm_queue(win, & type, & ptr, & action))
+								char name[NAME_ARRAY_SIZE];		\
+								switch (get_from_wm_queue(win, & type, & ptr, & action, name))
 
 typedef enum {
 	TYPE_DUMMY,
@@ -109,6 +110,7 @@ typedef enum {
 	GUI_OBJ_POS,
 	GUI_OBJ_PAYLOAD,
 	GUI_OBJ_STATE,
+	GUI_OBJ_LOCK,
 } object_prop_t;
 
 typedef struct {
@@ -248,6 +250,7 @@ typedef struct {
 	obj_type_t type;			// тип элемента
 	uintptr_t ptr;
 	int_fast8_t action;
+	char name[NAME_ARRAY_SIZE];
 } wm_data_t;
 
 typedef struct {					// очередь сообщений окнам от WM о взаимодействии с элементами GUI

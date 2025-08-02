@@ -136,6 +136,9 @@ void gui_obj_align_to(const char * name1, const char * name2, object_alignment_t
 	void * oh1 = find_gui_obj(type1, win, name1);
 	void * oh2 = find_gui_obj(type2, win, name2);
 
+	if (oh1 == oh2)
+		return;
+
 	uint16_t x2, y2, w2, h2;
 
 	switch(type2)
@@ -195,6 +198,29 @@ void gui_obj_align_to(const char * name1, const char * name2, object_alignment_t
 	}
 }
 
+char * gui_obj_get_string_prop(const char * name, object_prop_t prop)
+{
+	window_t * win = get_win(get_parent_window());
+	obj_type_t type = parse_obj_name(name);
+	void * obj = find_gui_obj(type, win, name);
+
+	switch(type)
+	{
+	case TYPE_LABEL:
+		label_t * lh = (label_t *) obj;
+		if (prop == GUI_OBJ_TEXT) return lh->text;
+		break;
+	case TYPE_BUTTON:
+		button_t * bh = (button_t *) obj;
+		if (prop == GUI_OBJ_TEXT) return bh->text;
+		break;
+	default:
+		break;
+	}
+
+	return NULL;
+}
+
 int gui_obj_get_int_prop(const char * name, object_prop_t prop)
 {
 	window_t * win = get_win(get_parent_window());
@@ -208,6 +234,7 @@ int gui_obj_get_int_prop(const char * name, object_prop_t prop)
 		if (prop == GUI_OBJ_VISIBLE) return lh->visible;
 		else if (prop == GUI_OBJ_POS_X) return lh->x;
 		else if (prop == GUI_OBJ_POS_Y) return lh->y;
+		else if (prop == GUI_OBJ_PAYLOAD) return lh->payload;
 		else if (prop == GUI_OBJ_STATE) return lh->state;
 		break;
 	case TYPE_BUTTON:
@@ -217,6 +244,7 @@ int gui_obj_get_int_prop(const char * name, object_prop_t prop)
 		else if (prop == GUI_OBJ_POS_Y) return bh->y1;
 		else if (prop == GUI_OBJ_PAYLOAD) return bh->payload;
 		else if (prop == GUI_OBJ_STATE) return bh->state;
+		else if (prop == GUI_OBJ_LOCK) return bh->is_locked;
 		break;
 	default:
 		break;
@@ -254,6 +282,7 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_TEXT) strncpy(bh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
 		else if (prop == GUI_OBJ_TEXT_FMT) vsnprintf(bh->text, TEXT_ARRAY_SIZE - 1, va_arg(arg, char *), arg);
 		else if (prop == GUI_OBJ_STATE) bh->state = va_arg(arg, int);
+		else if (prop == GUI_OBJ_LOCK) bh->is_locked = va_arg(arg, int);
 		break;
 	default:
 		break;
@@ -262,26 +291,9 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 	va_end(arg);
 }
 
-uint8_t gui_check_obj(uintptr_t ptr, const char * name)
+uint8_t gui_check_obj(const char * name1, const char * name2)
 {
-	window_t * win = get_win(get_parent_window());
-	obj_type_t type = parse_obj_name(name);
-	void * obj = find_gui_obj(type, win, name);
-
-	switch(type)
-	{
-	case TYPE_LABEL:
-		if ((label_t *) obj == (label_t *) ptr)
-			return 1;
-		break;
-	case TYPE_BUTTON:
-		if ((button_t *) obj == (button_t *) ptr)
-			return 1;
-	default:
-		break;
-	}
-
-	return 0;
+	return strcmp(name1, name2) == 0;
 }
 
 #endif /* WITHTOUCHGUI */
