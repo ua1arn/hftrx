@@ -8,8 +8,8 @@
 
 #include "hardware.h"
 #include "formats.h"
-#include "display/display.h"
-#include "display/fontmaps.h"
+#include "src/display/display.h"
+#include "src/display/fontmaps.h"
 
 #if WITHTOUCHGUI
 
