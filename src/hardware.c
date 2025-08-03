@@ -3102,7 +3102,9 @@ uint_fast32_t cpu_getdebugticksfreq(void)
 // see sysinit_perfmeter_initialize() in hardware.c
 uint_fast32_t cpu_getdebugticks(void)
 {
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
+#if ! WITHDEBUG
+	return 0;
+#elif __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 	return DWT->CYCCNT;	// use TIMESTAMP_GET();
 #elif defined(__aarch64__)
 	return __get_PMCCNTR_EL0();
@@ -3133,7 +3135,9 @@ uint_fast32_t cpu_getdebugticks(void)
 static void
 sysinit_perfmeter_initialize(void)
 {
-#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
+#if ! WITHDEBUG
+	// no any actions
+#elif __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 
 	#if WITHDEBUG && __CORTEX_M == 7U
 		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
@@ -3142,15 +3146,12 @@ sysinit_perfmeter_initialize(void)
 		DWT->LAR = 0x00000000;	// Key value for lock
 	#endif /* WITHDEBUG && __CORTEX_M == 7U */
 
-#endif /* __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U */
-
-#if defined(__aarch64__)
+#elif defined(__aarch64__)
 		__set_PMCNTENSET_EL0(__get_PMCNTENSET_EL0() | (UINT32_C(1) << 31));
 		__set_PMCR_EL0(__get_PMCR_EL0() | (UINT32_C(1) << 0));
 
 #elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
 
-	#if WITHDEBUG || 1
 //	{
 //		uint32_t value;
 //		__get_CP(15, 0, value, 9, 12, 0);	// Read PMNC
@@ -3197,7 +3198,8 @@ sysinit_perfmeter_initialize(void)
 		//asm volatile ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
 		__set_CP(15, 0, 0x80000000, 9, 12, 3);
 	}
-	#endif /* WITHDEBUG */
+
+#elif defined(__riscv)
 
 #endif /* ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__)) */
 }
