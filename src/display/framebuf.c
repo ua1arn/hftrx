@@ -206,6 +206,18 @@ static void awxx_rcq(uintptr_t buff, unsigned len)
 	ASSERT(G2D_TOP->RCQ_HEADER_LEN == len);
 }
 
+
+static LCLSPINLOCK_t rtmxlock;
+
+static void g2d_rtmx_accure(void)
+{
+	LCLSPIN_LOCK(& rtmxlock);
+}
+static void g2d_rtmx_release(void)
+{
+	LCLSPIN_UNLOCK(& rtmxlock);
+}
+
 /* Запуск и ожидание завершения работы G2D */
 /* 0 - timeout. 1 - OK */
 static int hwacc_rtmx_waitdone(void)
@@ -265,7 +277,8 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 	//	memset(G2D_WB, 0, sizeof * G2D_WB);
 	//	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 	//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
-	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
+	g2d_rtmx_accure();
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 	awxx_g2d_mixer_reset(); /* Отключаем все источники */
 	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
@@ -365,6 +378,7 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
 	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
 	awxx_g2d_rtmix_startandwait(); /* Запускаем и ждём завершения обработки */
+	g2d_rtmx_release();
 }
 
 #endif /* defined (G2D_MIXER) */
@@ -414,6 +428,17 @@ static void awxx_g2d_rot_startandwait(void)
 
 #endif /* defined (G2D_ROT) */
 
+static LCLSPINLOCK_t rotlock;
+
+static void g2d_rot_accure(void)
+{
+	LCLSPIN_LOCK(& rotlock);
+}
+static void g2d_rot_release(void)
+{
+	LCLSPIN_UNLOCK(& rotlock);
+}
+
 /* Коприрование с применением блока G2D_ROT */
 static void
 hwaccel_rotcopy(
@@ -426,6 +451,7 @@ hwaccel_rotcopy(
 	uint_fast32_t rot_ctl
 	)
 {
+	g2d_rot_accure();
 	ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
 
 	G2D_ROT->ROT_CTL = 0;
@@ -459,6 +485,7 @@ hwaccel_rotcopy(
 	G2D_ROT->ROT_CTL = rot_ctl;
 	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);		// ENABLE
 	awxx_g2d_rot_startandwait();		/* Запускаем и ждём завершения обработки */
+	g2d_rot_release();
 
 }
 
@@ -776,8 +803,9 @@ static void hwaccel_fillrect(
 	)
 {
 
+	g2d_rtmx_accure();
 	awxx_g2d_mixer_reset();	/* Отключаем все источники */
-	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (1uL << 31)) == 0);
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 
 	if (fillmask & FILL_FLAG_MIXBG)
 	{
@@ -842,6 +870,7 @@ static void hwaccel_fillrect(
 	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
 
 	awxx_g2d_rtmix_startandwait();		/* Запускаем и ждём завершения обработки */
+	g2d_rtmx_release();
 }
 #endif
 
@@ -3355,7 +3384,9 @@ void hwaccel_stretchblt(
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
+	g2d_rtmx_accure();
 	awxx_g2d_mixer_reset();	/* Отключаем все источники */
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 
 //	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
@@ -3520,6 +3551,7 @@ void hwaccel_stretchblt(
 	G2D_WB->WB_SIZE = tsizehw;
 
 	awxx_g2d_rtmix_startandwait();		/* Запускаем и ждём завершения обработки */
+	g2d_rtmx_release();
 
 #else
 
