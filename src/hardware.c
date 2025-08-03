@@ -3087,9 +3087,6 @@ sysinit_debug_initialize(void)
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
-#if defined(__aarch64__)
-#endif /* defined(__aarch64__) */
-
 // Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 // получение частоты, с которой инкрементируется счетчик
 uint_fast32_t cpu_getdebugticksfreq(void)
@@ -3104,8 +3101,10 @@ uint_fast32_t cpu_getdebugticks(void)
 {
 #if ! WITHDEBUG
 	return 0;
+
 #elif __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 	return DWT->CYCCNT;	// use TIMESTAMP_GET();
+
 #elif defined(__aarch64__)
 	return __get_PMCCNTR_EL0();
 
@@ -3128,6 +3127,7 @@ uint_fast32_t cpu_getdebugticks(void)
 #else
 	//#warning Wromg CPUSTYLE_xxx - cpu_getdebugticks not work
 	return 0;
+
 #endif
 }
 
