@@ -112,6 +112,10 @@ typedef enum {
 	GUI_OBJ_STATE,
 	GUI_OBJ_LOCK,
 	GUI_OBJ_COLOR,
+	GUI_OBJ_WIDTH,
+	GUI_OBJ_HEIGHT,
+	GUI_OBJ_SIZE,
+	GUI_OBJ_REPEAT,
 } object_prop_t;
 
 typedef struct {

@@ -247,6 +247,8 @@ int gui_obj_get_int_prop(const char * name, object_prop_t prop)
 		else if (prop == GUI_OBJ_PAYLOAD) return bh->payload;
 		else if (prop == GUI_OBJ_STATE) return bh->state;
 		else if (prop == GUI_OBJ_LOCK) return bh->is_locked;
+		else if (prop == GUI_OBJ_WIDTH) return bh->w;
+		else if (prop == GUI_OBJ_HEIGHT) return bh->h;
 		break;
 	default:
 		break;
@@ -286,6 +288,10 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_TEXT_FMT) vsnprintf(bh->text, TEXT_ARRAY_SIZE - 1, va_arg(arg, char *), arg);
 		else if (prop == GUI_OBJ_STATE) bh->state = va_arg(arg, int);
 		else if (prop == GUI_OBJ_LOCK) bh->is_locked = va_arg(arg, int);
+		else if (prop == GUI_OBJ_WIDTH) bh->w = va_arg(arg, int);
+		else if (prop == GUI_OBJ_HEIGHT) bh->h = va_arg(arg, int);
+		else if (prop == GUI_OBJ_SIZE) { bh->w = va_arg(arg, int); bh->h = va_arg(arg, int); }
+		else if (prop == GUI_OBJ_REPEAT) bh->is_repeating = va_arg(arg, int);
 		break;
 	default:
 		break;

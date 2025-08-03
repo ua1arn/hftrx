@@ -5601,15 +5601,15 @@ void window_kbd_process(void)
 	const char kbd_cap[] = ",.!@#*()?;QWERTYUIOPASDFGHJKLZXCVBNM";
 	const char kbd_low[] = "1234567890qwertyuiopasdfghjklzxcvbnm";
 	const unsigned len1 = 10, len2 = 10, len3 = 9, len4 = 7, kbd_len = len1 + len2 + len3 + len4, btn_size = 40;
-	const char kbd_func [][20] = { "btn_kbd_caps", "btn_kbd_backspace", "btn_kbd_space", "btn_kbd_enter", "btn_kbd_esc", };
+	const char kbd_func [5][20] = { "btn_kbd_caps", "btn_kbd_backspace", "btn_kbd_space", "btn_kbd_enter", "btn_kbd_esc", };
 	static char edit_str[TEXT_ARRAY_SIZE];
+	char btn_name[NAME_ARRAY_SIZE];
 
 	if (win->first_call)
 	{
 		win->first_call = 0;
 		update = 1;
 		is_shift = 0;
-		button_t * bh = NULL;
 		unsigned x = 0, y = 0, interval = 5, i = 0;
 
 		if (gui_keyboard.clean)
@@ -5619,85 +5619,61 @@ void window_kbd_process(void)
 		else
 			strncpy(edit_str, gui_keyboard.str, gui_keyboard.max_len);
 
-		win->bh_count = kbd_len + 5;
-		unsigned buttons_size = win->bh_count * sizeof (button_t);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-
-		for (; i < win->bh_count; i ++)
+		for (; i < kbd_len + 5; i ++)
 		{
 			if (i == len1)
 			{
-				x = bh->w / 2;
-				y += bh->h + interval;
+				x = btn_size / 2;
+				y += btn_size + interval;
 			}
 			else if (i == len1 + len2)
 			{
-				x = bh->w + interval;
-				y += bh->h + interval;
+				x = btn_size + interval;
+				y += btn_size + interval;
 			}
 			else if (i == len1 + len2 + len3)
 			{
-				x = bh->w * 2;
-				y += bh->h + interval;
+				x = btn_size * 2;
+				y += btn_size + interval;
 			}
 
-			bh = & win->bh_ptr[i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->w = btn_size;
-			bh->h = btn_size;
-			bh->state = (gui_keyboard.digits_only && i > len1 - 1 && i < kbd_len) ? DISABLED : CANCELLED;
-			bh->visible = VISIBLE;
-			bh->parent = WINDOW_KBD;
-			bh->index = i;
-			bh->is_long_press = 0;
-			bh->is_repeating = 0;
-			bh->is_locked = BUTTON_NON_LOCKED;
 			if (i < kbd_len)
-				local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), "btn_kbd_%02d", i);
+				local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "btn_kbd_%02d", i);
 			else
-				local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), "%s", kbd_func [i - kbd_len]);
+				local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "%s", kbd_func [i - kbd_len]);
 
-			x += bh->w + interval;
+			gui_obj_create(btn_name, btn_size, btn_size, 0, 0, "");
+			gui_obj_set_prop(btn_name, GUI_OBJ_STATE, (gui_keyboard.digits_only && i > len1 - 1 && i < kbd_len) ? DISABLED : CANCELLED);
+			gui_obj_set_prop(btn_name, GUI_OBJ_POS, x, y);
+
+			x += btn_size + interval;
 		}
 
-		button_t * btn_kbd_caps = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_kbd_caps");
-		btn_kbd_caps->x1 = 0;
-		btn_kbd_caps->y1 = btn_size * 3 + interval * 3;
-		btn_kbd_caps->w = 75;
-		local_snprintf_P(btn_kbd_caps->text, ARRAY_SIZE(btn_kbd_caps->text), "CAPS");
-		btn_kbd_caps->is_locked = is_shift ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
-		btn_kbd_caps->state = gui_keyboard.digits_only ? DISABLED : CANCELLED;
+		gui_obj_set_prop("btn_kbd_caps", GUI_OBJ_POS, 0, btn_size * 3 + interval * 3);
+		gui_obj_set_prop("btn_kbd_caps", GUI_OBJ_WIDTH, 75);
+		gui_obj_set_prop("btn_kbd_caps", GUI_OBJ_TEXT, "CAPS");
+		gui_obj_set_prop("btn_kbd_caps", GUI_OBJ_LOCK, is_shift);
+		gui_obj_set_prop("btn_kbd_caps", GUI_OBJ_STATE, gui_keyboard.digits_only ? DISABLED : CANCELLED);
 
-		button_t * btn_kbd_backspace = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_kbd_backspace");
-		btn_kbd_backspace->x1 = btn_size * len1 + interval * len1;
-		btn_kbd_backspace->y1 = 0;
-		btn_kbd_backspace->is_repeating = 1;
-		local_snprintf_P(btn_kbd_backspace->text, ARRAY_SIZE(btn_kbd_backspace->text), "<-");
+		gui_obj_set_prop("btn_kbd_backspace", GUI_OBJ_POS, btn_size * len1 + interval * len1, 0);
+		gui_obj_set_prop("btn_kbd_backspace", GUI_OBJ_REPEAT, 1);
+		gui_obj_set_prop("btn_kbd_backspace", GUI_OBJ_TEXT, "<-");
 
-		button_t * btn_kbd_space = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_kbd_space");
-		btn_kbd_space->x1 = btn_kbd_caps->x1 + btn_kbd_caps->w + interval * 8 + btn_size * len4;
-		btn_kbd_space->y1 = btn_kbd_caps->y1;
-		btn_kbd_space->w = 95;
-		local_snprintf_P(btn_kbd_space->text, ARRAY_SIZE(btn_kbd_space->text), "Space");
-		btn_kbd_space->payload = (char) ' ';
-		btn_kbd_space->state = gui_keyboard.digits_only ? DISABLED : CANCELLED;
+		local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "btn_kbd_%02d", kbd_len - 1);
+		gui_obj_align_to("btn_kbd_space", btn_name, ALIGN_RIGHT_UP, interval);
+		gui_obj_set_prop("btn_kbd_space", GUI_OBJ_WIDTH, 95);
+		gui_obj_set_prop("btn_kbd_space", GUI_OBJ_TEXT, "Space");
+		gui_obj_set_prop("btn_kbd_space", GUI_OBJ_PAYLOAD, (char) ' ');
+		gui_obj_set_prop("btn_kbd_space", GUI_OBJ_STATE, gui_keyboard.digits_only ? DISABLED : CANCELLED);
 
-		button_t * btn_kbd_esc = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_kbd_esc");
-		btn_kbd_esc->x1 = btn_kbd_backspace->x1 + btn_kbd_backspace->w + interval * 3;
-		btn_kbd_esc->y1 = btn_kbd_backspace->y1 + btn_kbd_backspace->h / 2;
-		btn_kbd_esc->w = 50;
-		btn_kbd_esc->h = 50;
-		local_snprintf_P(btn_kbd_esc->text, ARRAY_SIZE(btn_kbd_esc->text), "Esc");
+		gui_obj_align_to("btn_kbd_esc", "btn_kbd_backspace", ALIGN_RIGHT_UP, interval * 3);
+		gui_obj_set_prop("btn_kbd_esc", GUI_OBJ_SIZE, 50, 50);
+		gui_obj_set_prop("btn_kbd_esc", GUI_OBJ_TEXT, "Esc");
 
-		button_t * btn_kbd_enter = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_kbd_enter");
-		btn_kbd_enter->x1 = btn_kbd_esc->x1;
-		btn_kbd_enter->y1 = btn_kbd_esc->y1 + btn_kbd_esc->h + interval * 3;
-		btn_kbd_enter->w = 50;
-		btn_kbd_enter->h = 50;
-		local_snprintf_P(btn_kbd_enter->text, ARRAY_SIZE(btn_kbd_enter->text), "OK");
-		btn_kbd_enter->is_locked = BUTTON_LOCKED;
+		gui_obj_align_to("btn_kbd_enter", "btn_kbd_esc", ALIGN_DOWN_LEFT, interval * 2);
+		gui_obj_set_prop("btn_kbd_enter", GUI_OBJ_SIZE, 50, 50);
+		gui_obj_set_prop("btn_kbd_enter", GUI_OBJ_TEXT, "OK");
+		gui_obj_set_prop("btn_kbd_enter", GUI_OBJ_LOCK, 1);
 
 		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s_", edit_str);
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -5710,48 +5686,21 @@ void window_kbd_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_kbd_esc = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_kbd_esc");
-			button_t * btn_kbd_caps = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_kbd_caps");
-			button_t * btn_kbd_enter = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_kbd_enter");
-			button_t * btn_kbd_space = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_kbd_space");
-			button_t * btn_kbd_backspace = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_kbd_backspace");
-
-			if ((bh->index < kbd_len || bh == btn_kbd_space))
-			{
-				char text [2];
-				text [0] = (char) bh->payload;
-				text [1] = '\0';
-				if (gui_keyboard.digits_only)
-				{
-					char tmp_str[TEXT_ARRAY_SIZE];
-					strcpy(tmp_str, edit_str);
-					strcat(tmp_str, text);
-					if (strtoul(tmp_str, NULL, 10) < UINT32_MAX)
-					{
-						strcat(edit_str, text);
-					}
-				}
-				else if (strlen(edit_str) < gui_keyboard.max_len)
-				{
-					strcat(edit_str, text);
-				}
-			}
-			else if (bh == btn_kbd_caps)
+			if (gui_check_obj(name, "btn_kbd_caps"))
 			{
 				is_shift = ! is_shift;
-				btn_kbd_caps->is_locked = is_shift ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+				gui_obj_set_prop("btn_kbd_caps", GUI_OBJ_LOCK, is_shift);
 				update = 1;
 			}
-			else if (bh == btn_kbd_backspace)
+			else if (gui_check_obj(name, "btn_kbd_backspace"))
 			{
 				unsigned l = strlen(edit_str);
 				if (l)
 					edit_str [l - 1] = '\0';
 			}
-			else if (bh == btn_kbd_enter || bh == btn_kbd_esc)
+			else if (gui_check_obj(name, "btn_kbd_enter") || gui_check_obj(name, "btn_kbd_esc"))
 			{
-				if (bh == btn_kbd_enter)
+				if (gui_check_obj(name, "btn_kbd_enter"))
 				{
 					if (gui_keyboard.digits_only)
 						* gui_keyboard.num = strtoul(edit_str, NULL, 10);
@@ -5761,6 +5710,21 @@ void window_kbd_process(void)
 
 				close_window(OPEN_PARENT_WINDOW);
 				return;
+			}
+			else
+			{
+				char text[2] = { (char) gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD), '\0', };
+
+				if (gui_keyboard.digits_only)
+				{
+					char tmp_str[TEXT_ARRAY_SIZE];
+					strcpy(tmp_str, edit_str);
+					strcat(tmp_str, text);
+					if (strtoul(tmp_str, NULL, 10) < UINT32_MAX)
+						strcat(edit_str, text);
+				}
+				else if (strlen(edit_str) < gui_keyboard.max_len)
+					strcat(edit_str, text);
 			}
 
 			local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s_", edit_str);
@@ -5777,12 +5741,10 @@ void window_kbd_process(void)
 
 		for(unsigned i = 0; i < kbd_len; i ++)
 		{
-			button_t * bh = & win->bh_ptr[i];
-			char text [2];
-			text [0] = is_shift ? kbd_cap [i] : kbd_low [i];
-			text [1] = '\0';
-			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "%s", text);
-			bh->payload = (char) text [0];
+			local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "btn_kbd_%02d", i);
+			char p = is_shift ? kbd_cap [i] : kbd_low [i];
+			gui_obj_set_prop(btn_name, GUI_OBJ_TEXT_FMT, "%c", p);
+			gui_obj_set_prop(btn_name, GUI_OBJ_PAYLOAD, p);
 		}
 	}
 }
