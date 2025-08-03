@@ -242,7 +242,7 @@ static void keyboard_edit_string(uintptr_t s, unsigned strlen, unsigned clean)
 	open_window(win_kbd);
 }
 
-static void keyboard_edit_digits(uint32_t * val)
+static void keyboard_edit_digits(int * val)
 {
 	gui_keyboard.num = val;
 	gui_keyboard.digits_only = 1;
@@ -2067,6 +2067,9 @@ void window_utilites_process(void)
 #if LINUX_SUBSYSTEM && WITHEXTIO_LAN
 		gui_obj_create("btn_stream", 100, 44, 0, 0, "IQ LAN|Stream");
 #endif /* LINUX_SUBSYSTEM && WITHEXTIO_LAN */
+#if 0
+		gui_obj_create("btn_kbdtest", 100, 44, 0, 0, "Keyboard|test");
+#endif
 
 		x = 0;
 		y = 0;
@@ -2138,6 +2141,8 @@ void window_utilites_process(void)
 				open_window(get_win(WINDOW_EXTIOLAN));
 			}
 #endif /* LINUX_SUBSYSTEM && WITHEXTIO_LAN */
+			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_kbdtest"))
+				open_window(get_win(WINDOW_KBD_TEST));
 		}
 		break;
 
@@ -5607,8 +5612,10 @@ void window_kbd_process(void)
 		button_t * bh = NULL;
 		unsigned x = 0, y = 0, interval = 5, i = 0;
 
-		if (gui_keyboard.clean || gui_keyboard.digits_only)
-			memset(edit_str, 0, strlen(edit_str) * sizeof(char));
+		if (gui_keyboard.clean)
+			memset(edit_str, 0, TEXT_ARRAY_SIZE);
+		else if (gui_keyboard.digits_only)
+			local_snprintf_P(edit_str, TEXT_ARRAY_SIZE, "%d", * gui_keyboard.num);
 		else
 			strncpy(edit_str, gui_keyboard.str, gui_keyboard.max_len);
 
@@ -5785,54 +5792,29 @@ void window_kbd_process(void)
 void window_kbd_test_process(void)
 {
 	window_t * const win = get_win(WINDOW_KBD_TEST);
-	static uint32_t num_lbl1 = 12345;
+	static int num_lbl1 = 12345;
 	static char str_lbl2 [TEXT_ARRAY_SIZE] = "qwertyuiopas";
 	const unsigned win_id = WINDOW_KBD_TEST;
 
 	if (win->first_call)
 	{
 		win->first_call = 0;
-		const unsigned interval = 50;
+		const unsigned interval = 30;
 
-		static const button_t buttons [] = {
-			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_KBD_TEST, VISIBLE, INT32_MAX, "btn_text", "Edit...", },
-			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_KBD_TEST, VISIBLE, INT32_MAX, "btn_num", "Edit...", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
+		gui_obj_create("lbl_text", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_num", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
 
-		static const label_t labels [] = {
-			{ WINDOW_KBD_TEST, DISABLED, 0, VISIBLE, "lbl_text", "********************", FONT_MEDIUM, COLORPIP_WHITE, },
-			{ WINDOW_KBD_TEST, DISABLED, 0, VISIBLE, "lbl_num",  "********************", FONT_MEDIUM, COLORPIP_WHITE, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t *) malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
+		gui_obj_create("btn_text", 86, 40, 0, 0, "Edit...");
+		gui_obj_create("btn_num", 86, 40, 0, 0, "Edit...");
 
-		button_t * btn_text = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_text");
-		button_t * btn_num = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_num");
-		label_t * lbl_text = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_text");
-		label_t * lbl_num = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_num");
+		gui_obj_set_prop("lbl_text", GUI_OBJ_POS_Y, 20);
 
-		lbl_text->x = 0;
-		lbl_text->y = 0;
+		gui_obj_align_to("lbl_num", "lbl_text", ALIGN_DOWN_LEFT, interval);
+		gui_obj_align_to("btn_text", "lbl_text", ALIGN_RIGHT_UP_MID, interval);
+		gui_obj_align_to("btn_num", "lbl_num", ALIGN_RIGHT_UP_MID, interval);
 
-		lbl_num->x = 0;
-		lbl_num->y = get_label_height(lbl_text) + interval;
-
-		btn_text->x1 = get_label_width(lbl_text) + interval;
-		btn_text->y1 = 0;
-
-		btn_num->x1 = btn_text->x1;
-		btn_num->y1 = lbl_num->y;
-
-		local_snprintf_P(lbl_num->text, ARRAY_SIZE(lbl_num->text), "%u", (unsigned) num_lbl1);
-		strcpy(lbl_text->text, str_lbl2);
+		gui_obj_set_prop("lbl_text", GUI_OBJ_TEXT, str_lbl2);
+		gui_obj_set_prop("lbl_num", GUI_OBJ_TEXT_FMT, "%d", num_lbl1);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -5843,11 +5825,9 @@ void window_kbd_test_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-
-			if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_text"))
+			if (gui_check_obj(name, "btn_text"))
 				keyboard_edit_string((uintptr_t) & str_lbl2, 10, 0);					// передается строка длиной 12
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_num"))
+			else if (gui_check_obj(name, "btn_num"))
 				keyboard_edit_digits(& num_lbl1);
 		}
 		break;
@@ -5871,7 +5851,7 @@ void window_3d_process(void)
 	{
 		win->first_call = 0;
 
-		gui_obj_create("tf_3d", 60, 22, DOWN, & gothic_11x13);
+		gui_obj_create("tf_3d", 60, 22, UP, & gothic_11x13);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -6433,11 +6413,7 @@ void window_wnbconfig_process(void)
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
 		{
-			if (gui_check_obj(name, "btn_gain_add"))
-				enc.change = gui_obj_get_int_prop("btn_gain_add", GUI_OBJ_PAYLOAD);
-			else if ((gui_check_obj(name, "btn_gain_sub")))
-				enc.change = gui_obj_get_int_prop("btn_gain_sub", GUI_OBJ_PAYLOAD);
-
+			enc.change = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
 			enc.updated = 1;
 		}
 		break;
@@ -6551,11 +6527,7 @@ void window_ad936x_process(void)
 		}
 		else if (gui_check_obj(name, "btn_gain_add") || gui_check_obj(name, "btn_gain_sub"))
 		{
-			int p;
-			if (gui_check_obj(name, "btn_gain_add"))
-				p = gui_obj_get_int_prop("btn_gain_add", GUI_OBJ_PAYLOAD);
-			else if ((gui_check_obj(name, "btn_gain_sub")))
-				p = gui_obj_get_int_prop("btn_gain_sub", GUI_OBJ_PAYLOAD);
+			int p = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
 
 			if (gain_val + p > 3 || gain_val + p < 70)
 			{
