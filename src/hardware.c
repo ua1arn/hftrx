@@ -3090,12 +3090,14 @@ sysinit_debug_initialize(void)
 #if defined(__aarch64__)
 #endif /* defined(__aarch64__) */
 
+// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 // получение частоты, с которой инкрементируется счетчик
 uint_fast32_t cpu_getdebugticksfreq(void)
 {
 	return CPU_FREQ;
 }
 
+// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 // получение из аппаратного счетчика монотонно увеличивающегося кода
 // see sysinit_perfmeter_initialize() in hardware.c
 uint_fast32_t cpu_getdebugticks(void)
@@ -3127,13 +3129,13 @@ uint_fast32_t cpu_getdebugticks(void)
 #endif
 }
 
+// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 static void
 sysinit_perfmeter_initialize(void)
 {
 #if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 
 	#if WITHDEBUG && __CORTEX_M == 7U
-		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
 		DWT->LAR = 0xC5ACCE55;	// Key value for unlock
 		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
@@ -3143,6 +3145,8 @@ sysinit_perfmeter_initialize(void)
 #endif /* __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U */
 
 #if defined(__aarch64__)
+		__set_PMCNTENSET_EL0(__get_PMCNTENSET_EL0() | (UINT32_C(1) << 31));
+		__set_PMCR_EL0(__get_PMCR_EL0() | (UINT32_C(1) << 0));
 
 #elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
 
@@ -3154,7 +3158,6 @@ sysinit_perfmeter_initialize(void)
 //		PRINTF("counters=%" PRIu32 "\n", (value >> 11) & 0x1F);
 //	}
 	{
-		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 		// From https://stackoverflow.com/questions/3247373/how-to-measure-program-execution-time-in-arm-cortex-a8-processor
 		    /* enable user-mode access to the performance counter*/
 		// User Enable Register (USEREN)

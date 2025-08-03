@@ -1579,8 +1579,36 @@ __STATIC_FORCEINLINE void __set_PMCCNTR_EL0(uint64_t value)
 __STATIC_FORCEINLINE uint64_t __get_PMCCNTR_EL0(void)
 {
 	uint64_t result;
-	// MRS <Xt>, SCTLR_EL3 ; Read SCTLR_EL3 into Xt
+	// MRS <Xt>, PMCCNTR_EL0 ; Read PMCCNTR_EL0 into Xt
 	__get_RG64("PMCCNTR_EL0", result);
+	return result;
+}
+
+//  PMCR_EL0, Performance Monitors Control Register
+__STATIC_FORCEINLINE void __set_PMCR_EL0(uint64_t value)
+{
+	__set_RG64("PMCR_EL0", value);
+}
+
+__STATIC_FORCEINLINE uint64_t __get_PMCR_EL0(void)
+{
+	uint64_t result;
+	// MRS <Xt>, PMCR_EL0 ; Read PMCR_EL0 into Xt
+	__get_RG64("PMCR_EL0", result);
+	return result;
+}
+
+// PMCNTENSET_EL0, Performance Monitors Count Enable Set register
+__STATIC_FORCEINLINE void __set_PMCNTENSET_EL0(uint64_t value)
+{
+	__set_RG64("PMCNTENSET_EL0", value);
+}
+
+__STATIC_FORCEINLINE uint64_t __get_PMCNTENSET_EL0(void)
+{
+	uint64_t result;
+	// MRS <Xt>, PMCNTENSET_EL0 ; Read PMCNTENSET_EL0 into Xt
+	__get_RG64("PMCNTENSET_EL0", result);
 	return result;
 }
 
