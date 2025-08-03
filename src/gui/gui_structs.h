@@ -111,6 +111,7 @@ typedef enum {
 	GUI_OBJ_PAYLOAD,
 	GUI_OBJ_STATE,
 	GUI_OBJ_LOCK,
+	GUI_OBJ_COLOR,
 } object_prop_t;
 
 typedef struct {

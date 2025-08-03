@@ -5864,7 +5864,6 @@ void window_kbd_test_process(void)
 void window_3d_process(void)
 {
 	window_t * const win = get_win(WINDOW_3D);
-	static text_field_t * tf_3d = NULL;
 	static float A = 0, B = 0, z[1760];
 	char b[22][80];
 
@@ -5872,19 +5871,7 @@ void window_3d_process(void)
 	{
 		win->first_call = 0;
 
-		static const text_field_t text_field [] = {
-			{ 60, 22, CANCELLED, WINDOW_3D, VISIBLE, DOWN, & gothic_11x13, "tf_3d", },
-		};
-		win->tf_count = ARRAY_SIZE(text_field);
-		unsigned tf_size = sizeof(text_field);
-		win->tf_ptr = (text_field_t*) malloc(tf_size);
-		GUI_MEM_ASSERT(win->tf_ptr);
-		memcpy(win->tf_ptr, text_field, tf_size);
-
-		tf_3d = (text_field_t*) find_gui_obj(TYPE_TEXT_FIELD, win, "tf_3d");
-		textfield_update_size(tf_3d);
-		tf_3d->x1 = 0;
-		tf_3d->y1 = 0;
+		gui_obj_create("tf_3d", 60, 22, DOWN, & gothic_11x13);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -5910,9 +5897,9 @@ void window_3d_process(void)
 			}
 		}
 
-		textfield_clean(tf_3d);
+		textfield_clean("tf_3d");
 		for (int k = 0; k < 22; k ++)
-			textfield_add_string_old(tf_3d, b[k], COLORPIP_WHITE);
+			textfield_add_string("tf_3d", b[k], COLORPIP_WHITE);
 
 		A += 0.08;
 		B += 0.04;
@@ -6150,75 +6137,42 @@ void window_lfm_process(void)
 	static unsigned update = 0;
 	static enc_var_t enc;
 
+	const char * const lbl_array[3] = { "lbl_timeoffset", "lbl_stopfreq", "lbl_interval", };
+
 	if (win->first_call)
 	{
 		unsigned x = 0, y = 0, interval = 24;
 		win->first_call = 0;
 		update = 1;
-		enc.select = 2;
+		enc.select = 0;
 		enc.change = 0;
 		enc.updated = 1;
 
-		static const label_t labels [] = {
-			{ WINDOW_LFM, DISABLED,  0, VISIBLE, "lbl_nmeatime",		"NMEA time:", 	FONT_MEDIUM, COLORPIP_WHITE, 0, },
-			{ WINDOW_LFM, DISABLED,  0, VISIBLE, "lbl_nmeatime_val",	"00:00:00", 	FONT_MEDIUM, COLORPIP_GREEN, 1, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_timeoffset",		"Time offset:",	FONT_MEDIUM, COLORPIP_WHITE, 2, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_timeoffset_val",	"xx sec",		FONT_MEDIUM, COLORPIP_WHITE, 3, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_stopfreq",    	"Stop freq:",	FONT_MEDIUM, COLORPIP_WHITE, 4, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_stopfreq_val",	"xx MHz",		FONT_MEDIUM, COLORPIP_WHITE, 5, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_interval",    	"Interval:",	FONT_MEDIUM, COLORPIP_WHITE, 6, },
-			{ WINDOW_LFM, CANCELLED, 0, VISIBLE, "lbl_interval_val",	"xx sec",		FONT_MEDIUM, COLORPIP_WHITE, 7, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t *) malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
+		gui_obj_create("lbl_nmeatime", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_timeoffset", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_stopfreq", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_interval", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
 
 		gui_obj_create("btn_state", 86, 40, 0, 0, "");
 		gui_obj_create("btn_draw", 86, 40, 0, 0, "Draw|spectre");
 		gui_obj_create("btn_p", 35, 35, 0, 0, "+");
 		gui_obj_create("btn_m", 35, 35, 0, 0, "-");
 
-		for (unsigned i = 0; i < win->lh_count; i += 2)
-		{
-			label_t * lh1 = & win->lh_ptr [i];
-			label_t * lh2 = & win->lh_ptr [i + 1];
+		gui_obj_align_to("lbl_timeoffset", "lbl_nmeatime", ALIGN_DOWN_LEFT, interval);
+		gui_obj_align_to("lbl_stopfreq", "lbl_timeoffset", ALIGN_DOWN_LEFT, interval);
+		gui_obj_align_to("lbl_interval", "lbl_stopfreq", ALIGN_DOWN_LEFT, interval);
+		gui_obj_align_to("btn_state", "lbl_interval", ALIGN_DOWN_LEFT, interval);
+		gui_obj_align_to("btn_draw", "btn_state", ALIGN_RIGHT_UP, interval);
+		gui_obj_align_to("btn_p", "lbl_timeoffset", ALIGN_RIGHT_UP, interval);
+		gui_obj_align_to("btn_m", "btn_p", ALIGN_DOWN_LEFT, interval);
 
-			lh1->x = x;
-			lh1->y = y;
-			lh1->visible = VISIBLE;
+		gui_obj_set_prop("btn_p", GUI_OBJ_PAYLOAD, 1);
+		gui_obj_set_prop("btn_m", GUI_OBJ_PAYLOAD, -1);
 
-			lh2->x = x + 130;
-			lh2->y = y;
-			lh2->visible = VISIBLE;
-
-			y = y + get_label_height(lh1) + interval;
-		}
-
-		button_t * btn_state = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_state");
-		btn_state->x1 = 5;
-		btn_state->y1 = y;
-		btn_state->visible = VISIBLE;
-
-		button_t * btn_draw = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_draw");
-		btn_draw->x1 = btn_state->x1 + btn_state->w + interval;
-		btn_draw->y1 = y;
-		btn_draw->visible = VISIBLE;
-
-		button_t * btn_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_p");
-		btn_p->x1 = 230;
-		btn_p->y1 = 35;
-		btn_p->visible = VISIBLE;
-		btn_p->payload = 1;
-		btn_p->index = 90;
-
-		button_t * btn_m = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_m");
-		btn_m->x1 = btn_p->x1;
-		btn_m->y1 = btn_p->y1 + btn_p->h + 20;
-		btn_m->visible = VISIBLE;
-		btn_m->payload = -1;
-		btn_m->index = 91;
+		gui_obj_set_prop("lbl_nmeatime", GUI_OBJ_STATE, DISABLED);
+		gui_obj_set_prop("lbl_timeoffset", GUI_OBJ_PAYLOAD, 0);
+		gui_obj_set_prop("lbl_stopfreq", GUI_OBJ_PAYLOAD, 1);
+		gui_obj_set_prop("lbl_interval", GUI_OBJ_PAYLOAD, 2);
 
 		hamradio_enable_encoder2_redirect();
 		enable_window_move(win);
@@ -6231,31 +6185,28 @@ void window_lfm_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-
-			if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_state"))
+			if (gui_check_obj(name, "btn_state"))
 			{
-				if (bh->is_locked)
+				if (gui_obj_get_int_prop("btn_state", GUI_OBJ_LOCK))
 				{
 					hamradio_lfm_disable();
-					bh->is_locked = 0;
+					gui_obj_set_prop("btn_state", GUI_OBJ_LOCK, 0);
 				}
 				else
 					hamradio_set_lfmmode(! hamradio_get_lfmmode());
 
 				update = 1;
 			}
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_draw"))
+			else if (gui_check_obj(name, "btn_draw"))
 			{
 				open_window(get_win(WINDOW_LFM_SPECTRE));
 			}
-			else if (bh->index == 90 || bh->index == 91)
-				gui_set_encoder2_rotate(bh->payload);
+			else if (gui_check_obj(name, "btn_p") || gui_check_obj(name, "btn_m"))
+				gui_set_encoder2_rotate(gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD));
 		}
 		else if (IS_LABEL_PRESS)
 		{
-			label_t * lh = (label_t *) ptr;
-			enc.select = lh->payload;
+			enc.select = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
 			enc.change = 0;
 			enc.updated = 1;
 		}
@@ -6280,29 +6231,24 @@ void window_lfm_process(void)
 	{
 		enc.updated = 0;
 
-		for(unsigned i = 2; i < win->lh_count; i ++)
-			win->lh_ptr [i].color = COLORPIP_WHITE;
+		for(unsigned i = 0; i < 3; i ++)
+			gui_obj_set_prop(lbl_array[i], GUI_OBJ_COLOR, COLORPIP_WHITE);
 
-		ASSERT(enc.select < win->lh_count);
+		ASSERT(enc.select < 3);
+		gui_obj_set_prop(lbl_array[enc.select], GUI_OBJ_COLOR, COLORPIP_YELLOW);
 
-		if (enc.select == 2 || enc.select == 3)
+		if (enc.select == 0)
 		{
-			win->lh_ptr [2].color = COLORPIP_YELLOW;
-			win->lh_ptr [3].color = COLORPIP_YELLOW;
 			uint_fast16_t v = hamradio_get_lfmtoffset();
 			hamradio_set_lfmtoffset(v + enc.change);
 		}
-		else if (enc.select == 4 || enc.select == 5)
+		else if (enc.select == 1)
 		{
-			win->lh_ptr [4].color = COLORPIP_YELLOW;
-			win->lh_ptr [5].color = COLORPIP_YELLOW;
 			uint_fast16_t v = hamradio_get_lfmstop100k();
 			hamradio_set_lfmstop100k(v + enc.change * 10);
 		}
-		else if (enc.select == 6 || enc.select == 7)
+		else if (enc.select == 2)
 		{
-			win->lh_ptr [6].color = COLORPIP_YELLOW;
-			win->lh_ptr [7].color = COLORPIP_YELLOW;
 			uint_fast16_t v = hamradio_get_lfmtinterval();
 			hamradio_set_lfmtinterval(v + enc.change);
 		}
@@ -6313,27 +6259,20 @@ void window_lfm_process(void)
 	if (update)
 	{
 		update = 0;
-
-		button_t * btn_state = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_state");
-		btn_state->is_locked = iflfmactive() != 0;
+		uint8_t state = iflfmactive() != 0;
+		uint8_t s = hamradio_get_lfmmode() == 0 ? 0 : state ? 2 : 1;
 		const char states[3][9] = { "Disabled", "Standby", "Scan..." };
-		uint_fast16_t s = hamradio_get_lfmmode() == 0 ? 0 : btn_state->is_locked ? 2 : 1;
-		local_snprintf_P(btn_state->text, ARRAY_SIZE(btn_state->text), states[s]);
+		char buf[30];
+		hamradio_get_nmea_time(buf, 30);
 
-		button_t * btn_draw = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_draw");
-		btn_draw->state = s == 2 ? CANCELLED : DISABLED;
+		gui_obj_set_prop("btn_draw", GUI_OBJ_STATE, s == 2 ? CANCELLED : DISABLED);
+		gui_obj_set_prop("btn_state", GUI_OBJ_LOCK, state);
+		gui_obj_set_prop("btn_state", GUI_OBJ_TEXT, states[s]);
 
-		label_t * lbl_nmeatime_val = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_nmeatime_val");
-		hamradio_get_nmea_time(lbl_nmeatime_val->text, ARRAY_SIZE(lbl_nmeatime_val->text));
-
-		label_t * lbl_timeoffset_val = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_timeoffset_val");
-		local_snprintf_P(lbl_timeoffset_val->text, ARRAY_SIZE(lbl_timeoffset_val->text), "%02d sec", hamradio_get_lfmtoffset());
-
-		label_t * lbl_stopfreq_val = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_stopfreq_val");
-		local_snprintf_P(lbl_stopfreq_val->text, ARRAY_SIZE(lbl_stopfreq_val->text), "%02d MHz", hamradio_get_lfmstop100k() / 10);
-
-		label_t * lbl_interval_val = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_interval_val");
-		local_snprintf_P(lbl_interval_val->text, ARRAY_SIZE(lbl_interval_val->text), "%02d sec", hamradio_get_lfmtinterval());
+		gui_obj_set_prop("lbl_nmeatime", GUI_OBJ_TEXT_FMT,   "NMEA time  : %s", buf);
+		gui_obj_set_prop("lbl_timeoffset", GUI_OBJ_TEXT_FMT, "Time offset: %d", hamradio_get_lfmtoffset());
+		gui_obj_set_prop("lbl_stopfreq", GUI_OBJ_TEXT_FMT,   "Stop freq  : %02d MHz", hamradio_get_lfmstop100k() / 10);
+		gui_obj_set_prop("lbl_interval", GUI_OBJ_TEXT_FMT,   "Interval   : %02d sec", hamradio_get_lfmtinterval());
 	}
 #endif /* WITHLFM  */
 }

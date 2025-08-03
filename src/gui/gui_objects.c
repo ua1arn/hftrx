@@ -119,9 +119,11 @@ void textfield_add_string(const char * name, const char * str, COLORPIP_T color)
 }
 
 /* Очистить текстовое поле */
-void textfield_clean(text_field_t * tf)
+void textfield_clean(const char * name)
 {
-	ASSERT(tf != NULL);
+	window_t * win = get_win(get_parent_window());
+	text_field_t * tf = (text_field_t *) find_gui_obj(TYPE_TEXT_FIELD, win, name);
+
 	tf->index = 0;
 	memset(tf->string, 0, tf->h_str * sizeof(tf_entry_t));
 }
@@ -271,6 +273,7 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_TEXT) strncpy(lh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
 		else if (prop == GUI_OBJ_TEXT_FMT) vsnprintf(lh->text, TEXT_ARRAY_SIZE - 1, va_arg(arg, char *), arg);
 		else if (prop == GUI_OBJ_STATE) lh->state = va_arg(arg, int);
+		else if (prop == GUI_OBJ_COLOR) lh->color = va_arg(arg, PACKEDCOLORPIP_T);
 		break;
 	case TYPE_BUTTON:
 		button_t * bh = (button_t *) obj;
