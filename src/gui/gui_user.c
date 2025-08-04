@@ -5086,41 +5086,33 @@ void window_mode_process(void)
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y, interval = 6, row_count = 4, id_start, id_end;
 		win->first_call = 0;
 
-		static const button_t buttons [] = {
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "btn_ModeLSB", "LSB", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "btn_ModeCW",  "CW",  },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  "btn_ModeAM",  "AM",  },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGL, "btn_ModeDGL", "DGL", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_USB, "btn_ModeUSB", "USB", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, "btn_ModeCWR", "CWR", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, "btn_ModeNFM", "NFM", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, "btn_ModeDGU", "DGU", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
+		gui_obj_create("btn_ModeLSB", 86, 44, 0, 0, "LSB");
+		gui_obj_create("btn_ModeCW", 86, 44, 0, 0, "CW");
+		gui_obj_create("btn_ModeAM", 86, 44, 0, 0, "AM");
+		gui_obj_create("btn_ModeDGL", 86, 44, 0, 0, "DGL");
+		gui_obj_create("btn_ModeUSB", 86, 44, 0, 0, "USB");
+		gui_obj_create("btn_ModeCWR", 86, 44, 0, 0, "CWR");
+		gui_obj_create("btn_ModeNFM", 86, 44, 0, 0, "NFM");
+		gui_obj_create("btn_ModeDGU", 86, 44, 0, 0, "DGU");
 
-		y = 0;
+		gui_obj_set_prop("btn_ModeLSB", GUI_OBJ_PAYLOAD, SUBMODE_LSB);
+		gui_obj_set_prop("btn_ModeCW", GUI_OBJ_PAYLOAD, SUBMODE_CW);
+		gui_obj_set_prop("btn_ModeAM", GUI_OBJ_PAYLOAD, SUBMODE_AM);
+		gui_obj_set_prop("btn_ModeDGL", GUI_OBJ_PAYLOAD, SUBMODE_DGL);
+		gui_obj_set_prop("btn_ModeUSB", GUI_OBJ_PAYLOAD, SUBMODE_USB);
+		gui_obj_set_prop("btn_ModeCWR", GUI_OBJ_PAYLOAD, SUBMODE_CWR);
+		gui_obj_set_prop("btn_ModeNFM", GUI_OBJ_PAYLOAD, SUBMODE_NFM);
+		gui_obj_set_prop("btn_ModeDGU", GUI_OBJ_PAYLOAD, SUBMODE_DGU);
 
-		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
-		{
-			button_t * bh = & win->bh_ptr [i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
-			x = x + interval + bh->w;
-			if (r >= row_count)
-			{
-				r = 0;
-				x = 0;
-				y = 0 + bh->h + interval;
-			}
-		}
+		gui_obj_align_to("btn_ModeCW", "btn_ModeLSB", ALIGN_RIGHT_UP, 6);
+		gui_obj_align_to("btn_ModeAM", "btn_ModeCW", ALIGN_RIGHT_UP, 6);
+		gui_obj_align_to("btn_ModeDGL", "btn_ModeAM", ALIGN_RIGHT_UP, 6);
+		gui_obj_align_to("btn_ModeUSB", "btn_ModeLSB", ALIGN_DOWN_LEFT, 6);
+		gui_obj_align_to("btn_ModeCWR", "btn_ModeUSB", ALIGN_RIGHT_UP, 6);
+		gui_obj_align_to("btn_ModeNFM", "btn_ModeCWR", ALIGN_RIGHT_UP, 6);
+		gui_obj_align_to("btn_ModeDGU", "btn_ModeNFM", ALIGN_RIGHT_UP, 6);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -5128,13 +5120,9 @@ void window_mode_process(void)
 	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-
-			if (bh->payload != INT32_MAX)
-				hamradio_change_submode(bh->payload, 1);
+			hamradio_change_submode(gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD), 1);
 
 			close_window(DONT_OPEN_PARENT_WINDOW);
 			footer_buttons_state(CANCELLED);
@@ -5143,7 +5131,6 @@ void window_mode_process(void)
 		break;
 
 	default:
-
 		break;
 	}
 }
@@ -5157,45 +5144,38 @@ void window_receive_process(void)
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, interval = 6, row_count = 3;
+		uint8_t x = 0, y = 0;
+		const uint8_t interval = 6, row_count = 3, w = 100, h = 44;
 		win->first_call = 0;
 		update = 1;
 
-		static const button_t buttons [] = {
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_att",    "", 			},
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_AGC", 	 "", 			},
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_mode",   "Mode", 		},
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_preamp", "", 			},
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_AF",  	 "AF|filter", 	},
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_DNR",    "DNR", 		},
-#if WITHWNB
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_WNB",    "WNB", 		},
-#endif /* WITHWNB */
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
+		const char btn_names[][15] = { "att", "agc", "mode", "preamp", "af", "dnr", "wnb", };
+		char name[15];
 
-		x = 0;
-		y = 0;
-
-		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
+		for (unsigned i = 0, r = 1; i < ARRAY_SIZE(btn_names); i ++, r ++)
 		{
-			button_t * bh = & win->bh_ptr [i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
+			local_snprintf_P(name, 15, "btn_%s", btn_names[i]);
+			gui_obj_create(name, w, h, 0, 0, "");
+			gui_obj_set_prop(name, GUI_OBJ_POS, x, y);
 
-			x = x + interval + bh->w;
+			x = x + interval + w;
 			if (r >= row_count)
 			{
 				r = 0;
 				x = 0;
-				y = y + bh->h + interval;
+				y = y + h + interval;
 			}
 		}
+
+		gui_obj_set_prop("btn_mode", GUI_OBJ_TEXT, "Mode");
+		gui_obj_set_prop("btn_af", GUI_OBJ_TEXT, "AF|filter");
+		gui_obj_set_prop("btn_dnr", GUI_OBJ_TEXT, "DNR");
+		gui_obj_set_prop("btn_wnb", GUI_OBJ_TEXT, "WNB");
+		gui_obj_set_prop("btn_preamp", GUI_OBJ_TEXT, "Preamp");
+
+#if ! WITHWNB
+		gui_obj_set_prop("btn_wnb", GUI_OBJ_STATE, DISABLED);
+#endif /* ! WITHWNB */
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -5206,89 +5186,47 @@ void window_receive_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_att = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_att");
-			button_t * btn_preamp = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_preamp");
-			button_t * btn_AF = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_AF");
-			button_t * btn_AGC = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_AGC");
-			button_t * btn_mode = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_mode");
-			button_t * btn_DNR = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_DNR");
-#if WITHWNB
-			button_t * btn_WNB = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_WNB");
-#endif /* WITHWNB */
-
-			if (bh == btn_att)
-			{
+			if (gui_check_obj(name, "btn_att"))
 				hamradio_change_att();
-			}
-			else if (bh == btn_preamp)
-			{
+			else if (gui_check_obj(name, "btn_preamp"))
 				hamradio_change_preamp(1);
-			}
-			else if (bh == btn_AF)
-			{
-				window_t * const win = get_win(WINDOW_AF);
-				open_window(win);
-			}
-			else if (bh == btn_AGC)
-			{
-				btn_AGC->payload ? hamradio_set_agc_slow() : hamradio_set_agc_fast();
-				btn_AGC->payload = hamradio_get_agc_type();
-			}
-			else if (bh == btn_mode)
-			{
-				window_t * const win = get_win(WINDOW_MODES);
-				open_window(win);
-			}
-			else if (bh == btn_DNR)
-			{
+			else if (gui_check_obj(name, "btn_af"))
+				open_window(get_win(WINDOW_AF));
+			else if (gui_check_obj(name, "btn_agc"))
+				hamradio_get_agc_type() ? hamradio_set_agc_slow() : hamradio_set_agc_fast();
+			else if (gui_check_obj(name, "btn_mode"))
+				open_window(get_win(WINDOW_MODES));
+			else if (gui_check_obj(name, "btn_dnr"))
 				hamradio_change_nr(1);
-			}
 #if WITHWNB
-			else if (bh == btn_WNB)
-			{
-				btn_WNB->is_locked = wnb_state_switch(1);
-			}
+			else if (gui_check_obj(name, "btn_wnb"))
+				gui_obj_set_prop("btn_wnb", GUI_OBJ_LOCK, wnb_state_switch(1));
 #endif /* WITHWNB */
 		}
 		else if (IS_BUTTON_LONG_PRESS)			// обработка длинного нажатия
 		{
-			button_t * bh = (button_t *) ptr;
 #if WITHWNB
-			button_t * btn_WNB = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_WNB");
-			if (bh == btn_WNB)
-			{
+			if (gui_check_obj(name, "btn_wnb"))
 				open_window(get_win(WINDOW_WNBCONFIG));
-			}
 #endif /* WITHWNB */
 		}
 		break;
 
 	case WM_MESSAGE_UPDATE:
-
 		update = 1;
 		break;
 
 	default:
-
 		break;
 	}
 
 	if (update)
 	{
-		button_t * btn_att = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_att");
 		const char * a = remove_start_line_spaces(hamradio_get_att_value());
-		local_snprintf_P(btn_att->text, ARRAY_SIZE(btn_att->text), PSTR("Att|%s"), a == NULL ? "off" : a);
-
-		button_t * btn_preamp = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_preamp");
-		uint8_t p = hamradio_change_preamp(0);
-		local_snprintf_P(btn_preamp->text, ARRAY_SIZE(btn_preamp->text), PSTR("Preamp|%s"), p ? "on" : "off");
-
-		button_t * btn_AGC = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_AGC");
-		local_snprintf_P(btn_AGC->text, ARRAY_SIZE(btn_AGC->text), PSTR("AGC|%s"), btn_AGC->payload ? "fast" : "slow");
-
-		button_t * btn_DNR = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_DNR");
-		btn_DNR->is_locked = hamradio_change_nr(0) != 0;
+		gui_obj_set_prop("btn_att", GUI_OBJ_TEXT_FMT, "Attenuator|%s", a == NULL ? "off" : a);
+		gui_obj_set_prop("btn_preamp", GUI_OBJ_LOCK, hamradio_change_preamp(0));
+		gui_obj_set_prop("btn_dnr", GUI_OBJ_LOCK, hamradio_change_nr(0));
+		gui_obj_set_prop("btn_agc", GUI_OBJ_TEXT_FMT, "AGC|%s", hamradio_get_agc_type() ? "fast" : "slow");
 	}
 }
 
