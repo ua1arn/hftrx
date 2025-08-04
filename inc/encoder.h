@@ -31,8 +31,6 @@ typedef struct encoder_tag
 	uint8_t old_val;
 	uint_fast8_t (* getpins)(void);
 	IRQLSPINLOCK_t enclock;
-	/* locked by encspeedlock */
-	int_least16_t rotate;
 
 	/* перенесено из глобальной области видимости */
 	IRQLSPINLOCK_t encspeedlock;

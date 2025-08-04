@@ -310,7 +310,8 @@ void inputevent_fill(inputevent_t * e)
 	e->encSUB.delta = encoder_getrotatehires(e->encSUB.enc, & e->encSUB.jumpsize);
 #endif /* WITHENCODER_SUB */
 #if WITHENCODER2
-	e->encFN.delta = encoder_getrotatehires(e->encFN.enc, & e->encFN.jumpsize);
+	e->encFN.delta = encoder_get_delta(e->encFN.enc);
+	e->encFN.jumpsize = 1;
 #endif /* WITHENCODER2 */
 #if WITHENCODER_1F
 	e->encF1.delta = encoder_get_delta(e->encF1.enc);

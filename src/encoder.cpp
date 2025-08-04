@@ -28,7 +28,7 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	e->getpins = agetpins;
 	e->position = 0;
 
-	e->rotate = 0;
+	//e->rotate = 0;
 	e->enchistindex = 0;
 	e->enchist [0] = e->enchist [1] = e->enchist [2] = e->enchist [3] = 0;
 	ASSERT(HISTLEN == 4);
@@ -165,7 +165,6 @@ static void encoder_clear(encoder_t * e)
 	e->old_val = e->getpins();
 	e->position = 0;
 	IRQLSPIN_UNLOCK(& e->enclock, oldIrql2);
-	e->rotate = 0;
 	e->rotate_kbd = 0;
 	e->enchist [0] = e->enchist [1] = e->enchist [2] = e->enchist [3] = 0;
 	ASSERT(HISTLEN == 4);
@@ -223,7 +222,6 @@ encspeed_spool(void * ctx)
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
 
-	e->rotate += p1;		/* учёт количества импульсов (для прямого отсчёта) */
 #if WITHKBDENCODER
 	rotate_kbd += p1kbd;		/* учёт количества импульсов (для прямого отсчёта) */
 #endif
@@ -283,13 +281,12 @@ encoder_get_snapshotproportional(
 	ASSERT(HISTLEN == 4);
 	// 2. Время измерения
 	tdelta = e->tichist + ENCTICKSMAX * (HISTLEN - 1); // во всех остальных слотах, кроме текущего, количество тиков максимальное.
+	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
 
 //	hrotate = e->rotate + e->rotate_kbd * derate;	/* работа в меню от клавиш - реагируем сразу */
 //	e->rotate_kbd = 0;
-	hrotate = e->rotate;	/* работа в меню от клавиш - реагируем сразу */
-	e->rotate = 0;
+	hrotate = encoder_get_delta(e);
 
-	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
 
 	// Расчёт скорости. Результат - (1 / ENCODER_NORMALIZED_RESOLUTION) долей оборота за секунду
 	// Если результат ENCODER_NORMALIZED_RESOLUTION это обозначает один оборот в секунду
@@ -322,11 +319,11 @@ encoder_get_delta(
 void encoder_pushback(encoder_t * const e, int outsteps)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
+	IRQLSPIN_LOCK(& e->enclock, & oldIrql, TICKER_IRQL);
 
-	e->rotate += outsteps;
+	e->position += outsteps;
 
-	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
+	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
 encoder_t encoder1;	// Main RX tuning knob

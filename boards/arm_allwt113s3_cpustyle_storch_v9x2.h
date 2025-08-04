@@ -263,7 +263,7 @@
 	#define ENCODER2_BITS_GET() 	((TARGET_ENCODER2_PORT & TARGET_ENCODER2_BITS) >> TARGET_ENCODER2_B_POS)
 	//#define ENCODER2_BITS_GET() 	(((TARGET_ENCODER2_PORT & TARGET_ENCODER2_A) != 0) * GETENCBIT_A + ((TARGET_ENCODER2_PORT & TARGET_ENCODER2_B) != 0) * GETENCBIT_B)
 
-	#define ENCODER2_NOSPOOL 1
+	#define ENCODER2_NOSPOOL 1	// сами назначаем опрос
 
 	#define TARGET_MAIN_ENC_INITIALIZE() do { \
 		/* Main encoder */ \
@@ -279,7 +279,7 @@
 		/* FUNC encoder по прерываниям */ \
 		static einthandler_t eh; \
 		static ticker_t th; \
-		arm_hardware_pioe_altfn20(TARGET_ENCODER2_A, GPIO_CFG_EINT); \
+		arm_hardware_pioe_altfn2(TARGET_ENCODER2_A, GPIO_CFG_EINT); \
 		arm_hardware_pioe_inputs(TARGET_ENCODER2_B); \
 		arm_hardware_pioe_updown(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, 0); \
 		einthandler_initialize(& eh, TARGET_ENCODER2_A, spool_encinterrupts4_dirB_ccw, & encoder2); \
@@ -290,7 +290,7 @@
 		/* FUNC encoder по опросу и прерываниям */ \
 		static einthandler_t eh; \
 		static ticker_t th; \
-		arm_hardware_pioe_altfn20(TARGET_ENCODER2_BITS, GPIO_CFG_EINT); \
+		arm_hardware_pioe_altfn2(TARGET_ENCODER2_BITS, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, 0); \
 		ticker_initialize(& th, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts, & encoder2); \
 		ticker_add(& th); \
