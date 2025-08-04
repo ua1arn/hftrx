@@ -5300,52 +5300,33 @@ void window_freq_process (void)
 	static editfreq_t editfreq;
 	window_t * const win = get_win(WINDOW_FREQ);
 	unsigned update = 0;
+	char btn_name[NAME_ARRAY_SIZE];
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, interval = 6, row_count = 3;
+		unsigned x = 0, y = 0, interval = 6, row_count = 3, size = 50;
 		win->first_call = 0;
-		button_t * bh = NULL;
 
-		static const button_t buttons [] = {
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 1, 		 		"btn_Freq1",  "1", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 2, 		 		"btn_Freq2",  "2", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 3, 		 		"btn_Freq3",  "3", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 4, 	 			"btn_Freq4",  "4", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 5, 				"btn_Freq5",  "5", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 6, 				"btn_Freq6",  "6", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 7, 				"btn_Freq7",  "7", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 8,  			"btn_Freq8",  "8", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 9, 		 		"btn_Freq9",  "9", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, BUTTON_CODE_BK, "btn_FreqBK", "<-", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 0, 	 			"btn_Freq0",  "0", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, BUTTON_CODE_OK, "btn_FreqOK", "OK", },
+		char btns_text[12][3] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "<", "0", "OK" };
+		uint8_t btns_payload[12] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, BUTTON_CODE_BK, 0, BUTTON_CODE_OK };
 
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
+		for (unsigned i = 0, r = 1; i < 12; i ++, r ++)
 		{
-			bh = & win->bh_ptr [i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
+			local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "btn_%02d", btns_payload[i]);
+			gui_obj_create(btn_name, size, size, 0, 0, btns_text[i]);
+			gui_obj_set_prop(btn_name, GUI_OBJ_PAYLOAD, btns_payload[i]);
+			gui_obj_set_prop(btn_name, GUI_OBJ_POS, x, y);
 
-			x = x + interval + bh->w;
+			x = x + interval + size;
 			if (r >= row_count)
 			{
 				r = 0;
 				x = 0;
-				y = y + bh->h + interval;
+				y = y + size + interval;
 			}
 		}
 
-		bh = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_FreqOK");
-		bh->is_locked = BUTTON_LOCKED;
+		gui_obj_set_prop("btn_30", GUI_OBJ_LOCK, 1);
 
 		editfreq.val = 0;
 		editfreq.num = 0;
@@ -5363,8 +5344,7 @@ void window_freq_process (void)
 
 		if (IS_BUTTON_PRESS && editfreq.key == BUTTON_CODE_DONE)
 		{
-			button_t * bh = (button_t *) ptr;
-			editfreq.key = bh->payload;
+			editfreq.key = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
 			update = 1;
 		}
 		break;
@@ -5400,9 +5380,7 @@ void window_freq_process (void)
 
 			case BUTTON_CODE_OK:
 				if (hamradio_set_freq(editfreq.val * 1000) || editfreq.val == 0)
-				{
 					close_all_windows();
-				}
 				else
 					editfreq.error = 1;
 
@@ -5428,6 +5406,32 @@ void window_freq_process (void)
 
 // *****************************************************************************************************************************
 
+int is_valid_datetime(int year, int month, int day, int hour, int minute, int second)
+{
+    if (month < 1 || month > 12)
+        return 0;
+
+    if (day < 1 || day > 31)
+        return 0;
+
+    if (hour < 0 || minute < 0 || second < 0)
+        return 0;
+
+    if (hour > 23 || minute > 59 || second > 59)
+        return 0;
+
+    uint8_t days_in_month[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+    // Корректировка количества дней в феврале високосного года
+    if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
+    	days_in_month[1] = 29;
+
+    if (day > days_in_month[month - 1])
+        return 0;
+
+    return 1;
+}
+
 void window_time_process(void)
 {
 #if defined (RTC1_TYPE)
@@ -5439,79 +5443,65 @@ void window_time_process(void)
 	{
 		win->first_call = 0;
 		update = 1;
-		uint8_t interval = 60;
+		uint8_t interval = 20;
 
-		static const label_t labels [] = {
-			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_year",   "****", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_month", 	"**", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_day",  	"**", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_hour",   	"**", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_minute",   "**", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_second", 	"**", FONT_MEDIUM, COLORPIP_WHITE, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t *) malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
+		gui_obj_create("lbl_year", 0, FONT_MEDIUM, COLORPIP_WHITE, 6);
+		gui_obj_create("lbl_month", 0, FONT_MEDIUM, COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_day", 0, FONT_MEDIUM, COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_hour", 0, FONT_MEDIUM, COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_minute", 0, FONT_MEDIUM, COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_second", 0, FONT_MEDIUM, COLORPIP_WHITE, 4);
 
-		static const button_t buttons [] = {
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 1, 	"btn_year+",  "Y+", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, -1,	"btn_year-",  "Y-", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 1, 	"btn_month+",  "M+", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, -1,	"btn_month-",  "M-", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 1, 	"btn_day+",  "D+", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, -1,	"btn_day-",  "D-", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 1, 	"btn_hour+",  "h+", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, -1,	"btn_hour-",  "h-", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 1, 	"btn_minute+",  "m+", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, -1,	"btn_minute-",  "m-", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 1, 	"btn_second+",  "s+", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, -1,	"btn_second-",  "s-", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 0,		"btn_sec0",  "s00", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 0,		"btn_set",  "Set", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
+		gui_obj_create("btn_year+", 40, 40, 0, 0, "+");
+		gui_obj_create("btn_year-", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_month+", 40, 40, 0, 0, "+");
+		gui_obj_create("btn_month-", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_day+", 40, 40, 0, 0, "+");
+		gui_obj_create("btn_day-", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_hour+", 40, 40, 0, 0, "+");
+		gui_obj_create("btn_hour-", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_minute+", 40, 40, 0, 0, "+");
+		gui_obj_create("btn_minute-", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_second+", 40, 40, 0, 0, "+");
+		gui_obj_create("btn_second-", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_sec0", 40, 40, 0, 0, ">0");
+		gui_obj_create("btn_set", 40, 40, 0, 0, "Set");
 
-		button_t * bh = NULL;
-		label_t * lh = NULL;
-		unsigned x = 0, y = 0;
+		gui_obj_align_to("lbl_month", "lbl_year", ALIGN_RIGHT_UP, interval);
+		gui_obj_align_to("lbl_day", "lbl_month", ALIGN_RIGHT_UP, interval);
+		gui_obj_align_to("lbl_hour", "lbl_day", ALIGN_RIGHT_UP, interval);
+		gui_obj_align_to("lbl_minute", "lbl_hour", ALIGN_RIGHT_UP, interval);
+		gui_obj_align_to("lbl_second", "lbl_minute", ALIGN_RIGHT_UP, interval);
 
-		for (unsigned i = 0; i < win->bh_count; i ++)
-		{
-			bh = & win->bh_ptr[i];
+		gui_obj_align_to("btn_year+", "lbl_year", ALIGN_DOWN_MID, interval);
+		gui_obj_align_to("btn_month+", "lbl_month", ALIGN_DOWN_MID, interval);
+		gui_obj_align_to("btn_day+", "lbl_day", ALIGN_DOWN_MID, interval);
+		gui_obj_align_to("btn_hour+", "lbl_hour", ALIGN_DOWN_MID, interval);
+		gui_obj_align_to("btn_minute+", "lbl_minute", ALIGN_DOWN_MID, interval);
+		gui_obj_align_to("btn_second+", "lbl_second", ALIGN_DOWN_MID, interval);
+		gui_obj_align_to("btn_sec0", "btn_second+", ALIGN_RIGHT_UP, interval);
+		gui_obj_align_to("btn_set", "btn_sec0", ALIGN_DOWN_LEFT, interval);
 
-			if (i % 2 == 0)
-			{
-				if (bh->payload != 0)
-				{
-					lh = & win->lh_ptr[i / 2];
-					lh->x = x + bh->w / 2 - get_label_width(lh) / 2;
-					lh->y = 0;
-					lh->visible = VISIBLE;
-				}
-				y += lh->y + get_label_height(lh) * 2;
-			}
+		gui_obj_align_to("btn_year-", "btn_year+", ALIGN_DOWN_LEFT, interval);
+		gui_obj_align_to("btn_month-", "btn_month+", ALIGN_DOWN_LEFT, interval);
+		gui_obj_align_to("btn_day-", "btn_day+", ALIGN_DOWN_LEFT, interval);
+		gui_obj_align_to("btn_hour-", "btn_hour+", ALIGN_DOWN_LEFT, interval);
+		gui_obj_align_to("btn_minute-", "btn_minute+", ALIGN_DOWN_LEFT, interval);
+		gui_obj_align_to("btn_second-", "btn_second+", ALIGN_DOWN_LEFT, interval);
 
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
-
-			y += interval;
-
-			if ((i + 1) % 2 == 0)
-			{
-				y = 0;
-				x += interval;
-			}
-		}
-
-		button_t * btn_set =  (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_set");
-		btn_set->is_locked = BUTTON_LOCKED;
+		gui_obj_set_prop("btn_year+", GUI_OBJ_PAYLOAD, 1);
+		gui_obj_set_prop("btn_month+", GUI_OBJ_PAYLOAD, 1);
+		gui_obj_set_prop("btn_day+", GUI_OBJ_PAYLOAD, 1);
+		gui_obj_set_prop("btn_hour+", GUI_OBJ_PAYLOAD, 1);
+		gui_obj_set_prop("btn_minute+", GUI_OBJ_PAYLOAD, 1);
+		gui_obj_set_prop("btn_second+", GUI_OBJ_PAYLOAD, 1);
+		gui_obj_set_prop("btn_year-", GUI_OBJ_PAYLOAD, -1);
+		gui_obj_set_prop("btn_month-", GUI_OBJ_PAYLOAD, -1);
+		gui_obj_set_prop("btn_day-", GUI_OBJ_PAYLOAD, -1);
+		gui_obj_set_prop("btn_hour-", GUI_OBJ_PAYLOAD, -1);
+		gui_obj_set_prop("btn_minute-", GUI_OBJ_PAYLOAD, -1);
+		gui_obj_set_prop("btn_second-", GUI_OBJ_PAYLOAD, -1);
+		gui_obj_set_prop("btn_set", GUI_OBJ_LOCK, 1);
 
 		board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute,	& second);
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -5523,41 +5513,38 @@ void window_time_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_yearp =  (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_year+");
-			button_t * btn_yearn =  (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_year-");
-			button_t * btn_monthp =  (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_month+");
-			button_t * btn_monthn =  (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_month-");
-			button_t * btn_dayp =  (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_day+");
-			button_t * btn_dayn =  (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_day-");
-			button_t * btn_hourp =  (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_hour+");
-			button_t * btn_hourn =  (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_hour-");
-			button_t * btn_minutep =  (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_minute+");
-			button_t * btn_minuten =  (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_minute-");
-			button_t * btn_secondp =  (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_second+");
-			button_t * btn_secondn =  (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_second-");
-			button_t * btn_sec0 =  (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_sec0");
-			button_t * btn_set =  (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_set");
+			int tmp_year = year, tmp_month = month, tmp_day = day;
+			int tmp_hour = hour, tmp_minute = minute, tmp_second = second;
 
-			if (bh == btn_yearp || bh == btn_yearn)
-				year += bh->payload;
-			else if (bh == btn_monthp || bh == btn_monthn)
-				month += bh->payload;
-			else if (bh == btn_dayp || bh == btn_dayn)
-				day += bh->payload;
-			else if (bh == btn_hourp || bh == btn_hourn)
-				hour += bh->payload;
-			else if (bh == btn_minutep || bh == btn_minuten)
-				minute += bh->payload;
-			else if (bh == btn_secondp || bh == btn_secondn)
-				second += bh->payload;
-			else if (bh == btn_sec0)
-				second = 0;
-			else if (bh == btn_set)
+			if (gui_check_obj(name, "btn_year+") || gui_check_obj(name, "btn_year-"))
+				tmp_year += gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
+			else if (gui_check_obj(name, "btn_month+") || gui_check_obj(name, "btn_month-"))
+				tmp_month += gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
+			else if (gui_check_obj(name, "btn_day+") || gui_check_obj(name, "btn_day-"))
+				tmp_day += gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
+			else if (gui_check_obj(name, "btn_hour+") || gui_check_obj(name, "btn_hour-"))
+				tmp_hour += gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
+			else if (gui_check_obj(name, "btn_minute+") || gui_check_obj(name, "btn_minute-"))
+				tmp_minute += gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
+			else if (gui_check_obj(name, "btn_second+") || gui_check_obj(name, "btn_second-"))
+				tmp_second += gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
+			else if (gui_check_obj(name, "btn_sec0"))
+				tmp_second = 0;
+			else if (gui_check_obj(name, "btn_set"))
 			{
 				board_rtc_setdatetime(year, month, day, hour, minute, second);
 				close_all_windows();
 				return;
+			}
+
+			if (is_valid_datetime(tmp_year, tmp_month, tmp_day, tmp_hour, tmp_minute, tmp_second))
+			{
+				year = tmp_year;
+				month = tmp_month;
+				day = tmp_day;
+				hour = tmp_hour;
+				minute = tmp_minute;
+				second = tmp_second;
 			}
 
 			update = 1;
@@ -5573,23 +5560,12 @@ void window_time_process(void)
 	{
 		update = 0;
 
-		label_t * lh =  (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_year");
-		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%d", year);
-
-		lh =  (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_month");
-		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", month);
-
-		lh =  (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_day");
-		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", day);
-
-		lh =  (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_hour");
-		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", hour);
-
-		lh =  (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_minute");
-		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", minute);
-
-		lh =  (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_second");
-		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", second);
+		gui_obj_set_prop("lbl_year", GUI_OBJ_TEXT_FMT, "Y:%d", year);
+		gui_obj_set_prop("lbl_month", GUI_OBJ_TEXT_FMT, "m:%02d", month);
+		gui_obj_set_prop("lbl_day", GUI_OBJ_TEXT_FMT, "d:%02d", day);
+		gui_obj_set_prop("lbl_hour", GUI_OBJ_TEXT_FMT, "h:%02d", hour);
+		gui_obj_set_prop("lbl_minute", GUI_OBJ_TEXT_FMT, "m:%02d", minute);
+		gui_obj_set_prop("lbl_second", GUI_OBJ_TEXT_FMT, "s:%02d", second);
 	}
 #endif /* defined (RTC1_TYPE) */
 }
