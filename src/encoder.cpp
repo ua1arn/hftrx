@@ -16,11 +16,27 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <atomic>
 
 #undef WITHKBDENCODER
 /* обработчики прерывания от валкодера */
 
-static int position_kbd;	/* накопитель от клавиатуры - знаковое число */
+typedef std::atomic<int_least16_t> position_t;
+
+static position_t position_kbd;	/* накопитель от клавиатуры - знаковое число */
+
+struct encoder_tag
+{
+	position_t position;	// обновляется по прерыванию
+	uint8_t old_val;
+	uint_fast8_t (* getpins)(void);
+
+	/* перенесено из глобальной области видимости */
+	IRQLSPINLOCK_t encspeedlock;
+	unsigned enchist [HISTLEN];
+	uint_fast8_t tichist;	// Должно поместиться число от 0 до TICKSMAX включительно
+	uint_fast8_t enchistindex;
+};
 
 void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 {
@@ -33,7 +49,6 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	e->enchist [0] = e->enchist [1] = e->enchist [2] = e->enchist [3] = 0;
 	ASSERT(HISTLEN == 4);
 
-	IRQLSPINLOCK_INITIALIZE(& e->enclock);
 	IRQLSPINLOCK_INITIALIZE(& e->encspeedlock);
 }
 
@@ -42,13 +57,7 @@ void spool_encinterrupts4_dirA_cw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
 	const int_fast8_t step = (e->getpins() & GETENCBIT_A) ? + 1 : - 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	IRQL_t oldIrql;
-
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
-
 	e->position += step;
-
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
 /* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
@@ -56,13 +65,7 @@ void spool_encinterrupts4_dirA_ccw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
 	const int_fast8_t step = (e->getpins() & GETENCBIT_A) ? - 1 : + 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	IRQL_t oldIrql;
-
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
-
 	e->position += step;
-
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
 /* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
@@ -70,13 +73,7 @@ void spool_encinterrupts4_dirB_cw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
 	const int_fast8_t step = (e->getpins() & GETENCBIT_B) ? + 1 : - 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	IRQL_t oldIrql;
-
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
-
 	e->position += step;
-
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
 /* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
@@ -84,13 +81,7 @@ void spool_encinterrupts4_dirB_ccw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
 	const int_fast8_t step = (e->getpins() & GETENCBIT_B) ? - 1 : + 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	IRQL_t oldIrql;
-
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
-
 	e->position += step;
-
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
 static const int8_t graydecoder [4][4] =
@@ -130,12 +121,9 @@ void spool_encinterrupts(void * ctx)
 	// GETENCBIT_A, GETENCBIT_B
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 	const int_fast8_t step = graydecoder [e->old_val][new_val];
-	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
 	e->position += step;
 	e->old_val = new_val;
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
 /* прерывание по любому перепаду сигнала на входах от валкодера */
@@ -147,25 +135,16 @@ void spool_encinterrupts_ccw(void * ctx)
 	// GETENCBIT_A, GETENCBIT_B
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 	const int_fast8_t step = - graydecoder [e->old_val][new_val];
-	IRQL_t oldIrql;
-
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
 	e->position += step;
 	e->old_val = new_val;
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
 static void encoder_clear(encoder_t * e)
 {
 	IRQL_t oldIrql;
-	IRQL_t oldIrql2;
 
-	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql2, ENCODER_IRQL);
-	e->old_val = e->getpins();
 	e->position = 0;
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql2);
-	e->rotate_kbd = 0;
+	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
 	e->enchist [0] = e->enchist [1] = e->enchist [2] = e->enchist [3] = 0;
 	ASSERT(HISTLEN == 4);
 	e->tichist = 0;
@@ -175,9 +154,7 @@ static void encoder_clear(encoder_t * e)
 static int safegetposition_kbd(void)
 {
 #if WITHKBDENCODER
-	int r = position_kbd;
-	position_kbd = 0;
-	return r;
+	return std::atomic_exchange(& position_kbd, 0);
 #else
 	return 0;
 #endif
@@ -218,20 +195,17 @@ encspeed_spool(void * ctx)
 	encoder_t * const e = (encoder_t *) ctx;
 	const int p1 = encoder_get_delta(e);
 	const int p1kbd = safegetposition_kbd();
+	encoder_pushback(e, p1 + p1kbd);
 
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
-
-#if WITHKBDENCODER
-	rotate_kbd += p1kbd;		/* учёт количества импульсов (для прямого отсчёта) */
-#endif
 
 	/* запоминание данных для расчёта скорости вращения валкодера */
 	/* при расчёте скорости игнорируется направление вращения - улучшается обработка синтуйии, когда при уже
 	   включившемся ускорении пользователь меняет направление - движется назад к пропущенной частоте. при этом для
 	   предсказуемости перестройки ускорение не должно изменяться.
 	*/
-	e->enchist [e->enchistindex] += local_iabs(p1) + 0;//local_iabs(p1kbd);
+	e->enchist [e->enchistindex] += local_iabs(p1) + local_iabs(p1kbd);
 	if (++ e->tichist >= ENCTICKSMAX)	// уменьшение предела - уменьшает "постояную времени" измерителя скорости валкодера
 	{	
 		e->tichist  = 0;
@@ -266,7 +240,7 @@ encoder_get_snapshotproportional(
 	unsigned * speed
 	)
 {
-	int hrotate;
+	const int hrotate = encoder_get_delta(e);
 	
 	unsigned s;				// количество шагов за время измерения
 	unsigned tdelta;	// Время измерения
@@ -283,9 +257,6 @@ encoder_get_snapshotproportional(
 	tdelta = e->tichist + ENCTICKSMAX * (HISTLEN - 1); // во всех остальных слотах, кроме текущего, количество тиков максимальное.
 	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
 
-//	hrotate = e->rotate + e->rotate_kbd * derate;	/* работа в меню от клавиш - реагируем сразу */
-//	e->rotate_kbd = 0;
-	hrotate = encoder_get_delta(e);
 
 
 	// Расчёт скорости. Результат - (1 / ENCODER_NORMALIZED_RESOLUTION) долей оборота за секунду
@@ -303,27 +274,12 @@ encoder_get_delta(
 	encoder_t * const e
 	)
 {
-	int position;
-
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
-
-	position = e->position;
-	e->position = 0;
-
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
-
-	return position;
+	return std::atomic_exchange(& e->position, 0);
 }
 
 void encoder_pushback(encoder_t * const e, int outsteps)
 {
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql, TICKER_IRQL);
-
 	e->position += outsteps;
-
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
 encoder_t encoder1;	// Main RX tuning knob

@@ -25,20 +25,7 @@ extern "C" {
 #define ENCNTICKS(v) ((v + (ENC_TICKS_PERIOD - 1)) / ENC_TICKS_PERIOD)
 #define ENCTICKS_FREQUENCY (1000 / ENC_TICKS_PERIOD)
 
-typedef struct encoder_tag
-{
-	int_least16_t position;	// обновляется по прерыванию
-	uint8_t old_val;
-	uint_fast8_t (* getpins)(void);
-	IRQLSPINLOCK_t enclock;
-
-	/* перенесено из глобальной области видимости */
-	IRQLSPINLOCK_t encspeedlock;
-	unsigned enchist [HISTLEN];
-	uint_fast8_t tichist;	// Должно поместиться число от 0 до TICKSMAX включительно
-	uint_fast8_t enchistindex;
-	int rotate_kbd;
-} encoder_t;
+typedef struct encoder_tag encoder_t;
 
 void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void));
 
