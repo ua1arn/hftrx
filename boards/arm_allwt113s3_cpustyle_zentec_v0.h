@@ -169,7 +169,7 @@
 //		#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
 //		#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
 	#endif /* WITHINTEGRATEDDSP */
-	//#define WITHETHHW 1	/* Hardware Ethernet controller */
+	#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания
 	#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
@@ -970,6 +970,41 @@
 	/* запрос на вход в режим загрузчика */
 	//#define BOARD_USERBOOT_BIT	(UINT32_C(1) << 1)	/* PB1: ~USER_BOOT */
 	#define BOARD_IS_USERBOOT() 0//(((GPIOB->DATA) & BOARD_USERBOOT_BIT) == 0 || ((GPIOE->DATA) & TARGET_ENC2BTN_BIT) == 0)
+
+#if WITHETHHW
+	// RTL8201F-VB-CG
+	#define HARDWARE_ETH_INITIALIZE() do { \
+		const portholder_t NRSTB = UINT32_C(1) << 6; /* PF6 RMII_RESET */ \
+		\
+		arm_hardware_piof_outputs(NRSTB, 0 * NRSTB); /* PF6 PHYRSTB */ \
+		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
+		arm_hardware_piof_outputs(NRSTB, 1 * NRSTB); /* PF6 PHYRSTB */ \
+		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
+		\
+		arm_hardware_piog_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF4); /* PG15 RMII_MDIO */ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF4); /* PG14 RMII_MDC */ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF4); /* PG13 RMIII_RXER */ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 12, GPIO_CFG_AF4); /* PG12 RMII_TXEN */ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF4); /* PG11 RMII_25MHz EPHY-25M */ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF4); 	/* PG5 RMIII_TXD1 */ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 4, GPIO_CFG_AF4); 	/* PG4 RMIII_TXD0 */ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF4); 	/* PG3 RMII_TXCLK */ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF4); 	/* PG2 RMIII_RXD1 */ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF4); 	/* PG1 RMIII_RXD0 */ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF4); 	/* PG0 RMII_CRS-DV */ \
+		arm_hardware_piog_updown(UINT32_C(1) << 15, UINT32_C(1) << 14, 0); /* PG15 RMII_MDIO */ \
+		arm_hardware_piog_updown(UINT32_C(1) << 14, UINT32_C(1) << 15, 0); /* PG14 RMII_MDC */ \
+		\
+	} while (0)
+	// T507:
+	// 	EMAC0: 10/100/1000 Mbps Ethernet port with RGMII and RMII interfaces;
+	// 	EMAC1: 10/100 Mbps Ethernet port with RMII interface
+	#define HARDWARE_EMAC_IX 0	// 0: EMAC0, 1: EMAC1
+	#define HARDWARE_EMAC_PTR EMAC0
+	#define HARDWARE_EMAC_EPHY_CLK_REG (SYS_CFG->EMAC_EPHY_CLK_REG0)
+	#define HARDWARE_EMAC_IRQ EMAC0_IRQn
+
+#endif /* WITHETHHW */
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
