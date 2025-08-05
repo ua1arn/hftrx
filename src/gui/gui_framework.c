@@ -80,7 +80,7 @@ obj_type_t parse_obj_name(const char * name)
 	}
 }
 
-// label: is_trackable, font_size, color, width_by_symbols
+// label: font_size, color, width_by_symbols
 // button: w, h, is_repeating, is_long_press, text,
 // text_field: w_sim, h_str, direction, font *
 // touch area: x, y, w, h, is_trackable
@@ -104,7 +104,6 @@ void gui_obj_create(const char * obj_name, ...)
 		memcpy(lh, & label_default, sizeof(label_t));
 
 		lh->parent = window_id;
-		lh->is_trackable = va_arg(arg, uint32_t);
 		lh->font_size = (font_size_t) va_arg(arg, int);
 		lh->color = va_arg(arg, COLORPIP_T);
 		lh->visible = 1;

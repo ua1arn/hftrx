@@ -1392,7 +1392,7 @@ void window_memory_process(void)
 		win->bh_ptr = (button_t *) malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 
-		gui_obj_create("lbl_note1", 0, FONT_MEDIUM, COLORPIP_WHITE, 30);
+		gui_obj_create("lbl_note1", FONT_MEDIUM, COLORPIP_WHITE, 30);
 
 		x = 0;
 		y = 0;
@@ -1511,8 +1511,8 @@ void window_bands_process(void)
 		GUI_MEM_ASSERT(bands);
 		hamradio_get_bands(bands, 0, 1);
 
-		gui_obj_create("lbl_ham", 0, FONT_LARGE, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_bcast", 0, FONT_LARGE, COLORPIP_WHITE, 16);
+		gui_obj_create("lbl_ham", FONT_LARGE, COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_bcast", FONT_LARGE, COLORPIP_WHITE, 16);
 
 		win->bh_count = bandnum + 1;
 		unsigned buttons_size = win->bh_count * sizeof (button_t);
@@ -2183,9 +2183,9 @@ void window_swrscan_process(void)
 		gui_obj_create("btn_swr_start", 86, 44, 0, 0, "Start");
 		gui_obj_create("btn_swr_OK",    86, 44, 0, 0, "OK");
 
-		gui_obj_create("lbl_swr_bottom", 0, FONT_SMALL, COLORPIP_WHITE, 16);
-		gui_obj_create("lbl_swr_top",    0, FONT_SMALL, COLORPIP_WHITE, 16);
-		gui_obj_create("lbl_swr_error",  0, FONT_MEDIUM, COLORPIP_WHITE, 16);
+		gui_obj_create("lbl_swr_bottom", FONT_SMALL, COLORPIP_WHITE, 16);
+		gui_obj_create("lbl_swr_top",    FONT_SMALL, COLORPIP_WHITE, 16);
+		gui_obj_create("lbl_swr_error",  FONT_MEDIUM, COLORPIP_WHITE, 16);
 
 		mid_w = 0 + gr_w / 2;
 		btn_swr_start = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_swr_start");
@@ -2679,8 +2679,8 @@ void window_tx_power_process(void)
 		gui_obj_create("btn_p", 44, 44, 1, 0, "+");
 		gui_obj_create("btn_n", 44, 44, 1, 0, "-");
 
-		gui_obj_create("lbl_tx_power", 0, FONT_MEDIUM, COLORPIP_WHITE, 16);
-		gui_obj_create("lbl_tune_power", 0, FONT_MEDIUM, COLORPIP_WHITE, 16);
+		gui_obj_create("lbl_tx_power", FONT_MEDIUM, COLORPIP_WHITE, 16);
+		gui_obj_create("lbl_tune_power", FONT_MEDIUM, COLORPIP_WHITE, 16);
 
 		lbl_tx_power = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_tx_power");
 		lbl_tune_power = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_tune_power");
@@ -4070,10 +4070,10 @@ void window_shift_process(void)
 		enc.select = 0;
 		enc.change = 0;
 
-		gui_obj_create("lbl_rx_cic_shift", 0, FONT_MEDIUM, COLORPIP_WHITE, 13);
-		gui_obj_create("lbl_rx_fir_shift", 0, FONT_MEDIUM, COLORPIP_WHITE, 13);
-		gui_obj_create("lbl_tx_shift", 0, FONT_MEDIUM, COLORPIP_WHITE, 13);
-		gui_obj_create("lbl_iq_test", 0, FONT_MEDIUM, COLORPIP_WHITE, 23);
+		gui_obj_create("lbl_rx_cic_shift", FONT_MEDIUM, COLORPIP_WHITE, 13);
+		gui_obj_create("lbl_rx_fir_shift", FONT_MEDIUM, COLORPIP_WHITE, 13);
+		gui_obj_create("lbl_tx_shift", FONT_MEDIUM, COLORPIP_WHITE, 13);
+		gui_obj_create("lbl_iq_test", FONT_MEDIUM, COLORPIP_WHITE, 23);
 
 		gui_obj_create("btn_p", 50, 50, 0, 0, "+");
 		gui_obj_create("btn_m", 50, 50, 0, 0, "-");
@@ -4491,9 +4491,9 @@ void window_ft8_settings_process(void)
 		gui_obj_create("btn_time0", 86, 30, 0, 0, "Time >0<");
 		gui_obj_create("btn_OK", 40, 40, 0, 0, "OK");
 
-		gui_obj_create("lbl_callsign", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_qth", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_txfreq", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_callsign", FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_qth", FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_txfreq", FONT_MEDIUM, COLORPIP_WHITE, 10);
 
 		label_t * lbl_callsign = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_callsign");
 		label_t * lbl_qth = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_qth");
@@ -4606,18 +4606,18 @@ void window_ft8_process(void)
 		gui_obj_create("btn_bands", 86, 44, 0, 0, "FT8|bands");
 		gui_obj_create("btn_settings", 86, 44, 0, 0, "Edit|settings");
 
-		gui_obj_create("lbl_cq_title", 0, FONT_LARGE, COLORPIP_GREEN, 3);
-		gui_obj_create("lbl_tx_title", 0, FONT_LARGE, COLORPIP_GREEN, 3);
-		gui_obj_create("lbl_cq0", 0, FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq1", 0, FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq2", 0, FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq3", 0, FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq4", 0, FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq5", 0, FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_txmsg0", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_txmsg1", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_txmsg2", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_txmsg3", 0, FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_cq_title", FONT_LARGE, COLORPIP_GREEN, 3);
+		gui_obj_create("lbl_tx_title", FONT_LARGE, COLORPIP_GREEN, 3);
+		gui_obj_create("lbl_cq0", FONT_MEDIUM, COLORPIP_WHITE, 8);
+		gui_obj_create("lbl_cq1", FONT_MEDIUM, COLORPIP_WHITE, 8);
+		gui_obj_create("lbl_cq2", FONT_MEDIUM, COLORPIP_WHITE, 8);
+		gui_obj_create("lbl_cq3", FONT_MEDIUM, COLORPIP_WHITE, 8);
+		gui_obj_create("lbl_cq4", FONT_MEDIUM, COLORPIP_WHITE, 8);
+		gui_obj_create("lbl_cq5", FONT_MEDIUM, COLORPIP_WHITE, 8);
+		gui_obj_create("lbl_txmsg0", FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_txmsg1", FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_txmsg2", FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_txmsg3", FONT_MEDIUM, COLORPIP_WHITE, 10);
 
 		static const text_field_t text_field [] = {
 			{ 37, 26, CANCELLED, WINDOW_FT8, NON_VISIBLE, UP, & gothic_11x13, "tf_ft8", },
@@ -4882,83 +4882,32 @@ void window_af_process(void)
 {
 	window_t * const win = get_win(WINDOW_AF);
 	static enc_var_t bp_t;
+	const char * const lbl_array[3] = { "lbl_low", "lbl_high", "lbl_afr", };
 
 	if (win->first_call)
 	{
 		win->first_call = 0;
-		unsigned interval = 50;
+		unsigned interval = 20;
+		bp_t.select = TYPE_BP_LOW;
 		bp_t.change = 0;
 		bp_t.updated = 1;
 
-		static const button_t buttons [] = {
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_low_m", 	"-", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_low_p", 	"+", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_high_m", "-", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_high_p", "+", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_afr_m", 	"-", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_afr_p", 	"+", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_ifshift_m", "-", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_ifshift_p", "+", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
+		gui_obj_create("lbl_low", FONT_MEDIUM, COLORPIP_WHITE, 16);
+		gui_obj_create("lbl_high", FONT_MEDIUM, COLORPIP_WHITE, 16);
+		gui_obj_create("lbl_afr", FONT_MEDIUM, COLORPIP_WHITE, 16);
+		gui_obj_create("btn_add", 40, 40, 0, 0, "+");
+		gui_obj_create("btn_sub", 40, 40, 0, 0, "-");
 
-		static const label_t labels [] = {
-			{ WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_low",     "Low  cut : **** ", FONT_MEDIUM, COLORPIP_WHITE, TYPE_BP_LOW, 	},
-			{ WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_high",    "High cut : **** ", FONT_MEDIUM, COLORPIP_WHITE, TYPE_BP_HIGH, 	},
-			{ WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_afr",     "AFR      : **** ", FONT_MEDIUM, COLORPIP_WHITE, TYPE_AFR, 		},
-			{ WINDOW_AF, CANCELLED, 0, NON_VISIBLE, "lbl_ifshift", "IF shift : **** ", FONT_MEDIUM, COLORPIP_WHITE, TYPE_IF_SHIFT, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t *) malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
+		gui_obj_set_prop("lbl_low", GUI_OBJ_PAYLOAD, TYPE_BP_LOW);
+		gui_obj_set_prop("lbl_high", GUI_OBJ_PAYLOAD, TYPE_BP_HIGH);
+		gui_obj_set_prop("lbl_afr", GUI_OBJ_PAYLOAD, TYPE_AFR);
+		gui_obj_set_prop("btn_add", GUI_OBJ_PAYLOAD, 1);
+		gui_obj_set_prop("btn_sub", GUI_OBJ_PAYLOAD, -1);
 
-		label_t * lbl_low = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_low");
-		label_t * lbl_high = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_high");
-		label_t * lbl_afr = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_afr");
-		label_t * lbl_ifshift = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_ifshift");
-
-		button_t * bh = & win->bh_ptr [0];
-
-		lbl_low->x = 0;
-		lbl_low->y = bh->h / 2;
-		lbl_low->visible = VISIBLE;
-
-		lbl_high->x = lbl_low->x;
-		lbl_high->y = lbl_low->y + interval;
-		lbl_high->visible = VISIBLE;
-
-		lbl_afr->x = lbl_high->x;
-		lbl_afr->y = lbl_high->y + interval;
-		lbl_afr->visible = VISIBLE;
-
-		lbl_ifshift->x = lbl_afr->x;
-		lbl_ifshift->y = lbl_afr->y + interval;
-		lbl_ifshift->visible = VISIBLE;
-
-		unsigned x = lbl_low->x + get_label_width(lbl_low);
-		unsigned y = lbl_low->y + get_label_height(lbl_low) / 2 - bh->h / 2;
-
-		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
-		{
-			bh = & win->bh_ptr [i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
-
-			x = x + bh->w + 10;
-			if (r >= 2)
-			{
-				r = 0;
-				x = lbl_low->x + get_label_width(lbl_low);
-				y = y + interval;
-			}
-		}
+		gui_obj_align_to("lbl_high", "lbl_low", ALIGN_DOWN_LEFT, interval);
+		gui_obj_align_to("lbl_afr", "lbl_high", ALIGN_DOWN_LEFT, interval);
+		gui_obj_align_to("btn_add", "lbl_low", ALIGN_RIGHT_UP, interval);
+		gui_obj_align_to("btn_sub", "btn_add", ALIGN_DOWN_LEFT, interval);
 
 		hamradio_enable_encoder2_redirect();
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -4970,38 +4919,9 @@ void window_af_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_low_m = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_low_m");
-			button_t * btn_low_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_low_p");
-			button_t * btn_high_m = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_high_m");
-			button_t * btn_high_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_high_p");
-			button_t * btn_afr_m = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_afr_m");
-			button_t * btn_afr_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_afr_p");
-			button_t * btn_ifshift_m = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_ifshift_m");
-			button_t * btn_ifshift_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_ifshift_p");
-
-			if (bh == btn_low_m || bh == btn_low_p)
+			if (gui_check_obj(name, "btn_add") || gui_check_obj(name, "btn_sub"))
 			{
-				bp_t.select = TYPE_BP_LOW;
-				bp_t.change = bh->payload;
-				bp_t.updated = 1;
-			}
-			else if (bh == btn_high_m || bh == btn_high_p)
-			{
-				bp_t.select = TYPE_BP_HIGH;
-				bp_t.change = bh->payload;
-				bp_t.updated = 1;
-			}
-			else if (bh == btn_afr_m || bh == btn_afr_p)
-			{
-				bp_t.select = TYPE_AFR;
-				bp_t.change = bh->payload;
-				bp_t.updated = 1;
-			}
-			else if (bh == btn_ifshift_m || bh == btn_ifshift_p)
-			{
-				bp_t.select = TYPE_IF_SHIFT;
-				bp_t.change = bh->payload;
+				bp_t.change = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
 				bp_t.updated = 1;
 			}
 		}
@@ -5048,31 +4968,21 @@ void window_af_process(void)
 			strcpy(str_high, "Pitch    ");
 		}
 
-		for(unsigned i = 0; i < win->lh_count; i ++)
-			win->lh_ptr [i].color = COLORPIP_WHITE;
+		for(unsigned i = 0; i < ARRAY_SIZE(lbl_array); i ++)
+			gui_obj_set_prop(lbl_array[i], GUI_OBJ_COLOR, COLORPIP_WHITE);
 
-		ASSERT(bp_t.select < win->lh_count);
-		win->lh_ptr [bp_t.select].color = COLORPIP_YELLOW;
-
-		label_t * const lbl_low = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_low");
-		label_t * const lbl_high = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_high");
-		label_t * const lbl_afr = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_afr");
-		label_t * const lbl_ifshift = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_ifshift");
+		ASSERT(bp_t.select < 3);
+		gui_obj_set_prop(lbl_array[bp_t.select], GUI_OBJ_COLOR, COLORPIP_YELLOW);
 
 		unsigned val_low = hamradio_get_low_bp(bp_t.select == TYPE_BP_LOW ? (bp_t.change * 5) : 0);
-		local_snprintf_P(lbl_low->text, ARRAY_SIZE(lbl_low->text), PSTR("%s: %4u"), str_low, val_low * 10);
+		gui_obj_set_prop("lbl_low", GUI_OBJ_TEXT_FMT, "%s: %4u", str_low, val_low * 10);
 
-		unsigned val_high = hamradio_get_high_bp(bp_t.select == TYPE_BP_HIGH ? bp_t.change : 0) * (bp_wide ? 100 : 10);
-		local_snprintf_P(lbl_high->text, ARRAY_SIZE(lbl_high->text), PSTR("%s: %4u"), str_high, val_high);
+		unsigned val_high = hamradio_get_high_bp(bp_t.select == TYPE_BP_HIGH ?
+				bp_t.change : 0) * (bp_wide ? 100 : 10);
+		gui_obj_set_prop("lbl_high", GUI_OBJ_TEXT_FMT, "%s: %4u", str_high, val_high);
 
-		local_snprintf_P(lbl_afr->text, ARRAY_SIZE(lbl_afr->text), PSTR("AFR      : %+4d "),
+		gui_obj_set_prop("lbl_afr", GUI_OBJ_TEXT_FMT, "AFR      : %+4d",
 				hamradio_afresponce(bp_t.select == TYPE_AFR ? bp_t.change : 0));
-
-		int shift = hamradio_if_shift(bp_t.select == TYPE_IF_SHIFT ? bp_t.change : 0);
-		if (shift)
-			local_snprintf_P(lbl_ifshift->text, ARRAY_SIZE(lbl_ifshift->text), PSTR("IF shift :%+5d"), shift);
-		else
-			local_snprintf_P(lbl_ifshift->text, ARRAY_SIZE(lbl_ifshift->text), PSTR("IF shift :  OFF"));
 
 		bp_t.change = 0;
 	}
@@ -5147,7 +5057,7 @@ void window_receive_process(void)
 		win->first_call = 0;
 		update = 1;
 
-		const char btn_names[][NAME_ARRAY_SIZE] = { "btn_att", "lbl_agc", "btn_mode", "btn_preamp", "btn_af", "btn_dnr", "btn_wnb", };
+		const char btn_names[][NAME_ARRAY_SIZE] = { "btn_att", "btn_agc", "btn_mode", "btn_preamp", "btn_af", "btn_dnr", "btn_wnb", };
 
 		for (int i = 0; i < ARRAY_SIZE(btn_names); i ++)
 			gui_obj_create(btn_names[i], 100, 44, 0, "");
@@ -5361,12 +5271,12 @@ void window_time_process(void)
 		update = 1;
 		uint8_t interval = 20;
 
-		gui_obj_create("lbl_year", 0, FONT_MEDIUM, COLORPIP_WHITE, 6);
-		gui_obj_create("lbl_month", 0, FONT_MEDIUM, COLORPIP_WHITE, 4);
-		gui_obj_create("lbl_day", 0, FONT_MEDIUM, COLORPIP_WHITE, 4);
-		gui_obj_create("lbl_hour", 0, FONT_MEDIUM, COLORPIP_WHITE, 4);
-		gui_obj_create("lbl_minute", 0, FONT_MEDIUM, COLORPIP_WHITE, 4);
-		gui_obj_create("lbl_second", 0, FONT_MEDIUM, COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_year", FONT_MEDIUM, COLORPIP_WHITE, 6);
+		gui_obj_create("lbl_month", FONT_MEDIUM, COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_day", FONT_MEDIUM, COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_hour", FONT_MEDIUM, COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_minute", FONT_MEDIUM, COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_second", FONT_MEDIUM, COLORPIP_WHITE, 4);
 
 		gui_obj_create("btn_year+", 40, 40, 0, 0, "+");
 		gui_obj_create("btn_year-", 40, 40, 0, 0, "-");
@@ -5655,8 +5565,8 @@ void window_kbd_test_process(void)
 		win->first_call = 0;
 		const unsigned interval = 30;
 
-		gui_obj_create("lbl_text", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
-		gui_obj_create("lbl_num", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_text", FONT_MEDIUM, COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_num", FONT_MEDIUM, COLORPIP_WHITE, 20);
 
 		gui_obj_create("btn_text", 86, 40, 0, 0, "Edit...");
 		gui_obj_create("btn_num", 86, 40, 0, 0, "Edit...");
@@ -5956,10 +5866,10 @@ void window_lfm_process(void)
 		enc.change = 0;
 		enc.updated = 1;
 
-		gui_obj_create("lbl_nmeatime", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
-		gui_obj_create("lbl_timeoffset", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
-		gui_obj_create("lbl_stopfreq", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
-		gui_obj_create("lbl_interval", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_nmeatime", FONT_MEDIUM, COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_timeoffset", FONT_MEDIUM, COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_stopfreq", FONT_MEDIUM, COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_interval", FONT_MEDIUM, COLORPIP_WHITE, 20);
 
 		gui_obj_create("btn_state", 86, 40, 0, 0, "");
 		gui_obj_create("btn_draw", 86, 40, 0, 0, "Draw|spectre");
@@ -6222,7 +6132,7 @@ void window_wnbconfig_process(void)
 
 		gui_obj_create("btn_add", 40, 40, 0, 0, "+");
 		gui_obj_create("btn_sub", 40, 40, 0, 0, "-");
-		gui_obj_create("lbl_val", 0, FONT_MEDIUM, COLORPIP_WHITE, 14);
+		gui_obj_create("lbl_val", FONT_MEDIUM, COLORPIP_WHITE, 14);
 
 		gui_obj_set_prop("lbl_val", GUI_OBJ_POS, 0, 15);
 		gui_obj_align_to("btn_sub", "lbl_val", ALIGN_RIGHT_UP_MID, 10);
@@ -6296,10 +6206,10 @@ void window_ad936x_process(void)
 		win->first_call = 0;
 		unsigned x = 0, y = 0, interval = 24;
 
-		gui_obj_create("lbl_status", 0, FONT_MEDIUM, COLORPIP_WHITE, 9);
-		gui_obj_create("lbl_status_str", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
-		gui_obj_create("lbl_iio_name", 0, FONT_MEDIUM, COLORPIP_WHITE, 9);
-		gui_obj_create("lbl_iio_val", 0, FONT_MEDIUM, COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_status", FONT_MEDIUM, COLORPIP_WHITE, 9);
+		gui_obj_create("lbl_status_str", FONT_MEDIUM, COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_iio_name", FONT_MEDIUM, COLORPIP_WHITE, 9);
+		gui_obj_create("lbl_iio_val", FONT_MEDIUM, COLORPIP_WHITE, 20);
 		gui_obj_create("btn_uri_edit", 86, 44, 0, 0, "Edit...");
 		gui_obj_create("btn_action", 86, 44, 0, 0, "Find");
 		gui_obj_create("btn_gain_type", 86, 44, 0, 0, "Gain|manual");

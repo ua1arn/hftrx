@@ -82,7 +82,6 @@ enum {
 	TYPE_BP_LOW,
 	TYPE_BP_HIGH,
 	TYPE_AFR,
-	TYPE_IF_SHIFT
 };
 
 enum {
