@@ -20,6 +20,43 @@
 #include "gui_settings.h"
 #include "gui_windows.h"
 
+// *************** Buttons ***************
+
+void gui_arrange_buttons(const char names[][NAME_ARRAY_SIZE], uint8_t count, uint8_t cols, uint8_t interval)
+{
+	window_t * win = get_win(get_parent_window());
+
+	obj_type_t type = parse_obj_name(names[0]);
+	if (type != TYPE_BUTTON)
+	{
+		PRINTF("%s: idx %d unsupported object type to arrange\n", __func__, 0);
+		ASSERT(0);
+	}
+
+	button_t * bh = find_gui_obj(TYPE_BUTTON, win, names[0]);
+	uint16_t w = bh->w, h = bh->h;
+	uint16_t x = bh->x1, y = bh->y1;
+
+	for (int i = 1; i < count; i ++)
+	{
+		uint8_t row = i / cols;
+		uint8_t col = i % cols;
+
+		const char * obj = names[i];
+
+		obj_type_t type = parse_obj_name(obj);
+		if (type != TYPE_BUTTON)
+		{
+			PRINTF("%s: idx %d unsupported object type to arrange\n", __func__, i);
+			ASSERT(0);
+		}
+
+		button_t * bhx = find_gui_obj(TYPE_BUTTON, win, obj);
+		bhx->x1 = x + (w + interval) * col;
+		bhx->y1 = y + (h + interval) * row;
+	}
+}
+
 // *************** Labels ***************
 
 /* Получение ширины метки в пикселях  */

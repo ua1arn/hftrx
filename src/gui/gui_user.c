@@ -5144,28 +5144,15 @@ void window_receive_process(void)
 
 	if (win->first_call)
 	{
-		uint8_t x = 0, y = 0;
-		const uint8_t interval = 6, row_count = 3, w = 100, h = 44;
 		win->first_call = 0;
 		update = 1;
 
-		const char btn_names[][15] = { "att", "agc", "mode", "preamp", "af", "dnr", "wnb", };
-		char name[15];
+		const char btn_names[][NAME_ARRAY_SIZE] = { "btn_att", "lbl_agc", "btn_mode", "btn_preamp", "btn_af", "btn_dnr", "btn_wnb", };
 
-		for (unsigned i = 0, r = 1; i < ARRAY_SIZE(btn_names); i ++, r ++)
-		{
-			local_snprintf_P(name, 15, "btn_%s", btn_names[i]);
-			gui_obj_create(name, w, h, 0, 0, "");
-			gui_obj_set_prop(name, GUI_OBJ_POS, x, y);
+		for (int i = 0; i < ARRAY_SIZE(btn_names); i ++)
+			gui_obj_create(btn_names[i], 100, 44, 0, "");
 
-			x = x + interval + w;
-			if (r >= row_count)
-			{
-				r = 0;
-				x = 0;
-				y = y + h + interval;
-			}
-		}
+		gui_arrange_buttons(btn_names, ARRAY_SIZE(btn_names), 4, 6);
 
 		gui_obj_set_prop("btn_mode", GUI_OBJ_TEXT, "Mode");
 		gui_obj_set_prop("btn_af", GUI_OBJ_TEXT, "AF|filter");
@@ -5238,32 +5225,23 @@ void window_freq_process (void)
 	static editfreq_t editfreq;
 	window_t * const win = get_win(WINDOW_FREQ);
 	unsigned update = 0;
-	char btn_name[NAME_ARRAY_SIZE];
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, interval = 6, row_count = 3, size = 50;
 		win->first_call = 0;
 
 		char btns_text[12][3] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "<", "0", "OK" };
 		uint8_t btns_payload[12] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, BUTTON_CODE_BK, 0, BUTTON_CODE_OK };
+		char btn_names[12][NAME_ARRAY_SIZE];
 
-		for (unsigned i = 0, r = 1; i < 12; i ++, r ++)
+		for (unsigned i = 0; i < 12; i ++)
 		{
-			local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "btn_%02d", btns_payload[i]);
-			gui_obj_create(btn_name, size, size, 0, 0, btns_text[i]);
-			gui_obj_set_prop(btn_name, GUI_OBJ_PAYLOAD, btns_payload[i]);
-			gui_obj_set_prop(btn_name, GUI_OBJ_POS, x, y);
-
-			x = x + interval + size;
-			if (r >= row_count)
-			{
-				r = 0;
-				x = 0;
-				y = y + size + interval;
-			}
+			local_snprintf_P(btn_names[i], NAME_ARRAY_SIZE, "btn_%02d", btns_payload[i]);
+			gui_obj_create(btn_names[i], 50, 50, 0, 0, btns_text[i]);
+			gui_obj_set_prop(btn_names[i], GUI_OBJ_PAYLOAD, btns_payload[i]);
 		}
 
+		gui_arrange_buttons(btn_names, 12, 3, 6);
 		gui_obj_set_prop("btn_30", GUI_OBJ_LOCK, 1);
 
 		editfreq.val = 0;
@@ -5824,43 +5802,30 @@ void window_menu_params_process(void)
 	window_t * const win = get_win(WINDOW_MENU_PARAMS);
 	static menu_names_t menup [MENU_PARAMS_MAX], menuv;
 	static unsigned sel = 0;
-	char btn_to_align[TEXT_ARRAY_SIZE] = "btn_params_00";
-	char btn_name[TEXT_ARRAY_SIZE];
 	static char btn_selected[NAME_ARRAY_SIZE];
+	char btn_names[MENU_PARAMS_MAX][NAME_ARRAY_SIZE];
 
 	if (win->first_call)
 	{
 		win->first_call = 0;
 		sel = 0;
 
-		unsigned interval = 6, x = 0, y = 0, xmax = 0;
 		const unsigned count = hamradio_get_multilinemenu_block_params(menup, index_param, MENU_PARAMS_MAX);
-		unsigned cols = count <= 16 ? 4 : 5;
+		unsigned cols = count <= 16 ? 4 : 5, interval = 6;
 
 		for (unsigned i = 0; i < count; i ++)
 		{
-			local_snprintf_P(btn_name, TEXT_ARRAY_SIZE, "btn_params_%02d", i);
+			local_snprintf_P(btn_names[i], TEXT_ARRAY_SIZE, "btn_params_%02d", i);
 			remove_end_line_spaces(menup[i].name);
 
 			if (getwidth_Pstring(menup[i].name, & FONT_BUTTONS) > 110)
 				split_string(menup[i].name, '|');
 
-			gui_obj_create(btn_name, 120, 40, 0, 0, menup[i].name);
-			gui_obj_set_prop(btn_name, GUI_OBJ_PAYLOAD, menup[i].index);
-
-			if (i % cols == 0 && i)
-			{
-				local_snprintf_P(btn_to_align, TEXT_ARRAY_SIZE, "btn_params_%02d", i - cols);
-				gui_obj_align_to(btn_name, btn_to_align, ALIGN_DOWN_LEFT, interval);
-				local_snprintf_P(btn_to_align, TEXT_ARRAY_SIZE, "btn_params_%02d", i);
-			}
-			else
-			{
-				gui_obj_align_to(btn_name, btn_to_align, ALIGN_RIGHT_UP, interval);
-				strncpy(btn_to_align, btn_name, TEXT_ARRAY_SIZE - 1);
-			}
-
+			gui_obj_create(btn_names[i], 120, 40, 0, 0, menup[i].name);
+			gui_obj_set_prop(btn_names[i], GUI_OBJ_PAYLOAD, menup[i].index);
 		}
+
+		gui_arrange_buttons(btn_names, count, cols, interval);
 
 #if 1	// Добавить экранные кнопки "+" и "-" при необходимости
 		gui_obj_create("btn_p", 40, 40, 1, 0, "+");
@@ -5931,39 +5896,26 @@ void window_menu_process(void)
 	if (win->first_call)
 	{
 		win->first_call = 0;
-		unsigned x = 0, y = 0;
-		button_t * bh = NULL;
 		menu_names_t menu [MENU_GROUPS_MAX];
-		const unsigned cols = 4, interval = 6;
-		char btn_to_align[TEXT_ARRAY_SIZE] = "btn_groups_00";
-		char btn_name[TEXT_ARRAY_SIZE];
+		char btn_names[MENU_GROUPS_MAX][NAME_ARRAY_SIZE];
 
 		const unsigned count = hamradio_get_multilinemenu_block_groups(menu);
 		ASSERT(count < MENU_GROUPS_MAX);
 
 		for (unsigned i = 0; i < count; i ++)
 		{
-			local_snprintf_P(btn_name, TEXT_ARRAY_SIZE, "btn_groups_%02d", i);
+			local_snprintf_P(btn_names[i], TEXT_ARRAY_SIZE, "btn_groups_%02d", i);
 			remove_end_line_spaces(menu[i].name);
 
 			if (getwidth_Pstring(menu[i].name, & FONT_BUTTONS) > 110)
 				split_string(menu[i].name, '|');
 
-			gui_obj_create(btn_name, 120, 40, 0, 0, menu[i].name);
-			gui_obj_set_prop(btn_name, GUI_OBJ_PAYLOAD, menu[i].index);
-
-			if (i % cols == 0 && i)
-			{
-				local_snprintf_P(btn_to_align, TEXT_ARRAY_SIZE, "btn_groups_%02d", i - cols);
-				gui_obj_align_to(btn_name, btn_to_align, ALIGN_DOWN_LEFT, interval);
-				local_snprintf_P(btn_to_align, TEXT_ARRAY_SIZE, "btn_groups_%02d", i);
-			}
-			else
-			{
-				gui_obj_align_to(btn_name, btn_to_align, ALIGN_RIGHT_UP, interval);
-				strncpy(btn_to_align, btn_name, TEXT_ARRAY_SIZE - 1);
-			}
+			gui_obj_create(btn_names[i], 120, 40, 0, 0, menu[i].name);
+			gui_obj_set_prop(btn_names[i], GUI_OBJ_PAYLOAD, menu[i].index);
 		}
+
+		gui_arrange_buttons(btn_names, count, 4, 6);
+
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
