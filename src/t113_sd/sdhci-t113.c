@@ -565,10 +565,10 @@ void sdhci_t113_clock(void)
 // SMHC_BGR_REG|=1;                              //gating on clock SMHC0
 //
 // SMHC_BGR_REG|=(1<<16);                        //SMHC0 de-assert reset
-#if ! defined CPUSTYLE_A64 && ! defined CPUSTYLE_T113 && ! defined CPUSTYLE_F133
+#if ! defined CPUSTYLE_A64
 	if (SMHCHARD_PTR == SMHC2)
 	{
-
+#if ! defined CPUSTYLE_T113 && ! defined CPUSTYLE_F133
 		SMHCHARD_PTR->SMHC_FIFOTH = 0x300F00F0;
 		SMHCHARD_PTR->SMHC_THLD = 0x02000004;
 		SMHCHARD_PTR->SMHC_SFC =
@@ -578,7 +578,7 @@ void sdhci_t113_clock(void)
 		SMHCHARD_PTR->SMHC_CSDC = 0x00000006;
 		SMHCHARD_PTR->SMHC_NTSR = 0;
 		//SMHCHARD_PTR->EMMC_DDR_SBIT_DET |= (UINT32_C(1) << 31);
-
+#endif
 		//	The steps to calibrate delay chain are as follows:
 		//	Step1: Enable SMHC. In order to calibrate delay chain by operation registers in SMHC, SMHC must be enabled through SMHC Bus Gating Reset Register and SMHC0/1/2 Clock Register.
 		//	Step2: Configure a proper clock for SMHC. Calibration delay chain is based on the clock for SMHC from Clock Control Unit(CCU). Calibration delay chain is an internal function in SMHC and does not need device. So, it is unnecessary to open clock signal for device. The recommended clock frequency is 200 MHz.
@@ -597,7 +597,7 @@ void sdhci_t113_clock(void)
 			((SMHCHARD_PTR->SMHC_SAMP_DL >> 8) & 0x3F) |
 			0;
 		SMHCHARD_PTR->SMHC_SAMP_DL |= (UINT32_C(1) << 7);	// Sample Delay Software Enable
-		//PRINTF("SMHC_SAMP_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_SAMP_DL >> 8) & 0x3F);
+		PRINTF("SMHC_SAMP_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_SAMP_DL >> 8) & 0x3F);
 
 		/* Delay calibration */
 		SMHCHARD_PTR->SMHC_DS_DL = 0xA0;
@@ -609,7 +609,7 @@ void sdhci_t113_clock(void)
 			((SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F) |
 			0;
 		SMHCHARD_PTR->SMHC_DS_DL |= (UINT32_C(1) << 7);	// Sample Delay Software Enable
-		//PRINTF("SMHC_DS_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F);
+		PRINTF("SMHC_DS_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F);
 
 	}
 #endif
