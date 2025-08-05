@@ -3933,8 +3933,17 @@ static void diskio_test(BYTE drv)
 	static RAMNOINIT_D1 FATFSALIGN_BEGIN unsigned char sectbuffr [MMC_SECTORSIZE] FATFSALIGN_END;
 	static RAMNOINIT_D1 FATFSALIGN_BEGIN unsigned char sectbuffw [MMC_SECTORSIZE] FATFSALIGN_END;
 
-	PRINTF(PSTR("Test SD card (drv=%d)\n"), (int) drv);
+	PRINTF(PSTR("Test SD/eMMC storage (drv=%d)\n"), (int) drv);
 	mmcInitialize(drv);
+	{
+		uint_fast64_t v = mmcCardSize(drv);
+		PRINTF(PSTR("SD/eMMC storage size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"),
+			(unsigned long) (v / 1024),
+			(unsigned long) (v / 1024 / 1024),
+			(unsigned long) (v >> 32),
+			(unsigned long) (v >> 0));
+
+	}
 
 	PRINTF(PSTR("Enter command:\n"));
 //test_disk();
@@ -4095,7 +4104,7 @@ static void diskio_test(BYTE drv)
 			case 'q':
 				{
 					uint_fast64_t v = mmcCardSize(drv);
-					PRINTF(PSTR("SD Card size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"),
+					PRINTF(PSTR("SD/eMMC storage size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"),
 						(unsigned long) (v / 1024), 
 						(unsigned long) (v / 1024 / 1024), 
 						(unsigned long) (v >> 32), 

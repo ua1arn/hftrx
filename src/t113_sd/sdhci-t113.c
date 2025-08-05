@@ -565,7 +565,7 @@ void sdhci_t113_clock(void)
 // SMHC_BGR_REG|=1;                              //gating on clock SMHC0
 //
 // SMHC_BGR_REG|=(1<<16);                        //SMHC0 de-assert reset
-#if ! defined CPUSTYLE_A64
+#if ! defined CPUSTYLE_A64 && ! defined CPUSTYLE_T113 && ! defined CPUSTYLE_F133
 	if (SMHCHARD_PTR == SMHC2)
 	{
 
