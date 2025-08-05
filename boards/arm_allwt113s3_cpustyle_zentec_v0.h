@@ -260,11 +260,11 @@
 	//#define WITHUSBCDCACM_NOINT	1	/* Не использовать NOTIFY endpoint - под Linux не работает */
 
 
-	#if WITHLWIP
+	#if WITHLWIP && ! WITHETHHW
 		#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
-	#endif /* WITHLWIP */
+	#endif /* WITHLWIP && ! WITHETHHW */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
 	#if WIHSPIDFHW || WIHSPIDFSW
@@ -1000,9 +1000,9 @@
 	// 	EMAC0: 10/100/1000 Mbps Ethernet port with RGMII and RMII interfaces;
 	// 	EMAC1: 10/100 Mbps Ethernet port with RMII interface
 	#define HARDWARE_EMAC_IX 0	// 0: EMAC0, 1: EMAC1
-	#define HARDWARE_EMAC_PTR EMAC0
+	#define HARDWARE_EMAC_PTR EMAC
 	#define HARDWARE_EMAC_EPHY_CLK_REG (SYS_CFG->EMAC_EPHY_CLK_REG0)
-	#define HARDWARE_EMAC_IRQ EMAC0_IRQn
+	#define HARDWARE_EMAC_IRQ EMAC_IRQn
 
 #endif /* WITHETHHW */
 

@@ -313,7 +313,7 @@
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 
 	//#define WITHUSEUSBBT		1	// Включение поддержки USB BT stick
-	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	#define WITHUSESDCARD		1	// Включение поддержки SD CARD/ eMMC
 	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
 	//#define WITHUSERAMDISKSIZEKB	(16uL * 1024)	// размр в килобайтах FATFS диска в озу
@@ -326,9 +326,8 @@
 	
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
-	#if 0
+	#if 1
 		#define WITHLWIP 1
-		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 
 	/* что за память настроек и частот используется в контроллере */
