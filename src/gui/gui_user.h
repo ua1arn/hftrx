@@ -69,11 +69,11 @@ typedef struct {
 	int8_t selected_str;		// выбранная строка уровня
 	int8_t selected_label;		// выбранная метка уровня
 	uint8_t add_id;				// номер строки уровня, отображаемой первой
-	menu_names_t menu_block [MENU_ARRAY_SIZE];	// массив значений уровня меню
+	menu_names_t menu_block[MENU_ARRAY_SIZE];	// массив значений уровня меню
 } menu_t;
 
 typedef struct {
-	char name [TEXT_ARRAY_SIZE];
+	char name[TEXT_ARRAY_SIZE];
 	uint16_t menupos;
 	uint8_t exitkey;
 } menu_by_name_t;
@@ -104,7 +104,7 @@ typedef struct {
 
 typedef struct {
 	uint_fast16_t step;
-	char label [10];
+	char label[10];
 } val_step_t;
 
 typedef struct {

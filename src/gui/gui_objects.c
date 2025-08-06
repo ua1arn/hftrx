@@ -80,7 +80,7 @@ void textfield_add_string_old(text_field_t * tf, const char * str, COLORPIP_T co
 {
 	ASSERT(tf != NULL);
 
-	tf_entry_t * rec = &  tf->string [tf->index];
+	tf_entry_t * rec = &  tf->string[tf->index];
 	strncpy(rec->text, str, TEXT_ARRAY_SIZE - 1);
 	rec->color_line = color;
 	tf->index ++;
@@ -92,7 +92,7 @@ void textfield_add_string(const char * name, const char * str, COLORPIP_T color)
 	window_t * win = get_win(get_parent_window());
 	text_field_t * tf = (text_field_t *) find_gui_obj(TYPE_TEXT_FIELD, win, name);
 
-	tf_entry_t * rec = &  tf->string [tf->index];
+	tf_entry_t * rec = &  tf->string[tf->index];
 	strncpy(rec->text, str, TEXT_ARRAY_SIZE - 1);
 	rec->color_line = color;
 	tf->index ++;
@@ -155,7 +155,7 @@ void gui_obj_create(const char * obj_name, ...)
 		win->lh_ptr = (label_t *) realloc(win->lh_ptr, sizeof(label_t) * (win->lh_count + 1));
 		GUI_MEM_ASSERT(win->lh_ptr);
 
-		label_t * lh = & win->lh_ptr [win->lh_count];
+		label_t * lh = & win->lh_ptr[win->lh_count];
 		memcpy(lh, & label_default, sizeof(label_t));
 
 		lh->parent = window_id;
@@ -194,7 +194,7 @@ void gui_obj_create(const char * obj_name, ...)
 		win->bh_ptr = (button_t *) realloc(win->bh_ptr, sizeof(button_t) * (win->bh_count + 1));
 		GUI_MEM_ASSERT(win->bh_ptr);
 
-		button_t * bh = & win->bh_ptr [win->bh_count];
+		button_t * bh = & win->bh_ptr[win->bh_count];
 		memcpy(bh, & button_default, sizeof(button_t));
 
 		bh->parent = window_id;
@@ -217,7 +217,7 @@ void gui_obj_create(const char * obj_name, ...)
 		win->tf_ptr = (text_field_t *) realloc(win->tf_ptr, sizeof(text_field_t) * (win->tf_count + 1));
 		GUI_MEM_ASSERT(win->tf_ptr);
 
-		text_field_t * tf = & win->tf_ptr [win->tf_count];
+		text_field_t * tf = & win->tf_ptr[win->tf_count];
 		memcpy(tf, & tf_default, sizeof(text_field_t));
 
 		tf->parent = window_id;
@@ -241,7 +241,7 @@ void gui_obj_create(const char * obj_name, ...)
 		win->ta_ptr = (touch_area_t *) realloc(win->ta_ptr, sizeof(touch_area_t) * (win->ta_count + 1));
 		GUI_MEM_ASSERT(win->ta_ptr);
 
-		touch_area_t * ta = & win->ta_ptr [win->ta_count];
+		touch_area_t * ta = & win->ta_ptr[win->ta_count];
 		memcpy(ta, & ta_default, sizeof(touch_area_t));
 
 		ta->parent = window_id;
