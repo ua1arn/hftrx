@@ -983,9 +983,9 @@
 		\
 		arm_hardware_piog_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF4); /* PG15 RMII_MDIO */ \
 		arm_hardware_piog_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF4); /* PG14 RMII_MDC */ \
-		arm_hardware_piog_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF4); /* PG13 RMIII_RXER */ \
+		arm_hardware_piog_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF4); /* PG13 RMII_RXER */ \
 		arm_hardware_piog_altfn50(UINT32_C(1) << 12, GPIO_CFG_AF4); /* PG12 RMII_TXEN */ \
-		arm_hardware_piog_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF4); /* PG11 RMII_25MHz EPHY-25M */ \
+		arm_hardware_piog_altfn50(0 * UINT32_C(1) << 11, GPIO_CFG_AF4); /* PG11 RMII_25MHz EPHY-25M */ \
 		arm_hardware_piog_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF4); 	/* PG5 RMIII_TXD1 */ \
 		arm_hardware_piog_altfn50(UINT32_C(1) << 4, GPIO_CFG_AF4); 	/* PG4 RMIII_TXD0 */ \
 		arm_hardware_piog_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF4); 	/* PG3 RMII_TXCLK */ \

@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if WITHLWIP && WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
+#if WITHLWIP && WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_T113 || CPUSTYLE_F133)
 
 
 #include "gpio.h"
@@ -131,11 +131,17 @@ static void emac_hw_initialize(void)
 	HARDWARE_ETH_INITIALIZE();	// Должно быть тут - снять ресет с PHY до инициализации
 	{
 		// The working clock of EMAC is from AHB3.
-
-		HARDWARE_EMAC_EPHY_CLK_REG = 0x00051c06; // 0x00051c06 0x00053c01
+#if (CPUSTYLE_T507 || CPUSTYLE_H616)
+		HARDWARE_EMAC_EPHY_CLK_REG =
+			0x00051c06 | // 0x00051c06 0x00053c01
+			0;
 		//PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
 		//printhex32((uintptr_t) HARDWARE_EMAC_PTR, HARDWARE_EMAC_PTR, 256);
-
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+		HARDWARE_EMAC_EPHY_CLK_REG =
+			1 * (UINT32_C(1) << 13) |
+			0;
+#endif
 		// Сигнал phyrstb тут уже должен бьыть неактивен
 
 		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 |= (UINT32_C(1) << 0);	// Soft reset
