@@ -142,7 +142,7 @@ obj_type_t parse_obj_name(const char * name)
 
 void gui_obj_create(const char * obj_name, ...)
 {
-	uint_fast8_t window_id = get_parent_window();
+	uint8_t window_id = get_parent_window();
 	window_t * win = get_win(window_id);
 	obj_type_t type = parse_obj_name(obj_name);
 	va_list arg;
@@ -162,6 +162,7 @@ void gui_obj_create(const char * obj_name, ...)
 		lh->font_size = (font_size_t) va_arg(arg, int);
 		lh->color = va_arg(arg, COLORPIP_T);
 		lh->visible = 1;
+		lh->index = win->lh_count;
 		lh->x = 0;
 		lh->y = 0;
 
@@ -205,6 +206,7 @@ void gui_obj_create(const char * obj_name, ...)
 		strncpy(bh->name, obj_name, NAME_ARRAY_SIZE - 1);
 		strncpy(bh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
 		bh->visible = 1;
+		bh->index = win->bh_count;
 		bh->x1 = 0;
 		bh->y1 = 0;
 
@@ -227,6 +229,7 @@ void gui_obj_create(const char * obj_name, ...)
 		tf->font = va_arg(arg, UB_Font *);
 		strncpy(tf->name, obj_name, NAME_ARRAY_SIZE - 1);
 		tf->visible = 1;
+		tf->index = win->tf_count;
 		tf->x1 = 0;
 		tf->y1 = 0;
 
@@ -252,6 +255,7 @@ void gui_obj_create(const char * obj_name, ...)
 		ta->is_trackable = va_arg(arg, uint_fast16_t);
 		strncpy(ta->name, obj_name, NAME_ARRAY_SIZE - 1);
 		ta->visible = 1;
+		ta->index = win->ta_count;
 
 		win->ta_count ++;
 		break;
@@ -441,9 +445,11 @@ uint8_t gui_check_obj(const char * name1, const char * name2)
 	return strcmp(name1, name2) == 0;
 }
 
-// выравнивание однотипных объектов (кнопка, метка, слайдер)
+// выравнивание однотипных объектов (кнопка, метка, слайдер) с передачей массива имен объектов
 void gui_arrange_objects(const char names[][NAME_ARRAY_SIZE], uint8_t count, uint8_t cols, uint8_t interval)
 {
+	if (count <= 1) return;
+
 	window_t * win = get_win(get_parent_window());
 
 	obj_type_t type = parse_obj_name(names[0]);
@@ -471,6 +477,76 @@ void gui_arrange_objects(const char names[][NAME_ARRAY_SIZE], uint8_t count, uin
 			PRINTF("%s: idx %d - arrange various objects not supported\n", __func__, i);
 			ASSERT(0);
 		}
+
+		gui_obj_set_prop(obj, GUI_OBJ_POS_X, x + (w + interval) * col);
+		gui_obj_set_prop(obj, GUI_OBJ_POS_Y, y + (h + interval) * row);
+	}
+}
+
+static char * get_obj_name_by_idx(window_t * win, obj_type_t type, uint8_t idx)
+{
+	if (type == TYPE_BUTTON)
+	{
+		ASSERT(idx < win->bh_count);
+		return win->bh_ptr[idx].name;
+	}
+	else if (type == TYPE_LABEL)
+	{
+		ASSERT(idx < win->lh_count);
+		return win->lh_ptr[idx].name;
+	}
+	else if (type == TYPE_SLIDER)
+	{
+		ASSERT(idx < win->sh_count);
+		return win->sh_ptr[idx].name;
+	}
+
+	ASSERT(0);
+	return NULL;
+}
+
+static uint8_t get_obj_idx_by_name(window_t * win, obj_type_t type, const char * name)
+{
+	void * p = find_gui_obj(type, win, name);
+
+	if (type == TYPE_BUTTON)
+		return ((button_t *) p)->index;
+	else if (type == TYPE_LABEL)
+		return ((label_t *) p)->index;
+	else if (type == TYPE_SLIDER)
+		return ((slider_t *) p)->index;
+
+	ASSERT(0);
+	return 0;
+}
+
+// выравнивание однотипных объектов (кнопка, метка, слайдер) с передачей имени первого объекта,
+// обработка по возрастанию индекса (в порядке создания)
+void gui_arrange_objects_from(const char * name, uint8_t count, uint8_t cols, uint8_t interval)
+{
+	if (count <= 1) return;
+
+	window_t * win = get_win(get_parent_window());
+
+	obj_type_t type = parse_obj_name(name);
+	if (type != TYPE_BUTTON && type != TYPE_LABEL && type != TYPE_SLIDER)
+	{
+		PRINTF("%s: idx %d unsupported object type to arrange\n", __func__, 0);
+		ASSERT(0);
+	}
+
+	uint16_t x = gui_obj_get_int_prop(name, GUI_OBJ_POS_X);
+	uint16_t y = gui_obj_get_int_prop(name, GUI_OBJ_POS_Y);
+	uint16_t w = gui_obj_get_int_prop(name, GUI_OBJ_WIDTH);
+	uint16_t h = gui_obj_get_int_prop(name, GUI_OBJ_HEIGHT);
+	uint8_t idx = get_obj_idx_by_name(win, type, name) + 1;
+
+	for (int i = 1; i < count; i ++)
+	{
+		uint8_t row = i / cols;
+		uint8_t col = i % cols;
+
+		const char * obj = get_obj_name_by_idx(win, type, idx ++);
 
 		gui_obj_set_prop(obj, GUI_OBJ_POS_X, x + (w + interval) * col);
 		gui_obj_set_prop(obj, GUI_OBJ_POS_Y, y + (h + interval) * row);

@@ -11,8 +11,6 @@
 		for (;;) ; \
 		} } while (0)
 
-void gui_obj_create(const char * obj_name, ...);
-obj_type_t parse_obj_name(const char * name);
 void * find_gui_obj(obj_type_t type, window_t * win, const char * name);
 void objects_state (window_t * win);
 void remove_end_line_spaces(char * str);
