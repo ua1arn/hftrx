@@ -2033,6 +2033,7 @@ void lvglhw_initialize(void)
 #if defined (G2D_MIXER)
 	if (0)
 	{
+		// t113: flicker on LV_BUILD_DEMOS
 		PRINTF("lvglhw_initialize: Enable G2D_MIXER hw accelerate for LVGL\n");
 		//#if LV_DRAW_SW_COMPLEX == 1
 		//    lv_draw_sw_mask_init();
