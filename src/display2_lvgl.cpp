@@ -78,14 +78,24 @@ lv_obj_t * hamradio_walkmenu_getparameditor(const struct paramdefdef * pd, lv_ob
 		lv_obj_t * dd = lv_dropdown_create(obj);
 		lv_dropdown_clear_options(dd);
 
-		if (pd->qrj == RJ_SMETER)
+		switch (pd->qrj)
+		{
+		case RJ_SMETER:
 			lv_dropdown_set_options(dd, "BARS\n" "DIAL");
-		else if (pd->qrj == RJ_TXAUDIO)
+			break;
+#if WITHTX && WITHIF4DSP
+		case RJ_TXAUDIO:
 			for (unsigned int i = 0; i < TXAUDIOSRC_COUNT; i ++)
 				lv_dropdown_add_option(dd, txaudiosrcs[i].label, LV_DROPDOWN_POS_LAST);
-		else if (pd->qrj == RJ_VIEW)
+			break;
+#endif /* WITHTX && WITHIF4DSP */
+		case RJ_VIEW:
 			for (int i = 0; i < VIEW_count; i ++)
 				lv_dropdown_add_option(dd, view_types[i], LV_DROPDOWN_POS_LAST);
+			break;
+		default:
+			break;
+		}
 
 		lv_dropdown_set_selected(dd, param_getvalue(pd));
 		lv_obj_set_grid_cell(dd, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
