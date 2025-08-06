@@ -11645,6 +11645,8 @@ void hightests(void)
 		dcache_clean(dbv_layer0_a.cachebase, dbv_layer0_a.cachesize);
 		dcache_clean(dbv_layer0_b.cachebase, dbv_layer0_b.cachesize);
 		dcache_clean(dbv_layer1.cachebase, dbv_layer1.cachesize);
+		dcache_clean(dbv_layer2.cachebase, dbv_layer2.cachesize);
+		dcache_clean(dbv_layer3.cachebase, dbv_layer3.cachesize);
 //
 //		printhex32((uintptr_t) layer0, layer0, 64);
 //		printhex32((uintptr_t) layer1, layer1, 64);
