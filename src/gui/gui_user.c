@@ -4592,119 +4592,67 @@ void window_ft8_process(void)
 	window_t * const win = get_win(WINDOW_FT8);
 	static unsigned win_x = 0, win_y = 0, x, y, update = 0, selected_label_cq = 255, selected_label_tx = 0;
 	static unsigned backup_mode = 0, work = 0, labels_tx_update = 0, backup_freq = 0, backup_zoom = 0;
-	static label_t * lh_array_cq [6];
-	static label_t * lh_array_tx [4];
 	static const int snr = -10;
 	static uint8_t viewtemp;
+
+	const char lh_array_cq[6][NAME_ARRAY_SIZE] = { "lbl_cq0", "lbl_cq1", "lbl_cq2", "lbl_cq3", "lbl_cq4", "lbl_cq5" };
+	const char lh_array_tx[4][NAME_ARRAY_SIZE] = { "lbl_txmsg0", "lbl_txmsg1", "lbl_txmsg2", "lbl_txmsg3" };
+	const char btns[4][NAME_ARRAY_SIZE] = { "btn_tx", "btn_filter", "btn_bands", "btn_settings" };
 
 	if (win->first_call)
 	{
 		win->first_call = 0;
+		unsigned interval = 20;
 
-		gui_obj_create("btn_tx", 86, 44, 0, 0, "Transmit");
-		gui_obj_create("btn_filter", 86, 44, 0, 0, "View|all");
-		gui_obj_create("btn_bands", 86, 44, 0, 0, "FT8|bands");
-		gui_obj_create("btn_settings", 86, 44, 0, 0, "Edit|settings");
-
+		gui_obj_create(btns[0], 86, 44, 0, 0, "Transmit");
+		gui_obj_create(btns[1], 86, 44, 0, 0, "View|all");
+		gui_obj_create(btns[2], 86, 44, 0, 0, "FT8|bands");
+		gui_obj_create(btns[3], 86, 44, 0, 0, "Edit|settings");
 		gui_obj_create("lbl_cq_title", FONT_LARGE, COLORPIP_GREEN, 3);
 		gui_obj_create("lbl_tx_title", FONT_LARGE, COLORPIP_GREEN, 3);
-		gui_obj_create("lbl_cq0", FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq1", FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq2", FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq3", FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq4", FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq5", FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_txmsg0", FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_txmsg1", FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_txmsg2", FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_txmsg3", FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create(lh_array_cq[0], FONT_MEDIUM, COLORPIP_WHITE, 8);
+		gui_obj_create(lh_array_cq[1], FONT_MEDIUM, COLORPIP_WHITE, 8);
+		gui_obj_create(lh_array_cq[2], FONT_MEDIUM, COLORPIP_WHITE, 8);
+		gui_obj_create(lh_array_cq[3], FONT_MEDIUM, COLORPIP_WHITE, 8);
+		gui_obj_create(lh_array_cq[4], FONT_MEDIUM, COLORPIP_WHITE, 8);
+		gui_obj_create(lh_array_cq[5], FONT_MEDIUM, COLORPIP_WHITE, 8);
+		gui_obj_create(lh_array_tx[0], FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create(lh_array_tx[1], FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create(lh_array_tx[2], FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create(lh_array_tx[3], FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create("tf_ft8", 37, 26, UP, & gothic_11x13);
 
-		static const text_field_t text_field [] = {
-			{ 37, 26, CANCELLED, WINDOW_FT8, NON_VISIBLE, UP, & gothic_11x13, "tf_ft8", },
-		};
-		win->tf_count = ARRAY_SIZE(text_field);
-		unsigned tf_size = sizeof(text_field);
-		win->tf_ptr = (text_field_t*) malloc(tf_size);
-		GUI_MEM_ASSERT(win->tf_ptr);
-		memcpy(win->tf_ptr, text_field, tf_size);
+		gui_obj_set_prop("lbl_cq_title", GUI_OBJ_TEXT, "CQ:");
+		gui_obj_set_prop("lbl_cq_title", GUI_OBJ_STATE, DISABLED);
+		gui_obj_set_prop("lbl_tx_title", GUI_OBJ_TEXT, "TX:");
+		gui_obj_set_prop("lbl_tx_title", GUI_OBJ_STATE, DISABLED);
+		gui_obj_set_prop(lh_array_tx[0], GUI_OBJ_TEXT_FMT, "CQ %s %s", gui_nvram.ft8_callsign, gui_nvram.ft8_qth);
+		gui_obj_set_prop(lh_array_cq[0], GUI_OBJ_PAYLOAD, 0);
+		gui_obj_set_prop(lh_array_cq[1], GUI_OBJ_PAYLOAD, 1);
+		gui_obj_set_prop(lh_array_cq[2], GUI_OBJ_PAYLOAD, 2);
+		gui_obj_set_prop(lh_array_cq[3], GUI_OBJ_PAYLOAD, 3);
+		gui_obj_set_prop(lh_array_cq[4], GUI_OBJ_PAYLOAD, 4);
+		gui_obj_set_prop(lh_array_cq[5], GUI_OBJ_PAYLOAD, 5);
+		gui_obj_set_prop(lh_array_tx[0], GUI_OBJ_PAYLOAD, 10);
+		gui_obj_set_prop(lh_array_tx[1], GUI_OBJ_PAYLOAD, 11);
+		gui_obj_set_prop(lh_array_tx[2], GUI_OBJ_PAYLOAD, 12);
+		gui_obj_set_prop(lh_array_tx[3], GUI_OBJ_PAYLOAD, 13);
 
-		text_field_t * tf_ft8 = (text_field_t*) find_gui_obj(TYPE_TEXT_FIELD, win, "tf_ft8");
-		textfield_update_size(tf_ft8);
-		tf_ft8->x1 = 0;
-		tf_ft8->y1 = 0;
-		tf_ft8->visible = VISIBLE;
+		gui_obj_align_to("lbl_cq_title", "tf_ft8", ALIGN_RIGHT_UP, interval);
+		gui_obj_align_to("lbl_tx_title", "lbl_cq_title", ALIGN_RIGHT_UP, interval * 4);
 
-		label_t * lh = NULL;
-		label_t * lbl_cq_title = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_cq_title");
-		label_t * lbl_tx_title = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_tx_title");
-		button_t * btn_tx = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_tx");
-		button_t * btn_filter = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_filter");
-		button_t * btn_bands = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_bands");
-		button_t * btn_settings = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_settings");
+		gui_obj_align_to("lbl_cq0", "lbl_cq_title", ALIGN_DOWN_LEFT, interval);
+		gui_arrange_objects(lh_array_cq, ARRAY_SIZE(lh_array_cq), 1, interval);
 
-		unsigned interval = get_label_height(lbl_cq_title) * 2;
+		gui_obj_align_to("lbl_txmsg0", "lbl_tx_title", ALIGN_DOWN_LEFT, interval);
+		gui_arrange_objects(lh_array_tx, ARRAY_SIZE(lh_array_tx), 1, interval);
 
-		lbl_cq_title->x = tf_ft8->x1 + tf_ft8->w + 70;
-		lbl_cq_title->y = 0;
-		lbl_cq_title->state = DISABLED;
-		lbl_cq_title->visible = VISIBLE;
-		local_snprintf_P(lbl_cq_title->text, ARRAY_SIZE(lbl_cq_title->text), "CQ:");
+		gui_obj_align_to("btn_tx", "lbl_txmsg3", ALIGN_DOWN_LEFT, interval);
+		gui_arrange_objects(btns, ARRAY_SIZE(btns), 2, interval);
 
-		x = lbl_cq_title->x;
-		y = lbl_cq_title->y + interval;
-		for (unsigned i = 0; i < 6; i ++)
-		{
-			char lh_name [15];
-			local_snprintf_P(lh_name, ARRAY_SIZE(lh_name), "lbl_cq%d", i);
-			lh = (label_t *) find_gui_obj(TYPE_LABEL, win, lh_name);
-			lh->x = x;
-			lh->y = y;
-			lh->payload = i;
-			y += interval;
-			lh_array_cq [i] = lh;
-		}
-
-		lbl_tx_title->x = lbl_cq_title->x + get_label_width(lh_array_cq [0]) + 10;
-		lbl_tx_title->y = 0;
-		lbl_tx_title->state = DISABLED;
-		lbl_tx_title->visible = VISIBLE;
-		local_snprintf_P(lbl_tx_title->text, ARRAY_SIZE(lbl_tx_title->text), "TX:");
-
-		x = lbl_tx_title->x;
-		y = lbl_tx_title->y + interval;
-		for (unsigned i = 0; i < 4; i ++)
-		{
-			char lh_name [15];
-			local_snprintf_P(lh_name, ARRAY_SIZE(lh_name), "lbl_txmsg%d", i);
-			lh = (label_t *) find_gui_obj(TYPE_LABEL, win, lh_name);
-			lh->x = x;
-			lh->y = y;
-			lh->payload = 10 + i;
-			lh->visible = VISIBLE;
-			y += interval;
-			lh_array_tx [i] = lh;
-		}
-
-		local_snprintf_P(lh_array_tx [0]->text, ARRAY_SIZE(lh_array_tx [0]->text), "CQ %s %s", gui_nvram.ft8_callsign, gui_nvram.ft8_qth);
-
-		btn_tx->x1 = lh_array_tx [3]->x;
-		btn_tx->y1 = lh_array_tx [3]->y + get_label_height(lh_array_tx [3]) * 3;
-		btn_tx->visible = VISIBLE;
 #if ! WITHTX
-		btn_tx->state = DISABLED;
+		gui_obj_set_prop("btn_tx", GUI_OBJ_STATE, DISABLED);
 #endif
-
-		btn_filter->x1 = btn_tx->x1 + btn_tx->w + interval;
-		btn_filter->y1 = btn_tx->y1;
-		btn_filter->visible = VISIBLE;
-
-		btn_bands->x1 = btn_tx->x1;
-		btn_bands->y1 = btn_tx->y1 + btn_tx->h + interval;
-		btn_bands->visible = VISIBLE;
-
-		btn_settings->x1 = btn_filter->x1;
-		btn_settings->y1 = btn_filter->y1 + btn_filter->h + interval;
-		btn_settings->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_FULLSCREEN);
 		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands [gui_nvram.ft8_band] / 1000, hour, minute, seconds);
@@ -4763,30 +4711,25 @@ void window_ft8_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_tx = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_tx");
-			button_t * btn_filter = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_filter");
-			button_t * btn_bands = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_bands");
-			button_t * btn_settings = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_settings");
-
-			if (bh == btn_tx)
+			if (gui_check_obj(name, "btn_tx"))
 			{
-				strcpy(ft8.tx_text, lh_array_tx [selected_label_tx]->text);
+				strncpy(ft8.tx_text, gui_obj_get_string_prop(
+						lh_array_tx[selected_label_tx], GUI_OBJ_TEXT), ft8_text_length - 1);
 				ft8.tx_freq = (float) gui_nvram.ft8_txfreq_val;
 				ft8_do_encode();
 			}
-			else if (bh == btn_filter)
+			else if (gui_check_obj(name, "btn_filter"))
 			{
 				cq_filter = ! cq_filter;
-				local_snprintf_P(btn_filter->text, ARRAY_SIZE(btn_filter->text), "%s", cq_filter ? "View|CQ only" : "View|all");
+				gui_obj_set_prop("btn_filter", GUI_OBJ_TEXT_FMT, "%s", cq_filter ? "View|CQ only" : "View|all");
 			}
-			else if (bh == btn_settings)
+			else if (gui_check_obj(name, "btn_settings"))
 			{
 				work = 1;
 				window_t * win2 = get_win(WINDOW_FT8_SETTINGS);
 				open_window(win2);
 			}
-			else if (bh == btn_bands)
+			else if (gui_check_obj(name, "btn_bands"))
 			{
 				work = 1;
 				window_t * win2 = get_win(WINDOW_FT8_BANDS);
@@ -4795,14 +4738,14 @@ void window_ft8_process(void)
 		}
 		else if (IS_LABEL_PRESS)
 		{
-			label_t * lh = (label_t *) ptr;
-			if (lh->payload < 10)
+			int p = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
+			if (p < 10)
 			{
-				selected_label_cq = lh->payload;
+				selected_label_cq = p;
 				labels_tx_update = 1;
 			}
 			else
-				selected_label_tx = lh->payload - 10;
+				selected_label_tx = p - 10;
 			update = 1;
 		}
 
@@ -4839,35 +4782,32 @@ void window_ft8_process(void)
 
 		for (unsigned i = 0; i < 6; i ++)
 		{
-			label_t * lh = lh_array_cq [i];
-			lh->visible = NON_VISIBLE;
-			lh->color = COLORPIP_WHITE;
+			const char * lh = lh_array_cq [i];
+
 			if (strlen(cq_call [i]))
 			{
-				strcpy(lh->text, cq_call [i]);
-				lh->visible = VISIBLE;
+				gui_obj_set_prop(lh, GUI_OBJ_TEXT, cq_call [i]);
+				gui_obj_set_prop(lh, GUI_OBJ_VISIBLE, VISIBLE);
 
-				if (lh->payload == selected_label_cq)
-					lh->color = COLORPIP_YELLOW;
+				if (gui_obj_get_int_prop(lh, GUI_OBJ_PAYLOAD) == selected_label_cq)
+					gui_obj_set_prop(lh, GUI_OBJ_COLOR, COLORPIP_YELLOW);
+			}
+			else
+			{
+				gui_obj_set_prop(lh, GUI_OBJ_VISIBLE, NON_VISIBLE);
+				gui_obj_set_prop(lh, GUI_OBJ_COLOR, COLORPIP_WHITE);
 			}
 		}
 
 		for (unsigned i = 0; i < 4; i ++)
-		{
-			label_t * lh = lh_array_tx [i];
-
-			if (i == selected_label_tx)
-				lh->color = COLORPIP_YELLOW;
-			else
-				lh->color = COLORPIP_WHITE;
-		}
+			gui_obj_set_prop(lh_array_tx[i], GUI_OBJ_COLOR, i == selected_label_tx ? COLORPIP_YELLOW : COLORPIP_WHITE);
 
 		if (labels_tx_update)
 		{
 			labels_tx_update = 0;
-			local_snprintf_P(lh_array_tx [1]->text, ARRAY_SIZE(lh_array_tx [1]->text), "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_qth);
-			local_snprintf_P(lh_array_tx [2]->text, ARRAY_SIZE(lh_array_tx [2]->text), "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_snr);
-			local_snprintf_P(lh_array_tx [3]->text, ARRAY_SIZE(lh_array_tx [3]->text), "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_end);
+			gui_obj_set_prop(lh_array_tx [1], GUI_OBJ_TEXT_FMT, "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_qth);
+			gui_obj_set_prop(lh_array_tx [2], GUI_OBJ_TEXT_FMT, "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_snr);
+			gui_obj_set_prop(lh_array_tx [3], GUI_OBJ_TEXT_FMT, "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_end);
 		}
 
 		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands [gui_nvram.ft8_band] / 1000, hour, minute, seconds);
@@ -5062,7 +5002,7 @@ void window_receive_process(void)
 		for (int i = 0; i < ARRAY_SIZE(btn_names); i ++)
 			gui_obj_create(btn_names[i], 100, 44, 0, "");
 
-		gui_arrange_buttons(btn_names, ARRAY_SIZE(btn_names), 4, 6);
+		gui_arrange_objects(btn_names, ARRAY_SIZE(btn_names), 4, 6);
 
 		gui_obj_set_prop("btn_mode", GUI_OBJ_TEXT, "Mode");
 		gui_obj_set_prop("btn_af", GUI_OBJ_TEXT, "AF|filter");
@@ -5151,7 +5091,7 @@ void window_freq_process (void)
 			gui_obj_set_prop(btn_names[i], GUI_OBJ_PAYLOAD, btns_payload[i]);
 		}
 
-		gui_arrange_buttons(btn_names, 12, 3, 6);
+		gui_arrange_objects(btn_names, 12, 3, 6);
 		gui_obj_set_prop("btn_30", GUI_OBJ_LOCK, 1);
 
 		editfreq.val = 0;
@@ -5735,7 +5675,7 @@ void window_menu_params_process(void)
 			gui_obj_set_prop(btn_names[i], GUI_OBJ_PAYLOAD, menup[i].index);
 		}
 
-		gui_arrange_buttons(btn_names, count, cols, interval);
+		gui_arrange_objects(btn_names, count, cols, interval);
 
 #if 1	// Добавить экранные кнопки "+" и "-" при необходимости
 		gui_obj_create("btn_p", 40, 40, 1, 0, "+");
@@ -5824,7 +5764,7 @@ void window_menu_process(void)
 			gui_obj_set_prop(btn_names[i], GUI_OBJ_PAYLOAD, menu[i].index);
 		}
 
-		gui_arrange_buttons(btn_names, count, 4, 6);
+		gui_arrange_objects(btn_names, count, 4, 6);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}

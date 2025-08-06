@@ -22,7 +22,7 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...);
 int gui_obj_get_int_prop(const char * name, object_prop_t prop);
 char * gui_obj_get_string_prop(const char * name, object_prop_t prop);
 uint8_t gui_check_obj(const char * name1, const char * name2);
-void gui_arrange_buttons(const char names[][NAME_ARRAY_SIZE], uint8_t count, uint8_t cols, uint8_t interval);
+void gui_arrange_objects(const char names[][NAME_ARRAY_SIZE], uint8_t count, uint8_t cols, uint8_t interval);
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_OBJECTS_H_INCLUDED */
