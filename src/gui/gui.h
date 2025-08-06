@@ -47,10 +47,10 @@ struct gui_nvram_t {
 	uint8_t freq_swipe_enable;
 	uint8_t freq_swipe_step;
 #if WITHFT8
-	char ft8_callsign [callsign_max_lenght];
-	char ft8_qth [qth_max_lenght];
-	char ft8_snr [end_max_lenght];
-	char ft8_end [end_max_lenght];
+	char ft8_callsign[callsign_max_lenght];
+	char ft8_qth[qth_max_lenght];
+	char ft8_snr[end_max_lenght];
+	char ft8_end[end_max_lenght];
 	uint8_t ft8_band;
 	uint32_t ft8_txfreq_val;
 	uint8_t ft8_txfreq_equal;

@@ -41,10 +41,10 @@ static window_t windows[] = {
 window_t * get_win(uint8_t window_id)
 {
 	if (window_id == NO_PARENT_WINDOW)	//	костыль
-		return & windows [0];
+		return & windows[0];
 
 	ASSERT(window_id < WINDOWS_COUNT);
-	return & windows [window_id];
+	return & windows[window_id];
 }
 
 /* Открыть окно */
@@ -182,7 +182,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 			{
 				for (uint_fast8_t i = 0; i < win->bh_count; i++)
 				{
-					const button_t * bh = & win->bh_ptr [i];
+					const button_t * bh = & win->bh_ptr[i];
 					xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
 					ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
 					ASSERT(xmax < WITHGUIMAXX);
@@ -194,7 +194,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 			{
 				for (uint_fast8_t i = 0; i < win->lh_count; i++)
 				{
-					const label_t * lh = & win->lh_ptr [i];
+					const label_t * lh = & win->lh_ptr[i];
 					xmax = (xmax > lh->x + get_label_width(lh)) ? xmax : (lh->x + get_label_width(lh));
 					ymax = (ymax > lh->y + get_label_height(lh)) ? ymax : (lh->y + get_label_height(lh));
 					ASSERT(xmax < WITHGUIMAXX);
@@ -206,7 +206,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 			{
 				for (uint_fast8_t i = 0; i < win->tf_count; i++)
 				{
-					const text_field_t * tf = & win->tf_ptr [i];
+					const text_field_t * tf = & win->tf_ptr[i];
 					xmax = (xmax > tf->x1 + tf->w) ? xmax : (tf->x1 + tf->w);
 					ymax = (ymax > tf->y1 + tf->h) ? ymax : (tf->y1+ tf->h);
 					ASSERT(xmax < WITHGUIMAXX);
@@ -218,7 +218,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 			{
 				for (uint_fast8_t i = 0; i < win->sh_count; i++)
 				{
-					const slider_t * sh = & win->sh_ptr [i];
+					const slider_t * sh = & win->sh_ptr[i];
 					if (sh->orientation)	// ORIENTATION_HORIZONTAL
 					{
 						xmax = (xmax > sh->x + sh->size + sliders_w) ? xmax : (sh->x + sh->size + sliders_w);
@@ -249,7 +249,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	{
 		for (uint_fast8_t i = 0; i < win->bh_count; i++)
 		{
-			button_t * bh = & win->bh_ptr [i];
+			button_t * bh = & win->bh_ptr[i];
 			bh->x1 += shift_x;
 			bh->y1 += shift_y;
 			ASSERT(bh->x1 + bh->w < WITHGUIMAXX);
@@ -261,7 +261,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	{
 		for (uint_fast8_t i = 0; i < win->lh_count; i++)
 		{
-			label_t * lh = & win->lh_ptr [i];
+			label_t * lh = & win->lh_ptr[i];
 			lh->x += shift_x;
 			lh->y += shift_y;
 			ASSERT(lh->x + get_label_width(lh) < WITHGUIMAXX);
@@ -273,7 +273,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	{
 		for (uint_fast8_t i = 0; i < win->tf_count; i++)
 		{
-			text_field_t * tf = & win->tf_ptr [i];
+			text_field_t * tf = & win->tf_ptr[i];
 			tf->x1 += shift_x;
 			tf->y1 += shift_y;
 			ASSERT(tf->x1 + tf->w < WITHGUIMAXX);
@@ -285,7 +285,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 //	{
 //		for (uint_fast8_t i = 0; i < win->ta_count; i++)
 //		{
-//			text_field_t * ta = & win->ta_ptr [i];
+//			text_field_t * ta = & win->ta_ptr[i];
 //			ta->x1 += shift_x;
 //			ta->y1 += shift_y;
 //			ASSERT(ta->x1 + ta->w < WITHGUIMAXX);
@@ -297,7 +297,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	{
 		for (uint_fast8_t i = 0; i < win->sh_count; i++)
 		{
-			slider_t * sh = & win->sh_ptr [i];
+			slider_t * sh = & win->sh_ptr[i];
 			sh->x += shift_x;
 			sh->y += shift_y;
 //			ASSERT(sh->x < WITHGUIMAXX);

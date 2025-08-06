@@ -33,12 +33,12 @@
 #include "gui_windows.h"
 #include "gui_objects.h"
 
-val_step_t enc2step [] = {
+val_step_t enc2step[] = {
 	{ 100, "100 Hz", },
 	{ 500, "500 Hz", },
 };
 
-val_step_t freq_swipe_step [] = {
+val_step_t freq_swipe_step[] = {
 	{ 10, "10 Hz", },
 	{ 50, "50 Hz", },
 	{ 100, "100 Hz", },
@@ -66,7 +66,7 @@ static uint_fast8_t tmpstr_index = 0;
 
 //todo: перенести раскладку инфобара в конфиг
 static uint8_t infobar_selected = UINT8_MAX;
-const uint8_t infobar_places [infobar_num_places] = {
+const uint8_t infobar_places[infobar_num_places] = {
 		INFOBAR_AF,
 		INFOBAR_AF_VOLUME,
 		INFOBAR_ATT,
@@ -89,7 +89,7 @@ const uint8_t infobar_places [infobar_num_places] = {
 
 #include "ft8.h"
 
-const uint_fast32_t ft8_bands [] = {
+const uint_fast32_t ft8_bands[] = {
 		1840000uL,
 		3573000uL,
 		5357000uL,
@@ -146,16 +146,16 @@ void load_settings(void)
 		gui_nvram.freq_swipe_step = freq_swipe_step_default;
 
 #if WITHFT8
-	if ((uint8_t) gui_nvram.ft8_callsign [0] == UINT8_MAX)
+	if ((uint8_t) gui_nvram.ft8_callsign[0] == UINT8_MAX)
 		local_snprintf_P(gui_nvram.ft8_callsign, ARRAY_SIZE(gui_nvram.ft8_callsign), "RA4ASN");
 
-	if ((uint8_t) gui_nvram.ft8_snr [0] == UINT8_MAX)
+	if ((uint8_t) gui_nvram.ft8_snr[0] == UINT8_MAX)
 		local_snprintf_P(gui_nvram.ft8_snr, ARRAY_SIZE(gui_nvram.ft8_snr), "-20");
 
-	if ((uint8_t) gui_nvram.ft8_qth [0] == UINT8_MAX)
+	if ((uint8_t) gui_nvram.ft8_qth[0] == UINT8_MAX)
 		local_snprintf_P(gui_nvram.ft8_qth, ARRAY_SIZE(gui_nvram.ft8_qth), "LO10");
 
-	if ((uint8_t) gui_nvram.ft8_end [0] == UINT8_MAX)
+	if ((uint8_t) gui_nvram.ft8_end[0] == UINT8_MAX)
 		local_snprintf_P(gui_nvram.ft8_end, ARRAY_SIZE(gui_nvram.ft8_end), "RR73");
 
 	if ((uint8_t) gui_nvram.ft8_band == UINT8_MAX)
@@ -187,7 +187,7 @@ void save_settings(void)
 #if WITHGUIDEBUG
 void gui_add_debug(char d)
 {
-	static char str [TEXT_ARRAY_SIZE] = { 0 };
+	static char str[TEXT_ARRAY_SIZE] = { 0 };
 	static unsigned i = 0;
 
 	if (d == '\r')
@@ -199,7 +199,7 @@ void gui_add_debug(char d)
 	if (d != '\n')
 	{
 		if (i < TEXT_ARRAY_SIZE)
-			str [i ++ ] = d;
+			str[i ++ ] = d;
 	}
 	else
 	{
@@ -258,13 +258,13 @@ void window_infobar_menu_process(void)
 #if GUI_SHOW_INFOBAR
 	window_t * const win = get_win(WINDOW_INFOBAR_MENU);
 	unsigned interval = 5, yy = 0, need_close = 0, need_open = 255;
-	unsigned infobar = infobar_places [infobar_selected] & INFOBAR_VALID_MASK;
+	unsigned infobar = infobar_places[infobar_selected] & INFOBAR_VALID_MASK;
 
 	if (win->first_call)
 	{
 		win->first_call = 0;
 
-		static const button_t buttons [] = {
+		static const button_t buttons[] = {
 			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_INFOBAR_MENU, NON_VISIBLE, INT32_MAX, "btn_0", "",	},
 			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_INFOBAR_MENU, NON_VISIBLE, INT32_MAX, "btn_1", "",	},
 			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_INFOBAR_MENU, NON_VISIBLE, INT32_MAX, "btn_2", "",	},
@@ -285,7 +285,7 @@ void window_infobar_menu_process(void)
 		{
 			for (unsigned i = 0; i < 3; i ++)
 			{
-				char btn_name [6] = { 0 };
+				char btn_name[6] = { 0 };
 				local_snprintf_P(btn_name, ARRAY_SIZE(btn_name), PSTR("btn_%d"), i);
 				button_t * bh = (button_t *) find_gui_obj(TYPE_BUTTON, win, btn_name);
 				bh->x1 = 0;
@@ -317,7 +317,7 @@ void window_infobar_menu_process(void)
 		{
 			for (unsigned i = 0; i < 4; i ++)
 			{
-				char btn_name [6] = { 0 };
+				char btn_name[6] = { 0 };
 				local_snprintf_P(btn_name, ARRAY_SIZE(btn_name), PSTR("btn_%d"), i);
 				button_t * bh = (button_t *) find_gui_obj(TYPE_BUTTON, win, btn_name);
 
@@ -371,20 +371,20 @@ void window_infobar_menu_process(void)
 
 		case INFOBAR_ATT:
 		{
-			uint_fast8_t atts [6];
+			uint_fast8_t atts[6];
 			unsigned count = hamradio_get_att_dbs(atts, 6);
 
 			for (unsigned i = 0; i < count; i ++)
 			{
-				char btn_name [6] = { 0 };
+				char btn_name[6] = { 0 };
 				local_snprintf_P(btn_name, ARRAY_SIZE(btn_name), PSTR("btn_%d"), i);
 				button_t * bh = (button_t *) find_gui_obj(TYPE_BUTTON, win, btn_name);
 				bh->x1 = 0;
 				bh->y1 = yy;
 				bh->visible = VISIBLE;
 				bh->payload = i;
-				if (atts [i])
-					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "%d db", atts [i] / 10);
+				if (atts[i])
+					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "%d db", atts[i] / 10);
 				else
 					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "off");
 				yy = yy + interval + bh->h;
@@ -400,7 +400,7 @@ void window_infobar_menu_process(void)
 
 			for (unsigned i = 0; i < 6; i ++)
 			{
-				char btn_name [6] = { 0 };
+				char btn_name[6] = { 0 };
 				local_snprintf_P(btn_name, ARRAY_SIZE(btn_name), PSTR("btn_%d"), i);
 				button_t * bh = (button_t *) find_gui_obj(TYPE_BUTTON, win, btn_name);
 				bh->x1 = 0;
@@ -415,7 +415,7 @@ void window_infobar_menu_process(void)
 				}
 
 				bh->payload = i;
-				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "%s", bws.label [i]);
+				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "%s", bws.label[i]);
 				yy = yy + interval + bh->h;
 			}
 
@@ -585,7 +585,7 @@ void footer_buttons_state (uint_fast8_t state, ...)
 
 	for (uint_fast8_t i = 0; i < win->bh_count; i ++)
 	{
-		button_t * bh = & win->bh_ptr [i];
+		button_t * bh = & win->bh_ptr[i];
 
 		if (state == DISABLED && bt != NULL)
 			bitmask_locked_buttons |= bh->is_locked << i;
@@ -608,7 +608,7 @@ void gui_main_process(void)
 	window_t * const win = get_win(WINDOW_MAIN);
 
 	const gxdrawb_t * db = gui_get_drawbuf();
-	char buf [TEXT_ARRAY_SIZE];
+	char buf[TEXT_ARRAY_SIZE];
 	const unsigned buflen = ARRAY_SIZE(buf);
 	unsigned update = 0;
 	static unsigned freq_swipe;
@@ -628,7 +628,7 @@ void gui_main_process(void)
 #endif /* WITHLFM */
 
 #if WITHGUIDEBUG
-		static const text_field_t text_field [] = {
+		static const text_field_t text_field[] = {
 			{ TEXT_ARRAY_SIZE, 25, CANCELLED, WINDOW_MAIN, NON_VISIBLE, DOWN, NULL, "tf_debug", },
 		};
 		win->tf_count = ARRAY_SIZE(text_field);
@@ -643,7 +643,7 @@ void gui_main_process(void)
 		tf_debug->y1 = win->h / 2 - tf_debug->h / 2;
 #endif /* WITHGUIDEBUG */
 
-		static const button_t buttons [] = {
+		static const button_t buttons[] = {
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_txrx", 		"RX", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Bands", 	"Bands", 			},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Memory",  	"Memory", 			},
@@ -671,7 +671,7 @@ void gui_main_process(void)
 
 #if GUI_SHOW_INFOBAR
 
-		static const touch_area_t tas [] = {
+		static const touch_area_t tas[] = {
 			{ CANCELLED, WINDOW_MAIN, NON_VISIBLE, 0, INT32_MAX, "ta_infobar_1", },
 			{ CANCELLED, WINDOW_MAIN, NON_VISIBLE, 0, INT32_MAX, "ta_infobar_2", },
 			{ CANCELLED, WINDOW_MAIN, NON_VISIBLE, 0, INT32_MAX, "ta_infobar_3", },
@@ -689,7 +689,7 @@ void gui_main_process(void)
 
 		for (unsigned id = 0; id < infobar_num_places; id ++)
 		{
-			touch_area_t * ta = & win->ta_ptr [id];
+			touch_area_t * ta = & win->ta_ptr[id];
 			ta->x1 = id * infobar_label_width;
 			ta->y1 = infobar_1st_str_y;
 			ta->w = infobar_label_width;
@@ -710,7 +710,7 @@ void gui_main_process(void)
 
 		for (unsigned id = 0; id < win->bh_count; id ++)
 		{
-			button_t * bh = & win->bh_ptr [id];
+			button_t * bh = & win->bh_ptr[id];
 			bh->x1 = x;
 			bh->y1 = WITHGUIMAXY - bh->h - 1;
 			bh->visible = VISIBLE;
@@ -756,7 +756,7 @@ void gui_main_process(void)
 
 			infobar_selected = ta->index;
 			ASSERT(infobar_selected < infobar_num_places);
-			unsigned infobar = infobar_places [infobar_selected];
+			unsigned infobar = infobar_places[infobar_selected];
 
 			if (infobar != INFOBAR_EMPTY && ! ((infobar & INFOBAR_NOACTION) >> INFOBAR_NOACTION_POS))
 			{
@@ -941,7 +941,7 @@ void gui_main_process(void)
 
 	case WM_MESSAGE_ENC2_ROTATE:	// если не открыто 2-е окно, 2-й энкодер подстраивает частоту с округлением 500 гц от текущего значения
 	{
-		unsigned step = enc2step [gui_nvram.enc2step_pos].step;
+		unsigned step = enc2step[gui_nvram.enc2step_pos].step;
 		unsigned freq = hamradio_get_freq_rx();
 		unsigned f_rem = freq % step;
 
@@ -1037,7 +1037,7 @@ void gui_main_process(void)
 
 		for (unsigned current_place = 0; current_place < infobar_num_places; current_place ++)
 		{
-			uint_fast8_t infobar = infobar_places [current_place] & INFOBAR_VALID_MASK;
+			uint_fast8_t infobar = infobar_places[current_place] & INFOBAR_VALID_MASK;
 			COLORPIP_T str_color = (current_place == infobar_selected) && infobar_hl ? COLORPIP_BLACK : COLORPIP_WHITE;
 
 			switch (infobar)
@@ -1400,7 +1400,7 @@ void window_memory_process(void)
 
 		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			bh = & win->bh_ptr [i];
+			bh = & win->bh_ptr[i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -1530,7 +1530,7 @@ void window_bands_process(void)
 
 		for (unsigned r = 1; i < win->bh_count; i ++, r ++)
 		{
-			bh = & win->bh_ptr [i];
+			bh = & win->bh_ptr[i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -1542,7 +1542,7 @@ void window_bands_process(void)
 
 			max_x = (bh->x1 + bh->w > max_x) ? (bh->x1 + bh->w) : max_x;
 
-			if (bands [i].type != BAND_TYPE_HAM)
+			if (bands[i].type != BAND_TYPE_HAM)
 			{
 				// кнопка прямого ввода частоты
 				local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_freq"));
@@ -1552,16 +1552,16 @@ void window_bands_process(void)
 				break;
 			}
 
-			bh->payload = bands [i].init_freq;
+			bh->payload = bands[i].init_freq;
 
-			char * div = strchr(bands [i].name, ' ');
+			char * div = strchr(bands[i].name, ' ');
 			if(div)
 				memcpy(div, "|", 1);
 
 			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_ham_%d"), i);
-			strcpy(bh->text, bands [i].name);
+			strcpy(bh->text, bands[i].name);
 
-			if (hamradio_check_current_freq_by_band(bands [i].index))
+			if (hamradio_check_current_freq_by_band(bands[i].index))
 				bh->is_locked = BUTTON_LOCKED;
 
 #if WITHAD936XIIO || WITHAD936XDEV
@@ -1590,7 +1590,7 @@ void window_bands_process(void)
 
 		for (unsigned r = 1; i < win->bh_count; i ++, r ++)
 		{
-			bh = & win->bh_ptr [i];
+			bh = & win->bh_ptr[i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -1599,11 +1599,11 @@ void window_bands_process(void)
 			bh->h = 44;
 			bh->state = CANCELLED;
 			bh->parent = WINDOW_BANDS;
-			bh->payload = bands [i - 1].init_freq;
+			bh->payload = bands[i - 1].init_freq;
 			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_bcast_%d"), i);
-			strcpy(bh->text, bands [i - 1].name);
+			strcpy(bh->text, bands[i - 1].name);
 
-			if (hamradio_check_current_freq_by_band(bands [i - 1].index))
+			if (hamradio_check_current_freq_by_band(bands[i - 1].index))
 				bh->is_locked = BUTTON_LOCKED;
 
 #if WITHAD936XIIO || WITHAD936XDEV
@@ -1689,7 +1689,7 @@ void window_options_process(void)
 
 		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			button_t * bh = & win->bh_ptr [i];
+			button_t * bh = & win->bh_ptr[i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -1803,7 +1803,7 @@ void window_display_process(void)
 		display_t.change = 0;
 		display_t.updated = 1;
 
-		static const button_t buttons [] = {
+		static const button_t buttons[] = {
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_zoom", 		"", },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_view", 		"", },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_params", 		"", },
@@ -1822,7 +1822,7 @@ void window_display_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		static const label_t labels [] = {
+		static const label_t labels[] = {
 			{	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_topSP",    "Top    : xxx db", FONT_MEDIUM, COLORPIP_WHITE, TYPE_DISPLAY_SP_TOP, 	},
 			{	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_bottomSP", "Bottom : xxx db", FONT_MEDIUM, COLORPIP_WHITE, TYPE_DISPLAY_SP_BOTTOM, },
 			{	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_topWF",    "Top    : xxx db", FONT_MEDIUM, COLORPIP_WHITE, TYPE_DISPLAY_WF_TOP, 	},
@@ -2014,10 +2014,10 @@ void window_display_process(void)
 		local_snprintf_P(btn_params->text, ARRAY_SIZE(btn_params->text), PSTR("WF params|%s"), hamradio_get_gwflevelsep() ? "separate" : "from SP");
 
 		for(unsigned i = 0; i < win->lh_count; i ++)
-			win->lh_ptr [i].color = COLORPIP_WHITE;
+			win->lh_ptr[i].color = COLORPIP_WHITE;
 
 		ASSERT(display_t.select < win->lh_count);
-		win->lh_ptr [display_t.select].color = COLORPIP_YELLOW;
+		win->lh_ptr[display_t.select].color = COLORPIP_YELLOW;
 
 		label_t * lbl_topSP = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_topSP");
 		label_t * lbl_bottomSP = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_bottomSP");
@@ -2076,7 +2076,7 @@ void window_utilites_process(void)
 
 		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			button_t * bh = & win->bh_ptr [i];
+			button_t * bh = & win->bh_ptr[i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -2308,9 +2308,9 @@ void window_swrscan_process(void)
 		}
 
 		const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале индикатора
-		y_vals [i] = normalize(get_swr(swr_fullscale), 0, swr_fullscale, y0 - y1);
+		y_vals[i] = normalize(get_swr(swr_fullscale), 0, swr_fullscale, y0 - y1);
 		if (i)
-			y_vals [i] = (y_vals [i - 1] * (averageFactor - 1) + y_vals [i]) / averageFactor;
+			y_vals[i] = (y_vals[i - 1] * (averageFactor - 1) + y_vals[i]) / averageFactor;
 		i++;
 	}
 
@@ -2320,7 +2320,7 @@ void window_swrscan_process(void)
 		gui_drawline(x0, y0, x0, y1, COLORPIP_WHITE);
 		gui_drawline(x0, y0, x1, y0, COLORPIP_WHITE);
 
-		char buf [5];
+		char buf[5];
 		uint_fast8_t l = 1, row_step = roundf((y0 - y1) / 3);
 		uint8_t charw = gothic_11x13.width, charh = gothic_11x13.height;
 
@@ -2350,7 +2350,7 @@ void window_swrscan_process(void)
 		if (is_swr_scanning || swr_scan_done)	// вывод графика во время сканирования и по завершении
 		{
 			for(uint_fast16_t j = 2; j <= i; j ++)
-				gui_drawline(x0 + j - 2, y0 - y_vals [j - 2], x0 + j - 1, y0 - y_vals [j - 1], COLORPIP_YELLOW);
+				gui_drawline(x0 + j - 2, y0 - y_vals[j - 2], x0 + j - 1, y0 - y_vals[j - 1], COLORPIP_YELLOW);
 		}
 	}
 #endif /* WITHSWRSCAN */
@@ -2379,7 +2379,7 @@ void window_tx_process(void)
 
 		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			button_t * bh = & win->bh_ptr [i];
+			button_t * bh = & win->bh_ptr[i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -2479,7 +2479,7 @@ void window_tx_vox_process(void)
 		unsigned interval = 50;
 		win->first_call = 0;
 
-		static const button_t buttons [] = {
+		static const button_t buttons[] = {
 			{  44, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TX_VOX_SETT, NON_VISIBLE, INT32_MAX, "btn_tx_vox_OK", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -2488,7 +2488,7 @@ void window_tx_vox_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		static const slider_t sliders [] = {
+		static const slider_t sliders[] = {
 			{ ORIENTATION_HORIZONTAL, WINDOW_TX_VOX_SETT, "sl_vox_delay",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ ORIENTATION_HORIZONTAL, WINDOW_TX_VOX_SETT, "sl_vox_level",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ ORIENTATION_HORIZONTAL, WINDOW_TX_VOX_SETT, "sl_avox_level", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
@@ -2499,7 +2499,7 @@ void window_tx_vox_process(void)
 		GUI_MEM_ASSERT(win->sh_ptr);
 		memcpy(win->sh_ptr, sliders, sliders_size);
 
-		static const label_t labels [] = {
+		static const label_t labels[] = {
 			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_delay",    	 "", FONT_MEDIUM, COLORPIP_WHITE, },
 			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_level",    	 "", FONT_MEDIUM, COLORPIP_WHITE, },
 			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_avox_level",   	 "", FONT_MEDIUM, COLORPIP_WHITE, },
@@ -2801,10 +2801,10 @@ void window_tx_power_process(void)
 		}
 
 		for(unsigned i = 0; i < win->lh_count; i ++)
-			win->lh_ptr [i].color = COLORPIP_WHITE;
+			win->lh_ptr[i].color = COLORPIP_WHITE;
 
 		ASSERT(pw.select < win->lh_count);
-		win->lh_ptr [pw.select].color = COLORPIP_YELLOW;
+		win->lh_ptr[pw.select].color = COLORPIP_YELLOW;
 	}
 
 #endif /* WITHPOWERTRIM && WITHTX */
@@ -2824,7 +2824,7 @@ void window_audiosettings_process(void)
 		win->first_call = 0;
 		update = 1;
 
-		static const button_t buttons [] = {
+		static const button_t buttons[] = {
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_reverb", 		 "Reverb|OFF", 		 },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_eq", 		 "MIC EQ|OFF", 		 },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_profiles", 	 "MIC|profiles", 	 },
@@ -2847,7 +2847,7 @@ void window_audiosettings_process(void)
 
 		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			button_t * bh = & win->bh_ptr [i];
+			button_t * bh = & win->bh_ptr[i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -2990,7 +2990,7 @@ void window_ap_reverb_process(void)
 		uint_fast8_t interval = 60;
 		win->first_call = 0;
 
-		static const button_t buttons [] = {
+		static const button_t buttons[] = {
 			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AP_REVERB_SETT,	NON_VISIBLE, INT32_MAX, "btn_REVs_ok", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -2999,7 +2999,7 @@ void window_ap_reverb_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		static const label_t labels [] = {
+		static const label_t labels[] = {
 			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay",		"", FONT_MEDIUM, COLORPIP_WHITE, },
 			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss", 		"", FONT_MEDIUM, COLORPIP_WHITE, },
 			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay_min", 	"", FONT_SMALL, COLORPIP_WHITE, },
@@ -3013,7 +3013,7 @@ void window_ap_reverb_process(void)
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		slider_t sliders [] = {
+		slider_t sliders[] = {
 			{ ORIENTATION_HORIZONTAL, WINDOW_AP_REVERB_SETT, 	"reverbDelay", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ ORIENTATION_HORIZONTAL, WINDOW_AP_REVERB_SETT, 	"reverbLoss",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 		};
@@ -3132,7 +3132,7 @@ void window_ap_mic_eq_process(void)
 
 	label_t * lbl = NULL;
 	static unsigned eq_limit, eq_base = 0, id = 0;
-	char buf [TEXT_ARRAY_SIZE];
+	char buf[TEXT_ARRAY_SIZE];
 	static int mid_y = 0;
 	static button_t * btn_EQ_ok;
 
@@ -3141,7 +3141,7 @@ void window_ap_mic_eq_process(void)
 		unsigned x, y, mid_w, interval = 70;
 		win->first_call = 0;
 
-		static const button_t buttons [] = {
+		static const button_t buttons[] = {
 			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AP_MIC_EQ, 	NON_VISIBLE, INT32_MAX, "btn_EQ_ok", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -3150,7 +3150,7 @@ void window_ap_mic_eq_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		static const label_t labels [] = {
+		static const label_t labels[] = {
 			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.08_val", 	"", FONT_LARGE, COLORPIP_YELLOW, },
 			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.23_val", 	"", FONT_LARGE, COLORPIP_YELLOW, },
 			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.65_val",  "", FONT_LARGE, COLORPIP_YELLOW, },
@@ -3168,7 +3168,7 @@ void window_ap_mic_eq_process(void)
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		static const slider_t sliders [] = {
+		static const slider_t sliders[] = {
 			{ ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.08", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 0, },
 			{ ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.23", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 1, },
 			{ ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.65", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 2, },
@@ -3190,7 +3190,7 @@ void window_ap_mic_eq_process(void)
 
 		for (id = 0; id < win->sh_count; id++)
 		{
-			sl = & win->sh_ptr [id];
+			sl = & win->sh_ptr[id];
 
 			sl->x = x;
 			sl->size = 200;
@@ -3285,7 +3285,7 @@ void window_af_eq_process(void)
 
 	label_t * lbl = NULL;
 	static uint_fast32_t eq_limit, eq_base = 0;
-	char buf [TEXT_ARRAY_SIZE];
+	char buf[TEXT_ARRAY_SIZE];
 	static int_fast16_t mid_y = 0;
 	static uint_fast32_t id = 0, eq_w = 0;
 
@@ -3295,7 +3295,7 @@ void window_af_eq_process(void)
 		uint_fast8_t interval = 70;
 		win->first_call = 0;
 
-		static const button_t buttons [] = {
+		static const button_t buttons[] = {
 			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AF_EQ, NON_VISIBLE, INT32_MAX, "btn_EQ_ok", "OK", },
 			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AF_EQ, NON_VISIBLE, INT32_MAX, "btn_EQ_enable", "", },
 		};
@@ -3305,7 +3305,7 @@ void window_af_eq_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		static const label_t labels [] = {
+		static const label_t labels[] = {
 			{	WINDOW_AF_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq400_val", 	"", FONT_LARGE, COLORPIP_YELLOW, },
 			{	WINDOW_AF_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq1500_val", 	"", FONT_LARGE, COLORPIP_YELLOW, },
 			{	WINDOW_AF_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq2700_val",  "", FONT_LARGE, COLORPIP_YELLOW, },
@@ -3319,7 +3319,7 @@ void window_af_eq_process(void)
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		static const slider_t sliders [] = {
+		static const slider_t sliders[] = {
 			{ ORIENTATION_VERTICAL, WINDOW_AF_EQ, "eq400", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 0, },
 			{ ORIENTATION_VERTICAL, WINDOW_AF_EQ, "eq1500", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 1, },
 			{ ORIENTATION_VERTICAL, WINDOW_AF_EQ, "eq2700", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 2, },
@@ -3339,7 +3339,7 @@ void window_af_eq_process(void)
 
 		for (id = 0; id < win->sh_count; id++)
 		{
-			sl = & win->sh_ptr [id];
+			sl = & win->sh_ptr[id];
 
 			sl->x = x;
 			sl->size = 200;
@@ -3465,7 +3465,7 @@ void window_ap_mic_process(void)
 		uint_fast8_t interval = 50;
 		win->first_call = 0;
 
-		static const button_t buttons [] = {
+		static const button_t buttons[] = {
 			{  86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_agc",   "AGC|OFF",   },
 			{  86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_boost", "Boost|OFF", },
 			{  86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_OK",    "OK", 		  },
@@ -3476,7 +3476,7 @@ void window_ap_mic_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		static const label_t labels [] = {
+		static const label_t labels[] = {
 			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micLevel", 	  "", FONT_MEDIUM, COLORPIP_WHITE, },
 			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micClip",  	  "", FONT_MEDIUM, COLORPIP_WHITE, },
 			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micAGC",   	  "", FONT_MEDIUM, COLORPIP_WHITE, },
@@ -3493,7 +3493,7 @@ void window_ap_mic_process(void)
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		static const slider_t sliders [] = {
+		static const slider_t sliders[] = {
 			{ ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, "sl_micLevel", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, "sl_micClip",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
 			{ ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, "sl_micAGC",   CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
@@ -3685,7 +3685,7 @@ void window_ap_mic_prof_process(void)
 		unsigned x = 0, y = 0, interval = 6, row_count = 3;
 		win->first_call = 0;
 
-		static const button_t buttons [] = {
+		static const button_t buttons[] = {
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_1", "", 0, },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_2", "", 1, },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_3", "", 2, },
@@ -3702,7 +3702,7 @@ void window_ap_mic_prof_process(void)
 		unsigned i, r;
 		for (i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			button_t * bh = & win->bh_ptr [i];
+			button_t * bh = & win->bh_ptr[i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -3788,7 +3788,7 @@ void window_notch_process(void)
 		notch.change = 0;
 		notch.updated = 1;
 
-		static const button_t buttons [] = {
+		static const button_t buttons[] = {
 			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_NOTCH, NON_VISIBLE, -1, "btn_freq-",  "-", },
 			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btn_freq+",  "+", },
 			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_NOTCH, NON_VISIBLE, -1, "btn_width-", "-", },
@@ -3802,7 +3802,7 @@ void window_notch_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		static const label_t labels [] = {
+		static const label_t labels[] = {
 			{ WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_freq",  "Freq:  *******",  FONT_MEDIUM, COLORPIP_YELLOW, },
 			{ WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_width", "Width: *******",  FONT_MEDIUM, COLORPIP_WHITE,  },
 			{ WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_type",  "Type: ",  		   FONT_MEDIUM, COLORPIP_WHITE,  },
@@ -3939,10 +3939,10 @@ void window_notch_process(void)
 		notch.updated = 0;
 
 		for(unsigned i = 0; i < win->lh_count; i ++)
-			win->lh_ptr [i].color = COLORPIP_WHITE;
+			win->lh_ptr[i].color = COLORPIP_WHITE;
 
 		ASSERT(notch.select < win->lh_count);
-		win->lh_ptr [notch.select].color = COLORPIP_YELLOW;
+		win->lh_ptr[notch.select].color = COLORPIP_YELLOW;
 
 		unsigned type = hamradio_get_gnotchtype();
 		btn_Auto->is_locked = type == BOARD_NOTCH_AUTO ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
@@ -3965,7 +3965,7 @@ void window_gui_settings_process(void)
 		unsigned x = 0, y = 0, interval = 6, row_count = 4;
 		win->first_call = 0;
 
-		static const button_t buttons [] = {
+		static const button_t buttons[] = {
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_enc2_step",  "", },
 			{ 110, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_freq_swipe", "", },
 			{ 110, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_freq_swipe_step", "", },
@@ -3978,7 +3978,7 @@ void window_gui_settings_process(void)
 
 		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
-			button_t * bh = & win->bh_ptr [i];
+			button_t * bh = & win->bh_ptr[i];
 			bh->x1 = x;
 			bh->y1 = y;
 			bh->visible = VISIBLE;
@@ -4039,7 +4039,7 @@ void window_gui_settings_process(void)
 	{
 		update = 0;
 		button_t * btn_enc2_step = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_enc2_step");
-		local_snprintf_P(btn_enc2_step->text, ARRAY_SIZE(btn_enc2_step->text), "Enc2 step|%s", enc2step [gui_nvram.enc2step_pos].label);
+		local_snprintf_P(btn_enc2_step->text, ARRAY_SIZE(btn_enc2_step->text), "Enc2 step|%s", enc2step[gui_nvram.enc2step_pos].label);
 
 		button_t * btn_freq_swipe = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_freq_swipe");
 		btn_freq_swipe->is_locked = gui_nvram.freq_swipe_enable != 0;
@@ -4081,7 +4081,7 @@ void window_shift_process(void)
 
 		for (unsigned i = 0; i < win->lh_count; i ++)
 		{
-			label_t * lh = & win->lh_ptr [i];
+			label_t * lh = & win->lh_ptr[i];
 
 			lh->x = x;
 			lh->y = y;
@@ -4097,7 +4097,7 @@ void window_shift_process(void)
 
 		for (unsigned i = 0; i < win->bh_count; i ++)
 		{
-			button_t * bh = & win->bh_ptr [i];
+			button_t * bh = & win->bh_ptr[i];
 
 			bh->x1 = x;
 			bh->y1 = 0;
@@ -4165,25 +4165,25 @@ void window_shift_process(void)
 		enc.updated = 0;
 
 		for(unsigned i = 0; i < win->lh_count; i ++)
-			win->lh_ptr [i].color = COLORPIP_WHITE;
+			win->lh_ptr[i].color = COLORPIP_WHITE;
 
 		ASSERT(enc.select < win->lh_count);
 
 		if (enc.select == 0)
 		{
-			win->lh_ptr [0].color = COLORPIP_YELLOW;
+			win->lh_ptr[0].color = COLORPIP_YELLOW;
 			unsigned v = iq_shift_cic_rx(0);
 			iq_shift_cic_rx(v + enc.change);
 		}
 		else if (enc.select == 1)
 		{
-			win->lh_ptr [1].color = COLORPIP_YELLOW;
+			win->lh_ptr[1].color = COLORPIP_YELLOW;
 			unsigned v = iq_shift_fir_rx(0);
 			iq_shift_fir_rx(v + enc.change);
 		}
 		else if (enc.select == 2)
 		{
-			win->lh_ptr [2].color = COLORPIP_YELLOW;
+			win->lh_ptr[2].color = COLORPIP_YELLOW;
 			unsigned v = iq_shift_tx(0);
 			iq_shift_tx(v + enc.change);
 		}
@@ -4251,7 +4251,7 @@ void window_uif_process(void)
 		reinit = 1;
 		static const unsigned win_width = 170;
 
-		static const button_t buttons [] = {
+		static const button_t buttons[] = {
 			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_UIF, NON_VISIBLE, -1, "btn_UIF-", "-", },
 			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_UIF, NON_VISIBLE, 1,  "btn_UIF+", "+", },
 		};
@@ -4261,7 +4261,7 @@ void window_uif_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		static const label_t labels [] = {
+		static const label_t labels[] = {
 			{	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", "**", FONT_LARGE, COLORPIP_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
@@ -4366,7 +4366,7 @@ void gui_open_sys_menu(void)
 #if WITHFT8
 
 static unsigned parse_ft8buf = 0, idx_cqcall = 0, cq_filter = 0;
-static char cq_call [6][10];
+static char cq_call[6][10];
 
 void hamradio_gui_parse_ft8buf(void)
 {
@@ -4379,8 +4379,8 @@ static void parse_ft8_answer(char * str, COLORPIP_T * color, unsigned * cq_flag)
 {
 	* color = COLORPIP_WHITE;
 	* cq_flag = 0;
-	char tmpstr [TEXT_ARRAY_SIZE];
-	char lexem [10][10]; // time; freq; snr; text 2 - 4 pcs
+	char tmpstr[TEXT_ARRAY_SIZE];
+	char lexem[10][10]; // time; freq; snr; text 2 - 4 pcs
 	char * next;
 	strcpy(tmpstr, str);
 
@@ -4399,13 +4399,13 @@ static void parse_ft8_answer(char * str, COLORPIP_T * color, unsigned * cq_flag)
 		* color = COLORPIP_GREEN;
 		* cq_flag = 1;
 		if (idx_cqcall < ARRAY_SIZE(cq_call))
-			strcpy(cq_call [idx_cqcall ++], lexem[4]);
+			strcpy(cq_call[idx_cqcall ++], lexem[4]);
 	}
 	else if (! strcmp(lexem[3], gui_nvram.ft8_callsign))
 	{
 		* color = COLORPIP_RED;
 		* cq_flag = 1;
-		strcpy(cq_call [idx_cqcall ++], lexem[4]);
+		strcpy(cq_call[idx_cqcall ++], lexem[4]);
 	}
 }
 
@@ -4417,40 +4417,19 @@ void window_ft8_bands_process(void)
 	{
 		win->first_call = 0;
 		unsigned cols = ft8_bands_count > 10 ? 4 : 5, interval = 15, x = 0, y = 0;
-		button_t * bh;
+		char btns[ft8_bands_count][NAME_ARRAY_SIZE];
+		uint32_t rx_freq = hamradio_get_freq_rx();
 
-		win->bh_count = ft8_bands_count;
-		unsigned buttons_size = win->bh_count * sizeof (button_t);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-
-		unsigned freq = hamradio_get_freq_rx();
-
-		for (unsigned i = 0; i < win->bh_count; i ++)
+		for (int i = 0; i < ft8_bands_count; i ++)
 		{
-			bh = & win->bh_ptr [i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->w = 86;
-			bh->h = 44;
-			bh->state = CANCELLED;
-			bh->visible = VISIBLE;
-			bh->parent = WINDOW_FT8_BANDS;
-			bh->index = i;
-			bh->is_long_press = 0;
-			bh->is_repeating = 0;
-			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), "btn_bands_%02d", i);
-			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "%dk", ft8_bands [i] / 1000);
-			bh->payload = ft8_bands [i];
-			bh->is_locked = freq == bh->payload ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
-
-			x = x + interval + bh->w;
-			if ((i + 1) % cols == 0)
-			{
-				x = 0;
-				y = y + bh->h + interval;
-			}
+			local_snprintf_P(btns[i], NAME_ARRAY_SIZE, "btn_bands_%02d", i);
+			gui_obj_create(btns[i], 86, 44, 0, 0, "");
+			gui_obj_set_prop(btns[i], GUI_OBJ_TEXT_FMT, "%dk", ft8_bands[i] / 1000);
+			gui_obj_set_prop(btns[i], GUI_OBJ_PAYLOAD, i);
+			gui_obj_set_prop(btns[i], GUI_OBJ_LOCK, rx_freq == ft8_bands[i]);
 		}
+
+		gui_arrange_objects(btns, ft8_bands_count, cols, interval);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -4461,9 +4440,8 @@ void window_ft8_bands_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			gui_nvram.ft8_band = bh->index;
-			hamradio_set_freq(ft8_bands [gui_nvram.ft8_band]);
+			gui_nvram.ft8_band = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
+			hamradio_set_freq(ft8_bands[gui_nvram.ft8_band]);
 			close_window(OPEN_PARENT_WINDOW);
 		}
 
@@ -4482,66 +4460,32 @@ void window_ft8_settings_process(void)
 	if (win->first_call)
 	{
 		win->first_call = 0;
-		unsigned interval = 10;
+		unsigned interval = 20;
 
-		gui_obj_create("btn_callsign", 86, 30, 0, 0, "Callsign");
-		gui_obj_create("btn_qth", 86, 30, 0, 0, "QTH");
-		gui_obj_create("btn_freq", 86, 30, 0, 0, "TX freq");
-		gui_obj_create("btn_freq_eq", 86, 30, 0, 0, "");
-		gui_obj_create("btn_time0", 86, 30, 0, 0, "Time >0<");
-		gui_obj_create("btn_OK", 40, 40, 0, 0, "OK");
+		const char btns[6][NAME_ARRAY_SIZE] = { "btn_callsign", "btn_qth", "btn_freq", "btn_freq_eq", "btn_time0", "btn_OK" };
+
+		gui_obj_create("btn_callsign", 86, 44, 0, 0, "Callsign");
+		gui_obj_create("btn_qth", 86, 44, 0, 0, "QTH");
+		gui_obj_create("btn_freq", 86, 44, 0, 0, "TX freq");
+		gui_obj_create("btn_freq_eq", 86, 44, 0, 0, "TX on RX|freq");
+		gui_obj_create("btn_time0", 86, 44, 0, 0, "Time >0<");
+		gui_obj_create("btn_OK", 44, 44, 0, 0, "OK");
 
 		gui_obj_create("lbl_callsign", FONT_MEDIUM, COLORPIP_WHITE, 10);
 		gui_obj_create("lbl_qth", FONT_MEDIUM, COLORPIP_WHITE, 10);
 		gui_obj_create("lbl_txfreq", FONT_MEDIUM, COLORPIP_WHITE, 10);
 
-		label_t * lbl_callsign = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_callsign");
-		label_t * lbl_qth = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_qth");
-		label_t * lbl_txfreq = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_txfreq");
-		button_t * btn_callsign = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_callsign");
-		button_t * btn_qth = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_qth");
-		button_t * btn_freq = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_freq");
-		button_t * btn_OK = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_OK");
-		button_t * btn_time0 = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_time0");
+		gui_arrange_objects(btns, 4, 1, interval);
+		gui_arrange_objects(& btns[3], 3, 3, interval);
 
-		unsigned lbllen = get_label_width(lbl_callsign);
+		gui_obj_align_to("lbl_callsign", "btn_callsign", ALIGN_RIGHT_UP_MID, interval);
+		gui_obj_align_to("lbl_qth", "btn_qth", ALIGN_RIGHT_UP_MID, interval);
+		gui_obj_align_to("lbl_txfreq", "btn_freq", ALIGN_RIGHT_UP_MID, interval);
 
-		btn_freq->x1 = lbllen + interval;
-		btn_freq->y1 = 0;
-		btn_freq->visible = VISIBLE;
-
-		btn_callsign->x1 = btn_freq->x1;
-		btn_callsign->y1 = btn_freq->y1 + btn_freq->h + interval * 2;
-		btn_callsign->visible = VISIBLE;
-		btn_callsign->payload = 1;
-
-		btn_qth->x1 = btn_callsign->x1;
-		btn_qth->y1 = btn_callsign->y1 + btn_callsign->h + interval * 2;
-		btn_qth->visible = VISIBLE;
-		btn_qth->payload = 2;
-
-		lbl_txfreq->x = 0;
-		lbl_txfreq->y = btn_freq->y1 + btn_freq->h / 2 - get_label_height(lbl_txfreq) / 2;
-		lbl_txfreq->visible = VISIBLE;
-		local_snprintf_P(lbl_txfreq->text, ARRAY_SIZE(lbl_txfreq->text), "%d Hz", (int) gui_nvram.ft8_txfreq_val);
-
-		lbl_callsign->x = 0;
-		lbl_callsign->y = btn_callsign->y1 + btn_callsign->h / 2 - get_label_height(lbl_callsign) / 2;
-		lbl_callsign->visible = VISIBLE;
-		local_snprintf_P(lbl_callsign->text, ARRAY_SIZE(lbl_callsign->text), "%s", gui_nvram.ft8_callsign);
-
-		lbl_qth->x = 0;
-		lbl_qth->y = btn_qth->y1 + btn_qth->h / 2 - get_label_height(lbl_qth) / 2;
-		lbl_qth->visible = VISIBLE;
-		local_snprintf_P(lbl_qth->text, ARRAY_SIZE(lbl_qth->text), "%s", gui_nvram.ft8_qth);
-
-		btn_time0->x1 = btn_qth->x1;
-		btn_time0->y1 = btn_qth->y1 + btn_qth->h + interval * 2;
-		btn_time0->visible = VISIBLE;
-
-		btn_OK->x1 = 0;
-		btn_OK->y1 = btn_time0->y1;
-		btn_OK->visible = VISIBLE;
+		gui_obj_set_prop("lbl_txfreq", GUI_OBJ_TEXT_FMT, "%d Hz", (int) gui_nvram.ft8_txfreq_val);
+		gui_obj_set_prop("lbl_callsign", GUI_OBJ_TEXT_FMT, "%s", gui_nvram.ft8_callsign);
+		gui_obj_set_prop("lbl_qth", GUI_OBJ_TEXT_FMT, "%s", gui_nvram.ft8_qth);
+		gui_obj_set_prop("btn_freq_eq", GUI_OBJ_LOCK, gui_nvram.ft8_txfreq_equal);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -4552,13 +4496,9 @@ void window_ft8_settings_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-
-			if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_OK"))
-			{
+			if (gui_check_obj(name, "btn_OK"))
 				close_window(OPEN_PARENT_WINDOW);
-			}
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_freq"))
+			else if (gui_check_obj(name, "btn_freq"))
 			{
 				uint32_t f = gui_nvram.ft8_txfreq_val;
 				keyboard_edit_digits(& f);
@@ -4566,16 +4506,21 @@ void window_ft8_settings_process(void)
 				uint32_t h = hamradio_get_high_bp(0) * 10;
 				gui_nvram.ft8_txfreq_val = (f >= l && f <= h) ? f : gui_nvram.ft8_txfreq_val;
 			}
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_time0"))
+			else if (gui_check_obj(name, "btn_time0"))
 			{
 				uint_fast8_t hour, minute, seconds;
 				board_rtc_cached_gettime(& hour, & minute, & seconds);
 				seconds = 0;
 				board_rtc_settime(hour, minute, seconds);
 			}
-			else if (bh->payload == 1)
+			else if (gui_check_obj(name, "btn_freq_eq"))
+			{
+				gui_nvram.ft8_txfreq_equal = ! gui_nvram.ft8_txfreq_equal;
+				gui_obj_set_prop("btn_freq_eq", GUI_OBJ_LOCK, gui_nvram.ft8_txfreq_equal);
+			}
+			else if (gui_check_obj(name, "btn_callsign"))
 				keyboard_edit_string((uintptr_t) & gui_nvram.ft8_callsign, 10, 0);
-			else if (bh->payload == 2)
+			else if (gui_check_obj(name, "btn_qth"))
 				keyboard_edit_string((uintptr_t) & gui_nvram.ft8_qth, 10, 0);
 		}
 
@@ -4655,7 +4600,7 @@ void window_ft8_process(void)
 #endif
 
 		calculate_window_position(win, WINDOW_POSITION_FULLSCREEN);
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands [gui_nvram.ft8_band] / 1000, hour, minute, seconds);
+		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands[gui_nvram.ft8_band] / 1000, hour, minute, seconds);
 
 		if (! work)
 		{
@@ -4665,7 +4610,7 @@ void window_ft8_process(void)
 			viewtemp = hamradio_get_viewstyle();
 			hamradio_settemp_viewstyle(VIEW_LINE);
 
-			hamradio_set_freq(ft8_bands [gui_nvram.ft8_band]);
+			hamradio_set_freq(ft8_bands[gui_nvram.ft8_band]);
 			hamradio_change_submode(ft8_mode, 0);
 			hamradio_set_gzoomxpow2(BOARD_FFTZOOM_POW2MAX);
 			memset(ft8.rx_text, '\0', ft8_text_records * ft8_text_length);
@@ -4687,7 +4632,7 @@ void window_ft8_process(void)
 
 		for (unsigned i = 0; i < ft8.decoded_messages; i ++)
 		{
-			char * msg = ft8.rx_text [i];
+			char * msg = ft8.rx_text[i];
 			remove_end_line_spaces(msg);
 			if (! strlen(msg)) break;
 			COLORPIP_T colorline;
@@ -4782,11 +4727,11 @@ void window_ft8_process(void)
 
 		for (unsigned i = 0; i < 6; i ++)
 		{
-			const char * lh = lh_array_cq [i];
+			const char * lh = lh_array_cq[i];
 
-			if (strlen(cq_call [i]))
+			if (strlen(cq_call[i]))
 			{
-				gui_obj_set_prop(lh, GUI_OBJ_TEXT, cq_call [i]);
+				gui_obj_set_prop(lh, GUI_OBJ_TEXT, cq_call[i]);
 				gui_obj_set_prop(lh, GUI_OBJ_VISIBLE, VISIBLE);
 
 				if (gui_obj_get_int_prop(lh, GUI_OBJ_PAYLOAD) == selected_label_cq)
@@ -4805,12 +4750,12 @@ void window_ft8_process(void)
 		if (labels_tx_update)
 		{
 			labels_tx_update = 0;
-			gui_obj_set_prop(lh_array_tx [1], GUI_OBJ_TEXT_FMT, "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_qth);
-			gui_obj_set_prop(lh_array_tx [2], GUI_OBJ_TEXT_FMT, "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_snr);
-			gui_obj_set_prop(lh_array_tx [3], GUI_OBJ_TEXT_FMT, "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_end);
+			gui_obj_set_prop(lh_array_tx[1], GUI_OBJ_TEXT_FMT, "%s %s %s", cq_call[selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_qth);
+			gui_obj_set_prop(lh_array_tx[2], GUI_OBJ_TEXT_FMT, "%s %s %s", cq_call[selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_snr);
+			gui_obj_set_prop(lh_array_tx[3], GUI_OBJ_TEXT_FMT, "%s %s %s", cq_call[selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_end);
 		}
 
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands [gui_nvram.ft8_band] / 1000, hour, minute, seconds);
+		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands[gui_nvram.ft8_band] / 1000, hour, minute, seconds);
 	}
 }
 
@@ -4895,7 +4840,7 @@ void window_af_process(void)
 	{
 		bp_t.updated = 0;
 
-		char str_low [TEXT_ARRAY_SIZE], str_high [TEXT_ARRAY_SIZE];
+		char str_low[TEXT_ARRAY_SIZE], str_high[TEXT_ARRAY_SIZE];
 		const unsigned bp_wide = hamradio_get_bp_type_wide();
 		if (bp_wide)						// BWSET_WIDE
 		{
@@ -5343,7 +5288,7 @@ void window_kbd_process(void)
 	const char kbd_cap[] = ",.!@#*()?;QWERTYUIOPASDFGHJKLZXCVBNM";
 	const char kbd_low[] = "1234567890qwertyuiopasdfghjklzxcvbnm";
 	const unsigned len1 = 10, len2 = 10, len3 = 9, len4 = 7, kbd_len = len1 + len2 + len3 + len4, btn_size = 40;
-	const char kbd_func [5][20] = { "btn_kbd_caps", "btn_kbd_backspace", "btn_kbd_space", "btn_kbd_enter", "btn_kbd_esc", };
+	const char kbd_func[5][20] = { "btn_kbd_caps", "btn_kbd_backspace", "btn_kbd_space", "btn_kbd_enter", "btn_kbd_esc", };
 	static char edit_str[TEXT_ARRAY_SIZE];
 	char btn_name[NAME_ARRAY_SIZE];
 
@@ -5382,7 +5327,7 @@ void window_kbd_process(void)
 			if (i < kbd_len)
 				local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "btn_kbd_%02d", i);
 			else
-				local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "%s", kbd_func [i - kbd_len]);
+				local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "%s", kbd_func[i - kbd_len]);
 
 			gui_obj_create(btn_name, btn_size, btn_size, 0, 0, "");
 			gui_obj_set_prop(btn_name, GUI_OBJ_STATE, (gui_keyboard.digits_only && i > len1 - 1 && i < kbd_len) ? DISABLED : CANCELLED);
@@ -5438,7 +5383,7 @@ void window_kbd_process(void)
 			{
 				unsigned l = strlen(edit_str);
 				if (l)
-					edit_str [l - 1] = '\0';
+					edit_str[l - 1] = '\0';
 			}
 			else if (gui_check_obj(name, "btn_kbd_enter") || gui_check_obj(name, "btn_kbd_esc"))
 			{
@@ -5484,7 +5429,7 @@ void window_kbd_process(void)
 		for(unsigned i = 0; i < kbd_len; i ++)
 		{
 			local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "btn_kbd_%02d", i);
-			char p = is_shift ? kbd_cap [i] : kbd_low [i];
+			char p = is_shift ? kbd_cap[i] : kbd_low[i];
 			gui_obj_set_prop(btn_name, GUI_OBJ_TEXT_FMT, "%c", p);
 			gui_obj_set_prop(btn_name, GUI_OBJ_PAYLOAD, p);
 		}
@@ -5497,7 +5442,7 @@ void window_kbd_test_process(void)
 {
 	window_t * const win = get_win(WINDOW_KBD_TEST);
 	static int num_lbl1 = 12345;
-	static char str_lbl2 [TEXT_ARRAY_SIZE] = "qwertyuiopas";
+	static char str_lbl2[TEXT_ARRAY_SIZE] = "qwertyuiopas";
 	const unsigned win_id = WINDOW_KBD_TEST;
 
 	if (win->first_call)
@@ -5575,8 +5520,8 @@ void window_3d_process(void)
 						o = x + 80 * y, N = 8 * ((f * e - c * d * g) * m - c * d * e - f * g - l * d * n);
 				if(22 > y && y > 0 && x > 0 && 80 > x && D > z[o])
 				{
-					z [o] = D;
-					b [y][x] = ".,-~:;=!*#$@" [N > 0 ? N : 0];
+					z[o] = D;
+					b[y][x] = ".,-~:;=!*#$@"[N > 0 ? N : 0];
 				}
 			}
 		}
@@ -5650,7 +5595,7 @@ void split_string(char * str, char ch)
 void window_menu_params_process(void)
 {
 	window_t * const win = get_win(WINDOW_MENU_PARAMS);
-	static menu_names_t menup [MENU_PARAMS_MAX], menuv;
+	static menu_names_t menup[MENU_PARAMS_MAX], menuv;
 	static unsigned sel = 0;
 	static char btn_selected[NAME_ARRAY_SIZE];
 	char btn_names[MENU_PARAMS_MAX][NAME_ARRAY_SIZE];
@@ -5723,7 +5668,7 @@ void window_menu_params_process(void)
 
 	case WM_MESSAGE_ENC2_ROTATE:
 	{
-		char edit_val [20];
+		char edit_val[20];
 		if (sel)
 		{
 			strcpy(edit_val, hamradio_gui_edit_menu_item(menuv.index, action));
@@ -5746,7 +5691,7 @@ void window_menu_process(void)
 	if (win->first_call)
 	{
 		win->first_call = 0;
-		menu_names_t menu [MENU_GROUPS_MAX];
+		menu_names_t menu[MENU_GROUPS_MAX];
 		char btn_names[MENU_GROUPS_MAX][NAME_ARRAY_SIZE];
 
 		const unsigned count = hamradio_get_multilinemenu_block_groups(menu);
@@ -6312,7 +6257,7 @@ void window_as_process(void)
 	window_t * const win = get_win(WINDOW_AS);
 	static unsigned update = 0;
 	enum { len = 320, lim = 25 };
-	static COLORPIP_T d [len];
+	static COLORPIP_T d[len];
 
 	if (win->first_call)
 	{

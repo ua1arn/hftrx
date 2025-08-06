@@ -141,7 +141,7 @@ typedef struct {
 	uint8_t visible;
 	tf_direction_t direction;
 	UB_Font * font;		// NULL - SMALLCHAR2
-	char name [NAME_ARRAY_SIZE];
+	char name[NAME_ARRAY_SIZE];
 	uint8_t index;
 	tf_entry_t * string;
 	uint16_t x1;
@@ -156,7 +156,7 @@ typedef struct {
 	uint8_t visible;
 	uint8_t is_trackable;
 	int32_t payload;
-	char name [NAME_ARRAY_SIZE];
+	char name[NAME_ARRAY_SIZE];
 	uint8_t index;
 	uint16_t x1;
 	uint16_t y1;
@@ -174,8 +174,8 @@ typedef struct {
 	uint8_t parent;					// индекс окна, в котором будет отображаться кнопка
 	uint8_t visible;				// рисовать ли кнопку на экране
 	int32_t payload;
-	char name [NAME_ARRAY_SIZE];
-	char text [TEXT_ARRAY_SIZE]; 	// текст внутри кнопки, разделитель строк |, не более 2х строк
+	char name[NAME_ARRAY_SIZE];
+	char text[TEXT_ARRAY_SIZE]; 	// текст внутри кнопки, разделитель строк |, не более 2х строк
 	uint8_t index;
 	uint16_t x1;					// координаты от начала окна
 	uint16_t y1;
@@ -192,8 +192,8 @@ typedef struct {
 	uint8_t state;
 	uint8_t is_trackable;
 	uint8_t visible;
-	char name [NAME_ARRAY_SIZE];
-	char text [TEXT_ARRAY_SIZE];
+	char name[NAME_ARRAY_SIZE];
+	char text[TEXT_ARRAY_SIZE];
 	font_size_t font_size;
 	PACKEDCOLORPIP_T color;
 	int32_t payload;
@@ -212,7 +212,7 @@ typedef enum  {
 typedef struct {
 	orientation_t orientation;
 	uint8_t parent;
-	char name [NAME_ARRAY_SIZE];
+	char name[NAME_ARRAY_SIZE];
 	uint8_t state;
 	uint8_t visible;
 	uint16_t size;					// длина шкалы в пикселях
@@ -269,7 +269,7 @@ typedef struct {
 	const uint8_t window_id;		// в окне будут отображаться элементы с соответствующим полем for_window
 	uint8_t parent_id;				// UINT8_MAX - нет parent window
 	window_align_t align_mode;		// вертикаль выравнивания окна
-	char title [NAME_ARRAY_SIZE];	// текст, выводимый в заголовке окна
+	char title[NAME_ARRAY_SIZE];	// текст, выводимый в заголовке окна
 	uint8_t is_close;				// разрешение или запрет вывода кнопки закрытия окна
 	void (*onVisibleProcess) (void);
 //	*** служебные и автоматически заполняемые элементы структуры ***
