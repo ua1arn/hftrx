@@ -141,7 +141,7 @@
 	#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
 
 	#define BOARD_DSTYLE "g_x800_y480.h"
-	#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
+	//#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
 	//#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 
 #elif 1
@@ -326,8 +326,12 @@
 	
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
-	#if 1
+	#if 0
 		#define WITHLWIP 1
+	#endif
+	#if 1
+		#define WITHLVGL 1		/* bare-metal config of LVGL */
+		//#define WITHLVGLINDEV 1	/* обработку событий от органов управления делает LVGL */
 	#endif
 
 	/* что за память настроек и частот используется в контроллере */

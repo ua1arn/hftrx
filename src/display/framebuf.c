@@ -2030,9 +2030,8 @@ static int32_t draw_awrot_delete(lv_draw_unit_t * draw_unit)
 // Add custom draw unit
 void lvglhw_initialize(void)
 {
-//	return;
 #if defined (G2D_MIXER)
-	if (1)
+	if (0)
 	{
 		PRINTF("lvglhw_initialize: Enable G2D_MIXER hw accelerate for LVGL\n");
 		//#if LV_DRAW_SW_COMPLEX == 1

@@ -10753,19 +10753,19 @@ void hightests(void)
 		unsigned opaque;
 
 		opaque = 255;
-		colpip_rectangle(buffer, dx, dy, 0, 0, DIM_X, DIM_Y, TFTALPHA(opaque, COLOR_RED), FILL_FLAG_NONE);
+		colpip_rectangle(& dbv, 0, 0, DIM_X, DIM_Y, TFTALPHA(opaque, COLOR_RED), FILL_FLAG_NONE);
 		PRINTF("Background (opaque=%u)\n", opaque);
 		printhex32(0, buffer, 16);
 		//display_text(0, 0, "Start...");
 		//display_text(100 / GRID2X(1), 100 / GRID2Y(1), "test");
 
 		opaque = 128;
-		colpip_rectangle(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_BLUE), FILL_FLAG_MIXBG);
+		colpip_rectangle(& dbv, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_BLUE), FILL_FLAG_MIXBG);
 		PRINTF("blue (opaque=%u)\n", opaque);
 		printhex32(0, buffer, 16);
 
 		opaque = 128;
-		colpip_rectangle(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_GREEN), FILL_FLAG_MIXBG);
+		colpip_rectangle(& dbv, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_GREEN), FILL_FLAG_MIXBG);
 		PRINTF("green (opaque=%u)\n", opaque);
 		printhex32(0, buffer, 16);
 		//colmain_nextfb();
@@ -11459,6 +11459,25 @@ void hightests(void)
 		static PACKEDCOLORPIP_T fbpic2 [GXSIZE(picx, picy)];
 		static PACKEDCOLORPIP_T fbpic3 [GXSIZE(picx, picy)];
 
+		gxdrawb_t dbv_layer0_a;
+		gxdrawb_t dbv_layer0_b;
+		gxdrawb_t dbv_layer1;
+		gxdrawb_t dbv_layer2;
+		gxdrawb_t dbv_layer3;
+		gxdrawb_t dbv_fbpic;
+		gxdrawb_t dbv_fbpic2;
+		gxdrawb_t dbv_fbpic3;
+
+		gxdrawb_initialize(& dbv_layer0_a, layer0_a, DIM_X, DIM_Y);
+		gxdrawb_initialize(& dbv_layer0_b, layer0_b, DIM_X, DIM_Y);
+		gxdrawb_initialize(& dbv_layer1, layer1, DIM_X, DIM_Y);
+		gxdrawb_initialize(& dbv_layer2, layer2, DIM_X, DIM_Y);
+		gxdrawb_initialize(& dbv_layer3, layer3, DIM_X, DIM_Y);
+		gxdrawb_initialize(& dbv_fbpic, fbpic, picx, picy);
+		gxdrawb_initialize(& dbv_fbpic2, fbpic2, picx, picy);
+		gxdrawb_initialize(& dbv_fbpic3, fbpic3, picx, picy);
+
+
 //		dcache_clean_invalidate((uintptr_t) layer0, sizeof layer0);
 //		dcache_clean_invalidate((uintptr_t) layer1, sizeof layer1);
 //		dcache_clean_invalidate((uintptr_t) fbpic, sizeof fbpic);
@@ -11474,58 +11493,58 @@ void hightests(void)
 //		PRINTF("test: b=%08X\n", COLORPIP_B(keycolor));
 
 		unsigned picalpha = 128;
-		colpip_fillrect(fbpic, picx, picy, 0, 0, picx, picy, TFTALPHA(picalpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
-		colpip_fillrect(fbpic, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(picalpha, COLORPIP_WHITE));
-		colpip_line(fbpic, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
-		colpip_line(fbpic, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
-		colpip_fillrect(fbpic, picx, picy, picx / 4 + 5, picy / 4 + 5, picx / 2 - 10, picy / 2 - 10, TFTALPHA(0 * picalpha, COLORPIP_WHITE));
-		colpip_string_tbg(fbpic, picx, picy, 5, 6, "Hello!", TFTALPHA(picalpha, COLORPIP_WHITE));
-		dcache_clean((uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0]);
+		colpip_fillrect(& dbv_fbpic, 0, 0, picx, picy, TFTALPHA(picalpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
+		colpip_fillrect(& dbv_fbpic, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(picalpha, COLORPIP_WHITE));
+		colpip_line(& dbv_fbpic, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
+		colpip_line(& dbv_fbpic, 0, picy - 1, picx - 1, 0, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
+		colpip_fillrect(& dbv_fbpic, picx / 4 + 5, picy / 4 + 5, picx / 2 - 10, picy / 2 - 10, TFTALPHA(0 * picalpha, COLORPIP_WHITE));
+		colpip_string_tbg(& dbv_fbpic, 5, 6, "Hello!", TFTALPHA(picalpha, COLORPIP_WHITE));
+		dcache_clean(dbv_fbpic.cachebase, dbv_fbpic.cachesize);
 
 		unsigned pic2alpha = 44;
-		colpip_fillrect(fbpic2, picx, picy, 0, 0, picx, picy, TFTALPHA(pic2alpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
-		colpip_fillrect(fbpic2, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic2alpha, COLORPIP_WHITE));
-		colpip_line(fbpic2, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
-		colpip_line(fbpic2, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
-		colpip_string_tbg(fbpic2, picx, picy, 5, 6, "LY2", TFTALPHA(pic2alpha, COLORPIP_WHITE));
-		dcache_clean((uintptr_t) fbpic2, GXSIZE(picx, picy) * sizeof fbpic2 [0]);
+		colpip_fillrect(& dbv_fbpic2, 0, 0, picx, picy, TFTALPHA(pic2alpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
+		colpip_fillrect(& dbv_fbpic2, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic2alpha, COLORPIP_WHITE));
+		colpip_line(& dbv_fbpic2, 0, 0, picx - 1, picy - 1, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
+		colpip_line(& dbv_fbpic2, 0, picy - 1, picx - 1, 0, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
+		colpip_string_tbg(& dbv_fbpic2, 5, 6, "LY2", TFTALPHA(pic2alpha, COLORPIP_WHITE));
+		dcache_clean(dbv_fbpic2.cachebase, dbv_fbpic2.cachesize);
 
 		unsigned pic3alpha = 33;
-		colpip_fillrect(fbpic3, picx, picy, 0, 0, picx, picy, TFTALPHA(pic3alpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
-		colpip_fillrect(fbpic3, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic3alpha, COLORPIP_WHITE));
-		colpip_line(fbpic3, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
-		colpip_line(fbpic3, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
-		colpip_string_tbg(fbpic3, picx, picy, 5, 6, "LY3", TFTALPHA(pic3alpha, COLORPIP_WHITE));
-		dcache_clean((uintptr_t) fbpic3, GXSIZE(picx, picy) * sizeof fbpic3 [0]);
+		colpip_fillrect(& dbv_fbpic3, 0, 0, picx, picy, TFTALPHA(pic3alpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
+		colpip_fillrect(& dbv_fbpic3, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic3alpha, COLORPIP_WHITE));
+		colpip_line(& dbv_fbpic3, 0, 0, picx - 1, picy - 1, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
+		colpip_line(& dbv_fbpic3, 0, picy - 1, picx - 1, 0, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
+		colpip_string_tbg(& dbv_fbpic3, 5, 6, "LY3", TFTALPHA(pic3alpha, COLORPIP_WHITE));
+		dcache_clean(dbv_fbpic3.cachebase, dbv_fbpic3.cachesize);
 
 		/* непрозрачный фон */
 		unsigned bgalpha = 255;
-		colpip_fillrect(layer0_a, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
-		colpip_fillrect(layer0_b, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
+		colpip_fillrect(& dbv_layer0_a, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
+		colpip_fillrect(& dbv_layer0_b, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
 		/* непрозрачный прямоугольник на фоне */
-		colpip_fillrect(layer0_a, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLORPIP_RED));	// RED - нижний слой не учитывает прозрачность
-		colpip_fillrect(layer0_b, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLORPIP_RED));	// RED - нижний слой не учитывает прозрачность
+		colpip_fillrect(& dbv_layer0_a, 10, 10, 400, 300, TFTALPHA(bgalpha, COLORPIP_RED));	// RED - нижний слой не учитывает прозрачность
+		colpip_fillrect(& dbv_layer0_b, 10, 10, 400, 300, TFTALPHA(bgalpha, COLORPIP_RED));	// RED - нижний слой не учитывает прозрачность
 
 		/* полупрозрачный фон */
 		unsigned fgalpha = 128;
-		colpip_fillrect(layer1, DIM_X, DIM_Y, 110, 110, DIM_X - 200, DIM_Y - 200, TFTALPHA(fgalpha, COLORPIP_BLUE));	/* transparent black */
+		colpip_fillrect(& dbv_layer1, 110, 110, DIM_X - 200, DIM_Y - 200, TFTALPHA(fgalpha, COLORPIP_BLUE));	/* transparent black */
 		/* полупрозрачный прямоугольник на фоне */
-		colpip_fillrect(layer1, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(fgalpha, COLORPIP_GREEN));	// GREEN
+		colpip_fillrect(& dbv_layer1, 120, 120, 200, 200, TFTALPHA(fgalpha, COLORPIP_GREEN));	// GREEN
 		/* прозрачный слой */
 		unsigned l2alpha = 0;
-		colpip_fillrect(layer2, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_RED));	/* opaque color transparent black */
+		colpip_fillrect(& dbv_layer2, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_RED));	/* opaque color transparent black */
 		/* прозрачный слой */
 		unsigned l3alpha = 0;
-		colpip_fillrect(layer3, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_GREEN));	/* opaque color transparent black */
+		colpip_fillrect(& dbv_layer3, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_GREEN));	/* opaque color transparent black */
 
 		TP();
 		/* копируем изображение в верхний слой с цветовым ключем */
 		colpip_bitblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer1, DIM_X, DIM_Y,
+				dbv_layer1.cachebase, dbv_layer1.cachesize,
+				& dbv_layer1,
 				220, 220,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic, picx, picy,
+				dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+				& dbv_fbpic,
 				0, 0,	// координаты окна источника
 				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
@@ -11534,11 +11553,11 @@ void hightests(void)
 		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_bitblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer1, DIM_X, DIM_Y,
+				dbv_layer1.cachebase, dbv_layer1.cachesize,
+				& dbv_layer1,
 				350, 250,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic, picx, picy,
+				dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+				& dbv_fbpic,
 				0, 0,	// координаты окна источника
 				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE, keycolor
@@ -11547,11 +11566,11 @@ void hightests(void)
 		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_stretchblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer1, DIM_X, DIM_Y,
+				dbv_layer1.cachebase, dbv_layer1.cachesize,
+				& dbv_layer1,
 				40, 20, picx * 5 / 2, picy,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic, picx, picy,
+				dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+				& dbv_fbpic,
 				0, 0,	// координаты источника
 				picx, picy,	// размеры источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
@@ -11560,11 +11579,11 @@ void hightests(void)
 		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_stretchblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer1, DIM_X, DIM_Y,
+				dbv_layer1.cachebase, dbv_layer1.cachesize,
+				& dbv_layer1,
 				450, 250, picx * 3 / 2, picy * 3 / 2,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic, picx, picy,
+				dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+				& dbv_fbpic,
 				0, 0,	/* координаты источника */
 				picx, picy,	// размеры источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
@@ -11573,11 +11592,11 @@ void hightests(void)
 		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_stretchblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer1, DIM_X, DIM_Y,
+				dbv_layer1.cachebase, dbv_layer1.cachesize,
+				& dbv_layer1,
 				170, 220, picx * 2 / 3, picy * 2 / 3,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic, picx, picy,
+				dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+				& dbv_fbpic,
 				0, 0,	/* координаты источника */
 				picx, picy,	// размеры источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
@@ -11586,11 +11605,11 @@ void hightests(void)
 		TP();
 		/* копируем изображение в верхний слой с цветовым ключем */
 		colpip_bitblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer1, DIM_X, DIM_Y,
+				dbv_layer1.cachebase, dbv_layer1.cachesize,
+				& dbv_layer1,
 				90, 90,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic, picx, picy,
+				dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+				& dbv_fbpic,
 				0, 0,	// координаты окна источника
 				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
@@ -11599,11 +11618,11 @@ void hightests(void)
 		TP();
 		/* копируем изображение в 2-й слой с цветовым ключем */
 		colpip_bitblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer2, DIM_X, DIM_Y,
+				dbv_layer2.cachebase, dbv_layer2.cachesize,
+				& dbv_layer2,
 				30, 330,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic2, picx, picy,
+				dbv_fbpic2.cachebase, dbv_fbpic2.cachesize,
+				& dbv_fbpic2,
 				0, 0,	// координаты окна источника
 				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
@@ -11612,20 +11631,20 @@ void hightests(void)
 		TP();
 		/* копируем изображение в 3-й слой с цветовым ключем */
 		colpip_bitblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer3, DIM_X, DIM_Y,
+				dbv_layer3.cachebase, dbv_layer3.cachesize,
+				& dbv_layer3,
 				370, 20,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic3, picx, picy,
+				dbv_fbpic3.cachebase, dbv_fbpic3.cachesize,
+				& dbv_fbpic3,
 				0, 0,	// координаты окна источника
 				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
 		// нужно если программно заполняли
-		dcache_clean((uintptr_t) layer0_a, sizeof layer0_a);
-		dcache_clean((uintptr_t) layer0_b, sizeof layer0_b);
-		dcache_clean((uintptr_t) layer1, sizeof layer1);
+		dcache_clean(dbv_layer0_a.cachebase, dbv_layer0_a.cachesize);
+		dcache_clean(dbv_layer0_b.cachebase, dbv_layer0_b.cachesize);
+		dcache_clean(dbv_layer1.cachebase, dbv_layer1.cachesize);
 //
 //		printhex32((uintptr_t) layer0, layer0, 64);
 //		printhex32((uintptr_t) layer1, layer1, 64);
@@ -11641,20 +11660,20 @@ void hightests(void)
 			int w = DIM_X - x0;
 			int xpos = (c * (w - 1)) / (cycles - 1);	/* позиция маркера */
 
-			PACKEDCOLORPIP_T * const drawlayer = phase ? layer0_a : layer0_b;
+			gxdrawb_t * const drawlayer = phase ? & dbv_layer0_a : & dbv_layer0_b;
 
-			colpip_fillrect(drawlayer, DIM_X, DIM_Y, x0, y, w, h, TFTALPHA(bgalpha, COLORPIP_BLACK));
+			colpip_fillrect(drawlayer, x0, y, w, h, TFTALPHA(bgalpha, COLORPIP_BLACK));
 			/* линия в один пиксель рисуется прораммно - за ней требуется flush,
 			 * поскольку потом меняется еще аппаратурой - invalidate
 			 * */
-			colpip_fillrect(drawlayer, DIM_X, DIM_Y, x0 + xpos, y, 1, h, TFTALPHA(bgalpha, COLORPIP_WHITE));
-			dcache_clean_invalidate((uintptr_t) drawlayer, sizeof * drawlayer * GXSIZE(DIM_X, DIM_Y));
+			colpip_fillrect(drawlayer, x0 + xpos, y, 1, h, TFTALPHA(bgalpha, COLORPIP_WHITE));
+			dcache_clean_invalidate(drawlayer->cachebase, drawlayer->cachesize);
 
-			hardware_ltdc_main_set4(rtmixid, (uintptr_t) drawlayer, 1*(uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
+			hardware_ltdc_main_set4(rtmixid, (uintptr_t) drawlayer->buffer, 1*(uintptr_t) dbv_layer1.buffer, 0*(uintptr_t) dbv_layer2.buffer, 0*(uintptr_t) dbv_layer3.buffer);
 
 			phase = ! phase;
 			c = (c + 1) % cycles;
-			board_dpc_processing();		// обработка отложенного вызова user mode функций
+			//board_dpc_processing();		// обработка отложенного вызова user mode функций
 		}
 		for (;;)
 		{
