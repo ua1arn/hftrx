@@ -140,9 +140,9 @@ obj_type_t parse_obj_name(const char * name)
 // text_field: w_sim, h_str, direction, font *
 // touch area: x, y, w, h, is_trackable
 
-void gui_obj_create(const char * obj_name, ...)
+uint8_t gui_obj_create(const char * obj_name, ...)
 {
-	uint8_t window_id = get_parent_window();
+	uint8_t idx, window_id = get_parent_window();
 	window_t * win = get_win(window_id);
 	obj_type_t type = parse_obj_name(obj_name);
 	va_list arg;
@@ -186,6 +186,7 @@ void gui_obj_create(const char * obj_name, ...)
 			lh->height_pix = SMALLCHARH3;
 		}
 
+		idx = win->lh_count;
 		win->lh_count ++;
 		break;
 	}
@@ -210,6 +211,7 @@ void gui_obj_create(const char * obj_name, ...)
 		bh->x1 = 0;
 		bh->y1 = 0;
 
+		win->bh_count;
 		win->bh_count ++;
 		break;
 	}
@@ -235,6 +237,7 @@ void gui_obj_create(const char * obj_name, ...)
 
 		textfield_update_size(tf);
 
+		win->tf_count;
 		win->tf_count ++;
 		break;
 	}
@@ -257,6 +260,7 @@ void gui_obj_create(const char * obj_name, ...)
 		ta->visible = 1;
 		ta->index = win->ta_count;
 
+		win->ta_count;
 		win->ta_count ++;
 		break;
 	}
@@ -266,6 +270,7 @@ void gui_obj_create(const char * obj_name, ...)
 	}
 
 	va_end(arg);
+	return idx;
 }
 
 void gui_obj_align_to(const char * name1, const char * name2, object_alignment_t align, uint16_t offset)
@@ -483,8 +488,10 @@ void gui_arrange_objects(const char names[][NAME_ARRAY_SIZE], uint8_t count, uin
 	}
 }
 
-static char * get_obj_name_by_idx(window_t * win, obj_type_t type, uint8_t idx)
+char * get_obj_name_by_idx(obj_type_t type, uint8_t idx)
 {
+	window_t * win = get_win(get_parent_window());
+
 	if (type == TYPE_BUTTON)
 	{
 		ASSERT(idx < win->bh_count);
@@ -546,7 +553,7 @@ void gui_arrange_objects_from(const char * name, uint8_t count, uint8_t cols, ui
 		uint8_t row = i / cols;
 		uint8_t col = i % cols;
 
-		const char * obj = get_obj_name_by_idx(win, type, idx ++);
+		const char * obj = get_obj_name_by_idx(type, idx ++);
 
 		gui_obj_set_prop(obj, GUI_OBJ_POS_X, x + (w + interval) * col);
 		gui_obj_set_prop(obj, GUI_OBJ_POS_Y, y + (h + interval) * row);

@@ -1906,7 +1906,7 @@ void window_display_process(void)
 		btn_params->x1 = btn_view->x1 + btn_view->w + interval / 2;
 		btn_params->y1 = btn_view->y1;
 		btn_params->visible = VISIBLE;
-		btn_zoom->x1 = btn_view->x1 - btn_zoom->w - interval / 2;
+		btn_zoom->x1 = btn_view->x1 + btn_zoom->w - interval / 2;
 		btn_zoom->y1 = btn_view->y1;
 		btn_zoom->visible = VISIBLE;
 
@@ -4058,56 +4058,39 @@ void window_shift_process(void)
 #if WITHIQSHIFT
 	window_t * const win = get_win(WINDOW_SHIFT);
 
-	static unsigned update = 0, cic_test = 0;
+	static uint8_t cic_test = 0;
 	static enc_var_t enc;
+	static uint8_t lbls[3];
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, interval = 6;
 		win->first_call = 0;
-		update = 1;
 		enc.updated = 1;
 		enc.select = 0;
 		enc.change = 0;
 
-		gui_obj_create("lbl_rx_cic_shift", FONT_MEDIUM, COLORPIP_WHITE, 13);
-		gui_obj_create("lbl_rx_fir_shift", FONT_MEDIUM, COLORPIP_WHITE, 13);
-		gui_obj_create("lbl_tx_shift", FONT_MEDIUM, COLORPIP_WHITE, 13);
+		lbls[0] = gui_obj_create("lbl_rx_cic_shift", FONT_MEDIUM, COLORPIP_WHITE, 13);
+		lbls[1] = gui_obj_create("lbl_rx_fir_shift", FONT_MEDIUM, COLORPIP_WHITE, 13);
+		lbls[2] = gui_obj_create("lbl_tx_shift", FONT_MEDIUM, COLORPIP_WHITE, 13);
 		gui_obj_create("lbl_iq_test", FONT_MEDIUM, COLORPIP_WHITE, 23);
 
-		gui_obj_create("btn_p", 50, 50, 0, 0, "+");
-		gui_obj_create("btn_m", 50, 50, 0, 0, "-");
-		gui_obj_create("btn_test", 50, 50, 0, 0, "CIC|test");
+		gui_obj_create("btn_p", 40, 40, 0, 0, "+");
+		gui_obj_create("btn_m", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_test", 95, 40, 0, 0, "CIC|test");
 
-		for (unsigned i = 0; i < win->lh_count; i ++)
-		{
-			label_t * lh = & win->lh_ptr[i];
+		gui_obj_set_prop("lbl_rx_cic_shift", GUI_OBJ_PAYLOAD, 0);
+		gui_obj_set_prop("lbl_rx_fir_shift", GUI_OBJ_PAYLOAD, 1);
+		gui_obj_set_prop("lbl_tx_shift", GUI_OBJ_PAYLOAD, 2);
+		gui_obj_set_prop("lbl_iq_test", GUI_OBJ_TEXT, "MAX IQ test:");
+		gui_obj_set_prop("lbl_iq_test", GUI_OBJ_STATE, DISABLED);
+		gui_obj_set_prop("btn_p", GUI_OBJ_PAYLOAD, 1);
+		gui_obj_set_prop("btn_m", GUI_OBJ_PAYLOAD, -1);
 
-			lh->x = x;
-			lh->y = y;
-			lh->payload = i;
-			lh->visible = VISIBLE;
-			lh->state = CANCELLED;
+		gui_arrange_objects_from("lbl_rx_cic_shift", 4, 1, 20);
 
-			y += get_label_height(lh) + interval * 3;
-		}
-
-		label_t * lh = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_rx_cic_shift");
-		x = lh->x + get_label_width(lh) + interval * 2;
-
-		for (unsigned i = 0; i < win->bh_count; i ++)
-		{
-			button_t * bh = & win->bh_ptr[i];
-
-			bh->x1 = x;
-			bh->y1 = 0;
-			bh->visible = VISIBLE;
-
-			x += bh->w + interval * 2;
-		}
-
-		label_t * lbl_iq_test = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_iq_test");
-		local_snprintf_P(lbl_iq_test->text, ARRAY_SIZE(lbl_iq_test->text), "MAX IQ test:");
+		gui_obj_align_to("btn_m", "lbl_rx_cic_shift", ALIGN_RIGHT_UP, 15);
+		gui_obj_align_to("btn_p", "btn_m", ALIGN_RIGHT_UP, 15);
+		gui_obj_align_to("btn_test", "btn_m", ALIGN_DOWN_LEFT, 15);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -4117,46 +4100,37 @@ void window_shift_process(void)
 	case WM_MESSAGE_ACTION:
 		if (IS_LABEL_PRESS)
 		{
-			label_t * lh = (label_t *) ptr;
-			enc.select = lh->payload;
+			enc.select = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
 			enc.change = 0;
 			enc.updated = 1;
 		}
 		else if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_test"))
+			if (gui_check_obj(name, "btn_test"))
 			{
 				cic_test = ! cic_test;
 				iq_cic_test(cic_test);
-				bh->is_locked = cic_test;
+				gui_obj_set_prop("btn_test", GUI_OBJ_LOCK, cic_test);
 			}
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_p"))
+			else
 			{
-				enc.change = 1;
-				enc.updated = 1;
-			}
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_m"))
-			{
-				enc.change = -1;
+				enc.change = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
 				enc.updated = 1;
 			}
 		}
 		break;
 
 	case WM_MESSAGE_ENC2_ROTATE:
-
 		enc.change = action;
 		enc.updated = 1;
 		break;
 
 	case WM_MESSAGE_UPDATE:
-
-		update = 1;
+		enc.updated = 1;
+		enc.change = 0;
 		break;
 
 	default:
-
 		break;
 	}
 
@@ -4164,52 +4138,23 @@ void window_shift_process(void)
 	{
 		enc.updated = 0;
 
-		for(unsigned i = 0; i < win->lh_count; i ++)
-			win->lh_ptr[i].color = COLORPIP_WHITE;
-
-		ASSERT(enc.select < win->lh_count);
+		for(int i = 0; i < ARRAY_SIZE(lbls); i ++)
+			gui_obj_set_prop(get_obj_name_by_idx(TYPE_LABEL, i), GUI_OBJ_COLOR, enc.select == i ? COLORPIP_YELLOW : COLORPIP_WHITE);
 
 		if (enc.select == 0)
-		{
-			win->lh_ptr[0].color = COLORPIP_YELLOW;
-			unsigned v = iq_shift_cic_rx(0);
-			iq_shift_cic_rx(v + enc.change);
-		}
+			iq_shift_cic_rx(iq_shift_cic_rx(0) + enc.change);
 		else if (enc.select == 1)
-		{
-			win->lh_ptr[1].color = COLORPIP_YELLOW;
-			unsigned v = iq_shift_fir_rx(0);
-			iq_shift_fir_rx(v + enc.change);
-		}
+			iq_shift_fir_rx(iq_shift_fir_rx(0) + enc.change);
 		else if (enc.select == 2)
-		{
-			win->lh_ptr[2].color = COLORPIP_YELLOW;
-			unsigned v = iq_shift_tx(0);
-			iq_shift_tx(v + enc.change);
-		}
+			iq_shift_tx(iq_shift_tx(0) + enc.change);
 
-		update = 1;
-	}
-
-	if (update)
-	{
-		update = 0;
-
-		label_t * lbl_rx_cic_shift = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_rx_cic_shift");
-		local_snprintf_P(lbl_rx_cic_shift->text, ARRAY_SIZE(lbl_rx_cic_shift->text), "RX CIC: %d", (int) iq_shift_cic_rx(0));
-		label_t * lbl_rx_fir_shift = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_rx_fir_shift");
-		local_snprintf_P(lbl_rx_fir_shift->text, ARRAY_SIZE(lbl_rx_fir_shift->text), "RX FIR: %d", (int) iq_shift_fir_rx(0));
-		label_t * lbl_tx_shift = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_tx_shift");
-		local_snprintf_P(lbl_tx_shift->text, ARRAY_SIZE(lbl_tx_shift->text), "TX CIC: %d", (int) iq_shift_tx(0));
-
-		button_t * btn_test = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_test");
-		btn_test->is_locked = cic_test;
+		gui_obj_set_prop("lbl_rx_cic_shift", GUI_OBJ_TEXT_FMT, "RX CIC: %d", iq_shift_cic_rx(0));
+		gui_obj_set_prop("lbl_rx_fir_shift", GUI_OBJ_TEXT_FMT, "RX FIR: %d", iq_shift_fir_rx(0));
+		gui_obj_set_prop("lbl_tx_shift", GUI_OBJ_TEXT_FMT, "TX CIC: %d", iq_shift_tx(0));
+		gui_obj_set_prop("btn_test", GUI_OBJ_LOCK, cic_test);
 
 		if (cic_test)
-		{
-			label_t * lbl_iq_test = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_iq_test");
-			local_snprintf_P(lbl_iq_test->text, ARRAY_SIZE(lbl_iq_test->text), "MAX IQ test: 0x%08lx", iq_cic_test_process());
-		}
+			gui_obj_set_prop("lbl_iq_test", GUI_OBJ_TEXT_FMT, "MAX IQ test: 0x%08lx", iq_cic_test_process());
 	}
 #endif /* WITHIQSHIFT */
 }
