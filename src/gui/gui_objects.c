@@ -139,6 +139,7 @@ obj_type_t parse_obj_name(const char * name)
 // button: w, h, is_repeating, is_long_press, text,
 // text_field: w_sim, h_str, direction, font *
 // touch area: x, y, w, h, is_trackable
+// возвращает индекс созданного объекта
 
 uint8_t gui_obj_create(const char * obj_name, ...)
 {

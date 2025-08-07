@@ -3962,35 +3962,13 @@ void window_gui_settings_process(void)
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, interval = 6, row_count = 4;
 		win->first_call = 0;
 
-		static const button_t buttons[] = {
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_enc2_step",  "", },
-			{ 110, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_freq_swipe", "", },
-			{ 110, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_freq_swipe_step", "", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
+		gui_obj_create("btn_enc2_step", 100, 44, 0, 0, "");
+		gui_obj_create("btn_freq_swipe", 100, 44, 0, 0, "");
+		gui_obj_create("btn_freq_swipe_step", 100, 44, 0, 0, "");
 
-		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
-		{
-			button_t * bh = & win->bh_ptr[i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
-
-			x = x + interval + bh->w;
-			if (r >= row_count)
-			{
-				r = 0;
-				x = 0;
-				y = y + bh->h + interval;
-			}
-		}
+		gui_arrange_objects_from("btn_enc2_step", 3, 3, 6);
 
 		update = 1;
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -3999,55 +3977,33 @@ void window_gui_settings_process(void)
 	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_enc2_step = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_enc2_step");
-			button_t * btn_freq_swipe = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_freq_swipe");
-			button_t * btn_freq_swipe_step = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_freq_swipe_step");
-
-			if (bh == btn_enc2_step)
-			{
+			if (gui_check_obj(name, "btn_enc2_step"))
 				gui_nvram.enc2step_pos = (gui_nvram.enc2step_pos + 1 ) % enc2step_vals;
-				save_settings();
-				update = 1;
-			}
-
-			if (bh == btn_freq_swipe)
-			{
+			else if (gui_check_obj(name, "btn_freq_swipe"))
 				gui_nvram.freq_swipe_enable = ! gui_nvram.freq_swipe_enable;
-				save_settings();
-				update = 1;
-			}
-
-			if (bh == btn_freq_swipe_step)
-			{
+			else if (gui_check_obj(name, "btn_freq_swipe_step"))
 				gui_nvram.freq_swipe_step = (gui_nvram.freq_swipe_step + 1 ) % freq_swipe_step_vals;
-				save_settings();
-				update = 1;
-			}
+
+			save_settings();
+			update = 1;
 		}
 		break;
 
 	default:
-
 		break;
 	}
 
 	if (update)
 	{
 		update = 0;
-		button_t * btn_enc2_step = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_enc2_step");
-		local_snprintf_P(btn_enc2_step->text, ARRAY_SIZE(btn_enc2_step->text), "Enc2 step|%s", enc2step[gui_nvram.enc2step_pos].label);
 
-		button_t * btn_freq_swipe = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_freq_swipe");
-		btn_freq_swipe->is_locked = gui_nvram.freq_swipe_enable != 0;
-		local_snprintf_P(btn_freq_swipe->text, ARRAY_SIZE(btn_freq_swipe->text), "Freq swipe|%s", btn_freq_swipe->is_locked ? "enable" : "disable");
-
-		button_t * btn_freq_swipe_step = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_freq_swipe_step");
-		btn_freq_swipe_step->state = btn_freq_swipe->is_locked ? CANCELLED : DISABLED;
-		local_snprintf_P(btn_freq_swipe_step->text, ARRAY_SIZE(btn_freq_swipe_step->text), "Swipe step|%s", freq_swipe_step[gui_nvram.freq_swipe_step].label);
+		gui_obj_set_prop("btn_enc2_step", GUI_OBJ_TEXT_FMT, "Enc2 step|%s", enc2step[gui_nvram.enc2step_pos].label);
+		gui_obj_set_prop("btn_freq_swipe", GUI_OBJ_TEXT_FMT, "Freq swipe|%s", gui_nvram.freq_swipe_enable ? "enable" : "disable");
+		gui_obj_set_prop("btn_freq_swipe", GUI_OBJ_LOCK, gui_nvram.freq_swipe_enable);
+		gui_obj_set_prop("btn_freq_swipe_step", GUI_OBJ_TEXT_FMT, "Swipe step|%s", freq_swipe_step[gui_nvram.freq_swipe_step].label);
+		gui_obj_set_prop("btn_freq_swipe_step", GUI_OBJ_STATE, gui_nvram.freq_swipe_enable ? CANCELLED : DISABLED);
 	}
 }
 
@@ -4362,19 +4318,19 @@ void window_ft8_bands_process(void)
 	{
 		win->first_call = 0;
 		unsigned cols = ft8_bands_count > 10 ? 4 : 5, interval = 15, x = 0, y = 0;
-		char btns[ft8_bands_count][NAME_ARRAY_SIZE];
+		char btn_name[NAME_ARRAY_SIZE];
 		uint32_t rx_freq = hamradio_get_freq_rx();
 
 		for (int i = 0; i < ft8_bands_count; i ++)
 		{
-			local_snprintf_P(btns[i], NAME_ARRAY_SIZE, "btn_bands_%02d", i);
-			gui_obj_create(btns[i], 86, 44, 0, 0, "");
-			gui_obj_set_prop(btns[i], GUI_OBJ_TEXT_FMT, "%dk", ft8_bands[i] / 1000);
-			gui_obj_set_prop(btns[i], GUI_OBJ_PAYLOAD, i);
-			gui_obj_set_prop(btns[i], GUI_OBJ_LOCK, rx_freq == ft8_bands[i]);
+			local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "btn_bands_%02d", i);
+			gui_obj_create(btn_name, 86, 44, 0, 0, "");
+			gui_obj_set_prop(btn_name, GUI_OBJ_TEXT_FMT, "%dk", ft8_bands[i] / 1000);
+			gui_obj_set_prop(btn_name, GUI_OBJ_PAYLOAD, i);
+			gui_obj_set_prop(btn_name, GUI_OBJ_LOCK, rx_freq == ft8_bands[i]);
 		}
 
-		gui_arrange_objects(btns, ft8_bands_count, cols, interval);
+		gui_arrange_objects_from("btn_bands_00", ft8_bands_count, cols, interval);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -4844,13 +4800,7 @@ void window_mode_process(void)
 		gui_obj_set_prop("btn_ModeNFM", GUI_OBJ_PAYLOAD, SUBMODE_NFM);
 		gui_obj_set_prop("btn_ModeDGU", GUI_OBJ_PAYLOAD, SUBMODE_DGU);
 
-		gui_obj_align_to("btn_ModeCW", "btn_ModeLSB", ALIGN_RIGHT_UP, 6);
-		gui_obj_align_to("btn_ModeAM", "btn_ModeCW", ALIGN_RIGHT_UP, 6);
-		gui_obj_align_to("btn_ModeDGL", "btn_ModeAM", ALIGN_RIGHT_UP, 6);
-		gui_obj_align_to("btn_ModeUSB", "btn_ModeLSB", ALIGN_DOWN_LEFT, 6);
-		gui_obj_align_to("btn_ModeCWR", "btn_ModeUSB", ALIGN_RIGHT_UP, 6);
-		gui_obj_align_to("btn_ModeNFM", "btn_ModeCWR", ALIGN_RIGHT_UP, 6);
-		gui_obj_align_to("btn_ModeDGU", "btn_ModeNFM", ALIGN_RIGHT_UP, 6);
+		gui_arrange_objects_from("btn_ModeLSB", 8, 4, 6);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -4962,7 +4912,7 @@ void window_freq_process (void)
 	static label_t * lbl_freq;
 	static editfreq_t editfreq;
 	window_t * const win = get_win(WINDOW_FREQ);
-	unsigned update = 0;
+	uint8_t update = 0;
 
 	if (win->first_call)
 	{
@@ -4970,16 +4920,16 @@ void window_freq_process (void)
 
 		char btns_text[12][3] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "<", "0", "OK" };
 		uint8_t btns_payload[12] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, BUTTON_CODE_BK, 0, BUTTON_CODE_OK };
-		char btn_names[12][NAME_ARRAY_SIZE];
+		char btn_name[NAME_ARRAY_SIZE];
 
-		for (unsigned i = 0; i < 12; i ++)
+		for (uint8_t i = 0; i < 12; i ++)
 		{
-			local_snprintf_P(btn_names[i], NAME_ARRAY_SIZE, "btn_%02d", btns_payload[i]);
-			gui_obj_create(btn_names[i], 50, 50, 0, 0, btns_text[i]);
-			gui_obj_set_prop(btn_names[i], GUI_OBJ_PAYLOAD, btns_payload[i]);
+			local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "btn_%02d", btns_payload[i]);
+			gui_obj_create(btn_name, 50, 50, 0, 0, btns_text[i]);
+			gui_obj_set_prop(btn_name, GUI_OBJ_PAYLOAD, btns_payload[i]);
 		}
 
-		gui_arrange_objects(btn_names, 12, 3, 6);
+		gui_arrange_objects_from("btn_01", 12, 3, 6);
 		gui_obj_set_prop("btn_30", GUI_OBJ_LOCK, 1);
 
 		editfreq.val = 0;
@@ -5099,49 +5049,31 @@ void window_time_process(void)
 		update = 1;
 		uint8_t interval = 20;
 
-		gui_obj_create("lbl_year", FONT_MEDIUM, COLORPIP_WHITE, 6);
-		gui_obj_create("lbl_month", FONT_MEDIUM, COLORPIP_WHITE, 4);
 		gui_obj_create("lbl_day", FONT_MEDIUM, COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_month", FONT_MEDIUM, COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_year", FONT_MEDIUM, COLORPIP_WHITE, 4);
 		gui_obj_create("lbl_hour", FONT_MEDIUM, COLORPIP_WHITE, 4);
 		gui_obj_create("lbl_minute", FONT_MEDIUM, COLORPIP_WHITE, 4);
 		gui_obj_create("lbl_second", FONT_MEDIUM, COLORPIP_WHITE, 4);
 
-		gui_obj_create("btn_year+", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_year-", 40, 40, 0, 0, "-");
-		gui_obj_create("btn_month+", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_month-", 40, 40, 0, 0, "-");
 		gui_obj_create("btn_day+", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_day-", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_month+", 40, 40, 0, 0, "+");
+		gui_obj_create("btn_year+", 40, 40, 0, 0, "+");
 		gui_obj_create("btn_hour+", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_hour-", 40, 40, 0, 0, "-");
 		gui_obj_create("btn_minute+", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_minute-", 40, 40, 0, 0, "-");
 		gui_obj_create("btn_second+", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_second-", 40, 40, 0, 0, "-");
 		gui_obj_create("btn_sec0", 40, 40, 0, 0, ">0");
+		gui_obj_create("btn_day-", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_month-", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_year-", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_hour-", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_minute-", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_second-", 40, 40, 0, 0, "-");
 		gui_obj_create("btn_set", 40, 40, 0, 0, "Set");
 
-		gui_obj_align_to("lbl_month", "lbl_year", ALIGN_RIGHT_UP, interval);
-		gui_obj_align_to("lbl_day", "lbl_month", ALIGN_RIGHT_UP, interval);
-		gui_obj_align_to("lbl_hour", "lbl_day", ALIGN_RIGHT_UP, interval);
-		gui_obj_align_to("lbl_minute", "lbl_hour", ALIGN_RIGHT_UP, interval);
-		gui_obj_align_to("lbl_second", "lbl_minute", ALIGN_RIGHT_UP, interval);
-
-		gui_obj_align_to("btn_year+", "lbl_year", ALIGN_DOWN_MID, interval);
-		gui_obj_align_to("btn_month+", "lbl_month", ALIGN_DOWN_MID, interval);
-		gui_obj_align_to("btn_day+", "lbl_day", ALIGN_DOWN_MID, interval);
-		gui_obj_align_to("btn_hour+", "lbl_hour", ALIGN_DOWN_MID, interval);
-		gui_obj_align_to("btn_minute+", "lbl_minute", ALIGN_DOWN_MID, interval);
-		gui_obj_align_to("btn_second+", "lbl_second", ALIGN_DOWN_MID, interval);
-		gui_obj_align_to("btn_sec0", "btn_second+", ALIGN_RIGHT_UP, interval);
-		gui_obj_align_to("btn_set", "btn_sec0", ALIGN_DOWN_LEFT, interval);
-
-		gui_obj_align_to("btn_year-", "btn_year+", ALIGN_DOWN_LEFT, interval);
-		gui_obj_align_to("btn_month-", "btn_month+", ALIGN_DOWN_LEFT, interval);
-		gui_obj_align_to("btn_day-", "btn_day+", ALIGN_DOWN_LEFT, interval);
-		gui_obj_align_to("btn_hour-", "btn_hour+", ALIGN_DOWN_LEFT, interval);
-		gui_obj_align_to("btn_minute-", "btn_minute+", ALIGN_DOWN_LEFT, interval);
-		gui_obj_align_to("btn_second-", "btn_second+", ALIGN_DOWN_LEFT, interval);
+		gui_arrange_objects_from("lbl_day", 6, 6, interval);
+		gui_obj_align_to("btn_day+", "lbl_day", ALIGN_DOWN_LEFT, interval);
+		gui_arrange_objects_from("btn_day+", 14, 7, interval);
 
 		gui_obj_set_prop("btn_year+", GUI_OBJ_PAYLOAD, 1);
 		gui_obj_set_prop("btn_month+", GUI_OBJ_PAYLOAD, 1);
@@ -5214,12 +5146,12 @@ void window_time_process(void)
 	{
 		update = 0;
 
-		gui_obj_set_prop("lbl_year", GUI_OBJ_TEXT_FMT, "Y:%d", year);
-		gui_obj_set_prop("lbl_month", GUI_OBJ_TEXT_FMT, "m:%02d", month);
-		gui_obj_set_prop("lbl_day", GUI_OBJ_TEXT_FMT, "d:%02d", day);
-		gui_obj_set_prop("lbl_hour", GUI_OBJ_TEXT_FMT, "h:%02d", hour);
-		gui_obj_set_prop("lbl_minute", GUI_OBJ_TEXT_FMT, "m:%02d", minute);
-		gui_obj_set_prop("lbl_second", GUI_OBJ_TEXT_FMT, "s:%02d", second);
+		gui_obj_set_prop("lbl_year", GUI_OBJ_TEXT_FMT, "Y:%d", year - 2000);
+		gui_obj_set_prop("lbl_month", GUI_OBJ_TEXT_FMT, "M:%02d", month);
+		gui_obj_set_prop("lbl_day", GUI_OBJ_TEXT_FMT, "D:%02d", day);
+		gui_obj_set_prop("lbl_hour", GUI_OBJ_TEXT_FMT, "H:%02d", hour);
+		gui_obj_set_prop("lbl_minute", GUI_OBJ_TEXT_FMT, "M:%02d", minute);
+		gui_obj_set_prop("lbl_second", GUI_OBJ_TEXT_FMT, "S:%02d", second);
 	}
 #endif /* defined (RTC1_TYPE) */
 }
@@ -5680,14 +5612,13 @@ void window_lfm_process(void)
 {
 #if WITHLFM
 	window_t * const win = get_win(WINDOW_LFM);
-	static unsigned update = 0;
+	static uint8_t update = 0;
 	static enc_var_t enc;
-
-	const char * const lbl_array[3] = { "lbl_timeoffset", "lbl_stopfreq", "lbl_interval", };
+	static uint8_t lbls[3];
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, interval = 24;
+		uint8_t interval = 24;
 		win->first_call = 0;
 		update = 1;
 		enc.select = 0;
@@ -5695,18 +5626,16 @@ void window_lfm_process(void)
 		enc.updated = 1;
 
 		gui_obj_create("lbl_nmeatime", FONT_MEDIUM, COLORPIP_WHITE, 20);
-		gui_obj_create("lbl_timeoffset", FONT_MEDIUM, COLORPIP_WHITE, 20);
-		gui_obj_create("lbl_stopfreq", FONT_MEDIUM, COLORPIP_WHITE, 20);
-		gui_obj_create("lbl_interval", FONT_MEDIUM, COLORPIP_WHITE, 20);
+		lbls[0] = gui_obj_create("lbl_timeoffset", FONT_MEDIUM, COLORPIP_WHITE, 20);
+		lbls[1] = gui_obj_create("lbl_stopfreq", FONT_MEDIUM, COLORPIP_WHITE, 20);
+		lbls[2] = gui_obj_create("lbl_interval", FONT_MEDIUM, COLORPIP_WHITE, 20);
 
 		gui_obj_create("btn_state", 86, 40, 0, 0, "");
 		gui_obj_create("btn_draw", 86, 40, 0, 0, "Draw|spectre");
 		gui_obj_create("btn_p", 35, 35, 0, 0, "+");
 		gui_obj_create("btn_m", 35, 35, 0, 0, "-");
 
-		gui_obj_align_to("lbl_timeoffset", "lbl_nmeatime", ALIGN_DOWN_LEFT, interval);
-		gui_obj_align_to("lbl_stopfreq", "lbl_timeoffset", ALIGN_DOWN_LEFT, interval);
-		gui_obj_align_to("lbl_interval", "lbl_stopfreq", ALIGN_DOWN_LEFT, interval);
+		gui_arrange_objects_from("lbl_nmeatime", 4, 1, interval);
 		gui_obj_align_to("btn_state", "lbl_interval", ALIGN_DOWN_LEFT, interval);
 		gui_obj_align_to("btn_draw", "btn_state", ALIGN_RIGHT_UP, interval);
 		gui_obj_align_to("btn_p", "lbl_timeoffset", ALIGN_RIGHT_UP, interval);
@@ -5778,10 +5707,10 @@ void window_lfm_process(void)
 		enc.updated = 0;
 
 		for(unsigned i = 0; i < 3; i ++)
-			gui_obj_set_prop(lbl_array[i], GUI_OBJ_COLOR, COLORPIP_WHITE);
+			gui_obj_set_prop(get_obj_name_by_idx(TYPE_LABEL, lbls[i]), GUI_OBJ_COLOR, COLORPIP_WHITE);
 
 		ASSERT(enc.select < 3);
-		gui_obj_set_prop(lbl_array[enc.select], GUI_OBJ_COLOR, COLORPIP_YELLOW);
+		gui_obj_set_prop(get_obj_name_by_idx(TYPE_LABEL, lbls[enc.select]), GUI_OBJ_COLOR, COLORPIP_YELLOW);
 
 		if (enc.select == 0)
 		{
