@@ -590,66 +590,6 @@ uint_fast8_t debugusb_getchar(char * cp); /* приём символа, если
 void debugusb_parsechar(uint_fast8_t c);	/* вызывается из обработчика прерываний */
 void debugusb_sendchar(void * ctx);			/* вызывается из обработчика прерываний */
 
-/* TWI (I2C) interface */
-#if ! LINUX_SUBSYSTEM
-	#define I2C_RETRIES 3	/* количество повторов */
-#endif /* ! LINUX_SUBSYSTEM */
-
-/* target device speed */
-typedef struct i2c_parameters
-{
-	uint8_t ch;
-	uint8_t usdelayv;	/* время задержки на полпериода скрости обмпена при программном формировании I2C */
-} i2cp_t;
-
-#define I2CP_I2C1	0	/* i2c_xxx */
-#define I2CP_I2C2	1	/* i2c2_xxx */
-
-void i2cp_intiialize(i2cp_t * p, unsigned ch, unsigned freq);	/* канал и скорость обмена */
-
-#define I2C_READ_ACK 0  // i2c_read parameter
-#define I2C_READ_ACK_1 1  // i2c_read parameter
-#define I2C_READ_NACK 2		// ack_type - last parameterr in read block
-#define I2C_READ_ACK_NACK 3		// чтение первого и единственного байта по I2C
-
-void i2c_initialize(void);
-void i2c_start(uint_fast8_t address);
-void i2c_read(uint8_t * pdata, uint_fast8_t acknak);
-void i2c_write(uint_fast8_t data);
-void i2c_write_withrestart(uint_fast8_t data);	// запись, после чего restart
-void i2c_waitsend(void);	// Вызвать после последнего i2c_write()
-void i2c_stop(void);
-
-// Работа со вторым каналом I2C
-void i2c2_start(uint_fast8_t address);
-void i2c2_read(uint8_t * pdata, uint_fast8_t acknak);
-void i2c2_write(uint_fast8_t data);
-void i2c2_write_withrestart(uint_fast8_t data);	// запись, после чего restart
-void i2c2_waitsend(void);	// Вызвать после последнего i2c_write()
-void i2c2_stop(void);
-
-void i2cp_i2c_initialize(void);
-
-/* Версии функций с указанием скорости и порта I2C */
-void i2cp_start(const i2cp_t * p, uint_fast8_t address);
-void i2cp_read(const i2cp_t * p, uint8_t * pdata, uint_fast8_t acknak);
-void i2cp_write(const i2cp_t * p, uint_fast8_t data);
-void i2cp_write_withrestart(const i2cp_t * p, uint_fast8_t data);	// запись, после чего restart
-void i2cp_waitsend(const i2cp_t * p);	// Вызвать после последнего i2c_write()
-void i2cp_stop(const i2cp_t * p);
-
-void hardware_twi_master_configure(void);
-
-/* return non-zero then error */
-// LSB of slave_address8b ignored */
-int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size);
-int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size);
-int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize);	// Use restart for read
-
-int i2chw2_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size);
-int i2chw2_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size);
-int i2chw2_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize);	// Use restart for read
-
 uint32_t hardware_get_random(void);
 
 void arm_hardware_dma2d_initialize(void);	// Graphic 2D engine

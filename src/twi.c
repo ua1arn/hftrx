@@ -1777,7 +1777,7 @@ static int t113_i2c_write(TWI_TypeDef * twi, struct i2c_msg_t * msg)
 
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
-int i2chwx_read(TWI_TypeDef * const twi, uint16_t slave_address8b, uint8_t * buf, uint32_t size)
+int i2chwx_read(TWI_t * const twi, uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
 	int res;
 	struct i2c_msg_t  msgs;
@@ -1807,7 +1807,7 @@ int i2chwx_read(TWI_TypeDef * const twi, uint16_t slave_address8b, uint8_t * buf
 
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
-int i2chwx_write(TWI_TypeDef * const twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
+int i2chwx_write(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 {
 	int res;
 	struct i2c_msg_t  msgs;
@@ -1837,7 +1837,7 @@ int i2chwx_write(TWI_TypeDef * const twi, uint16_t slave_address8b, const uint8_
 
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
-int i2chwx_exchange(TWI_TypeDef * const twi, uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
+int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
 {
 	int res;
 	struct i2c_msg_t  msgs;
