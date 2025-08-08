@@ -1886,6 +1886,42 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 	return 0;
 }
 
+void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq)
+{
+#if CPUSTYLE_ALLWINNER
+	if (0)
+	{
+
+	}
+#if defined (S_TWI0)
+	else if (twi == S_TWI0)
+	{
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
+		PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
+	}
+#endif /* defined (S_TWI0) */
+	else
+	{
+		const unsigned TWIx = TWIHARD_IX;
+		CCU->TWI_BGR_REG |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
+		CCU->TWI_BGR_REG &= ~ (UINT32_C(1) << (16 + TWIx));	// Assert reset
+		CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
+	}
+
+	t113_i2c_set_rate(twi, sclfreq, busfreq);
+
+	twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
+
+	twi->TWI_SRST |= UINT32_C(1) << 0;
+	while ((twi->TWI_SRST & (UINT32_C(1) << 0)) != 0)
+		;
+
+	t113_i2c_stop(twi);
+
+#endif
+}
+
 int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
 	return i2chwx_read(TWIHARD_PTR, slave_address8b, buf, size);
@@ -1936,6 +1972,35 @@ void i2c_initialize(void)
 	TWIHARD2_INITIALIZE();
 	t113_i2c_stop(TWIHARD2_PTR);
 #endif /* defined (TWIHARD2_PTR) */
+
+#if WITHTWI0HW
+	i2chwx_initialize(TWIBASENAME(0), TWIHARD_FREQ, 400000);
+	HARDWARE_TWI0_INITIALIZE();
+#endif
+#if WITHTWI1HW
+	i2chwx_initialize(TWIBASENAME(1), TWIHARD_FREQ, 400000);
+	HARDWARE_TWI1_INITIALIZE();
+#endif
+#if WITHTWI2HW
+	i2chwx_initialize(TWIBASENAME(2), TWIHARD_FREQ, 400000);
+	HARDWARE_TWI2_INITIALIZE();
+#endif
+#if WITHTWI3HW
+	i2chwx_initialize(TWIBASENAME(3), TWIHARD_FREQ, 400000);
+	HARDWARE_TWI3_INITIALIZE();
+#endif
+#if WITHTWI4HW
+	i2chwx_initialize(TWIBASENAME(4), TWIHARD_FREQ, 400000);
+	HARDWARE_TWI4_INITIALIZE();
+#endif
+#if WITHTWI5HW
+	i2chwx_initialize(TWIBASENAME(5), TWIHARD_FREQ, 400000);
+	HARDWARE_TWI5_INITIALIZE();
+#endif
+#if WITHTWI6HW
+	i2chwx_initialize(TWIBASENAME(6), TWIHARD_FREQ, 400000);
+	HARDWARE_TWI6_INITIALIZE();
+#endif
 
 }
 
@@ -2525,7 +2590,7 @@ void hardware_twi_master_configure(void)
 	}
 #endif /* defined (TWIHARD_PTR) */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif CPUSTYLE_ALLWINNER
 
 	const uint_fast32_t sclfreq = 400000;
 
