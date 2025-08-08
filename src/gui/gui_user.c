@@ -3455,160 +3455,48 @@ void window_af_eq_process(void)
 void window_ap_mic_process(void)
 {
 	window_t * const win = get_win(WINDOW_AP_MIC_SETT);
-
-	static slider_t * sl_micLevel = NULL, * sl_micClip = NULL, * sl_micAGC = NULL;
-	static label_t * lbl_micLevel = NULL, * lbl_micClip = NULL, * lbl_micAGC = NULL;
 	static uint_fast8_t level_min, level_max, clip_min, clip_max, agc_min, agc_max;
 
 	if (win->first_call)
 	{
-		uint_fast8_t interval = 50;
 		win->first_call = 0;
-
-		static const button_t buttons[] = {
-			{  86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_agc",   "AGC|OFF",   },
-			{  86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_boost", "Boost|OFF", },
-			{  86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_OK",    "OK", 		  },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		static const label_t labels[] = {
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micLevel", 	  "", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micClip",  	  "", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micAGC",   	  "", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micLevel_min", "", FONT_SMALL,  COLORPIP_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micLevel_max", "", FONT_SMALL,  COLORPIP_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micClip_min",  "", FONT_SMALL,  COLORPIP_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micClip_max",  "", FONT_SMALL,  COLORPIP_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micAGC_min",   "", FONT_SMALL,  COLORPIP_WHITE, },
-			{	WINDOW_AP_MIC_SETT, DISABLED, 0, NON_VISIBLE, "lbl_micAGC_max",   "", FONT_SMALL,  COLORPIP_WHITE, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t *) malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
-
-		static const slider_t sliders[] = {
-			{ ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, "sl_micLevel", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, "sl_micClip",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ ORIENTATION_HORIZONTAL, WINDOW_AP_MIC_SETT, "sl_micAGC",   CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-		};
-		win->sh_count = ARRAY_SIZE(sliders);
-		unsigned sliders_size = sizeof(sliders);
-		win->sh_ptr = (slider_t *) malloc(sliders_size);
-		GUI_MEM_ASSERT(win->sh_ptr);
-		memcpy(win->sh_ptr, sliders, sliders_size);
 
 		hamradio_get_mic_level_limits(& level_min, & level_max);
 		hamradio_get_mic_clip_limits(& clip_min, & clip_max);
 		hamradio_get_mic_agc_limits(& agc_min, & agc_max);
 
-		sl_micLevel = (slider_t *) find_gui_obj(TYPE_SLIDER, win, "sl_micLevel");
-		sl_micClip = (slider_t *) find_gui_obj(TYPE_SLIDER, win, "sl_micClip");
-		sl_micAGC = (slider_t *) find_gui_obj(TYPE_SLIDER, win, "sl_micAGC");
-		lbl_micLevel = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_micLevel");
-		lbl_micClip = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_micClip");
-		lbl_micAGC = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_micAGC");
+		gui_obj_create("lbl_micLevel", FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_micClip", FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_micAGC", FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create("sl_micLevel", ORIENTATION_HORIZONTAL, 300, 3);
+		gui_obj_create("sl_micClip", ORIENTATION_HORIZONTAL, 300, 3);
+		gui_obj_create("sl_micAGC", ORIENTATION_HORIZONTAL, 300, 3);
+		gui_obj_create("btn_mic_agc", 86, 44, 0, 0, "AGC|OFF");
+		gui_obj_create("btn_mic_boost", 86, 44, 0, 0, "Boost|OFF");
+		gui_obj_create("btn_mic_OK", 86, 44, 0, 0, "OK");
 
-		lbl_micLevel->x = 0;
-		lbl_micLevel->y = 10;
-		lbl_micLevel->visible = VISIBLE;
-		local_snprintf_P(lbl_micLevel->text, ARRAY_SIZE(lbl_micLevel->text), PSTR("Level: %3d"), hamradio_get_mik1level());
+		gui_obj_set_prop("lbl_micLevel", GUI_OBJ_POS_Y, 10);
+		gui_arrange_objects_from("lbl_micLevel", 3, 1, 50);
+		gui_obj_align_to("sl_micLevel", "lbl_micLevel", ALIGN_RIGHT_UP_MID, 30);
+		gui_obj_align_to("sl_micClip", "lbl_micClip", ALIGN_RIGHT_UP_MID, 30);
+		gui_obj_align_to("sl_micAGC", "lbl_micAGC", ALIGN_RIGHT_UP_MID, 30);
+		gui_obj_align_to("btn_mic_agc", "lbl_micAGC", ALIGN_DOWN_LEFT, 30);
+		gui_arrange_objects_from("btn_mic_agc", 3, 3, 50);
 
-		lbl_micClip->x = lbl_micLevel->x;
-		lbl_micClip->y = lbl_micLevel->y + interval;
-		lbl_micClip->visible = VISIBLE;
-		local_snprintf_P(lbl_micClip->text, ARRAY_SIZE(lbl_micClip->text), PSTR("Clip : %3d"), hamradio_get_gmikehclip());
+		gui_obj_set_prop("lbl_micLevel", GUI_OBJ_TEXT_FMT, "Level: %3d", hamradio_get_mik1level());
+		gui_obj_set_prop("lbl_micClip", GUI_OBJ_TEXT_FMT, "Clip : %3d", hamradio_get_gmikehclip());
+		gui_obj_set_prop("lbl_micAGC", GUI_OBJ_TEXT_FMT, "AGC  : %3d", hamradio_get_gmikeagcgain());
+		gui_obj_set_prop("sl_micLevel", GUI_OBJ_PAYLOAD, normalize(hamradio_get_mik1level(), level_min, level_max, 100));
+		gui_obj_set_prop("sl_micClip", GUI_OBJ_PAYLOAD, normalize(hamradio_get_gmikehclip(), clip_min, clip_max, 100));
+		gui_obj_set_prop("sl_micAGC", GUI_OBJ_PAYLOAD, normalize(hamradio_get_gmikeagcgain(), agc_min, agc_max, 100));
+		gui_obj_set_prop("sl_micAGC", GUI_OBJ_LOCK, hamradio_get_gmikeagc());
 
-		lbl_micAGC->x = lbl_micClip->x;
-		lbl_micAGC->y = lbl_micClip->y + interval;
-		lbl_micAGC->visible = VISIBLE;
-		local_snprintf_P(lbl_micAGC->text, ARRAY_SIZE(lbl_micAGC->text), PSTR("AGC  : %3d"), hamradio_get_gmikeagcgain());
 
-		sl_micLevel->x = lbl_micLevel->x + interval * 2 + interval / 2;
-		sl_micLevel->y = lbl_micLevel->y;
-		sl_micLevel->visible = VISIBLE;
-		sl_micLevel->size = 300;
-		sl_micLevel->step = 3;
-		sl_micLevel->value = normalize(hamradio_get_mik1level(), level_min, level_max, 100);
-
-		sl_micClip->x = sl_micLevel->x;
-		sl_micClip->y = lbl_micClip->y;
-		sl_micClip->visible = VISIBLE;
-		sl_micClip->size = 300;
-		sl_micClip->step = 3;
-		sl_micClip->value = normalize(hamradio_get_gmikehclip(), clip_min, clip_max, 100);
-
-		sl_micAGC->x = sl_micLevel->x;
-		sl_micAGC->y = lbl_micAGC->y;
-		sl_micAGC->visible = VISIBLE;
-		sl_micAGC->size = 300;
-		sl_micAGC->step = 3;
-		sl_micAGC->value = normalize(hamradio_get_gmikeagcgain(), agc_min, agc_max, 100);
-
-		button_t * bh2 = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_mic_boost");
-		bh2->x1 = (sl_micLevel->x + sl_micLevel->size) / 2 - (bh2->w / 2);
-		bh2->y1 = lbl_micAGC->y + interval;
 #if WITHAFCODEC1HAVEPROC
-		bh2->is_locked = hamradio_get_gmikeboost20db() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+		gui_obj_set_prop("btn_mic_boost", GUI_OBJ_LOCK, hamradio_get_gmikeboost20db() ? BUTTON_LOCKED : BUTTON_NON_LOCKED);
 #else
-		bh2->state = DISABLED;
+		gui_obj_set_prop("btn_mic_boost", GUI_OBJ_STATE, DISABLED);
 #endif /* WITHAFCODEC1HAVEPROC */
-		local_snprintf_P(bh2->text, ARRAY_SIZE(bh2->text), PSTR("Boost|%s"), bh2->is_locked ? "ON" : "OFF");
-		bh2->visible = VISIBLE;
-
-		button_t * bh1 = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_mic_agc");
-		bh1->x1 = bh2->x1 - bh1->w - interval;
-		bh1->y1 = bh2->y1;
-		bh1->is_locked = hamradio_get_gmikeagc() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
-		local_snprintf_P(bh1->text, ARRAY_SIZE(bh1->text), PSTR("AGC|%s"), bh1->is_locked ? "ON" : "OFF");
-		bh1->visible = VISIBLE;
-
-		bh1 = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_mic_OK");
-		bh1->x1 = bh2->x1 + bh2->w + interval;
-		bh1->y1 = bh2->y1;
-		bh1->visible = VISIBLE;
-
-		label_t * lbl_micLevel_min = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_micLevel_min");
-		local_snprintf_P(lbl_micLevel_min->text, ARRAY_SIZE(lbl_micLevel_min->text), PSTR("%d"), level_min);
-		lbl_micLevel_min->x = sl_micLevel->x - get_label_width(lbl_micLevel_min) / 2;
-		lbl_micLevel_min->y = sl_micLevel->y + get_label_height(lbl_micLevel_min) * 3;
-		lbl_micLevel_min->visible = VISIBLE;
-
-		label_t * lbl_micLevel_max = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_micLevel_max");
-		local_snprintf_P(lbl_micLevel_max->text, ARRAY_SIZE(lbl_micLevel_max->text), PSTR("%d"), level_max);
-		lbl_micLevel_max->x = sl_micLevel->x + sl_micLevel->size - get_label_width(lbl_micLevel_max) / 2;
-		lbl_micLevel_max->y = sl_micLevel->y + get_label_height(lbl_micLevel_max) * 3;
-		lbl_micLevel_max->visible = VISIBLE;
-
-		label_t * lbl_micClip_min = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_micClip_min");
-		local_snprintf_P(lbl_micClip_min->text, ARRAY_SIZE(lbl_micClip_min->text), PSTR("%d"), clip_min);
-		lbl_micClip_min->x = sl_micClip->x - get_label_width(lbl_micClip_min) / 2;
-		lbl_micClip_min->y = sl_micClip->y + get_label_height(lbl_micClip_min) * 3;
-		lbl_micClip_min->visible = VISIBLE;
-
-		label_t * lbl_micClip_max = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_micClip_max");
-		local_snprintf_P(lbl_micClip_max->text, ARRAY_SIZE(lbl_micClip_max->text), PSTR("%d"), clip_max);
-		lbl_micClip_max->x = sl_micClip->x + sl_micClip->size - get_label_width(lbl_micClip_max) / 2;
-		lbl_micClip_max->y = sl_micClip->y + get_label_height(lbl_micClip_max) * 3;
-		lbl_micClip_max->visible = VISIBLE;
-
-		label_t * lbl_micAGC_min = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_micAGC_min");
-		local_snprintf_P(lbl_micAGC_min->text, ARRAY_SIZE(lbl_micAGC_min->text), PSTR("%d"), agc_min);
-		lbl_micAGC_min->x = sl_micAGC->x - get_label_width(lbl_micAGC_min) / 2;
-		lbl_micAGC_min->y = sl_micAGC->y + get_label_height(lbl_micAGC_min) * 3;
-		lbl_micAGC_min->visible = VISIBLE;
-
-		label_t * lbl_micAGC_max = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_micAGC_max");
-		local_snprintf_P(lbl_micAGC_max->text, ARRAY_SIZE(lbl_micAGC_max->text), PSTR("%d"), agc_max);
-		lbl_micAGC_max->x = sl_micAGC->x + sl_micClip->size - get_label_width(lbl_micAGC_max) / 2;
-		lbl_micAGC_max->y = sl_micAGC->y + get_label_height(lbl_micAGC_max) * 3;
-		lbl_micAGC_max->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -3616,29 +3504,25 @@ void window_ap_mic_process(void)
 	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_mic_boost = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_mic_boost");
-			button_t * btn_mic_agc = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_mic_agc");
-			button_t * btn_mic_OK = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_mic_OK");
-
-			if (bh == btn_mic_boost)
+			if (gui_check_obj(name, "btn_mic_boost"))
 			{
 #if WITHAFCODEC1HAVEPROC
-				btn_mic_boost->is_locked = hamradio_get_gmikeboost20db() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
-				local_snprintf_P(btn_mic_boost->text, ARRAY_SIZE(btn_mic_boost->text), PSTR("Boost|%s"), btn_mic_boost->is_locked ? "ON" : "OFF");
-				hamradio_set_gmikeboost20db(btn_mic_boost->is_locked);
+				uint8_t v = hamradio_get_gmikeboost20db();
+				gui_obj_set_prop("btn_mic_boost", GUI_OBJ_LOCK, v ? BUTTON_NON_LOCKED : BUTTON_LOCKED);
+				gui_obj_set_prop("btn_mic_boost", GUI_OBJ_TEXT_FMT, "Boost|%s", v ? "OFF" : "ON");
+				hamradio_set_gmikeboost20db(! v);
 #endif /* WITHAFCODEC1HAVEPROC */
 			}
-			else if (bh == btn_mic_agc)
+			else if (gui_check_obj(name, "btn_mic_agc"))
 			{
-				btn_mic_agc->is_locked = hamradio_get_gmikeagc() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
-				local_snprintf_P(btn_mic_agc->text, ARRAY_SIZE(btn_mic_agc->text), PSTR("AGC|%s"), btn_mic_agc->is_locked ? "ON" : "OFF");
-				hamradio_set_gmikeagc(btn_mic_agc->is_locked);
+				uint8_t v = hamradio_get_gmikeagc();
+				gui_obj_set_prop("btn_mic_agc", GUI_OBJ_LOCK, v ? BUTTON_NON_LOCKED : BUTTON_LOCKED);
+				gui_obj_set_prop("btn_mic_agc", GUI_OBJ_TEXT_FMT, "AGC|%s", v ? "OFF" : "ON");
+				hamradio_set_gmikeagc(! v);
 			}
-			else if (bh == btn_mic_OK)
+			else if (gui_check_obj(name, "btn_mic_OK"))
 			{
 				close_all_windows();
 				return;
@@ -3646,30 +3530,30 @@ void window_ap_mic_process(void)
 		}
 		else if (IS_SLIDER_MOVE)
 		{
-			slider_t * sh = (slider_t *) ptr;
-			if (sh == sl_micLevel)
+			uint8_t v = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
+
+			if (gui_check_obj(name, "sl_micLevel"))
 			{
-				uint_fast16_t level = level_min + normalize(sh->value, 0, 100, level_max - level_min);
-				local_snprintf_P(lbl_micLevel->text, ARRAY_SIZE(lbl_micLevel->text), PSTR("Level: %3d"), level);
+				uint_fast16_t level = level_min + normalize(v, 0, 100, level_max - level_min);
+				gui_obj_set_prop("lbl_micLevel", GUI_OBJ_TEXT_FMT, "Level: %3d", level);
 				hamradio_set_mik1level(level);
 			}
-			else if (sh == sl_micClip)
+			else if (gui_check_obj(name, "sl_micClip"))
 			{
-				uint_fast16_t clip = clip_min + normalize(sh->value, 0, 100, clip_max - clip_min);
-				local_snprintf_P(lbl_micClip->text, ARRAY_SIZE(lbl_micClip->text), PSTR("Clip : %3d"), clip);
+				uint_fast16_t clip = clip_min + normalize(v, 0, 100, clip_max - clip_min);
+				gui_obj_set_prop("lbl_micClip", GUI_OBJ_TEXT_FMT, "Clip : %3d", clip);
 				hamradio_set_gmikehclip(clip);
 			}
-			else if (sh == sl_micAGC)
+			else if (gui_check_obj(name, "sl_micAGC"))
 			{
-				uint_fast16_t agc = agc_min + normalize(sh->value, 0, 100, agc_max - agc_min);
-				local_snprintf_P(lbl_micAGC->text, ARRAY_SIZE(lbl_micAGC->text), PSTR("AGC  : %3d"), agc);
+				uint_fast16_t agc = agc_min + normalize(v, 0, 100, agc_max - agc_min);
+				gui_obj_set_prop("lbl_micAGC", GUI_OBJ_TEXT_FMT, "AGC  : %3d", agc);
 				hamradio_set_gmikeagcgain(agc);
 			}
 		}
 		break;
 
 	default:
-
 		break;
 	}
 }
@@ -3679,48 +3563,23 @@ void window_ap_mic_process(void)
 void window_ap_mic_prof_process(void)
 {
 	window_t * const win = get_win(WINDOW_AP_MIC_PROF);
+	uint8_t update = 0;
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, interval = 6, row_count = 3;
 		win->first_call = 0;
+		update = 1;
+		char name[NAME_ARRAY_SIZE];
 
-		static const button_t buttons[] = {
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_1", "", 0, },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_2", "", 1, },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_3", "", 2, },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		x = 0;
-		y = 0;
-
-		unsigned i, r;
-		for (i = 0, r = 1; i < win->bh_count; i ++, r ++)
+		for (uint8_t i = 0; i < NMICPROFCELLS; i ++)
 		{
-			button_t * bh = & win->bh_ptr[i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
-
-			x = x + interval + bh->w;
-			if (r >= row_count)
-			{
-				r = 0;
-				x = 0;
-				y = y + bh->h + interval;
-			}
-			unsigned cell_saved = hamradio_load_mic_profile(i, 0);
-			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%d|%s"), i + 1, cell_saved ? "saved" : "clean");
-			bh->payload = cell_saved;
-
-			if (gui_nvram.micprofile == i && bh->payload)
-				bh->is_locked = BUTTON_LOCKED;
+			local_snprintf_P(name, NAME_ARRAY_SIZE, "btn_mic_profile_%01d", i);
+			gui_obj_create(name, 100, 44, 0, 1, "");
+			uint8_t cell_saved = hamradio_load_mic_profile(i, 0);
+			gui_obj_set_prop(name, GUI_OBJ_PAYLOAD, (i << 16) | cell_saved);
 		}
+
+		gui_arrange_objects_from("btn_mic_profile_0", NMICPROFCELLS, 3, 6);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -3728,16 +3587,15 @@ void window_ap_mic_prof_process(void)
 	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			unsigned profile_id = bh->index;
-			if (bh->payload)
+			uint32_t p = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
+			uint8_t cell_saved = p & 1;
+			uint8_t profile_id = p >> 16;
+
+			if (cell_saved)
 			{
 				hamradio_load_mic_profile(profile_id, 1);
-				gui_nvram.micprofile = profile_id;
-				save_settings();
 				close_window(DONT_OPEN_PARENT_WINDOW);
 				footer_buttons_state(CANCELLED);
 				return;
@@ -3745,32 +3603,35 @@ void window_ap_mic_prof_process(void)
 		}
 		else if (IS_BUTTON_LONG_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			unsigned profile_id = bh->index;
-			if (bh->payload)
-			{
+			uint32_t p = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
+			uint8_t cell_saved = p & 1;
+			uint8_t profile_id = p >> 16;
+
+			gui_obj_set_prop(name, GUI_OBJ_PAYLOAD, (profile_id << 16) | ! cell_saved);
+
+			if (cell_saved)
 				hamradio_clean_mic_profile(profile_id);
-				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%d|clean"), profile_id + 1);
-				bh->payload = 0;
-				if (gui_nvram.micprofile == profile_id)
-				{
-					gui_nvram.micprofile = micprofile_default;
-					save_settings();
-					bh->is_locked = BUTTON_NON_LOCKED;
-				}
-			}
 			else
-			{
 				hamradio_save_mic_profile(profile_id);
-				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%d|saved"), profile_id + 1);
-				bh->payload = 1;
-			}
+
+			update = 1;
 		}
 		break;
 
 	default:
-
 		break;
+	}
+
+	if (update)
+	{
+		update = 0;
+
+		for (uint8_t i = 0; i < NMICPROFCELLS; i ++)
+		{
+			char * name = get_obj_name_by_idx(TYPE_BUTTON, i);
+			uint32_t p = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
+			gui_obj_set_prop(name, GUI_OBJ_TEXT_FMT, "%d|%s", i + 1, p & 1 ? "saved" : "clean");
+		}
 	}
 }
 

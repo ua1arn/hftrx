@@ -220,7 +220,7 @@ typedef struct {
 	uint8_t value;					// 0..100 %
 	uint8_t value_old;				// для перерасчетов при изменении значения
 	uint16_t value_p;				// в пикселях от начала шкалы
-	float step;
+	uint8_t step;
 	uint8_t index;
 	uint16_t x;
 	uint16_t y;

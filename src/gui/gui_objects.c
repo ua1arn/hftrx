@@ -266,6 +266,29 @@ uint8_t gui_obj_create(const char * obj_name, ...)
 		break;
 	}
 
+	case TYPE_SLIDER:
+	{
+		win->sh_ptr = (slider_t *) realloc(win->sh_ptr, sizeof(slider_t) * (win->sh_count + 1));
+		GUI_MEM_ASSERT(win->sh_ptr);
+
+		slider_t * sh = & win->sh_ptr[win->sh_count];
+		memset(sh, 0, sizeof(slider_t));
+
+		sh->parent = window_id;
+		sh->orientation = va_arg(arg, int);
+		strncpy(sh->name, obj_name, NAME_ARRAY_SIZE - 1);
+		sh->state = CANCELLED;
+		sh->visible = 1;
+		sh->size = va_arg(arg, int);
+		sh->step = va_arg(arg, int);
+		sh->value = 0;
+		sh->value_old = 255;
+
+		sh->index = win->sh_count;
+		win->sh_count ++;
+		break;
+	}
+
 	default:
 		break;
 	}
@@ -313,6 +336,13 @@ void gui_obj_align_to(const char * name1, const char * name2, object_alignment_t
 		h2 = tf2->h;
 		break;
 
+	case TYPE_SLIDER:
+		slider_t * sh2 = (slider_t *) oh2;
+		x2 = sh2->x;
+		y2 = sh2->y;
+		w2 = sh2->size;
+		h2 = sliders_h * 2;
+
 	default:
 		break;
 	}
@@ -337,6 +367,17 @@ void gui_obj_align_to(const char * name1, const char * name2, object_alignment_t
 		else if (align == ALIGN_LEFT_UP)  { bh1->x1 = x2 - bh1->w - offset; bh1->y1 = y2; }
 		else if (align == ALIGN_DOWN_LEFT) { bh1->x1 = x2; bh1->y1 = y2 + h2 + offset; }
 		else if (align == ALIGN_DOWN_MID) { bh1->x1 = x2 + w2 / 2 - bh1->w / 2; bh1->y1 = y2 + h2 + offset; }
+		break;
+
+	case TYPE_SLIDER:
+		slider_t * sh1 = (slider_t *) oh1;
+
+		if (align == ALIGN_RIGHT_UP) { sh1->x = x2 + w2 + offset; sh1->y = y2; }
+		else if (align == ALIGN_RIGHT_UP_MID) { sh1->x = x2 + w2 + offset; sh1->y = y2 + (h2 / 2 - sliders_h / 2); }
+		else if (align == ALIGN_LEFT_UP)  { sh1->x = x2 - sliders_w - offset; sh1->y = y2; }
+		else if (align == ALIGN_DOWN_LEFT) { sh1->x = x2; sh1->y = y2 + h2 + offset; }
+		else if (align == ALIGN_DOWN_MID) { sh1->x = x2 + w2 / 2 - sliders_w / 2; sh1->y = y2 + h2 + offset; }
+
 		break;
 
 	default:
@@ -385,6 +426,7 @@ int gui_obj_get_int_prop(const char * name, object_prop_t prop)
 		else if (prop == GUI_OBJ_WIDTH) return lh->width_pix;
 		else if (prop == GUI_OBJ_HEIGHT) return lh->height_pix;
 		break;
+
 	case TYPE_BUTTON:
 		button_t * bh = (button_t *) obj;
 		if (prop == GUI_OBJ_VISIBLE) return bh->visible;
@@ -396,6 +438,18 @@ int gui_obj_get_int_prop(const char * name, object_prop_t prop)
 		else if (prop == GUI_OBJ_WIDTH) return bh->w;
 		else if (prop == GUI_OBJ_HEIGHT) return bh->h;
 		break;
+
+	case TYPE_SLIDER:
+		slider_t * sh = (slider_t *) obj;
+		if (prop == GUI_OBJ_VISIBLE) return sh->visible;
+		else if (prop == GUI_OBJ_POS_X) return sh->x;
+		else if (prop == GUI_OBJ_POS_Y) return sh->y;
+		else if (prop == GUI_OBJ_STATE) return sh->state;
+		else if (prop == GUI_OBJ_WIDTH) return sh->size;
+		else if (prop == GUI_OBJ_HEIGHT) return sliders_h;
+		else if (prop == GUI_OBJ_PAYLOAD) return sh->value;
+		break;
+
 	default:
 		break;
 	}
@@ -423,6 +477,7 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_STATE) lh->state = va_arg(arg, int);
 		else if (prop == GUI_OBJ_COLOR) lh->color = va_arg(arg, PACKEDCOLORPIP_T);
 		break;
+
 	case TYPE_BUTTON:
 		button_t * bh = (button_t *) obj;
 		if (prop == GUI_OBJ_VISIBLE) bh->visible = !! va_arg(arg, int);
@@ -439,6 +494,17 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_SIZE) { bh->w = va_arg(arg, int); bh->h = va_arg(arg, int); }
 		else if (prop == GUI_OBJ_REPEAT) bh->is_repeating = va_arg(arg, int);
 		break;
+
+	case TYPE_SLIDER:
+		slider_t * sh = (slider_t *) obj;
+		if (prop == GUI_OBJ_VISIBLE) sh->visible = !! va_arg(arg, int);
+		else if (prop == GUI_OBJ_POS_X) sh->x = va_arg(arg, int);
+		else if (prop == GUI_OBJ_POS_Y) sh->y = va_arg(arg, int);
+		else if (prop == GUI_OBJ_POS) { sh->x = va_arg(arg, int); sh->y = va_arg(arg, int); }
+		else if (prop == GUI_OBJ_WIDTH) sh->size = va_arg(arg, int);
+		else if (prop == GUI_OBJ_PAYLOAD) sh->value = va_arg(arg, int);
+		break;
+
 	default:
 		break;
 	}
