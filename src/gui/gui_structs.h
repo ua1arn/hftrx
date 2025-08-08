@@ -116,6 +116,7 @@ typedef enum {
 	GUI_OBJ_HEIGHT,
 	GUI_OBJ_SIZE,
 	GUI_OBJ_REPEAT,
+	GUI_OBJ_INDEX,
 } object_prop_t;
 
 typedef struct {
@@ -221,6 +222,8 @@ typedef struct {
 	uint8_t value_old;				// для перерасчетов при изменении значения
 	uint16_t value_p;				// в пикселях от начала шкалы
 	uint8_t step;
+	uint16_t width;
+	uint16_t height;
 	uint8_t index;
 	uint16_t x;
 	uint16_t y;

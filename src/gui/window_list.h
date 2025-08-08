@@ -26,7 +26,7 @@
     X(NOTCH,             DUMMY,         ALIGN_CENTER_X, "Notch",                     1, window_notch_process) 			\
     X(GUI_SETTINGS,      OPTIONS,       ALIGN_CENTER_X, "GUI settings",              1, window_gui_settings_process) 	\
     X(INFOBAR_MENU,      DUMMY,         ALIGN_MANUAL,   "",                          0, window_infobar_menu_process) 	\
-    X(AF_EQ,             DUMMY,         ALIGN_CENTER_X, "AF equalizer",              1, window_af_eq_process) 			\
+    X(AF_EQ,             AUDIOSETTINGS, ALIGN_CENTER_X, "AF equalizer",              1, window_af_eq_process) 			\
     X(TIME,              OPTIONS,       ALIGN_CENTER_X, "Date & time set",           1, window_time_process) 			\
     X(KBD,               DUMMY,         ALIGN_CENTER_X, "Keyboard",                  0, window_kbd_process) 			\
     X(KBD_TEST,          UTILS,         ALIGN_CENTER_X, "Keyboard demo",             1, window_kbd_test_process) 		\
