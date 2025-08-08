@@ -4475,7 +4475,7 @@ static uint_fast8_t gforcexvrtr;	/* принудительно включить 
 #else /* defined (WITHWFLBETA_DEFAULT) */
 	static uint_fast8_t gwflbeta100 = 50;	/* beta = 0.1 .. 1.0 */
 #endif /* defined (WITHWFLBETA_DEFAULT) */
-static uint_fast8_t gspectrumpart = 50;	/* Часть отведенной под спектр высоты экрана 0..100 */
+static uint_fast8_t gspectrumpart = 75;	/* Часть отведенной под спектр высоты экрана 0..100 */
 
 static unsigned getselector_bandgroup(unsigned * count)
 {
