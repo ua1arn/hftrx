@@ -17,7 +17,6 @@ void window_af_process(void);
 void window_freq_process (void);
 void window_swrscan_process(void);
 void window_tx_process(void);
-void window_tx_vox_process(void);
 void window_tx_power_process(void);
 void window_audiosettings_process(void);
 void window_ap_reverb_process(void);

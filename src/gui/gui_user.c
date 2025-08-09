@@ -2157,67 +2157,51 @@ void window_utilites_process(void)
 void window_swrscan_process(void)
 {
 #if WITHSWRSCAN
-	uint_fast16_t gr_w = 500, gr_h = 200;							// размеры области графика
-	uint_fast8_t interval = 20;
-	uint_fast16_t x0 = interval, y0 = gr_h;							// нулевые координаты графика
-	uint_fast16_t x1 = x0 + gr_w - interval * 2, y1 = gr_h - y0;	// размеры осей графика
-	static uint_fast16_t mid_w = 0, freq_step = 0;
-	static uint_fast16_t i, current_freq_x;
+	uint16_t gr_w = 500, gr_h = 200, mid_w = gr_w / 2;				// размеры области графика
+	uint8_t interval = 20;
+	const uint16_t x0 = interval, y0 = gr_h;							// нулевые координаты графика
+	const uint16_t x1 = x0 + gr_w - interval * 2, y1 = gr_h - y0;	// размеры осей графика
+	static uint16_t freq_step = 0;
+	static uint16_t i, current_freq_x;
 	static uint_fast32_t lim_bottom, lim_top, swr_freq, backup_freq;
-	static label_t * lbl_swr_error;
-	static button_t * btn_swr_start, * btn_Options, * btn_swr_OK;
-	static uint_fast8_t backup_power;
-	static uint_fast8_t swr_scan_done = 0, is_swr_scanning = 0;
-	static uint_fast8_t swr_scan_enable = 0;		// флаг разрешения сканирования КСВ
-	static uint_fast8_t swr_scan_stop = 0;			// флаг нажатия кнопки Stop во время сканирования
-	static uint_fast8_t * y_vals;					// массив КСВ в виде отсчетов по оси Y графика
+	static uint8_t backup_power;
+	static uint8_t swr_scan_done = 0, is_swr_scanning = 0;
+	static uint8_t swr_scan_enable = 0;		// флаг разрешения сканирования КСВ
+	static uint8_t swr_scan_stop = 0;			// флаг нажатия кнопки Stop во время сканирования
+	static uint8_t * y_vals;					// массив КСВ в виде отсчетов по оси Y графика
 	window_t * const win = get_win(WINDOW_SWR_SCANNER);
 	const uint8_t averageFactor = 3;
 
 	if (win->first_call)
 	{
-		uint_fast16_t x = 0, y = 0, xmax = 0, ymax = 0;
 		win->first_call = 0;
-		button_t * bh = NULL;
+		i = 0;
+		y_vals = calloc(x1 - x0, sizeof(uint8_t));
+		GUI_MEM_ASSERT(y_vals);
+		swr_scan_done = 0;
+		is_swr_scanning = 0;
+		swr_scan_stop = 0;
+		backup_freq = hamradio_get_freq_rx();
 
 		gui_obj_create("btn_swr_start", 86, 44, 0, 0, "Start");
 		gui_obj_create("btn_swr_OK",    86, 44, 0, 0, "OK");
 
-		gui_obj_create("lbl_swr_bottom", FONT_SMALL, COLORPIP_WHITE, 16);
-		gui_obj_create("lbl_swr_top",    FONT_SMALL, COLORPIP_WHITE, 16);
+		gui_obj_create("lbl_swr_bottom", FONT_SMALL, COLORPIP_WHITE, 7);
+		gui_obj_create("lbl_swr_top",    FONT_SMALL, COLORPIP_WHITE, 7);
 		gui_obj_create("lbl_swr_error",  FONT_MEDIUM, COLORPIP_WHITE, 16);
 
-		mid_w = 0 + gr_w / 2;
-		btn_swr_start = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_swr_start");
-		btn_swr_start->x1 = mid_w - btn_swr_start->w - interval;
-		btn_swr_start->y1 = gr_h + interval;
-		strcpy(btn_swr_start->text, "Start");
-		btn_swr_start->visible = VISIBLE;
+		gui_obj_set_prop("lbl_swr_top", GUI_OBJ_POS, x1 - 30, y0 + interval);
+		gui_obj_set_prop("lbl_swr_bottom", GUI_OBJ_POS, x0, y0 + interval);
 
-		btn_swr_OK = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_swr_OK");
-		btn_swr_OK->x1 = mid_w + interval;
-		btn_swr_OK->y1 = btn_swr_start->y1;
-		btn_swr_OK->visible = VISIBLE;
+		gui_obj_align_to("btn_swr_start", "lbl_swr_bottom", ALIGN_DOWN_LEFT, interval);
+		gui_obj_align_to("btn_swr_OK", "lbl_swr_top", ALIGN_DOWN_RIGHT, interval);
 
-		lbl_swr_error = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_swr_error");
-		btn_Options = (button_t *) find_gui_obj(TYPE_BUTTON, get_win(WINDOW_MAIN), "btn_Options");
-
-		backup_freq = hamradio_get_freq_rx();
 		if (hamradio_verify_freq_bands(backup_freq, & lim_bottom, & lim_top))
 		{
-			label_t * lbl_swr_bottom = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_swr_bottom");
-			local_snprintf_P(lbl_swr_bottom->text, ARRAY_SIZE(lbl_swr_bottom->text), PSTR("%dk"), lim_bottom / 1000);
-			lbl_swr_bottom->x = x0;
-			lbl_swr_bottom->y = y0 + get_label_height(lbl_swr_bottom) * 2;
-			lbl_swr_bottom->visible = VISIBLE;
+			gui_obj_set_prop("lbl_swr_bottom", GUI_OBJ_TEXT_FMT, "%dk", lim_bottom / 1000);
+			gui_obj_set_prop("lbl_swr_top", GUI_OBJ_TEXT_FMT, "%dk", lim_top / 1000);
+			gui_obj_set_prop("lbl_swr_error", GUI_OBJ_VISIBLE, 0);
 
-			label_t * lbl_swr_top = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_swr_top");
-			local_snprintf_P(lbl_swr_top->text, ARRAY_SIZE(lbl_swr_top->text), PSTR("%dk"), lim_top / 1000);
-			lbl_swr_top->x = x1 - get_label_width(lbl_swr_bottom);
-			lbl_swr_top->y = lbl_swr_bottom->y;
-			lbl_swr_top->visible = VISIBLE;
-
-			btn_swr_start->state = CANCELLED;
 			swr_freq = lim_bottom;
 			freq_step = (lim_top - lim_bottom) / (x1 - x0);
 			current_freq_x = normalize(backup_freq / 1000, lim_bottom / 1000, lim_top / 1000, x1 - x0);
@@ -2225,44 +2209,30 @@ void window_swrscan_process(void)
 		}
 		else
 		{	// если текущая частота не входит ни в один из любительских диапазонов, вывод сообщения об ошибке
-			local_snprintf_P(lbl_swr_error->text, ARRAY_SIZE(lbl_swr_error->text), PSTR("%dk not into HAM bands"), backup_freq / 1000);
-			lbl_swr_error->x = mid_w - get_label_width(lbl_swr_error) / 2;
-			lbl_swr_error->y = gr_h / 2;
-			lbl_swr_error->visible = VISIBLE;
-			btn_swr_start->state = DISABLED;
+			gui_obj_set_prop("btn_swr_start", GUI_OBJ_STATE, DISABLED);
+			gui_obj_set_prop("lbl_swr_top", GUI_OBJ_VISIBLE, 0);
+			gui_obj_set_prop("lbl_swr_bottom", GUI_OBJ_VISIBLE, 0);
+			gui_obj_set_prop("lbl_swr_error", GUI_OBJ_VISIBLE, 1);
+			gui_obj_set_prop("lbl_swr_error", GUI_OBJ_TEXT_FMT, "%dk not into HAM bands", backup_freq / 1000);
+			gui_obj_set_prop("lbl_swr_error", GUI_OBJ_POS, mid_w - get_label_width2("lbl_swr_error") / 2, gr_h / 2);
 		}
 
-		xmax = 0 + gr_w;
-		ymax = btn_swr_OK->y1 + btn_swr_OK->h;
-
-		calculate_window_position(win, WINDOW_POSITION_MANUAL_SIZE, xmax, ymax);
-
-		i = 0;
-		y_vals = calloc(x1 - x0, sizeof(uint_fast8_t));
-		swr_scan_done = 0;
-		is_swr_scanning = 0;
-		swr_scan_stop = 0;
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
 	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_swr_start = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_swr_start");
-			button_t * btn_swr_OK = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_swr_OK");
-
-			if (bh == btn_swr_start && ! strcmp(btn_swr_start->text, "Start"))
+			if (gui_check_obj(name, "btn_swr_start"))
 			{
-				swr_scan_enable = 1;
+				if (is_swr_scanning)
+					swr_scan_stop = 1;
+				else
+					swr_scan_enable = 1;
 			}
-			else if (bh == btn_swr_start && ! strcmp(btn_swr_start->text, "Stop"))
-			{
-				swr_scan_stop = 1;
-			}
-			else if (bh == btn_swr_OK)
+			else if (gui_check_obj(name, "btn_swr_OK"))
 			{
 				close_all_windows();
 				free(y_vals);
@@ -2272,16 +2242,14 @@ void window_swrscan_process(void)
 		break;
 
 	default:
-
 		break;
 	}
 
 	if (swr_scan_enable)						// нажата кнопка Start
 	{
 		swr_scan_enable = 0;
-		strcpy(btn_swr_start->text, "Stop");
-		btn_Options->state = DISABLED;
-		btn_swr_OK->state = DISABLED;
+		gui_obj_set_prop("btn_swr_start", GUI_OBJ_TEXT, "Stop");
+		gui_obj_set_prop("btn_swr_OK", GUI_OBJ_STATE, DISABLED);
 //		hamradio_set_tx_power(50);
 		hamradio_set_tune(1);
 		is_swr_scanning = 1;
@@ -2299,15 +2267,14 @@ void window_swrscan_process(void)
 			swr_scan_done = 1;
 			is_swr_scanning = 0;
 			swr_scan_stop = 0;
-			strcpy(btn_swr_start->text, "Start");
-			btn_Options->state = CANCELLED;
-			btn_swr_OK->state = CANCELLED;
+			gui_obj_set_prop("btn_swr_start", GUI_OBJ_TEXT, "Start");
+			gui_obj_set_prop("btn_swr_OK", GUI_OBJ_STATE, CANCELLED);
 			hamradio_set_tune(0);
 			hamradio_set_freq(backup_freq);
 //			hamradio_set_tx_power(backup_power);
 		}
 
-		const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале индикатора
+		const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок на шкале индикатора
 		y_vals[i] = normalize(get_swr(swr_fullscale), 0, swr_fullscale, y0 - y1);
 		if (i)
 			y_vals[i] = (y_vals[i - 1] * (averageFactor - 1) + y_vals[i]) / averageFactor;
@@ -2337,17 +2304,16 @@ void window_swrscan_process(void)
 			gui_print_UB(x0 - charw, yy - charh / 2, buf, & gothic_11x13, COLORPIP_WHITE);
 		}
 
-		if (lbl_swr_error->visible)				// фон сообщения об ошибке
+		if (gui_obj_get_int_prop("lbl_swr_error", GUI_OBJ_VISIBLE))				// фон сообщения об ошибке
 		{
-			int lx1 = 0, ly1 = gr_h / 2 - 3, lx2 = gr_w - 1, ly2 = ly1 + get_label_height(lbl_swr_error) + 4;
+			int lx1 = 0, ly1 = gr_h / 2 - 3, lx2 = gr_w - 1;
+			int ly2 = ly1 + gui_obj_get_int_prop("lbl_swr_error", GUI_OBJ_HEIGHT) + 4;
 			gui_drawrect(lx1, ly1, lx2, ly2, COLORPIP_RED, 1);
 		}
-		else									// маркер текущей частоты
-		{
+		else																	// маркер текущей частоты
 			gui_drawline(x0 + current_freq_x, y0, x0 + current_freq_x, y1, COLORPIP_RED);
-		}
 
-		if (is_swr_scanning || swr_scan_done)	// вывод графика во время сканирования и по завершении
+		if (is_swr_scanning || swr_scan_done)									// вывод графика во время сканирования и по завершении
 		{
 			for(uint_fast16_t j = 2; j <= i; j ++)
 				gui_drawline(x0 + j - 2, y0 - y_vals[j - 2], x0 + j - 1, y0 - y_vals[j - 1], COLORPIP_YELLOW);
@@ -2370,8 +2336,6 @@ void window_tx_process(void)
 		win->first_call = 0;
 		update = 1;
 
-		gui_obj_create("btn_tx_vox",          100, 44, 0, 0, "VOX|OFF");
-		gui_obj_create("btn_tx_vox_settings", 100, 44, 0, 0, "VOX|settings");
 		gui_obj_create("btn_tx_power",        100, 44, 0, 0, "TX power");
 
 		x = 0;
@@ -2399,16 +2363,12 @@ void window_tx_process(void)
 	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * const bh = (button_t *) ptr;
 			window_t * const winTX = get_win(WINDOW_TX_SETTINGS);
 			window_t * const winPower = get_win(WINDOW_TX_POWER);
-			window_t * const winVOX = get_win(WINDOW_TX_VOX_SETT);
-			button_t * const btn_tx_vox = (button_t *) find_gui_obj(TYPE_BUTTON, winTX, "btn_tx_vox");
 			button_t * const btn_tx_power = (button_t *) find_gui_obj(TYPE_BUTTON, winTX, "btn_tx_power");
-			button_t * const btn_tx_vox_settings = (button_t *) find_gui_obj(TYPE_BUTTON, winTX, "btn_tx_vox_settings");
 
 #if WITHPOWERTRIM && WITHTX
 			if (bh == btn_tx_power)
@@ -2417,23 +2377,10 @@ void window_tx_process(void)
 				return;
 			}
 #endif /* WITHPOWERTRIM  && WITHTX*/
-#if WITHVOX
-			if (bh == btn_tx_vox)
-			{
-				hamradio_set_gvoxenable(! hamradio_get_gvoxenable());
-				update = 1;
-			}
-			else if (bh == btn_tx_vox_settings)
-			{
-				open_window(winVOX);
-				return;
-			}
-#endif /* WITHVOX */
 		}
 		break;
 
 	default:
-
 		break;
 	}
 
@@ -2443,218 +2390,7 @@ void window_tx_process(void)
 		button_t * btn_tx_power = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_tx_power");
 		btn_tx_power->state = DISABLED;
 #endif /* ! WITHPOWERTRIM */
-
-		button_t * btn_tx_vox = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_tx_vox"); 						// vox on/off
-#if WITHVOX
-		btn_tx_vox->is_locked = hamradio_get_gvoxenable() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
-		local_snprintf_P(btn_tx_vox->text, ARRAY_SIZE(btn_tx_vox->text), PSTR("VOX|%s"), btn_tx_vox->is_locked ? "ON" : "OFF");
-#else
-		btn_tx_vox->state = DISABLED;
-		local_snprintf_P(btn_tx_vox->text, ARRAY_SIZE(btn_tx_vox->text), PSTR("VOX"));
-#endif /* WITHVOX */
-
-		button_t * btn_tx_vox_settings = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_tx_vox_settings");		// vox settings
-#if WITHVOX
-		btn_tx_vox_settings->state = hamradio_get_gvoxenable() ? CANCELLED : DISABLED;
-#else
-		btn_tx_vox_settings->state = DISABLED;
-#endif /* WITHVOX */
 	}
-}
-
-// *********************************************************************************************************************************************************************
-
-void window_tx_vox_process(void)
-{
-#if WITHVOX
-	window_t * const win = get_win(WINDOW_TX_VOX_SETT);
-
-	static slider_t * sl_vox_delay = NULL, * sl_vox_level = NULL, * sl_avox_level = NULL;
-	static label_t * lbl_vox_delay = NULL, * lbl_vox_level = NULL, * lbl_avox_level = NULL;
-	static uint_fast8_t delay_min, delay_max, level_min, level_max, alevel_min, alevel_max;
-	slider_t * sl;
-
-	if (win->first_call)
-	{
-		unsigned interval = 50;
-		win->first_call = 0;
-
-		static const button_t buttons[] = {
-			{  44, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TX_VOX_SETT, NON_VISIBLE, INT32_MAX, "btn_tx_vox_OK", "OK", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		static const slider_t sliders[] = {
-			{ ORIENTATION_HORIZONTAL, WINDOW_TX_VOX_SETT, "sl_vox_delay",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ ORIENTATION_HORIZONTAL, WINDOW_TX_VOX_SETT, "sl_vox_level",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ ORIENTATION_HORIZONTAL, WINDOW_TX_VOX_SETT, "sl_avox_level", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-		};
-		win->sh_count = ARRAY_SIZE(sliders);
-		unsigned sliders_size = sizeof(sliders);
-		win->sh_ptr = (slider_t *) malloc(sliders_size);
-		GUI_MEM_ASSERT(win->sh_ptr);
-		memcpy(win->sh_ptr, sliders, sliders_size);
-
-		static const label_t labels[] = {
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_delay",    	 "", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_level",    	 "", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_avox_level",   	 "", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_delay_min",  "", FONT_SMALL, COLORPIP_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_delay_max",  "", FONT_SMALL, COLORPIP_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_level_min",  "", FONT_SMALL, COLORPIP_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_vox_level_max",  "", FONT_SMALL, COLORPIP_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_avox_level_min", "", FONT_SMALL, COLORPIP_WHITE, },
-			{	WINDOW_TX_VOX_SETT, DISABLED,  0, NON_VISIBLE, "lbl_avox_level_max", "", FONT_SMALL, COLORPIP_WHITE, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t *) malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
-
-		hamradio_get_vox_delay_limits(& delay_min, & delay_max);
-		hamradio_get_vox_level_limits(& level_min, & level_max);
-		hamradio_get_antivox_delay_limits(& alevel_min, & alevel_max);
-
-		sl_vox_delay = (slider_t *) find_gui_obj(TYPE_SLIDER, win, "sl_vox_delay");
-		sl_vox_level = (slider_t *) find_gui_obj(TYPE_SLIDER, win, "sl_vox_level");
-		sl_avox_level = (slider_t *) find_gui_obj(TYPE_SLIDER, win, "sl_avox_level");
-		lbl_vox_delay = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_vox_delay");
-		lbl_vox_level = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_vox_level");
-		lbl_avox_level = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_avox_level");
-
-		ldiv_t d = ldiv(hamradio_get_vox_delay(), 100);
-		lbl_vox_delay->x = 0;
-		lbl_vox_delay->y = 10;
-		lbl_vox_delay->visible = VISIBLE;
-		local_snprintf_P(lbl_vox_delay->text, ARRAY_SIZE(lbl_vox_delay->text), PSTR("Delay: %d.%d"), (int) d.quot, (int) (d.rem / 10));
-
-		lbl_vox_level->x = lbl_vox_delay->x;
-		lbl_vox_level->y = lbl_vox_delay->y + interval;
-		lbl_vox_level->visible = VISIBLE;
-		local_snprintf_P(lbl_vox_level->text, ARRAY_SIZE(lbl_vox_level->text), PSTR("Level: %3d"), hamradio_get_vox_level());
-
-		lbl_avox_level->x = lbl_vox_level->x;
-		lbl_avox_level->y = lbl_vox_level->y + interval;
-		lbl_avox_level->visible = VISIBLE;
-		local_snprintf_P(lbl_avox_level->text, ARRAY_SIZE(lbl_avox_level->text), PSTR("AVOX : %3d"), hamradio_get_antivox_level());
-
-		sl_vox_delay->x = lbl_vox_delay->x + interval * 2 + interval / 2;
-		sl_vox_delay->y = lbl_vox_delay->y;
-		sl_vox_delay->visible = VISIBLE;
-		sl_vox_delay->size = 300;
-		sl_vox_delay->step = 3;
-		sl_vox_delay->value = normalize(hamradio_get_vox_delay(), delay_min, delay_max, 100);
-
-		sl_vox_level->x = sl_vox_delay->x;
-		sl_vox_level->y = lbl_vox_level->y;
-		sl_vox_level->visible = VISIBLE;
-		sl_vox_level->size = 300;
-		sl_vox_level->step = 3;
-		sl_vox_level->value = normalize(hamradio_get_vox_level(), level_min, level_max, 100);
-
-		sl_avox_level->x = sl_vox_delay->x;
-		sl_avox_level->y = lbl_avox_level->y;
-		sl_avox_level->visible = VISIBLE;
-		sl_avox_level->size = 300;
-		sl_avox_level->step = 3;
-		sl_avox_level->value = normalize(hamradio_get_antivox_level(), alevel_min, alevel_max, 100);
-
-		button_t * bh = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_tx_vox_OK");
-		bh->x1 = (sl_vox_delay->x + sl_vox_delay->size) / 2 - (bh->w / 2);
-		bh->y1 = lbl_avox_level->y + interval;
-		bh->visible = VISIBLE;
-
-		d = ldiv(delay_min, 100);
-		label_t * lbl_vox_delay_min = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_vox_delay_min");
-		local_snprintf_P(lbl_vox_delay_min->text, ARRAY_SIZE(lbl_vox_delay_min->text), PSTR("%d.%d sec"), (int) d.quot, (int) (d.rem / 10));
-		lbl_vox_delay_min->x = sl_vox_delay->x - get_label_width(lbl_vox_delay_min) / 2;
-		lbl_vox_delay_min->y = sl_vox_delay->y + get_label_height(lbl_vox_delay_min) * 3;
-		lbl_vox_delay_min->visible = VISIBLE;
-
-		d = ldiv(delay_max, 100);
-		label_t * lbl_vox_delay_max = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_vox_delay_max");
-		local_snprintf_P(lbl_vox_delay_max->text, ARRAY_SIZE(lbl_vox_delay_max->text), PSTR("%d.%d sec"), (int) d.quot, (int) (d.rem / 10));
-		lbl_vox_delay_max->x = sl_vox_delay->x + sl_vox_delay->size - get_label_width(lbl_vox_delay_max) / 2;
-		lbl_vox_delay_max->y = sl_vox_delay->y + get_label_height(lbl_vox_delay_max) * 3;
-		lbl_vox_delay_max->visible = VISIBLE;
-
-		label_t * lbl_vox_level_min = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_vox_level_min");
-		local_snprintf_P(lbl_vox_level_min->text, ARRAY_SIZE(lbl_vox_level_min->text), PSTR("%d"), level_min);
-		lbl_vox_level_min->x = sl_vox_level->x - get_label_width(lbl_vox_level_min) / 2;
-		lbl_vox_level_min->y = sl_vox_level->y + get_label_height(lbl_vox_level_min) * 3;
-		lbl_vox_level_min->visible = VISIBLE;
-
-		label_t * lbl_vox_level_max = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_vox_level_max");
-		local_snprintf_P(lbl_vox_level_max->text, ARRAY_SIZE(lbl_vox_level_max->text), PSTR("%d"), level_max);
-		lbl_vox_level_max->x = sl_vox_level->x + sl_vox_level->size - get_label_width(lbl_vox_level_max) / 2;
-		lbl_vox_level_max->y = sl_vox_level->y + get_label_height(lbl_vox_level_max) * 3;
-		lbl_vox_level_max->visible = VISIBLE;
-
-		label_t * lbl_avox_level_min = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_avox_level_min");
-		local_snprintf_P(lbl_avox_level_min->text, ARRAY_SIZE(lbl_avox_level_min->text), PSTR("%d"), alevel_min);
-		lbl_avox_level_min->x = sl_avox_level->x - get_label_width(lbl_avox_level_min) / 2;
-		lbl_avox_level_min->y = sl_avox_level->y + get_label_height(lbl_avox_level_min) * 3;
-		lbl_avox_level_min->visible = VISIBLE;
-
-		label_t * lbl_avox_level_max = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_avox_level_max");
-		local_snprintf_P(lbl_avox_level_max->text, ARRAY_SIZE(lbl_avox_level_max->text), PSTR("%d"), alevel_max);
-		lbl_avox_level_max->x = sl_avox_level->x + sl_vox_level->size - get_label_width(lbl_avox_level_max) / 2;
-		lbl_avox_level_max->y = sl_avox_level->y + get_label_height(lbl_avox_level_max) * 3;
-		lbl_avox_level_max->visible = VISIBLE;
-
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
-	}
-
-	GET_FROM_WM_QUEUE
-	{
-	case WM_MESSAGE_ACTION:
-
-		if (IS_BUTTON_PRESS)
-		{
-			button_t * bh = (button_t *) ptr;
-
-			button_t * btn_tx_vox_OK = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_tx_vox_OK");
-			if (bh == btn_tx_vox_OK)
-			{
-				close_all_windows();
-			}
-		}
-		else if (IS_SLIDER_MOVE)
-		{
-			slider_t * sl = (slider_t *) ptr;
-
-			if (sl == sl_vox_delay)
-			{
-				uint_fast16_t delay = delay_min + normalize(sl->value, 0, 100, delay_max - delay_min);
-				ldiv_t d = ldiv(delay, 100);
-				local_snprintf_P(lbl_vox_delay->text, ARRAY_SIZE(lbl_vox_delay->text), PSTR("Delay: %d.%d"), (int) d.quot, (int) (d.rem / 10));
-				hamradio_set_vox_delay(delay);
-			}
-			else if (sl == sl_vox_level)
-			{
-				uint_fast16_t level = level_min + normalize(sl->value, 0, 100, level_max - level_min);
-				local_snprintf_P(lbl_vox_level->text, ARRAY_SIZE(lbl_vox_level->text), PSTR("Level: %3d"), level);
-				hamradio_set_vox_level(level);
-			}
-			else if (sl == sl_avox_level)
-			{
-				uint_fast16_t alevel = alevel_min + normalize(sl->value, 0, 100, alevel_max - alevel_min);
-				local_snprintf_P(lbl_avox_level->text, ARRAY_SIZE(lbl_avox_level->text), PSTR("AVOX : %3d"), alevel);
-				hamradio_set_antivox_level(alevel);
-			}
-		}
-		break;
-
-	default:
-
-		break;
-	}
-#endif /* WITHVOX */
 }
 
 // *********************************************************************************************************************************************************************
@@ -2663,60 +2399,30 @@ void window_tx_power_process(void)
 {
 #if WITHPOWERTRIM && WITHTX
 	window_t * const win = get_win(WINDOW_TX_POWER);
-
-	static label_t * lbl_tx_power = NULL, * lbl_tune_power = NULL;
-	static enc_var_t pw;
-	static uint_fast8_t power_min, power_max, power_full, power_tune;
+	static uint_fast8_t power_min, power_max, update = 0;;
 
 	if (win->first_call)
 	{
-		unsigned interval = 50;
 		win->first_call = 0;
-		pw.change = 0;
-		pw.updated = 1;
-
-		gui_obj_create("btn_tx_pwr_OK", 44, 44, 0, 0, "OK");
-		gui_obj_create("btn_p", 44, 44, 1, 0, "+");
-		gui_obj_create("btn_n", 44, 44, 1, 0, "-");
-
-		gui_obj_create("lbl_tx_power", FONT_MEDIUM, COLORPIP_WHITE, 16);
-		gui_obj_create("lbl_tune_power", FONT_MEDIUM, COLORPIP_WHITE, 16);
-
-		lbl_tx_power = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_tx_power");
-		lbl_tune_power = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_tune_power");
+		uint8_t interval = 30;
+		update = 1;
 
 		hamradio_get_tx_power_limits(& power_min, & power_max);
-		power_full = hamradio_get_tx_power();
-		power_tune = hamradio_get_tx_tune_power();
 
-		lbl_tx_power->x = 0;
-		lbl_tx_power->y = 10;
-		lbl_tx_power->visible = VISIBLE;
-		lbl_tx_power->payload = 0;
-		local_snprintf_P(lbl_tx_power->text, ARRAY_SIZE(lbl_tx_power->text), PSTR("TX power  : %3d"), power_full);
+		gui_obj_create("lbl_power", FONT_MEDIUM, COLORPIP_WHITE, 14);
+		gui_obj_create("lbl_tune", FONT_MEDIUM, COLORPIP_WHITE, 14);
+		gui_obj_create("sl_power", ORIENTATION_HORIZONTAL, 300, 3);
+		gui_obj_create("sl_tune", ORIENTATION_HORIZONTAL, 300, 3);
+		gui_obj_create("btn_ok", 40, 40, 0, 0, "OK");
 
-		lbl_tune_power->x = lbl_tx_power->x;
-		lbl_tune_power->y = lbl_tx_power->y + interval;
-		lbl_tune_power->visible = VISIBLE;
-		lbl_tune_power->payload = 1;
-		local_snprintf_P(lbl_tune_power->text, ARRAY_SIZE(lbl_tune_power->text), PSTR("Tune power: %3d"), power_tune);
+		gui_obj_set_prop("lbl_power", GUI_OBJ_POS_Y, 10);
+		gui_obj_set_prop("sl_power", GUI_OBJ_PAYLOAD, normalize(hamradio_get_tx_power(), power_min, power_max, 100));
+		gui_obj_set_prop("sl_tune", GUI_OBJ_PAYLOAD, normalize(hamradio_get_tx_tune_power(), power_min, power_max, 100));
 
-		button_t * btn_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_p");
-		btn_p->x1 = 0;
-		btn_p->y1 = lbl_tune_power->y + interval;
-		btn_p->visible = VISIBLE;
-		btn_p->payload = 1;
-
-		button_t * btn_n = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_n");
-		btn_n->x1 = btn_p->x1 + interval;
-		btn_n->y1 = btn_p->y1 ;
-		btn_n->visible = VISIBLE;
-		btn_n->payload = -1;
-
-		button_t * btn_tx_pwr_OK = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_tx_pwr_OK");
-		btn_tx_pwr_OK->x1 = btn_n->x1 + interval;
-		btn_tx_pwr_OK->y1 = btn_n->y1;
-		btn_tx_pwr_OK->visible = VISIBLE;
+		gui_obj_align_to("lbl_tune", "lbl_power", ALIGN_DOWN_LEFT, interval);
+		gui_obj_align_to("sl_power", "lbl_power", ALIGN_RIGHT_UP_MID, interval);
+		gui_obj_align_to("sl_tune", "lbl_tune", ALIGN_RIGHT_UP_MID, interval);
+		gui_obj_align_to("btn_ok", "sl_tune", ALIGN_DOWN_RIGHT, interval);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -2724,87 +2430,36 @@ void window_tx_power_process(void)
 	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_tx_pwr_OK = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_tx_pwr_OK");
-			button_t * btn_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_p");
-			button_t * btn_n = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_n");
-
-			if (bh == btn_tx_pwr_OK)
-			{
-				close_all_windows();
-			}
-			else if (bh == btn_p || bh == btn_n)
-			{
-				pw.change = bh->payload;
-				pw.updated = 1;
-			}
+			close_all_windows();
+			return;
 		}
-		else if (IS_LABEL_PRESS)
+		else if (IS_SLIDER_MOVE)
 		{
-			label_t * lh = (label_t *) ptr;
-			pw.select = lh->payload;
-			pw.change = 0;
-			pw.updated = 1;
+			uint16_t val = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
+			uint16_t p = power_min + normalize(val, 0, 100, power_max - power_min);
+
+			if (gui_check_obj(name, "sl_power"))
+				hamradio_set_tx_power(p);
+			else if (gui_check_obj(name, "sl_tune"))
+				hamradio_set_tx_tune_power(p);
+
+			save_settings();
+			update = 1;
 		}
-		break;
-
-	case WM_MESSAGE_ENC2_ROTATE:
-
-		pw.change = action;
-		pw.updated = 1;
-		break;
-
-	case WM_MESSAGE_UPDATE:
-
-		pw.change = 0;
-		pw.updated = 1;
 		break;
 
 	default:
 		break;
 	}
 
-	if (pw.updated)
+	if (update)
 	{
-		pw.updated = 0;
+		update = 0;
 
-		if (pw.change != 0)
-		{
-			switch (pw.select)
-			{
-			case 0:
-				if (power_full + pw.change <= power_max && power_full + pw.change >= power_min)
-					power_full += pw.change;
-
-				local_snprintf_P(lbl_tx_power->text, ARRAY_SIZE(lbl_tx_power->text), PSTR("TX power  : %3d"), power_full);
-				hamradio_set_tx_power(power_full);
-				save_settings();
-
-				break;
-
-			case 1:
-				if (power_tune + pw.change <= power_max && power_tune + pw.change >= power_min)
-					power_tune += pw.change;
-
-				local_snprintf_P(lbl_tune_power->text, ARRAY_SIZE(lbl_tune_power->text), PSTR("Tune power: %3d"), power_tune);
-				hamradio_set_tx_tune_power(power_tune);
-				save_settings();
-
-				break;
-
-			default:
-				break;
-			}
-		}
-
-		for(unsigned i = 0; i < win->lh_count; i ++)
-			win->lh_ptr[i].color = COLORPIP_WHITE;
-
-		ASSERT(pw.select < win->lh_count);
-		win->lh_ptr[pw.select].color = COLORPIP_YELLOW;
+		gui_obj_set_prop("lbl_power", GUI_OBJ_TEXT_FMT, "TX power  : %3d", hamradio_get_tx_power());
+		gui_obj_set_prop("lbl_tune", GUI_OBJ_TEXT_FMT, "Tune power: %3d", hamradio_get_tx_tune_power());
 	}
 
 #endif /* WITHPOWERTRIM && WITHTX */
@@ -2962,12 +2617,12 @@ void window_ap_reverb_process(void)
 
 			if (gui_check_obj(name, "sl_delay"))
 			{
-				uint_fast16_t delay = delay_min + normalize(val, 0, 100, delay_max - delay_min);
+				uint16_t delay = delay_min + normalize(val, 0, 100, delay_max - delay_min);
 				hamradio_set_reverb_delay(delay);
 			}
 			else if (gui_check_obj(name, "sl_loss"))
 			{
-				uint_fast16_t loss = loss_min + normalize(val, 0, 100, loss_max - loss_min);
+				uint16_t loss = loss_min + normalize(val, 0, 100, loss_max - loss_min);
 				hamradio_set_reverb_loss(loss);
 			}
 

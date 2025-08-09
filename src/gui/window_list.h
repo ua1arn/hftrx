@@ -14,7 +14,6 @@
     X(AP_MIC_SETT,       AUDIOSETTINGS, ALIGN_CENTER_X, "Microphone settings",       1, window_ap_mic_process) 			\
     X(AP_MIC_PROF,       AUDIOSETTINGS, ALIGN_CENTER_X, "Microphone profiles",       1, window_ap_mic_prof_process) 	\
     X(TX_SETTINGS,       OPTIONS,       ALIGN_CENTER_X, "Transmit settings",         1, window_tx_process) 				\
-    X(TX_VOX_SETT,       TX_SETTINGS,   ALIGN_CENTER_X, "VOX settings",              1, window_tx_vox_process) 			\
     X(TX_POWER,          TX_SETTINGS,   ALIGN_CENTER_X, "TX power",                  1, window_tx_power_process) 		\
     X(OPTIONS,           DUMMY,         ALIGN_CENTER_X, "Options",                   1, window_options_process) 		\
     X(UTILS,             OPTIONS,       ALIGN_CENTER_X, "Utilites",                  1, window_utilites_process) 		\
