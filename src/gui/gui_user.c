@@ -2815,61 +2815,30 @@ void window_tx_power_process(void)
 void window_audiosettings_process(void)
 {
 	window_t * const win = get_win(WINDOW_AUDIOSETTINGS);
-	unsigned update = 0;
+	uint8_t update = 0;
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, interval = 6, row_count = 4;
+		unsigned x = 0, y = 0, interval = 10, row_count = 4;
 		button_t * bh = NULL;
 		win->first_call = 0;
 		update = 1;
 
-		static const button_t buttons[] = {
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_reverb", 		 "Reverb|OFF", 		 },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_eq", 		 "MIC EQ|OFF", 		 },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_profiles", 	 "MIC|profiles", 	 },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_monitor", 		 "Monitor|disabled", },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_reverb_settings", "Reverb|settings",  },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_eq_settings", "MIC EQ|settings",  },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_settings", 	 "MIC|settings", 	 },
-#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_audio_switch", 	 "", 	 },
-#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA */
-#if WITHAFEQUALIZER
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_af_eq", 	 		"AF|equalizer", 	 },
-#endif /* WITHAFEQUALIZER */
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
+		gui_obj_create("btn_mic_settings", 100, 44, 0, 0, "MIC|settings");
+		gui_obj_create("btn_mic_profiles", 100, 44, 0, 0, "MIC|profiles");
+		gui_obj_create("btn_reverb_settings", 100, 44, 0, 0, "Reverb|settings");
+		gui_obj_create("btn_monitor", 100, 44, 0, 0, "Monitor|disabled");
+		gui_obj_create("btn_af_eq", 100, 44, 0, 0, "AF|equalizer");
+		gui_obj_create("btn_audio_switch", 100, 44, 0, 0, "Audio|switch");
 
-		x = 0;
-		y = 0;
+		gui_arrange_objects_from("btn_mic_settings", 6, 4, interval);
 
-		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
-		{
-			button_t * bh = & win->bh_ptr[i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
-
-			x = x + interval + bh->w;
-			if (r >= row_count)
-			{
-				r = 0;
-				x = 0;
-				y = y + bh->h + interval;
-			}
-		}
-
-#if ! WITHAFCODEC1HAVEPROC
-		bh = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_mic_eq");						// MIC EQ on/off
-		bh->state = DISABLED;
-		bh = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_mic_eq_settings");				// MIC EQ settings
-		bh->state = DISABLED;
-#endif /* ! WITHAFCODEC1HAVEPROC */
+#if ! defined (WITHAFEQUALIZER) || WITHAFEQUALIZER == 0
+		gui_obj_set_prop("btn_af_eq", GUI_OBJ_STATE, DISABLED);
+#endif /* ! WITHAFEQUALIZER */
+#if ! defined(CODEC1_TYPE) && (CODEC1_TYPE != CODEC_TYPE_ALSA) || BLUETOOTH_ALSA == 0
+		gui_obj_set_prop("btn_audio_switch", GUI_OBJ_STATE, DISABLED);
+#endif /* ! defined(CODEC1_TYPE) && (CODEC1_TYPE != CODEC_TYPE_ALSA) || BLUETOOTH_ALSA == 0 */
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -2877,106 +2846,57 @@ void window_audiosettings_process(void)
 	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * const bh = (button_t *) ptr;
-			window_t * const winAP = get_win(WINDOW_AUDIOSETTINGS);
-			window_t * const winEQ = get_win(WINDOW_AP_MIC_EQ);
-			window_t * const winMIC = get_win(WINDOW_AP_MIC_SETT);
-			window_t * const winMICpr = get_win(WINDOW_AP_MIC_PROF);
-			button_t * const btn_reverb = (button_t *) find_gui_obj(TYPE_BUTTON, winAP, "btn_reverb");						// reverb on/off
-			button_t * const btn_reverb_settings = (button_t *) find_gui_obj(TYPE_BUTTON, winAP, "btn_reverb_settings");		// reverb settings
-			button_t * const btn_monitor = (button_t *) find_gui_obj(TYPE_BUTTON, winAP, "btn_monitor");						// monitor on/off
-			button_t * const btn_mic_eq = (button_t *) find_gui_obj(TYPE_BUTTON, winAP, "btn_mic_eq");						// MIC EQ on/off
-			button_t * const btn_mic_eq_settings = (button_t *) find_gui_obj(TYPE_BUTTON, winAP, "btn_mic_eq_settings");		// MIC EQ settingss
-			button_t * const btn_mic_settings = (button_t *) find_gui_obj(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settings
-			button_t * const btn_mic_profiles = (button_t *) find_gui_obj(TYPE_BUTTON, winAP, "btn_mic_profiles");			// mic profiles
-
-			if (bh == btn_monitor)
+			if (gui_check_obj(name, "btn_monitor"))
 			{
 				hamradio_set_gmoniflag(! hamradio_get_gmoniflag());
 				update = 1;
 			}
 #if WITHREVERB
-			else if (bh == btn_reverb_settings)
+			else if (gui_check_obj(name, "btn_reverb_settings"))
 			{
 				open_window(get_win(WINDOW_AP_REVERB_SETT));
 			}
 #endif /* WITHREVERB */
-#if WITHAFCODEC1HAVEPROC
-			else if (bh == btn_mic_eq)
+			else if (gui_check_obj(name, "btn_mic_settings"))
 			{
-				hamradio_set_gmikeequalizer(! hamradio_get_gmikeequalizer());
-				update = 1;
-			}
-			else if (bh == btn_mic_eq_settings)
-			{
-				open_window(winEQ);
+				open_window(get_win(WINDOW_AP_MIC_SETT));
 				return;
 			}
-#endif /* WITHAFCODEC1HAVEPROC */
-			else if (bh == btn_mic_settings)
+			else if (gui_check_obj(name, "btn_mic_profiles"))
 			{
-				open_window(winMIC);
+				open_window(get_win(WINDOW_AP_MIC_PROF));
 				return;
 			}
-			else if (bh == btn_mic_profiles)
-			{
-				open_window(winMICpr);
-				return;
-			}
-#if WITHREVERB
-			else if (bh == btn_reverb)
-			{
-				hamradio_set_greverb(! hamradio_get_greverb());
-				update = 1;
-			}
-#endif /* WITHREVERB */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_audio_switch"))
+			else if (gui_check_obj(name, "btn_audio_switch"))
 			{
 				alsa_switch_out();
 				update = 1;
 			}
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA */
 #if WITHAFEQUALIZER
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_af_eq"))
+			else if (gui_check_obj(name, "btn_af_eq"))
 				open_window(get_win(WINDOW_AF_EQ));
 #endif /* WITHAFEQUALIZER */
 		}
 		break;
 
 	default:
-
 		break;
 	}
 
 	if (update)
 	{
-		button_t * bh = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_reverb"); 			// reverb on/off
-#if WITHREVERB
-		bh->is_locked = hamradio_get_greverb() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
-		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Reverb|%s"), hamradio_get_greverb() ? "ON" : "OFF");
-#else
-		bh->state = DISABLED;
-		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Reverb|OFF"));
-#endif /* WITHREVERB */
+		update = 0;
 
-		bh = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_reverb_settings");				// reverb settings
-#if WITHREVERB
-		bh->state = hamradio_get_greverb() ? CANCELLED : DISABLED;
-#else
-		bh->state = DISABLED;
-#endif /* WITHREVERB */
-
-		bh = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_monitor");						// monitor on/off
-		bh->is_locked = hamradio_get_gmoniflag() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
-		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Monitor|%s"), bh->is_locked ? "enabled" : "disabled");
+		uint8_t v = hamradio_get_gmoniflag();
+		gui_obj_set_prop("btn_monitor", GUI_OBJ_LOCK, v);
+		gui_obj_set_prop("btn_monitor", GUI_OBJ_TEXT_FMT, "Monitor|%s", v ? "enabled" : "disabled");
 
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA
-		bh = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_audio_switch");
-		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Audio|%s"), get_alsa_out());
+		gui_obj_set_prop("btn_audio_switch", GUI_OBJ_TEXT_FMT, "Monitor|%s", "Audio|%s", get_alsa_out());
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_ALSA) && BLUETOOTH_ALSA */
 	}
 }
@@ -2987,109 +2907,34 @@ void window_ap_reverb_process(void)
 {
 #if WITHREVERB
 	window_t * const win = get_win(WINDOW_AP_REVERB_SETT);
-
-	static label_t * lbl_reverbDelay = NULL, * lbl_reverbLoss = NULL;
-	static slider_t * sl_reverbDelay = NULL, * sl_reverbLoss = NULL;
 	static uint_fast8_t delay_min, delay_max, loss_min, loss_max;
+	uint8_t update = 0;
 
 	if (win->first_call)
 	{
-		uint_fast8_t interval = 60;
 		win->first_call = 0;
-
-		static const button_t buttons[] = {
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AP_REVERB_SETT,	NON_VISIBLE, INT32_MAX, "btn_REVs_ok", "OK", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		static const label_t labels[] = {
-			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay",		"", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss", 		"", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay_min", 	"", FONT_SMALL, COLORPIP_WHITE, },
-			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbDelay_max", 	"", FONT_SMALL, COLORPIP_WHITE, },
-			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss_min", 	"", FONT_SMALL, COLORPIP_WHITE, },
-			{	WINDOW_AP_REVERB_SETT,  DISABLED,  0, NON_VISIBLE, "lbl_reverbLoss_max", 	"", FONT_SMALL, COLORPIP_WHITE, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t *) malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
-
-		slider_t sliders[] = {
-			{ ORIENTATION_HORIZONTAL, WINDOW_AP_REVERB_SETT, 	"reverbDelay", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ ORIENTATION_HORIZONTAL, WINDOW_AP_REVERB_SETT, 	"reverbLoss",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-		};
-		win->sh_count = ARRAY_SIZE(sliders);
-		unsigned sliders_size = sizeof(sliders);
-		win->sh_ptr = (slider_t *) malloc(sliders_size);
-		GUI_MEM_ASSERT(win->sh_ptr);
-		memcpy(win->sh_ptr, sliders, sliders_size);
-
-		label_t * lbl_reverbDelay_min = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_reverbDelay_min");
-		label_t * lbl_reverbDelay_max = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_reverbDelay_max");
-		label_t * lbl_reverbLoss_min = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_reverbLoss_min");
-		label_t * lbl_reverbLoss_max = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_reverbLoss_max");
-		lbl_reverbDelay = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_reverbDelay");
-		lbl_reverbLoss = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_reverbLoss");
-		sl_reverbDelay = (slider_t *) find_gui_obj(TYPE_SLIDER, win, "reverbDelay");
-		sl_reverbLoss = (slider_t *) find_gui_obj(TYPE_SLIDER, win, "reverbLoss");
+		uint8_t interval = 30;
+		update = 1;
 
 		hamradio_get_reverb_delay_limits(& delay_min, & delay_max);
 		hamradio_get_reverb_loss_limits(& loss_min, & loss_max);
 
-		lbl_reverbDelay->x = 0;
-		lbl_reverbDelay->y = 10;
-		lbl_reverbDelay->visible = VISIBLE;
-		local_snprintf_P(lbl_reverbDelay->text, ARRAY_SIZE(lbl_reverbDelay->text), PSTR("Delay: %3d ms"), hamradio_get_reverb_delay());
+		gui_obj_create("sl_delay", ORIENTATION_HORIZONTAL, 300, 3);
+		gui_obj_create("sl_loss", ORIENTATION_HORIZONTAL, 300, 3);
+		gui_obj_create("lbl_delay", FONT_MEDIUM, COLORPIP_WHITE, 14);
+		gui_obj_create("lbl_loss", FONT_MEDIUM, COLORPIP_WHITE, 14);
+		gui_obj_create("btn_en", 40, 40, 0, 0, "EN");
+		gui_obj_create("btn_ok", 40, 40, 0, 0, "OK");
 
-		lbl_reverbLoss->x = lbl_reverbDelay->x;
-		lbl_reverbLoss->y = lbl_reverbDelay->y + interval;
-		lbl_reverbLoss->visible = VISIBLE;
-		local_snprintf_P(lbl_reverbLoss->text, ARRAY_SIZE(lbl_reverbLoss->text), PSTR("Loss :  %2d dB"), hamradio_get_reverb_loss());
+		gui_obj_set_prop("lbl_delay", GUI_OBJ_POS_Y, 10);
+		gui_obj_set_prop("sl_delay", GUI_OBJ_PAYLOAD, normalize(hamradio_get_reverb_delay(), delay_min, delay_max, 100));
+		gui_obj_set_prop("sl_loss", GUI_OBJ_PAYLOAD, normalize(hamradio_get_reverb_loss(), loss_min, loss_max, 100));
 
-		sl_reverbDelay->x = lbl_reverbDelay->x + interval * 3;
-		sl_reverbDelay->y = lbl_reverbDelay->y;
-		sl_reverbDelay->visible = VISIBLE;
-		sl_reverbDelay->size = 300;
-		sl_reverbDelay->step = 3;
-		sl_reverbDelay->value = normalize(hamradio_get_reverb_delay(), delay_min, delay_max, 100);
-
-		local_snprintf_P(lbl_reverbDelay_min->text, ARRAY_SIZE(lbl_reverbDelay_min->text), PSTR("%d ms"), delay_min);
-		lbl_reverbDelay_min->x = sl_reverbDelay->x - get_label_width(lbl_reverbDelay_min) / 2;
-		lbl_reverbDelay_min->y = sl_reverbDelay->y + get_label_height(lbl_reverbDelay_min) * 3;
-		lbl_reverbDelay_min->visible = VISIBLE;
-
-		local_snprintf_P(lbl_reverbDelay_max->text, ARRAY_SIZE(lbl_reverbDelay_max->text), PSTR("%d ms"), delay_max);
-		lbl_reverbDelay_max->x = sl_reverbDelay->x + sl_reverbDelay->size - get_label_width(lbl_reverbDelay_max) / 2;
-		lbl_reverbDelay_max->y = sl_reverbDelay->y + get_label_height(lbl_reverbDelay_max) * 3;
-		lbl_reverbDelay_max->visible = VISIBLE;
-
-		sl_reverbLoss->x = lbl_reverbLoss->x + interval * 3;
-		sl_reverbLoss->y = lbl_reverbLoss->y;
-		sl_reverbLoss->visible = VISIBLE;
-		sl_reverbLoss->size = 300;
-		sl_reverbLoss->step = 3;
-		sl_reverbLoss->value = normalize(hamradio_get_reverb_loss(), loss_min, loss_max, 100);
-
-		local_snprintf_P(lbl_reverbLoss_min->text, ARRAY_SIZE(lbl_reverbLoss_min->text), PSTR("%d dB"), loss_min);
-		lbl_reverbLoss_min->x = sl_reverbLoss->x - get_label_width(lbl_reverbLoss_min) / 2;
-		lbl_reverbLoss_min->y = sl_reverbLoss->y + get_label_height(lbl_reverbLoss_min) * 3;
-		lbl_reverbLoss_min->visible = VISIBLE;
-
-		local_snprintf_P(lbl_reverbLoss_max->text, ARRAY_SIZE(lbl_reverbLoss_max->text), PSTR("%d dB"), loss_max);
-		lbl_reverbLoss_max->x = sl_reverbLoss->x + sl_reverbLoss->size - get_label_width(lbl_reverbLoss_max) / 2;
-		lbl_reverbLoss_max->y = sl_reverbLoss->y + get_label_height(lbl_reverbLoss_max) * 3;
-		lbl_reverbLoss_max->visible = VISIBLE;
-
-		button_t * bh = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_REVs_ok");
-		bh->x1 = sl_reverbLoss->x + sl_reverbLoss->size + interval / 2;
-		bh->y1 = lbl_reverbLoss->y;
-		bh->visible = VISIBLE;
+		gui_obj_align_to("lbl_loss", "lbl_delay", ALIGN_DOWN_LEFT, interval);
+		gui_obj_align_to("sl_delay", "lbl_delay", ALIGN_RIGHT_UP_MID, interval);
+		gui_obj_align_to("sl_loss", "lbl_loss", ALIGN_RIGHT_UP_MID, interval);
+		gui_obj_align_to("btn_en", "sl_delay", ALIGN_RIGHT_UP, interval);
+		gui_obj_align_to("btn_ok", "btn_en", ALIGN_DOWN_LEFT, interval);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -3097,190 +2942,52 @@ void window_ap_reverb_process(void)
 	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
-			close_window(OPEN_PARENT_WINDOW); // единственная кнопка
-			return;
+			if (gui_check_obj(name, "btn_ok"))
+			{
+				close_window(DONT_OPEN_PARENT_WINDOW);
+				footer_buttons_state(CANCELLED);
+				return;
+			}
+			else if (gui_check_obj(name, "btn_en"))
+			{
+				hamradio_set_greverb(! hamradio_get_greverb());
+				update = 1;
+			}
 		}
 		else if (IS_SLIDER_MOVE)
 		{
-			slider_t * sh = (slider_t *) ptr;
+			uint16_t val = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
 
-			if (sh == sl_reverbDelay)
+			if (gui_check_obj(name, "sl_delay"))
 			{
-				uint_fast16_t delay = delay_min + normalize(sl_reverbDelay->value, 0, 100, delay_max - delay_min);
-				local_snprintf_P(lbl_reverbDelay->text, ARRAY_SIZE(lbl_reverbDelay->text), PSTR("Delay: %3d ms"), delay);
+				uint_fast16_t delay = delay_min + normalize(val, 0, 100, delay_max - delay_min);
 				hamradio_set_reverb_delay(delay);
 			}
-			else if (sh == sl_reverbLoss)
+			else if (gui_check_obj(name, "sl_loss"))
 			{
-				uint_fast16_t loss = loss_min + normalize(sl_reverbLoss->value, 0, 100, loss_max - loss_min);
-				local_snprintf_P(lbl_reverbLoss->text, ARRAY_SIZE(lbl_reverbLoss->text), PSTR("Loss :  %2d dB"), loss);
+				uint_fast16_t loss = loss_min + normalize(val, 0, 100, loss_max - loss_min);
 				hamradio_set_reverb_loss(loss);
 			}
+
+			update = 1;
 		}
 		break;
 
 	default:
-
 		break;
+	}
+
+	if (update)
+	{
+		update = 0;
+
+		gui_obj_set_prop("lbl_delay", GUI_OBJ_TEXT_FMT, "Delay: %3d ms", hamradio_get_reverb_delay());
+		gui_obj_set_prop("lbl_loss", GUI_OBJ_TEXT_FMT, "Loss :  %2d dB", hamradio_get_reverb_loss());
+		gui_obj_set_prop("btn_en", GUI_OBJ_LOCK, hamradio_get_greverb());
 	}
 #endif /* WITHREVERB */
-}
-
-// *********************************************************************************************************************************************************************
-
-void window_ap_mic_eq_process(void)
-{
-#if WITHAFCODEC1HAVEPROC
-	window_t * const win = get_win(WINDOW_AP_MIC_EQ);
-	const gxdrawb_t * db = gui_get_drawbuf();
-
-	label_t * lbl = NULL;
-	static unsigned eq_limit, eq_base = 0, id = 0;
-	char buf[TEXT_ARRAY_SIZE];
-	static int mid_y = 0;
-	static button_t * btn_EQ_ok;
-
-	if (win->first_call)
-	{
-		unsigned x, y, mid_w, interval = 70;
-		win->first_call = 0;
-
-		static const button_t buttons[] = {
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AP_MIC_EQ, 	NON_VISIBLE, INT32_MAX, "btn_EQ_ok", "OK", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		static const label_t labels[] = {
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.08_val", 	"", FONT_LARGE, COLORPIP_YELLOW, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.23_val", 	"", FONT_LARGE, COLORPIP_YELLOW, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.65_val",  "", FONT_LARGE, COLORPIP_YELLOW, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq1.8_val",   "", FONT_LARGE, COLORPIP_YELLOW, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq5.3_val",   "", FONT_LARGE, COLORPIP_YELLOW, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.08_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.23_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq0.65_name", "", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq1.8_name",  "", FONT_MEDIUM, COLORPIP_WHITE, },
-			{	WINDOW_AP_MIC_EQ, DISABLED,  0, NON_VISIBLE, "lbl_eq5.3_name",  "", FONT_MEDIUM, COLORPIP_WHITE, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t *) malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
-
-		static const slider_t sliders[] = {
-			{ ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.08", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 0, },
-			{ ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.23", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 1, },
-			{ ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq0.65", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 2, },
-			{ ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq1.8",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 3, },
-			{ ORIENTATION_VERTICAL, WINDOW_AP_MIC_EQ, "eq5.3",  CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, 4, },
-		};
-		win->sh_count = ARRAY_SIZE(sliders);
-		unsigned sliders_size = sizeof(sliders);
-		win->sh_ptr = (slider_t *) malloc(sliders_size);
-		GUI_MEM_ASSERT(win->sh_ptr);
-		memcpy(win->sh_ptr, sliders, sliders_size);
-
-		eq_base = hamradio_getequalizerbase();
-		eq_limit = abs(eq_base) * 2;
-
-		x = 50;
-		y = 0;
-		slider_t * sl = NULL;
-
-		for (id = 0; id < win->sh_count; id++)
-		{
-			sl = & win->sh_ptr[id];
-
-			sl->x = x;
-			sl->size = 200;
-			sl->step = 2;
-			sl->value = normalize(hamradio_get_gmikeequalizerparams(id), eq_limit, 0, 100);
-			sl->visible = VISIBLE;
-
-			mid_w = sl->x + sliders_width / 2;		// центр шкалы слайдера по x
-
-			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_name"), sl->name);
-			lbl = (label_t *) find_gui_obj(TYPE_LABEL, win, buf);
-			local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%sk"), strchr(sl->name, 'q') + 1);
-			lbl->x = mid_w - get_label_width(lbl) / 2;
-			lbl->y = y;
-			lbl->visible = VISIBLE;
-
-			y = lbl->y + get_label_height(lbl) * 2;
-
-			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_val"), sl->name);
-			lbl = (label_t *) find_gui_obj(TYPE_LABEL, win, buf);
-			local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_gmikeequalizerparams(id) + eq_base);
-			lbl->x = mid_w - get_label_width(lbl) / 2;
-			lbl->y = y;
-			lbl->visible = VISIBLE;
-
-			sl->y = lbl->y + get_label_height(lbl) * 2 + 10;
-
-			x = x + interval;
-			y = 0;
-		}
-
-		btn_EQ_ok = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_EQ_ok");
-		btn_EQ_ok->x1 = sl->x + sliders_width + btn_EQ_ok->w;
-		btn_EQ_ok->y1 = sl->y + sl->size - btn_EQ_ok->h;
-		btn_EQ_ok->visible = VISIBLE;
-
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		mid_y = win->y1 + sl->y + sl->size / 2;						//todo: абсолютные координаты! переделать
-	}
-
-	GET_FROM_WM_QUEUE
-	{
-	case WM_MESSAGE_ACTION:
-
-		if (IS_BUTTON_PRESS)
-		{
-			close_all_windows();
-			return;
-		}
-		else if (IS_SLIDER_MOVE)
-		{
-			slider_t * sh = (slider_t *) ptr;
-			unsigned id = sh->index;
-
-			hamradio_set_gmikeequalizerparams(id, normalize(sh->value, 100, 0, eq_limit));
-
-			local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("lbl_%s_val"), sh->name);
-			lbl = (label_t *) find_gui_obj(TYPE_LABEL, win, buf);
-			local_snprintf_P(lbl->text, ARRAY_SIZE(lbl->text), PSTR("%d"), hamradio_get_gmikeequalizerparams(id) + eq_base);
-			lbl->x = sh->x + sliders_width / 2 - get_label_width(lbl) / 2;
-		}
-		break;
-
-	default:
-
-		break;
-	}
-
-	// разметка шкал
-	for (unsigned i = 0; i <= abs(eq_base); i += 3)
-	{
-		uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
-		colpip_line(db, win->x1 + 50, mid_y + yy, win->x1 + win->w - (btn_EQ_ok->w << 1), mid_y + yy, GUI_SLIDERLAYOUTCOLOR, 0);
-		local_snprintf_P(buf, ARRAY_SIZE(buf), i == 0 ? PSTR("%d") : PSTR("-%d"), i);
-		colpip_string2_tbg(db, win->x1 + 50 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, COLORPIP_WHITE);
-
-		if (i == 0)
-			continue;
-		colpip_line(db, win->x1 + 50, mid_y - yy, win->x1 + win->w - (btn_EQ_ok->w << 1), mid_y - yy, GUI_SLIDERLAYOUTCOLOR, 0);
-		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), i);
-		colpip_string2_tbg(db, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORPIP_WHITE);
-	}
-#endif /* WITHAFCODEC1HAVEPROC */
 }
 
 // *********************************************************************************************************************************************************************

@@ -287,7 +287,7 @@ uint8_t gui_obj_create(const char * obj_name, ...)
 		if (sh->orientation)	// ORIENTATION_HORIZONTAL
 		{
 			sh->width = sh->size;
-			sh->height = sliders_h * 2;
+			sh->height = sliders_scale_thickness;
 		}
 		else					// ORIENTATION_VERTICAL
 		{

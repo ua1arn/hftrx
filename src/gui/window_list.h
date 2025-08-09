@@ -11,7 +11,6 @@
     X(MENU_PARAMS,       MENU,          ALIGN_CENTER_X, "Settings",                  1, window_menu_params_process) 	\
     X(UIF,               DUMMY,         ALIGN_LEFT_X,   "",                          0, window_uif_process) 			\
     X(AUDIOSETTINGS,     OPTIONS,       ALIGN_CENTER_X, "Audio settings",            1, window_audiosettings_process) 	\
-    X(AP_MIC_EQ,         AUDIOSETTINGS, ALIGN_CENTER_X, "MIC TX equalizer",          1, window_ap_mic_eq_process) 		\
     X(AP_MIC_SETT,       AUDIOSETTINGS, ALIGN_CENTER_X, "Microphone settings",       1, window_ap_mic_process) 			\
     X(AP_MIC_PROF,       AUDIOSETTINGS, ALIGN_CENTER_X, "Microphone profiles",       1, window_ap_mic_prof_process) 	\
     X(TX_SETTINGS,       OPTIONS,       ALIGN_CENTER_X, "Transmit settings",         1, window_tx_process) 				\

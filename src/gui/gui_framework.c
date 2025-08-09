@@ -592,7 +592,7 @@ static void draw_slider(slider_t * sl)
 	{
 		if (sl->value_old != sl->value)
 		{
-			uint_fast16_t mid_w = sl->y + sliders_width / 2;
+			uint_fast16_t mid_w = sl->y + sliders_scale_thickness / 2;
 			sl->value_p = sl->x + sl->size * sl->value / 100;
 			sl->y1_p = mid_w - sliders_w;
 			sl->x1_p = sl->value_p - sliders_h;
@@ -600,8 +600,8 @@ static void draw_slider(slider_t * sl)
 			sl->x2_p = sl->value_p + sliders_h;
 			sl->value_old = sl->value;
 		}
-		colpip_rect(gui.gdb, win->x1 + sl->x, win->y1 + sl->y,  win->x1 + sl->x + sl->size, win->y1 + sl->y + sliders_width, COLORPIP_BLACK, 1);
-		colpip_rect(gui.gdb, win->x1 + sl->x, win->y1 + sl->y,  win->x1 + sl->x + sl->size, win->y1 + sl->y + sliders_width, COLORPIP_WHITE, 0);
+		colpip_rect(gui.gdb, win->x1 + sl->x, win->y1 + sl->y,  win->x1 + sl->x + sl->size, win->y1 + sl->y + sliders_scale_thickness, COLORPIP_BLACK, 1);
+		colpip_rect(gui.gdb, win->x1 + sl->x, win->y1 + sl->y,  win->x1 + sl->x + sl->size, win->y1 + sl->y + sliders_scale_thickness, COLORPIP_WHITE, 0);
 		colpip_rect(gui.gdb, win->x1 + sl->x1_p, win->y1 + sl->y1_p,  win->x1 + sl->x2_p, win->y1 + sl->y2_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
 		colpip_line(gui.gdb, win->x1 + sl->value_p, win->y1 + sl->y1_p,  win->x1 + sl->value_p, win->y1 + sl->y2_p, COLORPIP_WHITE, 0);
 	}
@@ -609,7 +609,7 @@ static void draw_slider(slider_t * sl)
 	{
 		if (sl->value_old != sl->value)
 		{
-			uint_fast16_t mid_w = sl->x + sliders_width / 2;
+			uint_fast16_t mid_w = sl->x + sliders_scale_thickness / 2;
 			sl->value_p = sl->y + sl->size * sl->value / 100;
 			sl->x1_p = mid_w - sliders_w;
 			sl->y1_p = sl->value_p - sliders_h;
@@ -617,8 +617,8 @@ static void draw_slider(slider_t * sl)
 			sl->y2_p = sl->value_p + sliders_h;
 			sl->value_old = sl->value;
 		}
-		colpip_rect(gui.gdb, win->x1 + sl->x + 1, win->y1 + sl->y + 1, win->x1 + sl->x + sliders_width - 1, win->y1 + sl->y + sl->size - 1, COLORPIP_BLACK, 1);
-		colpip_rect(gui.gdb, win->x1 + sl->x, win->y1 + sl->y, win->x1 + sl->x + sliders_width, win->y1 + sl->y + sl->size, COLORPIP_WHITE, 0);
+		colpip_rect(gui.gdb, win->x1 + sl->x + 1, win->y1 + sl->y + 1, win->x1 + sl->x + sliders_scale_thickness - 1, win->y1 + sl->y + sl->size - 1, COLORPIP_BLACK, 1);
+		colpip_rect(gui.gdb, win->x1 + sl->x, win->y1 + sl->y, win->x1 + sl->x + sliders_scale_thickness, win->y1 + sl->y + sl->size, COLORPIP_WHITE, 0);
 		colpip_rect(gui.gdb, win->x1 + sl->x1_p, win->y1 + sl->y1_p, win->x1 + sl->x2_p, win->y1 + sl->y2_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
 		colpip_line(gui.gdb, win->x1 + sl->x1_p, win->y1 + sl->value_p, win->x1 + sl->x2_p, win->y1 + sl->value_p, COLORPIP_WHITE, 0);
 	}
