@@ -1505,11 +1505,10 @@ void window_bands_process(void)
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, max_x = 0, interval = 6, row_count = 3, i = 0;
-		button_t * bh = NULL;
 		win->first_call = 0;
 
-		uint_fast8_t bandnum = hamradio_get_bands(NULL, 1, 1);
+		char name[NAME_ARRAY_SIZE], text[NAME_ARRAY_SIZE] ;
+		uint8_t bandnum = hamradio_get_bands(NULL, 1, 1), i = 0;
 		bands = (band_array_t *) calloc(bandnum, sizeof (band_array_t));
 		GUI_MEM_ASSERT(bands);
 		hamradio_get_bands(bands, 0, 1);
@@ -1517,112 +1516,75 @@ void window_bands_process(void)
 		gui_obj_create("lbl_ham", FONT_LARGE, COLORPIP_WHITE, 10);
 		gui_obj_create("lbl_bcast", FONT_LARGE, COLORPIP_WHITE, 16);
 
-		win->bh_count = bandnum + 1;
-		unsigned buttons_size = win->bh_count * sizeof (button_t);
-		win->bh_ptr = (button_t *) calloc(win->bh_count, sizeof (button_t));
-		GUI_MEM_ASSERT(win->bh_ptr);
+		gui_obj_set_prop("lbl_ham", GUI_OBJ_TEXT, "HAM bands");
+		gui_obj_set_prop("lbl_bcast", GUI_OBJ_TEXT, "Broadcast bands");
 
-		label_t * lh1 = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_ham");
-		lh1->x = 0;
-		lh1->y = 0;
-		lh1->visible = VISIBLE;
-		local_snprintf_P(lh1->text, ARRAY_SIZE(lh1->text), "HAM bands");
+		gui_obj_align_to("lbl_bcast", "lbl_ham", ALIGN_RIGHT_UP, 140);
 
-		x = 0;
-		y = lh1->y + get_label_height(lh1) * 2;
-
-		for (unsigned r = 1; i < win->bh_count; i ++, r ++)
+		for (; i < bandnum; i ++)
 		{
-			bh = & win->bh_ptr[i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
-
-			bh->w = 86;
-			bh->h = 44;
-			bh->state = CANCELLED;
-			bh->parent = WINDOW_BANDS;
-
-			max_x = (bh->x1 + bh->w > max_x) ? (bh->x1 + bh->w) : max_x;
-
 			if (bands[i].type != BAND_TYPE_HAM)
 			{
 				// кнопка прямого ввода частоты
-				local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_freq"));
-				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Freq|enter"));
+				gui_obj_create("btn_freq", 86, 44, 0, 0, "Freq|enter");
 				i ++;
 
 				break;
 			}
 
-			bh->payload = bands[i].init_freq;
-
+			local_snprintf_P(name, NAME_ARRAY_SIZE, "btn_ham_%d", i);
 			char * div = strchr(bands[i].name, ' ');
 			if(div)
 				memcpy(div, "|", 1);
 
-			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_ham_%d"), i);
-			strcpy(bh->text, bands[i].name);
+			strncpy(text, bands[i].name, NAME_ARRAY_SIZE - 1);
+
+			gui_obj_create(name, 86, 44, 0, 0, text);
 
 			if (hamradio_check_current_freq_by_band(bands[i].index))
-				bh->is_locked = BUTTON_LOCKED;
+				gui_obj_set_prop(name, GUI_OBJ_LOCK, BUTTON_LOCKED);
+
+			gui_obj_set_prop(name, GUI_OBJ_PAYLOAD, bands[i].init_freq);
 
 #if WITHAD936XIIO || WITHAD936XDEV
-			if ((get_ad936x_stream_status() && bh->payload < NOXVRTUNE_TOP) ||
-					(! get_ad936x_stream_status() && bh->payload > NOXVRTUNE_TOP))
-				bh->state = DISABLED;
+			if ((get_ad936x_stream_status() && bands[i].init_freq < NOXVRTUNE_TOP) ||
+					(! get_ad936x_stream_status() && bands[i].init_freq > NOXVRTUNE_TOP))
+				gui_obj_set_prop(name, GUI_OBJ_STATE, DISABLED);
 #endif /* WITHAD936XIIO || WITHAD936XDEV */
-
-			x = x + interval + bh->w;
-			if (r >= row_count)
-			{
-				r = 0;
-				x = 0;
-				y = y + bh->h + interval;
-			}
 		}
 
-		label_t * lh2 = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_bcast");
-		lh2->x = max_x + 50;
-		lh2->y = 0;
-		lh2->visible = VISIBLE;
-		local_snprintf_P(lh2->text, ARRAY_SIZE(lh2->text), "Broadcast bands");
+		char * btn0 = get_obj_name_by_idx(TYPE_BUTTON, 0);
+		gui_obj_align_to(btn0, "lbl_ham", ALIGN_DOWN_LEFT, 6);
+		gui_arrange_objects_from(btn0, i, 3, 6);
 
-		x = lh2->x;
-		y = lh1->y + get_label_height(lh1) * 2;
+		uint8_t j = i;
 
-		for (unsigned r = 1; i < win->bh_count; i ++, r ++)
+		for (; j < bandnum + 1; j ++)
 		{
-			bh = & win->bh_ptr[i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
+			local_snprintf_P(name, NAME_ARRAY_SIZE, "btn_bcast_%d", j);
+			char * div = strchr(bands[j - 1].name, ' ');
+			if(div)
+				memcpy(div, "|", 1);
 
-			bh->w = 86;
-			bh->h = 44;
-			bh->state = CANCELLED;
-			bh->parent = WINDOW_BANDS;
-			bh->payload = bands[i - 1].init_freq;
-			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_bcast_%d"), i);
-			strcpy(bh->text, bands[i - 1].name);
+			strncpy(text, bands[j - 1].name, NAME_ARRAY_SIZE - 1);
 
-			if (hamradio_check_current_freq_by_band(bands[i - 1].index))
-				bh->is_locked = BUTTON_LOCKED;
+			gui_obj_create(name, 86, 44, 0, 0, text);
+
+			if (hamradio_check_current_freq_by_band(bands[j - 1].index))
+				gui_obj_set_prop(name, GUI_OBJ_LOCK, BUTTON_LOCKED);
+
+			gui_obj_set_prop(name, GUI_OBJ_PAYLOAD, bands[j - 1].init_freq);
 
 #if WITHAD936XIIO || WITHAD936XDEV
-			if ((get_ad936x_stream_status() && bh->payload < NOXVRTUNE_TOP) ||
-					(! get_ad936x_stream_status() && bh->payload > NOXVRTUNE_TOP))
-				bh->state = DISABLED;
+			if ((get_ad936x_stream_status() && bands[j - 1].init_freq < NOXVRTUNE_TOP) ||
+					(! get_ad936x_stream_status() && bands[j - 1].init_freq > NOXVRTUNE_TOP))
+				gui_obj_set_prop(name, GUI_OBJ_STATE, DISABLED);
 #endif /* WITHAD936XIIO || WITHAD936XDEV */
-
-			x = x + interval + bh->w;
-			if (r >= row_count)
-			{
-				r = 0;
-				x = lh2->x;
-				y = y + bh->h + interval;
-			}
 		}
+
+		btn0 = get_obj_name_by_idx(TYPE_BUTTON, i);
+		gui_obj_align_to(btn0, "lbl_bcast", ALIGN_DOWN_LEFT, 6);
+		gui_arrange_objects_from(btn0, j - i, 3, 6);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -1633,34 +1595,28 @@ void window_bands_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_Freq = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_freq");
-
-			if (bh == btn_Freq)
+			if (gui_check_obj(name, "btn_Freq"))
 			{
-				window_t * const win = get_win(WINDOW_FREQ);
-				open_window(win);
+				open_window(get_win(WINDOW_FREQ));
 				hamradio_set_lock(1);
 				hamradio_enable_keyboard_redirect();
 			}
 			else
 			{
-				hamradio_goto_band_by_freq(bh->payload);
+				int f = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
+				hamradio_goto_band_by_freq(f);
 				close_all_windows();
 			}
 		}
 		break;
 
 	case WM_MESSAGE_CLOSE:
-
 		free(bands);
 		break;
 
 	default:
-
 		break;
 	}
-
 }
 
 // *********************************************************************************************************************************************************************
