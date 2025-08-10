@@ -3468,7 +3468,7 @@ void window_ft8_settings_process(void)
 				close_window(OPEN_PARENT_WINDOW);
 			else if (gui_check_obj(name, "btn_freq"))
 			{
-				uint32_t f = gui_nvram.ft8_txfreq_val;
+				int f = gui_nvram.ft8_txfreq_val;
 				keyboard_edit_digits(& f);
 				uint32_t l = hamradio_get_low_bp(0) * 10;
 				uint32_t h = hamradio_get_high_bp(0) * 10;

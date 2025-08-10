@@ -19,6 +19,7 @@
 #include "gui_structs.h"
 #include "gui_settings.h"
 #include "gui_windows.h"
+#include <string.h>
 
 const label_t label_default = 	{ 0, CANCELLED, 0, NON_VISIBLE, "", "", FONT_MEDIUM, COLORPIP_WHITE, };
 const button_t button_default = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 1, 0, NON_VISIBLE, INT32_MAX, "", "", };
