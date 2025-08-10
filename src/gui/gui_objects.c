@@ -213,7 +213,7 @@ uint8_t gui_obj_create(const char * obj_name, ...)
 		bh->x1 = 0;
 		bh->y1 = 0;
 
-		win->bh_count;
+		idx = win->bh_count;
 		win->bh_count ++;
 		break;
 	}

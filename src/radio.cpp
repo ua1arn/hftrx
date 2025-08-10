@@ -4515,7 +4515,7 @@ static const struct paramdefdef xgspectrumpart =
 {
 	QLABEL2("SPEC PRT", "Spectrum part"), 7, 0, 0,	ISTEP1,
 	ITEM_VALUE,
-	20, 100,			/* Часть отведенной под спектр высоты экрана 0..100 */
+	WITHSPPARTMIN, WITHSPPARTMAX,			/* Часть отведенной под спектр высоты экрана 0..100 */
 	OFFSETOF(struct nvmap, gspectrumpart),
 	getselector0, nvramoffs0, valueoffs0,
 	NULL,
@@ -20752,62 +20752,59 @@ void hamradio_set_gwflevelsep(uint_fast8_t v)
 	updateboard();
 }
 
-uint_fast8_t hamradio_gtopdbsp(int_least16_t v)
-{
-	if (param_rotate(& xgtopdbspe, v))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
-	{
-		updateboard();
-	}
-	return param_getvalue(& xgtopdbspe);
-}
-
-uint_fast8_t hamradio_gbottomdbsp(int_least16_t v)
-{
-	if (param_rotate(& xgbottomdbspe, v))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
-	{
-		updateboard();
-	}
-	return param_getvalue(& xgbottomdbspe);
-}
-
-uint_fast8_t hamradio_gtopdbwf(int_least16_t v)
-{
-	if (param_rotate(& xgtopdbwfl, v))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
-	{
-		updateboard();
-	}
-	return param_getvalue(& xgtopdbwfl);
-}
-
-uint_fast8_t hamradio_gbottomdbwf(int_least16_t v)
-{
-	if (param_rotate(& xgbottomdbwfl, v))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
-	{
-		updateboard();
-	}
-	return param_getvalue(& xgbottomdbwfl);
-}
-
-void hamradio_set_gbottomdbspe(uint8_t v)
+void hamradio_set_bottomdbspe(uint8_t v)
 {
 	param_setvalue(& xgbottomdbspe, v);
 	updateboard();
 }
 
-void hamradio_set_gtopdbspe(uint8_t v)
+void hamradio_set_topdbspe(uint8_t v)
 {
 	param_setvalue(& xgtopdbspe, v);
 	updateboard();
 }
 
-uint8_t hamradio_get_gbottomdbspe(void)
+void hamradio_set_bottomdbwfl(uint8_t v)
+{
+	param_setvalue(& xgbottomdbwfl, v);
+	updateboard();
+}
+
+void hamradio_set_topdbwfl(uint8_t v)
+{
+	param_setvalue(& xgtopdbwfl, v);
+	updateboard();
+}
+
+uint8_t hamradio_get_bottomdbspe(void)
 {
 	return param_getvalue(& xgbottomdbspe);
 }
 
-uint8_t hamradio_get_gtopdbspe(void)
+uint8_t hamradio_get_topdbspe(void)
 {
 	return param_getvalue(& xgtopdbspe);
+}
+
+uint8_t hamradio_get_topdbwfl(void)
+{
+	return param_getvalue(& xgtopdbwfl);
+}
+
+uint8_t hamradio_get_bottomdbwfl(void)
+{
+	return param_getvalue(& xgbottomdbwfl);
+}
+
+uint8_t hamradio_get_spectrumpart(void)
+{
+	return param_getvalue(& xgspectrumpart);
+}
+
+void hamradio_set_spectrumpart(uint8_t v)
+{
+	param_setvalue(& xgspectrumpart, v);
+	updateboard();
 }
 
 #endif

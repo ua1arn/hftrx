@@ -45,14 +45,17 @@ extern "C" {
 #define WITHNOTCHWIDTHMAX	1000
 
 /* параметры отображения панорамы */
-#define WITHTOPDBMIN 0
-#define WITHTOPDBMAX 60
-#define WITHTOPDBDEFAULT 30
+#define WITHSPPARTMIN		20
+#define WITHSPPARTMAX		100
 
-#define WITHBOTTOMDBTX 90
+#define WITHTOPDBMIN 		0
+#define WITHTOPDBMAX 		60
+#define WITHTOPDBDEFAULT 	30
 
-#define WITHBOTTOMDBMIN 40
-#define WITHBOTTOMDBMAX 160
+#define WITHBOTTOMDBTX 		90
+
+#define WITHBOTTOMDBMIN 	40
+#define WITHBOTTOMDBMAX 	160
 
 #define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
 #define	BOARD_IFGAIN_MAX	24		/* код управления усилением ВЧ тракта */
@@ -3356,10 +3359,16 @@ uint_fast8_t hamradio_get_gzoomxpow2(void);
 void hamradio_set_gzoomxpow2(uint_fast8_t v);
 uint_fast8_t hamradio_get_gwflevelsep(void);
 void hamradio_set_gwflevelsep(uint_fast8_t v);
-uint_fast8_t hamradio_gtopdbsp(int_least16_t v);
-uint_fast8_t hamradio_gbottomdbsp(int_least16_t v);
-uint_fast8_t hamradio_gtopdbwf(int_least16_t v);
-uint_fast8_t hamradio_gbottomdbwf(int_least16_t v);
+void hamradio_set_bottomdbspe(uint8_t v);
+void hamradio_set_topdbspe(uint8_t v) ;
+void hamradio_set_bottomdbwfl(uint8_t v);
+void hamradio_set_topdbwfl(uint8_t v);
+uint8_t hamradio_get_bottomdbspe(void);
+uint8_t hamradio_get_topdbspe(void);
+uint8_t hamradio_get_topdbwfl(void);
+uint8_t hamradio_get_bottomdbwfl(void);
+uint8_t hamradio_get_spectrumpart(void);
+void hamradio_set_spectrumpart(uint8_t v);
 const char * hamradio_change_view_style(uint_fast8_t v);
 uint_fast8_t hamradio_get_viewstyle(void);
 void hamradio_settemp_viewstyle(uint_fast8_t v);

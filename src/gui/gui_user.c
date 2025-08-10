@@ -60,7 +60,7 @@ enum { freq_swipe_step_vals = ARRAY_SIZE(freq_swipe_step) };
 
 static text_field_t * tf_debug = NULL;
 static tf_entry_t tmpbuf[TEXT_ARRAY_SIZE];
-static uint_fast8_t tmpstr_index = 0;
+static uint8_t tmpstr_index = 0, debug_view = 0;
 
 #if GUI_SHOW_INFOBAR
 
@@ -221,7 +221,10 @@ void gui_add_debug(char d)
 void gui_open_debug_window(void)
 {
 	if (tf_debug)
-		tf_debug->visible = ! tf_debug->visible;
+	{
+		debug_view = ! debug_view;
+		tf_debug->visible = debug_view != 0;
+	}
 }
 #endif /* WITHGUIDEBUG */
 
@@ -1330,7 +1333,7 @@ void gui_main_process(void)
 #endif /* WITHFT8 && ! LINUX_SUBSYSTEM */
 
 #if WITHGUIDEBUG
-	if (tf_debug->visible)
+	if (debug_view)
 	{
 		display_transparency(db, tf_debug->x1 - 5, tf_debug->y1 - 5, tf_debug->x1 + tf_debug->w + 5, tf_debug->y1 + tf_debug->h + 5, DEFAULT_ALPHA);
 	}
@@ -1668,45 +1671,26 @@ void window_options_process(void)
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, interval = 6, row_count = 4;
 		win->first_call = 0;
+		uint8_t idx;
 
-		gui_obj_create("btn_SysMenu", 100, 44, 0, 0, "System|settings");
-		gui_obj_create("btn_AUDsett", 100, 44, 0, 0, "Audio|settings");
-		gui_obj_create("btn_TXsett",  100, 44, 0, 0, "Transmit|settings");
-		gui_obj_create("btn_Display", 100, 44, 0, 0, "Display|settings");
-		gui_obj_create("btn_gui", 	   100, 44, 0, 0, "GUI|settings");
-		gui_obj_create("btn_Utils",   100, 44, 0, 0, "Utils");
+		idx = gui_obj_create("btn_SysMenu", 100, 44, 0, 0, "System|settings");
+		idx = gui_obj_create("btn_AUDsett", 100, 44, 0, 0, "Audio|settings");
+		idx = gui_obj_create("btn_TXsett", 100, 44, 0, 0, "Transmit|settings");
+		idx = gui_obj_create("btn_Display", 100, 44, 0, 0, "Display|settings");
+		idx = gui_obj_create("btn_gui", 100, 44, 0, 0, "GUI|settings");
+		idx = gui_obj_create("btn_Utils", 100, 44, 0, 0, "Utils");
 #if WITHAD936XIIO || WITHAD936XDEV
-		gui_obj_create("btn_936x",    100, 44, 0, 0, "AD936x");
+		idx = gui_obj_create("btn_936x", 100, 44, 0, 0, "AD936x");
 #endif /* WITHAD936XIIO || WITHAD936XDEV */
 #if defined (RTC1_TYPE)
-		gui_obj_create("btn_Time",    100, 44, 0, 0, "Set time|& date");
+		idx = gui_obj_create("btn_Time", 100, 44, 0, 0, "Set time|& date");
 #endif /* defined (RTC1_TYPE) */
 #if LINUX_SUBSYSTEM
-		gui_obj_create("btn_exit",		100, 44, 0, 0, "Terminate|program");
+		idx = gui_obj_create("btn_exit", 100, 44, 0, 0, "Terminate|program");
 #endif /* LINUX_SUBSYSTEM */
 
-		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
-		{
-			button_t * bh = & win->bh_ptr[i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
-
-			x = x + interval + bh->w;
-			if (r >= row_count)
-			{
-				r = 0;
-				x = 0;
-				y = y + bh->h + interval;
-			}
-		}
-
-#if ! (WITHSPECTRUMWF && WITHMENU)
-		button_t * btn_Display = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_Display");
-		btn_Display->state = DISABLED;
-#endif
+		gui_arrange_objects_from(get_obj_name_by_idx(TYPE_BUTTON, 0), idx + 1, 4, 6);
 
 		hamradio_disable_keyboard_redirect();
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -1715,75 +1699,39 @@ void window_options_process(void)
 	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_gui = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_gui");
-			button_t * btn_Utils = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_Utils");
-			button_t * btn_TXsett = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_TXsett");
-			button_t * btn_AUDsett = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_AUDsett");
-			button_t * btn_SysMenu = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_SysMenu");
-			button_t * btn_Display = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_Display");
+			if (gui_check_obj(name, "btn_gui"))
+				open_window(get_win(WINDOW_GUI_SETTINGS));
 #if defined (RTC1_TYPE)
-			button_t * btn_Time = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_Time");
-			if (bh == btn_Time)
-			{
-				window_t * const win = get_win(WINDOW_TIME);
-				open_window(win);
-			}
-			else
+			else if (gui_check_obj(name, "btn_Time"))
+				open_window(get_win(WINDOW_TIME));
 #endif /* defined (RTC1_TYPE) */
-			if (bh == btn_Utils)
+			else if (gui_check_obj(name, "btn_Utils"))
+				open_window(get_win(WINDOW_UTILS));
+			else if (gui_check_obj(name, "btn_TXsett"))
+				open_window(get_win(WINDOW_TX_SETTINGS));
+			else if (gui_check_obj(name, "btn_AUDsett"))
+				open_window(get_win(WINDOW_AUDIOSETTINGS));
+			else if (gui_check_obj(name, "btn_SysMenu"))
 			{
-				window_t * const win = get_win(WINDOW_UTILS);
-				open_window(win);
-			}
-			else if (bh == btn_gui)
-			{
-				window_t * const win = get_win(WINDOW_GUI_SETTINGS);
-				open_window(win);
-			}
-			else if (bh == btn_TXsett)
-			{
-				window_t * const win = get_win(WINDOW_TX_SETTINGS);
-				open_window(win);
-			}
-			else if (bh == btn_AUDsett)
-			{
-				window_t * const win = get_win(WINDOW_AUDIOSETTINGS);
-				open_window(win);
-			}
-			else if (bh == btn_SysMenu)
-			{
-				window_t * const win = get_win(WINDOW_MENU);
-				open_window(win);
+				open_window(get_win(WINDOW_MENU));
 				hamradio_enable_encoder2_redirect();
 			}
-#if WITHSPECTRUMWF && WITHMENU
-			else if (bh == btn_Display)
-			{
-				window_t * const win = get_win(WINDOW_DISPLAY);
-				open_window(win);
-			}
-#endif /* WITHSPECTRUMWF && WITHMENU */
+			else if (gui_check_obj(name, "btn_Display"))
+				open_window(get_win(WINDOW_DISPLAY));
 #if LINUX_SUBSYSTEM
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_exit"))
-			{
+			else if (gui_check_obj(name, "btn_exit"))
 				linux_exit();		// Terminate all
-			}
 #endif /* LINUX_SUBSYSTEM */
 #if WITHAD936XIIO || WITHAD936XDEV
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_936x"))
-			{
+			else if (gui_check_obj(name, "btn_936x"))
 				open_window(get_win(WINDOW_AD936X));
-			}
 #endif /* WITHAD936XIIO || WITHAD936XDEV*/
 		}
 		break;
 
 	default:
-
 		break;
 	}
 }
@@ -1794,121 +1742,42 @@ void window_display_process(void)
 {
 #if WITHSPECTRUMWF && WITHMENU
 	window_t * const win = get_win(WINDOW_DISPLAY);
-	static enc_var_t display_t;
+	uint8_t update = 0;
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, interval = 50;
 		win->first_call = 0;
-		display_t.change = 0;
-		display_t.updated = 1;
+		uint8_t interval = 30;
+		update = 1;
 
-		static const button_t buttons[] = {
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_zoom", 		"", },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_view", 		"", },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_params", 		"", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, 		"btn_topSP_m", 		"-", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  		"btn_topSP_p", 		"+", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, 		"btn_bottomSP_m", 	"-", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  		"btn_bottomSP_p", 	"+", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, 		"btn_topWF_m", 		"-", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  		"btn_topWF_p", 		"+", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, 		"btn_bottomWF_m", 	"-", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  		"btn_bottomWF_p", 	"+", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		unsigned buttons_size = sizeof(buttons);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
+		gui_obj_create("lbl_topSP", FONT_MEDIUM, COLORPIP_WHITE, 18);
+		gui_obj_create("lbl_bottomSP", FONT_MEDIUM, COLORPIP_WHITE, 18);
+		gui_obj_create("lbl_topWF", FONT_MEDIUM, COLORPIP_WHITE, 18);
+		gui_obj_create("lbl_bottomWF", FONT_MEDIUM, COLORPIP_WHITE, 18);
+		gui_obj_create("lbl_partSP", FONT_MEDIUM, COLORPIP_WHITE, 18);
+		gui_obj_create("sl_topSP", ORIENTATION_HORIZONTAL, 300, 3);			// index = TYPE_DISPLAY_SP_TOP
+		gui_obj_create("sl_bottomSP", ORIENTATION_HORIZONTAL, 300, 3);		// index = TYPE_DISPLAY_SP_BOTTOM
+		gui_obj_create("sl_topWF", ORIENTATION_HORIZONTAL, 300, 3);			// index = TYPE_DISPLAY_WF_TOP
+		gui_obj_create("sl_bottomWF", ORIENTATION_HORIZONTAL, 300, 3);		// index = TYPE_DISPLAY_WF_BOTTOM
+		gui_obj_create("sl_partSP", ORIENTATION_HORIZONTAL, 300, 3); 		// index = TYPE_DISPLAY_SP_PART
+		gui_obj_create("btn_zoom", 100, 44, 0, 0, "");
+		gui_obj_create("btn_view", 100, 44, 0, 0, "");
+		gui_obj_create("btn_params", 100, 44, 0, 0, "");
 
-		static const label_t labels[] = {
-			{	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_topSP",    "Top    : xxx db", FONT_MEDIUM, COLORPIP_WHITE, TYPE_DISPLAY_SP_TOP, 	},
-			{	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_bottomSP", "Bottom : xxx db", FONT_MEDIUM, COLORPIP_WHITE, TYPE_DISPLAY_SP_BOTTOM, },
-			{	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_topWF",    "Top    : xxx db", FONT_MEDIUM, COLORPIP_WHITE, TYPE_DISPLAY_WF_TOP, 	},
-			{	WINDOW_DISPLAY, CANCELLED, 0, NON_VISIBLE, "lbl_bottomWF", "Bottom : xxx db", FONT_MEDIUM, COLORPIP_WHITE, TYPE_DISPLAY_WF_BOTTOM, },
-			{	WINDOW_DISPLAY, DISABLED,  0, NON_VISIBLE, "lbl_sp",	   "Spectrum", 		  FONT_LARGE,  COLORPIP_WHITE, },
-			{	WINDOW_DISPLAY, DISABLED,  0, NON_VISIBLE, "lbl_wf", 	   "Waterfall", 	  FONT_LARGE,  COLORPIP_WHITE, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		unsigned labels_size = sizeof(labels);
-		win->lh_ptr = (label_t *) malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
+		gui_arrange_objects_from("lbl_topSP", 5, 1, interval);
+		gui_obj_align_to("sl_topSP", "lbl_topSP", ALIGN_RIGHT_UP_MID, interval);
+		gui_obj_align_to("sl_bottomSP", "lbl_bottomSP", ALIGN_RIGHT_UP_MID, interval);
+		gui_obj_align_to("sl_topWF", "lbl_topWF", ALIGN_RIGHT_UP_MID, interval);
+		gui_obj_align_to("sl_bottomWF", "lbl_bottomWF", ALIGN_RIGHT_UP_MID, interval);
+		gui_obj_align_to("sl_partSP", "lbl_partSP", ALIGN_RIGHT_UP_MID, interval);
+		gui_obj_align_to("btn_zoom", "lbl_partSP", ALIGN_DOWN_LEFT, interval);
+		gui_arrange_objects_from("btn_zoom", 3, 3, interval);
 
-		label_t * lbl_sp = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_sp");
-		label_t * lbl_wf = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_wf");
-		label_t * lbl_topSP = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_topSP");
-		label_t * lbl_bottomSP = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_bottomSP");
-		label_t * lbl_topWF = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_topWF");
-		label_t * lbl_bottomWF = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_bottomWF");
-
-		button_t * btn_bottomSP_m = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_bottomSP_m");
-		button_t * btn_bottomSP_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_bottomSP_p");
-		button_t * btn_topSP_m = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_topSP_m");
-		button_t * btn_topSP_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_topSP_p");
-		button_t * btn_bottomWF_m = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_bottomWF_m");
-		button_t * btn_bottomWF_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_bottomWF_p");
-		button_t * btn_topWF_m = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_topWF_m");
-		button_t * btn_topWF_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_topWF_p");
-
-		button_t * btn_zoom = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_zoom");
-		button_t * btn_view = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_view");
-		button_t * btn_params = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_params");
-
-		lbl_sp->y = 0;
-		lbl_sp->visible = VISIBLE;
-		lbl_topSP->x = 0;
-		lbl_topSP->y = lbl_sp->y + interval;
-		lbl_topSP->visible = VISIBLE;
-		lbl_bottomSP->x = lbl_topSP->x;
-		lbl_bottomSP->y = lbl_topSP->y + interval;
-		lbl_bottomSP->visible = VISIBLE;
-		btn_topSP_m->x1 = lbl_topSP->x + get_label_width(lbl_topSP) + 10;
-		btn_topSP_m->y1 = lbl_topSP->y + get_label_height(lbl_topSP) / 2 - btn_topSP_m->h / 2;
-		btn_topSP_m->visible = VISIBLE;
-		btn_topSP_p->x1 = btn_topSP_m->x1 + btn_topSP_m->w + 10;
-		btn_topSP_p->y1 = btn_topSP_m->y1;
-		btn_topSP_p->visible = VISIBLE;
-		btn_bottomSP_m->x1 = btn_topSP_m->x1;
-		btn_bottomSP_m->y1 = lbl_bottomSP->y + get_label_height(lbl_bottomSP) / 2 - btn_bottomSP_m->h / 2;
-		btn_bottomSP_m->visible = VISIBLE;
-		btn_bottomSP_p->x1 = btn_bottomSP_m->x1 + btn_bottomSP_m->w + 10;
-		btn_bottomSP_p->y1 = btn_bottomSP_m->y1;
-		btn_bottomSP_p->visible = VISIBLE;
-		lbl_sp->x = (lbl_topSP->x + btn_topSP_p->x1 + btn_topSP_p->w) / 2 - get_label_width(lbl_sp) / 2;
-
-		lbl_topWF->x = btn_topSP_p->x1 + btn_topSP_p->w + interval / 2;
-		lbl_topWF->y = lbl_topSP->y;
-		lbl_topWF->visible = VISIBLE;
-		lbl_bottomWF->x = lbl_topWF->x;
-		lbl_bottomWF->y = lbl_topWF->y + interval;
-		lbl_bottomWF->visible = VISIBLE;
-		btn_topWF_m->x1 = lbl_topWF->x + get_label_width(lbl_topWF) + 10;
-		btn_topWF_m->y1 = lbl_topWF->y + get_label_height(lbl_topWF) / 2 - btn_topWF_m->h / 2;
-		btn_topWF_m->visible = VISIBLE;
-		btn_topWF_p->x1 = btn_topWF_m->x1 + btn_topWF_m->w + 10;
-		btn_topWF_p->y1 = btn_topWF_m->y1;
-		btn_topWF_p->visible = VISIBLE;
-		btn_bottomWF_m->x1 = btn_topWF_m->x1;
-		btn_bottomWF_m->y1 = lbl_bottomWF->y + get_label_height(lbl_bottomWF) / 2 - btn_bottomWF_m->h / 2;
-		btn_bottomWF_m->visible = VISIBLE;
-		btn_bottomWF_p->x1 = btn_bottomWF_m->x1 + btn_bottomWF_m->w + 10;
-		btn_bottomWF_p->y1 = btn_bottomWF_m->y1;
-		btn_bottomWF_p->visible = VISIBLE;
-		lbl_wf->x = (lbl_topWF->x + btn_topWF_p->x1 + btn_topWF_p->w) / 2 - get_label_width(lbl_wf) / 2;
-		lbl_wf->y = lbl_sp->y;
-		lbl_wf->visible = VISIBLE;
-
-		btn_view->x1 = (lbl_sp->x + lbl_wf->x + get_label_width(lbl_wf)) / 2 - btn_view->w / 2;
-		btn_view->y1 = btn_bottomWF_p->y1 + btn_bottomWF_p->h + interval / 2;
-		btn_view->visible = VISIBLE;
-		btn_params->x1 = btn_view->x1 + btn_view->w + interval / 2;
-		btn_params->y1 = btn_view->y1;
-		btn_params->visible = VISIBLE;
-		btn_zoom->x1 = btn_view->x1 + btn_zoom->w - interval / 2;
-		btn_zoom->y1 = btn_view->y1;
-		btn_zoom->visible = VISIBLE;
+		gui_obj_set_prop("sl_topSP", GUI_OBJ_PAYLOAD, normalize(hamradio_get_topdbspe(), WITHTOPDBMIN, WITHTOPDBMAX, 100));
+		gui_obj_set_prop("sl_bottomSP", GUI_OBJ_PAYLOAD, normalize(hamradio_get_bottomdbspe(), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, 100));
+		gui_obj_set_prop("sl_topWF", GUI_OBJ_PAYLOAD, normalize(hamradio_get_topdbwfl(), WITHTOPDBMIN, WITHTOPDBMAX, 100));
+		gui_obj_set_prop("sl_bottomWF", GUI_OBJ_PAYLOAD, normalize(hamradio_get_bottomdbwfl(), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, 100));
+		gui_obj_set_prop("sl_partSP", GUI_OBJ_PAYLOAD, normalize(hamradio_get_spectrumpart(), WITHSPPARTMIN, WITHSPPARTMAX, 100));
 
 		hamradio_enable_encoder2_redirect();
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -1917,126 +1786,58 @@ void window_display_process(void)
 	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_bottomSP_m = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_bottomSP_m");
-			button_t * btn_bottomSP_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_bottomSP_p");
-			button_t * btn_topSP_m = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_topSP_m");
-			button_t * btn_topSP_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_topSP_p");
-			button_t * btn_bottomWF_m = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_bottomWF_m");
-			button_t * btn_bottomWF_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_bottomWF_p");
-			button_t * btn_topWF_m = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_topWF_m");
-			button_t * btn_topWF_p = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_topWF_p");
-			button_t * btn_zoom = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_zoom");
-			button_t * btn_view = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_view");
-			button_t * btn_params = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_params");
-
-			if (bh == btn_view)
-			{
+			if (gui_check_obj(name, "btn_view"))
 				hamradio_change_view_style(1);
-				display_t.updated = 1;
-			}
-			else if (bh == btn_zoom)
+			else if (gui_check_obj(name, "btn_zoom"))
 			{
-				unsigned z = (hamradio_get_gzoomxpow2() + 1) % (BOARD_FFTZOOM_POW2MAX + 1);
+				uint8_t z = (hamradio_get_gzoomxpow2() + 1) % (BOARD_FFTZOOM_POW2MAX + 1);
 				hamradio_set_gzoomxpow2(z);
-				display_t.updated = 1;
 			}
-			else if (bh == btn_params)
-			{
+			else if (gui_check_obj(name, "btn_params"))
 				hamradio_set_gwflevelsep(! hamradio_get_gwflevelsep());
-				display_t.updated = 1;
-			}
-			else if (bh == btn_topSP_m || bh == btn_topSP_p)
-			{
-				hamradio_gtopdbsp(bh->payload);
-				display_t.updated = 1;
-			}
-			else if (bh == btn_bottomSP_m || bh == btn_bottomSP_p)
-			{
-				hamradio_gbottomdbsp(bh->payload);
-				display_t.updated = 1;
-			}
-			else if (bh == btn_topWF_m || bh == btn_topWF_p)
-			{
-				hamradio_gtopdbwf(bh->payload);
-				display_t.updated = 1;
-			}
-			else if (bh == btn_bottomWF_m || bh == btn_bottomWF_p)
-			{
-				hamradio_gbottomdbwf(bh->payload);
-				display_t.updated = 1;
-			}
+
+
+			update = 1;
 		}
-		else if (IS_LABEL_PRESS)
+		else if (IS_SLIDER_MOVE)
 		{
-			label_t * lh = (label_t *) ptr;
+			uint8_t v = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
+			uint8_t i = gui_obj_get_int_prop(name, GUI_OBJ_INDEX);
 
-			display_t.select = lh->payload;
-			display_t.change = 0;
-			display_t.updated = 1;
+			if (i == TYPE_DISPLAY_SP_TOP)
+				hamradio_set_topdbspe(WITHTOPDBMIN + normalize(v, 0, 100, WITHTOPDBMAX - WITHTOPDBMIN));
+			else if (i == TYPE_DISPLAY_SP_BOTTOM)
+				hamradio_set_bottomdbspe(WITHBOTTOMDBMIN + normalize(v, 0, 100, WITHBOTTOMDBMAX - WITHBOTTOMDBMIN));
+			else if (i == TYPE_DISPLAY_WF_TOP)
+				hamradio_set_topdbwfl(WITHTOPDBMIN + normalize(v, 0, 100, WITHTOPDBMAX - WITHTOPDBMIN));
+			else if (i == TYPE_DISPLAY_WF_BOTTOM)
+				hamradio_set_bottomdbwfl(WITHBOTTOMDBMIN + normalize(v, 0, 100, WITHBOTTOMDBMAX - WITHBOTTOMDBMIN));
+			else if (i == TYPE_DISPLAY_SP_PART)
+				hamradio_set_spectrumpart(WITHSPPARTMIN + normalize(v, 0, 100, WITHSPPARTMAX - WITHSPPARTMIN));
+
+			update = 1;
 		}
 
-		break;
-
-	case WM_MESSAGE_ENC2_ROTATE:
-
-		display_t.change = action;
-		display_t.updated = 1;
-
-		break;
-
-	case WM_MESSAGE_UPDATE:
-
-		display_t.updated = 1;
-		display_t.change = 0;
 		break;
 
 	default:
-
 		break;
 	}
 
-	if (display_t.updated)
+	if (update)
 	{
-		display_t.updated = 0;
+		update = 0;
 
-		button_t * btn_view = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_view");
-		local_snprintf_P(btn_view->text, ARRAY_SIZE(btn_view->text), PSTR("View|%s"), hamradio_change_view_style(0));
-		remove_end_line_spaces(btn_view->text);
-
-		button_t * btn_zoom = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_zoom");
-		local_snprintf_P(btn_zoom->text, ARRAY_SIZE(btn_zoom->text), PSTR("Zoom|x%d"), 1 << hamradio_get_gzoomxpow2());
-
-		button_t * btn_params = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_params");
-		local_snprintf_P(btn_params->text, ARRAY_SIZE(btn_params->text), PSTR("WF params|%s"), hamradio_get_gwflevelsep() ? "separate" : "from SP");
-
-		for(unsigned i = 0; i < win->lh_count; i ++)
-			win->lh_ptr[i].color = COLORPIP_WHITE;
-
-		ASSERT(display_t.select < win->lh_count);
-		win->lh_ptr[display_t.select].color = COLORPIP_YELLOW;
-
-		label_t * lbl_topSP = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_topSP");
-		label_t * lbl_bottomSP = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_bottomSP");
-		label_t * lbl_topWF = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_topWF");
-		label_t * lbl_bottomWF = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_bottomWF");
-
-		local_snprintf_P(lbl_topSP->text, ARRAY_SIZE(lbl_topSP->text), PSTR("Top    : %3d db"),
-				hamradio_gtopdbsp(display_t.select == TYPE_DISPLAY_SP_TOP ? display_t.change : 0));
-
-		local_snprintf_P(lbl_bottomSP->text, ARRAY_SIZE(lbl_bottomSP->text), PSTR("Bottom : %3d db"),
-				hamradio_gbottomdbsp(display_t.select == TYPE_DISPLAY_SP_BOTTOM ? display_t.change : 0));
-
-		local_snprintf_P(lbl_topWF->text, ARRAY_SIZE(lbl_topWF->text), PSTR("Top    : %3d db"),
-				hamradio_gtopdbwf(display_t.select == TYPE_DISPLAY_WF_TOP ? display_t.change : 0));
-
-		local_snprintf_P(lbl_bottomWF->text, ARRAY_SIZE(lbl_bottomWF->text), PSTR("Bottom : %3d db"),
-				hamradio_gbottomdbwf(display_t.select == TYPE_DISPLAY_WF_BOTTOM ? display_t.change : 0));
-
-		display_t.change = 0;
+		gui_obj_set_prop("btn_view", GUI_OBJ_TEXT_FMT, "View|%s", hamradio_change_view_style(0));
+		gui_obj_set_prop("btn_zoom", GUI_OBJ_TEXT_FMT, "Zoom|x%d", 1 << hamradio_get_gzoomxpow2());
+		gui_obj_set_prop("btn_params", GUI_OBJ_TEXT_FMT, "WF params|%s", hamradio_get_gwflevelsep() ? "separate" : "from SP");
+		gui_obj_set_prop("lbl_topSP", GUI_OBJ_TEXT_FMT,    "SP Top    : %3d db", hamradio_get_topdbspe());
+		gui_obj_set_prop("lbl_bottomSP", GUI_OBJ_TEXT_FMT, "SP Bottom : %3d db", hamradio_get_bottomdbspe());
+		gui_obj_set_prop("lbl_topWF", GUI_OBJ_TEXT_FMT,    "WF Top    : %3d db", hamradio_get_topdbwfl());
+		gui_obj_set_prop("lbl_bottomWF", GUI_OBJ_TEXT_FMT, "WF Bottom : %3d db", hamradio_get_bottomdbwfl());
+		gui_obj_set_prop("lbl_partSP", GUI_OBJ_TEXT_FMT,   "SP part   : %3d %%", hamradio_get_spectrumpart());
 	}
 #endif /* WITHSPECTRUMWF && WITHMENU */
 }
@@ -2049,50 +1850,33 @@ void window_utilites_process(void)
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, interval = 6, row_count = 4;
 		win->first_call = 0;
+		uint8_t idx;
+
 #if WITHGUIDEBUG
-		gui_obj_create("btn_debug", 100, 44, 0, 0, "Debug|view");
+		idx = gui_obj_create("btn_debug", 100, 44, 0, 0, "Debug|view");
 #endif /* WITHGUIDEBUG */
 #if WITHSWRSCAN
-		gui_obj_create("btn_SWRscan", 100, 44, 0, 0, "SWR|scanner");
+		idx = gui_obj_create("btn_SWRscan", 100, 44, 0, 0, "SWR|scanner");
 #endif /* WITHSWRSCAN */
-		gui_obj_create("btn_3d", 100, 44, 0, 0, "Donut|3d");
+		idx = gui_obj_create("btn_3d", 100, 44, 0, 0, "Donut|3d");
 #if WITHLFM
-		gui_obj_create("btn_lfm", 100, 44, 0, 0, "LFM|receive");
+		idx = gui_obj_create("btn_lfm", 100, 44, 0, 0, "LFM|receive");
 #endif /* WITHLFM  */
 #if WITHIQSHIFT
-		gui_obj_create("btn_shift", 100, 44, 0, 0, "IQ shift");
+		idx = gui_obj_create("btn_shift", 100, 44, 0, 0, "IQ shift");
 #endif /* WITHIQSHIFT */
 #if LINUX_SUBSYSTEM && WITHEXTIO_LAN
-		gui_obj_create("btn_stream", 100, 44, 0, 0, "IQ LAN|Stream");
+		idx = gui_obj_create("btn_stream", 100, 44, 0, 0, "IQ LAN|Stream");
 #endif /* LINUX_SUBSYSTEM && WITHEXTIO_LAN */
 #if 0
-		gui_obj_create("btn_kbdtest", 100, 44, 0, 0, "Keyboard|test");
+		idx = gui_obj_create("btn_kbdtest", 100, 44, 0, 0, "Keyboard|test");
 #endif
 
-		x = 0;
-		y = 0;
-
-		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
-		{
-			button_t * bh = & win->bh_ptr[i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
-
-			x = x + interval + bh->w;
-			if (r >= row_count)
-			{
-				r = 0;
-				x = 0;
-				y = y + bh->h + interval;
-			}
-		}
+		gui_arrange_objects_from(get_obj_name_by_idx(TYPE_BUTTON, 0), idx + 1, 4, 6);
 
 #if WITHGUIDEBUG
-		button_t * bh = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_debug");
-		bh->is_locked = tf_debug->visible != 0;
+		gui_obj_set_prop("btn_debug", GUI_OBJ_LOCK, debug_view);
 #endif /* WITHGUIDEBUG */
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -2101,53 +1885,39 @@ void window_utilites_process(void)
 	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-
-			if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_3d"))
-			{
+			if (gui_check_obj(name, "btn_3d"))
 				open_window(get_win(WINDOW_3D));
-			}
 #if WITHSWRSCAN
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_SWRscan"))
-			{
+			else if (gui_check_obj(name, "btn_SWRscan"))
 				open_window(get_win(WINDOW_SWR_SCANNER));
-			}
 #endif /* WITHSWRSCAN */
 #if WITHLFM
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_lfm"))
-			{
+			else if (gui_check_obj(name, "btn_lfm"))
 				open_window(get_win(WINDOW_LFM));
-			}
 #endif /* WITHLFM  */
 #if WITHGUIDEBUG
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_debug"))
+			else if (gui_check_obj(name, "btn_debug"))
 			{
 				gui_open_debug_window();
 				close_all_windows();
 			}
 #endif /* WITHGUIDEBUG */
 #if WITHIQSHIFT
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_shift"))
-			{
+			else if (gui_check_obj(name, "btn_shift"))
 				open_window(get_win(WINDOW_SHIFT));
-			}
 #endif /* WITHIQSHIFT */
 #if LINUX_SUBSYSTEM && WITHEXTIO_LAN
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_stream"))
-			{
+			else if (gui_check_obj(name, "btn_stream"))
 				open_window(get_win(WINDOW_EXTIOLAN));
-			}
 #endif /* LINUX_SUBSYSTEM && WITHEXTIO_LAN */
-			else if (bh == (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_kbdtest"))
+			else if (gui_check_obj(name, "btn_kbdtest"))
 				open_window(get_win(WINDOW_KBD_TEST));
 		}
 		break;
 
 	default:
-
 		break;
 	}
 }
@@ -2327,35 +2097,16 @@ void window_swrscan_process(void)
 void window_tx_process(void)
 {
 	window_t * const win = get_win(WINDOW_TX_SETTINGS);
-	unsigned update = 0;
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, interval = 6, row_count = 3;
-		button_t * bh = NULL;
 		win->first_call = 0;
-		update = 1;
 
-		gui_obj_create("btn_tx_power",        100, 44, 0, 0, "TX power");
+		gui_obj_create("btn_tx_power", 100, 44, 0, 0, "TX power");
 
-		x = 0;
-		y = 0;
-
-		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
-		{
-			button_t * bh = & win->bh_ptr[i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
-
-			x = x + interval + bh->w;
-			if (r >= row_count)
-			{
-				r = 0;
-				x = 0;
-				y = y + bh->h + interval;
-			}
-		}
+#if ! WITHPOWERTRIM
+		gui_obj_set_prop("btn_tx_power", GUI_OBJ_STATE, DISABLED);
+#endif /* ! WITHPOWERTRIM */
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -2365,31 +2116,15 @@ void window_tx_process(void)
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * const bh = (button_t *) ptr;
-			window_t * const winTX = get_win(WINDOW_TX_SETTINGS);
-			window_t * const winPower = get_win(WINDOW_TX_POWER);
-			button_t * const btn_tx_power = (button_t *) find_gui_obj(TYPE_BUTTON, winTX, "btn_tx_power");
-
 #if WITHPOWERTRIM && WITHTX
-			if (bh == btn_tx_power)
-			{
-				open_window(winPower);
-				return;
-			}
+			if (gui_check_obj(name, "btn_tx_power"))
+				open_window(get_win(WINDOW_TX_POWER));
 #endif /* WITHPOWERTRIM  && WITHTX*/
 		}
 		break;
 
 	default:
 		break;
-	}
-
-	if (update)
-	{
-#if ! WITHPOWERTRIM
-		button_t * btn_tx_power = (button_t *) find_gui_obj(TYPE_BUTTON, win, "btn_tx_power");
-		btn_tx_power->state = DISABLED;
-#endif /* ! WITHPOWERTRIM */
 	}
 }
 
