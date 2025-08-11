@@ -1387,63 +1387,29 @@ void window_memory_process(void)
 
 	if (win->first_call)
 	{
-		unsigned x = 0, y = 0, interval = 6, row_count = 5;
 		win->first_call = 0;
+		char name[NAME_ARRAY_SIZE], text[NAME_ARRAY_SIZE];
 
-		win->bh_count = memory_cells_count;
-		unsigned buttons_size = win->bh_count * sizeof (button_t);
-		win->bh_ptr = (button_t *) malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-
-		gui_obj_create("lbl_note1", FONT_MEDIUM, COLORPIP_WHITE, 30);
-
-		x = 0;
-		y = 0;
-		button_t * bh = NULL;
-
-		for (unsigned i = 0, r = 1; i < win->bh_count; i ++, r ++)
+		for (int i = 0; i < memory_cells_count; i ++)
 		{
-			bh = & win->bh_ptr[i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
-			bh->w = 100;
-			bh->h = 44;
-			bh->state = CANCELLED;
-			bh->parent = WINDOW_MEMORY;
-			bh->index = i;
-			bh->is_long_press = 1;
-			bh->is_repeating = 0;
-			bh->is_locked = BUTTON_NON_LOCKED;
-			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_memory_%02d"), i);
+			local_snprintf_P(name, NAME_ARRAY_SIZE, "btn_memory_%d", i);
 
-			x = x + interval + bh->w;
-			if (r >= row_count)
-			{
-				r = 0;
-				x = 0;
-				y = y + bh->h + interval;
-			}
-
-			unsigned freq = load_mems(i, 0);
+			uint32_t freq = load_mems(i, 0);
 			if (freq > 0)
-			{
-				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%dk"), freq / 1000);
-				bh->payload = 1;
-			}
+				local_snprintf_P(text, NAME_ARRAY_SIZE, "%dk", freq / 1000);
 			else
-			{
-				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("---"));
-				bh->payload = 0;
-			}
+				local_snprintf_P(text, NAME_ARRAY_SIZE, "---");
+
+			gui_obj_create(name, 100, 44, 0, 1, text);
+			gui_obj_set_prop(name, GUI_OBJ_PAYLOAD, freq > 0);
 		}
 
-		ASSERT(bh != NULL);
-		label_t * lbl_note1 = (label_t *) find_gui_obj(TYPE_LABEL, win, "lbl_note1");
-		lbl_note1->x = 0;
-		lbl_note1->y = bh->y1 + bh->h + get_label_height(lbl_note1);
-		lbl_note1->visible = VISIBLE;
-		local_snprintf_P(lbl_note1->text, ARRAY_SIZE(lbl_note1->text), PSTR("Long press on empty cell - save,on saved cell - clean"));
+		char * btn0 = get_obj_name_by_idx(TYPE_BUTTON, 0);
+		gui_arrange_objects_from(btn0, memory_cells_count, 5, 6);
+
+		gui_obj_create("lbl_note1", FONT_MEDIUM, COLORPIP_WHITE, 54);
+		gui_obj_set_prop("lbl_note1", GUI_OBJ_TEXT, "Long press on empty cell - save,on saved cell - clean");
+		gui_obj_set_prop("lbl_note1", GUI_OBJ_POS_Y, 205);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -1451,15 +1417,14 @@ void window_memory_process(void)
 	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (type == TYPE_BUTTON)
 		{
 			if (IS_BUTTON_PRESS)
 			{
-				button_t * bh = (button_t *) ptr;
-				unsigned cell_id = bh->index;
+				uint8_t cell_id = gui_obj_get_int_prop(name, GUI_OBJ_INDEX);
+				uint8_t p = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
 
-				if (bh->payload)
+				if (p)
 				{
 					load_mems(cell_id, 1);
 					close_window(DONT_OPEN_PARENT_WINDOW);
@@ -1469,20 +1434,20 @@ void window_memory_process(void)
 			}
 			else if (IS_BUTTON_LONG_PRESS)
 			{
-				button_t * bh = (button_t *) ptr;
-				unsigned cell_id = bh->index;
+				uint8_t cell_id = gui_obj_get_int_prop(name, GUI_OBJ_INDEX);
+				uint8_t p = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
 
-				if (bh->payload)
+				if (p)
 				{
-					bh->payload = 0;
+					gui_obj_set_prop(name, GUI_OBJ_PAYLOAD, 0);
+					gui_obj_set_prop(name, GUI_OBJ_TEXT, "---");
 					clean_mems(cell_id);
-					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("---"));
 				}
 				else
 				{
-					bh->payload = 1;
-					unsigned freq = hamradio_get_freq_rx();
-					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%dk"), freq / 1000);
+					uint32_t freq = hamradio_get_freq_rx();
+					gui_obj_set_prop(name, GUI_OBJ_TEXT_FMT, "%dk", freq / 1000);
+					gui_obj_set_prop(name, GUI_OBJ_PAYLOAD, 1);
 					write_mems(cell_id);
 				}
 			}
@@ -1491,7 +1456,6 @@ void window_memory_process(void)
 		break;
 
 	default:
-
 		break;
 	}
 }
@@ -1507,7 +1471,7 @@ void window_bands_process(void)
 	{
 		win->first_call = 0;
 
-		char name[NAME_ARRAY_SIZE], text[NAME_ARRAY_SIZE] ;
+		char name[NAME_ARRAY_SIZE], text[NAME_ARRAY_SIZE];
 		uint8_t bandnum = hamradio_get_bands(NULL, 1, 1), i = 0;
 		bands = (band_array_t *) calloc(bandnum, sizeof (band_array_t));
 		GUI_MEM_ASSERT(bands);
