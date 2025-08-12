@@ -39,6 +39,7 @@ static gui_t gui = { 0, 0, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, };
 static gui_object_t gui_objects[GUI_OBJECTS_ARRAY_SIZE];
 static uint_fast8_t gui_object_count = 0;
 static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, INT32_MAX, "btс_close", "", };
+static uint8_t opened_windows_count = 1;
 
 /* Возврат id parent window */
 uint_fast8_t get_parent_window(void)
@@ -49,6 +50,7 @@ uint_fast8_t get_parent_window(void)
 void set_parent_window(uint8_t p)
 {
 	gui.win[1] = p;
+	opened_windows_count = p == NO_PARENT_WINDOW ? 1 : 2;
 }
 
 void gui_set_encoder2_rotate (int_least16_t rotate)
@@ -294,9 +296,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 			if (! strcmp(bh->name, name))
 				return (button_t *) bh;
 		}
-		PRINTF("find_gui_obj: button '%s' not found\n", name);
-		ASSERT(0);
-		return NULL;
+		goto not_found;
 		break;
 
 	case TYPE_LABEL:
@@ -306,9 +306,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 			if (! strcmp(lh->name, name))
 				return (label_t *) lh;
 		}
-		PRINTF("find_gui_obj: label '%s' not found\n", name);
-		ASSERT(0);
-		return NULL;
+		goto not_found;
 		break;
 
 	case TYPE_SLIDER:
@@ -318,9 +316,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 			if (! strcmp(sh->name, name))
 				return (slider_t *) sh;
 		}
-		PRINTF("find_gui_obj: slider '%s' not found\n", name);
-		ASSERT(0);
-		return NULL;
+		goto not_found;
 		break;
 
 	case TYPE_TOUCH_AREA:
@@ -330,9 +326,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 			if (! strcmp(ta->name, name))
 				return (touch_area_t *) ta;
 		}
-		PRINTF("find_gui_obj: touch_area '%s' not found\n", name);
-		ASSERT(0);
-		return NULL;
+		goto not_found;
 		break;
 
 	case TYPE_TEXT_FIELD:
@@ -342,9 +336,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 			if (! strcmp(tf->name, name))
 				return (text_field_t *) tf;
 		}
-		PRINTF("find_gui_obj: text_field '%s' not found\n", name);
-		ASSERT(0);
-		return NULL;
+		goto not_found;
 		break;
 
 	default:
@@ -352,6 +344,16 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 		ASSERT(0);
 		return NULL;
 	}
+
+not_found:
+	if (win->window_id == WINDOW_MAIN)
+	{
+		PRINTF("%s: object '%s' not found\n", __func__, name);
+		ASSERT(0);
+		return NULL;
+	}
+	else
+		return find_gui_obj(type, get_win(WINDOW_MAIN), name);
 }
 
 const gxdrawb_t * gui_get_drawbuf(void)
@@ -1233,16 +1235,12 @@ void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, ui
 	uint_fast8_t alpha = DEFAULT_ALPHA; // на сколько затемнять цвета
 	char buf[TEXT_ARRAY_SIZE];
 	uint_fast8_t str_len = 0;
-
 	gui.gdb = db;
 
 	process_gui();
 
-	for(uint_fast8_t i = 0; i < WIN_GUI_COUNT; i ++)
+	for(uint_fast8_t i = 0; i < opened_windows_count; i ++)
 	{
-		if (gui.win[i] == NO_PARENT_WINDOW)
-			break;
-
 		const window_t * const win = get_win(gui.win[i]);
 		uint_fast8_t f = win->first_call;
 

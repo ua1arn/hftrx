@@ -63,7 +63,7 @@ enum {
 };
 
 enum {
-	NO_PARENT_WINDOW = UINT8_MAX,
+	NO_PARENT_WINDOW = 0,
 	WINDOW_DUMMY = NO_PARENT_WINDOW,
 };
 

@@ -239,7 +239,7 @@ uint8_t gui_obj_create(const char * obj_name, ...)
 
 		textfield_update_size(tf);
 
-		win->tf_count;
+		idx = win->tf_count;
 		win->tf_count ++;
 		break;
 	}
@@ -262,7 +262,7 @@ uint8_t gui_obj_create(const char * obj_name, ...)
 		ta->visible = 1;
 		ta->index = win->ta_count;
 
-		win->ta_count;
+		idx = win->ta_count;
 		win->ta_count ++;
 		break;
 	}
@@ -284,6 +284,7 @@ uint8_t gui_obj_create(const char * obj_name, ...)
 		sh->step = va_arg(arg, int);
 		sh->value = 0;
 		sh->value_old = 255;
+		sh->index = win->sh_count;
 
 		if (sh->orientation)	// ORIENTATION_HORIZONTAL
 		{
@@ -296,7 +297,7 @@ uint8_t gui_obj_create(const char * obj_name, ...)
 			sh->height = sh->size;
 		}
 
-		sh->index = win->sh_count;
+		idx = win->sh_count;
 		win->sh_count ++;
 		break;
 	}
@@ -466,6 +467,25 @@ int gui_obj_get_int_prop(const char * name, object_prop_t prop)
 		else if (prop == GUI_OBJ_PAYLOAD) return sh->value;
 		else if (prop == GUI_OBJ_SIZE) return sh->size;
 		else if (prop == GUI_OBJ_INDEX) return sh->index;
+		break;
+
+	case TYPE_TOUCH_AREA:
+		touch_area_t * ta = (touch_area_t *) obj;
+		if (prop == GUI_OBJ_VISIBLE) return ta->visible;
+		else if (prop == GUI_OBJ_POS_X) return ta->x1;
+		else if (prop == GUI_OBJ_POS_Y) return ta->y1;
+		else if (prop == GUI_OBJ_PAYLOAD) return ta->payload;
+		else if (prop == GUI_OBJ_INDEX) return ta->index;
+		break;
+
+	case TYPE_TEXT_FIELD:
+		text_field_t * tf = (text_field_t *) obj;
+		if (prop == GUI_OBJ_VISIBLE) return tf->visible;
+		else if (prop == GUI_OBJ_POS_X) return tf->x1;
+		else if (prop == GUI_OBJ_POS_Y) return tf->y1;
+		else if (prop == GUI_OBJ_WIDTH) return tf->w;
+		else if (prop == GUI_OBJ_HEIGHT) return tf->h;
+		else if (prop == GUI_OBJ_INDEX) return tf->index;
 		break;
 
 	default:
