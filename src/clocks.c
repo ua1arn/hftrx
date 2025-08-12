@@ -4202,11 +4202,10 @@ static void t113_set_psi_ahb(void)
 
 // T113
 // APB0 frequency set
-static void t113_set_apb0(void)
+static void t113_set_apb0(uint_fast32_t needfreq)
 {
 	// Automatic divisors calculation
 	unsigned clksrc = 3;	// 11: PLL_PERI(1X)
-	uint_fast32_t needfreq = UINT32_C(100) * 1000 * 1000;
 	unsigned dvalue;
 	unsigned prei = calcdivider(calcdivround2(allwnr_t113_get_peripll1x_freq(), needfreq), 5, (8 | 4 | 2 | 1), & dvalue, 1);
 	CCU->APB0_CLK_REG =
@@ -4218,19 +4217,51 @@ static void t113_set_apb0(void)
 
 // T113
 // APB1 frequency set
-static void t113_set_apb1(void)
+static void t113_set_apb1(uint_fast32_t needfreq)
 {
 	// Automatic divisors calculation
 	unsigned clksrc = 3;	// 11: PLL_PERI(1X)
-	uint_fast32_t needfreq = UINT32_C(200) * 1000 * 1000;
 	unsigned dvalue;
 	unsigned prei = calcdivider(calcdivround2(allwnr_t113_get_peripll1x_freq(), needfreq), 5, (8 | 4 | 2 | 1), & dvalue, 1);
-	CCU->APB1_CLK_REG =
-		(UINT32_C(1) << 31) |
+//	PRINTF("t113_set_apb1 1: CCU->APB1_CLK_REG=%08X prei=%u, dvalue=%u, src=%u, needfreq=%u\n", (unsigned) CCU->APB1_CLK_REG, prei, dvalue, (unsigned) allwnr_t113_get_peripll1x_freq(), (unsigned) needfreq);
+	dvalue = 2;
+	prei = 0;
+//	PRINTF("t113_set_apb1 2: CCU->APB1_CLK_REG=%08X prei=%u, dvalue=%u, src=%u, needfreq=%u\n", (unsigned) CCU->APB1_CLK_REG, prei, dvalue, (unsigned) allwnr_t113_get_peripll1x_freq(), (unsigned) needfreq);
+//	dbg_flush();
+//	PRINTF("\n");
+//	PRINTF("\n");
+//	PRINTF("\n");
+//	dbg_flush();
+	const uint_fast32_t reg0 =
+		3 * (UINT32_C(1) << 24) |
+		0 * (UINT32_C(1) << 8) |
+		1 * (UINT32_C(1) << 0) |
+		0;
+	const uint_fast32_t reg =
 		clksrc * (UINT32_C(1) << 24) |
 		prei * (UINT32_C(1) << 8) |
 		dvalue * (UINT32_C(1) << 0) |
 		0;
+//	PRINTF("t113_set_apb1 21: reg=%08X\n", reg);
+//	dbg_flush();
+//	PRINTF("\n");
+//	PRINTF("\n");
+//	PRINTF("\n");
+//	dbg_flush();
+
+	do {
+		CCU->APB1_CLK_REG = reg0;
+	} while (CCU->APB1_CLK_REG != reg0);
+
+	do {
+		CCU->APB1_CLK_REG = reg;
+	} while (CCU->APB1_CLK_REG != reg);
+//	PRINTF("t113_set_apb1 3: CCU->APB1_CLK_REG=%08X prei=%u, dvalue=%u, src=%u, needfreq=%u\n", (unsigned) CCU->APB1_CLK_REG, prei, dvalue, (unsigned) allwnr_t113_get_peripll1x_freq(), (unsigned) needfreq);
+//	dbg_flush();
+//	PRINTF("\n");
+//	PRINTF("\n");
+//	PRINTF("\n");
+//	dbg_flush();
 }
 
 // T113
@@ -4258,6 +4289,14 @@ void allwnr_t113_module_pll_spr(volatile uint32_t * pllctrlreg, volatile uint32_
 	* pat0 |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN
 
 	* pllctrlreg |= (UINT32_C(1) << 24);	// PLL_SDM_ENABLE
+}
+
+void allwnr_t113_module_pll_n(volatile uint32_t * pllctrlreg, unsigned N)
+{
+	// N: 15..8
+	* pllctrlreg = (* pllctrlreg & ~ UINT32_C(0xFF00)) |
+		(N - 1) * (UINT32_C(1) << 8) |
+		0;
 }
 
 void allwnr_t113_module_pll_enable(volatile uint32_t * pllctrlreg)
@@ -5242,9 +5281,10 @@ void allwnr_t113_pll_initialize(int N)
 	local_delay_initialize();
 	CCU->PSI_CLK_REG = 0;	// AHB freq from OSC24
 	CCU->APB0_CLK_REG = 0;	// переключаем источник APB0 на HOSC
-	CCU->APB1_CLK_REG = (UINT32_C(1) << 31);	// переключаем источник APB1 на HOSC
+	CCU->APB1_CLK_REG = 0;	// переключаем источник APB1 на HOSC
 
 	allwnr_t113_module_pll_spr(& CCU->PLL_PERI_CTRL_REG, & CCU->PLL_PERI_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+	//allwnr_t113_module_pll_n(& CCU->PLL_PERI_CTRL_REG, 96);
 	allwnr_t113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
 
 	allwnr_t113_module_pll_spr(& CCU->PLL_AUDIO0_CTRL_REG, & CCU->PLL_AUDIO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
@@ -5263,8 +5303,8 @@ void allwnr_t113_pll_initialize(int N)
 
 	t113_set_mbus();
 	t113_set_psi_ahb();
-	t113_set_apb0();	// 100 MHz
-	t113_set_apb1();	// 200 MHz
+	t113_set_apb0(UINT32_C(100) * 1000 * 1000);	// 100 MHz
+	t113_set_apb1(UINT32_C(300) * 1000 * 1000);	// 192 MHz - for 4M baud rate
 }
 
 #endif /* CPUSTYLE_STM32MP1 */
