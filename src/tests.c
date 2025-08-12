@@ -11332,7 +11332,7 @@ void hightests(void)
 
 	}
 #endif
-#if 0 && CPUSTYLE_A64
+#if 0 && CPUSTYLE_A64 && WITHDEBUG
 	{
 		PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
 		PRINTF("C0_CPUX_CFG->GENER_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->GENER_CTRL_REG0);
@@ -11377,7 +11377,7 @@ void hightests(void)
 			;
 	}
 #endif
-#if 0 && (CPUSTYLE_H3)
+#if 0 && (CPUSTYLE_H3) && WITHDEBUG
 	{
 		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 //		PRINTF("allwnr_h3_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_axi_freq() / 1000 / 1000));
@@ -11392,7 +11392,7 @@ void hightests(void)
 		//t507_hdmi_edid_test();
 	}
 #endif
-#if 0 && (CPUSTYLE_T507 || CPUSTYLE_H616)
+#if 0 && (CPUSTYLE_T507 || CPUSTYLE_H616) && WITHDEBUG
 	{
 		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 		PRINTF("allwnr_t507_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_axi_freq() / 1000 / 1000));
@@ -11407,7 +11407,7 @@ void hightests(void)
 		PRINTF("allwnr_t507_get_apbs1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apbs1_freq() / 1000 / 1000));
 	}
 #endif
-#if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHDEBUG
 	{
 		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 		PRINTF("allwnr_t113_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_axi_freq() / 1000 / 1000));
