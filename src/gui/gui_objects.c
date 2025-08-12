@@ -112,7 +112,7 @@ void textfield_clean(const char * name)
 
 // *************** Common ***************
 
-obj_type_t parse_obj_name(const char * name)
+static obj_type_t parse_obj_name(const char * name)
 {
 	ASSERT(name);
 
@@ -136,19 +136,28 @@ obj_type_t parse_obj_name(const char * name)
 	}
 }
 
+static void obj_name_user(char * name)
+{
+	char * r = strrchr(name, '#');
+	name[r - name] = '\0';
+}
+
 // label: font_size, color, width_by_symbols
 // button: w, h, is_repeating, is_long_press, text,
 // text_field: w_sim, h_str, direction, font *
 // touch area: x, y, w, h, is_trackable
 // возвращает индекс созданного объекта
 
-uint8_t gui_obj_create(const char * obj_name, ...)
+uint8_t gui_obj_create(const char * name, ...)
 {
 	uint8_t idx, window_id = get_parent_window();
 	window_t * win = get_win(window_id);
-	obj_type_t type = parse_obj_name(obj_name);
 	va_list arg;
-	va_start(arg, obj_name);
+	va_start(arg, name);
+
+	char obj_name[NAME_ARRAY_SIZE] = { 0 };
+	local_snprintf_P(obj_name, NAME_ARRAY_SIZE, "%s#%02d", name, win->window_id);
+	obj_type_t type = parse_obj_name(obj_name);
 
 	switch (type)
 	{
@@ -498,6 +507,7 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 	window_t * win = get_win(get_parent_window());
 	obj_type_t type = parse_obj_name(name);
 	void * obj = find_gui_obj(type, win, name);
+
 	va_list arg;
 	va_start(arg, prop);
 
@@ -595,21 +605,29 @@ void gui_arrange_objects(const char names[][NAME_ARRAY_SIZE], uint8_t count, uin
 char * get_obj_name_by_idx(obj_type_t type, uint8_t idx)
 {
 	window_t * win = get_win(get_parent_window());
+	static char obj_name[NAME_ARRAY_SIZE] = { 0 };
 
 	if (type == TYPE_BUTTON)
 	{
 		ASSERT(idx < win->bh_count);
-		return win->bh_ptr[idx].name;
+
+		strncpy(obj_name, win->bh_ptr[idx].name, NAME_ARRAY_SIZE - 1);
+		obj_name_user(obj_name);
+		return obj_name;
 	}
 	else if (type == TYPE_LABEL)
 	{
 		ASSERT(idx < win->lh_count);
-		return win->lh_ptr[idx].name;
+		strncpy(obj_name, win->lh_ptr[idx].name, NAME_ARRAY_SIZE - 1);
+		obj_name_user(obj_name);
+		return obj_name;
 	}
 	else if (type == TYPE_SLIDER)
 	{
 		ASSERT(idx < win->sh_count);
-		return win->sh_ptr[idx].name;
+		strncpy(obj_name, win->sh_ptr[idx].name, NAME_ARRAY_SIZE - 1);
+		obj_name_user(obj_name);
+		return obj_name;
 	}
 
 	ASSERT(0);

@@ -43,7 +43,7 @@ void linux_cancel_thread(pthread_t tid);
 void ft8_thread(void);
 
 #define PIDFILE 		"/var/run/hftrx.pid"
-#define MAX_WAIT_TIME 	5
+#define MAX_WAIT_TIME 	1
 
 #if defined (AXI_LITE_UARTLITE) && defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 

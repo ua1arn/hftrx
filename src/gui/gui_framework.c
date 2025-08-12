@@ -237,7 +237,15 @@ wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * 
 	* type = win->queue.data[win->queue.size].type;
 	* ptr = win->queue.data[win->queue.size].ptr;
 	* action = win->queue.data[win->queue.size].action;
-	strncpy(name, win->queue.data[win->queue.size].name, NAME_ARRAY_SIZE - 1);
+
+	if (win->queue.data[win->queue.size].message == WM_MESSAGE_ACTION)
+	{
+		char obj_name[NAME_ARRAY_SIZE] = { 0 };
+		strncpy(obj_name, win->queue.data[win->queue.size].name, NAME_ARRAY_SIZE - 1);
+		char * r = strrchr(obj_name, '#');
+		obj_name[r - obj_name] = '\0';
+		strncpy(name, obj_name, NAME_ARRAY_SIZE - 1);
+	}
 
 //	if (win->window_id != WINDOW_MAIN)
 //		PRINTF("get_from_wm_queue: win - %s, message - %d, size - %d\n", win->title, win->queue.data[win->queue.size].message, win->queue.size);
@@ -287,13 +295,16 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 	ASSERT(win);
 	ASSERT(name);
 
+	char obj_name[NAME_ARRAY_SIZE] = { 0 };
+	local_snprintf_P(obj_name, NAME_ARRAY_SIZE, "%s#%02d", name, win->window_id);
+
 	switch (type)
 	{
 	case TYPE_BUTTON:
 		for (uint_fast8_t i = 0; i < win->bh_count; i ++)
 		{
 			button_t * bh = & win->bh_ptr[i];
-			if (! strcmp(bh->name, name))
+			if (! strcmp(bh->name, obj_name))
 				return (button_t *) bh;
 		}
 		goto not_found;
@@ -303,7 +314,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 		for (uint_fast8_t i = 0; i < win->lh_count; i ++)
 		{
 			label_t * lh = & win->lh_ptr[i];
-			if (! strcmp(lh->name, name))
+			if (! strcmp(lh->name, obj_name))
 				return (label_t *) lh;
 		}
 		goto not_found;
@@ -313,7 +324,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 		for (uint_fast8_t i = 0; i < win->sh_count; i ++)
 		{
 			slider_t * sh = & win->sh_ptr[i];
-			if (! strcmp(sh->name, name))
+			if (! strcmp(sh->name, obj_name))
 				return (slider_t *) sh;
 		}
 		goto not_found;
@@ -323,7 +334,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 		for (uint_fast8_t i = 0; i < win->ta_count; i ++)
 		{
 			touch_area_t * ta = & win->ta_ptr[i];
-			if (! strcmp(ta->name, name))
+			if (! strcmp(ta->name, obj_name))
 				return (touch_area_t *) ta;
 		}
 		goto not_found;
@@ -333,14 +344,14 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 		for (uint_fast8_t i = 0; i < win->tf_count; i ++)
 		{
 			text_field_t * tf = & win->tf_ptr[i];
-			if (! strcmp(tf->name, name))
+			if (! strcmp(tf->name, obj_name))
 				return (text_field_t *) tf;
 		}
 		goto not_found;
 		break;
 
 	default:
-		PRINTF("find_gui_obj: undefined type %d\n", type);
+		PRINTF("%s: undefined type %d\n", __func__, type);
 		ASSERT(0);
 		return NULL;
 	}
