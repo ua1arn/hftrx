@@ -37,6 +37,29 @@ static window_t windows[] = {
 	#undef WINDOW_LIST
 };
 
+uint8_t is_win_init(void)
+{
+	window_t * win = get_win(get_parent_window());
+	uint8_t s = win->first_call;
+
+	if (s)
+		win->first_call = 0;
+
+	return s;
+}
+
+// only for gui_main_process()
+uint8_t is_winmain_init(void)
+{
+	window_t * win = get_win(WINDOW_MAIN);
+	uint8_t s = win->first_call;
+
+	if (s)
+		win->first_call = 0;
+
+	return s;
+}
+
 /* Возврат ссылки на окно */
 window_t * get_win(uint8_t window_id)
 {
@@ -121,9 +144,9 @@ void close_all_windows(void)
 }
 
 /* Разрешить перетаскивание окна */
-void enable_window_move(window_t * win)
+void enable_window_move(void)
 {
-	ASSERT(win != NULL);
+	window_t * win = get_win(get_parent_window());
 	win->is_moving = 1;
 }
 
@@ -145,8 +168,9 @@ void move_window(window_t * win, int_fast16_t ax, int_fast16_t ay)
 
 /* Расчет экранных координат окна */
 /* при mode = WINDOW_POSITION_MANUAL_SIZE в качестве необязательных параметров передать xmax и ymax */
-void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
+void calculate_window_position(uint_fast8_t mode, ...)
 {
+	window_t * win = get_win(get_parent_window());
 	uint_fast16_t title_length = strlen(win->title) * SMALLCHARW;
 	uint_fast16_t xmax = 0, ymax = 0, shift_x, shift_y, x_start, y_start;
 
@@ -379,9 +403,15 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	objects_state(win);
 }
 
-void window_set_title_align(window_t * win, title_align_t align)
+void window_set_title(const char * text)
 {
-	ASSERT(win != NULL);
+	window_t * win = get_win(get_parent_window());
+	strncpy(win->title, text, NAME_ARRAY_SIZE - 1);
+}
+
+void window_set_title_align(title_align_t align)
+{
+	window_t * win = get_win(get_parent_window());
 	win->title_align = align;
 }
 

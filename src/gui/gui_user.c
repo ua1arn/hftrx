@@ -120,10 +120,6 @@ typedef enum {
 
 ft8_state_t ft8_state;
 
-typedef struct {
-	label_t * ptr;
-} lh_array_t;
-
 #endif /* #if WITHFT8 */
 
 void gui_encoder2_menu (enc2_menu_t * enc2_menu)
@@ -259,15 +255,12 @@ static void keyboard_edit_digits(int * val)
 void window_infobar_menu_process(void)
 {
 #if GUI_SHOW_INFOBAR
-	window_t * const win = get_win(WINDOW_INFOBAR_MENU);
 	uint8_t interval = 5, yy = 0, need_close = 0, need_open = 255;
 	uint8_t infobar = infobar_places[infobar_selected] & INFOBAR_VALID_MASK;
 	char btn_name[NAME_ARRAY_SIZE];
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
-
 		for (uint8_t i = 0; i < 6; i ++)
 		{
 			local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "btn_%d", i);
@@ -392,13 +385,12 @@ void window_infobar_menu_process(void)
 			break;
 		}
 
-		calculate_window_position(win, WINDOW_POSITION_MANUAL_POSITION, infobar_selected * infobar_label_width, infobar_2nd_str_y + SMALLCHARH2);
+		calculate_window_position(WINDOW_POSITION_MANUAL_POSITION, infobar_selected * infobar_label_width, infobar_2nd_str_y + SMALLCHARH2);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_INFOBAR_MENU)
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
 			int32_t p = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
@@ -557,19 +549,15 @@ void footer_buttons_state (uint_fast8_t state, ...)
 
 void gui_main_process(void)
 {
-	window_t * const win = get_win(WINDOW_MAIN);
-
 	const gxdrawb_t * db = gui_get_drawbuf();
 	char buf[TEXT_ARRAY_SIZE];
 	const uint8_t buflen = ARRAY_SIZE(buf);
 	uint8_t update = 0;
 	static uint8_t freq_swipe;
 
-	if (win->first_call)
+	if (is_winmain_init())
 	{
 		uint8_t interval_btn = 3, x = 0;
-		ASSERT(win != NULL);
-		win->first_call = 0;
 		gui_enc2_menu.updated = 1;
 		gui_keyboard.clean = 0;
 		gui_keyboard.digits_only = 0;
@@ -630,7 +618,7 @@ void gui_main_process(void)
 		gui_arrange_objects_from(btn0, 9, 9, interval_btn);
 
 		load_settings();
-		objects_state(win);
+		objects_state(get_win(WINDOW_MAIN));
 		hamradio_set_lock(0);
 
 #if WITHGUIDEBUG
@@ -639,7 +627,7 @@ void gui_main_process(void)
 #endif /* WITHGUIDEBUG */
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_MAIN)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_AREA_MOVE)
@@ -1266,11 +1254,8 @@ static void write_mems(uint_fast8_t cell)
 
 void window_memory_process(void)
 {
-	window_t * const win = get_win(WINDOW_MEMORY);
-
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		char name[NAME_ARRAY_SIZE], text[NAME_ARRAY_SIZE];
 
 		for (int i = 0; i < memory_cells_count; i ++)
@@ -1294,10 +1279,10 @@ void window_memory_process(void)
 		gui_obj_set_prop("lbl_note1", GUI_OBJ_TEXT, "Long press on empty cell - save,on saved cell - clean");
 		gui_obj_set_prop("lbl_note1", GUI_OBJ_POS_Y, 205);
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_MEMORY)
 	{
 	case WM_MESSAGE_ACTION:
 		if (type == TYPE_BUTTON)
@@ -1347,13 +1332,10 @@ void window_memory_process(void)
 
 void window_bands_process(void)
 {
-	window_t * const win = get_win(WINDOW_BANDS);
 	static band_array_t * bands = NULL;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
-
 		char name[NAME_ARRAY_SIZE], text[NAME_ARRAY_SIZE];
 		uint8_t bandnum = hamradio_get_bands(NULL, 1, 1), i = 0;
 		bands = (band_array_t *) calloc(bandnum, sizeof (band_array_t));
@@ -1433,16 +1415,16 @@ void window_bands_process(void)
 		gui_obj_align_to(btn0, "lbl_bcast", ALIGN_DOWN_LEFT, 6);
 		gui_arrange_objects_from(btn0, j - i, 3, 6);
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_BANDS)
 	{
 	case WM_MESSAGE_ACTION:
 
 		if (IS_BUTTON_PRESS)
 		{
-			if (gui_check_obj(name, "btn_Freq"))
+			if (gui_check_obj(name, "btn_freq"))
 			{
 				open_window(get_win(WINDOW_FREQ));
 				hamradio_set_lock(1);
@@ -1470,11 +1452,8 @@ void window_bands_process(void)
 
 void window_options_process(void)
 {
-	window_t * const win = get_win(WINDOW_OPTIONS);
-
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		uint8_t idx;
 
 		idx = gui_obj_create("btn_SysMenu", 100, 44, 0, 0, "System|settings");
@@ -1496,10 +1475,10 @@ void window_options_process(void)
 		gui_arrange_objects_from(get_obj_name_by_idx(TYPE_BUTTON, 0), idx + 1, 4, 6);
 
 		hamradio_disable_keyboard_redirect();
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_OPTIONS)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
@@ -1544,12 +1523,10 @@ void window_options_process(void)
 void window_display_process(void)
 {
 #if WITHSPECTRUMWF && WITHMENU
-	window_t * const win = get_win(WINDOW_DISPLAY);
 	uint8_t update = 0;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		uint8_t interval = 30;
 		update = 1;
 
@@ -1583,10 +1560,10 @@ void window_display_process(void)
 		gui_obj_set_prop("sl_partSP", GUI_OBJ_PAYLOAD, normalize(hamradio_get_spectrumpart(), WITHSPPARTMIN, WITHSPPARTMAX, 100));
 
 		hamradio_enable_encoder2_redirect();
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_DISPLAY)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
@@ -1649,11 +1626,8 @@ void window_display_process(void)
 
 void window_utilites_process(void)
 {
-	window_t * const win = get_win(WINDOW_UTILS);
-
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		uint8_t idx;
 
 #if WITHGUIDEBUG
@@ -1682,10 +1656,10 @@ void window_utilites_process(void)
 		gui_obj_set_prop("btn_debug", GUI_OBJ_LOCK, debug_view);
 #endif /* WITHGUIDEBUG */
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_UTILS)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
@@ -1742,12 +1716,10 @@ void window_swrscan_process(void)
 	static uint8_t swr_scan_enable = 0;		// флаг разрешения сканирования КСВ
 	static uint8_t swr_scan_stop = 0;			// флаг нажатия кнопки Stop во время сканирования
 	static uint8_t * y_vals;					// массив КСВ в виде отсчетов по оси Y графика
-	window_t * const win = get_win(WINDOW_SWR_SCANNER);
 	const uint8_t averageFactor = 3;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		i = 0;
 		y_vals = calloc(x1 - x0, sizeof(uint8_t));
 		GUI_MEM_ASSERT(y_vals);
@@ -1790,10 +1762,11 @@ void window_swrscan_process(void)
 			gui_obj_set_prop("lbl_swr_error", GUI_OBJ_POS, mid_w - get_label_width2("lbl_swr_error") / 2, gr_h / 2);
 		}
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_SWR_SCANNER)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
@@ -1813,6 +1786,9 @@ void window_swrscan_process(void)
 			}
 		}
 		break;
+
+	case WM_MESSAGE_CLOSE:
+		return;
 
 	default:
 		break;
@@ -1854,8 +1830,6 @@ void window_swrscan_process(void)
 		i++;
 	}
 
-	if (! win->first_call)
-	{
 		// отрисовка фона графика и разметки
 		gui_drawline(x0, y0, x0, y1, COLORPIP_WHITE);
 		gui_drawline(x0, y0, x1, y0, COLORPIP_WHITE);
@@ -1891,7 +1865,6 @@ void window_swrscan_process(void)
 			for(uint_fast16_t j = 2; j <= i; j ++)
 				gui_drawline(x0 + j - 2, y0 - y_vals[j - 2], x0 + j - 1, y0 - y_vals[j - 1], COLORPIP_YELLOW);
 		}
-	}
 #endif /* WITHSWRSCAN */
 }
 
@@ -1901,9 +1874,8 @@ void window_tx_process(void)
 {
 	window_t * const win = get_win(WINDOW_TX_SETTINGS);
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 
 		gui_obj_create("btn_tx_power", 100, 44, 0, 0, "TX power");
 
@@ -1911,10 +1883,10 @@ void window_tx_process(void)
 		gui_obj_set_prop("btn_tx_power", GUI_OBJ_STATE, DISABLED);
 #endif /* ! WITHPOWERTRIM */
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_TX_SETTINGS)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
@@ -1936,12 +1908,10 @@ void window_tx_process(void)
 void window_tx_power_process(void)
 {
 #if WITHPOWERTRIM && WITHTX
-	window_t * const win = get_win(WINDOW_TX_POWER);
 	static uint_fast8_t power_min, power_max, update = 0;;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		uint8_t interval = 30;
 		update = 1;
 
@@ -1962,10 +1932,10 @@ void window_tx_power_process(void)
 		gui_obj_align_to("sl_tune", "lbl_tune", ALIGN_RIGHT_UP_MID, interval);
 		gui_obj_align_to("btn_ok", "sl_tune", ALIGN_DOWN_RIGHT, interval);
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_TX_POWER)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
@@ -2007,14 +1977,10 @@ void window_tx_power_process(void)
 
 void window_audiosettings_process(void)
 {
-	window_t * const win = get_win(WINDOW_AUDIOSETTINGS);
 	uint8_t update = 0;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		uint8_t x = 0, y = 0, interval = 10, row_count = 4;
-		button_t * bh = NULL;
-		win->first_call = 0;
 		update = 1;
 
 		gui_obj_create("btn_mic_settings", 100, 44, 0, 0, "MIC|settings");
@@ -2024,7 +1990,7 @@ void window_audiosettings_process(void)
 		gui_obj_create("btn_af_eq", 100, 44, 0, 0, "AF|equalizer");
 		gui_obj_create("btn_audio_switch", 100, 44, 0, 0, "Audio|switch");
 
-		gui_arrange_objects_from("btn_mic_settings", 6, 4, interval);
+		gui_arrange_objects_from("btn_mic_settings", 6, 4, 10);
 
 #if ! defined (WITHAFEQUALIZER) || WITHAFEQUALIZER == 0
 		gui_obj_set_prop("btn_af_eq", GUI_OBJ_STATE, DISABLED);
@@ -2033,10 +1999,10 @@ void window_audiosettings_process(void)
 		gui_obj_set_prop("btn_audio_switch", GUI_OBJ_STATE, DISABLED);
 #endif /* ! defined(CODEC1_TYPE) && (CODEC1_TYPE != CODEC_TYPE_ALSA) || BLUETOOTH_ALSA == 0 */
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_AUDIOSETTINGS)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
@@ -2099,13 +2065,11 @@ void window_audiosettings_process(void)
 void window_ap_reverb_process(void)
 {
 #if WITHREVERB
-	window_t * const win = get_win(WINDOW_AP_REVERB_SETT);
 	static uint_fast8_t delay_min, delay_max, loss_min, loss_max;
 	uint8_t update = 0;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		uint8_t interval = 30;
 		update = 1;
 
@@ -2129,10 +2093,10 @@ void window_ap_reverb_process(void)
 		gui_obj_align_to("btn_en", "sl_delay", ALIGN_RIGHT_UP, interval);
 		gui_obj_align_to("btn_ok", "btn_en", ALIGN_DOWN_LEFT, interval);
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_AP_REVERB_SETT)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
@@ -2188,14 +2152,11 @@ void window_ap_reverb_process(void)
 void window_af_eq_process(void)
 {
 #if WITHAFEQUALIZER
-	window_t * const win = get_win(WINDOW_AF_EQ);
-
 	static uint32_t eq_w, eq_limit, eq_base = 0;
 	static int16_t mid_y = 0;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 
 		eq_base = hamradio_get_af_equalizer_base();
 		eq_limit = abs(eq_base) * 2;
@@ -2227,16 +2188,14 @@ void window_af_eq_process(void)
 		gui_obj_set_prop("btn_en", GUI_OBJ_LOCK, v);
 		gui_obj_set_prop("btn_en", GUI_OBJ_TEXT, v ? "En" : "Dis");
 
-		eq_w = 40 << 1;
 		mid_y = gui_obj_get_int_prop("sl_eq400", GUI_OBJ_POS_Y) + gui_obj_get_int_prop("sl_eq400", GUI_OBJ_SIZE) / 2;
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_AF_EQ)
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
 			if (gui_check_obj(name, "btn_ok"))
@@ -2262,24 +2221,25 @@ void window_af_eq_process(void)
 		break;
 
 	default:
-
 		break;
 	}
+
+	uint16_t ww = gui_get_window_draw_width() - 55;
 
 	// разметка шкал
 	for (uint8_t i = 0; i <= abs(eq_base); i += 3)
 	{
 		char buf[10];
 		uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
-		gui_drawline(30, mid_y + yy, win->w - eq_w, mid_y + yy, GUI_SLIDERLAYOUTCOLOR);
-		local_snprintf_P(buf, ARRAY_SIZE(buf), i == 0 ? PSTR("%d") : PSTR("-%d"), i);
+		gui_drawline(30, mid_y + yy, ww, mid_y + yy, GUI_SLIDERLAYOUTCOLOR);
+		local_snprintf_P(buf, ARRAY_SIZE(buf), i == 0 ? "%d" : "-%d", i);
 		gui_drawstring(30 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, FONT_MEDIUM, COLORPIP_WHITE);
 
 		if (i == 0)
 			continue;
 
-		gui_drawline(30, mid_y - yy, win->w - eq_w, mid_y - yy, GUI_SLIDERLAYOUTCOLOR);
-		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), i);
+		gui_drawline(30, mid_y - yy, ww, mid_y - yy, GUI_SLIDERLAYOUTCOLOR);
+		local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", i);
 		gui_drawstring(30 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, FONT_MEDIUM, COLORPIP_WHITE);
 	}
 #endif /* WITHAFEQUALIZER */
@@ -2289,13 +2249,10 @@ void window_af_eq_process(void)
 
 void window_ap_mic_process(void)
 {
-	window_t * const win = get_win(WINDOW_AP_MIC_SETT);
 	static uint_fast8_t level_min, level_max, clip_min, clip_max, agc_min, agc_max;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
-
 		hamradio_get_mic_level_limits(& level_min, & level_max);
 		hamradio_get_mic_clip_limits(& clip_min, & clip_max);
 		hamradio_get_mic_agc_limits(& agc_min, & agc_max);
@@ -2333,10 +2290,10 @@ void window_ap_mic_process(void)
 		gui_obj_set_prop("btn_mic_boost", GUI_OBJ_STATE, DISABLED);
 #endif /* WITHAFCODEC1HAVEPROC */
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_AP_MIC_SETT)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
@@ -2397,12 +2354,10 @@ void window_ap_mic_process(void)
 
 void window_ap_mic_prof_process(void)
 {
-	window_t * const win = get_win(WINDOW_AP_MIC_PROF);
 	uint8_t update = 0;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		update = 1;
 		char name[NAME_ARRAY_SIZE];
 
@@ -2416,10 +2371,10 @@ void window_ap_mic_prof_process(void)
 
 		gui_arrange_objects_from("btn_mic_profile_0", NMICPROFCELLS, 3, 6);
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_AP_MIC_PROF)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
@@ -2474,13 +2429,11 @@ void window_ap_mic_prof_process(void)
 
 void window_notch_process(void)
 {
-	window_t * const win = get_win(WINDOW_NOTCH);
 	static enc_var_t notch;
 	static uint8_t lbls[2];
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		uint8_t interval = 30;
 		notch.change = 0;
 		notch.updated = 1;
@@ -2501,10 +2454,10 @@ void window_notch_process(void)
 		gui_obj_set_prop("btn_add", GUI_OBJ_PAYLOAD, 1);
 		gui_obj_set_prop("btn_sub", GUI_OBJ_PAYLOAD, -1);
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_NOTCH)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
@@ -2549,7 +2502,7 @@ void window_notch_process(void)
 		notch.updated = 0;
 		uint8_t type = hamradio_get_gnotchtype();
 
-		for(uint8_t i = 0; i < win->lh_count; i ++)
+		for(uint8_t i = 0; i < ARRAY_SIZE(lbls); i ++)
 			gui_obj_set_prop(get_obj_name_by_idx(TYPE_LABEL, lbls[i]), GUI_OBJ_COLOR,
 					lbls[i] == notch.select ? COLORPIP_YELLOW : COLORPIP_WHITE);
 
@@ -2566,13 +2519,10 @@ void window_notch_process(void)
 
 void window_gui_settings_process(void)
 {
-	window_t * const win = get_win(WINDOW_GUI_SETTINGS);
 	uint8_t update = 0;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
-
 		gui_obj_create("btn_enc2_step", 100, 44, 0, 0, "");
 		gui_obj_create("btn_freq_swipe", 100, 44, 0, 0, "");
 		gui_obj_create("btn_freq_swipe_step", 100, 44, 0, 0, "");
@@ -2580,10 +2530,10 @@ void window_gui_settings_process(void)
 		gui_arrange_objects_from("btn_enc2_step", 3, 3, 6);
 
 		update = 1;
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_GUI_SETTINGS)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
@@ -2621,15 +2571,12 @@ void window_gui_settings_process(void)
 void window_shift_process(void)
 {
 #if WITHIQSHIFT
-	window_t * const win = get_win(WINDOW_SHIFT);
-
 	static uint8_t cic_test = 0;
 	static enc_var_t enc;
 	static uint8_t lbls[3];
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		enc.updated = 1;
 		enc.select = 0;
 		enc.change = 0;
@@ -2657,10 +2604,10 @@ void window_shift_process(void)
 		gui_obj_align_to("btn_p", "btn_m", ALIGN_RIGHT_UP, 15);
 		gui_obj_align_to("btn_test", "btn_m", ALIGN_DOWN_LEFT, 15);
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_SHIFT)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_LABEL_PRESS)
@@ -2726,7 +2673,7 @@ void window_shift_process(void)
 
 // *********************************************************************************************************************************************************************
 
-void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey)
+void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey) // ?
 {
 	window_t * const win = get_win(WINDOW_UIF);
 	if (win->state == NON_VISIBLE)
@@ -2752,12 +2699,10 @@ void window_uif_process(void)
 	static label_t * lbl_uif_val;
 	static button_t * button_up, * button_down;
 	static uint16_t window_center_x, reinit = 0;
-	window_t * const win = get_win(WINDOW_UIF);
 	int rotate = 0;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		reinit = 1;
 
 		gui_obj_create("btn_UIF-", 40, 40, 0, 0, "+");
@@ -2770,13 +2715,14 @@ void window_uif_process(void)
 		gui_obj_set_prop("lbl_uif_val", GUI_OBJ_TEXT, hamradio_gui_edit_menu_item(menu_uif.menupos, 0));
 
 
-		strcpy(win->title, menu_uif.name);
+		window_set_title(menu_uif.name);
+		window_set_title_align(TITLE_ALIGNMENT_CENTER);
 
 		hamradio_enable_keyboard_redirect();
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_UIF)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
@@ -2803,7 +2749,7 @@ void window_uif_process(void)
 	if (reinit)
 	{
 		reinit = 0;
-		strcpy(win->title, menu_uif.name);
+		window_set_title(menu_uif.name);
 
 		gui_obj_set_prop("lbl_uif_val", GUI_OBJ_TEXT, hamradio_gui_edit_menu_item(menu_uif.menupos, 0));
 
@@ -2829,8 +2775,7 @@ void gui_open_sys_menu(void)
 	}
 	else
 	{
-		window_t * const win = get_win(WINDOW_MENU);
-		open_window(win);
+		open_window(get_win(WINDOW_MENU));
 		footer_buttons_state(DISABLED, NULL);
 	}
 }
@@ -2885,11 +2830,8 @@ static void parse_ft8_answer(char * str, COLORPIP_T * color, uint8_t * cq_flag)
 
 void window_ft8_bands_process(void)
 {
-	window_t * const win = get_win(WINDOW_FT8_BANDS);
-
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		uint8_t cols = ft8_bands_count > 10 ? 4 : 5, interval = 15, x = 0, y = 0;
 		char btn_name[NAME_ARRAY_SIZE];
 		uint32_t rx_freq = hamradio_get_freq_rx();
@@ -2905,13 +2847,12 @@ void window_ft8_bands_process(void)
 
 		gui_arrange_objects_from("btn_bands_00", ft8_bands_count, cols, interval);
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_FT8_BANDS)
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
 			gui_nvram.ft8_band = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
@@ -2927,11 +2868,8 @@ void window_ft8_bands_process(void)
 
 void window_ft8_settings_process(void)
 {
-	window_t * const win = get_win(WINDOW_FT8_SETTINGS);
-
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		uint8_t interval = 20;
 
 		gui_obj_create("btn_callsign", 86, 44, 0, 0, "Callsign");
@@ -2957,13 +2895,12 @@ void window_ft8_settings_process(void)
 		gui_obj_set_prop("lbl_qth", GUI_OBJ_TEXT_FMT, "%s", gui_nvram.ft8_qth);
 		gui_obj_set_prop("btn_freq_eq", GUI_OBJ_LOCK, gui_nvram.ft8_txfreq_equal);
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_FT8_SETTINGS)
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
 			if (gui_check_obj(name, "btn_OK"))
@@ -2997,24 +2934,22 @@ void window_ft8_settings_process(void)
 		break;
 
 	default:
-
 		break;
 	}
 }
 
 void window_ft8_process(void)
 {
-	window_t * const win = get_win(WINDOW_FT8);
 	static uint8_t update = 0, selected_label_cq = 255, selected_label_tx = 0;
 	static uint8_t backup_mode = 0, work = 0, labels_tx_update = 0;
 	static uint32_t backup_freq = 0, backup_zoom = 0;
 	static const int snr = -10;
 	static uint8_t viewtemp;
 	char nameobj[NAME_ARRAY_SIZE];
+	char buf[NAME_ARRAY_SIZE];
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		uint8_t interval = 20;
 
 		gui_obj_create("btn_tx", 86, 44, 0, 0, "Transmit");
@@ -3070,8 +3005,9 @@ void window_ft8_process(void)
 		gui_obj_set_prop("btn_tx", GUI_OBJ_STATE, DISABLED);
 #endif
 
-		calculate_window_position(win, WINDOW_POSITION_FULLSCREEN);
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands[gui_nvram.ft8_band] / 1000, hour, minute, seconds);
+		calculate_window_position(WINDOW_POSITION_FULLSCREEN);
+		local_snprintf_P(buf, NAME_ARRAY_SIZE, "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands[gui_nvram.ft8_band] / 1000, hour, minute, seconds);
+		window_set_title(buf);
 
 		if (! work)
 		{
@@ -3120,10 +3056,9 @@ void window_ft8_process(void)
 		update = 1;
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_FT8)
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
 			if (gui_check_obj(name, "btn_tx"))
@@ -3167,7 +3102,6 @@ void window_ft8_process(void)
 		break;
 
 	case WM_MESSAGE_CLOSE:
-
 		if (! work)
 		{
 			hamradio_set_freq(backup_freq);
@@ -3178,16 +3112,15 @@ void window_ft8_process(void)
 			save_settings();
 		}
 		display2_set_page_temp(display_getpage0());
+		return;
 
 		break;
 
 	case WM_MESSAGE_UPDATE:
-
 		update = 1;
 		break;
 
 	default:
-
 		break;
 	}
 
@@ -3228,7 +3161,8 @@ void window_ft8_process(void)
 			gui_obj_set_prop("lbl_txmsg3", GUI_OBJ_TEXT_FMT, "%s %s %s", cq_call[selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_end);
 		}
 
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands[gui_nvram.ft8_band] / 1000, hour, minute, seconds);
+		local_snprintf_P(buf, NAME_ARRAY_SIZE, "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands[gui_nvram.ft8_band] / 1000, hour, minute, seconds);
+		window_set_title(buf);
 	}
 }
 
@@ -3238,13 +3172,11 @@ void window_ft8_process(void)
 
 void window_af_process(void)
 {
-	window_t * const win = get_win(WINDOW_AF);
 	static enc_var_t bp_t;
 	const char * const lbl_array[3] = { "lbl_low", "lbl_high", "lbl_afr", };
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		uint8_t interval = 20;
 		bp_t.select = TYPE_BP_LOW;
 		bp_t.change = 0;
@@ -3268,13 +3200,12 @@ void window_af_process(void)
 		gui_obj_align_to("btn_sub", "btn_add", ALIGN_DOWN_LEFT, interval);
 
 		hamradio_enable_encoder2_redirect();
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_AF)
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
 			if (gui_check_obj(name, "btn_add") || gui_check_obj(name, "btn_sub"))
@@ -3285,27 +3216,23 @@ void window_af_process(void)
 		}
 		else if (IS_LABEL_PRESS)
 		{
-			label_t * lh = (label_t *) ptr;
-			bp_t.select = lh->payload;
+			bp_t.select = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
 			bp_t.change = 0;
 			bp_t.updated = 1;
 		}
 		break;
 
 	case WM_MESSAGE_ENC2_ROTATE:
-
 		bp_t.change = action;
 		bp_t.updated = 1;
 		break;
 
 	case WM_MESSAGE_UPDATE:
-
 		bp_t.change = 0;
 		bp_t.updated = 1;
 		break;
 
 	default:
-
 		break;
 	}
 
@@ -3350,12 +3277,8 @@ void window_af_process(void)
 
 void window_mode_process(void)
 {
-	window_t * const win = get_win(WINDOW_MODES);
-
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
-
 		gui_obj_create("btn_ModeLSB", 86, 44, 0, 0, "LSB");
 		gui_obj_create("btn_ModeCW", 86, 44, 0, 0, "CW");
 		gui_obj_create("btn_ModeAM", 86, 44, 0, 0, "AM");
@@ -3376,10 +3299,10 @@ void window_mode_process(void)
 
 		gui_arrange_objects_from("btn_ModeLSB", 8, 4, 6);
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_MODES)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
@@ -3401,12 +3324,10 @@ void window_mode_process(void)
 
 void window_receive_process(void)
 {
-	window_t * const win = get_win(WINDOW_RECEIVE);
 	uint8_t update = 0;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		update = 1;
 
 		const char btn_names[][NAME_ARRAY_SIZE] = { "btn_att", "btn_agc", "btn_mode", "btn_preamp", "btn_af", "btn_dnr", "btn_wnb", };
@@ -3426,13 +3347,12 @@ void window_receive_process(void)
 		gui_obj_set_prop("btn_wnb", GUI_OBJ_STATE, DISABLED);
 #endif /* ! WITHWNB */
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_RECEIVE)
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
 			if (gui_check_obj(name, "btn_att"))
@@ -3485,13 +3405,11 @@ void window_freq_process (void)
 {
 	static label_t * lbl_freq;
 	static editfreq_t editfreq;
-	window_t * const win = get_win(WINDOW_FREQ);
 	uint8_t update = 0;
+	char buf[NAME_ARRAY_SIZE];
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
-
 		char btns_text[12][3] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "<", "0", "OK" };
 		uint8_t btns_payload[12] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, BUTTON_CODE_BK, 0, BUTTON_CODE_OK };
 		char btn_name[NAME_ARRAY_SIZE];
@@ -3510,16 +3428,16 @@ void window_freq_process (void)
 		editfreq.num = 0;
 		editfreq.key = BUTTON_CODE_DONE;
 
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%d k", (int) editfreq.val);
+		local_snprintf_P(buf, NAME_ARRAY_SIZE, "%d k", (int) editfreq.val);
+		window_set_title(buf);
+		window_set_title_align(TITLE_ALIGNMENT_CENTER);
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		window_set_title_align(win, TITLE_ALIGNMENT_CENTER);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_FREQ)
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS && editfreq.key == BUTTON_CODE_DONE)
 		{
 			editfreq.key = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
@@ -3528,7 +3446,6 @@ void window_freq_process (void)
 		break;
 
 	default:
-
 		break;
 	}
 
@@ -3558,7 +3475,10 @@ void window_freq_process (void)
 
 			case BUTTON_CODE_OK:
 				if (hamradio_set_freq(editfreq.val * 1000) || editfreq.val == 0)
+				{
 					close_all_windows();
+					return;
+				}
 				else
 					editfreq.error = 1;
 
@@ -3574,10 +3494,8 @@ void window_freq_process (void)
 			}
 			editfreq.key = BUTTON_CODE_DONE;
 
-			if (editfreq.error)
-				local_snprintf_P(win->title, ARRAY_SIZE(win->title), "ERROR");
-			else
-				local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%d k", (int) editfreq.val);
+			local_snprintf_P(buf, NAME_ARRAY_SIZE, "%d k", (int) editfreq.val);
+			window_set_title(editfreq.error ? "ERROR" : buf);
 		}
 	}
 }
@@ -3613,13 +3531,11 @@ int is_valid_datetime(int year, int month, int day, int hour, int minute, int se
 void window_time_process(void)
 {
 #if defined (RTC1_TYPE)
-	window_t * const win = get_win(WINDOW_TIME);
 	static uint_fast16_t year;
 	static uint_fast8_t month, day, hour, minute, second, update;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		update = 1;
 		uint8_t interval = 20;
 
@@ -3664,13 +3580,12 @@ void window_time_process(void)
 		gui_obj_set_prop("btn_set", GUI_OBJ_LOCK, 1);
 
 		board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute,	& second);
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_TIME)
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
 			int tmp_year = year, tmp_month = month, tmp_day = day;
@@ -3712,7 +3627,6 @@ void window_time_process(void)
 		break;
 
 	default:
-
 		break;
 	}
 
@@ -3732,7 +3646,6 @@ void window_time_process(void)
 
 void window_kbd_process(void)
 {
-	window_t * const win = get_win(WINDOW_KBD);
 	static uint8_t update = 0, is_shift = 0;
 	const char kbd_cap[] = ",.!@#*()?;QWERTYUIOPASDFGHJKLZXCVBNM";
 	const char kbd_low[] = "1234567890qwertyuiopasdfghjklzxcvbnm";
@@ -3741,9 +3654,8 @@ void window_kbd_process(void)
 	static char edit_str[TEXT_ARRAY_SIZE];
 	char btn_name[NAME_ARRAY_SIZE];
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		update = 1;
 		is_shift = 0;
 		uint8_t x = 0, y = 0, interval = 5, i = 0;
@@ -3811,15 +3723,15 @@ void window_kbd_process(void)
 		gui_obj_set_prop("btn_kbd_enter", GUI_OBJ_TEXT, "OK");
 		gui_obj_set_prop("btn_kbd_enter", GUI_OBJ_LOCK, 1);
 
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s_", edit_str);
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		window_set_title_align(win, TITLE_ALIGNMENT_CENTER);
+		window_set_title(edit_str);
+		window_set_title_align(TITLE_ALIGNMENT_CENTER);
+
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_KBD)
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
 			if (gui_check_obj(name, "btn_kbd_caps"))
@@ -3863,12 +3775,12 @@ void window_kbd_process(void)
 					strcat(edit_str, text);
 			}
 
-			local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s_", edit_str);
+			window_set_title(edit_str);
 		}
 		break;
 
 	default:
-	break;
+		break;
 	}
 
 	if (update)
@@ -3889,14 +3801,12 @@ void window_kbd_process(void)
 
 void window_kbd_test_process(void)
 {
-	window_t * const win = get_win(WINDOW_KBD_TEST);
 	static int num_lbl1 = 12345;
 	static char str_lbl2[TEXT_ARRAY_SIZE] = "qwertyuiopas";
 	const uint8_t win_id = WINDOW_KBD_TEST;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		const uint8_t interval = 30;
 
 		gui_obj_create("lbl_text", FONT_MEDIUM, COLORPIP_WHITE, 20);
@@ -3914,13 +3824,12 @@ void window_kbd_test_process(void)
 		gui_obj_set_prop("lbl_text", GUI_OBJ_TEXT, str_lbl2);
 		gui_obj_set_prop("lbl_num", GUI_OBJ_TEXT_FMT, "%d", num_lbl1);
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_KBD_TEST)
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
 			if (gui_check_obj(name, "btn_text"))
@@ -3931,7 +3840,7 @@ void window_kbd_test_process(void)
 		break;
 
 	default:
-	break;
+		break;
 	}
 }
 
@@ -3941,53 +3850,50 @@ void window_kbd_test_process(void)
 
 void window_3d_process(void)
 {
-	window_t * const win = get_win(WINDOW_3D);
 	static float A = 0, B = 0, z[1760];
 	char b[22][80];
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
-
 		gui_obj_create("tf_3d", 60, 22, UP, & gothic_11x13);
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	if (win->state == VISIBLE)
+	GET_FROM_WM_QUEUE(WINDOW_3D)
 	{
-		memset(b,' ', 80 * 22 * sizeof(char));
-		memset(z, 0, 1760 * sizeof(float));
-		for(float j = 0; 6.28 > j; j += 0.07)
-		{
-			for(float i = 0; 6.28 > i; i += 0.02)
-			{
-				float c = arm_sin_f32(i), d = arm_cos_f32(j), e = arm_sin_f32(A), f = arm_sin_f32(j),
-						g = arm_cos_f32(A), h = d + 2, D = 1 / (c * h * e + f * g + 5), l = arm_cos_f32(i),
-						m = arm_cos_f32(B), n = arm_sin_f32(B), t = c * h * g - f * e;
-				int x = 30 + 30 * D * (l * h * m - t * n), y = 12 + 15 * D * (l * h * n + t * m),
-						o = x + 80 * y, N = 8 * ((f * e - c * d * g) * m - c * d * e - f * g - l * d * n);
-				if(22 > y && y > 0 && x > 0 && 80 > x && D > z[o])
-				{
-					z[o] = D;
-					b[y][x] = ".,-~:;=!*#$@"[N > 0 ? N : 0];
-				}
-			}
-		}
+	case WM_MESSAGE_CLOSE:
+		return;
 
-		textfield_clean("tf_3d");
-		for (int k = 0; k < 22; k ++)
-			textfield_add_string("tf_3d", b[k], COLORPIP_WHITE);
-
-		A += 0.08;
-		B += 0.04;
-	}
-
-	GET_FROM_WM_QUEUE
-	{
 	default:
 		break;
 	}
+
+	memset(b,' ', 80 * 22 * sizeof(char));
+	memset(z, 0, 1760 * sizeof(float));
+	for(float j = 0; 6.28 > j; j += 0.07)
+	{
+		for(float i = 0; 6.28 > i; i += 0.02)
+		{
+			float c = arm_sin_f32(i), d = arm_cos_f32(j), e = arm_sin_f32(A), f = arm_sin_f32(j),
+					g = arm_cos_f32(A), h = d + 2, D = 1 / (c * h * e + f * g + 5), l = arm_cos_f32(i),
+					m = arm_cos_f32(B), n = arm_sin_f32(B), t = c * h * g - f * e;
+			int x = 30 + 30 * D * (l * h * m - t * n), y = 12 + 15 * D * (l * h * n + t * m),
+					o = x + 80 * y, N = 8 * ((f * e - c * d * g) * m - c * d * e - f * g - l * d * n);
+			if(22 > y && y > 0 && x > 0 && 80 > x && D > z[o])
+			{
+				z[o] = D;
+				b[y][x] = ".,-~:;=!*#$@"[N > 0 ? N : 0];
+			}
+		}
+	}
+
+	textfield_clean("tf_3d");
+	for (int k = 0; k < 22; k ++)
+		textfield_add_string("tf_3d", b[k], COLORPIP_WHITE);
+
+	A += 0.08;
+	B += 0.04;
 }
 
 // *****************************************************************************************************************************
@@ -4043,15 +3949,14 @@ void split_string(char * str, char ch)
 
 void window_menu_params_process(void)
 {
-	window_t * const win = get_win(WINDOW_MENU_PARAMS);
 	static menu_names_t menup[MENU_PARAMS_MAX], menuv;
 	static uint8_t sel = 0;
 	static char btn_selected[NAME_ARRAY_SIZE];
 	char btn_names[MENU_PARAMS_MAX][NAME_ARRAY_SIZE];
+	char buf[NAME_ARRAY_SIZE];
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		sel = 0;
 
 		const uint8_t count = hamradio_get_multilinemenu_block_params(menup, index_param, MENU_PARAMS_MAX);
@@ -4084,15 +3989,14 @@ void window_menu_params_process(void)
 		gui_obj_set_prop("btn_m", GUI_OBJ_PAYLOAD, -1);
 #endif
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "Edit param: choose...");
-		window_set_title_align(win, TITLE_ALIGNMENT_CENTER);
+		calculate_window_position(WINDOW_POSITION_AUTO);
+		window_set_title("Edit param: choose...");
+		window_set_title_align(TITLE_ALIGNMENT_CENTER);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_MENU_PARAMS)
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
 			if (gui_check_obj(name, "btn_p") || gui_check_obj(name, "btn_m"))
@@ -4108,8 +4012,9 @@ void window_menu_params_process(void)
 
 				hamradio_get_multilinemenu_block_vals(& menuv, gui_obj_get_int_prop(btn_selected, GUI_OBJ_PAYLOAD), 1);
 				remove_end_line_spaces(menuv.name);
-				local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s: %s",
+				local_snprintf_P(buf, NAME_ARRAY_SIZE, "%s: %s",
 						gui_obj_get_string_prop(btn_selected, GUI_OBJ_TEXT), menuv.name);
+				window_set_title(buf);
 
 			}
 		}
@@ -4122,24 +4027,22 @@ void window_menu_params_process(void)
 		{
 			strcpy(edit_val, hamradio_gui_edit_menu_item(menuv.index, action));
 			remove_end_line_spaces(edit_val);
-			local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s: %s",
+			local_snprintf_P(buf, NAME_ARRAY_SIZE, "%s: %s",
 					gui_obj_get_string_prop(btn_selected, GUI_OBJ_TEXT), edit_val);
+			window_set_title(buf);
 		}
 	}
 		break;
 
 	default:
-	break;
+		break;
 	}
 }
 
 void window_menu_process(void)
 {
-	window_t * const win = get_win(WINDOW_MENU);
-
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		menu_names_t menu[MENU_GROUPS_MAX];
 		char btn_names[MENU_GROUPS_MAX][NAME_ARRAY_SIZE];
 
@@ -4160,23 +4063,21 @@ void window_menu_process(void)
 
 		gui_arrange_objects(btn_names, count, 4, 6);
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_MENU)
 	{
 	case WM_MESSAGE_ACTION:
-
 		if (IS_BUTTON_PRESS)
 		{
 			index_param = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
-			window_t * const win = get_win(WINDOW_MENU_PARAMS);
-			open_window(win);
+			open_window(get_win(WINDOW_MENU_PARAMS));
 		}
 		break;
 
 	default:
-	break;
+		break;
 	}
 }
 
@@ -4185,15 +4086,13 @@ void window_menu_process(void)
 void window_lfm_process(void)
 {
 #if WITHLFM
-	window_t * const win = get_win(WINDOW_LFM);
 	static uint8_t update = 0;
 	static enc_var_t enc;
 	static uint8_t lbls[3];
 
-	if (win->first_call)
+	if (is_win_init())
 	{
 		uint8_t interval = 24;
-		win->first_call = 0;
 		update = 1;
 		enc.select = 0;
 		enc.change = 0;
@@ -4224,11 +4123,11 @@ void window_lfm_process(void)
 		gui_obj_set_prop("lbl_interval", GUI_OBJ_PAYLOAD, 2);
 
 		hamradio_enable_encoder2_redirect();
-		enable_window_move(win);
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		enable_window_move();
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_LFM)
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -4262,13 +4161,11 @@ void window_lfm_process(void)
 		break;
 
 	case WM_MESSAGE_ENC2_ROTATE:
-
 		enc.change = action;
 		enc.updated = 1;
 		break;
 
 	case WM_MESSAGE_UPDATE:
-
 		update = 1;
 		break;
 
@@ -4330,27 +4227,24 @@ void window_lfm_spectre_process(void)
 {
 #if WITHLFM
 	enum { xmax = 600, ymax = 200, i1 = (800 / 2) - 100, i2 = (800 / 2) + 100 };
-	window_t * const win = get_win(WINDOW_LFM_SPECTRE);
 	static COLORPIP_T d[xmax][ymax];
 	static int shift = 0;
 
 	static uint16_t xx = 0;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		xx = 0;
 		shift = 0;
 
 		memset(d, GUI_DEFAULTCOLOR, sizeof(d));
-		calculate_window_position(win, WINDOW_POSITION_MANUAL_SIZE, xmax, ymax);
+		calculate_window_position(WINDOW_POSITION_MANUAL_SIZE, xmax, ymax);
 		return;
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_LFM_SPECTRE)
 	{
 	case WM_MESSAGE_ENC2_ROTATE:
-
 		shift += (action * 5);
 		break;
 
@@ -4391,13 +4285,10 @@ void stream_log(char * str)
 
 void window_stream_process(void)
 {
-	window_t * const win = get_win(WINDOW_EXTIOLAN);
 	static uint8_t update = 0;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
-
 		gui_obj_create("tf_log", 50, 15, DOWN, & gothic_11x13);
 		gui_obj_create("btn_state", 130, 40, 0, 0, "");
 
@@ -4405,11 +4296,11 @@ void window_stream_process(void)
 		gui_obj_align_to("btn_state", "tf_log", ALIGN_DOWN_MID, 10);
 
 		update = 1;
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 		return;
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_EXTIOLAN)
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -4428,7 +4319,6 @@ void window_stream_process(void)
 		break;
 
 	case WM_MESSAGE_UPDATE:
-
 		update = 1;
 		break;
 
@@ -4452,14 +4342,11 @@ void window_stream_process(void) {}
 void window_wnbconfig_process(void)
 {
 #if WITHWNB
-	window_t * const win = get_win(WINDOW_WNBCONFIG);
 	uint8_t update = 0;
 	static enc_var_t enc;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
-
 		gui_obj_create("btn_add", 40, 40, 0, 0, "+");
 		gui_obj_create("btn_sub", 40, 40, 0, 0, "-");
 		gui_obj_create("lbl_val", FONT_MEDIUM, COLORPIP_WHITE, 14);
@@ -4471,12 +4358,12 @@ void window_wnbconfig_process(void)
 		gui_obj_set_prop("btn_add", GUI_OBJ_PAYLOAD, 1);
 
 		hamradio_enable_encoder2_redirect();
-		enable_window_move(win);
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		enable_window_move();
+		calculate_window_position(WINDOW_POSITION_AUTO);
 		update = 1;
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_WNBCONFIG)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
@@ -4522,7 +4409,6 @@ void window_wnbconfig_process(void)
 #if WITHAD936XIIO
 void window_ad936x_process(void)
 {
-	window_t * const win = get_win(WINDOW_AD936X);
 	uint8_t update = 0;
 	static int status = 10, gain_mode = 0, gain_val = 20;
 
@@ -4531,10 +4417,8 @@ void window_ad936x_process(void)
 	const char * gainmode_str[2] = { "Gain|manual", "Gain|auto" };
 	static char uri[20] = "usb:";
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
-
 		gui_obj_create("lbl_status", FONT_MEDIUM, COLORPIP_WHITE, 9);
 		gui_obj_create("lbl_status_str", FONT_MEDIUM, COLORPIP_WHITE, 20);
 		gui_obj_create("lbl_iio_name", FONT_MEDIUM, COLORPIP_WHITE, 9);
@@ -4560,12 +4444,12 @@ void window_ad936x_process(void)
 		gui_obj_align_to("btn_gain_add", "btn_gain_type", ALIGN_RIGHT_UP, 10);
 		gui_obj_set_prop("btn_gain_add", GUI_OBJ_PAYLOAD, 1);
 
-		enable_window_move(win);
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		enable_window_move();
+		calculate_window_position(WINDOW_POSITION_AUTO);
 		update = 1;
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_AD936X)
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -4640,12 +4524,10 @@ void window_ad936x_process(void)
 #elif WITHAD936XDEV
 void window_ad936x_process(void)
 {
-	window_t * const win = get_win(WINDOW_AD936X);
 	static uint32_t freq = 7012000;
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
 		uint8_t p = ad936xdev_present();
 		uint8_t s = get_ad936x_stream_status();
 
@@ -4659,10 +4541,10 @@ void window_ad936x_process(void)
 			gui_obj_set_prop("btn_switch", GUI_OBJ_STATE, p ? CANCELLED : DISABLED);
 		}
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_AD936X)
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -4698,15 +4580,12 @@ void window_ad936x_process(void) {}
 void window_as_process(void)
 {
 #if WITHAUDIOSAMPLESREC
-	window_t * const win = get_win(WINDOW_AS);
 	uint8_t update = 0;
 	enum { len = 320, lim = 25 };
 	static COLORPIP_T d[len];
 
-	if (win->first_call)
+	if (is_win_init())
 	{
-		win->first_call = 0;
-
 		gui_obj_create("btn_rec", 100, 40, 0, 0, "Record");
 		gui_obj_create("btn_play", 100, 40, 0, 0, "Play");
 		gui_obj_create("btn_tx", 100, 40, 0, 0, "Transmit");
@@ -4718,7 +4597,7 @@ void window_as_process(void)
 		if (as_get_state() == AS_IDLE)
 			memset(d, 0, ARRAY_SIZE(d));
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		calculate_window_position(WINDOW_POSITION_AUTO);
 		update = 1;
 	}
 
@@ -4732,7 +4611,7 @@ void window_as_process(void)
 	}
 
 
-	GET_FROM_WM_QUEUE
+	GET_FROM_WM_QUEUE(WINDOW_AS)
 	{
 	case WM_MESSAGE_ACTION:
 

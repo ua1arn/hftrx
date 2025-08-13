@@ -123,7 +123,6 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		va_start(arg, message);
 
 		uint32_t type = va_arg(arg, uint32_t);
-		uintptr_t ptr = va_arg(arg, uintptr_t);
 		int32_t action = va_arg(arg, int32_t);
 		char * name = va_arg(arg, char *);
 
@@ -136,7 +135,6 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		{
 			win->queue.data[win->queue.size].message = WM_MESSAGE_ACTION;
 			win->queue.data[win->queue.size].type = (obj_type_t) type;
-			win->queue.data[win->queue.size].ptr = ptr;
 			win->queue.data[win->queue.size].action = action;
 			strncpy(win->queue.data[win->queue.size].name, name, NAME_ARRAY_SIZE - 1);
 			win->queue.size ++;
@@ -161,7 +159,6 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		{
 			win->queue.data[win->queue.size].message = WM_MESSAGE_ENC2_ROTATE;
 			win->queue.data[win->queue.size].type = (obj_type_t) UINT8_MAX;
-			win->queue.data[win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data[win->queue.size].action = r;
 			win->queue.size ++;
 		}
@@ -176,7 +173,6 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 
 		win->queue.data[win->queue.size].message = WM_MESSAGE_KEYB_CODE;
 		win->queue.data[win->queue.size].type = (obj_type_t) UINT8_MAX;
-		win->queue.data[win->queue.size].ptr = UINTPTR_MAX;
 		win->queue.data[win->queue.size].action = va_arg(arg, int32_t);
 		win->queue.size ++;
 
@@ -193,7 +189,6 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		{
 			win->queue.data[win->queue.size].message = WM_MESSAGE_UPDATE;
 			win->queue.data[win->queue.size].type = (obj_type_t) UINT8_MAX;
-			win->queue.data[win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data[win->queue.size].action = INT8_MAX;
 			win->queue.size ++;
 		}
@@ -208,7 +203,6 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		{
 			win->queue.data[win->queue.size].message = WM_MESSAGE_CLOSE;
 			win->queue.data[win->queue.size].type = (obj_type_t) UINT8_MAX;
-			win->queue.data[win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data[win->queue.size].action = INT8_MAX;
 			win->queue.size ++;
 		}
@@ -227,15 +221,16 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	return 0;
 }
 
-wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * ptr, int_fast8_t * action, char * name)
+wm_message_t get_from_wm_queue(uint8_t win_id, uint8_t * type, int8_t * action, char * name)
 {
+	window_t * win = get_win(win_id);
+
 	if (! win->queue.size)
-		return WM_NO_MESSAGE;							// очередь сообщений пустая
+		return WM_NO_MESSAGE;										// очередь сообщений пустая
 
 	win->queue.size --;
 
 	* type = win->queue.data[win->queue.size].type;
-	* ptr = win->queue.data[win->queue.size].ptr;
 	* action = win->queue.data[win->queue.size].action;
 
 	if (win->queue.data[win->queue.size].message == WM_MESSAGE_ACTION)
@@ -247,14 +242,10 @@ wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * 
 		strncpy(name, obj_name, NAME_ARRAY_SIZE - 1);
 	}
 
-//	if (win->window_id != WINDOW_MAIN)
-//		PRINTF("get_from_wm_queue: win - %s, message - %d, size - %d\n", win->title, win->queue.data[win->queue.size].message, win->queue.size);
-
 	wm_message_t m = win->queue.data[win->queue.size].message;
 
 	win->queue.data[win->queue.size].message = WM_NO_MESSAGE;		// очистить текущую запись
 	win->queue.data[win->queue.size].type = TYPE_DUMMY;
-	win->queue.data[win->queue.size].ptr = 0;
 	win->queue.data[win->queue.size].action = 0;
 	memset(win->queue.data[win->queue.size].name, 0, NAME_ARRAY_SIZE);
 
@@ -372,11 +363,6 @@ const gxdrawb_t * gui_get_drawbuf(void)
 	return gui.gdb;
 }
 
-gui_t * get_gui_ptr(void)
-{
-	return & gui;
-}
-
 /* Установка статуса элементов после инициализации */
 void objects_state (window_t * win)
 {
@@ -396,6 +382,7 @@ void objects_state (window_t * win)
 					PRINTF("ERROR: invalid combination of properties 'is_long_press' and 'is_repeating' on button %s\n", bh->name);
 					ASSERT(0);
 				}
+
 				ASSERT(gui_object_count < GUI_OBJECTS_ARRAY_SIZE);
 				gui_objects[gui_object_count].link = bh;
 				gui_objects[gui_object_count].win = win;
@@ -971,7 +958,7 @@ static void set_state_record(gui_object_t * val)
 			bh->state = val->state;
 			if (bh->state == RELEASED || bh->state == LONG_PRESSED || bh->state == PRESS_REPEATING)
 			{
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh, bh->state == LONG_PRESSED ? LONG_PRESSED : PRESSED, bh->name))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh->state == LONG_PRESSED ? LONG_PRESSED : PRESSED, bh->name))
 					dump_queue(val->win);
 			}
 		}
@@ -986,12 +973,12 @@ static void set_state_record(gui_object_t * val)
 			lh->state = val->state;
 			if (lh->state == RELEASED)
 			{
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, PRESSED, lh->name))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, PRESSED, lh->name))
 					dump_queue(val->win);
 			}
 			else if (lh->state == PRESSED && lh->is_trackable)
 			{
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, MOVING, lh->name))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, MOVING, lh->name))
 					dump_queue(val->win);
 			}
 		}
@@ -1007,7 +994,7 @@ static void set_state_record(gui_object_t * val)
 			if (sh->state == PRESSED)
 			{
 				slider_process(sh);
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_SLIDER, sh, PRESSED, sh->name))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_SLIDER, PRESSED, sh->name))
 					dump_queue(val->win);
 			}
 		}
@@ -1022,7 +1009,7 @@ static void set_state_record(gui_object_t * val)
 			ta->state = val->state;
 			if (ta->state == RELEASED)
 			{
-				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, PRESSED, ta->name))
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, PRESSED, ta->name))
 					dump_queue(val->win);
 			}
 			else if (ta->state == PRESSED && ta->is_trackable)
@@ -1033,7 +1020,7 @@ static void set_state_record(gui_object_t * val)
 					gui.vector_move_x = 0;
 					gui.vector_move_y = 0;
 				}
-				else if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, MOVING, ta->name))
+				else if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, MOVING, ta->name))
 					dump_queue(val->win);
 			}
 		}

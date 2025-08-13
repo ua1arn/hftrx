@@ -15,11 +15,10 @@
 #define IS_AREA_TOUCHED 		(type == TYPE_TOUCH_AREA && action == PRESSED)
 #define IS_AREA_MOVE	 		(type == TYPE_TOUCH_AREA && action == MOVING)
 
-#define GET_FROM_WM_QUEUE		uint_fast8_t type;	\
-								int_fast8_t action;	\
-								uintptr_t ptr;		\
+#define GET_FROM_WM_QUEUE(W)	uint8_t type;	\
+								int8_t action;	\
 								char name[NAME_ARRAY_SIZE];		\
-								switch (get_from_wm_queue(win, & type, & ptr, & action, name))
+								switch (get_from_wm_queue(W, & type, & action, name))
 
 typedef enum {
 	TYPE_DUMMY,
@@ -258,9 +257,8 @@ typedef enum {
 
 typedef struct {
 	wm_message_t message;			// тип сообщения
-	obj_type_t type;			// тип элемента
-	uintptr_t ptr;
-	int_fast8_t action;
+	obj_type_t type;				// тип элемента
+	int8_t action;
 	char name[NAME_ARRAY_SIZE];
 } wm_data_t;
 
