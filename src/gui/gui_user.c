@@ -58,7 +58,6 @@ static keyb_t gui_keyboard;
 enum { enc2step_vals = ARRAY_SIZE(enc2step) };
 enum { freq_swipe_step_vals = ARRAY_SIZE(freq_swipe_step) };
 
-static text_field_t * tf_debug = NULL;
 static tf_entry_t tmpbuf[TEXT_ARRAY_SIZE];
 static uint8_t tmpstr_index = 0, debug_view = 0;
 
@@ -216,11 +215,8 @@ void gui_add_debug(char d)
 
 void gui_open_debug_window(void)
 {
-	if (tf_debug)
-	{
-		debug_view = ! debug_view;
-		gui_obj_set_prop("tf_debug", GUI_OBJ_VISIBLE, debug_view);
-	}
+	debug_view = ! debug_view;
+	gui_obj_set_prop("tf_debug", GUI_OBJ_VISIBLE, debug_view);
 }
 #endif /* WITHGUIDEBUG */
 
@@ -563,24 +559,14 @@ void gui_main_process(void)
 		gui_keyboard.digits_only = 0;
 		update = 1;
 
-#if WITHLFM
-		hamradio_set_lfmmode(0);
-#endif /* WITHLFM */
-
 #if WITHGUIDEBUG
-		static const text_field_t text_field[] = {
-			{ TEXT_ARRAY_SIZE, 25, CANCELLED, WINDOW_MAIN, NON_VISIBLE, DOWN, NULL, "tf_debug", },
-		};
-		win->tf_count = ARRAY_SIZE(text_field);
-		uint8_t tf_size = sizeof(text_field);
-		win->tf_ptr = (text_field_t*) malloc(tf_size);
-		GUI_MEM_ASSERT(win->tf_ptr);
-		memcpy(win->tf_ptr, text_field, tf_size);
+		gui_obj_create("tf_debug", TEXT_ARRAY_SIZE, 25, DOWN, NULL);
+		gui_obj_set_prop("tf_debug", GUI_OBJ_VISIBLE, 0);
 
-		tf_debug = (text_field_t*) find_gui_obj(TYPE_TEXT_FIELD, win, "tf_debug");
-		textfield_update_size(tf_debug);
-		tf_debug->x1 = win->w / 2 - tf_debug->w / 2;
-		tf_debug->y1 = win->h / 2 - tf_debug->h / 2;
+		uint16_t w = gui_obj_get_int_prop("tf_debug", GUI_OBJ_WIDTH);
+		uint16_t h = gui_obj_get_int_prop("tf_debug", GUI_OBJ_HEIGHT);
+
+		gui_obj_set_prop("tf_debug", GUI_OBJ_POS, DIM_X / 2 - w / 2, DIM_Y / 2 - h / 2);
 #endif /* WITHGUIDEBUG */
 
 		gui_obj_create("btn_txrx", 86, 44, 0, 1, "RX");
@@ -620,6 +606,9 @@ void gui_main_process(void)
 		load_settings();
 		objects_state(get_win(WINDOW_MAIN));
 		hamradio_set_lock(0);
+#if WITHLFM
+		hamradio_set_lfmmode(0);
+#endif /* WITHLFM */
 
 #if WITHGUIDEBUG
 		for (uint8_t i = 0; i < tmpstr_index; i ++)

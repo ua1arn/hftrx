@@ -523,7 +523,7 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_TEXT) strncpy(lh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
 		else if (prop == GUI_OBJ_TEXT_FMT) vsnprintf(lh->text, TEXT_ARRAY_SIZE - 1, va_arg(arg, char *), arg);
 		else if (prop == GUI_OBJ_STATE) lh->state = va_arg(arg, int);
-		else if (prop == GUI_OBJ_COLOR) lh->color = va_arg(arg, PACKEDCOLORPIP_T);
+		else if (prop == GUI_OBJ_COLOR) lh->color = va_arg(arg, COLORPIP_T);
 		break;
 
 	case TYPE_BUTTON:
@@ -550,6 +550,14 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_POS_Y) sh->y = va_arg(arg, int);
 		else if (prop == GUI_OBJ_POS) { sh->x = va_arg(arg, int); sh->y = va_arg(arg, int); }
 		else if (prop == GUI_OBJ_PAYLOAD) sh->value = va_arg(arg, int);
+		break;
+
+	case TYPE_TEXT_FIELD:
+		text_field_t * tf = (text_field_t *) obj;
+		if (prop == GUI_OBJ_VISIBLE) tf->visible = !! va_arg(arg, int);
+		else if (prop == GUI_OBJ_POS_X) tf->x1 = va_arg(arg, int);
+		else if (prop == GUI_OBJ_POS_Y) tf->y1 = va_arg(arg, int);
+		else if (prop == GUI_OBJ_POS) { tf->x1 = va_arg(arg, int); tf->y1 = va_arg(arg, int); }
 		break;
 
 	default:
