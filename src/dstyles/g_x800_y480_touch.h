@@ -137,9 +137,9 @@
 		{	0,	0, 4,	0,	display2_siglevel4, 	& dzi_default, PGSWR, },	// signal level dBm
 //		{	36, 30,	8,	0,	display2_freqdelta8, & dzi_default, PGSWR, },	// выход ЧМ демодулятора
 	#if WITHSPECTRUMWF || WITHAFSPECTRE
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX)),	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX)),	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX)),	BDCV_ALLRX,	display2_gcombo,	& dzi_default, PGSPE, },// подготовка изображения спектра
+		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX,	display2_gcombo,	& dzi_default, PGSPE, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 #else
 		{	0,	25,	0,	0,	display2_adctest,	& dzi_default, PGSWR, },	// ADC raw data print
