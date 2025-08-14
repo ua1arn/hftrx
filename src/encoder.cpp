@@ -21,13 +21,13 @@
 #undef WITHKBDENCODER
 /* обработчики прерывания от валкодера */
 
-typedef std::atomic<int_least16_t> position_t;
+typedef std::atomic<int32_t> atomicpos_t;
 
-static position_t position_kbd;	/* накопитель от клавиатуры - знаковое число */
+static atomicpos_t position_kbd;	/* накопитель от клавиатуры - знаковое число */
 
 struct encoder_tag
 {
-	position_t position;	// обновляется по прерыванию
+	atomicpos_t position;	// обновляется по прерыванию
 	uint8_t old_val;
 	uint_fast8_t (* getpins)(void);
 
