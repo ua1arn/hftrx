@@ -7265,11 +7265,7 @@ static void display2_3dss(const gxdrawb_t * db0, uint_fast8_t x0, uint_fast8_t y
 	const uint_fast16_t alldy = GRID2Y(yspan);
 	const uint_fast16_t SPY_3DSS = GRID2Y(yspan);	// was: SPDY
 	const uint_fast16_t SPY_3DSS_H = SPY_3DSS / 4;
-#if WITHTOUCHGUI
-	const uint_fast16_t SPY = GRID2Y(yspan) - FOOTER_HEIGHT - 15;
-#else
-	const uint_fast16_t SPY = GRID2Y(yspan) - 15;
-#endif
+	const uint_fast16_t SPY = GRID2Y(yspan) - 15;	// 15 - высота шрифта частотных маркеров
 	const uint_fast16_t HORMAX_3DSS = SPY - MAX_3DSS_STEP * Z_STEP_3DSS - 2;
 	const uint_fast32_t f0 = latched_dm.f0;	/* frequency at middle of spectrum */
 	const int_fast32_t bw = latched_dm.bw;
@@ -7394,12 +7390,8 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 {
 	const uint_fast16_t x0pix = GRID2X(x0);				// смещение по вертикали в пикселях части отведенной водопаду
 	const uint_fast16_t y0pix = GRID2Y(y0);				// смещение по вертикали в пикселях части отведенной водопаду
-	#if WITHTOUCHGUI
-	const uint_fast8_t xBDCV_WFLRX = yspan - 10;    // вертикальный размер водопада в ячейках - GUI version
-	#else /* WITHTOUCHGUI */
-	const uint_fast8_t xBDCV_WFLRX = yspan;	// вертикальный размер водопада в ячейках
-	#endif /* WITHTOUCHGUI */
-	const uint_fast16_t wfdy = GRID2Y(xBDCV_WFLRX);				// размер по вертикали в пикселях части отведенной водопаду
+	const uint_fast8_t xBDCV_WFLRX = yspan;				// вертикальный размер водопада в ячейках
+	const uint_fast16_t wfdy = GRID2Y(xBDCV_WFLRX);		// размер по вертикали в пикселях части отведенной водопаду
 	const uint_fast16_t wfdx = GRID2X(xspan);
 	gxdrawb_t wfjdbv;
 	gxdrawb_initialize(& wfjdbv, scbf.scrollcolor.bf(), ALLDX, NROWSWFL);
