@@ -1331,6 +1331,10 @@ display_value_small(const gxdrawb_t * db,
 	const uint_fast16_t w = GRID2X(xspan);
 	const uint_fast16_t h = GRID2Y(yspan);
 	colpip_fillrect(db, xpix, ypix, w, h, ltdc_bg);
+	if (h > smallfont_height())
+	{
+		ypix += (h - smallfont_height()) / 2;
+	}
 	if (wsign || wminus)
 	{
 		// отображение со знаком.
