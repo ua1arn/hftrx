@@ -1240,63 +1240,63 @@ typedef struct DMIC_Type
 /*!< DSI MIPI DSI Display Interface */
 typedef struct DSI_Type
 {
-    __IO uint32_t DSI_CTL;                            /*!< Offset 0x000 dsi_gctl 0x00 - 0x0c */
-    __IO uint32_t DSI_GINT0;                          /*!< Offset 0x004 dsi_gint0  */
-    __IO uint32_t DSI_GINT1;                          /*!< Offset 0x008 dsi_gint1  */
-    __IO uint32_t DSI_BASIC_CTL;                      /*!< Offset 0x00C dsi_basic_ctl  */
-    __IO uint32_t DSI_BASIC_CTL0;                     /*!< Offset 0x010 dsi_basic_ctl0 0x10 - 0x1c */
-    __IO uint32_t DSI_BASIC_CTL1;                     /*!< Offset 0x014 dsi_basic_ctl1  */
-    __IO uint32_t DSI_BASIC_SIZE0;                    /*!< Offset 0x018 dsi_basic_size0  */
-    __IO uint32_t DSI_BASIC_SIZE1;                    /*!< Offset 0x01C dsi_basic_size1  */
-    __IO uint32_t DSI_BASIC_INST0 [0x008];            /*!< Offset 0x020 dsi_inst_func[8] 0x20 - 0x3c */
-    __IO uint32_t DSI_INST_LOOP_SEL;                  /*!< Offset 0x040 dsi_inst_loop_sel 0x40 - 0x5c */
-    __IO uint32_t DSI_INST_LOOP_NUM;                  /*!< Offset 0x044 dsi_inst_loop_num  */
-    __IO uint32_t DSI_INST_JUMP_SEL;                  /*!< Offset 0x048 dsi_inst_jump_sel  */
-    __IO uint32_t DSI_INST_JUMP_CFG [0x002];          /*!< Offset 0x04C dsi_inst_jump_cfg[2]  */
-    __IO uint32_t DSI_INST_LOOP_NUM2;                 /*!< Offset 0x054 dsi_inst_loop_num2  */
+    __IO uint32_t DSI_CTL_REG;                        /*!< Offset 0x000 dsi_gctl 0x00 - 0x0c */
+    __IO uint32_t DSI_GINT0_REG;                      /*!< Offset 0x004 dsi_gint0  */
+    __IO uint32_t DSI_GINT1_REG;                      /*!< Offset 0x008 dsi_gint1  */
+    __IO uint32_t DSI_BASIC_CTL_REG;                  /*!< Offset 0x00C dsi_basic_ctl  */
+    __IO uint32_t DSI_BASIC_CTL0_REG;                 /*!< Offset 0x010 dsi_basic_ctl0 0x10 - 0x1c */
+    __IO uint32_t DSI_BASIC_CTL1_REG;                 /*!< Offset 0x014 dsi_basic_ctl1  */
+    __IO uint32_t DSI_BASIC_SIZE0_REG;                /*!< Offset 0x018 dsi_basic_size0  */
+    __IO uint32_t DSI_BASIC_SIZE1_REG;                /*!< Offset 0x01C dsi_basic_size1  */
+    __IO uint32_t DSI_BASIC_INST0_REG [0x008];        /*!< Offset 0x020 dsi_inst_func[8] 0x20 - 0x3c */
+    __IO uint32_t DSI_INST_LOOP_SEL_REG;              /*!< Offset 0x040 dsi_inst_loop_sel 0x40 - 0x5c */
+    __IO uint32_t DSI_INST_LOOP_NUM_REG;              /*!< Offset 0x044 dsi_inst_loop_num  */
+    __IO uint32_t DSI_INST_JUMP_SEL_REG;              /*!< Offset 0x048 dsi_inst_jump_sel  */
+    __IO uint32_t DSI_INST_JUMP_CFG_REG [0x002];      /*!< Offset 0x04C dsi_inst_jump_cfg[2]  */
+    __IO uint32_t DSI_INST_LOOP_NUM2_REG;             /*!< Offset 0x054 dsi_inst_loop_num2  */
          RESERVED(0x058[0x0060 - 0x0058], uint8_t)
-    __IO uint32_t DSI_TRANS_START;                    /*!< Offset 0x060 dsi_trans_start 0x60 - 0x6c */
+    __IO uint32_t DSI_TRANS_START_REG;                /*!< Offset 0x060 dsi_trans_start 0x60 - 0x6c */
          RESERVED(0x064[0x0078 - 0x0064], uint8_t)
-    __IO uint32_t DSI_TRANS_ZERO;                     /*!< Offset 0x078 dsi_trans_zero  */
-    __IO uint32_t DSI_TCON_DRQ;                       /*!< Offset 0x07C dsi_tcon_drq  */
-    __IO uint32_t DSI_PIXEL_CTL0;                     /*!< Offset 0x080 dsi_pixel_ctl0 0x80 - 0x8c */
-    __IO uint32_t DSI_PIXEL_CTL1;                     /*!< Offset 0x084 dsi_pixel_ctl1  */
+    __IO uint32_t DSI_TRANS_ZERO_REG;                 /*!< Offset 0x078 dsi_trans_zero  */
+    __IO uint32_t DSI_TCON_DRQ_REG;                   /*!< Offset 0x07C dsi_tcon_drq  */
+    __IO uint32_t DSI_PIXEL_CTL0_REG;                 /*!< Offset 0x080 dsi_pixel_ctl0 0x80 - 0x8c */
+    __IO uint32_t DSI_PIXEL_CTL1_REG;                 /*!< Offset 0x084 dsi_pixel_ctl1  */
          RESERVED(0x088[0x0090 - 0x0088], uint8_t)
-    __IO uint32_t DSI_PIXEL_PH;                       /*!< Offset 0x090 dsi_pixel_ph 0x90 - 0x9c */
-    __IO uint32_t DSI_PIXEL_PD;                       /*!< Offset 0x094 dsi_pixel_pd  */
-    __IO uint32_t DSI_PIXEL_PF0;                      /*!< Offset 0x098 dsi_pixel_pf0  */
-    __IO uint32_t DSI_PIXEL_PF1;                      /*!< Offset 0x09C dsi_pixel_pf1  */
+    __IO uint32_t DSI_PIXEL_PH_REG;                   /*!< Offset 0x090 dsi_pixel_ph 0x90 - 0x9c */
+    __IO uint32_t DSI_PIXEL_PD_REG;                   /*!< Offset 0x094 dsi_pixel_pd  */
+    __IO uint32_t DSI_PIXEL_PF0_REG;                  /*!< Offset 0x098 dsi_pixel_pf0  */
+    __IO uint32_t DSI_PIXEL_PF1_REG;                  /*!< Offset 0x09C dsi_pixel_pf1  */
          RESERVED(0x0A0[0x00B0 - 0x00A0], uint8_t)
-    __IO uint32_t DSI_SYNC_HSS;                       /*!< Offset 0x0B0 dsi_sync_hss 0xb0 - 0xbc */
-    __IO uint32_t DSI_SYNC_HSE;                       /*!< Offset 0x0B4 dsi_sync_hse  */
-    __IO uint32_t DSI_SYNC_VSS;                       /*!< Offset 0x0B8 dsi_sync_vss  */
-    __IO uint32_t DSI_SYNC_VSE;                       /*!< Offset 0x0BC dsi_sync_vse  */
-    __IO uint32_t DSI_BLK_HSA0;                       /*!< Offset 0x0C0 dsi_blk_hsa0 0xc0 - 0xcc */
-    __IO uint32_t DSI_BLK_HSA1;                       /*!< Offset 0x0C4 dsi_blk_hsa1  */
-    __IO uint32_t DSI_BLK_HBP0;                       /*!< Offset 0x0C8 dsi_blk_hbp0  */
-    __IO uint32_t DSI_BLK_HBP1;                       /*!< Offset 0x0CC dsi_blk_hbp1  */
-    __IO uint32_t DSI_BLK_HFP0;                       /*!< Offset 0x0D0 dsi_blk_hfp0 0xd0 - 0xdc */
-    __IO uint32_t DSI_BLK_HFP1;                       /*!< Offset 0x0D4 dsi_blk_hfp1  */
+    __IO uint32_t DSI_SYNC_HSS_REG;                   /*!< Offset 0x0B0 dsi_sync_hss 0xb0 - 0xbc */
+    __IO uint32_t DSI_SYNC_HSE_REG;                   /*!< Offset 0x0B4 dsi_sync_hse  */
+    __IO uint32_t DSI_SYNC_VSS_REG;                   /*!< Offset 0x0B8 dsi_sync_vss  */
+    __IO uint32_t DSI_SYNC_VSE_REG;                   /*!< Offset 0x0BC dsi_sync_vse  */
+    __IO uint32_t DSI_BLK_HSA0_REG;                   /*!< Offset 0x0C0 dsi_blk_hsa0 0xc0 - 0xcc */
+    __IO uint32_t DSI_BLK_HSA1_REG;                   /*!< Offset 0x0C4 dsi_blk_hsa1  */
+    __IO uint32_t DSI_BLK_HBP0_REG;                   /*!< Offset 0x0C8 dsi_blk_hbp0  */
+    __IO uint32_t DSI_BLK_HBP1_REG;                   /*!< Offset 0x0CC dsi_blk_hbp1  */
+    __IO uint32_t DSI_BLK_HFP0_REG;                   /*!< Offset 0x0D0 dsi_blk_hfp0 0xd0 - 0xdc */
+    __IO uint32_t DSI_BLK_HFP1_REG;                   /*!< Offset 0x0D4 dsi_blk_hfp1  */
          RESERVED(0x0D8[0x00E0 - 0x00D8], uint8_t)
-    __IO uint32_t DSI_BLK_HBLK0;                      /*!< Offset 0x0E0 dsi_blk_hblk0 0xe0 - 0xec */
-    __IO uint32_t DSI_BLK_HBLK1;                      /*!< Offset 0x0E4 dsi_blk_hblk1  */
-    __IO uint32_t DSI_BLK_VBLK0;                      /*!< Offset 0x0E8 dsi_blk_vblk0  */
-    __IO uint32_t DSI_BLK_VBLK1;                      /*!< Offset 0x0EC dsi_blk_vblk1  */
-    __IO uint32_t DSI_BURST_LINE;                     /*!< Offset 0x0F0 dsi_burst_line 0xf0 - 0x1fc */
-    __IO uint32_t DSI_BURST_DRQ;                      /*!< Offset 0x0F4 dsi_burst_drq  */
+    __IO uint32_t DSI_BLK_HBLK0_REG;                  /*!< Offset 0x0E0 dsi_blk_hblk0 0xe0 - 0xec */
+    __IO uint32_t DSI_BLK_HBLK1_REG;                  /*!< Offset 0x0E4 dsi_blk_hblk1  */
+    __IO uint32_t DSI_BLK_VBLK0_REG;                  /*!< Offset 0x0E8 dsi_blk_vblk0  */
+    __IO uint32_t DSI_BLK_VBLK1_REG;                  /*!< Offset 0x0EC dsi_blk_vblk1  */
+    __IO uint32_t DSI_BURST_LINE_REG;                 /*!< Offset 0x0F0 dsi_burst_line 0xf0 - 0x1fc */
+    __IO uint32_t DSI_BURST_DRQ_REG;                  /*!< Offset 0x0F4 dsi_burst_drq  */
          RESERVED(0x0F8[0x0200 - 0x00F8], uint8_t)
-    __IO uint32_t DSI_CMD_CTL;                        /*!< Offset 0x200 dsi_cmd_ctl 0x200 - 0x23c */
+    __IO uint32_t DSI_CMD_CTL_REG;                    /*!< Offset 0x200 dsi_cmd_ctl 0x200 - 0x23c */
          RESERVED(0x204[0x0240 - 0x0204], uint8_t)
-    __IO uint32_t DSI_CMD_RX [0x008];                 /*!< Offset 0x240 dsi_cmd_rx[8] 0x240 - 0x2dc */
+    __IO uint32_t DSI_CMD_RX_REG [0x008];             /*!< Offset 0x240 dsi_cmd_rx[8] 0x240 - 0x2dc */
          RESERVED(0x260[0x02E0 - 0x0260], uint8_t)
-    __IO uint32_t DSI_DEBUG_VIDEO0;                   /*!< Offset 0x2E0 dsi_debug_video0 0x2e0 - 0x2ec */
-    __IO uint32_t DSI_DEBUG_VIDEO1;                   /*!< Offset 0x2E4 dsi_debug_video1  */
+    __IO uint32_t DSI_DEBUG_VIDEO0_REG;               /*!< Offset 0x2E0 dsi_debug_video0 0x2e0 - 0x2ec */
+    __IO uint32_t DSI_DEBUG_VIDEO1_REG;               /*!< Offset 0x2E4 dsi_debug_video1  */
          RESERVED(0x2E8[0x02F0 - 0x02E8], uint8_t)
-    __IO uint32_t DSI_DEBUG_INST;                     /*!< Offset 0x2F0 dsi_debug_inst 0x2f0 - 0x2fc */
-    __IO uint32_t DSI_DEBUG_FIFO;                     /*!< Offset 0x2F4 dsi_debug_fifo  */
-    __IO uint32_t DSI_DEBUG_DATA;                     /*!< Offset 0x2F8 dsi_debug_data  */
+    __IO uint32_t DSI_DEBUG_INST_REG;                 /*!< Offset 0x2F0 dsi_debug_inst 0x2f0 - 0x2fc */
+    __IO uint32_t DSI_DEBUG_FIFO_REG;                 /*!< Offset 0x2F4 dsi_debug_fifo  */
+    __IO uint32_t DSI_DEBUG_DATA_REG;                 /*!< Offset 0x2F8 dsi_debug_data  */
          RESERVED(0x2FC[0x0300 - 0x02FC], uint8_t)
-    __IO uint32_t DSI_CMD_TX [0x040];                 /*!< Offset 0x300 dsi_cmd_tx[64] 0x300 - 0x3fc */
+    __IO uint32_t DSI_CMD_TX_REG [0x040];             /*!< Offset 0x300 dsi_cmd_tx[64] 0x300 - 0x3fc */
 } DSI_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief DSI_DPHY
@@ -1304,41 +1304,41 @@ typedef struct DSI_Type
 /*!< DSI_DPHY MIPI DSI Physical Interface */
 typedef struct DSI_DPHY_Type
 {
-    __IO uint32_t DPHY_GCTL;                          /*!< Offset 0x000  */
-    __IO uint32_t DPHY_TX_CTL;                        /*!< Offset 0x004  */
-    __IO uint32_t DPHY_RX_CTL;                        /*!< Offset 0x008  */
+    __IO uint32_t DPHY_GCTL_REG;                      /*!< Offset 0x000  */
+    __IO uint32_t DPHY_TX_CTL_REG;                    /*!< Offset 0x004  */
+    __IO uint32_t DPHY_RX_CTL_REG;                    /*!< Offset 0x008  */
          RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
-    __IO uint32_t DPHY_TX_TIME0;                      /*!< Offset 0x010  */
-    __IO uint32_t DPHY_TX_TIME1;                      /*!< Offset 0x014  */
-    __IO uint32_t DPHY_TX_TIME2;                      /*!< Offset 0x018  */
-    __IO uint32_t DPHY_TX_TIME3;                      /*!< Offset 0x01C  */
-    __IO uint32_t DPHY_TX_TIME4;                      /*!< Offset 0x020  */
+    __IO uint32_t DPHY_TX_TIME0_REG;                  /*!< Offset 0x010  */
+    __IO uint32_t DPHY_TX_TIME1_REG;                  /*!< Offset 0x014  */
+    __IO uint32_t DPHY_TX_TIME2_REG;                  /*!< Offset 0x018  */
+    __IO uint32_t DPHY_TX_TIME3_REG;                  /*!< Offset 0x01C  */
+    __IO uint32_t DPHY_TX_TIME4_REG;                  /*!< Offset 0x020  */
          RESERVED(0x024[0x0030 - 0x0024], uint8_t)
-    __IO uint32_t DPHY_RX_TIME0;                      /*!< Offset 0x030  */
-    __IO uint32_t DPHY_RX_TIME1;                      /*!< Offset 0x034  */
-    __IO uint32_t DPHY_RX_TIME2;                      /*!< Offset 0x038  */
+    __IO uint32_t DPHY_RX_TIME0_REG;                  /*!< Offset 0x030  */
+    __IO uint32_t DPHY_RX_TIME1_REG;                  /*!< Offset 0x034  */
+    __IO uint32_t DPHY_RX_TIME2_REG;                  /*!< Offset 0x038  */
          RESERVED(0x03C[0x0040 - 0x003C], uint8_t)
-    __IO uint32_t DPHY_RX_TIME3;                      /*!< Offset 0x040  */
+    __IO uint32_t DPHY_RX_TIME3_REG;                  /*!< Offset 0x040  */
          RESERVED(0x044[0x004C - 0x0044], uint8_t)
-    __IO uint32_t DPHY_ANA0;                          /*!< Offset 0x04C  */
-    __IO uint32_t DPHY_ANA1;                          /*!< Offset 0x050  */
-    __IO uint32_t DPHY_ANA2;                          /*!< Offset 0x054  */
-    __IO uint32_t DPHY_ANA3;                          /*!< Offset 0x058  */
-    __IO uint32_t DPHY_ANA4;                          /*!< Offset 0x05C  */
-    __IO uint32_t DPHY_INT_EN0;                       /*!< Offset 0x060  */
-    __IO uint32_t DPHY_INT_EN1;                       /*!< Offset 0x064  */
-    __IO uint32_t DPHY_INT_EN2;                       /*!< Offset 0x068  */
+    __IO uint32_t DPHY_ANA0_REG;                      /*!< Offset 0x04C  */
+    __IO uint32_t DPHY_ANA1_REG;                      /*!< Offset 0x050  */
+    __IO uint32_t DPHY_ANA2_REG;                      /*!< Offset 0x054  */
+    __IO uint32_t DPHY_ANA3_REG;                      /*!< Offset 0x058  */
+    __IO uint32_t DPHY_ANA4_REG;                      /*!< Offset 0x05C  */
+    __IO uint32_t DPHY_INT_EN0_REG;                   /*!< Offset 0x060  */
+    __IO uint32_t DPHY_INT_EN1_REG;                   /*!< Offset 0x064  */
+    __IO uint32_t DPHY_INT_EN2_REG;                   /*!< Offset 0x068  */
          RESERVED(0x06C[0x0070 - 0x006C], uint8_t)
-    __IO uint32_t DPHY_INT_PD0;                       /*!< Offset 0x070  */
-    __IO uint32_t DPHY_INT_PD1;                       /*!< Offset 0x074  */
-    __IO uint32_t DPHY_INT_PD2;                       /*!< Offset 0x078  */
+    __IO uint32_t DPHY_INT_PD0_REG;                   /*!< Offset 0x070  */
+    __IO uint32_t DPHY_INT_PD1_REG;                   /*!< Offset 0x074  */
+    __IO uint32_t DPHY_INT_PD2_REG;                   /*!< Offset 0x078  */
          RESERVED(0x07C[0x00E0 - 0x007C], uint8_t)
-    __IO uint32_t DPHY_DBG0;                          /*!< Offset 0x0E0  */
-    __IO uint32_t DPHY_DBG1;                          /*!< Offset 0x0E4  */
-    __IO uint32_t DPHY_DBG2;                          /*!< Offset 0x0E8  */
-    __IO uint32_t DPHY_DBG3;                          /*!< Offset 0x0EC  */
-    __IO uint32_t DPHY_DBG4;                          /*!< Offset 0x0F0  */
-    __IO uint32_t DPHY_DBG5;                          /*!< Offset 0x0F4  */
+    __IO uint32_t DPHY_DBG0_REG;                      /*!< Offset 0x0E0  */
+    __IO uint32_t DPHY_DBG1_REG;                      /*!< Offset 0x0E4  */
+    __IO uint32_t DPHY_DBG2_REG;                      /*!< Offset 0x0E8  */
+    __IO uint32_t DPHY_DBG3_REG;                      /*!< Offset 0x0EC  */
+    __IO uint32_t DPHY_DBG4_REG;                      /*!< Offset 0x0F0  */
+    __IO uint32_t DPHY_DBG5_REG;                      /*!< Offset 0x0F4  */
     __IO uint32_t DPHY_TX_SKEW_REG0;                  /*!< Offset 0x0F8  */
     __IO uint32_t DPHY_TX_SKEW_REG1;                  /*!< Offset 0x0FC  */
     __IO uint32_t DPHY_TX_SKEW_REG2;                  /*!< Offset 0x100  */

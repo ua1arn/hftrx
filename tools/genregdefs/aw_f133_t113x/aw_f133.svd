@@ -5991,8 +5991,8 @@
   </interrupt>
   <registers>
    <register>
-    <name>DSI_CTL</name>
-    <displayName>DSI_CTL</displayName>
+    <name>DSI_CTL_REG</name>
+    <displayName>DSI_CTL_REG</displayName>
     <description>dsi_gctl 0x00 - 0x0c</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
@@ -6000,8 +6000,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_GINT0</name>
-    <displayName>DSI_GINT0</displayName>
+    <name>DSI_GINT0_REG</name>
+    <displayName>DSI_GINT0_REG</displayName>
     <description>dsi_gint0 </description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
@@ -6009,8 +6009,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_GINT1</name>
-    <displayName>DSI_GINT1</displayName>
+    <name>DSI_GINT1_REG</name>
+    <displayName>DSI_GINT1_REG</displayName>
     <description>dsi_gint1 </description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>
@@ -6018,8 +6018,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BASIC_CTL</name>
-    <displayName>DSI_BASIC_CTL</displayName>
+    <name>DSI_BASIC_CTL_REG</name>
+    <displayName>DSI_BASIC_CTL_REG</displayName>
     <description>dsi_basic_ctl </description>
     <addressOffset>0x00C</addressOffset>
     <size>0x20</size>
@@ -6027,8 +6027,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BASIC_CTL0</name>
-    <displayName>DSI_BASIC_CTL0</displayName>
+    <name>DSI_BASIC_CTL0_REG</name>
+    <displayName>DSI_BASIC_CTL0_REG</displayName>
     <description>dsi_basic_ctl0 0x10 - 0x1c</description>
     <addressOffset>0x010</addressOffset>
     <size>0x20</size>
@@ -6036,8 +6036,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BASIC_CTL1</name>
-    <displayName>DSI_BASIC_CTL1</displayName>
+    <name>DSI_BASIC_CTL1_REG</name>
+    <displayName>DSI_BASIC_CTL1_REG</displayName>
     <description>dsi_basic_ctl1 </description>
     <addressOffset>0x014</addressOffset>
     <size>0x20</size>
@@ -6045,8 +6045,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BASIC_SIZE0</name>
-    <displayName>DSI_BASIC_SIZE0</displayName>
+    <name>DSI_BASIC_SIZE0_REG</name>
+    <displayName>DSI_BASIC_SIZE0_REG</displayName>
     <description>dsi_basic_size0 </description>
     <addressOffset>0x018</addressOffset>
     <size>0x20</size>
@@ -6054,8 +6054,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BASIC_SIZE1</name>
-    <displayName>DSI_BASIC_SIZE1</displayName>
+    <name>DSI_BASIC_SIZE1_REG</name>
+    <displayName>DSI_BASIC_SIZE1_REG</displayName>
     <description>dsi_basic_size1 </description>
     <addressOffset>0x01C</addressOffset>
     <size>0x20</size>
@@ -6066,8 +6066,8 @@
     <dim>8</dim>
     <addressOffset>0x00000020</addressOffset>
     <register>
-     <name>DSI_BASIC_INST0</name>
-     <displayName>DSI_BASIC_INST0</displayName>
+     <name>DSI_BASIC_INST0_REG</name>
+     <displayName>DSI_BASIC_INST0_REG</displayName>
      <description>dsi_inst_func[8] 0x20 - 0x3c</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -6077,8 +6077,8 @@
     <dimIncrement>0x020</dimIncrement>
    </cluster>
    <register>
-    <name>DSI_INST_LOOP_SEL</name>
-    <displayName>DSI_INST_LOOP_SEL</displayName>
+    <name>DSI_INST_LOOP_SEL_REG</name>
+    <displayName>DSI_INST_LOOP_SEL_REG</displayName>
     <description>dsi_inst_loop_sel 0x40 - 0x5c</description>
     <addressOffset>0x040</addressOffset>
     <size>0x20</size>
@@ -6086,8 +6086,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_INST_LOOP_NUM</name>
-    <displayName>DSI_INST_LOOP_NUM</displayName>
+    <name>DSI_INST_LOOP_NUM_REG</name>
+    <displayName>DSI_INST_LOOP_NUM_REG</displayName>
     <description>dsi_inst_loop_num </description>
     <addressOffset>0x044</addressOffset>
     <size>0x20</size>
@@ -6095,8 +6095,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_INST_JUMP_SEL</name>
-    <displayName>DSI_INST_JUMP_SEL</displayName>
+    <name>DSI_INST_JUMP_SEL_REG</name>
+    <displayName>DSI_INST_JUMP_SEL_REG</displayName>
     <description>dsi_inst_jump_sel </description>
     <addressOffset>0x048</addressOffset>
     <size>0x20</size>
@@ -6107,8 +6107,8 @@
     <dim>2</dim>
     <addressOffset>0x0000004C</addressOffset>
     <register>
-     <name>DSI_INST_JUMP_CFG</name>
-     <displayName>DSI_INST_JUMP_CFG</displayName>
+     <name>DSI_INST_JUMP_CFG_REG</name>
+     <displayName>DSI_INST_JUMP_CFG_REG</displayName>
      <description>dsi_inst_jump_cfg[2] </description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -6118,8 +6118,8 @@
     <dimIncrement>0x008</dimIncrement>
    </cluster>
    <register>
-    <name>DSI_INST_LOOP_NUM2</name>
-    <displayName>DSI_INST_LOOP_NUM2</displayName>
+    <name>DSI_INST_LOOP_NUM2_REG</name>
+    <displayName>DSI_INST_LOOP_NUM2_REG</displayName>
     <description>dsi_inst_loop_num2 </description>
     <addressOffset>0x054</addressOffset>
     <size>0x20</size>
@@ -6127,8 +6127,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_TRANS_START</name>
-    <displayName>DSI_TRANS_START</displayName>
+    <name>DSI_TRANS_START_REG</name>
+    <displayName>DSI_TRANS_START_REG</displayName>
     <description>dsi_trans_start 0x60 - 0x6c</description>
     <addressOffset>0x060</addressOffset>
     <size>0x20</size>
@@ -6136,8 +6136,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_TRANS_ZERO</name>
-    <displayName>DSI_TRANS_ZERO</displayName>
+    <name>DSI_TRANS_ZERO_REG</name>
+    <displayName>DSI_TRANS_ZERO_REG</displayName>
     <description>dsi_trans_zero </description>
     <addressOffset>0x078</addressOffset>
     <size>0x20</size>
@@ -6145,8 +6145,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_TCON_DRQ</name>
-    <displayName>DSI_TCON_DRQ</displayName>
+    <name>DSI_TCON_DRQ_REG</name>
+    <displayName>DSI_TCON_DRQ_REG</displayName>
     <description>dsi_tcon_drq </description>
     <addressOffset>0x07C</addressOffset>
     <size>0x20</size>
@@ -6154,8 +6154,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_PIXEL_CTL0</name>
-    <displayName>DSI_PIXEL_CTL0</displayName>
+    <name>DSI_PIXEL_CTL0_REG</name>
+    <displayName>DSI_PIXEL_CTL0_REG</displayName>
     <description>dsi_pixel_ctl0 0x80 - 0x8c</description>
     <addressOffset>0x080</addressOffset>
     <size>0x20</size>
@@ -6163,8 +6163,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_PIXEL_CTL1</name>
-    <displayName>DSI_PIXEL_CTL1</displayName>
+    <name>DSI_PIXEL_CTL1_REG</name>
+    <displayName>DSI_PIXEL_CTL1_REG</displayName>
     <description>dsi_pixel_ctl1 </description>
     <addressOffset>0x084</addressOffset>
     <size>0x20</size>
@@ -6172,8 +6172,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_PIXEL_PH</name>
-    <displayName>DSI_PIXEL_PH</displayName>
+    <name>DSI_PIXEL_PH_REG</name>
+    <displayName>DSI_PIXEL_PH_REG</displayName>
     <description>dsi_pixel_ph 0x90 - 0x9c</description>
     <addressOffset>0x090</addressOffset>
     <size>0x20</size>
@@ -6181,8 +6181,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_PIXEL_PD</name>
-    <displayName>DSI_PIXEL_PD</displayName>
+    <name>DSI_PIXEL_PD_REG</name>
+    <displayName>DSI_PIXEL_PD_REG</displayName>
     <description>dsi_pixel_pd </description>
     <addressOffset>0x094</addressOffset>
     <size>0x20</size>
@@ -6190,8 +6190,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_PIXEL_PF0</name>
-    <displayName>DSI_PIXEL_PF0</displayName>
+    <name>DSI_PIXEL_PF0_REG</name>
+    <displayName>DSI_PIXEL_PF0_REG</displayName>
     <description>dsi_pixel_pf0 </description>
     <addressOffset>0x098</addressOffset>
     <size>0x20</size>
@@ -6199,8 +6199,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_PIXEL_PF1</name>
-    <displayName>DSI_PIXEL_PF1</displayName>
+    <name>DSI_PIXEL_PF1_REG</name>
+    <displayName>DSI_PIXEL_PF1_REG</displayName>
     <description>dsi_pixel_pf1 </description>
     <addressOffset>0x09C</addressOffset>
     <size>0x20</size>
@@ -6208,8 +6208,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_SYNC_HSS</name>
-    <displayName>DSI_SYNC_HSS</displayName>
+    <name>DSI_SYNC_HSS_REG</name>
+    <displayName>DSI_SYNC_HSS_REG</displayName>
     <description>dsi_sync_hss 0xb0 - 0xbc</description>
     <addressOffset>0x0B0</addressOffset>
     <size>0x20</size>
@@ -6217,8 +6217,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_SYNC_HSE</name>
-    <displayName>DSI_SYNC_HSE</displayName>
+    <name>DSI_SYNC_HSE_REG</name>
+    <displayName>DSI_SYNC_HSE_REG</displayName>
     <description>dsi_sync_hse </description>
     <addressOffset>0x0B4</addressOffset>
     <size>0x20</size>
@@ -6226,8 +6226,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_SYNC_VSS</name>
-    <displayName>DSI_SYNC_VSS</displayName>
+    <name>DSI_SYNC_VSS_REG</name>
+    <displayName>DSI_SYNC_VSS_REG</displayName>
     <description>dsi_sync_vss </description>
     <addressOffset>0x0B8</addressOffset>
     <size>0x20</size>
@@ -6235,8 +6235,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_SYNC_VSE</name>
-    <displayName>DSI_SYNC_VSE</displayName>
+    <name>DSI_SYNC_VSE_REG</name>
+    <displayName>DSI_SYNC_VSE_REG</displayName>
     <description>dsi_sync_vse </description>
     <addressOffset>0x0BC</addressOffset>
     <size>0x20</size>
@@ -6244,8 +6244,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BLK_HSA0</name>
-    <displayName>DSI_BLK_HSA0</displayName>
+    <name>DSI_BLK_HSA0_REG</name>
+    <displayName>DSI_BLK_HSA0_REG</displayName>
     <description>dsi_blk_hsa0 0xc0 - 0xcc</description>
     <addressOffset>0x0C0</addressOffset>
     <size>0x20</size>
@@ -6253,8 +6253,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BLK_HSA1</name>
-    <displayName>DSI_BLK_HSA1</displayName>
+    <name>DSI_BLK_HSA1_REG</name>
+    <displayName>DSI_BLK_HSA1_REG</displayName>
     <description>dsi_blk_hsa1 </description>
     <addressOffset>0x0C4</addressOffset>
     <size>0x20</size>
@@ -6262,8 +6262,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BLK_HBP0</name>
-    <displayName>DSI_BLK_HBP0</displayName>
+    <name>DSI_BLK_HBP0_REG</name>
+    <displayName>DSI_BLK_HBP0_REG</displayName>
     <description>dsi_blk_hbp0 </description>
     <addressOffset>0x0C8</addressOffset>
     <size>0x20</size>
@@ -6271,8 +6271,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BLK_HBP1</name>
-    <displayName>DSI_BLK_HBP1</displayName>
+    <name>DSI_BLK_HBP1_REG</name>
+    <displayName>DSI_BLK_HBP1_REG</displayName>
     <description>dsi_blk_hbp1 </description>
     <addressOffset>0x0CC</addressOffset>
     <size>0x20</size>
@@ -6280,8 +6280,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BLK_HFP0</name>
-    <displayName>DSI_BLK_HFP0</displayName>
+    <name>DSI_BLK_HFP0_REG</name>
+    <displayName>DSI_BLK_HFP0_REG</displayName>
     <description>dsi_blk_hfp0 0xd0 - 0xdc</description>
     <addressOffset>0x0D0</addressOffset>
     <size>0x20</size>
@@ -6289,8 +6289,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BLK_HFP1</name>
-    <displayName>DSI_BLK_HFP1</displayName>
+    <name>DSI_BLK_HFP1_REG</name>
+    <displayName>DSI_BLK_HFP1_REG</displayName>
     <description>dsi_blk_hfp1 </description>
     <addressOffset>0x0D4</addressOffset>
     <size>0x20</size>
@@ -6298,8 +6298,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BLK_HBLK0</name>
-    <displayName>DSI_BLK_HBLK0</displayName>
+    <name>DSI_BLK_HBLK0_REG</name>
+    <displayName>DSI_BLK_HBLK0_REG</displayName>
     <description>dsi_blk_hblk0 0xe0 - 0xec</description>
     <addressOffset>0x0E0</addressOffset>
     <size>0x20</size>
@@ -6307,8 +6307,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BLK_HBLK1</name>
-    <displayName>DSI_BLK_HBLK1</displayName>
+    <name>DSI_BLK_HBLK1_REG</name>
+    <displayName>DSI_BLK_HBLK1_REG</displayName>
     <description>dsi_blk_hblk1 </description>
     <addressOffset>0x0E4</addressOffset>
     <size>0x20</size>
@@ -6316,8 +6316,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BLK_VBLK0</name>
-    <displayName>DSI_BLK_VBLK0</displayName>
+    <name>DSI_BLK_VBLK0_REG</name>
+    <displayName>DSI_BLK_VBLK0_REG</displayName>
     <description>dsi_blk_vblk0 </description>
     <addressOffset>0x0E8</addressOffset>
     <size>0x20</size>
@@ -6325,8 +6325,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BLK_VBLK1</name>
-    <displayName>DSI_BLK_VBLK1</displayName>
+    <name>DSI_BLK_VBLK1_REG</name>
+    <displayName>DSI_BLK_VBLK1_REG</displayName>
     <description>dsi_blk_vblk1 </description>
     <addressOffset>0x0EC</addressOffset>
     <size>0x20</size>
@@ -6334,8 +6334,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BURST_LINE</name>
-    <displayName>DSI_BURST_LINE</displayName>
+    <name>DSI_BURST_LINE_REG</name>
+    <displayName>DSI_BURST_LINE_REG</displayName>
     <description>dsi_burst_line 0xf0 - 0x1fc</description>
     <addressOffset>0x0F0</addressOffset>
     <size>0x20</size>
@@ -6343,8 +6343,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_BURST_DRQ</name>
-    <displayName>DSI_BURST_DRQ</displayName>
+    <name>DSI_BURST_DRQ_REG</name>
+    <displayName>DSI_BURST_DRQ_REG</displayName>
     <description>dsi_burst_drq </description>
     <addressOffset>0x0F4</addressOffset>
     <size>0x20</size>
@@ -6352,8 +6352,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_CMD_CTL</name>
-    <displayName>DSI_CMD_CTL</displayName>
+    <name>DSI_CMD_CTL_REG</name>
+    <displayName>DSI_CMD_CTL_REG</displayName>
     <description>dsi_cmd_ctl 0x200 - 0x23c</description>
     <addressOffset>0x200</addressOffset>
     <size>0x20</size>
@@ -6364,8 +6364,8 @@
     <dim>8</dim>
     <addressOffset>0x00000240</addressOffset>
     <register>
-     <name>DSI_CMD_RX</name>
-     <displayName>DSI_CMD_RX</displayName>
+     <name>DSI_CMD_RX_REG</name>
+     <displayName>DSI_CMD_RX_REG</displayName>
      <description>dsi_cmd_rx[8] 0x240 - 0x2dc</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -6375,8 +6375,8 @@
     <dimIncrement>0x020</dimIncrement>
    </cluster>
    <register>
-    <name>DSI_DEBUG_VIDEO0</name>
-    <displayName>DSI_DEBUG_VIDEO0</displayName>
+    <name>DSI_DEBUG_VIDEO0_REG</name>
+    <displayName>DSI_DEBUG_VIDEO0_REG</displayName>
     <description>dsi_debug_video0 0x2e0 - 0x2ec</description>
     <addressOffset>0x2E0</addressOffset>
     <size>0x20</size>
@@ -6384,8 +6384,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_DEBUG_VIDEO1</name>
-    <displayName>DSI_DEBUG_VIDEO1</displayName>
+    <name>DSI_DEBUG_VIDEO1_REG</name>
+    <displayName>DSI_DEBUG_VIDEO1_REG</displayName>
     <description>dsi_debug_video1 </description>
     <addressOffset>0x2E4</addressOffset>
     <size>0x20</size>
@@ -6393,8 +6393,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_DEBUG_INST</name>
-    <displayName>DSI_DEBUG_INST</displayName>
+    <name>DSI_DEBUG_INST_REG</name>
+    <displayName>DSI_DEBUG_INST_REG</displayName>
     <description>dsi_debug_inst 0x2f0 - 0x2fc</description>
     <addressOffset>0x2F0</addressOffset>
     <size>0x20</size>
@@ -6402,8 +6402,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_DEBUG_FIFO</name>
-    <displayName>DSI_DEBUG_FIFO</displayName>
+    <name>DSI_DEBUG_FIFO_REG</name>
+    <displayName>DSI_DEBUG_FIFO_REG</displayName>
     <description>dsi_debug_fifo </description>
     <addressOffset>0x2F4</addressOffset>
     <size>0x20</size>
@@ -6411,8 +6411,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DSI_DEBUG_DATA</name>
-    <displayName>DSI_DEBUG_DATA</displayName>
+    <name>DSI_DEBUG_DATA_REG</name>
+    <displayName>DSI_DEBUG_DATA_REG</displayName>
     <description>dsi_debug_data </description>
     <addressOffset>0x2F8</addressOffset>
     <size>0x20</size>
@@ -6423,8 +6423,8 @@
     <dim>64</dim>
     <addressOffset>0x00000300</addressOffset>
     <register>
-     <name>DSI_CMD_TX</name>
-     <displayName>DSI_CMD_TX</displayName>
+     <name>DSI_CMD_TX_REG</name>
+     <displayName>DSI_CMD_TX_REG</displayName>
      <description>dsi_cmd_tx[64] 0x300 - 0x3fc</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
@@ -6441,8 +6441,8 @@
   <baseAddress>0x05451000</baseAddress>
   <registers>
    <register>
-    <name>DPHY_GCTL</name>
-    <displayName>DPHY_GCTL</displayName>
+    <name>DPHY_GCTL_REG</name>
+    <displayName>DPHY_GCTL_REG</displayName>
     <description></description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
@@ -6450,8 +6450,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_TX_CTL</name>
-    <displayName>DPHY_TX_CTL</displayName>
+    <name>DPHY_TX_CTL_REG</name>
+    <displayName>DPHY_TX_CTL_REG</displayName>
     <description></description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
@@ -6459,8 +6459,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_RX_CTL</name>
-    <displayName>DPHY_RX_CTL</displayName>
+    <name>DPHY_RX_CTL_REG</name>
+    <displayName>DPHY_RX_CTL_REG</displayName>
     <description></description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>
@@ -6468,8 +6468,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_TX_TIME0</name>
-    <displayName>DPHY_TX_TIME0</displayName>
+    <name>DPHY_TX_TIME0_REG</name>
+    <displayName>DPHY_TX_TIME0_REG</displayName>
     <description></description>
     <addressOffset>0x010</addressOffset>
     <size>0x20</size>
@@ -6477,8 +6477,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_TX_TIME1</name>
-    <displayName>DPHY_TX_TIME1</displayName>
+    <name>DPHY_TX_TIME1_REG</name>
+    <displayName>DPHY_TX_TIME1_REG</displayName>
     <description></description>
     <addressOffset>0x014</addressOffset>
     <size>0x20</size>
@@ -6486,8 +6486,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_TX_TIME2</name>
-    <displayName>DPHY_TX_TIME2</displayName>
+    <name>DPHY_TX_TIME2_REG</name>
+    <displayName>DPHY_TX_TIME2_REG</displayName>
     <description></description>
     <addressOffset>0x018</addressOffset>
     <size>0x20</size>
@@ -6495,8 +6495,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_TX_TIME3</name>
-    <displayName>DPHY_TX_TIME3</displayName>
+    <name>DPHY_TX_TIME3_REG</name>
+    <displayName>DPHY_TX_TIME3_REG</displayName>
     <description></description>
     <addressOffset>0x01C</addressOffset>
     <size>0x20</size>
@@ -6504,8 +6504,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_TX_TIME4</name>
-    <displayName>DPHY_TX_TIME4</displayName>
+    <name>DPHY_TX_TIME4_REG</name>
+    <displayName>DPHY_TX_TIME4_REG</displayName>
     <description></description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
@@ -6513,8 +6513,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_RX_TIME0</name>
-    <displayName>DPHY_RX_TIME0</displayName>
+    <name>DPHY_RX_TIME0_REG</name>
+    <displayName>DPHY_RX_TIME0_REG</displayName>
     <description></description>
     <addressOffset>0x030</addressOffset>
     <size>0x20</size>
@@ -6522,8 +6522,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_RX_TIME1</name>
-    <displayName>DPHY_RX_TIME1</displayName>
+    <name>DPHY_RX_TIME1_REG</name>
+    <displayName>DPHY_RX_TIME1_REG</displayName>
     <description></description>
     <addressOffset>0x034</addressOffset>
     <size>0x20</size>
@@ -6531,8 +6531,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_RX_TIME2</name>
-    <displayName>DPHY_RX_TIME2</displayName>
+    <name>DPHY_RX_TIME2_REG</name>
+    <displayName>DPHY_RX_TIME2_REG</displayName>
     <description></description>
     <addressOffset>0x038</addressOffset>
     <size>0x20</size>
@@ -6540,8 +6540,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_RX_TIME3</name>
-    <displayName>DPHY_RX_TIME3</displayName>
+    <name>DPHY_RX_TIME3_REG</name>
+    <displayName>DPHY_RX_TIME3_REG</displayName>
     <description></description>
     <addressOffset>0x040</addressOffset>
     <size>0x20</size>
@@ -6549,8 +6549,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_ANA0</name>
-    <displayName>DPHY_ANA0</displayName>
+    <name>DPHY_ANA0_REG</name>
+    <displayName>DPHY_ANA0_REG</displayName>
     <description></description>
     <addressOffset>0x04C</addressOffset>
     <size>0x20</size>
@@ -6558,8 +6558,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_ANA1</name>
-    <displayName>DPHY_ANA1</displayName>
+    <name>DPHY_ANA1_REG</name>
+    <displayName>DPHY_ANA1_REG</displayName>
     <description></description>
     <addressOffset>0x050</addressOffset>
     <size>0x20</size>
@@ -6567,8 +6567,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_ANA2</name>
-    <displayName>DPHY_ANA2</displayName>
+    <name>DPHY_ANA2_REG</name>
+    <displayName>DPHY_ANA2_REG</displayName>
     <description></description>
     <addressOffset>0x054</addressOffset>
     <size>0x20</size>
@@ -6576,8 +6576,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_ANA3</name>
-    <displayName>DPHY_ANA3</displayName>
+    <name>DPHY_ANA3_REG</name>
+    <displayName>DPHY_ANA3_REG</displayName>
     <description></description>
     <addressOffset>0x058</addressOffset>
     <size>0x20</size>
@@ -6585,8 +6585,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_ANA4</name>
-    <displayName>DPHY_ANA4</displayName>
+    <name>DPHY_ANA4_REG</name>
+    <displayName>DPHY_ANA4_REG</displayName>
     <description></description>
     <addressOffset>0x05C</addressOffset>
     <size>0x20</size>
@@ -6594,8 +6594,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_INT_EN0</name>
-    <displayName>DPHY_INT_EN0</displayName>
+    <name>DPHY_INT_EN0_REG</name>
+    <displayName>DPHY_INT_EN0_REG</displayName>
     <description></description>
     <addressOffset>0x060</addressOffset>
     <size>0x20</size>
@@ -6603,8 +6603,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_INT_EN1</name>
-    <displayName>DPHY_INT_EN1</displayName>
+    <name>DPHY_INT_EN1_REG</name>
+    <displayName>DPHY_INT_EN1_REG</displayName>
     <description></description>
     <addressOffset>0x064</addressOffset>
     <size>0x20</size>
@@ -6612,8 +6612,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_INT_EN2</name>
-    <displayName>DPHY_INT_EN2</displayName>
+    <name>DPHY_INT_EN2_REG</name>
+    <displayName>DPHY_INT_EN2_REG</displayName>
     <description></description>
     <addressOffset>0x068</addressOffset>
     <size>0x20</size>
@@ -6621,8 +6621,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_INT_PD0</name>
-    <displayName>DPHY_INT_PD0</displayName>
+    <name>DPHY_INT_PD0_REG</name>
+    <displayName>DPHY_INT_PD0_REG</displayName>
     <description></description>
     <addressOffset>0x070</addressOffset>
     <size>0x20</size>
@@ -6630,8 +6630,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_INT_PD1</name>
-    <displayName>DPHY_INT_PD1</displayName>
+    <name>DPHY_INT_PD1_REG</name>
+    <displayName>DPHY_INT_PD1_REG</displayName>
     <description></description>
     <addressOffset>0x074</addressOffset>
     <size>0x20</size>
@@ -6639,8 +6639,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_INT_PD2</name>
-    <displayName>DPHY_INT_PD2</displayName>
+    <name>DPHY_INT_PD2_REG</name>
+    <displayName>DPHY_INT_PD2_REG</displayName>
     <description></description>
     <addressOffset>0x078</addressOffset>
     <size>0x20</size>
@@ -6648,8 +6648,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_DBG0</name>
-    <displayName>DPHY_DBG0</displayName>
+    <name>DPHY_DBG0_REG</name>
+    <displayName>DPHY_DBG0_REG</displayName>
     <description></description>
     <addressOffset>0x0E0</addressOffset>
     <size>0x20</size>
@@ -6657,8 +6657,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_DBG1</name>
-    <displayName>DPHY_DBG1</displayName>
+    <name>DPHY_DBG1_REG</name>
+    <displayName>DPHY_DBG1_REG</displayName>
     <description></description>
     <addressOffset>0x0E4</addressOffset>
     <size>0x20</size>
@@ -6666,8 +6666,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_DBG2</name>
-    <displayName>DPHY_DBG2</displayName>
+    <name>DPHY_DBG2_REG</name>
+    <displayName>DPHY_DBG2_REG</displayName>
     <description></description>
     <addressOffset>0x0E8</addressOffset>
     <size>0x20</size>
@@ -6675,8 +6675,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_DBG3</name>
-    <displayName>DPHY_DBG3</displayName>
+    <name>DPHY_DBG3_REG</name>
+    <displayName>DPHY_DBG3_REG</displayName>
     <description></description>
     <addressOffset>0x0EC</addressOffset>
     <size>0x20</size>
@@ -6684,8 +6684,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_DBG4</name>
-    <displayName>DPHY_DBG4</displayName>
+    <name>DPHY_DBG4_REG</name>
+    <displayName>DPHY_DBG4_REG</displayName>
     <description></description>
     <addressOffset>0x0F0</addressOffset>
     <size>0x20</size>
@@ -6693,8 +6693,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DPHY_DBG5</name>
-    <displayName>DPHY_DBG5</displayName>
+    <name>DPHY_DBG5_REG</name>
+    <displayName>DPHY_DBG5_REG</displayName>
     <description></description>
     <addressOffset>0x0F4</addressOffset>
     <size>0x20</size>

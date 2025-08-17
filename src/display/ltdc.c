@@ -3318,10 +3318,10 @@ static void t113_DSI_controller_configuration(const videomode_t * vdmode)
 		DSI_DPHY->COMBO_PHY_REG0 = 0xf;
 		local_delay_us(5);
 
-		DSI_DPHY->DPHY_ANA4 = 0x84000000;
-		DSI_DPHY->DPHY_ANA3 = 0x01040000;
-		DSI_DPHY->DPHY_ANA2 = DSI_DPHY->DPHY_ANA2 & (0x0u << 1);	/* ;) */
-		DSI_DPHY->DPHY_ANA1 = 0x0;
+		DSI_DPHY->DPHY_ANA4_REG = 0x84000000;
+		DSI_DPHY->DPHY_ANA3_REG = 0x01040000;
+		DSI_DPHY->DPHY_ANA2_REG = DSI_DPHY->DPHY_ANA2_REG & (0x0u << 1);	/* ;) */
+		DSI_DPHY->DPHY_ANA1_REG = 0x0;
 
 	}
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
