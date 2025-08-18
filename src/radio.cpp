@@ -21342,8 +21342,7 @@ application_initialize(void)
 
 		IRQLSPINLOCK_INITIALIZE(& boardupdatelock);
 		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL);
-		//ticker_initialize_user_display(& displatchticker, NTICKS(1000 / glatchfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
-		ticker_initialize_user(& displatchticker, NTICKS(1000 / glatchfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_initialize_user_display(& displatchticker, NTICKS(1000 / glatchfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
 		ticker_add(& displatchticker);
 	}
 
