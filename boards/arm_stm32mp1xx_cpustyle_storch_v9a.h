@@ -294,25 +294,49 @@
 
 	#define ENCODER2_NOSPOOL 1
 
-	#define ENCODER_INITIALIZE() \
+	#if ENCODER2_REVERSE
+		#define ENCODER2_INITIALIZE() \
+			do { \
+				static einthandler_t h2; \
+				static ticker_t th2; \
+				/* func encoder */ \
+				arm_hardware_piog_inputs(EENCODER2_BITS); \
+				arm_hardware_piog_updown(EENCODER2_BITS, EENCODER2_BITS, 0); \
+				einthandler_initialize(& h2, EENCODER2_BITS, spool_encinterrupts_ccw, & encoder2); \
+				arm_hardware_piog_onchangeinterrupt(EENCODER2_BITS, EENCODER2_BITS, EENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
+				/* ticker for spool */ \
+				ticker_initialize(& th2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts_ccw, & encoder2); \
+			} while (0)
+	#else /* ENCODER2_REVERSE */
+		#define ENCODER2_INITIALIZE() \
+			do { \
+				static einthandler_t h2; \
+				static ticker_t th2; \
+				/* func encoder */ \
+				arm_hardware_piog_inputs(EENCODER2_BITS); \
+				arm_hardware_piog_updown(EENCODER2_BITS, EENCODER2_BITS, 0); \
+				einthandler_initialize(& h2, EENCODER2_BITS, spool_encinterrupts, & encoder2); \
+				arm_hardware_piog_onchangeinterrupt(EENCODER2_BITS, EENCODER2_BITS, EENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
+				/* ticker for spool */ \
+				ticker_initialize(& th2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts, & encoder2); \
+			} while (0)
+	#endif /* ENCODER2_REVERSE */
+
+	#define ENCODER1_INITIALIZE() \
 		do { \
 			static einthandler_t h1; \
-			static einthandler_t h2; \
-			static ticker_t th2; \
 			/* main encoder */ \
 			arm_hardware_piog_inputs(EENCODER_BITS); \
 			arm_hardware_piog_updown(EENCODER_BITS, EENCODER_BITS, 0); \
 			einthandler_initialize(& h1, EENCODER_BITS, spool_encinterrupts, & encoder1); \
 			arm_hardware_piog_onchangeinterrupt(EENCODER_BITS, EENCODER_BITS, EENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
-			/* func encoder */ \
-			arm_hardware_piog_inputs(EENCODER2_BITS); \
-			arm_hardware_piog_updown(EENCODER2_BITS, EENCODER2_BITS, 0); \
-			einthandler_initialize(& h2, EENCODER2_BITS, spool_encinterrupts, & encoder2); \
-			arm_hardware_piog_onchangeinterrupt(EENCODER2_BITS, EENCODER2_BITS, EENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
-			/* ticker for spool */ \
-			ticker_initialize(& th2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts, & encoder2); \
 		} while (0)
 
+	#define ENCODER_INITIALIZE() \
+		do { \
+			ENCODER1_INITIALIZE(); \
+			ENCODER2_INITIALIZE(); \
+		} while (0)
 #endif
 
 	// Инициализируются I2S2 в дуплексном режиме.
