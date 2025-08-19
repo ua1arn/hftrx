@@ -52,7 +52,7 @@ static void showpos(uint_fast8_t pos)
 		PSTR("POS %2u"), (unsigned) pos
 		 );
 	display_gotoxy(0, 0);
-	display_at(buff, 0);
+	display_text(buff, 0);
 }
 
 #endif
@@ -3837,12 +3837,6 @@ static void fb_print(const struct fb * p, int x, int y, int selected)
 		PRINTF(PSTR("%8lu  %s\n"), p->fno.fsize, p->fno.fname);
 	}
 
-	//uint_fast8_t lowhalf = HALFCOUNT_SMALL2 - 1;
-	//do
-	//{
-	//	display_gotoxy(x, y + lowhalf);
-	//	display_string2(buff, lowhalf);		// печать буфера - маленьким шрифтом. 0=всегда для данного дисплея
-	//} while (lowhalf --);
 }
 #endif
 
@@ -3931,7 +3925,7 @@ static uint_fast64_t mmcCardSize(BYTE drv)
 	return st != RES_OK ? 0 : (uint_fast64_t) v * MMC_SECTORSIZE;
 }
 
-#if 1 && WITHDEBUG && WITHUSEFATFS
+#if 0 && WITHDEBUG && WITHUSEFATFS
 static void diskio_test(BYTE drv)
 {
 	const unsigned long MMC_SUCCESS2 = 0x00;
@@ -3939,8 +3933,17 @@ static void diskio_test(BYTE drv)
 	static RAMNOINIT_D1 FATFSALIGN_BEGIN unsigned char sectbuffr [MMC_SECTORSIZE] FATFSALIGN_END;
 	static RAMNOINIT_D1 FATFSALIGN_BEGIN unsigned char sectbuffw [MMC_SECTORSIZE] FATFSALIGN_END;
 
-	PRINTF(PSTR("Test SD card (drv=%d)\n"), (int) drv);
+	PRINTF(PSTR("Test SD/eMMC storage (drv=%d)\n"), (int) drv);
 	mmcInitialize(drv);
+	{
+		uint_fast64_t v = mmcCardSize(drv);
+		PRINTF(PSTR("SD/eMMC storage size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"),
+			(unsigned long) (v / 1024),
+			(unsigned long) (v / 1024 / 1024),
+			(unsigned long) (v >> 32),
+			(unsigned long) (v >> 0));
+
+	}
 
 	PRINTF(PSTR("Enter command:\n"));
 //test_disk();
@@ -3993,7 +3996,7 @@ static void diskio_test(BYTE drv)
 
 		/* Обеспечение работы USER MODE DPC */
 		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0, NULL);
+		processmessages(& kbch, & kbready);
 
 		char c;
 		if (dbg_getchar(& c))
@@ -4101,7 +4104,7 @@ static void diskio_test(BYTE drv)
 			case 'q':
 				{
 					uint_fast64_t v = mmcCardSize(drv);
-					PRINTF(PSTR("SD Card size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"),
+					PRINTF(PSTR("SD/eMMC storage size = %lu KB (%lu MB) (%08lx:%08lx bytes)\n"),
 						(unsigned long) (v / 1024), 
 						(unsigned long) (v / 1024 / 1024), 
 						(unsigned long) (v >> 32), 
@@ -4128,7 +4131,7 @@ static void diskio_test(BYTE drv)
 						board_dpc_processing();		// обработка отложенного вызова user mode функций
 						/* Обеспечение работы USER MODE DPC */
 						uint_fast8_t kbch, kbready;
-						processmessages(& kbch, & kbready, 0, NULL);
+						processmessages(& kbch, & kbready);
 						// проверка прерывания работы с клавиатуры
 						char c;
 						if (dbg_getchar(& c))
@@ -4155,16 +4158,16 @@ static void diskio_test(BYTE drv)
 
 			case 'W':
 				{
-					unsigned nsect = mmcCardSize(drv) / MMC_SECTORSIZE;
-					//unsigned nsect = 256 * 1024 * 2;	// 10M
+					//unsigned nsect = mmcCardSize(drv) / MMC_SECTORSIZE;
+					unsigned nsect = 10 * 1024 * 2;	// 10M
 					// Wipe SD
-					PRINTF(PSTR("Wipe SD card - first %u sectors. Press 'y' for proceed\n"), nsect);
+					PRINTF(PSTR("Wipe SD card - first %u sectors (by previously prepared data). Press 'y' for proceed\n"), nsect);
 					char c = 0;
 					for (;;)
 					{
 						/* Обеспечение работы USER MODE DPC */
 						uint_fast8_t kbch, kbready;
-						processmessages(& kbch, & kbready, 0, NULL);
+						processmessages(& kbch, & kbready);
 
 						if (dbg_getchar(& c))
 						{
@@ -4191,7 +4194,7 @@ static void diskio_test(BYTE drv)
 						{
 							/* Обеспечение работы USER MODE DPC */
 							uint_fast8_t kbch, kbready;
-							processmessages(& kbch, & kbready, 0, NULL);
+							processmessages(& kbch, & kbready);
 							// проверка прерывания работы с клавиатуры
 							char c;
 							if (dbg_getchar(& c))
@@ -4249,7 +4252,7 @@ static void fatfs_filesystest(int speedtest)
 	{
 		/* Обеспечение работы USER MODE DPC */
 		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0, NULL);
+		processmessages(& kbch, & kbready);
 		char c;
 		if (dbg_getchar(& c))
 		{
@@ -4394,6 +4397,7 @@ static void fatfs_filesystest(int speedtest)
 }
 
 #if 1
+
 static int fatfs_filesyspeedstest(void)
 {
 	uint_fast16_t year;
@@ -4417,6 +4421,8 @@ static int fatfs_filesyspeedstest(void)
 	return dosaveblocks(testlog);
 }
 #endif
+
+#if CPUSTYLE_ALLWINNER
 
 static void programming(FIL * f, unsigned offset, BYTE targetDEV)
 {
@@ -4497,7 +4503,7 @@ bootloaderFLASH(const char * volPrefix, BYTE targetDEV)
 	{
 		/* Обеспечение работы USER MODE DPC */
 		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0, NULL);
+		processmessages(& kbch, & kbready);
 		char c;
 		if (dbg_getchar(& c))
 		{
@@ -4569,6 +4575,7 @@ startProgramming:
 	rc = f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
 	PRINTF("Done\n");
 }
+#endif /* CPUSTYLE_ALLWINNER */
 
 #endif
 
@@ -5354,10 +5361,10 @@ void looptests(void)
 	{
 		// Encoder tests
 		PRINTF("ef1=%+3d, ef2=%+3d, ef3=%+3d, ef4=%+3d\n",
-				(int) encoder_get_delta(& encoder_ENC1F, 1),
-				(int) encoder_get_delta(& encoder_ENC2F, 1),
-				(int) encoder_get_delta(& encoder_ENC3F, 1),
-				(int) encoder_get_delta(& encoder_ENC4F, 1)
+				(int) encoder_get_delta(& encoder_ENC1F),
+				(int) encoder_get_delta(& encoder_ENC2F),
+				(int) encoder_get_delta(& encoder_ENC3F),
+				(int) encoder_get_delta(& encoder_ENC4F)
 				);
 	}
 #endif
@@ -5510,12 +5517,12 @@ static void showstate(
 
 	local_snprintf_P(buff, 32, PSTR(" ON: %4u0 mS"), ontime);
 	display_gotoxy(0, 0);
-	display_at(buff, 0);
+	display_text(buff, 0);
 
 
 	local_snprintf_P(buff, 32, PSTR("OFF: %4u0 mS"), offtime);
 	display_gotoxy(0, 1);
-	display_at(buff, 0);
+	display_text(buff, 0);
 
 }
 
@@ -5583,7 +5590,7 @@ static void display_solidbar(
 		const uint_fast16_t t = y;
 		y = y2, y2 = t;
 	}
-	display_fillrect(& dbv, x, y, x2 - x, y2 - y, color);
+	colpip_fillrect(& dbv, x, y, x2 - x, y2 - y, color);
 }
 
 
@@ -5682,9 +5689,9 @@ GridTest(void)
 	// Тест порядка цветов в пикселе
 	const unsigned yrct0 = DIM_Y / 4;
 	const unsigned xrct0 = DIM_X / 4;
-	display_fillrect(& dbv, xrct0, yrct0 * 1, xrct0, yrct0, COLORPIP_RED);
-	display_fillrect(& dbv, xrct0, yrct0 * 2, xrct0, yrct0, COLORPIP_GREEN);
-	display_fillrect(& dbv, xrct0, yrct0 * 3, xrct0, yrct0, COLORPIP_BLUE);
+	colpip_fillrect(& dbv, xrct0, yrct0 * 1, xrct0, yrct0, COLORPIP_RED);
+	colpip_fillrect(& dbv, xrct0, yrct0 * 2, xrct0, yrct0, COLORPIP_GREEN);
+	colpip_fillrect(& dbv, xrct0, yrct0 * 3, xrct0, yrct0, COLORPIP_BLUE);
 /*
 	const unsigned yg0 = DIM_Y / 24;
 	const unsigned xg0 = DIM_X / 30;
@@ -5698,7 +5705,7 @@ GridTest(void)
 				 );
 */
 
-	display_fillrect(& dbv, xm * 4 / 10, 0, xm * 3 / 10, ym * 2 / 10, COLORPIP_WHITE);
+	colpip_fillrect(& dbv, xm * 4 / 10, 0, xm * 3 / 10, ym * 2 / 10, COLORPIP_WHITE);
 	display_line(& dbv, xm * 6 / 10,  0, xm * 6 / 10, ym,  COLORPIP_RED);
 
 	/* Interlase clocke test.	*/
@@ -9773,7 +9780,7 @@ void vm41nandtest(void)
 	{
 		char c;
 		uint_fast8_t kbch, kbready;
-		processmessages(& kbch, & kbready, 0, NULL);
+		processmessages(& kbch, & kbready);
 		if (dbg_getchar(& c))
 		{
 			switch (c)
@@ -10044,20 +10051,514 @@ static void lidar_parse(unsigned char c)
 // p15, 1, <Rt>, c15, c3, 0; -> __get_CP64(15, 1, result, 15);  Read CBAR into Rt
 // p15, 1, <Rt>, <Rt2>, c15; -> __get_CP64(15, 1, result, 15);
 
+#if WITHLVGL
+
+#include "lvgl.h"
+#include "../demos/lv_demos.h"
+#include "layouts/grid/lv_grid.h"
+//#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
+//#include "src/lvgl_gui/styles.h"
+
+/**
+ * Draw a line to the canvas
+ */
+static void lv_example_canvas_7(lv_obj_t * parent)
+{
+	enum { CANVAS_WIDTH = 300, CANVAS_HEIGHT = 300 };
+
+
+    lv_draw_rect_dsc_t rect_dsc;
+    lv_draw_rect_dsc_init(&rect_dsc);
+    rect_dsc.radius = 10;
+    rect_dsc.bg_opa = LV_OPA_COVER;
+    rect_dsc.bg_grad.dir = LV_GRAD_DIR_VER;
+    rect_dsc.bg_grad.stops[0].color = lv_palette_main(LV_PALETTE_RED);
+    rect_dsc.bg_grad.stops[0].opa = LV_OPA_100;
+    rect_dsc.bg_grad.stops[1].color = lv_palette_main(LV_PALETTE_BLUE);
+    rect_dsc.bg_grad.stops[1].opa = LV_OPA_50;
+    rect_dsc.border_width = 2;
+    rect_dsc.border_opa = LV_OPA_90;
+    rect_dsc.border_color = lv_color_white();
+    rect_dsc.shadow_width = 5;
+    rect_dsc.shadow_offset_x = 5;
+    rect_dsc.shadow_offset_y = 5;
+
+    lv_draw_label_dsc_t label_dsc;
+    lv_draw_label_dsc_init(&label_dsc);
+    label_dsc.color = lv_palette_main(LV_PALETTE_ORANGE);
+    label_dsc.text = "Some text on text canvas";
+    /*Create a buffer for the canvas*/
+//    LV_DRAW_BUF_DEFINE_STATIC(draw_buf_16bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_RGB565);
+//    LV_DRAW_BUF_INIT_STATIC(draw_buf_16bpp);
+	static RAMFRAMEBUFF __ALIGNED(64) uint8_t db1 [GXSIZE(CANVAS_WIDTH, CANVAS_HEIGHT) * 2];
+	static lv_draw_buf_t draw_buf_16bpp;
+    lv_draw_buf_init(& draw_buf_16bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_RGB565, 2 * GXADJ(CANVAS_WIDTH), db1, sizeof (db1)); \
+    lv_draw_buf_set_flag(& draw_buf_16bpp, LV_IMAGE_FLAGS_MODIFIABLE);
+
+    {
+        lv_obj_t * canvas1 = lv_canvas_create(parent);
+
+        lv_canvas_set_draw_buf(canvas1, & draw_buf_16bpp);
+        lv_obj_center(canvas1);
+        lv_canvas_fill_bg(canvas1, lv_palette_lighten(LV_PALETTE_GREY, 3), LV_OPA_COVER);
+
+        lv_layer_t layer;
+        lv_canvas_init_layer(canvas1, &layer);
+
+        lv_area_t coords_rect = {30, 20, 100, 70};
+        lv_draw_rect(&layer, &rect_dsc, &coords_rect);
+
+        lv_area_t coords_text = {40, 80, 100, 120};
+        lv_draw_label(&layer, &label_dsc, &coords_text);
+
+        lv_canvas_finish_layer(canvas1, &layer);
+
+        //lv_obj_delete(canvas1);
+		//lv_obj_set_flag(canvas1, LV_OBJ_FLAG_HIDDEN, 1);
+     }
+    /*Test the rotation. It requires another buffer where the original image is stored.
+     *So use previous canvas as image and rotate it to the new canvas*/
+//    LV_DRAW_BUF_DEFINE_STATIC(draw_buf_32bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_ARGB8888);
+//    LV_DRAW_BUF_INIT_STATIC(draw_buf_32bpp);
+	static RAMFRAMEBUFF __ALIGNED(64) uint8_t db2 [GXSIZE(CANVAS_WIDTH, CANVAS_HEIGHT) * 4];
+	static lv_draw_buf_t draw_buf_32bpp;
+    lv_draw_buf_init(& draw_buf_32bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_ARGB8888, 4 * GXADJ(CANVAS_WIDTH), db2, sizeof (db2)); \
+    lv_draw_buf_set_flag(& draw_buf_32bpp, LV_IMAGE_FLAGS_MODIFIABLE);
+    {
+        /*Create a canvas2 and initialize its palette*/
+        lv_obj_t * canvas2 = lv_canvas_create(parent);
+
+        lv_canvas_set_draw_buf(canvas2, &draw_buf_32bpp);
+        lv_canvas_fill_bg(canvas2, lv_color_hex3(0xccc), LV_OPA_COVER);
+        lv_obj_center(canvas2);
+
+        lv_canvas_fill_bg(canvas2, lv_palette_lighten(LV_PALETTE_GREY, 1), LV_OPA_COVER);
+
+        lv_layer_t layer;
+        lv_canvas_init_layer(canvas2, &layer);
+        lv_image_dsc_t img;
+        lv_draw_buf_to_image(&draw_buf_16bpp, &img);	// копируктся ранее нарисованный буфер
+        lv_draw_image_dsc_t img_dsc;
+        lv_draw_image_dsc_init(&img_dsc);
+        img_dsc.rotation = 120;
+        img_dsc.src = &img;
+        img_dsc.pivot.x = CANVAS_WIDTH / 2;
+        img_dsc.pivot.y = CANVAS_HEIGHT / 2;
+
+        lv_area_t coords_img = {0, 0, CANVAS_WIDTH - 1, CANVAS_HEIGHT - 1};
+        lv_draw_image(&layer, &img_dsc, &coords_img);
+
+        lv_canvas_finish_layer(canvas2, &layer);
+        //lv_obj_delete(canvas2);
+		//lv_obj_set_flag(canvas2, LV_OBJ_FLAG_HIDDEN, 1);
+
+    }
+}
+#endif /* WITHLVGL */
+
+#if 0
+
+// Очередь символов для передачи в канал обмена
+static u8queue_t txq;
+// Очередь принятых симвоов из канала обменна
+static u8queue_t rxq;
+
+// передача символа в канал. Ожидание, если очередь заполнена
+static int nmeaX_putc(int c)
+{
+	IRQL_t oldIrql;
+	uint_fast8_t f;
+
+	do {
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		f = uint8_queue_put(& txq, c);
+		hardware_uart4_enabletx(1);
+		LowerIrql(oldIrql);
+	} while (! f);
+	return c;
+}
+
+// Передача в канал указанного массива. Ожидание, если очередь заполнена
+static void uartX_write(const uint8_t * buff, size_t n)
+{
+	while (n --)
+	{
+		const uint8_t c = * buff ++;
+		nmeaX_putc(c);
+	}
+}
+
+static void uartX_format(const char * format, ...)
+{
+	char b [256];
+	int n, i;
+	va_list	ap;
+	va_start(ap, format);
+
+	n = vsnprintf(b, sizeof b / sizeof b [0], format, ap);
+
+	for (i = 0; i < n; ++ i)
+		nmeaX_putc(b [i]);
+
+	va_end(ap);
+}
+
+// callback по принятому символу. сохранить в очередь для обработки в user level
+void user_uart4_onrxchar(uint_fast8_t c)
+{
+	IRQL_t oldIrql;
+
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	uint8_queue_put(& rxq, c);
+	LowerIrql(oldIrql);
+}
+
+// callback по готовности последовательного порта к пердаче
+void user_uart4_ontxchar(void * ctx)
+{
+	uint_fast8_t c;
+	if (uint8_queue_get(& txq, & c))
+	{
+		hardware_uart4_tx(ctx, c);
+		if (uint8_queue_empty(& txq))
+			hardware_uart4_enabletx(0);
+	}
+	else
+	{
+		hardware_uart4_enabletx(0);
+	}
+}
+
+
+/////////////
+///
+///
+///
+
+static uint_fast8_t crc8update(const uint_fast8_t v, uint8_t crc)
+{
+
+	static const uint8_t crc8tab [256] =
+	{
+	    0x00, 0xD5, 0x7F, 0xAA, 0xFE, 0x2B, 0x81, 0x54, 0x29, 0xFC, 0x56, 0x83, 0xD7, 0x02, 0xA8, 0x7D,
+	    0x52, 0x87, 0x2D, 0xF8, 0xAC, 0x79, 0xD3, 0x06, 0x7B, 0xAE, 0x04, 0xD1, 0x85, 0x50, 0xFA, 0x2F,
+	    0xA4, 0x71, 0xDB, 0x0E, 0x5A, 0x8F, 0x25, 0xF0, 0x8D, 0x58, 0xF2, 0x27, 0x73, 0xA6, 0x0C, 0xD9,
+	    0xF6, 0x23, 0x89, 0x5C, 0x08, 0xDD, 0x77, 0xA2, 0xDF, 0x0A, 0xA0, 0x75, 0x21, 0xF4, 0x5E, 0x8B,
+	    0x9D, 0x48, 0xE2, 0x37, 0x63, 0xB6, 0x1C, 0xC9, 0xB4, 0x61, 0xCB, 0x1E, 0x4A, 0x9F, 0x35, 0xE0,
+	    0xCF, 0x1A, 0xB0, 0x65, 0x31, 0xE4, 0x4E, 0x9B, 0xE6, 0x33, 0x99, 0x4C, 0x18, 0xCD, 0x67, 0xB2,
+	    0x39, 0xEC, 0x46, 0x93, 0xC7, 0x12, 0xB8, 0x6D, 0x10, 0xC5, 0x6F, 0xBA, 0xEE, 0x3B, 0x91, 0x44,
+	    0x6B, 0xBE, 0x14, 0xC1, 0x95, 0x40, 0xEA, 0x3F, 0x42, 0x97, 0x3D, 0xE8, 0xBC, 0x69, 0xC3, 0x16,
+	    0xEF, 0x3A, 0x90, 0x45, 0x11, 0xC4, 0x6E, 0xBB, 0xC6, 0x13, 0xB9, 0x6C, 0x38, 0xED, 0x47, 0x92,
+	    0xBD, 0x68, 0xC2, 0x17, 0x43, 0x96, 0x3C, 0xE9, 0x94, 0x41, 0xEB, 0x3E, 0x6A, 0xBF, 0x15, 0xC0,
+	    0x4B, 0x9E, 0x34, 0xE1, 0xB5, 0x60, 0xCA, 0x1F, 0x62, 0xB7, 0x1D, 0xC8, 0x9C, 0x49, 0xE3, 0x36,
+	    0x19, 0xCC, 0x66, 0xB3, 0xE7, 0x32, 0x98, 0x4D, 0x30, 0xE5, 0x4F, 0x9A, 0xCE, 0x1B, 0xB1, 0x64,
+	    0x72, 0xA7, 0x0D, 0xD8, 0x8C, 0x59, 0xF3, 0x26, 0x5B, 0x8E, 0x24, 0xF1, 0xA5, 0x70, 0xDA, 0x0F,
+	    0x20, 0xF5, 0x5F, 0x8A, 0xDE, 0x0B, 0xA1, 0x74, 0x09, 0xDC, 0x76, 0xA3, 0xF7, 0x22, 0x88, 0x5D,
+	    0xD6, 0x03, 0xA9, 0x7C, 0x28, 0xFD, 0x57, 0x82, 0xFF, 0x2A, 0x80, 0x55, 0x01, 0xD4, 0x7E, 0xAB,
+	    0x84, 0x51, 0xFB, 0x2E, 0x7A, 0xAF, 0x05, 0xD0, 0xAD, 0x78, 0xD2, 0x07, 0x53, 0x86, 0x2C, 0xF9
+	};
+
+	return crc8tab [(crc ^ v) & 0xFF];
+}
+
+enum csrf_states
+{
+	CSRF_WAIT_SYNC, ///< CSRF_WAIT_SYNC
+	CSRF_FRAME_LEN, ///< CSRF_FRAME_LEN
+	CSRF_FRAME_TYPE,///< CSRF_FRAME_TYPE
+	CSRF_ORIG_ADDR,
+	CSRF_DEST_ADDR,
+	CSRF_PAYLOAD,   ///< CSRF_PAYLOAD
+	CSRF_CRC        ///< CSRF_CRC
+
+};
+
+static enum csrf_states state = CSRF_WAIT_SYNC;
+
+static uint_fast8_t crsf_type;
+static uint_fast8_t crsf_framelen;
+static uint_fast8_t crsf_crc;
+static uint_fast8_t crsf_dest_addr;
+static uint_fast8_t crsf_orig_addr;
+static uint_fast8_t crsf_lenbyte;	// необработанный байт длинны
+static uint_fast8_t crsf_broadcast;
+static uint8_t crsf_payload [255];
+static unsigned crsf_payload_ix;
+
+static void crsf_parser(const uint_fast8_t c)
+{
+	//PRINTF("%02X ", c);
+	crsf_crc = crc8update(c, crsf_crc);
+	switch (state)
+	{
+	case CSRF_WAIT_SYNC:
+		if (c == 0xC8)
+		{
+			state = CSRF_FRAME_LEN;
+		}
+		break;
+
+	case CSRF_FRAME_LEN:
+		if (c >= 2 && c <= 0x62)
+		{
+			// Broadcast Frame: Type + Payload + CRC,
+			// Extended header frame: Type + Destination address + Origin address + Payload + CRC
+//			crsf_framelen = c - 2;
+			crsf_lenbyte = c;
+			state = CSRF_FRAME_TYPE;
+			crsf_crc = 0x00;	// initial CRC accum
+		}
+		else
+		{
+			PRINTF("drop (bad packet length) ");
+			state = CSRF_WAIT_SYNC;
+		}
+		break;
+
+	case CSRF_FRAME_TYPE:
+		crsf_type = c;
+		crsf_payload_ix = 0;
+		if (crsf_type < 0x27)
+		{
+			crsf_framelen = crsf_lenbyte - 2;
+			crsf_broadcast = 1;
+			state = CSRF_PAYLOAD;
+		}
+		else
+		{
+			crsf_framelen = crsf_lenbyte - 4;
+			crsf_broadcast = 0;
+			state = CSRF_DEST_ADDR;
+		}
+		break;
+
+	case CSRF_DEST_ADDR:
+		crsf_dest_addr = c;
+		state = CSRF_ORIG_ADDR;
+		break;
+
+	case CSRF_ORIG_ADDR:
+		crsf_orig_addr = c;
+		state = CSRF_PAYLOAD;
+		break;
+
+	case CSRF_PAYLOAD:
+		if (crsf_payload_ix < ARRAY_SIZE(crsf_payload))
+		{
+			crsf_payload [crsf_payload_ix] = c;
+			if (++ crsf_payload_ix >= crsf_framelen)
+				state = CSRF_CRC;
+		}
+		else
+		{
+			PRINTF("drop (payload overflow) ");
+			state = CSRF_WAIT_SYNC;
+		}
+		break;
+
+	case CSRF_CRC:
+		state = CSRF_WAIT_SYNC;
+		if (crsf_crc == 0)
+		{
+			//PRINTF("bc=%d lb=%02X ty=%02X ", crsf_broadcast, crsf_lenbyte, crsf_type);
+			dbg_putchar(crsf_broadcast ? '*' : '-');
+			//printhex(0, crsf_payload, crsf_framelen);
+		}
+		else
+		{
+			PRINTF("[bc=%d lb=%02X  ty=%02X ", crsf_broadcast, crsf_lenbyte, crsf_type);
+			PRINTF("drop (bad CRC)] ");
+			//printhex(0, crsf_payload, crsf_framelen);
+		}
+		break;
+
+	default:
+		break;
+
+	}
+
+}
+
+static void csrftest(void)
+{
+	static uint8_t txb [512];
+	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
+	static uint8_t rxb [512];
+	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
+
+	const uint_fast32_t baudrate = 420000;
+	hardware_uart4_initialize(0, baudrate, 8, 0, 0);
+	hardware_uart4_set_speed(baudrate);
+
+
+
+	hardware_uart4_enablerx(1);
+	hardware_uart4_enabletx(0);
+
+	PRINTF("Test device\n");
+	for (;;)
+	{
+		/* Обеспечение работы USER MODE DPC */
+		uint_fast8_t kbch, kbready;
+		processmessages(& kbch, & kbready);
+
+		IRQL_t oldIrql;
+		uint_fast8_t f;
+		uint_fast8_t c;
+		/* Отладочные функции */
+		if (kbready)
+			PRINTF("bkbch=%02x\n", kbch);
+
+		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		f = uint8_queue_get(& rxq, & c);
+		LowerIrql(oldIrql);
+		if (f)
+		{
+			crsf_parser(c);
+		}
+	}
+}
+
+#endif
+
+#if 1
+
+static uint8_t data [6];
+static volatile uint_fast32_t pd;
+static volatile uint_fast32_t pv;
+static volatile uint_fast32_t zpd;
+static volatile uint_fast32_t crc;
+
+// callback по принятому символу. сохранить в очередь для обработки в user level
+void user_uart1_onrxchar(uint_fast8_t c)
+{
+	static int state = 0;
+	if (c & 0x80)
+		state = 0;
+
+	data [state ++] = c;
+	if (state >= 6)
+	{
+		state = 0;
+		pv = (data [0] >> 6) & 0x01;
+		zpd = (data [0] >> 5) & 0x01;
+		pd =
+			(data [0] & 0x07) * (UINT32_C(1) << 19) +
+			(data [1] & 0x7F) * (UINT32_C(1) << 12) +
+			(data [2] & 0x7F) * (UINT32_C(1) << 5) +
+			((data [3] >> 2) & 0x3F) * (UINT32_C(1) << 0) +
+			0;
+		crc =
+			(data [3] & 0x03) * (UINT32_C(1) << 14) +
+			(data [4] & 0x7F) * (UINT32_C(1) << 7) +
+			(data [5] & 0x7F) * (UINT32_C(1) << 0) +
+			0;
+	}
+}
+
+// callback по готовности последовательного порта к пердаче
+void user_uart1_ontxchar(void * ctx)
+{
+	hardware_uart1_enabletx(0);
+}
+
+//	C0 03 2C 13 62 0B
+//	C0 03 2C 13 62 0B
+//	C0 03 2C 13 62 0B
+//	C0 03 2C 13 62 0B
+
+static void enctest(void)
+{
+	const uint_fast32_t baudrate = 230400;
+	hardware_uart1_initialize(0, baudrate, 8, 0, 0);
+	hardware_uart1_set_speed(baudrate);
+
+
+
+	hardware_uart1_enablerx(1);
+	hardware_uart1_enabletx(0);
+
+	PRINTF("Test device\n");
+	for (;;)
+	{
+		/* Обеспечение работы USER MODE DPC */
+		uint_fast8_t kbch, kbready;
+		processmessages(& kbch, & kbready);
+
+		IRQL_t oldIrql;
+		uint_fast8_t f;
+		uint_fast8_t c;
+		/* Отладочные функции */
+		if (kbready)
+			PRINTF("bkbch=%02x\n", kbch);
+
+		unsigned angle100 = 36000 * (pd & 0x3FFF) / 16384;
+		PRINTF("pv=%u zpd=%u pd=%04X angle=%3u.%02u\n", (unsigned) pv, (unsigned) zpd, (unsigned) pd, angle100 / 100, angle100 % 100);
+//		RiseIrql(IRQL_SYSTEM, & oldIrql);
+//		f = uint8_queue_get(& rxq, & c);
+//		LowerIrql(oldIrql);
+//		if (f)
+//		{
+//			PRINTF("%02X ", c & 0xFF);
+//			//crsf_parser(c);
+//		}
+	}
+}
+
+#endif
+
+
 void hightests(void)
 {
+#if LCDMODE_LTDC
 	gxdrawb_t dbv;
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+#endif /* LCDMODE_LTDC */
 
 #if WITHLTDCHW && LCDMODE_LTDC
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
-		display_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
-		display_at(& dbv, 0, 0, "Start...");
+		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
+		display_text(& dbv, 0, 0, "Start...", 10, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0
+	{
+		enctest();
+	}
+#endif
+#if 0 && WITHLVGL
+	{
+		lv_example_canvas_7(lv_screen_active());
+		for (;;)
+			lv_timer_handler();
+	}
+#endif
+#if 0
+	{
+		csrftest();
+	}
+#endif
+#if 0 && WITHLVGL && LV_BUILD_DEMOS
+	{
+		//lv_demo_vector_graphic_not_buffered();
+
+	//	//char s1 [] = "stress";
+	//	char s1 [] = "widgets";
+	//	char * demo [] = { s1, };
+	//    lv_demos_create(demo, 1);
+	//
+	    lv_demo_widgets();
+	    lv_demo_widgets_start_slideshow();
+	    for (;;)
+	    {
+	    	board_dpc_processing();
+	    	lv_timer_handler();
+	    }
+	}
+#endif
 #if 0
 	{
 		for (;;)
@@ -10196,7 +10697,7 @@ void hightests(void)
 			for (;;)
 			{
 				uint_fast8_t kbch, kbready;
-				processmessages(& kbch, & kbready, 0, NULL);
+				processmessages(& kbch, & kbready);
 				if (kbready)
 				{
 					switch (kbch)
@@ -10252,19 +10753,19 @@ void hightests(void)
 		unsigned opaque;
 
 		opaque = 255;
-		colpip_fillrect2(buffer, dx, dy, 0, 0, DIM_X, DIM_Y, TFTALPHA(opaque, COLOR_RED), FILL_FLAG_NONE);
+		colpip_rectangle(& dbv, 0, 0, DIM_X, DIM_Y, TFTALPHA(opaque, COLOR_RED), FILL_FLAG_NONE);
 		PRINTF("Background (opaque=%u)\n", opaque);
 		printhex32(0, buffer, 16);
-		//display_at_P(0, 0, "Start...");
-		//display_at_P(100 / GRID2X(1), 100 / GRID2Y(1), "test");
+		//display_text(0, 0, "Start...");
+		//display_text(100 / GRID2X(1), 100 / GRID2Y(1), "test");
 
 		opaque = 128;
-		colpip_fillrect2(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_BLUE), FILL_FLAG_MIXBG);
+		colpip_rectangle(& dbv, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_BLUE), FILL_FLAG_MIXBG);
 		PRINTF("blue (opaque=%u)\n", opaque);
 		printhex32(0, buffer, 16);
 
 		opaque = 128;
-		colpip_fillrect2(buffer, dx, dy, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_GREEN), FILL_FLAG_MIXBG);
+		colpip_rectangle(& dbv, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_GREEN), FILL_FLAG_MIXBG);
 		PRINTF("green (opaque=%u)\n", opaque);
 		printhex32(0, buffer, 16);
 		//colmain_nextfb();
@@ -10272,18 +10773,6 @@ void hightests(void)
 			;
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 0
-	{
-		// V3s clocks information print
-		PRINTF("allwnr_v3s_get_cpu_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_cpu_freq() / 1000 / 1000));
-		PRINTF("allwnr_v3s_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_axi_freq() / 1000 / 1000));
-		PRINTF("allwnr_v3s_get_sysapb_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_sysapb_freq() / 1000 / 1000));
-		PRINTF("allwnr_v3s_get_ahb2_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_ahb2_freq() / 1000 / 1000));
-		PRINTF("allwnr_v3s_get_ahb1_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_ahb1_freq() / 1000 / 1000));
-		PRINTF("allwnr_v3s_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_apb2_freq() / 1000 / 1000));
-		PRINTF("allwnr_v3s_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_apb1_freq() / 1000 / 1000));
-	}
-#endif
 #if 0 && ! WITHISBOOTLOADER
 	{
 		// Test lidar
@@ -10733,6 +11222,18 @@ void hightests(void)
 		PRINTF("chipid=%08X\n", (unsigned) allwnr_t113_get_chipid());
 	}
 #endif
+#if 0
+	{
+		//printhex32(SID_BASE, SID, 1024);
+		PRINTF("SID memory dump:\n");
+		unsigned offs;
+		for (offs = 0; offs < 256; offs += 4)
+		{
+			PRINTF("SID[0x%02X]=%08X\n", offs, (unsigned) allwnr_t507_sid_read(offs));
+		}
+
+	}
+#endif
 #if 0 && (CPUSTYLE_T113) && WITHDEBUG
 	{
 //		uint32_t midr;
@@ -10831,7 +11332,7 @@ void hightests(void)
 
 	}
 #endif
-#if 0 && CPUSTYLE_A64
+#if 0 && CPUSTYLE_A64 && WITHDEBUG
 	{
 		PRINTF("C0_CPUX_CFG->C_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->C_CTRL_REG0);
 		PRINTF("C0_CPUX_CFG->GENER_CTRL_REG0=%08X\n", (unsigned) C0_CPUX_CFG->GENER_CTRL_REG0);
@@ -10876,7 +11377,7 @@ void hightests(void)
 			;
 	}
 #endif
-#if 0 && (CPUSTYLE_H3)
+#if 0 && (CPUSTYLE_H3) && WITHDEBUG
 	{
 		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 //		PRINTF("allwnr_h3_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_axi_freq() / 1000 / 1000));
@@ -10891,21 +11392,22 @@ void hightests(void)
 		//t507_hdmi_edid_test();
 	}
 #endif
-#if 0 && (CPUSTYLE_T507 || CPUSTYLE_H616)
+#if 0 && (CPUSTYLE_T507 || CPUSTYLE_H616) && WITHDEBUG
 	{
 		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 		PRINTF("allwnr_t507_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_axi_freq() / 1000 / 1000));
+		PRINTF("allwnr_t507_get_apb_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb_freq() / 1000 / 1000));
+		PRINTF("allwnr_t507_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb1_freq() / 1000 / 1000));
+		PRINTF("allwnr_t507_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb2_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_mbus_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_mbus_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_psi_ahb1_ahb2_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_psi_ahb1_ahb2_freq() / 1000 / 1000));
-		PRINTF("allwnr_t507_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb2_freq() / 1000 / 1000));
-		PRINTF("allwnr_t507_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apb1_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_pll_peri0_x1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_pll_peri0_x1_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_pll_peri1_x1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_pll_peri1_x1_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_ahbs_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_ahbs_freq() / 1000 / 1000));
 		PRINTF("allwnr_t507_get_apbs1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_apbs1_freq() / 1000 / 1000));
 	}
 #endif
-#if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133)
+#if 0 && (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHDEBUG
 	{
 		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 		PRINTF("allwnr_t113_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_axi_freq() / 1000 / 1000));
@@ -10914,6 +11416,18 @@ void hightests(void)
 		PRINTF("allwnr_t113_get_ahb0_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_ahb0_freq() / 1000 / 1000));
 		PRINTF("allwnr_t113_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_apb1_freq() / 1000 / 1000));
 		PRINTF("allwnr_t113_get_apb0_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_apb0_freq() / 1000 / 1000));
+	}
+#endif
+#if 0 && CPUSTYLE_V3S
+	{
+		// V3s clocks information print
+		PRINTF("allwnr_v3s_get_cpu_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_cpu_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_axi_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_sysapb_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_sysapb_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_ahb2_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_ahb2_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_ahb1_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_ahb1_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_apb2_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_apb2_freq() / 1000 / 1000));
+		PRINTF("allwnr_v3s_get_apb1_freq()=%u MHz\n", (unsigned) (allwnr_v3s_get_apb1_freq() / 1000 / 1000));
 	}
 #endif
 #if 0
@@ -10945,6 +11459,25 @@ void hightests(void)
 		static PACKEDCOLORPIP_T fbpic2 [GXSIZE(picx, picy)];
 		static PACKEDCOLORPIP_T fbpic3 [GXSIZE(picx, picy)];
 
+		gxdrawb_t dbv_layer0_a;
+		gxdrawb_t dbv_layer0_b;
+		gxdrawb_t dbv_layer1;
+		gxdrawb_t dbv_layer2;
+		gxdrawb_t dbv_layer3;
+		gxdrawb_t dbv_fbpic;
+		gxdrawb_t dbv_fbpic2;
+		gxdrawb_t dbv_fbpic3;
+
+		gxdrawb_initialize(& dbv_layer0_a, layer0_a, DIM_X, DIM_Y);
+		gxdrawb_initialize(& dbv_layer0_b, layer0_b, DIM_X, DIM_Y);
+		gxdrawb_initialize(& dbv_layer1, layer1, DIM_X, DIM_Y);
+		gxdrawb_initialize(& dbv_layer2, layer2, DIM_X, DIM_Y);
+		gxdrawb_initialize(& dbv_layer3, layer3, DIM_X, DIM_Y);
+		gxdrawb_initialize(& dbv_fbpic, fbpic, picx, picy);
+		gxdrawb_initialize(& dbv_fbpic2, fbpic2, picx, picy);
+		gxdrawb_initialize(& dbv_fbpic3, fbpic3, picx, picy);
+
+
 //		dcache_clean_invalidate((uintptr_t) layer0, sizeof layer0);
 //		dcache_clean_invalidate((uintptr_t) layer1, sizeof layer1);
 //		dcache_clean_invalidate((uintptr_t) fbpic, sizeof fbpic);
@@ -10960,58 +11493,58 @@ void hightests(void)
 //		PRINTF("test: b=%08X\n", COLORPIP_B(keycolor));
 
 		unsigned picalpha = 128;
-		colpip_fillrect(fbpic, picx, picy, 0, 0, picx, picy, TFTALPHA(picalpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
-		colpip_fillrect(fbpic, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(picalpha, COLORPIP_WHITE));
-		colpip_line(fbpic, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
-		colpip_line(fbpic, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
-		colpip_fillrect(fbpic, picx, picy, picx / 4 + 5, picy / 4 + 5, picx / 2 - 10, picy / 2 - 10, TFTALPHA(0 * picalpha, COLORPIP_WHITE));
-		colpip_string_tbg(fbpic, picx, picy, 5, 6, "Hello!", TFTALPHA(picalpha, COLORPIP_WHITE));
-		dcache_clean((uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0]);
+		colpip_fillrect(& dbv_fbpic, 0, 0, picx, picy, TFTALPHA(picalpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
+		colpip_fillrect(& dbv_fbpic, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(picalpha, COLORPIP_WHITE));
+		colpip_line(& dbv_fbpic, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
+		colpip_line(& dbv_fbpic, 0, picy - 1, picx - 1, 0, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
+		colpip_fillrect(& dbv_fbpic, picx / 4 + 5, picy / 4 + 5, picx / 2 - 10, picy / 2 - 10, TFTALPHA(0 * picalpha, COLORPIP_WHITE));
+		colpip_string_tbg(& dbv_fbpic, 5, 6, "Hello!", TFTALPHA(picalpha, COLORPIP_WHITE));
+		dcache_clean(dbv_fbpic.cachebase, dbv_fbpic.cachesize);
 
 		unsigned pic2alpha = 44;
-		colpip_fillrect(fbpic2, picx, picy, 0, 0, picx, picy, TFTALPHA(pic2alpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
-		colpip_fillrect(fbpic2, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic2alpha, COLORPIP_WHITE));
-		colpip_line(fbpic2, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
-		colpip_line(fbpic2, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
-		colpip_string_tbg(fbpic2, picx, picy, 5, 6, "LY2", TFTALPHA(pic2alpha, COLORPIP_WHITE));
-		dcache_clean((uintptr_t) fbpic2, GXSIZE(picx, picy) * sizeof fbpic2 [0]);
+		colpip_fillrect(& dbv_fbpic2, 0, 0, picx, picy, TFTALPHA(pic2alpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
+		colpip_fillrect(& dbv_fbpic2, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic2alpha, COLORPIP_WHITE));
+		colpip_line(& dbv_fbpic2, 0, 0, picx - 1, picy - 1, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
+		colpip_line(& dbv_fbpic2, 0, picy - 1, picx - 1, 0, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
+		colpip_string_tbg(& dbv_fbpic2, 5, 6, "LY2", TFTALPHA(pic2alpha, COLORPIP_WHITE));
+		dcache_clean(dbv_fbpic2.cachebase, dbv_fbpic2.cachesize);
 
 		unsigned pic3alpha = 33;
-		colpip_fillrect(fbpic3, picx, picy, 0, 0, picx, picy, TFTALPHA(pic3alpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
-		colpip_fillrect(fbpic3, picx, picy, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic3alpha, COLORPIP_WHITE));
-		colpip_line(fbpic3, picx, picy, 0, 0, picx - 1, picy - 1, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
-		colpip_line(fbpic3, picx, picy, 0, picy - 1, picx - 1, 0, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
-		colpip_string_tbg(fbpic3, picx, picy, 5, 6, "LY3", TFTALPHA(pic3alpha, COLORPIP_WHITE));
-		dcache_clean((uintptr_t) fbpic3, GXSIZE(picx, picy) * sizeof fbpic3 [0]);
+		colpip_fillrect(& dbv_fbpic3, 0, 0, picx, picy, TFTALPHA(pic3alpha, keycolor));	/* при alpha==0 все биты цвета становятся 0 */
+		colpip_fillrect(& dbv_fbpic3, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic3alpha, COLORPIP_WHITE));
+		colpip_line(& dbv_fbpic3, 0, 0, picx - 1, picy - 1, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
+		colpip_line(& dbv_fbpic3, 0, picy - 1, picx - 1, 0, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
+		colpip_string_tbg(& dbv_fbpic3, 5, 6, "LY3", TFTALPHA(pic3alpha, COLORPIP_WHITE));
+		dcache_clean(dbv_fbpic3.cachebase, dbv_fbpic3.cachesize);
 
 		/* непрозрачный фон */
 		unsigned bgalpha = 255;
-		colpip_fillrect(layer0_a, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
-		colpip_fillrect(layer0_b, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
+		colpip_fillrect(& dbv_layer0_a, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
+		colpip_fillrect(& dbv_layer0_b, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
 		/* непрозрачный прямоугольник на фоне */
-		colpip_fillrect(layer0_a, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLORPIP_RED));	// RED - нижний слой не учитывает прозрачность
-		colpip_fillrect(layer0_b, DIM_X, DIM_Y, 10, 10, 400, 300, TFTALPHA(bgalpha, COLORPIP_RED));	// RED - нижний слой не учитывает прозрачность
+		colpip_fillrect(& dbv_layer0_a, 10, 10, 400, 300, TFTALPHA(bgalpha, COLORPIP_RED));	// RED - нижний слой не учитывает прозрачность
+		colpip_fillrect(& dbv_layer0_b, 10, 10, 400, 300, TFTALPHA(bgalpha, COLORPIP_RED));	// RED - нижний слой не учитывает прозрачность
 
 		/* полупрозрачный фон */
 		unsigned fgalpha = 128;
-		colpip_fillrect(layer1, DIM_X, DIM_Y, 110, 110, DIM_X - 200, DIM_Y - 200, TFTALPHA(fgalpha, COLORPIP_BLUE));	/* transparent black */
+		colpip_fillrect(& dbv_layer1, 110, 110, DIM_X - 200, DIM_Y - 200, TFTALPHA(fgalpha, COLORPIP_BLUE));	/* transparent black */
 		/* полупрозрачный прямоугольник на фоне */
-		colpip_fillrect(layer1, DIM_X, DIM_Y, 120, 120, 200, 200, TFTALPHA(fgalpha, COLORPIP_GREEN));	// GREEN
+		colpip_fillrect(& dbv_layer1, 120, 120, 200, 200, TFTALPHA(fgalpha, COLORPIP_GREEN));	// GREEN
 		/* прозрачный слой */
 		unsigned l2alpha = 0;
-		colpip_fillrect(layer2, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_RED));	/* opaque color transparent black */
+		colpip_fillrect(& dbv_layer2, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_RED));	/* opaque color transparent black */
 		/* прозрачный слой */
 		unsigned l3alpha = 0;
-		colpip_fillrect(layer3, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_GREEN));	/* opaque color transparent black */
+		colpip_fillrect(& dbv_layer3, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_GREEN));	/* opaque color transparent black */
 
 		TP();
 		/* копируем изображение в верхний слой с цветовым ключем */
 		colpip_bitblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer1, DIM_X, DIM_Y,
+				dbv_layer1.cachebase, dbv_layer1.cachesize,
+				& dbv_layer1,
 				220, 220,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic, picx, picy,
+				dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+				& dbv_fbpic,
 				0, 0,	// координаты окна источника
 				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
@@ -11020,11 +11553,11 @@ void hightests(void)
 		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_bitblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer1, DIM_X, DIM_Y,
+				dbv_layer1.cachebase, dbv_layer1.cachesize,
+				& dbv_layer1,
 				350, 250,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic, picx, picy,
+				dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+				& dbv_fbpic,
 				0, 0,	// координаты окна источника
 				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE, keycolor
@@ -11033,11 +11566,11 @@ void hightests(void)
 		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_stretchblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer1, DIM_X, DIM_Y,
+				dbv_layer1.cachebase, dbv_layer1.cachesize,
+				& dbv_layer1,
 				40, 20, picx * 5 / 2, picy,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic, picx, picy,
+				dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+				& dbv_fbpic,
 				0, 0,	// координаты источника
 				picx, picy,	// размеры источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
@@ -11046,11 +11579,11 @@ void hightests(void)
 		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_stretchblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer1, DIM_X, DIM_Y,
+				dbv_layer1.cachebase, dbv_layer1.cachesize,
+				& dbv_layer1,
 				450, 250, picx * 3 / 2, picy * 3 / 2,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic, picx, picy,
+				dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+				& dbv_fbpic,
 				0, 0,	/* координаты источника */
 				picx, picy,	// размеры источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
@@ -11059,11 +11592,11 @@ void hightests(void)
 		TP();
 		/* копируем изображение в верхний слой БЕЗ цветового ключа */
 		colpip_stretchblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer1, DIM_X, DIM_Y,
+				dbv_layer1.cachebase, dbv_layer1.cachesize,
+				& dbv_layer1,
 				170, 220, picx * 2 / 3, picy * 2 / 3,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic, picx, picy,
+				dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+				& dbv_fbpic,
 				0, 0,	/* координаты источника */
 				picx, picy,	// размеры источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
@@ -11072,11 +11605,11 @@ void hightests(void)
 		TP();
 		/* копируем изображение в верхний слой с цветовым ключем */
 		colpip_bitblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer1, DIM_X, DIM_Y,
+				dbv_layer1.cachebase, dbv_layer1.cachesize,
+				& dbv_layer1,
 				90, 90,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic, picx, picy,
+				dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+				& dbv_fbpic,
 				0, 0,	// координаты окна источника
 				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
@@ -11085,11 +11618,11 @@ void hightests(void)
 		TP();
 		/* копируем изображение в 2-й слой с цветовым ключем */
 		colpip_bitblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer2, DIM_X, DIM_Y,
+				dbv_layer2.cachebase, dbv_layer2.cachesize,
+				& dbv_layer2,
 				30, 330,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic2, picx, picy,
+				dbv_fbpic2.cachebase, dbv_fbpic2.cachesize,
+				& dbv_fbpic2,
 				0, 0,	// координаты окна источника
 				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
@@ -11098,20 +11631,22 @@ void hightests(void)
 		TP();
 		/* копируем изображение в 3-й слой с цветовым ключем */
 		colpip_bitblt(
-				(uintptr_t) layer1, GXSIZE(DIM_X, DIM_Y) * sizeof layer1 [0],
-				layer3, DIM_X, DIM_Y,
+				dbv_layer3.cachebase, dbv_layer3.cachesize,
+				& dbv_layer3,
 				370, 20,
-				(uintptr_t) fbpic, GXSIZE(picx, picy) * sizeof fbpic [0],
-				fbpic3, picx, picy,
+				dbv_fbpic3.cachebase, dbv_fbpic3.cachesize,
+				& dbv_fbpic3,
 				0, 0,	// координаты окна источника
 				picx, picy, // размер окна источника
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
 		// нужно если программно заполняли
-		dcache_clean((uintptr_t) layer0_a, sizeof layer0_a);
-		dcache_clean((uintptr_t) layer0_b, sizeof layer0_b);
-		dcache_clean((uintptr_t) layer1, sizeof layer1);
+		dcache_clean(dbv_layer0_a.cachebase, dbv_layer0_a.cachesize);
+		dcache_clean(dbv_layer0_b.cachebase, dbv_layer0_b.cachesize);
+		dcache_clean(dbv_layer1.cachebase, dbv_layer1.cachesize);
+		dcache_clean(dbv_layer2.cachebase, dbv_layer2.cachesize);
+		dcache_clean(dbv_layer3.cachebase, dbv_layer3.cachesize);
 //
 //		printhex32((uintptr_t) layer0, layer0, 64);
 //		printhex32((uintptr_t) layer1, layer1, 64);
@@ -11127,20 +11662,20 @@ void hightests(void)
 			int w = DIM_X - x0;
 			int xpos = (c * (w - 1)) / (cycles - 1);	/* позиция маркера */
 
-			PACKEDCOLORPIP_T * const drawlayer = phase ? layer0_a : layer0_b;
+			gxdrawb_t * const drawlayer = phase ? & dbv_layer0_a : & dbv_layer0_b;
 
-			colpip_fillrect(drawlayer, DIM_X, DIM_Y, x0, y, w, h, TFTALPHA(bgalpha, COLORPIP_BLACK));
+			colpip_fillrect(drawlayer, x0, y, w, h, TFTALPHA(bgalpha, COLORPIP_BLACK));
 			/* линия в один пиксель рисуется прораммно - за ней требуется flush,
 			 * поскольку потом меняется еще аппаратурой - invalidate
 			 * */
-			colpip_fillrect(drawlayer, DIM_X, DIM_Y, x0 + xpos, y, 1, h, TFTALPHA(bgalpha, COLORPIP_WHITE));
-			dcache_clean_invalidate((uintptr_t) drawlayer, sizeof * drawlayer * GXSIZE(DIM_X, DIM_Y));
+			colpip_fillrect(drawlayer, x0 + xpos, y, 1, h, TFTALPHA(bgalpha, COLORPIP_WHITE));
+			dcache_clean_invalidate(drawlayer->cachebase, drawlayer->cachesize);
 
-			hardware_ltdc_main_set4(rtmixid, (uintptr_t) drawlayer, 1*(uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
+			hardware_ltdc_main_set4(rtmixid, (uintptr_t) drawlayer->buffer, 1*(uintptr_t) dbv_layer1.buffer, 0*(uintptr_t) dbv_layer2.buffer, 0*(uintptr_t) dbv_layer3.buffer);
 
 			phase = ! phase;
 			c = (c + 1) % cycles;
-			board_dpc_processing();		// обработка отложенного вызова user mode функций
+			//board_dpc_processing();		// обработка отложенного вызова user mode функций
 		}
 		for (;;)
 		{
@@ -11617,7 +12152,7 @@ void hightests(void)
 		{
 			/* Обеспечение работы USER MODE DPC */
 			uint_fast8_t kbch, kbready;
-			processmessages(& kbch, & kbready, 0, NULL);
+			processmessages(& kbch, & kbready);
 			char c;
 			if (dbg_getchar(& c))
 			{
@@ -11827,11 +12362,11 @@ void hightests(void)
 				//dsp3D_renderWireframe(dsp3dModel);
 //				char buff [64];
 //				snprintf(buff, 64, "normal : %d, %d, %d,", (int) buf [0], (int) buf [1], (int) buf [2]);
-//				display_at(20, 10, buff);
+//				display_text(20, 10, buff);
 //				snprintf(buff, 64, "normal : %d, %d, %d,", (int) buf2 [0], (int) buf2 [1], (int) buf2 [2]);
-//				display_at(20, 15, buff);
+//				display_text(20, 15, buff);
 //				snprintf(buff, 64, "normal : %d, %d, %d,", (int) buf3 [0], (int) buf3 [1], (int) buf3 [2]);
-//				display_at(20, 20, buff);
+//				display_text(20, 20, buff);
 				dsp3D_present();
 				local_delay_ms(25);
 				char c;
@@ -11878,64 +12413,6 @@ void hightests(void)
 		PRINTF("zynq pin & bank calculations test passed.\n");
 	}
 #endif
-#if 0 && (WITHTWIHW || WITHTWISW)
-	{
-		unsigned i;
-		for (i = 1; i < 127; ++ i)
-		{
-			uint8_t v;
-			unsigned addrw = i * 2;
-			unsigned addrr = addrw + 1;
-			////%%TP();
-			i2c_start(addrw);
-			i2c_write_withrestart(0x1B);
-			i2c_start(addrr);
-			i2c_read(& v, I2C_READ_ACK_NACK);
-			////%%TP();
-			PRINTF("I2C addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
-		}
-	}
-#endif
-#if 0 && (WITHTWIHW || WITHTWISW)
-	{
-		// i2c bus test i2c test twi bus test twi test
-
-		unsigned i;
-		for (i = 1; i < 127; ++ i)
-		{
-			uint8_t v;
-			unsigned addrw = i * 2;
-			unsigned addrr = addrw + 1;
-			////%%TP();
-			i2c2_start(addrw);
-			i2c2_write_withrestart(0x1B);
-			i2c2_start(addrr);
-			i2c2_read(& v, I2C_READ_ACK_NACK);
-			////%%TP();
-			PRINTF("I2C2 addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
-		}
-	}
-#endif
-#if 0 && (WITHTWIHW || WITHTWISW)
-	{
-		// i2c bus test i2c test twi bus test twi test
-
-		unsigned i;
-		for (i = 1; i < 127; ++ i)
-		{
-			uint8_t v;
-			unsigned addrw = i * 2;
-			unsigned addrr = addrw + 1;
-			////%%TP();
-			i2c_start(addrw);
-			i2c_write_withrestart(0x1B);
-			i2c_start(addrr);
-			i2c_read(& v, I2C_READ_ACK_NACK);
-			////%%TP();
-			PRINTF("I2C1 addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
-		}
-	}
-#endif
 #if 0 && CPUSTYLE_STM32MP1
 	{
 		//	This register is used by the MPU to check the reset source. This register is updated by the
@@ -11945,34 +12422,6 @@ void hightests(void)
 		RCC->MP_RSTSCLRR = RCC->MP_RSTSCLRR;
 		PRINTF(PSTR("MP_RSTSCLRR=%08lX\n"), (unsigned long) RCC->MP_RSTSCLRR);
 		PRINTF(PSTR("ACTLR=%08lX\n"), (unsigned long) __get_ACTLR());
-	}
-#endif
-#if 0 && CPUSTYLE_STM32MP1
-	{
-
-		RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_BSECEN;
-		(void) RCC->MP_APB5ENSETR;
-	//	0x24: STM32MP153Cx
-	//	0x25: STM32MP153Ax
-	//	0xA4: STM32MP153Fx
-	//	0xA5: STM32MP153Dx
-	//	0x00: STM32MP157Cx
-	//	0x01: STM32MP157Ax
-	//	0x80: STM32MP157Fx
-	//	0x81: STM32MP157Dx
-		const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
-		switch (rpn)
-		{
-		case 0x24: PRINTF(PSTR("STM32MP153Cx\n")); break;
-		case 0x25: PRINTF(PSTR("STM32MP153Ax\n")); break;
-		case 0xA4: PRINTF(PSTR("STM32MP153Fx\n")); break;
-		case 0xA5: PRINTF(PSTR("STM32MP153Dx\n")); break;
-		case 0x00: PRINTF(PSTR("STM32MP157Cx\n")); break;
-		case 0x01: PRINTF(PSTR("STM32MP157Ax\n")); break;
-		case 0x80: PRINTF(PSTR("STM32MP157Fx\n")); break;
-		case 0x81: PRINTF(PSTR("STM32MP157Dx\n")); break;
-		default: PRINTF(PSTR("STN32MP1 RPN=%02X\n"), rpn); break;
-		}
 	}
 #endif
 #if 0 && defined (TZC) && WITHDEBUG
@@ -12365,13 +12814,13 @@ void hightests(void)
 #if 0
 	{
 		colmain_setcolors(COLOR_GREEN, COLOR_BLACK);
-		display_at_P(5, 0, PSTR("PT-Electronics 2015"));
+		display_text(5, 0, PSTR("PT-Electronics 2015"));
 
 		colmain_setcolors(COLOR_RED, COLOR_BLACK);
-		display_at_P(7, 3, PSTR("RENESAS"));
+		display_text(7, 3, PSTR("RENESAS"));
 
 		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-		display_at_P(9, 6, PSTR("2.7 inch TFT"));
+		display_text(9, 6, PSTR("2.7 inch TFT"));
 		
 		for (;;)
 			;
@@ -12868,7 +13317,7 @@ void hightests(void)
 		for (int i = 0; i <= 255; i++)
 		{
 
-			display_fillrect(x, y, wx - sepx, wy - sepy, i << 4);
+			colpip_fillrect(x, y, wx - sepx, wy - sepy, i << 4);
 
 			if (wx > 24)
 			{
@@ -12972,7 +13421,7 @@ void hightests(void)
 
 				display_gotoxy(0, 0 + lowhalf);
 				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-				display_at(buff, lowhalf);
+				display_text(buff, lowhalf);
 			} while (lowhalf --);
 			PRINTF(PSTR("CNT=%08lX\n"), i);
 		}
@@ -13004,7 +13453,7 @@ void hightests(void)
 			{
 				display_gotoxy(0, 0 + lowhalf);
 
-				display_at(buff, lowhalf);
+				display_text(buff, lowhalf);
 			} while (lowhalf --);
 		}
 	}
@@ -13093,14 +13542,14 @@ void hightests(void)
 
 				local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 					PSTR("V%d=%4d"), i, board_getadc_unfiltered_1 /* true */value(i));
-				display_at(COLWIDTH * (i % 2), i / 2, buff);
+				display_text(COLWIDTH * (i % 2), i / 2, buff);
 			}
 			if (0)
 			{
 				char buff [32];
 				local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 					PSTR("CNT=%08lX"), cnt); 
-				display_at(8 * (i % 2), i / 2, buff);
+				display_text(8 * (i % 2), i / 2, buff);
 			}
 		}
 	}
@@ -13121,7 +13570,7 @@ void hightests(void)
 #if 0 && WITHTX && WITHVOX && WITHDEBUG
 	// Отображение значений с выхода DSP модуля - уровень VOX
 	{
-		updateboard(1, 1);	/* полная перенастройка (как после смены режима) - режим приема */
+		updateboard();	/* полная перенастройка (как после смены режима) - режим приема */
 		updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 		for (;;)
 		{
@@ -13140,7 +13589,7 @@ void hightests(void)
 					PSTR("vox2=%3d"), vox2
 					 );
 				display_gotoxy(0, 0 + lowhalf);
-				display_at(buff, lowhalf);
+				display_text(buff, lowhalf);
 
 				//////////////////////////
 				// VOX2 level
@@ -13149,7 +13598,7 @@ void hightests(void)
 					PSTR("vox1=%5d"), vox1
 					 );
 				display_gotoxy(0, 1 + lowhalf);
-				display_at(buff, lowhalf);
+				display_text(buff, lowhalf);
 				*/
 				//////////////////////////
 				// A-VOX level
@@ -13157,7 +13606,7 @@ void hightests(void)
 					PSTR("avox=%3d"), avox
 					 );
 				display_gotoxy(11, 0 + lowhalf);
-				display_at(buff, lowhalf);
+				display_text(buff, lowhalf);
 
 			} while (lowhalf --);
 		}
@@ -13199,38 +13648,38 @@ void hightests(void)
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("af= %4d"), potaf
 			 );
-		display_at(0, 0 * HALFCOUNT_SMALL, buff);
+		display_text(0, 0 * HALFCOUNT_SMALL, buff);
 		// AF gain raw
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("aft=%4d"), potaft
 			 );
-		display_at(0, 1 * HALFCOUNT_SMALL, buff);
+		display_text(0, 1 * HALFCOUNT_SMALL, buff);
 		continue;
 #else
 		// IF gain
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("rf= %4d"), potrf
 			 );
-		display_at(0, 0 * HALFCOUNT_SMALL, buff);
+		display_text(0, 0 * HALFCOUNT_SMALL, buff);
 		// AF gain
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("af= %4d"), potaf
 			 );
-		display_at(0, 1 * HALFCOUNT_SMALL, buff);
+		display_text(0, 1 * HALFCOUNT_SMALL, buff);
 
 		// AUX1
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("A1= %4d"), aux1
 			 );
 		display_gotoxy(14, 0 + lowhalf);
-		display_at(buff, lowhalf);
+		display_text(buff, lowhalf);
 
 		// AUX2
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("A2= %4d"), aux2
 			 );
 		display_gotoxy(0, 1 + lowhalf);
-		display_at(buff, lowhalf);
+		display_text(buff, lowhalf);
 
 		// AUX3
 		/*
@@ -13238,7 +13687,7 @@ void hightests(void)
 			PSTR("A3=%3d"), aux3
 			 );
 		display_gotoxy(7, 1 + lowhalf);
-		display_at(buff, lowhalf);
+		display_text(buff, lowhalf);
 		*/
 #if WITHPOTWPM
 		// WPM
@@ -13246,7 +13695,7 @@ void hightests(void)
 			PSTR("cw=%3d"), wpm
 			 );
 		display_gotoxy(14, 1 + lowhalf);
-		display_at(buff, lowhalf);
+		display_text(buff, lowhalf);
 #endif /* WITHPOTWPM */
 
 		// IF gain raw
@@ -13254,13 +13703,13 @@ void hightests(void)
 			PSTR("rft=%4d"), potrft
 			 );
 		display_gotoxy(0, 2 + lowhalf);
-		display_at(buff, lowhalf);
+		display_text(buff, lowhalf);
 		// AF gain raw
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("aft=%4d"), potaft
 			 );
 		display_gotoxy(10, 2 + lowhalf);
-		display_at(buff, lowhalf);
+		display_text(buff, lowhalf);
 #endif
 
 
@@ -13286,7 +13735,7 @@ void hightests(void)
 
 				display_gotoxy(0, 0 + lowhalf);
 				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-				display_at(buff, lowhalf);
+				display_text(buff, lowhalf);
 			} while (lowhalf --);
 		}
 	}
@@ -13333,7 +13782,7 @@ void hightests(void)
 				display2_fillbg();
 				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
 				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-				display_at(0, 0, b);
+				display_text(0, 0, b);
 				colmain_nextfb();
 				local_delay_ms(50);
 			}
@@ -13343,7 +13792,7 @@ void hightests(void)
 				display2_fillbg();
 				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
 				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-				display_at(0, 0, b);
+				display_text(0, 0, b);
 				colmain_nextfb();
 				local_delay_ms(50);
 			}
@@ -13357,7 +13806,7 @@ void hightests(void)
 				display2_fillbg();
 				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("X%d"), c);
 				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-				display_at(0, 0, b);
+				display_text(0, 0, b);
 				colmain_nextfb();
 				local_delay_ms(2000);
 			}
@@ -13369,7 +13818,7 @@ void hightests(void)
 			display2_fillbg();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("R%d"), c + rSkip);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_at(0, 0, b);
+			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(2000);
 		}
@@ -13379,7 +13828,7 @@ void hightests(void)
 			display2_fillbg();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("G%d"), c + gSkip);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_at(0, 0, b);
+			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(2000);
 		}
@@ -13389,7 +13838,7 @@ void hightests(void)
 			display2_fillbg();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("B%d"), c + bSkip);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_at(0, 0, b);
+			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(2000);
 		}
@@ -13410,7 +13859,7 @@ void hightests(void)
 			display2_fillbg();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_at(0, 0, b);
+			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(50);
 		}
@@ -13420,7 +13869,7 @@ void hightests(void)
 			display2_fillbg();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_at(0, 0, b);
+			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(50);
 		}
@@ -13430,7 +13879,7 @@ void hightests(void)
 			display2_fillbg();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_at(0, 0, b);
+			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(50);
 		}
@@ -13440,7 +13889,7 @@ void hightests(void)
 			display2_fillbg();
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
-			display_at(0, 0, b);
+			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(50);
 		}
@@ -13468,7 +13917,7 @@ void hightests(void)
 				//unsigned char v1, v2;
 				display_gotoxy(0, 4);
 				local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%10lu"), freq );
-				display_at(buff, 0);
+				display_text(buff, 0);
 				ITM_SendChar('a' + (cd ++) % 16);
 				//SWO_PrintChar('a' + (cd ++) % 16);
 
@@ -13491,13 +13940,13 @@ void hightests(void)
 		//v1 = si570_get_status();
 		display_gotoxy(0, 6);
 		local_snprintf_P(buff, 22, PSTR("he %08lX:%08lX"), 0x1726354aul, -7ul);
-		display_at(buff, 0);
+		display_text(buff, 0);
 
 		display_gotoxy(0, 7);
 		//unsigned long l1 = (unsigned long) (rftw >> 32);
 		//unsigned long l2 = (unsigned long) rftw;
 		local_snprintf_P(buff, 22, PSTR("he %08lx"), -4000000l);
-		display_at(buff, 0);
+		display_text(buff, 0);
 		for (;;)
 			;
 	}
@@ -13581,13 +14030,13 @@ void hightests(void)
 			PRINTF("tune=%u, ptt=%u, ptt2=%u, elkey=%u\n", tune1, ptt1, ptt2, elkey);
 			continue;
 
-			display_at(0, 0, ptt1 != 0 ? "ptt " : "    ");
-			display_at(0, 2, ptt2 != 0 ? "cptt " : "     ");
-			display_at(0, 4, ckey != 0 ? "ckey " : "     ");
+			display_text(0, 0, ptt1 != 0 ? "ptt " : "    ");
+			display_text(0, 2, ptt2 != 0 ? "cptt " : "     ");
+			display_text(0, 4, ckey != 0 ? "ckey " : "     ");
 
-			display_at(0, 6, (elkey & ELKEY_PADDLE_DIT) != 0 ? "dit " : "     ");
-			display_at(0, 8, (elkey & ELKEY_PADDLE_DASH) != 0 ? "dash" : "      ");
-			display_at(0, 10, (phase = ! phase) ? " test1" : " test2");
+			display_text(0, 6, (elkey & ELKEY_PADDLE_DIT) != 0 ? "dit " : "     ");
+			display_text(0, 8, (elkey & ELKEY_PADDLE_DASH) != 0 ? "dash" : "      ");
+			display_text(0, 10, (phase = ! phase) ? " test1" : " test2");
 
 		}
 	}
@@ -13623,7 +14072,7 @@ void hightests(void)
 		for (;;)
 		{
 			uint_fast8_t jumpsize;
-			int_least16_t nrotate = getRotateHiRes(& encoder1, & jumpsize, 1);
+			int_least16_t nrotate = encoder_getrotatehires(& encoder1, & jumpsize);
 			(void) nrotate;
 			//display_gotoxy(0, 1);		// курсор в начало второй строки
 			display_debug_digit(jumpsize, 7, 0, 0);
@@ -13664,7 +14113,7 @@ void hightests(void)
 			do
 			{
 				display_gotoxy(0, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
-				display_at("ADCx=", lowhalf);
+				display_text("ADCx=", lowhalf);
 				display_gotoxy(5, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
 				display2_menu_value(v0, 5, 255, 0, lowhalf);
 			} while (lowhalf --);
@@ -13855,7 +14304,7 @@ void hightests(void)
 				local_snprintf_P(buff, 17, fmt_1, v1);
 
 				display_gotoxy((i % 8) * 3, (i / 8) * 2);
-				display_at(buff, 0);
+				display_text(buff, 0);
 			}
 		}
 	#endif
@@ -13876,7 +14325,7 @@ void hightests(void)
 		char buff [17];
 		local_snprintf_P(buff, 17, fmt_1, v1);
 		display_gotoxy(0, 0);
-		display_at(buff, 0);
+		display_text(buff, 0);
 		local_delay_ms(100);
 	}
 
@@ -13906,7 +14355,7 @@ void hightests(void)
 		char buff [17];
 		local_snprintf_P(buff, 17, fmt_1, v);
 		display_gotoxy(0, 0);
-		display_at(buff);
+		display_text(buff);
 		local_delay_ms(100);
 	}
 #endif
@@ -13972,7 +14421,7 @@ void hightests(void)
 
 			local_snprintf_P(buff, 17, fmt_1, v ++);
 			display_gotoxy(0, 0);
-			display_at(buff, 0);
+			display_text(buff, 0);
 			
 		}
 	}
@@ -14359,6 +14808,24 @@ void __WEAK FreeRTOS_IRQ_Handler(void)
 // Вызывается перед инициализацией NVRAM, но после инициализации SPI
 void midtests(void)
 {
+#if 0
+	{
+		PRINTF("SPI speed test.\n");
+		uint8_t buff [64];
+		memset(buff, 0xFF, sizeof buff);
+		//__disable_irq();
+		for (;;)
+		{
+			//prog_spi_io(targetnvram, SPIC_SPEEDUFAST, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 24 M
+			//prog_spi_io(targetnvram, SPIC_SPEEDFAST, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 12 M
+			prog_spi_io(targetnvram, SPIC_SPEED100k, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 100 kHz
+			//prog_spi_io(targetnvram, SPIC_SPEED400k, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 400 kHz
+			//prog_spi_io(targetnvram, SPIC_SPEED1M, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 1 M
+			//prog_spi_io(targetnvram, SPIC_SPEED4M, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 4 M
+			//prog_spi_io(targetnvram, SPIC_SPEED10M, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 10 M
+		}
+	}
+#endif
 #if WITHRTOS
 	{
 		InitializeIrql(0xffU);
@@ -14744,7 +15211,7 @@ void lowtests(void)
 	lv_demo_keypad_encoder();
 
 	while(1) {
-		lv_task_handler();
+		lv_timer_handler();
 		usleep(10000);
 	}
 
@@ -14920,159 +15387,4 @@ void lowtests(void)
 		cpptest();
 	}
 #endif /* WITHDEBUG */
-#if 0
-	{
-		// Калиьбровка задержек для данного процссора
-		// See local_delay_uscycles()
-		//enum { WORKMASK	 = 1ul << 7 };	// PB7
-		enum { WORKMASK	 = 1ul << 10 };	// P7_10
-		//arm_hardware_piob_outputs(WORKMASK, WORKMASK);
-		arm_hardware_pio7_outputs(WORKMASK, WORKMASK);
-
-		for (;;)
-		{
-			//(GPIOB)->BSRR = BSRR_S(WORKMASK);
-			R7S721_TARGET_PORT_S(7, WORKMASK);
-			local_delay_ms(5);
-			//(GPIOB)->BSRR = BSRR_C(WORKMASK);
-			R7S721_TARGET_PORT_C(7, WORKMASK);
-			local_delay_ms(5);
-		}
-	}
-#endif
-#if 0
-	{
-		HARDWARE_DEBUG_INITIALIZE();
-		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-		//for (;;)
-		dbg_puts_impl_P(PSTR("Version " __DATE__ " " __TIME__ " 2 debug session starts.\n"));
-		#if 0
-			// выдача повторяющегося символа для тестирования скорости передачи, если ошибочная инициализация
-			for (;;)
-				dbg_putchar(0xf0);
-		#endif
-		// тестирование приёма и передачи символов
-		for (;1;)
-		{
-			char c;
-			if (dbg_getchar(& c))
-			{
-				dbg_putchar(c);
-				if (c == 0x1b)
-					break;
-			}
-		}
-		for (;;)
-			;
-	}
-#endif
-#if 0
-	{
-		// "бегающие огоньки" на светодиодах - 74HC595
-		//arm_hardware_pio1_inputs(0xFF00);
-		// тестирование SPI
-		spi_initialize();
-
-		uint_fast8_t i = 0;
-		for (;;)
-		{
-			const uint_fast8_t timev = 1; //(~ GPIO.PPR1 >> 8) & 0xFF;
-			const spitarget_t target = targetext1;
-			uint_fast8_t v;
-			//
-			//TP();
-			spi_select2(target, SPIC_MODE3, SPIC_SPEEDFAST);	// В FPGA регистр тактируется не в прямую
-			spi_progval8_p1(target, 0xFF);		/* read status register */
-			spi_complete(target);
-
-			spi_to_read(target);
-			v = spi_read_byte(target, 0xff);
-			spi_to_write(target);
-
-			spi_unselect(target);	/* done sending data to target chip */
-
-			//local_delay_ms(10 * timev);
-			++ i;
-		}
-	}
-#endif /*  */
-#if 0
-	{
-		// FPU test
-		HARDWARE_DEBUG_INITIALIZE();
-		HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-		//for (;;)
-		dbg_puts_impl_P(PSTR("Version " __DATE__ " " __TIME__ " 3 debug session starts.\n"));
-		// выдача повторяющегося символа для тестирования скорости передачи, если ошибочная инициализация
-		//for (;;)
-		//	dbg_putchar(0xff);
-
-
-		extern unsigned long __isr_vector__;
-		PRINTF(PSTR("__isr_vector__=%p\n"), & __isr_vector__);
-		volatile int a = 10, b = 0;
-		volatile int c = a / b;
-		TP();
-		unsigned long i;
-		for (i = 0x8000000;; ++ i)
-		{
-			TP();
-			const double a = i ? i : 1;
-			//const int ai = (int) (sin(a) * 1000);
-			TP();
-			PRINTF(PSTR("Hello! %lu, sqrt(%lu)=%lu\n"), i, (unsigned) a, (unsigned) sqrt(a));
-			TP();
-		}
-	}
-#endif /* CPUSTYLE_R7S721 */
-#if 0 && CPUSTYLE_R7S721
-	// тестирование скорости до инициализации MMU
-	{
-		const uint32_t mask = (1uL << 13);	// P6_13
-		// R7S721 pins
-		arm_hardware_pio6_outputs(mask, mask);
-		for (;;)
-		{
-			R7S721_TARGET_PORT_S(6, mask);	/* P6_13=1 */
-			local_delay_ms(10);
-			R7S721_TARGET_PORT_C(6, mask);	/* P6_13=0 */
-			local_delay_ms(10);
-		}
-	}
-#endif
-#if 0
-	{
-		// Формирование импульсов на выводе процессора
-		for (;;)
-		{
-			//const uint32_t WORKMASK = 1uL << 31;	// PA31
-			const uint32_t WORKMASK =
-				(1uL << 13) |		// BP13
-				(1uL << 14) |		// BP14
-				(1uL << 15) |		// BP15
-				0;
-
-			arm_hardware_piob_outputs(WORKMASK, WORKMASK * 1);
-			hardware_spi_io_delay();
-			arm_hardware_piob_outputs(WORKMASK, WORKMASK * 0);
-			hardware_spi_io_delay();
-		}
-	}
-#endif
-#if 0
-	hardware_f051_dac_initialize();
-	for (;;)
-	{
-		unsigned i;
-		for (i = 0; i < 4096; ++ i)
-		{
-			hardware_f051_dac_ch1_setvalue(i);
-			arm_hardware_pioa_outputs(0x01, 0x01 * (i % 2));
-		}
-	}
-#endif
-#if ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
-	hardware_tim21_initialize();
-	local_delay_ms(100);	// пока на выходе выпрямителя появится напряжение */
-#endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
 }

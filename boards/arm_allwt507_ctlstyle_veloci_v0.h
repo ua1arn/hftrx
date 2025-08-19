@@ -25,8 +25,15 @@
 	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */
 
 	//  PLL_CPUX=24MHz*N/P
-	#define PLL_CPU_N 	50
-	#define PLL_CPU_P_POW 0
+#if 0
+	/* 1396 MHz */
+	#define PLL_CPU_N 	116
+	#define PLL_CPU_P_POW 1
+#else
+	/* 1200 MHz */
+	#define PLL_CPU_N 	100
+	#define PLL_CPU_P_POW 1
+#endif
 
 	/* модели синтезаторов - схемы частотообразования */
 
@@ -89,7 +96,7 @@
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 
-	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+	
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	// --- Особые варианты расположения кнопок на клавиатуре
@@ -106,8 +113,8 @@
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
-	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
-	//#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
 	
 	#define BOARD_DSTYLE "g_x480_y272_spectrum_notouch.h"
@@ -117,8 +124,8 @@
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define LCDMODE_LQ123K3LG01 1	/* LQ123K3LG01 panel (1280*480) - 12.3" display LVDS mode */
 
-	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
-	//#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
@@ -126,14 +133,15 @@
 	//#define BOARD_DSTYLE "g_x800_y480.h"
 	#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 	//#define BOARD_DSTYLE "g_x800_y480_linux.h"
+	//#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
 
 #elif 1
 
 	#define LCDMODE_LQ123K3LG01 1	/* LQ123K3LG01 panel (1280*480) - 12.3" display LVDS mode */
 
-	//#define LCDMODE_V2 1	/* только главный экран 8 бит (две страницы), L8, без PIP */
-	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
-	//#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
+	//#define LCDMODE_PALETTE256 1	/* Экран 8 бит, L8 */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
@@ -145,8 +153,8 @@
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 
-	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
-	//#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
 	
 
@@ -158,7 +166,7 @@
 #elif 1
 
 	#define LCDMODE_TCG104XGLPAPNN 1	/* TCG104XGLPAPNN-AN30 panel (1024*768) - 10.4" display - DE mode required */
-	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
 	
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
@@ -181,6 +189,7 @@
 	// +++ заглушки для плат с DSP обработкой
 	#define	BOARD_AGCCODE_ON	0x00
 	#define	BOARD_AGCCODE_OFF	0x01
+	#define WITHAGCMODENONE 1
 
 	#define BOARD_DETECTOR_AM 	0		// Заглушка
 	#define BOARD_DETECTOR_FM 	0		// Заглушка
@@ -196,7 +205,7 @@
 	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
-	//#define WITHWATCHDOG	1	/* разрешение сторожевого таймера в устройстве */
+	#define WITHWATCHDOG	(! WITHDEBUG && 1)	/* разрешение сторожевого таймера в устройстве */
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	
@@ -212,13 +221,12 @@
 
 	//#define WITHUSBHEADSET	1	/* Функциональность USB микрофона */
 	
-	#define FORMATFROMLIBRARY 	1
+	//#define FORMATFROMLIBRARY 	1
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	//#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
 
-	//#define WITHRENDERHTML	1	/* Использование библиотеки litehtml для формирования изображения на дисплее */
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 	#define COLORSTYLE_GREEN	1
 	//#define COLORSTYLE_BLUE	1
@@ -255,7 +263,7 @@
 
 	#define CODEC1_TYPE CODEC_TYPE_NAU8822L
 	#define CODEC_TYPE_NAU8822_USE_SPI	1
-	#define NAU8822_USE_SPI4	1	// SPI 4-Wire 24-bit Write and 32-bit Read Operation
+	//#define NAU8822_USE_SPI4	1	// SPI 4-Wire 24-bit Write and 32-bit Read Operation
 	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 	//#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
 	#define WITHAFCODEC1HAVELINEINLEVEL 1	// (rear panel mini-din 6 pin input)
@@ -275,7 +283,7 @@
 	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
 
-	//#define WITHWATCHDOG	1	/* разрешение сторожевого таймера в устройстве */
+	#define WITHWATCHDOG	(! WITHDEBUG && 1)	/* разрешение сторожевого таймера в устройстве */
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
@@ -305,7 +313,9 @@
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
-	//#define WITHUSEUSBBT		1	// Включение поддержки USB BT stick
+	#if 0
+		#define WITHUSEUSBBT		1	// Включение поддержки USB BT stick
+	#endif
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
@@ -321,7 +331,7 @@
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
-		#define WITHFFTSIZEWIDE 2048		/* Отображение спектра и волопада */
+		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
 		#define WITHSPECBETA_DEFAULT	30
 		#if 0
 			#define WITHTOUCHGUI		1
@@ -434,8 +444,8 @@
 		#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 		#define WITHSWRMTR	1		/* Измеритель КСВ */
 	#endif /* WITHTX */
-	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
-	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
+	
+	
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
@@ -464,12 +474,13 @@
 
 	#if 0
 		#define WITHLWIP 1
-		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	#if 0
-
 		#define WITHLVGL 1		/* bare-metal config of LVGL */
-		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
+		//#define WITHLVGLINDEV 1	/* обработку событий от органов управления делает LVGL */
+	#endif
+	#if 0
+		#define WITHRENDERHTML	1	/* Использование библиотеки litehtml для формирования изображения на дисплее */
 	#endif
 
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
@@ -516,7 +527,6 @@
 	//#define WITH_STMPE811_INTERRUPTS	1
 	//#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
 	//#define WITH_GT911_INTERRUPTS	1
-	//#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
 	//#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
@@ -572,7 +582,7 @@
 	{
 		FWD = BOARD_ADCX2IN(0),
 		REF = BOARD_ADCX2IN(1),
-		PWRI = FWD,
+		
 
 		PASENSEIX2 = BOARD_ADCX2IN(2),	// DRAIN
 		PAREFERIX2 = BOARD_ADCX2IN(3),	// reference (1/2 питания ACS712ELCTR-30B-T).
@@ -587,10 +597,10 @@
 		PASENSEMRRIX = BOARD_ADCMRRIN(2),	// кеш - индекc не должен повторяться в конфигурации
 		REFMRRIX = BOARD_ADCMRRIN(3),
 		FWDMRRIX = BOARD_ADCMRRIN(4),
-		PWRMRRIX = FWDMRRIX,
-		VOLTMRRIX = BOARD_ADCMRRIN(5),	// кеш - индекc не должен повторяться в конфигурации
-		PASENSEMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
-		PAREFERMRRIX2 = BOARD_ADCMRRIN(7),		// кеш - индекc не должен повторяться в конфигурации
+		PWRMRRIX = BOARD_ADCMRRIN(5),
+		VOLTMRRIX = BOARD_ADCMRRIN(6),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX2 = BOARD_ADCMRRIN(7),		// кеш - индекc не должен повторяться в конфигурации
+		PAREFERMRRIX2 = BOARD_ADCMRRIN(8),		// кеш - индекc не должен повторяться в конфигурации
 
 		// клавиатура на АЦП MCP3208
 		KI0 = BOARD_ADCXKIN(0),

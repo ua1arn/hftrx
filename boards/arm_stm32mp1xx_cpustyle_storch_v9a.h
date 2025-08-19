@@ -18,7 +18,7 @@
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
-//#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
+
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
@@ -294,25 +294,49 @@
 
 	#define ENCODER2_NOSPOOL 1
 
-	#define ENCODER_INITIALIZE() \
+	#if ENCODER2_REVERSE
+		#define ENCODER2_INITIALIZE() \
+			do { \
+				static einthandler_t h2; \
+				static ticker_t th2; \
+				/* func encoder */ \
+				arm_hardware_piog_inputs(EENCODER2_BITS); \
+				arm_hardware_piog_updown(EENCODER2_BITS, EENCODER2_BITS, 0); \
+				einthandler_initialize(& h2, EENCODER2_BITS, spool_encinterrupts_ccw, & encoder2); \
+				arm_hardware_piog_onchangeinterrupt(EENCODER2_BITS, EENCODER2_BITS, EENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
+				/* ticker for spool */ \
+				ticker_initialize(& th2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts_ccw, & encoder2); \
+			} while (0)
+	#else /* ENCODER2_REVERSE */
+		#define ENCODER2_INITIALIZE() \
+			do { \
+				static einthandler_t h2; \
+				static ticker_t th2; \
+				/* func encoder */ \
+				arm_hardware_piog_inputs(EENCODER2_BITS); \
+				arm_hardware_piog_updown(EENCODER2_BITS, EENCODER2_BITS, 0); \
+				einthandler_initialize(& h2, EENCODER2_BITS, spool_encinterrupts, & encoder2); \
+				arm_hardware_piog_onchangeinterrupt(EENCODER2_BITS, EENCODER2_BITS, EENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
+				/* ticker for spool */ \
+				ticker_initialize(& th2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts, & encoder2); \
+			} while (0)
+	#endif /* ENCODER2_REVERSE */
+
+	#define ENCODER1_INITIALIZE() \
 		do { \
 			static einthandler_t h1; \
-			static einthandler_t h2; \
-			static ticker_t th2; \
 			/* main encoder */ \
 			arm_hardware_piog_inputs(EENCODER_BITS); \
 			arm_hardware_piog_updown(EENCODER_BITS, EENCODER_BITS, 0); \
 			einthandler_initialize(& h1, EENCODER_BITS, spool_encinterrupts, & encoder1); \
 			arm_hardware_piog_onchangeinterrupt(EENCODER_BITS, EENCODER_BITS, EENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h1); \
-			/* func encoder */ \
-			arm_hardware_piog_inputs(EENCODER2_BITS); \
-			arm_hardware_piog_updown(EENCODER2_BITS, EENCODER2_BITS, 0); \
-			einthandler_initialize(& h2, EENCODER2_BITS, spool_encinterrupts, & encoder2); \
-			arm_hardware_piog_onchangeinterrupt(EENCODER2_BITS, EENCODER2_BITS, EENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
-			/* ticker for spool */ \
-			ticker_initialize(& th2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts, & encoder2); \
 		} while (0)
 
+	#define ENCODER_INITIALIZE() \
+		do { \
+			ENCODER1_INITIALIZE(); \
+			ENCODER2_INITIALIZE(); \
+		} while (0)
 #endif
 
 	// Инициализируются I2S2 в дуплексном режиме.
@@ -1007,6 +1031,9 @@
 
 	#define SPDIF_D2_BIT (UINT32_C(1) << 7)		// PF7	QUADSPI_BK1_IO2
 	#define SPDIF_D3_BIT (UINT32_C(1) << 6)		// PF6	QUADSPI_BK1_IO3
+
+	#define SPIDFHARD_PTR QUADSPI
+
 	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 	#define SPIDF_HANGOFF() do { \
 			arm_hardware_piob_inputs(SPDIF_NCS_BIT); \

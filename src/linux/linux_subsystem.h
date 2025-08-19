@@ -38,6 +38,15 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#if WITHAD936XDEV
+#include "ad936xdev.h"
+#endif /* WITHAD936XDEV */
+
+#if WITHLVGL
+#include "lvgl/lvgl.h"
+void lvgl_gui_init(lv_obj_t * parent);
+#endif /* WITHLVGL */
+
 /* Audio register map definitions */
 #define AUDIO_REG_I2S_RESET 		 0x00   //Write only
 #define AUDIO_REG_I2S_CTRL			 0x04
@@ -178,6 +187,11 @@ uint8_t iio_ad936x_find(const char * uri);
 uint8_t iio_ad936x_start(const char * uri);
 uint8_t iio_ad936x_stop(void);
 void iio_ad936x_set_gain(uint8_t type, int gain);
+
+void wnb_set_threshold(uint16_t v);
+void wnb_get_limits(uint16_t * min, uint16_t * max);
+uint16_t wnb_get_threshold(void);
+uint8_t wnb_state_switch(uint8_t v);
 
 void board_rtc_getdate(
 	uint_fast16_t * year,

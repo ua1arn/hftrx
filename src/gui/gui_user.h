@@ -8,111 +8,48 @@
 #include "src/gui/gui.h"
 #include "src/gui/gui_structs.h"
 
-static void gui_main_process(void);
-static void window_mode_process(void);
-static void window_af_process(void);
-static void window_freq_process (void);
-static void window_swrscan_process(void);
-static void window_tx_process(void);
-static void window_tx_vox_process(void);
-static void window_tx_power_process(void);
-static void window_audiosettings_process(void);
-static void window_ap_reverb_process(void);
-static void window_ap_mic_eq_process(void);
-static void window_ap_mic_process(void);
-static void window_ap_mic_prof_process(void);
-static void window_menu_process(void);
-static void window_uif_process(void);
-static void window_options_process(void);
-static void window_utilites_process(void);
-static void window_bands_process(void);
-static void window_memory_process(void);
-static void window_display_process(void);
-static void window_receive_process(void);
-static void window_notch_process(void);
-static void window_gui_settings_process(void);
-static void window_ft8_process(void);
-static void window_ft8_bands_process(void);
-static void window_ft8_settings_process(void);
-static void window_infobar_menu_process(void);
-static void window_af_eq_process(void);
-static void window_shift_process(void);
-static void window_menu_params_process(void);
-static void window_time_process(void);
-static void window_kbd_process(void);
-static void window_kbd_test_process(void);
-static void window_3d_process(void);
-static void window_lfm_process(void);
-static void window_lfm_spectre_process(void);
-static void window_stream_process(void);
-static void window_wnbconfig_process(void);
-static void window_iioconfig_process(void);
-static void window_as_process(void);
-
-enum {
-	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
-	WINDOW_MODES,					// переключение режимов работы, видов модуляции
-	WINDOW_AF,						// регулировка полосы пропускания фильтров выбранного режима
-	WINDOW_FREQ,					// прямой ввод частоты
-	WINDOW_MENU,					// системное меню
-	WINDOW_MENU_PARAMS,
-	WINDOW_UIF,						// быстрое меню по нажатию заранее определенных кнопок
-#if WITHSWRSCAN
-	WINDOW_SWR_SCANNER,				// сканер КСВ по диапазону
-#endif /* WITHSWRSCAN */
-	WINDOW_AUDIOSETTINGS,			// настройки аудиопараметров
-	WINDOW_AP_MIC_EQ,				// эквалайзер микрофона
-#if WITHREVERB
-	WINDOW_AP_REVERB_SETT,			// параметры ревербератора
-#endif /* WITHREVERB */
-	WINDOW_AP_MIC_SETT,				// настройки микрофона
-	WINDOW_AP_MIC_PROF,				// профили микрофона (заготовка окна)
-	WINDOW_TX_SETTINGS,				// настройки, относящиеся к режиму передачи
-	WINDOW_TX_VOX_SETT,				// настройки VOX
-	WINDOW_TX_POWER,				// выходная мощность
-	WINDOW_OPTIONS,					// различные настройки
-	WINDOW_UTILS,					// измерения и т.д.
-	WINDOW_BANDS,					// выбор диапазона
-	WINDOW_MEMORY,					// ячейки памяти
-	WINDOW_DISPLAY,					// настройки отображения
-	WINDOW_RECEIVE,					// настройки приема
-	WINDOW_NOTCH,					// ручной режекторый фильтр
-	WINDOW_GUI_SETTINGS,			// настройки интерфейса GUI
-#if WITHFT8
-	WINDOW_FT8,
-	WINDOW_FT8_BANDS,
-	WINDOW_FT8_SETTINGS,
-#endif /* #if WITHFT8 */
-	WINDOW_INFOBAR_MENU,
-	WINDOW_AF_EQ,
-#if WITHIQSHIFT
-	WINDOW_SHIFT,
-#endif /* WITHIQSHIFT */
-	WINDOW_TIME,
-	WINDOW_KBD,
-	WINDOW_KBD_TEST,
-	WINDOW_3D,
-#if WITHLFM
-	WINDOW_LFM,
-	WINDOW_LFM_SPECTRE,
-#endif /* WITHLFM  */
-#if LINUX_SUBSYSTEM && WITHEXTIO_LAN
-	WINDOW_EXTIOLAN,
-#endif /* LINUX_SUBSYSTEM && WITHEXTIO_LAN */
-#if WITHWNB
-	WINDOW_WNBCONFIG,
-#endif /* WITHWNB */
-#if LINUX_SUBSYSTEM && WITHAD936XIIO
-	WINDOW_IIOCONFIG,
-#endif /* LINUX_SUBSYSTEM && WITHAD936XIIO */
-#if WITHAUDIOSAMPLESREC
-	WINDOW_AS,
-#endif /* WITHAUDIOSAMPLESREC */
-
-	WINDOWS_COUNT
-};
-
 void gui_user_actions_after_close_window(void);
+void footer_buttons_state (uint_fast8_t state, ...);
+
+void gui_main_process(void);
+void window_mode_process(void);
+void window_af_process(void);
+void window_freq_process (void);
+void window_swrscan_process(void);
+void window_tx_process(void);
+void window_tx_power_process(void);
+void window_audiosettings_process(void);
+void window_ap_reverb_process(void);
+void window_ap_mic_eq_process(void);
+void window_ap_mic_process(void);
+void window_ap_mic_prof_process(void);
+void window_menu_process(void);
+void window_uif_process(void);
+void window_options_process(void);
+void window_utilites_process(void);
+void window_bands_process(void);
+void window_memory_process(void);
+void window_display_process(void);
+void window_receive_process(void);
+void window_notch_process(void);
+void window_gui_settings_process(void);
+void window_ft8_process(void);
+void window_ft8_bands_process(void);
+void window_ft8_settings_process(void);
+void window_infobar_menu_process(void);
+void window_af_eq_process(void);
+void window_shift_process(void);
+void window_menu_params_process(void);
+void window_time_process(void);
+void window_kbd_process(void);
+void window_kbd_test_process(void);
+void window_3d_process(void);
+void window_lfm_process(void);
+void window_lfm_spectre_process(void);
+void window_stream_process(void);
+void window_wnbconfig_process(void);
+void window_ad936x_process(void);
+void window_as_process(void);
 
 enum {
 	MENU_OFF,
@@ -131,11 +68,11 @@ typedef struct {
 	int8_t selected_str;		// выбранная строка уровня
 	int8_t selected_label;		// выбранная метка уровня
 	uint8_t add_id;				// номер строки уровня, отображаемой первой
-	menu_names_t menu_block [MENU_ARRAY_SIZE];	// массив значений уровня меню
+	menu_names_t menu_block[MENU_ARRAY_SIZE];	// массив значений уровня меню
 } menu_t;
 
 typedef struct {
-	char name [TEXT_ARRAY_SIZE];
+	char name[TEXT_ARRAY_SIZE];
 	uint16_t menupos;
 	uint8_t exitkey;
 } menu_by_name_t;
@@ -144,7 +81,6 @@ enum {
 	TYPE_BP_LOW,
 	TYPE_BP_HIGH,
 	TYPE_AFR,
-	TYPE_IF_SHIFT
 };
 
 enum {
@@ -156,7 +92,8 @@ enum {
 	TYPE_DISPLAY_SP_TOP,
 	TYPE_DISPLAY_SP_BOTTOM,
 	TYPE_DISPLAY_WF_TOP,
-	TYPE_DISPLAY_WF_BOTTOM
+	TYPE_DISPLAY_WF_BOTTOM,
+	TYPE_DISPLAY_SP_PART,
 };
 
 typedef struct {
@@ -167,12 +104,12 @@ typedef struct {
 
 typedef struct {
 	uint_fast16_t step;
-	char label [10];
+	char label[10];
 } val_step_t;
 
 typedef struct {
 	char * str;				// указатель на редактируемую строку
-	uint32_t * num;			// указатель на редактируемое числовое зачение
+	int * num;				// указатель на редактируемое числовое зачение
 	uint8_t clean;			// признак очистки строки перед открытием окна
 	uint8_t digits_only;	// только цифровая клавиатура
 	uint8_t max_len;		// максимальная длина редактируемой строки

@@ -2970,13 +2970,13 @@ static void set_t507_pll_cpux(unsigned N, unsigned Ppow)
 	while ((CCU->PLL_CPUX_CTRL_REG & (UINT32_C(1) << 31)) != 0)
 		;
 	// Set PLL dividers
-	CCU->PLL_CPUX_CTRL_REG = (CCU->PLL_CPUX_CTRL_REG & ~ ((UINT32_C(0xFF) << 8) | (UINT32_C(0x03) << 16))) |
+	CCU->PLL_CPUX_CTRL_REG = (CCU->PLL_CPUX_CTRL_REG & ~ (UINT32_C(0xFF) << 8) & ~ (UINT32_C(0x03) << 16)) |
 		(N - 1) * (UINT32_C(1) << 8) |	// PLL_FACTOR_N
 		Ppow * (UINT32_C(1) << 16) |		// PLL_OUT_EXT_DIVP
 		0;
 	// Start PLL
 	CCU->PLL_CPUX_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 29);
-	// Waitig for PLL stable
+	// Wait for PLL stable
 	while ((CCU->PLL_CPUX_CTRL_REG & (UINT32_C(1) << 28)) == 0)	// LOCK
 		;
 }
@@ -3028,17 +3028,34 @@ void allwnr_t507_pll_initialize(int forced)
 {
 }
 
+//	https://github.com/torvalds/linux/blob/master/drivers/nvmem/sunxi_sid.c#L62
+
+#define SUN8I_SID_OFFSET_MASK	0x1FF
+#define SUN8I_SID_OFFSET_SHIFT	16
+#define SUN8I_SID_OP_LOCK	(0xAC << 8)
+#define SUN8I_SID_READ		(UINT32_C(1) << 1)
+
+uint_fast32_t allwnr_t507_sid_read(unsigned offs)
+{
+	ASSERT(! (offs % 4));
+	SID->SID_PRCTL = ((offs & SUN8I_SID_OFFSET_MASK) << SUN8I_SID_OFFSET_SHIFT) | SUN8I_SID_OP_LOCK | SUN8I_SID_READ;
+	while ((SID->SID_PRCTL & (UINT32_C(1) << 1)) != 0)
+		;
+	const uint_fast32_t val = SID->SID_RDKEY;
+	SID->SID_PRCTL = 0;
+	return val;
+}
 //	#define CHIPID_F133A 		0x5C00
 //	#define CHIPID_T113S3 		0x6000
 //	#define CHIPID_T113M4020DC0 0x7200	// A.K.A. T11-s4
 //	#define CHIPID_H616			0x2300
 //	#define CHIPID_T507			0x2300
 // T507
-uint_fast32_t allwnr_t507_get_chipid(void)
-{
-	//printhex32(SID_BASE, SID, 1024 * 4);
-	return SID->SID_DATA [0] & 0xFFFF;
-}
+//uint_fast32_t allwnr_t507_get_chipid(void)
+//{
+//	//printhex32(SID_BASE, SID, 1024 * 4);
+//	return SID->SID_DATA [0] & 0xFFFF;
+//}
 
 // T507
 uint_fast32_t allwnr_t507_get_hosc_freq(void)
@@ -3464,6 +3481,7 @@ uint_fast32_t allwnr_t507_get_apb2_freq(void)
 	}
 }
 
+// The system accesses RTC register by APBS1 to generate the real time.
 uint_fast32_t allwnr_t507_get_apbs1_freq(void)
 {
 	const uint_fast32_t clkreg = PRCM->APBS1_CFG_REG;
@@ -4184,11 +4202,10 @@ static void t113_set_psi_ahb(void)
 
 // T113
 // APB0 frequency set
-static void t113_set_apb0(void)
+static void t113_set_apb0(uint_fast32_t needfreq)
 {
 	// Automatic divisors calculation
 	unsigned clksrc = 3;	// 11: PLL_PERI(1X)
-	uint_fast32_t needfreq = UINT32_C(100) * 1000 * 1000;
 	unsigned dvalue;
 	unsigned prei = calcdivider(calcdivround2(allwnr_t113_get_peripll1x_freq(), needfreq), 5, (8 | 4 | 2 | 1), & dvalue, 1);
 	CCU->APB0_CLK_REG =
@@ -4200,19 +4217,51 @@ static void t113_set_apb0(void)
 
 // T113
 // APB1 frequency set
-static void t113_set_apb1(void)
+static void t113_set_apb1(uint_fast32_t needfreq)
 {
 	// Automatic divisors calculation
 	unsigned clksrc = 3;	// 11: PLL_PERI(1X)
-	uint_fast32_t needfreq = UINT32_C(200) * 1000 * 1000;
 	unsigned dvalue;
 	unsigned prei = calcdivider(calcdivround2(allwnr_t113_get_peripll1x_freq(), needfreq), 5, (8 | 4 | 2 | 1), & dvalue, 1);
-	CCU->APB1_CLK_REG =
-		(UINT32_C(1) << 31) |
+//	PRINTF("t113_set_apb1 1: CCU->APB1_CLK_REG=%08X prei=%u, dvalue=%u, src=%u, needfreq=%u\n", (unsigned) CCU->APB1_CLK_REG, prei, dvalue, (unsigned) allwnr_t113_get_peripll1x_freq(), (unsigned) needfreq);
+	dvalue = 2;
+	prei = 0;
+//	PRINTF("t113_set_apb1 2: CCU->APB1_CLK_REG=%08X prei=%u, dvalue=%u, src=%u, needfreq=%u\n", (unsigned) CCU->APB1_CLK_REG, prei, dvalue, (unsigned) allwnr_t113_get_peripll1x_freq(), (unsigned) needfreq);
+//	dbg_flush();
+//	PRINTF("\n");
+//	PRINTF("\n");
+//	PRINTF("\n");
+//	dbg_flush();
+	const uint_fast32_t reg0 =
+		3 * (UINT32_C(1) << 24) |
+		0 * (UINT32_C(1) << 8) |
+		1 * (UINT32_C(1) << 0) |
+		0;
+	const uint_fast32_t reg =
 		clksrc * (UINT32_C(1) << 24) |
 		prei * (UINT32_C(1) << 8) |
 		dvalue * (UINT32_C(1) << 0) |
 		0;
+//	PRINTF("t113_set_apb1 21: reg=%08X\n", reg);
+//	dbg_flush();
+//	PRINTF("\n");
+//	PRINTF("\n");
+//	PRINTF("\n");
+//	dbg_flush();
+
+	do {
+		CCU->APB1_CLK_REG = reg0;
+	} while (CCU->APB1_CLK_REG != reg0);
+
+	do {
+		CCU->APB1_CLK_REG = reg;
+	} while (CCU->APB1_CLK_REG != reg);
+//	PRINTF("t113_set_apb1 3: CCU->APB1_CLK_REG=%08X prei=%u, dvalue=%u, src=%u, needfreq=%u\n", (unsigned) CCU->APB1_CLK_REG, prei, dvalue, (unsigned) allwnr_t113_get_peripll1x_freq(), (unsigned) needfreq);
+//	dbg_flush();
+//	PRINTF("\n");
+//	PRINTF("\n");
+//	PRINTF("\n");
+//	dbg_flush();
 }
 
 // T113
@@ -4240,6 +4289,14 @@ void allwnr_t113_module_pll_spr(volatile uint32_t * pllctrlreg, volatile uint32_
 	* pat0 |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN
 
 	* pllctrlreg |= (UINT32_C(1) << 24);	// PLL_SDM_ENABLE
+}
+
+void allwnr_t113_module_pll_n(volatile uint32_t * pllctrlreg, unsigned N)
+{
+	// N: 15..8
+	* pllctrlreg = (* pllctrlreg & ~ UINT32_C(0xFF00)) |
+		(N - 1) * (UINT32_C(1) << 8) |
+		0;
 }
 
 void allwnr_t113_module_pll_enable(volatile uint32_t * pllctrlreg)
@@ -5224,9 +5281,10 @@ void allwnr_t113_pll_initialize(int N)
 	local_delay_initialize();
 	CCU->PSI_CLK_REG = 0;	// AHB freq from OSC24
 	CCU->APB0_CLK_REG = 0;	// переключаем источник APB0 на HOSC
-	CCU->APB1_CLK_REG = (UINT32_C(1) << 31);	// переключаем источник APB1 на HOSC
+	CCU->APB1_CLK_REG = 0;	// переключаем источник APB1 на HOSC
 
 	allwnr_t113_module_pll_spr(& CCU->PLL_PERI_CTRL_REG, & CCU->PLL_PERI_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+	//allwnr_t113_module_pll_n(& CCU->PLL_PERI_CTRL_REG, 96);
 	allwnr_t113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
 
 	allwnr_t113_module_pll_spr(& CCU->PLL_AUDIO0_CTRL_REG, & CCU->PLL_AUDIO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
@@ -5245,8 +5303,8 @@ void allwnr_t113_pll_initialize(int N)
 
 	t113_set_mbus();
 	t113_set_psi_ahb();
-	t113_set_apb0();	// 100 MHz
-	t113_set_apb1();	// 200 MHz
+	t113_set_apb0(UINT32_C(100) * 1000 * 1000);	// 100 MHz
+	t113_set_apb1(UINT32_C(300) * 1000 * 1000);	// 192 MHz - for 4M baud rate
 }
 
 #endif /* CPUSTYLE_STM32MP1 */
@@ -5683,10 +5741,7 @@ calcdivider(
 
 void hardware_spi_io_delay(void)
 {
-#if CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
-	_NOP();
-	_NOP();
-#elif	CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
+#if	CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 	__DSB();
 	//__ISB();
 	__NOP();
@@ -5908,59 +5963,6 @@ void hardware_spi_io_delay(void)
 		}
 	}
 
-#elif CPUSTYLE_ATMEGA
-
-	// Timer 1 output compare A interrupt service routine
-	ISR(TIMER1_COMPA_vect)
-	{
-		spool_elkeybundle();
-	}
-
-	// Обработчик вызывается с частотой TICKS_FREQUENCY герц.
-	#if CPUSTYLE_ATMEGA328
-		ISR(TIMER2_COMPA_vect)
-		{
-			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		}
-	#elif CPUSTYLE_ATMEGA_XXX4
-		ISR(TIMER0_COMPA_vect)
-		{
-			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		}
-	#else /* CPUSTYLE_ATMEGA_XXX4 */
-		ISR(TIMER0_COMP_vect)
-		{
-			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		}
-	#endif /* CPUSTYLE_ATMEGA_XXX4 */
-
-#elif CPUSTYLE_ATXMEGA
-
-	#if CPUSTYLE_ATXMEGAXXXA4
-
-	ISR(PORTC_INT0_vect)
-	{
-		spool_encinterrupts(& encoder1);	/* прерывание по изменению сигнала на входах от валкодера */
-	}
-
-	ISR(PORTC_INT1_vect)
-	{
-		spool_encinterrupts(& encoder1);	/* прерывание по изменению сигнала на входах от валкодера */
-	}
-
-	ISR(TCC0_CCA_vect)
-	{
-		spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-	}
-
-	// Timer 1 output compare A interrupt service routine
-	ISR(TCC1_CCA_vect)
-	{
-		spool_elkeybundle();
-	}
-
-	#endif /* CPUSTYLE_ATXMEGAXXXA4 */
-
 #elif CPUSTYLE_VM14
 	// Private timer use
 	void
@@ -6072,19 +6074,6 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 		(AT91C_AIC_PRIOR & AT91C_AIC_PRIOR_LOWEST);
 	AT91C_BASE_AIC->AIC_ICCR = (UINT32_C(1) << AT91C_ID_SYS);		// clear pending interrupt
     AT91C_BASE_AIC->AIC_IECR = (UINT32_C(1) << AT91C_ID_SYS);	// enable inerrupt
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
-	// программирование таймера
-	TCC0.CCA = value;	// timer/counter C0, compare register A, see TCC0_CCA_vect
-	TCC0.CTRLA = (prei + 1);
-	TCC0.CTRLB = (TC_WGMODE_FRQ_gc);
-	TCC0.INTCTRLB = (TC_CCAINTLVL_HI_gc);
-	// разрешение прерываний на входе в PMIC
-	PMIC.CTRL |= (PMIC_HILVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm);
 
 #elif CPUSTYLE_R7S721
 
@@ -9906,9 +9895,25 @@ sysinit_pll_initialize(int forced)
 	PRCM->APBS1_CFG_REG = 0;
 #endif
 
-	set_t507_pll_cpux(forced ? PLL_CPU_N : 17, PLL_CPU_P_POW);
+	if (forced)
+	{
+		const uint_fast32_t desiredAXIfreq = 600;	// AXI не выше 600 MHz
+		const uint_fast32_t desiredAPBfreq = 400;	// AРB не выше 400 MHz
+		const uint_fast32_t fCPU = (24u * PLL_CPU_N) >> PLL_CPU_P_POW;
+		// Рабочая частота
+		set_t507_pll_cpux(PLL_CPU_N, PLL_CPU_P_POW);
+		unsigned apbDIV = 4;//ulmax(1, ulmin(4, (fCPU + (desiredAPBfreq - 1)) / desiredAPBfreq));	// 1..4
+		unsigned axiDIV = fCPU > 1200 ? 3 : 2;//ulmax(1, ulmin(4, (fCPU + (desiredAXIfreq - 1)) / desiredAXIfreq));	// 1..4	- if CPU_FREQ=1200, axi_freq=600
+		set_t507_axi_sel(0x03, apbDIV, axiDIV);	// 011: PLL_CPUX - CPUX_AXI_CFG_REG
+	}
+	else
+	{
+		set_t507_pll_cpux(17, 0);
+		unsigned apbDIV = 4;	// 1..4
+		unsigned axiDIV = 2;	// 1..4	- if CPU_FREQ=1200, axi_freq=600
+		set_t507_axi_sel(0x03, apbDIV, axiDIV);	// 011: PLL_CPUX - CPUX_AXI_CFG_REG
+	}
 
-	set_t507_axi_sel(0x03, 4, 2);	// 011: PLL_CPUX
 
 	// PSI_AHB1_AHB2 CLK = Clock Source/M/N
 	// old default=0x03000102
@@ -10921,56 +10926,6 @@ void hardware_adc_initialize(void)
 	AT91C_BASE_AIC->AIC_ICCR = (UINT32_C(1) << AT91C_ID_ADC);		// clear pending interrupt
 	AT91C_BASE_AIC->AIC_IECR = (UINT32_C(1) << AT91C_ID_ADC);	// enable inerrupt
 
-#elif CPUSTYLE_ATMEGA
-
-	// Использование автоматического расчёта предделителя
-	// Хотя, 128 (prei = 6) годится для всех частот - 8 МГц и выше. Ниже - уменьшаем.
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ADC_FREQ), ATMEGA_ADPS_WIDTH, ATMEGA_ADPS_TAPS, & value, 1);
-
-	#if CPUSTYLE_ATMEGA_XXX4
-
-		DIDR0 = build_adc_mask();	// запретить цифровые входы на входах АЦП
-		ADCSRA = (UINT32_C(1) << ADEN) | (UINT32_C(1) << ADIE ) | prei;
-
-	#else /* CPUSTYLE_ATMEGA_XXX4 */
-
-		ADCSRA = (UINT32_C(1) << ADEN) | (UINT32_C(1) << ADIE ) | prei;
-
-
-	#endif	/* CPUSTYLE_ATMEGA_XXX4 */
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	#warning TODO: write atxmega code - ADC init
-	// Использование автоматического расчёта предделителя
-	// Хотя, 128 (prei = 6) годится для всех частот - 8 МГц и выше. Ниже - уменьшаем.
-	////unsigned value;
-	////const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ADC_FREQ), ATXMEGA_ADPS_WIDTH, ATXMEGA_ADPS_TAPS, & value, 1);
-
-	////ADCA.PRESCALER = prei;
-	//DIDR0 = build_adc_mask();	// запретить цифровые входы на входах АЦП
-	//ADCSRA = (UINT32_C(1) << ADEN) | (UINT32_C(1) << ADIE );
-
-#if 0
-		// код из electronix.ru
-	/* инициализация АЦП */
-	ADCA.CTRLA = 0x05;
-	ADCA.CTRLB = 0x00;
-	ADCA.PRESCALER = ADC_PRESCALER_DIV256_gc; // 0x6; // ADC_PRESCALER_DIV256_gc
-	ADCA.CH1.CTRL =	ADC_CH_INPUTMODE_SINGLEENDED_gc; // 0x01;
-
-
-	uint16_t get_adc()
-	{
-		ADCA.REFCTRL |= (UINT32_C(1) << 5); // подаем смещение с пина AREFA
-		ADCA.CH1.MUXCTRL =	0x20; // выбираем ножку
-		ADCA.CH1.CTRL =	(ADC_CH_START_bm | ADC_CH_INPUTMODE_SINGLEENDED_gc); //0x81;	//запускаем преобразавние
-		_delay_us(30);
-		return ADCA.CH1.RES;
-	}
-#endif
-
 #elif CPUSTYLE_STM32F1XX
 
 	const uint_fast32_t ainmask = build_adc_mask();
@@ -11602,34 +11557,6 @@ void hardware_sounds_disable(void)
 
 	HARDWARE_SIDETONE_DISCONNECT();
 
-#elif CPUSTYLE_ATMEGA328
-
-	// генерация сигнала самоконтроля на PD6(OC0A)
-	TCCR0B = 0x00;	// 0 - Normal port operation, OC0A disconnected.
-
-#elif CPUSTYLE_ATMEGA_XXX4
-	// генерация сигнала самоконтроля на PD7(OC2)
-
-	// 8-bit таймер должен сгенерировать переключения выхода с частотой минимум 800 герц (для получения тона 400 герц).
-	TCCR2B = 0x00;	// 0 - Normal port operation, OC2 disconnected.
-
-#elif CPUSTYLE_ATMEGA128
-	// ATMega128/ATMega64
-	// генерация сигнала самоконтроля на PD7(OC2)
-
-	// 8-bit таймер должен сгенерировать переключения выхода с частотой минимум 800 герц (для получения тона 400 герц).
-	TCCR2 = TCCR2WGM;	// (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20)
-
-#elif CPUSTYLE_ATMEGA32
-	// генерация сигнала самоконтроля на PD7(OC2)
-
-	// 8-bit таймер должен сгенерировать переключения выхода с частотой минимум 800 герц (для получения тона 400 герц).
-	TCCR2 = TCCR2WGM;	// (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20)
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	TCD1.CTRLA = 0x00;
-
 #elif CPUSTYLE_STM32F
 
 	TIM4->CR1 = 0x00;
@@ -11665,86 +11592,6 @@ void hardware_sounds_setfreq(
 	AT91C_BASE_TCB->TCB_TC1.TC_RC = value;	// программирование полупериода (выход с триггерам)
 
 	HARDWARE_SIDETONE_CONNECT();
-
-#elif CPUSTYLE_ATMEGA328
-	//
-	// compare match после записи делителя отменяется на один цикл
-	// timer2 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD6(OC0A) - выход делителя на 2
-	// TCCR2B - Timer/Counter Control Register B
-	const uint_fast8_t tccrXBval = (prei + 1);
-	if ((TCCR0B != tccrXBval) || (OCR0A > value))	// таймер может отработать до максимального значения счётчика, если уменьшаем TOP
-	{
-		TCCR0B = 0x00;		// останавливаем таймер.
-		OCR0A = value;		// загружаем новое значение TOP
-		TCNT0 = 0x00;		// сбрасыаваем счётчик
-		TCCR0B = tccrXBval;	// запускаем таймер
-	}
-	else
-		OCR0A = value;	// период станет длиннее
-
-#elif CPUSTYLE_ATMEGA_XXX4
-	//
-	// timer2 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
-	// Пототму в расчёте используется tonefreq * 2
-	// TCCR2B - Timer/Counter Control Register B
-	const uint_fast8_t tccrXBval = (prei + 1);
-	if ((TCCR2B != tccrXBval) || (OCR2A > value))	// таймер может отработать до максимального значения счётчика, если уменьшаем TOP
-	{
-		TCCR2B = 0x00;		// останавливаем таймер.
-		OCR2A = value;		// загружаем новое значение TOP
-		TCNT2 = 0x00;		// сбрасыаваем счётчик
-		TCCR2B = tccrXBval;	// запускаем таймер
-	}
-	else
-		OCR2A = value;	// период станет длиннее
-
-#elif CPUSTYLE_ATMEGA128
-	// ATMega128/ATMega64
-
-	//
-	// timer2 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
-	// Пототму в расчёте используется tonefreq * 2
-	// TCCR2WGM = (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20)
-	const uint_fast8_t tccrXBval = TCCR2WGM | (prei + 1);
-	if ((TCCR2 != tccrXBval) || (OCR2 > value))		// таймер может отработать до максимального значения счётчика, если уменьшаем TOP
-	{
-		TCCR2 = TCCR2WGM;	// (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20) останавливаем таймер
-		OCR2 = value;		// загружаем новое значение TOP
-		TCNT2 = 0x00;		// сбрасыаваем счётчик
-		TCCR2 = tccrXBval;	// запускаем таймер
-	}
-	else
-		OCR2 = value;		// период станет длиннее
-
-#elif CPUSTYLE_ATMEGA32
-
-	//
-	// timer2 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
-	// Пототму в расчёте используется tonefreq * 2
-	// TCCR2WGM = (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20)
-	const uint_fast8_t tccrXBval = TCCR2WGM | (prei + 1);
-	if ((TCCR2 != tccrXBval) || (OCR2 > value))		// таймер может отработать до максимального значения счётчика, если уменьшаем TOP
-	{
-		TCCR2 = TCCR2WGM;	// (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20) останавливаем таймер
-		OCR2 = value;		// загружаем новое значение TOP
-		TCNT2 = 0x00;		// сбрасыаваем счётчик
-		TCCR2 = tccrXBval;	// запускаем таймер
-	}
-	else
-		OCR2 = value;		// период станет длиннее
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	// программирование таймера
-	TCD1.CCA = value;	// timer/counter C1, compare register A, see TCC1_CCA_vect
-	TCD1.CTRLA = (prei + 1);
-	//TCC2.INTCTRLB = (TC_CCAINTLVL_MED_gc);
-	// разрешение прерываний на входе в PMIC
-	//PMIC.CTRL |= (PMIC_HILVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm);
 
 #elif CPUSTYLE_STM32F
 
@@ -11821,65 +11668,6 @@ hardware_beep_initialize(void)
 	// Timer outputs, connected to pin(s)
 	HARDWARE_SIDETONE_INITIALIZE();
 
-#elif CPUSTYLE_ATMEGA328
-	// генерация сигнала самоконтроля на PD6(OC0A)
-	// Timer/Counter 0 initialization
-	// Timer/Counter 0 initialization
-	// Clock source: System Clock
-	// Clock value: Timer 0 Stopped
-	// Mode: CTC top=OCR0A
-	// OC0A output: Toggle on compare match
-	// OC0B output: Disconnected
-	TCCR0A = 0x42;
-	TCCR0B = 0x00;
-	// обязательно - настройка вывода процессора как выхода.
-	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; 	// output pin connection - test without this string need.
-	SIDETONE_TARGET_PORT &= ~ SIDETONE_TARGET_BIT; // disable pull-up
-
-#elif CPUSTYLE_ATMEGA_XXX4
-	// Timer/Counter 2 initialization
-	// Clock source: System Clock
-	// Clock value: Timer 2 Stopped
-	// Mode: CTC top=OCR2A
-	// OC2A output: Toggle on compare match
-	// OC2B output: Disconnected
-	ASSR = 0x00;
-	TCCR2A = (UINT32_C(1) << COM2A0) | (UINT32_C(1) << WGM21);	// 0x42, (UINT32_C(1) << WGM21) only - OC2A disconnected
-	TCCR2B = 0x00;
-	// обязательно - настройка вывода процессора как выхода.
-	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; // output pin connection - strongly need for working
-	SIDETONE_TARGET_PORT &= ~ SIDETONE_TARGET_BIT; // disable pull-up
-
-#elif CPUSTYLE_ATMEGA128
-	// ATMega128/ATMega64
-	// Timer/Counter 2 initialization
-	// Clock source: System Clock
-	// Clock value: Timer 2 Stopped
-	// Mode: CTC top=OCR2
-	// OC2 output: Toggle on compare match
-	ASSR = 0x00;
-	TCCR2 = TCCR2WGM;	// (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20)
-	// обязательно - настройка вывода процессора как выхода.
-	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; // (UINT32_C(1) << DDD7);	// output pin connection - test without this string need.
-	SIDETONE_TARGET_PORT &= ~ SIDETONE_TARGET_BIT; // (UINT32_C(1) << PD7);	// disable pull-up
-
-#elif CPUSTYLE_ATMEGA32
-	// Timer/Counter 2 initialization
-	// Clock source: System Clock
-	// Clock value: Timer 2 Stopped
-	// Mode: CTC top=OCR2
-	// OC2 output: Toggle on compare match
-	ASSR = 0x00;
-	TCCR2 = TCCR2WGM;	// (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20)
-	// обязательно - настройка вывода процессора как выхода.
-	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; // (UINT32_C(1) << DDD7);	// output pin connection - test without this string need.
-	SIDETONE_TARGET_PORT &= ~ SIDETONE_TARGET_BIT; // (UINT32_C(1) << PD7);	// disable pull-up
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	TCD1.CTRLB = (TC1_CCAEN_bm | TC_WGMODE_FRQ_gc);
-	SIDETONE_TARGET_DDR |= SIDETONE_TARGET_BIT; // (UINT32_C(1) << DDD7);	// output pin connection - test without this string need.
-
 #elif CPUSTYLE_STM32F
 
 	// apb1
@@ -11911,41 +11699,6 @@ hardware_calc_sound_params(
 #elif CPUSTYLE_AT91SAM7S
 
 	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, pvalue, 1);
-
-#elif CPUSTYLE_ATMEGA328
-	//
-	// compare match после записи делителя отменяется на один цикл
-	// timer0 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD6(OC0A) - выход делителя на 2
-	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, pvalue, 1);
-
-#elif CPUSTYLE_ATMEGA_XXX4
-	//
-	// timer2 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
-	// Пототму в расчёте используется tonefreq * 2
-	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), ATMEGA_TIMER2_WIDTH, ATMEGA_TIMER2_TAPS, pvalue, 1);
-
-#elif CPUSTYLE_ATMEGA128
-	// ATMega128/ATMega64
-
-	//
-	// timer2 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
-	// Пототму в расчёте используется tonefreq * 2
-	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), ATMEGA_TIMER2_WIDTH, ATMEGA_TIMER2_TAPS, pvalue, 1);
-
-#elif CPUSTYLE_ATMEGA32
-
-	//
-	// timer2 - 8 bit wide.
-	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
-	// Пототму в расчёте используется tonefreq * 2
-	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), ATMEGA_TIMER2_WIDTH, ATMEGA_TIMER2_TAPS, pvalue, 1);
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, pvalue, 1);
 
 #elif CPUSTYLE_STM32F
 
@@ -12044,10 +11797,6 @@ hardware_elkey_timer_initialize(void)
 		AT91C_BASE_AIC->AIC_IECR = (UINT32_C(1) << irqID);	// enable interrupt
 	}
 
-#elif CPUSTYLE_ATXMEGA
-
-	TCC1.INTCTRLB = 0;		// останавливаем таймер - будет запущен в функции установке частоты
-
 #elif CPUSTYLE_STM32H7XX
 
 	RCC->APB1LENR |= RCC_APB1LENR_TIM3EN;   // подаем тактирование на TIM3
@@ -12124,30 +11873,6 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	AT91C_BASE_TCB->TCB_TC2.TC_CMR =
 		(AT91C_BASE_TCB->TCB_TC2.TC_CMR & ~ AT91C_TC_CLKS) | tc_cmr_clks [prei];
 	AT91C_BASE_TCB->TCB_TC2.TC_RC = value;	// программирование полного периода
-
-#elif CPUSTYLE_ATMEGA
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER1_WIDTH, ATMEGA_TIMER1_TAPS, & value, 1);
-	// WGM12 = WGMn2 bit in timer 1
-	// (UINT32_C(1) << WGM12) - mode4: CTC
-	TCCR1B = (UINT32_C(1) << WGM12) | (prei + 1);	// прескалер
-	OCR1A = value;	// делитель - программирование полного периода
-
-#elif CPUSTYLE_ATXMEGA
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
-
-	// программирование таймера
-	TCC1.CCA = value;	// timer/counter C1, compare register A, see TCC1_CCA_vect
-	TCC1.CTRLA = (prei + 1);
-	TCC1.CTRLB = (TC_WGMODE_FRQ_gc);
-	TCC1.INTCTRLB = (TC_CCAINTLVL_MED_gc);
-	// разрешение прерываний на входе в PMIC
-	PMIC.CTRL |= (PMIC_HILVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm);
 
 #elif CPUSTYLE_STM32MP1
 	// TIM2 & TIM5 on CPUSTYLE_STM32F4XX have 32-bit CNT and ARR registers

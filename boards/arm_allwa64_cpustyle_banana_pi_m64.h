@@ -14,7 +14,7 @@
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
-//#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
+
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
@@ -665,6 +665,7 @@
 	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0x01	/* A64: 00: OSC24M 01: PLL_PERIPH0(1X) 10: PLL_PERIPH1(1X) */
 	#define HARDWARE_SPI_FREQ (allwnr_a64_get_spi1_freq())
 
 	#define SPIIO_INITIALIZE() do { \

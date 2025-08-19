@@ -12,18 +12,19 @@
 // Тест конструкторов глобальных объектов
 
 class tcl0 {
+	const char * s;
 public:
-	tcl0() {
-		PRINTF("*********** tcl0 @%p\n", this);
+	tcl0(const char * label) : s(label) {
+		printf("*********** tcl0 @%p '%s'\n", this, s);
 	}
 	~tcl0() {
-		PRINTF("----------- tcl0 @%p\n", this);
+		printf("----------- tcl0 @%p '%s'\n", this, s);
 	}
 };
 
-static class tcl0 gltest;
-static RAMDTCM class tcl0 gltest2;
-static RAMBIG class tcl0 gltest3;
+static class tcl0 gltest("static memory");
+static RAMDTCM class tcl0 gltest2("RAMDTCM memory");
+static RAMBIG class tcl0 gltest3("RAMBIG memory");
 
 static RAMDTCM char xxxx [32];
 
@@ -32,12 +33,12 @@ extern "C" {
 }
 
 void cpptest() {
-	tcl0 t1;
-	tcl0 t2;
-	tcl0 * p1 = new tcl0;
-	tcl0 * p2 = new tcl0;
-	tcl0 * p3 = new tcl0;
-	tcl0 * p4 = new (reinterpret_cast<void *>(xxxx)) tcl0;
+	tcl0 t1("stack t1");
+	tcl0 t2("stack t2");
+	tcl0 * p1 = new tcl0("new p1");
+	tcl0 * p2 = new tcl0("new p2");
+	tcl0 * p3 = new tcl0("new p3");
+	tcl0 * p4 = new (reinterpret_cast<void *>(xxxx)) tcl0("RAMDTCM memory - placement");
 
 	delete p1;
 	delete p2;

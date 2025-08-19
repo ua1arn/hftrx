@@ -23,8 +23,9 @@
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	#define XVTR_R820T2			1	// ad936x
-	#define	WITHAD936XIIO		1	// External AD936x board
+//	#define	WITHAD936XIIO		1	// External AD936x board
 //todo: объединить эти 2 дефайна
+	#define WITHAD936XDEV		1
 
 	// --- вариации прошивки, специфические для разных частот
 
@@ -47,17 +48,17 @@
 	#define WITHPREAMPATT2_6DB 1	/* LTC2208 Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
-	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+	
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
-	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
+	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 	#define WITHTFT_OVER_LVDS	1	// LVDS receiver THC63LVDF84B
 
 
 	#define ENCRES_DEFAULT ENCRES_128
 	#define WITHDIRECTFREQENER	1 // прямой ввод частоты с клавиш
-	
+	#define WITHENCODER		1
 //	#define WITHENCODER2	1		/* есть второй валкодер */
 //	#define ENCODER2_EVDEV	1		// Linux Input device
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
@@ -71,8 +72,8 @@
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
+	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
+	#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHDSPLOCALTXFIR 1
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
@@ -83,13 +84,12 @@
 	#define WITHFFTSIZEWIDE 		1024		/* Отображение спектра и волопада */
 	#define WITHVIEW_3DSS			1
 	#define WITHDEFAULTVIEW			VIEW_3DSS
-	#define WITHVIEW_3DSS_MARK		1
+//	#define WITHVIEW_3DSS_MARK		1
 	#define WITHDISPLAY_FPS			30
 	#define WITHDISPLAYSWR_FPS		30
 	#define WITHSPECBETA_DEFAULT	30
 	#define WITHAFSPECTRE			1		/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHFFTSIZEAF 			512		/* Отображение спектра НЧ сигнвлв */
-//	#define WITHLVGL				1
 	#define WITHTOUCHGUI			1
 //	#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 	#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
@@ -194,7 +194,7 @@
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
 			FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
-			PWRI = FWD,
+			
 		#endif /* WITHSWRMTR */
 
 
@@ -202,7 +202,7 @@
 		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 		REFMRRIX = BOARD_ADCMRRIN(2),
 		FWDMRRIX = BOARD_ADCMRRIN(3),
-		PWRMRRIX = FWDMRRIX,
+		PWRMRRIX = BOARD_ADCMRRIN(7),
 		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
 		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации

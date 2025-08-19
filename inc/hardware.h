@@ -128,29 +128,6 @@ extern "C" {
 	#define ALIGNX_BEGIN /* __ALIGNED(64)  */
 	#define ALIGNX_END /* nothing */
 
-#elif \
-	defined (__AVR_ATxmega32A4__) || \
-	defined (__AVR_ATxmega32A4U__) || \
-	defined (__AVR_ATxmega128A4U__) || \
-	0
-
-	#define CPUSTYLE_ATXMEGA	1
-	#define CPUSTYLE_ATXMEGAXXXA4	1
-	
-	#ifndef F_CPU
-	#define F_CPU 32000000uL
-	#endif
-
-	#include <avr/io.h>			/* Pin manipulation functions */
-	#include <avr/pgmspace.h>
-	#include <avr/eeprom.h>		/* только для случая использования внутренней памяти процессора */
-	#include <avr/interrupt.h>
-	#include <avr/cpufunc.h>
-	#include <util/delay.h>
-
-	#define ALIGNX_BEGIN /* __ALIGNED(64)  */
-	#define ALIGNX_END /* nothing */
-
 #elif CPUSTYLE_STM32H7XX
 	// STM32H743ZIT6 processors, up to 400 MHz
 
@@ -517,6 +494,7 @@ void hardware_timer_initialize(uint_fast32_t ticksfreq);
 
 void gt911_interrupt_handler(void * ctx);
 void stmpe811_interrupt_handler(void * ctx);
+void xpt2406_interrupt_handler(void * ctx);
 
 void hardware_adc_initialize(void);
 
@@ -568,39 +546,6 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 	void local_delay_ms_nocache(int timeMS);	// задержка до того как включили MMU и cache */
 	void local_delay_initialize(void);
 
-#elif CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
-	// ATMega, ATXMega target
-
-	/* тип для передачи параметра "адрес устройства на SPI шине" */
-	/* это может быть битовая маска в порту ввода-вывода */
-	typedef uint_fast8_t spitarget_t;
-	/* тип для хранения данных, считанный из порта ввода-вывода или для формируемого значения */
-	typedef uint_fast8_t portholder_t;		
-
-	#define local_delay_us(t) do { if ((t) <= 1) _delay_us(0); else if ((t <= 10)) _delay_us(10); else _delay_us(100); } while (0)
-	#define local_delay_ms(t) do { if ((t) <= 1) _delay_ms(0); else if ((t <= 10)) _delay_ms(10); else _delay_ms(100); } while (0)
- 
-	#if (FLASHEND > 0x7FFF)	
-		// нет нужды экономить память FLASH
-		#define NOINLINEAT // __attribute__((noinline))
-		#define RAMFUNC_NONILINE // __attribute__((noinline))
-		#define RAMFUNC // __attribute__((__section__(".ramfunc"), noinline))
-	#else
-		#define NOINLINEAT __attribute__((noinline))	// On small FLASH ATMega CPUs
-		#define RAMFUNC_NONILINE __attribute__((noinline))	// On small FLASH ATMega CPUs
-		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
-	#endif
-
-	#define ATTRWEAK __attribute__ ((weak))
-	#define __WEAK __attribute__ ((weak))
-	#define __NO_RETURN	__attribute__((__noreturn__))
-
-	/* stubs */
-
-	#define IRQL_SYSTEM 			1
-	#define IRQL_REALTIME 			1
-	#define IRQL_OVERREALTIME 		1
-
 #else
 	#error Undefined CPUSTYLE_xxxx
 #endif
@@ -644,66 +589,6 @@ uint_fast8_t debugusb_putchar(uint_fast8_t c);/* передача символа
 uint_fast8_t debugusb_getchar(char * cp); /* приём символа, если готов порт */
 void debugusb_parsechar(uint_fast8_t c);	/* вызывается из обработчика прерываний */
 void debugusb_sendchar(void * ctx);			/* вызывается из обработчика прерываний */
-
-/* TWI (I2C) interface */
-#if ! LINUX_SUBSYSTEM
-	#define I2C_RETRIES 3	/* количество повторов */
-#endif /* ! LINUX_SUBSYSTEM */
-
-/* target device speed */
-typedef struct i2c_parameters
-{
-	uint8_t ch;
-	uint8_t usdelayv;	/* время задержки на полпериода скрости обмпена при программном формировании I2C */
-} i2cp_t;
-
-#define I2CP_I2C1	0	/* i2c_xxx */
-#define I2CP_I2C2	1	/* i2c2_xxx */
-
-void i2cp_intiialize(i2cp_t * p, unsigned ch, unsigned freq);	/* канал и скорость обмена */
-
-#define I2C_READ_ACK 0  // i2c_read parameter
-#define I2C_READ_ACK_1 1  // i2c_read parameter
-#define I2C_READ_NACK 2		// ack_type - last parameterr in read block
-#define I2C_READ_ACK_NACK 3		// чтение первого и единственного байта по I2C
-
-void i2c_initialize(void);
-void i2c_start(uint_fast8_t address);
-void i2c_read(uint8_t * pdata, uint_fast8_t acknak);
-void i2c_write(uint_fast8_t data);
-void i2c_write_withrestart(uint_fast8_t data);	// запись, после чего restart
-void i2c_waitsend(void);	// Вызвать после последнего i2c_write()
-void i2c_stop(void);
-
-// Работа со вторым каналом I2C
-void i2c2_start(uint_fast8_t address);
-void i2c2_read(uint8_t * pdata, uint_fast8_t acknak);
-void i2c2_write(uint_fast8_t data);
-void i2c2_write_withrestart(uint_fast8_t data);	// запись, после чего restart
-void i2c2_waitsend(void);	// Вызвать после последнего i2c_write()
-void i2c2_stop(void);
-
-void i2cp_i2c_initialize(void);
-
-/* Версии функций с указанием скорости и порта I2C */
-void i2cp_start(const i2cp_t * p, uint_fast8_t address);
-void i2cp_read(const i2cp_t * p, uint8_t * pdata, uint_fast8_t acknak);
-void i2cp_write(const i2cp_t * p, uint_fast8_t data);
-void i2cp_write_withrestart(const i2cp_t * p, uint_fast8_t data);	// запись, после чего restart
-void i2cp_waitsend(const i2cp_t * p);	// Вызвать после последнего i2c_write()
-void i2cp_stop(const i2cp_t * p);
-
-void hardware_twi_master_configure(void);
-
-/* return non-zero then error */
-// LSB of slave_address8b ignored */
-int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size);
-int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size);
-int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize);	// Use restart for read
-
-int i2chw2_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size);
-int i2chw2_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size);
-int i2chw2_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize);	// Use restart for read
 
 uint32_t hardware_get_random(void);
 
@@ -830,7 +715,7 @@ void cpu_stm32f1xx_setmapr(unsigned long bits);
 
 void hardware_sdhost_initialize(void);
 void hardware_sdhost_setspeed(unsigned long ticksfreq);
-void hardware_sdhost_setbuswidth(uint_fast8_t use4bit);
+void hardware_sdhost_setbuswidth(uint_fast8_t useNBits);
 void hardware_sdhost_detect(uint_fast8_t present);		// в ответ на прерывание изменения состояния card detect
 
 void lowtests(void);
@@ -873,6 +758,7 @@ typedef struct ticker_tag
 struct dpcobj_tag;
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
 void ticker_initialize_user(ticker_t * p, unsigned nticks, struct dpcobj_tag * dpc);
+void ticker_initialize_user_display(ticker_t * p, unsigned nticks, struct dpcobj_tag * dpc);	// DPC будет вызываться на ядре board_dpc_display_coreid()
 void ticker_initialize_ext(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx, enum ticker_mode mode);
 void ticker_setperiod(ticker_t * p, unsigned nticks);	/* изменение периода запущенного тикера */
 void ticker_start(ticker_t * p);	/* начало интервала в случае TICKERMD_MANUAL */
@@ -1018,15 +904,7 @@ int main(void);
 int blinky_main(void);
 #define GTIM_IRQ_NUM SecurePhysicalTimer_IRQn
 
-struct menudef;
-void
-//NOINLINEAT
-processmessages(
-	uint_fast8_t * kbch,
-	uint_fast8_t * kbready,
-	uint_fast8_t inmenu,
-	const struct menudef * mp
-	);
+void processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready);
 
 
 uintptr_t getRamDiskBase(void);
@@ -1109,5 +987,68 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
 // Substitutions for t507 ddr ram init
 //#define i2c_read local_i2c_read
 //#define i2c_write local_i2c_write
+
+#if CPUSTYLE_R7S721
+	#include "rza1xx_hal.h"
+
+#elif CPUSTYLE_STM32MP1
+	#include "stm32mp1xx.h"
+	#include "stm32mp1xx_hal.h"
+
+#elif CPUSTYLE_STM32H7XX
+	#include "stm32h7xx.h"
+	#include "stm32h7xx_hal.h"
+
+#elif CPUSTYLE_STM32F7XX
+	#include "stm32f7xx.h"
+	#include "stm32f7xx_hal.h"
+
+#elif CPUSTYLE_STM32F4XX
+	#include "stm32f4xx.h"
+	#include "stm32f4xx_hal.h"
+
+#elif CPUSTYLE_XC7Z
+
+	#include "zynq7000_hal.h"
+
+#elif CPUSTYLE_ALLWINNER
+
+	#include "t113s3_hal.h"
+
+#endif
+
+#if CPUSTYLE_R7S721
+	#include "rza1xx_hal.h"
+	#include "rza1xx_hal_usb.h"
+
+#elif CPUSTYLE_STM32MP1
+	#include "stm32mp1xx.h"
+	#include "stm32mp1xx_hal.h"
+	#include "stm32mp1xx_ll_pwr.h"
+
+#elif CPUSTYLE_STM32H7XX
+	#include "stm32h7xx.h"
+	#include "stm32h7xx_hal.h"
+	#include "stm32h7xx_ll_pwr.h"
+
+#elif CPUSTYLE_STM32F7XX
+	#include "stm32f7xx.h"
+	#include "stm32f7xx_hal.h"
+	#include "stm32f7xx_ll_pwr.h"
+
+#elif CPUSTYLE_STM32F4XX
+	#include "stm32f4xx.h"
+	#include "stm32f4xx_hal.h"
+	#include "stm32f4xx_ll_pwr.h"
+
+#elif CPUSTYLE_XC7Z
+
+	#include "zynq7000_hal.h"
+
+#elif CPUSTYLE_ALLWINNER
+
+	#include "t113s3_hal.h"
+
+#endif
 
 #endif // HARDWARE_H_INCLUDED

@@ -5,5 +5,6 @@ ifeq (1, 0)
 LVGLDIR = $(PRJROOT)/lvgl
 DINCDIR += $(LVGLDIR)/src
 SRCDIRS += $(LVGLDIR)/src
+#ASRC_APP += $(call rwildcard, $(LVGLDIR)/src/draw/sw/blend/neon, *.S)
 #SRCDIRS += $(LVGLDIR)/demos/widgets
 endif

@@ -54,7 +54,9 @@ typedef enum
 
 #define POSITION_VAL(VAL)     (__CLZ(__RBIT(VAL)))
 
-#define UNUSED(x) ((void)(sizeof(x)))
+#ifndef UNUSED
+#define UNUSED(x) ((void)(sizeof(x)))	/* To avoid gcc/g++ warnings */
+#endif
 
 #if  defined ( __GNUC__ )
   #ifndef __weak

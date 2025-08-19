@@ -17,8 +17,45 @@
 extern "C" {
 #endif /* __cplusplus */
 
-void spi_initialize(void);	// отдельно инициализация SPI
 
+#define SPIBASEconcat(base, index) base ## index
+#define QSPIBASEconcat(base, index) base ## index
+
+#if CPUSTYLE_R7S721
+	typedef struct st_rspi SPI_t;
+	typedef struct st_spibsc QSPI_t;
+	#define SPIBASENAME(port) SPIBASEconcat(& RSPI, port)
+#elif CPUSTYLE_ALLWINNER
+	typedef SPI_TypeDef SPI_t;
+	typedef SPI_TypeDef QSPI_t;
+	#define SPIBASENAME(port) SPIBASEconcat(SPI, port)
+	#define QSPIBASENAME(port) QSPIBASEconcat(SPI, port)
+#elif CPUSTYLE_STM32F
+	typedef SPI_TypeDef SPI_t;
+	typedef QUADSPI_TypeDef QSPI_t;
+	#define SPIBASENAME(port) SPIBASEconcat(SPI, port)
+	#define SPIDFHARD_PTR QUADSPI	// TODO: move to cpu configuration
+#elif CPUSTYLE_STM32MP1
+	typedef SPI_TypeDef SPI_t;
+	typedef QUADSPI_TypeDef QSPI_t;
+	#define SPIBASENAME(port) SPIBASEconcat(SPI, port)
+#elif CPUSTYLE_ROCKCHIP
+	typedef SPI_TypeDef SPI_t;
+	typedef QSPI_TypeDef QSPI_t;
+	#define SPIBASENAME(port) SPIBASEconcat(SPI, port)
+	#define QSPIBASENAME(port) QSPIBASEconcat(QSPI, port)
+#elif CPUSTYLE_XC7Z
+	typedef SPI_Registers SPI_t;
+	typedef XQSPIPS_Registers QSPI_t;
+	#define SPIBASENAME(port) SPIBASEconcat(SPI, port)
+	#define SPIHARD_PTR SPI0	// TODO: move to cpu configuration
+	#define SPIDFHARD_PTR QSPI	// TODO: move to cpu configuration
+#else
+	typedef void SPI_t;
+	typedef void QSPI_t;
+#endif
+
+void spi_initialize(void);	// отдельно инициализация SPI
 
 /* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
    на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается.
@@ -27,8 +64,6 @@ void spi_initialize(void);	// отдельно инициализация SPI
    режимы SPI с "0" уровнем SCLK в неактивном состоянии.
    */
 
-
-
 #if WITHSPISW
 	#if CPUSTYLE_XC7Z
 		#define SCLK_NPULSE() do { 							\
@@ -36,15 +71,14 @@ void spi_initialize(void);	// отдельно инициализация SPI
 			SPI_SCLK_S(); hardware_spi_io_delay(); 			\
 		} while (0)
 
-	#define SDO_SET(val) do { 								\
-			if ((val) != 0) 								\
-				{ SPI_MOSI_S(); hardware_spi_io_delay();  } \
-			else 											\
-				{ SPI_MOSI_C(); hardware_spi_io_delay();  } \
-		} while (0)
+		#define SDO_SET(val) do { 								\
+				if ((val) != 0) 								\
+					{ SPI_MOSI_S(); hardware_spi_io_delay();  } \
+				else 											\
+					{ SPI_MOSI_C(); hardware_spi_io_delay();  } \
+			} while (0)
 
-
-	#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+	#elif CPUSTYLE_ARM
 		// при программной реализации SPI
 		// поддерживается режим SPI MODE 3
 		#define SCLK_SET() do { \
@@ -64,156 +98,20 @@ void spi_initialize(void);	// отдельно инициализация SPI
 					{ SPI_TARGET_MOSI_PORT_C(SPI_MOSI_BIT); hardware_spi_io_delay();  } \
 			} while (0)
 
-	#elif CPUSTYLE_ATMEGA
-
-		#if WITHSPISPLIT	/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
-			// SPI0
-			// при программной реализации SPI
-			// поддерживается режим SPI MODE 3
-			// Формирование строба SPI0
-			#define SCLK0_SET() do { SPI0_TARGET_SCLK_PORT |= SPI0_SCLK_BIT; } while (0)
-			#define SCLK0_CLR() do { SPI0_TARGET_SCLK_PORT &= ~SPI0_SCLK_BIT; } while (0)
-
-			#if CPUSTYLE_ATMEGA_XXX4
-				// поддержка быстрого формирования строба
-				#define SCLK0_TGL() do { SPI0_TARGET_SCLK_PIN = SPI0_SCLK_BIT; } while (0)
-
-				#define SCLK0_NPULSE() do { SCLK0_TGL(); SCLK0_TGL(); } while (0)
-			#else
-				#define SCLK0_NPULSE() do { SCLK0_CLR(); SCLK0_SET(); } while (0)
-			#endif
-			// выдача данных на MOSI0
-			#define SDO0_SET(val) do { \
-				if ((val) != 0)  \
-				  SPI0_TARGET_MOSI_PORT |= SPI0_MOSI_BIT; \
-				else \
-				  SPI0_TARGET_MOSI_PORT &= ~SPI0_MOSI_BIT; \
-				} while (0)
-			// SPI1
-			// при программной реализации SPI
-			// поддерживается режим SPI MODE 3
-			// Формирование строба SPI1
-			#define SCLK1_SET() do { SPI1_TARGET_SCLK_PORT |= SPI1_SCLK_BIT; } while (0)
-			#define SCLK1_CLR() do { SPI1_TARGET_SCLK_PORT &= ~SPI1_SCLK_BIT; } while (0)
-
-			#if CPUSTYLE_ATMEGA_XXX4
-				// поддержка быстрого формирования строба
-				#define SCLK1_TGL() do { SPI1_TARGET_SCLK_PIN = SPI1_SCLK_BIT; } while (0)
-
-				#define SCLK1_NPULSE() do { SCLK1_TGL(); SCLK1_TGL(); } while (0)
-			#else
-				#define SCLK1_NPULSE() do { SCLK1_CLR(); SCLK1_SET(); } while (0)
-			#endif
-			// выдача данных на MOSI1
-			#define SDO1_SET(val) do { \
-				if ((val) != 0)  \
-				  SPI1_TARGET_MOSI_PORT |= SPI1_MOSI_BIT; \
-				else \
-				  SPI1_TARGET_MOSI_PORT &= ~SPI1_MOSI_BIT; \
-				} while (0)
-			// SPI2
-			// при программной реализации SPI
-			// поддерживается режим SPI MODE 3
-			// Формирование строба SPI1
-			#define SCLK2_SET() do { SPI2_TARGET_SCLK_PORT |= SPI2_SCLK_BIT; } while (0)
-			#define SCLK2_CLR() do { SPI2_TARGET_SCLK_PORT &= ~SPI2_SCLK_BIT; } while (0)
-
-			#if CPUSTYLE_ATMEGA_XXX4
-				// поддержка быстрого формирования строба
-				#define SCLK2_TGL() do { SPI2_TARGET_SCLK_PIN = SPI2_SCLK_BIT; } while (0)
-
-				#define SCLK2_NPULSE() do { SCLK2_TGL(); SCLK2_TGL(); } while (0)
-			#else
-				#define SCLK2_NPULSE() do { SCLK2_CLR(); SCLK2_SET(); } while (0)
-			#endif
-			// выдача данных на MOSI1
-			#define SDO2_SET(val) do { \
-				if ((val) != 0)  \
-				  SPI2_TARGET_MOSI_PORT |= SPI2_MOSI_BIT; \
-				else \
-				  SPI2_TARGET_MOSI_PORT &= ~SPI2_MOSI_BIT; \
-				} while (0)
-
-
-		#else /* WITHSPISPLIT */
-			// при программной реализации SPI
-			// поддерживается режим SPI MODE 3
-
-			// Формирование строба SPI
-			#define SCLK_SET() do { SPI_TARGET_SCLK_PORT |= SPI_SCLK_BIT; } while (0)
-			#define SCLK_CLR() do { SPI_TARGET_SCLK_PORT &= ~SPI_SCLK_BIT; } while (0)
-
-			#if CPUSTYLE_ATMEGA_XXX4
-				// поддержка быстрого формирования строба
-				#define SCLK_TGL() do { SPI_TARGET_SCLK_PIN = SPI_SCLK_BIT; } while (0)
-
-				#define SCLK_NPULSE() do { SCLK_TGL(); SCLK_TGL(); } while (0)
-			#else
-				#define SCLK_NPULSE() do { SCLK_CLR(); SCLK_SET(); } while (0)
-			#endif
-			// выдача данных на MOSI
-			#define SDO_SET(val) do { \
-				if ((val) != 0)  \
-				  SPI_TARGET_MOSI_PORT |= SPI_MOSI_BIT; \
-				else \
-				  SPI_TARGET_MOSI_PORT &= ~SPI_MOSI_BIT; \
-				} while (0)
-		#endif /* WITHSPISPLIT */
-
 	#else
 
 		#error Missing CPUSTYLE_xxx
 
 	#endif
 
-	#if WITHSPISPLIT	/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
-		//интерфейс с платой - выдача одного бита на последовательный канал
-		#if defined (SPI_CSEL2)
-			#define prog_bit(target, bitv) \
-				do { \
-					switch (target) \
-					{ \
-					case SPI_CSEL0: \
-						SDO0_SET(bitv);	/* запись бита информации */ \
-						SCLK0_NPULSE();	/* latch to chips */ \
-						break; \
-					case SPI_CSEL1: \
-						SDO1_SET(bitv);	/* запись бита информации */ \
-						SCLK1_NPULSE();	/* latch to chips */ \
-						break; \
-					case SPI_CSEL2: \
-						SDO2_SET(bitv);	/* запись бита информации */ \
-						SCLK2_NPULSE();	/* latch to chips */ \
-						break; \
-					} \
-				} while (0)
-		#else
-			#define prog_bit(target, bitv) \
-				do { \
-					switch (target) \
-					{ \
-					case SPI_CSEL0: \
-						SDO0_SET(bitv);	/* запись бита информации */ \
-						SCLK0_NPULSE();	/* latch to chips */ \
-						break; \
-					case SPI_CSEL1: \
-						SDO1_SET(bitv);	/* запись бита информации */ \
-						SCLK1_NPULSE();	/* latch to chips */ \
-						break; \
-					} \
-				} while (0)
-		#endif
-		// ---------------- end of optimizations
-	#else /* WITHSPISPLIT */
-		//интерфейс с платой - выдача одного бита на последовательный канал
-		#define prog_bit(target, bitv) \
-			do { \
-				(void) (target); \
-				SDO_SET(bitv);	/* запись бита информации */ \
-				SCLK_NPULSE();	/* latch to chips */ \
-			} while (0)
-		// ---------------- end of optimizations
-	#endif /* WITHSPISPLIT */
+	//интерфейс с платой - выдача одного бита на последовательный канал
+	#define prog_bit(target, bitv) \
+		do { \
+			(void) (target); \
+			SDO_SET(bitv);	/* запись бита информации */ \
+			SCLK_NPULSE();	/* latch to chips */ \
+		} while (0)
+	// ---------------- end of optimizations
 
 	void prog_val_impl(
 		spitarget_t target,	/* addressing to chip */
@@ -264,6 +162,12 @@ void prog_spi_io(
 	const uint8_t * txbuff2, unsigned int txsize2,
 	uint8_t * rxbuff, unsigned int rxsize
 	);
+void spi_cs_ping(spitarget_t target);
+
+void spi_operate_lock(IRQL_t * oldIrql);
+void spi_operate_unlock(IRQL_t irql);
+void spidf_operate_lock(IRQL_t * oldIrql);
+void spidf_operate_unlock(IRQL_t irql);
 
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
@@ -298,11 +202,11 @@ void board_reload_fir_artix7_p2(spitarget_t target, uint_fast8_t v1, uint_fast32
 void board_reload_fir_artix7_spistart(IRQL_t * irql);
 void board_reload_fir_artix7_spidone(IRQL_t irql);
 
-void board_fpga_fir_coef_p1(int_fast32_t v);	// Передача одного (первого) 32-битного значения и формирование строба.
-void board_fpga_fir_coef_p2(int_fast32_t v);	// Передача одного (последующего) 32-битного значения и формирование строба.
-void board_fpga_fir_complete(void);
-void board_fpga_fir_connect(IRQL_t * oldIrql);
-void board_fpga_fir_disconnect(IRQL_t irql);
+void board_fpga_fir_coef_p1(SPI_t * spi, int_fast32_t v);	// Передача одного (первого) 32-битного значения и формирование строба.
+void board_fpga_fir_coef_p2(SPI_t * spi, int_fast32_t v);	// Передача одного (последующего) 32-битного значения и формирование строба.
+void board_fpga_fir_complete(SPI_t * spi);
+void board_fpga_fir_connect(SPI_t * spi, IRQL_t * oldIrql);
+void board_fpga_fir_disconnect(SPI_t * spi, IRQL_t irql);
 
 // Serial flash (boot memory) interface
 void spidf_initialize(void);

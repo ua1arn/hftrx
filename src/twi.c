@@ -92,7 +92,7 @@ static void i2c_delay(const i2cp_t * p)
 
 #endif /* WITHTWISW */
 
-#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA || CPUSTYLE_RISCV
+#elif CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 	#define SET_TWCK() do { TARGET_TWI_TWCK_PORT_S(TARGET_TWI_TWCK); } while (0)	// SCL = 1
 	#define CLR_TWCK() do { TARGET_TWI_TWCK_PORT_C(TARGET_TWI_TWCK); } while (0)	// SCL = 0
@@ -1364,86 +1364,6 @@ void i2c_initialize(void)
 #endif
 }
 
-#elif CPUSTYLE_ATXMEGA
-
-void i2c_initialize(void)
-{
-	const i2cp_t * const p1 = & i2cp_1;
-	const i2cp_t * const p2 = & i2cp_2;
-	TWISOFT_INITIALIZE();
-	i2c_softbusrelease();
-
-	hardware_twi_master_configure();
-#if WITHTWIHW
-	TWIHARD_INITIALIZE();
-#endif
-}
-// start write
-/* char */ void i2c_start(
-	uint_fast8_t address
-	) 
-{
-	TARGET_TWI.MASTER.ADDR = address;
-}
-
-// Вызвать после последнего i2c_write()
-void i2c_waitsend(void)
-{
-
-}
-
-void i2c_stop(void)
-{
-	unsigned w = 255;
-	while (w -- && (TARGET_TWI.MASTER.STATUS & TWI_MASTER_WIF_bm) == 0)
-		local_delay_us(1);
-	TARGET_TWI.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc; 
-}
-/* char */ void i2c_write(
-	uint_fast8_t data
-	)
-{
-	unsigned w = 255;
-	while (w -- && (TARGET_TWI.MASTER.STATUS & TWI_MASTER_WIF_bm) == 0)
-		local_delay_us(1);
-	TARGET_TWI.MASTER.DATA = data;
-}
-
-// запись, после чего restart
-/* char */ void i2c_write_withrestart(uint_fast8_t data)
-{
-	unsigned w = 255;
-	while (w -- && (TARGET_TWI.MASTER.STATUS & TWI_MASTER_WIF_bm) == 0)
-		local_delay_us(1);
-	TARGET_TWI.MASTER.DATA = data;
-	TARGET_TWI.MASTER.CTRLC = TWI_MASTER_CMD_REPSTART_gc; 	// next command - i2c_start
-}
-	
-void i2c_read(uint8_t *data, uint_fast8_t ack_type)
-{
-	unsigned w = 255;
-	while (w -- && (TARGET_TWI.MASTER.STATUS & TWI_MASTER_RIF_bm) == 0)
-		local_delay_us(1);
-	* data = TARGET_TWI.MASTER.DATA;
-
-	switch (ack_type)
-	{
-	case I2C_READ_ACK_1:
-		TARGET_TWI.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_RECVTRANS_gc;
-		break;
-	case I2C_READ_ACK:
-		TARGET_TWI.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_RECVTRANS_gc; 
-		break;
-	case I2C_READ_NACK:
-		TARGET_TWI.MASTER.CTRLC = TWI_MASTER_CMD_STOP_gc; 
-		break;
-	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
-		TARGET_TWI.MASTER.CTRLC = TWI_MASTER_ACKACT_bm | TWI_MASTER_CMD_STOP_gc; 
-		* data = TARGET_TWI.MASTER.DATA;
-		break;
-	}
-}
-
 #elif LINUX_SUBSYSTEM
 
 #elif (CPUSTYLE_XC7Z) && WITHTWIHW
@@ -1857,7 +1777,7 @@ static int t113_i2c_write(TWI_TypeDef * twi, struct i2c_msg_t * msg)
 
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
-int i2chwx_read(TWI_TypeDef * const twi, uint16_t slave_address8b, uint8_t * buf, uint32_t size)
+int i2chwx_read(TWI_t * const twi, uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
 	int res;
 	struct i2c_msg_t  msgs;
@@ -1887,7 +1807,7 @@ int i2chwx_read(TWI_TypeDef * const twi, uint16_t slave_address8b, uint8_t * buf
 
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
-int i2chwx_write(TWI_TypeDef * const twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
+int i2chwx_write(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 {
 	int res;
 	struct i2c_msg_t  msgs;
@@ -1917,7 +1837,7 @@ int i2chwx_write(TWI_TypeDef * const twi, uint16_t slave_address8b, const uint8_
 
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
-int i2chwx_exchange(TWI_TypeDef * const twi, uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
+int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
 {
 	int res;
 	struct i2c_msg_t  msgs;
@@ -1964,6 +1884,42 @@ int i2chwx_exchange(TWI_TypeDef * const twi, uint16_t slave_address8b, const uin
 	}
 	t113_i2c_stop(twi);
 	return 0;
+}
+
+void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq)
+{
+#if CPUSTYLE_ALLWINNER
+	if (0)
+	{
+
+	}
+#if defined (S_TWI0)
+	else if (twi == S_TWI0)
+	{
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
+		PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
+	}
+#endif /* defined (S_TWI0) */
+	else
+	{
+		const unsigned TWIx = TWIHARD_IX;
+		CCU->TWI_BGR_REG |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
+		CCU->TWI_BGR_REG &= ~ (UINT32_C(1) << (16 + TWIx));	// Assert reset
+		CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
+	}
+
+	t113_i2c_set_rate(twi, sclfreq, busfreq);
+
+	twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
+
+	twi->TWI_SRST |= UINT32_C(1) << 0;
+	while ((twi->TWI_SRST & (UINT32_C(1) << 0)) != 0)
+		;
+
+	t113_i2c_stop(twi);
+
+#endif
 }
 
 int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
@@ -2016,6 +1972,35 @@ void i2c_initialize(void)
 	TWIHARD2_INITIALIZE();
 	t113_i2c_stop(TWIHARD2_PTR);
 #endif /* defined (TWIHARD2_PTR) */
+
+#if WITHTWI0HW
+	i2chwx_initialize(TWIBASENAME(0), TWIHARD_FREQ, 400000);
+	HARDWARE_TWI0_INITIALIZE();
+#endif
+#if WITHTWI1HW
+	i2chwx_initialize(TWIBASENAME(1), TWIHARD_FREQ, 400000);
+	HARDWARE_TWI1_INITIALIZE();
+#endif
+#if WITHTWI2HW
+	i2chwx_initialize(TWIBASENAME(2), TWIHARD_FREQ, 400000);
+	HARDWARE_TWI2_INITIALIZE();
+#endif
+#if WITHTWI3HW
+	i2chwx_initialize(TWIBASENAME(3), TWIHARD_FREQ, 400000);
+	HARDWARE_TWI3_INITIALIZE();
+#endif
+#if WITHTWI4HW
+	i2chwx_initialize(TWIBASENAME(4), TWIHARD_FREQ, 400000);
+	HARDWARE_TWI4_INITIALIZE();
+#endif
+#if WITHTWI5HW
+	i2chwx_initialize(TWIBASENAME(5), TWIHARD_FREQ, 400000);
+	HARDWARE_TWI5_INITIALIZE();
+#endif
+#if WITHTWI6HW
+	i2chwx_initialize(TWIBASENAME(6), TWIHARD_FREQ, 400000);
+	HARDWARE_TWI6_INITIALIZE();
+#endif
 
 }
 
@@ -2387,13 +2372,6 @@ void hardware_twi_master_configure(void)
 	//value = 70;
     TWI0->TWI_CWGR = TWI_CWGR_CKDIV(prei) | TWI_CWGR_CHDIV(value) | TWI_CWGR_CLDIV(value);
 
-#elif CPUSTYLE_ATXMEGA
-
-	TARGET_TWI.MASTER.BAUD = ((CPU_FREQ / (2 * SCL_CLOCK)) - 5);
-	TARGET_TWI.MASTER.CTRLA = TWI_MASTER_ENABLE_bm;
-  	//TARGET_TWI.MASTER.CTRLB = TWI_MASTER_SMEN_bm;
-	TARGET_TWI.MASTER.STATUS = TWI_MASTER_BUSSTATE_IDLE_gc;
-
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
 	//конфигурирую непосредствено I2С
@@ -2612,7 +2590,7 @@ void hardware_twi_master_configure(void)
 	}
 #endif /* defined (TWIHARD_PTR) */
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif CPUSTYLE_ALLWINNER
 
 	const uint_fast32_t sclfreq = 400000;
 

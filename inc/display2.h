@@ -50,50 +50,17 @@ void display2_fnlabel9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 // FUNC item value
 void display2_fnvalue9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
-void display2_swrsts22(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+void display2_swrsts20(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
-// Вызывается из display2.c
-//Отображение многострочного меню для больших экранов (группы)
-void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-//Отображение многострочного меню для больших экранов (параметры)
-void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-//Отображение многострочного меню для больших экранов (значения)
-void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-// Вызывается из display2.c
-// группа, в которой находится редактируемый параметр
-void display2_menu_group(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-
-// Вызывается из display2.c
-// значение параметра
-void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-
-// Вызывается из display2.c
-// название редактируемого параметра или группы
-void display2_menu_lblst(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-
-// Вызывается из display2.c
-// название редактируемого параметра
-// если группа - ничего не отображаем
-void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-
-// Вызывается из display2.c
-// код редактируемого параметра
-void display2_menu_lblc3(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-
-void display2_keyboard_menu(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-
-// Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
-void display2_keyboard_screen0(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-
-// Обработка клавиатуры и валкодеров при нахождении в режиме меню
-void display2_keyboard_menu(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+// вызывается по dzones
+void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx);
 
 uint_fast8_t display_getpagesmax(void);	// количество разных вариантов отображения (menuset)
 uint_fast8_t display_getpagesleep(void);	// номер варианта отображения для "сна"
 uint_fast8_t display_getfreqformat(uint_fast8_t * prjv);	// получить параметры отображения частоты (для функции прямого ввода)
 
 void display2_bgprocess(uint_fast8_t inmenu, uint_fast8_t menuset, dctx_t * ctx);	// выполнение шагов state machine отображения дисплея
-void display2_fillbg(void);	// очистить дисплей
+void display2_fillbg(const gxdrawb_t * db);	// очистить дисплей
 void display2_initialize(void);	// проход по элементам с необходимостью инициализации
 void display2_latch(void);
 uint_fast8_t display2_mouse(uint_fast16_t x, uint_fast16_t y, unsigned evcode, uint_fast8_t inmenu, uint_fast8_t menuset, dctx_t * ctx);	// Обработка событий тачскрина или мыши
@@ -113,9 +80,6 @@ display2_bars_tx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast
 void
 display2_adctest(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
-// всплывающее меню
-void display2_popup(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
-
 void layout_init(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
@@ -127,6 +91,7 @@ typedef struct multimenuwnd_tag
 	uint8_t ystep;
 	uint8_t reverse;	// 0/1
 	uint8_t valuew;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
+	uint8_t xspan;	/* количество знакомест по горизонтали, отдаваемое под меню */
 } multimenuwnd_t;
 
 #define LABELW 8
@@ -160,22 +125,6 @@ uint_fast16_t normalize(
 		uint_fast16_t range		// включает выходное значение
 	);
 
-#define BGCOLOR (display2_getbgcolor())
-
-void display_2states(const gxdrawb_t * db,
-	uint_fast8_t x,
-	uint_fast8_t y,
-	uint_fast8_t state,
-	const char * state1,	// активное
-	const char * state0
-	);
-// параметры, не меняющие состояния цветом
-void display_1state(const gxdrawb_t * db,
-	uint_fast8_t x,
-	uint_fast8_t y,
-	const char * label
-	);
-
 // FUNC menu
 
 void display_2fmenus(const gxdrawb_t * db,
@@ -183,14 +132,16 @@ void display_2fmenus(const gxdrawb_t * db,
 	uint_fast8_t y,
 	uint_fast8_t state,
 	const char * state1,	// активное
-	const char * state0
+	const char * state0,
+	uint_fast8_t xspan, uint_fast8_t yspan
 	);
 
 // параметры, не меняющие состояния цветом
 void display_1fmenu(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
-	const char * label
+	const char * label,
+	uint_fast8_t xspan, uint_fast8_t yspan
 	);
 
 
@@ -208,20 +159,179 @@ void board_set_afspechigh(int_fast16_t v);		// верхняя частота о�
 void display2_set_lvlgridstep(uint_fast8_t v);		/* Шаг сетки уровней в децибелах */
 void display2_set_rxbwsatu(uint_fast8_t v);		/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 void display2_set_spectrumpart(uint_fast8_t v); /* Часть отведенной под спектр высоты экрана 0..100 */
+void display2_set_smetertype(uint_fast8_t v);
+void display2_set_filter_spe(uint_fast8_t v);	/* парамеры видеофильтра спектра */
+void display2_set_filter_wfl(uint_fast8_t v);	/* парамеры видеофильтра водопада */
 
 COLORPIP_T display2_getbgcolor(void);
 void display2_setbgcolor(COLORPIP_T c);
 
 COLORPIP_T display2_get_spectrum(int x);
 
+int_fast32_t display2_zoomedbw(void);
+const char * display2_gethtml(uint_fast8_t page);
+
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
+
+
+#if WITHLVGL
+
+#include "lvgl.h"
+#include "../demos/lv_demos.h"
+#include "layouts/grid/lv_grid.h"
+//#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
+
+#include "core/lv_obj_private.h"
+#include "core/lv_obj_class_private.h"
+#include "widgets/label/lv_label_private.h"
+#include "widgets/image/lv_image_private.h"
+#include "layouts/grid/lv_grid.h"
+#include "misc/lv_event.h"
+
+void styles_init(void);	// инициализация стилей, используемых объектами главного окна
+void lvgl_test(void);	// создание элементов на главном окне
+void lvgl_dev_init(void);
+
+lv_color_t display_lvlcolor(COLORPIP_T c);	// преобразование цвета в тип LVGL
+
+LV_FONT_DECLARE(Rubik_Medium_16_w2)
+LV_FONT_DECLARE(Rubik_Medium_18_w2)
+//LV_FONT_DECLARE(Roboto_Regular_14_w1)
+//LV_FONT_DECLARE(Roboto_Regular_16_w1)
+//LV_FONT_DECLARE(Roboto_Regular_56_w1)
+
+// Усеченные наборы символов
+LV_FONT_DECLARE(eurostyle_56w)
+LV_FONT_DECLARE(lvgl_CenturyGothic_big)			// width=36, height=56
+LV_FONT_DECLARE(lvgl_CenturyGothic_half)		// width=28, height=56
+
+// Полные шрифты
+LV_FONT_DECLARE(Epson_LTDC_big)			// width=36, height=56
+LV_FONT_DECLARE(Epson_LTDC_half)		// width=28, height=56
+LV_FONT_DECLARE(Epson_LTDC_small_RU)	// width=10, height=15
+LV_FONT_DECLARE(Epson_LTDC_small)		// width=16, height=15
+LV_FONT_DECLARE(Epson_LTDC_small2)		// width=10, height=16
+LV_FONT_DECLARE(Epson_LTDC_small3)		// width=8, height=8
+
+lv_obj_t * lv_smtr2_create(lv_obj_t * parent);	// s-meter (own draw)
+lv_obj_t * lv_wtrf_create(lv_obj_t * parent);	// waterfall
+lv_obj_t * lv_wtrf2_create(lv_obj_t * parent);	// waterfall (own draw)
+lv_obj_t * lv_sscp2_create(lv_obj_t * parent);	// RF specter (own draw)
+lv_obj_t * lv_info_create(lv_obj_t * parent, int (* infocb)(char * b, size_t len, int * selector));
+lv_obj_t * lv_sscp3dss_create(lv_obj_t * parent);	// 3dss waterfall
+
+lv_obj_t * lv_compat_create(lv_obj_t * parent, const void * param);
+void dzi_compat_draw_callback(lv_layer_t * layer, const void * dzpv, dctx_t * pctx);
+
+void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords);
+lv_obj_t * lv_hamradiomenu_create(lv_obj_t * parent);
+
+
+typedef struct
+{
+	lv_obj_t obj;
+
+	lv_style_t stdigits;
+	lv_style_t stlines;
+    lv_draw_rect_dsc_t gradrect;
+    uint8_t * gbuf1pix;	// с шириной в 1 пиксель
+    lv_draw_buf_t gdrawb;
+    lv_draw_rect_dsc_t grect_dsc;	// из этого прямоугольника будем брать для отрисовки вертикальных линий
+
+    uint8_t * gbuftmp;	// буфер для отрисовки виджета в draw
+    lv_draw_buf_t gdrawbtmp;
+
+} lv_sscp2_t;
+
+
+typedef struct
+{
+	lv_obj_t obj;
+
+	lv_style_t stdigits;
+	lv_style_t stlines;
+    lv_draw_rect_dsc_t gradrect;
+    uint8_t * gbuf1pix;	// с шириной в 1 пиксель
+    lv_draw_buf_t gdrawb;
+    lv_draw_rect_dsc_t grect_dsc;	// из этого прямоугольника будем брать для отрисовки вертикальных линий
+
+    uint8_t * gbuftmp;	// буфер для отрисовки виджета в draw
+    lv_draw_buf_t gdrawbtmp;
+
+} lv_sscp3dss_t;
+
+
+typedef struct
+{
+	lv_obj_t obj;
+	//
+} lv_smtr2_t;
+
+typedef struct
+{
+	lv_label_t label;
+	char infotext [32];
+	int (* infocb)(char * b, size_t len, int * state);
+} lv_info_t;
+
+typedef struct
+{
+	lv_obj_t obj;
+	lv_style_t stdigits;
+	lv_style_t stlines;
+} lv_wtrf2_t;
+
+typedef struct
+{
+	lv_obj_t obj;
+	const void * dzpv;
+} lv_compat_t;
+
+#if 0//defined (G2D_ROT) && ! LINUX_SUBSYSTEM
+
+	#include "misc/lv_types.h"
+	#include "misc/lv_color.h"
+	#include "misc/lv_area.h"
+	lv_result_t lv_draw_sw_image_awrot(
+											bool is_transform,
+											lv_color_format_t src_cf,
+											const uint8_t *src_buf,
+											const lv_area_t * coords,
+											int32_t src_stride,
+											const lv_area_t * des_area,
+											const lv_draw_task_t * draw_task,
+											const lv_draw_image_dsc_t * draw_dsc);
+
+		#define LV_DRAW_SW_IMAGE(__transformed,                                     \
+							 __cf,                                                  \
+							 __src_buf,                                             \
+							 __img_coords,                                          \
+							 __src_stride,                                          \
+							 __blend_area,                                          \
+							 __draw_task,                                           \
+							 __draw_dsc)                                            \
+				lv_draw_sw_image_awrot(   (__transformed),                            \
+										(__cf),                                     \
+										(uint8_t *)(__src_buf),                     \
+										(__img_coords),                             \
+										(__src_stride),                             \
+										(__blend_area),                             \
+										(__draw_task),                              \
+										(__draw_dsc))
+
+#endif /* defined (G2D_ROT) && ! LINUX_SUBSYSTEM */
+
+#endif /* WITHLVGL */
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
+
 // Цвета используемые для отображения
 // различных элементов на основном экране.
+
+#define BGCOLOR (display2_getbgcolor())
 
 #define LCOLOR	COLORPIP_GREEN		// цвет левой половины S-метра
 #define RCOLOR	COLORPIP_RED			// цвет правой половины S-метра
@@ -271,13 +381,13 @@ COLORPIP_T display2_get_spectrum(int x);
 	#define DSGN_SPECTRUMBG2	(COLORPIP_BASE + 13) // TFTRGB(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
 	#define DSGN_SPECTRUMBG2RX2	(COLORPIP_BASE + 13) // TFTRGB(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
 	#define DSGN_SPECTRUMFG		(COLORPIP_BASE + 14) // TFTRGB(0, 255, 0)		// цвет спектра при сполошном заполнении
-
 	#define COLORPIP_DARKGRAY   (COLORPIP_BASE + 15) // TFTRGB(0x00, 0x64, 0x00)
 
+	#define DSGN_SPECTRUMPEAKS 	COLORPIP_DARKGRAY
 	#define DSGN_SPECTRUMLINE	COLORPIP_YELLOW
 	#define DSGN_SPECTRUMFENCE	COLORPIP_WHITE
 
-	#if LCDMODE_MAIN_L8
+	#if LCDMODE_PALETTE256
 		// Цвета, используемые на основном экране
 		#define COLORPIP_DARKCYAN   COLORPIP_DARKGREEN
 		#define COLORPIP_CYAN       COLORPIP_GREEN
@@ -309,14 +419,14 @@ COLORPIP_T display2_get_spectrum(int x);
 	#define COLOR_DARKRED        TFTRGB(0x80, 0x00, 0x00)
 	#define COLOR_DARKRED2       TFTRGB(0x40, 0x00, 0x00)
 	#define COLOR_OLIVE          TFTRGB(0x80, 0x80, 0x00)
-	#define COLOR_GRAY           TFTRGB(0x80, 0x80, 0x80)
+	#define COLOR_DARKGRAY       TFTRGB(0x80, 0x80, 0x80)
 	#define COLOR_SKYBLUE        TFTRGB(0x87, 0xCE, 0xEB)
 	#define COLOR_BLUEVIOLET     TFTRGB(0x8A, 0x2B, 0xE2)
 	#define COLOR_LIGHTGREEN     TFTRGB(0x90, 0xEE, 0x90)
 	#define COLOR_DARKVIOLET     TFTRGB(0x94, 0x00, 0xD3)
 	#define COLOR_YELLOWGREEN    TFTRGB(0x9A, 0xCD, 0x32)
 	#define COLOR_BROWN          TFTRGB(0xA5, 0x2A, 0x2A)
-	#define COLOR_DARKGRAY       TFTRGB(0xA9, 0xA9, 0xA9)
+	#define COLOR_GRAY       	 TFTRGB(0xA9, 0xA9, 0xA9)
 	#define COLOR_SIENNA         TFTRGB(0xA0, 0x52, 0x2D)
 	#define COLOR_LIGHTBLUE      TFTRGB(0xAD, 0xD8, 0xE6)
 	#define COLOR_GREENYELLOW    TFTRGB(0xAD, 0xFF, 0x2F)
@@ -348,6 +458,7 @@ COLORPIP_T display2_get_spectrum(int x);
 	#define COLORPIP_DARKGREEN   COLOR_DARKGREEN
 	#define COLORPIP_DARKGRED    COLOR_DARKRED
 	#define COLORPIP_DARKCYAN    COLOR_DARKCYAN
+	#define COLORPIP_DARKBLUE    COLOR_DARKBLUE
 	#define COLORPIP_BLUE        COLOR_BLUE
 	#define COLORPIP_GREEN       COLOR_GREEN
 	#define COLORPIP_RED         COLOR_RED
@@ -366,6 +477,7 @@ COLORPIP_T display2_get_spectrum(int x);
 		#define DSGN_SPECTRUMFENCE	COLOR_WHITE
 		#define DSGN_SPECTRUMLINE		COLORPIP_RED
 		#define DSGN_LOCKED  	 TFTRGB(0x3C, 0x3C, 0x00)
+		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
 
 	#elif COLORSTYLE_GREEN
 		// old
@@ -379,7 +491,8 @@ COLORPIP_T display2_get_spectrum(int x);
 		#define DSGN_SPECTRUMFG			COLORPIP_GREEN			// цвет спектра при сполошном заполнении
 		#define DSGN_SPECTRUMFENCE		COLOR_WHITE
 		#define DSGN_SPECTRUMLINE		COLORPIP_GREEN
-		#define DSGN_LOCKED  	 TFTRGB(0x3C, 0x3C, 0x00)
+		#define DSGN_LOCKED  	 		TFTRGB(0x3C, 0x3C, 0x00)
+		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
 
 
 	#elif COLORSTYLE_BLUE
@@ -397,6 +510,7 @@ COLORPIP_T display2_get_spectrum(int x);
 		//#define DSGN_SPECTRUMLINE	COLORPIP_GREEN
 		#define DSGN_SPECTRUMLINE	COLORPIP_YELLOW
 		#define DSGN_LOCKED  	 TFTRGB(0x3C, 0x3C, 0x00)
+		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
 
 	#endif
 
@@ -405,6 +519,7 @@ COLORPIP_T display2_get_spectrum(int x);
 #if COLORSTYLE_RED
 	// "All-in-red": FT1000 inspired color scheme
 	#define DSGN_BIGCOLOR 			COLORPIP_RED 		// DARK RED
+	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
 	#define DSGN_BIGCOLORB 			COLORPIP_RED		// цвет частоты дополнительного приемника
 	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKRED
@@ -427,10 +542,13 @@ COLORPIP_T display2_get_spectrum(int x);
 	#define DSGN_STATEBACK			COLORPIP_BLACK
 	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
 	#define DSGN_SMLABELBACK		COLORPIP_BLACK
+	#define DSGN_SMLABELPLKUSTEXT		COLORPIP_RED
+	#define DSGN_SMLABELPLKUSBACK		COLORPIP_BLACK
 
 #elif COLORSTYLE_GREEN
 	/* цветовая схема для эксперементов */
-	#define DSGN_BIGCOLOR 		COLORPIP_YELLOW 	// GOLD
+	#define DSGN_BIGCOLOR 			COLORPIP_YELLOW 	// GOLD
+	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
 	#define DSGN_BIGCOLORB 			COLORPIP_YELLOW		// цвет частоты и режима ополнительного приемника
 	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKGREEN
@@ -457,43 +575,53 @@ COLORPIP_T display2_get_spectrum(int x);
 	#define DSGN_STATEBACK			COLORPIP_BLACK
 	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
 	#define DSGN_SMLABELBACK		COLORPIP_BLACK
+	#define DSGN_SMLABELPLKUSTEXT		COLORPIP_RED
+	#define DSGN_SMLABELPLKUSBACK		COLORPIP_BLACK
 
 #elif COLORSTYLE_BLUE
 
 	#define DSGN_BIGCOLOR 			COLORPIP_WHITE //COLORPIP_YELLOW 	// GOLD
-	#define DSGN_BIGCOLORB 			COLORPIP_WHITE //DSGN_SPECTRUMBG2		// цвет частоты дополнительного приемника
+	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
+	#define DSGN_BIGCOLORB 			COLORPIP_YELLOW //DSGN_SPECTRUMBG2		// цвет частоты дополнительного приемника
 	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKCYAN
+
 	#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
 	#define DSGN_FMENUACTIVEBACK	COLORPIP_BLACK
 	#define DSGN_FMENUINACTIVETEXT	COLORPIP_DARKCYAN
 	#define DSGN_FMENUINACTIVEBACK	COLORPIP_BLACK
+	#define DSGN_FMENUTEXT			COLORPIP_GREEN
+	#define DSGN_FMENUBACK			COLORPIP_BLACK
+
 	#define DSGN_LABELACTIVETEXT	COLORPIP_WHITE
 	#define DSGN_LABELACTIVEBACK	COLORPIP_BLACK
 	#define DSGN_LABELINACTIVETEXT	COLORPIP_DARKCYAN
 	#define DSGN_LABELINACTIVEBACK	COLORPIP_BLACK
 	#define DSGN_LABELTEXT			COLORPIP_WHITE
 	#define DSGN_LABELBACK			COLORPIP_BLACK
-	#define DSGN_FMENUTEXT			COLORPIP_GREEN
-	#define DSGN_FMENUBACK			COLORPIP_BLACK
 	#define DSGN_GRIDCOLOR      	COLORPIP_OLIVE        // center marker
 	#define DSGN_GRIDCOLOR0     	COLORPIP_DARKRED        // other markers
 	#define DSGN_GRIDCOLOR2     	COLORPIP_DARKRED        // other markers
-	#define DSGN_SPECTRUMBG     	COLORPIP_BLACK            //COLORPIP_BLACK
+	#define DSGN_SPECTRUMBG     	COLORPIP_BLACK
 	#define DSGN_SPECTRUMBG2    	COLORPIP_DARKCYAN        //  полоса пропускания приемника
 	#define DSGN_SPECTRUMBG2RX2    	COLORPIP_DARKRED        //  полоса пропускания приемника RX2
 	#define DSGN_SPECTRUMFG			COLORPIP_GREEN
 	#define DSGN_SPECTRUMFENCE		COLORPIP_WHITE
 	#define DSGN_SPECTRUMLINE		COLORPIP_YELLOW
+	#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
 	#define DSGN_GRIDDIGITS 		COLORPIP_YELLOW
 	#define DSGN_STATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
 	#define DSGN_STATEBACK			COLORPIP_BLACK
 	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
 	#define DSGN_SMLABELBACK		COLORPIP_BLACK
+	#define DSGN_SMLABELPLKUSTEXT		COLORPIP_RED
+	#define DSGN_SMLABELPLKUSBACK		COLORPIP_BLACK
+
 
 #else /* COLORSTYLE_RED */
 
-	#if LCDMODE_MAIN_L8
+	#if LCDMODE_PALETTE256
 		#define DSGN_BIGCOLOR 			COLORPIP_WHITE //COLORPIP_YELLOW 	// GOLD
+		#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 		#define DSGN_BIGCOLORB 			COLORPIP_WHITE //DSGN_SPECTRUMBG2		// цвет частоты дополнительного приемника
 		#define DSGN_BIGCOLORBINACTIVE 	DSGN_SPECTRUMBG2
 
@@ -519,9 +647,12 @@ COLORPIP_T display2_get_spectrum(int x);
 		#define DSGN_FMENUBACK			COLORPIP_BLACK
 		#define DSGN_SMLABELTEXT		COLORPIP_GREEN
 		#define DSGN_SMLABELBACK		COLORPIP_BLACK
+		#define DSGN_SMLABELPLKUSTEXT		COLORPIP_RED
+		#define DSGN_SMLABELPLKUSBACK		COLORPIP_BLACK
 
-	#else /* LCDMODE_MAIN_L8 */
+	#else /* LCDMODE_PALETTE256 */
 		#define DSGN_BIGCOLOR 			COLORPIP_WHITE //COLORPIP_YELLOW 	// GOLD
+		#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 		#define DSGN_BIGCOLORB 			COLORPIP_WHITE //DSGN_SPECTRUMBG2		// цвет частоты дополнительного приемника
 		#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_GRAY
 
@@ -546,8 +677,10 @@ COLORPIP_T display2_get_spectrum(int x);
 		#define DSGN_FMENUBACK			COLORPIP_BLACK
 		#define DSGN_SMLABELTEXT		COLORPIP_GREEN
 		#define DSGN_SMLABELBACK		COLORPIP_BLACK
+		#define DSGN_SMLABELPLKUSTEXT		COLORPIP_RED
+		#define DSGN_SMLABELPLKUSBACK		COLORPIP_BLACK
 
-	#endif /* LCDMODE_MAIN_L8 */
+	#endif /* LCDMODE_PALETTE256 */
 
 #endif /* COLORSTYLE_RED */
 

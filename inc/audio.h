@@ -340,6 +340,47 @@ extern adapter_t sdcardio;
 extern transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
 extern transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
 
+/* AGC */
+
+
+typedef struct agcstate
+{
+	FLOAT_t  agcfastcap;	// разница после выпрямления
+	FLOAT_t  agcslowcap;	// разница после выпрямления
+	unsigned agchangticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
+} agcstate_t;
+
+typedef struct agcparams
+{
+	uint8_t agcoff;	// признак отключения АРУ
+
+	// Временные парметры АРУ
+
+	// постоянные времени цепи АРУ для реакции на импульсные помехи (быстрая АРУ).
+	FLOAT_t dischargespeedfast;	//0.02f;	// 1 - мгновенно, 0 - никогда
+	FLOAT_t	chargespeedfast;
+
+	// постоянные времени основного фильтра АРУ -  время заряды должно быть того же порядка, что и разряд цепи быстрой АРУ
+	FLOAT_t chargespeedslow;		//0.05f;	// 1 - мгновенно, 0 - никогда
+	FLOAT_t dischargespeedslow;	// 1 - мгновенно, 0 - никогда
+	unsigned hungticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
+
+	// Амплитудные параметры АРУ
+
+	FLOAT_t gainlimit;				// Максимальное усиление в разах по напряжению, допустимое для АРУ
+	FLOAT_t	mininput;
+	FLOAT_t levelfence;				// Максимальнное значение на выхоле АРУ
+	FLOAT_t agcfactor;				// Параметр при вычислении "спортивной" АРУ
+} agcparams_t;
+
+void agc_state_initialize(volatile agcstate_t * st, const volatile agcparams_t * agcp);
+void agc_parameters_initialize(volatile agcparams_t * agcp, uint_fast32_t sr);
+void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t sr);
+FLOAT_t MAKETAUIF2(FLOAT_t t, uint_fast32_t sr);
+void agc_perform(const agcparams_t * agcp, agcstate_t * st, FLOAT_t sample);
+FLOAT_t agc_result_fast(agcstate_t * st);
+FLOAT_t agc_result_slow(agcstate_t * st);
+
 unsigned audiorec_getwidth(void);
 
 uint_fast8_t modem_getnextbit(
@@ -353,6 +394,7 @@ modem_frames_decode(
 
 uint_fast8_t getsampmlemike(FLOAT32P_t * v);			/* получить очередной оцифрованый сэмпл с микрофона */
 uint_fast8_t getsampmleusb(FLOAT32P_t * v);				/* получить очередной оцифрованый сэмпл с USB UAC OUT после ресэмплигнга */
+uint_fast8_t getsampmlebt(FLOAT32P_t * v);				/* получить очередной оцифрованый сэмпл с BT AUDIO после ресэмплигнга */
 
 //#endif /* WITHINTEGRATEDDSP */
 
@@ -368,8 +410,10 @@ void prog_dsplreg_update(void);
 void prog_fltlreg_update(void);
 void board_dsp1regchanged(void);
 void prog_codec1reg(void);
+void filters_update_rx(uint_fast8_t pathi);
 
 void board_set_trxpath(uint_fast8_t v);	/* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
+
 void board_set_mik1level(uint_fast16_t v);	/* усиление микрофонного усилителя */
 void board_set_agcrate(uint_fast8_t v);	/* на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ */
 void board_set_agc_t0(uint_fast8_t v);	/* подстройка параметра АРУ */
@@ -392,13 +436,11 @@ void board_set_swaprts(uint_fast8_t v);	/* если используется к�
 void board_set_lo6(int_fast32_t f);
 void board_set_fullbw6(int_fast16_t f);	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
 void board_set_fltsofter(uint_fast8_t n);	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
-
 void board_set_aflowcutrx(int_fast16_t v);		/* Нижняя частота среза фильтра НЧ */
 void board_set_afhighcutrx(int_fast16_t v);	/* Верхняя частота среза фильтра НЧ */
 void board_set_aflowcuttx(int_fast16_t v);		/* Нижняя частота среза фильтра НЧ */
 void board_set_afhighcuttx(int_fast16_t v);	/* Верхняя частота среза фильтра НЧ */
 void board_set_nfmdeviation100(uint_fast8_t v);	/* Девиация в NFM (сотни герц) */
-
 void board_set_afgain(uint_fast16_t v);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 void board_set_ifgain(uint_fast16_t v);	// Параметр для регулировки усиления ПЧ/ВЧ
 void board_set_dspmode(uint_fast8_t v);	// Параметр для установки режима работы приёмника A/передатчика A
@@ -417,10 +459,11 @@ void board_set_mikehclip(uint_fast8_t gmikehclip);	/* Ограничитель *
 void board_set_reverb(uint_fast8_t greverb, uint_fast8_t greverbdelay, uint_fast8_t greverbloss); /* ревербератор */
 void board_set_compressor(uint_fast8_t attack, uint_fast8_t release, uint_fast8_t hold, uint_fast8_t gain, uint_fast8_t threshold);
 
-
 void board_set_uacplayer(uint_fast8_t v);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+void board_set_btaudioplayer(uint_fast8_t v);	/* BT AUDIO */
 void board_set_datatx(uint_fast8_t v);	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 void board_set_usb_ft8cn(uint_fast8_t v);	/* совместимость VID/PID для работы с программой FT8CN */
+void board_set_usb_hs(uint_fast8_t v);	/* Использование USB HS dvtcn USB FS */
 
 void dsp_initialize(void);
 
@@ -430,6 +473,8 @@ void dsp_initialize(void);
 	// возвращает значения от 0 до ymax включительно
 	// 0 - минимальный сигнал, ymax - максимальный
 	int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb);
+	FLOAT_t ratio2db(FLOAT_t ratio);	// Преобразовать отношение напряжений выраженное в "разах" к децибелам.
+	FLOAT_t db2ratio(FLOAT_t valueDBb);	// Преобразовать отношение выраженное в децибелах к "разам" отношения напряжений.
 
 #endif /* WITHINTEGRATEDDSP */
 
@@ -463,7 +508,7 @@ void endstamp3(void);
 void buffers_diagnostics(void);
 void audio_diagnostics(void);
 void dtmftest(void);
-void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff);	// calculate full array of coefficients
+void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum);	// calculate full array of coefficients
 
 void elfill_dmabufferuacin48(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_dmabuffer32tx(FLOAT_t ch0, FLOAT_t ch1);
@@ -614,16 +659,18 @@ typedef struct iir_filter {
     double a[IIR_BIQUAD_MAX_SECTIONS * (IIR_BIQUAD_SECTION_ORDER + 1)];
     double b[IIR_BIQUAD_MAX_SECTIONS * (IIR_BIQUAD_SECTION_ORDER + 1)];
     double d[(IIR_BIQUAD_MAX_SECTIONS + 1) * IIR_BIQUAD_SECTION_ORDER];
+    double x [333];
 } iir_filter_t;
 
 void biquad_create(iir_filter_t *filter, unsigned sect_num);
-void fill_biquad_coeffs(iir_filter_t *filter, FLOAT_t *coeffs, unsigned sect_num);
+void fill_biquad_coeffs(iir_filter_t *filter, FLOAT_t *coeffs);
 
 void biquad_zero(iir_filter_t *filter);
-void biquad_init_lowpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t fc);
+void biquad_init_lowpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f);
 void biquad_init_bandpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f1, FLOAT_t f2);
 void biquad_init_bandstop(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f1, FLOAT_t f2);
 void biquad_init_highpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f);
+void iir_freq_resp(iir_filter_t *filter, FLOAT_t *hcomplex, FLOAT_t fs, FLOAT_t f);
 
 #if __STDC__ && ! CPUSTYLE_ATMEGA
 

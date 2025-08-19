@@ -25,18 +25,21 @@ static void complex_div(complex_d *p, complex_d *q);
 void biquad_create(iir_filter_t *filter, unsigned sect_num)
 {
 	memset(filter, 0, sizeof * filter);
-
+	ASSERT(IIR_BIQUAD_MAX_SECTIONS >= sect_num);
 	filter->sections = sect_num;
 	filter->sect_ord = IIR_BIQUAD_SECTION_ORDER;
 
-	memset(filter->a, 0, sizeof filter->a);
-	memset(filter->b, 0, sizeof filter->b);
-	memset(filter->d, 0, sizeof filter->d);
+	arm_fill_f64(0, filter->a, ARRAY_SIZE(filter->a));
+	arm_fill_f64(0, filter->b, ARRAY_SIZE(filter->b));
+	arm_fill_f64(0, filter->d, ARRAY_SIZE(filter->d));
 }
 
-void fill_biquad_coeffs(iir_filter_t *filter, FLOAT_t *coeffs, unsigned sect_num)
+// Make CMSIS_DSP array
+//     {b10, b11, b12, a11, a12,   b20, b21, b22, a21, a22, ...}
+void fill_biquad_coeffs(iir_filter_t *filter, FLOAT_t *coeffs)
 {
 	//transpose and save coefficients
+	unsigned sect_num = filter->sections;
 	unsigned ind = 0;
 	for(uint8_t sect = 0; sect < sect_num; sect++)
 	{
@@ -67,18 +70,18 @@ void biquad_zero(struct iir_filter *filter)
     }
 }
 
-void biquad_init_lowpass(struct iir_filter *filter, FLOAT_t fs, FLOAT_t fc)
+void biquad_init_lowpass(struct iir_filter *filter, FLOAT_t fs, FLOAT_t f)
 {
 	double *a = filter->a;
 	double *b = filter->b;
-	double w = 2 * M_PI * fc / fs;
+	double w = 2 * M_PI * f / fs;
 	double phi, alpha;
 	int i, k;
 	int n;
 
 	n = filter->sections;
 	for (i = 0; i < n; i += 1) {
-		k = n - i - 1.0;
+		k = n - i - 1;
 		phi = M_PI / (4.0 * n) * (k * 2.0 + 1.0);
 		alpha = sin(w) * cos(phi);
 
@@ -362,6 +365,55 @@ void biquad_init_bandpass(struct iir_filter *filter, FLOAT_t fs, FLOAT_t f1, FLO
 void biquad_init_bandstop(struct iir_filter *filter, FLOAT_t fs, FLOAT_t f1, FLOAT_t f2)
 {
 	return biquad_init_band(filter, fs, f1, f2, 1);
+}
+
+
+void iir_freq_resp(iir_filter_t *filter, FLOAT_t *h, FLOAT_t fs, FLOAT_t f)
+{
+    double *a = filter->a;
+    double *b = filter->b;
+    double w = 2.0 * M_PI * f / fs;
+    complex_d _z, m, p, q;
+    int i, k;
+
+    /* On unit circle, 1/z = ~z (complex conjugate) */
+
+    _z.re = cos(w);
+    _z.im = -sin(w);
+
+    m.re = 1.0;
+    m.im = 0.0;
+
+    for (i = 0; i < filter->sections; i += 1)
+    {
+        k = filter->sect_ord;
+        p.re = b[k];
+        p.im = 0;
+        while (k > 0)
+        {
+            k -= 1.0;
+            complex_mul(&p, &_z);
+            p.re += b[k];
+        }
+
+        k = filter->sect_ord;
+        q.re = a[k];
+        q.im = 0;
+        while (k > 0)
+        {
+            k -= 1.0;
+            complex_mul(&q, &_z);
+            q.re += a[k];
+        }
+
+        complex_div(&p, &q);
+        complex_mul(&m, &p);
+        a += filter->sect_ord + 1;
+        b += filter->sect_ord + 1;
+    }
+
+    h[0] = m.re;
+    h[1] = m.im;
 }
 
 #endif

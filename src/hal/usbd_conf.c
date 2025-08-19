@@ -1347,22 +1347,13 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		PRINTF(PSTR("usbd_fifo_initialize error: base4=%u, last4=%u, fullsize=%u\n"), (base4 * 4), (last4 * 4), fullsize);
 //		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("used=%u"), (base4 * 4) + (fullsize - last4 * 4));
 //		colmain_setcolors(COLORPIP_RED, BGCOLOR);
-//		display_at(0, 0, b);
+//		display_text(0, 0, b);
 		for (;;)
 			;
 	}
 	else
 	{
 		//PRINTF(PSTR("usbd_fifo_initialize: base4=%u, last4=%u, fullsize=%u\n"), (base4 * 4), (last4 * 4), fullsize);
-#if 0
-		// Диагностическая выдача использованного объёма FIFO RAM
-		char b [64];
-
-		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("used=%u"), (base4 * 4) + (fullsize - last4 * 4));
-		colmain_setcolors(COLORPIP_GREEN, BGCOLOR);
-		display_at(0, 0, b);
-		HARDWARE_DELAY_MS(2000);
-#endif
 	}
 
 	(void) USB_FlushRxFifo(USBx);

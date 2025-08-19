@@ -65,6 +65,8 @@ SECTIONS
  		*(.dtors)
 
 		*(.rodata*)
+		*(.gcc_except_table*)
+		
 		. = ALIGN(64);
 		KEEP(*(.isr_vector))
 		__Vectors_End = .;
@@ -125,7 +127,7 @@ SECTIONS
 
 		. = ALIGN(64);
 
-		*(.data*)
+		*(.data* .sdata*)
 		*(.dtcm*)
 
 		. = ALIGN(8);
@@ -160,7 +162,10 @@ SECTIONS
 	{
 		__bss_start__ = .;
 		. = ALIGN(64);
-		*(.bss*)
+		*(.sbss*)
+		*(.gnu.linkonce.sb.*)
+		*(.bss .bss.*)
+		*(.gnu.linkonce.b.*)
 		*(COMMON)
 		. = ALIGN(64);
 		__bss_end__ = .;
@@ -194,6 +199,13 @@ SECTIONS
 		__end__ = .;
 		PROVIDE(end = __end__);
 	} > DDR3
+
+	.debugs 0 (NOLOAD):
+	{
+		*(.debug*)
+		*(.comment*)
+		*(.ARM.attributes*)
+	} : NONE
 
 	__StackTop = ORIGIN(DDR3) + LENGTH(DDR3);
 	PROVIDE(__stack = __StackTop);

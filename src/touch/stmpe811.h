@@ -3,6 +3,10 @@
 
 #include "hardware.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 
 #if TSC_TYPE_STMPE811_USE_SPI
@@ -143,5 +147,9 @@ void stmpe811_initialize(void);
 uint_fast8_t stmpe811_is_pressed(void);
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
+
+#ifdef __cplusplus
+ }
+#endif
 
 #endif /* STMPE811_H_INCLUDED */

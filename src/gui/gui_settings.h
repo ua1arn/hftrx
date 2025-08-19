@@ -52,7 +52,7 @@
 #endif /* ! WITHALTERNATIVELAYOUT */
 
 enum {
-	sliders_width = 8,			// ширина шкалы слайдера
+	sliders_scale_thickness = 8,// ширина шкалы слайдера
 	sliders_w = 12,				// размеры ползунка слайдера
 	sliders_h = 18,				// от центра (*2)
 	button_round_radius = 3,	// радиус закругления кнопки

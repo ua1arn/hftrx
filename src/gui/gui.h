@@ -38,22 +38,6 @@ enum {
 	wifiAPmaxcount = 10,
 };
 
-typedef enum {
-	BAND_TYPE_HAM,
-	BAND_TYPE_BROADCAST
-} gui_band_type_t;
-
-typedef struct {
-	uint_fast32_t init_freq;
-	uint_fast8_t index;
-	gui_band_type_t type;
-	char name[10];
-} band_array_t;
-
-typedef struct {
-	char label [10][10];
-} bws_t;
-
 /* структура для размещения в конфигурационном ОЗУ */
 struct gui_nvram_t {
 	uint8_t enc2step_pos;
@@ -63,10 +47,10 @@ struct gui_nvram_t {
 	uint8_t freq_swipe_enable;
 	uint8_t freq_swipe_step;
 #if WITHFT8
-	char ft8_callsign [callsign_max_lenght];
-	char ft8_qth [qth_max_lenght];
-	char ft8_snr [end_max_lenght];
-	char ft8_end [end_max_lenght];
+	char ft8_callsign[callsign_max_lenght];
+	char ft8_qth[qth_max_lenght];
+	char ft8_snr[end_max_lenght];
+	char ft8_end[end_max_lenght];
 	uint8_t ft8_band;
 	uint32_t ft8_txfreq_val;
 	uint8_t ft8_txfreq_equal;
@@ -96,11 +80,8 @@ void hamradio_ft8_start_fill(void);
 uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit);
 uint_fast8_t hamradio_get_att_db(void);
 void hamradio_set_att_db(uint_fast8_t db);
-uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit);
 void hamradio_set_bw(uint_fast8_t v);
-uint_fast16_t hamradio_get_afgain(void);
-void hamradio_set_afgain(uint_fast16_t v);
-void hamradio_change_nr(void);
+uint_fast8_t hamradio_change_nr(uint_fast8_t v);
 void hamradio_gui_set_reqautotune2(uint_fast8_t val);
 uint_fast8_t hamradio_split_toggle(void);
 void hamradio_split_vfo_swap(void);
@@ -120,20 +101,19 @@ void hamradio_set_lfmtinterval(uint_fast16_t v);
 void hamradio_lfm_disable(void);
 void hamradio_get_nmea_time(char * p, size_t sz);
 void gui_gnssupdate(void);
-uint8_t wnb_state_switch(void);
+uint8_t wnb_state_switch(uint8_t v);
 void wnb_set_threshold(uint16_t v);
 uint16_t wnb_get_threshold(void);
 
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
 void gui_initialize(void);
-void gui_set_encoder2_rotate(int_fast8_t rotate);
+void gui_set_encoder2_rotate(int_least16_t rotate);
 void gui_put_keyb_code(uint_fast8_t kbch);
 void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey);
 void gui_open_sys_menu(void);
 void gui_update(void);
 void gui_add_debug(char d);
 void gui_open_debug_window(void);
-void gui_as_update(void);
 
 #endif /* WITHTOUCHGUI */
 

@@ -326,7 +326,7 @@ static ALIGNX_BEGIN RAMNOINIT_D1 FATFS wave_Fatfs ALIGNX_END;		/* File system ob
 
 static uint_fast8_t waveUnmount(void)
 {
-	if (! hamradio_get_usbh_active())
+	if (! hamradio_get_usbmsc_active())
 		return 1;
 	FRESULT rc;				/* Result code */
 
@@ -337,7 +337,7 @@ static uint_fast8_t waveUnmount(void)
 /* Register volume work area (never fails) */
 static uint_fast8_t waveMount(void)
 {
-	if (! hamradio_get_usbh_active())
+	if (! hamradio_get_usbmsc_active())
 		return 1;
 
 	FRESULT rc;				/* Result code */
@@ -398,7 +398,7 @@ static uint_fast8_t wave_startrecording(void)
 // Заканчиваем запись
 static uint_fast8_t wave_stoprecording(void)
 {
-	if (! hamradio_get_usbh_active())
+	if (! hamradio_get_usbmsc_active())
 		return 1;
 	FRESULT rc;				/* Result code */
 	rc = write_wav_tail();
@@ -408,7 +408,7 @@ static uint_fast8_t wave_stoprecording(void)
 
 static uint_fast8_t wave_resync(void)
 {
-	if (! hamradio_get_usbh_active())
+	if (! hamradio_get_usbmsc_active())
 		return 1;
 	FRESULT rc;				/* Result code */
 	rc = write_wav_resync();
@@ -420,7 +420,7 @@ static uint_fast8_t wave_resync(void)
 // 3 - выполнить resync
 static uint_fast8_t wave_nextblockrecording(void)
 {
-	if (! hamradio_get_usbh_active())
+	if (! hamradio_get_usbmsc_active())
 		return 1;
 	const uint_fast32_t RSYNLEN = UINT32_C(10) * 1024 * 1024;
 	const uint_fast32_t FILELEN = UINT32_C(695) * 1024 * 1024;	// Размер ограничивающий файл не кратен предидущему числу
@@ -759,14 +759,14 @@ typedef struct {
 
 // Выполняем запись
 // 1 - неудачно
-static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
+static uint_fast8_t screenshot_bodyrecording(const gxdrawb_t * db)
 {
 	enum { PIX_BYTES = 3 };
 	const unsigned _bitsperpixel = PIX_BYTES * 8;
-	const unsigned rowpadsize = (4 - (dx * PIX_BYTES) % 4) % 4;
+	const unsigned rowpadsize = (4 - (db->dx * PIX_BYTES) % 4) % 4;
 	const unsigned _planes = 1;
 	const unsigned _compression = 0;	// RGB
-	const unsigned _pixelbytesize = (dy * (dx * _bitsperpixel / 8 + rowpadsize));
+	const unsigned _pixelbytesize = (db->dy * (db->dx * _bitsperpixel / 8 + rowpadsize));
 	const unsigned _filesize = (_pixelbytesize + sizeof (bitmap_t));
 	const unsigned _xpixelpermeter = 0x130B; //2835 , 72 DPI
 	const unsigned _ypixelpermeter = 0x130B; //2835 , 72 DPI
@@ -782,8 +782,8 @@ static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORPIP_T * buffer, uint_fas
 	bm.fileheader.filesize = _filesize;
     bm.fileheader.fileoffset_to_pixelarray = sizeof (bitmap_t);
     bm.bitmapinfoheader.dibheadersize = sizeof (bitmapinfoheader_t);
-    bm.bitmapinfoheader.width = dx;
-    bm.bitmapinfoheader.height = dy;
+    bm.bitmapinfoheader.width = db->dx;
+    bm.bitmapinfoheader.height = db->dy;
     bm.bitmapinfoheader.planes = _planes;
     bm.bitmapinfoheader.bitsperpixel = _bitsperpixel;
     bm.bitmapinfoheader.compression = _compression;
@@ -805,13 +805,13 @@ static uint_fast8_t screenshot_bodyrecording(PACKEDCOLORPIP_T * buffer, uint_fas
 #endif /* LCDMODE_MAIN_L8 */
 
 	unsigned y;
-	for (y = 0; y < dy; ++ y)
+	for (y = 0; y < db->dy; ++ y)
 	{
-		uint8_t row [dx][PIX_BYTES];	// b, g, r, reserved
+		uint8_t row [db->dx][PIX_BYTES];	// b, g, r, reserved
 		unsigned x;
-		for (x = 0; x < dx; ++ x)
+		for (x = 0; x < db->dx; ++ x)
 		{
-			const COLORPIP_T c = * colpip_mem_at(buffer, dx, dy, x, dy - y - 1);
+			const COLORPIP_T c = * colpip_mem_at(db, x, db->dy - y - 1);
 #if LCDMODE_MAIN_L8
 			const COLOR24_T v24 = xltrgb24 [c];
 			row [x][0] = COLOR24_B(v24);
@@ -849,17 +849,17 @@ static uint_fast8_t screenshot_stoprecording(void)
 }
 
 /* запись видимого изображения в файл */
-void display_snapshot_write(PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
+void display_snapshot_write(const gxdrawb_t * db)
 {
 	if (sdstate == SDSTATE_IDLE)
 	{
 		waveMount();
-		(void) (screenshot_startrecording() || screenshot_bodyrecording(buffer, dx, dy) || screenshot_stoprecording());
+		(void) (screenshot_startrecording() || screenshot_bodyrecording(db) || screenshot_stoprecording());
 		waveUnmount();
 	}
 	else
 	{
-		(void) (screenshot_startrecording() || screenshot_bodyrecording(buffer, dx, dy) || screenshot_stoprecording());
+		(void) (screenshot_startrecording() || screenshot_bodyrecording(db) || screenshot_stoprecording());
 	}
 }
 

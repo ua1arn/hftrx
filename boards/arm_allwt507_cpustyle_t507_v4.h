@@ -17,7 +17,7 @@
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
-//#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
+
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
@@ -50,7 +50,7 @@
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
-#define BOARD_CONFIG_DRAM_CLK 672//792
+	#define BOARD_CONFIG_DRAM_CLK 792
 	#define CONFIG_SUNXI_DRAM_H616_LPDDR4 1
 
 	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
@@ -650,6 +650,7 @@
 	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0x03	/* t507: 000: OSC24M 001: PLL_PERI0(1X) 010: PLL_PERI1 (1X) 011: PLL_PERI0(2X) 100: PLL_PERI1 (2X) */
 	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
 
 	#if WITHSPIHW

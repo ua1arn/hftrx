@@ -535,7 +535,7 @@ void hardware_uartx_initialize(UART_t * uart, uint_fast32_t busfreq, uint_fast32
 
 #elif CPUSTYLE_ALLWINNER
 
-	uint32_t divisor = busfreq / ((defbaudrate) * 16);
+	uint32_t divisor = calcdivround2(busfreq, defbaudrate * 16);
 
 	uart->UART_DLH_IER = 0;
 	uart->UART_IIR_FCR = 0xf7;

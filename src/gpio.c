@@ -810,7 +810,7 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx
 #define ALWNR_GPIO_DRV_INPUT 0x02
 #define ALWNR_GPIO_PULL_INPUT 0x01	// pull-up
 
-#define ALWNR_GPIO_DRV_AF2M 0x02
+#define ALWNR_GPIO_DRV_AF2M 0x00	// 180 OHm
 #define ALWNR_GPIO_PULL_AF2M 0x01	// pull-up
 
 #define ALWNR_GPIO_DRV_OPENDRAINAF2M 0x03
@@ -4717,7 +4717,7 @@ arm_hardware_pioi_outputs(portholder_t opins, portholder_t initialstate)
 
 	//gpioX_poweron(GPIOB);
 	gpioX_setstate(GPIOI, opins, initialstate);
-	gpioX_prog(GPIOI, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
+	gpioX_prog(GPIOI, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
 #else
 	#error Undefined CPUSTYLE_XXX

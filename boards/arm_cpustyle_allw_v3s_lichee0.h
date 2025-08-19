@@ -14,12 +14,12 @@
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
-//#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
+
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
-//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+//#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
+#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 //#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
 //#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
@@ -580,6 +580,7 @@
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
 	#define HARDWARE_SPI_FREQ (allwnr_v3s_get_apb2_freq())
 	#define	SPIDFHARD_PTR SPI	/* 0 - SPI0, 1: SPI1... */
+	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0
 
 	#define SPIIO_INITIALIZE() do { \
 		arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF3); 	/* PC2 SPI_CLK */ \

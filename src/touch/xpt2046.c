@@ -15,14 +15,15 @@
 #include "spi.h"
 #include "xpt2046.h"
 
-// Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO.,LTD http://www.xptek.com.cn
+// XPT2046 Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO.,LTD http://www.xptek.com.cn
+// TI TSC2046
 // SPI interface used
 
 // При необходимости разместить в файле конфигурации платы.
 //#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
 //#define BOARD_TSC1_YMIRROR 1	// Зеркалируем тачскрин по вертикали.
 
-#define tscspeed SPIC_SPEED1M
+#define tscspeed SPIC_SPEED100k
 #define tscmode SPIC_MODE0
 
 #define XPT2046_DFR_MODE 	0x00
@@ -54,6 +55,7 @@ enum XPTCoordinate
 // https://github.com/Bodmer/TFT_Touch/blob/master/TFT_Touch.cpp
 // https://github.com/MarlinFirmware/Marlin/blob/2.0.x/Marlin/src/lcd/touch/touch_buttons.cpp
 // MKS Robin Mini/firmware/Marlin2.0-MKS-Robin_mini/Marlin/src/HAL/HAL_STM32F1/xpt2046.h
+// https://github.com/d-qoi/TSC2046_kernel_driver/blob/master/TSC2046_driver.c
 
 #if WITHSPIHW || WITHSPISW
 
@@ -67,11 +69,12 @@ xpt2046_read4(
 	uint_fast16_t * z2
 	)
 {
-	enum { PDx = XPT2046_PD0 };	// Reference is off and ADC is on.
+	enum { PDx = 0*XPT2046_PD1 | 0*XPT2046_PD0 };
 	static const uint8_t txbuf [] =
 	{
 		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_X, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_X, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_Z1, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,
@@ -90,9 +93,9 @@ xpt2046_read4(
 	for (i = 0; i < 1; ++ i)
 	{
 		yv += USBD_peek_u16_BE(rxbuf + (i * 8) + 3) / 8;
-		xv += USBD_peek_u16_BE(rxbuf + (i * 8) + 5) / 8;
-		z1v += USBD_peek_u16_BE(rxbuf + (i * 8) + 7) / 8;
-		z2v += USBD_peek_u16_BE(rxbuf + (i * 8) + 9) / 8;
+		xv += USBD_peek_u16_BE(rxbuf + (i * 8) + 7) / 8;
+		z1v += USBD_peek_u16_BE(rxbuf + (i * 8) + 9) / 8;
+		z2v += USBD_peek_u16_BE(rxbuf + (i * 8) + 11) / 8;
 	}
 	* y = yv / i;
 	* x = xv / i;
@@ -126,11 +129,23 @@ uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	return (z1 > XPT2046_Z1_THRESHOLD2) || (z1 > XPT2046_Z1_THRESHOLD && (4095 - z2) > XPT2046_Z2_THRESHOLD);
 }
 
+void
+xpt2406_interrupt_handler(void * ctx)
+{
+	const spitarget_t target = targettsc1;
+	unsigned x, y, z1, z2;
+	xpt2046_read4(target, & x, & y, & z1, & z2);
+	PRINTF("xpt2046 interrupt: x=%5u, y=%5u z1=%5u, z2=%5u\n", x, y, z1, z2);
+}
+
 void xpt2046_initialize(void)
 {
-	//BOARD_XPT2046_INT_CONNECT();
 	const spitarget_t target = targettsc1;
 	//PRINTF("xpt2046_initialize:\n");
+	{
+		unsigned x, y, z1, z2;
+		xpt2046_read4(target, & x, & y, & z1, & z2);
+	}
 #if 0
 	for (;;)
 	{
@@ -139,6 +154,7 @@ void xpt2046_initialize(void)
 		PRINTF("xpt2046: x=%5u, y=%5u z1=%5u, z2=%5u\n", x, y, z1, z2);
 	}
 #endif
+	BOARD_XPT2046_INT_CONNECT();
 	//PRINTF("xpt2046_initialize done.\n");
 }
 

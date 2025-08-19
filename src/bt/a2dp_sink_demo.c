@@ -93,11 +93,15 @@
 #ifdef HAVE_POSIX_FILE_IO
 #include "wav_util.h"
 #define STORE_TO_WAV_FILE
+#ifdef _MSC_VER
+// ignore deprecated warning for fopen
+#pragma warning(disable : 4996)
+#endif
 #endif
 
 #define NUM_CHANNELS 2
 #define BYTES_PER_FRAME     (2*NUM_CHANNELS)
-#define MAX_SBC_FRAME_SIZE (120 * 5)	// was: 120
+#define MAX_SBC_FRAME_SIZE (120 * 35)	// was: 120
 
 #ifdef HAVE_BTSTACK_STDIN
 static const char * device_addr_string = "00:1B:DC:08:E2:72"; // pts v5.0
@@ -262,8 +266,8 @@ static void stdin_process(char cmd);
 static int setup_demo(void){
 
     // init protocols
-    l2cap_init();
-    sdp_init();
+    //l2cap_init();	// перенесено в port.c
+    //sdp_init();	// перенесено в port.c
 #ifdef ENABLE_BLE
     // Initialize LE Security Manager. Needed for cross-transport key derivation
     sm_init();
@@ -305,7 +309,7 @@ static int setup_demo(void){
     a2dp_sink_create_sdp_record(sdp_avdtp_sink_service_buffer, sdp_create_service_record_handle(),
                                 AVDTP_SINK_FEATURE_MASK_HEADPHONE, NULL, NULL);
     btstack_assert(de_get_len( sdp_avdtp_sink_service_buffer) <= sizeof(sdp_avdtp_sink_service_buffer));
-    sdp_register_service(sdp_avdtp_sink_service_buffer);
+    VERIFY(0 == sdp_register_service(sdp_avdtp_sink_service_buffer));
 
     // - Create AVRCP Controller service record and register it with SDP. We send Category 1 commands to the media player, e.g. play/pause
     memset(sdp_avrcp_controller_service_buffer, 0, sizeof(sdp_avrcp_controller_service_buffer));
@@ -319,7 +323,7 @@ static int setup_demo(void){
     avrcp_controller_create_sdp_record(sdp_avrcp_controller_service_buffer, sdp_create_service_record_handle(),
                                        controller_supported_features, NULL, NULL);
     btstack_assert(de_get_len( sdp_avrcp_controller_service_buffer) <= sizeof(sdp_avrcp_controller_service_buffer));
-    sdp_register_service(sdp_avrcp_controller_service_buffer);
+    VERIFY(0 == sdp_register_service(sdp_avrcp_controller_service_buffer));
 
     // - Create and register A2DP Sink service record
     //   -  We receive Category 2 commands from the media player, e.g. volume up/down
@@ -328,14 +332,14 @@ static int setup_demo(void){
     avrcp_target_create_sdp_record(sdp_avrcp_target_service_buffer,
                                    sdp_create_service_record_handle(), target_supported_features, NULL, NULL);
     btstack_assert(de_get_len( sdp_avrcp_target_service_buffer) <= sizeof(sdp_avrcp_target_service_buffer));
-    sdp_register_service(sdp_avrcp_target_service_buffer);
+    VERIFY(0 == sdp_register_service(sdp_avrcp_target_service_buffer));
 
     // - Create and register Device ID (PnP) service record
     memset(device_id_sdp_service_buffer, 0, sizeof(device_id_sdp_service_buffer));
     device_id_create_sdp_record(device_id_sdp_service_buffer,
                                 sdp_create_service_record_handle(), DEVICE_ID_VENDOR_ID_SOURCE_BLUETOOTH, BLUETOOTH_COMPANY_ID_BLUEKITCHEN_GMBH, 1, 1);
     btstack_assert(de_get_len( device_id_sdp_service_buffer) <= sizeof(device_id_sdp_service_buffer));
-    sdp_register_service(device_id_sdp_service_buffer);
+    VERIFY(0 == sdp_register_service(device_id_sdp_service_buffer));
 
 
     // Configure GAP - discovery / connection
@@ -343,25 +347,25 @@ static int setup_demo(void){
     // - Set local name with a template Bluetooth address, that will be automatically
     //   replaced with an actual address once it is available, i.e. when BTstack boots
     //   up and starts talking to a Bluetooth module.
-    //gap_set_local_name("A2DP Sink Demo 00:00:00:00:00:00");
-
-    // - Allow to show up in Bluetooth inquiry
-//    gap_discoverable_control(1);
+//    gap_set_local_name("A2DP Sink Demo 00:00:00:00:00:00");
 //
-    // - Set Class of Device - Service Class: Audio, Major Device Class: Audio, Minor: Loudspeaker
-    gap_set_class_of_device(0x200414);
+//    // - Allow to show up in Bluetooth inquiry
+//    gap_discoverable_control(1);
+
+    // - Set Class of Device - Service Class: Audio, Major Device Class: Audio, Minor: Headphone
+//    gap_set_class_of_device(0x200404);
 
     // - Allow for role switch in general and sniff mode
     gap_set_default_link_policy_settings( LM_LINK_POLICY_ENABLE_ROLE_SWITCH | LM_LINK_POLICY_ENABLE_SNIFF_MODE );
 
     // - Allow for role switch on outgoing connections
     //   - This allows A2DP Source, e.g. smartphone, to become master when we re-connect to it.
-    gap_set_allow_role_switch(true);
+    //gap_set_allow_role_switch(true);	// перенесено в port.c
 
 
     // Register for HCI events
-    hci_event_callback_registration.callback = &hci_packet_handler;
-    hci_add_event_handler(&hci_event_callback_registration);
+//    hci_event_callback_registration.callback = &hci_packet_handler;
+//    hci_add_event_handler(&hci_event_callback_registration);
 
     // Inform about audio playback / test options
 #ifdef HAVE_POSIX_FILE_IO
@@ -664,17 +668,20 @@ static void dump_sbc_configuration(media_codec_configuration_sbc_t * configurati
     printf("\n");
 }
 
+#if 0
+// Перенесено в port.c
 static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
     UNUSED(channel);
     UNUSED(size);
     if (packet_type != HCI_EVENT_PACKET) return;
-    if (hci_event_packet_get_type(packet) == HCI_EVENT_PIN_CODE_REQUEST) {
-        bd_addr_t address;
-        printf("Pin code request - using '0000'\n");
-        hci_event_pin_code_request_get_bd_addr(packet, address);
-        gap_pin_code_response(address, "0000");
-    }
+//    if (hci_event_packet_get_type(packet) == HCI_EVENT_PIN_CODE_REQUEST) {
+//        bd_addr_t address;
+//        printf("Pin code request - using '0000'\n");
+//        hci_event_pin_code_request_get_bd_addr(packet, address);
+//        gap_pin_code_response(address, "0000");
+//    }
 }
+#endif
 
 #ifdef ENABLE_AVRCP_COVER_ART
 static void a2dp_sink_demo_cover_art_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
@@ -789,7 +796,8 @@ static void avrcp_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
             avrcp_target_support_event(connection->avrcp_cid, AVRCP_NOTIFICATION_EVENT_VOLUME_CHANGED);
             avrcp_target_support_event(connection->avrcp_cid, AVRCP_NOTIFICATION_EVENT_BATT_STATUS_CHANGED);
             avrcp_target_battery_status_changed(connection->avrcp_cid, battery_status);
-        
+			avrcp_target_volume_changed(connection->avrcp_cid, 127);	// ставим максимальную громкость
+
             // query supported events:
             avrcp_controller_get_supported_events(connection->avrcp_cid);
             return;
@@ -994,7 +1002,7 @@ static void avrcp_target_packet_handler(uint8_t packet_type, uint16_t channel, u
             break;
         
         case AVRCP_SUBEVENT_OPERATION:
-            operation_id = avrcp_subevent_operation_get_operation_id(packet);
+            operation_id = (avrcp_operation_id_t) avrcp_subevent_operation_get_operation_id(packet);
             button_state = avrcp_subevent_operation_get_button_pressed(packet) > 0 ? "PRESS" : "RELEASE";
             switch (operation_id){
                 case AVRCP_OPERATION_ID_VOLUME_UP:
@@ -1121,6 +1129,7 @@ static void a2dp_sink_packet_handler(uint8_t packet_type, uint16_t channel, uint
             break;
         
         default:
+            printf("a2dp_sink: Unhandled A2DP subevent 0x%02X\n", (unsigned) packet[2]);
             break;
     }
 }
@@ -1377,7 +1386,6 @@ static void stdin_process(char cmd){
 }
 #endif
 
-int btstack_main(int argc, const char * argv[]);
 int a2dp_sink_btstack_main(int argc, const char * argv[]){
     UNUSED(argc);
     (void)argv;
@@ -1391,8 +1399,8 @@ int a2dp_sink_btstack_main(int argc, const char * argv[]){
 #endif
 
     // turn on!
-//    printf("Starting BTstack ...\n");
-//    hci_power_control(HCI_POWER_ON);
+ //   printf("Starting BTstack ...\n");
+ //   hci_power_control(HCI_POWER_ON);
     return 0;
 }
 /* EXAMPLE_END */

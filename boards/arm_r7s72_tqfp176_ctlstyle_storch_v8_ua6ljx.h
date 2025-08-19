@@ -62,7 +62,7 @@
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 	//#define WITHATT2_6DB		1		// LTC2217 or AD9246 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 
-	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+	
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
@@ -86,7 +86,7 @@
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
-	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	#define LCDMODE_PALETTE256	1	/* Экран с тремя видеобуферами, L8 */
 
 	
 
@@ -97,13 +97,13 @@
 
 	//#define LCDMODE_V0	1	//* Обычная конфигурация одна страница без PIP с L8 на основном экране */
 
-	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
-	//#define LCDMODE_V2_2PAGE	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
+	#define LCDMODE_PALETTE256	1	/* Экран с тремя видеобуферами, L8 */
+	//#define LCDMODE_PALETTE256	1	/* Экран с двумя видеобуферами, L8 */
 
-	//#define LCDMODE_V2A	1	/* только главный экран 16 бит (три страницы), без PIP */
-	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+	//#define LCDMODE_RGB565	1	/* Экран 16 бит (три страницы) */
+	//#define LCDMODE_RGB565 1	/* Экран 16 бит */
 
-	//#define LCDMODE_V2B 1	/* только главный экран 16 бит (одна страница), без PIP */
+	
 
 	
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
@@ -112,8 +112,8 @@
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 
-	#define LCDMODE_V2	1	/* только главный экран, без PIP */
-	//#define LCDMODE_V2A	1	/* только главный экран, без PIP (но главный экран 16 бит) */
+	#define LCDMODE_PALETTE256	1	/* Экран */
+	//#define LCDMODE_RGB565	1	/* Экран, без PIP (но главный экран 16 бит) */
 
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 
@@ -269,8 +269,8 @@
 	#define WITHVOX			1	/* используется VOX */
 	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 	#define WITHSWRMTR	1		/* Измеритель КСВ */
-	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
-	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
+	
+	
 
 	#if 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
@@ -336,7 +336,6 @@
 	#define WITHSPECBETA_DEFAULT	30
 
 	#define WITHMAXPWRCALI		150	/* калибровочный параметр PWR-метра */
-	#define WITHSWRCALI			150	/* калибровочный параметр SWR-метра */
 
 //	#define WITHTOUCHGUI		1
 //	#define WITHALPHA			64
@@ -511,7 +510,6 @@
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHSWRMTR
-			PWRI = 0,			// PB1
 			FWD = 0, REF = 1,	// PB0	SWR-meter
 			REFMRRIX = BOARD_ADCMRRIN(2),
 			FWDMRRIX = BOARD_ADCMRRIN(3),
@@ -532,7 +530,7 @@
 
 		FWD = BOARD_ADCX2IN(2),
 		REF = BOARD_ADCX2IN(3),
-		PWRI = FWD,
+		
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
@@ -542,7 +540,7 @@
 		PASENSEMRRIX = BOARD_ADCMRRIN(1),  // кеш - индекc не должен повторяться в конфигурации
 		REFMRRIX = BOARD_ADCMRRIN(2),
 		FWDMRRIX = BOARD_ADCMRRIN(3),
-		PWRMRRIX = FWDMRRIX,
+		PWRMRRIX = BOARD_ADCMRRIN(7),
 		VOLTMRRIX = BOARD_ADCMRRIN(4),  // кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),    // кеш - индекc не должен повторяться в конфигурации
 		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),    // кеш - индекc не должен повторяться в конфигурации

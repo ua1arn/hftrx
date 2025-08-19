@@ -14,7 +14,7 @@
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
-//#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
+
 //#define WITHSPISW 	1	/* Использование программного управления SPI. */
 //
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
@@ -542,6 +542,7 @@
 	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0x03	/* t113: 000: HOSC 001: PLL_PERI(1X) 010: PLL_PERI(2X) 011: PLL_AUDIO1(DIV2) 100: PLL_AUDIO1(DIV5) */
 	#define HARDWARE_SPI_FREQ (allwnr_t113_get_spi0_freq())
 	#define	SPIDFHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 

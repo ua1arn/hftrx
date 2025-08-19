@@ -35,26 +35,22 @@
  *
  */
 
+#define BTSTACK_FILE__ "spp_counter.c"
 
 
 #include "hardware.h"
-#include "formats.h"
 
 #if WITHUSEUSBBT
 
-//#define BTSTACK_FILE__ "spp_counter.c"
+#include "formats.h"
+#include "board.h"
+#include "serial.h"
 
-// *****************************************************************************
-/* EXAMPLE_START(spp_counter): SPP Server - Heartbeat Counter over RFCOMM
- *
- * @text The Serial port profile (SPP) is widely used as it provides a serial
- * port over Bluetooth. The SPP counter example demonstrates how to setup an SPP
- * service, and provide a periodic timer over RFCOMM.   
- *
- * @text Note: To test, please run the spp_counter example, and then pair from 
- * a remote device, and open the Virtual Serial Port.
- */
-// *****************************************************************************
+
+static volatile uint_fast8_t btsppenabletx;
+static volatile uint_fast8_t btsppenablerx;
+
+static uint_fast8_t btspptxbusy = 0;
 
 #include <inttypes.h>
 #include <stdint.h>
@@ -64,90 +60,13 @@
  
 #include "btstack.h"
 
-#define RFCOMM_SERVER_CHANNEL 1
-#define HEARTBEAT_PERIOD_MS 1000
-
-static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
+#define SPP_COUNTER_RFCOMM_SERVER_CHANNEL 2
 
 static uint16_t rfcomm_channel_id;
 static uint8_t  spp_service_buffer[150];
-static btstack_packet_callback_registration_t hci_event_callback_registration;
 
-
-/* @section SPP Service Setup 
- *s
- * @text To provide an SPP service, the L2CAP, RFCOMM, and SDP protocol layers 
- * are required. After setting up an RFCOMM service with channel nubmer
- * RFCOMM_SERVER_CHANNEL, an SDP record is created and registered with the SDP server.
- * Example code for SPP service setup is
- * provided in Listing SPPSetup. The SDP record created by function
- * spp_create_sdp_record consists of a basic SPP definition that uses the provided
- * RFCOMM channel ID and service name. For more details, please have a look at it
- * in \path{src/sdp_util.c}. 
- * The SDP record is created on the fly in RAM and is deterministic.
- * To preserve valuable RAM, the result could be stored as constant data inside the ROM.   
- */
-
-/* LISTING_START(SPPSetup): SPP service setup */ 
-static void spp_service_setup(void){
-
-#if 1
-    // register for HCI events
-    hci_event_callback_registration.callback = &packet_handler;
-    hci_add_event_handler(&hci_event_callback_registration);
-#endif
-
-    //l2cap_init();
-
-#ifdef ENABLE_BLE
-    // Initialize LE Security Manager. Needed for cross-transport key derivation
-    sm_init();
-#endif
-
-#if 1
-    //rfcomm_init();
-    rfcomm_register_service(packet_handler, RFCOMM_SERVER_CHANNEL, 0xffff);  // reserved channel, mtu limited by l2cap
-#endif
-
-    // init SDP, create record for SPP and register with SDP
-    //sdp_init();
-    memset(spp_service_buffer, 0, sizeof(spp_service_buffer));
-    spp_create_sdp_record(spp_service_buffer, sdp_create_service_record_handle(), RFCOMM_SERVER_CHANNEL, "SPP Counter");
-    btstack_assert(de_get_len( spp_service_buffer) <= sizeof(spp_service_buffer));
-    sdp_register_service(spp_service_buffer);
-}
-/* LISTING_END */
-
-/* @section Periodic Timer Setup
- * 
- * @text The heartbeat handler increases the real counter every second, 
- * and sends a text string with the counter value, as shown in Listing PeriodicCounter. 
- */
-
-/* LISTING_START(PeriodicCounter): Periodic Counter */ 
-static btstack_timer_source_t heartbeat;
-static char lineBuffer[30];
-static void  heartbeat_handler(struct btstack_timer_source *ts){
-    static int counter = 0;
-
-    if (rfcomm_channel_id){
-        snprintf(lineBuffer, sizeof(lineBuffer), "BTstack counter %04u\n", ++counter);
-        printf("%s", lineBuffer);
-
-        rfcomm_request_can_send_now_event(rfcomm_channel_id);
-    }
-
-    btstack_run_loop_set_timer(ts, HEARTBEAT_PERIOD_MS);
-    btstack_run_loop_add_timer(ts);
-} 
-
-static void one_shot_timer_setup(void){
-    // set one-shot timer
-    heartbeat.process = &heartbeat_handler;
-    btstack_run_loop_set_timer(&heartbeat, HEARTBEAT_PERIOD_MS);
-    btstack_run_loop_add_timer(&heartbeat);
-}
-/* LISTING_END */
+static uint8_t lineBuffer[128];
+static uint_fast16_t lineBuffer_len;
 
 
 /* @section Bluetooth Logic 
@@ -190,17 +109,17 @@ static void one_shot_timer_setup(void){
  */ 
 
 /* LISTING_START(SppServerPacketHandler): SPP Server - Heartbeat Counter over RFCOMM */
-static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
+static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
     UNUSED(channel);
 
 /* LISTING_PAUSE */ 
     bd_addr_t event_addr;
-    uint8_t   rfcomm_channel_nr;
     uint16_t  mtu;
     int i;
-    //printhex(0xFFFF0000, packet, size);
+
     switch (packet_type) {
         case HCI_EVENT_PACKET:
+            //printf("spp_counter: parse HCI event 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
             switch (hci_event_packet_get_type(packet)) {
 /* LISTING_RESUME */ 
 //                case HCI_EVENT_PIN_CODE_REQUEST:
@@ -217,68 +136,200 @@ static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *pack
 //                    break;
 
                 case RFCOMM_EVENT_INCOMING_CONNECTION:
-                    rfcomm_event_incoming_connection_get_bd_addr(packet, event_addr);
-                    rfcomm_channel_nr = rfcomm_event_incoming_connection_get_server_channel(packet);
-                    rfcomm_channel_id = rfcomm_event_incoming_connection_get_rfcomm_cid(packet);
-                    printf("RFCOMM channel %u requested for %s\n", rfcomm_channel_nr, bd_addr_to_str(event_addr));
-                    rfcomm_accept_connection(rfcomm_channel_id);
+					{
+					    uint8_t   rfcomm_channel_nr;
+						rfcomm_event_incoming_connection_get_bd_addr(packet, event_addr);
+						rfcomm_channel_nr = rfcomm_event_incoming_connection_get_server_channel(packet);
+						rfcomm_channel_id = rfcomm_event_incoming_connection_get_rfcomm_cid(packet);
+						printf("spp_counter: RFCOMM channel %u requested for %s\n", rfcomm_channel_nr, bd_addr_to_str(event_addr));
+						rfcomm_accept_connection(rfcomm_channel_id);
+					}
                     break;
                
                 case RFCOMM_EVENT_CHANNEL_OPENED:
                     if (rfcomm_event_channel_opened_get_status(packet)) {
-                        printf("RFCOMM channel open failed, status 0x%02x\n", rfcomm_event_channel_opened_get_status(packet));
+                        printf("spp_counter: RFCOMM channel open failed, status 0x%02x\n", rfcomm_event_channel_opened_get_status(packet));
                     } else {
                         rfcomm_channel_id = rfcomm_event_channel_opened_get_rfcomm_cid(packet);
                         mtu = rfcomm_event_channel_opened_get_max_frame_size(packet);
-                        printf("RFCOMM channel open succeeded. New RFCOMM Channel ID %u, max frame size %u\n", rfcomm_channel_id, mtu);
+                        printf("spp_counter: RFCOMM channel open succeeded. New RFCOMM Channel ID %u, max frame size %u\n", rfcomm_channel_id, mtu);
+                    	btspptxbusy = 0;
                     }
                     break;
                 case RFCOMM_EVENT_CAN_SEND_NOW:
-                    rfcomm_send(rfcomm_channel_id, (uint8_t*) lineBuffer, (uint16_t) strlen(lineBuffer));  
+                    rfcomm_send(rfcomm_channel_id, lineBuffer, lineBuffer_len);
                     break;
 
 /* LISTING_PAUSE */                 
                 case RFCOMM_EVENT_CHANNEL_CLOSED:
-                    printf("RFCOMM channel closed\n");
+                    printf("spp_counter: RFCOMM channel closed\n");
                     rfcomm_channel_id = 0;
                     break;
-                
+
+                case HCI_EVENT_TRANSPORT_PACKET_SENT:
+                	//printf("HCI_EVENT_TRANSPORT_PACKET_SENT\n");
+                	//printhex(0, packet, size);
+                	btspptxbusy = 0;
+                	break;
+
+                case HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS:
+                	//printf("HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS\n");
+                	break;
+                case HCI_EVENT_COMMAND_COMPLETE:
+                	// Done in port.c
+                	break;
+                case BTSTACK_EVENT_STATE:
+                	// Done in port.c
+                	break;
+                case BTSTACK_EVENT_SCAN_MODE_CHANGED:
+                	// Done in port.c
+               	break;
+            	case HCI_EVENT_COMMAND_STATUS:
+                	// Done in port.c
+            		break;
+                case HCI_EVENT_QOS_SETUP_COMPLETE:
+                    //PRINTF("port: HCI_EVENT_QOS_SETUP_COMPLETE!\n");
+                    break;
                 default:
-                    //printf("Unhandled event packet type 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
-                   break;
+                    //printf("spp_counter: Unhandled HCI event 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
+                    break;
             }
             break;
 
         case RFCOMM_DATA_PACKET:
-            printf("RCV: '");
-            for (i=0;i<size;i++){
-                putchar(packet[i]);
-            }
-            printf("'\n");
-            break;
+            //printf("RCV: '");
+//			if (size == 0)
+//        		PRINTF("Empty RFCOMM_DATA_PACKET\n");
+//        	else
+//        		printhex(0, packet, size);
+#if WITHCAT
+         	if (board_get_catmux() == BOARD_CATMUX_BTSPP)
+         	{
+         		unsigned i;
+         		for (i = 0; btsppenablerx && i < size; ++ i)
+         		{
+         			btspp_parsechar(packet [i]);
+         		}
+         	}
+#endif
+           break;
 
         default:
-            //printf("Unhandled packet type 0x%02X\n", (unsigned) packet_type);
+            printf("spp_counter: Unhandled RFCOMM packet 0x%02X\n", (unsigned) packet_type);
             break;
     }
-/* LISTING_RESUME */ 
 }
-/* LISTING_END */
 
-int btstack_main(int argc, const char * argv[]);
-int spp_counter_btstack_main(int argc, const char * argv[]){
-    (void)argc;
-    (void)argv;
+/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
+void btspp_tx(void * ctx, uint_fast8_t c)
+{
 
-    one_shot_timer_setup();
-    spp_service_setup();
-
-    //gap_discoverable_control(1);
-    //gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
-    //gap_set_local_name(WITHBRANDSTR " SPP Counter 00:00:00:00:00:00");
-    
-    return 0;
 }
-/* EXAMPLE_END */
+/* вызывается из обработчика прерываний */
+void btspp_enabletx(uint_fast8_t state)
+{
+	btsppenabletx = state;
+}
+
+/* вызывается из обработчика прерываний */
+void btspp_enablerx(uint_fast8_t state)
+{
+	btsppenablerx = state;
+}
+
+void
+cat_answervariable_btspp(const char * p, uint_fast8_t len)
+{
+    if (rfcomm_channel_id){
+    	const uint_fast16_t chunk = ulmin16(len, sizeof lineBuffer);
+    	memcpy(lineBuffer, p, chunk);	// Подготовка буфера для передачи по RFCOMM_EVENT_CAN_SEND_NOW
+    	lineBuffer_len = chunk;
+        rfcomm_request_can_send_now_event(rfcomm_channel_id);
+        //printhex(0, lineBuffer, lineBuffer_len);
+    	btspptxbusy = 1;
+    	//PRINTF("rfcomm_channel_id=0x%02X\n", (unsigned) rfcomm_channel_id);
+    }
+}
+
+uint_fast8_t
+cat_answer_ready_btspp(void)
+{
+	return ! btspptxbusy;
+}
+
+static btstack_packet_callback_registration_t hci_event_callback_registration;
+
+
+/* @section SPP Service Setup
+ *s
+ * @text To provide an SPP service, the L2CAP, RFCOMM, and SDP protocol layers
+ * are required. After setting up an RFCOMM service with channel nubmer
+ * SPP_COUNTER_RFCOMM_SERVER_CHANNEL, an SDP record is created and registered with the SDP server.
+ * Example code for SPP service setup is
+ * provided in Listing SPPSetup. The SDP record created by function
+ * spp_create_sdp_record consists of a basic SPP definition that uses the provided
+ * RFCOMM channel ID and service name. For more details, please have a look at it
+ * in \path{src/sdp_util.c}.
+ * The SDP record is created on the fly in RAM and is deterministic.
+ * To preserve valuable RAM, the result could be stored as constant data inside the ROM.
+ */
+
+/* LISTING_START(SPPSetup): SPP service setup */
+void spp_service_setup(void)
+{
+
+    // register for HCI events
+    hci_event_callback_registration.callback = &spp_packet_handler;
+    hci_add_event_handler(&hci_event_callback_registration);
+
+    //l2cap_init();	// перенесено в port.c
+
+#ifdef ENABLE_BLE
+    // Initialize LE Security Manager. Needed for cross-transport key derivation
+    sm_init();
+#endif
+
+    //rfcomm_init();	// перенесено в port.c
+    VERIFY(ERROR_CODE_SUCCESS == rfcomm_register_service(spp_packet_handler, SPP_COUNTER_RFCOMM_SERVER_CHANNEL, 0xffff));  // reserved channel, mtu limited by l2cap
+
+    // init SDP, create record for SPP and register with SDP
+    //sdp_init();	// перенесено в port.c
+    memset(spp_service_buffer, 0, sizeof(spp_service_buffer));
+    spp_create_sdp_record(spp_service_buffer, sdp_create_service_record_handle(), SPP_COUNTER_RFCOMM_SERVER_CHANNEL, "SPP Counter");
+    btstack_assert(de_get_len( spp_service_buffer) <= sizeof(spp_service_buffer));
+//    unsigned ec = sdp_register_service(spp_service_buffer);
+//    PRINTF("ec=0x%02X\n", ec);
+//    ASSERT(ec==0);
+    VERIFY(0 == sdp_register_service(spp_service_buffer));
+}
+
+#else  /* WITHUSEUSBBT */
+
+/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
+void btspp_tx(void * ctx, uint_fast8_t c)
+{
+
+}
+/* вызывается из обработчика прерываний */
+void btspp_enabletx(uint_fast8_t state)
+{
+
+}
+
+/* вызывается из обработчика прерываний */
+void btspp_enablerx(uint_fast8_t state)
+{
+
+}
+
+void
+cat_answervariable_btspp(const char * p, uint_fast8_t len)
+{
+}
+
+uint_fast8_t cat_answer_ready_btspp(void)
+{
+	return 1;
+}
 
 #endif /* WITHUSEUSBBT */

@@ -42,6 +42,7 @@
 #if WITHUSEUSBBT
 
 #include "buffers.h"
+#include "audio.h"
 
 #include "port.h"
 
@@ -69,90 +70,8 @@
 #include "hci_dump_embedded_stdout.h"
 #endif
 
+static int btactive;
 
-int glob_btenable;
-/**
-  * @brief  Initializes wave recording.
-  * @param  AudioFreq: Audio frequency to be configured for the I2S peripheral.
-  * @param  BitRes: Audio frequency to be configured for the I2S peripheral.
-  * @param  ChnlNbr: Audio frequency to be configured for the I2S peripheral.
-  * @retval AUDIO_OK if correct communication, else wrong communication
-  */
-uint8_t BSP_AUDIO_IN_Init(uint32_t AudioFreq, uint32_t BitRes, uint32_t ChnlNbr)
-{
-
-//#if 0
-//  // BK: only do PLL clock configuration in sink
-//  /* Configure PLL clock */
-//  BSP_AUDIO_IN_ClockConfig(&hAudioInI2s, AudioFreq, NULL);
-//#endif
-//
-//  /* Configure the PDM library */
-//  PDMDecoder_Init(AudioFreq, ChnlNbr);
-//
-//  /* Configure the I2S peripheral */
-//  hAudioInI2s.Instance = I2S2;
-//  if(HAL_I2S_GetState(&hAudioInI2s) == HAL_I2S_STATE_RESET)
-//  {
-//    /* Initialize the I2S Msp: this __weak function can be rewritten by the application */
-//    BSP_AUDIO_IN_MspInit(&hAudioInI2s, NULL);
-//  }
-//
-//  /* Configure the I2S2 */
-//  I2S2_Init(AudioFreq);
-//
-  /* Return AUDIO_OK when all operations are correctly done */
-  return 0;//AUDIO_OK;
-}
-
-
-/**
-  * @brief  Stops audio recording.
-  * @retval AUDIO_OK if correct communication, else wrong communication
-  */
-uint8_t BSP_AUDIO_IN_Stop(void)
-{
-//  uint32_t ret = AUDIO_ERROR;
-//
-//  /* Call the Media layer pause function */
-//  HAL_I2S_DMAStop(&hAudioInI2s);
-
-  /* Return AUDIO_OK when all operations are correctly done */
-//  ret = AUDIO_OK;
-
-  return 0;//AUDIO_OK;
-}
-
-
-/**
-  * @brief  Starts audio recording.
-  * @param  pbuf: Main buffer pointer for the recorded data storing
-  * @param  size: Current size of the recorded buffer
-  * @retval AUDIO_OK if correct communication, else wrong communication
-  */
-uint8_t BSP_AUDIO_IN_Record(uint16_t* pbuf, uint32_t size)
-{
-//  uint32_t ret = AUDIO_ERROR;
-//
-//  /* Start the process receive DMA */
-//  HAL_I2S_Receive_DMA(&hAudioInI2s, pbuf, size);
-//
-//  /* Return AUDIO_OK when all operations are correctly done */
-//  ret = AUDIO_OK;
-
-  return 0;//ret;
-}
-
-/**
-  * @brief  Retrive the audio frequency.
-  * @retval AudioFreq: Audio frequency used to play the audio stream.
-  * @note   This API should be called after the BSP_AUDIO_OUT_Init() to adjust the
-  *         audio frequency.
-  */
-uint32_t BSP_AUDIO_OUT_GetFrequency(uint32_t AudioFreq)
-{
-  return 48000;//bsp_audio_out_frequency;
-}
 
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 static btstack_tlv_flash_bank_t btstack_tlv_flash_bank_context;
@@ -166,9 +85,9 @@ static btstack_tlv_flash_bank_t btstack_tlv_flash_bank_context;
 
 // hal_cpu.h implementation
 #include "hal_cpu.h"
-
+#if 1
 void hal_cpu_disable_irqs(void){
-    __disable_irq();
+	global_disableIRQ();
 }
 
 void hal_cpu_enable_irqs(void){
@@ -183,6 +102,7 @@ void hal_cpu_enable_irqs_and_sleep(void){
     //  __asm__("wfe");
 #endif
 }
+#endif
 
 //#define HAL_FLASH_BANK_SIZE (128 * 1024)
 //#define HAL_FLASH_BANK_0_ADDR 0x080C0000
@@ -193,31 +113,59 @@ void hal_cpu_enable_irqs_and_sleep(void){
 //int btstack_main(int argc, char ** argv);
 
 // main.c
-static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
+static void port_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
     UNUSED(size);
     UNUSED(channel);
     bd_addr_t local_addr;
 	bd_addr_t address;
     if (packet_type != HCI_EVENT_PACKET) return;
-    switch(hci_event_packet_get_type(packet)){
+//#if 1
+//    PRINTF("port_packet_handler: hci_event=0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
+//    return;
+//#endif
+    switch(hci_event_packet_get_type(packet))
+    {
+    case BTSTACK_EVENT_SCAN_MODE_CHANGED:
+        PRINTF("port: BTSTACK_EVENT_SCAN_MODE_CHANGED\n");
+    	break;
     case BTSTACK_EVENT_STATE:
-        if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING) return;
-        gap_local_bd_addr(local_addr);
-        PRINTF("BTstack up and running on %s.\n", bd_addr_to_str(local_addr));
-        break;
+        switch (btstack_event_state_get_state(packet))
+		{
+		case HCI_STATE_INITIALIZING:
+			PRINTF("port: HCI_STATE_INITIALIZING\n");
+			break;
+		case HCI_STATE_WORKING:
+			gap_local_bd_addr(local_addr);
+			PRINTF("port: BTstack up and running on %s.\n", bd_addr_to_str(local_addr));
+			break;
+		default:
+			PRINTF("port: BTstack hci_state=%u.\n", (unsigned) btstack_event_state_get_state(packet));
+			break;
+		}
+		break;
+	case HCI_EVENT_COMMAND_STATUS:
+		break;
+
     case HCI_EVENT_PIN_CODE_REQUEST:
-        PRINTF("Pin code request - using '0000'\n");
+        PRINTF("port: Pin code request - using '0000'\n");
         hci_event_pin_code_request_get_bd_addr(packet, address);
         gap_pin_code_response(address, "0000");
         break;
     case GAP_EVENT_PAIRING_COMPLETE:
-        PRINTF("Paired!\n");
+        PRINTF("port: Paired!\n");
         break;
+    case HCI_EVENT_QOS_SETUP_COMPLETE:
+        //PRINTF("port: HCI_EVENT_QOS_SETUP_COMPLETE!\n");
+        break;
+
     case HCI_EVENT_USER_CONFIRMATION_REQUEST:
         // ssp: inform about user confirmation request
-        PRINTF("User Confirmation Request with numeric value '%06" PRIu32 "'\n", little_endian_read_32(packet, 8));
-        PRINTF("User Confirmation Auto accept\n");
+        PRINTF("port: User Confirmation Request with numeric value '%06" PRIu32 "'\n", little_endian_read_32(packet, 8));
+        PRINTF("port: User Confirmation Auto accept\n");
         break;
+    case HCI_EVENT_DISCONNECTION_COMPLETE:
+        PRINTF("port: Disconnection!\n");
+    	break;
 	default:
 		break;
     }
@@ -240,30 +188,19 @@ static uint32_t hal_fram_get_alignment(void * context){
     return 1;
 }
 
-static void hal_fram_erase(void * context, int bank){
-//	hal_flash_bank_t * self = (hal_flash_bank_t *) context;
-	if (bank > 1) return;
-//	PRINTF("hal_fram_erase: bank=%u\n", (unsigned) bank);
-//	FLASH_EraseInitTypeDef eraseInit;
-//	eraseInit.TypeErase = FLASH_TYPEERASE_SECTORS;
-//	eraseInit.Sector = self->sectors[bank];
-//	eraseInit.NbSectors = 1;
-//	eraseInit.VoltageRange = FLASH_VOLTAGE_RANGE_1;	// safe value
-//	uint32_t sectorError;
-//	HAL_FLASH_Unlock();
-//	HAL_FLASHEx_Erase(&eraseInit, &sectorError);
-//	HAL_FLASH_Lock();
+static void hal_fram_erase(void * context, int bank)
+{
+//	PRINTF("hal_fram_erase:\n");
+//	unsigned tlvbase;
+//	const unsigned tlvsize = nvram_tlv_getparam(& tlvbase);
+//	for (unsigned i = 0; i < tlvsize; ++ i)
+//	{
+//		save_i8(tlvbase + i, 0xFF);
+//	}
 }
 
-static void hal_fram_read(void * context, int bank, uint32_t offset, uint8_t * buffer, uint32_t size){
-//	hal_flash_bank_t * self = (hal_flash_bank_t *) context;
-//
-//	if (bank > 1) return;
-//	if (offset > self->sector_size) return;
-//	if ((offset + size) > self->sector_size) return;
-//
-//	memcpy(buffer, ((uint8_t *) self->banks[bank]) + offset, size);
-//	memset(buffer, 0, size);
+static void hal_fram_read(void * context, int bank, uint32_t offset, uint8_t * buffer, uint32_t size)
+{
 	//PRINTF("hal_fram_read: bank=%u, off=%u, size=%u\n", (unsigned) bank, (unsigned) offset, (unsigned) size);
 	unsigned tlvbase;
 	const unsigned tlvsize = nvram_tlv_getparam(& tlvbase);
@@ -301,13 +238,12 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 };
 
 //////////////////////////////////////////////
-#define BTSSCALE 20
 
-#define DRIVER_POLL_INTERVAL_MS          (BTSSCALE * 10)
+#define DRIVER_POLL_INTERVAL_MS          ((BTSSCALE * 10) - 1)	// вызов раз в 10 мс btstack_run_loop_embedded_execute_once
 
 // client
-static void (*playback_callback)(int16_t * buffer, uint16_t num_samples);
-static void (*recording_callback)(const int16_t * buffer, uint16_t num_samples);
+static void (*playback_callback)(int16_t * buffer, uint16_t num_samples);	// получаем сэмплы для воспроизвеление
+static void (*recording_callback)(const int16_t * buffer, uint16_t num_samples);	// отдаем сэмплы из трансивера
 
 // timer to fill output ring buffer
 static btstack_timer_source_t  driver_timer_sink;
@@ -317,6 +253,8 @@ static int source_active;
 static int sink_active;
 static uint32_t sink_samplerate;
 static uint32_t source_samplerate;
+static uint32_t sink_channels;
+static uint32_t source_channels;
 
 static int btstack_audio_storch_sink_init(
     uint8_t channels,
@@ -336,12 +274,13 @@ static int btstack_audio_storch_sink_init(
 
     playback_callback  = playback;
     sink_samplerate = samplerate;
+    sink_channels = channels;
     //hal_audio_sink_init(channels, samplerate, &btstack_audio_audio_played);
 
     return 0;
 }
 
-
+// Звук в трансивер
 static void driver_timer_handler_sink(btstack_timer_source_t * ts){
 
 	//PRINTF("%s:\n", __func__);
@@ -350,27 +289,30 @@ static void driver_timer_handler_sink(btstack_timer_source_t * ts){
 	{
 	case 44100:
 		addr = allocate_dmabufferbtout44p1k();
-		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout44p1k() / sizeof (int16_t) / 2);
-		//printhex(0, (int16_t *) addr, datasize_dmabufferbtout44p1());
+		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout44p1k() / sizeof (int16_t) / sink_channels);
+		//printhex(0, (int16_t *) addr, datasize_dmabufferbtout44p1k());
 		save_dmabufferbtout44p1k(addr);
 		break;
 	case 32000:
 		addr = allocate_dmabufferbtout32k();
-		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout32k() / sizeof (int16_t) / 2);
+		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout32k() / sizeof (int16_t) / sink_channels);
 		//printhex(0, (int16_t *) addr, datasize_dmabufferbtout32k());
 		save_dmabufferbtout32k(addr);
 		break;
 	case 16000:
 		addr = allocate_dmabufferbtout16k();
-		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout16k() / sizeof (int16_t) / 1);
+		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout16k() / sizeof (int16_t) / sink_channels);
 		//printhex(0, (int16_t *) addr, datasize_dmabufferbtout16k());
 		save_dmabufferbtout16k(addr);
 		break;
 	case 8000:
 		addr = allocate_dmabufferbtout8k();
-		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout8k() / sizeof (int16_t) / 1);
+		(*playback_callback)((int16_t *) addr, datasize_dmabufferbtout8k() / sizeof (int16_t) / sink_channels);
 		//printhex(0, (int16_t *) addr, datasize_dmabufferbtout16k());
 		save_dmabufferbtout8k(addr);
+		break;
+	default:
+		TP();
 		break;
 	}
     // playback buffer ready to fill
@@ -387,6 +329,7 @@ static void driver_timer_handler_sink(btstack_timer_source_t * ts){
     btstack_run_loop_add_timer(ts);
 }
 
+// Звук из трансивера
 static void driver_timer_handler_source(btstack_timer_source_t * ts){
 	//PRINTF("%s:\n", __func__);
    // recording buffer ready to process
@@ -405,7 +348,7 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 		if (addr != 0)
 		{
 			ASSERT(recording_callback != NULL);
-			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin44p1k() / sizeof (int16_t) / 2);
+			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin44p1k() / sizeof (int16_t) / source_channels);
 			release_dmabufferbtin44p1k(addr);
 		}
 		break;
@@ -414,7 +357,7 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 		if (addr != 0)
 		{
 			ASSERT(recording_callback != NULL);
-			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin32k() / sizeof (int16_t) / 2);
+			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin32k() / sizeof (int16_t) / source_channels);
 			release_dmabufferbtin32k(addr);
 		}
 		break;
@@ -423,7 +366,7 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 		if (addr != 0)
 		{
 			ASSERT(recording_callback != NULL);
-			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin16k() / sizeof (int16_t) / 1);
+			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin16k() / sizeof (int16_t) / source_channels);
 			release_dmabufferbtin16k(addr);
 		}
 		break;
@@ -432,9 +375,12 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 		if (addr != 0)
 		{
 			ASSERT(recording_callback != NULL);
-			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin8k() / sizeof (int16_t) / 1);
+			(*recording_callback)((int16_t *) addr, datasize_dmabufferbtin8k() / sizeof (int16_t) / source_channels);
 			release_dmabufferbtin8k(addr);
 		}
+		break;
+	default:
+		TP();
 		break;
 	}
 
@@ -445,7 +391,7 @@ static void driver_timer_handler_source(btstack_timer_source_t * ts){
 }
 
 static uint32_t btstack_audio_storch_sink_get_samplerate(void) {
-    return 48000;//BSP_AUDIO_OUT_GetFrequency();
+    return ARMSAIRATE;//BSP_AUDIO_OUT_GetFrequency();
 }
 
 static int btstack_audio_storch_source_init(
@@ -459,8 +405,10 @@ static int btstack_audio_storch_source_init(
         return 1;
     }
 
+    PRINTF("btstack_audio_storch_source_init: channels=%u, samplerate=%u\n", (unsigned) channels, (unsigned) samplerate);
     recording_callback  = recording;
     source_samplerate = samplerate;
+    source_channels = channels;
 //    hal_audio_source_init(channels, samplerate, &btstack_audio_audio_recorded);
 
     return 0;
@@ -593,8 +541,15 @@ const btstack_audio_source_t * btstack_audio_storch_source_get_instance(void){
 }
 
 
+uint_fast8_t hamradio_get_usbbth_active(void)
+{
+	return btactive;
+}
+
 void tuh_bth_mount_cb(uint8_t idx)
 {
+	if (btactive)
+		return;
 	PRINTF("tuh_bth_mount_cb: idx=%u\n", idx);
     // start with BTstack init - especially configure HCI Transport
     btstack_memory_init();
@@ -637,67 +592,97 @@ void tuh_bth_mount_cb(uint8_t idx)
 	btstack_audio_sink_set_instance(btstack_audio_storch_sink_get_instance());
 	btstack_audio_source_set_instance(btstack_audio_storch_source_get_instance());
 
-//    // inform about BTstack state
-//    hci_event_callback_registration.callback = &packet_handler;
-//    hci_add_event_handler(&hci_event_callback_registration);
+    // inform about BTstack state
+    hci_event_callback_registration.callback = &port_packet_handler;
+    hci_add_event_handler(&hci_event_callback_registration);
+
+    //hci_register_sco_packet_handler(&port_packet_handler);		// Used for HSP and HFP profiles.
 //
-//    sdp_init();		// везде в примерах убрать
-//    l2cap_init();	// везде в примерах убрать
-//    rfcomm_init();	// везде в примерах убрать
+    sdp_init();		// везде в примерах убрать
+    l2cap_init();	// везде в примерах убрать
+    rfcomm_init();	// везде в примерах убрать
+
 //    // Init profiles
 //    a2dp_sink_init();
 //    avrcp_init();
 //    avrcp_controller_init();
 //    avrcp_target_init();
 
+	// https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-54/out/en/host/generic-access-profile.html
+
+
     // hand over to btstack embedded code
-    //VERIFY(! spp_counter_btstack_main(0, NULL));
     //VERIFY(! a2dp_source_btstack_main(0, NULL));
-    VERIFY(! a2dp_sink_btstack_main(0, NULL));
-    //VERIFY(! hfp_hf_btstack_main(0, NULL));
-    //VERIFY(! hsp_hs_btstack_main(0, NULL));
-    //VERIFY(! spp_streamer_btstack_main(0, NULL));
+    VERIFY(! a2dp_sink_btstack_main(0, NULL));	// Тарнсивер получает звук - стерео, 44100
+    //VERIFY(! hfp_hf_btstack_main(0, NULL));			// Трансивер выглядит как гарнитура - двунаправленная передача, 16000, моно
+    spp_service_setup();	// трансивер виден как два serial порта
 
     //gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
     gap_set_local_name(WITHBRANDSTR " BTx");
     gap_discoverable_control(1);
-//    //gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
-//    gap_ssp_set_io_capability(SSP_IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
-//    // turn on!
+
+    //gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
+    gap_ssp_set_io_capability(SSP_IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
+
+    //gap_set_allow_role_switch(true);
+
+    // turn on!
     hci_power_control(HCI_POWER_ON);
 
     // go
     //btstack_run_loop_execute();
+    btactive = 1;
 }
 
+uint_fast8_t buffers_get_btoutactive(void)
+{
+	return 0;
+}
 
 void tuh_bth_umount_cb(uint8_t idx)
 {
 	PRINTF("tuh_bth_umount_cb: idx=%u\n", idx);
-    //hci_power_control(HCI_POWER_OFF);
-	hci_remove_event_handler(&hci_event_callback_registration);
-	hci_deinit();
-//	btstack_run_loop_deinit();
-//	btstack_memory_deinit();
-//	ASSERT(0);
+	if (btactive)
+	{
+	    btactive = 0;
+
+	    rfcomm_deinit();
+	    l2cap_deinit();
+	    sdp_deinit();
+	    //hci_power_control(HCI_POWER_OFF);
+		hci_remove_event_handler(&hci_event_callback_registration);
+//		hci_deinit();
+		btstack_run_loop_deinit();
+		btstack_memory_deinit();
+	//	ASSERT(0);
+	}
+}
+
+static void dpc_0p01_s_timer_fn(void * ctx)
+{
+	if (btactive)
+		btstack_run_loop_embedded_execute_once();
 }
 
 /* Bluetooth initialize */
 void bt_initialize(void)
 {
 #if ! WITHTINYUSB
+	// For stm32 host library support
 	PRINTF("bt_initialize start\n");
 	tuh_bth_mount_cb(1);
 	PRINTF("bt_initialize done\n");
 #endif
-}
 
-/* Bluetooth enable */
-void bt_enable(uint_fast8_t v)
-{
-	glob_btenable = !! v;
-}
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;
 
+		dpcobj_initialize(& dpcobj, dpc_0p01_s_timer_fn, NULL);
+		ticker_initialize_user(& ticker, NTICKS(10), & dpcobj);
+		ticker_add(& ticker);
+	}
+}
 
 #else  /* WITHUSEUSBBT */
 
@@ -706,9 +691,14 @@ void bt_initialize(void)
 
 }
 
-void bt_enable(uint_fast8_t v)
+uint_fast8_t hamradio_get_usbbth_active(void)
 {
+	return 0;
+}
 
+uint_fast8_t buffers_get_btoutactive(void)
+{
+	return 0;
 }
 
 #endif /* WITHUSEUSBBT */

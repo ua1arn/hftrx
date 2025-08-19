@@ -15,10 +15,10 @@
 #define IS_AREA_TOUCHED 		(type == TYPE_TOUCH_AREA && action == PRESSED)
 #define IS_AREA_MOVE	 		(type == TYPE_TOUCH_AREA && action == MOVING)
 
-#define GET_FROM_WM_QUEUE		uint_fast8_t type;	\
-								int_fast8_t action;	\
-								uintptr_t ptr;		\
-								switch (get_from_wm_queue(win, & type, & ptr, & action))
+#define GET_FROM_WM_QUEUE(W)	uint8_t type;	\
+								int8_t action;	\
+								char name[NAME_ARRAY_SIZE];		\
+								switch (get_from_wm_queue(W, & type, & action, name))
 
 typedef enum {
 	TYPE_DUMMY,
@@ -28,7 +28,7 @@ typedef enum {
 	TYPE_CLOSE_BUTTON,
 	TYPE_TOUCH_AREA,
 	TYPE_TEXT_FIELD
-} element_type_t;
+} obj_type_t;
 
 enum {
 	PRESSED,						// нажато
@@ -62,7 +62,8 @@ enum {
 };
 
 enum {
-	NO_PARENT_WINDOW = UINT8_MAX,
+	NO_PARENT_WINDOW = 0,
+	WINDOW_DUMMY = NO_PARENT_WINDOW,
 };
 
 enum {
@@ -83,13 +84,40 @@ enum {
 	NAME_ARRAY_SIZE = 40,
 	MENU_ARRAY_SIZE = 50,
 	TEXT_ARRAY_SIZE = 70,
-	GUI_ELEMENTS_ARRAY_SIZE = 60
+	GUI_OBJECTS_ARRAY_SIZE = 60
 };
 
 typedef enum {
 	UP,
 	DOWN,
 } tf_direction_t;
+
+typedef enum {
+	ALIGN_RIGHT_UP,
+	ALIGN_RIGHT_UP_MID,
+	ALIGN_LEFT_UP,
+	ALIGN_DOWN_LEFT,
+	ALIGN_DOWN_MID,
+	ALIGN_DOWN_RIGHT,
+} object_alignment_t;
+
+typedef enum {
+	GUI_OBJ_VISIBLE,
+	GUI_OBJ_TEXT,
+	GUI_OBJ_TEXT_FMT,
+	GUI_OBJ_POS_X,
+	GUI_OBJ_POS_Y,
+	GUI_OBJ_POS,
+	GUI_OBJ_PAYLOAD,
+	GUI_OBJ_STATE,
+	GUI_OBJ_LOCK,
+	GUI_OBJ_COLOR,
+	GUI_OBJ_WIDTH,
+	GUI_OBJ_HEIGHT,
+	GUI_OBJ_SIZE,
+	GUI_OBJ_REPEAT,
+	GUI_OBJ_INDEX,
+} object_prop_t;
 
 typedef struct {
 	uint16_t w;
@@ -114,7 +142,7 @@ typedef struct {
 	uint8_t visible;
 	tf_direction_t direction;
 	UB_Font * font;		// NULL - SMALLCHAR2
-	char name [NAME_ARRAY_SIZE];
+	char name[NAME_ARRAY_SIZE];
 	uint8_t index;
 	tf_entry_t * string;
 	uint16_t x1;
@@ -129,7 +157,7 @@ typedef struct {
 	uint8_t visible;
 	uint8_t is_trackable;
 	int32_t payload;
-	char name [NAME_ARRAY_SIZE];
+	char name[NAME_ARRAY_SIZE];
 	uint8_t index;
 	uint16_t x1;
 	uint16_t y1;
@@ -147,8 +175,8 @@ typedef struct {
 	uint8_t parent;					// индекс окна, в котором будет отображаться кнопка
 	uint8_t visible;				// рисовать ли кнопку на экране
 	int32_t payload;
-	char name [NAME_ARRAY_SIZE];
-	char text [TEXT_ARRAY_SIZE]; 	// текст внутри кнопки, разделитель строк |, не более 2х строк
+	char name[NAME_ARRAY_SIZE];
+	char text[TEXT_ARRAY_SIZE]; 	// текст внутри кнопки, разделитель строк |, не более 2х строк
 	uint8_t index;
 	uint16_t x1;					// координаты от начала окна
 	uint16_t y1;
@@ -165,13 +193,15 @@ typedef struct {
 	uint8_t state;
 	uint8_t is_trackable;
 	uint8_t visible;
-	char name [NAME_ARRAY_SIZE];
-	char text [TEXT_ARRAY_SIZE];
+	char name[NAME_ARRAY_SIZE];
+	char text[TEXT_ARRAY_SIZE];
 	font_size_t font_size;
 	PACKEDCOLORPIP_T color;
+	int32_t payload;
 	uint8_t index;
 	uint8_t width;			// ширина в символах
 	uint16_t width_pix;		// ширина в пикселях
+	uint16_t height_pix;
 	uint16_t x;
 	uint16_t y;
 } label_t;
@@ -184,14 +214,16 @@ typedef enum  {
 typedef struct {
 	orientation_t orientation;
 	uint8_t parent;
-	char name [NAME_ARRAY_SIZE];
+	char name[NAME_ARRAY_SIZE];
 	uint8_t state;
 	uint8_t visible;
 	uint16_t size;					// длина шкалы в пикселях
 	uint8_t value;					// 0..100 %
 	uint8_t value_old;				// для перерасчетов при изменении значения
 	uint16_t value_p;				// в пикселях от начала шкалы
-	float step;
+	uint8_t step;
+	uint16_t width;
+	uint16_t height;
 	uint8_t index;
 	uint16_t x;
 	uint16_t y;
@@ -225,9 +257,9 @@ typedef enum {
 
 typedef struct {
 	wm_message_t message;			// тип сообщения
-	element_type_t type;			// тип элемента
-	uintptr_t ptr;
-	int_fast8_t action;
+	obj_type_t type;				// тип элемента
+	int8_t action;
+	char name[NAME_ARRAY_SIZE];
 } wm_data_t;
 
 typedef struct {					// очередь сообщений окнам от WM о взаимодействии с элементами GUI
@@ -240,7 +272,7 @@ typedef struct {
 	const uint8_t window_id;		// в окне будут отображаться элементы с соответствующим полем for_window
 	uint8_t parent_id;				// UINT8_MAX - нет parent window
 	window_align_t align_mode;		// вертикаль выравнивания окна
-	char title [NAME_ARRAY_SIZE];	// текст, выводимый в заголовке окна
+	char title[NAME_ARRAY_SIZE];	// текст, выводимый в заголовке окна
 	uint8_t is_close;				// разрешение или запрет вывода кнопки закрытия окна
 	void (*onVisibleProcess) (void);
 //	*** служебные и автоматически заполняемые элементы структуры ***
@@ -271,7 +303,7 @@ typedef struct {
 } window_t;
 
 typedef struct {
-	element_type_t type;			// тип элемента, поддерживающего реакцию на касания
+	obj_type_t type;			// тип элемента, поддерживающего реакцию на касания
 	window_t * win;					// указатель на parent window
 	void * link;					// указатель на запись массива окна с описанием элемента
 	uint8_t state;					// текущее состояние элемента
@@ -283,13 +315,13 @@ typedef struct {
 	uint16_t y1;
 	uint16_t x2;
 	uint16_t y2;
-} gui_element_t;
+} gui_object_t;
 
 typedef struct {
 	uint16_t last_pressed_x; 	  	// последняя точка касания экрана
 	uint16_t last_pressed_y;
-	element_type_t selected_type; 	// тип последнего выбранного элемента
-	gui_element_t * selected_link;	// ссылка на выбранный элемент
+	obj_type_t selected_type; 	// тип последнего выбранного элемента
+	gui_object_t * selected_link;	// ссылка на выбранный элемент
 	uint8_t state;				  	// последнее состояние
 	uint8_t is_touching_screen;   	// есть ли касание экрана в данный момент
 	uint8_t is_after_touch; 	  	// есть ли касание экрана после выхода точки касания из элемента (при is_tracking == 0)
@@ -298,6 +330,7 @@ typedef struct {
 	int16_t vector_move_y;
 	uint8_t win[WIN_GUI_COUNT];		// на экране не более 2х окон, одно из которых - основное на весь экран
 	uint8_t footer_buttons_count;
+	const gxdrawb_t * gdb;
 } gui_t;
 
 #endif /* WITHTOUCHGUI */

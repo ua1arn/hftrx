@@ -443,8 +443,8 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED 		(allwnr_a64_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	(allwnr_a64_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	typedef enum {
 		GPIO_CFG_IN  = 0x00,
@@ -488,8 +488,8 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED 		(allwnr_a133_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	(allwnr_a133_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	typedef enum {
 		GPIO_CFG_IN  = 0x00,
@@ -518,7 +518,6 @@ extern "C" {
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
 	#define CPU_FREQ	(allwnr_t507_get_cpux_freq())
-	//#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
 	#define HARDWARE_UART_FREQ (allwnr_t507_get_uart_freq())
 
 	#define CPU_PL1_FREQ (allwnr_t507_get_hosc_freq())	/* PL1 times source frequency */
@@ -533,8 +532,8 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED 		(allwnr_t507_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	(allwnr_t507_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	typedef enum {
 		GPIO_CFG_IN  = 0x00,
@@ -575,8 +574,8 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED 		(allwnr_t113_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	(allwnr_t113_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	typedef enum {
 		GPIO_CFG_IN  = 0x00,
@@ -621,8 +620,8 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED 		(allwnr_h3_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	(allwnr_h3_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	typedef enum {
 		GPIO_CFG_IN  = 0x00,
@@ -664,8 +663,8 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED 		(allwnr_v3s_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	(allwnr_v3s_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	typedef enum {
 		GPIO_CFG_IN  = 0x00,
@@ -701,8 +700,8 @@ extern "C" {
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED 		(allwnr_t113_get_hosc_freq() / 2)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 	(allwnr_t113_get_hosc_freq())	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	typedef enum {
 		GPIO_CFG_IN  = 0x00,
@@ -771,6 +770,7 @@ extern "C" {
 	#define IRQL_USER 				0
 	#define IRQL_IPC 				0
 	#define IRQL_SYSTEM 			0
+	#define IRQL_BOARD	 			0
 	#define IRQL_REALTIME 			0
 	#define IRQL_OVERREALTIME 		0
 
@@ -787,6 +787,7 @@ extern "C" {
 	extern uint32_t gARM_OVERREALTIME_PRIORITY;
 	extern uint32_t gARM_REALTIME_PRIORITY;
 	extern uint32_t gARM_SYSTEM_PRIORITY;
+	extern uint32_t gARM_BOARD_PRIORITY;
 	extern uint32_t gARM_BASEPRI_ONLY_REALTIME;
 	extern uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
 	extern uint32_t gARM_BASEPRI_ALL_ENABLED;
@@ -797,6 +798,7 @@ extern "C" {
 	#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
 	#define IRQL_USER 0xFF	// TODO: verify value
+	#define IRQL_BOARD ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 3, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 	#define IRQL_SYSTEM ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 	#define IRQL_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 	#define IRQL_OVERREALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
@@ -813,13 +815,6 @@ extern "C" {
 	}
 	*/
 
-#elif CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
-
-	typedef uint_fast8_t IRQL_t;
-
-	#define global_enableIRQ() do { sei(); } while (0)
-	#define global_disableIRQ() do { cli(); } while (0)
-
 #elif (__GIC_PRESENT == 1)
 
 	typedef uint8_t IRQL_t;
@@ -831,6 +826,7 @@ extern "C" {
 		PRIOv_OVRT,
 		PRIOv_RT,
 		PRIOv_SYS,		/* таймеры, USB */
+		PRIOv_BRD,		/* папаметы фильттров, board_set_xxx */
 		PRIOv_USER,
 		//
 		PRIOv_count
@@ -858,6 +854,7 @@ extern "C" {
 	#define IRQL_OVERREALTIME 	(GICI_ENCODE_IRQL(PRIOv_OVRT))
 	#define IRQL_REALTIME	 	(GICI_ENCODE_IRQL(PRIOv_RT))
 	#define IRQL_SYSTEM 		(GICI_ENCODE_IRQL(PRIOv_SYS))
+	#define IRQL_BOARD			(GICI_ENCODE_IRQL(PRIOv_BRD))
 	#define IRQL_USER 			(GICI_ENCODE_IRQL(PRIOv_USER))
 
 	// A lower priority value indicating a higher priority
@@ -896,10 +893,11 @@ extern "C" {
 
 	typedef uint_xlen_t IRQL_t;
 
-	#define ARM_IPC_PRIORITY			4
-	#define ARM_OVERREALTIME_PRIORITY	3	/* валкодер и телеграф */
-	#define ARM_REALTIME_PRIORITY		2	/* звук */
-	#define ARM_SYSTEM_PRIORITY			1	/* таймеры, USB */
+	#define ARM_IPC_PRIORITY			5
+	#define ARM_OVERREALTIME_PRIORITY	4	/* валкодер и телеграф */
+	#define ARM_REALTIME_PRIORITY		3	/* звук */
+	#define ARM_SYSTEM_PRIORITY			2	/* таймеры, USB */
+	#define ARM_BOARD_PRIORITY			1	/* установка параметров */
 	#define ARM_USER_PRIORITY			0	/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
 
 	#define global_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
@@ -907,6 +905,7 @@ extern "C" {
 
 	#define IRQL_USER				ARM_USER_PRIORITY
 	#define IRQL_SYSTEM 			ARM_SYSTEM_PRIORITY
+	#define IRQL_BOARD				ARM_BOARD_PRIORITY
 	#define IRQL_REALTIME 			ARM_REALTIME_PRIORITY
 	#define IRQL_OVERREALTIME		ARM_OVERREALTIME_PRIORITY
 
@@ -1343,7 +1342,6 @@ extern "C" {
 	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
-	#define DISPLAYMODES_FPS 5	/* количество обновлений отображения режимов работы */
 	#define DISPLAY_FPS	10	/* обновление показаний частоты за секунду */
 	#define DISPLAYSWR_FPS 5	/* количество обновлений SWR за секунду */
 
@@ -1389,11 +1387,10 @@ extern "C" {
 
 /* Зависимости для поределения конфигурации видеосистемы */
 
-#if LCDMODE_V2
-	/* только главный экран с двумя видеобуферами L8, без PIP */
+#if LCDMODE_PALETTE256
+	/* Экран с двумя видеобуферами L8 */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
-	//#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_PIXELSIZE 1
 
 	// 0..COLORPIP_BASE-1 - волопад
@@ -1410,11 +1407,10 @@ extern "C" {
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 
-#elif LCDMODE_V2_2PAGE
-	/* только главный экран с двумя видеобуферами L8, без PIP */
+#elif LCDMODE_PALETTE256_NO_SHADES
+	/* Экран с двумя видеобуферами L8 */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
-	//#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_PIXELSIZE 1
 
 	// 0..COLORPIP_BASE-1 - волопад
@@ -1431,38 +1427,19 @@ extern "C" {
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 
-#elif LCDMODE_V2A
-	/* только главный экран 16 бит двумя видеобуферами, без PIP */
+#elif LCDMODE_RGB565
+	/* Экран 16 бит двумя видеобуферами */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
-	//#define LCDMODE_MAIN_L8	1
-	#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_PIXELSIZE 2
 
-#elif LCDMODE_V2A_2PAGE
-	/* только главный экран 16 бит двумя видеобуферами, без PIP */
+#elif LCDMODE_ARGB8888
+	/* Экран 32 бит ARGB8888 */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
-	//#define LCDMODE_MAIN_L8	1
-	#define LCDMODE_MAIN_RGB565	1
-	#define LCDMODE_PIXELSIZE 2
-
-#elif LCDMODE_V5A
-	/* только главный экран с двумя видеобуферами 32 бит ARGB8888, без PIP */
-	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
-	//#define LCDMODE_MAIN_L8	1
-	#define LCDMODE_MAIN_ARGB8888	1
 	#define LCDMODE_PIXELSIZE 4
-
-#elif LCDMODE_V2B
-	/* только главный экран 16 бит двумя видеобуферами, без PIP */
-	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
-	//#define LCDMODE_MAIN_L8	1
-	#define LCDMODE_MAIN_RGB565	1
-	#define LCDMODE_PIXELSIZE 2
 
 #elif LCDMODE_DUMMY
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
-	//#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_PIXELSIZE 1
 
 	#define LCDMODE_PIP_PAGES	0
@@ -1476,7 +1453,7 @@ extern "C" {
 
 #define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
-#define WITHPRERENDER (1 && WITHLTDCHW && (LCDMODE_MAIN_RGB565 || LCDMODE_MAIN_ARGB8888))		/* использование предварительно построенных изображений при отображении частоты */
+#define WITHPRERENDER (1 && WITHLTDCHW && (LCDMODE_RGB565 || LCDMODE_ARGB8888))		/* использование предварительно построенных изображений при отображении частоты */
 
 #if WITHTOUCHGUI
 
@@ -1546,10 +1523,10 @@ extern "C" {
 	#error RTC_TYPE_GPS and WITHNMEA must be used in same time
 #endif /* defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_GPS) && ! defined WITHNMEA */
 
-#if LINUX_SUBSYSTEM && WITHLVGL
-	#undef WITHTOUCHGUI
-	#undef TSC1_TYPE
-#endif /* LINUX_SUBSYSTEM && WITHLVGL */
+//#if LINUX_SUBSYSTEM && WITHLVGL
+//	#undef WITHTOUCHGUI
+//	#undef TSC1_TYPE
+//#endif /* LINUX_SUBSYSTEM && WITHLVGL */
 
 #ifdef __cplusplus
 }

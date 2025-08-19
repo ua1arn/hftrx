@@ -10,24 +10,8 @@
 #include "board.h"
 #include "synthcalcs.h"
 
-// На 8-битном микропроцессоре для ускорения вычислений
-// частота округляется (отбрасываются младшие 16 бит).
-
-#if CPUSTYLE_ATMEGA || CPUSTYLE_ATXMEGA
-
-	#define BANDDIVPOWER	16	/* ~65.5 kHz granulation */
-	typedef uint_fast16_t fseltype_t;
-
-#elif CPUSTYLE_ARM || CPUSTYLE_RISCV || CPUSTYLE_UBLAZE
-
-	#define BANDDIVPOWER	0	/* 1 Hz granulation */
-	typedef uint_fast32_t fseltype_t;
-
-#else
-
-	#error Undefined CPUSTYLE_XXX
-
-#endif
+#define BANDDIVPOWER	0	/* 1 Hz granulation */
+typedef uint_fast32_t fseltype_t;
 
 #if BANDSELSTYLERE_RX3QSP
 
@@ -464,8 +448,6 @@ void bandf_calc_initialize(void)
 
 #elif \
 	CTLREGMODE_STORCH_V1 || \
-	CTLREGMODE_STORCH_V2 || \
-	CTLREGMODE_STORCH_V3 || \
 	CTLREGMODE_STORCH_V7 || \
 	CTLREGMODE_STORCH_V9 || \
 	CTLREGMODE_STORCH_V9A || \
@@ -489,7 +471,6 @@ void bandf_calc_initialize(void)
 	CTLREGMODE_RAVENDSP_V5 || \
 	CTLREGMODE_RAVENDSP_V6 || \
 	CTLREGMODE_RAVENDSP_V7 || \
-	CTLREGMODE_STORCH_V1_R4DR || \
 	CTLREGMODE_STORCH_V4 ||		/* modem only v2 */ \
 	CTLREGMODE_STORCH_V5 ||		/* mimni RX */ \
 	1 || \

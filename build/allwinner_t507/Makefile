@@ -27,8 +27,8 @@ XFEL = ./xfel_lpddr4
 #UADEFS += -D"WITHSMPSYSTEM"
 
 PRJROOT := ../..
-OBJDIR = obj
-OBJDIR64 = obj64
+OBJDIR = o
+OBJDIR64 = x
 
 # Define project name here
 PROJECT = tc1_awt507
@@ -121,18 +121,8 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
 
-ifeq (1, 1)
-# CMSIS_DSP
-SRCDIRS +=
-DINCDIR += \
-	$(CMSISDSPDIR)/Include \
-	$(CMSISDSPDIR)/ComputeLibrary/Include \
-	$(CMSISDSPDIR)/Source \
-	$(CMSISDSPDIR)/PrivateInclude
-endif
-
-# lvgl
-include ../lvgl.mak
+# cmsis-dsp
+include ../cmsis_dsp.mak
 
 ifeq (1, 1)
 # ST USB DEVICE
@@ -148,18 +138,14 @@ DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
 
-ifeq (1, 1)
 # tinyusb
-# https://github.com/hathach/tinyusb.git
-SRCDIRS += $(PRJROOT)/lib/hftrx_tinyusb/src
-DINCDIR += $(PRJROOT)/lib/hftrx_tinyusb/src
-endif
+include ../tinyusb.mak
 
-ifeq (1, 0)
+# lvgl
+include ../lvgl.mak
+
 # LuPng
-SRCDIRS += $(PRJROOT)/lib/LuPng
-DINCDIR += $(PRJROOT)/lib/LuPng
-endif
+include ../lupng.mak
 
 # FreeRTOS
 include ../freertos.mak
@@ -173,11 +159,8 @@ include ../litehtml.mak
 # LWIP
 include ../lwip.mak
 
-ifeq (1, 0)
 # custom application
-SRCDIRS += $(PRJROOT)/lib/xhelpert507
-DINCDIR += $(PRJROOT)/lib/xhelpert507
-endif
+include ../custom0.mak
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
@@ -257,12 +240,12 @@ bootloader: BOOT2
 # Take from tc1_t507_boot.map - address of SystemDRAMInit
 ifeq (1, 1)
 # T507
-SystemDRAMInit = 0x0002ece8
-SystemExecAARCH64 = 0x0002c1f0
-# H616
+SystemDRAMInit = 0x0002e0b4
+SystemExecAARCH64 = 0x0002b7e8
 else
-SystemDRAMInit = 0x0002d2cc
-SystemExecAARCH64 = 0x0002b3c0
+# H616
+SystemDRAMInit = 0x0002d298
+SystemExecAARCH64 = 0x0002b324
 endif
 
 # Invoke SystemInit 

@@ -248,9 +248,20 @@ static void ticker_trampoline(void * ctx)
 	board_dpc_call((dpcobj_t *) ctx, board_dpc_coreid());	// Запрос отложенного выполнения USER-MODE функции
 }
 
+static void ticker_trampoline_display(void * ctx)
+{
+	board_dpc_call((dpcobj_t *) ctx, board_dpc_display_coreid());	// Запрос отложенного выполнения USER-MODE функции на ядре 1
+}
+
 void ticker_initialize_user(ticker_t * p, unsigned nticks, dpcobj_t * dpc)
 {
 	ticker_initialize(p, nticks, ticker_trampoline, dpc);
+}
+
+// DPC будет вызываться на ядре board_dpc_display_coreid()
+void ticker_initialize_user_display(ticker_t * p, unsigned nticks, dpcobj_t * dpc)
+{
+	ticker_initialize(p, nticks, ticker_trampoline_display, dpc);
 }
 
 void ticker_add(ticker_t * p)
@@ -434,6 +445,11 @@ uint32_t sys_now(void)
 uint32_t board_millis(void)
 {
 	return sys_now_counter;
+}
+
+uint32_t tusb_time_millis_api(void)
+{
+  return board_millis();
 }
 
 //#include "hal_time_ms.h"
@@ -716,45 +732,6 @@ RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 				{
 					ADMUX = hardware_atmega_admux(adci);
 					ADCSRA |= (1U << ADSC);			// Start the AD conversion
-					break;
-				}
-			}
-		}
-	}
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	#warning TODO: write atxmega code for ADC interrupt handler
-
-
-	// adc
-	ISR(ADCA_CH0_vect)
-	{
-			// на этом цикле используем результат
-		#if HARDWARE_ADCBITS == 8
-			// Select next ADC input
-			// Read the 8 most significant bits
-			// of the AD conversion result
-			board_adc_store_data(board_get_adcch(adc_input), ADCA.CH0.RESH);
-		#else
-			// Read the AD conversion result
-			board_adc_store_data(board_get_adcch(adc_input), ADCA.CH0.RESH * 256 + ADCA.CH0.RESL);
-		#endif 
-		// Select next ADC input
-		for (;;)
-		{
-			if (++ adc_input >= board_get_adcinputs())
-			{
-				spool_adcdonebundle();
-				break;
-			}
-			else
-			{
-				// Select next ADC input (only one)
-				const uint_fast8_t adci = board_get_adcch(adc_input);
-				if (isadchw(adci))
-				{
-					ADCA.CH0.MUXCTRL = adci;
-					ADCA.CH0.CTRL |= (1U << ADC_CH_START_bp);			// Start the AD conversion
 					break;
 				}
 			}
@@ -1170,19 +1147,6 @@ hardware_adc_startonescan(void)
 	AT91C_BASE_ADC->ADC_CHDR = ~ mask; /* disable ADC inputs */
 	AT91C_BASE_ADC->ADC_CHER = mask; /* enable ADC */
 	AT91C_BASE_ADC->ADC_CR = AT91C_ADC_START;	// Start the AD conversion
-
-#elif CPUSTYLE_ATMEGA
-
-	ADMUX = hardware_atmega_admux(board_get_adcch(adc_input));
-	// Start the AD conversion
-	ADCSRA |= (1U << ADSC);
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	#warning TODO: write atxmega code - ADC start
-	ADCA.CH0.MUXCTRL = board_get_adcch(adc_input);
-	// Start the AD conversion
-	ADCA.CH0.CTRL |= (1U << ADC_CH_START_bp);			// Start the AD conversion
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// Установить следующий вход (блок ADC может измениться)
@@ -2182,41 +2146,6 @@ int_fast32_t icache_rowsize(void)
 
 #endif /* CPUSTYLE_ARM_CM7 */
 
-// получение частоты, с которой инкрементируется счетчик
-uint_fast32_t cpu_getdebugticksfreq(void)
-{
-	return CPU_FREQ;
-}
-
-// получение из аппаратного счетчика монотонно увеличивающегося кода
-// see SystemInit() in hardware.c
-uint_fast32_t cpu_getdebugticks(void)
-{
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
-	return DWT->CYCCNT;	// use TIMESTAMP_GET();
-#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
-	{
-		uint32_t result;
-		// Read CCNT Register
-		//	MRC p15, 0, <Rt>, c9, c13, 0 : Read PMCCNTR into Rt
-		//	MCR p15, 0, <Rt>, c9, c13, 0 : Write Rt to PMCCNTR
-		//asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(value));  
-		__get_CP(15, 0, result, 9, 13, 0);
-		return(result);
-	}
-
-#elif defined(__riscv)
-
-	uint64_t v = csr_read_mcycle();
-	return v;
-
-#else
-	//#warning Wromg CPUSTYLE_xxx - cpu_getdebugticks not work
-	return 0;
-#endif
-}
-
-
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
 
 
@@ -2679,7 +2608,7 @@ ttb_level2_2MB_initialize(uintptr_t (* accessbits)(uintptr_t a, int ro, int xn),
 #endif
 
 static void
-ttb_level0_1MB_initialize(uintptr_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
+ttb_level0_1MB_initialize(uintptr_t (* accessbits)(uintptr_t a, int ro, int xn))
 {
 	unsigned i;
 	const uint_fast32_t pagesize = (1uL << 20);
@@ -2688,13 +2617,6 @@ ttb_level0_1MB_initialize(uintptr_t (* accessbits)(uintptr_t a, int ro, int xn),
 	{
 		const uintptr_t address = (uintptr_t) i << 20;
 		ttb0_base [i] =  accessbits(address, 0, 0);
-	}
-	/* Установить R/O атрибуты для указанной области */
-	while (textsize >= pagesize)
-	{
-		ttb0_base [textstart / pagesize] =  accessbits(textstart, 0 * 1, 0);
-		textsize -= pagesize;
-		textstart += pagesize;
 	}
 }
 
@@ -2706,55 +2628,46 @@ sysinit_mmu_tables(void)
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	// MMU iniitialize
 
-#if 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE)
-	{
-		// SCU inut
-		// SCU Control Register
-		((volatile uint32_t *) SCU_CONTROL_BASE) [0] &= ~ 0x01;
-//
-//
-//		// Filtering Start Address Register
-//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] & ~ (0xFFFuL << 20)) |
-//				(0x001uL << 20) |
-//				0;
-//		TP();
-//		// Filtering End Address Register
-//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] & ~ (0xFFFuL << 20)) |
-//				(0xFFEuL << 20) |
-//				0;
+	#if (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE)
+		{
+			// SCU inut
+			// SCU Control Register
+			((volatile uint32_t *) SCU_CONTROL_BASE) [0] &= ~ 0x01;
+	//
+	//
+	//		// Filtering Start Address Register
+	//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] & ~ (0xFFFuL << 20)) |
+	//				(0x001uL << 20) |
+	//				0;
+	//		TP();
+	//		// Filtering End Address Register
+	//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] & ~ (0xFFFuL << 20)) |
+	//				(0xFFEuL << 20) |
+	//				0;
 
-		((volatile uint32_t *) SCU_CONTROL_BASE) [0x3] = 0;		// SCU Invalidate All Registers in Secure State
-		((volatile uint32_t *) SCU_CONTROL_BASE) [0] |= 0x01;	// SCU Control Register
-	}
-#endif /* 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE) */
+			((volatile uint32_t *) SCU_CONTROL_BASE) [0x3] = 0;		// SCU Invalidate All Registers in Secure State
+			((volatile uint32_t *) SCU_CONTROL_BASE) [0] |= 0x01;	// SCU Control Register
+		}
+	#endif /* 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE) */
 
 
-#if defined (__aarch64__)
-	// MMU iniitialize
+	#if defined (__aarch64__)
+		// MMU iniitialize
 
-	unsigned i;
-	for (i = 0; i < ARRAY_SIZE(ttb0_base); ++ i)
-	{
-		ttb0_base [i] = (uintptr_t) (level2_pagetable + 512 * i) | 0x03;
-	}
+		unsigned i;
+		for (i = 0; i < ARRAY_SIZE(ttb0_base); ++ i)
+		{
+			ttb0_base [i] = (uintptr_t) (level2_pagetable + 512 * i) | 0x03;
+		}
 
-	ttb_level2_2MB_initialize(ttb_1MB_accessbits, 0, 0);
+		ttb_level2_2MB_initialize(ttb_1MB_accessbits, 0, 0);
 
-#elif WITHISBOOTLOADER || CPUSTYLE_R7S721
+	#else
+		// MMU iniitialize
 
-	// MMU iniitialize
-	ttb_level0_1MB_initialize(ttb_1MB_accessbits, 0, 0);
+		ttb_level0_1MB_initialize(ttb_1MB_accessbits);
 
-#elif CPUSTYLE_STM32MP1
-	extern uint32_t __data_start__;
-	// MMU iniitialize
-	ttb_level0_1MB_initialize(ttb_1MB_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
-
-#else
-	// MMU iniitialize
-	ttb_level0_1MB_initialize(ttb_1MB_accessbits, 0, 0);
-
-#endif
+	#endif	/* defined (__aarch64__) */
 
 
 #elif CPUSTYLE_RISCV
@@ -2810,64 +2723,6 @@ sysinit_mmu_tables(void)
 	}
 
 	//ttb_level2_2MB_initialize(ttb_1MB_accessbits, 0, 0);
-#if 0
-
-
-	#define FULLADFSZ 32	// Not __riscv_xlen
-	if (0)
-	{
-		const unsigned SYSMAP_ASH = 12;	// 40-28
-
-		extern uint32_t __RAMNC_BASE;
-		extern uint32_t __RAMNC_TOP;
-		const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
-		const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
-
-		// See SYSMAP_BASE_ADDR, SYSMAP_FLAG
-
-		// The smallest address of address space 0 is 0x0
-		SYSMAP->PARAM [0].ADDR = (0x40000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [0].ATTR = DEVICE_ATTRS;
-
-		SYSMAP->PARAM [1].ADDR = (__ramnc_base >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [1].ATTR = RAM_ATTRS;
-
-		SYSMAP->PARAM [2].ADDR = (__ramnc_top >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [2].ATTR = NCRAM_ATTRS;
-
-		SYSMAP->PARAM [3].ADDR = (0xC0000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [3].ATTR = RAM_ATTRS;
-
-		// DRAM space ends at 0xC0000000
-		SYSMAP->PARAM [4].ADDR = (0xC1000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [4].ATTR = DEVICE_ATTRS;
-
-		SYSMAP->PARAM [5].ADDR = (0xC2000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [5].ATTR = DEVICE_ATTRS;
-
-		SYSMAP->PARAM [6].ADDR = (0xC3000000 >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [6].ATTR = DEVICE_ATTRS;
-
-		SYSMAP->PARAM [7].ADDR = (0xFFFFFFFFFF >> SYSMAP_ASH);	// The largest address (noninclusive) of address space
-		SYSMAP->PARAM [7].ATTR = DEVICE_ATTRS;
-
-		{
-			unsigned i;
-			for (i = 0; i < ARRAY_SIZE(SYSMAP->PARAM); ++ i)
-			{
-				const uint_fast32_t attr = SYSMAP->PARAM [i].ATTR;
-				PRINTF("2 SYSMAP zone%u: base=%010lX SO=%u, C=%u. B=%u\n",
-						i,
-						(unsigned long) (((uintptr_t) SYSMAP->PARAM [i].ADDR) << SYSMAP_ASH),
-						(attr >> 4) & 0x01,
-						(attr >> 3) & 0x01,
-						(attr >> 2) & 0x01
-						);
-			}
-		}
-	}
-
-#endif
 
 #endif
 
@@ -3019,7 +2874,7 @@ sysinit_ttbr_initialize(void)
 			(((uintptr_t) ttb0_base >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
 			0;
 	csr_write_satp(satp);
-	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
+//	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
 
 //	mmu_write_satp(satp);
 //	mmu_flush_cache();
@@ -3232,24 +3087,71 @@ sysinit_debug_initialize(void)
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
+// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
+// получение частоты, с которой инкрементируется счетчик
+uint_fast32_t cpu_getdebugticksfreq(void)
+{
+	return CPU_FREQ;
+}
+
+// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
+// получение из аппаратного счетчика монотонно увеличивающегося кода
+// see sysinit_perfmeter_initialize() in hardware.c
+uint_fast32_t cpu_getdebugticks(void)
+{
+#if ! WITHDEBUG
+	return 0;
+
+#elif __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
+	return DWT->CYCCNT;	// use TIMESTAMP_GET();
+
+#elif defined(__aarch64__)
+	return __get_PMCCNTR_EL0();
+
+#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
+	{
+		uint32_t result;
+		// Read CCNT Register
+		//	MRC p15, 0, <Rt>, c9, c13, 0 : Read PMCCNTR into Rt
+		//	MCR p15, 0, <Rt>, c9, c13, 0 : Write Rt to PMCCNTR
+		//asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(value));
+		__get_CP(15, 0, result, 9, 13, 0);
+		return(result);
+	}
+
+#elif defined(__riscv)
+
+	uint64_t v = csr_read_mcycle();
+	return v;
+
+#else
+	//#warning Wromg CPUSTYLE_xxx - cpu_getdebugticks not work
+	return 0;
+
+#endif
+}
+
+// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 static void
 sysinit_perfmeter_initialize(void)
 {
-#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
+#if ! WITHDEBUG
+	// no any actions
+#elif __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 
 	#if WITHDEBUG && __CORTEX_M == 7U
-		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
 		DWT->LAR = 0xC5ACCE55;	// Key value for unlock
 		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 		DWT->LAR = 0x00000000;	// Key value for lock
 	#endif /* WITHDEBUG && __CORTEX_M == 7U */
 
-#endif /* __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U */
+#elif defined(__aarch64__)
+		__set_PMCNTENSET_EL0(__get_PMCNTENSET_EL0() | (UINT32_C(1) << 31));
+		__set_PMCR_EL0(__get_PMCR_EL0() | (UINT32_C(1) << 0));
 
-#if ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__))
+#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
 
-	#if WITHDEBUG || 1
 //	{
 //		uint32_t value;
 //		__get_CP(15, 0, value, 9, 12, 0);	// Read PMNC
@@ -3257,7 +3159,6 @@ sysinit_perfmeter_initialize(void)
 //		PRINTF("counters=%" PRIu32 "\n", (value >> 11) & 0x1F);
 //	}
 	{
-		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 		// From https://stackoverflow.com/questions/3247373/how-to-measure-program-execution-time-in-arm-cortex-a8-processor
 		    /* enable user-mode access to the performance counter*/
 		// User Enable Register (USEREN)
@@ -3297,7 +3198,8 @@ sysinit_perfmeter_initialize(void)
 		//asm volatile ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
 		__set_CP(15, 0, 0x80000000, 9, 12, 3);
 	}
-	#endif /* WITHDEBUG */
+
+#elif defined(__riscv)
 
 #endif /* ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__)) */
 }
@@ -3717,10 +3619,10 @@ SystemInit(void)
 #ifdef BOARD_BLINK_INITIALIZE
 	BOARD_BLINK_INITIALIZE();
 #endif
+	sysinit_pmic_initialize();
 	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
 	sysinit_debug_initialize();
 	local_delay_initialize();
-	sysinit_pmic_initialize();
 	sysinit_sdram_initialize();
 	sysinit_mmu_tables();			// Инициализация таблиц. */
 	sysinit_cache_initialize();		// caches iniitialize
@@ -4345,6 +4247,12 @@ void arm_hardware_reset(void)
 void watchdog_initialize(void)
 {
 #if CPUSTYLE_STM32MP1
+#elif CPUSTYLE_ALLWINNER
+	TIMER->WDOG_MODE_REG =
+		0x07 * (UINT32_C(1) << 4) |	// 0111: 256000 cycles (8s)
+		0x01 * (UINT32_C(1) << 0) | // WDOG_EN
+		0;
+	TIMER->WDOG_CFG_REG = 0x01;	// To whole system
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
@@ -4352,5 +4260,10 @@ void watchdog_initialize(void)
 void watchdog_ping(void)
 {
 #if CPUSTYLE_STM32MP1
+#elif CPUSTYLE_ALLWINNER
+	TIMER->WDOG_CTRL_REG =
+		0xA57 * (UINT32_C(1) << 1) |
+		0x01 * (UINT32_C(1) << 0) |
+		0;
 #endif /* CPUSTYLE_STM32MP1 */
 }

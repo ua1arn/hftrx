@@ -25,7 +25,7 @@
 #define	AXI_LITE_MODEM_CONTROL		0x00004000
 #define	AXI_LITE_WNB_CONFIG			0x00005000
 #define	AXI_LITE_DDS_FTW_SUB		0x00006000
-#define	AXI_LITE_IQ_FX_FIFO			0x00007000
+#define	AXI_LITE_IQ_TX_FIFO			0x00007000
 #define	AXI_LITE_STREAM_RATE		0x00008000
 #define	AXI_LITE_STREAM_POS			0x00009000
 #define AXI_LITE_FIFO_PHONES		0x0000A000
@@ -80,12 +80,12 @@ enum {
 #define LINUX_TTY_FILE			"/dev/tty0"
 #define LINUX_STREAM_INT_FILE	"/dev/xdma0_events_1"
 #define LINUX_AUDIO_INT_FILE	"/dev/uio3"
-#define TOUCH_EVENT_NAME		"UsbHID SingWon-CTP-V1.18B" // "fts_ts"
+#define TOUCH_EVENT_NAME		"UsbHID SingWon-CTP-V1.18B" // "fts_ts" // "wch.cn USB2IIC_CTP_CONTROL"
 #define ENCODER2_EVENT_NAME		"rotary-encoder2"
 #define KEYBOARD_EVENT_NAME		"gpio-keys"
 #define MOUSE_EVENT_NAME		"Mouse"
-#define MEMORYCELLS_DB_FILE		"hftrx_data/memory_cells.db"
-#define NVRAM_DB_FILE			"hftrx_data/nvram.db"
+#define MEMORYCELLS_DB_FILE		"/usr/hftrx_data/memory_cells.db"
+#define NVRAM_DB_FILE			"/usr/hftrx_data/nvram.db"
 
 #define WITHLTDCHW			1	/* Наличие контроллера дисплея с framebuffer-ом */
 #define RTMIXIDLCD			0
@@ -125,5 +125,6 @@ enum {
 /* макроопределение, которое должно включить в себя все инициализации */
 #define	HARDWARE_INITIALIZE()   do {} while (0)
 #define HARDWARE_DEBUG_FLUSH()	do {} while (0)
+#define ENCODER_INITIALIZE()	do {} while (0)
 
 #endif /* LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A50T_PCIE_FULL_H_INCLUDED */

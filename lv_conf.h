@@ -18,7 +18,7 @@
 #define LV_CONF_H
 
 /* If you need to include anything here, do it inside the `__ASSEMBLY__` guard */
-#if 1 //defined(__ASSEMBLY__)
+#if ! defined(__ASSEMBLY__)
 	#include "hardware.h"
 	#include "src/display/display.h"
 #endif
@@ -32,13 +32,13 @@
 	#if LCDMODE_LTDC_L24
 		/** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
 		#define LV_COLOR_DEPTH 24
-	#elif LCDMODE_MAIN_L8
+	#elif LCDMODE_PALETTE256
 		/** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
 		#define LV_COLOR_DEPTH 8
-	#elif LCDMODE_MAIN_ARGB8888
+	#elif LCDMODE_ARGB8888
 		/** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
 		#define LV_COLOR_DEPTH 32
-	#elif LCDMODE_MAIN_RGB565
+	#elif LCDMODE_RGB565
 		/** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
 		#define LV_COLOR_DEPTH 16
 	#endif
@@ -87,7 +87,7 @@
 
 #if LV_USE_STDLIB_MALLOC == LV_STDLIB_BUILTIN
     /** Size of memory available for `lv_malloc()` in bytes (>= 2kB) */
-    #define LV_MEM_SIZE (64 * 1024U)          /**< [bytes] */
+    #define LV_MEM_SIZE (6400 * 1024U)          /**< [bytes] */
 
     /** Size of the memory expand for `lv_malloc()` in bytes */
     #define LV_MEM_POOL_EXPAND_SIZE 0
@@ -144,10 +144,10 @@
  *========================*/
 
 /** Align stride of all layers and images to this bytes */
-#define LV_DRAW_BUF_STRIDE_ALIGN                8
+#define LV_DRAW_BUF_STRIDE_ALIGN                4
 
 /** Align start address of draw_buf addresses to this bytes*/
-#define LV_DRAW_BUF_ALIGN                       64
+#define LV_DRAW_BUF_ALIGN                       4
 
 /** Using matrix for transformations.
  * Requirements:
@@ -238,7 +238,7 @@
     #define  LV_USE_DRAW_SW_ASM     LV_DRAW_SW_ASM_NONE
 
     #if LV_USE_DRAW_SW_ASM == LV_DRAW_SW_ASM_CUSTOM
-		#define LV_DRAW_SW_ASM_CUSTOM_INCLUDE "src/lvgl_gui/styles.h"
+		#define LV_DRAW_SW_ASM_CUSTOM_INCLUDE "display2.h"
     #endif
 
     /** Enable drawing complex gradients in software: linear at an angle, radial or conical */
@@ -396,7 +396,7 @@
 
     /** - 1: Print log with 'printf';
      *  - 0: User needs to register a callback with `lv_log_register_print_cb()`. */
-    #define LV_LOG_PRINTF 0
+    #define LV_LOG_PRINTF 1
 
     /** Set callback to print logs.
      *  E.g `my_print`. The prototype should be `void my_print(lv_log_level_t level, const char * buf)`.
@@ -478,7 +478,7 @@
 
 /** Number of stops allowed per gradient. Increase this to allow more stops.
  *  This adds (sizeof(lv_color_t) + 1) bytes per additional stop. */
-#define LV_GRADIENT_MAX_STOPS   2
+#define LV_GRADIENT_MAX_STOPS   4
 
 /** Adjust color mix functions rounding. GPUs might calculate color mix (blending) differently.
  *  - 0:   round down,
@@ -560,14 +560,14 @@
 
 /** Align VG_LITE buffers on this number of bytes.
  *  @note  vglite_src_buf_aligned() uses this value to validate alignment of passed buffer pointers. */
-#define LV_ATTRIBUTE_MEM_ALIGN_SIZE 1
+#define LV_ATTRIBUTE_MEM_ALIGN_SIZE 4
 
 /** Will be added where memory needs to be aligned (with -Os data might not be aligned to boundary by default).
  *  E.g. __attribute__((aligned(4)))*/
 #define LV_ATTRIBUTE_MEM_ALIGN __ALIGNED(4)
 
 /** Attribute to mark large constant arrays, for example for font bitmaps */
-#define LV_ATTRIBUTE_LARGE_CONST
+#define LV_ATTRIBUTE_LARGE_CONST const
 
 /** Compiler prefix for a large array declaration in RAM */
 #define LV_ATTRIBUTE_LARGE_RAM_ARRAY
@@ -615,7 +615,7 @@
 #define LV_FONT_MONTSERRAT_32 0
 #define LV_FONT_MONTSERRAT_34 0
 #define LV_FONT_MONTSERRAT_36 0
-#define LV_FONT_MONTSERRAT_38 1
+#define LV_FONT_MONTSERRAT_38 0
 #define LV_FONT_MONTSERRAT_40 0
 #define LV_FONT_MONTSERRAT_42 0
 #define LV_FONT_MONTSERRAT_44 0
@@ -651,7 +651,7 @@
 /** Enable handling large font and/or fonts with a lot of characters.
  *  The limit depends on the font size, font face and bpp.
  *  A compiler error will be triggered if a font needs it. */
-#define LV_FONT_FMT_TXT_LARGE 0
+#define LV_FONT_FMT_TXT_LARGE 1
 
 /** Enables/disables support for compressed fonts. */
 #define LV_USE_FONT_COMPRESSED 0
@@ -1256,7 +1256,7 @@
      * shared across sub-systems and libraries using the Linux DMA-BUF API.
      * The GBM library aims to provide a platform independent memory management system
      * it supports the major GPU vendors - This option requires linking with libgbm */
-    #define LV_LINUX_DRM_GBM_BUFFERS 0
+    #define LV_USE_LINUX_DRM_GBM_BUFFERS 0
 #endif
 
 /** Interface for TFT_eSPI */

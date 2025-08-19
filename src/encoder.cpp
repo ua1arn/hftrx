@@ -16,26 +16,39 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <atomic>
 
 #undef WITHKBDENCODER
 /* обработчики прерывания от валкодера */
 
-static int position_kbd;	/* накопитель от клавиатуры - знаковое число */
+typedef std::atomic<int32_t> atomicpos_t;
+
+static atomicpos_t position_kbd;	/* накопитель от клавиатуры - знаковое число */
+
+struct encoder_tag
+{
+	atomicpos_t position;	// обновляется по прерыванию
+	uint8_t old_val;
+	uint_fast8_t (* getpins)(void);
+
+	/* перенесено из глобальной области видимости */
+	IRQLSPINLOCK_t encspeedlock;
+	unsigned enchist [HISTLEN];
+	uint_fast8_t tichist;	// Должно поместиться число от 0 до TICKSMAX включительно
+	uint_fast8_t enchistindex;
+};
 
 void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 {
 	e->old_val = agetpins();
 	e->getpins = agetpins;
 	e->position = 0;
-	e->backup_position = 0;
 
-	e->backup_rotate = 0;
-	e->rotate = 0;
+	//e->rotate = 0;
 	e->enchistindex = 0;
 	e->enchist [0] = e->enchist [1] = e->enchist [2] = e->enchist [3] = 0;
 	ASSERT(HISTLEN == 4);
 
-	IRQLSPINLOCK_INITIALIZE(& e->enclock);
 	IRQLSPINLOCK_INITIALIZE(& e->encspeedlock);
 }
 
@@ -44,13 +57,7 @@ void spool_encinterrupts4_dirA_cw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
 	const int_fast8_t step = (e->getpins() & GETENCBIT_A) ? + 1 : - 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	IRQL_t oldIrql;
-
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
-
 	e->position += step;
-
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
 /* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
@@ -58,13 +65,7 @@ void spool_encinterrupts4_dirA_ccw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
 	const int_fast8_t step = (e->getpins() & GETENCBIT_A) ? - 1 : + 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	IRQL_t oldIrql;
-
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
-
 	e->position += step;
-
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
 /* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
@@ -72,13 +73,7 @@ void spool_encinterrupts4_dirB_cw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
 	const int_fast8_t step = (e->getpins() & GETENCBIT_B) ? + 1 : - 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	IRQL_t oldIrql;
-
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
-
 	e->position += step;
-
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
 /* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
@@ -86,13 +81,7 @@ void spool_encinterrupts4_dirB_ccw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
 	const int_fast8_t step = (e->getpins() & GETENCBIT_B) ? - 1 : + 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	IRQL_t oldIrql;
-
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
-
 	e->position += step;
-
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
 static const int8_t graydecoder [4][4] =
@@ -132,12 +121,9 @@ void spool_encinterrupts(void * ctx)
 	// GETENCBIT_A, GETENCBIT_B
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 	const int_fast8_t step = graydecoder [e->old_val][new_val];
-	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
 	e->position += step;
 	e->old_val = new_val;
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
 /* прерывание по любому перепаду сигнала на входах от валкодера */
@@ -149,28 +135,16 @@ void spool_encinterrupts_ccw(void * ctx)
 	// GETENCBIT_A, GETENCBIT_B
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 	const int_fast8_t step = - graydecoder [e->old_val][new_val];
-	IRQL_t oldIrql;
-
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
 	e->position += step;
 	e->old_val = new_val;
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
 }
 
 static void encoder_clear(encoder_t * e)
 {
 	IRQL_t oldIrql;
-	IRQL_t oldIrql2;
 
-	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql2, ENCODER_IRQL);
-	e->old_val = e->getpins();
 	e->position = 0;
-	e->backup_position = 0;
-	IRQLSPIN_UNLOCK(& e->enclock, oldIrql2);
-	e->rotate = 0;
-	e->backup_rotate = 0;
-	e->rotate_kbd = 0;
+	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
 	e->enchist [0] = e->enchist [1] = e->enchist [2] = e->enchist [3] = 0;
 	ASSERT(HISTLEN == 4);
 	e->tichist = 0;
@@ -180,9 +154,7 @@ static void encoder_clear(encoder_t * e)
 static int safegetposition_kbd(void)
 {
 #if WITHKBDENCODER
-	int r = position_kbd;
-	position_kbd = 0;
-	return r;
+	return std::atomic_exchange(& position_kbd, 0);
 #else
 	return 0;
 #endif
@@ -198,15 +170,17 @@ static uint_fast8_t encoder1_dynamic = 1;
 //#define ENCODER_ACTUAL_RESOLUTION (encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
 //static uint_fast8_t encoder_resolution;
 
-void encoderA_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
+void encoder_set_resolution(encoder_t * e, uint_fast8_t v, uint_fast8_t encdynamic)
 {
 	//encoder_resolution = v;	/* используется учетверение шагов */
 	encoder1_actual_resolution = v * 4 * ENCRESSCALE;	/* используется учетверение шагов */
 	encoder1_dynamic = encdynamic;
 }
 
-void encoderB_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
+// возвращает количество инкрементов на оборот
+unsigned encoder_get_actualresolution(encoder_t * e)
 {
+	return encoder1_actual_resolution;
 }
 
 static int local_iabs(int v)
@@ -219,23 +193,19 @@ static void
 encspeed_spool(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
-	const int p1 = encoder_get_delta(e, 1);
+	const int p1 = encoder_get_delta(e);
 	const int p1kbd = safegetposition_kbd();
+	encoder_pushback(e, p1 + p1kbd);
 
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
-
-	e->rotate += p1;		/* учёт количества импульсов (для прямого отсчёта) */
-#if WITHKBDENCODER
-	rotate_kbd += p1kbd;		/* учёт количества импульсов (для прямого отсчёта) */
-#endif
 
 	/* запоминание данных для расчёта скорости вращения валкодера */
 	/* при расчёте скорости игнорируется направление вращения - улучшается обработка синтуйии, когда при уже
 	   включившемся ускорении пользователь меняет направление - движется назад к пропущенной частоте. при этом для
 	   предсказуемости перестройки ускорение не должно изменяться.
 	*/
-	e->enchist [e->enchistindex] += local_iabs(p1) + 0;//local_iabs(p1kbd);
+	e->enchist [e->enchistindex] += local_iabs(p1) + local_iabs(p1kbd);
 	if (++ e->tichist >= ENCTICKSMAX)	// уменьшение предела - уменьшает "постояную времени" измерителя скорости валкодера
 	{	
 		e->tichist  = 0;
@@ -264,13 +234,13 @@ void encoders_clear(void)
 }
 
 /* получение количества шагов и скорости вращения. */
-int_least16_t
+static int_least16_t
 encoder_get_snapshotproportional(
 	encoder_t * e,
-	unsigned * speed, 
-	const uint_fast8_t derate)
+	unsigned * speed
+	)
 {
-	int hrotate;
+	const int hrotate = encoder_get_delta(e);
 	
 	unsigned s;				// количество шагов за время измерения
 	unsigned tdelta;	// Время измерения
@@ -285,86 +255,31 @@ encoder_get_snapshotproportional(
 	ASSERT(HISTLEN == 4);
 	// 2. Время измерения
 	tdelta = e->tichist + ENCTICKSMAX * (HISTLEN - 1); // во всех остальных слотах, кроме текущего, количество тиков максимальное.
+	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
 
-	hrotate = e->rotate + e->rotate_kbd * derate;	/* работа в меню от клавиш - реагируем сразу */
-	e->rotate = 0;
-	e->rotate_kbd = 0;
+
 
 	// Расчёт скорости. Результат - (1 / ENCODER_NORMALIZED_RESOLUTION) долей оборота за секунду
 	// Если результат ENCODER_NORMALIZED_RESOLUTION это обозначает один оборот в секунду
 	// ((s * ENCTICKS_FREQUENCY) / t) - результат в размерности "импульсов в секунду".
-	* speed = ((s * (uint_fast32_t) ENCTICKS_FREQUENCY * ENCODER_NORMALIZED_RESOLUTION) / (tdelta * (uint_fast32_t) encoder1_actual_resolution));
-	
-	/* Уменьшение разрешения валкодера в зависимости от установок в меню */
-	const div_t h = div(hrotate + e->backup_rotate, derate);
+	* speed = ((s * (uint_fast32_t) ENCTICKS_FREQUENCY * ENCODER_NORMALIZED_RESOLUTION) / (tdelta * (uint_fast32_t) encoder_get_actualresolution(e)));
 
-	e->backup_rotate = h.rem;
-
-	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
-
-	return h.quot;
+	return hrotate;
 }
 
-
-/* получение количества шагов и скорости вращения. */
-static int_least16_t
-encoder_get_snapshot(
-	encoder_t * const e,
-	const uint_fast8_t derate
-	)
-{
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
-
-	/* Уменьшение разрешения валкодера в зависимости от установок в меню */
-	const div_t h = div(e->rotate + e->backup_rotate, derate);
-	e->backup_rotate = h.rem;
-	e->rotate = 0;
-
-	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
-
-	return h.quot;
-}
 
 /* получение количества шагов, накопленного с момента предыдущего опроса */
 int_least16_t
 encoder_get_delta(
-	encoder_t * const e,
-	const uint_fast8_t derate
+	encoder_t * const e
 	)
 {
-	int position;
-
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& e->enclock, & oldIrql, ENCODER_IRQL);
-	position = e->position;
-	e->position = 0;
-
-	if (derate != 1)
-	{
-		/* Уменьшение разрешения валкодера в зависимости от установок в меню */
-		const div_t h = div(position + e->backup_position, derate);
-		e->backup_position = h.rem;
-		IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
-
-		return h.quot;
-	}
-	else
-	{
-		IRQLSPIN_UNLOCK(& e->enclock, oldIrql);
-
-		return position;
-	}
+	return std::atomic_exchange(& e->position, 0);
 }
 
-void encoder_pushback(encoder_t * const e, int outsteps, uint_fast8_t hiresdiv)
+void encoder_pushback(encoder_t * const e, int outsteps)
 {
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
-
-	e->backup_rotate += (outsteps * (int) hiresdiv);
-
-	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
+	e->position += outsteps;
 }
 
 encoder_t encoder1;	// Main RX tuning knob
@@ -390,32 +305,15 @@ void encoder_kbdctl(
 	int_fast8_t d = code == ENC_CODE_STEP_UP ? 1 : -1;
 	int v = d * (accel ? 5 : 1);
 	position_kbd += v;
-	//encoder_pushback(& encoder_kbd, v, 1);
+	//encoder_pushback(& encoder_kbd, v);
 #endif
-}
-
-/* получение "редуцированного" количества прерываний от валкодера.
- * То что осталось после деления на scale, остается в накопителе
- */
-int_least16_t getRotateLoRes_A(uint_fast8_t hiresdiv)
-{
-	encoder_t * const e = & encoder1;
-	unsigned speed;
-	return encoder_get_snapshotproportional(& encoder1, & speed, encoder1_actual_resolution * hiresdiv / ENCODER_MENU_STEPS);
-}
-
-// Управление вращением валколера из CAT
-void encoderA_pushback(int outsteps, uint_fast8_t hiresdiv)
-{
-	encoder_pushback(& encoder1, outsteps, hiresdiv);
 }
 /* получение накопленного значения прерываний от валкодера.
 		накопитель сбрасывается */
 int_least16_t 
-getRotateHiRes(
+encoder_getrotatehires(
 	encoder_t * const e,
-	uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
-	uint_fast8_t hiresdiv
+	uint_fast8_t * jumpsize	/* jumpsize - во сколько раз увеличивается скорость перестройки */
 	)
 {
 	typedef struct accel_tag
@@ -434,7 +332,7 @@ getRotateHiRes(
 
 
 	unsigned speed;
-	int_least16_t nrotate = encoder_get_snapshotproportional(e, & speed, hiresdiv);
+	int_least16_t nrotate = encoder_get_snapshotproportional(e, & speed);
 
 	if (encoder1_dynamic != 0)
 	{
@@ -454,34 +352,7 @@ getRotateHiRes(
 	}
 
 	* jumpsize = 1;
-#if REQUEST_BA
-
-	/* Уменьшение разрешения валкодера для скоростей меньших, чем в таблице делается равным 48 */
-	const div_t h = div(nrotate, encoder1_actual_resolution / ENCODER_SLOW_STEPS);
-
-	e->backup_rotate += h.rem * hiresdiv;
-
-	return h.quot;
-#else
 	return nrotate;
-#endif
-}
-
-/* получение накопленного значения прерываний от валкодера.
-		накопитель сбрасывается */
-int_least16_t
-getRotateHiRes_FN(
-	uint_fast8_t * jumpsize,	/* jumpsize - во сколько раз увеличивается скорость перестройки */
-	uint_fast8_t derateFN
-	)
-{
-#if WITHENCODER2
-	* jumpsize = 1;
-	return encoder_get_delta(& encoder2, derateFN);
-#else /* WITHENCODER2 */
-	* jumpsize = 1;
-	return 0;
-#endif /* WITHENCODER2 */
 }
 
 #if WITHENCODER2
@@ -535,13 +406,27 @@ void encoders_initialize(void)
 #endif /* WITHENCODER2 && ! ENCODER2_NOSPOOL */
 }
 
-#if WITHLVGL && WITHLVGL && LINUX_SUBSYSTEM
+#if 0 //WITHLVGL && WITHLVGL && LINUX_SUBSYSTEM
 
 #include "lv_drivers/indev/evdev.h"
 
 void indev_enc2_spool(void)
 {
 	encspeed_spool(& encoder2);
+}
+
+
+/* получение количества шагов и скорости вращения. */
+static int_least16_t
+encoder_get_snapshot(
+	encoder_t * const e,
+	unsigned derate
+	)
+{
+	int_least16_t delta = encoder_get_delta(e);
+	div_t d = div(delta, derate);
+	encoder_pushback(e, d.rem);
+	return d.quot;
 }
 
 void encoder_indev_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)

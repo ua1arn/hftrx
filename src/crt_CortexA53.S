@@ -88,11 +88,13 @@ __Vectors64:
 	.align 4
    	//.code 64
    
-   	.extern _start
-   	/*.extern __libc_init_array*/
+	.global Reset_Handler
+   	.extern addr64_preparedata
    	.extern SystemInit
-   	.global Reset_Handler
- /****************************************************************************/
+   	.extern _start
+   	.extern __stack
+
+/****************************************************************************/
 /*                           Reset handler                                  */
 /****************************************************************************/
 Reset_Handler:
@@ -106,12 +108,16 @@ Reset_Handler:
 	MSR SPSR_irq, x30
 	ldr x30, =__stack_cpu0_sys_end
 	mov sp, x30
+
 	mov x30, XZR
+	//BL addr64_preparedata	/* fill .bss and prepare constant data */
 	BL SystemInit
+	BL addr64_preparedata	/* fill .bss and prepare constant data */
+
 	ldr x30, =__stack
 	mov sp, x30
 	mov x30, XZR
-	BL __riscv_start
+	BL _start
 1:
 	b 1b
 

@@ -223,9 +223,9 @@ typedef struct
                                             This parameter can be any value of @ref USB_OTG_HCStateTypeDef  */
 } USB_OTG_HCTypeDef;
 
-
-
+#ifndef UNUSED
 #define UNUSED(x) ((void)(sizeof(x)))	/* To avoid gcc/g++ warnings */
+#endif
 
 #define HAL_MAX_DELAY      0xFFFFFFFFU
 

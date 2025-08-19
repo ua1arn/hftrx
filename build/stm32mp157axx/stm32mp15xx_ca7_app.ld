@@ -56,9 +56,25 @@ SECTIONS
 		*(.text*)
 		KEEP(*(.init))
 		KEEP(*(.fini))
-		*(.itcm*)
+		
+		/* .ctors */
+		*crtbegin.o(.ctors)
+		*crtbegin?.o(.ctors)
+		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
+		*(SORT(.ctors.*))
+		*(.ctors)
 
-		. = ALIGN(8);
+		/* .dtors */
+ 		*crtbegin.o(.dtors)
+ 		*crtbegin?.o(.dtors)
+ 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
+ 		*(SORT(.dtors.*))
+ 		*(.dtors)
+
+		*(.rodata*)
+
+		KEEP(*(.eh_frame*))
+
 	} > RAM
 
 	.ARM.extab :
@@ -112,32 +128,14 @@ SECTIONS
 		__data_start__ = .;
 		. = ALIGN(64);
 
+		*(.data*)
+		. = ALIGN(64);
 		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
-		. = ALIGN(64);
+
+		*(.itcm*)
 		*(.dtcm*)
-		. = ALIGN(32);
-		
-		/* .ctors */
-		*crtbegin.o(.ctors)
-		*crtbegin?.o(.ctors)
-		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
-		*(SORT(.ctors.*))
-		*(.ctors)
-
-		/* .dtors */
- 		*crtbegin.o(.dtors)
- 		*crtbegin?.o(.dtors)
- 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
- 		*(SORT(.dtors.*))
- 		*(.dtors)
-
-		*(.rodata*)
-
-		KEEP(*(.eh_frame*))
-
-		*(.data*)
 
 		. = ALIGN(8);
 		/* preinit data */
@@ -161,19 +159,24 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		/* All data end */
-
-		__data_end__ = .;
-
+		
+        . = ALIGN(4);
+        /* All data end */
+        __data_end__ = .;
 	} > RAM
+
+	__etext2 = .;
 
 	.bss :
 	{
 		__bss_start__ = .;
-		. = ALIGN(32);
-		*(.bss*)
+		. = ALIGN(64);
+		*(.sbss*)
+		*(.gnu.linkonce.sb.*)
+		*(.bss .bss.*)
+		*(.gnu.linkonce.b.*)
 		*(COMMON)
-		. = ALIGN(32);
+		. = ALIGN(64);
 		__bss_end__ = .;
 		LONG(0xDEADBEEF)
 	} > RAM
@@ -182,9 +185,7 @@ SECTIONS
 	{
 		. = ALIGN(64);
 		*(.noinit*)
-		. = ALIGN(64);
 		*(.framebuff*)
-		. = ALIGN(64);
 	} > RAM
 
 	.ramnc BLOCK(1M) (NOLOAD):

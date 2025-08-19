@@ -156,7 +156,6 @@ enum {
 #define SDXC_CARD_INSERT			(UINT32_C(1) << 30)
 #define SDXC_CARD_REMOVE			(UINT32_C(1) << 31)
 
-//#define SDXC_INTERRUPT_ERROR_BIT    (SDXC_RESP_ERROR | SDXC_RESP_CRC_ERROR | 0*SDXC_DATA_CRC_ERROR | SDXC_RESP_TIMEOUT | SDXC_DATA_TIMEOUT | SDXC_FIFO_RUN_ERROR | SDXC_HARD_WARE_LOCKED | SDXC_START_BIT_ERROR | 0*SDXC_END_BIT_ERROR)
 #define SDXC_INTERRUPT_ERROR_BIT	(SDXC_RESP_ERROR | SDXC_RESP_CRC_ERROR | SDXC_DATA_CRC_ERROR | SDXC_RESP_TIMEOUT | SDXC_DATA_TIMEOUT | SDXC_FIFO_RUN_ERROR | SDXC_HARD_WARE_LOCKED | SDXC_START_BIT_ERROR | SDXC_END_BIT_ERROR)
 
 #define SDXC_INTERRUPT_DONE_BIT		(SDXC_AUTO_COMMAND_DONE | SDXC_DATA_OVER | SDXC_COMMAND_DONE | SDXC_VOLTAGE_CHANGE_DONE)
@@ -500,11 +499,11 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 //	uint32_t ratio = udiv32( clk_get_rate(pdat->pclk) + 2 * clock - 1, (2 * clock));
 	uint32_t ratio;
 
-	if (sdhci->instance == SMHC2)
-	{
-		if (clock > 1000000)
-			clock = 1000000;
-	}
+//	if (sdhci->instance == SMHC2)
+//	{
+//		if (clock > 1000000)
+//			clock = 1000000;
+//	}
 
     ratio = SMHCHARD_FREQ / (4 * clock);	// Измерения частоты сигнала CLK показали, что деление на 4 а не на 2
 
@@ -569,7 +568,7 @@ void sdhci_t113_clock(void)
 #if ! defined CPUSTYLE_A64
 	if (SMHCHARD_PTR == SMHC2)
 	{
-
+#if ! defined CPUSTYLE_T113 && ! defined CPUSTYLE_F133
 		SMHCHARD_PTR->SMHC_FIFOTH = 0x300F00F0;
 		SMHCHARD_PTR->SMHC_THLD = 0x02000004;
 		SMHCHARD_PTR->SMHC_SFC =
@@ -579,7 +578,7 @@ void sdhci_t113_clock(void)
 		SMHCHARD_PTR->SMHC_CSDC = 0x00000006;
 		SMHCHARD_PTR->SMHC_NTSR = 0;
 		//SMHCHARD_PTR->EMMC_DDR_SBIT_DET |= (UINT32_C(1) << 31);
-
+#endif
 		//	The steps to calibrate delay chain are as follows:
 		//	Step1: Enable SMHC. In order to calibrate delay chain by operation registers in SMHC, SMHC must be enabled through SMHC Bus Gating Reset Register and SMHC0/1/2 Clock Register.
 		//	Step2: Configure a proper clock for SMHC. Calibration delay chain is based on the clock for SMHC from Clock Control Unit(CCU). Calibration delay chain is an internal function in SMHC and does not need device. So, it is unnecessary to open clock signal for device. The recommended clock frequency is 200 MHz.
@@ -598,7 +597,7 @@ void sdhci_t113_clock(void)
 			((SMHCHARD_PTR->SMHC_SAMP_DL >> 8) & 0x3F) |
 			0;
 		SMHCHARD_PTR->SMHC_SAMP_DL |= (UINT32_C(1) << 7);	// Sample Delay Software Enable
-		//PRINTF("SMHC_SAMP_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_SAMP_DL >> 8) & 0x3F);
+		PRINTF("SMHC_SAMP_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_SAMP_DL >> 8) & 0x3F);
 
 		/* Delay calibration */
 		SMHCHARD_PTR->SMHC_DS_DL = 0xA0;
@@ -610,7 +609,7 @@ void sdhci_t113_clock(void)
 			((SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F) |
 			0;
 		SMHCHARD_PTR->SMHC_DS_DL |= (UINT32_C(1) << 7);	// Sample Delay Software Enable
-		//PRINTF("SMHC_DS_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F);
+		PRINTF("SMHC_DS_DL calibration result=0x%02X\n", (unsigned) (SMHCHARD_PTR->SMHC_DS_DL >> 8) & 0x3F);
 
 	}
 #endif

@@ -35,35 +35,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if CPUSTYLE_R7S721
-	#include "rza1xx_hal.h"
-
-#elif CPUSTYLE_STM32MP1
-	#include "stm32mp1xx.h"
-	#include "stm32mp1xx_hal.h"
-
-#elif CPUSTYLE_STM32H7XX
-	#include "stm32h7xx.h"
-	#include "stm32h7xx_hal.h"
-
-#elif CPUSTYLE_STM32F7XX
-	#include "stm32f7xx.h"
-	#include "stm32f7xx_hal.h"
-
-#elif CPUSTYLE_STM32F4XX
-	#include "stm32f4xx.h"
-	#include "stm32f4xx_hal.h"
-
-#elif CPUSTYLE_XC7Z
-
-	#include "zynq7000_hal.h"
-
-#elif CPUSTYLE_ALLWINNER
-
-	#include "t113s3_hal.h"
-
-#endif
-
 /* USER CODE BEGIN INCLUDE */
 
 /* USER CODE END INCLUDE */

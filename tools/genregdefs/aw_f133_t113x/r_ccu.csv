@@ -12,4 +12,27 @@
 #regdef; VDD_SYS_PWROFF_GATING_REG; 0x250;
 #regdef; ANALOG_PWROFF_GATING_REG; 0x254;
 
+# H137 user manual
+## regdef; AHBS_CFG_REG; 0x0000; AHBS Configuration Register
+## regdef; APBS0_CFG_REG; 0x000C; APBS0 Configuration Register
+## regdef; TIMER1_BGR_REG; 0x011C; TIMER1 Bus GatingReset Register
+## regdef; PPU_BGR_REG; 0x01AC; PPU Bus GatingReset Register
+## regdef; IR_RX_CLK_REG; 0x01C0; IR_RX Clock Register
+## regdef; IR_RX_BGR_REG; 0x01CC; IR_RX Bus GatingReset Register
+## regdef; RTC_BGR_REG; 0x020C; RTCBus GatingReset Register
+## regdef; PLL_CTRL_REG0; 0x0240; PLL Control Register0
+## regdef; PLL_CTRL_REG1; 0x0244; PLL Control Register1
+## regdef; VDD_SYS_PWROFF_GATING_REG; 0x0250; VDD_SYS Power Off Gating Register
+## regdef; ANA_PWR_RST_REG; 0x0254; ANALOG Power Off Gating Register
+## regdef; RAM_CFG_REG; 0x0270; RAM Configuration Register
+## regdef; RAM_TEST_CTRL_REG; 0x0274; RAMTest Control Register
+## regdef; NMI_INT_CTRL_REG; 0x0320; NMI Interrupt Control Register
+## regdef; NMI_INT_EN_REG; 0x0324; NMI Interrupt Enable Register
+## regdef; NMI_INT_PEND_REG; 0x0328; NMI Interrupt Pending Register
+## regdef; BUS_ACG_REG; 0x033C; Bus Auto Clock Gating Register
+## regdef; AHBS_RDY_TOUT_CTRL_REG; 0x0368; AHBS ReadyTimeout Control Register
+## regdef; CRY_CONFIG_REG; 0x03E0; Crypt Configuration Register
+## regdef; CRY_KEY_REG; 0x03E4; Crypt Key Register
+## regdef; CRY_EN_REG; 0x03E8; Crypt Enable Register
+
 #typeend;

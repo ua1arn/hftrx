@@ -15,7 +15,7 @@
 	{
 		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
 		BDTH_ALLRX = 50, //DIM_X / GRID2X(1),	// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = ROWS2GRID(61),	// количество строк, отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = ROWS2GRID(51),	// количество строк, отведенное под S-метр, панораму, иные отображения
 
 		BDTH_LEFTRX = 17,	// ширина индикатора баллов (без плюсов)
 		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
@@ -73,11 +73,11 @@
 	//#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 	//#define SMALLCHARH 15 /* Font height */
 	//#define SMALLCHARW 16 /* Font width */
-	static const FLASHMEM struct dzone dzones [] =
+	static const dzone_t dzones [] =
 	{
 #if ! WITHLVGL
 			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
-		{	0,	0,	0,	0,	display2_keyboard_screen0,	& dzi_default, PG0, }, // Обработка клавиатуры и валкодеров при нахождении в режиме основного экрана
+
 		//{	10,	0,	6,	0,	display2_rxbwval6alt,	& dzi_default, PG0, },	// RX BW value
 		{	17,	0,	5,	0,	display_txrxstate5alt, & dzi_default, PG0, },
 		{	21,	0,	7,	0,	display2_ant7alt,		& dzi_default, PG0, },
@@ -101,20 +101,20 @@
 		{	42, 20,	4,	0,	display2_byp4alt,		& dzi_default, PG0, },	// TUNER BYPASS state (optional)
 
 		{	17,	7,	0,	0,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
-		{	17,	7,	0,	0,	display2_freqX_a,	& dzi_default, PG0, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
-		{	38, 10,	3,	0,	display2_mode3_a,	& dzi_default,	PG0, },	// SSB/CW/AM/FM/...
-		{	42, 10,	3,	0,	display2_rxbw3,		& dzi_default, PG0, },	// 3.1 / 0,5 / WID / NAR
+		{	17,	7,	0,	0,	display2_freqX_a,	& dzi_freqa, PG0, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+		{	38, 10,	3,	0,	display2_mode3_a,	& dzi_modea,	PG0, },	// SSB/CW/AM/FM/...
+		{	42, 10,	3,	0,	display2_rxbw3,		& dzi_rxbw, PG0, },	// 3.1 / 0,5 / WID / NAR
 		{	46, 10,	3,	0,	display2_nr3,		& dzi_default, PG0, },	// NR : was: AGC
 		{	38, 15,	3,	0,	display2_mainsub3,	& dzi_default, PG0, },	// main/sub RX: A/A, A/B, B/A, etc
 
 		{	42,	15,	5,	0,	display2_vfomode5alt,	& dzi_default, PG0, },	// SPLIT
 		{	26,	20,	0,	0,	display2_freqX_b,	& dzi_default, PG0, },	// SUB FREQ
-		{	38, 20,	3,	0,	display2_mode3_b,	& dzi_default,	PG0, },	// SSB/CW/AM/FM/...
+		{	38, 20,	3,	0,	display2_mode3_b,	& dzi_modeb,	PG0, },	// SSB/CW/AM/FM/...
 
-		{	0,	0,	0,	0,	wait_iq, 			& dzi_default,	PG0, },
+//		{	0,	0,	0,	0,	wait_iq, 			& dzi_default,	PG0, },
 #if WITHBARS
 		{    0, 4,  0,	0,	display2_smeter15_init,	& dzi_default, PGINI, },	//  Инициализация стрелочного прибора
-		{    0, 4,  15,	0,	display2_smeter15, 		& dzi_default, PG0, },	// Изображение стрелочного прибора
+		{    0, 4,  15,	20,	display2_smeter15, 		& dzi_compat, PG0, },	// Изображение стрелочного прибора
 #endif /* WITHBARS */
 #if WITHAFSPECTRE
 		{	0,	4,	0,	0,	display2_af_spectre15_init,	& dzi_default, PGINI, },
@@ -139,6 +139,7 @@
 		p->ystep = 4;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;
 		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
+		p->xspan = BDTH_ALLRX;	/* количество знакомест по горизонтали, отдаваемое под меню */
 	}
 #endif /* WITHMENU */
 

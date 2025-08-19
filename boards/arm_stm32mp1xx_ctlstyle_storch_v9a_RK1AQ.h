@@ -49,7 +49,7 @@
 			#define PLL1DIVN	(stm32mp1_overdrived() ? 66 : 54)	// Auto select
 
 			// PLL2_1600
-			#if 1
+			#if 0
 				#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
 				#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
 				#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
@@ -240,7 +240,7 @@
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 
-	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+	
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
@@ -263,8 +263,8 @@
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
-	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
-	//#define LCDMODE_V2	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_PALETTE256	1	/* Экран с двумя видеобуферами, L8 */
 
 	
 
@@ -272,7 +272,7 @@
 
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
-	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
 
 	
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
@@ -281,7 +281,7 @@
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 
-	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
 
 	
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
@@ -517,6 +517,8 @@
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#if 1
+		#define WITHTPA100W_UA1CEI_V2 1	/* Есть функция автотюнера */
+	#elif 0
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
 		#define FULLSET8	1
@@ -551,8 +553,8 @@
 		#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 		#define WITHSWRMTR	1		/* Измеритель КСВ */
 	#endif /* WITHTX */
-	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
-	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
+	
+	
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
@@ -635,11 +637,6 @@
 	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
-	// ST LM235Z
-	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
-	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
-	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 #endif /* WITHISBOOTLOADER */
 
@@ -684,7 +681,44 @@
 
 	//#define WITHALTERNATIVEFONTS    1
 
-	#if WITHAUTOTUNER_AVBELNN
+	#if WITHTPA100W_UA1CEI_V2
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
+
+		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
+		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
+
+		#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
+
+		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
+
+		FWD = BOARD_ADCX2IN(0),
+		REF = BOARD_ADCX2IN(1),
+
+		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
+		PASENSEIX2 = BOARD_ADCX2IN(2),	// DRAIN
+		PAREFERIX2 = BOARD_ADCX2IN(3),	// reference (1/2 питания ACS712ELCTR-30B-T).
+
+		#if WITHTHERMOLEVEL
+			XTHERMOIX = BOARD_ADCX2IN(4),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+		#endif /* WITHTHERMOLEVEL */
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = BOARD_ADCX1IN(7),		// main board Средняя точка делителя напряжения, для АКБ
+		#endif /* WITHVOLTLEVEL */
+
+		// ST LM235Z
+		#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
+		#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
+		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
+		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+
+	#elif WITHAUTOTUNER_AVBELNN
 
 		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 
@@ -699,7 +733,7 @@
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
 			FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
-			PWRI = FWD,
+			
 		#endif /* WITHSWRMTR */
 
 		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
@@ -710,11 +744,18 @@
 
 		FWD = BOARD_ADCX2IN(3),
 		REF = BOARD_ADCX2IN(2),
-		PWRI = FWD,
+		
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
 		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
 		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 питания ACS712ELCTR-30B-T).
+
+		// ST LM235Z
+		#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
+		#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
+		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
+		#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+
 	#else
 		// толькло основная плата - 5W усилитель
 
@@ -737,7 +778,7 @@
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
 			FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
-			PWRI = FWD,
+			
 		#endif /* WITHSWRMTR */
 	#endif
 
@@ -745,10 +786,10 @@
 		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 		REFMRRIX = BOARD_ADCMRRIN(2),
 		FWDMRRIX = BOARD_ADCMRRIN(3),
-		PWRMRRIX = FWDMRRIX,
-		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
-		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
-		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
+		PWRMRRIX = BOARD_ADCMRRIN(4),
+		VOLTMRRIX = BOARD_ADCMRRIN(5),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
+		PAREFERMRRIX2 = BOARD_ADCMRRIN(7),		// кеш - индекc не должен повторяться в конфигурации
 
 		KI0 = 0, KI1 = 1, KI2 = 2, KI3 = 7, KI4 = 10	// клавиатура - PA0, PA1, PA2, PA7, PC0
 	};

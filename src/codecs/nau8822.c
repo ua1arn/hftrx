@@ -37,7 +37,7 @@
 
 // Clock period, SCLK no less then 80 nS (частота не выше 12.5 МГц)
 #define NAU8822_SPIMODE			SPIC_MODE3
-#define NAU8822_SPISPEED 		SPIC_SPEED10M
+#define NAU8822_SPISPEED 		SPIC_SPEED1M	// УМЕНЬШЕНО С 10 МГц до 1 - помехи
 #define NAU8822_ADDRESS_W		0x34	// I2C address: 0x34
 
 /* data is
@@ -61,7 +61,7 @@ static void nau8822_setreg_16(
 	uint_fast16_t datav			/* 9 bit value */
 	)
 {
-	const uint_fast16_t fulldata = regv * (UINT32_C(1) << 9) | (datav & 0x1ff);
+	const uint_fast16_t fulldata = (0x7F & regv) * (UINT32_C(1) << 9) | (datav & 0x1ff);
 	//PRINTF("nau8822_setreg: regv=%02X, datav=%03X\n", (unsigned) regv, (unsigned) datav);
 
 #if CODEC_TYPE_NAU8822_USE_SPI
@@ -69,7 +69,10 @@ static void nau8822_setreg_16(
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
 #if WITHSPIHW || WITHSPISW
-	const uint8_t txbuf [] = { fulldata >> 8, fulldata >> 0, };
+	const uint8_t txbuf [] =
+	{
+		fulldata >> 8, fulldata >> 0,
+	};
 
 	prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
 #endif
@@ -91,6 +94,55 @@ static void nau8822_setreg_16(
 #endif /* CODEC_TYPE_NAU8822_USE_SPI */
 }
 
+/* Запись двух регистров на смежных адресах */
+// need investigations (for spi2 && I2C)
+static void nau8822_setreg_16_2(
+	uint_fast8_t regv,			/* 7 bit register address */
+	uint_fast16_t datav1,			/* 9 bit value */
+	uint_fast16_t datav2			/* 9 bit value */
+	)
+{
+	const uint_fast16_t fulldata1 = ((0x7F & regv) + 0) * (UINT32_C(1) << 9) | (datav1 & 0x1ff);
+	const uint_fast16_t fulldata2 = ((0x7F & regv) + 1) * (UINT32_C(1) << 9) | (datav2 & 0x1ff);
+	//PRINTF("nau8822_setreg: regv=%02X, datav=%03X\n", (unsigned) regv, (unsigned) datav);
+
+#if CODEC_TYPE_NAU8822_USE_SPI
+	// кодек управляется по SPI
+	const spitarget_t target = targetcodec1;	/* addressing to chip */
+
+#if WITHSPIHW || WITHSPISW
+	const uint8_t txbuf [] =
+	{
+		fulldata1 >> 8, fulldata1 >> 0,
+		fulldata2 >> 8, fulldata2 >> 0,
+	};
+
+	prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+#endif
+
+#else /* CODEC_TYPE_NAU8822_USE_SPI */
+
+	#if WITHTWIHW
+		const uint8_t buff [] =
+		{
+			fulldata1 >> 8, fulldata1 >> 0,
+			fulldata2 >> 8, fulldata2 >> 0,
+		};
+		i2chw_write(NAU8822_ADDRESS_W, buff, ARRAY_SIZE(buff));
+	#elif WITHTWISW
+		// кодек управляется по I2C
+		i2c_start(NAU8822_ADDRESS_W);
+		i2c_write(fulldata1 >> 8);
+		i2c_write(fulldata1 >> 0);
+		i2c_write(fulldata2 >> 8);
+		i2c_write(fulldata2 >> 0);
+		i2c_waitsend();
+		i2c_stop();
+	#endif
+
+#endif /* CODEC_TYPE_NAU8822_USE_SPI */
+}
+
 #if CODEC_TYPE_NAU8822_USE_SPI
 // SPI 4-Wire 24-bit Write and 32-bit Read Operation
 
@@ -100,8 +152,32 @@ static void nau8822_setreg_24(
 	)
 {
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
-	const uint_fast32_t fulldata = regv * (UINT32_C(1) << 9) | (datav & 0x1ff);
-	const uint8_t txbuf [3] = { 0x10, fulldata >> 8, fulldata >> 0, };
+	const uint_fast32_t fulldata = (0x7F & regv) * (UINT32_C(1) << 9) | (datav & 0x1ff);
+	const uint8_t txbuf [] =
+	{
+		0x10,
+		fulldata >> 8, fulldata >> 0,
+	};
+
+	prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+}
+
+/* Запись двух регистров на смежных адресах */
+static void nau8822_setreg_24_2(
+	uint_fast8_t regv,			/* 7 bit register address */
+	uint_fast16_t datav1,			/* 9 bit value */
+	uint_fast16_t datav2			/* 9 bit value */
+	)
+{
+	const spitarget_t target = targetcodec1;	/* addressing to chip */
+	const uint_fast32_t fulldata1 = ((0x7F & regv) + 0) * (UINT32_C(1) << 9) | (datav1 & 0x1ff);
+	const uint_fast32_t fulldata2 = ((0x7F & regv) + 1) * (UINT32_C(1) << 9) | (datav2 & 0x1ff);
+	const uint8_t txbuf [] =
+	{
+		0x10,
+		fulldata1 >> 8, fulldata1 >> 0,
+		fulldata2 >> 8, fulldata2 >> 0,
+	};
 
 	prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
 }
@@ -111,8 +187,13 @@ static uint_fast16_t nau8822_getreg_32(
 	)
 {
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
-	const uint_fast32_t fulldata = regv * (UINT32_C(1) << 9);
-	const uint8_t txbuf [4] = { 0x20, fulldata >> 8, fulldata >> 0, 0x00, };
+	const uint_fast32_t fulldata = (0x7F & regv) * (UINT32_C(1) << 9);
+	const uint8_t txbuf [] =
+	{
+		0x20,
+		fulldata >> 8, fulldata >> 0,
+		0x00,
+	};
 	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
 	prog_spi_exchange(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, rxbuf, ARRAY_SIZE(txbuf));
@@ -122,12 +203,13 @@ static uint_fast16_t nau8822_getreg_32(
 
 #endif /* CODEC_TYPE_NAU8822_USE_SPI */
 
+// Пока работа только в 16-бит режиме - до разбирательства
 static void nau8822_setreg_universal(
 	uint_fast8_t regv,			/* 7 bit register address */
 	uint_fast16_t datav			/* 9 bit value */
 	)
 {
-#if CODEC_TYPE_NAU8822_USE_SPI
+#if CODEC_TYPE_NAU8822_USE_SPI && 0
 	nau8822_setreg_24(regv, datav);
 #else /* CODEC_TYPE_NAU8822_USE_SPI */
 	nau8822_setreg_16(regv, datav);
@@ -143,6 +225,23 @@ void nau8822_setreg(
 	nau8822_setreg_24(regv, datav);
 #else /* NAU8822_USE_SPI4_ACTUAL */
 	nau8822_setreg_16(regv, datav);
+#endif /* NAU8822_USE_SPI4_ACTUAL */
+}
+
+/* Запись двух регистров на смежных адресах */
+void nau8822_setreg2(
+	uint_fast8_t regv,			/* 7 bit register address */
+	uint_fast16_t datav1,			/* 9 bit value */
+	uint_fast16_t datav2			/* 9 bit value */
+	)
+{
+#if NAU8822_USE_SPI4_ACTUAL
+	nau8822_setreg_24_2(regv, datav1, datav2);
+#else /* NAU8822_USE_SPI4_ACTUAL */
+	nau8822_setreg_16(regv + 0, datav1);
+	nau8822_setreg_16(regv + 1, datav2);
+	return;
+	nau8822_setreg_16_2(regv, datav1, datav2);
 #endif /* NAU8822_USE_SPI4_ACTUAL */
 }
 
@@ -194,15 +293,12 @@ static void nau8822_setvolume(uint_fast16_t gainL, uint_fast16_t gainR, uint_fas
 	//PRINTF(PSTR("nau8822_setvolume: level=%02x start\n"), level);
 
 	// Установка уровня вывода на наушники
-	nau8822_setreg(NAU8822_LOUT1_HP_CONTROL, vmutehp | (levelhpL & 0x3F) | 0);
-	nau8822_setreg(NAU8822_ROUT1_HP_CONTROL, vmutehp | (levelhpR & 0x3F) | 0x100);
+	nau8822_setreg2(NAU8822_LOUT1_HP_CONTROL, vmutehp | (levelhpL & 0x3F) | 0, vmutehp | (levelhpR & 0x3F) | 0x100);
 
 	// Установка уровня вывода на динамик
-	nau8822_setreg(NAU8822_LOUT2_SPK_CONTROL, vmutespk | (levelspkL & 0x3F) | 0);
-	nau8822_setreg(NAU8822_ROUT2_SPK_CONTROL, vmutespk | (levelspkR & 0x3F) | 0x100);
+	nau8822_setreg2(NAU8822_LOUT2_SPK_CONTROL, vmutespk | (levelspkL & 0x3F) | 0, vmutespk | (levelspkR & 0x3F) | 0x100);
 
-	nau8822_setreg(NAU8822_AUX2_MIXER_CONTROL, vmuteaux12);		// aux2
-	nau8822_setreg(NAU8822_AUX1_MIXER_CONTROL, vmuteaux12);		// aux1
+	nau8822_setreg2(NAU8822_AUX2_MIXER_CONTROL, vmuteaux12, vmuteaux12);		// aux2
 }
 
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
@@ -440,7 +536,7 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 
 	nau8822_setreg_universal(0x73, 0x000);	//	REG SPI3 0x73	0x129
 	nau8822_setreg_universal(0x57, 0x000);	//	REG SPI1 0x57	0x115
-	nau8822_setreg_universal(0x6C, 0x000);	//	REG SPI2 0x6C	0x008	0x3b recommended???
+	nau8822_setreg_universal(0x6C, 0x03B);	//	REG SPI2 0x6C	0x008	0x3b recommended???
 	nau8822_setreg_universal(0x08, 0x000);	//	REG GPIO 0x08	0x100
 #endif /* NAU8822_USE_SPI4_ACTUAL */
 
@@ -489,16 +585,13 @@ static void nau8822_initialize_fullduplex(void (* io_control)(uint_fast8_t on), 
 
 	const uint_fast8_t level = 0;	// До инициализации тишина
 	// Установка уровня вывода на наушники
-	nau8822_setreg(NAU8822_LOUT1_HP_CONTROL, level | 0);
-	nau8822_setreg(NAU8822_ROUT1_HP_CONTROL, level | 0x100);
+	nau8822_setreg2(NAU8822_LOUT1_HP_CONTROL, level | 0, level | 0x100);
 
 	// Установка уровня вывода на динамик
-	nau8822_setreg(NAU8822_LOUT2_SPK_CONTROL, level | 0);
-	nau8822_setreg(NAU8822_ROUT2_SPK_CONTROL, level | 0x100);
+	nau8822_setreg2(NAU8822_LOUT2_SPK_CONTROL, level | 0, level | 0x100);
 
 	// Установка параметров умножителя за ЦАП не требуется - всегда максимальный уровень.
-	nau8822_setreg(NAU8822_LEFT_DAC_DIGITAL_VOLUME, 255 | 0);
-	nau8822_setreg(NAU8822_RIGHT_DAC_DIGITAL_VOLUME, 255 | 0x100);
+	nau8822_setreg2(NAU8822_LEFT_DAC_DIGITAL_VOLUME, 255 | 0, 255 | 0x100);
 
 	nau8822_setreg(NAU8822_DAC_DITHER, 0x000);	// dither off
 	nau8822_setreg(NAU8822_DAC_CONTROL, 0x008);	// was: 0x00c - removed automute

@@ -433,6 +433,7 @@ void httpd_post_finished(void *connection, char *response_uri, u16_t response_ur
 	unsigned startoffset = 0;
 	unsigned endoffset = 0;
 
+	(void) endoffset;
 	PRINTF("httpd_post_finished, bufoffset=%u\n", bufoffset);
 
 	if (writeok)

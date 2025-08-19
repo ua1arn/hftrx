@@ -90,6 +90,7 @@
 
 // ARMSAIRATE - sample rate IF кодека в герцах
 #define NSAITICKS(t_ms) ((uint_fast16_t) (((uint_fast32_t) (t_ms) * ARMSAIRATE + 500) / 1000))
+#define NSAITICKS2(t_ms, sr) ((uint_fast16_t) (((uint_fast32_t) (t_ms) * (sr) + 500) / 1000))
 
 ///////////////////////////////////////
 //
@@ -194,18 +195,28 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 static uint_fast8_t		glob_dsploudspeaker_off;
 
 static volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+static volatile uint_fast8_t btaudioplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 static volatile uint_fast8_t datavox;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 
 
 #if WITHINTEGRATEDDSP
 
-static uint_fast8_t istxreplaced(void)
+static uint_fast8_t istxreplacedusbactive(void)
 {
 #if WITHUSBHW && WITHUSBUACOUT
 	return (datavox != 0 && buffers_get_uacoutactive() != 0);
 #else /* WITHUSBHW && WITHUSBUACOUT */
 	return 0;
 #endif /* WITHUSBHW && WITHUSBUACOUT */
+}
+
+static uint_fast8_t istxreplacedbtactive(void)
+{
+#if WITHUSEUSBBT
+	return (datavox != 0 && buffers_get_btoutactive() != 0);
+#else /* WITHUSEUSBBT */
+	return 0;
+#endif /* WITHUSEUSBBTT */
 }
 
 #define NPROF 2	/* количество профилей параметров DSP фильтров. */
@@ -416,6 +427,7 @@ static uint_fast8_t getTxShapeNotComplete(void);
 
 static FLOAT32P_t getsampmlemike2(void);
 static FLOAT32P_t getsampmleusb2(void);
+static FLOAT32P_t getsampmlebt2(void);
 
 static int getRxGate(void);	/* разрешение работы тракта в режиме приёма */
 
@@ -724,16 +736,16 @@ static FLOAT32P_t get_float4_iflo(void)
 
 // Преобразовать отношение напряжений выраженное в "разах" к децибелам.
 
-static FLOAT_t ratio2db(FLOAT_t ratio)
+FLOAT_t ratio2db(FLOAT_t ratio)
 {
 	return LOG10F(ratio) * 20;
 }
 
 // Преобразовать отношение выраженное в децибелах к "разам" отношения напряжений.
 
-static FLOAT_t db2ratio(FLOAT_t valueDBb)
+FLOAT_t db2ratio(FLOAT_t valueDBb)
 {
-	return POWF(10, valueDBb / 20);
+	return POWF(10, (valueDBb) / 20);
 }
 
 //////////////////////////////////////////
@@ -1211,6 +1223,9 @@ int dsp_mag2y(
 	int_fast16_t bottomdb		/* нижний предел спектроанализатора (positive number of decibels) */
 	)
 {
+	static const FLOAT_t minmag = db2ratio(- 160);
+	if (mag < minmag)
+		return 0;
 	const FLOAT_t r = ratio2db(mag);
 	const int y = ymax - (int) ((r + topdb) * ymax / - (bottomdb - topdb));
 
@@ -1399,6 +1414,18 @@ static void fir_design_adjust_tx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iC
 // Аргумент: постоянная времени цепи в секундах
 // Результат: 1 - мгновенно, 0 - никогда
 
+FLOAT_t MAKETAUIF2(FLOAT_t t, uint_fast32_t sr)
+{
+	if (t == 0)
+		return 1;
+
+	const FLOAT_t samplerate = sr;	// 48 kHz
+	const FLOAT_t step = POWF((FLOAT_t) M_SQRT1_2, 1 / (t * samplerate));
+	//const FLOAT_t step = EXPF(- 1 / (t * samplerate));
+
+	return 1 - step;
+}
+
 static FLOAT_t MAKETAUIF(FLOAT_t t)
 {
 	if (t == 0)
@@ -1411,22 +1438,8 @@ static FLOAT_t MAKETAUIF(FLOAT_t t)
 	return 1 - step;
 }
 
-// Аргумент: постоянная времени цепи в секундах
-// Результат: 1 - мгновенно, 0 - никогда
-static FLOAT_t MAKETAUAF(FLOAT_t t)
-{
-	if (t == 0)
-		return 1;
-
-	const FLOAT_t samplerate = ARMI2SRATE;	// 48 kHz or 12 kHz
-	const FLOAT_t step = POWF((FLOAT_t) M_SQRT1_2, 1 / (t * samplerate));
-	//const FLOAT_t step = EXPF(- 1 / (t * samplerate));
-
-	return 1 - step;
-}
-
 // Результат: 1 - мгновенно
-static FLOAT_t MAKETAUAF0(void)
+static FLOAT_t MAKETAU0(void)
 {
 	return 1;
 }
@@ -1442,37 +1455,6 @@ static void charge2(volatile FLOAT_t * vcap, FLOAT_t vinput, FLOAT_t chargespeed
 	* vcap += (vinput - * vcap) * chargespeed;
 }
 
-typedef struct agcstate
-{
-	FLOAT_t  agcfastcap;	// разница после выпрямления
-	FLOAT_t  agcslowcap;	// разница после выпрямления
-	unsigned agchangticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
-	IRQLSPINLOCK_t lock /* = IRQLSPINLOCK_INIT */;
-} agcstate_t;
-
-typedef struct agcparams
-{
-	uint_fast8_t agcoff;	// признак отключения АРУ
-
-	// Временные парметры АРУ
-
-	// постоянные времени цепи АРУ для реакции на импульсные помехи (быстрая АРУ).
-	FLOAT_t dischargespeedfast;	//0.02f;	// 1 - мгновенно, 0 - никогда
-	FLOAT_t	chargespeedfast;
-
-	// постоянные времени основного фильтра АРУ -  время заряды должно быть того же порядка, что и разряд цепи быстрой АРУ
-	FLOAT_t chargespeedslow;		//0.05f;	// 1 - мгновенно, 0 - никогда
-	FLOAT_t dischargespeedslow;	// 1 - мгновенно, 0 - никогда
-	unsigned hungticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
-
-	// Амплитудные параметры АРУ
-
-	FLOAT_t gainlimit;				// Максимальное усиление в разах по напряжению, допустимое для АРУ
-	FLOAT_t	mininput;
-	FLOAT_t levelfence;				// Максимальнное значение на выхоле АРУ
-	FLOAT_t agcfactor;				// Параметр при вычислении "спортивной" АРУ
-} agcparams_t;
-
 
 /////////////
 // agc +++
@@ -1484,20 +1466,46 @@ static FLOAT_t agc_calcagcfactor(uint_fast8_t rate)
 
 // Начальная установка  параметров АРУ приёмника
 
-static void agc_parameters_initialize(volatile agcparams_t * agcp)
+void agc_parameters_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
 {
 	agcp->agcoff = 0;
+	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 0.1, sr);
+	const FLOAT_t tauZERO = MAKETAU0();
 
-	agcp->dischargespeedfast = MAKETAUIF((FLOAT_t) 0.095);
-	agcp->chargespeedfast = MAKETAUAF0();
+	agcp->chargespeedfast = tauZERO;
+	agcp->dischargespeedfast = tauFAST;
 
-	agcp->chargespeedslow = MAKETAUIF((FLOAT_t) 0.095);
-	agcp->dischargespeedslow = MAKETAUIF((FLOAT_t) 0.2);	
+	agcp->chargespeedslow = tauFAST;
+	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 0.2, sr);
 
-	agcp->hungticks = NSAITICKS(300);			// 0.3 seconds
+	agcp->hungticks = NSAITICKS2(300, sr);			// 0.3 seconds
 
 	agcp->gainlimit = db2ratio(60);
 	agcp->mininput = db2ratio(- 160);
+	agcp->levelfence = 1;
+	agcp->agcfactor = agc_calcagcfactor(10);
+
+	//PRINTF(PSTR("agc_parameters_initialize: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
+}
+
+// Отображение пиков и линии спектра
+void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
+{
+	agcp->agcoff = 1;
+	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 0.1, sr);
+	const FLOAT_t tauZERO = MAKETAU0();
+
+	agcp->chargespeedfast = tauFAST;
+	agcp->dischargespeedfast = tauFAST;
+
+	agcp->chargespeedslow = tauFAST;
+	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 1.0, sr);
+
+	agcp->hungticks = NSAITICKS2(1000, sr);			// 1 second
+	agcp->mininput = db2ratio(- 160);
+
+	// параметры используются при работе АРУ
+	agcp->gainlimit = db2ratio(60);
 	agcp->levelfence = 1;
 	agcp->agcfactor = agc_calcagcfactor(10);
 
@@ -1508,16 +1516,17 @@ static void agc_parameters_initialize(volatile agcparams_t * agcp)
 
 static void rxagc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit, uint_fast8_t pathi)
 {
+	const uint_fast32_t sr = ARMSAIRATE;
 	const uint_fast8_t flatgain = glob_agcrate [pathi] == UINT8_MAX;
 
 	agcp->agcoff = (glob_dspagc == BOARD_AGCCODE_OFF);
 
-	agcp->dischargespeedfast = MAKETAUIF((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
+	agcp->dischargespeedfast = MAKETAUIF2((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
 
-	agcp->chargespeedfast = MAKETAUIF((int) glob_agc_t0 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
-	agcp->chargespeedslow = MAKETAUIF((int) glob_agc_t1 [pathi] * (FLOAT_t) 0.001);	// в милисекундах
-	agcp->dischargespeedslow = MAKETAUIF((int) glob_agc_t2 [pathi] * (FLOAT_t) 0.1);	// в сотнях милисекунд (0.1 секунды)
-	agcp->hungticks = NSAITICKS(glob_agc_thung [pathi] * 100);			// в сотнях милисекунд (0.1 секунды)
+	agcp->chargespeedfast = MAKETAUIF2((int) glob_agc_t0 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
+	agcp->chargespeedslow = MAKETAUIF2((int) glob_agc_t1 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
+	agcp->dischargespeedslow = MAKETAUIF2((int) glob_agc_t2 [pathi] * (FLOAT_t) 0.1, sr);	// в сотнях милисекунд (0.1 секунды)
+	agcp->hungticks = NSAITICKS2(glob_agc_thung [pathi] * 100, sr);			// в сотнях милисекунд (0.1 секунды)
 
 	agcp->gainlimit = gainlimit;
 	agcp->levelfence = (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;	/* Для эксперементов по улучшению приема АМ */
@@ -1530,6 +1539,7 @@ static void rxagc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t g
 
 static void smeter_parameters_update(volatile agcparams_t * const agcp)
 {
+	const uint_fast32_t sr = ARMSAIRATE;
 	agcp->agcoff = 0;
 
 	agcp->chargespeedfast = MAKETAUIF((FLOAT_t) 0.1);	// 100 mS
@@ -1542,7 +1552,7 @@ static void smeter_parameters_update(volatile agcparams_t * const agcp)
 	agcp->agcfactor = (FLOAT_t) -1;
 
 #if CTLSTYLE_OLEG4Z_V1
-	agcp->chargespeedfast = MAKETAUAF0();
+	agcp->chargespeedfast = MAKETAU0();
 	agcp->chargespeedfast = MAKETAUIF((FLOAT_t) 0.005);	// 5 mS
 	agcp->dischargespeedfast = MAKETAUIF((FLOAT_t) 0.005);	// 5 mS
 #endif /* CTLSTYLE_OLEG4Z_V1 */
@@ -1554,10 +1564,11 @@ static void smeter_parameters_update(volatile agcparams_t * const agcp)
 
 static void comp_parameters_initialize(volatile agcparams_t * agcp)
 {
+	const uint_fast32_t sr = ARMI2SRATE;
 	agcp->agcoff = 0;
 
+	agcp->chargespeedfast = MAKETAU0();
 	agcp->dischargespeedfast = MAKETAUIF((FLOAT_t) 0.100);
-	agcp->chargespeedfast = MAKETAUAF0();
 
 	agcp->chargespeedslow = MAKETAUIF((FLOAT_t) 0.200);
 	agcp->dischargespeedslow = MAKETAUIF((FLOAT_t) 0.200);
@@ -1574,6 +1585,7 @@ static void comp_parameters_initialize(volatile agcparams_t * agcp)
 
 static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit)
 {
+	const uint_fast32_t sr = ARMI2SRATE;
 	agcp->agcoff = glob_mikeagc == 0;
 
 	agcp->gainlimit = gainlimit;
@@ -1583,12 +1595,9 @@ static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t ga
 // детектор АРУ - поддерживает выходное значение пропорционально сигналу
 // со всеми положенными задержками на срабатывание/отпускание
 
-static void
+void
 agc_perform(const agcparams_t * agcp, agcstate_t * st, FLOAT_t sample)
 {
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& st->lock, & oldIrql, IRQL_REALTIME);
-
 	if (st->agcfastcap < sample)
 	{
 		// быстрая цепь АРУ
@@ -1628,25 +1637,18 @@ agc_perform(const agcparams_t * agcp, agcstate_t * st, FLOAT_t sample)
 		// не меняется значение
 		st->agchangticks = agcp->hungticks;
 	}
-	IRQLSPIN_UNLOCK(& st->lock, oldIrql);
 }
 
-static FLOAT_t agc_result_slow(agcstate_t * st)
+FLOAT_t agc_result_slow(agcstate_t * st)
 {
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& st->lock, & oldIrql, IRQL_REALTIME);
 	const FLOAT_t v = FMAXF(st->agcfastcap, st->agcslowcap);	// разница после ИЛИ
-	IRQLSPIN_UNLOCK(& st->lock, oldIrql);
 
 	return v;
 }
 
-static FLOAT_t agc_result_fast(agcstate_t * st)
+FLOAT_t agc_result_fast(agcstate_t * st)
 {
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& st->lock, & oldIrql, IRQL_REALTIME);
 	const FLOAT_t v = st->agcfastcap;
-	IRQLSPIN_UNLOCK(& st->lock, oldIrql);
 
 	return v;
 }
@@ -1665,7 +1667,7 @@ static RAMDTCM FLOAT_t DVOXCHARGE = 0;
 // Возвращает значения 0..255
 uint_fast8_t dsp_getvox(uint_fast8_t fullscale)
 {
-	unsigned v = FMAXF(mikeinlevel, 0 /* datavox == 0 ? 0 : dvoxlevel */ ) * fullscale;	// масшабирование к 0..255
+	unsigned v = FMAXF(mikeinlevel, 0) * fullscale;	// масшабирование к 0..255
 	return v > fullscale ? fullscale : v;
 }
 
@@ -1677,11 +1679,12 @@ uint_fast8_t dsp_getavox(uint_fast8_t fullscale)
 
 static void voxmeter_initialize(void)
 {
-	VOXCHARGE = MAKETAUAF0();	// Пиковый детектор со временем заряда 0
-	VOXDISCHARGE = MAKETAUAF((FLOAT_t) 0.02);	// Пиковый детектор со временем разряда 0.02 секунды
+	const uint_fast32_t sr = ARMI2SRATE;
+	VOXCHARGE = MAKETAU0();	// Пиковый детектор со временем заряда 0
+	VOXDISCHARGE = MAKETAUIF2((FLOAT_t) 0.02, sr);	// Пиковый детектор со временем разряда 0.02 секунды
 
-	DVOXCHARGE = MAKETAUAF0();	// Пиковый детектор со временем заряда 0
-	DVOXDISCHARGE = MAKETAUAF((FLOAT_t) 0.02);	// Пиковый детектор со временем разряда 0.02 секунды
+	DVOXCHARGE = MAKETAU0();	// Пиковый детектор со временем заряда 0
+	DVOXDISCHARGE = MAKETAUIF2((FLOAT_t) 0.02, sr);	// Пиковый детектор со временем разряда 0.02 секунды
 }
 
 /////////////////////////////
@@ -2984,11 +2987,13 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi, uint_fast8_
 }
 
 // calculate 1/2 of coefficients
-static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
+// Зависят от glob_dspmodes, glob_aflowcutrx, glob_afhighcutrx, glob_fltsofter, glob_afresponcerx
+static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff)
 {
 	const int cutfreqlow = glob_aflowcutrx [pathi];
 	const int cutfreqhigh = glob_afhighcutrx [pathi];
 	const uint_fast8_t fltsofter = glob_fltsofter [pathi];
+	const int iCoefNum = Ntap_rx_AUDIO;
 	static FLOAT_t dWindow [NtapCoeffs(Ntap_rx_AUDIO)];			/* подготовленные значения функции окна - с учетом симметрии (половина) */
 
 	ASSERT((iCoefNum % 2) == 1);
@@ -3093,9 +3098,11 @@ static void dsp_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoeff, int i
 
 
 // calculate full array of coefficients
-void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff)
+// Зависят от glob_dspmodes, glob_aflowcutrx, glob_afhighcutrx, glob_fltsofter, glob_afresponcerx
+void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
 {
-	dsp_recalceq_coeffs_half(pathi, dCoeff, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
+	ASSERT(Ntap_rx_AUDIO == iCoefNum);	/* проверяем на несогласованность параметров */
+	dsp_recalceq_coeffs_half(pathi, dCoeff);	// calculate 1/2 of coefficients
 	fir_expand_symmetric(dCoeff, Ntap_rx_AUDIO);	// Duplicate symmetrical part of coeffs.
 }
 
@@ -3315,9 +3322,8 @@ static void modem_update(void)
 
 static RAMDTCM FLOAT_t agclogof10 = 1;
 	
-static void agc_state_initialize(volatile agcstate_t * st, const volatile agcparams_t * agcp)
+void agc_state_initialize(volatile agcstate_t * st, const volatile agcparams_t * agcp)
 {
-	IRQLSPINLOCK_INITIALIZE(& st->lock);
 	const FLOAT_t f0 = agcp->levelfence;
 	const FLOAT_t m0 = agcp->mininput;
 	const FLOAT_t siglevel = 0;
@@ -3363,7 +3369,7 @@ static RAMFUNC FLOAT_t agccalcgain_log(const volatile agcparams_t * const agcp, 
 
 // По отфильтрованому в соответствии с заданными временныме параметрами показатлю
 // силы сигнала получаем относительный уровень (логарифмированный)
-static RAMFUNC FLOAT_t agc_calcstrengthlog10(const volatile agcparams_t * const agcp, FLOAT_t streingth)
+static RAMFUNC FLOAT_t agc_calcstrengthlog10(FLOAT_t streingth)
 {
 	return streingth / agclogof10;	// уже логарифмировано
 }
@@ -3405,10 +3411,10 @@ static void agc_initialize(void)
 		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
 
-			agc_parameters_initialize(& rxagcparams [profile] [pathi]);
+			agc_parameters_initialize(& rxagcparams [profile] [pathi], ARMSAIRATE);
 			agc_state_initialize(& rxagcstate [pathi], & rxagcparams [profile] [pathi]);
 			// s-meter
-			agc_parameters_initialize(& rxsmeterparams);
+			agc_parameters_initialize(& rxsmeterparams, ARMSAIRATE);
 			agc_state_initialize(& rxsmeterstate [pathi], & rxsmeterparams);
 		}
 
@@ -3480,64 +3486,17 @@ static RAMFUNC int agc_squelchopen(
 
 // Функция для S-метра - получение десятичного логарифма уровня сигнала от FS
 /* Вызывается из user-mode программы */
-static void agc_reset(
-	uint_fast8_t pathi
-	)
-{
-	agcparams_t * const agcp = & rxsmeterparams;
-	agcstate_t * const st = & rxsmeterstate [pathi];
-	FLOAT_t m0 = agcp->mininput;
-	FLOAT_t m1;
-
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_REALTIME, & oldIrql);
-	st->agcfastcap = m0;
-	st->agcslowcap = m0;
-	LowerIrql(oldIrql);
-
-	for (;;)
-	{
-		local_delay_ms(1);
-
-		IRQL_t oldIrql;
-		RiseIrql(IRQL_REALTIME, & oldIrql);
-		const FLOAT_t v = agc_result_slow(st);
-		LowerIrql(oldIrql);
-
-		if (v != m0)
-		{
-			m1 = v;
-			break;
-		}
-	}
-	for (;;)
-	{
-		local_delay_ms(1);
-
-		IRQL_t oldIrql;
-		RiseIrql(IRQL_REALTIME, & oldIrql);
-		const FLOAT_t v = agc_result_slow(st);
-		LowerIrql(oldIrql);
-
-		if (v != m1)
-			break;
-	}
-}
-
-// Функция для S-метра - получение десятичного логарифма уровня сигнала от FS
-/* Вызывается из user-mode программы */
 static FLOAT_t agc_forvard_getstreigthlog10(
 	FLOAT_t * tracemax,
 	uint_fast8_t pathi
 	)
 {
-	agcparams_t * const agcp = & rxsmeterparams;
 	agcstate_t * const st = & rxsmeterstate [pathi];
 
 	const FLOAT_t fltstrengthfast = agc_result_fast(st);	// измеритель уровня сигнала
 	const FLOAT_t fltstrengthslow = agc_result_slow(st);	// измеритель уровня сигнала
-	* tracemax = agc_calcstrengthlog10(agcp, fltstrengthslow);
-	FLOAT_t r = agc_calcstrengthlog10(agcp, fltstrengthfast);
+	* tracemax = agc_calcstrengthlog10(fltstrengthslow);
+	FLOAT_t r = agc_calcstrengthlog10(fltstrengthfast);
 
 	return r;
 }
@@ -3563,8 +3522,6 @@ uint_fast8_t
 dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper, uint_fast8_t clean)
 {
 	const uint_fast8_t pathi = 0;	// тракт, испольуемый для показа s-метра
-	//if (clean != 0)
-	//	agc_reset(pathi);
 	FLOAT_t tmaxf;
 	int level = upper + computeslevel_1(agc_forvard_getstreigthlog10(& tmaxf, pathi));
 	int tmax = upper + computeslevel_1(tmaxf);
@@ -3589,8 +3546,6 @@ uint_fast16_t
 dsp_getsmeter10(uint_fast16_t * tracemax, uint_fast16_t lower, uint_fast16_t upper, uint_fast8_t clean)
 {
 	const uint_fast8_t pathi = 0;	// тракт, испольуемый для показа s-метра
-	//if (clean != 0)
-	//	agc_reset(pathi);
 	FLOAT_t tmaxf;
 	int level = upper + computeslevel_10(agc_forvard_getstreigthlog10(& tmaxf, pathi));
 	int tmax = upper + computeslevel_10(tmaxf);
@@ -3745,7 +3700,7 @@ static FLOAT_t subtonevolume = 0; //(glob_subtonelevel / (FLOAT_t) 100);
 // Здесь значение выборки в диапазоне, допустимом для кодека
 static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 {
-	if (uacoutplayer)
+	if (uacoutplayer || btaudioplayer)
 		return sdtn;
 	const FLOAT_t mainvolumerx = 1 - sidetonevolume;
 	return v * mainvolumerx + sdtn * sidetonevolume;
@@ -3755,7 +3710,7 @@ static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 // shape: 0..1: 0 - monitor, 1 - sidetone
 static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 {
-	if (uacoutplayer)
+	if (uacoutplayer || btaudioplayer)
 		return moni;
 	return sdtn * shape + moni * glob_moniflag * (1 - shape);
 }
@@ -3805,36 +3760,43 @@ static void monimux(
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_FREEDV:
-#if WITHUSBHW && WITHUSBUACOUT
-		if (glob_txaudio != BOARD_TXAUDIO_USB && ! istxreplaced())
+		if (glob_txaudio != BOARD_TXAUDIO_USB && glob_txaudio != BOARD_TXAUDIO_BT && ! istxreplacedusbactive() && ! istxreplacedbtactive())
 		{
 			moni->IV = * ssbtx;
 			moni->QV = * ssbtx;
 		}
-#else /* WITHUSBHW && WITHUSBUACOUT */
 		moni->IV = * ssbtx;
 		moni->QV = * ssbtx;
-#endif /* WITHUSBHW && WITHUSBUACOUT */
 		break;
 
 	default:
 		break;
 	}
 }
+
+// VOX detector и разрядная цепь
+// Поддержка работы VOX
+static void voxmeasure(FLOAT32P_t v)
+{
+	const FLOAT_t vi0f = FMAXF(FABSF(v.IV), FABSF(v.QV));
+	charge2(& mikeinlevel, vi0f, (mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
+}
+
 // return audio sample in range [- 1.. + 1]
 static RAMFUNC FLOAT_t mikeinmux(
 	uint_fast8_t dspmode,
 	FLOAT32P_t * moni
 	)
 {
-	const uint_fast8_t digitx = dspmode == DSPCTL_MODE_TX_DIGI;
-	const FLOAT_t txlevelXXX = digitx || istxreplaced() ? txlevelfenceDIGI : txlevelfenceSSB;
-	const FLOAT32P_t vi0p = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
-	const FLOAT32P_t viusb0f = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
-	FLOAT_t vi0f = vi0p.IV;
+	const uint_fast8_t digitx = (dspmode == DSPCTL_MODE_TX_DIGI);
+	const FLOAT_t txlevelXXX = (digitx || istxreplacedusbactive() || istxreplacedbtactive()) ? txlevelfenceDIGI : txlevelfenceSSB;
+	const FLOAT32P_t vi0airpmike = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
+	const FLOAT32P_t vi0pairusb = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
+	const FLOAT32P_t vi0pairbt = getsampmlebt2();	// с BT (или 0, если ещё не запустился) */
+	FLOAT_t vi0fmike = vi0airpmike.IV;
 
 #if WITHFT8
-	ft8_txfill(& vi0f);	// todo: add new DSPCTL_FT8 mode
+	ft8_txfill(& vi0fmike);	// todo: add new DSPCTL_FT8 mode
 #endif /* WITHFT8 */
 
 #if WITHTXCPATHCALIBRATE
@@ -3857,38 +3819,43 @@ static RAMFUNC FLOAT_t mikeinmux(
 		switch (glob_txaudio)
 		{
 		default:
-#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 			// источник - LINE IN
 		case BOARD_TXAUDIO_LINE:
-#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 		case BOARD_TXAUDIO_MIKE:
-#if WITHUSBHW && WITHUSBUACOUT
-			if (istxreplaced())
+			if (istxreplacedusbactive())
 				goto txfromusb;
-#endif /* WITHUSBHW && WITHUSBUACOUT */
-			//vi0f = get_rout();		// Тест - синусоида 700 герц амплитуы (-1..+1)
+			if (istxreplacedbtactive())
+				goto txfrombt;
+			//vi0fmike = get_rout();		// Тест - синусоида 700 герц амплитуы (-1..+1)
 			// источник - микрофон
-			vi0f = txmikeagc(vi0f * txlevelXXX);	// АРУ
-			vi0f = txmikeclip(vi0f);				// Ограничитель
+			vi0fmike = txmikeagc(vi0fmike * txlevelXXX);	// АРУ
+			vi0fmike = txmikeclip(vi0fmike);				// Ограничитель
 #if WITHREVERB
-			vi0f = audio_reverb_calc(vi0f);				// Ревербератор
+			vi0fmike = audio_reverb_calc(vi0fmike);				// Ревербератор
 #endif /* WITHREVERB */
 #if WITHCOMPRESSOR
-			vi0f = audio_compressor_calc(vi0f);		// Компрессор
+			vi0fmike = audio_compressor_calc(vi0fmike);		// Компрессор
 #endif /* WITHCOMPRESSOR */
-			moni->IV = vi0f;
-			moni->QV = vi0f;
-			return vi0f;
+			moni->IV = vi0fmike;
+			moni->QV = vi0fmike;
+			voxmeasure(vi0airpmike);	// Поддержка работы VOX
+			return vi0fmike;
 
-#if WITHUSBHW && WITHUSBUACOUT
 		case BOARD_TXAUDIO_USB:
 			txfromusb:
 			// источник - USB
-			moni->IV = viusb0f.IV;
-			moni->QV = viusb0f.QV;
-			return viusb0f.IV * txlevelXXX;
+			moni->IV = vi0pairusb.IV;
+			moni->QV = vi0pairusb.QV;
+			voxmeasure(vi0pairusb);	// Поддержка работы VOX
+			return vi0pairusb.IV * txlevelXXX;
 
-#endif /* WITHUSBHW && WITHUSBUACOUT */
+		case BOARD_TXAUDIO_BT:
+			txfrombt:
+			// источник - BT
+			moni->IV = vi0pairbt.IV;
+			moni->QV = vi0pairbt.QV;
+			voxmeasure(vi0pairbt);	// Поддержка работы VOX
+			return vi0pairbt.IV * txlevelXXX;
 
 		case BOARD_TXAUDIO_NOISE:
 			// источник - шум
@@ -3910,7 +3877,11 @@ static RAMFUNC FLOAT_t mikeinmux(
 		// В режиме приёма или bypass ничего не делаем.
 		if (uacoutplayer)
 		{
-			* moni = viusb0f;
+			* moni = vi0pairusb;
+		}
+		else if (btaudioplayer)
+		{
+			* moni = vi0pairbt;
 		}
 		else
 		{
@@ -4586,11 +4557,6 @@ static RAMFUNC FLOAT32P_t getsampmlemike2(void)
 		v.IV = 0;
 		v.QV = 0;
 	}
-	// VOX detector и разрядная цепь
-	// Поддержка работы VOX
-	const FLOAT_t vi0f = FMAXF(FABSF(v.IV), FABSF(v.QV));
-	charge2(& mikeinlevel, vi0f, (mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
-
 	return v;
 }
 
@@ -4603,11 +4569,18 @@ static RAMFUNC FLOAT32P_t getsampmleusb2(void)
 		v.IV = 0;
 		v.QV = 0;
 	}
-	// VOX detector и разрядная цепь
-	// Поддержка работы DATA VOX
-	const FLOAT_t vi0f = FMAXF(FABSF(v.IV), FABSF(v.QV));
-	charge2(& dvoxlevel, vi0f, (dvoxlevel < vi0f) ? DVOXCHARGE : DVOXDISCHARGE);
+	return v;
+}
 
+/* получить очередной оцифрованый сэмпл с USB AUDIO канала. */
+static RAMFUNC FLOAT32P_t getsampmlebt2(void)
+{
+	FLOAT32P_t v;
+	if (getsampmlebt(& v) == 0)
+	{
+		v.IV = 0;
+		v.QV = 0;
+	}
 	return v;
 }
 
@@ -5137,6 +5110,9 @@ void dsp_fillphones(unsigned nsamples)
 #if WITHHDMITVHW
 		elfill_dmabufferhdmi48tx(b.IV, b.QV);
 #endif /* WITHHDMITVHW */
+#if WITHUSEUSBBT
+		elfill_dmabufferbtin48(b.IV, b.QV);
+#endif /* WITHUSEUSBBT */
 	}
 }
 
@@ -5355,7 +5331,6 @@ void rxEqIni(void)
 #if WITHAFEQUALIZER
 
 #define EQ_STAGES				1
-#define BIQUAD_COEFF_IN_STAGE 	5
 
 static FLOAT_t EQ_RX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
 static FLOAT_t EQ_RX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
@@ -5916,20 +5891,6 @@ prog_dsplreg(void)
 	const uint_fast8_t tprofile = ! gwagcproftx;	// индекс профиля, который станет рабочим
 	txparam_update(tprofile);
 	gwagcproftx = tprofile;
-
-#if (CTLSTYLE_RAVENDSP_V1 || CTLSTYLE_DSPV1A)
-	if (isdspmoderx(glob_dspmodes [0]))
-	{
-		// усиление тракта ПЧ (AD605)
-		HARDWARE_DAC_AGC((glob_gvad605 * dac_agc_coderange) / UINT8_MAX + dac_agc_lowcode);
-	}
-	else
-	{
-		// при передаче закрыть
-		HARDWARE_DAC_AGC(0);
-	}
-#endif /* (CTLSTYLE_RAVENDSP_V1 || CTLSTYLE_DSPV1A) */
-
 }
 
 void 
@@ -5943,8 +5904,10 @@ prog_fltlreg(void)
 	audio_setup_mike(spf);
 	uint_fast8_t pathi;
 	for (pathi = 0; pathi < pathn; ++ pathi)
+	{
 		audio_update(spf, pathi, tx);
-
+		filters_update_rx(pathi);
+	}
 	gwprof = spf;
 
 	modem_update();
@@ -6471,6 +6434,14 @@ void board_set_uacplayer(uint_fast8_t v)
 #if WITHUSBUAC
 	uacoutplayer = v;
 #endif /* WITHUSBUAC */
+}
+
+/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+void board_set_btaudioplayer(uint_fast8_t v)
+{
+#if WITHUSEUSBBT
+	btaudioplayer = v;
+#endif /* WITHUSEUSBBT */
 }
 
 /* автоматическое изменение источника при появлении звука со стороны компьютера */
