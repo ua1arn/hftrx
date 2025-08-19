@@ -23,7 +23,7 @@ typedef void VOID, * PVOID;
 typedef int64_t LONGLONG;
 typedef uint64_t ULONGLONG;
 
-#define RESTRICTED_POINTER /* */
+#define RESTRICTED_POINTER __RESTRICT
 #define IN_param /* */
 #define OUT_param /* */
 
@@ -74,12 +74,6 @@ typedef struct _LIST_ENTRY {
    struct _LIST_ENTRY *Flink;
    struct _LIST_ENTRY *Blink;
 } LIST_ENTRY, *PLIST_ENTRY, *RESTRICTED_POINTER PRLIST_ENTRY;
-
-typedef struct _VLIST_ENTRY {
-   volatile struct _VLIST_ENTRY *Flink;
-   volatile struct _VLIST_ENTRY *Blink;
-} VLIST_ENTRY, *RESTRICTED_POINTER PRVLIST_ENTRY;
-typedef volatile VLIST_ENTRY * PVLIST_ENTRY;
 
 //
 //  Singly linked list structure. Can be used as either a list head, or
@@ -215,18 +209,6 @@ InsertHeadList(
     _EX_ListHead->Flink = (Entry);\
     }
 
-#define InsertHeadVList(ListHead,Entry) {\
-    PVLIST_ENTRY _EX_Flink;\
-    PVLIST_ENTRY _EX_ListHead;\
-    _EX_ListHead = (ListHead);\
-    _EX_Flink = _EX_ListHead->Flink;\
-    (Entry)->Flink = _EX_Flink;\
-    (Entry)->Blink = _EX_ListHead;\
-    _EX_Flink->Blink = (Entry);\
-    _EX_ListHead->Flink = (Entry);\
-    }
-
-
 ///////
 //
 VOID 
@@ -238,17 +220,6 @@ InsertTailList(
 #define InsertTailList(ListHead,Entry) {\
     PLIST_ENTRY _EX_Blink;\
     PLIST_ENTRY _EX_ListHead;\
-    _EX_ListHead = (ListHead);\
-    _EX_Blink = _EX_ListHead->Blink;\
-    (Entry)->Flink = _EX_ListHead;\
-    (Entry)->Blink = _EX_Blink;\
-    _EX_Blink->Flink = (Entry);\
-    _EX_ListHead->Blink = (Entry);\
-    }
-
-#define InsertTailVList(ListHead,Entry) {\
-    PVLIST_ENTRY _EX_Blink;\
-    PVLIST_ENTRY _EX_ListHead;\
     _EX_ListHead = (ListHead);\
     _EX_Blink = _EX_ListHead->Blink;\
     (Entry)->Flink = _EX_ListHead;\
@@ -309,15 +280,6 @@ RemoveEntryList(
 #define RemoveEntryList(Entry) {\
     PLIST_ENTRY _EX_Blink;\
     PLIST_ENTRY _EX_Flink;\
-    _EX_Flink = (Entry)->Flink;\
-    _EX_Blink = (Entry)->Blink;\
-    _EX_Blink->Flink = _EX_Flink;\
-    _EX_Flink->Blink = _EX_Blink;\
-    }
-
-#define RemoveEntryVList(Entry) {\
-    PVLIST_ENTRY _EX_Blink;\
-    PVLIST_ENTRY _EX_Flink;\
     _EX_Flink = (Entry)->Flink;\
     _EX_Blink = (Entry)->Blink;\
     _EX_Blink->Flink = _EX_Flink;\

@@ -746,7 +746,7 @@ enum ticker_mode
 };
 typedef struct ticker_tag
 {
-	VLIST_ENTRY item;
+	LIST_ENTRY item;
 	unsigned period;
 	//unsigned fired;
 	unsigned ticks;		// текущее количество тиков
@@ -767,7 +767,7 @@ void ticker_remove(ticker_t * p);
 
 typedef struct adcdone_tag
 {
-	VLIST_ENTRY item;
+	LIST_ENTRY item;
 	void (* cb)(void *);
 	void * ctx;
 } adcdone_t;

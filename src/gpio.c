@@ -15,7 +15,7 @@
 
 #define GPIOIRQL IRQL_SYSTEM
 
-static VLIST_ENTRY einthead [26];	// a..z lists
+static LIST_ENTRY einthead [26];	// a..z lists
 #define EIHEAD_STM32 0
 
 void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t handler, void * ctx)
@@ -29,11 +29,11 @@ void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t han
 /* Вызов обработчика для указанных битов порта */
 static void
 gpioX_invokeinterrupt(
-	const volatile VLIST_ENTRY * head,
+	const LIST_ENTRY * RESTRICTED_POINTER head,
 	portholder_t mask
 	)
 {
-	volatile VLIST_ENTRY * t;
+	PRLIST_ENTRY t;
 	for (t = head->Blink; t != head; t = t->Blink)
 	{
 		ASSERT(t != NULL);
@@ -845,19 +845,6 @@ static gpio_ctx_t * gpioX_get_ctx(const GPIO_TypeDef * gpio)
 	return & gpiodatas_ctx [gpio - (GPIO_TypeDef *) GPIOBLOCK_BASE];
 }
 
-
-static uint32_t readl(uintptr_t addr)
-{
-	return * (volatile uint32_t *) addr;
-}
-
-static void writel(uint32_t value, uintptr_t addr)
-{
-	* (volatile uint32_t *) addr = value;
-}
-
-//#define	R_PRCM_BASE	 ((uintptr_t) 0x01F01400)
-
 // временная подготовка к работе с gpio.
 // Вызывается из SystemInit() - после работы память будет затерта
 void sysinit_gpio_initialize(void)
@@ -1246,7 +1233,7 @@ gpioX_onchangeinterrupt(
 		uint32_t priority,
 		uint_fast8_t targetcpu,
 		void (* group_handler)(void),
-		volatile VLIST_ENTRY * head, volatile einthandler_t * h
+		PRLIST_ENTRY head, einthandler_t * h
 		)
 {
 	unsigned pos;
@@ -1312,7 +1299,7 @@ gpioX_onchangeinterrupt(
 		/* Регистрация обработчика для указанных битов порта */
 		arm_hardware_disable_handler(int_id);
 		h->mask = ipins;
-		InsertHeadVList(head, & h->item);
+		InsertHeadList(head, & h->item);
 		arm_hardware_set_handler(int_id, group_handler, priority, targetcpu);	/* GPIOx_NS */
 		break;
 	}
@@ -1471,7 +1458,7 @@ void sysinit_gpio_initialize(void)
 	stm32f10x_pioX_onchangeinterrupt(portholder_t ipins,
 			portholder_t raise, portholder_t fall,
 			portholder_t portcode, uint32_t priority,
-			LIST_ENTRY * head, einthandler_t * h
+			PRLIST_ENTRY head, einthandler_t * h
 			)
 	{
 		//const portholder_t portcode = AFIO_EXTICR1_EXTI0_PB;	// PORT B
@@ -1676,7 +1663,7 @@ void sysinit_gpio_initialize(void)
 
 		// Add interrupt handler to chain
 		h->mask = ipins;
-		InsertHeadVList(& einthead [EIHEAD_STM32], & h->item);
+		InsertHeadList(& einthead [EIHEAD_STM32], & h->item);
 
 	}
 

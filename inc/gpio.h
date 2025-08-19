@@ -22,7 +22,7 @@ extern "C" {
 typedef void (* eintcb_t)(void * ctx);
 typedef struct einthandler
 {
-	VLIST_ENTRY item;
+	LIST_ENTRY item;
 	portholder_t mask;
 	eintcb_t handler;
 	void * ctx;

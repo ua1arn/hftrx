@@ -601,7 +601,7 @@ void hamradio_lfm_disable(void)
 
 #endif /* WITHLFM */
 
-LIST_ENTRY edgepins;
+static LIST_ENTRY edgepins;
 
 static edgepin_t edgpmoxptt;
 static edgepin_t edgphandptt;
@@ -18717,10 +18717,10 @@ void edgepins_initialize(void)
 /* проверка, есть ли хоть на одном из входов продетектированный запрос перехода на пережачу */
 uint_fast8_t edgepins_get_ptt(void)
 {
-	PLIST_ENTRY t;
+	PRLIST_ENTRY t;
 	for (t = edgepins.Blink; t != & edgepins; t = t->Blink)
 	{
-		PLIST_ENTRY tnext = t->Blink;	/* текущий элемент может быть удалён из списка */
+		PRLIST_ENTRY tnext = t->Blink;	/* текущий элемент может быть удалён из списка */
 		edgepin_t * const p = CONTAINING_RECORD(t, edgepin_t, item);
 		const uint_fast8_t f = p->getpin(p->ctx);
 		if (f)

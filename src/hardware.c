@@ -226,8 +226,8 @@ void xc7z_gpio_output(uint8_t pin)
 
 static IRQLSPINLOCK_t tickerslock = IRQLSPINLOCK_INIT;
 static IRQLSPINLOCK_t adcdoneslock = IRQLSPINLOCK_INIT;
-static VLIST_ENTRY tickers;
-static VLIST_ENTRY adcdones;
+static LIST_ENTRY tickers;
+static LIST_ENTRY adcdones;
 
 void ticker_initialize_ext(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx, enum ticker_mode mode)
 {
@@ -270,7 +270,7 @@ void ticker_add(ticker_t * p)
 
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
 	ASSERT(tickers.Blink != NULL && tickers.Flink != NULL);
-	InsertHeadVList(& tickers, & p->item);
+	InsertHeadList(& tickers, & p->item);
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
@@ -279,7 +279,7 @@ void ticker_remove(ticker_t * p)
 	IRQL_t oldIrql;
 
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
-	RemoveEntryVList(& p->item);
+	RemoveEntryList(& p->item);
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
@@ -323,12 +323,12 @@ static void tickers_event(void)
 	IRQL_t oldIrql;
 
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
-	PVLIST_ENTRY t;
+	PRLIST_ENTRY t;
 	ASSERT(tickers.Blink != NULL && tickers.Flink != NULL);
 	for (t = tickers.Blink; t != & tickers;)
 	{
 		ASSERT(t != NULL);
-		PVLIST_ENTRY tnext = t->Blink;	/* текущий элемент может быть удалён из списка */
+		PRLIST_ENTRY tnext = t->Blink;	/* текущий элемент может быть удалён из списка */
 		ticker_t * const p = CONTAINING_RECORD(t, ticker_t, item);
 	
 		switch (p->mode)
@@ -396,7 +396,7 @@ void tickers_deinitialize(void)
 	IRQL_t oldIrql;
 
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
-	RemoveEntryVList(& tickers);
+	RemoveEntryList(& tickers);
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
@@ -413,7 +413,7 @@ void adcdone_add(adcdone_t * p)
 	IRQL_t oldIrql;
 
 	IRQLSPIN_LOCK(& adcdoneslock, & oldIrql, TICKER_IRQL);
-	InsertHeadVList(& adcdones, & p->item);
+	InsertHeadList(& adcdones, & p->item);
 	IRQLSPIN_UNLOCK(& adcdoneslock, oldIrql);
 }
 
@@ -423,7 +423,7 @@ static void adcdones_event(void * ctx)
 	IRQL_t oldIrql;
 
 	IRQLSPIN_LOCK(& adcdoneslock, & oldIrql, TICKER_IRQL);
-	PVLIST_ENTRY t;
+	PRLIST_ENTRY t;
 	for (t = adcdones.Blink; t != & adcdones; t = t->Blink)
 	{
 		ASSERT(t != NULL);

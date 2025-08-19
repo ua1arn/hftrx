@@ -108,7 +108,7 @@ static void nextlist(void)
 {
 	if (! IsListEmpty(& rxlistfree))
 	{
-		LIST_ENTRY * v = RemoveHeadList(& rxlistfree);
+		PRLIST_ENTRY v = RemoveHeadList(& rxlistfree);
 		rxlist_t * const p = CONTAINING_RECORD(v, rxlist_t, item);
 		p->crc = 0xFFFF;
 		p->count = 0;
@@ -117,7 +117,7 @@ static void nextlist(void)
 	}
 	else if (! IsListEmpty(& rxlistready))
 	{
-		LIST_ENTRY * v = RemoveHeadList(& rxlistready);
+		PRLIST_ENTRY v = RemoveHeadList(& rxlistready);
 		rxlist_t * const p = CONTAINING_RECORD(v, rxlist_t, item);
 		p->crc = STARTCRCVAL;
 		p->count = 0;
@@ -267,7 +267,7 @@ static void uart5_spool(void * ctx)
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 	if (!IsListEmpty(& rxlistready))
 	{
-		LIST_ENTRY * v = RemoveTailList(& rxlistready);
+		PRLIST_ENTRY v = RemoveTailList(& rxlistready);
 		p = CONTAINING_RECORD(v, rxlist_t, item);
 	}
 	else
