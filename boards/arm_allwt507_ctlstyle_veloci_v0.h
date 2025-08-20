@@ -564,18 +564,23 @@
 
 	#define WITHTHERMOLEVEL		1	/* отображение данных с датчика температуры */
 	#define WITHTHERMOLEVEL2	1	/* отображение данных с датчика температуры с помощью двух каналов ацп */
-	
-	// ST LM235Z
-//	#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
-//	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-//	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
-//	#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
-	// TI LM35
-	#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
-	#define THERMOSENSOR_LOWER		47	// 1 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET 	(0)		// 0 volt = 0 Celsius, 10 mV/C
-	#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+	#if WITHTHERMOLEVEL
+		#if WITHTHERMOLEVEL2
+			// TI LM35
+			#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
+			#define THERMOSENSOR_LOWER		47	// 1 kOhm - нижний резистор
+			#define THERMOSENSOR_OFFSET 	(0)		// 0 volt = 0 Celsius, 10 mV/C
+			#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+		#else /* WITHTHERMOLEVEL2 */
+			// ST LM235Z
+			#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
+			#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
+			#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
+			#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+		#endif /* WITHTHERMOLEVEL2 */
+	#endif /* WITHTHERMOLEVEL */
+
 
 	// Назначения входов АЦП процессора.
 	enum
