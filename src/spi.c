@@ -2128,6 +2128,13 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 
 }
 
+typedef union
+{
+	volatile uint32_t v32;
+	volatile uint16_t v16 [2];
+	volatile uint8_t v8 [4];
+} spiux_t;
+
 portholder_t RAMFUNC hardware_spi_complete_b16(SPI_t * spi)	/* дождаться готовности */
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -2146,11 +2153,9 @@ portholder_t RAMFUNC hardware_spi_complete_b16(SPI_t * spi)	/* дождатьс�
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
-	//while ((spi->SR & SPI_SR_TXC) == 0)
-	//	;
 	while ((spi->SR & SPI_SR_RXP) == 0)
 		;
-	const portholder_t t = * (volatile uint16_t *) & spi->RXDR;	/* SPI_RXDR_RXDR clear SPI_SR_RXNE in status register */
+	const portholder_t t = ((spiux_t *) & spi->RXDR)->v16 [0];	/* 16 bit access, SPI_RXDR_RXDR clear SPI_SR_RXNE in status register */
 	return t;
 
 #elif CPUSTYLE_STM32F
@@ -2173,7 +2178,7 @@ portholder_t RAMFUNC hardware_spi_complete_b16(SPI_t * spi)	/* дождатьс�
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((spi->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
-	return 0xFFFF & (__REV16(* (volatile uint16_t *) & spi->SPI_RXD));
+	return 0xFFFF & __REV16(((spiux_t *) & spi->SPI_RXD)->v16 [0]);
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -2199,11 +2204,11 @@ void RAMFUNC hardware_spi_b16_p1(
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
-	* (volatile uint16_t *) & spi->TXDR = v;	// prevent data packing feature
+	((spiux_t *) & spi->TXDR)->v16 [0] = v;	/* 16bit access */
 
 #elif CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F30X || CPUSTYLE_STM32F7XX
 
-	* (volatile uint16_t *) & spi->DR = v;	// prevent data packing feature
+	((spiux_t *) & spi->DR)->v16 [0] = v;	/* 16bit access */
 
 #elif CPUSTYLE_STM32F
 
@@ -2222,7 +2227,7 @@ void RAMFUNC hardware_spi_b16_p1(
 		2 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
-	* (volatile uint16_t *) & spi->SPI_TXD = __REV16(v);	/* 16bit access */
+	((spiux_t *) & spi->SPI_TXD)->v16 [0] = __REV16(v);	/* 16bit access */
 
 	spi->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
 
