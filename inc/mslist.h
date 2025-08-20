@@ -23,7 +23,12 @@ typedef void VOID, * PVOID;
 typedef int64_t LONGLONG;
 typedef uint64_t ULONGLONG;
 
+#if LINUX_SUBSYSTEM
+#define RESTRICTED_POINTER
+#else
 #define RESTRICTED_POINTER __RESTRICT
+#endif /* LINUX_SUBSYSTEM */
+
 #define IN_param /* */
 #define OUT_param /* */
 
