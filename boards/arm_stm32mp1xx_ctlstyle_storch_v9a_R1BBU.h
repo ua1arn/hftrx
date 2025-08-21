@@ -13,6 +13,7 @@
 
 	#define WITHBRANDSTR "Falcon"
 	#define WITHBANDR1BBU 1
+	#define BUFOVERSIZE 5
 
 	#if ! defined(STM32MP157Axx) && ! defined(STM32MP153Dxx)
 		#error Wrong CPU selected. STM32MP157Axx expected
