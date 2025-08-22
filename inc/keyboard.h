@@ -203,7 +203,6 @@ struct qmkey
 	uint_fast8_t numpad;		/* код клавиши в режиме цифрового ввода */
 };
 extern const struct qmkey qmdefs [];
-uint_fast8_t getexitkey(void);
 uint_fast8_t geterasekey(void);
 
 

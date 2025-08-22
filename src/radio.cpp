@@ -17409,7 +17409,6 @@ processmenukeyandencoder(inputevent_t * ev)
 	uint_fast16_t firstitem = gmenufirstitem [gmenulevel];
 	uint_fast16_t lastitem = gmenulastitem [gmenulevel];
 	const struct menudef * mp = gmp0;
-	//uint_fast8_t exitkey = getexitkey();
 	uint_fast16_t menupos = mp - menutable;
 	multimenuwnd_t window;
 	const uint_fast8_t itemmask = gmenulevel ? ITEM_VALUE : ITEM_GROUP;
@@ -18494,7 +18493,6 @@ processmainloopkeyboard(inputevent_t * ev)
 		return 0;
 	}
 #endif
-	//const uint_fast8_t exitkey = getexitkey();	/* эта клавиша совмещена с menu - дополнительный код для выхода. */
 
 #if WITHDIRECTFREQENER
 	uint_fast8_t rj;

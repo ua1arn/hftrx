@@ -79,7 +79,6 @@
 #elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7 && 1	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c.h"
 	#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_falcon.h"
-	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_R1BBU.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_lfm.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_qrp.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_r1ab.h"
@@ -119,6 +118,7 @@
 	#include "boards/arm_allwh616_cpustyle_orangepi_zero2.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_allwt507_ctlstyle_veloci_v0.h"
+	//#include "boards/arm_allwt507_ctlstyle_veloci_v0_UA1CEI.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt507_cpustyle_veloci_v0.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
