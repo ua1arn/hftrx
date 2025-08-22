@@ -10,8 +10,8 @@
 // HelperBoard T507 Core Board
 // ARM® Cortex®-A53 MPCore Processor Revision: r0p4
 
-#ifndef ARM_ALW_T507_CTL_VELOCI_V0_H_INCLUDED
-#define ARM_ALW_T507_CTL_VELOCI_V0_H_INCLUDED 1
+#ifndef ARM_ALW_T507_CTL_VELOCI_V0_UA1CEI_H_INCLUDED
+#define ARM_ALW_T507_CTL_VELOCI_V0_UA1CEI_H_INCLUDED 1
 
 	#define WITHBRANDSTR "Falcon"
 
@@ -77,7 +77,8 @@
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
-	#define KEYB_VELOCI24_V0	1	/* 24 кнопки на 6 линий */
+	//#define KEYB_VELOCI24_V0	1	/* 24 кнопки на 6 линий */
+	#define KEYB_VELOCI24_V0_UA1CEI	1	/* 24 кнопки на 6 линий */
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -228,8 +229,8 @@
 	//#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
 
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
-	#define COLORSTYLE_GREEN	1
-	//#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_GREEN	1
+	#define COLORSTYLE_BLUE	1
 	//#define COLORSTYLE_RED	1
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
 
@@ -581,7 +582,6 @@
 		#endif /* WITHTHERMOLEVEL2 */
 	#endif /* WITHTHERMOLEVEL */
 
-
 	// Назначения входов АЦП процессора.
 	enum
 	{
@@ -622,4 +622,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_ALW_T507_CTL_VELOCI_V0_H_INCLUDED */
+#endif /* ARM_ALW_T507_CTL_VELOCI_V0_UA1CEI_H_INCLUDED */
