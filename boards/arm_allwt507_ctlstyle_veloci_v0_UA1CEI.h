@@ -218,7 +218,10 @@
 	#define WITHISBOOTLOADERRAWDISK	1	// чтение application с предопределённого смещения на накопителе
 	#define WITHISBOOTLOADERRAWDISK_DEV 0	// device для FatFS diskio
 
+	#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
+
 #else /* WITHISBOOTLOADER */
+	#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
 
 	//#define WITHUSBHEADSET	1	/* Функциональность USB микрофона */
 	
