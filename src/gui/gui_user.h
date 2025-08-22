@@ -9,7 +9,7 @@
 #include "src/gui/gui_structs.h"
 
 void gui_user_actions_after_close_window(void);
-void footer_buttons_state (uint_fast8_t state, ...);
+void footer_buttons_state(uint_fast8_t state, ...);
 
 void gui_main_process(void);
 void window_mode_process(void);

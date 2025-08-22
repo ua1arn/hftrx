@@ -32,6 +32,7 @@
 #include "gui_settings.h"
 #include "gui_windows.h"
 #include "gui_objects.h"
+#include "utils.h"
 
 val_step_t enc2step[] = {
 	{ 100, "100 Hz", },
@@ -500,41 +501,40 @@ void window_infobar_menu_process(void)
 
 /* Установки статуса основных кнопок */
 /* При DISABLED в качестве необязательного параметра передать указатель на активную кнопку или NULL для блокирования всех */
-void footer_buttons_state (uint_fast8_t state, ...)
+void footer_buttons_state(uint_fast8_t state, ...)
 {
-	window_t * win = get_win(WINDOW_MAIN);
+	char name[NAME_ARRAY_SIZE];
 	va_list arg;
-	button_t * bt = NULL;
-	uint_fast8_t is_name;
 	static uint_fast16_t bitmask_locked_buttons = 0;
+	char * bt_name = NULL;
 
 	if (state == DISABLED)
 	{
 		va_start(arg, state);
-		char * bt_name = va_arg(arg, char *);
-		if (bt_name) bt = find_gui_obj(TYPE_BUTTON, win, bt_name);
+		bt_name = va_arg(arg, char *);
 		va_end(arg);
 	}
 
-	if (state == DISABLED && bt != NULL)
+	if (state == DISABLED && bt_name)
 		bitmask_locked_buttons = 0;
 
-	for (uint_fast8_t i = 0; i < win->bh_count; i ++)
+	for (uint8_t i = 0; i < 9; i ++)
 	{
-		button_t * bh = & win->bh_ptr[i];
+		local_snprintf_P(name, NAME_ARRAY_SIZE, "btn_main%02d", i);
 
-		if (state == DISABLED && bt != NULL)
-			bitmask_locked_buttons |= bh->is_locked << i;
+		if (state == DISABLED && bt_name)
+			bitmask_locked_buttons |= gui_obj_get_int_prop(name, GUI_OBJ_LOCK) << i;
 
 		if (state == DISABLED)
 		{
-			bh->state = bh == bt ? CANCELLED : DISABLED;
-			bh->is_locked = bh->state == CANCELLED ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+			uint8_t state = safe_strcmp(name, bt_name) ? DISABLED : CANCELLED;
+			gui_obj_set_prop(name, GUI_OBJ_STATE, state);
+			gui_obj_set_prop(name, GUI_OBJ_LOCK, state == CANCELLED ? BUTTON_LOCKED : BUTTON_NON_LOCKED);
 		}
 		else if (state == CANCELLED && get_parent_window() == NO_PARENT_WINDOW)
 		{
-			bh->state = CANCELLED;
-			bh->is_locked = ((bitmask_locked_buttons >> i) & 1) ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+			gui_obj_set_prop(name, GUI_OBJ_STATE, CANCELLED);
+			gui_obj_set_prop(name, GUI_OBJ_LOCK, (bitmask_locked_buttons >> i) & 1);
 		}
 	}
 }
@@ -565,21 +565,21 @@ void gui_main_process(void)
 		gui_obj_set_prop("tf_debug", GUI_OBJ_POS, DIM_X / 2 - w / 2, DIM_Y / 2 - h / 2);
 #endif /* WITHGUIDEBUG */
 
-		gui_obj_create("btn_txrx", 86, 44, 0, 1, "RX");
-		gui_obj_create("btn_Bands", 86, 44, 0, 0, "Bands");
-		gui_obj_create("btn_Memory", 86, 44, 0, 0, "Memory");
-		gui_obj_create("btn_Receive", 86, 44, 0, 0, "Receive|options");
-		gui_obj_create("btn_notch", 86, 44, 0, 1, "");
-		gui_obj_create("btn_speaker", 86, 44, 0, 0, "Speaker|on air");
-		gui_obj_create("btn_var", 86, 44, 0, 0, "");
-		gui_obj_create("btn_ft8", 86, 44, 0, 0, "");
-		gui_obj_create("btn_Options", 86, 44, 0, 0, "Options");
+		gui_obj_create("btn_main00", 86, 44, 0, 1, "RX");				// btn_txrx
+		gui_obj_create("btn_main01", 86, 44, 0, 0, "Bands");			// btn_Bands
+		gui_obj_create("btn_main02", 86, 44, 0, 0, "Memory");			// btn_Memory
+		gui_obj_create("btn_main03", 86, 44, 0, 0, "Receive|options");	// btn_Receive
+		gui_obj_create("btn_main04", 86, 44, 0, 1, "");					// btn_notch
+		gui_obj_create("btn_main05", 86, 44, 0, 0, "Speaker|on air");	// btn_speaker
+		gui_obj_create("btn_main06", 86, 44, 0, 0, "");					// btn_var
+		gui_obj_create("btn_main07", 86, 44, 0, 0, "");					// btn_ft8
+		gui_obj_create("btn_main08", 86, 44, 0, 0, "Options");			// btn_Options
 
 #if WITHFT8
-		gui_obj_set_prop("btn_ft8", GUI_OBJ_TEXT, "FT8");
+		gui_obj_set_prop("btn_main07", GUI_OBJ_TEXT, "FT8");
 #endif /* WITHFT8 */
 #if WITHAUDIOSAMPLESREC
-		gui_obj_set_prop("btn_var", GUI_OBJ_TEXT, "AF|samples");
+		gui_obj_set_prop("btn_main06", GUI_OBJ_TEXT, "AF|samples");
 #endif /* WITHAUDIOSAMPLESREC */
 
 #if GUI_SHOW_INFOBAR
@@ -653,13 +653,13 @@ void gui_main_process(void)
 
 		if (IS_BUTTON_PRESS)	// обработка короткого нажатия кнопок
 		{
-			if (gui_check_obj(name, "btn_notch"))
+			if (gui_check_obj(name, "btn_main04"))
 			{
 				hamradio_set_gnotch(! hamradio_get_gnotch());
 				update = 1;
 			}
 #if WITHFT8
-			else if (gui_check_obj(name, "btn_ft8"))
+			else if (gui_check_obj(name, "btn_main07"))
 			{
 				if (get_parent_window() != NO_PARENT_WINDOW)
 				{
@@ -670,18 +670,18 @@ void gui_main_process(void)
 				{
 					window_t * const win = get_win(WINDOW_FT8);
 					open_window(win);
-					footer_buttons_state(DISABLED, "btn_ft8");
+					footer_buttons_state(DISABLED, "btn_main07");
 				}
 			}
 #endif /* WITHFT8 */
 #if WITHSPKMUTE
-			else if (gui_check_obj(name, "btn_speaker"))
+			else if (gui_check_obj(name, "btn_main05"))
 			{
 				hamradio_set_gmutespkr(! hamradio_get_gmutespkr());
 				update = 1;
 			}
 #endif /* #if WITHSPKMUTE */
-			else if (gui_check_obj(name, "btn_Bands"))
+			else if (gui_check_obj(name, "btn_main01"))
 			{
 				if (get_parent_window() != NO_PARENT_WINDOW)
 				{
@@ -692,16 +692,16 @@ void gui_main_process(void)
 				{
 					window_t * const win = get_win(WINDOW_BANDS);
 					open_window(win);
-					footer_buttons_state(DISABLED, "btn_Bands");
+					footer_buttons_state(DISABLED, "btn_main01");
 				}
 			}
-			else if (gui_check_obj(name, "btn_Memory"))
+			else if (gui_check_obj(name, "btn_main02"))
 			{
 				window_t * const win = get_win(WINDOW_MEMORY);
 				if (win->state == NON_VISIBLE)
 				{
 					open_window(win);
-					footer_buttons_state(DISABLED, "btn_Memory");
+					footer_buttons_state(DISABLED, "btn_main02");
 				}
 				else
 				{
@@ -709,7 +709,7 @@ void gui_main_process(void)
 					footer_buttons_state(CANCELLED);
 				}
 			}
-			else if (gui_check_obj(name, "btn_Options"))
+			else if (gui_check_obj(name, "btn_main08"))
 			{
 				if (get_parent_window() != NO_PARENT_WINDOW)
 				{
@@ -722,10 +722,10 @@ void gui_main_process(void)
 				{
 					window_t * const win = get_win(WINDOW_OPTIONS);
 					open_window(win);
-					footer_buttons_state(DISABLED, "btn_Options");
+					footer_buttons_state(DISABLED, "btn_main08");
 				}
 			}
-			else if (gui_check_obj(name, "btn_Receive"))
+			else if (gui_check_obj(name, "btn_main03"))
 			{
 				if (get_parent_window() != NO_PARENT_WINDOW)
 				{
@@ -738,17 +738,17 @@ void gui_main_process(void)
 				{
 					window_t * const win = get_win(WINDOW_RECEIVE);
 					open_window(win);
-					footer_buttons_state(DISABLED, "btn_Receive");
+					footer_buttons_state(DISABLED, "btn_main03");
 				}
 			}
 #if WITHAUDIOSAMPLESREC
-			else if (gui_check_obj(name, "btn_var"))
+			else if (gui_check_obj(name, "btn_main06"))
 			{
 				window_t * const win = get_win(WINDOW_AS);
 				if (win->state == NON_VISIBLE)
 				{
 					open_window(win);
-					footer_buttons_state(DISABLED, "btn_var");
+					footer_buttons_state(DISABLED, "btn_main06");
 				}
 				else
 				{
@@ -758,7 +758,7 @@ void gui_main_process(void)
 			}
 #endif /* WITHAUDIOSAMPLESREC */
 #if WITHTX
-			else if (gui_check_obj(name, "btn_txrx"))
+			else if (gui_check_obj(name, "btn_main00"))
 			{
 				hamradio_gui_set_reqautotune2(0);
 				hamradio_moxmode(1);
@@ -769,7 +769,7 @@ void gui_main_process(void)
 		else if (IS_BUTTON_LONG_PRESS)			// обработка длинного нажатия
 		{
 #if WITHTX
-			if (gui_check_obj(name, "btn_txrx"))
+			if (gui_check_obj(name, "btn_main00"))
 			{
 				hamradio_gui_set_reqautotune2(1);
 				hamradio_tunemode(1);
@@ -777,13 +777,13 @@ void gui_main_process(void)
 			}
 			else
 #endif /* WITHTX */
-			if (gui_check_obj(name, "btn_notch"))
+			if (gui_check_obj(name, "btn_main04"))
 			{
 				window_t * const win = get_win(WINDOW_NOTCH);
 				if (win->state == NON_VISIBLE)
 				{
 					open_window(win);
-					footer_buttons_state(DISABLED, "btn_notch");
+					footer_buttons_state(DISABLED, "btn_main04");
 				}
 				else
 				{
@@ -819,19 +819,19 @@ void gui_main_process(void)
 	{
 		freq_swipe = freq_swipe_step[gui_nvram.freq_swipe_step].step;
 
-		gui_obj_set_prop("btn_notch", GUI_OBJ_LOCK, hamradio_get_gnotch());
+		gui_obj_set_prop("btn_main04", GUI_OBJ_LOCK, hamradio_get_gnotch());
 		uint8_t notch_type = hamradio_get_gnotchtype();
 		if (notch_type == 1)
-			gui_obj_set_prop("btn_notch", GUI_OBJ_TEXT, "Notch|manual");
+			gui_obj_set_prop("btn_main04", GUI_OBJ_TEXT, "Notch|manual");
 		else if (notch_type == 2)
-			gui_obj_set_prop("btn_notch", GUI_OBJ_TEXT, "Notch|auto");
+			gui_obj_set_prop("btn_main04", GUI_OBJ_TEXT, "Notch|auto");
 
 #if WITHSPKMUTE
 		uint8_t s = hamradio_get_gmutespkr();
-		gui_obj_set_prop("btn_speaker", GUI_OBJ_LOCK, s);
-		gui_obj_set_prop("btn_speaker", GUI_OBJ_TEXT_FMT, "Speaker|%s", s ? "muted" : "on air");
+		gui_obj_set_prop("btn_main05", GUI_OBJ_LOCK, s);
+		gui_obj_set_prop("btn_main05", GUI_OBJ_TEXT_FMT, "Speaker|%s", s ? "muted" : "on air");
 #else
-		gui_obj_set_prop("btn_speaker", GUI_OBJ_STATE, DISABLED);
+		gui_obj_set_prop("btn_main05", GUI_OBJ_STATE, DISABLED);
 #endif /* #if WITHSPKMUTE */
 
 #if WITHTX
@@ -840,22 +840,22 @@ void gui_main_process(void)
 
 		if (tune)
 		{
-			gui_obj_set_prop("btn_txrx", GUI_OBJ_LOCK, BUTTON_LOCKED);
-			gui_obj_set_prop("btn_txrx", GUI_OBJ_TEXT, "TX|tune");
+			gui_obj_set_prop("btn_main00", GUI_OBJ_LOCK, BUTTON_LOCKED);
+			gui_obj_set_prop("btn_main00", GUI_OBJ_TEXT, "TX|tune");
 		}
 		else if (! tune && mox)
 		{
-			gui_obj_set_prop("btn_txrx", GUI_OBJ_LOCK, BUTTON_LOCKED);
-			gui_obj_set_prop("btn_txrx", GUI_OBJ_TEXT, "TX");
+			gui_obj_set_prop("btn_main00", GUI_OBJ_LOCK, BUTTON_LOCKED);
+			gui_obj_set_prop("btn_main00", GUI_OBJ_TEXT, "TX");
 		}
 		else if (! tune && ! mox)
 		{
-			gui_obj_set_prop("btn_txrx", GUI_OBJ_LOCK, BUTTON_NON_LOCKED);
-			gui_obj_set_prop("btn_txrx", GUI_OBJ_TEXT, "RX");
+			gui_obj_set_prop("btn_main00", GUI_OBJ_LOCK, BUTTON_NON_LOCKED);
+			gui_obj_set_prop("btn_main00", GUI_OBJ_TEXT, "RX");
 		}
 #else
-		gui_obj_set_prop("btn_txrx", GUI_OBJ_STATE, DISABLED);
-		gui_obj_set_prop("btn_txrx", GUI_OBJ_TEXT, "RX");
+		gui_obj_set_prop("btn_main00", GUI_OBJ_STATE, DISABLED);
+		gui_obj_set_prop("btn_main00", GUI_OBJ_TEXT, "RX");
 #endif /* WITHTX */
 
 #if defined (RTC1_TYPE)
@@ -3476,31 +3476,6 @@ void window_freq_process (void)
 
 // *****************************************************************************************************************************
 
-int is_valid_datetime(int year, int month, int day, int hour, int minute, int second)
-{
-    if (month < 1 || month > 12)
-        return 0;
-
-    if (day < 1 || day > 31)
-        return 0;
-
-    if (hour < 0 || minute < 0 || second < 0)
-        return 0;
-
-    if (hour > 23 || minute > 59 || second > 59)
-        return 0;
-
-    uint8_t days_in_month[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
-    // Корректировка количества дней в феврале високосного года
-    if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))
-    	days_in_month[1] = 29;
-
-    if (day > days_in_month[month - 1])
-        return 0;
-
-    return 1;
-}
 
 void window_time_process(void)
 {
