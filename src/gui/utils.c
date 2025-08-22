@@ -7,6 +7,7 @@
 // Touch GUI от RA4ASN
 
 #include "utils.h"
+#include <string.h>
 
 /* Безопасное сравнение строк */
 int safe_strcmp(const char * s1, const char * s2)
