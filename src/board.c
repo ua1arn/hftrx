@@ -6127,6 +6127,13 @@ void board_rgrbeep_enable(uint_fast8_t state)
 	IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 }
 
+#else /* WITHIF4DSP */
+
+/* roger beep (вызывается из обработчика перрываний sequencer) */
+void board_rgrbeep_enable(uint_fast8_t state)
+{
+}
+
 #endif /* WITHIF4DSP */
 
 /* сигнал об ошибке (вызывается из обработчика перрываний) */

@@ -471,16 +471,12 @@ seq_spool_ticks(void * ctc)
 		}
 		else if ((seqpushtime = txrxticks) == 0)
 		{
-#if WITHIF4DSP
-				board_rgrbeep_enable(0);
-#endif /* WITHIF4DSP */
+			board_rgrbeep_enable(0);
 			seqstate = SEQST_SWITCHTORX;
 		}
 		else
 		{
-#if WITHIF4DSP
-				board_rgrbeep_enable(0);
-#endif /* WITHIF4DSP */
+			board_rgrbeep_enable(0);
 			/* ждём указанное время и перепрограммируем (через SPI) на приём */
 			seqstate = SEQST_PUSHED_SWITCHTORX;	// ждем перехода на на приём от пользовательской программы
 		}
@@ -506,9 +502,7 @@ seq_spool_ticks(void * ctc)
 			// Проверяем, не надо ли формировать roger beep
 			if (seq_rgbeep != 0 && (seqpushtime == rgbeepticks) != 0)
 			{
-#if WITHIF4DSP
 				board_rgrbeep_enable(1);
-#endif /* WITHIF4DSP */
 				seqstate = SEQST_RGBEEP;
 			}
 			else if ((seqpushtime = txrxticks) == 0)
