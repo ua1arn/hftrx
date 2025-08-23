@@ -6321,6 +6321,11 @@ void board_beep_initialize(void)
 {
 }
 
+/* roger beep (вызывается из обработчика перрываний sequencer) */
+void board_rgrbeep_enable(uint_fast8_t state)
+{
+}
+
 #endif /* SIDETONE_TARGET_BIT != 0 */
 
 

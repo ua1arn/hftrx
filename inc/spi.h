@@ -17,6 +17,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#if defined (WITHSPIHW)
 
 #define SPIBASEconcat(base, index) base ## index
 #define QSPIBASEconcat(base, index) base ## index
@@ -54,6 +55,12 @@ extern "C" {
 	typedef void SPI_t;
 	typedef void QSPI_t;
 #endif
+
+#else /* defined (WITHSPIHW) */
+	typedef void SPI_t;
+	typedef void QSPI_t;
+
+#endif /* defined (WITHSPIHW) */
 
 void spi_initialize(void);	// отдельно инициализация SPI
 

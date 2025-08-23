@@ -1941,40 +1941,6 @@ void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq
 #endif
 }
 
-int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
-{
-	return i2chwx_read(TWIHARD_PTR, slave_address8b, buf, size);
-}
-
-int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
-{
-	return i2chwx_write(TWIHARD_PTR, slave_address8b, buf, size);
-}
-
-int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
-{
-	return i2chwx_exchange(TWIHARD_PTR, slave_address8b, wbuf, wsize, rbuf, rsize);
-}
-
-#if defined (TWIHARD2_PTR)
-
-int i2chw2_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
-{
-	return i2chwx_read(TWIHARD2_PTR, slave_address8b, buf, size);
-}
-
-int i2chw2_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
-{
-	return i2chwx_write(TWIHARD2_PTR, slave_address8b, buf, size);
-}
-
-int i2chw2_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
-{
-	return i2chwx_exchange(TWIHARD2_PTR, slave_address8b, wbuf, wsize, rbuf, rsize);
-}
-
-#endif /* defined (TWIHARD2_PTR) */
-
 void i2c_initialize(void)
 {
 	TWISOFT_INITIALIZE();
@@ -2885,3 +2851,45 @@ void i2c2_stop(void)
 #endif
 
 #endif /* (WITHTWISW) && ! LINUX_SUBSYSTEM */
+
+#if WITHTWISW || WITHTWIHW
+
+#if defined (TWIHARD_PTR)
+
+int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
+{
+	return i2chwx_read(TWIHARD_PTR, slave_address8b, buf, size);
+}
+
+int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
+{
+	return i2chwx_write(TWIHARD_PTR, slave_address8b, buf, size);
+}
+
+int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
+{
+	return i2chwx_exchange(TWIHARD_PTR, slave_address8b, wbuf, wsize, rbuf, rsize);
+}
+
+#endif /* defined (TWIHARD_PTR) */
+
+#if defined (TWIHARD2_PTR)
+
+int i2chw2_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
+{
+	return i2chwx_read(TWIHARD2_PTR, slave_address8b, buf, size);
+}
+
+int i2chw2_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
+{
+	return i2chwx_write(TWIHARD2_PTR, slave_address8b, buf, size);
+}
+
+int i2chw2_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
+{
+	return i2chwx_exchange(TWIHARD2_PTR, slave_address8b, wbuf, wsize, rbuf, rsize);
+}
+
+#endif /* defined (TWIHARD2_PTR) */
+
+#endif /* WITHTWISW || WITHTWIHW */

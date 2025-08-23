@@ -1792,7 +1792,7 @@ void sysinit_gpio_initialize(void)
 				arm_hardware_set_handler(EXTI15_10_IRQn, EXTI15_10_IRQHandler, priority, targetcpu);
 	        // Add interrupt handler to chain
 	        h->mask = ipins;
-	        InsertHeadVList(& einthead [EIHEAD_STM32], & h->item);
+	        InsertHeadList(& einthead [EIHEAD_STM32], & h->item);
 		}
 
 	/* программирвоание битов в регистрах управления GPIO, указанных в iomask, в конфигурацию CNF И режим MODE */
