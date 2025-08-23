@@ -1901,6 +1901,25 @@ void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq
 		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
 	}
 #endif /* defined (S_TWI0) */
+#if defined (R_TWI) && 0
+	// A64
+	else if (twi == R_TWI)
+	{
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
+		PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
+	}
+#endif /* defined (S_TWI0) */
+#if CPUSTYLE_A64
+	else
+	{
+
+		const unsigned TWIx = TWIHARD_IX;
+		CCU->BUS_CLK_GATING_REG3 |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
+		CCU->BUS_SOFT_RST_REG4 &= ~ (UINT32_C(1) << (0 + TWIx));	// Assert reset
+		CCU->BUS_SOFT_RST_REG4 |= UINT32_C(1) << (0 + TWIx);	// De-assert reset
+	}
+#else
 	else
 	{
 		const unsigned TWIx = TWIHARD_IX;
@@ -1908,7 +1927,7 @@ void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq
 		CCU->TWI_BGR_REG &= ~ (UINT32_C(1) << (16 + TWIx));	// Assert reset
 		CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
 	}
-
+#endif
 	t113_i2c_set_rate(twi, sclfreq, busfreq);
 
 	twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
