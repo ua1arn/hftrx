@@ -136,6 +136,7 @@ kbd_scan_local(uint_fast8_t * key)
 			{
 			case KBD_MAX_PRESS_DELAY_LONG + KBD_PRESS_REPEAT_SLOW:
 				kbd_press = KBD_MAX_PRESS_DELAY_LONG;	// позволяем ещё раз сюда попасть.
+				// @suppress("No break at end of case")
 
 			case KBD_MAX_PRESS_DELAY_LONG:
 				* key = qmdefs [kbd_last].code;	

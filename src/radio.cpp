@@ -1689,7 +1689,9 @@ struct micprof_cell
 
 typedef struct micprof_cell	micprof_t;
 
+#if WITHTOUCHGUI
 static micprof_t micprof_cells [NMICPROFCELLS];
+#endif /* WITHTOUCHGUI */
 
 static mikproc_t micprofiles [] =
 {

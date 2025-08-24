@@ -135,8 +135,6 @@ static void init_lwip()
 #if LWIP_HTTPD_CGI
 
 
-static uint8_t PORTC[8];
-
 const char *state_cgi_handler(int index, int n_params, char *params[], char *values[])
 {
   return "/state.shtml";
