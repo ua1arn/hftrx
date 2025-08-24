@@ -190,6 +190,7 @@ static size_t escapedlen(const char *s)
 			continue;
 		}
 	}
+	return n;
 }
 
 static void desscape(char *dst, const char *src)
@@ -565,7 +566,7 @@ static int nextline(FILE *fp)
 		}
 		return s != NULL;
 	}
-
+	return 0;
 }
 
 static struct regdfn*
@@ -1474,7 +1475,7 @@ static void generate_debug(void)
 
 static void substitute(char *s, char c1, char c2)
 {
-	while (s = strchr(s, c1))
+	while ((s = strchr(s, c1)) != NULL)
 	{
 		*s++ = c2;
 	}

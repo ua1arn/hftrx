@@ -210,6 +210,7 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 				break;
 			}
 			/* pass trough intentionally */
+    		// @suppress("No break at end of case")
 		case 'u':
 			cp = uconvert(u.lval, 10, s + TMP_S_SIZE, lcase);
 			if (signc != '\0')
@@ -240,6 +241,7 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 			continue;
 		case 'c':
 			c = (char) u.lval;
+    		// @suppress("No break at end of case")
 		default:
 			* (cp = s + TMP_S_SIZE - 1) = c;
 			break;

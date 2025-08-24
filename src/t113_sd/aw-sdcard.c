@@ -915,7 +915,9 @@ int sdcard_init(void)
 			uint32_t width;
 			PRINTF("Processing SD bus width parameters, card->version=%08X\n", (unsigned) card->version);
 			if (0)
-				;
+			{
+
+			}
 #if WITHSDHCHW8BIT
 			else if ((hci->width & MMC_BUS_WIDTH_8))
 				width = 3;
@@ -943,7 +945,8 @@ int sdcard_init(void)
 			sdhci_t113_setclock(hci, LOCAL_MIN(card->tran_speed, hci->clock));
 
 			if (0)
-				;
+			{
+			}
 #if WITHSDHCHW8BIT
 			else if((hci->width & MMC_BUS_WIDTH_8))
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_8);
@@ -970,7 +973,8 @@ int sdcard_init(void)
 			printhex(0, cccr, ARRAY_SIZE(cccr));
 
 			if (0)
-				;
+			{
+			}
 #if WITHSDHCHW8BIT
 			else if ((hci->width & MMC_BUS_WIDTH_8))
 				width = 1u << 2;	// S8B in CCCR[7]
@@ -987,7 +991,8 @@ int sdcard_init(void)
 			sdhci_t113_setclock(hci, LOCAL_MIN(card->tran_speed, hci->clock));
 
 			if (0)
-				;
+			{
+			}
 #if WITHSDHCHW8BIT
 			else if((hci->width & MMC_BUS_WIDTH_8))
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_8);
@@ -1016,7 +1021,8 @@ int sdcard_init(void)
 			 * [31:26] Set to 0, [25:24] Access, [23:16] Index, [15:8] Value, [7:3] Set to 0, [2:0] Cmd Set
 			 */
 			if (0)
-				;
+			{
+			}
 #if WITHSDHCHW8BIT
 			else if(hci->width & MMC_BUS_WIDTH_8)
 			{
@@ -1059,7 +1065,8 @@ int sdcard_init(void)
 			sdhci_t113_setclock(hci, LOCAL_MIN(card->tran_speed, hci->clock));
 
 			if (0)
-				;
+			{
+			}
 #if WITHSDHCHW8BIT
 			else if(hci->width & MMC_BUS_WIDTH_8)
 				sdhci_t113_setwidth(hci, MMC_BUS_WIDTH_8);

@@ -2000,7 +2000,9 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	const IRQL_t oldv = GIC_GetInterfacePriorityMask();
 	ASSERT2(oldv != 0, file, line);
 	if (oldv >= newIRQL)
+	{
 		; /* Не понижаем приоритет */
+	}
 	else
 	{
 		PRINTF("irq fail at %s/%d, newIRQL=%u, old=%u, cpuid=%u\n", file, line, (unsigned) newIRQL, (unsigned) oldv, (unsigned) arm_hardware_cpuid());

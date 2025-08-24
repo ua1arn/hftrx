@@ -5003,7 +5003,8 @@ static uint_fast8_t
 spdif_iostartread(QSPI_t * qspi, unsigned long len, unsigned long flashoffset, IRQL_t * oldspidfcsIRQL)
 {
 	if (0)
-		;
+	{
+	}
 #if WIHSPIDFHW4BIT && ! WIHSPIDFOVERSPI
 	else if (readxb [SPDFIO_4WIRE] != 0x00)
 	{

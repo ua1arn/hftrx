@@ -441,6 +441,7 @@ public:
 		wbadded(0),
 		wbdeleted(0),
 		wbgatix(ARRAY_SIZE(wbgatsize)),	// состояние - нет ничего для формирования нового блокв
+		workbuff(NULL),
 		MINMLEVEL(hasresample ? 1 * capacity / 4 : 0),
 		NORMLEVEL(hasresample ? 2 * capacity / 4 : capacity / 4),	// без resample используется только этот параметр
 		MAXLEVEL(hasresample ? 3 * capacity / 4 : 0),
@@ -813,7 +814,9 @@ public:
 	dmahandle(IRQL_t airql, const char * aname, element_t * storage, unsigned capacity) :
 		parent_t(airql, aname, storage, capacity),
 		wb(NULL),
-		rb(NULL)
+		wbn(0),
+		rb(NULL),
+		rbn(0)
 	{
 
 	}

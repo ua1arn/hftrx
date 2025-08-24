@@ -19213,6 +19213,7 @@ static STTE_t hamradio_tune_step(void)
 			// keep state
 			break;
 		}
+		break;
 
 	case TUNERSTATE_ABORTING:
 		auto_tune3();
@@ -19588,6 +19589,7 @@ hamradio_main_step(void)
 				// сохраним частоту и пеерйдём к состоянию STHRL_RXTX
 
 			}
+			// @suppress("No break at end of case")
 
 	case STHRL_RXTX:
 		// работа с пользователем
@@ -20625,7 +20627,7 @@ uint_fast8_t hamradio_get_low_bp(int_least16_t rotate)
 			break;
 
 		default:
-			ASSERT(0);
+			ASSERT(0);	// @suppress("No break at end of case")
 		case BWSET_SINGLE:
 			if (rotate < 0)
 			{
@@ -20666,7 +20668,7 @@ uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 		break;
 
 	default:
-		ASSERT(0);
+		ASSERT(0); // @suppress("No break at end of case")
 	case BWSET_SINGLE:
 		if (rotate != 0 && gcwpitch10 + rotate <= CWPITCHMAX10 && gcwpitch10 + rotate >= CWPITCHMIN10)
 		{
@@ -21697,12 +21699,17 @@ int infocb_thermo(char * b, size_t len, int * pstate)
 		//colmain_setcolors(COLORPIP_WHITE, display2_getbgcolor());
 	}
 	else if (tempv >= 500)
+	{
 		;//colmain_setcolors(COLORPIP_RED, display2_getbgcolor());
+	}
 	else if (tempv >= 300)
+	{
 		;//colmain_setcolors(COLORPIP_YELLOW, display2_getbgcolor());
+	}
 	else
+	{
 		;//colmain_setcolors(COLORPIP_GREEN, display2_getbgcolor());
-
+	}
 	const int thermoa = tempv / 10;
 	const int thermos01a = tempv > 0 ? (tempv % 10) : (- tempv % 10);
 	return local_snprintf_P(b, len, "%d.%d", thermoa, thermos01a);

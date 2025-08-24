@@ -50,13 +50,13 @@ static void softfill(
 			switch (n)
 			{
 			default:
-				* buffer ++ = color; -- n;
+				* buffer ++ = color; -- n; // @suppress("No break at end of case")
 			case 3:
-				* buffer ++ = color; -- n;
+				* buffer ++ = color; -- n; // @suppress("No break at end of case")
 			case 2:
-				* buffer ++ = color; -- n;
+				* buffer ++ = color; -- n; // @suppress("No break at end of case")
 			case 1:
-				* buffer ++ = color; -- n;
+				* buffer ++ = color; -- n; // @suppress("No break at end of case")
 			}
 		}
 		buffer += t;
