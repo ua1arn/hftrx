@@ -12171,7 +12171,7 @@ updateboard_noui(
 		board_set_tuner_bypass(1);
 	#endif /* WITHAUTOTUNER */
 
-	ticker_setperiod(& displatchticker, NTICKS(1000 / glatchfps));	// частота обновления изображения на экране
+	ticker_setperiod(& displatchticker, NTICKS(calcdivround2(1000, glatchfps)));	// частота обновления изображения на экране
 	board_set_displayfps(glatchfps);
 		/* просто настройки тракта и не относящиеся к приёму-пеердаче. */
 	#if WITHCAT
@@ -13629,7 +13629,7 @@ refreshenabled_freqs(void)
 static void
 refreshperformed_freqs(void)
 {
-	const uint_fast32_t n = UINTICKS(1000 / gdisplayfreqsfps);	// 50 ms - обновление с частотой 20 герц
+	const uint_fast32_t n = UINTICKS(calcdivround2(1000, gdisplayfreqsfps));	// 50 ms - обновление с частотой 20 герц
 
 	counterupdatedfreqs = n;
 }
@@ -21348,7 +21348,7 @@ application_initialize(void)
 
 		IRQLSPINLOCK_INITIALIZE(& boardupdatelock);
 		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL);
-		ticker_initialize_user_display(& displatchticker, NTICKS(1000 / glatchfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_initialize_user_display(& displatchticker, NTICKS(calcdivround2(1000, glatchfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
 		ticker_add(& displatchticker);
 	}
 
