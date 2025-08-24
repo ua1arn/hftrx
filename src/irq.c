@@ -2624,7 +2624,7 @@ void board_dpc_processing(void)
 		IRQLSPIN_UNLOCK(lock, oldIrql);
 	}
 #if WITHSMPSYSTEM
-	__DMB();
+	//__DMB();
 	//__WFI();
 #endif /* WITHSMPSYSTEM */
 }

@@ -231,7 +231,7 @@ int i2chw2_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsi
 #elif CPUSTYLE_XC7Z
 	typedef void /*SPI_Registers */ TWI_t;
 	#define TWIBASENAME(port) TWIBASEconcat(I2C, port)
-	#define TWIHARD_PTR TWI0	// TODO: move to cpu configuration
+//	#define TWIHARD_PTR TWI0	// TODO: move to cpu configuration
 #else
 	typedef void TWI_t;
 #endif

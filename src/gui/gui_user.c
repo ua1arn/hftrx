@@ -800,7 +800,7 @@ void gui_main_process(void)
 
 	case WM_MESSAGE_ENC2_ROTATE:	// если не открыто 2-е окно, 2-й энкодер подстраивает частоту с округлением 500 гц от текущего значения
 	{
-		uint8_t step = enc2step[gui_nvram.enc2step_pos].step;
+		uint16_t step = enc2step[gui_nvram.enc2step_pos].step;
 		uint32_t freq = hamradio_get_freq_rx();
 		uint32_t f_rem = freq % step;
 
@@ -1242,7 +1242,7 @@ void window_memory_process(void)
 
 			uint32_t freq = load_mems(i, 0);
 			if (freq > 0)
-				local_snprintf_P(text, NAME_ARRAY_SIZE, "%dk", freq / 1000);
+				local_snprintf_P(text, NAME_ARRAY_SIZE, "%ldk", freq / 1000);
 			else
 				local_snprintf_P(text, NAME_ARRAY_SIZE, "---");
 
@@ -3139,7 +3139,10 @@ void window_ft8_process(void)
 		window_set_title(buf);
 	}
 }
-
+#else
+void window_ft8_bands_process(void) 	{}
+void window_ft8_settings_process(void) 	{}
+void window_ft8_process(void) 			{}
 #endif /* WITHFT8 */
 
 // *********************************************************************************************************************************************************************
@@ -3955,7 +3958,7 @@ void window_menu_params_process(void)
 				if (sel)
 					gui_obj_set_prop(btn_selected, GUI_OBJ_LOCK, 0);
 
-				strncpy(btn_selected, name, NAME_ARRAY_SIZE - 1);
+				strncpy(btn_selected, name, NAME_ARRAY_SIZE);
 				gui_obj_set_prop(btn_selected, GUI_OBJ_LOCK, 1);
 				sel = 1;
 
