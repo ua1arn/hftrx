@@ -2851,7 +2851,7 @@ static void display2_usbsts3(const gxdrawb_t * db,
 //////////////
 
 // Отображение остояния ENC1F
-static void display2_ENC1F_9(const gxdrawb_t * db,
+static void display2_ENC1F(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -2868,7 +2868,7 @@ static void display2_ENC1F_9(const gxdrawb_t * db,
 }
 
 // Отображение остояния ENC2F
-static void display2_ENC2F_9(const gxdrawb_t * db,
+static void display2_ENC2F(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -2885,7 +2885,7 @@ static void display2_ENC2F_9(const gxdrawb_t * db,
 }
 
 // Отображение остояния ENC4F
-static void display2_ENC3F_9(const gxdrawb_t * db,
+static void display2_ENC3F(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -2902,7 +2902,7 @@ static void display2_ENC3F_9(const gxdrawb_t * db,
 }
 
 // Отображение остояния ENC4F
-static void display2_ENC4F_9(const gxdrawb_t * db,
+static void display2_ENC4F(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
