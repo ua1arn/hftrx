@@ -85,7 +85,7 @@ static void (*tuh_packet_received)(uint8_t packet_type, uint8_t * packet, uint16
 
 static int bth_idx = 0;
 static int bth_dev_addr = 1;
-static int pdrv = 0;
+//static int pdrv = 0;
 
 static void cmd_io_complete(tuh_xfer_t* xfer)
 {

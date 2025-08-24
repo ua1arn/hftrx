@@ -880,7 +880,6 @@ static const uint8_t InquiryData[]  =
 	0x20, 0x30, 0x31, 0x30, 0x30
 };
 
-static const uint8_t SenseData[] = {0x03, 0x00, 0x00, 0x00};
 
 static uint32_t aw_module(uint32_t x, uint32_t y)
 {
@@ -1624,6 +1623,8 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 
 
 #if WITHUSBDMSC && WITHWAWXXUSB
+
+static const uint8_t SenseData[] = {0x03, 0x00, 0x00, 0x00};
 
 static uint64_t write_len;
 static uint64_t write_offset;

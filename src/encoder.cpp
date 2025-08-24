@@ -23,7 +23,9 @@
 
 typedef std::atomic<int32_t> atomicpos_t;
 
+#if WITHKBDENCODER
 static atomicpos_t position_kbd;	/* накопитель от клавиатуры - знаковое число */
+#endif /* WITHKBDENCODER */
 
 struct encoder_tag
 {
