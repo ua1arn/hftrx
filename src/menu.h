@@ -2882,26 +2882,10 @@ static const struct menudef menutable [] =
 		getzerobase,
 	},
 #endif /* WITHIF4DSP */
-//	(const struct paramdefdef [1]) {
-//		QLABEL("REPT HF"), 5 + WSIGNFLAG, 0, RJ_SIGNED, 	ISTEP1,
-//		ITEM_VALUE,
-//		RPTOFFSMIN, RPTOFFSMAX,		/* repeater offset */
-//		OFFSETOF(struct nvmap, rptroffshf1k),
-//		getselector0, nvramoffs0, valueoffs0,
-//		& rptroffshf1k,
-//		NULL,
-//		getrptoffsbase,
-//	},
-//	(const struct paramdefdef [1]) {
-//		QLABEL("REPT UHF"), 5 + WSIGNFLAG, 0, RJ_SIGNED, 	ISTEP1,
-//		ITEM_VALUE,
-//		RPTOFFSMIN, RPTOFFSMAX,		/* repeater offset */
-//		OFFSETOF(struct nvmap, rptroffsuhf1k),
-//		getselector0, nvramoffs0, valueoffs0,
-//		& rptroffsuhf1k,
-//		NULL,
-//		getrptoffsbase,
-//	},
+#if WITHRPTOFFSET
+	& xrptroffshf1k,	// HF repeater offset parameter
+	& xrptroffsvhf1k,	// VHF repeater offset parameter
+#endif /* WITHRPTOFFSET */
 #endif /* WITHTX */
 
 #if defined(REFERENCE_FREQ)

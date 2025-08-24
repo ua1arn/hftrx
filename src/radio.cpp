@@ -627,17 +627,21 @@ uint_fast8_t edgepin_get(edgepin_t * egp)
 
 
 
-enum { RPTOFFSMIN = 0, RPTOFFSHALF = 900, RPTOFFSMAX = 2 * RPTOFFSHALF };
 
 static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при приеме телеграфа или самоконтроль (в десятках герц) */
 
-static uint_fast16_t rptroffshf1k = RPTOFFSHALF;		/* Repeater offset HF */
-static uint_fast16_t rptroffsuhf1k = RPTOFFSHALF;		/* Repeater offset UHF */
+#if WITHRPTOFFSET
 
-static int_fast32_t getrptoffsbase(void)
-{
-	return - RPTOFFSHALF;
-}
+	enum { RPTOFFSMIN = 0, RPTOFFSHALF = 900, RPTOFFSMAX = 2 * RPTOFFSHALF };
+	static uint_fast16_t rptroffshf1k = RPTOFFSHALF;		/* Repeater offset HF */
+	static uint_fast16_t rptroffsvhf1k = RPTOFFSHALF;		/* Repeater offset UHF */
+
+	static int_fast32_t getrptoffsbase(void)
+	{
+		return - RPTOFFSHALF;
+	}
+
+#endif /* WITHRPTOFFSET */
 
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 
@@ -3641,8 +3645,10 @@ struct nvmap
 	uint8_t splitmode;		/* не-0, если работа с фиксированными ячейками (vfo/vfoa/vfob/mem) */
 	uint8_t vfoab;		/* 1, если работа с VFO B, 0 - с VFO A */
 #endif /* WITHSPLIT */
-//	uint16_t rptroffshf1k;		/* Repeater offset HF */
-//	uint16_t rptroffsuhf1k;	/* Repeater offset UHF */
+#if WITHRPTOFFSET
+	uint16_t rptroffshf1k;		/* Repeater offset HF */
+	uint16_t rptroffsvhf1k;		/* Repeater offset VHF */
+#endif /* WITHRPTOFFSET */
 	uint8_t gcwpitch10;	/* тон в CW/CWR режиме */
 	uint8_t gkeybeep10;	/* тон озвучки нажатий клавиш */
 	uint8_t stayfreq;	/* при изменении режимов кнопками - не меняем частоту */
@@ -5210,6 +5216,31 @@ static const struct paramdefdef xcatenable =
 		};
 	#endif /* WITHIF4DSP */
 	#endif /* WITHSUBTONES */
+
+#if WITHRPTOFFSET
+		static const struct paramdefdef xrptroffshf1k =
+		{
+			QLABEL("REPT HF"), 5 + WSIGNFLAG, 0, RJ_SIGNED, 	ISTEP1,
+			ITEM_VALUE,
+			RPTOFFSMIN, RPTOFFSMAX,		/* repeater offset */
+			OFFSETOF(struct nvmap, rptroffshf1k),
+			getselector0, nvramoffs0, valueoffs0,
+			& rptroffshf1k,
+			NULL,
+			getrptoffsbase,
+		};
+		static const struct paramdefdef xrptroffsvhf1k =
+		{
+			QLABEL("REPT VHF"), 5 + WSIGNFLAG, 0, RJ_SIGNED, 	ISTEP1,
+			ITEM_VALUE,
+			RPTOFFSMIN, RPTOFFSMAX,		/* repeater offset */
+			OFFSETOF(struct nvmap, rptroffsvhf1k),
+			getselector0, nvramoffs0, valueoffs0,
+			& rptroffsvhf1k,
+			NULL,
+			getrptoffsbase,
+		};
+#endif /* WITHRPTOFFSET */
 
 		/* пара значений для 10% выходной мощности и 100% выходной мощности */
 		struct pwradj
