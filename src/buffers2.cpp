@@ -513,7 +513,7 @@ public:
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& readylist))
 		{
-			const PRLIST_ENTRY t = RemoveTailList(& readylist);
+			const PLIST_ENTRY t = RemoveTailList(& readylist);
 			-- readycount;
 			fiforeadyupdate();
 	#if WITHBUFFERSDEBUG
@@ -537,7 +537,7 @@ public:
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& freelist))
 		{
-			const PRLIST_ENTRY t = RemoveTailList(& freelist);
+			const PLIST_ENTRY t = RemoveTailList(& freelist);
 			ASSERT(freecount != 0);
 			-- freecount;
 			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
@@ -555,7 +555,7 @@ public:
 		return false;
 	}
 
-	unsigned take_readys(PRLIST_ENTRY list, unsigned n)
+	unsigned take_readys(LIST_ENTRY * list, unsigned n)
 	{
 		unsigned v = 0;
 		IRQL_t oldIrql;
@@ -564,7 +564,7 @@ public:
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 		while (n -- && ! IsListEmpty(& readylist))
 		{
-			const PRLIST_ENTRY t = RemoveTailList(& readylist);
+			const PLIST_ENTRY t = RemoveTailList(& readylist);
 			-- readycount;
 			InsertHeadList(list, t);
 			++ v;
@@ -574,7 +574,7 @@ public:
 		return v;
 	}
 
-	void save_frees(PRLIST_ENTRY list)
+	void save_frees(LIST_ENTRY * list)
 	{
 		IRQL_t oldIrql;
 
@@ -582,7 +582,7 @@ public:
 
 		while (! IsListEmpty(list))
 		{
-			const PRLIST_ENTRY t = RemoveTailList(list);
+			const PLIST_ENTRY t = RemoveTailList(list);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
 			ASSERT3(p->tag0 == this, __FILE__, __LINE__, name);
 			ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
@@ -2841,7 +2841,7 @@ size_t takemodemrxbuffer(uint8_t * * dest)
 	RiseIrql(IRQL_REALTIME, & oldIrql);
 	if (! IsListEmpty2(& modemsrx8))
 	{
-		PRLIST_ENTRY t = RemoveTailList2(& modemsrx8);
+		PLIST_ENTRY t = RemoveTailList2(& modemsrx8);
 		LowerIrql(oldIrql);
 		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
 		* dest = p->buff;
@@ -2859,7 +2859,7 @@ size_t takemodembuffer(uint8_t * * dest)
 	RiseIrql(IRQL_REALTIME, & oldIrql);
 	if (! IsListEmpty2(& modemsfree8))
 	{
-		PRLIST_ENTRY t = RemoveTailList2(& modemsfree8);
+		PLIST_ENTRY t = RemoveTailList2(& modemsfree8);
 		LowerIrql(oldIrql);
 		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
 		* dest = p->buff;
@@ -2876,7 +2876,7 @@ size_t takemodembuffer_low(uint8_t * * dest)
 {
 	if (! IsListEmpty2(& modemsfree8))
 	{
-		PRLIST_ENTRY t = RemoveTailList2(& modemsfree8);
+		PLIST_ENTRY t = RemoveTailList2(& modemsfree8);
 		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
 		* dest = p->buff;
 		return (MODEMBUFFERSIZE8 * sizeof p->buff [0]);
@@ -3767,7 +3767,7 @@ uintptr_t getfilled_dmabufferuacinrtsX(uint_fast16_t * sizep)
 /* предполагается что тут значения нормирования в диапазоне -1..+1 */
 void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
 {
-	PRLIST_ENTRY t;
+	PLIST_ENTRY t;
 	IRQL_t oldIrql;
 
 	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
@@ -3783,7 +3783,7 @@ void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
 void deliveryfloat_buffer(deliverylist_t * list, const FLOAT_t * ch0, const FLOAT_t * ch1, unsigned n)
 {
 	IRQL_t oldIrql;
-	PRLIST_ENTRY t;
+	PLIST_ENTRY t;
 
 	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
@@ -3801,7 +3801,7 @@ void deliveryfloat_buffer(deliverylist_t * list, const FLOAT_t * ch0, const FLOA
 void deliveryint(deliverylist_t * list, int_fast32_t ch0, int_fast32_t ch1)
 {
 	IRQL_t oldIrql;
-	PRLIST_ENTRY t;
+	PLIST_ENTRY t;
 
 	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)

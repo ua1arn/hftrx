@@ -5515,7 +5515,7 @@ uint_fast8_t allocate_fftbuffer(fftbuff_t * * dest)
 	IRQLSPIN_LOCK(& fftlock, & oldIrql, FFTLOCL_IRQL);
 	if (! IsListEmpty(& fftbuffree))
 	{
-		const PRLIST_ENTRY t = RemoveTailList(& fftbuffree);
+		const PLIST_ENTRY t = RemoveTailList(& fftbuffree);
 		IRQLSPIN_UNLOCK(& fftlock, oldIrql);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
@@ -5524,7 +5524,7 @@ uint_fast8_t allocate_fftbuffer(fftbuff_t * * dest)
 	/* Начинаем отбрасывать самые старые в очереди готовых. */
 	if (! IsListEmpty(& fftbufready))
 	{
-		const PRLIST_ENTRY t = RemoveTailList(& fftbufready);
+		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
 		IRQLSPIN_UNLOCK(& fftlock, oldIrql);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
@@ -5541,7 +5541,7 @@ void saveready_fftbuffer(fftbuff_t * p)
 	IRQLSPIN_LOCK(& fftlock, & oldIrql, FFTLOCL_IRQL);
 	while (! IsListEmpty(& fftbufready))
 	{
-		const PRLIST_ENTRY t = RemoveTailList(& fftbufready);
+		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
 		InsertHeadList(& fftbuffree, t);
 	}
 	InsertHeadList(& fftbufready, & p->item);
@@ -5564,7 +5564,7 @@ uint_fast8_t  getfilled_fftbuffer(fftbuff_t * * dest)
 	IRQLSPIN_LOCK(& fftlock, & oldIrql, FFTLOCL_IRQL);
 	if (! IsListEmpty(& fftbufready))
 	{
-		const PRLIST_ENTRY t = RemoveTailList(& fftbufready);
+		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
 		IRQLSPIN_UNLOCK(& fftlock, oldIrql);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;

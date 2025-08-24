@@ -560,7 +560,7 @@ static void lwip_1s_spool(void * ctx)
 
 typedef struct nic_buffer_tag
 {
-	LIST_ENTRY item;
+	VLIST_ENTRY item;
 	struct pbuf *frame;
 } nic_buffer_t;
 
@@ -577,8 +577,8 @@ static void nicbuff_unlock(IRQL_t irql)
 	IRQLSPIN_UNLOCK(& nicbufflock, irql);
 }
 
-static LIST_ENTRY nic_buffers_free;
-static LIST_ENTRY nic_buffers_ready;
+static VLIST_ENTRY nic_buffers_free;
+static VLIST_ENTRY nic_buffers_ready;
 
 static void nic_buffers_initialize(void)
 {
@@ -591,7 +591,7 @@ static void nic_buffers_initialize(void)
 	for (i = 0; i < (sizeof sliparray / sizeof sliparray [0]); ++ i)
 	{
 		nic_buffer_t * const p = & sliparray [i];
-		InsertHeadList(& nic_buffers_free, & p->item);
+		InsertHeadVList(& nic_buffers_free, & p->item);
 	}
 }
 
@@ -601,7 +601,7 @@ static int nic_buffer_alloc(nic_buffer_t * * tp)
 	nicbuff_lock(& oldIrql);
 	if (! IsListEmpty(& nic_buffers_free))
 	{
-		const PRLIST_ENTRY t = RemoveTailList(& nic_buffers_free);
+		const PVLIST_ENTRY t = RemoveTailVList(& nic_buffers_free);
 		nicbuff_unlock(oldIrql);
 		nic_buffer_t * const p = CONTAINING_RECORD(t, nic_buffer_t, item);
 		* tp = p;
@@ -617,7 +617,7 @@ static int nic_buffer_ready(nic_buffer_t * * tp)
 	nicbuff_lock(& oldIrql);
 	if (! IsListEmpty(& nic_buffers_ready))
 	{
-		const PRLIST_ENTRY t = RemoveTailList(& nic_buffers_ready);
+		const PVLIST_ENTRY t = RemoveTailVList(& nic_buffers_ready);
 		nicbuff_unlock(oldIrql);
 		nic_buffer_t * const p = CONTAINING_RECORD(t, nic_buffer_t, item);
 		* tp = p;
@@ -631,7 +631,7 @@ static void nic_buffer_release(nic_buffer_t * p)
 {
 	IRQL_t oldIrql;
 	nicbuff_lock(& oldIrql);
-	InsertHeadList(& nic_buffers_free, & p->item);
+	InsertHeadVList(& nic_buffers_free, & p->item);
 	nicbuff_unlock(oldIrql);
 }
 
@@ -640,7 +640,7 @@ static void nic_buffer_rx(nic_buffer_t * p)
 {
 	IRQL_t oldIrql;
 	nicbuff_lock(& oldIrql);
-	InsertHeadList(& nic_buffers_ready, & p->item);
+	InsertHeadVList(& nic_buffers_ready, & p->item);
 	nicbuff_unlock(oldIrql);
 }
 

@@ -8,7 +8,18 @@
 #define LIST_H_INCLUDED
 
 #include <stddef.h>
+
+#if defined(_MSC_VER) && (_MSC_VER < 1600)
+typedef __int8 int8_t;
+typedef __int16 int16_t;
+typedef __int32 int32_t;
+typedef unsigned __int8 uint8_t;
+typedef unsigned __int16 uint16_t;
+typedef unsigned __int32 uint32_t;
+#else
 #include <stdint.h>
+#include <stdlib.h>
+#endif
 
 
 #define NTAPI
@@ -16,12 +27,12 @@
 #define IN_param
 #define OUT_param
 
-typedef uint32_t ULONG, * PULONG;
-typedef int32_t LONG, * PLONG;
+typedef unsigned long ULONG, * PULONG;
+typedef long LONG, * PLONG;
 typedef void VOID, * PVOID;
 
-typedef int64_t LONGLONG;
-typedef uint64_t ULONGLONG;
+typedef __int64 LONGLONG;
+typedef unsigned __int64 ULONGLONG;
 
 #define RESTRICTED_POINTER /* */
 #define IN_param /* */
@@ -74,6 +85,12 @@ typedef struct _LIST_ENTRY {
    struct _LIST_ENTRY *Flink;
    struct _LIST_ENTRY *Blink;
 } LIST_ENTRY, *PLIST_ENTRY, *RESTRICTED_POINTER PRLIST_ENTRY;
+
+typedef struct _VLIST_ENTRY {
+   volatile struct _VLIST_ENTRY *Flink;
+   volatile struct _VLIST_ENTRY *Blink;
+} VLIST_ENTRY, *RESTRICTED_POINTER PRVLIST_ENTRY;
+typedef volatile VLIST_ENTRY * PVLIST_ENTRY;
 
 //
 //  Singly linked list structure. Can be used as either a list head, or
@@ -173,8 +190,8 @@ Return Value:
 //
 
 #define CONTAINING_RECORD(address, type, field) ( (type *)( \
-                                                  (uint8_t *)(address) - \
-                                                  (uintptr_t) offsetof(type, field) ))
+                                                  (unsigned char *)(address) - \
+                                                  (unsigned) offsetof(type, field) ))
 
 /*
  *	functions.
@@ -209,6 +226,18 @@ InsertHeadList(
     _EX_ListHead->Flink = (Entry);\
     }
 
+#define InsertHeadVList(ListHead,Entry) {\
+    PVLIST_ENTRY _EX_Flink;\
+    PVLIST_ENTRY _EX_ListHead;\
+    _EX_ListHead = (ListHead);\
+    _EX_Flink = _EX_ListHead->Flink;\
+    (Entry)->Flink = _EX_Flink;\
+    (Entry)->Blink = _EX_ListHead;\
+    _EX_Flink->Blink = (Entry);\
+    _EX_ListHead->Flink = (Entry);\
+    }
+
+
 ///////
 //
 VOID 
@@ -220,6 +249,17 @@ InsertTailList(
 #define InsertTailList(ListHead,Entry) {\
     PLIST_ENTRY _EX_Blink;\
     PLIST_ENTRY _EX_ListHead;\
+    _EX_ListHead = (ListHead);\
+    _EX_Blink = _EX_ListHead->Blink;\
+    (Entry)->Flink = _EX_ListHead;\
+    (Entry)->Blink = _EX_Blink;\
+    _EX_Blink->Flink = (Entry);\
+    _EX_ListHead->Blink = (Entry);\
+    }
+
+#define InsertTailVList(ListHead,Entry) {\
+    PVLIST_ENTRY _EX_Blink;\
+    PVLIST_ENTRY _EX_ListHead;\
     _EX_ListHead = (ListHead);\
     _EX_Blink = _EX_ListHead->Blink;\
     (Entry)->Flink = _EX_ListHead;\
@@ -280,6 +320,15 @@ RemoveEntryList(
 #define RemoveEntryList(Entry) {\
     PLIST_ENTRY _EX_Blink;\
     PLIST_ENTRY _EX_Flink;\
+    _EX_Flink = (Entry)->Flink;\
+    _EX_Blink = (Entry)->Blink;\
+    _EX_Blink->Flink = _EX_Flink;\
+    _EX_Flink->Blink = _EX_Blink;\
+    }
+
+#define RemoveEntryVList(Entry) {\
+    PVLIST_ENTRY _EX_Blink;\
+    PVLIST_ENTRY _EX_Flink;\
     _EX_Flink = (Entry)->Flink;\
     _EX_Blink = (Entry)->Blink;\
     _EX_Blink->Flink = _EX_Flink;\
