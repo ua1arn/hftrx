@@ -17621,13 +17621,13 @@ processmenukeyandencoder(inputevent_t * ev)
 #endif /* WITHTX */
 
 	case KBD_CODE_BAND_DOWN:
-#if WITHENCODER2
+#if WITHENCODER2 || WITHENCODER_4F
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 		uif_key_click_banddown();
 		ev->keyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 || WITHENCODER_4F */
 
 	case KBD_CODE_MENU_DOWN:
 		/* переход на предыдущий пункт/группу меню */
@@ -17642,13 +17642,13 @@ processmenukeyandencoder(inputevent_t * ev)
 		goto menuswitch;
 
 	case KBD_CODE_BAND_UP:
-#if WITHENCODER2
+#if WITHENCODER2 || WITHENCODER_4F
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 		uif_key_click_bandup();
 		ev->keyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
-#endif /* WITHENCODER2 */
+#endif /* WITHENCODER2 || WITHENCODER_4F */
 
 	case KBD_CODE_MENU_UP:
 		/* переход на следующий пункт/группу меню */
