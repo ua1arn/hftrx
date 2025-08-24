@@ -80,7 +80,9 @@ static volatile uint_fast8_t 	glob_catmux = BOARD_CATMUX_USBCDC;
 	static uint_fast8_t 	glob_bglightoff = 0;	// выключаем дисплей
 #endif /* WITHLCDBACKLIGHT */
 
+#if WITHKBDBACKLIGHT
 static uint_fast8_t 	glob_kblight = 1;
+#endif /* WITHKBDBACKLIGHT */
 static uint_fast8_t 	glob_poweron = 1;
 
 static uint_fast8_t		glob_fanflag;	/* включение вентилятора */
@@ -94,8 +96,6 @@ static uint_fast8_t		glob_fanflag;	/* включение вентилятора 
 #endif /* WITHDCDCFREQCTL */
 
 /* Следующие два параметра совместно выбирают фильтры в случае использования отдельных фильтров для LSB и USB */
-static uint_fast16_t 	glob_filter;		// код фильтра ПЧ. 16 бит из-за использования пары ADG714 в одной из конфигураций
-
 static uint_fast8_t 	glob_notch;
 static uint_fast8_t 	glob_notchnarrow;
 static uint_fast8_t 	glob_lo1scale = 1;
