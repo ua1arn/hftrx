@@ -16866,8 +16866,6 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 	uint_fast16_t selected_group_left_margin; // первый элемент группы
 	uint_fast16_t el;
 	multimenuwnd_t window;
-	const uint_fast8_t xcell_marker = xcell + 0;
-	const uint_fast8_t xcell_text = xcell + 1;
 
 	display2_getmultimenu(& window);
 
@@ -16905,26 +16903,19 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 			if ((index_groups - menu_block_scroll_offset_groups) > window.multilinemenu_max_rows)
 				continue;
 
-			colmain_setcolors(MENUSELCOLOR, BGCOLOR);
 			if (el == selected_group_left_margin)
 			{
 				//подсвечиваем выбранный элемент
-				display_text(db, xcell_marker, y_position_groups, PSTR(">"), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
+				//display_text(db, xcell_marker, y_position_groups, PSTR(">"), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
+				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
 			}
 			else
 			{
 				//снять отметку
-				display_text(db, xcell_marker, y_position_groups, PSTR(" "), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
+				//display_text(db, xcell_marker, y_position_groups, PSTR(" "), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
+				colmain_setcolors(MENUCOLOR, BGCOLOR);
 			}
-			display2_menu_group(db, xcell_text, y_position_groups, mv, xspan - 1, getlabel); // название группы
-            if (el == selected_group_left_margin)
-            {
-               	uint_fast16_t xpix = GRID2X(xcell);
-               	uint_fast16_t ypix = GRID2Y(y_position_groups);
-              	uint_fast16_t wpix = GRID2X(xspan);
-              	uint_fast16_t hpix = GRID2Y(window.ystep);
-              	display_line(db, xpix, ypix + hpix - 1, xpix + wpix - 1, ypix + hpix - 1, COLORPIP_WHITE);
-            }
+			display2_menu_group(db, xcell, y_position_groups, mv, xspan, getlabel); // название группы
 
 			y_position_groups += window.ystep;
 		}
@@ -16936,7 +16927,7 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 			index_groups - menu_block_scroll_offset_groups < window.multilinemenu_max_rows;
 			++ index_groups, y_position_groups += window.ystep)
 	{
-		display_text(db, xcell_marker, y_position_groups, "", xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
+		display_text(db, xcell, y_position_groups, "", xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 	}
 }
 
@@ -16951,8 +16942,6 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 	uint_fast16_t selected_group_right_margin; // последний элемент группы
 	uint_fast16_t el;
 	multimenuwnd_t window;
-	const uint_fast8_t xcell_marker = xcell + 0;
-	const uint_fast8_t xcell_text = xcell + 1;
 
 	display2_getmultimenu(& window);
 
@@ -16999,26 +16988,19 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 			if ((index_params - menu_block_scroll_offset_params) > window.multilinemenu_max_rows)
 				continue;
 
-			colmain_setcolors(MENUSELCOLOR, BGCOLOR);
 			if (el == index)
 			{
 				//подсвечиваем выбранный элемент
-				display_text(db, xcell_marker, y_position_params, PSTR(">"), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
+				//display_text(db, xcell_marker, y_position_params, PSTR(">"), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
+				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
 			}
 			else
 			{
 				//снять подсветку
-				display_text(db, xcell_marker, y_position_params, PSTR(" "), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
+				//display_text(db, xcell_marker, y_position_params, PSTR(" "), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
+				colmain_setcolors(MENUCOLOR, BGCOLOR);
 			}
-			display2_menu_lblng(db, xcell_text, y_position_params, mv, xspan - 1, getlabel); // название редактируемого параметра
-            if (el == index)
-            {
-               	uint_fast16_t xpix = GRID2X(xcell);
-               	uint_fast16_t ypix = GRID2Y(y_position_params);
-              	uint_fast16_t wpix = GRID2X(xspan);
-              	uint_fast16_t hpix = GRID2Y(window.ystep);
-              	display_line(db, xpix, ypix + hpix - 1, xpix + wpix - 1, ypix + hpix - 1, COLORPIP_WHITE);
-            }
+			display2_menu_lblng(db, xcell, y_position_params, mv, xspan, getlabel); // название редактируемого параметра
 
             y_position_params += window.ystep;
 		}
@@ -17077,7 +17059,6 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 	const uint_fast16_t menu_block_scroll_offset_params = window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
 
 	// выводим на экран блок с параметрами
-	colmain_setcolors(COLORPIP_WHITE, BGCOLOR);
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
 		const struct menudef * const mv = & menutable [el];
@@ -17093,15 +17074,15 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 			if ((index_params - menu_block_scroll_offset_params) > window.multilinemenu_max_rows)
 				continue;
 
-            display2_menu_valxx(db, x, y_position_params, mv, xspan); // значение параметра
             if (el == index)
             {
-               	uint_fast16_t xpix = GRID2X(x);
-               	uint_fast16_t ypix = GRID2Y(y_position_params);
-              	uint_fast16_t wpix = GRID2X(xspan);
-              	uint_fast16_t hpix = GRID2Y(window.ystep);
-              	display_line(db, xpix, ypix + hpix - 1, xpix + wpix - 1, ypix + hpix - 1, COLORPIP_WHITE);
+                colmain_setcolors(MENUSELCOLOR, BGCOLOR);
             }
+            else
+            {
+                colmain_setcolors(MENUCOLOR, BGCOLOR);
+            }
+            display2_menu_valxx(db, x, y_position_params, mv, xspan); // значение параметра
 
 			y_position_params += window.ystep;
 		}
@@ -17125,8 +17106,6 @@ void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
 	multimenuwnd_t w;
-	const uint_fast8_t xcell_marker = xcell + 0;
-	const uint_fast8_t xcell_text = xcell + 1;
 
 	if (xspan == 0)
 		return;
@@ -17172,7 +17151,7 @@ static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_f
 	display2_getmultimenu(& window);
 	if (ismenukinddp(mp->pd, ITEM_VALUE) == 0)
 		return;
-	colmain_setcolors(MENUCOLOR, BGCOLOR);
+	//colmain_setcolors(MENUCOLOR, BGCOLOR);
 	display_text(db, xcell, ycell, mp->pd->label, xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 }
 
@@ -17184,7 +17163,7 @@ static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_f
 	display2_getmultimenu(& window);
 	while (ismenukinddp(mp->pd, ITEM_GROUP) == 0)
 		-- mp;
-	colmain_setcolors(MENUGROUPCOLOR, BGCOLOR);
+	//colmain_setcolors(MENUGROUPCOLOR, BGCOLOR);
 	display_text(db, xcell, ycell, mp->pd->label, xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 }
 
