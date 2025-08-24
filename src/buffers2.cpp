@@ -11,6 +11,7 @@
 #include "mslist.h"
 #include "audio.h"
 #include "display/display.h"
+#include <atomic>
 
 //#undef RAMNC
 //#define RAMNC
@@ -349,7 +350,7 @@ public:
 class fqmeter
 {
 	unsigned debugcount;
-	unsigned ms100;
+	std::atomic<unsigned> ms100;
 public:
 	fqmeter() : debugcount(0), ms100(0)
 	{
@@ -705,13 +706,8 @@ public:
 	void spool100ms()
 	{
 #if WITHBUFFERSDEBUG
-		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
-
 		fqin.spool100ms();
 		fqout.spool100ms();
-
-		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 #endif /* WITHBUFFERSDEBUG */
 	}
 
