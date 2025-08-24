@@ -18843,12 +18843,11 @@ keyboard_test(void)
 /* вызывается при разрешённых прерываниях. */
 void initialize2(void)
 {
-#if LCDMODE_LTDC
+#if ! LCDMODE_DUMMY
 	gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-#endif /* LCDMODE_LTDC */
+#endif /* ! LCDMODE_DUMMY */
 	uint_fast8_t mclearnvram;
-
 
 	//hardware_cw_diagnostics(0, 1, 0);	// 'D'
 
@@ -18883,7 +18882,7 @@ void initialize2(void)
 		display_text(& dbv, 0, 0, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 		colmain_nextfb();
 #endif /*  ! LCDMODE_DUMMY */
-		PRINTF(PSTR("KBD fault\n"));
+		PRINTF(PSTR("%s\n"), msg);
 		for (;;)
 			;
 	}
@@ -18979,10 +18978,12 @@ void initialize2(void)
 			board_update();
 #endif /* WITHLCDBACKLIGHT */
 
+#if ! LCDMODE_DUMMY
 			static const char msg [] = "ERASE: Press SPL";
 			display2_fillbg(& dbv);
 			display_text(db, 0, 0, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 			colmain_nextfb();
+#endif /* ! LCDMODE_DUMMY */
 
 			for (;;)
 			{
@@ -18991,7 +18992,7 @@ void initialize2(void)
 					kbd_pass();
 					local_delay_ms(KBD_TICKS_PERIOD * 1000 / TICKS_FREQUENCY);
 				}
-				PRINTF("kbch=0x%02X (%u)\n", (unsigned) kbch, (unsigned) kbch);
+				PRINTF("wkbch=0x%02X (%u)\n", (unsigned) kbch, (unsigned) kbch);
 				if (kbch == erasekey)
 					break;
 			}
