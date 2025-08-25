@@ -4112,6 +4112,7 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	for (;;)
 	{
 		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
+		__DMB();
 	}
 }
 
