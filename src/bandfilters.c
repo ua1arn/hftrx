@@ -451,6 +451,7 @@ void bandf_calc_initialize(void)
 	CTLREGMODE_STORCH_V7 || \
 	CTLREGMODE_STORCH_V9 || \
 	CTLREGMODE_STORCH_V9A || \
+	CTLREGMODE_STORCH_V9A_R6BK_V1 || \
 	0
 	/* плата усилителя 2*RD100 UA1CEI */
 	// 2.4 3.9 7.4 14.8 22 30

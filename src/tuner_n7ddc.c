@@ -12,6 +12,8 @@ static unsigned char C_linear = 0, L_linear = 0;
 	static const unsigned char L_q = 7, C_q = 7;
 #elif FULLSET_7L8C
 	static const unsigned char L_q = 7, C_q = 8;
+#elif FULLSET_8L7C
+	static const unsigned char L_q = 8, C_q = 7;
 #elif FULLSET8
 	static const unsigned char L_q = 8, C_q = 8;
 #endif

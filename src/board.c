@@ -1706,6 +1706,121 @@ prog_ctrlreg(uint_fast8_t plane)
 }
 
 
+#elif CTLREGMODE_STORCH_V9A_R6BK_V1
+
+
+/* STM32MP1, Allwinner t113-s3, STM32MP157, дополнения для подключения трансвертора */
+
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+static void
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+	// registers chain control register
+	{
+		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
+		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
+		//Current Output at Idle Power A1 = 0, A0 = 1, VO = 0 ±100 ±60 ±55 ±50 mA min A
+
+		enum
+		{
+			HARDWARE_OPA2674I_FULLPOWER = 0x03,
+			HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
+			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
+			HARDWARE_OPA2674I_SHUTDOWN = 0x00
+		};
+		static const uint_fast8_t powerxlat [] =
+		{
+			HARDWARE_OPA2674I_IDLEPOWER,
+			HARDWARE_OPA2674I_POWERCUTBACK,
+			HARDWARE_OPA2674I_FULLPOWER,
+		};
+		const spitarget_t target = targetctl1;
+
+		rbtype_t rbbuff [10] = { 0 };
+		const uint_fast8_t txgated = glob_tx && glob_txgate;
+		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf) || glob_forcexvrtr;
+		//PRINTF("prog_ctrlreg: glob_bandf=%d, xvrtr=%d\n", glob_bandf, xvrtr);
+
+#if WITHAUTOTUNER
+	#if WITHTPA100W_UA1CEI_V2
+
+		/* 7 indictors, 7 or 8 capacitors */
+		RBVAL8(0100, glob_tuner_C);
+		RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
+		RBVAL(0070, glob_tuner_L, 7);
+
+		//RBBIT(0067, 0);	// UNUSED
+		RBBIT(0066, 0);	// undefined
+		RBBIT(0065, glob_classamode);	// class A
+		RBBIT(0064, glob_rxantenna);	// RX ANT
+		RBBIT(0063, ! glob_tuner_bypass);	// Energized - tuner on
+		RBBIT(0062, ! glob_classamode);	// hi power out
+		RBBIT(0061, txgated);	//
+		RBBIT(0060, glob_fanflag || txgated);	// fan
+
+		RBBIT(0057, glob_antenna);	// Ant A/B
+		RBVAL(0050, 1U << glob_bandf2, 7);	// LPF6..LPF0
+
+	#elif WITHTPA100W_R6BK_V1
+
+		enum { bs = 050 };
+		RBVAL8(0060 + bs - 050, glob_tuner_L);
+		RBVAL(0051 + bs - 050, glob_tuner_C, 7);
+		RBBIT(0050 + bs - 050, glob_tuner_type);		// TY
+
+	#else
+		#error WITHAUTOTUNER and unknown details
+	#endif
+#endif /* WITHAUTOTUNER */
+
+		// DD23 SN74HC595PW + ULN2003APW на разъём управления LPF
+		RBBIT(0047, ! xvrtr && txgated);		// D7 - XS18 PIN 16: PTT
+		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
+
+		// DD42 SN74HC595PW
+		RBBIT(0037, xvrtr && ! glob_tx);	// D7 - XVR_RXMODE
+		RBBIT(0036, xvrtr && glob_tx);		// D6 - XVR_TXMODE
+		RBBIT(0035, glob_antenna);	// D5: CTLSPARE2 - Ant A/B
+		RBBIT(0034, glob_rxantenna);			// D4: CTLSPARE1 - RX ANT
+		RBBIT(0033, 0);			// D3: not used
+	#if WITHBLPWMCTL && WITHLCDBACKLIGHT
+		// Имеется управление яркостью подсветки дисплея через PWM
+		RBBIT(0032, 1);			// D2: LCD_BL_ENABLE
+		RBBIT(0031, 1);			// LCD_BL1
+		RBBIT(0030, 1);			// LCD_BL0
+	#elif WITHLCDBACKLIGHT
+		/* Аналоговое управление яркостью подсветки */
+		RBBIT(0032, ! glob_bglightoff);			// D2: LCD_BL_ENABLE
+		RBBIT(0031, ((glob_bglight - WITHLCDBACKLIGHTMIN) & 0x02));	// LCD_BL1
+		RBBIT(0030, ((glob_bglight - WITHLCDBACKLIGHTMIN) & 0x01));	// LCD_BL0
+	#endif /* WITHBLPWMCTL */
+
+		// DD22 SN74HC595PW в управлении диапазонными фильтрами приёмника
+		RBVAL(0021, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
+		RBBIT(0020, ! xvrtr && glob_bandf != 0 && txgated);		// D0: включение подачи смещения на выходной каскад усилителя мощности
+
+		// DD21 SN74HC595PW в управлении диапазонными фильтрами приёмника
+		RBVAL(0016, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
+		RBVAL(0014, ~ ((! xvrtr && txgated) ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
+		RBBIT(0013, xvrtr && (glob_fanflag || txgated));			/* D3: XVRTR PA FAN */
+		RBBIT(0012, xvrtr || (glob_bandf == 0));		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
+		RBBIT(0011, ! xvrtr && glob_tx);				// D1: TX ANT relay
+		RBBIT(0010, glob_bandf == 0);		// D0: средневолновый ФНЧ - управление реле на входе
+
+		// DD28 SN74HC595PW рядом с DIN8
+		RBBIT(0007, glob_poweron);			// POWER_HOLD_ON added in next version
+		RBBIT(0006, ! xvrtr && glob_fanflag);			// FAN_CTL added in LVDS version
+		RBBIT(0005, ! xvrtr && glob_tx);				// EXT_PTT2 added in LVDS version
+		RBBIT(0004, ! xvrtr && glob_tx);				// EXT_PTT added in LVDS version
+		RBVAL(0000, glob_bandf3, 4);		/* D3:D0: DIN8 EXT PA band select */
+
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+	}
+}
+
+
 #elif CTLREGMODE_STORCH_V9A
 
 /* STM32MP1, Allwinner t113-s3, STM32MP157, дополнения для подключения трансвертора */

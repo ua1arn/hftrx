@@ -1164,7 +1164,7 @@ static const struct menudef menutable [] =
 		NULL,
 	},
 /* group name --- */
-#if 0 && ! CTLREGMODE_STORCH_V9A
+#if 0
 	(const struct paramdefdef [1]) {
 		QLABEL("ADC RAND"), 8, 3, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
 		ITEM_VALUE,
@@ -1173,9 +1173,9 @@ static const struct menudef menutable [] =
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gadcrand,
-		getzerobase, 
+		getzerobase,
 	},
-#endif /* ! CTLREGMODE_STORCH_V9A */
+#endif /* */
 	(const struct paramdefdef [1]) {
 		QLABEL("ADC DITH"), 8, 3, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
 		ITEM_VALUE,
