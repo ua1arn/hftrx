@@ -6,12 +6,12 @@
 // UA1ARN
 //
 // Трансивер с DSP обработкой "Аист" на процессоре Allwinner t133-S3
-// rmainunit_sv9x1.pcb
-// rmainunit_sv9x2.pcb
-// rmainunit_sv9x3.pcb
+// Allwinner t133-S3, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+// rmainunit_sv9f.pc
+// rmainunit_sv9u.pc
 
-#ifndef ARM_ALWT113S3_CTLSTYLE_STORCH_V9X2_R6BK_H_INCLUDED
-#define ARM_ALWT113S3_CTLSTYLE_STORCH_V9X2_R6BK_H_INCLUDED 1
+#ifndef ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_R6BBK_H_INCLUDED
+#define ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_R6BBK_H_INCLUDED 1
 
 	#define WITHBRANDSTR "Falcon"
 
@@ -61,7 +61,7 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-    //#define CTLREGMODE_STORCH_V9A    1    /* STM32MP1, Allwinner t113-s3  */
+	//#define CTLREGMODE_STORCH_V9A	1	/* STM32MP1, Allwinner t113-s3  */
 	#define CTLREGMODE_STORCH_V9A_R6BK_V1	1
 	//#define CTLREGMODE_NOCTLREG 1
 
@@ -89,9 +89,9 @@
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
-	#define KEYB_FPANEL20_V0B	1	/* 20 кнопок на 6 линий - KI5 соединен с кнопкой второго валкодера */
-	//#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
-
+	//#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
+	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
+	//#define KEYB_FPANEL20_V0A_RA1AGO	1	/* перевернутый */
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
@@ -123,9 +123,9 @@
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
 	#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
+
 	#define BOARD_DSTYLE "g_x800_y480.h"
 	#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
-	//#define BOARD_DSTYLE_LVGL "g_x800_y480_linux_lvgl.h"
 
 #elif 1
 
@@ -282,7 +282,6 @@
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 	#define COLORSTYLE_GREEN	1
 	//#define COLORSTYLE_RED	1
-	//#define COLORSTYLE_BLUE	1
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
@@ -290,7 +289,6 @@
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
 		#define WITHVIEW_3DSS		1
 		#define WITHVIEW_3DSS_MARK	1
-		//#define WITHDEFAULTVIEW		VIEW_3DSS
 		#define WITHSPECBETA_DEFAULT	30
 		//#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		//#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
@@ -442,10 +440,6 @@
 		#define WITHLWIP 1
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
-	#if 0
-		#define WITHLVGL 1		/* bare-metal config of LVGL */
-		//#define WITHLVGLINDEV 1	/* обработку событий от органов управления делает LVGL */
-	#endif
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
 	//#define WITHFANPWM		1	/* есть управление скоростью вентилятора */
@@ -547,43 +541,6 @@
 	//#define WITHALTERNATIVEFONTS    1
 
 	#if WITHTPA100W_UA1CEI_V2
-		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
-		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
-		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
-		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-		#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
-		
-		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
-		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
-
-		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
-		#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
-
-		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
-
-		FWD = BOARD_ADCX2IN(0),
-		REF = BOARD_ADCX2IN(1),
-		
-
-		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
-		PASENSEIX2 = BOARD_ADCX2IN(2),	// DRAIN
-		PAREFERIX2 = BOARD_ADCX2IN(3),	// reference (1/2 питания ACS712ELCTR-30B-T).
-
-		#if WITHTHERMOLEVEL
-			XTHERMOIX = BOARD_ADCX2IN(4),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
-		#endif /* WITHTHERMOLEVEL */
-		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
-		#endif /* WITHVOLTLEVEL */
-
-		// ST LM235Z
-		#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
-		#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
-		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
-	#elif WITHTPA100W_R6BK_V1
 		/* TUNER & PA board 2*RD100 by R6BK */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
@@ -592,14 +549,32 @@
 
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
+	#elif WITHTPA100W_R6BK_V1
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		#define WITHANTSELECT	1	/* Управление переключением антенн */
+		
+		//#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
+		//#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
+
+		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
+		#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		
 		#if WITHCURRLEVEL
 			PASENSEIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
 		#endif /* WITHVOLTLEVEL */
+
+		#if WITHTHERMOLEVEL
+			XTHERMOIX = BOARD_ADCX1IN(0),		// Exernal thermo sensor ST LM235Z
+		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHSWRMTR
 			FWD = BOARD_ADCX1IN(5), REF = BOARD_ADCX1IN(4),	// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
@@ -673,16 +648,13 @@
 		KI1 = BOARD_ADCXKIN(4),
 		KI2 = BOARD_ADCXKIN(5),
 		KI3 = BOARD_ADCXKIN(6),
-		KI4 = BOARD_ADCXKIN(7),
-		KI5 = BOARD_ADCX1IN(3)		// другой АЦП - сейчас кнопка второго валкодера
+		KI4 = BOARD_ADCXKIN(7)
 	};
 
-	#define KI_COUNT 6	// количество используемых под клавиатуру входов АЦП
-	#define KI_LIST	KI5, KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
-	//#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
-	//#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
+	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
+	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_ALWT113S3_CTLSTYLE_STORCH_V9X2_R6BK_H_INCLUDED */
+#endif /* ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_R6BBK_H_INCLUDED */
