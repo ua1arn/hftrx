@@ -303,6 +303,7 @@ typedef struct {
 } window_t;
 
 typedef struct {
+	LIST_ENTRY list_entry;
 	obj_type_t type;			// тип элемента, поддерживающего реакцию на касания
 	window_t * win;					// указатель на parent window
 	void * link;					// указатель на запись массива окна с описанием элемента

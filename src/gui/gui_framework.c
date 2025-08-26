@@ -37,7 +37,7 @@ static btn_bg_t btn_bg[] = {
 enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 
 static gui_t gui = { 0, 0, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, };
-static gui_object_t gui_objects[GUI_OBJECTS_ARRAY_SIZE];
+static LIST_ENTRY gui_objects_list;
 static uint_fast8_t gui_object_count = 0;
 static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, INT32_MAX, "btс_close", "", };
 static uint8_t opened_windows_count = 1;
@@ -265,10 +265,9 @@ void gui_update(void)
 	put_to_wm_queue(get_win(WINDOW_MAIN), WM_MESSAGE_UPDATE);	// главное окно всегда нужно обновлять
 
 	uint_fast8_t win2 = get_parent_window();
+
 	if (win2 != NO_PARENT_WINDOW)								// если открыто второе окно,
-	{
 		put_to_wm_queue(get_win(win2), WM_MESSAGE_UPDATE);		// добавить сообщение на обновление в его очередь
-	}
 }
 
 /* Получить относительные координаты перемещения точки касания экрана */
@@ -370,6 +369,19 @@ void objects_state (window_t * win)
 	ASSERT(win != NULL);
 	int debug_num = 0;
 
+	PLIST_ENTRY current_entry = gui_objects_list.Flink;
+	while (current_entry != & gui_objects_list)
+	{
+		PLIST_ENTRY next_entry = current_entry->Flink; // Сохраняем следующий элемент, так как текущий может быть удален
+		gui_object_t * obj = CONTAINING_RECORD(current_entry, gui_object_t, list_entry);
+		if (obj->win == win) {
+			RemoveEntryList(& obj->list_entry);
+			free(obj);
+			gui_object_count--;
+		}
+		current_entry = next_entry;
+	}
+
 	button_t * b = win->bh_ptr;
 	if (b != NULL)
 	{
@@ -383,18 +395,20 @@ void objects_state (window_t * win)
 					PRINTF("ERROR: invalid combination of properties 'is_long_press' and 'is_repeating' on button %s\n", bh->name);
 					ASSERT(0);
 				}
+				gui_object_t * new_obj = (gui_object_t *) calloc(1, sizeof(gui_object_t));
+				GUI_MEM_ASSERT(new_obj);
 
-				ASSERT(gui_object_count < GUI_OBJECTS_ARRAY_SIZE);
-				gui_objects[gui_object_count].link = bh;
-				gui_objects[gui_object_count].win = win;
-				gui_objects[gui_object_count].type = TYPE_BUTTON;
+				new_obj->link = bh;
+				new_obj->win = win;
+				new_obj->type = TYPE_BUTTON;
+
+				InsertTailList(& gui_objects_list, & new_obj->list_entry);
 				gui_object_count ++;
 				debug_num ++;
 			}
 			else
 			{
 				debug_num --;
-				gui_object_count --;
 				bh->visible = NON_VISIBLE;
 				ASSERT(gui_object_count >= gui.footer_buttons_count);
 			}
@@ -409,17 +423,20 @@ void objects_state (window_t * win)
 			label_t * lh = & l[i];
 			if (win->state)
 			{
-				ASSERT(gui_object_count < GUI_OBJECTS_ARRAY_SIZE);
-				gui_objects[gui_object_count].link = lh;
-				gui_objects[gui_object_count].win = win;
-				gui_objects[gui_object_count].type = TYPE_LABEL;
+				gui_object_t * new_obj = (gui_object_t *) calloc(1, sizeof(gui_object_t));
+				GUI_MEM_ASSERT(new_obj);
+
+				new_obj->link = lh;
+				new_obj->win = win;
+				new_obj->type = TYPE_LABEL;
+
+				InsertTailList(& gui_objects_list, & new_obj->list_entry);
 				gui_object_count ++;
 				debug_num ++;
 			}
 			else
 			{
 				debug_num --;
-				gui_object_count --;
 				lh->visible = NON_VISIBLE;
 				ASSERT(gui_object_count >= gui.footer_buttons_count);
 			}
@@ -434,17 +451,20 @@ void objects_state (window_t * win)
 			slider_t * sh = & s[i];
 			if (win->state)
 			{
-				ASSERT(gui_object_count < GUI_OBJECTS_ARRAY_SIZE);
-				gui_objects[gui_object_count].link = (slider_t *) sh;
-				gui_objects[gui_object_count].win = win;
-				gui_objects[gui_object_count].type = TYPE_SLIDER;
+				gui_object_t * new_obj = (gui_object_t *) calloc(1, sizeof(gui_object_t));
+				GUI_MEM_ASSERT(new_obj);
+
+				new_obj->link = (slider_t *) sh;
+				new_obj->win = win;
+				new_obj->type = TYPE_SLIDER;
+
+				InsertTailList(& gui_objects_list, & new_obj->list_entry);
 				gui_object_count ++;
 				debug_num ++;
 			}
 			else
 			{
 				debug_num --;
-				gui_object_count --;
 				sh->visible = NON_VISIBLE;
 				ASSERT(gui_object_count >= gui.footer_buttons_count);
 			}
@@ -459,17 +479,20 @@ void objects_state (window_t * win)
 			touch_area_t * ta = & t[i];
 			if (win->state)
 			{
-				ASSERT(gui_object_count < GUI_OBJECTS_ARRAY_SIZE);
-				gui_objects[gui_object_count].link = (touch_area_t *) ta;
-				gui_objects[gui_object_count].win = win;
-				gui_objects[gui_object_count].type = TYPE_TOUCH_AREA;
+				gui_object_t * new_obj = (gui_object_t *) calloc(1, sizeof(gui_object_t));
+				GUI_MEM_ASSERT(new_obj);
+
+				new_obj->link = (touch_area_t *) ta;
+				new_obj->win = win;
+				new_obj->type = TYPE_TOUCH_AREA;
+
+				InsertTailList(& gui_objects_list, & new_obj->list_entry);
 				gui_object_count ++;
 				debug_num ++;
 			}
 			else
 			{
 				debug_num --;
-				gui_object_count --;
 				ta->visible = NON_VISIBLE;
 				ASSERT(gui_object_count >= gui.footer_buttons_count);
 			}
@@ -484,12 +507,17 @@ void objects_state (window_t * win)
 			text_field_t * tff = & tf[i];
 			if (win->state)
 			{
-				ASSERT(gui_object_count < GUI_OBJECTS_ARRAY_SIZE);
-				gui_objects[gui_object_count].link = (text_field_t *) tff;
-				gui_objects[gui_object_count].win = win;
-				gui_objects[gui_object_count].type = TYPE_TEXT_FIELD;
+				gui_object_t * new_obj = (gui_object_t *) calloc(1, sizeof(gui_object_t));
+				GUI_MEM_ASSERT(new_obj);
+
+				new_obj->link = (text_field_t *) tff;
+				new_obj->win = win;
+				new_obj->type = TYPE_TEXT_FIELD;
+
+				InsertTailList(& gui_objects_list, & new_obj->list_entry);
 				gui_object_count ++;
 				debug_num ++;
+
 				tff->string = (tf_entry_t *) calloc(tff->h_str, sizeof(tf_entry_t));
 				GUI_MEM_ASSERT(tff->string);
 				tff->index = 0;
@@ -497,7 +525,6 @@ void objects_state (window_t * win)
 			else
 			{
 				debug_num --;
-				gui_object_count --;
 				tff->visible = NON_VISIBLE;
 				free(tff->string);
 				tff->string = NULL;
@@ -519,17 +546,20 @@ void objects_state (window_t * win)
 			close_button.visible = VISIBLE;
 			close_button.state = CANCELLED;
 
-			ASSERT(gui_object_count < GUI_OBJECTS_ARRAY_SIZE);
-			gui_objects[gui_object_count].link = (button_t *) & close_button;
-			gui_objects[gui_object_count].win = win;
-			gui_objects[gui_object_count].type = TYPE_CLOSE_BUTTON;
+			gui_object_t * new_obj = (gui_object_t *) calloc(1, sizeof(gui_object_t));
+			GUI_MEM_ASSERT(new_obj);
+
+			new_obj->link = (button_t *) & close_button;
+			new_obj->win = win;
+			new_obj->type = TYPE_CLOSE_BUTTON;
+
+			InsertTailList(& gui_objects_list, & new_obj->list_entry);
 			gui_object_count ++;
 			debug_num ++;
 		}
 		else
 		{
 			debug_num --;
-			gui_object_count --;
 			close_button.visible = NON_VISIBLE;
 			ASSERT(gui_object_count >= gui.footer_buttons_count);
 		}
@@ -797,12 +827,12 @@ static void draw_button(const button_t * const bh)
 				text2, & FONT_BUTTONS, textcolor
 				);
 #else
-		colpip_string2_tbg(gdb, shift + x1 + (bh->w - (strwidth2(text2))) / 2,
-				shift + y1 + j, text2, COLORPIP_BLACK);
+		colpip_string2_tbg(gdb, shiftX + x1 + (bh->w - (strwidth2(text2))) / 2,
+				shiftY + y1 + j, text2, COLORPIP_BLACK);
 
 		text2 = strtok_r(NULL, delimeters, & next);
-		colpip_string2_tbg(gdb, shift + x1 + (bh->w - (strwidth2(text2))) / 2,
-				shift + bh->h + y1 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
+		colpip_string2_tbg(gdb, shiftX + x1 + (bh->w - (strwidth2(text2))) / 2,
+				shiftY + bh->h + y1 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
 #endif /* WITHALTERNATIVEFONTS */
 	}
 }
@@ -817,25 +847,27 @@ static void objects_init(void)
 /* Инициализация GUI */
 void gui_initialize (void)
 {
+	InitializeListHead(& gui_objects_list);
+
 	window_t * win = get_win(WINDOW_MAIN);
 	win->x1 = 0;
 	win->y1 = 0;
 	win->w = WITHGUIMAXX - 1;
 	win->h = WITHGUIMAXY - FOOTER_HEIGHT - 1;
-
 	open_window(win);
 	gui.win[1] = NO_PARENT_WINDOW;
 	gui.footer_buttons_count = win->bh_count;
-
 	objects_init();
 }
 
-/* Обновление данных в массиве элементов открытых окон */
+/* Обновление данных в списке элементов открытых окон */
 static void update_gui_objects_list(void)
 {
-	for (uint_fast8_t i = 0; i < gui_object_count; i ++)
+	PLIST_ENTRY current_entry = gui_objects_list.Flink;
+	while (current_entry != & gui_objects_list)
 	{
-		gui_object_t * p = & gui_objects[i];
+		gui_object_t * p = CONTAINING_RECORD(current_entry, gui_object_t, list_entry);
+
 		if (p->type == TYPE_BUTTON || p->type == TYPE_CLOSE_BUTTON)
 		{
 			button_t * bh = (button_t *) p->link;
@@ -901,6 +933,7 @@ static void update_gui_objects_list(void)
 			p->is_long_press = 0;
 			p->is_repeating = 0;
 		}
+		current_entry = current_entry->Flink; // Переход к следующему элементу
 	}
 }
 
@@ -1054,16 +1087,18 @@ static void process_gui(void)
 		gui.is_after_touch = 0;
 	}
 
-	if (gui_object_count == 0)
+
+	if (IsListEmpty(& gui_objects_list))
 		return;
 
 	if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
 	{
-		ASSERT(gui_object_count != 0);
-		for (int i = gui_object_count - 1; i >= 0; i --)
+		ASSERT(! IsListEmpty(& gui_objects_list));
+
+		PLIST_ENTRY current_entry = gui_objects_list.Blink; // Обход списка в обратном порядке
+		while (current_entry != & gui_objects_list)
 		{
-			ASSERT(i < ARRAY_SIZE(gui_objects));
-			p = & gui_objects[i];
+			p = CONTAINING_RECORD(current_entry, gui_object_t, list_entry);
 			w = p->win;
 			ASSERT(w != NULL);
 			uint_fast16_t x1 = p->x1 + w->x1, y1 = p->y1 + w->y1;
@@ -1078,6 +1113,7 @@ static void process_gui(void)
 				long_press_counter = 0;
 				break;
 			}
+			current_entry = current_entry->Blink; // Переход к предыдущему элементу
 		}
 	}
 
@@ -1154,7 +1190,6 @@ static void process_gui(void)
 						is_repeating = 1;
 					}
 				}
-
 			}
 			else
 				gui.state = RELEASED;
@@ -1209,8 +1244,7 @@ void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, ui
 
 		if (win->state == VISIBLE)
 		{
-			// при открытии окна рассчитываются экранные координаты самого окна и его child элементов
-			if (! f)
+			if (! f) 	// при открытии окна рассчитываются экранные координаты самого окна и его child элементов
 			{
 				if (win->window_id != WINDOW_MAIN)
 				{
@@ -1225,8 +1259,7 @@ void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, ui
 				}
 			}
 
-			// запуск процедуры фоновой обработки для окна
-			win->onVisibleProcess();
+			win->onVisibleProcess();	// запуск процедуры фоновой обработки для окна
 
 			if (! f)
 			{
@@ -1261,9 +1294,10 @@ void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, ui
 				}
 
 				// отрисовка принадлежащих окну элементов
-				for (uint_fast8_t i = 0; i < gui_object_count; i ++)
+				PLIST_ENTRY current_entry = gui_objects_list.Flink;
+				while (current_entry != & gui_objects_list)
 				{
-					gui_object_t * p = & gui_objects[i];
+					gui_object_t * p = CONTAINING_RECORD(current_entry, gui_object_t, list_entry);
 
 					if (p->type == TYPE_BUTTON)
 					{
@@ -1329,12 +1363,11 @@ void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, ui
 							}
 						}
 					}
+					current_entry = current_entry->Flink;
 				}
 			}
 		}
 	}
 }
-
-
 
 #endif /* WITHTOUCHGUI */
