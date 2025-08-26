@@ -3916,9 +3916,6 @@ struct nvmap
 		uint8_t bkinenable;	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
 	#endif /* WITHELKEY */
 
-	#if WITHPABIASTRIM
-		uint8_t gpabias;	/* регулировка тока покоя оконечного каскада передатчика */
-	#endif /* WITHPABIASTRIM */
 	uint8_t gtxgate;	/* разрешение предусилителя */
 	uint8_t bkindelay;	/* задержка отпускания BREAK-IN */
 	uint8_t grgbeep;	/* разрешение (не-0) или запрещение (0) формирования roger beep */
@@ -5304,13 +5301,6 @@ static const struct paramdefdef xcatenable =
 		enum { gtunepower = WITHPOWERTRIMMAX }; /* мощность при работе автоматического согласующего устройства */
 	#endif /* WITHPOWERTRIM, WITHPOWERLPHP */
 
-	#if WITHPABIASTRIM
-		#if defined (WITHBBOXPABIAS)
-			static uint_fast8_t gpabias = WITHBBOXPABIAS; //WITHPABIASMIN;	/* ток оконечного каскада передатчика */
-		#else /* defined (WITHBBOXPABIAS) */
-			static uint_fast8_t gpabias = 208; //WITHPABIASMIN;	/* регулировка тока покоя оконечного каскада передатчика */
-		#endif /* defined (WITHBBOXPABIAS) */
-	#endif /* WITHPABIASTRIM */
 	static uint_fast8_t gtxgate = 1;		/* разрешение драйвера и оконечного усилителя */
 	#if WITHVOX
 		static uint_fast8_t gvoxenable;	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
@@ -11949,9 +11939,6 @@ updateboard_noui(
 			seq_set_txgate(pamodetempl->txgfva, pamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
 			board_set_txlevel(getactualtxboard());	/* BOARDPOWERMIN..BOARDPOWERMAX */
 
-			#if WITHPABIASTRIM
-				board_set_pabias(gpabias);	/* регулировка тока покоя оконечного каскада передатчика */
-			#endif /* WITHPABIASTRIM */
 			// установка параметров Speech processor
 			//board_speech_set_mode(speechmode);
 			//board_speech_set_width(speechwidth);

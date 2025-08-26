@@ -134,7 +134,6 @@ static uint_fast8_t 	glob_lo2xtal;
 static uint_fast8_t 	glob_bandf;		/* код диапазонного фильтра приёмника */
 static uint_fast8_t 	glob_bandf2;	/* код диапазонного фильтра передатчика */
 static uint_fast8_t 	glob_bandf3;	/* управление через разъем ACC */
-static uint_fast8_t		glob_pabias;	/* ток покоя выходного каскада передатчика */
 static uint_fast16_t 	glob_bcdfreq100k;	/* отображаемая частота с точностью сотен килогерц */
 static uint_fast16_t 	glob_bcdfreq1k;	/* отображаемая частота с точностью единиц килогерц */
 
@@ -1064,121 +1063,6 @@ pll1_getoutdivider(
 #endif /* defined(PLL1_TYPE) */
 
 #if 0
-
-#elif CTLREGMODE_RAVENDSP_V5	// "Воронёнок" с DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-
-#if WITHAUTOTUNEROWNSPI && WITHAUTOTUNER
-
-static void 
-prog_atuctlreg(const spitarget_t target)
-{
-	rbtype_t rbbuff [2] = { 0 };
-
-	/* +++ Управление согласующим устройством */
-	/* регистр управления массивом конденсаторов - дальше от процессора */
-	RBVAL(011, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C) >> 1), 7);/* LSB-MSB: pin07-pin01. Capacitors tuner bank 	*/
-	RBBIT(010, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 15: TYPE OF TUNER 	*/
-	/* регистр управления наборной индуктивностью. - ближе к процессору */
-	RBBIT(007, ! glob_tuner_bypass);		// pin 07: обход СУ
-	//RBVAL(000, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_L) >> 1), 7);	/* LSB-MSB: pin06-pin01,pin15: Inductors tuner bank 	*/
-	RBVAL(000, glob_tuner_bypass ? 0 : glob_tuner_L, 7);	/* LSB-MSB: pin06-pin01,pin15: Inductors tuner bank 	*/
-	/* --- Управление согласующим устройством */
-
-	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-}
-#endif /* WITHAUTOTUNEROWNSPI && WITHAUTOTUNER */
-
-// "Воронёнок" с DSP и FPGA, SD-CARD
-static void 
-//NOINLINEAT
-prog_rxctrlreg(uint_fast8_t plane)
-{
-
-	// registers chain control register
-	{
-		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
-		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
-		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
-		//Current Output at Idle Power A1 = 0, A0 = 1, VO = 0 ±100 ±60 ±55 ±50 mA min A
-
-		enum
-		{
-			HARDWARE_OPA2674I_FULLPOWER = 0x03,
-			HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
-			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
-			HARDWARE_OPA2674I_SHUTDOWN = 0x00
-		};
-		static const uint_fast8_t powerxlat [] =
-		{
-			HARDWARE_OPA2674I_IDLEPOWER,
-			HARDWARE_OPA2674I_POWERCUTBACK,
-			HARDWARE_OPA2674I_FULLPOWER,
-		};
-		const spitarget_t target = targetctl1;
-		const uint_fast8_t txgated = glob_tx && glob_txgate;
-
-#if 0
-		rbtype_t rbbuff [9] = { 0 };
-		/* +++ Управление согласующим устройством */
-		/* дополнительный регистр */
-		RBBIT(0103, glob_tx);				/* pin 03:индикатор передачи */
-		RBBIT(0102, glob_antenna);			// pin 02: выбор антенны (0 - ANT1, 1 - ANT2)
-		RBBIT(0101, ! glob_tuner_bypass);		// pin 01: обход СУ (1 - работа)
-		RBBIT(0100, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 15: TYPE OF TUNER 	*/
-		/* регистр управления массивом конденсаторов */
-		RBVAL8(0070, glob_tuner_bypass ? 0 : glob_tuner_C);			/* Capacitors tuner bank 	*/
-		/* регистр управления наборной индуктивностью. */
-		RBVAL8(0060, glob_tuner_bypass ? 0 : glob_tuner_L);			/* Inductors tuner bank 	*/
-		/* --- Управление согласующим устройством */
-#else
-		rbtype_t rbbuff [6] = { 0 };
-
-#endif
-		// AD5260BRUZ20 - регулировка тока покоя оконечного каскада передатчика
-		RBVAL8(0050, txgated ? glob_pabias : 0);
-
-		// STP08CP05TTR на части передатчика
-		RBVAL8(0040, 1U << glob_bandf2);		// D0..D7: band select бит выбора диапазонного фильтра передатчика
-
-		// STP08CP05TTR в управлении диапазонными фильтрами приёмника
-		RBVAL8(0030, glob_tx ? 0 : (1U << glob_bandf));		// D0: 0, D7..D1: band select бит выбора диапазонного фильтра приёмника
-
-		// STP08CP05TTR в управлении диапазонными фильтрами приёмника
-		RBVAL(0026, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
-		RBVAL(0024, ~ (txgated ? powerxlat [glob_stage2level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 2
-		RBVAL(0022, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
-		RBBIT(0021, glob_tx);				// D1: TX ANT relay
-		RBBIT(0020, glob_bandf == 0);		// D0: средневолновый ФНЧ
-
-		// SN74HC595PW рядом с DIN8
-		RBNULL(0014, 4);
-		RBVAL(0010, glob_bandf3, 4);			/* D3:D0: DIN8 PA band select */
-
-		// STP08CP05TTR рядом с DIN8
-		RBBIT(0007, glob_fanflag);			// D7: TX FAN
-		RBBIT(0006, glob_tx);				// D6: EXT PTT signal
-		RBBIT(0005, glob_bandf == 0);		// D5: средневолновый ФНЧ - управление реле
-		RBBIT(0004, glob_sdcardpoweron);		/* D4: SD CARD POWER */
-		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight */
-		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight */
-		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
-		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
-
-		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	}
-}
-
-static void 
-//NOINLINEAT
-prog_ctldacreg(void)	// CTLREGMODE_RAVENDSP_V5
-{
-	const spitarget_t target = targetdac1;
-	// Выдача кода на цифровой потенциометр AD5260BRUZ20 в управлении частотой опорного генератора
-
-	const uint8_t buff [] = { glob_dac1 };
-	prog_spi_io(target, CTLREG_SPISPEED, CTLREG_SPIMODE, buff, ARRAY_SIZE(buff), NULL, 0, NULL, 0);
-}
 
 #elif CTLREGMODE_RAVENDSP_V6	// "Воронёнок" с DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
@@ -2968,16 +2852,6 @@ board_set_bandf3(uint_fast8_t n)
 	if (glob_bandf3 != n)
 	{
 		glob_bandf3 = n;
-		board_ctlreg1changed();
-	}
-}
-
-void 
-board_set_pabias(uint_fast8_t n)
-{
-	if (glob_pabias != n)
-	{
-		glob_pabias = n;
 		board_ctlreg1changed();
 	}
 }

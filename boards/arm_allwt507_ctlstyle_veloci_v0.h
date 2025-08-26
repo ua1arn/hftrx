@@ -492,7 +492,7 @@
 	#define WITHFANPWMMAX 4
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
-	//#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика
+	
 
 	/* что за память настроек и частот используется в контроллере */
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25XXXX	// SERIAL FRAM AUTODETECT

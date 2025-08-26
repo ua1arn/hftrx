@@ -2769,19 +2769,6 @@ static const struct menudef menutable [] =
 #endif /* WITHPACLASSA */
 #endif /* WITHIF4DSP */
 
-#if WITHPABIASTRIM
-	(const struct paramdefdef [1]) {
-		QLABEL("PA BIAS"), 7, 0, 0,	ISTEP1,		/* регулировка тока покоя оконечного каскада передатчика */
-		ITEM_VALUE,
-		WITHPABIASMIN, WITHPABIASMAX,
-		OFFSETOF(struct nvmap, gpabias),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gpabias,
-		getzerobase, 
-	},
-#endif /* WITHPABIASTRIM && WITHTX */
-
 #endif /* WITHTX */
 
 /* settings page header */

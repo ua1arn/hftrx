@@ -132,7 +132,7 @@
 	
 	
 
-	//#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика
+	
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
 
