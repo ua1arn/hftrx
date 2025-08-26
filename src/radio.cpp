@@ -11773,12 +11773,6 @@ updateboard_noui(
 			const uint_fast8_t wide = workfilter->widefilter;
 	#endif /* WITHIF4DSP */
 			//
-#if WITHDUMBIF
-			{
-				const int_fast32_t freqif1 = WITHDUMBIF;
-				synth_if1 [pathi] = UPPERTOSIGN(mixXlsbs [1], freqif1);	// Запоминается для последующего преобразования рабочей частоты к частоте гетеродина.
-			}
-#else /* WITHDUMBIF */
 			const int_fast16_t pbt = getpbt(workfilter, amode, gtx);
 			const int_fast16_t ifshift = getifshift(workfilter, amode, gtx);	/* положительные значения - повышение тембра (фильтр сдвигается "выше"). */
 
@@ -11834,7 +11828,7 @@ updateboard_noui(
 			const int_fast32_t freqif1 = freqlo2 + UPPERTOSIGN(mixXlsbs [2], freqif2);
 			const int_fast32_t freqlo0 = getlo0(lo0hint);
 			synth_if1 [pathi] = UPPERTOSIGN(mixXlsbs [1], freqif1) - UPPERTOSIGN(mixXlsbs [0], freqlo0);	// Запоминается для последующего преобразования рабочей частоты к частоте гетеродина.
-#endif /* WITHDUMBIF */
+
 
 	#if 0 && WITHDEBUG
 			{
@@ -11958,12 +11952,10 @@ updateboard_noui(
 			synth_setreference(getsynthref(amode));	// расчет коэфф. для работы синтезаторв
 
 		/* А теперь настраиваем частоты. */
-	#if ! WITHDUMBIF
 			update_lo2(pathi, workfilter, amode, mixXlsbs [2], freqlo2, getlo2div(gtx), gtx, lo2hint [pathi]);
 			update_lo3(pathi, amode, mixXlsbs [3], freqlo3, getlo3div(gtx), gtx);
 
 			synth_lo4_setfreq(pathi, freqlo4, getlo4div(gtx), getlo4enable(amode, gtx));	/* утстановка третьего гетеродина */
-	#endif /* ! WITHDUMBIF */
 
 		} // pathi
 
