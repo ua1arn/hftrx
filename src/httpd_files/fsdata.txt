@@ -5,7 +5,7 @@
 
 #if WITHLWIP
 
-#define file_NULL (struct fsdata_file *) NULL
+#define file_NULL ((struct fsdata_file *) NULL)
 
 
 static const unsigned int dummy_align__img_discovery_svg = 0;

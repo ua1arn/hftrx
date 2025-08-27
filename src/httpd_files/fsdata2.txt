@@ -5,8 +5,6 @@
 
 #if WITHLWIP
 
-#define file_NULL (struct fsdata_file *) NULL
-
 #define file_NULL ((struct fsdata_file *) NULL)
 
 #include "ll.txt"
