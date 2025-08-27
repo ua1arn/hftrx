@@ -1,0 +1,72 @@
+#include "lwip/apps/fs.h"
+#include "lwip/def.h"
+#include "fsdata.h"
+
+
+#if WITHLWIP
+
+#define file_NULL (struct fsdata_file *) NULL
+
+#define file_NULL ((struct fsdata_file *) NULL)
+
+#include "ll.txt"
+
+const struct fsdata_file file_done[] = { {
+NULL,
+(const unsigned char *) "/done.html",
+done_text,
+sizeof(done_text),
+1,
+}};
+
+const struct fsdata_file file_error[] = { {
+file_done,
+(const unsigned char *) "/error.html",
+error_text,
+sizeof(error_text),
+1,
+}};
+
+#if 1
+
+#define linkname file_error
+
+#else /* 1 */
+
+struct fsdata_file file_logfile[] = { {
+file_error,
+(const unsigned char *) "/logfile.html",
+logfile_text,
+sizeof(logfile_text),
+1,
+}};
+
+const struct fsdata_file file_info[] = { {
+file_logfile,
+(const unsigned char *) "/info.html",
+info_text,
+sizeof(info_text),
+1,
+}};
+
+#define linkname file_info
+
+#endif /* 1 */
+
+const struct fsdata_file file_index_boot[] = { {
+linkname,
+(const unsigned char *) "/index.html",
+index_text,
+sizeof(index_text),
+1,
+}};
+
+
+#define FS_ROOT file_index_boot
+//#define FS_NUMFILES 5
+
+#else /* WITHLWIP */
+
+#define FS_ROOT NULL
+
+#endif /* WITHLWIP */

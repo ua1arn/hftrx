@@ -322,7 +322,7 @@ typedef unsigned sys_prot_t;
 
 #define ETH_RX_BUFFER_SIZE 32768
 
-#define HTTPD_FSDATA_FILE "src/fsdata.txt"
+#define HTTPD_FSDATA_FILE "src/httpd_files/fsdata.txt"
 
 #define LWIP_RAND() (4)
 
