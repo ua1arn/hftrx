@@ -1650,9 +1650,9 @@ prog_ctrlreg(uint_fast8_t plane)
 	#elif WITHTPA100W_R6BK_V1
 
 		enum { bs = 050 };
-		RBVAL8(0060 + bs - 050, glob_tuner_L);
-		RBVAL(0051 + bs - 050, glob_tuner_C, 7);
-		RBBIT(0050 + bs - 050, glob_tuner_type);		// TY
+		RBVAL8(0060 + bs - 050, glob_tuner_bypass ? 0 : glob_tuner_L);
+		RBVAL(0051 + bs - 050, glob_tuner_bypass ? 0 : glob_tuner_C, 7);
+		RBBIT(0050 + bs - 050, glob_tuner_bypass ? 0 : glob_tuner_type);		// TY
 
 	#else
 		#error WITHAUTOTUNER and unknown details
