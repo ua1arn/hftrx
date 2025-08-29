@@ -260,6 +260,7 @@ typedef struct {
 	obj_type_t type;				// тип элемента
 	int8_t action;
 	char name[NAME_ARRAY_SIZE];
+	LIST_ENTRY list;
 } wm_data_t;
 
 typedef struct {					// очередь сообщений окнам от WM о взаимодействии с элементами GUI
@@ -286,7 +287,6 @@ typedef struct {
 	uint8_t ta_count;
 	text_field_t * tf_ptr;
 	uint8_t tf_count;
-	wm_queue_t queue;
 	uint8_t first_call;				// признак первого вызова для различных инициализаций
 	uint8_t state;
 	uint16_t x1;
@@ -300,6 +300,8 @@ typedef struct {
 	title_align_t title_align;
 	uint8_t size_mode;
 	uint8_t is_moving;
+	LIST_ENTRY queue_head;
+	uint8_t queue_size;
 } window_t;
 
 typedef struct {
