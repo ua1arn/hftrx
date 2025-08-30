@@ -9842,54 +9842,18 @@ sysinit_pll_initialize(int forced)
 	allwnr_t507_module_pll_spr(& CCU->PLL_GPU0_CTRL_REG, & CCU->PLL_GPU0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t507_module_pll_enable(& CCU->PLL_GPU0_CTRL_REG, 36);
 #endif /* WITHGPUHW */
-	{
-		// Настройки AUDIO PLL используются и AUDIO HUB и аппаратным аужиокодеком - настраиваем ТУТ.
-		//	PLL_AUDIO(hs) = 24 MHz*N/M1
-		//	PLL_AUDIO(4X) = 24 MHz*N/M0/M1/P
-		//	PLL_AUDIO(2X) = 24 MHz*N/M0/M1/P/2
-		//	PLL_AUDIO(1X) = 24 MHz*N/M0/M1/P/4
-		unsigned N = 49;	// 49/24 Повторяем нстройки по умолчанию... Точнее частоту не подобрать
-		unsigned P = 24;	// 1..64
-		allwnr_t507_module_pll_spr(& CCU->PLL_AUDIO_CTRL_REG, & CCU->PLL_AUDIO_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, N);
-		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 1);	// M1 - already 0
-		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 0);	// M0 - set to zero
-		CCU->PLL_AUDIO_CTRL_REG = (CCU->PLL_AUDIO_CTRL_REG & ~ (0x3F * (UINT32_C(1) << 16))) |
-			(P - 1) * (UINT32_C(1) << 16) |	// P
-			0;
-	}
-	if (1)
-	{
-
-	    // Whhen PLL_AUDIO(1X) is 24.576 MHz
-	    // AUDIO_HUB_CLK_REG should use 01: PLL_AUDIO(2X)
-	    CCU->PLL_AUDIO_CTRL_REG = 0xA8010F01;	// N=16, M1=1, M0=2
-	    CCU->PLL_AUDIO_PAT0_CTRL_REG = 0xE000C49B; //SIG_DELT_PAT_EN=1, SPR_FREQ_MODE=3, WAVE_STEP=0, WAVE_BOT=0xC49B
-
-	    // 384000
-	    // 48000
-	    // 49152
-		uint_fast64_t mod = UINT64_C(1) << 17;
-	    uint_fast32_t z = mod - ( (mod * 4800) / 49152);
-	    z = 0x8300;	// 0x8300 - нчинает выкиывать сэмплы, 0x8301 - добавлять
-	    CCU->PLL_AUDIO_PAT0_CTRL_REG =
-			1 * (UINT32_C(1) << 31) |	// SIG_DELT_PAT_EN
-			0x03 * (UINT32_C(1) << 29) |	// SPR_FREQ_MODE 11: Triangular(n bit)
-			0x00 * (UINT32_C(1) << 20) |	// WAVE_STEP (9 bit)
-			//0x0C49B * (UINT32_C(1) << 0) |	// WAVE_BOT (17 bit)
-			(z & 0x1FFFF) * (UINT32_C(1) << 0) |	// WAVE_BOT (17 bit)
-			0;
-
-		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, 16);
-	    //local_delay_ms(2);
-
-	}
 
 	// [02.507]CPU=1008 MHz,PLL6=600 Mhz,AHB=200 Mhz, APB1=100Mhz  MBus=400Mhz
 
 #if 1
-	PRCM->CPUS_CFG_REG = 0x03 * (UINT32_C(1) << 24) | (6 - 1);	// PLL_PERI0(X1), /6
-	PRCM->APBS1_CFG_REG = (4 - 1);
+	PRCM->CPUS_CFG_REG =
+		0x03 * (UINT32_C(1) << 24) | // CPUS_CLK_SRC_SEL PLL_PERI0(X1)
+		(0) * (UINT32_C(1) << 8) |	// CLK_DIV_RATIO_N /1
+		(6 - 1) * (UINT32_C(1) << 0) | 	// FACTOR_M /6
+		0;
+	PRCM->APBS1_CFG_REG =
+		(4 - 1) |
+		0;
 #else
 	PRCM->CPUS_CFG_REG = 0;
 	PRCM->APBS1_CFG_REG = 0;

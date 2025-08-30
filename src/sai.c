@@ -3990,6 +3990,52 @@ void T507_AHUB_handler(void)
 	}
 }
 
+// Раньше находилось в clocks.c
+static void t507_audiopll_initialize(void)
+{
+	{
+		// Настройки AUDIO PLL используются и AUDIO HUB и аппаратным аужиокодеком - настраиваем ТУТ.
+		//	PLL_AUDIO(hs) = 24 MHz*N/M1
+		//	PLL_AUDIO(4X) = 24 MHz*N/M0/M1/P
+		//	PLL_AUDIO(2X) = 24 MHz*N/M0/M1/P/2
+		//	PLL_AUDIO(1X) = 24 MHz*N/M0/M1/P/4
+		unsigned N = 49;	// 49/24 Повторяем нстройки по умолчанию... Точнее частоту не подобрать
+		unsigned P = 24;	// 1..64
+		allwnr_t507_module_pll_spr(& CCU->PLL_AUDIO_CTRL_REG, & CCU->PLL_AUDIO_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, N);
+		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 1);	// M1 - already 0
+		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 0);	// M0 - set to zero
+		CCU->PLL_AUDIO_CTRL_REG = (CCU->PLL_AUDIO_CTRL_REG & ~ (0x3F * (UINT32_C(1) << 16))) |
+			(P - 1) * (UINT32_C(1) << 16) |	// P
+			0;
+	}
+	if (1)
+	{
+
+	    // Whhen PLL_AUDIO(1X) is 24.576 MHz
+	    // AUDIO_HUB_CLK_REG should use 01: PLL_AUDIO(2X)
+	    CCU->PLL_AUDIO_CTRL_REG = 0xA8010F01;	// N=16, M1=1, M0=2
+	    CCU->PLL_AUDIO_PAT0_CTRL_REG = 0xE000C49B; //SIG_DELT_PAT_EN=1, SPR_FREQ_MODE=3, WAVE_STEP=0, WAVE_BOT=0xC49B
+
+	    // 384000
+	    // 48000
+	    // 49152
+		uint_fast64_t mod = UINT64_C(1) << 17;
+	    uint_fast32_t z = mod - ( (mod * 4800) / 49152);
+	    z = 0x8300;	// 0x8300 - нчинает выкиывать сэмплы, 0x8301 - добавлять
+	    CCU->PLL_AUDIO_PAT0_CTRL_REG =
+			1 * (UINT32_C(1) << 31) |	// SIG_DELT_PAT_EN
+			0x03 * (UINT32_C(1) << 29) |	// SPR_FREQ_MODE 11: Triangular(n bit)
+			0x00 * (UINT32_C(1) << 20) |	// WAVE_STEP (9 bit)
+			//0x0C49B * (UINT32_C(1) << 0) |	// WAVE_BOT (17 bit)
+			(z & 0x1FFFF) * (UINT32_C(1) << 0) |	// WAVE_BOT (17 bit)
+			0;
+
+		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, 16);
+	    //local_delay_ms(2);
+
+	}
+}
 #endif /* CPUSTYLE_T507 || CPUSTYLE_H616 */
 
 
@@ -4000,7 +4046,12 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 	// CCU
+	if (ix == 1)
+	{
+		// HDMI
+		t507_audiopll_initialize();
 
+	}
 //	PRINTF("allwnr_t507_get_mbus_freq=%u\n", (unsigned) allwnr_t507_get_mbus_freq());
 //	PRINTF("allwnr_t507_get_apb1_freq=%u\n", (unsigned) allwnr_t507_get_apb1_freq());
 //	PRINTF("allwnr_t507_get_apb2_freq=%u\n", (unsigned) allwnr_t507_get_apb2_freq());
@@ -6041,6 +6092,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
+	t507_audiopll_initialize();
 	// Default CCU settings:
 	//	AudioCodec: allwnr_t113_get_audio0pllhs_freq()=1032000 kHz
 	//	AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=1032000 kHz
