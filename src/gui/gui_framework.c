@@ -238,6 +238,7 @@ wm_message_t get_from_wm_queue(uint8_t win_id, uint8_t * type, int8_t * action, 
 {
 	window_t * win = get_win(win_id);
 	wm_data_t * q;
+	uint8_t need_free = 0;
 
 	if (! win->queue_size)
 		return WM_NO_MESSAGE;										// очередь сообщений пустая
@@ -250,6 +251,7 @@ wm_message_t get_from_wm_queue(uint8_t win_id, uint8_t * type, int8_t * action, 
 	{
 		PLIST_ENTRY t = RemoveTailList(& win->queue_head);
 		q = CONTAINING_RECORD(t, wm_data_t, list_entry);
+		need_free = 1;
 	}
 
 	* type = q->type;
@@ -265,11 +267,7 @@ wm_message_t get_from_wm_queue(uint8_t win_id, uint8_t * type, int8_t * action, 
 	}
 
 	wm_message_t m = q->message;
-
-	q->message = WM_NO_MESSAGE;		// очистить текущую запись
-	q->type = TYPE_DUMMY;
-	q->action = 0;
-	memset(q->name, 0, NAME_ARRAY_SIZE);
+	if (need_free) free(q);
 
 	return m;
 }
