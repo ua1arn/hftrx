@@ -4016,13 +4016,15 @@ static void t507_audiopll_initialize(void)
 	    // AUDIO_HUB_CLK_REG should use 01: PLL_AUDIO(2X)
 	    CCU->PLL_AUDIO_CTRL_REG = 0xA8010F01;	// N=16, M1=1, M0=2
 	    CCU->PLL_AUDIO_PAT0_CTRL_REG = 0xE000C49B; //SIG_DELT_PAT_EN=1, SPR_FREQ_MODE=3, WAVE_STEP=0, WAVE_BOT=0xC49B
-
+	    PRINTF("1 t507_audiopll_initialize: PLL_AUDIO_CTRL_REG=%08X PLL_AUDIO_PAT0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG, (unsigned) CCU->PLL_AUDIO_PAT0_CTRL_REG);
 	    // 384000
 	    // 48000
 	    // 49152
 		uint_fast64_t mod = UINT64_C(1) << 17;
 	    uint_fast32_t z = mod - ( (mod * 4800) / 49152);
+	    PRINTF("z 1 = %08X\n", (unsigned) z);
 	    z = 0x8300;	// 0x8300 - нчинает выкиывать сэмплы, 0x8301 - добавлять
+	    PRINTF("z 2 = %08X\n", (unsigned) z);
 	    CCU->PLL_AUDIO_PAT0_CTRL_REG =
 			1 * (UINT32_C(1) << 31) |	// SIG_DELT_PAT_EN
 			0x03 * (UINT32_C(1) << 29) |	// SPR_FREQ_MODE 11: Triangular(n bit)
@@ -4033,7 +4035,13 @@ static void t507_audiopll_initialize(void)
 
 		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, 16);
 	    //local_delay_ms(2);
+	    PRINTF("2 t507_audiopll_initialize: PLL_AUDIO_CTRL_REG=%08X PLL_AUDIO_PAT0_CTRL_REG=%08X PLL_AUDIO_PAT1_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG, (unsigned) CCU->PLL_AUDIO_PAT0_CTRL_REG, (unsigned) CCU->PLL_AUDIO_PAT1_CTRL_REG);
 
+	    // Работает:
+		//	1 t507_audiopll_initialize: PLL_AUDIO_CTRL_REG=B8010F01 PLL_AUDIO_PAT0_CTRL_REG=E000C49B
+		//	2 t507_audiopll_initialize: PLL_AUDIO_CTRL_REG=B8010F01 PLL_AUDIO_PAT0_CTRL_REG=E0008300
+
+	    PRINTF("allwnr_t507_get_pll_audio_4x_freq()=%u\n", (unsigned) allwnr_t507_get_pll_audio_4x_freq());
 	}
 }
 #endif /* CPUSTYLE_T507 || CPUSTYLE_H616 */

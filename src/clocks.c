@@ -3254,12 +3254,26 @@ uint_fast32_t allwnr_t507_get_pll_audio_4x_freq(void)
 	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
 	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
 	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
-	//	PLL_AUDIO(hs) = 24 MHz*N/M1
-	//	PLL_AUDIO(4x) = 24 MHz*N/M0/M1/P
-	//	PLL_AUDIO(2X) = 24 MHz*N/M0/M1/P/2
-	//	PLL_AUDIO(1X) =	24 MHz*N/M0/M1/P/4
-	//	The default value of PLL_AUDIO(4X) is 24.5714 MHz.
-	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M0 / M1 / P;
+	if (CCU->PLL_AUDIO_PAT1_CTRL_REG & (UINT32_C(1) << 20)) // FRAC_EN
+	{
+		// Sigma-Delta Pattern Enabled, fraction enabled
+		const uint_fast32_t fracin = (CCU->PLL_AUDIO_PAT1_CTRL_REG >> 0) & 0x1FFF;	// FRAC_IN - 17 bit value
+		//	PLL_AUDIO(hs) = 24 MHz*N/M1
+		//	PLL_AUDIO(4x) = 24 MHz*N/M0/M1/P
+		//	PLL_AUDIO(2X) = 24 MHz*N/M0/M1/P/2
+		//	PLL_AUDIO(1X) =	24 MHz*N/M0/M1/P/4
+		//	The default value of PLL_AUDIO(4X) is 24.5714 MHz.
+		return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M0 / M1 / P;
+	}
+	else
+	{
+		//	PLL_AUDIO(hs) = 24 MHz*N/M1
+		//	PLL_AUDIO(4x) = 24 MHz*N/M0/M1/P
+		//	PLL_AUDIO(2X) = 24 MHz*N/M0/M1/P/2
+		//	PLL_AUDIO(1X) =	24 MHz*N/M0/M1/P/4
+		//	The default value of PLL_AUDIO(4X) is 24.5714 MHz.
+		return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M0 / M1 / P;
+	}
 }
 
 uint_fast64_t allwnr_t507_get_pll_peri0_x1_freq(void)
