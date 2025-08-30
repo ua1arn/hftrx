@@ -3236,10 +3236,10 @@ void window_af_process(void)
 		ASSERT(bp_t.select < 3);
 		gui_obj_set_prop(lbl_array[bp_t.select], GUI_OBJ_COLOR, COLORPIP_YELLOW);
 
-		uint8_t val_low = hamradio_get_low_bp(bp_t.select == TYPE_BP_LOW ? (bp_t.change * 5) : 0);
+		uint16_t val_low = hamradio_get_low_bp(bp_t.select == TYPE_BP_LOW ? (bp_t.change * 5) : 0);
 		gui_obj_set_prop("lbl_low", GUI_OBJ_TEXT_FMT, "%s: %4u", str_low, val_low * 10);
 
-		uint8_t val_high = hamradio_get_high_bp(bp_t.select == TYPE_BP_HIGH ?
+		uint16_t val_high = hamradio_get_high_bp(bp_t.select == TYPE_BP_HIGH ?
 				bp_t.change : 0) * (bp_wide ? 100 : 10);
 		gui_obj_set_prop("lbl_high", GUI_OBJ_TEXT_FMT, "%s: %4u", str_high, val_high);
 

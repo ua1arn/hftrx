@@ -96,7 +96,7 @@
 	#define WITHALPHA				42
 	#define FORMATFROMLIBRARY 		1
 	#define WITHAFGAINDEFAULT		14
-//	#define WITHAFEQUALIZER			1
+	#define WITHAFEQUALIZER			1
 	#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 	#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 //	#define WITHGNSS				1
@@ -117,6 +117,7 @@
 	#define MOUSE_CURSOR_PATH		"/usr/hftrx_data/arrow.png"
 //	#define BLUETOOTH_ALSA			1
 	#define WITHSWRSCAN				1
+	#define WITHREVERB				1
 
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 

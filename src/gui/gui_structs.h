@@ -260,13 +260,8 @@ typedef struct {
 	obj_type_t type;				// тип элемента
 	int8_t action;
 	char name[NAME_ARRAY_SIZE];
-	LIST_ENTRY list;
+	LIST_ENTRY list_entry;
 } wm_data_t;
-
-typedef struct {					// очередь сообщений окнам от WM о взаимодействии с элементами GUI
-	wm_data_t data[WM_MAX_QUEUE_SIZE];
-    size_t size;
-} wm_queue_t;
 
 typedef struct {
 //	*** обязательные для указания вручную элементы описателя ***

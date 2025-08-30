@@ -79,7 +79,7 @@ void dump_queue(window_t * win)
 
 	for (PLIST_ENTRY t = win->queue_head.Flink; t != & win->queue_head; t = t->Flink)
 	{
-		wm_data_t * const p = CONTAINING_RECORD(t, wm_data_t, list);
+		wm_data_t * const p = CONTAINING_RECORD(t, wm_data_t, list_entry);
 
 		switch(p->message)
 		{
@@ -125,7 +125,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	if (IsListEmpty(& win->queue_head))
 		lastq = & wm_message_default;
 	else
-		lastq = CONTAINING_RECORD(& win->queue_head.Blink, wm_data_t, list);
+		lastq = CONTAINING_RECORD(& win->queue_head.Blink, wm_data_t, list_entry);
 
 	switch (message)
 	{
@@ -148,7 +148,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			newq->action = action;
 			strncpy(newq->name, name, NAME_ARRAY_SIZE - 1);
 			win->queue_size ++;
-			InsertTailList(& win->queue_head, & newq->list);
+			InsertTailList(& win->queue_head, & newq->list_entry);
 		}
 
 		return 1;
@@ -172,7 +172,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			newq->type = (obj_type_t) UINT8_MAX;
 			newq->action = r;
 			win->queue_size ++;
-			InsertTailList(& win->queue_head, & newq->list);
+			InsertTailList(& win->queue_head, & newq->list_entry);
 		}
 
 		return 1;
@@ -187,7 +187,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		newq->type = (obj_type_t) UINT8_MAX;
 		newq->action = va_arg(arg, int32_t);
 		win->queue_size ++;
-		InsertTailList(& win->queue_head, & newq->list);
+		InsertTailList(& win->queue_head, & newq->list_entry);
 
 		va_end(arg);
 
@@ -203,7 +203,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			newq->type = (obj_type_t) UINT8_MAX;
 			newq->action = INT8_MAX;
 			win->queue_size ++;
-			InsertTailList(& win->queue_head, & newq->list);
+			InsertTailList(& win->queue_head, & newq->list_entry);
 		}
 	}
 		return 1;
@@ -217,7 +217,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 			newq->type = (obj_type_t) UINT8_MAX;
 			newq->action = INT8_MAX;
 			win->queue_size ++;
-			InsertTailList(& win->queue_head, & newq->list);
+			InsertTailList(& win->queue_head, & newq->list_entry);
 		}
 	}
 		return 1;
@@ -249,7 +249,7 @@ wm_message_t get_from_wm_queue(uint8_t win_id, uint8_t * type, int8_t * action, 
 	else
 	{
 		PLIST_ENTRY t = RemoveTailList(& win->queue_head);
-		q = CONTAINING_RECORD(t, wm_data_t, list);
+		q = CONTAINING_RECORD(t, wm_data_t, list_entry);
 	}
 
 	* type = q->type;
@@ -281,7 +281,7 @@ void clean_wm_queue (window_t * win)
 
 	for (PLIST_ENTRY t = win->queue_head.Blink; t != & win->queue_head; t = t->Blink)
 	{
-		wm_data_t * q = CONTAINING_RECORD(t, wm_data_t, list);
+		wm_data_t * q = CONTAINING_RECORD(t, wm_data_t, list_entry);
 		free(q);
 	}
 }
