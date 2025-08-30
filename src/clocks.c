@@ -9869,7 +9869,7 @@ sysinit_pll_initialize(int forced)
 	    // 384000
 	    // 48000
 	    // 49152
-		uint_fast64_t mod = 1u << 17;
+		uint_fast64_t mod = UINT64_C(1) << 17;
 	    uint_fast32_t z = mod - ( (mod * 4800) / 49152);
 	    z = 0x8300;	// 0x8300 - нчинает выкиывать сэмплы, 0x8301 - добавлять
 	    CCU->PLL_AUDIO_PAT0_CTRL_REG =
