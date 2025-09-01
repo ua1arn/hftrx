@@ -424,7 +424,7 @@ extern "C" {
 	#define ALIGNX_BEGIN __ALIGNED(32)
 	#define ALIGNX_END /* nothing */
 
-#elif CPUSTYLE_RK356X && LINUX_SUBSYSTEM
+#elif (CPUSTYLE_RK356X || CPUSTYLE_BROADCOM) && LINUX_SUBSYSTEM
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 

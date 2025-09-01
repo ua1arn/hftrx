@@ -34,13 +34,14 @@
 #include <fcntl.h>
 #include <linux/input.h>
 #include <dirent.h>
-#include "lvgl/lvgl.h"
 #include "pcie_dev.h"
 #include "common.h"
 
 void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int priority, int cpuid);
 void linux_cancel_thread(pthread_t tid);
 void ft8_thread(void);
+void sdl2_events_start(void);
+int get_mouse_move(uint_fast16_t * x, uint_fast16_t * y);
 
 #define PIDFILE 		"/var/run/hftrx.pid"
 #define MAX_WAIT_TIME 	1
@@ -127,7 +128,7 @@ enum {
 	iio_thread_core = 1,
 	spool_thread_core = 0,
 	nmea_thread_core = 1,
-#elif CPUSTYLE_RK356X
+#elif CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
 	stream_thread_core = 3,
 	alsa_thread_core = 3,
 	iq_thread_core = 2,
@@ -2247,6 +2248,9 @@ void linux_user_init(void)
 	if (pcie_status)
 		ad936xdev_init();
 #endif /* WITHAD936XDEV */
+#if SDL2_EVENTS
+	sdl2_events_start();
+#endif /* SDL2_EVENTS */
 }
 
 /****************************************************************/
@@ -2615,7 +2619,9 @@ uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	get_touch_events(xr, yr);
 #if MOUSE_EVDEV
 	get_mouse_events(xr, yr);
-#endif /* MOUSE_EVDEV */
+#elif SDL2_EVENTS
+	pr = get_mouse_move(xr, yr);
+#endif /* SDL2_EVENTS */
 
 	return pr;
 }

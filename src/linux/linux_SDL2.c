@@ -85,7 +85,7 @@ int sdl2_render_init(void)
     }
 
     // Текстура для отрисовки фреймбуфера
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, DIM_X, DIM_Y);
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, DIM_X, DIM_Y);
     if (! texture) return 0;
 
 #if MOUSE_EVDEV
@@ -141,6 +141,56 @@ void sdl2_render_update(uintptr_t frame)
 
 	SDL_RenderPresent(renderer);
 }
+
+#if SDL2_EVENTS
+
+pthread_t sdl2events_t;
+int mouse_x = 0, mouse_y = 0, press = 0;
+
+int get_mouse_move(uint_fast16_t * x, uint_fast16_t * y)
+{
+	* x = mouse_x;
+#if defined (TSC_EVDEV_RAWX)
+	* x = normalize(* x, 0, TSC_EVDEV_RAWX, DIM_X - 1);
+#endif /* defined (TSC_EVDEV_RAWX)*/
+
+	* y = mouse_y;
+#if defined (TSC_EVDEV_RAWY)
+	* y = normalize(* y, 0, TSC_EVDEV_RAWY, DIM_Y - 1);
+#endif /* defined (TSC_EVDEV_RAWY) */
+
+	return press;
+}
+
+void * sdl2_events_thread(void * args)
+{
+	SDL_Event e;
+
+	while(1)
+	{
+		while (SDL_PollEvent(&e) != 0)
+		{
+			if (e.type == SDL_MOUSEMOTION)
+			{
+				mouse_x = e.motion.x;
+				mouse_y = e.motion.y;
+			}
+			else if (e.type == SDL_MOUSEBUTTONDOWN)
+				press = 1;
+			else if (e.type == SDL_MOUSEBUTTONUP)
+				press = 0;
+		}
+
+		usleep(5000);
+	}
+}
+
+void sdl2_events_start(void)
+{
+	linux_create_thread(& sdl2events_t, sdl2_events_thread, 50, 1);
+}
+
+#endif /* SDL2_EVENTS */
 
 #endif /* WITHLVGL */
 

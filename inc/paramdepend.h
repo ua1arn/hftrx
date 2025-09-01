@@ -755,6 +755,36 @@ extern "C" {
 		#define WITHCPUNAME "RK356x"
 	#endif
 
+#elif CPUSTYLE_BROADCOM
+	// Broadcom BCM2711
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#define CPU_FREQ	1000000000u //(xc7z_get_arm_freq())
+	//#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
+	#define HARDWARE_UART_FREQ (24000000)
+	#define HARDWARE_HOSC_FREQ (24000000)	/* PL1 times source frequency */
+
+	#define TICKS_FREQUENCY 1000	// Hz
+
+	#define SEQ_TICKS_PERIOD    5    // 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
+	#define ENC_TICKS_PERIOD    5    // 5 ms
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED (12000000uL)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
+
+	#define HARDWARE_NCORES 4
+	#if defined(__aarch64__)
+		#define WITHCPUNAME "BCM2711_64"
+	#else
+		#define WITHCPUNAME "BCM2711"
+	#endif
+
 #else
 
 	#error Undefined CPUSTYLE_XXX
