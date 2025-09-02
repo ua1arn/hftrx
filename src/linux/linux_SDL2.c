@@ -12,29 +12,6 @@
 #include <SDL2/SDL_image.h>
 #include <GLES3/gl32.h>
 
-#if WITHLVGL
-
-#include "lvgl.h"
-
-void lvglhw_initialize(void)
-{
-	lv_display_t * disp = lv_sdl_window_create(DIM_X, DIM_Y);
-#if 0
-	SDL_Renderer * renderer = lv_sdl_window_get_renderer(disp);
-	SDL_DisplayMode display_mode;
-	SDL_GetCurrentDisplayMode(0, & display_mode);
-    if ((display_mode.w > DIM_X) && (display_mode.h > DIM_Y))
-    {
-    	float d_x = (float) display_mode.w / DIM_X;
-    	float d_y = (float) display_mode.h / DIM_Y;
-    	SDL_RenderSetScale(renderer, d_x, d_y); 			// масштабирование до размеров экрана
-    	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");	// Antialiasing для масштабированных объектов
-    }
-#endif
-}
-
-#else
-
 void get_cursor_pos(uint16_t * x, uint16_t * y);
 uint8_t check_is_mouse_present(void);
 
@@ -54,14 +31,21 @@ int sdl2_render_init(void)
     SDL_DisplayMode display_mode;
     SDL_GetCurrentDisplayMode(0, & display_mode);
 
+#if ! X11
     // Установить атрибуты для настройки аппаратного ускорения графики
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+#endif /* ! X11 */
 
-    window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, DIM_X, DIM_Y, SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_OPENGL);
+    window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, DIM_X, DIM_Y,
+    		SDL_WINDOW_FULLSCREEN_DESKTOP
+#if ! X11
+			| SDL_WINDOW_OPENGL
+#endif /* ! X11 */
+    );
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!renderer) {
@@ -75,6 +59,17 @@ int sdl2_render_init(void)
     const char * glRenderer = (const char *) glGetString(GL_RENDERER);
     printf("OpenGL Version: %s\n", glVersion);
     printf("OpenGL Renderer: %s\n", glRenderer);
+
+	SDL_RendererInfo info;
+	if (SDL_GetRendererInfo(renderer, & info) == 0)
+	{
+	    printf("Renderer name: %s\n", info.name);
+
+		if (info.flags & SDL_RENDERER_ACCELERATED)
+			printf("Hardware accelerated\n");
+		else
+			printf("Software rendering\n");
+	}
 
     if ((display_mode.w > DIM_X) && (display_mode.h > DIM_Y))
     {
@@ -191,7 +186,5 @@ void sdl2_events_start(void)
 }
 
 #endif /* SDL2_EVENTS */
-
-#endif /* WITHLVGL */
 
 #endif /* LINUX_SUBSYSTEM && WITHSDL2VIDEO */

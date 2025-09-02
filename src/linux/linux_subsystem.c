@@ -439,7 +439,7 @@ void * linux_pps_thread(void * args)
 
 /******************************************************************/
 
-#if WITHFBDEV && ! WITHLVGL
+#if WITHFBDEV
 
 static struct fb_var_screeninfo vinfo;
 static struct fb_fix_screeninfo finfo;
@@ -519,7 +519,7 @@ void framebuffer_close(void)
     close(ttyd);
 }
 
-#endif /* WITHFBDEV && ! WITHLVGL */
+#endif /* WITHFBDEV */
 
 /********************** EMIO ************************/
 
@@ -2626,7 +2626,7 @@ uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	return pr;
 }
 
-#endif /* (TSC1_TYPE == TSC_TYPE_EVDEV) && ! WITHLVGL*/
+#endif /* (TSC1_TYPE == TSC_TYPE_EVDEV) */
 
 static int is_event_device(const struct dirent * dir) {
 	return strncmp("event", dir->d_name, 5) == 0;
@@ -2719,11 +2719,11 @@ void linux_exit(void)
 #if WITHAD936XDEV
 	ad936xdev_off();
 #endif /* WITHAD936XDEV */
-#if WITHFBDEV && ! WITHLVGL
+#if WITHFBDEV
 	framebuffer_close();
-#elif WITHSDL2VIDEO && ! WITHLVGL
+#elif WITHSDL2VIDEO
 	sdl2_render_close();
-#endif /* WITHFBDEV && ! WITHLVGL */
+#endif /* WITHFBDEV */
 	modem_reset(0);
 #if 0
 	linux_cancel_thread(timer_spool_t);
@@ -2797,7 +2797,7 @@ void iq_stream_start(void)
 void iq_stream_stop(void)
 {
 #if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
-	linux_cancel_thread(xdma_t);
+	if (pcie_status > 0) linux_cancel_thread(xdma_t);
 #elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	linux_cancel_thread(iq_interrupt_t);
 #endif
