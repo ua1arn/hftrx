@@ -41,7 +41,6 @@ static LIST_ENTRY gui_objects_list;
 static uint_fast8_t gui_object_count = 0;
 static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, INT32_MAX, "btс_close", "", };
 static uint8_t opened_windows_count = 1;
-wm_data_t wm_message_default = { WM_NO_MESSAGE, TYPE_DUMMY, 0, "", };
 
 /* Возврат id parent window */
 uint_fast8_t get_parent_window(void)
@@ -69,38 +68,36 @@ void gui_set_encoder2_rotate (int_least16_t rotate)
 
 void dump_queue(window_t * win)
 {
-	if (! win->queue_size)
+	if (! win->queue.size)
 		return;
 
 	PRINTF("dump WM queue window '%s'\n", win->title);
 
-	if (win->queue_size == WM_MAX_QUEUE_SIZE)
+	if (win->queue.size == WM_MAX_QUEUE_SIZE)
 		PRINTF("WM stack full!\n");
 
-	for (PLIST_ENTRY t = win->queue_head.Flink; t != & win->queue_head; t = t->Flink)
+	for (uint_fast8_t i = 0; i < win->queue.size; i ++)
 	{
-		wm_data_t * const p = CONTAINING_RECORD(t, wm_data_t, list_entry);
-
-		switch(p->message)
+		switch(win->queue.data[i].message)
 		{
 		case WM_MESSAGE_UPDATE:
-			PRINTF("WM_MESSAGE_UPDATE\n");
+			PRINTF("%d: WM_MESSAGE_UPDATE\n", i);
 			break;
 
 		case WM_MESSAGE_ACTION:
-			PRINTF("WM_MESSAGE_ACTION: object type - %d, action - %d\n", p->type, p->action);
+			PRINTF("%d: WM_MESSAGE_ACTION: object type - %d, action - %d\n", i, win->queue.data[i].type, win->queue.data[i].action);
 			break;
 
 		case WM_MESSAGE_ENC2_ROTATE:
-			PRINTF("WM_MESSAGE_ENC2_ROTATE: direction - %d\n", p->action);
+			PRINTF("%d: WM_MESSAGE_ENC2_ROTATE: direction - %d\n", i, win->queue.data[i].action);
 			break;
 
 		case WM_MESSAGE_KEYB_CODE:
-			PRINTF("WM_MESSAGE_KEYB_CODE: code - %d\n", p->action);
+			PRINTF("%d: WM_MESSAGE_KEYB_CODE: code - %d\n", i, win->queue.data[i].action);
 			break;
 
 		default:
-			PRINTF("unknown message type! - %d\n", p->message);
+			PRINTF("%d: unknown message type! - %d\n", i, win->queue.data[i].message);
 			break;
 		}
 	}
@@ -113,19 +110,12 @@ void dump_queue(window_t * win)
 // WM_MESSAGE_CLOSE: 		nothing
 uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 {
-	if (win->queue_size >= WM_MAX_QUEUE_SIZE)
+	if (win->queue.size >= WM_MAX_QUEUE_SIZE)
 		return 0;					// очередь переполнена, ошибка
 
 	//dump_queue(win);
 
 	va_list arg;
-	wm_data_t * lastq;
-	wm_data_t * newq = (wm_data_t *) calloc(1, sizeof(wm_data_t));
-
-	if (IsListEmpty(& win->queue_head))
-		lastq = & wm_message_default;
-	else
-		lastq = CONTAINING_RECORD(& win->queue_head.Blink, wm_data_t, list_entry);
 
 	switch (message)
 	{
@@ -139,16 +129,16 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 
 		va_end(arg);
 
-		if (lastq->message == WM_MESSAGE_ACTION && lastq->type == type && lastq->action == action)
+		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;
+		if (win->queue.data[ind].message == WM_MESSAGE_ACTION && win->queue.data[ind].type == type && win->queue.data[ind].action == action)
 			return 1;
 		else
 		{
-			newq->message = WM_MESSAGE_ACTION;
-			newq->type = (obj_type_t) type;
-			newq->action = action;
-			strncpy(newq->name, name, NAME_ARRAY_SIZE - 1);
-			win->queue_size ++;
-			InsertTailList(& win->queue_head, & newq->list_entry);
+			win->queue.data[win->queue.size].message = WM_MESSAGE_ACTION;
+			win->queue.data[win->queue.size].type = (obj_type_t) type;
+			win->queue.data[win->queue.size].action = action;
+			strncpy(win->queue.data[win->queue.size].name, name, NAME_ARRAY_SIZE - 1);
+			win->queue.size ++;
 		}
 
 		return 1;
@@ -161,18 +151,17 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		int32_t r = va_arg(arg, int32_t);
 		va_end(arg);
 
-		// если первое в очереди сообщение - WM_MESSAGE_ENC2_ROTATE,
-		// просуммировать текущее и новое значения поворота,
-		// иначе добавить новое сообщение
-		if (lastq->message == WM_MESSAGE_ENC2_ROTATE)
-			lastq->action += r;
+		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;				// если первое в очереди сообщение - WM_MESSAGE_ENC2_ROTATE,
+		if (win->queue.data[ind].message == WM_MESSAGE_ENC2_ROTATE)				// просуммировать текущее и новое значения поворота,
+		{																			// иначе добавить новое сообщение
+			win->queue.data[ind].action += r;
+		}
 		else
 		{
-			newq->message = WM_MESSAGE_ENC2_ROTATE;
-			newq->type = (obj_type_t) UINT8_MAX;
-			newq->action = r;
-			win->queue_size ++;
-			InsertTailList(& win->queue_head, & newq->list_entry);
+			win->queue.data[win->queue.size].message = WM_MESSAGE_ENC2_ROTATE;
+			win->queue.data[win->queue.size].type = (obj_type_t) UINT8_MAX;
+			win->queue.data[win->queue.size].action = r;
+			win->queue.size ++;
 		}
 
 		return 1;
@@ -183,11 +172,10 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	{
 		va_start(arg, message);
 
-		newq->message = WM_MESSAGE_KEYB_CODE;
-		newq->type = (obj_type_t) UINT8_MAX;
-		newq->action = va_arg(arg, int32_t);
-		win->queue_size ++;
-		InsertTailList(& win->queue_head, & newq->list_entry);
+		win->queue.data[win->queue.size].message = WM_MESSAGE_KEYB_CODE;
+		win->queue.data[win->queue.size].type = (obj_type_t) UINT8_MAX;
+		win->queue.data[win->queue.size].action = va_arg(arg, int32_t);
+		win->queue.size ++;
 
 		va_end(arg);
 
@@ -197,13 +185,13 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 
 	case WM_MESSAGE_UPDATE:
 	{
-		if (lastq->message != WM_MESSAGE_UPDATE)		// предотвращение дублей сообщения WM_MESSAGE_UPDATE
+		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;
+		if (win->queue.data[ind].message != WM_MESSAGE_UPDATE)		// предотвращение дублей сообщения WM_MESSAGE_UPDATE
 		{
-			newq->message = WM_MESSAGE_UPDATE;
-			newq->type = (obj_type_t) UINT8_MAX;
-			newq->action = INT8_MAX;
-			win->queue_size ++;
-			InsertTailList(& win->queue_head, & newq->list_entry);
+			win->queue.data[win->queue.size].message = WM_MESSAGE_UPDATE;
+			win->queue.data[win->queue.size].type = (obj_type_t) UINT8_MAX;
+			win->queue.data[win->queue.size].action = INT8_MAX;
+			win->queue.size ++;
 		}
 	}
 		return 1;
@@ -211,13 +199,13 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 
 	case WM_MESSAGE_CLOSE:
 	{
-		if (lastq->message != WM_MESSAGE_CLOSE)		// предотвращение дублей сообщения WM_MESSAGE_CLOSE
+		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;
+		if (win->queue.data[ind].message != WM_MESSAGE_CLOSE)		// предотвращение дублей сообщения WM_MESSAGE_CLOSE
 		{
-			newq->message = WM_MESSAGE_CLOSE;
-			newq->type = (obj_type_t) UINT8_MAX;
-			newq->action = INT8_MAX;
-			win->queue_size ++;
-			InsertTailList(& win->queue_head, & newq->list_entry);
+			win->queue.data[win->queue.size].message = WM_MESSAGE_CLOSE;
+			win->queue.data[win->queue.size].type = (obj_type_t) UINT8_MAX;
+			win->queue.data[win->queue.size].action = INT8_MAX;
+			win->queue.size ++;
 		}
 	}
 		return 1;
@@ -237,51 +225,38 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 wm_message_t get_from_wm_queue(uint8_t win_id, uint8_t * type, int8_t * action, char * name)
 {
 	window_t * win = get_win(win_id);
-	wm_data_t * q;
-	uint8_t need_free = 0;
 
-	if (! win->queue_size)
+	if (! win->queue.size)
 		return WM_NO_MESSAGE;										// очередь сообщений пустая
 
-	win->queue_size --;
+	win->queue.size --;
 
-	if (IsListEmpty(& win->queue_head))
-		q = & wm_message_default;
-	else
-	{
-		PLIST_ENTRY t = RemoveTailList(& win->queue_head);
-		q = CONTAINING_RECORD(t, wm_data_t, list_entry);
-		need_free = 1;
-	}
+	* type = win->queue.data[win->queue.size].type;
+	* action = win->queue.data[win->queue.size].action;
 
-	* type = q->type;
-	* action = q->action;
-
-	if (q->message == WM_MESSAGE_ACTION)
+	if (win->queue.data[win->queue.size].message == WM_MESSAGE_ACTION)
 	{
 		char obj_name[NAME_ARRAY_SIZE] = { 0 };
-		strncpy(obj_name, q->name, NAME_ARRAY_SIZE - 1);
+		strncpy(obj_name, win->queue.data[win->queue.size].name, NAME_ARRAY_SIZE - 1);
 		char * r = strrchr(obj_name, '#');
 		obj_name[r - obj_name] = '\0';
 		strncpy(name, obj_name, NAME_ARRAY_SIZE - 1);
 	}
 
-	wm_message_t m = q->message;
-	if (need_free) free(q);
+	wm_message_t m = win->queue.data[win->queue.size].message;
+
+	win->queue.data[win->queue.size].message = WM_NO_MESSAGE;		// очистить текущую запись
+	win->queue.data[win->queue.size].type = TYPE_DUMMY;
+	win->queue.data[win->queue.size].action = 0;
+	memset(win->queue.data[win->queue.size].name, 0, NAME_ARRAY_SIZE);
 
 	return m;
 }
 
 void clean_wm_queue (window_t * win)
 {
-	win->queue_size = 0;
-	if (IsListEmpty(& win->queue_head)) return;
-
-	for (PLIST_ENTRY t = win->queue_head.Blink; t != & win->queue_head; t = t->Blink)
-	{
-		wm_data_t * q = CONTAINING_RECORD(t, wm_data_t, list_entry);
-		free(q);
-	}
+	win->queue.size = 0;
+	memset(win->queue.data, 0, sizeof win->queue.data);
 }
 
 /* Запрос на обновление состояния элементов GUI */
