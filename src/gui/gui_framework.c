@@ -591,8 +591,11 @@ void gui_put_event(gui_event_type type, uint16_t code)
 		else if (code == CODE_KEY_ENTER && win->idx_bh_focus_old != UINT8_MAX)
 		{
 			button_t * bh = & win->bh_ptr[win->idx_bh_focus];
-			if (! put_to_wm_queue(win, WM_MESSAGE_ACTION, TYPE_BUTTON, PRESSED, bh->name))
-				dump_queue(win);
+			if (bh->state != DISABLED)
+			{
+				if (! put_to_wm_queue(win, WM_MESSAGE_ACTION, TYPE_BUTTON, PRESSED, bh->name))
+					dump_queue(win);
+			}
 
 			return;
 		}
@@ -769,6 +772,38 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	}
 }
 
+static void drawDashedRectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t dashLength)
+{
+    if (width == 0 || height == 0 || dashLength == 0) return;
+
+    const gxdrawb_t * gdb = gui_get_drawbuf();
+    uint16_t x1 = x;
+    uint16_t y1 = y;
+    uint16_t x2 = x + width - 1;
+    uint16_t y2 = y + height - 1;
+    uint16_t pos = 0;
+
+    // Верхняя линия (слева направо)
+    for (uint16_t i = 0; i < width; i ++)
+        if ((pos ++ / dashLength) % 2 == 0)
+        	colpip_point(gdb, x1 + i, y1, COLOR_BLACK);
+
+    // Правая линия (сверху вниз)
+    for (uint16_t i = 1; i < height; i ++)
+        if ((pos ++ / dashLength) % 2 == 0)
+        	colpip_point(gdb, x2, y1 + i, COLOR_BLACK);
+
+    // Нижняя линия (справа налево)
+    for (uint16_t i = 1; i < width; i ++)
+        if ((pos ++ / dashLength) % 2 == 0)
+        	colpip_point(gdb, x2 - i, y2, COLOR_BLACK);
+
+    // Левая линия (снизу вверх)
+    for (uint16_t i = 1; i < height - 1; i ++)
+        if ((pos ++ / dashLength) % 2 == 0)
+        	colpip_point(gdb, x1, y2 - i, COLOR_BLACK);
+}
+
 static void draw_button(const button_t * const bh)
 {
 	PACKEDCOLORPIP_T * bg = NULL;
@@ -832,18 +867,16 @@ static void draw_button(const button_t * const bh)
 
 	const uint_fast16_t shiftX = bh->state == PRESSED ? 1 : 0;
 	const uint_fast16_t shiftY = bh->state == PRESSED ? 1 : 0;
-	const COLORPIP_T textcolor = bh->is_focus ? COLORPIP_DARKGRAY : COLORPIP_BLACK;
+	const COLORPIP_T textcolor = COLORPIP_BLACK;
 
 	if (strchr(bh->text, delimeters[0]) == NULL)
 	{
 		/* Однострочная надпись */
-#if WITHALTERNATIVEFONTS
-		UB_Font_DrawPString(gdb, shiftX + x1 + (bh->w - (getwidth_Pstring(bh->text, & FONT_BUTTONS))) / 2,
-				shiftY + y1 + (bh->h - FONT_BUTTONS.height) / 2, bh->text, & FONT_BUTTONS, textcolor);
-#else
-		colpip_string2_tbg(gdb, shiftX + x1 + (bh->w - (strwidth2(bh->text))) / 2,
-				shiftY + y1 + (bh->h - SMALLCHARH2) / 2, bh->text, textcolor);
-#endif /* WITHALTERNATIVEFONTS */
+		UB_Font_DrawPString(gdb,
+				shiftX + x1 + (bh->w - (getwidth_Pstring(bh->text, & FONT_BUTTONS))) / 2,
+				shiftY + y1 + (bh->h - FONT_BUTTONS.height) / 2,
+				bh->text, & FONT_BUTTONS, textcolor
+				);
 	}
 	else
 	{
@@ -853,7 +886,7 @@ static void draw_button(const button_t * const bh)
 		char buf[TEXT_ARRAY_SIZE];
 		strcpy(buf, bh->text);
 		char * text2 = strtok_r(buf, delimeters, & next);
-#if WITHALTERNATIVEFONTS
+
 		UB_Font_DrawPString(gdb,
 				shiftX + x1 + (bh->w - (getwidth_Pstring(text2, & FONT_BUTTONS))) / 2,
 				shiftY + y1 + j,
@@ -862,19 +895,14 @@ static void draw_button(const button_t * const bh)
 
 		text2 = strtok_r(NULL, delimeters, & next);
 		UB_Font_DrawPString(gdb,
-				shiftX + x1 + (bh->w - (getwidth_Pstring(text2, & FONT_BUTTONS))) / 2,
+				shiftX + x1 + (bh->w - getwidth_Pstring(text2, & FONT_BUTTONS)) / 2,
 				shiftY + bh->h + y1 - FONT_BUTTONS.height - j,
 				text2, & FONT_BUTTONS, textcolor
 				);
-#else
-		colpip_string2_tbg(gdb, shiftX + x1 + (bh->w - (strwidth2(text2))) / 2,
-				shiftY + y1 + j, text2, COLORPIP_BLACK);
-
-		text2 = strtok_r(NULL, delimeters, & next);
-		colpip_string2_tbg(gdb, shiftX + x1 + (bh->w - (strwidth2(text2))) / 2,
-				shiftY + bh->h + y1 - SMALLCHARH2 - j, text2, COLORPIP_BLACK);
-#endif /* WITHALTERNATIVEFONTS */
 	}
+
+	if (bh->is_focus)
+		drawDashedRectangle(x1 + 4, y1 + 4, bh->w - 8, bh->h - 8, 4);
 }
 
 static void objects_init(void)
