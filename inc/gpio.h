@@ -378,78 +378,91 @@ typedef struct encoder_tag encoder_t;
 void arm_hardware_pioa_inputs(portholder_t ipins);
 void arm_hardware_pioa_outputs(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioa_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioa_outputs20m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioa_outputs50m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioa_opendrain(portholder_t opins, portholder_t initialstate);
 
 void arm_hardware_piob_inputs(portholder_t ipins);
 void arm_hardware_piob_outputs(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piob_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piob_outputs20m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piob_outputs50m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piob_opendrain(portholder_t opins, portholder_t initialstate);
 
 void arm_hardware_pioc_inputs(portholder_t ipins);
 void arm_hardware_pioc_outputs(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioc_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioc_outputs20m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioc_outputs50m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioc_opendrain(portholder_t opins, portholder_t initialstate);
 
 void arm_hardware_piod_inputs(portholder_t ipins);
 void arm_hardware_piod_outputs(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piod_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piod_outputs20m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piod_outputs50m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piod_opendrain(portholder_t opins, portholder_t initialstate);
 
 void arm_hardware_pioe_inputs(portholder_t ipins);
 void arm_hardware_pioe_outputs(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioe_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioe_outputs20m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioe_outputs50m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioe_opendrain(portholder_t opins, portholder_t initialstate);
 
 void arm_hardware_piof_inputs(portholder_t ipins);
 void arm_hardware_piof_outputs(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piof_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piof_outputs20m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piof_outputs50m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piof_opendrain(portholder_t opins, portholder_t initialstate);
 
 void arm_hardware_piog_inputs(portholder_t ipins);
 void arm_hardware_piog_outputs(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piog_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piog_outputs20m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piog_outputs50m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piog_opendrain(portholder_t opins, portholder_t initialstate);
 
 void arm_hardware_pioh_inputs(portholder_t ipins);
 void arm_hardware_pioh_outputs(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioh_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioh_outputs20m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioh_outputs50m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioh_opendrain(portholder_t opins, portholder_t initialstate);
 
 void arm_hardware_pioi_inputs(portholder_t ipins);
 void arm_hardware_pioi_outputs(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioi_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioi_outputs20m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioi_outputs50m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioi_opendrain(portholder_t opins, portholder_t initialstate);
 
 void arm_hardware_pioj_inputs(portholder_t ipins);
 void arm_hardware_pioj_outputs(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioj_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioj_outputs20m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioj_outputs50m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioj_opendrain(portholder_t opins, portholder_t initialstate);
 
 void arm_hardware_piok_inputs(portholder_t ipins);
 void arm_hardware_piok_outputs(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piok_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piok_outputs20m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piok_outputs50m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piok_opendrain(portholder_t opins, portholder_t initialstate);
 
 void arm_hardware_piol_inputs(portholder_t ipins);
 void arm_hardware_piol_outputs(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piol_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_piol_outputs20m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piol_outputs50m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_piol_opendrain(portholder_t opins, portholder_t initialstate);
 
 void arm_hardware_pioz_inputs(portholder_t ipins);
 void arm_hardware_pioz_outputs(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioz_outputs2m(portholder_t opins, portholder_t initialstate);
+void arm_hardware_pioz_outputs20m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioz_outputs50m(portholder_t opins, portholder_t initialstate);
 void arm_hardware_pioz_opendrain(portholder_t opins, portholder_t initialstate);
 

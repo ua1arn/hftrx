@@ -795,9 +795,6 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx
 #define ALWNR_GPIO_DRV_OUTPUT2M 0x01
 #define ALWNR_GPIO_PULL_OUTPUT2M 0x00
 
-#define ALWNR_GPIO_DRV_OUTPUT10M 0x02
-#define ALWNR_GPIO_PULL_OUTPUT10M 0x00
-
 #define ALWNR_GPIO_DRV_OUTPUT20M 0x02
 #define ALWNR_GPIO_PULL_OUTPUT20M 0x00
 
@@ -2813,7 +2810,7 @@ arm_hardware_pioa_outputs(portholder_t opins, portholder_t initialstate)
 /* программирование выводов на вывод, без присоединения к периферии */
 /* Установка режима - вывод, с ограничением скорости (на STM32) 10 МГц	*/
 void 
-arm_hardware_pioa_outputs10m(portholder_t opins, portholder_t initialstate)
+arm_hardware_pioa_outputs20m(portholder_t opins, portholder_t initialstate)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -2907,7 +2904,7 @@ arm_hardware_pioa_outputs10m(portholder_t opins, portholder_t initialstate)
 
 //	//gpioX_poweron(GPIOA);
 	gpioX_setstate(GPIOA, opins, initialstate);
-	gpioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT10M, ALWNR_GPIO_PULL_OUTPUT10M);
+	gpioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
