@@ -8,6 +8,7 @@
 #if LINUX_SUBSYSTEM && WITHSDL2VIDEO
 
 #include "linux_subsystem.h"
+#include "gui/gui_events.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <GLES3/gl32.h>
@@ -163,17 +164,29 @@ void * sdl2_events_thread(void * args)
 
 	while(1)
 	{
-		while (SDL_PollEvent(&e) != 0)
+		while (SDL_PollEvent(& e) != 0)
 		{
 			if (e.type == SDL_MOUSEMOTION)
 			{
 				mouse_x = e.motion.x;
 				mouse_y = e.motion.y;
 			}
-			else if (e.type == SDL_MOUSEBUTTONDOWN)
+			else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
 				press = 1;
-			else if (e.type == SDL_MOUSEBUTTONUP)
+			else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT)
 				press = 0;
+	        // Обработка кнопок курсора
+			else if (e.type == SDL_KEYDOWN)
+			{
+				if (e.key.keysym.sym == SDLK_LEFT)
+					gui_put_event(EVENT_TYPE_CONTROL, CODE_CURSOR_LEFT);
+				else if (e.key.keysym.sym == SDLK_RIGHT)
+					gui_put_event(EVENT_TYPE_CONTROL, CODE_CURSOR_RIGHT);
+				else if (e.key.keysym.sym == SDLK_RETURN || e.key.keysym.sym == SDLK_KP_ENTER)
+					gui_put_event(EVENT_TYPE_CONTROL, CODE_KEY_ENTER);
+				else if (e.key.keysym.sym == SDLK_ESCAPE)
+					gui_put_event(EVENT_TYPE_CONTROL, CODE_KEY_ESCAPE);
+			}
 		}
 
 		usleep(5000);

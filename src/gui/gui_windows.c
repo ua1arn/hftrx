@@ -78,6 +78,7 @@ void open_window(window_t * win)
 	if (win->parent_id != NO_PARENT_WINDOW && pwin == win->parent_id)	// Если открыто parent window, закрыть его и оставить child window
 		close_window(0);
 
+	win->idx_bh_focus_old = UINT8_MAX;
 	win->state = VISIBLE;
 	win->first_call = 1;
 	win->is_moving = 0;

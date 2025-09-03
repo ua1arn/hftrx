@@ -1839,8 +1839,11 @@ void xdma_iq_init(void)
 
 void xdma_close(void)
 {
-	linux_cancel_thread(xdma_t);
-	pcie_close();
+	if(pcie_status > 0)
+	{
+		linux_cancel_thread(xdma_t);
+		pcie_close();
+	}
 }
 
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */

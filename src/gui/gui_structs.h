@@ -16,7 +16,7 @@
 #define IS_AREA_MOVE	 		(type == TYPE_TOUCH_AREA && action == MOVING)
 
 #define GET_FROM_WM_QUEUE(W)	uint8_t type;	\
-								int8_t action;	\
+								int32_t action;	\
 								char name[NAME_ARRAY_SIZE];		\
 								switch (get_from_wm_queue(W, & type, & action, name))
 
@@ -172,6 +172,7 @@ typedef struct {
 	uint8_t is_locked;				// признак фиксации кнопки
 	uint8_t is_repeating;			// повтор действия при длительном удержании кнопки
 	uint8_t is_long_press;			// разрешение обработки долгого нажатия
+	uint8_t is_focus;
 	uint8_t parent;					// индекс окна, в котором будет отображаться кнопка
 	uint8_t visible;				// рисовать ли кнопку на экране
 	int32_t payload;
@@ -258,7 +259,7 @@ typedef enum {
 typedef struct {
 	wm_message_t message;			// тип сообщения
 	obj_type_t type;				// тип элемента
-	int8_t action;
+	int32_t action;
 	char name[NAME_ARRAY_SIZE];
 } wm_data_t;
 
@@ -300,6 +301,8 @@ typedef struct {
 	title_align_t title_align;
 	uint8_t size_mode;
 	uint8_t is_moving;
+	int8_t idx_bh_focus;
+	uint8_t idx_bh_focus_old;
 } window_t;
 
 typedef struct {

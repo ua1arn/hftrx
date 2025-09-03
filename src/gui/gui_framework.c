@@ -25,6 +25,7 @@
 #include "gui_settings.h"
 #include "gui_windows.h"
 #include "gui_objects.h"
+#include "gui_events.h"
 #include "utils.h"
 
 #if WITHTOUCHGUI
@@ -39,7 +40,7 @@ enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 static gui_t gui = { 0, 0, CANCELLED, 0, 0, 0, 0, 0, };
 static LIST_ENTRY gui_objects_list;
 static uint_fast8_t gui_object_count = 0;
-static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, INT32_MAX, "btс_close", "", };
+static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, INT32_MAX, "btс_close", "", };
 static uint8_t opened_windows_count = 1;
 
 /* Возврат id parent window */
@@ -190,7 +191,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		{
 			win->queue.data[win->queue.size].message = WM_MESSAGE_UPDATE;
 			win->queue.data[win->queue.size].type = (obj_type_t) UINT8_MAX;
-			win->queue.data[win->queue.size].action = INT8_MAX;
+			win->queue.data[win->queue.size].action = INT32_MAX;
 			win->queue.size ++;
 		}
 	}
@@ -204,7 +205,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		{
 			win->queue.data[win->queue.size].message = WM_MESSAGE_CLOSE;
 			win->queue.data[win->queue.size].type = (obj_type_t) UINT8_MAX;
-			win->queue.data[win->queue.size].action = INT8_MAX;
+			win->queue.data[win->queue.size].action = INT32_MAX;
 			win->queue.size ++;
 		}
 	}
@@ -222,7 +223,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	return 0;
 }
 
-wm_message_t get_from_wm_queue(uint8_t win_id, uint8_t * type, int8_t * action, char * name)
+wm_message_t get_from_wm_queue(uint8_t win_id, uint8_t * type, int32_t * action, char * name)
 {
 	window_t * win = get_win(win_id);
 
@@ -578,6 +579,45 @@ void gui_put_keyb_code (uint_fast8_t kbch)
 		put_to_wm_queue(get_win(gui.win[1]), WM_MESSAGE_KEYB_CODE, kbch);
 }
 
+void gui_put_event(gui_event_type type, uint16_t code)
+{
+	window_t * win = get_win(get_parent_window());
+
+	if (type == EVENT_TYPE_CONTROL)
+	{
+		int p;
+		if (code == CODE_CURSOR_LEFT) p = -1;
+		else if (code == CODE_CURSOR_RIGHT) p = 1;
+		else if (code == CODE_KEY_ENTER && win->idx_bh_focus_old != UINT8_MAX)
+		{
+			button_t * bh = & win->bh_ptr[win->idx_bh_focus];
+			if (! put_to_wm_queue(win, WM_MESSAGE_ACTION, TYPE_BUTTON, PRESSED, bh->name))
+				dump_queue(win);
+
+			return;
+		}
+		else if (code == CODE_KEY_ESCAPE)
+		{
+			close_window(1);
+			if (! get_parent_window())
+				footer_buttons_state(CANCELLED);
+			return;
+		}
+
+		if (win->idx_bh_focus_old != UINT8_MAX)
+		{
+			win->idx_bh_focus += p;
+			if (win->idx_bh_focus < 0) win->idx_bh_focus = win->bh_count - 1;
+			if (win->idx_bh_focus >= win->bh_count) win->idx_bh_focus = 0;
+		}
+
+		win->bh_ptr[win->idx_bh_focus_old].is_focus = 0;
+		win->bh_ptr[win->idx_bh_focus].is_focus = 1;
+
+		win->idx_bh_focus_old = win->idx_bh_focus;
+	}
+}
+
 /* Отрисовка слайдера */
 static void draw_slider(slider_t * sl)
 {
@@ -792,7 +832,7 @@ static void draw_button(const button_t * const bh)
 
 	const uint_fast16_t shiftX = bh->state == PRESSED ? 1 : 0;
 	const uint_fast16_t shiftY = bh->state == PRESSED ? 1 : 0;
-	const COLORPIP_T textcolor = COLORPIP_BLACK;
+	const COLORPIP_T textcolor = bh->is_focus ? COLORPIP_DARKGRAY : COLORPIP_BLACK;
 
 	if (strchr(bh->text, delimeters[0]) == NULL)
 	{
