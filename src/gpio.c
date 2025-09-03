@@ -4787,6 +4787,69 @@ arm_hardware_pioi_outputs2m(portholder_t opins, portholder_t initialstate)
 
 #endif
 }
+/* Установка режима - вывод, без ограничения скорости	*/
+void
+arm_hardware_pioi_outputs50m(portholder_t opins, portholder_t initialstate)
+{
+#if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPGEN)
+
+	RCC->APB2ENR |= RCC_APB2ENR_IOPIEN;	/* I/O port I clock enable */
+	(void) RCC->APB2ENR;
+	// Установка начального состояния битов
+	gpioX_setstate(GPIOI, opins, initialstate);
+	// Установка режима выводов
+	arm_stm32f10x_hardware_pio_prog(GPIOI, opins, 0, 2);	/* Установить CNF=0 и MODE=2 для указанных битов */
+
+#elif (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX)
+
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOIEN;	/* I/O port I clock enable */
+	(void) RCC->AHB1ENR;
+	// Установка начального состояния битов
+	gpioX_setstate(GPIOI, opins, initialstate);
+	// Установка режима выводов
+	stm32f30x_pioX_prog(GPIOI, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif (CPUSTYLE_STM32H7XX)
+
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOIEN;	/* I/O port I clock enable */
+	(void) RCC->AHB4ENR;
+	// Установка начального состояния битов
+	gpioX_setstate(GPIOI, opins, initialstate);
+	// Установка режима выводов
+	stm32f30x_pioX_prog(GPIOI, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif (CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX)
+
+	RCC->AHBENR |= RCC_AHBENR_GPIOIEN;	/* I/O port I clock enable */
+	(void) RCC->AHBENR;
+	// Установка начального состояния битов
+	//GPIOI->BSRR = (GPIO_BSRR_BS_0 * (initialstate & opins)) | (GPIO_BSRR_BR_0 * (~ initialstate & opins));
+	gpioX_setstate(GPIOI, opins, initialstate);
+	// Установка режима выводов
+	stm32f30x_pioX_prog(GPIOI, opins, STM32F_GPIO_MODE_GPIO, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_STM32MP1
+
+	RCC->MP_AHB4ENSETR = RCC_MP_AHB4ENSETR_GPIOIEN;	/* I/O port I clock enable */
+	(void) RCC->MP_AHB4ENSETR;
+	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOILPEN;	/* I/O port I clock enable */
+	(void) RCC->MP_AHB4LPENSETR;
+	// Установка начального состояния битов
+	gpioX_setstate(GPIOI, opins, initialstate);
+	// Установка режима выводов
+	stm32mp1_pioX_prog(GPIOI, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_ALLWINNER
+
+	//gpioX_poweron(GPIOI);
+	gpioX_setstate(GPIOI, opins, initialstate);
+	gpioX_prog(GPIOI, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
+
+#else
+	#error Undefined CPUSTYLE_XXX
+
+#endif
+}
 
 #endif /* defined(GPIOI) */
 
