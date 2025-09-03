@@ -4904,8 +4904,6 @@ static const struct paramdefdef xcatenable =
 #endif /* WITHUSBDEV_HSDESC */
 		static uint_fast8_t gbtaudioplayer = 0;
 		static uint_fast8_t gswapiq;	/* Поменять местами I и Q сэмплы в потоке RTS96 */
-		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
-		uint_fast8_t hamradio_get_ft8cn(void) { return gusb_ft8cn; }
 		/* передача звука с USB вместо обычного источника */
 		static const struct paramdefdef xgdatamode =
 		{
@@ -4991,6 +4989,8 @@ static const struct paramdefdef xcatenable =
 			& gswapiq,
 			getzerobase, /* складывается со смещением и отображается */
 		};
+		uint_fast8_t hamradio_get_datamode(void) { return param_getvalue(& xgdatamode); }
+		uint_fast8_t hamradio_get_ft8cn(void) { return param_getvalue(& xgusb_ft8cn); }
 	#endif /* WITHRTS96 || WITHRTS192 */
 	#else /* WITHUSBHW && WITHUSBUAC */
 		enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
@@ -12054,16 +12054,16 @@ updateboard_noui(
 			board_set_mainsubrxmode(getactualmainsubrx());		// Левый/правый, A - main RX, B - sub RX
 		#endif /* WITHUSEDUALWATCH */
 		#if WITHUSBHW && WITHUSBUAC
-			board_set_btaudioplayer(gbtaudioplayer);
-			board_set_uacplayer((gtx && gdatamode) || guacplayer);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+			board_set_btaudioplayer(param_getvalue(& xgbtaudioplayer));
+			board_set_uacplayer((gtx && param_getvalue(& xgdatamode)) || param_getvalue(& xguacplayer));	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 			#if WITHRTS96 || WITHRTS192
-				board_set_swaprts(gswapiq);	/* Поменять местами I и Q сэмплы в потоке RTS96 */
+				board_set_swaprts(param_getvalue(& xgswapiq));	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 			#endif /* WITHRTS96 || WITHRTS192 */
 			#if WITHTX
-				board_set_datatx(gdatatx);	/* автоматическое изменение источника при появлении звука со стороны компьютера */
+				board_set_datatx(param_getvalue(& xgdatatx));	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 			#endif /* WITHTX */
-				board_set_usb_ft8cn(gusb_ft8cn);	/* совместимость VID/PID для работы с программой FT8CN */
-				board_set_usb_hs(gusb_hs);	/* Использование USB HS dvtcn USB FS */
+				board_set_usb_ft8cn(param_getvalue(& xgusb_ft8cn));	/* совместимость VID/PID для работы с программой FT8CN */
+				board_set_usb_hs(param_getvalue(& xgusb_hs));	/* Использование USB HS dvtcn USB FS */
 		#endif /* WITHUSBHW && WITHUSBUAC */
 		#if WITHTX
 			board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном
@@ -12115,7 +12115,7 @@ updateboard_noui(
 
 	#if WITHTX
 		#if defined (CODEC1_TYPE) && WITHAFCODEC1HAVEPROC
-			board_set_mikeequal(gmikeequalizer);	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
+			board_set_mikeequal(param_getvalue(& xgmikeequalizer));	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 			board_set_mikeequalparams(gmikeequalizerparams);	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 		#endif /* defined (CODEC1_TYPE) && WITHAFCODEC1HAVEPROC */
 		#if WITHIF4DSP
