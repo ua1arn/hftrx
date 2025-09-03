@@ -209,21 +209,21 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_rockchip_cpustyle_opi3b.h"	// Плата Orange Pi OPI 3B RK3566
 #elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7 && LINUX_SUBSYSTEM && 0
-	#include <boards/linux_rockchip_ctlstyle_opicm4_xc7a50t_pcie_lite.h>
+	#include "boards/linux_rockchip_ctlstyle_opicm4_xc7a50t_pcie_lite.h"
 	#include "paramdepend.h"
-	#include <boards/linux_rockchip_cpustyle_opicm4_xc7a50t_pcie_lite.h>
+	#include "boards/linux_rockchip_cpustyle_opicm4_xc7a50t_pcie_lite.h"
 #elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7 && LINUX_SUBSYSTEM && 0
-	#include <boards/linux_rockchip_ctlstyle_opicm4_xc7a50t_pcie_full.h>
+	#include "boards/linux_rockchip_ctlstyle_opicm4_xc7a50t_pcie_full.h"
 	#include "paramdepend.h"
-	#include <boards/linux_rockchip_cpustyle_opicm4_xc7a50t_pcie_full.h>
+	#include "boards/linux_rockchip_cpustyle_opicm4_xc7a50t_pcie_full.h"
 #elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7 && LINUX_SUBSYSTEM && 0
-	#include <boards/linux_rockchip_ctlstyle_opicm4_xc7a100t_pcie.h>
+	#include "boards/linux_rockchip_ctlstyle_opicm4_xc7a100t_pcie.h"
 	#include "paramdepend.h"
-	#include <boards/linux_rockchip_cpustyle_opicm4_xc7a100t_pcie.h>
+	#include "boards/linux_rockchip_cpustyle_opicm4_xc7a100t_pcie.h"
 #elif CPUSTYLE_BROADCOM && CTLSTYLE_STORCH_V7 && LINUX_SUBSYSTEM && 0
-	#include <boards/linux_broadcom_ctlstyle_uconsole.h>  // Clockwork Pi uConsole 
+	#include "boards/linux_broadcom_ctlstyle_uconsole.h"  // Clockwork Pi uConsole
 	#include "paramdepend.h"                              // (Raspberry Pi CM4 CM4004000) 
-	#include <boards/linux_broadcom_cpustyle_uconsole.h>
+	#include "boards/linux_broadcom_cpustyle_uconsole.h"
 #else
 	#define LCDMODE_DUMMY	1
 	#define	BOARDPOWERMAX 1
