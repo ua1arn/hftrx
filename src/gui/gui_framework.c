@@ -36,7 +36,7 @@ static btn_bg_t btn_bg[] = {
 };
 enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 
-static gui_t gui = { 0, 0, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, };
+static gui_t gui = { 0, 0, CANCELLED, 0, 0, 0, 0, 0, };
 static LIST_ENTRY gui_objects_list;
 static uint_fast8_t gui_object_count = 0;
 static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, INT32_MAX, "btс_close", "", };
@@ -374,7 +374,7 @@ void objects_state (window_t * win)
 	{
 		PLIST_ENTRY next_entry = current_entry->Flink; // Сохраняем следующий элемент, так как текущий может быть удален
 		gui_object_t * obj = CONTAINING_RECORD(current_entry, gui_object_t, list_entry);
-		if (obj->win == win) {
+		if (obj->win == win && ! win->state) {
 			RemoveEntryList(& obj->list_entry);
 			free(obj);
 			gui_object_count--;
@@ -564,7 +564,7 @@ void objects_state (window_t * win)
 			ASSERT(gui_object_count >= gui.footer_buttons_count);
 		}
 	}
-//	PRINTF("line %d: %s gui_object_count: %d %+d\n", __LINE__, win->title, gui_object_count, debug_num);
+//	PRINTF("%s: %s, gui_object_count: %d %+d\n", __func__, win->title, gui_object_count, debug_num);
 	clean_wm_queue(win);
 }
 
@@ -944,15 +944,18 @@ static void set_state_record(gui_object_t * val)
 	switch (val->type)
 	{
 		case TYPE_CLOSE_BUTTON:
-			close_all_windows();
+		{
+			ASSERT(val->link != NULL);
+			button_t * bh = (button_t *) val->link;
+			bh->state = val->state;
+			if (bh->state == RELEASED) close_all_windows();
+		}
 			break;
 
 		case TYPE_BUTTON:
 		{
 			ASSERT(val->link != NULL);
 			button_t * bh = (button_t *) val->link;
-			gui.selected_type = TYPE_BUTTON;
-			gui.selected_link = val;
 			bh->state = val->state;
 			if (bh->state == RELEASED || bh->state == LONG_PRESSED || bh->state == PRESS_REPEATING)
 			{
@@ -966,8 +969,6 @@ static void set_state_record(gui_object_t * val)
 		{
 			ASSERT(val->link != NULL);
 			label_t * lh = (label_t *) val->link;
-			gui.selected_type = TYPE_LABEL;
-			gui.selected_link = val;
 			lh->state = val->state;
 			if (lh->state == RELEASED)
 			{
@@ -986,8 +987,6 @@ static void set_state_record(gui_object_t * val)
 		{
 			ASSERT(val->link != NULL);
 			slider_t * sh = (slider_t *) val->link;
-			gui.selected_type = TYPE_SLIDER;
-			gui.selected_link = val;
 			sh->state = val->state;
 			if (sh->state == PRESSED)
 			{
@@ -1002,8 +1001,6 @@ static void set_state_record(gui_object_t * val)
 		{
 			ASSERT(val->link != NULL);
 			touch_area_t * ta = (touch_area_t *) val->link;
-			gui.selected_type = TYPE_TOUCH_AREA;
-			gui.selected_link = val;
 			ta->state = val->state;
 			if (ta->state == RELEASED)
 			{
@@ -1029,7 +1026,7 @@ static void set_state_record(gui_object_t * val)
 
 		default:
 		{
-			PRINTF("set_state_record: undefined type\n");
+			PRINTF("set_state_record: undefined type %d\n", val->type);
 			ASSERT(0);
 		}
 			break;

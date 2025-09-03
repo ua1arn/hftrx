@@ -3610,7 +3610,7 @@ void window_kbd_process(void)
 	{
 		update = 1;
 		is_shift = 0;
-		uint8_t x = 0, y = 0, interval = 5, i = 0;
+		uint16_t x = 0, y = 0, interval = 5, i = 0;
 
 		if (gui_keyboard.clean)
 			memset(edit_str, 0, TEXT_ARRAY_SIZE);

@@ -321,8 +321,6 @@ typedef struct {
 typedef struct {
 	uint16_t last_pressed_x; 	  	// последняя точка касания экрана
 	uint16_t last_pressed_y;
-	obj_type_t selected_type; 	// тип последнего выбранного элемента
-	gui_object_t * selected_link;	// ссылка на выбранный элемент
 	uint8_t state;				  	// последнее состояние
 	uint8_t is_touching_screen;   	// есть ли касание экрана в данный момент
 	uint8_t is_after_touch; 	  	// есть ли касание экрана после выхода точки касания из элемента (при is_tracking == 0)
