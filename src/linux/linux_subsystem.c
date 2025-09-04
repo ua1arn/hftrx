@@ -2190,6 +2190,74 @@ float linux_get_cpu_temp(void)
 
 #endif /* WITHCPUTEMPERATURE */
 
+#if WITHSYSFSBATTERY
+
+char battery_path[256];
+uint8_t battery_present = 0;
+
+static void sysfs_battery_init(void)
+{
+	DIR * dir;
+	struct dirent * entry;
+	char temp_path[256];
+
+	dir = opendir("/sys/class/power_supply");
+	if (dir == NULL) {
+		printf("Opening /sys/class/power_supply failed\n");
+		return;
+	}
+
+	while ((entry = readdir(dir)) != NULL)
+	{
+		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+			continue;
+
+		snprintf(temp_path, sizeof(temp_path), "/sys/class/power_supply/%s/capacity", entry->d_name);
+
+		if (access(temp_path, F_OK) == 0)
+		{
+			strncpy(battery_path, temp_path, ARRAY_SIZE(battery_path) - 1);
+			battery_path[ARRAY_SIZE(battery_path) - 1] = '\0';
+			battery_present = 1;
+			closedir(dir);
+			return;
+		}
+	}
+
+	closedir(dir);
+}
+
+int linux_get_battery_charge_level(void)
+{
+	if (! battery_present)
+		return -1;
+
+	FILE * file;
+	char buffer[1024];
+	uint32_t capacity;
+
+	file = fopen(battery_path, "r");
+	if (file == NULL) {
+		printf("Opening %s failed\n", battery_path);
+		return -1;
+	}
+
+	if (fgets(buffer, sizeof(buffer), file) != NULL)
+	{
+		capacity = atol(buffer);
+		fclose(file);
+		return capacity;
+	}
+	else
+	{
+		printf("Error reading from %s\n", battery_path);
+		fclose(file);
+		return -1;
+	}
+}
+
+#endif /* WITHSYSFSBATTERY */
+
 void linux_subsystem_init(void)
 {
     if (check_and_terminate_existing_instance() != 0) {
@@ -2254,6 +2322,9 @@ void linux_user_init(void)
 #if SDL2_EVENTS
 	sdl2_events_start();
 #endif /* SDL2_EVENTS */
+#if WITHSYSFSBATTERY
+	sysfs_battery_init();
+#endif /* WITHSYSFSBATTERY */
 }
 
 /****************************************************************/

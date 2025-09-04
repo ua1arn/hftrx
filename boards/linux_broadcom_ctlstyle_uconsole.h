@@ -116,6 +116,16 @@
 	#define WITHSWRSCAN				1
 	#define WITHREVERB				1
 
+	#define INFOBAR_CUSTOM 		\
+		INFOBAR_AF, 			\
+		INFOBAR_AF_VOLUME, 		\
+		INFOBAR_ATT, 			\
+		INFOBAR_DNR, 			\
+		INFOBAR_TX_POWER, 		\
+		INFOBAR_BATTERY | INFOBAR_NOACTION, 	\
+		INFOBAR_CPU_TEMP | INFOBAR_NOACTION, 	\
+		INFOBAR_2ND_ENC_MENU
+
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
 	#define WITHTX	1

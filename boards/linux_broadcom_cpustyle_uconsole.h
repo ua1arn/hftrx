@@ -17,6 +17,9 @@
 #define WITHSDL2VIDEO	1	/* Вывод графики посредством Linux Simple DirectMedia Layer v2 */
 #define X11				1
 
+#define WITHSYSFSBATTERY			1 /* Получение значения емкости аккумулятора из /sys/class/power_supply */
+#define GET_BATTERY_CAPACITY() (linux_get_battery_charge_level())
+
 #define	AXI_IQ_RX_BRAM				0xC0000000
 #define	AXI_IQ_STREAM_BRAM			0xC0010000
 #define	AXI_LITE_IQ_RX_BRAM_CNT		0x00001000

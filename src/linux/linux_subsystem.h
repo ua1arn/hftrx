@@ -162,6 +162,7 @@ void evdev_initialize(void);
 int linux_get_enc2(void);
 char * get_alsa_out(void);
 void alsa_switch_out(void);
+int linux_get_battery_charge_level(void);
 
 uint8_t linux_xgpi_read_pin(uint8_t pin);
 void linux_xgpo_write_pin(uint8_t pin, uint8_t val);

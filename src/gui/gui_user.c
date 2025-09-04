@@ -67,6 +67,9 @@ static uint8_t tmpstr_index = 0, debug_view = 0;
 //todo: перенести раскладку инфобара в конфиг
 static uint8_t infobar_selected = UINT8_MAX;
 const uint8_t infobar_places[infobar_num_places] = {
+#if defined(INFOBAR_CUSTOM)
+		INFOBAR_CUSTOM
+#else
 		INFOBAR_AF,
 		INFOBAR_AF_VOLUME,
 		INFOBAR_ATT,
@@ -81,6 +84,7 @@ const uint8_t infobar_places[infobar_num_places] = {
 #endif /* WITHPS7BOARD_EBAZ4205 */
 		INFOBAR_CPU_TEMP | INFOBAR_NOACTION,
 		INFOBAR_2ND_ENC_MENU
+#endif /* defined(INFOBAR_CUSTOM) */
 };
 
 #endif /* GUI_SHOW_INFOBAR */
@@ -1121,6 +1125,26 @@ void gui_main_process(void)
 				local_snprintf_P(buf, buflen, "%2.1f", cpu_temp);
 				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, cpu_temp > 60.0 ? COLORPIP_RED : COLORPIP_WHITE);
 	#endif /* defined (GET_CPU_TEMPERATURE) */
+			}
+				break;
+
+			case INFOBAR_BATTERY:
+			{
+	#if defined (GET_BATTERY_CAPACITY)
+				static int capacity = 0;
+				if (update) capacity = GET_BATTERY_CAPACITY();
+
+				uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
+				local_snprintf_P(buf, buflen, "Battery");
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
+				if (capacity >= 0)
+				{
+					local_snprintf_P(buf, buflen, "%d%%", capacity);
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, capacity < 30 ? COLORPIP_RED : COLORPIP_WHITE);
+				}
+				else
+					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, "error", COLORPIP_RED);
+	#endif /* defined (GET_BATTERY_CAPACITY) */
 			}
 				break;
 
