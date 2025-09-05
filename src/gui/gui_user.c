@@ -613,6 +613,8 @@ void gui_main_process(void)
 #if WITHGUIDEBUG
 		for (uint8_t i = 0; i < tmpstr_index; i ++)
 			textfield_add_string("tf_debug", tmpbuf[i].text, COLORPIP_WHITE);
+
+		calculate_window_position(WINDOW_POSITION_FULLSCREEN);
 #endif /* WITHGUIDEBUG */
 	}
 
@@ -869,323 +871,317 @@ void gui_main_process(void)
 
 #if GUI_SHOW_INFOBAR
 
-	const window_t * const pwin = get_win(get_parent_window());
-	if (pwin->size_mode != WINDOW_POSITION_FULLSCREEN)
+	// разметка инфобара
+	const uint16_t y_mid = infobar_1st_str_y + (infobar_2nd_str_y - infobar_1st_str_y) / 2;
+	const uint16_t infobar_hl = (infobar_selected < infobar_num_places) && (get_parent_window() == WINDOW_INFOBAR_MENU);
+
+	for(uint8_t i = 1; i < infobar_num_places; i++)
 	{
-		// разметка инфобара
-		const uint16_t y_mid = infobar_1st_str_y + (infobar_2nd_str_y - infobar_1st_str_y) / 2;
-		const uint16_t infobar_hl = (infobar_selected < infobar_num_places) && (get_parent_window() == WINDOW_INFOBAR_MENU);
-
-		for(uint8_t i = 1; i < infobar_num_places; i++)
-		{
-			uint_fast16_t x = infobar_label_width * i;
-			colpip_line(db, x, infobar_1st_str_y, x, infobar_2nd_str_y + SMALLCHARH2, COLORPIP_GREEN, 0);
-		}
-
-		if (infobar_hl)
-		{
-			uint16_t x1 = infobar_selected * infobar_label_width + 2;
-			uint16_t x2 = x1 + infobar_label_width - 4;
-
-			colmain_rounded_rect(db, x1, infobar_1st_str_y, x2, infobar_2nd_str_y + SMALLCHARH2 - 2, 5, COLORPIP_YELLOW, 1);
-		}
-
-		for (uint8_t current_place = 0; current_place < infobar_num_places; current_place ++)
-		{
-			uint_fast8_t infobar = infobar_places[current_place] & INFOBAR_VALID_MASK;
-			COLORPIP_T str_color = (current_place == infobar_selected) && infobar_hl ? COLORPIP_BLACK : COLORPIP_WHITE;
-
-			switch (infobar)
-			{
-			case INFOBAR_DUAL_RX:
-			{
-#if WITHUSEDUALWATCH
-				static uint_fast8_t val = 0;
-				uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
-
-				if (update)
-					hamradio_get_vfomode3_value(& val);
-
-				local_snprintf_P(buf, buflen, "Dual RX");
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
-				local_snprintf_P(buf, buflen, "VFO %s", hamradio_get_gvfoab() ? "2" : "1");
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
-#endif /* WITHUSEDUALWATCH */
-			}
-				break;
-
-			case INFOBAR_AF_VOLUME:
-			{
-				static uint_fast8_t vol;
-				uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
-
-				if (update)
-					vol = hamradio_get_afgain();
-
-				local_snprintf_P(buf, buflen, "AF gain");
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
-				if (hamradio_get_gmutespkr())
-					local_snprintf_P(buf, buflen, "muted");
-				else
-					local_snprintf_P(buf, buflen, "%d", vol);
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
-			}
-				break;
-
-			case INFOBAR_TX_POWER:
-			{
-			#if WITHTX
-				static uint_fast8_t tx_pwr, tune_pwr;
-				uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
-
-				if (update)
-				{
-					tx_pwr = hamradio_get_tx_power();
-					tune_pwr = hamradio_get_tx_tune_power();
-				}
-
-				local_snprintf_P(buf, buflen, "TX %d\%%", (int) tx_pwr);
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
-				local_snprintf_P(buf, buflen, "Tune %d\%%", (int) tune_pwr);
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
-			#endif /* WITHTX */
-						}
-				break;
-
-			case INFOBAR_DNR:
-			{
-				static int_fast32_t grade = 0;
-				static uint_fast8_t state = 0;
-				uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
-
-				if (update)
-					state = hamradio_get_nrvalue(& grade);
-
-				local_snprintf_P(buf, buflen, "DNR");
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, state ? str_color : COLORPIP_GRAY);
-				local_snprintf_P(buf, buflen, state ? "on" : "off");
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, state ? str_color : COLORPIP_GRAY);
-			}
-
-				break;
-
-			case INFOBAR_AF:
-			// параметры полосы пропускания фильтра
-			{
-				static uint_fast8_t bp_wide;
-				static uint_fast16_t bp_low, bp_high;
-				uint_fast16_t xx;
-
-				if (update)
-				{
-					bp_wide = hamradio_get_bp_type_wide();
-					bp_high = hamradio_get_high_bp(0);
-					bp_low = hamradio_get_low_bp(0) * 10;
-					bp_high = bp_wide ? (bp_high * 100) : (bp_high * 10);
-				}
-				local_snprintf_P(buf, buflen, "AF");
-				xx = current_place * infobar_label_width + 7;
-				colpip_string2_tbg(db, xx, y_mid, buf, str_color);
-				xx += SMALLCHARW2 * 3;
-				local_snprintf_P(buf, buflen, bp_wide ? "L %u" : "W %u", bp_low);
-				colpip_string2_tbg(db, xx, infobar_1st_str_y, buf, str_color);
-				local_snprintf_P(buf, buflen, bp_wide ? "H %u" : "P %u", bp_high);
-				colpip_string2_tbg(db, xx, infobar_2nd_str_y, buf, str_color);
-			}
-				break;
-
-			case INFOBAR_IF_SHIFT:
-			// значение сдвига частоты
-			{
-				static int_fast16_t if_shift;
-				uint_fast16_t xx;
-
-				if (update)
-					if_shift = hamradio_if_shift(0);
-				xx = current_place * infobar_label_width + infobar_label_width / 2;
-				if (if_shift)
-				{
-					local_snprintf_P(buf, buflen, "IF shift");
-					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
-					local_snprintf_P(buf, buflen, if_shift == 0 ? "%d" : "%+d Hz", if_shift);
-					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
-				}
-				else
-				{
-					local_snprintf_P(buf, buflen, "IF shift");
-					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, y_mid, buf, COLORPIP_GRAY);
-				}
-			}
-				break;
-
-			case INFOBAR_ATT:
-			// attenuator
-			{
-				static uint8_t atten;
-				uint_fast16_t xx;
-
-				if (update)
-					atten  = hamradio_get_att_db();
-
-				xx = current_place * infobar_label_width + infobar_label_width / 2;
-				local_snprintf_P(buf, buflen, "ATT");
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
-				if (atten)
-					local_snprintf_P(buf, buflen, "%d db", atten);
-				else
-					local_snprintf_P(buf, buflen, "off");
-
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
-			}
-				break;
-
-			case INFOBAR_SPAN:
-			// ширина панорамы
-			{
-	#if WITHIF4DSP
-				static int_fast32_t z;
-				uint_fast16_t xx;
-
-				if (update)
-					z = display2_zoomedbw() / 1000;
-				local_snprintf_P(buf, buflen, "SPAN");
-				xx = current_place * infobar_label_width + infobar_label_width / 2;
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
-				local_snprintf_P(buf, buflen, "%dk", z);
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
-	#endif /* WITHIF4DSP */
-			}
-				break;
-
-			case INFOBAR_VOLTAGE:
-			{
-	#if WITHVOLTLEVEL
-				// напряжение питания
-				static ldiv_t v;
-				uint_fast16_t xx;
-
-				if (update)
-					v = ldiv(hamradio_get_volt_value(), 10);
-				local_snprintf_P(buf, buflen, "%d.%1dV", (int) v.quot, (int) v.rem);
-				xx = current_place * infobar_label_width + infobar_label_width / 2;
-	#if WITHCURRLEVEL || WITHCURRLEVEL2
-				uint_fast16_t yy = hamradio_get_tx() ? infobar_1st_str_y : y_mid;
-	#else
-				uint_fast16_t yy = y_mid;
-	#endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, yy, buf, str_color);
-	#endif /* WITHVOLTLEVEL */
-
-	#if WITHCURRLEVEL || WITHCURRLEVEL2
-			// ток PA (при передаче)
-				if (hamradio_get_tx())
-				{
-					uint_fast16_t xx;
-					xx = current_place * infobar_label_width + infobar_label_width / 2;
-
-					static int_fast16_t drain;
-					if (update)
-					{
-						drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (может быть отрицательным)
-		//				if (drain < 0)
-		//				{
-		//					drain = 0;	// FIXME: без калибровки нуля (как у нас сейчас) могут быть ошибки установки тока
-		//				}
-					}
-
-	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
-					// для больших токов (более 9 ампер)
-					const div_t t = div(drain / 10, 10);
-					local_snprintf_P(buf, buflen, "%2d.%01dA", t.quot, abs(t.rem));
-
-	#else /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
-					// Датчик тока до 5 ампер
-					const div_t t = div(drain, 100);
-					local_snprintf_P(buf, buflen, "%d.%02dA", t.quot, abs(t.rem));
-
-	#endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
-
-					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
-				}
-	#endif /* WITHCURRLEVEL */
-			}
-				break;
-
-			case INFOBAR_CPU_TEMP:
-			{
-	#if defined (GET_CPU_TEMPERATURE)
-				// вывод температуры процессора, если поддерживается
-				static float cpu_temp = 0;
-				if (update)
-					cpu_temp = GET_CPU_TEMPERATURE();
-
-				uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
-				local_snprintf_P(buf, buflen, "CPU temp");
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
-				local_snprintf_P(buf, buflen, "%2.1f", cpu_temp);
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, cpu_temp > 60.0 ? COLORPIP_RED : COLORPIP_WHITE);
-	#endif /* defined (GET_CPU_TEMPERATURE) */
-			}
-				break;
-
-			case INFOBAR_BATTERY:
-			{
-	#if defined (GET_BATTERY_CAPACITY)
-				static int capacity = 0;
-				if (update) capacity = GET_BATTERY_CAPACITY();
-
-				uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
-				local_snprintf_P(buf, buflen, "Battery");
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
-				if (capacity >= 0)
-				{
-					local_snprintf_P(buf, buflen, "%d%%", capacity);
-					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, capacity < 30 ? COLORPIP_RED : COLORPIP_WHITE);
-				}
-				else
-					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, "error", COLORPIP_RED);
-	#endif /* defined (GET_BATTERY_CAPACITY) */
-			}
-				break;
-
-			case INFOBAR_2ND_ENC_MENU:
-			{
-				// быстрое меню 2-го энкодера
-				hamradio_gui_enc2_update();
-
-				if (gui_enc2_menu.state)
-				{
-					local_snprintf_P(buf, buflen, "%s", gui_enc2_menu.param);
-					remove_end_line_spaces(buf);
-					uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
-					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
-					local_snprintf_P(buf, buflen, "%s", gui_enc2_menu.val);
-					remove_end_line_spaces(buf);
-					COLORPIP_T color_lbl = gui_enc2_menu.state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
-					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, color_lbl);
-				}
-				else
-				{
-	#if defined (RTC1_TYPE)
-					// текущее время
-					local_snprintf_P(buf, buflen, "%02d.%02d", day, month);
-					uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
-					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
-					local_snprintf_P(buf, buflen, "%02d%c%02d", hour, ((seconds & 1) ? ' ' : ':'), minute);
-					colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORPIP_WHITE);
-	#endif 	/* defined (RTC1_TYPE) */
-				}
-			}
-				break;
-
-			case INFOBAR_EMPTY:
-			default:
-				break;
-
-			}
-		}
+		uint_fast16_t x = infobar_label_width * i;
+		colpip_line(db, x, infobar_1st_str_y, x, infobar_2nd_str_y + SMALLCHARH2, COLORPIP_GREEN, 0);
 	}
 
+	if (infobar_hl)
+	{
+		uint16_t x1 = infobar_selected * infobar_label_width + 2;
+		uint16_t x2 = x1 + infobar_label_width - 4;
+
+		colmain_rounded_rect(db, x1, infobar_1st_str_y, x2, infobar_2nd_str_y + SMALLCHARH2 - 2, 5, COLORPIP_YELLOW, 1);
+	}
+
+	for (uint8_t current_place = 0; current_place < infobar_num_places; current_place ++)
+	{
+		uint_fast8_t infobar = infobar_places[current_place] & INFOBAR_VALID_MASK;
+		COLORPIP_T str_color = (current_place == infobar_selected) && infobar_hl ? COLORPIP_BLACK : COLORPIP_WHITE;
+
+		switch (infobar)
+		{
+		case INFOBAR_DUAL_RX:
+		{
+#if WITHUSEDUALWATCH
+			static uint_fast8_t val = 0;
+			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
+
+			if (update)
+				hamradio_get_vfomode3_value(& val);
+
+			local_snprintf_P(buf, buflen, "Dual RX");
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+			local_snprintf_P(buf, buflen, "VFO %s", hamradio_get_gvfoab() ? "2" : "1");
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+#endif /* WITHUSEDUALWATCH */
+		}
+			break;
+
+		case INFOBAR_AF_VOLUME:
+		{
+			static uint_fast8_t vol;
+			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
+
+			if (update)
+				vol = hamradio_get_afgain();
+
+			local_snprintf_P(buf, buflen, "AF gain");
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+			if (hamradio_get_gmutespkr())
+				local_snprintf_P(buf, buflen, "muted");
+			else
+				local_snprintf_P(buf, buflen, "%d", vol);
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+		}
+			break;
+
+		case INFOBAR_TX_POWER:
+		{
+		#if WITHTX
+			static uint_fast8_t tx_pwr, tune_pwr;
+			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
+
+			if (update)
+			{
+				tx_pwr = hamradio_get_tx_power();
+				tune_pwr = hamradio_get_tx_tune_power();
+			}
+
+			local_snprintf_P(buf, buflen, "TX %d\%%", (int) tx_pwr);
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+			local_snprintf_P(buf, buflen, "Tune %d\%%", (int) tune_pwr);
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+		#endif /* WITHTX */
+					}
+			break;
+
+		case INFOBAR_DNR:
+		{
+			static int_fast32_t grade = 0;
+			static uint_fast8_t state = 0;
+			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
+
+			if (update)
+				state = hamradio_get_nrvalue(& grade);
+
+			local_snprintf_P(buf, buflen, "DNR");
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, state ? str_color : COLORPIP_GRAY);
+			local_snprintf_P(buf, buflen, state ? "on" : "off");
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, state ? str_color : COLORPIP_GRAY);
+		}
+
+			break;
+
+		case INFOBAR_AF:
+		// параметры полосы пропускания фильтра
+		{
+			static uint_fast8_t bp_wide;
+			static uint_fast16_t bp_low, bp_high;
+			uint_fast16_t xx;
+
+			if (update)
+			{
+				bp_wide = hamradio_get_bp_type_wide();
+				bp_high = hamradio_get_high_bp(0);
+				bp_low = hamradio_get_low_bp(0) * 10;
+				bp_high = bp_wide ? (bp_high * 100) : (bp_high * 10);
+			}
+			local_snprintf_P(buf, buflen, "AF");
+			xx = current_place * infobar_label_width + 7;
+			colpip_string2_tbg(db, xx, y_mid, buf, str_color);
+			xx += SMALLCHARW2 * 3;
+			local_snprintf_P(buf, buflen, bp_wide ? "L %u" : "W %u", bp_low);
+			colpip_string2_tbg(db, xx, infobar_1st_str_y, buf, str_color);
+			local_snprintf_P(buf, buflen, bp_wide ? "H %u" : "P %u", bp_high);
+			colpip_string2_tbg(db, xx, infobar_2nd_str_y, buf, str_color);
+		}
+			break;
+
+		case INFOBAR_IF_SHIFT:
+		// значение сдвига частоты
+		{
+			static int_fast16_t if_shift;
+			uint_fast16_t xx;
+
+			if (update)
+				if_shift = hamradio_if_shift(0);
+			xx = current_place * infobar_label_width + infobar_label_width / 2;
+			if (if_shift)
+			{
+				local_snprintf_P(buf, buflen, "IF shift");
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+				local_snprintf_P(buf, buflen, if_shift == 0 ? "%d" : "%+d Hz", if_shift);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+			}
+			else
+			{
+				local_snprintf_P(buf, buflen, "IF shift");
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, y_mid, buf, COLORPIP_GRAY);
+			}
+		}
+			break;
+
+		case INFOBAR_ATT:
+		// attenuator
+		{
+			static uint8_t atten;
+			uint_fast16_t xx;
+
+			if (update)
+				atten  = hamradio_get_att_db();
+
+			xx = current_place * infobar_label_width + infobar_label_width / 2;
+			local_snprintf_P(buf, buflen, "ATT");
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+			if (atten)
+				local_snprintf_P(buf, buflen, "%d db", atten);
+			else
+				local_snprintf_P(buf, buflen, "off");
+
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+		}
+			break;
+
+		case INFOBAR_SPAN:
+		// ширина панорамы
+		{
+#if WITHIF4DSP
+			static int_fast32_t z;
+			uint_fast16_t xx;
+
+			if (update)
+				z = display2_zoomedbw() / 1000;
+			local_snprintf_P(buf, buflen, "SPAN");
+			xx = current_place * infobar_label_width + infobar_label_width / 2;
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+			local_snprintf_P(buf, buflen, "%dk", z);
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+#endif /* WITHIF4DSP */
+		}
+			break;
+
+		case INFOBAR_VOLTAGE:
+		{
+#if WITHVOLTLEVEL
+			// напряжение питания
+			static ldiv_t v;
+			uint_fast16_t xx;
+
+			if (update)
+				v = ldiv(hamradio_get_volt_value(), 10);
+			local_snprintf_P(buf, buflen, "%d.%1dV", (int) v.quot, (int) v.rem);
+			xx = current_place * infobar_label_width + infobar_label_width / 2;
+#if WITHCURRLEVEL || WITHCURRLEVEL2
+			uint_fast16_t yy = hamradio_get_tx() ? infobar_1st_str_y : y_mid;
+#else
+			uint_fast16_t yy = y_mid;
+#endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, yy, buf, str_color);
+#endif /* WITHVOLTLEVEL */
+
+#if WITHCURRLEVEL || WITHCURRLEVEL2
+		// ток PA (при передаче)
+			if (hamradio_get_tx())
+			{
+				uint_fast16_t xx;
+				xx = current_place * infobar_label_width + infobar_label_width / 2;
+
+				static int_fast16_t drain;
+				if (update)
+				{
+					drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (может быть отрицательным)
+	//				if (drain < 0)
+	//				{
+	//					drain = 0;	// FIXME: без калибровки нуля (как у нас сейчас) могут быть ошибки установки тока
+	//				}
+				}
+
+#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
+				// для больших токов (более 9 ампер)
+				const div_t t = div(drain / 10, 10);
+				local_snprintf_P(buf, buflen, "%2d.%01dA", t.quot, abs(t.rem));
+
+#else /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
+				// Датчик тока до 5 ампер
+				const div_t t = div(drain, 100);
+				local_snprintf_P(buf, buflen, "%d.%02dA", t.quot, abs(t.rem));
+
+#endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
+
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+			}
+#endif /* WITHCURRLEVEL */
+		}
+			break;
+
+		case INFOBAR_CPU_TEMP:
+		{
+#if defined (GET_CPU_TEMPERATURE)
+			// вывод температуры процессора, если поддерживается
+			static float cpu_temp = 0;
+			if (update)
+				cpu_temp = GET_CPU_TEMPERATURE();
+
+			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
+			local_snprintf_P(buf, buflen, "CPU temp");
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
+			local_snprintf_P(buf, buflen, "%2.1f", cpu_temp);
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, cpu_temp > 60.0 ? COLORPIP_RED : COLORPIP_WHITE);
+#endif /* defined (GET_CPU_TEMPERATURE) */
+		}
+			break;
+
+		case INFOBAR_BATTERY:
+		{
+#if defined (GET_BATTERY_CAPACITY)
+			static int capacity = 0;
+			if (update) capacity = GET_BATTERY_CAPACITY();
+
+			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
+			local_snprintf_P(buf, buflen, "Battery");
+			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
+			if (capacity >= 0)
+			{
+				local_snprintf_P(buf, buflen, "%d%%", capacity);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, capacity < 30 ? COLORPIP_RED : COLORPIP_WHITE);
+			}
+			else
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, "error", COLORPIP_RED);
+#endif /* defined (GET_BATTERY_CAPACITY) */
+		}
+			break;
+
+		case INFOBAR_2ND_ENC_MENU:
+		{
+			// быстрое меню 2-го энкодера
+			hamradio_gui_enc2_update();
+
+			if (gui_enc2_menu.state)
+			{
+				local_snprintf_P(buf, buflen, "%s", gui_enc2_menu.param);
+				remove_end_line_spaces(buf);
+				uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
+				local_snprintf_P(buf, buflen, "%s", gui_enc2_menu.val);
+				remove_end_line_spaces(buf);
+				COLORPIP_T color_lbl = gui_enc2_menu.state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, color_lbl);
+			}
+			else
+			{
+#if defined (RTC1_TYPE)
+				// текущее время
+				local_snprintf_P(buf, buflen, "%02d.%02d", day, month);
+				uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
+				local_snprintf_P(buf, buflen, "%02d%c%02d", hour, ((seconds & 1) ? ' ' : ':'), minute);
+				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORPIP_WHITE);
+#endif 	/* defined (RTC1_TYPE) */
+			}
+		}
+			break;
+
+		case INFOBAR_EMPTY:
+		default:
+			break;
+		}
+	}
 #endif /* GUI_SHOW_INFOBAR */
 
 #if 0 //WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)

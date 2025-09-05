@@ -266,67 +266,70 @@ void calculate_window_position(uint_fast8_t mode, ...)
 		break;
 	}
 
-	// Выравнивание массива оконных элементов по центру окна
 	shift_x = edge_step;
 	shift_y = (title_length ? window_title_height : 0) + edge_step;
 
-	if (win->bh_ptr != NULL)
+	// Выравнивание массива оконных элементов по центру окна
+	if (win->window_id != WINDOW_MAIN)
 	{
-		for (uint_fast8_t i = 0; i < win->bh_count; i++)
+		if (win->bh_ptr != NULL)
 		{
-			button_t * bh = & win->bh_ptr[i];
-			bh->x1 += shift_x;
-			bh->y1 += shift_y;
-			ASSERT(bh->x1 + bh->w < WITHGUIMAXX);
-			ASSERT(bh->y1 + bh->h < WITHGUIMAXY);
+			for (uint_fast8_t i = 0; i < win->bh_count; i++)
+			{
+				button_t * bh = & win->bh_ptr[i];
+				bh->x1 += shift_x;
+				bh->y1 += shift_y;
+				ASSERT(bh->x1 + bh->w < WITHGUIMAXX);
+				ASSERT(bh->y1 + bh->h < WITHGUIMAXY);
+			}
 		}
-	}
 
-	if (win->lh_ptr != NULL)
-	{
-		for (uint_fast8_t i = 0; i < win->lh_count; i++)
+		if (win->lh_ptr != NULL)
 		{
-			label_t * lh = & win->lh_ptr[i];
-			lh->x += shift_x;
-			lh->y += shift_y;
-			ASSERT(lh->x + get_label_width(lh) < WITHGUIMAXX);
-			ASSERT(lh->y + get_label_height(lh) < WITHGUIMAXY);
+			for (uint_fast8_t i = 0; i < win->lh_count; i++)
+			{
+				label_t * lh = & win->lh_ptr[i];
+				lh->x += shift_x;
+				lh->y += shift_y;
+				ASSERT(lh->x + get_label_width(lh) < WITHGUIMAXX);
+				ASSERT(lh->y + get_label_height(lh) < WITHGUIMAXY);
+			}
 		}
-	}
 
-	if (win->tf_ptr != NULL)
-	{
-		for (uint_fast8_t i = 0; i < win->tf_count; i++)
+		if (win->tf_ptr != NULL)
 		{
-			text_field_t * tf = & win->tf_ptr[i];
-			tf->x1 += shift_x;
-			tf->y1 += shift_y;
-			ASSERT(tf->x1 + tf->w < WITHGUIMAXX);
-			ASSERT(tf->y1 + tf->h < WITHGUIMAXY);
+			for (uint_fast8_t i = 0; i < win->tf_count; i++)
+			{
+				text_field_t * tf = & win->tf_ptr[i];
+				tf->x1 += shift_x;
+				tf->y1 += shift_y;
+				ASSERT(tf->x1 + tf->w < WITHGUIMAXX);
+				ASSERT(tf->y1 + tf->h < WITHGUIMAXY);
+			}
 		}
-	}
 
-//	if (win->ta_ptr != NULL)
-//	{
-//		for (uint_fast8_t i = 0; i < win->ta_count; i++)
-//		{
-//			text_field_t * ta = & win->ta_ptr[i];
-//			ta->x1 += shift_x;
-//			ta->y1 += shift_y;
-//			ASSERT(ta->x1 + ta->w < WITHGUIMAXX);
-//			ASSERT(ta->y1 + ta->h < WITHGUIMAXY);
-//		}
-//	}
-
-	if (win->sh_ptr != NULL)
-	{
-		for (uint_fast8_t i = 0; i < win->sh_count; i++)
+		if (win->ta_ptr != NULL)
 		{
-			slider_t * sh = & win->sh_ptr[i];
-			sh->x += shift_x;
-			sh->y += shift_y;
-//			ASSERT(sh->x < WITHGUIMAXX);
-//			ASSERT(sh->y < WITHGUIMAXY);
+			for (uint_fast8_t i = 0; i < win->ta_count; i++)
+			{
+				touch_area_t * ta = & win->ta_ptr[i];
+				ta->x1 += shift_x;
+				ta->y1 += shift_y;
+				ASSERT(ta->x1 + ta->w < WITHGUIMAXX);
+				ASSERT(ta->y1 + ta->h < WITHGUIMAXY);
+			}
+		}
+
+		if (win->sh_ptr != NULL)
+		{
+			for (uint_fast8_t i = 0; i < win->sh_count; i++)
+			{
+				slider_t * sh = & win->sh_ptr[i];
+				sh->x += shift_x;
+				sh->y += shift_y;
+				ASSERT(sh->x < WITHGUIMAXX);
+				ASSERT(sh->y < WITHGUIMAXY);
+			}
 		}
 	}
 
@@ -337,8 +340,8 @@ void calculate_window_position(uint_fast8_t mode, ...)
 
 		win->x1 = 0;
 		win->y1 = 0;
-		win->w = WITHGUIMAXX;
-		win->h = WITHGUIMAXY - FOOTER_HEIGHT;
+		win->w = WITHGUIMAXX - 1;
+		win->h = WITHGUIMAXY - FOOTER_HEIGHT - 1;
 	}
 	else if (mode == WINDOW_POSITION_MANUAL_POSITION)
 	{
@@ -385,10 +388,20 @@ void calculate_window_position(uint_fast8_t mode, ...)
 		ASSERT(win->y1 + win->h < WITHGUIMAXY);
 	}
 
-	win->draw_x1 = win->x1 + edge_step;
-	win->draw_y1 = win->y1 + edge_step + (title_length ? window_title_height : 0);
-	win->draw_x2 = win->x1 + win->w - edge_step;
-	win->draw_y2 = win->y1 + win->h - edge_step;
+	if (win->window_id == WINDOW_MAIN)	// для главного окна рисование без отступов
+	{
+		win->draw_x1 = win->x1;
+		win->draw_y1 = win->y1;
+		win->draw_x2 = win->x1 + win->w;
+		win->draw_y2 = win->y1 + win->h;
+	}
+	else
+	{
+		win->draw_x1 = win->x1 + edge_step;
+		win->draw_y1 = win->y1 + edge_step + (title_length ? window_title_height : 0);
+		win->draw_x2 = win->x1 + win->w - edge_step;
+		win->draw_y2 = win->y1 + win->h - edge_step;
+	}
 
 	win->title_align = TITLE_ALIGNMENT_LEFT;
 

@@ -411,7 +411,7 @@ void objects_state (window_t * win)
 			{
 				debug_num --;
 				bh->visible = NON_VISIBLE;
-				ASSERT(gui_object_count >= gui.footer_buttons_count);
+				ASSERT(gui_object_count >= footer_buttons_count);
 			}
 		}
 	}
@@ -439,7 +439,7 @@ void objects_state (window_t * win)
 			{
 				debug_num --;
 				lh->visible = NON_VISIBLE;
-				ASSERT(gui_object_count >= gui.footer_buttons_count);
+				ASSERT(gui_object_count >= footer_buttons_count);
 			}
 		}
 	}
@@ -467,7 +467,7 @@ void objects_state (window_t * win)
 			{
 				debug_num --;
 				sh->visible = NON_VISIBLE;
-				ASSERT(gui_object_count >= gui.footer_buttons_count);
+				ASSERT(gui_object_count >= footer_buttons_count);
 			}
 		}
 	}
@@ -495,7 +495,7 @@ void objects_state (window_t * win)
 			{
 				debug_num --;
 				ta->visible = NON_VISIBLE;
-				ASSERT(gui_object_count >= gui.footer_buttons_count);
+				ASSERT(gui_object_count >= footer_buttons_count);
 			}
 		}
 	}
@@ -529,7 +529,7 @@ void objects_state (window_t * win)
 				tff->visible = NON_VISIBLE;
 				free(tff->string);
 				tff->string = NULL;
-				ASSERT(gui_object_count >= gui.footer_buttons_count);
+				ASSERT(gui_object_count >= footer_buttons_count);
 			}
 		}
 	}
@@ -562,7 +562,7 @@ void objects_state (window_t * win)
 		{
 			debug_num --;
 			close_button.visible = NON_VISIBLE;
-			ASSERT(gui_object_count >= gui.footer_buttons_count);
+			ASSERT(gui_object_count >= footer_buttons_count);
 		}
 	}
 //	PRINTF("%s: %s, gui_object_count: %d %+d\n", __func__, win->title, gui_object_count, debug_num);
@@ -916,16 +916,9 @@ static void objects_init(void)
 void gui_initialize (void)
 {
 	InitializeListHead(& gui_objects_list);
-
-	window_t * win = get_win(WINDOW_MAIN);
-	win->x1 = 0;
-	win->y1 = 0;
-	win->w = WITHGUIMAXX - 1;
-	win->h = WITHGUIMAXY - FOOTER_HEIGHT - 1;
-	open_window(win);
-	gui.win[1] = NO_PARENT_WINDOW;
-	gui.footer_buttons_count = win->bh_count;
 	objects_init();
+
+	open_window(get_win(WINDOW_MAIN));
 }
 
 /* Обновление данных в списке элементов открытых окон */
