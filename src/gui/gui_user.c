@@ -604,7 +604,6 @@ void gui_main_process(void)
 		gui_arrange_objects_from(btn0, 9, 9, interval_btn);
 
 		load_settings();
-		objects_state(get_win(WINDOW_MAIN));
 		hamradio_set_lock(0);
 #if WITHLFM
 		hamradio_set_lfmmode(0);
@@ -613,9 +612,9 @@ void gui_main_process(void)
 #if WITHGUIDEBUG
 		for (uint8_t i = 0; i < tmpstr_index; i ++)
 			textfield_add_string("tf_debug", tmpbuf[i].text, COLORPIP_WHITE);
+#endif /* WITHGUIDEBUG */
 
 		calculate_window_position(WINDOW_POSITION_FULLSCREEN);
-#endif /* WITHGUIDEBUG */
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_MAIN)
@@ -3330,7 +3329,7 @@ void window_receive_process(void)
 		const char btn_names[][NAME_ARRAY_SIZE] = { "btn_att", "btn_agc", "btn_mode", "btn_preamp", "btn_af", "btn_dnr", "btn_wnb", };
 
 		for (int i = 0; i < ARRAY_SIZE(btn_names); i ++)
-			gui_obj_create(btn_names[i], 100, 44, 0, "");
+			gui_obj_create(btn_names[i], 100, 44, 0, 0, "");
 
 		gui_arrange_objects(btn_names, ARRAY_SIZE(btn_names), 4, 6);
 
@@ -3338,6 +3337,8 @@ void window_receive_process(void)
 		gui_obj_set_prop("btn_af", GUI_OBJ_TEXT, "AF|filter");
 		gui_obj_set_prop("btn_dnr", GUI_OBJ_TEXT, "DNR");
 		gui_obj_set_prop("btn_wnb", GUI_OBJ_TEXT, "WNB");
+		gui_obj_set_prop("btn_wnb", GUI_OBJ_LONG_PRESS, 1);
+		gui_obj_set_prop("btn_wnb", GUI_OBJ_LOCK, wnb_state_switch(0));
 		gui_obj_set_prop("btn_preamp", GUI_OBJ_TEXT, "Preamp");
 
 #if ! WITHWNB
@@ -4338,6 +4339,7 @@ void window_wnbconfig_process(void)
 		break;
 
 	case WM_MESSAGE_UPDATE:
+		enc.change = 0;
 		enc.updated = 1;
 		break;
 
@@ -4351,6 +4353,7 @@ void window_wnbconfig_process(void)
 
 		uint_fast16_t v = wnb_get_threshold();
 		wnb_set_threshold(v + enc.change);
+		enc.change = 0;
 
 		gui_obj_set_prop("lbl_val", GUI_OBJ_TEXT_FMT, "Threshold: %d", wnb_get_threshold());
 	}

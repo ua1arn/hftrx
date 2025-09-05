@@ -117,6 +117,7 @@ typedef enum {
 	GUI_OBJ_SIZE,
 	GUI_OBJ_REPEAT,
 	GUI_OBJ_INDEX,
+	GUI_OBJ_LONG_PRESS,
 } object_prop_t;
 
 typedef struct {

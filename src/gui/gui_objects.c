@@ -94,6 +94,7 @@ void textfield_add_string(const char * name, const char * str, COLORPIP_T color)
 	text_field_t * tf = (text_field_t *) find_gui_obj(TYPE_TEXT_FIELD, win, name);
 
 	tf_entry_t * rec = &  tf->string[tf->index];
+	ASSERT(rec);
 	strncpy(rec->text, str, TEXT_ARRAY_SIZE - 1);
 	rec->color_line = color;
 	tf->index ++;
@@ -245,6 +246,10 @@ uint8_t gui_obj_create(const char * name, ...)
 		tf->index = win->tf_count;
 		tf->x1 = 0;
 		tf->y1 = 0;
+
+		tf->string = (tf_entry_t *) calloc(tf->h_str, sizeof(tf_entry_t));
+		GUI_MEM_ASSERT(tf->string);
+		tf->index = 0;
 
 		textfield_update_size(tf);
 
@@ -536,11 +541,12 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_TEXT) strncpy(bh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
 		else if (prop == GUI_OBJ_TEXT_FMT) vsnprintf(bh->text, TEXT_ARRAY_SIZE - 1, va_arg(arg, char *), arg);
 		else if (prop == GUI_OBJ_STATE) bh->state = va_arg(arg, int);
-		else if (prop == GUI_OBJ_LOCK) bh->is_locked = va_arg(arg, int);
+		else if (prop == GUI_OBJ_LOCK) bh->is_locked = !! va_arg(arg, int);
 		else if (prop == GUI_OBJ_WIDTH) bh->w = va_arg(arg, int);
 		else if (prop == GUI_OBJ_HEIGHT) bh->h = va_arg(arg, int);
 		else if (prop == GUI_OBJ_SIZE) { bh->w = va_arg(arg, int); bh->h = va_arg(arg, int); }
-		else if (prop == GUI_OBJ_REPEAT) bh->is_repeating = va_arg(arg, int);
+		else if (prop == GUI_OBJ_REPEAT) bh->is_repeating = !! va_arg(arg, int);
+		else if (prop == GUI_OBJ_LONG_PRESS) bh->is_long_press = !! va_arg(arg, int);
 		break;
 
 	case TYPE_SLIDER:

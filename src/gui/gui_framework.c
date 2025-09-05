@@ -46,7 +46,10 @@ static uint8_t opened_windows_count = 1;
 /* Возврат id parent window */
 uint_fast8_t get_parent_window(void)
 {
-	return gui.win[1];
+	if (opened_windows_count == 2)
+		return gui.win[1];
+	else
+		return NO_PARENT_WINDOW;
 }
 
 void set_parent_window(uint8_t p)
@@ -364,24 +367,30 @@ const gxdrawb_t * gui_get_drawbuf(void)
 	return gui.gdb;
 }
 
-/* Установка статуса элементов после инициализации */
-void objects_state (window_t * win)
+static uint8_t remove_from_gui_list(void * link)
 {
-	ASSERT(win != NULL);
-	int debug_num = 0;
-
 	PLIST_ENTRY current_entry = gui_objects_list.Flink;
 	while (current_entry != & gui_objects_list)
 	{
 		PLIST_ENTRY next_entry = current_entry->Flink; // Сохраняем следующий элемент, так как текущий может быть удален
 		gui_object_t * obj = CONTAINING_RECORD(current_entry, gui_object_t, list_entry);
-		if (obj->win == win && ! win->state) {
+		if (link == obj->link)
+		{
 			RemoveEntryList(& obj->list_entry);
 			free(obj);
-			gui_object_count--;
+			return 1;
 		}
 		current_entry = next_entry;
 	}
+
+	return 0;
+}
+
+/* Установка статуса элементов после инициализации */
+void objects_state (window_t * win)
+{
+	ASSERT(win != NULL);
+	int debug_num = 0;
 
 	button_t * b = win->bh_ptr;
 	if (b != NULL)
@@ -409,7 +418,9 @@ void objects_state (window_t * win)
 			}
 			else
 			{
+				ASSERT(remove_from_gui_list(bh));
 				debug_num --;
+				gui_object_count--;
 				bh->visible = NON_VISIBLE;
 				ASSERT(gui_object_count >= footer_buttons_count);
 			}
@@ -437,7 +448,9 @@ void objects_state (window_t * win)
 			}
 			else
 			{
+				ASSERT(remove_from_gui_list(lh));
 				debug_num --;
+				gui_object_count--;
 				lh->visible = NON_VISIBLE;
 				ASSERT(gui_object_count >= footer_buttons_count);
 			}
@@ -465,7 +478,9 @@ void objects_state (window_t * win)
 			}
 			else
 			{
+				ASSERT(remove_from_gui_list(sh));
 				debug_num --;
+				gui_object_count--;
 				sh->visible = NON_VISIBLE;
 				ASSERT(gui_object_count >= footer_buttons_count);
 			}
@@ -493,7 +508,9 @@ void objects_state (window_t * win)
 			}
 			else
 			{
+				ASSERT(remove_from_gui_list(ta));
 				debug_num --;
+				gui_object_count--;
 				ta->visible = NON_VISIBLE;
 				ASSERT(gui_object_count >= footer_buttons_count);
 			}
@@ -518,14 +535,12 @@ void objects_state (window_t * win)
 				InsertTailList(& gui_objects_list, & new_obj->list_entry);
 				gui_object_count ++;
 				debug_num ++;
-
-				tff->string = (tf_entry_t *) calloc(tff->h_str, sizeof(tf_entry_t));
-				GUI_MEM_ASSERT(tff->string);
-				tff->index = 0;
 			}
 			else
 			{
+				ASSERT(remove_from_gui_list(tff));
 				debug_num --;
+				gui_object_count--;
 				tff->visible = NON_VISIBLE;
 				free(tff->string);
 				tff->string = NULL;
@@ -560,7 +575,9 @@ void objects_state (window_t * win)
 		}
 		else
 		{
+			ASSERT(remove_from_gui_list(& close_button));
 			debug_num --;
+			gui_object_count--;
 			close_button.visible = NON_VISIBLE;
 			ASSERT(gui_object_count >= footer_buttons_count);
 		}
