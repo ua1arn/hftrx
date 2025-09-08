@@ -14,9 +14,9 @@ extern "C" {
 #define GT9157_ID	0x39313537	// "9157"
 
 // 0x28/0x29 (0x14 7bit)
-#define GOODIX_I2C_ADDR_28  0x28
+#define GOODIX_I2C_ADDR_28  0x28	// 8-bit I2C address
 // 0xBA/0xBB (0x5D 7bit)
-#define GOODIX_I2C_ADDR_BA  0xBA
+#define GOODIX_I2C_ADDR_BA  0xBA	// 8-bit I2C address
 
 #define GOODIX_MAX_HEIGHT   4096
 #define GOODIX_MAX_WIDTH    4096
