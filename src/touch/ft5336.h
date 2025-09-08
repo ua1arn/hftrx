@@ -42,7 +42,7 @@ uint8_t ft5336_Initialize(uint16_t ts_SizeX, uint16_t ts_SizeY);
 uint8_t ft5336_GetState(TS_StateTypeDef *TS_State);
 
   /* I2C Slave address of touchscreen FocalTech FT5336 */
-#define FT5336_I2C_SLAVE_ADDRESS            ((uint8_t)0x70)
+#define FT5336_I2C_SLAVE_ADDRESS            ((uint8_t)0x70)	// 8-bit I2C address
 
   /* Maximum border values of the touchscreen pad */
 #define FT5336_MAX_WIDTH                    ((uint16_t)480)     /* Touchscreen pad max width   */
