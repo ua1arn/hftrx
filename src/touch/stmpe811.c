@@ -44,9 +44,14 @@ static int i2cperiph_readN(uint_fast8_t d_adr, uint_fast8_t r_adr, uint32_t r_by
 
 #elif WITHTWIHW
 
-	uint8_t bufw = r_adr;
-	i2chw_write(d_adr, & bufw, 1);
+	const uint8_t bufw [] = { r_adr };
+#if 1
+	i2chw_write(d_adr, bufw, ARRAY_SIZE(bufw));
 	return i2chw_read(d_adr, r_buffer, r_byte);
+#else
+	// Need test
+	return i2chw_exchange(d_adr, bufw, ARRAY_SIZE(bufw), r_buffer, r_byte);
+#endif
 
 #endif
 }
@@ -61,8 +66,8 @@ static void i2cperiph_write8(uint_fast8_t DeviceAddr, uint_fast8_t reg, uint_fas
 	i2cp_waitsend(p1);
 	i2cp_stop(p1);
 #elif WITHTWIHW
-	uint8_t bufw[2] = { reg, val, };
-	i2chw_write(DeviceAddr, bufw, 2);
+	const uint8_t bufw [] = { reg, val, };
+	i2chw_write(DeviceAddr, bufw, ARRAY_SIZE(bufw));
 #endif
 }
 
