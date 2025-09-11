@@ -539,10 +539,10 @@ uint_fast8_t
 //NOINLINEAT
 restore_i8(nvramaddress_t addr)
 {
-	uint8_t vb [1];
+	uint8_t vbr [1];
 	ASSERT(addr != MENUNONVRAM);
-	nvram_read(addr, & vb [0], sizeof vb);
-	return vb [0];
+	nvram_read(addr, & vbr [0], sizeof vbr);
+	return vbr [0];
 }
 
 /* сохранение по указанному индексу в FRAM одного байта */
@@ -550,10 +550,10 @@ void
 //NOINLINEAT
 save_i8(nvramaddress_t addr, uint_fast8_t v)
 {
-	uint8_t vb [1];
-	vb [0] = v;
+	uint8_t vbw [1];
+	vbw [0] = v;
 	ASSERT(addr != MENUNONVRAM);
-	nvram_write(addr, & vb [0], sizeof vb);
+	nvram_write(addr, & vbw [0], sizeof vbw);
 }
 
 /* выборка по указанному индексу из FRAM одного 16-битного слова */
@@ -561,11 +561,11 @@ uint_fast16_t
 //NOINLINEAT
 restore_i16(nvramaddress_t addr)
 {
-	uint8_t vb [2];
+	uint8_t vbr [2];
 
 	ASSERT(addr != MENUNONVRAM);
-	nvram_read(addr, & vb [0], sizeof vb);
-	return USBD_peek_u16(vb);
+	nvram_read(addr, & vbr [0], sizeof vbr);
+	return USBD_peek_u16(vbr);
 }
 
 /* сохранение по указанному индексу в FRAM одного 16-битного слова */
@@ -573,11 +573,11 @@ void
 //NOINLINEAT
 save_i16(nvramaddress_t addr, uint_fast16_t v)
 {
-	uint8_t vb [2];
+	uint8_t vbw [2];
 
-	USBD_poke_u16(vb, v);
+	USBD_poke_u16(vbw, v);
 	ASSERT(addr != MENUNONVRAM);
-	nvram_write(addr, & vb [0], sizeof vb);
+	nvram_write(addr, & vbw [0], sizeof vbw);
 }
 
 /* выборка по указанному индексу из FRAM одного 24-битного слова */
@@ -585,11 +585,11 @@ uint_fast32_t
 //NOINLINEAT
 restore_i24(nvramaddress_t addr)
 {
-	uint8_t vb [3];
+	uint8_t vbr [3];
 
-	nvram_read(addr, vb, sizeof vb);
+	nvram_read(addr, vbr, sizeof vbr);
 	ASSERT(addr != MENUNONVRAM);
-	return USBD_peek_u24(vb);
+	return USBD_peek_u24(vbr);
 }
 
 /* сохранение по указанному индексу в FRAM одного 24-битного слова */
@@ -597,11 +597,11 @@ void
 //NOINLINEAT
 save_i24(nvramaddress_t addr, uint_fast32_t v)
 {
-	uint8_t vb [3];
+	uint8_t vbw [3];
 
-	USBD_poke_u24(vb, v);
+	USBD_poke_u24(vbw, v);
 	ASSERT(addr != MENUNONVRAM);
-	nvram_write(addr, & vb [0], sizeof vb);
+	nvram_write(addr, & vbw [0], sizeof vbw);
 }
 
 /* выборка по указанному индексу из FRAM одного 32-битного слова */
@@ -609,11 +609,11 @@ uint_fast32_t
 //NOINLINEAT
 restore_i32(nvramaddress_t addr)
 {
-	uint8_t vb [4];
+	uint8_t vbr [4];
 
 	ASSERT(addr != MENUNONVRAM);
-	nvram_read(addr, vb, sizeof vb);
-	return USBD_peek_u32(vb);
+	nvram_read(addr, vbr, sizeof vbr);
+	return USBD_peek_u32(vbr);
 }
 
 /* сохранение по указанному индексу в FRAM одного 32-битного слова */
@@ -621,11 +621,16 @@ void
 //NOINLINEAT
 save_i32(nvramaddress_t addr, uint_fast32_t v)
 {
-	uint8_t vb [4];
+	uint8_t vbw [4];
 
-	USBD_poke_u32(vb, v);
+	USBD_poke_u32(vbw, v);
 	ASSERT(addr != MENUNONVRAM);
-	nvram_write(addr, & vb [0], sizeof vb);
+	nvram_write(addr, & vbw [0], sizeof vbw);
+#if 0 && WITHDEBUG
+	uint8_t vbr [4];
+	nvram_read(addr, & vbr [0], sizeof vbr);
+	ASSERT(!memcmp(vbw, vbr, sizeof vbr));
+#endif
 }
 
 //#else /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
