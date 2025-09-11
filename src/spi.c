@@ -1351,8 +1351,9 @@ static void spi_transfer_b8(SPI_t * spi, spitarget_t target, const uint8_t * txb
 
 	while (count > 0)
 	{
-		int chunk = (count <= MAXCHUNK) ? count : MAXCHUNK;
-		chunk = chunk < 4 ? chunk : (chunk / 4 * 4);
+		const int chunk = (count <= MAXCHUNK) ?
+				(count < 4 ? count : (count / 4 * 4)) :
+				MAXCHUNK;
 		int i;
 
 		spi->SPI_MBC = chunk;	// total burst counter
