@@ -5469,9 +5469,15 @@ static const struct paramdefdef xcatenable =
 		& elkeyreverse,
 		getzerobase,
 	};
+	/* получить текст значения параметра */
+	static size_t getelkeymodetext(char * buff, size_t count, int_fast32_t value)
+	{
+		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+		return local_snprintf_P(buff, count, "%s", elkeymodes [value].label);
+	}
 	static const struct paramdefdef xgelkeymode =
 	{
-		QLABEL("KEYER"), 6, 0, RJ_ELKEYMODE,	ISTEP1,
+		QLABEL("KEYER"), 6, 0, RJ_CB,	ISTEP1,
 		ITEM_VALUE,
 		0, ARRAY_SIZE(elkeymodes) - 1,	/* режим электронного ключа */
 		OFFSETOF(struct nvmap, elkeymode),
@@ -5479,6 +5485,7 @@ static const struct paramdefdef xcatenable =
 		NULL,
 		& elkeymode,
 		getzerobase,
+		getelkeymodetext
 	};
 #if WITHVIBROPLEX
 	static const struct paramdefdef xgelkeyslope =
@@ -12011,12 +12018,12 @@ updateboard_noui(
 		board_set_antenna(antmodes [ant2hint].code [gtx]);
 	#endif /* WITHANTSELECT || WITHANTSELECTRX */
 	#if WITHELKEY
-		board_set_wpm(elkeywpm.value);	/* скорость электронного ключа */
+		board_set_wpm(param_getvalue(& xgelkeywpm));	/* скорость электронного ключа */
 		#if WITHVIBROPLEX
-			elkey_set_slope(elkeyslope);	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
+			elkey_set_slope(param_getvalue(& xgelkeyslope));	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 		#endif /* WITHVIBROPLEX */
-			elkey_set_format(dashratio, spaceratio);	/* соотношение тире к точке (в десятках процентов) */
-			elkey_set_mode(elkeymodes [elkeymode].code, elkeyreverse);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+			elkey_set_format(param_getvalue(& xgdashratio), param_getvalue(& xgspaceratio));	/* соотношение тире к точке (в десятках процентов) */
+			elkey_set_mode(elkeymodes [param_getvalue(& xgelkeymode)].code, elkeyreverse);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 		#if WITHTX && WITHELKEY
 			seq_set_bkin_enable(bkinenable, bkindelay);			/* параметры BREAK-IN */
 			/*seq_rgbeep(0); */								/* формирование roger beep */
@@ -17189,6 +17196,10 @@ param_format(
 	if (ismenukinddp(pd, ITEM_VALUE) == 0)
 		return 0;
 
+	if (pd->qrj == RJ_CB && pd->getvaltext != NULL)
+	{
+		return pd->getvaltext(buff, count, value);
+	}
 	// отображение параметра, отличающиеся от цифрового
 	switch (pd->qrj)
 	{
@@ -17305,11 +17316,6 @@ param_format(
 	case RJ_CATSIG:
 		return local_snprintf_P(buff, count, "%s", catsiglabels [value]);
 #endif /* WITHCAT */
-
-#if WITHELKEY
-	case RJ_ELKEYMODE:
-		return local_snprintf_P(buff, count, "%s", elkeymodes [value].label);
-#endif /* WITHELKEY */
 
 #if WITHPOWERLPHP
 	case RJ_POWER:	/* отображние мощности HP/LP */

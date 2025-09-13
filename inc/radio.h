@@ -3611,7 +3611,6 @@ enum
 	RJ_CATSPEED,	/* отображение скорости CAT */
 	RJ_CATMUX,		/* выбор одного из каналов CAT */
 	RJ_CATSIG,		/* параметр - управляющие параметры PTT/KEY чкпкз CAT */
-	RJ_ELKEYMODE,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 	RJ_POW2,		/* параметр - степень двойки. Отображается результат */
 	RJ_ENCRES,		/* параметр - индекс в таблице разрешений валкодера */
 	RJ_SUBTONE,		/* параметр - индекс в таблице частот субтонов */
@@ -3629,6 +3628,7 @@ enum
 	RJ_COMPILED,		/* текст даты компиляции */
 	RJ_SERIALNR,		/* текст серийного номера */
 	RJ_DUAL,			/* режим двойного прима */
+	RJ_CB,			/* для получения текста есть callback функция */
 	//
 	RJ_notused
 };
@@ -3668,6 +3668,7 @@ struct paramdefdef
 	uint_fast16_t * apval16;			/* переменная, которую подстраиваем - если она 16 бит */
 	uint_fast8_t * apval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
 	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
+	size_t (* getvaltext)(char * buff, size_t count, int_fast32_t value);	/* получить текст значения параметра - see RJ_CB */
 };
 
 uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit);
