@@ -2786,7 +2786,8 @@ void display2_midlabel(const gxdrawb_t * db,
 	for (section = 0; section < 8; ++ section)
 	{
 		const uint_fast8_t last = section == 7;
-		display2_midlabelX(db, x + CHARS2GRID(6) * section, y, pctx, section, last ? 8 : width, yspan);
+		const uint_fast8_t xpos = x + CHARS2GRID(width + 1) * section;
+		display2_midlabelX(db, xpos, y, pctx, section, last ? xspan - xpos : width, yspan);
 	}
 }
 
@@ -2803,7 +2804,8 @@ void display2_midvalue(const gxdrawb_t * db,
 	for (section = 0; section < 8; ++ section)
 	{
 		const uint_fast8_t last = section == 7;
-		display2_midvalueX(db, x + CHARS2GRID(6) * section, y, pctx, section, last ? 8 : width, yspan);
+		const uint_fast8_t xpos = x + CHARS2GRID(width + 1) * section;
+		display2_midvalueX(db, xpos, y, pctx, section, last ? xspan - xpos : width, yspan);
 	}
 }
 
