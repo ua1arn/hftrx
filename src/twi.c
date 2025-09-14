@@ -2393,38 +2393,6 @@ void hardware_twi_master_configure(void)
 
 	I2C1->CR1 |= I2C_CR1_ACK | I2C_CR1_PE; // включаю тактирование переферии I2С
 
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
-
-	//конфигурирую непосредствено I2С
-	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
-	(void) RCC->APB1ENR;
-    // set I2C1 clock to PCLCK (72/64/36 MHz)
-    RCC->CFGR3 |= RCC_CFGR3_I2C1SW;		// PCLK1_FREQ or PCLK2_FREQ (PCLK of this BUS, PCLK1) selected as I2C spi clock source
-
-
-	I2C1->CR1 &= ~ I2C_CR1_PE; // все конфигурации необходимо проводить только со сброшеным битом PE
-
-	//I2C1->CR2 = (I2C1->CR2 & ~I2C_CR2_FREQ) | I2C_CR2_FREQ_0 * ( PCLK2_FREQ / SCL_CLOCK); // частота тактирования модуля I2C1 до делителя равна FREQ_IN
-	//I2C1->CR2 = I2C_CR2_FREQ_0 * 4; //255; // |= I2C_CR2_FREQ;	// debug
-
-	I2C1->TIMINGR = (I2C1->TIMINGR & ~ I2C_TIMINGR_PRESC) | (4UL << 28);
-
-	//I2C1->CCR &= ~I2C_CCR_CCR;
-	//I2C1->CCR |= (1000/(2*40000)) * ((I2C1->CR2&I2C_CR2_FREQ) / I2C_CR2_FREQ_0); // конечный коэффциент деления
-	////I2C1->CCR = 40; //36; // / 4;	//|= I2C_CCR_CCR;	// debug
-	//I2C1->CCR |= I2C_CCR_FS;
-
-	//I2C1->TRISE = 9; //время установления логического уровня в количестве циклов тактового генератора I2C
-
-    // disable analog filter
-    I2C1->CR1 |= I2C_CR1_ANFOFF;
-    // from stm32f3_i2c_calc.py (400KHz, 125ns rise/fall time, no AF/DFN)
-    const uint_fast8_t sdadel = 7;
-    const uint_fast8_t scldel = 5;
-    I2C1->TIMINGR = 0x30000C19 | ((scldel & 0x0F) << 20) | ((sdadel & 0x0F) << 16);
-
-	I2C1->CR1 |= I2C_CR1_PE; // включаю тактирование периферии I2С
-
 #elif CPUSTYLE_STM32F7XX
 	//конфигурирую непосредствено I2С
 	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C

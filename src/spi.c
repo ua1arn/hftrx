@@ -874,7 +874,7 @@ prog_select_init(void)
 	#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
 		static portholder_t spi_cr1_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spi_cr1_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 в режиме 16-ти битных слов. */
-	#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+	#elif CPUSTYLE_STM32F7XX
 		static portholder_t spi_cr1_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spi_cr1_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_R7S721
@@ -1062,7 +1062,7 @@ void hardware_spi_master_initialize(void)
 	/* настраиваем в режиме disconnect */
 	SPIIO_INITIALIZE();
 
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
 	// Настроим модуль SPI.
 	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; // подать тактирование
@@ -1561,7 +1561,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	spi_cr1_val16w [spispeedindex][SPIC_MODE2] = cr1bits16w | CR1_MODE2;
 	spi_cr1_val16w [spispeedindex][SPIC_MODE3] = cr1bits16w | CR1_MODE3;
 
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F7XX
 
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
 	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
@@ -2205,7 +2205,7 @@ void RAMFUNC hardware_spi_b16_p1(
 
 	((spiux_t *) & spi->TXDR)->v16 [0] = v;	/* 16bit access */
 
-#elif CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F30X || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F7XX
 
 	((spiux_t *) & spi->DR)->v16 [0] = v;	/* 16bit access */
 
@@ -2425,7 +2425,7 @@ void hardware_spi_b8_p1(
 
 	* (volatile uint8_t *) & spi->TXDR = v;	// prevent data packing feature
 
-#elif CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F30X || CPUSTYLE_STM32F7XX
+#elif CPUSTYLE_STM32F7XX
 
 	* (volatile uint8_t *) & spi->DR = v;	// prevent data packing feature
 

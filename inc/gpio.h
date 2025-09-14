@@ -55,30 +55,7 @@ typedef struct encoder_tag encoder_t;
 	#define BSRR_C(v) ((v) * GPIO_BSRR_BR0)	/* Преобразование значения для сброса бита в регистре */
 
 	// Параметры для arm_stm32f30x_hardware_pio_prog
-	#if CPUSTYLE_STM32L0XX		// 0: very low speed, 1: low speed, 2: medium speed, 3: high speed
-		#define GPIO_BSRR_BS0 GPIO_BSRR_BS_0
-		#define GPIO_BSRR_BR0 GPIO_BSRR_BR_0
-		#define STM32F_GPIO_MODE_ALT	2
-		#define STM32F_GPIO_SPEED_50M	3
-		#define STM32F_GPIO_SPEED_20M	2
-		#define STM32F_GPIO_SPEED_2M	1
-	#elif CPUSTYLE_STM32F0XX	// 0, 2: low speed, 1: medium speed, 3: high speed
-		#define GPIO_BSRR_BS0 GPIO_BSRR_BS_0
-		#define GPIO_BSRR_BR0 GPIO_BSRR_BR_0
-		#define STM32F_GPIO_MODE_ALT	2
-		#define STM32F_GPIO_SPEED_50M	3
-		#define STM32F_GPIO_SPEED_20M	1
-		#define STM32F_GPIO_SPEED_2M	0
-	#elif CPUSTYLE_STM32F30X	// 0: low speed, 1: medium speed, 3: high speed
-		#define GPIO_BSRR_BS0 GPIO_BSRR_BS_0
-		#define GPIO_BSRR_BR0 GPIO_BSRR_BR_0
-		#define STM32F_GPIO_MODE_GPIO	1
-		#define STM32F_GPIO_MODE_ALT	2
-		#define STM32F_GPIO_MODE_ANALOG	3
-		#define STM32F_GPIO_SPEED_50M	3
-		#define STM32F_GPIO_SPEED_20M	1
-		#define STM32F_GPIO_SPEED_2M	0
-	#elif CPUSTYLE_STM32F4XX	// 0: low speed, 1: medium speed, 2: fast speed, 3: high speed
+	#if CPUSTYLE_STM32F4XX	// 0: low speed, 1: medium speed, 2: fast speed, 3: high speed
 		#define STM32F_GPIO_MODE_GPIO	1
 		#define STM32F_GPIO_MODE_ALT	2
 		#define STM32F_GPIO_MODE_ANALOG	3
@@ -102,41 +79,6 @@ typedef struct encoder_tag encoder_t;
 		#define STM32F_GPIO_SPEED_20M	1
 		#define STM32F_GPIO_SPEED_2M	0
 	#endif
-
-	#if CPUSTYLE_STM32L0XX
-		/* Спасибо ST, что исправили опечатки в заголовочном файле */
-		#define GPIO_MODER_MODER0			GPIO_MODER_MODE0
-		#define GPIO_MODER_MODER0_0			GPIO_MODER_MODE0_0
-		#define	GPIO_PUPDR_PUPDR0			GPIO_PUPDR_PUPD0
-		#define	GPIO_PUPDR_PUPDR0_0			GPIO_PUPDR_PUPD0_0
-		#define	GPIO_OSPEEDER_OSPEEDR0		GPIO_OSPEEDER_OSPEED0
-		#define	GPIO_OSPEEDER_OSPEEDR0_0	GPIO_OSPEEDER_OSPEED0_0
-	#endif /* CPUSTYLE_STM32L0XX */
-
-#elif CPUSTYLE_ATMEGA
-
-	#define HARDWARE_OUTPUT_INITIALIZE(portname, dirport, bitmask, initstate) do { \
-		(portname) |= ((bitmask) & (initstate)); \
-		(portname) &= ~ ((bitmask) & ~ (initstate)); \
-		(dirport) |= (bitmask); \
-		} while (0)
-
-
-	#define HARDWARE_INPUT_INITIALIZE(portname, dirport, bitmask, pullup) do { \
-		(portname) |= ((bitmask) & (pullup)); \
-		(portname) &= ~ ((bitmask) & ~ (pullup)); \
-		(dirport) &= ~ (bitmask); \
-		} while (0)
-
-
-	#define HARDWARE_OUTPUT_SETSTATE(portname, bitmask, initstate) do { \
-		(portname) |= ((bitmask) & (initstate)); \
-		(portname) &= ~ ((bitmask) & ~ (initstate)); \
-		} while (0)
-
-	#define HARDWARE_OUTPUT_TOGGLE(portname, bitmask) do { \
-		(portname) ^= ((bitmask)); \
-		} while (0)
 
 #elif CPUSTYLE_R7S721
 

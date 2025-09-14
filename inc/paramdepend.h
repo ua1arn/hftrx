@@ -11,7 +11,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#if CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
 	#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
@@ -155,31 +155,6 @@ extern "C" {
 			#define WITHCPUNAME "STM32F4xx"
 
 		#endif
-
-	#elif CPUSTYLE_STM32F30X
-		//
-		//#define WITHCPUXTAL 8000000uL	// Если есть внешний кварц на процессоре.
-		#if WITHCPUXTAL
-			#define	REFINFREQ WITHCPUXTAL
-			#define REF1_DIV 1
-			#define REF1_MUL 9	// Up to 16 supported - вынести в конфигурационный файл платы
-		#else
-			#define	REFINFREQ 8000000u
-			#define REF1_DIV 2
-			#define REF1_MUL 9	// Up to 16 supported - вынести в конфигурационный файл платы
-		#endif
-
-		#define PLL_FREQ	(REFINFREQ / REF1_DIV * REF1_MUL)
-		#define CPU_FREQ (PLL_FREQ / 1)
-
- 		#if CPU_FREQ >= 48000000u
-			#define	PCLK1_FREQ (CPU_FREQ / 2)	// PCLK1 frequency
-			#define	PCLK2_FREQ (CPU_FREQ / 1)	// PCLK2 frequency
-		#else
-			#define	PCLK1_FREQ (CPU_FREQ / 1)	// PCLK1 frequency
-			#define	PCLK2_FREQ (CPU_FREQ / 1)	// PCLK2 frequency
-		#endif
-		//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#endif
 
