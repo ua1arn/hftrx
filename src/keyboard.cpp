@@ -5,10 +5,12 @@
 // UA1ARN
 //
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
-#include "buffers.h"
 #include "keyboard.h"
+#include "buffers.h"
 #include "encoder.h"
 #include "board.h"
+
+#include <atomic>
 
 #if WITHKEYBOARD
 
@@ -36,39 +38,8 @@ enum
 	KBD_PRESS_REPEAT_QUICK2 =	KBDNTICKS(5)	// время между символами по очень быстрому автоповтору
 };
 
-
-static uint_fast8_t
-getstablev8(const volatile uint_fast8_t * p)
-{
-	uint_fast8_t v1 = * p;
-	uint_fast8_t v2;
-	do
-	{
-		v2 = v1;
-		v1 = * p;
-	} while (v2 != v1);
-	return v1;
-
-}
-
-static uint_fast16_t
-getstablev16(const volatile uint_fast16_t * p)
-{
-	uint_fast16_t v1 = * p;
-	uint_fast16_t v2;
-	do
-	{
-		v2 = v1;
-		v1 = * p;
-	} while (v2 != v1);
-	return v1;
-
-}
-
-//static std::atomic<uint_fast16_t> kbd_press;
-
 // сделаны по 8 бит - при 200 герц прерываний 600 мс всего 120 тиков.
-static volatile uint_fast16_t kbd_press;	/* время с момента нажатия */
+static std::atomic<unsigned> kbd_press;	/* время с момента нажатия */
 static uint_fast16_t kbd_release;		/* время после отпускания - запрет нового нажатия */
 
 static uint_fast8_t kbd_last;	/* последний скан-код (возврат при отпускании кнопки) */
@@ -327,7 +298,7 @@ kbd_is_tready(void)
 
 	uint_fast8_t f;
 
-	f = getstablev8(& kbd_ready);
+	f = kbd_ready;
 	return f;
 
 #else /* WITHCPUADCHW */
@@ -345,9 +316,9 @@ uint_fast8_t kbd_get_ishold(uint_fast8_t flag)
 	return 0;
 #else /* WITHBBOX */
 	uint_fast8_t r;
-	uint_fast16_t f = getstablev16(& kbd_press);
+	uint_fast8_t f = !! kbd_press;
 
-	r = (f != 0) && (qmdefs [kbd_last].flags & flag);
+	r = f && (qmdefs [kbd_last].flags & flag);
 	return r;
 #endif /* WITHBBOX */
 }
