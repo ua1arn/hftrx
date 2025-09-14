@@ -4,13 +4,12 @@
 // 480/5 = 96, 800/16=50
 
 #define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале (на этом дизайне нет, просто для того чтобы компилировлось)
-
 enum {
 	DLEM = 30,		// Menu window upper line
-	DLES = 30 + GRID2Y(2),		// spectrum window upper line
+	DLES = 30 + 9,		// spectrum window upper line
 	DLEB = 96 - GRID2Y(1),		// 96-5	- bottom line
 	MIDLABEL = 30,
-	MIDVALUE = MIDLABEL + GRID2Y(1),
+	MIDVALUE = MIDLABEL + 4,
 	//
 	DLE_unused
 };
