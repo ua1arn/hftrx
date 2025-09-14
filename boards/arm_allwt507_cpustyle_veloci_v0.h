@@ -841,8 +841,8 @@
 	#define OE_CTL1_BIT	(UINT32_C(1) << 16)	/* PI16 */
 	//#define targetdataflash 0xFF
 	#define targetnone 0x00
-	#define FPGALOADER_SPISPEED SPIC_SPEEDFAST
-	#define SPIDF_SPEEDC SPIC_SPEEDFAST
+	#define FPGALOADER_SPISPEED SPIC_SPEED4M
+	#define SPIDF_SPEEDC SPIC_SPEED4M
 
 	#define targetctl1		(UINT32_C(1) << 22)		// PE22 board control registers chain
 	#define targettsc1		(UINT32_C(1) << 19)		// PE19 XPT2046 SPI chip select signal - CSEXT1
@@ -866,7 +866,7 @@
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
 		switch (target) { \
-		case targetcodec1:  { gpioX_setstate(GPIOE, targetcodec1, 0 * targetcodec1); gpioX_setstate(GPIOE, targetcodec1, 1 * targetcodec1); } break; /* on-board codec1 NAU8822L */ \
+		case targetcodec1:  { gpioX_setstate(GPIOE, targetcodec1, 0 * targetcodec1); gpioX_setstate(GPIOE, targetcodec1, 1 * targetcodec1); } break; /* pulse for NAU8822L */ \
 		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); } break; *//* PC3 SPI0_CS */ \
 		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 0 * (target)); } break; */\
 		case targetctl1: { gpioX_setstate(GPIOE, targetctl1, 1 * targetctl1); gpioX_setstate(GPIOI, OE_CTL1_BIT, 0 * OE_CTL1_BIT); } break; \
@@ -890,15 +890,15 @@
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
-		/*arm_hardware_pioc_outputs2m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
-		arm_hardware_pioi_outputs2m(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
-		arm_hardware_pioe_outputs2m(targettsc1, 1 * targettsc1); /*  */ \
-		arm_hardware_pioe_outputs2m(targetnvram, 1 * targetnvram); /*  */ \
-		arm_hardware_pioe_outputs2m(targetctl1, 1 * targetctl1); /*  */ \
-		arm_hardware_pioe_outputs2m(targetcodec1, 1 * targetcodec1); /*  */ \
-		arm_hardware_pioe_outputs2m(targetfpga1, 1 * targetfpga1); /*  */ \
-		arm_hardware_pioe_outputs2m(targetadck, 1 * targetadck); /*  */ \
-		arm_hardware_pioe_outputs2m(targetxad2, 1 * targetxad2); /*  */ \
+		/*arm_hardware_pioc_outputs20m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
+		arm_hardware_pioi_outputs20m(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
+		arm_hardware_pioe_outputs20m(targettsc1, 1 * targettsc1); /*  */ \
+		arm_hardware_pioe_outputs20m(targetnvram, 1 * targetnvram); /*  */ \
+		arm_hardware_pioe_outputs20m(targetctl1, 1 * targetctl1); /*  */ \
+		arm_hardware_pioe_outputs20m(targetcodec1, 1 * targetcodec1); /*  */ \
+		arm_hardware_pioe_outputs20m(targetfpga1, 1 * targetfpga1); /*  */ \
+		arm_hardware_pioe_outputs20m(targetadck, 1 * targetadck); /*  */ \
+		arm_hardware_pioe_outputs20m(targetxad2, 1 * targetxad2); /*  */ \
 	} while (0)
 
 	// MOSI & SCK port
