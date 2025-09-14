@@ -30,6 +30,7 @@ enum
 	KBD_CODE_MENU_UP, KBD_CODE_MENU_DOWN,	// навигация по меню
 	KBD_CODE_BKIN,
 	KBD_CODE_BKIN_HOLDED,
+	KBD_CODE_MEMO, KBD_CODE_MEMO_HOLDED,
 
 	KBD_CODE_MENU,
 	KBD_CODE_MODE, KBD_CODE_MODEMOD,	// переключение режимов - первый код при коротком нажатии, второй - при удержанном
