@@ -3627,7 +3627,7 @@ enum
 };
 
 // WSIGNFLAG
-
+// qspecial bits
 #define ITEM_VALUE	(UINT8_C(1) << 0)	/* пункт меню для редактирования параметра */
 #define ITEM_GROUP	(UINT8_C(1) << 1)	/* пункт меню без изменяемого значения - связан с подменю */
 
@@ -3635,6 +3635,7 @@ enum
 #define ITEM_FILTERL	(UINT8_C(1) << 3)	/* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
 
 #define ITEM_NOINITNVRAM	(UINT8_C(1) << 4)	/* значение этого пункта не используется при начальной инициализации NVRAM */
+#define ITEM_LISTSELECT	(UINT8_C(1) << 5)	/* отображение этого элемента в lvgl списком значений на выбор */
 
 #define QLABEL(s1) (s1), (s1), (s1)
 #define QLABEL2(s1, s2) (s1), (s2), (s2)

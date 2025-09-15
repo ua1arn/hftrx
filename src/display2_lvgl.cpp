@@ -67,10 +67,9 @@ lv_obj_t * hamradio_walkmenu_getparameditor(const struct paramdefdef * pd, lv_ob
 	lv_obj_set_style_grid_column_dsc_array(obj, cols_dsc, 0);
 	lv_obj_set_style_grid_row_dsc_array(obj, rows_dsc, 0);
 
-	switch (pd->qrj) {
-	case RJ_TXAUDIO:
-	case RJ_VIEW:
-	case RJ_SMETER: {
+	if (pd->qspecial & ITEM_LISTSELECT)
+	{
+		/* отображение этого элемента в lvgl списком значений на выбор */
 		lv_obj_t * label_name = lv_label_create(obj);
 		lv_label_set_text_static(label_name, pd->qlabel);
 		lv_obj_set_grid_cell(label_name, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 0, 1);
@@ -78,62 +77,54 @@ lv_obj_t * hamradio_walkmenu_getparameditor(const struct paramdefdef * pd, lv_ob
 		lv_obj_t * dd = lv_dropdown_create(obj);
 		lv_dropdown_clear_options(dd);
 
-		switch (pd->qrj)
+		uint_fast16_t v16 = pd->qbottom;
+		uint_fast16_t upper = pd->qupper;
+		for (; v16 <= upper; ++ v16)
 		{
-		case RJ_SMETER:
-			lv_dropdown_set_options(dd, "BARS\n" "DIAL");
-			break;
-#if WITHTX && WITHIF4DSP
-		case RJ_TXAUDIO:
-			for (unsigned int i = 0; i < TXAUDIOSRC_COUNT; i ++)
-				lv_dropdown_add_option(dd, txaudiosrcs[i].label, LV_DROPDOWN_POS_LAST);
-			break;
-#endif /* WITHTX && WITHIF4DSP */
-		case RJ_VIEW:
-			for (int i = 0; i < VIEW_count; i ++)
-				lv_dropdown_add_option(dd, view_types[i], LV_DROPDOWN_POS_LAST);
-			break;
-		default:
-			break;
+			const int_fast32_t value = (int_fast32_t) v16 + pd->funcoffs();
+			char b [32];
+			param_format(pd, b, ARRAY_SIZE(b), value);
+			lv_dropdown_add_option(dd, b, LV_DROPDOWN_POS_LAST);
 		}
-
 		lv_dropdown_set_selected(dd, param_getvalue(pd));
 		lv_obj_set_grid_cell(dd, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
 		lv_obj_add_event_cb(dd, parameditor_dropdown_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
-
-		break;
 	}
-	case RJ_YES:
-	case RJ_ON: {
-		lv_obj_t * label = lv_label_create(obj);
-		lv_label_set_text_static(label, pd->qlabel);
-		lv_obj_set_grid_cell(label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 0, 1);
+	else
+	{
+		switch (pd->qrj) {
+		case RJ_YES:
+		case RJ_ON: {
+			lv_obj_t * label = lv_label_create(obj);
+			lv_label_set_text_static(label, pd->qlabel);
+			lv_obj_set_grid_cell(label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 0, 1);
 
-		lv_obj_t * sw = lv_switch_create(obj);
-		lv_obj_add_state(sw, param_getvalue(pd) ? LV_STATE_CHECKED : LV_STATE_DEFAULT);
-		lv_obj_set_grid_cell(sw, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
-		lv_obj_add_event_cb(sw, parameditor_switch_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
+			lv_obj_t * sw = lv_switch_create(obj);
+			lv_obj_add_state(sw, param_getvalue(pd) ? LV_STATE_CHECKED : LV_STATE_DEFAULT);
+			lv_obj_set_grid_cell(sw, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
+			lv_obj_add_event_cb(sw, parameditor_switch_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
 
-		break;
-	}
-	default: {
-		lv_obj_t * label_name = lv_label_create(obj);
-		lv_label_set_text_static(label_name, pd->qlabel);
-		lv_obj_set_grid_cell(label_name, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 0, 1);
+			break;
+		}
+		default: {
+			lv_obj_t * label_name = lv_label_create(obj);
+			lv_label_set_text_static(label_name, pd->qlabel);
+			lv_obj_set_grid_cell(label_name, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 0, 1);
 
-		lv_obj_t * label_value = lv_label_create(obj);
-		lv_label_set_text_fmt(label_value, "%" PRIiFAST32, param_getvalue(pd));
-		lv_obj_set_grid_cell(label_value, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 0, 1);
+			lv_obj_t * label_value = lv_label_create(obj);
+			lv_label_set_text_fmt(label_value, "%" PRIiFAST32, param_getvalue(pd));
+			lv_obj_set_grid_cell(label_value, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 0, 1);
 
-		lv_obj_t * slider = lv_slider_create(obj);
-		lv_slider_set_range(slider, pd->qbottom, pd->qupper);
-		lv_slider_set_value(slider, param_getvalue(pd), LV_ANIM_OFF);
-		lv_obj_set_user_data(slider, label_value);
-		lv_obj_set_grid_cell(slider, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
-		lv_obj_add_event_cb(slider, parameditor_slider_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
+			lv_obj_t * slider = lv_slider_create(obj);
+			lv_slider_set_range(slider, pd->qbottom, pd->qupper);
+			lv_slider_set_value(slider, param_getvalue(pd), LV_ANIM_OFF);
+			lv_obj_set_user_data(slider, label_value);
+			lv_obj_set_grid_cell(slider, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
+			lv_obj_add_event_cb(slider, parameditor_slider_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
 
-		break;
-	}
+			break;
+		}
+		}
 	}
 
 	return obj;

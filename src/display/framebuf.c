@@ -1518,7 +1518,7 @@ static int32_t awg2d_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
     //#endif
 		}
     }
-    t->state = LV_DRAW_TASK_STATE_READY;
+    t->state = LV_DRAW_TASK_STATE_FINISHED;
 
     /*The draw unit is free now. Request a new dispatching as it can get a new task*/
     lv_draw_dispatch_request();
@@ -1940,7 +1940,7 @@ static int32_t awrot_dispatch(lv_draw_unit_t * draw_unit, lv_layer_t * layer)
     //#endif
 		}
     }
-    t->state = LV_DRAW_TASK_STATE_READY;
+    t->state = LV_DRAW_TASK_STATE_FINISHED;
 
     /*The draw unit is free now. Request a new dispatching as it can get a new task*/
     lv_draw_dispatch_request();

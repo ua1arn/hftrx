@@ -41,7 +41,7 @@ static const struct menudef menutable [] =
 	#if WITHLOWPOWEREXTTUNE
 	(const struct paramdefdef [1]) {
 		QLABEL("ATU PWR"), 7, 0, RJ_CB,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_LISTSELECT,
 		0, PWRMODE_COUNT - 1,
 		OFFSETOF(struct nvmap, gtunepower),
 		getselector0, nvramoffs0, valueoffs0,
@@ -1117,7 +1117,7 @@ static const struct menudef menutable [] =
 /* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("NOTCH"), 8, 3, RJ_CB,	ISTEP1,		/* управление режимом NOTCH */
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_LISTSELECT,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
 		getselector0, nvramoffs0, valueoffs0,
@@ -1470,7 +1470,7 @@ static const struct menudef menutable [] =
 	#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC SSB"), 8, 5, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_SSB),
 		getselector0, nvramoffs0, valueoffs0,
@@ -1481,7 +1481,7 @@ static const struct menudef menutable [] =
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC DIG"), 8, 5, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_DIGI),
 		getselector0, nvramoffs0, valueoffs0,
@@ -1492,7 +1492,7 @@ static const struct menudef menutable [] =
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC AM"), 8, 5, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_AM),
 		getselector0, nvramoffs0, valueoffs0,
@@ -1503,7 +1503,7 @@ static const struct menudef menutable [] =
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC FM"), 8, 5, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_NFM),
 		getselector0, nvramoffs0, valueoffs0,
@@ -2330,7 +2330,7 @@ static const struct menudef menutable [] =
 #elif WITHPOWERLPHP
 	(const struct paramdefdef [1]) {
 		QLABEL("TX POWER"), 7, 0, RJ_CB,	ISTEP1,		/* мощность при обычной работе на передачу */
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_LISTSELECT,
 		0, PWRMODE_COUNT - 1,
 		OFFSETOF(struct nvmap, gpwri),
 		getselector0, nvramoffs0, valueoffs0,

@@ -4808,7 +4808,7 @@ enum
 		static const struct paramdefdef xgcatmux =
 		{
 			QLABEL("CAT SEL"), 8, 3, RJ_CB,	ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_LISTSELECT,
 			0, ARRAY_SIZE(catmuxmodes) - 1,
 			OFFSETOF(struct nvmap, gcatmux),
 			getselector0, nvramoffs0, valueoffs0,
@@ -4820,7 +4820,7 @@ enum
 		static const struct paramdefdef xcatbaudrate =
 		{
 			QLABEL("CAT SPD"), 7, 0, RJ_CB,	ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_LISTSELECT,
 			0, ARRAY_SIZE(catbr2int) - 1,
 			OFFSETOF(struct nvmap, catbaudrate),
 			getselector0, nvramoffs0, valueoffs0,
@@ -4864,7 +4864,7 @@ enum
 	static const struct paramdefdef xcatsigptt =
 	{
 		QLABEL("CAT PTT"), 8, 8, RJ_CB,	ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_LISTSELECT,
 		0, BOARD_CATSIG_count - 1,
 		OFFSETOF(struct nvmap, catsigptt),
 		getselector0, nvramoffs0, valueoffs0,
@@ -4878,7 +4878,7 @@ enum
 	static const struct paramdefdef xcatsigkey =
 	{
 		QLABEL("CAT KEY"), 8, 8, RJ_CB,	ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_LISTSELECT,
 		0, BOARD_CATSIG_count - 1,
 		OFFSETOF(struct nvmap, catsigkey),
 		getselector0, nvramoffs0, valueoffs0,
@@ -5275,7 +5275,7 @@ enum
 		static const struct paramdefdef xgsubtonei =
 		{
 			QLABEL2("CTCSS FQ", "CTCSS FQ"), 7, 1, RJ_CB,	ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_LISTSELECT,
 			0, ARRAY_SIZE(gsubtones) - 1,
 			OFFSETOF(struct nvmap, gsubtonei),
 			getselector0, nvramoffs0, valueoffs0,
@@ -5584,7 +5584,7 @@ enum
 	static const struct paramdefdef xgelkeymode =
 	{
 		QLABEL("KEYER"), 6, 0, RJ_CB,	ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_LISTSELECT,
 		0, ARRAY_SIZE(elkeymodes) - 1,	/* режим электронного ключа */
 		OFFSETOF(struct nvmap, elkeymode),
 		getselector0, nvramoffs0, valueoffs0,
