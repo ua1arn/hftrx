@@ -3648,7 +3648,7 @@ enum
 #define QLABEL3(s1, s2, s3) (s1), (s2), (s3)
 #define QLABELENC2(s1) (s1), (s1), (s1)
 
-struct paramdefdef
+typedef struct paramdefdef
 {
 	const char * qlabel;		/* текст - название пункта меню */
 	const char * label;
@@ -3669,7 +3669,7 @@ struct paramdefdef
 	uint_fast8_t * apval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
 	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
 	size_t (* getvaltext)(char * buff, size_t count, int_fast32_t value);	/* получить текст значения параметра - see RJ_CB */
-};
+} paramdefdef_t;
 
 uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit);
 void hamradio_set_bw(uint_fast8_t v);

@@ -1089,7 +1089,7 @@ static int_fast32_t getzerobase(void)
 	return 0;
 }
 
-const static struct paramdefdef xgdummy =
+static const struct paramdefdef xgdummy =
 {
 	QLABEL(""), 7, 0, RJ_COMPILED, 	ISTEP_RO,	// тип процессора
 	ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
@@ -1099,6 +1099,7 @@ const static struct paramdefdef xgdummy =
 	& gzero,
 	NULL,
 	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 #if WITHIF4DSP
@@ -4180,6 +4181,7 @@ static const struct paramdefdef xgnoisereduct =
 	NULL,
 	& gnoisereducts [0],
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif /* WITHIF4DSP */
 #if WITHUSEDUALWATCH
@@ -4194,6 +4196,7 @@ static const struct paramdefdef xmainsubrxmode =
 	NULL,
 	& mainsubrxmode,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif /* WITHUSEDUALWATCH */
 
@@ -4210,6 +4213,7 @@ static const struct paramdefdef xgsquelch =
 	NULL,
 	& gsquelch.value,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 static uint_fast8_t gsquelchNFM;	/* squelch level for NFM */
@@ -4226,6 +4230,7 @@ static const struct paramdefdef xgsquelchNFM =
 	NULL,
 	& gsquelchNFM,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 static uint_fast8_t ggainnfmrx10 = 30;	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
@@ -4239,7 +4244,7 @@ static const struct paramdefdef xggainnfmrx10 =
 	NULL,
 	& ggainnfmrx10,
 	getzerobase, /* складывается со смещением и отображается */
-
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif /* WITHIF4DSP */
 
@@ -4312,6 +4317,7 @@ static const struct paramdefdef xgcwpitch10 =
 	NULL,
 	& gcwpitch10,
 	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 #if WITHENCODER
@@ -4360,6 +4366,7 @@ static const struct paramdefdef xgnotch =
 	NULL,
 	& gnotch,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 
@@ -4400,6 +4407,7 @@ static const struct paramdefdef xgbandset11m =
 	NULL,
 	& bandset11m,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 #if TUNE_6MBAND
@@ -4521,6 +4529,7 @@ static const struct paramdefdef xgviewstyle =
 	NULL,
 	& gviewstyle,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 /* Часть отведенной под спектр высоты экрана 0..100 */
@@ -4534,6 +4543,7 @@ static const struct paramdefdef xgspectrumpart =
 	NULL,
 	& gspectrumpart,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 #if WITHSPECTRUMWF
@@ -4550,6 +4560,7 @@ static const struct paramdefdef xgzoomxpow2 =
 	NULL,
 	& gzoomxpow2,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif
 
@@ -4564,6 +4575,7 @@ static const struct paramdefdef xgtopdbspe =
 	NULL,
 	& gtopdbspe,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 /* верхний предел FFT */
 static const struct paramdefdef xgbottomdbspe =
@@ -4576,6 +4588,7 @@ static const struct paramdefdef xgbottomdbspe =
 	NULL,
 	& gbottomdbspe,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 /* нижний предел FFT waterflow */
 static const struct paramdefdef xgtopdbwfl =
@@ -4588,6 +4601,7 @@ static const struct paramdefdef xgtopdbwfl =
 	NULL,
 	& gtopdbwfl,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 /* верхний предел FFT waterflow */
 static const struct paramdefdef xgbottomdbwfl =
@@ -4600,6 +4614,7 @@ static const struct paramdefdef xgbottomdbwfl =
 	NULL,
 	& gbottomdbwfl,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 // чувствительность водопада регулируется отдельной парой параметровs
 static const struct paramdefdef xgwflevelsep =
@@ -4612,6 +4627,7 @@ static const struct paramdefdef xgwflevelsep =
 	NULL,
 	& gwflevelsep,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 #endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
@@ -4637,6 +4653,7 @@ static const struct paramdefdef xgwflevelsep =
 		NULL,
 		& gbglight,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
 #else /* WITHLCDBACKLIGHT */
@@ -4656,6 +4673,7 @@ static const struct paramdefdef xgwflevelsep =
 		NULL,
 		& gkblight,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
 #else /* WITHKBDBACKLIGHT */
@@ -4727,6 +4745,7 @@ static const struct paramdefdef xcatenable =
 	NULL,
 	& catenable,
 	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 	#if WITHCAT_MUX
@@ -4757,6 +4776,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gcatmux,
 			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xcatbaudrate =
 		{
@@ -4768,6 +4788,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& catbaudrate,
 			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 
 	#elif WITHCAT_CDC
@@ -4795,6 +4816,7 @@ static const struct paramdefdef xcatenable =
 		NULL,
 		& catsigptt,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 #endif /* WITHTX */
 	static uint_fast8_t catsigkey = nokeysig;	/* Выбраный сигнал для манипуляции по CAT */
@@ -4808,6 +4830,7 @@ static const struct paramdefdef xcatenable =
 		NULL,
 		& catsigkey,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
 #else /* WITHCAT */
@@ -4840,6 +4863,7 @@ static const struct paramdefdef xcatenable =
 		& afgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	// Усиление ПЧ/ВЧ в процентах
 	static const struct paramdefdef xrfgain1 =
@@ -4856,6 +4880,7 @@ static const struct paramdefdef xcatenable =
 		& rfgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	static uint_fast16_t glineamp = WITHLINEINGAINMAX;	// усиление с LINE IN
 	/* подстройка усиления с линейного входа через меню. */
@@ -4869,6 +4894,7 @@ static const struct paramdefdef xcatenable =
 		& glineamp,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	static uint_fast8_t gmikeboost20db;	// предусилитель микрофона
 	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
@@ -4915,6 +4941,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gdatamode,
 			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		/* совместимость VID/PID для работы с программой FT8CN */
 		static const struct paramdefdef xgusb_ft8cn =
@@ -4927,6 +4954,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gusb_ft8cn,
 			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		static const struct paramdefdef xgdatatx =
@@ -4939,6 +4967,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gdatatx,
 			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		static const struct paramdefdef xguacplayer =
@@ -4951,6 +4980,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& guacplayer,
 			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		static const struct paramdefdef xgbtaudioplayer =
@@ -4963,6 +4993,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gbtaudioplayer,
 			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		static const struct paramdefdef xgusb_hs =
@@ -4975,6 +5006,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gusb_hs,
 			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 	#if WITHRTS96 || WITHRTS192
 		/* Поменять местами I и Q сэмплы в потоке RTS96 */
@@ -4988,6 +5020,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gswapiq,
 			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		uint_fast8_t hamradio_get_datamode(void) { return param_getvalue(& xgdatamode); }
 		uint_fast8_t hamradio_get_ft8cn(void) { return param_getvalue(& xgusb_ft8cn); }
@@ -5021,6 +5054,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gmikeequalizer,
 			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 	#endif /* WITHAFCODEC1HAVEPROC */
 #if WITHAFEQUALIZER
@@ -5177,6 +5211,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			NULL,
 			NULL,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		//  Continuous Tone-Coded Squelch System or CTCSS freq
 		static const struct paramdefdef xgsubtonei =
@@ -5189,6 +5224,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gsubtonei,
 			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		//  Continuous Tone-Coded Squelch System or CTCSS control
 		static const struct paramdefdef xgctssenable =
@@ -5201,6 +5237,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gctssenable,
 			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 	#if WITHIF4DSP
 		static uint_fast8_t gsubtonelevel = 10;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
@@ -5216,6 +5253,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gsubtonelevel,
 			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 	#endif /* WITHIF4DSP */
 	#endif /* WITHSUBTONES */
@@ -5231,6 +5269,7 @@ static const struct paramdefdef xcatenable =
 			& rptroffshf1k,
 			NULL,
 			getrptoffsbase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xrptroffsvhf1k =
 		{
@@ -5242,6 +5281,7 @@ static const struct paramdefdef xcatenable =
 			& rptroffsvhf1k,
 			NULL,
 			getrptoffsbase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 #endif /* WITHRPTOFFSET */
 
@@ -5318,6 +5358,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gvoxenable,
 			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xgvoxlevel =
 		{
@@ -5329,6 +5370,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gvoxlevel,
 			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xgavoxlevel =
 		{
@@ -5340,6 +5382,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gavoxlevel,
 			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xgvoxdelay =
 		{
@@ -5351,6 +5394,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& voxdelay,
 			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 
 
@@ -5435,6 +5479,7 @@ static const struct paramdefdef xcatenable =
 		NULL,
 		& elkeywpm.value,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	static const struct paramdefdef xgdashratio =
 	{
@@ -5446,6 +5491,7 @@ static const struct paramdefdef xcatenable =
 		NULL,
 		& dashratio,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	static const struct paramdefdef xgspaceratio =
 	{
@@ -5457,6 +5503,7 @@ static const struct paramdefdef xcatenable =
 		NULL,
 		& spaceratio,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	static const struct paramdefdef xgelkeyreverse =
 	{
@@ -5468,6 +5515,7 @@ static const struct paramdefdef xcatenable =
 		NULL,
 		& elkeyreverse,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	/* получить текст значения параметра */
 	static size_t getelkeymodetext(char * buff, size_t count, int_fast32_t value)
@@ -5498,6 +5546,7 @@ static const struct paramdefdef xcatenable =
 		NULL,
 		& elkeyslope,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 #endif /* WITHVIBROPLEX */
 #if WITHTX
@@ -5511,6 +5560,7 @@ static const struct paramdefdef xcatenable =
 		NULL,
 		& bkinenable,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	static const struct paramdefdef xgbkindelay =
 	{
@@ -5522,6 +5572,7 @@ static const struct paramdefdef xcatenable =
 		NULL,
 		& bkindelay,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 #endif /* WITHTX */
 #if WITHIF4DSP
@@ -5536,6 +5587,7 @@ static const struct paramdefdef xcatenable =
 		NULL,
 		& gcwedgetime,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 #endif /* WITHIF4DSP */
 #if WITHTX && WITHIF4DSP
@@ -5550,6 +5602,7 @@ static const struct paramdefdef xcatenable =
 		NULL,
 		& gcwssbtx,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 #endif /* WITHTX && WITHIF4DSP */
 
@@ -5687,6 +5740,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 		NULL,
 		& gmutespkr,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 #endif /* WITHSPKMUTE */
 										/* маска режимов работы (тройки бит, указывают номер позиции в каждой строке) */
@@ -5731,6 +5785,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 		NULL,
 		& gdownatcwtune,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
@@ -5744,6 +5799,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 			NULL,
 			& gswrprot,
 			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	static const struct paramdefdef xminforward =
 	{
@@ -5755,6 +5811,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 		& minforward,
 		NULL,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	static const struct paramdefdef xmaxpwrcali =
 	{
@@ -5766,6 +5823,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 		NULL,
 		& maxpwrcali,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 #endif /* */
 
@@ -5832,6 +5890,7 @@ static const struct paramdefdef xgcpufreq =
 	& gzero,
 	NULL,
 	getcpufreqbase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 static const struct paramdefdef xgcputype =
@@ -5844,6 +5903,7 @@ static const struct paramdefdef xgcputype =
 	& gzero,
 	NULL,
 	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 #ifdef DDR_FREQ
@@ -5910,6 +5970,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		& gmik1level,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 #endif /* WITHMIC1LEVEL */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
@@ -5945,6 +6006,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		& ggaindigitx,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	/* Глубина модуляции в АМ - 0..100% */
 	static const struct paramdefdef xgamdepth =
@@ -5957,6 +6019,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		NULL,
 		& gamdepth,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	/* Девиация при передаче в NFM - в сотнях герц */
 	static const struct paramdefdef xgnfmdeviation =
@@ -5969,6 +6032,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		NULL,
 		& gnfmdeviation,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	static const struct paramdefdef xggaincwtx =
@@ -5981,6 +6045,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		& ggaincwtx,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	#if defined (WITHDEFDACSCALE)
@@ -7228,6 +7293,7 @@ static const struct paramdefdef xgdimmtime =
 	NULL,
 	& gdimmtime,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 
@@ -7261,6 +7327,7 @@ static const struct paramdefdef xgsleeptime =
 	NULL,
 	& gsleeptime,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 #else
@@ -8554,6 +8621,7 @@ static const struct paramdefdef xgclassamode =
 	NULL,
 	& gclassamode,
 	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif
 
@@ -8568,6 +8636,7 @@ static const struct paramdefdef xgnormalpower =
     NULL,
     & gnormalpower.value,
     getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif
 static const struct paramdefdef xgtxgate =
@@ -8580,6 +8649,7 @@ static const struct paramdefdef xgtxgate =
 	NULL,
 	& gtxgate,
 	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 #endif /* WITHTX */
@@ -8596,6 +8666,7 @@ static const struct paramdefdef xfltbw_cwwide =
 	NULL,
 	& bwprop_cwwide.left10_width10,
 	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 // CW filter edges for WIDE
 static const struct paramdefdef xfltsofter_cwwide =
@@ -8608,6 +8679,7 @@ static const struct paramdefdef xfltsofter_cwwide =
 	NULL,
 	& bwprop_cwwide.fltsofter,
 	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 // CW filter bandwidth for NARROW
 static const struct paramdefdef xfltbw_cwnarrow =
@@ -8620,6 +8692,7 @@ static const struct paramdefdef xfltbw_cwnarrow =
 	NULL,
 	& bwprop_cwnarrow.left10_width10,
 	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 // CW filter edges for NARROW
 static const struct paramdefdef xfltsofter_cwnarrow =
@@ -8635,6 +8708,7 @@ static const struct paramdefdef xfltsofter_cwnarrow =
 	NULL,
 	& bwprop_cwnarrow.fltsofter,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif /* WITHIF4DSP */
 

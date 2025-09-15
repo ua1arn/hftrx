@@ -20,6 +20,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 #if WITHPOWERTRIM
@@ -33,6 +34,7 @@ static const struct menudef menutable [] =
 			NULL,
 			& gtunepower,
 			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		},
 	#endif /* WITHLOWPOWEREXTTUNE */
 #elif WITHPOWERLPHP
@@ -46,6 +48,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gtunepower,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHPOWERTRIM */
@@ -58,6 +61,7 @@ static const struct menudef menutable [] =
 		& tunerind,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("TUNER C"), 7, 0, RJ_UNSIGNED,	ISTEP1,
@@ -68,6 +72,7 @@ static const struct menudef menutable [] =
 		& tunercap,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("TUNER TY"), 7, 0, RJ_UNSIGNED,	ISTEP1,
@@ -78,6 +83,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& tunertype,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("TUNER WT"), 7, 0, RJ_UNSIGNED,	ISTEP5,	// задержка перед измерением после переключения реле
@@ -88,6 +94,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gtunerdelay,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #if WITHAUTOTUNER_N7DDCALGO
 	(const struct paramdefdef [1]) {
@@ -99,6 +106,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gn7ddclinearC,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("L LINEAR"), 7, 0, RJ_YES,	ISTEP1,
@@ -109,6 +117,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gn7ddclinearL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHAUTOTUNER_N7DDCALGOT */
 #endif /* WITHAUTOTUNER */
@@ -122,6 +131,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 #if WITHLCDBACKLIGHT
@@ -158,6 +168,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gshowdbm,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("FREQ FPS"), 7, 0, RJ_UNSIGNED,	ISTEP1,
@@ -168,6 +179,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gdisplayfreqsfps,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #if WITHBARS
 	(const struct paramdefdef [1]) {
@@ -179,6 +191,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& glatchfps,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHBARS */
 #if WITHSPECTRUMWF
@@ -194,6 +207,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gview3dss_mark,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHVIEW_3DSS */
 	& xgtopdbspe,	/* нижний предел FFT */
@@ -210,6 +224,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& glvlgridstep,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL2("RXBW IND", "RX BW Indicator"), 7, 0, RJ_UNSIGNED,	ISTEP1,
@@ -220,6 +235,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& grxbwsatu,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #if BOARD_FFTZOOM_POW2MAX > 0
 	& xgzoomxpow2,	/* уменьшение отображаемого участка спектра */
@@ -233,6 +249,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gtxloopback,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("BETA PAN"), 7, 2, RJ_UNSIGNED,	ISTEP1,
@@ -243,6 +260,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gspecbeta100,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("BETA WFL"), 7, 2, RJ_UNSIGNED,	ISTEP1,
@@ -253,6 +271,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gwflbeta100,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	(const struct paramdefdef [1]) {
@@ -264,6 +283,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gsmetertype,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 #endif /* WITHSPECTRUMWF */
@@ -277,6 +297,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gshowovf,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHDSPEXTDDC */
 #if defined (RTC1_TYPE)
@@ -290,6 +311,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
@@ -311,6 +333,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& grtcmonth,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("TM DAY"), 7, 0, RJ_UNSIGNED,	ISTEP1,
@@ -331,6 +354,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& grtchour,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("TM MIN"), 7, 0, RJ_UNSIGNED,	ISTEP1,
@@ -341,6 +365,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& grtcminute,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("TM SET"), 7, 3, RJ_YES,	ISTEP1,
@@ -351,6 +376,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& grtcstrobe,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* defined (RTC1_TYPE) */
 /* group name +++ */
@@ -363,6 +389,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 #if WITHIF4DSP
@@ -375,6 +402,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gnoisereductvl,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHIF4DSP */
 #if WITHIF4DSP
@@ -391,6 +419,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_ssbwide.right100,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("SSB W LO"), 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
@@ -411,6 +440,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_ssbwide.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("SSB M HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB MEDIUM */
@@ -421,6 +451,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_ssbmedium.right100,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("SSB M LO"), 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB MEDIUM */
@@ -431,6 +462,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_ssbmedium.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("SSBM AFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
@@ -441,6 +473,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_ssbmedium.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("SSB N HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB NARROW */
@@ -451,6 +484,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_ssbnarrow.right100,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("SSB N LO"), 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB NARROW */
@@ -461,6 +495,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_ssbnarrow.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("SSBN AFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
@@ -471,6 +506,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_ssbnarrow.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AM W HI"), 6, 1, 0,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
@@ -481,6 +517,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_amwide.right100,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AM W LO"), 7, 2, 0,	ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
@@ -491,6 +528,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_amwide.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AM W AFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
@@ -501,6 +539,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_amwide.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AM N HI"), 6, 1, 0,	ISTEP2,		/* Подстройка полосы пропускания - AM NARROW */
@@ -511,6 +550,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_amnarrow.right100,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AM N LO"), 7, 2, 0,	ISTEP5,		/* подстройка полосы пропускания - AM NARROW */
@@ -521,6 +561,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_amnarrow.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AM N AFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
@@ -531,6 +572,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_amnarrow.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("SSBTX HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
@@ -541,6 +583,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_ssbtx.right100,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("SSBTX LO"), 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
@@ -551,6 +594,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_ssbtx.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("SSBTXAFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
@@ -561,6 +605,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_ssbtx.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("DIGI HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
@@ -571,6 +616,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_digiwide.right100,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("DIGI LO"), 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
@@ -581,6 +627,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bwprop_digiwide.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHIF4DSP */
 
@@ -595,6 +642,7 @@ static const struct menudef menutable [] =
 		& ifshifoffset.value,
 		NULL,
 		getifshiftbase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHIFSHIFT && ! WITHPOTIFSHIFT */
 
@@ -608,6 +656,7 @@ static const struct menudef menutable [] =
 		& lo4offset,
 		NULL,
 		getlo4base, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #elif WITHDUALBFO	/* Переворот боковых за счёт переключения частоты опорного генератора */
 	(const struct paramdefdef [1]) {
@@ -619,6 +668,7 @@ static const struct menudef menutable [] =
 		& lo4offsets [0],
 		NULL,
 		getlo4base, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("BFO LSB"), 7, 2, 1,	ISTEP10,
@@ -629,6 +679,7 @@ static const struct menudef menutable [] =
 		& lo4offsets [1],
 		NULL,
 		getlo4base, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #elif WITHFIXEDBFO	/* Переворот боковых за счёт 1-го гетродина (особенно, если нет подстраиваемого BFO) */
 	(const struct paramdefdef [1]) {
@@ -640,6 +691,7 @@ static const struct menudef menutable [] =
 		& lo4offset,
 		NULL,
 		getlo4base, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("LAST LSB"), 7, 3, RJ_YES,	ISTEP1,
@@ -650,6 +702,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& glo4lsb,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 
 #elif (defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) && (IF3_MODEL != IF3_TYPE_BYPASS))
@@ -665,6 +718,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& dctxmodecw,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHTX */
 
@@ -678,6 +732,7 @@ static const struct menudef menutable [] =
 		& fi_2p4.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("2.4 LSB"), 7, 2, 1,	ISTEP10,
@@ -688,6 +743,7 @@ static const struct menudef menutable [] =
 		& fi_2p4.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* (IF3_FMASK & IF3_FMASK_2P4) */
 	#if (IF3_FMASK & IF3_FMASK_2P7)
@@ -700,6 +756,7 @@ static const struct menudef menutable [] =
 		& fi_2p7.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("BFO7 LSB"), 7, 2, 1,	ISTEP10,
@@ -710,6 +767,7 @@ static const struct menudef menutable [] =
 		& fi_2p7.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7) != 0
 	(const struct paramdefdef [1]) {
@@ -721,6 +779,7 @@ static const struct menudef menutable [] =
 		& fi_2p7_tx.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("CAR7 LSB"), 7, 2, 1,	ISTEP10,
@@ -731,6 +790,7 @@ static const struct menudef menutable [] =
 		& fi_2p7_tx.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* WITHTX && WITHSAMEBFO == 0 */
 	#endif /* (IF3_FMASK & IF3_FMASK_2P7) */
@@ -745,6 +805,7 @@ static const struct menudef menutable [] =
 		& fi_3p1.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("BFO LSB"), 7, 2, 1,	ISTEP10,
@@ -755,6 +816,7 @@ static const struct menudef menutable [] =
 		& fi_3p1.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_3P1) != 0
 	(const struct paramdefdef [1]) {
@@ -766,6 +828,7 @@ static const struct menudef menutable [] =
 		& fi_3p1_tx.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("CAR LSB"), 7, 2, 1,	ISTEP10,
@@ -776,6 +839,7 @@ static const struct menudef menutable [] =
 		& fi_3p1_tx.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* WITHTX && WITHSAMEBFO == 0 */
 	#endif /* (IF3_FMASK & IF3_FMASK_3P1) */
@@ -790,6 +854,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& fi_0p3.present,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("CNTR 0.3"), 7, 2, 1,	ISTEP10,	/* центральная частота телеграфного фильтра */
@@ -800,6 +865,7 @@ static const struct menudef menutable [] =
 		& fi_0p3.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* (IF3_FMASK & IF3_FMASK_0P3) */
 
@@ -813,6 +879,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& fi_0p5.present,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("CNTR 0.5"), 7, 2, 1,	ISTEP10,	/* центральная частота телеграфного фильтра */
@@ -823,6 +890,7 @@ static const struct menudef menutable [] =
 		& fi_0p5.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* (IF3_FMASK & IF3_FMASK_0P5) */
 
@@ -836,6 +904,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& fi_1p8.present,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("1.8 USB"), 7, 2, 1,	ISTEP10,
@@ -846,6 +915,7 @@ static const struct menudef menutable [] =
 		& fi_1p8.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("1.8 LSB"), 7, 2, 1,	ISTEP10,
@@ -856,6 +926,7 @@ static const struct menudef menutable [] =
 		& fi_1p8.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* (IF3_FMASK & IF3_FMASK_1P8) */
 
@@ -869,6 +940,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& fi_2p4.present,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* (IF3_FMASK & IF3_FMASK_2P4) */
 
@@ -882,6 +954,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& fi_2p4_tx.present,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P4) */
 
@@ -895,6 +968,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& fi_2p7_tx.present,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7) */
 
@@ -908,6 +982,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& fi_3p1_tx.present,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7) */
 
@@ -921,6 +996,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& fi_6p0.present,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
 	(const struct paramdefdef [1]) {
@@ -932,6 +1008,7 @@ static const struct menudef menutable [] =
 		& fi_6p0.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* (IF3_FMASK & IF3_FMASK_6P0) */
 
@@ -946,6 +1023,7 @@ static const struct menudef menutable [] =
 		& fi_7p8.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* (IF3_FMASK & IF3_FMASK_7P8) */
 
@@ -960,6 +1038,7 @@ static const struct menudef menutable [] =
 		& fi_8p0.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif
 	#if (IF3_FMASK & IF3_FMASK_9P0)
@@ -973,6 +1052,7 @@ static const struct menudef menutable [] =
 		& fi_9p0.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* (IF3_FMASK & IF3_FMASK_9P0) */
 	#if (IF3_FMASK & IF3_FMASK_15P0)
@@ -987,6 +1067,7 @@ static const struct menudef menutable [] =
 		& fi_15p0_tx_nfm.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#else /* WITHDEDICATEDNFM */
 	/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
@@ -999,6 +1080,7 @@ static const struct menudef menutable [] =
 		& fi_15p0.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* WITHDEDICATEDNFM */
 	#endif /* (IF3_FMASK & IF3_FMASK_15P0) */
@@ -1013,6 +1095,7 @@ static const struct menudef menutable [] =
 		& fi_17p0.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif
 
@@ -1029,6 +1112,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
@@ -1040,6 +1124,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gnotchtype,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#if ! WITHPOTNOTCH
 	(const struct paramdefdef [1]) {
@@ -1051,6 +1136,7 @@ static const struct menudef menutable [] =
 		& gnotchfreq.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("NTCH WDT"), 7, 3, 0,	ISTEP50,		/* полоса режекции NOTCH. */
@@ -1061,6 +1147,7 @@ static const struct menudef menutable [] =
 		& gnotchwidth.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* ! WITHPOTNOTCH */
 #elif WITHNOTCHONOFF
@@ -1074,6 +1161,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
@@ -1085,6 +1173,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gnotch,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHNOTCHFREQ */
 
@@ -1100,6 +1189,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
@@ -1111,6 +1201,7 @@ static const struct menudef menutable [] =
 		& gpbtoffset,
 		NULL,
 		getpbtbase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* ! WITHPOTPBT && WITHPBT && (LO3_SIDE != LOCODE_INVALID) */
 #endif /* defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) */
@@ -1126,6 +1217,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 	// разрешено не только в случае наличия электронного ключа - требуется при переключении режимов CW/SSB
@@ -1162,6 +1254,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 #if 0
@@ -1174,6 +1267,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gadcrand,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* */
 	(const struct paramdefdef [1]) {
@@ -1185,6 +1279,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gdither,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 //	(const struct paramdefdef [1]) {
 //		QLABEL("ADC FIFO"), 8, 3, RJ_ON,	ISTEP1,	/*  */
@@ -1195,6 +1290,7 @@ static const struct menudef menutable [] =
 //		NULL,
 //		& gadcfifo,
 //		getzerobase,
+//		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 //	},
 //	(const struct paramdefdef [1]) {
 //		QLABEL("ADC OFFS"), 5 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,	/* смещение для выходного сигнала с АЦП */
@@ -1205,6 +1301,7 @@ static const struct menudef menutable [] =
 //		& gadcoffset,
 //		NULL,
 //		getadcoffsbase,	/* складывается со смещением и отображается */
+//		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 //	},
 #endif /* WITHDSPEXTDDC */
 #if WITHTX
@@ -1219,6 +1316,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 	& xgvoxenable,
@@ -1238,6 +1336,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 	& xcatenable,
@@ -1273,6 +1372,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 #if WITHIF4DSP
@@ -1293,6 +1393,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gkeybeep10,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP */
 #if WITHMUTEALL && WITHTX
@@ -1305,6 +1406,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gmuteall,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHMUTEALL && WITHTX */
 #if WITHIF4DSP
@@ -1321,6 +1423,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gsidetonelevel,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("MONI EN"), 8, 3, RJ_ON,	ISTEP1,		/* Select the monitoring sound output enable */
@@ -1331,6 +1434,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gmoniflag,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHIF4DSP */
 #if WITHTX && WITHIF4DSP
@@ -1344,6 +1448,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gloopmsg,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("LOOP SEC"), 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
@@ -1354,6 +1459,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gloopsec,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 #if WITHMIC1LEVEL
@@ -1371,6 +1477,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gtxaudio [MODE_SSB],
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC DIG"), 8, 5, RJ_TXAUDIO,	ISTEP1,
@@ -1381,6 +1488,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gtxaudio [MODE_DIGI],
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC AM"), 8, 5, RJ_TXAUDIO,	ISTEP1,
@@ -1391,6 +1499,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gtxaudio [MODE_AM],
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC FM"), 8, 5, RJ_TXAUDIO,	ISTEP1,
@@ -1401,6 +1510,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gtxaudio [MODE_NFM],
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC AGC"), 8, 3, RJ_ON,	ISTEP1,
@@ -1411,6 +1521,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gmikeagc,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("MICAGCGN"), 7, 0, 0,	ISTEP1,
@@ -1421,6 +1532,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gmikeagcgain,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC CLIP"), 7, 0, 0,	ISTEP1,
@@ -1431,6 +1543,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gmikehclip,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #if WITHCOMPRESSOR
 	(const struct paramdefdef [1]) {
@@ -1442,6 +1555,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gcompressor_attack,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("COMP RLS"), 7, 0, 0,	ISTEP5,
@@ -1452,6 +1566,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gcompressor_release,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("COMP HLD"), 7, 0, 0,	ISTEP5,
@@ -1462,6 +1577,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gcompressor_hold,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("COMP GN"), 7, 0, 0,	ISTEP1,
@@ -1472,6 +1588,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gcompressor_gain,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("COMP TH"), 7, 0, 0,	ISTEP1,
@@ -1482,6 +1599,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gcompressor_threshold,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHCOMPRESSOR */
 #if WITHREVERB
@@ -1494,6 +1612,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& greverb,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL2("RVB TIME", "Reverb Delay"), 7, 0, 0,	ISTEP1,
@@ -1504,6 +1623,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& greverbdelay,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL2("RVB LOSS", "Reverb Loss"), 7, 0, 0,	ISTEP1,
@@ -1514,6 +1634,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& greverbloss,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHREVERB */
 	(const struct paramdefdef [1]) {
@@ -1525,6 +1646,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gmikeboost20db,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
 	& xgmikeequalizer,	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
@@ -1538,6 +1660,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gmikeequalizerparams [0],
 		getequalizerbase, /* складывается с -12 и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("EQUA .23"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
@@ -1548,6 +1671,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gmikeequalizerparams [1],
 		getequalizerbase, /* складывается с -12 и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("EQUA .65"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
@@ -1558,6 +1682,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gmikeequalizerparams [2],
 		getequalizerbase, /* складывается с -12 и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("EQUA 1.8"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
@@ -1568,6 +1693,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gmikeequalizerparams [3],
 		getequalizerbase, /* складывается с -12 и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("EQUA 5.3"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
@@ -1578,6 +1704,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gmikeequalizerparams [4],
 		getequalizerbase, /* складывается с -12 и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* WITHAFCODEC1HAVEPROC */
 #if WITHAFEQUALIZER
@@ -1590,6 +1717,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& geqrx,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL2("RX 0.4k", "RX EQ 400 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
@@ -1600,6 +1728,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& geqrxparams [0],
 		hamradio_get_af_equalizer_base,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL2("RX 1.5k", "RX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
@@ -1610,6 +1739,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& geqrxparams [1],
 		hamradio_get_af_equalizer_base,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL2("RX 2.7k", "RX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
@@ -1620,6 +1750,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& geqrxparams [2],
 		hamradio_get_af_equalizer_base,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL2("TX EQ", "TX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
@@ -1630,6 +1761,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& geqtx,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL2("TX 0.4k", "TX EQ 400 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
@@ -1640,6 +1772,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& geqtxparams [0],
 		hamradio_get_af_equalizer_base,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL2("TX 1.5k", "TX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
@@ -1650,6 +1783,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& geqtxparams [1],
 		hamradio_get_af_equalizer_base,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL2("TX 2.7k", "TX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
@@ -1660,6 +1794,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& geqtxparams [2],
 		hamradio_get_af_equalizer_base,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHAFEQUALIZER */
 #endif /* WITHTX && WITHIF4DSP */
@@ -1678,6 +1813,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& ALCNEN,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("ALCNTH"), 7, 0, 0,	ISTEP1,		/* ALC noise gate threshold level. */
@@ -1688,6 +1824,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& ALCNTH,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("ALC EN"), 7, 0, RJ_ON,	ISTEP1,		/* ALC enabled. */
@@ -1698,6 +1835,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& ALCEN,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("ALCMXGAN"), 7, 0, 0,	ISTEP1,		/* Set maximum gain limit for PGA volume setting changes under ALC control. */
@@ -1708,6 +1846,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& ALCMXGAIN,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("ALCMNGAN"), 7, 0, 0,	ISTEP1,		/* Set minimum gain value limit for PGA volume setting changes under ALC contro. */
@@ -1718,6 +1857,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& ALCMNGAIN,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHUSEAUDIOREC
@@ -1730,6 +1870,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& recmode,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHUSEAUDIOREC */
 #if WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN || WITHUSEUSBBT)
@@ -1743,6 +1884,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 #if WITHIF4DSP
@@ -1776,6 +1918,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
@@ -1787,6 +1930,7 @@ static const struct menudef menutable [] =
 		& gfsadcpower10 [0],	// 16 bit
 		NULL,
 		getfsasdcbase10, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("ADC FSXV"), 3 + WSIGNFLAG, 1, RJ_SIGNED,	ISTEP1,		/* с колнвертором Калиьровка S-метра - момент перегрузки */
@@ -1797,6 +1941,7 @@ static const struct menudef menutable [] =
 		& gfsadcpower10 [1],	// 16 bit
 		NULL,
 		getfsasdcbase10, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC OFF"), 7, 3, RJ_YES,	ISTEP1,
@@ -1807,6 +1952,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagcoff,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("IFGN MAX"), 7, 0, 0,	ISTEP1,		/* диапазон ручной (или автоматической) регулировки цифрового усиления - максимальное значение */
@@ -1817,6 +1963,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gdigigainmax,	// 8 bit
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name +++ */
 	(const struct paramdefdef [1]) {
@@ -1828,6 +1975,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
@@ -1839,6 +1987,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagc [AGCSETI_SSB].rate,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC HUNG"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
@@ -1849,6 +1998,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagc [AGCSETI_SSB].thung10,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T1"), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
@@ -1859,6 +2009,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagc [AGCSETI_SSB].t1,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T2"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
@@ -1869,6 +2020,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagc [AGCSETI_SSB].release10,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T4"), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
@@ -1879,6 +2031,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagc [AGCSETI_SSB].t4,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name +++ */
 	(const struct paramdefdef [1]) {
@@ -1890,6 +2043,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
@@ -1901,6 +2055,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagc [AGCSETI_CW].rate,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC HUNG"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
@@ -1911,6 +2066,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagc [AGCSETI_CW].thung10,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T1"), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
@@ -1921,6 +2077,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagc [AGCSETI_CW].t1,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T2"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
@@ -1931,6 +2088,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagc [AGCSETI_CW].release10,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T4"), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
@@ -1941,6 +2099,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagc [AGCSETI_CW].t4,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name +++ */
 	(const struct paramdefdef [1]) {
@@ -1952,6 +2111,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
@@ -1963,6 +2123,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagc [AGCSETI_DIGI].rate,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC HUNG"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
@@ -1973,6 +2134,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagc [AGCSETI_DIGI].thung10,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T1"), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
@@ -1983,6 +2145,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagc [AGCSETI_DIGI].t1,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T2"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
@@ -1993,6 +2156,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagc [AGCSETI_DIGI].release10,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T4"), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
@@ -2003,6 +2167,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gagc [AGCSETI_DIGI].t4,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHIF4DSP */
 #if WITHMODEM
@@ -2016,6 +2181,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
@@ -2027,6 +2193,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gmodemmode,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("DATA SPD"), 7, 2, RJ_MDMSPEED, 	ISTEP1,
@@ -2037,6 +2204,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gmodemspeed,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHMODEM */
 #if WITHLFM
@@ -2050,6 +2218,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
@@ -2061,6 +2230,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& lfmmode,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("LFM STRT"), 5, 1, 0, 	ISTEP1,
@@ -2071,6 +2241,7 @@ static const struct menudef menutable [] =
 		& lfmstart100k,
 		NULL,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("LFM STOP"), 5, 1, 0, 	ISTEP1,
@@ -2081,6 +2252,7 @@ static const struct menudef menutable [] =
 		& lfmstop100k,
 		NULL,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("LFM SPD"), 5, 0, 0, 	ISTEP1,
@@ -2091,6 +2263,7 @@ static const struct menudef menutable [] =
 		& lfmspeed1k,
 		NULL,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// Секунды от начала часа до запуска
 	(const struct paramdefdef [1]) {
@@ -2102,6 +2275,7 @@ static const struct menudef menutable [] =
 		& lfmtoffset,
 		NULL,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// Интервал в секундах между запусками в пределах часа
 	(const struct paramdefdef [1]) {
@@ -2113,6 +2287,7 @@ static const struct menudef menutable [] =
 		& lfmtinterval,
 		NULL,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
     (const struct paramdefdef [1]) {
         QLABEL("LFM SHFT"), 5 + WSIGNFLAG, 0, RJ_SIGNED,     ISTEP1,
@@ -2123,7 +2298,8 @@ static const struct menudef menutable [] =
         & lfmfreqbias,
         NULL,
         getlfmbias,
-    },
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+   },
 #endif /* WITHLFM */
 
 #if WITHTX
@@ -2138,6 +2314,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 
@@ -2160,6 +2337,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gpwri,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHPOWERTRIM */
 #if WITHIF4DSP
@@ -2179,6 +2357,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gfanpatime,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#if WITHFANPWM
 	(const struct paramdefdef [1]) {
@@ -2190,6 +2369,7 @@ static const struct menudef menutable [] =
 		& gfanpapwm,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* WITHFANPWM */
 #endif /* WITHFANTIMER */
@@ -2205,6 +2385,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gdactest,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHDSPEXTDDC */
 #if WITHIF4DSP
@@ -2217,6 +2398,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gdacscale,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 
 /* settings page header */
@@ -2230,6 +2412,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 
@@ -2245,6 +2428,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [0].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2256,6 +2440,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [1].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2267,6 +2452,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [2].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2278,6 +2464,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [3].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2289,6 +2476,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [4].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2300,6 +2488,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [5].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2311,6 +2500,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [6].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2322,6 +2512,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [7].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2333,6 +2524,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [8].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2344,6 +2536,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [9].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2355,6 +2548,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [10].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2366,6 +2560,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [11].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2377,6 +2572,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [12].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2388,6 +2584,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [13].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2399,6 +2596,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [14].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2410,6 +2608,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [15].adj_b,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 
 	// gbandf2adj [NUMLPFADJ]
@@ -2422,6 +2621,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [0].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2433,6 +2633,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [1].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2444,6 +2645,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [2].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2455,6 +2657,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [3].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2466,6 +2669,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [4].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2477,6 +2681,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [5].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2488,6 +2693,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [6].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2499,6 +2705,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [7].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2510,6 +2717,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [8].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2521,6 +2729,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [9].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2532,6 +2741,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [10].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2543,6 +2753,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [11].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2554,6 +2765,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [12].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2565,6 +2777,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [13].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2576,6 +2789,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [14].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2587,6 +2801,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [15].adj_a,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #if WITHPACLASSA
 	// gbandf2adj [NUMLPFADJ]
@@ -2599,6 +2814,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [0].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2610,6 +2826,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [1].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2621,6 +2838,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [2].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2632,6 +2850,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [3].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2643,6 +2862,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [4].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2654,6 +2874,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [5].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2665,6 +2886,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [6].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2676,6 +2898,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [7].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2687,6 +2910,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [8].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2698,6 +2922,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [9].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2709,6 +2934,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [10].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2720,6 +2946,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [11].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2731,6 +2958,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [12].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2742,6 +2970,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [13].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2753,6 +2982,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [14].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
@@ -2764,6 +2994,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandf2adj [15].adj_classa,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 
 #endif /* WITHPACLASSA */
@@ -2782,6 +3013,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 
@@ -2796,6 +3028,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& userfsg,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHRFSG */
 #if WITHENCODER
@@ -2808,6 +3041,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& genc1pulses,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("ENC1 DYN"), 8, 3, RJ_ON,	ISTEP1,
@@ -2818,6 +3052,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& genc1dynamic,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("ENC1 DIV"), 7, 0, 0,	ISTEP1,
@@ -2828,6 +3063,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& genc1div,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("BIG STEP"), 7, 3, RJ_YES,	ISTEP1,
@@ -2838,6 +3074,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbigstep,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #if WITHENCODER2
 	(const struct paramdefdef [1]) {
@@ -2849,6 +3086,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& genc2div,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHENCODER2 */
 #endif /* WITHENCODER */
@@ -2867,6 +3105,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& grgbeep,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHIF4DSP */
 #if WITHRPTOFFSET
@@ -2886,6 +3125,7 @@ static const struct menudef menutable [] =
 		NULL,	/* подстройка опорника */
 		& dac1level,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* defined (DAC1_TYPE) */
 	(const struct paramdefdef [1]) {
@@ -2897,6 +3137,7 @@ static const struct menudef menutable [] =
 		& refbias,	/* подстройка частоты опорника */
 		NULL,
 		getrefbase, 	/* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif	/* defined(REFERENCE_FREQ) */
 #if (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ	/* подстройка частоты гетеродина через меню. */
@@ -2909,6 +3150,7 @@ static const struct menudef menutable [] =
 		& lo3offset,	/* подстройка частоты гетеродина */
 		NULL,
 		getlo3base, 	/* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif	/* (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ */
 #if defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570)
@@ -2921,6 +3163,7 @@ static const struct menudef menutable [] =
 		& si570_xtall_offset,	/* подстройка опорника */
 		NULL,
 		si570_get_xtall_base, 	/* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570) */
 #if WITHONLYBANDS
@@ -2933,6 +3176,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& withonlybands,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHONLYBANDS */
 	(const struct paramdefdef [1]) {
@@ -2944,6 +3188,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& stayfreq,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
 	(const struct paramdefdef [1]) {
@@ -2955,6 +3200,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& voltcalibr100mV,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
 #if (WITHCURRLEVEL || WITHCURRLEVEL2)
@@ -2967,6 +3213,7 @@ static const struct menudef menutable [] =
 		& gipacali,
 		NULL,
 		getipacalibase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* (WITHCURRLEVEL || WITHCURRLEVEL2) */
 #if WITHTX
@@ -2980,6 +3227,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& swrmode,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHSWRMTR && ! WITHSHOWSWRPWR */
 	(const struct paramdefdef [1]) {
@@ -2991,6 +3239,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& swrcalibr,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	& xminforward,
@@ -3008,6 +3257,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gtempvmax,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("HEATPROT"), 7, 0, RJ_ON,	ISTEP1,
@@ -3018,6 +3268,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gheatprot,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 #if WITHIF4DSP || defined (TXPATH_BIT_ENABLE_SSB) || defined (TXPATH_BIT_ENABLE_CW) || defined (TXPATH_BIT_GATE)
@@ -3030,6 +3281,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& rxtxdelay,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("TXRX DLY"), 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */
@@ -3040,6 +3292,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& txrxdelay,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* GATEs */
 #endif /* WITHTX */
@@ -3053,6 +3306,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& lo1level,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHLO1LEVELADJ */
 #if LO1PHASES
@@ -3065,6 +3319,7 @@ static const struct menudef menutable [] =
 		& phasesmap [0],
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #if WITHTX
 	(const struct paramdefdef [1]) {
@@ -3076,6 +3331,7 @@ static const struct menudef menutable [] =
 		& phasesmap [1],
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHTX */
 #endif /* LO1PHASES */
@@ -3090,6 +3346,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& alignmode,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif	/* LO1MODE_HYBRID */
 
@@ -3103,6 +3360,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gforcexvrtr,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif	/* WITHDEBUG */
 
@@ -3116,6 +3374,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& lo1powmap [0],
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("LO1DV TX"), 7, 0, RJ_POW2,	ISTEP1,
@@ -3126,6 +3385,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& lo1powmap [1],
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif
 #if LO4FDIV_ADJ
@@ -3138,6 +3398,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& lo4powmap [0],
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("LO4DV TX"), 7, 0, RJ_POW2,	ISTEP1,
@@ -3148,6 +3409,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& lo4powmap [1],
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif
 
@@ -3161,6 +3423,7 @@ static const struct menudef menutable [] =
 		NULL,			/* калибровка уровней S-метра */
 		& s9level,
 		getzerobase, 
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("S9 DELTA"), 7, 0, 0,	ISTEP1,
@@ -3171,6 +3434,7 @@ static const struct menudef menutable [] =
 		NULL,			/* калибровка уровней S-метра */
 		& s9delta,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("+60DELTA"), 7, 0, 0,	ISTEP1,
@@ -3181,6 +3445,7 @@ static const struct menudef menutable [] =
 		NULL,			/* калибровка уровней S-метра */
 		& s9_60_delta,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("ATTPRESH"), 7, 0, RJ_ON,	ISTEP1,	/* attenuator-preamplifier shift */
@@ -3191,6 +3456,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gattpresh,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHBARS */
 
@@ -3204,6 +3470,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& hffreqswitch,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHANTSELECT2 */
 
@@ -3218,6 +3485,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gbandsetbcast,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHBCBANDS */
 
@@ -3231,6 +3499,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bandset6m,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* TUNE_6MBAND */
 #if TUNE_4MBAND
@@ -3243,6 +3512,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bandset4m,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* TUNE_6MBAND */
 #if TUNE_2MBAND
@@ -3255,6 +3525,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& bandset2m,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* TUNE_2MBAND */
 
@@ -3268,6 +3539,7 @@ static const struct menudef menutable [] =
 		NULL,
 		NULL,
 		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
@@ -3279,6 +3551,7 @@ static const struct menudef menutable [] =
 		& gzero,
 		NULL,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("S/N"), 7, 0, RJ_SERIALNR, 	ISTEP_RO,	// Индивидуальный номер изделия
@@ -3289,6 +3562,7 @@ static const struct menudef menutable [] =
 		& gzero,
 		NULL,
 		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	& xgcputype,
 	& xgcpufreq,
@@ -3302,6 +3576,7 @@ static const struct menudef menutable [] =
 		& gzero,
 		NULL,
 		getddrfreqbase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("BUS FREQ"), 7, 0, 0, 	ISTEP_RO,	// частота шины
@@ -3312,6 +3587,7 @@ static const struct menudef menutable [] =
 		& gzero,
 		NULL,
 		getaxissfreqbase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif
 };
