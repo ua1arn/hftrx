@@ -8,8 +8,7 @@ enum {
 	DLEM = 30,		// Menu window upper line
 	DLES = 30 + 9,		// spectrum window upper line
 	DLEB = 96 - GRID2Y(1),		// 96-5	- bottom line
-	MIDLABEL = 30,
-	MIDVALUE = MIDLABEL + 4,
+	MIDMENU = 30,
 	//
 	DLE_unused
 };
@@ -147,9 +146,7 @@ static const dzone_t dzones [] =
 
 #if 1
 	// Middle bar
-//	{	0, MIDLABEL,	BDTH_ALLRX,	10,	display2_dummy,  & dzi_middlemenu, PG0, },
-	{	0, MIDLABEL,	BDTH_ALLRX,	4,	display2_midlabel,  & dzi_compat, PG0, },
-	{	0, MIDVALUE,	BDTH_ALLRX,	4,	display2_midvalue,  & dzi_compat, PG0, },
+	{	0, MIDMENU,	BDTH_ALLRX,	8,	display2_midbar,  & dzi_compat, PG0, },
 #endif
 
 	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_wfl_init,		NULL,	PGINI, },	// формирование палитры водопада

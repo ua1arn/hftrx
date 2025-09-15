@@ -2742,38 +2742,7 @@ void display_1fmenu(const gxdrawb_t * db,
 	display2_text(db, x, y, & label, colors_1fmenu, 0, xspan, yspan);
 }
 
-/////////////////
-///
-
-void display2_midlabelX(const gxdrawb_t * db,
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx,
-	uint_fast8_t section,
-	uint_fast8_t width,
-	uint_fast8_t yspan
-	)
-{
-	uint_fast8_t active;
-	const char * const label = hamradio_midlabel5(section, & active);
-	display_2states(db, x, y, active, label, label, width, yspan);
-}
-
-void display2_midvalueX(const gxdrawb_t * db,
-	uint_fast8_t x,
-	uint_fast8_t y,
-	dctx_t * pctx,
-	uint_fast8_t section,
-	uint_fast8_t width,
-	uint_fast8_t yspan
-	)
-{
-	uint_fast8_t active;
-	const char * const label = hamradio_midvalue5(section, & active);
-	display_2states(db, x, y, active, label, label, width, yspan);
-}
-
-void display2_midlabel(const gxdrawb_t * db,
+void display2_midbar(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -2781,34 +2750,31 @@ void display2_midlabel(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	const uint_fast8_t width = 5;
+	const uint_fast8_t width = xspan / MIDCELLS - 1;
+	const uint_fast8_t rowheight = yspan / 2;
+
 	uint_fast8_t section;
 	for (section = 0; section < MIDCELLS; ++ section)
 	{
 		const uint_fast8_t last = section == (MIDCELLS - 1);
 		const uint_fast8_t xpos = x + CHARS2GRID(width + 1) * section;
-		display2_midlabelX(db, xpos, y, pctx, section, last ? xspan - xpos : width, yspan);
+		const uint_fast8_t cellwidth = last ? xspan - xpos : width;
+		uint_fast8_t active;
+		const char * const label = hamradio_midlabel5(section, & active);
+		const char * const value = hamradio_midvalue5(section, & active);
+
+		display_2states(db, xpos, y + rowheight * 0, active, label, label, cellwidth, rowheight);
+		display_2states(db, xpos, y + rowheight * 1, active, value, value, cellwidth, rowheight);
+		{
+			const uint_fast16_t xpix = GRID2X(xpos);
+			const uint_fast16_t ypix = GRID2Y(y);
+			const uint_fast16_t w = GRID2X(cellwidth);
+			const uint_fast16_t h = GRID2Y(yspan);
+			colpip_rect(db, xpix, ypix, xpix + w - 1, ypix + h - 1, COLOR_RED, 0);
+		}
+
 	}
 }
-
-void display2_midvalue(const gxdrawb_t * db,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	const uint_fast8_t width = 5;
-	uint_fast8_t section;
-	for (section = 0; section < MIDCELLS; ++ section)
-	{
-		const uint_fast8_t last = section == (MIDCELLS - 1);
-		const uint_fast8_t xpos = x + CHARS2GRID(width + 1) * section;
-		display2_midvalueX(db, xpos, y, pctx, section, last ? xspan - xpos : width, yspan);
-	}
-}
-
 
 // отображение состояния USB BT
 static void display2_btsts2(const gxdrawb_t * db,
