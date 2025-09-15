@@ -890,15 +890,15 @@
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
-		/*arm_hardware_pioc_outputs20m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
-		arm_hardware_pioi_outputs20m(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
-		arm_hardware_pioe_outputs20m(targettsc1, 1 * targettsc1); /*  */ \
-		arm_hardware_pioe_outputs20m(targetnvram, 1 * targetnvram); /*  */ \
-		arm_hardware_pioe_outputs20m(targetctl1, 1 * targetctl1); /*  */ \
-		arm_hardware_pioe_outputs20m(targetcodec1, 1 * targetcodec1); /*  */ \
-		arm_hardware_pioe_outputs20m(targetfpga1, 1 * targetfpga1); /*  */ \
-		arm_hardware_pioe_outputs20m(targetadck, 1 * targetadck); /*  */ \
-		arm_hardware_pioe_outputs20m(targetxad2, 1 * targetxad2); /*  */ \
+		/*arm_hardware_pioc_outputs2m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
+		arm_hardware_pioi_outputs2m(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
+		arm_hardware_pioe_outputs2m(targettsc1, 1 * targettsc1); /*  */ \
+		arm_hardware_pioe_outputs2m(targetnvram, 1 * targetnvram); /*  */ \
+		arm_hardware_pioe_outputs2m(targetctl1, 1 * targetctl1); /*  */ \
+		arm_hardware_pioe_outputs2m(targetcodec1, 1 * targetcodec1); /*  */ \
+		arm_hardware_pioe_outputs2m(targetfpga1, 1 * targetfpga1); /*  */ \
+		arm_hardware_pioe_outputs2m(targetadck, 1 * targetadck); /*  */ \
+		arm_hardware_pioe_outputs2m(targetxad2, 1 * targetxad2); /*  */ \
 	} while (0)
 
 	// MOSI & SCK port
@@ -922,9 +922,9 @@
 
 	#define WITHSPI1HW	1	// Use SPI1
 	#define HARDWARE_SPI1_INITIALIZE() do { \
-		arm_hardware_pioh_altfn20(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
-		arm_hardware_pioh_altfn20(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
-		arm_hardware_pioh_altfn20(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
+		arm_hardware_pioh_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
+		arm_hardware_pioh_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
+		arm_hardware_pioh_altfn2(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
 	} while (0)
 
 	#define SPIIO_INITIALIZE() do { \
