@@ -1556,6 +1556,12 @@ static const struct {
 	{ BOARDPOWERMAX, "HP" },
 };
 
+// HP/LP
+static size_t getvaltextpwrmode(char * buff, size_t count, int_fast32_t value)
+{
+	return local_snprintf_P(buff, count, "%s", pwrmodes [value]);
+}
+
 #endif /* WITHPOWERLPHP */
 
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
@@ -1571,6 +1577,21 @@ static const struct {
 #endif /* WITHLMSAUTONOTCH */
 	{ BOARD_NOTCH_MANUAL, 	"NOTCH" },
 };
+
+static size_t getvaltextnotchmode(char * buff, size_t count, int_fast32_t value)
+{
+	switch (notchmodes [value].code)
+	{
+	default:
+	case BOARD_NOTCH_OFF:
+		return local_snprintf_P(buff, count, "%s", "OFF");
+	case BOARD_NOTCH_MANUAL:
+		return local_snprintf_P(buff, count, "%s", "FREQ");
+	case BOARD_NOTCH_AUTO:
+		return local_snprintf_P(buff, count, "%s", "AUTO");
+	}
+}
+
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 
 #if WITHUSEDUALWATCH
@@ -1602,6 +1623,12 @@ static uint_fast8_t findtxaudioindex(uint_fast8_t code)
 			return i;
 	}
 	return 0;
+}
+
+static size_t getvaltexttxaudio(char * buff, size_t count, int_fast32_t value)
+{
+	ASSERT(value >= 0 && value < TXAUDIOSRC_COUNT);
+	return local_snprintf_P(buff, count, "%s", txaudiosrcs [value].label);
 }
 
 #endif /* WITHTX && WITHIF4DSP */
@@ -4735,18 +4762,18 @@ enum
 	static uint_fast8_t catenable = 1;	/* модифицируется через меню. */
 	static uint_fast8_t catbaudrate = 3;	/* 3 is a 9600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
 
-static const struct paramdefdef xcatenable =
-{
-	QLABEL("CAT ENAB"), 8, 3, RJ_ON,	ISTEP1,
-	ITEM_VALUE,
-	0, 1,
-	OFFSETOF(struct nvmap, catenable),
-	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& catenable,
-	getzerobase,
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-};
+	static const struct paramdefdef xcatenable =
+	{
+		QLABEL("CAT ENAB"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, catenable),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& catenable,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 
 	#if WITHCAT_MUX
 
@@ -4763,12 +4790,24 @@ static const struct paramdefdef xcatenable =
 			{	BOARD_CATMUX_DIN8, "DIN8", },
 		};
 
+		static size_t getvaltextcatspeed(char * buff, size_t count, int_fast32_t value)
+		{
+			return local_snprintf_P(buff, count, "%u", catbr2int [value] * BRSCALE);
+		}
+
+		#if WITHCAT_MUX
+		static size_t getvaltextcatmux(char * buff, size_t count, int_fast32_t value)
+		{
+			return local_snprintf_P(buff, count, "%s", catmuxmodes [value].label);
+		}
+		#endif /* WITHCAT_MUX */
+
 		enum { nopttsig = BOARD_CATSIG_NONE };
 		enum { nokeysig = BOARD_CATSIG_NONE };
 		static uint_fast8_t gcatmux;
 		static const struct paramdefdef xgcatmux =
 		{
-			QLABEL("CAT SEL"), 8, 3, RJ_CATMUX,	ISTEP1,
+			QLABEL("CAT SEL"), 8, 3, RJ_CB,	ISTEP1,
 			ITEM_VALUE,
 			0, ARRAY_SIZE(catmuxmodes) - 1,
 			OFFSETOF(struct nvmap, gcatmux),
@@ -4776,11 +4815,11 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gcatmux,
 			getzerobase,
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+			getvaltextcatmux, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xcatbaudrate =
 		{
-			QLABEL("CAT SPD"), 7, 0, RJ_CATSPEED,	ISTEP1,
+			QLABEL("CAT SPD"), 7, 0, RJ_CB,	ISTEP1,
 			ITEM_VALUE,
 			0, ARRAY_SIZE(catbr2int) - 1,
 			OFFSETOF(struct nvmap, catbaudrate),
@@ -4788,7 +4827,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& catbaudrate,
 			getzerobase,
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+			getvaltextcatspeed, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 
 	#elif WITHCAT_CDC
@@ -4804,11 +4843,27 @@ static const struct paramdefdef xcatenable =
 		enum { nokeysig = BOARD_CATSIG_NONE };
 	#endif /* WITHCAT_CDC */
 
+	static const char catsiglabels [BOARD_CATSIG_count] [9] =
+	{
+		"NONE",
+		"SER1 DTR",
+		"SER1 RTS",
+	#if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
+		"SER2 DTR",
+		"SER2 RTS",
+	#endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
+	};
+
+	static size_t getvaltextcatsig(char * buff, size_t count, int_fast32_t value)
+	{
+		return local_snprintf_P(buff, count, "%s", catsiglabels [value]);
+	}
+
 #if WITHTX
 	static uint_fast8_t catsigptt = nopttsig;	/* Выбраный сигнал для перехода на передачу по CAT */
 	static const struct paramdefdef xcatsigptt =
 	{
-		QLABEL("CAT PTT"), 8, 8, RJ_CATSIG,	ISTEP1,
+		QLABEL("CAT PTT"), 8, 8, RJ_CB,	ISTEP1,
 		ITEM_VALUE,
 		0, BOARD_CATSIG_count - 1,
 		OFFSETOF(struct nvmap, catsigptt),
@@ -4816,13 +4871,13 @@ static const struct paramdefdef xcatenable =
 		NULL,
 		& catsigptt,
 		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		getvaltextcatsig, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 #endif /* WITHTX */
 	static uint_fast8_t catsigkey = nokeysig;	/* Выбраный сигнал для манипуляции по CAT */
 	static const struct paramdefdef xcatsigkey =
 	{
-		QLABEL("CAT KEY"), 8, 8, RJ_CATSIG,	ISTEP1,
+		QLABEL("CAT KEY"), 8, 8, RJ_CB,	ISTEP1,
 		ITEM_VALUE,
 		0, BOARD_CATSIG_count - 1,
 		OFFSETOF(struct nvmap, catsigkey),
@@ -4830,7 +4885,7 @@ static const struct paramdefdef xcatenable =
 		NULL,
 		& catsigkey,
 		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		getvaltextcatsig, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
 #else /* WITHCAT */
@@ -5197,7 +5252,10 @@ static const struct paramdefdef xcatenable =
 			2503,	/* 250.3 герц */
 			2541,	/* 254.1 герц */
 		};
-
+		static size_t getvaltextsubtone(char * buff, size_t count, int_fast32_t value)
+		{
+			return local_snprintf_P(buff, count, "%u.%1u", gsubtones [value] / 10, gsubtones [value] % 10);
+		}
 		static uint_fast8_t gsubtonei = 18;	// частота subtone = 77.0 герц
 		static uint_fast8_t gctssenable;	// разрешить формирование subtone
 		//  Continuous Tone-Coded Squelch System or CTCSS settings group
@@ -5216,7 +5274,7 @@ static const struct paramdefdef xcatenable =
 		//  Continuous Tone-Coded Squelch System or CTCSS freq
 		static const struct paramdefdef xgsubtonei =
 		{
-			QLABEL2("CTCSS FQ", "CTCSS FQ"), 7, 1, RJ_SUBTONE,	ISTEP1,
+			QLABEL2("CTCSS FQ", "CTCSS FQ"), 7, 1, RJ_CB,	ISTEP1,
 			ITEM_VALUE,
 			0, ARRAY_SIZE(gsubtones) - 1,
 			OFFSETOF(struct nvmap, gsubtonei),
@@ -5224,7 +5282,7 @@ static const struct paramdefdef xcatenable =
 			NULL,
 			& gsubtonei,
 			getzerobase,
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+			getvaltextsubtone, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		//  Continuous Tone-Coded Squelch System or CTCSS control
 		static const struct paramdefdef xgctssenable =
@@ -8567,18 +8625,6 @@ static void micproc_load(void)
 ///////////////////////////
 //
 // работа со вторым валкодером
-
-static const char catsiglabels [BOARD_CATSIG_count] [9] =
-{
-	"NONE",
-	"SER1 DTR",
-	"SER1 RTS",
-#if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
-	"SER2 DTR",
-	"SER2 RTS",
-#endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
-};
-
 
 static unsigned getselector_bandgroupant(unsigned * count)
 {
@@ -17283,10 +17329,6 @@ param_format(
 		return local_snprintf_P(buff, count, "%s", value ? "YES" : "NO");
 	case RJ_ON:
 		return local_snprintf_P(buff, count, "%s", value ? "ON" : "OFF");
-#if WITHSUBTONES && WITHTX
-	case RJ_SUBTONE:
-		return local_snprintf_P(buff, count, "%u.%1u", gsubtones [value] / 10, gsubtones [value] % 10);
-#endif /* WITHSUBTONES && WITHTX */
 
 	case RJ_SIGNED:
 		switch (pd->qcomma)
@@ -17316,11 +17358,6 @@ param_format(
 		case 3:
 			return local_snprintf_P(buff, count, "%" PRIdFAST32 ".%03" PRIdFAST32, value / 1000, value % 1000);
 		}
-
-#if WITHTX && WITHIF4DSP
-	case RJ_TXAUDIO:
-		return local_snprintf_P(buff, count, "%s", txaudiosrcs [value].label);
-#endif /* WITHTX && WITHIF4DSP */
 
 #if WITHMODEM
 
@@ -17353,23 +17390,6 @@ param_format(
 			return local_snprintf_P(buff, count, "%s", value ? msg_dial : msg_bars);
 		}
 
-#if WITHNOTCHFREQ || WITHNOTCHONOFF
-	case RJ_NOTCH:
-		{
-			switch (notchmodes [value].code)
-			{
-			default:
-			case BOARD_NOTCH_OFF:
-				return local_snprintf_P(buff, count, "%s", "OFF");
-			case BOARD_NOTCH_MANUAL:
-				return local_snprintf_P(buff, count, "%s", "FREQ");
-			case BOARD_NOTCH_AUTO:
-				return local_snprintf_P(buff, count, "%s", "AUTO");
-			}
-		}
-		break;
-#endif /* WITHNOTCHFREQ || WITHNOTCHONOFF */
-
 #if WITHUSEDUALWATCH
 	case RJ_DUAL:
 		return local_snprintf_P(buff, count, "%s", mainsubrxmodes [value].label);
@@ -17377,24 +17397,6 @@ param_format(
 
 	case RJ_ENCRES:
 		return local_snprintf_P(buff, count, "%u", encresols [value] * ENCRESSCALE);
-
-#if WITHCAT
-	case RJ_CATSPEED:
-		return local_snprintf_P(buff, count, "%u", catbr2int [value] * BRSCALE);
-
-#if WITHCAT_MUX
-	case RJ_CATMUX:
-		return local_snprintf_P(buff, count, "%s", catmuxmodes [value].label);
-#endif /* WITHCAT_MUX */
-
-	case RJ_CATSIG:
-		return local_snprintf_P(buff, count, "%s", catsiglabels [value]);
-#endif /* WITHCAT */
-
-#if WITHPOWERLPHP
-	case RJ_POWER:	/* отображние мощности HP/LP */
-		return local_snprintf_P(buff, count, "%s", pwrmodes [value]);
-#endif /* WITHPOWERLPHP */
 
 	case RJ_CPUTYPE:
 		{

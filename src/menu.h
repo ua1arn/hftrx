@@ -40,7 +40,7 @@ static const struct menudef menutable [] =
 #elif WITHPOWERLPHP
 	#if WITHLOWPOWEREXTTUNE
 	(const struct paramdefdef [1]) {
-		QLABEL("ATU PWR"), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+		QLABEL("ATU PWR"), 7, 0, RJ_CB,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
 		ITEM_VALUE,
 		0, PWRMODE_COUNT - 1,
 		OFFSETOF(struct nvmap, gtunepower),
@@ -48,7 +48,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gtunepower,
 		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		getvaltextpwrmode, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHPOWERTRIM */
@@ -1116,7 +1116,7 @@ static const struct menudef menutable [] =
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
-		QLABEL("NOTCH"), 8, 3, RJ_NOTCH,	ISTEP1,		/* управление режимом NOTCH */
+		QLABEL("NOTCH"), 8, 3, RJ_CB,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
@@ -1124,7 +1124,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gnotchtype,
 		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		getvaltextnotchmode, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#if ! WITHPOTNOTCH
 	(const struct paramdefdef [1]) {
@@ -1469,7 +1469,7 @@ static const struct menudef menutable [] =
 	& xglineamp,	/* подстройка усиления с линейного входа через меню. */
 	#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 	(const struct paramdefdef [1]) {
-		QLABEL("MIC SSB"), 8, 5, RJ_TXAUDIO,	ISTEP1,
+		QLABEL("MIC SSB"), 8, 5, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_SSB),
@@ -1477,10 +1477,10 @@ static const struct menudef menutable [] =
 		NULL,
 		& gtxaudio [MODE_SSB],
 		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		getvaltexttxaudio, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("MIC DIG"), 8, 5, RJ_TXAUDIO,	ISTEP1,
+		QLABEL("MIC DIG"), 8, 5, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_DIGI),
@@ -1488,10 +1488,10 @@ static const struct menudef menutable [] =
 		NULL,
 		& gtxaudio [MODE_DIGI],
 		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		getvaltexttxaudio, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("MIC AM"), 8, 5, RJ_TXAUDIO,	ISTEP1,
+		QLABEL("MIC AM"), 8, 5, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_AM),
@@ -1499,10 +1499,10 @@ static const struct menudef menutable [] =
 		NULL,
 		& gtxaudio [MODE_AM],
 		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		getvaltexttxaudio, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("MIC FM"), 8, 5, RJ_TXAUDIO,	ISTEP1,
+		QLABEL("MIC FM"), 8, 5, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_NFM),
@@ -1510,7 +1510,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gtxaudio [MODE_NFM],
 		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		getvaltexttxaudio, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("MIC AGC"), 8, 3, RJ_ON,	ISTEP1,
@@ -2329,7 +2329,7 @@ static const struct menudef menutable [] =
   #endif /* ! WITHPOTPOWER */
 #elif WITHPOWERLPHP
 	(const struct paramdefdef [1]) {
-		QLABEL("TX POWER"), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
+		QLABEL("TX POWER"), 7, 0, RJ_CB,	ISTEP1,		/* мощность при обычной работе на передачу */
 		ITEM_VALUE,
 		0, PWRMODE_COUNT - 1,
 		OFFSETOF(struct nvmap, gpwri),
@@ -2337,7 +2337,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& gpwri,
 		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		getvaltextpwrmode, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHPOWERTRIM */
 #if WITHIF4DSP
