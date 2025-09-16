@@ -780,6 +780,15 @@
 	#define PTT2_BIT_PTT				(UINT32_C(1) << 26)		// PD26 - PTT
 	#define PTT3_TARGET_PIN				gpioX_getinputs(GPIOD)
 	#define PTT3_BIT_PTT				(UINT32_C(1) << 25)		// PD25 - READ PTT
+
+	// FT-710 specific bits
+	#define DAKY_TARGET_PIN				gpioX_getinputs(GPIOD)
+	#define DAKY_BIT_PTT				(UINT32_C(1) << 25)		// PD23 - READ DAKY
+	#define HARDWARE_GET_DAKY()			((DAKY_TARGET_PIN & DAKY_BIT_PTT) == 0)
+	#define SHIFT_TARGET_PIN			gpioX_getinputs(GPIOD)
+	#define SHIFT_BIT_PTT				(UINT32_C(1) << 25)		// PD24 - READ SHIFT
+	#define HARDWARE_GET_SHIFT() ((SHIFT_TARGET_PIN & SHIFT_BIT_PTT) == 0)
+
 	// получить бит запроса оператором перехода на пердачу
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0 || (PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() do { \
@@ -789,6 +798,10 @@
 			arm_hardware_piod_updown(PTT2_BIT_PTT, PTT2_BIT_PTT, 0); \
 			arm_hardware_piod_inputs(PTT3_BIT_PTT); \
 			arm_hardware_piod_updown(PTT3_BIT_PTT, PTT3_BIT_PTT, 0); \
+			arm_hardware_piod_inputs(DAKY_BIT_PTT); \
+			arm_hardware_piod_updown(DAKY_BIT_PTT, DAKY_BIT_PTT, 0); \
+			arm_hardware_piod_inputs(SHIFT_BIT_PTT); \
+			arm_hardware_piod_updown(SHIFT_BIT_PTT, SHIFT_BIT_PTT, 0); \
 		} while (0)
 	// ---
 	// TUNE input - PD11
