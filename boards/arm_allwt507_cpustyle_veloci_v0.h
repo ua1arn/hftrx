@@ -841,8 +841,12 @@
 	#define OE_CTL1_BIT	(UINT32_C(1) << 16)	/* PI16 */
 	//#define targetdataflash 0xFF
 	#define targetnone 0x00
+
 	#define FPGALOADER_SPISPEED SPIC_SPEED4M
-	#define SPIDF_SPEEDC SPIC_SPEED4M
+	#define FPGAREG_V1_SPISPEED SPIC_SPEED4M
+	#define SPIDF_SPEEDC 		SPIC_SPEED4M
+	#define NVRAM_SPISPEED 		SPIC_SPEED4M
+	#define CTLREG_SPISPEED		SPIC_SPEED400k
 
 	#define targetctl1		(UINT32_C(1) << 22)		// PE22 board control registers chain
 	#define targettsc1		(UINT32_C(1) << 19)		// PE19 XPT2046 SPI chip select signal - CSEXT1

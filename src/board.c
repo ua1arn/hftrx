@@ -23,8 +23,10 @@
 
 static void ua1cei_magloop_initialize(void);
 
-#define CTLREG_SPISPEED	SPIC_SPEED400k
 #define CTLREG_SPIMODE	SPIC_MODE3
+#ifndef CTLREG_SPISPEED
+	#define CTLREG_SPISPEED	SPIC_SPEED400k
+#endif
 
 //#include "chip/cmx992.c"
 /********************************/

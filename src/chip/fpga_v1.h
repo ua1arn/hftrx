@@ -12,8 +12,10 @@ extern "C" {
 
 extern const phase_t phase_0;
 
-#define FPGAREG_V1_SPISPEED		SPIC_SPEEDUFAST
 #define FPGAREG_V1_SPIMODE		SPIC_MODE3
+#ifndef FPGAREG_V1_SPISPEED
+	#define FPGAREG_V1_SPISPEED		SPIC_SPEEDUFAST
+#endif
 
 #define FPGA_DECODE_CTLREG	(1u << 0)
 #define FPGA_DECODE_NCO1	(1u << 1)
@@ -41,7 +43,7 @@ board_fpga1_spi_exchange_frame(
 	unsigned int size
 	)
 {
-	prog_spi_exchange(target, SPIC_SPEEDFAST, CTLREG_SPIMODE, tbuff, rbuff, size);
+	prog_spi_exchange(target, FPGAREG_V1_SPISPEED, CTLREG_SPIMODE, tbuff, rbuff, size);
 }
 
 /* programming FPGA SPI registers */

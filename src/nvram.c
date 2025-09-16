@@ -18,7 +18,9 @@
 #include "spi.h"
 
 #define NVRAM_SPIMODE SPIC_MODE3		// mode 3 or mode 0 suppeoted by FRAM chip.
-#define NVRAM_SPISPEED SPIC_SPEEDFAST
+#ifndef NVRAM_SPISPEED
+	#define NVRAM_SPISPEED SPIC_SPEEDFAST
+#endif
 
 #define WREN	0x06
 #define WRITE	0x02
