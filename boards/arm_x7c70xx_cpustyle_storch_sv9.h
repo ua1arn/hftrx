@@ -662,15 +662,6 @@
 		gpio_input2(SPI_MISO_MIO, pinmode_input); \
 	} while (0)
 
-	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-	} while (0)
-
-	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-		enum { IOTYPE = TARGET_SPI_IOTYPE }; \
-		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 1); \
-		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 0); \
-		gpio_input2(SPI_MOSI_MIO, pinmode_input); \
-	} while (0)
 
 	#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
 

@@ -563,12 +563,6 @@
 			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
 			arm_hardware_piob_inputs(SPI_MISO_BIT); \
 		} while (0)
-	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-			arm_hardware_piob_altfn20(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
-		} while (0)
-	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
-		} while (0)
 
 	#define HARDWARE_UART1_INITIALIZE() do { \
 			const uint_fast32_t TXMASK = (UINT32_C(1) << 9); /* PA9: TX DATA line (2 MHz) */ \

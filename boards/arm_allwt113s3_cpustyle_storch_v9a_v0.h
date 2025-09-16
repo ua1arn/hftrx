@@ -610,7 +610,7 @@
 	#define HARDWARE_SPI_FREQ (allwnr_t113_get_spi0_freq())
 	#define	SPIDFHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI0_INITIALIZE() do { \
 		arm_hardware_pioc_altfn20(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
 		arm_hardware_pioc_altfn20(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
 		arm_hardware_pioc_altfn20(SPI_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
@@ -621,9 +621,12 @@
 	} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 	} while (0)
-	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-	} while (0)
-	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
+
+	#define WITHSPI0HW	1	// Use SPI0
+
+	/* compatibility define (should be removed) */
+	#define SPIIO_INITIALIZE() do { \
+		HARDWARE_SPI0_INITIALIZE(); \
 	} while (0)
 
 #else /* WITHSPIHW || WITHSPISW */

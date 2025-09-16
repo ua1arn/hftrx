@@ -924,13 +924,14 @@
 	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0x03	/* t507: 000: OSC24M 001: PLL_PERI0(1X) 010: PLL_PERI1 (1X) 011: PLL_PERI0(2X) 100: PLL_PERI1 (2X) */
 	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
 
-	#define WITHSPI1HW	1	// Use SPI1
 	#define HARDWARE_SPI1_INITIALIZE() do { \
 		arm_hardware_pioh_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
 		arm_hardware_pioh_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
 		arm_hardware_pioh_altfn2(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
 	} while (0)
+	#define WITHSPI1HW	1	// Use SPI1
 
+	/* compatibility define (should be removed) */
 	#define SPIIO_INITIALIZE() do { \
 		HARDWARE_SPI1_INITIALIZE(); \
 	} while (0)

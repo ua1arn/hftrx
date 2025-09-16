@@ -582,12 +582,6 @@
 			arm_hardware_pio6_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT);	/* PIO enable */ \
 		} while (0)
 
-	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-			arm_hardware_pio6_alternative(SPI_MOSI_BIT, R7S721_PIOALT_3);	/* PIO disable for MOSI bit (SD CARD read support) */ \
-		} while (0)
-	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-			arm_hardware_pio6_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
-		} while (0)
 
 #endif /* WITHSPIHW */
 

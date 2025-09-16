@@ -557,10 +557,6 @@
 	} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 	} while (0)
-	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-	} while (0)
-	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-	} while (0)
 
 #else /* WITHSPIHW || WITHSPISW */
 

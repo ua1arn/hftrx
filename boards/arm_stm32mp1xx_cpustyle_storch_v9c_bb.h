@@ -687,12 +687,6 @@ void user_uart4_onrxchar(uint_fast8_t c);
 			arm_hardware_pioz_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); \
 			arm_hardware_pioz_inputs(SPI_MISO_BIT); \
 		} while (0)
-	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-			arm_hardware_pioz_altfn20(SPI_MOSI_BIT, AF_SPI1);	/* AF_5 PIO disable for MOSI bit */ \
-		} while (0)
-	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-			arm_hardware_pioz_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit */ \
-		} while (0)
 
 	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
