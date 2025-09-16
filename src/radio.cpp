@@ -1627,7 +1627,7 @@ static uint_fast8_t findtxaudioindex(uint_fast8_t code)
 
 static size_t getvaltexttxaudio(char * buff, size_t count, int_fast32_t value)
 {
-	ASSERT(value >= 0 && value < TXAUDIOSRC_COUNT);
+	ASSERT(value >= 0 && value < (int) TXAUDIOSRC_COUNT);
 	return local_snprintf_P(buff, count, "%s", txaudiosrcs [value].label);
 }
 
