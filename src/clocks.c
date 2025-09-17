@@ -4649,6 +4649,29 @@ uint_fast32_t allwnr_t113_get_audio_codec_adc_freq(void)
 	}
 }
 
+uint_fast32_t allwnr_t113_get_dmic_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->DMIC_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x1F);
+	const uint_fast32_t pgdiv = M * N;
+	// ADMIC_CLK = Clock Source/M/N.
+	//	Clock Source Select
+	//	00: PLL_AUDIO0(1X)
+	//	01: PLL_AUDIO1(DIV2)
+	//	10: PLL_AUDIO1(DIV5)
+	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
+	{
+	default:
+	case 0x00:	/* 00: PLL_AUDIO0(1X) */
+		return allwnr_t113_get_audio0pll1x_freq() / pgdiv;
+	case 0x01:	/* 10: PLL_AUDIO1(DIV2) */
+		return allwnr_t113_get_audio1pll_div2_freq() / pgdiv;
+	case 0x02: 	/* 10: PLL_AUDIO1(DIV5) */
+		return allwnr_t113_get_audio1pll_div5_freq() / pgdiv;
+	}
+}
+
 // Graphic 2D (G2D)
 uint_fast32_t allwnr_t113_get_g2d_freq(void)
 {
