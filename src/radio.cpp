@@ -2840,6 +2840,19 @@ static const uint_fast8_t encresols [] =
 	600 / ENCRESSCALE,	// 11
 };
 
+static size_t getvaltextencres(char * buff, size_t count, int_fast32_t value)
+{
+	ASSERT(value >= 0 && value < (int) ARRAY_SIZE(encresols));
+	return local_snprintf_P(buff, count, "%u", encresols [value] * ENCRESSCALE);
+}
+
+static size_t getvaltextsmetertype(char * buff, size_t count, int_fast32_t value)
+{
+	static const char msg_dial [] = "DIAL";
+	static const char msg_bars [] = "BARS";
+	return local_snprintf_P(buff, count, "%s", value ? msg_dial : msg_bars);
+}
+
 #if WITHTOUCHGUI
 	#define BANDPAD	0
 #else
@@ -4212,18 +4225,26 @@ static const struct paramdefdef xgnoisereduct =
 };
 #endif /* WITHIF4DSP */
 #if WITHUSEDUALWATCH
+
+
+static size_t getvaltextmaisubrxmode(char * buff, size_t count, int_fast32_t value)
+{
+	ASSERT(value >= 0 && value < (int) MAINSUBRXMODE_COUNT);
+	return local_snprintf_P(buff, count, "%s", mainsubrxmodes [value].label);
+}
+
 // Левый/правый, A - main RX, B - sub RX
 static const struct paramdefdef xmainsubrxmode =
 {
-	QLABEL("DUAL"), 7, 0, RJ_DUAL,	ISTEP1,
-	ITEM_VALUE,
+	QLABEL("DUAL"), 7, 0, RJ_CB,	ISTEP1,
+	ITEM_VALUE | ITEM_LISTSELECT,
 	0, MAINSUBRXMODE_COUNT - 1,
 	OFFSETOF(struct nvmap, mainsubrxmode),
 	getselector0, nvramoffs0, valueoffs0,
 	NULL,
 	& mainsubrxmode,
 	getzerobase, /* складывается со смещением и отображается */
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	getvaltextmaisubrxmode, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif /* WITHUSEDUALWATCH */
 
@@ -17382,21 +17403,6 @@ param_format(
 	case RJ_MONTH:
 		return local_snprintf_P(buff, count, "%s", months [value]);
 #endif /* defined (RTC1_TYPE) */
-
-	case RJ_SMETER:
-		{
-			static const char msg_dial [] = "DIAL";
-			static const char msg_bars [] = "BARS";
-			return local_snprintf_P(buff, count, "%s", value ? msg_dial : msg_bars);
-		}
-
-#if WITHUSEDUALWATCH
-	case RJ_DUAL:
-		return local_snprintf_P(buff, count, "%s", mainsubrxmodes [value].label);
-#endif /* WITHUSEDUALWATCH */
-
-	case RJ_ENCRES:
-		return local_snprintf_P(buff, count, "%u", encresols [value] * ENCRESSCALE);
 
 	case RJ_CPUTYPE:
 		{

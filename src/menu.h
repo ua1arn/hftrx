@@ -275,15 +275,15 @@ static const struct menudef menutable [] =
 	},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	(const struct paramdefdef [1]) {
-		QLABEL2("SMETER", "S-meter Type"), 7, 3, RJ_SMETER,	ISTEP1,
-		ITEM_VALUE,
+		QLABEL2("SMETER", "S-meter Type"), 7, 3, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_LISTSELECT,
 		0, 1,							/* выбор внешнего вида прибора - стрелочный или градусник */
 		OFFSETOF(struct nvmap, gsmetertype),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gsmetertype,
 		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		getvaltextsmetertype, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 #endif /* WITHSPECTRUMWF */
@@ -3033,15 +3033,15 @@ static const struct menudef menutable [] =
 #endif /* WITHRFSG */
 #if WITHENCODER
 	(const struct paramdefdef [1]) {
-		QLABEL("ENC1 RES"), 7, 0, RJ_ENCRES,	ISTEP1,
-		ITEM_VALUE,
+		QLABEL("ENC1 RES"), 7, 0, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_LISTSELECT,
 		0, ARRAY_SIZE(encresols) - 1,
 		OFFSETOF(struct nvmap, genc1pulses),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& genc1pulses,
 		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		getvaltextencres, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("ENC1 DYN"), 8, 3, RJ_ON,	ISTEP1,
