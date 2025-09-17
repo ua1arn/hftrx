@@ -52,6 +52,7 @@ typedef enum IRQn
     CAN0_IRQn = 53,                                   /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) */
     CAN1_IRQn = 54,                                   /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) */
     OWA_IRQn = 55,                                    /*!< OWA One Wire Audio (TX only) */
+    DMIC_IRQn = 56,                                   /*!< DMIC  */
     AUDIO_CODEC_IRQn = 57,                            /*!< AUDIO_CODEC Audio Codec */
     I2S_PCM1_IRQn = 59,                               /*!< I2S_PCM  */
     I2S_PCM2_IRQn = 60,                               /*!< I2S_PCM  */

@@ -5842,6 +5842,11 @@
   <name>DMIC</name>
   <description></description>
   <baseAddress>0x02031000</baseAddress>
+  <interrupt>
+   <name>DMIC</name>
+   <value>40</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>DMIC_EN</name>

@@ -1,5 +1,8 @@
 #type; DMIC
 
+#irq; DMIC 56
+#irqrv; DMIC 40
+
 #regdef; DMIC_EN; 0x0000; DMIC Enable Control Register
 #regdef; DMIC_SR; 0x0004; DMIC Sample Rate Register
 #regdef; DMIC_CTR; 0x0008; DMIC Control Register
