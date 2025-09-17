@@ -274,17 +274,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
-	(const struct paramdefdef [1]) {
-		QLABEL2("SMETER", "S-meter Type"), 7, 3, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_LISTSELECT,
-		0, 1,							/* выбор внешнего вида прибора - стрелочный или градусник */
-		OFFSETOF(struct nvmap, gsmetertype),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gsmetertype,
-		getzerobase, /* складывается со смещением и отображается */
-		getvaltextsmetertype, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgsmetertype,
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 #endif /* WITHSPECTRUMWF */
 #if WITHDSPEXTDDC

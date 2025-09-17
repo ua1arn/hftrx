@@ -2846,13 +2846,6 @@ static size_t getvaltextencres(char * buff, size_t count, int_fast32_t value)
 	return local_snprintf_P(buff, count, "%u", encresols [value] * ENCRESSCALE);
 }
 
-static size_t getvaltextsmetertype(char * buff, size_t count, int_fast32_t value)
-{
-	static const char msg_dial [] = "DIAL";
-	static const char msg_bars [] = "BARS";
-	return local_snprintf_P(buff, count, "%s", value ? msg_dial : msg_bars);
-}
-
 #if WITHTOUCHGUI
 	#define BANDPAD	0
 #else
@@ -5912,6 +5905,28 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 	enum { gheatprot = 0, gtempvmax = 99 };
 
 #endif /* WITHTX */
+
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
+static size_t getvaltextsmetertype(char * buff, size_t count, int_fast32_t value)
+{
+	static const char msg_dial [] = "DIAL";
+	static const char msg_bars [] = "BARS";
+	return local_snprintf_P(buff, count, "%s", value ? msg_dial : msg_bars);
+}
+
+static const struct paramdefdef xgsmetertype =
+{
+	QLABEL2("SMETER", "S-meter Type"), 7, 3, RJ_CB,	ISTEP1,
+	ITEM_VALUE | ITEM_LISTSELECT,
+	0, 1,							/* выбор внешнего вида прибора - стрелочный или градусник */
+	OFFSETOF(struct nvmap, gsmetertype),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gsmetertype,
+	getzerobase, /* складывается со смещением и отображается */
+	getvaltextsmetertype, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 static uint_fast8_t gmenuset; 	/* номер комплекта функций на кнопках (переключается кнопкой MENU) */
 static uint_fast8_t dimmflag;	/* не-0: притушить дисплей. */
