@@ -316,7 +316,7 @@ static const struct menudef menutable [] =
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("TM MONTH"), 7, 3, RJ_CB,	ISTEP1,
-		ITEM_VALUE, 
+		ITEM_VALUE | ITEM_LISTSELECT,
 		1, 12, 
 		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
 		getselector0, nvramoffs0, valueoffs0,
