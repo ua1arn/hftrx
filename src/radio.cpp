@@ -1091,7 +1091,7 @@ static int_fast32_t getzerobase(void)
 
 static const struct paramdefdef xgdummy =
 {
-	QLABEL(""), 7, 0, RJ_COMPILED, 	ISTEP_RO,	// тип процессора
+	QLABEL(""), 7, 0, RJ_UNSIGNED, 	ISTEP_RO,	// тип процессора
 	ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
@@ -4559,18 +4559,23 @@ static nvramaddress_t nvramoffs_bandgroup(nvramaddress_t base, unsigned bg)
 	return base + RMT_BANDPOS(bg) - RMT_BANDPOS(0);
 }
 
+static size_t getvaltextviewstyle(char * buff, size_t count, int_fast32_t value)
+{
+	/* стиль отображения спектра и панорамы */
+	return local_snprintf_P(buff, count, "%s", view_types [value]);
+}
 /* стиль отображения спектра и панорамы */
 static const struct paramdefdef xgviewstyle =
 {
-	QLABEL3("VIEW STL", "View style", "VIEW STLE"), 7, 5, RJ_VIEW, ISTEP1,
-	ITEM_VALUE,
+	QLABEL3("VIEW STL", "View style", "VIEW STLE"), 7, 5, RJ_CB, ISTEP1,
+	ITEM_VALUE | ITEM_LISTSELECT,
 	0, VIEW_count - 1,
 	OFFSETOF(struct nvmap, gviewstyle),
 	getselector0, nvramoffs0, valueoffs0,
 	NULL,
 	& gviewstyle,
 	getzerobase, /* складывается со смещением и отображается */
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	getvaltextviewstyle, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 /* Часть отведенной под спектр высоты экрана 0..100 */
@@ -5974,6 +5979,80 @@ static int_fast32_t getcpufreqbase(void)
 	return CPU_FREQ / 1000000;
 }
 
+static const char months [13] [4] =
+{
+	"---",
+	"JAN",
+	"FEB",
+	"MAR",
+	"APR",
+	"MAY",
+	"JUN",
+	"JUL",
+	"AUG",
+	"SEP",
+	"OCT",
+	"NOV",
+	"DEC",
+};
+
+static size_t getvaltextmonth(char * buff, size_t count, int_fast32_t value)
+{
+	return local_snprintf_P(buff, count, "%s", months [value]);
+}
+
+static size_t getvaltextcompiled(char * buff, size_t count, int_fast32_t value)
+{
+	uint_fast16_t year;
+	uint_fast8_t month, day;
+	uint_fast8_t hour, minute, seconds;
+
+	board_get_compile_datetime(& year, & month, & day, & hour, & minute, & seconds);
+	return local_snprintf_P(buff, count, "%02d-%3.3s-%02d", day, months [month], year % 100);
+}
+
+static size_t getvaltextserialnum(char * buff, size_t count, int_fast32_t value)
+{
+	uint_fast32_t serialnr;
+
+	board_get_serialnr(& serialnr);
+	return local_snprintf_P(buff, count, "%04X:%04X", (serialnr >> 16) & 0xFFFF, (serialnr >> 0) & 0xFFFF);
+}
+
+static size_t getvaltextcputype(char * buff, size_t count, int_fast32_t value)
+{
+	const char * msg;
+#if defined (WITHCPUNAME)
+	msg = PSTR(WITHCPUNAME);
+#elif CPUSTYLE_STM32MP1
+	RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_BSECEN;
+	(void) RCC->MP_APB5ENSETR;
+	RCC->MP_APB5LPENSETR = RCC_MP_APB5LPENSETR_BSECLPEN;
+	(void) RCC->MP_APB5LPENSETR;
+
+	const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
+	switch (rpn)
+	{
+	case 0x24: 	msg = PSTR("STM32MP153Cx"); break;
+	case 0x25: 	msg = PSTR("STM32MP153Ax"); break;
+	case 0xA4: 	msg = PSTR("STM32MP153Fx"); break;
+	case 0xA5: 	msg = PSTR("STM32MP153Dx"); break;
+	case 0x00: 	msg = PSTR("STM32MP157Cx"); break;
+	case 0x01: 	msg = PSTR("STM32MP157Ax"); break;
+	case 0x80: 	msg = PSTR("STM32MP157Fx"); break;
+	case 0x81:	msg = PSTR("STM32MP157Dx"); break;
+	default: 	msg = PSTR("STM32MP15xxx"); break;
+	}
+#elif CPUSTYLE_XC7Z
+	msg = PSTR("ZYNQ 7020");
+#elif CPUSTYLE_R7S721
+	msg = PSTR("RENESAS");
+#else
+	msg = PSTR("CPUxxx");
+#endif
+	return local_snprintf_P(buff, count, "%s", msg);
+}
+
 static const struct paramdefdef xgcpufreq =
 {
 	QLABEL("CPU FREQ"), 7, 0, 0, 	ISTEP_RO,	// частота процессора
@@ -5989,7 +6068,7 @@ static const struct paramdefdef xgcpufreq =
 
 static const struct paramdefdef xgcputype =
 {
-	QLABEL("CPU TYPE"), 7, 0, RJ_CPUTYPE, 	ISTEP_RO,	// тип процессора
+	QLABEL("CPU TYPE"), 7, 0, RJ_CB, 	ISTEP_RO,	// тип процессора
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
@@ -5997,7 +6076,7 @@ static const struct paramdefdef xgcputype =
 	& gzero,
 	NULL,
 	getzerobase,
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	getvaltextcputype, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 #ifdef DDR_FREQ
@@ -17414,67 +17493,6 @@ param_format(
 
 #endif /* WITHMODEM */
 
-#if defined (RTC1_TYPE)
-	case RJ_MONTH:
-		return local_snprintf_P(buff, count, "%s", months [value]);
-#endif /* defined (RTC1_TYPE) */
-
-	case RJ_CPUTYPE:
-		{
-			const char * msg;
-#if defined (WITHCPUNAME)
-			msg = PSTR(WITHCPUNAME);
-#elif CPUSTYLE_STM32MP1
-			RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_BSECEN;
-			(void) RCC->MP_APB5ENSETR;
-			RCC->MP_APB5LPENSETR = RCC_MP_APB5LPENSETR_BSECLPEN;
-			(void) RCC->MP_APB5LPENSETR;
-
-			const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
-			switch (rpn)
-			{
-			case 0x24: 	msg = PSTR("STM32MP153Cx"); break;
-			case 0x25: 	msg = PSTR("STM32MP153Ax"); break;
-			case 0xA4: 	msg = PSTR("STM32MP153Fx"); break;
-			case 0xA5: 	msg = PSTR("STM32MP153Dx"); break;
-			case 0x00: 	msg = PSTR("STM32MP157Cx"); break;
-			case 0x01: 	msg = PSTR("STM32MP157Ax"); break;
-			case 0x80: 	msg = PSTR("STM32MP157Fx"); break;
-			case 0x81:	msg = PSTR("STM32MP157Dx"); break;
-			default: 	msg = PSTR("STM32MP15xxx"); break;
-			}
-#elif CPUSTYLE_XC7Z
-			msg = PSTR("ZYNQ 7020");
-#elif CPUSTYLE_R7S721
-			msg = PSTR("RENESAS");
-#else
-			msg = PSTR("CPUxxx");
-#endif
-			return local_snprintf_P(buff, count, "%s", msg);
-		}
-		break;
-
-	case RJ_SERIALNR:
-		{
-			uint_fast32_t serialnr;
-
-			board_get_serialnr(& serialnr);
-			return local_snprintf_P(buff, count, "%04X:%04X", (serialnr >> 16) & 0xFFFF, (serialnr >> 0) & 0xFFFF);
-		}
-
-	case RJ_COMPILED:
-		{
-			uint_fast16_t year;
-			uint_fast8_t month, day;
-			uint_fast8_t hour, minute, seconds;
-
-			board_get_compile_datetime(& year, & month, & day, & hour, & minute, & seconds);
-			return local_snprintf_P(buff, count, "%02d-%3.3s-%02d", day, months [month], year % 100);
-		}
-
-	case RJ_VIEW:
-		/* стиль отображения спектра и панорамы */
-		return local_snprintf_P(buff, count, "%s", view_types [value]);
 	}
 }
 

@@ -315,7 +315,7 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("TM MONTH"), 7, 3, RJ_MONTH,	ISTEP1,
+		QLABEL("TM MONTH"), 7, 3, RJ_CB,	ISTEP1,
 		ITEM_VALUE, 
 		1, 12, 
 		MENUNONVRAM, //OFFSETOF(struct nvmap, tunerind),
@@ -323,7 +323,7 @@ static const struct menudef menutable [] =
 		NULL,
 		& grtcmonth,
 		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		getvaltextmonth, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("TM DAY"), 7, 0, RJ_UNSIGNED,	ISTEP1,
@@ -3533,7 +3533,7 @@ static const struct menudef menutable [] =
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
-		QLABEL("VERSION"), 7, 0, RJ_COMPILED, 	ISTEP_RO,	// тип процессора
+		QLABEL("VERSION"), 7, 0, RJ_CB, 	ISTEP_RO,	// тип процессора
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
@@ -3541,10 +3541,10 @@ static const struct menudef menutable [] =
 		& gzero,
 		NULL,
 		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		getvaltextcompiled, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("S/N"), 7, 0, RJ_SERIALNR, 	ISTEP_RO,	// Индивидуальный номер изделия
+		QLABEL("S/N"), 7, 0, RJ_CB, 	ISTEP_RO,	// Индивидуальный номер изделия
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
@@ -3552,7 +3552,7 @@ static const struct menudef menutable [] =
 		& gzero,
 		NULL,
 		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		getvaltextserialnum, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	& xgcputype,
 	& xgcpufreq,
