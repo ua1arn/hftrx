@@ -17,12 +17,12 @@
 	#endif /* ! defined(BCM2711) */
 
 //	#define DIRECT_122M88_X1			1	/* Тактовый генератор 122.880 МГц */
-	#define DIRECT_61M440_X1	1
-	#define BANDSELSTYLERE_UPCONV56M	1
+	#define DIRECT_49M152_X1	1
+	#define BANDSELSTYLERE_UPCONV32M	1
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
-	#define XVTR_R820T2			1	// ad936x
-	#define	WITHAD936XIIO		1	// External AD936x board
+//	#define XVTR_R820T2			1	// ad936x
+//	#define	WITHAD936XIIO		1	// External AD936x board
 //todo: объединить эти 2 дефайна
 
 	// --- вариации прошивки, специфические для разных частот
@@ -71,8 +71,8 @@
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
+//	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
+	#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHDSPLOCALTXFIR 1
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
@@ -109,9 +109,9 @@
 //	#define WITHCPUFANPWM			1
 	#define WITHCPUTEMPERATURE		1
 //	#define WITHEXTIO_LAN			1 	// ExtIO_Storch.dll for SDRSharper
-	#define WITHWNB					1	// Simple noise blanker
+//	#define WITHWNB					1	// Simple noise blanker
 	#define WITHAUDIOSAMPLESREC		1	// запись и воспроизведение коротких фрагментов звука из эфира
-	#define REALREFERENCE_FREQ 		61443000L
+//	#define REALREFERENCE_FREQ 		61443000L
 //	#define BLUETOOTH_ALSA			1
 	#define WITHSWRSCAN				1
 	#define WITHREVERB				1
@@ -151,7 +151,7 @@
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	/* Board hardware configuration */
-	#define DDS1_TYPE 		DDS_TYPE_XDMA
+	#define DDS1_TYPE 		DDS_TYPE_FPGA_USB
 	#define TSC1_TYPE 		TSC_TYPE_EVDEV
 	#define SDL2_EVENTS		1
 	#define TSC_EVDEV_RAWX	1270

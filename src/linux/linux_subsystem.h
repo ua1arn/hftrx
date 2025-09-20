@@ -215,5 +215,13 @@ void sdl2_render_close(void);
 
 void nvram_sync(void);
 
+void modem_reset(uint8_t val);
+void usb_iq_start(void);
+int linux_usb_init(void);
+void linux_usb_stop(void);
+void usb_dds_rts(const uint_least64_t * val);
+void usb_dds_ftw(const uint_least64_t * val);
+void usb_dds_ftw_sub(const uint_least64_t * val);
+
 #endif /* LINUX_SUBSYSTEM */
 #endif /* LINUX_SUBSYSTEM_H */

@@ -100,44 +100,6 @@ void iq_mutex_unlock(void)
 		safe_cond_signal(& ct_iq);
 }
 
-enum {
-	rx_fir_shift_pos 	= 0,
-	tx_shift_pos 		= 8,
-	rx_cic_shift_pos 	= 16,
-	tx_state_pos 		= 24,
-	resetn_modem_pos 	= 25,
-	hw_vfo_sel_pos		= 26,
-	adc_rand_pos 		= 27,
-	iq_test_pos			= 28,
-	wnb_pos				= 29,
-	stream_reset_pos 	= 30,
-	fir_load_reset_pos 	= 31,
-};
-
-enum {
-	CNT16TX = DMABUFFSIZE16TX / DMABUFFSTEP16TX,
-	CNT32RX = DMABUFFSIZE32RX / DMABUFFSTEP32RX,
-	SIZERX8 = DMABUFFSIZE32RX * 4,
-};
-
-enum {
-#if CPUSTYLE_XC7Z
-	stream_core = 1,
-	alsa_thread_core = 1,
-	iq_thread_core = 1,
-	iio_thread_core = 1,
-	spool_thread_core = 0,
-	nmea_thread_core = 1,
-#elif CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
-	stream_thread_core = 3,
-	alsa_thread_core = 3,
-	iq_thread_core = 2,
-	iio_thread_core = 2,
-	spool_thread_core = 0,
-	nmea_thread_core = 1,
-#endif
-};
-
 #if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
 
 void linux_rxtx_state(uint8_t tx)
@@ -2285,9 +2247,13 @@ void linux_subsystem_init(void)
 #if WITHSPIDEV
 	spidev_init();
 #endif /* WITHSPIDEV */
-#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
+#if defined (DDS1_TYPE)
+#if DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA
 	linux_iq_init();
-#endif /* defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA) */
+#elif DDS1_TYPE == DDS_TYPE_FPGA_USB
+	linux_usb_init();
+#endif /* DDS1_TYPE */
+#endif /* defined (DDS1_TYPE) */
 #if WITHIQSHIFT
 	iq_shift_cic_rx(CALIBRATION_IQ_CIC_RX_SHIFT);
 	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
@@ -2303,6 +2269,8 @@ void linux_user_init(void)
 
 #if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	zynq_pl_init();
+#elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGA_USB)
+	usb_iq_start();
 #elif defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_XDMA)
 	xdma_iq_init();
 #if defined(AXI_LITE_UARTLITE)
@@ -2788,6 +2756,8 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 
 void linux_exit(void)
 {
+	linux_usb_stop();
+
 #if WITHAD936XIIO
 	iio_stop_stream();
 #endif /* WITHAD936XIIO */

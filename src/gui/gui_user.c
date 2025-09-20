@@ -3338,12 +3338,11 @@ void window_receive_process(void)
 		gui_obj_set_prop("btn_dnr", GUI_OBJ_TEXT, "DNR");
 		gui_obj_set_prop("btn_wnb", GUI_OBJ_TEXT, "WNB");
 		gui_obj_set_prop("btn_wnb", GUI_OBJ_LONG_PRESS, 1);
-		gui_obj_set_prop("btn_wnb", GUI_OBJ_LOCK, wnb_state_switch(0));
 		gui_obj_set_prop("btn_preamp", GUI_OBJ_TEXT, "Preamp");
 
-#if ! WITHWNB
-		gui_obj_set_prop("btn_wnb", GUI_OBJ_STATE, DISABLED);
-#endif /* ! WITHWNB */
+#if WITHWNB
+		gui_obj_set_prop("btn_wnb", GUI_OBJ_LOCK, wnb_state_switch(0));
+#endif /* WITHWNB */
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
 	}

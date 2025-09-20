@@ -3681,6 +3681,8 @@ prog_dds1_ftw_sub(const ftw_t * value)
 {
 #if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
 	xcz_dds_ftw_sub(value);
+#elif (DDS1_TYPE == DDS_TYPE_FPGA_USB)
+	usb_dds_ftw_sub(value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq2(targetfpga1, value);
 #endif
@@ -3718,6 +3720,8 @@ prog_dds1_ftw(const ftw_t * value)
 
 	#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
 		xcz_dds_ftw(value);
+	#elif (DDS1_TYPE == DDS_TYPE_FPGA_USB)
+		usb_dds_ftw(value);
 	#elif (DDS1_TYPE == DDS_TYPE_AD9852)
 		prog_ad9852_freq1(targetdds1, value);
 		prog_pulse_ioupdate();
@@ -3755,6 +3759,8 @@ prog_rts1_ftw(const ftw_t * value)
 {
 #if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL || DDS1_TYPE == DDS_TYPE_XDMA)
 	xcz_dds_rts(value);
+#elif (DDS1_TYPE == DDS_TYPE_FPGA_USB)
+	usb_dds_rts(value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq1_rts(targetfpga1, value);
 #endif
