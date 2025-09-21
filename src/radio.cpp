@@ -4509,6 +4509,15 @@ static uint_fast8_t gforcexvrtr;	/* принудительно включить 
 #else /* defined (WITHVIEW_3DSS_MARK) */
 	static uint_fast8_t gview3dss_mark = 0;
 #endif /* defined (WITHVIEW_3DSS_MARK) */
+
+#define DBVALOFFSET (0)
+	static int_fast32_t getrfdbbase(void)
+	{
+		return 0;
+	}
+
+	static uint_fast8_t gtopdbspetx = WITHTOPDBDEFAULT;	/* верхний предел FFT для показа в режиме TX */
+	static uint_fast8_t gbottomdbspetx = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT для показа в режиме TX */
 	static uint_fast8_t gtopdbspe = WITHTOPDBDEFAULT;	/* верхний предел FFT */
 	static uint_fast8_t gbottomdbspe = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT */
 	static uint_fast8_t gtopdbwfl = WITHTOPDBDEFAULT;	/* верхний предел FFT waterflow*/
@@ -4606,53 +4615,80 @@ static const struct paramdefdef xgzoomxpow2 =
 /* нижний предел FFT */
 static const struct paramdefdef xgtopdbspe =
 {
-	QLABEL("TOP DB"), 7, 0, 0,	ISTEP1,
+	QLABEL("TOP DB"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
 	OFFSETOF(struct nvmap, bandgroups [0].gtopdbspe),
 	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
 	NULL,
 	& gtopdbspe,
-	getzerobase, /* складывается со смещением и отображается */
+	getrfdbbase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 /* верхний предел FFT */
 static const struct paramdefdef xgbottomdbspe =
 {
-	QLABEL2("BOTTM DB", "BOTTOM DB"), 7, 0, 0,	ISTEP1,
+	QLABEL2("BOTTM DB", "BOTTOM DB"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
 	OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe),
 	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
 	NULL,
 	& gbottomdbspe,
-	getzerobase, /* складывается со смещением и отображается */
+	getrfdbbase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 /* нижний предел FFT waterflow */
 static const struct paramdefdef xgtopdbwfl =
 {
-	QLABEL("TOP WF"), 7, 0, 0,	ISTEP1,
+	QLABEL("TOP WF"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
 	OFFSETOF(struct nvmap, bandgroups [0].gtopdbwfl),
 	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
 	NULL,
 	& gtopdbwfl,
-	getzerobase, /* складывается со смещением и отображается */
+	getrfdbbase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 /* верхний предел FFT waterflow */
 static const struct paramdefdef xgbottomdbwfl =
 {
-	QLABEL("BOTTM WF"), 7, 0, 0,	ISTEP1,
+	QLABEL("BOTTM WF"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
 	OFFSETOF(struct nvmap, bandgroups [0].gbottomdbwfl),
 	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
 	NULL,
 	& gbottomdbwfl,
-	getzerobase, /* складывается со смещением и отображается */
+	getrfdbbase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
+/* нижний предел FFT для показа в режиме TX */
+static const struct paramdefdef xgtopdbspetx =
+{
+	QLABEL("TOP DB TX"), 7, 0, RJ_SIGNED,	ISTEP_RO,
+	ITEM_VALUE,
+	WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
+	MENUNONVRAM,
+	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
+	NULL,
+	& gtopdbspetx,
+	getrfdbbase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+/* верхний предел FFT для показа в режиме TX */
+static const struct paramdefdef xgbottomdbspetx =
+{
+	QLABEL2("BOTTM DB TX", "BOTTOM DB"), 7, 0, RJ_SIGNED,	ISTEP_RO,
+	ITEM_VALUE,
+	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
+	MENUNONVRAM,
+	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
+	NULL,
+	& gbottomdbspetx,
+	getrfdbbase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 // чувствительность водопада регулируется отдельной парой параметровs
@@ -12322,10 +12358,10 @@ updateboard_noui(
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 			const uint8_t bi_main = getbankindexmain();	/* VFO A modifications */
-			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbspe);		/* верхний предел FFT */
-			board_set_bottomdb(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdbspe);		/* нижний предел FFT */
-			board_set_topdbwf(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbwfl);		/* верхний предел FFT для водопада */
-			board_set_bottomdbwf(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdbwfl);		/* нижний предел FFT для водопада */
+			board_set_topdb(param_getvalue(gtxloopback && gtx ? & xgtopdbspetx : & xgtopdbspe));		/* верхний предел FFT */
+			board_set_bottomdb(param_getvalue(gtxloopback && gtx ? & xgbottomdbspetx : & xgbottomdbspe));		/* нижний предел FFT */
+			board_set_topdbwf(param_getvalue(gtxloopback && gtx ? & xgtopdbspetx : & xgtopdbwfl));		/* верхний предел FFT для водопада */
+			board_set_bottomdbwf(param_getvalue(gtxloopback && gtx ? & xgbottomdbspetx : & xgbottomdbwfl));		/* нижний предел FFT для водопада */
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
 			display2_set_lvlgridstep(glvlgridstep);	/* Шаг сетки уровней в децибелах */
