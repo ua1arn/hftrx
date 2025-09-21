@@ -1219,15 +1219,12 @@ FLOAT_t local_exp(FLOAT_t x)
 int dsp_mag2y(
 	FLOAT_t mag,
 	int ymax,
-	int_fast16_t topdb,		/* верхний предел спектроанализатора (positive number of decibels) */
-	int_fast16_t bottomdb		/* нижний предел спектроанализатора (positive number of decibels) */
+	int_fast16_t topdb,		/* верхний предел спектроанализатора */
+	int_fast16_t bottomdb		/* нижний предел спектроанализатора */
 	)
 {
-	static const FLOAT_t minmag = db2ratio(- 160);
-	if (mag < minmag)
-		return 0;
-	const FLOAT_t r = ratio2db(mag);
-	const int y = ymax - (int) ((r + topdb) * ymax / - (bottomdb - topdb));
+	const FLOAT_t drange = topdb - bottomdb;
+	const int y = ymax - (int) ((topdb - ratio2db(mag)) * ymax / drange);
 
 	if (y > ymax)
 		return ymax;
@@ -3322,7 +3319,7 @@ static void modem_update(void)
 
 static RAMDTCM FLOAT_t agclogof10 = 1;
 	
-void agc_state_initialize(volatile agcstate_t * st, const volatile agcparams_t * agcp)
+void agc_state_initialize(agcstate_t * __restrict st, const agcparams_t * __restrict agcp)
 {
 	const FLOAT_t f0 = agcp->levelfence;
 	const FLOAT_t m0 = agcp->mininput;

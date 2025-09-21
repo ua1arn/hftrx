@@ -4422,12 +4422,6 @@ static const struct paramdefdef xgnotch =
 #endif /* WITHWARCBANDS */
 
 
-#if defined (WITHBOTTOMDBVAL)
-#define WITHBOTTOMDBDEFAULT WITHBOTTOMDBVAL
-#else
-#define WITHBOTTOMDBDEFAULT 140
-#endif /* WITHBOTTOMDBVAL */
-
 //static uint_fast8_t bandsetham = 1;	/* HAM radio bands */
 static uint_fast8_t gbandsetbcast = 0;	/* Broadcast radio bands */
 static uint_fast8_t bandset11m;
@@ -4510,10 +4504,23 @@ static uint_fast8_t gforcexvrtr;	/* принудительно включить 
 	static uint_fast8_t gview3dss_mark = 0;
 #endif /* defined (WITHVIEW_3DSS_MARK) */
 
-#define DBVALOFFSET (0)
+
+	#define DBVALOFFSET_BASE (- 160)
+
+	/* Значения, хранимые в NVRAM */
+	#define WITHTOPDBMIN 		(- 50 - DBVALOFFSET_BASE)
+	#define WITHTOPDBMAX 		(+ 20 - DBVALOFFSET_BASE)
+	#define WITHTOPDBDEFAULT 	(- 30 - DBVALOFFSET_BASE)
+
+	/* Значения, хранимые в NVRAM */
+	#define WITHBOTTOMDBMIN 	(- 140 - DBVALOFFSET_BASE)
+	#define WITHBOTTOMDBMAX 	(+ 10 - DBVALOFFSET_BASE)
+	#define WITHBOTTOMDBDEFAULT (- 140 - DBVALOFFSET_BASE)
+
+	/* складывается со смещением и отображается */
 	static int_fast32_t getrfdbbase(void)
 	{
-		return 0;
+		return DBVALOFFSET_BASE;
 	}
 
 	static uint_fast8_t gtopdbspetx = WITHTOPDBDEFAULT;	/* верхний предел FFT для показа в режиме TX */
@@ -4615,7 +4622,7 @@ static const struct paramdefdef xgzoomxpow2 =
 /* нижний предел FFT */
 static const struct paramdefdef xgtopdbspe =
 {
-	QLABEL("TOP DB"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL("TOP DB"), 7, 0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
 	OFFSETOF(struct nvmap, bandgroups [0].gtopdbspe),
@@ -4628,7 +4635,7 @@ static const struct paramdefdef xgtopdbspe =
 /* верхний предел FFT */
 static const struct paramdefdef xgbottomdbspe =
 {
-	QLABEL2("BOTTM DB", "BOTTOM DB"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL2("BOTTM DB", "BOTTOM DB"), 7, 0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
 	OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe),
@@ -4641,7 +4648,7 @@ static const struct paramdefdef xgbottomdbspe =
 /* нижний предел FFT waterflow */
 static const struct paramdefdef xgtopdbwfl =
 {
-	QLABEL("TOP WF"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL("TOP WF"), 7, 0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
 	OFFSETOF(struct nvmap, bandgroups [0].gtopdbwfl),
@@ -4654,7 +4661,7 @@ static const struct paramdefdef xgtopdbwfl =
 /* верхний предел FFT waterflow */
 static const struct paramdefdef xgbottomdbwfl =
 {
-	QLABEL("BOTTM WF"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL("BOTTM WF"), 7, 0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
 	OFFSETOF(struct nvmap, bandgroups [0].gbottomdbwfl),

@@ -373,7 +373,7 @@ typedef struct agcparams
 	FLOAT_t agcfactor;				// Параметр при вычислении "спортивной" АРУ
 } agcparams_t;
 
-void agc_state_initialize(volatile agcstate_t * st, const volatile agcparams_t * agcp);
+void agc_state_initialize(agcstate_t * __restrict st, const agcparams_t * __restrict agcp);
 void agc_parameters_initialize(volatile agcparams_t * agcp, uint_fast32_t sr);
 void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t sr);
 FLOAT_t MAKETAUIF2(FLOAT_t t, uint_fast32_t sr);

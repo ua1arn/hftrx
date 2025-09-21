@@ -1694,11 +1694,11 @@ static uint_fast8_t glob_view_style = VIEW_COLOR;		/* стиль отображ�
 static uint_fast8_t gview3dss_mark;			/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 static uint_fast8_t glob_rxbwsatu = 100;	// 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре.
 
-static int_fast16_t glob_topdb = 30;		/* верхний предел FFT */
-static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
+static int_fast16_t glob_topdb = - 30;		/* absolute power - верхний предел FFT */
+static int_fast16_t glob_bottomdb = - 130;	/* absolute power - нижний предел FFT */
+static int_fast16_t glob_topdbwf = - 30;		/* absolute power - верхний предел FFT */
+static int_fast16_t glob_bottomdbwf = - 130;	/* absolute power - нижний предел FFT */
 
-static int_fast16_t glob_topdbwf = 0;		/* верхний предел FFT */
-static int_fast16_t glob_bottomdbwf = 137;	/* нижний предел FFT */
 static uint_fast8_t glob_wflevelsep;		/* чувствительность водопада регулируется отдельной парой параметров */
 static uint_fast8_t glob_zoomxpow2;			/* уменьшение отображаемого участка спектра - horizontal magnification power of two */
 
@@ -1709,7 +1709,7 @@ static uint_fast8_t glob_smetertype = SMETER_TYPE_DIAL;	/* выбор внешн
 static int_fast16_t glob_afspeclow = 300;	// нижняя частота отображения спектроанализатора
 static int_fast16_t glob_afspechigh = 3400;	// верхняя частота отображения спектроанализатора
 
-static uint_fast8_t glob_lvlgridstep = 12;	// Шаг сетки уровней в децибелах. (0-отключаем отображение сетки уровней)
+static int glob_lvlgridstep = 12;	// Шаг сетки уровней в децибелах. (0-отключаем отображение сетки уровней)
 
 static uint_fast8_t glob_spectrumpart = 50;
 
@@ -6722,10 +6722,10 @@ display_colorgrid_set(
 	// Маркеры уровней сигналов
 	if (glob_lvlgridstep != 0)
 	{
-		int_fast16_t lvl;
-		for (lvl = glob_topdb / glob_lvlgridstep * glob_lvlgridstep; lvl < glob_bottomdb; lvl += glob_lvlgridstep)
+		int lvl;
+		for (lvl = glob_topdb / glob_lvlgridstep * glob_lvlgridstep; lvl >= glob_bottomdb; lvl -= glob_lvlgridstep)
 		{
-			const int yval = dsp_mag2y(db2ratio(- lvl), h - 1, glob_topdb, glob_bottomdb);
+			const int yval = dsp_mag2y(db2ratio(lvl), h - 1, glob_topdb, glob_bottomdb);
 			if (yval > 0 && yval < (int) h)
 				colpip_set_hline(db, x, y + yval, w, color);	// Level marker
 		}
@@ -7608,9 +7608,9 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
     	if (0 && glob_lvlgridstep != 0)
     	{
     		int32_t lvl;
-    		for (lvl = glob_topdb / glob_lvlgridstep * glob_lvlgridstep; lvl < glob_bottomdb; lvl += glob_lvlgridstep)
+    		for (lvl = glob_topdb / glob_lvlgridstep * glob_lvlgridstep; lvl >= glob_bottomdb; lvl -= glob_lvlgridstep)
     		{
-    			const int32_t yval = dsp_mag2y(db2ratio(- lvl), alldy - 1, glob_topdb, glob_bottomdb);
+    			const int32_t yval = dsp_mag2y(db2ratio(lvl), alldy - 1, glob_topdb, glob_bottomdb);
     			if (yval > 0 && yval < alldy)
     			{
    		            lv_draw_line_dsc_t l;
@@ -8570,9 +8570,9 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     	if (glob_lvlgridstep != 0)
     	{
     		int32_t lvl;
-    		for (lvl = glob_topdb / glob_lvlgridstep * glob_lvlgridstep; lvl < glob_bottomdb; lvl += glob_lvlgridstep)
+    		for (lvl = glob_topdb / glob_lvlgridstep * glob_lvlgridstep; lvl >= glob_bottomdb; lvl -= glob_lvlgridstep)
     		{
-    			const int32_t yval = dsp_mag2y(db2ratio(- lvl), alldy - 1, glob_topdb, glob_bottomdb);
+    			const int32_t yval = dsp_mag2y(db2ratio(lvl), alldy - 1, glob_topdb, glob_bottomdb);
     			if (yval > 0 && yval < alldy)
     			{
    		            lv_draw_line_dsc_t l;

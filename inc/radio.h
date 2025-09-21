@@ -48,15 +48,6 @@ extern "C" {
 #define WITHSPPARTMIN		20
 #define WITHSPPARTMAX		100
 
-#define WITHTOPDBMIN 		0
-#define WITHTOPDBMAX 		60
-#define WITHTOPDBDEFAULT 	30
-
-#define WITHBOTTOMDBTX 		90
-
-#define WITHBOTTOMDBMIN 	40
-#define WITHBOTTOMDBMAX 	160
-
 #define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
 #define	BOARD_IFGAIN_MAX	24		/* код управления усилением ВЧ тракта */
 
