@@ -3332,7 +3332,7 @@ void agc_state_initialize(agcstate_t * __restrict st, const agcparams_t * __rest
 //gain = valelout / adjsig * powf(10.0f, log10f(adjsig / valelin) * agcfactor);
 //gain = valelout / adjsig * powf(adjsig / valelin, agcfactor);
 
-// Для работы функции agc_perform требуется siglevel, больште значения которого
+// Для работы функции agc_perform требуется siglevel, больше значения которого
 // соответствуют большим уровням сигнала. может быть отрицательным
 static RAMFUNC FLOAT_t agccalcstrength_log(const volatile agcparams_t * const agcp, FLOAT_t siglevel)
 {
