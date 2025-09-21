@@ -2252,15 +2252,8 @@ const struct paramdefdef * const * getmiddlemenu_wfm(unsigned * size);
 	#define	BPSK_LO5_SIDE_RX		LOCODE_LOWER	/* При преобразовании на этом гетеродине нет инверсии спектра */
 	#define	BPSK_LO5_SIDE_TX		LOCODE_LOWER	/* При преобразовании на этом гетеродине нет инверсии спектра */
 
-#if CTLSTYLE_SW2016VHF || CTLSTYLE_SW2018XVR
-	// CTLSTYLE_SW2016VHF (Si5351)
-	#define	NFM_LO5_SIDE_RX		LOCODE_LOWER	/* При преобразовании на этом гетеродине нет инверсии спектра */
-	#define	NFM_LO5_SIDE_TX		LOCODE_INVALID	/* Не выключать третий гетеродин - при NFM используется тот же тракт. */
-#else
-	// раньше было
 	#define	NFM_LO5_SIDE_RX		LOCODE_INVALID	/* Этого гетеродина нет. */
 	#define	NFM_LO5_SIDE_TX		LOCODE_LOWER	/* Не выключать третий гетеродин - при NFM используется тот же тракт. */
-#endif
 
 	#define	DRM_LO5_SIDE_RX		LOCODE_LOWER	/* При преобразовании на этом гетеродине нет инверсии спектра */
 	#define	DRM_LO5_SIDE_TX		LOCODE_LOWER	/* При преобразовании на этом гетеродине нет инверсии спектра */
@@ -5542,10 +5535,7 @@ enum
 #endif
 
 	static uint_fast8_t grgbeep;	/* разрешение (не-0) или запрещение (0) формирования roger beep */
-	#if (CTLSTYLE_SW2016MINI)
-		static uint_fast8_t rxtxdelay = 45;	/* в единицах mS. модифицируется через меню - задержка перехода прём-передача */
-		static uint_fast8_t txrxdelay = 15;	/* в единицах mS. модифицируется через меню - задержка перехода передача-прём */
-	#elif (CTLREGMODE_STORCH_V4)
+	#if (CTLREGMODE_STORCH_V4)
 		// modem
 		static uint_fast8_t rxtxdelay = 75;	/* в единицах mS. модифицируется через меню - задержка перехода прём-передача */
 		static uint_fast8_t txrxdelay = 25;	/* в единицах mS. модифицируется через меню - задержка перехода передача-прём */
@@ -5766,22 +5756,6 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 		uint_fast8_t s9level = UINT8_MAX + S9FENCE;					/* уровни калибровки S-метра */
 		uint_fast8_t s9delta = (6 * 8);		// 9 баллов - 8 интервалов - по 6 децибел каждый
 		uint_fast8_t s9_60_delta = 60;		// 60 dB
-	#elif (CTLSTYLE_SW2016MINI)
-		uint_fast8_t s9level = 110;			/* уровни калибровки S-метра */
-		uint_fast8_t s9delta = 70;
-		uint_fast8_t s9_60_delta = 50;
-	#elif CTLSTYLE_SW2012CN || CTLSTYLE_SW2013SF || CTLSTYLE_SW2013RDX || CTLSTYLE_SW2012CN5 || CTLSTYLE_SW2015
-		uint_fast8_t s9level = 110;			/* уровни калибровки S-метра */
-		uint_fast8_t s9delta = 70;
-		uint_fast8_t s9_60_delta = 50;
-	#elif CTLSTYLE_SW2016 || CTLSTYLE_SW2016VHF || CTLSTYLE_SW2018XVR
-		uint_fast8_t s9level = 110;			/* уровни калибровки S-метра */
-		uint_fast8_t s9delta = 70;
-		uint_fast8_t s9_60_delta = 50;
-	#elif (CTLSTYLE_SW2011 || CTLSTYLE_SW2012_MINI)
-		uint_fast8_t s9level = 120;			/* уровни калибровки S-метра */
-		uint_fast8_t s9delta = 120;
-		uint_fast8_t s9_60_delta = 120;
 	#else
 		uint_fast8_t s9level = 88;			/* уровни калибровки S-метра */
 		uint_fast8_t s9delta = 34;
