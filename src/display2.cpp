@@ -20,6 +20,7 @@
 
 #include "dspdefines.h"
 
+//#define WITHSECTRUMPEAKS 1	// Рисование peak value
 
 #if LVGL_VERSION_MAJOR == 9 && LVGL_VERSION_MINOR < 3
 void lv_obj_set_flag(lv_obj_t * obj, lv_obj_flag_t f, bool v)
@@ -4979,7 +4980,9 @@ template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 	FLOAT_t m_spavgarray [w * 1];	// h == 1
 	FLOAT_t m_yoldwfl [w * 1];	// h == 1
 	FLOAT_t m_yoldspe [w * 1];	// h == 1
+#if WITHSECTRUMPEAKS
 	agcstate_t m_ypeakspe [w * 1];	// h == 1
+#endif /* WITHSECTRUMPEAKS */
 	FLOAT_t m_yold3dss [w * 1];	// h == 1
 
 public:
@@ -4991,7 +4994,9 @@ public:
 	scrollb1h<FLOAT_t, w>  spavgarray;	// строка принятая из DSP части в последний раз
 	scrollb1h<FLOAT_t, w>  yoldwfl;		// фильтр водопада
 	scrollb1h<FLOAT_t, w>  yoldspe;		// фильтр спектра
+#if WITHSECTRUMPEAKS
 	scrollb1h<agcstate_t, w>  ypeakspe;		// пиковые значения спектра
+#endif /* WITHSECTRUMPEAKS */
 	scrollb1h<FLOAT_t, w>  yold3dss;	// фильтр 3DSS
 
 public:
@@ -5002,7 +5007,9 @@ public:
 		spavgarray(centerx, centeryzero, m_spavgarray),
 		yoldwfl(centerx, centeryzero, m_yoldwfl),
 		yoldspe(centerx, centeryzero, m_yoldspe),
+#if WITHSECTRUMPEAKS
 		ypeakspe(centerx, centeryzero, m_ypeakspe),
+#endif /* WITHSECTRUMPEAKS */
 		yold3dss(centerx, centeryzero, m_yold3dss)
 	{
 		agc_parameters_peaks_initialize(& peakparams, glob_displayfps);	// частота latch
@@ -5010,15 +5017,17 @@ public:
 	/* + стереть содержимое */
 	void setupnew()
 	{
+#if WITHSECTRUMPEAKS
 		agcstate_t agc0;
 		agc_state_initialize(& agc0, & peakparams);
+		ypeakspe.setupnew(w, agc0);
+#endif /* WITHSECTRUMPEAKS */
 		scrollcolor.setupnew(w, display2_bgcolorwfl());
 		scrollpwr.setupnew(w, 0);
 		/* one-row objects */
 		spavgarray.setupnew(w, 0);
 		yoldwfl.setupnew(w, 0);
 		yoldspe.setupnew(w, 0);
-		ypeakspe.setupnew(w, agc0);
 		yold3dss.setupnew(w, 0);
 	}
 	/* + продвижение по истории */
@@ -5033,17 +5042,19 @@ public:
 	{
 		if (pixels)
 		{
-			agcstate_t agc0;
-			agc_state_initialize(& agc0, & peakparams);
 			//centerx = (centerx + w + pixels) % w;	// корректировка горизонтальной позиции воображаемого левого края
 			// TODO: очистить освобождающиеся зоны
+#if WITHSECTRUMPEAKS
+			agcstate_t agc0;
+			agc_state_initialize(& agc0, & peakparams);
+			ypeakspe.shiftleft(w, pixels, agc0);
+#endif /* WITHSECTRUMPEAKS */
 			scrollcolor.shiftleft(w, pixels, display2_bgcolorwfl());
 			scrollpwr.shiftleft(w, pixels, 0);
 			/* one-row objects */
 			spavgarray.shiftleft(w, pixels, 0);
 			yoldwfl.shiftleft(w, pixels, 0);
 			yoldspe.shiftleft(w, pixels, 0);
-			ypeakspe.shiftleft(w, pixels, agc0);
 			yold3dss.shiftleft(w, pixels, 0);
 		}
 	}
@@ -5054,17 +5065,19 @@ public:
 	{
 		if (pixels)
 		{
-			agcstate_t agc0;
-			agc_state_initialize(& agc0, & peakparams);
 			//centerx = (centerx + w - pixels) % w;	// корректировка горизонтальной позиции воображаемого левого края
 			// TODO: очистить освобождающиеся зоны
+#if WITHSECTRUMPEAKS
+			agcstate_t agc0;
+			agc_state_initialize(& agc0, & peakparams);
+			ypeakspe.shiftright(w, pixels, agc0);
+#endif /* WITHSECTRUMPEAKS */
 			scrollcolor.shiftright(w, pixels, display2_bgcolorwfl());
 			scrollpwr.shiftright(w, pixels, 0);
 			/* one-row objects */
 			spavgarray.shiftright(w, pixels, 0);
 			yoldwfl.shiftright(w, pixels, 0);
 			yoldspe.shiftright(w, pixels, 0);
-			ypeakspe.shiftright(w, pixels, agc0);
 			yold3dss.shiftright(w, pixels, 0);
 		}
 	}
@@ -5091,10 +5104,12 @@ private:
 		const FLOAT_t Y = yoldspe.peek(x, 0) * spectrum_alpha + spectrum_beta * val;
 		yoldspe.poke(x, 0, Y);
 
+#if WITHSECTRUMPEAKS
 		//const FLOAT_t val = Y;//spavgarray.peek(x, 0);	// массив входных данных
 		// Работа с пиковым детектором
 		agcstate_t * const st = ypeakspe.bufferat(ALLDX, x, 0);
 		agc_perform(& peakparams, st, val);
+#endif /* WITHSECTRUMPEAKS */
 	}
 
 public:
@@ -5108,9 +5123,13 @@ public:
 
 	FLOAT_t peaks_spectrum(uint_fast16_t vx, uint_fast16_t alldx)
 	{
+#if WITHSECTRUMPEAKS
 		const uint_fast16_t bx = normalize(vx, 0, alldx - 1, ALLDX - 1);
 		agcstate_t * const st = ypeakspe.bufferat(ALLDX, bx, 0);
 		return agc_result_slow(st);
+#else /* WITHSECTRUMPEAKS */
+		return filtered_spectrum(vx, alldx);
+#endif /* WITHSECTRUMPEAKS */
 	}
 
 	// todo: свои параметры фильтрации?
