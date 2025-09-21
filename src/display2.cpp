@@ -2742,34 +2742,34 @@ void display_1fmenu(const gxdrawb_t * db,
 	display2_text(db, x, y, & label, colors_1fmenu, 0, xspan, yspan);
 }
 
+/* Middle bar rendering */
 void display2_midbar(const gxdrawb_t * db,
-		uint_fast8_t x,
-		uint_fast8_t y,
+		uint_fast8_t x0,
+		uint_fast8_t y0,
 		uint_fast8_t xspan,
 		uint_fast8_t yspan,
 		dctx_t * pctx
 		)
 {
-	const uint_fast8_t width = xspan / MIDCELLS;
-	const uint_fast8_t rowheight = yspan / 2;
+	const uint_fast16_t x0pix = GRID2X(x0);
+	const uint_fast16_t y0pix = GRID2Y(y0);				// смещение по вертикали в пикселях части отведенной спектру
+	const uint_fast16_t alldx = GRID2X(xspan);
+	const uint_fast16_t alldy = GRID2Y(yspan);				// размер по вертикали в пикселях части отведенной спектру
+	const uint_fast16_t cellwidth = alldx / MIDCELLS;
+	const uint_fast16_t rowheight = alldy / 2;
 
 	uint_fast8_t section;
 	for (section = 0; section < MIDCELLS; ++ section)
 	{
-		const uint_fast8_t last = section == (MIDCELLS - 1);
-		const uint_fast8_t xpos = x + CHARS2GRID(width) * section;
-		const uint_fast8_t cellwidth = last ? xspan - xpos : width;
-		const uint_fast16_t xpix = GRID2X(xpos);
-		const uint_fast16_t ypix = GRID2Y(y);
-		const uint_fast16_t w = GRID2X(cellwidth) - 1;
-		const uint_fast16_t h = GRID2Y(yspan);
+		const uint_fast16_t xpos = 1 + cellwidth * section;
+		const uint_fast16_t w = cellwidth - 2;
 		uint_fast8_t active;
 		const char * const label = hamradio_midlabel5(section, & active);
 		const char * const value = hamradio_midvalue5(section, & active);
 		const COLORPIP_T fg = colors_2state [active].fg;
-		colmain_rounded_rect(db, xpix, ypix, xpix + w - 1, ypix + h - 1, 5, colors_2state [active].bg, 1);
-		colpip_string2_tbg(db, xpix + 1, ypix + 1, label, fg);
-		colpip_string2_tbg(db, xpix + 1, ypix + h / 2 + 1, value, fg);
+		colmain_rounded_rect(db, xpos, y0pix, xpos + w - 1, y0pix + alldy - 1, 5, colors_2state [active].bg, 1);
+		colpip_string2_tbg(db, xpos + 1, y0pix + 1, label, fg);
+		colpip_string2_tbg(db, xpos + 1, y0pix + alldy / 2 + 1, value, fg);
 
 	}
 }
