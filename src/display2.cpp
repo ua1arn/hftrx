@@ -1425,7 +1425,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos)
 	// построение цветных градиентов по готовой таблице.
 	const COLOR24_T c = pancolor [ARRAY_SIZE(pancolor) - 1 - normalize(pos, 0, maxpos, ARRAY_SIZE(pancolor) - 1)];
 	return COLOR24(COLOR24_R(c), COLOR24_G(c), COLOR24_B(c));
-#endif
+#endif /* WITHGRADIENT_FIXED */
 	// построение цветных градиентов от UA3REO
 	uint_fast8_t red = 0;
 	uint_fast8_t green = 0;
@@ -4691,15 +4691,14 @@ enum { NROWSWFL = GRID2Y(BDCV_ALLRX) };
 	/* быстрое отображение водопада (но требует больше памяти) */
 	enum { PALETTESIZE = COLORPIP_BASE };
 
-#elif WITHGRADIENT_FIXED
-
-	/* быстрое отображение водопада (но требует больше памяти) */
-	enum { PALETTESIZE = ARRAY_SIZE(pancolor) };
-
 #elif LCDMODE_LTDC
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	enum { PALETTESIZE = 256 };
+	#if WITHGRADIENT_FIXED
+		enum { PALETTESIZE = ARRAY_SIZE(pancolor) };
+	#else /* WITHGRADIENT_FIXED */
+		enum { PALETTESIZE = 256 };
+	#endif /* WITHGRADIENT_FIXED */
 
 	static uint_fast16_t row3dss;		// строка, в которую последней занесены данные
 
