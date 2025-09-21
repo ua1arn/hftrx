@@ -4972,7 +4972,6 @@ template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 	uint_fast16_t centerx;
 	uint_fast16_t centery;
 	const uint_fast16_t centeryzero = 0;
-	agcstate_t agc0;
 
 	__ALIGNED(64) PACKEDCOLORPIP_T m_buffscrollcolor [GXSIZE(w, h)];
 	int16_t m_buffscrollpwr [GXSIZE(w, h)];
@@ -5007,11 +5006,12 @@ public:
 		yold3dss(centerx, centeryzero, m_yold3dss)
 	{
 		agc_parameters_peaks_initialize(& peakparams, glob_displayfps);	// частота latch
-		agc_state_initialize(& agc0, & peakparams);
 	}
 	/* + стереть содержимое */
 	void setupnew()
 	{
+		agcstate_t agc0;
+		agc_state_initialize(& agc0, & peakparams);
 		scrollcolor.setupnew(w, display2_bgcolorwfl());
 		scrollpwr.setupnew(w, 0);
 		/* one-row objects */
@@ -5033,6 +5033,8 @@ public:
 	{
 		if (pixels)
 		{
+			agcstate_t agc0;
+			agc_state_initialize(& agc0, & peakparams);
 			//centerx = (centerx + w + pixels) % w;	// корректировка горизонтальной позиции воображаемого левого края
 			// TODO: очистить освобождающиеся зоны
 			scrollcolor.shiftleft(w, pixels, display2_bgcolorwfl());
@@ -5052,6 +5054,8 @@ public:
 	{
 		if (pixels)
 		{
+			agcstate_t agc0;
+			agc_state_initialize(& agc0, & peakparams);
 			//centerx = (centerx + w - pixels) % w;	// корректировка горизонтальной позиции воображаемого левого края
 			// TODO: очистить освобождающиеся зоны
 			scrollcolor.shiftright(w, pixels, display2_bgcolorwfl());
