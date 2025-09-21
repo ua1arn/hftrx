@@ -5235,154 +5235,153 @@ enum
 
 #endif /* WITHAUTOTUNER */
 
+#if WITHTX && WITHSUBTONES && WITHIF4DSP
+	// частоты  Continuous Tone-Coded Squelch System or CTCSS с точностью 0.1 герца.
+	// https://en.wikipedia.org/wiki/Continuous_Tone-Coded_Squelch_System#List_of_tones
+	static const uint_least16_t gsubtones [] =
+	{
+		330,	/* 33.0 герц #0 */
+		354,	/* 35.4 герц */
+		366,	/* 36.6 герц */
+		379,	/* 37.9 герц */
+		396,	/* 39.6 герц */
+		444,	/* 44.4 герц */
+		475,	/* 47.5 герц */
+		492,	/* 49.2 герц */
+		512,	/* 51.2 герц */
+		530,	/* 53.0 герц */
+		549,	/* 54.9 герц */
+		568,	/* 56.8 герц */
+		588,	/* 58.8 герц */
+		630,	/* 63.0 герц */
+		670,	/* 67.0 герц */
+		694,	/* 69.4 герц */
+		719,	/* 71.9 герц */
+		744,	/* 74.4 герц */
+		770,	/* 77.0 герц #18 */
+		797,	/* 79.7 герц */
+		825,	/* 82.5 герц */
+		854,	/* 85.4 герц */
+		885,	/* 88.5 герц */
+		915,	/* 91.5 герц */
+		948,	/* 94.8 герц */
+		974,	/* 97.4 герц */
+		1000,	/* 100.0 герц */
+		1035,	/* 103.5 герц */
+		1072,	/* 107.2 герц */
+		1109,	/* 110.9 герц */
+		1148,	/* 114.8 герц */
+		1188,	/* 118.8 герц */
+		1230,	/* 123.0 герц */
+		1273,	/* 127.3 герц */
+		1318,	/* 131.8 герц */
+		1365,	/* 136.5 герц */
+		1413,	/* 141.3 герц */
+		1462,	/* 146.2 герц */
+		1514,	/* 151.4 герц */
+		1567,	/* 156.7 герц */
+		1598,	/* 159.8 герц */
+		1622,	/* 162.2 герц */
+		1655,	/* 165.5 герц */
+		1679,	/* 167.9 герц */
+		1713,	/* 171.3 герц */
+		1738,	/* 173.8 герц */
+		1773,	/* 177.3 герц */
+		1799,	/* 179.9 герц */
+		1835,	/* 183.5 герц */
+		1862,	/* 186.2 герц */
+		1899,	/* 189.9 герц */
+		1928,	/* 192.8 герц */
+		1966,	/* 196.6 герц */
+		1995,	/* 199.5 герц */
+		2035,	/* 203.5 герц */
+		2065,	/* 206.5 герц */
+		2107,	/* 210.7 герц */
+		2181,	/* 218.1 герц */
+		2257,	/* 225.7 герц */
+		2291,	/* 229.1 герц */
+		2336,	/* 233.6 герц */
+		2418,	/* 241.8 герц */
+		2503,	/* 250.3 герц */
+		2541,	/* 254.1 герц */
+	};
+	static size_t getvaltextsubtone(char * buff, size_t count, int_fast32_t value)
+	{
+		return local_snprintf_P(buff, count, "%u.%1u", gsubtones [value] / 10, gsubtones [value] % 10);
+	}
+	static uint_fast8_t gsubtoneitx = 18;	// частота subtone = 77.0 герц
+	static uint_fast8_t gsubtoneirx = 18;	// частота subtone = 77.0 герц
+	static uint_fast8_t gctssenable;	// разрешить формирование subtone
+	//  Continuous Tone-Coded Squelch System or CTCSS settings group
+	static const struct paramdefdef xgctssgroup =
+	{
+		QLABEL("CTCSS"), 0, 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		OFFSETOF(struct nvmap, ggrpctcss),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		NULL,
+		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	//  Continuous Tone-Coded Squelch System or CTCSS freq
+	static const struct paramdefdef xgsubtoneitx =
+	{
+		QLABEL2("TCTCSS FQ", "T-CTCSS FREQ"), 7, 1, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_LISTSELECT,
+		0, ARRAY_SIZE(gsubtones) - 1,
+		OFFSETOF(struct nvmap, gsubtoneitx),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gsubtoneitx,
+		getzerobase,
+		getvaltextsubtone, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	//  Continuous Tone-Coded Squelch System or CTCSS freq
+	static const struct paramdefdef xgsubtoneirx =
+	{
+		QLABEL2("RCTCSS FQ", "R-CTCSS FREQ"), 7, 1, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_LISTSELECT,
+		0, ARRAY_SIZE(gsubtones) - 1,
+		OFFSETOF(struct nvmap, gsubtoneirx),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gsubtoneirx,
+		getzerobase,
+		getvaltextsubtone, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	//  Continuous Tone-Coded Squelch System or CTCSS control
+	static const struct paramdefdef xgctssenable =
+	{
+		QLABEL("CTCSS"), 8, 3, RJ_ON, ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gctssenable),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gctssenable,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static uint_fast8_t gsubtonelevel = 10;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
+	//  Continuous Tone-Coded Squelch System or CTCSS control
+	/* Select the CTCSS transmit level. */
+	static const struct paramdefdef xgctsslevel =
+	{
+		QLABEL2("CTCSSLVL", "CTCSS LEVEL"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Select the CTCSS transmit level. */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gsubtonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gsubtonelevel,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+#endif /* WITHTX && WITHSUBTONES && WITHIF4DSP */
+
 #if WITHTX
-	#if WITHSUBTONES
-		// частоты  Continuous Tone-Coded Squelch System or CTCSS с точностью 0.1 герца.
-		// https://en.wikipedia.org/wiki/Continuous_Tone-Coded_Squelch_System#List_of_tones
-		static const uint_least16_t gsubtones [] =
-		{
-			330,	/* 33.0 герц #0 */
-			354,	/* 35.4 герц */
-			366,	/* 36.6 герц */
-			379,	/* 37.9 герц */
-			396,	/* 39.6 герц */
-			444,	/* 44.4 герц */
-			475,	/* 47.5 герц */
-			492,	/* 49.2 герц */
-			512,	/* 51.2 герц */
-			530,	/* 53.0 герц */
-			549,	/* 54.9 герц */
-			568,	/* 56.8 герц */
-			588,	/* 58.8 герц */
-			630,	/* 63.0 герц */
-			670,	/* 67.0 герц */
-			694,	/* 69.4 герц */
-			719,	/* 71.9 герц */
-			744,	/* 74.4 герц */
-			770,	/* 77.0 герц #18 */
-			797,	/* 79.7 герц */
-			825,	/* 82.5 герц */
-			854,	/* 85.4 герц */
-			885,	/* 88.5 герц */
-			915,	/* 91.5 герц */
-			948,	/* 94.8 герц */
-			974,	/* 97.4 герц */
-			1000,	/* 100.0 герц */
-			1035,	/* 103.5 герц */
-			1072,	/* 107.2 герц */
-			1109,	/* 110.9 герц */
-			1148,	/* 114.8 герц */
-			1188,	/* 118.8 герц */
-			1230,	/* 123.0 герц */
-			1273,	/* 127.3 герц */
-			1318,	/* 131.8 герц */
-			1365,	/* 136.5 герц */
-			1413,	/* 141.3 герц */
-			1462,	/* 146.2 герц */
-			1514,	/* 151.4 герц */
-			1567,	/* 156.7 герц */
-			1598,	/* 159.8 герц */
-			1622,	/* 162.2 герц */
-			1655,	/* 165.5 герц */
-			1679,	/* 167.9 герц */
-			1713,	/* 171.3 герц */
-			1738,	/* 173.8 герц */
-			1773,	/* 177.3 герц */
-			1799,	/* 179.9 герц */
-			1835,	/* 183.5 герц */
-			1862,	/* 186.2 герц */
-			1899,	/* 189.9 герц */
-			1928,	/* 192.8 герц */
-			1966,	/* 196.6 герц */
-			1995,	/* 199.5 герц */
-			2035,	/* 203.5 герц */
-			2065,	/* 206.5 герц */
-			2107,	/* 210.7 герц */
-			2181,	/* 218.1 герц */
-			2257,	/* 225.7 герц */
-			2291,	/* 229.1 герц */
-			2336,	/* 233.6 герц */
-			2418,	/* 241.8 герц */
-			2503,	/* 250.3 герц */
-			2541,	/* 254.1 герц */
-		};
-		static size_t getvaltextsubtone(char * buff, size_t count, int_fast32_t value)
-		{
-			return local_snprintf_P(buff, count, "%u.%1u", gsubtones [value] / 10, gsubtones [value] % 10);
-		}
-		static uint_fast8_t gsubtoneitx = 18;	// частота subtone = 77.0 герц
-		static uint_fast8_t gsubtoneirx = 18;	// частота subtone = 77.0 герц
-		static uint_fast8_t gctssenable;	// разрешить формирование subtone
-		//  Continuous Tone-Coded Squelch System or CTCSS settings group
-		static const struct paramdefdef xgctssgroup =
-		{
-			QLABEL("CTCSS"), 0, 0, 0, 0,
-			ITEM_GROUP,
-			0, 0,
-			OFFSETOF(struct nvmap, ggrpctcss),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			NULL,
-			NULL,
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-		//  Continuous Tone-Coded Squelch System or CTCSS freq
-		static const struct paramdefdef xgsubtoneitx =
-		{
-			QLABEL2("TCTCSS FQ", "T-CTCSS FREQ"), 7, 1, RJ_CB,	ISTEP1,
-			ITEM_VALUE | ITEM_LISTSELECT,
-			0, ARRAY_SIZE(gsubtones) - 1,
-			OFFSETOF(struct nvmap, gsubtoneitx),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& gsubtoneitx,
-			getzerobase,
-			getvaltextsubtone, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-		//  Continuous Tone-Coded Squelch System or CTCSS freq
-		static const struct paramdefdef xgsubtoneirx =
-		{
-			QLABEL2("RCTCSS FQ", "R-CTCSS FREQ"), 7, 1, RJ_CB,	ISTEP1,
-			ITEM_VALUE | ITEM_LISTSELECT,
-			0, ARRAY_SIZE(gsubtones) - 1,
-			OFFSETOF(struct nvmap, gsubtoneirx),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& gsubtoneirx,
-			getzerobase,
-			getvaltextsubtone, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-		//  Continuous Tone-Coded Squelch System or CTCSS control
-		static const struct paramdefdef xgctssenable =
-		{
-			QLABEL("CTCSS"), 8, 3, RJ_ON, ISTEP1,
-			ITEM_VALUE,
-			0, 1,
-			OFFSETOF(struct nvmap, gctssenable),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& gctssenable,
-			getzerobase,
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-	#if WITHIF4DSP
-		static uint_fast8_t gsubtonelevel = 10;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
-		//  Continuous Tone-Coded Squelch System or CTCSS control
-		/* Select the CTCSS transmit level. */
-		static const struct paramdefdef xgctsslevel =
-		{
-			QLABEL2("CTCSSLVL", "CTCSS LEVEL"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Select the CTCSS transmit level. */
-			ITEM_VALUE,
-			0, 100,
-			OFFSETOF(struct nvmap, gsubtonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& gsubtonelevel,
-			getzerobase, /* складывается со смещением и отображается */
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-	#endif /* WITHIF4DSP */
-	#endif /* WITHSUBTONES */
 
 #if WITHRPTOFFSET
 		static const struct paramdefdef xrptroffshf1k =

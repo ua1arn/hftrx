@@ -1342,17 +1342,15 @@ static const struct menudef menutable [] =
 	& xcatsigkey,
 #endif /* WITHCAT */
 
-#if WITHSUBTONES && WITHTX
+#if WITHSUBTONES && WITHTX && WITHIF4DSP
 /* group name +++ */
 	& xgctssgroup,
 /* group name --- */
 	& xgctssenable,	//  Continuous Tone-Coded Squelch System or CTCSS control
 	& xgsubtoneitx,	//  Continuous Tone-Coded Squelch System or CTCSS freq
-#if WITHIF4DSP
 	& xgctsslevel,	/* Select the CTCSS transmit level. */
 	& xgsubtoneirx,	//  Continuous Tone-Coded Squelch System or CTCSS freq
-#endif /* WITHIF4DSP */
-#endif /* WITHSUBTONES && WITHTX */
+#endif /* WITHSUBTONES && WITHTX && WITHIF4DSP */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("Audio"), 0, 0, 0, 0,
