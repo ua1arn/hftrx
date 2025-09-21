@@ -12154,6 +12154,9 @@ updateboard_noui(
 				board_set_agc_thung(gagc [agcseti].thung10);	// hold time (hung time) in 0.1 sec
 				board_set_squelch_level(pamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_NFM ? ulmax(gsquelch.value, gsquelchNFM) : gsquelch.value);
 				board_set_gainnfmrx(ggainnfmrx10 * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+				#if WITHSUBTONES
+					board_set_ctss_squelch(gctssenable && pamodetempl->subtone);	// RX CTSS squelch enable
+				#endif /* WITHSUBTONES */
 			#endif /* WITHIF4DSP */
 				board_set_nb_enable(pathi, 0);	/* Управлением включением RX Noise Blanker */
 			} /* tx == 0 */
@@ -12162,7 +12165,6 @@ updateboard_noui(
 			#if WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
 				board_subtone_setfreq(gsubtones [gsubtonei]);	// частота subtone (до десятых долей герца).
-				board_set_ctss_squelch(gctssenable && ! gtx && getmodetempl(txsubmode)->subtone);	// RX CTSS squelch enable
 			#endif /* WITHSUBTONES */
 			#if WITHTX && WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
