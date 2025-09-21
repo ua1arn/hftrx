@@ -1548,12 +1548,6 @@ static void smeter_parameters_update(volatile agcparams_t * const agcp)
 	agcp->gainlimit = db2ratio(60);
 	agcp->agcfactor = (FLOAT_t) -1;
 
-#if CTLSTYLE_OLEG4Z_V1
-	agcp->chargespeedfast = MAKETAU0();
-	agcp->chargespeedfast = MAKETAUIF((FLOAT_t) 0.005);	// 5 mS
-	agcp->dischargespeedfast = MAKETAUIF((FLOAT_t) 0.005);	// 5 mS
-#endif /* CTLSTYLE_OLEG4Z_V1 */
-
 	//PRINTF(PSTR("rxagc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
 
@@ -3328,10 +3322,9 @@ void agc_state_initialize(agcstate_t * __restrict st, const agcparams_t * __rest
 	const FLOAT_t ratio = (agcp->agcoff ? m0 : level) / f0;
 
 	const FLOAT_t streingth_log = LOGF(ratio);
-	const FLOAT_t caplevel = streingth_log;
 
-	st->agcfastcap = caplevel;
-	st->agcslowcap = caplevel;
+	st->agcfastcap = streingth_log;
+	st->agcslowcap = streingth_log;
 }
 
 // TODO: eliminate LOGF

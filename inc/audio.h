@@ -347,7 +347,7 @@ typedef struct agcstate
 {
 	FLOAT_t  agcfastcap;	// разница после выпрямления
 	FLOAT_t  agcslowcap;	// разница после выпрямления
-	unsigned agchangticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
+	unsigned agchangticks;	// сколько сэмплов надо сохранять agcslowcap неизменным.
 } agcstate_t;
 
 typedef struct agcparams
