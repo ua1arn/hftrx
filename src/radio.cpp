@@ -17100,7 +17100,7 @@ static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_f
 }
 
 // отобразить значение параметра
-static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, uint_fast8_t yspan)
+static void display2_menu_value(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, uint_fast8_t yspan)
 {
 	char buff [xspan + 1];
 
@@ -17337,7 +17337,14 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
             {
                 colmain_setcolors(MENUCOLOR, MENUBGCOLOR);
             }
-            display2_menu_valxx(db, x, y_position_params, mv, xspan, rowspan); // значение параметра
+#if 1
+            display2_menu_value(db, x, y_position_params, mv, xspan, rowspan); // значение параметра
+#else
+        	char buff [xspan + 1];
+
+        	param_format(mp->pd, buff, xspan + 1, param_getvalue(mp->pd));
+        	display_text(db, x, y_position_params, buff, xspan, rowspan);
+#endif
 
 			y_position_params += window.ystep;
 		}
