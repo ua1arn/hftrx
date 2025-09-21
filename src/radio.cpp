@@ -3579,7 +3579,11 @@ struct nvmap
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 #if WITHFANTIMER
 	uint8_t gfanpatime;
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	uint8_t gfanpatempflag;
+	uint8_t gfanpaofftemp;
+	uint8_t gfanpaontemp;
+#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 	#if WITHFANPWM
 		uint16_t gfanpapwm;
 	#endif /* WITHFANPWM */
@@ -7512,13 +7516,13 @@ static const struct paramdefdef xgdimmtime =
 #define FANPATIMEMAX	240
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 static uint_fast8_t gfanpatempflag = 1;	/* */
-static uint_fast8_t gfanpamaxtemp = 45;	/* температура включения вентилятора */
-static uint_fast8_t gfanpamintemp = 35;	/* температура выключения вентилятора */
+static uint_fast8_t gfanpaontemp = 45;	/* температура включения вентилятора */
+static uint_fast8_t gfanpaofftemp = 35;	/* температура выключения вентилятора */
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 
 static uint_fast8_t gfanpatime = 25;	/* количество секунд до выключения вентилятора после передачи, 0 - не гасим. Регулируется из меню. */
 static uint_fast8_t fanpacount = FANPATIMEMAX;
-static uint_fast8_t fanpaflag = 1;	/* не-0: выключить ыентилятор. */
+static uint_fast8_t fanpaflag = 1;	/* не-0: выключить вентилятор. */
 static uint_fast8_t fanpaflagch;	/* не-0: изменилось состояние fanpaflag */
 	#if WITHFANPWM
 		static uint_fast16_t gfanpapwm = WITHFANPWMMAX;
@@ -16618,10 +16622,12 @@ static void dpc_1s_timer_fn(void * arg)
 		{
 			// Вентилятор включается только по датчику температуры
 			const int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях
+			const int_fast16_t tempon = ulmax16(gfanpaontemp, gfanpaofftemp) * 10;
+			const int_fast16_t tempoff = ulmin16(gfanpaontemp, gfanpaofftemp) * 10;
 			if (fanpaflag)
 			{
 				// выключено
-				if (tempv >= (int_fast16_t) (gfanpamaxtemp * 10))
+				if (tempv >= tempon)
 				{
 					fanpaflag = 0;	// включаем
 					fanpaflagch = 1;
@@ -16630,7 +16636,7 @@ static void dpc_1s_timer_fn(void * arg)
 			else
 			{
 				// включено
-				if (tempv <= (int_fast16_t) (gfanpamintemp * 10))
+				if (tempv <= tempoff)
 				{
 					fanpaflag = 1;	// выключаем
 					fanpaflagch = 1;

@@ -26,7 +26,7 @@ static const struct menudef menutable [] =
 #if WITHPOWERTRIM
 	#if WITHLOWPOWEREXTTUNE
 		(const struct paramdefdef [1]) {
-			QLABEL("ATU PWR"), 7, 0, 0,	ISTEP5,		/* мощность при работе автоматического согласующего устройства */
+			QLABEL("ATU PWR"), 7, 0, RJ_UNSIGNED, ISTEP5,		/* мощность при работе автоматического согласующего устройства */
 			ITEM_VALUE,
 			WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 			OFFSETOF(struct nvmap, gtunepower),
@@ -401,7 +401,7 @@ static const struct menudef menutable [] =
 	& xfltbw_cwnarrow,
 	& xfltsofter_cwnarrow,
 	(const struct paramdefdef [1]) {
-		QLABEL("SSB W HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
+		QLABEL("SSB W HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBWIDE),
@@ -412,7 +412,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("SSB W LO"), 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
+		QLABEL("SSB W LO"), 7, 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBWIDE),
@@ -433,7 +433,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("SSB M HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB MEDIUM */
+		QLABEL("SSB M HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB MEDIUM */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBMEDIUM),
@@ -444,7 +444,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("SSB M LO"), 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB MEDIUM */
+		QLABEL("SSB M LO"), 7, 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB MEDIUM */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBMEDIUM),
@@ -466,7 +466,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("SSB N HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - SSB NARROW */
+		QLABEL("SSB N HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB NARROW */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBNARROW),
@@ -477,7 +477,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("SSB N LO"), 7, 2, 0,	ISTEP5,		/* Подстройка полосы пропускания - SSB NARROW */
+		QLABEL("SSB N LO"), 7, 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB NARROW */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBNARROW),
@@ -510,7 +510,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("AM W LO"), 7, 2, 0,	ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
+		QLABEL("AM W LO"), 7, 2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_AMWIDE),
@@ -543,7 +543,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("AM N LO"), 7, 2, 0,	ISTEP5,		/* подстройка полосы пропускания - AM NARROW */
+		QLABEL("AM N LO"), 7, 2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM NARROW */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_AMNARROW),
@@ -565,7 +565,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("SSBTX HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
+		QLABEL("SSBTX HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBTX),
@@ -576,7 +576,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("SSBTX LO"), 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
+		QLABEL("SSBTX LO"), 7, 2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBTX),
@@ -598,7 +598,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("DIGI HI"), 6, 1, 0,	ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
+		QLABEL("DIGI HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_DIGIWIDE),
@@ -609,7 +609,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("DIGI LO"), 7, 2, 0,	ISTEP1,		/* подстройка полосы пропускания - TX SSB */
+		QLABEL("DIGI LO"), 7, 2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_DIGIWIDE),
@@ -1118,7 +1118,7 @@ static const struct menudef menutable [] =
 	},
 	#if ! WITHPOTNOTCH
 	(const struct paramdefdef [1]) {
-		QLABEL("NTCH FRQ"), 7, 3, 0,	ISTEP50,		/* управление частотой NOTCH. */
+		QLABEL("NTCH FRQ"), 7, 3, RJ_UNSIGNED, ISTEP50,		/* управление частотой NOTCH. */
 		ITEM_VALUE,
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		OFFSETOF(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
@@ -1129,7 +1129,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("NTCH WDT"), 7, 3, 0,	ISTEP50,		/* полоса режекции NOTCH. */
+		QLABEL("NTCH WDT"), 7, 3, RJ_UNSIGNED, ISTEP50,		/* полоса режекции NOTCH. */
 		ITEM_VALUE,
 		WITHNOTCHWIDTHMIN, WITHNOTCHWIDTHMAX,
 		OFFSETOF(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
@@ -1405,7 +1405,7 @@ static const struct menudef menutable [] =
 	& xgsquelchNFM,
 #endif /* ! WITHPOTNFMSQL */
 	(const struct paramdefdef [1]) {
-		QLABEL("SDTN LVL"), 7, 0, 0,	ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
+		QLABEL("SDTN LVL"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
 		ITEM_VALUE,
 		0, 100, 
 		OFFSETOF(struct nvmap, gsidetonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
@@ -1430,7 +1430,7 @@ static const struct menudef menutable [] =
 #if WITHTX && WITHIF4DSP
 #if WITHWAVPLAYER || WITHSENDWAV
 	(const struct paramdefdef [1]) {
-		QLABEL("LOOP MSG"), 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
+		QLABEL("LOOP MSG"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Select the monitoring sound output level.. */
 		ITEM_VALUE,
 		0, ARRAY_SIZE(loopnames) - 1,
 		OFFSETOF(struct nvmap, gloopmsg),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
@@ -1441,7 +1441,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("LOOP SEC"), 7, 0, 0,	ISTEP1,		/* Select the monitoring sound output level.. */
+		QLABEL("LOOP SEC"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Select the monitoring sound output level.. */
 		ITEM_VALUE,
 		15, 240,
 		OFFSETOF(struct nvmap, gloopsec),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
@@ -1514,7 +1514,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("MICAGCGN"), 7, 0, 0,	ISTEP1,
+		QLABEL("MICAGCGN"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,	
 		WITHMIKEAGCMIN, WITHMIKEAGCMAX, 	/* максимальное усиление АРУ микрофона в дБ */
 		OFFSETOF(struct nvmap, gmikeagcgain),
@@ -1525,7 +1525,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("MIC CLIP"), 7, 0, 0,	ISTEP1,
+		QLABEL("MIC CLIP"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,	
 		0, 90, 					/* Ограничение */
 		OFFSETOF(struct nvmap, gmikehclip),
@@ -1537,7 +1537,7 @@ static const struct menudef menutable [] =
 	},
 #if WITHCOMPRESSOR
 	(const struct paramdefdef [1]) {
-		QLABEL("COMP ATK"), 7, 0, 0,	ISTEP5,
+		QLABEL("COMP ATK"), 7, 0, RJ_UNSIGNED, ISTEP5,
 		ITEM_VALUE,	
 		WITHCOMPATTACKMIN, WITHCOMPATTACKMAX,
 		OFFSETOF(struct nvmap, gcompressor_attack),
@@ -1548,7 +1548,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("COMP RLS"), 7, 0, 0,	ISTEP5,
+		QLABEL("COMP RLS"), 7, 0, RJ_UNSIGNED, ISTEP5,
 		ITEM_VALUE,	
 		WITHCOMPRELEASEMIN, WITHCOMPRELEASEMAX,
 		OFFSETOF(struct nvmap, gcompressor_release),
@@ -1559,7 +1559,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("COMP HLD"), 7, 0, 0,	ISTEP5,
+		QLABEL("COMP HLD"), 7, 0, RJ_UNSIGNED, ISTEP5,
 		ITEM_VALUE,	
 		WITHCOMPHOLDMIN, WITHCOMPHOLDMAX,
 		OFFSETOF(struct nvmap, gcompressor_hold),
@@ -1570,7 +1570,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("COMP GN"), 7, 0, 0,	ISTEP1,
+		QLABEL("COMP GN"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,	
 		WITHCOMPGAINMIN, WITHCOMPGAINMAX,
 		OFFSETOF(struct nvmap, gcompressor_gain),
@@ -1581,7 +1581,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("COMP TH"), 7, 0, 0,	ISTEP1,
+		QLABEL("COMP TH"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,	
 		WITHCOMPTHRESHOLDMIN, WITHCOMPTHRESHOLDMAX,
 		OFFSETOF(struct nvmap, gcompressor_threshold),
@@ -1605,7 +1605,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL2("RVB TIME", "Reverb Delay"), 7, 0, 0,	ISTEP1,
+		QLABEL2("RVB TIME", "Reverb Delay"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		WITHREVERBDELAYMIN, WITHREVERBDELAYMAX, 					/* ревербератор - задержка */
 		OFFSETOF(struct nvmap, greverbdelay),
@@ -1616,7 +1616,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL2("RVB LOSS", "Reverb Loss"), 7, 0, 0,	ISTEP1,
+		QLABEL2("RVB LOSS", "Reverb Loss"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		WITHREVERBLOSSMIN, WITHREVERBLOSSMAX, 					/* ревербератор - ослабление на возврате */
 		OFFSETOF(struct nvmap, greverbloss),
@@ -1806,7 +1806,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("ALCNTH"), 7, 0, 0,	ISTEP1,		/* ALC noise gate threshold level. */
+		QLABEL("ALCNTH"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* ALC noise gate threshold level. */
 		ITEM_VALUE,
 		0, 7,
 		OFFSETOF(struct nvmap, ALCNTH),	/* ALC noise gate threshold level */
@@ -1828,7 +1828,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("ALCMXGAN"), 7, 0, 0,	ISTEP1,		/* Set maximum gain limit for PGA volume setting changes under ALC control. */
+		QLABEL("ALCMXGAN"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Set maximum gain limit for PGA volume setting changes under ALC control. */
 		ITEM_VALUE,
 		0, 7,
 		OFFSETOF(struct nvmap, ALCMXGAIN),	/* Set maximum gain limit for PGA volume setting changes under ALC control */
@@ -1839,7 +1839,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("ALCMNGAN"), 7, 0, 0,	ISTEP1,		/* Set minimum gain value limit for PGA volume setting changes under ALC contro. */
+		QLABEL("ALCMNGAN"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Set minimum gain value limit for PGA volume setting changes under ALC contro. */
 		ITEM_VALUE,
 		0, 7,
 		OFFSETOF(struct nvmap, ALCMNGAIN),	/* Set minimum gain value limit for PGA volume setting changes under ALC contro */
@@ -1945,7 +1945,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("IFGN MAX"), 7, 0, 0,	ISTEP1,		/* диапазон ручной (или автоматической) регулировки цифрового усиления - максимальное значение */
+		QLABEL("IFGN MAX"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* диапазон ручной (или автоматической) регулировки цифрового усиления - максимальное значение */
 		ITEM_VALUE,
 		40, 120, 		// 40..120 dB
 		OFFSETOF(struct nvmap, gdigigainmax),
@@ -1969,7 +1969,7 @@ static const struct menudef menutable [] =
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
-		QLABEL("AGC RATE"), 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
+		QLABEL("AGC RATE"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, AGC_RATE_FLAT,
 		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
@@ -1980,7 +1980,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("AGC HUNG"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
+		QLABEL("AGC HUNG"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].thung10),	/* время удержания медленной цепи АРУ */
@@ -1991,7 +1991,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("AGC T1"), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
+		QLABEL("AGC T1"), 7, 0, RJ_UNSIGNED, ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].t1),	/* время срабатывания медленной цепи АРУ */
@@ -2002,7 +2002,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("AGC T2"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
+		QLABEL("AGC T2"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].release10),	/* время разряда медленной цепи АРУ */
@@ -2013,7 +2013,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("AGC T4"), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
+		QLABEL("AGC T4"), 7, 0, RJ_UNSIGNED, ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].t4),	/* время разряда быстрой цепи АРУ */
@@ -2037,7 +2037,7 @@ static const struct menudef menutable [] =
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
-		QLABEL("AGC RATE"), 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
+		QLABEL("AGC RATE"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, AGC_RATE_FLAT,
 		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
@@ -2048,7 +2048,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("AGC HUNG"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
+		QLABEL("AGC HUNG"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].thung10),	/* время удержания медленной цепи АРУ */
@@ -2059,7 +2059,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("AGC T1"), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
+		QLABEL("AGC T1"), 7, 0, RJ_UNSIGNED, ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].t1),	/* время срабатывания медленной цепи АРУ */
@@ -2070,7 +2070,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("AGC T2"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
+		QLABEL("AGC T2"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].release10),	/* время разряда медленной цепи АРУ */
@@ -2081,7 +2081,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("AGC T4"), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
+		QLABEL("AGC T4"), 7, 0, RJ_UNSIGNED, ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].t4),	/* время разряда быстрой цепи АРУ */
@@ -2105,7 +2105,7 @@ static const struct menudef menutable [] =
 	},
 /* group name --- */
 	(const struct paramdefdef [1]) {
-		QLABEL("AGC RATE"), 7, 0, 0,	ISTEP1,		/* подстройка параметра АРУ через меню. */
+		QLABEL("AGC RATE"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, AGC_RATE_FLAT,
 		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
@@ -2116,7 +2116,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("AGC HUNG"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
+		QLABEL("AGC HUNG"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].thung10),	/* время удержания медленной цепи АРУ */
@@ -2127,7 +2127,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("AGC T1"), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
+		QLABEL("AGC T1"), 7, 0, RJ_UNSIGNED, ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].t1),	/* время срабатывания медленной цепи АРУ */
@@ -2138,7 +2138,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("AGC T2"), 6, 1, 0,	ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
+		QLABEL("AGC T2"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].release10),	/* время разряда медленной цепи АРУ */
@@ -2149,7 +2149,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("AGC T4"), 7, 0, 0,	ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
+		QLABEL("AGC T4"), 7, 0, RJ_UNSIGNED, ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].t4),	/* время разряда быстрой цепи АРУ */
@@ -2338,17 +2338,6 @@ static const struct menudef menutable [] =
 
 #endif /* WITHIF4DSP */
 #if WITHFANTIMER
-	(const struct paramdefdef [1]) {
-		QLABEL("FAN TIME"), 7, 0, 0,	ISTEP5,
-		ITEM_VALUE,
-		0, FANPATIMEMAX,
-		OFFSETOF(struct nvmap, gfanpatime),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gfanpatime,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	(const struct paramdefdef [1]) {
 		QLABEL("FAN TEMP"), 7, 0, RJ_ON,	ISTEP1,
@@ -2361,10 +2350,43 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
+	(const struct paramdefdef [1]) {
+		QLABEL("FAN TMIN"), 7, 0, RJ_SIGNED,	ISTEP1,
+		ITEM_VALUE,
+		10, 70,
+		OFFSETOF(struct nvmap, gfanpaofftemp),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gfanpaofftemp,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+	(const struct paramdefdef [1]) {
+		QLABEL("FAN TMAX"), 7, 0, RJ_SIGNED,	ISTEP1,
+		ITEM_VALUE,
+		10, 70,
+		OFFSETOF(struct nvmap, gfanpaontemp),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gfanpaontemp,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
+	(const struct paramdefdef [1]) {
+		QLABEL("FAN TIME"), 7, 0, RJ_UNSIGNED,	ISTEP5,
+		ITEM_VALUE,
+		0, FANPATIMEMAX,
+		OFFSETOF(struct nvmap, gfanpatime),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gfanpatime,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
 	#if WITHFANPWM
 	(const struct paramdefdef [1]) {
-		QLABEL("FAN FLOW"), 7, 0, 0,	ISTEP1,
+		QLABEL("FAN FLOW"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		WITHFANPWMMIN, WITHFANPWMMAX,
 		OFFSETOF(struct nvmap, gfanpapwm),
@@ -2393,7 +2415,7 @@ static const struct menudef menutable [] =
 #endif /* WITHDSPEXTDDC */
 #if WITHIF4DSP
 	(const struct paramdefdef [1]) {
-		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("DACSCALE"), 7, 0, RJ_UNSIGNED,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2423,7 +2445,7 @@ static const struct menudef menutable [] =
 
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP MW/LW"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP MW/LW"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2435,7 +2457,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP 160m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 160m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2447,7 +2469,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP 80m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 80m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2459,7 +2481,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP 40m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 40m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2471,7 +2493,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP 30m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 30m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2483,7 +2505,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP 20m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 20m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2495,7 +2517,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP 17m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 17m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2507,7 +2529,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP 15m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 15m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2519,7 +2541,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP 12m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 12m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2531,7 +2553,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP 10m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 10m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2543,7 +2565,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP 6m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 6m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2555,7 +2577,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP 2m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 2m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2567,7 +2589,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP 0.7m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP 0.7m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2579,7 +2601,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP ACC13"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP ACC13"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2591,7 +2613,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP ACC14"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP ACC14"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2603,7 +2625,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("HP ACC15"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("HP ACC15"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_b [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2616,7 +2638,7 @@ static const struct menudef menutable [] =
 
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP MW/LW"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP MW/LW"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2628,7 +2650,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP 160m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP 160m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2640,7 +2662,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP 80m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP 80m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2652,7 +2674,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP 40m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP 40m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2664,7 +2686,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP 30m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP 30m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2676,7 +2698,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP 20m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP 20m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2688,7 +2710,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP 17m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP 17m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2700,7 +2722,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP 15m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP 15m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2712,7 +2734,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP 12m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP 12m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2724,7 +2746,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP 10m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP 10m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2736,7 +2758,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP 6m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP 6m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2748,7 +2770,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP 2m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP 2m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2760,7 +2782,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP 0.7m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP 0.7m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2772,7 +2794,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP ACC13"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP ACC13"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2784,7 +2806,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP ACC14"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP ACC14"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2796,7 +2818,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("LP ACC15"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("LP ACC15"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_a [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2809,7 +2831,7 @@ static const struct menudef menutable [] =
 #if WITHPACLASSA
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA MW/LW"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA MW/LW"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2821,7 +2843,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA 160m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA 160m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2833,7 +2855,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA 80m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA 80m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2845,7 +2867,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA 40m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA 40m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2857,7 +2879,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA 30m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA 30m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2869,7 +2891,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA 20m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA 20m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2881,7 +2903,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA 17m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA 17m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2893,7 +2915,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA 15m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA 15m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2905,7 +2927,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA 12m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA 12m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2917,7 +2939,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA 10m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA 10m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2929,7 +2951,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA 6m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA 6m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2941,7 +2963,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA 2m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA 2m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2953,7 +2975,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA 0.7m"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA 0.7m"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2965,7 +2987,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA ACC13"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA ACC13"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2977,7 +2999,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA ACC14"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA ACC14"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2989,7 +3011,7 @@ static const struct menudef menutable [] =
 	},
 	// gbandf2adj [NUMLPFADJ]
 	(const struct paramdefdef [1]) {
-		QLABEL("CA ACC15"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("CA ACC15"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gbandf2adj_classa [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -3058,7 +3080,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("ENC1 DIV"), 7, 0, 0,	ISTEP1,
+		QLABEL("ENC1 DIV"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		1, 128, 	/* /1 ... /128 */
 		OFFSETOF(struct nvmap, genc1div),
@@ -3081,7 +3103,7 @@ static const struct menudef menutable [] =
 	},
 #if WITHENCODER2
 	(const struct paramdefdef [1]) {
-		QLABEL("ENC2 DIV"), 7, 0, 0,	ISTEP1,
+		QLABEL("ENC2 DIV"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		1, 8, 	/* /1 ... /8 */
 		OFFSETOF(struct nvmap, genc2div),
@@ -3120,7 +3142,7 @@ static const struct menudef menutable [] =
 #if defined(REFERENCE_FREQ)
 #if defined (DAC1_TYPE)
 	(const struct paramdefdef [1]) {
-		QLABEL("REF ADJ"), 7, 0, 0,	ISTEP1,		/* подстройка частоты опорного генератора (напряжением) через меню. */
+		QLABEL("REF ADJ"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* подстройка частоты опорного генератора (напряжением) через меню. */
 		ITEM_VALUE,
 		WITHDAC1VALMIN, WITHDAC1VALMAX, 
 		OFFSETOF(struct nvmap, dac1level),
@@ -3132,7 +3154,7 @@ static const struct menudef menutable [] =
 	},
 #endif /* defined (DAC1_TYPE) */
 	(const struct paramdefdef [1]) {
-		QLABEL("REF FREQ"), 9, 3, 0,	ISTEP1,		/* ввод реальной частоты опорного генератора через меню. */
+		QLABEL("REF FREQ"), 9, 3, RJ_UNSIGNED, ISTEP1,		/* ввод реальной частоты опорного генератора через меню. */
 		ITEM_VALUE,
 		0, OSCSHIFT * 2 - 1, 
 		OFFSETOF(struct nvmap, refbias),
@@ -3145,7 +3167,7 @@ static const struct menudef menutable [] =
 #endif	/* defined(REFERENCE_FREQ) */
 #if (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ	/* подстройка частоты гетеродина через меню. */
 	(const struct paramdefdef [1]) {
-		QLABEL("LO3 FRQ"), 9, 3, 0,	ISTEP1,
+		QLABEL("LO3 FRQ"), 9, 3, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		LO2AMIN, LO2AMAX, 
 		OFFSETOF(struct nvmap, lo3offset),
@@ -3158,7 +3180,7 @@ static const struct menudef menutable [] =
 #endif	/* (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ */
 #if defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570)
 	(const struct paramdefdef [1]) {
-		QLABEL("REFSI570"), 9, 3, 0,	ISTEP1,
+		QLABEL("REFSI570"), 9, 3, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		0, OSCSHIFT * 2 - 1, 
 		OFFSETOF(struct nvmap, si570_xtall_offset),
@@ -3195,7 +3217,7 @@ static const struct menudef menutable [] =
 	},
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
 	(const struct paramdefdef [1]) {
-		QLABEL("BAT CALI"), 7, 1, 0,	ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
+		QLABEL("BAT CALI"), 7, 1, RJ_UNSIGNED, ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
 		ITEM_VALUE,
 		ADCVREF_CPU, 255,	// 3.3/5.0 .. 25.5 вольта
 		OFFSETOF(struct nvmap, voltcalibr100mV),
@@ -3234,7 +3256,7 @@ static const struct menudef menutable [] =
 	},
 #endif /* WITHSWRMTR && ! WITHSHOWSWRPWR */
 	(const struct paramdefdef [1]) {
-		QLABEL("SWR CALI"), 7, 2, 0,	ISTEP1,		/* калибровка SWR-метра */
+		QLABEL("SWR CALI"), 7, 2, RJ_UNSIGNED, ISTEP1,		/* калибровка SWR-метра */
 		ITEM_VALUE,
 		50, 200, //80, 120, 
 		OFFSETOF(struct nvmap, swrcalibr),
@@ -3252,7 +3274,7 @@ static const struct menudef menutable [] =
 #endif
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	(const struct paramdefdef [1]) {
-		QLABEL("HEAT LIM"), 7, 0, 0,	ISTEP1,
+		QLABEL("HEAT LIM"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		20, 85,						/* порог срабатывания защиты по температуре */
 		OFFSETOF(struct nvmap, gtempvmax),
@@ -3276,7 +3298,7 @@ static const struct menudef menutable [] =
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 #if WITHIF4DSP || defined (TXPATH_BIT_ENABLE_SSB) || defined (TXPATH_BIT_ENABLE_CW) || defined (TXPATH_BIT_GATE)
 	(const struct paramdefdef [1]) {
-		QLABEL("RXTX DLY"), 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */
+		QLABEL("RXTX DLY"), 7, 0, RJ_UNSIGNED, ISTEP5,	/* 5 mS step of changing value */
 		ITEM_VALUE,
 		5, WITHMAXRXTXDELAY,						/* 5..100 ms delay */
 		OFFSETOF(struct nvmap, rxtxdelay),
@@ -3287,7 +3309,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("TXRX DLY"), 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */
+		QLABEL("TXRX DLY"), 7, 0, RJ_UNSIGNED, ISTEP5,	/* 5 mS step of changing value */
 		ITEM_VALUE,
 		5, WITHMAXTXRXDELAY,						/* 5..100 ms delay */
 		OFFSETOF(struct nvmap, txrxdelay),
@@ -3301,7 +3323,7 @@ static const struct menudef menutable [] =
 #endif /* WITHTX */
 #if WITHLO1LEVELADJ
 	(const struct paramdefdef [1]) {
-		QLABEL("LO1 LEVL"), 7, 0, 0,	ISTEP1,
+		QLABEL("LO1 LEVL"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		0, 100, 		/* уровень (амплитуда) LO1 в процентах */
 		OFFSETOF(struct nvmap, lo1level),
@@ -3314,7 +3336,7 @@ static const struct menudef menutable [] =
 #endif /* WITHLO1LEVELADJ */
 #if LO1PHASES
 	(const struct paramdefdef [1]) {
-		QLABEL("PHASE RX"), 7, 0, 0,	ISTEP1,
+		QLABEL("PHASE RX"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		0, 65535, /* добавление к коду смещения фазы */
 		OFFSETOF(struct nvmap, phaserx),
@@ -3326,7 +3348,7 @@ static const struct menudef menutable [] =
 	},
 #if WITHTX
 	(const struct paramdefdef [1]) {
-		QLABEL("PHASE TX"), 7, 0, 0,	ISTEP1,
+		QLABEL("PHASE TX"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		0, 65535, /* добавление к коду смещения фазы */
 		OFFSETOF(struct nvmap, phasetx),
@@ -3418,7 +3440,7 @@ static const struct menudef menutable [] =
 
 #if WITHBARS
 	(const struct paramdefdef [1]) {
-		QLABEL("S9 LEVEL"), 7, 0, 0,	ISTEP1,
+		QLABEL("S9 LEVEL"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		1, UINT8_MAX - 1, 
 		OFFSETOF(struct nvmap, s9level),
@@ -3429,7 +3451,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("S9 DELTA"), 7, 0, 0,	ISTEP1,
+		QLABEL("S9 DELTA"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		1, UINT8_MAX - 1, 
 		OFFSETOF(struct nvmap, s9delta),
@@ -3440,7 +3462,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("+60DELTA"), 7, 0, 0,	ISTEP1,
+		QLABEL("+60DELTA"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		1, UINT8_MAX - 1, 
 		OFFSETOF(struct nvmap, s9_60_delta),
