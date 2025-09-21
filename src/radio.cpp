@@ -16614,7 +16614,7 @@ static void dpc_1s_timer_fn(void * arg)
 
 		}
 	#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
-		else if (gfanpamintemp)
+		else if (gfanpatempflag)
 		{
 			// Вентилятор включается только по датчику температуры
 			const int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях
@@ -16623,7 +16623,7 @@ static void dpc_1s_timer_fn(void * arg)
 				// выключено
 				if (tempv >= (int_fast16_t) (gfanpamaxtemp * 10))
 				{
-					fanpaflag = 1;	// выключаем
+					fanpaflag = 0;	// включаем
 					fanpaflagch = 1;
 				}
 			}
@@ -16632,7 +16632,7 @@ static void dpc_1s_timer_fn(void * arg)
 				// включено
 				if (tempv <= (int_fast16_t) (gfanpamintemp * 10))
 				{
-					fanpaflag = 0;	// включаем
+					fanpaflag = 1;	// выключаем
 					fanpaflagch = 1;
 				}
 			}
