@@ -17307,8 +17307,8 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 	// выводим на экран блок с параметрами
 	for (el = 0; el < MENUROW_COUNT; el ++)
 	{
-		const struct menudef * const mv = & menutable [el];
-		if (ismenukinddp(mv->pd, ITEM_VALUE))
+		const struct paramdefdef * const pd = menutable [el].pd;
+		if (ismenukinddp(pd, ITEM_VALUE))
 		{
 			if (el < selected_group_left_margin)
 				continue;
@@ -17330,7 +17330,7 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
             }
         	char buff [xspan + 1];
 
-        	param_format(mv->pd, buff, xspan + 1, param_getvalue(mv->pd));
+        	param_format(pd, buff, xspan + 1, param_getvalue(pd));
         	display_text(db, x, y_position_params, buff, xspan, rowspan);
 
 			y_position_params += window.ystep;
