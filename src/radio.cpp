@@ -11899,7 +11899,7 @@ updateboard_noui(
 	static uint_fast32_t lo0hint = UINT32_MAX;
 	static uint_fast8_t lo1side [2] = { LOCODE_INVALID, LOCODE_INVALID };
 	const uint_fast8_t lo2side = LO2_SIDE;
-	static uint_fast8_t lo2hint [2];
+	static uint_fast8_t lo2hint [2] = { UINT8_MAX, UINT8_MAX };
 	const uint_fast8_t lo3side = LO3_SIDE;
 	static uint_fast8_t forcelsb [2];
 #if WITHDCDCFREQCTL
