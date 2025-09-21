@@ -6214,6 +6214,14 @@ void board_set_ctss_squelch(uint_fast8_t v)
 #endif /* WITHSUBTONES */
 }
 
+void
+board_subtone_setfreqrx(
+	uint_least16_t tonefreq01)	/* tonefreq - частота в десятых долях герца. */
+{
+#if WITHSUBTONES
+#endif /* WITHSUBTONES */
+}
+
 void 
 board_set_cwedgetime(uint_fast8_t n)	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 {

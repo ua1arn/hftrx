@@ -1347,9 +1347,10 @@ static const struct menudef menutable [] =
 	& xgctssgroup,
 /* group name --- */
 	& xgctssenable,	//  Continuous Tone-Coded Squelch System or CTCSS control
-	& xgsubtonei,	//  Continuous Tone-Coded Squelch System or CTCSS freq
+	& xgsubtoneitx,	//  Continuous Tone-Coded Squelch System or CTCSS freq
 #if WITHIF4DSP
 	& xgctsslevel,	/* Select the CTCSS transmit level. */
+	& xgsubtoneirx,	//  Continuous Tone-Coded Squelch System or CTCSS freq
 #endif /* WITHIF4DSP */
 #endif /* WITHSUBTONES && WITHTX */
 /* group name +++ */

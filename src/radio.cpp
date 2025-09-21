@@ -3957,7 +3957,8 @@ struct nvmap
 	#endif
 
 #if WITHSUBTONES
-	uint8_t gsubtonei;	// номер subtone
+	uint8_t gsubtoneitx;	// номер subtone
+	uint8_t gsubtoneirx;	// номер subtone
 	uint8_t gctssenable;	// разрешить формирование subtone
 #endif /* WITHSUBTONES */
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
@@ -5309,7 +5310,8 @@ enum
 		{
 			return local_snprintf_P(buff, count, "%u.%1u", gsubtones [value] / 10, gsubtones [value] % 10);
 		}
-		static uint_fast8_t gsubtonei = 18;	// частота subtone = 77.0 герц
+		static uint_fast8_t gsubtoneitx = 18;	// частота subtone = 77.0 герц
+		static uint_fast8_t gsubtoneirx = 18;	// частота subtone = 77.0 герц
 		static uint_fast8_t gctssenable;	// разрешить формирование subtone
 		//  Continuous Tone-Coded Squelch System or CTCSS settings group
 		static const struct paramdefdef xgctssgroup =
@@ -5325,15 +5327,28 @@ enum
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		//  Continuous Tone-Coded Squelch System or CTCSS freq
-		static const struct paramdefdef xgsubtonei =
+		static const struct paramdefdef xgsubtoneitx =
 		{
-			QLABEL2("CTCSS FQ", "CTCSS FREQ"), 7, 1, RJ_CB,	ISTEP1,
+			QLABEL2("TCTCSS FQ", "T-CTCSS FREQ"), 7, 1, RJ_CB,	ISTEP1,
 			ITEM_VALUE | ITEM_LISTSELECT,
 			0, ARRAY_SIZE(gsubtones) - 1,
-			OFFSETOF(struct nvmap, gsubtonei),
+			OFFSETOF(struct nvmap, gsubtoneitx),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
-			& gsubtonei,
+			& gsubtoneitx,
+			getzerobase,
+			getvaltextsubtone, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		//  Continuous Tone-Coded Squelch System or CTCSS freq
+		static const struct paramdefdef xgsubtoneirx =
+		{
+			QLABEL2("RCTCSS FQ", "R-CTCSS FREQ"), 7, 1, RJ_CB,	ISTEP1,
+			ITEM_VALUE | ITEM_LISTSELECT,
+			0, ARRAY_SIZE(gsubtones) - 1,
+			OFFSETOF(struct nvmap, gsubtoneirx),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gsubtoneirx,
 			getzerobase,
 			getvaltextsubtone, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
@@ -8930,7 +8945,8 @@ static const struct paramdefdef * enc2menus [] =
 	& xgnormalpower,
 #endif /* WITHPOWERTRIM && ! WITHPOTPOWER */
 #if WITHSUBTONES
-	& xgsubtonei,	//  Continuous Tone-Coded Squelch System or CTCSS freq
+	& xgsubtoneitx,	//  Continuous Tone-Coded Squelch System or CTCSS freq
+	& xgsubtoneirx,	//  Continuous Tone-Coded Squelch System or CTCSS freq
 #endif /* WITHPOWERTRIM */
 #if WITHMIC1LEVEL
 	(const struct paramdefdef [1]) {
@@ -12156,6 +12172,7 @@ updateboard_noui(
 				board_set_gainnfmrx(ggainnfmrx10 * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 				#if WITHSUBTONES
 					board_set_ctss_squelch(gctssenable && pamodetempl->subtone);	// RX CTSS squelch enable
+					board_subtone_setfreqtx(gsubtones [gsubtoneirx]);	// частота subtone (до десятых долей герца).
 				#endif /* WITHSUBTONES */
 			#endif /* WITHIF4DSP */
 				board_set_nb_enable(pathi, 0);	/* Управлением включением RX Noise Blanker */
@@ -12164,7 +12181,7 @@ updateboard_noui(
 		#if WITHIF4DSP
 			#if WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
-				board_subtone_setfreq(gsubtones [gsubtonei]);	// частота subtone (до десятых долей герца).
+				board_subtone_setfreqtx(gsubtones [gsubtoneitx]);	// частота subtone (до десятых долей герца).
 			#endif /* WITHSUBTONES */
 			#if WITHTX && WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS

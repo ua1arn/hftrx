@@ -6210,7 +6210,7 @@ void board_testsound_enable(uint_fast8_t state)
 /* NFM передача subtone */
 /* вызывается из update hardware (user mode).	*/
 void 
-board_subtone_setfreq(
+board_subtone_setfreqtx(
 	uint_least16_t tonefreq01)	/* tonefreq - частота в десятых долях герца. */
 {
 #if WITHSUBTONES
@@ -6302,7 +6302,7 @@ void board_sidetone_enable(uint_fast8_t state)
 /* функция - заглушка */
 /* subtone */
 void
-board_subtone_setfreq(
+board_subtone_setfreqtx(
 	uint_least16_t tonefreq01)	/* tonefreq - частота в десятых долях герца. */
 {
 }
