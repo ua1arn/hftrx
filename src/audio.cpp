@@ -1503,7 +1503,7 @@ void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t 
 
 	// параметры используются при работе АРУ
 	agcp->gainlimit_ratio = db2ratio(60);
-	agcp->levelfence_ratio = 1;
+	agcp->levelfence_ratio = db2ratio(WITHMAXFSPOWER);
 	agcp->agcfactor = agc_calcagcfactor(10);
 
 	//PRINTF(PSTR("agc_parameters_initialize: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
