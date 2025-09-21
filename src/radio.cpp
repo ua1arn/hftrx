@@ -3579,6 +3579,7 @@ struct nvmap
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 #if WITHFANTIMER
 	uint8_t gfanpatime;
+	uint8_t gfanpatempflag;
 	#if WITHFANPWM
 		uint16_t gfanpapwm;
 	#endif /* WITHFANPWM */
@@ -7509,6 +7510,12 @@ static const struct paramdefdef xgdimmtime =
 #if WITHFANTIMER
 
 #define FANPATIMEMAX	240
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
+static uint_fast8_t gfanpatempflag = 1;	/* */
+static uint_fast8_t gfanpamaxtemp = 45;	/* температура включения вентилятора */
+static uint_fast8_t gfanpamintemp = 35;	/* температура выключения вентилятора */
+#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
+
 static uint_fast8_t gfanpatime = 25;	/* количество секунд до выключения вентилятора после передачи, 0 - не гасим. Регулируется из меню. */
 static uint_fast8_t fanpacount = FANPATIMEMAX;
 static uint_fast8_t fanpaflag = 1;	/* не-0: выключить ыентилятор. */
@@ -16602,21 +16609,55 @@ static void dpc_1s_timer_fn(void * arg)
 		}
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 #if WITHFANTIMER
-		if (gtx != 0 || gfanpatime == 0)
+		if (0)
 		{
-			if (fanpaflag != 0)
-			{
-				fanpaflag = 0;
-				fanpaflagch = 1;
-			}
-			fanpacount = 0;		/* счётчик времени неактивности */
+
 		}
-		else if (fanpaflag == 0)		// ещё не выключили
+	#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
+		else if (gfanpamintemp)
 		{
-			if (++ fanpacount >= gfanpatime)
+			// Вентилятор включается только по датчику температуры
+			const int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях
+			if (fanpaflag)
 			{
-				fanpaflag = 1;
-				fanpaflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
+				// выключено
+				if (tempv >= (int_fast16_t) (gfanpamaxtemp * 10))
+				{
+					fanpaflag = 1;	// выключаем
+					fanpaflagch = 1;
+				}
+			}
+			else
+			{
+				// включено
+				if (tempv <= (int_fast16_t) (gfanpamintemp * 10))
+				{
+					fanpaflag = 0;	// включаем
+					fanpaflagch = 1;
+				}
+			}
+
+		}
+	#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
+		else
+		{
+			// Вентилятор включаерся по таймеру
+			if (gtx != 0 || gfanpatime == 0)
+			{
+				if (fanpaflag != 0)
+				{
+					fanpaflag = 0;
+					fanpaflagch = 1;
+				}
+				fanpacount = 0;		/* счётчик времени неактивности */
+			}
+			else if (fanpaflag == 0)		// ещё не выключили
+			{
+				if (++ fanpacount >= gfanpatime)
+				{
+					fanpaflag = 1;
+					fanpaflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
+				}
 			}
 		}
 #endif /* WITHFANTIMER */

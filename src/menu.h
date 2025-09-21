@@ -2349,6 +2349,19 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
+	(const struct paramdefdef [1]) {
+		QLABEL("FAN TEMP"), 7, 0, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gfanpatempflag),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gfanpatempflag,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 	#if WITHFANPWM
 	(const struct paramdefdef [1]) {
 		QLABEL("FAN FLOW"), 7, 0, 0,	ISTEP1,
