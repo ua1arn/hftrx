@@ -3133,8 +3133,10 @@ static const struct menudef menutable [] =
 	},
 #endif /* WITHIF4DSP */
 #if WITHRPTOFFSET
-	& xrptroffshf1k,	// HF repeater offset parameter
-	& xrptroffsvhf1k,	// VHF repeater offset parameter
+	& xrptrhfenable,	// HF repeater offset enable
+	& xrptroffshf1k,		// HF repeater offset parameter
+	& xrptrvhfenable,	// VHF repeater offset enable
+	& xrptroffsvhf1k,		// VHF repeater offset parameter
 #endif /* WITHRPTOFFSET */
 #endif /* WITHTX */
 

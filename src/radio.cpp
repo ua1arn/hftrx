@@ -26,6 +26,8 @@
 #include "dspdefines.h"
 #include <atomic>
 
+//#define WITHRPTOFFSET 1
+
 #define UI_TICKS_PERIOD 50	// ms
 #define UINTICKS(v) (((v) + (UI_TICKS_PERIOD - 1)) / UI_TICKS_PERIOD)
 
@@ -625,9 +627,15 @@ static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при прием
 
 #if WITHRPTOFFSET
 
-	enum { RPTOFFSMIN = 0, RPTOFFSHALF = 900, RPTOFFSMAX = 2 * RPTOFFSHALF };
-	static uint_fast16_t rptroffshf1k = RPTOFFSHALF;		/* Repeater offset HF */
-	static uint_fast16_t rptroffsvhf1k = RPTOFFSHALF;		/* Repeater offset UHF */
+	// For instance, a 2-meter repeater might be described as "147.36 with a plus offset",
+	// meaning that the repeater transmits on 147.36 MHz and receives on 147.96 MHz,
+	// 600 kHz above the output frequency.
+
+	enum { RPTOFFSMIN = 0, RPTOFFSHALF = UINT16_MAX / 2, RPTOFFSMAX = UINT16_MAX };
+	static uint_fast16_t rptroffshf1k = (+ 300) + RPTOFFSHALF;		/* Repeater offset HF */
+	static uint_fast16_t rptroffsvhf1k = (+ 600) + RPTOFFSHALF;		/* Repeater offset UHF */
+	static uint_fast8_t rptrhfenable;		/* Repeater offset HF enable flag */
+	static uint_fast8_t rptrvhfenable;		/* Repeater offset VHF enable flag */
 
 	static int_fast32_t getrptoffsbase(void)
 	{
@@ -3671,7 +3679,9 @@ struct nvmap
 	uint8_t vfoab;		/* 1, если работа с VFO B, 0 - с VFO A */
 #endif /* WITHSPLIT */
 #if WITHRPTOFFSET
+	uint8_t rptrhfenable;		/* Repeater offset HF */
 	uint16_t rptroffshf1k;		/* Repeater offset HF */
+	uint8_t rptrvhfenable;		/* Repeater offset VHF */
 	uint16_t rptroffsvhf1k;		/* Repeater offset VHF */
 #endif /* WITHRPTOFFSET */
 	uint8_t gcwpitch10;	/* тон в CW/CWR режиме */
@@ -5386,7 +5396,7 @@ enum
 #if WITHRPTOFFSET
 		static const struct paramdefdef xrptroffshf1k =
 		{
-			QLABEL("REPT HF"), 5 + WSIGNFLAG, 0, RJ_SIGNED, 	ISTEP1,
+			QLABEL("OFFS HF"), 0, 0, RJ_SIGNED, ISTEP1,
 			ITEM_VALUE,
 			RPTOFFSMIN, RPTOFFSMAX,		/* repeater offset */
 			OFFSETOF(struct nvmap, rptroffshf1k),
@@ -5398,7 +5408,7 @@ enum
 		};
 		static const struct paramdefdef xrptroffsvhf1k =
 		{
-			QLABEL("REPT VHF"), 5 + WSIGNFLAG, 0, RJ_SIGNED, 	ISTEP1,
+			QLABEL("OFFS VHF"), 0, 0, RJ_SIGNED, ISTEP1,
 			ITEM_VALUE,
 			RPTOFFSMIN, RPTOFFSMAX,		/* repeater offset */
 			OFFSETOF(struct nvmap, rptroffsvhf1k),
@@ -5406,6 +5416,30 @@ enum
 			& rptroffsvhf1k,
 			NULL,
 			getrptoffsbase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xrptrhfenable =
+		{
+			QLABEL("REPT HF"), 0, 0, RJ_ON, ISTEP1,
+			ITEM_VALUE,
+			0, 1,		/* repeater offset */
+			OFFSETOF(struct nvmap, rptrhfenable),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& rptrhfenable,
+			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xrptrvhfenable =
+		{
+			QLABEL("REPT VHF"), 0, 0, RJ_ON, ISTEP1,
+			ITEM_VALUE,
+			0, 1,		/* repeater offset */
+			OFFSETOF(struct nvmap, rptrvhfenable),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& rptrvhfenable,
+			getzerobase,
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 #endif /* WITHRPTOFFSET */
