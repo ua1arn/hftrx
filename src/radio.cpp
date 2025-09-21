@@ -17099,15 +17099,6 @@ static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_f
 	display_text(db, xcell, ycell, getlabel(mp->pd), xspan, yspan);
 }
 
-// отобразить значение параметра
-static void display2_menu_value(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, uint_fast8_t yspan)
-{
-	char buff [xspan + 1];
-
-	param_format(mp->pd, buff, xspan + 1, param_getvalue(mp->pd));
-	display_text(db, xcell, ycell, buff, xspan, yspan);
-}
-
 // Отображение многострочного меню для больших экранов (группы)
 static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx, const char * (* getlabel)(const struct paramdefdef * pd))
 {
@@ -17337,14 +17328,10 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
             {
                 colmain_setcolors(MENUCOLOR, MENUBGCOLOR);
             }
-#if 1
-            display2_menu_value(db, x, y_position_params, mv, xspan, rowspan); // значение параметра
-#else
         	char buff [xspan + 1];
 
-        	param_format(mp->pd, buff, xspan + 1, param_getvalue(mp->pd));
+        	param_format(mv->pd, buff, xspan + 1, param_getvalue(mv->pd));
         	display_text(db, x, y_position_params, buff, xspan, rowspan);
-#endif
 
 			y_position_params += window.ystep;
 		}
