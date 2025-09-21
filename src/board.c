@@ -6226,7 +6226,7 @@ board_subtone_setfreq(
 #endif /* WITHSUBTONES */
 }
 
-void board_subtone_enable(uint_fast8_t state)
+void board_subtone_enabletx(uint_fast8_t state)
 {
 #if WITHSUBTONES
 	const uint_fast8_t v = state != 0;
@@ -6308,7 +6308,7 @@ board_subtone_setfreq(
 }
 /* функция - заглушка */
 /* subtone */
-void board_subtone_enable(uint_fast8_t state)
+void board_subtone_enabletx(uint_fast8_t state)
 {
 }
 

@@ -12152,15 +12152,20 @@ updateboard_noui(
 				board_set_agc_t2(gagc [agcseti].release10);		// время разряда медленной цепи АРУ
 				board_set_agc_t4(gagc [agcseti].t4);			// время разряда быстрой цепи АРУ
 				board_set_agc_thung(gagc [agcseti].thung10);	// hold time (hung time) in 0.1 sec
-				board_set_squelch(pamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_NFM ? ulmax(gsquelch.value, gsquelchNFM) : gsquelch.value);
+				board_set_squelch_level(pamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_NFM ? ulmax(gsquelch.value, gsquelchNFM) : gsquelch.value);
 				board_set_gainnfmrx(ggainnfmrx10 * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 			#endif /* WITHIF4DSP */
 				board_set_nb_enable(pathi, 0);	/* Управлением включением RX Noise Blanker */
 			} /* tx == 0 */
 
 		#if WITHIF4DSP
+			#if WITHSUBTONES
+				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
+				board_subtone_setfreq(gsubtones [gsubtonei]);	// частота subtone (до десятых долей герца).
+				board_set_ctss_squelch(gctssenable && ! gtx && getmodetempl(txsubmode)->subtone);	// RX CTSS squelch enable
+			#endif /* WITHSUBTONES */
 			#if WITHTX && WITHSUBTONES
-				board_set_subtonelevel(gctssenable && gtx && getmodetempl(txsubmode)->subtone ? gsubtonelevel : 0);	/* Уровень сигнала CTCSS в процентах - 0%..100% */
+				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
 			#endif /* WITHTX && WITHSUBTONES */
 			board_set_aflowcutrx(bwseti_getlow(bwseti));	/* Нижняя частота среза фильтра НЧ по приему */
 			board_set_afhighcutrx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по приему */
@@ -12185,8 +12190,8 @@ updateboard_noui(
 			board_set_vox(gvoxenable && getmodetempl(txsubmode)->vox);	// включение внешних схем VOX
 			#if WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
-				board_subtone_setfreq(gsubtones [gsubtonei]);	// частота subtone (до десятых долей герца).
-				board_subtone_enable(gctssenable && gtx && getmodetempl(txsubmode)->subtone);
+				board_subtone_enabletx(gctssenable && gtx && getmodetempl(txsubmode)->subtone);
+				board_set_subtonelevel(gctssenable && gtx && getmodetempl(txsubmode)->subtone ? gsubtonelevel : 0);	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 			#endif /* WITHSUBTONES */
 			#if WITHVOX
 				vox_enable(gvoxenable && getmodetempl(txsubmode)->vox, voxdelay);		/* разрешение голосового управления переходом на передачу */

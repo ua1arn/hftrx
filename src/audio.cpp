@@ -117,7 +117,7 @@ static int_fast16_t		glob_fullbw6 [2] = { 1000, 1000 };		/* Частота ср�
 static int_fast32_t		glob_lo6 [2] = { 0, 0 };
 static uint_fast8_t		glob_fltsofter [2] = { WITHFILTSOFTMIN, WITHFILTSOFTMIN }; /* WITHFILTSOFTMIN..WITHFILTSOFTMAX Код управления сглаживанием скатов фильтра основной селекции на приёме */
 static int_fast16_t 	glob_gainnfmrx [2] = { 100, 100 };
-static uint_fast8_t 	glob_squelch;
+static uint_fast8_t 	glob_squelch_level;
 
 static uint_fast8_t 	glob_wnb;	// Noise blanker enable (NB)
 static int_fast16_t 	glob_wnbfence10;	// 0.1 dB step noise blanker fence (dbFS)
@@ -5707,7 +5707,7 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 
 		const FLOAT_t upper_log = agccalcstrength_log(agcp, agcp->levelfence_ratio);
 		const FLOAT_t lower_log = agccalcstrength_log(agcp, agcp->mininput_ratio);
-		manualsquelch [pathi] = (int) glob_squelch * (upper_log - lower_log) / SQUELCHMAX + lower_log;
+		manualsquelch [pathi] = (int) glob_squelch_level * (upper_log - lower_log) / SQUELCHMAX + lower_log;
 	}
 
 	// Noise Blanker (NB)
@@ -6110,11 +6110,12 @@ board_set_agc_thung(uint_fast8_t n)	/* подстройка параметра �
 }
 
 void 
-board_set_squelch(uint_fast8_t n)	/* уровень открывания шумоподавителя */
+board_set_squelch_level(uint_fast8_t n)	/* уровень открывания шумоподавителя */
 {
-	if (glob_squelch != n)
+	if (glob_squelch_level != n)
 	{
-		glob_squelch = n;		board_dsp1regchanged();
+		glob_squelch_level = n;
+		board_dsp1regchanged();
 	}
 }
 
@@ -6197,6 +6198,13 @@ board_set_subtonelevel(uint_fast8_t n)	/* Уровень сигнала CTCSS в
 		glob_subtonelevel = n;
 		board_dsp1regchanged();
 	}
+}
+
+// RX CTSS squelch enable
+void board_set_ctss_squelch(uint_fast8_t state)
+{
+#if WITHSUBTONES
+#endif /* WITHSUBTONES */
 }
 
 void 
