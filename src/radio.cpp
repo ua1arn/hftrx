@@ -4505,7 +4505,7 @@ static uint_fast8_t gforcexvrtr;	/* принудительно включить 
 #endif /* defined (WITHVIEW_3DSS_MARK) */
 
 
-	#define DBVALOFFSET_BASE (- 160)
+	#define DBVALOFFSET_BASE WITHMINFSPOWER	// - 160
 
 	/* Значения, хранимые в NVRAM */
 	#define WITHTOPDBMIN 		(- 50 - DBVALOFFSET_BASE)

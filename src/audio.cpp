@@ -1477,8 +1477,8 @@ void agc_parameters_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
 
 	agcp->hungticks = NSAITICKS2(300, sr);			// 0.3 seconds
 
-	agcp->gainlimit = db2ratio(60);
-	agcp->mininput = db2ratio(- 160);
+	agcp->gainlimit_ratio = db2ratio(60);
+	agcp->mininput_ratio = db2ratio(WITHMINFSPOWER);
 	agcp->levelfence = 1;
 	agcp->agcfactor = agc_calcagcfactor(10);
 
@@ -1499,10 +1499,10 @@ void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t 
 	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 1.0, sr);
 
 	agcp->hungticks = NSAITICKS2(1000, sr);			// 1 second
-	agcp->mininput = db2ratio(- 160);
+	agcp->mininput_ratio = db2ratio(WITHMINFSPOWER);
 
 	// параметры используются при работе АРУ
-	agcp->gainlimit = db2ratio(60);
+	agcp->gainlimit_ratio = db2ratio(60);
 	agcp->levelfence = 1;
 	agcp->agcfactor = agc_calcagcfactor(10);
 
@@ -1511,7 +1511,7 @@ void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t 
 
 // Установка параметров АРУ приёмника
 
-static void rxagc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit, uint_fast8_t pathi)
+static void rxagc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit_ratio, uint_fast8_t pathi)
 {
 	const uint_fast32_t sr = ARMSAIRATE;
 	const uint_fast8_t flatgain = glob_agcrate [pathi] == UINT8_MAX;
@@ -1525,7 +1525,7 @@ static void rxagc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t g
 	agcp->dischargespeedslow = MAKETAUIF2((int) glob_agc_t2 [pathi] * (FLOAT_t) 0.1, sr);	// в сотнях милисекунд (0.1 секунды)
 	agcp->hungticks = NSAITICKS2(glob_agc_thung [pathi] * 100, sr);			// в сотнях милисекунд (0.1 секунды)
 
-	agcp->gainlimit = gainlimit;
+	agcp->gainlimit_ratio = gainlimit_ratio;
 	agcp->levelfence = (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;	/* Для эксперементов по улучшению приема АМ */
 	agcp->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
 
@@ -1545,7 +1545,7 @@ static void smeter_parameters_update(volatile agcparams_t * const agcp)
 	agcp->dischargespeedslow = MAKETAUIF((FLOAT_t) 0.4);	// 400 mS
 	agcp->hungticks = NSAITICKS(1000);			// в сотнях милисекунд (1 секунда)
 
-	agcp->gainlimit = db2ratio(60);
+	agcp->gainlimit_ratio = db2ratio(60);
 	agcp->agcfactor = (FLOAT_t) -1;
 
 	//PRINTF(PSTR("rxagc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
@@ -1566,20 +1566,20 @@ static void comp_parameters_initialize(volatile agcparams_t * agcp)
 
 	agcp->hungticks = NSAITICKS(300);			// 0.3 seconds
 
-	agcp->gainlimit = db2ratio(60);
-	agcp->mininput = db2ratio(- 160);
+	agcp->gainlimit_ratio = db2ratio(60);
+	agcp->mininput_ratio = db2ratio(WITHMINFSPOWER);
 	agcp->levelfence = txlevelfenceSSB;
 	agcp->agcfactor = (FLOAT_t) - 1;
 }
 
 // Установка параметров АРУ передатчика
 
-static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit)
+static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit_ratio)
 {
 	const uint_fast32_t sr = ARMI2SRATE;
 	agcp->agcoff = glob_mikeagc == 0;
 
-	agcp->gainlimit = gainlimit;
+	agcp->gainlimit_ratio = gainlimit_ratio;
 	agcp->levelfence = txlevelfenceSSB;
 }
 
@@ -3316,7 +3316,7 @@ static RAMDTCM FLOAT_t agclogof10 = 1;
 void agc_state_initialize(agcstate_t * __restrict st, const agcparams_t * __restrict agcp)
 {
 	const FLOAT_t f0 = agcp->levelfence;
-	const FLOAT_t m0 = agcp->mininput;
+	const FLOAT_t m0 = agcp->mininput_ratio;
 	const FLOAT_t siglevel = 0;
 	const FLOAT_t level = FMINF(FMAXF(m0, siglevel), f0);	// работаем в диапазоне от 1 до f
 	const FLOAT_t ratio = (agcp->agcoff ? m0 : level) / f0;
@@ -3337,7 +3337,7 @@ void agc_state_initialize(agcstate_t * __restrict st, const agcparams_t * __rest
 static RAMFUNC FLOAT_t agccalcstrength_log(const volatile agcparams_t * const agcp, FLOAT_t siglevel)
 {
 	const FLOAT_t f0 = agcp->levelfence;
-	const FLOAT_t m0 = agcp->mininput;
+	const FLOAT_t m0 = agcp->mininput_ratio;
 	const FLOAT_t level = FMINF(FMAXF(m0, siglevel), f0);	// работаем в диапазоне от 1 до levelfence
 	const FLOAT_t ratio = (agcp->agcoff ? m0 : level) / f0;
 
@@ -3353,7 +3353,7 @@ static RAMFUNC FLOAT_t agccalcgain_log(const volatile agcparams_t * const agcp, 
 	// реализация "спортивной" АРУ
 	// Увеличению сигнала на glob_agcrate децибел должно соответствовать
 	// увеличение выхода приёмника на 1 децтибел
-	const FLOAT_t gain = FMINF(agcp->gainlimit, gain0);
+	const FLOAT_t gain = FMINF(agcp->gainlimit_ratio, gain0);
 	return gain;
 }
 
@@ -5706,7 +5706,7 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 		const volatile agcparams_t * const agcp = & rxsmeterparams;
 
 		const FLOAT_t upper = agccalcstrength_log(agcp, agcp->levelfence);
-		const FLOAT_t lower = agccalcstrength_log(agcp, agcp->mininput);
+		const FLOAT_t lower = agccalcstrength_log(agcp, agcp->mininput_ratio);
 		manualsquelch [pathi] = (int) glob_squelch * (upper - lower) / SQUELCHMAX + lower;
 	}
 

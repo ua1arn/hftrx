@@ -97,6 +97,10 @@ extern "C" {
 
 #define NRLEVELMAX 60
 
+#define WITHMAXFSPOWER	(+ 60)
+#define WITHMINFSPOWER	(- 160)
+
+
 #if defined (DAC1_TYPE)
 	#define WITHDAC1VALMIN	0
 	#define WITHDAC1VALMAX	255
