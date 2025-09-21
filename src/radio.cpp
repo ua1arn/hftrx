@@ -55,13 +55,6 @@
 #include "src/speex/arch.h"
 #include "src/speex/speex_preprocess.h"
 
-// группа, в которой находится редактируемый параметр
-static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, const char * (* getlabel)(const struct paramdefdef * pd));
-// значение параметра
-static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan);
-// название параметра, если группа - ничего не отображаем
-static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, const char * (* getlabel)(const struct paramdefdef * pd));
-
 static uint_fast8_t board_wakeup(void);
 static uint_fast8_t
 processcatmsg(uint_fast8_t catcommand1,
@@ -17083,6 +17076,38 @@ defaultsettings(void)
 
 //+++ menu support
 
+// название редактируемого параметра
+// если группа - ничего не отображаем
+static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, uint_fast8_t yspan, const char * (* getlabel)(const struct paramdefdef * pd))
+{
+	multimenuwnd_t window;
+
+	display2_getmultimenu(& window);
+	if (ismenukinddp(mp->pd, ITEM_VALUE) == 0)
+		return;
+	display_text(db, xcell, ycell, getlabel(mp->pd), xspan, yspan);
+}
+
+// группа, в которой находится редактируемый параметр
+static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, uint_fast8_t yspan, const char * (* getlabel)(const struct paramdefdef * pd))
+{
+	multimenuwnd_t window;
+
+	display2_getmultimenu(& window);
+	while (ismenukinddp(mp->pd, ITEM_GROUP) == 0)
+		-- mp;
+	display_text(db, xcell, ycell, getlabel(mp->pd), xspan, yspan);
+}
+
+// отобразить значение параметра
+static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, uint_fast8_t yspan)
+{
+	char buff [xspan + 1];
+
+	param_format(mp->pd, buff, xspan + 1, param_getvalue(mp->pd));
+	display_text(db, xcell, ycell, buff, xspan, yspan);
+}
+
 // Отображение многострочного меню для больших экранов (группы)
 static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx, const char * (* getlabel)(const struct paramdefdef * pd))
 {
@@ -17095,6 +17120,7 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 	multimenuwnd_t window;
 
 	display2_getmultimenu(& window);
+	const uint_fast8_t rowspan = window.ystep;
 
 	//ищем границы текущей группы параметров
 	uint_fast16_t selected_group_finder = index;
@@ -17134,27 +17160,27 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 			{
 				//подсвечиваем выбранный элемент
 				//display_text(db, xcell_marker, y_position_groups, PSTR(">"), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
-				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
+				colmain_setcolors(MENUSELCOLOR, MENUSELBGCOLOR);
 			}
 			else
 			{
 				//снять отметку
 				//display_text(db, xcell_marker, y_position_groups, PSTR(" "), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
-				colmain_setcolors(MENUCOLOR, BGCOLOR);
+				colmain_setcolors(MENUCOLOR, MENUBGCOLOR);
 			}
-			display2_menu_group(db, xcell, y_position_groups, mv, xspan, getlabel); // название группы
+			display2_menu_group(db, xcell, y_position_groups, mv, xspan, rowspan, getlabel); // название группы
 
 			y_position_groups += window.ystep;
 		}
 	}
 
 	//стираем ненужные имена групп, оставшиеся от предыдущей страницы
-	colmain_setcolors(COLORPIP_WHITE, BGCOLOR);
+	colmain_setcolors(MENUCOLOR, MENUBGCOLOR);
 	for (;
 			index_groups - menu_block_scroll_offset_groups < window.multilinemenu_max_rows;
 			++ index_groups, y_position_groups += window.ystep)
 	{
-		display_text(db, xcell, y_position_groups, "", xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
+		display_text(db, xcell, y_position_groups, "", xspan, rowspan);
 	}
 }
 
@@ -17171,6 +17197,7 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 	multimenuwnd_t window;
 
 	display2_getmultimenu(& window);
+	const uint_fast8_t rowspan = window.ystep;
 
 	// ищем границы текущей группы параметров
 	uint_fast16_t selected_group_finder = index;
@@ -17219,15 +17246,15 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 			{
 				//подсвечиваем выбранный элемент
 				//display_text(db, xcell_marker, y_position_params, PSTR(">"), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
-				colmain_setcolors(MENUSELCOLOR, BGCOLOR);
+				colmain_setcolors(MENUSELCOLOR, MENUSELBGCOLOR);
 			}
 			else
 			{
 				//снять подсветку
 				//display_text(db, xcell_marker, y_position_params, PSTR(" "), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
-				colmain_setcolors(MENUCOLOR, BGCOLOR);
+				colmain_setcolors(MENUCOLOR, MENUBGCOLOR);
 			}
-			display2_menu_lblng(db, xcell, y_position_params, mv, xspan, getlabel); // название редактируемого параметра
+			display2_menu_lblng(db, xcell, y_position_params, mv, xspan, rowspan, getlabel); // название редактируемого параметра
 
             y_position_params += window.ystep;
 		}
@@ -17235,12 +17262,12 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 
 	//стираем ненужные имена параметров, оставшиеся от предыдущей страницы
 
-	colmain_setcolors(COLORPIP_WHITE, BGCOLOR);
+	colmain_setcolors(MENUCOLOR, MENUBGCOLOR);
 	for (;
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
 	{
-		display_text(db, xcell, y_position_params, "", xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
+		display_text(db, xcell, y_position_params, "", xspan, rowspan);
 	}
 }
 
@@ -17257,6 +17284,7 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 	multimenuwnd_t window;
 
 	display2_getmultimenu(& window);
+	const uint_fast8_t rowspan = window.ystep;
 
 	//ищем границы текущей группы параметров
 	uint_fast16_t selected_group_finder = index;
@@ -17303,13 +17331,13 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 
             if (el == index)
             {
-                colmain_setcolors(MENUSELCOLOR, BGCOLOR);
+                colmain_setcolors(MENUSELCOLOR, MENUSELBGCOLOR);
             }
             else
             {
-                colmain_setcolors(MENUCOLOR, BGCOLOR);
+                colmain_setcolors(MENUCOLOR, MENUBGCOLOR);
             }
-            display2_menu_valxx(db, x, y_position_params, mv, xspan); // значение параметра
+            display2_menu_valxx(db, x, y_position_params, mv, xspan, rowspan); // значение параметра
 
 			y_position_params += window.ystep;
 		}
@@ -17317,13 +17345,13 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 
 	/* параметры полей вывода значений в меню */
 	//стираем ненужные значения параметров, оставшиеся от предыдущей страницы
-	colmain_setcolors(COLORPIP_WHITE, BGCOLOR);
+	colmain_setcolors(MENUCOLOR, MENUBGCOLOR);
 	for (;
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
 	{
 		//display_menu_string(colorpip, x, y_position_params, nolabel, VALUEW, VALUEW);
-		display_text(db, x, y_position_params, "", xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
+		display_text(db, x, y_position_params, "", xspan, rowspan);
 	}
 }
 
@@ -17367,31 +17395,6 @@ void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint
 		display2_multilinemenu_block_params(db, namesx, ycell, namesspan, yspan, pctx, pd_getlonglabel);
 		display2_multilinemenu_block_vals(db, valuesx, ycell, valuesspan, yspan, pctx);
 	}
-}
-
-// название редактируемого параметра
-// если группа - ничего не отображаем
-static void display2_menu_lblng(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, const char * (* getlabel)(const struct paramdefdef * pd))
-{
-	multimenuwnd_t window;
-
-	display2_getmultimenu(& window);
-	if (ismenukinddp(mp->pd, ITEM_VALUE) == 0)
-		return;
-	//colmain_setcolors(MENUCOLOR, BGCOLOR);
-	display_text(db, xcell, ycell, mp->pd->label, xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
-}
-
-// группа, в которой находится редактируемый параметр
-static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan, const char * (* getlabel)(const struct paramdefdef * pd))
-{
-	multimenuwnd_t window;
-
-	display2_getmultimenu(& window);
-	while (ismenukinddp(mp->pd, ITEM_GROUP) == 0)
-		-- mp;
-	//colmain_setcolors(MENUGROUPCOLOR, BGCOLOR);
-	display_text(db, xcell, ycell, mp->pd->label, xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 }
 
 static int_fast32_t iabs(int_fast32_t v)
@@ -17494,15 +17497,6 @@ param_format(
 #endif /* WITHMODEM */
 
 	}
-}
-
-// отобразить значение параметра
-static void display2_menu_valxx(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const struct menudef * mp, uint_fast8_t xspan)
-{
-	char buff [xspan + 1];
-
-	param_format(mp->pd, buff, xspan + 1, param_getvalue(mp->pd));
-	display_text(db, xcell, ycell, buff, xspan, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
 }
 
 // --- menu support
