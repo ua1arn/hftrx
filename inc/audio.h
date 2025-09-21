@@ -369,7 +369,7 @@ typedef struct agcparams
 
 	FLOAT_t gainlimit_ratio;				// Максимальное усиление в разах по напряжению, допустимое для АРУ
 	FLOAT_t	mininput_ratio;
-	FLOAT_t levelfence;				// Максимальнное значение на выхоле АРУ
+	FLOAT_t levelfence_ratio;				// Максимальнное значение на выхоле АРУ
 	FLOAT_t agcfactor;				// Параметр при вычислении "спортивной" АРУ
 } agcparams_t;
 

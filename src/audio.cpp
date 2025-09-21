@@ -1479,7 +1479,7 @@ void agc_parameters_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
 
 	agcp->gainlimit_ratio = db2ratio(60);
 	agcp->mininput_ratio = db2ratio(WITHMINFSPOWER);
-	agcp->levelfence = 1;
+	agcp->levelfence_ratio = 1;
 	agcp->agcfactor = agc_calcagcfactor(10);
 
 	//PRINTF(PSTR("agc_parameters_initialize: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
@@ -1503,7 +1503,7 @@ void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t 
 
 	// параметры используются при работе АРУ
 	agcp->gainlimit_ratio = db2ratio(60);
-	agcp->levelfence = 1;
+	agcp->levelfence_ratio = 1;
 	agcp->agcfactor = agc_calcagcfactor(10);
 
 	//PRINTF(PSTR("agc_parameters_initialize: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
@@ -1526,7 +1526,7 @@ static void rxagc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t g
 	agcp->hungticks = NSAITICKS2(glob_agc_thung [pathi] * 100, sr);			// в сотнях милисекунд (0.1 секунды)
 
 	agcp->gainlimit_ratio = gainlimit_ratio;
-	agcp->levelfence = (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;	/* Для эксперементов по улучшению приема АМ */
+	agcp->levelfence_ratio = (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;	/* Для эксперементов по улучшению приема АМ */
 	agcp->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
 
 	//PRINTF(PSTR("rxagc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
@@ -1568,7 +1568,7 @@ static void comp_parameters_initialize(volatile agcparams_t * agcp)
 
 	agcp->gainlimit_ratio = db2ratio(60);
 	agcp->mininput_ratio = db2ratio(WITHMINFSPOWER);
-	agcp->levelfence = txlevelfenceSSB;
+	agcp->levelfence_ratio = txlevelfenceSSB;
 	agcp->agcfactor = (FLOAT_t) - 1;
 }
 
@@ -1580,7 +1580,7 @@ static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t ga
 	agcp->agcoff = glob_mikeagc == 0;
 
 	agcp->gainlimit_ratio = gainlimit_ratio;
-	agcp->levelfence = txlevelfenceSSB;
+	agcp->levelfence_ratio = txlevelfenceSSB;
 }
 
 // детектор АРУ - поддерживает выходное значение пропорционально сигналу
@@ -3315,11 +3315,11 @@ static RAMDTCM FLOAT_t agclogof10 = 1;
 	
 void agc_state_initialize(agcstate_t * __restrict st, const agcparams_t * __restrict agcp)
 {
-	const FLOAT_t f0 = agcp->levelfence;
-	const FLOAT_t m0 = agcp->mininput_ratio;
-	const FLOAT_t siglevel = 0;
-	const FLOAT_t level = FMINF(FMAXF(m0, siglevel), f0);	// работаем в диапазоне от 1 до f
-	const FLOAT_t ratio = (agcp->agcoff ? m0 : level) / f0;
+	const FLOAT_t f0_ratio = agcp->levelfence_ratio;
+	const FLOAT_t m0_ratio = agcp->mininput_ratio;
+	const FLOAT_t siglevel_ratio = 0;
+	const FLOAT_t level_ratio = FMINF(FMAXF(m0_ratio, siglevel_ratio), f0_ratio);	// работаем в диапазоне от 1 до f
+	const FLOAT_t ratio = (agcp->agcoff ? m0_ratio : level_ratio) / f0_ratio;
 
 	const FLOAT_t streingth_log = LOGF(ratio);
 
@@ -3334,12 +3334,12 @@ void agc_state_initialize(agcstate_t * __restrict st, const agcparams_t * __rest
 
 // Для работы функции agc_perform требуется siglevel, больше значения которого
 // соответствуют большим уровням сигнала. может быть отрицательным
-static RAMFUNC FLOAT_t agccalcstrength_log(const volatile agcparams_t * const agcp, FLOAT_t siglevel)
+static RAMFUNC FLOAT_t agccalcstrength_log(const volatile agcparams_t * const agcp, FLOAT_t siglevel_ratio)
 {
-	const FLOAT_t f0 = agcp->levelfence;
-	const FLOAT_t m0 = agcp->mininput_ratio;
-	const FLOAT_t level = FMINF(FMAXF(m0, siglevel), f0);	// работаем в диапазоне от 1 до levelfence
-	const FLOAT_t ratio = (agcp->agcoff ? m0 : level) / f0;
+	const FLOAT_t f0_ratio = agcp->levelfence_ratio;
+	const FLOAT_t m0_ratio = agcp->mininput_ratio;
+	const FLOAT_t level_ratio = FMINF(FMAXF(m0_ratio, siglevel_ratio), f0_ratio);	// работаем в диапазоне от 1 до levelfence
+	const FLOAT_t ratio = (agcp->agcoff ? m0_ratio : level_ratio) / f0_ratio;
 
 	const FLOAT_t streingth_log = LOGF(ratio);
 	return streingth_log;
@@ -3434,14 +3434,14 @@ static RAMFUNC FLOAT_t agc_measure_float(
 	const agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
 	agcstate_t * const st = & rxagcstate [pathi];
 	BEGIN_STAMP();
-	const FLOAT_t strength = agccalcstrength_log(agcp, siglevel0);	// получение логарифмического хначения уровня сигнала
+	const FLOAT_t strength_log = agccalcstrength_log(agcp, siglevel0);	// получение логарифмического хначения уровня сигнала
 	END_STAMP();
 
 	// показ S-метра
-	agc_perform(& rxsmeterparams, & rxsmeterstate [pathi], strength);	// измеритель уровня сигнала
+	agc_perform(& rxsmeterparams, & rxsmeterstate [pathi], strength_log);	// измеритель уровня сигнала
 
 	//BEGIN_STAMP();
-	agc_perform(agcp, st, strength);	// измеритель уровня сигнала
+	agc_perform(agcp, st, strength_log);	// измеритель уровня сигнала
 	//END_STAMP();
 
 	//END_STAMP3();
@@ -3593,7 +3593,7 @@ static RAMFUNC FLOAT_t txmikeclip(FLOAT_t vi)
 uint_fast8_t dsp_getmikeadcoverflow(void)
 {
 	volatile agcstate_t * const st = & txagcstate;
-	const FLOAT_t FS = txagcparams [gwagcproftx].levelfence;	// txlevelfenceSSB
+	const FLOAT_t FS = txagcparams [gwagcproftx].levelfence_ratio;	// txlevelfenceSSB
 	return st->agcslowcap >= FS * db2ratio((FLOAT_t) - 1);
 }
 
@@ -5705,9 +5705,9 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 	{
 		const volatile agcparams_t * const agcp = & rxsmeterparams;
 
-		const FLOAT_t upper = agccalcstrength_log(agcp, agcp->levelfence);
-		const FLOAT_t lower = agccalcstrength_log(agcp, agcp->mininput_ratio);
-		manualsquelch [pathi] = (int) glob_squelch * (upper - lower) / SQUELCHMAX + lower;
+		const FLOAT_t upper_log = agccalcstrength_log(agcp, agcp->levelfence_ratio);
+		const FLOAT_t lower_log = agccalcstrength_log(agcp, agcp->mininput_ratio);
+		manualsquelch [pathi] = (int) glob_squelch * (upper_log - lower_log) / SQUELCHMAX + lower_log;
 	}
 
 	// Noise Blanker (NB)
@@ -5750,11 +5750,11 @@ txparam_update(uint_fast8_t profile)
 
 	{
 		// Настройка ограничителя
-		const FLOAT_t FS = txagcparams [profile].levelfence;	// txlevelfenceSSB
+		const FLOAT_t FS_ratio = txagcparams [profile].levelfence_ratio;	// txlevelfenceSSB
 		const FLOAT_t grade = 1 - (glob_mikehclip / (FLOAT_t) 100);
 		mickeclipscale [profile] = 1 / grade;
-		mickecliplevelp [profile] = FS * grade;
-		mickeclipleveln [profile] = - FS * grade;
+		mickecliplevelp [profile] = FS_ratio * grade;
+		mickeclipleveln [profile] = - FS_ratio * grade;
 	}
 	{
 		// компрессор
