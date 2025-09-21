@@ -167,8 +167,9 @@ static uint_fast8_t 	glob_notch_mode = BOARD_NOTCH_OFF;		/* включение N
 static uint_fast8_t 	glob_cwedgetime = 4;		/* CW Rise Time (in 1 ms discrete) */
 static uint_fast8_t 	glob_sidetonelevel = 10;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 static uint_fast8_t 	glob_moniflag = 1;		/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
-static uint_fast8_t		glob_cwssbtx = 1;			/* разрешение передачи телеграфа как тона в режиме SSB */
+static uint_fast8_t		glob_cwssbtx = 1;		/* разрешение передачи телеграфа как тона в режиме SSB */
 static uint_fast8_t 	glob_subtonelevel = 0;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
+static uint_fast8_t 	glob_ctss_squelch = 0;	/* RX CTSS squelch enable */
 static uint_fast8_t 	glob_amdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 #if WITHIF4DSP
 static uint_fast16_t	glob_dacscale = BOARDDACSCALEMAX;	/* На какую часть (в процентах в квадрате) от полной амплитуды использцется ЦАП передатчика */
@@ -6171,7 +6172,7 @@ board_set_sidetonelevel(uint_fast8_t n)	/* Уровень сигнала сам�
 void 
 board_set_moniflag(uint_fast8_t v)	/* разрешение самопрослушивания */
 {
-	const uint_fast8_t n = v != 0;
+	const uint_fast8_t n = !! v;
 	if (glob_moniflag != n)
 	{
 		glob_moniflag = n;
@@ -6182,7 +6183,7 @@ board_set_moniflag(uint_fast8_t v)	/* разрешение самопрослу�
 void
 board_set_cwssbtx(uint_fast8_t v)	/* разрешение передачи телеграфа как тона в режиме SSB */
 {
-	const uint_fast8_t n = v != 0;
+	const uint_fast8_t n = !! v;
 	if (glob_cwssbtx != n)
 	{
 		glob_cwssbtx = n;
@@ -6201,9 +6202,15 @@ board_set_subtonelevel(uint_fast8_t n)	/* Уровень сигнала CTCSS в
 }
 
 // RX CTSS squelch enable
-void board_set_ctss_squelch(uint_fast8_t state)
+void board_set_ctss_squelch(uint_fast8_t v)
 {
 #if WITHSUBTONES
+	const uint_fast8_t n = !! v;
+	if (glob_ctss_squelch != n)
+	{
+		glob_ctss_squelch = n;
+		board_dsp1regchanged();
+	}
 #endif /* WITHSUBTONES */
 }
 
@@ -6648,7 +6655,7 @@ void
 board_set_dsploudspeaker(uint_fast8_t v)
 {
 #if WITHIF4DSP
-	const uint_fast8_t n = v != 0;
+	const uint_fast8_t n = !! v;
 	if (glob_dsploudspeaker_off != n)
 	{
 		glob_dsploudspeaker_off = n;
