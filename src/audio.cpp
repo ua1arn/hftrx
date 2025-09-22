@@ -6106,7 +6106,7 @@ static void ctcss_initialize(void)
 	}
 
 	static subscribefloat_t ctcss_register;
-	subscribefloat(& speexoutfloat, & ctcss_register, NULL, ctcss_processing);	// выход speex и фильтра
+	subscribefloat(& afdemodoutfloat, & ctcss_register, NULL, ctcss_processing);	// выход приёмника до фильтров
 }
 
 static void dtmf_initialize(void)
