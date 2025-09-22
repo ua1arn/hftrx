@@ -5908,13 +5908,13 @@ static FLOAT_t goeC [NFREQUES], goeCW[NFREQUES], goeSW [NFREQUES]; // Goertzel c
 static FLOAT_t goeZ1 [NFREQUES], goeZ2 [NFREQUES]; // Goertzel status registers
 static const int goeN = 1000; // points for Goertzel
 
-void goertzel_processing(FLOAT_t sample)
+void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	const FLOAT_t goeTH = 0.1; // threshold
 	static int nseq;
 	int i;
 
-	const FLOAT_t x = ((sample * goertz_win[nseq]));                                // windowing
+	const FLOAT_t x = ((ch0 * goertz_win[nseq]));                                // windowing
 	if ((nseq % goeN) == 0)
 	{
 		for (i = 0; i < NFREQUES; i++)
@@ -5967,12 +5967,8 @@ void goertzel_processing(FLOAT_t sample)
 			}
 		}
 
-		PRINTF("\ndecoded   string: ");
 		if ((i1 > -1) && (i1 < 4) && (i2 > -1) && (i2 < 4))
 			PRINTF("%c", sym[symmtx[i1][i2]]);
-		else
-			PRINTF(" ");
-		PRINTF("\n\n");
 	}
 
 }
@@ -6014,6 +6010,10 @@ static void goertzel_initialize(void)
 		goeC [i + 4] = goeCW[i + 4] * 2;	// 2 * cosf(w)
 		goeSW [i + 4] = sinf(w);
 	}
+
+	static subscribefloat_t goertzelregister;
+	subscribefloat(& speexoutfloat, & goertzelregister, NULL, goertzel_processing);	// выход speex и фильтра
+
 }
 
 // RX CTSS squelch enable
@@ -6082,7 +6082,7 @@ void dsp_initialize(void)
 	}
 
 #if WITHSUBTONES
-	goertzel_initialize();
+	//goertzel_initialize();
 #endif /* WITHSUBTONES */
 
 	static dpcobj_t user_audioproc_dpc;
