@@ -5801,6 +5801,32 @@ trxparam_update(void)
 	/* http://gregstoll.dyndns.org/~gregstoll/floattohex/ use for tests */
 }
 
+#if WITHSUBTONES
+
+void goertzel_initialize(void)
+{
+
+}
+
+// RX CTSS squelch enable
+void board_set_ctss_squelch(uint_fast8_t v)
+{
+	const uint_fast8_t n = !! v;
+	if (glob_ctss_squelch != n)
+	{
+		glob_ctss_squelch = n;
+		board_dsp1regchanged();
+	}
+}
+
+void
+board_subtone_setfreqrx(
+	uint_least16_t tonefreq01)	/* tonefreq - частота в десятых долях герца. */
+{
+}
+
+#endif /* WITHSUBTONES */
+
 /* вызывается при разрешённых прерываниях. */
 void dsp_initialize(void)
 {
@@ -5842,6 +5868,10 @@ void dsp_initialize(void)
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 		audio_update(spf, pathi, 0);
 	gwprof = spf;
+
+#if WITHSUBTONES
+	goertzel_initialize();
+#endif /* WITHSUBTONES */
 
 	static dpcobj_t user_audioproc_dpc;
 	dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL);
@@ -6199,27 +6229,6 @@ board_set_subtonelevel(uint_fast8_t n)	/* Уровень сигнала CTCSS в
 		glob_subtonelevel = n;
 		board_dsp1regchanged();
 	}
-}
-
-// RX CTSS squelch enable
-void board_set_ctss_squelch(uint_fast8_t v)
-{
-#if WITHSUBTONES
-	const uint_fast8_t n = !! v;
-	if (glob_ctss_squelch != n)
-	{
-		glob_ctss_squelch = n;
-		board_dsp1regchanged();
-	}
-#endif /* WITHSUBTONES */
-}
-
-void
-board_subtone_setfreqrx(
-	uint_least16_t tonefreq01)	/* tonefreq - частота в десятых долях герца. */
-{
-#if WITHSUBTONES
-#endif /* WITHSUBTONES */
 }
 
 void 

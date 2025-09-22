@@ -12205,7 +12205,7 @@ updateboard_noui(
 				board_set_gainnfmrx(ggainnfmrx10 * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 				#if WITHSUBTONES
 					board_set_ctss_squelch(gctssenable && pamodetempl->subtone);	// RX CTSS squelch enable
-					board_subtone_setfreqtx(gsubtones [gsubtoneirx]);	// частота subtone (до десятых долей герца).
+					board_subtone_setfreqrx(gsubtones [gsubtoneirx]);	// частота subtone (до десятых долей герца).
 				#endif /* WITHSUBTONES */
 			#endif /* WITHIF4DSP */
 				board_set_nb_enable(pathi, 0);	/* Управлением включением RX Noise Blanker */
