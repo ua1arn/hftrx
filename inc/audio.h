@@ -719,6 +719,7 @@ extern volatile phase_t mirror_nco4;
 extern volatile phase_t mirror_ncorts;
 
 void user_audioproc(void * ctx);	// user-mode processing - NR, эквалайзер приёмника
+void goertzel_processing(FLOAT_t sample);
 
 #ifdef __cplusplus
 }

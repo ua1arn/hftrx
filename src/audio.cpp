@@ -5802,10 +5802,216 @@ trxparam_update(void)
 }
 
 #if WITHSUBTONES
-
-void goertzel_initialize(void)
+// частоты  Continuous Tone-Coded Squelch System or CTCSS с точностью 0.1 герца.
+// https://en.wikipedia.org/wiki/Continuous_Tone-Coded_Squelch_System#List_of_tones
+static const uint_least16_t gsubtones [] =
 {
+	330,	/* 33.0 герц #0 */
+	354,	/* 35.4 герц */
+	366,	/* 36.6 герц */
+	379,	/* 37.9 герц */
+	396,	/* 39.6 герц */
+	444,	/* 44.4 герц */
+	475,	/* 47.5 герц */
+	492,	/* 49.2 герц */
+	512,	/* 51.2 герц */
+	530,	/* 53.0 герц */
+	549,	/* 54.9 герц */
+	568,	/* 56.8 герц */
+	588,	/* 58.8 герц */
+	630,	/* 63.0 герц */
+	670,	/* 67.0 герц */
+	694,	/* 69.4 герц */
+	719,	/* 71.9 герц */
+	744,	/* 74.4 герц */
+	770,	/* 77.0 герц #18 */
+	797,	/* 79.7 герц */
+	825,	/* 82.5 герц */
+	854,	/* 85.4 герц */
+	885,	/* 88.5 герц */
+	915,	/* 91.5 герц */
+	948,	/* 94.8 герц */
+	974,	/* 97.4 герц */
+	1000,	/* 100.0 герц */
+	1035,	/* 103.5 герц */
+	1072,	/* 107.2 герц */
+	1109,	/* 110.9 герц */
+	1148,	/* 114.8 герц */
+	1188,	/* 118.8 герц */
+	1230,	/* 123.0 герц */
+	1273,	/* 127.3 герц */
+	1318,	/* 131.8 герц */
+	1365,	/* 136.5 герц */
+	1413,	/* 141.3 герц */
+	1462,	/* 146.2 герц */
+	1514,	/* 151.4 герц */
+	1567,	/* 156.7 герц */
+	1598,	/* 159.8 герц */
+	1622,	/* 162.2 герц */
+	1655,	/* 165.5 герц */
+	1679,	/* 167.9 герц */
+	1713,	/* 171.3 герц */
+	1738,	/* 173.8 герц */
+	1773,	/* 177.3 герц */
+	1799,	/* 179.9 герц */
+	1835,	/* 183.5 герц */
+	1862,	/* 186.2 герц */
+	1899,	/* 189.9 герц */
+	1928,	/* 192.8 герц */
+	1966,	/* 196.6 герц */
+	1995,	/* 199.5 герц */
+	2035,	/* 203.5 герц */
+	2065,	/* 206.5 герц */
+	2107,	/* 210.7 герц */
+	2181,	/* 218.1 герц */
+	2257,	/* 225.7 герц */
+	2291,	/* 229.1 герц */
+	2336,	/* 233.6 герц */
+	2418,	/* 241.8 герц */
+	2503,	/* 250.3 герц */
+	2541,	/* 254.1 герц */
+};
 
+#define NSUBTONES ARRAY_SIZE(gsubtones)
+
+static FLOAT_t subtonesbuf [NSUBTONES] [1024];
+
+
+#define MAXNBURST 1000
+
+// DTMF frequencies
+static const int frow[4] = { 697, 770, 852, 941 }; // 1st tone
+static const int fcol[4] = { 1209, 1336, 1477, 1633 }; // 2nd tone
+
+// DTMF symbols
+static const char sym[16] =
+{
+	'1', '4', '7', '*', '2', '5', '8', '0', '3', '6', '9', '#', 'A', 'B',
+	'C', 'D'
+};
+
+#define NFREQUES 8
+
+// DTMF decoding matrix
+static const int symmtx[4][4] =
+{
+	{ 0, 4, 8, 12 },
+	{ 1, 5, 9, 13 },
+	{ 2, 6, 10, 14 },
+	{ 3, 7, 11, 15 }
+};
+
+static float goertz_win [MAXNBURST]; // Window
+
+// Goertzel
+static float goeC [NFREQUES], goeCW[NFREQUES], goeSW [NFREQUES]; // Goertzel constants
+static float goeZ1 [NFREQUES], goeZ2 [NFREQUES]; // Goertzel status registers
+static float goeI [NFREQUES], goeQ [NFREQUES], goeM2 [NFREQUES]; // Goertzel output: real, imag, squared magnitude
+static const int goeN = 1000; // points for Goertzel
+
+void goertzel_processing(FLOAT_t sample)
+{
+	const float goeTH = 0.1; // threshold
+	static int nseq;
+	int i;
+
+	const float x = ((sample * goertz_win[nseq]));                                // windowing
+	if ((nseq % goeN) == 0)
+	{
+		for (i = 0; i < NFREQUES; i++)
+		{
+			goeZ1[i] = 0;
+			goeZ2[i] = 0;
+		} // Goertzel reset
+	}
+	// **** GOERTZEL ITERATION ****
+	for (i = 0; i < NFREQUES; i++)
+	{
+		const float z0 = x + ((goeC[i] * goeZ1[i])) - goeZ2[i];       // Goertzel iteration
+		goeZ2[i] = goeZ1[i];
+		goeZ1[i] = z0;
+	} 	// Goertzel status update
+
+	// **** GOERTZEL ITERATION ****
+	nseq ++;
+	if ((nseq % goeN) == 0)
+	{
+		int i1, i2;
+		nseq = 0; // finalize and decode
+
+		for (i1 = i2 = -1, i = 0; i < NFREQUES; i++)
+		{
+			// CORDIC may be used here to compute atan2() and sqrt()
+			goeI [i] = (goeCW[i] * goeZ1[i]) - goeZ2[i];      // Goertzel final goeI
+			goeQ [i] = (goeSW[i] * goeZ1[i]);              // Goertzel final goeQ
+			goeM2 [i] = goeI[i] * goeI[i] + goeQ[i] * goeQ[i];         // magnitude squared
+
+			if (goeM2[i] > goeTH)
+			{                                  // DTMF decoding
+				if (i < 4)
+				{
+					if (i1 == -1)
+						i1 = i;
+					else
+						i1 = 4;
+				}     // find 1st tone, one peak allowed
+				else
+				{
+					if (i2 == -1)
+						i2 = i - 4;
+					else
+						i2 = 4;
+				}     // find 2nd tone, one peak allowed
+			}
+		}
+
+		PRINTF("\ndecoded   string: ");
+		if ((i1 > -1) && (i1 < 4) && (i2 > -1) && (i2 < 4))
+			PRINTF("%c", sym[symmtx[i1][i2]]);
+		else
+			PRINTF(" ");
+		PRINTF("\n\n");
+	}
+
+}
+
+static void goertzel_initialize(void)
+{
+	const float goeFs = ARMI2SRATE;	// Hz sampling frequency
+	int i, n;
+
+	{
+		int i1, i2;
+		PRINTF("Reference string: ");
+		for (i2 = 0; i2 < 4; i2++)
+			for (i1 = 0; i1 < 4; i1++)
+				PRINTF("%c", sym [symmtx[i1][i2]]);
+		PRINTF("\n");
+	}
+
+	for (i = 0; i < goeN; i++)
+	{ // init window (Hamming)
+		goertz_win[i] = (int) ((0.54f - 0.46f * cosf( 2 * M_PI * (float) i / (float) (goeN - 1))));
+	}
+	for (i = 0; i < 4; i++)
+	{
+		// init Goertzel constants
+		// CORDIC may be used here to compute sin() and cos()
+		const float w = 2.0 * M_PI * ((float) goeN * (float) frow[i] / (float) goeFs) / (float) goeN;
+		goeCW[i] = cosf(w);
+		goeC[i] = goeCW[i] * 2;// 2 * cosf(w)
+		goeSW[i] = sinf(w);
+	}
+
+	for (i = 0; i < 4; i++)
+	{
+		// init Goertzel constants
+
+		const float w = 2.0 * M_PI * ((float) goeN * (float) fcol[i] / (float) goeFs) / (float) goeN;
+		goeCW[i + 4] = cosf(w);
+		goeC[i + 4] = goeCW[i + 4] * 2;	// 2 * cosf(w)
+		goeSW[i + 4] = sinf(w);
+	}
 }
 
 // RX CTSS squelch enable
@@ -5849,12 +6055,13 @@ void dsp_initialize(void)
 	agc_initialize();
 	voxmeter_initialize();
 	trxparam_update();
-	const uint_fast8_t rprofile = ! gwagcprofrx;	// индекс профиля, который станет рабочим
-
-	uint_fast8_t pathi;
-	for (pathi = 0; pathi < NTRX; ++ pathi)
-		rxparam_update(rprofile, pathi);
-	gwagcprofrx = rprofile;
+	{
+		const uint_fast8_t rprofile = ! gwagcprofrx;	// индекс профиля, который станет рабочим
+		uint_fast8_t pathi;
+		for (pathi = 0; pathi < NTRX; ++ pathi)
+			rxparam_update(rprofile, pathi);
+		gwagcprofrx = rprofile;
+	}
 
 	ARM_MORPH(arm_fir_init)(& tx_fir_instance, Ntap_tx_MIKE, tx_firEQcoeff, tx_fir_state, tx_MIKE_blockSize);
 
@@ -5862,12 +6069,15 @@ void dsp_initialize(void)
 	txparam_update(tprofile);
 	gwagcproftx = tprofile;
 
-	const uint_fast8_t spf = ! gwprof;	// индекс профиля для подготовки параметров DSP
+	{
+		const uint_fast8_t spf = ! gwprof;	// индекс профиля для подготовки параметров DSP
+		uint_fast8_t pathi;
 
-	audio_setup_mike(spf);
-	for (pathi = 0; pathi < NTRX; ++ pathi)
-		audio_update(spf, pathi, 0);
-	gwprof = spf;
+		audio_setup_mike(spf);
+		for (pathi = 0; pathi < NTRX; ++ pathi)
+			audio_update(spf, pathi, 0);
+		gwprof = spf;
+	}
 
 #if WITHSUBTONES
 	goertzel_initialize();
