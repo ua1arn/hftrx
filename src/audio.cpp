@@ -5934,6 +5934,7 @@ void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 		static FLOAT_t goeM2 [NFREQUES]; // Goertzel output: real, imag, squared magnitude
 
+		const FLOAT_t goeTH = 800; // threshold
 		int i1, i2;
 		i1 = i2 = -1;
 		for (i = 0; i < NFREQUES; i++)
@@ -5943,9 +5944,10 @@ void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 			const FLOAT_t goeQ = goeSW [i] * goeZ1 [i];              // Goertzel final goeQ
 			goeM2 [i] = goeI * goeI + goeQ * goeQ;         // magnitude squared
 
-			const FLOAT_t goeTH = 400; // threshold
+#if 0
 			if (goeM2 [i] > goeTH)
-			{                                  // DTMF decoding
+			{
+				// DTMF decoding
 				if (i < 4)
 				{
 					if (i1 == -1)
@@ -5961,7 +5963,31 @@ void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 						i2 = 4;
 				}     // find 2nd tone, one peak allowed
 			}
+#endif
 		}
+#if 1
+		FLOAT_t max1, max2;
+		uint32_t index1, index2;
+		ARM_MORPH(arm_max)(goeM2, NFREQUES, & max1, & index1);
+		goeM2 [index1] = 0;
+		ARM_MORPH(arm_max)(goeM2, NFREQUES, & max2, & index2);
+		if (max1 > goeTH && max2 > goeTH)
+		{
+			//PRINTF("i1=%u i2=%u\n", index1, index2);
+			if (index1 >= 4 && index2 < 4)
+			{
+				PRINTF("%c", sym [symmtx [index2] [index1 % 4]]);
+			}
+			else if (index1 < 4 && index2 >= 4)
+			{
+				PRINTF("%c", sym [symmtx [index1] [index2 % 4]]);
+			}
+			else
+			{
+				// Равны или в одной группе
+			}
+		}
+#endif
 #if 0
 		PRINTF("rep: ");
 		for (i = 0; i < NFREQUES; i++)
@@ -5970,8 +5996,8 @@ void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 		}
 		PRINTF("\n");
 #endif
-		if ((i1 > -1) && (i1 < 4) && (i2 > -1) && (i2 < 4))
-			PRINTF("%c", sym[symmtx[i1][i2]]);
+//		if ((i1 > -1) && (i1 < 4) && (i2 > -1) && (i2 < 4))
+//			PRINTF("%c", sym[symmtx[i1][i2]]);
 	}
 
 }
