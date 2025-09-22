@@ -5872,19 +5872,15 @@ static const uint_least16_t gsubtones [] =
 	2541,	/* 254.1 герц */
 };
 
-#define NSUBTONES ARRAY_SIZE(gsubtones)
-
-static FLOAT_t subtonesbuf [NSUBTONES] [1024];
-
-
-#define MAXNBURST 2048
-#define goeN  	2048 // points for Goertzel
-
+//#define NFREQUES ARRAY_SIZE(gsubtones)
 #define NFREQUES 8
 
+#define goeN  	1024 // points for Goertzel - зависит точность определения частоты
+
+
 // DTMF frequencies
-static const int frow[4] = { 697, 770, 852, 941 }; // 1st tone
-static const int fcol[4] = { 1209, 1336, 1477, 1633 }; // 2nd tone
+static const int frow [4] = { 697, 770, 852, 941 }; // 1st tone
+static const int fcol [4] = { 1209, 1336, 1477, 1633 }; // 2nd tone
 
 // DTMF symbols
 static const char sym[16] =
@@ -5918,8 +5914,8 @@ void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	{
 		for (i = 0; i < NFREQUES; i++)
 		{
-			goeZ1[i] = 0;
-			goeZ2[i] = 0;
+			goeZ1 [i] = 0;
+			goeZ2 [i] = 0;
 		} // Goertzel reset
 	}
 	// **** GOERTZEL ITERATION ****
@@ -5947,7 +5943,7 @@ void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 			const FLOAT_t goeQ = goeSW [i] * goeZ1 [i];              // Goertzel final goeQ
 			goeM2 [i] = goeI * goeI + goeQ * goeQ;         // magnitude squared
 
-			const FLOAT_t goeTH = 200; // threshold
+			const FLOAT_t goeTH = 400; // threshold
 			if (goeM2 [i] > goeTH)
 			{                                  // DTMF decoding
 				if (i < 4)
@@ -5982,18 +5978,20 @@ void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 static void goertzel_initialize(void)
 {
+	//enum { MAXNBURST = 1024 };
+	enum { MAXNBURST = goeN };
 	ASSERT(goeN <= MAXNBURST);
 	const FLOAT_t goeFs = ARMI2SRATE;	// Hz sampling frequency
 	int i, n;
 
-	{
-		int i1, i2;
-		PRINTF("Reference string: ");
-		for (i2 = 0; i2 < 4; i2++)
-			for (i1 = 0; i1 < 4; i1++)
-				PRINTF("%c", sym [symmtx[i1][i2]]);
-		PRINTF("\n");
-	}
+//	{
+//		int i1, i2;
+//		PRINTF("Reference string: ");
+//		for (i2 = 0; i2 < 4; i2++)
+//			for (i1 = 0; i1 < 4; i1++)
+//				PRINTF("%c", sym [symmtx[i1][i2]]);
+//		PRINTF("\n");
+//	}
 
 	for (i = 0; i < goeN; i++)
 	{ // init window (Hamming)
