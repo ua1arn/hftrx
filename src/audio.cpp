@@ -5901,21 +5901,21 @@ static const int symmtx[4][4] =
 	{ 3, 7, 11, 15 }
 };
 
-static float goertz_win [MAXNBURST]; // Window
+static FLOAT_t goertz_win [MAXNBURST]; // Window
 
 // Goertzel
-static float goeC [NFREQUES], goeCW[NFREQUES], goeSW [NFREQUES]; // Goertzel constants
-static float goeZ1 [NFREQUES], goeZ2 [NFREQUES]; // Goertzel status registers
-static float goeI [NFREQUES], goeQ [NFREQUES], goeM2 [NFREQUES]; // Goertzel output: real, imag, squared magnitude
+static FLOAT_t goeC [NFREQUES], goeCW[NFREQUES], goeSW [NFREQUES]; // Goertzel constants
+static FLOAT_t goeZ1 [NFREQUES], goeZ2 [NFREQUES]; // Goertzel status registers
+static FLOAT_t goeI [NFREQUES], goeQ [NFREQUES], goeM2 [NFREQUES]; // Goertzel output: real, imag, squared magnitude
 static const int goeN = 1000; // points for Goertzel
 
 void goertzel_processing(FLOAT_t sample)
 {
-	const float goeTH = 0.1; // threshold
+	const FLOAT_t goeTH = 0.1; // threshold
 	static int nseq;
 	int i;
 
-	const float x = ((sample * goertz_win[nseq]));                                // windowing
+	const FLOAT_t x = ((sample * goertz_win[nseq]));                                // windowing
 	if ((nseq % goeN) == 0)
 	{
 		for (i = 0; i < NFREQUES; i++)
@@ -5977,7 +5977,7 @@ void goertzel_processing(FLOAT_t sample)
 
 static void goertzel_initialize(void)
 {
-	const float goeFs = ARMI2SRATE;	// Hz sampling frequency
+	const FLOAT_t goeFs = ARMI2SRATE;	// Hz sampling frequency
 	int i, n;
 
 	{
@@ -5991,13 +5991,13 @@ static void goertzel_initialize(void)
 
 	for (i = 0; i < goeN; i++)
 	{ // init window (Hamming)
-		goertz_win[i] = (int) ((0.54f - 0.46f * cosf( 2 * M_PI * (float) i / (float) (goeN - 1))));
+		goertz_win[i] = ((0.54f - 0.46f * cosf( 2 * M_PI * (float) i / (float) (goeN - 1))));
 	}
 	for (i = 0; i < 4; i++)
 	{
 		// init Goertzel constants
 		// CORDIC may be used here to compute sin() and cos()
-		const float w = 2.0 * M_PI * ((float) goeN * (float) frow[i] / (float) goeFs) / (float) goeN;
+		const FLOAT_t w = 2 * M_PI * ((float) goeN * (float) frow[i] / (float) goeFs) / (float) goeN;
 		goeCW[i] = cosf(w);
 		goeC[i] = goeCW[i] * 2;// 2 * cosf(w)
 		goeSW[i] = sinf(w);
@@ -6007,7 +6007,7 @@ static void goertzel_initialize(void)
 	{
 		// init Goertzel constants
 
-		const float w = 2.0 * M_PI * ((float) goeN * (float) fcol[i] / (float) goeFs) / (float) goeN;
+		const FLOAT_t w = 2 * M_PI * ((float) goeN * (float) fcol[i] / (float) goeFs) / (float) goeN;
 		goeCW[i + 4] = cosf(w);
 		goeC[i + 4] = goeCW[i + 4] * 2;	// 2 * cosf(w)
 		goeSW[i + 4] = sinf(w);
