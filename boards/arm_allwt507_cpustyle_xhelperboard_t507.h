@@ -89,8 +89,9 @@ void user_uart5_ontxchar(void * ctx);
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
-#define BOARD_CONFIG_DRAM_CLK 672//792
+	#define BOARD_CONFIG_DRAM_CLK 672//792
 	#define CONFIG_SUNXI_DRAM_H616_LPDDR4 1
+	#define CONFIG_MACH_SUN50I_T507 1
 
 	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */

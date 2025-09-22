@@ -43,7 +43,8 @@
 #if WITHISBOOTLOADER
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_DDR3
+	#define CONFIG_MACH_SUN50I_A133 1
+	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
 	#define BOARD_CONFIG_DRAM_CLK 800
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
@@ -617,8 +618,6 @@
 	} while (0)
 
 
-#define BOARD_GPIOA_ENC2BTN_BIT (UINT32_C(1) << 8)	// PA8 - second encoder button with pull-up
-
 #if WITHKEYBOARD
 	/* PE15: pull-up second encoder button */
 
@@ -1061,7 +1060,7 @@
 
 		/* Контроллер питания AXP305 */
 		#define BOARD_PMIC_INITIALIZE() do { \
-			axp305_initialize(); \
+			/*axp305_initialize(); */\
 		} while (0)
 	#endif /* WITHISBOOTLOADER */
 

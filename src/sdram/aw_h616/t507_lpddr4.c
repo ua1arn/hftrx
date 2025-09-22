@@ -1,8 +1,10 @@
 /*
- * a64_ddr3.c
+ * t507_lpddr4.c
  *
  *  Created on: 15 февр. 2023 г.
- *      Author: User
+ * Проект HF Dream Receiver (КВ приёмник мечты)
+ * автор Гена Завидовский mgs2001@mail.ru
+ * UA1ARN
  */
 
 // https://github.com/apritzel/u-boot/blob/3aaabfe9ff4bbcd11096513b1b28d1fb0a40800f/arch/arm/mach-sunxi/dram_sun50i_h616.c#L3
@@ -10,7 +12,7 @@
 
 #include "hardware.h"
 
-#if WITHSDRAMHW && CPUSTYLE_T507 && ! CPUSTYLE_H616
+#if WITHSDRAMHW && (CPUSTYLE_A133 || (CPUSTYLE_T507 && ! CPUSTYLE_H616))
 
 #include "formats.h"
 #include "clocks.h"
@@ -29,7 +31,6 @@
 /* SID address space starts at 0x03006000, but e-fuse is at offset 0x200 */
 #define SUNXI_SID_BASE   0x03006200
 
-#define CONFIG_MACH_SUN50I_H616 1
 
 #ifdef CONFIG_MACH_SUN50I_H6
 	#define SUNXI_DRAM_COM_BASE		0x04002000
@@ -40,10 +41,17 @@
 //#define SUNXI_MMC0_BASE			0x04020000
 //#define SUNXI_MMC1_BASE			0x04021000
 //#define SUNXI_MMC2_BASE			0x04022000
-#ifdef CONFIG_MACH_SUN50I_H616
-	#define SUNXI_DRAM_COM_BASE		0x047FA000
+#ifdef CONFIG_MACH_SUN50I_T507 || CONFIG_MACH_SUN50I_H616
+	#define SUNXI_DRAM_COM_BASE			0x047FA000
 	#define SUNXI_DRAM_CTL0_BASE		0x047FB000
 	#define SUNXI_DRAM_PHY0_BASE		0x04800000
+#endif
+
+#ifdef CONFIG_MACH_SUN50I_A133
+	// https://github.com/u-boot/u-boot/blob/d33b21b7e261691e8d6613a24cc9b0ececba3b01/arch/arm/include/asm/arch-sunxi/cpu_sun50i_h6.h#L33
+	#define SUNXI_DRAM_COM_BASE			0x04810000
+	#define SUNXI_DRAM_CTL0_BASE		0x04820000
+	#define SUNXI_DRAM_PHY0_BASE		0x04830000
 #endif
 
 #define DRAM_CLK_ENABLE			BIT_U32(31)
@@ -606,7 +614,7 @@ struct sunxi_ccm_reg {
 
 /* apb1 bit field */
 #define CCM_APB1_DEFAULT		0x03000102
-#elif CONFIG_MACH_SUN50I_H616
+#elif CONFIG_MACH_SUN50I_T507
 #define CCM_PLL6_DEFAULT		0xa8003100
 
 /* psi_ahb1_ahb2 bit field */
@@ -2167,7 +2175,7 @@ static uint64_t mctl_calc_size(const struct dram_config *config)
 	return (UINT64_C(1) << (config->cols + config->rows + 3)) * width * config->ranks;
 }
 
-#if 1
+#if CPUSTYLE_T507
 
 /* 1GB LPDDR4 @ HelperBoard507 */
 #define CONFIG_DRAM_SUN50I_H616_DX_ODT 0x0c0c0c0c
@@ -2201,6 +2209,85 @@ static const struct dram_para para = {
 	.tpr11 = CONFIG_DRAM_SUN50I_H616_TPR11,
 	.tpr12 = CONFIG_DRAM_SUN50I_H616_TPR12,
 };
+
+#elif CPUSTYLE_A133
+
+static struct dram_para paraX =
+{
+	.clk       = 792,
+	.type      = SUNXI_DRAM_TYPE_LPDDR4,
+	.dx_odt    = 0x7070707,
+	.dx_dri    = 0xD0D0D0D,
+	.ca_dri    = 0xE0E,
+	.para0     = 0xD0A050C,
+	.para1     = 0x310A,
+	.para2     = 0x10001000,
+	.mr0       = 0x0,
+	.mr1       = 0x34,
+	.mr2       = 0x1B,
+	.mr3       = 0x33,
+	.mr4       = 0x3,
+	.mr5       = 0x0,
+	.mr6       = 0x0,
+	.mr11      = 0x4,
+	.mr12      = 0x72,
+	.mr13      = 0x0,
+	.mr14      = 0x7,
+	.mr16      = 0x0,
+	.mr17      = 0x0,
+	.mr22      = 0x26,
+	.tpr0      = 0x6060606,
+	.tpr1      = 0x84040404,
+	.tpr2      = 0x0,
+	.tpr3      = 0x0,
+	.tpr6      = 0x48000000,
+	.tpr10     = 0x273333,
+	.tpr11     = 0x1D17121B,
+	.tpr12     = 0x14141313,
+	.tpr13     = 0x7521,
+	.tpr14     = 0x2023211F,
+};
+static struct dram_para para =
+{
+	.clk       = 792,
+	.type      = SUNXI_DRAM_TYPE_LPDDR4,
+	.dx_odt    = 0x7070707,
+	.dx_dri    = 0xD0D0D0D,
+	.ca_dri    = 0xE0E,
+	.para0     = 0xD0A050C,
+	.para1     = 0x310A,
+	.para2     = 0x10001000,
+	.mr11      = 0x4,
+	.mr12      = 0x72,
+	.mr14      = 0x7,
+	.mr22      = 0x26,
+	.tpr1      = 0x26,
+	.tpr2      = 0x6060606,
+	.tpr6      = 0x48000000,
+	.tpr10     = 0x273333,
+	.tpr11     = 0x231d151c,
+	.tpr12     = 0x1212110e,
+	.tpr13     = 0x7521,
+	.tpr14     = 0x2023211f,
+};
+// https://github.com/u-boot/u-boot/blob/d33b21b7e261691e8d6613a24cc9b0ececba3b01/configs/liontron-h-a133l_defconfig#L1
+
+//CONFIG_DRAM_SUNXI_DX_ODT=0x7070707
+//CONFIG_DRAM_SUNXI_DX_DRI=0xd0d0d0d
+//CONFIG_DRAM_SUNXI_CA_DRI=0xe0e
+//CONFIG_DRAM_SUNXI_PARA0=0xd0a050c
+//CONFIG_DRAM_SUNXI_MR11=0x4
+//CONFIG_DRAM_SUNXI_MR12=0x72
+//CONFIG_DRAM_SUNXI_MR14=0x7
+//CONFIG_DRAM_SUNXI_TPR1=0x26
+//CONFIG_DRAM_SUNXI_TPR2=0x6060606
+//CONFIG_DRAM_SUNXI_TPR3=0x84040404
+//CONFIG_DRAM_SUNXI_TPR6=0x48000000
+//CONFIG_DRAM_SUNXI_TPR10=0x273333
+//CONFIG_DRAM_SUNXI_TPR11=0x231d151c
+//CONFIG_DRAM_SUNXI_TPR12=0x1212110e
+//CONFIG_DRAM_SUNXI_TPR13=0x7521
+//CONFIG_DRAM_SUNXI_TPR14=0x2023211f
 
 #else
 

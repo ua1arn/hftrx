@@ -1893,7 +1893,7 @@ void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq
 	{
 
 	}
-#if defined (S_TWI0)
+#if defined (S_TWI0) && defined (PRCM)
 	else if (twi == S_TWI0)
 	{
 		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
@@ -1901,7 +1901,7 @@ void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq
 		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
 	}
 #endif /* defined (S_TWI0) */
-#if defined (R_TWI) && 0
+#if defined (R_TWI) && defined (PRCM)
 	// A64
 	else if (twi == R_TWI)
 	{
@@ -2554,7 +2554,7 @@ void hardware_twi_master_configure(void)
 		{
 
 		}
-	#if defined (S_TWI0)
+	#if defined (S_TWI0) && defined (PRCM)
 		else if (twi == S_TWI0)
 		{
 			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate

@@ -172,6 +172,7 @@ uint_fast32_t allwnr_a133_get_cpux_freq(void);
 uint_fast32_t allwnr_a133_get_uart_freq(void);
 uint_fast32_t allwnr_a133_get_spi_freq(void);
 uint_fast32_t allwnr_a133_get_twi_freq(void);
+uint_fast32_t allwnr_a133_get_s_twi_freq(void);
 
 #endif /* (CPUSTYLE_V3S) */
 
