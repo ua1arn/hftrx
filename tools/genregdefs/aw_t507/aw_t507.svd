@@ -2703,6 +2703,203 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>CSIC</name>
+  <description></description>
+  <baseAddress>0x06600000</baseAddress>
+  <interrupt>
+   <name>CSI_MIPI0_RX</name>
+   <value>109</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>CCU_CLK_MODE_REG</name>
+    <displayName>CCU_CLK_MODE_REG</displayName>
+    <description>CCU Clock Mode Register </description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCU_PARSER_CLK_EN_REG</name>
+    <displayName>CCU_PARSER_CLK_EN_REG</displayName>
+    <description>CCU Parser Clock Enable Register </description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCU_POST0_CLK_EN_REG</name>
+    <displayName>CCU_POST0_CLK_EN_REG</displayName>
+    <description>CCU Post0 Clock Enable Register </description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCU_POST1_CLK_EN_REG</name>
+    <displayName>CCU_POST1_CLK_EN_REG</displayName>
+    <description>CCU Post1 Clock Enable Register </description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>CSIC_CCU</name>
+  <description></description>
+  <baseAddress>0x06600000</baseAddress>
+  <registers>
+   <register>
+    <name>CCU_CLK_MODE_REG</name>
+    <displayName>CCU_CLK_MODE_REG</displayName>
+    <description>CCU Clock Mode Register </description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCU_PARSER_CLK_EN_REG</name>
+    <displayName>CCU_PARSER_CLK_EN_REG</displayName>
+    <description>CCU Parser Clock Enable Register </description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCU_POST0_CLK_EN_REG</name>
+    <displayName>CCU_POST0_CLK_EN_REG</displayName>
+    <description>CCU Post0 Clock Enable Register </description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCU_POST1_CLK_EN_REG</name>
+    <displayName>CCU_POST1_CLK_EN_REG</displayName>
+    <description>CCU Post1 Clock Enable Register </description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>CSIC_TOP</name>
+  <description></description>
+  <baseAddress>0x06600800</baseAddress>
+  <registers>
+   <register>
+    <name>CSIC_TOP_EN_REG</name>
+    <displayName>CSIC_TOP_EN_REG</displayName>
+    <description>CSIC TOP Enable Register </description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA0_INPUT_SEL_REG</name>
+    <displayName>CSIC_DMA0_INPUT_SEL_REG</displayName>
+    <description>CSIC DMA0 Input Select Register </description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA1_INPUT_SEL_REG</name>
+    <displayName>CSIC_DMA1_INPUT_SEL_REG</displayName>
+    <description>CSIC DMA1 Input Select Register </description>
+    <addressOffset>0x0A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA2_INPUT_SEL_REG</name>
+    <displayName>CSIC_DMA2_INPUT_SEL_REG</displayName>
+    <description>CSIC DMA2 Input Select Register </description>
+    <addressOffset>0x0A8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA3_INPUT_SEL_REG</name>
+    <displayName>CSIC_DMA3_INPUT_SEL_REG</displayName>
+    <description>CSIC DMA3 Input Select Register </description>
+    <addressOffset>0x0AC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_BIST_CS_REG</name>
+    <displayName>CSIC_BIST_CS_REG</displayName>
+    <description>CSIC BIST CS Register </description>
+    <addressOffset>0x0DC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_BIST_CONTROL_REG</name>
+    <displayName>CSIC_BIST_CONTROL_REG</displayName>
+    <description>CSIC BIST Control Register </description>
+    <addressOffset>0x0E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_BIST_START_REG</name>
+    <displayName>CSIC_BIST_START_REG</displayName>
+    <description>CSIC BIST Start Register </description>
+    <addressOffset>0x0E4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_BIST_END_REG</name>
+    <displayName>CSIC_BIST_END_REG</displayName>
+    <description>CSIC BIST End Register </description>
+    <addressOffset>0x0E8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_BIST_DATA_MASK_REG</name>
+    <displayName>CSIC_BIST_DATA_MASK_REG</displayName>
+    <description>CSIC BIST Data Mask Register </description>
+    <addressOffset>0x0EC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_MBUS_REQ_MAX_REG</name>
+    <displayName>CSIC_MBUS_REQ_MAX_REG</displayName>
+    <description>CSIC MBUS REQ MAX Register </description>
+    <addressOffset>0x0F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>DE_MIXER0_BLD</name>
   <description>Display Engine (DE) - Blender</description>
   <baseAddress>0x01281000</baseAddress>

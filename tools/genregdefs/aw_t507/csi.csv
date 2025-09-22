@@ -3,15 +3,53 @@
 #irq; CSI_MIPI0_RX 109;
 
 #base; CSIC 0x06600000 
+
+#regdef; CCU_CLK_MODE_REG; 0x0000; CCU Clock Mode Register 
+#regdef; CCU_PARSER_CLK_EN_REG; 0x0004; CCU Parser Clock Enable Register 
+#regdef; CCU_POST0_CLK_EN_REG; 0x000C; CCU Post0 Clock Enable Register 
+#regdef; CCU_POST1_CLK_EN_REG; 0x0010; CCU Post1 Clock Enable Register 
+
+#typeend;
+
+#type; CSIC_CCU;
+
 #base; CSIC_CCU 0x06600000 
+
+#regdef; CCU_CLK_MODE_REG; 0x0000; CCU Clock Mode Register 
+#regdef; CCU_PARSER_CLK_EN_REG; 0x0004; CCU Parser Clock Enable Register 
+#regdef; CCU_POST0_CLK_EN_REG; 0x000C; CCU Post0 Clock Enable Register 
+#regdef; CCU_POST1_CLK_EN_REG; 0x0010; CCU Post1 Clock Enable Register 
+
+#typeend;
+
+#type; CSIC_TOP;
+
 #base; CSIC_TOP 0x06600800 
 
-#irq; CSI_PARSER0 105;
-#irq; CSI_PARSER1 106;
+#regdef; CSIC_TOP_EN_REG; 0x0000; CSIC TOP Enable Register 
+#regdef; CSIC_DMA0_INPUT_SEL_REG; 0x00A0; CSIC DMA0 Input Select Register 
+#regdef; CSIC_DMA1_INPUT_SEL_REG; 0x00A4; CSIC DMA1 Input Select Register 
+#regdef; CSIC_DMA2_INPUT_SEL_REG; 0x00A8; CSIC DMA2 Input Select Register 
+#regdef; CSIC_DMA3_INPUT_SEL_REG; 0x00AC; CSIC DMA3 Input Select Register 
+#regdef; CSIC_BIST_CS_REG; 0x00DC; CSIC BIST CS Register 
+#regdef; CSIC_BIST_CONTROL_REG; 0x00E0; CSIC BIST Control Register 
+#regdef; CSIC_BIST_START_REG; 0x00E4; CSIC BIST Start Register 
+#regdef; CSIC_BIST_END_REG; 0x00E8; CSIC BIST End Register 
+#regdef; CSIC_BIST_DATA_MASK_REG; 0x00EC; CSIC BIST Data Mask Register 
+#regdef; CSIC_MBUS_REQ_MAX_REG; 0x00F0; CSIC MBUS REQ MAX Register 
+
+#typeend;
+
+#type; CSIC_PARSER;
+
 
 #base; CSIC_PARSER0 0x06601000 
 #base; CSIC_PARSER1 0x06602000 
 
+
+#typeend;
+
+#type; CSI_DMA;
 
 #irq; CSI_DMA0 101;
 #irq; CSI_DMA1 102;
@@ -26,6 +64,10 @@
 #base; CSIC_DMA3 0x06609600 
 #base; CSIC_DMA4 0x06609800 
 #base; CSIC_DMA5 0x06609A00 
+
+#typeend;
+
+#type; CSI_CCI;
 
 #irq; CSI_CCI0 107;
 #irq; CSI_CCI1 108;

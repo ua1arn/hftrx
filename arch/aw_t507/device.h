@@ -101,17 +101,15 @@ typedef enum IRQn
     TCON_TV0_IRQn = 98,                               /*!< TCON_TV TV Output */
     TCON_TV1_IRQn = 99,                               /*!< TCON_TV TV Output */
     TVE_IRQn = 100,                                   /*!< TVE_TOP TV encoder interrupt */
-    CSI_DMA0_IRQn = 101,                              /*!< CSI  */
-    CSI_DMA1_IRQn = 102,                              /*!< CSI  */
-    CSI_DMA2_IRQn = 103,                              /*!< CSI  */
-    CSI_DMA3_IRQn = 104,                              /*!< CSI  */
-    CSI_PARSER0_IRQn = 105,                           /*!< CSI  */
-    CSI_PARSER1_IRQn = 106,                           /*!< CSI  */
-    CSI_CCI0_IRQn = 107,                              /*!< CSI  */
-    CSI_CCI1_IRQn = 108,                              /*!< CSI  */
+    CSI_DMA0_IRQn = 101,                              /*!< CSI_DMA  */
+    CSI_DMA1_IRQn = 102,                              /*!< CSI_DMA  */
+    CSI_DMA2_IRQn = 103,                              /*!< CSI_DMA  */
+    CSI_DMA3_IRQn = 104,                              /*!< CSI_DMA  */
+    CSI_CCI0_IRQn = 107,                              /*!< CSI_CCI  */
+    CSI_CCI1_IRQn = 108,                              /*!< CSI_CCI  */
     CSI_MIPI0_RX_IRQn = 109,                          /*!< CSI  */
-    CSI_DMA4_IRQn = 111,                              /*!< CSI  */
-    CSI_DMA5_IRQn = 112,                              /*!< CSI  */
+    CSI_DMA4_IRQn = 111,                              /*!< CSI_DMA  */
+    CSI_DMA5_IRQn = 112,                              /*!< CSI_DMA  */
     DE_IRQn = 120,                                    /*!< DE_TOP DE interrupt */
     DI_IRQn = 121,                                    /*!< DI  */
     G2D_IRQn = 122,                                   /*!< G2D_TOP Graphic 2D top */
@@ -315,18 +313,18 @@ typedef enum IRQn
 #define TVE_TOP_BASE ((uintptr_t) 0x06520000)         /*!< TVE_TOP TV Encoder (display out interface = CVBS OUT) Base */
 #define TVE0_BASE ((uintptr_t) 0x06524000)            /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) Base */
 #define CSIC_BASE ((uintptr_t) 0x06600000)            /*!< CSI  Base */
-#define CSIC_CCU_BASE ((uintptr_t) 0x06600000)        /*!< CSI  Base */
-#define CSIC_TOP_BASE ((uintptr_t) 0x06600800)        /*!< CSI  Base */
-#define CSIC_PARSER0_BASE ((uintptr_t) 0x06601000)    /*!< CSI  Base */
-#define CSIC_PARSER1_BASE ((uintptr_t) 0x06602000)    /*!< CSI  Base */
-#define CSIC_DMA0_BASE ((uintptr_t) 0x06609000)       /*!< CSI  Base */
-#define CSIC_DMA1_BASE ((uintptr_t) 0x06609200)       /*!< CSI  Base */
-#define CSIC_DMA2_BASE ((uintptr_t) 0x06609400)       /*!< CSI  Base */
-#define CSIC_DMA3_BASE ((uintptr_t) 0x06609600)       /*!< CSI  Base */
-#define CSIC_DMA4_BASE ((uintptr_t) 0x06609800)       /*!< CSI  Base */
-#define CSIC_DMA5_BASE ((uintptr_t) 0x06609A00)       /*!< CSI  Base */
-#define CSIC_CCI0_BASE ((uintptr_t) 0x06614000)       /*!< CSI  Base */
-#define CSIC_CCI1_BASE ((uintptr_t) 0x06614400)       /*!< CSI  Base */
+#define CSIC_CCU_BASE ((uintptr_t) 0x06600000)        /*!< CSIC_CCU  Base */
+#define CSIC_TOP_BASE ((uintptr_t) 0x06600800)        /*!< CSIC_TOP  Base */
+#define CSIC_PARSER0_BASE ((uintptr_t) 0x06601000)    /*!< CSIC_PARSER  Base */
+#define CSIC_PARSER1_BASE ((uintptr_t) 0x06602000)    /*!< CSIC_PARSER  Base */
+#define CSIC_DMA0_BASE ((uintptr_t) 0x06609000)       /*!< CSI_DMA  Base */
+#define CSIC_DMA1_BASE ((uintptr_t) 0x06609200)       /*!< CSI_DMA  Base */
+#define CSIC_DMA2_BASE ((uintptr_t) 0x06609400)       /*!< CSI_DMA  Base */
+#define CSIC_DMA3_BASE ((uintptr_t) 0x06609600)       /*!< CSI_DMA  Base */
+#define CSIC_DMA4_BASE ((uintptr_t) 0x06609800)       /*!< CSI_DMA  Base */
+#define CSIC_DMA5_BASE ((uintptr_t) 0x06609A00)       /*!< CSI_DMA  Base */
+#define CSIC_CCI0_BASE ((uintptr_t) 0x06614000)       /*!< CSI_CCI  Base */
+#define CSIC_CCI1_BASE ((uintptr_t) 0x06614400)       /*!< CSI_CCI  Base */
 #define RTC_BASE ((uintptr_t) 0x07000000)             /*!< RTC Real Time Clock Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG  Base */
 #define PRCM_BASE ((uintptr_t) 0x07010000)            /*!< PRCM Power Reset Clock Management module Base */
@@ -803,6 +801,50 @@ typedef struct CPU_SUBSYS_CTRL_T507_Type
         __IO uint32_t HIGH;                           /*!< Offset 0x044 Reset Vector Base Address Registerx_H */
     } RVBARADDR [0x004];                              /*!< Offset 0x040 Reset Vector Base Address Register for core [0..3] */
 } CPU_SUBSYS_CTRL_T507_TypeDef; /* size of structure = 0x060 */
+/*
+ * @brief CSI
+ */
+/*!< CSI  */
+typedef struct CSI_Type
+{
+    __IO uint32_t CCU_CLK_MODE_REG;                   /*!< Offset 0x000 CCU Clock Mode Register  */
+    __IO uint32_t CCU_PARSER_CLK_EN_REG;              /*!< Offset 0x004 CCU Parser Clock Enable Register  */
+         RESERVED(0x008[0x000C - 0x0008], uint8_t)
+    __IO uint32_t CCU_POST0_CLK_EN_REG;               /*!< Offset 0x00C CCU Post0 Clock Enable Register  */
+    __IO uint32_t CCU_POST1_CLK_EN_REG;               /*!< Offset 0x010 CCU Post1 Clock Enable Register  */
+} CSI_TypeDef; /* size of structure = 0x014 */
+/*
+ * @brief CSIC_CCU
+ */
+/*!< CSIC_CCU  */
+typedef struct CSIC_CCU_Type
+{
+    __IO uint32_t CCU_CLK_MODE_REG;                   /*!< Offset 0x000 CCU Clock Mode Register  */
+    __IO uint32_t CCU_PARSER_CLK_EN_REG;              /*!< Offset 0x004 CCU Parser Clock Enable Register  */
+         RESERVED(0x008[0x000C - 0x0008], uint8_t)
+    __IO uint32_t CCU_POST0_CLK_EN_REG;               /*!< Offset 0x00C CCU Post0 Clock Enable Register  */
+    __IO uint32_t CCU_POST1_CLK_EN_REG;               /*!< Offset 0x010 CCU Post1 Clock Enable Register  */
+} CSIC_CCU_TypeDef; /* size of structure = 0x014 */
+/*
+ * @brief CSIC_TOP
+ */
+/*!< CSIC_TOP  */
+typedef struct CSIC_TOP_Type
+{
+    __IO uint32_t CSIC_TOP_EN_REG;                    /*!< Offset 0x000 CSIC TOP Enable Register  */
+         RESERVED(0x004[0x00A0 - 0x0004], uint8_t)
+    __IO uint32_t CSIC_DMA0_INPUT_SEL_REG;            /*!< Offset 0x0A0 CSIC DMA0 Input Select Register  */
+    __IO uint32_t CSIC_DMA1_INPUT_SEL_REG;            /*!< Offset 0x0A4 CSIC DMA1 Input Select Register  */
+    __IO uint32_t CSIC_DMA2_INPUT_SEL_REG;            /*!< Offset 0x0A8 CSIC DMA2 Input Select Register  */
+    __IO uint32_t CSIC_DMA3_INPUT_SEL_REG;            /*!< Offset 0x0AC CSIC DMA3 Input Select Register  */
+         RESERVED(0x0B0[0x00DC - 0x00B0], uint8_t)
+    __IO uint32_t CSIC_BIST_CS_REG;                   /*!< Offset 0x0DC CSIC BIST CS Register  */
+    __IO uint32_t CSIC_BIST_CONTROL_REG;              /*!< Offset 0x0E0 CSIC BIST Control Register  */
+    __IO uint32_t CSIC_BIST_START_REG;                /*!< Offset 0x0E4 CSIC BIST Start Register  */
+    __IO uint32_t CSIC_BIST_END_REG;                  /*!< Offset 0x0E8 CSIC BIST End Register  */
+    __IO uint32_t CSIC_BIST_DATA_MASK_REG;            /*!< Offset 0x0EC CSIC BIST Data Mask Register  */
+    __IO uint32_t CSIC_MBUS_REQ_MAX_REG;              /*!< Offset 0x0F0 CSIC MBUS REQ MAX Register  */
+} CSIC_TOP_TypeDef; /* size of structure = 0x0F4 */
 /*
  * @brief DE_BLD
  */
@@ -3682,6 +3724,9 @@ typedef struct VE_Type
 #define TCON_TV1 ((TCON_TV_TypeDef *) TCON_TV1_BASE)  /*!< TCON_TV1 TV Output register set access pointer */
 #define TVE_TOP ((TVE_TOP_TypeDef *) TVE_TOP_BASE)    /*!< TVE_TOP TV Encoder (display out interface = CVBS OUT) register set access pointer */
 #define TVE0 ((TV_Encoder_TypeDef *) TVE0_BASE)       /*!< TVE0 TV Encoder (display out interface = CVBS OUT) register set access pointer */
+#define CSIC ((CSI_TypeDef *) CSIC_BASE)              /*!< CSIC  register set access pointer */
+#define CSIC_CCU ((CSIC_CCU_TypeDef *) CSIC_CCU_BASE) /*!< CSIC_CCU  register set access pointer */
+#define CSIC_TOP ((CSIC_TOP_TypeDef *) CSIC_TOP_BASE) /*!< CSIC_TOP  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */
 #define PRCM ((PRCM_TypeDef *) PRCM_BASE)             /*!< PRCM Power Reset Clock Management module register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL Port Controller register set access pointer */
