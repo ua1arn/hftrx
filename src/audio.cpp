@@ -5877,8 +5877,8 @@ static const uint_least16_t gsubtones [] =
 static FLOAT_t subtonesbuf [NSUBTONES] [1024];
 
 
-#define MAXNBURST 8192
-#define goeN  	1024 // points for Goertzel
+#define MAXNBURST 2048
+#define goeN  	2048 // points for Goertzel
 
 #define NFREQUES 8
 
@@ -5902,7 +5902,7 @@ static const int symmtx[4][4] =
 	{ 3, 7, 11, 15 }
 };
 
-static FLOAT_t goertz_win [MAXNBURST]; // Window
+static FLOAT_t goertz_win [goeN]; // Window
 
 // Goertzel
 static FLOAT_t goeC [NFREQUES], goeCW[NFREQUES], goeSW [NFREQUES]; // Goertzel constants
@@ -5982,6 +5982,7 @@ void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 static void goertzel_initialize(void)
 {
+	ASSERT(goeN <= MAXNBURST);
 	const FLOAT_t goeFs = ARMI2SRATE;	// Hz sampling frequency
 	int i, n;
 
