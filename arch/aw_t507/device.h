@@ -72,6 +72,8 @@ typedef enum IRQn
     SMHC0_IRQn = 67,                                  /*!< SMHC SD-MMC Host Controller */
     SMHC1_IRQn = 68,                                  /*!< SMHC SD-MMC Host Controller */
     SMHC2_IRQn = 69,                                  /*!< SMHC SD-MMC Host Controller */
+    MSI_IRQn = 70,                                    /*!< MSI_CTRL MSI interrupt  */
+    DRAM_PHY_IRQn = 72,                               /*!< DRAM_PHY DRAM_PHY interrupt  */
     CLK_DET_IRQn = 73,                                /*!< CCU Clock Controller Unit (CCU) */
     DMAC_IRQn = 74,                                   /*!< DMAC  */
     GPIOE_IRQn = 75,                                  /*!< GPIOINT GPIOE interrupt (vector number not sequential) */
@@ -89,14 +91,29 @@ typedef enum IRQn
     GPIOH_IRQn = 88,                                  /*!< GPIOINT GPIOH interrupt */
     GPIOI_IRQn = 89,                                  /*!< GPIOINT GPIOI interrupt */
     AudioCodec_DAC_IRQn = 90,                         /*!< AUDIO_CODEC AudioCodec_DAC interrupt */
+    PSI_IRQn = 91,                                    /*!< PSI PSI interrupt */
+    BUS_TIMEOUT_IRQn = 92,                            /*!< PSI BUS timeout interrupt */
     IOMMU_IRQn = 93,                                  /*!< IOMMU IOMMU */
+    SMCARD_IRQn = 94,                                 /*!< SMCARD SMCARD interrupt */
     HDMI_TX0_IRQn = 95,                               /*!< HDMI_TX  */
     TCON_LCD0_IRQn = 96,                              /*!< TCON_LCD TCON_LCD0 interrupt */
     TCON_LCD1_IRQn = 97,                              /*!< TCON_LCD TCON_LCD1 interrupt */
     TCON_TV0_IRQn = 98,                               /*!< TCON_TV TV Output */
     TCON_TV1_IRQn = 99,                               /*!< TCON_TV TV Output */
     TVE_IRQn = 100,                                   /*!< TVE_TOP TV encoder interrupt */
+    CSI_DMA0_IRQn = 101,                              /*!< CSI  */
+    CSI_DMA1_IRQn = 102,                              /*!< CSI  */
+    CSI_DMA2_IRQn = 103,                              /*!< CSI  */
+    CSI_DMA3_IRQn = 104,                              /*!< CSI  */
+    CSI_PARSER0_IRQn = 105,                           /*!< CSI  */
+    CSI_PARSER1_IRQn = 106,                           /*!< CSI  */
+    CSI_CCI0_IRQn = 107,                              /*!< CSI  */
+    CSI_CCI1_IRQn = 108,                              /*!< CSI  */
+    CSI_MIPI0_RX_IRQn = 109,                          /*!< CSI  */
+    CSI_DMA4_IRQn = 111,                              /*!< CSI  */
+    CSI_DMA5_IRQn = 112,                              /*!< CSI  */
     DE_IRQn = 120,                                    /*!< DE_TOP DE interrupt */
+    DI_IRQn = 121,                                    /*!< DI  */
     G2D_IRQn = 122,                                   /*!< G2D_TOP Graphic 2D top */
     CE_NS_IRQn = 123,                                 /*!< CE CE_NS interrupt */
     CE_S_IRQn = 124,                                  /*!< CE CE interrupt */
@@ -105,8 +122,12 @@ typedef enum IRQn
     GPU_JOB_IRQn = 127,                               /*!< GPU GPU_JOB interrupt */
     GPU_MMU_IRQn = 128,                               /*!< GPU GPU_MMU interrupt */
     GPU_IRQn = 129,                                   /*!< GPU GPU interrupt */
+    NMI_IRQn = 135,                                   /*!< C0_CPUX_CFG_T507 NMI interrupt  */
     ALARM0_IRQn = 136,                                /*!< RTC Real Time Clock */
     S_TWI0_IRQn = 137,                                /*!< TWI  */
+    CIR_RX_IRQn = 138,                                /*!< CIR_RX  */
+    R_CPU_IDLE_IRQn = 139,                            /*!< TIMER  */
+    TWD_IRQn = 140,                                   /*!< TIMER Trust watchdog interrupt  */
     R_UART_IRQn = 144,                                /*!< UART R_UART */
     C0_CTI0_IRQn = 160,                               /*!< C0_CPUX_CFG_T507 C0_CTI0 Interrupt */
     C0_CTI1_IRQn = 161,                               /*!< C0_CPUX_CFG_T507 C0_CTI1 Interrupt */
@@ -237,6 +258,9 @@ typedef enum IRQn
 #define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC SD-MMC Host Controller Base */
 #define SMHC1_BASE ((uintptr_t) 0x04021000)           /*!< SMHC SD-MMC Host Controller Base */
 #define SMHC2_BASE ((uintptr_t) 0x04022000)           /*!< SMHC SD-MMC Host Controller Base */
+#define MSI_CTRL_BASE ((uintptr_t) 0x047FA000)        /*!< MSI_CTRL  Base */
+#define DRAM_CTRL_BASE ((uintptr_t) 0x047FB000)       /*!< DRAM_CTRL  Base */
+#define DRAM_PHY_BASE ((uintptr_t) 0x04800000)        /*!< DRAM_PHY PHY_CTRL Base */
 #define UART0_BASE ((uintptr_t) 0x05000000)           /*!< UART  Base */
 #define UART1_BASE ((uintptr_t) 0x05000400)           /*!< UART  Base */
 #define UART2_BASE ((uintptr_t) 0x05000800)           /*!< UART  Base */
@@ -290,6 +314,19 @@ typedef enum IRQn
 #define TCON_TV1_BASE ((uintptr_t) 0x06516000)        /*!< TCON_TV TV Output Base */
 #define TVE_TOP_BASE ((uintptr_t) 0x06520000)         /*!< TVE_TOP TV Encoder (display out interface = CVBS OUT) Base */
 #define TVE0_BASE ((uintptr_t) 0x06524000)            /*!< TV_Encoder TV Encoder (display out interface = CVBS OUT) Base */
+#define CSIC_BASE ((uintptr_t) 0x06600000)            /*!< CSI  Base */
+#define CSIC_CCU_BASE ((uintptr_t) 0x06600000)        /*!< CSI  Base */
+#define CSIC_TOP_BASE ((uintptr_t) 0x06600800)        /*!< CSI  Base */
+#define CSIC_PARSER0_BASE ((uintptr_t) 0x06601000)    /*!< CSI  Base */
+#define CSIC_PARSER1_BASE ((uintptr_t) 0x06602000)    /*!< CSI  Base */
+#define CSIC_DMA0_BASE ((uintptr_t) 0x06609000)       /*!< CSI  Base */
+#define CSIC_DMA1_BASE ((uintptr_t) 0x06609200)       /*!< CSI  Base */
+#define CSIC_DMA2_BASE ((uintptr_t) 0x06609400)       /*!< CSI  Base */
+#define CSIC_DMA3_BASE ((uintptr_t) 0x06609600)       /*!< CSI  Base */
+#define CSIC_DMA4_BASE ((uintptr_t) 0x06609800)       /*!< CSI  Base */
+#define CSIC_DMA5_BASE ((uintptr_t) 0x06609A00)       /*!< CSI  Base */
+#define CSIC_CCI0_BASE ((uintptr_t) 0x06614000)       /*!< CSI  Base */
+#define CSIC_CCI1_BASE ((uintptr_t) 0x06614400)       /*!< CSI  Base */
 #define RTC_BASE ((uintptr_t) 0x07000000)             /*!< RTC Real Time Clock Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG  Base */
 #define PRCM_BASE ((uintptr_t) 0x07010000)            /*!< PRCM Power Reset Clock Management module Base */
@@ -1101,6 +1138,22 @@ typedef struct DMIC_Type
     __IO uint32_t HPF_COEF_REG;                       /*!< Offset 0x03C High Pass Filter Coef Register */
     __IO uint32_t HPF_GAIN_REG;                       /*!< Offset 0x040 High Pass Filter Gain Register */
 } DMIC_TypeDef; /* size of structure = 0x044 */
+/*
+ * @brief DRAM_CTRL
+ */
+/*!< DRAM_CTRL  */
+typedef struct DRAM_CTRL_Type
+{
+         RESERVED(0x000[0x5000 - 0x0000], uint8_t)
+} DRAM_CTRL_TypeDef; /* size of structure = 0x5000 */
+/*
+ * @brief DRAM_PHY
+ */
+/*!< DRAM_PHY PHY_CTRL */
+typedef struct DRAM_PHY_Type
+{
+         RESERVED(0x000[0x80000 - 0x0000], uint8_t)
+} DRAM_PHY_TypeDef; /* size of structure = 0x80000 */
 /*
  * @brief EMAC
  */
@@ -2204,6 +2257,14 @@ typedef struct LRADC_Type
     __IO uint32_t LRADC_INTS;                         /*!< Offset 0x008 LRADC Interrupt Status Register */
     __IO uint32_t LRADC_DATA0;                        /*!< Offset 0x00C LRADC Data Register0 */
 } LRADC_TypeDef; /* size of structure = 0x010 */
+/*
+ * @brief MSI_CTRL
+ */
+/*!< MSI_CTRL  */
+typedef struct MSI_CTRL_Type
+{
+         RESERVED(0x000[0x1000 - 0x0000], uint8_t)
+} MSI_CTRL_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief NDFC
  */
@@ -3565,6 +3626,9 @@ typedef struct VE_Type
 #define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0 SD-MMC Host Controller register set access pointer */
 #define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1 SD-MMC Host Controller register set access pointer */
 #define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2 SD-MMC Host Controller register set access pointer */
+#define MSI_CTRL ((MSI_CTRL_TypeDef *) MSI_CTRL_BASE) /*!< MSI_CTRL  register set access pointer */
+#define DRAM_CTRL ((DRAM_CTRL_TypeDef *) DRAM_CTRL_BASE)/*!< DRAM_CTRL  register set access pointer */
+#define DRAM_PHY ((DRAM_PHY_TypeDef *) DRAM_PHY_BASE) /*!< DRAM_PHY PHY_CTRL register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */

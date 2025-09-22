@@ -1,0 +1,25 @@
+#type; MSI_CTRL;
+#irq; MSI 70; MSI interrupt 
+#base; MSI_CTRL 0x047FA000
+#regdef; padding 0; 0x1000; set size to 4 KB
+#typeend;
+
+#type; DRAM_CTRL;
+#base; DRAM_CTRL 0x047FB000;
+
+#regdef; padding 0; 0x5000; set size to 20 KB
+#typeend;
+
+#type; DRAM_PHY; PHY_CTRL
+#irq; DRAM_PHY 72; DRAM_PHY interrupt 
+#base; DRAM_PHY 0x04800000;
+
+#regdef; padding 0; 0x80000; set size to 8 MB
+#typeend;
+
+#type; PSI;
+#irq; PSI 91; PSI interrupt
+#irq; BUS_TIMEOUT 92; BUS timeout interrupt
+
+#typeend;
+

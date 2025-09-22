@@ -1,0 +1,4 @@
+#type; CIR_RX
+#irq; CIR_RX 138
+
+#typeend;

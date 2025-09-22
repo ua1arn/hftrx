@@ -1,0 +1,3 @@
+#type; SMCARD;
+#irq; SMCARD 94; SMCARD interrupt
+#typeend;

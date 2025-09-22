@@ -895,6 +895,11 @@
   <description>T507 Cluster 0 Configuration Register List</description>
   <baseAddress>0x09010000</baseAddress>
   <interrupt>
+   <name>NMI</name>
+   <value>135</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
    <name>C0_CTI0</name>
    <value>160</value>
    <description></description>
@@ -4683,6 +4688,25 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>DRAM_CTRL</name>
+  <description></description>
+  <baseAddress>0x047FB000</baseAddress>
+  <registers>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>DRAM_PHY</name>
+  <description>PHY_CTRL</description>
+  <baseAddress>0x04800000</baseAddress>
+  <interrupt>
+   <name>DRAM_PHY</name>
+   <value>72</value>
+   <description></description>
+  </interrupt>
+  <registers>
   </registers>
   </peripheral>
   <peripheral>
@@ -13023,6 +13047,18 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>MSI_CTRL</name>
+  <description></description>
+  <baseAddress>0x047FA000</baseAddress>
+  <interrupt>
+   <name>MSI</name>
+   <value>70</value>
+   <description></description>
+  </interrupt>
+  <registers>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>NAND0</name>
   <description>Nand Flash Controller</description>
   <baseAddress>0x04011000</baseAddress>
@@ -15968,6 +16004,16 @@
   <interrupt>
    <name>WATCHDOG</name>
    <value>82</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>R_CPU_IDLE</name>
+   <value>139</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TWD</name>
+   <value>140</value>
    <description></description>
   </interrupt>
   <registers>
