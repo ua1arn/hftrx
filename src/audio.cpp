@@ -5941,12 +5941,12 @@ static FLOAT_t goe_result(const goeCOEF_t * goe, const goeSTATE_t * const goes)
 	return goeI * goeI + goeQ * goeQ;         // magnitude squared
 }
 
-void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	static int nseq;
 	int i;
 
-	const FLOAT_t x = ((ch0 * goertz_win[nseq]));                                // windowing
+	const FLOAT_t x = ch0 * goertz_win [nseq]; // windowing
 	if ((nseq % goeN) == 0)
 	{
 		for (i = 0; i < NFREQUES; i++)
@@ -6040,7 +6040,7 @@ void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 }
 
-static void goertzel_initialize(void)
+static void dtmf_initialize(void)
 {
 	//enum { MAXNBURST = 1024 };
 	enum { MAXNBURST = goeN };
@@ -6078,7 +6078,7 @@ static void goertzel_initialize(void)
 	}
 
 	static subscribefloat_t goertzelregister;
-	subscribefloat(& speexoutfloat, & goertzelregister, NULL, goertzel_processing);	// выход speex и фильтра
+	subscribefloat(& speexoutfloat, & goertzelregister, NULL, dtmf_processing);	// выход speex и фильтра
 
 }
 
@@ -6148,7 +6148,7 @@ void dsp_initialize(void)
 	}
 
 #if WITHSUBTONES
-	//goertzel_initialize();
+	dtmf_initialize();
 #endif /* WITHSUBTONES */
 
 	static dpcobj_t user_audioproc_dpc;
