@@ -5872,7 +5872,7 @@ static const uint_least16_t gsubtones [] =
 	2541,	/* 254.1 герц */
 };
 
-//#define NFREQUES ARRAY_SIZE(gsubtones)
+#define CTCSSNFREQUES ARRAY_SIZE(gsubtones)
 #define NFREQUES 8
 
 #define goeN  	1024 // points for Goertzel - зависит точность определения частоты
@@ -5917,9 +5917,12 @@ typedef struct goeSTATE_tag
 static goeCOEF_t goeCOEFs [NFREQUES];
 static goeSTATE_t goeSTATEs [NFREQUES];
 
-static void goe_initialize(goeCOEF_t * goe, int_fast32_t freq, int_fast32_t goeFs)
+static goeCOEF_t ctcssCOEFs [CTCSSNFREQUES];
+static goeSTATE_t ctcssSTATEs [CTCSSNFREQUES];
+
+static void goe_initialize(goeCOEF_t * goe, FLOAT_t freq, int_fast32_t goeFs)
 {
-	const FLOAT_t w = M_TWOPI * (FLOAT_t) goeN * (FLOAT_t) freq /(FLOAT_t) goeFs / (FLOAT_t) goeN;
+	const FLOAT_t w = M_TWOPI * (FLOAT_t) goeN * freq /(FLOAT_t) goeFs / (FLOAT_t) goeN;
 	goe->goeCW = COSF(w);
 	goe->goeC = goe->goeCW * 2;// 2 * cosf(w)
 	goe->goeSW = SINF(w);
@@ -5941,10 +5944,61 @@ static FLOAT_t goe_result(const goeCOEF_t * goe, const goeSTATE_t * const goes)
 	return goeI * goeI + goeQ * goeQ;         // magnitude squared
 }
 
+void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+{
+	static unsigned nseq;
+	unsigned i;
+
+	const FLOAT_t x = ch0 * goertz_win [nseq]; // windowing
+	if ((nseq % goeN) == 0)
+	{
+		for (i = 0; i < CTCSSNFREQUES; i++)
+		{
+			goeSTATE_t * const goes = & ctcssSTATEs [i];
+			goes->goeZ1 = 0;
+			goes->goeZ2 = 0;
+		} // Goertzel reset
+	}
+	// **** GOERTZEL ITERATION ****
+	for (i = 0; i < CTCSSNFREQUES; i++)
+	{
+		const goeCOEF_t * const goe = & ctcssCOEFs [i];
+		goeSTATE_t * const goes = & ctcssSTATEs [i];
+
+		goe_process(goe, goes, x);
+	} 	// Goertzel status update
+
+	// **** GOERTZEL ITERATION ****
+	nseq ++;
+	if ((nseq % goeN) == 0)
+	{
+		nseq = 0; // finalize and decode
+
+		static FLOAT_t goeM2 [CTCSSNFREQUES]; // Goertzel output: real, imag, squared magnitude
+
+		const FLOAT_t goeTH = 800; // threshold
+		for (i = 0; i < CTCSSNFREQUES; i++)
+		{
+			const goeCOEF_t * const goe = & ctcssCOEFs [i];
+			const goeSTATE_t * const goes = & ctcssSTATEs [i];
+			goeM2 [i] = goe_result(goe, goes);
+		}
+		FLOAT_t max1;
+		uint32_t index1;
+		ARM_MORPH(arm_max)(goeM2, NFREQUES, & max1, & index1);
+		if (max1 > goeTH)
+		{
+			//PRINTF("i1=%u i2=%u\n", index1, index2);
+		}
+	}
+
+
+}
+
 void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
-	static int nseq;
-	int i;
+	static unsigned nseq;
+	unsigned i;
 
 	const FLOAT_t x = ch0 * goertz_win [nseq]; // windowing
 	if ((nseq % goeN) == 0)
@@ -6040,22 +6094,28 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 }
 
+static void ctcss_initialize(void)
+{
+	const FLOAT_t ctcssFs = ARMI2SRATE;	// Hz sampling frequency
+	unsigned i;
+	for (i = 0; i < CTCSSNFREQUES; i++)
+	{
+		// init Goertzel constants
+		goeCOEF_t * const goe = & ctcssCOEFs [i];
+		goe_initialize(goe, (FLOAT_t) gsubtones [i] / 10, ctcssFs);
+	}
+
+	static subscribefloat_t ctcss_register;
+	subscribefloat(& speexoutfloat, & ctcss_register, NULL, ctcss_processing);	// выход speex и фильтра
+}
+
 static void dtmf_initialize(void)
 {
 	//enum { MAXNBURST = 1024 };
 	enum { MAXNBURST = goeN };
 	ASSERT(goeN <= MAXNBURST);
 	const FLOAT_t goeFs = ARMI2SRATE;	// Hz sampling frequency
-	int i, n;
-
-//	{
-//		int i1, i2;
-//		PRINTF("Reference string: ");
-//		for (i2 = 0; i2 < 4; i2++)
-//			for (i1 = 0; i1 < 4; i1++)
-//				PRINTF("%c", sym [symmtx[i1][i2]]);
-//		PRINTF("\n");
-//	}
+	unsigned i;
 
 	for (i = 0; i < goeN; i++)
 	{ // init window (Hamming)
@@ -6077,8 +6137,8 @@ static void dtmf_initialize(void)
 		goe_initialize(goe, fcol [i], goeFs);
 	}
 
-	static subscribefloat_t goertzelregister;
-	subscribefloat(& speexoutfloat, & goertzelregister, NULL, dtmf_processing);	// выход speex и фильтра
+	static subscribefloat_t dtmf_register;
+	subscribefloat(& speexoutfloat, & dtmf_register, NULL, dtmf_processing);	// выход speex и фильтра
 
 }
 
@@ -6147,8 +6207,9 @@ void dsp_initialize(void)
 		gwprof = spf;
 	}
 
-#if WITHSUBTONES
+#if WITHSUBTONES && 0
 	dtmf_initialize();
+	ctcss_initialize();
 #endif /* WITHSUBTONES */
 
 	static dpcobj_t user_audioproc_dpc;
