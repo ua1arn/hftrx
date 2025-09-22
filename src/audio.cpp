@@ -5906,7 +5906,6 @@ static FLOAT_t goertz_win [MAXNBURST]; // Window
 // Goertzel
 static FLOAT_t goeC [NFREQUES], goeCW[NFREQUES], goeSW [NFREQUES]; // Goertzel constants
 static FLOAT_t goeZ1 [NFREQUES], goeZ2 [NFREQUES]; // Goertzel status registers
-static FLOAT_t goeI [NFREQUES], goeQ [NFREQUES], goeM2 [NFREQUES]; // Goertzel output: real, imag, squared magnitude
 static const int goeN = 1000; // points for Goertzel
 
 void goertzel_processing(FLOAT_t sample)
@@ -5936,15 +5935,18 @@ void goertzel_processing(FLOAT_t sample)
 	nseq ++;
 	if ((nseq % goeN) == 0)
 	{
-		int i1, i2;
 		nseq = 0; // finalize and decode
 
-		for (i1 = i2 = -1, i = 0; i < NFREQUES; i++)
+		static FLOAT_t goeI [NFREQUES], goeQ [NFREQUES], goeM2 [NFREQUES]; // Goertzel output: real, imag, squared magnitude
+
+		int i1, i2;
+		i1 = i2 = -1;
+		for (i = 0; i < NFREQUES; i++)
 		{
 			// CORDIC may be used here to compute atan2() and sqrt()
-			goeI [i] = (goeCW[i] * goeZ1[i]) - goeZ2[i];      // Goertzel final goeI
-			goeQ [i] = (goeSW[i] * goeZ1[i]);              // Goertzel final goeQ
-			goeM2 [i] = goeI[i] * goeI[i] + goeQ[i] * goeQ[i];         // magnitude squared
+			goeI [i] = goeCW [i] * goeZ1 [i] - goeZ2 [i];      // Goertzel final goeI
+			goeQ [i] = goeSW [i] * goeZ1 [i];              // Goertzel final goeQ
+			goeM2 [i] = goeI [i] * goeI [i] + goeQ [i] * goeQ [i];         // magnitude squared
 
 			if (goeM2[i] > goeTH)
 			{                                  // DTMF decoding
@@ -5991,26 +5993,26 @@ static void goertzel_initialize(void)
 
 	for (i = 0; i < goeN; i++)
 	{ // init window (Hamming)
-		goertz_win[i] = ((0.54f - 0.46f * cosf( 2 * M_PI * (float) i / (float) (goeN - 1))));
+		goertz_win [i] = (0.54f - 0.46f * cosf( 2 * M_PI * (float) i / (float) (goeN - 1)));
 	}
 	for (i = 0; i < 4; i++)
 	{
 		// init Goertzel constants
 		// CORDIC may be used here to compute sin() and cos()
-		const FLOAT_t w = 2 * M_PI * ((float) goeN * (float) frow[i] / (float) goeFs) / (float) goeN;
-		goeCW[i] = cosf(w);
-		goeC[i] = goeCW[i] * 2;// 2 * cosf(w)
-		goeSW[i] = sinf(w);
+		const FLOAT_t w = 2 * M_PI * (float) goeN * (float) frow[i] / (float) goeFs / (float) goeN;
+		goeCW [i] = cosf(w);
+		goeC [i] = goeCW[i] * 2;// 2 * cosf(w)
+		goeSW [i] = sinf(w);
 	}
 
 	for (i = 0; i < 4; i++)
 	{
 		// init Goertzel constants
 
-		const FLOAT_t w = 2 * M_PI * ((float) goeN * (float) fcol[i] / (float) goeFs) / (float) goeN;
-		goeCW[i + 4] = cosf(w);
-		goeC[i + 4] = goeCW[i + 4] * 2;	// 2 * cosf(w)
-		goeSW[i + 4] = sinf(w);
+		const FLOAT_t w = 2 * M_PI * (float) goeN * (float) fcol[i] / (float) goeFs / (float) goeN;
+		goeCW [i + 4] = cosf(w);
+		goeC [i + 4] = goeCW[i + 4] * 2;	// 2 * cosf(w)
+		goeSW [i + 4] = sinf(w);
 	}
 }
 
