@@ -5901,8 +5901,21 @@ static const int symmtx[4][4] =
 static FLOAT_t goertz_win [goeN]; // Window
 
 // Goertzel
-static FLOAT_t goeC [NFREQUES], goeCW[NFREQUES], goeSW [NFREQUES]; // Goertzel constants
-static FLOAT_t goeZ1 [NFREQUES], goeZ2 [NFREQUES]; // Goertzel status registers
+
+// Goertzel constants
+typedef struct goeCOEF_tag
+{
+	FLOAT_t goeC, goeCW, goeSW;
+} goeCOEF_t;
+
+// Goertzel status registers
+typedef struct goeSTATE_tag
+{
+	FLOAT_t goeZ1, goeZ2;
+} goeSTATE_t;
+
+static goeCOEF_t goeCOEFs [NFREQUES];
+static goeSTATE_t goeSTATEs [NFREQUES];
 
 void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
@@ -5914,16 +5927,20 @@ void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	{
 		for (i = 0; i < NFREQUES; i++)
 		{
-			goeZ1 [i] = 0;
-			goeZ2 [i] = 0;
+			goeSTATE_t * const goes = & goeSTATEs [i];
+			goes->goeZ1 = 0;
+			goes->goeZ2 = 0;
 		} // Goertzel reset
 	}
 	// **** GOERTZEL ITERATION ****
 	for (i = 0; i < NFREQUES; i++)
 	{
-		const float z0 = x + (goeC[i] * goeZ1[i]) - goeZ2[i];       // Goertzel iteration
-		goeZ2 [i] = goeZ1 [i];
-		goeZ1 [i] = z0;
+		const goeCOEF_t * const goe = & goeCOEFs [i];
+		goeSTATE_t * const goes = & goeSTATEs [i];
+		//
+		const float z0 = x + goe->goeC * goes->goeZ1 - goes->goeZ2;       // Goertzel iteration
+		goes->goeZ2 = goes->goeZ1;
+		goes->goeZ1 = z0;
 	} 	// Goertzel status update
 
 	// **** GOERTZEL ITERATION ****
@@ -5935,13 +5952,15 @@ void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 		static FLOAT_t goeM2 [NFREQUES]; // Goertzel output: real, imag, squared magnitude
 
 		const FLOAT_t goeTH = 800; // threshold
-		int i1, i2;
-		i1 = i2 = -1;
+//		int i1, i2;
+//		i1 = i2 = -1;
 		for (i = 0; i < NFREQUES; i++)
 		{
+			const goeCOEF_t * const goe = & goeCOEFs [i];
+			const goeSTATE_t * const goes = & goeSTATEs [i];
 			// CORDIC may be used here to compute atan2() and sqrt()
-			const FLOAT_t goeI = goeCW [i] * goeZ1 [i] - goeZ2 [i];      // Goertzel final goeI
-			const FLOAT_t goeQ = goeSW [i] * goeZ1 [i];              // Goertzel final goeQ
+			const FLOAT_t goeI = goe->goeCW * goes->goeZ1 - goes->goeZ2;      // Goertzel final goeI
+			const FLOAT_t goeQ = goe->goeSW * goes->goeZ1;              // Goertzel final goeQ
 			goeM2 [i] = goeI * goeI + goeQ * goeQ;         // magnitude squared
 
 #if 0
@@ -6027,20 +6046,22 @@ static void goertzel_initialize(void)
 	{
 		// init Goertzel constants
 		// CORDIC may be used here to compute sin() and cos()
-		const FLOAT_t w = 2 * M_PI * (float) goeN * (float) frow[i] / (float) goeFs / (float) goeN;
-		goeCW [i] = cosf(w);
-		goeC [i] = goeCW[i] * 2;// 2 * cosf(w)
-		goeSW [i] = sinf(w);
+		goeCOEF_t * const goe = & goeCOEFs [i];
+		const FLOAT_t w = M_TWOPI * (float) goeN * (float) frow [i] / (float) goeFs / (float) goeN;
+		goe->goeCW = cosf(w);
+		goe->goeC = goe->goeCW * 2;// 2 * cosf(w)
+		goe->goeSW = sinf(w);
 	}
 
 	for (i = 0; i < 4; i++)
 	{
 		// init Goertzel constants
 
-		const FLOAT_t w = 2 * M_PI * (float) goeN * (float) fcol[i] / (float) goeFs / (float) goeN;
-		goeCW [i + 4] = cosf(w);
-		goeC [i + 4] = goeCW[i + 4] * 2;	// 2 * cosf(w)
-		goeSW [i + 4] = sinf(w);
+		goeCOEF_t * const goe = & goeCOEFs [i + 4];
+		const FLOAT_t w = M_TWOPI * (float) goeN * (float) fcol [i] / (float) goeFs / (float) goeN;
+		goe->goeCW = cosf(w);
+		goe->goeC = goe->goeCW * 2;// 2 * cosf(w)
+		goe->goeSW = sinf(w);
 	}
 
 	static subscribefloat_t goertzelregister;
