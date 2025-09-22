@@ -2794,6 +2794,530 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>CSIC_PARSER0</name>
+  <description></description>
+  <baseAddress>0x06601000</baseAddress>
+  <registers>
+   <register>
+    <name>PRS_EN_REG</name>
+    <displayName>PRS_EN_REG</displayName>
+    <description>Parser Enable Register </description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_NCSIC_IF_CFG_REG</name>
+    <displayName>PRS_NCSIC_IF_CFG_REG</displayName>
+    <description>Parser NCSIC Interface Configuration Register </description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_MCSIC_IF_CFG_REG</name>
+    <displayName>PRS_MCSIC_IF_CFG_REG</displayName>
+    <description>Parser MCSIC Interface Configuration Register </description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_CAP_REG</name>
+    <displayName>PRS_CAP_REG</displayName>
+    <description>Parser Capture Register </description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_SIGNAL_STA_REG</name>
+    <displayName>PRS_SIGNAL_STA_REG</displayName>
+    <description>Parser Signal Status Register </description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_NCSIC_BT656_HEAD_CFG_REG</name>
+    <displayName>PRS_NCSIC_BT656_HEAD_CFG_REG</displayName>
+    <description>Parser NCSIC BT656 Header Configuration Register </description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C0_INFMT_REG</name>
+    <displayName>PRS_C0_INFMT_REG</displayName>
+    <description>Parser Channel_0 Input Format Register </description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C0_OUTPUT_HSIZE_REG</name>
+    <displayName>PRS_C0_OUTPUT_HSIZE_REG</displayName>
+    <description>Parser Channel_0 Output Horizontal Size Register </description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C0_OUTPUT_VSIZE_REG</name>
+    <displayName>PRS_C0_OUTPUT_VSIZE_REG</displayName>
+    <description>Parser Channel_0 Output Vertical Size Register </description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C0_INPUT_PARA0_REG</name>
+    <displayName>PRS_C0_INPUT_PARA0_REG</displayName>
+    <description>Parser Channel_0 Input Parameter0 Register </description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C0_INPUT_PARA1_REG</name>
+    <displayName>PRS_C0_INPUT_PARA1_REG</displayName>
+    <description>Parser Channel_0 Input Parameter1 Register </description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C0_INPUT_PARA2_REG</name>
+    <displayName>PRS_C0_INPUT_PARA2_REG</displayName>
+    <description>Parser Channel_0 Input Parameter2 Register </description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C0_INPUT_PARA3_REG</name>
+    <displayName>PRS_C0_INPUT_PARA3_REG</displayName>
+    <description>Parser Channel_0 Input Parameter3 Register </description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C0_INT_EN_REG</name>
+    <displayName>PRS_C0_INT_EN_REG</displayName>
+    <description>Parser Channel_0 Interrupt Enable Register </description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C0_INT_STA_REG</name>
+    <displayName>PRS_C0_INT_STA_REG</displayName>
+    <description>Parser Channel_0 Interrupt Status Register </description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_CH0_LINE_TIME_REG</name>
+    <displayName>PRS_CH0_LINE_TIME_REG</displayName>
+    <description>Parser Channel_0 Line Time Register </description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C1_INFMT_REG</name>
+    <displayName>PRS_C1_INFMT_REG</displayName>
+    <description>Parser Channel_1 Input Format Register </description>
+    <addressOffset>0x124</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C1_OUTPUT_HSIZE_REG</name>
+    <displayName>PRS_C1_OUTPUT_HSIZE_REG</displayName>
+    <description>Parser Channel_1 Output Horizontal Size Register </description>
+    <addressOffset>0x128</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C1_OUTPUT_VSIZE_REG</name>
+    <displayName>PRS_C1_OUTPUT_VSIZE_REG</displayName>
+    <description>Parser Channel_1 Output Vertical Size Register </description>
+    <addressOffset>0x12C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C1_INPUT_PARA0_REG</name>
+    <displayName>PRS_C1_INPUT_PARA0_REG</displayName>
+    <description>Parser Channel_1 Input Parameter0 Register </description>
+    <addressOffset>0x130</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C1_INPUT_PARA1_REG</name>
+    <displayName>PRS_C1_INPUT_PARA1_REG</displayName>
+    <description>Parser Channel_1 Input Parameter1 Register </description>
+    <addressOffset>0x134</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C1_INPUT_PARA2_REG</name>
+    <displayName>PRS_C1_INPUT_PARA2_REG</displayName>
+    <description>Parser Channel_1 Input Parameter2 Register </description>
+    <addressOffset>0x138</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C1_INPUT_PARA3_REG</name>
+    <displayName>PRS_C1_INPUT_PARA3_REG</displayName>
+    <description>Parser Channel_1 Input Parameter3 Register </description>
+    <addressOffset>0x13C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C1_INT_EN_REG</name>
+    <displayName>PRS_C1_INT_EN_REG</displayName>
+    <description>Parser Channel_1 Interrupt Enable Register </description>
+    <addressOffset>0x140</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C1_INT_STA_REG</name>
+    <displayName>PRS_C1_INT_STA_REG</displayName>
+    <description>Parser Channel_1 Interrupt Status Register </description>
+    <addressOffset>0x144</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_CH1_LINE_TIME_REG</name>
+    <displayName>PRS_CH1_LINE_TIME_REG</displayName>
+    <description>Parser Channel_1 Line Time Register </description>
+    <addressOffset>0x148</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C2_INFMT_REG</name>
+    <displayName>PRS_C2_INFMT_REG</displayName>
+    <description>Parser Channel_2 Input Format Register </description>
+    <addressOffset>0x224</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C2_OUTPUT_HSIZE_REG</name>
+    <displayName>PRS_C2_OUTPUT_HSIZE_REG</displayName>
+    <description>Parser Channel_2 Output Horizontal Size Register </description>
+    <addressOffset>0x228</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C2_OUTPUT_VSIZE_REG</name>
+    <displayName>PRS_C2_OUTPUT_VSIZE_REG</displayName>
+    <description>Parser Channel_2 Output Vertical Size Register </description>
+    <addressOffset>0x22C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C2_INPUT_PARA0_REG</name>
+    <displayName>PRS_C2_INPUT_PARA0_REG</displayName>
+    <description>Parser Channel_2 Input Parameter0 Register </description>
+    <addressOffset>0x230</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C2_INPUT_PARA1_REG</name>
+    <displayName>PRS_C2_INPUT_PARA1_REG</displayName>
+    <description>Parser Channel_2 Input Parameter1 Register </description>
+    <addressOffset>0x234</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C2_INPUT_PARA2_REG</name>
+    <displayName>PRS_C2_INPUT_PARA2_REG</displayName>
+    <description>Parser Channel_2 Input Parameter2 Register </description>
+    <addressOffset>0x238</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C2_INPUT_PARA3_REG</name>
+    <displayName>PRS_C2_INPUT_PARA3_REG</displayName>
+    <description>Parser Channel_2 Input Parameter3 Register </description>
+    <addressOffset>0x23C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C2_INT_EN_REG</name>
+    <displayName>PRS_C2_INT_EN_REG</displayName>
+    <description>Parser Channel_2 Interrupt Enable Register </description>
+    <addressOffset>0x240</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C2_INT_STA_REG</name>
+    <displayName>PRS_C2_INT_STA_REG</displayName>
+    <description>Parser Channel_2 Interrupt Status Register </description>
+    <addressOffset>0x244</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_CH2_LINE_TIME_REG</name>
+    <displayName>PRS_CH2_LINE_TIME_REG</displayName>
+    <description>Parser Channel_2 Line Time Register </description>
+    <addressOffset>0x248</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C3_INFMT_REG</name>
+    <displayName>PRS_C3_INFMT_REG</displayName>
+    <description>Parser Channel_3 Input Format Register </description>
+    <addressOffset>0x324</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C3_OUTPUT_HSIZE_REG</name>
+    <displayName>PRS_C3_OUTPUT_HSIZE_REG</displayName>
+    <description>Parser Channel_3 Output Horizontal Size Register </description>
+    <addressOffset>0x328</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C3_OUTPUT_VSIZE_REG</name>
+    <displayName>PRS_C3_OUTPUT_VSIZE_REG</displayName>
+    <description>Parser Channel_3 Output Vertical Size Register </description>
+    <addressOffset>0x32C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C3_INPUT_PARA0_REG</name>
+    <displayName>PRS_C3_INPUT_PARA0_REG</displayName>
+    <description>Parser Channel_3 Input Parameter0 Register </description>
+    <addressOffset>0x330</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C3_INPUT_PARA1_REG</name>
+    <displayName>PRS_C3_INPUT_PARA1_REG</displayName>
+    <description>Parser Channel_3 Input Parameter1 Register </description>
+    <addressOffset>0x334</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C3_INPUT_PARA2_REG</name>
+    <displayName>PRS_C3_INPUT_PARA2_REG</displayName>
+    <description>Parser Channel_3 Input Parameter2 Register </description>
+    <addressOffset>0x338</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C3_INPUT_PARA3_REG</name>
+    <displayName>PRS_C3_INPUT_PARA3_REG</displayName>
+    <description>Parser Channel_3 Input Parameter3 Register </description>
+    <addressOffset>0x33C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C3_INT_EN_REG</name>
+    <displayName>PRS_C3_INT_EN_REG</displayName>
+    <description>Parser Channel_3 Interrupt Enable Register </description>
+    <addressOffset>0x340</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_C3_INT_STA_REG</name>
+    <displayName>PRS_C3_INT_STA_REG</displayName>
+    <description>Parser Channel_3 Interrupt Status Register </description>
+    <addressOffset>0x344</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_CH3_LINE_TIME_REG</name>
+    <displayName>PRS_CH3_LINE_TIME_REG</displayName>
+    <description>Parser Channel_3 Line Time Register </description>
+    <addressOffset>0x348</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_NCSIC_RX_SIGNAL0_DLY_ADJ_REG</name>
+    <displayName>PRS_NCSIC_RX_SIGNAL0_DLY_ADJ_REG</displayName>
+    <description>Parser NCSIC RX Signal0 Delay Adjust Register </description>
+    <addressOffset>0x500</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_NCSIC_RX_SIGNAL1_DLY_ADJ_REG</name>
+    <displayName>PRS_NCSIC_RX_SIGNAL1_DLY_ADJ_REG</displayName>
+    <description>Parser NCSIC RX Signal1 Delay Adjust Register </description>
+    <addressOffset>0x504</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_NCSIC_RX_SIGNAL2_DLY_ADJ_REG</name>
+    <displayName>PRS_NCSIC_RX_SIGNAL2_DLY_ADJ_REG</displayName>
+    <description>Parser NCSIC RX Signal2 Delay Adjust Register </description>
+    <addressOffset>0x508</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_NCSIC_RX_SIGNAL3_DLY_ADJ_REG</name>
+    <displayName>PRS_NCSIC_RX_SIGNAL3_DLY_ADJ_REG</displayName>
+    <description>Parser NCSIC RX Signal3 Delay Adjust Register </description>
+    <addressOffset>0x50C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_NCSIC_RX_SIGNAL4_DLY_ADJ_REG</name>
+    <displayName>PRS_NCSIC_RX_SIGNAL4_DLY_ADJ_REG</displayName>
+    <description>Parser NCSIC RX Signal4 Delay Adjust Register </description>
+    <addressOffset>0x510</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_NCSIC_RX_SIGNAL5_DLY_ADJ_REG</name>
+    <displayName>PRS_NCSIC_RX_SIGNAL5_DLY_ADJ_REG</displayName>
+    <description>Parser NCSIC RX Signal5 Delay Adjust Register </description>
+    <addressOffset>0x514</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_NCSIC_RX_SIGNAL6_DLY_ADJ_REG</name>
+    <displayName>PRS_NCSIC_RX_SIGNAL6_DLY_ADJ_REG</displayName>
+    <description>Parser NCSIC RX Signal6 Delay Adjust Register </description>
+    <addressOffset>0x518</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_NCSIC_SYNC_EN_REG</name>
+    <displayName>PRS_NCSIC_SYNC_EN_REG</displayName>
+    <description>Parser NCSIC SYNC Enable Register </description>
+    <addressOffset>0x520</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_NCSIC_SYNC_CFG_REG</name>
+    <displayName>PRS_NCSIC_SYNC_CFG_REG</displayName>
+    <description>Parser NCSIC SYNC CFG Register </description>
+    <addressOffset>0x524</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_NCSIC_SYNC_WAIT_N_REG</name>
+    <displayName>PRS_NCSIC_SYNC_WAIT_N_REG</displayName>
+    <description>Parser NCSIC SYNC WAIT N Register </description>
+    <addressOffset>0x528</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRS_NCSIC_SYNC_WAIT_M_REG</name>
+    <displayName>PRS_NCSIC_SYNC_WAIT_M_REG</displayName>
+    <description>Parser NCSIC SYNC WAIT M Register </description>
+    <addressOffset>0x52C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="CSIC_PARSER0">
+  <name>CSIC_PARSER1</name>
+  <baseAddress>0x06602000</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>CSIC_TOP</name>
   <description></description>
   <baseAddress>0x06600800</baseAddress>
@@ -2898,6 +3422,614 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
+  </peripheral>
+  <peripheral>
+  <name>CSIC_CCI0</name>
+  <description></description>
+  <baseAddress>0x06614000</baseAddress>
+  <interrupt>
+   <name>CSI_CCI0</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_CCI1</name>
+   <value>108</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>CCI_CTRL</name>
+    <displayName>CCI_CTRL</displayName>
+    <description>CCI Control Register </description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCI_CFG</name>
+    <displayName>CCI_CFG</displayName>
+    <description>CCI Transmission Configuration Register </description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCI_FMT</name>
+    <displayName>CCI_FMT</displayName>
+    <description>CCI Packet Format Register </description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCI_BUS_CTRL</name>
+    <displayName>CCI_BUS_CTRL</displayName>
+    <description>CCI Bus Control Register </description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCI_INT_CTRL</name>
+    <displayName>CCI_INT_CTRL</displayName>
+    <description>CCI Interrupt Control Register </description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCI_LC_TRIG</name>
+    <displayName>CCI_LC_TRIG</displayName>
+    <description>CCI Line Counter Trigger Register </description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>16</dim>
+    <addressOffset>0x00000100</addressOffset>
+    <register>
+     <name>CCI_FIFO_ACC</name>
+     <displayName>CCI_FIFO_ACC</displayName>
+     <description>CCI FIFO Access Register </description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x040</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>9</dim>
+    <addressOffset>0x00000200</addressOffset>
+    <register>
+     <name>CCI_RSV_REG</name>
+     <displayName>CCI_RSV_REG</displayName>
+     <description>CCI Reserved Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x024</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="CSIC_CCI0">
+  <name>CSIC_CCI1</name>
+  <baseAddress>0x06614400</baseAddress>
+  <interrupt>
+   <name>CSI_CCI0</name>
+   <value>107</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_CCI1</name>
+   <value>108</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral>
+  <name>CSIC_DMA0</name>
+  <description></description>
+  <baseAddress>0x06609000</baseAddress>
+  <interrupt>
+   <name>CSI_DMA0</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA1</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA2</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA3</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA4</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA5</name>
+   <value>112</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>CSIC_DMA_EN_REG</name>
+    <displayName>CSIC_DMA_EN_REG</displayName>
+    <description>CSIC DMA Enable Register </description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_CFG_REG</name>
+    <displayName>CSIC_DMA_CFG_REG</displayName>
+    <description>CSIC DMA Configuration Register </description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_HSIZE_REG</name>
+    <displayName>CSIC_DMA_HSIZE_REG</displayName>
+    <description>CSIC DMA Horizontal Size Register </description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_VSIZE_REG</name>
+    <displayName>CSIC_DMA_VSIZE_REG</displayName>
+    <description>CSIC DMA Vertical Size Register </description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_F0_BUFA_REG</name>
+    <displayName>CSIC_DMA_F0_BUFA_REG</displayName>
+    <description>CSIC DMA FIFO 0 Output Buffer-A Address Register </description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_F0_BUFA_RESULT_REG</name>
+    <displayName>CSIC_DMA_F0_BUFA_RESULT_REG</displayName>
+    <description>CSIC DMA FIFO 0 Output Buffer-A Address Result Register </description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_F1_BUFA_REG</name>
+    <displayName>CSIC_DMA_F1_BUFA_REG</displayName>
+    <description>CSIC DMA FIFO 1 Output Buffer-A Address Register </description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_F1_BUFA_RESULT_REG</name>
+    <displayName>CSIC_DMA_F1_BUFA_RESULT_REG</displayName>
+    <description>CSIC DMA FIFO 1 Output Buffer-A Address Result Register </description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_F2_BUFA_REG</name>
+    <displayName>CSIC_DMA_F2_BUFA_REG</displayName>
+    <description>CSIC DMA FIFO 2 Output Buffer-A Address Register </description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_F2_BUFA_RESULT_REG</name>
+    <displayName>CSIC_DMA_F2_BUFA_RESULT_REG</displayName>
+    <description>CSIC DMA FIFO 2 Output Buffer-A Address Result Register </description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_BUF_LEN_REG</name>
+    <displayName>CSIC_DMA_BUF_LEN_REG</displayName>
+    <description>CSIC DMA Buffer Length Register </description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_FLIP_SIZE_REG</name>
+    <displayName>CSIC_DMA_FLIP_SIZE_REG</displayName>
+    <description>CSIC DMA Flip Size Register </description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_VI_TO_TH0_REG</name>
+    <displayName>CSIC_DMA_VI_TO_TH0_REG</displayName>
+    <description>CSIC DMA Video Input Timeout Threshold0 Register </description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_VI_TO_TH1_REG</name>
+    <displayName>CSIC_DMA_VI_TO_TH1_REG</displayName>
+    <description>CSIC DMA Video Input Timeout Threshold1 Register </description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_VI_TO_CNT_VAL_REG</name>
+    <displayName>CSIC_DMA_VI_TO_CNT_VAL_REG</displayName>
+    <description>CSIC DMA Video Input Timeout Counter Value Register </description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_CAP_STA_REG</name>
+    <displayName>CSIC_DMA_CAP_STA_REG</displayName>
+    <description>CSIC DMA Capture Status Register </description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_INT_EN_REG</name>
+    <displayName>CSIC_DMA_INT_EN_REG</displayName>
+    <description>CSIC DMA Interrupt Enable Register </description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_INT_STA_REG</name>
+    <displayName>CSIC_DMA_INT_STA_REG</displayName>
+    <description>CSIC DMA Interrupt Status Register </description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_LINE_CNT_REG</name>
+    <displayName>CSIC_DMA_LINE_CNT_REG</displayName>
+    <description>CSIC DMA LINE COUNTER Register </description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_FRM_CNT_REG</name>
+    <displayName>CSIC_DMA_FRM_CNT_REG</displayName>
+    <description>CSIC DMA Frame Counter Register </description>
+    <addressOffset>0x05C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_FRM_CLK_CNT_REG</name>
+    <displayName>CSIC_DMA_FRM_CLK_CNT_REG</displayName>
+    <description>CSIC DMA Frame Clock Counter Register </description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_ACC_ITNL_CLK_CNT_REG</name>
+    <displayName>CSIC_DMA_ACC_ITNL_CLK_CNT_REG</displayName>
+    <description>CSIC DMA Accumulated And Internal Clock Counter Register </description>
+    <addressOffset>0x064</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_FIFO_STAT_REG</name>
+    <displayName>CSIC_DMA_FIFO_STAT_REG</displayName>
+    <description>CSIC DMA FIFO Statistic Register </description>
+    <addressOffset>0x068</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_FIFO_THRS_REG</name>
+    <displayName>CSIC_DMA_FIFO_THRS_REG</displayName>
+    <description>CSIC DMA FIFO Threshold Register </description>
+    <addressOffset>0x06C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_PCLK_STAT_REG</name>
+    <displayName>CSIC_DMA_PCLK_STAT_REG</displayName>
+    <description>CSIC DMA PCLK Statistic Register </description>
+    <addressOffset>0x070</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_BUF_ADDR_FIFO0_ENTRY_REG</name>
+    <displayName>CSIC_DMA_BUF_ADDR_FIFO0_ENTRY_REG</displayName>
+    <description>CSIC DMA BUF Address FIFO0 Entry Register </description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_BUF_ADDR_FIFO1_ENTRY_REG</name>
+    <displayName>CSIC_DMA_BUF_ADDR_FIFO1_ENTRY_REG</displayName>
+    <description>CSIC DMA BUF Address FIFO1 Entry Register </description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_BUF_ADDR_FIFO2_ENTRY_REG</name>
+    <displayName>CSIC_DMA_BUF_ADDR_FIFO2_ENTRY_REG</displayName>
+    <description>CSIC DMA BUF Address FIFO2 Entry Register </description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_BUF_TH_REG</name>
+    <displayName>CSIC_DMA_BUF_TH_REG</displayName>
+    <description>CSIC DMA BUF Threshold Register </description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_BUF_ADDR_FIFO_CON_REG</name>
+    <displayName>CSIC_DMA_BUF_ADDR_FIFO_CON_REG</displayName>
+    <description>CSIC DMA BUF Address FIFO Content Register </description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_DMA_STORED_FRM_CNT_REG</name>
+    <displayName>CSIC_DMA_STORED_FRM_CNT_REG</displayName>
+    <description>CSIC DMA Stored Frame Counter Register </description>
+    <addressOffset>0x094</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CSIC_FEATURE_REG</name>
+    <displayName>CSIC_FEATURE_REG</displayName>
+    <description>CSIC DMA Feature List Register </description>
+    <addressOffset>0x1F4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="CSIC_DMA0">
+  <name>CSIC_DMA1</name>
+  <baseAddress>0x06609200</baseAddress>
+  <interrupt>
+   <name>CSI_DMA0</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA1</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA2</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA3</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA4</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA5</name>
+   <value>112</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="CSIC_DMA0">
+  <name>CSIC_DMA2</name>
+  <baseAddress>0x06609400</baseAddress>
+  <interrupt>
+   <name>CSI_DMA0</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA1</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA2</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA3</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA4</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA5</name>
+   <value>112</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="CSIC_DMA0">
+  <name>CSIC_DMA3</name>
+  <baseAddress>0x06609600</baseAddress>
+  <interrupt>
+   <name>CSI_DMA0</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA1</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA2</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA3</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA4</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA5</name>
+   <value>112</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="CSIC_DMA0">
+  <name>CSIC_DMA4</name>
+  <baseAddress>0x06609800</baseAddress>
+  <interrupt>
+   <name>CSI_DMA0</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA1</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA2</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA3</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA4</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA5</name>
+   <value>112</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="CSIC_DMA0">
+  <name>CSIC_DMA5</name>
+  <baseAddress>0x06609A00</baseAddress>
+  <interrupt>
+   <name>CSI_DMA0</name>
+   <value>101</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA1</name>
+   <value>102</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA2</name>
+   <value>103</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA3</name>
+   <value>104</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA4</name>
+   <value>111</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>CSI_DMA5</name>
+   <value>112</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>DE_MIXER0_BLD</name>
