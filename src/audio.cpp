@@ -5877,7 +5877,10 @@ static const uint_least16_t gsubtones [] =
 static FLOAT_t subtonesbuf [NSUBTONES] [1024];
 
 
-#define MAXNBURST 1000
+#define MAXNBURST 8192
+#define goeN  	1024 // points for Goertzel
+
+#define NFREQUES 8
 
 // DTMF frequencies
 static const int frow[4] = { 697, 770, 852, 941 }; // 1st tone
@@ -5889,8 +5892,6 @@ static const char sym[16] =
 	'1', '4', '7', '*', '2', '5', '8', '0', '3', '6', '9', '#', 'A', 'B',
 	'C', 'D'
 };
-
-#define NFREQUES 8
 
 // DTMF decoding matrix
 static const int symmtx[4][4] =
@@ -5906,11 +5907,9 @@ static FLOAT_t goertz_win [MAXNBURST]; // Window
 // Goertzel
 static FLOAT_t goeC [NFREQUES], goeCW[NFREQUES], goeSW [NFREQUES]; // Goertzel constants
 static FLOAT_t goeZ1 [NFREQUES], goeZ2 [NFREQUES]; // Goertzel status registers
-static const int goeN = 1000; // points for Goertzel
 
 void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
-	const FLOAT_t goeTH = 0.1; // threshold
 	static int nseq;
 	int i;
 
@@ -5926,9 +5925,9 @@ void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	// **** GOERTZEL ITERATION ****
 	for (i = 0; i < NFREQUES; i++)
 	{
-		const float z0 = x + ((goeC[i] * goeZ1[i])) - goeZ2[i];       // Goertzel iteration
-		goeZ2[i] = goeZ1[i];
-		goeZ1[i] = z0;
+		const float z0 = x + (goeC[i] * goeZ1[i]) - goeZ2[i];       // Goertzel iteration
+		goeZ2 [i] = goeZ1 [i];
+		goeZ1 [i] = z0;
 	} 	// Goertzel status update
 
 	// **** GOERTZEL ITERATION ****
@@ -5937,18 +5936,19 @@ void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	{
 		nseq = 0; // finalize and decode
 
-		static FLOAT_t goeI [NFREQUES], goeQ [NFREQUES], goeM2 [NFREQUES]; // Goertzel output: real, imag, squared magnitude
+		static FLOAT_t goeM2 [NFREQUES]; // Goertzel output: real, imag, squared magnitude
 
 		int i1, i2;
 		i1 = i2 = -1;
 		for (i = 0; i < NFREQUES; i++)
 		{
 			// CORDIC may be used here to compute atan2() and sqrt()
-			goeI [i] = goeCW [i] * goeZ1 [i] - goeZ2 [i];      // Goertzel final goeI
-			goeQ [i] = goeSW [i] * goeZ1 [i];              // Goertzel final goeQ
-			goeM2 [i] = goeI [i] * goeI [i] + goeQ [i] * goeQ [i];         // magnitude squared
+			const FLOAT_t goeI = goeCW [i] * goeZ1 [i] - goeZ2 [i];      // Goertzel final goeI
+			const FLOAT_t goeQ = goeSW [i] * goeZ1 [i];              // Goertzel final goeQ
+			goeM2 [i] = goeI * goeI + goeQ * goeQ;         // magnitude squared
 
-			if (goeM2[i] > goeTH)
+			const FLOAT_t goeTH = 200; // threshold
+			if (goeM2 [i] > goeTH)
 			{                                  // DTMF decoding
 				if (i < 4)
 				{
@@ -5966,7 +5966,14 @@ void goertzel_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 				}     // find 2nd tone, one peak allowed
 			}
 		}
-
+#if 0
+		PRINTF("rep: ");
+		for (i = 0; i < NFREQUES; i++)
+		{
+			PRINTF("%d ", (int) (goeM2 [i] * 100));
+		}
+		PRINTF("\n");
+#endif
 		if ((i1 > -1) && (i1 < 4) && (i2 > -1) && (i2 < 4))
 			PRINTF("%c", sym[symmtx[i1][i2]]);
 	}
