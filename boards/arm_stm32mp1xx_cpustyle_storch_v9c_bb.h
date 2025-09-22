@@ -531,7 +531,7 @@ void user_uart4_onrxchar(uint_fast8_t c);
 	#define PTT3_BIT_PTT				(UINT32_C(1) << 15)		// PF15 - PTT3
 
 	#define PTT4_TARGET_PIN				(gpioX_getinputs(GPIOH))
-	#define PTT4_BIT_PTT				HOSTBB_PTTFROMMODEM_BIT	// PH9 - PTT_IN
+	#define PTT4_BIT_PTT				HOSTBB_PTTFROMMODEM_BIT	// PH10 - PTT_IN
 	// получить бит запроса оператором перехода на пердачу
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0 || (PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0 || (PTT4_TARGET_PIN & PTT4_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
