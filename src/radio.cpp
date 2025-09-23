@@ -1907,7 +1907,7 @@ static const bwsetsc_t bwsetsc [BWSETI_count] =
 	{ 0, { & bwprop_ssbtx, }, { strFlashNormal, }, },	// BWSETI_SSBTX
 	{ 0, { & bwprop_digiwide, }, { strFlashNormal, }, },	// BWSETI_DIGI
 	{ 1, { & bwprop_amwide, & bwprop_amnarrow, }, { strFlashWide, strFlashNarrow, }, },	// BWSETI_AM
-	{ 1, { & bwprop_nfmwide, & bwprop_nfmnarrow, }, { strFlashWide, strFlashNarrow, }, },	// BWSETI_NFM
+	{ 1, { & bwprop_nfmnarrow, & bwprop_nfmwide, }, { strFlashWide, strFlashNarrow, }, },	// BWSETI_NFM
 	{ 0, { & bwprop_amwide, }, { strFlashNormal, }, },	// BWSETI_DRM
 	{ 0, { & bwprop_wfm, }, { strFlashWFM, }, },	// BWSETI_WFM
 };
