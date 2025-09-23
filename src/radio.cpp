@@ -1835,10 +1835,6 @@ typedef struct
 	const char * labels [BWSET_WIDTHS];	// названия фильтров
 } bwsetsc_t;
 
-// полосы пропускания радиотракта для NFN
-#define NBFMWIDTH 12500
-#define WBFMWIDTH 25000
-
 // Пределы изменения полосы пропускания для меню
 
 #define BWGRANLOW	10		// низкочастотный скат фильтров подстраивается и меню с шагом 10 герц
@@ -1853,7 +1849,11 @@ typedef struct
 #define BWRIGHTMIN (800 / BWGRANHIGH)	// 0.8 kHz-18 kHz
 #define BWRIGHTMAX (18000 / BWGRANHIGH)
 
-// bwlimits_nfm - left10_width10_low оставлено 300 герц для работы CTCSS
+// полосы пропускания радиотракта для NFN
+#define NBFMWIDTH 12500	// полоса тракта для bwprop_nfmnarrow
+#define WBFMWIDTH 25000	// полоса тракта для bwprop_nfmwide
+
+// bwlimits_nfm - left10_width10_low фиксированно 300 герц для работы CTCSS
 static const bwlimits_t bwlimits_cw = { 100 / BWGRANLOW, 100 / BWGRANHIGH, BWCWLEFTMIN, BWCWLEFTMAX, 0, 0,  };
 static const bwlimits_t bwlimits_am = { 50 / BWGRANLOW, 100 / BWGRANHIGH, BWLEFTMIN, BWLEFTMAX, BWRIGHTMIN, BWRIGHTMAX,  };
 static const bwlimits_t bwlimits_ssb = { 50 / BWGRANLOW, 100 / BWGRANHIGH, BWLEFTMIN, BWLEFTMAX, BWRIGHTMIN, BWRIGHTMAX, };
