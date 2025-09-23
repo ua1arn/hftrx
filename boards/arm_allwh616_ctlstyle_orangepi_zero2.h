@@ -257,7 +257,7 @@
 	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 	//#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
 
-	//#define WITHDTMFPROCESSING 1
+	
 	//#define WITHBBOXMIKESRC BOARD_TXAUDIO_LINE
 
 	//#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */

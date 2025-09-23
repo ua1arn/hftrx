@@ -282,13 +282,8 @@ typedef int32_t hdmi48bufv_t;
 
 #define ARMSAIRATE		(ARMSAIMCLK / 256)	// SAI sample rate (FPGA/IF CODEC side)
 
-#if WITHDTMFPROCESSING
-	#define ARMI2SRATE			((int32_t) 8000)	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATEX(scale)	((int32_t) (ARMI2SRATE * (scale)))	// I2S sample rate audio codec (human side)
-#else /* WITHDTMFPROCESSING */
-	#define ARMI2SRATE			((int32_t) (ARMI2SMCLK / 256))	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATEX(scale)	((int32_t) (ARMI2SMCLKX(scale)))	// I2S sample rate audio codec (human side)
-#endif /* WITHDTMFPROCESSING */
+#define ARMI2SRATE			((int32_t) (ARMI2SMCLK / 256))	// I2S sample rate audio codec (human side)
+#define ARMI2SRATEX(scale)	((int32_t) (ARMI2SMCLKX(scale)))	// I2S sample rate audio codec (human side)
 
 #define ARMI2SRATE100		((int32_t) (ARMI2SRATEX(100)))
 

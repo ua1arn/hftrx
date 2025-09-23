@@ -5448,9 +5448,6 @@ void looptests(void)
 	(p)();
 
 #endif
-#if WITHDTMFPROCESSING
-	dtmftest();
-#endif
 #if 0 && WITHINTEGRATEDDSP && WITHDEBUG
 	{
 		dsp_speed_diagnostics();	// печать в последовательный порт результатов диагностики
