@@ -12795,6 +12795,7 @@ uif_key_spliton(uint_fast8_t holded)
 }
 
 /* копирование в VFO B состояния VFO A */
+// Performs the VFO copy (A=B) function.
 // for WITHSPLITEX
 static void
 uif_key_click_b_from_a(void)
@@ -15901,6 +15902,20 @@ processcatmsg(
 	}
 #endif /* WITHIF4DSP */
 #if WITHSPLITEX
+	else if (pcmd == packcmd2('V', 'V'))
+	{
+		if (cathasparam == 0)
+		{
+			// Performs the VFO copy (A=B) function.
+			uif_key_click_b_from_a();
+			rc = 1;
+		}
+		else
+		{
+			cat_answer_request(CAT_BADCOMMAND_INDEX);
+		}
+
+	}
 	else if (pcmd == packcmd2('S', 'P'))
 	{
 		if (cathasparam != 0)
