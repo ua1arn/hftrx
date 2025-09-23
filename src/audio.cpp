@@ -5735,12 +5735,6 @@ typedef struct goeSTATE_tag
 	FLOAT_t goeZ1, goeZ2;
 } goeSTATE_t;
 
-static goeCOEF_t goeCOEFs [NFREQUES];
-static goeSTATE_t goeSTATEs [NFREQUES];
-
-static goeCOEF_t ctcssCOEFs [CTCSSNFREQUES];
-static goeSTATE_t ctcssSTATEs [CTCSSNFREQUES];
-
 static void goe_initialize(goeCOEF_t * goe, FLOAT_t freq, int_fast32_t goeFs)
 {
 	const FLOAT_t w = M_TWOPI * (FLOAT_t) goeN * freq /(FLOAT_t) goeFs / (FLOAT_t) goeN;
@@ -5764,6 +5758,9 @@ static FLOAT_t goe_result(const goeCOEF_t * goe, const goeSTATE_t * const goes)
 	const FLOAT_t goeQ = goe->goeSW * goes->goeZ1;              // Goertzel final goeQ
 	return goeI * goeI + goeQ * goeQ;         // magnitude squared
 }
+
+static goeCOEF_t ctcssCOEFs [CTCSSNFREQUES];
+static goeSTATE_t ctcssSTATEs [CTCSSNFREQUES];
 
 void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
@@ -5831,9 +5828,12 @@ static void ctcss_initialize(void)
 	subscribefloat(& afdemodoutfloat, & ctcss_register, NULL, ctcss_processing);	// выход приёмника до фильтров
 }
 
+static goeCOEF_t goeCOEFs [NFREQUES];
+static goeSTATE_t goeSTATEs [NFREQUES];
+
 static void dtmf_out(void * ctx, char c)
 {
-	/PRINTF("%c", c);
+	//PRINTF("%c", c);
 }
 
 void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
