@@ -2811,56 +2811,6 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect -920 144 -776 224)
-	(text "lpm_counter_w32" (rect 23 0 142 16)(font "Arial" (font_size 10)))
-	(text "inst17" (rect 8 64 37 76)(font "Arial" ))
-	(port
-		(pt 0 32)
-		(input)
-		(text "clock" (rect 0 0 29 14)(font "Arial" (font_size 8)))
-		(text "clock" (rect 26 25 55 39)(font "Arial" (font_size 8)))
-		(line (pt 0 32)(pt 16 32))
-	)
-	(port
-		(pt 0 48)
-		(input)
-		(text "cin" (rect 0 0 16 14)(font "Arial" (font_size 8)))
-		(text "cin" (rect 20 41 36 55)(font "Arial" (font_size 8)))
-		(line (pt 0 48)(pt 16 48))
-	)
-	(port
-		(pt 144 56)
-		(output)
-		(text "cout" (rect 0 0 24 14)(font "Arial" (font_size 8)))
-		(text "cout" (rect 104 49 128 63)(font "Arial" (font_size 8)))
-		(line (pt 144 56)(pt 128 56))
-	)
-	(port
-		(pt 144 40)
-		(output)
-		(text "q[31..0]" (rect 0 0 42 14)(font "Arial" (font_size 8)))
-		(text "q[31..0]" (rect 89 33 131 47)(font "Arial" (font_size 8)))
-		(line (pt 144 40)(pt 128 40)(line_width 3))
-	)
-	(drawing
-		(text "up counter" (rect 84 22 135 34)(font "Arial" ))
-		(line (pt 16 16)(pt 16 64))
-		(line (pt 16 16)(pt 128 16))
-		(line (pt 16 64)(pt 128 64))
-		(line (pt 128 16)(pt 128 64))
-		(line (pt 0 0)(pt 146 0))
-		(line (pt 146 0)(pt 146 82))
-		(line (pt 0 82)(pt 146 82))
-		(line (pt 0 0)(pt 0 82))
-		(line (pt 16 26)(pt 22 32))
-		(line (pt 22 32)(pt 16 38))
-		(line (pt 0 0)(pt 0 0))
-		(line (pt 0 0)(pt 0 0))
-		(line (pt 0 0)(pt 0 0))
-		(line (pt 0 0)(pt 0 0))
-	)
-)
-(symbol
 	(rect -3696 840 -3648 872)
 	(text "WIRE" (rect 1 0 24 10)(font "Arial" (font_size 6)))
 	(text "inst35" (rect 3 21 32 33)(font "Arial" ))
@@ -6807,10 +6757,6 @@ applicable agreement for further details.
 	(pt -1264 -368)
 )
 (connector
-	(pt -1712 -1064)
-	(pt -1648 -1064)
-)
-(connector
 	(pt -1848 -1176)
 	(pt -1848 -1048)
 	(color 255 0 0)
@@ -8109,10 +8055,6 @@ applicable agreement for further details.
 (connector
 	(pt -1144 -1072)
 	(pt -1296 -1072)
-)
-(connector
-	(pt -1600 -1064)
-	(pt -1360 -1064)
 )
 (connector
 	(text "mode_tx" (rect -1438 -1096 -1396 -1084)(font "Arial" ))
@@ -9879,28 +9821,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(text "w32[31..0]" (rect -776 168 -726 180)(font "Arial" ))
-	(pt -776 184)
-	(pt -736 184)
-	(bus)
-)
-(connector
-	(pt -1024 192)
-	(pt -920 192)
-)
-(connector
-	(pt -1024 32)
-	(pt -1024 192)
-)
-(connector
-	(pt -1040 -200)
-	(pt -1040 176)
-)
-(connector
-	(pt -1040 176)
-	(pt -920 176)
-)
-(connector
 	(pt -936 -64)
 	(pt -936 -32)
 )
@@ -9939,21 +9859,8 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(text "main64_valid" (rect -1118 16 -1054 28)(font "Arial" ))
-	(pt -1112 32)
-	(pt -1024 32)
-)
-(connector
-	(pt -1024 32)
-	(pt -936 32)
-)
-(connector
 	(pt -936 32)
 	(pt -920 32)
-)
-(connector
-	(pt -1040 -200)
-	(pt -952 -200)
 )
 (connector
 	(pt -1744 -88)
@@ -10090,10 +9997,6 @@ applicable agreement for further details.
 	(pt -1480 -200)
 )
 (connector
-	(pt -1480 -200)
-	(pt -1040 -200)
-)
-(connector
 	(pt -1480 -152)
 	(pt -1344 -152)
 )
@@ -10178,6 +10081,23 @@ applicable agreement for further details.
 	(text "i2s3_sck" (rect -3270 800 -3227 812)(font "Arial" ))
 	(pt -3272 816)
 	(pt -3104 816)
+)
+(connector
+	(pt -1712 -1064)
+	(pt -1648 -1064)
+)
+(connector
+	(pt -1360 -1064)
+	(pt -1600 -1064)
+)
+(connector
+	(text "main64_valid" (rect -1118 16 -1054 28)(font "Arial" ))
+	(pt -1112 32)
+	(pt -936 32)
+)
+(connector
+	(pt -1480 -200)
+	(pt -952 -200)
 )
 (junction (pt -1592 -696))
 (junction (pt -4384 -696))
@@ -10272,8 +10192,6 @@ applicable agreement for further details.
 (junction (pt -952 -80))
 (junction (pt -952 -16))
 (junction (pt -936 32))
-(junction (pt -1024 32))
-(junction (pt -1040 -200))
 (junction (pt -712 -96))
 (junction (pt -1480 -200))
 (text "Previous" (rect -2280 1000 -2231 1014)(font "Arial" (font_size 8)))

@@ -4538,6 +4538,7 @@ static uint_fast8_t gforcexvrtr;	/* принудительно включить 
 	#define WITHTOPDBMIN 		(- 50 - DBVALOFFSET_BASE)
 	#define WITHTOPDBMAX 		(+ 20 - DBVALOFFSET_BASE)
 	#define WITHTOPDBDEFAULT 	(- 30 - DBVALOFFSET_BASE)
+	#define WITHTOPDBDEFAULTTX 	(0 - DBVALOFFSET_BASE)
 
 	/* Значения, хранимые в NVRAM */
 	#define WITHBOTTOMDBMIN 	(- 140 - DBVALOFFSET_BASE)
@@ -4550,7 +4551,7 @@ static uint_fast8_t gforcexvrtr;	/* принудительно включить 
 		return DBVALOFFSET_BASE;
 	}
 
-	static uint_fast8_t gtopdbspetx = WITHTOPDBDEFAULT;	/* верхний предел FFT для показа в режиме TX */
+	static uint_fast8_t gtopdbspetx = WITHTOPDBDEFAULTTX;	/* верхний предел FFT для показа в режиме TX */
 	static uint_fast8_t gbottomdbspetx = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT для показа в режиме TX */
 	static uint_fast8_t gtopdbspe = WITHTOPDBDEFAULT;	/* верхний предел FFT */
 	static uint_fast8_t gbottomdbspe = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT */
