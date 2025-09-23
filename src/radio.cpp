@@ -1823,6 +1823,8 @@ typedef struct
 	uint_fast8_t left10_width10, right100;	/* left выполняет роль width для телеграфных (BWSET_SINGLE) фильтров */
 	uint_fast8_t afresponce;	/* наклон АЧХ - на Samplerate/2 АЧХ становится на столько децибел  */
 	uint_fast8_t fltsofter;	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
+	uint8_t rxbw100;	/* полоса пропускания радиотракта (или 0 если вычисляется) в сотнях герц */
+	uint8_t txbw100;	/* полоса пропускания радиотракта (или 0 если вычисляется), девиация для NFM в сотнях герц*/
 } bwprop_t;
 
 // Частоты границ полосы пропускания
@@ -1832,6 +1834,10 @@ typedef struct
 	bwprop_t  * prop [BWSET_WIDTHS];				// частоты и другие свойства фильтров
 	const char * labels [BWSET_WIDTHS];	// названия фильтров
 } bwsetsc_t;
+
+// полосы пропускания радиотракта для NFN
+#define NBFMWIDTH 12500
+#define WBFMWIDTH 25000
 
 // Пределы изменения полосы пропускания для меню
 
@@ -1879,18 +1885,18 @@ enum
 
 // Частоты границ полосы пропускания
 // эти значения могут модифицироваться через меню
-static bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWPROPI_CWNARROW, BWSET_SINGLE, 200 / BWGRANLOW, 0, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, };
-static bwprop_t bwprop_cwwide = { & bwlimits_cw, BWPROPI_CWWIDE, BWSET_SINGLE, 500 / BWGRANLOW, 0, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, };
-static bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWPROPI_SSBWIDE, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, };
-static bwprop_t bwprop_ssbmedium = { & bwlimits_ssb, BWPROPI_SSBMEDIUM, BWSET_PAIR, 300 / BWGRANLOW, 2700 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, };
-static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWPROPI_SSBNARROW, BWSET_PAIR, 300 / BWGRANLOW, 2200 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, };
-static bwprop_t bwprop_ssbtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, };
-static bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_PAIR, 100 / BWGRANLOW, 9000 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, };
-static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_PAIR, 100 / BWGRANLOW, 4500 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, };
-static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_PAIR, 50 / BWGRANLOW, 5500 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, };
-static bwprop_t bwprop_nfmnarrow = { & bwlimits_nfm, BWPROPI_NFMNARROW, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT,	WITHFILTSOFTMIN, };
-static bwprop_t bwprop_nfmwide = { & bwlimits_nfm, BWPROPI_NFMWIDE, BWSET_PAIR, 300 / BWGRANLOW, 4000 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT,	WITHFILTSOFTMIN, };
-static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_PAIR, 100 / BWGRANLOW, 12000 / BWGRANHIGH, AFRESPONCEWFM + AFRESPONCESHIFT, WITHFILTSOFTMIN, };
+static bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWPROPI_CWNARROW, BWSET_SINGLE, 200 / BWGRANLOW, 0, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
+static bwprop_t bwprop_cwwide = { & bwlimits_cw, BWPROPI_CWWIDE, BWSET_SINGLE, 500 / BWGRANLOW, 0, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
+static bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWPROPI_SSBWIDE, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
+static bwprop_t bwprop_ssbmedium = { & bwlimits_ssb, BWPROPI_SSBMEDIUM, BWSET_PAIR, 300 / BWGRANLOW, 2700 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
+static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWPROPI_SSBNARROW, BWSET_PAIR, 300 / BWGRANLOW, 2200 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
+static bwprop_t bwprop_ssbtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
+static bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_PAIR, 100 / BWGRANLOW, 9000 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
+static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_PAIR, 100 / BWGRANLOW, 4500 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
+static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_PAIR, 50 / BWGRANLOW, 5500 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
+static bwprop_t bwprop_nfmnarrow = { & bwlimits_nfm, BWPROPI_NFMNARROW, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, NBFMWIDTH / BWGRANHIGH, NBFMWIDTH / BWGRANHIGH, };
+static bwprop_t bwprop_nfmwide = { & bwlimits_nfm, BWPROPI_NFMWIDE, BWSET_PAIR, 300 / BWGRANLOW, 4000 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, WBFMWIDTH / BWGRANHIGH, WBFMWIDTH / BWGRANHIGH, };
+static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_PAIR, 100 / BWGRANLOW, 12000 / BWGRANHIGH, AFRESPONCEWFM + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
 
 // Способ представления частот и количество профилей полосы пропускания,
 // а так же названия полос пропускания для отображения
@@ -1984,6 +1990,18 @@ bwseti_getwidth(
 	case BWSET_PAIR:
 		return p->right100 * BWGRANHIGH - p->left10_width10 * BWGRANLOW;
 	}
+}
+
+// получить полосу пропускания NFM редима
+static int_fast16_t
+bwseti_getnfmbw(
+	uint_fast8_t bwseti,
+	uint_fast8_t tx
+	)
+{
+	const uint_fast8_t pos = bwsetpos [bwseti];
+	const bwprop_t * const p = bwsetsc [bwseti].prop [pos];
+	return (tx ? p->txbw100 : p->rxbw100) * BWGRANHIGH;
 }
 
 // получить нижнюю частоту среза фильтра
@@ -2494,7 +2512,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_NFM, DSPCTL_MODE_TX_NFM, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
 		{ BWSETI_NFM, BWSETI_SSBTX, },				// индекс банка полос пропускания для данного режима
-		{ 9000, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
+		{ 0, 0, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_NFM,				// группа профилей обработки звука
 		AGCSETI_FLAT,
@@ -3713,7 +3731,6 @@ struct nvmap
 	uint8_t gagcoff;
 	uint8_t gamdepth;		/* Глубина модуляции в АМ - 0..100% */
 	uint8_t ggainnfmrx10;		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
-	uint8_t gnfmdeviation;	/* Девиация при передаче в NFM - в сотнях герц */
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	uint16_t ggaindigitx;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	uint16_t ggaincwtx;		/* Увеличение усиления при передаче в CW режимах 50..100% */
@@ -3731,7 +3748,6 @@ struct nvmap
 	uint8_t gdigigainmax;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 	uint8_t gsquelch;		/* уровень открытия шумоподавителя */
 	uint8_t gsquelchNFM;	/* sуровень открытия шумоподавителя для NFM */
-	uint8_t gvad605;		/* напряжение на AD605 (управление усилением тракта ПЧ */
 	uint16_t gfsadcpower10 [2];	/*	Мощность, соответствующая full scale от IF ADC (с тояностью 0.1 дБмВт */
 	#if ! WITHPOTAFGAIN
 		uint16_t afgain1;	// Параметр для регулировки уровня на выходе аудио-ЦАП
@@ -6232,7 +6248,6 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		static uint_fast16_t ggaindigitx = 150;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#endif /* WITHTXCWREDUCE */
 	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
-	static uint_fast8_t gnfmdeviation = 55;	/* Девиация при передаче в NFM - в сотнях герц */
 	/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 	static const struct paramdefdef xggaindigitx =
 	{
@@ -6259,19 +6274,19 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-	/* Девиация при передаче в NFM - в сотнях герц */
-	static const struct paramdefdef xgnfmdeviation =
-	{
-		QLABEL("NFM DEVI"), 7, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка девиации на передачу */
-		ITEM_VALUE,
-		0, 120,
-		OFFSETOF(struct nvmap, gnfmdeviation),	/* девиация в сотнях герц */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gnfmdeviation,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	};
+//	/* Девиация при передаче в NFM - в сотнях герц */
+//	static const struct paramdefdef xgnfmdeviation =
+//	{
+//		QLABEL("NFM DEVI"), 7, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка девиации на передачу */
+//		ITEM_VALUE,
+//		0, 120,
+//		OFFSETOF(struct nvmap, gnfmdeviation),	/* девиация в сотнях герц */
+//		getselector0, nvramoffs0, valueoffs0,
+//		NULL,
+//		& gnfmdeviation,
+//		getzerobase, /* складывается со смещением и отображается */
+//		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+//	};
 	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	static const struct paramdefdef xggaincwtx =
 	{
@@ -6337,7 +6352,6 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 #endif /*  */
 	static uint_fast8_t gmoniflag;		/* разрешение самопрослушивания */
 
-	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 		static uint_fast8_t gdither;		/* управление зашумлением в LTC2208 */
 		#if (ADC1_TYPE == ADC_TYPE_AD9246)
@@ -10066,6 +10080,9 @@ getif6bw(
 
 #endif /* WITHMODEM */
 
+	case MODE_NFM:
+		return bwseti_getnfmbw(bwseti, tx);
+
 #if WITHFREEDV
 	case MODE_FREEDV:
 #endif /* WITHFREEDV */
@@ -12370,7 +12387,6 @@ updateboard_noui(
 		board_set_lineinput(txaudiocode == BOARD_TXAUDIO_LINE);
 
 		board_set_digigainmax(gdigigainmax);
-		board_set_gvad605(gvad605);			/* напряжение на AD605 (управление усилением тракта ПЧ */
 		board_set_fsadcpower10((int_fast16_t) gfsadcpower10 [lo0side != LOCODE_INVALID] - (int_fast16_t) FSADCPOWEROFFSET10 + gerflossdb10(lo0side != LOCODE_INVALID, gatt, gpamp));	/*	Мощность, соответствующая full scale от IF ADC */
 		#if WITHUSEDUALWATCH
 			board_set_mainsubrxmode(getactualmainsubrx());		// Левый/правый, A - main RX, B - sub RX
@@ -12448,7 +12464,6 @@ updateboard_noui(
 			board_set_aflowcuttx(bwseti_getlow(bwseti));	/* Нижняя частота среза фильтра НЧ по передаче */
 			board_set_afhighcuttx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по передаче */
 			board_set_afresponcetx(bwseti_getafresponce(bwseti));	/* коррекция АЧХ НЧ тракта передатчика */
-			board_set_nfmdeviation100(gnfmdeviation);	/* Девиация при передаче в NFM - в сотнях герц */
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
 			// 0..10000
 			board_set_dacscale(makebandf2adjust(bandf3hint, getactualtxampl()) * (int) gdacscale);	// BOARDDACSCALEMAX

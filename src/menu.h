@@ -2332,7 +2332,6 @@ static const struct menudef menutable [] =
 #if WITHIF4DSP
 
 	& xgamdepth,		/* Глубина модуляции в АМ - 0..100% */
-	& xgnfmdeviation,	/* Девиация при передаче в NFM - в сотнях герц */
 	& xggaincwtx,		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 
 #endif /* WITHIF4DSP */

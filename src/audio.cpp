@@ -179,7 +179,6 @@ static uint_fast16_t	glob_digiscale = 100;	/* Увеличение усилен�
 static uint_fast16_t	glob_cwscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 static uint_fast16_t	glob_designscale = 100;	/* используется при калибровке параметров интерполятора */
 static uint_fast8_t 	glob_digigainmax = 96;
-static uint_fast8_t		glob_gvad605 = UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 
 static int_fast16_t		glob_fsadcpower10 = 0;	// мощность, соответствующая full scale от IF ADC с точностью 0.1 дБмВт
 
@@ -190,8 +189,6 @@ static int_fast8_t		glob_afresponcerx;	// изменение тембра зву
 static int_fast8_t		glob_afresponcetx;	// изменение тембра звука в канале передатчика - на Samplerate/2 АЧХ становится на столько децибел
 
 static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, A - main RX, B - sub RX
-
-static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальная девиация в NFM
 
 static uint_fast8_t		glob_dsploudspeaker_off;
 
@@ -2794,7 +2791,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 #endif /* WITHDSPEXTDDC */
 
 //	PRINTF(PSTR("audio_setup_wiver: construct bypass glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
-	if (fullbw6 == INT16_MAX)
+	if (fullbw6 == INT16_MAX || dspmode == DSPCTL_MODE_TX_NFM)
 	{
 	#if WITHDSPLOCALFIR
 
@@ -5609,7 +5606,7 @@ txparam_update(uint_fast8_t profile)
 	subtonevolume = (glob_subtonelevel / (FLOAT_t) 100);
 
 	// Девиация в NFM
-	gnfmdeviationftw = FTWAF((int) glob_nfmdeviation100 * 100L);
+	gnfmdeviationftw = FTWAF(glob_fullbw6 [glob_trxpath] / 2);
 }
 
 // Передача параметров в DSP модуль
@@ -6670,6 +6667,7 @@ void board_set_lo6(int_fast32_t f)
 }
 
 /* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
+/* Установка девиации в NFM */
 void board_set_fullbw6(int_fast16_t n)
 {
 	if (glob_fullbw6 [glob_trxpath] != n)
@@ -6748,29 +6746,6 @@ board_set_gainnfmrx(int_fast16_t n)	/* дополнительное усилен
 	{
 		glob_gainnfmrx [glob_trxpath] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
-	}
-}
-
-/* Девиация в NFM (сотни герц) */
-void
-board_set_nfmdeviation100(uint_fast8_t v)
-{
-	if (glob_nfmdeviation100 != v)
-	{
-		glob_nfmdeviation100 = v;
-		board_dsp1regchanged();
-	}
-}
-
-
-/* напряжение на AD605 (управление усилением тракта ПЧ */
-void
-board_set_gvad605(uint_fast8_t v)
-{
-	if (glob_gvad605 != v)
-	{
-		glob_gvad605 = v;
-		board_dsp1regchanged();
 	}
 }
 
