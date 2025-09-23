@@ -5880,7 +5880,7 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 		goeM2 [index1] = 0;
 		ARM_MORPH(arm_max)(goeM2, NFREQUES, & max2, & index2);
 
-		const FLOAT_t goeTH = min1 * 10000; // threshold
+		const FLOAT_t goeTH = min1 * 2000; // threshold
 		if (max1 > goeTH && max2 > goeTH)
 		{
 			//PRINTF("i1=%u i2=%u\n", index1, index2);
