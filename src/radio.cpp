@@ -1847,9 +1847,11 @@ typedef struct
 #define BWRIGHTMIN (800 / BWGRANHIGH)	// 0.8 kHz-18 kHz
 #define BWRIGHTMAX (18000 / BWGRANHIGH)
 
+// bwlimits_nfm - left10_width10_low оставлено 300 герц для работы CTCSS
 static const bwlimits_t bwlimits_cw = { 100 / BWGRANLOW, 100 / BWGRANHIGH, BWCWLEFTMIN, BWCWLEFTMAX, 0, 0,  };
 static const bwlimits_t bwlimits_am = { 50 / BWGRANLOW, 100 / BWGRANHIGH, BWLEFTMIN, BWLEFTMAX, BWRIGHTMIN, BWRIGHTMAX,  };
 static const bwlimits_t bwlimits_ssb = { 50 / BWGRANLOW, 100 / BWGRANHIGH, BWLEFTMIN, BWLEFTMAX, BWRIGHTMIN, BWRIGHTMAX, };
+static const bwlimits_t bwlimits_nfm = { 300 / BWGRANLOW, 100 / BWGRANHIGH, 300 / BWGRANLOW, 300 / BWGRANLOW, BWRIGHTMIN, BWRIGHTMAX, };
 static const bwlimits_t bwlimits_wfm = { 50 / BWGRANLOW, 100 / BWGRANHIGH, BWLEFTMIN, BWLEFTMAX, BWRIGHTMIN, BWRIGHTMAX, };
 
 // индекс банка полос пропускания для данного режима
@@ -1886,8 +1888,8 @@ static bwprop_t bwprop_ssbtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 
 static bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_PAIR, 100 / BWGRANLOW, 9000 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, };
 static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_PAIR, 100 / BWGRANLOW, 4500 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, };
 static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_PAIR, 50 / BWGRANLOW, 5500 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, };
-static bwprop_t bwprop_nfmnarrow = { & bwlimits_am, BWPROPI_NFMNARROW, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT,	WITHFILTSOFTMIN, };
-static bwprop_t bwprop_nfmwide = { & bwlimits_am, BWPROPI_NFMWIDE, BWSET_PAIR, 300 / BWGRANLOW, 4000 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT,	WITHFILTSOFTMIN, };
+static bwprop_t bwprop_nfmnarrow = { & bwlimits_nfm, BWPROPI_NFMNARROW, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT,	WITHFILTSOFTMIN, };
+static bwprop_t bwprop_nfmwide = { & bwlimits_nfm, BWPROPI_NFMWIDE, BWSET_PAIR, 300 / BWGRANLOW, 4000 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT,	WITHFILTSOFTMIN, };
 static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_PAIR, 100 / BWGRANLOW, 12000 / BWGRANHIGH, AFRESPONCEWFM + AFRESPONCESHIFT, WITHFILTSOFTMIN, };
 
 // Способ представления частот и количество профилей полосы пропускания,
