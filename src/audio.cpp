@@ -5830,7 +5830,7 @@ static goeSTATE_t goeSTATEs [NFREQUES];
 
 static void dtmf_out(void * ctx, char c)
 {
-	//PRINTF("%c", c);
+	PRINTF("%c", c);
 }
 
 void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
