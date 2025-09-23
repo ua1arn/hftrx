@@ -3,6 +3,7 @@ ifeq (1, 1)
 SRCDIRS +=
 DINCDIR += \
 	$(CMSISDSPDIR)/Include \
+	$(CMSISDSPDIR)/Ne10 \
 	$(CMSISDSPDIR)/ComputeLibrary/Include \
 	$(CMSISDSPDIR)/Source \
 	$(CMSISDSPDIR)/PrivateInclude

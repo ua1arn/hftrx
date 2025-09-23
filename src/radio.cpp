@@ -11704,22 +11704,22 @@ user_audioproc(void * ctx)
 }
 
 #else /* WITHINTEGRATEDDSP */
-
-FLOAT_t local_pow(FLOAT_t x, FLOAT_t y)
-{
-	return 0;
-}
-
-
-FLOAT_t local_exp(FLOAT_t x)
-{
-	return 0;
-}
-
-FLOAT_t local_log(FLOAT_t x)
-{
-	return 0;
-}
+//
+//FLOAT_t local_pow(FLOAT_t x, FLOAT_t y)
+//{
+//	return 0;
+//}
+//
+//
+//FLOAT_t local_exp(FLOAT_t x)
+//{
+//	return 0;
+//}
+//
+//FLOAT_t local_log(FLOAT_t x)
+//{
+//	return 0;
+//}
 
 #endif /* WITHINTEGRATEDDSP */
 

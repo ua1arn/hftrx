@@ -8,23 +8,6 @@
 #ifndef SRC_DSPDEFINES_H_
 #define SRC_DSPDEFINES_H_
 
-#if WITHINTEGRATEDDSP
-
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-	#define ARM_FAST_ALLOW_TABLES	1
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
-#endif /* WITHINTEGRATEDDSP */
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -102,13 +85,36 @@ extern "C" {
 #endif
 
 
+#if WITHINTEGRATEDDSP
+
+	#if __aarch64__
+		//#define ARM_MATH_MVEF 1
+	#endif /* __aarch64__ */
+
+	#if __ARM_NEON
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
+	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
+	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
+
+	#include "arm_math.h"
+	#include "arm_const_structs.h"
+
+void dsp_cfft(const arm_cfft_instance_f32 * S, FLOAT_t * p, uint8_t ifftFlag);
+
+#endif /* WITHINTEGRATEDDSP */
+
 /* from "C Language Algorithms for Digital Signal Processing"
 by Paul M. Embree and Bruce Kimble, Prentice Hall, 1991 */
 
 
 FLOAT_t local_exp(FLOAT_t x);
-FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
-FLOAT_t local_log(FLOAT_t x);
+//FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
+//FLOAT_t local_log(FLOAT_t x);
 FLOAT_t local_log10(FLOAT_t X);
 
 /* для возможности работы с функциями сопроцессора NEON - vld1_f32 например */

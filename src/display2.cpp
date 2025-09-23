@@ -6348,7 +6348,7 @@ dsp_getspectrumrow(
 
 	ARM_MORPH(arm_cmplx_mult_real)(fftinpt, gvars.ifspec_wndfn, fftinpt,  NORMALFFT);	// Применить оконную функцию к IQ буферу
 	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_cfft_init)(& fftinstance, NORMALFFT));
-	ARM_MORPH(arm_cfft)(& fftinstance, fftinpt, 0, 1);	// forward transform
+	dsp_cfft(& fftinstance, fftinpt, 0);	// forward transform
 	ARM_MORPH(arm_cmplx_mag)(fftinpt, fftinpt, NORMALFFT);	/* Calculate magnitudes */
 
 	enum { visiblefftsize = (int_fast64_t) NORMALFFT * SPECTRUMWIDTH_MULT / SPECTRUMWIDTH_DENOM };

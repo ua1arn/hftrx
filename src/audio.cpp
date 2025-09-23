@@ -994,6 +994,7 @@ FLOAT_t local_log10(FLOAT_t x)
 	Y += e;
 	return (Y * (FLOAT_t) 0.3010299956639812);
 }
+#if 0
 
 FLOAT_t local_log(FLOAT_t x)
 {
@@ -1039,9 +1040,10 @@ FLOAT_t local_log(FLOAT_t x)
     z = n;
     return ((z * C2 + r) + z * C1);
 }
+#endif
 
 // from ftp://ftp.update.uu.se/pub/pdp11/rt/cmath/pow.c
-
+#if 0
 #define MAXEXP 2031		/* (MAX_EXP * 16) - 1			*/
 #define MINEXP (-2047)		/* (MIN_EXP * 16) - 1			*/
 
@@ -1162,6 +1164,7 @@ FLOAT_t local_pow(FLOAT_t x, FLOAT_t y)
     return LDEXPF(z, m);
 
 }
+#endif
 
 // from: ftp://ftp.update.uu.se/pub/pdp11/rt/cmath/exp.c
 
@@ -1246,6 +1249,16 @@ static FLOAT_t getmaxresponce(void)
 	}
 	return r;
 }
+
+void dsp_cfft(
+  const arm_cfft_instance_f32 * S,
+	  FLOAT_t * p,
+        uint8_t ifftFlag
+		)
+{
+	ARM_MORPH(arm_cfft)(S, p, ifftFlag, 1);
+}
+
 //====================================================
 //  calculate impulse response of FIR filter
 //====================================================
@@ -1286,7 +1299,7 @@ static void imp_response(const FLOAT_t *dCoeff, int iCoefNum)
 
 
 	/* Process the data through the CFFT/CIFFT module */
-	ARM_MORPH(arm_cfft)(& fftinstance, (FLOAT_t *) Sig, 0, 1);
+	dsp_cfft(& fftinstance, (FLOAT_t *) Sig, 0);
 
 	//ARM_MORPH(arm_cmplx_mag_squared)(sg, MagArr, MagLen);
 
@@ -1368,7 +1381,7 @@ static void correctspectrumcomplex(int_fast8_t targetdb)
 
 	// Construct FIR coefficients from frequency response
 	/* Process the data through the CFFT/CIFFT module */
-	ARM_MORPH(arm_cfft)(& fftinstance, (FLOAT_t *) Sig, !0, 1);	// inverse FFT
+	dsp_cfft(& fftinstance, (FLOAT_t *) Sig, !0);	// inverse FFT
 
 	//arm_cmplx_mag_squared_f32(sg, MagArr, MagLen);
 }
@@ -5995,6 +6008,26 @@ void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 }
 
+static void ctcss_initialize(void)
+{
+	const FLOAT_t ctcssFs = ARMI2SRATE;	// Hz sampling frequency
+	unsigned i;
+	for (i = 0; i < CTCSSNFREQUES; i++)
+	{
+		// init Goertzel constants
+		goeCOEF_t * const goe = & ctcssCOEFs [i];
+		goe_initialize(goe, (FLOAT_t) gsubtones [i] / 10, ctcssFs);
+	}
+
+	static subscribefloat_t ctcss_register;
+	subscribefloat(& afdemodoutfloat, & ctcss_register, NULL, ctcss_processing);	// выход приёмника до фильтров
+}
+
+static void dtmf_out(void * ctx, char c)
+{
+	//PRINTF("%c", c);
+}
+
 void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	static unsigned nseq;
@@ -6027,86 +6060,42 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 		static FLOAT_t goeM2 [NFREQUES]; // Goertzel output: real, imag, squared magnitude
 
-		const FLOAT_t goeTH = 800; // threshold
-//		int i1, i2;
-//		i1 = i2 = -1;
 		for (i = 0; i < NFREQUES; i++)
 		{
 			const goeCOEF_t * const goe = & goeCOEFs [i];
 			const goeSTATE_t * const goes = & goeSTATEs [i];
 			goeM2 [i] = goe_result(goe, goes);
 
-#if 0
-			if (goeM2 [i] > goeTH)
-			{
-				// DTMF decoding
-				if (i < 4)
-				{
-					if (i1 == -1)
-						i1 = i;
-					else
-						i1 = 4;
-				}     // find 1st tone, one peak allowed
-				else
-				{
-					if (i2 == -1)
-						i2 = i - 4;
-					else
-						i2 = 4;
-				}     // find 2nd tone, one peak allowed
-			}
-#endif
 		}
-#if 1
-		FLOAT_t max1, max2;
+
+		FLOAT_t min1, max1, max2;
 		uint32_t index1, index2;
+		ARM_MORPH(arm_min_no_idx)(goeM2, NFREQUES, & min1);
 		ARM_MORPH(arm_max)(goeM2, NFREQUES, & max1, & index1);
 		goeM2 [index1] = 0;
 		ARM_MORPH(arm_max)(goeM2, NFREQUES, & max2, & index2);
+
+		const FLOAT_t goeTH = min1 * 10000; // threshold
 		if (max1 > goeTH && max2 > goeTH)
 		{
 			//PRINTF("i1=%u i2=%u\n", index1, index2);
 			if (index1 >= 4 && index2 < 4)
 			{
-				PRINTF("%c", sym [symmtx [index2] [index1 % 4]]);
+				dtmf_out(ctx, sym [symmtx [index2] [index1 - 4]]);
+				//PRINTF(" %u %u %u\n", (int) (100 * goeTH), (int) (100 * max1), (int) (100 * max2));
 			}
 			else if (index1 < 4 && index2 >= 4)
 			{
-				PRINTF("%c", sym [symmtx [index1] [index2 % 4]]);
+				dtmf_out(ctx, sym [symmtx [index1] [index2 - 4]]);
+				//PRINTF(" %u %u %u\n", (int) (100 * goeTH), (int) (100 * max1), (int) (100 * max2));
 			}
 			else
 			{
 				// Равны или в одной группе
 			}
 		}
-#endif
-#if 0
-		PRINTF("rep: ");
-		for (i = 0; i < NFREQUES; i++)
-		{
-			PRINTF("%d ", (int) (goeM2 [i] * 100));
-		}
-		PRINTF("\n");
-#endif
-//		if ((i1 > -1) && (i1 < 4) && (i2 > -1) && (i2 < 4))
-//			PRINTF("%c", sym[symmtx[i1][i2]]);
 	}
 
-}
-
-static void ctcss_initialize(void)
-{
-	const FLOAT_t ctcssFs = ARMI2SRATE;	// Hz sampling frequency
-	unsigned i;
-	for (i = 0; i < CTCSSNFREQUES; i++)
-	{
-		// init Goertzel constants
-		goeCOEF_t * const goe = & ctcssCOEFs [i];
-		goe_initialize(goe, (FLOAT_t) gsubtones [i] / 10, ctcssFs);
-	}
-
-	static subscribefloat_t ctcss_register;
-	subscribefloat(& afdemodoutfloat, & ctcss_register, NULL, ctcss_processing);	// выход приёмника до фильтров
 }
 
 static void dtmf_initialize(void)
