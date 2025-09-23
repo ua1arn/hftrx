@@ -4690,7 +4690,7 @@ static const struct paramdefdef xgtopdbspetx =
 	ITEM_VALUE,
 	WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
 	MENUNONVRAM,
-	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
+	getselector0, nvramoffs0, valueoffs0,
 	NULL,
 	& gtopdbspetx,
 	getrfdbbase, /* складывается со смещением и отображается */
@@ -4703,7 +4703,7 @@ static const struct paramdefdef xgbottomdbspetx =
 	ITEM_VALUE,
 	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
 	MENUNONVRAM,
-	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
+	getselector0, nvramoffs0, valueoffs0,
 	NULL,
 	& gbottomdbspetx,
 	getrfdbbase, /* складывается со смещением и отображается */
