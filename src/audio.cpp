@@ -18,6 +18,7 @@
 #include <limits.h>
 #include <string.h>
 #include <math.h>
+#include <atomic>
 
 #include "dspdefines.h"
 
@@ -5753,7 +5754,7 @@ static const uint_least16_t gsubtones [] =
 #define CTCSS_NFREQUES ARRAY_SIZE(gsubtones)
 
 // IIR filter before decimation
-#define CTCSS_DECIM_STAGES_IIR 9
+#define CTCSS_LPF_STAGES_IIR 9
 
 // Дециматор для Zoom FFT
 #define CTCSS_DECIM_STAGES_FIR 4	// Maximum taps from all zooms
@@ -5763,11 +5764,13 @@ static goeSTATE_t ctcssSTATEs [CTCSS_NFREQUES];
 static ARM_MORPH(arm_biquad_cascade_df2T_instance) ctcss_iir_config;
 static ARM_MORPH(arm_fir_decimate_instance) ctcss_fir_config;
 #if defined(ARM_MATH_NEON)
-static FLOAT_t ctcss_iir_state [CTCSS_DECIM_STAGES_IIR * 8];
+static FLOAT_t ctcss_iir_state [CTCSS_LPF_STAGES_IIR * 8];
 #else /* defined(ARM_MATH_NEON) */
-static FLOAT_t ctcss_iir_state [CTCSS_DECIM_STAGES_IIR * 4];
+static FLOAT_t ctcss_iir_state [CTCSS_LPF_STAGES_IIR * 4];
 #endif /* defined(ARM_MATH_NEON) */
 static FLOAT_t ctcss_fir_state [CTCSS_DECIM_STAGES_FIR + goeLENGTH  * CTCSS_DECIM - 1];
+
+static std::atomic<int> searchix(-1);
 
 void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
@@ -5821,19 +5824,27 @@ void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	goeM2 [index1] = - 1;
 	ARM_MORPH(arm_max_no_idx)(goeM2, CTCSS_NFREQUES, & noisemax1);
 
-	const FLOAT_t goeTH = noisemax1 * 100; // threshold = 10 dB
+	const FLOAT_t goeTH = noisemax1 * 1000; // threshold = 10 dB
 
 	if (max1 > goeTH)
 	{
+		searchix = max1;
 		PRINTF("z%i ", (int) index1);
 	}
+	else
+	{
+		searchix = - 1;
+	}
+
 }
 
 // 1/16 decimation
-static const FLOAT_t ctcss_IIRCoeffs [CTCSS_DECIM_STAGES_IIR * 5] =
-{
-	0.6500044972642, 0, 0, 0, 0, 1, -1.935616780918, 1, 1.908632776595, -0.9387888949475, 0.4599444315799, 0, 0, 0, 0, 1, -1.880017827578, 1, 1.851418291083, -0.8732990221737, 0.2087317940803, 0, 0, 0, 0, 1, -1.278402634611, 1, 1.794539349192, -0.80764043772, 0.01645106748385, 0, 0, 0, 0, 1, -1.948135342532, 1, 1.948194658987, -0.9825675157696, 1, 0, 0, 0, 0
-};
+//static FLOAT_t ctcss_IIRCoeffs [CTCSS_LPF_STAGES_IIR * 5] =
+//{
+//	0.6500044972642, 0, 0, 0, 0, 1, -1.935616780918, 1, 1.908632776595, -0.9387888949475, 0.4599444315799, 0, 0, 0, 0, 1, -1.880017827578, 1, 1.851418291083, -0.8732990221737, 0.2087317940803, 0, 0, 0, 0, 1, -1.278402634611, 1, 1.794539349192, -0.80764043772, 0.01645106748385, 0, 0, 0, 0, 1, -1.948135342532, 1, 1.948194658987, -0.9825675157696, 1, 0, 0, 0, 0
+//};
+static FLOAT_t ctcss_IIRCoeffs [CTCSS_LPF_STAGES_IIR * 5];
+
 static const FLOAT_t ctcss_FIRCoeffs [CTCSS_DECIM_STAGES_FIR] =
 {
 	-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792
@@ -5843,11 +5854,18 @@ static const FLOAT_t ctcss_FIRCoeffs [CTCSS_DECIM_STAGES_FIR] =
 static void ctcss_initialize(void)
 {
 	//PRINTF("ctcss_initialize start\n");
-	const int_fast32_t ctcssFs = ARMI2SRATE;	// Hz sampling frequency
+	const int_fast32_t samplerate = ARMI2SRATE;	// Hz sampling frequency
+
+	{
+		iir_filter_t f0;
+		biquad_create(& f0, CTCSS_LPF_STAGES_IIR);
+		biquad_init_lowpass(& f0, samplerate, 300);
+		fill_biquad_coeffs(& f0, ctcss_IIRCoeffs);
+	}
 
 	// filter
 	// Initialize floating-point Biquad cascade filter.
-	ARM_MORPH(arm_biquad_cascade_df2T_init)(& ctcss_iir_config, CTCSS_DECIM_STAGES_IIR, ctcss_IIRCoeffs, ctcss_iir_state);
+	ARM_MORPH(arm_biquad_cascade_df2T_init)(& ctcss_iir_config, CTCSS_LPF_STAGES_IIR, ctcss_IIRCoeffs, ctcss_iir_state);
 
 	// decimator
 	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_fir_decimate_init)(& ctcss_fir_config,
@@ -5863,7 +5881,7 @@ static void ctcss_initialize(void)
 	{
 		// init Goertzel constants
 		goeCOEF_t * const goe = & ctcssCOEFs [i];
-		goe_initialize(goe, (FLOAT_t) gsubtones [i] / 10, ctcssFs / CTCSS_DECIM);
+		goe_initialize(goe, (FLOAT_t) gsubtones [i] / 10, samplerate / CTCSS_DECIM);
 	}
 
 	for (i = 0; i < CTCSS_NFREQUES; ++ i)
