@@ -5770,18 +5770,10 @@ static goeSTATE_t ctcssSTATEs [CTCSSNFREQUES];
 
 void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
-	static unsigned nseq;
+	static unsigned n;
 	unsigned i;
 
-	const FLOAT_t x = ch0 * goertz_win [nseq]; // windowing
-	if ((nseq % goeLENGTH) == 0)
-	{
-		for (i = 0; i < CTCSSNFREQUES; i++)
-		{
-			goeSTATE_t * const goes = & ctcssSTATEs [i];
-			goe_reset(goes);
-		} // Goertzel reset
-	}
+	const FLOAT_t x = ch0 * goertz_win [n]; // windowing
 	// **** GOERTZEL ITERATION ****
 	for (i = 0; i < CTCSSNFREQUES; i++)
 	{
@@ -5792,10 +5784,9 @@ void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	} 	// Goertzel status update
 
 	// **** GOERTZEL ITERATION ****
-	nseq ++;
-	if ((nseq % goeLENGTH) == 0)
+	if (++ n >= goeLENGTH)
 	{
-		nseq = 0; // finalize and decode
+		n = 0; // finalize and decode
 
 		static FLOAT_t goeM2 [CTCSSNFREQUES]; // Goertzel output: real, imag, squared magnitude
 
@@ -5813,6 +5804,11 @@ void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 		{
 			//PRINTF("i1=%u i2=%u\n", index1, index2);
 		}
+		for (i = 0; i < CTCSSNFREQUES; i++)
+		{
+			goeSTATE_t * const goes = & ctcssSTATEs [i];
+			goe_reset(goes);
+		} // Goertzel reset
 	}
 
 
@@ -5828,6 +5824,12 @@ static void ctcss_initialize(void)
 		goeCOEF_t * const goe = & ctcssCOEFs [i];
 		goe_initialize(goe, (FLOAT_t) gsubtones [i] / 10, ctcssFs);
 	}
+
+	for (i = 0; i < CTCSSNFREQUES; i++)
+	{
+		goeSTATE_t * const goes = & ctcssSTATEs [i];
+		goe_reset(goes);
+	} // Goertzel reset
 
 	static subscribefloat_t ctcss_register;
 	subscribefloat(& afdemodoutfloat, & ctcss_register, NULL, ctcss_processing);	// выход приёмника до фильтров
@@ -5845,18 +5847,10 @@ static void dtmf_out(void * ctx, char c)
 
 void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
-	static unsigned nseq;
+	static unsigned n;
 	unsigned i;
 
-	const FLOAT_t x = ch0 * goertz_win [nseq]; // windowing
-	if ((nseq % goeLENGTH) == 0)
-	{
-		for (i = 0; i < NFREQUES; i++)
-		{
-			goeSTATE_t * const goes = & goeSTATEs [i];
-			goe_reset(goes);
-		} // Goertzel reset
-	}
+	const FLOAT_t x = ch0 * goertz_win [n]; // windowing
 	// **** GOERTZEL ITERATION ****
 	for (i = 0; i < NFREQUES; i++)
 	{
@@ -5867,10 +5861,10 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	} 	// Goertzel status update
 
 	// **** GOERTZEL ITERATION ****
-	nseq ++;
-	if ((nseq % goeLENGTH) == 0)
+	if (++ n >= goeLENGTH)
 	{
-		nseq = 0; // finalize and decode
+		// finalize and decode
+		n = 0;
 
 		static FLOAT_t goeM2 [NFREQUES]; // Goertzel output: real, imag, squared magnitude
 
@@ -5911,6 +5905,12 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 				// Равны или в одной группе
 			}
 		}
+		// Initial state
+		for (i = 0; i < NFREQUES; i++)
+		{
+			goeSTATE_t * const goes = & goeSTATEs [i];
+			goe_reset(goes);
+		} // Goertzel reset
 	}
 
 }
@@ -5940,6 +5940,11 @@ static void dtmf_initialize(void)
 		goeCOEF_t * const goe = & goeCOEFs [i + 4];
 		goe_initialize(goe, fcol [i], Fs);
 	}
+	for (i = 0; i < NFREQUES; i++)
+	{
+		goeSTATE_t * const goes = & goeSTATEs [i];
+		goe_reset(goes);
+	} // Goertzel reset
 
 	static subscribefloat_t dtmf_register;
 	subscribefloat(& speexoutfloat, & dtmf_register, NULL, dtmf_processing);	// выход speex и фильтра
