@@ -11689,6 +11689,19 @@ user_audioproc(void * ctx)
 	while (takespeexready(& p))
 	{
 		// обработка и сохранение в savesampleout16stereo_user()
+		unsigned score;
+		for (score = 0; score < FIRBUFSIZE; )
+		{
+			const unsigned len = 256;
+			const unsigned rest = (FIRBUFSIZE - score);
+			const unsigned chunk = rest >= len ? len : rest;
+	#if WITHUSEDUALWATCH
+			deliveryfloat_buffer(& speexinfloat, p + FIRBUFSIZE + score, p + score, chunk);	// to AUDIO codec
+	#else /* WITHUSEDUALWATCH */
+			deliveryfloat_buffer(& speexinfloat, p + score, p + score, chunk);	// to AUDIO codec
+	#endif /* WITHUSEDUALWATCH */
+			score += chunk;
+		}
 		uint_fast8_t pathi;
 		FLOAT_t * outsp [NTRX];
 		for (pathi = 0; pathi < NTRX; ++ pathi)
@@ -11704,7 +11717,7 @@ user_audioproc(void * ctx)
 		}
 		//////////////////////////////////////////////
 		// Save results
-		unsigned score;
+		//unsigned score;
 		for (score = 0; score < FIRBUFSIZE; )
 		{
 			const unsigned len = 256;

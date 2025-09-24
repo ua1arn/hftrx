@@ -3436,6 +3436,7 @@ uint_fast8_t hamradio_change_nr(uint_fast8_t v);
 uint_fast8_t hamradio_moxmode(uint_fast8_t v);
 uint_fast8_t hamradio_tunemode(uint_fast8_t v);
 void hamradio_set_moxmode(uint_fast8_t mode);
+uint_fast8_t hamradio_get_ctcss_active(uint_fast32_t * freq);
 
 void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem));
 int hamradio_walkmenu_getgroupanme(const void * groupitem, char * buff, size_t count);

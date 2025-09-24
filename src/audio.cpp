@@ -5920,7 +5920,7 @@ static void ctcss_initialize(void)
 	} // Goertzel reset
 
 	static subscribefloat_t ctcss_register;
-	subscribefloat(& afdemodoutfloat, & ctcss_register, NULL, ctcss_processing);	// выход приёмника до фильтров
+	subscribefloat(& speexinfloat, & ctcss_register, NULL, ctcss_processing);	// выход приёмника до фильтров
 	//PRINTF("ctcss_initialize done\n");
 }
 

@@ -3186,6 +3186,7 @@ savesampleout16tospeex(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
 deliverylist_t speexoutfloat;	// выход speex и фильтра
 deliverylist_t afdemodoutfloat;	// выход приемника
+deliverylist_t speexinfloat;	// вход speex
 
 #endif /* WITHINTEGRATEDDSP */
 
@@ -4378,6 +4379,7 @@ void buffers_initialize(void)
 	deliverylist_initialize(& rtstargetsint, IRQL_REALTIME);
 	deliverylist_initialize(& speexoutfloat, IRQL_REALTIME);
 	deliverylist_initialize(& afdemodoutfloat, IRQL_REALTIME);
+	deliverylist_initialize(& speexinfloat, IRQL_REALTIME);
 
 
 #if WITHSKIPUSERMODE
