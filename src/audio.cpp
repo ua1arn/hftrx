@@ -5628,7 +5628,7 @@ trxparam_update(void)
 
 #if WITHSUBTONES
 
-#define goeLENGTH  	1024 // points for Goertzel - зависит точность определения частоты
+#define goeLENGTH  	2048 // points for Goertzel - зависит точность определения частоты
 
 static FLOAT_t goertz_win [goeLENGTH]; // Window
 
@@ -5772,6 +5772,20 @@ static FLOAT_t ctcss_fir_state [CTCSS_DECIM_STAGES_FIR + goeLENGTH  * CTCSS_DECI
 
 static std::atomic<int> searchix(-1);
 
+uint_fast8_t hamradio_get_ctcss_active(uint_fast32_t * freq)
+{
+	int i = searchix;
+	if (i >= 0)
+	{
+		* freq = gsubtones [i];
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	static FLOAT_t ctcss_buffer [goeLENGTH * CTCSS_DECIM];	// входные данные для обработки
@@ -5824,12 +5838,12 @@ void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	goeM2 [index1] = - 1;
 	ARM_MORPH(arm_max_no_idx)(goeM2, CTCSS_NFREQUES, & noisemax1);
 
-	const FLOAT_t goeTH = noisemax1 * 1000; // threshold = 10 dB
+	const FLOAT_t goeTH = noisemax1 * 100; // threshold = 10 dB
 
 	if (max1 > goeTH)
 	{
-		searchix = max1;
-		PRINTF("z%i ", (int) index1);
+		searchix = index1;
+		//PRINTF("z%i ", (int) index1);
 	}
 	else
 	{
@@ -5856,6 +5870,7 @@ static void ctcss_initialize(void)
 	//PRINTF("ctcss_initialize start\n");
 	const int_fast32_t samplerate = ARMI2SRATE;	// Hz sampling frequency
 
+	if (1)
 	{
 		iir_filter_t f0;
 		biquad_create(& f0, CTCSS_LPF_STAGES_IIR);
@@ -6017,17 +6032,22 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 }
 
+void goertzel_win_initialize(void)
+{
+	unsigned i;
+	for (i = 0; i < goeLENGTH; i++)
+	{
+		// init window (Hamming)
+		goertz_win [i] = ((FLOAT_t) 0.54 - (FLOAT_t) 0.46 * COSF(M_TWOPI * (FLOAT_t) i / (FLOAT_t) (goeLENGTH - 1)));
+	}
+}
+
 static void dtmf_initialize(void)
 {
 	//PRINTF("dtmf_initialize start\n");
 	const int_fast32_t Fs = ARMI2SRATE;	// Hz sampling frequency
 	unsigned i;
 
-	for (i = 0; i < goeLENGTH; i++)
-	{
-		// init window (Hamming)
-		goertz_win [i] = ((FLOAT_t) 0.54 - (FLOAT_t) 0.46 * COSF(M_TWOPI * (FLOAT_t) i / (FLOAT_t) (goeLENGTH - 1)));
-	}
 	for (i = 0; i < 4; i++)
 	{
 		// init Goertzel constants
@@ -6103,7 +6123,8 @@ void dsp_initialize(void)
 	}
 
 #if WITHSUBTONES && 0
-	dtmf_initialize();
+	goertzel_win_initialize();
+	//dtmf_initialize();
 	ctcss_initialize();
 #endif /* WITHSUBTONES */
 

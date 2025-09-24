@@ -160,6 +160,7 @@ static const dzone_t dzones [] =
 	{	32, DLEB,	2,	4,	display2_btsts2,		& dzi_btact, PG0, },	// USB host status
 	{	35, DLEB,	7,	4,	display2_classa7,		& dzi_classa, PG0, },	// Class-A power amplifier
 	//{	28, DLEB,	10,	4,	display_freqmeter10, 	& dzi_default, PGALL, },	// измеренная частота опоры
+	{	43, DLEB, 	5, 4, 	display2_rxctcss5, 		& dzi_compat, PGALL, },
 
 #if WITHMENU
 	{	0,				DLEM,	BDTH_ALLRX, (DLEB - DLEM) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)

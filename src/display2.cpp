@@ -2775,6 +2775,32 @@ void display2_midbar(const gxdrawb_t * db,
 	}
 }
 
+// отображение состояния CTCSS
+void display2_rxctcss5(const gxdrawb_t * db,
+		uint_fast8_t x,
+		uint_fast8_t y,
+		uint_fast8_t xspan,
+		uint_fast8_t yspan,
+		dctx_t * pctx
+		)
+{
+#if WITHSUBTONES
+	uint_fast32_t freq;
+	const uint_fast8_t active = hamradio_get_ctcss_active(& freq);
+	if (active)
+	{
+		char b [32];
+		//local_snprintf_P(b, ARRAY_SIZE(b), "%d", (int) (freq));
+		local_snprintf_P(b, ARRAY_SIZE(b), "%d.%d", (int) (freq / 10), (int) (freq % 10));
+		display_2states(db, x, y, active, b, b, xspan, yspan);
+	}
+	else
+	{
+		display_2states(db, x, y, active, "-", "-", xspan, yspan);
+	}
+#endif /* WITHSUBTONES */
+}
+
 // отображение состояния USB BT
 static void display2_btsts2(const gxdrawb_t * db,
 		uint_fast8_t x,
