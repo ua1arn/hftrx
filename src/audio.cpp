@@ -5723,38 +5723,40 @@ static FLOAT_t goertz_win [goeN]; // Window
 // Goertzel constants
 typedef struct goeCOEF_tag
 {
-	FLOAT_t goeC, goeCW, goeSW;
+	FLOAT_t C, CW, SW;
 } goeCOEF_t;
 
 // Goertzel status registers
 typedef struct goeSTATE_tag
 {
-	FLOAT_t goeZ1, goeZ2;
+	FLOAT_t Z1, Z2;
 } goeSTATE_t;
 
-static void goe_initialize(goeCOEF_t * goe, FLOAT_t freq, int_fast32_t goeFs)
+static void goe_initialize(goeCOEF_t * goe, FLOAT_t freq, int_fast32_t Fs)
 {
-	const FLOAT_t w = M_TWOPI * (FLOAT_t) goeN * freq /(FLOAT_t) goeFs / (FLOAT_t) goeN;
-	goe->goeCW = COSF(w);
-	goe->goeC = goe->goeCW * 2;// 2 * cosf(w)
-	goe->goeSW = SINF(w);
+	const FLOAT_t w = M_TWOPI * (FLOAT_t) goeN * freq /(FLOAT_t) Fs / (FLOAT_t) goeN;
+	goe->CW = COSF(w);
+	goe->C = goe->CW * 2;// 2 * cosf(w)
+	goe->SW = SINF(w);
 }
 
 // Goertzel iteration
 static void goe_process(const goeCOEF_t * goe, goeSTATE_t * const goes, FLOAT_t x)
 {
-	const FLOAT_t z0 = x + goe->goeC * goes->goeZ1 - goes->goeZ2;
-	goes->goeZ2 = goes->goeZ1;
-	goes->goeZ1 = z0;
+	const FLOAT_t z0 = x + goe->C * goes->Z1 - goes->Z2;
+	goes->Z2 = goes->Z1;
+	goes->Z1 = z0;
 }
 
 static FLOAT_t goe_result(const goeCOEF_t * goe, const goeSTATE_t * const goes)
 {
 	// CORDIC may be used here to compute atan2() and sqrt()
-	const FLOAT_t goeI = goe->goeCW * goes->goeZ1 - goes->goeZ2;      // Goertzel final goeI
-	const FLOAT_t goeQ = goe->goeSW * goes->goeZ1;              // Goertzel final goeQ
-	return goeI * goeI + goeQ * goeQ;         // magnitude squared
+	const FLOAT_t I = goe->CW * goes->Z1 - goes->Z2;      // Goertzel final goeI
+	const FLOAT_t Q = goe->SW * goes->Z1;              // Goertzel final goeQ
+	return I * I + Q * Q;         // magnitude squared
 }
+
+// CTCSS decoding
 
 static goeCOEF_t ctcssCOEFs [CTCSSNFREQUES];
 static goeSTATE_t ctcssSTATEs [CTCSSNFREQUES];
@@ -5770,8 +5772,8 @@ void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 		for (i = 0; i < CTCSSNFREQUES; i++)
 		{
 			goeSTATE_t * const goes = & ctcssSTATEs [i];
-			goes->goeZ1 = 0;
-			goes->goeZ2 = 0;
+			goes->Z1 = 0;
+			goes->Z2 = 0;
 		} // Goertzel reset
 	}
 	// **** GOERTZEL ITERATION ****
@@ -5825,6 +5827,8 @@ static void ctcss_initialize(void)
 	subscribefloat(& afdemodoutfloat, & ctcss_register, NULL, ctcss_processing);	// выход приёмника до фильтров
 }
 
+// DTMF decoding
+
 static goeCOEF_t goeCOEFs [NFREQUES];
 static goeSTATE_t goeSTATEs [NFREQUES];
 
@@ -5844,8 +5848,8 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 		for (i = 0; i < NFREQUES; i++)
 		{
 			goeSTATE_t * const goes = & goeSTATEs [i];
-			goes->goeZ1 = 0;
-			goes->goeZ2 = 0;
+			goes->Z1 = 0;
+			goes->Z2 = 0;
 		} // Goertzel reset
 	}
 	// **** GOERTZEL ITERATION ****
@@ -5872,6 +5876,8 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 			goeM2 [i] = goe_result(goe, goes);
 
 		}
+//		const FLOAT_t en = ARM_MORPH(arm_entropy)(goeM2, NFREQUES);
+//		PRINTF("e=%u ", (int) (10 * en));
 
 		FLOAT_t min1, max1, max2;
 		uint32_t index1, index2;
@@ -6001,7 +6007,7 @@ void dsp_initialize(void)
 		gwprof = spf;
 	}
 
-#if WITHSUBTONES && 0
+#if WITHSUBTONES && 1
 	dtmf_initialize();
 	ctcss_initialize();
 #endif /* WITHSUBTONES */
