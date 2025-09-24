@@ -5631,20 +5631,21 @@ trxparam_update(void)
 // CTCSS при частоте дискретизации 48/16 = 3 кГц распознается при 2048 и при 1530 точках
 
 #define goeLENGTH  	2048 // points for Goertzel - зависит точность определения частоты
-}
+
 
 // Goertzel
 
 static FLOAT_t goertz_win [goeLENGTH]; // Window
 
-void goertzel_win_initialize(void)
+void goertzel_win_initialize(FLOAT_t * w, int n)
 {
 	unsigned i;
 	for (i = 0; i < goeLENGTH; i++)
 	{
 		// init window (Hamming)
-		goertz_win [i] = ((FLOAT_t) 0.54 - (FLOAT_t) 0.46 * COSF(M_TWOPI * (FLOAT_t) i / (FLOAT_t) (goeLENGTH - 1)));
+		w [i] = ((FLOAT_t) 0.54 - (FLOAT_t) 0.46 * COSF(M_TWOPI * (FLOAT_t) i / (FLOAT_t) (n - 1)));
 	}
+}
 
 // Goertzel constants
 typedef struct goeCOEF_tag
@@ -5882,6 +5883,7 @@ static void ctcss_initialize(void)
 	//PRINTF("ctcss_initialize start\n");
 	const int_fast32_t samplerate = ARMI2SRATE;	// Hz sampling frequency
 
+	goertzel_win_initialize(goertz_win, goeLENGTH);
 	if (1)
 	{
 		iir_filter_t f0;
@@ -6049,6 +6051,7 @@ static void dtmf_initialize(void)
 	//PRINTF("dtmf_initialize start\n");
 	const int_fast32_t Fs = ARMI2SRATE;	// Hz sampling frequency
 	unsigned i;
+	goertzel_win_initialize(goertz_win, goeLENGTH);
 
 	for (i = 0; i < 4; i++)
 	{
@@ -6125,7 +6128,6 @@ void dsp_initialize(void)
 	}
 
 #if WITHSUBTONES && 0
-	goertzel_win_initialize();
 	//dtmf_initialize();
 	ctcss_initialize();
 #endif /* WITHSUBTONES */
