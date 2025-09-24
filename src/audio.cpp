@@ -5628,11 +5628,23 @@ trxparam_update(void)
 
 #if WITHSUBTONES
 
+// CTCSS при частоте дискретизации 48/16 = 3 кГц распознается при 2048 и при 1530 точках
+
 #define goeLENGTH  	2048 // points for Goertzel - зависит точность определения частоты
+}
+
+// Goertzel
 
 static FLOAT_t goertz_win [goeLENGTH]; // Window
 
-// Goertzel
+void goertzel_win_initialize(void)
+{
+	unsigned i;
+	for (i = 0; i < goeLENGTH; i++)
+	{
+		// init window (Hamming)
+		goertz_win [i] = ((FLOAT_t) 0.54 - (FLOAT_t) 0.46 * COSF(M_TWOPI * (FLOAT_t) i / (FLOAT_t) (goeLENGTH - 1)));
+	}
 
 // Goertzel constants
 typedef struct goeCOEF_tag
@@ -6030,16 +6042,6 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 		}
 	}
 
-}
-
-void goertzel_win_initialize(void)
-{
-	unsigned i;
-	for (i = 0; i < goeLENGTH; i++)
-	{
-		// init window (Hamming)
-		goertz_win [i] = ((FLOAT_t) 0.54 - (FLOAT_t) 0.46 * COSF(M_TWOPI * (FLOAT_t) i / (FLOAT_t) (goeLENGTH - 1)));
-	}
 }
 
 static void dtmf_initialize(void)
