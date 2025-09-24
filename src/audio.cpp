@@ -5971,7 +5971,7 @@ static goeSTATE_t goeSTATEs [DTMF_NFREQUES];
 
 static void dtmf_out(void * ctx, char c)
 {
-	//PRINTF("%c", c);
+	PRINTF("%c", c);
 }
 
 void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
@@ -6128,7 +6128,7 @@ void dsp_initialize(void)
 	}
 
 #if WITHSUBTONES && 0
-	//dtmf_initialize();
+	dtmf_initialize();
 	ctcss_initialize();
 #endif /* WITHSUBTONES */
 

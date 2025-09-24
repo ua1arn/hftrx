@@ -379,8 +379,12 @@
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
-
 	#if 0
+		// DTMF/CTCSS tests
+		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
+		#define WITHBBOXSUBMODE	SUBMODE_NFM	// единственный режим работы
+		#define WITHBBOXFREQ	(136025000 - 122880000)
+	#elif 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		#define WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
