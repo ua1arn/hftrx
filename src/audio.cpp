@@ -5690,7 +5690,7 @@ static FLOAT_t goe_result(const goeCOEF_t * goe, const goeSTATE_t * const goes)
 }
 
 // CTCSS decoding
-//enum { CTCSS_DECIM = ARMI2SRATE / 1000 };
+//enum { CTCSS_DECIM = ARMI2SRATE / 750 };
 enum { CTCSS_DECIM = 16 };
 
 // частоты  Continuous Tone-Coded Squelch System or CTCSS с точностью 0.1 герца.
