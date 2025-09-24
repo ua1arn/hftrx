@@ -5884,14 +5884,16 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 //		const FLOAT_t en = ARM_MORPH(arm_entropy)(goeM2, NFREQUES);
 //		PRINTF("e=%u ", (int) (10 * en));
 
-		FLOAT_t min1, max1, max2;
+		FLOAT_t noisemax1, max1, max2;
 		uint32_t index1, index2;
-		ARM_MORPH(arm_min_no_idx)(goeM2, NFREQUES, & min1);
 		ARM_MORPH(arm_max)(goeM2, NFREQUES, & max1, & index1);
-		goeM2 [index1] = 0;
+		goeM2 [index1] = - 1;
 		ARM_MORPH(arm_max)(goeM2, NFREQUES, & max2, & index2);
+		goeM2 [index2] = - 1;
+		ARM_MORPH(arm_max_no_idx)(goeM2, NFREQUES, & noisemax1);
 
-		const FLOAT_t goeTH = min1 * 2000; // threshold
+		const FLOAT_t goeTH = noisemax1 * 100; // threshold = 10 dB
+
 		if (max1 > goeTH && max2 > goeTH)
 		{
 			//PRINTF("i1=%u i2=%u\n", index1, index2);
@@ -6010,7 +6012,7 @@ void dsp_initialize(void)
 		gwprof = spf;
 	}
 
-#if WITHSUBTONES && 0
+#if WITHSUBTONES && 1
 	dtmf_initialize();
 	ctcss_initialize();
 #endif /* WITHSUBTONES */
