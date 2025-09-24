@@ -5700,27 +5700,6 @@ static const uint_least16_t gsubtones [] =
 
 #define goeLENGTH  	1024 // points for Goertzel - зависит точность определения частоты
 
-
-// DTMF frequencies
-static const int frow [4] = { 697, 770, 852, 941 }; // 1st tone
-static const int fcol [4] = { 1209, 1336, 1477, 1633 }; // 2nd tone
-
-// DTMF symbols
-static const char sym[16] =
-{
-	'1', '4', '7', '*', '2', '5', '8', '0', '3', '6', '9', '#', 'A', 'B',
-	'C', 'D'
-};
-
-// DTMF decoding matrix
-static const int symmtx[4][4] =
-{
-	{ 0, 4, 8, 12 },
-	{ 1, 5, 9, 13 },
-	{ 2, 6, 10, 14 },
-	{ 3, 7, 11, 15 }
-};
-
 static FLOAT_t goertz_win [goeLENGTH]; // Window
 
 // Goertzel
@@ -5765,7 +5744,7 @@ static FLOAT_t goe_result(const goeCOEF_t * goe, const goeSTATE_t * const goes)
 	// CORDIC may be used here to compute atan2() and sqrt()
 	const FLOAT_t I = goe->CW * goes->Z1 - goes->Z2;      // Goertzel final goeI
 	const FLOAT_t Q = goe->SW * goes->Z1;              // Goertzel final goeQ
-	return I * I + Q * Q;         // magnitude squared
+	return I * I + Q * Q;         // magnitude squared (power)
 }
 
 // CTCSS decoding
@@ -5787,29 +5766,30 @@ static FLOAT_t ctcss_iir_state [CTCSS_DECIM_STAGES_IIR * 8];
 #else /* defined(ARM_MATH_NEON) */
 static FLOAT_t ctcss_iir_state [CTCSS_DECIM_STAGES_IIR * 4];
 #endif /* defined(ARM_MATH_NEON) */
-static FLOAT_t ctcss_fir_state [CTCSS_DECIM_STAGES_FIR + goeLENGTH - 1];
+static FLOAT_t ctcss_fir_state [CTCSS_DECIM_STAGES_FIR + goeLENGTH  * CTCSS_DECIM - 1];
 
 void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	static FLOAT_t ctcss_buffer [goeLENGTH * CTCSS_DECIM];	// входные данные для обработки
-	static unsigned n;
+	static unsigned incount;
 	unsigned i;
+	unsigned n;
 
-	ctcss_buffer [n] = ch0;
-	if (++ n < ARRAY_SIZE(ctcss_buffer))
+	ctcss_buffer [incount] = ch0;
+	if (++ incount < ARRAY_SIZE(ctcss_buffer))
 		return;
-	n = 0; // finalize and decode
+	incount = 0; // finalize and decode
 
 	// filter
 	ARM_MORPH(arm_biquad_cascade_df2T)(& ctcss_iir_config, ctcss_buffer, ctcss_buffer, ARRAY_SIZE(ctcss_buffer));
 	// decimator
-	//ARM_MORPH(arm_fir_decimate)(& ctcss_fir_config, ctcss_buffer, ctcss_buffer, ARRAY_SIZE(ctcss_buffer));
+	ARM_MORPH(arm_fir_decimate)(& ctcss_fir_config, ctcss_buffer, ctcss_buffer, ARRAY_SIZE(ctcss_buffer));
 
 	for (n = 0; n < goeLENGTH; ++ n)
 	{
 		const FLOAT_t x = ctcss_buffer [n] * goertz_win [n]; // windowing
 		// **** GOERTZEL ITERATION ****
-		for (i = 0; i < CTCSS_NFREQUES; i++)
+		for (i = 0; i < CTCSS_NFREQUES; ++ i)
 		{
 			const goeCOEF_t * const goe = & ctcssCOEFs [i];
 			goeSTATE_t * const goes = & ctcssSTATEs [i];
@@ -5821,28 +5801,31 @@ void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 	static FLOAT_t goeM2 [CTCSS_NFREQUES]; // Goertzel output: real, imag, squared magnitude
 
-	const FLOAT_t goeTH = 800; // threshold
-	for (i = 0; i < CTCSS_NFREQUES; i++)
+	for (i = 0; i < CTCSS_NFREQUES; ++ i)
 	{
 		const goeCOEF_t * const goe = & ctcssCOEFs [i];
 		const goeSTATE_t * const goes = & ctcssSTATEs [i];
 		goeM2 [i] = goe_result(goe, goes);
 	}
-	for (i = 0; i < CTCSS_NFREQUES; i++)
+	for (i = 0; i < CTCSS_NFREQUES; ++ i)
 	{
 		goeSTATE_t * const goes = & ctcssSTATEs [i];
 		goe_reset(goes);
 	} // Goertzel reset
 
-//	FLOAT_t max1;
-//	uint32_t index1;
-//	ARM_MORPH(arm_max)(goeM2, CTCSS_NFREQUES, & max1, & index1);
-//	if (max1 > goeTH)
-//	{
-//		//PRINTF("i1=%u i2=%u\n", index1, index2);
-//	}
-	n = 0; // finalize and decode
+	FLOAT_t noisemax1, max1;
+	uint32_t index1;
 
+	ARM_MORPH(arm_max)(goeM2, CTCSS_NFREQUES, & max1, & index1);
+	goeM2 [index1] = - 1;
+	ARM_MORPH(arm_max_no_idx)(goeM2, CTCSS_NFREQUES, & noisemax1);
+
+	const FLOAT_t goeTH = noisemax1 * 100; // threshold = 10 dB
+
+	if (max1 > goeTH)
+	{
+		PRINTF("z%u ", index1);
+	}
 }
 
 // 1/16 decimation
@@ -5875,14 +5858,14 @@ static void ctcss_initialize(void)
 
 
 	unsigned i;
-	for (i = 0; i < CTCSS_NFREQUES; i++)
+	for (i = 0; i < CTCSS_NFREQUES; ++ i)
 	{
 		// init Goertzel constants
 		goeCOEF_t * const goe = & ctcssCOEFs [i];
 		goe_initialize(goe, (FLOAT_t) gsubtones [i] / 10, ctcssFs / CTCSS_DECIM);
 	}
 
-	for (i = 0; i < CTCSS_NFREQUES; i++)
+	for (i = 0; i < CTCSS_NFREQUES; ++ i)
 	{
 		goeSTATE_t * const goes = & ctcssSTATEs [i];
 		goe_reset(goes);
@@ -5912,6 +5895,28 @@ board_subtone_setfreqrx(
 
 // DTMF decoding
 
+
+
+// DTMF frequencies
+static const int frow [4] = { 697, 770, 852, 941 }; // 1st tone
+static const int fcol [4] = { 1209, 1336, 1477, 1633 }; // 2nd tone
+
+// DTMF symbols
+static const char sym [16] =
+{
+	'1', '4', '7', '*', '2', '5', '8', '0', '3', '6', '9', '#', 'A', 'B',
+	'C', 'D'
+};
+
+// DTMF decoding matrix
+static const int symmtx[4][4] =
+{
+	{ 0, 4, 8, 12 },
+	{ 1, 5, 9, 13 },
+	{ 2, 6, 10, 14 },
+	{ 3, 7, 11, 15 }
+};
+
 #define DTMF_NFREQUES 8
 static goeCOEF_t goeCOEFs [DTMF_NFREQUES];
 static goeSTATE_t goeSTATEs [DTMF_NFREQUES];
@@ -5928,7 +5933,7 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 	const FLOAT_t x = ch0 * goertz_win [n]; // windowing
 	// **** GOERTZEL ITERATION ****
-	for (i = 0; i < DTMF_NFREQUES; i++)
+	for (i = 0; i < DTMF_NFREQUES; ++ i)
 	{
 		const goeCOEF_t * const goe = & goeCOEFs [i];
 		goeSTATE_t * const goes = & goeSTATEs [i];
@@ -5944,7 +5949,7 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 		static FLOAT_t goeM2 [DTMF_NFREQUES]; // Goertzel output: real, imag, squared magnitude
 
-		for (i = 0; i < DTMF_NFREQUES; i++)
+		for (i = 0; i < DTMF_NFREQUES; ++ i)
 		{
 			const goeCOEF_t * const goe = & goeCOEFs [i];
 			const goeSTATE_t * const goes = & goeSTATEs [i];
@@ -5952,7 +5957,7 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 		}
 		// Initial state
-		for (i = 0; i < DTMF_NFREQUES; i++)
+		for (i = 0; i < DTMF_NFREQUES; ++ i)
 		{
 			goeSTATE_t * const goes = & goeSTATEs [i];
 			goe_reset(goes);
@@ -5995,6 +6000,7 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 static void dtmf_initialize(void)
 {
+	PRINTF("dtmf_initialize start\n");
 	const int_fast32_t Fs = ARMI2SRATE;	// Hz sampling frequency
 	unsigned i;
 
@@ -6018,7 +6024,7 @@ static void dtmf_initialize(void)
 		goeCOEF_t * const goe = & goeCOEFs [i + 4];
 		goe_initialize(goe, fcol [i], Fs);
 	}
-	for (i = 0; i < DTMF_NFREQUES; i++)
+	for (i = 0; i < DTMF_NFREQUES; ++ i)
 	{
 		goeSTATE_t * const goes = & goeSTATEs [i];
 		goe_reset(goes);
@@ -6026,7 +6032,7 @@ static void dtmf_initialize(void)
 
 	static subscribefloat_t dtmf_register;
 	subscribefloat(& speexoutfloat, & dtmf_register, NULL, dtmf_processing);	// выход speex и фильтра
-
+	PRINTF("dtmf_initialize done\n");
 }
 
 #endif /* WITHSUBTONES */
