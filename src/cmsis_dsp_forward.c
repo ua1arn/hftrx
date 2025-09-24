@@ -11,6 +11,12 @@
 
 #if WITHINTEGRATEDDSP && ! LINUX_SUBSYSTEM
 
+	#if ARM_MATH_NEON
+		#include "CommonTables/arm_neon_tables.c"
+		#include "NE10_fft_float32.neonintrinsic.c"
+		#include "CMSIS_NE10_fft_generic_float32.neonintrisic.c"
+	#endif
+
 	#include "BasicMathFunctions/BasicMathFunctions.c"
 	//#include "BayesFunctions/BayesFunctions.c"
 	#include "CommonTables/CommonTables.c"

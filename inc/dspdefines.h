@@ -90,13 +90,14 @@ extern "C" {
 	#if __aarch64__
 		//#define ARM_MATH_MVEF 1
 	#endif /* __aarch64__ */
-
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
+	#if __ARM_FEATURE_DSP
+		#define ARM_MATH_DSP 1
+	#endif /* __ARM_FEATURE_DSP */
+	#if __ARM_NEON && 0
+		#define ARM_MATH_NEON 1
 		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 	#define ARM_FAST_ALLOW_TABLES	1
 	#define ARM_MATH_LOOPUNROLL 1
 	#define DISABLEFLOAT16 1

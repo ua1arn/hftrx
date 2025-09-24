@@ -1253,7 +1253,13 @@ void dsp_cfft(
         uint8_t ifftFlag
 		)
 {
+#if ARM_MATH_NEON
+	FLOAT_t outBuff [S->fftLen * 2];
+	ARM_MORPH(arm_cfft)(S, p, outBuff, NULL, ifftFlag);
+	ARM_MORPH(arm_copy)(p, outBuff, ARRAY_SIZE(outBuff));
+#else /* ARM_MATH_NEON */
 	ARM_MORPH(arm_cfft)(S, p, ifftFlag, 1);
+#endif /* ARM_MATH_NEON */
 }
 
 //====================================================
@@ -6016,7 +6022,7 @@ void dsp_initialize(void)
 		gwprof = spf;
 	}
 
-#if WITHSUBTONES && 0
+#if WITHSUBTONES && 1
 	dtmf_initialize();
 	ctcss_initialize();
 #endif /* WITHSUBTONES */
