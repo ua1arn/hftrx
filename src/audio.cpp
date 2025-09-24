@@ -5841,7 +5841,7 @@ static const FLOAT_t ctcss_FIRCoeffs [CTCSS_DECIM_STAGES_FIR] =
 
 static void ctcss_initialize(void)
 {
-	PRINTF("ctcss_initialize start\n");
+	//PRINTF("ctcss_initialize start\n");
 	const int_fast32_t ctcssFs = ARMI2SRATE;	// Hz sampling frequency
 
 	// filter
@@ -5854,7 +5854,7 @@ static void ctcss_initialize(void)
 						CTCSS_DECIM,          // Decimation factor
 						ctcss_FIRCoeffs,
 						ctcss_fir_state,            // Filter state variables
-						goeLENGTH));
+						goeLENGTH * CTCSS_DECIM));
 
 
 	unsigned i;
@@ -5873,7 +5873,7 @@ static void ctcss_initialize(void)
 
 	static subscribefloat_t ctcss_register;
 	subscribefloat(& afdemodoutfloat, & ctcss_register, NULL, ctcss_processing);	// выход приёмника до фильтров
-	PRINTF("ctcss_initialize done\n");
+	//PRINTF("ctcss_initialize done\n");
 }
 
 // RX CTSS squelch enable
@@ -5923,7 +5923,7 @@ static goeSTATE_t goeSTATEs [DTMF_NFREQUES];
 
 static void dtmf_out(void * ctx, char c)
 {
-	PRINTF("%c", c);
+	//PRINTF("%c", c);
 }
 
 void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
@@ -6000,7 +6000,7 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 static void dtmf_initialize(void)
 {
-	PRINTF("dtmf_initialize start\n");
+	//PRINTF("dtmf_initialize start\n");
 	const int_fast32_t Fs = ARMI2SRATE;	// Hz sampling frequency
 	unsigned i;
 
@@ -6032,7 +6032,7 @@ static void dtmf_initialize(void)
 
 	static subscribefloat_t dtmf_register;
 	subscribefloat(& speexoutfloat, & dtmf_register, NULL, dtmf_processing);	// выход speex и фильтра
-	PRINTF("dtmf_initialize done\n");
+	//PRINTF("dtmf_initialize done\n");
 }
 
 #endif /* WITHSUBTONES */
