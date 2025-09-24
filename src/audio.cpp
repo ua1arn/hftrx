@@ -5881,11 +5881,10 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 			goeM2 [i] = goe_result(goe, goes);
 
 		}
-//		const FLOAT_t en = ARM_MORPH(arm_entropy)(goeM2, NFREQUES);
-//		PRINTF("e=%u ", (int) (10 * en));
 
 		FLOAT_t noisemax1, max1, max2;
 		uint32_t index1, index2;
+
 		ARM_MORPH(arm_max)(goeM2, NFREQUES, & max1, & index1);
 		goeM2 [index1] = - 1;
 		ARM_MORPH(arm_max)(goeM2, NFREQUES, & max2, & index2);
@@ -6012,7 +6011,7 @@ void dsp_initialize(void)
 		gwprof = spf;
 	}
 
-#if WITHSUBTONES && 1
+#if WITHSUBTONES && 0
 	dtmf_initialize();
 	ctcss_initialize();
 #endif /* WITHSUBTONES */
