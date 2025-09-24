@@ -5770,59 +5770,108 @@ static FLOAT_t goe_result(const goeCOEF_t * goe, const goeSTATE_t * const goes)
 }
 
 // CTCSS decoding
+//enum { CTCSS_DECIM = ARMI2SRATE / 1000 };
+enum { CTCSS_DECIM = 16 };
+
+// IIR filter before decimation
+#define CTCSS_DECIM_STAGES_IIR 9
+
+// Дециматор для Zoom FFT
+#define CTCSS_DECIM_STAGES_FIR 4	// Maximum taps from all zooms
 
 static goeCOEF_t ctcssCOEFs [CTCSSNFREQUES];
 static goeSTATE_t ctcssSTATEs [CTCSSNFREQUES];
-
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) ctcss_iir_config;
+static ARM_MORPH(arm_fir_decimate_instance) ctcss_fir_config;
+#if defined(ARM_MATH_NEON)
+static FLOAT_t ctcss_iir_state [CTCSS_DECIM_STAGES_IIR * 8];
+#else /* defined(ARM_MATH_NEON) */
+static FLOAT_t ctcss_iir_state [CTCSS_DECIM_STAGES_IIR * 4];
+#endif /* defined(ARM_MATH_NEON) */
+static FLOAT_t ctcss_fir_state [CTCSS_DECIM_STAGES_FIR + goeLENGTH - 1];
+static FLOAT_t ctcss_buffer [goeLENGTH * CTCSS_DECIM];	// входные данные для обработки
 void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
 	static unsigned n;
 	unsigned i;
 
-	const FLOAT_t x = ch0 * goertz_win [n]; // windowing
-	// **** GOERTZEL ITERATION ****
-	for (i = 0; i < CTCSSNFREQUES; i++)
+	ctcss_buffer [n] = ch0;
+	if (++ n < ARRAY_SIZE(ctcss_buffer))
+		return;
+
+	// filter
+	ARM_MORPH(arm_biquad_cascade_df2T)(& ctcss_iir_config, ctcss_buffer, ctcss_buffer, ARRAY_SIZE(ctcss_buffer));
+	// decimator
+	ARM_MORPH(arm_fir_decimate)(& ctcss_fir_config, ctcss_buffer, ctcss_buffer, ARRAY_SIZE(ctcss_buffer));
+
+	for (n = 0; n < goeLENGTH; ++ n)
 	{
-		const goeCOEF_t * const goe = & ctcssCOEFs [i];
-		goeSTATE_t * const goes = & ctcssSTATEs [i];
-
-		goe_process(goe, goes, x);
-	} 	// Goertzel status update
-
-	// **** GOERTZEL ITERATION ****
-	if (++ n >= goeLENGTH)
-	{
-		n = 0; // finalize and decode
-
-		static FLOAT_t goeM2 [CTCSSNFREQUES]; // Goertzel output: real, imag, squared magnitude
-
-		const FLOAT_t goeTH = 800; // threshold
+		const FLOAT_t x = ch0 * goertz_win [n]; // windowing
+		// **** GOERTZEL ITERATION ****
 		for (i = 0; i < CTCSSNFREQUES; i++)
 		{
 			const goeCOEF_t * const goe = & ctcssCOEFs [i];
-			const goeSTATE_t * const goes = & ctcssSTATEs [i];
-			goeM2 [i] = goe_result(goe, goes);
-		}
-		FLOAT_t max1;
-		uint32_t index1;
-		ARM_MORPH(arm_max)(goeM2, NFREQUES, & max1, & index1);
-		if (max1 > goeTH)
-		{
-			//PRINTF("i1=%u i2=%u\n", index1, index2);
-		}
-		for (i = 0; i < CTCSSNFREQUES; i++)
-		{
 			goeSTATE_t * const goes = & ctcssSTATEs [i];
-			goe_reset(goes);
-		} // Goertzel reset
-	}
 
+			goe_process(goe, goes, x);
+		} 	// Goertzel status update
+	}
+	// **** GOERTZEL ITERATION ****
+
+	static FLOAT_t goeM2 [CTCSSNFREQUES]; // Goertzel output: real, imag, squared magnitude
+
+	const FLOAT_t goeTH = 800; // threshold
+	for (i = 0; i < CTCSSNFREQUES; i++)
+	{
+		const goeCOEF_t * const goe = & ctcssCOEFs [i];
+		const goeSTATE_t * const goes = & ctcssSTATEs [i];
+		goeM2 [i] = goe_result(goe, goes);
+	}
+	for (i = 0; i < CTCSSNFREQUES; i++)
+	{
+		goeSTATE_t * const goes = & ctcssSTATEs [i];
+		goe_reset(goes);
+	} // Goertzel reset
+
+	FLOAT_t max1;
+	uint32_t index1;
+	ARM_MORPH(arm_max)(goeM2, NFREQUES, & max1, & index1);
+	if (max1 > goeTH)
+	{
+		//PRINTF("i1=%u i2=%u\n", index1, index2);
+	}
+	n = 0; // finalize and decode
 
 }
+
+// 1/16 decimation
+static const FLOAT_t ctcss_IIRCoeffs [CTCSS_DECIM_STAGES_IIR * 5] =
+{
+	0.6500044972642, 0, 0, 0, 0, 1, -1.935616780918, 1, 1.908632776595, -0.9387888949475, 0.4599444315799, 0, 0, 0, 0, 1, -1.880017827578, 1, 1.851418291083, -0.8732990221737, 0.2087317940803, 0, 0, 0, 0, 1, -1.278402634611, 1, 1.794539349192, -0.80764043772, 0.01645106748385, 0, 0, 0, 0, 1, -1.948135342532, 1, 1.948194658987, -0.9825675157696, 1, 0, 0, 0, 0
+};
+static const FLOAT_t ctcss_FIRCoeffs [CTCSS_DECIM_STAGES_FIR] =
+{
+	-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792
+};
+
 
 static void ctcss_initialize(void)
 {
 	const int_fast32_t ctcssFs = ARMI2SRATE;	// Hz sampling frequency
+
+	// filter
+	// Initialize floating-point Biquad cascade filter.
+	ARM_MORPH(arm_biquad_cascade_df2T_init)(& ctcss_iir_config, CTCSS_DECIM_STAGES_IIR, ctcss_IIRCoeffs, ctcss_iir_state);
+
+	// decimator
+	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_fir_decimate_init)(& ctcss_fir_config,
+						CTCSS_DECIM_STAGES_FIR,
+						CTCSS_DECIM,          // Decimation factor
+						ctcss_FIRCoeffs,
+						ctcss_fir_state,            // Filter state variables
+						goeLENGTH));
+
+
 	unsigned i;
 	for (i = 0; i < CTCSSNFREQUES; i++)
 	{
@@ -5881,13 +5930,21 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 			goeM2 [i] = goe_result(goe, goes);
 
 		}
+		// Initial state
+		for (i = 0; i < NFREQUES; i++)
+		{
+			goeSTATE_t * const goes = & goeSTATEs [i];
+			goe_reset(goes);
+		} // Goertzel reset
 
+		// Определение наличия двух тонов
 		FLOAT_t noisemax1, max1, max2;
 		uint32_t index1, index2;
 
-		ARM_MORPH(arm_max)(goeM2, NFREQUES, & max1, & index1);
+		ARM_MORPH(arm_max)(goeM2 + 0, NFREQUES / 2, & max1, & index1);
 		goeM2 [index1] = - 1;
-		ARM_MORPH(arm_max)(goeM2, NFREQUES, & max2, & index2);
+		ARM_MORPH(arm_max)(goeM2 + 4, NFREQUES / 2, & max2, & index2);
+		index2 += 4;
 		goeM2 [index2] = - 1;
 		ARM_MORPH(arm_max_no_idx)(goeM2, NFREQUES, & noisemax1);
 
@@ -5911,12 +5968,6 @@ void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 				// Равны или в одной группе
 			}
 		}
-		// Initial state
-		for (i = 0; i < NFREQUES; i++)
-		{
-			goeSTATE_t * const goes = & goeSTATEs [i];
-			goe_reset(goes);
-		} // Goertzel reset
 	}
 
 }
@@ -6022,7 +6073,7 @@ void dsp_initialize(void)
 		gwprof = spf;
 	}
 
-#if WITHSUBTONES && 1
+#if WITHSUBTONES && 0
 	dtmf_initialize();
 	ctcss_initialize();
 #endif /* WITHSUBTONES */
