@@ -5626,6 +5626,60 @@ trxparam_update(void)
 }
 
 #if WITHSUBTONES
+
+#define goeLENGTH  	1024 // points for Goertzel - зависит точность определения частоты
+
+static FLOAT_t goertz_win [goeLENGTH]; // Window
+
+// Goertzel
+
+// Goertzel constants
+typedef struct goeCOEF_tag
+{
+	FLOAT_t C, CW, SW;
+} goeCOEF_t;
+
+// Goertzel status registers
+typedef struct goeSTATE_tag
+{
+	FLOAT_t Z1, Z2;
+} goeSTATE_t;
+
+static void goe_initialize(goeCOEF_t * goe, FLOAT_t freq, int_fast32_t Fs)
+{
+	const FLOAT_t w = M_TWOPI * (FLOAT_t) goeLENGTH * freq /(FLOAT_t) Fs / (FLOAT_t) goeLENGTH;
+	goe->CW = COSF(w);
+	goe->C = goe->CW * 2;// 2 * cosf(w)
+	goe->SW = SINF(w);
+}
+
+// Goertzel iteration
+static void goe_process(const goeCOEF_t * goe, goeSTATE_t * const goes, FLOAT_t x)
+{
+	const FLOAT_t z0 = x + goe->C * goes->Z1 - goes->Z2;
+	goes->Z2 = goes->Z1;
+	goes->Z1 = z0;
+}
+
+// Goertzel reset
+static void goe_reset(goeSTATE_t * const goes)
+{
+	goes->Z1 = 0;
+	goes->Z2 = 0;
+}
+
+static FLOAT_t goe_result(const goeCOEF_t * goe, const goeSTATE_t * const goes)
+{
+	// CORDIC may be used here to compute atan2() and sqrt()
+	const FLOAT_t I = goe->CW * goes->Z1 - goes->Z2;      // Goertzel final goeI
+	const FLOAT_t Q = goe->SW * goes->Z1;              // Goertzel final goeQ
+	return I * I + Q * Q;         // magnitude squared (power)
+}
+
+// CTCSS decoding
+//enum { CTCSS_DECIM = ARMI2SRATE / 1000 };
+enum { CTCSS_DECIM = 16 };
+
 // частоты  Continuous Tone-Coded Squelch System or CTCSS с точностью 0.1 герца.
 // https://en.wikipedia.org/wiki/Continuous_Tone-Coded_Squelch_System#List_of_tones
 static const uint_least16_t gsubtones [] =
@@ -5697,59 +5751,6 @@ static const uint_least16_t gsubtones [] =
 };
 
 #define CTCSS_NFREQUES ARRAY_SIZE(gsubtones)
-
-#define goeLENGTH  	1024 // points for Goertzel - зависит точность определения частоты
-
-static FLOAT_t goertz_win [goeLENGTH]; // Window
-
-// Goertzel
-
-// Goertzel constants
-typedef struct goeCOEF_tag
-{
-	FLOAT_t C, CW, SW;
-} goeCOEF_t;
-
-// Goertzel status registers
-typedef struct goeSTATE_tag
-{
-	FLOAT_t Z1, Z2;
-} goeSTATE_t;
-
-static void goe_initialize(goeCOEF_t * goe, FLOAT_t freq, int_fast32_t Fs)
-{
-	const FLOAT_t w = M_TWOPI * (FLOAT_t) goeLENGTH * freq /(FLOAT_t) Fs / (FLOAT_t) goeLENGTH;
-	goe->CW = COSF(w);
-	goe->C = goe->CW * 2;// 2 * cosf(w)
-	goe->SW = SINF(w);
-}
-
-// Goertzel iteration
-static void goe_process(const goeCOEF_t * goe, goeSTATE_t * const goes, FLOAT_t x)
-{
-	const FLOAT_t z0 = x + goe->C * goes->Z1 - goes->Z2;
-	goes->Z2 = goes->Z1;
-	goes->Z1 = z0;
-}
-
-// Goertzel reset
-static void goe_reset(goeSTATE_t * const goes)
-{
-	goes->Z1 = 0;
-	goes->Z2 = 0;
-}
-
-static FLOAT_t goe_result(const goeCOEF_t * goe, const goeSTATE_t * const goes)
-{
-	// CORDIC may be used here to compute atan2() and sqrt()
-	const FLOAT_t I = goe->CW * goes->Z1 - goes->Z2;      // Goertzel final goeI
-	const FLOAT_t Q = goe->SW * goes->Z1;              // Goertzel final goeQ
-	return I * I + Q * Q;         // magnitude squared (power)
-}
-
-// CTCSS decoding
-//enum { CTCSS_DECIM = ARMI2SRATE / 1000 };
-enum { CTCSS_DECIM = 16 };
 
 // IIR filter before decimation
 #define CTCSS_DECIM_STAGES_IIR 9
@@ -5824,7 +5825,7 @@ void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 	if (max1 > goeTH)
 	{
-		PRINTF("z%u ", index1);
+		PRINTF("z%i ", (int) index1);
 	}
 }
 
