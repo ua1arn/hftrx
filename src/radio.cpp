@@ -12263,8 +12263,10 @@ updateboard_noui(
 			board_set_vox(gvoxenable && getmodetempl(txsubmode)->vox);	// включение внешних схем VOX
 			#if WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
-				board_subtone_setfreqtx(getmodetempl(txsubmode)->subtone && param_getvalue(& xgsubtoneitx) && gtx ? gsubtones [param_getvalue(& xgsubtoneitx)] : 0);	// частота subtone (до десятых долей герца).
-				board_set_subtonelevel(getmodetempl(txsubmode)->subtone && param_getvalue(& xgsubtoneitx) && gtx ? param_getvalue(& xgctsslevel) : 0);	/* Уровень сигнала CTCSS в процентах - 0%..100% */
+				board_subtone_setfreqtx(getmodetempl(txsubmode)->subtone && param_getvalue(& xgsubtoneitx) && gtx ?
+						gsubtones [param_getvalue(& xgsubtoneitx)] : 0);	// частота subtone (до десятых долей герца).
+				board_set_subtonelevel(getmodetempl(txsubmode)->subtone && param_getvalue(& xgsubtoneitx) && gtx ?
+						param_getvalue(& xgctsslevel) : 0);	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 			#endif /* WITHSUBTONES */
 			#if WITHVOX
 				vox_enable(gvoxenable && getmodetempl(txsubmode)->vox, voxdelay);		/* разрешение голосового управления переходом на передачу */
