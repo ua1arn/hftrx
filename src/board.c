@@ -6211,11 +6211,12 @@ void board_testsound_enable(uint_fast8_t state)
 /* вызывается из update hardware (user mode).	*/
 void 
 board_subtone_setfreqtx(
-	uint_least16_t tonefreq01)	/* tonefreq - частота в десятых долях герца. */
+	uint_least16_t tonefreq01)	/* tonefreq - частота в десятых долях герца. частота не-0 - разрешить */
 {
 #if WITHSUBTONES
 	enum { sndi = SNDI_SUBTONE };
-	if (board_calcs_setfreq(sndi, tonefreq01) != 0)	/* если частота изменилась - перепрограммируем */
+	const uint_fast8_t v = tonefreq01 != 0;	/* частота не-0 - разрешить */
+	if (v && board_calcs_setfreq(sndi, tonefreq01) != 0)	/* если частота изменилась - перепрограммируем */
 	{
 		IRQL_t oldIrql;
 
@@ -6223,25 +6224,15 @@ board_subtone_setfreqtx(
 		board_sounds_resched();
 		IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 	}
-#endif /* WITHSUBTONES */
-}
-
-void board_subtone_enabletx(uint_fast8_t state)
-{
-#if WITHSUBTONES
-	const uint_fast8_t v = state != 0;
-	enum { sndi = SNDI_SUBTONE };
-
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
-
 	if (gstate [sndi] != v)
 	{
+		IRQL_t oldIrql;
+
+		IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
 		gstate [sndi] = v;
 		board_sounds_resched();
+		IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 	}
-
-	IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 #endif /* WITHSUBTONES */
 }
 
@@ -6304,11 +6295,6 @@ void board_sidetone_enable(uint_fast8_t state)
 void
 board_subtone_setfreqtx(
 	uint_least16_t tonefreq01)	/* tonefreq - частота в десятых долях герца. */
-{
-}
-/* функция - заглушка */
-/* subtone */
-void board_subtone_enabletx(uint_fast8_t state)
 {
 }
 

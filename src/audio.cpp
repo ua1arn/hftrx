@@ -170,7 +170,6 @@ static uint_fast8_t 	glob_sidetonelevel = 10;	/* Уровень сигнала �
 static uint_fast8_t 	glob_moniflag = 1;		/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
 static uint_fast8_t		glob_cwssbtx = 1;		/* разрешение передачи телеграфа как тона в режиме SSB */
 static uint_fast8_t 	glob_subtonelevel = 0;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
-static uint_fast8_t 	glob_ctss_squelch = 0;	/* RX CTSS squelch enable */
 static uint_fast8_t 	glob_amdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 #if WITHIF4DSP
 static uint_fast16_t	glob_dacscale = BOARDDACSCALEMAX;	/* На какую часть (в процентах в квадрате) от полной амплитуды использцется ЦАП передатчика */
@@ -5925,20 +5924,9 @@ static void ctcss_initialize(void)
 	//PRINTF("ctcss_initialize done\n");
 }
 
-// RX CTSS squelch enable
-void board_set_ctss_squelch(uint_fast8_t v)
-{
-	const uint_fast8_t n = !! v;
-	if (glob_ctss_squelch != n)
-	{
-		glob_ctss_squelch = n;
-		board_dsp1regchanged();
-	}
-}
-
 void
 board_subtone_setfreqrx(
-	uint_least16_t tonefreq01)	/* tonefreq - частота в десятых долях герца. */
+	uint_least16_t tonefreq01)	/* tonefreq - частота в десятых долях герца. частота не-0 - разрешить. */
 {
 }
 

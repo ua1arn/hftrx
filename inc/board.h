@@ -197,8 +197,6 @@ void board_rgrbeep_enable(uint_fast8_t state);	/* roger beep */
 void board_testsound_enable(uint_fast8_t state);
 void board_subtone_setfreqtx(uint_least16_t tonefreq01);	/* tonefreq - частота в десятых долях герца. */
 void board_subtone_setfreqrx(uint_least16_t tonefreq01);	/* RX CTSS squelch - частота в десятых долях герца. */
-void board_subtone_enabletx(uint_fast8_t state);	// TX CTSS enable
-void board_set_ctss_squelch(uint_fast8_t state);	// RX CTSS squelch enable
 /* управление полосовыми фильтрами - bandpass.c */
 void bandf_calc_initialize(void);
 void bandf2_calc_initialize(void);
