@@ -1346,10 +1346,11 @@ static const struct menudef menutable [] =
 /* group name +++ */
 	& xgctssgroup,
 /* group name --- */
-	& xgctssenable,	//  Continuous Tone-Coded Squelch System or CTCSS control
+	& xgctssenabletx,	//  Continuous Tone-Coded Squelch System or CTCSS control
 	& xgsubtoneitx,	//  Continuous Tone-Coded Squelch System or CTCSS freq
 	& xgctsslevel,	/* Select the CTCSS transmit level. */
-	& xgsubtoneirx,	//  Continuous Tone-Coded Squelch System or CTCSS freq
+	& xgctssenablerx,	//  tone squelch control
+	& xgsubtoneirx,	//  tone squelch frequency
 #endif /* WITHSUBTONES && WITHTX && WITHIF4DSP */
 /* group name +++ */
 	(const struct paramdefdef [1]) {

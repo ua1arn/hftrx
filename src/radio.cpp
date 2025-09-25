@@ -3987,7 +3987,8 @@ struct nvmap
 #if WITHSUBTONES
 	uint8_t gsubtoneitx;	// номер subtone
 	uint8_t gsubtoneirx;	// номер subtone
-	uint8_t gctssenable;	// разрешить формирование subtone
+	uint8_t gctssenabletx;	// разрешить формирование subtone
+	uint8_t gctssenablerx;	// разрешить tone squelch
 #endif /* WITHSUBTONES */
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	uint8_t gtempvmax;
@@ -5340,7 +5341,8 @@ enum
 	}
 	static uint_fast8_t gsubtoneitx = 18;	// частота subtone = 77.0 герц
 	static uint_fast8_t gsubtoneirx = 18;	// частота subtone = 77.0 герц
-	static uint_fast8_t gctssenable;	// разрешить формирование subtone
+	static uint_fast8_t gctssenabletx;	// разрешить формирование subtone
+	static uint_fast8_t gctssenablerx;	// разрешить tone squelch
 	//  Continuous Tone-Coded Squelch System or CTCSS settings group
 	static const struct paramdefdef xgctssgroup =
 	{
@@ -5381,15 +5383,28 @@ enum
 		getvaltextsubtone, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	//  Continuous Tone-Coded Squelch System or CTCSS control
-	static const struct paramdefdef xgctssenable =
+	static const struct paramdefdef xgctssenabletx =
 	{
-		QLABEL("CTCSS"), 8, 3, RJ_ON, ISTEP1,
+		QLABEL2("TCTCSS", "T-CTCSS"), 8, 3, RJ_ON, ISTEP1,
 		ITEM_VALUE,
 		0, 1,
-		OFFSETOF(struct nvmap, gctssenable),
+		OFFSETOF(struct nvmap, gctssenabletx),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
-		& gctssenable,
+		& gctssenabletx,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	//  Continuous Tone-Coded Squelch System or CTCSS control
+	static const struct paramdefdef xgctssenablerx =
+	{
+		QLABEL2("RCTCSS", "R-CTCSS"), 8, 3, RJ_ON, ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gctssenablerx),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gctssenablerx,
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
@@ -12237,8 +12252,8 @@ updateboard_noui(
 				board_set_squelch_level(pamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_NFM ? ulmax(gsquelch.value, gsquelchNFM) : gsquelch.value);
 				board_set_gainnfmrx(ggainnfmrx10 * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 				#if WITHSUBTONES
-					board_set_ctss_squelch(gctssenable && pamodetempl->subtone);	// RX CTSS squelch enable
-					board_subtone_setfreqrx(gsubtones [gsubtoneirx]);	// частота subtone (до десятых долей герца).
+					board_set_ctss_squelch(param_getvalue(& xgctssenablerx) && pamodetempl->subtone);	// RX CTSS squelch enable
+					board_subtone_setfreqrx(gsubtones [param_getvalue(& xgsubtoneirx)]);	// частота subtone (до десятых долей герца).
 				#endif /* WITHSUBTONES */
 			#endif /* WITHIF4DSP */
 				board_set_nb_enable(pathi, 0);	/* Управлением включением RX Noise Blanker */
@@ -12247,7 +12262,7 @@ updateboard_noui(
 		#if WITHIF4DSP
 			#if WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
-				board_subtone_setfreqtx(gsubtones [gsubtoneitx]);	// частота subtone (до десятых долей герца).
+				board_subtone_setfreqtx(gsubtones [param_getvalue(& xgsubtoneitx)]);	// частота subtone (до десятых долей герца).
 			#endif /* WITHSUBTONES */
 			#if WITHTX && WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
@@ -12275,8 +12290,8 @@ updateboard_noui(
 			board_set_vox(gvoxenable && getmodetempl(txsubmode)->vox);	// включение внешних схем VOX
 			#if WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
-				board_subtone_enabletx(gctssenable && gtx && getmodetempl(txsubmode)->subtone);
-				board_set_subtonelevel(gctssenable && gtx && getmodetempl(txsubmode)->subtone ? gsubtonelevel : 0);	/* Уровень сигнала CTCSS в процентах - 0%..100% */
+				board_subtone_enabletx(param_getvalue(& xgctssenabletx) && gtx && getmodetempl(txsubmode)->subtone);
+				board_set_subtonelevel(param_getvalue(& xgctssenabletx) && gtx && getmodetempl(txsubmode)->subtone ? param_getvalue(& xgctsslevel) : 0);	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 			#endif /* WITHSUBTONES */
 			#if WITHVOX
 				vox_enable(gvoxenable && getmodetempl(txsubmode)->vox, voxdelay);		/* разрешение голосового управления переходом на передачу */
@@ -17053,7 +17068,7 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
 		& xgvoxenable,
 	#endif /* WITHVOX && WITHTX */
 	#if WITHSUBTONES && WITHTX
-		& xgctssenable,
+		& xgctssenabletx,
 	#endif /* WITHSUBTONES && WITHTX */
 	#if WITHTX && WITHAFCODEC1HAVEPROC
 		& xgmikeequalizer,
