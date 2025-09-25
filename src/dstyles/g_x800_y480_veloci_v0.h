@@ -114,7 +114,8 @@ static const dzone_t dzones [] =
 
 	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 	{	41, 10,	3,	4,	display2_rxbw3,	& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
-	{	46, 10,	3,	4,	display2_agc3,	& dzi_agc, PGALL, },	// AGC mode
+	//{	46, 10,	3,	4,	display2_agc3,	& dzi_agc, PGALL, },	// AGC mode
+	{	46,	10,	4,	4,	display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
 
 	{	37, 15,	3,	4,	display2_nr3,	& dzi_nr, PGALL, },	// NR : was: AGC
 	{	41, 15,	3,	4,	display2_datamode3,	& dzi_datamode, PGALL, },	// DATA mode indicator
@@ -131,7 +132,6 @@ static const dzone_t dzones [] =
 	{	0, 	25,	5,	4,	display2_voltlevelV5, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
 	{	6, 	25,	5,	4,	display2_currlevel5, & dzi_currlevel, PGALL, },	// PA drain current d.dd with "A"
 
-	{	14,	25,	4,	4,	display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
 	{	19,	25,	5,	4,	display2_ant5,	& dzi_antenna, PGALL, },
 	{	25, 25,	3,	4,	display2_byp3,	& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
 
