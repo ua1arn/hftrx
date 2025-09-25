@@ -14,6 +14,7 @@
 #include "audio_compressor.h"
 
 #include "codecs.h"
+#include "keyboard.h"	// dtmf
 
 #include <limits.h>
 #include <string.h>
@@ -5964,6 +5965,12 @@ static void dtmf_out(void * ctx, char c)
 	PRINTF("%c", c);
 }
 
+uint_fast8_t
+dtmf_get_pressed_key(void)
+{
+	return KEYBOARD_NOKEY;
+}
+
 static FLOAT_t goertz_dtmf_win [goe_dtmfLENGTH]; // Window
 
 void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
@@ -6119,7 +6126,7 @@ void dsp_initialize(void)
 		gwprof = spf;
 	}
 
-#if WITHSUBTONES && 0
+#if WITHSUBTONES && 1
 	dtmf_initialize();
 	ctcss_initialize();
 #endif /* WITHSUBTONES */

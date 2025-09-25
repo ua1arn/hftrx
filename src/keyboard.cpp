@@ -428,7 +428,7 @@ void kbd_initialize(void)
 	kbdst_initialize(& kbd0, board_get_pressed_key);
 #endif /* WITHBBOX */
 #if WITHSUBTONES
-	kbdst_initialize(& dtmf_kbd, dummy_get_pressed_key);
+	kbdst_initialize(& dtmf_kbd, dtmf_get_pressed_key);
 #endif /* WITHSUBTONES */
 
 	IRQLSPINLOCK_INITIALIZE(& irqllock);
