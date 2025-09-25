@@ -608,6 +608,7 @@ void unsubscribeint32(deliverylist_t * head, subscribeint32_t * target);
 extern deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
 extern deliverylist_t speexoutfloat;	// выход speex и фильтра
 extern deliverylist_t afdemodoutfloat;	// выход приемника
+extern deliverylist_t speexinfloat;	// вход speex
 
 
 //void dsp_step32rx(const IFADCvalue_t * buff);	// RX
