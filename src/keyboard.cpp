@@ -38,80 +38,129 @@ enum
 	KBD_PRESS_REPEAT_QUICK2 =	KBDNTICKS(5)	// время между символами по очень быстрому автоповтору
 };
 
-// сделаны по 8 бит - при 200 герц прерываний 600 мс всего 120 тиков.
-static std::atomic<unsigned> kbd_press;	/* время с момента нажатия */
-static uint_fast16_t kbd_release;		/* время после отпускания - запрет нового нажатия */
+static void kbd_spool(void * ctx);
 
-static uint_fast8_t kbd_last;	/* последний скан-код (возврат при отпускании кнопки) */
-static uint_fast8_t kbd_slowcount; /* количество сгенерированных символов с медленным автоповтором */
+typedef struct kbdst_tag
+{
+	// сделаны по 8 бит - при 200 герц прерываний 600 мс всего 120 тиков.
+	std::atomic<unsigned> kbd_press;	/* время с момента нажатия */
+	uint_fast16_t kbd_release;		/* время после отпускания - запрет нового нажатия */
 
-static uint_fast8_t kbd_beep;	/* время с момента нажатия */
+	uint_fast8_t kbd_last;	/* последний скан-код (возврат при отпускании кнопки) */
+	uint_fast8_t kbd_slowcount; /* количество сгенерированных символов с медленным автоповтором */
+
+	uint_fast8_t kbd_beep;	/* время с момента нажатия */
+
+	volatile uint_fast8_t kbd_ready;
+
+	u8queue_t kbdq;
+
+	ticker_t kbdticker;
+	adcdone_t aevent;
+	uint8_t kbdfifo [16];
+	uint_fast8_t (* get_pressed_key)(void);
+} kbdst_t;
+
+static kbdst_t kbd0;
+
+static void kbdst_initialize(kbdst_t * kbdp, uint_fast8_t (* get_pressed_key_cb)(void))
+{
+	kbdp->get_pressed_key = get_pressed_key_cb;
+	kbdp->kbd_press = 0;	/* время с момента нажатия */
+	kbdp->kbd_release = 0;		/* время после отпускания - запрет нового нажатия */
+
+	kbdp->kbd_last = 0;	/* последний скан-код (возврат при отпускании кнопки) */
+	kbdp->kbd_slowcount = 0; /* количество сгенерированных символов с медленным автоповтором */
+
+	kbdp->kbd_beep = 0;	/* время с момента нажатия */
+
+	kbdp->kbd_ready = 0;
+
+	uint8_queue_init(& kbdp->kbdq, kbdp->kbdfifo, sizeof kbdp->kbdfifo / sizeof kbdp->kbdfifo [0]);
+
+	kbdp->kbd_last = kbdp->get_pressed_key();
+	if (kbdp->kbd_last != KEYBOARD_NOKEY)
+	{
+		// самое первое нажатие
+		kbdp->kbd_press = 1;
+		kbdp->kbd_release = 0;
+		kbdp->kbd_slowcount = 0;
+	}
+
+#if WITHCPUADCHW
+	adcdone_initialize(& kbdp->aevent, kbd_spool, kbdp);
+	adcdone_add(& aevent);
+#else /* KEYBOARD_USE_ADC */
+	ticker_initialize(& kbdp->kbdticker, NTICKS(KBD_TICKS_PERIOD), kbd_spool, kbdp);
+	ticker_add(& kbdp->kbdticker);
+#endif /* KEYBOARD_USE_ADC */
+}
 
 /* получение скан-кода клавиши или 0 в случае отсутствия.
  * если клавиша удержана, возвращается скан-код из соответствующего поля массива структур qmdefs
  * ОТЛАЖИВАЕТСЯ
  */
 static uint_fast8_t
-kbd_scan_local(uint_fast8_t * key)
+kbd_scan_local(kbdst_t * kbdp, uint_fast8_t * key)
 {
-	const uint_fast8_t chinp = board_get_pressed_key();
-	const uint_fast8_t notstab = (kbd_press < (KBD_STABIL_PRESS + 1));
+	const uint_fast8_t chinp = kbdp->get_pressed_key();
+	const uint_fast8_t notstab = (kbdp->kbd_press < (KBD_STABIL_PRESS + 1));
 
 	if (chinp != KEYBOARD_NOKEY)
 	{
-		if (/*kbd_release != 0 && */ ! notstab && (kbd_last != chinp))		// клавиша сменилась в состоянии стабильного нажатия
+		if (/*kbd_release != 0 && */ ! notstab && (kbdp->kbd_last != chinp))		// клавиша сменилась в состоянии стабильного нажатия
 		{
 			// самое первое нажатие
-			kbd_last = chinp;
-			kbd_press = 1;
-			kbd_release = 0;
-			kbd_slowcount = 0;
+			kbdp->kbd_last = chinp;
+			kbdp->kbd_press = 1;
+			kbdp->kbd_release = 0;
+			kbdp->kbd_slowcount = 0;
 			//dbg_putchar('t');
 			return 0;
 		}
-		else if (kbd_release != 0 && ! notstab)
+		else if (kbdp->kbd_release != 0 && ! notstab)
 		{
 			// Уже было застабилизировавшееся значение - не меняем ничего.
 			// kbd_last уже содержит правильное значение
 			// Нажатие должно исчезнуть когда-то наконец.
 			//dbg_putchar('k');
 		}
-		else if (kbd_press == 0)
+		else if (kbdp->kbd_press == 0)
 		{
 			// самое первое нажатие
-			kbd_last = chinp;
-			kbd_press = 1;
-			kbd_release = 0;
-			kbd_slowcount = 0;
+			kbdp->kbd_last = chinp;
+			kbdp->kbd_press = 1;
+			kbdp->kbd_release = 0;
+			kbdp->kbd_slowcount = 0;
 			//dbg_putchar('l');
 			return 0;
 		}	
-		else if (notstab && (kbd_last != chinp))		// Ожидание стабилизации кода клавиши
+		else if (notstab && (kbdp->kbd_last != chinp))		// Ожидание стабилизации кода клавиши
 		{	
-			kbd_last = chinp;
-			kbd_press = 1;
-			kbd_release = 0;
-			kbd_slowcount = 0;
+			kbdp->kbd_last = chinp;
+			kbdp->kbd_press = 1;
+			kbdp->kbd_release = 0;
+			kbdp->kbd_slowcount = 0;
 			//dbg_putchar('m');
 			return 0;
 		}
 
-		kbd_release = KBD_STABIL_RELEASE;
+		kbdp->kbd_release = KBD_STABIL_RELEASE;
 		
-		const uint_fast8_t flags = qmdefs [kbd_last].flags;
+		const uint_fast8_t flags = qmdefs [kbdp->kbd_last].flags;
 		/* сравнение кодов клавиш, для которых допустим медленный автоповтор при длительном удержании */
 		if ((flags & KIF_SLOW) != 0)	//(is_slow_repeat(kbd_last))
 		{
 			// клавиша может работать с медленным автоповтором
-			switch (++ kbd_press)
+			switch (++ kbdp->kbd_press)
 			{
 			case KBD_MAX_PRESS_DELAY_LONG + KBD_PRESS_REPEAT_SLOW:
-				kbd_press = KBD_MAX_PRESS_DELAY_LONG;	// позволяем ещё раз сюда попасть.
+			kbdp->kbd_press = KBD_MAX_PRESS_DELAY_LONG;	// позволяем ещё раз сюда попасть.
 				// @suppress("No break at end of case")
 
 			case KBD_MAX_PRESS_DELAY_LONG:
-				* key = qmdefs [kbd_last].code;	
-				kbd_release = 0;
+				* key = qmdefs [kbdp->kbd_last].code;
+				kbdp->kbd_release = 0;
 				return 1;
 			}
 			return 0;
@@ -120,15 +169,15 @@ kbd_scan_local(uint_fast8_t * key)
 		else if ((flags & KIF_SLOW4) != 0)	//(is_slow_repeat(kbd_last))
 		{
 			// клавиша может работать с медленным автоповтором
-			switch (++ kbd_press)
+			switch (++ kbdp->kbd_press)
 			{
 			case KBD_MAX_PRESS_DELAY_LONG4 + KBD_PRESS_REPEAT_SLOW4:
-				kbd_press = KBD_MAX_PRESS_DELAY_LONG4;	// позволяем ещё раз сюда попасть.
+			kbdp->kbd_press = KBD_MAX_PRESS_DELAY_LONG4;	// позволяем ещё раз сюда попасть.
 	    		// @suppress("No break at end of case")
 
 			case KBD_MAX_PRESS_DELAY_LONG4:
-				* key = qmdefs [kbd_last].code;	
-				kbd_release = 0;
+				* key = qmdefs [kbdp->kbd_last].code;
+				kbdp->kbd_release = 0;
 				return 1;
 			}
 			return 0;
@@ -139,18 +188,18 @@ kbd_scan_local(uint_fast8_t * key)
 #if WITHKBDENCODER
 			// клавиша может работать с быстрым автоповтором
 			// Перестройка клавишами вместо валкодера
-			switch (++ kbd_press)
+			switch (++ kbdp->kbd_press)
 			{
 			case KBD_TIME_SWITCH_QUICK:
-				if (kbd_slowcount < 20)
+				if (kbdp->kbd_slowcount < 20)
 				{
 					//++ kbd_slowcount;	// закомментировано - никогда не ускоряемся
-					kbd_press = KBD_TIME_SWITCH_QUICK - KBD_PRESS_REPEAT_QUICK1;
+					kbdp->kbd_press = KBD_TIME_SWITCH_QUICK - KBD_PRESS_REPEAT_QUICK1;
 				}
 				else
-					kbd_press = KBD_TIME_SWITCH_QUICK - KBD_PRESS_REPEAT_QUICK2;
+					kbdp->kbd_press = KBD_TIME_SWITCH_QUICK - KBD_PRESS_REPEAT_QUICK2;
 				// формирование символа в автоповторе
-				encoder_kbdctl(qmdefs [kbd_last].code, 1);
+				encoder_kbdctl(qmdefs [kbdp->kbd_last].code, 1);
 				//dbg_putchar('R');
 				//dbg_putchar('0' + kbd_last);
 				break;
@@ -164,13 +213,13 @@ kbd_scan_local(uint_fast8_t * key)
 		else if ((flags & KIF_POWER) != 0)
 		{
 			// клавиша может работать с длинным нажатием
-			if (kbd_press == KBD_MAX_PRESS_DELAY_POWER)
+			if (kbdp->kbd_press == KBD_MAX_PRESS_DELAY_POWER)
 				return 0;	// lond_press symbol already returned
-			if (kbd_press < KBD_MAX_PRESS_DELAY_POWER)
+			if (kbdp->kbd_press < KBD_MAX_PRESS_DELAY_POWER)
 			{
-				if (++ kbd_press == KBD_MAX_PRESS_DELAY_POWER)
+				if (++ kbdp->kbd_press == KBD_MAX_PRESS_DELAY_POWER)
 				{
-					* key = qmdefs [kbd_last].holded; // lond_press symbol
+					* key = qmdefs [kbdp->kbd_last].holded; // lond_press symbol
 					//
 					return 1;
 				}
@@ -180,13 +229,13 @@ kbd_scan_local(uint_fast8_t * key)
 		else
 		{
 			// клавиша может работать с длинным нажатием
-			if (kbd_press == KBD_MAX_PRESS_DELAY_LONG)
+			if (kbdp->kbd_press == KBD_MAX_PRESS_DELAY_LONG)
 				return 0;	// lond_press symbol already returned
-			if (kbd_press < KBD_MAX_PRESS_DELAY_LONG)
+			if (kbdp->kbd_press < KBD_MAX_PRESS_DELAY_LONG)
 			{
-				if (++ kbd_press == KBD_MAX_PRESS_DELAY_LONG)
+				if (++ kbdp->kbd_press == KBD_MAX_PRESS_DELAY_LONG)
 				{	
-					* key = qmdefs [kbd_last].holded; // lond_press symbol
+					* key = qmdefs [kbdp->kbd_last].holded; // lond_press symbol
 					//
 					return 1;
 				}
@@ -195,52 +244,52 @@ kbd_scan_local(uint_fast8_t * key)
 		return 0;
 
 	}
-	else if (kbd_release != 0) // Нет нажатой клавишии - было нажатие
+	else if (kbdp->kbd_release != 0) // Нет нажатой клавишии - было нажатие
 	{
 		if (notstab)
 		{
-			kbd_press = 0;		// слишком короткие нажатия игнорируем
-			kbd_release = 0;
+			kbdp->kbd_press = 0;		// слишком короткие нажатия игнорируем
+			kbdp->kbd_release = 0;
 			//dbg_putchar('J');
 			return 0;
 		}
 		//dbg_putchar('r');
 		// keyboard keys released, time is not expire.
-		if (-- kbd_release == 0)
+		if (-- kbdp->kbd_release == 0)
 		{
-			const uint_fast8_t flags = qmdefs [kbd_last].flags;
+			const uint_fast8_t flags = qmdefs [kbdp->kbd_last].flags;
 			// time is expire
 			if ((flags & KIF_FAST) != 0)
 			{
 #if WITHKBDENCODER
 				// Перестройка клавишами вместо валкодера
 				//if (kbd_press < KBD_MED_STAGE1)
-				if (kbd_slowcount == 0)
+				if (kbdp->kbd_slowcount == 0)
 				{
-					encoder_kbdctl(qmdefs [kbd_last].code, 0);
+					encoder_kbdctl(qmdefs [kkbdp->bd_last].code, 0);
 					//dbg_putchar('Q');
 					//dbg_putchar('0' + kbd_last);
 				}
 				//else
 				//	dbg_putchar('F');
 
-				kbd_press = 0;
-				kbd_slowcount = 0;
+				kbdp->kbd_press = 0;
+				kbdp->kbd_slowcount = 0;
 				return 0;		// уже было срабатывание по быстрому автоповтору
 #endif /* WITHKBDENCODER */
 			}
-			else if (kbd_press < KBD_MAX_PRESS_DELAY_LONG)
+			else if (kbdp->kbd_press < KBD_MAX_PRESS_DELAY_LONG)
 			{
-				* key = qmdefs [kbd_last].code;
-				kbd_press = 0;
-				kbd_slowcount = 0;
+				* key = qmdefs [kbdp->kbd_last].code;
+				kbdp->kbd_press = 0;
+				kbdp->kbd_slowcount = 0;
 
 				return 1;		// срабатывание по кратковременному нажатию на клавишу.
 			}
 			else
 			{
-				kbd_press = 0;
-				kbd_slowcount = 0;
+				kbdp->kbd_press = 0;
+				kbdp->kbd_slowcount = 0;
 
 				return 0;		// уже было срабатывание по автоповтору или по длинному нажатию.
 			}
@@ -253,40 +302,38 @@ kbd_scan_local(uint_fast8_t * key)
 }
 
 static IRQLSPINLOCK_t irqllock = IRQLSPINLOCK_INIT;
-static volatile uint_fast8_t kbd_ready;
-
-static u8queue_t kbdq;
 
 // вызывается с частотой TICKS_FREQUENCY герц
 // после завершения полного цикла ADC по всем входам.
 static void
 kbd_spool(void * ctx)
 {
+	kbdst_t * const kbdp = (kbdst_t *) ctx;
 	uint_fast8_t code;
-	if (kbd_scan_local(& code) != 0)
+	if (kbd_scan_local(kbdp, & code) != 0)
 	{
-		kbd_beep = KBD_BEEP_LENGTH;
+		kbdp->kbd_beep = KBD_BEEP_LENGTH;
 		board_keybeep_enable(1);	/* начать формирование звукового сигнала */
 
 #if ! WITHBBOX
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& irqllock, & oldIrql, IRQL_SYSTEM);
 
-		uint8_queue_put(& kbdq, code);
+		uint8_queue_put(& kbdp->kbdq, code);
 
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 #endif /* ! WITHBBOX */
 	}
 	else
 	{
-		if (kbd_beep != 0 && -- kbd_beep == 0)
+		if (kbdp->kbd_beep != 0 && -- kbdp->kbd_beep == 0)
 			board_keybeep_enable(0);
 	}
-	kbd_ready = 1;
+	kbdp->kbd_ready = 1;
 }
 
-uint_fast8_t 
-kbd_is_tready(void)
+static uint_fast8_t
+kbdx_is_tready(kbdst_t * kbdp)
 {
 #if CPUSTYLE_STM32F30X
 
@@ -298,7 +345,7 @@ kbd_is_tready(void)
 
 	uint_fast8_t f;
 
-	f = kbd_ready;
+	f = kbdp->kbd_ready;
 	return f;
 
 #else /* WITHCPUADCHW */
@@ -307,77 +354,78 @@ kbd_is_tready(void)
 #endif /* WITHCPUADCHW */
 }
 
+uint_fast8_t
+kbd_is_tready(void)
+{
+	return kbdx_is_tready(& kbd0);
+}
 /* Проверка, нажата ли клавиша c указанным флагом
 // KIF_ERASE или KIF_EXTMENU
  */
-uint_fast8_t kbd_get_ishold(uint_fast8_t flag)
+uint_fast8_t kbdx_get_ishold(kbdst_t * kbdp, uint_fast8_t flag)
 {
 #if WITHBBOX
 	return 0;
 #else /* WITHBBOX */
 	uint_fast8_t r;
-	uint_fast8_t f = !! kbd_press;
+	uint_fast8_t f = !! kbdp->kbd_press;
 
-	r = f && (qmdefs [kbd_last].flags & flag);
+	r = f && (qmdefs [kbdp->kbd_last].flags & flag);
 	return r;
 #endif /* WITHBBOX */
 }
 
-uint_fast8_t kbd_scan(uint_fast8_t * v)
+static uint_fast8_t kbdx_scan(kbdst_t * kbdp, uint_fast8_t * v)
 {
 	uint_fast8_t f;
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& irqllock, & oldIrql, IRQL_SYSTEM);
 
-	f = uint8_queue_get(& kbdq, v);
+	f = uint8_queue_get(& kbdp->kbdq, v);
 
 	IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 	return f;
 }
 
-void kbd_pass(void)
+void kbdx_pass(kbdst_t * kbdp)
 {
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
 
-	kbd_spool(NULL);
+	kbd_spool(kbdp);
 
 	LowerIrql(oldIrql);
+}
+
+uint_fast8_t kbd_scan(uint_fast8_t * v)
+{
+	return kbdx_scan(& kbd0, v);
+}
+
+void kbd_pass(void)
+{
+	kbdx_pass(& kbd0);
+}
+
+uint_fast8_t kbd_get_ishold(uint_fast8_t flag)
+{
+	return kbdx_get_ishold(& kbd0, flag);
 }
 
 /* инициализация переменных работы с клавиатурой */
 void kbd_initialize(void)
 {
-	static ticker_t kbdticker;
-	static adcdone_t aevent;
+	kbdst_initialize(& kbd0, board_get_pressed_key);
 
 	IRQLSPINLOCK_INITIALIZE(& irqllock);
 
-	kbd_last = board_get_pressed_key();
-	if (kbd_last != KEYBOARD_NOKEY)
-	{
-		// самое первое нажатие
-		kbd_press = 1;
-		kbd_release = 0;
-		kbd_slowcount = 0;
-	}
 
-	static uint8_t kbdfifo [16];
-
-	uint8_queue_init(& kbdq, kbdfifo, sizeof kbdfifo / sizeof kbdfifo [0]);
 
 	// todo: все присвоения нулями могут быть убраны.
 
 	////kbd_press = 0;
 	////kbd_release = 0;
 	////kbd_repeat = 0;
-#if WITHCPUADCHW
-	adcdone_initialize(& aevent, kbd_spool, NULL);
-	adcdone_add(& aevent);
-#else /* KEYBOARD_USE_ADC */
-	ticker_initialize(& kbdticker, NTICKS(KBD_TICKS_PERIOD), kbd_spool, NULL);
-	ticker_add(& kbdticker);
-#endif /* KEYBOARD_USE_ADC */
 }
 
 #else /* WITHKEYBOARD */
@@ -385,6 +433,7 @@ void kbd_initialize(void)
 /* инициализация переменных работы с клавиатурой */
 void kbd_initialize(void)
 {
+	kbdst_initialize(& kbd0);
 }
 
 uint_fast8_t kbd_is_tready(void)
