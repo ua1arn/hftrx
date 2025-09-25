@@ -62,6 +62,9 @@ typedef struct kbdst_tag
 } kbdst_t;
 
 static kbdst_t kbd0;
+#if WITHSUBTONES
+static kbdst_t dtmf_kbd;
+#endif /* WITHSUBTONES */
 
 static void kbdst_initialize(kbdst_t * kbdp, uint_fast8_t (* get_pressed_key_cb)(void))
 {
@@ -315,14 +318,12 @@ kbd_spool(void * ctx)
 		kbdp->kbd_beep = KBD_BEEP_LENGTH;
 		board_keybeep_enable(1);	/* начать формирование звукового сигнала */
 
-#if ! WITHBBOX
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& irqllock, & oldIrql, IRQL_SYSTEM);
 
 		uint8_queue_put(& kbdp->kbdq, code);
 
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
-#endif /* ! WITHBBOX */
 	}
 	else
 	{
@@ -364,15 +365,11 @@ kbd_is_tready(void)
  */
 uint_fast8_t kbdx_get_ishold(kbdst_t * kbdp, uint_fast8_t flag)
 {
-#if WITHBBOX
-	return 0;
-#else /* WITHBBOX */
 	uint_fast8_t r;
 	uint_fast8_t f = !! kbdp->kbd_press;
 
 	r = f && (qmdefs [kbdp->kbd_last].flags & flag);
 	return r;
-#endif /* WITHBBOX */
 }
 
 static uint_fast8_t kbdx_scan(kbdst_t * kbdp, uint_fast8_t * v)
@@ -409,13 +406,30 @@ void kbd_pass(void)
 
 uint_fast8_t kbd_get_ishold(uint_fast8_t flag)
 {
+#if WITHBBOX
+	return 0;
+#else /* WITHBBOX */
 	return kbdx_get_ishold(& kbd0, flag);
+#endif /* WITHBBOX */
+}
+
+uint_fast8_t
+static dummy_get_pressed_key(void)
+{
+	return KEYBOARD_NOKEY;
 }
 
 /* инициализация переменных работы с клавиатурой */
 void kbd_initialize(void)
 {
+#if WITHBBOX
+	kbdst_initialize(& kbd0, dummy_get_pressed_key);
+#else /* WITHBBOX */
 	kbdst_initialize(& kbd0, board_get_pressed_key);
+#endif /* WITHBBOX */
+#if WITHSUBTONES
+	kbdst_initialize(& dtmf_kbd, dummy_get_pressed_key);
+#endif /* WITHSUBTONES */
 
 	IRQLSPINLOCK_INITIALIZE(& irqllock);
 
