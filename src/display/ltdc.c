@@ -2308,6 +2308,7 @@ static int hdmi_edid_read(HDMI_TX_TypeDef * const hdmi, unsigned page, uint8_t *
 	return 0;
 }
 
+//  Панель WareShare
 //	EDID Structure Version & Revision: 01 03
 //	00000000: 00 FF FF FF FF FF FF 00 12 E5 00 21 50 2D 31 01  ...........!P-1.
 //	00000010: 1C 13 01 03 81 2F 1A 78 2E 35 85 A6 56 48 9A 24  ...../.x.5..VH.$
@@ -2326,6 +2327,9 @@ static int hdmi_edid_read(HDMI_TX_TypeDef * const hdmi, unsigned page, uint8_t *
 //	000000E0: 28 55 40 B9 88 21 00 00 1E 02 3A 80 D0 72 38 2D  (U@..!....:..r8-
 //	000000F0: 40 10 2C 45 80 B9 88 21 00 00 1E 00 00 00 00 D0  @.,E...!........
 
+//	Маленький телевизор
+//	1440x900 106.5MHz
+//	1440x900 88.75MHz
 //	EDID Structure Version & Revision: 01 03
 //	00000000: 00 FF FF FF FF FF FF 00 41 0C 55 D0 46 11 00 00  ........A.U.F...
 //	00000010: 0F 12 01 03 80 29 1A 78 2A 78 F5 A6 55 48 9B 26  .....).x*x..UH.&
@@ -2344,7 +2348,10 @@ static int hdmi_edid_read(HDMI_TX_TypeDef * const hdmi, unsigned page, uint8_t *
 //	000000E0: 1D 80 D0 72 1C 16 20 10 2C 25 80 34 CD 31 00 00  ...r.. .,%.4.1..
 //	000000F0: 9E 00 00 00 00 00 00 00 00 00 00 00 00 00 00 3F  ...............?
 
-// большой телевизор
+// 	большой телевизор
+// 	1920x1080
+// 	1366x768
+// 	EDID Version: 1.3
 //	00000000: 00 FF FF FF FF FF FF 00 52 62 00 00 00 00 00 00  ........Rb......
 //	00000010: 20 1F 01 03 80 00 00 78 0A D7 A5 A2 59 4A 96 24   ......x....YJ.$
 //	00000020: 14 50 54 A3 08 00 81 C0 01 01 01 01 01 01 01 01  .PT.............

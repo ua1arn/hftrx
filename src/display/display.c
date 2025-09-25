@@ -1990,10 +1990,10 @@ const videomode_t * get_videomode_CRT(void)
 const videomode_t * get_videomode_HDMI(void)
 {
 	//return & vdmode_HDMI_1024x768at60;	// большой телевизор не занимается масштабированием этого формата ! TESTED
-	return & vdmode_HDMI_1366x768at60;	// б. тел. не занимается масштабированием этого формата ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
+	//return & vdmode_HDMI_1366x768at60;	// б. тел. не занимается масштабированием этого формата ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
 	//return & vdmode_HDMI_1280x720at50;	// б. тел. масштабирует ! TESTED
 	//return & vdmode_HDMI_1440x900at50;	// б. тел. не занимается масштабированием этого формата ! TESTED, параметры не подтверждены, работает на 50 герц
-	//return & vdmode_HDMI_1920x1080at60;	// б. тел. масштабирует ! TESTED
+	return & vdmode_HDMI_1920x1080at60;	// б. тел. масштабирует ! TESTED
 }
 
 #endif /* WITHLTDCHW */
