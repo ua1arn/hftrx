@@ -349,7 +349,10 @@ void display_bar(
 	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
 	);
 
+// Используется при выводе на графический индикатор, нормальный шрифт
 void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan);		// Выдача строки из ОЗУ в указанное место экрана.
+// Используется при выводе на графический индикатор, мелкий шрифт
+void display_text2(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan);		// Выдача строки из ОЗУ в указанное место экрана.
 
 
 // большие и средние цифры (частота)
@@ -662,6 +665,7 @@ uint_fast8_t bigfont_width(char cc);
 uint_fast8_t halffont_width(char cc);
 uint_fast8_t smallfont_width(char cc);
 uint_fast8_t smallfont2_width(char cc);
+uint_fast8_t smallfont2_height(void);
 uint_fast8_t smallfont3_width(char cc);
 uint_fast8_t smallfont_height(void);
 

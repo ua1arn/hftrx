@@ -385,10 +385,16 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_x2_put_char_small(
 
 
 #if defined (SMALLCHARH2)
+
 uint_fast8_t smallfont2_width(char cc)
 {
 	(void) cc;
 	return SMALLCHARW2;	// полная ширина символа в пикселях
+}
+
+uint_fast8_t smallfont2_height(void)
+{
+	return SMALLCHARH2;	// полная ширина символа в пикселях
 }
 
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
@@ -970,8 +976,30 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 
 #endif /* WITHLVGL //&& ! LINUX_SUBSYSTEM */
 
+// Используется при выводе на графический индикатор, мелкий шрифт
+void
+display_text2(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan)
+{
+	char c;
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
+	const uint_fast16_t h = GRID2Y(yspan);
+	const uint_fast16_t w = GRID2X(yspan);
+	uint_fast16_t xpix0 = xpix;
 
-// Используется при выводе на графический индикатор,
+	colpip_fillrect(db, xpix, ypix, w, h, ltdc_bg);
+	if (h > smallfont2_height())
+	{
+		ypix += (h - smallfont2_height()) / 2;
+	}
+
+	while (xpix - xpix0 + smallfont2_width(' ') < w)
+		xpix = colorpip_put_char_small2(db, xpix, ypix, ' ', ltdc_fg);
+	while ((c = * s ++) != '\0' && xpix - xpix0 + smallfont2_width(c) < w)
+		xpix = colorpip_put_char_small2(db, xpix, ypix, c, ltdc_fg);
+}
+
+// Используется при выводе на графический индикатор, нормальный шрифт
 void
 display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan)
 {
@@ -1017,7 +1045,7 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	}
 	for (len = strlen(s); len < xspan; ++ len)
 		xpix = colorpip_put_char_small(db, xpix, ypix, ' ', ltdc_fg);
-	while((c = * s ++) != '\0' && xspan --)
+	while ((c = * s ++) != '\0' && xspan --)
 		xpix = colorpip_put_char_small(db, xpix, ypix, c, ltdc_fg);
 
 }
