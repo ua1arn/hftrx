@@ -196,6 +196,7 @@ void kbd_pass(void);
 uint_fast8_t kbd_scan(uint_fast8_t * key);
 uint_fast8_t kbd_get_ishold(uint_fast8_t flag);
 uint_fast8_t kbd_getnumpad(uint_fast8_t key);
+uint_fast8_t dtmf_scan(uint_fast8_t * v);
 
 struct qmkey 
 {

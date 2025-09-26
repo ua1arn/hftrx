@@ -399,6 +399,15 @@ uint_fast8_t kbd_scan(uint_fast8_t * v)
 	return kbdx_scan(& kbd0, v);
 }
 
+uint_fast8_t dtmf_scan(uint_fast8_t * v)
+{
+#if WITHSUBTONES
+	return kbdx_scan(& dtmf_kbd, v);
+#else /* WITHSUBTONES */
+	return 0;
+#endif /* WITHSUBTONES */
+}
+
 void kbd_pass(void)
 {
 	kbdx_pass(& kbd0);
@@ -465,6 +474,10 @@ uint_fast8_t kbd_scan(uint_fast8_t * v)
 	return 0;
 }
 
+uint_fast8_t dtmf_scan(uint_fast8_t * v)
+{
+	return 0;
+}
 
 void kbd_pass(void)
 {

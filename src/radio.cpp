@@ -19638,7 +19638,11 @@ static void appspoolprocess(void * ctx)
 static void keyspoolprocess(void * ctx)
 {
 #if ! defined (HAVE_BTSTACK_STDIN)
-
+	uint_fast8_t dtmfch;
+	if (dtmf_scan((& dtmfch)))
+	{
+		PRINTF("dtmfkey=%02X\n", (unsigned char) dtmfch);
+	}
 	/* здесь можно добавить обработку каких-либо команд с debug порта */
 	char c;
 	if (dbg_getchar(& c))
