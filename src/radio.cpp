@@ -21528,6 +21528,7 @@ typedef struct goeSTATE_tag
 
 static void goe_initialize(goeCOEF_t * goe, FLOAT_t freq, int_fast32_t Fs)
 {
+	ASSERT(freq != 0);
 	const FLOAT_t w = M_TWOPI * (FLOAT_t) goe_ctssLENGTH * freq /(FLOAT_t) Fs / (FLOAT_t) goe_ctssLENGTH;
 	goe->CW = COSF(w);
 	goe->C = goe->CW * 2;// 2 * cosf(w)
