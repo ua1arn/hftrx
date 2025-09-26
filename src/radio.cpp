@@ -21494,6 +21494,405 @@ static void dpc_displatch_timer_fn(void * arg)
 	}
 }
 
+#if WITHSUBTONES
+
+// CTCSS при частоте дискретизации 48/16 = 3 кГц распознается при 2048 и при 1530 точках
+// CTCSS при частоте дискретизации 48/32 = 1.5 кГц распознается при 1024 точках
+
+#define goe_ctssLENGTH  	1024 // points for Goertzel - зависит точность определения частоты
+
+
+// Goertzel
+
+void goertzel_win_initialize(FLOAT_t * w, int n)
+{
+	int i;
+	for (i = 0; i < n; i++)
+	{
+		// init window (Hamming)
+		w [i] = ((FLOAT_t) 0.54 - (FLOAT_t) 0.46 * COSF(M_TWOPI * (FLOAT_t) i / (FLOAT_t) (n - 1)));
+	}
+}
+
+// Goertzel constants
+typedef struct goeCOEF_tag
+{
+	FLOAT_t C, CW, SW;
+} goeCOEF_t;
+
+// Goertzel status registers
+typedef struct goeSTATE_tag
+{
+	FLOAT_t Z1, Z2;
+} goeSTATE_t;
+
+static void goe_initialize(goeCOEF_t * goe, FLOAT_t freq, int_fast32_t Fs)
+{
+	const FLOAT_t w = M_TWOPI * (FLOAT_t) goe_ctssLENGTH * freq /(FLOAT_t) Fs / (FLOAT_t) goe_ctssLENGTH;
+	goe->CW = COSF(w);
+	goe->C = goe->CW * 2;// 2 * cosf(w)
+	goe->SW = SINF(w);
+}
+
+// Goertzel iteration
+static void goe_process(const goeCOEF_t * goe, goeSTATE_t * const goes, FLOAT_t x)
+{
+	const FLOAT_t z0 = x + goe->C * goes->Z1 - goes->Z2;
+	goes->Z2 = goes->Z1;
+	goes->Z1 = z0;
+}
+
+// Goertzel reset
+static void goe_reset(goeSTATE_t * const goes)
+{
+	goes->Z1 = 0;
+	goes->Z2 = 0;
+}
+
+static FLOAT_t goe_result(const goeCOEF_t * goe, const goeSTATE_t * const goes)
+{
+	// CORDIC may be used here to compute atan2() and sqrt()
+	const FLOAT_t I = goe->CW * goes->Z1 - goes->Z2;      // Goertzel final goeI
+	const FLOAT_t Q = goe->SW * goes->Z1;              // Goertzel final goeQ
+	return I * I + Q * Q;         // magnitude squared (power)
+}
+
+// CTCSS decoding
+//enum { CTCSS_DECIM = ARMI2SRATE / 750 };
+enum { CTCSS_DECIM = 32 };
+
+#define CTCSS_NFREQUES ARRAY_SIZE(gsubtones)
+
+// IIR filter before decimation
+#define CTCSS_LPF_STAGES_IIR 9
+
+// Дециматор для Zoom FFT
+#define CTCSS_DECIM_STAGES_FIR 8	// Maximum taps from all zooms
+
+static goeCOEF_t ctcssCOEFs [CTCSS_NFREQUES];
+static goeSTATE_t ctcssSTATEs [CTCSS_NFREQUES];
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) ctcss_iir_config;
+static ARM_MORPH(arm_fir_decimate_instance) ctcss_fir_config;
+#if defined(ARM_MATH_NEON)
+static FLOAT_t ctcss_iir_state [CTCSS_LPF_STAGES_IIR * 8];
+#else /* defined(ARM_MATH_NEON) */
+static FLOAT_t ctcss_iir_state [CTCSS_LPF_STAGES_IIR * 4];
+#endif /* defined(ARM_MATH_NEON) */
+static FLOAT_t ctcss_fir_state [CTCSS_DECIM_STAGES_FIR + goe_ctssLENGTH  * CTCSS_DECIM - 1];
+
+static FLOAT_t goertz_ctss_win [goe_ctssLENGTH]; // Window
+
+static std::atomic<int> searchix(-1);
+
+uint_fast8_t hamradio_get_ctcss_active(uint_fast32_t * freq)
+{
+	int i = searchix;
+	if (i >= 0)
+	{
+		* freq = gsubtones [i];
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+static int_fast16_t glob_ctcssrx;
+
+int ctcss_squelch(void)
+{
+	if (glob_ctcssrx == 0)
+		return 1;
+	return 1;
+}
+
+void
+board_set_ctcssrx(
+	uint_least16_t tonefreq01)	/* tonefreq - частота в десятых долях герца. частота не-0 - разрешить. */
+{
+	uint_least16_t v = tonefreq01 * 10;
+	if (glob_ctcssrx != v)
+	{
+		glob_ctcssrx = v;
+		//board_dsp1regchanged();
+	}
+}
+
+void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+{
+	static FLOAT_t ctcss_buffer [goe_ctssLENGTH * CTCSS_DECIM];	// входные данные для обработки
+	static unsigned incount;
+	unsigned i;
+	unsigned n;
+
+	ctcss_buffer [incount] = ch0;
+	if (++ incount < ARRAY_SIZE(ctcss_buffer))
+		return;
+	incount = 0; // finalize and decode
+
+	// filter
+	ARM_MORPH(arm_biquad_cascade_df2T)(& ctcss_iir_config, ctcss_buffer, ctcss_buffer, ARRAY_SIZE(ctcss_buffer));
+	// decimator
+	ARM_MORPH(arm_fir_decimate)(& ctcss_fir_config, ctcss_buffer, ctcss_buffer, ARRAY_SIZE(ctcss_buffer));
+	// обработка буфера после децимации
+	for (n = 0; n < goe_ctssLENGTH; ++ n)
+	{
+		const FLOAT_t x = ctcss_buffer [n] * goertz_ctss_win [n]; // windowing
+		// **** GOERTZEL ITERATION ****
+		for (i = 1; i < CTCSS_NFREQUES; ++ i)
+		{
+			const goeCOEF_t * const goe = & ctcssCOEFs [i];
+			goeSTATE_t * const goes = & ctcssSTATEs [i];
+
+			goe_process(goe, goes, x);
+		} 	// Goertzel status update
+	}
+	// **** GOERTZEL ITERATION ****
+
+	static FLOAT_t goeM2 [CTCSS_NFREQUES]; // Goertzel output: real, imag, squared magnitude
+
+	for (i = 1; i < CTCSS_NFREQUES; ++ i)
+	{
+		const goeCOEF_t * const goe = & ctcssCOEFs [i];
+		const goeSTATE_t * const goes = & ctcssSTATEs [i];
+		goeM2 [i] = goe_result(goe, goes);
+	}
+	for (i = 1; i < CTCSS_NFREQUES; ++ i)
+	{
+		goeSTATE_t * const goes = & ctcssSTATEs [i];
+		goe_reset(goes);
+	} // Goertzel reset
+
+	FLOAT_t noisemax1, max1;
+	uint32_t index1;
+
+	ARM_MORPH(arm_max)(goeM2, CTCSS_NFREQUES, & max1, & index1);
+	goeM2 [index1] = - 1;
+	ARM_MORPH(arm_max_no_idx)(goeM2, CTCSS_NFREQUES, & noisemax1);
+
+	const FLOAT_t goeTH = noisemax1 * 100; // threshold = 10 dB
+
+	if (max1 > goeTH)
+	{
+		searchix = index1;
+		//PRINTF("z%i ", (int) index1);
+	}
+	else
+	{
+		searchix = - 1;
+	}
+
+}
+
+
+static void ctcss_initialize(void)
+{
+
+	// 1/16 decimation
+	//static FLOAT_t ctcss_IIRCoeffs [CTCSS_LPF_STAGES_IIR * 5] =
+	//{
+	//	0.6500044972642, 0, 0, 0, 0, 1, -1.935616780918, 1, 1.908632776595, -0.9387888949475, 0.4599444315799, 0, 0, 0, 0, 1, -1.880017827578, 1, 1.851418291083, -0.8732990221737, 0.2087317940803, 0, 0, 0, 0, 1, -1.278402634611, 1, 1.794539349192, -0.80764043772, 0.01645106748385, 0, 0, 0, 0, 1, -1.948135342532, 1, 1.948194658987, -0.9825675157696, 1, 0, 0, 0, 0
+	//};
+	static FLOAT_t ctcss_IIRCoeffs [CTCSS_LPF_STAGES_IIR * 5];
+
+	static const FLOAT_t ctcss_FIRCoeffs [CTCSS_DECIM_STAGES_FIR] =
+	{
+		-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792
+	};
+	//PRINTF("ctcss_initialize start\n");
+	const int_fast32_t samplerate = ARMI2SRATE;	// Hz sampling frequency
+
+	goertzel_win_initialize(goertz_ctss_win, goe_ctssLENGTH);
+	//if (1)
+	{
+		iir_filter_t f0;
+		biquad_create(& f0, CTCSS_LPF_STAGES_IIR);
+		biquad_init_lowpass(& f0, samplerate, 300);
+		fill_biquad_coeffs(& f0, ctcss_IIRCoeffs);
+	}
+
+	// filter
+	// Initialize floating-point Biquad cascade filter.
+	ARM_MORPH(arm_biquad_cascade_df2T_init)(& ctcss_iir_config, CTCSS_LPF_STAGES_IIR, ctcss_IIRCoeffs, ctcss_iir_state);
+
+	// decimator
+	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_fir_decimate_init)(& ctcss_fir_config,
+						CTCSS_DECIM_STAGES_FIR,
+						CTCSS_DECIM,          // Decimation factor
+						ctcss_FIRCoeffs,
+						ctcss_fir_state,            // Filter state variables
+						goe_ctssLENGTH * CTCSS_DECIM));
+
+
+	unsigned i;
+	for (i = 1; i < CTCSS_NFREQUES; ++ i)
+	{
+		// init Goertzel constants
+		goeCOEF_t * const goe = & ctcssCOEFs [i];
+		goe_initialize(goe, (FLOAT_t) gsubtones [i] / 10, samplerate / CTCSS_DECIM);
+	}
+
+	for (i = 1; i < CTCSS_NFREQUES; ++ i)
+	{
+		goeSTATE_t * const goes = & ctcssSTATEs [i];
+		goe_reset(goes);
+	} // Goertzel reset
+
+	static subscribefloat_t ctcss_register;
+	subscribefloat(& speexinfloat, & ctcss_register, NULL, ctcss_processing);	// выход приёмника до фильтров
+	//PRINTF("ctcss_initialize done\n");
+}
+
+// DTMF decoding
+
+#define goe_dtmfLENGTH  	2048 // points for Goertzel - зависит точность определения частоты
+
+
+// DTMF frequencies
+static const int frow [4] = { 697, 770, 852, 941 }; // 1st tone
+static const int fcol [4] = { 1209, 1336, 1477, 1633 }; // 2nd tone
+
+// DTMF symbols
+static const char sym [16] =
+{
+	'1', '4', '7', '*', '2', '5', '8', '0', '3', '6', '9', '#', 'A', 'B',
+	'C', 'D'
+};
+
+// DTMF decoding matrix
+static const int symmtx[4][4] =
+{
+	{ 0, 4, 8, 12 },
+	{ 1, 5, 9, 13 },
+	{ 2, 6, 10, 14 },
+	{ 3, 7, 11, 15 }
+};
+
+#define DTMF_NFREQUES 8
+static goeCOEF_t goeCOEFs [DTMF_NFREQUES];
+static goeSTATE_t goeSTATEs [DTMF_NFREQUES];
+
+static void dtmf_out(void * ctx, char c)
+{
+	PRINTF("%c", c);
+}
+
+uint_fast8_t
+dtmf_get_pressed_key(void)
+{
+	return KEYBOARD_NOKEY;
+}
+
+static FLOAT_t goertz_dtmf_win [goe_dtmfLENGTH]; // Window
+
+void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+{
+	static unsigned n;
+	unsigned i;
+
+	const FLOAT_t x = ch0 * goertz_dtmf_win [n]; // windowing
+	// **** GOERTZEL ITERATION ****
+	for (i = 0; i < DTMF_NFREQUES; ++ i)
+	{
+		const goeCOEF_t * const goe = & goeCOEFs [i];
+		goeSTATE_t * const goes = & goeSTATEs [i];
+
+		goe_process(goe, goes, x);
+	} 	// Goertzel status update
+
+	// **** GOERTZEL ITERATION ****
+	if (++ n >= goe_dtmfLENGTH)
+	{
+		// finalize and decode
+		n = 0;
+
+		static FLOAT_t goeM2 [DTMF_NFREQUES]; // Goertzel output: real, imag, squared magnitude
+
+		for (i = 0; i < DTMF_NFREQUES; ++ i)
+		{
+			const goeCOEF_t * const goe = & goeCOEFs [i];
+			const goeSTATE_t * const goes = & goeSTATEs [i];
+			goeM2 [i] = goe_result(goe, goes);
+
+		}
+		// Initial state
+		for (i = 0; i < DTMF_NFREQUES; ++ i)
+		{
+			goeSTATE_t * const goes = & goeSTATEs [i];
+			goe_reset(goes);
+		} // Goertzel reset
+
+		// Определение наличия двух тонов
+		FLOAT_t noisemax1, max1, max2;
+		uint32_t index1, index2;
+
+		ARM_MORPH(arm_max)(goeM2 + 0, DTMF_NFREQUES / 2, & max1, & index1);
+		goeM2 [index1] = - 1;
+		ARM_MORPH(arm_max)(goeM2 + 4, DTMF_NFREQUES / 2, & max2, & index2);
+		index2 += 4;
+		goeM2 [index2] = - 1;
+		ARM_MORPH(arm_max_no_idx)(goeM2, DTMF_NFREQUES, & noisemax1);
+
+		const FLOAT_t goeTH = noisemax1 * 100; // threshold = 10 dB
+
+		if (max1 > goeTH && max2 > goeTH)
+		{
+			//PRINTF("i1=%u i2=%u\n", index1, index2);
+			if (index1 >= 4 && index2 < 4)
+			{
+				dtmf_out(ctx, sym [symmtx [index2] [index1 - 4]]);
+				//PRINTF(" %u %u %u\n", (int) (100 * goeTH), (int) (100 * max1), (int) (100 * max2));
+			}
+			else if (index1 < 4 && index2 >= 4)
+			{
+				dtmf_out(ctx, sym [symmtx [index1] [index2 - 4]]);
+				//PRINTF(" %u %u %u\n", (int) (100 * goeTH), (int) (100 * max1), (int) (100 * max2));
+			}
+			else
+			{
+				// Равны или в одной группе
+			}
+		}
+	}
+
+}
+
+static void dtmf_initialize(void)
+{
+	//PRINTF("dtmf_initialize start\n");
+	const int_fast32_t Fs = ARMI2SRATE;	// Hz sampling frequency
+	unsigned i;
+	goertzel_win_initialize(goertz_dtmf_win, goe_dtmfLENGTH);
+
+	for (i = 0; i < 4; i++)
+	{
+		// init Goertzel constants
+		// CORDIC may be used here to compute sin() and cos()
+		goeCOEF_t * const goe = & goeCOEFs [i];
+		goe_initialize(goe, frow [i], Fs);
+	}
+
+	for (i = 0; i < 4; i++)
+	{
+		// init Goertzel constants
+
+		goeCOEF_t * const goe = & goeCOEFs [i + 4];
+		goe_initialize(goe, fcol [i], Fs);
+	}
+	for (i = 0; i < DTMF_NFREQUES; ++ i)
+	{
+		goeSTATE_t * const goes = & goeSTATEs [i];
+		goe_reset(goes);
+	} // Goertzel reset
+
+	static subscribefloat_t dtmf_register;
+	subscribefloat(& speexoutfloat, & dtmf_register, NULL, dtmf_processing);	// выход speex и фильтра
+	//PRINTF("dtmf_initialize done\n");
+}
+
+#endif /* WITHSUBTONES */
+
 
 /* вызывается при разрешённых прерываниях. */
 void
@@ -21556,6 +21955,12 @@ application_initialize(void)
 #if WITHFT8
 	ft8_initialize();
 #endif /* WITHFT8 */
+
+#if WITHSUBTONES && 0
+	dtmf_initialize();
+	ctcss_initialize();
+#endif /* WITHSUBTONES */
+
 #endif /* WITHINTEGRATEDDSP */
 
 #if WITHUSBHW

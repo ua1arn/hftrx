@@ -460,6 +460,7 @@ void board_set_usb_ft8cn(uint_fast8_t v);	/* совместимость VID/PID 
 void board_set_usb_hs(uint_fast8_t v);	/* Использование USB HS dvtcn USB FS */
 
 void dsp_initialize(void);
+int ctcss_squelch(void);
 
 #if WITHINTEGRATEDDSP
 
