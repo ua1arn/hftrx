@@ -210,6 +210,7 @@ uint_fast8_t geterasekey(void);
 #define KEYBOARD_NOKEY UINT8_MAX
 
 uint_fast8_t board_get_pressed_key(void);	// Если ничего - возвращаем KEYBOARD_NOKEY
+uint_fast8_t dtmf_get_pressed_key(void);
 
 #ifdef __cplusplus
 }

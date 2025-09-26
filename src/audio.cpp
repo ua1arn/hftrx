@@ -197,6 +197,7 @@ static volatile uint_fast8_t uacoutplayer;	/* режим прослушиван�
 static volatile uint_fast8_t btaudioplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 static volatile uint_fast8_t datavox;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 
+static int_fast16_t glob_ctcssrx;
 
 #if WITHINTEGRATEDDSP
 
@@ -3489,7 +3490,10 @@ static RAMFUNC int agc_squelchopen(
 	uint_fast8_t pathi
 	)
 {
-	return fltstrengthslow > manualsquelch [pathi];
+	if (glob_ctcssrx == 0)
+		return fltstrengthslow > manualsquelch [pathi];
+	else
+		return 1;
 }
 
 // Функция для S-метра - получение десятичного логарифма уровня сигнала от FS
@@ -5926,9 +5930,15 @@ static void ctcss_initialize(void)
 }
 
 void
-board_subtone_setfreqrx(
+board_set_ctcssrx(
 	uint_least16_t tonefreq01)	/* tonefreq - частота в десятых долях герца. частота не-0 - разрешить. */
 {
+	uint_least16_t v = tonefreq01 * 10;
+	if (glob_ctcssrx != v)
+	{
+		glob_ctcssrx = v;
+		board_dsp1regchanged();
+	}
 }
 
 // DTMF decoding
@@ -6126,7 +6136,7 @@ void dsp_initialize(void)
 		gwprof = spf;
 	}
 
-#if WITHSUBTONES && 1
+#if WITHSUBTONES && 0
 	dtmf_initialize();
 	ctcss_initialize();
 #endif /* WITHSUBTONES */

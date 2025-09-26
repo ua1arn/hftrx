@@ -12226,7 +12226,7 @@ updateboard_noui(
 				board_set_squelch_level(pamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_NFM ? ulmax(gsquelch.value, gsquelchNFM) : gsquelch.value);
 				board_set_gainnfmrx(ggainnfmrx10 * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 				#if WITHSUBTONES
-					board_subtone_setfreqrx(pamodetempl->subtone && param_getvalue(& xgsubtoneirx) ? gsubtones [param_getvalue(& xgsubtoneirx)] : 0);	// частота subtone (до десятых долей герца).
+					board_set_ctcssrx(pamodetempl->subtone && param_getvalue(& xgsubtoneirx) ? gsubtones [param_getvalue(& xgsubtoneirx)] : 0);	// частота subtone (до десятых долей герца).
 				#endif /* WITHSUBTONES */
 			#endif /* WITHIF4DSP */
 				board_set_nb_enable(pathi, 0);	/* Управлением включением RX Noise Blanker */
@@ -12235,7 +12235,7 @@ updateboard_noui(
 		#if WITHIF4DSP
 			#if WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
-				board_subtone_setfreqtx(gsubtones [param_getvalue(& xgsubtoneitx)]);	// частота subtone (до десятых долей герца).
+				board_set_ctcsstx(gsubtones [param_getvalue(& xgsubtoneitx)]);	// частота subtone (до десятых долей герца).
 			#endif /* WITHSUBTONES */
 			#if WITHTX && WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
@@ -12263,7 +12263,7 @@ updateboard_noui(
 			board_set_vox(gvoxenable && getmodetempl(txsubmode)->vox);	// включение внешних схем VOX
 			#if WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
-				board_subtone_setfreqtx(getmodetempl(txsubmode)->subtone && param_getvalue(& xgsubtoneitx) && gtx ?
+				board_set_ctcsstx(getmodetempl(txsubmode)->subtone && param_getvalue(& xgsubtoneitx) && gtx ?
 						gsubtones [param_getvalue(& xgsubtoneitx)] : 0);	// частота subtone (до десятых долей герца).
 				board_set_subtonelevel(getmodetempl(txsubmode)->subtone && param_getvalue(& xgsubtoneitx) && gtx ?
 						param_getvalue(& xgctsslevel) : 0);	/* Уровень сигнала CTCSS в процентах - 0%..100% */
