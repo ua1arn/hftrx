@@ -6292,8 +6292,7 @@ void board_sidetone_enable(uint_fast8_t state)
 }
 /* функция - заглушка */
 /* subtone */
-void
-static int16_t glob_ctcsstx(
+void board_set_ctcsstx(
 	uint_least16_t tonefreq01)	/* tonefreq - частота в десятых долях герца. */
 {
 }
