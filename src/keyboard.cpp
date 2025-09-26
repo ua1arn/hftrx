@@ -456,7 +456,6 @@ void kbd_initialize(void)
 /* инициализация переменных работы с клавиатурой */
 void kbd_initialize(void)
 {
-	kbdst_initialize(& kbd0);
 }
 
 uint_fast8_t kbd_is_tready(void)
