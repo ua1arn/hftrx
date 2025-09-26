@@ -5284,7 +5284,7 @@ enum
 		588,	/* 58.8 герц */
 		630,	/* 63.0 герц */
 		670,	/* 67.0 герц */
-		694,	/* 69.4 герц */
+		693,	/* 69.3 герц */
 		719,	/* 71.9 герц */
 		744,	/* 74.4 герц */
 		770,	/* 77.0 герц #18 */
@@ -5334,6 +5334,7 @@ enum
 		2503,	/* 250.3 герц */
 		2541,	/* 254.1 герц */
 	};
+	#define CTCSS_NFREQUES ARRAY_SIZE(gsubtones)
 	static size_t getvaltextsubtone(char * buff, size_t count, int_fast32_t value)
 	{
 		if (gsubtones [value] == 0)
@@ -5361,7 +5362,7 @@ enum
 	{
 		QLABEL2("TCTCSS FQ", "T-CTCSS FREQ"), 7, 1, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_LISTSELECT,
-		0, ARRAY_SIZE(gsubtones) - 1,
+		0, CTCSS_NFREQUES - 1,
 		OFFSETOF(struct nvmap, gsubtoneitx),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
@@ -5374,7 +5375,7 @@ enum
 	{
 		QLABEL2("RCTCSS FQ", "R-CTCSS FREQ"), 7, 1, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_LISTSELECT,
-		0, ARRAY_SIZE(gsubtones) - 1,
+		0, CTCSS_NFREQUES - 1,
 		OFFSETOF(struct nvmap, gsubtoneirx),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
@@ -21496,11 +21497,6 @@ static void dpc_displatch_timer_fn(void * arg)
 
 #if WITHSUBTONES
 
-// CTCSS при частоте дискретизации 48/16 = 3 кГц распознается при 2048 и при 1530 точках
-// CTCSS при частоте дискретизации 48/32 = 1.5 кГц распознается при 1024 точках
-
-#define goe_ctssLENGTH  	1024 // points for Goertzel - зависит точность определения частоты
-
 
 // Goertzel
 
@@ -21526,10 +21522,10 @@ typedef struct goeSTATE_tag
 	FLOAT_t Z1, Z2;
 } goeSTATE_t;
 
-static void goe_initialize(goeCOEF_t * goe, FLOAT_t freq, int_fast32_t Fs)
+static void goe_initialize(goeCOEF_t * goe, FLOAT_t freq, int_fast32_t Fs, int_fast32_t n)
 {
 	ASSERT(freq != 0);
-	const FLOAT_t w = M_TWOPI * (FLOAT_t) goe_ctssLENGTH * freq /(FLOAT_t) Fs / (FLOAT_t) goe_ctssLENGTH;
+	const FLOAT_t w = M_TWOPI * (FLOAT_t) n * freq /(FLOAT_t) Fs / (FLOAT_t) n;
 	goe->CW = COSF(w);
 	goe->C = goe->CW * 2;// 2 * cosf(w)
 	goe->SW = SINF(w);
@@ -21559,16 +21555,18 @@ static FLOAT_t goe_result(const goeCOEF_t * goe, const goeSTATE_t * const goes)
 }
 
 // CTCSS decoding
-//enum { CTCSS_DECIM = ARMI2SRATE / 750 };
-enum { CTCSS_DECIM = 32 };
+enum { CTCSS_DECIM = ARMI2SRATE / 800 };
 
-#define CTCSS_NFREQUES ARRAY_SIZE(gsubtones)
+// CTCSS при частоте дискретизации 48/16 = 3 кГц распознается при 2048 и при 1530 точках
+// CTCSS при частоте дискретизации 48/32 = 1.5 кГц распознается при 1024 точках
+
+#define goe_ctssLENGTH  	768 // points for Goertzel - зависит точность определения частоты
 
 // IIR filter before decimation
 #define CTCSS_LPF_STAGES_IIR 9
 
 // Дециматор для Zoom FFT
-#define CTCSS_DECIM_STAGES_FIR 8	// Maximum taps from all zooms
+#define CTCSS_DECIM_STAGES_FIR 6
 
 static goeCOEF_t ctcssCOEFs [CTCSS_NFREQUES];
 static goeSTATE_t ctcssSTATEs [CTCSS_NFREQUES];
@@ -21588,7 +21586,7 @@ static std::atomic<int> searchix(-1);
 uint_fast8_t hamradio_get_ctcss_active(uint_fast32_t * freq)
 {
 	int i = searchix;
-	if (i >= 0)
+	if (i > 0)
 	{
 		* freq = gsubtones [i];
 		return 1;
@@ -21686,20 +21684,18 @@ void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 }
 
-
 static void ctcss_initialize(void)
 {
-
-	// 1/16 decimation
-	//static FLOAT_t ctcss_IIRCoeffs [CTCSS_LPF_STAGES_IIR * 5] =
-	//{
-	//	0.6500044972642, 0, 0, 0, 0, 1, -1.935616780918, 1, 1.908632776595, -0.9387888949475, 0.4599444315799, 0, 0, 0, 0, 1, -1.880017827578, 1, 1.851418291083, -0.8732990221737, 0.2087317940803, 0, 0, 0, 0, 1, -1.278402634611, 1, 1.794539349192, -0.80764043772, 0.01645106748385, 0, 0, 0, 0, 1, -1.948135342532, 1, 1.948194658987, -0.9825675157696, 1, 0, 0, 0, 0
-	//};
 	static FLOAT_t ctcss_IIRCoeffs [CTCSS_LPF_STAGES_IIR * 5];
-
+	// IowaHills calculated coeffs:
 	static const FLOAT_t ctcss_FIRCoeffs [CTCSS_DECIM_STAGES_FIR] =
 	{
-		-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792
+			 0.125304137688421385,
+			 0.166819426964949558,
+			 0.190300554610376316,
+			 0.190300554610376316,
+			 0.166819426964949558,
+			 0.125304137688421385,
 	};
 	//PRINTF("ctcss_initialize start\n");
 	const int_fast32_t samplerate = ARMI2SRATE;	// Hz sampling frequency
@@ -21731,7 +21727,7 @@ static void ctcss_initialize(void)
 	{
 		// init Goertzel constants
 		goeCOEF_t * const goe = & ctcssCOEFs [i];
-		goe_initialize(goe, (FLOAT_t) gsubtones [i] / 10, samplerate / CTCSS_DECIM);
+		goe_initialize(goe, (FLOAT_t) gsubtones [i] / 10, samplerate / CTCSS_DECIM, goe_ctssLENGTH);
 	}
 
 	for (i = 1; i < CTCSS_NFREQUES; ++ i)
@@ -21871,7 +21867,7 @@ static void dtmf_initialize(void)
 		// init Goertzel constants
 		// CORDIC may be used here to compute sin() and cos()
 		goeCOEF_t * const goe = & goeCOEFs [i];
-		goe_initialize(goe, frow [i], Fs);
+		goe_initialize(goe, frow [i], Fs, goe_dtmfLENGTH);
 	}
 
 	for (i = 0; i < 4; i++)
@@ -21879,7 +21875,7 @@ static void dtmf_initialize(void)
 		// init Goertzel constants
 
 		goeCOEF_t * const goe = & goeCOEFs [i + 4];
-		goe_initialize(goe, fcol [i], Fs);
+		goe_initialize(goe, fcol [i], Fs, goe_dtmfLENGTH);
 	}
 	for (i = 0; i < DTMF_NFREQUES; ++ i)
 	{
@@ -21957,7 +21953,7 @@ application_initialize(void)
 	ft8_initialize();
 #endif /* WITHFT8 */
 
-#if WITHSUBTONES && 0
+#if WITHSUBTONES && 1
 	dtmf_initialize();
 	ctcss_initialize();
 #endif /* WITHSUBTONES */
