@@ -652,8 +652,9 @@
 	LV_FONT_DECLARE(Epson_LTDC_small3)		/* width=8, height=8 */ \
 	LV_FONT_DECLARE(Rubik_Medium_16_w2) \
 	LV_FONT_DECLARE(Rubik_Medium_18_w2) \
-	/*LV_FONT_DECLARE(Roboto_Regular_14_w1) */ \
-	/*LV_FONT_DECLARE(Roboto_Regular_16_w1) */ \
+	LV_FONT_DECLARE(Roboto_Medium_14_w1) \
+	/*LV_FONT_DECLARE(Roboto_Medium_16_w1) */ \
+	LV_FONT_DECLARE(Roboto_Medium_18_w1) \
 	/*LV_FONT_DECLARE(Roboto_Regular_56_w1) */ \
 	LV_FONT_DECLARE(eurostyle_56w) \
 	LV_FONT_DECLARE(lvgl_CenturyGothic_big)			/* width=36, height=56 */ \

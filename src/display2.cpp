@@ -148,7 +148,7 @@ static void lvstales_initialize(void)
 		lv_style_set_radius(s, 4);
 		lv_style_set_text_align(s, LV_TEXT_ALIGN_CENTER);
 		lv_style_set_text_opa(s, LV_OPA_COVER);
-	    lv_style_set_text_font(s, & Rubik_Medium_18_w2);
+	    lv_style_set_text_font(s, & Roboto_Medium_18_w1);	// was: Rubik_Medium_18_w2
 	    //lv_style_set_text_letter_space(s, 3);
 	}
 	{
