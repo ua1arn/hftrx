@@ -1644,7 +1644,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0063, ! glob_tuner_bypass);	// Energized - tuner on
 		RBBIT(0062, ! glob_classamode);	// hi power out
 		RBBIT(0061, txgated);	//
-		RBBIT(0060, glob_fanflag || txgated);	// fan
+		RBBIT(0060, glob_fanflag);	// fan
 
 		RBBIT(0057, glob_antenna);	// Ant A/B
 		RBVAL(0050, 1U << glob_bandf2, 7);	// LPF6..LPF0
@@ -1690,7 +1690,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		// DD21 SN74HC595PW в управлении диапазонными фильтрами приёмника
 		RBVAL(0016, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
 		RBVAL(0014, ~ ((! xvrtr && txgated) ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
-		RBBIT(0013, xvrtr && (glob_fanflag || txgated));			/* D3: XVRTR PA FAN */
+		RBBIT(0013, xvrtr && glob_fanflag);			/* D3: XVRTR PA FAN */
 		RBBIT(0012, xvrtr || (glob_bandf == 0));		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
 		RBBIT(0011, ! xvrtr && glob_tx);				// D1: TX ANT relay
 		RBBIT(0010, glob_bandf == 0);		// D0: средневолновый ФНЧ - управление реле на входе
@@ -1766,7 +1766,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0063, ! glob_tuner_bypass);	// Energized - tuner on
 		RBBIT(0062, ! glob_classamode);	// hi power out
 		RBBIT(0061, txgated);	//
-		RBBIT(0060, glob_fanflag || txgated);	// fan
+		RBBIT(0060, glob_fanflag);	// fan
 
 		RBBIT(0057, glob_antenna);	// Ant A/B
 		RBVAL(0050, 1U << glob_bandf2, 7);	// LPF6..LPF0
@@ -1907,7 +1907,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #if WITHFANTIMER
 		ASSERT(WITHFANPWMMIN == FANSPEED_MIN);
 		ASSERT(WITHFANPWMMAX == FANSPEED_MAX);
-		const unsigned fanspeed = (glob_fanflag || txgated) ? glob_fanpwm : FANSPEED_OFF;
+		const unsigned fanspeed = glob_fanflag ? glob_fanpwm : FANSPEED_OFF;
 #else /* WITHFANTIMER */
 		const unsigned fanspeed = FANSPEED_OFF;
 #endif /* WITHFANTIMER */
@@ -2018,7 +2018,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0063, ! glob_tuner_bypass);	// Energized - tuner on
 		RBBIT(0062, ! glob_classamode);	// hi power out
 		RBBIT(0061, txgated);	//
-		RBBIT(0060, glob_fanflag || txgated);	// fan
+		RBBIT(0060, glob_fanflag);	// fan
 
 		RBBIT(0057, glob_antenna);	// Ant A/B
 		RBVAL(0050, 1U << glob_bandf2, 7);	// LPF6..LPF0
@@ -2037,7 +2037,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0104 + bs - 050, glob_antenna);	// REZ1_OC -> antenna switch
 		////RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102 + bs - 050, txgated && ! xvrtr);
-		RBBIT(0101 + bs - 050, glob_fanflag || txgated);	// FAN
+		RBBIT(0101 + bs - 050, glob_fanflag);	// FAN
 		RBBIT(0100 + bs - 050, 0);	// unused
 
 		// 0100 is a bpf7
@@ -2099,7 +2099,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		// DD21 SN74HC595PW в управлении диапазонными фильтрами приёмника
 		RBVAL(0016, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
 		RBVAL(0014, ~ ((! xvrtr && txgated) ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
-		RBBIT(0013, xvrtr && (glob_fanflag || txgated));			/* D3: XVRTR PA FAN */
+		RBBIT(0013, xvrtr && glob_fanflag);			/* D3: XVRTR PA FAN */
 		RBBIT(0012, xvrtr || (glob_bandf == 0));		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
 		RBBIT(0011, ! xvrtr && glob_tx);				// D1: TX ANT relay
 		RBBIT(0010, glob_bandf == 0);		// D0: средневолновый ФНЧ - управление реле на входе
@@ -2182,7 +2182,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0104, glob_antenna);	// REZ1_OC -> antenna switch
 		////RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102, glob_tx && ! xvrtr);
-		RBBIT(0101, glob_fanflag || txgated);	// FAN
+		RBBIT(0101, glob_fanflag);	// FAN
 		// 0100 is a bpf7
 		RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
 		RBBIT(0071, glob_tuner_type);		// TY

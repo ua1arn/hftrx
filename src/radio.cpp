@@ -16709,7 +16709,7 @@ static void dpc_1s_timer_fn(void * arg)
 					fanpaflagch = 1;
 				}
 			}
-
+			fanpacount = gfanpatime;		/* счётчик времени неактивности - не требуется включаться */
 		}
 	#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 		else
@@ -16722,7 +16722,7 @@ static void dpc_1s_timer_fn(void * arg)
 					fanpaflag = 0;
 					fanpaflagch = 1;
 				}
-				fanpacount = 0;		/* счётчик времени неактивности */
+				fanpacount = 0;		/* счётчик времени неактивности  - еще надо будет работать */
 			}
 			else if (fanpaflag == 0)		// ещё не выключили
 			{
