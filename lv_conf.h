@@ -661,6 +661,7 @@
 	LV_FONT_DECLARE(lvgl_CenturyGothic_half)		/* width=28, height=56 */
 
 /** Always set a default font */
+//#define LV_FONT_DEFAULT (& Roboto_Medium_14_w1)
 #define LV_FONT_DEFAULT (& lv_font_montserrat_14)
 
 /** Enable handling large font and/or fonts with a lot of characters.
