@@ -194,24 +194,7 @@ void lvgl_dev_init(void);
 
 lv_color_t display_lvlcolor(COLORPIP_T c);	// преобразование цвета в тип LVGL
 
-LV_FONT_DECLARE(Rubik_Medium_16_w2)
-LV_FONT_DECLARE(Rubik_Medium_18_w2)
-//LV_FONT_DECLARE(Roboto_Regular_14_w1)
-//LV_FONT_DECLARE(Roboto_Regular_16_w1)
-//LV_FONT_DECLARE(Roboto_Regular_56_w1)
-
-// Усеченные наборы символов
-LV_FONT_DECLARE(eurostyle_56w)
-LV_FONT_DECLARE(lvgl_CenturyGothic_big)			// width=36, height=56
-LV_FONT_DECLARE(lvgl_CenturyGothic_half)		// width=28, height=56
-
 // Полные шрифты
-LV_FONT_DECLARE(Epson_LTDC_big)			// width=36, height=56
-LV_FONT_DECLARE(Epson_LTDC_half)		// width=28, height=56
-LV_FONT_DECLARE(Epson_LTDC_small_RU)	// width=10, height=15
-LV_FONT_DECLARE(Epson_LTDC_small)		// width=16, height=15
-LV_FONT_DECLARE(Epson_LTDC_small2)		// width=10, height=16
-LV_FONT_DECLARE(Epson_LTDC_small3)		// width=8, height=8
 
 lv_obj_t * lv_smtr2_create(lv_obj_t * parent);	// s-meter (own draw)
 lv_obj_t * lv_wtrf_create(lv_obj_t * parent);	// waterfall
