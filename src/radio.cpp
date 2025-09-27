@@ -1849,7 +1849,7 @@ typedef struct
 #define BWRIGHTMIN (800 / BWGRANHIGH)	// 0.8 kHz-18 kHz
 #define BWRIGHTMAX (18000 / BWGRANHIGH)
 
-// полосы пропускания радиотракта для NFN
+// полосы пропускания радиотракта для NFM
 #define NBFMWIDTHRX 10000	// полоса тракта для bwprop_nfmnarrow
 #define WBFMWIDTHRX 20000	// полоса тракта для bwprop_nfmwide
 #define NBFMWIDTHTX 5000	// +/- 2.5 кГц удвоенная девиация для bwprop_nfmnarrow
