@@ -129,6 +129,7 @@ typedef enum IRQn
 #define USB20_HOST1_EHCI_BASE ((uintptr_t) 0x05200000)/*!< USB_EHCI_Capability  Base */
 #define USB20_HOST1_OHCI_BASE ((uintptr_t) 0x05200400)/*!< USB_OHCI_Capability  Base */
 #define USBPHYC1_BASE ((uintptr_t) 0x05200800)        /*!< USBPHYC HCI Contgroller and PHY Interface Description Base */
+#define PRCM_BASE ((uintptr_t) 0x07010000)            /*!< PRCM Power Reset Clock Management module Base */
 #define R_WDG_BASE ((uintptr_t) 0x07020400)           /*!< TIMER  Base */
 #define R_TWDG_BASE ((uintptr_t) 0x07020800)          /*!< TIMER  Base */
 #define GPIOL_BASE ((uintptr_t) 0x07022000)           /*!< GPIO Port Controller Base */
@@ -487,6 +488,51 @@ typedef struct I2S_PCM_Type
     __IO uint32_t ASRCMBISTSTAT;                      /*!< Offset 0x0A0 ASRC MBIST Test Status Register */
 } I2S_PCM_TypeDef; /* size of structure = 0x0A4 */
 /*
+ * @brief PRCM
+ */
+/*!< PRCM Power Reset Clock Management module */
+typedef struct PRCM_Type
+{
+    __IO uint32_t CPUS_CFG_REG;                       /*!< Offset 0x000 CPUS Configuration Register */
+         RESERVED(0x004[0x000C - 0x0004], uint8_t)
+    __IO uint32_t APBS1_CFG_REG;                      /*!< Offset 0x00C APBS1 Configuration Register */
+         RESERVED(0x010[0x012C - 0x0010], uint8_t)
+    __IO uint32_t R_TWD_BGR_REG;                      /*!< Offset 0x12C R_TWD Bus Gating Reset Register */
+         RESERVED(0x130[0x019C - 0x0130], uint8_t)
+    __IO uint32_t R_TWI_BGR_REG;                      /*!< Offset 0x19C R_TWI Bus Gating Reset Register */
+         RESERVED(0x1A0[0x01AC - 0x01A0], uint8_t)
+    __IO uint32_t R_CAN_BGR_REG;                      /*!< Offset 0x1AC R_CAN Bus Gating Reset Register */
+         RESERVED(0x1B0[0x01BC - 0x01B0], uint8_t)
+    __IO uint32_t R_RSB_BGR_REG;                      /*!< Offset 0x1BC R_RSB Bus Gating Reset Register */
+    __IO uint32_t R_IR_RX_CLK_REG;                    /*!< Offset 0x1C0 R_IR_RX Clock Register */
+         RESERVED(0x1C4[0x01CC - 0x01C4], uint8_t)
+    __IO uint32_t R_IR_RX_BGR_REG;                    /*!< Offset 0x1CC R_IR_RX Bus Gating Reset Register */
+         RESERVED(0x1D0[0x020C - 0x01D0], uint8_t)
+    __IO uint32_t RTC_BGR_REG;                        /*!< Offset 0x20C RTC Bus Gating Reset Register */
+         RESERVED(0x210[0x0240 - 0x0210], uint8_t)
+    __IO uint32_t PLL_CTRL_REG0;                      /*!< Offset 0x240 PLL Control Register 0 */
+    __IO uint32_t PLL_CTRL_REG1;                      /*!< Offset 0x244 PLL Control Register 1 */
+         RESERVED(0x248[0x0250 - 0x0248], uint8_t)
+    __IO uint32_t VDD_SYS_PWROFF_GATING_REG;          /*!< Offset 0x250 VDD_SYS Power Off Gating Register */
+    __IO uint32_t GPU_PWROFF_GATING;                  /*!< Offset 0x254 GPU Power Off Gating Register */
+    __IO uint32_t VE_PWROFF_GATING;                   /*!< Offset 0x258 VE Power Off Gating Register */
+         RESERVED(0x25C[0x0270 - 0x025C], uint8_t)
+    __IO uint32_t RAM_CFG_REG;                        /*!< Offset 0x270 RAM Configuration Register */
+    __IO uint32_t RAM_TEST_CTRL_REG;                  /*!< Offset 0x274 RAM Test Control Register */
+         RESERVED(0x278[0x0290 - 0x0278], uint8_t)
+    __IO uint32_t PRCM_SEC_SWITCH_REG;                /*!< Offset 0x290 PRCM Security Switch Register */
+         RESERVED(0x294[0x0310 - 0x0294], uint8_t)
+    __IO uint32_t RES_CAL_CTRL_REG;                   /*!< Offset 0x310 Resistor Calibration Control Register */
+    __IO uint32_t RES200_CTRL_REG;                    /*!< Offset 0x314 200ohms Resistor Manual Control Register */
+    __IO uint32_t RES240_CTRL_REG;                    /*!< Offset 0x318 240ohms Resistor Manual Control Register */
+    __IO uint32_t RES_CAL_STATUS_REG;                 /*!< Offset 0x31C Resistor Calibration Status Register */
+    __IO uint32_t NMI_IRQ_CTRL_REG;                   /*!< Offset 0x320 NMI Interrupt Control Register */
+    __IO uint32_t NMI_IRQ_ENABLE_REG;                 /*!< Offset 0x324 NMI Interrupt Enable Register */
+    __IO uint32_t NMI_IRQ_PEND_REG;                   /*!< Offset 0x328 NMI Interrupt Pending Register */
+         RESERVED(0x32C[0x03F0 - 0x032C], uint8_t)
+    __IO uint32_t PRCM_VERSION_REG;                   /*!< Offset 0x3F0 PRCM Version Register */
+} PRCM_TypeDef; /* size of structure = 0x3F4 */
+/*
  * @brief TIMER
  */
 /*!< TIMER  */
@@ -795,6 +841,7 @@ typedef struct USB_OHCI_Capability_Type
 #define USB20_HOST1_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST1_EHCI_BASE)/*!< USB20_HOST1_EHCI  register set access pointer */
 #define USB20_HOST1_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST1_OHCI_BASE)/*!< USB20_HOST1_OHCI  register set access pointer */
 #define USBPHYC1 ((USBPHYC_TypeDef *) USBPHYC1_BASE)  /*!< USBPHYC1 HCI Contgroller and PHY Interface Description register set access pointer */
+#define PRCM ((PRCM_TypeDef *) PRCM_BASE)             /*!< PRCM Power Reset Clock Management module register set access pointer */
 #define R_WDG ((TIMER_TypeDef *) R_WDG_BASE)          /*!< R_WDG  register set access pointer */
 #define R_TWDG ((TIMER_TypeDef *) R_TWDG_BASE)        /*!< R_TWDG  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL Port Controller register set access pointer */
