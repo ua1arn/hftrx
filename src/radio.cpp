@@ -1824,7 +1824,7 @@ typedef struct
 	uint_fast8_t afresponce;	/* наклон АЧХ - на Samplerate/2 АЧХ становится на столько децибел  */
 	uint_fast8_t fltsofter;	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 	uint8_t rxbw100;	/* полоса пропускания радиотракта (или 0 если вычисляется) в сотнях герц */
-	uint8_t txbw100;	/* полоса пропускания радиотракта (или 0 если вычисляется), девиация для NFM в сотнях герц*/
+	uint8_t txbw100;	/* полоса пропускания радиотракта (или 0 если вычисляется), удвоенная девиация для NFM в сотнях герц*/
 } bwprop_t;
 
 // Частоты границ полосы пропускания
@@ -1850,8 +1850,10 @@ typedef struct
 #define BWRIGHTMAX (18000 / BWGRANHIGH)
 
 // полосы пропускания радиотракта для NFN
-#define NBFMWIDTH 12500	// полоса тракта для bwprop_nfmnarrow
-#define WBFMWIDTH 25000	// полоса тракта для bwprop_nfmwide
+#define NBFMWIDTHRX 12500	// полоса тракта для bwprop_nfmnarrow
+#define WBFMWIDTHRX 25000	// полоса тракта для bwprop_nfmwide
+#define NBFMWIDTHTX 5000	// +/- 2.5 кГц удвоенная девиация для bwprop_nfmnarrow
+#define WBFMWIDTHTX 10000	// +/- 5 кГц удвоенная девиация для bwprop_nfmwide
 
 // bwlimits_nfm - left10_width10_low фиксированно 300 герц для работы CTCSS
 static const bwlimits_t bwlimits_cw = { 100 / BWGRANLOW, 100 / BWGRANHIGH, BWCWLEFTMIN, BWCWLEFTMAX, 0, 0,  };
@@ -1894,8 +1896,8 @@ static bwprop_t bwprop_ssbtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 
 static bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_PAIR, 100 / BWGRANLOW, 9000 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
 static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_PAIR, 100 / BWGRANLOW, 4500 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
 static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_PAIR, 50 / BWGRANLOW, 5500 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
-static bwprop_t bwprop_nfmnarrow = { & bwlimits_nfm, BWPROPI_NFMNARROW, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, NBFMWIDTH / BWGRANHIGH, NBFMWIDTH / BWGRANHIGH, };
-static bwprop_t bwprop_nfmwide = { & bwlimits_nfm, BWPROPI_NFMWIDE, BWSET_PAIR, 300 / BWGRANLOW, 4000 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, WBFMWIDTH / BWGRANHIGH, WBFMWIDTH / BWGRANHIGH, };
+static bwprop_t bwprop_nfmnarrow = { & bwlimits_nfm, BWPROPI_NFMNARROW, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, NBFMWIDTHRX / BWGRANHIGH, NBFMWIDTHTX / BWGRANHIGH, };
+static bwprop_t bwprop_nfmwide = { & bwlimits_nfm, BWPROPI_NFMWIDE, BWSET_PAIR, 300 / BWGRANLOW, 4000 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, WBFMWIDTHRX / BWGRANHIGH, WBFMWIDTHTX / BWGRANHIGH, };
 static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_PAIR, 100 / BWGRANLOW, 12000 / BWGRANHIGH, AFRESPONCEWFM + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
 
 // Способ представления частот и количество профилей полосы пропускания,
@@ -6251,19 +6253,6 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-//	/* Девиация при передаче в NFM - в сотнях герц */
-//	static const struct paramdefdef xgnfmdeviation =
-//	{
-//		QLABEL("NFM DEVI"), 7, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка девиации на передачу */
-//		ITEM_VALUE,
-//		0, 120,
-//		OFFSETOF(struct nvmap, gnfmdeviation),	/* девиация в сотнях герц */
-//		getselector0, nvramoffs0, valueoffs0,
-//		NULL,
-//		& gnfmdeviation,
-//		getzerobase, /* складывается со смещением и отображается */
-//		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-//	};
 	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	static const struct paramdefdef xggaincwtx =
 	{
