@@ -12,7 +12,7 @@
 
 #include "hardware.h"
 
-#if WITHSDRAMHW && (CPUSTYLE_A133 || (CPUSTYLE_T507 && ! CPUSTYLE_H616))
+#if WITHSDRAMHW && (0 || (CPUSTYLE_T507 && ! CPUSTYLE_H616))
 
 #include "formats.h"
 #include "clocks.h"
