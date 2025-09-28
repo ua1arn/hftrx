@@ -63,6 +63,7 @@ typedef enum IRQn
     GPIOG_IRQn = 91,                                  /*!< GPIOINT GPIOG interrupt */
     GPIOH_IRQn = 92,                                  /*!< GPIOINT GPIOH interrupt */
     GPIOI_IRQn = 93,                                  /*!< GPIOINT GPIOI interrupt */
+    DSI0_IRQn = 100,                                  /*!< DSI0 DSI0 interrupt */
     R_TIMER0_IRQn = 136,                              /*!< TIMER  */
     R_TIMER1_IRQn = 137,                              /*!< TIMER  */
     R_TIMER2_IRQn = 138,                              /*!< TIMER  */
@@ -129,6 +130,7 @@ typedef enum IRQn
 #define USB20_HOST1_EHCI_BASE ((uintptr_t) 0x05200000)/*!< USB_EHCI_Capability  Base */
 #define USB20_HOST1_OHCI_BASE ((uintptr_t) 0x05200400)/*!< USB_OHCI_Capability  Base */
 #define USBPHYC1_BASE ((uintptr_t) 0x05200800)        /*!< USBPHYC HCI Contgroller and PHY Interface Description Base */
+#define DSI0_BASE ((uintptr_t) 0x06504000)            /*!< DSI0 MIPI DSI System (A133/R818) Base */
 #define PRCM_BASE ((uintptr_t) 0x07010000)            /*!< PRCM Power Reset Clock Management module Base */
 #define R_WDG_BASE ((uintptr_t) 0x07020400)           /*!< TIMER  Base */
 #define R_TWDG_BASE ((uintptr_t) 0x07020800)          /*!< TIMER  Base */
@@ -411,6 +413,124 @@ typedef struct CPU_SUBSYS_CTRL_Type
         __IO uint32_t HIGH;                           /*!< Offset 0x044 Reset Vector Base Address Registerx_H */
     } RVBARADDR [0x004];                              /*!< Offset 0x040 Reset Vector Base Address Register for core [0..3] */
 } CPU_SUBSYS_CTRL_TypeDef; /* size of structure = 0x060 */
+/*
+ * @brief DSI0
+ */
+/*!< DSI0 MIPI DSI System (A133/R818) */
+typedef struct DSI0_Type
+{
+    __IO uint32_t DSI_CTL_REG;                        /*!< Offset 0x000 DSI Control Register */
+    __IO uint32_t DSI_GINT0_REG;                      /*!< Offset 0x004 DSI Global Interrupt Register0 */
+    __IO uint32_t DSI_GINT1_REG;                      /*!< Offset 0x008 DSI Global Interrupt Register1 */
+    __IO uint32_t DSI_BASIC_CTL_REG;                  /*!< Offset 0x00C DSI Basic Control Register */
+    __IO uint32_t DSI_BASIC_CTL0_REG;                 /*!< Offset 0x010 DSI Basic Control Register0 */
+    __IO uint32_t DSI_BASIC_CTL1_REG;                 /*!< Offset 0x014 DSI Basic Control Register1 */
+    __IO uint32_t DSI_BASIC_SIZE0_REG;                /*!< Offset 0x018 DSI Basic Timing Register0 */
+    __IO uint32_t DSI_BASIC_SIZE1_REG;                /*!< Offset 0x01C DSI Basic Timing Register1 */
+    __IO uint32_t DSI_BASIC_INST0_REG [0x008];        /*!< Offset 0x020 DSI Basic Instruction Register0 (N=0,1,2,3,4,5,6,7) */
+    __IO uint32_t DSI_BASIC_INST1_REG;                /*!< Offset 0x040 DSI Basic Instruction Register1 */
+    __IO uint32_t DSI_BASIC_INST2_REG;                /*!< Offset 0x044 DSI Basic Instruction Register2 */
+    __IO uint32_t DSI_BASIC_INST3_REG;                /*!< Offset 0x048 DSI Basic Instruction Register3 */
+    __IO uint32_t DSI_BASIC_INST4_REG;                /*!< Offset 0x04C DSI Basic Instruction Register4 */
+    __IO uint32_t DSI_BASIC_INST5_REG;                /*!< Offset 0x050 DSI Basic Instruction Register5 */
+    __IO uint32_t DSI_BASIC_INST6_REG;                /*!< Offset 0x054 DSI Basic Instruction Register6 */
+         RESERVED(0x058[0x0060 - 0x0058], uint8_t)
+    __IO uint32_t DSI_BASIC_TRAN0_REG;                /*!< Offset 0x060 DSI Basic Transmission Register0 */
+         RESERVED(0x064[0x0078 - 0x0064], uint8_t)
+    __IO uint32_t DSI_BASIC_TRAN4_REG;                /*!< Offset 0x078 DSI Basic Transmission Register4 */
+    __IO uint32_t DSI_BASIC_TRAN5_REG;                /*!< Offset 0x07C DSI Basic Transmission Register5 */
+    __IO uint32_t DSI_PIXEL_CTL0_REG;                 /*!< Offset 0x080 DSI Pixel Control Register0 */
+         RESERVED(0x084[0x0090 - 0x0084], uint8_t)
+    __IO uint32_t DSI_PIXEL_PH_REG;                   /*!< Offset 0x090 DSI Pixel Packet Header Register */
+    __IO uint32_t DSI_PIXEL_PD_REG;                   /*!< Offset 0x094 DSI Pixel Packet Data Register */
+    __IO uint32_t DSI_PIXEL_PF0_REG;                  /*!< Offset 0x098 DSI Pixel Packet Footer Register0 */
+    __IO uint32_t DSI_PIXEL_PF1_REG;                  /*!< Offset 0x09C DSI Pixel Packet Footer Register1 */
+         RESERVED(0x0A0[0x00B0 - 0x00A0], uint8_t)
+    __IO uint32_t DSI_SYNC_HSS_REG;                   /*!< Offset 0x0B0 DSI H Sync Start Register */
+    __IO uint32_t DSI_SYNC_HSE_REG;                   /*!< Offset 0x0B4 DSI H Sync End Register */
+    __IO uint32_t DSI_SYNC_VSS_REG;                   /*!< Offset 0x0B8 DSI V Sync Start Register */
+    __IO uint32_t DSI_SYNC_VSE_REG;                   /*!< Offset 0x0BC DSI V Sync End Register */
+    __IO uint32_t DSI_BLK_HSA0_REG;                   /*!< Offset 0x0C0 DSI Blanking H Sync Active Register0 */
+    __IO uint32_t DSI_BLK_HSA1_REG;                   /*!< Offset 0x0C4 DSI Blanking H Sync Active Register1 */
+    __IO uint32_t DSI_BLK_HBP0_REG;                   /*!< Offset 0x0C8 DSI Blanking H Back Porch Register0 */
+    __IO uint32_t DSI_BLK_HBP1_REG;                   /*!< Offset 0x0CC DSI Blanking H Back Porch Register0 */
+    __IO uint32_t DSI_BLK_HFP0_REG;                   /*!< Offset 0x0D0 DSI Blanking H Front Porch Register0 */
+    __IO uint32_t DSI_BLK_HFP1_REG;                   /*!< Offset 0x0D4 DSI Blanking H Front Porch Register1 */
+         RESERVED(0x0D8[0x00E0 - 0x00D8], uint8_t)
+    __IO uint32_t DSI_BLK_HBLK0_REG;                  /*!< Offset 0x0E0 DSI H Blanking Register0 */
+    __IO uint32_t DSI_BLK_HBLK1_REG;                  /*!< Offset 0x0E4 DSI H Blanking Register1 */
+    __IO uint32_t DSI_BLK_VBLK0_REG;                  /*!< Offset 0x0E8 DSI V Blanking Register0 */
+    __IO uint32_t DSI_BLK_VBLK1_REG;                  /*!< Offset 0x0EC DSI V Blanking Register1 */
+    __IO uint32_t DSI_BURST_LINE_REG;                 /*!< Offset 0x0F0 DSI Burst Line Register */
+    __IO uint32_t DSI_BURST_DRQ_REG;                  /*!< Offset 0x0F4 DSI Burst DRQ Register */
+         RESERVED(0x0F8[0x00FC - 0x00F8], uint8_t)
+    __IO uint32_t DSI_DEBUG_REG;                      /*!< Offset 0x0FC DSI Debug Register */
+         RESERVED(0x100[0x0120 - 0x0100], uint8_t)
+    __IO uint32_t DSI_BASIC_INST10_REG [0x007];       /*!< Offset 0x120 DSI Basic INST10 Register (N=0,1,2,3,4,5,6) */
+         RESERVED(0x13C[0x0140 - 0x013C], uint8_t)
+    __IO uint32_t DSI_BASIC_INST11_REG;               /*!< Offset 0x140 DSI Basic INST11 Register */
+         RESERVED(0x144[0x0148 - 0x0144], uint8_t)
+    __IO uint32_t DSI_BASIC_INST13_REG;               /*!< Offset 0x148 DSI Basic INST13 Register */
+         RESERVED(0x14C[0x01F0 - 0x014C], uint8_t)
+    __IO uint32_t DSI_SAFE_PERIOD_REG;                /*!< Offset 0x1F0 (null) */
+         RESERVED(0x1F4[0x0200 - 0x01F4], uint8_t)
+    __IO uint32_t DSI_CMD_CTL_REG;                    /*!< Offset 0x200 (null) */
+         RESERVED(0x204[0x0240 - 0x0204], uint8_t)
+    __IO uint32_t DSI_CMD_RX_REG [0x008];             /*!< Offset 0x240 DSI Command RX Register (N=0,1,2,3,4,5,6,7) */
+         RESERVED(0x260[0x02E0 - 0x0260], uint8_t)
+    __IO uint32_t DSI_DEBUG0_REG;                     /*!< Offset 0x2E0 DSI Debug Register0 */
+    __IO uint32_t DSI_DEBUG1_REG;                     /*!< Offset 0x2E4 DSI Debug Register1 */
+         RESERVED(0x2E8[0x02EC - 0x02E8], uint8_t)
+    __IO uint32_t DSI_INST_DEBUG_REG;                 /*!< Offset 0x2EC DSI INST Debug Register */
+    __IO uint32_t DSI_DEBUG2_REG;                     /*!< Offset 0x2F0 DSI Debug Register2 */
+    __IO uint32_t DSI_DEBUG3_REG;                     /*!< Offset 0x2F4 DSI Debug Register3 */
+    __IO uint32_t DSI_DEBUG4_REG;                     /*!< Offset 0x2F8 (null) */
+         RESERVED(0x2FC[0x0300 - 0x02FC], uint8_t)
+    __IO uint32_t DSI_CMD_TX_REG [0x040];             /*!< Offset 0x300 DSI Command TX Register (N=0,1,2,�,63) */
+         RESERVED(0x400[0x0FF8 - 0x0400], uint8_t)
+    __IO uint32_t DSI_FIFO_BIST_REG;                  /*!< Offset 0xFF8 DSI FIFO Bist Register */
+         RESERVED(0xFFC[0x1000 - 0x0FFC], uint8_t)
+    __IO uint32_t DPHY_CTL_REG;                       /*!< Offset 0x1000 DPHY Control Register */
+    __IO uint32_t DPHY_TX_CTL_REG;                    /*!< Offset 0x1004 DPHY TX Control Register */
+         RESERVED(0x1008[0x1010 - 0x1008], uint8_t)
+    __IO uint32_t DPHY_TX_TIME0_REG;                  /*!< Offset 0x1010 DPHY TX Timing Parameter 0 Register */
+    __IO uint32_t DPHY_TX_TIME1_REG;                  /*!< Offset 0x1014 DPHY TX Timing Parameter 1 Register */
+    __IO uint32_t DPHY_TX_TIME2_REG;                  /*!< Offset 0x1018 DPHY TX Timing Parameter 2 Register */
+    __IO uint32_t DPHY_TX_TIME3_REG;                  /*!< Offset 0x101C DPHY TX Timing Parameter 3 Register */
+    __IO uint32_t DPHY_TX_TIME4_REG;                  /*!< Offset 0x1020 DPHY TX Timing Parameter 4 Register */
+         RESERVED(0x1024[0x1030 - 0x1024], uint8_t)
+    __IO uint32_t DPHY_RX_TIME0_REG;                  /*!< Offset 0x1030 DPHY RX Timing Parameter 0 Register */
+    __IO uint32_t DPHY_RX_TIME1_REG;                  /*!< Offset 0x1034 DPHY RX Timing Parameter 1 Register */
+         RESERVED(0x1038[0x1040 - 0x1038], uint8_t)
+    __IO uint32_t DPHY_RX_TIME3_REG;                  /*!< Offset 0x1040 DPHY RX Timing Parameter 3 Register */
+         RESERVED(0x1044[0x104C - 0x1044], uint8_t)
+    __IO uint32_t DPHY_ANA0_REG;                      /*!< Offset 0x104C DPHY Analog 0 Register */
+    __IO uint32_t DPHY_ANA1_REG;                      /*!< Offset 0x1050 DPHY Analog 1 Register */
+    __IO uint32_t DPHY_ANA2_REG;                      /*!< Offset 0x1054 DPHY Analog 2 Register */
+    __IO uint32_t DPHY_ANA3_REG;                      /*!< Offset 0x1058 DPHY Analog 3 Register */
+    __IO uint32_t DPHY_ANA4_REG;                      /*!< Offset 0x105C DPHY Analog 4 Register */
+    __IO uint32_t DPHY_INT_EN0_REG;                   /*!< Offset 0x1060 DPHY Interrupt Enable 0 Register */
+    __IO uint32_t DPHY_INT_EN1_REG;                   /*!< Offset 0x1064 DPHY Interrupt Enable 1 Register */
+    __IO uint32_t DPHY_INT_EN2_REG;                   /*!< Offset 0x1068 DPHY Interrupt Enable 2 Register */
+         RESERVED(0x106C[0x1070 - 0x106C], uint8_t)
+    __IO uint32_t DPHY_INT_PD0_REG;                   /*!< Offset 0x1070 DPHY Interrupt Pending 0 Register */
+    __IO uint32_t DPHY_INT_PD1_REG;                   /*!< Offset 0x1074 DPHY Interrupt Pending 1 Register */
+         RESERVED(0x1078[0x10E0 - 0x1078], uint8_t)
+    __IO uint32_t DPHY_DBG0_REG;                      /*!< Offset 0x10E0 DPHY Debug 0 Register */
+    __IO uint32_t DPHY_DBG1_REG;                      /*!< Offset 0x10E4 DPHY Debug 1 Register */
+    __IO uint32_t DPHY_DBG2_REG;                      /*!< Offset 0x10E8 DPHY Debug 2 Register */
+    __IO uint32_t DPHY_DBG3_REG;                      /*!< Offset 0x10EC DPHY Debug 3 Register */
+    __IO uint32_t DPHY_DBG4_REG;                      /*!< Offset 0x10F0 DPHY Debug 4 Register */
+         RESERVED(0x10F4[0x10F8 - 0x10F4], uint8_t)
+    __IO uint32_t DPHY_TX_SKEW_REG0;                  /*!< Offset 0x10F8 DPHY TX Skew Register0 */
+    __IO uint32_t DPHY_TX_SKEW_REG1;                  /*!< Offset 0x10FC DPHY TX Skew Register1 */
+    __IO uint32_t DPHY_TX_SKEW_REG2;                  /*!< Offset 0x1100 DPHY TX Skew Register2 */
+    __IO uint32_t DPHY_PLL_REG0;                      /*!< Offset 0x1104 DPHY PLL Register0 */
+    __IO uint32_t DPHY_PLL_REG1;                      /*!< Offset 0x1108 DPHY PLL Register1 */
+         RESERVED(0x110C[0x1110 - 0x110C], uint8_t)
+    __IO uint32_t COMBO_PHY_REG0;                     /*!< Offset 0x1110 Combo PHY Register0 */
+    __IO uint32_t COMBO_PHY_REG1;                     /*!< Offset 0x1114 Combo PHY Register1 */
+} DSI0_TypeDef; /* size of structure = 0x1118 */
 /*
  * @brief GICV
  */
@@ -883,6 +1003,7 @@ typedef struct USB_OHCI_Capability_Type
 #define USB20_HOST1_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST1_EHCI_BASE)/*!< USB20_HOST1_EHCI  register set access pointer */
 #define USB20_HOST1_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST1_OHCI_BASE)/*!< USB20_HOST1_OHCI  register set access pointer */
 #define USBPHYC1 ((USBPHYC_TypeDef *) USBPHYC1_BASE)  /*!< USBPHYC1 HCI Contgroller and PHY Interface Description register set access pointer */
+#define DSI0 ((DSI0_TypeDef *) DSI0_BASE)             /*!< DSI0 MIPI DSI System (A133/R818) register set access pointer */
 #define PRCM ((PRCM_TypeDef *) PRCM_BASE)             /*!< PRCM Power Reset Clock Management module register set access pointer */
 #define R_WDG ((TIMER_TypeDef *) R_WDG_BASE)          /*!< R_WDG  register set access pointer */
 #define R_TWDG ((TIMER_TypeDef *) R_TWDG_BASE)        /*!< R_TWDG  register set access pointer */
