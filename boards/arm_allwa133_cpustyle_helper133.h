@@ -678,8 +678,8 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
+		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF2);	/* PL0 - S_TWI0_SCK */ \
+		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF2);		/* PL1 - S_TWI0_SDA */ \
 	} while (0)
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
@@ -1053,10 +1053,13 @@
 
 		#define WITHSDRAM_AXP707	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP305 power management chip */
 
-		#define PMIC_I2C_W 0x6C	// 7bit: 0x36
+		// i2c: 0x68/0x69 or 0x6a/0x6b
+		// rsb: 0x01d1 of 0x0273
+
+		#define PMIC_I2C_W 0x68	// 7bit: 0x36
 		#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
-		// See WITHSDRAM_AXP308
+		// See WITHSDRAM_AXP707
 		int board_helperboard_a133_axp707_initialize(void);
 
 		/* Контроллер питания AXP305 */

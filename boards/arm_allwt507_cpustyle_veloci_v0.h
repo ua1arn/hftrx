@@ -106,7 +106,7 @@
 	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
 	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
-	// See WITHSDRAM_AXP308
+	// See WITHSDRAM_AXP853
 	int board_helperboard_t507_axp853_initialize(void);
 
 	/* Контроллер питания AXP305 */

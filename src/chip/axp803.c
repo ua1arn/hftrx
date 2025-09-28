@@ -464,6 +464,7 @@ int board_banana_pi_axp803_initialize(void)
 	}
 
 	PRINTF("axp803_chip_id=0x%02X (expected 0x51)\n", axp803_chip_id);
+	dbg_flush();
 	if (!(axp803_chip_id == 0x51))
 		return -1;
 
@@ -607,6 +608,7 @@ int board_orangepi_zero2_axp305_initialize(void)
 	}
 
 	PRINTF("axp305_chip_id=0x%02X (expected 0x60)\n", axp305_chip_id);
+	dbg_flush();
 	if (!(axp305_chip_id == 0x60))
 		return -1;
 
@@ -1201,6 +1203,7 @@ int board_helperboard_t507_axp853_initialize(void)
 	ret = pmic_bus_read(AXP858_CHIP_ID, &axp_chip_id);
 
 	PRINTF("axp_chip_id=0x%02X (expected 0x54)\n", axp_chip_id);
+	dbg_flush();
 	if (!(axp_chip_id == 0x54))
 		return -1;
 
@@ -1258,20 +1261,27 @@ int board_helperboard_t507_axp853_initialize(void)
 	return 0;
 }
 
+static uint_fast8_t axp707_chipidunpak(uint_fast8_t v)
+{
+	return (((v >> 6) & 0x03) << 4) | (v & 0x0F);
+}
 
 int board_helperboard_a133_axp707_initialize(void)
 {
 	uint8_t axp_chip_id = 0xFF;
 	int ret;
-    PRINTF("PMIC: AXP853T/AXP858\n");
+    PRINTF("! PMIC: AXP707\n");
+	dbg_flush();
 	ret = pmic_bus_init();
 	if (ret)
 		return ret;
-
 	ret = pmic_bus_read(AXP858_CHIP_ID, &axp_chip_id);
-
-	PRINTF("axp_chip_id=0x%02X (expected 0x54)\n", axp_chip_id);
-	if (!(axp_chip_id == 0x54))
+	if (ret)
+		return ret;
+	unsigned id = axp707_chipidunpak(axp_chip_id);
+	PRINTF("axp_chip_id=0x%02X (expected 0x11)\n", id);
+	dbg_flush();
+	if (!(id == 0x11))
 		return -1;
 #if 0
 	if (0)

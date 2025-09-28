@@ -111,17 +111,17 @@
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
 #if 0
-	#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
+	#define WITHSDRAM_AXPxxx	1	/* AXP853T power management chip */
 	// AXP853T on HelperBoard T507 Core Board
 	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
 	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
-	// See WITHSDRAM_AXP308
-	int board_helperboard_t507_axp853_initialize(void);
+	// See WITHSDRAM_AXPxxx
+	int board_helperboard_t507_axpXXX_initialize(void);
 
 	/* Контроллер питания AXP305 */
 	#define BOARD_PMIC_INITIALIZE() do { \
-		board_helperboard_t507_axp853_initialize(); /* Voltages are set here */ \
+		board_helperboard_t507_axpXXX_initialize(); /* Voltages are set here */ \
 	} while (0)
 #endif
 
