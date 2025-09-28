@@ -139,6 +139,8 @@ typedef enum IRQn
 #define R_UART_BASE ((uintptr_t) 0x07080000)          /*!< UART  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
 #define S_TWI1_BASE ((uintptr_t) 0x07081800)          /*!< TWI  Base */
+#define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL A133 CPU Subsystem Control Register List Base */
+#define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG A133 Cluster 0 Configuration Register List Base */
 
 #if __aarch64__
     #include <core64_ca.h>
@@ -146,6 +148,25 @@ typedef enum IRQn
     #include <core_ca.h>
 #endif
 
+/*
+ * @brief C0_CPUX_CFG
+ */
+/*!< C0_CPUX_CFG A133 Cluster 0 Configuration Register List */
+typedef struct C0_CPUX_CFG_Type
+{
+    __IO uint32_t C0_RST_CTRL;                        /*!< Offset 0x000 Cluster 0 Reset Control Register */
+         RESERVED(0x004[0x0010 - 0x0004], uint8_t)
+    __IO uint32_t C0_CTRL_REG0;                       /*!< Offset 0x010 Cluster 0 Control Register0 */
+    __IO uint32_t C0_CTRL_REG1;                       /*!< Offset 0x014 Cluster 0 Control Register1 */
+    __IO uint32_t C0_CTRL_REG2;                       /*!< Offset 0x018 Cluster 0 Control Register2 */
+         RESERVED(0x01C[0x0024 - 0x001C], uint8_t)
+    __IO uint32_t CACHE_CFG_REG;                      /*!< Offset 0x024 Cache Configuration Register */
+         RESERVED(0x028[0x0060 - 0x0028], uint8_t)
+    __IO uint32_t C0_CPUx_CTRL_REG [0x004];           /*!< Offset 0x060 Cluster 0 CPU0..CPU03 Control Register */
+         RESERVED(0x070[0x0080 - 0x0070], uint8_t)
+    __IO uint32_t C0_CPU_STATUS;                      /*!< Offset 0x080 Cluster 0 CPU Status Register */
+    __IO uint32_t L2_STATUS_REG;                      /*!< Offset 0x084 Cluster 0 L2 Status Register */
+} C0_CPUX_CFG_TypeDef; /* size of structure = 0x088 */
 /*
  * @brief CCU
  */
@@ -369,6 +390,27 @@ typedef struct CCU_Type
          RESERVED(0xF08[0x0F20 - 0x0F08], uint8_t)
     __IO uint32_t PLL_CPUX_HW_FM_REG;                 /*!< Offset 0xF20 PLL_CPUX Hardware FM Register */
 } CCU_TypeDef; /* size of structure = 0xF24 */
+/*
+ * @brief CPU_SUBSYS_CTRL
+ */
+/*!< CPU_SUBSYS_CTRL A133 CPU Subsystem Control Register List */
+typedef struct CPU_SUBSYS_CTRL_Type
+{
+    __IO uint32_t GENER_CTRL_REG0;                    /*!< Offset 0x000 General Control Register0 */
+         RESERVED(0x004[0x000C - 0x0004], uint8_t)
+    __IO uint32_t GIC_JTAG_RST_CTRL;                  /*!< Offset 0x00C GIC and Jtag Reset Control Register */
+    __IO uint32_t C0_INT_EN;                          /*!< Offset 0x010 Cluster0 Interrupt Enable Control Register */
+    __IO uint32_t IRQ_FIQ_STATUS;                     /*!< Offset 0x014 IRQ/FIQ Status Register */
+    __IO uint32_t GENER_CTRL_REG2;                    /*!< Offset 0x018 General Control Register2 */
+    __IO uint32_t DBG_STATE;                          /*!< Offset 0x01C Debug State Register */
+    __IO uint32_t CPUx_CTRL_REG [0x004];              /*!< Offset 0x020 CPU0..CPU3 Control Register */
+         RESERVED(0x030[0x0040 - 0x0030], uint8_t)
+    struct
+    {
+        __IO uint32_t LOW;                            /*!< Offset 0x040 Reset Vector Base Address Registerx_L */
+        __IO uint32_t HIGH;                           /*!< Offset 0x044 Reset Vector Base Address Registerx_H */
+    } RVBARADDR [0x004];                              /*!< Offset 0x040 Reset Vector Base Address Register for core [0..3] */
+} CPU_SUBSYS_CTRL_TypeDef; /* size of structure = 0x060 */
 /*
  * @brief GICV
  */
@@ -851,6 +893,8 @@ typedef struct USB_OHCI_Capability_Type
 #define R_UART ((UART_TypeDef *) R_UART_BASE)         /*!< R_UART  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
 #define S_TWI1 ((TWI_TypeDef *) S_TWI1_BASE)          /*!< S_TWI1  register set access pointer */
+#define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL A133 CPU Subsystem Control Register List register set access pointer */
+#define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG A133 Cluster 0 Configuration Register List register set access pointer */
 
 #ifdef __cplusplus
  }
