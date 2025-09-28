@@ -1263,9 +1263,68 @@ int board_helperboard_t507_axp853_initialize(void)
 	return 0;
 }
 
+
+// AXP707 registers
+#define AXP707_CHIP_ID 	0x03
+
 static uint_fast8_t axp707_chipidunpak(uint_fast8_t v)
 {
 	return (((v >> 6) & 0x03) << 4) | (v & 0x0F);
+}
+
+static void pmu_axp707_ap_reset_enable(void)
+{
+
+}
+
+static void axp707_set_sw(int sw)
+{
+
+}
+
+static int axp707_set_dcdc2(unsigned int mvolt)
+{
+	return 0;
+}
+
+static int axp707_set_dcdc3(unsigned int mvolt)
+{
+	return 0;
+}
+
+static int axp707_set_dcdc4(unsigned int mvolt)
+{
+	return 0;
+}
+
+static int axp707_set_dcdc5(unsigned int mvolt)
+{
+	return 0;
+}
+
+static int axp707_set_aldo1(unsigned int mvolt)
+{
+	return 0;
+}
+
+static int axp707_set_aldo2(unsigned int mvolt)
+{
+	return 0;
+}
+
+static int axp707_set_aldo3(unsigned int mvolt)
+{
+	return 0;
+}
+
+static int axp707_set_eldo1(unsigned int mvolt)
+{
+	return 0;
+}
+
+static int axp707_set_fldo1(unsigned int mvolt)
+{
+	return 0;
 }
 
 int board_helperboard_a133_axp707_initialize(void)
@@ -1277,7 +1336,7 @@ int board_helperboard_a133_axp707_initialize(void)
 	ret = pmic_bus_init();
 	if (ret)
 		return ret;
-	ret = pmic_bus_read(AXP858_CHIP_ID, &axp_chip_id);
+	ret = pmic_bus_read(AXP707_CHIP_ID, &axp_chip_id);
 	if (ret)
 		return ret;
 	unsigned id = axp707_chipidunpak(axp_chip_id);
@@ -1323,36 +1382,30 @@ int board_helperboard_a133_axp707_initialize(void)
 	return 0;
 #endif
 
-#if 0
-	pmu_axp858_ap_reset_enable();	// без этой строчки не инициализируется после reset
-	axp858_set_sw(0);
+	// dcdc2, dcdc3: 0.9V - VDD-CPU
+	// dcdc4: 0.9V - VDD-SYS, VDD-USB
+	// dcdc5: VCC-DRAM 1.1V for lpddr4
+	// aldo1: 1.8V AVCC/VCC-PLL/VDD-DRAM
+	// aldo2: 1.8V VDD18-LPDDR
+	// aldo3: 3.3V VCC-USB/VCC-PL(ON)(USB super standby)
+	// eldo1: 1.8V CPVIN/VCC-PC/VCC-LVDS/VCC-MCSI/VCC-EFUSE(ON)
+	// fldo1: 0.9V VDD-CPUS/VDD-USB(ON)
 
-	// https://artmemtech.com/
-	// artmem atl4b0832
+#if 1
+	pmu_axp707_ap_reset_enable();	// без этой строчки не инициализируется после reset
+	axp707_set_sw(0);
 
-	// VDD2, VDDQ = 1.06–1.17V; VDD1 = 1.70–1.95V; TC = 0°C to +85°C
+	VERIFY(0 == axp707_set_dcdc2(900));
+	VERIFY(0 == axp707_set_dcdc3(900));
+	VERIFY(0 == axp707_set_dcdc4(900));
+	VERIFY(0 == axp707_set_dcdc5(1100));
 
-	// F1 ball VDD1: 1.8
-	// A4 ball VDD2: vcc_dram 1.1
+	VERIFY(0 == axp707_set_aldo1(1800));
+	VERIFY(0 == axp707_set_aldo2(1800));
+	VERIFY(0 == axp707_set_aldo3(3300));
 
-	VERIFY(0 == axp858_set_dcdc1(3300));	// VCC-PA/VCC-PG/VCC-WIFI/VCC-CTP/VCC-3V3/VCC-IO/VCC-PI/VCC-PC/VCC-USB/VCC-EMMC/AC107-VCC-DIO/AC107-AVCC
-	VERIFY(0 == axp858_set_dcdc2(1000));	// VDD-CPU 0.88..1.2 volt recommended
-	VERIFY(0 == axp858_set_dcdc3(950));		// VDD-SYS 0.9..0.99 volt recommended
-	VERIFY(0 == axp858_set_dcdc4(990));		// VDD-GPU 0.81..1.2 volt recommended
-	VERIFY(0 == axp858_set_dcdc5(1100));	// VCC-DRAM - 1.1 volt for LPDDR4
-
-	VERIFY(0 == axp858_set_aldo1(1800));	// VCC_PG, SDIO, eMMC I/O
-	VERIFY(0 == axp858_set_aldo2(1800));	// AVCC/VCC-PLL/VCC-DCXO/AC107-DVCC
-	VERIFY(0 == axp858_set_aldo3(2500));	// VPP DRAM
-	VERIFY(0 == axp858_set_aldo4(1800));	// 1.8V for LPDDR4 VDD18-DRAM/VDD18-LPDDR
-	VERIFY(0 == axp858_set_aldo5(3300));	// VCC-PE 2.8/3.3 volt
-
-	VERIFY(0 == axp858_set_bldo1(1800));	// 1.8V VCC-MCSI/VCC-HDMI/VCC-LVDS
-	VERIFY(0 == axp858_set_bldo5(1200));	// External pin IOVDD_1V8 or Toshiba TC358778XBG
-
-
-	VERIFY(0 == axp858_set_cldo3(0));		// CLDO3 connected as GPIO to EXTIRQ CPU pin
-	VERIFY(0 == axp858_set_cldo4(1800));	// 1.8V VCC-TV
+	VERIFY(0 == axp707_set_eldo1(1800));
+	VERIFY(0 == axp707_set_fldo1(900));
 
 //	pmic_bus_setbits(0x1A,	// DCDC mode control 1
 //					1U << 6);	// DCDC 2&3 polyphase control
@@ -1360,7 +1413,7 @@ int board_helperboard_a133_axp707_initialize(void)
 	PRINTF("PMIC: axp707 ON\n");
 	local_delay_initialize();
 	local_delay_ms_nocache(100);
-	axp858_set_sw(1);
+	axp707_set_sw(1);
 	local_delay_ms_nocache(100);
 	PRINTF("PMIC: axp707 done\n");
 	dbg_flush();
