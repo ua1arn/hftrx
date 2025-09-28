@@ -777,26 +777,31 @@
 	// PTT2 input - PD9
 	#define PTT_TARGET_PIN				gpioX_getinputs(GPIOE)
 	#define PTT_BIT_PTT					(UINT32_C(1) << 10)		// PE10 - PTT_FRONT
-	#define PTT2_TARGET_PIN				gpioX_getinputs(GPIOD)
-	#define PTT2_BIT_PTT				(UINT32_C(1) << 26)		// PD26 - PTT
+//	#define PTT2_TARGET_PIN				gpioX_getinputs(GPIOD)
+//	#define PTT2_BIT_PTT				(UINT32_C(1) << 26)		// PD26 - PTT ??? - unused
 	#define PTT3_TARGET_PIN				gpioX_getinputs(GPIOD)
-	#define PTT3_BIT_PTT				(UINT32_C(1) << 25)		// PD25 - READ PTT
+	#define PTT3_BIT_PTT				(UINT32_C(1) << 25)		// PD25 - Rear panel PTT
 
 	// FT-710 specific bits
 	#define DAKY_TARGET_PIN				gpioX_getinputs(GPIOD)
-	#define DAKY_BIT_PTT				(UINT32_C(1) << 25)		// PD23 - READ DAKY
+	#define DAKY_BIT_PTT				(UINT32_C(1) << 23)		// PD23 - READ DAKY
 	#define HARDWARE_GET_DAKY()			((DAKY_TARGET_PIN & DAKY_BIT_PTT) == 0)
 	#define SHIFT_TARGET_PIN			gpioX_getinputs(GPIOD)
-	#define SHIFT_BIT_PTT				(UINT32_C(1) << 25)		// PD24 - READ SHIFT
+	#define SHIFT_BIT_PTT				(UINT32_C(1) << 24)		// PD24 - READ SHIFT
 	#define HARDWARE_GET_SHIFT() ((SHIFT_TARGET_PIN & SHIFT_BIT_PTT) == 0)
 
 	// получить бит запроса оператором перехода на пердачу
-	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0 || (PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0)
+	#define HARDWARE_GET_PTT() ( \
+			(PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || /* PTT_FRONT */ \
+			/* (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0 || */ \
+			(PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0 || /* rear PTT */ \
+			0 \
+		)
 	#define PTT_INITIALIZE() do { \
 			arm_hardware_pioe_inputs(PTT_BIT_PTT); \
 			arm_hardware_pioe_updown(PTT_BIT_PTT, PTT_BIT_PTT, 0); \
-			arm_hardware_piod_inputs(PTT2_BIT_PTT); \
-			arm_hardware_piod_updown(PTT2_BIT_PTT, PTT2_BIT_PTT, 0); \
+			/*arm_hardware_piod_inputs(PTT2_BIT_PTT); */\
+			/*arm_hardware_piod_updown(PTT2_BIT_PTT, PTT2_BIT_PTT, 0); */\
 			arm_hardware_piod_inputs(PTT3_BIT_PTT); \
 			arm_hardware_piod_updown(PTT3_BIT_PTT, PTT3_BIT_PTT, 0); \
 			arm_hardware_piod_inputs(DAKY_BIT_PTT); \
