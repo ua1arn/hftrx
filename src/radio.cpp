@@ -21612,8 +21612,11 @@ void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 
 	// filter
 	ARM_MORPH(arm_biquad_cascade_df2T)(& ctcss_iir_config, ctcss_buffer, ctcss_buffer, ARRAY_SIZE(ctcss_buffer));
-	// decimator
-	ARM_MORPH(arm_fir_decimate)(& ctcss_fir_config, ctcss_buffer, ctcss_buffer, ARRAY_SIZE(ctcss_buffer));
+	if (CTCSS_DECIM > 1)
+	{
+		// decimator
+		ARM_MORPH(arm_fir_decimate)(& ctcss_fir_config, ctcss_buffer, ctcss_buffer, ARRAY_SIZE(ctcss_buffer));
+	}
 	// обработка буфера после децимации
 	for (n = 0; n < goe_ctssLENGTH; ++ n)
 	{
@@ -21688,18 +21691,20 @@ static void ctcss_initialize(void)
 		biquad_init_lowpass(& f0, samplerate, 300);
 		fill_biquad_coeffs(& f0, ctcss_IIRCoeffs);
 	}
-
 	// filter
 	// Initialize floating-point Biquad cascade filter.
 	ARM_MORPH(arm_biquad_cascade_df2T_init)(& ctcss_iir_config, CTCSS_LPF_STAGES_IIR, ctcss_IIRCoeffs, ctcss_iir_state);
 
-	// decimator
-	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_fir_decimate_init)(& ctcss_fir_config,
-						CTCSS_DECIM_STAGES_FIR,
-						CTCSS_DECIM,          // Decimation factor
-						ctcss_FIRCoeffs,
-						ctcss_fir_state,            // Filter state variables
-						goe_ctssLENGTH * CTCSS_DECIM));
+	if (CTCSS_DECIM > 1)
+	{
+		// decimator
+		VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_fir_decimate_init)(& ctcss_fir_config,
+							CTCSS_DECIM_STAGES_FIR,
+							CTCSS_DECIM,          // Decimation factor
+							ctcss_FIRCoeffs,
+							ctcss_fir_state,            // Filter state variables
+							goe_ctssLENGTH * CTCSS_DECIM));
+	}
 
 
 	unsigned i;
