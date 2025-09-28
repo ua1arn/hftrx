@@ -32,6 +32,7 @@
 
 #if WITHSDRAM_AXP803 || WITHSDRAM_AXP305 || WITHSDRAM_AXP853 || WITHSDRAM_AXP707
 
+#include <string.h>
 #include "gpio.h"
 #include "formats.h"
 
@@ -1257,6 +1258,7 @@ int board_helperboard_t507_axp853_initialize(void)
 	axp858_set_sw(1);
 	local_delay_ms_nocache(100);
 	PRINTF("PMIC: AXP853T/AXP858 done\n");
+	dbg_flush();
 
 	return 0;
 }
@@ -1270,7 +1272,7 @@ int board_helperboard_a133_axp707_initialize(void)
 {
 	uint8_t axp_chip_id = 0xFF;
 	int ret;
-    PRINTF("! PMIC: AXP707\n");
+    PRINTF("PMIC: AXP707\n");
 	dbg_flush();
 	ret = pmic_bus_init();
 	if (ret)
@@ -1283,18 +1285,45 @@ int board_helperboard_a133_axp707_initialize(void)
 	dbg_flush();
 	if (!(id == 0x11))
 		return -1;
+
+	//	00000000: 35 10 02 51 00 00 00 00 00 00 00 00 00 00 00 00  5..Q............
+	//	00000010: 3F 00 01 E4 48 1A 16 16 1A 16 00 00 04 02 00 00  ?...H...........
+	//	00000020: 11 A8 A8 A8 A6 9E A8 FC 0B 0B 1A 00 00 B0 40 00  ..............@.
+	//	00000030: 01 03 43 C5 45 68 59 00 A5 1F 80 08 FC 16 00 00  ..C.EhY.........
+	//	00000040: D8 FC FF 03 7C 00 00 00 08 40 00 00 00 00 00 00  ....|....@......
+	//	00000050: 00 00 00 00 00 00 B4 0C 00 00 00 00 00 00 00 00  ................
+	//	00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+	//	00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+	//	00000080: 80 80 E1 00 F2 B0 00 00 00 00 00 00 00 00 40 00  ..............@.
+	//	00000090: 07 1A 07 1A 00 00 00 00 00 00 00 00 00 00 00 00  ................
+	//	000000A0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+	//	000000B0: 00 00 00 00 00 00 00 00 C0 64 80 5D 00 00 00 00  .........d.]....
+	//	000000C0: 00 00 00 01 01 03 05 06 07 0A 0D 10 1A 24 2E 32  .............$.2
+	//	000000D0: 35 39 3D 43 49 4F 54 58 5C 5D 5E 5F 60 61 62 63  59=CIOTX\]^_`abc
+	//	000000E0: 00 00 00 00 64 64 A0 00 00 00 00 00 00 00 50 00  ....dd........P.
+	//	000000F0: 01 00 80 03 00 80 00 00 00 00 00 00 00 00 00 00  ................
 #if 0
-	if (0)
+	if (1)
 	{
+		uint8_t b [256];
 		unsigned reg;
-		for (reg = 0; reg <= 0xED; ++ reg)
+		memset(b, 0xFF, sizeof b);
+		for (reg = 0; reg <= 0xFF; ++ reg)
 		{
 			uint8_t v;
-			pmic_bus_read(reg, & v);
-			PRINTF("axp853 reg%02X=0x%02X\n", reg, v);
+			if (pmic_bus_read(reg, b + reg))
+			{
+				PRINTF("axp707: read register 0x%02X failed.\n", reg);
+				break;
+			}
 		}
+		printhex(0, b, reg);
+		dbg_flush();
 	}
+	return 0;
+#endif
 
+#if 0
 	pmu_axp858_ap_reset_enable();	// без этой строчки не инициализируется после reset
 	axp858_set_sw(0);
 
@@ -1328,12 +1357,13 @@ int board_helperboard_a133_axp707_initialize(void)
 //	pmic_bus_setbits(0x1A,	// DCDC mode control 1
 //					1U << 6);	// DCDC 2&3 polyphase control
 
-	PRINTF("PMIC: AXP853T/AXP858 ON\n");
+	PRINTF("PMIC: axp707 ON\n");
 	local_delay_initialize();
 	local_delay_ms_nocache(100);
 	axp858_set_sw(1);
 	local_delay_ms_nocache(100);
-	PRINTF("PMIC: AXP853T/AXP858 done\n");
+	PRINTF("PMIC: axp707 done\n");
+	dbg_flush();
 #endif
 	return 0;
 }
