@@ -4085,6 +4085,21 @@ uint_fast32_t allwnr_t507_get_smhc2_freq(void)
 #elif (CPUSTYLE_A133 || CPUSTYLE_R828)
 
 
+static void set_a133_axi_sel(unsigned sel, unsigned APBdiv, unsigned AXIdiv)
+{
+//	const unsigned APBdiv = 4;
+//	const unsigned AXIdiv = 2;//3;	// default - 2 = PSI to MEMORY interface
+	// switch CPU clock to sel
+	//	CPUX Clock = Clock Source
+	//	CPUX_AXI Clock = Clock Source/M
+	//	CPUX_APB Clock = Clock Source/N
+	CCU->C0_CPUX_AXI_CFG_REG = (CCU->C0_CPUX_AXI_CFG_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x03) << 0)) |
+		sel * (UINT32_C(1) << 24) |	// OSC24 or PLL_CPUX
+		(APBdiv - 1) * (UINT32_C(1) << 8) |		// CPUX_APB_FACTOR_N = APB divider
+		(AXIdiv - 1) * (UINT32_C(1) << 0) |		// FACTOR_M - AXI divider
+		0;
+}
+
 uint_fast32_t allwnr_a133_get_hosc_freq(void)
 {
 #if WITHCPUXTAL
@@ -9961,6 +9976,31 @@ sysinit_pll_initialize(int forced)
 
 #elif (CPUSTYLE_A133 || CPUSTYLE_R828)
 
+
+	{
+		// Disable SD hosts
+
+		CCU->SMHC0_CLK_REG = 0;
+		CCU->SMHC1_CLK_REG = 0;
+		CCU->SMHC2_CLK_REG = 0;
+		CCU->SMHC_BGR_REG = 0;
+	}
+
+	{
+		// Disable XFEL enabled device
+
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG_RST
+		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 8);	// USBOTG_GATING
+	}
+
+#if 0
+	set_a133_axi_sel(0x00, 1, 1);	// OSC24 as source
+
+	CCU->PSI_AHB1_AHB2_CFG_REG = 0;
+	PRCM->CPUS_CFG_REG = 0;
+	PRCM->APBS1_CFG_REG = 0;
+#endif
 
 #elif CPUSTYLE_VM14
 	/* 1892ВМ14Я */
