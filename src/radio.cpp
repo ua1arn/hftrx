@@ -4542,9 +4542,10 @@ static uint_fast8_t gforcexvrtr;	/* принудительно включить 
 	#define WITHTOPDBDEFAULTTX 	(0 - DBVALOFFSET_BASE)
 
 	/* Значения, хранимые в NVRAM */
-	#define WITHBOTTOMDBMIN 	(- 140 - DBVALOFFSET_BASE)
+	#define WITHBOTTOMDBMIN 	(WITHMINFSPOWER - DBVALOFFSET_BASE)
 	#define WITHBOTTOMDBMAX 	(+ 10 - DBVALOFFSET_BASE)
-	#define WITHBOTTOMDBDEFAULT (- 140 - DBVALOFFSET_BASE)
+	#define WITHBOTTOMDBDEFAULT (- 130 - DBVALOFFSET_BASE)
+	#define WITHBOTTOMDBDEFAULTTX (- 110 - DBVALOFFSET_BASE)
 
 	/* складывается со смещением и отображается */
 	static int_fast32_t getrfdbbase(void)
@@ -4553,7 +4554,7 @@ static uint_fast8_t gforcexvrtr;	/* принудительно включить 
 	}
 
 	static uint_fast8_t gtopdbspetx = WITHTOPDBDEFAULTTX;	/* верхний предел FFT для показа в режиме TX */
-	static uint_fast8_t gbottomdbspetx = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT для показа в режиме TX */
+	static uint_fast8_t gbottomdbspetx = WITHBOTTOMDBDEFAULTTX;	/* нижний предел FFT для показа в режиме TX */
 	static uint_fast8_t gtopdbspe = WITHTOPDBDEFAULT;	/* верхний предел FFT */
 	static uint_fast8_t gbottomdbspe = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT */
 	static uint_fast8_t gtopdbwfl = WITHTOPDBDEFAULT;	/* верхний предел FFT waterflow*/

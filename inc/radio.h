@@ -45,8 +45,8 @@ extern "C" {
 #define WITHNOTCHWIDTHMAX	1000
 
 /* параметры отображения панорамы */
-#define WITHSPPARTMIN		20
-#define WITHSPPARTMAX		100
+#define WITHSPPARTMIN		0		/*  % */
+#define WITHSPPARTMAX		100		/*  % */
 
 #define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
 #define	BOARD_IFGAIN_MAX	24		/* код управления усилением ВЧ тракта */
@@ -57,8 +57,8 @@ extern "C" {
 #define WITHLINEINGAINMIN	0		/* код управления усилением входа с линии */
 #define WITHLINEINGAINMAX	255		/* код управления усилением входа с линии */
 
-#define WITHMIKEINGAINMIN	0		/* код управления усилением входа с микрофона */
-#define WITHMIKEINGAINMAX	100		/* код управления усилением входа с микрофона */
+#define WITHMIKEINGAINMIN	0		/* код управления усилением входа с микрофона, %  */
+#define WITHMIKEINGAINMAX	100		/* код управления усилением входа с микрофона, %  */
 
 #define WITHMIKECLIPMIN		0
 #define WITHMIKECLIPMAX		90
@@ -66,22 +66,22 @@ extern "C" {
 #define WITHMIKEAGCMIN		10
 #define WITHMIKEAGCMAX		60
 
-#define WITHVOXDELAYMIN		10
-#define WITHVOXDELAYMAX		250
+#define WITHVOXDELAYMIN		10	/* ms */
+#define WITHVOXDELAYMAX		250	/* ms */
 
-#define WITHVOXLEVELMIN		0
-#define WITHVOXLEVELMAX		100
+#define WITHVOXLEVELMIN		0	/*  % */
+#define WITHVOXLEVELMAX		100	/*  % */
 
-#define WITHAVOXLEVELMIN	0
-#define WITHAVOXLEVELMAX	100
+#define WITHAVOXLEVELMIN	0	/*  % */
+#define WITHAVOXLEVELMAX	100	/*  % */
 
 #define WITHFILTSOFTMIN		0		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 #define WITHFILTSOFTMAX		10		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 
-#define WITHREVERBDELAYMIN 1	/* минимальная задержка ревербератора % */
-#define WITHREVERBDELAYMAX 100	/* максимальная задержка ревербератора % */
+#define WITHREVERBDELAYMIN 1	/* минимальная задержка ревербератора, % */
+#define WITHREVERBDELAYMAX 100	/* максимальная задержка ревербератора, % */
 
-#define WITHREVERBLOSSMIN 0		/* минимальное ослабление на возврате ревербератора db */
+#define WITHREVERBLOSSMIN 0		/* минимальное ослабление на возврате ревербератора (dB) */
 #define WITHREVERBLOSSMAX 30	/* максимальная ослабление на возврате ревербератора (dB) */
 
 #define WITHCOMPATTACKMIN 1		/* минимальное время атаки компрессора (мс) */
