@@ -1346,6 +1346,7 @@
 		(UINT32_C(1) << 20) |	/* LCD_LVDS_CLK_SEL 1: LCD CLK */ \
 		0 * (UINT32_C(1) << 25) |		/* LCD_LVDS_DEBUG_EN */ \
 		0 * (UINT32_C(1) << 24) |		/* LCD_LVDS_DEBUG_MODE */ \
+		/* младшие 5 бит имеют неправильное описание - на самом деле "0" - нормально разведенные пары. */ \
 		0 * (UINT32_C(1) << 4) |				/* LCD_LVDS_CLK_POL: 0: reverse, 1: normal */ \
 		0 * 0x0F * (UINT32_C(1) << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */ \
 		0)
