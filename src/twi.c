@@ -1901,6 +1901,14 @@ void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq
 		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
 	}
 #endif /* defined (S_TWI0) */
+#if defined (S_TWI1) && defined (PRCM)
+	else if (twi == S_TWI1)
+	{
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 1);	// Open the clock gate
+		PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 17);	// Assert reset
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 17);	// De-assert reset
+	}
+#endif /* defined (S_TWI1) */
 #if defined (R_TWI) && defined (PRCM)
 	// A64
 	else if (twi == R_TWI)
@@ -2562,6 +2570,14 @@ void hardware_twi_master_configure(void)
 			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
 		}
 	#endif /* defined (S_TWI0) */
+	#if defined (S_TWI1) && defined (PRCM)
+		else if (twi == S_TWI1)
+		{
+			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 1);	// Open the clock gate
+			PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 17);	// Assert reset
+			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 17);	// De-assert reset
+		}
+	#endif /* defined (S_TWI1) */
 		else
 		{
 			const unsigned TWIx = TWIHARD_IX;
