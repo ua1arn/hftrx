@@ -54,12 +54,12 @@
 	#define PMIC_I2C_W 0x68
 	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
-	int axp803_initialize(void);
+	int board_banana_pi_axp803_initialize(void);
 
 	/* Контроллер питания AXP803 */
 	#define BOARD_PMIC_INITIALIZE() do { \
 		arm_hardware_pioh_outputs(UINT32_C(1) << 5, 1 * UINT32_C(1) << 5); /* PH5 VCC-5V-ON */ \
-		axp803_initialize(); \
+		board_banana_pi_axp803_initialize(); \
 	} while (0)
 
 #if 0

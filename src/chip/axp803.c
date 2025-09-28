@@ -30,7 +30,7 @@
 
 #include "hardware.h"
 
-#if WITHSDRAM_AXP803 || WITHSDRAM_AXP305 || WITHSDRAM_AXP853
+#if WITHSDRAM_AXP803 || WITHSDRAM_AXP305 || WITHSDRAM_AXP853 || WITHSDRAM_AXP707
 
 #include "gpio.h"
 #include "formats.h"
@@ -439,7 +439,7 @@ static int axp803_set_sw(int on)
  *
  * @return
  */
-int axp803_initialize(void)
+int board_banana_pi_axp803_initialize(void)
 {
 	uint8_t axp803_chip_id;
 	int ret;
@@ -578,7 +578,7 @@ static int axp_set_dcdcd(unsigned int mvolt)
 
 // AXP 305 - контроллер питания производства Allwinner - аналог Datasheet AXP805
 
-int axp305_initialize(void)
+int board_orangepi_zero2_axp305_initialize(void)
 {
 	uint8_t axp305_chip_id;
 	int ret;
@@ -1189,7 +1189,7 @@ static int pmu_axp858_ap_reset_enable(void)
 	return 0;
 }
 
-int axp853_initialize(void)
+int board_helperboard_t507_axp853_initialize(void)
 {
 	uint8_t axp_chip_id = 0xFF;
 	int ret;
@@ -1257,4 +1257,75 @@ int axp853_initialize(void)
 
 	return 0;
 }
-#endif /* WITHSDRAM_AXP803 || WITHSDRAM_AXP305 || WITHSDRAM_AXP853 */
+
+
+int board_helperboard_a133_axp707_initialize(void)
+{
+	uint8_t axp_chip_id = 0xFF;
+	int ret;
+    PRINTF("PMIC: AXP853T/AXP858\n");
+	ret = pmic_bus_init();
+	if (ret)
+		return ret;
+
+	ret = pmic_bus_read(AXP858_CHIP_ID, &axp_chip_id);
+
+	PRINTF("axp_chip_id=0x%02X (expected 0x54)\n", axp_chip_id);
+	if (!(axp_chip_id == 0x54))
+		return -1;
+#if 0
+	if (0)
+	{
+		unsigned reg;
+		for (reg = 0; reg <= 0xED; ++ reg)
+		{
+			uint8_t v;
+			pmic_bus_read(reg, & v);
+			PRINTF("axp853 reg%02X=0x%02X\n", reg, v);
+		}
+	}
+
+	pmu_axp858_ap_reset_enable();	// без этой строчки не инициализируется после reset
+	axp858_set_sw(0);
+
+	// https://artmemtech.com/
+	// artmem atl4b0832
+
+	// VDD2, VDDQ = 1.06–1.17V; VDD1 = 1.70–1.95V; TC = 0°C to +85°C
+
+	// F1 ball VDD1: 1.8
+	// A4 ball VDD2: vcc_dram 1.1
+
+	VERIFY(0 == axp858_set_dcdc1(3300));	// VCC-PA/VCC-PG/VCC-WIFI/VCC-CTP/VCC-3V3/VCC-IO/VCC-PI/VCC-PC/VCC-USB/VCC-EMMC/AC107-VCC-DIO/AC107-AVCC
+	VERIFY(0 == axp858_set_dcdc2(1000));	// VDD-CPU 0.88..1.2 volt recommended
+	VERIFY(0 == axp858_set_dcdc3(950));		// VDD-SYS 0.9..0.99 volt recommended
+	VERIFY(0 == axp858_set_dcdc4(990));		// VDD-GPU 0.81..1.2 volt recommended
+	VERIFY(0 == axp858_set_dcdc5(1100));	// VCC-DRAM - 1.1 volt for LPDDR4
+
+	VERIFY(0 == axp858_set_aldo1(1800));	// VCC_PG, SDIO, eMMC I/O
+	VERIFY(0 == axp858_set_aldo2(1800));	// AVCC/VCC-PLL/VCC-DCXO/AC107-DVCC
+	VERIFY(0 == axp858_set_aldo3(2500));	// VPP DRAM
+	VERIFY(0 == axp858_set_aldo4(1800));	// 1.8V for LPDDR4 VDD18-DRAM/VDD18-LPDDR
+	VERIFY(0 == axp858_set_aldo5(3300));	// VCC-PE 2.8/3.3 volt
+
+	VERIFY(0 == axp858_set_bldo1(1800));	// 1.8V VCC-MCSI/VCC-HDMI/VCC-LVDS
+	VERIFY(0 == axp858_set_bldo5(1200));	// External pin IOVDD_1V8 or Toshiba TC358778XBG
+
+
+	VERIFY(0 == axp858_set_cldo3(0));		// CLDO3 connected as GPIO to EXTIRQ CPU pin
+	VERIFY(0 == axp858_set_cldo4(1800));	// 1.8V VCC-TV
+
+//	pmic_bus_setbits(0x1A,	// DCDC mode control 1
+//					1U << 6);	// DCDC 2&3 polyphase control
+
+	PRINTF("PMIC: AXP853T/AXP858 ON\n");
+	local_delay_initialize();
+	local_delay_ms_nocache(100);
+	axp858_set_sw(1);
+	local_delay_ms_nocache(100);
+	PRINTF("PMIC: AXP853T/AXP858 done\n");
+#endif
+	return 0;
+}
+
+#endif /* WITHSDRAM_AXP803 || WITHSDRAM_AXP305 || WITHSDRAM_AXP853 || WITHSDRAM_AXP707 */

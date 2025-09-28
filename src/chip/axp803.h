@@ -86,9 +86,6 @@ extern "C" {
 #define AXP_GPIO_STATE			0x94
 #define AXP_GPIO_STATE_OFFSET		0
 
-
-int axp803_initialize(void);
-
 // https://github.com/apritzel/u-boot/blob/3aaabfe9ff4bbcd11096513b1b28d1fb0a40800f/include/axp305.h#L6
 
 /* SPDX-License-Identifier: GPL-2.0+ */
@@ -127,8 +124,6 @@ enum axp305_reg {
 
 #define AXP_POWER_STATUS		0x00
 #define AXP_POWER_STATUS_ALDO_IN		(1 << 0)
-
-int axp305_initialize(void);
 
 #ifdef __cplusplus
 }

@@ -45,7 +45,8 @@
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define CONFIG_MACH_SUN50I_A133 1
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
-	#define BOARD_CONFIG_DRAM_CLK 800
+	#define BOARD_CONFIG_DRAM_CLK 792
+	#define CONFIG_DRAM_CLK 792
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -1050,17 +1051,17 @@
 
 	#if WITHISBOOTLOADER
 
-		#define WITHSDRAM_AXP305	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP305 power management chip */
+		#define WITHSDRAM_AXP707	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP305 power management chip */
 
 		#define PMIC_I2C_W 0x6C	// 7bit: 0x36
 		#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
 		// See WITHSDRAM_AXP308
-		int axp305_initialize(void);
+		int board_helperboard_a133_axp707_initialize(void);
 
 		/* Контроллер питания AXP305 */
 		#define BOARD_PMIC_INITIALIZE() do { \
-			/*axp305_initialize(); */\
+			board_helperboard_a133_axp707_initialize(); \
 		} while (0)
 	#endif /* WITHISBOOTLOADER */
 

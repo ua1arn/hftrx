@@ -117,11 +117,11 @@
 	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
 	// See WITHSDRAM_AXP308
-	int axp853_initialize(void);
+	int board_helperboard_t507_axp853_initialize(void);
 
 	/* Контроллер питания AXP305 */
 	#define BOARD_PMIC_INITIALIZE() do { \
-		axp853_initialize(); /* Voltages are set here */ \
+		board_helperboard_t507_axp853_initialize(); /* Voltages are set here */ \
 	} while (0)
 #endif
 

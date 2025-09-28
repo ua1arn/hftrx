@@ -1057,11 +1057,11 @@
 		#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
 		// See WITHSDRAM_AXP308
-		int axp305_initialize(void);
+		int board_orangepi_zero2_axp305_initialize(void);
 
 		/* Контроллер питания AXP305 */
 		#define BOARD_PMIC_INITIALIZE() do { \
-			axp305_initialize(); \
+			board_orangepi_zero2_axp305_initialize(); \
 		} while (0)
 	#endif /* WITHISBOOTLOADER */
 

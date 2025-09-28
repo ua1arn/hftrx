@@ -49,10 +49,11 @@
 //	#define PMIC_I2C_W 0x68
 //	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
-//	int axp803_initialize(void);
+	int board_orange_pi_axpXXX_initialize(void);
 
 	/* Контроллер питания AXP803 */
 	#define BOARD_PMIC_INITIALIZE() do { \
+		board_orange_pi_axpXXX_initialize(); \
 	} while (0)
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
