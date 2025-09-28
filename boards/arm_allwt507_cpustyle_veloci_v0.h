@@ -1340,9 +1340,9 @@
 
 	#define LCD_LVDS_IF_REG_VALUE ( \
 		(UINT32_C(1) << 31) |	/* LCD_LVDS_EN */ \
-		(UINT32_C(0) << 30) |	/* LCD_LVDS_LINK: 0: single link */ \
-		(! UINT32_C(1) << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter) */ \
-		(UINT32_C(0) << 26) |	/* LCD_LVDS_BITWIDTH 0: 24-bit */ \
+		0 * (UINT32_C(1) << 30) |	/* LCD_LVDS_LINK: 0: single link */ \
+		0 * (UINT32_C(1) << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0: NS MODE for THC63LVDF84B converter) */ \
+		0 * (UINT32_C(1) << 26) |	/* LCD_LVDS_BITWIDTH 0: 24-bit */ \
 		(UINT32_C(1) << 20) |	/* LCD_LVDS_CLK_SEL 1: LCD CLK */ \
 		0 * (UINT32_C(1) << 25) |		/* LCD_LVDS_DEBUG_EN */ \
 		0 * (UINT32_C(1) << 24) |		/* LCD_LVDS_DEBUG_MODE */ \
