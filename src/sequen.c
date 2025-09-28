@@ -122,6 +122,7 @@ static /* volatile */ uint_fast8_t usertxstate;	/* 0 - периферия нах
 
 static volatile uint_fast8_t seqstate;
 static volatile uint_fast8_t seqpushtime;	// Возможные количства "тиков" на передачу и на приём
+static IRQLSPINLOCK_t seqlock = IRQLSPINLOCK_INIT;
 
 
 static uint_fast8_t
@@ -153,12 +154,13 @@ uint_fast8_t seq_get_txstate(void)
 void vox_set_levels(uint_fast8_t vlevel, uint_fast8_t alevel)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
 	
 	vox_level = vlevel;	// 0..100
 	avox_level = alevel;	// 0..100
 
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
+
 }
 
 static int vscale(uint_fast8_t v, uint_fast8_t mag)
@@ -185,10 +187,10 @@ vox_enable(
 	)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
 	vox_delay = SEQNTICKS(10 * vox_delay_tens);
 	seq_voxenable = voxstate;
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
 }
 
 #endif
@@ -201,10 +203,10 @@ seq_set_bkin_enable(
 	)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
 	bkin_delay = SEQNTICKS(10 * bkin_delay_tens);
 	seq_bkinenable = bkinstate;
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
 }
 
 /* разрешение работы CW */
@@ -214,9 +216,9 @@ seq_set_cw_enable(
 	)	
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
 	seq_cwenable = state;
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
 }
 
 /* разрешение формирования roger beep */
@@ -226,9 +228,9 @@ seq_set_rgbeep(
 	)	
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
 	seq_rgbeep = state;
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
 }
 
 
@@ -325,10 +327,10 @@ void seq_set_txgate(
 	)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
 	txgfp = atxgfp;	// параметры управления трактом
 	sdtnp = asdtnp;	// параметры управления самоконтролем
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
 }	
 
 /* в зависимсти от текущего режима возвращает признак для перехода (или невыхода) из
@@ -564,7 +566,7 @@ void seq_set_rxtxdelay(
 	if (arxtxticks != rxtxticks || atxrxticks != txrxticks || apretxticks != pretxticks)
 	{
 		IRQL_t oldIrql;
-		RiseIrql(IRQL_SYSTEM, & oldIrql);
+		IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
 		rxtxticks = arxtxticks;
 		txrxticks = atxrxticks;
 		pretxticks = apretxticks;
@@ -572,7 +574,7 @@ void seq_set_rxtxdelay(
 		uint_fast8_t n = (pretxticks + rxtxticks) * 2;
 		while (n --)
 			keyqueuein(0);
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& seqlock, oldIrql);
 	}
 }
 
@@ -623,26 +625,20 @@ void seq_initialize(void)
 void seq_purge(void)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
 
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
 }
 
 // запрос из user-mode части программы на переход на передачу для tune.
 void seq_txrequest(uint_fast8_t tune, uint_fast8_t aptt)
 {
+	//PRINTF("seq_txrequest: tune=%d, aptt=%d\n", (int) tune, (int) aptt);
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
 	exttunereq = tune;
 	ptt = aptt;
-	LowerIrql(oldIrql);
-}
-
-// запрос из system-mode части программы на переход на передачу для tune.
-void seq_txrequest_irq(uint_fast8_t tune, uint_fast8_t aptt)
-{
-	exttunereq_irq = tune;
-	ptt_irq = aptt;
+	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
 }
 
 /* подтверждение от user-mode программы о том, что смена режима приём-передача осуществлена */
@@ -650,11 +646,11 @@ void seq_ask_txstate(
 	uint_fast8_t tx)	/* 0 - периферия находимся в состоянии приёма, иначе - в состоянии передачи */
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
 
 	usertxstate = tx;
 
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
 }
 
 // состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)

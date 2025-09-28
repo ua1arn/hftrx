@@ -16855,6 +16855,10 @@ processtxrequest(void)
 	if (moxmode || hardware_get_ptt())	// тангента, педаль
 	{
 #if WITHCAT
+		if (! moxmode)
+		{
+			bring_swr("PTT");
+		}
 		cat_reset_ptt();	// снять программный запрос на передачу - "залипший" запрос.
 #endif	/* WITHCAT */
 		txreq = 1;
