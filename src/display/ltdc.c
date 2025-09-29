@@ -3514,10 +3514,10 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 {
 #if defined (TCONLCD_PTR)
 
-	int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
-	int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
-	int den_active;		// 1 - negatibe pulses, 0 - positice pulses
-	int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
+	int h_sync_active;	// 1 - negative pulses, 0 - positive pulses
+	int v_sync_active;	// 1 - negative pulses, 0 - positive pulses
+	int den_active;		// 1 - negative pulses, 0 - positive pulses
+	int clk_active;		// 1 - negative pulses, 0 - positive pulses
 
 	h_sync_active = vdmode->vsyncneg;
 	v_sync_active = vdmode->hsyncneg;
