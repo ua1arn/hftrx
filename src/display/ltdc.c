@@ -3528,7 +3528,7 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 	val = 0;
 
 	if (! h_sync_active)
-		val |= (UINT32_C(1) << 25);	// IO1_Inv 0 HSYMC
+		val |= (UINT32_C(1) << 25);	// IO1_Inv 0 HSYNC
 	if (! v_sync_active)
 		val |= (UINT32_C(1) << 24);	// IO0_Inv - VSYNC
 	if (! den_active)
@@ -7610,7 +7610,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	// step1 - same as step1 in HV mode: Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
-	t113_LVDS_clock_configuration(vdmode);
+	t113_LVDS_clock_configuration(vdmode);	// LCD_DCLK_REG - 1/7 divide
 	// step3 - same as step3 in HV mode: Set sequuence parameters
 	t113_set_sequence_parameters(vdmode);
 	// step4 - same as step4 in HV mode: Open volatile output
