@@ -100,7 +100,7 @@ static const struct menudef menutable [] =
 	(const struct paramdefdef [1]) {
 		QLABEL("C LINEAR"), 7, 0, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
-		0, KSCH_COUNT - 1,
+		0, 1,
 		OFFSETOF(struct nvmap, gn7ddclinearC),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
@@ -111,7 +111,7 @@ static const struct menudef menutable [] =
 	(const struct paramdefdef [1]) {
 		QLABEL("L LINEAR"), 7, 0, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
-		0, KSCH_COUNT - 1,
+		0, 1,
 		OFFSETOF(struct nvmap, gn7ddclinearL),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
