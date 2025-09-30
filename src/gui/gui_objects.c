@@ -505,6 +505,7 @@ int gui_obj_get_int_prop(const char * name, object_prop_t prop)
 	default:
 		break;
 	}
+	return 0;
 }
 
 void gui_obj_set_prop(const char * name, object_prop_t prop, ...)

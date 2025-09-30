@@ -3435,6 +3435,21 @@ int hamradio_walkmenu_getgroupanme(const void * groupitem, char * buff, size_t c
 int hamradio_walkmenu_getparamanme(const void * paramitem, char * buff, size_t count);
 int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t count);
 
+
+#define DBVALOFFSET_BASE WITHMINFSPOWER	// - 160
+
+/* Беззнаковые значения, хранимые в NVRAM */
+#define WITHTOPDBMIN 		(- 50 - DBVALOFFSET_BASE)
+#define WITHTOPDBMAX 		(+ 20 - DBVALOFFSET_BASE)
+#define WITHTOPDBDEFAULT 	(- 30 - DBVALOFFSET_BASE)
+#define WITHTOPDBDEFAULTTX 	(0 - DBVALOFFSET_BASE)
+
+/* Беззнаковые значения, хранимые в NVRAM */
+#define WITHBOTTOMDBMIN 	(WITHMINFSPOWER - DBVALOFFSET_BASE)
+#define WITHBOTTOMDBMAX 	(+ 10 - DBVALOFFSET_BASE)
+#define WITHBOTTOMDBDEFAULT (- 130 - DBVALOFFSET_BASE)
+#define WITHBOTTOMDBDEFAULTTX (- 110 - DBVALOFFSET_BASE)
+
 /* выбор внешнего вида прибора - стрелочный или градусник */
 enum
 {
