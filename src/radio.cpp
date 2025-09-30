@@ -16803,7 +16803,9 @@ processtxrequest(void)
 		{
 			bring_swr("PTT");
 			tunemode = 0;
+	#if WITHAUTOTUNER
 			reqautotune = 0;
+	#endif /* WITHAUTOTUNER */
 			txreq = 1;
 		}
 	}
