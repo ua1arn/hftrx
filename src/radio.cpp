@@ -16898,6 +16898,9 @@ const struct paramdefdef * const * getmiddlemenu_ssb(unsigned * size)
 	#if WITHIF4DSP
 		& xgnoisereduct,
 	#endif /* WITHIF4DSP */
+	#if WITHNOTCHONOFF || WITHNOTCHFREQ
+		& xgnotch,
+	#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 	#if WITHUSEDUALWATCH
 		& xmainsubrxmode,
 	#endif /* WITHUSEDUALWATCH */
