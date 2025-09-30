@@ -92,7 +92,7 @@ static void kbdst_initialize(kbdst_t * kbdp, uint_fast8_t (* get_pressed_key_cb)
 
 #if WITHCPUADCHW
 	adcdone_initialize(& kbdp->aevent, kbd_spool, kbdp);
-	adcdone_add(& aevent);
+	adcdone_add(& kbdp->aevent);
 #else /* KEYBOARD_USE_ADC */
 	ticker_initialize(& kbdp->kbdticker, NTICKS(KBD_TICKS_PERIOD), kbd_spool, kbdp);
 	ticker_add(& kbdp->kbdticker);
