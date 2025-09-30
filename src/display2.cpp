@@ -1697,10 +1697,6 @@ static uint_fast8_t glob_rxbwsatu = 100;	// 0..100 - насыщнность цв
 
 static int_fast16_t glob_topdb = - 30;		/* absolute power - верхний предел FFT */
 static int_fast16_t glob_bottomdb = - 130;	/* absolute power - нижний предел FFT */
-static int_fast16_t glob_topdbwf = - 30;		/* absolute power - верхний предел FFT */
-static int_fast16_t glob_bottomdbwf = - 130;	/* absolute power - нижний предел FFT */
-
-static uint_fast8_t glob_wflevelsep;		/* чувствительность водопада регулируется отдельной парой параметров */
 static uint_fast8_t glob_zoomxpow2;			/* уменьшение отображаемого участка спектра - horizontal magnification power of two */
 
 static uint_fast8_t glob_showdbm = 1;		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
@@ -6941,8 +6937,8 @@ static void display2_latchcombo(
 	for (x = 0; x < ALLDX; ++ x)
 	{
 		// для водопада
-		const int valwfl = dsp_mag2y(scbf.filtered_waterfall(x, ALLDX), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
-		const int val3dss = dsp_mag2y(scbf.filtered_3dss(x, ALLDX), INT16_MAX, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
+		const int valwfl = dsp_mag2y(scbf.filtered_waterfall(x, ALLDX), PALETTESIZE - 1, glob_topdb, glob_bottomdb); // возвращает значения от 0 до dy включительно
+		const int val3dss = dsp_mag2y(scbf.filtered_3dss(x, ALLDX), INT16_MAX, glob_topdb, glob_bottomdb); // возвращает значения от 0 до dy включительно
 		scbf.scrollpwr.poke(x, 0, val3dss);
 	#if LCDMODE_MAIN_L8
 		//colpip_putpixel(& wfjdbv, x, wfrow, valwfl);	// запись в буфер водопада индекса палитры
@@ -10310,33 +10306,12 @@ display2_set_rxbwsatu(uint_fast8_t v)
 	glob_rxbwsatu = v;
 }
 
-/* верхний предел FFT - waterflow */
-void
-board_set_topdbwf(int_fast16_t v)
-{
-	glob_topdbwf = v;
-}
-
-/* нижний предел FFT - waterflow*/
-void
-board_set_bottomdbwf(int_fast16_t v)
-{
-	glob_bottomdbwf = v;
-}
-
 /* уменьшение отображаемого участка спектра */
 // horizontal magnification power of two
 void
 board_set_zoomxpow2(uint_fast8_t v)
 {
 	glob_zoomxpow2 = v;
-}
-
-/* чувствительность водопада регулируется отдельной парой параметров */
-void
-board_set_wflevelsep(uint_fast8_t v)
-{
-	glob_wflevelsep = v != 0;
 }
 
 // Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)

@@ -1550,8 +1550,8 @@ void window_display_process(void)
 		gui_obj_align_to("btn_zoom", "lbl_partSP", ALIGN_DOWN_LEFT, interval);
 		gui_arrange_objects_from("btn_zoom", 3, 3, interval);
 
-		gui_obj_set_prop("sl_topSP", GUI_OBJ_PAYLOAD, normalize(hamradio_get_topdbspe(), WITHTOPDBMIN, WITHTOPDBMAX, 100));
-		gui_obj_set_prop("sl_bottomSP", GUI_OBJ_PAYLOAD, normalize(hamradio_get_bottomdbspe(), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, 100));
+		gui_obj_set_prop("sl_topSP", GUI_OBJ_PAYLOAD, normalize(hamradio_get_topdb(), WITHTOPDBMIN, WITHTOPDBMAX, 100));
+		gui_obj_set_prop("sl_bottomSP", GUI_OBJ_PAYLOAD, normalize(hamradio_get_bottomdb(), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, 100));
 		gui_obj_set_prop("sl_topWF", GUI_OBJ_PAYLOAD, normalize(hamradio_get_topdbwfl(), WITHTOPDBMIN, WITHTOPDBMAX, 100));
 		gui_obj_set_prop("sl_bottomWF", GUI_OBJ_PAYLOAD, normalize(hamradio_get_bottomdbwfl(), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, 100));
 		gui_obj_set_prop("sl_partSP", GUI_OBJ_PAYLOAD, normalize(hamradio_get_spectrumpart(), WITHSPPARTMIN, WITHSPPARTMAX, 100));
@@ -1583,9 +1583,9 @@ void window_display_process(void)
 			uint8_t i = gui_obj_get_int_prop(name, GUI_OBJ_INDEX);
 
 			if (i == TYPE_DISPLAY_SP_TOP)
-				hamradio_set_topdbspe(WITHTOPDBMIN + normalize(v, 0, 100, WITHTOPDBMAX - WITHTOPDBMIN));
+				hamradio_set_topdb(WITHTOPDBMIN + normalize(v, 0, 100, WITHTOPDBMAX - WITHTOPDBMIN));
 			else if (i == TYPE_DISPLAY_SP_BOTTOM)
-				hamradio_set_bottomdbspe(WITHBOTTOMDBMIN + normalize(v, 0, 100, WITHBOTTOMDBMAX - WITHBOTTOMDBMIN));
+				hamradio_set_bottomdb(WITHBOTTOMDBMIN + normalize(v, 0, 100, WITHBOTTOMDBMAX - WITHBOTTOMDBMIN));
 			else if (i == TYPE_DISPLAY_WF_TOP)
 				hamradio_set_topdbwfl(WITHTOPDBMIN + normalize(v, 0, 100, WITHTOPDBMAX - WITHTOPDBMIN));
 			else if (i == TYPE_DISPLAY_WF_BOTTOM)
@@ -1609,8 +1609,8 @@ void window_display_process(void)
 		gui_obj_set_prop("btn_view", GUI_OBJ_TEXT_FMT, "View|%s", hamradio_change_view_style(0));
 		gui_obj_set_prop("btn_zoom", GUI_OBJ_TEXT_FMT, "Zoom|x%d", 1 << hamradio_get_gzoomxpow2());
 		gui_obj_set_prop("btn_params", GUI_OBJ_TEXT_FMT, "WF params|%s", hamradio_get_gwflevelsep() ? "separate" : "from SP");
-		gui_obj_set_prop("lbl_topSP", GUI_OBJ_TEXT_FMT,    "SP Top    : %3d db", hamradio_get_topdbspe());
-		gui_obj_set_prop("lbl_bottomSP", GUI_OBJ_TEXT_FMT, "SP Bottom : %3d db", hamradio_get_bottomdbspe());
+		gui_obj_set_prop("lbl_topSP", GUI_OBJ_TEXT_FMT,    "SP Top    : %3d db", hamradio_get_topdb());
+		gui_obj_set_prop("lbl_bottomSP", GUI_OBJ_TEXT_FMT, "SP Bottom : %3d db", hamradio_get_bottomdb());
 		gui_obj_set_prop("lbl_topWF", GUI_OBJ_TEXT_FMT,    "WF Top    : %3d db", hamradio_get_topdbwfl());
 		gui_obj_set_prop("lbl_bottomWF", GUI_OBJ_TEXT_FMT, "WF Bottom : %3d db", hamradio_get_bottomdbwfl());
 		gui_obj_set_prop("lbl_partSP", GUI_OBJ_TEXT_FMT,   "SP part   : %3d %%", hamradio_get_spectrumpart());

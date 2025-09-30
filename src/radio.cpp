@@ -3531,10 +3531,8 @@ struct bandgroup_tag {
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
 #if WITHSPECTRUMWF
 	uint8_t gzoomxpow2;	/* уменьшение отображаемого участка спектра */
-	uint8_t gtopdbspe;		/* нижний предел FFT */
-	uint8_t gbottomdbspe;	/* верхний предел FFT */
-	uint8_t gtopdbwfl;		/* нижний предел FFT waterflow */
-	uint8_t gbottomdbwfl;	/* верхний предел FFT waterflow */
+	uint8_t gtopdb;		/* нижний предел FFT */
+	uint8_t gbottomdb;	/* верхний предел FFT */
 #endif /* WITHSPECTRUMWF */
 #if WITHANTSELECTRX || WITHANTSELECT1RX
 	struct onerxant_tag orxants [ANTMODE_COUNT + 1];	// Параметры, связанные с антенами, которые могут использоваться на приём (TODO: добавить для приёмной антенны)
@@ -3666,7 +3664,6 @@ struct nvmap
 #if WITHSPECTRUMWF
 	uint8_t gviewstyle;		/* стиль отображения спектра и панорамы */
 	uint8_t gview3dss_mark;	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
-	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	uint8_t gtxloopback;		 /* включение спектроанализатора сигнала передачи */
 	uint8_t gspecbeta100;	/* beta - парамеры видеофильтра спектра */
 	uint8_t gwflbeta100;	/* beta - парамеры видеофильтра водопада */
@@ -4553,13 +4550,10 @@ static uint_fast8_t gforcexvrtr;	/* принудительно включить 
 		return DBVALOFFSET_BASE;
 	}
 
-	static uint_fast8_t gtopdbspetx = WITHTOPDBDEFAULTTX;	/* верхний предел FFT для показа в режиме TX */
-	static uint_fast8_t gbottomdbspetx = WITHBOTTOMDBDEFAULTTX;	/* нижний предел FFT для показа в режиме TX */
-	static uint_fast8_t gtopdbspe = WITHTOPDBDEFAULT;	/* верхний предел FFT */
-	static uint_fast8_t gbottomdbspe = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT */
-	static uint_fast8_t gtopdbwfl = WITHTOPDBDEFAULT;	/* верхний предел FFT waterflow*/
-	static uint_fast8_t gbottomdbwfl = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT waterflow */
-	static uint_fast8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
+	static uint_fast8_t gtopdbtx = WITHTOPDBDEFAULTTX;	/* верхний предел FFT для показа в режиме TX */
+	static uint_fast8_t gbottomdbtx = WITHBOTTOMDBDEFAULTTX;	/* нижний предел FFT для показа в режиме TX */
+	static uint_fast8_t gtopdb = WITHTOPDBDEFAULT;	/* верхний предел FFT */
+	static uint_fast8_t gbottomdb = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT */
 	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
@@ -4650,60 +4644,33 @@ static const struct paramdefdef xgzoomxpow2 =
 #endif
 
 /* нижний предел FFT */
-static const struct paramdefdef xgtopdbspe =
+static const struct paramdefdef xgtopdb =
 {
 	QLABEL("TOP DB"), 7, 0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-	OFFSETOF(struct nvmap, bandgroups [0].gtopdbspe),
+	OFFSETOF(struct nvmap, bandgroups [0].gtopdb),
 	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
 	NULL,
-	& gtopdbspe,
+	& gtopdb,
 	getrfdbbase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 /* верхний предел FFT */
-static const struct paramdefdef xgbottomdbspe =
+static const struct paramdefdef xgbottomdb =
 {
 	QLABEL2("BOTTM DB", "BOTTOM DB"), 7, 0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-	OFFSETOF(struct nvmap, bandgroups [0].gbottomdbspe),
+	OFFSETOF(struct nvmap, bandgroups [0].gbottomdb),
 	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
 	NULL,
-	& gbottomdbspe,
+	& gbottomdb,
 	getrfdbbase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
-/* нижний предел FFT waterflow */
-static const struct paramdefdef xgtopdbwfl =
-{
-	QLABEL("TOP WF"), 7, 0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE,
-	WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-	OFFSETOF(struct nvmap, bandgroups [0].gtopdbwfl),
-	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
-	NULL,
-	& gtopdbwfl,
-	getrfdbbase, /* складывается со смещением и отображается */
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-};
-/* верхний предел FFT waterflow */
-static const struct paramdefdef xgbottomdbwfl =
-{
-	QLABEL("BOTTM WF"), 7, 0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE,
-	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-	OFFSETOF(struct nvmap, bandgroups [0].gbottomdbwfl),
-	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
-	NULL,
-	& gbottomdbwfl,
-	getrfdbbase, /* складывается со смещением и отображается */
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-};
-
 /* нижний предел FFT для показа в режиме TX */
-static const struct paramdefdef xgtopdbspetx =
+static const struct paramdefdef xgtopdbtx =
 {
 	QLABEL("TOP DB TX"), 7, 0, RJ_SIGNED,	ISTEP_RO,
 	ITEM_VALUE,
@@ -4711,12 +4678,12 @@ static const struct paramdefdef xgtopdbspetx =
 	MENUNONVRAM,
 	getselector0, nvramoffs0, valueoffs0,
 	NULL,
-	& gtopdbspetx,
+	& gtopdbtx,
 	getrfdbbase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 /* верхний предел FFT для показа в режиме TX */
-static const struct paramdefdef xgbottomdbspetx =
+static const struct paramdefdef xgbottomdbtx =
 {
 	QLABEL2("BOTTM DB TX", "BOTTOM DB"), 7, 0, RJ_SIGNED,	ISTEP_RO,
 	ITEM_VALUE,
@@ -4724,21 +4691,8 @@ static const struct paramdefdef xgbottomdbspetx =
 	MENUNONVRAM,
 	getselector0, nvramoffs0, valueoffs0,
 	NULL,
-	& gbottomdbspetx,
+	& gbottomdbtx,
 	getrfdbbase, /* складывается со смещением и отображается */
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-};
-// чувствительность водопада регулируется отдельной парой параметровs
-static const struct paramdefdef xgwflevelsep =
-{
-	QLABEL("WFPARAMS"), 7, 3, RJ_YES,	ISTEP1,
-	ITEM_VALUE,
-	0, 1,							/* водопад отдельными папаметрами */
-	OFFSETOF(struct nvmap, gwflevelsep),
-	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& gwflevelsep,
-	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
@@ -8503,20 +8457,16 @@ storebandfreq(const vindex_t b, const uint_fast8_t bi)
 static void storezoom(uint_fast8_t bg)
 {
 	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].gzoomxpow2), gzoomxpow2);	/* уменьшение отображаемого участка спектра */
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].gtopdbspe), gtopdbspe);	/* нижний предел FFT */
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].gbottomdbspe), gbottomdbspe);	/* верхний предел FFT */
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].gtopdbwfl), gtopdbwfl);	/* нижний предел FFT waterflow */
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].gbottomdbwfl), gbottomdbwfl);	/* верхний предел FFT waterflow */
+	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].gtopdb), gtopdb);	/* нижний предел FFT */
+	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].gbottomdb), gbottomdb);	/* верхний предел FFT */
 }
 
 /* восстановление параметров отображения спектра и водопада */
 static void loadzoom(uint_fast8_t bg)
 {
 	gzoomxpow2 = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].gzoomxpow2), 0, BOARD_FFTZOOM_POW2MAX, 0);	/* масштаб панорамы */
-	gtopdbspe = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].gtopdbspe), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT */
-	gbottomdbspe = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].gbottomdbspe), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT */
-	gtopdbwfl = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].gtopdbwfl), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT waterflow */
-	gbottomdbwfl = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].gbottomdbwfl), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT waterflow */
+	gtopdb = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].gtopdb), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT */
+	gbottomdb = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].gbottomdb), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT */
 }
 
 #endif /* WITHSPECTRUMWF */
@@ -9028,7 +8978,7 @@ static const struct paramdefdef * enc2menus [] =
 	& xgsquelchNFM,
 #endif /* ! WITHPOTNFMSQL */
 #if WITHSPECTRUMWF
-	& xgbottomdbspe,
+	& xgbottomdb,
 #if BOARD_FFTZOOM_POW2MAX > 0
 	& xgzoomxpow2,	/* уменьшение отображаемого участка спектра */
 #endif /* BOARD_FFTZOOM_POW2MAX > 0 */
@@ -12406,12 +12356,9 @@ updateboard_noui(
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 			const uint8_t bi_main = getbankindexmain();	/* VFO A modifications */
-			board_set_topdb(param_getvalue(gtxloopback && gtx ? & xgtopdbspetx : & xgtopdbspe));		/* верхний предел FFT */
-			board_set_bottomdb(param_getvalue(gtxloopback && gtx ? & xgbottomdbspetx : & xgbottomdbspe));		/* нижний предел FFT */
-			board_set_topdbwf(param_getvalue(gtxloopback && gtx ? & xgtopdbspetx : & xgtopdbwfl));		/* верхний предел FFT для водопада */
-			board_set_bottomdbwf(param_getvalue(gtxloopback && gtx ? & xgbottomdbspetx : & xgbottomdbwfl));		/* нижний предел FFT для водопада */
+			board_set_topdb(param_getvalue(gtxloopback && gtx ? & xgtopdbtx : & xgtopdb));		/* верхний предел FFT */
+			board_set_bottomdb(param_getvalue(gtxloopback && gtx ? & xgbottomdbtx : & xgbottomdb));		/* нижний предел FFT */
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
-			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
 			display2_set_lvlgridstep(glvlgridstep);	/* Шаг сетки уровней в децибелах */
 			board_set_view_style(gviewstyle);			/* стиль отображения спектра и панорамы */
 			board_set_view3dss_mark(gview3dss_mark);	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
@@ -20999,59 +20946,30 @@ void hamradio_set_gzoomxpow2(uint_fast8_t v)
 	updateboard();
 }
 
-uint_fast8_t hamradio_get_gwflevelsep(void)
+/* значения со знаком */
+void hamradio_set_bottomdb(int_fast16_t v)
 {
-	return param_getvalue(& xgwflevelsep);
-}
-
-void hamradio_set_gwflevelsep(uint_fast8_t v)
-{
-	param_setvalue(& xgwflevelsep, v != 0);
+	param_setvalue(& xgbottomdb, v);
 	updateboard();
 }
 
-void hamradio_set_bottomdbspe(uint8_t v)
+/* значения со знаком */
+void hamradio_set_topdb(int_fast16_t v)
 {
-	param_setvalue(& xgbottomdbspe, v);
+	param_setvalue(& xgtopdb, v);
 	updateboard();
 }
 
-void hamradio_set_topdbspe(uint8_t v)
+/* значения со знаком */
+int_fast16_t hamradio_get_bottomdb(void)
 {
-	param_setvalue(& xgtopdbspe, v);
-	updateboard();
+	return param_getvalue(& xgbottomdb);
 }
 
-void hamradio_set_bottomdbwfl(uint8_t v)
+/* значения со знаком */
+int_fast16_t hamradio_get_topdb(void)
 {
-	param_setvalue(& xgbottomdbwfl, v);
-	updateboard();
-}
-
-void hamradio_set_topdbwfl(uint8_t v)
-{
-	param_setvalue(& xgtopdbwfl, v);
-	updateboard();
-}
-
-uint8_t hamradio_get_bottomdbspe(void)
-{
-	return param_getvalue(& xgbottomdbspe);
-}
-
-uint8_t hamradio_get_topdbspe(void)
-{
-	return param_getvalue(& xgtopdbspe);
-}
-
-uint8_t hamradio_get_topdbwfl(void)
-{
-	return param_getvalue(& xgtopdbwfl);
-}
-
-uint8_t hamradio_get_bottomdbwfl(void)
-{
-	return param_getvalue(& xgbottomdbwfl);
+	return param_getvalue(& xgtopdb);
 }
 
 uint8_t hamradio_get_spectrumpart(void)

@@ -210,11 +210,8 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHVIEW_3DSS */
-	& xgtopdbspe,	/* нижний предел FFT */
-	& xgbottomdbspe,	/* верхний предел FFT */
-	& xgwflevelsep,	// чувствительность водопада регулируется отдельной парой параметровs
-	& xgtopdbwfl,	/* нижний предел FFT waterflow */
-	& xgbottomdbwfl,	/* верхний предел FFT waterflow */
+	& xgtopdb,	/* нижний предел FFT */
+	& xgbottomdb,	/* верхний предел FFT */
 	(const struct paramdefdef [1]) {
 		QLABEL("STEP DB"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
