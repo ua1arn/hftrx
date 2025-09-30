@@ -15398,6 +15398,7 @@ cat_reset_ptt(void)
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
 	cattunemode = catstatetx = 0;
+	catstatetxdata = 0;
 	IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 }
 
@@ -15498,8 +15499,7 @@ static void processcat_enable(uint_fast8_t enable)
 		aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
-		catstatetxdata = 0;
-		cattunemode = catstatetx = 0;
+		catstatetxdata = cattunemode = catstatetx = 0;
 		HARDWARE_CAT_ENABLERX(1);
 		catstatein = CATSTATE_WAITCOMMAND1;
 		catstateout = CATSTATEO_SENDREADY;
@@ -16784,15 +16784,36 @@ processtxrequest(void)
 #if WITHTX
 	uint_fast8_t txreq = 0;
 	uint_fast8_t tunreq = 0;
-	if (moxmode || hardware_get_ptt())	// тангента, педаль
-	{
+	const uint_fast8_t hwptt = hardware_get_ptt();
+
 #if WITHCAT
-		if (! moxmode)
+	if (catprocenable && (cattunemode || catstatetx || catstatetxdata))
+	{
+		if (hwptt)
 		{
 			bring_swr("PTT");
+			cat_reset_ptt();	// снять программный запрос на передачу - "залипший" запрос.
+			txreq = 1;
 		}
-		cat_reset_ptt();	// снять программный запрос на передачу - "залипший" запрос.
+	}
 #endif	/* WITHCAT */
+	if (tunemode || reqautotune)
+	{
+		if (hwptt)
+		{
+			bring_swr("PTT");
+			tunemode = 0;
+			reqautotune = 0;
+			txreq = 1;
+		}
+	}
+	if (moxmode)
+	{
+		txreq = 1;
+	}
+	if (hwptt)	// тангента, педаль
+	{
+		moxmode = 0;
 		txreq = 1;
 	}
 #if WITHSENDWAV
@@ -16819,10 +16840,6 @@ processtxrequest(void)
 		txreq = 1;
 	}
 #endif	/* WITHMODEM */
-	if (moxmode)
-	{
-		txreq = 1;
-	}
 	if (getactualtune())
 	{
 		tunreq = 1;
