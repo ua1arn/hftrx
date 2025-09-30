@@ -269,7 +269,7 @@ kbd_scan_local(kbdst_t * kbdp, uint_fast8_t * key)
 				//if (kbd_press < KBD_MED_STAGE1)
 				if (kbdp->kbd_slowcount == 0)
 				{
-					encoder_kbdctl(qmdefs [kkbdp->bd_last].code, 0);
+					encoder_kbdctl(qmdefs [kbdp->kbd_last].code, 0);
 					//dbg_putchar('Q');
 					//dbg_putchar('0' + kbd_last);
 				}
