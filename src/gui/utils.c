@@ -86,3 +86,29 @@ const char * remove_start_line_spaces(const char * str)
 	else
 		return str + i;
 }
+
+int snormalize(int raw, int rawmin, int rawmax, int range)
+{
+	if (rawmin < rawmax)
+	{
+		// Normal direction
+		const int distance = rawmax - rawmin;
+		if (raw < rawmin)
+			return 0;
+		raw = raw - rawmin;
+		if (raw > distance)
+			return range;
+		return raw * range / distance;
+	}
+	else if (rawmin > rawmax)
+	{
+		// reverse direction
+		const int distance = rawmin - rawmax;
+		if (raw >= rawmin)
+			return 0;
+		raw = rawmin - raw;
+		if (raw > distance)
+			return range;
+		return raw * range / distance;
+	}
+}
