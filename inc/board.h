@@ -413,21 +413,21 @@ void ulpi_chip_debug(void);
 typedef struct edgepin_tag
 {
 	LIST_ENTRY item;
-	uint8_t outstate;	/* результирующее состояние */
+	//uint8_t outstate;	/* результирующее состояние */
 	uint8_t prevstate;
+	uint8_t posedge;
+	uint8_t negedge;
 	void * ctx;	/* контестный указатель, с которым вызывается функция проверуи состояния источника */
 	uint_fast8_t (* getpin)(void * ctx);
 } edgepin_t;
 
 void edgepin_initialize(edgepin_t * egp, uint_fast8_t (* fn)(void *), void * ctx);
-uint_fast8_t edgepin_getoutstate(edgepin_t * egp);
+uint_fast8_t edgepin_getoutstate(edgepin_t * egp, uint_fast8_t * negedgep);
 
 typedef enum txreqst_values
 {
 	TXREQST_RX,	// приём
-	TXREQST_TXPTT,	// передача с нажатия на тангенту
-	TXREQST_TXMOX,	// передача с нажатия на кнопку клавиатуры
-	TXREQST_TXCAT,	// передача с обычного источника
+	TXREQST_TX,	// передача
 	TXREQST_TXDATA,	// передача с USB
 	TXREQST_TXTONE,	// передача тестового сигнала
 	TXREQST_TXAUTOTUNE,	// автонастройка тюнера
@@ -467,8 +467,7 @@ uint_fast8_t txreq_getreqautotune(const txreq_t * txreqp);
 void txreq_settxtone(txreq_t * txreqp, uint_fast8_t v);
 uint_fast8_t txreq_gettxtone(const txreq_t * txreqp);	/* возвращаем не-0, если есть запрос на tune от пользователя или CAT */
 void txreq_set_mox(txreq_t * txreqp, uint_fast8_t v);
-void txreq_replace_ptt(txreq_t * txreqp, uint_fast8_t v);
-void txreq_set_cat_tx(txreq_t * txreqp, uint_fast8_t v);
+void txreq_handle_ptt(txreq_t * txreqp, uint_fast8_t press, uint_fast8_t release);
 uint_fast8_t txreq_get_tx(const txreq_t * txreqp);
 void txreq_txerror(txreq_t * txreqp);	/* переход на приём из-за ошибок (сброс всех запросов) */
 uint_fast8_t txreq_setmoxtune(txreq_t * txreqp, uint_fast8_t mox, uint_fast8_t tune);	// Установить режимы. Вернуть не-ноль если менялись
