@@ -438,7 +438,21 @@ typedef struct txreqstate_tag
 
 #endif /* WITHCAT */
 
+	uint_fast8_t reqautotune;	/* режим настройки тюнера, включённый кнопкой с клавиатуры */
+	uint_fast8_t txtone;		/* режим выдачи несущей, включённый кнопкой с клавиатуры */
+	uint_fast8_t moxmode;		/* передача, включённая кнопкой с клавиатуры */
+
 } txreqstate_t;
+
+void txreqstate_initialize(txreqstate_t * txreqp);
+void txreqstate_process(txreqstate_t * txreqp);		/* Установка сиквенсору запроса на передачу.	*/
+
+void txreqstate_setreqautotune(txreqstate_t * txreqp, uint_fast8_t v);
+uint_fast8_t txreqstate_getreqautotune(txreqstate_t * txreqp);
+void txreqstate_settxtone(txreqstate_t * txreqp, uint_fast8_t v);
+uint_fast8_t txreqstate_gettxtone(txreqstate_t * txreqp);
+void txreqstate_setmoxmode(txreqstate_t * txreqp, uint_fast8_t v);
+uint_fast8_t txreqstate_getmoxmode(txreqstate_t * txreqp);
 
 void nmeatuner_initialize(void);	/* сброс машины состояний парсера и инициализация последовательного пориа есои нужно */
 void nmeatuner_onrxchar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
