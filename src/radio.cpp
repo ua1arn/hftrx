@@ -16679,9 +16679,7 @@ static void dpc_1s_timer_fn(void * arg)
 	PRINTF(PSTR("CPU temp: %dC\n"), c);
 #endif
 
-#if defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX)
 	nvram_sync();
-#endif /* defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX) */
 
 #if WITHCAT
 	if (aistate != 0)

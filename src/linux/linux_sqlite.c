@@ -5,6 +5,8 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"	// for debug prints
 #include "audio.h"
+#include "utils.h"
+//#include "board.h"	// todo: uncomment this line
 
 #if LINUX_SUBSYSTEM
 
@@ -199,18 +201,15 @@ uint8_t restore_i8(uint16_t addr) {
 }
 
 uint_fast16_t restore_i16(uint16_t addr) {
-    uint16_t value = *(uint16_t *)(bitfield + addr);
-    return value; // Little endian
+	return USBD_peek_u16(bitfield + addr); // Little endian
 }
 
 uint_fast32_t restore_i24(uint16_t addr) {
-    uint32_t value = *(uint32_t *)(bitfield + addr);
-    return value & 0x00FFFFFF; // Mask for 24 bits
+	return USBD_peek_u24(bitfield + addr); // Little endian
 }
 
 uint_fast32_t restore_i32(uint16_t addr) {
-    uint32_t value = *(uint32_t *)(bitfield + addr);
-    return value; // Little endian
+	return USBD_peek_u32(bitfield + addr); // Little endian
 }
 
 void save_i8(uint16_t addr, uint8_t v) {
@@ -219,17 +218,17 @@ void save_i8(uint16_t addr, uint8_t v) {
 }
 
 void save_i16(uint16_t addr, uint_fast16_t v) {
-    *(uint16_t *)(bitfield + addr) = v; // Little endian
+	USBD_poke_u16(bitfield + addr, v); // Little endian
     need_sync = 1;
 }
 
 void save_i24(uint16_t addr, uint_fast32_t v) {
-    *(uint32_t *)(bitfield + addr) = v & 0x00FFFFFF; // Mask for 24 bits
-    need_sync = 1;
+	USBD_poke_u24(bitfield + addr, v); // Little endian
+	need_sync = 1;
 }
 
 void save_i32(uint16_t addr, uint_fast32_t v) {
-    *(uint32_t *)(bitfield + addr) = v; // Little endian
+	USBD_poke_u32(bitfield + addr, v); // Little endian
     need_sync = 1;
 }
 

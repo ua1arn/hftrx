@@ -275,6 +275,8 @@ void board_get_compile_datetime(
 
 void board_get_serialnr(uint_fast32_t * sn);
 void nvram_initialize(void);
+void nvram_sync(void);
+void nvram_close(void);
 void nvram_set_abytes(uint_fast8_t v);
 typedef uint_least16_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
 

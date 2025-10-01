@@ -343,7 +343,7 @@ ui16min(uint_least16_t a, uint_least16_t b)
 #endif /* CPUSTYLE_STM32F */
 
 /* вызывается при разрешённых прерываниях. */
-void nvram_initialize(void)
+void nvram_initialize_baremetal(void)
 {
 	//PRINTF(PSTR("nvram_initialize\n"));
 #if (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM)
@@ -406,7 +406,7 @@ void nvram_initialize(void)
 //static uint8_t simnvram [NVRAM_END + 1];
 
 void
-nvram_write(nvramaddress_t addr, const uint8_t * data, unsigned len)
+nvram_write_baremetal(nvramaddress_t addr, const uint8_t * data, unsigned len)
 {
 	ASSERT((addr + len - 1) <= NVRAM_END);
 #if (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM)
@@ -478,7 +478,7 @@ nvram_write(nvramaddress_t addr, const uint8_t * data, unsigned len)
 }
 
 void
-nvram_read(nvramaddress_t addr, uint8_t * data, unsigned len)
+nvram_read_baremetal(nvramaddress_t addr, uint8_t * data, unsigned len)
 {
 	ASSERT((addr + len - 1) <= NVRAM_END);
 #if (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM)
@@ -533,7 +533,30 @@ nvram_read(nvramaddress_t addr, uint8_t * data, unsigned len)
 #endif
 }
 
+void nvram_initialize(void)
+{
+	nvram_initialize_baremetal();
+}
 
+void nvram_write(nvramaddress_t addr, const uint8_t * data, unsigned len)
+{
+	nvram_write_baremetal(addr, data, len);
+}
+
+void nvram_read(nvramaddress_t addr, uint8_t * data, unsigned len)
+{
+	nvram_read_baremetal(addr, data, len);
+}
+
+void nvram_sync(void)
+{
+
+}
+
+void nvram_close(void)
+{
+
+}
 
 
 /* выборка по указанному индексу из FRAM одного байта */
