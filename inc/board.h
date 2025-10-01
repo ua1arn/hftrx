@@ -420,7 +420,20 @@ typedef struct edgepin_tag
 } edgepin_t;
 
 void edgepin_initialize(edgepin_t * egp, uint_fast8_t (* fn)(void *), void * ctx);
-uint_fast8_t edgepin_get(edgepin_t * egp);
+uint_fast8_t edgepin_getoutstate(edgepin_t * egp);
+
+typedef enum txreqst_values
+{
+	TXREQST_RX,	// приём
+	TXREQST_TXPTT,	// передача с нажатия на тангенту
+	TXREQST_TXMOX,	// передача с нажатия на кнопку клавиатуры
+	TXREQST_TXCAT,	// передача с обычного источника
+	TXREQST_TXDATA,	// передача с USB
+	TXREQST_TXTONE,	// передача тестового сигнала
+	TXREQST_TXAUTOTUNE,	// автонастройка тюнера
+	//
+	TXREQ_count
+} txreqst_t;
 
 typedef struct txreq_tag
 {
@@ -433,30 +446,36 @@ typedef struct txreq_tag
 	edgepin_t edgptunerptt;
 	edgepin_t edgpelkeyptt;
 
-#if WITHCAT
+	//uint_fast8_t catstatetx;		/* запрос перехода трансивера на передачу от CAT команды */
+	//uint_fast8_t catstatetxdata;		/* запрос перехода трансивера на передачу от CAT команды TX1 */
+	//uint_fast8_t cattunemode;		/* запрос перехода трансивера на передачу от CAT команды */
 
+//	uint_fast8_t reqautotune;	/* режим настройки тюнера, включённый кнопкой с клавиатуры */
+//	uint_fast8_t txtone;		/* режим выдачи несущей, включённый кнопкой с клавиатуры */
+//	uint_fast8_t moxmode;		/* передача, включённая кнопкой с клавиатуры */
 
-#endif /* WITHCAT */
-
-	uint_fast8_t reqautotune;	/* режим настройки тюнера, включённый кнопкой с клавиатуры */
-	uint_fast8_t txtone;		/* режим выдачи несущей, включённый кнопкой с клавиатуры */
-	uint_fast8_t moxmode;		/* передача, включённая кнопкой с клавиатуры */
+	txreqst_t state;
 
 } txreq_t;
 
 void txreq_initialize(txreq_t * txreqp);
+void txreq_spooledges(txreq_t * txreqp);
 void txreq_process(txreq_t * txreqp);		/* Установка сиквенсору запроса на передачу.	*/
 
 void txreq_setreqautotune(txreq_t * txreqp, uint_fast8_t v);
 uint_fast8_t txreq_getreqautotune(const txreq_t * txreqp);
 void txreq_settxtone(txreq_t * txreqp, uint_fast8_t v);
-uint_fast8_t txreq_gettxtone(const txreq_t * txreqp);
-void txreq_setmoxmode(txreq_t * txreqp, uint_fast8_t v);
-uint_fast8_t txreq_getmoxmode(const txreq_t * txreqp);
+uint_fast8_t txreq_gettxtone(const txreq_t * txreqp);	/* возвращаем не-0, если есть запрос на tune от пользователя или CAT */
+void txreq_set_mox(txreq_t * txreqp, uint_fast8_t v);
+void txreq_replace_ptt(txreq_t * txreqp, uint_fast8_t v);
+void txreq_set_cat_tx(txreq_t * txreqp, uint_fast8_t v);
+uint_fast8_t txreq_get_tx(const txreq_t * txreqp);
 void txreq_txerror(txreq_t * txreqp);	/* переход на приём из-за ошибок (сброс всех запросов) */
 uint_fast8_t txreq_setmoxtune(txreq_t * txreqp, uint_fast8_t mox, uint_fast8_t tune);	// Установить режимы. Вернуть не-ноль если менялись
+void txreq_rx(txreq_t * txreqp);	// Установить режимы. Вернуть не-ноль если менялись
+uint_fast8_t txreq_gettxdata(const txreq_t * txreqp);
+void txreq_settxdata(txreq_t * txreqp, uint_fast8_t v);
 
-//
 //void txreq_keytune(txreq_t * txreqp);	/* обработка нажатия на запрос настройки тюнера */
 //void txreq_keymox(txreq_t * txreqp);	/* обработка нажатия на mox */
 

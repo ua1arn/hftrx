@@ -4450,14 +4450,6 @@ static uint_fast8_t bandset2m = 1;	/* используется ли диапаз
 
 #if WITHCAT
 	static uint_fast8_t catprocenable;	/* разрешена работа подсистемы CAT */
-	static uint_fast8_t catstatetx;		/* запрос перехода трансивера на передачу от CAT команды */
-	static uint_fast8_t catstatetxdata;		/* запрос перехода трансивера на передачу от CAT команды TX1 */
-	static uint_fast8_t cattunemode;		/* запрос перехода трансивера на передачу от CAT команды */
-//	static uint_fast8_t catautotuner_p1;			/* запрос ржима настройки тюнера от CAT команды */
-//	static uint_fast8_t catautotuner_p2;			/* запрос ржима настройки тюнера от CAT команды */
-//	static uint_fast8_t catautotuner_p3;			/* запрос ржима настройки тюнера от CAT команды */
-#else /* WITHCAT */
-	enum { catstatetx = 0, catstatetxdata = 0, cattunemode = 0 };
 #endif /* WITHCAT */
 
 static uint_fast8_t alignmode;		/* режимы для настройки аппаратной части (0-нормальная работа) */
@@ -10210,7 +10202,7 @@ getactualtune(void)
 {
 	txreq_t * const txreqp = & txreqst0;
 
-	return txreq_gettxtone(txreqp) || (catenable && cattunemode) || txreq_getreqautotune(txreqp) || reqautotune2 || hardware_get_tune();
+	return txreq_gettxtone(txreqp) || txreq_getreqautotune(txreqp) || reqautotune2 || hardware_get_tune();
 }
 
 // вызывается из user mode
@@ -10305,13 +10297,6 @@ getactualtxboard(void)
 }
 
 #endif /* WITHTX */
-
-// вызывается из user mode - признак передачи в режиме данных
-static uint_fast8_t
-getcattxdata(void)
-{
-	return catenable && catstatetx && catstatetxdata;
-}
 
 // получить submode для тракта, возможно замененный на CWZ в случае формирования сигнала настройки.
 static uint_fast8_t
@@ -12267,7 +12252,7 @@ updateboard_noui(
 		const uint_fast8_t txaudiocodedigi =
 				(txaudiocodenormal == BOARD_TXAUDIO_USB || txaudiocodenormal == BOARD_TXAUDIO_USB) ?
 						txaudiocodenormal : BOARD_TXAUDIO_USB;
-		const uint_fast8_t txaudiocode = (gdatamode || getcattxdata()) ? txaudiocodedigi : txaudiocodenormal;
+		const uint_fast8_t txaudiocode = (gdatamode || txreq_gettxdata(& txreqst0)) ? txaudiocodedigi : txaudiocodenormal;
 
 		board_set_lineinput(txaudiocode == BOARD_TXAUDIO_LINE);
 
@@ -13308,17 +13293,13 @@ uif_key_changefilter(void)
 static void
 uif_key_tuneoff(void)
 {
-	if (getactualtune() || txreq_getmoxmode(& txreqst0))
+	if (getactualtune() || txreq_get_tx(& txreqst0))
 	{
-		const uint_fast8_t f = txreq_setmoxtune(& txreqst0, 0, 0);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
-#if WITHCAT
-		cattunemode = 0;
-		//catautotuner_p3 = 0;
-#endif /* WITHCAT */
+		txreq_rx(& txreqst0);
 	}
 	else
 	{
-		txreq_setmoxmode(& txreqst0, ! txreq_getmoxmode(& txreqst0));
+		txreq_set_mox(& txreqst0, ! txreq_get_tx(& txreqst0));
 	}
 	updateboard();
 }
@@ -14442,11 +14423,7 @@ void cat2_disconnect(void)
 	inpmorselength [1] = 0;
 #endif /* WITHTX */
 
-	//aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
-	cattunemode = catstatetx = 0;
-//	catautotuner_p1 = 0;
-//	catautotuner_p2 = 0;
-//	catautotuner_p3 = 0;
+	aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
 	catstatein = CATSTATE_WAITCOMMAND1;
 	catstateout = CATSTATEO_SENDREADY;
 }
@@ -15346,18 +15323,6 @@ static void badcommandanswer(uint_fast8_t arg)
 
 #if WITHTX
 
-// Вызывается из user mode программы
-// сбрасываем запрос на передачу от команд CAT
-static void
-cat_reset_ptt(void)
-{
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
-	cattunemode = catstatetx = 0;
-	catstatetxdata = 0;
-	IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
-}
-
 static uint_fast8_t
 cat_get_signal(uint_fast8_t selector)
 {
@@ -15374,9 +15339,9 @@ cat_get_signal(uint_fast8_t selector)
 }
 
 // Вызывается из пользовательской программы
-// Получить запрос перехода на передачу от команд CAT или порта управления.
+// Получить запрос перехода на передачу от порта управления CAT.
 static uint_fast8_t
-cat_get_ptt(void)
+cat_get_hwptt(void)
 {
 	if (catprocenable != 0)
 	{
@@ -15385,7 +15350,7 @@ cat_get_ptt(void)
 		const uint_fast8_t r = cat_get_signal(catsigptt);
 		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 
-		return (catstatetx != 0) || r;	// catstatetx - это по текстовым командам
+		return r;
 	}
 	return 0;
 }
@@ -15455,7 +15420,6 @@ static void processcat_enable(uint_fast8_t enable)
 		aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
-		catstatetxdata = cattunemode = catstatetx = 0;
 		HARDWARE_CAT_ENABLERX(1);
 		catstatein = CATSTATE_WAITCOMMAND1;
 		catstateout = CATSTATEO_SENDREADY;
@@ -16152,14 +16116,13 @@ processcatmsg(
 			switch (v)
 			{
 			case 0:
-				catstatetx = 1;		/* эта переменная сбрасывается и читается и из прерываний */
+				txreq_set_cat_tx(& txreqst0, 1);
 				break;
 			case 1:
-				catstatetx = 1;		/* эта переменная сбрасывается и читается и из прерываний */
-				catstatetxdata = 1;
+				txreq_settxdata(& txreqst0, 1);
 				break;
 			case 2:
-				cattunemode = 1;
+				txreq_settxtone(& txreqst0, 1);
 				break;
 			}
 
@@ -16168,28 +16131,31 @@ processcatmsg(
 		}
 		else
 		{
-			catstatetx = 1;		/* эта переменная сбрасывается и читается и из прерываний */
-			catstatetxdata = 0;
-			cattunemode = 0;
+			txreq_set_cat_tx(& txreqst0, 1);
 			if (aistate != 0)
 				cat_answer_request(CAT_TX_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('R', 'X'))
 	{
+		//	P1
+		//		 0:  RX-AT THRU
+		//		 1:  RX-AT IN
+		//	P2
+		//		 0:  TX-AT THRU
+		//		 1:  TX-AT IN
+		//	P3
+		//		 0:  Stop Tuning (Set)/ Tuning is stopped (Answer)
+
 		if (cathasparam != 0)
 		{
-			cattunemode = 0;
-			catstatetx = 0;		/* эта переменная сбрасывается и читается и из прерываний */
-			catstatetxdata = 0;
+			txreq_rx(& txreqst0);
 			if (aistate != 0)
 				cat_answer_request(CAT_RX_INDEX);	// POSSIBLE: ignore main/sub rx selection (0 - main. 1 - sub);
 		}
 		else
 		{
-			cattunemode = 0;
-			catstatetx = 0;		/* эта переменная сбрасывается и читается и из прерываний */
-			catstatetxdata = 0;
+			txreq_rx(& txreqst0);
 			if (aistate != 0)
 				cat_answer_request(CAT_RX_INDEX);
 		}
@@ -16418,6 +16384,13 @@ static void cat_initialize(void)
 	board_dpc_addentry(& cat_dpc, board_dpc_coreid());
 }
 
+#else	/* WITHCAT */
+
+static uint_fast8_t
+cat_get_hwptt(void)
+{
+	return 0;
+}
 #endif	/* WITHCAT */
 
 
@@ -18790,15 +18763,17 @@ void edgepin_initialize(LIST_ENTRY * list, edgepin_t * egp, uint_fast8_t (* fn)(
 	InsertTailList(list, & egp->item);
 }
 
-uint_fast8_t edgepin_get(edgepin_t * egp)
+uint_fast8_t edgepin_getoutstate(edgepin_t * egp)
 {
-	return egp->outstate;
+	const uint_fast8_t f = egp->outstate;
+	egp->outstate = 0;
+	return f;
 }
 
 
 uint_fast8_t checkmoxptt(void * ctx)
 {
-	return txreq_getmoxmode(& txreqst0);	// с клавиатуры
+	return txreq_get_tx(& txreqst0);	// с клавиатуры
 }
 
 uint_fast8_t checkhandptt(void * ctx)
@@ -18809,7 +18784,7 @@ uint_fast8_t checkhandptt(void * ctx)
 uint_fast8_t checkcatptt(void * ctx)
 {
 #if WITHCAT && WITHTX
-	return cat_get_ptt();
+	return cat_get_hwptt();
 #else /* WITHCAT && WITHTX */
 	return 0;
 #endif /* WITHCAT && WITHTX */
@@ -18835,9 +18810,12 @@ void txreq_initialize(txreq_t * txreqp)
 	edgepin_initialize(& txreqp->edgepins, & txreqp->edgptunerptt, checktunerptt, NULL);
 	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpelkeyptt, checkelkeyptt, NULL);
 
-	txreqp->reqautotune = 0;	/* режим настройки тюнера */
-	txreqp->txtone = 0;	/* режим настройки передающего тракта */
-	txreqp->moxmode = 0;	/* передача, включённая кнопкой с клавиатуры */
+	txreqp->state = TXREQST_RX;
+}
+
+void txreq_spooledges(txreq_t * txreqp)
+{
+	edgepins_get_ptt(txreqp);
 }
 
 /* Установка сиквенсору запроса на передачу.	*/
@@ -18845,56 +18823,17 @@ void
 txreq_process(txreq_t * txreqp)
 {
 #if WITHTX
-	uint_fast8_t txreq = 0;
-	uint_fast8_t tunreq = 0;
-	const uint_fast8_t hwptt = hardware_get_ptt();
-
-#if WITHCAT
-	if (catprocenable && (cattunemode || catstatetx || catstatetxdata))
-	{
-		if (hwptt)
-		{
-			bring_swr("PTT");
-			cat_reset_ptt();	// снять программный запрос на передачу - "залипший" запрос.
-			txreq = 1;
-		}
-	}
-#endif	/* WITHCAT */
-	if (txreqp->txtone || txreqp->reqautotune)
-	{
-		if (hwptt)
-		{
-			bring_swr("PTT");
-			txreqp->txtone = 0;
-			txreqp->reqautotune = 0;
-			txreq = 1;
-		}
-	}
-	if (txreqp->moxmode)
-	{
-		txreq = 1;
-	}
-	if (hwptt)	// тангента, педаль
-	{
-		txreqp->moxmode = 0;
-		txreq = 1;
-	}
+	txreq_replace_ptt(txreqp, hardware_get_ptt());
 #if WITHSENDWAV
 	if (isplayfile())
 	{
-		txreq = 1;
+		txreq_set_mox(txreqp, 1);
 	}
 #endif /* WITHSENDWAV */
 #if WITHBEACON
 	if (beacon_get_ptt())
 	{
-		txreq = 1;
-	}
-#endif	/* WITHCAT */
-#if WITHCAT
-	if (cat_get_ptt())
-	{
-		txreq = 1;
+		txreq_set_mox(txreqp, 1);
 	}
 #endif	/* WITHCAT */
 #if WITHMODEM
@@ -18903,69 +18842,90 @@ txreq_process(txreq_t * txreqp)
 		txreq = 1;
 	}
 #endif	/* WITHMODEM */
-	if (getactualtune())
-	{
-		tunreq = 1;
-	}
+//	if (getactualtune())
+//	{
+//		tunreq = 1;
+//	}
 
-	const uint_fast8_t error = get_txdisable(txreq || tunreq);
+	const uint_fast8_t error = get_txdisable(txreqp->state != TXREQST_RX);
 	if (error)
 	{
-#if WITHCAT
-		cat_reset_ptt();	// снять программный запрос на передачу - "залипший" запрос.
-#endif	/* WITHCAT */
-		const uint_fast8_t f = txreq_setmoxtune(& txreqst0, 0, 0);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
-		if (f)
-			updateboard();
-		txreqp->reqautotune = 0;
+		txreq_rx(txreqp);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
 	}
 
-	seq_txrequest(! error && tunreq, ! error && (tunreq || txreq));
+	seq_txrequest(txreqp->state == TXREQST_TXTONE || txreqp->state == TXREQST_TXAUTOTUNE, txreqp->state != TXREQST_RX);
 #endif /* WITHTX */
 }
 
 void txreq_setreqautotune(txreq_t * txreqp, uint_fast8_t v)
 {
-	txreqp->reqautotune = v;
+	txreqp->state = v ? TXREQST_TXAUTOTUNE : TXREQST_RX;
 }
 
 uint_fast8_t txreq_getreqautotune(const txreq_t * txreqp)
 {
-	return txreqp->reqautotune;
+	return txreqp->state == TXREQST_TXAUTOTUNE;
 }
 
 void txreq_settxtone(txreq_t * txreqp, uint_fast8_t v)
 {
-	txreqp->txtone = v;
+	txreqp->state = v ? TXREQST_TXTONE : txreqp->state;
 }
+/* возвращаем не-0, если есть запрос на tune от пользователя или CAT */
 uint_fast8_t txreq_gettxtone(const txreq_t * txreqp)
 {
-	return txreqp->txtone;
+	return txreqp->state == TXREQST_TXTONE;
 }
 
-void txreq_setmoxmode(txreq_t * txreqp, uint_fast8_t v)
+void txreq_set_mox(txreq_t * txreqp, uint_fast8_t v)
 {
-	txreqp->moxmode = v;
+	txreqp->state = v ? TXREQST_TXMOX : txreqp->state;
 }
-uint_fast8_t txreq_getmoxmode(const txreq_t * txreqp)
+
+void txreq_replace_ptt(txreq_t * txreqp, uint_fast8_t v)
 {
-	return txreqp->moxmode;
+	txreqp->state = v ? TXREQST_TXPTT : (txreqp->state == TXREQST_TXPTT ? TXREQST_RX : txreqp->state);
+}
+
+void txreq_set_cat_tx(txreq_t * txreqp, uint_fast8_t v)
+{
+	txreqp->state = v ? TXREQST_TXCAT : txreqp->state;
+}
+uint_fast8_t txreq_get_tx(const txreq_t * txreqp)
+{
+	return txreqp->state != TXREQST_RX;
 }
 /* переход на приём из-за ошибок (сброс всех запросов) */
 void txreq_txerror(txreq_t * txreqp)
 {
-
+	// todo: сбросить edge detectors
+	txreq_rx(txreqp);
 }
+
+void txreq_rx(txreq_t * txreqp)
+{
+	txreqp->state = TXREQST_RX;
+}
+
+void txreq_settxdata(txreq_t * txreqp, uint_fast8_t v)
+{
+	txreqp->state = v ? TXREQST_TXDATA : TXREQST_RX;
+}
+uint_fast8_t txreq_gettxdata(const txreq_t * txreqp)
+{
+	return txreqp->state == TXREQST_TXDATA;
+}
+
 
 // Установить режимы. Вернуть не-ноль если менялись
 uint_fast8_t txreq_setmoxtune(txreq_t * txreqp, uint_fast8_t mox, uint_fast8_t tune)
 {
 	uint_fast8_t f = 0;
 
-	f = f || txreq_getmoxmode(txreqp) != mox;
+	f = f || txreq_get_tx(txreqp) != mox;
 	f = f || txreq_gettxtone(txreqp) != tune;
 
-	txreq_setmoxmode(txreqp, mox);
+	txreq_set_mox(txreqp, mox);
 	txreq_settxtone(txreqp, tune);
 
 	return f;
@@ -19547,6 +19507,7 @@ static void hamradio_main_initialize(void)
 static void appspoolprocess(void * ctx)
 {
 	(void) ctx;
+	txreq_spooledges(& txreqst0);
 	{
 		uint_fast8_t changedtx = 0;
 	#if WITHTX
@@ -21081,7 +21042,7 @@ uint_fast8_t hamradio_moxmode(uint_fast8_t v)
 {
 	if (v)
 		uif_key_tuneoff();
-	return txreq_getmoxmode(& txreqst0);
+	return txreq_get_tx(& txreqst0);
 }
 
 uint_fast8_t hamradio_tunemode(uint_fast8_t v)
