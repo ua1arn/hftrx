@@ -422,7 +422,7 @@ typedef struct edgepin_tag
 void edgepin_initialize(edgepin_t * egp, uint_fast8_t (* fn)(void *), void * ctx);
 uint_fast8_t edgepin_get(edgepin_t * egp);
 
-typedef struct txreqstate_tag
+typedef struct txreq_tag
 {
 
 	LIST_ENTRY edgepins;
@@ -442,17 +442,21 @@ typedef struct txreqstate_tag
 	uint_fast8_t txtone;		/* режим выдачи несущей, включённый кнопкой с клавиатуры */
 	uint_fast8_t moxmode;		/* передача, включённая кнопкой с клавиатуры */
 
-} txreqstate_t;
+} txreq_t;
 
-void txreqstate_initialize(txreqstate_t * txreqp);
-void txreqstate_process(txreqstate_t * txreqp);		/* Установка сиквенсору запроса на передачу.	*/
+void txreq_initialize(txreq_t * txreqp);
+void txreq_process(txreq_t * txreqp);		/* Установка сиквенсору запроса на передачу.	*/
 
-void txreqstate_setreqautotune(txreqstate_t * txreqp, uint_fast8_t v);
-uint_fast8_t txreqstate_getreqautotune(txreqstate_t * txreqp);
-void txreqstate_settxtone(txreqstate_t * txreqp, uint_fast8_t v);
-uint_fast8_t txreqstate_gettxtone(txreqstate_t * txreqp);
-void txreqstate_setmoxmode(txreqstate_t * txreqp, uint_fast8_t v);
-uint_fast8_t txreqstate_getmoxmode(txreqstate_t * txreqp);
+void txreq_setreqautotune(txreq_t * txreqp, uint_fast8_t v);
+uint_fast8_t txreq_getreqautotune(const txreq_t * txreqp);
+void txreq_settxtone(txreq_t * txreqp, uint_fast8_t v);
+uint_fast8_t txreq_gettxtone(const txreq_t * txreqp);
+void txreq_setmoxmode(txreq_t * txreqp, uint_fast8_t v);
+uint_fast8_t txreq_getmoxmode(const txreq_t * txreqp);
+void txreq_txerror(txreq_t * txreqp);	/* переход на приём из-за ошибок (сброс всех запросов) */
+//
+//void txreq_keytune(txreq_t * txreqp);	/* обработка нажатия на запрос настройки тюнера */
+//void txreq_keymox(txreq_t * txreqp);	/* обработка нажатия на mox */
 
 void nmeatuner_initialize(void);	/* сброс машины состояний парсера и инициализация последовательного пориа есои нужно */
 void nmeatuner_onrxchar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
