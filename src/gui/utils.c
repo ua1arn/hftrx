@@ -111,4 +111,5 @@ int snormalize(int raw, int rawmin, int rawmax, int range)
 			return range;
 		return raw * range / distance;
 	}
+	return 0;
 }
