@@ -596,32 +596,7 @@ void hamradio_lfm_disable(void)
 
 #endif /* WITHLFM */
 
-LIST_ENTRY edgepins;
-
-static edgepin_t edgpmoxptt;
-static edgepin_t edgphandptt;
-static edgepin_t edgpcatptt;
-static edgepin_t edgptunerptt;
-static edgepin_t edgpelkeyptt;
-
-void edgepin_initialize(edgepin_t * egp, uint_fast8_t (* fn)(void *), void * ctx)
-{
-	egp->getpin = fn;
-	egp->ctx = ctx;
-	egp->outstate = 0;
-	egp->prevstate = fn(ctx);
-
-	InitializeListHead(& egp->item);
-	InsertTailList(& edgepins, & egp->item);
-}
-
-uint_fast8_t edgepin_get(edgepin_t * egp)
-{
-	return egp->outstate;
-}
-
-
-
+static txreqstate_t txreqst0;
 
 static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при приеме телеграфа или самоконтроль (в десятках герц) */
 
@@ -18877,6 +18852,58 @@ processmainloopkeyboard(inputevent_t * ev)
 #endif /* WITHKEYBOARD */
 
 
+/* проверка, есть ли хоть на одном из входов продетектированный запрос перехода на пережачу */
+uint_fast8_t edgepins_get_ptt(txreqstate_t * txreqp)
+{
+	PLIST_ENTRY t;
+	for (t = txreqp->edgepins.Blink; t != & txreqp->edgepins; t = t->Blink)
+	{
+		PLIST_ENTRY tnext = t->Blink;	/* текущий элемент может быть удалён из списка */
+		edgepin_t * const p = CONTAINING_RECORD(t, edgepin_t, item);
+		const uint_fast8_t f = p->getpin(p->ctx);
+		if (f)
+		{
+			if (p->prevstate == 0)
+				p->outstate = 1;
+		}
+		else
+		{
+			p->outstate = 0;
+		}
+		p->prevstate = f;
+
+		if (p->outstate)
+			return 1;
+	}
+	return 0;
+}
+
+static void dpc_0p1_s_timer_fn(void * ctx)
+{
+	bringtimers();
+	/* быстро меняющиеся значения с частым опорсом */
+	doadcmirror();
+	main_speed_diagnostics();
+	looptests();		// Периодически вызывается в главном цикле - тесты
+}
+
+void edgepin_initialize(LIST_ENTRY * list, edgepin_t * egp, uint_fast8_t (* fn)(void *), void * ctx)
+{
+	egp->getpin = fn;
+	egp->ctx = ctx;
+	egp->outstate = 0;
+	egp->prevstate = fn(ctx);
+
+	InitializeListHead(& egp->item);
+	InsertTailList(list, & egp->item);
+}
+
+uint_fast8_t edgepin_get(edgepin_t * egp)
+{
+	return egp->outstate;
+}
+
+
 uint_fast8_t checkmoxptt(void * ctx)
 {
 	return moxmode;	// с клавиатуры
@@ -18906,50 +18933,15 @@ uint_fast8_t checkelkeyptt(void * ctx)
 	return 0;
 }
 
-void edgepins_initialize(void)
+void txreqstate_initialize(txreqstate_t * txreqp)
 {
-	InitializeListHead(& edgepins);
+	InitializeListHead(& txreqp->edgepins);
 
-	edgepin_initialize(& edgpmoxptt, checkmoxptt, NULL);
-	edgepin_initialize(& edgphandptt, checkhandptt, NULL);
-	edgepin_initialize(& edgpcatptt, checkcatptt, NULL);
-	edgepin_initialize(& edgptunerptt, checktunerptt, NULL);
-	edgepin_initialize(& edgpelkeyptt, checkelkeyptt, NULL);
-}
-
-/* проверка, есть ли хоть на одном из входов продетектированный запрос перехода на пережачу */
-uint_fast8_t edgepins_get_ptt(void)
-{
-	PLIST_ENTRY t;
-	for (t = edgepins.Blink; t != & edgepins; t = t->Blink)
-	{
-		PLIST_ENTRY tnext = t->Blink;	/* текущий элемент может быть удалён из списка */
-		edgepin_t * const p = CONTAINING_RECORD(t, edgepin_t, item);
-		const uint_fast8_t f = p->getpin(p->ctx);
-		if (f)
-		{
-			if (p->prevstate == 0)
-				p->outstate = 1;
-		}
-		else
-		{
-			p->outstate = 0;
-		}
-		p->prevstate = f;
-
-		if (p->outstate)
-			return 1;
-	}
-	return 0;
-}
-
-static void dpc_0p1_s_timer_fn(void * ctx)
-{
-	bringtimers();
-	/* быстро меняющиеся значения с частым опорсом */
-	doadcmirror();
-	main_speed_diagnostics();
-	looptests();		// Периодически вызывается в главном цикле - тесты
+	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpmoxptt, checkmoxptt, NULL);
+	edgepin_initialize(& txreqp->edgepins, & txreqp->edgphandptt, checkhandptt, NULL);
+	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpcatptt, checkcatptt, NULL);
+	edgepin_initialize(& txreqp->edgepins, & txreqp->edgptunerptt, checktunerptt, NULL);
+	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpelkeyptt, checkelkeyptt, NULL);
 }
 
 /* вызывается при запрещённых прерываниях. */
@@ -18991,7 +18983,7 @@ applowinitialize(void)
 
 	buffers_initialize();
 
-	edgepins_initialize();
+	txreqstate_initialize(& txreqst0);
 
 #if WITHUSBHW
 	if (bootloader_withusb())

@@ -422,6 +422,24 @@ typedef struct edgepin_tag
 void edgepin_initialize(edgepin_t * egp, uint_fast8_t (* fn)(void *), void * ctx);
 uint_fast8_t edgepin_get(edgepin_t * egp);
 
+typedef struct txreqstate_tag
+{
+
+	LIST_ENTRY edgepins;
+
+	edgepin_t edgpmoxptt;
+	edgepin_t edgphandptt;
+	edgepin_t edgpcatptt;
+	edgepin_t edgptunerptt;
+	edgepin_t edgpelkeyptt;
+
+#if WITHCAT
+
+
+#endif /* WITHCAT */
+
+} txreqstate_t;
+
 void nmeatuner_initialize(void);	/* сброс машины состояний парсера и инициализация последовательного пориа есои нужно */
 void nmeatuner_onrxchar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
 void nmeatuner_rxoverflow(void);							/* вызывается из обработчика прерываний */
