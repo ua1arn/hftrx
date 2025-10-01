@@ -454,6 +454,8 @@ uint_fast8_t txreq_gettxtone(const txreq_t * txreqp);
 void txreq_setmoxmode(txreq_t * txreqp, uint_fast8_t v);
 uint_fast8_t txreq_getmoxmode(const txreq_t * txreqp);
 void txreq_txerror(txreq_t * txreqp);	/* переход на приём из-за ошибок (сброс всех запросов) */
+uint_fast8_t txreq_setmoxtune(txreq_t * txreqp, uint_fast8_t mox, uint_fast8_t tune);	// Установить режимы. Вернуть не-ноль если менялись
+
 //
 //void txreq_keytune(txreq_t * txreqp);	/* обработка нажатия на запрос настройки тюнера */
 //void txreq_keymox(txreq_t * txreqp);	/* обработка нажатия на mox */

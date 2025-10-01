@@ -13304,27 +13304,13 @@ uif_key_changefilter(void)
 //////////////////////////
 #if WITHTX
 
-// Установить режимы. Вернуть не-ноль если менялись
-static uint_fast8_t setmoxtune(uint_fast8_t mox, uint_fast8_t tune)
-{
-	uint_fast8_t f = 0;
-
-	f = f || txreq_getmoxmode(& txreqst0) != mox;
-	f = f || txreq_gettxtone(& txreqst0) != tune;
-
-	txreq_setmoxmode(& txreqst0, mox);
-	txreq_settxtone(& txreqst0, tune);
-
-	return f;
-}
-
 /* включение режима настройки */
 static void
 uif_key_tuneoff(void)
 {
 	if (getactualtune() || txreq_getmoxmode(& txreqst0))
 	{
-		const uint_fast8_t f = setmoxtune(0, 0);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+		const uint_fast8_t f = txreq_setmoxtune(& txreqst0, 0, 0);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
 #if WITHCAT
 		cattunemode = 0;
 		//catautotuner_p3 = 0;
@@ -18928,7 +18914,7 @@ txreq_process(txreq_t * txreqp)
 #if WITHCAT
 		cat_reset_ptt();	// снять программный запрос на передачу - "залипший" запрос.
 #endif	/* WITHCAT */
-		const uint_fast8_t f = setmoxtune(0, 0);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+		const uint_fast8_t f = txreq_setmoxtune(& txreqst0, 0, 0);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
 		if (f)
 			updateboard();
 		txreqp->reqautotune = 0;
@@ -18969,6 +18955,20 @@ uint_fast8_t txreq_getmoxmode(const txreq_t * txreqp)
 void txreq_txerror(txreq_t * txreqp)
 {
 
+}
+
+// Установить режимы. Вернуть не-ноль если менялись
+uint_fast8_t txreq_setmoxtune(txreq_t * txreqp, uint_fast8_t mox, uint_fast8_t tune)
+{
+	uint_fast8_t f = 0;
+
+	f = f || txreq_getmoxmode(txreqp) != mox;
+	f = f || txreq_gettxtone(txreqp) != tune;
+
+	txreq_setmoxmode(txreqp, mox);
+	txreq_settxtone(txreqp, tune);
+
+	return f;
 }
 
 
@@ -21072,7 +21072,7 @@ uint_fast8_t hamradio_change_preamp(uint_fast8_t v)
 
 void hamradio_set_moxmode(uint_fast8_t mode)
 {
-	const uint_fast8_t f = setmoxtune(!! mode, txreq_gettxtone(& txreqst0));	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+	const uint_fast8_t f = txreq_setmoxtune(& txreqst0, !! mode, txreq_gettxtone(& txreqst0));	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
 	if (f)
 		updateboard();
 }
