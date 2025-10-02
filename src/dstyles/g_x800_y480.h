@@ -161,6 +161,7 @@
 		{	0,	(DIM_Y - GRID2Y(5)) / 5, 9, 5, display2_freqsof9,	& dzi_compat, PG0, },		// Вывод текущего состояния протокола
 	#endif
 
+		//{	0, 0,	0, 0, display2_demorect, & dzi_compat, PGALL, },	// voltmeter with "V"
 		{	0,	0,	0, 0, display2_showmain,	& dzi_compat, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 	};
 

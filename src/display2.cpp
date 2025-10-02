@@ -3728,6 +3728,19 @@ static void display2_mode3_b(const gxdrawb_t * db,
 	display2_text(db, x, y, labels, colors_2modeB, state, xspan, yspan);
 }
 
+
+static void display2_demorect(const gxdrawb_t * db,
+		uint_fast8_t x,
+		uint_fast8_t y,
+		uint_fast8_t xspan,
+		uint_fast8_t yspan,
+		dctx_t * pctx
+		)
+{
+	colpip_rectangle(db, 0, 0, DIM_X / 2, DIM_Y, COLORPIP_RED, FILL_FLAG_NONE);
+	colpip_rectangle(db, DIM_X / 2, 0, DIM_X / 2, DIM_Y, COLORPIP_BLUE, FILL_FLAG_NONE);
+}
+
 // dd.dV - 5 places
 static void display2_voltlevelV5(const gxdrawb_t * db,
 		uint_fast8_t x,
