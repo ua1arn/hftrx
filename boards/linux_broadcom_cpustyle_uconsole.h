@@ -16,6 +16,7 @@
 //#define WITHTWIHW 		1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHSDL2VIDEO	1	/* Вывод графики посредством Linux Simple DirectMedia Layer v2 */
 #define X11				1
+#define	IQ_VIA_USB		1
 
 #define WITHSYSFSBATTERY			1 /* Получение значения емкости аккумулятора из /sys/class/power_supply */
 #define GET_BATTERY_CAPACITY() (linux_get_battery_charge_level())

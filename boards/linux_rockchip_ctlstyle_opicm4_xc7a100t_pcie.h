@@ -142,7 +142,7 @@
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	/* Board hardware configuration */
-	#define DDS1_TYPE 		DDS_TYPE_XDMA
+	#define DDS1_TYPE 		DDS_TYPE_LINUX
 	#define TSC1_TYPE 		TSC_TYPE_EVDEV
 //	#define TSC_EVDEV_RAWX	1024	// 2048
 //	#define TSC_EVDEV_RAWY	600		// 2048

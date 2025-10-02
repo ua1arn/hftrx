@@ -16,6 +16,7 @@
 #define WITHSPIDEV		1	/* Linux SPI userspace API */
 #define WITHTWIHW 		1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHSDL2VIDEO	1	/* Вывод графики посредством Linux Simple DirectMedia Layer v2 */
+#define	IQ_VIA_XDMA	1
 
 #define	AXI_IQ_RX_BRAM				0xC0000000
 #define	AXI_IQ_STREAM_BRAM			0xC0010000

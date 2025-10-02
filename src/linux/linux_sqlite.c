@@ -6,7 +6,7 @@
 #include "formats.h"	// for debug prints
 #include "audio.h"
 #include "utils.h"
-//#include "board.h"	// todo: uncomment this line
+#include "board.h"
 
 #if LINUX_SUBSYSTEM
 
