@@ -732,6 +732,11 @@ void nvram_read(nvramaddress_t addr, uint8_t * data, unsigned len)
 	memset(data, 0xFF, len);
 }
 
+void nvram_sync(void)
+{
+
+}
+
 #endif
 
 #endif /* defined (NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
