@@ -4989,6 +4989,7 @@ enum
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
+		uint_fast8_t hamradio_get_datamode(void) { return param_getvalue(& xgdatamode); }
 		/* совместимость VID/PID для работы с программой FT8CN */
 		static const struct paramdefdef xgusb_ft8cn =
 		{
@@ -5002,6 +5003,7 @@ enum
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
+		uint_fast8_t hamradio_get_ft8cn(void) { return param_getvalue(& xgusb_ft8cn); }
 		/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		static const struct paramdefdef xgdatatx =
 		{
@@ -5068,8 +5070,6 @@ enum
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
-		uint_fast8_t hamradio_get_datamode(void) { return param_getvalue(& xgdatamode); }
-		uint_fast8_t hamradio_get_ft8cn(void) { return param_getvalue(& xgusb_ft8cn); }
 	#endif /* WITHRTS96 || WITHRTS192 */
 	#else /* WITHUSBHW && WITHUSBUAC */
 		enum { gdatamode = 0 };	/* передача звука с USB вместо обычного источника */
