@@ -16,6 +16,7 @@
 #define WITHSPIDEV		1	/* Linux SPI userspace API */
 #define WITHTWIHW 		1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHSDL2VIDEO	1	/* Вывод графики посредством Linux Simple DirectMedia Layer v2 */
+#define	IQ_VIA_XDMA		1
 
 // GPS receiver Locosys MC-1513: only RMC sentences at 1 Hz
 #define HARDWARE_NMEA_INITIALIZE() do { \

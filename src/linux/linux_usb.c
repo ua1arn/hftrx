@@ -9,7 +9,7 @@
 #include "buffers.h"
 #include "audio.h"
 
-#if LINUX_SUBSYSTEM
+#if LINUX_SUBSYSTEM && IQ_VIA_USB
 
 #include "linux_subsystem.h"
 #include "common.h"
@@ -373,7 +373,7 @@ int linux_usb_init(void)
 
 void usb_iq_start(void)
 {
-	linux_create_thread(&usbiq_t, usb_iq_thread, 90, iq_thread_core);
+	linux_create_thread(& usbiq_t, usb_iq_thread, 90, iq_thread_core);
 
 	modem_reset(0);
 	usleep(5000);
@@ -434,21 +434,21 @@ uint8_t iq_shift_tx(uint8_t val)
 	return tx_shift;
 }
 
-void usb_dds_rts(const uint_least64_t * val)
+void linux_dds_rts(const uint_least64_t * val)
 {
 	uint32_t v = *val;
 	mirror_ncorts = v;
 	send_command2(CLIENT_FREQ_RTS_CMD, v);
 }
 
-void usb_dds_ftw(const uint_least64_t * val)
+void linux_dds_ftw(const uint_least64_t * val)
 {
 	uint32_t v = *val;
 	mirror_nco1 = v;
 	send_command2(CLIENT_FREQ_FTW_CMD, v);
 }
 
-void usb_dds_ftw_sub(const uint_least64_t * val)
+void linux_dds_ftw_sub(const uint_least64_t * val)
 {
 	uint32_t v = *val;
 	mirror_nco2 = v;
@@ -474,4 +474,4 @@ void iq_cic_test(uint32_t val)
 	update_modem_ctrl();
 }
 
-#endif /* LINUX_SUBSYSTEM */
+#endif /* LINUX_SUBSYSTEM && IQ_VIA_USB */

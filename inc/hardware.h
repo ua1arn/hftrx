@@ -886,13 +886,11 @@ void xcz_if_rx_enable(uint_fast8_t state);
 void xcz_if_tx_enable(uint_fast8_t state);
 void xcz_adcrand_set(uint8_t val);
 
-void xcz_dds_ftw(const uint_least64_t * value);	// Установка центральной частоты тракта основного приёмника
-void xcz_dds_ftw_sub(const uint_least64_t * value);// Установка центральной частоты тракта дополнительного приёмника
-void xcz_dds_rts(const uint_least64_t * value);// Установка центральной частоты панорамного индикатора
-void xcz_rxtx_state(uint8_t tx);
-
 #endif /* CPUSTYLE_XC7Z */
 
+void linux_dds_ftw(const uint_least64_t * value);		// Установка центральной частоты тракта основного приёмника
+void linux_dds_ftw_sub(const uint_least64_t * value);	// Установка центральной частоты тракта дополнительного приёмника
+void linux_dds_rts(const uint_least64_t * value);		// Установка центральной частоты панорамного индикатора
 void linux_rxtx_state(uint8_t tx);
 
 uint32_t sys_now(void);

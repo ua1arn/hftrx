@@ -1,6 +1,9 @@
 #ifndef LINUX_COMMON_H
 #define LINUX_COMMON_H
 
+#include "hardware.h"
+#include "buffers.h"
+
 enum {
 	rx_cic_shift_min = 32,
 	rx_cic_shift_max = 64,
