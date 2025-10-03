@@ -4431,8 +4431,8 @@ static const struct paramdefdef xgbandsetbcast =
 	0, 1,
 	OFFSETOF(struct nvmap, gbandsetbcast),
 	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& gbandsetbcast,
+	NULL,	// uint_fast16_t value pointer
+	& gbandsetbcast,	// uint_fast8_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
@@ -4463,8 +4463,8 @@ static const struct paramdefdef xgbandset6m =
 	0, 1,
 	OFFSETOF(struct nvmap, bandset6m),
 	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& bandset6m,
+	NULL,	// uint_fast16_t value pointer
+	& bandset6m,	// uint_fast8_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
@@ -4478,8 +4478,8 @@ static const struct paramdefdef xgbandset4m =
 	0, 1,
 	OFFSETOF(struct nvmap, bandset4m),
 	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& bandset4m,
+	NULL,	// uint_fast16_t value pointer
+	& bandset4m,	// uint_fast8_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
@@ -4493,8 +4493,8 @@ static const struct paramdefdef xgbandset2m =
 	0, 1,
 	OFFSETOF(struct nvmap, bandset2m),
 	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& bandset2m,
+	NULL,	// uint_fast16_t value pointer
+	& bandset2m,	// uint_fast8_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
