@@ -445,14 +445,7 @@ typedef struct txreq_tag
 	edgepin_t edgpcatptt;
 	edgepin_t edgptunerptt;
 	edgepin_t edgpelkeyptt;
-
-	//uint_fast8_t catstatetx;		/* запрос перехода трансивера на передачу от CAT команды */
-	//uint_fast8_t catstatetxdata;		/* запрос перехода трансивера на передачу от CAT команды TX1 */
-	//uint_fast8_t cattunemode;		/* запрос перехода трансивера на передачу от CAT команды */
-
-//	uint_fast8_t reqautotune;	/* режим настройки тюнера, включённый кнопкой с клавиатуры */
-//	uint_fast8_t txtone;		/* режим выдачи несущей, включённый кнопкой с клавиатуры */
-//	uint_fast8_t moxmode;		/* передача, включённая кнопкой с клавиатуры */
+	edgepin_t edgpexttune;
 
 	txreqst_t state;
 
@@ -468,6 +461,7 @@ void txreq_settxtone(txreq_t * txreqp, uint_fast8_t v);
 uint_fast8_t txreq_gettxtone(const txreq_t * txreqp);	/* возвращаем не-0, если есть запрос на tune от пользователя или CAT */
 void txreq_set_mox(txreq_t * txreqp, uint_fast8_t v);
 void txreq_handle_ptt(txreq_t * txreqp, uint_fast8_t press, uint_fast8_t release);
+void txreq_handle_tune(txreq_t * txreqp, uint_fast8_t press, uint_fast8_t release);
 uint_fast8_t txreq_get_tx(const txreq_t * txreqp);
 void txreq_txerror(txreq_t * txreqp);	/* переход на приём из-за ошибок (сброс всех запросов) */
 uint_fast8_t txreq_setmoxtune(txreq_t * txreqp, uint_fast8_t mox, uint_fast8_t tune);	// Установить режимы. Вернуть не-ноль если менялись

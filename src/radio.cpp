@@ -10202,7 +10202,7 @@ getactualtune(void)
 {
 	txreq_t * const txreqp = & txreqst0;
 
-	return txreq_gettxtone(txreqp) || txreq_getreqautotune(txreqp) || reqautotune2 || hardware_get_tune();
+	return txreq_gettxtone(txreqp) || txreq_getreqautotune(txreqp) || reqautotune2;
 }
 
 // вызывается из user mode
@@ -13297,8 +13297,6 @@ uif_key_click(void)
 		txreq_rx(& txreqst0);
 	else
 		txreq_set_mox(& txreqst0, 1);
-	txreq_process(& txreqst0);
-	updateboard();
 }
 
 ///////////////////////////
@@ -13310,8 +13308,6 @@ static void
 uif_key_tune(void)
 {
 	txreq_settxtone(& txreqst0, 1);
-	txreq_process(& txreqst0);
-	updateboard();
 }
 
 #endif /* WITHTX */
@@ -13335,8 +13331,9 @@ uif_key_bypasstoggle(void)
 	storetuner(bg, ant);
 
 	if (tunerwork == 0)
-		txreq_setreqautotune(& txreqst0, 0);	// сброс идущей настройки
-	updateboard();
+	{
+		txreq_rx(& txreqst0);	// сброс идущей настройки
+	}
 }
 
 static void
@@ -18787,6 +18784,12 @@ uint_fast8_t checkhandptt(void * ctx)
 	return hardware_get_ptt();	// тангента, педаль;
 }
 
+
+uint_fast8_t checkexterntune(void * ctx)
+{
+	return hardware_get_tune();
+}
+
 uint_fast8_t checkcatptt(void * ctx)
 {
 	return 0;
@@ -18816,6 +18819,7 @@ void txreq_initialize(txreq_t * txreqp)
 	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpcatptt, checkcatptt, NULL);
 	edgepin_initialize(& txreqp->edgepins, & txreqp->edgptunerptt, checktunerptt, NULL);
 	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpelkeyptt, checkelkeyptt, NULL);
+	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpexttune, checkexterntune, NULL);
 
 	txreqp->state = TXREQST_RX;
 }
@@ -18830,9 +18834,14 @@ void
 txreq_process(txreq_t * txreqp)
 {
 #if WITHTX
+	uint_fast8_t tunextrelease;
+	const uint_fast8_t tunextpress = edgepin_getoutstate(& txreqp->edgpexttune, & tunextrelease);
+	txreq_handle_tune(txreqp, tunextpress, tunextrelease);
+
 	uint_fast8_t moxrelease;
 	const uint_fast8_t moxpress = edgepin_getoutstate(& txreqp->edgphandptt, & moxrelease);
 	txreq_handle_ptt(txreqp, moxpress, moxrelease);
+
 #if WITHSENDWAV
 	if (isplayfile())
 	{
@@ -18856,13 +18865,13 @@ txreq_process(txreq_t * txreqp)
 //		tunreq = 1;
 //	}
 
-	const uint_fast8_t error = get_txdisable(txreqp->state != TXREQST_RX);
+	const uint_fast8_t error = get_txdisable(txreq_get_tx(txreqp));
 	if (error)
 	{
 		txreq_rx(txreqp);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
 	}
 
-	seq_txrequest(txreqp->state == TXREQST_TXTONE || txreqp->state == TXREQST_TXAUTOTUNE, txreqp->state != TXREQST_RX);
+	seq_txrequest(txreqp->state == TXREQST_TXTONE || txreqp->state == TXREQST_TXAUTOTUNE, txreq_get_tx(txreqp));
 #endif /* WITHTX */
 }
 
@@ -18897,6 +18906,14 @@ void txreq_handle_ptt(txreq_t * txreqp, uint_fast8_t press, uint_fast8_t release
 		txreqp->state = TXREQST_RX;
 	else if (press)
 		txreqp->state = TXREQST_TX;
+}
+
+void txreq_handle_tune(txreq_t * txreqp, uint_fast8_t press, uint_fast8_t release)
+{
+	if (release)
+		txreqp->state = TXREQST_RX;
+	else if (press)
+		txreqp->state = TXREQST_TXTONE;
 }
 
 uint_fast8_t txreq_get_tx(const txreq_t * txreqp)
@@ -19344,7 +19361,6 @@ static enum tnrstate tunerstate = TUNERSTATE_0;
 static STTE_t hamradio_tune_step(void)
 {
 #if WITHAUTOTUNER
-	txreq_process(& txreqst0);	/* Установка сиквенсору запроса на передачу.	*/
 	switch (tunerstate)
 	{
 	case TUNERSTATE_0:
@@ -19745,10 +19761,10 @@ hamradio_main_step(void)
 	inputevent_initialize(& event);
 	inputevent_fill(& event);
 
+	txreq_process(& txreqst0);	/* Установка сиквенсору запроса на передачу.	*/
 	switch (sthrl)
 	{
 //	case STHRL_MENU:
-//		txreq_process(& txreqst0);	/* Установка сиквенсору запроса на передачу.	*/
 //		if (hamradio_menu_step() == STTE_OK)
 //			sthrl = STHRL_RXTX;
 //		break;
@@ -19762,7 +19778,6 @@ hamradio_main_step(void)
 			/* валкодер перестал вращаться - если было изменение частоты - сохраняем конфигурацию */
 			if (refreshenabled_freqs())
 			{
-				txreq_process(& txreqst0);	/* Установка сиквенсору запроса на передачу.	*/
 				const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
 				const uint_fast8_t bi_sub = getbankindexsub();		/* состояние выбора банков может измениться */
 				/* в случае внутренней памяти микроконтроллера - частоту не запоминать (очень мал ресурс). */
@@ -19783,8 +19798,6 @@ hamradio_main_step(void)
 
 	case STHRL_RXTX:
 		// работа с пользователем
-
-		txreq_process(& txreqst0);	/* Установка сиквенсору запроса на передачу.	*/
 		if (txreq_getreqautotune(& txreqst0) != 0 && gtx != 0)
 		{
 			sthrl = STHRL_TUNE;
@@ -19918,8 +19931,6 @@ void hamradio_set_afgain(uint_fast16_t v)
 void hamradio_set_tune(uint_fast8_t v)
 {
 	txreq_settxtone(& txreqst0, v != 0);
-	txreq_process(& txreqst0);
-	updateboard();
 }
 
 #if WITHPOWERTRIM
@@ -21043,8 +21054,6 @@ uint_fast8_t hamradio_change_preamp(uint_fast8_t v)
 void hamradio_set_moxmode(uint_fast8_t mode)
 {
 	const uint_fast8_t f = txreq_setmoxtune(& txreqst0, !! mode, txreq_gettxtone(& txreqst0));	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
-	txreq_process(& txreqst0);
-	updateboard();
 }
 
 uint_fast8_t hamradio_moxmode(uint_fast8_t v)
