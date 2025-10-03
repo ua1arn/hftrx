@@ -4204,8 +4204,8 @@ static const struct paramdefdef xgnoisereduct =
 	0, 1,
 	RMT_NR_BASE(0),							/* управление режимом NOTCH */
 	nvramoffs_selector, nvramoffs_mode, valueoffs_mode,
-	NULL,
-	& gnoisereducts [0],
+	NULL,	// uint_fast16_t value pointer
+	& gnoisereducts [0],	// uint_fast8_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
@@ -4227,8 +4227,8 @@ static const struct paramdefdef xmainsubrxmode =
 	0, MAINSUBRXMODE_COUNT - 1,
 	OFFSETOF(struct nvmap, mainsubrxmode),
 	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& mainsubrxmode,
+	NULL,	// uint_fast16_t value pointer
+	& mainsubrxmode,	// uint_fast8_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
 	getvaltextmaisubrxmode, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
@@ -4244,8 +4244,8 @@ static const struct paramdefdef xgsquelch =
 	0, SQUELCHMAX,
 	OFFSETOF(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
 	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& gsquelch.value,
+	NULL,	// uint_fast16_t value pointer
+	& gsquelch.value,	// uint_fast8_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
@@ -4261,8 +4261,8 @@ static const struct paramdefdef xgsquelchNFM =
 	0, SQUELCHMAX,
 	OFFSETOF(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
 	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& gsquelchNFM,
+	NULL,	// uint_fast16_t value pointer
+	& gsquelchNFM,	// uint_fast8_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
@@ -4275,8 +4275,8 @@ static const struct paramdefdef xggainnfmrx10 =
 	10, 100,
 	OFFSETOF(struct nvmap, ggainnfmrx10),	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& ggainnfmrx10,
+	NULL,	// uint_fast16_t value pointer
+	& ggainnfmrx10,	// uint_fast8_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
@@ -4348,8 +4348,8 @@ static const struct paramdefdef xgcwpitch10 =
 	CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 10 Hz steps */
 	OFFSETOF(struct nvmap, gcwpitch10),
 	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& gcwpitch10,
+	NULL,	// uint_fast16_t value pointer
+	& gcwpitch10,	// uint_fast8_t value pointer
 	getzerobase,
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
@@ -4397,8 +4397,8 @@ static const struct paramdefdef xgnotch =
 	0, NOTCHMODE_COUNT - 1,
 	RMT_NOTCH_BASE,							/* управление режимом NOTCH */
 	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& gnotch,
+	NULL,	// uint_fast16_t value pointer
+	& gnotch,	// uint_fast8_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
@@ -4422,8 +4422,24 @@ static const struct paramdefdef xgnotch =
 #endif /* WITHWARCBANDS */
 
 
-//static uint_fast8_t bandsetham = 1;	/* HAM radio bands */
+#if WITHBCBANDS
 static uint_fast8_t gbandsetbcast = 0;	/* Broadcast radio bands */
+static const struct paramdefdef xgbandsetbcast =
+{
+	QLABEL("BAND BC"), 7, 3, RJ_YES,	ISTEP1,
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, gbandsetbcast),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gbandsetbcast,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+#else /* WITHBCBANDS */
+enum { gbandsetbcast = 0 };
+#endif /* WITHBCBANDS */
+
 static uint_fast8_t bandset11m;
 static const struct paramdefdef xgbandset11m =
 {
@@ -4432,20 +4448,56 @@ static const struct paramdefdef xgbandset11m =
 	0, 1,
 	OFFSETOF(struct nvmap, bandset11m),
 	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& bandset11m,
+	NULL,	// uint_fast16_t value pointer
+	& bandset11m,	// uint_fast8_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 #if TUNE_6MBAND
 static uint_fast8_t bandset6m = 1;	/* используется ли диапазон 6 метров */
+static const struct paramdefdef xgbandset6m =
+{
+	QLABEL("BAND 50"), 8, 3, RJ_ON,	ISTEP1,
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, bandset6m),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bandset6m,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
 #endif /* TUNE_6MBAND */
 #if TUNE_4MBAND
 static uint_fast8_t bandset4m = 1;	/* используется ли диапазон 4 метров */
+static const struct paramdefdef xgbandset4m =
+{
+	QLABEL("BAND 70"), 8, 3, RJ_ON,	ISTEP1,
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, bandset4m),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bandset4m,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
 #endif /* TUNE_4MBAND */
 #if TUNE_2MBAND
 static uint_fast8_t bandset2m = 1;	/* используется ли диапазон 2 метра */
+static const struct paramdefdef xgbandset2m =
+{
+	QLABEL("BAND 144"), 8, 3, RJ_ON,	ISTEP1,
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, bandset2m),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bandset2m,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
 #endif /* TUNE_2MBAND */
 
 #if WITHCAT

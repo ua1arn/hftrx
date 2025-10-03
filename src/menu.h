@@ -3494,60 +3494,18 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHANTSELECT2 */
-
 	& xgbandset11m,
 #if WITHBCBANDS
-	(const struct paramdefdef [1]) {
-		QLABEL("BAND BC"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		OFFSETOF(struct nvmap, gbandsetbcast),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gbandsetbcast,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgbandsetbcast,
 #endif /* WITHBCBANDS */
-
 #if TUNE_6MBAND
-	(const struct paramdefdef [1]) {
-		QLABEL("BAND 50"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		OFFSETOF(struct nvmap, bandset6m),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& bandset6m,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgbandset6m,
 #endif /* TUNE_6MBAND */
 #if TUNE_4MBAND
-	(const struct paramdefdef [1]) {
-		QLABEL("BAND 70"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		OFFSETOF(struct nvmap, bandset4m),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& bandset4m,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgbandset4m,
 #endif /* TUNE_6MBAND */
 #if TUNE_2MBAND
-	(const struct paramdefdef [1]) {
-		QLABEL("BAND 144"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		OFFSETOF(struct nvmap, bandset2m),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& bandset2m,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgbandset2m,
 #endif /* TUNE_2MBAND */
 
 /* group name +++ */
