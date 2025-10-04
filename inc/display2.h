@@ -422,6 +422,8 @@ typedef struct
 
 	// Заполнение палитры производится в display2_xltrgb24()
 
+	#define COLOR_bgXXO         TFTRGB(0x01, 0x24, 0x37)	// flex radio BG color
+
 	#define COLORPIP_YELLOW      COLOR_YELLOW
 	#define COLORPIP_ORANGE      COLOR_ORANGE
 	#define COLORPIP_BLACK       COLOR_BLACK
