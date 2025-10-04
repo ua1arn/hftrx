@@ -18813,17 +18813,21 @@ txreq_process(txreq_t * txreqp)
 	const uint_fast8_t tunereq =
 			txreqp->edgpexttune.req ||
 			0;
-	if (tunereq)
+	const uint_fast8_t rxreq =
+			txreqp->edgphandptt.negedge ||
+			txreqp->edgpcathwptt.negedge ||
+			txreqp->edgpelkeyptt.negedge ||
+			txreqp->edgpexttune.negedge ||
+			0;
+
+	if (0)
+		;
+	else if (rxreq)
+		txreq_rx(txreqp, NULL);
+	else if (tunereq)
 		txreqp->state = TXREQST_TXTONE;
 	else if (txreq)
 		txreqp->state = TXREQST_TX;
-	else if (txreqp->edgphandptt.negedge)
-	{
-		txreqp->edgphandptt.negedge = 0;
-		txreqp->state = TXREQST_RX;
-	}
-//	else
-//		txreqp->state = TXREQST_RX;
 
 #if WITHSENDWAV
 	if (isplayfile())
@@ -18943,19 +18947,10 @@ void txreq_txdata(txreq_t * txreqp)
 {
 	txreqp->state = TXREQST_TXDATA;
 }
+
 uint_fast8_t txreq_gettxdata(const txreq_t * txreqp)
 {
 	return txreqp->state == TXREQST_TXDATA;
-}
-
-
-// Установить режимы. Вернуть не-ноль если менялись
-void txreq_setmoxtune(txreq_t * txreqp, uint_fast8_t mox, uint_fast8_t tune)
-{
-	if (mox)
-		txreq_mox(txreqp);
-	if (tune)
-		txreq_txtone(txreqp);
 }
 
 static void dpc_0p1_s_timer_fn(void * ctx)
