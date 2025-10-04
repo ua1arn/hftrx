@@ -5862,12 +5862,6 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	static uint_fast8_t gdownatcwtune;	/* снижаем мощность до "тюнерной" при нажатии TUNE */
 
-#if WITHTOUCHGUI
-	static uint_fast8_t reqautotune2 = 0;
-#else
-	enum { reqautotune2 = 0 };
-#endif /* WITHTOUCHGUI */
-
 	static const struct paramdefdef xgdownatcwtune =
 	{
 		QLABEL("TUNE LP"), 8, 3, RJ_ON,	ISTEP1,	/* снижаем мощность до "тюнерной" при нажатии TUNE */
@@ -5922,7 +5916,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 
 #else /* WITHTX */
 
-	enum { gdownatcwtune = 0, reqautotune2 = 0 };
+	enum { gdownatcwtune = 0 };
 	enum { gheatprot = 0, gtempvmax = 99 };
 
 #endif /* WITHTX */
@@ -10270,7 +10264,7 @@ getactualtune(void)
 {
 	txreq_t * const txreqp = & txreqst0;
 
-	return txreq_gettxtone(txreqp) || txreq_getreqautotune(txreqp) || reqautotune2;
+	return txreq_gettxtone(txreqp) || txreq_getreqautotune(txreqp);
 }
 
 // вызывается из user mode
@@ -10278,14 +10272,12 @@ getactualtune(void)
 uint_fast8_t
 getactualdownpower(txreq_t * txreqp)
 {
-#if WITHTX
 	return
-			0 ||
-			(gdownatcwtune && txreq_gettxtone(txreqp)) ||	/* снижаем мощность до "тюнерной" при нажатии TUNE */
-			txreq_getreqautotune(txreqp) || reqautotune2 || hardware_get_tune();
-#else /* WITHTX */
-	return 0;
-#endif /* WITHTX */
+	#if WITHTX
+		(gdownatcwtune && txreq_gettxtone(txreqp)) ||	/* снижаем мощность до "тюнерной" при нажатии TUNE */
+		txreq_getreqautotune(txreqp) || hardware_get_tune() ||
+	#endif /* WITHTX */
+		0;
 }
 
 #if WITHTX
@@ -13356,7 +13348,7 @@ uif_key_click(void)
 	if (txreq_get_tx(& txreqst0))
 		txreq_rx(& txreqst0, NULL);
 	else
-		txreq_set_mox(& txreqst0);
+		txreq_mox(& txreqst0);
 }
 
 ///////////////////////////
@@ -13367,7 +13359,7 @@ uif_key_click(void)
 static void
 uif_key_tune(void)
 {
-	txreq_settxtone(& txreqst0);
+	txreq_txtone(& txreqst0);
 }
 
 #endif /* WITHTX */
@@ -13406,7 +13398,7 @@ uif_key_atunerstart(void)
 	const uint_fast8_t bg = getfreqbandgroup(freq);
 	const uint_fast8_t ant = geteffantenna(freq);
 
-	txreq_setreqautotune(& txreqst0, 1);
+	txreq_reqautotune(& txreqst0, 1);
 	// отработка перехода в режим передачи делается в основном цикле
 	tunerwork = 1;
 	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerwork), 1);
@@ -16171,13 +16163,13 @@ processcatmsg(
 			switch (v)
 			{
 			case 0:
-				txreq_set_mox(& txreqst0);
+				txreq_mox(& txreqst0);
 				break;
 			case 1:
-				txreq_settxdata(& txreqst0);
+				txreq_txdata(& txreqst0);
 				break;
 			case 2:
-				txreq_settxtone(& txreqst0);
+				txreq_txtone(& txreqst0);
 				break;
 			}
 
@@ -16186,7 +16178,7 @@ processcatmsg(
 		}
 		else
 		{
-			txreq_set_mox(& txreqst0);
+			txreq_mox(& txreqst0);
 			if (aistate != 0)
 				cat_answer_request(CAT_TX_INDEX);
 		}
@@ -16272,7 +16264,7 @@ processcatmsg(
 
 				tunerwork = p1 || p2;
 
-				txreq_setreqautotune(& txreqst0, !! p3);
+				txreq_reqautotune(& txreqst0, !! p3);
 
 				storetuner(bg, ant);
 				updateboard();	/* полная перенастройка (как после смены режима) */
@@ -18836,13 +18828,13 @@ txreq_process(txreq_t * txreqp)
 #if WITHSENDWAV
 	if (isplayfile())
 	{
-		txreq_set_mox(txreqp);
+		txreq_mox(txreqp);
 	}
 #endif /* WITHSENDWAV */
 #if WITHBEACON
 	if (beacon_get_ptt())
 	{
-		txreq_set_mox(txreqp);
+		txreq_mox(txreqp);
 	}
 #endif	/* WITHCAT */
 #if WITHMODEM
@@ -18860,19 +18852,19 @@ txreq_process(txreq_t * txreqp)
 	{
 		txreq_rx(txreqp, "TOT");
 	}
-	if (txreq_get_tx(txreqp) && hardware_get_txdisable())
+	else if (txreq_get_tx(txreqp) && hardware_get_txdisable())
 	{
 		txreq_rx(txreqp, "DIS");
 	}
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_PAtemp_value(), (int) gtempvmax * 10);
-	if (txreq_get_tx(txreqp) && gheatprot != 0 && hamradio_get_PAtemp_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
+	else if (txreq_get_tx(txreqp) && gheatprot != 0 && hamradio_get_PAtemp_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
 	{
 		txreq_rx(txreqp, "OVH");
 	}
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 #if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX
-	if (txreq_get_tx(txreqp) && getactualdownpower(& txreqst0) == 0 && gswrprot != 0)
+	else if (txreq_get_tx(txreqp) && getactualdownpower(& txreqst0) == 0 && gswrprot != 0)
 	{
 		//PRINTF("1 gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower(& txreqst0) == 0, get_swr_cached(4 * SWRMIN));
 		if (get_swr_cached(4 * SWRMIN) >= (4 * SWRMIN))	// SWR >= 4.0
@@ -18898,7 +18890,8 @@ txreq_process(txreq_t * txreqp)
 #endif /* WITHTX */
 }
 
-void txreq_setreqautotune(txreq_t * txreqp, uint_fast8_t v)
+// Выход из режима - txreq_rx
+void txreq_reqautotune(txreq_t * txreqp, uint_fast8_t v)
 {
 	txreqp->state = v ? TXREQST_TXAUTOTUNE : txreqp->state;
 }
@@ -18908,7 +18901,7 @@ uint_fast8_t txreq_getreqautotune(const txreq_t * txreqp)
 	return txreqp->state == TXREQST_TXAUTOTUNE;
 }
 
-void txreq_settxtone(txreq_t * txreqp)
+void txreq_txtone(txreq_t * txreqp)
 {
 	txreqp->state = TXREQST_TXTONE;
 }
@@ -18918,7 +18911,7 @@ uint_fast8_t txreq_gettxtone(const txreq_t * txreqp)
 	return txreqp->state == TXREQST_TXTONE;
 }
 
-void txreq_set_mox(txreq_t * txreqp)
+void txreq_mox(txreq_t * txreqp)
 {
 	txreqp->state = TXREQST_TX;
 }
@@ -18945,7 +18938,8 @@ void txreq_rx(txreq_t * txreqp, const char * label)
 	}
 }
 
-void txreq_settxdata(txreq_t * txreqp)
+// передача с USB
+void txreq_txdata(txreq_t * txreqp)
 {
 	txreqp->state = TXREQST_TXDATA;
 }
@@ -18956,19 +18950,12 @@ uint_fast8_t txreq_gettxdata(const txreq_t * txreqp)
 
 
 // Установить режимы. Вернуть не-ноль если менялись
-uint_fast8_t txreq_setmoxtune(txreq_t * txreqp, uint_fast8_t mox, uint_fast8_t tune)
+void txreq_setmoxtune(txreq_t * txreqp, uint_fast8_t mox, uint_fast8_t tune)
 {
-	uint_fast8_t f = 0;
-
-	f = f || txreq_get_tx(txreqp) != mox;
-	f = f || txreq_gettxtone(txreqp) != tune;
-
 	if (mox)
-		txreq_set_mox(txreqp);
+		txreq_mox(txreqp);
 	if (tune)
-		txreq_settxtone(txreqp);
-
-	return f;
+		txreq_txtone(txreqp);
 }
 
 static void dpc_0p1_s_timer_fn(void * ctx)
@@ -19929,7 +19916,7 @@ void hamradio_set_afgain(uint_fast16_t v)
 void hamradio_set_tune(uint_fast8_t v)
 {
 	if (v)
-		txreq_settxtone(& txreqst0);
+		txreq_txtone(& txreqst0);
 	else
 		txreq_rx(& txreqst0, NULL);
 }
@@ -21054,7 +21041,10 @@ uint_fast8_t hamradio_change_preamp(uint_fast8_t v)
 
 void hamradio_set_moxmode(uint_fast8_t mode)
 {
-	const uint_fast8_t f = txreq_setmoxtune(& txreqst0, !! mode, txreq_gettxtone(& txreqst0));	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+	if (mode)
+		txreq_mox(& txreqst0);
+	else
+		txreq_rx(& txreqst0, NULL);
 }
 
 uint_fast8_t hamradio_moxmode(uint_fast8_t v)
@@ -21062,6 +21052,16 @@ uint_fast8_t hamradio_moxmode(uint_fast8_t v)
 	if (v)
 		uif_key_click();
 	return txreq_get_tx(& txreqst0);
+}
+
+void hamradio_setrx(void)
+{
+	txreq_rx(& txreqst0, NULL);
+}
+
+void hamradio_setautotune(void)
+{
+	txreq_reqautotune(& txreqst0, 1);
 }
 
 uint_fast8_t hamradio_tunemode(uint_fast8_t v)
@@ -21116,15 +21116,6 @@ void hamradio_gui_enc2_update(void)
 {
 }
 #endif /* WITHENCODER2 */
-
-#if WITHTX
-
-void hamradio_gui_set_reqautotune2(uint_fast8_t val)
-{
-	reqautotune2 = val != 0;
-}
-
-#endif /* WITHTX */
 
 void display2_set_page_temp(uint_fast8_t page)
 {

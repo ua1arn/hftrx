@@ -82,7 +82,6 @@ uint_fast8_t hamradio_get_att_db(void);
 void hamradio_set_att_db(uint_fast8_t db);
 void hamradio_set_bw(uint_fast8_t v);
 uint_fast8_t hamradio_change_nr(uint_fast8_t v);
-void hamradio_gui_set_reqautotune2(uint_fast8_t val);
 uint_fast8_t hamradio_split_toggle(void);
 void hamradio_split_vfo_swap(void);
 void hamradio_split_mode_toggle(void);

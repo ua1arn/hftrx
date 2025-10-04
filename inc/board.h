@@ -448,19 +448,15 @@ typedef struct txreq_tag
 void txreq_initialize(txreq_t * txreqp);
 void txreq_process(txreq_t * txreqp);		/* Установка сиквенсору запроса на передачу.	*/
 
-void txreq_setreqautotune(txreq_t * txreqp, uint_fast8_t v);
+void txreq_reqautotune(txreq_t * txreqp, uint_fast8_t v);	// Выход из режима - txreq_rx
 uint_fast8_t txreq_getreqautotune(const txreq_t * txreqp);
-void txreq_settxtone(txreq_t * txreqp);
+void txreq_txtone(txreq_t * txreqp);
 uint_fast8_t txreq_gettxtone(const txreq_t * txreqp);	/* возвращаем не-0, если есть запрос на tune от пользователя или CAT */
-void txreq_set_mox(txreq_t * txreqp);
+void txreq_mox(txreq_t * txreqp);
 uint_fast8_t txreq_get_tx(const txreq_t * txreqp);
-uint_fast8_t txreq_setmoxtune(txreq_t * txreqp, uint_fast8_t mox, uint_fast8_t tune);	// Установить режимы. Вернуть не-ноль если менялись
 void txreq_rx(txreq_t * txreqp, const char * label);	/* переход на приём (сброс всех запросов) */
 uint_fast8_t txreq_gettxdata(const txreq_t * txreqp);
-void txreq_settxdata(txreq_t * txreqp);
-
-//void txreq_keytune(txreq_t * txreqp);	/* обработка нажатия на запрос настройки тюнера */
-//void txreq_keymox(txreq_t * txreqp);	/* обработка нажатия на mox */
+void txreq_txdata(txreq_t * txreqp);	// передача с USB
 
 void nmeatuner_initialize(void);	/* сброс машины состояний парсера и инициализация последовательного пориа есои нужно */
 void nmeatuner_onrxchar(uint_fast8_t c);				/* вызывается из обработчика прерываний */

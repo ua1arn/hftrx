@@ -765,8 +765,7 @@ void gui_main_process(void)
 #if WITHTX
 			else if (gui_check_obj(name, "btn_main00"))
 			{
-				hamradio_gui_set_reqautotune2(0);
-				hamradio_moxmode(1);
+				hamradio_setrx();
 				update = 1;
 			}
 #endif /* WITHTX */
@@ -776,8 +775,7 @@ void gui_main_process(void)
 #if WITHTX
 			if (gui_check_obj(name, "btn_main00"))
 			{
-				hamradio_gui_set_reqautotune2(1);
-				hamradio_tunemode(1);
+				hamradio_setautotune();
 				update = 1;
 			}
 			else
