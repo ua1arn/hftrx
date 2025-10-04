@@ -417,6 +417,7 @@ typedef struct edgepin_tag
 	uint8_t prevstate;
 	uint8_t posedge;
 	uint8_t negedge;
+	uint8_t req;
 	uint_fast8_t (* getpin)(void);
 } edgepin_t;
 

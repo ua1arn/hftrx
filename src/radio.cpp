@@ -18751,6 +18751,7 @@ void txreq_scaninputs(txreq_t * txreqp)
 		{
 			if (p->prevstate == 0)
 			{
+				p->req = 1;
 				p->posedge = 1;
 				p->negedge = 0;
 			}
@@ -18759,21 +18760,13 @@ void txreq_scaninputs(txreq_t * txreqp)
 		{
 			if (p->prevstate != 0)
 			{
+				p->req = 0;
 				p->posedge = 0;
 				p->negedge = 1;
 			}
 		}
 		p->prevstate = f;
 	}
-}
-
-static void dpc_0p1_s_timer_fn(void * ctx)
-{
-	bringtimers();
-	/* быстро меняющиеся значения с частым опорсом */
-	doadcmirror();
-	main_speed_diagnostics();
-	looptests();		// Периодически вызывается в главном цикле - тесты
 }
 
 void edgepin_initialize(LIST_ENTRY * list, edgepin_t * egp, uint_fast8_t (* fn)(void))
@@ -18783,6 +18776,7 @@ void edgepin_initialize(LIST_ENTRY * list, edgepin_t * egp, uint_fast8_t (* fn)(
 	egp->prevstate = fn();
 	egp->posedge = 0;
 	egp->negedge = 0;
+	egp->req = 0;
 
 	InsertTailList(list, & egp->item);
 }
@@ -18966,6 +18960,7 @@ void txreq_txerror(txreq_t * txreqp, const char * label)
 		edgepin_t * const p = CONTAINING_RECORD(t, edgepin_t, item);
 		p->posedge = 0;
 		p->negedge = 0;
+		p->req = 0;
 	}
 }
 
@@ -18998,6 +18993,14 @@ uint_fast8_t txreq_setmoxtune(txreq_t * txreqp, uint_fast8_t mox, uint_fast8_t t
 	return f;
 }
 
+static void dpc_0p1_s_timer_fn(void * ctx)
+{
+	bringtimers();
+	/* быстро меняющиеся значения с частым опорсом */
+	doadcmirror();
+	main_speed_diagnostics();
+	looptests();		// Периодически вызывается в главном цикле - тесты
+}
 
 /* вызывается при запрещённых прерываниях. */
 void
