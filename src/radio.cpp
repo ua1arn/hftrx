@@ -6280,6 +6280,31 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		(- 30) + FSADCPOWEROFFSET10,	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
 		(- 230) + FSADCPOWEROFFSET10,	// с конвертором
 	};
+	static const struct paramdefdef xgfsadcpower10 =
+	{
+		QLABEL("ADC FS"), 3 + WSIGNFLAG, 1, RJ_SIGNED,	ISTEP1,		/* Калиьровка S-метра - момент перегрузки */
+		ITEM_VALUE,
+		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
+		OFFSETOF(struct nvmap, gfsadcpower10 [0]),
+		getselector0, nvramoffs0, valueoffs0,
+		& gfsadcpower10 [0],	// 16 bit
+		NULL,
+		getfsasdcbase10, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgfsadcpower10xv =
+	{
+			QLABEL("ADC FSXV"), 3 + WSIGNFLAG, 1, RJ_SIGNED,	ISTEP1,		/* с колнвертором Калиьровка S-метра - момент перегрузки */
+			ITEM_VALUE,
+			0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
+			OFFSETOF(struct nvmap, gfsadcpower10 [1]),
+			getselector0, nvramoffs0, valueoffs0,
+			& gfsadcpower10 [1],	// 16 bit
+			NULL,
+			getfsasdcbase10, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
 #endif /*  */
 	static uint_fast8_t gmoniflag;		/* разрешение самопрослушивания */
 
@@ -12309,7 +12334,9 @@ updateboard_noui(
 		board_set_lineinput(txaudiocode == BOARD_TXAUDIO_LINE);
 
 		board_set_digigainmax(gdigigainmax);
-		board_set_fsadcpower10((int_fast16_t) gfsadcpower10 [lo0side != LOCODE_INVALID] - (int_fast16_t) FSADCPOWEROFFSET10 + gerflossdb10(lo0side != LOCODE_INVALID, gatt, gpamp));	/*	Мощность, соответствующая full scale от IF ADC */
+		board_set_fsadcpower10(	/*	Мощность, соответствующая full scale от IF ADC */
+				param_getvalue(lo0side != LOCODE_INVALID ? & xgfsadcpower10xv : & xgfsadcpower10) +
+				gerflossdb10(lo0side != LOCODE_INVALID, gatt, gpamp));
 		#if WITHUSEDUALWATCH
 			board_set_mainsubrxmode(getactualmainsubrx());		// Левый/правый, A - main RX, B - sub RX
 		#endif /* WITHUSEDUALWATCH */

@@ -1906,28 +1906,8 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
-	(const struct paramdefdef [1]) {
-		QLABEL("ADC FS"), 3 + WSIGNFLAG, 1, RJ_SIGNED,	ISTEP1,		/* Калиьровка S-метра - момент перегрузки */
-		ITEM_VALUE,
-		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
-		OFFSETOF(struct nvmap, gfsadcpower10 [0]),
-		getselector0, nvramoffs0, valueoffs0,
-		& gfsadcpower10 [0],	// 16 bit
-		NULL,
-		getfsasdcbase10, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("ADC FSXV"), 3 + WSIGNFLAG, 1, RJ_SIGNED,	ISTEP1,		/* с колнвертором Калиьровка S-метра - момент перегрузки */
-		ITEM_VALUE,
-		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
-		OFFSETOF(struct nvmap, gfsadcpower10 [1]),
-		getselector0, nvramoffs0, valueoffs0,
-		& gfsadcpower10 [1],	// 16 bit
-		NULL,
-		getfsasdcbase10, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgfsadcpower10,
+	& xgfsadcpower10xv,
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC OFF"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,	
