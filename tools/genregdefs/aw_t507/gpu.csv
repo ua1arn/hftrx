@@ -140,10 +140,10 @@
 #type; GPU_MMU
 #base; GPU_MMU 0x01802000
 
-#regdef; MMU_IRQ_RAWSTAT         ; 0x000   ; (RW) Raw interrupt status register
-#regdef; MMU_IRQ_CLEAR           ; 0x004   ; (WO) Interrupt clear register
-#regdef; MMU_IRQ_MASK            ; 0x008   ; (RW) Interrupt mask register
-#regdefr; MMU_IRQ_STATUS         ; 0x00C   ; (RO) Interrupt status register
+#regdef; MMU_IRQ_RAWSTAT        ; 0x000   ; (RW) Raw interrupt status register
+#regdefw; MMU_IRQ_CLEAR         ; 0x004   ; (WO) Interrupt clear register
+#regdef; MMU_IRQ_MASK           ; 0x008   ; (RW) Interrupt mask register
+#regdefr; MMU_IRQ_STATUS        ; 0x00C   ; (RO) Interrupt status register
 
 #aggreg; MMU_AS; 0x100 16; Configuration registers for address space 0..15
 

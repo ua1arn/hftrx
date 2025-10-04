@@ -1667,7 +1667,7 @@ typedef struct GPU_JOB_CONTROL_Type
 typedef struct GPU_MMU_Type
 {
     __IO uint32_t MMU_IRQ_RAWSTAT;                    /*!< Offset 0x000 (RW) Raw interrupt status register */
-    __IO uint32_t MMU_IRQ_CLEAR;                      /*!< Offset 0x004 (WO) Interrupt clear register */
+    __O  uint32_t MMU_IRQ_CLEAR;                      /*!< Offset 0x004 (WO) Interrupt clear register */
     __IO uint32_t MMU_IRQ_MASK;                       /*!< Offset 0x008 (RW) Interrupt mask register */
     __I  uint32_t MMU_IRQ_STATUS;                     /*!< Offset 0x00C (RO) Interrupt status register */
          RESERVED(0x010[0x0100 - 0x0010], uint8_t)
