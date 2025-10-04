@@ -3704,6 +3704,7 @@ struct nvmap
 
 	uint8_t gagcoff;
 	uint8_t gamdepth;		/* Глубина модуляции в АМ - 0..100% */
+	uint16_t gtxtot;			/* разрешённое время передачи */
 	uint8_t ggainnfmrx10;		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	uint16_t ggaindigitx;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
@@ -6192,6 +6193,21 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
+	static uint_fast16_t gtxtimer;
+	static uint_fast16_t gtxtot = 300;		/* разрешённое время передачи */
+	/* разрешённое время передачи */
+	static const struct paramdefdef xgtxtot =
+	{
+		QLABEL2("TXTOT", "TX Timeout"), 7, 0, RJ_UNSIGNED, ISTEP5,		/* разрешённое время передачи */
+		ITEM_VALUE,
+		0, 300,
+		OFFSETOF(struct nvmap, gtxtot),	/* разрешённое время передачи */
+		getselector0, nvramoffs0, valueoffs0,
+		& gtxtot,	// uint_fast16_t value pointer
+		NULL,	// uint_fast8_t value pointer
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 	/* Глубина модуляции в АМ - 0..100% */
 	static const struct paramdefdef xgamdepth =
 	{
@@ -6200,8 +6216,8 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		0, 100,
 		OFFSETOF(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
 		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gamdepth,
+		NULL,	// uint_fast16_t value pointer
+		& gamdepth,	// uint_fast8_t value pointer
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
@@ -6885,10 +6901,10 @@ static enum phases auto_tune0(void)
 	{
 	default:
 	case N7DDCTUNE_ABORT:
-		bring_swr("ABT");
+		txreq_txerror(& txreqst0, "ABT");
 		return PHASE_ABORT; // восстановление будет в auto_tune3
 	case N7DDCTUNE_ERROR:
-		bring_swr("ERR");
+		txreq_txerror(& txreqst0, "ERR");
 		return PHASE_ABORT; // восстановление будет в auto_tune3
 	case N7DDCTUNE_OK:
 		return PHASE_DONE; // сохранение будет в auto_tune2
@@ -6909,10 +6925,9 @@ static void auto_tune2_init(void)
 }
 
 // save to nvram
-static enum phases auto_tune2(void)
+static void auto_tune2(void)
 {
 	storetuner(tuner_bg, tuner_ant);
-	return PHASE_DONE;
 }
 
 #else /* WITHAUTOTUNER_N7DDCALGO */
@@ -7009,9 +7024,8 @@ static void auto_tune2_init(void)
 	scanminCk_init();
 }
 
-// 1 - aborted
 // save to nvram
-static enum phases auto_tune2(void)
+static void auto_tune2(void)
 {
 	if (scanminCk(& tunerstatuses [tuner_cshindex]) != 0)
 		return PHASE_ABORT; //goto aborted;
@@ -7024,12 +7038,11 @@ static enum phases auto_tune2(void)
 	PRINTF(PSTR("auto_tune stop\n"));
 ////NoMoreTune:
 	storetuner(tuner_bg, tuner_ant);
-	return PHASE_DONE;
 }
 
 #endif /* WITHAUTOTUNER_N7DDCALGO */
 
-// aborting
+// aborting - restore tuner state from saved
 static void auto_tune3(void)
 {
 	tunerwork = 1;	// всегда единица (сохранилось в начале настройки)
@@ -16611,6 +16624,17 @@ static void dpc_1s_timer_fn(void * arg)
 			}
 		}
 #endif /* WITHFANTIMER */
+#if WITHTX
+	/* обработка таймера ограничения времени передачи */
+	if (gtx)
+	{
+		gtxtimer = (gtxtot && gtxtimer < gtxtot) ? (gtxtimer + 1) : gtxtimer;
+	}
+	else
+	{
+		gtxtimer = 0;
+	}
+#endif /* WITHTX */
 #if WITHSLEEPTIMER
 		if (gsleeptime == 0)
 		{
@@ -16697,50 +16721,6 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 	return 0;
 }
 #endif /* WITHTX */
-
-static uint_fast8_t get_txdisable(uint_fast8_t txreq)
-{
-	if (hardware_get_txdisable())
-	{
-		//PRINTF("tx disabled\n");
-		if (txreq)
-		{
-			bring_swr("DIS");
-		}
-		return 1;
-	}
-#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
-	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_PAtemp_value(), (int) gtempvmax * 10);
-	if (gheatprot != 0 && hamradio_get_PAtemp_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
-	{
-		if (txreq)
-		{
-			bring_swr("OVH");
-		}
-		return 1;
-	}
-#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
-#if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX
-	if (getactualdownpower(& txreqst0) == 0)
-	{
-		if (gswrprot != 0)
-		{
-			//PRINTF("1 gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower(& txreqst0) == 0, get_swr_cached(4 * SWRMIN));
-			if (get_swr_cached(4 * SWRMIN) >= (4 * SWRMIN))	// SWR >= 4.0
-			{
-				if (txreq)
-				{
-					bring_swr("SWR");
-				}
-				return 1;
-			}
-
-		}
-	}
-#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
-	//PRINTF("tx ok\n");
-	return 0;
-}
 
 static uint_fast32_t ipow10(uint_fast8_t v)
 {
@@ -18762,7 +18742,6 @@ void txreq_scaninputs(txreq_t * txreqp)
 	PLIST_ENTRY t;
 	for (t = txreqp->edgepins.Blink; t != & txreqp->edgepins; t = t->Blink)
 	{
-		PLIST_ENTRY tnext = t->Blink;	/* текущий элемент может быть удалён из списка */
 		edgepin_t * const p = CONTAINING_RECORD(t, edgepin_t, item);
 		const uint_fast8_t f = p->getpin();
 		if (f)
@@ -18802,7 +18781,6 @@ void edgepin_initialize(LIST_ENTRY * list, edgepin_t * egp, uint_fast8_t (* fn)(
 	egp->posedge = 0;
 	egp->negedge = 0;
 
-	InitializeListHead(& egp->item);
 	InsertTailList(list, & egp->item);
 }
 
@@ -18897,11 +18875,31 @@ txreq_process(txreq_t * txreqp)
 //		tunreq = 1;
 //	}
 
-	const uint_fast8_t error = get_txdisable(txreq_get_tx(txreqp));
-	if (error)
+	if (txreq_get_tx(txreqp) && gtxtot != 0 && gtxtimer >= gtxtot)
 	{
-		txreq_rx(txreqp);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+		txreq_txerror(txreqp, "TOT");
 	}
+	if (txreq_get_tx(txreqp) && hardware_get_txdisable())
+	{
+		txreq_txerror(txreqp, "DIS");
+	}
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
+	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_PAtemp_value(), (int) gtempvmax * 10);
+	if (txreq_get_tx(txreqp) && gheatprot != 0 && hamradio_get_PAtemp_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
+	{
+		txreq_txerror(txreqp, "OVH");
+	}
+#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
+#if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX
+	if (txreq_get_tx(txreqp) && getactualdownpower(& txreqst0) == 0 && gswrprot != 0)
+	{
+		//PRINTF("1 gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower(& txreqst0) == 0, get_swr_cached(4 * SWRMIN));
+		if (get_swr_cached(4 * SWRMIN) >= (4 * SWRMIN))	// SWR >= 4.0
+		{
+			txreq_txerror(txreqp, "SWR");
+		}
+	}
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 	seq_txrequest(txreq_get_tx(txreqp));
 #endif /* WITHTX */
@@ -18944,11 +18942,20 @@ uint_fast8_t txreq_get_tx(const txreq_t * txreqp)
 {
 	return txreqp->state != TXREQST_RX;
 }
+
 /* переход на приём из-за ошибок (сброс всех запросов) */
-void txreq_txerror(txreq_t * txreqp)
+void txreq_txerror(txreq_t * txreqp, const char * label)
 {
-	// todo: сбросить edge detectors
+	bring_swr(label);
 	txreq_rx(txreqp);
+	// сбросить edge detectors
+	PLIST_ENTRY t;
+	for (t = txreqp->edgepins.Blink; t != & txreqp->edgepins; t = t->Blink)
+	{
+		edgepin_t * const p = CONTAINING_RECORD(t, edgepin_t, item);
+		p->posedge = 0;
+		p->negedge = 0;
+	}
 }
 
 void txreq_rx(txreq_t * txreqp)
@@ -19426,35 +19433,25 @@ static STTE_t hamradio_tune_step(void)
 		break;
 
 	case TUNERSTATE_2:
-		switch (auto_tune2())
-		{
-		case PHASE_ABORT:
-			tunerstate = TUNERSTATE_ABORTING;
-			break;
-		case PHASE_DONE:
-			tunerstate = TUNERSTATE_DONE;
-			break;
-		default:
-			// keep state
-			break;
-		}
+		auto_tune2();	// save to nvram
+		tunerstate = TUNERSTATE_DONE;
 		break;
 
 	case TUNERSTATE_ABORTING:
-		auto_tune3();
+		auto_tune3();	// restore tuner state from saved
 		txreq_rx(& txreqst0);
 		updateboard();
 		tunerstate = TUNERSTATE_0;
-		{
-			// прочистить очередь сообщений
-			for (;;)
-			{
-				uint_fast8_t kbch, kbready;
-				processmessages(& kbch, & kbready);
-				if (kbready == 0)
-					break;
-			}
-		}
+//		{
+//			// прочистить очередь сообщений
+//			for (;;)
+//			{
+//				uint_fast8_t kbch, kbready;
+//				processmessages(& kbch, & kbready);
+//				if (kbready == 0)
+//					break;
+//			}
+//		}
 		break;
 
 	case TUNERSTATE_DONE:
@@ -19565,6 +19562,10 @@ static void appspoolprocess(void * ctx)
 		/* произошло изменение режима прием/передача */
 		if (changedtx != 0)
 		{
+			if (gtx)
+			{
+				gtxtimer = 0;	/* начинаем отсчёт времени передачи */
+			}
 			updateboard();	/* полная перенастройка (как после смены режима) */
 			seq_ask_txstate(gtx);
 			//display2_needupdate();	// Обновление дисплея - всё, включая частоту

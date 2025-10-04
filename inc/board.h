@@ -459,7 +459,7 @@ uint_fast8_t txreq_gettxtone(const txreq_t * txreqp);	/* возвращаем н
 void txreq_set_mox(txreq_t * txreqp, uint_fast8_t v);
 void txreq_handle_ptt(txreq_t * txreqp, uint_fast8_t press, uint_fast8_t release, txreqst_t txstate);
 uint_fast8_t txreq_get_tx(const txreq_t * txreqp);
-void txreq_txerror(txreq_t * txreqp);	/* переход на приём из-за ошибок (сброс всех запросов) */
+void txreq_txerror(txreq_t * txreqp, const char * label);	/* переход на приём из-за ошибок (сброс всех запросов) */
 uint_fast8_t txreq_setmoxtune(txreq_t * txreqp, uint_fast8_t mox, uint_fast8_t tune);	// Установить режимы. Вернуть не-ноль если менялись
 void txreq_rx(txreq_t * txreqp);	// Установить режимы. Вернуть не-ноль если менялись
 uint_fast8_t txreq_gettxdata(const txreq_t * txreqp);

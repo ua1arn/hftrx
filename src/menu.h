@@ -2327,6 +2327,7 @@ static const struct menudef menutable [] =
 #endif /* WITHPOWERTRIM */
 #if WITHIF4DSP
 
+	& xgtxtot,			/* разрешённое время передачи */
 	& xgamdepth,		/* Глубина модуляции в АМ - 0..100% */
 	& xggaincwtx,		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 
