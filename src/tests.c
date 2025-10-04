@@ -10622,7 +10622,7 @@ void hightests(void)
 		hidparsertest();
 	}
 #endif
-#if 1 && WITHHDMITVHW
+#if 0 && WITHHDMITVHW
 	{
 		hardware_edid_test();
 	}
