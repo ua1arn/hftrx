@@ -156,8 +156,8 @@
 #regdef; AS_COMMAND             ; 0x18	; (WO) MMU command register for address space n
 #regdefr; AS_FAULTSTATUS        ; 0x1C	; (RO) MMU fault status register for address space n
 #regdefr; AS_FAULTADDRESS_LO    ; 0x20	; (RO) Fault Address for address space n, low word
-#regdef; AS_FAULTADDRESS_HI     ; 0x24	; (RO) Fault Address for address space n, high word
-#regdef; AS_STATUS              ; 0x28	; (RO) Status flags for address space n
+#regdefr; AS_FAULTADDRESS_HI     ; 0x24	; (RO) Fault Address for address space n, high word
+#regdefr; AS_STATUS              ; 0x28	; (RO) Status flags for address space n
 
 # Additional Bifrost AS registers
 

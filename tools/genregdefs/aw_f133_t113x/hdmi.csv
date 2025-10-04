@@ -9,14 +9,14 @@
 ## Taken from https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/develop/drivers/gpu/drm/bridge/dw-hdmi.h#L14
 
 ## Identification Registers 
-#regdef; HDMI_DESIGN_ID                          1 ; 0x0000 ; 
-#regdef; HDMI_REVISION_ID                        1 ; 0x0001 ;
-#regdef; HDMI_PRODUCT_ID0                        1 ; 0x0002 ;
-#regdef; HDMI_PRODUCT_ID1                        1 ; 0x0003 ;
-#regdef; HDMI_CONFIG0_ID                         1 ; 0x0004 ;
-#regdef; HDMI_CONFIG1_ID                         1 ; 0x0005 ;
-#regdef; HDMI_CONFIG2_ID                         1 ; 0x0006 ;
-#regdef; HDMI_CONFIG3_ID                         1 ; 0x0007 ;
+#regdefr; HDMI_DESIGN_ID                          1 ; 0x0000 ; 
+#regdefr; HDMI_REVISION_ID                        1 ; 0x0001 ;
+#regdefr; HDMI_PRODUCT_ID0                        1 ; 0x0002 ;
+#regdefr; HDMI_PRODUCT_ID1                        1 ; 0x0003 ;
+#regdefr; HDMI_CONFIG0_ID                         1 ; 0x0004 ;
+#regdefr; HDMI_CONFIG1_ID                         1 ; 0x0005 ;
+#regdefr; HDMI_CONFIG2_ID                         1 ; 0x0006 ;
+#regdefr; HDMI_CONFIG3_ID                         1 ; 0x0007 ;
 
 ## Interrupt Registers 
 #regdef; HDMI_IH_FC_STAT0                        1 ; 0x0100 ;

@@ -1682,8 +1682,8 @@ typedef struct GPU_MMU_Type
         __IO uint32_t AS_COMMAND;                     /*!< Offset 0x118 (WO) MMU command register for address space n */
         __I  uint32_t AS_FAULTSTATUS;                 /*!< Offset 0x11C (RO) MMU fault status register for address space n */
         __I  uint32_t AS_FAULTADDRESS_LO;             /*!< Offset 0x120 (RO) Fault Address for address space n, low word */
-        __IO uint32_t AS_FAULTADDRESS_HI;             /*!< Offset 0x124 (RO) Fault Address for address space n, high word */
-        __IO uint32_t AS_STATUS;                      /*!< Offset 0x128 (RO) Status flags for address space n */
+        __I  uint32_t AS_FAULTADDRESS_HI;             /*!< Offset 0x124 (RO) Fault Address for address space n, high word */
+        __I  uint32_t AS_STATUS;                      /*!< Offset 0x128 (RO) Status flags for address space n */
              RESERVED(0x02C[0x0030 - 0x002C], uint8_t)
         __IO uint32_t AS_TRANSCFG_LO;                 /*!< Offset 0x130 (RW) Translation table configuration for address space n, low word */
         __IO uint32_t AS_TRANSCFG_HI;                 /*!< Offset 0x134 (RW) Translation table configuration for address space n, high word */
@@ -1698,14 +1698,14 @@ typedef struct GPU_MMU_Type
 /*!< HDMI_TX  */
 typedef struct HDMI_TX_Type
 {
-    __IO uint8_t  HDMI_DESIGN_ID;                     /*!< Offset 0x000  */
-    __IO uint8_t  HDMI_REVISION_ID;                   /*!< Offset 0x001  */
-    __IO uint8_t  HDMI_PRODUCT_ID0;                   /*!< Offset 0x002  */
-    __IO uint8_t  HDMI_PRODUCT_ID1;                   /*!< Offset 0x003  */
-    __IO uint8_t  HDMI_CONFIG0_ID;                    /*!< Offset 0x004  */
-    __IO uint8_t  HDMI_CONFIG1_ID;                    /*!< Offset 0x005  */
-    __IO uint8_t  HDMI_CONFIG2_ID;                    /*!< Offset 0x006  */
-    __IO uint8_t  HDMI_CONFIG3_ID;                    /*!< Offset 0x007  */
+    __I  uint8_t  HDMI_DESIGN_ID;                     /*!< Offset 0x000  */
+    __I  uint8_t  HDMI_REVISION_ID;                   /*!< Offset 0x001  */
+    __I  uint8_t  HDMI_PRODUCT_ID0;                   /*!< Offset 0x002  */
+    __I  uint8_t  HDMI_PRODUCT_ID1;                   /*!< Offset 0x003  */
+    __I  uint8_t  HDMI_CONFIG0_ID;                    /*!< Offset 0x004  */
+    __I  uint8_t  HDMI_CONFIG1_ID;                    /*!< Offset 0x005  */
+    __I  uint8_t  HDMI_CONFIG2_ID;                    /*!< Offset 0x006  */
+    __I  uint8_t  HDMI_CONFIG3_ID;                    /*!< Offset 0x007  */
          RESERVED(0x008[0x0100 - 0x0008], uint8_t)
     __IO uint8_t  HDMI_IH_FC_STAT0;                   /*!< Offset 0x100  */
     __IO uint8_t  HDMI_IH_FC_STAT1;                   /*!< Offset 0x101  */

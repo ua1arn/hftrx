@@ -1724,14 +1724,14 @@ typedef struct HDMI_PHY_Type
 /*!< HDMI_TX  */
 typedef struct HDMI_TX_Type
 {
-    __IO uint8_t  HDMI_DESIGN_ID;                     /*!< Offset 0x000  */
-    __IO uint8_t  HDMI_REVISION_ID;                   /*!< Offset 0x001  */
-    __IO uint8_t  HDMI_PRODUCT_ID0;                   /*!< Offset 0x002  */
-    __IO uint8_t  HDMI_PRODUCT_ID1;                   /*!< Offset 0x003  */
-    __IO uint8_t  HDMI_CONFIG0_ID;                    /*!< Offset 0x004  */
-    __IO uint8_t  HDMI_CONFIG1_ID;                    /*!< Offset 0x005  */
-    __IO uint8_t  HDMI_CONFIG2_ID;                    /*!< Offset 0x006  */
-    __IO uint8_t  HDMI_CONFIG3_ID;                    /*!< Offset 0x007  */
+    __I  uint8_t  HDMI_DESIGN_ID;                     /*!< Offset 0x000  */
+    __I  uint8_t  HDMI_REVISION_ID;                   /*!< Offset 0x001  */
+    __I  uint8_t  HDMI_PRODUCT_ID0;                   /*!< Offset 0x002  */
+    __I  uint8_t  HDMI_PRODUCT_ID1;                   /*!< Offset 0x003  */
+    __I  uint8_t  HDMI_CONFIG0_ID;                    /*!< Offset 0x004  */
+    __I  uint8_t  HDMI_CONFIG1_ID;                    /*!< Offset 0x005  */
+    __I  uint8_t  HDMI_CONFIG2_ID;                    /*!< Offset 0x006  */
+    __I  uint8_t  HDMI_CONFIG3_ID;                    /*!< Offset 0x007  */
          RESERVED(0x008[0x0100 - 0x0008], uint8_t)
     __IO uint8_t  HDMI_IH_FC_STAT0;                   /*!< Offset 0x100  */
     __IO uint8_t  HDMI_IH_FC_STAT1;                   /*!< Offset 0x101  */
