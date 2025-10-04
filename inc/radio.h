@@ -435,11 +435,11 @@ uint_fast32_t getlfmfreq(void);
 
 /* подготовка работы задержек переключения приём-передача */
 void vox_initialize(void);
-void vox_enable(uint_fast8_t voxstate, uint_fast8_t vox_delay_tens);	/* разрешение (не-0) или запрещение (0) работы vox. */
 void vox_set_levels(uint_fast8_t level, uint_fast8_t alevel);	/* установить уровень срабатывания vox и anti-vox */
+uint_fast8_t vox_getptt(void);
 
-void seq_set_bkin_enable(uint_fast8_t bkinstate, uint_fast8_t bkin_delay_tens);	/* разрешение (не-0) или запрещение (0) работы параметры BREAK-IN. */
-void seq_set_cw_enable(uint_fast8_t state);	/* разрешение (не-0) или запрещение (0) работы qsk. означает работу CW */
+void seq_set_bkin_time(uint_fast8_t bkin_delay_tens);
+void seq_set_vox_time(uint_fast8_t vox_delay_tens);
 void seq_set_rgbeep(uint_fast8_t state);	/* разрешение (не-0) или запрещение (0) формирования roger beep */
 
 // Для управления трактом надо задать управляющие слова dsp/фппаратуры для следующих состояний:
@@ -520,7 +520,7 @@ void elkey_set_slope(uint_fast8_t slope);	// скорость уменьшени
 uint_fast8_t elkey_get_output(void);
 uint_fast8_t elkey_get_ptt(void);
 uint_fast8_t elkey_getnextcw(void);	// Получение символа для передачи (только верхний регистр)
-
+uint_fast8_t vox_getbkin(void);
 
 /* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
 // Параметр функции board_set_seqphase()
@@ -539,7 +539,7 @@ void seq_set_rxtxdelay(
 	uint_fast8_t pretxdelay
 	);
 // запрос из user-mode части программы на переход на передачу и для для tune.
-void seq_txrequest(uint_fast8_t tune, uint_fast8_t ptt);
+void seq_txrequest(uint_fast8_t ptt);
 
 /* процедура возвращает из сиквенсора запрос на переключение на передачу в основную программу */
 uint_fast8_t seq_get_txstate(void);

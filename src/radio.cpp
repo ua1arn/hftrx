@@ -3940,7 +3940,7 @@ struct nvmap
 	#endif /* WITHVOX */
 
 	#if WITHELKEY
-		uint8_t bkinenable;	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
+		uint8_t gbkinenable;	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
 	#endif /* WITHELKEY */
 
 	uint8_t gtxgate;	/* разрешение предусилителя */
@@ -5528,7 +5528,7 @@ enum
 	#endif /* WITHPACLASSA */
 
 	#if WITHELKEY
-		static uint_fast8_t bkinenable = 1;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
+		static uint_fast8_t gbkinenable = 1;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
 		static uint_fast8_t bkindelay = 20;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
 	#endif /* WITHELKEY */
 
@@ -5549,7 +5549,7 @@ enum
 	#endif
 
 #else /* WITHTX */
-	static const uint_fast8_t bkinenable = 0;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
+	static const uint_fast8_t gbkinenable = 0;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
 	static const uint_fast8_t gvoxenable = 0;	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
 	static const uint_fast8_t bkindelay = 80;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
 #endif /* WITHTX */
@@ -5667,10 +5667,10 @@ enum
 		QLABEL("BREAK-IN"), 8, 3, RJ_ON,	ISTEP1,	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
 		ITEM_VALUE,
 		0, 1,
-		OFFSETOF(struct nvmap, bkinenable),
+		OFFSETOF(struct nvmap, gbkinenable),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
-		& bkinenable,
+		& gbkinenable,
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
@@ -12187,21 +12187,13 @@ updateboard_noui(
 						param_getvalue(& xgctsslevel) : 0);	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 			#endif /* WITHSUBTONES */
 			#if WITHVOX
-				vox_enable(gvoxenable && getmodetempl(txsubmode)->vox, voxdelay);		/* разрешение голосового управления переходом на передачу */
+				seq_set_vox_time(voxdelay);		/* разрешение голосового управления переходом на передачу */
 				vox_set_levels(gvoxlevel, gavoxlevel);		/* установка параметров vox */
 			#endif /* WITHVOX */
 			board_set_mikemute(gmuteall || getactualtune() || getmodetempl(txsubmode)->mute);	/* отключить микрофонный усилитель */
 			seq_set_txgate(pamodetempl->txgfva, pamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
 			board_set_txlevel(getactualtxboard());	/* BOARDPOWERMIN..BOARDPOWERMAX */
 
-			// установка параметров Speech processor
-			//board_speech_set_mode(speechmode);
-			//board_speech_set_width(speechwidth);
-			#if WITHELKEY
-				seq_set_cw_enable(getmodetempl(txsubmode)->wbkin || (getmodetempl(txsubmode)->abkin && gcwssbtx));	/* разрешение передачи CW */
-			#else /* WITHELKEY */
-				seq_set_cw_enable(0);	/* Неразрешение передачи CW */
-			#endif /* WITHELKEY */
 		#endif /* WITHTX */
 
 		/* Этот блок (установка опорной частоты DDS) вызывать до настроек частот */
@@ -12279,7 +12271,7 @@ updateboard_noui(
 			elkey_set_format(param_getvalue(& xgdashratio), param_getvalue(& xgspaceratio));	/* соотношение тире к точке (в десятках процентов) */
 			elkey_set_mode(elkeymodes [param_getvalue(& xgelkeymode)].code, elkeyreverse);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 		#if WITHTX && WITHELKEY
-			seq_set_bkin_enable(bkinenable, bkindelay);			/* параметры BREAK-IN */
+			seq_set_bkin_time(bkindelay);			/* параметры BREAK-IN */
 			/*seq_rgbeep(0); */								/* формирование roger beep */
 		#endif /* WITHTX && WITHELKEY */
 	#endif /* WITHELKEY */
@@ -12559,14 +12551,14 @@ void updateboard_freq(void)
 
 void uif_key_bkintoggle(void)
 {
-	bkinenable = calc_next(bkinenable, 0, 1);
-	save_i8(OFFSETOF(struct nvmap, bkinenable), bkinenable);
+	gbkinenable = calc_next(gbkinenable, 0, 1);
+	save_i8(OFFSETOF(struct nvmap, gbkinenable), gbkinenable);
 	updateboard();
 }
 
 uint_fast8_t hamradio_get_bkin_value(void)
 {
-	return bkinenable;
+	return gbkinenable;
 }
 
 static IRQLSPINLOCK_t lockcwmsg = IRQLSPINLOCK_INIT;
@@ -18772,7 +18764,7 @@ void txreq_scaninputs(txreq_t * txreqp)
 	{
 		PLIST_ENTRY tnext = t->Blink;	/* текущий элемент может быть удалён из списка */
 		edgepin_t * const p = CONTAINING_RECORD(t, edgepin_t, item);
-		const uint_fast8_t f = p->getpin(p->ctx);
+		const uint_fast8_t f = p->getpin();
 		if (f)
 		{
 			if (p->prevstate == 0)
@@ -18802,12 +18794,11 @@ static void dpc_0p1_s_timer_fn(void * ctx)
 	looptests();		// Периодически вызывается в главном цикле - тесты
 }
 
-void edgepin_initialize(LIST_ENTRY * list, edgepin_t * egp, uint_fast8_t (* fn)(void *), void * ctx)
+void edgepin_initialize(LIST_ENTRY * list, edgepin_t * egp, uint_fast8_t (* fn)(void))
 {
 	egp->getpin = fn;
-	egp->ctx = ctx;
 	//egp->outstate = 0;
-	egp->prevstate = fn(ctx);
+	egp->prevstate = fn();
 	egp->posedge = 0;
 	egp->negedge = 0;
 
@@ -18825,40 +18816,18 @@ uint_fast8_t edgepin_getoutstate(edgepin_t * egp, uint_fast8_t * negedgep)
 	return f;
 }
 
-
-uint_fast8_t checkmoxptt(void * ctx)
+// Зависящий от режима запрос на передачу
+// break-in, vox
+static uint_fast8_t modetxrequest(void)
 {
-	return 0;//txreq_get_tx(& txreqst0);	// с клавиатуры
-}
+	const uint_fast8_t bi = getbankindex_tx(1);		// TX bankindex
+	const uint_fast8_t submode = getsubmode(bi);	// какая модуляция в режиме передачи
+	const struct modetempl * const pmodet = getmodetempl(submode);
+	if (gbkinenable && pmodet->txcw && (pmodet->wbkin || (pmodet->abkin && gcwssbtx)) && vox_getbkin())
+		return 1;
+	if (gvoxenable && pmodet->vox && vox_getptt())
+		return 1;
 
-uint_fast8_t checkhandptt(void * ctx)
-{
-	return hardware_get_ptt();	// тангента, педаль;
-}
-
-
-uint_fast8_t checkexterntune(void * ctx)
-{
-	return hardware_get_tune();
-}
-
-uint_fast8_t checkcatptt(void * ctx)
-{
-	return 0;
-#if WITHCAT && WITHTX
-	return cat_get_hwptt();
-#else /* WITHCAT && WITHTX */
-	return 0;
-#endif /* WITHCAT && WITHTX */
-}
-
-uint_fast8_t checktunerptt(void * ctx)
-{
-	return 0;
-}
-
-uint_fast8_t checkelkeyptt(void * ctx)
-{
 	return 0;
 }
 
@@ -18866,12 +18835,10 @@ void txreq_initialize(txreq_t * txreqp)
 {
 	InitializeListHead(& txreqp->edgepins);
 
-	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpmoxptt, checkmoxptt, NULL);
-	edgepin_initialize(& txreqp->edgepins, & txreqp->edgphandptt, checkhandptt, NULL);
-	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpcatptt, checkcatptt, NULL);
-	edgepin_initialize(& txreqp->edgepins, & txreqp->edgptunerptt, checktunerptt, NULL);
-	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpelkeyptt, checkelkeyptt, NULL);
-	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpexttune, checkexterntune, NULL);
+	edgepin_initialize(& txreqp->edgepins, & txreqp->edgphandptt, hardware_get_ptt);// тангента, педаль;
+	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpcathwptt, cat_get_hwptt);	// CAT hw signals rts/dtr
+	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpelkeyptt, modetxrequest);	// break-in signals
+	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpexttune, hardware_get_tune);
 
 	txreqp->state = TXREQST_RX;
 }
@@ -18886,13 +18853,26 @@ void
 txreq_process(txreq_t * txreqp)
 {
 #if WITHTX
-	uint_fast8_t tunextrelease;
-	const uint_fast8_t tunextpress = edgepin_getoutstate(& txreqp->edgpexttune, & tunextrelease);
-	txreq_handle_tune(txreqp, tunextpress, tunextrelease);
-
-	uint_fast8_t moxrelease;
-	const uint_fast8_t moxpress = edgepin_getoutstate(& txreqp->edgphandptt, & moxrelease);
-	txreq_handle_ptt(txreqp, moxpress, moxrelease);
+	{
+		uint_fast8_t tunextrelease;
+		const uint_fast8_t tunextpress = edgepin_getoutstate(& txreqp->edgpexttune, & tunextrelease);
+		txreq_handle_ptt(txreqp, tunextpress, tunextrelease, TXREQST_TXTONE);
+	}
+	{
+		uint_fast8_t moxrelease;
+		const uint_fast8_t moxpress = edgepin_getoutstate(& txreqp->edgphandptt, & moxrelease);
+		txreq_handle_ptt(txreqp, moxpress, moxrelease, TXREQST_TX);
+	}
+	{
+		uint_fast8_t cathwpttrelease;
+		const uint_fast8_t cathwpttpress = edgepin_getoutstate(& txreqp->edgpcathwptt, & cathwpttrelease);
+		txreq_handle_ptt(txreqp, cathwpttpress, cathwpttrelease, TXREQST_TX);
+	}
+	{
+		uint_fast8_t elkeypttrelease;
+		const uint_fast8_t elkeypttpress = edgepin_getoutstate(& txreqp->edgpelkeyptt, & elkeypttrelease);
+		txreq_handle_ptt(txreqp, elkeypttpress, elkeypttrelease, TXREQST_TX);
+	}
 
 #if WITHSENDWAV
 	if (isplayfile())
@@ -18923,7 +18903,7 @@ txreq_process(txreq_t * txreqp)
 		txreq_rx(txreqp);	/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
 	}
 
-	seq_txrequest(txreqp->state == TXREQST_TXTONE || txreqp->state == TXREQST_TXAUTOTUNE, txreq_get_tx(txreqp));
+	seq_txrequest(txreq_get_tx(txreqp));
 #endif /* WITHTX */
 }
 
@@ -18952,20 +18932,12 @@ void txreq_set_mox(txreq_t * txreqp, uint_fast8_t v)
 	txreqp->state = v ? TXREQST_TX : txreqp->state;
 }
 
-void txreq_handle_ptt(txreq_t * txreqp, uint_fast8_t press, uint_fast8_t release)
+void txreq_handle_ptt(txreq_t * txreqp, uint_fast8_t press, uint_fast8_t release, txreqst_t txstate)
 {
 	if (release)
 		txreqp->state = TXREQST_RX;
 	else if (press)
-		txreqp->state = TXREQST_TX;
-}
-
-void txreq_handle_tune(txreq_t * txreqp, uint_fast8_t press, uint_fast8_t release)
-{
-	if (release)
-		txreqp->state = TXREQST_RX;
-	else if (press)
-		txreqp->state = TXREQST_TXTONE;
+		txreqp->state = txstate;
 }
 
 uint_fast8_t txreq_get_tx(const txreq_t * txreqp)

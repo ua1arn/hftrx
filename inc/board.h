@@ -417,11 +417,10 @@ typedef struct edgepin_tag
 	uint8_t prevstate;
 	uint8_t posedge;
 	uint8_t negedge;
-	void * ctx;	/* контестный указатель, с которым вызывается функция проверуи состояния источника */
-	uint_fast8_t (* getpin)(void * ctx);
+	uint_fast8_t (* getpin)(void);
 } edgepin_t;
 
-void edgepin_initialize(edgepin_t * egp, uint_fast8_t (* fn)(void *), void * ctx);
+void edgepin_initialize(LIST_ENTRY * list, edgepin_t * egp, uint_fast8_t (* fn)(void));
 uint_fast8_t edgepin_getoutstate(edgepin_t * egp, uint_fast8_t * negedgep);
 
 typedef enum txreqst_values
@@ -440,10 +439,8 @@ typedef struct txreq_tag
 
 	LIST_ENTRY edgepins;
 
-	edgepin_t edgpmoxptt;
 	edgepin_t edgphandptt;
-	edgepin_t edgpcatptt;
-	edgepin_t edgptunerptt;
+	edgepin_t edgpcathwptt;
 	edgepin_t edgpelkeyptt;
 	edgepin_t edgpexttune;
 
@@ -460,8 +457,7 @@ uint_fast8_t txreq_getreqautotune(const txreq_t * txreqp);
 void txreq_settxtone(txreq_t * txreqp, uint_fast8_t v);
 uint_fast8_t txreq_gettxtone(const txreq_t * txreqp);	/* возвращаем не-0, если есть запрос на tune от пользователя или CAT */
 void txreq_set_mox(txreq_t * txreqp, uint_fast8_t v);
-void txreq_handle_ptt(txreq_t * txreqp, uint_fast8_t press, uint_fast8_t release);
-void txreq_handle_tune(txreq_t * txreqp, uint_fast8_t press, uint_fast8_t release);
+void txreq_handle_ptt(txreq_t * txreqp, uint_fast8_t press, uint_fast8_t release, txreqst_t txstate);
 uint_fast8_t txreq_get_tx(const txreq_t * txreqp);
 void txreq_txerror(txreq_t * txreqp);	/* переход на приём из-за ошибок (сброс всех запросов) */
 uint_fast8_t txreq_setmoxtune(txreq_t * txreqp, uint_fast8_t mox, uint_fast8_t tune);	// Установить режимы. Вернуть не-ноль если менялись

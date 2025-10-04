@@ -11,6 +11,7 @@
 #include "hardware.h"
 #include "formats.h"	// for debug prints
 #include "board.h"
+#include <atomic>
 
 static ticker_t seqticker;
 static adcdone_t voxoribet;
@@ -90,59 +91,39 @@ static const char * const seqnames [SEQST_MAX] =
 // так как максимальная задержка VOX - 2.5 секунды (500 тиков),
 // и максимальная задержка QSK - 1.6 секунды (320 тиков).
 
-static uint_fast16_t bkin_delay;	/* задержка отпускания qsk в тиках (смотри TICKS_FREQUENCY) */
-static uint_fast16_t vox_delay;	/* задержка отпускания vox в тиках (смотри TICKS_FREQUENCY) */
+static	uint_fast32_t bkin_delay;	/* задержка отпускания qsk в тиках (смотри TICKS_FREQUENCY) */
+static 	uint_fast32_t vox_delay;	/* задержка отпускания vox в тиках (смотри TICKS_FREQUENCY) */
 
 
-static uint_fast16_t bkin_count;
-static uint_fast16_t vox_count;
+static std::atomic<uint_fast32_t> bkin_count;
+static std::atomic<uint_fast32_t> vox_count;
 
 #if WITHVOX
 static uint_fast8_t	vox_level;	/* уровень срабатывания VOX */
 static uint_fast8_t	avox_level;	/* уровень срабатывания anti-VOX */
 #endif /* WITHVOX */
 
-static uint_fast8_t	seq_cwenable;		/* */
-static uint_fast8_t	seq_voxenable;		/* */
-static uint_fast8_t	seq_bkinenable;		/* */
-static uint_fast8_t	seq_rgbeep;			/* разрешение формирование roger beep */
+static std::atomic<uint_fast32_t>	seq_rgbeep;			/* разрешение формирование roger beep */
 //static uint_fast8_t	seq_rgbeeptype;		/* вид roger beep */
 
 // sequenser parameers
-static uint_fast8_t rxtxticks;
-static uint_fast8_t txrxticks;
-static uint_fast8_t pretxticks;	// время выключения тракта RX в слуаче совмещённого тракта перед коммутацией на передачу.
-static uint_fast16_t rgbeepticks;	// время формирование roger beep
+static uint_fast32_t rxtxticks;
+static uint_fast32_t txrxticks;
+static uint_fast32_t pretxticks;	// время выключения тракта RX в слуаче совмещённого тракта перед коммутацией на передачу.
+static uint_fast32_t rgbeepticks;	// время формирование roger beep
 
-static /* volatile */ uint_fast8_t exttunereq;	// запрос на tune от пользовательской программы
-static /* volatile */ uint_fast8_t ptt;	// запрос на передачу от пользовательской программы
-static /* volatile */ uint_fast8_t exttunereq_irq;	// запрос на tune от system программы
-static /* volatile */ uint_fast8_t ptt_irq;	// запрос на передачу от system программы
+static std::atomic<uint_fast32_t> ptt;	// запрос на передачу от пользовательской программы
 static /* volatile */ uint_fast8_t usertxstate;	/* 0 - периферия находимся в состоянии приёма, иначе - в состоянии передачи */
 
-static volatile uint_fast8_t seqstate;
-static volatile uint_fast8_t seqpushtime;	// Возможные количства "тиков" на передачу и на приём
+static std::atomic<uint_fast32_t> seqstate;
+static uint_fast32_t seqpushtime;	// Возможные количства "тиков" на передачу и на приём
 static IRQLSPINLOCK_t seqlock = IRQLSPINLOCK_INIT;
 
-
-static uint_fast8_t
-getstablev8(const volatile uint_fast8_t * p)
-{
-	uint_fast8_t v1 = * p;
-	uint_fast8_t v2;
-	do
-	{
-		v2 = v1;
-		v1 = * p;
-	} while (v2 != v1);
-	return v1;
-
-}
 
 /* процедура возвращает из сиквенсора запрос на переключение на передачу в основную программу */
 uint_fast8_t seq_get_txstate(void)
 {
-	return seqtxstate [getstablev8(& seqstate)];
+	return seqtxstate [seqstate];
 }
 
 #if WITHVOX
@@ -181,15 +162,13 @@ static void vox_probe(uint_fast8_t vlevel, uint_fast8_t alevel)
 
 /* разрешение (не-0) или запрещение (0) работы vox. */
 void 
-vox_enable(
-	uint_fast8_t voxstate, 			/* разрешение (не-0) или запрещение (0) работы vox. */
+seq_set_vox_time(
 	uint_fast8_t vox_delay_tens	/* задержка отпускания vox в 1/100 секундных интервалах */
 	)
 {
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
 	vox_delay = SEQNTICKS(10 * vox_delay_tens);
-	seq_voxenable = voxstate;
 	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
 }
 
@@ -197,27 +176,13 @@ vox_enable(
 
 /* разрешение (не-0) или запрещение (0) работы BREAK-IN. */
 void 
-seq_set_bkin_enable(
-	uint_fast8_t bkinstate, 			/* разрешение (не-0) или запрещение (0) работы BREAK-IN. */
+seq_set_bkin_time(
 	uint_fast8_t bkin_delay_tens	/* задержка отпускания break-in в 1/100 секундных интервалах */
 	)
 {
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
 	bkin_delay = SEQNTICKS(10 * bkin_delay_tens);
-	seq_bkinenable = bkinstate;
-	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
-}
-
-/* разрешение работы CW */
-void 
-seq_set_cw_enable(
-	uint_fast8_t state		/* разрешение (не-0) или запрещение (0) работы CW. */
-	)	
-{
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
-	seq_cwenable = state;
 	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
 }
 
@@ -245,6 +210,17 @@ vox_initialize(void)
 	//seq_voxenable = 0;
 	//seq_cwenable = 0;
 }
+
+uint_fast8_t vox_getptt(void)
+{
+	return vox_count != 0;
+}
+
+uint_fast8_t vox_getbkin(void)
+{
+	return bkin_count != 0;
+}
+
 
 ////////////////////////////////
 
@@ -342,32 +318,7 @@ static uint_fast8_t
 //NOINLINEAT
 seqhastxrequest(void)
 {
-	
-	if (exttunereq || exttunereq_irq)
-	{
-		// режим "настройка - включить несущую - или включить режим AM
-		return 1;
-	}
-	if (ptt || ptt_irq)
-	{
-		// педаль или через CAT
-		return 1;
-	}
-	
-	if (seq_cwenable)
-	{
-		// CW
-		return (bkin_count != 0);
-	}
-	else
-	{
-		// SSB, AM, FM
-		return seq_voxenable && vox_count != 0;
-	}
-
-	// причин оставаться в режиме передачи больше нет.
-	// выключаем если надо всё и переходим к приёму.
-	return 0;
+	return !! ptt;
 }
 
 // 
@@ -395,7 +346,7 @@ seq_spool_ticks(void * ctc)
 	//
 	const uint_fast8_t keyptt = elkey_get_ptt();	// а так же состояния ручной манипуляции, манипуляции от CAT...
 	const uint_fast8_t keydown = elkey_get_output();	// а так же состояния ручной манипуляции, манипуляции от CAT...
-	if ((keydown || keyptt) && seq_bkinenable && seq_cwenable)
+	if ((keydown || keyptt))
 	{
 		bkin_count = bkin_delay;
 	}
@@ -413,12 +364,7 @@ seq_spool_ticks(void * ctc)
 		-- vox_count;
 
 	/* В очередь всегда должно помещаться что-либо */
-	if (bkin_count && seq_cwenable)
-		keyqueuein(keydown);	// В режиме break-in: поместить нажатие в очередь FIFO
-	else if (seq_cwenable && seq_get_txstate())
-		keyqueuein(keydown);	// В режиме ручного перехода на передачу: поместить нажатие в очередь FIFO
-	else
-		keyqueuein(0);
+	keyqueuein(keydown);	// В режиме break-in: поместить нажатие в очередь FIFO
 
 	const uint_fast8_t keydowndly = keyqueueout();
 	/* переходы по состояниям сиквенсора, в которых отсчитываются тики системного таймера */
@@ -631,14 +577,10 @@ void seq_purge(void)
 }
 
 // запрос из user-mode части программы на переход на передачу для tune.
-void seq_txrequest(uint_fast8_t tune, uint_fast8_t aptt)
+void seq_txrequest(uint_fast8_t aptt)
 {
 	//PRINTF("seq_txrequest: tune=%d, aptt=%d\n", (int) tune, (int) aptt);
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
-	exttunereq = tune;
 	ptt = aptt;
-	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
 }
 
 /* подтверждение от user-mode программы о том, что смена режима приём-передача осуществлена */
