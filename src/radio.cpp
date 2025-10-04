@@ -6665,14 +6665,6 @@ enum phases
 	PHASE_CONTINUE
 };
 
-// что удалось достичь в результате перебора
-typedef struct tunerstate
-{
-	uint8_t tunercap, tunerind, tunertype;
-	uint16_t swr;	// values 0..190: SWR = 1..20
-	adcvalholder_t f, r;
-} tus_t;
-
 static void board_set_tuner_group(void)
 {
 	//PRINTF(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
@@ -6773,7 +6765,104 @@ static uint_fast8_t tuneabort(void)
 	return 0;
 }
 
-#if 1
+static void storetuner(uint_fast8_t bg, uint_fast8_t ant)
+{
+	PRINTF("storetuner: L=%u,C=%u,T=%u\n", tunerind, tunercap, tunertype);
+	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunercap), tunercap);
+	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerind), tunerind);
+	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunertype), tunertype);
+	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerwork), tunerwork);
+}
+
+static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
+{
+	tunercap = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunercap), CMIN, CMAX, tunercap);
+	tunerind = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerind), LMIN, LMAX, tunerind);
+	tunertype = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
+	tunerwork = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerwork), 0, 1, 0);	// в новых диапазонах - тоюнер не включаем по умолчанию
+}
+
+#if WITHAUTOTUNER_N7DDCALGO
+
+void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type)
+{
+	tunerind = inductors;
+	tunercap = capcitors;
+	tunertype = type;
+
+	updateboard_tuner();
+	local_delay_ms(gtunerdelay);
+}
+
+static uint_fast8_t tuner_bg;
+static uint_fast8_t tuner_ant;
+
+
+static void auto_tune0_init(void)
+{
+	const uint_fast8_t tx = 1;
+	const uint_fast8_t bi = getbankindex_tx(tx);
+	const uint_fast32_t freq = gfreqs [bi];
+	tuner_bg = getfreqbandgroup(freq);
+	tuner_ant = geteffantenna(freq);
+}
+
+// Обновление изображения в процессе выполнения согласования
+// non-zero for cancel tuning process
+static int n7ddc_display(void * ctx)
+{
+	return tuneabort();
+}
+
+static enum phases auto_tune0(void)
+{
+	switch (n7ddc_tune(gn7ddclinearC, gn7ddclinearL, n7ddc_display, NULL))
+	{
+	default:
+	case N7DDCTUNE_ABORT:
+		txreq_rx(& txreqst0, "ABT");
+		return PHASE_ABORT; // восстановление будет в auto_tune3
+	case N7DDCTUNE_ERROR:
+		txreq_rx(& txreqst0, "ERR");
+		return PHASE_ABORT; // восстановление будет в auto_tune3
+	case N7DDCTUNE_OK:
+		return PHASE_DONE; // сохранение будет в auto_tune2
+	}
+}
+
+static void auto_tune1_init(void)
+{
+}
+
+static enum phases auto_tune1(void)
+{
+	return PHASE_DONE;
+}
+
+static void auto_tune2_init(void)
+{
+}
+
+// save to nvram
+static void auto_tune2(void)
+{
+	storetuner(tuner_bg, tuner_ant);
+}
+
+#else /* WITHAUTOTUNER_N7DDCALGO */
+
+
+// что удалось достичь в результате перебора
+typedef struct tunerstate
+{
+	uint8_t tunercap, tunerind, tunertype;
+	uint16_t swr;	// values 0..190: SWR = 1..20
+	adcvalholder_t f, r;
+} tus_t;
+
+static uint_fast8_t tuner_bg;
+static uint_fast8_t tuner_ant;
+static tus_t tunerstatuses [KSCH_COUNT];
 
 static void scanminLk_init(void)
 {
@@ -6867,98 +6956,6 @@ static uint_fast8_t findbestswr(const tus_t * v, uint_fast8_t n)
 	return best;
 }
 
-#endif /* */
-
-static void storetuner(uint_fast8_t bg, uint_fast8_t ant)
-{
-	PRINTF("storetuner: L=%u,C=%u,T=%u\n", tunerind, tunercap, tunertype);
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunercap), tunercap);
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerind), tunerind);
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunertype), tunertype);
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerwork), tunerwork);
-}
-
-static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
-{
-	tunercap = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunercap), CMIN, CMAX, tunercap);
-	tunerind = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerind), LMIN, LMAX, tunerind);
-	tunertype = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
-	tunerwork = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerwork), 0, 1, 0);	// в новых диапазонах - тоюнер не включаем по умолчанию
-}
-
-#if WITHAUTOTUNER_N7DDCALGO
-
-void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type)
-{
-	tunerind = inductors;
-	tunercap = capcitors;
-	tunertype = type;
-
-	updateboard_tuner();
-	local_delay_ms(gtunerdelay);
-}
-
-static uint_fast8_t tuner_bg;
-static uint_fast8_t tuner_ant;
-
-
-static void auto_tune0_init(void)
-{
-	const uint_fast8_t tx = 1;
-	const uint_fast8_t bi = getbankindex_tx(tx);
-	const uint_fast32_t freq = gfreqs [bi];
-	tuner_bg = getfreqbandgroup(freq);
-	tuner_ant = geteffantenna(freq);
-}
-
-// Обновление изображения в процессе выполнения согласования
-// non-zero for cancel tuning process
-static int n7ddc_display(void * ctx)
-{
-	return tuneabort();
-}
-
-static enum phases auto_tune0(void)
-{
-	switch (n7ddc_tune(gn7ddclinearC, gn7ddclinearL, n7ddc_display, NULL))
-	{
-	default:
-	case N7DDCTUNE_ABORT:
-		txreq_rx(& txreqst0, "ABT");
-		return PHASE_ABORT; // восстановление будет в auto_tune3
-	case N7DDCTUNE_ERROR:
-		txreq_rx(& txreqst0, "ERR");
-		return PHASE_ABORT; // восстановление будет в auto_tune3
-	case N7DDCTUNE_OK:
-		return PHASE_DONE; // сохранение будет в auto_tune2
-	}
-}
-
-static void auto_tune1_init(void)
-{
-}
-
-static enum phases auto_tune1(void)
-{
-	return PHASE_DONE;
-}
-
-static void auto_tune2_init(void)
-{
-}
-
-// save to nvram
-static void auto_tune2(void)
-{
-	storetuner(tuner_bg, tuner_ant);
-}
-
-#else /* WITHAUTOTUNER_N7DDCALGO */
-
-static uint_fast8_t tuner_bg;
-static uint_fast8_t tuner_ant;
-static tus_t tunerstatuses [KSCH_COUNT];
-
 static void auto_tune0_init(void)
 {
 }
@@ -7051,7 +7048,7 @@ static void auto_tune2_init(void)
 static void auto_tune2(void)
 {
 	if (scanminCk(& tunerstatuses [tuner_cshindex]) != 0)
-		return PHASE_ABORT; //goto aborted;
+		return;// PHASE_ABORT; //goto aborted;
 	printtunerstate("Selected 2", tunerstatuses [tuner_cshindex].swr, tunerstatuses [tuner_cshindex].r, tunerstatuses [tuner_cshindex].f);
 	// Устанавливаем аппаратуру в состояние при лучшем результате
 	tunertype = tunerstatuses [tuner_cshindex].tunertype;
