@@ -428,8 +428,8 @@
 	//#define WITHANTSELECT	1	/* Управление переключением антенн */
 
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
-	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
-	#define WITHHEATPROT 0			/* ОТЛАДКА - отключенна защит по перегреву */
+//	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
+//	#define WITHHEATPROT 0			/* ОТЛАДКА - отключенна защит по перегреву */
 
 	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */

@@ -6665,6 +6665,9 @@ enum phases
 	PHASE_CONTINUE
 };
 
+static uint_fast8_t tuner_bg;
+static uint_fast8_t tuner_ant;
+
 static void board_set_tuner_group(void)
 {
 	//PRINTF(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
@@ -6794,9 +6797,6 @@ void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type)
 	local_delay_ms(gtunerdelay);
 }
 
-static uint_fast8_t tuner_bg;
-static uint_fast8_t tuner_ant;
-
 
 static void auto_tune0_init(void)
 {
@@ -6860,8 +6860,6 @@ typedef struct tunerstate
 	adcvalholder_t f, r;
 } tus_t;
 
-static uint_fast8_t tuner_bg;
-static uint_fast8_t tuner_ant;
 static tus_t tunerstatuses [KSCH_COUNT];
 
 static void scanminLk_init(void)
