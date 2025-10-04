@@ -422,7 +422,6 @@ typedef struct edgepin_tag
 } edgepin_t;
 
 void edgepin_initialize(LIST_ENTRY * list, edgepin_t * egp, uint_fast8_t (* fn)(void));
-uint_fast8_t edgepin_getoutstate(edgepin_t * egp, uint_fast8_t * negedgep);
 
 typedef enum txreqst_values
 {
@@ -437,16 +436,13 @@ typedef enum txreqst_values
 
 typedef struct txreq_tag
 {
-
-	LIST_ENTRY edgepins;
-
-	edgepin_t edgphandptt;
-	edgepin_t edgpcathwptt;
-	edgepin_t edgpelkeyptt;
-	edgepin_t edgpexttune;
+	LIST_ENTRY edgepins;	/* писок входов, для которых отслеживается состояние */
+	edgepin_t edgphandptt;	// тангента/педаль
+	edgepin_t edgpcathwptt;	// CAT rts/dtr
+	edgepin_t edgpelkeyptt;	// ELKEY activity
+	edgepin_t edgpexttune;	// внешний запрос на выдачу несущей
 
 	txreqst_t state;
-
 } txreq_t;
 
 void txreq_initialize(txreq_t * txreqp);
@@ -454,16 +450,14 @@ void txreq_process(txreq_t * txreqp);		/* Установка сиквенсор�
 
 void txreq_setreqautotune(txreq_t * txreqp, uint_fast8_t v);
 uint_fast8_t txreq_getreqautotune(const txreq_t * txreqp);
-void txreq_settxtone(txreq_t * txreqp, uint_fast8_t v);
+void txreq_settxtone(txreq_t * txreqp);
 uint_fast8_t txreq_gettxtone(const txreq_t * txreqp);	/* возвращаем не-0, если есть запрос на tune от пользователя или CAT */
-void txreq_set_mox(txreq_t * txreqp, uint_fast8_t v);
-void txreq_handle_ptt(txreq_t * txreqp, uint_fast8_t press, uint_fast8_t release, txreqst_t txstate);
+void txreq_set_mox(txreq_t * txreqp);
 uint_fast8_t txreq_get_tx(const txreq_t * txreqp);
-void txreq_txerror(txreq_t * txreqp, const char * label);	/* переход на приём из-за ошибок (сброс всех запросов) */
 uint_fast8_t txreq_setmoxtune(txreq_t * txreqp, uint_fast8_t mox, uint_fast8_t tune);	// Установить режимы. Вернуть не-ноль если менялись
-void txreq_rx(txreq_t * txreqp);	// Установить режимы. Вернуть не-ноль если менялись
+void txreq_rx(txreq_t * txreqp, const char * label);	/* переход на приём (сброс всех запросов) */
 uint_fast8_t txreq_gettxdata(const txreq_t * txreqp);
-void txreq_settxdata(txreq_t * txreqp, uint_fast8_t v);
+void txreq_settxdata(txreq_t * txreqp);
 
 //void txreq_keytune(txreq_t * txreqp);	/* обработка нажатия на запрос настройки тюнера */
 //void txreq_keymox(txreq_t * txreqp);	/* обработка нажатия на mox */
@@ -475,7 +469,7 @@ void nmeatuner_sendchar(void * ctx);							/* вызывается из обра
 
 void nmeagnss_parsechar(uint_fast8_t c);				/* USER-MODE обработчик */
 
-void nmeagnss_initialize(void);	/* сброс машины состояний парсера и инициализация последовательного пориа есои нужно */
+void nmeagnss_initialize(void);	/* сброс машины состояний парсера и инициализация последовательного порта есои нужно */
 void nmeagnss_onrxchar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
 void nmeagnss_rxoverflow(void);							/* вызывается из обработчика прерываний */
 void nmeagnss_sendchar(void * ctx);							/* вызывается из обработчика прерываний */

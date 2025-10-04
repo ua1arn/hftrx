@@ -6904,10 +6904,10 @@ static enum phases auto_tune0(void)
 	{
 	default:
 	case N7DDCTUNE_ABORT:
-		txreq_txerror(& txreqst0, "ABT");
+		txreq_rx(& txreqst0, "ABT");
 		return PHASE_ABORT; // восстановление будет в auto_tune3
 	case N7DDCTUNE_ERROR:
-		txreq_txerror(& txreqst0, "ERR");
+		txreq_rx(& txreqst0, "ERR");
 		return PHASE_ABORT; // восстановление будет в auto_tune3
 	case N7DDCTUNE_OK:
 		return PHASE_DONE; // сохранение будет в auto_tune2
@@ -13354,9 +13354,9 @@ static void
 uif_key_click(void)
 {
 	if (txreq_get_tx(& txreqst0))
-		txreq_rx(& txreqst0);
+		txreq_rx(& txreqst0, NULL);
 	else
-		txreq_set_mox(& txreqst0, 1);
+		txreq_set_mox(& txreqst0);
 }
 
 ///////////////////////////
@@ -13367,7 +13367,7 @@ uif_key_click(void)
 static void
 uif_key_tune(void)
 {
-	txreq_settxtone(& txreqst0, 1);
+	txreq_settxtone(& txreqst0);
 }
 
 #endif /* WITHTX */
@@ -13392,7 +13392,7 @@ uif_key_bypasstoggle(void)
 
 	if (tunerwork == 0)
 	{
-		txreq_rx(& txreqst0);	// сброс идущей настройки
+		txreq_rx(& txreqst0, NULL);	// сброс идущей настройки
 	}
 }
 
@@ -16171,13 +16171,13 @@ processcatmsg(
 			switch (v)
 			{
 			case 0:
-				txreq_set_mox(& txreqst0, 1);
+				txreq_set_mox(& txreqst0);
 				break;
 			case 1:
-				txreq_settxdata(& txreqst0, 1);
+				txreq_settxdata(& txreqst0);
 				break;
 			case 2:
-				txreq_settxtone(& txreqst0, 1);
+				txreq_settxtone(& txreqst0);
 				break;
 			}
 
@@ -16186,7 +16186,7 @@ processcatmsg(
 		}
 		else
 		{
-			txreq_set_mox(& txreqst0, 1);
+			txreq_set_mox(& txreqst0);
 			if (aistate != 0)
 				cat_answer_request(CAT_TX_INDEX);
 		}
@@ -16204,13 +16204,13 @@ processcatmsg(
 
 		if (cathasparam != 0)
 		{
-			txreq_rx(& txreqst0);
+			txreq_rx(& txreqst0, NULL);
 			if (aistate != 0)
 				cat_answer_request(CAT_RX_INDEX);	// POSSIBLE: ignore main/sub rx selection (0 - main. 1 - sub);
 		}
 		else
 		{
-			txreq_rx(& txreqst0);
+			txreq_rx(& txreqst0, NULL);
 			if (aistate != 0)
 				cat_answer_request(CAT_RX_INDEX);
 		}
@@ -18739,6 +18739,21 @@ processmainloopkeyboard(inputevent_t * ev)
 #endif /* WITHKEYBOARD */
 
 
+// Зависящий от режима запрос на передачу
+// break-in, vox
+static uint_fast8_t modetxrequest(void)
+{
+	const uint_fast8_t bi = getbankindex_tx(1);		// TX bankindex
+	const uint_fast8_t submode = getsubmode(bi);	// какая модуляция в режиме передачи
+	const struct modetempl * const pmodet = getmodetempl(submode);
+	if (gbkinenable && pmodet->txcw && (pmodet->wbkin || (pmodet->abkin && gcwssbtx)) && vox_getbkin())
+		return 1;
+	if (gvoxenable && pmodet->vox && vox_getptt())
+		return 1;
+
+	return 0;
+}
+
 /* проверка, есть ли хоть на одном из входов продетектированный запрос перехода на пережачу */
 void txreq_scaninputs(txreq_t * txreqp)
 {
@@ -18772,38 +18787,12 @@ void txreq_scaninputs(txreq_t * txreqp)
 void edgepin_initialize(LIST_ENTRY * list, edgepin_t * egp, uint_fast8_t (* fn)(void))
 {
 	egp->getpin = fn;
-	//egp->outstate = 0;
 	egp->prevstate = fn();
 	egp->posedge = 0;
 	egp->negedge = 0;
 	egp->req = 0;
 
 	InsertTailList(list, & egp->item);
-}
-
-uint_fast8_t edgepin_getoutstate(edgepin_t * egp, uint_fast8_t * negedgep)
-{
-	const uint_fast8_t f = egp->posedge;
-	if (negedgep)
-		* negedgep = egp->negedge;
-	egp->posedge = 0;
-	egp->negedge = 0;
-	return f;
-}
-
-// Зависящий от режима запрос на передачу
-// break-in, vox
-static uint_fast8_t modetxrequest(void)
-{
-	const uint_fast8_t bi = getbankindex_tx(1);		// TX bankindex
-	const uint_fast8_t submode = getsubmode(bi);	// какая модуляция в режиме передачи
-	const struct modetempl * const pmodet = getmodetempl(submode);
-	if (gbkinenable && pmodet->txcw && (pmodet->wbkin || (pmodet->abkin && gcwssbtx)) && vox_getbkin())
-		return 1;
-	if (gvoxenable && pmodet->vox && vox_getptt())
-		return 1;
-
-	return 0;
 }
 
 void txreq_initialize(txreq_t * txreqp)
@@ -18813,7 +18802,7 @@ void txreq_initialize(txreq_t * txreqp)
 	edgepin_initialize(& txreqp->edgepins, & txreqp->edgphandptt, hardware_get_ptt);// тангента, педаль;
 	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpcathwptt, cat_get_hwptt);	// CAT hw signals rts/dtr
 	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpelkeyptt, modetxrequest);	// break-in signals
-	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpexttune, hardware_get_tune);
+	edgepin_initialize(& txreqp->edgepins, & txreqp->edgpexttune, hardware_get_tune);	// внешний запрос на выдачу несущей
 
 	txreqp->state = TXREQST_RX;
 }
@@ -18824,37 +18813,36 @@ txreq_process(txreq_t * txreqp)
 {
 #if WITHTX
 	txreq_scaninputs(txreqp);
+	const uint_fast8_t txreq =
+			txreqp->edgphandptt.req ||
+			txreqp->edgpcathwptt.req ||
+			txreqp->edgpelkeyptt.req ||
+			0;
+	const uint_fast8_t tunereq =
+			txreqp->edgpexttune.req ||
+			0;
+	if (tunereq)
+		txreqp->state = TXREQST_TXTONE;
+	else if (txreq)
+		txreqp->state = TXREQST_TX;
+	else if (txreqp->edgphandptt.negedge)
 	{
-		uint_fast8_t tunextrelease;
-		const uint_fast8_t tunextpress = edgepin_getoutstate(& txreqp->edgpexttune, & tunextrelease);
-		txreq_handle_ptt(txreqp, tunextpress, tunextrelease, TXREQST_TXTONE);
+		txreqp->edgphandptt.negedge = 0;
+		txreqp->state = TXREQST_RX;
 	}
-	{
-		uint_fast8_t moxrelease;
-		const uint_fast8_t moxpress = edgepin_getoutstate(& txreqp->edgphandptt, & moxrelease);
-		txreq_handle_ptt(txreqp, moxpress, moxrelease, TXREQST_TX);
-	}
-	{
-		uint_fast8_t cathwpttrelease;
-		const uint_fast8_t cathwpttpress = edgepin_getoutstate(& txreqp->edgpcathwptt, & cathwpttrelease);
-		txreq_handle_ptt(txreqp, cathwpttpress, cathwpttrelease, TXREQST_TX);
-	}
-	{
-		uint_fast8_t elkeypttrelease;
-		const uint_fast8_t elkeypttpress = edgepin_getoutstate(& txreqp->edgpelkeyptt, & elkeypttrelease);
-		txreq_handle_ptt(txreqp, elkeypttpress, elkeypttrelease, TXREQST_TX);
-	}
+//	else
+//		txreqp->state = TXREQST_RX;
 
 #if WITHSENDWAV
 	if (isplayfile())
 	{
-		txreq_set_mox(txreqp, 1);
+		txreq_set_mox(txreqp);
 	}
 #endif /* WITHSENDWAV */
 #if WITHBEACON
 	if (beacon_get_ptt())
 	{
-		txreq_set_mox(txreqp, 1);
+		txreq_set_mox(txreqp);
 	}
 #endif	/* WITHCAT */
 #if WITHMODEM
@@ -18870,17 +18858,17 @@ txreq_process(txreq_t * txreqp)
 
 	if (txreq_get_tx(txreqp) && gtxtot != 0 && gtxtimer >= gtxtot)
 	{
-		txreq_txerror(txreqp, "TOT");
+		txreq_rx(txreqp, "TOT");
 	}
 	if (txreq_get_tx(txreqp) && hardware_get_txdisable())
 	{
-		txreq_txerror(txreqp, "DIS");
+		txreq_rx(txreqp, "DIS");
 	}
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_PAtemp_value(), (int) gtempvmax * 10);
 	if (txreq_get_tx(txreqp) && gheatprot != 0 && hamradio_get_PAtemp_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
 	{
-		txreq_txerror(txreqp, "OVH");
+		txreq_rx(txreqp, "OVH");
 	}
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 #if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX
@@ -18889,7 +18877,7 @@ txreq_process(txreq_t * txreqp)
 		//PRINTF("1 gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower(& txreqst0) == 0, get_swr_cached(4 * SWRMIN));
 		if (get_swr_cached(4 * SWRMIN) >= (4 * SWRMIN))	// SWR >= 4.0
 		{
-			txreq_txerror(txreqp, "SWR");
+			txreq_rx(txreqp, "SWR");
 		}
 	}
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
@@ -18920,9 +18908,9 @@ uint_fast8_t txreq_getreqautotune(const txreq_t * txreqp)
 	return txreqp->state == TXREQST_TXAUTOTUNE;
 }
 
-void txreq_settxtone(txreq_t * txreqp, uint_fast8_t v)
+void txreq_settxtone(txreq_t * txreqp)
 {
-	txreqp->state = v ? TXREQST_TXTONE : txreqp->state;
+	txreqp->state = TXREQST_TXTONE;
 }
 /* возвращаем не-0, если есть запрос на tune от пользователя или CAT */
 uint_fast8_t txreq_gettxtone(const txreq_t * txreqp)
@@ -18930,17 +18918,9 @@ uint_fast8_t txreq_gettxtone(const txreq_t * txreqp)
 	return txreqp->state == TXREQST_TXTONE;
 }
 
-void txreq_set_mox(txreq_t * txreqp, uint_fast8_t v)
+void txreq_set_mox(txreq_t * txreqp)
 {
-	txreqp->state = v ? TXREQST_TX : txreqp->state;
-}
-
-void txreq_handle_ptt(txreq_t * txreqp, uint_fast8_t press, uint_fast8_t release, txreqst_t txstate)
-{
-	if (release)
-		txreqp->state = TXREQST_RX;
-	else if (press)
-		txreqp->state = txstate;
+	txreqp->state = TXREQST_TX;
 }
 
 uint_fast8_t txreq_get_tx(const txreq_t * txreqp)
@@ -18948,11 +18928,12 @@ uint_fast8_t txreq_get_tx(const txreq_t * txreqp)
 	return txreqp->state != TXREQST_RX;
 }
 
-/* переход на приём из-за ошибок (сброс всех запросов) */
-void txreq_txerror(txreq_t * txreqp, const char * label)
+/* переход на приём (сброс всех запросов) */
+void txreq_rx(txreq_t * txreqp, const char * label)
 {
-	bring_swr(label);
-	txreq_rx(txreqp);
+	if (label)
+		bring_swr(label);
+	txreqp->state = TXREQST_RX;
 	// сбросить edge detectors
 	PLIST_ENTRY t;
 	for (t = txreqp->edgepins.Blink; t != & txreqp->edgepins; t = t->Blink)
@@ -18964,14 +18945,9 @@ void txreq_txerror(txreq_t * txreqp, const char * label)
 	}
 }
 
-void txreq_rx(txreq_t * txreqp)
+void txreq_settxdata(txreq_t * txreqp)
 {
-	txreqp->state = TXREQST_RX;
-}
-
-void txreq_settxdata(txreq_t * txreqp, uint_fast8_t v)
-{
-	txreqp->state = v ? TXREQST_TXDATA : TXREQST_RX;
+	txreqp->state = TXREQST_TXDATA;
 }
 uint_fast8_t txreq_gettxdata(const txreq_t * txreqp)
 {
@@ -18987,8 +18963,10 @@ uint_fast8_t txreq_setmoxtune(txreq_t * txreqp, uint_fast8_t mox, uint_fast8_t t
 	f = f || txreq_get_tx(txreqp) != mox;
 	f = f || txreq_gettxtone(txreqp) != tune;
 
-	txreq_set_mox(txreqp, mox);
-	txreq_settxtone(txreqp, tune);
+	if (mox)
+		txreq_set_mox(txreqp);
+	if (tune)
+		txreq_settxtone(txreqp);
 
 	return f;
 }
@@ -19453,7 +19431,7 @@ static STTE_t hamradio_tune_step(void)
 
 	case TUNERSTATE_ABORTING:
 		auto_tune3();	// restore tuner state from saved
-		txreq_rx(& txreqst0);
+		txreq_rx(& txreqst0, NULL);
 		updateboard();
 		tunerstate = TUNERSTATE_0;
 //		{
@@ -19469,7 +19447,7 @@ static STTE_t hamradio_tune_step(void)
 		break;
 
 	case TUNERSTATE_DONE:
-		txreq_rx(& txreqst0);
+		txreq_rx(& txreqst0, NULL);
 		updateboard();
 		tunerstate = TUNERSTATE_0;
 		break;
@@ -19950,7 +19928,10 @@ void hamradio_set_afgain(uint_fast16_t v)
 
 void hamradio_set_tune(uint_fast8_t v)
 {
-	txreq_settxtone(& txreqst0, v != 0);
+	if (v)
+		txreq_settxtone(& txreqst0);
+	else
+		txreq_rx(& txreqst0, NULL);
 }
 
 #if WITHPOWERTRIM
