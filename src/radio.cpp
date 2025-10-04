@@ -6280,6 +6280,8 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		(- 30) + FSADCPOWEROFFSET10,	// для соответствия HDSDR мощность, соответствующая full scale от IF ADC
 		(- 230) + FSADCPOWEROFFSET10,	// с конвертором
 	};
+
+#endif /*  */
 	static const struct paramdefdef xgfsadcpower10 =
 	{
 		QLABEL("ADC FS"), 3 + WSIGNFLAG, 1, RJ_SIGNED,	ISTEP1,		/* Калиьровка S-метра - момент перегрузки */
@@ -6305,7 +6307,6 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
-#endif /*  */
 	static uint_fast8_t gmoniflag;		/* разрешение самопрослушивания */
 
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
