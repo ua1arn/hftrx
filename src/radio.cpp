@@ -12337,6 +12337,7 @@ updateboard_noui(
 		board_set_fsadcpower10(	/*	Мощность, соответствующая full scale от IF ADC */
 				param_getvalue(lo0side != LOCODE_INVALID ? & xgfsadcpower10xv : & xgfsadcpower10) +
 				gerflossdb10(lo0side != LOCODE_INVALID, gatt, gpamp));
+		display2_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 		#if WITHUSEDUALWATCH
 			board_set_mainsubrxmode(getactualmainsubrx());		// Левый/правый, A - main RX, B - sub RX
 		#endif /* WITHUSEDUALWATCH */
@@ -12378,7 +12379,7 @@ updateboard_noui(
 			board_set_bottomdb(param_getvalue(gtxloopback && gtx ? & xgbottomdbtx : & xgbottomdb));		/* нижний предел FFT */
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			display2_set_lvlgridstep(glvlgridstep);	/* Шаг сетки уровней в децибелах */
-			board_set_view_style(gviewstyle);			/* стиль отображения спектра и панорамы */
+			board_set_view_style(param_getvalue(& xgviewstyle));			/* стиль отображения спектра и панорамы */
 			board_set_view3dss_mark(gview3dss_mark);	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 			board_set_tx_loopback(gtxloopback && gtx);	/* включение спектроанализатора сигнала передачи */
 			board_set_afspeclow(gafspeclow);	// нижняя частота отображения спектроанализатора
@@ -12388,7 +12389,6 @@ updateboard_noui(
 			display2_set_filter_wfl(gwflbeta100);	/* beta - парамеры видеофильтра водопада */
 			display2_set_spectrumpart(gspectrumpart);	/* Часть отведенной под спектр высоты экрана 0..100 */
 		#endif /* (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
-		display2_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
 	#if WITHAFEQUALIZER
 		board_set_equalizer_rx(geqrx);
