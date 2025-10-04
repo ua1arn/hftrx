@@ -1543,10 +1543,10 @@ typedef struct GPU_CONTROL_Type
     __I  uint32_t AS_PRESENT;                         /*!< Offset 0x018 (RO) Address space slots present */
          RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
     __IO uint32_t GPU_IRQ_RAWSTAT;                    /*!< Offset 0x020 (RW) */
-    __IO uint32_t GPU_IRQ_CLEAR;                      /*!< Offset 0x024 (WO) */
+    __O  uint32_t GPU_IRQ_CLEAR;                      /*!< Offset 0x024 (WO) */
     __IO uint32_t GPU_IRQ_MASK;                       /*!< Offset 0x028 (RW) */
     __I  uint32_t GPU_IRQ_STATUS;                     /*!< Offset 0x02C (RO) */
-    __IO uint32_t GPU_COMMAND;                        /*!< Offset 0x030 (WO) */
+    __O  uint32_t GPU_COMMAND;                        /*!< Offset 0x030 (WO) */
     __I  uint32_t GPU_STATUS;                         /*!< Offset 0x034 (RO) */
          RESERVED(0x038[0x003C - 0x0038], uint8_t)
     __I  uint32_t GPU_FAULTSTATUS;                    /*!< Offset 0x03C (RO) GPU exception type and fault status */
@@ -1554,7 +1554,7 @@ typedef struct GPU_CONTROL_Type
     __I  uint32_t GPU_FAULTADDRESS_HI;                /*!< Offset 0x044 (RO) GPU exception fault address, high word */
     __IO uint32_t L2_CONFIG;                          /*!< Offset 0x048 (RW) Level 2 cache configuration */
          RESERVED(0x04C[0x0050 - 0x004C], uint8_t)
-    __IO uint32_t PWR_KEY;                            /*!< Offset 0x050 (WO) Power manager key register */
+    __O  uint32_t PWR_KEY;                            /*!< Offset 0x050 (WO) Power manager key register */
     __IO uint32_t PWR_OVERRIDE0;                      /*!< Offset 0x054 (RW) Power manager override settings */
     __IO uint32_t PWR_OVERRIDE1;                      /*!< Offset 0x058 (RW) Power manager override settings */
          RESERVED(0x05C[0x0090 - 0x005C], uint8_t)
@@ -1589,23 +1589,23 @@ typedef struct GPU_CONTROL_Type
     __I  uint32_t L2_READY_LO;                        /*!< Offset 0x160 (RO) Level 2 cache ready bitmap, low word */
     __I  uint32_t L2_READY_HI;                        /*!< Offset 0x164 (RO) Level 2 cache ready bitmap, high word */
          RESERVED(0x168[0x0180 - 0x0168], uint8_t)
-    __IO uint32_t SHADER_PWRON_LO;                    /*!< Offset 0x180 (WO) Shader core power on bitmap, low word */
-    __IO uint32_t SHADER_PWRON_HI;                    /*!< Offset 0x184 (WO) Shader core power on bitmap, high word */
+    __O  uint32_t SHADER_PWRON_LO;                    /*!< Offset 0x180 (WO) Shader core power on bitmap, low word */
+    __O  uint32_t SHADER_PWRON_HI;                    /*!< Offset 0x184 (WO) Shader core power on bitmap, high word */
          RESERVED(0x188[0x0190 - 0x0188], uint8_t)
-    __IO uint32_t TILER_PWRON_LO;                     /*!< Offset 0x190 (WO) Tiler core power on bitmap, low word */
-    __IO uint32_t TILER_PWRON_HI;                     /*!< Offset 0x194 (WO) Tiler core power on bitmap, high word */
+    __O  uint32_t TILER_PWRON_LO;                     /*!< Offset 0x190 (WO) Tiler core power on bitmap, low word */
+    __O  uint32_t TILER_PWRON_HI;                     /*!< Offset 0x194 (WO) Tiler core power on bitmap, high word */
          RESERVED(0x198[0x01A0 - 0x0198], uint8_t)
-    __IO uint32_t L2_PWRON_LO;                        /*!< Offset 0x1A0 (WO) Level 2 cache power on bitmap, low word */
-    __IO uint32_t L2_PWRON_HI;                        /*!< Offset 0x1A4 (WO) Level 2 cache power on bitmap, high word */
+    __O  uint32_t L2_PWRON_LO;                        /*!< Offset 0x1A0 (WO) Level 2 cache power on bitmap, low word */
+    __O  uint32_t L2_PWRON_HI;                        /*!< Offset 0x1A4 (WO) Level 2 cache power on bitmap, high word */
          RESERVED(0x1A8[0x01C0 - 0x01A8], uint8_t)
-    __IO uint32_t SHADER_PWROFF_LO;                   /*!< Offset 0x1C0 (WO) Shader core power off bitmap, low word */
-    __IO uint32_t SHADER_PWROFF_HI;                   /*!< Offset 0x1C4 (WO) Shader core power off bitmap, high word */
+    __O  uint32_t SHADER_PWROFF_LO;                   /*!< Offset 0x1C0 (WO) Shader core power off bitmap, low word */
+    __O  uint32_t SHADER_PWROFF_HI;                   /*!< Offset 0x1C4 (WO) Shader core power off bitmap, high word */
          RESERVED(0x1C8[0x01D0 - 0x01C8], uint8_t)
-    __IO uint32_t TILER_PWROFF_LO;                    /*!< Offset 0x1D0 (WO) Tiler core power off bitmap, low word */
-    __IO uint32_t TILER_PWROFF_HI;                    /*!< Offset 0x1D4 (WO) Tiler core power off bitmap, high word */
+    __O  uint32_t TILER_PWROFF_LO;                    /*!< Offset 0x1D0 (WO) Tiler core power off bitmap, low word */
+    __O  uint32_t TILER_PWROFF_HI;                    /*!< Offset 0x1D4 (WO) Tiler core power off bitmap, high word */
          RESERVED(0x1D8[0x01E0 - 0x01D8], uint8_t)
-    __IO uint32_t L2_PWROFF_LO;                       /*!< Offset 0x1E0 (WO) Level 2 cache power off bitmap, low word */
-    __IO uint32_t L2_PWROFF_HI;                       /*!< Offset 0x1E4 (WO) Level 2 cache power off bitmap, high word */
+    __O  uint32_t L2_PWROFF_LO;                       /*!< Offset 0x1E0 (WO) Level 2 cache power off bitmap, low word */
+    __O  uint32_t L2_PWROFF_HI;                       /*!< Offset 0x1E4 (WO) Level 2 cache power off bitmap, high word */
          RESERVED(0x1E8[0x0200 - 0x01E8], uint8_t)
     __I  uint32_t SHADER_PWRTRANS_LO;                 /*!< Offset 0x200 (RO) Shader core power transition bitmap, low word */
     __I  uint32_t SHADER_PWRTRANS_HI;                 /*!< Offset 0x204 (RO) Shader core power transition bitmap, high word */
@@ -1679,7 +1679,7 @@ typedef struct GPU_MMU_Type
         __IO uint32_t AS_MEMATTR_HI;                  /*!< Offset 0x10C (RW) Memory attributes for address space n, high word. */
         __IO uint32_t AS_LOCKADDR_LO;                 /*!< Offset 0x110 (RW) Lock region address for address space n, low word */
         __IO uint32_t AS_LOCKADDR_HI;                 /*!< Offset 0x114 (RW) Lock region address for address space n, high word */
-        __IO uint32_t AS_COMMAND;                     /*!< Offset 0x118 (WO) MMU command register for address space n */
+        __O  uint32_t AS_COMMAND;                     /*!< Offset 0x118 (WO) MMU command register for address space n */
         __I  uint32_t AS_FAULTSTATUS;                 /*!< Offset 0x11C (RO) MMU fault status register for address space n */
         __I  uint32_t AS_FAULTADDRESS_LO;             /*!< Offset 0x120 (RO) Fault Address for address space n, low word */
         __I  uint32_t AS_FAULTADDRESS_HI;             /*!< Offset 0x124 (RO) Fault Address for address space n, high word */
