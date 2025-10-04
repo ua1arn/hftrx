@@ -5531,6 +5531,8 @@ enum
 	#if WITHELKEY
 		static uint_fast8_t gbkinenable = 1;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
 		static uint_fast8_t bkindelay = 20;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
+	#else /* WITHELKEY */
+		enum { gbkinenable = 0 };
 	#endif /* WITHELKEY */
 
 #if TXPATH_BIT_GATE_RX && CTLSTYLE_SW2011ALL
@@ -5717,9 +5719,12 @@ enum
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
+	#else /* WITHTX && WITHIF4DSP */
+	enum { gcwssbtx = 0 };
 #endif /* WITHTX && WITHIF4DSP */
 
 #else
+	enum { gcwssbtx = 0 };
 	//static const uint_fast8_t elkeymode = 2;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 	//static const uint_fast8_t elkeyslope = 0;		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 #endif
@@ -19562,10 +19567,12 @@ static void appspoolprocess(void * ctx)
 		/* произошло изменение режима прием/передача */
 		if (changedtx != 0)
 		{
+#if WITHTX
 			if (gtx)
 			{
 				gtxtimer = 0;	/* начинаем отсчёт времени передачи */
 			}
+#endif /* WITHTX */
 			updateboard();	/* полная перенастройка (как после смены режима) */
 			seq_ask_txstate(gtx);
 			//display2_needupdate();	// Обновление дисплея - всё, включая частоту
