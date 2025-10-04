@@ -449,7 +449,6 @@ typedef struct txreq_tag
 } txreq_t;
 
 void txreq_initialize(txreq_t * txreqp);
-void txreq_spooledges(txreq_t * txreqp);
 void txreq_process(txreq_t * txreqp);		/* Установка сиквенсору запроса на передачу.	*/
 
 void txreq_setreqautotune(txreq_t * txreqp, uint_fast8_t v);

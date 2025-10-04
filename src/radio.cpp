@@ -625,8 +625,6 @@ static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при прием
 
 //#define DEBUGEXT 1
 
-static void txreq_process(void);	/* Установка сиквенсору запроса на передачу.	*/
-
 static uint_fast8_t getbankindex_raw(uint_fast8_t pathi);
 static uint_fast8_t getbankindex_ab(uint_fast8_t ab);
 static uint_fast8_t getbankindex_pathi(uint_fast8_t pathi);
@@ -18826,16 +18824,12 @@ void txreq_initialize(txreq_t * txreqp)
 	txreqp->state = TXREQST_RX;
 }
 
-void txreq_spooledges(txreq_t * txreqp)
-{
-	txreq_scaninputs(txreqp);
-}
-
 /* Установка сиквенсору запроса на передачу.	*/
 void
 txreq_process(txreq_t * txreqp)
 {
 #if WITHTX
+	txreq_scaninputs(txreqp);
 	{
 		uint_fast8_t tunextrelease;
 		const uint_fast8_t tunextpress = edgepin_getoutstate(& txreqp->edgpexttune, & tunextrelease);
@@ -18907,6 +18901,18 @@ txreq_process(txreq_t * txreqp)
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 	seq_txrequest(txreq_get_tx(txreqp));
+
+	if (flagne_u8(& gtx, seq_get_txstate()) != 0)
+	{
+		/* произошло изменение режима прием/передача */
+		if (gtx)
+		{
+			gtxtimer = 0;	/* начинаем отсчёт времени передачи */
+		}
+		updateboard();	/* полная перенастройка (как после смены режима) */
+		seq_ask_txstate(gtx);
+		//display2_needupdate();	// Обновление дисплея - всё, включая частоту
+	}
 #endif /* WITHTX */
 }
 
@@ -19557,27 +19563,6 @@ static void hamradio_main_initialize(void)
 static void appspoolprocess(void * ctx)
 {
 	(void) ctx;
-	txreq_spooledges(& txreqst0);
-	{
-		uint_fast8_t changedtx = 0;
-	#if WITHTX
-		changedtx |= flagne_u8(& gtx, seq_get_txstate());	// текущее состояние прием или передача
-	#endif /* WITHTX */
-
-		/* произошло изменение режима прием/передача */
-		if (changedtx != 0)
-		{
-#if WITHTX
-			if (gtx)
-			{
-				gtxtimer = 0;	/* начинаем отсчёт времени передачи */
-			}
-#endif /* WITHTX */
-			updateboard();	/* полная перенастройка (как после смены режима) */
-			seq_ask_txstate(gtx);
-			//display2_needupdate();	// Обновление дисплея - всё, включая частоту
-		}
-	}
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 	// обработать запрос на обновление состояния аппаратуры из user mode программы
 	if (dimmflagch != 0)
