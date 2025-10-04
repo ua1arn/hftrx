@@ -5719,15 +5719,15 @@ enum
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-	#else /* WITHTX && WITHIF4DSP */
+#else /* WITHTX && WITHIF4DSP */
 	enum { gcwssbtx = 0 };
 #endif /* WITHTX && WITHIF4DSP */
 
-#else
+#else /* WITHELKEY */
 	enum { gcwssbtx = 0 };
 	//static const uint_fast8_t elkeymode = 2;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 	//static const uint_fast8_t elkeyslope = 0;		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
-#endif
+#endif /* WITHELKEY */
 
 static uint_fast8_t stayfreq;			/* при изменении режимов кнопками - не меняем частоту */
 
