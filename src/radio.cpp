@@ -21803,6 +21803,13 @@ static void dtmf_initialize(void)
 	//PRINTF("dtmf_initialize done\n");
 }
 
+#else /* WITHSUBTONES */
+
+int ctcss_squelch(void)
+{
+	return 1;
+}
+
 #endif /* WITHSUBTONES */
 
 

@@ -120,7 +120,6 @@ extern "C" {
 	//#define WITHLEAKYLMSANR		1	/* Использование LeakyLmsNr */
 
 	#define WITHNOTCHFREQ		1	/* NOTCH фильтр с устанавливаемой через меню или потенциометром частотой */
-	#define WITHSUBTONES		1	/* выполняется формирование субтона при передаче NFM */
 	#define WITHSAM				1	/* synchronous AM demodulation */
 	//#define WITHIFSHIFT			1	/* используется IF SHIFT */
 	#define WITHMIC1LEVEL		1	/* установка усиления микрофона */

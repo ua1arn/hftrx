@@ -15,6 +15,10 @@
 		#error Wrong CPU selected. STM32MP157Axx expected
 	#endif /* ! defined(STM32MP157Axx) */
 
+	#define WITHBRANDSTR "Falcon"
+	//#define WITHBANDR1BBU 1
+	//#define BUFOVERSIZE 5
+
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
@@ -560,6 +564,7 @@
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
+	//#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
