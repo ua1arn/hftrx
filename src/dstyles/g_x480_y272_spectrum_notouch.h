@@ -115,7 +115,6 @@
 		{	9,	16,	0,	3,	display2_freqX_b,	& dzi_default, PG0, },	// SUB FREQ
 		{	21,	16,	3,	3,	display2_mode3_b,	& dzi_modeb,	PG0, },	// SSB/CW/AM/FM/...
 
-#if 1
 		{	0,	20,	24,	3,	display2_legend,	& dzi_default, PG0, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
 		{	0,	24,	24,	3,	display2_bars,		& dzi_default, PG0, },	// S-METER, SWR-METER, POWER-METER
 		{	25, 24, 5,	3,	display2_smeors5, 	& dzi_default, PG0, },	// уровень сигнала в баллах S или dBm
@@ -123,22 +122,19 @@
 		{	0,	28,	BDCH_ALLRX,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 		{	0,	28,	BDCH_ALLRX,	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	28,	BDCH_ALLRX,	BDCV_ALLRX,	display2_gcombo,	& dzi_default, PGSPE, },// подготовка изображения спектра
-#else
-		{	0,	20,	0,	0,	display2_adctest,	& dzi_default, PG0, },	// ADC raw data print
-#endif
 
-#if WITH_LPFBOARD_UA1CEI
+	#if WITH_LPFBOARD_UA1CEI
 		/* плата без тюнера - можем использовать это место */
 		{	0,	51,	5,	3,	display_time5,		& dzi_default, PG0,	},	// TIME
 		{	6, 	51,	3,	3,	display2_rec3,		& dzi_default, PG0, },	// Отображение режима записи аудио фрагмента
 		{	10, 51,	3,	3,	display2_usbsts3,                                                                      	& dzi_default, PGALL, },	// USB host status
-#else /* WITH_LPFBOARD_UA1CEI */
+	#else /* WITH_LPFBOARD_UA1CEI */
 		//{	0,	51,	8,	3,	display_samfreqdelta8, & dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	0,	51,	5,	3,	display_time5,		& dzi_default, PG0,	},	// TIME
 		{	6, 	51,	3,	3,	display2_classa3,		& dzi_default, PG0, },	// ClassA indication
 		//{	6, 	51,	3,	3,	display2_atu3,		& dzi_tune, PG0, },	// TUNER state (optional)
 		{	10, 51,	3,	3,	display2_byp3,		& dzi_bypass, PG0, },	// TUNER BYPASS state (optional)
-#endif /* WITH_LPFBOARD_UA1CEI */
+	#endif /* WITH_LPFBOARD_UA1CEI */
 		{	14, 51,	5,	3,	display2_thermo5,	& dzi_default, PG0, },	// thermo sensor 20.7C
 		{	19, 51,	5,	3,	display2_currlevel5, & dzi_default, PG0, },	// PA drain current d.dd without "A"
 		{	25, 51,	5,	3,	display2_voltlevelV5, & dzi_voltlevel, PG0, },	// voltmeter with "V"
@@ -146,20 +142,17 @@
 		{	25, 51,	5,	3,	display_amfmhighcut5,& dzi_default, PGALL, },	// 13.70
 	#endif /* WITHAMHIGHKBDADJ */
 
+		{	0, MENU1ROW,	BDTH_ALLRX, (51 - MENU1ROW), display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+	#if WITHAUTOTUNER
+		{	0, 51,	20,	3,	display2_swrsts20,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
+	#endif /* WITHAUTOTUNER */
+
 		// sleep mode display
 		{	5,	24,	12,	3,	display2_datetime12,	& dzi_datetime12, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 24,	5,	3,	display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
-
-	#if WITHMENU
-		{	0, MENU1ROW,	BDTH_ALLRX, (51 - MENU1ROW), display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		#if WITHAUTOTUNER
-		{	0, 51,	20,	3,	display2_swrsts20,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
-		#endif /* WITHAUTOTUNER */
-	#endif /* WITHMENU */
 		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 	};
 
-#if WITHMENU
 	void display2_getmultimenu(multimenuwnd_t * p)
 	{
 		enum { YSTEP = 3 };		// количество ячеек разметки на одну строку меню
@@ -169,7 +162,6 @@
 		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		p->xspan = BDTH_ALLRX;	/* количество знакомест по горизонтали, отдаваемое под меню */
 	}
-#endif /* WITHMENU */
 
 	/* получить координаты окна с панорамой и/или водопадом. */
 	void display2_getpipparams(pipparams_t * p)
