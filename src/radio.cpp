@@ -1780,8 +1780,8 @@ static const char
 // Частоты перестройки границ полосы пропускания
 typedef struct
 {
-	uint16_t granulationleft;	// дискретность изменения параметра через CAT или меню
-	uint16_t granulationright;	// дискретность изменения параметра через CAT или меню
+	uint16_t granulationleft;	// дискретность изменения параметра через CAT или меню - used if WITHAMHIGHKBDADJ enabled
+	uint16_t granulationright;	// дискретность изменения параметра через CAT или меню - used if WITHAMHIGHKBDADJ enabled
 	uint8_t left10_width10_low, left10_width10_high;	// пределы изменения параметров
 	uint8_t right100_low, right100_high;	// пределы изменения параметров
 } bwlimits_t;
@@ -1790,7 +1790,7 @@ typedef struct
 {
 	/* константные параметры */
 	const bwlimits_t * limits;
-	uint8_t bwpropi;	// BWPROPI_xxxx
+	uint8_t bwpropi;	// BWPROPI_xxxx - used if WITHAMHIGHKBDADJ enabled
 	uint8_t type;		// BWSET_SINGLE/BWSET_PAIR
 	/* параметры, изменяемые через меню */
 	uint_fast8_t left10_width10, right100;	/* left выполняет роль width для телеграфных (BWSET_SINGLE) фильтров */
