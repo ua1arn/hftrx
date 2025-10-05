@@ -62,8 +62,6 @@ enum { freq_swipe_step_vals = ARRAY_SIZE(freq_swipe_step) };
 static tf_entry_t tmpbuf[TEXT_ARRAY_SIZE];
 static uint8_t tmpstr_index = 0, debug_view = 0;
 
-#if GUI_SHOW_INFOBAR
-
 //todo: перенести раскладку инфобара в конфиг
 static uint8_t infobar_selected = UINT8_MAX;
 const uint8_t infobar_places[infobar_num_places] = {
@@ -86,8 +84,6 @@ const uint8_t infobar_places[infobar_num_places] = {
 		INFOBAR_2ND_ENC_MENU
 #endif /* defined(INFOBAR_CUSTOM) */
 };
-
-#endif /* GUI_SHOW_INFOBAR */
 
 #if WITHFT8
 
@@ -255,7 +251,6 @@ static void keyboard_edit_digits(int * val)
 
 void window_infobar_menu_process(void)
 {
-#if GUI_SHOW_INFOBAR
 	uint8_t interval = 5, yy = 0, need_close = 0, need_open = 255;
 	uint8_t infobar = infobar_places[infobar_selected] & INFOBAR_VALID_MASK;
 	char btn_name[NAME_ARRAY_SIZE];
@@ -498,7 +493,6 @@ void window_infobar_menu_process(void)
 
 	if (need_close)
 		close_all_windows();
-#endif /* GUI_SHOW_INFOBAR */
 }
 
 // *********************************************************************************************************************************************************************
@@ -586,8 +580,6 @@ void gui_main_process(void)
 		gui_obj_set_prop("btn_main06", GUI_OBJ_TEXT, "AF|samples");
 #endif /* WITHAUDIOSAMPLESREC */
 
-#if GUI_SHOW_INFOBAR
-
 		for (int i = 0; i < infobar_num_places; i ++)
 		{
 			local_snprintf_P(buf, buflen, "ta_infobar_%d", i);
@@ -596,8 +588,6 @@ void gui_main_process(void)
 
 		uint16_t p = infobar_2nd_str_y + SMALLCHARH2 + 5;
 		gui_obj_create("ta_freq", 0, p, WITHGUIMAXX, WITHGUIMAXY - FOOTER_HEIGHT - p, 1);
-
-#endif /* GUI_SHOW_INFOBAR */
 
 		char * btn0 = get_obj_name_by_idx(TYPE_BUTTON, 0);
 		gui_obj_set_prop(btn0, GUI_OBJ_POS, 0, WITHGUIMAXY - 45);
@@ -631,7 +621,6 @@ void gui_main_process(void)
 			}
 		}
 
-#if GUI_SHOW_INFOBAR
 		if (IS_AREA_TOUCHED)
 		{
 			if (gui_check_obj(name, "ta_freq")) break;
@@ -654,7 +643,6 @@ void gui_main_process(void)
 				}
 			}
 		}
-#endif /* GUI_SHOW_INFOBAR */
 
 		if (IS_BUTTON_PRESS)	// обработка короткого нажатия кнопок
 		{
@@ -765,7 +753,7 @@ void gui_main_process(void)
 #if WITHTX
 			else if (gui_check_obj(name, "btn_main00"))
 			{
-				hamradio_setrx();
+				hamradio_moxmode(1);
 				update = 1;
 			}
 #endif /* WITHTX */
@@ -775,7 +763,7 @@ void gui_main_process(void)
 #if WITHTX
 			if (gui_check_obj(name, "btn_main00"))
 			{
-				hamradio_setautotune();
+				hamradio_setautotune(); // hamradio_tunemode(1)
 				update = 1;
 			}
 			else
@@ -865,8 +853,6 @@ void gui_main_process(void)
 		board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 #endif /* defined (RTC1_TYPE) */
 	}
-
-#if GUI_SHOW_INFOBAR
 
 	// разметка инфобара
 	const uint16_t y_mid = infobar_1st_str_y + (infobar_2nd_str_y - infobar_1st_str_y) / 2;
@@ -1179,19 +1165,18 @@ void gui_main_process(void)
 			break;
 		}
 	}
-#endif /* GUI_SHOW_INFOBAR */
 
 #if 0 //WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
-		if (hamradio_get_tx())
-		{
-			const ldiv_t t = ldiv(hamradio_get_PAtemp_value(), 10);
-			local_snprintf_P(buf, buflen, "%d.%dC ", t.quot, t.rem);
-			PRINTF("%s\n", buf);		// пока вывод в консоль
-		}
+	if (hamradio_get_tx())
+	{
+		const ldiv_t t = ldiv(hamradio_get_PAtemp_value(), 10);
+		local_snprintf_P(buf, buflen, "%d.%dC ", t.quot, t.rem);
+		PRINTF("%s\n", buf);		// пока вывод в консоль
+	}
 #endif /* WITHTHERMOLEVEL */
 
 #if WITHFT8 && ! LINUX_SUBSYSTEM
-		ft8_walkthrough_core0(seconds);
+	ft8_walkthrough_core0(seconds);
 #endif /* WITHFT8 && ! LINUX_SUBSYSTEM */
 
 #if WITHGUIDEBUG
