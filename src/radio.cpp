@@ -20711,7 +20711,7 @@ uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit)
 		if (i > limit)
 			break;
 
-		strncpy(bws->label[i], bwsetsc [bwseti].labels [i], 10);
+		strncpy(bws->label[i], bwsetsc [bwseti].labels [i], ARRAY_SIZE(bws->label[i]));
 	}
 
 	return count;
