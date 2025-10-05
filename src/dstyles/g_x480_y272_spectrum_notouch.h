@@ -162,7 +162,7 @@
 #if WITHMENU
 	void display2_getmultimenu(multimenuwnd_t * p)
 	{
-		enum { YSTEP = 4 };		// количество ячеек разметки на одну строку меню
+		enum { YSTEP = 3 };		// количество ячеек разметки на одну строку меню
 		p->multilinemenu_max_rows = (51 - MENU1ROW) / YSTEP;
 		p->ystep = YSTEP;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;

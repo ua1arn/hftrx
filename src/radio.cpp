@@ -8849,7 +8849,7 @@ static const struct paramdefdef xgtxgate =
 // CW filter bandwidth for WIDE
 static const struct paramdefdef xfltbw_cwwide =
 {
-	QLABEL("CW W WDT"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for WIDE
+	QLABEL3("CW W WDT", "CW W WIDTH", "CW W WIDTH"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for WIDE
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 	RMT_BWPROPSLEFT_BASE(BWPROPI_CWWIDE),
@@ -8862,7 +8862,7 @@ static const struct paramdefdef xfltbw_cwwide =
 // CW filter edges for WIDE
 static const struct paramdefdef xfltsofter_cwwide =
 {
-	QLABEL("CW W SFT"), 7, 0, 0, 	ISTEP1,	// CW filter edges for WIDE
+	QLABEL3("CW W SFT", "CW W SOFT", "CW W SOFT"), 7, 0, 0, 	ISTEP1,	// CW filter edges for WIDE
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
 	RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWWIDE),
@@ -8875,7 +8875,7 @@ static const struct paramdefdef xfltsofter_cwwide =
 // CW filter bandwidth for NARROW
 static const struct paramdefdef xfltbw_cwnarrow =
 {
-	QLABEL("CW N WDT"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for NARROW
+	QLABEL3("CW N WDT", "CW N WIDTH", "CW N WIDTH"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for NARROW
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 	RMT_BWPROPSLEFT_BASE(BWPROPI_CWNARROW),
@@ -8888,7 +8888,7 @@ static const struct paramdefdef xfltbw_cwnarrow =
 // CW filter edges for NARROW
 static const struct paramdefdef xfltsofter_cwnarrow =
 {
-	QLABELENC2("CW N SOFT"),	// CW filter edges for NARROW
+	QLABEL3("CW N SFT", "CW N SOFT", "CW N SOFT"),	// CW filter edges for NARROW
 	0, 0,
 	RJ_UNSIGNED,		// rj
 	ISTEP1,
