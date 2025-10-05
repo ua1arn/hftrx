@@ -83,42 +83,42 @@
 	{
 		{	0,	0,	0, 	0, 	display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 
-		{	0,	0,	2,	4,	display_txrxstate2, & dzi_txrx, PGALL, },
-		{	3,	0,	5,	4,	display2_ant5,		& dzi_antenna, PGALL, },
-		{	9,	0,	4,	4,	display2_att4,		& dzi_attenuator, PGALL, },
-		{	14,	0,	3,	4,	display2_preovf3,	& dzi_default, PGALL, },
-		{	18,	0,	1,	4,	display_lockstate1,	& dzi_default, PGALL, },	// LOCK (*)
+		{	0,	0,	2,	3,	display_txrxstate2, & dzi_txrx, PGALL, },
+		{	3,	0,	5,	3,	display2_ant5,		& dzi_antenna, PGALL, },
+		{	9,	0,	4,	3,	display2_att4,		& dzi_attenuator, PGALL, },
+		{	14,	0,	3,	3,	display2_preovf3,	& dzi_default, PGALL, },
+		{	18,	0,	1,	3,	display_lockstate1,	& dzi_default, PGALL, },	// LOCK (*)
 
 	#if WITHENCODER2
-		{	21, 0,	9,	4,	display2_fnlabel9,	& dzi_default, PGALL, },	// FUNC item label
-		{	21,	4,	9,	4,	display2_fnvalue9,	& dzi_default, PGALL, },	// FUNC item value
-		{	25, 12,	5,	4,	display2_notch5,		& dzi_default, PGALL, },	// NOTCH on/off
+		{	21, 0,	9,	3,	display2_fnlabel9,	& dzi_default, PGALL, },	// FUNC item label
+		{	21,	4,	9,	3,	display2_fnvalue9,	& dzi_default, PGALL, },	// FUNC item value
+		{	25, 12,	5,	3,	display2_notch5,		& dzi_default, PGALL, },	// NOTCH on/off
 	#else /* WITHENCODER2 */
-		{	25, 0,	5,	4,	display2_notch5,		& dzi_default, PGALL, },	// FUNC item label
-		{	25,	4,	5,	4,	display2_notchfreq5,	& dzi_default, PGALL, },	// FUNC item value
+		{	25, 0,	5,	3,	display2_notch5,		& dzi_default, PGALL, },	// FUNC item label
+		{	25,	4,	5,	3,	display2_notchfreq5,	& dzi_default, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	26, 16,	3,	4,	display2_nr3,		& dzi_default, PGALL, },	// NR
-//		{	26,	16,	3,	4,	display2_agc3,		& dzi_default, PGALL, },	// AGC mode
-		{	26,	20,	3,	4,	display2_voxtune3,	& dzi_default, PGNOMEMU, },	// VOX
+		{	26, 16,	3,	3,	display2_nr3,		& dzi_default, PGALL, },	// NR
+//		{	26,	16,	3,	3,	display2_agc3,		& dzi_default, PGALL, },	// AGC mode
+		{	26,	20,	3,	3,	display2_voxtune3,	& dzi_default, PGNOMEMU, },	// VOX
 
 		{	0,	4,	21,	11,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
 		{	0,	4,	21,	11,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
-		{	21,	8,	3,	4,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
-		{	21,	12,	3,	4,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	26,	8,	3,	4,	display2_datamode3,	& dzi_default, PGALL, },	// DATA mode indicator
+		{	21,	8,	3,	3,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
+		{	21,	12,	3,	3,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	26,	8,	3,	3,	display2_datamode3,	& dzi_default, PGALL, },	// DATA mode indicator
 
-		{	0,	16,	3,	4,	display2_rec3,		& dzi_default, PG0, },	// Отображение режима записи аудио фрагмента
-		{	0,	16,	3,	4,	display2_mainsub3,	& dzi_default, PG0, },	// main/sub RX: A/A, A/B, B/A, etc
+		{	0,	16,	3,	3,	display2_rec3,		& dzi_default, PG0, },	// Отображение режима записи аудио фрагмента
+		{	0,	16,	3,	3,	display2_mainsub3,	& dzi_default, PG0, },	// main/sub RX: A/A, A/B, B/A, etc
 
-		{	5,	16,	3,	4,	display2_vfomode3,	& dzi_default, PG0, },	// SPLIT - не очень нужно при наличии индикации на A/B (display2_mainsub3) яркостью.
-		{	9,	16,	0,	4,	display2_freqX_b,	& dzi_default, PG0, },	// SUB FREQ
-		{	21,	16,	3,	4,	display2_mode3_b,	& dzi_modeb,	PG0, },	// SSB/CW/AM/FM/...
+		{	5,	16,	3,	3,	display2_vfomode3,	& dzi_default, PG0, },	// SPLIT - не очень нужно при наличии индикации на A/B (display2_mainsub3) яркостью.
+		{	9,	16,	0,	3,	display2_freqX_b,	& dzi_default, PG0, },	// SUB FREQ
+		{	21,	16,	3,	3,	display2_mode3_b,	& dzi_modeb,	PG0, },	// SSB/CW/AM/FM/...
 
 #if 1
-		{	0,	20,	24,	4,	display2_legend,	& dzi_default, PG0, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
-		{	0,	24,	24,	4,	display2_bars,		& dzi_default, PG0, },	// S-METER, SWR-METER, POWER-METER
-		{	25, 24, 5,	4,	display2_smeors5, 	& dzi_default, PG0, },	// уровень сигнала в баллах S или dBm
+		{	0,	20,	24,	3,	display2_legend,	& dzi_default, PG0, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
+		{	0,	24,	24,	3,	display2_bars,		& dzi_default, PG0, },	// S-METER, SWR-METER, POWER-METER
+		{	25, 24, 5,	3,	display2_smeors5, 	& dzi_default, PG0, },	// уровень сигнала в баллах S или dBm
 
 		{	0,	28,	BDCH_ALLRX,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 		{	0,	28,	BDCH_ALLRX,	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
@@ -151,9 +151,9 @@
 		{	20, 24,	5,	3,	display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
 
 	#if WITHMENU
-		{	0, MENU1ROW,	BDTH_ALLRX, (54 - MENU1ROW), display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+		{	0, MENU1ROW,	BDTH_ALLRX, (51 - MENU1ROW), display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 		#if WITHAUTOTUNER
-		{	0,  		51,	20,	5,	display2_swrsts20,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
+		{	0, 51,	20,	3,	display2_swrsts20,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display
 		#endif /* WITHAUTOTUNER */
 	#endif /* WITHMENU */
 		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
@@ -163,7 +163,7 @@
 	void display2_getmultimenu(multimenuwnd_t * p)
 	{
 		enum { YSTEP = 4 };		// количество ячеек разметки на одну строку меню
-		p->multilinemenu_max_rows = (54 - MENU1ROW) / YSTEP;
+		p->multilinemenu_max_rows = (51 - MENU1ROW) / YSTEP;
 		p->ystep = YSTEP;	// количество ячеек разметки на одну строку меню
 		p->reverse = 1;
 		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
