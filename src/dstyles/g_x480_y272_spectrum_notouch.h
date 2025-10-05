@@ -75,7 +75,7 @@
 	#endif
 	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
 
-	#define MENU1ROW 14
+	#define MENU1ROW 24
 
 	// 272/5 = 54, 480/16=30
 	// Main frequency indicator 56 lines height = 12 cells
@@ -108,16 +108,16 @@
 		{	21,	11,	3,	3,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	25,	8,	5,	3,	display2_datamode3,	& dzi_default, PGALL, },	// DATA mode indicator
 
-		{	0,	14,	3,	3,	display2_rec3,		& dzi_default, PG0, },	// Отображение режима записи аудио фрагмента
-		{	0,	14,	3,	3,	display2_mainsub3,	& dzi_default, PG0, },	// main/sub RX: A/A, A/B, B/A, etc
+		{	0,	14,	3,	3,	display2_rec3,		& dzi_default, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	0,	14,	3,	3,	display2_mainsub3,	& dzi_default, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
-		{	5,	14,	3,	3,	display2_vfomode3,	& dzi_default, PG0, },	// SPLIT - не очень нужно при наличии индикации на A/B (display2_mainsub3) яркостью.
-		{	9,	14,	11,	3,	display2_freqX_b,	& dzi_default, PG0, },	// SUB FREQ
-		{	21,	14,	3,	3,	display2_mode3_b,	& dzi_modeb,	PG0, },	// SSB/CW/AM/FM/...
+		{	5,	14,	3,	3,	display2_vfomode3,	& dzi_default, PGALL, },	// SPLIT - не очень нужно при наличии индикации на A/B (display2_mainsub3) яркостью.
+		{	9,	14,	11,	3,	display2_freqX_b,	& dzi_default, PGALL, },	// SUB FREQ
+		{	21,	14,	3,	3,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
 
-		{	0,	17,	BDTH_ALLRXBARS,	3,	display2_legend,	& dzi_default, PG0, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
-		{	0,	21,	BDTH_ALLRXBARS,	1,	display2_bars,		& dzi_default, PG0, },	// S-METER, SWR-METER, POWER-METER
-		{	25, 20, 5,	3,	display2_smeors5, 	& dzi_default, PG0, },	// уровень сигнала в баллах S или dBm
+		{	0,	17,	BDTH_ALLRXBARS,	3,	display2_legend,	& dzi_default, PGALL, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
+		{	0,	21,	BDTH_ALLRXBARS,	1,	display2_bars,		& dzi_default, PGALL, },	// S-METER, SWR-METER, POWER-METER
+		{	25, 20, 5,	3,	display2_smeors5, 	& dzi_default, PGALL, },	// уровень сигнала в баллах S или dBm
 
 		{	0,	24,	BDCH_ALLRX,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 		{	0,	24,	BDCH_ALLRX,	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
