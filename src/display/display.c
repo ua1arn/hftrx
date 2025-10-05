@@ -72,6 +72,7 @@ void display_bar(
 	uint_fast16_t x,
 	uint_fast16_t y,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
+	uint_fast8_t rowspan,	/* количество ячеек по вертикали, занимаемых индикатором */
 	uint_fast8_t value,		/* значение, которое надо отобразить */
 	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
 	uint_fast8_t topvalue,	/* значение, соответствующее полностью заполненному индикатору */
@@ -83,7 +84,7 @@ void display_bar(
 	ASSERT(value <= topvalue);
 	ASSERT(tracevalue <= topvalue);
 	const uint_fast16_t wfull = GRID2X(width);
-	const uint_fast16_t h = SMALLCHARH; //GRID2Y(1);
+	const uint_fast16_t h = GRID2Y(rowspan);
 	const uint_fast16_t wpart = (uint_fast32_t) wfull * value / topvalue;
 	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
 	const uint_fast8_t hpattern = 0x33;

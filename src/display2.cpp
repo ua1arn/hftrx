@@ -4432,6 +4432,8 @@ display_bars_x_pwr(
 void display_swrmeter(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
+	uint_fast8_t colspan,
+	uint_fast8_t rowspan,
 	adcvalholder_t f,	// forward,
 	adcvalholder_t r,	// reflected (скорректированное)
 	uint_fast16_t minforward
@@ -4459,23 +4461,25 @@ void display_swrmeter(const gxdrawb_t * db,
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_swr(x, CHARS2GRID(0)), y, & ypix);
-	display_bar(db, xpix, ypix, BDTH_ALLSWR, mapleftval, fullscale, fullscale, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);
+	display_bar(db, xpix, ypix, BDTH_ALLSWR, rowspan, mapleftval, fullscale, fullscale, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);
 
 	if (BDTH_SPACESWR != 0)
 	{
 		// заполняем пустое место за индикаторм КСВ
 		uint_fast16_t ypix;
 		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_swr(x, CHARS2GRID(BDTH_ALLSWR)), y, & ypix);
-		display_bar(db, xpix, ypix, BDTH_SPACESWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
+		display_bar(db, xpix, ypix, BDTH_SPACESWR, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 	}
 
 #endif /* WITHBARS && WITHTX */
 }
 
 // координаьы для общего блока PWR & SWR
-void display_pwrmeter(const gxdrawb_t * db,
+static void display_pwrmeter(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
+	uint_fast8_t colspan,
+	uint_fast8_t rowspan,
 	uint_fast8_t value,			// текущее значение
 	uint_fast8_t tracemax,		// max hold значение
 	uint_fast8_t maxpwrcali		// значение для отклонения на всю шкалу
@@ -4492,27 +4496,30 @@ void display_pwrmeter(const gxdrawb_t * db,
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(0)), y, & ypix);
-	display_bar(db, xpix, ypix, BDTH_ALLPWR, mapleftval, mapleftmax, fullscale, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);
+	display_bar(db, xpix, ypix, BDTH_ALLPWR, rowspan, mapleftval, mapleftmax, fullscale, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);
 
 	if (BDTH_SPACEPWR != 0)
 	{
 		// заполняем пустое место за индикаторм мощности
 		uint_fast16_t ypix;
 		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLPWR)), y, & ypix);
-		display_bar(db, xpix, ypix, BDTH_SPACEPWR, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
+		display_bar(db, xpix, ypix, BDTH_SPACEPWR, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 	}
 
 #endif /* WITHBARS */
 }
 
-void display_smeter(const gxdrawb_t * db,
+static void display_smeter(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
 	uint_fast8_t value,		// текущее значение
 	uint_fast8_t tracemax,	// метка запомненного максимума
 	uint_fast8_t level9,	// s9 level
 	uint_fast8_t delta1,	// s9 - s0 delta
-	uint_fast8_t delta2)	// s9+50 - s9 delta
+	uint_fast8_t delta2,	// s9+50 - s9 delta
+	uint_fast8_t colspan,
+	uint_fast8_t rowspan
+	)
 {
 #if WITHBARS
 	tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
@@ -4527,18 +4534,18 @@ void display_smeter(const gxdrawb_t * db,
 	colmain_setcolors(LCOLOR, BGCOLOR);
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_rx(x, CHARS2GRID(0)), y, & ypix);
-	display_bar(db, xpix, ypix, BDTH_LEFTRX, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);		//ниже 9 баллов ничего
+	display_bar(db, xpix, ypix, BDTH_LEFTRX, rowspan, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);		//ниже 9 баллов ничего
 	//
 	colmain_setcolors(RCOLOR, BGCOLOR);
 	uint_fast16_t ypix2;
 	uint_fast16_t xpix2 = display_wrdata_begin(display_bars_x_rx(x, CHARS2GRID(BDTH_LEFTRX)), y, & ypix2);
-	display_bar(db, xpix2, ypix2, BDTH_RIGHTRX, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);		// выше 9 баллов ничего нет.
+	display_bar(db, xpix2, ypix2, BDTH_RIGHTRX, rowspan, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);		// выше 9 баллов ничего нет.
 
 	if (BDTH_SPACERX != 0)
 	{
 		uint_fast16_t ypix;
 		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLRX)), y, & ypix);
-		display_bar(db, xpix, ypix, BDTH_SPACERX, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
+		display_bar(db, xpix, ypix, BDTH_SPACERX, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
 	}
 
 #endif /* WITHBARS */
@@ -10038,7 +10045,7 @@ display2_bars_rx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast
 #if WITHBARS
 	uint_fast8_t tracemax;
 	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
-	display_smeter(db, x, y, v, tracemax, s9level, s9delta, s9_60_delta);
+	display_smeter(db, x, y, v, tracemax, s9level, s9delta, s9_60_delta, colspan, rowspan);
 #endif /* WITHBARS */
 }
 
@@ -10056,13 +10063,13 @@ display2_bars_tx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast
 		adcvalholder_t reflected;
 		const adcvalholder_t forward = board_getswrmeter_cached(& reflected, swrcalibr);
 		#if WITHSHOWSWRPWR
-			display_swrmeter(db, x, y, forward, reflected, minforward);
-			display_pwrmeter(db, x, y, pwr, pwrtrace, maxpwrcali);
+			display_swrmeter(db, x, y, colspan, rowspan, forward, reflected, minforward);
+			display_pwrmeter(db, x, y, colspan, rowspan, pwr, pwrtrace, maxpwrcali);
 		#else
 			if (swrmode || getactualtune())
-				display_swrmeter(db, x, y, forward, reflected, minforward);
+				display_swrmeter(db, x, y, colspan, rowspan, forward, reflected, minforward);
 			else
-				display_pwrmeter(db, x, y, pwr, pwrtrace, maxpwrcali);
+				display_pwrmeter(db, x, y, colspan, rowspan, pwr, pwrtrace, maxpwrcali);
 		#endif
 	#endif
 

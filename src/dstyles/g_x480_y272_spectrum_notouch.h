@@ -32,7 +32,7 @@
 		BDTH_SPACEPWR = BDTH_SPACERX,
 	#endif /* WITHSHOWSWRPWR */
 
-		BDCV_ALLRX = ROWS2GRID(22),	// количество строк (ячееек), отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = ROWS2GRID(27),	// количество строк (ячееек), отведенное под S-метр, панораму, иные отображения
 		BDCH_ALLRX = CHARS2GRID(30),	// количество колонок (ячееек), отведенное под S-метр, панораму, иные отображения
 		//
 		B_unused
@@ -75,7 +75,7 @@
 	#endif
 	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
 
-	#define MENU1ROW 16
+	#define MENU1ROW 14
 
 	// 272/5 = 54, 480/16=30
 	// Main frequency indicator 56 lines height = 12 cells
@@ -91,37 +91,37 @@
 
 	#if WITHENCODER2
 		{	21, 0,	9,	3,	display2_fnlabel9,	& dzi_default, PGALL, },	// FUNC item label
-		{	21,	4,	9,	3,	display2_fnvalue9,	& dzi_default, PGALL, },	// FUNC item value
-		{	25, 12,	5,	3,	display2_notch5,		& dzi_default, PGALL, },	// NOTCH on/off
+		{	21,	3,	9,	3,	display2_fnvalue9,	& dzi_default, PGALL, },	// FUNC item value
+		{	25, 11,	5,	3,	display2_notch5,		& dzi_default, PGALL, },	// NOTCH on/off
 	#else /* WITHENCODER2 */
 		{	25, 0,	5,	3,	display2_notch5,		& dzi_default, PGALL, },	// FUNC item label
-		{	25,	4,	5,	3,	display2_notchfreq5,	& dzi_default, PGALL, },	// FUNC item value
+		{	25,	3,	5,	3,	display2_notchfreq5,	& dzi_default, PGALL, },	// FUNC item value
 	#endif /* WITHENCODER2 */
 
-		{	26, 16,	3,	3,	display2_nr3,		& dzi_default, PGALL, },	// NR
-//		{	26,	16,	3,	3,	display2_agc3,		& dzi_default, PGALL, },	// AGC mode
-		{	26,	20,	3,	3,	display2_voxtune3,	& dzi_default, PGNOMEMU, },	// VOX
+		{	25, 14,	5,	3,	display2_nr3,		& dzi_default, PGALL, },	// NR
+//		{	25,	15,	5,	3,	display2_agc3,		& dzi_default, PGALL, },	// AGC mode
+		{	25,	17,	5,	3,	display2_voxtune3,	& dzi_default, PGNOMEMU, },	// VOX
 
-		{	0,	4,	21,	11,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
-		{	0,	4,	21,	11,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+		{	0,	3,	21,	11,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
+		{	0,	3,	21,	11,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 		{	21,	8,	3,	3,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
-		{	21,	12,	3,	3,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	26,	8,	3,	3,	display2_datamode3,	& dzi_default, PGALL, },	// DATA mode indicator
+		{	21,	11,	3,	3,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	25,	8,	5,	3,	display2_datamode3,	& dzi_default, PGALL, },	// DATA mode indicator
 
-		{	0,	16,	3,	3,	display2_rec3,		& dzi_default, PG0, },	// Отображение режима записи аудио фрагмента
-		{	0,	16,	3,	3,	display2_mainsub3,	& dzi_default, PG0, },	// main/sub RX: A/A, A/B, B/A, etc
+		{	0,	14,	3,	3,	display2_rec3,		& dzi_default, PG0, },	// Отображение режима записи аудио фрагмента
+		{	0,	14,	3,	3,	display2_mainsub3,	& dzi_default, PG0, },	// main/sub RX: A/A, A/B, B/A, etc
 
-		{	5,	16,	3,	3,	display2_vfomode3,	& dzi_default, PG0, },	// SPLIT - не очень нужно при наличии индикации на A/B (display2_mainsub3) яркостью.
-		{	9,	16,	0,	3,	display2_freqX_b,	& dzi_default, PG0, },	// SUB FREQ
-		{	21,	16,	3,	3,	display2_mode3_b,	& dzi_modeb,	PG0, },	// SSB/CW/AM/FM/...
+		{	5,	14,	3,	3,	display2_vfomode3,	& dzi_default, PG0, },	// SPLIT - не очень нужно при наличии индикации на A/B (display2_mainsub3) яркостью.
+		{	9,	14,	11,	3,	display2_freqX_b,	& dzi_default, PG0, },	// SUB FREQ
+		{	21,	14,	3,	3,	display2_mode3_b,	& dzi_modeb,	PG0, },	// SSB/CW/AM/FM/...
 
-		{	0,	20,	24,	3,	display2_legend,	& dzi_default, PG0, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
-		{	0,	24,	24,	3,	display2_bars,		& dzi_default, PG0, },	// S-METER, SWR-METER, POWER-METER
-		{	25, 24, 5,	3,	display2_smeors5, 	& dzi_default, PG0, },	// уровень сигнала в баллах S или dBm
+		{	0,	17,	BDTH_ALLRXBARS,	3,	display2_legend,	& dzi_default, PG0, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
+		{	0,	21,	BDTH_ALLRXBARS,	1,	display2_bars,		& dzi_default, PG0, },	// S-METER, SWR-METER, POWER-METER
+		{	25, 20, 5,	3,	display2_smeors5, 	& dzi_default, PG0, },	// уровень сигнала в баллах S или dBm
 
-		{	0,	28,	BDCH_ALLRX,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
-		{	0,	28,	BDCH_ALLRX,	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	28,	BDCH_ALLRX,	BDCV_ALLRX,	display2_gcombo,	& dzi_default, PGSPE, },// подготовка изображения спектра
+		{	0,	24,	BDCH_ALLRX,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+		{	0,	24,	BDCH_ALLRX,	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	24,	BDCH_ALLRX,	BDCV_ALLRX,	display2_gcombo,	& dzi_default, PGSPE, },// подготовка изображения спектра
 
 	#if WITH_LPFBOARD_UA1CEI
 		/* плата без тюнера - можем использовать это место */
@@ -142,6 +142,7 @@
 		{	25, 51,	5,	3,	display_amfmhighcut5,& dzi_default, PGALL, },	// 13.70
 	#endif /* WITHAMHIGHKBDADJ */
 
+		// menu display
 		{	0, MENU1ROW,	BDTH_ALLRX, (51 - MENU1ROW), display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 	#if WITHAUTOTUNER
 		{	0, 51,	20,	3,	display2_swrsts20,	& dzi_default, REDRSUBSET_MENU, },	// SWR METER display

@@ -98,24 +98,6 @@ typedef struct multimenuwnd_tag
 
 void display2_getmultimenu(multimenuwnd_t * p); /* получение параметров окна для меню */
 
-void display_smeter(const gxdrawb_t * db,
-	uint_fast8_t x,
-	uint_fast8_t y,
-	uint_fast8_t value,
-	uint_fast8_t tracemax,
-	uint_fast8_t level9,	// s9 level
-	uint_fast8_t delta1,	// s9 - s0 delta
-	uint_fast8_t delta2		// s9+50 - s9 delta
-	);
-
-void display_pwrmeter(const gxdrawb_t * db,
-	uint_fast8_t x,
-	uint_fast8_t y,
-	uint_fast8_t pwr,
-	uint_fast8_t tracemax,
-	uint_fast8_t maxpwrcali		// значение для отклонения на всю шкалу
-	);
-
 uint_fast8_t display2_getswrmax(void);
 
 uint_fast16_t normalize(

@@ -341,6 +341,7 @@ void display_bar(
 	uint_fast16_t xpix,
 	uint_fast16_t ypix,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
+	uint_fast8_t rowspan,	/* количество ячеек по вертикали, занимаемых индикатором */
 	uint_fast8_t value,		/* значение, которое надо отобразить */
 	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
 	uint_fast8_t topvalue,	/* значение, соответствующее полностью заполненному индикатору */
@@ -366,6 +367,8 @@ uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fa
 void display_swrmeter(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
+	uint_fast8_t colspan,
+	uint_fast8_t rowspan,
 	adcvalholder_t forward,
 	adcvalholder_t reflected, // скорректированное
 	uint_fast16_t minforward
