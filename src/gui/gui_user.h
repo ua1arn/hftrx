@@ -127,8 +127,6 @@ enum {
 	micprofile_default = UINT8_MAX,
 };
 
-#if GUI_SHOW_INFOBAR
-
 enum {
 	infobar_1st_str_y = 125,
 	infobar_2nd_str_y = 145,
@@ -155,8 +153,6 @@ enum {
 	INFOBAR_DUAL_RX,
 	INFOBAR_BATTERY,
 };
-
-#endif /* GUI_SHOW_INFOBAR */
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */

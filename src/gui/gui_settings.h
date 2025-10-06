@@ -47,10 +47,6 @@
 
 #endif /* LCDMODE_MAIN_L8 */
 
-#if 1 //! WITHALTERNATIVELAYOUT
-	#define GUI_SHOW_INFOBAR				1
-#endif /* ! WITHALTERNATIVELAYOUT */
-
 enum {
 	sliders_scale_thickness = 8,// ширина шкалы слайдера
 	sliders_w = 12,				// размеры ползунка слайдера
