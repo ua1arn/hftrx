@@ -4252,10 +4252,7 @@ static const struct paramdefdef xgsquelch =
 static uint_fast8_t gsquelchNFM;	/* squelch level for NFM */
 static const struct paramdefdef xgsquelchNFM =
 {
-	QLABELENC2("SQUELCHFM"),
-	0, 0,
-	RJ_UNSIGNED,		// rj
-	ISTEP1,		/* squelch level */
+	QLABEL3("SQLC NFM", "SQUELCH NFM", "SQUELCHFM"), 0, 0, RJ_UNSIGNED, ISTEP1,		/* squelch level for NFM */
 	ITEM_VALUE,
 	0, SQUELCHMAX,
 	OFFSETOF(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
@@ -4342,7 +4339,7 @@ static const struct paramdefdef xggainnfmrx10 =
 
 static const struct paramdefdef xgcwpitch10 =
 {
-	QLABEL("CW PITCH"), 7, 2, 0, 	ISTEP1,
+	QLABEL("CW PITCH"), 7, 2, RJ_UNSIGNED, 	ISTEP1,
 	ITEM_VALUE,
 	CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 10 Hz steps */
 	OFFSETOF(struct nvmap, gcwpitch10),
