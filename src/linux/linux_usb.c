@@ -27,7 +27,6 @@
 #define CLIENT_HANDSHAKE_CMD    0x444E5348 	// "HSND"
 #define CLIENT_READY_CMD        0x44414552	// "READ"
 #define CLIENT_DISCONNECT_CMD   0x43534944	// "DISC"
-#define CLIENT_IQSEND_CMD       0x44535149	// "IQSD"
 #define CLIENT_PING_CMD         0x474E4950	// "PING"
 #define CLIENT_MODEM_CTRL_CMD   0x4D444F4D	// "MODM"
 #define CLIENT_FREQ_RTS_CMD   	0x53545246	// "FRTS"
@@ -72,7 +71,7 @@ static void LIBUSB_CALL transfer_callback(struct libusb_transfer * transfer)
 
 				uint8_t * data = (uint8_t *) (transfer->buffer + offset);
 				memcpy(iqbuf_rx, data, PACKET_SIZE);
-				safe_cond_signal(&ct_iqready);
+				safe_cond_signal(& ct_iqready);
 			}
 		}
 	} else if (!exit_requested)
@@ -230,9 +229,24 @@ void * usb_service_thread(void * args)
 
 void * usb_iq_thread(void * args)
 {
+	time_t told = time(NULL);
+	int c = 0;
+
 	while (! exit_requested)
 	{
 		safe_cond_wait(& ct_iqready);
+
+#if 1
+		c += DMABUFCLUSTER;
+
+		time_t tnow = time(NULL);
+		if (tnow - told >= 1)
+		{
+			printf("rx iq rate %ld\n", c);
+			c = 0;
+			told = tnow;
+		}
+#endif
 
 		uintptr_t addr32rx = allocate_dmabuffer32rx();
 		memcpy((uint8_t *) addr32rx, iqbuf_rx, PACKET_SIZE);

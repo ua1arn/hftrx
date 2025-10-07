@@ -763,7 +763,7 @@ void gui_main_process(void)
 #if WITHTX
 			if (gui_check_obj(name, "btn_main00"))
 			{
-				hamradio_setautotune(); // hamradio_tunemode(1)
+				hamradio_tunemode(1);
 				update = 1;
 			}
 			else
