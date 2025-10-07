@@ -6924,7 +6924,7 @@ void stm32mp1_audio_clocks_initialize(void)
 		;
 }
 
-void hardware_set_dotclock(unsigned long dotfreq)
+void hardware_set_dotclock(uint_fast32_t dotfreq)
 {
 	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
 	ASSERT(pll4divq >= 1);
@@ -6977,7 +6977,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 }
 
 // округление тактовой частоты дисплейного контроллера к возможностям системы синхронизации
-unsigned long hardware_get_dotclock(unsigned long dotfreq)
+uint_fast32_t hardware_get_dotclock(uint_fast32_t dotfreq)
 {
 	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
 	return stm32mp1_get_pll4_freq() / pll4divq;
@@ -7791,7 +7791,7 @@ stm32f4xx_pllsai_initialize(void)
 		;
 }
 
-void hardware_set_dotclock(unsigned long dotfreq)
+void hardware_set_dotclock(uint_fast32_t dotfreq)
 {
 	//#error TODO: write code to imitialize SAI PLL and LTDC output divisor
 	/* для устройств на шине APB2 (up to 72 MHz) */
@@ -8032,7 +8032,7 @@ stm32f7xx_pllsai_initialize(void)
 		;
 }
 
-void hardware_set_dotclock(unsigned long dotfreq)
+void hardware_set_dotclock(uint_fast32_t dotfreq)
 {
 	auto uint_fast32_t
 	calcdivround_saifreq(
@@ -8376,7 +8376,7 @@ uint_fast32_t stm32f7xx_pllq_initialize(void)
 	return stm32h7xx_pllq;
 }
 
-void hardware_set_dotclock(unsigned long dotfreq)
+void hardware_set_dotclock(uint_fast32_t dotfreq)
 {
 	// при разрешенной PLLSAI модификация регистров невозможна
 	(void) dotfreq;
@@ -9436,7 +9436,7 @@ unsigned long  xc7z_get_qspi_freq(void)
 	}
 }
 
-void hardware_set_dotclock(unsigned long dotfreq)
+void hardware_set_dotclock(uint_fast32_t dotfreq)
 {
 	unsigned long f1 = (unsigned long) ( xc7z_get_io_pll_freq() / 1000);
 	dotfreq /= 1000;

@@ -823,8 +823,8 @@ uint_fast8_t arm_hardware_cpuid(void);	// This processor index (0..n-1)
 uint_fast8_t arm_hardware_clustersize(void);
 void arm_hardware_populte_second_initialize(void);
 
-void hardware_set_dotclock(unsigned long dotfreq);
-unsigned long hardware_get_dotclock(unsigned long dotfreq);
+void hardware_set_dotclock(uint_fast32_t dotfreq);
+uint_fast32_t hardware_get_dotclock(uint_fast32_t dotfreq);
 uint_fast8_t stm32mp1_overdrived(void);	// return 1 if CPU supports 800 MHz clock
 
 int toshiba_ddr_power_init(void);

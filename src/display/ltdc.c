@@ -3179,7 +3179,7 @@ static void t113_HV_clock_configuration(const videomode_t * vdmode)
 
 
 // округление тактовой частоты дисплейного контроллера к возможностям системы синхронизации
-unsigned long hardware_get_dotclock(unsigned long dotfreq)
+uint_fast32_t hardware_get_dotclock(uint_fast32_t dotfreq)
 {
 	return dotfreq;
 //	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
@@ -3527,6 +3527,7 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 	uint32_t val;
 	val = 0;
 
+	// bits 30:28 are depend on dclk0..dclk2 bits in LCD_DCLK_REG
 	if (! h_sync_active)
 		val |= (UINT32_C(1) << 25);	// IO1_Inv 0 HSYNC
 	if (! v_sync_active)
