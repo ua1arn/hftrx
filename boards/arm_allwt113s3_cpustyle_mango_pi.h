@@ -21,22 +21,23 @@
 //#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
 #define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 //#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
-#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
+//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 //#define WITHCAN0HW 1
 #define WITHCAN1HW 1
 
-#define WITHUART1HW	1	/* TX=PG6 TX=PG7 Используется периферийный контроллер последовательного порта UART1 */
+//#define WITHUART1HW	1	/* TX=PG6 TX=PG7 Используется периферийный контроллер последовательного порта UART1 */
 
 #if WITHDEBUG
-	#define WITHUART0HW	1	/* PE2 PE3 Используется периферийный контроллер последовательного порта #0 UART0 */
+	#define WITHUART4HW	1	/* TX=PG2 TX=PG3 Используется периферийный контроллер последовательного порта UART4 */
+	//#define WITHUART0HW	1	/* PE2 PE3 Используется периферийный контроллер последовательного порта #0 UART0 */
 	//#define WITHUART0HW_FIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
 //#define WITHCAT_UART0		1
-#define WITHDEBUG_UART0	1
+#define WITHDEBUG_UART4	1
 
 
 // OHCI at USB1HSFSP2_BASE
