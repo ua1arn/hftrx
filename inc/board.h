@@ -450,6 +450,7 @@ void txreq_process(txreq_t * txreqp);		/* Установка сиквенсор�
 
 void txreq_reqautotune(txreq_t * txreqp, uint_fast8_t v);	// Выход из режима - txreq_rx
 uint_fast8_t txreq_getreqautotune(const txreq_t * txreqp);
+uint_fast8_t txreq_gethint(const txreq_t * txreqp);
 void txreq_txtone(txreq_t * txreqp);
 uint_fast8_t txreq_gettxtone(const txreq_t * txreqp);	/* возвращаем не-0, если есть запрос на tune от пользователя или CAT */
 void txreq_mox(txreq_t * txreqp);
