@@ -6819,10 +6819,12 @@ static enum phases auto_tune0(void)
 	case N7DDCTUNE_ABORT:
 		txreq_rx(& txreqst0, "ABT");
 		txreq_process(& txreqst0);
+		updateboard();	/* полная перенастройка (как после смены режима) */
 		return PHASE_ABORT; // восстановление будет в auto_tune3
 	case N7DDCTUNE_ERROR:
 		txreq_rx(& txreqst0, "ERR");
 		txreq_process(& txreqst0);
+		updateboard();	/* полная перенастройка (как после смены режима) */
 		return PHASE_ABORT; // восстановление будет в auto_tune3
 	case N7DDCTUNE_OK:
 		return PHASE_DONE; // сохранение будет в auto_tune2
@@ -13419,6 +13421,7 @@ uif_key_bypasstoggle(void)
 	{
 		txreq_rx(& txreqst0, NULL);	// сброс идущей настройки
 		txreq_process(& txreqst0);
+		updateboard();
 	}
 }
 
@@ -16200,14 +16203,17 @@ processcatmsg(
 			case 0:
 				txreq_mox(& txreqst0);
 				txreq_process(& txreqst0);
+				updateboard();	/* полная перенастройка (как после смены режима) */
 				break;
 			case 1:
 				txreq_txdata(& txreqst0);
 				txreq_process(& txreqst0);
+				updateboard();	/* полная перенастройка (как после смены режима) */
 				break;
 			case 2:
 				txreq_txtone(& txreqst0);
 				txreq_process(& txreqst0);
+				updateboard();	/* полная перенастройка (как после смены режима) */
 				break;
 			}
 
@@ -16236,6 +16242,7 @@ processcatmsg(
 		{
 			txreq_rx(& txreqst0, NULL);
 			txreq_process(& txreqst0);
+			updateboard();	/* полная перенастройка (как после смены режима) */
 			if (aistate != 0)
 				cat_answer_request(CAT_RX_INDEX);	// POSSIBLE: ignore main/sub rx selection (0 - main. 1 - sub);
 		}
@@ -16243,6 +16250,7 @@ processcatmsg(
 		{
 			txreq_rx(& txreqst0, NULL);
 			txreq_process(& txreqst0);
+			updateboard();	/* полная перенастройка (как после смены режима) */
 			if (aistate != 0)
 				cat_answer_request(CAT_RX_INDEX);
 		}
@@ -19790,6 +19798,7 @@ hamradio_main_step(void)
 	inputevent_fill(& event);
 
 	txreq_process(& txreqst0);	/* Установка сиквенсору запроса на передачу.	*/
+	updateboard();	/* полная перенастройка (как после смены режима) */
 	switch (sthrl)
 	{
 //	case STHRL_MENU:
