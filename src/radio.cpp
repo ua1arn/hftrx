@@ -227,6 +227,7 @@ static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшае
 #endif /* WITHENCODER */
 
 static uint_fast8_t gtx;	/* текущее состояние прием или передача */
+static txreqst_t gstate = TXREQST_RX;
 
 /* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
 void
@@ -18900,8 +18901,10 @@ txreq_process(txreq_t * txreqp)
 
 	seq_txrequest(txreq_get_tx(txreqp));
 
-	if (flagne_u8(& gtx, seq_get_txstate()) != 0)
+	// Use "|" operator
+	if (gstate != txreqp->state | flagne_u8(& gtx, seq_get_txstate()) != 0)
 	{
+		gstate = txreqp->state;
 		/* произошло изменение режима прием/передача */
 		if (gtx)
 		{
