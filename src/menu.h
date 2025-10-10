@@ -1447,6 +1447,10 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
+#if WITHTX && WITHUSBUAC
+	& xggaindigitx,	/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+#endif /* WITHTX && WITHUSBUAC */
+#endif /* WITHTX && WITHIF4DSP */
 #if WITHUSEAUDIOREC
 	(const struct paramdefdef [1]) {
 		QLABEL("SD RECRD"), 8, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
@@ -1460,7 +1464,6 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHUSEAUDIOREC */
-#endif /* WITHTX && WITHIF4DSP */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("Mike"), 0, 0, 0, 0,
@@ -1901,9 +1904,6 @@ static const struct menudef menutable [] =
 	#endif /* WITHRTS96 || WITHRTS192 */
 	& xgusb_ft8cn,	/* совместимость VID/PID для работы с программой FT8CN */
 	//& xgusb_hs,
-#if WITHTX
-	& xggaindigitx,	/* Увеличение усиления при передаче в цифровых режимах 90..300% */
-#endif /* WITHTX */
 #endif /* WITHUSBUAC */
 #endif /* WITHIF4DSP */
 #endif /* WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN || WITHUSEUSBBT) */

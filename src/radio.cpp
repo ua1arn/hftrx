@@ -6194,10 +6194,10 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		static uint_fast16_t ggaindigitx = 100;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#elif 1//WITHTXCWREDUCE
 		static uint_fast16_t ggaincwtx = 60;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-		static uint_fast16_t ggaindigitx = 150;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+		static uint_fast16_t ggaindigitx = 160;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#else /* WITHTXCWREDUCE */
 		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-		static uint_fast16_t ggaindigitx = 150;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+		static uint_fast16_t ggaindigitx = 160;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#endif /* WITHTXCWREDUCE */
 	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 	/* Увеличение усиления при передаче в цифровых режимах 90..300% */
@@ -6218,7 +6218,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	/* разрешённое время передачи */
 	static const struct paramdefdef xgtxtot =
 	{
-		QLABEL2("TXTOT", "TX Timeout"), 7, 0, RJ_UNSIGNED, ISTEP5,		/* разрешённое время передачи */
+		QLABEL2("TX TOUT", "TX Timeout"), 7, 0, RJ_UNSIGNED, ISTEP5,		/* разрешённое время передачи */
 		ITEM_VALUE,
 		0, 300,
 		OFFSETOF(struct nvmap, gtxtot),	/* разрешённое время передачи */
