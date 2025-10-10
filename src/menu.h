@@ -1370,7 +1370,7 @@ static const struct menudef menutable [] =
 #endif /* WITHIF4DSP */
 #if (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP
 	(const struct paramdefdef [1]) {
-		QLABEL("KEY BEEP"), 6, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
+		QLABEL2("KEY BEEP", "Keys Beep"), 6, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
 		ITEM_VALUE,
 		80, 250,			/* 800 Hz..2500, Hz in 50 Hz steps */
 		OFFSETOF(struct nvmap, gkeybeep10),
@@ -1400,7 +1400,7 @@ static const struct menudef menutable [] =
 	& xgsquelchNFM,
 #endif /* ! WITHPOTNFMSQL */
 	(const struct paramdefdef [1]) {
-		QLABEL("SDTN LVL"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
+		QLABEL2("SDTN LVL", "SDTN Level"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
 		ITEM_VALUE,
 		0, 100, 
 		OFFSETOF(struct nvmap, gsidetonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
