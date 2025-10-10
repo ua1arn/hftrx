@@ -3540,6 +3540,7 @@ struct nvmap
 	uint16_t	ggrptxadj;		// последний посещённый пункт группы
 	uint16_t	ggrpsecial;		// последний посещённый пункт группы
 	uint16_t	ggrpaudio;		// последний посещённый пункт группы
+	uint16_t	ggrpmike;		// последний посещённый пункт группы
 #if WITHSUBTONES && WITHTX
 	uint16_t ggrpctcss;		// последний посещённый пункт группы
 #endif /* WITHSUBTONES && WITHTX */

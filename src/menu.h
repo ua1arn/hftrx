@@ -1447,6 +1447,34 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
+#if WITHUSEAUDIOREC
+	(const struct paramdefdef [1]) {
+		QLABEL("SD RECRD"), 8, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, recmode),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& recmode,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+#endif /* WITHUSEAUDIOREC */
+#endif /* WITHTX && WITHIF4DSP */
+/* group name +++ */
+	(const struct paramdefdef [1]) {
+		QLABEL("Mike"), 0, 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		OFFSETOF(struct nvmap, ggrpmike),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		NULL,
+		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+/* group name --- */
+#if WITHTX && WITHIF4DSP
 #if WITHMIC1LEVEL
 	& xgmik1level,
 #endif /* ITHMIC1LEVEL */
@@ -1845,19 +1873,6 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
-#if WITHUSEAUDIOREC
-	(const struct paramdefdef [1]) {
-		QLABEL("SD RECRD"), 8, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, recmode),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& recmode,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-#endif /* WITHUSEAUDIOREC */
 #if WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN || WITHUSEUSBBT)
 /* group name +++ */
 	(const struct paramdefdef [1]) {
