@@ -231,8 +231,8 @@ void nau8822_setreg(
 }
 
 /* Запись двух регистров на смежных адресах */
-void nau8822_setreg2(
-	uint_fast8_t regv,			/* 7 bit register address */
+static void nau8822_setreg2(
+	uint_fast8_t regv,				/* 7 bit start register address */
 	uint_fast16_t datav1,			/* 9 bit value */
 	uint_fast16_t datav2			/* 9 bit value */
 	)
