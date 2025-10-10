@@ -6752,7 +6752,11 @@ static uint_fast8_t tuneabort(void)
 	// todo: не работает на дисплеях с off screen composition.
 	// счетчик перебора сбрасывается в 0 - и до обновления экрана дело не доходит.
 
+	txreq_process(& txreqst0);	/* обработка запросов */
+	updateboard();	/* полная перенастройка (как после смены режима) */
 	processmessages(& kbch, & kbready);
+	if (! txreq_getreqautotune(& txreqst0))
+		return 1;
 	if (kbready != 0)
 	{
 		switch (kbch)
@@ -19797,7 +19801,7 @@ hamradio_main_step(void)
 	inputevent_initialize(& event);
 	inputevent_fill(& event);
 
-	txreq_process(& txreqst0);	/* Установка сиквенсору запроса на передачу.	*/
+	txreq_process(& txreqst0);	/* обработка запросов */
 	updateboard();	/* полная перенастройка (как после смены режима) */
 	switch (sthrl)
 	{
