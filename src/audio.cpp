@@ -3730,15 +3730,15 @@ static RAMFUNC FLOAT_t injectsubtone(FLOAT_t v, FLOAT_t ctcss)
 }
 
 // Поддержка генерации белого шума
-static unsigned long local_random(unsigned long num)
+static uint_fast32_t local_random(uint_fast32_t num)
 {
 
-	static unsigned long rand_val = 123456UL;
+	static uint_fast32_t rand_val = UINT32_C(123456);
 
-	if (rand_val & 0x80000000UL)
+	if (rand_val & UINT32_C(0x80000000))
 		rand_val = (rand_val << 1);
 	else	
-		rand_val = (rand_val << 1) ^ 0x201051UL;
+		rand_val = (rand_val << 1) ^ UINT32_C(0x201051);
 
 	return (rand_val % num);
 }
@@ -3746,9 +3746,9 @@ static unsigned long local_random(unsigned long num)
 // генератор шума для настройки
 static RAMFUNC FLOAT_t get_noisefloat(void)
 {
-	const unsigned long middle = LONG_MAX;
+	const uint_fast32_t middle = UINT32_MAX / 2;
 	// Формирование значения выборки
-	return (int) (local_random(2 * middle - 1) - middle) / (FLOAT_t) middle;
+	return ((int32_t) local_random(middle * 2) - (int32_t) middle) / (FLOAT_t) middle;
 }
 
 /* При необходимости добавить в самопрослушивание пердаваемый SSB сигнал */
