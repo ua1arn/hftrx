@@ -37,7 +37,9 @@
 
 // Clock period, SCLK no less then 80 nS (частота не выше 12.5 МГц)
 #define NAU8822_SPIMODE			SPIC_MODE3
-#define NAU8822_SPISPEED 		SPIC_SPEED1M	// УМЕНЬШЕНО С 10 МГц до 1 - помехи
+#ifndef NAU8822_SPISPEED
+	#define NAU8822_SPISPEED 		SPIC_SPEED1M	// УМЕНЬШЕНО С 10 МГц до 1 - помехи
+#endif /* NAU8822_SPISPEED */
 #define NAU8822_ADDRESS_W		0x34	// 8-bit I2C address: 0x34
 
 /* data is
