@@ -1230,7 +1230,7 @@ static const struct menudef menutable [] =
 	& xgcwssbtx,
 #endif /* WITHTX && WITHIF4DSP */
 #endif /* WITHELKEY */
-#if WITHDSPEXTDDC	/* QLABEL("ВоронёнокQLABEL(" с DSP и FPGA */
+#if WITHDSPEXTDDC	/* Квадратуры получаются внешней аппаратурой */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("RF ADC"), 0, 0, 0, 0,
