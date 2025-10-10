@@ -6765,7 +6765,6 @@ static uint_fast8_t tuneabort(void)
 	// счетчик перебора сбрасывается в 0 - и до обновления экрана дело не доходит.
 
 	txreq_process(& txreqst0);	/* обработка запросов */
-	updateboard();	/* полная перенастройка (как после смены режима) */
 	processmessages(& kbch, & kbready);
 	if (! txreq_getreqautotune(& txreqst0))
 		return 1;
@@ -6835,12 +6834,10 @@ static enum phases auto_tune0(void)
 	case N7DDCTUNE_ABORT:
 		txreq_rx(& txreqst0, "ABT");
 		txreq_process(& txreqst0);
-		updateboard();	/* полная перенастройка (как после смены режима) */
 		return PHASE_ABORT; // восстановление будет в auto_tune3
 	case N7DDCTUNE_ERROR:
 		txreq_rx(& txreqst0, "ERR");
 		txreq_process(& txreqst0);
-		updateboard();	/* полная перенастройка (как после смены режима) */
 		return PHASE_ABORT; // восстановление будет в auto_tune3
 	case N7DDCTUNE_OK:
 		return PHASE_DONE; // сохранение будет в auto_tune2
@@ -13387,7 +13384,6 @@ uif_key_moxclick(void)
 	else
 		txreq_mox(& txreqst0);
 	txreq_process(& txreqst0);
-	updateboard();
 }
 
 ///////////////////////////
@@ -13400,7 +13396,6 @@ uif_key_tune(void)
 {
 	txreq_txtone(& txreqst0);
 	txreq_process(& txreqst0);
-	updateboard();
 }
 
 #endif /* WITHTX */
@@ -13427,7 +13422,6 @@ uif_key_bypasstoggle(void)
 	{
 		txreq_rx(& txreqst0, NULL);	// сброс идущей настройки
 		txreq_process(& txreqst0);
-		updateboard();
 	}
 }
 
@@ -13441,11 +13435,19 @@ uif_key_atunerstart(void)
 	const uint_fast8_t bg = getfreqbandgroup(freq);
 	const uint_fast8_t ant = geteffantenna(freq);
 
+	const uint_fast8_t oldtunerwork = tunerwork;
+	tunerwork = 1;
 	txreq_reqautotune(& txreqst0, 1);
 	txreq_process(& txreqst0);
-	// отработка перехода в режим передачи делается в основном цикле
-	tunerwork = 1;
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerwork), 1);
+	if (txreq_getreqautotune(& txreqst0))
+	{
+		tunerwork = 1;
+		save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerwork), tunerwork);
+	}
+	else
+	{
+		tunerwork = oldtunerwork;
+	}
 	updateboard();
 }
 
@@ -18859,6 +18861,8 @@ void
 txreq_process(txreq_t * txreqp)
 {
 #if WITHTX
+	// todo: установка запроса на пердачу может быть вызвана ранее
+	const uint_fast8_t oldhint = txreq_gethint(txreqp);
 	txreq_scaninputs(txreqp);
 	const uint_fast8_t txreq =
 			txreqp->edgphandptt.req ||
@@ -18933,7 +18937,10 @@ txreq_process(txreq_t * txreqp)
 	}
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
-	updateboard();	/* полная перенастройка (как после смены режима) */
+	//if (oldhint != txreq_gethint(txreqp))
+	{
+		updateboard();	/* полная перенастройка (как после смены режима) */
+	}
 
 #if 0
 	// Use "|" operator
@@ -19978,6 +19985,7 @@ void hamradio_set_tune(uint_fast8_t v)
 	else
 		txreq_rx(& txreqst0, NULL);
 	txreq_process(& txreqst0);
+	updateboard();
 }
 
 #if WITHPOWERTRIM
