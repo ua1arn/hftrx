@@ -197,7 +197,7 @@ typedef int32_t hdmi48bufv_t;
 	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
 	// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
 	//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-	#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+	#define HARDWARE_DACSCALE	(0.675)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
 	#define FPGADECIMATION 2560uL
 	#define FPGADIVIDERATIO 5uL

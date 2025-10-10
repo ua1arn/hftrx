@@ -2285,6 +2285,9 @@ static const struct menudef menutable [] =
 
 /* settings page list */
 
+#if WITHTXCPATHCALIBRATE
+	& xgdesignscale,
+#endif /* WITHTXCPATHCALIBRATE */
 #if WITHPOWERTRIM
   #if ! WITHPOTPOWER
     & xgnormalpower,        /* мощность при обычной работе на передачу */

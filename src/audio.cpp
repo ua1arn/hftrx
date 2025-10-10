@@ -178,7 +178,7 @@ static uint_fast8_t 	glob_dspagc = BOARD_AGCCODE_ON;
 #endif /* WITHIF4DSP */
 static uint_fast16_t	glob_digiscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 static uint_fast16_t	glob_cwscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-static uint_fast16_t	glob_designscale = 100;	/* используется при калибровке параметров интерполятора */
+static uint_fast16_t	glob_designscale = 1000;	/* используется при калибровке параметров интерполятора */
 static uint_fast8_t 	glob_digigainmax = 96;
 
 static int_fast16_t		glob_fsadcpower10 = 0;	// мощность, соответствующая full scale от IF ADC с точностью 0.1 дБмВт
@@ -3806,8 +3806,8 @@ static RAMFUNC FLOAT_t mikeinmux(
 	ft8_txfill(& vi0fmike);	// todo: add new DSPCTL_FT8 mode
 #endif /* WITHFT8 */
 
-#if WITHTXCPATHCALIBRATE
-	return (FLOAT_t) glob_designscale / 100;
+#if WITHTXCPATHCALIBRATE && 0
+	return (FLOAT_t) glob_designscale / 1000;
 #endif /* WITHTXCPATHCALIBRATE */
 
 	switch (dspmode)
@@ -5555,7 +5555,7 @@ txparam_update(uint_fast8_t profile)
 	const FLOAT_t txlevelfence = 1;	// контролировать по отсутствию индикации переполнения DUC при передаче
 
 	#if WITHTXCPATHCALIBRATE
-		const FLOAT_t c1MODES = (FLOAT_t) glob_designscale / 100;	// предотвращение переполнения
+		const FLOAT_t c1MODES = (FLOAT_t) glob_designscale / 1000;	// предотвращение переполнения
 	#else /* WITHTXCPATHCALIBRATE */
 		const FLOAT_t c1MODES = (FLOAT_t) HARDWARE_DACSCALE;	// предотвращение переполнения
 	#endif
