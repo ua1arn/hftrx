@@ -5426,6 +5426,19 @@ enum
 	#if WITHPOWERTRIM
 		#if WITHPACLASSA
 			static uint_fast8_t gclassamode;	/* использование режима клвсс А при передаче */
+			/* усилитель мощности поддерживает переключение в класс А */
+			static const struct paramdefdef xgclassamode =
+			{
+				QLABEL2("CLASSA", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
+				ITEM_VALUE,
+				0, 1,
+				OFFSETOF(struct nvmap, gclassamode),
+				getselector0, nvramoffs0, valueoffs0,
+				NULL,
+				& gclassamode,
+				getzerobase,
+				NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+			};
 		#else /* WITHPACLASSA */
 		#endif /* WITHPACLASSA */
 			static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
@@ -5452,7 +5465,6 @@ enum
 		enum { gtunepower = WITHPOWERTRIMMAX }; /* мощность при работе автоматического согласующего устройства */
 	#endif /* WITHPOWERTRIM, WITHPOWERLPHP */
 
-	static uint_fast8_t gtxgate = 1;		/* разрешение драйвера и оконечного усилителя */
 	#if WITHVOX
 		static uint_fast8_t gvoxenable;	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
 		static uint_fast8_t gvoxlevel = 10;	/* модифицируется через меню - усиление VOX */
@@ -5961,7 +5973,7 @@ uint_fast8_t hamradio_get_blinkphase(void)
 uint_fast8_t hamradio_get_classa(void)
 {
 #if WITHPACLASSA && WITHTX
-	return gclassamode;
+	return param_getvalue(& xgclassamode);
 #else /* WITHPACLASSA */
 	return 0;
 #endif /* WITHPACLASSA */
@@ -8806,19 +8818,6 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel)
 #if WITHTX
 
 #if WITHPACLASSA
-/* усилитель мощности поддерживает переключение в класс А */
-static const struct paramdefdef xgclassamode =
-{
-	QLABEL2("CLASSA", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
-	ITEM_VALUE,
-	0, 1,
-	OFFSETOF(struct nvmap, gclassamode),
-	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& gclassamode,
-	getzerobase,
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-};
 #endif
 
 #if WITHPOWERTRIM && ! WITHPOTPOWER
@@ -8835,6 +8834,8 @@ static const struct paramdefdef xgnormalpower =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif
+
+static uint_fast8_t gtxgate = 1;		/* разрешение драйвера и оконечного усилителя */
 static const struct paramdefdef xgtxgate =
 {
 	QLABEL("TX GATE"), 8, 3, RJ_ON,	ISTEP1,
@@ -8847,7 +8848,8 @@ static const struct paramdefdef xgtxgate =
 	getzerobase,
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
-
+#else
+enum { gtxgate = 0 };
 #endif /* WITHTX */
 
 #if WITHIF4DSP
