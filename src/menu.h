@@ -2333,7 +2333,7 @@ static const struct menudef menutable [] =
 #if WITHFANTIMER
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	(const struct paramdefdef [1]) {
-		QLABEL("FAN TEMP"), 7, 0, RJ_ON,	ISTEP1,
+		QLABEL2("FAN TEMP", "FAN Temp"), 7, 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gfanpatempflag),
@@ -2344,7 +2344,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("FAN TMIN"), 7, 0, RJ_SIGNED,	ISTEP1,
+		QLABEL2("FAN TMIN", "FAN T Min"), 7, 0, RJ_SIGNED,	ISTEP1,
 		ITEM_VALUE,
 		10, 70,
 		OFFSETOF(struct nvmap, gfanpaofftemp),
@@ -2355,7 +2355,7 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL("FAN TMAX"), 7, 0, RJ_SIGNED,	ISTEP1,
+		QLABEL2("FAN TMAX", "FAN T Max"), 7, 0, RJ_SIGNED,	ISTEP1,
 		ITEM_VALUE,
 		10, 70,
 		OFFSETOF(struct nvmap, gfanpaontemp),
@@ -2367,7 +2367,7 @@ static const struct menudef menutable [] =
 	},
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 	(const struct paramdefdef [1]) {
-		QLABEL("FAN TIME"), 7, 0, RJ_UNSIGNED,	ISTEP5,
+		QLABEL2("FAN TIME", "FAN Time"), 7, 0, RJ_UNSIGNED,	ISTEP5,
 		ITEM_VALUE,
 		0, FANPATIMEMAX,
 		OFFSETOF(struct nvmap, gfanpatime),
@@ -2379,7 +2379,7 @@ static const struct menudef menutable [] =
 	},
 	#if WITHFANPWM
 	(const struct paramdefdef [1]) {
-		QLABEL("FAN FLOW"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+		QLABEL2("FAN FLOW", "FAN Flow"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		WITHFANPWMMIN, WITHFANPWMMAX,
 		OFFSETOF(struct nvmap, gfanpapwm),
@@ -2391,11 +2391,38 @@ static const struct menudef menutable [] =
 	},
 	#endif /* WITHFANPWM */
 #endif /* WITHFANTIMER */
-	& xgtxgate,
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
+	& xgswrprot,
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
+	(const struct paramdefdef [1]) {
+		QLABEL2("HEAT LIM", "Heat Limit"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		ITEM_VALUE,
+		20, 85,						/* порог срабатывания защиты по температуре */
+		OFFSETOF(struct nvmap, gtempvmax),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gtempvmax,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+	(const struct paramdefdef [1]) {
+		QLABEL2("HEATPROT", "Heat Prot"), 7, 0, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,						/* защита от перегрева */
+		OFFSETOF(struct nvmap, gheatprot),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gheatprot,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
+	& xgtxgate,	/* разрешение драйвера и оконечного усилителя */
 
 #if WITHDSPEXTDDC	/* QLABEL("ВоронёнокQLABEL(" с DSP и FPGA */
 	(const struct paramdefdef [1]) {
-		QLABEL("DAC TEST"), 8, 3, RJ_ON,	ISTEP1,	/*  */
+		QLABEL2("DAC TEST", "DAC Test"), 8, 3, RJ_ON,	ISTEP1,	/*  */
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gdactest),
@@ -2408,7 +2435,7 @@ static const struct menudef menutable [] =
 #endif /* WITHDSPEXTDDC */
 #if WITHIF4DSP
 	(const struct paramdefdef [1]) {
-		QLABEL("DACSCALE"), 7, 0, RJ_UNSIGNED,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL2("DACSCALE", "DAC Scale"), 7, 0, RJ_UNSIGNED,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -2418,6 +2445,9 @@ static const struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
+#endif /* WITHIF4DSP */
+
+#if WITHIF4DSP
 
 /* settings page header */
 /* group name +++ */
@@ -3264,33 +3294,8 @@ static const struct menudef menutable [] =
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	& xminforward,
 	& xmaxpwrcali,
-	& xgswrprot,
 	& xgdownatcwtune,
 #endif
-#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
-	(const struct paramdefdef [1]) {
-		QLABEL("HEAT LIM"), 7, 0, RJ_UNSIGNED, ISTEP1,
-		ITEM_VALUE,
-		20, 85,						/* порог срабатывания защиты по температуре */
-		OFFSETOF(struct nvmap, gtempvmax),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gtempvmax,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("HEATPROT"), 7, 0, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,						/* защита от перегрева */
-		OFFSETOF(struct nvmap, gheatprot),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gheatprot,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 #if WITHIF4DSP || defined (TXPATH_BIT_ENABLE_SSB) || defined (TXPATH_BIT_ENABLE_CW) || defined (TXPATH_BIT_GATE)
 	(const struct paramdefdef [1]) {
 		QLABEL("RXTX DLY"), 7, 0, RJ_UNSIGNED, ISTEP5,	/* 5 mS step of changing value */

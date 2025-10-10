@@ -5888,15 +5888,15 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	static const struct paramdefdef xgswrprot =
 	{
-			QLABEL("SWR PROT"), 7, 0, RJ_ON,	ISTEP1,
-			ITEM_VALUE,
-			0, 1,						/* защита от превышения КСВ */
-			OFFSETOF(struct nvmap, gswrprot),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& gswrprot,
-			getzerobase,
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		QLABEL2("SWR PROT", "SWR Protect"), 7, 0, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,						/* защита от превышения КСВ */
+		OFFSETOF(struct nvmap, gswrprot),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gswrprot,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	static const struct paramdefdef xminforward =
 	{
@@ -6155,7 +6155,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	/* подстройка усиления микрофонного усилителя через меню. */
 	static const struct paramdefdef xgmik1level =
 	{
-		QLABEL("MIC LEVL"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		QLABEL2("MIC LEVL", "MIC Level"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
 		OFFSETOF(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
@@ -6231,7 +6231,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	/* Глубина модуляции в АМ - 0..100% */
 	static const struct paramdefdef xgamdepth =
 	{
-		QLABEL("AM DEPTH"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка глубины модуляции в АМ */
+		QLABEL2("AM DEPTH", "AM Depth"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка глубины модуляции в АМ */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
@@ -6244,7 +6244,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	static const struct paramdefdef xggaincwtx =
 	{
-		QLABEL("CW BOOST"),	7, 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		QLABEL2("CW BOOST", "CW Boost"),	7, 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,
 		30, 100,
 		OFFSETOF(struct nvmap, ggaincwtx),
@@ -8834,7 +8834,7 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel)
 #if WITHPOWERTRIM && ! WITHPOTPOWER
 static const struct paramdefdef xgnormalpower =
 {
-	QLABEL2("TX POWER", "TX POWER"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* мощность при обычной работе на передачу */
+	QLABEL2("TX POWER", "TX Power"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* мощность при обычной работе на передачу */
     ITEM_VALUE,
     WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
     OFFSETOF(struct nvmap, gnormalpower),
@@ -8849,7 +8849,7 @@ static const struct paramdefdef xgnormalpower =
 static uint_fast8_t gtxgate = 1;		/* разрешение драйвера и оконечного усилителя */
 static const struct paramdefdef xgtxgate =
 {
-	QLABEL("TX GATE"), 8, 3, RJ_ON,	ISTEP1,
+	QLABEL2("TX GATE", "TX Gate"), 8, 3, RJ_ON,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, gtxgate),
