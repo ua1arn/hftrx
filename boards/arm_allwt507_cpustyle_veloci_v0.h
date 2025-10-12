@@ -860,6 +860,7 @@
 	#define OE_CTL1_BIT	(UINT32_C(1) << 16)	/* PI16 */
 	//#define targetdataflash 0xFF
 	#define targetnone 0x00
+	#define targetcodec1pulse 0xFE	// pulse for NAU8822L
 
 	#define FPGALOADER_SPISPEED SPIC_SPEED12M
 	#define FPGAREG_V1_SPISPEED SPIC_SPEED12M
@@ -879,7 +880,7 @@
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target) do { \
 		switch (target) { \
-		/*case targetcodec1: break; *//* on-board codec1 NAU8822L */ \
+		case targetcodec1pulse: break; /* on-board codec1 NAU8822L */ \
 		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); } break; *//* PC3 SPI0_CS */ \
 		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 1 * (target)); } break; */\
 		default: { gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
@@ -890,7 +891,7 @@
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
 		switch (target) { \
-		/*case targetcodec1:  { gpioX_setstate(GPIOE, targetcodec1, 0 * targetcodec1); gpioX_setstate(GPIOE, targetcodec1, 1 * targetcodec1); } break; */ /* pulse for NAU8822L */ \
+		case targetcodec1pulse:  { gpioX_setstate(GPIOE, targetcodec1, 0 * targetcodec1); gpioX_setstate(GPIOE, targetcodec1, 1 * targetcodec1); } break; /* Pulse on CS for on-board codec1 NAU8822L */ \
 		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); } break; *//* PC3 SPI0_CS */ \
 		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 0 * (target)); } break; */\
 		case targetctl1: { gpioX_setstate(GPIOE, targetctl1, 1 * targetctl1); gpioX_setstate(GPIOI, OE_CTL1_BIT, 0 * OE_CTL1_BIT); } break; \
@@ -904,10 +905,12 @@
 		switch (target) { \
 		case targetnvram: break; /* NVRAM FM25W256 */ \
 		case targetcodec1: break; /* on-board codec1 NAU8822L */ \
+		case targetcodec1pulse: break; /* Pulse on CS for on-board codec1 NAU8822L */ \
 		case targetfpga1: break; /* FPGA control registers CS1 */ \
 		case targettsc1: /*local_delay_us(1); */ break; /* XPT2046 SPI chip select signal */ \
 		case targetxad2: local_delay_us(5); break; /* external SPI device (PA BOARD ADC) */ \
 		case targetctl1: local_delay_us(5); break; /* board control registers chain */ \
+		case targetnone: break; \
 		default: local_delay_us(1); break; \
 		} \
 	} while (0)
