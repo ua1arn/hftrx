@@ -195,23 +195,24 @@ void kbd_pass(void);
  */
 uint_fast8_t kbd_scan(uint_fast8_t * key);
 uint_fast8_t kbd_get_ishold(uint_fast8_t flag);
-uint_fast8_t kbd_getnumpad(uint_fast8_t key);
+uint_fast8_t front_getnumpad(uint_fast8_t key);
 uint_fast8_t dtmf_scan(uint_fast8_t * v);
 
 struct qmkey 
 {
-	uint_fast8_t flags;
-	uint_fast8_t code, holded;
-	uint_fast8_t numpad;		/* код клавиши в режиме цифрового ввода */
+	uint8_t flags;
+	uint16_t code, holded;
+	char numpad;		/* код клавиши в режиме цифрового ввода */
 };
-extern const struct qmkey qmdefs [];
+
 uint_fast8_t geterasekey(void);
 
 
 #define KEYBOARD_NOKEY UINT8_MAX
 
 uint_fast8_t board_get_pressed_key(void);	// Если ничего - возвращаем KEYBOARD_NOKEY
-uint_fast8_t dtmf_get_pressed_key(void);
+const struct qmkey * dtmf_get_pressed_pkey(void);
+const struct qmkey * front_get_pressed_pkey(void);
 
 #ifdef __cplusplus
 }

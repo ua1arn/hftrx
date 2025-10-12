@@ -31,7 +31,7 @@
 
 	// Коды для случая работы с семью кнопками, подключёнными прямо на выводы порта
 
-	const struct qmkey qmdefs [NQMKEYS] =
+	static const struct qmkey qmdefs [NQMKEYS] =
 	{
 		{ KIF_SLOW, KBD_CODE_BAND_DOWN, KBD_CODE_BAND_DOWN,  },
 		{ KIF_NONE, KBD_CODE_MODE, KBD_CODE_MODEMOD,  },
@@ -55,7 +55,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_7BUTTONS
 	// Коды для случая работы с семью кнопками, подключёнными прямо на ADC7 и ADC6
 
-	const struct qmkey qmdefs [NQMKEYS] =
+	static const struct qmkey qmdefs [NQMKEYS] =
 	{
 		{ KIF_NONE, KBD_CODE_BW, KBD_CODE_AGC,  },	// 0
 		{ KIF_NONE, KBD_CODE_MODE, KBD_CODE_MODEMOD,  },	// 1
@@ -87,7 +87,7 @@ uint_fast8_t geterasekey(void)
 // увеличение индекса в массиве соответствует направлению перебора кнопок снизу вверх
 /* расположение кнопок для плат "Павлин" */
 
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	//ki2-правый ряд
 	{ KIF_FAST,ENC_CODE_STEP_UP,ENC_CODE_STEP_UP, },
@@ -117,7 +117,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_RAVEN24
 
 /* расположение кнопок для плат "Воробей" с DSP обработкой */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	//ki5-самый правый ряд
 	{ KIF_NONE,		KBD_CODE_MAX,	KBD_CODE_MAX, 		' ', },
@@ -164,7 +164,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_RAVEN24_RA1AGO
 
 /* расположение кнопок для плат "Воробей" с DSP обработкой - выстаочный экземпляр */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	{ KIF_NONE,		KBD_CODE_BW,		KBD_CODE_AGC, 			' ', },	// #0: F4
 	{ KIF_SLOW4,	KBD_CODE_AMBANDPASSUP,		KBD_CODE_AMBANDPASSUP, 		' ', },	// #1: F3
@@ -209,7 +209,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_RAVEN20_V5
 
 /* расположение кнопок для плат "Воробей" с DSP обработкой */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	//ki4-правый ряд
 	{ KIF_NONE,		KBD_CODE_MODE,		KBD_CODE_MODEMOD, 		'3', },
@@ -255,7 +255,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_FPANEL20_V0
 
 /* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	/* ! ряд справа от индикатора - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_LOCK,		KBD_CODE_LOCK_HOLDED, 	' ', },
@@ -302,7 +302,7 @@ uint_fast8_t geterasekey(void)
 
 /* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 /* Новый вариант под корпус с надписями от RK1AQ */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	/* ! ряд справа от индикатора - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_GEN_HAM,		' ', },		// LOCK / GEN_HAM
@@ -349,7 +349,7 @@ uint_fast8_t geterasekey(void)
 
 /* 20 кнопок на 5 линий - плата Rfrontpanel_v7a, Rfrontpanel_v4b, Rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 /* Новый вариант под корпус с надписями от RK1AQ */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	/* ! ряд справа от индикатора - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
@@ -396,7 +396,7 @@ uint_fast8_t geterasekey(void)
 
 #elif KEYBOARD_SINGLE	// кнопка только на энкодере
 
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	{ KIF_ERASE,		KBD_ENC2_PRESS,			KBD_ENC2_HOLD, 			' ', },
 };
@@ -410,7 +410,7 @@ uint_fast8_t geterasekey(void)
 
 /* 20 кнопок на 5 линий - плата Rfrontpanel_v7a, Rfrontpanel_v4b, Rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 /* Новый вариант под корпус с надписями от RK1AQ */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	/* вход кнопки валкодера - KI5 */
 	{ KIF_NONE,		KBD_ENC2_PRESS,			KBD_ENC2_HOLD,			' ', },
@@ -464,7 +464,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_VELOCI24_V0_UA1CEI
 
 /* 24 кнопки на 6 линий */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	{ KIF_NONE,		KBD_ENC2_PRESS,			KBD_ENC2_HOLD,			' ', },		// 0  reserved
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 1  MH31 FST
@@ -503,7 +503,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_VELOCI24_V0
 
 /* 24 кнопки на 6 линий */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	{ KIF_NONE,		KBD_ENC2_PRESS,			KBD_ENC2_HOLD,			' ', },		// 0  reserved
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 1  MH31 FST
@@ -544,7 +544,7 @@ uint_fast8_t geterasekey(void)
 /* 20 кнопок на 5 линий - плата Rfrontpanel_v7a, Rfrontpanel_v4b, Rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 /* Новый вариант под корпус с надписями от RK1AQ */
 /* дополнительно коды для прямого ввода частоты */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	/* ! ряд справа от индикатора - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
@@ -589,7 +589,7 @@ uint_fast8_t geterasekey(void)
 
 #elif KEYBOARD_MATRIX_4x4
 
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,			KBD_ENC2_HOLD, 			' ', },
@@ -628,7 +628,7 @@ uint_fast8_t geterasekey(void)
 
 /* 20 кнопок на 5 линий - плата Rfrontpanel_v7a, Rfrontpanel_v4b, Rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 /* Новый вариант под корпус с надписями от RK1AQ */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 		/* ! ряд справа от индикатора - снизу вверх */
 		{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
@@ -674,7 +674,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_FPANEL30_V3_BASE
 
 /* 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	/* справа от индикатора, крайний правый (дальний от инлдикатора) - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
@@ -730,7 +730,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_FPANEL30_V3
 
 /* 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	/* RRR справа от индикатора, крайний правый (дальний от инлдикатора) - снизу вверх */
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
@@ -786,7 +786,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_FPANEL20_V0A_RA1AGO
 
 /* 20 кнопок на 5 линий - перевернутые */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	/* ! ряд слева от индикатора - сверху вниз */
 	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD, 		' ', },		// MODE/SUBMODE
@@ -840,7 +840,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_FPANEL20_V0A_AVB
 
 /* 20 кнопок на 5 линий - перевернутые */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	/* ! ряд слева от индикатора - сверху вниз */
 	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD, 		' ', },		// MODE/SUBMODE
@@ -894,7 +894,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_FPANEL20_V0A_AVB_NIKULSKI
 
 /* 20 кнопок на 5 линий - перевернутые - в ряду с диапазонами кнопка меню */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	/* ! ряд слева от индикатора - сверху вниз */
 	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD, 		' ', },		// MODE/SUBMODE
@@ -949,7 +949,7 @@ uint_fast8_t geterasekey(void)
 
 /* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 /* Новый вариант под корпус с надписями от RK1AQ */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	/* ! ряд справа от индикатора - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_USEFAST,	KBD_CODE_LOCK, 		' ', },
@@ -995,7 +995,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_VERTICAL_REV
 
 /* расположение кнопок для плат "Воробей" и "Колибри" */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	//ki2-правый ряд
 	{ KIF_NONE,		KBD_CODE_MODE,		KBD_CODE_MODEMOD, 		'3', },
@@ -1027,7 +1027,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_VERTICAL_REV_SIMPLEFREQ
 
 /* расположение кнопок для плат "Воробей" и "Колибри" - только прямой ввод частоты */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	//ki2-правый ряд
 	{ KIF_NONE,		KBD_CODE_0,		KBD_CODE_0, 	'3', },
@@ -1059,7 +1059,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_VERTICAL_VALERY
 
 /* расположение кнопок для плат "Воробей" и "Колибри" */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, 			'0', },
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,	KBD_CODE_ENTERFREQDONE, '1', },
@@ -1090,7 +1090,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_VERTICAL_REV_IGOR
 
 /* усечённый набор функций */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	//ki2-правый ряд
 	{ KIF_NONE,		KBD_CODE_0,			KBD_CODE_0, 		'3', },
@@ -1144,7 +1144,7 @@ uint_fast8_t geterasekey(void)
 	S18	TX, TUNE
  */
 
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	//ki2-левый ряд
 	{ KIF_NONE,		KBD_CODE_ATT,		KBD_CODE_PAMP, 			' ', },	// S13
@@ -1180,7 +1180,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_VERTICAL_REV_TOPDOWN
 
 /* расположение кнопок для ПЕРЕВЁРНУТЫХ плат "Воробей" и "Колибри" */
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	//ki2-левый ряд
 	{ KIF_FAST,		ENC_CODE_STEP_DOWN,	ENC_CODE_STEP_DOWN, 	'#', },
@@ -1210,7 +1210,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_M0SERG
 
 // три группы по ШЕСТЬ линейки кнопок друг за другом в один ряд.
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	{ KIF_FAST,		ENC_CODE_STEP_UP,	ENC_CODE_STEP_UP, 		'*', },	// 0
 	{ KIF_NONE,		KBD_CODE_LOCK,		KBD_CODE_LOCK_HOLDED, 	'0', },	// 1
@@ -1243,7 +1243,7 @@ uint_fast8_t geterasekey(void)
 #elif KEYB_RA1AGG
 
 // три группы по четыре линейки кнопок друг за другом в один ряд.
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	// ADC7(ki2) - middle
 	{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
@@ -1274,7 +1274,7 @@ uint_fast8_t geterasekey(void)
 
 /* расположение кнопок для RA1AGO */
 
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	// ADC7 (ki2) - middle
 	{ KIF_NONE, KBD_CODE_MOX, KBD_CODE_TXTUNE,  },
@@ -1303,7 +1303,7 @@ uint_fast8_t geterasekey(void)
 
 #elif KEYB_UA1CEI
 
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	// ki2
 	{ KIF_NONE,  ENC_CODE_STEP_DOWN, ENC_CODE_STEP_DOWN,   },
@@ -1343,7 +1343,7 @@ uint_fast8_t geterasekey(void)
 	*/
 
 
-	const struct qmkey qmdefs [NQMKEYS] =
+	static const struct qmkey qmdefs [NQMKEYS] =
 	{
 		{ KIF_EXTMENU,  KBD_CODE_DISPMODE, KBD_CODE_MENU,   },
 		{ KIF_NONE,  KBD_CODE_MODE,  KBD_CODE_MODEMOD,   },
@@ -1366,7 +1366,7 @@ uint_fast8_t geterasekey(void)
 #warning KEYB_XXXX not defined
 
 // базовое расположение клавиш (в соответствии с тем, что в .xls документе описано).
-const struct qmkey qmdefs [NQMKEYS] =
+static const struct qmkey qmdefs [NQMKEYS] =
 {
 	// ki2
 	{ KIF_SLOW, KBD_CODE_0, KBD_CODE_0,  },
@@ -1396,7 +1396,7 @@ uint_fast8_t geterasekey(void)
 #endif
 
 /* получить код клавиши цифровой клавиатуры по коду, полученному как код нажатия */
-uint_fast8_t kbd_getnumpad(uint_fast8_t key)
+uint_fast8_t front_getnumpad(uint_fast8_t key)
 {
 	uint_fast8_t i;
 
@@ -1408,11 +1408,21 @@ uint_fast8_t kbd_getnumpad(uint_fast8_t key)
 	return 0;
 }
 
+const struct qmkey * front_get_pressed_pkey(void)
+{
+	const uint_fast8_t code = board_get_pressed_key();
+	return code == KEYBOARD_NOKEY ? NULL : & qmdefs [code];
+}
+
 #else /* WITHKEYBOARD */
 
 uint_fast8_t geterasekey(void)
 {
 	return KBD_CODE_MAX;
+}
+const struct qmkey * front_get_pressed_pkey(void)
+{
+	return NULL;
 }
 
 #endif /* WITHKEYBOARD */

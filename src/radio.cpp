@@ -18649,7 +18649,7 @@ processmainloopkeyboard(inputevent_t * ev)
 		if (ev->keyevent.kbready == 0)
 			return 0;
 		ev->keyevent.kbready = 0;
-		const uint_fast8_t c = kbd_getnumpad(ev->keyevent.kbch);
+		const uint_fast8_t c = front_getnumpad(ev->keyevent.kbch);
 		if (ev->keyevent.kbch == KBD_CODE_ENTERFREQDONE)
 		{
 			editfreqmode = 0;
@@ -21790,10 +21790,9 @@ static void dtmf_out(void * ctx, char c)
 	PRINTF("%c", c);
 }
 
-uint_fast8_t
-dtmf_get_pressed_key(void)
+const struct qmkey * dtmf_get_pressed_pkey(void)
 {
-	return KEYBOARD_NOKEY;
+	return NULL;
 }
 
 static FLOAT_t goertz_dtmf_win [goe_dtmfLENGTH]; // Window
