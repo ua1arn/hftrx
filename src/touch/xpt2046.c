@@ -73,8 +73,6 @@ xpt2046_read4(
 	static const uint8_t txbuf [] =
 	{
 		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
-		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
-		XPT2046_CONTROL | PDx | XPT2046_X, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_X, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_Z1, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,
@@ -84,23 +82,12 @@ xpt2046_read4(
 	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
 	prog_spi_exchange(target, tscspeed, tscmode, txbuf, rxbuf, ARRAY_SIZE(txbuf));
-	//printhex((uintptr_t) rxbuf, rxbuf, sizeof rxbuf);
-	unsigned i;
-	unsigned yv = 0;
-	unsigned xv = 0;
-	unsigned z1v = 0;
-	unsigned z2v = 0;
-	for (i = 0; i < 1; ++ i)
-	{
-		yv += USBD_peek_u16_BE(rxbuf + (i * 8) + 3) / 8;
-		xv += USBD_peek_u16_BE(rxbuf + (i * 8) + 7) / 8;
-		z1v += USBD_peek_u16_BE(rxbuf + (i * 8) + 9) / 8;
-		z2v += USBD_peek_u16_BE(rxbuf + (i * 8) + 11) / 8;
-	}
-	* y = yv / i;
-	* x = xv / i;
-	* z1 = z1v / i;
-	* z2 = z2v / i;
+	//printhex((uintptr_t) 0, rxbuf, sizeof rxbuf);
+
+	* y = USBD_peek_u16_BE(rxbuf + 1) / 8;
+	* x = USBD_peek_u16_BE(rxbuf + 3) / 8;
+	* z1 = USBD_peek_u16_BE(rxbuf + 5) / 8;
+	* z2 = USBD_peek_u16_BE(rxbuf + 7) / 8;
 }
 
 #endif /* WITHSPIHW || WITHSPISW */
