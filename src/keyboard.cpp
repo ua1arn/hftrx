@@ -59,6 +59,7 @@ typedef struct kbdst_tag
 	adcdone_t aevent;
 	uint8_t kbdfifo [16];
 	uint_fast8_t (* get_pressed_key)(void);
+	const struct qmkey * qmdefsp;
 } kbdst_t;
 
 static kbdst_t kbd0;
@@ -66,8 +67,9 @@ static kbdst_t kbd0;
 static kbdst_t dtmf_kbd;
 #endif /* WITHSUBTONES */
 
-static void kbdst_initialize(kbdst_t * kbdp, uint_fast8_t (* get_pressed_key_cb)(void))
+static void kbdst_initialize(kbdst_t * kbdp, uint_fast8_t (* get_pressed_key_cb)(void), const struct qmkey * aqmdefsp)
 {
+	kbdp->qmdefsp = aqmdefsp;
 	kbdp->get_pressed_key = get_pressed_key_cb;
 	kbdp->kbd_press = 0;	/* время с момента нажатия */
 	kbdp->kbd_release = 0;		/* время после отпускания - запрет нового нажатия */
@@ -85,7 +87,7 @@ static void kbdst_initialize(kbdst_t * kbdp, uint_fast8_t (* get_pressed_key_cb)
 	if (kbdp->kbd_last != KEYBOARD_NOKEY)
 	{
 		// самое первое нажатие
-		kbdp->kbd_press = (qmdefs [kbdp->kbd_last].flags & KIF_POWER) ? (KBD_MAX_PRESS_DELAY_LONG + 1) : 1;	// длинное нажатие уже зарегистрировано
+		kbdp->kbd_press = (kbdp->qmdefsp [kbdp->kbd_last].flags & KIF_POWER) ? (KBD_MAX_PRESS_DELAY_LONG + 1) : 1;	// длинное нажатие уже зарегистрировано
 		kbdp->kbd_release = 0;
 		kbdp->kbd_slowcount = 0;
 	}
@@ -100,7 +102,7 @@ static void kbdst_initialize(kbdst_t * kbdp, uint_fast8_t (* get_pressed_key_cb)
 }
 
 /* получение скан-кода клавиши или 0 в случае отсутствия.
- * если клавиша удержана, возвращается скан-код из соответствующего поля массива структур qmdefs
+ * если клавиша удержана, возвращается скан-код из соответствующего поля массива структур kbdp->qmdefsp
  * ОТЛАЖИВАЕТСЯ
  */
 static uint_fast8_t
@@ -150,7 +152,7 @@ kbd_scan_local(kbdst_t * kbdp, uint_fast8_t * key)
 
 		kbdp->kbd_release = KBD_STABIL_RELEASE;
 		
-		const uint_fast8_t flags = qmdefs [kbdp->kbd_last].flags;
+		const uint_fast8_t flags = kbdp->qmdefsp [kbdp->kbd_last].flags;
 		/* сравнение кодов клавиш, для которых допустим медленный автоповтор при длительном удержании */
 		if ((flags & KIF_SLOW) != 0)	//(is_slow_repeat(kbd_last))
 		{
@@ -162,7 +164,7 @@ kbd_scan_local(kbdst_t * kbdp, uint_fast8_t * key)
 				// @suppress("No break at end of case")
 
 			case KBD_MAX_PRESS_DELAY_LONG:
-				* key = qmdefs [kbdp->kbd_last].code;
+				* key = kbdp->qmdefsp [kbdp->kbd_last].code;
 				kbdp->kbd_release = 0;
 				return 1;
 			}
@@ -179,7 +181,7 @@ kbd_scan_local(kbdst_t * kbdp, uint_fast8_t * key)
 	    		// @suppress("No break at end of case")
 
 			case KBD_MAX_PRESS_DELAY_LONG4:
-				* key = qmdefs [kbdp->kbd_last].code;
+				* key = kbdp->qmdefsp [kbdp->kbd_last].code;
 				kbdp->kbd_release = 0;
 				return 1;
 			}
@@ -202,7 +204,7 @@ kbd_scan_local(kbdst_t * kbdp, uint_fast8_t * key)
 				else
 					kbdp->kbd_press = KBD_TIME_SWITCH_QUICK - KBD_PRESS_REPEAT_QUICK2;
 				// формирование символа в автоповторе
-				encoder_kbdctl(qmdefs [kbdp->kbd_last].code, 1);
+				encoder_kbdctl(kbdp->qmdefsp [kbdp->kbd_last].code, 1);
 				//dbg_putchar('R');
 				//dbg_putchar('0' + kbd_last);
 				break;
@@ -222,7 +224,7 @@ kbd_scan_local(kbdst_t * kbdp, uint_fast8_t * key)
 			{
 				if (++ kbdp->kbd_press == KBD_MAX_PRESS_DELAY_POWER)
 				{
-					* key = qmdefs [kbdp->kbd_last].holded; // lond_press symbol
+					* key = kbdp->qmdefsp [kbdp->kbd_last].holded; // lond_press symbol
 					//
 					return 1;
 				}
@@ -238,7 +240,7 @@ kbd_scan_local(kbdst_t * kbdp, uint_fast8_t * key)
 			{
 				if (++ kbdp->kbd_press == KBD_MAX_PRESS_DELAY_LONG)
 				{	
-					* key = qmdefs [kbdp->kbd_last].holded; // lond_press symbol
+					* key = kbdp->qmdefsp [kbdp->kbd_last].holded; // lond_press symbol
 					//
 					return 1;
 				}
@@ -260,7 +262,7 @@ kbd_scan_local(kbdst_t * kbdp, uint_fast8_t * key)
 		// keyboard keys released, time is not expire.
 		if (-- kbdp->kbd_release == 0)
 		{
-			const uint_fast8_t flags = qmdefs [kbdp->kbd_last].flags;
+			const uint_fast8_t flags = kbdp->qmdefsp [kbdp->kbd_last].flags;
 			// time is expire
 			if ((flags & KIF_FAST) != 0)
 			{
@@ -269,7 +271,7 @@ kbd_scan_local(kbdst_t * kbdp, uint_fast8_t * key)
 				//if (kbd_press < KBD_MED_STAGE1)
 				if (kbdp->kbd_slowcount == 0)
 				{
-					encoder_kbdctl(qmdefs [kbdp->kbd_last].code, 0);
+					encoder_kbdctl(kbdp->qmdefsp [kbdp->kbd_last].code, 0);
 					//dbg_putchar('Q');
 					//dbg_putchar('0' + kbd_last);
 				}
@@ -283,7 +285,7 @@ kbd_scan_local(kbdst_t * kbdp, uint_fast8_t * key)
 			}
 			else if (kbdp->kbd_press < KBD_MAX_PRESS_DELAY_LONG)
 			{
-				* key = qmdefs [kbdp->kbd_last].code;
+				* key = kbdp->qmdefsp [kbdp->kbd_last].code;
 				kbdp->kbd_press = 0;
 				kbdp->kbd_slowcount = 0;
 
@@ -370,7 +372,7 @@ uint_fast8_t kbdx_get_ishold(kbdst_t * kbdp, uint_fast8_t flag)
 	IRQLSPIN_LOCK(& irqllock, & oldIrql, IRQL_SYSTEM);
 	uint_fast8_t f = !! kbdp->kbd_press;
 
-	r = f && (qmdefs [kbdp->kbd_last].flags & flag);
+	r = f && (kbdp->qmdefsp [kbdp->kbd_last].flags & flag);
 	IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 	return r;
 }
@@ -431,16 +433,21 @@ static dummy_get_pressed_key(void)
 	return KEYBOARD_NOKEY;
 }
 
+static const struct qmkey dtmf_qmdefs [] =
+{
+	{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, 			' ', },
+};
+
 /* инициализация переменных работы с клавиатурой */
 void kbd_initialize(void)
 {
 #if WITHBBOX
-	kbdst_initialize(& kbd0, dummy_get_pressed_key);
+	kbdst_initialize(& kbd0, dummy_get_pressed_key, qmdefs);
 #else /* WITHBBOX */
-	kbdst_initialize(& kbd0, board_get_pressed_key);
+	kbdst_initialize(& kbd0, board_get_pressed_key, qmdefs);
 #endif /* WITHBBOX */
 #if WITHSUBTONES
-	kbdst_initialize(& dtmf_kbd, dtmf_get_pressed_key);
+	kbdst_initialize(& dtmf_kbd, dtmf_get_pressed_key, dtmf_qmdefs);
 #endif /* WITHSUBTONES */
 
 	IRQLSPINLOCK_INITIALIZE(& irqllock);
