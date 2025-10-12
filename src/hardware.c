@@ -4141,7 +4141,7 @@ void cpump_initialize(void)
 		aarch32_mp_cpuN_start(aarch32_reset_handlers [core], core);
 #endif
 
-		LCLSPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освододит этот spinlock */
+		LCLSPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освободит этот spinlock */
 		LCLSPIN_UNLOCK(& cpu1init);
 	}
 }
