@@ -85,7 +85,7 @@ static void kbdst_initialize(kbdst_t * kbdp, uint_fast8_t (* get_pressed_key_cb)
 	if (kbdp->kbd_last != KEYBOARD_NOKEY)
 	{
 		// самое первое нажатие
-		kbdp->kbd_press = KBD_MAX_PRESS_DELAY_LONG + 1;	// длинное нажатие уже зарегистрировано
+		kbdp->kbd_press = (qmdefs [kbdp->kbd_last].flags & KIF_POWER) ? (KBD_MAX_PRESS_DELAY_LONG + 1) : 1;	// длинное нажатие уже зарегистрировано
 		kbdp->kbd_release = 0;
 		kbdp->kbd_slowcount = 0;
 	}
