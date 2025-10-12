@@ -18939,25 +18939,7 @@ txreq_process(txreq_t * txreqp)
 	}
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
-	//if (oldhint != txreq_gethint(txreqp))
-	{
-		updateboard();	/* полная перенастройка (как после смены режима) */
-	}
-
-#if 0
-	// Use "|" operator
-	if (gstate != txreqp->state | flagne_u8(& gtx, seq_get_txstate()) != 0)
-	{
-		/* произошло изменение режима прием/передача */
-		if (gtx)
-		{
-			gtxtimer = 0;	/* начинаем отсчёт времени передачи */
-		}
-		updateboard();	/* полная перенастройка (как после смены режима) */
-		seq_ask_txstate(gtx);
-		//display2_needupdate();	// Обновление дисплея - всё, включая частоту
-	}
-#endif
+	updateboard();	/* полная перенастройка (как после смены режима) */
 #endif /* WITHTX */
 }
 
