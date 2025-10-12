@@ -56,29 +56,12 @@
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZEUND = 64
-	 STACKSIZEABT = 64
-	 STACKSIZEFIQ = 64
-	 STACKSIZEHYP = 64
-	 STACKSIZEMON = 64
-	 STACKSIZESVC = 64
-	 STACKSIZEIRQ = 64
-
-	 STACKSIZESYSCPUn = 16 * 1024 * 1024	/* 1MB */
-
 	.section ".text"
 	.code 32
 
 	.align 4, 0
-	.global aarch32_reset_handlers
-aarch32_reset_handlers:
-	.word 0
-	.word Reset_CPU1_Handler
-	.word Reset_CPU2_Handler
-	.word Reset_CPU3_Handler
-	.word 0
-	.word 0
-	.word 0
+	.global aarch32_stack_top
+aarch32_stack_top:
 	.word 0
 
 	.section ".text"
@@ -87,10 +70,10 @@ aarch32_reset_handlers:
 
   	.extern Reset_CPUn_Handler
 
-  	.global Reset_CPU1_Handler
-    .func   Reset_CPU1_Handler
+  	.global Reset_CPUx_Handler
+    .func   Reset_CPUx_Handler
     /* invoked at ARM_MODE_SVC */
-Reset_CPU1_Handler:
+Reset_CPUx_Handler:
 	cpsid 	fi
    /*
     * Reset SCTLR Settings
@@ -103,40 +86,46 @@ Reset_CPU1_Handler:
 	BIC     R0, R0, #(0x1 << 13)     // Clear V bit 13 to disable hivecs
 	MCR     p15, 0, R0, c1, c0, 0    // Write value back to CP15 System Control register
 	ISB
-   /*
-    * Setup a stack for each mode
-    */
-   msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
-   ldr   sp, =__stack_cpu1_und_end
-   mov   lr, #0
+	/*
+	* Setup a stack for each mode
+	*/
+	ldr		r2, = aarch32_stack_top
+	ldr		r2, [r2]
+	mov		r3, #4096
+	msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r3, r2
 
-   msr   CPSR_c, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
-   ldr   sp, =__stack_cpu1_abt_end
-   mov   lr, #0
+	msr   CPSR_c, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r3, r2
 
-   msr   CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
-   ldr   sp, =__stack_cpu1_fiq_end
-   mov   lr, #0
+	msr   CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r3, r2
 
-   msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
-   ldr   sp, =__stack_cpu1_irq_end
-   mov   lr, #0
+	msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r3, r2
 
-   msr   CPSR_c, #ARM_MODE_MON | I_BIT | F_BIT     /* 0x16 Monitor Mode */
-   ldr   sp, =__stack_cpu1_mon_end
-   mov   lr, #0
-
-//   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
-//   ldr   sp, =__stack_cpu1_hyp_end
-//   mov   lr, #0
+	msr   CPSR_c, #ARM_MODE_MON | I_BIT | F_BIT     /* 0x16 Monitor Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r3, r2
 
 	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
-	ldr   sp, =__stack_cpu1_svc_end
+	mov   sp, r2
 	mov   lr, #0
+	sub	r2, r3, r2
 
-   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack_cpu1_sys_end
-   mov   lr, #0
+	msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r3, r2
 
 	ldr		r2, =Reset_CPUn_Handler
 	mov		lr, pc
@@ -148,200 +137,5 @@ Reset_CPU1_Handler:
 
 		.endfunc
    .ltorg
-
-	.section ".noinit"
-	.align 4
-
-	.space	STACKSIZEIRQ
-__stack_cpu1_irq_end = .
-	.space	STACKSIZEUND
-__stack_cpu1_und_end = .
-	.space	STACKSIZEABT
-__stack_cpu1_abt_end = .
-	.space	STACKSIZEFIQ
-__stack_cpu1_fiq_end = .
-	.space	STACKSIZEMON
-__stack_cpu1_mon_end = .
-//	.space	STACKSIZEHYP
-//__stack_cpu1_hyp_end = .
-	.space	STACKSIZESVC
-__stack_cpu1_svc_end = .
-	.space	STACKSIZESYSCPUn
-__stack_cpu1_sys_end = .
-
-	.word 0		/* fix non-zero size of this section */
-
-	.section ".text"
-
-  	.global Reset_CPU2_Handler
-    .func   Reset_CPU2_Handler
-    /* invoked at ARM_MODE_SVC */
-Reset_CPU2_Handler:
-	cpsid 	fi
-   /*
-    * Reset SCTLR Settings
-    */
-	MRC     p15, 0, R0, c1, c0, 0    // Read CP15 System Control register
-	BIC     R0, R0, #(0x1 << 12)     // Clear I bit 12 to disable I Cache
-	BIC     R0, R0, #(0x1 <<  2)     // Clear C bit  2 to disable D Cache
-	BIC     R0, R0, #0x1             // Clear M bit  0 to disable MMU
-	BIC     R0, R0, #(0x1 << 11)     // Clear Z bit 11 to disable branch prediction
-	BIC     R0, R0, #(0x1 << 13)     // Clear V bit 13 to disable hivecs
-	MCR     p15, 0, R0, c1, c0, 0    // Write value back to CP15 System Control register
-	ISB
-   /*
-    * Setup a stack for each mode
-    */
-   msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
-   ldr   sp, =__stack_cpu2_und_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
-   ldr   sp, =__stack_cpu2_abt_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
-   ldr   sp, =__stack_cpu2_fiq_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
-   ldr   sp, =__stack_cpu2_irq_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_MON | I_BIT | F_BIT     /* 0x16 Monitor Mode */
-   ldr   sp, =__stack_cpu2_mon_end
-   mov   lr, #0
-
-//   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
-//  ldr   sp, =__stack_cpu2_hyp_end
-//   mov   lr, #0
-
-	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
-	ldr   sp, =__stack_cpu2_svc_end
-	mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack_cpu2_sys_end
-   mov   lr, #0
-
-	ldr		r2, =Reset_CPUn_Handler
-	mov		lr, pc
-	bx		r2     /* And jump... */
-
-2:
-	wfi
-	b     2b
-
-		.endfunc
-   .ltorg
-
-	.section ".noinit"
-	.align 4
-
-	.space	STACKSIZEIRQ
-__stack_cpu2_irq_end = .
-	.space	STACKSIZEUND
-__stack_cpu2_und_end = .
-	.space	STACKSIZEABT
-__stack_cpu2_abt_end = .
-	.space	STACKSIZEFIQ
-__stack_cpu2_fiq_end = .
-	.space	STACKSIZEMON
-__stack_cpu2_mon_end = .
-//	.space	STACKSIZEHYP
-//__stack_cpu2_hyp_end = .
-	.space	STACKSIZESVC
-__stack_cpu2_svc_end = .
-	.space	STACKSIZESYSCPUn
-__stack_cpu2_sys_end = .
-
-	.word 0		/* fix non-zero size of this section */
-
-	.section ".text"
-
-  	.global Reset_CPU3_Handler
-    .func   Reset_CPU3_Handler
-    /* invoked at ARM_MODE_SVC */
-Reset_CPU3_Handler:
-	cpsid 	fi
-   /*
-    * Reset SCTLR Settings
-    */
-	MRC     p15, 0, R0, c1, c0, 0    // Read CP15 System Control register
-	BIC     R0, R0, #(0x1 << 12)     // Clear I bit 12 to disable I Cache
-	BIC     R0, R0, #(0x1 <<  2)     // Clear C bit  2 to disable D Cache
-	BIC     R0, R0, #0x1             // Clear M bit  0 to disable MMU
-	BIC     R0, R0, #(0x1 << 11)     // Clear Z bit 11 to disable branch prediction
-	BIC     R0, R0, #(0x1 << 13)     // Clear V bit 13 to disable hivecs
-	MCR     p15, 0, R0, c1, c0, 0    // Write value back to CP15 System Control register
-	ISB
-   /*
-    * Setup a stack for each mode
-    */
-   msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
-   ldr   sp, =__stack_cpu3_und_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
-   ldr   sp, =__stack_cpu3_abt_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
-   ldr   sp, =__stack_cpu3_fiq_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
-   ldr   sp, =__stack_cpu3_irq_end
-   mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_MON | I_BIT | F_BIT     /* 0x16 Monitor Mode */
-   ldr   sp, =__stack_cpu3_mon_end
-   mov   lr, #0
-
-//   msr   CPSR_c, #ARM_MODE_HYP | I_BIT | F_BIT     /* 0x1B Hypervisor Mode */
-//   ldr   sp, =__stack_cpu3_hyp_end
-//   mov   lr, #0
-
-	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
-	ldr   sp, =__stack_cpu3_svc_end
-	mov   lr, #0
-
-   msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
-   ldr   sp, =__stack_cpu3_sys_end
-   mov   lr, #0
-
-	ldr		r2, =Reset_CPUn_Handler
-	mov		lr, pc
-	bx		r2     /* And jump... */
-
-3:
-	wfi
-	b     3b
-
-		.endfunc
-   .ltorg
-
-	.section ".noinit"
-	.align 4
-
-	.space	STACKSIZEIRQ
-__stack_cpu3_irq_end = .
-	.space	STACKSIZEUND
-__stack_cpu3_und_end = .
-	.space	STACKSIZEABT
-__stack_cpu3_abt_end = .
-	.space	STACKSIZEFIQ
-__stack_cpu3_fiq_end = .
-	.space	STACKSIZEMON
-__stack_cpu3_mon_end = .
-//	.space	STACKSIZEHYP
-//__stack_cpu3_hyp_end = .
-	.space	STACKSIZESVC
-__stack_cpu3_svc_end = .
-	.space	STACKSIZESYSCPUn
-__stack_cpu3_sys_end = .
-
-	.word 0		/* fix non-zero size of this section */
-
 
 /*** EOF ***/   

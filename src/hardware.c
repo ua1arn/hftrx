@@ -4134,11 +4134,25 @@ void cpump_initialize(void)
 		LCLSPIN_LOCK(& cpu1init);
 
 #if defined(__aarch64__)
-		extern const uint64_t aarch64_reset_handlers [];	/* crt_CortexA53_CPUn.S */
-		aarch64_mp_cpuN_start(aarch64_reset_handlers [core], core);
+
+		static const uint64_t aarch64_stack_size = UINT64_C(16) * 1024 * 1024;	/* crt_CortexA53_CPUn.S */
+		extern uint64_t aarch64_stack_top;			/* crt_CortexA53_CPUn.S */
+		extern void Reset_CPUx_Handler(void);		/* crt_CortexA53_CPUn.S */
+		void * const p = malloc(aarch64_stack_size);
+		while (p == NULL)
+			;
+		aarch64_stack_top = (uint64_t) (uintptr_t) p + aarch64_stack_size;
+		aarch64_mp_cpuN_start((uintptr_t) Reset_CPUx_Handler, core);
 #else
-		extern const uint32_t aarch32_reset_handlers [];	/* crt_CortexA_CPUn.S */
-		aarch32_mp_cpuN_start(aarch32_reset_handlers [core], core);
+		static const uint64_t aarch32_stack_size = UINT32_C(16) * 1024 * 1024;	/* crt_CortexA_CPUn.S */
+		extern uint32_t aarch32_stack_top;			/* crt_CortexA_CPUn.S */
+		extern void Reset_CPUx_Handler(void);		/* crt_CortexA_CPUn.S */
+
+		void * const p = malloc(aarch32_stack_size);
+		while (p == NULL)
+			;
+		aarch32_stack_top = (uint32_t) (uintptr_t) p + aarch32_stack_size;
+		aarch32_mp_cpuN_start((uintptr_t) Reset_CPUx_Handler, core);
 #endif
 
 		LCLSPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освободит этот spinlock */

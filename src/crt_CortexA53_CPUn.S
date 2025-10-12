@@ -55,29 +55,12 @@
 	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
- 
-	 STACKSIZEUND = 4096
-	 STACKSIZEABT = 4096
-	 STACKSIZEFIQ = 4096
-	 STACKSIZEHYP = 4096
-	 STACKSIZEMON = 4096
-	 STACKSIZESVC = 4096
-	 STACKSIZEIRQ = 4096
-
-	 STACKSIZESYSCPUn = 16 * 1024 * 1024	/* 16MB */
 
 	.section ".text"
 
 	.align 4, 0
-	.global aarch64_reset_handlers
-aarch64_reset_handlers:
-	.dword 0
-	.dword Reset_CPU1_Handler
-	.dword Reset_CPU2_Handler
-	.dword Reset_CPU3_Handler
-	.dword 0
-	.dword 0
-	.dword 0
+	.global aarch64_stack_top
+aarch64_stack_top:
 	.dword 0
 
 	.section ".text"
@@ -85,19 +68,22 @@ aarch64_reset_handlers:
 
   	.extern Reset_CPUn_Handler
 
-  	.global Reset_CPU1_Handler
-    .func   Reset_CPU1_Handler
+  	.global Reset_CPUx_Handler
+    .func   Reset_CPUx_Handler
     /* invoked at ARM_MODE_SVC */
-Reset_CPU1_Handler:
-	ldr x30, =__stack_cpu1_fiq_end
+Reset_CPUx_Handler:
+	ldr x29, = 4096
+	ldr x30, = aarch64_stack_top
+	ldr x30, [x30]
+
 	MSR SPSR_fiq, x30
-	ldr x30, =__stack_cpu1_und_end
+	sub x30, x29, x30
 	MSR SPSR_und, x30
-	ldr x30, =__stack_cpu1_abt_end
+	sub x30, x29, x30
 	MSR SPSR_abt, x30
-	ldr x30, =__stack_cpu1_irq_end
+	sub x30, x29, x30
 	MSR SPSR_irq, x30
-	ldr x30, =__stack_cpu1_sys_end
+	sub x30, x29, x30
 	mov sp, x30
 	mov x30, XZR
 	B Reset_CPUn_Handler
@@ -106,117 +92,6 @@ Reset_CPU1_Handler:
 
    .ltorg
 
-	.section ".noinit"
-	.align 4
-
-	.space	STACKSIZEIRQ
-__stack_cpu1_irq_end = .
-	.space	STACKSIZEUND
-__stack_cpu1_und_end = .
-	.space	STACKSIZEABT
-__stack_cpu1_abt_end = .
-	.space	STACKSIZEFIQ
-__stack_cpu1_fiq_end = .
-	.space	STACKSIZEMON
-__stack_cpu1_mon_end = .
-//	.space	STACKSIZEHYP
-//__stack_cpu1_hyp_end = .
-	.space	STACKSIZESVC
-__stack_cpu1_svc_end = .
-	.space	STACKSIZESYSCPUn
-__stack_cpu1_sys_end = .
-
-	.word 0		/* fix non-zero size of this section */
-
-	.section ".text"
-
-  	.global Reset_CPU2_Handler
-    .func   Reset_CPU2_Handler
-    /* invoked at ARM_MODE_SVC */
-Reset_CPU2_Handler:
-	ldr x30, =__stack_cpu2_fiq_end
-	MSR SPSR_fiq, x30
-	ldr x30, =__stack_cpu2_und_end
-	MSR SPSR_und, x30
-	ldr x30, =__stack_cpu2_abt_end
-	MSR SPSR_abt, x30
-	ldr x30, =__stack_cpu2_irq_end
-	MSR SPSR_irq, x30
-	ldr x30, =__stack_cpu2_sys_end
-	mov sp, x30
-	mov x30, XZR
-	B Reset_CPUn_Handler
-
-	.endfunc
-
-   .ltorg
-
-	.section ".noinit"
-	.align 4
-
-	.space	STACKSIZEIRQ
-__stack_cpu2_irq_end = .
-	.space	STACKSIZEUND
-__stack_cpu2_und_end = .
-	.space	STACKSIZEABT
-__stack_cpu2_abt_end = .
-	.space	STACKSIZEFIQ
-__stack_cpu2_fiq_end = .
-	.space	STACKSIZEMON
-__stack_cpu2_mon_end = .
-//	.space	STACKSIZEHYP
-//__stack_cpu2_hyp_end = .
-	.space	STACKSIZESVC
-__stack_cpu2_svc_end = .
-	.space	STACKSIZESYSCPUn
-__stack_cpu2_sys_end = .
-
-	.word 0		/* fix non-zero size of this section */
-
-	.section ".text"
-
-  	.global Reset_CPU3_Handler
-    .func   Reset_CPU3_Handler
-    /* invoked at ARM_MODE_SVC */
-Reset_CPU3_Handler:
-	ldr x30, =__stack_cpu3_fiq_end
-	MSR SPSR_fiq, x30
-	ldr x30, =__stack_cpu3_und_end
-	MSR SPSR_und, x30
-	ldr x30, =__stack_cpu3_abt_end
-	MSR SPSR_abt, x30
-	ldr x30, =__stack_cpu3_irq_end
-	MSR SPSR_irq, x30
-	ldr x30, =__stack_cpu3_sys_end
-	mov sp, x30
-	mov x30, XZR
-	B Reset_CPUn_Handler
-
-	.endfunc
-
-   .ltorg
-
-	.section ".noinit"
-	.align 4
-
-	.space	STACKSIZEIRQ
-__stack_cpu3_irq_end = .
-	.space	STACKSIZEUND
-__stack_cpu3_und_end = .
-	.space	STACKSIZEABT
-__stack_cpu3_abt_end = .
-	.space	STACKSIZEFIQ
-__stack_cpu3_fiq_end = .
-	.space	STACKSIZEMON
-__stack_cpu3_mon_end = .
-//	.space	STACKSIZEHYP
-//__stack_cpu3_hyp_end = .
-	.space	STACKSIZESVC
-__stack_cpu3_svc_end = .
-	.space	STACKSIZESYSCPUn
-__stack_cpu3_sys_end = .
-
-	.word 0		/* fix non-zero size of this section */
 
 
 /*** EOF ***/   
