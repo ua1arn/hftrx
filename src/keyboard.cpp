@@ -85,7 +85,7 @@ static void kbdst_initialize(kbdst_t * kbdp, uint_fast8_t (* get_pressed_key_cb)
 	if (kbdp->kbd_last != KEYBOARD_NOKEY)
 	{
 		// самое первое нажатие
-		kbdp->kbd_press = 1;
+		kbdp->kbd_press = KBD_MAX_PRESS_DELAY_LONG + 1;
 		kbdp->kbd_release = 0;
 		kbdp->kbd_slowcount = 0;
 	}
@@ -366,9 +366,12 @@ kbd_is_tready(void)
 uint_fast8_t kbdx_get_ishold(kbdst_t * kbdp, uint_fast8_t flag)
 {
 	uint_fast8_t r;
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& irqllock, & oldIrql, IRQL_SYSTEM);
 	uint_fast8_t f = !! kbdp->kbd_press;
 
 	r = f && (qmdefs [kbdp->kbd_last].flags & flag);
+	IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 	return r;
 }
 
@@ -387,11 +390,11 @@ static uint_fast8_t kbdx_scan(kbdst_t * kbdp, uint_fast8_t * v)
 void kbdx_pass(kbdst_t * kbdp)
 {
 	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	IRQLSPIN_LOCK(& irqllock, & oldIrql, IRQL_SYSTEM);
 
 	kbd_spool(kbdp);
 
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 }
 
 uint_fast8_t kbd_scan(uint_fast8_t * v)
