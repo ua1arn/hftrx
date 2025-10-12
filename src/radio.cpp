@@ -3707,7 +3707,7 @@ struct nvmap
 	uint8_t ggainnfmrx10;		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	uint16_t ggaindigitx;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-	uint16_t ggaincwtx;		/* Увеличение усиления при передаче в CW режимах 50..100% */
+	uint16_t ggaincwtx;		/* Увеличение усиления при передаче в CW режимах 30..150% */
 	uint16_t gdesignscale;	/* используется при калибровке параметров интерполятора */
 #if WITHELKEY
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
@@ -6181,7 +6181,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	const struct paramdefdef xgdesignscale = {
 		QLABELENC2("TX CALIBR"), 0, 3, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
-		0, 1500,		/* используется при калибровке параметров интерполятора */
+		0, 2500,		/* используется при калибровке параметров интерполятора */
 		OFFSETOF(struct nvmap, gdesignscale),
 		getselector0, nvramoffs0, valueoffs0,
 		& gdesignscale,
@@ -6190,13 +6190,13 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	};
 	#endif /* WITHTXCPATHCALIBRATE */
 	#if WITHTXCPATHCALIBRATE
-		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в CW режимах 100..300% */
 		static uint_fast16_t ggaindigitx = 100;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#elif 1//WITHTXCWREDUCE
-		static uint_fast16_t ggaincwtx = 60;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+		static uint_fast16_t ggaincwtx = 60;		/* Увеличение усиления при передаче в CW режимах 100..300% */
 		static uint_fast16_t ggaindigitx = 160;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#else /* WITHTXCWREDUCE */
-		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в CW режимах 100..300% */
 		static uint_fast16_t ggaindigitx = 160;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#endif /* WITHTXCWREDUCE */
 	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
@@ -6244,9 +6244,9 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	static const struct paramdefdef xggaincwtx =
 	{
-		QLABEL2("CW BOOST", "CW Boost"),	7, 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		QLABEL2("CW BOOST", "CW Boost"),	7, 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в CW режимах 30..150% */
 		ITEM_VALUE,
-		30, 100,
+		30, 150,
 		OFFSETOF(struct nvmap, ggaincwtx),
 		getselector0, nvramoffs0, valueoffs0,
 		& ggaincwtx,

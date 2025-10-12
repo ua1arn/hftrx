@@ -3806,14 +3806,10 @@ static RAMFUNC FLOAT_t mikeinmux(
 	ft8_txfill(& vi0fmike);	// todo: add new DSPCTL_FT8 mode
 #endif /* WITHFT8 */
 
-#if WITHTXCPATHCALIBRATE && 0
-	return (FLOAT_t) glob_designscale / 1000;
-#endif /* WITHTXCPATHCALIBRATE */
-
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_BPSK:
-		return 0;	//txlevelfenceBPSK;	// постоянная составляющая с максимальным уровнем
+		return txlevelfenceBPSK;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_CW:
 		return txlevelfenceCW;	// постоянная составляющая с максимальным уровнем
