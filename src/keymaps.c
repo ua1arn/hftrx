@@ -1396,7 +1396,7 @@ uint_fast8_t geterasekey(void)
 #endif
 
 /* получить код клавиши цифровой клавиатуры по коду, полученному как код нажатия */
-uint_fast8_t front_getnumpad(uint_fast8_t key)
+char front_getnumpad(uint_fast16_t key)
 {
 	uint_fast8_t i;
 
@@ -1410,13 +1410,13 @@ uint_fast8_t front_getnumpad(uint_fast8_t key)
 
 const struct qmkey * front_get_pressed_pkey(void)
 {
-	const uint_fast8_t code = board_get_pressed_key();
+	const uint_fast16_t code = board_get_pressed_key();
 	return code == KEYBOARD_NOKEY ? NULL : & qmdefs [code];
 }
 
 #else /* WITHKEYBOARD */
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_MAX;
 }

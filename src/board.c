@@ -6975,7 +6975,7 @@ bnchk_poweroff(void)
 
 // вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 // Если ничего - возвращаем KEYBOARD_NOKEY
-uint_fast8_t 
+uint_fast16_t
 board_get_pressed_key(void)
 {
 	//return KEYBOARD_NOKEY;

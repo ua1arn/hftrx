@@ -193,10 +193,11 @@ uint_fast8_t kbd_is_tready(void);
 void kbd_pass(void);
 /* получение скан-кода клавиши, возврат 0 в случае отсутствия.
  */
-uint_fast8_t kbd_scan(uint_fast8_t * key);
+uint_fast16_t kbd_scan(uint_fast16_t * key);
 uint_fast8_t kbd_get_ishold(uint_fast8_t flag);
-uint_fast8_t front_getnumpad(uint_fast8_t key);
-uint_fast8_t dtmf_scan(uint_fast8_t * v);
+char front_getnumpad(uint_fast16_t key);
+
+uint_fast16_t dtmf_scan(uint_fast16_t * v);
 
 struct qmkey 
 {
@@ -205,12 +206,12 @@ struct qmkey
 	char numpad;		/* код клавиши в режиме цифрового ввода */
 };
 
-uint_fast8_t geterasekey(void);
+uint_fast16_t geterasekey(void);
 
 
 #define KEYBOARD_NOKEY UINT8_MAX
 
-uint_fast8_t board_get_pressed_key(void);	// Если ничего - возвращаем KEYBOARD_NOKEY
+uint_fast16_t board_get_pressed_key(void);	// Если ничего - возвращаем KEYBOARD_NOKEY
 const struct qmkey * dtmf_get_pressed_pkey(void);
 const struct qmkey * front_get_pressed_pkey(void);
 

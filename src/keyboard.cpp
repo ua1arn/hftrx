@@ -53,11 +53,11 @@ typedef struct kbdst_tag
 
 	volatile uint_fast8_t kbd_ready;
 
-	u8queue_t kbdq;
+	uint16_t kbdfifo [16];
+	u16queue_t kbdq;
 
 	ticker_t kbdticker;
 	adcdone_t aevent;
-	uint8_t kbdfifo [16];
 	const struct qmkey * (* get_qmkey)(void);
 } kbdst_t;
 
@@ -79,7 +79,7 @@ static void kbdst_initialize(kbdst_t * kbdp, const struct qmkey * (* get_pressed
 
 	kbdp->kbd_ready = 0;
 
-	uint8_queue_init(& kbdp->kbdq, kbdp->kbdfifo, sizeof kbdp->kbdfifo / sizeof kbdp->kbdfifo [0]);
+	uint16_queue_init(& kbdp->kbdq, kbdp->kbdfifo, sizeof kbdp->kbdfifo / sizeof kbdp->kbdfifo [0]);
 
 	kbdp->pkbd_last = kbdp->get_qmkey();
 	if (kbdp->pkbd_last != NULL)
@@ -104,7 +104,7 @@ static void kbdst_initialize(kbdst_t * kbdp, const struct qmkey * (* get_pressed
  * ОТЛАЖИВАЕТСЯ
  */
 static uint_fast8_t
-kbd_scan_local(kbdst_t * kbdp, uint_fast8_t * key)
+kbd_scan_local(kbdst_t * kbdp, uint_fast16_t * key)
 {
 	const uint_fast8_t notstab = (kbdp->kbd_press < (KBD_STABIL_PRESS + 1));
 	const struct qmkey * const pchinp = kbdp->get_qmkey();
@@ -312,7 +312,7 @@ static void
 kbd_spool(void * ctx)
 {
 	kbdst_t * const kbdp = (kbdst_t *) ctx;
-	uint_fast8_t code;
+	uint_fast16_t code;
 	if (kbd_scan_local(kbdp, & code) != 0)
 	{
 		kbdp->kbd_beep = KBD_BEEP_LENGTH;
@@ -321,7 +321,7 @@ kbd_spool(void * ctx)
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& irqllock, & oldIrql, IRQL_SYSTEM);
 
-		uint8_queue_put(& kbdp->kbdq, code);
+		uint16_queue_put(& kbdp->kbdq, code);
 
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 	}
@@ -375,13 +375,13 @@ uint_fast8_t kbdx_get_ishold(kbdst_t * kbdp, uint_fast8_t flag)
 	return r;
 }
 
-static uint_fast8_t kbdx_scan(kbdst_t * kbdp, uint_fast8_t * v)
+static uint_fast16_t kbdx_scan(kbdst_t * kbdp, uint_fast16_t * v)
 {
-	uint_fast8_t f;
+	uint_fast16_t f;
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& irqllock, & oldIrql, IRQL_SYSTEM);
 
-	f = uint8_queue_get(& kbdp->kbdq, v);
+	f = uint16_queue_get(& kbdp->kbdq, v);
 
 	IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 	return f;
@@ -397,12 +397,12 @@ void kbdx_pass(kbdst_t * kbdp)
 	IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 }
 
-uint_fast8_t kbd_scan(uint_fast8_t * v)
+uint_fast8_t kbd_scan(uint_fast16_t * v)
 {
 	return kbdx_scan(& kbd0, v);
 }
 
-uint_fast8_t dtmf_scan(uint_fast8_t * v)
+uint_fast16_t dtmf_scan(uint_fast16_t * v)
 {
 #if WITHSUBTONES
 	return kbdx_scan(& dtmf_kbd, v);

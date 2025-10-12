@@ -364,7 +364,7 @@ unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 }
 
 //////////////////////////////////////
-/// Queue support
+/// uint8_t Queue support
 ///
 
 
@@ -401,6 +401,48 @@ uint_fast8_t uint8_queue_get(u8queue_t * q, uint_fast8_t * pc)
 }
 
 uint_fast8_t uint8_queue_empty(const u8queue_t * q)
+{
+	return q->qp == q->qg;
+}
+
+//////////////////////////////////////
+/// uint16_t Queue support
+///
+
+
+void uint16_queue_init(u16queue_t * q, uint16_t * buff, unsigned sz)
+{
+	q->qg = q->qp = 0;
+	q->size = sz;
+	q->buffer = buff;
+}
+
+uint_fast8_t uint16_queue_put(u16queue_t * q, uint_fast16_t c)
+{
+	unsigned qpt = q->qp;
+	const unsigned next = (qpt + 1) % q->size;
+	if (next != q->qg)
+	{
+		q->buffer [qpt] = c;
+		q->qp = next;
+		return 1;
+	}
+	return 0;
+}
+
+uint_fast8_t uint16_queue_get(u16queue_t * q, uint_fast16_t * pc)
+{
+	unsigned qgt = q->qg;
+	if (q->qp != qgt)
+	{
+		* pc = q->buffer [qgt];
+		q->qg = (qgt + 1) % q->size;
+		return 1;
+	}
+	return 0;
+}
+
+uint_fast8_t uint16_queue_empty(const u16queue_t * q)
 {
 	return q->qp == q->qg;
 }

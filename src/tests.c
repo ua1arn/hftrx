@@ -14133,7 +14133,7 @@ void hightests(void)
 			//PRINTF(PSTR("keyport = %02x\n"), (unsigned) KBD_TARGET_PIN);
 			//continue;
 			
-			uint_fast8_t scancode;
+			uint_fast16_t scancode;
 			IRQL_t oldIrql;
 			RiseIrql(IRQL_SYSTEM, & oldIrql);
 			scancode = board_get_pressed_key();

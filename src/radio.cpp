@@ -69,7 +69,7 @@ processcatmsg(uint_fast8_t catcommand1,
 typedef struct keyevent_tag
 {
 	uint_fast8_t kbready;
-	uint_fast8_t kbch;
+	uint_fast16_t kbch;
 } keyevent_t;
 
 void keyevent_initialize(keyevent_t * e)
@@ -104,7 +104,8 @@ void mouseevent_initialize(mouseevent_t * e)
 
 typedef struct inputevent_tag
 {
-	keyevent_t keyevent;
+	keyevent_t frontkeyevent;
+	keyevent_t dtmfkeyevent;
 #if WITHENCODER
 	knobevent_t encMAIN;
 #if WITHENCODER_SUB
@@ -131,7 +132,8 @@ typedef struct inputevent_tag
 
 void inputevent_initialize(inputevent_t * e)
 {
-	keyevent_initialize(& e->keyevent);
+	keyevent_initialize(& e->frontkeyevent);
+	keyevent_initialize(& e->dtmfkeyevent);
 #if WITHENCODER
 	knobevent_initialize(& e->encMAIN, & encoder1);
 #if WITHENCODER_SUB
@@ -295,7 +297,12 @@ processmessages(
 
 void inputevent_fill(inputevent_t * e)
 {
-	processmessages(& e->keyevent.kbch, & e->keyevent.kbready);
+	processmessages(& e->frontkeyevent.kbch, & e->frontkeyevent.kbready);
+	e->dtmfkeyevent.kbready = dtmf_scan(& e->dtmfkeyevent.kbch);
+	if (e->dtmfkeyevent.kbready)
+	{
+		PRINTF("dtmfkey=%02X\n", (unsigned char) e->dtmfkeyevent.kbch);
+	}
 
 #if WITHENCODER
 	// main encoder
@@ -17575,35 +17582,35 @@ processmenukeyandencoder(inputevent_t * ev)
 //	}
 
 #if WITHENCODER_4F
-	if (! ev->keyevent.kbready)
+	if (! ev->frontkeyevent.kbready)
 	{
 		const int_least16_t delta = event_getRotate_LoRes(& ev->encF4, BOARD_ENC4F_DIVIDE);  // перемещение по меню также с помощью 2го энкодера
 
 		if (delta > 0)
 		{
-			ev->keyevent.kbch = KBD_CODE_MENU_DOWN;
-			ev->keyevent.kbready = 1;
+			ev->frontkeyevent.kbch = KBD_CODE_MENU_DOWN;
+			ev->frontkeyevent.kbready = 1;
 		}
 		else if (delta < 0)
 		{
-			ev->keyevent.kbch = KBD_CODE_MENU_UP;
-			ev->keyevent.kbready = 1;
+			ev->frontkeyevent.kbch = KBD_CODE_MENU_UP;
+			ev->frontkeyevent.kbready = 1;
 		}
 	}
 #elif WITHENCODER2
-	if (! ev->keyevent.kbready)
+	if (! ev->frontkeyevent.kbready)
 	{
 		const int_least16_t nr2 = event_getRotate_LoRes(& ev->encFN, genc2div);  // перемещение по меню также с помощью 2го энкодера
 
 		if (nr2 > 0)
 		{
-			ev->keyevent.kbch = KBD_CODE_MENU_DOWN;
-			ev->keyevent.kbready = 1;
+			ev->frontkeyevent.kbch = KBD_CODE_MENU_DOWN;
+			ev->frontkeyevent.kbready = 1;
 		}
 		else if (nr2 < 0)
 		{
-			ev->keyevent.kbch = KBD_CODE_MENU_UP;
-			ev->keyevent.kbready = 1;
+			ev->frontkeyevent.kbch = KBD_CODE_MENU_UP;
+			ev->frontkeyevent.kbready = 1;
 		}
 	}
 #endif /* WITHENCODER2 */
@@ -17624,10 +17631,10 @@ processmenukeyandencoder(inputevent_t * ev)
 	}
 #endif /* WITHENCODER */
 
-	if (! ev->keyevent.kbready)
+	if (! ev->frontkeyevent.kbready)
 		return 0;
 
-	switch (ev->keyevent.kbch)
+	switch (ev->frontkeyevent.kbch)
 	{
 	default:
 		break;
@@ -17652,7 +17659,7 @@ processmenukeyandencoder(inputevent_t * ev)
 			while (ismenukinddp(mp->pd, ITEM_VALUE));
 			setinmenu(1, mp);
 		}
-		ev->keyevent.kbready = 0;
+		ev->frontkeyevent.kbready = 0;
 		return 0;
 
 	case KBD_CODE_MENU:
@@ -17682,7 +17689,7 @@ processmenukeyandencoder(inputevent_t * ev)
 				// группа без пунктов?
 			}
 		}
-		ev->keyevent.kbready = 0;
+		ev->frontkeyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 
 //	case KBD_CODE_LOCK:
@@ -17699,7 +17706,7 @@ processmenukeyandencoder(inputevent_t * ev)
 	case KBD_CODE_POWEROFF:
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		uif_pwbutton_press();
-		ev->keyevent.kbready = 0;
+		ev->frontkeyevent.kbready = 0;
 		return 0;
 
 #if WITHTX
@@ -17707,7 +17714,7 @@ processmenukeyandencoder(inputevent_t * ev)
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		/* выключить режим настройки или приём/передача */
 		uif_key_moxclick();
-		ev->keyevent.kbready = 0;
+		ev->frontkeyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_TXTUNE:
@@ -17720,13 +17727,13 @@ processmenukeyandencoder(inputevent_t * ev)
 	case KBD_CODE_ATUSTART:
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		uif_key_atunerstart();
-		ev->keyevent.kbready = 0;
+		ev->frontkeyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_ATUBYPASS:
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		uif_key_bypasstoggle();
-		ev->keyevent.kbready = 0;
+		ev->frontkeyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 #endif /* WITHAUTOTUNER */
 
@@ -17737,7 +17744,7 @@ processmenukeyandencoder(inputevent_t * ev)
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 		uif_key_click_banddown();
-		ev->keyevent.kbready = 0;
+		ev->frontkeyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER2 || WITHENCODER_4F */
 
@@ -17758,7 +17765,7 @@ processmenukeyandencoder(inputevent_t * ev)
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 		uif_key_click_bandup();
-		ev->keyevent.kbready = 0;
+		ev->frontkeyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER2 || WITHENCODER_4F */
 
@@ -17791,7 +17798,7 @@ processmenukeyandencoder(inputevent_t * ev)
 		PRINTF(PSTR("menu: ")); PRINTF(mp->pd->qlabel); PRINTF(PSTR("\n"));
 #endif /* WITHDEBUG */
 
-		ev->keyevent.kbready = 0;
+		ev->frontkeyevent.kbready = 0;
 		return 0;
 	}
 
@@ -18631,10 +18638,10 @@ processmainloopkeyboard(inputevent_t * ev)
 #if WITHTOUCHGUI
 	if (keyboard_redirect)
 	{
-		if (ev->keyevent.kbready == 0)
+		if (ev->frontkeyevent.kbready == 0)
 			return 0;
-		ev->keyevent.kbready = 0;
-		gui_put_keyb_code(ev->keyevent.kbch);
+		ev->frontkeyevent.kbready = 0;
+		gui_put_keyb_code(ev->frontkeyevent.kbch);
 		return 0;
 	}
 #endif
@@ -18646,11 +18653,11 @@ processmainloopkeyboard(inputevent_t * ev)
 
 	if (editfreqmode != 0)
 	{
-		if (ev->keyevent.kbready == 0)
+		if (ev->frontkeyevent.kbready == 0)
 			return 0;
-		ev->keyevent.kbready = 0;
-		const uint_fast8_t c = front_getnumpad(ev->keyevent.kbch);
-		if (ev->keyevent.kbch == KBD_CODE_ENTERFREQDONE)
+		ev->frontkeyevent.kbready = 0;
+		const char c = front_getnumpad(ev->frontkeyevent.kbch);
+		if (ev->frontkeyevent.kbch == KBD_CODE_ENTERFREQDONE)
 		{
 			editfreqmode = 0;
 			return 1;
@@ -18687,9 +18694,9 @@ processmainloopkeyboard(inputevent_t * ev)
 			return 1;
 		}
 	}
-	else if (ev->keyevent.kbready && ev->keyevent.kbch == KBD_CODE_ENTERFREQ)
+	else if (ev->frontkeyevent.kbready && ev->frontkeyevent.kbch == KBD_CODE_ENTERFREQ)
 	{
-		ev->keyevent.kbready = 0;
+		ev->frontkeyevent.kbready = 0;
 		blinkpos = DISPLAY_LEFTBLINKPOS;		/* позиция курсора */
 		editfreqmode = 1;
 		editfreq = gfreqs [getbankindex_tx(gtx)];
@@ -18697,11 +18704,11 @@ processmainloopkeyboard(inputevent_t * ev)
 	}
 #endif /* WITHDIRECTFREQENER */
 
-	if (! ev->keyevent.kbready)
+	if (! ev->frontkeyevent.kbready)
 		return 0;
-	ev->keyevent.kbready = 0;
+	ev->frontkeyevent.kbready = 0;
 
-	switch (ev->keyevent.kbch)
+	switch (ev->frontkeyevent.kbch)
 	{
 	default:
 		break;
@@ -18749,7 +18756,7 @@ processmainloopkeyboard(inputevent_t * ev)
 			gmenuset = calc_next(gmenuset, 0, display_getpagesmax());
 			save_i8(RMT_MENUSET_BASE, gmenuset);
 			//display2_needupdate();
-			ev->keyevent.kbready = 0;
+			ev->frontkeyevent.kbready = 0;
 			return 1;	// требуется обновление индикатора
 		}
 #endif /* ! WITHTOUCHGUI */
@@ -18807,9 +18814,9 @@ processmainloopkeyboard(inputevent_t * ev)
 	}
 #endif /* WITHWAVPLAYER */
 
-	if (process_key_menuset0(ev->keyevent.kbch))
+	if (process_key_menuset0(ev->frontkeyevent.kbch))
 		return 1;
-	if (process_key_menuset_common(ev->keyevent.kbch))
+	if (process_key_menuset_common(ev->frontkeyevent.kbch))
 		return 1;	/* клавиша уже обработана */
 	return 0;	// не требуется обновления индикатора
 }
@@ -19678,11 +19685,13 @@ static void appspoolprocess(void * ctx)
 static void keyspoolprocess(void * ctx)
 {
 #if ! defined (HAVE_BTSTACK_STDIN)
+#if 0
 	uint_fast8_t dtmfch;
 	if (dtmf_scan((& dtmfch)))
 	{
 		PRINTF("dtmfkey=%02X\n", (unsigned char) dtmfch);
 	}
+#endif
 	/* здесь можно добавить обработку каких-либо команд с debug порта */
 	char c;
 	if (dbg_getchar(& c))
