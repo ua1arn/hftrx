@@ -75,24 +75,27 @@ uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void
 
 // On AT070TN90 with touch screen attached Y coordinate increments from bottom to top, X from left to right
 uint_fast8_t
-board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 {
 	static uint_fast16_t x = 0, y = 0;
-	uint_fast8_t z;
+	uint_fast8_t z = 0;
 	if (board_tsc_is_pressed())
 	{
 		if (stmpe811_TS_GetXYZ(& x, & y, & z))
 		{
 			* xr = x;
 			* yr = y;
+			* zr = z;
 			return 1;
 		}
 		* xr = x;
 		* yr = y;
+		* zr = z;
 		return 1;
 	}
 	* xr = x;
 	* yr = y;
+	* zr = z;
 	return 0;
 }
 
@@ -124,8 +127,9 @@ uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void
 
 /* получение ненормальзованных координат нажатия */
 uint_fast8_t
-board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 {
+	* zr = 0;	// stub
 #if LINUX_SUBSYSTEM
 	static uint32_t oldt = sys_now();
 	static uint_fast16_t x = 0, y = 0, p = 0;
@@ -172,10 +176,11 @@ uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void
 
 /* получение ненормальзованных координат нажатия */
 uint_fast8_t
-board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 {
 	static uint_fast16_t x = 0, y = 0;
 
+	* zr = 0;	// stub
 	ft5336_GetState(& ts_ft5336);
 
 	if (ts_ft5336.touchDetected)
@@ -244,9 +249,9 @@ uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void
 }
 
 uint_fast8_t
-board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 {
-	return xpt2046_getxy(xr, yr);
+	return xpt2046_getxy(xr, yr, zr);
 }
 
 #endif /* defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_XPT2046 */
@@ -304,11 +309,12 @@ uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void
 }
 
 uint_fast8_t
-board_tsc_getraw(uint_fast16_t * px, uint_fast16_t * py)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 {
 	const unsigned i2caddr = TSC_I2C_ADDR;
 
 
+	* zr = 0;	// stub
 	uint8_t v0, v1, v2, v3, v4, v5, v6, v7;
 
 	i2c_start(i2caddr | 0x00);
@@ -325,8 +331,8 @@ board_tsc_getraw(uint_fast16_t * px, uint_fast16_t * py)
 
 	if (v0 != 0)
 	{
-		* px = v1 + v2 * 256;
-		* py = v3 + v4 * 256;
+		* xr = v1 + v2 * 256;
+		* yr = v3 + v4 * 256;
 		return 1;
 	}
 	return 0;
@@ -359,11 +365,12 @@ uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void
 }
 
 uint_fast8_t
-board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 {
 	uint8_t command = REG_TOUCHDATA;
 	uint8_t read_buf[9];
 
+	* zr = 0;	// stub
 	if (! tsc_ili2102_present)
 	{
 		return 0;
@@ -434,8 +441,9 @@ void awgpadc_initialize(void)
 }
 
 uint_fast8_t
-board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr)
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 {
+	* zr = 0;	// stub
 	if ((TPADC->TP_INT_FIFO_STAT_REG & (UINT32_C(1) << 16)) != 0)
 	{
 		const uint_fast32_t v = TPADC->TP_DATA_REG & 0xFFF;
@@ -508,12 +516,12 @@ void board_tsc_initialize(void)
 #if WITHDEBUG && 0
 	for (;;)
 	{
-		uint_fast16_t x, y;
-		if (board_tsc_getraw(& x, & y))
+		uint_fast16_t x, y, z;
+		if (board_tsc_getraw(& x, & y, & z))
 		{
 			uint_fast16_t xc = board_tsc_normalize_x(x, y, NULL);
 			uint_fast16_t yc = board_tsc_normalize_y(x, y, NULL);
-			PRINTF("board_tsc_getraw: x=%-5u, y=%-5u -> xc=%-5u, yc=%-5u\n", x, y, xc, yc);
+			PRINTF("board_tsc_getraw: x=%-5u, y=%-5u , z=%-5u -> xc=%-5u, yc=%-5u\n", x, y, z, xc, yc);
 		}
 	}
 #endif
@@ -525,8 +533,8 @@ void board_tsc_initialize(void)
 uint_fast8_t
 board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 {
-	uint_fast16_t x, y;
-	if (board_tsc_getraw(& x, & y))
+	uint_fast16_t x, y, z;
+	if (board_tsc_getraw(& x, & y, & z))
 	{
 		* xr = board_tsc_normalize_x(x, y, NULL);
 		* yr = board_tsc_normalize_y(x, y, NULL);

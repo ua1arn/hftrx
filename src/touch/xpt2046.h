@@ -23,7 +23,7 @@ extern "C" {
 // hence no Z1 / Z2 measurements are possible.
 
 void xpt2046_initialize(void);
-uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr);
+uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr);
 
 #ifdef __cplusplus
  }

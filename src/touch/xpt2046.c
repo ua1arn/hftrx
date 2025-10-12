@@ -48,8 +48,6 @@ enum XPTCoordinate
 };
 
 #define XPT2046_Z1_THRESHOLD 200	// чувствительность к силе нажатия
-#define XPT2046_Z1_THRESHOLD2 1000	// чувствительность к силе нажатия
-#define XPT2046_Z2_THRESHOLD 200	// чувствительность к силе нажатия
 
 // See https://github.com/ikeji/Ender3Firmware/blob/ef1f9d25eb2cd084ce929e1ad4163ef0a3e88142/Marlin/src/feature/touch/xpt2046.cpp
 // https://github.com/Bodmer/TFT_Touch/blob/master/TFT_Touch.cpp
@@ -69,7 +67,7 @@ xpt2046_read4(
 	uint_fast16_t * z2
 	)
 {
-	enum { PDx = 0*XPT2046_PD1 | 0*XPT2046_PD0 };
+	enum { PDx = 1*XPT2046_PD1 | 1*XPT2046_PD0 };
 	static const uint8_t txbuf [] =
 	{
 		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
@@ -104,7 +102,7 @@ xpt2046_pressure(
 }
 
 /* получение ненормальзованных координат нажатия */
-uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 {
 	const spitarget_t target = targettsc1;
 	uint_fast16_t x, y, z1, z2;
@@ -113,7 +111,8 @@ uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	* xr = x;
 	* yr = y;
 	xpt2046_pressure(x, y, z1, z2);
-	return (z1 > XPT2046_Z1_THRESHOLD2) || (z1 > XPT2046_Z1_THRESHOLD && (4095 - z2) > XPT2046_Z2_THRESHOLD);
+	* zr = z1;
+	return !! x && !! y && (z1 > XPT2046_Z1_THRESHOLD);
 }
 
 void
