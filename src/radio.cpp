@@ -66,6 +66,9 @@ processcatmsg(uint_fast8_t catcommand1,
 	const uint8_t * catp	// массив символов
 	);
 
+static void dpc_displatch_timer_fn(void * arg);// User-mode function. Вызывается для выполнения latch спектра и панорамы
+static void appspoolprocess(void * ctx);
+
 typedef struct keyevent_tag
 {
 	uint_fast8_t kbready;
@@ -19573,6 +19576,76 @@ static STTE_t hamradio_tune_step(void)
 #endif /* WITHAUTOTUNER */
 }
 
+#if WITHDEBUG
+static void keyspoolprocess(void * ctx)
+{
+#if ! defined (HAVE_BTSTACK_STDIN)
+#if 0
+	uint_fast8_t dtmfch;
+	if (dtmf_scan((& dtmfch)))
+	{
+		PRINTF("dtmfkey=%02X\n", (unsigned char) dtmfch);
+	}
+#endif
+	/* здесь можно добавить обработку каких-либо команд с debug порта */
+	char c;
+	if (dbg_getchar(& c))
+	{
+		switch (c)
+		{
+		case 0x00:
+			break;
+		default:
+			PRINTF("key=%02X\n", (unsigned char) c);
+			break;
+#if 0
+		case 'd':
+			if (swrsim < 30)
+				++ swrsim;
+			PRINTF("swrsim=%d\n", swrsim);
+			break;
+		case 's':
+			if (swrsim > 0)
+				-- swrsim;
+			PRINTF("swrsim=%d\n", swrsim);
+			break;
+#endif
+#if WITHMENU
+		case 'm':
+			PRINTF("menu items:\n");
+			menu_print();
+			PRINTF("menu items end\n");
+			break;
+#endif /* WITHMENU */
+#if __riscv
+		case ' ':
+			{
+				uint64_t v = csr_read_mcycle();
+				static uint64_t v0;
+				PRINTF("%lu\n", (long) (v - v0) / 1000000);
+				v0 = v;
+			}
+			break;
+#endif /* __riscv */
+#if WITHUSBHOST_HIGHSPEEDULPI && 0
+		case 'u':
+			PRINTF("hkey:\n");
+			ulpi_chip_debug();
+			break;
+#endif /* WITHUSBHOST_HIGHSPEEDULPI */
+#if WITHWAVPLAYER || WITHSENDWAV
+		case 'p':
+			PRINTF(PSTR("Play test file\n"));
+			playwavfile("1.wav");
+			break;
+#endif /* WITHWAVPLAYER */
+		}
+	}
+
+#endif /* ! defined (HAVE_BTSTACK_STDIN) */
+}
+#endif /* WITHDEBUG */
+
 //
 //// работа в машине состояний меню
 //// STTE_OK - вышли из меню.
@@ -19599,6 +19672,62 @@ static uint_fast8_t sthrl = STHRL_RXTX;
 // инициализация главной машины состояний
 static void hamradio_main_initialize(void)
 {
+	{
+		static ticker_t ticker;
+
+		ticker_initialize(& ticker, NTICKS(UI_TICKS_PERIOD), refreshticker_cb, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		ticker_add(& ticker);
+	}
+
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, dpc_1s_timer_fn, NULL);
+		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
+		ticker_add(& ticker);
+	}
+
+	{
+		static dpcobj_t dpcobj;
+
+		IRQLSPINLOCK_INITIALIZE(& boardupdatelock);
+		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL);
+		ticker_initialize_user_display(& displatchticker, NTICKS(calcdivround2(1000, glatchfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_add(& displatchticker);
+	}
+
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, dpc_0p1_s_timer_fn, NULL);
+		ticker_initialize_user(& ticker, NTICKS(100), & dpcobj);
+		ticker_add(& ticker);
+	}
+
+#if WITHAUTOTUNER
+	{
+		static dpcobj_t dpcobj;
+		dpcobj_initialize(& dpcobj, dpc_tunertimer_fn, NULL);
+		ticker_initialize_user(& ticker_tuner, NTICKS(gtunerdelay), & dpcobj);
+		ticker_add(& ticker_tuner);
+	}
+#endif /* WITHAUTOTUNER */
+#if WITHDEBUG
+	{
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, keyspoolprocess, NULL);
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+	}
+#endif
+	{
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, appspoolprocess, NULL);
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+	}
 	// начальная инициализация
 
 	seq_purge();
@@ -19679,76 +19808,6 @@ static void appspoolprocess(void * ctx)
 	}
 #endif /* WITHSLEEPTIMER */
 }
-
-#if WITHDEBUG
-static void keyspoolprocess(void * ctx)
-{
-#if ! defined (HAVE_BTSTACK_STDIN)
-#if 0
-	uint_fast8_t dtmfch;
-	if (dtmf_scan((& dtmfch)))
-	{
-		PRINTF("dtmfkey=%02X\n", (unsigned char) dtmfch);
-	}
-#endif
-	/* здесь можно добавить обработку каких-либо команд с debug порта */
-	char c;
-	if (dbg_getchar(& c))
-	{
-		switch (c)
-		{
-		case 0x00:
-			break;
-		default:
-			PRINTF("key=%02X\n", (unsigned char) c);
-			break;
-#if 0
-		case 'd':
-			if (swrsim < 30)
-				++ swrsim;
-			PRINTF("swrsim=%d\n", swrsim);
-			break;
-		case 's':
-			if (swrsim > 0)
-				-- swrsim;
-			PRINTF("swrsim=%d\n", swrsim);
-			break;
-#endif
-#if WITHMENU
-		case 'm':
-			PRINTF("menu items:\n");
-			menu_print();
-			PRINTF("menu items end\n");
-			break;
-#endif /* WITHMENU */
-#if __riscv
-		case ' ':
-			{
-				uint64_t v = csr_read_mcycle();
-				static uint64_t v0;
-				PRINTF("%lu\n", (long) (v - v0) / 1000000);
-				v0 = v;
-			}
-			break;
-#endif /* __riscv */
-#if WITHUSBHOST_HIGHSPEEDULPI && 0
-		case 'u':
-			PRINTF("hkey:\n");
-			ulpi_chip_debug();
-			break;
-#endif /* WITHUSBHOST_HIGHSPEEDULPI */
-#if WITHWAVPLAYER || WITHSENDWAV
-		case 'p':
-			PRINTF(PSTR("Play test file\n"));
-			playwavfile("1.wav");
-			break;
-#endif /* WITHWAVPLAYER */
-		}
-	}
-
-#endif /* ! defined (HAVE_BTSTACK_STDIN) */
-}
-#endif /* WITHDEBUG */
 
 /* Возвращаем не-0, если было изменение частоты настройки */
 static uint_fast8_t
@@ -22029,62 +22088,6 @@ application_initialize(void)
 	bt_initialize();
 #endif /* WITHUSEUSBBT */
 
-	{
-		static ticker_t ticker;
-
-		ticker_initialize(& ticker, NTICKS(UI_TICKS_PERIOD), refreshticker_cb, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-		ticker_add(& ticker);
-	}
-
-	{
-		static ticker_t ticker;
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, dpc_1s_timer_fn, NULL);
-		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
-		ticker_add(& ticker);
-	}
-
-	{
-		static dpcobj_t dpcobj;
-
-		IRQLSPINLOCK_INITIALIZE(& boardupdatelock);
-		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL);
-		ticker_initialize_user_display(& displatchticker, NTICKS(calcdivround2(1000, glatchfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
-		ticker_add(& displatchticker);
-	}
-
-	{
-		static ticker_t ticker;
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, dpc_0p1_s_timer_fn, NULL);
-		ticker_initialize_user(& ticker, NTICKS(100), & dpcobj);
-		ticker_add(& ticker);
-	}
-
-#if WITHAUTOTUNER
-	{
-		static dpcobj_t dpcobj;
-		dpcobj_initialize(& dpcobj, dpc_tunertimer_fn, NULL);
-		ticker_initialize_user(& ticker_tuner, NTICKS(gtunerdelay), & dpcobj);
-		ticker_add(& ticker_tuner);
-	}
-#endif /* WITHAUTOTUNER */
-#if WITHDEBUG
-	{
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, keyspoolprocess, NULL);
-		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-	}
-#endif
-	{
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, appspoolprocess, NULL);
-		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-	}
 }
 
 // LVGL interface functions

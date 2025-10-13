@@ -581,42 +581,66 @@ void board_tsc_initialize(void)
 #endif /* TSC1_TYPE == TSC_TYPE_AWTPADC */
 
 #if 0
-	gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
-	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-
-	tPoint p_display[TSCCALIBPOINTS], p_touch[TSCCALIBPOINTS];
-	const uint_fast16_t xstep = DIM_X / 6;
-	const uint_fast16_t ystep = DIM_Y / 6;
-	p_display [0].x = xstep * 1;	// левый верхний
-	p_display [0].y = ystep * 1;
-	p_display [1].x = xstep * 1;	// левый нижний
-	p_display [1].y = ystep * 5;
-	p_display [2].x = xstep * 5;	// правый верхний
-	p_display [2].y = ystep * 1;
-	p_display [3].x = xstep * 5;	// правый нижний
-	p_display [3].y = ystep * 5;
-	p_display [4].x = xstep * 3;	// центр экрана
-	p_display [4].y = ystep * 3;
-
-	// стереть фон
-	colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-	// нарисовать мишени для калибровки
-	uint_fast8_t i;
-	for (i = 0; i < TSCCALIBPOINTS; ++ i)
+	if (1)
 	{
-		const uint_fast16_t xg = DIM_X / 32;
-		const uint_fast16_t yg = DIM_Y / 20;
-		colpip_line(& dbv, p_display [i].x - xg, p_display [i].y - 0, p_display [i].x + xg, p_display [i].y + 0, COLOR_WHITE, 0);
-		colpip_line(& dbv, p_display [i].x - 0, p_display [i].y - yg, p_display [i].x + 0, p_display [i].y + yg, COLOR_WHITE, 0);
-	}
-	colpip_text(& dbv, xstep * 2, ystep * 5, COLOR_WHITE, "CALIBRATE", 9);
-	colmain_nextfb();
+		tPoint p_display[TSCCALIBPOINTS], p_touch[TSCCALIBPOINTS];
+		const uint_fast16_t xstep = DIM_X / 6;
+		const uint_fast16_t ystep = DIM_Y / 6;
 
-	for (;;)
-		;
-	tCoef coef;
-	//Раcсчитываем коэффициенты для перехода от координат тачскрина в дисплейные координаты.
-	CoefCalc(p_display, p_touch, & coef, TSCCALIBPOINTS);
+		p_display [0].x = xstep * 1;	// левый верхний
+		p_display [0].y = ystep * 1;
+		p_display [1].x = xstep * 5;	// правый верхний
+		p_display [1].y = ystep * 1;
+		p_display [2].x = xstep * 1;	// левый нижний
+		p_display [2].y = ystep * 5;
+		p_display [3].x = xstep * 5;	// правый нижний
+		p_display [3].y = ystep * 5;
+		p_display [4].x = xstep * 3;	// центр экрана
+		p_display [4].y = ystep * 3;
+
+		uint_fast8_t tg;	// получение калибровочных значений для данной точки
+		for (tg = 0; tg < TSCCALIBPOINTS; ++ tg)
+		{
+			PRINTF("tsc: calibrate target %u\n", (unsigned) tg);
+
+			gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
+			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+			// стереть фон
+			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
+			// нарисовать мишени для калибровки
+			uint_fast8_t i;
+			for (i = 0; i < TSCCALIBPOINTS; ++ i)
+			{
+				const uint_fast16_t xg = DIM_X / 32;
+				const uint_fast16_t yg = DIM_Y / 20;
+				colpip_line(& dbv, p_display [i].x - xg, p_display [i].y - 0, p_display [i].x + xg, p_display [i].y + 0, COLOR_WHITE, 0);
+				colpip_line(& dbv, p_display [i].x - 0, p_display [i].y - yg, p_display [i].x + 0, p_display [i].y + yg, COLOR_WHITE, 0);
+				if (i == tg)
+				{
+					colpip_segm(& dbv, p_display [i].x, p_display [i].y, 0, 360, xg, 15, COLOR_WHITE, 0, 0);
+				}
+			}
+			colpip_text(& dbv, xstep * 2, ystep * 5, COLOR_WHITE, "CALIBRATE", 9);
+			colmain_nextfb();
+			// wait answer
+			unsigned as;
+			for (as = 0; as < 5000; ++ as)
+			{
+				uint_fast16_t x, y, z;
+				if (board_tsc_getraw(& x, & y, & z))
+				{
+					p_touch [tg].x = x;
+					p_touch [tg].y = y;
+				}
+				local_delay_ms(1);
+			}
+			PRINTF("tsc: calibrate target %u done\n", (unsigned) tg);
+		}
+
+		tCoef coef;
+		//Раcсчитываем коэффициенты для перехода от координат тачскрина в дисплейные координаты.
+		CoefCalc(p_display, p_touch, & coef, TSCCALIBPOINTS);
+	}
 #endif
 
 	/* Тест - печать ненормализованных значений */
