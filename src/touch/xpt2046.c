@@ -54,6 +54,7 @@ enum XPTCoordinate
 // https://github.com/MarlinFirmware/Marlin/blob/2.0.x/Marlin/src/lcd/touch/touch_buttons.cpp
 // MKS Robin Mini/firmware/Marlin2.0-MKS-Robin_mini/Marlin/src/HAL/HAL_STM32F1/xpt2046.h
 // https://github.com/d-qoi/TSC2046_kernel_driver/blob/master/TSC2046_driver.c
+// https://github.com/dmquirozc/XPT2046_driver_STM32/tree/main
 
 #if WITHSPIHW || WITHSPISW
 
@@ -67,7 +68,7 @@ xpt2046_read4(
 	uint_fast16_t * z2
 	)
 {
-	enum { PDx = 1*XPT2046_PD1 | 1*XPT2046_PD0 };
+	enum { PDx = 1*XPT2046_PD1 | 1*XPT2046_PD0 };	// оба бита "1" - прерывания не формируются
 	static const uint8_t txbuf [] =
 	{
 		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
@@ -140,7 +141,7 @@ void xpt2046_initialize(void)
 		PRINTF("xpt2046: x=%5u, y=%5u z1=%5u, z2=%5u\n", x, y, z1, z2);
 	}
 #endif
-	BOARD_XPT2046_INT_CONNECT();
+	//BOARD_XPT2046_INT_CONNECT();
 	//PRINTF("xpt2046_initialize done.\n");
 }
 
