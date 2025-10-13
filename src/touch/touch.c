@@ -585,6 +585,9 @@ void board_tsc_initialize(void)
 #if WITHTSC5PCALIBRATE
 	if (1)
 	{
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
 		tPoint p_display[TSCCALIBPOINTS], p_touch[TSCCALIBPOINTS];
 		const uint_fast16_t xstep = DIM_X / 6;
 		const uint_fast16_t ystep = DIM_Y / 6;
@@ -605,7 +608,6 @@ void board_tsc_initialize(void)
 		{
 			PRINTF("tsc: calibrate target %u\n", (unsigned) tg);
 
-			gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
 			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 			// стереть фон
 			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
@@ -634,9 +636,15 @@ void board_tsc_initialize(void)
 					p_touch [tg].x = x;
 					p_touch [tg].y = y;
 					PRINTF("tsc: calibrate target %u: x=%-5u, y=%-5u , z=%-5u\n", tg, x, y, z);
+					break;
 				}
 				local_delay_ms(1);
 			}
+			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+			// стереть фон
+			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
+			colpip_text(& dbv, xstep * 2, ystep * 5, COLOR_WHITE, "CALIBRATE DONE", 14);
+			colmain_nextfb();
 			PRINTF("tsc: calibrate target %u done\n", (unsigned) tg);
 		}
 
