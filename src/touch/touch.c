@@ -591,6 +591,12 @@ void board_tsc_initialize(void)
 		tPoint p_display[TSCCALIBPOINTS], p_touch[TSCCALIBPOINTS];
 		const uint_fast16_t xstep = DIM_X / 6;
 		const uint_fast16_t ystep = DIM_Y / 6;
+		// результат калибровки
+		p_touch [0].x=791  , p_touch [0].y=875;
+		p_touch [1].x=3333 , p_touch [1].y=874;
+		p_touch [2].x=733  , p_touch [2].y=3444;
+		p_touch [3].x=3370 , p_touch [3].y=3472;
+		p_touch [4].x=2027 , p_touch [4].y=2068;
 
 		p_display [0].x = xstep * 1;	// левый верхний
 		p_display [0].y = ystep * 1;
@@ -628,7 +634,7 @@ void board_tsc_initialize(void)
 			colmain_nextfb();
 			// wait answer
 			unsigned as;
-			for (as = 0; as < 5000; ++ as)
+			for (as = 0; as < 5000; /*++ as */)
 			{
 				uint_fast16_t x, y, z;
 				if (board_tsc_getraw(& x, & y, & z))

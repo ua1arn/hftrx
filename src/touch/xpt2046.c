@@ -28,6 +28,8 @@
 #define tscspeed SPIC_SPEED100k
 #define tscmode SPIC_MODE0
 
+#define XPT2046_SPOOLMS	20	// период опроса
+
 #define XPT2046_DFR_MODE 	0x00
 #define XPT2046_SER_MODE 	0x04
 #define XPT2046_CONTROL  	0x80
@@ -49,7 +51,7 @@ enum XPTCoordinate
 	XPT2046_TEMP_2 = 7 * XPT2046_A0 | XPT2046_SER_MODE		// Термодачик (The second mode)
 };
 
-#define XPT2046_Z1_THRESHOLD 200	// чувствительность к силе нажатия
+#define XPT2046_Z1_THRESHOLD 100	// чувствительность к силе нажатия
 
 // See https://github.com/ikeji/Ender3Firmware/blob/ef1f9d25eb2cd084ce929e1ad4163ef0a3e88142/Marlin/src/feature/touch/xpt2046.cpp
 // https://github.com/Bodmer/TFT_Touch/blob/master/TFT_Touch.cpp
@@ -106,7 +108,7 @@ xpt2046_pressure(
 }
 
 /* получение ненормальзованных координат нажатия */
-uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
+static uint_fast8_t xpt2046_getxy_spi(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 {
 	const spitarget_t target = targettsc1;
 	uint_fast16_t x, y, z1, z2;
@@ -114,8 +116,9 @@ uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t
 
 	* xr = x;
 	* yr = y;
-	xpt2046_pressure(x, y, z1, z2);
+	//xpt2046_pressure(x, y, z1, z2);
 	* zr = z1;
+	//PRINTF("xpt2046 xpt2046_getxy_spi: x=%5u, y=%5u z1=%5u, z2=%5u\n", x, y, z1, z2);
 	return !! x && !! y && (z1 > XPT2046_Z1_THRESHOLD);
 }
 
@@ -124,13 +127,66 @@ xpt2406_interrupt_handler(void * ctx)
 {
 	const spitarget_t target = targettsc1;
 	uint_fast16_t x, y, z1, z2;
+	(void) ctx;
 	xpt2046_read4(target, & x, & y, & z1, & z2);
 	PRINTF("xpt2046 interrupt: x=%5u, y=%5u z1=%5u, z2=%5u\n", x, y, z1, z2);
+}
+
+static IRQLSPINLOCK_t tsclock = IRQLSPINLOCK_INIT;
+
+static volatile uint_fast16_t gx, gy, gz;
+static volatile uint_fast8_t gready;
+static volatile unsigned press;
+
+
+/* получение ненормальзованных координат нажатия */
+uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
+{
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& tsclock, & oldIrql, IRQL_SYSTEM);
+	const uint_fast8_t f = gready;
+	* xr = gx;
+	* yr = gy;
+	* zr = gz;
+	gready = 0;
+	IRQLSPIN_UNLOCK(& tsclock, oldIrql);
+	return f;
+}
+
+static void xpt204_spool(void * ctx)
+{
+	enum { PRESSDELAY = 3 };
+	uint_fast16_t x, y, z1;
+	(void) ctx;
+	const uint_fast8_t f = xpt2046_getxy_spi(& x, & y, & z1);
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& tsclock, & oldIrql, IRQL_SYSTEM);
+	//PRINTF("%d: p=%u, r=%u\n", f, press, release);
+	if (f)
+	{
+		if (press < PRESSDELAY)
+			++ press;
+		if (press == PRESSDELAY)
+		{
+			//TP();
+			gx = x;
+			gy = y;
+			gz = z1;
+			gready = 1;
+			press = PRESSDELAY + 1;
+		}
+	}
+	else
+	{
+		press = 0;
+	}
+	IRQLSPIN_UNLOCK(& tsclock, oldIrql);
 }
 
 void xpt2046_initialize(void)
 {
 	const spitarget_t target = targettsc1;
+	IRQLSPINLOCK_INITIALIZE(& tsclock);
 	//PRINTF("xpt2046_initialize:\n");
 	{
 		uint_fast16_t x, y, z1, z2;
@@ -145,7 +201,12 @@ void xpt2046_initialize(void)
 		PRINTF("xpt2046: x=%5u, y=%5u z1=%5u, z2=%5u\n", x, y, z1, z2);
 	}
 #endif
-	BOARD_XPT2046_INT_CONNECT();
+
+	static ticker_t xpt204_ticker;
+	ticker_initialize(& xpt204_ticker, NTICKS(XPT2046_SPOOLMS), xpt204_spool, NULL);
+	ticker_add(& xpt204_ticker);
+
+	//BOARD_XPT2046_INT_CONNECT();
 	//PRINTF("xpt2046_initialize done.\n");
 }
 
