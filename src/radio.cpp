@@ -228,6 +228,60 @@ static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшае
 
 #endif /* WITHENCODER */
 
+
+
+/* система отказа от передачи при аварийных ситуациях */
+typedef struct edgepin_tag
+{
+	LIST_ENTRY item;
+	//uint8_t outstate;	/* результирующее состояние */
+	uint8_t prevstate;
+	uint8_t posedge;
+	uint8_t negedge;
+	uint8_t req;
+	uint_fast8_t (* getpin)(void);
+} edgepin_t;
+
+void edgepin_initialize(LIST_ENTRY * list, edgepin_t * egp, uint_fast8_t (* fn)(void));
+
+typedef enum txreqst_values
+{
+	TXREQST_RX,	// приём
+	TXREQST_TX,	// передача
+	TXREQST_TXDATA,	// передача с USB
+	TXREQST_TXTONE,	// передача тестового сигнала
+	TXREQST_TXAUTOTUNE,	// автонастройка тюнера
+	//
+	TXREQ_count
+} txreqst_t;
+
+typedef struct txreq_tag
+{
+	LIST_ENTRY edgepins;	/* писок входов, для которых отслеживается состояние */
+	edgepin_t edgphandptt;	// тангента/педаль
+	edgepin_t edgpcathwptt;	// CAT rts/dtr
+	edgepin_t edgpelkeyptt;	// ELKEY activity
+	edgepin_t edgpexttune;	// внешний запрос на выдачу несущей
+
+	txreqst_t state;
+} txreq_t;
+
+void txreq_initialize(txreq_t * txreqp);
+void txreq_process(txreq_t * txreqp);		/* Установка сиквенсору запроса на передачу и работа с аппаратурой	*/
+
+void txreq_reqautotune(txreq_t * txreqp, uint_fast8_t v);	// Выход из режима - txreq_rx
+uint_fast8_t txreq_getreqautotune(const txreq_t * txreqp);
+uint_fast8_t txreq_gethint(const txreq_t * txreqp);
+void txreq_txtone(txreq_t * txreqp);
+uint_fast8_t txreq_gettxtone(const txreq_t * txreqp);	/* возвращаем не-0, если есть запрос на tune от пользователя или CAT */
+void txreq_mox(txreq_t * txreqp);
+uint_fast8_t txreq_get_tx(const txreq_t * txreqp);
+void txreq_rx(txreq_t * txreqp, const char * label);	/* переход на приём (сброс всех запросов) */
+uint_fast8_t txreq_gettxdata(const txreq_t * txreqp);
+void txreq_txdata(txreq_t * txreqp);	// передача с USB
+
+static txreq_t txreqst0;
+
 static uint_fast8_t gtx;	/* текущее состояние прием или передача */
 
 /* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
@@ -240,8 +294,7 @@ processmessages(
 	if (hardware_getshutdown())	// признак провала питания
 	{
 		display_uninitialize();	// выключаем дисплей
-		gtx = 0;
-		updateboard();	// переходим на приём
+		txreq_rx(& txreqst0, NULL);	// переходим на приём
 		for (;;)				// вешаемся...
 			;
 	}
@@ -603,59 +656,6 @@ void hamradio_lfm_disable(void)
 
 #endif /* WITHLFM */
 
-
-
-/* система отказа от передачи при аварийных ситуациях */
-typedef struct edgepin_tag
-{
-	LIST_ENTRY item;
-	//uint8_t outstate;	/* результирующее состояние */
-	uint8_t prevstate;
-	uint8_t posedge;
-	uint8_t negedge;
-	uint8_t req;
-	uint_fast8_t (* getpin)(void);
-} edgepin_t;
-
-void edgepin_initialize(LIST_ENTRY * list, edgepin_t * egp, uint_fast8_t (* fn)(void));
-
-typedef enum txreqst_values
-{
-	TXREQST_RX,	// приём
-	TXREQST_TX,	// передача
-	TXREQST_TXDATA,	// передача с USB
-	TXREQST_TXTONE,	// передача тестового сигнала
-	TXREQST_TXAUTOTUNE,	// автонастройка тюнера
-	//
-	TXREQ_count
-} txreqst_t;
-
-typedef struct txreq_tag
-{
-	LIST_ENTRY edgepins;	/* писок входов, для которых отслеживается состояние */
-	edgepin_t edgphandptt;	// тангента/педаль
-	edgepin_t edgpcathwptt;	// CAT rts/dtr
-	edgepin_t edgpelkeyptt;	// ELKEY activity
-	edgepin_t edgpexttune;	// внешний запрос на выдачу несущей
-
-	txreqst_t state;
-} txreq_t;
-
-void txreq_initialize(txreq_t * txreqp);
-void txreq_process(txreq_t * txreqp);		/* Установка сиквенсору запроса на передачу и работа с аппаратурой	*/
-
-void txreq_reqautotune(txreq_t * txreqp, uint_fast8_t v);	// Выход из режима - txreq_rx
-uint_fast8_t txreq_getreqautotune(const txreq_t * txreqp);
-uint_fast8_t txreq_gethint(const txreq_t * txreqp);
-void txreq_txtone(txreq_t * txreqp);
-uint_fast8_t txreq_gettxtone(const txreq_t * txreqp);	/* возвращаем не-0, если есть запрос на tune от пользователя или CAT */
-void txreq_mox(txreq_t * txreqp);
-uint_fast8_t txreq_get_tx(const txreq_t * txreqp);
-void txreq_rx(txreq_t * txreqp, const char * label);	/* переход на приём (сброс всех запросов) */
-uint_fast8_t txreq_gettxdata(const txreq_t * txreqp);
-void txreq_txdata(txreq_t * txreqp);	// передача с USB
-
-static txreq_t txreqst0;
 
 static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при приеме телеграфа или самоконтроль (в десятках герц) */
 
@@ -7822,6 +7822,7 @@ uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag)
 static void
 uif_pwbutton_press(void)
 {
+	txreq_rx(& txreqst0, NULL);	// переходим на приём
 	gpoweronhold = 0;
 	updateboard();
 }
