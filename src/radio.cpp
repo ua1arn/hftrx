@@ -11978,7 +11978,6 @@ updateboard_noui(
 	seq_txrequest(txreq_get_tx(& txreqst0));
 	full2 |= flagne_u8(& txreqhint, txreq_gethint(& txreqst0));
 	full2 |= flagne_u8(& gtx, seq_get_txstate());
-	seq_ask_txstate(gtx);
 
 	uint_fast8_t pathi;
 	ASSERT(gtx < 2);
@@ -12613,10 +12612,9 @@ updateboard_noui(
 	}
 
 /* после всех перенастроек включаем передатчик */
-#if WITHTX
 	board_set_tx(gtx);		/* в конце выдаём сигнал разрешения передачи */
 	board_update();		/* вывести забуферированные изменения в регистры */
-#endif /* WITHTX */
+	seq_ask_txstate(gtx);
 
 	return full2;
 }

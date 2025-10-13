@@ -113,7 +113,7 @@ static uint_fast32_t pretxticks;	// время выключения тракта
 static uint_fast32_t rgbeepticks;	// время формирование roger beep
 
 static std::atomic<uint_fast32_t> ptt;	// запрос на передачу от пользовательской программы
-static /* volatile */ uint_fast8_t usertxstate;	/* 0 - периферия находимся в состоянии приёма, иначе - в состоянии передачи */
+static std::atomic<uint_fast32_t> usertxstate;	/* 0 - периферия находимся в состоянии приёма, иначе - в состоянии передачи */
 
 static std::atomic<uint_fast32_t> seqstate;
 static uint_fast32_t seqpushtime;	// Возможные количства "тиков" на передачу и на приём
@@ -587,12 +587,7 @@ void seq_txrequest(uint_fast8_t aptt)
 void seq_ask_txstate(
 	uint_fast8_t tx)	/* 0 - периферия находимся в состоянии приёма, иначе - в состоянии передачи */
 {
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
-
 	usertxstate = tx;
-
-	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
 }
 
 // состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)
