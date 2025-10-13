@@ -106,10 +106,12 @@ typedef struct {
 /*
  * Расчет коэффициентов для преобразования координат тачскрина в дисплейные координаты
  */
-static void CoefCalc(tPoint *p_d, tPoint *p_t, tCoef *coef, uint8_t all_points)
+static void CoefCalc(const tPoint *p_d, const tPoint *p_t, tCoef *coef, uint8_t all_points)
 {
-	uint64_t a = 0, b = 0, c = 0, d = 0, e = 0, X1 = 0, X2 = 0, X3 = 0, Y1 = 0, Y2 = 0, Y3 = 0;
-	for(uint8_t i = 0; i < all_points; i++)	{
+	uint_fast8_t i;
+	uint_fast64_t a = 0, b = 0, c = 0, d = 0, e = 0, X1 = 0, X2 = 0, X3 = 0, Y1 = 0, Y2 = 0, Y3 = 0;
+	for (i = 0; i < all_points; i ++)
+	{
 		a += p_t[i].x * p_t[i].x;
 		b += p_t[i].y * p_t[i].y;
 		c += p_t[i].x * p_t[i].y;
