@@ -18,6 +18,7 @@
 // XPT2046 Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO.,LTD http://www.xptek.com.cn
 // TI TSC2046
 // HR2046
+// ADS7843
 // SPI interface used
 
 // При необходимости разместить в файле конфигурации платы.
