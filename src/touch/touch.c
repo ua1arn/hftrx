@@ -13,6 +13,7 @@
 #include "touch.h"
 #include "gpio.h"
 
+//#define WITHTSC5PCALIBRATE 1
 
 static uint_fast16_t
 tcsnormalize(
@@ -106,12 +107,13 @@ static void CoefCalc(const tPoint *p_d, const tPoint *p_t, tCoef *coef, uint8_t 
  * - в переменной coef (тип tCoef) принимает коэффициенты преобразования;
  * - в переменной p_d (тип tPoint) возвращает дисплейные координаты.
  */
-void XPT2046_ConvertPoint(tPoint *p_d, const tPoint *p_t, const tCoef *coef)
+static void tsc_ConvertPoint(tPoint *p_d, const tPoint *p_t, const tCoef *coef)
 {
 	p_d->x = (int)((p_t->x * coef->Dx1 + p_t->y * coef->Dx2 + coef->Dx3) / coef->D);
 	p_d->y = (int)((p_t->x * coef->Dy1 + p_t->y * coef->Dy2 + coef->Dy3) / coef->D);
 }
 
+static tCoef tsccoef;
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 #include "stmpe811.h"
@@ -580,7 +582,7 @@ void board_tsc_initialize(void)
 	awgpadc_initialize();
 #endif /* TSC1_TYPE == TSC_TYPE_AWTPADC */
 
-#if 0
+#if WITHTSC5PCALIBRATE
 	if (1)
 	{
 		tPoint p_display[TSCCALIBPOINTS], p_touch[TSCCALIBPOINTS];
@@ -631,15 +633,34 @@ void board_tsc_initialize(void)
 				{
 					p_touch [tg].x = x;
 					p_touch [tg].y = y;
+					PRINTF("tsc: calibrate target %u: x=%-5u, y=%-5u , z=%-5u\n", tg, x, y, z);
 				}
 				local_delay_ms(1);
 			}
 			PRINTF("tsc: calibrate target %u done\n", (unsigned) tg);
 		}
 
-		tCoef coef;
 		//Раcсчитываем коэффициенты для перехода от координат тачскрина в дисплейные координаты.
-		CoefCalc(p_display, p_touch, & coef, TSCCALIBPOINTS);
+		CoefCalc(p_display, p_touch, & tsccoef, TSCCALIBPOINTS);
+	}
+#endif
+
+	/* Тест - печать ненормализованных значений */
+#if WITHDEBUG && WITHTSC5PCALIBRATE
+	for (;;)
+	{
+		uint_fast16_t x, y, z;
+		if (board_tsc_getraw(& x, & y, & z))
+		{
+			tPoint dp;
+			tPoint tp;
+			tp.x = x;
+			tp.y = y;
+			tsc_ConvertPoint(& dp, & tp, & tsccoef);
+//			uint_fast16_t xc = board_tsc_normalize_x(x, y, NULL);
+//			uint_fast16_t yc = board_tsc_normalize_y(x, y, NULL);
+			PRINTF("board_tsc_getraw: x=%-5u, y=%-5u , z=%-5u -> xc=%-5d, yc=%-5d\n", x, y, z, dp.x, dp.y);
+		}
 	}
 #endif
 
