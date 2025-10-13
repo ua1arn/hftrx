@@ -591,12 +591,13 @@ void board_tsc_initialize(void)
 		tPoint p_display[TSCCALIBPOINTS], p_touch[TSCCALIBPOINTS];
 		const uint_fast16_t xstep = DIM_X / 6;
 		const uint_fast16_t ystep = DIM_Y / 6;
+
 		// результат калибровки
-		p_touch [0].x=791  , p_touch [0].y=875;
-		p_touch [1].x=3333 , p_touch [1].y=874;
-		p_touch [2].x=733  , p_touch [2].y=3444;
-		p_touch [3].x=3370 , p_touch [3].y=3472;
-		p_touch [4].x=2027 , p_touch [4].y=2068;
+		p_touch [0].x=746, p_touch [0].y=877;
+		p_touch [1].x=3324, p_touch [1].y=927;
+		p_touch [2].x=772, p_touch [2].y=3427;
+		p_touch [3].x=3325, p_touch [3].y=3440;
+		p_touch [4].x=2044, p_touch [4].y=2164;
 
 		p_display [0].x = xstep * 1;	// левый верхний
 		p_display [0].y = ystep * 1;
@@ -612,7 +613,7 @@ void board_tsc_initialize(void)
 		uint_fast8_t tg;	// получение калибровочных значений для данной точки
 		for (tg = 0; tg < TSCCALIBPOINTS; ++ tg)
 		{
-			PRINTF("tsc: calibrate target %u\n", (unsigned) tg);
+			//PRINTF("tsc: calibrate target %u\n", (unsigned) tg);
 
 			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 			// стереть фон
@@ -641,7 +642,8 @@ void board_tsc_initialize(void)
 				{
 					p_touch [tg].x = x;
 					p_touch [tg].y = y;
-					PRINTF("tsc: calibrate target %u: x=%-5u, y=%-5u , z=%-5u\n", tg, x, y, z);
+					//PRINTF("tsc: calibrate target %u: x=%-5u, y=%-5u , z=%-5u\n", tg, x, y, z);
+					PRINTF("p_touch [%u].x=%u, p_touch [%u].y=%u;\n", tg, x, tg, y);
 					break;
 				}
 				local_delay_ms(1);
@@ -651,7 +653,7 @@ void board_tsc_initialize(void)
 			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
 			colpip_text(& dbv, xstep * 2, ystep * 5, COLOR_WHITE, "CALIBRATE DONE", 14);
 			colmain_nextfb();
-			PRINTF("tsc: calibrate target %u done\n", (unsigned) tg);
+			//PRINTF("tsc: calibrate target %u done\n", (unsigned) tg);
 		}
 
 		//Раcсчитываем коэффициенты для перехода от координат тачскрина в дисплейные координаты.
