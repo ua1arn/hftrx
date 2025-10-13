@@ -8,6 +8,7 @@
 #include "hardware.h"
 #include "board.h"
 #include "src/display/display.h"
+#include "display2.h"
 #include "formats.h"
 #include "touch.h"
 #include "gpio.h"
@@ -44,6 +45,73 @@ tcsnormalize(
 		return (uint_fast32_t) raw * range / distance;
 	}
 }
+
+// функции калибровки взяты тут:
+// https://github.com/vadrov/stm32-xpt2046-ili9341-dma-irq-spi-temperature-voltage
+/*
+ * Copyright (C) 2019, VadRov, all right reserved.
+ *
+ *  https://www.youtube.com/@VadRov
+ *  https://dzen.ru/vadrov
+ *  https://vk.com/vadrov
+ *  https://t.me/vadrov_channel
+ *
+ */
+
+enum { TSCCALIBPOINTS = 5 };
+/* Данные с координатами точки касания */
+typedef struct {
+	int x, y;
+} tPoint;
+
+/* Коэффициенты для преобразования координат тачскрина в дисплейные координаты */
+typedef struct {
+	int64_t	Dx1, Dx2, Dx3, Dy1, Dy2, Dy3, D;
+} tCoef;
+
+/*
+ * Расчет коэффициентов для преобразования координат тачскрина в дисплейные координаты
+ */
+static void CoefCalc(const tPoint *p_d, const tPoint *p_t, tCoef *coef, uint8_t all_points)
+{
+	uint_fast8_t i;
+	int_fast64_t a = 0, b = 0, c = 0, d = 0, e = 0;
+	int_fast64_t X1 = 0, X2 = 0, X3 = 0, Y1 = 0, Y2 = 0, Y3 = 0;
+	for (i = 0; i < all_points; i ++)
+	{
+		a += p_t[i].x * p_t[i].x;
+		b += p_t[i].y * p_t[i].y;
+		c += p_t[i].x * p_t[i].y;
+		d += p_t[i].x;
+		e += p_t[i].y;
+		X1 += p_t[i].x * p_d[i].x;
+		X2 += p_t[i].y * p_d[i].x;
+		X3 += p_d[i].x;
+		Y1 += p_t[i].x * p_d[i].y;
+		Y2 += p_t[i].y * p_d[i].y;
+		Y3 += p_d[i].y;
+	}
+	coef->D = all_points * (a * b - c * c) + 2 * c *  d * e - a * e * e - b * d * d;
+	coef->Dx1 = all_points * (X1 * b - X2 * c) + e * (X2 * d - X1 * e) + X3 * (c * e - b * d);
+	coef->Dx2 = all_points * (X2 * a - X1 * c) + d * (X1 * e - X2 * d) + X3 * (c * d - a * e);
+	coef->Dx3 = X3 * (a * b - c * c) + X1 * (c * e - b * d) + X2 * (c * d - a * e);
+	coef->Dy1 = all_points * (Y1 * b - Y2 * c) + e * (Y2 * d - Y1 * e) + Y3 * (c * e - b * d);
+	coef->Dy2 = all_points * (Y2 * a - Y1 * c) + d * (Y1 * e - Y2 * d) + Y3 * (c * d - a * e);
+	coef->Dy3 = Y3 * (a * b - c * c) + Y1 * (c * e - b * d) + Y2 * (c * d -a * e);
+}
+
+/*
+ * Преобразование координат тачскрина в дисплейные/экранные координаты:
+ * - в переменной p_t (тип tPoint) принимает координаты тачскрина;
+ * - в переменной coef (тип tCoef) принимает коэффициенты преобразования;
+ * - в переменной p_d (тип tPoint) возвращает дисплейные координаты.
+ */
+void XPT2046_ConvertPoint(tPoint *p_d, const tPoint *p_t, const tCoef *coef)
+{
+	p_d->x = (int)((p_t->x * coef->Dx1 + p_t->y * coef->Dx2 + coef->Dx3) / coef->D);
+	p_d->y = (int)((p_t->x * coef->Dy1 + p_t->y * coef->Dy2 + coef->Dy3) / coef->D);
+}
+
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 #include "stmpe811.h"
@@ -511,6 +579,45 @@ void board_tsc_initialize(void)
 #if TSC1_TYPE == TSC_TYPE_AWTPADC
 	awgpadc_initialize();
 #endif /* TSC1_TYPE == TSC_TYPE_AWTPADC */
+
+#if 0
+	gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
+	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+
+	tPoint p_display[TSCCALIBPOINTS], p_touch[TSCCALIBPOINTS];
+	const uint_fast16_t xstep = DIM_X / 6;
+	const uint_fast16_t ystep = DIM_Y / 6;
+	p_display [0].x = xstep * 1;	// левый верхний
+	p_display [0].y = ystep * 1;
+	p_display [1].x = xstep * 1;	// левый нижний
+	p_display [1].y = ystep * 5;
+	p_display [2].x = xstep * 5;	// правый верхний
+	p_display [2].y = ystep * 1;
+	p_display [3].x = xstep * 5;	// правый нижний
+	p_display [3].y = ystep * 5;
+	p_display [4].x = xstep * 3;	// центр экрана
+	p_display [4].y = ystep * 3;
+
+	// стереть фон
+	colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
+	// нарисовать мишени для калибровки
+	uint_fast8_t i;
+	for (i = 0; i < TSCCALIBPOINTS; ++ i)
+	{
+		const uint_fast16_t xg = DIM_X / 32;
+		const uint_fast16_t yg = DIM_Y / 20;
+		colpip_line(& dbv, p_display [i].x - xg, p_display [i].y - 0, p_display [i].x + xg, p_display [i].y + 0, COLOR_WHITE, 0);
+		colpip_line(& dbv, p_display [i].x - 0, p_display [i].y - yg, p_display [i].x + 0, p_display [i].y + yg, COLOR_WHITE, 0);
+	}
+	colpip_text(& dbv, xstep * 2, ystep * 5, COLOR_WHITE, "CALIBRATE", 9);
+	colmain_nextfb();
+
+	for (;;)
+		;
+	tCoef coef;
+	//Раcсчитываем коэффициенты для перехода от координат тачскрина в дисплейные координаты.
+	CoefCalc(p_display, p_touch, & coef, TSCCALIBPOINTS);
+#endif
 
 	/* Тест - печать ненормализованных значений */
 #if WITHDEBUG && 0

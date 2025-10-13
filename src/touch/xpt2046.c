@@ -94,58 +94,6 @@ xpt2046_read4(
 
 #endif /* WITHSPIHW || WITHSPISW */
 
-/* Данные с координатами точки касания */
-typedef struct {
-	int x, y;
-} tPoint;
-
-/* Коэффициенты для преобразования координат тачскрина в дисплейные координаты */
-typedef struct {
-	int64_t	Dx1, Dx2, Dx3, Dy1, Dy2, Dy3, D;
-} tCoef;
-
-/*
- * Расчет коэффициентов для преобразования координат тачскрина в дисплейные координаты
- */
-static void CoefCalc(const tPoint *p_d, const tPoint *p_t, tCoef *coef, uint8_t all_points)
-{
-	uint_fast8_t i;
-	uint_fast64_t a = 0, b = 0, c = 0, d = 0, e = 0, X1 = 0, X2 = 0, X3 = 0, Y1 = 0, Y2 = 0, Y3 = 0;
-	for (i = 0; i < all_points; i ++)
-	{
-		a += p_t[i].x * p_t[i].x;
-		b += p_t[i].y * p_t[i].y;
-		c += p_t[i].x * p_t[i].y;
-		d += p_t[i].x;
-		e += p_t[i].y;
-		X1 += p_t[i].x * p_d[i].x;
-		X2 += p_t[i].y * p_d[i].x;
-		X3 += p_d[i].x;
-		Y1 += p_t[i].x * p_d[i].y;
-		Y2 += p_t[i].y * p_d[i].y;
-		Y3 += p_d[i].y;
-	}
-	coef->D = all_points * (a * b - c * c) + 2 * c *  d * e - a * e * e - b * d * d;
-	coef->Dx1 = all_points * (X1 * b - X2 * c) + e * (X2 * d - X1 * e) + X3 * (c * e - b * d);
-	coef->Dx2 = all_points * (X2 * a - X1 * c) + d * (X1 * e - X2 * d) + X3 * (c * d - a * e);
-	coef->Dx3 = X3 * (a * b - c * c) + X1 * (c * e - b * d) + X2 * (c * d - a * e);
-	coef->Dy1 = all_points * (Y1 * b - Y2 * c) + e * (Y2 * d - Y1 * e) + Y3 * (c * e - b * d);
-	coef->Dy2 = all_points * (Y2 * a - Y1 * c) + d * (Y1 * e - Y2 * d) + Y3 * (c * d - a * e);
-	coef->Dy3 = Y3 * (a * b - c * c) + Y1 * (c * e - b * d) + Y2 * (c * d -a * e);
-}
-
-/*
- * Преобразование координат тачскрина в дисплейные/экранные координаты:
- * - в переменной p_t (тип tPoint) принимает координаты тачскрина;
- * - в переменной coef (тип tCoef) принимает коэффициенты преобразования;
- * - в переменной p_d (тип tPoint) возвращает дисплейные координаты.
- */
-void XPT2046_ConvertPoint(tPoint *p_d, const tPoint *p_t, const tCoef *coef)
-{
-	p_d->x = (int)((p_t->x * coef->Dx1 + p_t->y * coef->Dx2 + coef->Dx3) / coef->D);
-	p_d->y = (int)((p_t->x * coef->Dy1 + p_t->y * coef->Dy2 + coef->Dy3) / coef->D);
-}
-
 static unsigned
 xpt2046_pressure(
 	uint_fast16_t x,
@@ -188,12 +136,6 @@ void xpt2046_initialize(void)
 		uint_fast16_t x, y, z1, z2;
 		xpt2046_read4(target, & x, & y, & z1, & z2);
 	}
-#if 0
-	tPoint p_display[5], p_touch[5];
-	tCoef coef;
-	//Раcсчитываем коэффициенты для перехода от координат тачскрина в дисплейные координаты.
-	CoefCalc(p_display, p_touch, & coef, 5);
-#endif
 
 #if 0
 	for (;;)
