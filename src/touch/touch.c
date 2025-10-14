@@ -553,29 +553,32 @@ void board_tsc_initialize(void)
 	awgpadc_initialize();
 #endif /* TSC1_TYPE == TSC_TYPE_AWTPADC */
 
-#if WITHTSC5PCALIBRATE && 0
+
+#if WITHTSC5PCALIBRATE
+
+	const uint_fast16_t xstep = DIM_X / 6;
+	const uint_fast16_t ystep = DIM_Y / 6;
+	tPoint p_display [TSCCALIBPOINTS];
+	tPoint * const p_touch = board_tsc_getcalpoints();
+
+	p_display [0].x = xstep * 1;	// левый верхний
+	p_display [0].y = ystep * 1;
+	p_display [1].x = xstep * 5;	// правый верхний
+	p_display [1].y = ystep * 1;
+	p_display [2].x = xstep * 1;	// левый нижний
+	p_display [2].y = ystep * 5;
+	p_display [3].x = xstep * 5;	// правый нижний
+	p_display [3].y = ystep * 5;
+	p_display [4].x = xstep * 3;	// центр экрана
+	p_display [4].y = ystep * 3;
+
 	// Выполнение калибровки тач сенсора
-	if (1)
+	if (0)
 	{
 		enum { r0 = 15 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
-		tPoint p_display[TSCCALIBPOINTS];
-		tPoint * const p_touch = board_tsc_getcalpoints();
-		const uint_fast16_t xstep = DIM_X / 6;
-		const uint_fast16_t ystep = DIM_Y / 6;
-
-		p_display [0].x = xstep * 1;	// левый верхний
-		p_display [0].y = ystep * 1;
-		p_display [1].x = xstep * 5;	// правый верхний
-		p_display [1].y = ystep * 1;
-		p_display [2].x = xstep * 1;	// левый нижний
-		p_display [2].y = ystep * 5;
-		p_display [3].x = xstep * 5;	// правый нижний
-		p_display [3].y = ystep * 5;
-		p_display [4].x = xstep * 3;	// центр экрана
-		p_display [4].y = ystep * 3;
 
 		if (1)
 		{
@@ -626,10 +629,11 @@ void board_tsc_initialize(void)
 			}
 		}
 
-		//Раcсчитываем коэффициенты для перехода от координат тачскрина в дисплейные координаты.
-		CoefCalc(p_display, p_touch, & tsccoef, TSCCALIBPOINTS);
 	}
-#endif
+
+	//Раcсчитываем коэффициенты для перехода от координат тачскрина в дисплейные координаты.
+	CoefCalc(p_display, p_touch, & tsccoef, TSCCALIBPOINTS);
+#endif /* WITHTSC5PCALIBRATE */
 
 	/* Тест результата калибровки с рисованием точки касания */
 #if WITHDEBUG && 0
