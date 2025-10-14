@@ -22,6 +22,7 @@
 // ADS7843
 // SPI interface used
 
+
 // При необходимости разместить в файле конфигурации платы.
 //#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
 //#define BOARD_TSC1_YMIRROR 1	// Зеркалируем тачскрин по вертикали.
@@ -106,22 +107,6 @@ xpt2046_read4(
 
 #endif /* WITHSPIHW || WITHSPISW */
 
-static tPoint calpoints [TSCCALIBPOINTS] =
-{
-	// результат калибровки
-	{ 788, 867, },
-	{ 3368, 915, },
-	{ 784, 3331, },
-	{ 3358, 3344, },
-	{ 2051, 2107, },
-};
-
-tPoint *
-board_tsc_getcalpoints(void)
-{
-	return calpoints;
-}
-
 static unsigned
 xpt2046_pressure(
 	uint_fast16_t x,
@@ -166,7 +151,7 @@ static volatile unsigned press;
 
 
 /* получение ненормальзованных координат нажатия */
-uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
+uint_fast8_t board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 {
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& tsclock, & oldIrql, IRQL_SYSTEM);
@@ -234,6 +219,26 @@ void xpt2046_initialize(void)
 
 	//BOARD_XPT2046_INT_CONNECT();
 	//PRINTF("xpt2046_initialize done.\n");
+}
+
+// результат калибровки
+#if (DIM_X == 800) && (DIM_Y == 480)
+static tPoint calpoints [TSCCALIBPOINTS] =
+{
+	{ 848, 850, }, /* point 0 */
+	{ 3368, 898, }, /* point 1 */
+	{ 805, 3391, }, /* point 2 */
+	{ 3415, 3295, }, /* point 3 */
+	{ 2008, 2199, }, /* point 4 */
+};
+#else
+#error Provide calibration data
+#endif
+
+tPoint *
+board_tsc_getcalpoints(void)
+{
+	return calpoints;
 }
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_XPT2046) */

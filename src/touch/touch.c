@@ -13,7 +13,7 @@
 #include "touch.h"
 #include "gpio.h"
 
-//#define WITHTSC5PCALIBRATE 1
+//#define WITHTSC5PCALIBRATE 1	/* Калибровка по пяти точкам */
 
 static uint_fast16_t
 tcsnormalize(
@@ -295,12 +295,6 @@ board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 
 #include "xpt2046.h"
 
-uint_fast8_t
-board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
-{
-	return xpt2046_getxy(xr, yr, zr);
-}
-
 #endif /* defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_XPT2046 */
 
 #if defined(TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_S3402)
@@ -559,7 +553,8 @@ void board_tsc_initialize(void)
 	awgpadc_initialize();
 #endif /* TSC1_TYPE == TSC_TYPE_AWTPADC */
 
-#if WITHTSC5PCALIBRATE && 1
+#if WITHTSC5PCALIBRATE && 0
+	// Выполнение калибровки тач сенсора
 	if (1)
 	{
 		enum { r0 = 15 };
@@ -617,7 +612,7 @@ void board_tsc_initialize(void)
 						p_touch [tg].x = x;
 						p_touch [tg].y = y;
 						//PRINTF("tsc: calibrate target %u: x=%-5u, y=%-5u , z=%-5u\n", tg, x, y, z);
-						PRINTF("p_touch [%u].x=%u, p_touch [%u].y=%u;\n", tg, x, tg, y);
+						PRINTF("{ %u, %u, }, /* point %u */\n", x, y, tg);
 						break;
 					}
 					//local_delay_ms(1);
@@ -636,8 +631,8 @@ void board_tsc_initialize(void)
 	}
 #endif
 
-	/* Тест - печать ненормализованных значений */
-#if WITHDEBUG && WITHTSC5PCALIBRATE
+	/* Тест результата калибровки с рисованием точки касания */
+#if WITHDEBUG && 0
 	for (;;)
 	{
 		uint_fast16_t x, y;
