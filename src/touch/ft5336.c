@@ -282,4 +282,26 @@ uint8_t ft5336_GetState(TS_StateTypeDef *TS_State)
   return (ts_status);
 }
 
+#if WITHTSC5PCALIBRATE
+// результат калибровки
+#if (DIM_X == 800) && (DIM_Y == 480)
+static tPoint calpoints [TSCCALIBPOINTS] =
+{
+	{ 848, 850, }, /* point 0 */
+	{ 3368, 898, }, /* point 1 */
+	{ 805, 3391, }, /* point 2 */
+	{ 3415, 3295, }, /* point 3 */
+	{ 2008, 2199, }, /* point 4 */
+};
+#else
+#error Provide calibration data
+#endif
+#endif /* WITHTSC5PCALIBRATE */
+
+tPoint *
+board_tsc_getcalpoints(void)
+{
+	return calpoints;
+}
+
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_FT5336) */

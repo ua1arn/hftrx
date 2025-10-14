@@ -293,4 +293,26 @@ uint_fast8_t stmpe811_is_pressed(void) /* Return 1 if touch detection */
 			((i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_TSC_CTRL) & STMPE811_TS_CTRL_STATUS) >> STMPE811_TS_CTRL_STATUS_POS) != 0;
 }
 
+#if WITHTSC5PCALIBRATE
+// результат калибровки
+#if (DIM_X == 800) && (DIM_Y == 480)
+static tPoint calpoints [TSCCALIBPOINTS] =
+{
+	{ 848, 850, }, /* point 0 */
+	{ 3368, 898, }, /* point 1 */
+	{ 805, 3391, }, /* point 2 */
+	{ 3415, 3295, }, /* point 3 */
+	{ 2008, 2199, }, /* point 4 */
+};
+#else
+#error Provide calibration data
+#endif
+#endif /* WITHTSC5PCALIBRATE */
+
+tPoint *
+board_tsc_getcalpoints(void)
+{
+	return calpoints;
+}
+
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */

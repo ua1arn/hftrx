@@ -221,6 +221,7 @@ void xpt2046_initialize(void)
 	//PRINTF("xpt2046_initialize done.\n");
 }
 
+#if WITHTSC5PCALIBRATE
 // результат калибровки
 #if (DIM_X == 800) && (DIM_Y == 480)
 static tPoint calpoints [TSCCALIBPOINTS] =
@@ -234,6 +235,7 @@ static tPoint calpoints [TSCCALIBPOINTS] =
 #else
 #error Provide calibration data
 #endif
+#endif /* WITHTSC5PCALIBRATE */
 
 tPoint *
 board_tsc_getcalpoints(void)
