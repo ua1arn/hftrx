@@ -37,6 +37,7 @@
 #define XPT2046_8BIT_MODE	0x08
 #define XPT2046_PD0  		0x01	// full-power (PD0 = 1), not go into power-down (PD0 = 1) ???
 #define XPT2046_PD1  		0x02
+#define XPT2046_NOP  		0x00
 
 enum XPTCoordinate
 {
@@ -89,7 +90,7 @@ xpt2046_read4(
 //		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,
 //		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,
 
-		0x00,
+		XPT2046_NOP,
 	};
 	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
