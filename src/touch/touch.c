@@ -635,14 +635,24 @@ void board_tsc_initialize(void)
 
 	/* Тест результата калибровки с рисованием точки касания */
 #if WITHDEBUG && 0
+	{
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+
+		gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
+		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+
+		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
+		colpip_text(& dbv, DIM_X / 3, DIM_Y / 2, COLOR_GREEN, "TEST TSC", 8);
+		colmain_nextfb();
+
+	}
 	for (;;)
 	{
 		uint_fast16_t x, y;
 		if (board_tsc_getxy(& x, & y))
 		{
 			enum { r0 = 15 };
-			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
-			board_update();
 			gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
 
 			PRINTF("board_tsc_getxy: x=%-5u, y=%-5u\n", x, y);
@@ -650,6 +660,7 @@ void board_tsc_initialize(void)
 			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 			// стереть фон
 			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
+			colpip_text(& dbv, DIM_X / 3, DIM_Y / 2, COLOR_GREEN, "TEST TSC", 8);
 			enum { RSZ = 5 };
 			if (x < DIM_X - RSZ && y < DIM_Y - RSZ)
 				colpip_fillrect(& dbv, x, y, RSZ, RSZ, COLOR_WHITE);
