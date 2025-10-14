@@ -61,21 +61,23 @@ tcsnormalize(
 
 enum { TSCCALIBPOINTS = 5 };
 /* Данные с координатами точки касания */
-typedef struct {
+typedef struct
+{
 	int x, y;
 } tPoint;
 
 /* Коэффициенты для преобразования координат тачскрина в дисплейные координаты */
-typedef struct {
+typedef struct
+{
 	int64_t	Dx1, Dx2, Dx3, Dy1, Dy2, Dy3, D;
 } tCoef;
 
 /*
  * Расчет коэффициентов для преобразования координат тачскрина в дисплейные координаты
  */
-static void CoefCalc(const tPoint *p_d, const tPoint *p_t, tCoef *coef, uint8_t all_points)
+static void CoefCalc(const tPoint *p_d, const tPoint *p_t, tCoef *coef, int all_points)
 {
-	uint_fast8_t i;
+	int i;
 	int_fast64_t a = 0, b = 0, c = 0, d = 0, e = 0;
 	int_fast64_t X1 = 0, X2 = 0, X3 = 0, Y1 = 0, Y2 = 0, Y3 = 0;
 	for (i = 0; i < all_points; i ++)
