@@ -66,9 +66,6 @@ processcatmsg(uint_fast8_t catcommand1,
 	const uint8_t * catp	// массив символов
 	);
 
-static void dpc_displatch_timer_fn(void * arg);// User-mode function. Вызывается для выполнения latch спектра и панорамы
-static void appspoolprocess(void * ctx);
-
 typedef struct keyevent_tag
 {
 	uint_fast8_t kbready;
@@ -19646,6 +19643,87 @@ static void keyspoolprocess(void * ctx)
 }
 #endif /* WITHDEBUG */
 
+
+
+// User-mode function. Вызывается для выполнения latch спектра и панорамы
+static void
+dpc_displatch_timer_fn(void * ctx)
+{
+	(void) ctx;
+	display2_latch();
+
+	const struct menudef * mp;
+	if (0)
+	{
+
+	}
+#if WITHDIRECTFREQENER
+	else if (editfreqmode)
+	{
+		const uint_fast8_t bi = getbankindex_tx(gtx);
+		vindex_t vi = getvfoindex(bi);
+
+		editfreq2_t ef;
+
+		ef.freq = gfreqs [bi];
+		ef.blinkpos = blinkpos;
+		ef.blinkstate = blinkstate;
+
+		dctx_t dctx;
+		dctx.type = DCTX_FREQ;
+		dctx.pv = & ef;
+
+		display2_bgprocess(0, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
+	}
+#endif
+#if WITHMENU
+	else if (getinmenu(& mp))
+	{
+		dctx_t dctx;
+		dctx.type = DCTX_MENU;
+		dctx.pv = mp;
+
+		display2_bgprocess(1, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
+	}
+#endif /* WITHMENU */
+	else
+	{
+		display2_bgprocess(0, actpageix(), NULL);			/* выполнение шагов state machine отображения дисплея */
+	}
+}
+
+// user-mode processing
+// вызывается по DPC в главном цикле core 0
+static void
+appspoolprocess(void * ctx)
+{
+	(void) ctx;
+#if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
+	// обработать запрос на обновление состояния аппаратуры из user mode программы
+	if (dimmflagch != 0)
+	{
+		dimmflagch = 0;
+		updateboard();
+	}
+#endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
+#if WITHFANTIMER
+	// обработать запрос на обновление состояния аппаратуры из user mode программы
+	if (fanpaflagch != 0)
+	{
+		fanpaflagch = 0;
+		updateboard();
+	}
+#endif /* WITHFANTIMER */
+#if WITHSLEEPTIMER
+	// обработать запрос на обновление состояния аппаратуры из user mode программы
+	if (sleepflagch != 0)
+	{
+		sleepflagch = 0;
+		updateboard();
+	}
+#endif /* WITHSLEEPTIMER */
+}
+
 //
 //// работа в машине состояний меню
 //// STTE_OK - вышли из меню.
@@ -19776,37 +19854,6 @@ static void hamradio_main_initialize(void)
 			;
 	}
 #endif /* FQMODEL_GEN500 */
-}
-
-// user-mode processing
-// вызывается по DPC в главном цикле core 0
-static void appspoolprocess(void * ctx)
-{
-	(void) ctx;
-#if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
-	// обработать запрос на обновление состояния аппаратуры из user mode программы
-	if (dimmflagch != 0)
-	{
-		dimmflagch = 0;
-		updateboard();
-	}
-#endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
-#if WITHFANTIMER
-	// обработать запрос на обновление состояния аппаратуры из user mode программы
-	if (fanpaflagch != 0)
-	{
-		fanpaflagch = 0;
-		updateboard();
-	}
-#endif /* WITHFANTIMER */
-#if WITHSLEEPTIMER
-	// обработать запрос на обновление состояния аппаратуры из user mode программы
-	if (sleepflagch != 0)
-	{
-		sleepflagch = 0;
-		updateboard();
-	}
-#endif /* WITHSLEEPTIMER */
 }
 
 /* Возвращаем не-0, если было изменение частоты настройки */
@@ -21525,52 +21572,6 @@ static void siggen_mainloop(void)
 	}
 }
 #endif
-
-
-// User-mode function. Вызывается для выполнения latch спектра и панорамы
-static void dpc_displatch_timer_fn(void * arg)
-{
-	display2_latch();
-
-	const struct menudef * mp;
-	if (0)
-	{
-
-	}
-#if WITHDIRECTFREQENER
-	else if (editfreqmode)
-	{
-		const uint_fast8_t bi = getbankindex_tx(gtx);
-		vindex_t vi = getvfoindex(bi);
-
-		editfreq2_t ef;
-
-		ef.freq = gfreqs [bi];
-		ef.blinkpos = blinkpos;
-		ef.blinkstate = blinkstate;
-
-		dctx_t dctx;
-		dctx.type = DCTX_FREQ;
-		dctx.pv = & ef;
-
-		display2_bgprocess(0, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
-	}
-#endif
-#if WITHMENU
-	else if (getinmenu(& mp))
-	{
-		dctx_t dctx;
-		dctx.type = DCTX_MENU;
-		dctx.pv = mp;
-
-		display2_bgprocess(1, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
-	}
-#endif /* WITHMENU */
-	else
-	{
-		display2_bgprocess(0, actpageix(), NULL);			/* выполнение шагов state machine отображения дисплея */
-	}
-}
 
 #if WITHSUBTONES
 
