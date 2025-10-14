@@ -76,10 +76,18 @@ xpt2046_read4(
 	enum { PDx = 1*XPT2046_PD1 | 1*XPT2046_PD0 };	// оба бита "1" - прерывания не формируются
 	static const uint8_t txbuf [] =
 	{
+		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,	// ignored
 		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_X, 0x00,	// ignored
 		XPT2046_CONTROL | PDx | XPT2046_X, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_X, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_Z1, 0x00,	// ignored
 		XPT2046_CONTROL | PDx | XPT2046_Z1, 0x00,
-		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_Z1, 0x00,
+//		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,	// ignored
+//		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,
+//		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,
 
 		0x00,
 	};
@@ -88,10 +96,10 @@ xpt2046_read4(
 	prog_spi_exchange(target, tscspeed, tscmode, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 	//printhex((uintptr_t) 0, rxbuf, sizeof rxbuf);
 
-	* y = USBD_peek_u16_BE(rxbuf + 1) / 8;
-	* x = USBD_peek_u16_BE(rxbuf + 3) / 8;
-	* z1 = USBD_peek_u16_BE(rxbuf + 5) / 8;
-	* z2 = USBD_peek_u16_BE(rxbuf + 7) / 8;
+	* y = (USBD_peek_u16_BE(rxbuf + 3) + USBD_peek_u16_BE(rxbuf + 5)) / 2 / 8;
+	* x = (USBD_peek_u16_BE(rxbuf + 9) + USBD_peek_u16_BE(rxbuf + 11)) / 2 / 8;
+	* z1 = (USBD_peek_u16_BE(rxbuf + 15) + USBD_peek_u16_BE(rxbuf + 17)) / 2 / 8;
+	* z2 = 0;//(USBD_peek_u16_BE(rxbuf + 21) + USBD_peek_u16_BE(rxbuf + 23)) / 2 / 8;
 }
 
 #endif /* WITHSPIHW || WITHSPISW */

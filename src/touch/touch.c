@@ -598,11 +598,11 @@ void board_tsc_initialize(void)
 		const uint_fast16_t ystep = DIM_Y / 6;
 
 		// результат калибровки
-		p_touch [0].x=989, p_touch [0].y=743;
-		p_touch [1].x=3192, p_touch [1].y=861;
-		p_touch [2].x=919, p_touch [2].y=2829;
-		p_touch [3].x=3054, p_touch [3].y=2793;
-		p_touch [4].x=2038, p_touch [4].y=1804;
+		p_touch [0].x=788, p_touch [0].y=867;
+		p_touch [1].x=3368, p_touch [1].y=915;
+		p_touch [2].x=784, p_touch [2].y=3331;
+		p_touch [3].x=3358, p_touch [3].y=3344;
+		p_touch [4].x=2051, p_touch [4].y=2107;
 
 		p_display [0].x = xstep * 1;	// левый верхний
 		p_display [0].y = ystep * 1;
