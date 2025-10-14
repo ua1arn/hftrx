@@ -584,9 +584,10 @@ void board_tsc_initialize(void)
 	awgpadc_initialize();
 #endif /* TSC1_TYPE == TSC_TYPE_AWTPADC */
 
-#if WITHTSC5PCALIBRATE
+#if WITHTSC5PCALIBRATE && 1
 	if (1)
 	{
+		enum { r0 = 15 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
@@ -612,50 +613,53 @@ void board_tsc_initialize(void)
 		p_display [4].x = xstep * 3;	// центр экрана
 		p_display [4].y = ystep * 3;
 
-		uint_fast8_t tg;	// получение калибровочных значений для данной точки
-		for (tg = 0; tg < TSCCALIBPOINTS; ++ tg)
+		if (1)
 		{
-			//PRINTF("tsc: calibrate target %u\n", (unsigned) tg);
+			uint_fast8_t tg;	// получение калибровочных значений для данной точки
+			for (tg = 0; tg < TSCCALIBPOINTS; ++ tg)
+			{
+				//PRINTF("tsc: calibrate target %u\n", (unsigned) tg);
 
-			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-			// стереть фон
-			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-			// нарисовать мишени для калибровки
-			uint_fast8_t i;
-			for (i = 0; i < TSCCALIBPOINTS; ++ i)
-			{
-				const uint_fast16_t xg = DIM_X / 32;
-				const uint_fast16_t yg = DIM_Y / 20;
-				colpip_line(& dbv, p_display [i].x - xg, p_display [i].y - 0, p_display [i].x + xg, p_display [i].y + 0, COLOR_WHITE, 0);
-				colpip_line(& dbv, p_display [i].x - 0, p_display [i].y - yg, p_display [i].x + 0, p_display [i].y + yg, COLOR_WHITE, 0);
-				if (i == tg)
+				gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+				// стереть фон
+				colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
+				// нарисовать мишени для калибровки
+				uint_fast8_t i;
+				for (i = 0; i < TSCCALIBPOINTS; ++ i)
 				{
-					colpip_segm(& dbv, p_display [i].x, p_display [i].y, 0, 360, xg, 15, COLOR_WHITE, 0, 0);
+					const uint_fast16_t xg = DIM_X / 32;
+					const uint_fast16_t yg = DIM_Y / 20;
+					colpip_line(& dbv, p_display [i].x - xg, p_display [i].y - 0, p_display [i].x + xg, p_display [i].y + 0, COLOR_WHITE, 0);
+					colpip_line(& dbv, p_display [i].x - 0, p_display [i].y - yg, p_display [i].x + 0, p_display [i].y + yg, COLOR_WHITE, 0);
+					if (i == tg)
+					{
+						colpip_segm(& dbv, p_display [i].x, p_display [i].y, 0, 360, 15, r0, COLOR_WHITE, 0, 0);
+					}
 				}
-			}
-			colpip_text(& dbv, xstep * 2, ystep * 5, COLOR_WHITE, "CALIBRATE", 9);
-			colmain_nextfb();
-			// wait answer
-			unsigned as;
-			for (as = 0; as < 5000; /*++ as */)
-			{
-				uint_fast16_t x, y, z;
-				if (board_tsc_getraw(& x, & y, & z))
+				colpip_text(& dbv, xstep * 2, ystep * 5, COLOR_WHITE, "CALIBRATE", 9);
+				colmain_nextfb();
+				// wait answer
+				unsigned as;
+				for (as = 0; as < 5000; /*++ as */)
 				{
-					p_touch [tg].x = x;
-					p_touch [tg].y = y;
-					//PRINTF("tsc: calibrate target %u: x=%-5u, y=%-5u , z=%-5u\n", tg, x, y, z);
-					PRINTF("p_touch [%u].x=%u, p_touch [%u].y=%u;\n", tg, x, tg, y);
-					break;
+					uint_fast16_t x, y, z;
+					if (board_tsc_getraw(& x, & y, & z))
+					{
+						p_touch [tg].x = x;
+						p_touch [tg].y = y;
+						//PRINTF("tsc: calibrate target %u: x=%-5u, y=%-5u , z=%-5u\n", tg, x, y, z);
+						PRINTF("p_touch [%u].x=%u, p_touch [%u].y=%u;\n", tg, x, tg, y);
+						break;
+					}
+					//local_delay_ms(1);
 				}
-				local_delay_ms(1);
+				gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+				// стереть фон
+				colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
+				colpip_text(& dbv, xstep * 2, ystep * 5, COLOR_WHITE, "CALIBRATE DONE", 14);
+				colmain_nextfb();
+				//PRINTF("tsc: calibrate target %u done\n", (unsigned) tg);
 			}
-			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-			// стереть фон
-			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-			colpip_text(& dbv, xstep * 2, ystep * 5, COLOR_WHITE, "CALIBRATE DONE", 14);
-			colmain_nextfb();
-			//PRINTF("tsc: calibrate target %u done\n", (unsigned) tg);
 		}
 
 		//Раcсчитываем коэффициенты для перехода от координат тачскрина в дисплейные координаты.
@@ -670,6 +674,11 @@ void board_tsc_initialize(void)
 		uint_fast16_t x, y, z;
 		if (board_tsc_getraw(& x, & y, & z))
 		{
+			enum { r0 = 15 };
+			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+			board_update();
+			gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
+
 			tPoint dp;
 			tPoint tp;
 			tp.x = x;
@@ -678,6 +687,21 @@ void board_tsc_initialize(void)
 //			uint_fast16_t xc = board_tsc_normalize_x(x, y, NULL);
 //			uint_fast16_t yc = board_tsc_normalize_y(x, y, NULL);
 			PRINTF("board_tsc_getraw: x=%-5u, y=%-5u , z=%-5u -> xc=%-5d, yc=%-5d\n", x, y, z, dp.x, dp.y);
+
+			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+			// стереть фон
+			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
+			const uint_fast16_t r1 = dp.x < r0 ? dp.x : r0;
+			const uint_fast16_t r2 = dp.y < r0 ? dp.y : r0;
+			const uint_fast16_t r = ulmin16(r1, r2);
+			if (r)
+			{
+				colpip_segm(& dbv, dp.x, dp.y, 0, 360, 15, r, COLOR_WHITE, 0, 0);
+
+			}
+			colmain_nextfb();
+
+
 		}
 	}
 #endif
