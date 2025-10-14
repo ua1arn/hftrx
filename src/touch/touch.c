@@ -109,8 +109,10 @@ static void CoefCalc(const tPoint *p_d, const tPoint *p_t, tCoef *coef, uint8_t 
  */
 static void tsc_ConvertPoint(tPoint *p_d, const tPoint *p_t, const tCoef *coef)
 {
-	p_d->x = (int)((p_t->x * coef->Dx1 + p_t->y * coef->Dx2 + coef->Dx3) / coef->D);
-	p_d->y = (int)((p_t->x * coef->Dy1 + p_t->y * coef->Dy2 + coef->Dy3) / coef->D);
+	const int x = (int) ((p_t->x * coef->Dx1 + p_t->y * coef->Dx2 + coef->Dx3) / coef->D);
+	const int y = (int) ((p_t->x * coef->Dy1 + p_t->y * coef->Dy2 + coef->Dy3) / coef->D);
+	p_d->x = (x < 0) ? 0 : (x >= DIM_X) ? (DIM_X - 1) : x;
+	p_d->y = (y < 0) ? 0 : (y >= DIM_Y) ? (DIM_Y - 1) : y;
 }
 
 static tCoef tsccoef;
