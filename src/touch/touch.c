@@ -61,6 +61,12 @@ tcsnormalize(
  *
  */
 
+/* Коэффициенты для преобразования координат тачскрина в дисплейные координаты */
+typedef struct
+{
+	int64_t	Dx1, Dx2, Dx3, Dy1, Dy2, Dy3, D;
+} tCoef;
+
 /*
  * Расчет коэффициентов для преобразования координат тачскрина в дисплейные координаты
  */
@@ -632,60 +638,6 @@ void board_tsc_initialize(void)
 	//Раcсчитываем коэффициенты для перехода от координат тачскрина в дисплейные координаты.
 	CoefCalc(p_display, p_touch, & tsccoef, TSCCALIBPOINTS);
 #endif /* WITHTSC5PCALIBRATE */
-
-	/* Тест результата калибровки с рисованием точки касания */
-#if WITHDEBUG && 0
-	{
-		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
-		board_update();
-
-		gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
-		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-
-		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-		colpip_text(& dbv, DIM_X / 3, DIM_Y / 2, COLOR_GREEN, "TEST TSC", 8);
-		colmain_nextfb();
-
-	}
-	for (;;)
-	{
-		uint_fast16_t x, y;
-		if (board_tsc_getxy(& x, & y))
-		{
-			enum { r0 = 15 };
-			gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
-
-			PRINTF("board_tsc_getxy: x=%-5u, y=%-5u\n", x, y);
-
-			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-			// стереть фон
-			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-			colpip_text(& dbv, DIM_X / 3, DIM_Y / 2, COLOR_GREEN, "TEST TSC", 8);
-			enum { RSZ = 5 };
-			if (x < DIM_X - RSZ && y < DIM_Y - RSZ)
-				colpip_fillrect(& dbv, x, y, RSZ, RSZ, COLOR_WHITE);
-
-			colmain_nextfb();
-
-
-		}
-	}
-#endif
-
-	/* Тест - печать ненормализованных значений */
-#if WITHDEBUG && 0
-	for (;;)
-	{
-		uint_fast16_t x, y, z;
-		if (board_tsc_getraw(& x, & y, & z))
-		{
-			uint_fast16_t xc = board_tsc_normalize_x(x, y, NULL);
-			uint_fast16_t yc = board_tsc_normalize_y(x, y, NULL);
-			PRINTF("board_tsc_getraw: x=%-5u, y=%-5u , z=%-5u -> xc=%-5u, yc=%-5u\n", x, y, z, xc, yc);
-		}
-	}
-#endif
-
 }
 
 #if ! LINUX_SUBSYSTEM && defined (TSC1_TYPE) && TSC1_TYPE != TSC_TYPE_EVDEV

@@ -13336,65 +13336,57 @@ void hightests(void)
 			;
 	}
 #endif
-#if 0
-	// разметка для 9-точечной калибровки тачскрина
-	display2_fillbg();
-	colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
-	PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
-
-	uint8_t c = 35;
-
-	colpip_fillrect(fr, DIM_X, DIM_Y, 0 + c, 0 + c, 3, 3, COLORPIP_WHITE);			// 1
-	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, 0 + c, 3, 3, COLORPIP_WHITE);		// 2
-	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, 0 + c, 3, 3, COLORPIP_WHITE);		// 3
-
-	colpip_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y / 2, 3, 3, COLORPIP_WHITE);		// 4
-	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y / 2, 3, 3, COLORPIP_WHITE);	// 5
-
-	colpip_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y - c, 3, 3, COLORPIP_WHITE);		// 6
-	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y - c, 3, 3, COLORPIP_WHITE);	// 7
-	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y - c, 3, 3, COLORPIP_WHITE);	// 8
-
-	colpip_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y / 2, 3, 3, COLORPIP_WHITE);	// 9
-
-	dcache_clean((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T));
-	hardware_ltdc_main_set((uintptr_t) fr);
-
-	for(;;) {}
-#endif
 #if 0 && defined (TSC1_TYPE)
-#include "touch\touch.h"
-
+	/* Тест результата калибровки с рисованием точки касания */
+	#include "touch\touch.h"
 	{
-		uint_fast16_t gridx = DIM_X / 20;
-		uint_fast16_t gridy = DIM_Y / 20;
-
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
-		display2_fillbg();
-		colmain_setcolors(COLORPIP_WHITE, COLORPIP_BLACK);
-		char msg [64] = "";
 
-		// touch screen test
-		PRINTF(PSTR("touch screen test:\n"));
+		gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
+		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+
+		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
+		colpip_text(& dbv, DIM_X / 3, DIM_Y / 2, COLOR_GREEN, "TEST TSC", 8);
+		colmain_nextfb();
 		for (;;)
 		{
-			PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 			uint_fast16_t x, y;
-			colpip_fillrect(fr, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, COLORPIP_BLACK);
 			if (board_tsc_getxy(& x, & y))
 			{
-				uint_fast16_t markerx;
-				uint_fast16_t markery;
-				//PRINTF(PSTR("board_tsc_getxy: x=%5d, y=%5d\n"), (int) x, (int) y);
-				local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("X=%5d, Y=%5d"), (int) x, (int) y);
-				markerx = x / gridx * gridx;
-				markery = y / gridy * gridy;
-				colpip_fillrect(fr, DIM_X, DIM_Y, markerx, markery, gridx, gridy, COLORPIP_WHITE);
-			}
-			colpip_string_tbg(fr, DIM_X, DIM_Y, 0, 0, msg, COLORPIP_RED);
+				enum { r0 = 15 };
+				gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
+				char msg [64];
 
-			colmain_nextfb();
+				PRINTF("board_tsc_getxy: x=%-5u, y=%-5u\n", x, y);
+
+				gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+				// стереть фон
+				colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
+				colpip_text(& dbv, DIM_X / 3, DIM_Y / 2, COLOR_GREEN, "TEST TSC", 8);
+				local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("X=%5d, Y=%5d"), (int) x, (int) y);
+				colpip_string_tbg(& dbv, 0, 0, msg, COLOR_GREEN);
+				enum { RSZ = 5 };	// размер метки касания
+				if (x < DIM_X - RSZ && y < DIM_Y - RSZ)
+					colpip_fillrect(& dbv, x, y, RSZ, RSZ, COLOR_WHITE);
+
+				colmain_nextfb();
+			}
+		}
+	}
+#endif
+#if 0 && WITHDEBUG && defined (TSC1_TYPE)
+	/* Тест - печать ненормализованных значений координат */
+	{
+		for (;;)
+		{
+			uint_fast16_t x, y, z;
+			if (board_tsc_getraw(& x, & y, & z))
+			{
+				uint_fast16_t xc = board_tsc_normalize_x(x, y, NULL);
+				uint_fast16_t yc = board_tsc_normalize_y(x, y, NULL);
+				PRINTF("board_tsc_getraw: x=%-5u, y=%-5u , z=%-5u -> xc=%-5u, yc=%-5u\n", x, y, z, xc, yc);
+			}
 		}
 	}
 #endif
