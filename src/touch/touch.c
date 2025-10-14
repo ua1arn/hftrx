@@ -691,14 +691,17 @@ void board_tsc_initialize(void)
 			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 			// стереть фон
 			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-			const uint_fast16_t r1 = dp.x < r0 ? dp.x : r0;
-			const uint_fast16_t r2 = dp.y < r0 ? dp.y : r0;
-			const uint_fast16_t r = ulmin16(r1, r2);
-			if (r)
-			{
-				colpip_segm(& dbv, dp.x, dp.y, 0, 360, 15, r, COLOR_WHITE, 0, 0);
+//			const uint_fast16_t r1 = dp.x < r0 ? dp.x : r0;
+//			const uint_fast16_t r2 = dp.y < r0 ? dp.y : r0;
+//			const uint_fast16_t r = ulmin16(r1, r2);
+//			if (r)
+//			{
+//				colpip_segm(& dbv, dp.x, dp.y, 0, 360, 15, r, COLOR_WHITE, 0, 0);
+//
+//			}
+			if (dp.x < DIM_X - 5 && dp.y < DIM_Y - 5)
+				colpip_fillrect(& dbv, dp.x, dp.y, 5, 5, COLOR_WHITE);
 
-			}
 			colmain_nextfb();
 
 
