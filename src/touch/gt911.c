@@ -10,6 +10,7 @@
 //#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
 //#define BOARD_TSC1_YMIRROR 1	// Зеркалируем тачскрин по вертикали.
 
+#include "touch.h"
 #include "gt911.h"
 
 static i2cp_t tp_i2cp;	/* параметры для обмена по I2C. */

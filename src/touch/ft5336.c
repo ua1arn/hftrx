@@ -4,6 +4,7 @@
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_FT5336)
 
+#include "touch.h"
 #include "ft5336.h"
 
 static uint16_t tsXBoundary, tsYBoundary;

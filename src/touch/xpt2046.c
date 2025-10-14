@@ -13,6 +13,7 @@
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_XPT2046)
 
 #include "spi.h"
+#include "touch.h"
 #include "xpt2046.h"
 
 // XPT2046 Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO.,LTD http://www.xptek.com.cn
@@ -104,6 +105,22 @@ xpt2046_read4(
 }
 
 #endif /* WITHSPIHW || WITHSPISW */
+
+static tPoint calpoints [TSCCALIBPOINTS] =
+{
+	// результат калибровки
+	{ 788, 867, },
+	{ 3368, 915, },
+	{ 784, 3331, },
+	{ 3358, 3344, },
+	{ 2051, 2107, },
+};
+
+tPoint *
+board_tsc_getcalpoints(void)
+{
+	return calpoints;
+}
 
 static unsigned
 xpt2046_pressure(

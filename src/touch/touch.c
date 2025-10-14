@@ -13,7 +13,7 @@
 #include "touch.h"
 #include "gpio.h"
 
-//#define WITHTSC5PCALIBRATE 1
+#define WITHTSC5PCALIBRATE 1
 
 static uint_fast16_t
 tcsnormalize(
@@ -58,19 +58,6 @@ tcsnormalize(
  *  https://t.me/vadrov_channel
  *
  */
-
-enum { TSCCALIBPOINTS = 5 };
-/* Данные с координатами точки касания */
-typedef struct
-{
-	int x, y;
-} tPoint;
-
-/* Коэффициенты для преобразования координат тачскрина в дисплейные координаты */
-typedef struct
-{
-	int64_t	Dx1, Dx2, Dx3, Dy1, Dy2, Dy3, D;
-} tCoef;
 
 /*
  * Расчет коэффициентов для преобразования координат тачскрина в дисплейные координаты
@@ -593,16 +580,10 @@ void board_tsc_initialize(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
-		tPoint p_display[TSCCALIBPOINTS], p_touch[TSCCALIBPOINTS];
+		tPoint p_display[TSCCALIBPOINTS];
+		tPoint * const p_touch = board_tsc_getcalpoints();
 		const uint_fast16_t xstep = DIM_X / 6;
 		const uint_fast16_t ystep = DIM_Y / 6;
-
-		// результат калибровки
-		p_touch [0].x=788, p_touch [0].y=867;
-		p_touch [1].x=3368, p_touch [1].y=915;
-		p_touch [2].x=784, p_touch [2].y=3331;
-		p_touch [3].x=3358, p_touch [3].y=3344;
-		p_touch [4].x=2051, p_touch [4].y=2107;
 
 		p_display [0].x = xstep * 1;	// левый верхний
 		p_display [0].y = ystep * 1;

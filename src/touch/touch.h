@@ -7,11 +7,26 @@
 extern "C" {
 #endif
 
+
+enum { TSCCALIBPOINTS = 5 };
+/* Данные с координатами точки касания */
+typedef struct
+{
+	int x, y;
+} tPoint;
+
+/* Коэффициенты для преобразования координат тачскрина в дисплейные координаты */
+typedef struct
+{
+	int64_t	Dx1, Dx2, Dx3, Dy1, Dy2, Dy3, D;
+} tCoef;
+
 void board_tsc_initialize(void);
 uint_fast8_t board_tsc_getxy(uint_fast16_t * x, uint_fast16_t * y);	/* touch screen interface */
 uint_fast8_t board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr);	/* touch screen interface */
 uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params);	/* получение координаты нажатия в пределах 0..DIM_X-1 */
 uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params);	/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+tPoint * board_tsc_getcalpoints(void);
 
 #ifdef __cplusplus
  }

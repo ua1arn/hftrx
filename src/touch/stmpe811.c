@@ -5,6 +5,7 @@
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 #include "stmpe811.h"
+#include "touch.h"
 
 static uint_fast8_t tscpresent;
 static volatile uint_fast8_t tsc_int = 0;
