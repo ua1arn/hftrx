@@ -492,7 +492,7 @@ void board_tsc_initialize(void)
 	TPADC->TP_CTRL_REG0 =
 		0x0F * (UINT32_C(1) << 24) |
 		1 * (UINT32_C(1) << 23) |	// ADC_FIRST_DLY_MODE
-		0x07FF * (UINT32_C(1) << 0) |
+		0x0FFF * (UINT32_C(1) << 0) |
 		0;
 	PRINTF("TPADC->TP_CTRL_REG0=%08X\n", (unsigned) TPADC->TP_CTRL_REG0);
 
@@ -509,7 +509,7 @@ void board_tsc_initialize(void)
 //		0;
 
 	TPADC->TP_CTRL_REG3 =
-		1 * (UINT32_C(1) << 2) |	// FILTER_EN
+		//1 * (UINT32_C(1) << 2) |	// FILTER_EN
 		0x00 * (UINT32_C(1) << 0) |
 		0;
 
@@ -528,7 +528,7 @@ board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 	for (;;)
 	{
 		const uint_fast32_t fifo_stat = TPADC->TP_INT_FIFO_STAT_REG;
-		if ((fifo_stat & (UINT32_C(1) << 16)) != 0 && ((fifo_stat >> 8) & 0x1F) >= 2)
+		if ((fifo_stat & (UINT32_C(1) << 16)) != 0 && ((fifo_stat >> 8) & 0x3F) >= 2)
 		{
 			const uint_fast32_t v1 = TPADC->TP_DATA_REG & 0xFFF;
 			const uint_fast32_t v2 = TPADC->TP_DATA_REG & 0xFFF;
