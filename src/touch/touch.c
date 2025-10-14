@@ -70,7 +70,7 @@ typedef struct
 /*
  * Расчет коэффициентов для преобразования координат тачскрина в дисплейные координаты
  */
-static void CoefCalc(const tPoint *p_d, const tPoint *p_t, tCoef *coef, int all_points)
+static void tsc_CoefCalc(const tPoint *p_d, const tPoint *p_t, tCoef *coef, int all_points)
 {
 	int i;
 	int_fast64_t a = 0, b = 0, c = 0, d = 0, e = 0;
@@ -343,6 +343,14 @@ int s3402_get_id(void)
 	return v0;
 }
 
+/* вызывается при разрешённых прерываниях. */
+void board_tsc_initialize(void)
+{
+	s3402_initialize();
+	s3402_get_id();	// test
+}
+
+
 /* получение координаты нажатия в пределах 0..DIM_X-1 */
 uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
 {
@@ -435,7 +443,8 @@ board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 	return 0;
 }
 
-void ili2102_initialize(void)
+/* вызывается при разрешённых прерываниях. */
+void board_tsc_initialize(void)
 {
 	BOARD_GT911_RESET_INITIO_1();
 	BOARD_GT911_RESET_SET(1);
@@ -468,7 +477,8 @@ void ili2102_initialize(void)
 
 // https://github.com/RT-Thread/rt-thread/blob/master/bsp/allwinner/libraries/sunxi-hal/hal/source/tpadc/hal_tpadc.c
 
-void awgpadc_initialize(void)
+/* вызывается при разрешённых прерываниях. */
+void board_tsc_initialize(void)
 {
 	CCU->TPADC_CLK_REG = 0x00 * (UINT32_C(1) << 31);	// 000: HOSC
 	CCU->TPADC_CLK_REG = (UINT32_C(1) << 31);	// TPADC_CLK_GATING
@@ -485,6 +495,8 @@ void awgpadc_initialize(void)
 	while ((TPADC->TP_CTRL_REG1 & (UINT32_C(1) << 7)) != 0)
 		;
 	TPADC->TP_CTRL_REG1 |= (UINT32_C(1) << 5); 	// TP_EN
+
+	board_tsc_calibration();	// использовать результаты калибровки
 }
 
 uint_fast8_t
@@ -519,47 +531,9 @@ uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void
 
 #if defined (TSC1_TYPE)
 
-/* вызывается при разрешённых прерываниях. */
-void board_tsc_initialize(void)
+// использовать результаты калибровки
+void board_tsc_calibration(void)
 {
-#if TSC1_TYPE == TSC_TYPE_GT911
-	if (gt911_initialize())
-		PRINTF("gt911 initialization successful\n");
-	else
-		PRINTF("gt911 initialization error\n");
-#endif /* TSC1_TYPE == TSC_TYPE_GT911 */
-
-#if TSC1_TYPE == TSC_TYPE_STMPE811
-	stmpe811_initialize();
-#endif /* TSC1_TYPE == TSC_TYPE_STMPE811 */
-
-#if TSC1_TYPE == TSC_TYPE_FT5336
-	if (ft5336_Initialize(DIM_X, DIM_Y) == FT5336_I2C_INITIALIZED)
-		PRINTF("ft5336 initialization successful\n");
-	else
-	{
-		PRINTF("ft5336 initialization error\n");
-	}
-#endif /* TSC1_TYPE == TSC_TYPE_FT5336 */
-
-#if TSC1_TYPE == TSC_TYPE_XPT2046
-	xpt2046_initialize();
-#endif /* TSC1_TYPE == TSC_TYPE_XPT2046 */
-
-#if TSC1_TYPE == TSC_TYPE_S3402
-	s3402_initialize();
-	s3402_get_id();	// test
-#endif /* TSC1_TYPE == TSC_TYPE_XPT2046 */
-
-#if TSC1_TYPE == TSC_TYPE_ILI2102
-	ili2102_initialize();
-#endif /* TSC1_TYPE == TSC_TYPE_ILI2102 */
-
-#if TSC1_TYPE == TSC_TYPE_AWTPADC
-	awgpadc_initialize();
-#endif /* TSC1_TYPE == TSC_TYPE_AWTPADC */
-
-
 #if WITHTSC5PCALIBRATE
 
 	const uint_fast16_t xstep = DIM_X / 6;
@@ -636,7 +610,7 @@ void board_tsc_initialize(void)
 	}
 
 	//Раcсчитываем коэффициенты для перехода от координат тачскрина в дисплейные координаты.
-	CoefCalc(p_display, p_touch, & tsccoef, TSCCALIBPOINTS);
+	tsc_CoefCalc(p_display, p_touch, & tsccoef, TSCCALIBPOINTS);
 #endif /* WITHTSC5PCALIBRATE */
 }
 

@@ -211,6 +211,17 @@ uint8_t ft5336_Initialize(uint16_t ts_SizeX, uint16_t ts_SizeY)
   return status;
 }
 
+/* вызывается при разрешённых прерываниях. */
+void board_tsc_initialize(void)
+{
+	if (ft5336_Initialize(DIM_X, DIM_Y) == FT5336_I2C_INITIALIZED)
+		PRINTF("ft5336 initialization successful\n");
+	else
+	{
+		PRINTF("ft5336 initialization error\n");
+	}
+}
+
 uint8_t ft5336_GetState(TS_StateTypeDef *TS_State)
 {
   static uint32_t _x[FT5336_MAX_DETECTABLE_TOUCH] = {0, 0};

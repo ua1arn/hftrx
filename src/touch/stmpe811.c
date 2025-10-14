@@ -260,7 +260,8 @@ stmpe811_interrupt_handler(void * ctx)
 	tsc_int = 1;
 }
 
-void stmpe811_initialize(void)
+/* вызывается при разрешённых прерываниях. */
+void board_tsc_initialize(void)
 {
 	unsigned chip_id;
 	unsigned ver;
@@ -285,6 +286,8 @@ void stmpe811_initialize(void)
 		BOARD_STMPE811_INT_CONNECT();
 	#endif /* WITH_STMPE811_INTERRUPTS */
 	}
+
+	board_tsc_calibration();	// использовать результаты калибровки
 }
 
 uint_fast8_t stmpe811_is_pressed(void) /* Return 1 if touch detection */

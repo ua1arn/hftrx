@@ -194,7 +194,7 @@ static void xpt204_spool(void * ctx)
 	IRQLSPIN_UNLOCK(& tsclock, oldIrql);
 }
 
-void xpt2046_initialize(void)
+void board_tsc_initialize(void)
 {
 	const spitarget_t target = targettsc1;
 	IRQLSPINLOCK_INITIALIZE(& tsclock);
@@ -219,6 +219,7 @@ void xpt2046_initialize(void)
 
 	//BOARD_XPT2046_INT_CONNECT();
 	//PRINTF("xpt2046_initialize done.\n");
+	board_tsc_calibration();	// использовать результаты калибровки
 }
 
 #if WITHTSC5PCALIBRATE

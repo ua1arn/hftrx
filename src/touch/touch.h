@@ -15,7 +15,8 @@ typedef struct
 	int x, y;
 } tPoint;
 
-void board_tsc_initialize(void);
+void board_tsc_initialize(void);	/* вызывается при разрешённых прерываниях. */
+void board_tsc_calibration(void);	/* использовать результаты калибровки */
 uint_fast8_t board_tsc_getxy(uint_fast16_t * x, uint_fast16_t * y);	/* touch screen interface */
 uint_fast8_t board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr);	/* touch screen interface */
 uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params);	/* получение координаты нажатия в пределах 0..DIM_X-1 */

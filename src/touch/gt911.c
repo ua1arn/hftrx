@@ -280,6 +280,15 @@ uint_fast8_t gt911_initialize(void)
 }
 
 
+/* вызывается при разрешённых прерываниях. */
+void board_tsc_initialize(void)
+{
+	if (gt911_initialize())
+		PRINTF("gt911 initialization successful\n");
+	else
+		PRINTF("gt911 initialization error\n");
+}
+
 #if WITHTSC5PCALIBRATE
 // результат калибровки
 #if (DIM_X == 800) && (DIM_Y == 480)

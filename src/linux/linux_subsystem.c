@@ -2474,6 +2474,11 @@ uint_fast8_t board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	return pr;
 }
 
+/* вызывается при разрешённых прерываниях. */
+void board_tsc_initialize(void)
+{
+}
+
 #endif /* (TSC1_TYPE == TSC_TYPE_EVDEV) */
 
 static int is_event_device(const struct dirent * dir) {
