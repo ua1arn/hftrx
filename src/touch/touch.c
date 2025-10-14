@@ -580,53 +580,51 @@ void board_tsc_initialize(void)
 		board_update();
 		gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
 
-		if (1)
-		{
-			uint_fast8_t tg;	// получение калибровочных значений для данной точки
-			for (tg = 0; tg < TSCCALIBPOINTS; ++ tg)
-			{
-				//PRINTF("tsc: calibrate target %u\n", (unsigned) tg);
 
-				gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-				// стереть фон
-				colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-				// нарисовать мишени для калибровки
-				uint_fast8_t i;
-				for (i = 0; i < TSCCALIBPOINTS; ++ i)
+		uint_fast8_t tg;	// получение калибровочных значений для данной точки
+		for (tg = 0; tg < TSCCALIBPOINTS; ++ tg)
+		{
+			//PRINTF("tsc: calibrate target %u\n", (unsigned) tg);
+
+			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+			// стереть фон
+			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
+			// нарисовать мишени для калибровки
+			uint_fast8_t i;
+			for (i = 0; i < TSCCALIBPOINTS; ++ i)
+			{
+				const uint_fast16_t xg = DIM_X / 32;
+				const uint_fast16_t yg = DIM_Y / 20;
+				colpip_line(& dbv, p_display [i].x - xg, p_display [i].y - 0, p_display [i].x + xg, p_display [i].y + 0, COLOR_WHITE, 0);
+				colpip_line(& dbv, p_display [i].x - 0, p_display [i].y - yg, p_display [i].x + 0, p_display [i].y + yg, COLOR_WHITE, 0);
+				if (i == tg)
 				{
-					const uint_fast16_t xg = DIM_X / 32;
-					const uint_fast16_t yg = DIM_Y / 20;
-					colpip_line(& dbv, p_display [i].x - xg, p_display [i].y - 0, p_display [i].x + xg, p_display [i].y + 0, COLOR_WHITE, 0);
-					colpip_line(& dbv, p_display [i].x - 0, p_display [i].y - yg, p_display [i].x + 0, p_display [i].y + yg, COLOR_WHITE, 0);
-					if (i == tg)
-					{
-						colpip_segm(& dbv, p_display [i].x, p_display [i].y, 0, 360, 15, r0, COLOR_WHITE, 0, 0);
-					}
+					colpip_segm(& dbv, p_display [i].x, p_display [i].y, 0, 360, 15, r0, COLOR_WHITE, 0, 0);
 				}
-				colpip_text(& dbv, xstep * 2, ystep * 5, COLOR_WHITE, "CALIBRATE", 9);
-				colmain_nextfb();
-				// wait answer
-				unsigned as;
-				for (as = 0; as < 5000; /*++ as */)
-				{
-					uint_fast16_t x, y, z;
-					if (board_tsc_getraw(& x, & y, & z))
-					{
-						p_touch [tg].x = x;
-						p_touch [tg].y = y;
-						//PRINTF("tsc: calibrate target %u: x=%-5u, y=%-5u , z=%-5u\n", tg, x, y, z);
-						PRINTF("{ %u, %u, }, /* point %u */\n", x, y, tg);
-						break;
-					}
-					//local_delay_ms(1);
-				}
-				gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-				// стереть фон
-				colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-				colpip_text(& dbv, xstep * 2, ystep * 5, COLOR_WHITE, "CALIBRATE DONE", 14);
-				colmain_nextfb();
-				//PRINTF("tsc: calibrate target %u done\n", (unsigned) tg);
 			}
+			colpip_text(& dbv, xstep * 2, ystep * 5, COLOR_WHITE, "CALIBRATE", 9);
+			colmain_nextfb();
+			// wait answer
+			unsigned as;
+			for (as = 0; as < 5000; /*++ as */)
+			{
+				uint_fast16_t x, y, z;
+				if (board_tsc_getraw(& x, & y, & z))
+				{
+					p_touch [tg].x = x;
+					p_touch [tg].y = y;
+					//PRINTF("tsc: calibrate target %u: x=%-5u, y=%-5u , z=%-5u\n", tg, x, y, z);
+					PRINTF("{ %u, %u, }, /* point %u */\n", x, y, tg);
+					break;
+				}
+				//local_delay_ms(1);
+			}
+			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+			// стереть фон
+			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
+			colpip_text(& dbv, xstep * 2, ystep * 5, COLOR_WHITE, "CALIBRATE DONE", 14);
+			colmain_nextfb();
+			//PRINTF("tsc: calibrate target %u done\n", (unsigned) tg);
 		}
 
 	}
