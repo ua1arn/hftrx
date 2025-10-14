@@ -486,11 +486,33 @@ void board_tsc_initialize(void)
 	CCU->TPADC_BGR_REG |= (UINT32_C(1) << 0);	// Gating clock to TPADC
 	CCU->TPADC_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert TPADC RESET
 	CCU->TPADC_BGR_REG |= (UINT32_C(1) << 16);	// De-assert TPADC RESET
+	(void) CCU->TPADC_BGR_REG;
 
-	TPADC->TP_CTRL_REG1 =
-		0 * (UINT32_C(1) << 4) | // TP_MODE_SELECT
-		0x0F * (UINT32_C(1) << 0) | // ADC_CHAN3_SELECT..ADC_CHAN0_SELECT
+	PRINTF("TPADC->TP_CTRL_REG0=%08X\n", (unsigned) TPADC->TP_CTRL_REG0);
+	TPADC->TP_CTRL_REG0 =
+		0x0F * (UINT32_C(1) << 24) |
+		1 * (UINT32_C(1) << 23) |	// ADC_FIRST_DLY_MODE
+		0x07FF * (UINT32_C(1) << 0) |
 		0;
+	PRINTF("TPADC->TP_CTRL_REG0=%08X\n", (unsigned) TPADC->TP_CTRL_REG0);
+
+	TPADC->TP_INT_FIFO_CTRL_REG =
+		(2 - 1) * (UINT32_C(1) << 8) |
+		0;
+	TPADC->TP_CTRL_REG1 =
+		0 * (UINT32_C(1) << 4) | // TP_MODE_SELECT 0: TP
+		1 * (UINT32_C(1) << 5) | // TP_EN
+		//0x0F * (UINT32_C(1) << 0) | // ADC_CHAN3_SELECT..ADC_CHAN0_SELECT
+		0;
+//	TPADC->TP_CTRL_REG2 =
+//		8 * (UINT32_C(1) << 28) |
+//		0;
+
+	TPADC->TP_CTRL_REG3 =
+		1 * (UINT32_C(1) << 2) |	// FILTER_EN
+		0x00 * (UINT32_C(1) << 0) |
+		0;
+
 	TPADC->TP_CTRL_REG1 |= (UINT32_C(1) << 7); 	// TOUCH_PAN_CALI_EN
 	while ((TPADC->TP_CTRL_REG1 & (UINT32_C(1) << 7)) != 0)
 		;
@@ -503,28 +525,40 @@ uint_fast8_t
 board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 {
 	* zr = 0;	// stub
-	if ((TPADC->TP_INT_FIFO_STAT_REG & (UINT32_C(1) << 16)) != 0)
+	for (;;)
 	{
-		const uint_fast32_t v = TPADC->TP_DATA_REG & 0xFFF;
-		TPADC->TP_INT_FIFO_STAT_REG = (UINT32_C(1) << 16); // Clear FIFO data pending flag
-		* xr = 0;
-		* yr = 0;
-		return 0 * 1;
+		const uint_fast32_t fifo_stat = TPADC->TP_INT_FIFO_STAT_REG;
+		if ((fifo_stat & (UINT32_C(1) << 16)) != 0 && ((fifo_stat >> 8) & 0x1F) >= 2)
+		{
+			const uint_fast32_t v1 = TPADC->TP_DATA_REG & 0xFFF;
+			const uint_fast32_t v2 = TPADC->TP_DATA_REG & 0xFFF;
+			PRINTF("fifo_stat=%08X: %03X %03X\n", (unsigned) fifo_stat, (unsigned) v1, (unsigned) v2);
+			* xr = v1;
+			* yr = v2;
+			return 1;
+		}
 	}
 	return 0;
 }
 
-
-/* получение координаты нажатия в пределах 0..DIM_X-1 */
-uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
+// результат калибровки
+#if (DIM_X == 800) && (DIM_Y == 480)
+static tPoint calpoints [TSCCALIBPOINTS] =
 {
-	return x;
-}
+	{ 1694, 1011, }, /* point 0 */
+	{ 3811, 891, }, /* point 1 */
+	{ 699, 3363, }, /* point 2 */
+	{ 3440, 3340, }, /* point 3 */
+	{ 1963, 2236, }, /* point 4 */
+};
+#else
+#error Provide calibration data
+#endif
 
-/* получение координаты нажатия в пределах 0..DIM_Y-1 */
-uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+tPoint *
+board_tsc_getcalpoints(void)
 {
-	return y;
+	return calpoints;
 }
 
 #endif /* TSC1_TYPE == TSC_TYPE_AWTPADC */
