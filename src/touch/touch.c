@@ -13,7 +13,7 @@
 #include "touch.h"
 #include "gpio.h"
 
-#define WITHTSC5PCALIBRATE 1
+//#define WITHTSC5PCALIBRATE 1
 
 static uint_fast16_t
 tcsnormalize(
@@ -46,6 +46,8 @@ tcsnormalize(
 		return (uint_fast32_t) raw * range / distance;
 	}
 }
+
+#if WITHTSC5PCALIBRATE
 
 // функции калибровки взяты тут:
 // https://github.com/vadrov/stm32-xpt2046-ili9341-dma-irq-spi-temperature-voltage
@@ -90,6 +92,14 @@ static void CoefCalc(const tPoint *p_d, const tPoint *p_t, tCoef *coef, int all_
 	coef->Dy3 = Y3 * (a * b - c * c) + Y1 * (c * e - b * d) + Y2 * (c * d -a * e);
 }
 
+static tCoef tsccoef;
+
+/* поддержка калибровки */
+const void * board_tsc_normparams(void)
+{
+	return & tsccoef;
+}
+
 /*
  * Преобразование координат тачскрина в дисплейные/экранные координаты:
  * - в переменной p_t (тип tPoint) принимает координаты тачскрина;
@@ -98,13 +108,37 @@ static void CoefCalc(const tPoint *p_d, const tPoint *p_t, tCoef *coef, int all_
  */
 static void tsc_ConvertPoint(tPoint *p_d, const tPoint *p_t, const tCoef *coef)
 {
-	const int x = (int) ((p_t->x * coef->Dx1 + p_t->y * coef->Dx2 + coef->Dx3) / coef->D);
-	const int y = (int) ((p_t->x * coef->Dy1 + p_t->y * coef->Dy2 + coef->Dy3) / coef->D);
+	const int_fast32_t x = (int_fast32_t) ((p_t->x * coef->Dx1 + p_t->y * coef->Dx2 + coef->Dx3) / coef->D);
+	const int_fast32_t y = (int_fast32_t) ((p_t->x * coef->Dy1 + p_t->y * coef->Dy2 + coef->Dy3) / coef->D);
 	p_d->x = (x < 0) ? 0 : (x >= DIM_X) ? (DIM_X - 1) : x;
 	p_d->y = (y < 0) ? 0 : (y >= DIM_Y) ? (DIM_Y - 1) : y;
 }
 
-static tCoef tsccoef;
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t tx, uint_fast16_t ty, const void * params)
+{
+	const tCoef * const coef = (const tCoef *) params;
+	const int_fast32_t x = (int_fast32_t) ((tx * coef->Dx1 + ty * coef->Dx2 + coef->Dx3) / coef->D);
+	return (x < 0) ? 0 : (x >= DIM_X) ? (DIM_X - 1) : x;
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t tx, uint_fast16_t ty, const void * params)
+{
+	const tCoef * const coef = (const tCoef *) params;
+	const int_fast32_t y = (int_fast32_t) ((tx * coef->Dy1 + ty * coef->Dy2 + coef->Dy3) / coef->D);
+	return (y < 0) ? 0 : (y >= DIM_Y) ? (DIM_Y - 1) : y;
+}
+
+#else /* WITHTSC5PCALIBRATE */
+
+/* поддержка калибровки */
+const void * board_tsc_normparams(void)
+{
+	return NULL;
+}
+
+#endif /* WITHTSC5PCALIBRATE */
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 #include "stmpe811.h"
@@ -260,54 +294,6 @@ board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 #if defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_XPT2046
 
 #include "xpt2046.h"
-
-#if 1
-	static uint_fast16_t xrawmin = 180;//330;
-	static uint_fast16_t xrawmid = 2100;//330;
-	static uint_fast16_t xrawmax = 3850;//3610;
-
-	static uint_fast16_t yrawmin = 380;//510;
-	static uint_fast16_t yrawmid = 2000;//510;
-	static uint_fast16_t yrawmax = 3750;//3640;
-
-#else
-	/* top left raw data values */
-	static uint_fast16_t xrawmin = 850;//330;
-	static uint_fast16_t yrawmin = 420;//510;
-
-	/* bottom right raw data values */
-	static uint_fast16_t xrawmax = 3990;//3610;
-	static uint_fast16_t yrawmax = 3890;//3640;
-#endif
-
-/* получение координаты нажатия в пределах 0..DIM_X-1 */
-uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
-{
-
-#if BOARD_TSC1_XMIRROR
-	return tcsnormalize(x, xrawmax, xrawmin, DIM_X - 1);
-#else /* BOARD_TSC1_XMIRROR */
-	return tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
-	if (x < xrawmid)
-		return tcsnormalize(x, xrawmin, xrawmid - 1, DIM_X / 2 - 1);
-	else
-		return tcsnormalize(x, xrawmid, xrawmax, DIM_X / 2 - 1) + DIM_X / 2;
-#endif /* BOARD_TSC1_XMIRROR */
-}
-
-/* получение координаты нажатия в пределах 0..DIM_Y-1 */
-uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
-{
-#if BOARD_TSC1_YMIRROR
-	return tcsnormalize(y, yrawmax, yrawmin, DIM_Y - 1);
-#else /* BOARD_TSC1_YMIRROR */
-	return tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
-	if (y < yrawmid)
-		return tcsnormalize(y, yrawmin, yrawmid - 1, DIM_Y / 2 - 1);
-	else
-		return tcsnormalize(y, yrawmid, yrawmax, DIM_Y / 2 - 1) + DIM_Y / 2;
-#endif /* BOARD_TSC1_YMIRROR */
-}
 
 uint_fast8_t
 board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
@@ -654,36 +640,22 @@ void board_tsc_initialize(void)
 #if WITHDEBUG && WITHTSC5PCALIBRATE
 	for (;;)
 	{
-		uint_fast16_t x, y, z;
-		if (board_tsc_getraw(& x, & y, & z))
+		uint_fast16_t x, y;
+		if (board_tsc_getxy(& x, & y))
 		{
 			enum { r0 = 15 };
 			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 			board_update();
 			gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
 
-			tPoint dp;
-			tPoint tp;
-			tp.x = x;
-			tp.y = y;
-			tsc_ConvertPoint(& dp, & tp, & tsccoef);
-//			uint_fast16_t xc = board_tsc_normalize_x(x, y, NULL);
-//			uint_fast16_t yc = board_tsc_normalize_y(x, y, NULL);
-			PRINTF("board_tsc_getraw: x=%-5u, y=%-5u , z=%-5u -> xc=%-5d, yc=%-5d\n", x, y, z, dp.x, dp.y);
+			PRINTF("board_tsc_getxy: x=%-5u, y=%-5u\n", x, y);
 
 			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 			// стереть фон
 			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-//			const uint_fast16_t r1 = dp.x < r0 ? dp.x : r0;
-//			const uint_fast16_t r2 = dp.y < r0 ? dp.y : r0;
-//			const uint_fast16_t r = ulmin16(r1, r2);
-//			if (r)
-//			{
-//				colpip_segm(& dbv, dp.x, dp.y, 0, 360, 15, r, COLOR_WHITE, 0, 0);
-//
-//			}
-			if (dp.x < DIM_X - 5 && dp.y < DIM_Y - 5)
-				colpip_fillrect(& dbv, dp.x, dp.y, 5, 5, COLOR_WHITE);
+			enum { RSZ = 5 };
+			if (x < DIM_X - RSZ && y < DIM_Y - RSZ)
+				colpip_fillrect(& dbv, x, y, RSZ, RSZ, COLOR_WHITE);
 
 			colmain_nextfb();
 
@@ -716,8 +688,10 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	uint_fast16_t x, y, z;
 	if (board_tsc_getraw(& x, & y, & z))
 	{
-		* xr = board_tsc_normalize_x(x, y, NULL);
-		* yr = board_tsc_normalize_y(x, y, NULL);
+		const void * const param = board_tsc_normparams();	/* поддержка калибровки */
+
+		* xr = board_tsc_normalize_x(x, y, param);
+		* yr = board_tsc_normalize_y(x, y, param);
 		//PRINTF("board_tsc_getxy: x=%-5u, y=%-5u -> xc=%-5u, yc=%-5u\n", x, y, * xr, * yr);
 		return 1;
 	}
