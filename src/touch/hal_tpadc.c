@@ -27,7 +27,7 @@
 
 #include "hardware.h"
 
-#if TSC1_TYPE == TSC_TYPE_AWTPADC && 0
+#if defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_AWTPADC && 0
 
 #include "formats.h"
 #include "clocks.h"
@@ -918,5 +918,5 @@ hal_tpadc_status_t hal_tpadc_adc_exit()
     return TPADC_OK;
 }
 
-#endif /* TSC1_TYPE == TSC_TYPE_AWTPADC */
+#endif /* defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_AWTPADC */
 

@@ -9,7 +9,7 @@
 
 #include "hardware.h"
 
-#if TSC1_TYPE == TSC_TYPE_AWTPADC
+#if defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_AWTPADC
 
 #include "formats.h"
 #include "clocks.h"
@@ -102,4 +102,4 @@ board_tsc_getcalpoints(void)
 	return calpoints;
 }
 
-#endif /* TSC1_TYPE == TSC_TYPE_AWTPADC */
+#endif /* defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_AWTPADC*/

@@ -2529,9 +2529,9 @@ void evdev_initialize(void)
 		close(fd);
 		free(namelist[i]);
 
-#if TSC1_TYPE == TSC_TYPE_EVDEV
+#if defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_EVDEV
 		check_event(& evdev_touch_fd, name, fname, TOUCH_EVENT_NAME);
-#endif /* TSC1_TYPE == TSC_TYPE_EVDEV */
+#endif /* defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_EVDEV */
 #if ENCODER2_EVDEV
 		check_event(& evdev_enc2_fd, name, fname, ENCODER2_EVENT_NAME);
 #endif /* ENCODER2_EVDEV */
@@ -2543,9 +2543,9 @@ void evdev_initialize(void)
 #endif /* MOUSE_EVDEV */
 	}
 
-#if TSC1_TYPE == TSC_TYPE_EVDEV
+#if defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_EVDEV
 	if (evdev_touch_fd < 0) printf("Not found %s event devices\n", TOUCH_EVENT_NAME);
-#endif /* TSC1_TYPE == TSC_TYPE_EVDEV */
+#endif /* defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_EVDEV */
 #if ENCODER2_EVDEV
 	if (evdev_enc2_fd < 0) printf("Not found %s event devices\n", ENCODER2_EVENT_NAME);
 #endif /* ENCODER2_EVDEV */
