@@ -531,7 +531,7 @@
 	//#define WITHRTCLSI	1				/* тестирование без кварца 32.768 кГц */
 
 	#define WITHTSC5PCALIBRATE 1	/* Калибровка по пяти точкам */
-	#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
+	#define TSC1_TYPE TSC_TYPE_XPT2046	/* Resistive touch screen controller XPTEK XPT2046 */
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
 	//#define WITH_STMPE811_INTERRUPTS	1

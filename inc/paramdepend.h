@@ -1013,15 +1013,14 @@ extern "C" {
 #define RTC_TYPE_LINUX		56	/* Linux local time */
 #define RTC_TYPE_GPS		57	/* GPS time */
 
-#define TSC_TYPE_TSC2046	60	// Resistive touch screen controller TI TSC2046 - use TSC_TYPE_XPT2046
-#define TSC_TYPE_STMPE811	61	// Resistive touch screen controller ST STMPE811
-#define TSC_TYPE_GT911		62	// Capacitive touch screen controller Goodix GT911
-#define TSC_TYPE_S3402		63	// Capacitive touch screen controller S3402 (on panel H497TLB01.4)
-#define TSC_TYPE_FT5336 	64	// Capacitive touch screen controller FocalTech FT5336
-#define TSC_TYPE_XPT2046 	65	// Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO., LTD http://www.xptek.com.cn
-#define TSC_TYPE_ILI2102	66	// Capacitive touch screen controller Ilitek ILI2102
-#define TSC_TYPE_AWTPADC	67	// Allwinner F133/t113-s3 resistive touch screen controller
-#define TSC_TYPE_EVDEV		68	// Linux input device
+#define TSC_TYPE_STMPE811	60	// Resistive touch screen controller ST STMPE811
+#define TSC_TYPE_GT911		61	// Capacitive touch screen controller Goodix GT911
+#define TSC_TYPE_S3402		62	// Capacitive touch screen controller S3402 (on panel H497TLB01.4)
+#define TSC_TYPE_FT5336 	63	// Capacitive touch screen controller FocalTech FT5336
+#define TSC_TYPE_XPT2046 	64	// Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO., LTD http://www.xptek.com.cn
+#define TSC_TYPE_ILI2102	65	// Capacitive touch screen controller Ilitek ILI2102
+#define TSC_TYPE_AWTPADC	66	// Allwinner F133/t113-s3 resistive touch screen controller
+#define TSC_TYPE_EVDEV		67	// Linux input device
 
 // Start of NVRAM definitions section
 // NOTE: DO NOT USE any types of FLASH memory chips, only EEPROM or FRAM chips are supported.
@@ -1519,10 +1518,6 @@ extern "C" {
 	#define BOARDDACSCALEMIN	0	// Нижний предел мощности (аргумент board_set_dacscale() */
 	#define BOARDDACSCALEMAX	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
 #endif /* WITHIF4DSP */
-
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_TSC2046)
-	#error Use TSC_TYPE_XPT2046 instead TSC_TYPE_TSC2046
-#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_TSC2046) */
 
 #if defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_GPS) && ! defined WITHNMEA
 	#error RTC_TYPE_GPS and WITHNMEA must be used in same time

@@ -29,7 +29,7 @@ typedef enum
 
 typedef enum
 {
-	SPIC_SPEED100k 	= 100000,	/* 100 kHz для XPT2046/TSC2046 */
+	SPIC_SPEED100k 	= 100000,	/* 100 kHz для XPT2046 */
 	SPIC_SPEED400k 	= 400000,	/* 400 kHz для MCP3208, DS1305 */
 	SPIC_SPEED1M 	= 1000000,	/* 1 MHz для XPT2046 */
 	SPIC_SPEED2M 	= 2000000,	/* 2 MHz */
@@ -59,7 +59,7 @@ typedef enum
 
 typedef enum
 {
-	SPIC_SPEED100k,	/* 100 kHz для XPT2046/TSC2046  */
+	SPIC_SPEED100k,	/* 100 kHz для XPT2046  */
 	SPIC_SPEED400k,	/* 400 kHz для MCP3208, DS1305 */
 	SPIC_SPEED1M,	/* 1 MHz для XPT2046 */
 	SPIC_SPEED2M,	/* 2 MHz для XPT2046 */
