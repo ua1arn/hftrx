@@ -12,7 +12,8 @@ SET FILELIST= ^
 	ve.csv ce.csv disp_if_top.csv tconlcd.csv hdmi.csv tcon_tv.csv ^
 	tve.csv csi.csv di.csv ^
 	audio_codec.csv ahub.csv cir_rx.csv tsc.csv dmic.csv gpadc.csv lradc.csv owa.csv ths.csv ^
-	c0_cpux_cfg.csv cpusubsysctrl.csv r_xxx.csv rtc.csv msi.csv smcard.csv
+	c0_cpux_cfg.csv cpusubsysctrl.csv r_xxx.csv rtc.csv msi.csv smcard.csv ^
+	aw_t507.csv
 
 %CONVERTER% %FILELIST% > %OUTFILE%
 

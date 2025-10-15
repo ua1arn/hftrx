@@ -1,0 +1,114 @@
+# Allwinner T507-H, H616, H616 peripherials base
+
+#type; UART
+
+#base; UART0 0x05000000
+#base; UART1 0x05000400
+#base; UART2 0x05000800
+#base; UART3 0x05000C00
+#base; UART4 0x05001000
+#base; UART5 0x05001400
+
+#irq; UART0 32
+#irq; UART1 33
+#irq; UART2 34
+#irq; UART3 35
+#irq; UART4 36
+#irq; UART5 37
+
+
+# 
+# https://github.com/MotorolaMobilityLLC/kernel-msm/blob/0df9925d29dec5ada24e08238cec2a16e5fd38e0/arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi#L307
+#
+
+#base; R_UART	0x07080000; R_UART
+#irq; R_UART 144; R_UART
+#typeend;
+
+#type; TWI
+
+#base; TWI0 0x05002000
+#base; TWI1 0x05002400
+#base; TWI2 0x05002800
+#base; TWI3 0x05002C00
+#base; TWI4 0x05003000
+#base; R_TWI	0x07081400; S_TWI0
+#base; S_TWI0	0x07081400; R_TWI
+##base; S_TWI1	0x07081800; R_TWI1
+
+#irq; TWI0 38
+#irq; TWI1 39
+#irq; TWI2 40
+#irq; TWI3 41
+#irq; TWI4 42
+#irq; S_TWI0 137
+
+#typeend;
+
+#type; LRADC; 
+#irq; LRADC 52
+#base; LRADC 0x05070800
+#typeend;
+
+#type; GPIO; Port Controller
+
+#base; GPIOA 0x0300B000
+##base; GPIOB 0x0300B024
+#base; GPIOC 	0x0300B048
+#base; GPIOD 	0x0300B06C
+#base; GPIOE 	0x0300B090
+#base; GPIOF 	0x0300B0B4
+#base; GPIOG 	0x0300B0D8
+#base; GPIOH 	0x0300B0FC
+#base; GPIOI 	0x0300B120
+
+##base; R_PIO	0x07022000; GPIOL
+#base; GPIOL 	0x07022000; R_PIO
+#typeend;
+
+#type; GPIOBLOCK; Port Controller
+#base; GPIOBLOCK 0x0300B000
+#base; GPIOBLOCK_L 0x01F02C00
+#typeend;
+
+#type; GPIOINT
+
+#base; GPIOINTA 0x0300B200; GPIOA interrupt
+##base; GPIOINTB 0x0300B220; GPIOB interrupt
+#base; GPIOINTC 0x0300B240; GPIOC interrupt
+#base; GPIOINTD 0x0300B260; GPIOD interrupt
+#base; GPIOINTE 0x0300B280; GPIOE interrupt
+#base; GPIOINTF 0x0300B2A0; GPIOF interrupt
+#base; GPIOINTG 0x0300B2C0; GPIOG interrupt
+#base; GPIOINTH 0x0300B2E0; GPIOH interrupt
+#base; GPIOINTI 0x0300B300; GPIOI interrupt
+
+#irq; GPIOA 83; GPIOA interrupt
+#irq; GPIOC 84; GPIOC interrupt
+#irq; GPIOD 85; GPIOD interrupt
+#irq; GPIOE 75; GPIOE interrupt (vector number not sequential)
+#irq; GPIOF 86; GPIOF interrupt
+#irq; GPIOG 87; GPIOG interrupt
+#irq; GPIOH 88; GPIOH interrupt
+#irq; GPIOI 89; GPIOI interrupt
+#typeend;
+
+#type; TIMER
+#base; TIMER 0x03009000
+
+#irq; TIMER0 80
+#irq; TIMER1 81
+#irq; WATCHDOG 82
+#irq; R_CPU_IDLE 139; 
+#irq; TWD 140; Trust watchdog interrupt 
+#typeend;
+
+#type; SMHC; SD-MMC Host Controller
+#base; SMHC0 0x04020000
+#base; SMHC1 0x04021000
+#base; SMHC2 0x04022000
+
+#irq; SMHC0 67
+#irq; SMHC1 68
+#irq; SMHC2 69
+#typeend;
