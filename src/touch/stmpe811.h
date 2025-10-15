@@ -8,11 +8,6 @@ extern "C" {
 #endif
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
-
-#if TSC_TYPE_STMPE811_USE_SPI
-#else /* TSC_TYPE_STMPE811_USE_SPI */
-#define BOARD_I2C_STMPE811	(0x82)           /* 8-bit address of STMPE811 Controller A0=0: 0x82, A0=1: 0x88 */
-#endif /* TSC_TYPE_STMPE811_USE_SPI */
 /* chip IDs */
 #define STMPE811_ID                     0x0811
 

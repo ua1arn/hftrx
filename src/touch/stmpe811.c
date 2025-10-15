@@ -1,11 +1,29 @@
+/* $Id$ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
+
+// Resistive touch screen controller ST STMPE811
+
 #include "hardware.h"
-#include "board.h"
 #include "formats.h"
-#include "gpio.h"
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
-#include "stmpe811.h"
+
 #include "touch.h"
+#include "stmpe811.h"
+#include "board.h"
+#include "gpio.h"
+
+#if TSC_TYPE_STMPE811_USE_SPI
+
+#elif ! defined (BOARD_I2C_STMPE811)
+	#define BOARD_I2C_STMPE811	(0x82)           /* 8-bit address of STMPE811 Controller A0=0: 0x82, A0=1: 0x88 */
+#else /* TSC_TYPE_STMPE811_USE_SPI */
+
+#endif /* TSC_TYPE_STMPE811_USE_SPI */
 
 static uint_fast8_t tscpresent;
 static volatile uint_fast8_t tsc_int = 0;
@@ -310,12 +328,66 @@ static tPoint calpoints [TSCCALIBPOINTS] =
 #else
 #error Provide calibration data
 #endif
-#endif /* WITHTSC5PCALIBRATE */
 
 tPoint *
 board_tsc_getcalpoints(void)
 {
 	return calpoints;
+}
+
+#else /* WITHTSC5PCALIBRATE */
+
+/* top left raw data values */
+static uint_fast16_t xrawmin = 70;
+static uint_fast16_t yrawmin = 3890;
+/* bottom right raw data values */
+static uint_fast16_t xrawmax = 3990;
+static uint_fast16_t yrawmax = 150;
+
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
+}
+
+#endif /* WITHTSC5PCALIBRATE */
+
+uint_fast8_t board_tsc_is_pressed(void) /* Return 1 if touch detection */
+{
+	return stmpe811_is_pressed();
+}
+
+
+// On AT070TN90 with touch screen attached Y coordinate increments from bottom to top, X from left to right
+uint_fast8_t
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
+{
+	static uint_fast16_t x = 0, y = 0;
+	uint_fast8_t z = 0;
+	if (board_tsc_is_pressed())
+	{
+		if (stmpe811_TS_GetXYZ(& x, & y, & z))
+		{
+			* xr = x;
+			* yr = y;
+			* zr = z;
+			return 1;
+		}
+		* xr = x;
+		* yr = y;
+		* zr = z;
+		return 1;
+	}
+	* xr = x;
+	* yr = y;
+	* zr = z;
+	return 0;
 }
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */

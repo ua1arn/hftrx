@@ -1,3 +1,12 @@
+/* $Id$ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
+
+// Capacitive touch screen controller FocalTech FT5336
+
 #include "hardware.h"
 #include "board.h"
 #include "formats.h"
@@ -211,17 +220,6 @@ uint8_t ft5336_Initialize(uint16_t ts_SizeX, uint16_t ts_SizeY)
   return status;
 }
 
-/* вызывается при разрешённых прерываниях. */
-void board_tsc_initialize(void)
-{
-	if (ft5336_Initialize(DIM_X, DIM_Y) == FT5336_I2C_INITIALIZED)
-		PRINTF("ft5336 initialization successful\n");
-	else
-	{
-		PRINTF("ft5336 initialization error\n");
-	}
-}
-
 uint8_t ft5336_GetState(TS_StateTypeDef *TS_State)
 {
   static uint32_t _x[FT5336_MAX_DETECTABLE_TOUCH] = {0, 0};
@@ -293,26 +291,55 @@ uint8_t ft5336_GetState(TS_StateTypeDef *TS_State)
   return (ts_status);
 }
 
-#if WITHTSC5PCALIBRATE
-// результат калибровки
-#if (DIM_X == 800) && (DIM_Y == 480)
-static tPoint calpoints [TSCCALIBPOINTS] =
-{
-	{ 848, 850, }, /* point 0 */
-	{ 3368, 898, }, /* point 1 */
-	{ 805, 3391, }, /* point 2 */
-	{ 3415, 3295, }, /* point 3 */
-	{ 2008, 2199, }, /* point 4 */
-};
-#else
-#error Provide calibration data
-#endif
-#endif /* WITHTSC5PCALIBRATE */
+static TS_StateTypeDef ts_ft5336;
 
-tPoint *
-board_tsc_getcalpoints(void)
+static void
+tsc_interrupt_handler(void)
 {
-	return calpoints;
+	TP();
+}
+
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return x;
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+	return y;
+}
+
+/* получение ненормальзованных координат нажатия */
+uint_fast8_t
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
+{
+	static uint_fast16_t x = 0, y = 0;
+
+	* zr = 0;	// stub
+	ft5336_GetState(& ts_ft5336);
+
+	if (ts_ft5336.touchDetected)
+	{
+		* xr = ts_ft5336.touchX[0];
+		* yr = ts_ft5336.touchY[0];
+		return 1;
+	}
+	* xr = x;
+	* yr = y;
+	return 0;
+}
+
+/* вызывается при разрешённых прерываниях. */
+void board_tsc_initialize(void)
+{
+	if (ft5336_Initialize(DIM_X, DIM_Y) == FT5336_I2C_INITIALIZED)
+		PRINTF("ft5336 initialization successful\n");
+	else
+	{
+		PRINTF("ft5336 initialization error\n");
+	}
 }
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_FT5336) */

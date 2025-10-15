@@ -1,3 +1,10 @@
+/* $Id$ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
+
 #include "hardware.h"
 #include "board.h"
 #include "formats.h"
@@ -280,6 +287,26 @@ uint_fast8_t gt911_initialize(void)
 }
 
 
+/* получение координаты нажатия в пределах 0..DIM_X-1 */
+uint_fast16_t board_tsc_normalize_x(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+#if BOARD_TSC1_XMIRROR
+	return DIM_X - 1 - x;
+#else /* BOARD_TSC1_XMIRROR */
+	return x;
+#endif /* BOARD_TSC1_XMIRROR */
+}
+
+/* получение координаты нажатия в пределах 0..DIM_Y-1 */
+uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void * params)
+{
+#if BOARD_TSC1_YMIRROR
+	return DIM_Y - 1 - y;
+#else /* BOARD_TSC1_XMIRROR */
+	return y;
+#endif /* BOARD_TSC1_XMIRROR */
+}
+
 /* вызывается при разрешённых прерываниях. */
 void board_tsc_initialize(void)
 {
@@ -289,26 +316,29 @@ void board_tsc_initialize(void)
 		PRINTF("gt911 initialization error\n");
 }
 
-#if WITHTSC5PCALIBRATE
-// результат калибровки
-#if (DIM_X == 800) && (DIM_Y == 480)
-static tPoint calpoints [TSCCALIBPOINTS] =
-{
-	{ 848, 850, }, /* point 0 */
-	{ 3368, 898, }, /* point 1 */
-	{ 805, 3391, }, /* point 2 */
-	{ 3415, 3295, }, /* point 3 */
-	{ 2008, 2199, }, /* point 4 */
-};
-#else
-#error Provide calibration data
-#endif
-#endif /* WITHTSC5PCALIBRATE */
 
-tPoint *
-board_tsc_getcalpoints(void)
+/* получение ненормальзованных координат нажатия */
+uint_fast8_t
+board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 {
-	return calpoints;
+	* zr = 0;	// stub
+#if LINUX_SUBSYSTEM
+	static uint32_t oldt = sys_now();
+	static uint_fast16_t x = 0, y = 0, p = 0;
+
+	uint32_t t = sys_now();
+	if (t - oldt > 20)		// перед чтениями координат нужна задержка минимум на 15 + 5 ms
+	{
+		oldt = t;
+		p = gt911_getXY(& x, & y);
+	}
+
+	* xr = x;
+	* yr = y;
+	return p;
+#else
+	return gt911_getXY(xr, yr);
+#endif /* LINUX_SUBSYSTEM */
 }
 
-#endif
+#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911) */

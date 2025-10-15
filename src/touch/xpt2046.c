@@ -6,6 +6,12 @@
  */
 
 
+// XPT2046 Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO.,LTD http://www.xptek.com.cn
+// TI TSC2046
+// HR2046
+// ADS7843
+// SPI interface used
+
 #include "hardware.h"
 #include "board.h"
 #include "formats.h"
@@ -14,14 +20,6 @@
 
 #include "spi.h"
 #include "touch.h"
-#include "xpt2046.h"
-
-// XPT2046 Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO.,LTD http://www.xptek.com.cn
-// TI TSC2046
-// HR2046
-// ADS7843
-// SPI interface used
-
 
 // При необходимости разместить в файле конфигурации платы.
 //#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.

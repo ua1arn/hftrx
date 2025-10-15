@@ -24,6 +24,14 @@ uint_fast16_t board_tsc_normalize_y(uint_fast16_t x, uint_fast16_t y, const void
 tPoint * board_tsc_getcalpoints(void);	/* поддержка калибровки */
 const void * board_tsc_normparams(void);	/* поддержка калибровки */
 
+uint_fast16_t
+tcsnormalize(
+	uint_fast16_t raw,
+	uint_fast16_t rawmin,
+	uint_fast16_t rawmax,
+	uint_fast16_t range
+	);
+
 #ifdef __cplusplus
  }
 #endif
