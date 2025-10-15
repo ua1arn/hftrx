@@ -30,6 +30,7 @@
 #if TSC1_TYPE == TSC_TYPE_AWTPADC && 0
 
 #include "formats.h"
+#include "clocks.h"
 #include "touch.h"
 
 // https://github.com/RT-Thread/rt-thread/blob/master/bsp/allwinner/libraries/sunxi-hal/hal/source/tpadc/hal_tpadc.c

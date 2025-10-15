@@ -12,6 +12,7 @@
 #if TSC1_TYPE == TSC_TYPE_AWTPADC
 
 #include "formats.h"
+#include "clocks.h"
 #include "touch.h"
 
 // https://github.com/RT-Thread/rt-thread/blob/master/bsp/allwinner/libraries/sunxi-hal/hal/source/tpadc/hal_tpadc.c
@@ -27,6 +28,7 @@ void board_tsc_initialize(void)
 	CCU->TPADC_BGR_REG |= (UINT32_C(1) << 16);	// De-assert TPADC RESET
 	(void) CCU->TPADC_BGR_REG;
 
+	PRINTF("board_tsc_initialize: allwnr_t113_get_tpadc_freq()=%u Hz\n", (unsigned) allwnr_t113_get_tpadc_freq());
 	PRINTF("TPADC->TP_CTRL_REG0=%08X\n", (unsigned) TPADC->TP_CTRL_REG0);
 	TPADC->TP_CTRL_REG0 =
 		0x0F * (UINT32_C(1) << 24) |

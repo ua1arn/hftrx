@@ -245,6 +245,7 @@ uint_fast32_t allwnr_t113_get_apb1_freq(void);
 uint_fast32_t allwnr_t113_get_mbus_freq(void);
 uint_fast32_t allwnr_t113_get_ahb0_freq(void);	// ???
 uint_fast32_t allwnr_t113_get_axi_freq(void);	// ???
+uint_fast32_t allwnr_t113_get_tpadc_freq(void);
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
 

@@ -5035,6 +5035,22 @@ uint_fast32_t allwnr_t113_get_smhc2_freq(void)
 	}
 }
 
+// T113-s3
+uint_fast32_t allwnr_t113_get_tpadc_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->TPADC_CLK_REG;
+	switch ((clkreg >> 24) & 0x03)
+	{
+	default:
+	case 0x00:
+		/* 000: HOSC */
+		return allwnr_t113_get_hosc_freq();
+	case 0x01:
+		/* 000: HOSC */
+		return allwnr_t113_get_audio0pll1x_freq();
+	}
+}
+
 // CPU Clock = Clock Source
 // CPU_AXI Clock = Clock Source/M
 
