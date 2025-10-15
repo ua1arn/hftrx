@@ -8,7 +8,8 @@ SET FILELIST= ^
 	i2s_pcm.csv mipi_dsi.csv ^
 	prcm.csv timer.csv ^
 	twi.csv uart.csv ^
-	usbehci.csv usbotg.csv usbphyc.csv usb_ehci_capability.csv usb_ohci_capability.csv
+	usbehci.csv usbotg.csv usbphyc.csv usb_ehci_capability.csv usb_ohci_capability.csv ^
+	aw_a133.csv
 	
 %CONVERTER% %FILELIST% > %OUTFILE%
 

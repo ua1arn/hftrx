@@ -112,3 +112,8 @@
 #irq; SMHC1 68
 #irq; SMHC2 69
 #typeend;
+
+#type; GPADC; 
+#irq; GPADC 50
+#base; GPADC 0x05070000
+#typeend;

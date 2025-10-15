@@ -93,3 +93,8 @@
 #irqrv; GPADC 73
 #typeend;
 
+#type; TPADC
+#base; TPADC 0x02009C00
+#irq; TPADC 94
+#irqrv; TPADC 78
+#typeend;

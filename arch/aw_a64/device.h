@@ -1167,7 +1167,7 @@ typedef struct GPADC_Type
     __IO uint32_t GP_CS_EN;                           /*!< Offset 0x008 GPADC Compare and Select Enable Register */
     __IO uint32_t GP_FIFO_INTC;                       /*!< Offset 0x00C GPADC FIFO Interrupt Control Register */
     __IO uint32_t GP_FIFO_INTS;                       /*!< Offset 0x010 GPADC FIFO Interrupt Status Register */
-    __IO uint32_t GP_FIFO_DATA;                       /*!< Offset 0x014 GPADC FIFO Data Register */
+    __I  uint32_t GP_FIFO_DATA;                       /*!< Offset 0x014 GPADC FIFO Data Register */
     __IO uint32_t GP_CDATA;                           /*!< Offset 0x018 GPADC Calibration Data Register */
          RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
     __IO uint32_t GP_DATAL_INTC;                      /*!< Offset 0x020 GPADC Data Low Interrupt Configure Register */
@@ -1180,7 +1180,7 @@ typedef struct GPADC_Type
          RESERVED(0x03C[0x0040 - 0x003C], uint8_t)
     __IO uint32_t GP_CH0_CMP_DATA;                    /*!< Offset 0x040 GPADC CH0 Compare Data Register */
          RESERVED(0x044[0x0080 - 0x0044], uint8_t)
-    __IO uint32_t GP_CH0_DATA;                        /*!< Offset 0x080 GPADC CH0 Data Register */
+    __I  uint32_t GP_CH0_DATA;                        /*!< Offset 0x080 GPADC CH0 Data Register */
 } GPADC_TypeDef; /* size of structure = 0x084 */
 /*
  * @brief GPIO
@@ -2590,7 +2590,7 @@ typedef struct TPADC_Type
          RESERVED(0x018[0x001C - 0x0018], uint8_t)
     __IO uint32_t TP_CALI_DATA_REG;                   /*!< Offset 0x01C TP Calibration Data Register */
          RESERVED(0x020[0x0024 - 0x0020], uint8_t)
-    __IO uint32_t TP_DATA_REG;                        /*!< Offset 0x024 TP Data Register */
+    __I  uint32_t TP_DATA_REG;                        /*!< Offset 0x024 TP Data Register */
 } TPADC_TypeDef; /* size of structure = 0x028 */
 /*
  * @brief TWI

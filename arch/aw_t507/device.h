@@ -1457,7 +1457,7 @@ typedef struct GPADC_Type
     __IO uint32_t GP_CS_EN;                           /*!< Offset 0x008 GPADC */
     __IO uint32_t GP_FIFO_INTC;                       /*!< Offset 0x00C GPADC FIFO Interrupt Control Register */
     __IO uint32_t GP_FIFO_INTS;                       /*!< Offset 0x010 GPADC FIFO Interrupt Status Register */
-    __IO uint32_t GP_FIFO_DATA;                       /*!< Offset 0x014 GPADC FIFO Data Register */
+    __I  uint32_t GP_FIFO_DATA;                       /*!< Offset 0x014 GPADC FIFO Data Register */
     __IO uint32_t GP_CDATA;                           /*!< Offset 0x018 GPADC Calibration Data Register */
          RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
     __IO uint32_t GP_DATAL_INTC;                      /*!< Offset 0x020 GPADC Data Low Interrupt Configure Register */
@@ -1473,10 +1473,10 @@ typedef struct GPADC_Type
     __IO uint32_t GP_CH2_CMP_DATA;                    /*!< Offset 0x048 GPADC CH2 Compare Data Register */
     __IO uint32_t GP_CH3_CMP_DATA;                    /*!< Offset 0x04C GPADC CH3 Compare Data Register */
          RESERVED(0x050[0x0080 - 0x0050], uint8_t)
-    __IO uint32_t GP_CH0_DATA;                        /*!< Offset 0x080 GPADC CH0 Data Register */
-    __IO uint32_t GP_CH1_DATA;                        /*!< Offset 0x084 GPADC CH1 Data Register */
-    __IO uint32_t GP_CH2_DATA;                        /*!< Offset 0x088 GPADC CH2 Data Register */
-    __IO uint32_t GP_CH3_DATA;                        /*!< Offset 0x08C GPADC CH3 Data Register */
+    __I  uint32_t GP_CH0_DATA;                        /*!< Offset 0x080 GPADC CH0 Data Register */
+    __I  uint32_t GP_CH1_DATA;                        /*!< Offset 0x084 GPADC CH1 Data Register */
+    __I  uint32_t GP_CH2_DATA;                        /*!< Offset 0x088 GPADC CH2 Data Register */
+    __I  uint32_t GP_CH3_DATA;                        /*!< Offset 0x08C GPADC CH3 Data Register */
 } GPADC_TypeDef; /* size of structure = 0x090 */
 /*
  * @brief GPIO
