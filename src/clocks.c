@@ -3071,15 +3071,46 @@ uint_fast32_t allwnr_t507_get_hosc_freq(void)
 }
 
 // T507
+uint_fast32_t allwnr_t507_get_rc16m_freq(void)
+{
+    return HARDWARE_CLK16M_RC_FREQ;
+}
+
+// T507
+uint_fast32_t allwnr_t507_get_losc_freq(void)
+{
+	const uint_fast32_t reg = RTC->F32K_FANOUT_GATING_REG;
+	switch ((reg >> 0) & 0x01)	// LOSC_SRC_SEL
+	{
+	default:
+	case 0x00:
+		// 0: Low Frequency Clock from 16M RC
+		// 31.250 kHz
+	    return allwnr_t507_get_rc16m_freq() / 512;	// See Figure 3- 42. CPUS Clock Diagram
+	case 0x01:
+		// 1: External 32.768 kHz OSC
+	    return LSEFREQ;
+	}
+}
+
+// T507
+// TODO: need clarify
 uint_fast32_t allwnr_t507_get_rtc32k_freq(void)
+{
+    return allwnr_t507_get_losc_freq();
+}
+
+// T507
+// TODO: need clarify
+uint_fast32_t allwnr_t507_get_rtc_freq(void)
 {
     return LSEFREQ;
 }
 
 // T507
-uint_fast32_t allwnr_t507_get_rc16m_freq(void)
+uint_fast32_t allwnr_t507_get_lradc_freq(void)
 {
-    return 16000000u;
+	return allwnr_t507_get_rtc32k_freq();
 }
 
 // T507

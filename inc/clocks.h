@@ -320,6 +320,7 @@ uint_fast64_t allwnr_t507_get_pll_video1_x1_freq(void);
 uint_fast64_t allwnr_t507_get_pll_peri0_x2_freq(void);
 
 uint_fast32_t allwnr_t507_get_hosc_freq(void);
+uint_fast32_t allwnr_t507_get_losc_freq(void);
 uint_fast32_t allwnr_t507_get_cpux_freq(void);
 uint_fast32_t allwnr_t507_get_avs_freq(void);
 uint_fast32_t allwnr_t507_get_axi_freq(void);
@@ -358,6 +359,7 @@ uint_fast32_t allwnr_t507_get_smhc0_freq(void);
 uint_fast32_t allwnr_t507_get_smhc1_freq(void);
 uint_fast32_t allwnr_t507_get_smhc2_freq(void);
 uint_fast32_t allwnr_t507_get_rtc_freq(void);
+uint_fast32_t allwnr_t507_get_lradc_freq(void);
 
 void allwnr_t507_module_pll_spr(volatile uint32_t * reg, volatile uint32_t * pat);	// Set Spread Frequency Mode
 void allwnr_t507_module_pll_enable(volatile uint32_t * reg, unsigned N);
