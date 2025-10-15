@@ -902,7 +902,7 @@ int main(void);
 int blinky_main(void);
 #define GTIM_IRQ_NUM SecurePhysicalTimer_IRQn
 
-void processmessages(uint_fast8_t * kbch, uint_fast8_t * kbready);
+void processmessages(uint_fast16_t * kbch, uint_fast8_t * kbready);
 
 
 uintptr_t getRamDiskBase(void);

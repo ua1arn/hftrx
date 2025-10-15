@@ -528,7 +528,7 @@ void bootloader_mainloop(void)
 	/* Обеспечение работы USB DFU */
 	for (;;)
 	{
-		uint_fast8_t kbch, kbready;
+		uint_fast16_t kbch, kbready;
 		processmessages(& kbch, & kbready);
 
 		if (kbready)

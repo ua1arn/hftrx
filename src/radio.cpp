@@ -287,7 +287,7 @@ static uint_fast8_t gtx;	/* текущее состояние прием или 
 /* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
 void
 processmessages(
-	uint_fast8_t * kbch,
+	uint_fast16_t * kbch,
 	uint_fast8_t * kbready
 	)
 {
@@ -6832,7 +6832,8 @@ uint_fast16_t tuner_get_swr(const char * title, uint_fast16_t fullscale, adcvalh
 // Если прервана настройка - возврат не-0
 static uint_fast8_t tuneabort(void)
 {
-	uint_fast8_t kbch, kbready;
+	uint_fast16_t kbch;
+	uint_fast8_t kbready;
 
 	// todo: не работает на дисплеях с off screen composition.
 	// счетчик перебора сбрасывается в 0 - и до обновления экрана дело не доходит.
@@ -18016,7 +18017,8 @@ static void vfoallignment(void)
 	dispvfocode(vfo, top);
 	for (;;)
 	{
-		uint_fast8_t kbch, kbready;
+		uint_fast16_t kbch;
+		uint_fast8_t kbready;
 
 		processmessages(& kbch, & kbready);
 
@@ -19286,7 +19288,7 @@ void initialize2(void)
 
 	//PRINTF(PSTR("initialize2: NVRAM autodetection start.\n"));
 
-	const uint_fast8_t erasekey = geterasekey();
+	const uint_fast16_t erasekey = geterasekey();
 	uint_fast8_t ab = 0;
 	const uint_fast8_t ABMAX = 2;
 	// проверка сигнатуры привсех возможных ab
@@ -19381,7 +19383,7 @@ void initialize2(void)
 
 	//PRINTF(PSTR("initialize2: NVRAM(BKPSRAM/CPU EEPROM/SPI MEMORY) initialization: verify NVRAM signature.\n"));
 
-	const uint_fast8_t erasekey = geterasekey();
+	const uint_fast16_t erasekey = geterasekey();
 	if (verifynvramsignature())
 		mclearnvram = 2;
 
@@ -19391,7 +19393,7 @@ void initialize2(void)
 	{
 		if (mclearnvram == 1)
 		{
-			uint_fast8_t kbch;
+			uint_fast16_t kbch;
 
 #if WITHLCDBACKLIGHT
 			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -19548,7 +19550,8 @@ static STTE_t hamradio_tune_step(void)
 //			// прочистить очередь сообщений
 //			for (;;)
 //			{
-//				uint_fast8_t kbch, kbready;
+//				uint_fast16_t kbch;
+//				uint_fast8_t kbready;
 //				processmessages(& kbch, & kbready);
 //				if (kbready == 0)
 //					break;
@@ -19578,7 +19581,7 @@ static void keyspoolprocess(void * ctx)
 {
 #if ! defined (HAVE_BTSTACK_STDIN)
 #if 0
-	uint_fast8_t dtmfch;
+	uint_fast16_t dtmfch;
 	if (dtmf_scan((& dtmfch)))
 	{
 		PRINTF("dtmfkey=%02X\n", (unsigned char) dtmfch);

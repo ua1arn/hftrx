@@ -39,7 +39,8 @@ void ctlboardt507_mainloop(void)
 	for (;;)
 	{
 		/* Обеспечение работы USER MODE DPC */
-		uint_fast8_t kbch, kbready;
+		uint_fast16_t kbch;
+		uint_fast8_t kbready;
 		processmessages(& kbch, & kbready);
 
 		/* Отладочные функции */

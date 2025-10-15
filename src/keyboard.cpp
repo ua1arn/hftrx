@@ -402,7 +402,7 @@ uint_fast8_t kbd_scan(uint_fast16_t * v)
 	return kbdx_scan(& kbd0, v);
 }
 
-uint_fast16_t dtmf_scan(uint_fast16_t * v)
+uint_fast8_t dtmf_scan(uint_fast16_t * v)
 {
 #if WITHSUBTONES
 	return kbdx_scan(& dtmf_kbd, v);
@@ -470,12 +470,12 @@ uint_fast8_t kbd_get_ishold(uint_fast8_t flag)
 	return 0;
 }
 
-uint_fast8_t kbd_scan(uint_fast8_t * v)
+uint_fast8_t kbd_scan(uint_fast16_t * v)
 {
 	return 0;
 }
 
-uint_fast8_t dtmf_scan(uint_fast8_t * v)
+uint_fast8_t dtmf_scan(uint_fast16_t * v)
 {
 	return 0;
 }

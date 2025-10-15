@@ -47,7 +47,7 @@
 		{ KIF_NONE, KBD_CODE_MAX, KBD_CODE_MAX,  },
 	};
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -76,7 +76,7 @@ uint_fast8_t geterasekey(void)
 		{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 	};
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -109,7 +109,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -156,7 +156,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -201,7 +201,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -247,7 +247,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -293,7 +293,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -340,7 +340,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -389,7 +389,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -401,7 +401,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_ERASE,		KBD_ENC2_PRESS,			KBD_ENC2_HOLD, 			' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -456,7 +456,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -495,7 +495,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_POWER, 	KBD_CODE_LDSPTGL,		KBD_CODE_POWEROFF, 		' ', },		// 24 SPK/POWER
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -534,7 +534,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_POWER, 	KBD_CODE_LDSPTGL,		KBD_CODE_POWEROFF, 		' ', },		// 24 SPK/POWER
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -582,7 +582,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -619,7 +619,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			'2', },		// A=B
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -666,7 +666,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 		{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -722,7 +722,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -778,7 +778,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -832,7 +832,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -886,7 +886,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -940,7 +940,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -987,7 +987,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -1019,7 +1019,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -1051,7 +1051,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -1082,7 +1082,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -1114,7 +1114,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_ERASECONFIG;
 }
@@ -1172,7 +1172,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -1202,7 +1202,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -1235,7 +1235,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -1265,7 +1265,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -1296,7 +1296,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -1325,7 +1325,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
@@ -1356,7 +1356,7 @@ uint_fast8_t geterasekey(void)
 		{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 	};
 
-	uint_fast8_t geterasekey(void)
+	uint_fast16_t geterasekey(void)
 	{
 		return KBD_CODE_SPLIT;
 	}
@@ -1388,7 +1388,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{	KIF_NONE, 		KBD_CODE_MAX,		KBD_CODE_MAX, ' ', },
 };
 
-uint_fast8_t geterasekey(void)
+uint_fast16_t geterasekey(void)
 {
 	return KBD_CODE_SPLIT;
 }
