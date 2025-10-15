@@ -259,11 +259,11 @@ void board_tsc_initialize(void)
 #if (DIM_X == 800) && (DIM_Y == 480)
 static tPoint calpoints [TSCCALIBPOINTS] =
 {
-	{ 848, 850, }, /* point 0 */
-	{ 3368, 898, }, /* point 1 */
-	{ 805, 3391, }, /* point 2 */
-	{ 3415, 3295, }, /* point 3 */
-	{ 2008, 2199, }, /* point 4 */
+	{ 770, 878, }, /* point 0 */
+	{ 3350, 881, }, /* point 1 */
+	{ 771, 3407, }, /* point 2 */
+	{ 3336, 3416, }, /* point 3 */
+	{ 2058, 2185, }, /* point 4 */
 };
 #else
 #error Provide calibration data
