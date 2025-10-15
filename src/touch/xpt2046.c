@@ -1,10 +1,8 @@
-/*
- * xpt2046.c
- *
- *  Created on: Jun 18, 2021
- *      Author: gena
- */
-
+/* $Id$ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
 
 // XPT2046 Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO.,LTD http://www.xptek.com.cn
 // TI TSC2046
@@ -74,22 +72,32 @@ xpt2046_read4(
 	uint_fast16_t * z2
 	)
 {
+	enum { AVERAGE = 4 };
 	enum { PDx = 1*XPT2046_PD1 | 1*XPT2046_PD0 };	// оба бита "1" - прерывания не формируются
 	static const uint8_t txbuf [] =
 	{
 		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,	// ignored
 		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_X, 0x00,	// ignored
+		XPT2046_CONTROL | PDx | XPT2046_X, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_X, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_X, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_X, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_Z1, 0x00,	// ignored
 		XPT2046_CONTROL | PDx | XPT2046_Z1, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_Z1, 0x00,
-//		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,	// ignored
-//		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,
-//		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,
-
+		XPT2046_CONTROL | PDx | XPT2046_Z1, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_Z1, 0x00,
+#if 0
+		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,	// ignored
+		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,
+		XPT2046_CONTROL | PDx | XPT2046_Z2, 0x00,
+#endif
 		XPT2046_NOP,
 	};
 	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
@@ -97,10 +105,36 @@ xpt2046_read4(
 	prog_spi_exchange(target, tscspeed, tscmode, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 	//printhex((uintptr_t) 0, rxbuf, sizeof rxbuf);
 
-	* y = (USBD_peek_u16_BE(rxbuf + 3) + USBD_peek_u16_BE(rxbuf + 5)) / 2 / 8;
-	* x = (USBD_peek_u16_BE(rxbuf + 9) + USBD_peek_u16_BE(rxbuf + 11)) / 2 / 8;
-	* z1 = (USBD_peek_u16_BE(rxbuf + 15) + USBD_peek_u16_BE(rxbuf + 17)) / 2 / 8;
-	* z2 = 0;//(USBD_peek_u16_BE(rxbuf + 21) + USBD_peek_u16_BE(rxbuf + 23)) / 2 / 8;
+	uint_fast16_t xv = 0, yv = 0, z1v = 0, z2v = 0;
+	unsigned i, offs;
+	offs = 1;
+
+	offs += 2;	// skip dummy read
+	for (i = 0; i < AVERAGE; ++ i, offs += 2)
+	{
+		yv += USBD_peek_u16_BE(rxbuf + offs) / 8;
+	}
+	offs += 2;	// skip dummy read
+	for (i = 0; i < AVERAGE; ++ i, offs += 2)
+	{
+		xv += USBD_peek_u16_BE(rxbuf + offs) / 8;
+	}
+	offs += 2;	// skip dummy read
+	for (i = 0; i < AVERAGE; ++ i, offs += 2)
+	{
+		z1v += USBD_peek_u16_BE(rxbuf + offs) / 8;
+	}
+#if 0
+	offs += 2;	// skip dummy read
+	for (i = 0; i < AVERAGE; ++ i, offs += 2)
+	{
+		z2v += USBD_peek_u16_BE(rxbuf + offs) / 8;
+	}
+#endif
+	* x = xv / AVERAGE;
+	* y = yv / AVERAGE;
+	* z1 = z1v / AVERAGE;
+	* z2 = z2v / AVERAGE;
 }
 
 #endif /* WITHSPIHW || WITHSPISW */
