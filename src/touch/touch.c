@@ -157,16 +157,34 @@ void board_tsc_calibration(void)
 	tPoint p_display [TSCCALIBPOINTS];
 	tPoint * const p_touch = board_tsc_getcalpoints();
 
-	p_display [0].x = xstep * 1;	// левый верхний
-	p_display [0].y = ystep * 1;
-	p_display [1].x = xstep * 5;	// правый верхний
-	p_display [1].y = ystep * 1;
-	p_display [2].x = xstep * 1;	// левый нижний
-	p_display [2].y = ystep * 5;
-	p_display [3].x = xstep * 5;	// правый нижний
-	p_display [3].y = ystep * 5;
-	p_display [4].x = xstep * 3;	// центр экрана
-	p_display [4].y = ystep * 3;
+	unsigned i = 0;
+	p_display [i].x = xstep * 1;	// левый верхний
+	p_display [i].y = ystep * 1;
+	++ i;
+	p_display [i].x = xstep * 3;	// центр верхний
+	p_display [i].y = ystep * 1;
+	++ i;
+	p_display [i].x = xstep * 5;	// правый верхний
+	p_display [i].y = ystep * 1;
+	++ i;
+	p_display [i].x = xstep * 1;	// левый средний
+	p_display [i].y = ystep * 3;
+	++ i;
+	p_display [i].x = xstep * 3;	// центр средний
+	p_display [i].y = ystep * 3;
+	++ i;
+	p_display [i].x = xstep * 5;	// правый средний
+	p_display [i].y = ystep * 3;
+	++ i;
+	p_display [i].x = xstep * 1;	// левый нижний
+	p_display [i].y = ystep * 5;
+	++ i;
+	p_display [i].x = xstep * 3;	// центр нижний
+	p_display [i].y = ystep * 5;
+	++ i;
+	p_display [i].x = xstep * 5;	// правый нижний
+	p_display [i].y = ystep * 5;
+	ASSERT(TSCCALIBPOINTS == (i + 1));
 
 	// Выполнение калибровки тач сенсора
 	if (0)

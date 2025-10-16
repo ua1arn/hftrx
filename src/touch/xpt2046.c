@@ -259,24 +259,29 @@ void board_tsc_initialize(void)
 
 #if WITHTSC5PCALIBRATE
 // результат калибровки
-#if (DIM_X == 800) && (DIM_Y == 480)
+#if (DIM_X == 800) && (DIM_Y == 480) && TSCCALIBPOINTS == 9
 static tPoint calpoints [TSCCALIBPOINTS] =
 {
-	{ 760, 889, }, /* point 0 */
-	{ 3326, 894, }, /* point 1 */
-	{ 754, 3423, }, /* point 2 */
-	{ 3327, 3356, }, /* point 3 */
-	{ 2031, 2168, }, /* point 4 */
+	{ 756, 889, }, /* point 0 */
+	{ 2035, 897, }, /* point 1 */
+	{ 3339, 887, }, /* point 2 */
+	{ 747, 2128, }, /* point 3 */
+	{ 2043, 2168, }, /* point 4 */
+	{ 3328, 2214, }, /* point 5 */
+	{ 761, 3402, }, /* point 6 */
+	{ 2034, 3412, }, /* point 7 */
+	{ 3317, 3382, }, /* point 8 */
 };
 #else
 #error Provide calibration data
 #endif
-#endif /* WITHTSC5PCALIBRATE */
 
 tPoint *
 board_tsc_getcalpoints(void)
 {
 	return calpoints;
 }
+
+#endif /* WITHTSC5PCALIBRATE */
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_XPT2046) */

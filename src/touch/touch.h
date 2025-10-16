@@ -8,7 +8,8 @@ extern "C" {
 #endif
 
 
-enum { TSCCALIBPOINTS = 5 };
+#define TSCCALIBPOINTS 9
+
 /* Данные с координатами точки касания */
 typedef struct
 {
