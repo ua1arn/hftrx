@@ -23,7 +23,7 @@
 //#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
 //#define BOARD_TSC1_YMIRROR 1	// Зеркалируем тачскрин по вертикали.
 
-#define tscspeed SPIC_SPEED100k
+#define tscspeed SPIC_SPEED200k
 #define tscmode SPIC_MODE0
 
 #define XPT2046_SPOOLMS	20	// период опроса
@@ -76,6 +76,7 @@ xpt2046_read4(
 	enum { PDx = 1*XPT2046_PD1 | 1*XPT2046_PD0 };	// оба бита "1" - прерывания не формируются
 	static const uint8_t txbuf [] =
 	{
+			XPT2046_NOP,
 		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,	// ignored
 		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
 		XPT2046_CONTROL | PDx | XPT2046_Y, 0x00,
@@ -107,7 +108,7 @@ xpt2046_read4(
 
 	uint_fast16_t xv = 0, yv = 0, z1v = 0, z2v = 0;
 	unsigned i, offs;
-	offs = 1;
+	offs = 2;
 
 	offs += 2;	// skip dummy read
 	for (i = 0; i < AVERAGE; ++ i, offs += 2)
