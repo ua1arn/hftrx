@@ -65,13 +65,13 @@ enum XPTCoordinate
 // Read XPT2046 ADC
 static void
 xpt2046_read4(
-	spitarget_t target,
 	uint_fast16_t * x,
 	uint_fast16_t * y,
 	uint_fast16_t * z1,
 	uint_fast16_t * z2
 	)
 {
+	const spitarget_t target = targettsc1;
 	enum { AVERAGE = 4 };
 	enum { PDx = 1*XPT2046_PD1 | 1*XPT2046_PD0 };	// оба бита "1" - прерывания не формируются
 	static const uint8_t txbuf [] =
@@ -153,9 +153,8 @@ xpt2046_pressure(
 /* получение ненормальзованных координат нажатия */
 static uint_fast8_t xpt2046_getxy_spi(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 {
-	const spitarget_t target = targettsc1;
 	uint_fast16_t x, y, z1, z2;
-	xpt2046_read4(target, & x, & y, & z1, & z2);
+	xpt2046_read4(& x, & y, & z1, & z2);
 
 	* xr = x;
 	* yr = y;
@@ -168,10 +167,9 @@ static uint_fast8_t xpt2046_getxy_spi(uint_fast16_t * xr, uint_fast16_t * yr, ui
 void
 xpt2406_interrupt_handler(void * ctx)
 {
-	const spitarget_t target = targettsc1;
 	uint_fast16_t x, y, z1, z2;
 	(void) ctx;
-	xpt2046_read4(target, & x, & y, & z1, & z2);
+	xpt2046_read4(& x, & y, & z1, & z2);
 	PRINTF("xpt2046 interrupt: x=%5u, y=%5u z1=%5u, z2=%5u\n", x, y, z1, z2);
 }
 
@@ -228,19 +226,18 @@ static void xpt204_spool(void * ctx)
 
 void board_tsc_initialize(void)
 {
-	const spitarget_t target = targettsc1;
 	IRQLSPINLOCK_INITIALIZE(& tsclock);
 	//PRINTF("xpt2046_initialize:\n");
 	{
 		uint_fast16_t x, y, z1, z2;
-		xpt2046_read4(target, & x, & y, & z1, & z2);
+		xpt2046_read4(& x, & y, & z1, & z2);
 	}
 
 #if 0
 	for (;;)
 	{
 		uint_fast16_t x, y, z1, z2;
-		xpt2046_read4(target, & x, & y, & z1, & z2);
+		xpt2046_read4(& x, & y, & z1, & z2);
 		PRINTF("xpt2046: x=%5u, y=%5u z1=%5u, z2=%5u\n", x, y, z1, z2);
 	}
 #endif
