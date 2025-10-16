@@ -23,6 +23,7 @@
 //#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
 //#define BOARD_TSC1_YMIRROR 1	// Зеркалируем тачскрин по вертикали.
 
+//	sclk = 2 Mhz, busy = 0.5 uS
 //	sclk = 1 Mhz, busy = 1 uS
 //	sclk = 400 khz, busy = 2 uS
 //	sclk = 200 khz, busy = 5 uS
@@ -261,11 +262,11 @@ void board_tsc_initialize(void)
 #if (DIM_X == 800) && (DIM_Y == 480)
 static tPoint calpoints [TSCCALIBPOINTS] =
 {
-	{ 770, 878, }, /* point 0 */
-	{ 3350, 881, }, /* point 1 */
-	{ 771, 3407, }, /* point 2 */
-	{ 3336, 3416, }, /* point 3 */
-	{ 2058, 2185, }, /* point 4 */
+	{ 760, 889, }, /* point 0 */
+	{ 3326, 894, }, /* point 1 */
+	{ 754, 3423, }, /* point 2 */
+	{ 3327, 3356, }, /* point 3 */
+	{ 2031, 2168, }, /* point 4 */
 };
 #else
 #error Provide calibration data
