@@ -868,6 +868,7 @@
 	#define NVRAM_SPISPEED 		SPIC_SPEED12M
 	#define NAU8822_SPISPEED 	SPIC_SPEED12M
 	#define CTLREG_SPISPEED		SPIC_SPEED400k
+	#define XPT2046_SPIC_SPEED 	SPIC_SPEED2M
 
 	#define targetctl1		(UINT32_C(1) << 22)		// PE22 board control registers chain
 	#define targettsc1		(UINT32_C(1) << 19)		// PE19 XPT2046 SPI chip select signal - CSEXT1
