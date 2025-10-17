@@ -29,8 +29,10 @@
 //	sclk = 200 khz, busy = 5 uS
 //	sclk = 100 khz, busy = 10 uS
 
-#define tscspeed SPIC_SPEED2M
-#define tscmode SPIC_MODE0
+#ifndef XPT2046_SPIC_SPEED
+	#define XPT2046_SPIC_SPEED SPIC_SPEED2M
+#endif
+#define tscmode SPIC_MODE3
 
 #define XPT2046_SPOOLMS	20	// период опроса
 
@@ -109,7 +111,7 @@ xpt2046_read4(
 	};
 	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
-	prog_spi_exchange(target, tscspeed, tscmode, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+	prog_spi_exchange(target, XPT2046_SPIC_SPEED, tscmode, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 	//printhex((uintptr_t) 0, rxbuf, sizeof rxbuf);
 
 	uint_fast16_t xv = 0, yv = 0, z1v = 0, z2v = 0;
