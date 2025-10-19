@@ -868,7 +868,7 @@
 	#define NVRAM_SPISPEED 		SPIC_SPEED4M
 	#define NAU8822_SPISPEED 	SPIC_SPEED4M
 	#define CTLREG_SPISPEED		SPIC_SPEED400k
-	#define XPT2046_SPIC_SPEED 	SPIC_SPEED2M
+	#define XPT2046_SPIC_SPEED 	SPIC_SPEED400k
 
 	#define targetctl1		(UINT32_C(1) << 22)		// PE22 board control registers chain
 	#define targettsc1		(UINT32_C(1) << 19)		// PE19 XPT2046 SPI chip select signal - CSEXT1
@@ -877,7 +877,7 @@
 	#define targetfpga1		(UINT32_C(1) << 17)		// PE17 FPGA control registers CS1
 	#define targetadck		(UINT32_C(1) << 21)		// PE21 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADC2CS
 	#define targetxad2		(UINT32_C(1) << 16)		// PE16 ext2 external SPI device (PA BOARD ADC) CSEXT2
-	#define targetfpga1mask	(UINT32_C(1) << 11)		// PE11 data gete for all FPGA spi operations (0=active)
+	#define targetfpga1mask	(UINT32_C(1) << 11)		// PE11 data gate for all FPGA SPI operations (0: active)
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target) do { \
