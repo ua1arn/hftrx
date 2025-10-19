@@ -4983,10 +4983,6 @@ void board_initialize(void)
 	spi_initialize();
 #endif /* WITHSPIHW || WITHSPISW || WIHSPIDFOVERSPI */
 
-#if (WITHNANDHW || WITHNANDSW)
-	nand_initialize();
-#endif /* (WITHNANDHW || WITHNANDSW) */
-
 #if WITHFPGALOAD_PS
 	/* FPGA загружается процессором с помощью SPI */
 	board_fpga_loader_initialize();
@@ -4996,6 +4992,10 @@ void board_initialize(void)
 #if WITHDSPEXTFIR
 	board_fpga_fir_initialize();	// порт формирования стробов перезагрузки коэффициентов FIR фильтра в FPGA
 #endif /* WITHDSPEXTFIR */
+
+#if (WITHNANDHW || WITHNANDSW)
+	nand_initialize();
+#endif /* (WITHNANDHW || WITHNANDSW) */
 
 	board_update_initial();		// Обнуление теневых переменных, синхронизация регистров с теневыми переменными.
 	board_reset();			/* формирование импульса на reset_n */

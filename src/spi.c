@@ -5931,10 +5931,10 @@ static uint_fast8_t board_fpga_get_NSTATUS(void)
 }
 
 /* не на всех платах соединено с процессором */
-static uint_fast8_t board_fpga_get_INIT_DONE(void)
+static uint_fast8_t board_fpga_get_USER_MODE(void)
 {
-#if 0 && FPGA_INIT_DONE_BIT != 0
-	return (FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0;
+#if defined HARDWARE_FPGA_IS_USER_MODE
+	return HARDWARE_FPGA_IS_USER_MODE();
 #else
 	return 1;
 #endif
@@ -6057,7 +6057,7 @@ restart:
 	} while (board_fpga_get_NSTATUS() == 0);	// если ошибка - повторяем
 	PRINTF("fpga: board_fpga_loader_PS done\n");
 	/* проверяем, проинициализировалась ли FPGA (вошла в user mode). */
-	while (HARDWARE_FPGA_IS_USER_MODE() == 0)
+	while (board_fpga_get_USER_MODE() == 0)
 	{
 		local_delay_ms(1);
 		if (-- w == 0)
@@ -6108,7 +6108,7 @@ void board_fpga_loader_wait_AS(void)
 		;
 	PRINTF(PSTR("fpga: CONF_DONE asserted\n"));
 	/* проверяем, проинициализировалась ли FPGA (вошла в user mode). */
-	while (HARDWARE_FPGA_IS_USER_MODE() == 0)
+	while (board_fpga_get_USER_MODE() == 0)
 		;
 	PRINTF(PSTR("fpga: board_fpga_loader_wait_AS done\n"));
 }
