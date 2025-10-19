@@ -5796,10 +5796,10 @@ void board_fpga_fir_coef_p1(SPI_t * spi, int_fast32_t v)
 
 #elif WITHSPISW
 	// Software SPI
-	spi_progval8_p1(spi, 0, v >> 24);
-	spi_progval8_p2(spi, 0, v >> 16);
-	spi_progval8_p2(spi, 0, v >> 8);
-	spi_progval8_p2(spi, 0, v >> 0);	// на последнем бите формируется coef_in_clk
+	spi_progval8_p1(targetnone, v >> 24);
+	spi_progval8_p2(targetnone, v >> 16);
+	spi_progval8_p2(targetnone, v >> 8);
+	spi_progval8_p2(targetnone, v >> 0);	// на последнем бите формируется coef_in_clk
 
 #endif /* WITHSPI32BIT */
 }
@@ -5822,10 +5822,10 @@ void board_fpga_fir_coef_p2(SPI_t * spi, int_fast32_t v)
 
 #elif WITHSPISW
 	// Software SPI
-	spi_progval8_p2(spi, 0, v >> 24);
-	spi_progval8_p2(spi, 0, v >> 16);
-	spi_progval8_p2(spi, 0, v >> 8);
-	spi_progval8_p2(spi, 0, v >> 0);	// на последнем бите формируется coef_in_clk
+	spi_progval8_p2(targetnone, v >> 24);
+	spi_progval8_p2(targetnone, v >> 16);
+	spi_progval8_p2(targetnone, v >> 8);
+	spi_progval8_p2(targetnone, v >> 0);	// на последнем бите формируется coef_in_clk
 
 #endif /* WITHSPI32BIT */
 }
@@ -5873,8 +5873,8 @@ board_fpga_fir_connect(SPI_t * spi, IRQL_t * oldIrql)
 
 #elif WITHSPISW
 	// Software SPI
-	spi_progval8_p1(spi, targetnone, 0x00);	// provide clock for reset bit counter while CS=1
-	spi_complete(spi, targetnone);
+	spi_progval8_p1(targetnone, 0x00);	// provide clock for reset bit counter while CS=1
+	spi_complete(targetnone);
 
 #endif /* WITHSPI32BIT */
 
