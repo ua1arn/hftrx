@@ -930,6 +930,10 @@
 		arm_hardware_pioe_outputs20m(targetxad2, 1 * targetxad2); /*  */ \
 		arm_hardware_pioe_outputs20m(targetfpga1mask, 1 * targetfpga1mask); /*  */ \
 	} while (0)
+	/* разрешение обмена с FPGA  использованием SPI */
+	#define TARGET_FPGA_GATE(_on) do { \
+		 gpioX_setstate(GPIOE, targetfpga1mask, ! (_on) * targetfpga1mask); \
+	} while (0)
 
 	// MOSI & SCK port
 	#define	SPI_SCLK_BIT			(UINT32_C(1) << 6)	// PH6 SPI1_CLK
