@@ -864,9 +864,9 @@
 
 	#define FPGALOADER_SPISPEED SPIC_SPEED12M
 	#define FPGAREG_V1_SPISPEED SPIC_SPEED12M
-	#define SPIDF_SPEEDC 		SPIC_SPEED12M
-	#define NVRAM_SPISPEED 		SPIC_SPEED12M
-	#define NAU8822_SPISPEED 	SPIC_SPEED12M
+	#define SPIDF_SPEEDC 		SPIC_SPEED4M
+	#define NVRAM_SPISPEED 		SPIC_SPEED4M
+	#define NAU8822_SPISPEED 	SPIC_SPEED4M
 	#define CTLREG_SPISPEED		SPIC_SPEED400k
 	#define XPT2046_SPIC_SPEED 	SPIC_SPEED2M
 
@@ -877,6 +877,7 @@
 	#define targetfpga1		(UINT32_C(1) << 17)		// PE17 FPGA control registers CS1
 	#define targetadck		(UINT32_C(1) << 21)		// PE21 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADC2CS
 	#define targetxad2		(UINT32_C(1) << 16)		// PE16 ext2 external SPI device (PA BOARD ADC) CSEXT2
+	#define targetfpga1mask	(UINT32_C(1) << 11)		// PE11 data gete for all FPGA spi operations (0=active)
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target) do { \
@@ -927,6 +928,7 @@
 		arm_hardware_pioe_outputs20m(targetfpga1, 1 * targetfpga1); /*  */ \
 		arm_hardware_pioe_outputs20m(targetadck, 1 * targetadck); /*  */ \
 		arm_hardware_pioe_outputs20m(targetxad2, 1 * targetxad2); /*  */ \
+		arm_hardware_pioe_outputs20m(targetfpga1mask, 1 * targetfpga1mask); /*  */ \
 	} while (0)
 
 	// MOSI & SCK port

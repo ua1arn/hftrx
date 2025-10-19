@@ -5853,6 +5853,9 @@ void
 board_fpga_fir_connect(SPI_t * spi, IRQL_t * oldIrql)
 {
 	spi_operate_lock(oldIrql);
+#ifdef TARGET_FPGA_GATE
+	TARGET_FPGA_GATE(1);
+#endif
 #if WITHSPI32BIT
 	hardware_spi_connect_b32(spi, FPGALOADER_SPISPEED, SPIC_MODE3);
 
@@ -5901,6 +5904,9 @@ board_fpga_fir_disconnect(SPI_t * spi, IRQL_t irql)
 #if WITHSPIHW
 	hardware_spi_disconnect(spi);
 #else /* WITHSPIHW */
+#endif
+#ifdef TARGET_FPGA_GATE
+	TARGET_FPGA_GATE(0);
 #endif
 	spi_operate_unlock(irql);
 }
@@ -5966,7 +5972,7 @@ const uint8_t * getrbfimage(size_t * count)
 #endif /* ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY */
 
 /* FPGA загружается процессором с помощью SPI */
-void board_fpga_loader_PS(void)
+static void board_fpga_loader_PS_gated(void)
 {
 	unsigned retries = 0;
 restart:
@@ -6064,6 +6070,18 @@ restart:
 			goto restart;
 	}
 	PRINTF("board_fpga_loader_PS: usermode okay\n");
+}
+
+/* FPGA загружается процессором с помощью SPI */
+void board_fpga_loader_PS(void)
+{
+#if defined (TARGET_FPGA_GATE)
+	TARGET_FPGA_GATE(1);
+	board_fpga_loader_PS_gated();
+	TARGET_FPGA_GATE(0);
+#else
+	board_fpga_loader_PS_gated();
+#endif
 }
 
 #elif WITHFPGAWAIT_ARTIX7
