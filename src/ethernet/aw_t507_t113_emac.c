@@ -128,6 +128,8 @@ static void emac_hw_initialize(void)
 	CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((16 + ix)));	// EMACx Reset
 	//PRINTF("CCU->EMAC_BGR_REG=%08X (@%p)\n", (unsigned) CCU->EMAC_BGR_REG, & CCU->EMAC_BGR_REG);
 
+	//CCU->EMAC_25M_CLK_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);	// moved to HARDWARE_ETH_INITIALIZE
+
 	HARDWARE_ETH_INITIALIZE();	// Должно быть тут - снять ресет с PHY до инициализации
 	{
 		// The working clock of EMAC is from AHB3.

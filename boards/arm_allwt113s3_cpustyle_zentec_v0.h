@@ -972,6 +972,7 @@
 	#define HARDWARE_ETH_INITIALIZE() do { \
 		const portholder_t NRSTB = UINT32_C(1) << 6; /* PF6 RMII_RESET */ \
 		\
+		CCU->EMAC_25M_CLK_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30); /* RMII_25MHz support: PLL_PERI(1X)/24 */ \
 		arm_hardware_piof_outputs(NRSTB, 0 * NRSTB); /* PF6 PHYRSTB */ \
 		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
 		arm_hardware_piof_outputs(NRSTB, 1 * NRSTB); /* PF6 PHYRSTB */ \
