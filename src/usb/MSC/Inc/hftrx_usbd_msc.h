@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    usbd_msc.h
+  * @file    hftrx_usbd_msc
   * @author  MCD Application Team
   * @brief   Header for the usbd_msc.c file
   ******************************************************************************

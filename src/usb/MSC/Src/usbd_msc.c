@@ -44,7 +44,7 @@
 EndBSPDependencies */
 
 /* Includes ------------------------------------------------------------------*/
-#include "../Inc/usbd_msc.h"
+#include "../Inc/hftrx_usbd_msc.h"
 
 #include "src/usb/usb200.h"
 #include "src/usb/usbch9.h"

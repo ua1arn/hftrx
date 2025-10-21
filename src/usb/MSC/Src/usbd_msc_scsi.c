@@ -30,7 +30,7 @@ EndBSPDependencies */
 /* Includes ------------------------------------------------------------------*/
 #include "../Inc/usbd_msc_bot.h"
 #include "../Inc/usbd_msc_scsi.h"
-#include "../Inc/usbd_msc.h"
+#include "../Inc/hftrx_usbd_msc.h"
 #include "../Inc/usbd_msc_data.h"
 
 
