@@ -186,7 +186,7 @@
 
 	//#define WITHCHERRYUSB 1
 
-	//#define WITHTINYUSB 1
+	#define WITHTINYUSB 1
 	
 	
 	#if WITHTINYUSB
@@ -196,7 +196,7 @@
 		#define TUP_USBIP_EHCI 1
 	#endif /* WITHTINYUSB */
 
-	#if 0
+	#if 1
 		// USB3-DP & USB3-DM used
 		#define WITHUSBHW_EHCI		USB20_HOST3_EHCI
 		#define WITHUSBHW_EHCI_IRQ	USB20_HOST3_EHCI_IRQn
