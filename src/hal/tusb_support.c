@@ -771,15 +771,702 @@ void USBH_POSTRESET_INIT(void)
 #endif /* CPUSTYLE_XC7Z */
 }
 
+#endif /* CFG_TUH_ENABLED && (defined (TUP_USBIP_OHCI) || defined (TUP_USBIP_EHCI)) */
 
-void USBH_OHCI_IRQHandler(void)
+#if CFG_TUD_ENABLED
+
+
+uint8_t const * tud_descriptor_device_cb(void)
+{
+  (void) index; // for multiple configurations
+  return DeviceDescrTbl [0].data;
+}
+// Invoked when received GET CONFIGURATION DESCRIPTOR
+// Application return pointer to descriptor
+// Descriptor contents must exist long enough for transfer to complete
+uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
+{
+  (void) index; // for multiple configurations
+  return ConfigDescrTbl [index].data;
+}
+
+uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
+  (void) langid;
+  if (index < usbd_get_stringsdesc_count())
+	  return (uint16_t const *) StringDescrTbl [index].data;
+  else
+	  return NULL;
+}
+
+void tusb_dev_handler(void)
+{
+	dcd_int_handler(0);
+
+}
+
+#if WITHUSBCDCACM && WITHWAWXXUSB
+
+static LCLSPINLOCK_t lockusbdev = LCLSPINLOCK_INIT;
+//static usb_struct * volatile gpusb = NULL;
+
+// Control signal bitmap values for the SetControlLineState request
+// (usbcdc11.pdf, 6.2.14, Table 51)
+#define CDC_DTE_PRESENT                         (1 << 0)
+#define CDC_ACTIVATE_CARRIER                    (1 << 1)
+
+// Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
+//static uint8_t altinterfaces [INTERFACE_count];
+
+static volatile uint16_t usb_cdc_control_state [WITHUSBCDCACM_N];
+
+static volatile uint8_t usbd_cdcX_rxenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
+static __ALIGN_BEGIN uint8_t cdcXbuffout [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_OUT_DATA_SIZE] __ALIGN_END;
+static __ALIGN_BEGIN uint8_t cdcXbuffin [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_IN_DATA_SIZE] __ALIGN_END;
+static uint16_t cdcXbuffinlevel [WITHUSBCDCACM_N];
+
+static __ALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_END;
+
+//static uint32_t dwDTERate [WITHUSBCDCACM_N];
+
+#define MAIN_CDC_OFFSET 0
+#if WITHUSBCDCACM_N > 1
+	#define SECOND_CDC_OFFSET 1
+#endif /* WITHUSBCDCACM_N > 1 */
+
+static LCLSPINLOCK_t catlock = LCLSPINLOCK_INIT;
+
+/* управление по DTR происходит сразу, RTS только вместе со следующим DTR */
+/* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */
+/* Биты: RTS = 0x02, DTR = 0x01 */
+
+// Обычно используется для переключения на передачу (PTT)
+// вызывается в конексте system interrupt
+uint_fast8_t usbd_cdc1_getrts(void)
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	LCLSPIN_LOCK(& catlock);
+	const uint_fast8_t state =
+		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
+		0;
+	LCLSPIN_UNLOCK(& catlock);
+	return state;
+}
+
+// Обычно используется для телеграфной манипуляции (KEYDOWN)
+// вызывается в конексте system interrupt
+uint_fast8_t usbd_cdc1_getdtr(void)
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	LCLSPIN_LOCK(& catlock);
+	const uint_fast8_t state =
+		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
+		0;
+	LCLSPIN_UNLOCK(& catlock);
+	return state;
+}
+
+// Обычно используется для переключения на передачу (PTT)
+// вызывается в конексте system interrupt
+uint_fast8_t usbd_cdc2_getrts(void)
+{
+#if WITHUSBCDCACM_N > 1
+	const unsigned offset = SECOND_CDC_OFFSET;
+	LCLSPIN_LOCK(& catlock);
+	const uint_fast8_t state =
+		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
+		0;
+	LCLSPIN_UNLOCK(& catlock);
+	return state;
+#else /* WITHUSBCDCACM_N > 1 */
+	return 0;
+#endif /* WITHUSBCDCACM_N > 1 */
+}
+
+// Обычно используется для телеграфной манипуляции (KEYDOWN)
+// вызывается в конексте system interrupt
+uint_fast8_t usbd_cdc2_getdtr(void)
+{
+#if WITHUSBCDCACM_N > 1
+	const unsigned offset = SECOND_CDC_OFFSET;
+	LCLSPIN_LOCK(& catlock);
+	const uint_fast8_t state =
+		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
+		0;
+	LCLSPIN_UNLOCK(& catlock);
+	return state;
+#else /* WITHUSBCDCACM_N > 1 */
+	return 0;
+#endif /* WITHUSBCDCACM_N > 1 */
+}
+
+static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
+static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
+static uint32_t usbd_cdc_txlen [WITHUSBCDCACM_N];	/* количество данных в буфере */
+
+/* временное решение для передачи (вызывается при запрещённых прерываниях). */
+void usbd_cdc_send(const void * buff, size_t length)
+{
+	IRQL_t oldIrql;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	LCLSPIN_LOCK(& lockusbdev);
+
+	const unsigned offset = MAIN_CDC_OFFSET;
+//	if (gpusb != NULL)
+//	{
+//		usb_struct * const pusb = gpusb;
+//		const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
+//		if (pusb->eptx_ret[bo_ep_in-1] != USB_RETVAL_COMPOK)
+//			return;
+//		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
+//		const size_t n = ulmin(length, VIRTUAL_COM_PORT_IN_DATA_SIZE);
+//		memcpy(cdcXbuffin [offset], buff, n);
+//		usbd_cdc_zlp_pending [offset] = n == VIRTUAL_COM_PORT_IN_DATA_SIZE;
+//		usbd_cdc_txlen [offset] = n;
+//		//printhex(0, cdcXbuffin [offset], usbd_cdc_txlen [offset]);
+//		pusb->eptx_ret[bo_ep_in-1] = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t) cdcXbuffin [offset], usbd_cdc_txlen [offset], USB_PRTCL_BULK);
+//// 		do
+////  		{
+////  			ret = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t) cdcXbuffin [offset], usbd_cdc_txlen [offset], USB_PRTCL_BULK);
+////  		}
+////  		while(ret == USB_RETVAL_NOTCOMP);
+//	}
+	LCLSPIN_UNLOCK(& lockusbdev);
+	LowerIrql(oldIrql);
+}
+
+uint_fast8_t usbd_cdc_ready(void)	/* временное решение для передачи */
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+//	if (gpusb != NULL)
+//	{
+//		usb_struct * const pusb = gpusb;
+//		const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
+//		if (pusb->eptx_ret[bo_ep_in-1] != USB_RETVAL_COMPOK)
+//			return 0;
+//		return 1;
+//	}
+	return 0;
+}
+
+/* Разрешение/запрещение прерывания по передаче символа */
+void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	LCLSPIN_LOCK(& catlock);
+	usbd_cdc_txenabled [offset] = state;
+	LCLSPIN_UNLOCK(& catlock);
+}
+
+/* вызывается из обработчика прерываний или при запрещённых прерываниях. */
+/* Разрешение/запрещение прерываний про приёму символа */
+void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	LCLSPIN_LOCK(& catlock);
+	usbd_cdcX_rxenabled [offset] = state;
+	LCLSPIN_UNLOCK(& catlock);
+}
+
+/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
+void
+usbd_cdc_tx(void * ctx, uint_fast8_t c)
+{
+	const unsigned offset = MAIN_CDC_OFFSET;
+	//USBD_HandleTypeDef * const pdev = ctx;
+	(void) ctx;
+	LCLSPIN_LOCK(& catlock);
+	ASSERT(cdcXbuffinlevel  [offset] < VIRTUAL_COM_PORT_IN_DATA_SIZE);
+	cdcXbuffin [offset] [cdcXbuffinlevel [offset] ++] = c;
+	LCLSPIN_UNLOCK(& catlock);
+}
+
+/* использование буфера принятых данных */
+static void cdcXout_buffer_save(
+	const uint8_t * data,
+	unsigned length,
+	unsigned offset
+	)
+{
+	unsigned i;
+	//PRINTF("1:%u '%*.*s'", length, length, length, data);
+
+	for (i = 0; usbd_cdcX_rxenabled [offset] && i < length; ++ i)
+	{
+		HARDWARE_CDC_ONRXCHAR(offset, data [i]);
+	}
+}
+#endif
+#endif /* CFG_TUD_ENABLED */
+
+#endif /* WITHTINYUSB */
+
+#if WITHUSBHW
+
+
+static void USBDxx_IRQHandler(void)
+{
+#if WITHTINYUSB && CFG_TUD_ENABLED
+	tusb_dev_handler();
+#endif /* WITHTINYUSB && CFG_TUD_ENABLED */
+}
+
+void usbdevice_clk_init(void)
+{
+#if CPUSTYLE_R7S721
+
+	if (WITHUSBHW_DEVICE == & USB200)
+	{
+
+		/* ---- Supply clock to the USB20(channel 0) ---- */
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		(void) CPG.STBCR7;			/* Dummy read */
+	    //memset(WITHUSBHW_DEVICE, 0, sizeof * WITHUSBHW_DEVICE);
+
+		HARDWARE_USB0_INITIALIZE();
+
+	}
+	else if (WITHUSBHW_DEVICE == & USB201)
+	{
+
+		/* ---- Supply clock to the USB20(channel 1) ---- */
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		(void) CPG.STBCR7;			/* Dummy read */
+	    //memset(WITHUSBHW_DEVICE, 0, sizeof * WITHUSBHW_DEVICE);
+
+		HARDWARE_USB1_INITIALIZE();
+	}
+
+#elif CPUSTYLE_STM32MP1
+	// Set 3.3 volt DETECTOR enable
+	LL_PWR_EnableUSBVoltageDetector();
+	while (LL_PWR_IsEnabledUSBVoltageDetector() == 0)
+		;
+
+	// Wait 3.3 volt REGULATOR ready
+	while (LL_PWR_IsActiveFlag_USB() == 0)
+		;
+
+	__HAL_RCC_USBO_CLK_ENABLE();
+	__HAL_RCC_USBO_CLK_SLEEP_ENABLE();
+
+	//RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_USBOEN;
+	(void) RCC->MP_AHB2ENSETR;
+	//RCC->MP_AHB2LPENSETR = RCC_MP_AHB2LPENSETR_USBOLPEN;
+	(void) RCC->MP_AHB2LPENSETR;
+
+	__HAL_RCC_USBO_FORCE_RESET();
+	__HAL_RCC_USBO_RELEASE_RESET();
+	//RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_USBOEN;
+	(void) RCC->MP_AHB2ENSETR;
+	//RCC->MP_AHB2LPENSETR = RCC_MP_AHB2LPENSETR_USBOLPEN;
+	(void) RCC->MP_AHB2LPENSETR;
+
+	if (WITHUSBHW_DEVICE == USB1_OTG_HS)	// legacy name is USB_OTG_HS
+	{
+		if (pcdHandle->Init.phy_itface == USB_OTG_ULPI_PHY)
+		{
+			ASSERT(0);	// ULPI not supported by CPU
+			//USBD_HS_ULPI_INITIALIZE();
+
+//			__HAL_RCC_USBO_CLK_ENABLE();
+//			__HAL_RCC_USBO_CLK_SLEEP_ENABLE();
+//			__HAL_RCC_USBOULPI_CLK_ENABLE();
+//			__HAL_RCC_USBOULPI_CLK_SLEEP_ENABLE();
+
+//			RCC->MP_AHB2ENSETR |= RCC_MP_AHB2ENSETR_USBOEN | RCC_MP_AHB2ENSETR_USBOULPIEN;	/* USB/OTG HS with ULPI */
+//			(void) RCC->AHB1ENR;
+//			RCC->MP_AHB2LPENSETR |= RCC_MP_AHB2LPENSETR_USBOLPEN; /* USB/OTG HS  */
+//			(void) RCC->MP_AHB2LPENSETR;
+//			RCC->MP_AHB2LPENSETR |= RCC_MP_AHB2LPENSETR_USBOULPILPEN; /* USB/OTG HS ULPI  */
+//			(void) RCC->MP_AHB2LPENSETR;
+		}
+		else
+		{
+			USBD_HS_FS_INITIALIZE();
+		}
+		//RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;	/* USB/OTG HS companion - VBUS? */
+		//(void) RCC->APB4ENR;
+
+//		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM1EN;
+//		(void) RCC->AHB2ENR;
+//		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM2EN;
+//		(void) RCC->AHB2ENR;
+//		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM3EN;
+//		(void) RCC->AHB2ENR;
+
+
+		if (pcdHandle->Init.use_dedicated_ep1 == ENABLE)
+		{
+			//arm_hardware_set_handler_system(OTG_HS_EP1_OUT_IRQn, device_OTG_HS_EP1_OUT_IRQHandler);
+			//arm_hardware_set_handler_system(OTG_HS_EP1_IN_IRQn, device_OTG_HS_EP1_IN_IRQHandler);
+		}
+		arm_hardware_set_handler_system(OTG_IRQn, USBDxx_IRQHandler);
+
+	}
+
+#elif CPUSTYLE_STM32H7XX
+
+	//PWR->CR3 |= PWR_CR3_USBREGEN;
+
+	//while ((PWR->CR3 & PWR_CR3_USB33RDY) == 0)
+	//	;
+	//PWR->CR3 |= PWR_CR3_USBREGEN;
+	//while ((PWR->CR3 & PWR_CR3_USB33RDY) == 0)
+	//	;
+	PWR->CR3 |= PWR_CR3_USB33DEN;
+
+	if (WITHUSBHW_DEVICE == USB1_OTG_HS)	// legacy name is USB_OTG_HS
+	{
+		if (pcdHandle->Init.phy_itface == USB_OTG_ULPI_PHY)
+		{
+			USBD_HS_ULPI_INITIALIZE();
+			RCC->AHB1ENR |= RCC_AHB1ENR_USB1OTGHSEN | RCC_AHB1ENR_USB1OTGHSULPIEN;	/* USB/OTG HS with ULPI */
+			(void) RCC->AHB1ENR;
+			RCC->AHB1LPENR |= RCC_AHB1LPENR_USB1OTGHSLPEN; /* USB/OTG HS  */
+			(void) RCC->AHB1LPENR;
+			RCC->AHB1LPENR |= RCC_AHB1LPENR_USB1OTGHSULPILPEN; /* USB/OTG HS ULPI  */
+			(void) RCC->AHB1LPENR;
+		}
+		else
+		{
+			USBD_HS_FS_INITIALIZE();
+
+			PRINTF(PSTR("HAL_PCD_MspInitEx: HS without ULPI\n"));
+
+			RCC->AHB1ENR |= RCC_AHB1ENR_USB1OTGHSEN; /* USB/OTG HS  */
+			(void) RCC->AHB1ENR;
+			RCC->AHB1LPENR |= RCC_AHB1LPENR_USB1OTGHSLPEN; /* USB/OTG HS  */
+			(void) RCC->AHB1LPENR;
+			RCC->AHB1LPENR &= ~ RCC_AHB1LPENR_USB1OTGHSULPILPEN; /* USB/OTG HS ULPI  */
+			(void) RCC->AHB1LPENR;
+		}
+		//RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;	/* USB/OTG HS companion - VBUS? */
+		//(void) RCC->APB4ENR;
+		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM1EN;
+		(void) RCC->AHB2ENR;
+		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM2EN;
+		(void) RCC->AHB2ENR;
+		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM3EN;
+		(void) RCC->AHB2ENR;
+
+
+		if (pcdHandle->Init.use_dedicated_ep1 == ENABLE)
+		{
+			arm_hardware_set_handler_system(OTG_HS_EP1_OUT_IRQn, device_OTG_HS_EP1_OUT_IRQHandler);
+			arm_hardware_set_handler_system(OTG_HS_EP1_IN_IRQn, device_OTG_HS_EP1_IN_IRQHandler);
+		}
+		arm_hardware_set_handler_system(OTG_HS_IRQn, USBDxx_IRQHandler);
+
+	}
+	else if (WITHUSBHW_DEVICE == USB2_OTG_FS)	// legacy name is USB_OTG_FS
+	{
+		if (pcdHandle->Init.phy_itface == USB_OTG_ULPI_PHY)
+		{
+			USBD_FS_INITIALIZE();
+			RCC->AHB1ENR |= RCC_AHB1ENR_USB2OTGHSEN | RCC_AHB1ENR_USB2OTGHSULPIEN;	/* USB/OTG HS with ULPI */
+			(void) RCC->AHB1ENR;
+		}
+		else
+		{
+			USBD_FS_INITIALIZE();
+			RCC->AHB1ENR |= RCC_AHB1ENR_USB2OTGHSEN;	/* USB/OTG HS  */
+			(void) RCC->AHB1ENR;
+		}
+		//RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
+		//(void) RCC->APB4ENR;
+		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM1EN;
+		(void) RCC->AHB2ENR;
+		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM2EN;
+		(void) RCC->AHB2ENR;
+		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM3EN;
+		(void) RCC->AHB2ENR;
+
+		NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & device_OTG_FS_IRQHandler);
+		NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
+		NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
+
+	}
+
+#elif defined (STM32F40_41xxx)
+
+	//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	//PRINTF(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
+
+	USBD_FS_INITIALIZE();
+	RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN;	/* USB/OTG FS  */
+	(void) RCC->AHB2ENR;
+	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
+	(void) RCC->APB2ENR;
+
+	NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & device_OTG_FS_IRQHandler);
+	NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
+	NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
+
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
+
+	if (WITHUSBHW_DEVICE == USB_OTG_HS)
+	{
+		//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+		//PRINTF(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
+
+		if (pcdHandle->Init.phy_itface == USB_OTG_ULPI_PHY)
+		{
+			USBD_HS_ULPI_INITIALIZE();
+
+			//PRINTF(PSTR("HAL_PCD_MspInit: USB_OTG_HS and ULPI\n"));
+			RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN;		/* USB/OTG HS  */
+			(void) RCC->AHB1ENR;
+			RCC->AHB1LPENR |= RCC_AHB1LPENR_OTGHSLPEN;		/* USB/OTG HS  */
+			(void) RCC->AHB1LPENR;
+			RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSULPIEN;		/* USB/OTG HS with ULPI */
+			(void) RCC->AHB1ENR;
+			RCC->AHB1LPENR |= RCC_AHB1LPENR_OTGHSULPILPEN;	/* USB/OTG HS  */
+			(void) RCC->AHB1LPENR;
+		}
+		else
+		{
+			USBD_HS_FS_INITIALIZE();
+
+			//PRINTF(PSTR("HAL_PCD_MspInit: USB_OTG_HS without ULPI\n"));
+			RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN;	/* USB/OTG HS  */
+			(void) RCC->AHB1ENR;
+			RCC->AHB1LPENR |= RCC_AHB1LPENR_OTGHSLPEN; /* USB/OTG HS  */
+			(void) RCC->AHB1LPENR;
+			RCC->AHB1LPENR &= ~ RCC_AHB1LPENR_OTGHSULPILPEN; /* USB/OTG HS ULPI  */
+			(void) RCC->AHB1LPENR;
+		}
+
+		RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG HS companion - VBUS? */
+		(void) RCC->APB2ENR;
+
+		if (pcdHandle->Init.use_dedicated_ep1 == ENABLE)
+		{
+			NVIC_SetVector(OTG_HS_EP1_OUT_IRQn, (uintptr_t) & device_OTG_HS_EP1_OUT_IRQHandler);
+			NVIC_SetPriority(OTG_HS_EP1_OUT_IRQn, ARM_SYSTEM_PRIORITY);
+			NVIC_EnableIRQ(OTG_HS_EP1_OUT_IRQn);	// OTG_HS_EP1_OUT_IRQHandler() enable
+
+			NVIC_SetVector(OTG_HS_EP1_IN_IRQn, (uintptr_t) & device_OTG_HS_EP1_IN_IRQHandler);
+			NVIC_SetPriority(OTG_HS_EP1_IN_IRQn, ARM_SYSTEM_PRIORITY);
+			NVIC_EnableIRQ(OTG_HS_EP1_IN_IRQn);	// OTG_HS_EP1_IN_IRQHandler() enable
+		}
+		NVIC_SetVector(OTG_HS_IRQn, (uintptr_t) & USBDxx_IRQHandler);
+		NVIC_SetPriority(OTG_HS_IRQn, ARM_SYSTEM_PRIORITY);
+		NVIC_EnableIRQ(OTG_HS_IRQn);	// OTG_HS_IRQHandler() enable
+
+	}
+	else if (WITHUSBHW_DEVICE == USB_OTG_FS)
+	{
+		//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+		//PRINTF(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
+
+		USBD_FS_INITIALIZE();
+		RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN;	/* USB/OTG FS  */
+		(void) RCC->AHB2ENR;
+		RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
+		(void) RCC->APB2ENR;
+
+		NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & device_OTG_FS_IRQHandler);
+		NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
+		NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
+
+	}
+
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+//	void SetupUsbPhyc(USBPHYC_TypeDef * phy);
+//
+//	// Отличия в CCU
+////	CCU->SMHC2_CLK_REG = 0;
+////	CCU->SMHC_BGR_REG = 0;
+//
+//	CCU->USB0_CLK_REG |= 0x20000000;	// @0x0A70 was: 0x40000000
+//
+//	CCU->USB2_CLK_REG |= 0x60000000;	// WAS: 0 - USBPHY2RST, SCLK_GATING _USBPHY2
+//	CCU->USB_BGR_REG |= 0x00400040; // WAS 01000100 - USBEHCI2_RST USBEHCI2_GATING
+
+	{
+		CCU->USB0_CLK_REG |= 0x20000000;	// @0x0A70 was: 0x40000000
+
+		CCU->USB2_CLK_REG |= 0x60000000;	// WAS: 0 - USBPHY2RST, SCLK_GATING _USBPHY2
+		CCU->USB_BGR_REG |= 0x00400040; // WAS 01000100 - USBEHCI2_RST USBEHCI2_GATING
+
+//		const unsigned OHCIx_12M_SRC_SEL = 1;	// OHCI3_12M_SRC_SEL 01: 12M divided from 24 MHz
+//
+//		{
+//			// PHY2 enable
+//			CCU->USB2_CLK_REG = (CCU->USB2_CLK_REG & ~ (UINT32_C(0x03) << 24)) | (OHCIx_12M_SRC_SEL << 24);
+//			CCU->USB2_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY2_RST
+//			CCU->USB2_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY2
+//			SetupUsbPhyc(USBPHYC2);
+//		}
+
+	}
+	arm_hardware_disable_handler(USB20_HOST0_OHCI_IRQn);
+	arm_hardware_disable_handler(USB20_HOST0_EHCI_IRQn);
+	arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
+
+	CCU->USB_BGR_REG |= (UINT32_C(1) << 8);	// USBOTG_GATING
+	CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG_RST
+	CCU->USB_BGR_REG |= (UINT32_C(1) << 24);	// USBOTG_RST
+
+	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// SCLK_GATING_OHCI0
+	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
+	CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
+
+	//USB20_OTG_PHYC->USB_CTRL = UINT32_C(0x4300CC01);	// младший бит не влияет... вообще ничего не влияет
+	//USBPHYC0->USB_CTRL =  UINT32_C(0x4300CC00);	// влияет!
+	arm_hardware_set_handler_system(USB20_OTG_DEVICE_IRQn, USBDxx_IRQHandler);
+	arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
+
+	// Work
+	//	USB20_OTG_PHYC_BASE:
+	//	05100400  4300CC00 00000000 00000000 00000000 00000022 00000000 023438E4 00000000
+	//	05100420  00000001 00000008 00000000 00000000 00000000 00000000 00000000 00000000
+	//	05100440  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+	//	05100460  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+	// bad
+	//	USB20_OTG_PHYC_BASE:
+	//	05100400  40000000 00000000 00000000 00000000 00000002 00000000 023438E4 00000000
+	//	05100420  00000001 00000004 00000000 00000000 00000000 00000000 00000000 00000000
+	//	05100440  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+	//	05100460  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+
+	USB20_OTG_PHYC->USB_CTRL = 0x4300CC00;
+	USB20_OTG_PHYC->PHY_CTRL = 0x00000022;
+	USB20_OTG_PHYC->HSIC_PHY_tune3 = 0x00000008;
+
+//	PRINTF("USB20_OTG_PHYC_BASE:\n");
+//	printhex32(USB20_OTG_PHYC_BASE, USB20_OTG_PHYC, 128);
+//	PRINTF("USBPHYC0:\n");
+//	printhex32(USBPHYC0_BASE, USBPHYC0, 128);
+
+//	PRINTF("CCU:\n");
+//	printhex32(CCU_BASE, CCU, sizeof * CCU);
+
+#elif CPUSTYLE_A64
+
+	//	Allwinner USB DRD support (musb_otg)
+	//
+	//	Allwinner USB DRD is based on the Mentor USB OTG controller, with a
+	//	different register layout and a few missing registers.
+	// Turn off EHCI0
+//	PRINTF("1 HAL_PCD_MspInit: USBx->PHY_CTRL=%08lX\n", USBx->PHY_CTRL);
+//	PRINTF("1 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
+//	PRINTF("1 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
+
+    arm_hardware_disable_handler(USBOTG0_IRQn);
+    arm_hardware_disable_handler(USBEHCI0_IRQn);
+    arm_hardware_disable_handler(USBOHCI0_IRQn);
+
+//    PRINTF("USBPHY_CFG_REG = %08X\n", CCU->USBPHY_CFG_REG);
+
+    CCU->USBPHY_CFG_REG &= ~ (1u << 8);	// SCLK_GATING_USBPHY0
+    CCU->USBPHY_CFG_REG &= ~ (1u << 0);	// USBPHY0_RST
+	// Turn on USBOTG0
+    CCU->USBPHY_CFG_REG |= (1u << 8);	// SCLK_GATING_USBPHY0
+    CCU->USBPHY_CFG_REG |= (1u << 0);	// USBPHY0_RST
+
+    //CCU->USBPHY_CFG_REG |= (1u << 2);	// USBHSIC_RST ???
+
+	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 29);	// USB-OHCI0_RST.
+	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 25);	// USB-EHCI0_RST.
+
+	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 29);	// USBOHCI0_GATING.
+	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 25);	// USBEHCI0_GATING.
+
+	CCU->BUS_CLK_GATING_REG0 |= (1u << 23);	// USB-OTG-Device_GATING.
+	CCU->BUS_SOFT_RST_REG0 |= (1u << 23);	// USB-OTG-Device_RST.
+
+
+	arm_hardware_set_handler_system(USBOTG0_IRQn, USBDxx_IRQHandler);
+	arm_hardware_disable_handler(USBOTG0_IRQn);
+
+	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
+	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
+
+	// https://github.com/guanglun/r329-linux/blob/d6dced5dc9353fad5319ef5fb84e677e2b9a96b4/arch/arm64/boot/dts/allwinner/sun50i-r329.dtsi#L462
+	//	/* A83T specific control bits for PHY0 */
+	//	#define PHY_CTL_VBUSVLDEXT		BIT(5)
+	//	#define PHY_CTL_SIDDQ			BIT(3)
+	//	#define PHY_CTL_H3_SIDDQ		BIT(1)
+
+//	USBOTG0->PHY_OTGCTL |= (1uL << 0); 	// Device mode. Route phy0 to OTG0
+//
+//	USBOTG0->USB_ISCR = 0;//0x4300FC00;	// после запуска из QSPI было 0x40000000
+//	// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
+//	//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
+//	USBOTG0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
+//	USBOTG0->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
+//    PRINTF("USBPHY_CFG_REG = %08X\n", CCU->USBPHY_CFG_REG);
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	//	Allwinner USB DRD support (musb_otg)
+	//
+	//	Allwinner USB DRD is based on the Mentor USB OTG controller, with a
+	//	different register layout and a few missing registers.
+	// Turn off EHCI0
+//	PRINTF("1 HAL_PCD_MspInit: USBx->PHY_CTRL=%08lX\n", USBx->PHY_CTRL);
+//	PRINTF("1 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
+//	PRINTF("1 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
+
+    arm_hardware_disable_handler(USB0_DEVICE_IRQn);
+    arm_hardware_disable_handler(USB0_EHCI_IRQn);
+    arm_hardware_disable_handler(USB0_OHCI_IRQn);
+
+	CCU->USB_BGR_REG &= ~ (1uL << 16);	// USBOHCI0_RST
+	CCU->USB_BGR_REG &= ~ (1uL << 20);	// USBEHCI0_RST
+	CCU->USB_BGR_REG &= ~ (1uL << 24);	// USBOTG0_RST
+
+	CCU->USB_BGR_REG &= ~ (1uL << 0);	// USBOHCI0_GATING
+	CCU->USB_BGR_REG &= ~ (1uL << 4);	// USBEHCI0_GATING
+
+	// Turn on USBOTG0
+	CCU->USB_BGR_REG |= (1uL << 8);	// USBOTG0_GATING
+	CCU->USB_BGR_REG &= ~ (1uL << 24);	// USBOTG0_RST Assert
+	CCU->USB_BGR_REG |= (1uL << 24);	// USBOTG0_RST De-assert
+
+	// Enable
+	CCU->USB0_CLK_REG &= ~ (1uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0 0: Clock is OFF
+
+	CCU->USB0_CLK_REG &= ~ (1uL << 30);	// USBPHY0_RSTN Assert
+	CCU->USB0_CLK_REG |= (1uL << 30);	// USBPHY0_RSTN De-assert
+
+	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
+	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
+
+	// https://github.com/guanglun/r329-linux/blob/d6dced5dc9353fad5319ef5fb84e677e2b9a96b4/arch/arm64/boot/dts/allwinner/sun50i-r329.dtsi#L462
+	//	/* A83T specific control bits for PHY0 */
+	//	#define PHY_CTL_VBUSVLDEXT		BIT(5)
+	//	#define PHY_CTL_SIDDQ			BIT(3)
+	//	#define PHY_CTL_H3_SIDDQ		BIT(1)
+
+	USBOTG0->PHY_OTGCTL |= (1uL << 0); 	// Device mode. Route phy0 to OTG0
+
+	USBOTG0->USB_ISCR = 0;//0x4300FC00;	// после запуска из QSPI было 0x40000000
+	// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
+	//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
+	USBOTG0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
+	USBOTG0->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
+
+	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, USBDxx_IRQHandler);
+	arm_hardware_disable_handler(USB0_DEVICE_IRQn);
+
+#else
+	#error usbdevice_clk_init should be implemented
+
+#endif
+
+}
+
+static void USBH_OHCI_IRQHandler(void)
 {
 #if TUP_USBIP_OHCI && defined (WITHUSBHW_OHCI)
 	hcd_int_handler(BOARD_TUH_RHPORT, 1);
 #endif
 }
 
-void USBH_EHCI_IRQHandler(void)
+static void USBH_EHCI_IRQHandler(void)
 {
 #if TUP_USBIP_EHCI && defined (WITHUSBHW_EHCI)
 	hcd_int_handler(BOARD_TUH_RHPORT, 1);
@@ -1300,680 +1987,6 @@ void ohciehci_clk_init(void)
 #endif
 #endif /* defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_OHCI) */
 }
-#endif /* CFG_TUH_ENABLED && (defined (TUP_USBIP_OHCI) || defined (TUP_USBIP_EHCI)) */
 
-#if CFG_TUD_ENABLED
+#endif /* WITHUSBHW */
 
-
-uint8_t const * tud_descriptor_device_cb(void)
-{
-  (void) index; // for multiple configurations
-  return DeviceDescrTbl [0].data;
-}
-// Invoked when received GET CONFIGURATION DESCRIPTOR
-// Application return pointer to descriptor
-// Descriptor contents must exist long enough for transfer to complete
-uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
-{
-  (void) index; // for multiple configurations
-  return ConfigDescrTbl [index].data;
-}
-
-uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
-  (void) langid;
-  if (index < usbd_get_stringsdesc_count())
-	  return (uint16_t const *) StringDescrTbl [index].data;
-  else
-	  return NULL;
-}
-
-#if WITHUSBCDCACM && WITHWAWXXUSB
-
-static LCLSPINLOCK_t lockusbdev = LCLSPINLOCK_INIT;
-//static usb_struct * volatile gpusb = NULL;
-
-// Control signal bitmap values for the SetControlLineState request
-// (usbcdc11.pdf, 6.2.14, Table 51)
-#define CDC_DTE_PRESENT                         (1 << 0)
-#define CDC_ACTIVATE_CARRIER                    (1 << 1)
-
-// Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
-//static uint8_t altinterfaces [INTERFACE_count];
-
-static volatile uint16_t usb_cdc_control_state [WITHUSBCDCACM_N];
-
-static volatile uint8_t usbd_cdcX_rxenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
-static __ALIGN_BEGIN uint8_t cdcXbuffout [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_OUT_DATA_SIZE] __ALIGN_END;
-static __ALIGN_BEGIN uint8_t cdcXbuffin [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_IN_DATA_SIZE] __ALIGN_END;
-static uint16_t cdcXbuffinlevel [WITHUSBCDCACM_N];
-
-static __ALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_END;
-
-//static uint32_t dwDTERate [WITHUSBCDCACM_N];
-
-#define MAIN_CDC_OFFSET 0
-#if WITHUSBCDCACM_N > 1
-	#define SECOND_CDC_OFFSET 1
-#endif /* WITHUSBCDCACM_N > 1 */
-
-static LCLSPINLOCK_t catlock = LCLSPINLOCK_INIT;
-
-/* управление по DTR происходит сразу, RTS только вместе со следующим DTR */
-/* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */
-/* Биты: RTS = 0x02, DTR = 0x01 */
-
-// Обычно используется для переключения на передачу (PTT)
-// вызывается в конексте system interrupt
-uint_fast8_t usbd_cdc1_getrts(void)
-{
-	const unsigned offset = MAIN_CDC_OFFSET;
-	LCLSPIN_LOCK(& catlock);
-	const uint_fast8_t state =
-		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
-		0;
-	LCLSPIN_UNLOCK(& catlock);
-	return state;
-}
-
-// Обычно используется для телеграфной манипуляции (KEYDOWN)
-// вызывается в конексте system interrupt
-uint_fast8_t usbd_cdc1_getdtr(void)
-{
-	const unsigned offset = MAIN_CDC_OFFSET;
-	LCLSPIN_LOCK(& catlock);
-	const uint_fast8_t state =
-		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
-		0;
-	LCLSPIN_UNLOCK(& catlock);
-	return state;
-}
-
-// Обычно используется для переключения на передачу (PTT)
-// вызывается в конексте system interrupt
-uint_fast8_t usbd_cdc2_getrts(void)
-{
-#if WITHUSBCDCACM_N > 1
-	const unsigned offset = SECOND_CDC_OFFSET;
-	LCLSPIN_LOCK(& catlock);
-	const uint_fast8_t state =
-		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
-		0;
-	LCLSPIN_UNLOCK(& catlock);
-	return state;
-#else /* WITHUSBCDCACM_N > 1 */
-	return 0;
-#endif /* WITHUSBCDCACM_N > 1 */
-}
-
-// Обычно используется для телеграфной манипуляции (KEYDOWN)
-// вызывается в конексте system interrupt
-uint_fast8_t usbd_cdc2_getdtr(void)
-{
-#if WITHUSBCDCACM_N > 1
-	const unsigned offset = SECOND_CDC_OFFSET;
-	LCLSPIN_LOCK(& catlock);
-	const uint_fast8_t state =
-		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
-		0;
-	LCLSPIN_UNLOCK(& catlock);
-	return state;
-#else /* WITHUSBCDCACM_N > 1 */
-	return 0;
-#endif /* WITHUSBCDCACM_N > 1 */
-}
-
-static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
-static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
-static uint32_t usbd_cdc_txlen [WITHUSBCDCACM_N];	/* количество данных в буфере */
-
-/* временное решение для передачи (вызывается при запрещённых прерываниях). */
-void usbd_cdc_send(const void * buff, size_t length)
-{
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	LCLSPIN_LOCK(& lockusbdev);
-
-	const unsigned offset = MAIN_CDC_OFFSET;
-//	if (gpusb != NULL)
-//	{
-//		usb_struct * const pusb = gpusb;
-//		const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
-//		if (pusb->eptx_ret[bo_ep_in-1] != USB_RETVAL_COMPOK)
-//			return;
-//		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
-//		const size_t n = ulmin(length, VIRTUAL_COM_PORT_IN_DATA_SIZE);
-//		memcpy(cdcXbuffin [offset], buff, n);
-//		usbd_cdc_zlp_pending [offset] = n == VIRTUAL_COM_PORT_IN_DATA_SIZE;
-//		usbd_cdc_txlen [offset] = n;
-//		//printhex(0, cdcXbuffin [offset], usbd_cdc_txlen [offset]);
-//		pusb->eptx_ret[bo_ep_in-1] = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t) cdcXbuffin [offset], usbd_cdc_txlen [offset], USB_PRTCL_BULK);
-//// 		do
-////  		{
-////  			ret = epx_in_handler_dev(pusb, bo_ep_in, (uintptr_t) cdcXbuffin [offset], usbd_cdc_txlen [offset], USB_PRTCL_BULK);
-////  		}
-////  		while(ret == USB_RETVAL_NOTCOMP);
-//	}
-	LCLSPIN_UNLOCK(& lockusbdev);
-	LowerIrql(oldIrql);
-}
-
-uint_fast8_t usbd_cdc_ready(void)	/* временное решение для передачи */
-{
-	const unsigned offset = MAIN_CDC_OFFSET;
-//	if (gpusb != NULL)
-//	{
-//		usb_struct * const pusb = gpusb;
-//		const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
-//		if (pusb->eptx_ret[bo_ep_in-1] != USB_RETVAL_COMPOK)
-//			return 0;
-//		return 1;
-//	}
-	return 0;
-}
-
-/* Разрешение/запрещение прерывания по передаче символа */
-void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
-{
-	const unsigned offset = MAIN_CDC_OFFSET;
-	LCLSPIN_LOCK(& catlock);
-	usbd_cdc_txenabled [offset] = state;
-	LCLSPIN_UNLOCK(& catlock);
-}
-
-/* вызывается из обработчика прерываний или при запрещённых прерываниях. */
-/* Разрешение/запрещение прерываний про приёму символа */
-void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
-{
-	const unsigned offset = MAIN_CDC_OFFSET;
-	LCLSPIN_LOCK(& catlock);
-	usbd_cdcX_rxenabled [offset] = state;
-	LCLSPIN_UNLOCK(& catlock);
-}
-
-/* передача символа после прерывания о готовности передатчика - вызывается из HARDWARE_CDC_ONTXCHAR */
-void
-usbd_cdc_tx(void * ctx, uint_fast8_t c)
-{
-	const unsigned offset = MAIN_CDC_OFFSET;
-	//USBD_HandleTypeDef * const pdev = ctx;
-	(void) ctx;
-	LCLSPIN_LOCK(& catlock);
-	ASSERT(cdcXbuffinlevel  [offset] < VIRTUAL_COM_PORT_IN_DATA_SIZE);
-	cdcXbuffin [offset] [cdcXbuffinlevel [offset] ++] = c;
-	LCLSPIN_UNLOCK(& catlock);
-}
-
-/* использование буфера принятых данных */
-static void cdcXout_buffer_save(
-	const uint8_t * data,
-	unsigned length,
-	unsigned offset
-	)
-{
-	unsigned i;
-	//PRINTF("1:%u '%*.*s'", length, length, length, data);
-
-	for (i = 0; usbd_cdcX_rxenabled [offset] && i < length; ++ i)
-	{
-		HARDWARE_CDC_ONRXCHAR(offset, data [i]);
-	}
-}
-#endif
-
-void tusb_dev_handled(void)
-{
-	dcd_int_handler(0);
-
-}
-
-void usbdevice_clk_init(void)
-{
-#if CPUSTYLE_R7S721
-
-	if (WITHUSBHW_DEVICE == & USB200)
-	{
-
-		/* ---- Supply clock to the USB20(channel 0) ---- */
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
-		(void) CPG.STBCR7;			/* Dummy read */
-	    //memset(WITHUSBHW_DEVICE, 0, sizeof * WITHUSBHW_DEVICE);
-
-		HARDWARE_USB0_INITIALIZE();
-
-	}
-	else if (WITHUSBHW_DEVICE == & USB201)
-	{
-
-		/* ---- Supply clock to the USB20(channel 1) ---- */
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
-		(void) CPG.STBCR7;			/* Dummy read */
-	    //memset(WITHUSBHW_DEVICE, 0, sizeof * WITHUSBHW_DEVICE);
-
-		HARDWARE_USB1_INITIALIZE();
-	}
-
-#elif CPUSTYLE_STM32MP1
-	// Set 3.3 volt DETECTOR enable
-	LL_PWR_EnableUSBVoltageDetector();
-	while (LL_PWR_IsEnabledUSBVoltageDetector() == 0)
-		;
-
-	// Wait 3.3 volt REGULATOR ready
-	while (LL_PWR_IsActiveFlag_USB() == 0)
-		;
-
-	__HAL_RCC_USBO_CLK_ENABLE();
-	__HAL_RCC_USBO_CLK_SLEEP_ENABLE();
-
-	//RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_USBOEN;
-	(void) RCC->MP_AHB2ENSETR;
-	//RCC->MP_AHB2LPENSETR = RCC_MP_AHB2LPENSETR_USBOLPEN;
-	(void) RCC->MP_AHB2LPENSETR;
-
-	__HAL_RCC_USBO_FORCE_RESET();
-	__HAL_RCC_USBO_RELEASE_RESET();
-	//RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_USBOEN;
-	(void) RCC->MP_AHB2ENSETR;
-	//RCC->MP_AHB2LPENSETR = RCC_MP_AHB2LPENSETR_USBOLPEN;
-	(void) RCC->MP_AHB2LPENSETR;
-
-	if (WITHUSBHW_DEVICE == USB1_OTG_HS)	// legacy name is USB_OTG_HS
-	{
-		if (pcdHandle->Init.phy_itface == USB_OTG_ULPI_PHY)
-		{
-			ASSERT(0);	// ULPI not supported by CPU
-			//USBD_HS_ULPI_INITIALIZE();
-
-//			__HAL_RCC_USBO_CLK_ENABLE();
-//			__HAL_RCC_USBO_CLK_SLEEP_ENABLE();
-//			__HAL_RCC_USBOULPI_CLK_ENABLE();
-//			__HAL_RCC_USBOULPI_CLK_SLEEP_ENABLE();
-
-//			RCC->MP_AHB2ENSETR |= RCC_MP_AHB2ENSETR_USBOEN | RCC_MP_AHB2ENSETR_USBOULPIEN;	/* USB/OTG HS with ULPI */
-//			(void) RCC->AHB1ENR;
-//			RCC->MP_AHB2LPENSETR |= RCC_MP_AHB2LPENSETR_USBOLPEN; /* USB/OTG HS  */
-//			(void) RCC->MP_AHB2LPENSETR;
-//			RCC->MP_AHB2LPENSETR |= RCC_MP_AHB2LPENSETR_USBOULPILPEN; /* USB/OTG HS ULPI  */
-//			(void) RCC->MP_AHB2LPENSETR;
-		}
-		else
-		{
-			USBD_HS_FS_INITIALIZE();
-		}
-		//RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;	/* USB/OTG HS companion - VBUS? */
-		//(void) RCC->APB4ENR;
-
-//		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM1EN;
-//		(void) RCC->AHB2ENR;
-//		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM2EN;
-//		(void) RCC->AHB2ENR;
-//		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM3EN;
-//		(void) RCC->AHB2ENR;
-
-
-		if (pcdHandle->Init.use_dedicated_ep1 == ENABLE)
-		{
-			//arm_hardware_set_handler_system(OTG_HS_EP1_OUT_IRQn, device_OTG_HS_EP1_OUT_IRQHandler);
-			//arm_hardware_set_handler_system(OTG_HS_EP1_IN_IRQn, device_OTG_HS_EP1_IN_IRQHandler);
-		}
-		arm_hardware_set_handler_system(OTG_IRQn, tusb_dev_handled);
-
-	}
-
-#elif CPUSTYLE_STM32H7XX
-
-	//PWR->CR3 |= PWR_CR3_USBREGEN;
-
-	//while ((PWR->CR3 & PWR_CR3_USB33RDY) == 0)
-	//	;
-	//PWR->CR3 |= PWR_CR3_USBREGEN;
-	//while ((PWR->CR3 & PWR_CR3_USB33RDY) == 0)
-	//	;
-	PWR->CR3 |= PWR_CR3_USB33DEN;
-
-	if (WITHUSBHW_DEVICE == USB1_OTG_HS)	// legacy name is USB_OTG_HS
-	{
-		if (pcdHandle->Init.phy_itface == USB_OTG_ULPI_PHY)
-		{
-			USBD_HS_ULPI_INITIALIZE();
-			RCC->AHB1ENR |= RCC_AHB1ENR_USB1OTGHSEN | RCC_AHB1ENR_USB1OTGHSULPIEN;	/* USB/OTG HS with ULPI */
-			(void) RCC->AHB1ENR;
-			RCC->AHB1LPENR |= RCC_AHB1LPENR_USB1OTGHSLPEN; /* USB/OTG HS  */
-			(void) RCC->AHB1LPENR;
-			RCC->AHB1LPENR |= RCC_AHB1LPENR_USB1OTGHSULPILPEN; /* USB/OTG HS ULPI  */
-			(void) RCC->AHB1LPENR;
-		}
-		else
-		{
-			USBD_HS_FS_INITIALIZE();
-
-			PRINTF(PSTR("HAL_PCD_MspInitEx: HS without ULPI\n"));
-
-			RCC->AHB1ENR |= RCC_AHB1ENR_USB1OTGHSEN; /* USB/OTG HS  */
-			(void) RCC->AHB1ENR;
-			RCC->AHB1LPENR |= RCC_AHB1LPENR_USB1OTGHSLPEN; /* USB/OTG HS  */
-			(void) RCC->AHB1LPENR;
-			RCC->AHB1LPENR &= ~ RCC_AHB1LPENR_USB1OTGHSULPILPEN; /* USB/OTG HS ULPI  */
-			(void) RCC->AHB1LPENR;
-		}
-		//RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;	/* USB/OTG HS companion - VBUS? */
-		//(void) RCC->APB4ENR;
-		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM1EN;
-		(void) RCC->AHB2ENR;
-		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM2EN;
-		(void) RCC->AHB2ENR;
-		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM3EN;
-		(void) RCC->AHB2ENR;
-
-
-		if (pcdHandle->Init.use_dedicated_ep1 == ENABLE)
-		{
-			arm_hardware_set_handler_system(OTG_HS_EP1_OUT_IRQn, device_OTG_HS_EP1_OUT_IRQHandler);
-			arm_hardware_set_handler_system(OTG_HS_EP1_IN_IRQn, device_OTG_HS_EP1_IN_IRQHandler);
-		}
-		arm_hardware_set_handler_system(OTG_HS_IRQn, tusb_dev_handled);
-
-	}
-	else if (WITHUSBHW_DEVICE == USB2_OTG_FS)	// legacy name is USB_OTG_FS
-	{
-		if (pcdHandle->Init.phy_itface == USB_OTG_ULPI_PHY)
-		{
-			USBD_FS_INITIALIZE();
-			RCC->AHB1ENR |= RCC_AHB1ENR_USB2OTGHSEN | RCC_AHB1ENR_USB2OTGHSULPIEN;	/* USB/OTG HS with ULPI */
-			(void) RCC->AHB1ENR;
-		}
-		else
-		{
-			USBD_FS_INITIALIZE();
-			RCC->AHB1ENR |= RCC_AHB1ENR_USB2OTGHSEN;	/* USB/OTG HS  */
-			(void) RCC->AHB1ENR;
-		}
-		//RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
-		//(void) RCC->APB4ENR;
-		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM1EN;
-		(void) RCC->AHB2ENR;
-		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM2EN;
-		(void) RCC->AHB2ENR;
-		RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM3EN;
-		(void) RCC->AHB2ENR;
-
-		NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & device_OTG_FS_IRQHandler);
-		NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
-
-	}
-
-#elif defined (STM32F40_41xxx)
-
-	//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-	//PRINTF(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
-
-	USBD_FS_INITIALIZE();
-	RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN;	/* USB/OTG FS  */
-	(void) RCC->AHB2ENR;
-	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
-	(void) RCC->APB2ENR;
-
-	NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & device_OTG_FS_IRQHandler);
-	NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
-	NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
-
-#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX
-
-	if (WITHUSBHW_DEVICE == USB_OTG_HS)
-	{
-		//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-		//PRINTF(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
-
-		if (pcdHandle->Init.phy_itface == USB_OTG_ULPI_PHY)
-		{
-			USBD_HS_ULPI_INITIALIZE();
-
-			//PRINTF(PSTR("HAL_PCD_MspInit: USB_OTG_HS and ULPI\n"));
-			RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN;		/* USB/OTG HS  */
-			(void) RCC->AHB1ENR;
-			RCC->AHB1LPENR |= RCC_AHB1LPENR_OTGHSLPEN;		/* USB/OTG HS  */
-			(void) RCC->AHB1LPENR;
-			RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSULPIEN;		/* USB/OTG HS with ULPI */
-			(void) RCC->AHB1ENR;
-			RCC->AHB1LPENR |= RCC_AHB1LPENR_OTGHSULPILPEN;	/* USB/OTG HS  */
-			(void) RCC->AHB1LPENR;
-		}
-		else
-		{
-			USBD_HS_FS_INITIALIZE();
-
-			//PRINTF(PSTR("HAL_PCD_MspInit: USB_OTG_HS without ULPI\n"));
-			RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN;	/* USB/OTG HS  */
-			(void) RCC->AHB1ENR;
-			RCC->AHB1LPENR |= RCC_AHB1LPENR_OTGHSLPEN; /* USB/OTG HS  */
-			(void) RCC->AHB1LPENR;
-			RCC->AHB1LPENR &= ~ RCC_AHB1LPENR_OTGHSULPILPEN; /* USB/OTG HS ULPI  */
-			(void) RCC->AHB1LPENR;
-		}
-
-		RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG HS companion - VBUS? */
-		(void) RCC->APB2ENR;
-
-		if (pcdHandle->Init.use_dedicated_ep1 == ENABLE)
-		{
-			NVIC_SetVector(OTG_HS_EP1_OUT_IRQn, (uintptr_t) & device_OTG_HS_EP1_OUT_IRQHandler);
-			NVIC_SetPriority(OTG_HS_EP1_OUT_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(OTG_HS_EP1_OUT_IRQn);	// OTG_HS_EP1_OUT_IRQHandler() enable
-
-			NVIC_SetVector(OTG_HS_EP1_IN_IRQn, (uintptr_t) & device_OTG_HS_EP1_IN_IRQHandler);
-			NVIC_SetPriority(OTG_HS_EP1_IN_IRQn, ARM_SYSTEM_PRIORITY);
-			NVIC_EnableIRQ(OTG_HS_EP1_IN_IRQn);	// OTG_HS_EP1_IN_IRQHandler() enable
-		}
-		NVIC_SetVector(OTG_HS_IRQn, (uintptr_t) & tusb_dev_handled);
-		NVIC_SetPriority(OTG_HS_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(OTG_HS_IRQn);	// OTG_HS_IRQHandler() enable
-
-	}
-	else if (WITHUSBHW_DEVICE == USB_OTG_FS)
-	{
-		//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-		//PRINTF(PSTR("HAL_PCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
-
-		USBD_FS_INITIALIZE();
-		RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN;	/* USB/OTG FS  */
-		(void) RCC->AHB2ENR;
-		RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;	/* USB/OTG FS companion - VBUS? */
-		(void) RCC->APB2ENR;
-
-		NVIC_SetVector(OTG_FS_IRQn, (uintptr_t) & device_OTG_FS_IRQHandler);
-		NVIC_SetPriority(OTG_FS_IRQn, ARM_SYSTEM_PRIORITY);
-		NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
-
-	}
-
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
-
-//	void SetupUsbPhyc(USBPHYC_TypeDef * phy);
-//
-//	// Отличия в CCU
-////	CCU->SMHC2_CLK_REG = 0;
-////	CCU->SMHC_BGR_REG = 0;
-//
-//	CCU->USB0_CLK_REG |= 0x20000000;	// @0x0A70 was: 0x40000000
-//
-//	CCU->USB2_CLK_REG |= 0x60000000;	// WAS: 0 - USBPHY2RST, SCLK_GATING _USBPHY2
-//	CCU->USB_BGR_REG |= 0x00400040; // WAS 01000100 - USBEHCI2_RST USBEHCI2_GATING
-
-	{
-		CCU->USB0_CLK_REG |= 0x20000000;	// @0x0A70 was: 0x40000000
-
-		CCU->USB2_CLK_REG |= 0x60000000;	// WAS: 0 - USBPHY2RST, SCLK_GATING _USBPHY2
-		CCU->USB_BGR_REG |= 0x00400040; // WAS 01000100 - USBEHCI2_RST USBEHCI2_GATING
-
-//		const unsigned OHCIx_12M_SRC_SEL = 1;	// OHCI3_12M_SRC_SEL 01: 12M divided from 24 MHz
-//
-//		{
-//			// PHY2 enable
-//			CCU->USB2_CLK_REG = (CCU->USB2_CLK_REG & ~ (UINT32_C(0x03) << 24)) | (OHCIx_12M_SRC_SEL << 24);
-//			CCU->USB2_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY2_RST
-//			CCU->USB2_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY2
-//			SetupUsbPhyc(USBPHYC2);
-//		}
-
-	}
-	arm_hardware_disable_handler(USB20_HOST0_OHCI_IRQn);
-	arm_hardware_disable_handler(USB20_HOST0_EHCI_IRQn);
-	arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
-
-	CCU->USB_BGR_REG |= (UINT32_C(1) << 8);	// USBOTG_GATING
-	CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG_RST
-	CCU->USB_BGR_REG |= (UINT32_C(1) << 24);	// USBOTG_RST
-
-	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// SCLK_GATING_OHCI0
-	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
-	CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
-
-	//USB20_OTG_PHYC->USB_CTRL = UINT32_C(0x4300CC01);	// младший бит не влияет... вообще ничего не влияет
-	//USBPHYC0->USB_CTRL =  UINT32_C(0x4300CC00);	// влияет!
-	arm_hardware_set_handler_system(USB20_OTG_DEVICE_IRQn, tusb_dev_handled);
-	arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
-
-	// Work
-	//	USB20_OTG_PHYC_BASE:
-	//	05100400  4300CC00 00000000 00000000 00000000 00000022 00000000 023438E4 00000000
-	//	05100420  00000001 00000008 00000000 00000000 00000000 00000000 00000000 00000000
-	//	05100440  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-	//	05100460  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-	// bad
-	//	USB20_OTG_PHYC_BASE:
-	//	05100400  40000000 00000000 00000000 00000000 00000002 00000000 023438E4 00000000
-	//	05100420  00000001 00000004 00000000 00000000 00000000 00000000 00000000 00000000
-	//	05100440  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-	//	05100460  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-
-	USB20_OTG_PHYC->USB_CTRL = 0x4300CC00;
-	USB20_OTG_PHYC->PHY_CTRL = 0x00000022;
-	USB20_OTG_PHYC->HSIC_PHY_tune3 = 0x00000008;
-
-//	PRINTF("USB20_OTG_PHYC_BASE:\n");
-//	printhex32(USB20_OTG_PHYC_BASE, USB20_OTG_PHYC, 128);
-//	PRINTF("USBPHYC0:\n");
-//	printhex32(USBPHYC0_BASE, USBPHYC0, 128);
-
-//	PRINTF("CCU:\n");
-//	printhex32(CCU_BASE, CCU, sizeof * CCU);
-
-#elif CPUSTYLE_A64
-
-	//	Allwinner USB DRD support (musb_otg)
-	//
-	//	Allwinner USB DRD is based on the Mentor USB OTG controller, with a
-	//	different register layout and a few missing registers.
-	// Turn off EHCI0
-//	PRINTF("1 HAL_PCD_MspInit: USBx->PHY_CTRL=%08lX\n", USBx->PHY_CTRL);
-//	PRINTF("1 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
-//	PRINTF("1 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
-
-    arm_hardware_disable_handler(USBOTG0_IRQn);
-    arm_hardware_disable_handler(USBEHCI0_IRQn);
-    arm_hardware_disable_handler(USBOHCI0_IRQn);
-
-//    PRINTF("USBPHY_CFG_REG = %08X\n", CCU->USBPHY_CFG_REG);
-
-    CCU->USBPHY_CFG_REG &= ~ (1u << 8);	// SCLK_GATING_USBPHY0
-    CCU->USBPHY_CFG_REG &= ~ (1u << 0);	// USBPHY0_RST
-	// Turn on USBOTG0
-    CCU->USBPHY_CFG_REG |= (1u << 8);	// SCLK_GATING_USBPHY0
-    CCU->USBPHY_CFG_REG |= (1u << 0);	// USBPHY0_RST
-
-    //CCU->USBPHY_CFG_REG |= (1u << 2);	// USBHSIC_RST ???
-
-	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 29);	// USB-OHCI0_RST.
-	CCU->BUS_SOFT_RST_REG0 &= ~ (1u << 25);	// USB-EHCI0_RST.
-
-	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 29);	// USBOHCI0_GATING.
-	CCU->BUS_CLK_GATING_REG0 &= ~ (1u << 25);	// USBEHCI0_GATING.
-
-	CCU->BUS_CLK_GATING_REG0 |= (1u << 23);	// USB-OTG-Device_GATING.
-	CCU->BUS_SOFT_RST_REG0 |= (1u << 23);	// USB-OTG-Device_RST.
-
-
-	arm_hardware_set_handler_system(USBOTG0_IRQn, tusb_dev_handled);
-	arm_hardware_disable_handler(USBOTG0_IRQn);
-
-	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
-	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
-
-	// https://github.com/guanglun/r329-linux/blob/d6dced5dc9353fad5319ef5fb84e677e2b9a96b4/arch/arm64/boot/dts/allwinner/sun50i-r329.dtsi#L462
-	//	/* A83T specific control bits for PHY0 */
-	//	#define PHY_CTL_VBUSVLDEXT		BIT(5)
-	//	#define PHY_CTL_SIDDQ			BIT(3)
-	//	#define PHY_CTL_H3_SIDDQ		BIT(1)
-
-//	USBOTG0->PHY_OTGCTL |= (1uL << 0); 	// Device mode. Route phy0 to OTG0
-//
-//	USBOTG0->USB_ISCR = 0;//0x4300FC00;	// после запуска из QSPI было 0x40000000
-//	// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
-//	//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
-//	USBOTG0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
-//	USBOTG0->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
-//    PRINTF("USBPHY_CFG_REG = %08X\n", CCU->USBPHY_CFG_REG);
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-	//	Allwinner USB DRD support (musb_otg)
-	//
-	//	Allwinner USB DRD is based on the Mentor USB OTG controller, with a
-	//	different register layout and a few missing registers.
-	// Turn off EHCI0
-//	PRINTF("1 HAL_PCD_MspInit: USBx->PHY_CTRL=%08lX\n", USBx->PHY_CTRL);
-//	PRINTF("1 HAL_PCD_MspInit: USBx->USB_CTRL=%08lX\n", USBx->USB_CTRL);
-//	PRINTF("1 HAL_PCD_MspInit: CCU->USB0_CLK_REG=%08lX\n", CCU->USB0_CLK_REG);
-
-    arm_hardware_disable_handler(USB0_DEVICE_IRQn);
-    arm_hardware_disable_handler(USB0_EHCI_IRQn);
-    arm_hardware_disable_handler(USB0_OHCI_IRQn);
-
-	CCU->USB_BGR_REG &= ~ (1uL << 16);	// USBOHCI0_RST
-	CCU->USB_BGR_REG &= ~ (1uL << 20);	// USBEHCI0_RST
-	CCU->USB_BGR_REG &= ~ (1uL << 24);	// USBOTG0_RST
-
-	CCU->USB_BGR_REG &= ~ (1uL << 0);	// USBOHCI0_GATING
-	CCU->USB_BGR_REG &= ~ (1uL << 4);	// USBEHCI0_GATING
-
-	// Turn on USBOTG0
-	CCU->USB_BGR_REG |= (1uL << 8);	// USBOTG0_GATING
-	CCU->USB_BGR_REG &= ~ (1uL << 24);	// USBOTG0_RST Assert
-	CCU->USB_BGR_REG |= (1uL << 24);	// USBOTG0_RST De-assert
-
-	// Enable
-	CCU->USB0_CLK_REG &= ~ (1uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0 0: Clock is OFF
-
-	CCU->USB0_CLK_REG &= ~ (1uL << 30);	// USBPHY0_RSTN Assert
-	CCU->USB0_CLK_REG |= (1uL << 30);	// USBPHY0_RSTN De-assert
-
-	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
-	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
-
-	// https://github.com/guanglun/r329-linux/blob/d6dced5dc9353fad5319ef5fb84e677e2b9a96b4/arch/arm64/boot/dts/allwinner/sun50i-r329.dtsi#L462
-	//	/* A83T specific control bits for PHY0 */
-	//	#define PHY_CTL_VBUSVLDEXT		BIT(5)
-	//	#define PHY_CTL_SIDDQ			BIT(3)
-	//	#define PHY_CTL_H3_SIDDQ		BIT(1)
-
-	USBOTG0->PHY_OTGCTL |= (1uL << 0); 	// Device mode. Route phy0 to OTG0
-
-	USBOTG0->USB_ISCR = 0;//0x4300FC00;	// после запуска из QSPI было 0x40000000
-	// Looks like 9.6.6.24 0x0810 PHY Control Register (Default Value: 0x0000_0008)
-	//USB0_PHY->PHY_CTRL = 0x20;		// после запуска из QSPI было 0x00000008 а из загрузчика 0x00020
-	USBOTG0->PHY_CTRL &= ~ (1uL << 3);	// PHY_CTL_SIDDQ
-	USBOTG0->PHY_CTRL |= (1uL << 5);	// PHY_CTL_VBUSVLDEXT
-
-	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, tusb_dev_handled);
-	arm_hardware_disable_handler(USB0_DEVICE_IRQn);
-
-#else
-	#error usbdevice_clk_init should be implemented
-
-#endif
-
-}
-#endif /* CFG_TUD_ENABLED */
-
-#endif /* WITHTINYUSB */

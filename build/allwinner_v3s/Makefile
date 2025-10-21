@@ -270,7 +270,7 @@ $(PROJECT)_app.alw32: $(PROJECT)_app.bin
 
 $(OBJSC):
 	@mkdir -p $(@D)
-	$(CC) -o $@ -std=gnu99 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@)))
+	$(CC) -o $@ -std=gnu23 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@)))
 
 $(OBJSCPP):
 	@mkdir -p $(@D)

@@ -18,7 +18,7 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "usbd_core.h"
+#include "hftrx_usbd_core.h"
 
 /** @addtogroup STM32_USBD_DEVICE_LIBRARY
   * @{

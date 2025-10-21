@@ -52,7 +52,7 @@
 #include "usbd_def.h"
 
 /* USER CODE BEGIN INCLUDE */
-#include "usbd_core.h"
+#include "hftrx_usbd_core.h"
 //#include "usbd_desc.h"
 //#include "usbd_cdc.h"
 //#include "usbd_cdc_if.h"

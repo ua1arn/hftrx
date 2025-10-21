@@ -1,4 +1,4 @@
-ifeq (1, 1)
+ifeq (1, 0)
 # tinyusb
 # https://github.com/hathach/tinyusb.git
 SRCDIRS += $(PRJROOT)/lib/hftrx_tinyusb/src
