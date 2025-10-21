@@ -13,7 +13,7 @@
 #include "board.h"
 #include "formats.h"
 #include "usbd_def.h"
-#include "usbd_core.h"
+#include "hftrx_usbd_core.h"
 #include "usb_device.h"
 #include "usb200.h"
 #include "usbch9.h"

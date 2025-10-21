@@ -25,7 +25,7 @@
 #include "src/usb/usbch9.h"
 
 #include "usb_device.h"
-#include "usbd_core.h"
+#include "hftrx_usbd_core.h"
 #include "usbh_core.h"
 #include "usbh_def.h"
 

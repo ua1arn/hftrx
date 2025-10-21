@@ -3,8 +3,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifndef CHERRYUSB_CONFIG_H
-#define CHERRYUSB_CONFIG_H
+#ifndef ROOT_CHERRYUSB_CONFIG_H
+#define ROOT_CHERRYUSB_CONFIG_H
 
 /* ================ USB common Configuration ================ */
 

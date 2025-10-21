@@ -44,7 +44,7 @@ void Error_Handler(void)
 #include "src/usb/usbch9.h"
 
 #include "usbd_def.h"
-#include "usbd_core.h"
+#include "hftrx_usbd_core.h"
 #include "usb_device.h"
 
 //#if ! WITHTINYUSB
