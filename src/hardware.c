@@ -4139,8 +4139,8 @@ void cpump_initialize(void)
 		static const uint64_t aarch64_stack_size = UINT64_C(16) * 1024 * 1024;	/* crt_CortexA53_CPUn.S */
 		extern uint64_t aarch64_stack_top;			/* crt_CortexA53_CPUn.S */
 		extern void Reset_CPUx_Handler(void);		/* crt_CortexA53_CPUn.S */
-		//void * const p = aligned_alloc(DCACHEROWSIZE, aarch64_stack_size);
-		void * const p = malloc(aarch64_stack_size);
+		void * const p = aligned_alloc(DCACHEROWSIZE, aarch64_stack_size);
+		//void * const p = malloc(aarch64_stack_size);
 		while (p == NULL)
 			;
 		aarch64_stack_top = (uint64_t) (uintptr_t) p + aarch64_stack_size;
@@ -4150,8 +4150,8 @@ void cpump_initialize(void)
 		extern uint32_t aarch32_stack_top;			/* crt_CortexA_CPUn.S */
 		extern void Reset_CPUx_Handler(void);		/* crt_CortexA_CPUn.S */
 
-		//void * const p = aligned_alloc(DCACHEROWSIZE, aarch32_stack_size);
-		void * const p = malloc(aarch32_stack_size);
+		void * const p = aligned_alloc(DCACHEROWSIZE, aarch32_stack_size);
+		//void * const p = malloc(aarch32_stack_size);
 		while (p == NULL)
 			;
 		aarch32_stack_top = (uint32_t) (uintptr_t) p + aarch32_stack_size;
