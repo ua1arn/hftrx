@@ -149,9 +149,6 @@
 	#define CI_HCD_INT_DISABLE(_p)  do { } while (0)
 #endif
 
- void ohciehci_clk_init(void);
- void usbdevice_clk_init(void);
-
 #endif /* WITHTINYUSB */
 #ifdef __cplusplus
  }
