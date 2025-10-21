@@ -283,8 +283,10 @@ DRESULT USB_Get_Block_Size(
 	return RES_OK;
 }
 
+#elif WITHCHERRYUSB
 #else /* WITHTINYUSB */
 
+// ST Moddlevare
 #include "Class/MSC/Inc/usbh_msc.h"
 
 static

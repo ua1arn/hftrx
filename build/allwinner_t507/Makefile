@@ -138,6 +138,9 @@ DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
 
+# CherryUSB
+include ../cherryusb.mak
+
 # tinyusb
 include ../tinyusb.mak
 
