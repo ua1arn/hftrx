@@ -8,9 +8,6 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "keyboard.h"
 
-#include <string.h>
-#include <math.h>
-
 #include "board.h"
 #include "audio.h"
 #include "formats.h"	// for debug prints
@@ -18,6 +15,10 @@
 #include "spi.h"
 #include "encoder.h"
 #include "clocks.h"
+
+#include <string.h>
+#include <stdlib.h>	 // For aligned_alloc
+#include <math.h>
 
 #if 0
 #define DBGC(c) do { \
@@ -4138,6 +4139,7 @@ void cpump_initialize(void)
 		static const uint64_t aarch64_stack_size = UINT64_C(16) * 1024 * 1024;	/* crt_CortexA53_CPUn.S */
 		extern uint64_t aarch64_stack_top;			/* crt_CortexA53_CPUn.S */
 		extern void Reset_CPUx_Handler(void);		/* crt_CortexA53_CPUn.S */
+		//void * const p = aligned_alloc(DCACHEROWSIZE, aarch64_stack_size);
 		void * const p = malloc(aarch64_stack_size);
 		while (p == NULL)
 			;
@@ -4148,6 +4150,7 @@ void cpump_initialize(void)
 		extern uint32_t aarch32_stack_top;			/* crt_CortexA_CPUn.S */
 		extern void Reset_CPUx_Handler(void);		/* crt_CortexA_CPUn.S */
 
+		//void * const p = aligned_alloc(DCACHEROWSIZE, aarch32_stack_size);
 		void * const p = malloc(aarch32_stack_size);
 		while (p == NULL)
 			;
