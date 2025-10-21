@@ -19981,7 +19981,6 @@ hamradio_main_step(void)
 	inputevent_fill(& event);
 
 	txreq_process(& txreqst0);	/* обработка запросов */
-	updateboard();	/* полная перенастройка (как после смены режима) */
 	switch (sthrl)
 	{
 //	case STHRL_MENU:
