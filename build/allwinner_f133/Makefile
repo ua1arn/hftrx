@@ -278,7 +278,7 @@ $(PROJECT)_app.f133: $(PROJECT)_app.bin
 
 $(OBJSC):
 	@mkdir -p $(@D)
-	$(CC) -o $@ -std=gnu23 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@)))
+	$(CC) -o $@ -std=gnu2x -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@)))
 
 $(OBJSCPP):
 	@mkdir -p $(@D)
