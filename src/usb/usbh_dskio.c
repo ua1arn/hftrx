@@ -283,7 +283,39 @@ DRESULT USB_Get_Block_Size(
 	return RES_OK;
 }
 
+
+const struct drvfunc USBH_drvfunc =
+{
+	USB_Initialize,
+	USB_disk_status,
+	USB_Sync,
+	USB_disk_write,
+	USB_disk_read,
+	USB_Get_Sector_Count,
+	USB_Get_Block_Size,
+};
+
 #elif WITHCHERRYUSB
+
+
+
+const struct drvfunc USBH_drvfunc;
+/*=
+{
+	USB_Initialize,
+	USB_disk_status,
+	USB_Sync,
+	USB_disk_write,
+	USB_disk_read,
+	USB_Get_Sector_Count,
+	USB_Get_Block_Size,
+};
+*/
+uint_fast8_t hamradio_get_usbmsc_active(void)
+{
+	return  0;
+}
+
 #else /* WITHTINYUSB */
 
 // ST Moddlevare
@@ -480,7 +512,6 @@ uint_fast8_t hamradio_get_usbmsc_active(void)
 	return hUsbHostHS.device.is_connected != 0;
 }
 
-#endif /* WITHTINYUSB */
 
 const struct drvfunc USBH_drvfunc =
 {
@@ -492,6 +523,8 @@ const struct drvfunc USBH_drvfunc =
 	USB_Get_Sector_Count,
 	USB_Get_Block_Size,
 };
+
+#endif /* WITHTINYUSB */
 
 #else
 

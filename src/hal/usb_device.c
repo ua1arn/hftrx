@@ -48,8 +48,14 @@ void Error_Handler(void);
 	__ALIGN_BEGIN USBD_HandleTypeDef hUsbDeviceHS __ALIGN_END;
 #endif /* defined (WITHUSBHW_DEVICE) */
 
-#if ! WITHTINYUSB && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_OHCI) || defined (WITHUSBHW_EHCI))
+#if (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_OHCI) || defined (WITHUSBHW_EHCI))
 
+#if WITHTINYUSB
+
+#elif WITHCHERRYUSB
+
+#else
+	// ST
 	#include "usbh_core.h"
 	/* USB Host Core handle declaration. */
 	__ALIGN_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN_END;
@@ -57,6 +63,7 @@ void Error_Handler(void);
 	// MORI
 //	USBH_HandleTypeDef hUSBHost[5];
 //	HCD_HandleTypeDef _hHCD[2];
+#endif
 
 #endif /* defined (WITHUSBHW_HOST) */
 /*
@@ -194,7 +201,14 @@ void MX_USB_DEVICE_DeInit(void)
 
 #endif /* defined (WITHUSBHW_DEVICE) */
 
-#if ! WITHTINYUSB && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
+#if (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
+
+#if WITHTINYUSB
+
+#elif WITHCHERRYUSB
+
+#else
+// ST
 
 #include "usbh_core.h"
 #if WITHUSEUSBFLASH
@@ -335,6 +349,7 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 		}
 	}
 }
+#endif
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_OHCI)
@@ -350,7 +365,10 @@ void MX_USB_HOST_Init(void)
 	tuh_hid_set_default_protocol(HID_PROTOCOL_REPORT);
 #endif /* CFG_TUH_HID */
 	tuh_init(BOARD_TUH_RHPORT);
+#elif WITHCHERRYUSB
+
 #else /* WITHTINYUSB && CFG_TUH_ENABLED */
+	// ST
 	/* Init Host Library, Add Supported Class and Start the library*/
 	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
 
@@ -373,7 +391,10 @@ void MX_USB_HOST_DeInit(void)
 #if WITHTINYUSB && CFG_TUH_ENABLED
 //	tuh_deinit(BOARD_TUH_RHPORT);
 //	ohciehci_clk_deinit();
+#elif WITHCHERRYUSB
+
 #else /* WITHTINYUSB */
+	// ST
 	USBH_DeInit(& hUsbHostHS);
 #endif
 }
@@ -386,7 +407,9 @@ void MX_USB_HOST_Process(void)
 {
 #if WITHTINYUSB && CFG_TUH_ENABLED
 	tuh_task();
+#elif WITHCHERRYUSB
 #else
+	// ST
 	USBH_Process(& hUsbHostHS);
 #endif
 #if WITHEHCIHWSOFTSPOLL
@@ -526,11 +549,16 @@ void board_usb_activate(void)
 #endif /* WITHTINYUSB && CFG_TUD_ENABLED */
 
 #endif /* defined (WITHUSBHW_DEVICE) */
-#if ! WITHTINYUSB && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
+#if (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
+#if WITHTINYUSB
+#elif WITHCHERRYUSB
+#else
+	// ST
 	if (USBH_Start(& hUsbHostHS) != USBH_OK)
 	{
 		Error_Handler();
 	}
+#endif
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 	//PRINTF("board_usb_activate done\n");
 #endif /* WITHUSBHW */
@@ -539,7 +567,9 @@ void board_usb_activate(void)
 void board_usb_deactivate(void)
 {
 #if WITHTINYUSB
+#elif WITHCHERRYUSB
 #else /* WITHTINYUSB */
+	// ST
 #if WITHUSBHW
 	//PRINTF(PSTR("board_usb_deactivate start.\n"));
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)

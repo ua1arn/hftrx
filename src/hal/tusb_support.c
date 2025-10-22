@@ -24,13 +24,13 @@
  */
 
 #include "hardware.h"
-
-#if WITHTINYUSB
 #include "formats.h"
 #include "gpio.h"
 #include "clocks.h"
 
 #include "buffers.h"
+
+#if WITHTINYUSB
 
 #include "tusb.h"
 #include "host/usbh.h"
@@ -449,327 +449,6 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t cons
 }
 
 #if CFG_TUH_ENABLED && (defined (TUP_USBIP_OHCI) || defined (TUP_USBIP_EHCI))
-
-
-#if WITHUSBHOST_HIGHSPEEDULPI
-#if CPUSTYLE_XC7Z && defined (WITHUSBHW_EHCI)
-// https://xilinx.github.io/embeddedsw.github.io/usbps/doc/html/api/xusbps__hw_8h.html
-
-//	USB ULPI Viewport Register (ULPIVIEW) bit positions.
-#define XUSBPS_ULPIVIEW_DATWR_MASK   	0x000000FF	// 	ULPI Data Write. More...
-#define	XUSBPS_ULPIVIEW_DATWR_SHIFT		0
-#define XUSBPS_ULPIVIEW_DATRD_MASK   	0x0000FF00	// 	ULPI Data Read. More...
-#define XUSBPS_ULPIVIEW_DATRD_SHIFT	   	8			// 	ULPI Data Address. More...
-#define XUSBPS_ULPIVIEW_ADDR_MASK   	0x00FF0000	// 	ULPI Data Address. More...
-#define XUSBPS_ULPIVIEW_ADDR_SHIFT	   	16			// 	ULPI Data Address. More...
-#define XUSBPS_ULPIVIEW_PORT_MASK   	0x07000000	// 	ULPI Port Number. More...
-#define XUSBPS_ULPIVIEW_SS_MASK   		0x08000000	// 	ULPI Synchronous State. More...
-#define XUSBPS_ULPIVIEW_RW_MASK   		0x20000000	// 	ULPI Read/Write Control. More...
-#define XUSBPS_ULPIVIEW_RUN_MASK   		0x40000000	// 	ULPI Run. More...
-#define XUSBPS_ULPIVIEW_WU_MASK   		0x80000000	// 	ULPI Wakeup. More...
-
-static void ulpi_reg_write(uint_fast8_t addr, uint_fast8_t data)
-{
-	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
-
-	USBx->ULPIVIEW = (USBx->ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK | XUSBPS_ULPIVIEW_RUN_MASK | XUSBPS_ULPIVIEW_RW_MASK)) |
-			XUSBPS_ULPIVIEW_RW_MASK | 	// Select write direction
-			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK) |
-			(((uint_fast32_t) data << XUSBPS_ULPIVIEW_DATWR_SHIFT) & XUSBPS_ULPIVIEW_DATWR_MASK) |
-			0;
-
-	USBx->ULPIVIEW |= XUSBPS_ULPIVIEW_RUN_MASK;
-
-	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
-		;
-}
-
-static uint_fast8_t ulpi_reg_read(uint_fast8_t addr)
-{
-	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
-
-	USBx->ULPIVIEW = (USBx->ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK | XUSBPS_ULPIVIEW_RUN_MASK | XUSBPS_ULPIVIEW_RW_MASK)) |
-			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK) |
-			0;
-
-	USBx->ULPIVIEW |= XUSBPS_ULPIVIEW_RUN_MASK;
-
-	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
-		;
-
-	return (USBx->ULPIVIEW & XUSBPS_ULPIVIEW_DATRD_MASK) >> XUSBPS_ULPIVIEW_DATRD_SHIFT;
-}
-#endif /* CPUSTYLE_XC7Z */
-/*
- * https://electronix.ru/forum/topic/179658-stm32h725-v-lqfp100-kto-to-zapuskal-s-vneshney-fizikoy-usb-hs-ulpi/?do=findComment&comment=1911585
- *
-	Чтобы USB334x определялся как high-speed нужно в регистре DCFG выставить в 1 бит XCVRDLY.
-	Без этого оно определяется как full-speed (причина описана в errata USB3340, решение найдено на буржуйских форумах).
-	Для F2xx, F4xx, F7xx все то же самое, причем этот бит в заголовочном файле CMSIS не описан,
-	хотя в руководстве пользователя F7xx, H7xx он есть.
-*/
-
-void ulpi_chip_initialize(void)
-{
-	//return;
-	// USB3340
-	ulpi_reg_read(0x16);	/* Scratch Register - dummy read */
-
-	// Address = 00h (read only) Vendor ID Low = 0x24
-	// Address = 01h (read only) Vendor ID High = 0x04
-	// Address = 02h (read only) Product ID Low = 0x09
-	// Address = 03h (read only)  Product ID High = 0x00
-	const uint_fast8_t v0 = ulpi_reg_read(0x00);
-	const uint_fast8_t v1 = ulpi_reg_read(0x01);
-	const uint_fast8_t v2 = ulpi_reg_read(0x02);
-	const uint_fast8_t v3 = ulpi_reg_read(0x03);
-	const uint_fast16_t vid = v1 * 256 + v0;
-	const uint_fast16_t pid = v3 * 256 + v2;
-	PRINTF("ulpi_chip_initialize: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
-
-	ulpi_reg_write(0x16, 0xE5);	/* Scratch Register - dummy read */
-
-//	if (vid != 0x0424 || pid != 0x0009)
-//		return;
-
-	//	7.1.1.5 Function Control
-	//	Address = 04-06h (read), 04h (write), 05h (set), 06h (clear)
-	//ulpi_reg_write(0x06, 0x03);	/* Function Control - XcvrSelect[1:0] = 00 00b: Enables HS transceiver */
-
-}
-
-void ulpi_chip_sethost(uint_fast8_t state)
-{
-	// USB3340
-	return;
-
-	// Address = 00h (read only) Vendor ID Low = 0x24
-	// Address = 01h (read only) Vendor ID High = 0x04
-	// Address = 02h (read only) Product ID Low = 0x09
-	// Address = 03h (read only)  Product ID High = 0x00
-	const uint_fast8_t v0 = ulpi_reg_read(0x00);
-	const uint_fast8_t v1 = ulpi_reg_read(0x01);
-	const uint_fast8_t v2 = ulpi_reg_read(0x02);
-	const uint_fast8_t v3 = ulpi_reg_read(0x03);
-	const uint_fast16_t vid = v1 * 256 + v0;
-	const uint_fast16_t pid = v3 * 256 + v2;
-	//PRINTF("ulpi_chip_sethost: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
-
-	if (vid != 0x0424 || pid != 0x0009)
-		return;
-
-	//	7.1.1.7 OTG Control
-	//	Address = 0A-0Ch (read), 0Ah (write), 0Bh (set), 0Ch (clear
-	// 7.1.2.1 Carkit Control
-	// Address = 19-1Bh (read), 19h (write), 1Ah (set), 1Bh (clear)
-
-	if (state)
-	{
-		// Tie ID down
-		ulpi_reg_write(0x0C, (0x01 << 0));	// Clear IdPullup bit
-		ulpi_reg_write(0x1A, (0x01 << 1));	// Set IdGndDrv bit
-	}
-	else
-	{
-		// Tie ID up
-		ulpi_reg_write(0x1B, (0x01 << 1));	// Clear IdGndDrv bit
-		ulpi_reg_write(0x0B, (0x01 << 0));	// Set IdPullup bit
-	}
-	//PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_read(0x19));
-}
-
-void ulpi_chip_debug(void)
-{
-	PRINTF("sts=%08X, portsc=%08X\n", EHCIxToUSBx(WITHUSBHW_EHCI)->ISR, EHCIxToUSBx(WITHUSBHW_EHCI)->PORTSCR1);
-	return;
-	PRINTF("Function Control (0x04): %02X\n", 	ulpi_reg_read(0x04));
-	PRINTF("Interface Control (0x07): %02X\n", 	ulpi_reg_read(0x07));
-	PRINTF("OTG Control (0x0A): %02X\n", 		ulpi_reg_read(0x0A));
-	PRINTF("USB Interrupt Enable Rising  (0x0D): %02X\n", ulpi_reg_read(0x0D));
-	PRINTF("USB Interrupt Enable Falling  (0x10): %02X\n", ulpi_reg_read(0x10));
-	PRINTF("USB Interrupt Status  (0x13): %02X\n", ulpi_reg_read(0x13));
-	PRINTF("USB Interrupt Latch  (0x14): %02X\n", ulpi_reg_read(0x14));
-	PRINTF("Debug  (0x15): %02X\n", ulpi_reg_read(0x15));
-	PRINTF("Scratch Register  (0x16): %02X\n", ulpi_reg_read(0x16));
-	PRINTF("Carkit Control  (0x19): %02X\n", ulpi_reg_read(0x19));
-	PRINTF("Carkit Interrupt Enable  (0x1D): %02X\n", ulpi_reg_read(0x1D));
-	PRINTF("Carkit Interrupt Status  (0x20): %02X\n", ulpi_reg_read(0x20));
-	PRINTF("Carkit Interrupt Latch  (0x21): %02X\n", ulpi_reg_read(0x21));
-	PRINTF("HS Compensation Register  (0x31): %02X\n", ulpi_reg_read(0x31));
-	PRINTF("USB-IF Charger Detection  (0x32): %02X\n", ulpi_reg_read(0x32));
-	PRINTF("Headset Audio Mode  (0x32): %02X\n", ulpi_reg_read(0x33));
-}
-
-void ulpi_chip_vbuson(uint_fast8_t state)
-{
-	return;
-	// USB3340
-
-	// Address = 00h (read only) Vendor ID Low = 0x24
-	// Address = 01h (read only) Vendor ID High = 0x04
-	// Address = 02h (read only) Product ID Low = 0x09
-	// Address = 03h (read only)  Product ID High = 0x00
-	const uint_fast8_t v0 = ulpi_reg_read(0x00);
-	const uint_fast8_t v1 = ulpi_reg_read(0x01);
-	const uint_fast8_t v2 = ulpi_reg_read(0x02);
-	const uint_fast8_t v3 = ulpi_reg_read(0x03);
-	const uint_fast16_t vid = v1 * 256 + v0;
-	const uint_fast16_t pid = v3 * 256 + v2;
-	//PRINTF("ulpi_chip_vbuson: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
-
-//	if (vid != 0x0424 || pid != 0x0009)
-//		return;
-
-	//	7.1.1.7 OTG Control
-	//	Address = 0A-0Ch (read), 0Ah (write), 0Bh (set), 0Ch (clear)
-	//PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_read(0x0A));
-	if (state)
-		ulpi_reg_write(0x0B, (0x01 << 6));	// Set DrvVbusExternal bit
-	else
-		ulpi_reg_write(0x0C, (0x01 << 6));	// Clear DrvVbusExternal bit
-	PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_read(0x0A));
-
-}
-
-#endif /* WITHUSBHOST_HIGHSPEEDULPI */
-
-
-#if CPUSTYLE_XC7Z
-
-XUSBPS_Registers * EHCIxToUSBx(void * p)
-{
-    XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
-    return USBx;
-}
-
-#elif (CPUSTYLE_A64)
-
-//USBPHYC_TypeDef * EHCIxToUSBPHYC(void * p)
-//{
-//	USBPHYC_TypeDef * const PHYCx = (WITHUSBHW_EHCI == USBEHCI1) ? USBPHY1 : USBPHY0;
-//    return PHYCx;
-//}
-
-//	PHY 0x1c1b800 before:
-//	01C1B800  00000000 00000001 00000000 00000000 00000002 00000000 023438E4 00000053
-//	PHY 0x1c1b800 after:
-//	01C1B800  00000701 00000001 00000000 00000000 00000000 00000000 023438E4 00000053
-
-static void SetupHostUsbPhyc(USBPHYC_TypeDef * phy)
-{
-#if 0
-	volatile uint32_t * base = (volatile uint32_t *) phy;
-
-	PRINTF("PHY %p before:\n", phy);
-	printhex32((uintptr_t) phy, phy, 0x20);
-	base [0] = 0x00000701;	// 0x000 !!!! влияет
-//	base [1] = 0x00000001;	// 0x004
-//	base [2] = 0x00000000;	// 0x008
-//	base [3] = 0x00000000;	// 0x00C
-	base [4] = 0x00000000;	// 0x010 !!!! влияет
-//	base [5] = 0x00000000;	// 0x014
-//	base [6] = 0x023438e6;	// 0x018
-//	base [7] = 0x00000053;	// 0x01C
-
-	phy->HCI_ICR = 0x00000701;
-	phy->REG_10 = 0x00000000;
-	PRINTF("PHY %p after:\n", phy);
-	printhex32((uintptr_t) phy, phy, 0x20);
-#endif
-
-	phy->HCI_ICR = 0x00000701;
-	phy->PHY_CTRL = 0x00000000;
-
-	return;
-	phy->HCI_ICR |= (UINT32_C(1) << 0);
-
-//	phy->HCI_ICR |= (UINT32_C(1) << 1);			// С этим битом не видит connect HSIC - This meaning is only valid when the controller is HCI1
-//	phy->HCI_ICR |= (UINT32_C(1) << 17);
-
-	phy->HCI_ICR |= (UINT32_C(1) << 20);		// EHCI HS force
-
-	phy->HCI_ICR |= (0x0Fu << 8);	//
-
-	//PRINTF("phy->HCI_ICR: %08X\n", (unsigned) phy->HCI_ICR);
-}
-
-#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
-
-//USBPHYC_TypeDef * EHCIxToUSBPHYC(void * p)
-//{
-//	USBPHYC_TypeDef * const PHYCx = (WITHUSBHW_EHCI == USBEHCI1) ? USBPHY1 : USBPHY0;
-//    return PHYCx;
-//}
-
-
-//	PHY 0x5310800 before:
-//	05310800  00000000 00000001 00000000 00000000 00000000 00000000 023438E4 00000053
-//	PHY 0x5310800 after:
-//	05310800  00000701 00000001 00000000 00000000 00000000 00000000 023438E4 00000053
-//	PHY 0x5311800 before:
-//	05311800  00000000 00000101 00000000 00000000 00000008 00000000 023438E4 00000053
-//	PHY 0x5311800 after:
-//	05311800  00000701 00000001 00000000 00000000 00000000 00000000 023438E4 00000053
-
-void SetupHostUsbPhyc(USBPHYC_TypeDef * phy)
-{
-#if 0
-	volatile uint32_t * base = (volatile uint32_t *) phy;
-
-	PRINTF("PHY %p before:\n", phy);
-	printhex32((uintptr_t) phy, phy, 0x20);
-	base [0] = 0x00000701;	// 0x000
-//	base [1] = 0x00000001;	// 0x004
-//	base [2] = 0x00000000;	// 0x008
-//	base [3] = 0x00000000;	// 0x00C
-	base [4] = 0x00000000;	// 0x010
-//	base [5] = 0x00000000;	// 0x014
-//	base [6] = 0x023438e6;	// 0x018
-//	base [7] = 0x00000053;	// 0x01C
-	PRINTF("PHY %p after:\n", phy);
-	printhex32((uintptr_t) phy, phy, 0x20);
-#endif
-	phy->USB_CTRL = 0x00000701;
-	phy->PHY_CTRL = 0x00000000;
-	return;
-
-	// EHCI0: phy->USB_CTRL
-	PRINTF("%p->USB_CTRL=%08X (@%p)\n", phy, (unsigned) phy->USB_CTRL, & phy->USB_CTRL);
-
-	//phy->USB_CTRL = 0x4300CC01;
-	//USBPHYC1->USB_CTRL &= ~ (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
-	phy->USB_CTRL |= (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
-	//phy->USB_CTRL |= (UINT32_C(1) << 28);	// DMA Transfer Status Enable
-	//phy->USB_CTRL |= (UINT32_C(1) << 1);	// EHCI HS force required ?
-	//phy->USB_CTRL |= (UINT32_C(1) << 20);	// EHCI HS force - resulted LOW speed
-	PRINTF("%p->USB_CTRL=%08X\n", phy, (unsigned) phy->USB_CTRL);
-}
-
-
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && defined (WITHUSBHW_EHCI)
-
-USBPHYC_TypeDef * EHCIxToUSBPHYC(void * p)
-{
-	USBPHYC_TypeDef * const PHYCx = (WITHUSBHW_EHCI == USBEHCI1) ? USBPHY1 : USBPHY0;
-    return PHYCx;
-}
-
-#endif /* CPUSTYLE_XC7Z */
-
-/* Вызываем после выполнения reset контроллера */
-void USBH_POSTRESET_INIT(void)
-{
-#if CPUSTYLE_XC7Z
-	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
-
-
-	USBx->MODE = (USBx->MODE & ~ (0x0003)) |
-		//0x02 |		// IDLE
-		0x03 |		// HOST
-		0;
-
-#endif /* CPUSTYLE_XC7Z */
-}
 
 #endif /* CFG_TUH_ENABLED && (defined (TUP_USBIP_OHCI) || defined (TUP_USBIP_EHCI)) */
 
@@ -1457,6 +1136,328 @@ void usbdevice_clk_init(void)
 
 #endif
 
+}
+
+
+
+#if WITHUSBHOST_HIGHSPEEDULPI
+#if CPUSTYLE_XC7Z && defined (WITHUSBHW_EHCI)
+// https://xilinx.github.io/embeddedsw.github.io/usbps/doc/html/api/xusbps__hw_8h.html
+
+//	USB ULPI Viewport Register (ULPIVIEW) bit positions.
+#define XUSBPS_ULPIVIEW_DATWR_MASK   	0x000000FF	// 	ULPI Data Write. More...
+#define	XUSBPS_ULPIVIEW_DATWR_SHIFT		0
+#define XUSBPS_ULPIVIEW_DATRD_MASK   	0x0000FF00	// 	ULPI Data Read. More...
+#define XUSBPS_ULPIVIEW_DATRD_SHIFT	   	8			// 	ULPI Data Address. More...
+#define XUSBPS_ULPIVIEW_ADDR_MASK   	0x00FF0000	// 	ULPI Data Address. More...
+#define XUSBPS_ULPIVIEW_ADDR_SHIFT	   	16			// 	ULPI Data Address. More...
+#define XUSBPS_ULPIVIEW_PORT_MASK   	0x07000000	// 	ULPI Port Number. More...
+#define XUSBPS_ULPIVIEW_SS_MASK   		0x08000000	// 	ULPI Synchronous State. More...
+#define XUSBPS_ULPIVIEW_RW_MASK   		0x20000000	// 	ULPI Read/Write Control. More...
+#define XUSBPS_ULPIVIEW_RUN_MASK   		0x40000000	// 	ULPI Run. More...
+#define XUSBPS_ULPIVIEW_WU_MASK   		0x80000000	// 	ULPI Wakeup. More...
+
+static void ulpi_reg_write(uint_fast8_t addr, uint_fast8_t data)
+{
+	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
+
+	USBx->ULPIVIEW = (USBx->ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK | XUSBPS_ULPIVIEW_RUN_MASK | XUSBPS_ULPIVIEW_RW_MASK)) |
+			XUSBPS_ULPIVIEW_RW_MASK | 	// Select write direction
+			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK) |
+			(((uint_fast32_t) data << XUSBPS_ULPIVIEW_DATWR_SHIFT) & XUSBPS_ULPIVIEW_DATWR_MASK) |
+			0;
+
+	USBx->ULPIVIEW |= XUSBPS_ULPIVIEW_RUN_MASK;
+
+	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
+		;
+}
+
+static uint_fast8_t ulpi_reg_read(uint_fast8_t addr)
+{
+	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
+
+	USBx->ULPIVIEW = (USBx->ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK | XUSBPS_ULPIVIEW_RUN_MASK | XUSBPS_ULPIVIEW_RW_MASK)) |
+			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK) |
+			0;
+
+	USBx->ULPIVIEW |= XUSBPS_ULPIVIEW_RUN_MASK;
+
+	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
+		;
+
+	return (USBx->ULPIVIEW & XUSBPS_ULPIVIEW_DATRD_MASK) >> XUSBPS_ULPIVIEW_DATRD_SHIFT;
+}
+#endif /* CPUSTYLE_XC7Z */
+/*
+ * https://electronix.ru/forum/topic/179658-stm32h725-v-lqfp100-kto-to-zapuskal-s-vneshney-fizikoy-usb-hs-ulpi/?do=findComment&comment=1911585
+ *
+	Чтобы USB334x определялся как high-speed нужно в регистре DCFG выставить в 1 бит XCVRDLY.
+	Без этого оно определяется как full-speed (причина описана в errata USB3340, решение найдено на буржуйских форумах).
+	Для F2xx, F4xx, F7xx все то же самое, причем этот бит в заголовочном файле CMSIS не описан,
+	хотя в руководстве пользователя F7xx, H7xx он есть.
+*/
+
+void ulpi_chip_initialize(void)
+{
+	//return;
+	// USB3340
+	ulpi_reg_read(0x16);	/* Scratch Register - dummy read */
+
+	// Address = 00h (read only) Vendor ID Low = 0x24
+	// Address = 01h (read only) Vendor ID High = 0x04
+	// Address = 02h (read only) Product ID Low = 0x09
+	// Address = 03h (read only)  Product ID High = 0x00
+	const uint_fast8_t v0 = ulpi_reg_read(0x00);
+	const uint_fast8_t v1 = ulpi_reg_read(0x01);
+	const uint_fast8_t v2 = ulpi_reg_read(0x02);
+	const uint_fast8_t v3 = ulpi_reg_read(0x03);
+	const uint_fast16_t vid = v1 * 256 + v0;
+	const uint_fast16_t pid = v3 * 256 + v2;
+	PRINTF("ulpi_chip_initialize: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
+
+	ulpi_reg_write(0x16, 0xE5);	/* Scratch Register - dummy read */
+
+//	if (vid != 0x0424 || pid != 0x0009)
+//		return;
+
+	//	7.1.1.5 Function Control
+	//	Address = 04-06h (read), 04h (write), 05h (set), 06h (clear)
+	//ulpi_reg_write(0x06, 0x03);	/* Function Control - XcvrSelect[1:0] = 00 00b: Enables HS transceiver */
+
+}
+
+void ulpi_chip_sethost(uint_fast8_t state)
+{
+	// USB3340
+	return;
+
+	// Address = 00h (read only) Vendor ID Low = 0x24
+	// Address = 01h (read only) Vendor ID High = 0x04
+	// Address = 02h (read only) Product ID Low = 0x09
+	// Address = 03h (read only)  Product ID High = 0x00
+	const uint_fast8_t v0 = ulpi_reg_read(0x00);
+	const uint_fast8_t v1 = ulpi_reg_read(0x01);
+	const uint_fast8_t v2 = ulpi_reg_read(0x02);
+	const uint_fast8_t v3 = ulpi_reg_read(0x03);
+	const uint_fast16_t vid = v1 * 256 + v0;
+	const uint_fast16_t pid = v3 * 256 + v2;
+	//PRINTF("ulpi_chip_sethost: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
+
+	if (vid != 0x0424 || pid != 0x0009)
+		return;
+
+	//	7.1.1.7 OTG Control
+	//	Address = 0A-0Ch (read), 0Ah (write), 0Bh (set), 0Ch (clear
+	// 7.1.2.1 Carkit Control
+	// Address = 19-1Bh (read), 19h (write), 1Ah (set), 1Bh (clear)
+
+	if (state)
+	{
+		// Tie ID down
+		ulpi_reg_write(0x0C, (0x01 << 0));	// Clear IdPullup bit
+		ulpi_reg_write(0x1A, (0x01 << 1));	// Set IdGndDrv bit
+	}
+	else
+	{
+		// Tie ID up
+		ulpi_reg_write(0x1B, (0x01 << 1));	// Clear IdGndDrv bit
+		ulpi_reg_write(0x0B, (0x01 << 0));	// Set IdPullup bit
+	}
+	//PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_read(0x19));
+}
+
+void ulpi_chip_debug(void)
+{
+	PRINTF("sts=%08X, portsc=%08X\n", EHCIxToUSBx(WITHUSBHW_EHCI)->ISR, EHCIxToUSBx(WITHUSBHW_EHCI)->PORTSCR1);
+	return;
+	PRINTF("Function Control (0x04): %02X\n", 	ulpi_reg_read(0x04));
+	PRINTF("Interface Control (0x07): %02X\n", 	ulpi_reg_read(0x07));
+	PRINTF("OTG Control (0x0A): %02X\n", 		ulpi_reg_read(0x0A));
+	PRINTF("USB Interrupt Enable Rising  (0x0D): %02X\n", ulpi_reg_read(0x0D));
+	PRINTF("USB Interrupt Enable Falling  (0x10): %02X\n", ulpi_reg_read(0x10));
+	PRINTF("USB Interrupt Status  (0x13): %02X\n", ulpi_reg_read(0x13));
+	PRINTF("USB Interrupt Latch  (0x14): %02X\n", ulpi_reg_read(0x14));
+	PRINTF("Debug  (0x15): %02X\n", ulpi_reg_read(0x15));
+	PRINTF("Scratch Register  (0x16): %02X\n", ulpi_reg_read(0x16));
+	PRINTF("Carkit Control  (0x19): %02X\n", ulpi_reg_read(0x19));
+	PRINTF("Carkit Interrupt Enable  (0x1D): %02X\n", ulpi_reg_read(0x1D));
+	PRINTF("Carkit Interrupt Status  (0x20): %02X\n", ulpi_reg_read(0x20));
+	PRINTF("Carkit Interrupt Latch  (0x21): %02X\n", ulpi_reg_read(0x21));
+	PRINTF("HS Compensation Register  (0x31): %02X\n", ulpi_reg_read(0x31));
+	PRINTF("USB-IF Charger Detection  (0x32): %02X\n", ulpi_reg_read(0x32));
+	PRINTF("Headset Audio Mode  (0x32): %02X\n", ulpi_reg_read(0x33));
+}
+
+void ulpi_chip_vbuson(uint_fast8_t state)
+{
+	return;
+	// USB3340
+
+	// Address = 00h (read only) Vendor ID Low = 0x24
+	// Address = 01h (read only) Vendor ID High = 0x04
+	// Address = 02h (read only) Product ID Low = 0x09
+	// Address = 03h (read only)  Product ID High = 0x00
+	const uint_fast8_t v0 = ulpi_reg_read(0x00);
+	const uint_fast8_t v1 = ulpi_reg_read(0x01);
+	const uint_fast8_t v2 = ulpi_reg_read(0x02);
+	const uint_fast8_t v3 = ulpi_reg_read(0x03);
+	const uint_fast16_t vid = v1 * 256 + v0;
+	const uint_fast16_t pid = v3 * 256 + v2;
+	//PRINTF("ulpi_chip_vbuson: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
+
+//	if (vid != 0x0424 || pid != 0x0009)
+//		return;
+
+	//	7.1.1.7 OTG Control
+	//	Address = 0A-0Ch (read), 0Ah (write), 0Bh (set), 0Ch (clear)
+	//PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_read(0x0A));
+	if (state)
+		ulpi_reg_write(0x0B, (0x01 << 6));	// Set DrvVbusExternal bit
+	else
+		ulpi_reg_write(0x0C, (0x01 << 6));	// Clear DrvVbusExternal bit
+	PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_read(0x0A));
+
+}
+
+#endif /* WITHUSBHOST_HIGHSPEEDULPI */
+
+
+#if CPUSTYLE_XC7Z
+
+XUSBPS_Registers * EHCIxToUSBx(void * p)
+{
+    XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
+    return USBx;
+}
+
+#elif (CPUSTYLE_A64)
+
+//USBPHYC_TypeDef * EHCIxToUSBPHYC(void * p)
+//{
+//	USBPHYC_TypeDef * const PHYCx = (WITHUSBHW_EHCI == USBEHCI1) ? USBPHY1 : USBPHY0;
+//    return PHYCx;
+//}
+
+//	PHY 0x1c1b800 before:
+//	01C1B800  00000000 00000001 00000000 00000000 00000002 00000000 023438E4 00000053
+//	PHY 0x1c1b800 after:
+//	01C1B800  00000701 00000001 00000000 00000000 00000000 00000000 023438E4 00000053
+
+static void SetupHostUsbPhyc(USBPHYC_TypeDef * phy)
+{
+#if 0
+	volatile uint32_t * base = (volatile uint32_t *) phy;
+
+	PRINTF("PHY %p before:\n", phy);
+	printhex32((uintptr_t) phy, phy, 0x20);
+	base [0] = 0x00000701;	// 0x000 !!!! влияет
+//	base [1] = 0x00000001;	// 0x004
+//	base [2] = 0x00000000;	// 0x008
+//	base [3] = 0x00000000;	// 0x00C
+	base [4] = 0x00000000;	// 0x010 !!!! влияет
+//	base [5] = 0x00000000;	// 0x014
+//	base [6] = 0x023438e6;	// 0x018
+//	base [7] = 0x00000053;	// 0x01C
+
+	phy->HCI_ICR = 0x00000701;
+	phy->REG_10 = 0x00000000;
+	PRINTF("PHY %p after:\n", phy);
+	printhex32((uintptr_t) phy, phy, 0x20);
+#endif
+
+	phy->HCI_ICR = 0x00000701;
+	phy->PHY_CTRL = 0x00000000;
+
+	return;
+	phy->HCI_ICR |= (UINT32_C(1) << 0);
+
+//	phy->HCI_ICR |= (UINT32_C(1) << 1);			// С этим битом не видит connect HSIC - This meaning is only valid when the controller is HCI1
+//	phy->HCI_ICR |= (UINT32_C(1) << 17);
+
+	phy->HCI_ICR |= (UINT32_C(1) << 20);		// EHCI HS force
+
+	phy->HCI_ICR |= (0x0Fu << 8);	//
+
+	//PRINTF("phy->HCI_ICR: %08X\n", (unsigned) phy->HCI_ICR);
+}
+
+#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
+
+//USBPHYC_TypeDef * EHCIxToUSBPHYC(void * p)
+//{
+//	USBPHYC_TypeDef * const PHYCx = (WITHUSBHW_EHCI == USBEHCI1) ? USBPHY1 : USBPHY0;
+//    return PHYCx;
+//}
+
+
+//	PHY 0x5310800 before:
+//	05310800  00000000 00000001 00000000 00000000 00000000 00000000 023438E4 00000053
+//	PHY 0x5310800 after:
+//	05310800  00000701 00000001 00000000 00000000 00000000 00000000 023438E4 00000053
+//	PHY 0x5311800 before:
+//	05311800  00000000 00000101 00000000 00000000 00000008 00000000 023438E4 00000053
+//	PHY 0x5311800 after:
+//	05311800  00000701 00000001 00000000 00000000 00000000 00000000 023438E4 00000053
+
+void SetupHostUsbPhyc(USBPHYC_TypeDef * phy)
+{
+#if 0
+	volatile uint32_t * base = (volatile uint32_t *) phy;
+
+	PRINTF("PHY %p before:\n", phy);
+	printhex32((uintptr_t) phy, phy, 0x20);
+	base [0] = 0x00000701;	// 0x000
+//	base [1] = 0x00000001;	// 0x004
+//	base [2] = 0x00000000;	// 0x008
+//	base [3] = 0x00000000;	// 0x00C
+	base [4] = 0x00000000;	// 0x010
+//	base [5] = 0x00000000;	// 0x014
+//	base [6] = 0x023438e6;	// 0x018
+//	base [7] = 0x00000053;	// 0x01C
+	PRINTF("PHY %p after:\n", phy);
+	printhex32((uintptr_t) phy, phy, 0x20);
+#endif
+	phy->USB_CTRL = 0x00000701;
+	phy->PHY_CTRL = 0x00000000;
+	return;
+
+	// EHCI0: phy->USB_CTRL
+	PRINTF("%p->USB_CTRL=%08X (@%p)\n", phy, (unsigned) phy->USB_CTRL, & phy->USB_CTRL);
+
+	//phy->USB_CTRL = 0x4300CC01;
+	//USBPHYC1->USB_CTRL &= ~ (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
+	phy->USB_CTRL |= (UINT32_C(1) << 0);	// 1: Enable UTMI interface, disable ULPI interface, 0: Enable ULPI interface, disable UTMI interface
+	//phy->USB_CTRL |= (UINT32_C(1) << 28);	// DMA Transfer Status Enable
+	//phy->USB_CTRL |= (UINT32_C(1) << 1);	// EHCI HS force required ?
+	//phy->USB_CTRL |= (UINT32_C(1) << 20);	// EHCI HS force - resulted LOW speed
+	PRINTF("%p->USB_CTRL=%08X\n", phy, (unsigned) phy->USB_CTRL);
+}
+
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && defined (WITHUSBHW_EHCI)
+
+USBPHYC_TypeDef * EHCIxToUSBPHYC(void * p)
+{
+	USBPHYC_TypeDef * const PHYCx = (WITHUSBHW_EHCI == USBEHCI1) ? USBPHY1 : USBPHY0;
+    return PHYCx;
+}
+
+#endif /* CPUSTYLE_XC7Z */
+
+/* Вызываем после выполнения reset контроллера */
+void USBH_POSTRESET_INIT(void)
+{
+#if CPUSTYLE_XC7Z
+	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
+
+
+	USBx->MODE = (USBx->MODE & ~ (0x0003)) |
+		//0x02 |		// IDLE
+		0x03 |		// HOST
+		0;
+
+#endif /* CPUSTYLE_XC7Z */
 }
 
 static void USBH_OHCI_IRQHandler(void)
