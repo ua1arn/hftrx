@@ -63,7 +63,6 @@ CORE = -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
 OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
-CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 USBXDIR = $(PRJROOT)/src/hal
 
 # List all default C defines here, like -D_DEBUG=1
@@ -121,9 +120,6 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
 
-# cmsis-dsp
-include ../cmsis_dsp.mak
-
 ifeq (1, 1)
 # ST USB DEVICE
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
@@ -138,11 +134,17 @@ DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
 
+# cmsis-dsp
+include ../cmsis_dsp.mak
+
 # CherryUSB
 include ../cherryusb.mak
 
 # tinyusb
 include ../tinyusb.mak
+
+# rt-thread
+include ../rtthread.mak
 
 # lvgl
 include ../lvgl.mak

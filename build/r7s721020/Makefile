@@ -62,7 +62,6 @@ CORE += -mfpu=neon-vfpv3
 OPT = -Ofast -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
-CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
@@ -80,11 +79,7 @@ DINCDIR = \
 	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
 	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source \
-	$(CMSISDSPDIR)/Include \
-	$(CMSISDSPDIR)/ComputeLibrary/Include \
-	$(CMSISDIR)/Core_A/Source \
-	$(CMSISDSPDIR)/Source \
-	$(CMSISDSPDIR)/PrivateInclude
+	$(CMSISDIR)/Core_A/Source
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
@@ -123,17 +118,38 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
+# cmsis-dsp
+include ../cmsis_dsp.mak
+
+# CherryUSB
+include ../cherryusb.mak
+
+# tinyusb
+include ../tinyusb.mak
+
+# rt-thread
+include ../rtthread.mak
+
+# lvgl
+include ../lvgl.mak
+
 # LuPng
 include ../lupng.mak
-
-# LWIP
-include ../lwip.mak
 
 # FreeRTOS
 include ../freertos.mak
 
+# btstack
+include ../btstack.mak
+
 # litehtml
 include ../litehtml.mak
+
+# LWIP
+include ../lwip.mak
+
+# custom application
+include ../custom0.mak
 
 # taken from
 # https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352

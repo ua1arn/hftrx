@@ -62,7 +62,6 @@ CORE = -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
 OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
-CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 USBXDIR = $(PRJROOT)/src/hal
 
 # List all default C defines here, like -D_DEBUG=1
@@ -120,19 +119,6 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
 
-ifeq (1, 1)
-# CMSIS_DSP
-SRCDIRS +=
-DINCDIR += \
-	$(CMSISDSPDIR)/Include \
-	$(CMSISDSPDIR)/ComputeLibrary/Include \
-	$(CMSISDSPDIR)/Source \
-	$(CMSISDSPDIR)/PrivateInclude
-endif
-
-# lvgl
-include ../lvgl.mak
-
 ifeq (1, 0)
 # ST USB DEVICE
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
@@ -147,21 +133,23 @@ DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
 
-ifeq (1, 0)
+# cmsis-dsp
+include ../cmsis_dsp.mak
+
+# CherryUSB
+include ../cherryusb.mak
+
 # tinyusb
-# https://github.com/hathach/tinyusb.git
-SRCDIRS += $(PRJROOT)/lib/hftrx_tinyusb/src
-DINCDIR += $(PRJROOT)/lib/hftrx_tinyusb/src
-endif
+include ../tinyusb.mak
 
-ifeq (1, 0)
+# rt-thread
+include ../rtthread.mak
+
+# lvgl
+include ../lvgl.mak
+
 # LuPng
-SRCDIRS += $(PRJROOT)/lib/LuPng
-DINCDIR += $(PRJROOT)/lib/LuPng
-endif
-
-# LWIP
-include ../lwip.mak
+include ../lupng.mak
 
 # FreeRTOS
 include ../freertos.mak
@@ -169,14 +157,14 @@ include ../freertos.mak
 # btstack
 include ../btstack.mak
 
-ifeq (1, 0)
-# litehtml is the lightweight HTML rendering engine with CSS2/CSS3 support
-# http://www.litehtml.com/
-LITEHTMLDIR = $(PRJROOT)/lib/litehtml
-DINCDIR += $(LITEHTMLDIR)/include $(LITEHTMLDIR)/src/gumbo/include $(LITEHTMLDIR)/include/litehtml $(LITEHTMLDIR)/src/gumbo/include/gumbo
-SRCDIRS += $(LITEHTMLDIR)/src
-UDEFS += -D"LITEHTML_NO_THREADS"=1
-endif
+# litehtml
+include ../litehtml.mak
+
+# LWIP
+include ../lwip.mak
+
+# custom application
+include ../custom0.mak
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)

@@ -73,7 +73,6 @@ ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_ebaz
 ZYNQLIB = zynq7020.a
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
-CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
@@ -90,14 +89,7 @@ DINCDIR = \
 	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
 	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source \
-	$(CMSISDSPDIR)/Include \
-	$(CMSISDSPDIR)/ComputeLibrary/Include \
-	$(CMSISDSPDIR)/Source \
-	$(CMSISDSPDIR)/PrivateInclude \
 	$(ZYNQLIBSRC)
-
-# List the default directory to look for the libraries here
-#DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
 
 # List all default libraries here
 #DLIBS = -lm -larm_cortexA9lneon_math
