@@ -43,8 +43,8 @@ enum {
 	nmea_thread_core = 1,
 #elif CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
 	stream_thread_core = 3,
-	alsa_thread_core = 3,
-	iq_thread_core = 2,
+	alsa_thread_core = 1,
+	iq_thread_core = 3,
 	iio_thread_core = 2,
 	spool_thread_core = 0,
 	nmea_thread_core = 1,
