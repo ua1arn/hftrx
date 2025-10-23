@@ -1525,7 +1525,7 @@ irq_channel_t channels[] = {
 #if defined (LINUX_XDMA_UART_FILE)
 		{ LINUX_XDMA_UART_FILE, uartlite_event_handler, -1 },
 #endif /* defined (LINUX_XDMA_UART_FILE) */
-#if defined (LINUX_AD936X_INT_FILE)
+#if defined (LINUX_AD936X_INT_FILE) && WITHAD936XDEV
 		{ LINUX_AD936X_INT_FILE, ad936xdev_int_handler, -1 },
 #endif /* defined (LINUX_XDMA_IQ_EVENT_FILE) */
 };
@@ -1562,7 +1562,7 @@ void * xdma_event_thread(void * args)
 		}
 	}
 
-	#define MAX_EVENTS 10
+	#define MAX_EVENTS 64
 	struct epoll_event events[MAX_EVENTS];
 
 	while (1) {
@@ -1895,7 +1895,7 @@ void linux_create_thread(pthread_t * tid, void * (* process)(void * args), int p
 	ASSERT(cpuid < sysconf(_SC_NPROCESSORS_ONLN));
 
 	pthread_attr_init(& attr);
-	pthread_attr_setschedpolicy(& attr, SCHED_RR);
+	pthread_attr_setschedpolicy(& attr, SCHED_FIFO);
 	param.sched_priority = priority;
 	pthread_attr_setschedparam(& attr, & param);
 	CPU_ZERO(& mask);
@@ -2436,7 +2436,7 @@ void get_touch_events(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	struct input_event in;
 
-	if (! evdev_touch_fd) return;
+	if (evdev_touch_fd < 0) return;
 
 	while (read(evdev_touch_fd, & in, sizeof(struct input_event)) > 0)
 	{

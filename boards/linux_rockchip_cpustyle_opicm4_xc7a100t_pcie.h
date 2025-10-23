@@ -34,9 +34,10 @@
 #define	AXI_LITE_STREAM_RATE		0x00008000
 #define	AXI_LITE_STREAM_POS			0x00009000
 #define	AXI_LITE_FIR_COEFFS			0x0000C000
+#define	AXI_LITE_GPO				0x00031000
 
 #define CALIBRATION_IQ_FIR_RX_SHIFT		56	// 56 - sw FIR, 50 - hw FIR
-#define CALIBRATION_IQ_CIC_RX_SHIFT		62
+#define CALIBRATION_IQ_CIC_RX_SHIFT		61
 #define CALIBRATION_TX_SHIFT			27
 
 #define LINUX_XDMA_IQ_EVENT_FILE	"/dev/xdma0_events_0"
@@ -83,5 +84,7 @@
 #define	HARDWARE_INITIALIZE()   do {} while (0)
 #define HARDWARE_DEBUG_FLUSH()	do {} while (0)
 #define ENCODER_INITIALIZE()	do {} while (0)
+
+#define ADC_PGA_GPIO_SETSTATE(v)	do { reg_write(AXI_LITE_GPO, ! v); } while (0)
 
 #endif /* LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A100T_PCIE_H_INCLUDED */
