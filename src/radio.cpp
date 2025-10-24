@@ -12624,11 +12624,13 @@ static IRQLSPINLOCK_t boardupdatelock;
 /* полная перенастройка */
 void updateboard(void)
 {
+	uint_fast8_t f;
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
-	updateboard_noui(1);
+	f = updateboard_noui(1);
 	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
-	gui_update();
+	if (f)
+		gui_update();
 }
 
 /* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
