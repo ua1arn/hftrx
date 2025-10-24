@@ -117,6 +117,18 @@ Reset_Handler:
 	ldr x30, =__stack
 	mov sp, x30
 	mov x30, XZR
+/*
+ * Boot CPU general-purpose register settings:
+ *   x0 = physical address of device tree blob (dtb) in system RAM.
+ *   x1 = 0 (reserved for future use)
+ *   x2 = 0 (reserved for future use)
+ *   x3 = 0 (reserved for future use)
+ */
+ 	mov	x0, XZR
+ 	mov	x1, XZR
+ 	mov	x2, XZR
+ 	mov	x3, XZR
+
 	BL _start
 1:
 	b 1b

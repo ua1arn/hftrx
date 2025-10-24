@@ -27,8 +27,6 @@ extern "C" {
 /* fill .bss and prepare constant data */
 void addr64_preparedata(void)
 {
-  extern void _start(void) __NO_RETURN;
-
   typedef struct {
     volatile uint32_t const* src;
     volatile uint32_t* dest;
@@ -63,6 +61,8 @@ void addr64_preparedata(void)
 // Так же смотреть вокруг software_init_hook
 // see https://github.com/gmarkall/newlib/blob/de33102df7309e77441dfc76aa8cdef6d26da209/newlib/libc/sys/arm/crt0.S#L1
 
+#if ! WITHRTTHREAD
+
 extern int main(void);
 extern void __libc_init_array(void);
 
@@ -75,6 +75,7 @@ void __NO_RETURN _start(void)
 	for (;;)
 		;
 }
+#endif /* ! WITHRTTHREAD */
 
 // call after __preinit_array_xxx and before __init_array_xxx passing
 void _init(void)
