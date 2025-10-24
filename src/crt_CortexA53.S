@@ -46,6 +46,7 @@
 	// ARMv8-A-Programmer-Guide.pdf 10.4 AArch64 exception table
 	// Bits 10..0 of address should be zero
 	.global __Vectors64
+	.align 11	/* 2048 bytes align */
 __Vectors64:
 	.org __Vectors64 + 0x000	// Current EL with SP0
 	b	_curr_el_sp0_sync		/* Synchronous */
