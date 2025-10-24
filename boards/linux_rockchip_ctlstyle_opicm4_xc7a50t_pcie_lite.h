@@ -95,7 +95,7 @@
 	#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHALPHA				42
 	#define FORMATFROMLIBRARY 		1
-	#define WITHAFGAINDEFAULT		14
+	#define WITHAFGAINDEFAULT		20
 	#define WITHAFEQUALIZER			1
 	#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 	#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */

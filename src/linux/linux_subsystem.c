@@ -170,8 +170,8 @@ void as_tx(uint32_t * buf)
 	{
 		as_idx = 0;
 		stop = 0;
-		as_state = AS_READY;
 		hamradio_set_moxmode(0);
+		as_state = AS_READY;
 	}
 
 	pthread_mutex_unlock(& mutex_as);
@@ -226,8 +226,8 @@ void as_toggle_trx(void)
 		agc_gain_backup = hamradio_get_gmikeagcgain();
 		hamradio_set_gmikeagc(0);
 		hamradio_set_gmikeagcgain(50);
-		as_state = AS_TX;
 		hamradio_set_moxmode(1);
+		as_state = AS_TX;
 	}
 	else if (as_state == AS_TX)
 	{

@@ -21283,6 +21283,8 @@ void hamradio_set_moxmode(uint_fast8_t mode)
 		txreq_mox(& txreqst0);
 	else
 		txreq_rx(& txreqst0, NULL);
+
+	updateboard();
 }
 
 uint_fast8_t hamradio_moxmode(uint_fast8_t v)
