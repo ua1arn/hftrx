@@ -4519,8 +4519,8 @@ void window_as_process(void)
 
 	if (as_get_state() == AS_PLAYING || as_get_state() == AS_TX)
 	{
-		uint16_t pos = len * as_get_progress() * 0.01;
-		gui_drawline(pos, 0, pos, lim *2, COLORPIP_GREEN);
+		uint16_t pos = len * as_get_progress() / 100;
+		gui_drawline(pos, 0, pos, lim * 2, COLORPIP_GREEN);
 	}
 
 

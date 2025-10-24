@@ -12624,11 +12624,13 @@ static IRQLSPINLOCK_t boardupdatelock;
 /* полная перенастройка */
 void updateboard(void)
 {
+	uint_fast8_t f;
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
-	updateboard_noui(1);
+	f = updateboard_noui(1);
 	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
-	gui_update();
+	if (f)
+		gui_update();
 }
 
 /* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
@@ -19981,6 +19983,8 @@ hamradio_main_step(void)
 	inputevent_fill(& event);
 
 	txreq_process(& txreqst0);	/* обработка запросов */
+	if (gtx != seq_get_txstate())
+		updateboard();
 	switch (sthrl)
 	{
 //	case STHRL_MENU:
@@ -21279,6 +21283,8 @@ void hamradio_set_moxmode(uint_fast8_t mode)
 		txreq_mox(& txreqst0);
 	else
 		txreq_rx(& txreqst0, NULL);
+
+	updateboard();
 }
 
 uint_fast8_t hamradio_moxmode(uint_fast8_t v)
