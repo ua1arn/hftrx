@@ -475,6 +475,9 @@
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#if 0
+		#define WITHRTTHREAD 1	/* Use rt-thread https://github.com/RT-Thread/rt-thread.git */
+	#endif
+	#if 0
 		#define WITHLWIP 1
 	#endif
 	#if 0
