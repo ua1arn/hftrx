@@ -70,7 +70,6 @@ SECTIONS
 
 		KEEP(*(.eh_frame*))
 
-		. = ALIGN(2048);
 		KEEP(*(.isr_vector))
 
 
