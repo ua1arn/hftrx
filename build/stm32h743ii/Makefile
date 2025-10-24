@@ -212,7 +212,7 @@ $(OBJSCPP):
 
 $(OBJSA):
 	@mkdir -p $(@D)
-	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
+	$(AS) -o $@ -c $(ASFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
 %_boot.elf: $(OBJS)
 	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@

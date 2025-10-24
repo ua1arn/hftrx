@@ -305,7 +305,7 @@ $(OBJSCPP):
 
 $(OBJSA_APP) $(ZOBJSA):
 	@mkdir -p $(@D)
-	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
+	$(AS) -o $@ -c $(ASFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
 # add libsun50iw9p1_spinor.a 
 %_boot.elf: $(OBJS) $(OBJSA_BOOT) $(LDSCRIPT_BOOT)
