@@ -19981,6 +19981,8 @@ hamradio_main_step(void)
 	inputevent_fill(& event);
 
 	txreq_process(& txreqst0);	/* обработка запросов */
+	if (gtx != seq_get_txstate())
+		updateboard();
 	switch (sthrl)
 	{
 //	case STHRL_MENU:
