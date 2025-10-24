@@ -81,26 +81,38 @@ xpt2046_read4(
 {
 	const spitarget_t target = targettsc1;
 	enum { AVERAGE = 4 };
-	enum { PDx = 1*XPT2046_PD1 | 1*XPT2046_PD0 };	// оба бита "1" - прерывания не формируются
+	enum { PDx = 0*XPT2046_PD1 | 1*XPT2046_PD0 };	// оба бита "1" - прерывания не формируются
 	static const uint8_t txbuf [] =
 	{
 		XPT2046_NOP,
+		XPT2046_CONTROL | PDx | XPT2046_Y, XPT2046_NOP,	// ignored
+		XPT2046_CONTROL | PDx | XPT2046_Y, XPT2046_NOP,	// ignored
+		XPT2046_CONTROL | PDx | XPT2046_Y, XPT2046_NOP,	// ignored
 		XPT2046_CONTROL | PDx | XPT2046_Y, XPT2046_NOP,	// ignored
 		XPT2046_CONTROL | PDx | XPT2046_Y, XPT2046_NOP,
 		XPT2046_CONTROL | PDx | XPT2046_Y, XPT2046_NOP,
 		XPT2046_CONTROL | PDx | XPT2046_Y, XPT2046_NOP,
 		XPT2046_CONTROL | PDx | XPT2046_Y, XPT2046_NOP,
 		XPT2046_CONTROL | PDx | XPT2046_X, XPT2046_NOP,	// ignored
+		XPT2046_CONTROL | PDx | XPT2046_X, XPT2046_NOP,	// ignored
+		XPT2046_CONTROL | PDx | XPT2046_X, XPT2046_NOP,	// ignored
+		XPT2046_CONTROL | PDx | XPT2046_X, XPT2046_NOP,	// ignored
 		XPT2046_CONTROL | PDx | XPT2046_X, XPT2046_NOP,
 		XPT2046_CONTROL | PDx | XPT2046_X, XPT2046_NOP,
 		XPT2046_CONTROL | PDx | XPT2046_X, XPT2046_NOP,
 		XPT2046_CONTROL | PDx | XPT2046_X, XPT2046_NOP,
+		XPT2046_CONTROL | PDx | XPT2046_Z1, XPT2046_NOP,	// ignored
+		XPT2046_CONTROL | PDx | XPT2046_Z1, XPT2046_NOP,	// ignored
+		XPT2046_CONTROL | PDx | XPT2046_Z1, XPT2046_NOP,	// ignored
 		XPT2046_CONTROL | PDx | XPT2046_Z1, XPT2046_NOP,	// ignored
 		XPT2046_CONTROL | PDx | XPT2046_Z1, XPT2046_NOP,
 		XPT2046_CONTROL | PDx | XPT2046_Z1, XPT2046_NOP,
 		XPT2046_CONTROL | PDx | XPT2046_Z1, XPT2046_NOP,
 		XPT2046_CONTROL | PDx | XPT2046_Z1, XPT2046_NOP,
 #if 0
+		XPT2046_CONTROL | PDx | XPT2046_Z2, XPT2046_NOP,	// ignored
+		XPT2046_CONTROL | PDx | XPT2046_Z2, XPT2046_NOP,	// ignored
+		XPT2046_CONTROL | PDx | XPT2046_Z2, XPT2046_NOP,	// ignored
 		XPT2046_CONTROL | PDx | XPT2046_Z2, XPT2046_NOP,	// ignored
 		XPT2046_CONTROL | PDx | XPT2046_Z2, XPT2046_NOP,
 		XPT2046_CONTROL | PDx | XPT2046_Z2, XPT2046_NOP,
@@ -117,23 +129,23 @@ xpt2046_read4(
 	uint_fast16_t xv = 0, yv = 0, z1v = 0, z2v = 0;
 	unsigned i, offs = 2;
 
-	offs += 2;	// skip dummy read
+	offs += 8;	// skip dummy read
 	for (i = 0; i < AVERAGE; ++ i, offs += 2)
 	{
 		yv += USBD_peek_u16_BE(rxbuf + offs) / 8;
 	}
-	offs += 2;	// skip dummy read
+	offs += 8;	// skip dummy read
 	for (i = 0; i < AVERAGE; ++ i, offs += 2)
 	{
 		xv += USBD_peek_u16_BE(rxbuf + offs) / 8;
 	}
-	offs += 2;	// skip dummy read
+	offs += 8;	// skip dummy read
 	for (i = 0; i < AVERAGE; ++ i, offs += 2)
 	{
 		z1v += USBD_peek_u16_BE(rxbuf + offs) / 8;
 	}
 #if 0
-	offs += 2;	// skip dummy read
+	offs += 8;	// skip dummy read
 	for (i = 0; i < AVERAGE; ++ i, offs += 2)
 	{
 		z2v += USBD_peek_u16_BE(rxbuf + offs) / 8;
