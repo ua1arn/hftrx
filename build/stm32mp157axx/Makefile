@@ -63,7 +63,6 @@ CORE += -mfpu=neon-vfpv4
 OPT = -Ofast -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
-CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
@@ -82,11 +81,7 @@ DINCDIR = \
 	$(USBXDIR) \
 	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source \
 	$(RTOSXDIR)/Include \
-	$(CMSISDSPDIR)/Include \
-	$(CMSISDSPDIR)/ComputeLibrary/Include \
-	$(CMSISDIR)/Core_A/Source \
-	$(CMSISDSPDIR)/Source \
-	$(CMSISDSPDIR)/PrivateInclude
+	$(CMSISDIR)/Core_A/Source
 		
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
@@ -132,9 +127,6 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 SRCDIRS += $(PRJROOT)/src
 #SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 
-# lvgl
-include ../lvgl.mak
-
 ifeq (1, 1)
 # ST USB DEVICE
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
@@ -149,18 +141,23 @@ DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
 
-ifeq (1, 1)
+# cmsis-dsp
+include ../cmsis_dsp.mak
+
+# CherryUSB
+include ../cherryusb.mak
+
 # tinyusb
-TINYUSBDIR = $(PRJROOT)/lib/hftrx_tinyusb
-SRCDIRS += $(TINYUSBDIR)/src
-DINCDIR += $(TINYUSBDIR)/src
-endif
+include ../tinyusb.mak
+
+# rt-thread
+include ../rtthread.mak
+
+# lvgl
+include ../lvgl.mak
 
 # LuPng
 include ../lupng.mak
-
-# LWIP
-include ../lwip.mak
 
 # FreeRTOS
 include ../freertos.mak
@@ -171,14 +168,11 @@ include ../btstack.mak
 # litehtml
 include ../litehtml.mak
 
-ifeq (1, 0)
-# litehtml is the lightweight HTML rendering engine with CSS2/CSS3 support
-# http://www.litehtml.com/
-LITEHTMLDIR = $(PRJROOT)/lib/litehtml
-DINCDIR += $(LITEHTMLDIR)/include $(LITEHTMLDIR)/src/gumbo/include $(LITEHTMLDIR)/include/litehtml $(LITEHTMLDIR)/src/gumbo/include/gumbo
-SRCDIRS += $(LITEHTMLDIR)/src
-UDEFS += -D"LITEHTML_NO_THREADS"=1
-endif
+# LWIP
+include ../lwip.mak
+
+# custom application
+include ../custom0.mak
 
 SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR)

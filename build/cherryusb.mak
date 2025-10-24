@@ -1,13 +1,15 @@
 ifeq (1, 0)
-# tinyusb
+# CherryUSB
 # https://github.com/cherry-embedded/CherryUSB.git
-SRCDIRS += $(PRJROOT)/lib/CherryUSB/common
-SRCDIRS += $(PRJROOT)/lib/CherryUSB/core
-SRCDIRS += $(PRJROOT)/lib/CherryUSB/class/hub
-SRCDIRS += $(PRJROOT)/lib/CherryUSB/class/msc
+CHERRYUSBDIR=$(PRJROOT)/lib/CherryUSB/
 #
-DINCDIR += $(PRJROOT)/lib/CherryUSB/common
-DINCDIR += $(PRJROOT)/lib/CherryUSB/core
-DINCDIR += $(PRJROOT)/lib/CherryUSB/class/hub
-DINCDIR += $(PRJROOT)/lib/CherryUSB/class/msc
+SRCDIRS += $(CHERRYUSBDIR)/common
+SRCDIRS += $(CHERRYUSBDIR)/core
+SRCDIRS += $(CHERRYUSBDIR)/class/hub
+SRCDIRS += $(CHERRYUSBDIR)/class/msc
+#
+DINCDIR += $(CHERRYUSBDIR)/common
+DINCDIR += $(CHERRYUSBDIR)/core
+DINCDIR += $(CHERRYUSBDIR)/class/hub
+DINCDIR += $(CHERRYUSBDIR)/class/msc
 endif

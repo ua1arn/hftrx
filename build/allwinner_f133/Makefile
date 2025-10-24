@@ -63,7 +63,6 @@ CORE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector -
 OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
-CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 USBXDIR = $(PRJROOT)/src/hal
 TINYUSBDIR = $(PRJROOT)/lib/hftrx_tinyusb
@@ -85,12 +84,6 @@ DINCDIR += \
 DINCDIR += \
 	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source
 	
-DINCDIR += \
-	$(CMSISDSPDIR)/Include \
-	$(CMSISDSPDIR)/ComputeLibrary/Include \
-	$(CMSISDSPDIR)/Source \
-	$(CMSISDSPDIR)/PrivateInclude
-
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
 
@@ -135,9 +128,6 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
 
-# lvgl
-include ../lvgl.mak
-
 ifeq (1, 1)
 # ST USB DEVICE
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
@@ -152,18 +142,23 @@ DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
 
-ifeq (1, 1)
+# cmsis-dsp
+include ../cmsis_dsp.mak
+
+# CherryUSB
+include ../cherryusb.mak
+
 # tinyusb
-# https://github.com/hathach/tinyusb.git
-SRCDIRS += $(PRJROOT)/lib/hftrx_tinyusb/src
-DINCDIR += $(PRJROOT)/lib/hftrx_tinyusb/src
-endif
+include ../tinyusb.mak
+
+# rt-thread
+include ../rtthread.mak
+
+# lvgl
+include ../lvgl.mak
 
 # LuPng
 include ../lupng.mak
-
-# LWIP
-include ../lwip.mak
 
 # FreeRTOS
 include ../freertos.mak
@@ -173,6 +168,12 @@ include ../btstack.mak
 
 # litehtml
 include ../litehtml.mak
+
+# LWIP
+include ../lwip.mak
+
+# custom application
+include ../custom0.mak
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)

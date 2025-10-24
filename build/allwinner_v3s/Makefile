@@ -65,7 +65,6 @@ CORE += -mfpu=neon-vfpv4
 OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
-CMSISDSPDIR = $(PRJROOT)/CMSIS-DSP
 USBXDIR = $(PRJROOT)/src/hal
 
 # List all default C defines here, like -D_DEBUG=1
@@ -77,11 +76,7 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(ARCHDIR) \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source \
-	$(CMSISDSPDIR)/Include \
-	$(CMSISDSPDIR)/ComputeLibrary/Include \
-	$(CMSISDSPDIR)/Source \
-	$(CMSISDSPDIR)/PrivateInclude
+	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
@@ -127,9 +122,6 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
 
-# lvgl
-include ../lvgl.mak
-
 ifeq (1, 1)
 # ST USB DEVICE
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
@@ -144,27 +136,38 @@ DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
 
-ifeq (1, 1)
+# cmsis-dsp
+include ../cmsis_dsp.mak
+
+# CherryUSB
+include ../cherryusb.mak
+
 # tinyusb
-# https://github.com/hathach/tinyusb.git
-SRCDIRS += $(PRJROOT)/lib/hftrx_tinyusb/src
-DINCDIR += $(PRJROOT)/lib/hftrx_tinyusb/src
-endif
+include ../tinyusb.mak
 
-ifeq (1, 0)
+# rt-thread
+include ../rtthread.mak
+
+# lvgl
+include ../lvgl.mak
+
 # LuPng
-SRCDIRS += $(PRJROOT)/lib/LuPng
-DINCDIR += $(PRJROOT)/lib/LuPng
-endif
-
-# LWIP
-include ../lwip.mak
+include ../lupng.mak
 
 # FreeRTOS
 include ../freertos.mak
 
 # btstack
 include ../btstack.mak
+
+# litehtml
+include ../litehtml.mak
+
+# LWIP
+include ../lwip.mak
+
+# custom application
+include ../custom0.mak
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
