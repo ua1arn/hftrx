@@ -100,8 +100,6 @@ SECTIONS
 		__data_start__ = .;
 		. = ALIGN(32);
 		KEEP(*(.isr_vector))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
 
 		/* .ctors */
 		*crtbegin.o(.ctors)

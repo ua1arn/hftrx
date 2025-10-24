@@ -69,8 +69,6 @@ SECTIONS
 		
 		. = ALIGN(8);
 		KEEP(*(.isr_vector))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
 
 	} > DDR3
 

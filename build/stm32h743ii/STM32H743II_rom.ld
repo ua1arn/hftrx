@@ -53,8 +53,6 @@ SECTIONS
 	.text :
 	{
 		KEEP(*(.vectors))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
 
 		*(.text*)
 
