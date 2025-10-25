@@ -267,7 +267,7 @@ typedef struct txreq_tag
 } txreq_t;
 
 void txreq_initialize(txreq_t * txreqp);
-void txreq_process(txreq_t * txreqp);		/* Установка сиквенсору запроса на передачу и работа с аппаратурой	*/
+void txreq_process(void);		/* Установка сиквенсору запроса на передачу и работа с аппаратурой	*/
 
 void txreq_reqautotune(txreq_t * txreqp, uint_fast8_t v);	// Выход из режима - txreq_rx
 uint_fast8_t txreq_getreqautotune(const txreq_t * txreqp);
@@ -6838,7 +6838,7 @@ static uint_fast8_t tuneabort(void)
 	// todo: не работает на дисплеях с off screen composition.
 	// счетчик перебора сбрасывается в 0 - и до обновления экрана дело не доходит.
 
-	txreq_process(& txreqst0);	/* обработка запросов */
+	txreq_process();	/* обработка запросов */
 	processmessages(& kbch, & kbready);
 	if (! txreq_getreqautotune(& txreqst0))
 		return 1;
@@ -11976,7 +11976,6 @@ updateboard_noui(
 	static uint_fast8_t txreqhint = UINT8_MAX;
 	uint_fast8_t full2 = full;
 
-	seq_txrequest(txreq_get_tx(& txreqst0));
 	full2 |= flagne_u8(& txreqhint, txreq_gethint(& txreqst0));
 	full2 |= flagne_u8(& gtx, seq_get_txstate());
 
@@ -19006,11 +19005,14 @@ txreq_process0(txreq_t * txreqp)
 }
 
 void
-txreq_process(txreq_t * txreqp)
+txreq_process(void)
 {
+	txreq_t * const txreqp = & txreqst0;
+
 	const uint_fast8_t oldhint = txreq_gethint(txreqp);
 	txreq_process0(txreqp);	// проверка защит и запросов
-	if (oldhint != txreq_gethint(txreqp))
+	seq_txrequest(txreq_get_tx(txreqp));
+	if (oldhint != txreq_gethint(txreqp) || gtx != seq_get_txstate())
 		updateboard();	/* полная перенастройка (как после смены режима) */
 }
 
@@ -19982,9 +19984,7 @@ hamradio_main_step(void)
 	inputevent_initialize(& event);
 	inputevent_fill(& event);
 
-	txreq_process(& txreqst0);	/* обработка запросов */
-	if (gtx != seq_get_txstate())
-		updateboard();
+	txreq_process();	/* обработка запросов */
 	switch (sthrl)
 	{
 //	case STHRL_MENU:
