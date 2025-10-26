@@ -40,11 +40,13 @@ MEMORY
 
 SECTIONS
 {
+	.startup :
+	{
+		KEEP(*(.startup0))
+	} > RAM
+	
 	.text :
 	{
-		. = ALIGN(32);
-		KEEP(*(.startup0))
-
 		*(.text*)
 		KEEP(*(.init))
 		KEEP(*(.fini))
@@ -70,7 +72,6 @@ SECTIONS
 
 		KEEP(*(.eh_frame*))
 
-		. = ALIGN(2048);
 		KEEP(*(.isr_vector))
 
 

@@ -35,7 +35,7 @@
 
 	 STACKSIZESYSBOOT = 4096
 
-	.section ".isr_vector"
+	.section ".isr_vector", "ax"
 	//.code 64
         
 /****************************************************************************/
@@ -47,7 +47,7 @@
 	// Bits 10..0 of address should be zero
 	.global __Vectors64
 	// Vector Base Address Register (Bits 10..0 of address should be zero)
-	//.align 11	/* 2048 bytes align */
+	.align 11	/* 2048 bytes align */
 __Vectors64:
 	.org __Vectors64 + 0x000	// Current EL with SP0
 	b	_curr_el_sp0_sync		/* Synchronous */
@@ -86,8 +86,7 @@ __Vectors64:
 	b	_lower_el_aarch32_serror
    	.ltorg
 
-   	.section ".startup0"
-	.align 4
+   	.section ".startup0", "ax"
    	//.code 64
    
 	.global Reset_Handler

@@ -41,9 +41,13 @@ ENTRY(Reset_Handler)
 
 SECTIONS
 {
-	.text :
+	.startup :
 	{
 		KEEP(*(.startup0))
+	} > FLASH
+	
+	.text :
+	{
 		KEEP(*(.init))
 		KEEP(*(.fini))
 		*(.text*)

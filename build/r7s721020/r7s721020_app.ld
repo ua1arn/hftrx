@@ -40,13 +40,17 @@ ENTRY(Reset_Handler)
 
 SECTIONS
 {
+	.startup :
+	{
+		KEEP(*(.startup0))
+	} > RAM
+	
 	.text :
 	{
 		. = ALIGN(32);
 		KEEP(*(.isr_vector))
 		
 		. = ALIGN(8);
-		KEEP(*(.startup0))
 		KEEP(*(.init))
 		KEEP(*(.fini))
 		*(.text*)

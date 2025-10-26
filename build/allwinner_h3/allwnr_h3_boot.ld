@@ -43,10 +43,13 @@ MEMORY
 
 SECTIONS
 {
+	.startup :
+	{
+		KEEP(*(.startup0))
+	} > RAM
+	
 	.text :
 	{
-		. = ALIGN(64);
-		KEEP(*(.startup0))
 		. = ALIGN(64);
 		KEEP(*(.isr_vector))
 		. = ALIGN(64);

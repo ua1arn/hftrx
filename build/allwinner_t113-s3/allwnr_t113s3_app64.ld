@@ -4,7 +4,7 @@
 
 MEMORY
 {
-  DDR3 (rwx) 	: ORIGIN = 0x40000100, LENGTH = 256M - 256 	/* DDR internal memory */
+  RAM (rwx) 	: ORIGIN = 0x40000100, LENGTH = 256M - 256 	/* DDR internal memory */
   SRAM_A1 (rwx)	: ORIGIN = 0x00020000, LENGTH = 160k	/*  */
 }
 
@@ -41,10 +41,13 @@ MEMORY
 
 SECTIONS
 {
+	.startup :
+	{
+		KEEP(*(.startup0))
+	} > RAM
+	
 	.text :
 	{
-		. = ALIGN(64);
-		KEEP(*(.startup0))
 		*(.text*)
 		KEEP(*(.init))
 		KEEP(*(.fini))
@@ -70,24 +73,24 @@ SECTIONS
 		. = ALIGN(8);
 		KEEP(*(.isr_vector))
 
-	} > DDR3
+	} > RAM
 
 	.gcc_except_table :
 	{
 		*(.gcc_except_table)
 		*(.gcc_except_table.*)
-	} > DDR3
+	} > RAM
 
 	.ARM.extab :
 	{
 		*(.ARM.extab* .gnu.linkonce.armextab.*)
-	} > DDR3
+	} > RAM
 
 	__exidx_start = .;
 	.ARM.exidx :
 	{
 		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
-	} > DDR3
+	} > RAM
 	__exidx_end = .;
 
 	/* To copy multiple ROM to RAM sections,
@@ -106,7 +109,7 @@ SECTIONS
 		QUAD (__data2_start__)
 		QUAD ((__data2_end__ - __data2_start__) / 4)
 		__copy_table_end64__ = .;
-	} > DDR3
+	} > RAM
 
 	/* To clear multiple BSS sections,
 	 * uncomment .zero.table section and,
@@ -120,7 +123,7 @@ SECTIONS
 		QUAD (__bss2_start__)
 		QUAD ((__bss2_end__ - __bss2_start__) / 4)
 		__zero_table_end64__ = .;
-	} > DDR3
+	} > RAM
 
 	/* __etext = .; */
 
@@ -154,7 +157,7 @@ SECTIONS
         . = ALIGN(4);
         /* All data end */
         __data_end__ = .;
-	} > DDR3
+	} > RAM
 
 	__etext2 = .;
 
@@ -166,7 +169,7 @@ SECTIONS
 		*(.dtcm*)
 
 		__data2_end__ = .;
-	} > DDR3 /* was: STSRAN */
+	} > RAM /* was: STSRAN */
 
 	. = __etext2 + __data2_end__ - __data2_start__;
 
@@ -182,14 +185,14 @@ SECTIONS
 		. = ALIGN(64);
 		__bss_end__ = .;
 		LONG(0xDEADBEEF)
-	} > DDR3
+	} > RAM
 
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
 		*(.noinit*)
 		*(.framebuff*)
-	} > DDR3
+	} > RAM
 
 	.ramnc BLOCK(2M) (NOLOAD):
 	{
@@ -203,8 +206,8 @@ SECTIONS
 		. = ALIGN(64);
 		__end__ = .;
 		PROVIDE(end = __end__);
-	} > DDR3
+	} > RAM
 
-	__StackTop = ORIGIN(DDR3) + LENGTH(DDR3);
+	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	PROVIDE(__stack = __StackTop);
 }

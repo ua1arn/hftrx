@@ -252,7 +252,7 @@ trap_\func:
    	.extern _start
    	.extern __stack
 
-.section ".startup0"
+.section ".startup0", "ax"
 .align 8
 Reset_Handler:
 	fill0_i64		/* set all integer registers to zero */
@@ -274,7 +274,7 @@ Reset_Handler:
     addi x2,x0,-1
     sw x1, 0(x2)
 
-.section ".isr_vector"
+.section ".isr_vector", "ax"
 .align 8
 
 .global __Vectors

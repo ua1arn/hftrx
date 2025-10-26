@@ -39,9 +39,13 @@ MEMORY
 
 SECTIONS
 {
-	.text :
+	.startup :
 	{
 		KEEP(*(.startup0))
+	} > RAM
+	
+	.text :
+	{
 		*(.text*)
 		KEEP(*(.init))
 		KEEP(*(.fini))
