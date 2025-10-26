@@ -205,7 +205,7 @@ ASFLAGS = $(MCFLAGS) $(OPT) -g -gdwarf-2 $(ADEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
 
-LDCOMMONOPTS = -nostartfiles -Xlinker --sort-section=alignment -Xlinker --gc-sections
+LDCOMMONOPTS = -nostartfiles  -Xlinker --gc-sections
 # see also -Xlinker --print-gc-sections
 LDFLAGS_BOOT0 = $(MCFLAGS) $(OPT) $(LDCOMMONOPTS) -T$(LDSCRIPT_BOOT0) -Wl,-Map=$(PROJECT)_boot0.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
 LDFLAGS_BOOT = $(MCFLAGS) $(OPT) $(LDCOMMONOPTS) -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR) -Wl,--no-warn-rwx-segment
