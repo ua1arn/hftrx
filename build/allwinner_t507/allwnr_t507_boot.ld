@@ -71,7 +71,6 @@ SECTIONS
 		*(.rodata*)
 		*(.gcc_except_table*)
 		
-		. = ALIGN(64);
 		KEEP(*(.isr_vector))
 
 		KEEP(*(.eh_frame*))

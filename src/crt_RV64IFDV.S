@@ -275,7 +275,7 @@ Reset_Handler:
     sw x1, 0(x2)
 
 .section ".isr_vector", "ax"
-.align 8
+.align 8, 0		/* 256 bytes alignment */
 
 .global __Vectors
 

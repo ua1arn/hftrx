@@ -122,7 +122,6 @@ SECTIONS
 		. = ALIGN(64);
 
 		*(.data*)
-		. = ALIGN(64);
 		KEEP(*(.isr_vector))
 
 		*(.itcm*)

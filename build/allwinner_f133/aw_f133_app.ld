@@ -70,7 +70,6 @@ SECTIONS
 
 		KEEP(*(.eh_frame*))
 		
-		. = ALIGN(8);
 		KEEP(*(.isr_vector))
 
 	} > RAM

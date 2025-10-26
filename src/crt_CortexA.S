@@ -72,7 +72,7 @@
 /*               Vector table and reset entry                               */
 /* Table B1-3 The vector tables */
 /****************************************************************************/
-	.align 6
+	.align 6, 0		/* 64 bytes alignment */
 	.global __Vectors
 __Vectors:
 	ldr pc, ResetAddr    /* Reset                 */

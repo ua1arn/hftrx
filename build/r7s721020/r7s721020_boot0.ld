@@ -102,7 +102,6 @@ SECTIONS
 	.data : AT (__etext)
 	{
 		__data_start__ = .;
-		. = ALIGN(32);
 		KEEP(*(.isr_vector))
 
 		/* .ctors */

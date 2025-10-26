@@ -47,7 +47,6 @@ SECTIONS
 	
 	.text :
 	{
-		. = ALIGN(32);
 		KEEP(*(.isr_vector))
 		
 		. = ALIGN(8);
