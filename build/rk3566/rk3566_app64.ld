@@ -66,6 +66,7 @@ SECTIONS
  		*(.dtors)
 
 		*(.rodata*)
+		*(.gcc_except_table*)
 		
 		*(.itcm*)
 		*(.dtcm*)
@@ -130,7 +131,7 @@ SECTIONS
 		__data_start__ = .;
 		. = ALIGN(64);
 
-		*(.data*)
+		*(.data* .sdata*)
 
 		. = ALIGN(8);
 		/* preinit data */
@@ -160,13 +161,13 @@ SECTIONS
 		*(.plt) *(.iplt)
 		*(.plt.got)
 		*(.plt.bnd)
-		
-        . = ALIGN(4);
+
+		. = ALIGN(8);
         /* All data end */
         __data_end__ = .;
 	} > RAM
 
-	.bss :
+	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
 		. = ALIGN(64);
@@ -201,6 +202,13 @@ SECTIONS
 		PROVIDE(end = __end__);
 	} > RAM
 
+	.debugs 0 (NOLOAD):
+	{
+		*(.debug*)
+		*(.comment*)
+		*(.ARM.attributes*)
+	} : NONE
+	
 	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	PROVIDE(__stack = __StackTop);
 }

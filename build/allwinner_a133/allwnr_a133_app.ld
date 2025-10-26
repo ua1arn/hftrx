@@ -66,6 +66,7 @@ SECTIONS
  		*(.dtors)
 
 		*(.rodata*)
+		*(.gcc_except_table*)
 
 		KEEP(*(.eh_frame*))
 
@@ -122,11 +123,9 @@ SECTIONS
 		__data_start__ = .;
 		. = ALIGN(64);
 
-		*(.data*)
+		*(.data* .sdata*)
 		. = ALIGN(64);
 		KEEP(*(.isr_vector))
-		__Vectors_End = .;
-		__Vectors_Size = __Vectors_End - __Vectors;
 
 		*(.itcm*)
 		*(.dtcm*)
@@ -161,7 +160,7 @@ SECTIONS
 
 	__etext2 = .;
 
-	.bss :
+	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
 		. = ALIGN(64);
@@ -195,6 +194,13 @@ SECTIONS
 		__end__ = .;
 		PROVIDE(end = __end__);
 	} > RAM
+
+	.debugs 0 (NOLOAD):
+	{
+		*(.debug*)
+		*(.comment*)
+		*(.ARM.attributes*)
+	} : NONE
 
 	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
 	PROVIDE(__stack = __StackTop);
