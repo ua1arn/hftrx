@@ -561,8 +561,8 @@ void tuh_bth_mount_cb(uint8_t idx)
     // init HCI
 #if WITHTINYUSB
     hci_init(hci_transport_h2_tinyusb_instance(idx), NULL);
-#ELif WITHCHERRYUSB
-    //hci_init(hci_transport_h2_tinyusb_instance(idx), NULL);
+#elif WITHCHERRYUSB
+    //hci_init(hci_transport_h2_cherryusb_instance(idx), NULL);
 #else /* WITHTINYUSB */
     hci_init(hci_transport_h2_stm32_instance(), NULL);
 #endif /* WITHTINYUSB */
