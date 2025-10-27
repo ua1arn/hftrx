@@ -561,6 +561,8 @@ void tuh_bth_mount_cb(uint8_t idx)
     // init HCI
 #if WITHTINYUSB
     hci_init(hci_transport_h2_tinyusb_instance(idx), NULL);
+#ELif WITHCHERRYUSB
+    //hci_init(hci_transport_h2_tinyusb_instance(idx), NULL);
 #else /* WITHTINYUSB */
     hci_init(hci_transport_h2_stm32_instance(), NULL);
 #endif /* WITHTINYUSB */
@@ -689,6 +691,16 @@ void bt_initialize(void)
 void bt_initialize(void)
 {
 
+}
+
+void tuh_bth_mount_cb(uint8_t idx)
+{
+	PRINTF("tuh_bth_mount_cb: idx=%u\n", idx);
+}
+
+void tuh_bth_umount_cb(uint8_t idx)
+{
+	PRINTF("tuh_bth_umount_cb: idx=%u\n", idx);
 }
 
 uint_fast8_t hamradio_get_usbbth_active(void)
