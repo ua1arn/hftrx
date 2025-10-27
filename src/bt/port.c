@@ -62,6 +62,7 @@
 #include "hci_transport.h"
 #include "hci_transport_h2_stm32.h"
 #include "hci_transport_h2_tinyusb.h"
+#include "hci_transport_h2_cherryusb.h"
 
 #ifdef ENABLE_SEGGER_RTT
 #include "SEGGER_RTT.h"
@@ -562,7 +563,7 @@ void tuh_bth_mount_cb(uint8_t idx)
 #if WITHTINYUSB
     hci_init(hci_transport_h2_tinyusb_instance(idx), NULL);
 #elif WITHCHERRYUSB
-    //hci_init(hci_transport_h2_cherryusb_instance(idx), NULL);
+    hci_init(hci_transport_h2_cherryusb_instance(idx), NULL);
 #else /* WITHTINYUSB */
     hci_init(hci_transport_h2_stm32_instance(), NULL);
 #endif /* WITHTINYUSB */
