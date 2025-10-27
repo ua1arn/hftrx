@@ -7,7 +7,6 @@ BTSTACK_ROOT := $(PRJROOT)/lib/btstack
 
 C_SOURCES =  \
 ${BTSTACK_ROOT}/3rd-party/hxcmod-player/hxcmod.c \
-${BTSTACK_ROOT}/3rd-party/hxcmod-player/mods/nao-deceased_by_disease.c \
 ${BTSTACK_ROOT}/3rd-party/micro-ecc/uECC.c \
 ${BTSTACK_ROOT}/3rd-party/yxml/yxml.c \
 ${BTSTACK_ROOT}/3rd-party/md5/md5.c \
