@@ -6,11 +6,11 @@
 // UA1ARN
 //
 
-// Orange Pi Zero 2
-// http://www.orangepi.org/orangepiwiki/index.php/Orange_Pi_Zero_2
+// Orange Pi Zero 2W
+// http://www.orangepi.org/orangepiwiki/index.php/Orange_Pi_Zero_2W
 
-#ifndef ARM_ALW_H616_CPU_ORANGEPI_ZERO2_H_INCLUDED
-#define ARM_ALW_H616_CPU_ORANGEPI_ZERO2_H_INCLUDED 1
+#ifndef ARM_ALW_H616_CPU_ORANGEPI_ZERO2W_H_INCLUDED
+#define ARM_ALW_H616_CPU_ORANGEPI_ZERO2W_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -1036,17 +1036,14 @@
 
 #if 1
 
-	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 12)	// PC12 PWR-LED - RED to ground
-	#define BOARD_BLINK_BIT1 (UINT32_C(1) << 13)	// PC13 STATUS-LED - Green - to ground
+	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 13)	// PC13 STATUS-LED - Green - to ground
 
 
 	#define BOARD_BLINK_INITIALIZE() do { \
 		arm_hardware_pioc_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
-		arm_hardware_pioc_outputs(BOARD_BLINK_BIT1, 1 * BOARD_BLINK_BIT1); \
 	} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 		gpioX_setstate(GPIOC, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
-		gpioX_setstate(GPIOC, BOARD_BLINK_BIT1, !! (state) * BOARD_BLINK_BIT1); \
 	} while (0)
 #endif
 
@@ -1089,4 +1086,4 @@
 	// TUSB parameters
 	#define TUP_DCD_ENDPOINT_MAX    6
 
-#endif /* ARM_ALW_H616_CPU_ORANGEPI_ZERO2_H_INCLUDED */
+#endif /* ARM_ALW_H616_CPU_ORANGEPI_ZERO2W_H_INCLUDED */

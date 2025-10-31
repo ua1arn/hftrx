@@ -16836,8 +16836,10 @@ const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 	#if WITHELKEY
 		& xgelkeywpm,
 	#endif /* WITHELKEY */
+	#if WITHIF4DSP
 		& xfltbw_cwnarrow,
 		& xfltsofter_cwnarrow,
+	#endif /* WITHIF4DSP */
 		& xgcwpitch10,
 	#if WITHTX && WITHELKEY
 		& xgbkinenable,
@@ -16931,10 +16933,10 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
 	#if WITHVOX && WITHTX
 		& xgvoxenable,
 	#endif /* WITHVOX && WITHTX */
-	#if WITHSUBTONES
+	#if WITHSUBTONES && WITHIF4DSP
 		& xgsubtoneirx,
 		& xgsubtoneitx,
-	#endif /* WITHSUBTONES */
+	#endif /* WITHSUBTONES && WITHIF4DSP */
 	#if WITHTX && WITHAFCODEC1HAVEPROC
 		& xgmikeequalizer,
 	#endif /* WITHTX && WITHAFCODEC1HAVEPROC */

@@ -8,9 +8,10 @@
 // Orange Pi Zero 2
 // http://www.orangepi.org/orangepiwiki/index.php/Orange_Pi_Zero_2
 
-#ifndef ARM_ALW_T507_CTL_HELPERBOARD_H_INCLUDED
-#define ARM_ALW_T507_CTL_HELPERBOARD_H_INCLUDED 1
+#ifndef ARM_ALW_H616_CTL_ORANGEPI_ZERO2_H_INCLUDED
+#define ARM_ALW_H616_CTL_ORANGEPI_ZERO2_H_INCLUDED 1
 
+	#define CPUSTYLE_H616 1	/* Дополнительно к CPUSTYLE_T507 */
 	#define WITHBRANDSTR "Falcon"
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
@@ -443,7 +444,7 @@
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
-	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
+	//#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 //	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
@@ -686,4 +687,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_ALW_T507_CTL_HELPERBOARD_H_INCLUDED */
+#endif /* ARM_ALW_H616_CTL_ORANGEPI_ZERO2_H_INCLUDED */
