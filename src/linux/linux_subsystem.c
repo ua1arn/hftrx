@@ -107,6 +107,7 @@ enum {
 	as_sample_rate = ARMI2SRATE,
 	as_buf_size = as_max_length * as_sample_rate,
 	as_buf_step = DMABUFFSIZE16TX,
+	as_buf_step8 = DMABUFFSIZE16TX * 4,
 	as_gui_upd_pr = as_buf_size / 50,
 };
 
@@ -117,12 +118,17 @@ uint8_t as_state = AS_IDLE, stop = 0;
 
 void as_rx(uint32_t * buf)
 {
+	if (as_state != AS_RECORDING && as_state != AS_PLAYING)
+		return;
+
+	uint8_t tx = hamradio_moxmode(0);
+
 	pthread_mutex_lock(& mutex_as);
 
-	if (as_state == AS_RECORDING)
+	if (as_state == AS_RECORDING && ! tx)
 	{
 		ASSERT(as_idx < as_buf_size);
-		memcpy(& as_buf [as_idx], buf, as_buf_step * 4);
+		memcpy(& as_buf [as_idx], buf, as_buf_step8);
 		as_idx += as_buf_step;
 		if (as_idx % as_gui_upd_pr == 0) gui_update();
 
@@ -138,7 +144,7 @@ void as_rx(uint32_t * buf)
 	else if (as_state == AS_PLAYING)
 	{
 		ASSERT(as_idx < as_buf_size);
-		memcpy(buf, & as_buf [as_idx], as_buf_step * 4);
+		memcpy(buf, & as_buf [as_idx], as_buf_step8);
 		as_idx += as_buf_step;
 		if (as_idx % as_gui_upd_pr == 0) gui_update();
 
@@ -156,22 +162,44 @@ void as_rx(uint32_t * buf)
 
 void as_tx(uint32_t * buf)
 {
-	if (as_state != AS_TX)
+
+	if (as_state != AS_RECORDING && as_state != AS_TX)
 		return;
+
+	uint8_t tx = hamradio_moxmode(0);
 
 	pthread_mutex_lock(& mutex_as);
 
-	ASSERT(as_idx < as_buf_size);
-	memcpy(buf, & as_buf [as_idx], as_buf_step * 4);
-	as_idx += as_buf_step;
-	if (as_idx % as_gui_upd_pr == 0) gui_update();
-
-	if (as_idx >= as_idx_stop || stop)
+	if (as_state == AS_TX && tx)				// transmit
 	{
-		as_idx = 0;
-		stop = 0;
-		hamradio_set_moxmode(0);
-		as_state = AS_READY;
+		ASSERT(as_idx < as_buf_size);
+		memcpy(buf, & as_buf [as_idx], as_buf_step8);
+		as_idx += as_buf_step;
+		if (as_idx % as_gui_upd_pr == 0) gui_update();
+
+		if (as_idx >= as_idx_stop || stop)
+		{
+			as_idx = 0;
+			stop = 0;
+			hamradio_set_moxmode(0);
+			as_state = AS_READY;
+		}
+	}
+	else if (as_state == AS_RECORDING && tx)	// mic capture
+	{
+		ASSERT(as_idx < as_buf_size);
+		memcpy(& as_buf [as_idx], buf, as_buf_step8);
+		as_idx += as_buf_step;
+		if (as_idx % as_gui_upd_pr == 0) gui_update();
+
+		if (as_idx >= as_buf_size || stop)
+		{
+			as_idx_stop = as_idx;
+			as_idx = 0;
+			stop = 0;
+			as_state = AS_READY;
+			gui_update();
+		}
 	}
 
 	pthread_mutex_unlock(& mutex_as);

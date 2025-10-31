@@ -102,7 +102,10 @@ void * alsa_capture_thread(void * args)
 					snd_pcm_resume(pcm_ca);
 			} else {
 #if WITHAUDIOSAMPLESREC
-			as_tx(b);
+				for (int i = 0; i < error; i ++)
+					b[i * 2 + 1] = b[i * 2];
+
+				as_tx(b);
 #endif /* WITHAUDIOSAMPLESREC */
 			}
 

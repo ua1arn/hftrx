@@ -4523,14 +4523,16 @@ void window_as_process(void)
 		gui_drawline(pos, 0, pos, lim * 2, COLORPIP_GREEN);
 	}
 
-
 	GET_FROM_WM_QUEUE(WINDOW_AS)
 	{
 	case WM_MESSAGE_ACTION:
 		if (IS_BUTTON_PRESS)
 		{
 			if (gui_check_obj(name, "btn_rec"))
+			{
+				memset(d, 0, len * sizeof(COLORPIP_T));
 				as_toggle_record();
+			}
 			else if (gui_check_obj(name, "btn_play"))
 				as_toggle_play();
 			else if (gui_check_obj(name, "btn_tx"))
