@@ -367,7 +367,7 @@ static int axp_set_dldo1(int dldo_num, unsigned int mvolt)
 }
 ///-------------
 
-int axp313_initialize(void)
+int board_orangepi_zero2w_axp313_initialize(void)
 {
 ///PRINTF("START PMIC \n");
 	uint8_t axp313_chip_id;
@@ -393,6 +393,7 @@ int axp313_initialize(void)
 	}
 
 	PRINTF("axp313_chip_id=0x%02X (expected 0x4B)\n", axp313_chip_id);
+	dbg_flush();
 	if (!(axp313_chip_id == 0x4B))
 		return -1;
     PRINTF("axp313_chip_id=OK\n");
@@ -404,6 +405,7 @@ int axp313_initialize(void)
 	axp_set_dcdc3(1100);///VCC-DRAM - 1.1V for LPDDR4
 
 	PRINTF("axp313 INIT END\n");
+	dbg_flush();
 	return 0;
 }
 

@@ -1049,17 +1049,17 @@
 
 	#if WITHISBOOTLOADER
 
-		#define WITHSDRAM_AXP305	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP305 power management chip */
+		#define WITHSDRAM_AXP313	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP313A power management chip */
 
 		#define PMIC_I2C_W 0x6C	// 7bit: 0x36
 		#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
 		// See WITHSDRAM_AXP308
-		int board_orangepi_zero2_axp305_initialize(void);
+		int board_orangepi_zero2w_axp313_initialize(void);
 
 		/* Контроллер питания AXP305 */
 		#define BOARD_PMIC_INITIALIZE() do { \
-			board_orangepi_zero2_axp305_initialize(); \
+			board_orangepi_zero2w_axp313_initialize(); \
 		} while (0)
 	#endif /* WITHISBOOTLOADER */
 
