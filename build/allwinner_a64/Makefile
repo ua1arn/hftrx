@@ -242,6 +242,9 @@ bootloader: BOOT2
 BOOT2: fsbl.bt0
 
 fsbl.bt0: $(PROJECT)_boot.bin
+	busybox grep -e Reset_Handler $(PROJECT)_boot.map
+	busybox grep -e SystemDRAMInit $(PROJECT)_boot.map
+	busybox grep -e SystemExecAARCH64 $(PROJECT)_boot.map
 	./egontool -old $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_a64_boot.map
