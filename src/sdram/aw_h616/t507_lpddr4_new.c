@@ -9,9 +9,10 @@
 
 #include "hardware.h"
 
-#if WITHSDRAMHW && CPUSTYLE_T507 && ! CPUSTYLE_H616
+#if 1//WITHSDRAMHW && CPUSTYLE_T507 && ! CPUSTYLE_H616
 
 #include "formats.h"
+#include "clocks.h"
 #include <string.h>
 
 #define TPR10_CA_BIT_DELAY	BIT_U32(16)
@@ -105,13 +106,13 @@ typedef struct dram_para
 
 typedef uintptr_t virtual_addr_t;
 
-uint32_t read32(uintptr_t addr)
+static uint32_t read32(uintptr_t addr)
 {
 	__DSB();
 	return * (volatile uint32_t *) addr;
 }
 
-void write32(uintptr_t addr, uint32_t value)
+static void write32(uintptr_t addr, uint32_t value)
 {
 	* (volatile uint32_t *) addr = value;
 	__DSB();
