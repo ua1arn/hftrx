@@ -1284,16 +1284,34 @@ static void axp707_set_sw(int sw)
 
 static int axp707_set_dcdc2(unsigned int mvolt)
 {
+	uint8_t cfg;
+	if (mvolt >= 1220)
+		cfg = 70 + axp803_mvolt_to_cfg(mvolt, 1220, 1300, 20);
+	else
+		cfg = axp803_mvolt_to_cfg(mvolt, 500, 1200, 10);
+
 	return 0;
 }
 
 static int axp707_set_dcdc3(unsigned int mvolt)
 {
+	uint8_t cfg;
+	if (mvolt >= 1220)
+		cfg = 70 + axp803_mvolt_to_cfg(mvolt, 1220, 1300, 20);
+	else
+		cfg = axp803_mvolt_to_cfg(mvolt, 500, 1200, 10);
+
 	return 0;
 }
 
 static int axp707_set_dcdc4(unsigned int mvolt)
 {
+	uint8_t cfg;
+	if (mvolt >= 1220)
+		cfg = 70 + axp803_mvolt_to_cfg(mvolt, 1220, 1300, 20);
+	else
+		cfg = axp803_mvolt_to_cfg(mvolt, 500, 1200, 10);
+
 	return 0;
 }
 
