@@ -245,7 +245,7 @@ fsbl.bt0: $(PROJECT)_boot.bin
 	busybox grep -e Reset_Handler $(PROJECT)_boot.map
 	busybox grep -e SystemDRAMInit $(PROJECT)_boot.map
 	busybox grep -e SystemExecAARCH64 $(PROJECT)_boot.map
-	./egontool -old $(PROJECT)_boot.bin fsbl.bt0
+	./egontool -old -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_a64_boot.map
 SystemDRAMInit = 0x00019450

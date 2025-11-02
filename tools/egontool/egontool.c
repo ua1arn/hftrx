@@ -18,6 +18,8 @@
 static int targetRV = 0;
 static int targetAARCH64 = 0;
 static int targetOLD = 0;
+static unsigned long resetHandler = 0x00020100;
+static unsigned long baseAddress  = 0x00020000;
 
 /* boot_file_head copied from mksunxiboot */
 /* boot head definition from sun4i boot code */
@@ -82,7 +84,7 @@ static uint32_t cks(const void * buff, unsigned size, uint32_t sum)
 }
 
 
-static void process(
+static int process(
 	FILE * infile,
 	FILE * outfile)
 {
@@ -90,11 +92,24 @@ static void process(
 	static const uint8_t magic_eGON_BT0 [8] = { 'e', 'G', 'O', 'N', '.', 'B', 'T', '0' };	/* eGON.BT0 */
 	static const uint8_t pub_head_vsn3 [8] = { '3', '0', '0', '0' };	/* 3000 */
 	static const uint8_t platform4 [8] = {  '\0',  '\0',  '\0',  '\0', '4', '.', '0', '\0' };	/* 4.0 */
-	const unsigned execoffset = 0x100;
+	const unsigned execoffset = resetHandler - baseAddress;
 	long binsize;
 	long silesizealigned;
 	uint32_t check_sum;
 
+	if (execoffset % 4)
+	{
+		fprintf(stderr, "ResetHandler offset not aligned to 4 (0x%08X)\n", execoffset);
+		return 1;
+	}
+	if (resetHandler < baseAddress)
+	{
+		fprintf(stderr, "Wrong parameters: resetHandler=0x%08X, baseAddress=0x%08X\n", resetHandler, baseAddress);
+		return 1;
+	}
+	// todo: add range check for execoffset
+
+	fprintf(stderr, "resetHandler=0x%08X, baseAddress=0x%08X\n", resetHandler, baseAddress);
 	fseek(infile, 0, SEEK_END);
 	binsize = ftell(infile);
 	silesizealigned = alignup(binsize + execoffset, 8 * 1024);
@@ -172,6 +187,7 @@ static void process(
 	fillpad(outfile, silesizealigned - binsize - execoffset);
 	
 	fprintf(stderr, "Okay processing... %08X %08X\n", binsize, silesizealigned);
+	return 0;
 }
 
 static void printfield32(const void * buff, const char * name, unsigned offset)
@@ -208,33 +224,58 @@ static int printFLAG;
 
 int main(int argc, char* argv[])
 {
-	if (argc > 1 && strcmp(argv [1], "-old") == 0)
+	for (;;)
 	{
-		++ argv;
-		-- argc;
-		targetOLD = 1;
-		//fprintf(stderr, "RISC-V header generate\n");
-	}
-	if (argc > 1 && strcmp(argv [1], "-rv") == 0)
-	{
-		++ argv;
-		-- argc;
-		targetRV = 1;
-		//fprintf(stderr, "RISC-V header generate\n");
-	}
-	if (argc > 1 && strcmp(argv [1], "-print") == 0)
-	{
-		++ argv;
-		-- argc;
-		printFLAG = 1;
-		//fprintf(stderr, "RISC-V header generate\n");
-	}
-	if (argc > 1 && strcmp(argv [1], "-aarch64") == 0)
-	{
-		++ argv;
-		-- argc;
-		targetAARCH64 = 1;
-		//fprintf(stderr, "RISC-V header generate\n");
+		if (0)
+			;
+		else if (argc > 2 && strcmp(argv [1], "-reset") == 0)
+		{
+			++ argv;
+			-- argc;
+			resetHandler = strtoul(argv [1], NULL, 0);
+			++ argv;
+			-- argc;
+		}
+		else if (argc > 2 && strcmp(argv [1], "-base") == 0)
+		{
+			++ argv;
+			-- argc;
+			baseAddress = strtoul(argv [1], NULL, 0);
+			++ argv;
+			-- argc;
+		}
+		else if (argc > 1 && strcmp(argv [1], "-old") == 0)
+		{
+			++ argv;
+			-- argc;
+			targetOLD = 1;
+			//fprintf(stderr, "RISC-V header generate\n");
+		}
+		else if (argc > 1 && strcmp(argv [1], "-rv") == 0)
+		{
+			++ argv;
+			-- argc;
+			targetRV = 1;
+			//fprintf(stderr, "RISC-V header generate\n");
+		}
+		else if (argc > 1 && strcmp(argv [1], "-print") == 0)
+		{
+			++ argv;
+			-- argc;
+			printFLAG = 1;
+			//fprintf(stderr, "RISC-V header generate\n");
+		}
+		else if (argc > 1 && strcmp(argv [1], "-aarch64") == 0)
+		{
+			++ argv;
+			-- argc;
+			targetAARCH64 = 1;
+			//fprintf(stderr, "RISC-V header generate\n");
+		}
+		else
+		{
+			break;
+		}
 	}
 
 	if (printFLAG && argc >= 1)
@@ -267,6 +308,7 @@ int main(int argc, char* argv[])
 	{
 		const char * const infilename = argv [1]; //"../../build/allwinner_t113_s3/tc1_t113s3_boot.bin";
 		const char * const outfilename = argv [2]; //"../../build/allwinner_t113_s3/fsbl.bt0";
+		int code;
 
 		FILE * infile = fopen(infilename,"rb");
 		FILE * outfile = fopen(outfilename,"wb");
@@ -277,8 +319,10 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 		
-		process(infile, outfile);
-
+		code = process(infile, outfile);
+		fclose(outfile);
+		fclose(infile);
+		return code;
 	}
 
 	return 0;

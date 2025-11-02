@@ -239,7 +239,7 @@ bootloader: BOOT2
 	busybox grep -e Reset_Handler $(PROJECT)_boot.map
 	busybox grep -e SystemDRAMInit $(PROJECT)_boot.map
 	busybox grep -e SystemExecAARCH64 $(PROJECT)_boot.map
-	./egontool $(PROJECT)_boot.bin fsbl.bt0
+	./egontool -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_a133_boot.map - address of SystemDRAMInit
 ifeq (1, 1)
