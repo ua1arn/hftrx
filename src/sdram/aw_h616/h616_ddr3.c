@@ -8,7 +8,8 @@
 
 #include "hardware.h"
 
-#if WITHSDRAMHW && CPUSTYLE_H616
+#if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_H616_LPDDR3)
+
 
 #include "clocks.h"
 #include "formats.h"

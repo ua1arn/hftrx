@@ -15,7 +15,7 @@
  *
  */
 #include "hardware.h"
-#if WITHSDRAMHW && CPUSTYLE_A133
+#if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_A133_LPDDR4)
 #include "formats.h"
 #include "clocks.h"
 #include <string.h>
@@ -1835,5 +1835,5 @@ void arm_hardware_sdram_initialize(void)
 	sunxi_dram_init();
 	TP();
 }
-#endif
+#endif /* WITHSDRAMHW && (CONFIG_SUNXI_DRAM_A133_LPDDR4) */
 
