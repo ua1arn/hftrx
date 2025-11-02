@@ -1,5 +1,5 @@
-#type; C0_CPUX_CFG_T507; T507 Cluster 0 Configuration Register List
-#base; C0_CPUX_CFG_T507 0x09010000
+#type; C0_CPUX_CFG; T507/H618 Cluster 0 Configuration Register List
+#base; C0_CPUX_CFG 0x09010000
 
 #irq; NMI 135; NMI interrupt 
 
