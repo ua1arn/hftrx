@@ -47,6 +47,7 @@
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_DDR3
 	#define BOARD_CONFIG_DRAM_CLK 800
 	#define CONFIG_MACH_SUN50I_H616 1
+	#define CONFIG_SUNXI_DRAM_H616_LPDDR3 1
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */

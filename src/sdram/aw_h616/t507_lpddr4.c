@@ -2187,15 +2187,7 @@ static uint64_t mctl_calc_size(const struct dram_config *config)
 
 static const struct dram_para para = {
 	.clk = BOARD_CONFIG_DRAM_CLK, //CONFIG_DRAM_CLK,
-#ifdef CONFIG_SUNXI_DRAM_H616_DDR3_1333
-	.type = SUNXI_DRAM_TYPE_DDR3,
-#elif defined(CONFIG_SUNXI_DRAM_H616_LPDDR3)
-	.type = SUNXI_DRAM_TYPE_LPDDR3,
-#elif defined(CONFIG_SUNXI_DRAM_H616_LPDDR4)
-	.type = SUNXI_DRAM_TYPE_LPDDR4,
-#elif defined(CONFIG_SUNXI_DRAM_H618_LPDDR4)
-	.type = SUNXI_DRAM_TYPE_LPDDR4,
-#endif
+	.type = BOARD_CONFIG_DRAM_TYPE,
 	.dx_odt = CONFIG_DRAM_SUN50I_H616_DX_ODT,
 	.dx_dri = CONFIG_DRAM_SUN50I_H616_DX_DRI,
 	.ca_dri = CONFIG_DRAM_SUN50I_H616_CA_DRI,
