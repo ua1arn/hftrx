@@ -9,8 +9,8 @@
 // Orange Pi Zero 2W
 // http://www.orangepi.org/orangepiwiki/index.php/Orange_Pi_Zero_2W
 
-#ifndef ARM_ALW_H616_CPU_ORANGEPI_ZERO2W_H_INCLUDED
-#define ARM_ALW_H616_CPU_ORANGEPI_ZERO2W_H_INCLUDED 1
+#ifndef ARM_ALW_H618_CPU_ORANGEPI_ZERO2W_H_INCLUDED
+#define ARM_ALW_H618_CPU_ORANGEPI_ZERO2W_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -1088,4 +1088,4 @@
 	// TUSB parameters
 	#define TUP_DCD_ENDPOINT_MAX    6
 
-#endif /* ARM_ALW_H616_CPU_ORANGEPI_ZERO2W_H_INCLUDED */
+#endif /* ARM_ALW_H618_CPU_ORANGEPI_ZERO2W_H_INCLUDED */

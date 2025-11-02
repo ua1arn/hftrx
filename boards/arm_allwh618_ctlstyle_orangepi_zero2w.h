@@ -8,10 +8,10 @@
 // Orange Pi Zero 2W
 // http://www.orangepi.org/orangepiwiki/index.php/Orange_Pi_Zero_2W
 
-#ifndef ARM_ALW_H616_CTL_ORANGEPI_ZERO2W_H_INCLUDED
-#define ARM_ALW_H616_CTL_ORANGEPI_ZERO2W_H_INCLUDED 1
+#ifndef ARM_ALW_H618_CTL_ORANGEPI_ZERO2W_H_INCLUDED
+#define ARM_ALW_H618_CTL_ORANGEPI_ZERO2W_H_INCLUDED 1
 
-	#define CPUSTYLE_H616 1	/* Дополнительно к CPUSTYLE_T507 */
+	//#define CPUSTYLE_H616 1	/* Дополнительно к CPUSTYLE_T507 */
 	#define WITHBRANDSTR "Falcon"
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
@@ -273,7 +273,7 @@
 	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
 
 	//#define WITHWATCHDOG	1	/* разрешение сторожевого таймера в устройстве */
-	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
+	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	//#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	//#define WITHRTOS	1	/* Использование RTOS */
@@ -687,4 +687,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_ALW_H616_CTL_ORANGEPI_ZERO2W_H_INCLUDED */
+#endif /* ARM_ALW_H618_CTL_ORANGEPI_ZERO2W_H_INCLUDED */
