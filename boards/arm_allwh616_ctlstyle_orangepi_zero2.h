@@ -24,8 +24,15 @@
 	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */
 
 	//  PLL_CPUX=24MHz*N/P
-	#define PLL_CPU_N 	62
-	#define PLL_CPU_P_POW 0
+	#if 0
+		/* 1396 MHz */
+		#define PLL_CPU_N 	116
+		#define PLL_CPU_P_POW 1
+	#else
+		/* 1200 MHz */
+		#define PLL_CPU_N 	100
+		#define PLL_CPU_P_POW 1
+	#endif
 
 	/* модели синтезаторов - схемы частотообразования */
 

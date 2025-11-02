@@ -2208,8 +2208,8 @@ static const struct dram_para para = {
 
 static struct dram_para paraX =
 {
-	.clk       = 792,
-	.type      = SUNXI_DRAM_TYPE_LPDDR4,
+	.clk = BOARD_CONFIG_DRAM_CLK, //CONFIG_DRAM_CLK,
+	.type = BOARD_CONFIG_DRAM_TYPE,
 	.dx_odt    = 0x7070707,
 	.dx_dri    = 0xD0D0D0D,
 	.ca_dri    = 0xE0E,
@@ -2243,8 +2243,8 @@ static struct dram_para paraX =
 };
 static struct dram_para para =
 {
-	.clk       = 792,
-	.type      = SUNXI_DRAM_TYPE_LPDDR4,
+	.clk = BOARD_CONFIG_DRAM_CLK, //CONFIG_DRAM_CLK,
+	.type = BOARD_CONFIG_DRAM_TYPE,
 	.dx_odt    = 0x7070707,
 	.dx_dri    = 0xD0D0D0D,
 	.ca_dri    = 0xE0E,
@@ -2284,11 +2284,12 @@ static struct dram_para para =
 //CONFIG_DRAM_SUNXI_TPR14=0x2023211f
 
 #else
+	#error Wriong DRAM config
 
 static struct dram_para para =
 {
-		.clk       = 792,
-		.type      = SUNXI_DRAM_TYPE_LPDDR4,
+		.clk = BOARD_CONFIG_DRAM_CLK, //CONFIG_DRAM_CLK,
+		.type = BOARD_CONFIG_DRAM_TYPE,
 		.dx_odt    = 0x08080808,
 		.dx_dri    = 0x0e0e0e0e,
 		.ca_dri    = 0x0e0e,
