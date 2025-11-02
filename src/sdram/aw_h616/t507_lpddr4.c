@@ -1,7 +1,4 @@
 /*
- * t507_lpddr4.c
- *
- *  Created on: 15 февр. 2023 г.
  * Проект HF Dream Receiver (КВ приёмник мечты)
  * автор Гена Завидовский mgs2001@mail.ru
  * UA1ARN

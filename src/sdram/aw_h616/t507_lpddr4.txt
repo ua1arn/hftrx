@@ -1,8 +1,7 @@
 /*
- * a64_ddr3.c
- *
- *  Created on: 15 февр. 2023 г.
- *      Author: User
+ * Проект HF Dream Receiver (КВ приёмник мечты)
+ * автор Гена Завидовский mgs2001@mail.ru
+ * UA1ARN
  */
 
 // https://github.com/apritzel/u-boot/blob/3aaabfe9ff4bbcd11096513b1b28d1fb0a40800f/arch/arm/mach-sunxi/dram_sun50i_h616.c#L3
