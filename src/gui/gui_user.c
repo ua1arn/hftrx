@@ -2874,10 +2874,12 @@ void window_ft8_settings_process(void)
 			}
 			else if (gui_check_obj(name, "btn_time0"))
 			{
+		#if defined (RTC1_TYPE)
 				uint_fast8_t hour, minute, seconds;
 				board_rtc_cached_gettime(& hour, & minute, & seconds);
 				seconds = 0;
 				board_rtc_settime(hour, minute, seconds);
+		#endif /* defined (RTC1_TYPE) */
 			}
 			else if (gui_check_obj(name, "btn_freq_eq"))
 			{
