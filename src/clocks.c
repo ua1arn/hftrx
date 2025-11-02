@@ -10045,8 +10045,16 @@ sysinit_pll_initialize(int forced)
 	set_a133_axi_sel(0x00, 1, 1);	// OSC24 as source
 
 	CCU->PSI_AHB1_AHB2_CFG_REG = 0;
+
+	CCU->MBUS_CFG_REG = 0x80000000;
+	local_delay_ms(1);
+	CCU->MBUS_CFG_REG = 0xC0000000;
+
 	PRCM->CPUS_CFG_REG = 0;
 	PRCM->APBS1_CFG_REG = 0;
+
+	CCU->PLL_DDR_CTRL_REG;
+
 #endif
 
 #elif CPUSTYLE_VM14

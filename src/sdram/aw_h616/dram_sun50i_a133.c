@@ -15,7 +15,7 @@
  *
  */
 #include "hardware.h"
-#if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_A133_LPDDR4)
+#if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_A133_LPDDR4) && 1
 #include "formats.h"
 #include "clocks.h"
 #include <string.h>
@@ -53,22 +53,22 @@
 
 typedef uintptr_t virtual_addr_t;
 
-uint32_t read32(uintptr_t addr)
+static uint32_t read32(uintptr_t addr)
 {
-	//__DSB();
+	__DSB();
 	return * (volatile uint32_t *) addr;
 }
 
-void write32(uintptr_t addr, uint32_t value)
+static void write32(uintptr_t addr, uint32_t value)
 {
 	* (volatile uint32_t *) addr = value;
-	//__DSB();
+	__DSB();
 }
 
 static void write32ptr(volatile void * addr, uint32_t value)
 {
 	* (volatile uint32_t *) addr = value;
-	//__DSB();
+	__DSB();
 }
 
 static /*static inline*/ void sdelay(int loops)
@@ -93,12 +93,14 @@ static /*static inline*/ void udelay(int loops)
 
 static uint32_t readl(void * addr)
 {
+	__DSB();
 	return * (volatile uint32_t *) addr;
 }
 
 static void writel(uint32_t value, void * addr)
 {
 	* (volatile uint32_t *) addr = value;
+	__DSB();
 }
 #define writel_relaxed(v, a) do { writel((v), (void *) (a)); } while (0)
 #define readl_relaxed(a) (readl((void *) (a)))
@@ -1697,16 +1699,8 @@ static unsigned long calculate_dram_size(const struct dram_config *config)
 }
 
 static const struct dram_para para = {
-	.clk = CONFIG_DRAM_CLK,
-#ifdef CONFIG_SUNXI_DRAM_DDR3
-	.type = SUNXI_DRAM_TYPE_DDR3,
-#elif defined(CONFIG_SUNXI_DRAM_DDR4)
-	.type = SUNXI_DRAM_TYPE_DDR4,
-#elif defined(CONFIG_SUNXI_DRAM_LPDDR3)
-	.type = SUNXI_DRAM_TYPE_LPDDR3,
-#elif defined(CONFIG_SUNXI_DRAM_LPDDR4)
-	.type = SUNXI_DRAM_TYPE_LPDDR4,
-#endif
+	.clk = BOARD_CONFIG_DRAM_CLK, //CONFIG_DRAM_CLK,
+	.type = BOARD_CONFIG_DRAM_TYPE,
 	/* TODO: Populate from config */
 	.dx_odt = CONFIG_DRAM_SUNXI_DX_ODT,
 	.dx_dri = CONFIG_DRAM_SUNXI_DX_DRI,
