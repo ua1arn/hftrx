@@ -245,20 +245,27 @@ bootloader: BOOT2
 	busybox grep -e SystemExecAARCH64 $(PROJECT)_boot.map
 	./egontool $(PROJECT)_boot.bin fsbl.bt0
 	
-# Take from tc1_t507_boot.map - address of SystemDRAMInit
+# Take from tc1_t507_boot.map - address of SystemDRAMInit, SystemExecAARCH64
 ifeq (1, 1)
 # T507
-SystemDRAMInit = 0x0002e0b4
-SystemExecAARCH64 = 0x0002b7e8
+SystemDRAMInit = 0x0002c354
+SystemExecAARCH64 = 0x00029414
 else
 # H616
-SystemDRAMInit = 0x0002d298
-SystemExecAARCH64 = 0x0002b324
+#SystemDRAMInit = 0x0002d298
+#SystemExecAARCH64 = 0x0002b324
+# H618 + LPDDR4
+SystemDRAMInit = 0x0002c300
+SystemExecAARCH64 = 0x00029118
 endif
 
 # Invoke SystemInit 
 ddrinit_h616: ddrinit_h616.bin
 	$(XFEL) write 0x00028000 ddrinit_h616.bin
+	$(XFEL) exec $(SystemDRAMInit)
+
+ddrinit_h618_lpddr4: ddrinit_h618_lpddr4.bin
+	$(XFEL) write 0x00028000 ddrinit_h618_lpddr4.bin
 	$(XFEL) exec $(SystemDRAMInit)
 
 ddrinit_t507_:
