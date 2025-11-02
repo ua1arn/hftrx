@@ -1327,6 +1327,8 @@ static int axp707_set_fldo1(unsigned int mvolt)
 	return 0;
 }
 
+// https://github.com/baidxi/ATF-Allwinner-A133/blob/ea86259b1c51d4e86051cd35e96df6875b05fe04/plat/allwinner/sun50i_a133/sunxi_power.c#L29
+
 int board_helperboard_a133_axp707_initialize(void)
 {
 	uint8_t axp_chip_id = 0xFF;

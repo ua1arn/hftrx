@@ -274,7 +274,7 @@ static void writel(uint32_t value, void * addr)
 
 
 
-#if defined CONFIG_MACH_SUN50I_H6
+#if CONFIG_MACH_SUN50I_H6
 	#define SUNXI_DRAM_COM_BASE		0x04002000
 	#define SUNXI_DRAM_CTL0_BASE		0x04003000
 	#define SUNXI_DRAM_PHY0_BASE		0x04005000
@@ -283,13 +283,13 @@ static void writel(uint32_t value, void * addr)
 //#define SUNXI_MMC0_BASE			0x04020000
 //#define SUNXI_MMC1_BASE			0x04021000
 //#define SUNXI_MMC2_BASE			0x04022000
-#if defined CONFIG_MACH_SUN50I_T507 || defined CONFIG_MACH_SUN50I_H616
+#if CONFIG_MACH_SUN50I_T507 || CONFIG_MACH_SUN50I_H616
 	#define SUNXI_DRAM_COM_BASE			0x047FA000
 	#define SUNXI_DRAM_CTL0_BASE		0x047FB000
 	#define SUNXI_DRAM_PHY0_BASE		0x04800000
 #endif
 
-#if defined CONFIG_MACH_SUN50I_A133
+#if CONFIG_MACH_SUN50I_A133
 	// https://github.com/u-boot/u-boot/blob/d33b21b7e261691e8d6613a24cc9b0ececba3b01/arch/arm/include/asm/arch-sunxi/cpu_sun50i_h6.h#L33
 	#define SUNXI_DRAM_COM_BASE			0x04810000
 	#define SUNXI_DRAM_CTL0_BASE		0x04820000
@@ -308,7 +308,7 @@ static void writel(uint32_t value, void * addr)
 /*
  * Wait up to 1s for value to be set in given part of reg.
  */
-void mctl_await_completion(uint32_t *reg, uint32_t mask, uint32_t val)
+static void mctl_await_completion(uint32_t *reg, uint32_t mask, uint32_t val)
 {
 	//unsigned long tmo = timer_get_us() + 1000000;
 
