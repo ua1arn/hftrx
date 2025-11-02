@@ -72,6 +72,40 @@ static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
 
 static uint_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализатора
 
+#if defined CODEC1_TYPE
+	adapter_t afcodecrx;		/* от микрофона */
+	adapter_t afcodectx;		/* к наушникам */
+#endif /* defined CODEC1_TYPE */
+
+#if defined CODEC2_TYPE
+	adapter_t ifcodecrx;		/* канал от FPGA к процессору */
+	adapter_t ifcodectx;		/* канал от процессора к FPGA */
+	adapter_t ifspectrumin96;	/* канал от FPGA к процессору */
+	adapter_t ifspectrumin192;	/* канал от FPGA к процессору */
+#endif /* defined CODEC2_TYPE */
+
+static adapter_t adhdmi48tx;			/* к HDMI */
+
+#if WITHRTS96
+	static adapter_t rts96in;	/* Аудиоданные (спектр) в компютер из трансивера */
+#endif /* WITHRTS96 */
+
+#if WITHRTS192
+	static adapter_t rts192in;	/* Аудиоданные (спектр) в компютер из трансивера */
+#endif /* WITHRTS96 */
+
+#if WITHUSEAUDIOREC
+	static adapter_t sdcardio;
+#endif /* WITHUSEAUDIOREC */
+
+#if WITHRTS96
+transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
+#endif /* WITHRTS96 */
+
+#if WITHRTS192
+transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
+#endif /* WITHRTS192 */
+
 #if WITHINTEGRATEDDSP
 
 #if WITHUSBHW && WITHUSBUAC
@@ -2432,8 +2466,7 @@ typedef enum
 
 // USB AUDIO RTS IN
 
-#if WITHRTS192 || WITHRTS96
-
+#if WITHRTS192
 	typedef struct
 	{
 		uacintag_t tag;
@@ -2508,8 +2541,11 @@ typedef enum
 		ASSERT(p->tag == BUFFTAG_RTS192);
 		uacinrts192.release_buffer(p);
 	}
+#endif /* WITHRTS192 */
 
 //#elif WITHRTS96
+
+#if WITHRTS96
 
 	typedef struct
 	{
@@ -4364,6 +4400,145 @@ void buffers_diagnostics(void)
 
 #endif /* WITHBUFFERSDEBUG */
 
+//////////////////////////////////////////
+
+// Преобразовать отношение напряжений выраженное в "разах" к децибелам.
+
+FLOAT_t ratio2db(FLOAT_t ratio)
+{
+	return LOG10F(ratio) * 20;
+}
+
+// Преобразовать отношение выраженное в децибелах к "разам" отношения напряжений.
+
+FLOAT_t db2ratio(FLOAT_t valueDBb)
+{
+	return POWF(10, (valueDBb) / 20);
+}
+
+//////////////////////////////////////////
+
+// Адаптер - преобразователь формата из внешнего по отношению к DSP блоку формата.
+// Внешние форматы - целочисленные - в основном определяются типами зранящимися в DMA буфере данными.
+// Внутренний формат - FLOAT_t в диапазоне -1 .. +1
+
+void adpt_initialize(
+	adapter_t * adp,
+	int leftbit,	// Номер бита слева от знакового во внешнем формате в значащих разрядах
+	int rightspace,	// количество незанятых битов справа.
+	const char * name
+	)
+{
+	const int signpos = leftbit - 1;
+	const FLOAT_t outfence = db2ratio(- (FLOAT_t) 0.03);
+	/* Форматы с павающей точкой обеспечивают точное представление степеней двойки */
+	adp->inputK = LDEXPF(1, - signpos);
+	adp->outputK = LDEXPF(1, signpos) * outfence;
+	adp->outputKexact = LDEXPF(1, signpos);
+	adp->rightspace = rightspace;
+	adp->leftbit = leftbit;
+	adp->lshift32 = 32 - leftbit - rightspace;
+	adp->rshift32 = 32 - leftbit;
+	adp->outmax = outfence;
+	adp->outmin = - outfence;
+	//PRINTF("adpt_initialize: leftbit=%d, rightspace=%d, lshift32=%d, rshift32=%d\n", leftbit, rightspace, adp->lshift32, adp->rshift32);
+	adp->name = name;
+}
+
+// Преобразование значения целочисленного типа во внутреннее представление.
+FLOAT_t adpt_input(const adapter_t * adp, int32_t v)
+{
+	return (FLOAT_t) ((v << adp->lshift32) >> adp->rshift32) * adp->inputK;
+}
+
+// Преобразование во внешнее (целочисленное) представление.
+int32_t adpt_output(const adapter_t * adp, FLOAT_t v)
+{
+//	if (v < -1 || v > 1)
+//	{
+//		PRINTF("adpt_output: '%s' v=%f\n", adp->name, v);
+//	}
+//	ASSERT(v <= 1);
+//	ASSERT(v >= - 1);
+	v = FMINF(v, adp->outmax);	// ограничить сверху
+	v = FMAXF(v, adp->outmin);	// ограничить снизу
+	return (int32_t) (adp->outputK * v) << adp->rightspace;
+}
+
+// Преобразование во внешнее представление.
+int32_t adpt_outputL(const adapter_t * adp, double v)
+{
+//	if (v < -1 || v > 1)
+//	{
+//		PRINTF("adpt_outputL: '%s' v=%f\n", adp->name, v);
+//	}
+//	ASSERT(v <= 1);
+//	ASSERT(v >= - 1);
+	v = fmin(v, adp->outmax);	// ограничить сверху
+	v = fmax(v, adp->outmin);	// ограничить снизу
+	return (int32_t) (adp->outputK * v) << adp->rightspace;
+}
+
+// точное преобразование во внешнее представление.
+int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v)
+{
+//	if (v < -1 || v > 1)
+//	{
+//		PRINTF("adpt_outputexact: '%s' v=%f\n", adp->name, v);
+//	}
+//	ASSERT(v <= 1);
+//	ASSERT(v >= - 1);
+	return (int32_t) (adp->outputKexact * v) << adp->rightspace;
+}
+
+// точное преобразование во внешнее представление.
+int32_t adpt_outputexactL(const adapter_t * adp, double v)
+{
+//	if (v < -1 || v > 1)
+//	{
+//		PRINTF("adpt_outputexactL: '%s' v=%f\n", adp->name, v);
+//	}
+//	ASSERT(v <= 1);
+//	ASSERT(v >= - 1);
+	return (int32_t) (adp->outputKexact * v) << adp->rightspace;
+}
+
+// точное преобразование между внешними целочисленными представлениями.
+void transform_initialize(
+	transform_t * tfm,
+	const adapter_t * informat,
+	const adapter_t * outformat
+	)
+{
+	const int inwidth = informat->leftbit + informat->rightspace;
+	const int outwidth = outformat->leftbit + outformat->rightspace;
+	tfm->lshift32 = 32 - inwidth;
+	tfm->rshift32 = 32 - outwidth;
+	tfm->lshift64 = 64 - inwidth;
+	tfm->rshift64 = 64 - outwidth;
+}
+
+// точное преобразование между внешними целочисленными представлениями.
+// Знаковое число 32 бит
+int32_t transform_do32(
+	const transform_t * tfm,
+	int32_t v
+	)
+{
+	return (v << tfm->lshift32) >> tfm->rshift32;
+}
+
+// точное преобразование между внешними целочисленными представлениями.
+// Знаковое число 64 бит
+int64_t transform_do64(
+	const transform_t * tfm,
+	int64_t v
+	)
+{
+	return (v << tfm->lshift64) >> tfm->rshift64;
+}
+
+
 // инициализация системы буферов
 void buffers_initialize(void)
 {
@@ -4373,6 +4548,39 @@ void buffers_initialize(void)
 	ticker_initialize(& buffticker, NTICKS(DBG_PERIOD), buffers_spool, NULL);
 	ticker_add(& buffticker);
 #endif /* WITHBUFFERSDEBUG */
+
+
+#if defined CODEC1_TYPE
+	/* Аудиокодек */
+	adpt_initialize(& afcodecrx, WITHADAPTERCODEC1WIDTH, WITHADAPTERCODEC1SHIFT, "afcodecrx");
+	adpt_initialize(& afcodectx, WITHADAPTERCODEC1WIDTH, WITHADAPTERCODEC1SHIFT, "afcodectx");
+#endif /* defined CODEC1_TYPE */
+
+	adpt_initialize(& adhdmi48tx, WITHADAPTERHDMIWIDTH, WITHADAPTERHDMISHIFT, "hdmi48tx");
+
+#if defined CODEC2_TYPE
+	/* IF codec / FPGA */
+	adpt_initialize(& ifcodecrx, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT, "ifcodecrx");
+	adpt_initialize(& ifcodectx, WITHADAPTERIFDACWIDTH, WITHADAPTERIFDACSHIFT, "ifcodectx");
+#endif /* defined CODEC2_TYPE */
+
+#if WITHUSEAUDIOREC
+	/* SD CARD */
+	adpt_initialize(& sdcardio, audiorec_getwidth(), 0, "sdcardio");
+#endif /* WITHUSEAUDIOREC */
+
+#if WITHRTS96
+	/* канал квадратур USB AUDIO */
+	adpt_initialize(& ifspectrumin96, WITHADAPTERRTS96_WIDTH, WITHADAPTERRTS96_SHIFT, "ifspectrumin96");
+	adpt_initialize(& rts96in, UACIN_RTS96_SAMPLEBYTES * 8, 0, "rts96in");
+	transform_initialize(& if2rts96out, & ifspectrumin96, & rts96in);
+#endif /* WITHRTS96 */
+#if WITHRTS192
+	/* канал квадратур USB AUDIO */
+	adpt_initialize(& ifspectrumin192, WITHADAPTERRTS192_WIDTH, WITHADAPTERRTS192_SHIFT, "ifspectrumin192");
+	adpt_initialize(& rts192in, UACIN_RTS192_SAMPLEBYTES * 8, 0, "rts192in");
+	transform_initialize(& if2rts192out, & ifspectrumin192, & rts192in);
+#endif /* WITHRTS192 */
 
 #if WITHINTEGRATEDDSP
 

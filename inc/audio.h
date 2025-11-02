@@ -320,20 +320,17 @@ int32_t transform_do32(const transform_t * tfm, int32_t v); // точное пр
 int64_t transform_do64(const transform_t * tfm, int64_t v); // точное преобразование между внешними целочисленными представлениями.
 void transform_initialize(transform_t * tfm, const adapter_t * informat, const adapter_t * outformat);
 
-extern adapter_t afcodecrx;	/* от микрофона */
-extern adapter_t afcodectx;	/* к наушникам */
+#if defined CODEC1_TYPE
+	extern adapter_t afcodecrx;	/* от микрофона */
+	extern adapter_t afcodectx;	/* к наушникам */
+#endif /* defined CODEC1_TYPE */
 
-extern adapter_t ifcodecrx;	/* канал от FPGA к процессору */
-extern adapter_t ifcodectx;	/* канал от процессора к FPGA */
-extern adapter_t ifspectrumin96;	/* канал от FPGA к процессору */
-extern adapter_t ifspectrumin192;	/* канал от FPGA к процессору */
-extern adapter_t adhdmi48tx;			/* к HDMI */
-
-extern adapter_t rts96in;	/* Аудиоданные (спектр) в компютер из трансивера */
-extern adapter_t rts192in;	/* Аудиоданные (спектр) в компютер из трансивера */
-extern adapter_t sdcardio;
-extern transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
-extern transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO RTS
+#if defined CODEC2_TYPE
+	extern adapter_t ifcodecrx;	/* канал от FPGA к процессору */
+	extern adapter_t ifcodectx;	/* канал от процессора к FPGA */
+	extern adapter_t ifspectrumin96;	/* канал от FPGA к процессору */
+	extern adapter_t ifspectrumin192;	/* канал от FPGA к процессору */
+#endif /* defined CODEC2_TYPE */
 
 /* AGC */
 
