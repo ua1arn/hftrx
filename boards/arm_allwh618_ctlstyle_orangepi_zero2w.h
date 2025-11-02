@@ -11,7 +11,6 @@
 #ifndef ARM_ALW_H618_CTL_ORANGEPI_ZERO2W_H_INCLUDED
 #define ARM_ALW_H618_CTL_ORANGEPI_ZERO2W_H_INCLUDED 1
 
-	//#define CPUSTYLE_H616 1	/* Дополнительно к CPUSTYLE_T507 */
 	#define WITHBRANDSTR "Falcon"
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */

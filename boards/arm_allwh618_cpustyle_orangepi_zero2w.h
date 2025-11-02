@@ -112,21 +112,31 @@
 #else /* WITHISBOOTLOADER */
 
 	#if WITHINTEGRATEDDSP
-		#define WITHI2S0HW	1
-		#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
+
+		#define WITHFPGAPIPE_CODEC1 1	/* Интерфейс к FPGA, транзитом в аудио кодек через I2S0 */
+		#define WITHFPGAPIPE_RTS96 WITHRTS96	/* в том же фрейме идут квадратуры RTS96 */
+		#define WITHFPGAPIPE_RTS192 WITHRTS192	/* в том же фрейме идут квадратуры RTS192 */
+		#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
+		#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
+		#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
+
+		#define WITHI2S0HW	1	/* I2S0 - 16-ти канальный канал обмена с FPGA */
+		#define WITHI2S1HW	(1 && WITHHDMITVHW)	/* Использование I2S1 - звук через HDMI */
+		//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
 
 		#define WITHAPBIFMAP_RX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_RX для I2S0, I2S1, I2S2, I2S3.
 		#define WITHAPBIFMAP_TX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_TX для I2S0, I2S1, I2S2, I2S3.
 
-		//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
-		//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+		//#define HARDWARE_I2S0HW_USEDMA 0	// test
+
+		//#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+		//#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
+		//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
+		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
+		#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S0 */
 		//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
 		//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-		////#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-		//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
-		//#define WITHFPGAIF_I2S0_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-		////#define WITHFPGAIF_I2S0_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S0 */
-	//	#define WITHCODEC1_WHBLOCK_DUPLEX_MASTER	1	/* встороенный в процессор кодек */
+		#define WITHCODEC2_HDMI_DUPLEX_MASTER	(1 && WITHHDMITVHW)		/* Канал выдачи в HDMI */
 	#endif /* WITHINTEGRATEDDSP */
 
 	#if ! LCDMODE_DUMMY
