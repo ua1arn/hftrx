@@ -249,28 +249,22 @@
 
 	// Выводы подключения енкодера #1
 	#define ENCODER_INPUT_PORT	(gpioX_getinputs(GPIOA))
-	#define ENCODER_BITA		(UINT32_C(1) << 5)		// PA5
-	#define ENCODER_BITB		(UINT32_C(1) << 4)		// PA4
+	#define ENCODER_BITA		0//(UINT32_C(1) << 5)		// PA5
+	#define ENCODER_BITB		0//(UINT32_C(1) << 4)		// PA4
 
 	// Выводы подключения енкодера #2
 	#define ENCODER2_INPUT_PORT	(gpioX_getinputs(GPIOA))
-	#define ENCODER2_BITA		(UINT32_C(1) << 7)		// PA7
-	#define ENCODER2_BITB		(UINT32_C(1) << 6)		// PA6
+	#define ENCODER2_BITA		0//(UINT32_C(1) << 7)		// PA7
+	#define ENCODER2_BITB		0//(UINT32_C(1) << 6)		// PA6
 
 	/* Определения масок битов для формирования обработчиков прерываний в нужном GPIO */
 	#define BOARA_GPIOE_ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
 	#define BOARA_GPIOE_ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
 
-	#define ENCODER_BITS_GET() (((ENCODER_INPUT_PORT & ENCODER_BITA) != 0) * 2 + ((ENCODER_INPUT_PORT & ENCODER_BITB) != 0))
-	#define ENCODER2_BITS_GET() (((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
+	#define ENCODER_BITS_GET() 0//(((ENCODER_INPUT_PORT & ENCODER_BITA) != 0) * 2 + ((ENCODER_INPUT_PORT & ENCODER_BITB) != 0))
+	#define ENCODER2_BITS_GET() 0//(((ENCODER2_INPUT_PORT & ENCODER2_BITA) != 0) * 2 + ((ENCODER2_INPUT_PORT & ENCODER2_BITB) != 0))
 
 	#define ENCODER_INITIALIZE() do { \
-			arm_hardware_pioa_inputs(BOARA_GPIOE_ENCODER_BITS); \
-			arm_hardware_pioa_updown(_xMask, BOARA_GPIOE_ENCODER_BITS, 0); \
-			arm_hardware_pioa_onchangeinterrupt(BOARA_GPIOE_ENCODER_BITS, BOARA_GPIOE_ENCODER_BITS, BOARA_GPIOE_ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
-			arm_hardware_pioa_inputs(BOARA_GPIOE_ENCODER2_BITS); \
-			arm_hardware_pioa_updown(_xMask, BOARA_GPIOE_ENCODER2_BITS, 0); \
-			arm_hardware_pioa_onchangeinterrupt(0 * BOARA_GPIOE_ENCODER2_BITS, BOARA_GPIOE_ENCODER2_BITS, BOARA_GPIOE_ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
 #endif
@@ -420,7 +414,7 @@
 
 	// TXDISABLE input - PE11
 	#define TXDISABLE_TARGET_PIN				gpioX_getinputs(GPIOE)
-	#define TXDISABLE_BIT_TXDISABLE				(UINT32_C(1) << 11)		// PE11 - TX INHIBIT
+	#define TXDISABLE_BIT_TXDISABLE				0//(UINT32_C(1) << 11)		// PE11 - TX INHIBIT
 	// получить бит запрета передачи (от усилителя мощности)
 	#define HARDWARE_GET_TXDISABLE() (0) //((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
 	#define TXDISABLE_INITIALIZE() do { \
@@ -433,13 +427,13 @@
 	// PTT input - PD10
 	// PTT2 input - PD9
 	#define PTT_TARGET_PIN				gpioX_getinputs(GPIOE)
-	#define PTT_BIT_PTT					(UINT32_C(1) << 8)		// PE8 - PTT
+	#define PTT_BIT_PTT					0//(UINT32_C(1) << 8)		// PE8 - PTT
 	#define PTT2_TARGET_PIN				gpioX_getinputs(GPIOE)
-	#define PTT2_BIT_PTT				(UINT32_C(1) << 9)		// PE9 - PTT2
+	#define PTT2_BIT_PTT				0//(UINT32_C(1) << 9)		// PE9 - PTT2
 	#define PTT3_TARGET_PIN				gpioX_getinputs(GPIOE)
-	#define PTT3_BIT_PTT				(UINT32_C(1) << 10)		// PE10 - PTT3
+	#define PTT3_BIT_PTT				0//(UINT32_C(1) << 10)		// PE10 - PTT3
 	// получить бит запроса оператором перехода на пердачу
-	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0 || (PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0)
+	#define HARDWARE_GET_PTT() 0//((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0 || (PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() do { \
 			arm_hardware_pioe_inputs(PTT_BIT_PTT); \
 			arm_hardware_pioe_updown(PTT_BIT_PTT, PTT_BIT_PTT, 0); \
@@ -451,7 +445,7 @@
 	// ---
 	// TUNE input - PD11
 	#define TUNE_TARGET_PIN				gpioX_getinputs(GPIOE)
-	#define TUNE_BIT_TUNE				(UINT32_C(1) << 6)		// PE6
+	#define TUNE_BIT_TUNE				0//(UINT32_C(1) << 6)		// PE6
 	#define HARDWARE_GET_TUNE() 0//((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
 	#define TUNE_INITIALIZE() do { \
 			arm_hardware_pioe_inputs(TUNE_BIT_TUNE); \
@@ -470,13 +464,13 @@
 
 #if WITHELKEY
 	// Electronic key inputs
-	#define ELKEY_BIT_LEFT				(UINT32_C(1) << 4)		// PE4
-	#define ELKEY_BIT_RIGHT				(UINT32_C(1) << 5)		// PE5
+	#define ELKEY_BIT_LEFT				0//(UINT32_C(1) << 4)		// PE4
+	#define ELKEY_BIT_RIGHT				0//(UINT32_C(1) << 5)		// PE5
 
 	#define ELKEY_TARGET_PIN			gpioX_getinputs(GPIOE)
 
-	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
-	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+	#define HARDWARE_GET_ELKEY_LEFT() 	0//((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	0//((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
 
 
 	#define ELKEY_INITIALIZE() do { \
@@ -591,7 +585,7 @@
 		#define SPIIO_INITIALIZE() do { \
 			arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PC0 SPI0_CLK */ \
 			arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PC2 SPI0_MOSI */ \
-		arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PC4 SPI0_MISO */ \
+			arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PC4 SPI0_MISO */ \
 		} while (0)
 
 	#elif WITHSPISW
@@ -630,7 +624,7 @@
 	} while (0)
 
 
-#define BOARD_GPIOA_ENC2BTN_BIT (UINT32_C(1) << 8)	// PA8 - second encoder button with pull-up
+#define BOARD_GPIOA_ENC2BTN_BIT 0//(UINT32_C(1) << 8)	// PA8 - second encoder button with pull-up
 
 #if WITHKEYBOARD
 	/* PE15: pull-up second encoder button */
@@ -640,7 +634,7 @@
 
 #if WITHENCODER2
 	// P7_8
-	#define TARGET_ENC2BTN_GET	(((gpioX_getinputs(GPIOA)) & BOARD_GPIOA_ENC2BTN_BIT) == 0)
+	#define TARGET_ENC2BTN_GET	0//(((gpioX_getinputs(GPIOA)) & BOARD_GPIOA_ENC2BTN_BIT) == 0)
 #endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON
@@ -823,15 +817,11 @@
 
 #endif /* WITHCPUDACHW */
 
-	#define TARGET_GPIOC_VBUSON_BIT (UINT32_C(1) << 16)	// PC16 - единицей включение питания для device
-
 #if WITHUSBHW
 	#define	USBD_EHCI_INITIALIZE() do { \
-		arm_hardware_pioc_outputs(TARGET_GPIOC_VBUSON_BIT, 0 * TARGET_GPIOC_VBUSON_BIT); \
 	} while (0)
 
 	#define TARGET_USBFS_VBUSON_SET(on)	do { \
-		gpioX_setstate(GPIOC, TARGET_GPIOC_VBUSON_BIT, !! (on) * TARGET_GPIOC_VBUSON_BIT); \
 	} while (0)
 
 	/**USB_OTG_HS GPIO Configuration    
