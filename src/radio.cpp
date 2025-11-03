@@ -15504,6 +15504,12 @@ cat_get_hwptt(void)
 	return 0;
 }
 
+#else
+static uint_fast8_t
+cat_get_hwptt(void)
+{
+	return 0;
+}
 #endif /* WITHTX */
 
 
