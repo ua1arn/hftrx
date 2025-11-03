@@ -50,9 +50,9 @@ struct stm32_header {
 	uint8_t  header_version [4]; //4
 	uint32_t image_length; //4
 	uint32_t image_entry_point; //4
-	uint32_t reserved1; //4
+	uint32_t reserved1; //4 - high 32 bit for aarch64
 	uint32_t load_address; //4
-	uint32_t reserved2; //4
+	uint32_t reserved2; //4 - high 32 bit for aarch64
 	uint32_t version_number; //4
 	uint32_t option_flags; //4
 	uint32_t ecdsa_algorithm ; //4
@@ -121,7 +121,9 @@ static void stm32image_set_header(struct stm32_header *stm32hdr, uint32_t image_
 	stm32image_default_header(stm32hdr);
 
 	stm32hdr->load_address = __cpu_to_le32(loadaddr);
+	stm32hdr->reserved2 = __cpu_to_le32(0);	// high part
 	stm32hdr->image_entry_point = __cpu_to_le32(ep);
+	stm32hdr->reserved1 = __cpu_to_le32(0);	// high part
 	stm32hdr->image_length = __cpu_to_le32(image_length);
 	stm32hdr->image_checksum = checksum;
 	stm32hdr->version_number = __cpu_to_le32(ver);
