@@ -9804,6 +9804,18 @@ sysinit_pll_initialize(int forced)
 
 #elif CPUSTYLE_A64
 
+	{
+		// Disable SD hosts
+
+		CCU->SDMMC0_CLK_REG = 0;
+		CCU->SDMMC1_CLK_REG = 0;
+		CCU->SDMMC2_CLK_REG = 0;
+
+//		CCU->SMHC_BGR_REG = 0x0000FFFF;
+//		(void) CCU->SMHC_BGR_REG;
+//		CCU->SMHC_BGR_REG = 000000000;
+//		(void) CCU->SMHC_BGR_REG;
+	}
 	/* Off bootloader USB */
 	CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << 29);	// USB-OHCI0_RST.
 	CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << 25);	// USB-EHCI0_RST.
@@ -9845,6 +9857,18 @@ sysinit_pll_initialize(int forced)
 
 #elif CPUSTYLE_T113
 
+	{
+		// Disable SD hosts
+
+		CCU->SMHC0_CLK_REG = 0;
+		CCU->SMHC1_CLK_REG = 0;
+		CCU->SMHC2_CLK_REG = 0;
+
+		CCU->SMHC_BGR_REG = 0x0000FFFF;
+		(void) CCU->SMHC_BGR_REG;
+		CCU->SMHC_BGR_REG = 000000000;
+		(void) CCU->SMHC_BGR_REG;
+	}
 	/* Off bootloader USB */
 	if (1)
 	{
@@ -9859,8 +9883,19 @@ sysinit_pll_initialize(int forced)
 
 #elif CPUSTYLE_F133
 
+	{
+		// Disable SD hosts
+
+		CCU->SMHC0_CLK_REG = 0;
+		CCU->SMHC1_CLK_REG = 0;
+		CCU->SMHC2_CLK_REG = 0;
+
+		CCU->SMHC_BGR_REG = 0x0000FFFF;
+		(void) CCU->SMHC_BGR_REG;
+		CCU->SMHC_BGR_REG = 000000000;
+		(void) CCU->SMHC_BGR_REG;
+	}
 	/* Off bootloader USB */
-	if (1)
 	{
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
@@ -9883,8 +9918,19 @@ sysinit_pll_initialize(int forced)
 
 #elif CPUSTYLE_V3S
 
+	{
+		// Disable SD hosts
+
+		CCU->SMHC0_CLK_REG = 0;
+		CCU->SMHC1_CLK_REG = 0;
+		CCU->SMHC2_CLK_REG = 0;
+
+		CCU->SMHC_BGR_REG = 0x0000FFFF;
+		(void) CCU->SMHC_BGR_REG;
+		CCU->SMHC_BGR_REG = 000000000;
+		(void) CCU->SMHC_BGR_REG;
+	}
 	/* Off bootloader USB */
-	if (1)
 	{
 //		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
 //		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
@@ -9904,7 +9950,11 @@ sysinit_pll_initialize(int forced)
 		CCU->SMHC0_CLK_REG = 0;
 		CCU->SMHC1_CLK_REG = 0;
 		CCU->SMHC2_CLK_REG = 0;
-		CCU->SMHC_BGR_REG = 0;
+
+		CCU->SMHC_BGR_REG = 0x0000FFFF;
+		(void) CCU->SMHC_BGR_REG;
+		CCU->SMHC_BGR_REG = 000000000;
+		(void) CCU->SMHC_BGR_REG;
 	}
 
 	{
