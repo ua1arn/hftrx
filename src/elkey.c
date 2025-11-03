@@ -32,7 +32,7 @@ enum {
 	ELKEY_STATE_SPACE,	// сейчас отсчитывается время после передачи элемента знака
 	ELKEY_STATE_SPACE2,		// сейчас отсчитывается время после ОДИНОЧНОЙ паузы
 
-#if WITHCAT && WITHCATEXT
+#if WITHCAT
 	//
 	ELKEY_STATE_AUTO_INITIALIZE,	// ничего не передаётся - начальное состояние сиквенсора
 	ELKEY_STATE_AUTO_ELEMENT_DIT,
@@ -40,7 +40,7 @@ enum {
 	ELKEY_STATE_AUTO_SPACE,
 	ELKEY_STATE_AUTO_SPACE2,
 	ELKEY_STATE_AUTO_NEXT,
-#endif /* WITHCAT && WITHCATEXT */
+#endif /* WITHCAT */
 
 	//
 	ELKEY_STATE_MAX		// неиспользуемое число
@@ -61,7 +61,7 @@ static const FLASHMEM uint_fast8_t elkeyout [ELKEY_STATE_MAX] =
 	EKOUT_PTT, 	// ELKEY_STATE_SPACE_WITH_PENDING_DASH,	// появилось нажатие тире в процессе ожидания за знаком (или было ранее).
 	EKOUT_RX, 	// ELKEY_STATE_SPACE,	// сейчас отсчитывается время после передачи элемента знака
 	EKOUT_RX, 	// ELKEY_STATE_SPACE2,		// сейчас отсчитывается время после ОДИНОЧНОЙ паузы
-#if WITHCAT && WITHCATEXT
+#if WITHCAT
 	//
 	EKOUT_RX, 	// ELKEY_STATE_AUTO_INITIALIZE,	// ничего не передаётся - начальное состояние сиквенсора
 	EKOUT_TX, 	// ELKEY_STATE_AUTO_ELEMENT_DIT,
@@ -69,7 +69,7 @@ static const FLASHMEM uint_fast8_t elkeyout [ELKEY_STATE_MAX] =
 	EKOUT_PTT, 	// ELKEY_STATE_AUTO_SPACE,
 	EKOUT_PTT, 	// ELKEY_STATE_AUTO_SPACE2,
 	EKOUT_PTT, 	// ELKEY_STATE_AUTO_NEXT,
-#endif /* WITHCAT && WITHCATEXT */
+#endif /* WITHCAT */
 };
 
 
@@ -94,9 +94,9 @@ static RAMDTCM uint_fast8_t elkey_reverse;
 static RAMDTCM uint_fast8_t elkey_straight_flags;
 
 static RAMDTCM elkey_t elkey0;	// ручной ключ
-#if WITHCAT && WITHCATEXT
+#if WITHCAT
 	static RAMDTCM elkey_t elkey1;	// CAT (команды KY, KS, ...) ключ
-#endif /* WITHCAT && WITHCATEXT */
+#endif /* WITHCAT */
 
 #define DASHFLAG 	0x01
 #define DITSFLAG 	0x02
@@ -161,9 +161,9 @@ void elkey_set_slope(uint_fast8_t slope)
 {
 #if WITHVIBROPLEX
 	elkeyx_set_slope(& elkey0, slope);
-#if WITHCAT && WITHCATEXT
+#if WITHCAT
 	elkeyx_set_slope(& elkey1, slope);
-#endif /* WITHCAT && WITHCATEXT */
+#endif /* WITHCAT */
 #endif /* WITHVIBROPLEX */
 }
 
@@ -749,7 +749,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		}
 		break;
 
-#if WITHCAT && WITHCATEXT
+#if WITHCAT
 
 	case ELKEY_STATE_AUTO_INITIALIZE:	// ничего не передаётся
 		elkey_vibroplex_reset(elkey);	// копирование начальных параметров формирования элементов. При vibroplex уменьшаем.
@@ -829,7 +829,7 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 		}
 		break;
 
-#endif /* WITHCAT && WITHCATEXT */
+#endif /* WITHCAT */
 	}
 }
 
@@ -837,9 +837,9 @@ void elkeyx_spool_dots(elkey_t * const elkey, uint_fast8_t paddle)
 void elkey_spool_dots(void)
 {
 	elkeyx_spool_dots(& elkey0, hardware_elkey_getpaddle(elkey_reverse));
-#if WITHCAT	&& WITHCATEXT
+#if WITHCAT
 	elkeyx_spool_dots(& elkey1, ELKEY_PADDLE_NONE);
-#endif /* WITHCAT && WITHCATEXT */
+#endif /* WITHCAT */
 }
 
 
@@ -850,9 +850,9 @@ void elkeyx_initialize(elkey_t * const elkey, uint_fast8_t state)
 	elkey->state = state;
 	elkey->maxticks = 0;
 	elkey->ticks = 0;
-#if WITHCAT && WITHCATEXT
+#if WITHCAT
 	elkey->morse = 0;
-#endif /* WITHCAT && WITHCATEXT */
+#endif /* WITHCAT */
 #if WITHVIBROPLEX
 	elkey->vibroplex_slope = 0;
 	elkey->vibroplex_grade = 0;
@@ -865,9 +865,9 @@ void elkey_initialize(void)
 	hardware_elkey_ports_initialize();
 	hardware_elkey_timer_initialize();
 	elkeyx_initialize(& elkey0, ELKEY_STATE_INITIALIZE);
-#if WITHCAT && WITHCATEXT
+#if WITHCAT
 	elkeyx_initialize(& elkey1, ELKEY_STATE_AUTO_INITIALIZE);
-#endif /* WITHCAT && WITHCATEXT */
+#endif /* WITHCAT */
 }
 
 #endif /* WITHELKEY */
@@ -930,9 +930,7 @@ elkey_get_output(void)
 		(elkeyout [elkey0.state] & EKOUT_TX) != 0 ||
 		elkey_manual() ||
   #if WITHCAT	
-	#if WITHCATEXT
 		(elkeyout [elkey1.state] & EKOUT_TX) != 0 ||
-	#endif	/* WITHCATEXT */
 		cat_get_keydown() ||
   #endif	/* WITHCAT */
 		0;
@@ -952,9 +950,7 @@ elkey_get_ptt(void)
 		(elkeyout [elkey0.state] & (EKOUT_PTT | EKOUT_TX)) != 0 ||
 		elkey_manual() ||
   #if WITHCAT
-	#if WITHCATEXT
 		(elkeyout [elkey1.state] & (0*EKOUT_PTT | EKOUT_TX)) != 0 ||
-	#endif	/* WITHCATEXT */
 		cat_get_keydown() ||
   #endif	/* WITHCAT */
 		0;

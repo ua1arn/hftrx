@@ -1158,7 +1158,6 @@ static uint_fast8_t rmstate;		/* RM answer state type (1..3) */
 // add/remove codes: modify also catanswers table.
 enum
 {
-#if WITHCATEXT
 #if WITHELKEY
 	CAT_KY0_INDEX,		// ky0answer()	// обрабатыаем первой для ускорения реакции
 	CAT_KY1_INDEX,		// ky1answer()	// обрабатыаем первой для ускорения реакции
@@ -1180,7 +1179,6 @@ enum
 #if WITHTX && WITHAUTOTUNER
 	CAT_AC_INDEX,		// acanswer()
 #endif /* WITHTX && WITHAUTOTUNER */
-#endif /* WITHCATEXT */
 	CAT_ID_INDEX,		// idanswer()
 	CAT_FV_INDEX,		// fvanswer()
 	CAT_DA_INDEX,		// daanswer()
@@ -7514,9 +7512,9 @@ enum
 {
 	CATSTATE_HALTED,
 	CATSTATE_WAITPARAM,		/* состояние ожидания приёма параметра (кончается по приёму ';' */
-#if WITHCATEXT && WITHELKEY
+#if WITHELKEY
 	CATSTATE_WAITMORSE,		/* состояние ожидания приёма символа за KY */
-#endif /* WITHCATEXT && WITHELKEY */
+#endif /* WITHELKEY */
 	CATSTATE_WAITCOMMAND1,	/* состояние ожидания приёма первого байта команды */
 	CATSTATE_WAITCOMMAND2	/* состояние ожидания приёма второго байта команды */
 };
@@ -14293,11 +14291,11 @@ static uint_fast8_t morsefill;	/* индекс буфера, заполняем�
 static uint_fast8_t inpmorselength [2];
 static uint_fast8_t sendmorsepos [2];
 
-#if WITHCATEXT && WITHELKEY
+#if WITHELKEY
 	static void cat_set_kyanswer(uint_fast8_t force);
 	static uint_fast8_t cathasparamerror;
 	static unsigned char morsestring [2][25];
-#endif /* WITHCATEXT && WITHELKEY */
+#endif /* WITHELKEY */
 
 static uint_fast8_t catstatein = CATSTATE_HALTED;
 
@@ -14515,7 +14513,7 @@ ascii_toupper(uint_fast8_t c)
 	return toupper((unsigned char) c);
 }
 
-#if WITHCATEXT && WITHELKEY
+#if WITHELKEY
 
 /* todo: переделать на обновление параметра KY в ответе, если KY запрошен. */
 static void
@@ -14548,7 +14546,7 @@ static char cat_getnextcw(void)
 	return '\0';
 }
 
-#endif /* WITHCATEXT && WITHELKEY */
+#endif /* WITHELKEY */
 
 /* вызывается из обработчика прерываний */
 // произошла потеря символа (символов) при получении данных с CAT компорта
@@ -14610,7 +14608,7 @@ void cat2_parsechar(uint_fast8_t c)
 			cat_answer_map [CAT_BADCOMMAND_INDEX] = 1;	// второй символ не буква, а ';' - преждевременный конец команды
 			catstatein = CATSTATE_WAITCOMMAND1;
 		}
-#if WITHCATEXT && WITHELKEY
+#if WITHELKEY
 		else if (catcommand1 == 'K' && catcommand2 == 'Y')
 		{
 			catstatein = CATSTATE_WAITMORSE;
@@ -14618,7 +14616,7 @@ void cat2_parsechar(uint_fast8_t c)
 			catpcount = 0;
 			cathasparamerror = 0;
 		}
-#endif	/* WITHCATEXT && WITHELKEY */
+#endif	/* WITHELKEY */
 		else
 		{
 			catstatein = CATSTATE_WAITPARAM;
@@ -14663,7 +14661,7 @@ void cat2_parsechar(uint_fast8_t c)
 		}
 		break;
 
-#if WITHCATEXT && WITHELKEY
+#if WITHELKEY
 	case CATSTATE_WAITMORSE:
 		if (c == '\0')	// такой симвоь недопустим
 		{
@@ -14726,7 +14724,7 @@ void cat2_parsechar(uint_fast8_t c)
 			catstatein = CATSTATE_WAITCOMMAND1;	/* в user-mode нечего делать - ответ не формируем  */
 		}
 		break;
-#endif /* WITHCATEXT && WITHELKEY */
+#endif /* WITHELKEY */
 	}
 }
 
@@ -15030,7 +15028,7 @@ static void pcanswer(uint_fast8_t arg)
 
 #endif /* WITHPOWERTRIM && WITHTX */
 
-#if WITHCATEXT && WITHELKEY
+#if WITHELKEY
 
 static void ky0answer(uint_fast8_t arg)
 {
@@ -15073,7 +15071,7 @@ static void ksanswer(uint_fast8_t arg)
 		);
 	cat_answer(len);
 }
-#endif /* WITHCATEXT && WITHELKEY */
+#endif /* WITHELKEY */
 
 static void txanswer(uint_fast8_t arg)
 {
@@ -15114,9 +15112,6 @@ static void aianswer(uint_fast8_t arg)
 		);
 	cat_answer(len);
 }
-
-
-#if WITHCATEXT
 
 static void psanswer(uint_fast8_t arg)
 {
@@ -15401,7 +15396,6 @@ static void rm3answer(uint_fast8_t arg)
 }
 
 #endif /* WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) */
-#endif /* WITHCATEXT */
 
 static uint_fast8_t
 adjust8(uint_fast8_t v, uint_fast8_t minimal, uint_fast8_t maximal)
@@ -15588,7 +15582,7 @@ typedef void (* canapfn)(uint_fast8_t arg);
 
 static const canapfn catanswers [CAT_MAX_INDEX] =
 {
-#if WITHCATEXT
+#if 1
 #if WITHELKEY
 	ky0answer,	// обрабатыаем первой для ускорения реакции,
 	ky1answer,	// обрабатыаем первой для ускорения реакции,
@@ -15610,7 +15604,7 @@ static const canapfn catanswers [CAT_MAX_INDEX] =
 #if WITHTX && WITHAUTOTUNER
 	acanswer,
 #endif /* WITHTX && WITHAUTOTUNER */
-#endif /* WITHCATEXT */
+#endif /* 1 */
 	idanswer,
 	fvanswer,
 	daanswer,
@@ -15983,7 +15977,6 @@ processcatmsg(
 		}
 	}
 #endif /* WITHSPLITEX */
-#if WITHCATEXT
 #if WITHIF4DSP
 	else if (pcmd == packcmd2('N', 'T'))
 	{
@@ -16261,7 +16254,6 @@ processcatmsg(
 		}
 	}
 #endif
-#endif /* WITHCATEXT */
 #if WITHTX
 	else if (pcmd == packcmd2('T', 'X'))
 	{
@@ -16315,7 +16307,7 @@ processcatmsg(
 				cat_answer_request(CAT_RX_INDEX);
 		}
 	}
-#if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) && WITHCATEXT
+#if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 	else if (pcmd == packcmd2('R', 'M'))
 	{
 		// Get SWR, COMP or ALC- meter information
@@ -16350,7 +16342,7 @@ processcatmsg(
 			}
 		}
 	}
-#endif /*  WITHTX && WITHSWRMTR && WITHCATEXT */
+#endif /*  WITHTX && WITHSWRMTR */
 #if WITHTX && WITHAUTOTUNER
 	else if (pcmd == packcmd2('A', 'C'))
 	{
@@ -16407,7 +16399,7 @@ processcatmsg(
 			cat_answer_request(CAT_FW_INDEX);
 		}
 	}
-#if WITHCATEXT && WITHELKEY
+#if WITHELKEY
 	else if (pcmd == packcmd2('K', 'S'))
 	{
 		// keyer speed
@@ -16425,7 +16417,7 @@ processcatmsg(
 			cat_answer_request(CAT_KS_INDEX);
 		}
 	}
-#endif	/* WITHCATEXT */
+#endif	/* WITHELKEY */
 #if WITHIF4DSP
 	else if (pcmd == packcmd2('Z', 'Y'))
 	{
@@ -16627,13 +16619,13 @@ static char beacon_getnextcw(void)
 // Получение символа для передачи (только верхний регистр)
 uint_fast8_t elkey_getnextcw(void)
 {
-#if WITHCAT && WITHCATEXT
+#if WITHCAT
 	const uint_fast8_t chcat = cat_getnextcw();
 	const uint_fast8_t ch = (chcat != '\0') ? chcat : beacon_getnextcw();
 	return ch;
 #else
 	return beacon_getnextcw();
-#endif /* WITHCAT && WITHCATEXT*/
+#endif /* WITHCAT*/
 }
 
 #endif /* WITHELKEY */
