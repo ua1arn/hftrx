@@ -4894,6 +4894,17 @@ HAL_StatusTypeDef USB_DevInit(USBOTG_TypeDef *USBx, USB_OTG_CfgTypeDef cfg)
 //		* DEVADDn = 0;
 //		(void) * DEVADDn;
 //	}
+	if (1)
+	{
+		usb_struct * const pusb = NULL;
+		// Endpoints configuration test
+		usb_set_eprx_interrupt_enable(pusb, 0xFFFF);
+		usb_set_eptx_interrupt_enable(pusb, 0xFFFF);
+		const unsigned epn = aw_log2(WITHUSBHW_DEVICE->USB_INTTXE);
+		PRINTF("USB device endpoints: RX IRQs=%04X, TX IRQs=%04X (%u endpoints, EP0 included)\n", (unsigned) WITHUSBHW_DEVICE->USB_INTRXE, (unsigned) WITHUSBHW_DEVICE->USB_INTTXE, epn);
+		usb_clear_eprx_interrupt_enable(pusb, 0xFFFF);
+		usb_clear_eptx_interrupt_enable(pusb, 0xFFFF);
+	}
 
 	return HAL_OK;
 }
