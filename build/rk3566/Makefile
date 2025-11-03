@@ -308,7 +308,7 @@ BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP2: $(PROJECT)_app.elf $(PROJECT)_app.bin
 	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin
-	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
+	./stm32image -v 0 -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
 
 $(OBJSC):
 	@mkdir -p $(@D)

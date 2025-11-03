@@ -60,7 +60,8 @@ struct stm32_header {
 
 static uint_fast8_t bootloader_get_start(
 		uintptr_t apparea,	/* целевой адрес для загрузки образа - здесь лежит заголовок файла */
-		uintptr_t * ip)
+		uintptr_t * ip,
+		uint_fast8_t * flagx64)
 {
 	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) apparea;
 	uint_fast32_t checksum = hdr->image_checksum;
@@ -69,6 +70,7 @@ static uint_fast8_t bootloader_get_start(
 	if (hdr->magic_number != HEADER_MAGIC)
 		return 1;
 	* ip = hdr->image_entry_point;
+	* flagx64 = hdr->version_number == 1;	// 64 bit execution flag
 	while (length --)
 		checksum -= * p ++;
 	return checksum != 0;	// возврат 0 если контрольная сумма совпала
@@ -96,6 +98,7 @@ static uint_fast8_t bootloader_copyapp(
 	enum { HEADERSIZE = 256 };
 	static uint8_t tmpbuff [HEADERSIZE];
 	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) tmpbuff;
+	uint_fast8_t x64bit;
 
 	bootloader_readimage(appoffset, tmpbuff, HEADERSIZE);
 	//printhex(appoffset, tmpbuff, HEADERSIZE);
@@ -106,7 +109,7 @@ static uint_fast8_t bootloader_copyapp(
 	}
 	PRINTF("bootloader_copyapp: addr=%08X, len=%08X\n", (unsigned) hdr->load_address, (unsigned) hdr->image_length);
 	bootloader_readimage(appoffset + HEADERSIZE, (void *) (uintptr_t) hdr->load_address, hdr->image_length);
-	if (bootloader_get_start((uintptr_t) hdr, ip))	// verify
+	if (bootloader_get_start((uintptr_t) hdr, ip, & x64bit))	// verify
 	{
 		PRINTF("bootloader_copyapp done - checksum bad.\n");
 		printhex((uintptr_t) hdr->load_address, (void *) (uintptr_t) hdr->load_address, 256);
@@ -121,7 +124,7 @@ static uint_fast8_t bootloader_copyapp(
 // Сюда попадаем из USB DFU клвсса при приходе команды
 // DFU_Detach после USBD_Stop
 static void __NO_RETURN
-bootloader_launch_app(uintptr_t startfunc)
+bootloader_launch_app(uintptr_t startfunc, uint_fast8_t x64bit)
 {
 	const unsigned targetcore = 0;	// Номер ядра, на котором будет запущено приложение (aarch64/rv64)
 	dcache_clean_all();
@@ -194,9 +197,9 @@ bootloader_launch_app(uintptr_t startfunc)
 	}
 	dbg_flush();	// дождаться, пока будут переданы все символы, ы том числе и из FIFO
 
-#if CPUSTYLE_T113 && (WITHISBOOTLOADER_DDR || WITHISBOOTLOADER_RUN64)
+#if CPUSTYLE_T113
 
-	if (allwnr_t113_get_chipid() == CHIPID_T113M4020DC0)
+	if (allwnr_t113_get_chipid() == CHIPID_T113M4020DC0 && x64bit)
 	{
 		// start RV64 core as application
 		CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);				// RISC-V_MCLK_EN
@@ -213,40 +216,43 @@ bootloader_launch_app(uintptr_t startfunc)
 		__WFE();
 	}
 
-#elif defined (__CORTEX_A) && (__CORTEX_A == 53U)  && (! defined(__aarch64__)) && (WITHISBOOTLOADER_DDR || WITHISBOOTLOADER_RUN64)
+#elif defined (__CORTEX_A) && (__CORTEX_A == 53U)  && (! defined(__aarch64__))
 
-	// Start aarch64 core as application
-	//__set_RVBAR_EL3(startfunc);
-#if CPUSTYLE_A64
-	CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-	CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
-#elif CPUSTYLE_H616
-	C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-	C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
-#elif CPUSTYLE_T507
-	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-	CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
-#else
-	#error Unexpected CPUSTYLE_xxx
-#endif
-	// RMR - Reset Management Register
-	// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
-	enum { CODE = 0x03 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
-	//enum { CODE = 0x02 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
-
-	//__set_CP(15, 0, result, 12, 0, 2);
-	//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
-	// G8.2.123 RMR, Reset Management Register
-	__set_CP(15, 0, CODE, 12, 0, 2);	// RMR_EL1 - work okay
-	//__set_CP(15, 3, result, 12, 0, 2);	// RMR_EL2 - UndefHandler
-	//__set_CP(15, 6, result, 12, 0, 2);	// RMR_EL3 - UndefHandler
-
-	__ISB();
-	__WFI();
-
-	for (;;)
+	if (x64bit)
 	{
-		__WFE();
+		// Start aarch64 core as application
+		//__set_RVBAR_EL3(startfunc);
+	#if CPUSTYLE_A64
+		CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+		CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+	#elif CPUSTYLE_H616
+		C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+		C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+	#elif CPUSTYLE_T507
+		CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+		CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+	#else
+		#error Unexpected CPUSTYLE_xxx
+	#endif
+		// RMR - Reset Management Register
+		// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
+		enum { CODE = 0x03 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+		//enum { CODE = 0x02 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+
+		//__set_CP(15, 0, result, 12, 0, 2);
+		//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
+		// G8.2.123 RMR, Reset Management Register
+		__set_CP(15, 0, CODE, 12, 0, 2);	// RMR_EL1 - work okay
+		//__set_CP(15, 3, result, 12, 0, 2);	// RMR_EL2 - UndefHandler
+		//__set_CP(15, 6, result, 12, 0, 2);	// RMR_EL3 - UndefHandler
+
+		__ISB();
+		__WFI();
+
+		for (;;)
+		{
+			__WFE();
+		}
 	}
 
 #elif CPUSTYLE_RISCV
@@ -267,6 +273,10 @@ bootloader_launch_app(uintptr_t startfunc)
 	}
 
 #endif
+	for (;;)
+	{
+		__WFE();
+	}
 }
 
 /* Вызов заказан вызывется из обработчика USB прерываний EP0 */
@@ -274,7 +284,8 @@ void bootloader_deffereddetach(void * arg)
 {
 #if defined (USBD_DFU_RAM_LOADER)
 	uintptr_t ip;
-	if (bootloader_get_start(USBD_DFU_RAM_LOADER, & ip) == 0)
+	uint_fast8_t x64bit;
+	if (bootloader_get_start(USBD_DFU_RAM_LOADER, & ip, & x64bit) == 0)
 	{
 		PRINTF("bootloader_deffereddetach: ip=%08lX\n", (unsigned long) ip);
 		/* Perform an Attach-Detach operation on USB bus */
@@ -284,7 +295,7 @@ void bootloader_deffereddetach(void * arg)
 		if (bootloader_withusb())
 			board_usb_deinitialize();
 #endif /* WITHUSBHW */
-		bootloader_launch_app(ip);
+		bootloader_launch_app(ip, x64bit);
 	}
 	else
 	{
@@ -375,7 +386,7 @@ void bootloader_fatfs_mainloop(void)
 
 #if BOOTLOADER_RAMSIZE
 	uintptr_t ip;
-	if (bootloader_get_start((uintptr_t) header, & ip) != 0)	/* проверка сигнатуры и получение стартового адреса */
+	if (bootloader_get_start((uintptr_t) header, & ip, & x64bit) != 0)	/* проверка сигнатуры и получение стартового адреса */
 	{
 		PRINTF("bootloader_fatfs_mainloop start: can not load '%s'\n", IMAGENAME);
 		for (;;)
@@ -397,7 +408,7 @@ void bootloader_fatfs_mainloop(void)
 #if WITHDEBUG
 	local_delay_ms(100);
 #endif /* WITHDEBUG */
-	bootloader_launch_app(ip);
+	bootloader_launch_app(ip, x64bit);
 #endif /* BOOTLOADER_RAMSIZE */
 }
 
@@ -420,7 +431,7 @@ void bootloader0_mainloop(void)
 #if WITHUSBHW
 	#error No WITHUSBHW supported
 #endif /* WITHUSBHW */
-	bootloader_launch_app(target);
+	bootloader_launch_app(target, x64bit);
 	for (;;)
 		;
 }
@@ -458,7 +469,7 @@ void bootloader_mainloop(void)
 				board_usb_deinitialize();
 #endif /* WITHUSBHW */
 			PRINTF("bootloader_mainloop: ip=%08X\n", (unsigned) ip);
-			bootloader_launch_app(ip);
+			bootloader_launch_app(ip, x64bit);
 
 		} while (0);
 	}
@@ -480,6 +491,7 @@ void bootloader_mainloop(void)
 		DRESULT dc;
 		UINT br = 0;		//  количество считанных байтов
 		uintptr_t ip;
+		uint_fast8_t x64bit;
 		unsigned length = 0;
 		struct stm32_header * const hdr = (struct stm32_header *) drambase;
 
@@ -510,11 +522,11 @@ void bootloader_mainloop(void)
 			PRINTF("app read error\n");
 			break;
 		}
-		if (bootloader_get_start(drambase, & ip) == 0)
+		if (bootloader_get_start(drambase, & ip, & x64bit) == 0)
 		{
 			PRINTF("bootloader: go to ip=%08lX\n", (unsigned long) ip);
 			/* Perform an Attach-Detach operation on USB bus */
-			bootloader_launch_app(ip);
+			bootloader_launch_app(ip, x64bit);
 		}
 		else
 		{
@@ -558,10 +570,11 @@ void __attribute__((used)) SystemExecAARCH64(void)
 {
 	uintptr_t header = 0x40000000;
 	uintptr_t ip;
-	if (bootloader_get_start((uintptr_t) header, & ip) == 0)	/* проверка сигнатуры и получение стартового адреса */
+	uint_fast8_t x64bit;
+	if (bootloader_get_start((uintptr_t) header, & ip, & x64bit) == 0)	/* проверка сигнатуры и получение стартового адреса */
 	{
 		PRINTF("Start address ip=%08X\n", (unsigned) ip);
-		bootloader_launch_app(ip);
+		bootloader_launch_app(ip, x64bit);
 		for (;;)
 			;
 	}

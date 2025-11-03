@@ -340,6 +340,7 @@
 
 #if WITHSDHCHW
 
+	#define USERFIRSTSBLOCK 0
 	#define	SMHCHARD_IX 0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_PTR SMHC0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC0_BASE	/* 0 - SMHC0, 1: SMHC1... */
@@ -838,7 +839,6 @@
 		} while (0)
 #else /* WITHUSBHW */
 	#define	USBD_EHCI_INITIALIZE() do { \
-		arm_hardware_pioc_outputs(TARGET_GPIOC_VBUSON_BIT, 0 * TARGET_GPIOC_VBUSON_BIT); \
 	} while (0)
 
 #endif /* WITHUSBHW */

@@ -278,7 +278,7 @@ fsbl.f133: $(PROJECT)_boot.bin
 	./egontool -rv -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.f133
 	
 $(PROJECT)_app.f133: $(PROJECT)_app.bin
-	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
+	./stm32image -v 1 -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
 
 $(OBJSC):
 	@mkdir -p $(@D)

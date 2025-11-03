@@ -1263,6 +1263,7 @@ int board_helperboard_t507_axp853_initialize(void)
 	return 0;
 }
 
+#if WITHSDRAM_AXP707
 
 // AXP707 registers
 #define AXP707_CHIP_ID 	0x03
@@ -1440,5 +1441,6 @@ int board_helperboard_a133_axp707_initialize(void)
 #endif
 	return 0;
 }
+#endif /* WITHSDRAM_AXP707 */
 
 #endif /* WITHSDRAM_AXP803 || WITHSDRAM_AXP305 || WITHSDRAM_AXP853 || WITHSDRAM_AXP707 */

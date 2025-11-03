@@ -253,8 +253,8 @@ else
 #SystemDRAMInit = 0x0002d298
 #SystemExecAARCH64 = 0x0002b324
 # H618 + LPDDR4
-SystemDRAMInit = 0x0002c300
-SystemExecAARCH64 = 0x00029114
+SystemDRAMInit = 0x0002b440
+SystemExecAARCH64 = 0x00028f84
 endif
 
 # Invoke SystemInit 
@@ -305,10 +305,10 @@ BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP2: $(PROJECT)_app.elf $(PROJECT)_app.bin
 	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin
-	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
+	./stm32image -v 1 -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
 
 $(PROJECT)_app.alw32_TEST: $(PROJECT)_app.bin
-	./stm32image \`busybox -l 0x40000100 -e `grep Reset_Handler -m 1 $(PROJECT)_app.map | cut -F 2` -s $(PROJECT)_app.bin -d $@\`
+	./stm32image -v 1 \`busybox -l 0x40000100 -e `grep Reset_Handler -m 1 $(PROJECT)_app.map | cut -F 2` -s $(PROJECT)_app.bin -d $@\`
 
 $(OBJSC):
 	@mkdir -p $(@D)
