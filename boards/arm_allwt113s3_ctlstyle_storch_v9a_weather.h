@@ -523,7 +523,7 @@
 
 	//#define WITHWFM	1			/* используется WFM */
 
-	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
+	
 	//#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
 
