@@ -252,8 +252,8 @@ SystemDRAMInit = 0x0002c3a4
 SystemExecAARCH64 = 0x00029454
 else
 # H616
-#SystemDRAMInit = 0x0002d298
-#SystemExecAARCH64 = 0x0002b324
+#SystemDRAMInit = 0x0002c1f8
+#SystemExecAARCH64 = 0x0002918c
 # H618 + LPDDR4
 SystemDRAMInit = 0x0002b450
 SystemExecAARCH64 = 0x00028f90

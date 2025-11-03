@@ -92,13 +92,13 @@ static uint_fast8_t bootloader_get_start_no_cks(
 
 static uint_fast8_t bootloader_copyapp(
 		uint_fast32_t appoffset,	/* смещение заголовка приожения в накопителе */
-		uintptr_t * ip
+		uintptr_t * ip,
+		uint_fast8_t * fx64bit
 		)
 {
 	enum { HEADERSIZE = 256 };
 	static uint8_t tmpbuff [HEADERSIZE];
 	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) tmpbuff;
-	uint_fast8_t x64bit;
 
 	bootloader_readimage(appoffset, tmpbuff, HEADERSIZE);
 	//printhex(appoffset, tmpbuff, HEADERSIZE);
@@ -109,7 +109,7 @@ static uint_fast8_t bootloader_copyapp(
 	}
 	PRINTF("bootloader_copyapp: addr=%08X, len=%08X\n", (unsigned) hdr->load_address, (unsigned) hdr->image_length);
 	bootloader_readimage(appoffset + HEADERSIZE, (void *) (uintptr_t) hdr->load_address, hdr->image_length);
-	if (bootloader_get_start((uintptr_t) hdr, ip, & x64bit))	// verify
+	if (bootloader_get_start((uintptr_t) hdr, ip, fx64bit))	// verify
 	{
 		PRINTF("bootloader_copyapp done - checksum bad.\n");
 		printhex((uintptr_t) hdr->load_address, (void *) (uintptr_t) hdr->load_address, 256);
@@ -475,7 +475,8 @@ void bootloader_mainloop(void)
 		do
 		{
 			uintptr_t ip = 0xDEADBEEF;
-			if (bootloader_copyapp(BOOTLOADER_SELFSIZE, & ip) != 0)	/* копирование исполняемого образа (если есть) в требуемое место */
+			uint_fast8_t x64bit;
+			if (bootloader_copyapp(BOOTLOADER_SELFSIZE, & ip, & x64bit) != 0)	/* копирование исполняемого образа (если есть) в требуемое место */
 			{
 				PRINTF("bootloader_mainloop: No application image at offset 0x%08X\n", (unsigned) BOOTLOADER_SELFSIZE);
 				break;
