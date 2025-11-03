@@ -253,7 +253,7 @@ boot.hex: $(PROJECT)_boot0.bin
 APP2: $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 $(PROJECT)_app.nec32: $(PROJECT)_app.bin
-	./stm32image -l 0x20000100 -e 0x20000100 -s $(PROJECT)_app.bin -d $@
+	./stm32image -v 0 -l 0x20000100 -e 0x20000100 -s $(PROJECT)_app.bin -d $@
 
 app.hex: $(PROJECT)_app.nec32
 	./bin2ihex -l 0x00020000 -s $(PROJECT)_app.nec32 >$@

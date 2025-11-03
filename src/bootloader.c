@@ -211,9 +211,16 @@ bootloader_launch_app(uintptr_t startfunc, uint_fast8_t x64bit)
 		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 1 * ((UINT32_C(1) << targetcore));	/* De-assert rv64 reset */
 		C0_CPUX_CFG->C0_RST_CTRL &= ~ UINT32_C(0x03);		// CORE_RESET assert for aarch32 core1 and core0
 	}
-	for (;;)
+	else
 	{
-		__WFE();
+		/* Обычный запуск, в 32-бит режиме. */
+		__ISB();
+		__DSB();
+		(* (void (*)(void)) startfunc)();
+		for (;;)
+		{
+			__WFE();
+		}
 	}
 
 #elif defined (__CORTEX_A) && (__CORTEX_A == 53U)  && (! defined(__aarch64__))
@@ -249,6 +256,17 @@ bootloader_launch_app(uintptr_t startfunc, uint_fast8_t x64bit)
 		__ISB();
 		__WFI();
 
+		for (;;)
+		{
+			__WFE();
+		}
+	}
+	else
+	{
+		/* Обычный запуск, в 32-бит режиме. */
+		__ISB();
+		__DSB();
+		(* (void (*)(void)) startfunc)();
 		for (;;)
 		{
 			__WFE();

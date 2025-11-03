@@ -255,8 +255,8 @@ else
 #SystemDRAMInit = 0x0002d298
 #SystemExecAARCH64 = 0x0002b324
 # H618 + LPDDR4
-SystemDRAMInit = 0x0002b440
-SystemExecAARCH64 = 0x00028f84
+SystemDRAMInit = 0x0002b450
+SystemExecAARCH64 = 0x00028f90
 endif
 
 # Invoke SystemInit 
@@ -278,7 +278,7 @@ ddrinit_t507:
 
 app_run: $(PROJECT)_app.alw32 ddrinit_t507
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
-	$(XFEL) exec 0x40000100 
+	$(XFEL) exec $(SystemExecAARCH64)
 
 app_run64: $(PROJECT)_app.alw32 ddrinit_t507
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
