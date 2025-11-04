@@ -2970,11 +2970,63 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 }
 
 /* Инициализация системы тактирования, общей для всех видеовыходов */
-static void t113_DE_CCU_configuration(void)
+static void hardware_de_global_initialize(void)
 {
 #if CPUSTYLE_H3
 
 #elif CPUSTYLE_A64
+
+	// https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
+
+	/* переключить память к DE & VI */
+    // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
+	//#define SUNXI_SRAMC_BASE 0x03000000
+    // Under CONFIG_MACH_SUN50I
+	/* переключить память к DE & VI */
+    // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
+	SYS_CFG->MEMMAP_REG &= ~ (UINT32_C(1) << 24);
+
+	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
+	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
+	local_delay_ms(50);
+
+	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12); // Enable DE, HDMI, TCON0/1
+	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12); // De-assert reset of DE, HDMI0/1, TCON0/1
+	const unsigned DE_CLK_DIV_RATIO_M = 2;
+	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | (DE_CLK_DIV_RATIO_M - 1) * (UINT32_C(1) << 0); // Enable DE clock, set source to PLL_DE
+
+    CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12);	// DE_GATING
+    CCU->BUS_SOFT_RST_REG1 &= ~ (UINT32_C(1) << 12);	// DE_RST
+    CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12);	// DE_RST
+
+	//PRINTF("2 allwnr_a64_get_de_freq()=%u MHz\n", (unsigned) (allwnr_a64_get_de_freq() / 1000 / 1000));
+    //PRINTF("allwnr_a64_get_mbus_freq()=%" PRIuFAST32 " kHz\n", allwnr_a64_get_mbus_freq() / 1000);
+    local_delay_us(10);
+ 	/* Global DE settings */
+
+	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
+//
+// 	DE_TOP->DE_SCLK_DIV =
+//		7 * (UINT32_C(1) << 8) |	// wb-div
+//		7 * (UINT32_C(1) << 4) |	// mixer1-div
+//		7 * (UINT32_C(1) << 0) |	// mixer0-div
+//		0;
+
+    {
+	 	DE_TOP->SCLK_GATE |= ~0u; //UINT32_C(1) << 0;	// CORE0_SCLK_GATE
+	 	DE_TOP->SCLK_GATE |= ~0u; //UINT32_C(1) << 1;	// CORE1_SCLK_GATE
+	 	DE_TOP->HCLK_GATE |= ~0u; //UINT32_C(1) << 0;	// CORE0_HCLK_GATE
+	 	DE_TOP->HCLK_GATE |= ~0u; //UINT32_C(1) << 1;	// CORE1_HCLK_GATE
+
+	 	DE_TOP->AHB_RESET = 0;	// All cores reset
+		DE_TOP->AHB_RESET |= ~0u; //(UINT32_C(1) << 0);		// CORE0_AHB_RESET
+		DE_TOP->AHB_RESET |= ~0u; //(UINT32_C(1) << 1);		// CORE1_AHB_RESET
+
+		// All registers are 0xFF
+//		PRINTF("DE_TOP->AHB_RESET=%08X\n", (unsigned) DE_TOP->AHB_RESET);
+//		PRINTF("DE_TOP->SCLK_GATE=%08X\n", (unsigned) DE_TOP->SCLK_GATE);
+//		PRINTF("DE_TOP->HCLK_GATE=%08X\n", (unsigned) DE_TOP->HCLK_GATE);
+    }
 
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
@@ -2982,17 +3034,191 @@ static void t113_DE_CCU_configuration(void)
 	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
 
+	// https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
+
+	/* переключить память к DE & VI */
+    // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
+	SYS_CFG->MEMMAP_REG &= ~ (UINT32_C(1) << 24);
+
+//	allwnr_t507_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+//	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
+
+	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
+	//	CLK_SRC_SEL.
+	//	Clock Source Select
+	//	0: PLL_DE
+	//	1: PLL_PERI0(2X)
+	unsigned divider = 4;
+    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
+		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
+		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
+		0;
+    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+
+    local_delay_us(10);
+
+	//PRINTF("allwnr_t507_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_de_freq() / 1000 / 1000);
+	//PRINTF("allwnr_t507_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_mbus_freq() / 1000 / 1000);
+
+    CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
+    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
+    local_delay_us(10);
+
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
     // DISPLAY_TOP access
 	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
 	CCU->DPSS_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DPSS_TOP_RST Assert reset
 	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
+	// PLL_VIDEO1 may be used for LVDS synchronization
+	/* Configure DE clock (no FACTOR_N on this CPU) */
+	unsigned divider = 4;
+	ASSERT(divider >= 1 && divider <= 31);
+
+	//	CLK_SRC_SEL
+	//	Clock Source Select
+	//	000: PLL_PERI(2X)
+	//	001: PLL_VIDEO0(4X)
+	//	010: PLL_VIDEO1(4X)
+	//	011: PLL_AUDIO1(DIV2)
+
+	CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(0x1F) << 0))) |
+		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: 000: PLL_PERI(2X)
+		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
+		0;
+    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+    local_delay_us(10);
+	//PRINTF("allwnr_t113_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t113_get_de_freq() / 1000 / 1000);
+
+    CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
+    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
+    local_delay_us(10);
+
+
+	/* Global DE settings */
+//	PRINTF("DE_TOP before:\n");
+//	printhex32(DE_TOP_BASE, DE_TOP, 0x160);
 
 #else
 
 #endif
 
+}
+
+static void hardware_de_initialize(int rtmixid)
+{
+#if CPUSTYLE_A64
+
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+	/* Global DE settings */
+    const int disp = rtmixid - 1;
+
+	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
+	// https://github.com/rvboards/linux_kernel_for_d1/blob/5703a18aa3ca12829027b0b20cd197e9741c4c0f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v33x/de330/de_top.c#L245
+	// CORE0..CORE3 bits valid - valid bits 0x01F
+
+ 	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << disp;	// COREx_SCLK_GATE
+ 	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << disp;	// COREx_HCLK_GATE
+ 	// Only one bit writable
+ 	//DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
+	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+#if 0
+	//PRINTF("DE_TOP after:\n");
+	//printhex32(DE_TOP_BASE, DE_TOP, 0x160);
+	//    DE_IP_CFG=01020905
+	//    DE_IP_CFG.RTD1_DI_NO=0
+	//    DE_IP_CFG.RTD1_UI_NO=0
+	//    DE_IP_CFG.RTD1_VIDEO_NO=1
+	//    DE_IP_CFG.RTD1_FBD_NO=0
+	//    DE_IP_CFG.RTD1_DNS_NO=0
+	//    DE_IP_CFG.RTD1_VEP_NO=1
+	//    DE_IP_CFG.RTD1_DEP_NO=0
+	//    DE_IP_CFG.RTD0_DI_NO=0
+	//    DE_IP_CFG.RTD0_UI_NO=1
+	//    DE_IP_CFG.RTD0_VIDEO_NO=1
+	//    DE_IP_CFG.RTD0_FBD_NO=0
+	//    DE_IP_CFG.RTD0_DNS_NO=0
+	//    DE_IP_CFG.RTD0_VEP_NO=2
+	//    DE_IP_CFG.RTD0_DEP_NO=1
+
+	PRINTF("DE_IP_CFG=%08X\n", (unsigned) DE_TOP->DE_IP_CFG);
+
+	PRINTF("DE_IP_CFG.RTD1_DI_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 30) & 0x03);
+	PRINTF("DE_IP_CFG.RTD1_UI_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 27) & 0x07);
+	PRINTF("DE_IP_CFG.RTD1_VIDEO_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 24) & 0x07);
+	PRINTF("DE_IP_CFG.RTD1_FBD_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 21) & 0x07);
+	PRINTF("DE_IP_CFG.RTD1_DNS_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 19) & 0x03);
+	PRINTF("DE_IP_CFG.RTD1_VEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 17) & 0x03);
+	PRINTF("DE_IP_CFG.RTD1_DEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 16) & 0x01);
+
+	PRINTF("DE_IP_CFG.RTD0_DI_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 14) & 0x03);
+	PRINTF("DE_IP_CFG.RTD0_UI_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 11) & 0x07);
+	PRINTF("DE_IP_CFG.RTD0_VIDEO_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 8) & 0x07);
+	PRINTF("DE_IP_CFG.RTD0_FBD_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 5) & 0x07);
+	PRINTF("DE_IP_CFG.RTD0_DNS_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 3) & 0x03);
+	PRINTF("DE_IP_CFG.RTD0_VEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 1) & 0x03);
+	PRINTF("DE_IP_CFG.RTD0_DEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 0) & 0x01);
+#endif
+
+	{
+		/* Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для работы RT Mixer 1 */
+		const int rtmixid = 1;
+		// Enable RT-Mixer 0
+		DE_TOP->GATE_CFG |= UINT32_C(1) << 0;
+		DE_TOP->BUS_CFG |= UINT32_C(1) << 0;
+		//DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 0);
+		DE_TOP->RST_CFG |= UINT32_C(1) << 0;
+	}
+    {
+    	const int rtmixid = 2;
+       // Enable RT-Mixer 1
+    	DE_TOP->GATE_CFG |= UINT32_C(1) << 1;
+    	DE_TOP->BUS_CFG |= UINT32_C(1) << 1;
+    	//DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 1);
+    	DE_TOP->RST_CFG |= UINT32_C(1) << 1;
+    }
+
+#elif CPUSTYLE_H3
+
+ 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
+	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
+	local_delay_ms(50);
+
+    // clocks
+
+	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12); // Enable DE
+	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12); // De-assert reset of DE
+	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
+
+	// надо разбираться с битами включения. В регистрах задействованы 8 младших бит.
+	// Вероятно без 0-го канала DE не работает 1-й
+	{
+		const int pos = 1 * 2;
+		DE_TOP->SCLK_GATE |= (UINT32_C(3) << pos);
+		DE_TOP->HCLK_GATE |= (UINT32_C(3) << pos);
+		//DE_TOP->AHB_RESET &= ~ (UINT32_C(3) << pos);
+		DE_TOP->AHB_RESET |= (UINT32_C(3) << pos);
+	}
+	{
+		const int pos = 0 * 2;
+		DE_TOP->SCLK_GATE |= (UINT32_C(3) << pos);
+		DE_TOP->HCLK_GATE |= (UINT32_C(3) << pos);
+		//DE_TOP->AHB_RESET &= ~ (UINT32_C(3) << pos);
+		DE_TOP->AHB_RESET |= (UINT32_C(3) << pos);
+	}
+
+//	PRINTF("DE_TOP->AHB_RESET=%08X\n", (unsigned) DE_TOP->AHB_RESET);
+//	PRINTF("DE_TOP->SCLK_GATE=%08X\n", (unsigned) DE_TOP->SCLK_GATE);
+//	PRINTF("DE_TOP->HCLK_GATE=%08X\n", (unsigned) DE_TOP->HCLK_GATE);
+
+
+#else
+	#error Undefined CPUSTYLE_xxx
+#endif
 }
 
 // Used for HV and LVDS outputs
@@ -5959,232 +6185,6 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 
 #endif /* WITHDSIHW */
 
-static void hardware_de_initialize(const videomode_t * vdmode, int rtmixid)
-{
-#if CPUSTYLE_A64
-
-	// https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
-
-	/* переключить память к DE & VI */
-    // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
-	//#define SUNXI_SRAMC_BASE 0x03000000
-    // Under CONFIG_MACH_SUN50I
-	/* переключить память к DE & VI */
-    // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
-	SYS_CFG->MEMMAP_REG &= ~ (UINT32_C(1) << 24);
-
-	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
-	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
-	local_delay_ms(50);
-
-	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12); // Enable DE, HDMI, TCON0/1
-	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12); // De-assert reset of DE, HDMI0/1, TCON0/1
-	const unsigned DE_CLK_DIV_RATIO_M = 2;
-	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | (DE_CLK_DIV_RATIO_M - 1) * (UINT32_C(1) << 0); // Enable DE clock, set source to PLL_DE
-
-    CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12);	// DE_GATING
-    CCU->BUS_SOFT_RST_REG1 &= ~ (UINT32_C(1) << 12);	// DE_RST
-    CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12);	// DE_RST
-
-	//PRINTF("2 allwnr_a64_get_de_freq()=%u MHz\n", (unsigned) (allwnr_a64_get_de_freq() / 1000 / 1000));
-    //PRINTF("allwnr_a64_get_mbus_freq()=%" PRIuFAST32 " kHz\n", allwnr_a64_get_mbus_freq() / 1000);
-    local_delay_us(10);
- 	/* Global DE settings */
-
-	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
-//
-// 	DE_TOP->DE_SCLK_DIV =
-//		7 * (UINT32_C(1) << 8) |	// wb-div
-//		7 * (UINT32_C(1) << 4) |	// mixer1-div
-//		7 * (UINT32_C(1) << 0) |	// mixer0-div
-//		0;
-
-    {
-	 	DE_TOP->SCLK_GATE |= ~0u; //UINT32_C(1) << 0;	// CORE0_SCLK_GATE
-	 	DE_TOP->SCLK_GATE |= ~0u; //UINT32_C(1) << 1;	// CORE1_SCLK_GATE
-	 	DE_TOP->HCLK_GATE |= ~0u; //UINT32_C(1) << 0;	// CORE0_HCLK_GATE
-	 	DE_TOP->HCLK_GATE |= ~0u; //UINT32_C(1) << 1;	// CORE1_HCLK_GATE
-
-	 	DE_TOP->AHB_RESET = 0;	// All cores reset
-		DE_TOP->AHB_RESET |= ~0u; //(UINT32_C(1) << 0);		// CORE0_AHB_RESET
-		DE_TOP->AHB_RESET |= ~0u; //(UINT32_C(1) << 1);		// CORE1_AHB_RESET
-
-		// All registers are 0xFF
-//		PRINTF("DE_TOP->AHB_RESET=%08X\n", (unsigned) DE_TOP->AHB_RESET);
-//		PRINTF("DE_TOP->SCLK_GATE=%08X\n", (unsigned) DE_TOP->SCLK_GATE);
-//		PRINTF("DE_TOP->HCLK_GATE=%08X\n", (unsigned) DE_TOP->HCLK_GATE);
-    }
-
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
-
-	// https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
-
-	/* переключить память к DE & VI */
-    // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
-	SYS_CFG->MEMMAP_REG &= ~ (UINT32_C(1) << 24);
-
-//	allwnr_t507_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-//	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
-
-	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
-	//	CLK_SRC_SEL.
-	//	Clock Source Select
-	//	0: PLL_DE
-	//	1: PLL_PERI0(2X)
-	unsigned divider = 4;
-    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
-		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
-		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
-		0;
-    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-
-    local_delay_us(10);
-
-	//PRINTF("allwnr_t507_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_de_freq() / 1000 / 1000);
-	//PRINTF("allwnr_t507_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_mbus_freq() / 1000 / 1000);
-
-    CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
-    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
-    local_delay_us(10);
-
- 	/* Global DE settings */
-    const int disp = rtmixid - 1;
-
-	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
-	// https://github.com/rvboards/linux_kernel_for_d1/blob/5703a18aa3ca12829027b0b20cd197e9741c4c0f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v33x/de330/de_top.c#L245
-	// CORE0..CORE3 bits valid - valid bits 0x01F
-
- 	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << disp;	// COREx_SCLK_GATE
- 	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << disp;	// COREx_HCLK_GATE
- 	// Only one bit writable
- 	//DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
-	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-	// PLL_VIDEO1 may be used for LVDS synchronization
-	/* Configure DE clock (no FACTOR_N on this CPU) */
-	unsigned divider = 4;
-	ASSERT(divider >= 1 && divider <= 31);
-
-	//	CLK_SRC_SEL
-	//	Clock Source Select
-	//	000: PLL_PERI(2X)
-	//	001: PLL_VIDEO0(4X)
-	//	010: PLL_VIDEO1(4X)
-	//	011: PLL_AUDIO1(DIV2)
-
-	CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(0x1F) << 0))) |
-		0 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 001: 000: PLL_PERI(2X)
-		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
-		0;
-    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-    local_delay_us(10);
-	//PRINTF("allwnr_t113_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_t113_get_de_freq() / 1000 / 1000);
-
-    CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
-    CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
-    local_delay_us(10);
-
-
-	/* Global DE settings */
-//	PRINTF("DE_TOP before:\n");
-//	printhex32(DE_TOP_BASE, DE_TOP, 0x160);
-
-#if 0
-	//PRINTF("DE_TOP after:\n");
-	//printhex32(DE_TOP_BASE, DE_TOP, 0x160);
-	//    DE_IP_CFG=01020905
-	//    DE_IP_CFG.RTD1_DI_NO=0
-	//    DE_IP_CFG.RTD1_UI_NO=0
-	//    DE_IP_CFG.RTD1_VIDEO_NO=1
-	//    DE_IP_CFG.RTD1_FBD_NO=0
-	//    DE_IP_CFG.RTD1_DNS_NO=0
-	//    DE_IP_CFG.RTD1_VEP_NO=1
-	//    DE_IP_CFG.RTD1_DEP_NO=0
-	//    DE_IP_CFG.RTD0_DI_NO=0
-	//    DE_IP_CFG.RTD0_UI_NO=1
-	//    DE_IP_CFG.RTD0_VIDEO_NO=1
-	//    DE_IP_CFG.RTD0_FBD_NO=0
-	//    DE_IP_CFG.RTD0_DNS_NO=0
-	//    DE_IP_CFG.RTD0_VEP_NO=2
-	//    DE_IP_CFG.RTD0_DEP_NO=1
-
-	PRINTF("DE_IP_CFG=%08X\n", (unsigned) DE_TOP->DE_IP_CFG);
-
-	PRINTF("DE_IP_CFG.RTD1_DI_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 30) & 0x03);
-	PRINTF("DE_IP_CFG.RTD1_UI_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 27) & 0x07);
-	PRINTF("DE_IP_CFG.RTD1_VIDEO_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 24) & 0x07);
-	PRINTF("DE_IP_CFG.RTD1_FBD_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 21) & 0x07);
-	PRINTF("DE_IP_CFG.RTD1_DNS_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 19) & 0x03);
-	PRINTF("DE_IP_CFG.RTD1_VEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 17) & 0x03);
-	PRINTF("DE_IP_CFG.RTD1_DEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 16) & 0x01);
-
-	PRINTF("DE_IP_CFG.RTD0_DI_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 14) & 0x03);
-	PRINTF("DE_IP_CFG.RTD0_UI_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 11) & 0x07);
-	PRINTF("DE_IP_CFG.RTD0_VIDEO_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 8) & 0x07);
-	PRINTF("DE_IP_CFG.RTD0_FBD_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 5) & 0x07);
-	PRINTF("DE_IP_CFG.RTD0_DNS_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 3) & 0x03);
-	PRINTF("DE_IP_CFG.RTD0_VEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 1) & 0x03);
-	PRINTF("DE_IP_CFG.RTD0_DEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 0) & 0x01);
-#endif
-
-	{
-		/* Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для работы RT Mixer 1 */
-		const int rtmixid = 1;
-		// Enable RT-Mixer 0
-		DE_TOP->GATE_CFG |= UINT32_C(1) << 0;
-		DE_TOP->BUS_CFG |= UINT32_C(1) << 0;
-		DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 0);
-		DE_TOP->RST_CFG |= UINT32_C(1) << 0;
-	}
-    {
-    	const int rtmixid = 2;
-       // Enable RT-Mixer 1
-    	DE_TOP->GATE_CFG |= UINT32_C(1) << 1;
-    	DE_TOP->BUS_CFG |= UINT32_C(1) << 1;
-    	DE_TOP->RST_CFG &= ~ (UINT32_C(1) << 1);
-    	DE_TOP->RST_CFG |= UINT32_C(1) << 1;
-    }
-
-#elif CPUSTYLE_H3
-
- 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
-	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
-	local_delay_ms(50);
-
-    // clocks
-
-	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 12); // Enable DE
-	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << 12); // De-assert reset of DE
-	CCU->DE_CLK_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24); // Enable DE clock, set source to PLL_DE
-
-	// надо разбираться с битами включения. В регистрах задействованы 8 младших бит.
-	// Вероятно без 0-го канала DE не работает 1-й
-	{
-		const int pos = 1 * 2;
-		DE_TOP->SCLK_GATE |= (UINT32_C(3) << pos);
-		DE_TOP->HCLK_GATE |= (UINT32_C(3) << pos);
-		DE_TOP->AHB_RESET &= ~ (UINT32_C(3) << pos);
-		DE_TOP->AHB_RESET |= (UINT32_C(3) << pos);
-	}
-	{
-		const int pos = 0 * 2;
-		DE_TOP->SCLK_GATE |= (UINT32_C(3) << pos);
-		DE_TOP->HCLK_GATE |= (UINT32_C(3) << pos);
-		DE_TOP->AHB_RESET &= ~ (UINT32_C(3) << pos);
-		DE_TOP->AHB_RESET |= (UINT32_C(3) << pos);
-	}
-
-//	PRINTF("DE_TOP->AHB_RESET=%08X\n", (unsigned) DE_TOP->AHB_RESET);
-//	PRINTF("DE_TOP->SCLK_GATE=%08X\n", (unsigned) DE_TOP->SCLK_GATE);
-//	PRINTF("DE_TOP->HCLK_GATE=%08X\n", (unsigned) DE_TOP->HCLK_GATE);
-
-
-#else
-	#error Undefined CPUSTYLE_xxx
-#endif
-}
-
 static void awxx_deoutmapping(void)
 {
 #if CPUSTYLE_A64
@@ -7763,7 +7763,7 @@ static void hardware_tcon_initsteps(const videomode_t * vdmode)
 
 static void hardware_ltdc_set_format(int rtmixid, const videomode_t * vdmode, void (* tcon_init)(const videomode_t * vdmode), uint_least32_t defcolor)
 {
- 	hardware_de_initialize(vdmode, rtmixid);
+ 	hardware_de_initialize(rtmixid);
  	tcon_init(vdmode);
 	ltdc_tfcon_cfg(rtmixid, vdmode);	// Set DE MODE if need, mapping GPIO pins
 	t113_de_rtmix_initialize(rtmixid);
@@ -7790,10 +7790,10 @@ static void hardware_ltdc_set_format(int rtmixid, const videomode_t * vdmode, vo
 }
 
 // Установить режим отображения на выдеовыходе
-void hardware_hdmi_set_format(const videomode_t * vdmode)
+void hardware_hdmi_set_format(void)
 {
 #if WITHHDMITVHW
-	hardware_ltdc_set_format(RTMIXIDTV, vdmode, t113_hdmi_initsteps, COLOR24(255, 0, 0));
+	hardware_ltdc_set_format(RTMIXIDTV, get_videomode_HDMI(), t113_hdmi_initsteps, COLOR24(255, 0, 0));
 #endif /* WITHHDMITVHW */
 }
 
@@ -7819,7 +7819,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 #endif /* WITHHDMITVHW */
 	};
 
-	t113_DE_CCU_configuration();	/* Инициализация системы тактирования, общей для всех видеовыходов */
+	hardware_de_global_initialize();	/* Инициализация системы тактирования, общей для всех видеовыходов */
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(initstructs); ++ i)

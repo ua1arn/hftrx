@@ -2040,7 +2040,7 @@ board_set_hdmiformat(uint_fast8_t v)
 	if (glob_hdmiformat != n)
 	{
 		glob_hdmiformat = n;
-		hardware_hdmi_set_format(get_videomode_HDMI());
+		hardware_hdmi_set_format();
 	}
 }
 
