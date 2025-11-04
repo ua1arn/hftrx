@@ -287,6 +287,9 @@ static const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHDSPEXTDDC */
+#if WITHHDMITVHW
+	& xhdmiformat,	/* Видеорежим внешнего HDMI монитора */
+#endif /* WITHHDMITVHW */
 #if defined (RTC1_TYPE)
 /* group name +++ */
 	(const struct paramdefdef [1]) {

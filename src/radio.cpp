@@ -3702,6 +3702,9 @@ struct nvmap
 	uint8_t grxbwsatu;		/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 	uint8_t gspectrumpart;	/* Часть отведенной под спектр высоты экрана 0..100 */
 #endif /* WITHSPECTRUMWF */
+#if WITHHDMITVHW
+	uint8_t ghdmiformat;	/* Видеорежим внешнего HDMI монитора */
+#endif /* WITHHDMITVHW */
 
 	uint8_t gshowdbm;	/* Отображение уровня сигнала в dBm или S-memter */
 #if WITHBCBANDS
@@ -4628,7 +4631,6 @@ static uint_fast8_t gforcexvrtr;	/* принудительно включить 
 #else /* defined (WITHWFLBETA_DEFAULT) */
 	static uint_fast8_t gwflbeta100 = 50;	/* beta = 0.1 .. 1.0 */
 #endif /* defined (WITHWFLBETA_DEFAULT) */
-static uint_fast8_t gspectrumpart = 75;	/* Часть отведенной под спектр высоты экрана 0..100 */
 
 static unsigned getselector_bandgroup(unsigned * count)
 {
@@ -4670,6 +4672,7 @@ static const struct paramdefdef xgviewstyle =
 };
 
 /* Часть отведенной под спектр высоты экрана 0..100 */
+static uint_fast8_t gspectrumpart = 75;	/* Часть отведенной под спектр высоты экрана 0..100 */
 static const struct paramdefdef xgspectrumpart =
 {
 	QLABEL2("SPEC PRT", "Spectrum part"), 7, 0, RJ_UNSIGNED, ISTEP1,
@@ -4682,6 +4685,24 @@ static const struct paramdefdef xgspectrumpart =
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
+
+#if WITHHDMITVHW
+
+static uint_fast8_t ghdmiformat;
+/* Видеорежим внешнего HDMI монитора */
+static const struct paramdefdef xhdmiformat =
+{
+	QLABEL3("HDMI FMT", "HDMI format", "HDMI FMT"), 7, 5, RJ_CB, ISTEP1,
+	ITEM_VALUE | ITEM_LISTSELECT,
+	0, HDMIFORMATS_count - 1,
+	OFFSETOF(struct nvmap, ghdmiformat),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& ghdmiformat,
+	getzerobase, /* складывается со смещением и отображается */
+	getvaltexthdmiformat, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+#endif /* WITHHDMITVHW */
 
 #if WITHSPECTRUMWF
 
@@ -12454,6 +12475,11 @@ updateboard_noui(
 			display2_set_spectrumpart(gspectrumpart);	/* Часть отведенной под спектр высоты экрана 0..100 */
 		#endif /* (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
 	#endif /* WITHIF4DSP */
+
+	#if WITHHDMITVHW
+			board_set_hdmiformat(param_getvalue(& xhdmiformat));	// Установить режим отображения на выдеовыходе
+	#endif /* WITHHDMITVHW */
+
 	#if WITHAFEQUALIZER
 		board_set_equalizer_rx(geqrx);
 		board_set_equalizer_tx(geqtx);

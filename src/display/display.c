@@ -2016,13 +2016,40 @@ const videomode_t * get_videomode_CRT(void)
 	return & vdmode_PAL0;
 }
 
+static uint_fast8_t glob_hdmiformat;
+
+const videomode_t * hdmiformats [HDMIFORMATS_count] =
+{
+	& vdmode_HDMI_1366x768at60,	// б. тел. не занимается масштабированием этого формата ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
+	& vdmode_HDMI_1024x768at60,	// большой телевизор не занимается масштабированием этого формата ! TESTED
+	& vdmode_HDMI_1280x720at50,	// б. тел. масштабирует ! TESTED
+	& vdmode_HDMI_1440x900at50,	// б. тел. не занимается масштабированием этого формата ! TESTED, параметры не подтверждены, работает на 50 герц
+	& vdmode_HDMI_1920x1080at60,	// б. тел. масштабирует ! TESTED
+};
+
 const videomode_t * get_videomode_HDMI(void)
 {
-	//return & vdmode_HDMI_1024x768at60;	// большой телевизор не занимается масштабированием этого формата ! TESTED
-	return & vdmode_HDMI_1366x768at60;	// б. тел. не занимается масштабированием этого формата ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
-	//return & vdmode_HDMI_1280x720at50;	// б. тел. масштабирует ! TESTED
-	//return & vdmode_HDMI_1440x900at50;	// б. тел. не занимается масштабированием этого формата ! TESTED, параметры не подтверждены, работает на 50 герц
-	//return & vdmode_HDMI_1920x1080at60;	// б. тел. масштабирует ! TESTED
+	return hdmiformats [glob_hdmiformat];
+}
+
+void
+board_set_hdmiformat(uint_fast8_t v)
+{
+	const uint_fast8_t n = v;
+
+	if (glob_hdmiformat != n)
+	{
+		glob_hdmiformat = n;
+		hardware_hdmi_set_format(get_videomode_HDMI());
+	}
+}
+
+/* Название видеорежима для отображения в меню */
+size_t getvaltexthdmiformat(char * buff, size_t count, int_fast32_t value)
+{
+	const videomode_t * const vdmode = hdmiformats [value];
+	/* Название видеорежима для отображения в меню */
+	return local_snprintf_P(buff, count, "%u x %u @%u", vdmode->width, vdmode->height, vdmode->fps);
 }
 
 #endif /* WITHLTDCHW */

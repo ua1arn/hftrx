@@ -7789,6 +7789,7 @@ static void hardware_ltdc_set_format(int rtmixid, const videomode_t * vdmode, vo
 	t113_de_update(rtmixid);	/* Update registers */
 }
 
+// Установить режим отображения на выдеовыходе
 void hardware_hdmi_set_format(const videomode_t * vdmode)
 {
 #if WITHHDMITVHW

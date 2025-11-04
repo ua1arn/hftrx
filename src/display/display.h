@@ -873,6 +873,7 @@ typedef struct pipparams_tag
 } pipparams_t;
 
 void display2_getpipparams(pipparams_t * p);	/* получить координаты окна с панорамой и/или водопадом. */
+void board_set_hdmiformat(uint_fast8_t v);	/* установить видеорежим */
 
 #ifdef __cplusplus
 }

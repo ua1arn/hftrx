@@ -626,11 +626,13 @@ const videomode_t * get_videomode_DESIGN(void);	// DIM_X, DIM_Y
 const videomode_t * get_videomode_CRT(void);
 const videomode_t * get_videomode_HDMI(void);
 const videomode_t * get_videomode_LCD(void);
+size_t getvaltexthdmiformat(char * buff, size_t count, int_fast32_t value);	/* Название видеорежима для отображения в меню */
+#define HDMIFORMATS_count 5
 
 void hardware_ltdc_initialize(const videomode_t * vdmode);	// LCD-TFT Controller (LTDC) with framebuffer
 uint_fast32_t display_getdotclock(const videomode_t * vdmode);
 void hardware_edid_test(void);
-void hardware_hdmi_set_format(const videomode_t * vdmode);
+void hardware_hdmi_set_format(const videomode_t * vdmode);	// Установить режим отображения на выдеовыходе
 
 void hardware_ltdc_main_set(int rtmixid, uintptr_t addr);	/* Set MAIN frame buffer address. Wait for VSYNC. */
 void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3);	/* Set MAIN frame buffer address. Waiting for VSYNC. */
