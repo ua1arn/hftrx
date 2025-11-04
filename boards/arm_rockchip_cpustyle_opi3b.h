@@ -990,6 +990,8 @@
 		arm_hardware_piod_altfn50(UINT32_C(1) << 18, GPIO_CFG_AF3); 	/* PD18 LVDS1_V3P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 19, GPIO_CFG_AF3); 	/* PD19 LVDS1_V3N */ \
 	} while (0)
+	#define HARDWARE_HDMI_INITIALIZE() do { \
+	} while (0)
 
 	#if WITHHDMITVHW
 		// Надо для HDMI и TVOUT

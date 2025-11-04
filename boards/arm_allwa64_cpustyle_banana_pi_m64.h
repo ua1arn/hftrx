@@ -1033,6 +1033,8 @@
 	// PD12..PD21
 	#define HARDWARE_LVDS_INITIALIZE() do { \
 	} while (0)
+	#define HARDWARE_HDMI_INITIALIZE() do { \
+	} while (0)
 
 
 	#if WITHHDMITVHW
