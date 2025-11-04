@@ -37,8 +37,11 @@
 #define WITHDSIHW (WITHMIPIDSISHW && defined (HARDWARE_MIPIDSI_INITIALIZE))
 // LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
 
-static void ltdc_tfcon_cfg(const videomode_t * vdmode)
+static void ltdc_tfcon_cfg(int rtmixid, const videomode_t * vdmode)
 {
+#if defined RTMIXIDLCD
+	if (rtmixid != RTMIXIDLCD)
+		return;
 	// LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
 	if (vdmode->lq43reset)
 	{
@@ -70,6 +73,7 @@ static void ltdc_tfcon_cfg(const videomode_t * vdmode)
 #endif /* WITHLCDDEMODE */
 #endif /* defined (HARDWARE_LTDC_INITIALIZE) */
 	}
+#endif /* RTMIXIDLCD */
 }
 
 static void hardware_ltdc_vsync(int rtmixid);
@@ -752,7 +756,7 @@ hardware_ltdc_initialize(const videomode_t * vdmode)
 	vdc5fb_update_all(vdc);
 
 
-	ltdc_tfcon_cfg(vdmode);
+	ltdc_tfcon_cfg(RTMIXIDLCD, vdmode);
 
 	//PRINTF(PSTR("hardware_ltdc_initialize done\n"));
 }
@@ -1515,7 +1519,7 @@ hardware_ltdc_initialize(const videomode_t * vdmode)
 	while ((LTDC->SRCR & LTDC_SRCR_IMR_Msk) != 0)
 		;
 
-	ltdc_tfcon_cfg(vdmode);
+	ltdc_tfcon_cfg(RTMIXIDLCD, vdmode);
 	//PRINTF(PSTR("hardware_ltdc_initialize done\n"));
 }
 
@@ -1744,7 +1748,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 		PRINTF("Couldn't start display: %d\r\n", Status);
 	}
 
-	ltdc_tfcon_cfg(vdmode);
+	ltdc_tfcon_cfg(RTMIXIDLCD, vdmode);
 }
 
 /* Palette reload (dummy fuction) */
@@ -7756,6 +7760,41 @@ static void hardware_tcon_initsteps(const videomode_t * vdmode)
 #endif /* WITHLVDSHW */
 }
 
+static void hardware_ltdc_set_format(int rtmixid, const videomode_t * vdmode, void (* tcon_init)(const videomode_t * vdmode), uint_least32_t defcolor)
+{
+ 	hardware_de_initialize(vdmode, rtmixid);
+ 	tcon_init(vdmode);
+	ltdc_tfcon_cfg(rtmixid, vdmode);	// Set DE MODE if need, mapping GPIO pins
+	t113_de_rtmix_initialize(rtmixid);
+	awxx_deoutmapping();				// после инициализации и TCON и DE
+
+	//PRINTF("Init rtmixid=%d\n", rtmixid);
+	//TP();
+	/* эта инициализация после корректного соединения с работающим TCON */
+	t113_de_bld_initialize(rtmixid, vdmode, defcolor);	// RED
+	//TP();
+
+	// проверка различных scalers
+#if 1
+	h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
+#else
+	// On T507 defectiveimafe
+	// On H3 - HSUB=1 VSUB=1 IS_DE3=0 or IS_DE3=1 - work
+	// On A64
+	t113_vi_scaler_setup(rtmixid, get_videomode_DESIGN(), vdmode);
+#endif
+
+	// save settings
+	t113_de_update(rtmixid);	/* Update registers */
+}
+
+void hardware_hdmi_set_format(const videomode_t * vdmode)
+{
+#if WITHHDMITVHW
+	hardware_ltdc_set_format(RTMIXIDTV, vdmode, t113_hdmi_initsteps, COLOR24(255, 0, 0));
+#endif /* WITHHDMITVHW */
+}
+
 void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 {
     //PRINTF("hardware_ltdc_initialize\n");
@@ -7784,30 +7823,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 		int rtmixid = initstructs [i].rtmixid;
 		const videomode_t * const vdmode = initstructs [i].vdmodef();
 
-	 	hardware_de_initialize(vdmode, rtmixid);
-	 	initstructs [i].tcon_init(vdmode);
-		ltdc_tfcon_cfg(vdmode);	// Set DE MODE if need, mapping GPIO pins
-		t113_de_rtmix_initialize(rtmixid);
-		awxx_deoutmapping();				// после инициализации и TCON и DE
-
-		//PRINTF("Init rtmixid=%d\n", rtmixid);
-		//TP();
-		/* эта инициализация после корректного соединения с работающим TCON */
-		t113_de_bld_initialize(rtmixid, vdmode, initstructs [i].defcolor);	// RED
-		//TP();
-
-		// проверка различных scalers
-	#if 1
-		h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
-	#else
-    	// On T507 defectiveimafe
-		// On H3 - HSUB=1 VSUB=1 IS_DE3=0 or IS_DE3=1 - work
-		// On A64
-		t113_vi_scaler_setup(rtmixid, get_videomode_DESIGN(), vdmode);
-	#endif
-
-		// save settings
-		t113_de_update(rtmixid);	/* Update registers */
+		hardware_ltdc_set_format(rtmixid, vdmode, initstructs [i].tcon_init, initstructs [i].defcolor);
 		//PRINTF("Init rtmixid=%d done\n", rtmixid);
 	}
 
