@@ -2970,7 +2970,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 }
 
 /* Инициализация системы тактирования, общей для всех видеовыходов */
-static void t113_all_CCU_configuration(void)
+static void t113_DE_CCU_configuration(void)
 {
 #if CPUSTYLE_H3
 
@@ -3234,7 +3234,7 @@ static void t113_MIPIDSI_clock_configuration(const videomode_t * vdmode, unsigne
 }
 
 // step5 - set LVDS digital logic configuration
-static void t113_set_LVDS_digital_logic(const videomode_t * vdmode)
+static void t113_lvds_set_digital_logic(const videomode_t * vdmode)
 {
 #if defined (TCONLCD_PTR)
 #if defined (LCD_LVDS_IF_REG_VALUE)
@@ -7525,7 +7525,7 @@ static void t113_tcontv_initsteps(const videomode_t * vdmode)
 	// step4 - same as step4 in HV mode: Open volatile output
 	t113_tcontv_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
-	//t113_set_LVDS_digital_logic(vdmode);
+	//t113_lvds_set_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
 	//t113_DSI_controller_configuration(vdmode);
 	//t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
@@ -7624,7 +7624,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	// step4 - same as step4 in HV mode: Open volatile output
 	t113_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
-	t113_set_LVDS_digital_logic(vdmode);
+	t113_lvds_set_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
 	t113_DSI_controller_configuration(vdmode);	// t113 требует инициализации DSI_COMBO_PHY
 	t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
@@ -7658,7 +7658,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	// step4 - same as step4 in HV mode: Open volatile output
 	t113_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
-	t113_set_LVDS_digital_logic(vdmode);
+	t113_lvds_set_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 	// These CPUs not support DSI at all
@@ -7818,7 +7818,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 #endif /* WITHHDMITVHW */
 	};
 
-	t113_all_CCU_configuration();	/* Инициализация системы тактирования, общей для всех видеовыходов */
+	t113_DE_CCU_configuration();	/* Инициализация системы тактирования, общей для всех видеовыходов */
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(initstructs); ++ i)
