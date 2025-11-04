@@ -10906,7 +10906,7 @@ void hightests(void)
 
 		}
 	#endif /* defined (TCONTV_PTR) */
-		unsigned count = 3;		// количество смен направления до оконяания теста
+		unsigned count = 100;		// количество смен направления до оконяания теста
 		const int rectX = DIM_X / 8;
 		const int rectY = DIM_Y / 4;
 		int stepX = 1;
@@ -10916,8 +10916,8 @@ void hightests(void)
 		unsigned steps = 0;
 		for (;;)
 		{
-			enum { dx = DIM_X, dy = DIM_Y };
-			PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
+			gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
+			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 //			colpip_fill(fb, dx, dy, COLOR_GRAY);
 //			colpip_fillrect(fb, dx, dy, 50, 50, 50, 50, TFTRGB(230, 128, 128));
 //			hardware_ltdc_main_set4((uintptr_t) fb, 0, 0, 0);
@@ -10927,10 +10927,10 @@ void hightests(void)
 			snprintf(s, ARRAY_SIZE(s), "%u", steps ++);
 			// Erase background
 			//colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
-			colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
+			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
 			// Draw rextangle
-			colpip_fillrect(fb, DIM_X, DIM_Y, posX, posY, rectX, rectY, TFTRGB(0, 0, 0));
-			colpip_string_tbg(fb, DIM_X, DIM_Y, posX, posY + rectY / 2, s, TFTRGB(255, 255, 255));
+			colpip_fillrect(& dbv, posX, posY, rectX, rectY, TFTRGB(0, 0, 0));
+			colpip_string_tbg(& dbv, posX, posY + rectY / 2, s, TFTRGB(255, 255, 255));
 
 			colmain_nextfb();
 
