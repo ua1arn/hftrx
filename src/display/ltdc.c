@@ -39,41 +39,47 @@
 
 static void ltdc_tfcon_cfg(int rtmixid, const videomode_t * vdmode)
 {
+	switch (rtmixid)
+	{
+	default:
+		break;
+
 #if defined RTMIXIDLCD
-	if (rtmixid != RTMIXIDLCD)
-		return;
-	// LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
-	if (vdmode->lq43reset)
-	{
-		/* Configure the LCD Control pins */
-#if defined (HARDWARE_LTDC_INITIALIZE)
-		HARDWARE_LTDC_INITIALIZE(0);
-#endif /* defined (HARDWARE_LTDC_INITIALIZE) */
-#if defined (HARDWARE_LTDC_SET_DISP)
-		/* управление состоянием сигнала DISP панели */
-		/* SONY PSP-1000 display (4.3") required. */
-		HARDWARE_LTDC_SET_DISP(0);
-		local_delay_ms(150);
-		HARDWARE_LTDC_SET_DISP(1);
-#endif /* defined (HARDWARE_LTDC_SET_DISP) */
+	case RTMIXIDLCD:
+		// LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
+		if (vdmode->lq43reset)
+		{
+			/* Configure the LCD Control pins */
+	#if defined (HARDWARE_LTDC_INITIALIZE)
+			HARDWARE_LTDC_INITIALIZE(0);
+	#endif /* defined (HARDWARE_LTDC_INITIALIZE) */
+	#if defined (HARDWARE_LTDC_SET_DISP)
+			/* управление состоянием сигнала DISP панели */
+			/* SONY PSP-1000 display (4.3") required. */
+			HARDWARE_LTDC_SET_DISP(0);
+			local_delay_ms(150);
+			HARDWARE_LTDC_SET_DISP(1);
+	#endif /* defined (HARDWARE_LTDC_SET_DISP) */
+		}
+		else
+		{
+	#if defined (HARDWARE_MIPIDSI_INITIALIZE) && WITHMIPIDSISHW
+			HARDWARE_MIPIDSI_INITIALIZE();
+	#elif defined (HARDWARE_LVDS_INITIALIZE) && WITHLVDSHW
+			/* Configure the LCD Control pins */
+			HARDWARE_LVDS_INITIALIZE();
+	#elif defined (HARDWARE_LTDC_INITIALIZE)
+			/* Configure the LCD Control pins */
+	#if WITHLCDDEMODE
+			HARDWARE_LTDC_INITIALIZE(1);	// подключение к выводам процессора сигналов периферийного контроллера
+	#else /* WITHLCDDEMODE */
+			HARDWARE_LTDC_INITIALIZE(0);	// подключение к выводам процессора сигналов периферийного контроллера
+	#endif /* WITHLCDDEMODE */
+	#endif /* defined (HARDWARE_LTDC_INITIALIZE) */
+		}
+	#endif /* RTMIXIDLCD */
+		break;
 	}
-	else
-	{
-#if defined (HARDWARE_MIPIDSI_INITIALIZE) && WITHMIPIDSISHW
-		HARDWARE_MIPIDSI_INITIALIZE();
-#elif defined (HARDWARE_LVDS_INITIALIZE) && WITHLVDSHW
-		/* Configure the LCD Control pins */
-		HARDWARE_LVDS_INITIALIZE();
-#elif defined (HARDWARE_LTDC_INITIALIZE)
-		/* Configure the LCD Control pins */
-#if WITHLCDDEMODE
-		HARDWARE_LTDC_INITIALIZE(1);	// подключение к выводам процессора сигналов периферийного контроллера
-#else /* WITHLCDDEMODE */
-		HARDWARE_LTDC_INITIALIZE(0);	// подключение к выводам процессора сигналов периферийного контроллера
-#endif /* WITHLCDDEMODE */
-#endif /* defined (HARDWARE_LTDC_INITIALIZE) */
-	}
-#endif /* RTMIXIDLCD */
 }
 
 static void hardware_ltdc_vsync(int rtmixid);
@@ -7765,7 +7771,6 @@ static void hardware_ltdc_set_format(int rtmixid, const videomode_t * vdmode, vo
 {
  	hardware_de_initialize(rtmixid);
  	tcon_init(vdmode);
-	ltdc_tfcon_cfg(rtmixid, vdmode);	// Set DE MODE if need, mapping GPIO pins
 	t113_de_rtmix_initialize(rtmixid);
 	awxx_deoutmapping();				// после инициализации и TCON и DE
 
@@ -7787,6 +7792,8 @@ static void hardware_ltdc_set_format(int rtmixid, const videomode_t * vdmode, vo
 
 	// save settings
 	t113_de_update(rtmixid);	/* Update registers */
+
+	ltdc_tfcon_cfg(rtmixid, vdmode);	// Set DE MODE if need, mapping GPIO pins
 }
 
 // Установить режим отображения на выдеовыходе
