@@ -2969,6 +2969,31 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 #endif /* defined (TCONLCD_PTR) */
 }
 
+/* Инициализация системы тактирования, общей для всех видеовыходов */
+static void t113_all_CCU_configuration(void)
+{
+#if CPUSTYLE_H3
+
+#elif CPUSTYLE_A64
+
+#elif CPUSTYLE_T507 || CPUSTYLE_H616
+
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
+	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
+	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+    // DISPLAY_TOP access
+	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
+	CCU->DPSS_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DPSS_TOP_RST Фssert reset
+	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
+
+#else
+
+#endif
+
+}
 
 // Used for HV and LVDS outputs
 // T113: PLL_VIDEO1
@@ -2987,10 +3012,6 @@ static void t113_tconlcd_CCU_configuration(void)
 #elif CPUSTYLE_T507 || CPUSTYLE_H616
 
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
-
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
-	//CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
 
     //DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 31);
     //PRINTF("DISP_IF_TOP->MODULE_GATING=%08X\n", (unsigned) DISP_IF_TOP->MODULE_GATING);
@@ -3027,10 +3048,6 @@ static void t113_tconlcd_CCU_configuration(void)
     CCU->TCONLCD_BGR_REG &= ~ (UINT32_C(1) << 16);	// Set the LVDS reset of TCON LCD BUS GATING RESET register;
     CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
     local_delay_us(10);
-
-    // DISPLAY_TOP access
-	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
-	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
 
 #else
 
@@ -3092,9 +3109,6 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
-
 	//PRINTF("t113_tconlvds_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
 	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 		2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
@@ -3145,10 +3159,6 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
     CCU->TCONLCD_BGR_REG &= ~ (UINT32_C(1) << 16);	// Set the LVDS reset of TCON LCD BUS GATING RESET register;
     CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
     local_delay_us(10);
-
-    // DISPLAY_TOP access
-	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
-	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
 
 #else
 
@@ -3426,7 +3436,7 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsig
 }
 
 // Set sequuence parameters
-static void t113_set_sequence_parameters(const videomode_t * vdmode)
+static void t113_tconlcd_set_sequence_parameters(const videomode_t * vdmode)
 {
 #if defined (TCONLCD_PTR)
 	/* Accumulated parameters for this display */
@@ -3684,7 +3694,7 @@ static void t113_set_and_open_interrupt_function(void)
 }
 
 // Set and open interrupt function
-static void t113_set_and_open_tcontv_interrupt_function(void)
+static void t113_tcontv_set_and_open_interrupt_function(void)
 {
 #if defined (TCONTV_PTR)
 	// enabling the irq after io settings
@@ -5780,7 +5790,7 @@ static uint_fast32_t hdmi_realclock(const videomode_t * vdmode)
 }
 #endif
 
-static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
+static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 {
 #if defined (TCONTV_PTR)
 #if CPUSTYLE_H3
@@ -5851,9 +5861,6 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
     PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
     local_delay_ms(10);
     //PRINTF("PRCM->VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
-
- 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
-	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
 
     DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
 	DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
@@ -5940,10 +5947,6 @@ static void t113_TCONTV_CCU_configuration(uint_fast32_t dotclock)
 	//PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
-
-    // DISPLAY_TOP access
-	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
-	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
 
 	DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1));	// 0 - CCU clock, 1 - TVE clock
 	DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); // enable clk for TCON_TV0
@@ -7316,7 +7319,7 @@ static void de2_tcon_enable(struct lcd *lcd)
 }
 #endif
 
-static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
+static void t113_tcontv_set_sequence_parameters(const videomode_t * vdmode)
 {
 #if defined (TCONTV_PTR)
 
@@ -7439,7 +7442,7 @@ static void t113_set_tcontv_sequence_parameters(const videomode_t * vdmode)
 }
 
 // Open module enable
-static void t113_open_tcontv_module_enable(void)
+static void t113_tcontv_open_module_enable(void)
 {
 #if defined (TCONTV_PTR)
 #if CPUSTYLE_H3
@@ -7512,13 +7515,13 @@ static void t113_tcontv_initsteps(const videomode_t * vdmode)
 	const uint_fast32_t dotclock = display_getdotclock(vdmode);
 	// step0 - CCU configuration
 	t113_tcontv_PLL_configuration(dotclock);
-	t113_TCONTV_CCU_configuration(dotclock);
+	t113_tcontv_CCU_configuration(dotclock);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	//t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
 	//t113_LVDS_clock_configuration(vdmode);
 	// step3 - same as step3 in HV mode: Set sequuence parameters
-	t113_set_tcontv_sequence_parameters(vdmode);
+	t113_tcontv_set_sequence_parameters(vdmode);
 	// step4 - same as step4 in HV mode: Open volatile output
 	t113_tcontv_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
@@ -7527,9 +7530,9 @@ static void t113_tcontv_initsteps(const videomode_t * vdmode)
 	//t113_DSI_controller_configuration(vdmode);
 	//t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
-	t113_set_and_open_tcontv_interrupt_function();
+	t113_tcontv_set_and_open_interrupt_function();
 	// step8 - same as step6 in HV mode: Open module enable
-	t113_open_tcontv_module_enable();
+	t113_tcontv_open_module_enable();
 #endif /* defined (TCONTV_PTR) */
 }
 
@@ -7617,7 +7620,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	// step2 - Clock configuration
 	t113_LVDS_clock_configuration(vdmode);	// LCD_DCLK_REG - 1/7 divide
 	// step3 - same as step3 in HV mode: Set sequuence parameters
-	t113_set_sequence_parameters(vdmode);
+	t113_tconlcd_set_sequence_parameters(vdmode);
 	// step4 - same as step4 in HV mode: Open volatile output
 	t113_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
@@ -7637,8 +7640,6 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 
 //	disp 0, clk: pll(792000000),clk(792000000),dclk(33000000) dsi_rate(33000000)
 //	clk real:pll(792000000),clk(792000000),dclk(198000000) dsi_rate(150000000)
-
-// What is DPSS_TOP_BGR_REG ?
 static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 {
 	unsigned pixdepth = 24;
@@ -7653,7 +7654,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	// step2 - Clock configuration
 	t113_MIPIDSI_clock_configuration(vdmode, onepixelclocks);
 	// step3 - same as step3 in HV mode: Set sequuence parameters
-	t113_set_sequence_parameters(vdmode);
+	t113_tconlcd_set_sequence_parameters(vdmode);
 	// step4 - same as step4 in HV mode: Open volatile output
 	t113_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
@@ -7733,7 +7734,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	// step2 - Clock configuration
 	t113_HV_clock_configuration(vdmode);
 	// step3 - Set sequuence parameters
-	t113_set_sequence_parameters(vdmode);
+	t113_tconlcd_set_sequence_parameters(vdmode);
 	// step4 - Open volatile output
 	t113_open_IO_output(vdmode);
 	// step5 - Set and open interrupt function
@@ -7816,6 +7817,8 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 		{ RTMIXIDTV, get_videomode_HDMI, COLOR24(255, 0, 0), t113_hdmi_initsteps, },
 #endif /* WITHHDMITVHW */
 	};
+
+	t113_all_CCU_configuration();	/* Инициализация системы тактирования, общей для всех видеовыходов */
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(initstructs); ++ i)
