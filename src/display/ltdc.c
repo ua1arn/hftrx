@@ -2527,7 +2527,7 @@ static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 	}
 }
 
-
+// Video Scaler Unit (VSU)
 static DE_VSU_TypeDef * de3_getvsu(int rtmixid, int vich)
 {
 	ASSERT(vich == 1);
@@ -2555,7 +2555,7 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid, int vich)
 #endif /* CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 */
 }
 
-
+// UI Scaler(UIS) provides RGB format image resizing function
 static DE_UIS_TypeDef * de3_getuis(int rtmixid, int uich)
 {
 	ASSERT(uich == 1);
