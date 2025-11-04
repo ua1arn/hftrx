@@ -44,6 +44,14 @@ static void ltdc_tfcon_cfg(int rtmixid, const videomode_t * vdmode)
 	default:
 		break;
 
+#if defined RTMIXIDTV
+	case RTMIXIDTV:
+	#if defined HARDWARE_HDMI_INITIALIZE
+		HARDWARE_HDMI_INITIALIZE();
+	#endif /* defined HARDWARE_HDMI_INITIALIZE */
+		break;
+#endif /* RTMIXIDTV */
+
 #if defined RTMIXIDLCD
 	case RTMIXIDLCD:
 		// LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
@@ -77,7 +85,7 @@ static void ltdc_tfcon_cfg(int rtmixid, const videomode_t * vdmode)
 	#endif /* WITHLCDDEMODE */
 	#endif /* defined (HARDWARE_LTDC_INITIALIZE) */
 		}
-	#endif /* RTMIXIDLCD */
+#endif /* RTMIXIDLCD */
 		break;
 	}
 }
