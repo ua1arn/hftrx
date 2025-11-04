@@ -308,14 +308,14 @@ allDone:
 				//si570_hs_decode(hs_code),
 				//n
 			 );
-		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+		display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 		display_text(0, 0, buff);
 
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("[%lu]"),
 			 (unsigned long) (si570_xtall_base + si570_xtall_offset)
 			 );
-		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+		display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 		display_text(0, 2, buff);
 	}
 	for (;;)

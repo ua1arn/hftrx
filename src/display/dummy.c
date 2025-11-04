@@ -24,7 +24,7 @@ display_clear(const gxdrawb_t * db)
 }
 
 void
-colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg)
+display_textcolor(db, COLORPIP_T fg, COLORPIP_T bg)
 {
 }
 

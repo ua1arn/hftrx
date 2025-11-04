@@ -17224,13 +17224,13 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 			{
 				//подсвечиваем выбранный элемент
 				//display_text(db, xcell_marker, y_position_groups, PSTR(">"), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
-				colmain_setcolors(MENUSELCOLOR, MENUSELBGCOLOR);
+				display_textcolor(db, MENUSELCOLOR, MENUSELBGCOLOR);
 			}
 			else
 			{
 				//снять отметку
 				//display_text(db, xcell_marker, y_position_groups, PSTR(" "), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
-				colmain_setcolors(MENUCOLOR, MENUBGCOLOR);
+				display_textcolor(db, MENUCOLOR, MENUBGCOLOR);
 			}
 			display2_menu_group(db, xcell, y_position_groups, mv, xspan, rowspan, getlabel); // название группы
 
@@ -17239,7 +17239,7 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 	}
 
 	//стираем ненужные имена групп, оставшиеся от предыдущей страницы
-	colmain_setcolors(MENUCOLOR, MENUBGCOLOR);
+	display_textcolor(db, MENUCOLOR, MENUBGCOLOR);
 	for (;
 			index_groups - menu_block_scroll_offset_groups < window.multilinemenu_max_rows;
 			++ index_groups, y_position_groups += window.ystep)
@@ -17310,13 +17310,13 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 			{
 				//подсвечиваем выбранный элемент
 				//display_text(db, xcell_marker, y_position_params, PSTR(">"), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
-				colmain_setcolors(MENUSELCOLOR, MENUSELBGCOLOR);
+				display_textcolor(db, MENUSELCOLOR, MENUSELBGCOLOR);
 			}
 			else
 			{
 				//снять подсветку
 				//display_text(db, xcell_marker, y_position_params, PSTR(" "), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
-				colmain_setcolors(MENUCOLOR, MENUBGCOLOR);
+				display_textcolor(db, MENUCOLOR, MENUBGCOLOR);
 			}
 			display2_menu_lblng(db, xcell, y_position_params, mv, xspan, rowspan, getlabel); // название редактируемого параметра
 
@@ -17326,7 +17326,7 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 
 	//стираем ненужные имена параметров, оставшиеся от предыдущей страницы
 
-	colmain_setcolors(MENUCOLOR, MENUBGCOLOR);
+	display_textcolor(db, MENUCOLOR, MENUBGCOLOR);
 	for (;
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
@@ -17395,11 +17395,11 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 
             if (el == index)
             {
-                colmain_setcolors(MENUSELCOLOR, MENUSELBGCOLOR);
+                display_textcolor(db, MENUSELCOLOR, MENUSELBGCOLOR);
             }
             else
             {
-                colmain_setcolors(MENUCOLOR, MENUBGCOLOR);
+                display_textcolor(db, MENUCOLOR, MENUBGCOLOR);
             }
         	char buff [xspan + 1];
 
@@ -17412,7 +17412,7 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 
 	/* параметры полей вывода значений в меню */
 	//стираем ненужные значения параметров, оставшиеся от предыдущей страницы
-	colmain_setcolors(MENUCOLOR, MENUBGCOLOR);
+	display_textcolor(db, MENUCOLOR, MENUBGCOLOR);
 	for (;
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
@@ -22433,19 +22433,19 @@ int infocb_thermo(char * b, size_t len, int * pstate)
 	if (tempv < 0)
 	{
 		tempv = 0; //- tempv;
-		//colmain_setcolors(COLORPIP_WHITE, display2_getbgcolor());
+		//display_textcolor(db, COLORPIP_WHITE, display2_getbgcolor());
 	}
 	else if (tempv >= 500)
 	{
-		;//colmain_setcolors(COLORPIP_RED, display2_getbgcolor());
+		;//display_textcolor(db, COLORPIP_RED, display2_getbgcolor());
 	}
 	else if (tempv >= 300)
 	{
-		;//colmain_setcolors(COLORPIP_YELLOW, display2_getbgcolor());
+		;//display_textcolor(db, COLORPIP_YELLOW, display2_getbgcolor());
 	}
 	else
 	{
-		;//colmain_setcolors(COLORPIP_GREEN, display2_getbgcolor());
+		;//display_textcolor(db, COLORPIP_GREEN, display2_getbgcolor());
 	}
 	const int thermoa = tempv / 10;
 	const int thermos01a = tempv > 0 ? (tempv % 10) : (- tempv % 10);

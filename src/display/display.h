@@ -186,6 +186,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 typedef struct gxdrawb_tag
 {
 	PACKEDCOLORPIP_T * buffer;
+	PACKEDCOLORPIP_T textfg, textbg;
 	uint16_t dx;	// горизонтальный размер в пикселях
 	uint16_t dy;	// вертикальный размер в пикселях
 	uintptr_t cachebase;
@@ -220,7 +221,7 @@ void panel_deinitialize(void);
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(const gxdrawb_t * db);	// Заполниить цветом фона
-void colmain_setcolors(COLORPIP_T fg, COLORPIP_T bg);
+void display_textcolor(const gxdrawb_t * db, COLORPIP_T fg, COLORPIP_T bg);
 
 // Заполнение буфера сполшным цветом
 // Эта функция используется только в тесте

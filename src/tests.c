@@ -3821,14 +3821,14 @@ static void fb_print(const struct fb * p, int x, int y, int selected)
 	const char * fn = fb_getname(p);
 	if (p->fno.fattrib & AM_DIR)
 	{
-		colmain_setcolors(COLOR_GOLD, selected ? COLOR_BLUE: COLOR_BLACK);
+		display_textcolor(db, COLOR_GOLD, selected ? COLOR_BLUE: COLOR_BLACK);
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0], "%c   <dir>  %s", selected ? 'X' : ' ',
 			fn);
 		PRINTF(PSTR("   <dir>  %s\n"), p->fno.fname);
 	}
 	else
 	{
-		colmain_setcolors(COLOR_GREEN, selected ? COLOR_BLUE: COLOR_BLACK);
+		display_textcolor(db, COLOR_GREEN, selected ? COLOR_BLUE: COLOR_BLACK);
 		local_snprintf_P(
 			buff,						// куда форматировать строку
 			sizeof buff / sizeof buff [0],	// размер буфера
@@ -5180,7 +5180,7 @@ display_debug_digit(
 	enum { col = 0, row = 0 };
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 
-	colmain_setcolors(MNUVALCOLOR, BGCOLOR);
+	display_textcolor(db, MNUVALCOLOR, BGCOLOR);
 	do
 	{
 		display_gotoxy(col, row + lowhalf);		// курсор в начало первой строки
@@ -11863,7 +11863,7 @@ void hightests(void)
 		board_update();
 		TP();
 
-		display2_fillbg();
+		display2_fillbg(db);
 
 		/* Запуск теста одного из */
 
@@ -12821,13 +12821,13 @@ void hightests(void)
 #endif /* 1 && CTLSTYLE_V1V */
 #if 0
 	{
-		colmain_setcolors(COLOR_GREEN, COLOR_BLACK);
+		display_textcolor(db, COLOR_GREEN, COLOR_BLACK);
 		display_text(5, 0, PSTR("PT-Electronics 2015"));
 
-		colmain_setcolors(COLOR_RED, COLOR_BLACK);
+		display_textcolor(db, COLOR_RED, COLOR_BLACK);
 		display_text(7, 3, PSTR("RENESAS"));
 
-		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+		display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 		display_text(9, 6, PSTR("2.7 inch TFT"));
 		
 		for (;;)
@@ -13289,7 +13289,7 @@ void hightests(void)
 		board_update();
 		TP();
 		unsigned cnt;
-		display2_fillbg();
+		display2_fillbg(db);
 		//disableAllIRQs();
 		for (cnt = 0; ; ++ cnt)
 		{
@@ -13315,7 +13315,7 @@ void hightests(void)
 #if 0 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		// test: вывод палитры на экран
-		display2_fillbg();
+		display2_fillbg(db);
 		PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 		int sepx = 3, sepy = 3;
 		int wx = DIM_X / 16;
@@ -13405,7 +13405,7 @@ void hightests(void)
 	{
 		//int n = TIM6_DAC_IRQn;
 		unsigned long i = 0;
-		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+		display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 		for (;;)
 		{
 			++ i;
@@ -13420,7 +13420,7 @@ void hightests(void)
 					 );
 
 				display_gotoxy(0, 0 + lowhalf);
-				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 				display_text(buff, lowhalf);
 			} while (lowhalf --);
 			PRINTF(PSTR("CNT=%08lX\n"), i);
@@ -13719,7 +13719,7 @@ void hightests(void)
 	// тест дисплея - вывод меняющихся цифр
 	{
 		unsigned long i = 0;
-		colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+		display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 		for (;;)
 		{
 			++ i;
@@ -13734,7 +13734,7 @@ void hightests(void)
 					 );
 
 				display_gotoxy(0, 0 + lowhalf);
-				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 				display_text(buff, lowhalf);
 			} while (lowhalf --);
 		}
@@ -13759,7 +13759,7 @@ void hightests(void)
 					// Solid BLACK
 					c = UINT8_C(0);
 					display2_setbgcolor(TFTRGB(c, c, c));
-					display2_fillbg();
+					display2_fillbg(db);
 					colmain_nextfb();
 					local_delay_ms(1000);
 				}
@@ -13767,7 +13767,7 @@ void hightests(void)
 					// Solid WHITE
 					c = UINT8_C(0xFF);
 					display2_setbgcolor(TFTRGB(c, c, c));
-					display2_fillbg();
+					display2_fillbg(db);
 					colmain_nextfb();
 					local_delay_ms(1000);
 				}
@@ -13779,9 +13779,9 @@ void hightests(void)
 			for (c = 0; c < 256; ++ c)
 			{
 				display2_setbgcolor(TFTRGB(c, c, c));
-				display2_fillbg();
+				display2_fillbg(db);
 				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
-				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 				display_text(0, 0, b);
 				colmain_nextfb();
 				local_delay_ms(50);
@@ -13789,9 +13789,9 @@ void hightests(void)
 			for (; -- c > 0; )
 			{
 				display2_setbgcolor(TFTRGB(c, c, c));
-				display2_fillbg();
+				display2_fillbg(db);
 				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
-				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 				display_text(0, 0, b);
 				colmain_nextfb();
 				local_delay_ms(50);
@@ -13803,9 +13803,9 @@ void hightests(void)
 			for (c = 0; c < 8; ++ c)
 			{
 				display2_setbgcolor(TFTRGB(UINT8_C(1) << c, UINT8_C(1) << c, UINT8_C(1) << c));
-				display2_fillbg();
+				display2_fillbg(db);
 				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("X%d"), c);
-				colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+				display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 				display_text(0, 0, b);
 				colmain_nextfb();
 				local_delay_ms(2000);
@@ -13815,9 +13815,9 @@ void hightests(void)
 		for (c = 0; c < (8 - rSkip); ++ c)
 		{
 			display2_setbgcolor(TFTRGB(UINT8_C(1) << (c + rSkip), 0, 0));
-			display2_fillbg();
+			display2_fillbg(db);
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("R%d"), c + rSkip);
-			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+			display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(2000);
@@ -13825,9 +13825,9 @@ void hightests(void)
 		for (c = 0; c < (8 - gSkip); ++ c)
 		{
 			display2_setbgcolor(TFTRGB(0, UINT8_C(1) << (c + gSkip), 0));
-			display2_fillbg();
+			display2_fillbg(db);
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("G%d"), c + gSkip);
-			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+			display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(2000);
@@ -13835,9 +13835,9 @@ void hightests(void)
 		for (c = 0; c < (8 - bSkip); ++ c)
 		{
 			display2_setbgcolor(TFTRGB(0, 0, UINT8_C(1) << (c + bSkip)));
-			display2_fillbg();
+			display2_fillbg(db);
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("B%d"), c + bSkip);
-			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+			display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(2000);
@@ -13856,9 +13856,9 @@ void hightests(void)
 		for (c = 0; c < 256; ++ c)
 		{
 			display2_setbgcolor(TFTRGB(c, c, c));
-			display2_fillbg();
+			display2_fillbg(db);
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
-			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+			display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(50);
@@ -13866,9 +13866,9 @@ void hightests(void)
 		for (c = 0; c < 256; ++ c)
 		{
 			display2_setbgcolor(TFTRGB(c, 0, 0));
-			display2_fillbg();
+			display2_fillbg(db);
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), c);
-			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+			display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(50);
@@ -13876,9 +13876,9 @@ void hightests(void)
 		for (c = 0; c < 256; ++ c)
 		{
 			display2_setbgcolor(TFTRGB(0, c, 0));
-			display2_fillbg();
+			display2_fillbg(db);
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), c);
-			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+			display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(50);
@@ -13886,9 +13886,9 @@ void hightests(void)
 		for (c = 0; c < 256; ++ c)
 		{
 			display2_setbgcolor(TFTRGB(0, 0, c));
-			display2_fillbg();
+			display2_fillbg(db);
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), c);
-			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
+			display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
 			display_text(0, 0, b);
 			colmain_nextfb();
 			local_delay_ms(50);
