@@ -2986,7 +2986,7 @@ static void t113_all_CCU_configuration(void)
 
     // DISPLAY_TOP access
 	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
-	CCU->DPSS_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DPSS_TOP_RST Фssert reset
+	CCU->DPSS_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DPSS_TOP_RST Assert reset
 	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
 
 #else
