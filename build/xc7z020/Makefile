@@ -112,6 +112,18 @@ SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
 #SRCDIRS += $(OPENVGDIR)/src
 
+# cmsis-dsp
+include ../cmsis_dsp.mak
+
+# CherryUSB
+include ../cherryusb.mak
+
+# tinyusb
+include ../tinyusb.mak
+
+# rt-thread
+include ../rtthread.mak
+
 # lvgl
 include ../lvgl.mak
 
@@ -121,8 +133,17 @@ include ../lupng.mak
 # FreeRTOS
 include ../freertos.mak
 
+# btstack
+include ../btstack.mak
+
 # litehtml
 include ../litehtml.mak
+
+# LWIP
+include ../lwip.mak
+
+# custom application
+include ../custom0.mak
 
 # Define project name here
 PROJECT = tc1_xc7z020
