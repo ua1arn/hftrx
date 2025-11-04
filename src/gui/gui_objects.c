@@ -317,6 +317,7 @@ uint8_t gui_obj_create(const char * name, ...)
 	}
 
 	default:
+		idx = 0;
 		break;
 	}
 
