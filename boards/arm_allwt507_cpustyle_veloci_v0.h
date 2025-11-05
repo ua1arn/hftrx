@@ -761,6 +761,15 @@
 
 #endif /* WITHSDHCHW */
 
+	#define BOARD_SDCARD_DISCONNECT() do { \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 3, GPIO_CFG_IODISABLE);	/* PF3 - SDC0_CMD	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 2, GPIO_CFG_IODISABLE);	/* PF2 - SDC0_CK	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 1, GPIO_CFG_IODISABLE);	/* PF1 - SDC0_D0	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 0, GPIO_CFG_IODISABLE);	/* PF0 - SDC0_D1	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 5, GPIO_CFG_IODISABLE);	/* PF5 - SDC0_D2	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 4, GPIO_CFG_IODISABLE);	/* PF4 - SDC0_D3	*/ \
+	} while (0)
+
 #if WITHTX
 
 	// +++
@@ -1561,6 +1570,7 @@
 /* макроопределение, которое должно включить в себя все инициализации */
 #define	HARDWARE_INITIALIZE() do { \
 	arm_hardware_pioh_outputs(UINT32_C(1) << 4, 0 * UINT32_C(1) << 4); /* PH4 - BT-RST-N		- pin 34 (tied to +3.3) - from host */ \
+	BOARD_SDCARD_DISCONNECT(); \
 	BOARD_BLINK_INITIALIZE(); \
 	HARDWARE_KBD_INITIALIZE(); \
 	/*HARDWARE_DAC_INITIALIZE(); */\
