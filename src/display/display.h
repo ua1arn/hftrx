@@ -715,7 +715,7 @@ display_value_big(
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast8_t xspan,
 	uint_fast8_t yspan,
-	uint_fast32_t freq,
+	int_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
 	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
@@ -733,7 +733,7 @@ pix_display_value_big(
 	uint_fast16_t ypix,	// y координата начала вывода значения
 	uint_fast16_t xspanpix,
 	uint_fast16_t yspanpix,
-	uint_fast32_t freq,
+	int_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
 	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
@@ -753,7 +753,7 @@ rendered_value_big(
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast8_t xspan,
 	uint_fast8_t yspan,
-	uint_fast32_t freq,
+	int_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
 	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
@@ -768,7 +768,7 @@ pix_rendered_value_big(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
-	uint_fast32_t freq,
+	int_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
 	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
@@ -787,7 +787,7 @@ display_value_lower(
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast8_t xspan,
 	uint_fast8_t yspan,
-	uint_fast32_t freq,
+	int_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
 	uint_fast8_t rj,

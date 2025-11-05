@@ -1021,46 +1021,18 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 
 }
 
-#if LCDMODE_S1D13781
-
-	// младший бит левее
-	static const uint_fast16_t mapcolumn [16] =
-	{
-		0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, // биты для манипуляций с видеобуфером
-		0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000,
-	};
-
-#elif LCDMODE_UC1608 || LCDMODE_UC1601
-
-	/* старшие биты соответствуют верхним пикселям изображения */
-	// млдший бит ниже в растре
-	static const uint_fast8_t mapcolumn [8] =
-	{
-		0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, // биты для манипуляций с видеобуфером
-	};
-#else /* LCDMODE_UC1608 || LCDMODE_UC1601 */
-
-	/* младшие биты соответствуют верхним пикселям изображения */
-	// млдший бит выше в растре
-	static const uint_fast8_t mapcolumn [8] =
-	{
-		0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, // биты для манипуляций с видеобуфером
-	};
-
-#endif /* LCDMODE_UC1608 || LCDMODE_UC1601 */
-
 static const FLASHMEM int32_t vals10 [] =
 {
-	1000000000U,
-	100000000U,
-	10000000U,
-	1000000U,
-	100000U,
-	10000U,
-	1000U,
-	100U,
-	10U,
-	1U,
+	INT32_C(1000000000),
+	INT32_C(100000000),
+	INT32_C(10000000),
+	INT32_C(1000000),
+	INT32_C(100000),
+	INT32_C(10000),
+	INT32_C(1000),
+	INT32_C(100),
+	INT32_C(10),
+	INT32_C(1),
 };
 
 
@@ -1072,7 +1044,7 @@ pix_display_value_big(const gxdrawb_t * db,
 	uint_fast16_t ypix,	// y координата начала вывода значения
 	uint_fast16_t xspanpix,
 	uint_fast16_t yspanpix,
-	uint_fast32_t freq,
+	int_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
 	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
@@ -1134,12 +1106,13 @@ pix_display_value_big(const gxdrawb_t * db,
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 void
 NOINLINEAT
-display_value_big(const gxdrawb_t * db,
+display_value_big(
+	const gxdrawb_t * db,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast8_t xspan,
 	uint_fast8_t yspan,
-	uint_fast32_t freq,
+	int_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
 	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
@@ -1153,8 +1126,6 @@ display_value_big(const gxdrawb_t * db,
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
-//	const uint_fast16_t x = GRID2X(xcell);
-//	const uint_fast16_t y = GRID2Y(ycell);
 	const uint_fast16_t w = GRID2X(xspan);
 	const uint_fast16_t h = GRID2Y(yspan);
 	pix_display_value_big(db, xpix, ypix, w, h, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstyle);
@@ -1162,15 +1133,15 @@ display_value_big(const gxdrawb_t * db,
 
 #if WITHPRERENDER
 
-
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 /* использование предварительно построенных изображений при отображении частоты */
 void
 NOINLINEAT
-pix_rendered_value_big(const gxdrawb_t * db,
+pix_rendered_value_big(
+	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
-	uint_fast32_t freq,
+	int_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
 	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
@@ -1238,7 +1209,7 @@ rendered_value_big(const gxdrawb_t * db,
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast8_t xspan,
 	uint_fast8_t yspan,
-	uint_fast32_t freq,
+	int_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
 	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
@@ -1263,7 +1234,7 @@ display_value_lower(const gxdrawb_t * db,
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast8_t xspan,
 	uint_fast8_t yspan,
-	uint_fast32_t freq,
+	int_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
 	uint_fast8_t rj,	// = 1;		// right truncated
@@ -1307,7 +1278,8 @@ display_value_lower(const gxdrawb_t * db,
 
 void
 NOINLINEAT
-display_value_small(const gxdrawb_t * db,
+display_value_small(
+	const gxdrawb_t * db,
 	uint_fast8_t x,	// x координата начала вывода значения
 	uint_fast8_t y,	// y координата начала вывода значения
 	uint_fast8_t xspan,
@@ -1338,7 +1310,7 @@ display_value_small(const gxdrawb_t * db,
 	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->textbg);
 	if (h > smallfont_height())
 	{
-		ypix += (h - smallfont_height()) / 2;
+		ypix += (h - dbstyle->font_height()) / 2;
 	}
 	if (wsign || wminus)
 	{
@@ -1346,13 +1318,13 @@ display_value_small(const gxdrawb_t * db,
 		z = 0;
 		if (freq < 0)
 		{
-			xpix = colorpip_put_char_small(db, xpix, ypix, '-', fg);
+			xpix = dbstyle->put_char_small(db, xpix, ypix, '-', fg);
 			freq = - freq;
 		}
 		else if (wsign)
-			xpix = colorpip_put_char_small(db, xpix, ypix, '+', fg);
+			xpix = dbstyle->put_char_small(db, xpix, ypix, '+', fg);
 		else
-			xpix = colorpip_put_char_small(db, xpix, ypix, ' ', fg);
+			xpix = dbstyle->put_char_small(db, xpix, ypix, ' ', fg);
 	}
 	for (; i < j; ++ i)
 	{
@@ -1361,20 +1333,20 @@ display_value_small(const gxdrawb_t * db,
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = colorpip_put_char_small(db, xpix, ypix, (z == 0) ? '.' : ' ', fg);
+			xpix = dbstyle->put_char_small(db, xpix, ypix, (z == 0) ? '.' : ' ', fg);
 		}
 		else if (comma == g)
 		{
 			z = 0;
-			xpix = colorpip_put_char_small(db, xpix, ypix, '.', fg);
+			xpix = dbstyle->put_char_small(db, xpix, ypix, '.', fg);
 		}
 
 		if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = colorpip_put_char_small(db, xpix, ypix, ' ', fg);	// supress zero
+			xpix = dbstyle->put_char_small(db, xpix, ypix, ' ', fg);	// supress zero
 		else
 		{
 			z = 0;
-			xpix = colorpip_put_char_small(db, xpix, ypix, '0' + res.quot, fg);
+			xpix = dbstyle->put_char_small(db, xpix, ypix, '0' + res.quot, fg);
 		}
 		freq = res.rem;
 	}
