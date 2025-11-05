@@ -959,6 +959,7 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
 	const uint_fast16_t h = GRID2Y(yspan);
+	const COLORPIP_T fg = dbstyle->textfg;
 
 	savestring = s;
 	savewhere = __func__;
@@ -975,7 +976,7 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 		lv_draw_rect_dsc_init(& d);
 		lv_area_set(& coords, xpix, ypix, xpix + GRID2X(xspan) - 1, ypix + GRID2Y(yspan) - 1);
 	    d.bg_color = display_lvlcolor(dbstyle->textbg);
-	    l.color = display_lvlcolor(dbstyle->textfg);
+	    l.color = display_lvlcolor(fg);
 	    l.align = LV_TEXT_ALIGN_RIGHT;
 	    l.flag = 0*LV_TEXT_FLAG_EXPAND | LV_TEXT_FLAG_FIT;
 	    l.text = s;
@@ -1001,13 +1002,14 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 		for (len = strlen(s); len < xspan; ++ len)
 			xpix += smallfont_width(' ');
 		while ((c = * s ++) != '\0' && xspan --)
-			xpix = colorpip_put_char_small(db, xpix, ypix, c, dbstyle->textfg);
+			xpix = colorpip_put_char_small(db, xpix, ypix, c, fg);
 		break;
 	case GXSTYLE_HALIGN_LEFT:
 		while ((c = * s ++) != '\0' && xspan --)
-			xpix = colorpip_put_char_small(db, xpix, ypix, c, dbstyle->textfg);
+			xpix = colorpip_put_char_small(db, xpix, ypix, c, fg);
 		break;
 	case GXSTYLE_HALIGN_CENTER:
+		// todo: to be implemented
 		break;
 	}
 
@@ -1023,6 +1025,7 @@ display_text2(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, cons
 	const uint_fast16_t h = GRID2Y(yspan);
 	const uint_fast16_t w = GRID2X(yspan);
 	uint_fast16_t xpix0 = xpix;
+	const COLORPIP_T fg = dbstyle->textfg;
 
 	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->textbg);
 	if (h > smallfont2_height())
@@ -1037,13 +1040,14 @@ display_text2(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, cons
 		while (xpix - xpix0 + smallfont2_width(' ') < w)
 			xpix += smallfont2_width(' ');
 		while ((c = * s ++) != '\0' && xpix - xpix0 + smallfont2_width(c) < w)
-			xpix = colorpip_put_char_small2(db, xpix, ypix, c, dbstyle->textfg);
+			xpix = colorpip_put_char_small2(db, xpix, ypix, c, fg);
 		break;
 	case GXSTYLE_HALIGN_LEFT:
 		while ((c = * s ++) != '\0' && xpix - xpix0 + smallfont2_width(c) < w)
-			xpix = colorpip_put_char_small2(db, xpix, ypix, c, dbstyle->textfg);
+			xpix = colorpip_put_char_small2(db, xpix, ypix, c, fg);
 		break;
 	case GXSTYLE_HALIGN_CENTER:
+		// todo: to be implemented
 		break;
 	}
 }
@@ -1308,6 +1312,7 @@ display_value_lower(const gxdrawb_t * db,
 	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
 	const uint_fast16_t w = GRID2X(xspan);
 	const uint_fast16_t h = GRID2Y(yspan);
+	const COLORPIP_T fg = dbstyle->textfg;
 	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->textbg);
 	for (; i < j; ++ i)
 	{
@@ -1317,15 +1322,15 @@ display_value_lower(const gxdrawb_t * db,
 		if (comma == g || comma + 3 == g)
 		{
 			z = 0;
-			xpix = display_put_char_big(db, xpix, ypix, '.', dbstyle->textfg);
+			xpix = display_put_char_big(db, xpix, ypix, '.', fg);
 		}
 
 		if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_big(db, xpix, ypix, ' ', dbstyle->textfg);	// supress zero
+			xpix = display_put_char_big(db, xpix, ypix, ' ', fg);	// supress zero
 		else
 		{
 			z = 0;
-			xpix = display_put_char_half(db, xpix, ypix, '0' + res.quot, dbstyle->textfg);
+			xpix = display_put_char_half(db, xpix, ypix, '0' + res.quot, fg);
 		}
 		freq = res.rem;
 	}
@@ -1360,6 +1365,7 @@ display_value_small(const gxdrawb_t * db,
 //    const uint_fast16_t y = GRID2Y(ycell);
 	const uint_fast16_t w = GRID2X(xspan);
 	const uint_fast16_t h = GRID2Y(yspan);
+	const COLORPIP_T fg = dbstyle->textfg;
 	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->textbg);
 	if (h > smallfont_height())
 	{
@@ -1371,13 +1377,13 @@ display_value_small(const gxdrawb_t * db,
 		z = 0;
 		if (freq < 0)
 		{
-			xpix = colorpip_put_char_small(db, xpix, ypix, '-', dbstyle->textfg);
+			xpix = colorpip_put_char_small(db, xpix, ypix, '-', fg);
 			freq = - freq;
 		}
 		else if (wsign)
-			xpix = colorpip_put_char_small(db, xpix, ypix, '+', dbstyle->textfg);
+			xpix = colorpip_put_char_small(db, xpix, ypix, '+', fg);
 		else
-			xpix = colorpip_put_char_small(db, xpix, ypix, ' ', dbstyle->textfg);
+			xpix = colorpip_put_char_small(db, xpix, ypix, ' ', fg);
 	}
 	for (; i < j; ++ i)
 	{
@@ -1386,20 +1392,20 @@ display_value_small(const gxdrawb_t * db,
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = colorpip_put_char_small(db, xpix, ypix, (z == 0) ? '.' : ' ', dbstyle->textfg);
+			xpix = colorpip_put_char_small(db, xpix, ypix, (z == 0) ? '.' : ' ', fg);
 		}
 		else if (comma == g)
 		{
 			z = 0;
-			xpix = colorpip_put_char_small(db, xpix, ypix, '.', dbstyle->textfg);
+			xpix = colorpip_put_char_small(db, xpix, ypix, '.', fg);
 		}
 
 		if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = colorpip_put_char_small(db, xpix, ypix, ' ', dbstyle->textfg);	// supress zero
+			xpix = colorpip_put_char_small(db, xpix, ypix, ' ', fg);	// supress zero
 		else
 		{
 			z = 0;
-			xpix = colorpip_put_char_small(db, xpix, ypix, '0' + res.quot, dbstyle->textfg);
+			xpix = colorpip_put_char_small(db, xpix, ypix, '0' + res.quot, fg);
 		}
 		freq = res.rem;
 	}
