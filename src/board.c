@@ -1023,7 +1023,7 @@ pll1_getoutdivider(
 			goto found;
 	}
 #if 0
-	display_text(PSTR(0, 0, "[pll1_getoutdivider Err]"));
+	display_text(PSTR(0, 0, "[pll1_getoutdivider Err]"), & dbstylev);
 	return 0;		/* требуемую частоту невозожно получить */
 #endif
 
@@ -4104,7 +4104,7 @@ uint_fast8_t board_pll1_set_n(
 			local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 				PSTR("%02x"), (unsigned) count
 				 );
-			display_text(0, 1, buff);
+			display_text(db, 0, 1, buff, & dbstylev);
 		}
 #endif
 

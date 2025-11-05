@@ -428,6 +428,9 @@ void nmeamodem_sendchar(void * ctx);							/* вызывается из обра
 #define KBDNTICKS(v) (((v) + (KBD_TICKS_PERIOD - 1)) / KBD_TICKS_PERIOD)
 #define SEQNTICKS(v) (((v) + (SEQ_TICKS_PERIOD - 1)) / SEQ_TICKS_PERIOD)
 
+void xcz_rxtx_state(uint8_t tx);
+void xcz_dds_ftw(const uint_least64_t * val);
+void xcz_dds_rts(const uint_least64_t * val);
 
 #ifdef __cplusplus
 }

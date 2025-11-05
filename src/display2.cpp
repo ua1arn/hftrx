@@ -2374,15 +2374,17 @@ static void display_freqXbig_a(const gxdrawb_t * db,
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 
-	display_textcolor(db, colors_1freq [0].fg, colors_1freq [0].bg);
+	gxstyle_textcolor(& dbstylev, colors_1freq [0].fg, colors_1freq [0].bg);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
 
-		display_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 0);	// отрисовываем верхнюю часть строки
+		display_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 0, & dbstylev);	// отрисовываем верхнюю часть строки
 #endif /* WITHDIRECTFREQENER */
 	}
 	else
@@ -2391,7 +2393,7 @@ static void display_freqXbig_a(const gxdrawb_t * db,
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		display_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0);	// отрисовываем верхнюю часть строки
+		display_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0, & dbstylev);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -2418,6 +2420,8 @@ static void display2_freqX_a(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t 
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
@@ -2425,8 +2429,8 @@ static void display2_freqX_a(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t 
 	#if WITHPRERENDER
 		rendered_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
 	#else /* WITHPRERENDER */
-		display_textcolor(db, colors_1freq [0].fg, colors_1freq [0].bg);
-		display_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
+		gxstyle_textcolor(& dbstylev, colors_1freq [0].fg, colors_1freq [0].bg);
+		display_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev);	// отрисовываем верхнюю часть строки
 	#endif /* WITHPRERENDER */
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -2439,8 +2443,8 @@ static void display2_freqX_a(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t 
 	#if WITHPRERENDER
 		rendered_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 	#else /* WITHPRERENDER */
-		display_textcolor(db, colors_1freq [0].fg, colors_1freq [0].bg);
-		display_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+		gxstyle_textcolor(& dbstylev, colors_1freq [0].fg, colors_1freq [0].bg);
+		display_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev);	// отрисовываем верхнюю часть строки
 	#endif /* WITHPRERENDER */
 	}
 }
@@ -2452,9 +2456,11 @@ static void display2_freqx_a(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 	const uint_fast32_t freq = hamradio_get_freq_a();
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 
-	display_textcolor(db, colors_1freq [0].fg, colors_1freq [0].bg);
-	display_value_lower(db, x0, y0, colspan, rowspan, freq, fullwidth, comma, rj);
+	gxstyle_textcolor(& dbstylev, colors_1freq [0].fg, colors_1freq [0].bg);
+	display_value_lower(db, x0, y0, colspan, rowspan, freq, fullwidth, comma, rj, & dbstylev);
 }
 
 // Верстия отображения без точки между мегагерцами и сотнями килогерц (для текстовых дисплееев)
@@ -2470,14 +2476,16 @@ static void display_freqchr_a(const gxdrawb_t * db,
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 
-	display_textcolor(db, colors_1freq [0].fg, colors_1freq [0].bg);
+	gxstyle_textcolor(& dbstylev, colors_1freq [0].fg, colors_1freq [0].bg);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
-		display_value_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
+		display_value_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev);	// отрисовываем верхнюю часть строки
 #endif /* WITHDIRECTFREQENER */
 	}
 	else
@@ -2486,7 +2494,7 @@ static void display_freqchr_a(const gxdrawb_t * db,
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		display_value_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+		display_value_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1, & dbstylev);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -2505,14 +2513,16 @@ static void display_freqchr_b(const gxdrawb_t * db,
 	const uint_fast8_t comma = 3 - rj;
 	uint_fast8_t state;
 	hamradio_get_vfomode3_value(& state);	// state - признак активного SPLIT (0/1)
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 
-	display_textcolor(db, colors_2freqB [state].fg, colors_2freqB [state].bg);
+	gxstyle_textcolor(& dbstylev, colors_2freqB [state].fg, colors_2freqB [state].bg);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
-		display_value_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
+		display_value_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev);	// отрисовываем верхнюю часть строки
 #endif /* WITHDIRECTFREQENER */
 	}
 	else
@@ -2521,7 +2531,7 @@ static void display_freqchr_b(const gxdrawb_t * db,
 
 		const uint_fast32_t freq = hamradio_get_freq_b();
 
-		display_value_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, 255, 1, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+		display_value_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, 255, 1, blinkpos, blinkstate, 1, & dbstylev);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -2538,11 +2548,13 @@ static void display2_freqX_b(const gxdrawb_t * db,
 	const uint_fast8_t comma = 3 - rj;
 	uint_fast8_t state;
 	hamradio_get_vfomode3_value(& state);	// state - признак активного SPLIT (0/1)
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 
 	const uint_fast32_t freq = hamradio_get_freq_b();
 
-	display_textcolor(db, colors_2freqB [state].fg, colors_2freqB [state].bg);
-	display_value_small(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj);
+	gxstyle_textcolor(& dbstylev, colors_2freqB [state].fg, colors_2freqB [state].bg);
+	display_value_small(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, & dbstylev);
 }
 
 // отладочная функция измерителя опорной частоты
@@ -2556,6 +2568,8 @@ static void display_freqmeter10(const gxdrawb_t * db,
 {
 #if WITHFQMETER
 	char buf2 [11];
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 
 	local_snprintf_P(
 		buf2, ARRAY_SIZE(buf2),
@@ -2563,8 +2577,8 @@ static void display_freqmeter10(const gxdrawb_t * db,
 		(unsigned long) board_get_fqmeter()
 		);
 
-	display_textcolor(db, colors_1freq [0].fg, colors_1freq [0].bg);
-	display_text(db, xcell, ycell, buf2, xspan, yspan);
+	gxstyle_textcolor(& dbstylev, colors_1freq [0].fg, colors_1freq [0].bg);
+	display_text(db, xcell, ycell, buf2, xspan, yspan, & dbstylev);
 #endif /* WITHFQMETER */
 }
 
@@ -2580,14 +2594,16 @@ display2_text(const gxdrawb_t * db,
 	uint_fast8_t yspan				/* ширина поляЮ в которую должно быть вписано значение */
 	)
 {
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 	#if LCDMODE_COLORED
 	#else /* LCDMODE_COLORED */
 	#endif /* LCDMODE_COLORED */
 #if WITHALTERNATIVELAYOUT
 	layout_label1_medium(db, xcell, ycell, labels [state], strlen(labels [state]), 5, COLORPIP_BLACK, colors_2state_alt [state]);
 #else
-	display_textcolor(db, colors [state].fg, colors [state].bg);
-	display_text(db, xcell, ycell, labels [state], width, yspan);
+	gxstyle_textcolor(& dbstylev, colors [state].fg, colors [state].bg);
+	display_text(db, xcell, ycell, labels [state], width, yspan, & dbstylev);
 #endif /* WITHALTERNATIVELAYOUT */
 }
 
@@ -2812,7 +2828,7 @@ static void display2_btsts2(const gxdrawb_t * db,
 		static const char text_bt [] = "BT";
 		display_2states(db, x, y, active, text_bt, text_bt, xspan, yspan);
 	#else /* LCDMODE_COLORED */
-		display_text(db, x, y, active ? "BT" : "", xspan, yspan);
+		display_text(db, x, y, active ? "BT" : "", xspan, yspan, & dbstylev);
 	#endif /* LCDMODE_COLORED */
 #endif /* WITHUSEUSBBT && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)) */
 }
@@ -2832,7 +2848,7 @@ static void display2_usbsts3(const gxdrawb_t * db,
 		static const char text_usb [] = "USB";
 		display_2states(db, x, y, active, text_usb, text_usb, xspan, yspan);
 	#else /* LCDMODE_COLORED */
-		display_text(db, x, y, active ? PSTR("USB") : PSTR(""), xspan, yspan);
+		display_text(db, x, y, active ? PSTR("USB") : PSTR(""), xspan, yspan, & dbstylev);
 	#endif /* LCDMODE_COLORED */
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 }
@@ -3408,8 +3424,10 @@ static void display_lockstate1(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	display_textcolor(db, LOCKCOLOR, BGCOLOR);
-	display_text(db, x, y, hamradio_get_lockvalue() ? PSTR("*") : PSTR(""), xspan, yspan);
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
+	gxstyle_textcolor(& dbstylev, LOCKCOLOR, BGCOLOR);
+	display_text(db, x, y, hamradio_get_lockvalue() ? PSTR("*") : PSTR(""), xspan, yspan, & dbstylev);
 }
 
 // RX path bandwidth
@@ -3494,29 +3512,31 @@ static void display2_ovf3(const gxdrawb_t * db,
 		)
 {
 #if WITHDSPEXTDDC
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 	//const char * const labels [1] = { hamradio_get_pre_value_P(), };
 	//display2_text(db, x, y, labels, colors_1state, 0, xspan, yspan);
 
 	const char * labels [1];
 	if (hamradio_get_bringSWR(labels))
 	{
- 		display_textcolor(db, BGCOLOR, OVFCOLOR);
-		display_text(db, x, y, labels [0], xspan, yspan);
+ 		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
+		display_text(db, x, y, labels [0], xspan, yspan, & dbstylev);
 	}
 	else if (boad_fpga_adcoverflow() != 0)
 	{
-		display_textcolor(db, BGCOLOR, OVFCOLOR);
-		display_text(db, x, y, PSTR("OVF"), xspan, yspan);
+		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
+		display_text(db, x, y, PSTR("OVF"), xspan, yspan, & dbstylev);
 	}
 	else if (boad_mike_adcoverflow() != 0)
 	{
-		display_textcolor(db, BGCOLOR, OVFCOLOR);
-		display_text(db, x, y, PSTR("MIK"), xspan, yspan);
+		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
+		display_text(db, x, y, PSTR("MIK"), xspan, yspan, & dbstylev);
 	}
 	else
 	{
-		display_textcolor(db, BGCOLOR, BGCOLOR);
-		display_text(db, x, y, PSTR(""), xspan, yspan);
+		gxstyle_textcolor(& dbstylev, BGCOLOR, BGCOLOR);
+		display_text(db, x, y, PSTR(""), xspan, yspan, & dbstylev);
 	}
 #endif /* WITHDSPEXTDDC */
 }
@@ -3531,25 +3551,27 @@ static void display2_preovf3(const gxdrawb_t * db,
 		)
 {
 	const char * labels [1];
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 	if (hamradio_get_bringSWR(labels))
 	{
- 		display_textcolor(db, BGCOLOR, OVFCOLOR);
-		display_text(db, x, y, labels [0], xspan, yspan);
+ 		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
+		display_text(db, x, y, labels [0], xspan, yspan, & dbstylev);
 	}
 	else if (boad_fpga_adcoverflow() != 0)
 	{
-		display_textcolor(db, BGCOLOR, OVFCOLOR);
-		display_text(db, x, y, PSTR("OVF"), xspan, yspan);
+		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
+		display_text(db, x, y, PSTR("OVF"), xspan, yspan, & dbstylev);
 	}
 	else if (boad_mike_adcoverflow() != 0)
 	{
-		display_textcolor(db, BGCOLOR, OVFCOLOR);
-		display_text(db, x, y, PSTR("MIK"), xspan, yspan);
+		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
+		display_text(db, x, y, PSTR("MIK"), xspan, yspan, & dbstylev);
 	}
 	else
 	{
-		display_textcolor(db, DSGN_LABELTEXT, DSGN_LABELBACK);
-		display_text(db, x, y, hamradio_get_pre_value_P(), xspan, yspan);
+		gxstyle_textcolor(& dbstylev, DSGN_LABELTEXT, DSGN_LABELBACK);
+		display_text(db, x, y, hamradio_get_pre_value_P(), xspan, yspan, & dbstylev);
 	}
 }
 
@@ -3653,9 +3675,11 @@ static void display_att_tx3(const gxdrawb_t * db,
 {
 	const uint_fast8_t tx = hamradio_get_tx();
 	const char * text = tx ? PSTR("TX  ") : hamradio_get_att_value_P();
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 
-	display_textcolor(db, DSGN_LABELTEXT, DSGN_LABELBACK);
-	display_text(db, x, y, text, xspan, yspan);
+	gxstyle_textcolor(& dbstylev, DSGN_LABELTEXT, DSGN_LABELBACK);
+	display_text(db, x, y, text, xspan, yspan, & dbstylev);
 }
 
 // RX agc
@@ -3752,10 +3776,12 @@ static void display2_voltlevelV5(const gxdrawb_t * db,
 {
 #if WITHVOLTLEVEL
 	uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 	//PRINTF("display2_voltlevelV5: volt=%u\n", volt);
-	display_textcolor(db, colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-	display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, volt, 3, 1, 255, 0);
-	display_text(db, x + CHARS2GRID(4), y, PSTR("V"), 1, yspan);
+	gxstyle_textcolor(& dbstylev, colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
+	display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, volt, 3, 1, 255, 0, & dbstylev);
+	display_text(db, x + CHARS2GRID(4), y, PSTR("V"), 1, yspan, & dbstylev);
 #endif /* WITHVOLTLEVEL */
 }
 
@@ -3771,9 +3797,11 @@ static void display_voltlevel4(const gxdrawb_t * db,
 #if WITHVOLTLEVEL
 	const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 	//PRINTF("display_voltlevel4: volt=%u\n", volt);
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 
-	display_textcolor(db, colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-	display_value_small(db, x, y, xspan, yspan, volt, 3, 1, 255, 0);
+	gxstyle_textcolor(& dbstylev, colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
+	display_value_small(db, x, y, xspan, yspan, volt, 3, 1, 255, 0, & dbstylev);
 #endif /* WITHVOLTLEVEL */
 }
 
@@ -3788,6 +3816,8 @@ static void display2_thermo4(const gxdrawb_t * db,
 {
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 
 	// 50+ - красный
 	// 30+ - желтый
@@ -3798,16 +3828,16 @@ static void display2_thermo4(const gxdrawb_t * db,
 	if (tempv < 0)
 	{
 		tempv = 0; //- tempv;
-		display_textcolor(db, COLORPIP_WHITE, display2_getbgcolor());
+		gxstyle_textcolor(& dbstylev, COLORPIP_WHITE, display2_getbgcolor());
 	}
 	else if (tempv >= 500)
-		display_textcolor(db, COLORPIP_RED, display2_getbgcolor());
+		gxstyle_textcolor(& dbstylev, COLORPIP_RED, display2_getbgcolor());
 	else if (tempv >= 300)
-		display_textcolor(db, COLORPIP_YELLOW, display2_getbgcolor());
+		gxstyle_textcolor(& dbstylev, COLORPIP_YELLOW, display2_getbgcolor());
 	else
-		display_textcolor(db, COLORPIP_GREEN, display2_getbgcolor());
+		gxstyle_textcolor(& dbstylev, COLORPIP_GREEN, display2_getbgcolor());
 
-	display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, tempv, 3, 1, 255, 0);
+	display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, tempv, 3, 1, 255, 0, & dbstylev);
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 }
 
@@ -3822,6 +3852,8 @@ static void display2_thermo5(const gxdrawb_t * db,
 {
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 
 	// 50+ - красный
 	// 30+ - желтый
@@ -3832,17 +3864,17 @@ static void display2_thermo5(const gxdrawb_t * db,
 	if (tempv < 0)
 	{
 		tempv = 0; //- tempv;
-		display_textcolor(db, COLORPIP_WHITE, display2_getbgcolor());
+		gxstyle_textcolor(& dbstylev, COLORPIP_WHITE, display2_getbgcolor());
 	}
 	else if (tempv >= 500)
-		display_textcolor(db, COLORPIP_RED, display2_getbgcolor());
+		gxstyle_textcolor(& dbstylev, COLORPIP_RED, display2_getbgcolor());
 	else if (tempv >= 300)
-		display_textcolor(db, COLORPIP_YELLOW, display2_getbgcolor());
+		gxstyle_textcolor(& dbstylev, COLORPIP_YELLOW, display2_getbgcolor());
 	else
-		display_textcolor(db, COLORPIP_GREEN, display2_getbgcolor());
+		gxstyle_textcolor(& dbstylev, COLORPIP_GREEN, display2_getbgcolor());
 
-	display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, tempv, 3, 1, 255, 0);
-	display_text(db, x + CHARS2GRID(4), y, PSTR("C"), 1, yspan);
+	display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, tempv, 3, 1, 255, 0, & dbstylev);
+	display_text(db, x + CHARS2GRID(4), y, PSTR("C"), 1, yspan, & dbstylev);
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 }
 
@@ -3858,23 +3890,25 @@ static void display2_currlevelA6(const gxdrawb_t * db,
 		)
 {
 #if WITHCURRLEVEL || WITHCURRLEVEL2
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		display_textcolor(db, colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 1, 255, 1);
+		gxstyle_textcolor(& dbstylev, colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
+		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 1, 255, 1, & dbstylev);
 		// last character
-		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan);
+		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev);
 
 	#else /* WITHCURRLEVEL_ACS712_30A */
 		// dd.d - 6 places (without "A")
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		display_textcolor(db, colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 2, 255, 0);
+		gxstyle_textcolor(& dbstylev, colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
+		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 2, 255, 0, & dbstylev);
 		// last character
-		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan);
+		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev);
 
 	#endif /* WITHCURRLEVEL_ACS712_30A */
 #endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
@@ -3891,21 +3925,23 @@ static void display2_currlevel5(const gxdrawb_t * db,
 		)
 {
 #if WITHCURRLEVEL || WITHCURRLEVEL2
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		display_textcolor(db, colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 1, 255, 1);
-		//display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan);
+		gxstyle_textcolor(& dbstylev, colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
+		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 1, 255, 1, & dbstylev);
+		//display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev);
 
 	#else /* WITHCURRLEVEL_ACS712_30A */
 		// dd.d - 5 places (without "A")
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		display_textcolor(db, colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
-		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 2, 255, 0);
-		//display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan);
+		gxstyle_textcolor(& dbstylev, colors_1statevoltage [0].fg, colors_1statevoltage [0].bg);
+		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 2, 255, 0, & dbstylev);
+		//display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev);
 
 	#endif /* WITHCURRLEVEL_ACS712_30A */
 #endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
@@ -3927,7 +3963,7 @@ static void display2_classa7(const gxdrawb_t * db,
 		static const char classa_null [] = "";
 		display_2states(db, x, y, active, classa_text, classa_text, xspan, yspan);
 	#else /* LCDMODE_COLORED */
-		display_text(db, x, y, active ? classa_text : classa_null, xspan, yspan);
+		display_text(db, x, y, active ? classa_text : classa_null, xspan, yspan, & dbstylev);
 	#endif /* LCDMODE_COLORED */
 #endif /* WITHPACLASSA */
 }
@@ -3950,7 +3986,7 @@ static void display2_classa3(const gxdrawb_t * db,
 		//display_2states(db, x, y, active, classa_text, classb_text);
 		display_2states(db, x, y, 1, active ? classa_text : classb_text, classa_null, xspan, yspan);
 	#else /* LCDMODE_COLORED */
-		display_text(db, x, y, active ? classa_text : classa_null, xspan, yspan);
+		display_text(db, x, y, active ? classa_text : classa_null, xspan, yspan, & dbstylev);
 	#endif /* LCDMODE_COLORED */
 #endif /* WITHPACLASSA */
 }
@@ -4117,17 +4153,19 @@ static void display2_freqdelta8(const gxdrawb_t * db,
 		)
 {
 #if WITHINTEGRATEDDSP
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 	int_fast32_t deltaf;
 	const uint_fast8_t f = dsp_getfreqdelta10(& deltaf, 0);		/* Получить значение отклонения частоты с точностью 0.1 герца для приемника A */
 	deltaf = - deltaf;	// ошибка по частоте преобразуется в расстройку
-	display_textcolor(db, colors_1state [0].fg, colors_1state [0].bg);
+	gxstyle_textcolor(& dbstylev, colors_1state [0].fg, colors_1state [0].bg);
 	if (f != 0)
 	{
-		display_value_small(db, x, y, xspan, yspan, deltaf, 6 | WSIGNFLAG, 1, 255, 0);
+		display_value_small(db, x, y, xspan, yspan, deltaf, 6 | WSIGNFLAG, 1, 255, 0, & dbstylev);
 	}
 	else
 	{
-		display_text(db, x, y, "", xspan, yspan);
+		display_text(db, x, y, "", xspan, yspan, & dbstylev);
 	}
 #endif /* WITHINTEGRATEDDSP */
 }
@@ -4142,17 +4180,19 @@ static void display_samfreqdelta8(const gxdrawb_t * db,
 		)
 {
 #if WITHINTEGRATEDDSP
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 	int_fast32_t deltaf;
 	const uint_fast8_t f = hamradio_get_samdelta10(& deltaf, 0);		/* Получить значение отклонения частоты с точностью 0.1 герца для приемника A */
 	deltaf = - deltaf;	// ошибка по частоте преобразуется в расстройку
-	display_textcolor(db, colors_1state [0].fg, colors_1state [0].bg);
+	gxstyle_textcolor(& dbstylev, colors_1state [0].fg, colors_1state [0].bg);
 	if (f != 0)
 	{
-		display_value_small(db, x, y, xspan, yspan, deltaf, 6 | WSIGNFLAG, 1, 255, 0);
+		display_value_small(db, x, y, xspan, yspan, deltaf, 6 | WSIGNFLAG, 1, 255, 0, & dbstylev);
 	}
 	else
 	{
-		display_text(db, x, y, "", xspan, yspan);
+		display_text(db, x, y, "", xspan, yspan, & dbstylev);
 	}
 #endif /* WITHINTEGRATEDDSP */
 }
@@ -4170,9 +4210,11 @@ static void display_amfmhighcut4(const gxdrawb_t * db,
 #if WITHAMHIGHKBDADJ
 	uint_fast8_t flag;
 	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 
-	display_textcolor(db, colors_2state [flag].fg, colors_2state [flag].bg);
-	display_value_small(db, x, y, xspan, yspan, v, 3, 2, 255, 0);
+	gxstyle_textcolor(& dbstylev, colors_2state [flag].fg, colors_2state [flag].bg);
+	display_value_small(db, x, y, xspan, yspan, v, 3, 2, 255, 0, & dbstylev);
 #endif /* WITHAMHIGHKBDADJ */
 }
 
@@ -4189,9 +4231,11 @@ static void display_amfmhighcut5(const gxdrawb_t * db,
 #if WITHAMHIGHKBDADJ
 	uint_fast8_t flag;
 	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 
-	display_textcolor(db, colors_2state [flag].fg, colors_2state [flag].bg);
-	display_value_small(db, x, y, xspan, yspan, v, 4, 2, 255, 0);
+	gxstyle_textcolor(& dbstylev, colors_2state [flag].fg, colors_2state [flag].bg);
+	display_value_small(db, x, y, xspan, yspan, v, 4, 2, 255, 0, & dbstylev);
 #endif /* WITHAMHIGHKBDADJ */
 }
 
@@ -4457,18 +4501,20 @@ void display_swrmeter(const gxdrawb_t * db,
 
 	//PRINTF(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
 
-	display_textcolor(db, SWRCOLOR, BGCOLOR);
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
+	gxstyle_textcolor(& dbstylev, SWRCOLOR, BGCOLOR);
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_swr(x, CHARS2GRID(0)), y, & ypix);
-	display_bar(db, xpix, ypix, BDTH_ALLSWR, rowspan, mapleftval, fullscale, fullscale, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);
+	display_bar(db, xpix, ypix, BDTH_ALLSWR, rowspan, mapleftval, fullscale, fullscale, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL, & dbstylev);
 
 	if (BDTH_SPACESWR != 0)
 	{
 		// заполняем пустое место за индикаторм КСВ
 		uint_fast16_t ypix;
 		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_swr(x, CHARS2GRID(BDTH_ALLSWR)), y, & ypix);
-		display_bar(db, xpix, ypix, BDTH_SPACESWR, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
+		display_bar(db, xpix, ypix, BDTH_SPACESWR, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE, & dbstylev);
 	}
 
 #endif /* WITHBARS && WITHTX */
@@ -4492,18 +4538,20 @@ static void display_pwrmeter(const gxdrawb_t * db,
 	const uint_fast8_t mapleftval = display_mapbar(v, 0, fullscale, 0, v, fullscale);
 	const uint_fast8_t mapleftmax = display_mapbar(t, 0, fullscale, fullscale, t, fullscale); // fullscale - invisible
 
-	display_textcolor(db, PWRCOLOR, BGCOLOR);
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
+	gxstyle_textcolor(& dbstylev, PWRCOLOR, BGCOLOR);
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(0)), y, & ypix);
-	display_bar(db, xpix, ypix, BDTH_ALLPWR, rowspan, mapleftval, mapleftmax, fullscale, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);
+	display_bar(db, xpix, ypix, BDTH_ALLPWR, rowspan, mapleftval, mapleftmax, fullscale, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF, & dbstylev);
 
 	if (BDTH_SPACEPWR != 0)
 	{
 		// заполняем пустое место за индикаторм мощности
 		uint_fast16_t ypix;
 		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLPWR)), y, & ypix);
-		display_bar(db, xpix, ypix, BDTH_SPACEPWR, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
+		display_bar(db, xpix, ypix, BDTH_SPACEPWR, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE, & dbstylev);
 	}
 
 #endif /* WITHBARS */
@@ -4522,6 +4570,8 @@ static void display_smeter(const gxdrawb_t * db,
 	)
 {
 #if WITHBARS
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 	tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
 	//delta1 = delta1 > level9 ? level9 : delta1;
 
@@ -4531,21 +4581,21 @@ static void display_smeter(const gxdrawb_t * db,
 	const uint_fast8_t maprightval = display_mapbar(value, level9, level9 + delta2, 0, value - level9, delta2);
 	const uint_fast8_t maprightmax = display_mapbar(tracemax, level9, level9 + delta2, delta2, tracemax - level9, delta2); // delta2 - invisible
 
-	display_textcolor(db, LCOLOR, BGCOLOR);
+	gxstyle_textcolor(& dbstylev, LCOLOR, BGCOLOR);
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_rx(x, CHARS2GRID(0)), y, & ypix);
-	display_bar(db, xpix, ypix, BDTH_LEFTRX, rowspan, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF);		//ниже 9 баллов ничего
+	display_bar(db, xpix, ypix, BDTH_LEFTRX, rowspan, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF, & dbstylev);		//ниже 9 баллов ничего
 	//
-	display_textcolor(db, RCOLOR, BGCOLOR);
+	gxstyle_textcolor(& dbstylev, RCOLOR, BGCOLOR);
 	uint_fast16_t ypix2;
 	uint_fast16_t xpix2 = display_wrdata_begin(display_bars_x_rx(x, CHARS2GRID(BDTH_LEFTRX)), y, & ypix2);
-	display_bar(db, xpix2, ypix2, BDTH_RIGHTRX, rowspan, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL);		// выше 9 баллов ничего нет.
+	display_bar(db, xpix2, ypix2, BDTH_RIGHTRX, rowspan, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL, & dbstylev);		// выше 9 баллов ничего нет.
 
 	if (BDTH_SPACERX != 0)
 	{
 		uint_fast16_t ypix;
 		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLRX)), y, & ypix);
-		display_bar(db, xpix, ypix, BDTH_SPACERX, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE);
+		display_bar(db, xpix, ypix, BDTH_SPACERX, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE, & dbstylev);
 	}
 
 #endif /* WITHBARS */
@@ -4562,10 +4612,12 @@ static void display2_legend_rx(const gxdrawb_t * db,
 		)
 {
 #if defined(SMETERMAP)
-	display_textcolor(db, DSGN_SMLABELTEXT, DSGN_SMLABELBACK);
-	display_text(db, x + 0, y, SMETERMAP, BDTH_LEFTRX, yspan);
-	display_textcolor(db, DSGN_SMLABELPLKUSTEXT, DSGN_SMLABELPLKUSBACK);
-	display_text(db, x + BDTH_LEFTRX, y, SMETERMAP + BDTH_LEFTRX, xspan - BDTH_LEFTRX, yspan);
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
+	gxstyle_textcolor(& dbstylev, DSGN_SMLABELTEXT, DSGN_SMLABELBACK);
+	display_text(db, x + 0, y, SMETERMAP, BDTH_LEFTRX, yspan, & dbstylev);
+	gxstyle_textcolor(& dbstylev, DSGN_SMLABELPLKUSTEXT, DSGN_SMLABELPLKUSBACK);
+	display_text(db, x + BDTH_LEFTRX, y, SMETERMAP + BDTH_LEFTRX, xspan - BDTH_LEFTRX, yspan, & dbstylev);
 #endif /* defined(SMETERMAP) */
 }
 
@@ -4579,15 +4631,17 @@ static void display2_legend_tx(const gxdrawb_t * db,
 		)
 {
 #if defined(SWRPWRMAP) && WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
-	display_textcolor(db, DSGN_SMLABELTEXT, DSGN_SMLABELBACK);
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
+	gxstyle_textcolor(& dbstylev, DSGN_SMLABELTEXT, DSGN_SMLABELBACK);
 	#if WITHSWRMTR
 		#if WITHSHOWSWRPWR /* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-				display_text(db, x, y, SWRPWRMAP, xspan, yspan);
+				display_text(db, x, y, SWRPWRMAP, xspan, yspan, & dbstylev);
 		#else
 				if (swrmode) 	// Если TUNE то показываем шкалу КСВ
-					display_text(db, x, y, SWRMAP, xspan, yspan);
+					display_text(db, x, y, SWRMAP, xspan, yspan, & dbstylev);
 				else
-					display_text(db, x, y, POWERMAP, xspan, yspan);
+					display_text(db, x, y, POWERMAP, xspan, yspan, & dbstylev);
 		#endif
 	#else
 		#warning No TX indication
@@ -9104,11 +9158,13 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 		enum { blinkpos = 255, blinkstate = 0 };
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
+		gxstyle_t dbstylev;
+		gxstyle_initialize(& dbstylev);
 
 #if WITHPRERENDER
 		pix_rendered_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 #else /* WITHPRERENDER */
-		display_textcolor(db, colors_1freq [0].fg, colors_1freq [0].bg);
+		gxstyle_textcolor(& dbstylev, colors_1freq [0].fg, colors_1freq [0].bg);
 		pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 #endif /* WITHPRERENDER */
 	}

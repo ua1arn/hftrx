@@ -24,7 +24,7 @@ display_clear(const gxdrawb_t * db)
 }
 
 void
-display_textcolor(db, COLORPIP_T fg, COLORPIP_T bg)
+gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg)
 {
 }
 

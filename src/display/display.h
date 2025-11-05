@@ -186,7 +186,6 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 typedef struct gxdrawb_tag
 {
 	PACKEDCOLORPIP_T * buffer;
-	PACKEDCOLORPIP_T textfg, textbg;
 	uint16_t dx;	// горизонтальный размер в пикселях
 	uint16_t dy;	// вертикальный размер в пикселях
 	uintptr_t cachebase;
@@ -197,6 +196,23 @@ typedef struct gxdrawb_tag
 
 void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy);
 void gxdrawb_initlvgl(gxdrawb_t * db, void * layer);
+
+enum gxstyle_textalign
+{
+	GXATTR_HALIGN_LEFT,
+	GXATTR_HALIGN_CENTER,
+	GXATTR_HALIGN_RIGHT
+};
+
+typedef struct gxstyle_tag
+{
+	PACKEDCOLORPIP_T textfg, textbg;
+	enum gxstyle_textalign	textalign;
+} gxstyle_t;
+
+void gxstyle_initialize(gxstyle_t * dbstyle);
+void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg);
+void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_textalign a);
 
 // Интерфейсные функции, специфические для драйвера дисплея - зависящие от типа микросхемы контроллера.
 void display_hardware_initialize(void);	/* вызывается при запрещённых прерываниях. */
@@ -221,7 +237,6 @@ void panel_deinitialize(void);
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(const gxdrawb_t * db);	// Заполниить цветом фона
-void display_textcolor(const gxdrawb_t * db, COLORPIP_T fg, COLORPIP_T bg);
 
 // Заполнение буфера сполшным цветом
 // Эта функция используется только в тесте
@@ -348,13 +363,14 @@ void display_bar(
 	uint_fast8_t topvalue,	/* значение, соответствующее полностью заполненному индикатору */
 	uint_fast8_t pattern,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL */
 	uint_fast8_t patternmax,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL - для отображения запомненного значения */
-	uint_fast8_t emptyp			/* паттерн для заполнения между штрихами */
+	uint_fast8_t emptyp,			/* паттерн для заполнения между штрихами */
+	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
 	);
 
 // Используется при выводе на графический индикатор, нормальный шрифт
-void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan);		// Выдача строки из ОЗУ в указанное место экрана.
+void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle);		// Выдача строки из ОЗУ в указанное место экрана.
 // Используется при выводе на графический индикатор, мелкий шрифт
-void display_text2(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan);		// Выдача строки из ОЗУ в указанное место экрана.
+void display_text2(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle);		// Выдача строки из ОЗУ в указанное место экрана.
 
 
 // большие и средние цифры (частота)
@@ -707,7 +723,8 @@ display_value_big(
 	uint_fast8_t rj,	// = 1;		// right truncated
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf		// 0 - только большие цифры
+	uint_fast8_t withhalf,		// 0 - только большие цифры
+	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
 	);
 
 void
@@ -724,7 +741,8 @@ pix_display_value_big(
 	uint_fast8_t rj,	// = 1;		// right truncated
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf		// 0 - только большие цифры
+	uint_fast8_t withhalf,		// 0 - только большие цифры
+	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
 	);
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
@@ -773,7 +791,8 @@ display_value_lower(
 	uint_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
-	uint_fast8_t rj
+	uint_fast8_t rj,
+	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
 	);
 
 void
@@ -787,7 +806,8 @@ display_value_small(
 	uint_fast8_t width,	// full width (if >= 128 - display with sign)
 	uint_fast8_t comma,		// comma position (from right, inside width)
 	uint_fast8_t comma2,
-	uint_fast8_t rj		// right truncated
+	uint_fast8_t rj,		// right truncated
+	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
 	);
 
 void display_floodfill(

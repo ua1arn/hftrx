@@ -52,7 +52,7 @@ static void showpos(uint_fast8_t pos)
 		PSTR("POS %2u"), (unsigned) pos
 		 );
 	display_gotoxy(0, 0);
-	display_text(buff, 0);
+	display_text(buff, 0, & dbstylev);
 }
 
 #endif
@@ -3817,18 +3817,20 @@ static const char * fb_getname(const struct fb * p)
 
 static void fb_print(const struct fb * p, int x, int y, int selected)
 {
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 	char buff [100 + FF_MAX_LFN + 1];
 	const char * fn = fb_getname(p);
 	if (p->fno.fattrib & AM_DIR)
 	{
-		display_textcolor(db, COLOR_GOLD, selected ? COLOR_BLUE: COLOR_BLACK);
+		gxstyle_textcolor(& dbstylev, COLOR_GOLD, selected ? COLOR_BLUE: COLOR_BLACK);
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0], "%c   <dir>  %s", selected ? 'X' : ' ',
 			fn);
 		PRINTF(PSTR("   <dir>  %s\n"), p->fno.fname);
 	}
 	else
 	{
-		display_textcolor(db, COLOR_GREEN, selected ? COLOR_BLUE: COLOR_BLACK);
+		gxstyle_textcolor(& dbstylev, COLOR_GREEN, selected ? COLOR_BLUE: COLOR_BLACK);
 		local_snprintf_P(
 			buff,						// куда форматировать строку
 			sizeof buff / sizeof buff [0],	// размер буфера
@@ -5180,7 +5182,7 @@ display_debug_digit(
 	enum { col = 0, row = 0 };
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 
-	display_textcolor(db, MNUVALCOLOR, BGCOLOR);
+	gxstyle_textcolor(& dbstylev, MNUVALCOLOR, BGCOLOR);
 	do
 	{
 		display_gotoxy(col, row + lowhalf);		// курсор в начало первой строки
@@ -5520,12 +5522,12 @@ static void showstate(
 
 	local_snprintf_P(buff, 32, PSTR(" ON: %4u0 mS"), ontime);
 	display_gotoxy(0, 0);
-	display_text(buff, 0);
+	display_text(buff, 0, & dbstylev);
 
 
 	local_snprintf_P(buff, 32, PSTR("OFF: %4u0 mS"), offtime);
 	display_gotoxy(0, 1);
-	display_text(buff, 0);
+	display_text(buff, 0, & dbstylev);
 
 }
 
@@ -10525,8 +10527,10 @@ void hightests(void)
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
+		gxstyle_t dbstylev;
+		gxstyle_initialize(& dbstylev);
 		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
-		display_text(& dbv, 0, 0, "Start...", 10, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1));
+		display_text(& dbv, 0, 0, "Start...", 10, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
@@ -10763,8 +10767,8 @@ void hightests(void)
 		colpip_rectangle(& dbv, 0, 0, DIM_X, DIM_Y, TFTALPHA(opaque, COLOR_RED), FILL_FLAG_NONE);
 		PRINTF("Background (opaque=%u)\n", opaque);
 		printhex32(0, buffer, 16);
-		//display_text(0, 0, "Start...");
-		//display_text(100 / GRID2X(1), 100 / GRID2Y(1), "test");
+		//display_text(db, 0, 0, "Start...", & dbstylev);
+		//display_text(100 / GRID2X(1), 100 / GRID2Y(1), "test", & dbstylev);
 
 		opaque = 128;
 		colpip_rectangle(& dbv, 0, 0, 100, 100, TFTALPHA(opaque, COLOR_BLUE), FILL_FLAG_MIXBG);
@@ -12370,11 +12374,11 @@ void hightests(void)
 				//dsp3D_renderWireframe(dsp3dModel);
 //				char buff [64];
 //				snprintf(buff, 64, "normal : %d, %d, %d,", (int) buf [0], (int) buf [1], (int) buf [2]);
-//				display_text(20, 10, buff);
+//				display_text(20, 10, buff, & dbstylev);
 //				snprintf(buff, 64, "normal : %d, %d, %d,", (int) buf2 [0], (int) buf2 [1], (int) buf2 [2]);
-//				display_text(20, 15, buff);
+//				display_text(20, 15, buff, & dbstylev);
 //				snprintf(buff, 64, "normal : %d, %d, %d,", (int) buf3 [0], (int) buf3 [1], (int) buf3 [2]);
-//				display_text(20, 20, buff);
+//				display_text(20, 20, buff, & dbstylev);
 				dsp3D_present();
 				local_delay_ms(25);
 				char c;
@@ -12821,14 +12825,14 @@ void hightests(void)
 #endif /* 1 && CTLSTYLE_V1V */
 #if 0
 	{
-		display_textcolor(db, COLOR_GREEN, COLOR_BLACK);
-		display_text(5, 0, PSTR("PT-Electronics 2015"));
+		gxstyle_textcolor(& dbstylev, COLOR_GREEN, COLOR_BLACK);
+		display_text(5, 0, PSTR("PT-Electronics 2015"), & dbstylev);
 
-		display_textcolor(db, COLOR_RED, COLOR_BLACK);
-		display_text(7, 3, PSTR("RENESAS"));
+		gxstyle_textcolor(& dbstylev, COLOR_RED, COLOR_BLACK);
+		display_text(7, 3, PSTR("RENESAS"), & dbstylev);
 
-		display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
-		display_text(9, 6, PSTR("2.7 inch TFT"));
+		gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
+		display_text(9, 6, PSTR("2.7 inch TFT"), & dbstylev);
 		
 		for (;;)
 			;
@@ -13405,7 +13409,7 @@ void hightests(void)
 	{
 		//int n = TIM6_DAC_IRQn;
 		unsigned long i = 0;
-		display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
+		gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
 		for (;;)
 		{
 			++ i;
@@ -13420,8 +13424,8 @@ void hightests(void)
 					 );
 
 				display_gotoxy(0, 0 + lowhalf);
-				display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
-				display_text(buff, lowhalf);
+				gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
+				display_text(buff, lowhalf, & dbstylev);
 			} while (lowhalf --);
 			PRINTF(PSTR("CNT=%08lX\n"), i);
 		}
@@ -13453,7 +13457,7 @@ void hightests(void)
 			{
 				display_gotoxy(0, 0 + lowhalf);
 
-				display_text(buff, lowhalf);
+				display_text(buff, lowhalf, & dbstylev);
 			} while (lowhalf --);
 		}
 	}
@@ -13542,14 +13546,14 @@ void hightests(void)
 
 				local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 					PSTR("V%d=%4d"), i, board_getadc_unfiltered_1 /* true */value(i));
-				display_text(COLWIDTH * (i % 2), i / 2, buff);
+				display_text(COLWIDTH * (i % 2), i / 2, buff, & dbstylev);
 			}
 			if (0)
 			{
 				char buff [32];
 				local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 					PSTR("CNT=%08lX"), cnt); 
-				display_text(8 * (i % 2), i / 2, buff);
+				display_text(8 * (i % 2), i / 2, buff, & dbstylev);
 			}
 		}
 	}
@@ -13589,7 +13593,7 @@ void hightests(void)
 					PSTR("vox2=%3d"), vox2
 					 );
 				display_gotoxy(0, 0 + lowhalf);
-				display_text(buff, lowhalf);
+				display_text(buff, lowhalf, & dbstylev);
 
 				//////////////////////////
 				// VOX2 level
@@ -13598,7 +13602,7 @@ void hightests(void)
 					PSTR("vox1=%5d"), vox1
 					 );
 				display_gotoxy(0, 1 + lowhalf);
-				display_text(buff, lowhalf);
+				display_text(buff, lowhalf, & dbstylev);
 				*/
 				//////////////////////////
 				// A-VOX level
@@ -13606,7 +13610,7 @@ void hightests(void)
 					PSTR("avox=%3d"), avox
 					 );
 				display_gotoxy(11, 0 + lowhalf);
-				display_text(buff, lowhalf);
+				display_text(buff, lowhalf, & dbstylev);
 
 			} while (lowhalf --);
 		}
@@ -13648,38 +13652,38 @@ void hightests(void)
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("af= %4d"), potaf
 			 );
-		display_text(0, 0 * HALFCOUNT_SMALL, buff);
+		display_text(db, 0, 0 * HALFCOUNT_SMALL, buff, & dbstylev);
 		// AF gain raw
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("aft=%4d"), potaft
 			 );
-		display_text(0, 1 * HALFCOUNT_SMALL, buff);
+		display_text(db, 0, 1 * HALFCOUNT_SMALL, buff, & dbstylev);
 		continue;
 #else
 		// IF gain
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("rf= %4d"), potrf
 			 );
-		display_text(0, 0 * HALFCOUNT_SMALL, buff);
+		display_text(db, 0, 0 * HALFCOUNT_SMALL, buff, & dbstylev);
 		// AF gain
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("af= %4d"), potaf
 			 );
-		display_text(0, 1 * HALFCOUNT_SMALL, buff);
+		display_text(db, 0, 1 * HALFCOUNT_SMALL, buff, & dbstylev);
 
 		// AUX1
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("A1= %4d"), aux1
 			 );
 		display_gotoxy(14, 0 + lowhalf);
-		display_text(buff, lowhalf);
+		display_text(buff, lowhalf, & dbstylev);
 
 		// AUX2
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("A2= %4d"), aux2
 			 );
 		display_gotoxy(0, 1 + lowhalf);
-		display_text(buff, lowhalf);
+		display_text(buff, lowhalf, & dbstylev);
 
 		// AUX3
 		/*
@@ -13687,7 +13691,7 @@ void hightests(void)
 			PSTR("A3=%3d"), aux3
 			 );
 		display_gotoxy(7, 1 + lowhalf);
-		display_text(buff, lowhalf);
+		display_text(buff, lowhalf, & dbstylev);
 		*/
 #if WITHPOTWPM
 		// WPM
@@ -13695,7 +13699,7 @@ void hightests(void)
 			PSTR("cw=%3d"), wpm
 			 );
 		display_gotoxy(14, 1 + lowhalf);
-		display_text(buff, lowhalf);
+		display_text(buff, lowhalf, & dbstylev);
 #endif /* WITHPOTWPM */
 
 		// IF gain raw
@@ -13703,13 +13707,13 @@ void hightests(void)
 			PSTR("rft=%4d"), potrft
 			 );
 		display_gotoxy(0, 2 + lowhalf);
-		display_text(buff, lowhalf);
+		display_text(buff, lowhalf, & dbstylev);
 		// AF gain raw
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("aft=%4d"), potaft
 			 );
 		display_gotoxy(10, 2 + lowhalf);
-		display_text(buff, lowhalf);
+		display_text(buff, lowhalf, & dbstylev);
 #endif
 
 
@@ -13719,7 +13723,7 @@ void hightests(void)
 	// тест дисплея - вывод меняющихся цифр
 	{
 		unsigned long i = 0;
-		display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
+		gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
 		for (;;)
 		{
 			++ i;
@@ -13734,8 +13738,8 @@ void hightests(void)
 					 );
 
 				display_gotoxy(0, 0 + lowhalf);
-				display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
-				display_text(buff, lowhalf);
+				gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
+				display_text(buff, lowhalf, & dbstylev);
 			} while (lowhalf --);
 		}
 	}
@@ -13743,6 +13747,8 @@ void hightests(void)
 #if 0 && LCDMODE_COLORED
 	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 	board_update();
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 	// тест интерфейса дисплея - цветов RGB565
 	for (;;)
 	{
@@ -13781,8 +13787,8 @@ void hightests(void)
 				display2_setbgcolor(TFTRGB(c, c, c));
 				display2_fillbg(db);
 				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
-				display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
-				display_text(0, 0, b);
+				gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
+				display_text(db, 0, 0, b, & dbstylev);
 				colmain_nextfb();
 				local_delay_ms(50);
 			}
@@ -13791,8 +13797,8 @@ void hightests(void)
 				display2_setbgcolor(TFTRGB(c, c, c));
 				display2_fillbg(db);
 				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
-				display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
-				display_text(0, 0, b);
+				gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
+				display_text(db, 0, 0, b, & dbstylev);
 				colmain_nextfb();
 				local_delay_ms(50);
 			}
@@ -13805,8 +13811,8 @@ void hightests(void)
 				display2_setbgcolor(TFTRGB(UINT8_C(1) << c, UINT8_C(1) << c, UINT8_C(1) << c));
 				display2_fillbg(db);
 				local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("X%d"), c);
-				display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
-				display_text(0, 0, b);
+				gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
+				display_text(db, 0, 0, b, & dbstylev);
 				colmain_nextfb();
 				local_delay_ms(2000);
 			}
@@ -13817,8 +13823,8 @@ void hightests(void)
 			display2_setbgcolor(TFTRGB(UINT8_C(1) << (c + rSkip), 0, 0));
 			display2_fillbg(db);
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("R%d"), c + rSkip);
-			display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
-			display_text(0, 0, b);
+			gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
+			display_text(db, 0, 0, b, & dbstylev);
 			colmain_nextfb();
 			local_delay_ms(2000);
 		}
@@ -13827,8 +13833,8 @@ void hightests(void)
 			display2_setbgcolor(TFTRGB(0, UINT8_C(1) << (c + gSkip), 0));
 			display2_fillbg(db);
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("G%d"), c + gSkip);
-			display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
-			display_text(0, 0, b);
+			gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
+			display_text(db, 0, 0, b, & dbstylev);
 			colmain_nextfb();
 			local_delay_ms(2000);
 		}
@@ -13837,8 +13843,8 @@ void hightests(void)
 			display2_setbgcolor(TFTRGB(0, 0, UINT8_C(1) << (c + bSkip)));
 			display2_fillbg(db);
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("B%d"), c + bSkip);
-			display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
-			display_text(0, 0, b);
+			gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
+			display_text(db, 0, 0, b, & dbstylev);
 			colmain_nextfb();
 			local_delay_ms(2000);
 		}
@@ -13858,8 +13864,8 @@ void hightests(void)
 			display2_setbgcolor(TFTRGB(c, c, c));
 			display2_fillbg(db);
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
-			display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
-			display_text(0, 0, b);
+			gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
+			display_text(db, 0, 0, b, & dbstylev);
 			colmain_nextfb();
 			local_delay_ms(50);
 		}
@@ -13868,8 +13874,8 @@ void hightests(void)
 			display2_setbgcolor(TFTRGB(c, 0, 0));
 			display2_fillbg(db);
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), c);
-			display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
-			display_text(0, 0, b);
+			gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
+			display_text(db, 0, 0, b, & dbstylev);
 			colmain_nextfb();
 			local_delay_ms(50);
 		}
@@ -13878,8 +13884,8 @@ void hightests(void)
 			display2_setbgcolor(TFTRGB(0, c, 0));
 			display2_fillbg(db);
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), c);
-			display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
-			display_text(0, 0, b);
+			gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
+			display_text(db, 0, 0, b, & dbstylev);
 			colmain_nextfb();
 			local_delay_ms(50);
 		}
@@ -13888,8 +13894,8 @@ void hightests(void)
 			display2_setbgcolor(TFTRGB(0, 0, c));
 			display2_fillbg(db);
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), c);
-			display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
-			display_text(0, 0, b);
+			gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
+			display_text(db, 0, 0, b, & dbstylev);
 			colmain_nextfb();
 			local_delay_ms(50);
 		}
@@ -13917,7 +13923,7 @@ void hightests(void)
 				//unsigned char v1, v2;
 				display_gotoxy(0, 4);
 				local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%10lu"), freq );
-				display_text(buff, 0);
+				display_text(buff, 0, & dbstylev);
 				ITM_SendChar('a' + (cd ++) % 16);
 				//SWO_PrintChar('a' + (cd ++) % 16);
 
@@ -13940,13 +13946,13 @@ void hightests(void)
 		//v1 = si570_get_status();
 		display_gotoxy(0, 6);
 		local_snprintf_P(buff, 22, PSTR("he %08lX:%08lX"), 0x1726354aul, -7ul);
-		display_text(buff, 0);
+		display_text(buff, 0, & dbstylev);
 
 		display_gotoxy(0, 7);
 		//unsigned long l1 = (unsigned long) (rftw >> 32);
 		//unsigned long l2 = (unsigned long) rftw;
 		local_snprintf_P(buff, 22, PSTR("he %08lx"), -4000000l);
-		display_text(buff, 0);
+		display_text(buff, 0, & dbstylev);
 		for (;;)
 			;
 	}
@@ -14030,13 +14036,13 @@ void hightests(void)
 			PRINTF("tune=%u, ptt=%u, ptt2=%u, elkey=%u\n", tune1, ptt1, ptt2, elkey);
 			continue;
 
-			display_text(0, 0, ptt1 != 0 ? "ptt " : "    ");
-			display_text(0, 2, ptt2 != 0 ? "cptt " : "     ");
-			display_text(0, 4, ckey != 0 ? "ckey " : "     ");
+			display_text(db, 0, 0, ptt1 != 0 ? "ptt " : "    ", & dbstylev);
+			display_text(db, 0, 2, ptt2 != 0 ? "cptt " : "     ", & dbstylev);
+			display_text(db, 0, 4, ckey != 0 ? "ckey " : "     ", & dbstylev);
 
-			display_text(0, 6, (elkey & ELKEY_PADDLE_DIT) != 0 ? "dit " : "     ");
-			display_text(0, 8, (elkey & ELKEY_PADDLE_DASH) != 0 ? "dash" : "      ");
-			display_text(0, 10, (phase = ! phase) ? " test1" : " test2");
+			display_text(db, 0, 6, (elkey & ELKEY_PADDLE_DIT) != 0 ? "dit " : "     ", & dbstylev);
+			display_text(db, 0, 8, (elkey & ELKEY_PADDLE_DASH) != 0 ? "dash" : "      ", & dbstylev);
+			display_text(db, 0, 10, (phase = ! phase) ? " test1" : " test2", & dbstylev);
 
 		}
 	}
@@ -14113,7 +14119,7 @@ void hightests(void)
 			do
 			{
 				display_gotoxy(0, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
-				display_text("ADCx=", lowhalf);
+				display_text("ADCx=", lowhalf, & dbstylev);
 				display_gotoxy(5, row * HALFCOUNT_SMALL + lowhalf);		// курсор в начало второй строки
 				display2_menu_value(v0, 5, 255, 0, lowhalf);
 			} while (lowhalf --);
@@ -14304,7 +14310,7 @@ void hightests(void)
 				local_snprintf_P(buff, 17, fmt_1, v1);
 
 				display_gotoxy((i % 8) * 3, (i / 8) * 2);
-				display_text(buff, 0);
+				display_text(buff, 0, & dbstylev);
 			}
 		}
 	#endif
@@ -14325,7 +14331,7 @@ void hightests(void)
 		char buff [17];
 		local_snprintf_P(buff, 17, fmt_1, v1);
 		display_gotoxy(0, 0);
-		display_text(buff, 0);
+		display_text(buff, 0, & dbstylev);
 		local_delay_ms(100);
 	}
 
@@ -14355,7 +14361,7 @@ void hightests(void)
 		char buff [17];
 		local_snprintf_P(buff, 17, fmt_1, v);
 		display_gotoxy(0, 0);
-		display_text(buff);
+		display_text(buff, & dbstylev);
 		local_delay_ms(100);
 	}
 #endif
@@ -14401,7 +14407,7 @@ void hightests(void)
 
 			local_snprintf_P(buff, 17, fmt_1, v ++);
 			display_gotoxy(0, 0);
-			display_text(buff, 0);
+			display_text(buff, 0, & dbstylev);
 			
 		}
 	}

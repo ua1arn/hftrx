@@ -296,7 +296,7 @@ static pllhint_t si5351a_get_hint(
 			goto found;
 	}
 #if 0
-	display_text(0, 0, PSTR("[si5351a Err]"));
+	display_text(db, 0, 0, PSTR("[si5351a Err]"), & dbstylev);
 #endif
 
 found: 

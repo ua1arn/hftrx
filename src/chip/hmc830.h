@@ -166,7 +166,7 @@ prog_hmc830_get_hint(
 			goto found;
 	}
 #if 0
-	display_text(0, 0, PSTR("[HMC830 Err]"));
+	display_text(db, 0, 0, PSTR("[HMC830 Err]"), & dbstylev);
 	return 0;		/* требуемую частоту невозожно получить */
 #endif
 
@@ -191,7 +191,7 @@ static void df2(
 {
 	char s [21];
 	local_snprintf_P(s, 21, PSTR("/%-2d %02lX.%06lX"), d, n, fract);
-	display_text(0, 1, s);
+	display_text(db, 0, 1, s, & dbstylev);
 }
 
 /* 

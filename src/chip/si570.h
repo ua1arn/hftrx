@@ -246,7 +246,7 @@ si570_initialize(void)
 		//char buff [21];
 		//local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%02X%02X%02X%02X%02X%02X"), v0, v1, v2, v3, v4, v5);
 		//local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("%02X%02X%02X%02X%02X%02X"), v[0], v[1], v[2], v[3], v[4], v[5]);
-		//display_text(0, 1, buff);
+		//display_text(db, 0, 1, buff, & dbstylev);
 		//for (;;)
 		//	;
 		
@@ -308,15 +308,15 @@ allDone:
 				//si570_hs_decode(hs_code),
 				//n
 			 );
-		display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
-		display_text(0, 0, buff);
+		gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
+		display_text(db, 0, 0, buff, & dbstylev);
 
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("[%lu]"),
 			 (unsigned long) (si570_xtall_base + si570_xtall_offset)
 			 );
-		display_textcolor(db, COLOR_WHITE, COLOR_BLACK);
-		display_text(0, 2, buff);
+		gxstyle_textcolor(& dbstylev, COLOR_WHITE, COLOR_BLACK);
+		display_text(db, 0, 2, buff, & dbstylev);
 	}
 	for (;;)
 		;
@@ -498,7 +498,7 @@ pllhint_t si570_get_hint(
 			goto found;
 	}
 #if 0
-	display_text(0, 0, PSTR("[Si570 Err]"));
+	display_text(db, 0, 0, PSTR("[Si570 Err]"), & dbstylev);
 #endif
 
 found: 
@@ -578,7 +578,7 @@ void si570_n(
 		char buff [22];
 		//unsigned char v1, v2;
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0], PSTR("swi: [%u]"), count );
-		display_text(0, 1, buff);
+		display_text(db, 0, 1, buff, & dbstylev);
 	}
 #endif
 
@@ -596,7 +596,7 @@ void si570_n(
 			 freqs [hint].n1, 
 			 voofreqK
 			 );
-		display_text(0, 6, buff);
+		display_text(db, 0, 6, buff, & dbstylev);
 
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
 			PSTR("[%lu],%u "),
@@ -604,7 +604,7 @@ void si570_n(
 			count
 			);
 
-		display_text(0, 1, buff);
+		display_text(db, 0, 1, buff, & dbstylev);
 	}
 #endif
 }
