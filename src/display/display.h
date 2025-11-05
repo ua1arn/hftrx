@@ -206,6 +206,15 @@ typedef struct gxstyle_tag
 {
 	PACKEDCOLORPIP_T textfg, textbg;
 	enum gxstyle_textalign	textalign;
+	uint_fast16_t (* put_char_small)(
+		const gxdrawb_t * db,
+		uint_fast16_t x,
+		uint_fast16_t y,
+		char cc,
+		COLORPIP_T fg
+		);
+	uint_fast8_t (* font_width)(char cc);
+	uint_fast8_t (* font_height)(void);
 } gxstyle_t;
 
 void gxstyle_initialize(gxstyle_t * dbstyle);
@@ -220,10 +229,8 @@ void display_uninitialize(void);			/* вызывается при разрешё
 void display_lvgl_initialize(void);			/* вызывается при разрешённых прерываниях. */
 uint32_t display_get_lvformat(void);	/* получить LVGL код формата цвета, используемый в построении  изображений */
 
-// Используется при выводе на графический индикатор, нормальный шрифт
+// Используется при выводе на графический индикатор с кординатами и размерами по сетке
 void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle);		// Выдача строки из ОЗУ в указанное место экрана.
-// Используется при выводе на графический индикатор, мелкий шрифт
-void display_text2(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle);		// Выдача строки из ОЗУ в указанное место экрана.
 
 uint_fast16_t colorpip_put_char_small(
 	const gxdrawb_t * db,

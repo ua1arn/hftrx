@@ -94,7 +94,11 @@ void gxstyle_initialize(gxstyle_t * dbstyle)
 	dbstyle->textfg = COLORPIP_WHITE;
 	dbstyle->textbg = COLORPIP_BLACK;
 	dbstyle->textalign = GXSTYLE_HALIGN_RIGHT;
+	dbstyle->put_char_small = colorpip_put_char_small;
+	dbstyle->font_width = smallfont_width;
+	dbstyle->font_height = smallfont_height;
 }
+
 
 void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg)
 {
@@ -950,7 +954,7 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 
 #endif /* WITHLVGL //&& ! LINUX_SUBSYSTEM */
 
-// Используется при выводе на графический индикатор, нормальный шрифт
+// Используется при выводе на графический индикатор с кординатами и размерами по сетке
 void
 display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle)
 {
@@ -993,20 +997,20 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	colpip_fillrect(db, xpix, ypix, GRID2X(CHARS2GRID(xspan)), h, dbstyle->textbg);
 	if (h > smallfont_height())
 	{
-		ypix += (h - smallfont_height()) / 2;
+		ypix += (h - dbstyle->font_height()) / 2;
 	}
 	switch (dbstyle->textalign)
 	{
 	default:
 	case GXSTYLE_HALIGN_RIGHT:
 		for (len = strlen(s); len < xspan; ++ len)
-			xpix += smallfont_width(' ');
+			xpix += dbstyle->font_width(' ');
 		while ((c = * s ++) != '\0' && xspan --)
-			xpix = colorpip_put_char_small(db, xpix, ypix, c, fg);
+			xpix = dbstyle->put_char_small(db, xpix, ypix, c, fg);
 		break;
 	case GXSTYLE_HALIGN_LEFT:
 		while ((c = * s ++) != '\0' && xspan --)
-			xpix = colorpip_put_char_small(db, xpix, ypix, c, fg);
+			xpix = dbstyle->put_char_small(db, xpix, ypix, c, fg);
 		break;
 	case GXSTYLE_HALIGN_CENTER:
 		// todo: to be implemented
@@ -1015,36 +1019,65 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 
 }
 
-// Используется при выводе на графический индикатор, мелкий шрифт
+// Используется при выводе на графический индикатор с кординатами и размерами по сетке
 void
-display_text2(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle)
+display_textNew(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle)
 {
 	char c;
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
 	const uint_fast16_t h = GRID2Y(yspan);
-	const uint_fast16_t w = GRID2X(yspan);
+	const uint_fast16_t w = GRID2X(xspan);
 	uint_fast16_t xpix0 = xpix;
 	const COLORPIP_T fg = dbstyle->textfg;
 
-	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->textbg);
-	if (h > smallfont2_height())
+	savestring = s;
+	savewhere = __func__;
+
+#if WITHLVGL
+	lv_layer_t * const layer = (lv_layer_t *) db->layerv;
+	if (layer)
 	{
-		ypix += (h - smallfont2_height()) / 2;
+		//PRINTF("x/y=%d/%d '%s'\n", xpix, ypix, s);
+		lv_draw_rect_dsc_t d;
+	    lv_draw_label_dsc_t l;
+		lv_area_t coords;
+	    lv_draw_label_dsc_init(& l);
+		lv_draw_rect_dsc_init(& d);
+		lv_area_set(& coords, xpix, ypix, xpix + GRID2X(xspan) - 1, ypix + GRID2Y(yspan) - 1);
+	    d.bg_color = display_lvlcolor(dbstyle->textbg);
+	    l.color = display_lvlcolor(fg);
+	    l.align = LV_TEXT_ALIGN_RIGHT;
+	    l.flag = 0*LV_TEXT_FLAG_EXPAND | LV_TEXT_FLAG_FIT;
+	    l.text = s;
+	    l.font = & Epson_LTDC_small;
+	    //PRINTF("display_string: x/y=%d/%d '%s'\n", (int) xpix, (int) xpix, s);
+		lv_draw_rect(layer, & d, & coords);
+        lv_draw_label(layer, & l, & coords);
+
+        return;
+	}
+#endif
+
+	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->textbg);
+	if (h > dbstyle->font_height())
+	{
+		ypix += (h - dbstyle->font_height()) / 2;
 	}
 
 	switch (dbstyle->textalign)
 	{
 	default:
 	case GXSTYLE_HALIGN_RIGHT:
-		while (xpix - xpix0 + smallfont2_width(' ') < w)
-			xpix += smallfont2_width(' ');
-		while ((c = * s ++) != '\0' && xpix - xpix0 + smallfont2_width(c) < w)
-			xpix = colorpip_put_char_small2(db, xpix, ypix, c, fg);
+		// todo: to be implemented
+		while (xpix - xpix0 + dbstyle->font_width(' ') < w)
+			xpix += dbstyle->font_width(' ');
+		while ((c = * s ++) != '\0' && xpix - xpix0 + dbstyle->font_width(c) < w)
+			xpix = dbstyle->put_char_small(db, xpix, ypix, c, fg);
 		break;
 	case GXSTYLE_HALIGN_LEFT:
-		while ((c = * s ++) != '\0' && xpix - xpix0 + smallfont2_width(c) < w)
-			xpix = colorpip_put_char_small2(db, xpix, ypix, c, fg);
+		while ((c = * s ++) != '\0' && xpix - xpix0 + dbstyle->font_width(c) < w)
+			xpix = dbstyle->put_char_small(db, xpix, ypix, c, fg);
 		break;
 	case GXSTYLE_HALIGN_CENTER:
 		// todo: to be implemented
