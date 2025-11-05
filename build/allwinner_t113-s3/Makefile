@@ -304,7 +304,7 @@ $(PROJECT)_app.alw32: $(PROJECT)_app.bin
 	./stm32image -v 0 -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
 
 $(PROJECT)_app.alw32_TEST: $(PROJECT)_app.bin
-	./stm32image -v 0 \`busybox -l 0x40000100 -e `grep Reset_Handler -m 1 $(PROJECT)_app.map | cut -F 2` -s $(PROJECT)_app.bin -d $@\`
+	./stm32image -v 0 \`busybox -l 0x40000100 -e `grep -E -e ' Reset_Handler$$' $(PROJECT)_app.map | cut -F 2` -s $(PROJECT)_app.bin -d $@\`
 
 $(OBJSC):
 	@mkdir -p $(@D)
