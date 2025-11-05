@@ -13362,7 +13362,7 @@ void hightests(void)
 		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 
 		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-		colpip_text(& dbv, DIM_X / 3, DIM_Y / 2, COLOR_GREEN, "TEST TSC", 8);
+		colpip_string_tbg(& dbv, DIM_X / 3, DIM_Y / 2, "TEST TSC", COLOR_GREEN);
 		colmain_nextfb();
 		for (;;)
 		{
@@ -13378,7 +13378,7 @@ void hightests(void)
 				gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 				// стереть фон
 				colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-				colpip_text(& dbv, DIM_X / 3, DIM_Y / 2, COLOR_GREEN, "TEST TSC", 8);
+				colpip_string_tbg(& dbv, DIM_X / 3, DIM_Y / 2, "TEST TSC", COLOR_GREEN);
 				local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("X=%5d, Y=%5d"), (int) x, (int) y);
 				colpip_string_tbg(& dbv, 0, 0, msg, COLOR_GREEN);
 				enum { RSZ = 5 };	// размер метки касания

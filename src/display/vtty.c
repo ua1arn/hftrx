@@ -223,10 +223,10 @@ static void display_vtty_cout(
 
 	default:
 		{
-			colpip_text(
+			colorpip_put_char_small(
 					& vt->dbvfb,
 					vt->col * VTTY_CHARPIX, (vt->row + vt->scroll) % VTTY_ROWS * VTTY_ROWSPIX,
-					VTTY_FG, & ch, 1);
+					ch, VTTY_FG);
 
 			if (++ vt->col >= VTTY_COLS)
 			{

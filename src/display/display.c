@@ -350,12 +350,12 @@ static uint_fast16_t ltdc_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
-static uint_fast16_t colorpip_put_char_small(
+uint_fast16_t colorpip_put_char_small(
 	const gxdrawb_t * db,
 	uint_fast16_t x,
 	uint_fast16_t y,
 	char cc,
-	COLOR565_T fg
+	COLORPIP_T fg
 	)
 {
 	const uint_fast8_t width = SMALLCHARW;
@@ -372,12 +372,12 @@ static uint_fast16_t colorpip_put_char_small(
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
-static uint_fast16_t colorpip_x2_put_char_small(
+uint_fast16_t colorpip_x2_put_char_small(
 	const gxdrawb_t * db,
 	uint_fast16_t x,
 	uint_fast16_t y,
 	char cc,
-	COLOR565_T fg
+	COLORPIP_T fg
 	)
 {
 	const uint_fast8_t width = SMALLCHARW;
@@ -544,44 +544,6 @@ colpip_string_tbg(
 	while ((c = * s ++) != '\0')
 	{
 		x = colorpip_put_char_small(db, x, y, c, fg);
-	}
-}
-
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void
-colpip_text(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T fg,		// цвет вывода текста
-	const char * s,		// строка для вывода
-	size_t len			// количество символов
-	)
-{
-	ASSERT(s != NULL);
-	while (len --)
-	{
-		const char c = * s ++;
-		x = colorpip_put_char_small(db, x, y, c, fg);
-	}
-}
-// Используется при выводе на графический индикатор,
-void
-colpip_text_x2(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T fg,		// цвет вывода текста
-	const char * s,		// строка для вывода
-	size_t len			// количество символов
-	)
-{
-	ASSERT(s != NULL);
-	while (len --)
-	{
-		const char c = * s ++;
-		x = colorpip_x2_put_char_small(db, x, y, c, fg);
 	}
 }
 

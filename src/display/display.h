@@ -16,8 +16,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef uint_fast16_t COLOR565_T;
-typedef uint16_t PACKEDCOLOR565_T;
 // RRRRRRR.GGGGGGGG.BBBBBBBB
 typedef uint_fast32_t COLOR24_T;
 #define COLOR24(red, green, blue) \
@@ -227,6 +225,21 @@ void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, 
 // Используется при выводе на графический индикатор, мелкий шрифт
 void display_text2(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle);		// Выдача строки из ОЗУ в указанное место экрана.
 
+uint_fast16_t colorpip_put_char_small(
+	const gxdrawb_t * db,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	char cc,
+	COLORPIP_T fg
+	);
+uint_fast16_t colorpip_x2_put_char_small(
+	const gxdrawb_t * db,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	char cc,
+	COLORPIP_T fg
+	);
+
 void tc358768_initialize(const videomode_t * vdmode);
 void tc358768_wakeup(const videomode_t * vdmode);
 void tc358768_deinitialize(void);
@@ -288,27 +301,6 @@ colpip_string_tbg(
 	COLORPIP_T fg		// цвет вывода текста
 	);
 
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void
-colpip_text(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T fg,		// цвет вывода текста
-	const char * s,		// строка для вывода
-	size_t len			// количество символов
-	);
-// Используется при выводе на графический индикатор,
-void
-colpip_text_x2(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T fg,		// цвет вывода текста
-	const char * s,		// строка для вывода
-	size_t len			// количество символов
-	);
 // Используется при выводе на графический индикатор,
 void
 colpip_string_x2ra90_count(

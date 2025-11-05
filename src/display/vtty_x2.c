@@ -230,15 +230,15 @@ static void vtput(vtty_x2_t * const vt, unsigned col, unsigned row, char ch, COL
 			col * VTTYx2_CHARPIX, vpos * VTTYx2_ROWSPIX,
 			VTTYx2_CHARPIX, VTTYx2_ROWSPIX, bg);	// очищаем видеобуфер под выыодимыи символом
 #if DIM_X == 720
-	colpip_text_x2(
+	colorpip_x2_put_char_small(
 			& vt->dbvfb,
 			col * VTTYx2_CHARPIX, vpos * VTTYx2_ROWSPIX,
-			fg, & ch, 1);
+			ch, fg);
 #else
-	colpip_text(
+	colorpip_put_char_small(
 			& vt->dbvfb,
 			col * VTTYx2_CHARPIX, vpos * VTTYx2_ROWSPIX,
-			fg, & ch, 1);
+			ch, fg);
 #endif
 	colpip_putpixel(& vt->dbvfgshadow, col, vpos, fg);	// сохраняем цвет символа
 	colpip_putpixel(& vt->dbvbgshadow, col, vpos, bg);	// сохраняем цвет фона
