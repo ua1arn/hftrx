@@ -3005,15 +3005,17 @@ sysinit_fpu_initialize(void)
 
 
 #endif /*  */
+}
 
-#if ! WITHISBOOTLOADER_DDR
+static void
+stsinit_irql_initialize(void)
+{
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 	GIC_Enable();
 
 #endif
 	InitializeIrql(IRQL_USER);	// nested interrupts support
-#endif
 }
 
 static void
@@ -3586,6 +3588,7 @@ SystemInit_BOOT0(void)
 {
 	resetCPU(1);
 	sysinit_fpu_initialize();
+	stsinit_irql_initialize();
 	sysinit_gpio_initialize();
 	local_delay_initialize();
 }
@@ -3605,11 +3608,11 @@ SystemInit(void)
 void
 SystemInit(void)
 {
-#if ! WITHISBOOTLOADER_DDR
 #if CPUSTYLE_VM14
 	resetCPU(1);
 #endif /* CPUSTYLE_VM14 */
 	sysinit_fpu_initialize();
+	stsinit_irql_initialize();
 	sysinit_smp_initialize();
 	sysinit_perfmeter_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
@@ -3629,13 +3632,11 @@ SystemInit(void)
 	sysinit_cache_initialize();		// caches iniitialize
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 	sysinit_ttbr_initialize();		/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
-#endif /* ! WITHISBOOTLOADER_DDR */
 }
 
 /* Функция, вызываемая для инициализации DDR памяти из XFEL */
 void __attribute__((used)) SystemDRAMInit(void)
 {
-#if WITHISBOOTLOADER_DDR
 #if CPUSTYLE_VM14
 	resetCPU(1);
 #endif /* CPUSTYLE_VM14 */
@@ -3647,7 +3648,6 @@ void __attribute__((used)) SystemDRAMInit(void)
 	sysinit_debug_initialize();
 	sysinit_pmic_initialize();
 	sysinit_sdram_initialize();
-#endif /* WITHISBOOTLOADER_DDR */
 }
 
 #endif /* LINUX_SUBSYSTEM */
@@ -4078,6 +4078,7 @@ static LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 __NO_RETURN void Reset_CPUn_Handler(void)
 {
 	sysinit_fpu_initialize();
+	stsinit_irql_initialize();
 	sysinit_smp_initialize();
 	sysinit_perfmeter_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
