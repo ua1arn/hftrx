@@ -272,9 +272,9 @@ BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.f133: $(PROJECT)_boot.bin
-	busybox grep -e Reset_Handler $(PROJECT)_boot.map
-	busybox grep -e SystemDRAMInit $(PROJECT)_boot.map
-	busybox grep -e SystemExecAARCH64 $(PROJECT)_boot.map
+	busybox grep -E -e ' Reset_Handler$$' $(PROJECT)_boot.map
+	busybox grep -E -e ' SystemDRAMInit$$' $(PROJECT)_boot.map
+	busybox grep -E -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map
 	./egontool -rv -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.f133
 	
 $(PROJECT)_app.f133: $(PROJECT)_app.bin
