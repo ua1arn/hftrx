@@ -1039,7 +1039,8 @@ static const FLASHMEM int32_t vals10 [] =
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 void
 NOINLINEAT
-pix_display_value_big(const gxdrawb_t * db,
+pix_display_value_big(
+	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
 	uint_fast16_t xspanpix,
@@ -1204,7 +1205,8 @@ pix_rendered_value_big(
 /* использование предварительно построенных изображений при отображении частоты */
 void
 NOINLINEAT
-rendered_value_big(const gxdrawb_t * db,
+rendered_value_big(
+	const gxdrawb_t * db,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast8_t xspan,
@@ -1229,7 +1231,8 @@ rendered_value_big(const gxdrawb_t * db,
 
 void
 NOINLINEAT
-display_value_lower(const gxdrawb_t * db,
+display_value_lower(
+	const gxdrawb_t * db,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
 	uint_fast8_t xspan,
