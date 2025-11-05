@@ -988,39 +988,6 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 
 #endif /* WITHLVGL //&& ! LINUX_SUBSYSTEM */
 
-// Используется при выводе на графический индикатор, мелкий шрифт
-void
-display_text2(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle)
-{
-	char c;
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
-	const uint_fast16_t h = GRID2Y(yspan);
-	const uint_fast16_t w = GRID2X(yspan);
-	uint_fast16_t xpix0 = xpix;
-
-	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->textbg);
-	if (h > smallfont2_height())
-	{
-		ypix += (h - smallfont2_height()) / 2;
-	}
-
-	switch (dbstyle->textalign)
-	{
-	default:
-	case GXSTYLE_HALIGN_RIGHT:
-		while (xpix - xpix0 + smallfont2_width(' ') < w)
-			xpix = colorpip_put_char_small2(db, xpix, ypix, ' ', dbstyle->textfg);
-		while ((c = * s ++) != '\0' && xpix - xpix0 + smallfont2_width(c) < w)
-			xpix = colorpip_put_char_small2(db, xpix, ypix, c, dbstyle->textfg);
-		break;
-	case GXSTYLE_HALIGN_LEFT:
-		break;
-	case GXSTYLE_HALIGN_CENTER:
-		break;
-	}
-}
-
 // Используется при выводе на графический индикатор, нормальный шрифт
 void
 display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle)
@@ -1070,16 +1037,53 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	default:
 	case GXSTYLE_HALIGN_RIGHT:
 		for (len = strlen(s); len < xspan; ++ len)
-			xpix = colorpip_put_char_small(db, xpix, ypix, ' ', dbstyle->textfg);
+			xpix += smallfont_width(' ');
 		while ((c = * s ++) != '\0' && xspan --)
 			xpix = colorpip_put_char_small(db, xpix, ypix, c, dbstyle->textfg);
 		break;
 	case GXSTYLE_HALIGN_LEFT:
+		while ((c = * s ++) != '\0' && xspan --)
+			xpix = colorpip_put_char_small(db, xpix, ypix, c, dbstyle->textfg);
 		break;
 	case GXSTYLE_HALIGN_CENTER:
 		break;
 	}
 
+}
+
+// Используется при выводе на графический индикатор, мелкий шрифт
+void
+display_text2(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle)
+{
+	char c;
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
+	const uint_fast16_t h = GRID2Y(yspan);
+	const uint_fast16_t w = GRID2X(yspan);
+	uint_fast16_t xpix0 = xpix;
+
+	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->textbg);
+	if (h > smallfont2_height())
+	{
+		ypix += (h - smallfont2_height()) / 2;
+	}
+
+	switch (dbstyle->textalign)
+	{
+	default:
+	case GXSTYLE_HALIGN_RIGHT:
+		while (xpix - xpix0 + smallfont2_width(' ') < w)
+			xpix += smallfont2_width(' ');
+		while ((c = * s ++) != '\0' && xpix - xpix0 + smallfont2_width(c) < w)
+			xpix = colorpip_put_char_small2(db, xpix, ypix, c, dbstyle->textfg);
+		break;
+	case GXSTYLE_HALIGN_LEFT:
+		while ((c = * s ++) != '\0' && xpix - xpix0 + smallfont2_width(c) < w)
+			xpix = colorpip_put_char_small2(db, xpix, ypix, c, dbstyle->textfg);
+		break;
+	case GXSTYLE_HALIGN_CENTER:
+		break;
+	}
 }
 
 #if LCDMODE_S1D13781

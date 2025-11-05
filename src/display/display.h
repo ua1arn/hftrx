@@ -222,6 +222,11 @@ void display_uninitialize(void);			/* вызывается при разрешё
 void display_lvgl_initialize(void);			/* вызывается при разрешённых прерываниях. */
 uint32_t display_get_lvformat(void);	/* получить LVGL код формата цвета, используемый в построении  изображений */
 
+// Используется при выводе на графический индикатор, нормальный шрифт
+void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle);		// Выдача строки из ОЗУ в указанное место экрана.
+// Используется при выводе на графический индикатор, мелкий шрифт
+void display_text2(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle);		// Выдача строки из ОЗУ в указанное место экрана.
+
 void tc358768_initialize(const videomode_t * vdmode);
 void tc358768_wakeup(const videomode_t * vdmode);
 void tc358768_deinitialize(void);
@@ -366,11 +371,6 @@ void display_bar(
 	uint_fast8_t emptyp,			/* паттерн для заполнения между штрихами */
 	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
 	);
-
-// Используется при выводе на графический индикатор, нормальный шрифт
-void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle);		// Выдача строки из ОЗУ в указанное место экрана.
-// Используется при выводе на графический индикатор, мелкий шрифт
-void display_text2(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle);		// Выдача строки из ОЗУ в указанное место экрана.
 
 
 // большие и средние цифры (частота)
