@@ -249,15 +249,10 @@ allZ:
 bootloader: BOOT2 fsbl.bt0
 
 # Take from tc1_t113s3_boot.map
-SystemDRAMInit = 0x0002dcb0
-SystemExecAARCH64 = 0x000362d0
+SystemExecAARCH64 = 0x000291a4
+SystemDRAMInit = 0x0002c930
 
-#DDR_INIT=ddr_init_s3
 DDR_INIT=ddr_init_s4
-
-ddr_init_s3:
-	$(XFEL) ddr t113-s3
-	busybox sleep 0.5s
 
 # Load image and exec to SystemInit address
 ddr_init_s4:
@@ -271,7 +266,7 @@ app_run64: $(PROJECT)_app.alw32 $(DDR_INIT)
 
 app_run: $(PROJECT)_app.alw32 $(DDR_INIT)
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
-	$(XFEL) exec 0x40000100 
+	$(XFEL) exec $(SystemExecAARCH64) 
 	
 # bootloader debug - check allwnr_t113s3_boot.ld
 _app_run: fsbl.bt0
