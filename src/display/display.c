@@ -93,7 +93,7 @@ void gxstyle_initialize(gxstyle_t * dbstyle)
 {
 	dbstyle->textfg = COLORPIP_WHITE;
 	dbstyle->textbg = COLORPIP_BLACK;
-	dbstyle->textalign = GXATTR_HALIGN_RIGHT;
+	dbstyle->textalign = GXSTYLE_HALIGN_RIGHT;
 }
 
 void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg)
@@ -140,7 +140,7 @@ ltdc_pixel(
 
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 // Фон не трогаем
-static void RAMFUNC ltdc_horizontal_pixels_tbg(
+static void ltdc_horizontal_pixels_tbg(
 	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
 	const FLASHMEM uint8_t * __restrict raster,
 	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
@@ -177,7 +177,7 @@ static void RAMFUNC ltdc_horizontal_pixels_tbg(
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 // Фон не трогаем
 // удвоенный по ширине растр
-static void RAMFUNC ltdc_horizontal_x2_pixels_tbg(
+static void ltdc_horizontal_x2_pixels_tbg(
 	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
 	const FLASHMEM uint8_t * __restrict raster,
 	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
@@ -211,7 +211,7 @@ static void RAMFUNC ltdc_horizontal_x2_pixels_tbg(
 	}
 }
 
-static void RAMFUNC
+static void
 ltdc_put_char_unified(
 	const FLASHMEM uint8_t * fontraster,
 	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
@@ -308,7 +308,7 @@ uint_fast8_t smallfont_height(void)
 #endif /* defined (SMALLCHARW) */
 
 // return new x coordinate
-static uint_fast16_t RAMFUNC ltdc_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg)
+static uint_fast16_t ltdc_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg)
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
@@ -327,7 +327,7 @@ static uint_fast16_t RAMFUNC ltdc_put_char_big(const gxdrawb_t * db, uint_fast16
 }
 
 // return new x coordinate
-static uint_fast16_t RAMFUNC ltdc_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg)
+static uint_fast16_t ltdc_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg)
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
@@ -350,7 +350,7 @@ static uint_fast16_t RAMFUNC ltdc_put_char_half(const gxdrawb_t * db, uint_fast1
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small(
+static uint_fast16_t colorpip_put_char_small(
 	const gxdrawb_t * db,
 	uint_fast16_t x,
 	uint_fast16_t y,
@@ -372,7 +372,7 @@ static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small(
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE colorpip_x2_put_char_small(
+static uint_fast16_t colorpip_x2_put_char_small(
 	const gxdrawb_t * db,
 	uint_fast16_t x,
 	uint_fast16_t y,
@@ -412,7 +412,7 @@ uint_fast8_t smallfont2_height(void)
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small2(
+static uint_fast16_t colorpip_put_char_small2(
 	const gxdrawb_t * db,
 	uint_fast16_t x,
 	uint_fast16_t y,
@@ -473,7 +473,7 @@ uint_fast8_t smallfont3_width(char cc)
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
-static uint_fast16_t RAMFUNC_NONILINE colorpip_put_char_small3_tbg(
+static uint_fast16_t colorpip_put_char_small3_tbg(
 	const gxdrawb_t * db,
 	uint_fast16_t x,
 	uint_fast16_t y,
@@ -629,7 +629,7 @@ uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_
 #if SMALLCHARH3
 
 static uint_fast16_t
-RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
+ltdc_horizontal_put_char_small3(
 	const gxdrawb_t * db,
 	uint_fast16_t x, uint_fast16_t y,
 	char cc,
@@ -1005,10 +1005,20 @@ display_text2(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, cons
 		ypix += (h - smallfont2_height()) / 2;
 	}
 
-	while (xpix - xpix0 + smallfont2_width(' ') < w)
-		xpix = colorpip_put_char_small2(db, xpix, ypix, ' ', dbstyle->textfg);
-	while ((c = * s ++) != '\0' && xpix - xpix0 + smallfont2_width(c) < w)
-		xpix = colorpip_put_char_small2(db, xpix, ypix, c, dbstyle->textfg);
+	switch (dbstyle->textalign)
+	{
+	default:
+	case GXSTYLE_HALIGN_RIGHT:
+		while (xpix - xpix0 + smallfont2_width(' ') < w)
+			xpix = colorpip_put_char_small2(db, xpix, ypix, ' ', dbstyle->textfg);
+		while ((c = * s ++) != '\0' && xpix - xpix0 + smallfont2_width(c) < w)
+			xpix = colorpip_put_char_small2(db, xpix, ypix, c, dbstyle->textfg);
+		break;
+	case GXSTYLE_HALIGN_LEFT:
+		break;
+	case GXSTYLE_HALIGN_CENTER:
+		break;
+	}
 }
 
 // Используется при выводе на графический индикатор, нормальный шрифт
@@ -1055,10 +1065,20 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	{
 		ypix += (h - smallfont_height()) / 2;
 	}
-	for (len = strlen(s); len < xspan; ++ len)
-		xpix = colorpip_put_char_small(db, xpix, ypix, ' ', dbstyle->textfg);
-	while ((c = * s ++) != '\0' && xspan --)
-		xpix = colorpip_put_char_small(db, xpix, ypix, c, dbstyle->textfg);
+	switch (dbstyle->textalign)
+	{
+	default:
+	case GXSTYLE_HALIGN_RIGHT:
+		for (len = strlen(s); len < xspan; ++ len)
+			xpix = colorpip_put_char_small(db, xpix, ypix, ' ', dbstyle->textfg);
+		while ((c = * s ++) != '\0' && xspan --)
+			xpix = colorpip_put_char_small(db, xpix, ypix, c, dbstyle->textfg);
+		break;
+	case GXSTYLE_HALIGN_LEFT:
+		break;
+	case GXSTYLE_HALIGN_CENTER:
+		break;
+	}
 
 }
 

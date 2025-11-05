@@ -199,9 +199,9 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layer);
 
 enum gxstyle_textalign
 {
-	GXATTR_HALIGN_LEFT,
-	GXATTR_HALIGN_CENTER,
-	GXATTR_HALIGN_RIGHT
+	GXSTYLE_HALIGN_LEFT,
+	GXSTYLE_HALIGN_CENTER,
+	GXSTYLE_HALIGN_RIGHT
 };
 
 typedef struct gxstyle_tag
