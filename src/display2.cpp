@@ -1666,6 +1666,8 @@ static const COLORPAIR_T colors_1freq [1] =
 	{	DSGN_BIGCOLOR,	DSGN_BIGCOLORBACK,	},
 };
 
+static gxstyle_t dbstyle1freqv;
+
 // Параметры отображения режима основного приемника
 static const COLORPAIR_T colors_1mode [1] =
 {
@@ -2374,17 +2376,14 @@ static void display_freqXbig_a(const gxdrawb_t * db,
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
 
-	gxstyle_textcolor(& dbstylev, colors_1freq [0].fg, colors_1freq [0].bg);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
 
-		display_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 0, & dbstylev);	// отрисовываем верхнюю часть строки
+		display_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 0, & dbstyle1freqv);	// отрисовываем верхнюю часть строки
 #endif /* WITHDIRECTFREQENER */
 	}
 	else
@@ -2393,7 +2392,7 @@ static void display_freqXbig_a(const gxdrawb_t * db,
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		display_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0, & dbstylev);	// отрисовываем верхнюю часть строки
+		display_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0, & dbstyle1freqv);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -2415,57 +2414,8 @@ static void display2_freqX_a_init(
 }
 
 // Отображение частоты. Герцы маленьким шрифтом.
-static void display2_freqX_a(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
-{
-	uint_fast8_t rj;
-	uint_fast8_t fullwidth = display_getfreqformat(& rj);
-	const uint_fast8_t comma = 3 - rj;
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
-	if (pctx != NULL && pctx->type == DCTX_FREQ)
-	{
-#if WITHDIRECTFREQENER
-		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
-	#if WITHPRERENDER
-		rendered_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
-	#else /* WITHPRERENDER */
-		gxstyle_textcolor(& dbstylev, colors_1freq [0].fg, colors_1freq [0].bg);
-		display_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev);	// отрисовываем верхнюю часть строки
-	#endif /* WITHPRERENDER */
-#endif /* WITHDIRECTFREQENER */
-	}
-	else
-	{
-		enum { blinkpos = 255, blinkstate = 0 };
-
-		const uint_fast32_t freq = hamradio_get_freq_a();
-
-	#if WITHPRERENDER
-		rendered_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
-	#else /* WITHPRERENDER */
-		gxstyle_textcolor(& dbstylev, colors_1freq [0].fg, colors_1freq [0].bg);
-		display_value_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev);	// отрисовываем верхнюю часть строки
-	#endif /* WITHPRERENDER */
-	}
-}
-
-/* заглушка - в 320*200 */
-static void display2_freqx_a(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
-{
-	uint_fast8_t rj;
-	uint_fast8_t fullwidth = display_getfreqformat(& rj);
-	const uint_fast8_t comma = 3 - rj;
-	const uint_fast32_t freq = hamradio_get_freq_a();
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
-
-	gxstyle_textcolor(& dbstylev, colors_1freq [0].fg, colors_1freq [0].bg);
-	display_value_lower(db, x0, y0, colspan, rowspan, freq, fullwidth, comma, rj, & dbstylev);
-}
-
-// Верстия отображения без точки между мегагерцами и сотнями килогерц (для текстовых дисплееев)
-// FREQ B
-static void display_freqchr_a(const gxdrawb_t * db,
+static void display2_freqX_a(
+	const gxdrawb_t * db,
 	uint_fast8_t xcell,
 	uint_fast8_t ycell,
 	uint_fast8_t xspan,
@@ -2476,16 +2426,16 @@ static void display_freqchr_a(const gxdrawb_t * db,
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
 
-	gxstyle_textcolor(& dbstylev, colors_1freq [0].fg, colors_1freq [0].bg);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
-
-		display_value_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev);	// отрисовываем верхнюю часть строки
+	#if WITHPRERENDER
+		rendered_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
+	#else /* WITHPRERENDER */
+		display_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstyle1freqv);	// отрисовываем верхнюю часть строки
+	#endif /* WITHPRERENDER */
 #endif /* WITHDIRECTFREQENER */
 	}
 	else
@@ -2494,7 +2444,62 @@ static void display_freqchr_a(const gxdrawb_t * db,
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		display_value_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1, & dbstylev);	// отрисовываем верхнюю часть строки
+	#if WITHPRERENDER
+		rendered_value_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+	#else /* WITHPRERENDER */
+		display_value_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstyle1freqv);	// отрисовываем верхнюю часть строки
+	#endif /* WITHPRERENDER */
+	}
+}
+
+/* заглушка - в 320*200 */
+static void display2_freqx_a(
+	const gxdrawb_t * db,
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
+	uint_fast8_t xspan,
+	uint_fast8_t yspan,
+	dctx_t * pctx
+	)
+{
+	uint_fast8_t rj;
+	uint_fast8_t fullwidth = display_getfreqformat(& rj);
+	const uint_fast8_t comma = 3 - rj;
+	const uint_fast32_t freq = hamradio_get_freq_a();
+
+	display_value_lower(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, rj, & dbstyle1freqv);
+}
+
+// Верстия отображения без точки между мегагерцами и сотнями килогерц (для текстовых дисплееев)
+// FREQ B
+static void display_freqchr_a(
+	const gxdrawb_t * db,
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
+	uint_fast8_t xspan,
+	uint_fast8_t yspan,
+	dctx_t * pctx
+	)
+{
+	uint_fast8_t rj;
+	uint_fast8_t fullwidth = display_getfreqformat(& rj);
+	const uint_fast8_t comma = 3 - rj;
+
+	if (pctx != NULL && pctx->type == DCTX_FREQ)
+	{
+#if WITHDIRECTFREQENER
+		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
+
+		display_value_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstyle1freqv);	// отрисовываем верхнюю часть строки
+#endif /* WITHDIRECTFREQENER */
+	}
+	else
+	{
+		enum { blinkpos = 255, blinkstate = 0 };
+
+		const uint_fast32_t freq = hamradio_get_freq_a();
+
+		display_value_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1, & dbstyle1freqv);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -2568,8 +2573,6 @@ static void display_freqmeter10(const gxdrawb_t * db,
 {
 #if WITHFQMETER
 	char buf2 [11];
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
 
 	local_snprintf_P(
 		buf2, ARRAY_SIZE(buf2),
@@ -2577,8 +2580,7 @@ static void display_freqmeter10(const gxdrawb_t * db,
 		(unsigned long) board_get_fqmeter()
 		);
 
-	gxstyle_textcolor(& dbstylev, colors_1freq [0].fg, colors_1freq [0].bg);
-	display_text(db, xcell, ycell, buf2, xspan, yspan, & dbstylev);
+	display_text(db, xcell, ycell, buf2, xspan, yspan, & dbstyle1freqv);
 #endif /* WITHFQMETER */
 }
 
@@ -9158,13 +9160,10 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 		enum { blinkpos = 255, blinkstate = 0 };
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
-		gxstyle_t dbstylev;
-		gxstyle_initialize(& dbstylev);
 
 #if WITHPRERENDER
 		pix_rendered_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 #else /* WITHPRERENDER */
-		gxstyle_textcolor(& dbstylev, colors_1freq [0].fg, colors_1freq [0].bg);
 		pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 #endif /* WITHPRERENDER */
 	}
@@ -9751,6 +9750,10 @@ void display2_bgprocess(
 
 void display2_initialize(void)
 {
+	// Параметры отображения частоты основного приемника
+	gxstyle_initialize(& dbstyle1freqv);
+	gxstyle_textcolor(& dbstyle1freqv, colors_1freq [0].fg, colors_1freq [0].bg);
+
 #if (CPUSTYLE_R7S721 || 0)
 	//scbfi_t * p = new (reinterpret_cast<void *>(& scbf)) scbfi_t;
 #endif
