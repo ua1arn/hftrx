@@ -14,6 +14,7 @@
 #define ARM_ALW_T507_CTL_VELOCI_V0_UA1CEI_H_INCLUDED 1
 
 	#define WITHBRANDSTR "Falcon"
+	#define WITHBANDR1BBU 1
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
