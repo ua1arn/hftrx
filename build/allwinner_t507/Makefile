@@ -253,8 +253,8 @@ else
 #SystemDRAMInit = 0x0002c1f8
 #SystemExecAARCH64 = 0x0002918c
 # H618 + LPDDR4
-SystemDRAMInit = 0x0002b450
-SystemExecAARCH64 = 0x00028f90
+SystemExecAARCH64 = 0x00028f94
+SystemDRAMInit = 0x0002c418
 endif
 
 # Invoke SystemInit 
