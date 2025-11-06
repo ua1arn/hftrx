@@ -26,6 +26,8 @@ display_clear(const gxdrawb_t * db)
 void
 gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg)
 {
+	dbstyle->textfg = fg;
+	dbstyle->textbg = bg;
 }
 
 uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
@@ -58,6 +60,16 @@ display_reset(void)
 /* Разряжаем конденсаторы питания */
 void display_uninitialize(void)
 {
+}
+
+void gxstyle_initialize(gxstyle_t * dbstyle)
+{
+	gxstyle_texthalign(dbstyle, GXSTYLE_HALIGN_RIGHT);
+}
+
+void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_textalign a)
+{
+	dbstyle->textalign = a;
 }
 
 #endif /* LCDMODE_DUMMY */
