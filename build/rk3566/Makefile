@@ -239,7 +239,7 @@ allZ:
 	@echo $(abspath $(OBJS))
 
 bootloader: BOOT2
-	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }'
+	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }' | busybox sort
 	./egontool $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_t507_boot.map - address of SystemDRAMInit

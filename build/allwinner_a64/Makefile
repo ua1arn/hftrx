@@ -242,7 +242,7 @@ bootloader: BOOT2
 BOOT2: fsbl.bt0
 
 fsbl.bt0: $(PROJECT)_boot.bin
-	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }'
+	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }' | busybox sort
 	./egontool -old -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_a64_boot.map
