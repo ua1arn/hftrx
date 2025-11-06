@@ -220,6 +220,9 @@ typedef struct gxstyle_tag
 void gxstyle_initialize(gxstyle_t * dbstyle);
 void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg);
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_textalign a);
+uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s);
+void gxstyle_setsmallfont(gxstyle_t * dbstyle);
+void gxstyle_setsmallfont2(gxstyle_t * dbstyle);
 
 // Интерфейсные функции, специфические для драйвера дисплея - зависящие от типа микросхемы контроллера.
 void display_hardware_initialize(void);	/* вызывается при запрещённых прерываниях. */
@@ -233,6 +236,13 @@ uint32_t display_get_lvformat(void);	/* получить LVGL код форма�
 void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle);		// Выдача строки из ОЗУ в указанное место экрана.
 
 uint_fast16_t colorpip_put_char_small(
+	const gxdrawb_t * db,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	char cc,
+	COLORPIP_T fg
+	);
+uint_fast16_t colorpip_put_char_small2(
 	const gxdrawb_t * db,
 	uint_fast16_t x,
 	uint_fast16_t y,

@@ -89,14 +89,28 @@ void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t
 	db->layerv = NULL;
 }
 
-void gxstyle_initialize(gxstyle_t * dbstyle)
+void gxstyle_setsmallfont(gxstyle_t * dbstyle)
 {
-	dbstyle->textfg = COLORPIP_WHITE;
-	dbstyle->textbg = COLORPIP_BLACK;
-	dbstyle->textalign = GXSTYLE_HALIGN_RIGHT;
+#if defined (SMALLCHARW)
 	dbstyle->put_char_small = colorpip_put_char_small;
 	dbstyle->font_width = smallfont_width;
 	dbstyle->font_height = smallfont_height;
+#endif /* defined (SMALLCHARW) */
+}
+void gxstyle_setsmallfont2(gxstyle_t * dbstyle)
+{
+#if defined (SMALLCHARH2)
+	dbstyle->put_char_small = colorpip_put_char_small2;
+	dbstyle->font_width = smallfont2_width;
+	dbstyle->font_height = smallfont2_height;
+#endif /* defined (SMALLCHARH2) */
+}
+
+void gxstyle_initialize(gxstyle_t * dbstyle)
+{
+	gxstyle_textcolor(dbstyle, COLORPIP_WHITE, COLORPIP_BLACK);
+	gxstyle_setsmallfont(dbstyle);
+	gxstyle_texthalign(dbstyle, GXSTYLE_HALIGN_RIGHT);
 }
 
 
@@ -120,6 +134,15 @@ void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg)
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_textalign a)
 {
 	dbstyle->textalign = a;
+}
+
+uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s)
+{
+	char c;
+	uint_fast16_t n = 0;
+	while ((c = * s ++ != '\0'))
+		n += dbstyle->font_width(c);
+	return n;
 }
 
 #if 1//! WITHLVGL
@@ -416,7 +439,7 @@ uint_fast8_t smallfont2_height(void)
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
-static uint_fast16_t colorpip_put_char_small2(
+uint_fast16_t colorpip_put_char_small2(
 	const gxdrawb_t * db,
 	uint_fast16_t x,
 	uint_fast16_t y,
@@ -1000,7 +1023,7 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	{
 		ypix += (h - dbstyle->font_height()) / 2;
 	}
-	const uint_fast16_t textw = dbstyle->font_width(' ') * strlen(s);
+	const uint_fast16_t textw = gxstyle_strwidth(dbstyle, s);
 	const uint_fast16_t xpix0 = xpix;
 	switch (dbstyle->textalign)
 	{

@@ -72,6 +72,17 @@ void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_textalign a)
 	dbstyle->textalign = a;
 }
 
+uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s)
+{
+	return 0;
+}
+void gxstyle_setsmallfont(gxstyle_t * dbstyle)
+{
+}
+void gxstyle_setsmallfont2(gxstyle_t * dbstyle)
+{
+}
+
 #endif /* LCDMODE_DUMMY */
 
 
