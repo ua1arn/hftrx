@@ -7604,7 +7604,7 @@ static void t113_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 
 	for (int n = 0; n < 16; n ++)
 	{
-		uis->UIS_HCOEF_REGN [n] = 0x40404040;	// 0x200
+		uis->UIS_HCOEF_REGN [n] = 0x40000000;	// 0x200
 	}
 
 	uis->UIS_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
