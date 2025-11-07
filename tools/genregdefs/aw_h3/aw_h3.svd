@@ -1628,7 +1628,7 @@
     <register>
      <name>UIS_HCOEF_REGN</name>
      <displayName>UIS_HCOEF_REGN</displayName>
-     <description>Horizontal filter coefficient register N (N=0:15)#typeend</description>
+     <description>Horizontal filter coefficient register N (N=0:15)</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -1946,7 +1946,7 @@
    <register>
     <name>VSU_GLOBAL_ALPHA_REG</name>
     <displayName>VSU_GLOBAL_ALPHA_REG</displayName>
-    <description></description>
+    <description>VSU Output Global Alpha Register</description>
     <addressOffset>0x044</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
