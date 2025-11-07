@@ -206,6 +206,7 @@
 #regdef; UIS_FIELD_CTRL_REG; 0x00C; Field control register
 #regdef; UIS_BIST_REG; 0x010; BIST control register
 #regdef; UIS_OUTSIZE_REG; 0x040; Output size register
+#regdef; UIS_GLOBAL_ALPHA_REG; 0x0044; VSU Output Global Alpha Register
 
 #regdef; UIS_Y_INSIZE_REG; 0x080; Input size register
 #regdef; UIS_Y_HSTEP_REG; 0x088; Horizontal step register
@@ -219,7 +220,9 @@
 #regdef; UIS_C_HPHASE_REG; 0x0D0; Horizontal initial phase register
 #regdef; UIS_C_VPHASE_REG; 0x0D8; Vertical initial phase 0 register
 
-#regdef; UIS_HCOEF_REGN; 0x200 64; Horizontal filter coefficient register N (N=0:15)
+#regdef; UIS_Y_HCOEF0_REGN; 0x200 64; 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1))
+#regdef; UIS_Y_VCOEF_REGN; 0x400 64; 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1))
+#regdef; UIS_C_HCOEF0_REGN; 0x600 64; 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1))
 
 #typeend;
 

@@ -5054,6 +5054,15 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
+    <name>UIS_GLOBAL_ALPHA_REG</name>
+    <displayName>UIS_GLOBAL_ALPHA_REG</displayName>
+    <description>VSU Output Global Alpha Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>UIS_Y_INSIZE_REG</name>
     <displayName>UIS_Y_INSIZE_REG</displayName>
     <description>Input size register</description>
@@ -5147,9 +5156,37 @@
     <dim>64</dim>
     <addressOffset>0x00000200</addressOffset>
     <register>
-     <name>UIS_HCOEF_REGN</name>
-     <displayName>UIS_HCOEF_REGN</displayName>
-     <description>Horizontal filter coefficient register N (N=0:15)</description>
+     <name>UIS_Y_HCOEF0_REGN</name>
+     <displayName>UIS_Y_HCOEF0_REGN</displayName>
+     <description>0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x100</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>64</dim>
+    <addressOffset>0x00000400</addressOffset>
+    <register>
+     <name>UIS_Y_VCOEF_REGN</name>
+     <displayName>UIS_Y_VCOEF_REGN</displayName>
+     <description>0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x100</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>64</dim>
+    <addressOffset>0x00000600</addressOffset>
+    <register>
+     <name>UIS_C_HCOEF0_REGN</name>
+     <displayName>UIS_C_HCOEF0_REGN</displayName>
+     <description>0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1))</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>

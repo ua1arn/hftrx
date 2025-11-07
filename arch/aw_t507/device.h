@@ -1168,8 +1168,12 @@ typedef struct DE_UIS_Type
          RESERVED(0x0D4[0x00D8 - 0x00D4], uint8_t)
     __IO uint32_t UIS_C_VPHASE_REG;                   /*!< Offset 0x0D8 Vertical initial phase 0 register */
          RESERVED(0x0DC[0x0200 - 0x00DC], uint8_t)
-    __IO uint32_t UIS_HCOEF_REGN [0x040];             /*!< Offset 0x200 Horizontal filter coefficient register N (N=0:15) */
-} DE_UIS_TypeDef; /* size of structure = 0x300 */
+    __IO uint32_t UIS_Y_HCOEF0_REGN [0x040];          /*!< Offset 0x200 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+         RESERVED(0x300[0x0400 - 0x0300], uint8_t)
+    __IO uint32_t UIS_Y_VCOEF_REGN [0x040];           /*!< Offset 0x400 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1)) */
+         RESERVED(0x500[0x0600 - 0x0500], uint8_t)
+    __IO uint32_t UIS_C_HCOEF0_REGN [0x040];          /*!< Offset 0x600 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+} DE_UIS_TypeDef; /* size of structure = 0x700 */
 /*
  * @brief DE_VI
  */

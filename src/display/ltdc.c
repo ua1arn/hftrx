@@ -7481,8 +7481,8 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	DE_UIS_TypeDef * const uis = de3_getuis(rtmixid, 1);
 	if (uis == NULL)
 		return;
-
-	//printhex32((uintptr_t) uis, uis, 0x300);
+//	memset32(uis, 0xFFFFFFFF, 0x1000);
+//	printhex32((uintptr_t) uis, uis, 0x1000);
 	if (vdmodeDESIGN->width == vdmodeHDMI->width && vdmodeDESIGN->height == vdmodeHDMI->height)
 	{
 		uis->UIS_CTRL_REG = 0;	// EN Video Scaler Unit disable
@@ -7511,7 +7511,10 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 
 	for (int n = 0; n < 64; n ++)
 	{
-		//uis->UIS_HCOEF_REGN [n] = 0x40000000;	// 0x200
+		// предварительные попытки
+		uis->UIS_Y_HCOEF0_REGN [n] = 0x40000000;	// 0x200
+		uis->UIS_Y_VCOEF_REGN [n] = 0x40000000;	// 0x400
+		uis->UIS_Y_HCOEF0_REGN [n] = 0x40000000;	// 0x600
 	}
 
 	uis->UIS_GLOBAL_ALPHA_REG = 0x00;
