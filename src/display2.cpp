@@ -1584,7 +1584,6 @@ static gxstyle_t dbstylev_4state [4];
 static gxstyle_t dbstylev_2state [2];
 // Параметры отображения состояний из двух вариантов (активный - на красном фонк)
 static gxstyle_t dbstylev_2state_rec [2];
-
 // Параметры отображения текстов без вариантов
 static gxstyle_t dbstylev_1state;
 // Параметры отображения текстов без вариантов
@@ -1593,10 +1592,8 @@ static gxstyle_t dbstylev_1statevoltage;
 static gxstyle_t dbstylev_2fmenu [2];
 // Параметры отображения текстов без вариантов
 static gxstyle_t dbstylev_1fmenu;
-// Параметры отображения текстов без вариантов
-// синий
+// Параметры отображения текстов без вариантов (синий)
 static gxstyle_t dbstylev_1stateBlue;
-
 // Параметры отображения частоты дополнительного приемника
 static gxstyle_t dbstylev_2freqB [2];
 // Параметры отображения режима дополнительного приемника
@@ -1607,6 +1604,11 @@ static gxstyle_t dbstylev_1freqv;
 static gxstyle_t dbstylev_1mode;
 
 // Параметры отображения спектра и водопада
+
+const COLORPIP_T colorcmarker = DSGN_GRIDCOLOR0;	// Цвет макркера на центре
+const COLORPIP_T colorgridlines = DSGN_GRIDCOLOR2;	// Цвет линий сетки
+const COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// Цвет текста частот сетки
+const COLORPIP_T colorgridlines3dss = COLORPIP_GREEN;
 
 #if 1
 	// полностью частота до килогерц
@@ -6690,9 +6692,6 @@ display_colorgrid_xor(
 	)
 {
 	const int MARKERH = 10;
-	const COLORPIP_T color0 = DSGN_GRIDCOLOR0;	// макркер на центре
-	const COLORPIP_T color = DSGN_GRIDCOLOR2;	// макркеры частот сетки
-	const COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// макркеры частот сетки
 
 	//
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
@@ -6716,14 +6715,14 @@ display_colorgrid_xor(
 				if (isvisibletext(DIM_X, xtext, freqw))
 				{
 					colpip_string3_tbg(db, xtext, row0, buf2, colordigits);
-					colpip_xor_vline(db, xmarker, row0 + MARKERH, h - MARKERH, color);
+					colpip_xor_vline(db, xmarker, row0 + MARKERH, h - MARKERH, colorgridlines);
 				}
 				else
-					colpip_xor_vline(db, xmarker, row0, h, color);
+					colpip_xor_vline(db, xmarker, row0, h, colorgridlines);
 			}
 		}
 	}
-	colpip_xor_vline(db, ALLDX / 2, row0, h, color0);	// center frequency marker
+	colpip_xor_vline(db, ALLDX / 2, row0, h, colorcmarker);	// center frequency marker
 }
 
 // отрисовка маркеров частот
@@ -6739,9 +6738,6 @@ display_colorgrid_set(
 	const struct dispmap * dm
 	)
 {
-	const COLORPIP_T color0 = DSGN_GRIDCOLOR0;	// макркер на центре
-	const COLORPIP_T color = DSGN_GRIDCOLOR2;
-	const COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// макркеры частот сетки
 	const uint_fast8_t markerh = 10;
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
@@ -6756,7 +6752,7 @@ display_colorgrid_set(
 		{
 			const int yval = dsp_mag2y(db2ratio(lvl), h - 1, glob_topdb, glob_bottomdb);
 			if (yval > 0 && yval < (int) h)
-				colpip_set_hline(db, x, y + yval, w, color);	// Level marker
+				colpip_set_hline(db, x, y + yval, w, colorgridlines);	// Level marker
 		}
 	}
 
@@ -6776,16 +6772,16 @@ display_colorgrid_set(
 				if (isvisibletext(DIM_X, xtext, freqw))
 				{
 					colpip_string3_tbg(db, xtext, y, buf2, colordigits);
-					colpip_set_vline(db, xmarker, y + markerh, h - markerh, color);
+					colpip_set_vline(db, xmarker, y + markerh, h - markerh, colorgridlines);
 				}
 				else
-					colpip_set_vline(db, xmarker, y, h, color);
+					colpip_set_vline(db, xmarker, y, h, colorgridlines);
 			}
 		}
 	}
 	if (dm->xcenter != UINT16_MAX)
 	{
-		colpip_set_vline(db, x + dm->xcenter, y, h, color0);	// center frequency marker
+		colpip_set_vline(db, x + dm->xcenter, y, h, colorcmarker);	// center frequency marker
 	}
 }
 
@@ -6800,8 +6796,6 @@ display_colorgrid_3dss(
 	int_fast32_t bw		// span
 	)
 {
-	const COLORPIP_T colorcenter = DSGN_GRIDCOLOR0;	// макркер на центре
-	const COLORPIP_T colorgrid = COLORPIP_GREEN;
 	const uint_fast16_t row = row0 + h + 3;
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
@@ -6822,13 +6816,13 @@ display_colorgrid_3dss(
 				freqw = strwidth3(buf2);
 				uint_fast16_t xtext = xmarker >= (freqw + 1) / 2 ? xmarker - (freqw + 1) / 2 : UINT16_MAX;
 				if (isvisibletext(DIM_X, xtext, freqw))
-					colpip_string3_tbg(db, xtext, row, buf2, COLORPIP_YELLOW);
+					colpip_string3_tbg(db, xtext, row, buf2, colordigits);
 
-				colpip_set_vline(db, xmarker, row0, h, colorgrid);
+				colpip_set_vline(db, xmarker, row0, h, colorgridlines3dss);
 			}
 		}
 	}
-	colpip_set_vline(db, ALLDX / 2, row0, h, colorcenter);	// center frequency marker
+	colpip_set_vline(db, ALLDX / 2, row0, h, colorcmarker);	// center frequency marker
 }
 
 
@@ -7624,9 +7618,6 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
     	const uint_fast32_t f0 = dm->f0;	/* frequency at middle of spectrum */
     	const int_fast32_t bw = dm->bw;
 
-    	const COLORPIP_T color0 = DSGN_GRIDCOLOR0;	// макркер на центре
-    	const COLORPIP_T color = DSGN_GRIDCOLOR2;
-    	const COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// макркеры частот сетки
     	const uint_fast8_t markerh = 10;
     	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
     	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
@@ -7648,13 +7639,13 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
 					l.width = 1;
 					l.round_end = 0;
 					l.round_start = 0;
-					l.color = display_lvlcolor(color);
+					l.colorgridlines = display_lvlcolor(colorgridlines);
 
 					lv_point_precise_set(& l.p1, coord->x1, coord->y1 + yval);
 					lv_point_precise_set(& l.p2, coord->x2, coord->y1 + yval);
 					lv_draw_line(layer, & l);
 
-    				//colpip_set_hline(db, x, y + yval, w, color);	// Level marker
+    				//colpip_set_hline(db, x, y + yval, w, colorgridlines);	// Level marker
     			}
     		}
     	}
@@ -7677,17 +7668,17 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
 		            l.width = 1;
 		            l.round_end = 0;
 		            l.round_start = 0;
-		            l.color = display_lvlcolor(color);
+		            l.colorgridlines = display_lvlcolor(colorgridlines);
 
 		            lv_point_precise_set(& l.p1, coord->x1 + xmarker, coord->y1);
 		            lv_point_precise_set(& l.p2, coord->x1 + xmarker, coord->y2);
 		            lv_draw_line(layer, & l);
-					//colpip_set_vline(db, xmarker, y + markerh, alldy - markerh, color);
+					//colpip_set_vline(db, xmarker, y + markerh, alldy - markerh, colorgridlines);
 
 		            // текст маркера частоты
 		    	    lv_draw_label_dsc_t label;
 		    	    lv_draw_label_dsc_init(& label);
-		            label.color = display_lvlcolor(colordigits);
+		            label.colorgridlines = display_lvlcolor(colordigits);
 		            label.align = LV_TEXT_ALIGN_CENTER;
 		            label.text = buf2;
 		            // позиция (текст, выходящий за границы окне отрежется библиотекой)
@@ -7707,12 +7698,12 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
             l.width = 1;
             l.round_end = 0;
             l.round_start = 0;
-            l.color = display_lvlcolor(color0);
+            l.colorgridlines = display_lvlcolor(colorcmarker);
 
             lv_point_precise_set(& l.p1, coord->x1 + dm->xcenter, coord->y1 + 0);
             lv_point_precise_set(& l.p2, coord->x1 + dm->xcenter, coord->y1 + alldy - 1);
             lv_draw_line(layer, & l);
-    		//colpip_set_vline(db, x + dm->xcenter, y, h, color0);	// center frequency marker
+    		//colpip_set_vline(db, x + dm->xcenter, y, h, colorcmarker);	// center frequency marker
     	}
 
     }
@@ -8586,9 +8577,6 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     	const uint_fast32_t f0 = dm->f0;	/* frequency at middle of spectrum */
     	const int_fast32_t bw = dm->bw;
 
-    	const COLORPIP_T color0 = DSGN_GRIDCOLOR0;	// макркер на центре
-    	const COLORPIP_T color = DSGN_GRIDCOLOR2;
-    	const COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// макркеры частот сетки
     	const uint_fast8_t markerh = 10;
     	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
     	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
@@ -8610,13 +8598,13 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 					l.width = 1;
 					l.round_end = 0;
 					l.round_start = 0;
-					l.color = display_lvlcolor(color);
+					l.colorgridlines = display_lvlcolor(colorgridlines);
 
 					lv_point_precise_set(& l.p1, coord->x1, coord->y1 + yval);
 					lv_point_precise_set(& l.p2, coord->x2, coord->y1 + yval);
 					lv_draw_line(layer, & l);
 
-    				//colpip_set_hline(db, x, y + yval, w, color);	// Level marker
+    				//colpip_set_hline(db, x, y + yval, w, colorgridlines);	// Level marker
     			}
     		}
     	}
@@ -8639,17 +8627,17 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 		            l.width = 1;
 		            l.round_end = 0;
 		            l.round_start = 0;
-		            l.color = display_lvlcolor(color);
+		            l.colorgridlines = display_lvlcolor(colorgridlines);
 
 		            lv_point_precise_set(& l.p1, coord->x1 + xmarker, coord->y1);
 		            lv_point_precise_set(& l.p2, coord->x1 + xmarker, coord->y2);
 		            lv_draw_line(layer, & l);
-					//colpip_set_vline(db, xmarker, y + markerh, alldy - markerh, color);
+					//colpip_set_vline(db, xmarker, y + markerh, alldy - markerh, colorgridlines);
 
 		            // текст маркера частоты
 		    	    lv_draw_label_dsc_t label;
 		    	    lv_draw_label_dsc_init(& label);
-		            label.color = display_lvlcolor(colordigits);
+		            label.colorgridlines = display_lvlcolor(colordigits);
 		            label.align = LV_TEXT_ALIGN_CENTER;
 		            label.font = &lv_font_montserrat_14;
 		            label.text = buf2;
@@ -8670,12 +8658,12 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
             l.width = 1;
             l.round_end = 0;
             l.round_start = 0;
-            l.color = display_lvlcolor(color0);
+            l.colorgridlines = display_lvlcolor(colorcmarker);
 
             lv_point_precise_set(& l.p1, coord->x1 + dm->xcenter, coord->y1 + 0);
             lv_point_precise_set(& l.p2, coord->x1 + dm->xcenter, coord->y1 + alldy - 1);
             lv_draw_line(layer, & l);
-    		//colpip_set_vline(db, x + dm->xcenter, y, h, color0);	// center frequency marker
+    		//colpip_set_vline(db, x + dm->xcenter, y, h, colorcmarker);	// center frequency marker
     	}
 
     }
