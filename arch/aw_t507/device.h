@@ -1240,18 +1240,12 @@ typedef struct DE_VSU_Type
     __IO uint32_t VSU_C_VPHASE0_REG;                  /*!< Offset 0x0D8 VSU C Channel Vertical Initial Phase 0 Register */
     __IO uint32_t VSU_C_VPHASE1_REG;                  /*!< Offset 0x0DC VSU C Channel Vertical Initial Phase 1 Register */
          RESERVED(0x0E0[0x0200 - 0x00E0], uint8_t)
-    __IO uint32_t VSU_Y_HCOEF0_REGN [0x020];          /*!< Offset 0x200 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
-         RESERVED(0x280[0x0300 - 0x0280], uint8_t)
-    __IO uint32_t VSU_Y_HCOEF1_REGN [0x020];          /*!< Offset 0x300 0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1 */
-         RESERVED(0x380[0x0400 - 0x0380], uint8_t)
-    __IO uint32_t VSU_Y_VCOEF_REGN [0x020];           /*!< Offset 0x400 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1)) */
-         RESERVED(0x480[0x0600 - 0x0480], uint8_t)
-    __IO uint32_t VSU_C_HCOEF0_REGN [0x020];          /*!< Offset 0x600 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
-         RESERVED(0x680[0x0700 - 0x0680], uint8_t)
-    __IO uint32_t VSU_C_HCOEF1_REGN [0x020];          /*!< Offset 0x700 0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1)) */
-         RESERVED(0x780[0x0800 - 0x0780], uint8_t)
-    __IO uint32_t VSU_C_VCOEF_REGN [0x020];           /*!< Offset 0x800 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1)) */
-} DE_VSU_TypeDef; /* size of structure = 0x880 */
+    __IO uint32_t VSU_Y_HCOEF0_REGN [0x040];          /*!< Offset 0x200 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+         RESERVED(0x300[0x0400 - 0x0300], uint8_t)
+    __IO uint32_t VSU_Y_VCOEF_REGN [0x040];           /*!< Offset 0x400 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1)) */
+         RESERVED(0x500[0x0600 - 0x0500], uint8_t)
+    __IO uint32_t VSU_C_HCOEF0_REGN [0x040];          /*!< Offset 0x600 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+} DE_VSU_TypeDef; /* size of structure = 0x700 */
 /*
  * @brief DISP_IF_TOP
  */

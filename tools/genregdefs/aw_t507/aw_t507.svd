@@ -5628,7 +5628,7 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>32</dim>
+    <dim>64</dim>
     <addressOffset>0x00000200</addressOffset>
     <register>
      <name>VSU_Y_HCOEF0_REGN</name>
@@ -5639,24 +5639,10 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x080</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
    <cluster>
-    <dim>32</dim>
-    <addressOffset>0x00000300</addressOffset>
-    <register>
-     <name>VSU_Y_HCOEF1_REGN</name>
-     <displayName>VSU_Y_HCOEF1_REGN</displayName>
-     <description>0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1</description>
-     <addressOffset>0x000</addressOffset>
-     <size>0x20</size>
-     <access>read-write</access>
-     <resetValue>0x00000000</resetValue>
-    </register>
-    <dimIncrement>0x080</dimIncrement>
-   </cluster>
-   <cluster>
-    <dim>32</dim>
+    <dim>64</dim>
     <addressOffset>0x00000400</addressOffset>
     <register>
      <name>VSU_Y_VCOEF_REGN</name>
@@ -5667,10 +5653,10 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x080</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
    <cluster>
-    <dim>32</dim>
+    <dim>64</dim>
     <addressOffset>0x00000600</addressOffset>
     <register>
      <name>VSU_C_HCOEF0_REGN</name>
@@ -5681,35 +5667,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x080</dimIncrement>
-   </cluster>
-   <cluster>
-    <dim>32</dim>
-    <addressOffset>0x00000700</addressOffset>
-    <register>
-     <name>VSU_C_HCOEF1_REGN</name>
-     <displayName>VSU_C_HCOEF1_REGN</displayName>
-     <description>0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1))</description>
-     <addressOffset>0x000</addressOffset>
-     <size>0x20</size>
-     <access>read-write</access>
-     <resetValue>0x00000000</resetValue>
-    </register>
-    <dimIncrement>0x080</dimIncrement>
-   </cluster>
-   <cluster>
-    <dim>32</dim>
-    <addressOffset>0x00000800</addressOffset>
-    <register>
-     <name>VSU_C_VCOEF_REGN</name>
-     <displayName>VSU_C_VCOEF_REGN</displayName>
-     <description>0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1))</description>
-     <addressOffset>0x000</addressOffset>
-     <size>0x20</size>
-     <access>read-write</access>
-     <resetValue>0x00000000</resetValue>
-    </register>
-    <dimIncrement>0x080</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
   </registers>
   </peripheral>

@@ -7524,6 +7524,54 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	while ((uis->UIS_CTRL_REG & (UINT32_C(1) << 4)) != 0)
 		;
 }
+
+static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
+{
+	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid, 1);
+	if (vsu == NULL)
+		return;
+
+//	ASSERT(DIM_X == vdmodeDESIGN->width);
+//	ASSERT(DIM_Y == vdmodeDESIGN->height);
+	if (vdmodeDESIGN->width == vdmodeHDMI->width && vdmodeDESIGN->height == vdmodeHDMI->height)
+	{
+		vsu->VSU_CTRL_REG = 0;	// EN Video Scaler Unit disable
+		return;
+	}
+
+	enum { FRAСTWIDTH = 19 };	// При масштабе 1:1 о ширине изображения нет - для теста делаю уменьшение на 0.9
+	const unsigned HEIGHT = vdmodeHDMI->height;	/* height */
+	const unsigned WIDTH = vdmodeHDMI->width;	/* width */
+	const uint32_t APPDIMS_SIZE = ((vdmodeDESIGN->height - 1) << 16) | (vdmodeDESIGN->width - 1);	// source size
+
+	const uint_fast32_t HSTEP = (((uint_fast64_t) vdmodeDESIGN->width << FRAСTWIDTH) / WIDTH) << 1;
+	const uint_fast32_t VSTEP = (((uint_fast64_t) vdmodeDESIGN->height << FRAСTWIDTH) / HEIGHT) << 1;
+
+	vsu->VSU_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
+	vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+
+	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0);
+	vsu->VSU_OUT_SIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	vsu->VSU_Y_SIZE_REG = APPDIMS_SIZE;
+	vsu->VSU_Y_HSTEP_REG = HSTEP;
+	vsu->VSU_Y_VSTEP_REG = VSTEP;
+	vsu->VSU_C_SIZE_REG = APPDIMS_SIZE;
+	vsu->VSU_C_HSTEP_REG = HSTEP;
+	vsu->VSU_C_VSTEP_REG = VSTEP;
+
+	for (int n = 0; n < 64; n ++)
+	{
+		vsu->VSU_Y_HCOEF0_REGN [n] = 0x40000000;	// 0x200
+		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000;	// 0x400
+		vsu->VSU_C_HCOEF0_REGN [n] = 0x40000000;	// 0x600
+	}
+
+	vsu->VSU_GLOBAL_ALPHA_REG = 0x00;
+
+	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
+	while ((vsu->VSU_CTRL_REG & (UINT32_C(1) << 4)) != 0)
+		;
+}
 #endif /* CPUSTYLE_T507 || CPUSTYLE_H616 */
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
@@ -7559,15 +7607,13 @@ static void t113_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 		uis->UIS_HCOEF_REGN [n] = 0x40404040;	// 0x200
 	}
 
-	uis->UIS_GLOBAL_ALPHA_REG = 0x00;
-
 	uis->UIS_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 	while ((uis->UIS_CTRL_REG & (UINT32_C(1) << 4)) != 0)
 		;
 }
-#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
 
-static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
+
+static void t113_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
 {
 	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid, 1);
 	if (vsu == NULL)
@@ -7580,6 +7626,10 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 		vsu->VSU_CTRL_REG = 0;	// EN Video Scaler Unit disable
 		return;
 	}
+//	memset32(vsu, 0xFFFFFFFF, 0x1000);
+//	printhex32((uintptr_t) vsu, vsu, 0x1000);	// вызывает сбой цветов на HDMI
+//	for (;;)
+//		;
 	enum { FRAСTWIDTH = 19 };	// При масштабе 1:1 о ширине изображения нет - для теста делаю уменьшение на 0.9
 	const unsigned HEIGHT = vdmodeHDMI->height;	/* height */
 	const unsigned WIDTH = vdmodeHDMI->width;	/* width */
@@ -7617,6 +7667,7 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 		;
 }
 
+#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
 
 static void t113_tcontv_initsteps(const videomode_t * vdmode)
 {
@@ -7882,22 +7933,24 @@ static void hardware_ltdc_set_format(int rtmixid, const videomode_t * vdmode, vo
 	/* эта инициализация после корректного соединения с работающим TCON */
 	t113_de_bld_initialize(rtmixid, vdmode, defcolor);	// RED
 	//TP();
-
+	int usevsu = 1;
 	// проверка различных scalers
-#if 1
+#if CPUSTYLE_T507 || CPUSTYLE_H616
 	// Use VI scaler
-	h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
+	if (usevsu)
+		t507_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
+	else
+		t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode);
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+	if (usevsu)
+		t113_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
+	else
+		t113_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode);
 
 #else
-	// Use UI scaler
-	#if CPUSTYLE_T507 || CPUSTYLE_H616
-		t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode);
-	#elif CPUSTYLE_T113 || CPUSTYLE_F133
-		t113_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode);	// tested
-	#else
-		#warning NO UI scaler
-	#endif
+	#warning NO UI scaler
 
 #endif
 

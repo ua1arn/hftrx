@@ -258,12 +258,10 @@
 #regdef; VSU_C_HPHASE_REG; 0x00D0; VSU C Channel Horizontal Initial Phase Register
 #regdef; VSU_C_VPHASE0_REG; 0x00D8; VSU C Channel Vertical Initial Phase 0 Register
 #regdef; VSU_C_VPHASE1_REG; 0x00DC; VSU C Channel Vertical Initial Phase 1 Register
-#regdef; VSU_Y_HCOEF0_REGN; 0x200 32; 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1))
-#regdef; VSU_Y_HCOEF1_REGN; 0x300 32; 0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1
-#regdef; VSU_Y_VCOEF_REGN; 0x400 32; 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1))
-#regdef; VSU_C_HCOEF0_REGN; 0x600 32; 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1))
-#regdef; VSU_C_HCOEF1_REGN; 0x700 32; 0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1))
-#regdef; VSU_C_VCOEF_REGN; 0x800 32; 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1))
+
+#regdef; VSU_Y_HCOEF0_REGN; 0x200 64; 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1))
+#regdef; VSU_Y_VCOEF_REGN; 0x400 64; 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1))
+#regdef; VSU_C_HCOEF0_REGN; 0x600 64; 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1))
 #typeend;
 
 # define SUN50I_MIXER_FCE_EN			0x70000: 10A0000
