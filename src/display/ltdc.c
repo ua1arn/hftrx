@@ -7481,6 +7481,7 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	if (uis == NULL)
 		return;
 
+	//printhex32((uintptr_t) uis, uis, 0x300);
 	if (vdmodeDESIGN->width == vdmodeHDMI->width && vdmodeDESIGN->height == vdmodeHDMI->height)
 	{
 		uis->UIS_CTRL_REG = 0;	// EN Video Scaler Unit disable
@@ -7490,22 +7491,18 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	enum { FRAСTWIDTH = 18 };
 	const unsigned HEIGHT = vdmodeHDMI->height;	/* height */
 	const unsigned WIDTH = vdmodeHDMI->width;	/* width */
-	const uint32_t APPDIMS_SIZE = ((vdmodeDESIGN->height - 1) << 16) | (vdmodeDESIGN->width - 1);	// source size
-
-	const uint_fast32_t HSTEP = (((uint_fast64_t) vdmodeDESIGN->width << FRAСTWIDTH) / WIDTH) << 2;
-	const uint_fast32_t VSTEP = (((uint_fast64_t) vdmodeDESIGN->height << FRAСTWIDTH) / HEIGHT) << 2;
 
 	uis->UIS_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
 	uis->UIS_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
 
 	uis->UIS_OUTSIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
-	uis->UIS_INSIZE_REG = APPDIMS_SIZE;
-	uis->UIS_HSTEP_REG = HSTEP;
-	uis->UIS_VSTEP_REG = VSTEP;
+	uis->UIS_INSIZE_REG = ((vdmodeDESIGN->height - 1) << 16) | (vdmodeDESIGN->width - 1);	// source size
+	uis->UIS_HSTEP_REG = (((uint_fast64_t) vdmodeDESIGN->width << FRAСTWIDTH) / WIDTH) << 2;
+	uis->UIS_VSTEP_REG = (((uint_fast64_t) vdmodeDESIGN->height << FRAСTWIDTH) / HEIGHT) << 2;
 
 	for (int n = 0; n < 16; n ++)
 	{
-		uis->UIS_HCOEF_REGN [n] = 0x40000000;	// 0x200
+		uis->UIS_HCOEF_REGN [n] = 0x40404040;	// 0x200
 	}
 
 	uis->UIS_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
