@@ -1604,11 +1604,10 @@ static gxstyle_t dbstylev_1freqv;
 static gxstyle_t dbstylev_1mode;
 
 // Параметры отображения спектра и водопада
-
-const COLORPIP_T colorcmarker = DSGN_GRIDCOLOR0;	// Цвет макркера на центре
-const COLORPIP_T colorgridlines = DSGN_GRIDCOLOR2;	// Цвет линий сетки
-const COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// Цвет текста частот сетки
-const COLORPIP_T colorgridlines3dss = COLORPIP_GREEN;
+static COLORPIP_T colorcmarker = DSGN_GRIDCOLOR0;	// Цвет макркера на центре
+static COLORPIP_T colorgridlines = DSGN_GRIDCOLOR2;	// Цвет линий сетки
+static COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// Цвет текста частот сетки
+static COLORPIP_T colorgridlines3dss = COLORPIP_GREEN;
 
 #if 1
 	// полностью частота до килогерц
@@ -9721,6 +9720,12 @@ static void display2_stylesupdate(void)
 	// Параметры отображения режима основного приемника
 	gxstyle_initialize(& dbstylev_1mode);
 	gxstyle_textcolor(& dbstylev_1mode, DSGN_BIGCOLOR, DSGN_LABELBACK);
+
+	// Параметры отображения спектра и водопада
+	colorcmarker = DSGN_GRIDCOLOR0;	// Цвет макркера на центре
+	colorgridlines = DSGN_GRIDCOLOR2;	// Цвет линий сетки
+	colordigits = DSGN_GRIDDIGITS;	// Цвет текста частот сетки
+	colorgridlines3dss = COLORPIP_GREEN;
 
 }
 
