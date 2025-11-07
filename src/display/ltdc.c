@@ -7478,7 +7478,8 @@ static void t113_tcontv_open_module_enable(void)
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
 {
-	DE_UIS_TypeDef * const uis = de3_getuis(rtmixid, 1);
+	const int uich = 1;
+	DE_UIS_TypeDef * const uis = de3_getuis(rtmixid, uich);
 	if (uis == NULL)
 		return;
 	if (vdmodeDESIGN->width == vdmodeHDMI->width && vdmodeDESIGN->height == vdmodeHDMI->height)
@@ -7527,7 +7528,8 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 
 static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
 {
-	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid, 1);
+	const int vich = 1;
+	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid, vich);
 	if (vsu == NULL)
 		return;
 
@@ -7578,7 +7580,8 @@ static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 
 static void t113_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
 {
-	DE_UIS_TypeDef * const uis = de3_getuis(rtmixid, 1);
+	const int uich = 1;
+	DE_UIS_TypeDef * const uis = de3_getuis(rtmixid, uich);
 	if (uis == NULL)
 		return;
 
@@ -7615,7 +7618,8 @@ static void t113_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 
 static void t113_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
 {
-	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid, 1);
+	const int vich = 1;
+	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid, vich);
 	if (vsu == NULL)
 		return;
 
@@ -7933,7 +7937,7 @@ static void hardware_ltdc_set_format(int rtmixid, const videomode_t * vdmode, vo
 	/* эта инициализация после корректного соединения с работающим TCON */
 	t113_de_bld_initialize(rtmixid, vdmode, defcolor);	// RED
 	//TP();
-	int usevsu = 1;
+	const int usevsu = 1;
 	// проверка различных scalers
 #if CPUSTYLE_T507 || CPUSTYLE_H616
 	// Use VI scaler
@@ -8069,12 +8073,6 @@ static void hardware_ltdc_main_set_ui(int rtmixid, uintptr_t p1)
 	t113_de_update(rtmixid);	/* Update registers */
 }
 
-void hardware_ltdc_main_set(int rtmixid, uintptr_t p1)
-{
-	hardware_ltdc_main_set_vi(rtmixid, p1);	// VI
-	//hardware_ltdc_main_set_ui(rtmixid, p1);	// UI
-}
-
 /* Set frame buffer address. No waiting for VSYNC. */
 static void hardware_ltdc_main_set_no_vsync_ui(int rtmixid, uintptr_t p1)
 {
@@ -8107,6 +8105,12 @@ static void hardware_ltdc_main_set_no_vsync_vi(int rtmixid, uintptr_t p1)
 			((de3_getvi(rtmixid, vich) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, vich)) |
 		0;
 	t113_de_update(rtmixid);	/* Update registers */
+}
+
+void hardware_ltdc_main_set(int rtmixid, uintptr_t p1)
+{
+	hardware_ltdc_main_set_vi(rtmixid, p1);	// VI
+	//hardware_ltdc_main_set_ui(rtmixid, p1);	// UI
 }
 
 /* Set frame buffer address. No waiting for VSYNC. */
