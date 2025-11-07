@@ -7984,7 +7984,7 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 }
 
 /* set visible buffer start. Wait VSYNC. */
-void hardware_ltdc_main_set_vi(int rtmixid, uintptr_t p1)
+static void hardware_ltdc_main_set_vi(int rtmixid, uintptr_t p1)
 {
 	const int vich = 1;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
@@ -8000,7 +8000,7 @@ void hardware_ltdc_main_set_vi(int rtmixid, uintptr_t p1)
 	t113_de_update(rtmixid);	/* Update registers */
 }
 
-void hardware_ltdc_main_set_ui(int rtmixid, uintptr_t p1)
+static void hardware_ltdc_main_set_ui(int rtmixid, uintptr_t p1)
 {
 	const int uich = 1;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
@@ -8018,12 +8018,12 @@ void hardware_ltdc_main_set_ui(int rtmixid, uintptr_t p1)
 
 void hardware_ltdc_main_set(int rtmixid, uintptr_t p1)
 {
-	hardware_ltdc_main_set_vi(rtmixid, p1);
-	//hardware_ltdc_main_set_ui(rtmixid, p1);
+	hardware_ltdc_main_set_vi(rtmixid, p1);	// VI
+	//hardware_ltdc_main_set_ui(rtmixid, p1);	// UI
 }
 
 /* Set frame buffer address. No waiting for VSYNC. */
-void hardware_ltdc_main_set_no_vsync_ui(int rtmixid, uintptr_t p1)
+static void hardware_ltdc_main_set_no_vsync_ui(int rtmixid, uintptr_t p1)
 {
 	const int uich = 1;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
@@ -8040,7 +8040,7 @@ void hardware_ltdc_main_set_no_vsync_ui(int rtmixid, uintptr_t p1)
 }
 
 /* Set frame buffer address. No waiting for VSYNC. */
-void hardware_ltdc_main_set_no_vsync_vi(int rtmixid, uintptr_t p1)
+static void hardware_ltdc_main_set_no_vsync_vi(int rtmixid, uintptr_t p1)
 {
 	const int vich = 1;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
