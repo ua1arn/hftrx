@@ -834,7 +834,7 @@ void hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 	(void) vdc->GR3_UPDATE;
 }
 
-/* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Set frame buffer address. No waiting for VSYNC. */
 void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 	struct st_vdc5 * const vdc = & VDC50;
@@ -880,7 +880,7 @@ static void hardware_ltdc_vsync(int rtmixid)
 }
 
 /* set visible buffer start. Wait VSYNC. */
-/* Set MAIN frame buffer address. Wait for VSYNC. */
+/* Set frame buffer address. Wait for VSYNC. */
 void hardware_ltdc_main_set(int rtmixid, uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
@@ -892,7 +892,7 @@ void hardware_ltdc_main_set(int rtmixid, uintptr_t p)
 	hardware_ltdc_vsync(rtmixid);	/* ожидаем начало кадра */
 }
 
-/* Set MAIN frame buffer address. Waiting for VSYNC. */
+/* Set frame buffer address. Waiting for VSYNC. */
 void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
 	ASSERT(layer2 == 0);
@@ -1618,7 +1618,7 @@ void hardware_ltdc_L8_palette(void)
 }
 
 
-/* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Set frame buffer address. No waiting for VSYNC. */
 void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
@@ -1650,7 +1650,7 @@ static void hardware_ltdc_vsync(int rtmixid)
 		;
 }
 
-/* Set MAIN frame buffer address. Wait for VSYNC. */
+/* Set frame buffer address. Wait for VSYNC. */
 void hardware_ltdc_main_set(int rtmixid, uintptr_t p)
 {
 	LAYER_MAIN->CFBAR = p;
@@ -1662,7 +1662,7 @@ void hardware_ltdc_main_set(int rtmixid, uintptr_t p)
 	hardware_ltdc_vsync(rtmixid);
 }
 
-/* Set MAIN frame buffer address. Waiting for VSYNC. */
+/* Set frame buffer address. Waiting for VSYNC. */
 void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
 	ASSERT(layer2 == 0);
@@ -1683,7 +1683,7 @@ void hardware_ltdc_L8_palette(void)
 {
 }
 
-/* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Set frame buffer address. No waiting for VSYNC. */
 void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 	uint32_t size;
@@ -1691,7 +1691,7 @@ void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 	memcpy(linux_fb, (uint32_t *) addr, size);
 }
 
-/* Set MAIN frame buffer address. */
+/* Set frame buffer address. */
 void hardware_ltdc_main_set(int rtmixid, uintptr_t addr)
 {
 	uint32_t size;
@@ -1716,13 +1716,13 @@ void hardware_ltdc_L8_palette(void)
 {
 }
 
-/* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Set frame buffer address. No waiting for VSYNC. */
 void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 	sdl2_render_update(addr);
 }
 
-/* Set MAIN frame buffer address. */
+/* Set frame buffer address. */
 void hardware_ltdc_main_set(int rtmixid, uintptr_t addr)
 {
 	sdl2_render_update(addr);
@@ -1770,13 +1770,13 @@ void hardware_ltdc_L8_palette(void)
 {
 }
 
-/* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Set frame buffer address. No waiting for VSYNC. */
 void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
 }
 
-/* Set MAIN frame buffer address. */
+/* Set frame buffer address. */
 void hardware_ltdc_main_set(int rtmixid, uintptr_t addr)
 {
 	(void) rtmixid;
@@ -1788,7 +1788,7 @@ static void hardware_ltdc_vsync(int rtmixid)
 {
 }
 
-/* Set MAIN frame buffer address. Waiting for VSYNC. */
+/* Set frame buffer address. Waiting for VSYNC. */
 void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
 	ASSERT(layer2 == 0);
@@ -7481,8 +7481,6 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	DE_UIS_TypeDef * const uis = de3_getuis(rtmixid, 1);
 	if (uis == NULL)
 		return;
-//	memset32(uis, 0xFFFFFFFF, 0x1000);
-//	printhex32((uintptr_t) uis, uis, 0x1000);
 	if (vdmodeDESIGN->width == vdmodeHDMI->width && vdmodeDESIGN->height == vdmodeHDMI->height)
 	{
 		uis->UIS_CTRL_REG = 0;	// EN Video Scaler Unit disable
@@ -7499,6 +7497,9 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	uis->UIS_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
 	uis->UIS_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
 
+//	memset32(uis, 0xFFFFFFFF, 0x1000);
+//	printhex32((uintptr_t) uis, uis, 0x1000);	// вызывает сбой цветов на HDMI
+
 	uis->UIS_OUTSIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
 
 	uis->UIS_Y_INSIZE_REG = APPDIMS_SIZE;	// source size
@@ -7511,10 +7512,10 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 
 	for (int n = 0; n < 64; n ++)
 	{
-		// предварительные попытки
-		uis->UIS_Y_HCOEF0_REGN [n] = 0x40000000;	// 0x200
-		uis->UIS_Y_VCOEF_REGN [n] = 0x40000000;	// 0x400
-		uis->UIS_Y_HCOEF0_REGN [n] = 0x40000000;	// 0x600
+		// предварительные попытки назвать
+		uis->UIS_Y_HCOEF0_REGN [n] = 1*0x40000000;	// 0x200
+		uis->UIS_Y_VCOEF_REGN [n] = 1*0x40000000;	// 0x400
+		uis->UIS_C_HCOEF0_REGN [n] = 1*0x40000000;	// 0x600
 	}
 
 	uis->UIS_GLOBAL_ALPHA_REG = 0x00;
@@ -7884,21 +7885,20 @@ static void hardware_ltdc_set_format(int rtmixid, const videomode_t * vdmode, vo
 
 	// проверка различных scalers
 #if 1
+	// Use VI scaler
 	h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
 
-//#if CPUSTYLE_T507 || CPUSTYLE_H616
-//	t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode);
-//#elif CPUSTYLE_T113 || CPUSTYLE_F133
-//	t113_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode);	// tested
-//#else
-//	#warning NO UI scaler
-//#endif
 
 #else
-	// On T507 defectiveimafe
-	// On H3 - HSUB=1 VSUB=1 IS_DE3=0 or IS_DE3=1 - work
-	// On A64
-	t113_vi_scaler_setup(rtmixid, get_videomode_DESIGN(), vdmode);
+	// Use UI scaler
+	#if CPUSTYLE_T507 || CPUSTYLE_H616
+		t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode);
+	#elif CPUSTYLE_T113 || CPUSTYLE_F133
+		t113_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode);	// tested
+	#else
+		#warning NO UI scaler
+	#endif
+
 #endif
 
 	// save settings
@@ -7957,7 +7957,7 @@ hardware_ltdc_deinitialize(void)
 {
 }
 
-/* Set MAIN frame buffer address. Waiting for VSYNC. */
+/* Set frame buffer address. Waiting for VSYNC. */
 void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
@@ -8001,7 +8001,7 @@ void hardware_ltdc_main_set(int rtmixid, uintptr_t p1)
 	t113_de_update(rtmixid);	/* Update registers */
 }
 
-/* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Set frame buffer address. No waiting for VSYNC. */
 void hardware_ltdc_main_set_no_vsync_ui(int rtmixid, uintptr_t p1)
 {
 	const int uich = 1;
@@ -8018,7 +8018,7 @@ void hardware_ltdc_main_set_no_vsync_ui(int rtmixid, uintptr_t p1)
 	t113_de_update(rtmixid);	/* Update registers */
 }
 
-/* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Set frame buffer address. No waiting for VSYNC. */
 void hardware_ltdc_main_set_no_vsync_vi(int rtmixid, uintptr_t p1)
 {
 	const int vich = 1;
@@ -8034,11 +8034,12 @@ void hardware_ltdc_main_set_no_vsync_vi(int rtmixid, uintptr_t p1)
 		0;
 	t113_de_update(rtmixid);	/* Update registers */
 }
-/* Set MAIN frame buffer address. No waiting for VSYNC. */
+
+/* Set frame buffer address. No waiting for VSYNC. */
 void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t p1)
 {
-	hardware_ltdc_main_set_no_vsync_vi(rtmixid, p1);
-	//hardware_ltdc_main_set_no_vsync_ui(rtmixid, p1);
+	hardware_ltdc_main_set_no_vsync_vi(rtmixid, p1);	// VI
+	//hardware_ltdc_main_set_no_vsync_ui(rtmixid, p1);	// UI
 }
 
 /* Palette reload */
@@ -8053,7 +8054,7 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 {
 }
 
-/* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Set frame buffer address. No waiting for VSYNC. */
 void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t addr)
 {
 }
@@ -8063,7 +8064,7 @@ void hardware_ltdc_main_set(int rtmixid, uintptr_t p)
 {
 }
 
-/* Set MAIN frame buffer address. Waiting for VSYNC. */
+/* Set frame buffer address. Waiting for VSYNC. */
 void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
 }
