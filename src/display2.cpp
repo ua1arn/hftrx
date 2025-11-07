@@ -3819,7 +3819,7 @@ static void display2_currlevelA6(const gxdrawb_t * db,
 
 		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 1, UINT8_MAX, 1, & dbstylev_1statevoltage);
 		// last character
-		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev);
+		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev_1statevoltage);
 
 	#else /* WITHCURRLEVEL_ACS712_30A */
 		// dd.d - 6 places (without "A")
@@ -4194,7 +4194,7 @@ static void display_time5(const gxdrawb_t * db,
 		);
 
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, colors_1stateBlue, 0, xspan, yspan);
+	display2_text(db, x, y, labels, & dbstylev_1stateBlue, 0, xspan, yspan);
 
 #endif /* defined (RTC1_TYPE) */
 }
@@ -4289,7 +4289,7 @@ static void display2_datetime12(const gxdrawb_t * db,
 		);
 
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, colors_1stateBlue, 0, xspan, yspan);
+	display2_text(db, x, y, labels, & dbstylev_1stateBlue, 0, xspan, yspan);
 #endif /* defined (RTC1_TYPE) */
 }
 
