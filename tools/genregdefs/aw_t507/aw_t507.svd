@@ -5065,7 +5065,7 @@
    <register>
     <name>UIS_Y_INSIZE_REG</name>
     <displayName>UIS_Y_INSIZE_REG</displayName>
-    <description>Input size register</description>
+    <description>Y Channel Input size register</description>
     <addressOffset>0x080</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -5074,7 +5074,7 @@
    <register>
     <name>UIS_Y_HSTEP_REG</name>
     <displayName>UIS_Y_HSTEP_REG</displayName>
-    <description>Horizontal step register</description>
+    <description>Y Channel Horizontal step register</description>
     <addressOffset>0x088</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -5083,7 +5083,7 @@
    <register>
     <name>UIS_Y_VSTEP_REG</name>
     <displayName>UIS_Y_VSTEP_REG</displayName>
-    <description>Vertical step register</description>
+    <description>Y Channel Vertical step register</description>
     <addressOffset>0x08C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -5092,7 +5092,7 @@
    <register>
     <name>UIS_Y_HPHASE_REG</name>
     <displayName>UIS_Y_HPHASE_REG</displayName>
-    <description>Horizontal initial phase register</description>
+    <description>Y Channel Horizontal initial phase register</description>
     <addressOffset>0x090</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -5101,7 +5101,7 @@
    <register>
     <name>UIS_Y_VPHASE_REG</name>
     <displayName>UIS_Y_VPHASE_REG</displayName>
-    <description>Vertical initial phase 0 register</description>
+    <description>Y Channel Vertical initial phase 0 register</description>
     <addressOffset>0x098</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -5110,7 +5110,7 @@
    <register>
     <name>UIS_C_INSIZE_REG</name>
     <displayName>UIS_C_INSIZE_REG</displayName>
-    <description>Input size register</description>
+    <description>C Channel Input size register</description>
     <addressOffset>0x0C0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -5119,7 +5119,7 @@
    <register>
     <name>UIS_C_HSTEP_REG</name>
     <displayName>UIS_C_HSTEP_REG</displayName>
-    <description>Horizontal step register</description>
+    <description>C Channel Horizontal step register</description>
     <addressOffset>0x0C8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -5128,7 +5128,7 @@
    <register>
     <name>UIS_C_VSTEP_REG</name>
     <displayName>UIS_C_VSTEP_REG</displayName>
-    <description>Vertical step register</description>
+    <description>C Channel Vertical step register</description>
     <addressOffset>0x0CC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -5137,7 +5137,7 @@
    <register>
     <name>UIS_C_HPHASE_REG</name>
     <displayName>UIS_C_HPHASE_REG</displayName>
-    <description>Horizontal initial phase register</description>
+    <description>C Channel Horizontal initial phase register</description>
     <addressOffset>0x0D0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -5146,7 +5146,7 @@
    <register>
     <name>UIS_C_VPHASE_REG</name>
     <displayName>UIS_C_VPHASE_REG</displayName>
-    <description>Vertical initial phase 0 register</description>
+    <description>C Channel Vertical initial phase 0 register</description>
     <addressOffset>0x0D8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -5158,7 +5158,7 @@
     <register>
      <name>UIS_Y_HCOEF0_REGN</name>
      <displayName>UIS_Y_HCOEF0_REGN</displayName>
-     <description>0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1))</description>
+     <description>0x200+N*4 Y Channel Horizontal Filter Coefficient0 Register N N = M 1))</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -5172,7 +5172,7 @@
     <register>
      <name>UIS_Y_VCOEF_REGN</name>
      <displayName>UIS_Y_VCOEF_REGN</displayName>
-     <description>0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1))</description>
+     <description>0x400+N*4 Y Channel Vertical Filter Coefficient Register N N = M 1))</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -5186,7 +5186,7 @@
     <register>
      <name>UIS_C_HCOEF0_REGN</name>
      <displayName>UIS_C_HCOEF0_REGN</displayName>
-     <description>0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1))</description>
+     <description>0x600+N*4 C Channel Horizontal Filter Coefficient0 Register N N = M 1))</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>

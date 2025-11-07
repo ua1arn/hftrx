@@ -1152,27 +1152,27 @@ typedef struct DE_UIS_Type
     __IO uint32_t UIS_OUTSIZE_REG;                    /*!< Offset 0x040 Output size register */
     __IO uint32_t UIS_GLOBAL_ALPHA_REG;               /*!< Offset 0x044 VSU Output Global Alpha Register */
          RESERVED(0x048[0x0080 - 0x0048], uint8_t)
-    __IO uint32_t UIS_Y_INSIZE_REG;                   /*!< Offset 0x080 Input size register */
+    __IO uint32_t UIS_Y_INSIZE_REG;                   /*!< Offset 0x080 Y Channel Input size register */
          RESERVED(0x084[0x0088 - 0x0084], uint8_t)
-    __IO uint32_t UIS_Y_HSTEP_REG;                    /*!< Offset 0x088 Horizontal step register */
-    __IO uint32_t UIS_Y_VSTEP_REG;                    /*!< Offset 0x08C Vertical step register */
-    __IO uint32_t UIS_Y_HPHASE_REG;                   /*!< Offset 0x090 Horizontal initial phase register */
+    __IO uint32_t UIS_Y_HSTEP_REG;                    /*!< Offset 0x088 Y Channel Horizontal step register */
+    __IO uint32_t UIS_Y_VSTEP_REG;                    /*!< Offset 0x08C Y Channel Vertical step register */
+    __IO uint32_t UIS_Y_HPHASE_REG;                   /*!< Offset 0x090 Y Channel Horizontal initial phase register */
          RESERVED(0x094[0x0098 - 0x0094], uint8_t)
-    __IO uint32_t UIS_Y_VPHASE_REG;                   /*!< Offset 0x098 Vertical initial phase 0 register */
+    __IO uint32_t UIS_Y_VPHASE_REG;                   /*!< Offset 0x098 Y Channel Vertical initial phase 0 register */
          RESERVED(0x09C[0x00C0 - 0x009C], uint8_t)
-    __IO uint32_t UIS_C_INSIZE_REG;                   /*!< Offset 0x0C0 Input size register */
+    __IO uint32_t UIS_C_INSIZE_REG;                   /*!< Offset 0x0C0 C Channel Input size register */
          RESERVED(0x0C4[0x00C8 - 0x00C4], uint8_t)
-    __IO uint32_t UIS_C_HSTEP_REG;                    /*!< Offset 0x0C8 Horizontal step register */
-    __IO uint32_t UIS_C_VSTEP_REG;                    /*!< Offset 0x0CC Vertical step register */
-    __IO uint32_t UIS_C_HPHASE_REG;                   /*!< Offset 0x0D0 Horizontal initial phase register */
+    __IO uint32_t UIS_C_HSTEP_REG;                    /*!< Offset 0x0C8 C Channel Horizontal step register */
+    __IO uint32_t UIS_C_VSTEP_REG;                    /*!< Offset 0x0CC C Channel Vertical step register */
+    __IO uint32_t UIS_C_HPHASE_REG;                   /*!< Offset 0x0D0 C Channel Horizontal initial phase register */
          RESERVED(0x0D4[0x00D8 - 0x00D4], uint8_t)
-    __IO uint32_t UIS_C_VPHASE_REG;                   /*!< Offset 0x0D8 Vertical initial phase 0 register */
+    __IO uint32_t UIS_C_VPHASE_REG;                   /*!< Offset 0x0D8 C Channel Vertical initial phase 0 register */
          RESERVED(0x0DC[0x0200 - 0x00DC], uint8_t)
-    __IO uint32_t UIS_Y_HCOEF0_REGN [0x040];          /*!< Offset 0x200 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+    __IO uint32_t UIS_Y_HCOEF0_REGN [0x040];          /*!< Offset 0x200 0x200+N*4 Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
          RESERVED(0x300[0x0400 - 0x0300], uint8_t)
-    __IO uint32_t UIS_Y_VCOEF_REGN [0x040];           /*!< Offset 0x400 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1)) */
+    __IO uint32_t UIS_Y_VCOEF_REGN [0x040];           /*!< Offset 0x400 0x400+N*4 Y Channel Vertical Filter Coefficient Register N N = M 1)) */
          RESERVED(0x500[0x0600 - 0x0500], uint8_t)
-    __IO uint32_t UIS_C_HCOEF0_REGN [0x040];          /*!< Offset 0x600 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+    __IO uint32_t UIS_C_HCOEF0_REGN [0x040];          /*!< Offset 0x600 0x600+N*4 C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
 } DE_UIS_TypeDef; /* size of structure = 0x700 */
 /*
  * @brief DE_VI

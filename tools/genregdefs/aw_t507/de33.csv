@@ -208,21 +208,21 @@
 #regdef; UIS_OUTSIZE_REG; 0x040; Output size register
 #regdef; UIS_GLOBAL_ALPHA_REG; 0x0044; VSU Output Global Alpha Register
 
-#regdef; UIS_Y_INSIZE_REG; 0x080; Input size register
-#regdef; UIS_Y_HSTEP_REG; 0x088; Horizontal step register
-#regdef; UIS_Y_VSTEP_REG; 0x08C; Vertical step register
-#regdef; UIS_Y_HPHASE_REG; 0x090; Horizontal initial phase register
-#regdef; UIS_Y_VPHASE_REG; 0x098; Vertical initial phase 0 register
+#regdef; UIS_Y_INSIZE_REG; 0x080; Y Channel Input size register
+#regdef; UIS_Y_HSTEP_REG; 0x088; Y Channel Horizontal step register
+#regdef; UIS_Y_VSTEP_REG; 0x08C; Y Channel Vertical step register
+#regdef; UIS_Y_HPHASE_REG; 0x090; Y Channel Horizontal initial phase register
+#regdef; UIS_Y_VPHASE_REG; 0x098; Y Channel Vertical initial phase 0 register
 
-#regdef; UIS_C_INSIZE_REG; 0x0C0; Input size register
-#regdef; UIS_C_HSTEP_REG; 0x0C8; Horizontal step register
-#regdef; UIS_C_VSTEP_REG; 0x0CC; Vertical step register
-#regdef; UIS_C_HPHASE_REG; 0x0D0; Horizontal initial phase register
-#regdef; UIS_C_VPHASE_REG; 0x0D8; Vertical initial phase 0 register
+#regdef; UIS_C_INSIZE_REG; 0x0C0; C Channel Input size register
+#regdef; UIS_C_HSTEP_REG; 0x0C8; C Channel Horizontal step register
+#regdef; UIS_C_VSTEP_REG; 0x0CC; C Channel Vertical step register
+#regdef; UIS_C_HPHASE_REG; 0x0D0; C Channel Horizontal initial phase register
+#regdef; UIS_C_VPHASE_REG; 0x0D8; C Channel Vertical initial phase 0 register
 
-#regdef; UIS_Y_HCOEF0_REGN; 0x200 64; 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1))
-#regdef; UIS_Y_VCOEF_REGN; 0x400 64; 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1))
-#regdef; UIS_C_HCOEF0_REGN; 0x600 64; 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1))
+#regdef; UIS_Y_HCOEF0_REGN; 0x200 64; 0x200+N*4 Y Channel Horizontal Filter Coefficient0 Register N N = M 1))
+#regdef; UIS_Y_VCOEF_REGN; 0x400 64; 0x400+N*4 Y Channel Vertical Filter Coefficient Register N N = M 1))
+#regdef; UIS_C_HCOEF0_REGN; 0x600 64; 0x600+N*4 C Channel Horizontal Filter Coefficient0 Register N N = M 1))
 
 #typeend;
 
