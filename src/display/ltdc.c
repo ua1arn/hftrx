@@ -7936,22 +7936,15 @@ static void hardware_ltdc_set_format(int rtmixid, const videomode_t * vdmode, vo
 	//TP();
 	/* эта инициализация после корректного соединения с работающим TCON */
 	t113_de_bld_initialize(rtmixid, vdmode, defcolor);	// RED
-	//TP();
-	const int usevsu = 1;
-	// проверка различных scalers
+
 #if CPUSTYLE_T507 || CPUSTYLE_H616
-	// Use VI scaler
-	if (usevsu)
-		t507_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
-	else
-		t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode);
+	t507_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
+	t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	if (usevsu)
-		t113_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
-	else
-		t113_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode);
+	t113_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
+	t113_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode);
 
 #else
 	#warning NO UI scaler
