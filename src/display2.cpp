@@ -2310,15 +2310,19 @@ static void display_freqXbig_a(const gxdrawb_t * db,
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	if (pctx != NULL && pctx->type == DCTX_FREQ)
+	if (0)
 	{
+
+	}
 #if WITHDIRECTFREQENER
+	else if (pctx != NULL && pctx->type == DCTX_FREQ)
+	{
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
 
 		display_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 0, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
-#endif /* WITHDIRECTFREQENER */
 	}
+#endif /* WITHDIRECTFREQENER */
 	else
 	{
 		enum { blinkpos = 255, blinkstate = 0 };
@@ -2360,20 +2364,24 @@ static void display2_freqX_a(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	if (pctx != NULL && pctx->type == DCTX_FREQ)
+	if (0)
 	{
+
+	}
 #if WITHDIRECTFREQENER
+	else if (pctx != NULL && pctx->type == DCTX_FREQ)
+	{
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 	#if WITHPRERENDER
-		rendered_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
+		rendered_value_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
 	#else /* WITHPRERENDER */
-		display_value_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
+		display_value_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	#endif /* WITHPRERENDER */
-#endif /* WITHDIRECTFREQENER */
 	}
+#endif /* WITHDIRECTFREQENER */
 	else
 	{
-		enum { blinkpos = 255, blinkstate = 0 };
+		enum { blinkpos = UINT8_MAX, blinkstate = 0 };
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
@@ -2418,17 +2426,21 @@ static void display_freqchr_a(
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
 
-	if (pctx != NULL && pctx->type == DCTX_FREQ)
+	if (0)
 	{
+
+	}
 #if WITHDIRECTFREQENER
+	else if (pctx != NULL && pctx->type == DCTX_FREQ)
+	{
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
 		display_value_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
-#endif /* WITHDIRECTFREQENER */
 	}
+#endif /* WITHDIRECTFREQENER */
 	else
 	{
-		enum { blinkpos = 255, blinkstate = 0 };
+		enum { blinkpos = UINT8_MAX, blinkstate = 0 };
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
@@ -2452,18 +2464,21 @@ static void display_freqchr_b(const gxdrawb_t * db,
 	uint_fast8_t state;
 	hamradio_get_vfomode3_value(& state);	// state - признак активного SPLIT (0/1)
 	const gxstyle_t * const dbstylep = & dbstylev_2freqB [state];
-
-	if (pctx != NULL && pctx->type == DCTX_FREQ)
+	if (0)
 	{
+
+	}
 #if WITHDIRECTFREQENER
+	else if (pctx != NULL && pctx->type == DCTX_FREQ)
+	{
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
 		display_value_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, UINT8_MAX, rj, efp->blinkpos + 1, efp->blinkstate, 1, dbstylep);	// отрисовываем верхнюю часть строки
-#endif /* WITHDIRECTFREQENER */
 	}
+#endif /* WITHDIRECTFREQENER */
 	else
 	{
-		enum { blinkpos = 255, blinkstate = 0 };
+		enum { blinkpos = UINT8_MAX, blinkstate = 0 };
 
 		const uint_fast32_t freq = hamradio_get_freq_b();
 
