@@ -2325,7 +2325,7 @@ static void display_freqXbig_a(const gxdrawb_t * db,
 #endif /* WITHDIRECTFREQENER */
 	else
 	{
-		enum { blinkpos = 255, blinkstate = 0 };
+		enum { blinkpos = UINT8_MAX, blinkstate = 0 };
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
