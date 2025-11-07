@@ -3619,11 +3619,8 @@ static void display_att_tx3(const gxdrawb_t * db,
 {
 	const uint_fast8_t tx = hamradio_get_tx();
 	const char * text = tx ? PSTR("TX  ") : hamradio_get_att_value_P();
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
 
-	gxstyle_textcolor(& dbstylev, DSGN_LABELTEXT, DSGN_LABELBACK);
-	display_text(db, x, y, text, xspan, yspan, & dbstylev);
+	display_text(db, x, y, text, xspan, yspan, & dbstylev_1state);
 }
 
 // RX agc
@@ -4083,8 +4080,6 @@ static void display2_freqdelta8(const gxdrawb_t * db,
 		)
 {
 #if WITHINTEGRATEDDSP
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
 	int_fast32_t deltaf;
 	const uint_fast8_t f = dsp_getfreqdelta10(& deltaf, 0);		/* Получить значение отклонения частоты с точностью 0.1 герца для приемника A */
 	deltaf = - deltaf;	// ошибка по частоте преобразуется в расстройку
@@ -4136,11 +4131,7 @@ static void display_amfmhighcut4(const gxdrawb_t * db,
 #if WITHAMHIGHKBDADJ
 	uint_fast8_t flag;
 	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
-
-	gxstyle_textcolor(& dbstylev, colors_2state [flag].fg, colors_2state [flag].bg);
-	display_value_small(db, x, y, xspan, yspan, v, 3, 2, UINT8_MAX, 0, & dbstylev);
+	display_value_small(db, x, y, xspan, yspan, v, 3, 2, UINT8_MAX, 0, & colors_2state [flag]);
 #endif /* WITHAMHIGHKBDADJ */
 }
 
@@ -4157,11 +4148,7 @@ static void display_amfmhighcut5(const gxdrawb_t * db,
 #if WITHAMHIGHKBDADJ
 	uint_fast8_t flag;
 	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
-
-	gxstyle_textcolor(& dbstylev, colors_2state [flag].fg, colors_2state [flag].bg);
-	display_value_small(db, x, y, xspan, yspan, v, 4, 2, UINT8_MAX, 0, & dbstylev);
+	display_value_small(db, x, y, xspan, yspan, v, 4, 2, UINT8_MAX, 0, & dbstylev_2state [flag]);
 #endif /* WITHAMHIGHKBDADJ */
 }
 
