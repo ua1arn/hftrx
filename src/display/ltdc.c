@@ -7984,21 +7984,42 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 }
 
 /* set visible buffer start. Wait VSYNC. */
-void hardware_ltdc_main_set(int rtmixid, uintptr_t p1)
+void hardware_ltdc_main_set_vi(int rtmixid, uintptr_t p1)
 {
+	const int vich = 1;
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld == NULL)
 		return;
-	t113_de_set_address_vi(rtmixid, p1, 1);
-	//t113_de_set_address_ui(rtmixid, p1, 1);
+	t113_de_set_address_vi(rtmixid, p1, vich);
 
 	bld->BLD_EN_COLOR_CTL =
-			((de3_getvi(rtmixid, 1) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
-			//((de3_getui(rtmixid, 1) != NULL) * (p1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
+			((de3_getvi(rtmixid, vich) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, vich))	| // pipe0 enable - from VI1
 			0;
 
 	hardware_ltdc_vsync(rtmixid);		/* ожидаем начало кадра */
 	t113_de_update(rtmixid);	/* Update registers */
+}
+
+void hardware_ltdc_main_set_ui(int rtmixid, uintptr_t p1)
+{
+	const int uich = 1;
+	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
+	if (bld == NULL)
+		return;
+	t113_de_set_address_ui(rtmixid, p1, uich);
+
+	bld->BLD_EN_COLOR_CTL =
+			((de3_getui(rtmixid, uich) != NULL) * (p1 != 0) * UI_POS_BIT(rtmixid, uich))	| // pipe1 enable - from UI1
+			0;
+
+	hardware_ltdc_vsync(rtmixid);		/* ожидаем начало кадра */
+	t113_de_update(rtmixid);	/* Update registers */
+}
+
+void hardware_ltdc_main_set(int rtmixid, uintptr_t p1)
+{
+	hardware_ltdc_main_set_vi(rtmixid, p1);
+	//hardware_ltdc_main_set_ui(rtmixid, p1);
 }
 
 /* Set frame buffer address. No waiting for VSYNC. */

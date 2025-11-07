@@ -2071,7 +2071,6 @@ void display_hardware_initialize(void)
 		hardware_ltdc_initialize(get_videomode_LCD());
 	}
 
-	//hardware_ltdc_main_set(RTMIXIDLCD, (uintptr_t) colmain_fb_draw());
 	hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */
 
