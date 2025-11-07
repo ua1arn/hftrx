@@ -7575,7 +7575,7 @@ static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 #endif /* CPUSTYLE_T507 || CPUSTYLE_H616 */
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
-// Tested
+
 static void t113_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
 {
 	DE_UIS_TypeDef * const uis = de3_getuis(rtmixid, 1);
