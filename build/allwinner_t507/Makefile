@@ -270,7 +270,7 @@ ddrinit_t507_:
 	$(XFEL) ddr lpddr4
 	busybox sleep 1s
 
-ddrinit_t507: ddrinit_t507
+ddrinit_t507: ddrinit_t507.bin
 	$(XFEL) write 0x00028000 ddrinit_t507.bin
 	$(XFEL) exec $(SystemDRAMInit)
 
