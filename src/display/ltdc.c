@@ -7510,6 +7510,42 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 		;
 }
 
+// Tested
+static void t113_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
+{
+	DE_UIS_TypeDef * const uis = de3_getuis(rtmixid, 1);
+	if (uis == NULL)
+		return;
+
+	//printhex32((uintptr_t) uis, uis, 0x300);
+	if (vdmodeDESIGN->width == vdmodeHDMI->width && vdmodeDESIGN->height == vdmodeHDMI->height)
+	{
+		uis->UIS_CTRL_REG = 0;	// EN Video Scaler Unit disable
+		return;
+	}
+
+	enum { FRAСTWIDTH = 18 };
+	const unsigned HEIGHT = vdmodeHDMI->height;	/* height */
+	const unsigned WIDTH = vdmodeHDMI->width;	/* width */
+
+	uis->UIS_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
+	uis->UIS_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+
+	uis->UIS_OUTSIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	uis->UIS_INSIZE_REG = ((vdmodeDESIGN->height - 1) << 16) | (vdmodeDESIGN->width - 1);	// source size
+	uis->UIS_HSTEP_REG = (((uint_fast64_t) vdmodeDESIGN->width << FRAСTWIDTH) / WIDTH) << 2;
+	uis->UIS_VSTEP_REG = (((uint_fast64_t) vdmodeDESIGN->height << FRAСTWIDTH) / HEIGHT) << 2;
+
+	for (int n = 0; n < 16; n ++)
+	{
+		uis->UIS_HCOEF_REGN [n] = 0x40404040;	// 0x200
+	}
+
+	uis->UIS_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
+	while ((uis->UIS_CTRL_REG & (UINT32_C(1) << 4)) != 0)
+		;
+}
+
 static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
 {
 	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid, 1);
@@ -7827,7 +7863,14 @@ static void hardware_ltdc_set_format(int rtmixid, const videomode_t * vdmode, vo
 	// проверка различных scalers
 #if 1
 	h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode);
-	//t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode);
+
+//#if CPUSTYLE_T507 || CPUSTYLE_H616
+//	t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode);
+//#elif CPUSTYLE_T113 || CPUSTYLE_F133
+//	t113_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode);	// tested
+//#else
+//	#warning NO UI scaler
+//#endif
 
 #else
 	// On T507 defectiveimafe
@@ -7973,6 +8016,7 @@ void hardware_ltdc_main_set_no_vsync_vi(int rtmixid, uintptr_t p1)
 void hardware_ltdc_main_set_no_vsync(int rtmixid, uintptr_t p1)
 {
 	hardware_ltdc_main_set_no_vsync_vi(rtmixid, p1);
+	//hardware_ltdc_main_set_no_vsync_ui(rtmixid, p1);
 }
 
 /* Palette reload */
