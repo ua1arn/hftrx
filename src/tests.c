@@ -11451,12 +11451,6 @@ void hightests(void)
 #endif
 #if 0 && LCDMODE_LTDC
 	{
-#ifdef RTMIXIDTV
-		int rtmixid = RTMIXIDTV;
-#endif
-#ifdef RTMIXIDLCD
-		int rtmixid = RTMIXIDLCD;
-#endif
 		enum { picy = 110, picx = 150 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
@@ -11493,7 +11487,12 @@ void hightests(void)
 //		dcache_clean_invalidate((uintptr_t) layer1, sizeof layer1);
 //		dcache_clean_invalidate((uintptr_t) fbpic, sizeof fbpic);
 
-		hardware_ltdc_main_set4(rtmixid, (uintptr_t) layer0_a, (uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
+	#ifdef RTMIXIDTV
+		hardware_ltdc_main_set4(RTMIXIDTV, (uintptr_t) layer0_a, (uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
+	#endif
+	#ifdef RTMIXIDLCD
+		hardware_ltdc_main_set4(RTMIXIDLCD, (uintptr_t) layer0_a, (uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
+	#endif
 
 		/* Тестовое изображение для заполнения с color key (с фоном в этом цвете) */
 		COLORPIP_T keycolor = COLORPIP_KEY;
@@ -11682,11 +11681,16 @@ void hightests(void)
 			colpip_fillrect(drawlayer, x0 + xpos, y, 1, h, TFTALPHA(bgalpha, COLORPIP_WHITE));
 			dcache_clean_invalidate(drawlayer->cachebase, drawlayer->cachesize);
 
-			hardware_ltdc_main_set4(rtmixid, (uintptr_t) drawlayer->buffer, 1*(uintptr_t) dbv_layer1.buffer, 0*(uintptr_t) dbv_layer2.buffer, 0*(uintptr_t) dbv_layer3.buffer);
+		#ifdef RTMIXIDTV
+			hardware_ltdc_main_set4(RTMIXIDTV, (uintptr_t) drawlayer->buffer, 1*(uintptr_t) dbv_layer1.buffer, 0*(uintptr_t) dbv_layer2.buffer, 0*(uintptr_t) dbv_layer3.buffer);
+		#endif
+		#ifdef RTMIXIDLCD
+			hardware_ltdc_main_set4(RTMIXIDLCD, (uintptr_t) drawlayer->buffer, 1*(uintptr_t) dbv_layer1.buffer, 0*(uintptr_t) dbv_layer2.buffer, 0*(uintptr_t) dbv_layer3.buffer);
+		#endif
 
 			phase = ! phase;
 			c = (c + 1) % cycles;
-			//board_dpc_processing();		// обработка отложенного вызова user mode функций
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
 		}
 		for (;;)
 		{
