@@ -1199,7 +1199,7 @@ void hardware_spi_master_initialize(void)
 	//spi->SPI_TCR |= (1u << 7);
 	SPIIO_INITIALIZE();
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 	unsigned ix = SPIHARD_IX;	// SPI0
 
 	/* Open the clock gate for SPI0 */

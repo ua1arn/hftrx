@@ -438,7 +438,7 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMNC __attribute__((section(".ramnc")))
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */

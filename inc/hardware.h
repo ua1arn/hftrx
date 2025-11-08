@@ -294,8 +294,9 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
+	// Allwinner T507/H616/H618
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define CPUSTYLE_ALLWINNER	1		/* */
 

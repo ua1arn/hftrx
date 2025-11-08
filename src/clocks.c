@@ -2945,7 +2945,7 @@ uint_fast32_t allwnr_a64_get_smhc1_freq(void)
 	}
 }
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 static void set_t507_axi_sel(unsigned sel, unsigned APBdiv, unsigned AXIdiv)
 {
@@ -5908,7 +5908,7 @@ void hardware_spi_io_delay(void)
 	}
 
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H616 || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R828)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R828)
 
 	// Таймер электронного ключа
 	void TIMER0_IRQHandler(void)
@@ -6237,7 +6237,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Enable timer control
 	PL1_SetControl(1);
 
-#elif defined (TIMER) && (CPUSTYLE_H3 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_A133  || CPUSTYLE_R828 )
+#elif defined (TIMER) && (CPUSTYLE_H3 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_A133  || CPUSTYLE_R828 )
 
 	// timebase timer
 	const unsigned ix = 1;
@@ -9942,7 +9942,7 @@ sysinit_pll_initialize(int forced)
 	allwnr_v3s_pll_initialize();
 
 
-#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T507)
 
 	{
 		// Disable SD hosts
@@ -10133,7 +10133,7 @@ void SystemCoreClockUpdate(void)
 #if (WITHDCDCFREQCTL || WITHBLPWMCTL) && ! LINUX_SUBSYSTEM
 
 //static uint_fast16_t dcdcrefdiv = 62;	/* делится частота внутреннего генератора 48 МГц */
-#if (CPUSTYLE_T507 || CPUSTYLE_H616)
+#if (CPUSTYLE_T507)
 	// Note: The working clock of PWM is from APB1 or OSC24M.
 	#define PWMTICKSFREQ (allwnr_t507_get_apb1_freq())	/* Allwinner t507 / H616 */
 
@@ -10377,7 +10377,7 @@ static const struct DCDCFREQ dcdcfreqtable [] = {
         { 51 , 53070000, 54000000, },   /* dcdc=1204705 Hz visible=no */
 };
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 /* fsync=100000000, wflwidth=96000 */
 /* number of dividers=168 83..250 */
 /* Analyze up to 50 harmonics. */
@@ -10855,7 +10855,7 @@ found:
 	void hardware_dcdcfreq_pwm_initialize(unsigned pwmch)
 	{
 		//PRINTF("hardware_dcdcfreq_pwm_initialize: pwmch=%u\n", pwmch);
-	#if CPUSTYLE_T507 || CPUSTYLE_H616
+	#if CPUSTYLE_T507
 		unsigned value;
 		const uint_fast8_t prei = calcdivider(calcdivround2(allwnr_t507_get_apb1_freq(), PWMTICKSFREQ), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
 		//PRINTF("hardware_dcdcfreq_pwm_initialize: allwnr_t113_get_apb0_freq()=%lu, prei=%u, divider=%u\n", allwnr_t113_get_apb0_freq(), prei, value);
@@ -11990,7 +11990,7 @@ hardware_elkey_timer_initialize(void)
 
 	arm_hardware_set_handler_overrealtime(TIM3_IRQn, TIM3_IRQHandler);
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507
 
 	// elkey timer
 	const unsigned ix = 0;
@@ -12072,7 +12072,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		1 * (UINT32_C(1) << 0) |	// Enables the interrupts when counting starts.
 		0;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_H3
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H3
 
 	const unsigned ix = 0;
 	unsigned value;

@@ -1803,7 +1803,7 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 #define VI_CFG_INDEX 0
 
 
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 
 // Требуется заполнение в соответствии с инициализацией DE_PORT2CHN_MUX
 
@@ -1903,7 +1903,7 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 	#define VI_LASTIX(rtmixid) 1
 	#define UI_LASTIX(rtmixid) 1	// В RT-Mixer 1 отсутствуют UI
 	/* BLD_EN_COLOR_CTL positions 8..11 */
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 	#define VI_LASTIX(rtmixid) 1
 	#define UI_LASTIX(rtmixid) 1
 	/* BLD_EN_COLOR_CTL positions 8..13 */
@@ -1966,7 +1966,7 @@ struct lcd_timing
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 	// https://github.com/RMerl/asuswrt-merlin.ng/blob/master/release/src-rt-5.04axhnd.675x/bootloaders/u-boot-2019.07/arch/arm/include/asm/arch-sunxi/display2.h#L16
 	// struct de_clk
@@ -2549,7 +2549,7 @@ static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 static DE_VSU_TypeDef * de3_getvsu(int rtmixid, int vich)
 {
 	ASSERT(vich == 1);
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 	switch (rtmixid)
 	{
 	default: return NULL;
@@ -2570,14 +2570,14 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid, int vich)
 	case 1: return DE_MIXER0_VSU1;	// VI1
 	case 2: return DE_MIXER1_VSU1;	// VI1
 	}
-#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 */
+#endif /* CPUSTYLE_T507 || CPUSTYLE_A64 */
 }
 
 // UI Scaler(UIS) provides RGB format image resizing function
 static DE_UIS_TypeDef * de3_getuis(int rtmixid, int uich)
 {
 	ASSERT(uich == 1);
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 	switch (rtmixid)
 	{
 	default: return NULL;
@@ -2598,7 +2598,7 @@ static DE_UIS_TypeDef * de3_getuis(int rtmixid, int uich)
 	case 1: return DE_MIXER0_UIS1;	// UI1 - need clarification
 	case 2: return DE_MIXER1_UIS1;	// UI1 - need clarification
 	}
-#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 */
+#endif /* CPUSTYLE_T507 || CPUSTYLE_A64 */
 	return NULL;
 }
 
@@ -2864,9 +2864,9 @@ static void t113_de_rtmix_initialize(int rtmixid)
 			(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
 			(UINT32_C(1) << 0) |		// EN RT enable/disable
 			0;
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 	glb->GLB_CLK |= (UINT32_C(1) << 0);
-#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 */
+#endif /* CPUSTYLE_T507 */
 
 	ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
 	memset32(de3_getvi(rtmixid, 1), 0, sizeof * de3_getvi(rtmixid, 1));	// Требуется на H3
@@ -3042,7 +3042,7 @@ static void hardware_de_global_initialize(void)
 //		PRINTF("DE_TOP->HCLK_GATE=%08X\n", (unsigned) DE_TOP->HCLK_GATE);
     }
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
@@ -3124,7 +3124,7 @@ static void hardware_de_initialize(int rtmixid)
 {
 #if CPUSTYLE_A64
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 	/* Global DE settings */
     const int disp = rtmixid - 1;
 
@@ -3249,7 +3249,7 @@ static void t113_tconlcd_CCU_configuration(void)
 
 #elif CPUSTYLE_A64
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
@@ -3307,7 +3307,7 @@ static void t113_tconlvds_PLL_configuration(uint_fast32_t needfreq)
 #elif CPUSTYLE_A64
 
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 	// LVDS mode
 	// The default value of PLL_VIDEO1(4X) is 1188 MHz
@@ -3345,7 +3345,7 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 
 #elif CPUSTYLE_A64
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
@@ -3602,7 +3602,7 @@ static void t113_DSI_controller_configuration(const videomode_t * vdmode)
 		DSI_DPHY->DPHY_ANA1_REG = 0x0;
 
 	}
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 #endif /* */
 }
 
@@ -3611,7 +3611,7 @@ static void t113_DSI_controller_configuration(const videomode_t * vdmode)
 static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsigned lvds_num)
 {
 #if defined (TCONLCD_PTR)
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 	// Documented as LCD_LVDS_ANA0_REG
 	//const unsigned lvds_num = 0;	/* 0: LVDS0, 1: LVDS1 */
 	// Step 5 LVDS digital logic configuration
@@ -4740,7 +4740,7 @@ static void t113_tve_CCU_configuration(const videomode_t * vdmode)
 {
 	const uint_fast32_t needfreq = 216000000;
 #if CPUSTYLE_A64
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 	//	CLK_SRC_SEL
 	//	Clock Source Select
@@ -4926,7 +4926,7 @@ static void write32(uintptr_t addr, uint32_t value)
 //	PRINTF("de_vsu_base(1)=0x%08X\n", T113_DE_MUX_VSU+T113_DE_BASE_N(1));
 //	PRINTF("de_vsu_base(2)=0x%08X\n", T113_DE_MUX_VSU+T113_DE_BASE_N(2));
 
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 	#define T113_VSU_BASE_N(id) ((id) == 2 ? DE_VSU2_BASE: DE_VSU1_BASE)
 #else
 	#define T113_VSU_BASE_N(id) ((id) == 2 ? DE_MIXER1_VSU1_BASE: DE_MIXER0_VSU1_BASE)
@@ -5971,7 +5971,7 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 		;
 	local_delay_ms(50);
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 	allwnr_t507_module_pll_spr(& CCU->PLL_VIDEO0_CTRL_REG, & CCU->PLL_VIDEO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG, 99);
@@ -6020,7 +6020,7 @@ static uint_fast32_t hdmi_realclock(const videomode_t * vdmode)
 	return allwnr_h3_get_hdmi_freq();
 #elif CPUSTYLE_A64
 	return allwnr_a64_get_hdmi_freq();
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 	return allwnr_t507_get_hdmi0_freq();
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	return allwnr_t113_get_hdmi_freq();
@@ -6091,7 +6091,7 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 //	PRINTF("7 allwnr_a64_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a64_get_hdmi_freq() / 1000));	// 148.5 MHz or 74.25 MHz
 //	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));	// 74.25 MHz
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 	unsigned ix = TCONTV_IX;
 
@@ -6199,8 +6199,10 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 
 #endif /* WITHDSIHW */
 
-static void awxx_deoutmapping(void)
+static void awxx_deoutmapping(int rtmixid)
 {
+	const uint32_t disp = rtmixid - 1;
+
 #if CPUSTYLE_A64
 	// Only bit 0 valid
 	//PRINTF("1 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
@@ -6215,7 +6217,7 @@ static void awxx_deoutmapping(void)
 	DE_TOP->DE2TCON_MUX = 0x01;
 	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 	// DE_PORT2CHN_MUX [0]=9x00A98210
 	// bits 3:0 - BLD_EN_COLOR_CTL bit 8 (pipe0)
 	// bits 7:4 - BLD_EN_COLOR_CTL bit 9 (pipe1)
@@ -7046,7 +7048,7 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 //	HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
 //	/* descramble register offsets */
 //	HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
-//#if CPUSTYLE_T507 || CPUSTYLE_H616
+//#if CPUSTYLE_T507
 //	PRINTF("phy->REXT_CTRL=%08X\n", (unsigned) phy->REXT_CTRL);
 //	local_delay_ms(10);
 //	phy->REXT_CTRL |= SUN8I_HDMI_PHY_REXT_CTRL_REXT_EN;
@@ -7414,7 +7416,7 @@ static void t113_tcontv_set_sequence_parameters(const videomode_t * vdmode)
 
 	TCONTV_PTR->TCON_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);
 
-#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T507)
 
 	TCONTV_PTR->TV_GCTL_REG = 0;
 	TCONTV_GINT0_REG = 0;
@@ -7475,7 +7477,7 @@ static void t113_tcontv_open_module_enable(void)
 #endif /* defined (TCONTV_PTR) */
 }
 
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int uich)
 {
 	DE_UIS_TypeDef * const uis = de3_getuis(rtmixid, uich);
@@ -7572,7 +7574,7 @@ static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	while ((vsu->VSU_CTRL_REG & (UINT32_C(1) << 4)) != 0)
 		;
 }
-#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 */
+#endif /* CPUSTYLE_T507 */
 
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -7706,7 +7708,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 #if WITHHDMITVHW
 	const uint_fast32_t dotclock = hdmi_realclock(vdmode);
 
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 	t507_hdmi_phy_init(dotclock);
 #else
 	h3_hdmi_phy_init(dotclock);
@@ -7820,7 +7822,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	// step5 - set LVDS digital logic configuration
 	t113_lvds_set_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 	// These CPUs not support DSI at all
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
@@ -7862,7 +7864,7 @@ static void t113_tcon_PLL_configuration(void)
 		;
 	local_delay_ms(50);
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
 	CCU->PLL_VIDEO1_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
@@ -7926,14 +7928,14 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
  	hardware_de_initialize(rtmixid);
  	tcon_init(vdmode);
 	t113_de_rtmix_initialize(rtmixid);
-	awxx_deoutmapping();				// после инициализации и TCON и DE
+	awxx_deoutmapping(rtmixid);				// после инициализации и TCON и DE
 
 	//PRINTF("Init rtmixid=%d\n", rtmixid);
 	//TP();
 	/* эта инициализация после корректного соединения с работающим TCON */
 	t113_de_bld_initialize(rtmixid, vdmode, defcolor);	// RED
 
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 	t507_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
 	t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
 

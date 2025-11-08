@@ -1253,7 +1253,7 @@ uint32_t hardware_get_random(void)
 		;
 	return RNG->DR;
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_H3 || CPUSTYLE_A133
+#elif CPUSTYLE_T507 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_H3 || CPUSTYLE_A133
 
 	return cpu_getdebugticks();
 
@@ -2537,7 +2537,7 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 	// Все сравнения должны быть не точнее 2 MB
 

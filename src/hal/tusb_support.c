@@ -958,7 +958,7 @@ void usbdevice_clk_init(void)
 
 	}
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 //	void SetupUsbPhyc(USBPHYC_TypeDef * phy);
 //
@@ -1389,7 +1389,7 @@ static void SetupHostUsbPhyc(USBPHYC_TypeDef * phy)
 	//PRINTF("phy->HCI_ICR: %08X\n", (unsigned) phy->HCI_ICR);
 }
 
-#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif CPUSTYLE_T507
 
 //USBPHYC_TypeDef * EHCIxToUSBPHYC(void * p)
 //{
@@ -1485,7 +1485,7 @@ static void USBH_EHCI_IRQHandler(void)
 void ohciehci_clk_init(void)
 {
 #if defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_OHCI)
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 
 	CCU->USB0_CLK_REG |= 0x20000000;	// @0x0A70 was: 0x40000000
 

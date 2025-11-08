@@ -306,7 +306,7 @@ uint_fast32_t allwnr_h3_get_hdmi_slow_freq(void);
 #endif /* CPUSTYLE_H3 */
 
 // Allwinner T507/T507-H/H616
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 uint_fast64_t allwnr_t507_get_pll_peri0_x1_freq(void);
 uint_fast64_t allwnr_t507_get_pll_peri1_x1_freq(void);
 uint_fast32_t allwnr_t507_get_pll_audio_1x_freq(void);
@@ -366,7 +366,7 @@ void allwnr_t507_module_pll_enable(volatile uint32_t * reg, unsigned N);
 
 uint_fast32_t allwnr_t507_sid_read(unsigned offs);
 
-#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 */
+#endif /* CPUSTYLE_T507 */
 
 
 void hardware_tim21_initialize(void);
@@ -558,7 +558,7 @@ calcdivider(
 		XC7Z_SPI_BR_WIDTH = 0, XC7Z_SPI_BR_TAPS = (256 | 128 | 64 | 32 | 16 | 8 | 4)
 	};
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H616 || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R828
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R828
 	enum
 	{
 		ALLWNR_TIMER_WIDTH = 32, ALLWNR_TIMER_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2 | 1),

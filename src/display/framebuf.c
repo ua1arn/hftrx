@@ -1123,7 +1123,7 @@ void lvglhw_initialize(void)
 
 void arm_hardware_mdma_initialize(void)
 {
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 	{
 		// AW_G2D_开发指南.pdf 图2‑1: design_spec0
 		// G2D101r1p0
@@ -4097,7 +4097,7 @@ void arm_hardware_dma2d_initialize(void)
 #endif /* WITHDMA2DHW */
 
 
-#if WITHGPUHW && (CPUSTYLE_T507 || CPUSTYLE_H616)
+#if WITHGPUHW && (CPUSTYLE_T507)
 //#define GPU_CTRLBASE (GPU_BASE + 0x10000)
 
 // https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/panfrost/panfrost_regs.h

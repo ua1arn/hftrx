@@ -11403,7 +11403,7 @@ void hightests(void)
 		//t507_hdmi_edid_test();
 	}
 #endif
-#if 0 && (CPUSTYLE_T507 || CPUSTYLE_H616) && WITHDEBUG
+#if 0 && (CPUSTYLE_T507) && WITHDEBUG
 	{
 		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 		PRINTF("allwnr_t507_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_axi_freq() / 1000 / 1000));
