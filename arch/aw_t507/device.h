@@ -334,8 +334,8 @@ typedef enum IRQn
 #define R_TWI_BASE ((uintptr_t) 0x07081400)           /*!< TWI  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
 #define R_CAN0_BASE ((uintptr_t) 0x07082000)          /*!< R_CAN Car Area Network controller Base */
+#define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL T507/H618 CPU Subsystem Control Register List Base */
 #define CPU_SUBSYS_CTRL_H616_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List Base */
-#define CPU_SUBSYS_CTRL_T507_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_T507 T507 CPU Subsystem Control Register List Base */
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG T507/H618 Cluster 0 Configuration Register List Base */
 #define C0_CPUX_CFG_H616_BASE ((uintptr_t) 0x09010000)/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List Base */
 
@@ -765,25 +765,10 @@ typedef struct CE_Type
          RESERVED(0x05C[0x0800 - 0x005C], uint8_t)
 } CE_TypeDef; /* size of structure = 0x800 */
 /*
- * @brief CPU_SUBSYS_CTRL_H616
+ * @brief CPU_SUBSYS_CTRL
  */
-/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List */
-typedef struct CPU_SUBSYS_CTRL_H616_Type
-{
-    __IO uint32_t GENER_CTRL_REG0;                    /*!< Offset 0x000 General Control Register0 */
-    __IO uint32_t GENER_CTRL_REG1;                    /*!< Offset 0x004 General Control Register1 */
-         RESERVED(0x008[0x000C - 0x0008], uint8_t)
-    __IO uint32_t GIC_JTAG_RST_CTRL;                  /*!< Offset 0x00C GIC and Jtag Reset Control Register */
-    __IO uint32_t C0_INT_EN;                          /*!< Offset 0x010 Cluster0 Interrupt Enable Control Register */
-    __IO uint32_t IRQ_FIQ_STATUS;                     /*!< Offset 0x014 IRQ/FIQ Status Register */
-    __IO uint32_t GENER_CTRL_REG2;                    /*!< Offset 0x018 General Control Register2 */
-    __IO uint32_t DBG_STATE;                          /*!< Offset 0x01C Debug State Register */
-} CPU_SUBSYS_CTRL_H616_TypeDef; /* size of structure = 0x020 */
-/*
- * @brief CPU_SUBSYS_CTRL_T507
- */
-/*!< CPU_SUBSYS_CTRL_T507 T507 CPU Subsystem Control Register List */
-typedef struct CPU_SUBSYS_CTRL_T507_Type
+/*!< CPU_SUBSYS_CTRL T507/H618 CPU Subsystem Control Register List */
+typedef struct CPU_SUBSYS_CTRL_Type
 {
     __IO uint32_t GENER_CTRL_REG0;                    /*!< Offset 0x000 General Control Register0 */
     __IO uint32_t GENER_CTRL_REG1;                    /*!< Offset 0x004 General Control Register1 */
@@ -800,7 +785,22 @@ typedef struct CPU_SUBSYS_CTRL_T507_Type
         __IO uint32_t LOW;                            /*!< Offset 0x040 Reset Vector Base Address Registerx_L */
         __IO uint32_t HIGH;                           /*!< Offset 0x044 Reset Vector Base Address Registerx_H */
     } RVBARADDR [0x004];                              /*!< Offset 0x040 Reset Vector Base Address Register for core [0..3] */
-} CPU_SUBSYS_CTRL_T507_TypeDef; /* size of structure = 0x060 */
+} CPU_SUBSYS_CTRL_TypeDef; /* size of structure = 0x060 */
+/*
+ * @brief CPU_SUBSYS_CTRL_H616
+ */
+/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List */
+typedef struct CPU_SUBSYS_CTRL_H616_Type
+{
+    __IO uint32_t GENER_CTRL_REG0;                    /*!< Offset 0x000 General Control Register0 */
+    __IO uint32_t GENER_CTRL_REG1;                    /*!< Offset 0x004 General Control Register1 */
+         RESERVED(0x008[0x000C - 0x0008], uint8_t)
+    __IO uint32_t GIC_JTAG_RST_CTRL;                  /*!< Offset 0x00C GIC and Jtag Reset Control Register */
+    __IO uint32_t C0_INT_EN;                          /*!< Offset 0x010 Cluster0 Interrupt Enable Control Register */
+    __IO uint32_t IRQ_FIQ_STATUS;                     /*!< Offset 0x014 IRQ/FIQ Status Register */
+    __IO uint32_t GENER_CTRL_REG2;                    /*!< Offset 0x018 General Control Register2 */
+    __IO uint32_t DBG_STATE;                          /*!< Offset 0x01C Debug State Register */
+} CPU_SUBSYS_CTRL_H616_TypeDef; /* size of structure = 0x020 */
 /*
  * @brief CSI
  */
@@ -3881,8 +3881,8 @@ typedef struct VE_Type
 #define R_TWI ((TWI_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
 #define R_CAN0 ((R_CAN_TypeDef *) R_CAN0_BASE)        /*!< R_CAN0 Car Area Network controller register set access pointer */
+#define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL T507/H618 CPU Subsystem Control Register List register set access pointer */
 #define CPU_SUBSYS_CTRL_H616 ((CPU_SUBSYS_CTRL_H616_TypeDef *) CPU_SUBSYS_CTRL_H616_BASE)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List register set access pointer */
-#define CPU_SUBSYS_CTRL_T507 ((CPU_SUBSYS_CTRL_T507_TypeDef *) CPU_SUBSYS_CTRL_T507_BASE)/*!< CPU_SUBSYS_CTRL_T507 T507 CPU Subsystem Control Register List register set access pointer */
 #define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG T507/H618 Cluster 0 Configuration Register List register set access pointer */
 #define C0_CPUX_CFG_H616 ((C0_CPUX_CFG_H616_TypeDef *) C0_CPUX_CFG_H616_BASE)/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List register set access pointer */
 

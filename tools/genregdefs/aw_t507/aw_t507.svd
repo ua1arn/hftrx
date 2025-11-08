@@ -2524,78 +2524,8 @@
   </interrupt>
   </peripheral>
   <peripheral>
-  <name>CPU_SUBSYS_CTRL_H616</name>
-  <description>H616 CPU Subsystem Control Register List</description>
-  <baseAddress>0x08100000</baseAddress>
-  <registers>
-   <register>
-    <name>GENER_CTRL_REG0</name>
-    <displayName>GENER_CTRL_REG0</displayName>
-    <description>General Control Register0</description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>GENER_CTRL_REG1</name>
-    <displayName>GENER_CTRL_REG1</displayName>
-    <description>General Control Register1</description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>GIC_JTAG_RST_CTRL</name>
-    <displayName>GIC_JTAG_RST_CTRL</displayName>
-    <description>GIC and Jtag Reset Control Register</description>
-    <addressOffset>0x00C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>C0_INT_EN</name>
-    <displayName>C0_INT_EN</displayName>
-    <description>Cluster0 Interrupt Enable Control Register</description>
-    <addressOffset>0x010</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IRQ_FIQ_STATUS</name>
-    <displayName>IRQ_FIQ_STATUS</displayName>
-    <description>IRQ/FIQ Status Register</description>
-    <addressOffset>0x014</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>GENER_CTRL_REG2</name>
-    <displayName>GENER_CTRL_REG2</displayName>
-    <description>General Control Register2</description>
-    <addressOffset>0x018</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DBG_STATE</name>
-    <displayName>DBG_STATE</displayName>
-    <description>Debug State Register</description>
-    <addressOffset>0x01C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral>
-  <name>CPU_SUBSYS_CTRL_T507</name>
-  <description>T507 CPU Subsystem Control Register List</description>
+  <name>CPU_SUBSYS_CTRL</name>
+  <description>T507/H618 CPU Subsystem Control Register List</description>
   <baseAddress>0x08100000</baseAddress>
   <registers>
    <register>
@@ -2700,6 +2630,76 @@
     </registers>
     <dimIncrement>0x020</dimIncrement>
    </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>CPU_SUBSYS_CTRL_H616</name>
+  <description>H616 CPU Subsystem Control Register List</description>
+  <baseAddress>0x08100000</baseAddress>
+  <registers>
+   <register>
+    <name>GENER_CTRL_REG0</name>
+    <displayName>GENER_CTRL_REG0</displayName>
+    <description>General Control Register0</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GENER_CTRL_REG1</name>
+    <displayName>GENER_CTRL_REG1</displayName>
+    <description>General Control Register1</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GIC_JTAG_RST_CTRL</name>
+    <displayName>GIC_JTAG_RST_CTRL</displayName>
+    <description>GIC and Jtag Reset Control Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_INT_EN</name>
+    <displayName>C0_INT_EN</displayName>
+    <description>Cluster0 Interrupt Enable Control Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IRQ_FIQ_STATUS</name>
+    <displayName>IRQ_FIQ_STATUS</displayName>
+    <description>IRQ/FIQ Status Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GENER_CTRL_REG2</name>
+    <displayName>GENER_CTRL_REG2</displayName>
+    <description>General Control Register2</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DBG_STATE</name>
+    <displayName>DBG_STATE</displayName>
+    <description>Debug State Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
   </peripheral>
   <peripheral>
