@@ -2099,20 +2099,6 @@ void linux_user_init(void)
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, spool_thread_core);
 
 	evdev_initialize();
-
-#if IQ_VIA_ZYNQ_PL
-	zynq_pl_init();
-#elif IQ_VIA_USB
-	usb_iq_start();
-#elif IQ_VIA_XDMA
-	xdma_iq_init();
-#if defined(AXI_LITE_UARTLITE)
-	uartlite_reset();
-#endif /* defined(AXI_LITE_UARTLITE) */
-#if defined(HARDWARE_NMEA_INITIALIZE) && WITHNMEA
-	HARDWARE_NMEA_INITIALIZE();
-#endif /* defined(HARDWARE_NMEA_INITIALIZE()) && WITHNMEA*/
-#endif /* IQ_VIA_XDMA */
 #if WITHNMEA && WITHLFM && CPUSTYLE_XC7Z
 	linux_create_thread(& nmea_t, linux_nmea_spool, 50, nmea_thread_core);
 	linux_create_thread(& pps_t, linux_pps_thread, 90, nmea_thread_core);
@@ -2128,6 +2114,50 @@ void linux_user_init(void)
 	sysfs_battery_init();
 #endif /* WITHSYSFSBATTERY */
 }
+
+#if defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_LINUX)
+
+static void linux_fpga_initialize(void (* io_control)(uint_fast8_t on), uint_fast8_t master)
+{
+#if IQ_VIA_ZYNQ_PL
+	zynq_pl_init();
+#elif IQ_VIA_USB
+	usb_iq_start();
+#elif IQ_VIA_XDMA
+	xdma_iq_init();
+#if defined(AXI_LITE_UARTLITE)
+	uartlite_reset();
+#endif /* defined(AXI_LITE_UARTLITE) */
+#if defined(HARDWARE_NMEA_INITIALIZE) && WITHNMEA
+	HARDWARE_NMEA_INITIALIZE();
+#endif /* defined(HARDWARE_NMEA_INITIALIZE()) && WITHNMEA*/
+#endif /* IQ_VIA_XDMA */
+}
+
+const codec2if_t * board_getfpgacodecif(void)
+{
+	static const char codecname [] =
+#if IQ_VIA_ZYNQ_PL
+			"Linux (PL direct)";
+#elif IQ_VIA_USB
+			"Linux (USB)";
+#elif IQ_VIA_XDMA
+			"Linux (XDMA)";
+#else
+			"";
+#endif
+
+	/* Интерфейс управления кодеком */
+	static const codec2if_t ifc =
+	{
+		NULL,
+		linux_fpga_initialize,
+		codecname
+	};
+
+	return & ifc;
+}
+#endif /* defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_LINUX) */
 
 /****************************************************************/
 
