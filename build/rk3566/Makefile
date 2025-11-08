@@ -254,8 +254,8 @@ SystemExecAARCH64 = 0x00031560
 endif
 
 # Invoke SystemInit 
-ddrinit_h616: ddrinit_h616.bin
-	$(XROCK) write 0x00028000 ddrinit_h616.bin
+ddrinit_h616: ddrinit_h616_lpddr3.bin
+	$(XROCK) write 0x00028000 ddrinit_h616_lpddr3.bin
 	$(XROCK) exec $(SystemDRAMInit)
 
 ddrinit_t507_:
@@ -263,7 +263,7 @@ ddrinit_t507_:
 	busybox sleep 1s
 
 ddrinit_t507:
-	$(XROCK) write 0x00028000 ddrinit_t507.bin
+	$(XROCK) write 0x00028000 ddrinit_t507_lpddr4.bin
 	$(XROCK) exec $(SystemDRAMInit)
 
 
