@@ -12479,7 +12479,7 @@ updateboard_noui(
 	#endif /* WITHIF4DSP */
 
 	#if WITHHDMITVHW
-		board_set_hdmiformat(param_getvalue(& xhdmiformat));	// Установить режим отображения на выдеовыходе
+		board_set_tvoutformat(param_getvalue(& xhdmiformat));	// Установить режим отображения на выдеовыходе
 	#endif /* WITHHDMITVHW */
 
 	#if WITHAFEQUALIZER

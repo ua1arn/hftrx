@@ -624,8 +624,7 @@ typedef struct videomode_tag
 } videomode_t;
 
 const videomode_t * get_videomode_DESIGN(void);	// DIM_X, DIM_Y
-const videomode_t * get_videomode_CRT(void);
-const videomode_t * get_videomode_HDMI(void);
+const videomode_t * get_videomode_TVOUT(void);
 const videomode_t * get_videomode_LCD(void);
 size_t getvaltexthdmiformat(char * buff, size_t count, int_fast32_t value);	/* Название видеорежима для отображения в меню */
 #define HDMIFORMATS_count 5

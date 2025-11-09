@@ -2749,7 +2749,7 @@ static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 /* VI (VI0) - No UI format attr */
 static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_fast8_t vi_format)
 {
-	const videomode_t * const vdmode_CRT = get_videomode_CRT();
+	const videomode_t * const vdmode_CRT = get_videomode_TVOUT();
 	DE_VI_TypeDef * const vi = de3_getvi(rtmixid, vich);
 
 	if (vi == NULL)
@@ -7905,10 +7905,14 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 }
 #endif
 
-static void t113_hdmi_initsteps(const videomode_t * vdmode)
+static void t113_tvout_initsteps(const videomode_t * vdmode)
 {
 	t113_tcontv_initsteps0(vdmode);
+#if WITHHDMITVHW
 	t113_hdmi_init(vdmode);
+#elif defined (TVENCODER_PTR)
+	t113_tvoutDAC_init(vdmode);
+#endif /* WITHHDMITVHW */
 }
 
 static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, void (* tcon_init)(const videomode_t * vdmode), uint_least32_t defcolor)
@@ -7943,22 +7947,11 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 	ltdc_tfcon_cfg(rtmixid, vdmode);	// Set DE MODE if need, mapping GPIO pins
 }
 
-static void t113_tvout_initsteps(const videomode_t * vdmode)
-{
-	t113_tcontv_initsteps0(vdmode);
-#if defined (TVENCODER_PTR)
-	t113_tvoutDAC_init(vdmode);
-#endif /* defined (TVENCODER_PTR) */
-}
-
 // Установить режим отображения на выдеовыходе
 void hardware_tvout_set_format(void)
 {
-#if WITHHDMITVHW
-	hardware_rtmix_set_format(RTMIXIDTV, get_videomode_HDMI(), t113_hdmi_initsteps, COLOR24(255, 0, 0));
-#endif /* WITHHDMITVHW */
-#if defined (TVENCODER_PTR)
-	hardware_rtmix_set_format(RTMIXIDTV, get_videomode_CRT(), t113_tvout_initsteps, COLOR24(255, 0, 0));
+#if defined RTMIXIDTV
+	hardware_rtmix_set_format(RTMIXIDTV, get_videomode_TVOUT(), t113_tvout_initsteps, COLOR24(255, 0, 0));
 #endif /* WITHHDMITVHW */
 }
 
@@ -7984,13 +7977,10 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 	#else /* WITHLVDSHW */
 		{ RTMIXIDLCD, get_videomode_DESIGN, COLOR24(0, 255, 0), t113_tcon_hw_initsteps, },	// Parallel RGB mode
 	#endif /* WITHLVDSHW */
-#endif /* RTMIXIDLCD */
-#if WITHHDMITVHW
-		{ RTMIXIDTV, get_videomode_HDMI, COLOR24(255, 0, 0), t113_hdmi_initsteps, },
-#endif /* WITHHDMITVHW */
-#if defined (TVENCODER_PTR)
-		{ RTMIXIDTV, get_videomode_CRT, COLOR24(255, 0, 0), t113_tvout_initsteps, },
-#endif /* WITHHDMITVHW */
+#endif /* defined RTMIXIDLCD */
+#if defined RTMIXIDTV
+		{ RTMIXIDTV, get_videomode_TVOUT, COLOR24(255, 0, 0), t113_tvout_initsteps, },
+#endif /* defined RTMIXIDTV */
 	};
 
 	hardware_de_global_initialize();	/* Инициализация системы тактирования, общей для всех видеовыходов */

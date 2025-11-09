@@ -1985,12 +1985,7 @@ static const videomode_t vdmode_HDMI_1280x720at50 =
 	.interlaced = 0
 };
 
-const videomode_t * get_videomode_CRT(void)
-{
-	return & vdmode_PAL0;
-}
-
-static uint_fast8_t glob_hdmiformat;
+static uint_fast8_t glob_tvoutformat;
 
 const videomode_t * hdmiformats [HDMIFORMATS_count] =
 {
@@ -2001,19 +1996,24 @@ const videomode_t * hdmiformats [HDMIFORMATS_count] =
 	& vdmode_HDMI_1920x1080at60,	// б. тел. масштабирует ! TESTED
 };
 
-const videomode_t * get_videomode_HDMI(void)
+const videomode_t * get_videomode_TVOUT(void)
 {
-	return hdmiformats [glob_hdmiformat];
+#if WITHHDMITVHW
+	return hdmiformats [glob_tvoutformat];
+#else /* WITHHDMITVHW */
+	return & vdmode_PAL0;
+	//return & vdmode_NTSC0;
+#endif /* WITHHDMITVHW */
 }
 
 void
-board_set_hdmiformat(uint_fast8_t v)
+board_set_tvoutformat(uint_fast8_t v)
 {
 	const uint_fast8_t n = v;
 
-	if (glob_hdmiformat != n)
+	if (glob_tvoutformat != n)
 	{
-		glob_hdmiformat = n;
+		glob_tvoutformat = n;
 		hardware_tvout_set_format();
 	}
 }
