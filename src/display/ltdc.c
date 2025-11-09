@@ -7356,7 +7356,6 @@ static void de2_tcon_enable(struct lcd *lcd)
 
 static void t113_tcontv_set_sequence_parameters(const videomode_t * vdmode)
 {
-#if defined (TCONTV_PTR)
 
 	const unsigned interlace = vdmode->interlaced ? 2 : 1;
 	const unsigned HEIGHT = vdmode->height;	/* height */
@@ -7387,6 +7386,8 @@ static void t113_tcontv_set_sequence_parameters(const videomode_t * vdmode)
 //	PRINTF("VBP=%u\n", VBP);
 
 	//PRINTF("start delay=%u\n", (VTOTAL - HEIGHT) / interlace - 5);
+
+#if defined (TCONTV_PTR)
 
 #if CPUSTYLE_A64
 	// A64
