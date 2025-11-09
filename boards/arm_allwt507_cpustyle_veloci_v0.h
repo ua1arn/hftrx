@@ -973,9 +973,9 @@
 	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
 
 	#define HARDWARE_SPI1_INITIALIZE() do { \
-		arm_hardware_pioh_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
-		arm_hardware_pioh_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
-		arm_hardware_pioh_altfn50(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
+		arm_hardware_pioh_altfn20(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
+		arm_hardware_pioh_altfn20(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
+		arm_hardware_pioh_altfn20(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
 	} while (0)
 	#define WITHSPI1HW	1	// Use SPI1
 
@@ -1267,30 +1267,14 @@
 	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
-#if WITHISBOOTLOADER
-	#define	HARDWARE_BL_INITIALIZE() do { \
-	} while (0)
-#elif WITHBLPWMCTL
+#if WITHBLPWMCTL
 	/* Управление яркостью подсветки через выход PWN */
-	#if LCDMODE_LQ043T3DX02K
-		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
-		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
-		#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
-		#define WITHLCDBACKLIGHTMAX	5	// Верхний предел регулировки (показываемый на дисплее)
-		#define WITHLCDBACKLIGHTDEF	5	// значение яркости по уиолчанию
-		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-	#elif LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
-		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
-		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
-		#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
-		#define WITHLCDBACKLIGHTMAX	5	// Верхний предел регулировки (показываемый на дисплее)
-		#define WITHLCDBACKLIGHTDEF	5	// значение яркости по уиолчанию
-		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-	#else
-		/* Заглушка для работы без дисплея */
-		#define WITHLCDBACKLIGHTMIN	0
-		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
-	#endif
+	#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
+	#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
+	#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTMAX	5	// Верхний предел регулировки (показываемый на дисплее)
+	#define WITHLCDBACKLIGHTDEF	5	// значение яркости по уиолчанию
+	//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	/* Яркость Управлятся через PWM */
 	#define HARDWARE_BL_PWMCH 0	/* PWM0 */
@@ -1304,41 +1288,24 @@
 	// level=WITHLCDBACKLIGHTMIN не приводит к выключениию подсветки
 	#define HARDWARE_BL_SET(en, level) do { \
 		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, !! (en) * (level) * 100 / WITHLCDBACKLIGHTMAX); \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 0, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD0 LVDS0_V0P */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 1, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD1 LVDS0_V0N */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 2, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD2 LVDS0_V1P */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 3, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD3 LVDS0_V1N */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 4, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD4 LVDS0_V2P */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 5, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD5 LVDS0_V2N */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 6, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD6 LVDS0_CKP */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 7, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD7 LVDS0_CKN */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 8, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD8 LVDS0_V3P */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 9, !! (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD9 LVDS0_V3N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 0, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD0 LVDS0_V0P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 1, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD1 LVDS0_V0N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 2, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD2 LVDS0_V1P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 3, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD3 LVDS0_V1N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 4, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD4 LVDS0_V2P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 5, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD5 LVDS0_V2N */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 6, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD6 LVDS0_CKP */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 7, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD7 LVDS0_CKN */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 8, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD8 LVDS0_V3P */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 9, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD9 LVDS0_V3N */ \
 	} while (0)
 
 #else /* WITHBLPWMCTL */
 
 	/* Аналоговое управление яркостью подсветки */
-
-	#if LCDMODE_LQ043T3DX02K
-		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
-		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
-		#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
-		#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-		#define WITHLCDBACKLIGHTDEF	3	// значение яркости по уиолчанию
-		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-	#elif LCDMODE_AT070TN90 || LCDMODE_AT070TNA2
-		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
-		#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
-		#define WITHLCDBACKLIGHTMIN	1	// Нижний предел регулировки (показываемый на дисплее)
-		#define WITHLCDBACKLIGHTMAX	3	// Верхний предел регулировки (показываемый на дисплее)
-		#define WITHLCDBACKLIGHTDEF	3	// значение яркости по уиолчанию
-		//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
-	#else
-		/* Заглушка для работы без дисплея */
-		#define WITHLCDBACKLIGHTMIN	0
-		#define WITHLCDBACKLIGHTMAX	1	// Верхний предел регулировки (показываемый на дисплее)
-	#endif
+	/* Заглушка для работы без дисплея */
+	#define WITHLCDBACKLIGHTMIN	0
+	#define WITHLCDBACKLIGHTMAX	1	// Верхний предел регулировки (показываемый на дисплее)
 	/* BL0: PA12. BL1: PA11, EN: PD28  */
 	#define	HARDWARE_BL_INITIALIZE() do { \
 	} while (0)
