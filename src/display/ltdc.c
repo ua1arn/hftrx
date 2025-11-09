@@ -774,6 +774,10 @@ hardware_ltdc_initialize(const videomode_t * vdmode)
 
 	//PRINTF(PSTR("hardware_ltdc_initialize done\n"));
 }
+// Установить режим отображения на выдеовыходе
+void hardware_tvout_set_format(void)
+{
+}
 
 void
 hardware_ltdc_deinitialize(void)
@@ -1536,6 +1540,10 @@ hardware_ltdc_initialize(const videomode_t * vdmode)
 	ltdc_tfcon_cfg(RTMIXIDLCD, vdmode);
 	//PRINTF(PSTR("hardware_ltdc_initialize done\n"));
 }
+// Установить режим отображения на выдеовыходе
+void hardware_tvout_set_format(void)
+{
+}
 
 void
 hardware_ltdc_deinitialize(void)
@@ -1703,6 +1711,10 @@ void hardware_ltdc_main_set(int rtmixid, uintptr_t addr)
 static void hardware_ltdc_vsync(int rtmixid)
 {
 }
+// Установить режим отображения на выдеовыходе
+void hardware_tvout_set_format(void)
+{
+}
 
 #elif LINUX_SUBSYSTEM && WITHSDL2VIDEO && ! WITHLVGL
 
@@ -1730,6 +1742,10 @@ void hardware_ltdc_main_set(int rtmixid, uintptr_t addr)
 
 /* ожидаем начало кадра */
 static void hardware_ltdc_vsync(int rtmixid)
+{
+}
+// Установить режим отображения на выдеовыходе
+void hardware_tvout_set_format(void)
 {
 }
 
@@ -1763,6 +1779,10 @@ void hardware_ltdc_initialize(const videomode_t * vdmode)
 	}
 
 	ltdc_tfcon_cfg(RTMIXIDLCD, vdmode);
+}
+// Установить режим отображения на выдеовыходе
+void hardware_tvout_set_format(void)
+{
 }
 
 /* Palette reload (dummy fuction) */
@@ -7905,16 +7925,23 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 }
 #endif
 
-static void t113_tvout_initsteps(const videomode_t * vdmode)
+static void t113_hdmi_initsteps(const videomode_t * vdmode)
 {
 	t113_tcontv_initsteps0(vdmode);
 #if WITHHDMITVHW
-	t113_hdmi_init(vdmode);
-#elif defined (TVENCODER_PTR)
-	t113_tvoutDAC_init(vdmode);
+	t113_hdmi_init(vdmode);	// PHY initialize
 #endif /* WITHHDMITVHW */
 }
 
+static void t113_composite_initsteps(const videomode_t * vdmode)
+{
+	t113_tcontv_initsteps0(vdmode);
+#if defined (TVENCODER_PTR)
+	t113_tvoutDAC_init(vdmode);	// TV OUT DAC initialize
+#endif /* WITHHDMITVHW */
+}
+
+/* Инициализация одного видеовыхода */
 static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, void (* tcon_init)(const videomode_t * vdmode), uint_least32_t defcolor)
 {
  	hardware_de_initialize(rtmixid);
@@ -7945,17 +7972,22 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 	t113_de_update(rtmixid);	/* Update registers */
 
 	ltdc_tfcon_cfg(rtmixid, vdmode);	// Set DE MODE if need, mapping GPIO pins
+	//PRINTF("Init rtmixid=%d done\n", rtmixid);
 }
 
 // Установить режим отображения на выдеовыходе
 void hardware_tvout_set_format(void)
 {
 #if defined RTMIXIDTV
-	hardware_rtmix_set_format(RTMIXIDTV, get_videomode_TVOUT(), t113_tvout_initsteps, COLOR24(255, 0, 0));
+	#if WITHHDMITVHW
+		hardware_rtmix_set_format(RTMIXIDTV, get_videomode_TVOUT(), t113_hdmi_initsteps, COLOR24(255, 0, 0));
+	#elif defined (TVENCODER_PTR)
+		hardware_rtmix_set_format(RTMIXIDTV, get_videomode_TVOUT(), t113_composite_initsteps, COLOR24(255, 0, 0));
+	#endif /* WITHHDMITVHW */
 #endif /* WITHHDMITVHW */
 }
 
-void hardware_ltdc_initialize(const videomode_t * vdmodeX)
+void hardware_ltdc_initialize(const videomode_t * vdmode_unused)
 {
     //PRINTF("hardware_ltdc_initialize\n");
 
@@ -7979,7 +8011,11 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 	#endif /* WITHLVDSHW */
 #endif /* defined RTMIXIDLCD */
 #if defined RTMIXIDTV
-		{ RTMIXIDTV, get_videomode_TVOUT, COLOR24(255, 0, 0), t113_tvout_initsteps, },
+	#if WITHHDMITVHW
+		{ RTMIXIDTV, get_videomode_TVOUT, COLOR24(255, 0, 0), t113_hdmi_initsteps, },
+	#elif defined (TVENCODER_PTR)
+		{ RTMIXIDTV, get_videomode_TVOUT, COLOR24(255, 0, 0), t113_composite_initsteps, },
+	#endif /* WITHHDMITVHW */
 #endif /* defined RTMIXIDTV */
 	};
 
@@ -7992,7 +8028,6 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 		const videomode_t * const vdmode = initstructs [i].vdmodef();
 
 		hardware_rtmix_set_format(rtmixid, vdmode, initstructs [i].tcon_init, initstructs [i].defcolor);
-		//PRINTF("Init rtmixid=%d done\n", rtmixid);
 	}
 
     //PRINTF("hardware_ltdc_initialize done.\n");
@@ -8143,6 +8178,10 @@ static void hardware_ltdc_vsync(int rtmixid)
 
 /* Palette reload */
 void hardware_ltdc_L8_palette(void)
+{
+}
+// Установить режим отображения на выдеовыходе
+void hardware_tvout_set_format(void)
 {
 }
 
