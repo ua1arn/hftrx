@@ -4807,17 +4807,14 @@ static void t113_tvoutDAC_init(const videomode_t * vdmode)
 	t113_tve_DAC_configuration(vdmode);
 }
 
-static void t113_tvout_initsteps(const videomode_t * vdmode)
-{
-	t113_tcontv_initsteps(vdmode);
-	t113_tvoutDAC_init(vdmode);
-}
 
 #endif /* defined (TVENCODER_PTR) */
 
 /* ----- */
 
 #endif /* defined (TCONTV_PTR) */
+
+#if 0
 
 #if 0
 struct de_csc_t {
@@ -5936,6 +5933,8 @@ static void t113_vi_scaler_setup(int rtmixid, const videomode_t * srcvdmode, con
 	sun8i_vi_scaler_enable(rtmixid, 1);
 }
 
+#endif
+
 // H3: PLL_VIDEO
 // A64: PLL_VIDEO0
 // T113: PLL_VIDEO0
@@ -5992,7 +5991,7 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 		(N - 1) * (UINT32_C(1) << 8) |
 		(M - 1) * (UINT32_C(1) << 0) |
 		0;
-#error CHECK M field!!!
+#warning CHECK M field!!!
 
 	CCU->PLL_VIDEO0_CTRL_REG |= (UINT32_C(1) << 31);
 
@@ -7671,7 +7670,7 @@ static void t113_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 
 #endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
 
-static void t113_tcontv_initsteps(const videomode_t * vdmode)
+static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 {
 #if defined (TCONTV_PTR)
 	const uint_fast32_t dotclock = display_getdotclock(vdmode);
@@ -7885,7 +7884,7 @@ static void t113_tcon_PLL_configuration(void)
 #endif
 }
 
-// Paraleal RGB mode, HDMI mode
+// Parallel RGB mode
 static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 {
 	// step0 - CCU configuration
@@ -7908,19 +7907,8 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 
 static void t113_hdmi_initsteps(const videomode_t * vdmode)
 {
-	t113_tcontv_initsteps(vdmode);
+	t113_tcontv_initsteps0(vdmode);
 	t113_hdmi_init(vdmode);
-}
-
-static void hardware_tcon_initsteps(const videomode_t * vdmode)
-{
-#if WITHLVDSHW
-	t113_tcon_lvds_initsteps(vdmode);
-#elif WITHMIPIDSISHW
-	t113_tcon_dsi_initsteps(vdmode);
-#else /* WITHLVDSHW */
-	t113_tcon_hw_initsteps(vdmode);	// HW & HDMI
-#endif /* WITHLVDSHW */
 }
 
 static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, void (* tcon_init)(const videomode_t * vdmode), uint_least32_t defcolor)
@@ -7955,11 +7943,22 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 	ltdc_tfcon_cfg(rtmixid, vdmode);	// Set DE MODE if need, mapping GPIO pins
 }
 
+static void t113_tvout_initsteps(const videomode_t * vdmode)
+{
+	t113_tcontv_initsteps0(vdmode);
+#if defined (TVENCODER_PTR)
+	t113_tvoutDAC_init(vdmode);
+#endif /* defined (TVENCODER_PTR) */
+}
+
 // Установить режим отображения на выдеовыходе
-void hardware_hdmi_set_format(void)
+void hardware_tvout_set_format(void)
 {
 #if WITHHDMITVHW
 	hardware_rtmix_set_format(RTMIXIDTV, get_videomode_HDMI(), t113_hdmi_initsteps, COLOR24(255, 0, 0));
+#endif /* WITHHDMITVHW */
+#if defined (TVENCODER_PTR)
+	hardware_rtmix_set_format(RTMIXIDTV, get_videomode_CRT(), t113_tvout_initsteps, COLOR24(255, 0, 0));
 #endif /* WITHHDMITVHW */
 }
 
@@ -7978,10 +7977,19 @@ void hardware_ltdc_initialize(const videomode_t * vdmodeX)
 	static const initstruct_t initstructs [] =
 	{
 #if defined RTMIXIDLCD
-		{ RTMIXIDLCD, get_videomode_DESIGN, COLOR24(0, 255, 0), hardware_tcon_initsteps, },
+	#if WITHLVDSHW
+		{ RTMIXIDLCD, get_videomode_DESIGN, COLOR24(0, 255, 0), t113_tcon_lvds_initsteps, },
+	#elif WITHMIPIDSISHW
+		{ RTMIXIDLCD, get_videomode_DESIGN, COLOR24(0, 255, 0), t113_tcon_dsi_initsteps, },
+	#else /* WITHLVDSHW */
+		{ RTMIXIDLCD, get_videomode_DESIGN, COLOR24(0, 255, 0), t113_tcon_hw_initsteps, },	// Parallel RGB mode
+	#endif /* WITHLVDSHW */
 #endif /* RTMIXIDLCD */
 #if WITHHDMITVHW
 		{ RTMIXIDTV, get_videomode_HDMI, COLOR24(255, 0, 0), t113_hdmi_initsteps, },
+#endif /* WITHHDMITVHW */
+#if defined (TVENCODER_PTR)
+		{ RTMIXIDTV, get_videomode_CRT, COLOR24(255, 0, 0), t113_tvout_initsteps, },
 #endif /* WITHHDMITVHW */
 	};
 

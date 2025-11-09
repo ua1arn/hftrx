@@ -2014,7 +2014,7 @@ board_set_hdmiformat(uint_fast8_t v)
 	if (glob_hdmiformat != n)
 	{
 		glob_hdmiformat = n;
-		hardware_hdmi_set_format();
+		hardware_tvout_set_format();
 	}
 }
 
