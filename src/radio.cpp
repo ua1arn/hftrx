@@ -2969,6 +2969,7 @@ enum
 	BANDGROUP_24p8MHz,
 	BANDGROUP_CB,
 	BANDGROUP_28MHz,
+	BANDGROUP_45MHz,
 	BANDGROUP_50MHz,
 	BANDGROUP_70MHz,
 	BANDGROUP_144MHz,
@@ -2997,6 +2998,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 	"24",
 	"CB",
 	"28",
+	"45",
 	"50",
 	"70",
 	"144",
@@ -3045,6 +3047,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 	#define BANDMAPSUBMODE_CW	SUBMODE_CWSMART
 	#define BANDMAPSUBMODE_CWR	SUBMODE_CWSMART
 	#define BANDMAPSUBMODE_AM	SUBMODE_SSBSMART
+	#define BANDMAPSUBMODE_NFM	SUBMODE_NFM
 #else /* WITHMODESETSMART */
 	#define BANDMAPSUBMODE_LSB	SUBMODE_LSB
 	#define BANDMAPSUBMODE_USB	SUBMODE_USB
@@ -3052,6 +3055,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 	#define BANDMAPSUBMODE_CWR	SUBMODE_CWR
 	#define BANDMAPSUBMODE_AM	SUBMODE_AM
 	#define BANDMAPSUBMODE_WFM	SUBMODE_WFM
+	#define BANDMAPSUBMODE_NFM	SUBMODE_NFM
 #endif /* WITHMODESETSMART */
 
 /*
@@ -3139,6 +3143,9 @@ static struct bandrange  const bandsmap [] =
 	{ BMF(29200000), 			BMF(29700000 + BANDPAD),	BMF(29600000), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHz, "28M FM", },	/* FM */
 #endif
 
+#if WITHBANDR1BBU
+	{ BMF(41000000 - BANDPAD), 	BMF(49000000 + BANDPAD), 	BMF(44880000), 		BANDMAPSUBMODE_NFM | BANDSETF_HAM, BANDGROUP_45MHz, "LowBand"},
+#endif
 #if TUNE_6MBAND
 	{ BMF(50000000 - BANDPAD), 	BMF(54000000 + BANDPAD), 	BMF(50100000), 	BANDMAPSUBMODE_USB | BANDSETF_6M, 		BANDGROUP_50MHz, "50M SSB", },			/* 6 meters HAM band */
 #endif /* TUNE_6MBAND */
@@ -16966,12 +16973,13 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
 	#if WITHTX && WITHAFCODEC1HAVEPROC
 		& xgmikeequalizer,
 	#endif /* WITHTX && WITHAFCODEC1HAVEPROC */
+	#if WITHIF4DSP
+		& xgnoisereduct,
+		& xgsquelchNFM,
+	#endif /* WITHIF4DSP */
 	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
 		& xgzoomxpow2,
 	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
-	#if WITHIF4DSP
-		& xgnoisereduct,
-	#endif /* WITHIF4DSP */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
