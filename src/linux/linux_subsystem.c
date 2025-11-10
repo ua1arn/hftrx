@@ -131,6 +131,7 @@ void as_rx(uint32_t * buf)
 		memcpy(& as_buf [as_idx], buf, as_buf_step8);
 		as_idx += as_buf_step;
 		if (as_idx % as_gui_upd_pr == 0) gui_update();
+		as_idx_stop = as_buf_size;
 
 		if (as_idx >= as_buf_size || stop)
 		{
@@ -191,6 +192,7 @@ void as_tx(uint32_t * buf)
 		memcpy(& as_buf [as_idx], buf, as_buf_step8);
 		as_idx += as_buf_step;
 		if (as_idx % as_gui_upd_pr == 0) gui_update();
+		as_idx_stop = as_buf_size;
 
 		if (as_idx >= as_buf_size || stop)
 		{
@@ -223,7 +225,10 @@ void as_toggle_record(void)
 	pthread_mutex_lock(& mutex_as);
 
 	if (as_state == AS_IDLE || as_state == AS_READY)
+	{
 		as_state = AS_RECORDING;
+		memset(as_buf, 0, as_buf_size * 4);
+	}
 	else if (as_state == AS_RECORDING)
 		stop = 1;
 
@@ -270,11 +275,13 @@ void as_toggle_trx(void)
 void as_draw_spectrogram(COLORPIP_T * d, uint16_t len, uint16_t lim)
 {
 	const uint16_t step = as_idx_stop / len;
-	int32_t d_max = 0;
-	arm_max_no_idx_q31((q31_t *) as_buf, as_idx_stop, & d_max);
+	uint32_t d_max = 0;
+
+	for (int i = 0; i < as_idx_stop; i += step)
+		if (abs(as_buf[i]) > d_max) d_max = abs(as_buf[i]);
 
 	for (int i = 0; i < len; i ++)
-		d [i] = normalize(abs(as_buf [i * step]), 0, d_max, lim);
+		d [i] = normalize(abs(as_buf[i * step]), 0, d_max, lim);
 }
 
 #endif /* WITHAUDIOSAMPLESREC && WITHTOUCHGUI*/
