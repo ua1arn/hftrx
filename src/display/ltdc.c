@@ -1973,16 +1973,6 @@ static int32_t de_feat_get_num_chns(uint32_t disp)
 	return (VI_LASTIX(rtmixid) - 1) + 1 + (UI_LASTIX(rtmixid) - 1) + 1;
 }
 
-struct lcd_timing
-{
-	uint16_t hp;
-	uint16_t vp;
-	uint16_t hbp;
-	uint16_t vbp;
-	uint16_t hspw;
-	uint16_t vspw;
-};
-
 #if CPUSTYLE_T113 || CPUSTYLE_F133
 
 
@@ -2862,6 +2852,16 @@ static void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 	ASSERT(ui->CFG [UI_CFG_INDEX].ATTR == attr);
 }
 
+// Установить маску включённых layers
+static void t113_de_set_layerval(int rtmixid, uint_fast32_t val)
+{
+	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
+	if (bld != NULL)
+	{
+		bld->BLD_EN_COLOR_CTL = val;
+	}
+}
+
 /* Для обнуления регистров периферии не очень
  * подходит системный memset - иногда может группировать обращения к соседним ячейкам
 */
@@ -2962,17 +2962,13 @@ static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, uint
 		ASSERT(bld->CH [i].BLD_FILL_COLOR == 0xff000000);
 	}
 
-	for (i = 1; ; ++ i)
+	for (i = 1; de3_getui(rtmixid, i); ++ i)
 	{
-		if (de3_getui(rtmixid, i) == NULL)
-			break;
-		t113_de_set_address_ui(rtmixid, 0, i);
+		t113_de_set_address_ui(rtmixid, (uintptr_t) 0, i);
 	}
-	for (i = 1; ; ++ i)
+	for (i = 1; de3_getvi(rtmixid, i); ++ i)
 	{
-		if (de3_getvi(rtmixid, i) == NULL)
-			break;
-		t113_de_set_address_vi(rtmixid, 0, i);
+		t113_de_set_address_vi(rtmixid, (uintptr_t) 0, i);
 	}
 }
 
@@ -8042,10 +8038,6 @@ hardware_ltdc_deinitialize(void)
 /* Set frame buffer address. Waiting for VSYNC. */
 void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, uintptr_t layer2, uintptr_t layer3)
 {
-	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
-	if (bld == NULL)
-		return;
-
 	// Note: the layer priority is layer3>layer2>layer1>layer0
 	t113_de_set_address_vi(rtmixid, layer0, 1);	// VI1
 	t113_de_set_address_ui(rtmixid, layer1, 1);	// UI1
@@ -8054,12 +8046,13 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 
 	//DE_TOP->DE_PORT2CHN_MUX [0] = 0x0000A980;
 
-	bld->BLD_EN_COLOR_CTL =
+	t113_de_set_layerval(
+		rtmixid,
 		((de3_getvi(rtmixid, 1) != NULL) * (layer0 != 0) * VI_POS_BIT(rtmixid, 1))	| // pipe0 enable - from VI1
 		((de3_getui(rtmixid, 1) != NULL) * (layer1 != 0) * UI_POS_BIT(rtmixid, 1))	| // pipe1 enable - from UI1
 		((de3_getui(rtmixid, 2) != NULL) * (layer2 != 0) * UI_POS_BIT(rtmixid, 2))	| // pipe1 enable - from UI2
 		((de3_getui(rtmixid, 3) != NULL) * (layer3 != 0) * UI_POS_BIT(rtmixid, 3))	| // pipe1 enable - from UI3
-		0;
+		0);
 
 	hardware_ltdc_vsync(rtmixid);		/* ожидаем начало кадра */
 	t113_de_update(rtmixid);	/* Update registers */
@@ -8069,14 +8062,12 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 static void hardware_ltdc_main_set_vi(int rtmixid, uintptr_t p1)
 {
 	const int vich = 1;
-	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
-	if (bld == NULL)
-		return;
 	t113_de_set_address_vi(rtmixid, p1, vich);
 
-	bld->BLD_EN_COLOR_CTL =
-			((de3_getvi(rtmixid, vich) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, vich))	| // pipe0 enable - from VI1
-			0;
+	t113_de_set_layerval(
+		rtmixid,
+		((de3_getvi(rtmixid, vich) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, vich))	| // pipe0 enable - from VI1
+		0);
 
 	hardware_ltdc_vsync(rtmixid);		/* ожидаем начало кадра */
 	t113_de_update(rtmixid);	/* Update registers */
@@ -8085,14 +8076,12 @@ static void hardware_ltdc_main_set_vi(int rtmixid, uintptr_t p1)
 static void hardware_ltdc_main_set_ui(int rtmixid, uintptr_t p1)
 {
 	const int uich = 1;
-	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
-	if (bld == NULL)
-		return;
 	t113_de_set_address_ui(rtmixid, p1, uich);
 
-	bld->BLD_EN_COLOR_CTL =
-			((de3_getui(rtmixid, uich) != NULL) * (p1 != 0) * UI_POS_BIT(rtmixid, uich))	| // pipe1 enable - from UI1
-			0;
+	t113_de_set_layerval(
+		rtmixid,
+		((de3_getui(rtmixid, uich) != NULL) * (p1 != 0) * UI_POS_BIT(rtmixid, uich))	| // pipe1 enable - from UI1
+		0);
 
 	hardware_ltdc_vsync(rtmixid);		/* ожидаем начало кадра */
 	t113_de_update(rtmixid);	/* Update registers */
@@ -8102,16 +8091,13 @@ static void hardware_ltdc_main_set_ui(int rtmixid, uintptr_t p1)
 static void hardware_ltdc_main_set_no_vsync_ui(int rtmixid, uintptr_t p1)
 {
 	const int uich = 1;
-	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
-	if (bld == NULL)
-		return;
-
 	t113_de_set_address_ui(rtmixid, p1, uich);
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
-	bld->BLD_EN_COLOR_CTL =
-			((de3_getui(rtmixid, uich) != NULL) * (p1 != 0) * UI_POS_BIT(rtmixid, uich)) |
-		0;
+	t113_de_set_layerval(
+		rtmixid,
+		((de3_getui(rtmixid, uich) != NULL) * (p1 != 0) * UI_POS_BIT(rtmixid, uich)) |
+		0);
 	t113_de_update(rtmixid);	/* Update registers */
 }
 
@@ -8119,16 +8105,14 @@ static void hardware_ltdc_main_set_no_vsync_ui(int rtmixid, uintptr_t p1)
 static void hardware_ltdc_main_set_no_vsync_vi(int rtmixid, uintptr_t p1)
 {
 	const int vich = 1;
-	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
-	if (bld == NULL)
-		return;
 
 	t113_de_set_address_vi(rtmixid, p1, vich);
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
-	bld->BLD_EN_COLOR_CTL =
-			((de3_getvi(rtmixid, vich) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, vich)) |
-		0;
+	t113_de_set_layerval(
+		rtmixid,
+		((de3_getvi(rtmixid, vich) != NULL) * (p1 != 0) * VI_POS_BIT(rtmixid, vich)) |
+		0);
 	t113_de_update(rtmixid);	/* Update registers */
 }
 
