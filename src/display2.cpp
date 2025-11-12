@@ -1603,11 +1603,11 @@ static gxstyle_t dbstylev_1freqv;
 // Параметры отображения режима основного приемника
 static gxstyle_t dbstylev_1mode;
 
-// Параметры отображения спектра и водопада
+// Параметры отображения спектра и водопада - устанавливаются в display2_stylesupdate().
 static COLORPIP_T colorcmarker = DSGN_GRIDCOLOR0;	// Цвет макркера на центре
 static COLORPIP_T colorgridlines = DSGN_GRIDCOLOR2;	// Цвет линий сетки
-static COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// Цвет текста частот сетки
 static COLORPIP_T colorgridlines3dss = COLORPIP_GREEN;
+static COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// Цвет текста частот сетки
 
 #if 1
 	// полностью частота до килогерц
