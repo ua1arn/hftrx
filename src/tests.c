@@ -6113,7 +6113,7 @@ static void mtimer_set_raw_time_cmp(uint64_t new_mtimecmp) {
 }
 #endif /* CPUSTYLE_F133 */
 
-#if 0
+#if 0 && LCDMODE_LTDC
 
 // PNG files test
 
@@ -6130,49 +6130,53 @@ void testpng(const void * pngbuffer)
 	const unsigned picdx = png->width;//GXADJ(png->width);
 	const unsigned picw = png->width;
 	const unsigned pich = png->height;
+	gxdrawb_t dbv_fb;
+	gxdrawb_initialize(& dbv_fb, fb, DIM_X, DIM_Y);
+	gxdrawb_t dbv_fbpic;
+	gxdrawb_initialize(& dbv_fbpic, fbpic, png->width, png->height);
 
 	PRINTF("testpng: sz=%u data=%p, dataSize=%u, depth=%u, w=%u, h=%u\n", (unsigned) sizeof fbpic [0], png, (unsigned) png->dataSize,  (unsigned) png->depth, (unsigned) png->width, (unsigned) png->height);
 
-	colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, COLORPIP_GRAY);
+	colpip_fillrect(& dbv_fb, 0, 0, DIM_X, DIM_Y, COLORPIP_GRAY);
 
 	colpip_stretchblt(
-		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
-		fb, DIM_X, DIM_Y,
+		dbv_fb.cachebase, dbv_fb.cachesize,
+		& dbv_fb,
 		0, 0, picw / 4, pich / 4,		/* позиция и размеры прямоугольника - получателя */
-		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
-		fbpic, picdx, pich,
-		0, 0, picdx, pich,
-		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
-		);
-
-	colpip_stretchblt(
-		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
-		fb, DIM_X, DIM_Y,
-		30, 0, picw / 2, pich / 2,		/* позиция и размеры прямоугольника - получателя */
-		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
-		fbpic, picdx, pich,
-		0, 0, picdx, pich,
-		BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
-		);
-
-	colpip_stretchblt(
-		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
-		fb, DIM_X, DIM_Y,
-		30, pich / 2, picw / 2, pich / 2,		/* позиция и размеры прямоугольника - получателя */
-		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
-		fbpic, picdx, pich,
+		dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+		& dbv_fbpic,
 		0, 0, picdx, pich,
 		BITBLT_FLAG_NONE | 1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
 	colpip_stretchblt(
-		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
-		fb, DIM_X, DIM_Y,
-		300, 100, picw / 1, pich / 1,		/* позиция и размеры прямоугольника - получателя */
-		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
-		fbpic, picdx, pich,
+		dbv_fb.cachebase, dbv_fb.cachesize,
+		& dbv_fb,
+		30, 0, picw / 2, pich / 2,		/* позиция и размеры прямоугольника - получателя */
+		dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+		& dbv_fbpic,
 		0, 0, picdx, pich,
-		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+		BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+		);
+
+	colpip_stretchblt(
+		dbv_fb.cachebase, dbv_fb.cachesize,
+		& dbv_fb,
+		30, pich / 2, picw / 2, pich / 2,		/* позиция и размеры прямоугольника - получателя */
+		dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+		& dbv_fbpic,
+		0, 0, picdx, pich,
+		BITBLT_FLAG_NONE | 1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+		);
+
+	colpip_stretchblt(
+		dbv_fb.cachebase, dbv_fb.cachesize,
+		& dbv_fb,
+		300, 100, picw / 1, pich / 1,		/* позиция и размеры прямоугольника - получателя */
+		dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+		& dbv_fbpic,
+		0, 0, picdx, pich,
+		BITBLT_FLAG_NONE | 1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 		);
 
 	dcache_clean((uintptr_t) fb,  GXSIZE(DIM_X, DIM_Y) * sizeof fb [0]);
@@ -6194,6 +6198,10 @@ void testpng_no_stretch(const void * pngbuffer)
 	const unsigned picdx = png->width;//GXADJ(png->width);
 	const unsigned picw = png->width;
 	const unsigned pich = png->height;
+	gxdrawb_t dbv_fb;
+	gxdrawb_initialize(& dbv_fb, fb, DIM_X, DIM_Y);
+	gxdrawb_t dbv_fbpic;
+	gxdrawb_initialize(& dbv_fbpic, fbpic, png->width, png->height);
 
 	PRINTF("testpng: sz=%u data=%p, dataSize=%u, depth=%u, w=%u, h=%u\n", (unsigned) sizeof fbpic [0], png, (unsigned) png->dataSize,  (unsigned) png->depth, (unsigned) png->width, (unsigned) png->height);
 	PRINTF("testpng: dim_x=%u, dim_y=%u\n", DIM_X, DIM_Y);
@@ -6201,24 +6209,24 @@ void testpng_no_stretch(const void * pngbuffer)
 	//colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, COLORPIP_GRAY);
 
 	colpip_bitblt(
-		(uintptr_t) fb, GXSIZE(DIM_X, DIM_Y) * sizeof fb [0],
-		fb, DIM_X, DIM_Y,
+		dbv_fb.cachebase, dbv_fb.cachesize,
+		& dbv_fb,
 		0, 0,			/* позиция прямоугольника - получателя */
-		(uintptr_t) fbpic, GXSIZE(picw, pich) * sizeof fbpic [0],
-		fbpic, picdx, pich,
+		dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+		& dbv_fbpic,
 		0, 0, picdx, pich,
-		//BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
-		BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, keycolor
+		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+		//BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, keycolor
 		);
 
-	if (1)
+	if (0)
 	{
-		// Convert ABGR8886 to ARGB8888
+		// Convert ABGR8888 to ARGB8888
 		for (unsigned y = 0; y < DIM_Y; ++ y)
 		{
 			for (unsigned x = 0; x < DIM_X; ++ x)
 			{
-				PACKEDCOLORPIP_T * const p = colpip_mem_at(fb, DIM_X, DIM_Y, x, y);
+				PACKEDCOLORPIP_T * const p = colpip_mem_at(& dbv_fb, x, y);
 				unsigned a = (* p >> 24) & 0xFF;
 				unsigned b = (* p >> 16) & 0xFF;
 				unsigned g = (* p >> 8) & 0xFF;
@@ -11364,7 +11372,7 @@ void hightests(void)
 		board_update();
 		TP();
 
-		#include "testdata/Cobra.png.h"
+		#include "src/testdata/Cobra.png.h"
 
 		testpng(Cobra_png);
 		for (;;)
@@ -11379,7 +11387,7 @@ void hightests(void)
 
 		static const unsigned char png [] =
 		{
-			#include "testdata/1920x1080.h"
+			#include "src/testdata/1920x1080.h"
 
 		};
 
@@ -11488,10 +11496,10 @@ void hightests(void)
 //		dcache_clean_invalidate((uintptr_t) fbpic, sizeof fbpic);
 
 	#ifdef RTMIXIDTV
-		hardware_ltdc_main_set4(RTMIXIDTV, (uintptr_t) layer0_a, (uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
+		hardware_ltdc_main_set4(RTMIXIDTV, (uintptr_t) layer0_a, (uintptr_t) layer1, 1*(uintptr_t) layer2, 1*(uintptr_t) layer3);
 	#endif
 	#ifdef RTMIXIDLCD
-		hardware_ltdc_main_set4(RTMIXIDLCD, (uintptr_t) layer0_a, (uintptr_t) layer1, 0*(uintptr_t) layer2, 0*(uintptr_t) layer3);
+		hardware_ltdc_main_set4(RTMIXIDLCD, (uintptr_t) layer0_a, (uintptr_t) layer1, 1*(uintptr_t) layer2, 1*(uintptr_t) layer3);
 	#endif
 
 		/* Тестовое изображение для заполнения с color key (с фоном в этом цвете) */
