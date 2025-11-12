@@ -6208,16 +6208,32 @@ void testpng_no_stretch(const void * pngbuffer)
 
 	//colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, COLORPIP_GRAY);
 
-	colpip_bitblt(
-		dbv_fb.cachebase, dbv_fb.cachesize,
-		& dbv_fb,
-		0, 0,			/* позиция прямоугольника - получателя */
-		dbv_fbpic.cachebase, dbv_fbpic.cachesize,
-		& dbv_fbpic,
-		0, 0, picdx, pich,
-		BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
-		//BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, keycolor
-		);
+	if (1)
+	{
+		colpip_bitblt(
+			dbv_fb.cachebase, dbv_fb.cachesize,
+			& dbv_fb,
+			0, 0,			/* позиция прямоугольника - получателя */
+			dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+			& dbv_fbpic,
+			0, 0, picdx, pich,
+			BITBLT_FLAG_NONE | 1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+			//BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, keycolor
+			);
+	}
+	else
+	{
+		colpip_stretchblt(
+			dbv_fb.cachebase, dbv_fb.cachesize,
+			& dbv_fb,
+			0, 0, DIM_X, DIM_Y,		/* позиция и размеры прямоугольника - получателя */
+			dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+			& dbv_fbpic,
+			0, 0, picdx, pich,
+			BITBLT_FLAG_NONE | 1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+			);
+
+	}
 
 	if (0)
 	{
