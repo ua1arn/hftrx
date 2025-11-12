@@ -11449,7 +11449,7 @@ void hightests(void)
 		TP();
 	}
 #endif
-#if 1 && LCDMODE_LTDC
+#if 0 && LCDMODE_LTDC
 	{
 		enum { picy = 110, picx = 150 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
