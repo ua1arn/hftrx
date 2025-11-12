@@ -11449,7 +11449,7 @@ void hightests(void)
 		TP();
 	}
 #endif
-#if 0 && LCDMODE_LTDC
+#if 1 && LCDMODE_LTDC
 	{
 		enum { picy = 110, picx = 150 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -11537,15 +11537,19 @@ void hightests(void)
 
 		/* полупрозрачный фон */
 		unsigned fgalpha = 128;
+		colpip_fillrect(& dbv_layer1, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLORPIP_GREEN));	/* opaque color transparent black */
+		colpip_string_tbg(& dbv_layer1, 0, DIM_Y - 16 * 1, "ly1", TFTALPHA(255, COLORPIP_GREEN));
 		colpip_fillrect(& dbv_layer1, 110, 110, DIM_X - 200, DIM_Y - 200, TFTALPHA(fgalpha, COLORPIP_BLUE));	/* transparent black */
 		/* полупрозрачный прямоугольник на фоне */
 		colpip_fillrect(& dbv_layer1, 120, 120, 200, 200, TFTALPHA(fgalpha, COLORPIP_GREEN));	// GREEN
 		/* прозрачный слой */
 		unsigned l2alpha = 0;
 		colpip_fillrect(& dbv_layer2, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_RED));	/* opaque color transparent black */
+		colpip_string_tbg(& dbv_layer2, 0, DIM_Y - 16 * 2, "ly2", TFTALPHA(255, COLORPIP_RED));
 		/* прозрачный слой */
 		unsigned l3alpha = 0;
 		colpip_fillrect(& dbv_layer3, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_GREEN));	/* opaque color transparent black */
+		colpip_string_tbg(& dbv_layer3, 0, DIM_Y - 16 * 3, "ly3", TFTALPHA(255, COLORPIP_GREEN));
 
 		TP();
 		/* копируем изображение в верхний слой с цветовым ключем */
@@ -11682,10 +11686,10 @@ void hightests(void)
 			dcache_clean_invalidate(drawlayer->cachebase, drawlayer->cachesize);
 
 		#ifdef RTMIXIDTV
-			hardware_ltdc_main_set4(RTMIXIDTV, (uintptr_t) drawlayer->buffer, 1*(uintptr_t) dbv_layer1.buffer, 0*(uintptr_t) dbv_layer2.buffer, 0*(uintptr_t) dbv_layer3.buffer);
+			hardware_ltdc_main_set4(RTMIXIDTV, (uintptr_t) drawlayer->buffer, 1*(uintptr_t) dbv_layer1.buffer, 1*(uintptr_t) dbv_layer2.buffer, 1*(uintptr_t) dbv_layer3.buffer);
 		#endif
 		#ifdef RTMIXIDLCD
-			hardware_ltdc_main_set4(RTMIXIDLCD, (uintptr_t) drawlayer->buffer, 1*(uintptr_t) dbv_layer1.buffer, 0*(uintptr_t) dbv_layer2.buffer, 0*(uintptr_t) dbv_layer3.buffer);
+			hardware_ltdc_main_set4(RTMIXIDLCD, (uintptr_t) drawlayer->buffer, 1*(uintptr_t) dbv_layer1.buffer, 1*(uintptr_t) dbv_layer2.buffer, 1*(uintptr_t) dbv_layer3.buffer);
 		#endif
 
 			phase = ! phase;

@@ -1877,13 +1877,13 @@ static DE_VI_TypeDef * const rtmix1_vimap [] =
 static DE_UI_TypeDef * const rtmix0_uimap [] =
 {
 		DE_MIXER0_UI1,
-		NULL,
-		NULL,
+		0,//DE_MIXER0_UI2,
+		0,//DE_MIXER0_UI3,
 };
 
 static DE_UI_TypeDef * const rtmix1_uimap [] =
 {
-		NULL,
+		0,//DE_MIXER1_UI1,
 		NULL,
 		NULL,
 };
