@@ -2545,6 +2545,25 @@ static DE_UI_TypeDef * de3_getui(int rtmixid, int id)
 	}
 }
 
+static IRQLSPINLOCK_t rtmixlock [2];
+
+/* Установка новых адресов видеобуфера производится из прерываний на IRQL_OVERREALTIME */
+static void de3_lockbld(int rtmixid, IRQL_t * oldIrql)
+{
+	ASSERT(rtmixid >= 1);
+	const int disp = rtmixid - 1;
+	ASSERT(disp < ARRAY_SIZE(rtmixlock));
+	IRQLSPIN_LOCK(& rtmixlock [disp], oldIrql, IRQL_OVERREALTIME);
+}
+
+static void de3_unlockbld(int rtmixid, IRQL_t oldIrql)
+{
+	ASSERT(rtmixid >= 1);
+	const int disp = rtmixid - 1;
+	ASSERT(disp < ARRAY_SIZE(rtmixlock));
+	IRQLSPIN_UNLOCK(& rtmixlock [disp], oldIrql);
+}
+
 static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 {
 	switch (rtmixid)
@@ -2858,7 +2877,10 @@ static void t113_de_set_layerval(int rtmixid, uint_fast32_t val)
 	DE_BLD_TypeDef * const bld = de3_getbld(rtmixid);
 	if (bld != NULL)
 	{
+		IRQL_t oldIrql;
+		de3_lockbld(rtmixid, & oldIrql);
 		bld->BLD_EN_COLOR_CTL = val;
+		de3_unlockbld(rtmixid, oldIrql);
 	}
 }
 
@@ -2913,6 +2935,9 @@ static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, uint
 		glb->GLB_SIZE = ovl_ui_mbsize;
 		ASSERT(glb->GLB_SIZE == ovl_ui_mbsize);
 	}
+
+	IRQL_t oldIrql;
+	de3_lockbld(rtmixid, & oldIrql);
 
 	// 5.10.9.1 BLD fill color control register
 	// BLD_FILL_COLOR_CTL
@@ -2970,6 +2995,7 @@ static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, uint
 	{
 		t113_de_set_address_vi(rtmixid, (uintptr_t) 0, i);
 	}
+	de3_unlockbld(rtmixid, oldIrql);
 }
 
 // LVDS: mstep1, HV: step1: Select HV interface type
@@ -3002,6 +3028,13 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 /* Инициализация системы тактирования, общей для всех видеовыходов */
 static void hardware_de_global_initialize(void)
 {
+	unsigned i;
+
+	for (i = 0; i < ARRAY_SIZE(rtmixlock); ++ i)
+	{
+		IRQLSPINLOCK_t * const lck = & rtmixlock [i];
+		IRQLSPINLOCK_INITIALIZE(lck);
+	}
 #if CPUSTYLE_H3
 
 #elif CPUSTYLE_A64
