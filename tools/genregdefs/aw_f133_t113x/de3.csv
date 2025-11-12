@@ -79,6 +79,9 @@
 
 #type; DE_UI; Display Engine (DE) - UI surface
 
+# T113x_User_Manual_V1.1.pdf
+# Two alpha blending channels for main display, one channel for aux display
+
 #base; DE_MIXER0_UI1 0x05103000; RT-Mixer 0 UI surface
 ##base; DE_MIXER0_UI2 0x05104000; RT-Mixer 0 UI surface
 ##base; DE_MIXER0_UI3 0x05105000; RT-Mixer 0 UI surface
