@@ -2524,78 +2524,8 @@
   </interrupt>
   </peripheral>
   <peripheral>
-  <name>CPU_SUBSYS_CTRL_H616</name>
-  <description>H616 CPU Subsystem Control Register List</description>
-  <baseAddress>0x08100000</baseAddress>
-  <registers>
-   <register>
-    <name>GENER_CTRL_REG0</name>
-    <displayName>GENER_CTRL_REG0</displayName>
-    <description>General Control Register0</description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>GENER_CTRL_REG1</name>
-    <displayName>GENER_CTRL_REG1</displayName>
-    <description>General Control Register1</description>
-    <addressOffset>0x004</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>GIC_JTAG_RST_CTRL</name>
-    <displayName>GIC_JTAG_RST_CTRL</displayName>
-    <description>GIC and Jtag Reset Control Register</description>
-    <addressOffset>0x00C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>C0_INT_EN</name>
-    <displayName>C0_INT_EN</displayName>
-    <description>Cluster0 Interrupt Enable Control Register</description>
-    <addressOffset>0x010</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IRQ_FIQ_STATUS</name>
-    <displayName>IRQ_FIQ_STATUS</displayName>
-    <description>IRQ/FIQ Status Register</description>
-    <addressOffset>0x014</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>GENER_CTRL_REG2</name>
-    <displayName>GENER_CTRL_REG2</displayName>
-    <description>General Control Register2</description>
-    <addressOffset>0x018</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DBG_STATE</name>
-    <displayName>DBG_STATE</displayName>
-    <description>Debug State Register</description>
-    <addressOffset>0x01C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral>
-  <name>CPU_SUBSYS_CTRL_T507</name>
-  <description>T507 CPU Subsystem Control Register List</description>
+  <name>CPU_SUBSYS_CTRL</name>
+  <description>T507/H618 CPU Subsystem Control Register List</description>
   <baseAddress>0x08100000</baseAddress>
   <registers>
    <register>
@@ -2700,6 +2630,76 @@
     </registers>
     <dimIncrement>0x020</dimIncrement>
    </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>CPU_SUBSYS_CTRL_H616</name>
+  <description>H616 CPU Subsystem Control Register List</description>
+  <baseAddress>0x08100000</baseAddress>
+  <registers>
+   <register>
+    <name>GENER_CTRL_REG0</name>
+    <displayName>GENER_CTRL_REG0</displayName>
+    <description>General Control Register0</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GENER_CTRL_REG1</name>
+    <displayName>GENER_CTRL_REG1</displayName>
+    <description>General Control Register1</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GIC_JTAG_RST_CTRL</name>
+    <displayName>GIC_JTAG_RST_CTRL</displayName>
+    <description>GIC and Jtag Reset Control Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_INT_EN</name>
+    <displayName>C0_INT_EN</displayName>
+    <description>Cluster0 Interrupt Enable Control Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IRQ_FIQ_STATUS</name>
+    <displayName>IRQ_FIQ_STATUS</displayName>
+    <description>IRQ/FIQ Status Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GENER_CTRL_REG2</name>
+    <displayName>GENER_CTRL_REG2</displayName>
+    <description>General Control Register2</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DBG_STATE</name>
+    <displayName>DBG_STATE</displayName>
+    <description>Debug State Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
   </peripheral>
   <peripheral>
@@ -5054,72 +5054,145 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UIS_INSIZE_REG</name>
-    <displayName>UIS_INSIZE_REG</displayName>
-    <description>Input size register</description>
+    <name>UIS_GLOBAL_ALPHA_REG</name>
+    <displayName>UIS_GLOBAL_ALPHA_REG</displayName>
+    <description>VSU Output Global Alpha Register</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UIS_Y_INSIZE_REG</name>
+    <displayName>UIS_Y_INSIZE_REG</displayName>
+    <description>Y Channel Input size register</description>
     <addressOffset>0x080</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UIS_HSTEP_REG</name>
-    <displayName>UIS_HSTEP_REG</displayName>
-    <description>Horizontal step register</description>
+    <name>UIS_Y_HSTEP_REG</name>
+    <displayName>UIS_Y_HSTEP_REG</displayName>
+    <description>Y Channel Horizontal step register</description>
     <addressOffset>0x088</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UIS_VSTEP_REG</name>
-    <displayName>UIS_VSTEP_REG</displayName>
-    <description>Vertical step register</description>
+    <name>UIS_Y_VSTEP_REG</name>
+    <displayName>UIS_Y_VSTEP_REG</displayName>
+    <description>Y Channel Vertical step register</description>
     <addressOffset>0x08C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UIS_HPHASE_REG</name>
-    <displayName>UIS_HPHASE_REG</displayName>
-    <description>Horizontal initial phase register</description>
+    <name>UIS_Y_HPHASE_REG</name>
+    <displayName>UIS_Y_HPHASE_REG</displayName>
+    <description>Y Channel Horizontal initial phase register</description>
     <addressOffset>0x090</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UIS_VPHASE0_REG</name>
-    <displayName>UIS_VPHASE0_REG</displayName>
-    <description>Vertical initial phase 0 register</description>
+    <name>UIS_Y_VPHASE_REG</name>
+    <displayName>UIS_Y_VPHASE_REG</displayName>
+    <description>Y Channel Vertical initial phase 0 register</description>
     <addressOffset>0x098</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UIS_VPHASE1_REG</name>
-    <displayName>UIS_VPHASE1_REG</displayName>
-    <description>Vertical initial phase 1 register</description>
-    <addressOffset>0x09C</addressOffset>
+    <name>UIS_C_INSIZE_REG</name>
+    <displayName>UIS_C_INSIZE_REG</displayName>
+    <description>C Channel Input size register</description>
+    <addressOffset>0x0C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UIS_C_HSTEP_REG</name>
+    <displayName>UIS_C_HSTEP_REG</displayName>
+    <description>C Channel Horizontal step register</description>
+    <addressOffset>0x0C8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UIS_C_VSTEP_REG</name>
+    <displayName>UIS_C_VSTEP_REG</displayName>
+    <description>C Channel Vertical step register</description>
+    <addressOffset>0x0CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UIS_C_HPHASE_REG</name>
+    <displayName>UIS_C_HPHASE_REG</displayName>
+    <description>C Channel Horizontal initial phase register</description>
+    <addressOffset>0x0D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UIS_C_VPHASE_REG</name>
+    <displayName>UIS_C_VPHASE_REG</displayName>
+    <description>C Channel Vertical initial phase 0 register</description>
+    <addressOffset>0x0D8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>16</dim>
+    <dim>64</dim>
     <addressOffset>0x00000200</addressOffset>
     <register>
-     <name>UIS_HCOEF_REGN</name>
-     <displayName>UIS_HCOEF_REGN</displayName>
-     <description>Horizontal filter coefficient register N (N=0:15)#typeend</description>
+     <name>UIS_Y_HCOEF0_REGN</name>
+     <displayName>UIS_Y_HCOEF0_REGN</displayName>
+     <description>0x200+N*4 Y Channel Horizontal Filter Coefficient0 Register N N = M 1))</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x040</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>64</dim>
+    <addressOffset>0x00000400</addressOffset>
+    <register>
+     <name>UIS_Y_VCOEF_REGN</name>
+     <displayName>UIS_Y_VCOEF_REGN</displayName>
+     <description>0x400+N*4 Y Channel Vertical Filter Coefficient Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x100</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>64</dim>
+    <addressOffset>0x00000600</addressOffset>
+    <register>
+     <name>UIS_C_HCOEF0_REGN</name>
+     <displayName>UIS_C_HCOEF0_REGN</displayName>
+     <description>0x600+N*4 C Channel Horizontal Filter Coefficient0 Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
@@ -5440,7 +5513,7 @@
    <register>
     <name>VSU_GLOBAL_ALPHA_REG</name>
     <displayName>VSU_GLOBAL_ALPHA_REG</displayName>
-    <description></description>
+    <description>VSU Output Global Alpha Register</description>
     <addressOffset>0x044</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -5555,7 +5628,7 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>32</dim>
+    <dim>64</dim>
     <addressOffset>0x00000200</addressOffset>
     <register>
      <name>VSU_Y_HCOEF0_REGN</name>
@@ -5566,24 +5639,10 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x080</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
    <cluster>
-    <dim>32</dim>
-    <addressOffset>0x00000300</addressOffset>
-    <register>
-     <name>VSU_Y_HCOEF1_REGN</name>
-     <displayName>VSU_Y_HCOEF1_REGN</displayName>
-     <description>0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1</description>
-     <addressOffset>0x000</addressOffset>
-     <size>0x20</size>
-     <access>read-write</access>
-     <resetValue>0x00000000</resetValue>
-    </register>
-    <dimIncrement>0x080</dimIncrement>
-   </cluster>
-   <cluster>
-    <dim>32</dim>
+    <dim>64</dim>
     <addressOffset>0x00000400</addressOffset>
     <register>
      <name>VSU_Y_VCOEF_REGN</name>
@@ -5594,10 +5653,10 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x080</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
    <cluster>
-    <dim>32</dim>
+    <dim>64</dim>
     <addressOffset>0x00000600</addressOffset>
     <register>
      <name>VSU_C_HCOEF0_REGN</name>
@@ -5608,35 +5667,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x080</dimIncrement>
-   </cluster>
-   <cluster>
-    <dim>32</dim>
-    <addressOffset>0x00000700</addressOffset>
-    <register>
-     <name>VSU_C_HCOEF1_REGN</name>
-     <displayName>VSU_C_HCOEF1_REGN</displayName>
-     <description>0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1))</description>
-     <addressOffset>0x000</addressOffset>
-     <size>0x20</size>
-     <access>read-write</access>
-     <resetValue>0x00000000</resetValue>
-    </register>
-    <dimIncrement>0x080</dimIncrement>
-   </cluster>
-   <cluster>
-    <dim>32</dim>
-    <addressOffset>0x00000800</addressOffset>
-    <register>
-     <name>VSU_C_VCOEF_REGN</name>
-     <displayName>VSU_C_VCOEF_REGN</displayName>
-     <description>0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1))</description>
-     <addressOffset>0x000</addressOffset>
-     <size>0x20</size>
-     <access>read-write</access>
-     <resetValue>0x00000000</resetValue>
-    </register>
-    <dimIncrement>0x080</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
   </registers>
   </peripheral>

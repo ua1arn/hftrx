@@ -350,7 +350,7 @@ void hardware_uart5_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	   serial_set_handler(UART5_IRQn, UART5_IRQHandler);
 	}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507)
 
 	const unsigned ix = thisPORT;
 

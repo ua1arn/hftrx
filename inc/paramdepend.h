@@ -485,7 +485,7 @@ extern "C" {
 	#endif
 
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
@@ -1003,6 +1003,7 @@ extern "C" {
 #define CODEC_TYPE_CS42L51		45	// CIRRUS LOGIC CS42L51
 #define CODEC_TYPE_AWHWCODEC	46	// Allwinner embedded audio codec
 #define CODEC_TYPE_ALSA			47	// Linux ALSA
+#define CODEC_TYPE_LINUX		48	// Linux, for CODEC2_TYPE
 
 #define RTC_TYPE_DS1305		50	/* MAXIM DS1305EN RTC clock chip with SPI interface */
 #define RTC_TYPE_DS1307		51	/* MAXIM DS1307/DS3231 RTC clock chip with I2C interface */
@@ -1169,7 +1170,7 @@ extern "C" {
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
-#elif DIM_X == 800 && DIM_Y == 480
+#elif (DIM_X == 800 && DIM_Y == 480) || (DIM_X == 1366 && DIM_Y == 768)
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
 	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */

@@ -235,8 +235,8 @@ SystemExecAARCH64 = 0x00031560
 endif
 
 # Invoke SystemInit 
-ddrinit_h616: ddrinit_h616.bin
-	$(XFEL) write 0x00028000 ddrinit_h616.bin
+ddrinit_h616: ddrinit_h616_lpddr3.bin
+	$(XFEL) write 0x00028000 ddrinit_h616_lpddr3.bin
 	$(XFEL) exec $(SystemDRAMInit)
 
 ddrinit_a133_:

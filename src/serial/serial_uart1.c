@@ -468,7 +468,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	   serial_set_handler(UART1_IRQn, UART1_IRQHandler);
 	}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507)
 
 	const unsigned ix = thisPORT;
 

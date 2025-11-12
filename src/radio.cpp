@@ -2969,6 +2969,7 @@ enum
 	BANDGROUP_24p8MHz,
 	BANDGROUP_CB,
 	BANDGROUP_28MHz,
+	BANDGROUP_45MHz,
 	BANDGROUP_50MHz,
 	BANDGROUP_70MHz,
 	BANDGROUP_144MHz,
@@ -2997,6 +2998,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 	"24",
 	"CB",
 	"28",
+	"45",
 	"50",
 	"70",
 	"144",
@@ -3045,6 +3047,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 	#define BANDMAPSUBMODE_CW	SUBMODE_CWSMART
 	#define BANDMAPSUBMODE_CWR	SUBMODE_CWSMART
 	#define BANDMAPSUBMODE_AM	SUBMODE_SSBSMART
+	#define BANDMAPSUBMODE_NFM	SUBMODE_NFM
 #else /* WITHMODESETSMART */
 	#define BANDMAPSUBMODE_LSB	SUBMODE_LSB
 	#define BANDMAPSUBMODE_USB	SUBMODE_USB
@@ -3052,6 +3055,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 	#define BANDMAPSUBMODE_CWR	SUBMODE_CWR
 	#define BANDMAPSUBMODE_AM	SUBMODE_AM
 	#define BANDMAPSUBMODE_WFM	SUBMODE_WFM
+	#define BANDMAPSUBMODE_NFM	SUBMODE_NFM
 #endif /* WITHMODESETSMART */
 
 /*
@@ -3088,11 +3092,11 @@ static struct bandrange  const bandsmap [] =
 	{ BMF(3900000), 			BMF(4000000), 				BMF(3900000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, BANDGROUP_SWLOW, "75m", },			/*  */
 #if WITHBANDR1BBU
 	{ BMF(4455000 - BANDPAD), 	BMF(4455000 + BANDPAD), 	BMF(4455000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_4p44MHz, "4.4M"},
-#endif
+#endif /* WITHBANDR1BBU */
 	{ BMF(4750000), 			BMF(5060000), 				BMF(4750000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, BANDGROUP_SWLOW, "", },				/*  */
 #if WITHBANDR1BBU
 	{ BMF(5245000 - BANDPAD), 	BMF(5245000 + BANDPAD), 	BMF(5245000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_5p24MHz, "5.2M"},
-#endif
+#endif /* WITHBANDR1BBU */
 	/*
 		Частотный план диапазона 5 MHz ( 60m )
 		Диапазон: 5351.5-5.366.5 khz
@@ -3139,6 +3143,9 @@ static struct bandrange  const bandsmap [] =
 	{ BMF(29200000), 			BMF(29700000 + BANDPAD),	BMF(29600000), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHz, "28M FM", },	/* FM */
 #endif
 
+#if WITHBANDR1BBU
+	{ BMF(41000000 - BANDPAD), 	BMF(49000000 + BANDPAD), 	BMF(44880000), 		BANDMAPSUBMODE_NFM | BANDSETF_HAM, BANDGROUP_45MHz, "LowBand"},
+#endif /* WITHBANDR1BBU */
 #if TUNE_6MBAND
 	{ BMF(50000000 - BANDPAD), 	BMF(54000000 + BANDPAD), 	BMF(50100000), 	BANDMAPSUBMODE_USB | BANDSETF_6M, 		BANDGROUP_50MHz, "50M SSB", },			/* 6 meters HAM band */
 #endif /* TUNE_6MBAND */
@@ -12479,7 +12486,7 @@ updateboard_noui(
 	#endif /* WITHIF4DSP */
 
 	#if WITHHDMITVHW
-		board_set_hdmiformat(param_getvalue(& xhdmiformat));	// Установить режим отображения на выдеовыходе
+		board_set_tvoutformat(param_getvalue(& xhdmiformat));	// Установить режим отображения на выдеовыходе
 	#endif /* WITHHDMITVHW */
 
 	#if WITHAFEQUALIZER
@@ -16966,12 +16973,13 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
 	#if WITHTX && WITHAFCODEC1HAVEPROC
 		& xgmikeequalizer,
 	#endif /* WITHTX && WITHAFCODEC1HAVEPROC */
+	#if WITHIF4DSP
+		& xgnoisereduct,
+		& xgsquelchNFM,
+	#endif /* WITHIF4DSP */
 	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
 		& xgzoomxpow2,
 	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
-	#if WITHIF4DSP
-		& xgnoisereduct,
-	#endif /* WITHIF4DSP */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);

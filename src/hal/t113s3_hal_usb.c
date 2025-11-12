@@ -151,7 +151,7 @@ static int wBoot_block_write(unsigned int start,unsigned int nblock,void *pBuffe
 /////////////////////////////////////
 ///
 
-#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_A64 || CPUSTYLE_T507
 
 static uint32_t readl(uintptr_t addr)
 {
@@ -176,7 +176,7 @@ static void USBC_ConfigFIFO_Base(void)
     writel(reg_value, SYS_CFG_BASE + 0x04);
 }
 
-#endif /* CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 */
+#endif /* CPUSTYLE_A64 || CPUSTYLE_T507 */
 
 //////////////////////////////////////////////////////////////////
 

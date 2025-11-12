@@ -3610,7 +3610,7 @@ static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsi
     DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
     DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 	DMAC->DMAC_SEC_REG &= ~ (UINT32_C(1) << dmach);
 	arm_hardware_set_handler_realtime(DMAC_IRQn, DMAC_NS_IRQHandler);
@@ -3625,7 +3625,7 @@ static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsi
 
 static void DMAC_clock_initialize(void)
 {
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// DMA_MCLK_GATING
 	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock Note: The working clock of DMA is from AHB1.
@@ -3723,7 +3723,7 @@ static unsigned width2fmt(unsigned width)
 /* Установить для заданного канала I2S требуемый DINx и слот */
 static void aw_i2s_setchsrc(I2S_PCM_TypeDef * i2s, unsigned ch, unsigned slot, unsigned rxsdi)
 {
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 
 	/* в каждом регистре управления для восьми каналов */
 	const portholder_t mask0 = power8((UINT32_C(1) << ch) >> 0);	// биты в I2Sn_SDINCHMAP0 - каналы 3..0
@@ -3796,8 +3796,8 @@ static void I2S_fill_TXxCHMAP(
 #elif CPUSTYLE_V3S
 	//#warning Implement for CPUSTYLE_V3S
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
-	//#warning Implement for CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
+	//#warning Implement for CPUSTYLE_T507
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -3852,7 +3852,7 @@ static void I2S_fill_TXxCHMAP(
 //		;
 //}
 
-#if defined (AHUB) && CPUSTYLE_T507 || CPUSTYLE_H616
+#if defined (AHUB) && CPUSTYLE_T507
 
 //	#define WITHAPBIFMAP_RX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_RX для I2S0, I2S1, I2S2, I2S3.
 //	#define WITHAPBIFMAP_TX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_TX для I2S0, I2S1, I2S2, I2S3.
@@ -4044,7 +4044,7 @@ static void t507_audiopll_initialize(void)
 	    PRINTF("allwnr_t507_get_pll_audio_4x_freq()=%u\n", (unsigned) allwnr_t507_get_pll_audio_4x_freq());
 	}
 }
-#endif /* CPUSTYLE_T507 || CPUSTYLE_H616 */
+#endif /* CPUSTYLE_T507 */
 
 
 static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, unsigned NSLOTS, unsigned lrckf, unsigned framebits)
@@ -4052,7 +4052,7 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 	const unsigned bclkf = lrckf * framebits;
 	const unsigned mclkf = lrckf * 256;
 
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 	// CCU
 	if (ix == 1)
 	{
@@ -4195,7 +4195,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	const unsigned bclkf = lrckf * framebits;
 	const unsigned mclkf = lrckf * 256;
 
-#if defined (AHUB) && CPUSTYLE_T507 || CPUSTYLE_H616
+#if defined (AHUB) && CPUSTYLE_T507
 	const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
 	const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
 	const uint_fast32_t ws = width2fmt(framebits / NSLOTS);	// 7: 32 bit
@@ -4580,7 +4580,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 static void hardware_i2s_enable(unsigned ix, I2S_PCM_TypeDef * i2s, uint_fast8_t en)
 {
-#if defined (AHUB) && CPUSTYLE_T507 || CPUSTYLE_H616
+#if defined (AHUB) && CPUSTYLE_T507
 	/* Соответствующий i2S не работает напрямую с DMA */
 	const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
 	const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
@@ -4837,7 +4837,7 @@ static void DMA_I2Sx_TX_Handler_fpga(unsigned dmach)
 
 static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
-#if defined (AHUB) && CPUSTYLE_T507 || CPUSTYLE_H616
+#if defined (AHUB) && CPUSTYLE_T507
 //	static uint32_t v = 0xDEADBEEF;
 //	return (uintptr_t) & v;
 	(void) i2s;
@@ -4850,7 +4850,7 @@ static uintptr_t I2Sx_RX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 
 static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
-#if defined (AHUB) && CPUSTYLE_T507 || CPUSTYLE_H616
+#if defined (AHUB) && CPUSTYLE_T507
 	(void) i2s;
 	return (uintptr_t) & AHUB->APBIF_TX [getAPBIFtx(ix)].APBIF_TXnFIFO;
 #else
@@ -4861,7 +4861,7 @@ static uintptr_t I2Sx_TX_portaddr(I2S_PCM_TypeDef * i2s, unsigned ix)
 
 static unsigned I2Sx_RX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
-#if defined (AHUB) && CPUSTYLE_T507 || CPUSTYLE_H616
+#if defined (AHUB) && CPUSTYLE_T507
 	return DMAC_SrcReqAHUB_drqr0_RX + getAPBIFrx(ix);
 #else
 	return DMAC_SrcReqI2S1_RX + ix - 1;
@@ -4870,7 +4870,7 @@ static unsigned I2Sx_RX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 
 static unsigned I2Sx_TX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 {
-#if defined (AHUB) && CPUSTYLE_T507 || CPUSTYLE_H616
+#if defined (AHUB) && CPUSTYLE_T507
 	return DMAC_DstReqAHUB_drqt0_TX + getAPBIFtx(ix);
 #elif CPUSTYLE_A64
 	static const unsigned drq [] =
@@ -6098,7 +6098,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 //	PRINTF("AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_audio_codec_4x_freq() / 1000));
 //	PRINTF("AudioCodec: allwnr_t507_get_audio_codec_1x_freq()=%u kHz\n", (unsigned) (allwnr_t507_get_audio_codec_1x_freq() / 1000));
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 	t507_audiopll_initialize();
 	// Default CCU settings:
@@ -6342,7 +6342,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 //
 //	AUDIO_CODEC->HP_CTRL;
 
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 
 	PRINTF("PLL_AUDIO_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG);
 
@@ -6530,7 +6530,7 @@ static void hardware_AudioCodec_enable_codec1(uint_fast8_t state)
 	{
 		AUDIO_CODEC->DA_CTL &= ~ (UINT32_C(1) << 0);	// GEN Globe Enable
 	}
-#elif CPUSTYLE_T507 || CPUSTYLE_H616
+#elif CPUSTYLE_T507
 	if (state)
 	{
 		AUDIO_CODEC->AC_DAC_DPC |= (UINT32_C(1) << 31);		// DAC Digital Part Enable
@@ -6612,7 +6612,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
 
-#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T507)
 
 static void DMAC_AudioCodec_RX_initialize_codec1(void)
 {
@@ -6850,7 +6850,7 @@ static void DMAC_DMIC_RX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
 
-#elif (CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T507)
 
 static void DMAC_DMIC_RX_initialize_codec1(void)
 {
@@ -6889,7 +6889,7 @@ static void audiocodechw_setvolume(uint_fast16_t gainL, uint_fast16_t gainR, uin
 	gainL = gainR = BOARD_AFGAIN_MAX;
 #endif /* WITHUSBHEADSET */
 	PRINTF("audiocodechw_setvolume: gain=%u/%u, mute=%u, mutespk=%u\n", (unsigned) gainL, (unsigned) gainR, (unsigned) mute, (unsigned) mutespk);
-#if CPUSTYLE_T507 || CPUSTYLE_H616
+#if CPUSTYLE_T507
 	uint_fast8_t levelL = (gainL - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;
 	uint_fast8_t levelR = (gainR - BOARD_AFGAIN_MIN) * 0x1F / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + 0;
 	// Offset 0x310 DAC Analog Control Register

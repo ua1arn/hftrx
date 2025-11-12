@@ -131,6 +131,7 @@ void as_rx(uint32_t * buf)
 		memcpy(& as_buf [as_idx], buf, as_buf_step8);
 		as_idx += as_buf_step;
 		if (as_idx % as_gui_upd_pr == 0) gui_update();
+		as_idx_stop = as_buf_size;
 
 		if (as_idx >= as_buf_size || stop)
 		{
@@ -191,6 +192,7 @@ void as_tx(uint32_t * buf)
 		memcpy(& as_buf [as_idx], buf, as_buf_step8);
 		as_idx += as_buf_step;
 		if (as_idx % as_gui_upd_pr == 0) gui_update();
+		as_idx_stop = as_buf_size;
 
 		if (as_idx >= as_buf_size || stop)
 		{
@@ -223,7 +225,10 @@ void as_toggle_record(void)
 	pthread_mutex_lock(& mutex_as);
 
 	if (as_state == AS_IDLE || as_state == AS_READY)
+	{
 		as_state = AS_RECORDING;
+		memset(as_buf, 0, as_buf_size * 4);
+	}
 	else if (as_state == AS_RECORDING)
 		stop = 1;
 
@@ -270,11 +275,13 @@ void as_toggle_trx(void)
 void as_draw_spectrogram(COLORPIP_T * d, uint16_t len, uint16_t lim)
 {
 	const uint16_t step = as_idx_stop / len;
-	int32_t d_max = 0;
-	arm_max_no_idx_q31((q31_t *) as_buf, as_idx_stop, & d_max);
+	uint32_t d_max = 0;
+
+	for (int i = 0; i < as_idx_stop; i += step)
+		if (abs(as_buf[i]) > d_max) d_max = abs(as_buf[i]);
 
 	for (int i = 0; i < len; i ++)
-		d [i] = normalize(abs(as_buf [i * step]), 0, d_max, lim);
+		d [i] = normalize(abs(as_buf[i * step]), 0, d_max, lim);
 }
 
 #endif /* WITHAUDIOSAMPLESREC && WITHTOUCHGUI*/
@@ -2099,20 +2106,6 @@ void linux_user_init(void)
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, spool_thread_core);
 
 	evdev_initialize();
-
-#if IQ_VIA_ZYNQ_PL
-	zynq_pl_init();
-#elif IQ_VIA_USB
-	usb_iq_start();
-#elif IQ_VIA_XDMA
-	xdma_iq_init();
-#if defined(AXI_LITE_UARTLITE)
-	uartlite_reset();
-#endif /* defined(AXI_LITE_UARTLITE) */
-#if defined(HARDWARE_NMEA_INITIALIZE) && WITHNMEA
-	HARDWARE_NMEA_INITIALIZE();
-#endif /* defined(HARDWARE_NMEA_INITIALIZE()) && WITHNMEA*/
-#endif /* IQ_VIA_XDMA */
 #if WITHNMEA && WITHLFM && CPUSTYLE_XC7Z
 	linux_create_thread(& nmea_t, linux_nmea_spool, 50, nmea_thread_core);
 	linux_create_thread(& pps_t, linux_pps_thread, 90, nmea_thread_core);
@@ -2128,6 +2121,50 @@ void linux_user_init(void)
 	sysfs_battery_init();
 #endif /* WITHSYSFSBATTERY */
 }
+
+#if defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_LINUX)
+
+static void linux_fpga_initialize(void (* io_control)(uint_fast8_t on), uint_fast8_t master)
+{
+#if IQ_VIA_ZYNQ_PL
+	zynq_pl_init();
+#elif IQ_VIA_USB
+	usb_iq_start();
+#elif IQ_VIA_XDMA
+	xdma_iq_init();
+#if defined(AXI_LITE_UARTLITE)
+	uartlite_reset();
+#endif /* defined(AXI_LITE_UARTLITE) */
+#if defined(HARDWARE_NMEA_INITIALIZE) && WITHNMEA
+	HARDWARE_NMEA_INITIALIZE();
+#endif /* defined(HARDWARE_NMEA_INITIALIZE()) && WITHNMEA*/
+#endif /* IQ_VIA_XDMA */
+}
+
+const codec2if_t * board_getfpgacodecif(void)
+{
+	static const char codecname [] =
+#if IQ_VIA_ZYNQ_PL
+			"Linux (PL direct)";
+#elif IQ_VIA_USB
+			"Linux (USB)";
+#elif IQ_VIA_XDMA
+			"Linux (XDMA)";
+#else
+			"";
+#endif
+
+	/* Интерфейс управления кодеком */
+	static const codec2if_t ifc =
+	{
+		NULL,
+		linux_fpga_initialize,
+		codecname
+	};
+
+	return & ifc;
+}
+#endif /* defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_LINUX) */
 
 /****************************************************************/
 

@@ -861,7 +861,7 @@ typedef struct DE_UIS_Type
     __IO uint32_t UIS_VPHASE0_REG;                    /*!< Offset 0x098 Vertical initial phase 0 register */
     __IO uint32_t UIS_VPHASE1_REG;                    /*!< Offset 0x09C Vertical initial phase 1 register */
          RESERVED(0x0A0[0x0200 - 0x00A0], uint8_t)
-    __IO uint32_t UIS_HCOEF_REGN [0x010];             /*!< Offset 0x200 Horizontal filter coefficient register N (N=0:15)#typeend */
+    __IO uint32_t UIS_HCOEF_REGN [0x010];             /*!< Offset 0x200 Horizontal filter coefficient register N (N=0:15) */
 } DE_UIS_TypeDef; /* size of structure = 0x240 */
 /*
  * @brief DE_VI
@@ -906,7 +906,7 @@ typedef struct DE_VSU_Type
     __IO uint32_t VSU_SHARP_GAIN0_REG;                /*!< Offset 0x038 VSU Sharpness Control Gain Setting 0 Register */
     __IO uint32_t VSU_SHARP_GAIN1_REG;                /*!< Offset 0x03C VSU Sharpness Control Gain Setting 1 Register */
     __IO uint32_t VSU_OUT_SIZE_REG;                   /*!< Offset 0x040 VSU Output Size Register */
-    __IO uint32_t VSU_GLOBAL_ALPHA_REG;               /*!< Offset 0x044 (null) */
+    __IO uint32_t VSU_GLOBAL_ALPHA_REG;               /*!< Offset 0x044 VSU Output Global Alpha Register */
          RESERVED(0x048[0x0080 - 0x0048], uint8_t)
     __IO uint32_t VSU_Y_SIZE_REG;                     /*!< Offset 0x080 VSU Y Channel Size Register */
          RESERVED(0x084[0x0088 - 0x0084], uint8_t)

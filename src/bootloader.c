@@ -236,8 +236,8 @@ bootloader_launch_app(uintptr_t startfunc, uint_fast8_t x64bit)
 		C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
 		C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
 	#elif CPUSTYLE_T507
-		CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-		CPU_SUBSYS_CTRL_T507->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+		CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+		CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
 	#else
 		#error Unexpected CPUSTYLE_xxx
 	#endif

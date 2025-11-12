@@ -61,7 +61,7 @@ enum
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
 		#define DUALRXFLT		0
 
-	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_A64 || CPUSTYLE_H3 || CPUSTYLE_H616 || CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
+	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_A64 || CPUSTYLE_H3 || CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
 
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
@@ -89,7 +89,7 @@ enum
 
 	/* Фильтрация квадратур осуществляется FPGA */
 
-	#if CPUSTYLE_T113 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_A64 || CPUSTYLE_XC7Z || CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
+	#if CPUSTYLE_T113 || CPUSTYLE_T507 || CPUSTYLE_A64 || CPUSTYLE_XC7Z || CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
 		#define	Ntap_rx_AUDIO	NtapValidate(1023)
 		#define Ntap_tx_MIKE	NtapValidate(1023)
 		#define DUALRXFLT 1
@@ -157,7 +157,7 @@ typedef int32_t hdmi48bufv_t;
 	typedef int32_t IFADCvalue_t;
 	typedef int16_t IFDACvalue_t;
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616) && WITHDSPLOCALFIR
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507) && WITHDSPLOCALFIR
 	/* параметры входного/выходного адаптеров */
 	// IF RX
 	#define WITHADAPTERIFADCWIDTH	32		// 1 бит знак и 31 бит значащих

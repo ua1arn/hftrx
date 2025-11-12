@@ -307,7 +307,7 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	   serial_set_handler(UART0_IRQn, UART0_IRQHandler);
 	}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_H616)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507)
 
 	const unsigned ix = thisPORT;
 
@@ -434,7 +434,7 @@ hardware_uart0_set_speed(uint_fast32_t baudrate)
 
 	hardware_uartx_set_speed(UARTBASENAME(thisPORT), xc7z_get_uart_freq(), baudrate);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
 
 	hardware_uartx_set_speed(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, baudrate);
 

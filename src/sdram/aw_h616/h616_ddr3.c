@@ -626,7 +626,7 @@ void mctl_await_completion(uint32_t *reg, uint32_t mask, uint32_t val)
 	}
 }
 
-#if 1//CPUSTYLE_H616
+#if 1
 // https://github.com/apritzel/u-boot/blob/master/arch/arm/mach-sunxi/dram_timings/h616_ddr3_1333.c#L18
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
@@ -965,7 +965,9 @@ static void mctl_set_addrmap(struct h616_dram_para *para)
 }
 
 static const uint8_t phy_init[] = {
-#if defined(CONFIG_SUNXI_DRAM_H616_LPDDR3)
+#ifdef BOARD_DDR_PHY_INIT_DATA
+	BOARD_DDR_PHY_INIT_DATA
+#elif CONFIG_SUNXI_DRAM_H616_LPDDR3
 	0x07, 0x0b, 0x02, 0x16, 0x0d, 0x0e, 0x14, 0x19,
 	0x0a, 0x15, 0x03, 0x13, 0x04, 0x0c, 0x10, 0x06,
 	0x0f, 0x11, 0x1a, 0x01, 0x12, 0x17, 0x00, 0x08,
@@ -1776,4 +1778,4 @@ void arm_hardware_sdram_initialize(void)
 
 	PRINTF("arm_hardware_sdram_initialize done, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
 }
-#endif /* WITHSDRAMHW && CPUSTYLE_H616 */
+#endif /* WITHSDRAMHW */

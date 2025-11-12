@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 
-#if WITHLWIP && WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_H616 || CPUSTYLE_T113 || CPUSTYLE_F133)
+#if WITHLWIP && WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_T113 || CPUSTYLE_F133)
 
 
 #include "gpio.h"
@@ -133,7 +133,7 @@ static void emac_hw_initialize(void)
 	HARDWARE_ETH_INITIALIZE();	// Должно быть тут - снять ресет с PHY до инициализации
 	{
 		// The working clock of EMAC is from AHB3.
-#if (CPUSTYLE_T507 || CPUSTYLE_H616)
+#if (CPUSTYLE_T507)
 		HARDWARE_EMAC_EPHY_CLK_REG =
 			0x00051c06 | // 0x00051c06 0x00053c01
 			0;
@@ -246,4 +246,4 @@ void nic_initialize(void)
 
 }
 
-#endif /* WITHLWIP && WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_H616) */
+#endif /* WITHLWIP && WITHETHHW && (CPUSTYLE_T507) */

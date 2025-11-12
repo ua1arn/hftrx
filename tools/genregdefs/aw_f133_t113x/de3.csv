@@ -166,7 +166,7 @@
 #regdef; UIS_HPHASE_REG; 0x090; Horizontal initial phase register
 #regdef; UIS_VPHASE0_REG; 0x098; Vertical initial phase 0 register
 #regdef; UIS_VPHASE1_REG; 0x09C; Vertical initial phase 1 register
-#regdef; UIS_HCOEF_REGN; 0x200 16; Horizontal filter coefficient register N (N=0:15)#typeend;
+#regdef; UIS_HCOEF_REGN; 0x200 16; Horizontal filter coefficient register N (N=0:15)
 
 #typeend;
 
@@ -189,7 +189,7 @@
 #regdef; VSU_SHARP_GAIN0_REG; 0x0038; VSU Sharpness Control Gain Setting 0 Register
 #regdef; VSU_SHARP_GAIN1_REG; 0x003C; VSU Sharpness Control Gain Setting 1 Register
 #regdef; VSU_OUT_SIZE_REG; 0x0040; VSU Output Size Register
-#regdef; VSU_GLOBAL_ALPHA_REG; 0x0044 VSU Output Global Alpha Register
+#regdef; VSU_GLOBAL_ALPHA_REG; 0x0044; VSU Output Global Alpha Register
 #regdef; VSU_Y_SIZE_REG; 0x0080; VSU Y Channel Size Register
 #regdef; VSU_Y_HSTEP_REG; 0x0088; VSU Y Channel Horizontal Step Register
 #regdef; VSU_Y_VSTEP_REG; 0x008C; VSU Y Channel Vertical Step Register

@@ -1,5 +1,5 @@
-#type; CPU_SUBSYS_CTRL_T507; T507 CPU Subsystem Control Register List
-#base; CPU_SUBSYS_CTRL_T507 0x08100000
+#type; CPU_SUBSYS_CTRL; T507/H618 CPU Subsystem Control Register List
+#base; CPU_SUBSYS_CTRL 0x08100000
 
 #regdef; GENER_CTRL_REG0; 0x0000; General Control Register0
 #regdef; GENER_CTRL_REG1; 0x0004; General Control Register1

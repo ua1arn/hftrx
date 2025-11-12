@@ -65,6 +65,7 @@
 	//#define CODEC1_TYPE CODEC_TYPE_ALSA
 	#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	#define CODEC1_FPGA	1
+	#define CODEC2_TYPE CODEC_TYPE_LINUX
 	#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма
 	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека

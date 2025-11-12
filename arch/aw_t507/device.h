@@ -334,8 +334,8 @@ typedef enum IRQn
 #define R_TWI_BASE ((uintptr_t) 0x07081400)           /*!< TWI  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
 #define R_CAN0_BASE ((uintptr_t) 0x07082000)          /*!< R_CAN Car Area Network controller Base */
+#define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL T507/H618 CPU Subsystem Control Register List Base */
 #define CPU_SUBSYS_CTRL_H616_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List Base */
-#define CPU_SUBSYS_CTRL_T507_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_T507 T507 CPU Subsystem Control Register List Base */
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG T507/H618 Cluster 0 Configuration Register List Base */
 #define C0_CPUX_CFG_H616_BASE ((uintptr_t) 0x09010000)/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List Base */
 
@@ -765,25 +765,10 @@ typedef struct CE_Type
          RESERVED(0x05C[0x0800 - 0x005C], uint8_t)
 } CE_TypeDef; /* size of structure = 0x800 */
 /*
- * @brief CPU_SUBSYS_CTRL_H616
+ * @brief CPU_SUBSYS_CTRL
  */
-/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List */
-typedef struct CPU_SUBSYS_CTRL_H616_Type
-{
-    __IO uint32_t GENER_CTRL_REG0;                    /*!< Offset 0x000 General Control Register0 */
-    __IO uint32_t GENER_CTRL_REG1;                    /*!< Offset 0x004 General Control Register1 */
-         RESERVED(0x008[0x000C - 0x0008], uint8_t)
-    __IO uint32_t GIC_JTAG_RST_CTRL;                  /*!< Offset 0x00C GIC and Jtag Reset Control Register */
-    __IO uint32_t C0_INT_EN;                          /*!< Offset 0x010 Cluster0 Interrupt Enable Control Register */
-    __IO uint32_t IRQ_FIQ_STATUS;                     /*!< Offset 0x014 IRQ/FIQ Status Register */
-    __IO uint32_t GENER_CTRL_REG2;                    /*!< Offset 0x018 General Control Register2 */
-    __IO uint32_t DBG_STATE;                          /*!< Offset 0x01C Debug State Register */
-} CPU_SUBSYS_CTRL_H616_TypeDef; /* size of structure = 0x020 */
-/*
- * @brief CPU_SUBSYS_CTRL_T507
- */
-/*!< CPU_SUBSYS_CTRL_T507 T507 CPU Subsystem Control Register List */
-typedef struct CPU_SUBSYS_CTRL_T507_Type
+/*!< CPU_SUBSYS_CTRL T507/H618 CPU Subsystem Control Register List */
+typedef struct CPU_SUBSYS_CTRL_Type
 {
     __IO uint32_t GENER_CTRL_REG0;                    /*!< Offset 0x000 General Control Register0 */
     __IO uint32_t GENER_CTRL_REG1;                    /*!< Offset 0x004 General Control Register1 */
@@ -800,7 +785,22 @@ typedef struct CPU_SUBSYS_CTRL_T507_Type
         __IO uint32_t LOW;                            /*!< Offset 0x040 Reset Vector Base Address Registerx_L */
         __IO uint32_t HIGH;                           /*!< Offset 0x044 Reset Vector Base Address Registerx_H */
     } RVBARADDR [0x004];                              /*!< Offset 0x040 Reset Vector Base Address Register for core [0..3] */
-} CPU_SUBSYS_CTRL_T507_TypeDef; /* size of structure = 0x060 */
+} CPU_SUBSYS_CTRL_TypeDef; /* size of structure = 0x060 */
+/*
+ * @brief CPU_SUBSYS_CTRL_H616
+ */
+/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List */
+typedef struct CPU_SUBSYS_CTRL_H616_Type
+{
+    __IO uint32_t GENER_CTRL_REG0;                    /*!< Offset 0x000 General Control Register0 */
+    __IO uint32_t GENER_CTRL_REG1;                    /*!< Offset 0x004 General Control Register1 */
+         RESERVED(0x008[0x000C - 0x0008], uint8_t)
+    __IO uint32_t GIC_JTAG_RST_CTRL;                  /*!< Offset 0x00C GIC and Jtag Reset Control Register */
+    __IO uint32_t C0_INT_EN;                          /*!< Offset 0x010 Cluster0 Interrupt Enable Control Register */
+    __IO uint32_t IRQ_FIQ_STATUS;                     /*!< Offset 0x014 IRQ/FIQ Status Register */
+    __IO uint32_t GENER_CTRL_REG2;                    /*!< Offset 0x018 General Control Register2 */
+    __IO uint32_t DBG_STATE;                          /*!< Offset 0x01C Debug State Register */
+} CPU_SUBSYS_CTRL_H616_TypeDef; /* size of structure = 0x020 */
 /*
  * @brief CSI
  */
@@ -1150,18 +1150,30 @@ typedef struct DE_UIS_Type
     __IO uint32_t UIS_BIST_REG;                       /*!< Offset 0x010 BIST control register */
          RESERVED(0x014[0x0040 - 0x0014], uint8_t)
     __IO uint32_t UIS_OUTSIZE_REG;                    /*!< Offset 0x040 Output size register */
-         RESERVED(0x044[0x0080 - 0x0044], uint8_t)
-    __IO uint32_t UIS_INSIZE_REG;                     /*!< Offset 0x080 Input size register */
+    __IO uint32_t UIS_GLOBAL_ALPHA_REG;               /*!< Offset 0x044 VSU Output Global Alpha Register */
+         RESERVED(0x048[0x0080 - 0x0048], uint8_t)
+    __IO uint32_t UIS_Y_INSIZE_REG;                   /*!< Offset 0x080 Y Channel Input size register */
          RESERVED(0x084[0x0088 - 0x0084], uint8_t)
-    __IO uint32_t UIS_HSTEP_REG;                      /*!< Offset 0x088 Horizontal step register */
-    __IO uint32_t UIS_VSTEP_REG;                      /*!< Offset 0x08C Vertical step register */
-    __IO uint32_t UIS_HPHASE_REG;                     /*!< Offset 0x090 Horizontal initial phase register */
+    __IO uint32_t UIS_Y_HSTEP_REG;                    /*!< Offset 0x088 Y Channel Horizontal step register */
+    __IO uint32_t UIS_Y_VSTEP_REG;                    /*!< Offset 0x08C Y Channel Vertical step register */
+    __IO uint32_t UIS_Y_HPHASE_REG;                   /*!< Offset 0x090 Y Channel Horizontal initial phase register */
          RESERVED(0x094[0x0098 - 0x0094], uint8_t)
-    __IO uint32_t UIS_VPHASE0_REG;                    /*!< Offset 0x098 Vertical initial phase 0 register */
-    __IO uint32_t UIS_VPHASE1_REG;                    /*!< Offset 0x09C Vertical initial phase 1 register */
-         RESERVED(0x0A0[0x0200 - 0x00A0], uint8_t)
-    __IO uint32_t UIS_HCOEF_REGN [0x010];             /*!< Offset 0x200 Horizontal filter coefficient register N (N=0:15)#typeend */
-} DE_UIS_TypeDef; /* size of structure = 0x240 */
+    __IO uint32_t UIS_Y_VPHASE_REG;                   /*!< Offset 0x098 Y Channel Vertical initial phase 0 register */
+         RESERVED(0x09C[0x00C0 - 0x009C], uint8_t)
+    __IO uint32_t UIS_C_INSIZE_REG;                   /*!< Offset 0x0C0 C Channel Input size register */
+         RESERVED(0x0C4[0x00C8 - 0x00C4], uint8_t)
+    __IO uint32_t UIS_C_HSTEP_REG;                    /*!< Offset 0x0C8 C Channel Horizontal step register */
+    __IO uint32_t UIS_C_VSTEP_REG;                    /*!< Offset 0x0CC C Channel Vertical step register */
+    __IO uint32_t UIS_C_HPHASE_REG;                   /*!< Offset 0x0D0 C Channel Horizontal initial phase register */
+         RESERVED(0x0D4[0x00D8 - 0x00D4], uint8_t)
+    __IO uint32_t UIS_C_VPHASE_REG;                   /*!< Offset 0x0D8 C Channel Vertical initial phase 0 register */
+         RESERVED(0x0DC[0x0200 - 0x00DC], uint8_t)
+    __IO uint32_t UIS_Y_HCOEF0_REGN [0x040];          /*!< Offset 0x200 0x200+N*4 Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+         RESERVED(0x300[0x0400 - 0x0300], uint8_t)
+    __IO uint32_t UIS_Y_VCOEF_REGN [0x040];           /*!< Offset 0x400 0x400+N*4 Y Channel Vertical Filter Coefficient Register N N = M 1)) */
+         RESERVED(0x500[0x0600 - 0x0500], uint8_t)
+    __IO uint32_t UIS_C_HCOEF0_REGN [0x040];          /*!< Offset 0x600 0x600+N*4 C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+} DE_UIS_TypeDef; /* size of structure = 0x700 */
 /*
  * @brief DE_VI
  */
@@ -1208,7 +1220,7 @@ typedef struct DE_VSU_Type
     __IO uint32_t VSU_SHARP_GAIN0_REG;                /*!< Offset 0x038 VSU Sharpness Control Gain Setting 0 Register */
     __IO uint32_t VSU_SHARP_GAIN1_REG;                /*!< Offset 0x03C VSU Sharpness Control Gain Setting 1 Register */
     __IO uint32_t VSU_OUT_SIZE_REG;                   /*!< Offset 0x040 VSU Output Size Register */
-    __IO uint32_t VSU_GLOBAL_ALPHA_REG;               /*!< Offset 0x044 (null) */
+    __IO uint32_t VSU_GLOBAL_ALPHA_REG;               /*!< Offset 0x044 VSU Output Global Alpha Register */
          RESERVED(0x048[0x0080 - 0x0048], uint8_t)
     __IO uint32_t VSU_Y_SIZE_REG;                     /*!< Offset 0x080 VSU Y Channel Size Register */
          RESERVED(0x084[0x0088 - 0x0084], uint8_t)
@@ -1228,18 +1240,12 @@ typedef struct DE_VSU_Type
     __IO uint32_t VSU_C_VPHASE0_REG;                  /*!< Offset 0x0D8 VSU C Channel Vertical Initial Phase 0 Register */
     __IO uint32_t VSU_C_VPHASE1_REG;                  /*!< Offset 0x0DC VSU C Channel Vertical Initial Phase 1 Register */
          RESERVED(0x0E0[0x0200 - 0x00E0], uint8_t)
-    __IO uint32_t VSU_Y_HCOEF0_REGN [0x020];          /*!< Offset 0x200 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
-         RESERVED(0x280[0x0300 - 0x0280], uint8_t)
-    __IO uint32_t VSU_Y_HCOEF1_REGN [0x020];          /*!< Offset 0x300 0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1 */
-         RESERVED(0x380[0x0400 - 0x0380], uint8_t)
-    __IO uint32_t VSU_Y_VCOEF_REGN [0x020];           /*!< Offset 0x400 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1)) */
-         RESERVED(0x480[0x0600 - 0x0480], uint8_t)
-    __IO uint32_t VSU_C_HCOEF0_REGN [0x020];          /*!< Offset 0x600 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
-         RESERVED(0x680[0x0700 - 0x0680], uint8_t)
-    __IO uint32_t VSU_C_HCOEF1_REGN [0x020];          /*!< Offset 0x700 0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1)) */
-         RESERVED(0x780[0x0800 - 0x0780], uint8_t)
-    __IO uint32_t VSU_C_VCOEF_REGN [0x020];           /*!< Offset 0x800 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1)) */
-} DE_VSU_TypeDef; /* size of structure = 0x880 */
+    __IO uint32_t VSU_Y_HCOEF0_REGN [0x040];          /*!< Offset 0x200 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+         RESERVED(0x300[0x0400 - 0x0300], uint8_t)
+    __IO uint32_t VSU_Y_VCOEF_REGN [0x040];           /*!< Offset 0x400 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1)) */
+         RESERVED(0x500[0x0600 - 0x0500], uint8_t)
+    __IO uint32_t VSU_C_HCOEF0_REGN [0x040];          /*!< Offset 0x600 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+} DE_VSU_TypeDef; /* size of structure = 0x700 */
 /*
  * @brief DISP_IF_TOP
  */
@@ -3875,8 +3881,8 @@ typedef struct VE_Type
 #define R_TWI ((TWI_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
 #define R_CAN0 ((R_CAN_TypeDef *) R_CAN0_BASE)        /*!< R_CAN0 Car Area Network controller register set access pointer */
+#define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL T507/H618 CPU Subsystem Control Register List register set access pointer */
 #define CPU_SUBSYS_CTRL_H616 ((CPU_SUBSYS_CTRL_H616_TypeDef *) CPU_SUBSYS_CTRL_H616_BASE)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List register set access pointer */
-#define CPU_SUBSYS_CTRL_T507 ((CPU_SUBSYS_CTRL_T507_TypeDef *) CPU_SUBSYS_CTRL_T507_BASE)/*!< CPU_SUBSYS_CTRL_T507 T507 CPU Subsystem Control Register List register set access pointer */
 #define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG T507/H618 Cluster 0 Configuration Register List register set access pointer */
 #define C0_CPUX_CFG_H616 ((C0_CPUX_CFG_H616_TypeDef *) C0_CPUX_CFG_H616_BASE)/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List register set access pointer */
 

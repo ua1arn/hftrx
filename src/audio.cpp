@@ -4767,28 +4767,28 @@ void inject_testsignals(IFADCvalue_t * const dbuff)
 #endif
 }
 
-/* выборка tx_MIKE_blockSize семплов из источников звука и формирование потока на передатчик */
+/* выборка nsamples tx_MIKE_blockSize семплов из источников звука и формирование потока на передатчик */
 /* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx - меняем tx_MIKE_blockSize */
 RAMFUNC void dsp_processtx(unsigned nsamples)
 {
-	ASSERT(tx_MIKE_blockSize == nsamples);
+	ASSERT(tx_MIKE_blockSize >= nsamples);
 	unsigned i;
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
 	/* обработка передачи */
 	static FLOAT_t txfirbuff [tx_MIKE_blockSize];
 	static FLOAT32P_t monitorbuff [tx_MIKE_blockSize];
 	/* заполнение буфера сэмплами от микрофона или USB */
-	for (i = 0; i < tx_MIKE_blockSize; ++ i)
+	for (i = 0; i < nsamples; ++ i)
 	{
 		monitorbuff [i].IV = 0;
 		monitorbuff [i].QV = 0;
 		txfirbuff [i] = mikeinmux(dspmodeA, & monitorbuff [i]);
 	}
 	/* формирование АЧХ перед модулятором */
-	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, tx_MIKE_blockSize);
+	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, nsamples);
 
 	/* Передача */
-	for (i = 0; i < tx_MIKE_blockSize; ++ i)
+	for (i = 0; i < nsamples; ++ i)
 	{
 		const FLOAT_t shapecwssb = shapeCWSSBEnvelopStep();
 		const FLOAT_t cwssbtone = get_float_sidetonetxssb() * txlevelfenceSSB;

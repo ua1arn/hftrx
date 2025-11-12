@@ -22,10 +22,13 @@
 	#define BANDSELSTYLERE_UPCONV56M	1
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
+
+#if 0
 	#define XVTR_R820T2			1	// ad936x
 //	#define	WITHAD936XIIO		1	// External AD936x board
 //todo: объединить эти 2 дефайна
 	#define WITHAD936XDEV		1
+#endif
 
 	// --- вариации прошивки, специфические для разных частот
 
@@ -64,6 +67,7 @@
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	#define CODEC1_TYPE CODEC_TYPE_ALSA
+	#define CODEC2_TYPE CODEC_TYPE_LINUX
 	#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма
 	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека

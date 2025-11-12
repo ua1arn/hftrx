@@ -52,6 +52,12 @@
 //	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
 //	#define BOARD_CONFIG_DRAM_CLK 672//792
 //	#define CONFIG_SUNXI_DRAM_T507_LPDDR4 1
+//	// szbaijie HelperBoard 1.2 with LPDDR4
+//	#define BOARD_DDR_PHY_INIT_DATA \
+//		0x03, 0x00, 0x17, 0x05, 0x02, 0x19, 0x06, 0x07, \
+//		0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, \
+//		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x01, \
+//		0x18, 0x04, 0x1a
 
 	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */

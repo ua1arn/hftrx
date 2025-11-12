@@ -4578,7 +4578,7 @@ void window_as_process(void)
 
 		static uint8_t olds = AS_IDLE;
 
-		if (s == AS_READY && olds == AS_RECORDING)
+		if ((s == AS_READY && olds == AS_RECORDING) || s == AS_RECORDING)
 			as_draw_spectrogram(d, len, lim);
 
 		olds = s;

@@ -1494,39 +1494,6 @@ static const videomode_t vdmode0 =
 	.interlaced = 0
 };
 
-/* AT070TN90 panel (800*480) - 7" display HV mode */
-static const videomode_t vdmode_800x480 =
-{
-	.width = 800,			/* LCD PIXEL WIDTH            */
-	.height = 480,			/* LCD PIXEL HEIGHT           */
-	/**
-	  * @brief  AT070TN90 Timing
-	  * MODE=0 (DE)
-	  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
-	  * MODE=1 (SYNC)
-	  * When selected sync mode, de must be grounded.
-	  */
-	.hsync = 40,				/* Horizontal synchronization 1..40 */
-	.hbp = 6,				/* Horizontal back porch      */
-	.hfp = 210,				/* Horizontal front porch  16..354   */
-
-	.vsync = 20,				/* Vertical synchronization 1..20  */
-	.vbp = 3,				/* Vertical back porch      */
-	.vfp = 22,				/* Vertical front porch  7..147     */
-
-	// MODE: DE/SYNC mode select.
-	// DE MODE: MODE="1", VS and HS must pull high.
-	// SYNC MODE: MODE="0". DE must be grounded
-	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
-	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
-	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
-	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
-	.fps = 60,	/* frames per second */
-	.ntsc = 0,
-	.interlaced = 0
-};
-
 #elif LCDMODE_LQ123K3LG01
 
 /* LQ123K3LG01 panel (1280*480) - 12.3" display LVDS mode */
@@ -1773,6 +1740,39 @@ static const videomode_t vdmode0 =
 
 #endif
 
+/* AT070TN90 panel (800*480) - 7" display HV mode */
+static const videomode_t vdmode_800x480 =
+{
+	.width = 800,			/* LCD PIXEL WIDTH            */
+	.height = 480,			/* LCD PIXEL HEIGHT           */
+	/**
+	  * @brief  AT070TN90 Timing
+	  * MODE=0 (DE)
+	  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
+	  * MODE=1 (SYNC)
+	  * When selected sync mode, de must be grounded.
+	  */
+	.hsync = 40,				/* Horizontal synchronization 1..40 */
+	.hbp = 6,				/* Horizontal back porch      */
+	.hfp = 210,				/* Horizontal front porch  16..354   */
+
+	.vsync = 20,				/* Vertical synchronization 1..20  */
+	.vbp = 3,				/* Vertical back porch      */
+	.vfp = 22,				/* Vertical front porch  7..147     */
+
+	// MODE: DE/SYNC mode select.
+	// DE MODE: MODE="1", VS and HS must pull high.
+	// SYNC MODE: MODE="0". DE must be grounded
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
+	//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
+};
+
 /* NTSC TV out parameters */
 /* Aspect ratio 1.5 */
 static const videomode_t vdmode_NTSC0 =
@@ -1985,12 +1985,7 @@ static const videomode_t vdmode_HDMI_1280x720at50 =
 	.interlaced = 0
 };
 
-const videomode_t * get_videomode_CRT(void)
-{
-	return & vdmode_PAL0;
-}
-
-static uint_fast8_t glob_hdmiformat;
+static uint_fast8_t glob_tvoutformat;
 
 const videomode_t * hdmiformats [HDMIFORMATS_count] =
 {
@@ -2001,20 +1996,25 @@ const videomode_t * hdmiformats [HDMIFORMATS_count] =
 	& vdmode_HDMI_1920x1080at60,	// б. тел. масштабирует ! TESTED
 };
 
-const videomode_t * get_videomode_HDMI(void)
+const videomode_t * get_videomode_TVOUT(void)
 {
-	return hdmiformats [glob_hdmiformat];
+#if WITHHDMITVHW
+	return hdmiformats [glob_tvoutformat];
+#else /* WITHHDMITVHW */
+	return & vdmode_PAL0;
+	//return & vdmode_NTSC0;
+#endif /* WITHHDMITVHW */
 }
 
 void
-board_set_hdmiformat(uint_fast8_t v)
+board_set_tvoutformat(uint_fast8_t v)
 {
 	const uint_fast8_t n = v;
 
-	if (glob_hdmiformat != n)
+	if (glob_tvoutformat != n)
 	{
-		glob_hdmiformat = n;
-		hardware_hdmi_set_format();
+		glob_tvoutformat = n;
+		hardware_tvout_set_format();
 	}
 }
 
@@ -2071,7 +2071,6 @@ void display_hardware_initialize(void)
 		hardware_ltdc_initialize(get_videomode_LCD());
 	}
 
-	//hardware_ltdc_main_set(RTMIXIDLCD, (uintptr_t) colmain_fb_draw());
 	hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */
 
