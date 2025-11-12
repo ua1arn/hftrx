@@ -6020,7 +6020,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 31);	// PLL_EN
 
 		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 29);	// LOCK_ENABLE
-		while ((CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 28)) == 0)
+		while ((CCU->PLL_AUDIO_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 			;
 	}
 
@@ -6191,7 +6191,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 			//1 * (UINT32_C(1) << 1) |		// PLL_INPUT_DIV2
 			0;
 		CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 29);	// LOCK_ENABLE
-		while ((CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 28)) == 0)
+		while ((CCU->PLL_AUDIO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 			;
 		CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 31);	// PLL_EN
 	}
@@ -6720,7 +6720,7 @@ static void hardware_DMIC_master_rx_initialize_codec1(void)
 			//1 * (UINT32_C(1) << 1) |		// PLL_INPUT_DIV2
 			0;
 		CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 29);	// LOCK_ENABLE
-		while ((CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 28)) == 0)
+		while ((CCU->PLL_AUDIO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 			;
 		CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 31);	// PLL_EN
 	}
