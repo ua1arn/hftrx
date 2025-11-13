@@ -6009,7 +6009,9 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	if (1)
 	{
 		unsigned N = 43;	// Повторям нстройки по умолчанию... Точнее частоту не подобрать
-		CCU->PLL_AUDIO0_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27);
+		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 30);	// PLL_LDO_EN
+		local_delay_ms(20);
+		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27);
 		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 1);	// M1 - already 0
 		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 0);	// M0 - set to zero
 
@@ -6018,7 +6020,6 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 			//1 * (UINT32_C(1) << 1) |		// PLL_INPUT_DIV2
 			0;
 		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 31);	// PLL_EN
-
 		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 29);	// LOCK_ENABLE
 		while ((CCU->PLL_AUDIO_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 			;
