@@ -11392,7 +11392,9 @@ void hightests(void)
 
 		testpng(Cobra_png);
 		for (;;)
-			;
+		{
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
+		}
 	}
 #endif
 #if 0 && LCDMODE_LTDC
@@ -11409,7 +11411,9 @@ void hightests(void)
 
 		testpng_no_stretch(png, 0);	// становить формат DE2_FORMAT_XBGR_8888
 		for (;;)
-			;
+		{
+			board_dpc_processing();		// обработка отложенного вызова user mode функций
+		}
 	}
 #endif
 #if 0 && (CPUSTYLE_H3) && WITHDEBUG
