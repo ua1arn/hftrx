@@ -4096,7 +4096,7 @@ void colmain_nextfb(void)
 			0, 0,			/* позиция прямоугольника - получателя */
 			(uintptr_t) fb0, datasize_dmabuffercolmain0fb(),
 			& fbtfb0,
-			0, 0, DIM_X, DIM_Y,
+			0, 0, DIM_X, DIM_Y,			/* позиция прямоугольника и размеры источника */
 			BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, 0
 			);
 		tvout_nextfb();
@@ -4129,7 +4129,7 @@ void colmain_nextfb_sub(void)
 			0, 0,			/* позиция прямоугольника - получателя */
 			(uintptr_t) fb0, datasize_dmabuffercolmain0fb(),
 			& fbtfb0,
-			0, 0, DIM_X, DIM_Y,
+			0, 0, DIM_X, DIM_Y,	/* позиция прямоугольника и размеры источника */
 			BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, 0
 			);
 		tvout_nextfb();

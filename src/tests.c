@@ -6216,7 +6216,7 @@ void testpng_no_stretch(const void * pngbuffer)
 			0, 0,			/* позиция прямоугольника - получателя */
 			dbv_fbpic.cachebase, dbv_fbpic.cachesize,
 			& dbv_fbpic,
-			0, 0, picdx, pich,
+			0, 0, picdx, pich,	/* позиция прямоугольника и размеры источника */
 			BITBLT_FLAG_NONE | 1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 			//BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, keycolor
 			);
