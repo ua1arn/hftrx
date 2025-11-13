@@ -3748,7 +3748,7 @@ void colpip_bitblt(
 		& tdba,
 		srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
 		& sdba,
-		sw, sh,	// размеры окна источника
+		ulmin16(sw, tdba.dx), ulmin16(sh, tdba.dy),	// размеры окна источника (ограниченные размерами приёмника)
 		keyflag, keycolor
 		);
 }
