@@ -6188,7 +6188,7 @@ void testpng(const void * pngbuffer)
 }
 
 // PNG files test, no transparency (no key color)
-void testpng_no_stretch(const void * pngbuffer)
+void testpng_no_stretch(const void * pngbuffer, int useKeyColor)
 {
 	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
 	LuImage * png = luPngReadMemory((char *) pngbuffer);	// Read data in DE2_FORMAT_XBGR_8888 format
@@ -6217,7 +6217,7 @@ void testpng_no_stretch(const void * pngbuffer)
 			dbv_fbpic.cachebase, dbv_fbpic.cachesize,
 			& dbv_fbpic,
 			0, 0, picdx, pich,	/* позиция прямоугольника и размеры источника */
-			BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+			BITBLT_FLAG_NONE | !! useKeyColor * BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 			//BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, keycolor
 			);
 	}
@@ -6230,7 +6230,7 @@ void testpng_no_stretch(const void * pngbuffer)
 			dbv_fbpic.cachebase, dbv_fbpic.cachesize,
 			& dbv_fbpic,
 			0, 0, picdx, pich,
-			BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+			BITBLT_FLAG_NONE | !! useKeyColor * BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 			);
 
 	}
@@ -10725,7 +10725,7 @@ void hightests(void)
 
 		int seefile = 0;
 		if (files)
-			testpng_no_stretch(buffers [seefile]);	// становить формат DE2_FORMAT_XBGR_8888
+			testpng_no_stretch(buffers [seefile], 0);	// становить формат DE2_FORMAT_XBGR_8888
 		for (;files;)
 		{
 			for (;;)
@@ -10743,7 +10743,7 @@ void hightests(void)
 							-- seefile;
 						else
 							seefile = files - 1;
-						testpng_no_stretch(buffers [seefile]);	// становить формат DE2_FORMAT_XBGR_8888
+						testpng_no_stretch(buffers [seefile], 0);	// становить формат DE2_FORMAT_XBGR_8888
 						continue;
 
 					case KBD_CODE_CWMSG3:	// F3
@@ -10752,7 +10752,7 @@ void hightests(void)
 							++ seefile;
 						else
 							seefile = 0;
-						testpng_no_stretch(buffers [seefile]);	// становить формат DE2_FORMAT_XBGR_8888
+						testpng_no_stretch(buffers [seefile], 0);	// становить формат DE2_FORMAT_XBGR_8888
 						continue;
 
 					case KBD_CODE_DISPMODE:
@@ -11407,7 +11407,7 @@ void hightests(void)
 
 		};
 
-		testpng_no_stretch(png);	// становить формат DE2_FORMAT_XBGR_8888
+		testpng_no_stretch(png, 0);	// становить формат DE2_FORMAT_XBGR_8888
 		for (;;)
 			;
 	}
