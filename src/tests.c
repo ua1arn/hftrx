@@ -6187,7 +6187,7 @@ void testpng(const void * pngbuffer)
 		;
 }
 
-// PNG files test
+// PNG files test, no transparency (no key color)
 void testpng_no_stretch(const void * pngbuffer)
 {
 	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
@@ -6217,7 +6217,7 @@ void testpng_no_stretch(const void * pngbuffer)
 			dbv_fbpic.cachebase, dbv_fbpic.cachesize,
 			& dbv_fbpic,
 			0, 0, picdx, pich,	/* позиция прямоугольника и размеры источника */
-			BITBLT_FLAG_NONE | 1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+			BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 			//BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, keycolor
 			);
 	}
@@ -6230,7 +6230,7 @@ void testpng_no_stretch(const void * pngbuffer)
 			dbv_fbpic.cachebase, dbv_fbpic.cachesize,
 			& dbv_fbpic,
 			0, 0, picdx, pich,
-			BITBLT_FLAG_NONE | 1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
+			BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_ABGR8888, keycolor
 			);
 
 	}
