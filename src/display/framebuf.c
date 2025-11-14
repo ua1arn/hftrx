@@ -162,6 +162,29 @@ static uint_fast32_t awxx_bld_ctl2(
 	return awxx_bld_ctl(fd, fs, fd, fs);
 }
 
+
+static LCLSPINLOCK_t rotlock;
+
+static void g2d_rot_accure(void)
+{
+	LCLSPIN_LOCK(& rotlock);
+}
+static void g2d_rot_release(void)
+{
+	LCLSPIN_UNLOCK(& rotlock);
+}
+
+static LCLSPINLOCK_t rtmxlock;
+
+static void g2d_rtmx_accure(void)
+{
+	LCLSPIN_LOCK(& rtmxlock);
+}
+static void g2d_rtmx_release(void)
+{
+	LCLSPIN_UNLOCK(& rtmxlock);
+}
+
 #if defined (G2D_MIXER)
 
 static void aw_g2d_initialize(void)
@@ -206,17 +229,6 @@ static void awxx_rcq(uintptr_t buff, unsigned len)
 	ASSERT(G2D_TOP->RCQ_HEADER_LEN == len);
 }
 
-
-static LCLSPINLOCK_t rtmxlock;
-
-static void g2d_rtmx_accure(void)
-{
-	LCLSPIN_LOCK(& rtmxlock);
-}
-static void g2d_rtmx_release(void)
-{
-	LCLSPIN_UNLOCK(& rtmxlock);
-}
 
 /* Запуск и ожидание завершения работы G2D */
 /* 0 - timeout. 1 - OK */
@@ -427,17 +439,6 @@ static void awxx_g2d_rot_startandwait(void)
 }
 
 #endif /* defined (G2D_ROT) */
-
-static LCLSPINLOCK_t rotlock;
-
-static void g2d_rot_accure(void)
-{
-	LCLSPIN_LOCK(& rotlock);
-}
-static void g2d_rot_release(void)
-{
-	LCLSPIN_UNLOCK(& rotlock);
-}
 
 /* Коприрование с применением блока G2D_ROT */
 static void
@@ -1123,6 +1124,9 @@ void lvglhw_initialize(void)
 
 void arm_hardware_mdma_initialize(void)
 {
+	LCLSPINLOCK_INITIALIZE(& rtmxlock);
+	LCLSPINLOCK_INITIALIZE(& rotlock);
+
 #if CPUSTYLE_T507
 	{
 		// AW_G2D_开发指南.pdf 图2‑1: design_spec0
@@ -3238,6 +3242,10 @@ void hwaccel_bitblt(
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
+	unsigned rot_ctl = 0;
+	rot_ctl |= !! (keyflag & BITBLT_FLAG_XMIRROR) * (UINT32_C(1) << 7);	// flip horizontal
+	rot_ctl |= !! (keyflag & BITBLT_FLAG_YMIRROR) * (UINT32_C(1) << 6);	// flip vertical
+	//rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
 	hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, 0);
 
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER && defined (G2D_MIXER)
@@ -3268,8 +3276,20 @@ void hwaccel_bitblt(
 //	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
-	awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride,
-			tsizehw, taddr);
+	if ((keyflag & BITBLT_FLAG_XMIRROR) || keyflag & BITBLT_FLAG_YMIRROR)
+	{
+		unsigned rot_ctl = 0;
+		rot_ctl |= !! (keyflag & BITBLT_FLAG_XMIRROR) * (UINT32_C(1) << 7);	// flip horizontal
+		rot_ctl |= !! (keyflag & BITBLT_FLAG_YMIRROR) * (UINT32_C(1) << 6);	// flip vertical
+		//rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+		hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, 0);
+	}
+	else
+	{
+		awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride,
+				tsizehw, taddr);
+	}
+
 
 #else
 	// программная реализация

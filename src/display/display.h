@@ -433,9 +433,11 @@ colpip_rectangle(
 	unsigned fillmask
 	);
 
-#define BITBLT_FLAG_NONE			0x00
-#define BITBLT_FLAG_CKEY			0x01
-#define BITBLT_FLAG_SRC_ABGR8888		0x02	/* исходный имедж - ABGR8888 (от LuPng) */
+#define BITBLT_FLAG_NONE			0u
+#define BITBLT_FLAG_CKEY			(1u << 0)	// colpip_bitblt use keycolor parameter
+#define BITBLT_FLAG_XMIRROR			(1u << 1)
+#define BITBLT_FLAG_YMIRROR			(1u << 2)
+#define BITBLT_FLAG_SRC_ABGR8888	(1u << 3)	/* исходный имедж - ABGR8888 (от LuPng) */
 
 // скоприовать прямоугольник с типом пикселей соответствующим pip
 void colpip_bitblt(
