@@ -2220,6 +2220,7 @@ static int
 hwaccel_fillrect_u8(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
+	unsigned tstride,
 	uint8_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -2339,6 +2340,7 @@ static int
 hwaccel_fillrect_u16(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
+	unsigned tstride,
 	uint16_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -2460,7 +2462,6 @@ hwaccel_fillrect_u16(
 	if (w == 1)
 		return 0;
 
-	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uintptr_t taddr = (uintptr_t) buffer;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
@@ -2481,12 +2482,15 @@ static int
 hwaccel_fillrect_u24(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
+	unsigned tstride,
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
-	uint_fast32_t color	// цвет
+	uint_fast8_t color,	// цвет
+	unsigned fillmask,
+	unsigned alpha	// 0..255 for FILL_FLAG_MIXBG
 	)
 {
 	if (w == 0 || h == 0)
@@ -2611,6 +2615,7 @@ static int
 hwaccel_fillrect_u32(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
+	unsigned tstride,
 	uint32_t * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
@@ -2729,7 +2734,6 @@ hwaccel_fillrect_u32(
 #elif WITHGPUHW && 0
 
 	const uintptr_t taddr = (uintptr_t) buffer;
-	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
@@ -2743,7 +2747,6 @@ hwaccel_fillrect_u32(
 		return 0;	// программная реализация
 
 	const uintptr_t taddr = (uintptr_t) buffer;
-	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
 	return aw_g2d_fillrect(dstinvalidateaddr, dstinvalidatesize, buffer, dx, taddr, tstride, tsizehw, alpha, w, h, color, fillmask);
@@ -2863,6 +2866,7 @@ hwaccel_fillrect_mux(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * __restrict buffer,
+	unsigned tstride,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t w,	// ширниа
@@ -2874,16 +2878,16 @@ hwaccel_fillrect_mux(
 {
 	int done = 0;
 #if LCDMODE_PALETTE256
-	done = hwaccel_fillrect_u8(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color, fillmask, alpha);
+	done = hwaccel_fillrect_u8(dstinvalidateaddr, dstinvalidatesize, tstride, buffer, dx, dy, w, h, color, fillmask, alpha);
 
 #elif LCDMODE_RGB565
-	done = hwaccel_fillrect_u16(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color, fillmask, alpha);
+	done = hwaccel_fillrect_u16(dstinvalidateaddr, dstinvalidatesize, tstride, buffer, dx, dy, w, h, color, fillmask, alpha);
 
 #elif LCDMODE_MAIN_L24
-	done = hwaccel_fillrect_u24(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color, fillmask, alpha);
+	done = hwaccel_fillrect_u24(dstinvalidateaddr, dstinvalidatesize, tstride, buffer, dx, dy, w, h, color, fillmask, alpha);
 
 #elif LCDMODE_ARGB8888
-	done = hwaccel_fillrect_u32(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color, fillmask, alpha);
+	done = hwaccel_fillrect_u32(dstinvalidateaddr, dstinvalidatesize, tstride, buffer, dx, dy, w, h, color, fillmask, alpha);
 #else
 	done = 0;
 #endif
@@ -2916,7 +2920,7 @@ void colpip_rectangle(
 	const uintptr_t dstinvalidateaddr = db->cachebase;	// параметры invalidate получателя
 	const int_fast32_t dstinvalidatesize = db->cachesize;
 
-	hwaccel_fillrect_mux(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color, fillmask, alpha);
+	hwaccel_fillrect_mux(dstinvalidateaddr, dstinvalidatesize, tgr, db->stride, dx, dy, w, h, color, fillmask, alpha);
 }
 
 // заполнение прямоугольной области в видеобуфере
