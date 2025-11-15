@@ -6990,7 +6990,7 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 
 	if (! colpip_hasalpha())
 	{
-		// Изображение "шторки" на спектре.
+		// Изображение "шторки" под спектром.
 		uint_fast8_t splitflag;
 		uint_fast8_t pathi;
 		hamradio_get_vfomode3_value(& splitflag);
@@ -7009,7 +7009,7 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 				xright = alldx - 1;
 
 			const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
-			// Изображение "шторки" под спектром.
+
 			if (xleft < xrightv)
 			{
 				colpip_fillrect(db, x0pix + xleft, y0pix, xrightv - xleft, alldy, rxbwcolor);
@@ -7085,13 +7085,17 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 				xright = xleft + 1;
 			if (xright >= alldx)
 				xright = alldx - 1;
-			colpip_rectangle(
-					db,
-					xleft + x0pix, y0pix,
-					xright + 1 - xleft, alldy, // размер окна источника
-					pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2,
-					FILL_FLAG_MIXBG, gbwalpha
-				);
+			const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
+			if (xleft < xrightv)
+			{
+				colpip_rectangle(
+						db,
+						xleft + x0pix, y0pix,
+						xrightv - xleft, alldy, // размер окна заполнения
+						pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2,
+						FILL_FLAG_MIXBG, gbwalpha
+					);
+			}
 		}
 	}
 	(void) pctx;
