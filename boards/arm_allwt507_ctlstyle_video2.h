@@ -147,8 +147,8 @@
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
 
 	#define WITHNETRESOURCE 1	// поддержка ресурсного протокола
-	//#define LCDMODE_RGB565	1	/* Экран с тремя видеобуферами RGB565 */
-	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 	//#define LCDMODE_H497TLB01P4 1	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
 	#define LCDMODE_TV101WXM 1	/* 768 * 1024 10.1" */
 	#define LCDMODETX_TC358778XBG 1	/* Toshiba TC358778XBG chip */
@@ -157,8 +157,8 @@
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
-	//#define LCDMODE_RGB565 1	/* Экран 16 бит */
-	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
 	
 
@@ -167,7 +167,8 @@
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
 	//#define LCDMODE_PALETTE256 1	/* Экран 8 бит, L8 */
-	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 	//#define WITHTFT_OVER_LVDS	1	// LVDS receiver THC63LVDF84B
 	
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
@@ -176,8 +177,8 @@
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 
-	//#define LCDMODE_RGB565 1	/* Экран 16 бит */
-	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
 	
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */

@@ -121,8 +121,8 @@
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
-	//#define LCDMODE_RGB565 1	/* Видеобуфер 16 бит */
-	#define LCDMODE_ARGB8888	1	/* Видеобуфер 32 бит ARGB8888 */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
 	
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
@@ -133,8 +133,8 @@
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
 	//#define LCDMODE_PALETTE256 1	/* Видеобуфер 8 бит, L8 */
-	//#define LCDMODE_RGB565 1	/* Видеобуфер 16 бит */
-	#define LCDMODE_ARGB8888	1	/* Видеобуфер 32 бит ARGB8888 */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через LVDS интерфейс	*/

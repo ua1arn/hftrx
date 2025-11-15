@@ -132,8 +132,8 @@
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
 	//#define LCDMODE_PALETTE256 1	/* Экран 8 бит, L8 */
-	//#define LCDMODE_RGB565 1	/* Экран 16 бит */
-	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через LVDS интерфейс	*/

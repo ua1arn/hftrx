@@ -109,8 +109,8 @@
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
-	//#define LCDMODE_RGB565 1	/* Экран 16 бит */
-	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
 	
 
@@ -118,8 +118,8 @@
 
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
-	//#define LCDMODE_RGB565 1	/* Экран 16 бит */
-	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
 	
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
@@ -129,8 +129,8 @@
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 
-	//#define LCDMODE_RGB565 1	/* Экран 16 бит */
-	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
+	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
 	
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
