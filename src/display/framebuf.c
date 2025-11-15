@@ -297,14 +297,16 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		const COLOR24_T keycolor24 = awxx_key_color_conversion(keycolor);
 		/* 5.10.9.10 BLD color key control register */
 		//G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
-		G2D_BLD->BLD_KEY_CTL = (0x01u << 1) |// KEY0_MATCH_DIR 1: when the pixel value matches source image, it displays the pixel form destination image.
-				(UINT32_C(1) << 0) |// KEY0_EN 1: enable color key in Alpha Blender0.
-				0;
+		G2D_BLD->BLD_KEY_CTL =
+			(0x01u << 1) |// KEY0_MATCH_DIR 1: when the pixel value matches source image, it displays the pixel form destination image.
+			(UINT32_C(1) << 0) |// KEY0_EN 1: enable color key in Alpha Blender0.
+			0;
 		/* 5.10.9.11 BLD color key configuration register */
-		G2D_BLD->BLD_KEY_CON = 0 * (UINT32_C(1) << 2) |// KEY0R_MATCH 0: match color if value inside keys range
-				0 * (UINT32_C(1) << 1) |// KEY0G_MATCH 0: match color if value inside keys range
-				0 * (UINT32_C(1) << 0) |// KEY0B_MATCH 0: match color if value inside keys range
-				0;
+		G2D_BLD->BLD_KEY_CON =
+			0 * (UINT32_C(1) << 2) |// KEY0R_MATCH 0: match color if value inside keys range
+			0 * (UINT32_C(1) << 1) |// KEY0G_MATCH 0: match color if value inside keys range
+			0 * (UINT32_C(1) << 0) |// KEY0B_MATCH 0: match color if value inside keys range
+			0;
 		G2D_BLD->BLD_KEY_MAX = keycolor24;
 		G2D_BLD->BLD_KEY_MIN = keycolor24;
 		/* установка поверхности - источника (анализируется) */
@@ -332,9 +334,10 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		/* источник для анализа */
 		G2D_BLD->BLD_CH_ISIZE[1] = tsizehw;
 		G2D_BLD->BLD_CH_OFFSET[1] = 0; // ((row) << 16) | ((col) << 0);
-		G2D_BLD->BLD_FILL_COLOR_CTL = (UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable
-				(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable
-				0;
+		G2D_BLD->BLD_FILL_COLOR_CTL =
+			(UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable
+			(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable
+			0;
 		G2D_BLD->ROP_CTL = 0x00F0; // 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 		G2D_BLD->ROP_INDEX[0] = 0; // ? зависят от ROP_CTL
 		G2D_BLD->ROP_INDEX[1] = 0;
@@ -367,9 +370,10 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		G2D_BLD->BLD_CH_OFFSET[1] = 0; // ((row) << 16) | ((col) << 0);
 		G2D_BLD->BLD_KEY_CTL = 0;
 		G2D_BLD->BLD_KEY_CON = 0;
-		G2D_BLD->BLD_FILL_COLOR_CTL = (UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable - VI0
-				//(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable - UI2
-				0;
+		G2D_BLD->BLD_FILL_COLOR_CTL =
+			(UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable - VI0
+			//(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable - UI2
+			0;
 		G2D_BLD->ROP_CTL = 0x00F0; // 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 		G2D_BLD->ROP_INDEX[0] = 0; // ? зависят от ROP_CTL
 		G2D_BLD->ROP_INDEX[1] = 0;
