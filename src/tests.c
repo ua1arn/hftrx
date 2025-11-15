@@ -3516,7 +3516,7 @@ static void printtextfile(const char * filename)
 	for (;;)
 	{
 		char kbch;
-		board_dpc_processing();		// обработка отложенного вызова user mode функций
+		testsloopprocessing();		// обработка отложенного вызова user mode функций
 
 		if (dbg_getchar(& kbch) != 0)
 		{
@@ -3605,7 +3605,7 @@ static void dosaveserialport(const char * fname)
 		char kbch;
 		char c;
 
-		board_dpc_processing();		// обработка отложенного вызова user mode функций
+		testsloopprocessing();		// обработка отложенного вызова user mode функций
 		if (dbg_getchar(& kbch) != 0)
 		{
 			if (kbch == 0x1b)
@@ -3752,7 +3752,7 @@ static int dosaveblocks(const char * fname)
 
 	for (;;)
 	{
-		board_dpc_processing();		// обработка отложенного вызова user mode функций
+		testsloopprocessing();		// обработка отложенного вызова user mode функций
 		char kbch;
 		char c;
 
@@ -4131,8 +4131,6 @@ static void diskio_test(BYTE drv)
 
 					for (pos = 0; pos < v; )
 					{
-						board_dpc_processing();		// обработка отложенного вызова user mode функций
-						/* Обеспечение работы USER MODE DPC */
 						uint_fast16_t kbch;
 						uint_fast8_t kbready;
 						processmessages(& kbch, & kbready);
@@ -5641,7 +5639,7 @@ static void BarTest(void)
 
 		colmain_nextfb();
 		//local_delay_ms(5);
-		board_dpc_processing();		// обработка отложенного вызова user mode функций
+		testsloopprocessing();		// обработка отложенного вызова user mode функций
 	}
 
 	//getch();             /* Pause for user's response    */
@@ -10588,7 +10586,7 @@ void hightests(void)
 	    lv_demo_widgets_start_slideshow();
 	    for (;;)
 	    {
-	    	board_dpc_processing();
+	    	testsloopprocessing();
 	    	lv_timer_handler();
 	    }
 	}
@@ -10670,7 +10668,7 @@ void hightests(void)
 		unsigned i;
 		for (i = 0; i < 2000; ++ i)
 		{
-			board_dpc_processing();		// обработка отложенного вызова user mode функций
+			testsloopprocessing();		// обработка отложенного вызова user mode функций
 			local_delay_ms(1);
 		}
 		TP();
@@ -11477,7 +11475,7 @@ void hightests(void)
 		TP();
 	}
 #endif
-#if 0 && LCDMODE_LTDC
+#if 0 && LCDMODE_LTDC && LCDMODE_ARGB8888
 	{
 		enum { picy = 110, picx = 150 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -11722,11 +11720,11 @@ void hightests(void)
 
 			phase = ! phase;
 			c = (c + 1) % cycles;
-			board_dpc_processing();		// обработка отложенного вызова user mode функций
+			testsloopprocessing();		// обработка отложенного вызова user mode функций
 		}
 		for (;;)
 		{
-			board_dpc_processing();		// обработка отложенного вызова user mode функций
+			testsloopprocessing();		// обработка отложенного вызова user mode функций
 		}
 	}
 #endif
@@ -11812,7 +11810,7 @@ void hightests(void)
 		hardware_ltdc_main_set4((uintptr_t) layer0, (uintptr_t) 0, (uintptr_t) 0, (uintptr_t) 0);
 		for (;;)
 		{
-			board_dpc_processing();		// обработка отложенного вызова user mode функций
+			testsloopprocessing();		// обработка отложенного вызова user mode функций
 		}
 	}
 #endif
@@ -13015,14 +13013,14 @@ void hightests(void)
 				if (c == ' ')
 					break;
 			}
-			board_dpc_processing();		// обработка отложенного вызова user mode функций
+			testsloopprocessing();		// обработка отложенного вызова user mode функций
 			//local_delay_ms(5);
 		}
 		PRINTF("Storage device ready\n");
 		unsigned t;
 //		for (t = 0; t < 7000; t += 5)
 //		{
-//			board_dpc_processing();		// обработка отложенного вызова user mode функций
+//			testsloopprocessing();		// обработка отложенного вызова user mode функций
 //		}
 		static ticker_t test_recordticker;
 		IRQL_t oldIrql;
@@ -13052,7 +13050,7 @@ void hightests(void)
 				break;
 			for (t = 0; t < 7000; t += 5)
 			{
-				board_dpc_processing();		// обработка отложенного вызова user mode функций
+				testsloopprocessing();		// обработка отложенного вызова user mode функций
 		#if WITHUSEAUDIOREC
 				sdcardbgprocess();
 		#endif /* WITHUSEAUDIOREC */

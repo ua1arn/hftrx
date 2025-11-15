@@ -2629,6 +2629,14 @@ void board_dpc_processing(void)
 #endif /* WITHSMPSYSTEM */
 }
 
+void testsloopprocessing(void)
+{
+	board_dpc_processing();		// обработка отложенного вызова user mode функций
+#if WITHWATCHDOG
+	watchdog_ping();
+#endif /* WITHWATCHDOG */
+}
+
 // Вызывается из main
 void cpu_initialize(void)
 {
