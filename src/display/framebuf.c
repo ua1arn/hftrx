@@ -2862,8 +2862,7 @@ colpip_set_hline(
 
 uint_fast8_t colpip_hasalpha(void)
 {
-	return 1;
-#if (CPUSTYLE_T113 || CPUSTYLE_F133) && WITHMDMAHW && LCDMODE_ARGB8888
+#if WITHMDMAHW && CPUSTYLE_ALLWINNER && defined (G2D_MIXER)
 	return 1;
 #else
 	return 0;
