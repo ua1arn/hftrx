@@ -37,7 +37,8 @@ static void softfill(
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
-	COLORPIP_T color	// цвет
+	COLORPIP_T color,	// цвет
+	unsigned fillmask
 	)
 {
 	// программная реализация
@@ -367,9 +368,10 @@ awg2d_bitblt(unsigned flags, COLORPIP_T keycolor,
 		G2D_BLD->BLD_CH_OFFSET[1] = 0; // ((row) << 16) | ((col) << 0);
 		G2D_BLD->BLD_KEY_CTL = 0;
 		G2D_BLD->BLD_KEY_CON = 0;
-		G2D_BLD->BLD_FILL_COLOR_CTL = (UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable - VI0
-				//(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable - UI2
-				0;
+		G2D_BLD->BLD_FILL_COLOR_CTL =
+			(UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable - VI0
+			//(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable - UI2
+			0;
 		G2D_BLD->ROP_CTL = 0x00F0; // 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 		G2D_BLD->ROP_INDEX[0] = 0; // ? зависят от ROP_CTL
 		G2D_BLD->ROP_INDEX[1] = 0;
@@ -549,7 +551,7 @@ static void hwaccel_fillrect(
 	}
 	else
 	{
-		softfill(buffer, dx, w, h, color);	// программная реализация
+		softfill(buffer, dx, w, h, color, fillmask);	// программная реализация
 	}
 }
 
@@ -2161,7 +2163,7 @@ uint32_t display_get_lvformat(void)
 #if LCDMODE_PIXELSIZE == 1
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
-hwaccel_rect_u8(
+hwaccel_fillrect_u8(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
 	uint8_t * __restrict buffer,
@@ -2282,7 +2284,7 @@ hwaccel_rect_u8(
 
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
-hwaccel_rect_u16(
+hwaccel_fillrect_u16(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
 	uint16_t * __restrict buffer,
@@ -2290,7 +2292,8 @@ hwaccel_rect_u16(
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
-	COLORPIP_T color	// цвет
+	COLORPIP_T color,	// цвет
+	unsigned fillmask
 	)
 {
 	if (w == 0 || h == 0)
@@ -2402,7 +2405,7 @@ hwaccel_rect_u16(
 	{
 		/* Горизонтальные линии в один пиксель рисовать умеет аппаратура. */
 		/* программная реализация отрисовки вертикальной линии в один пиксель */
-		softfill(buffer, dx, w, h, color);	// программная реализация
+		softfill(buffer, dx, w, h, color, fillmask);	// программная реализация
 		return;
 	}
 
@@ -2411,11 +2414,11 @@ hwaccel_rect_u16(
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	hwaccel_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), w, h, color, FILL_FLAG_NONE);
+	hwaccel_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), w, h, color, fillmask);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 
-	softfill(buffer, dx, w, h, color);	// программная реализация
+	softfill(buffer, dx, w, h, color, fillmask);	// программная реализация
 
 #endif /* WITHMDMAHW, WITHDMA2DHW */
 }
@@ -2425,7 +2428,7 @@ hwaccel_rect_u16(
 #if LCDMODE_PIXELSIZE == 3
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
-hwaccel_rect_u24(
+hwaccel_fillrect_u24(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * __restrict buffer,
@@ -2433,7 +2436,8 @@ hwaccel_rect_u24(
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
-	uint_fast32_t color	// цвет
+	COLORPIP_T color,	// цвет
+	unsigned fillmask
 	)
 {
 	if (w == 0 || h == 0)
@@ -2541,7 +2545,7 @@ hwaccel_rect_u24(
 
 #else
 
-	softfill(buffer, dx, w, h, color);	// программная реализация
+	softfill(buffer, dx, w, h, color, fillmask);	// программная реализация
 
 #endif
 }
@@ -2553,7 +2557,7 @@ hwaccel_rect_u24(
 //#define FILL_FLAG_MIXBG		0x01	// alpha со старым содержимым буферв
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
-hwaccel_rect_u32(
+hwaccel_fillrect_u32(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
 	uint32_t * __restrict buffer,
@@ -2698,12 +2702,39 @@ hwaccel_rect_u32(
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
 
-	softfill(buffer, dx, w, h, color);	// программная реализация
+	softfill(buffer, dx, w, h, color, fillmask);	// программная реализация
 
 #endif /* WITHMDMAHW, WITHDMA2DHW */
 }
 
 #endif /* LCDMODE_PIXELSIZE == 4 */
+
+static void hwaccel_fillrect_mux(
+	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
+	int_fast32_t dstinvalidatesize,
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	COLORPIP_T color,	// цвет
+	unsigned fillmask
+	)
+{
+#if LCDMODE_PALETTE256
+	hwaccel_fillrect_u8(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color, fillmask);
+
+#elif LCDMODE_RGB565
+	hwaccel_fillrect_u16(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color, fillmask);
+
+#elif LCDMODE_MAIN_L24
+	hwaccel_fillrect_u24(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color, fillmask);
+
+#elif LCDMODE_ARGB8888
+	hwaccel_fillrect_u32(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color, fillmask);
+
+#endif
+}
 
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORPIP_T *
@@ -2843,20 +2874,7 @@ void colpip_rectangle(
 	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y);
 	const uintptr_t dstinvalidateaddr = (uintptr_t) db->buffer;	// параметры invalidate получателя
 	const int_fast32_t dstinvalidatesize = GXSIZE(dx, dy) * sizeof (PACKEDCOLORPIP_T);
-
-#if LCDMODE_PALETTE256
-	hwaccel_rect_u8(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
-
-#elif LCDMODE_RGB565
-	hwaccel_rect_u16(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
-
-#elif LCDMODE_MAIN_L24
-	hwaccel_rect_u24(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
-
-#elif LCDMODE_ARGB8888
-	hwaccel_rect_u32(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color, fillmask);
-
-#endif
+	hwaccel_fillrect_mux(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color, fillmask);
 }
 
 // копирование с поворотом
@@ -3079,19 +3097,8 @@ void colpip_fill(
 
 	const uintptr_t dstinvalidateaddr = (uintptr_t) buffer;	// параметры invalidate получателя
 	const int_fast32_t dstinvalidatesize = GXSIZE(dx, dy) * sizeof * buffer;
-#if LCDMODE_PALETTE256
-	hwaccel_rect_u8(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
-
-#elif LCDMODE_RGB565
-	hwaccel_rect_u16(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
-
-#elif LCDMODE_MAIN_L24
-	hwaccel_rect_u24(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
-
-#elif LCDMODE_ARGB8888
-	hwaccel_rect_u32(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color, FILL_FLAG_NONE);
-
-#endif
+	const unsigned fillmask = FILL_FLAG_NONE;
+	hwaccel_fillrect_mux(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color, fillmask);
 }
 
 
