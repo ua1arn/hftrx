@@ -2854,19 +2854,6 @@ uint_fast8_t colpip_hasalpha(void)
 #endif
 }
 
-// заполнение прямоугольной области в видеобуфере
-void colpip_fillrect(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// начальная координата
-	uint_fast16_t y,	// начальная координата
-	uint_fast16_t w,	// ширниа
-	uint_fast16_t h,	// высота
-	COLORPIP_T color	// цвет
-	)
-{
-	colpip_rectangle(db, x, y, w, h, color, FILL_FLAG_NONE);
-}
-
 //#define FILL_FLAG_NONE		0x00
 //#define FILL_FLAG_MIXBG		0x01	// alpha со старым содержимым буферв
 static void
@@ -2926,6 +2913,19 @@ void colpip_rectangle(
 	const int_fast32_t dstinvalidatesize = db->cachesize;
 
 	hwaccel_fillrect_mux(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color, fillmask);
+}
+
+// заполнение прямоугольной области в видеобуфере
+void colpip_fillrect(
+	const gxdrawb_t * db,
+	uint_fast16_t x,	// начальная координата
+	uint_fast16_t y,	// начальная координата
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	COLORPIP_T color	// цвет
+	)
+{
+	colpip_rectangle(db, x, y, w, h, color, FILL_FLAG_NONE);
 }
 
 // копирование с поворотом
