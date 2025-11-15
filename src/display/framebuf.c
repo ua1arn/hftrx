@@ -274,7 +274,7 @@ static void awxx_g2d_rtmix_startandwait(void)
 
 
 static void
-awg2d_bitblt(unsigned flags, COLORPIP_T keycolor,
+awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		unsigned srcFormat, unsigned sstride,
 		uint_fast32_t ssizehw, uintptr_t saddr,
 		unsigned tstride, uint_fast32_t tsizehw,
@@ -292,7 +292,7 @@ awg2d_bitblt(unsigned flags, COLORPIP_T keycolor,
 	g2d_rtmx_accure();
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 	awxx_g2d_mixer_reset(); /* Отключаем все источники */
-	if ((flags & BITBLT_FLAG_CKEY) != 0)
+	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
 		const COLOR24_T keycolor24 = awxx_key_color_conversion(keycolor);
 		/* 5.10.9.10 BLD color key control register */
@@ -3132,7 +3132,7 @@ void hwaccel_bitblt(
 	int_fast32_t srcinvalidatesize,
 	const gxdrawb_t * sdb,
 	uint_fast16_t sw,	uint_fast16_t sh,	// Размеры окна источника
-	unsigned flags, COLORPIP_T keycolor
+	unsigned keyflag, COLORPIP_T keycolor
 	)
 {
 	if (sw == 0 || sh == 0)
@@ -3246,8 +3246,8 @@ void hwaccel_bitblt(
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
 	unsigned rot_ctl = 0;
-	rot_ctl |= !! (flags & BITBLT_FLAG_XMIRROR) * (UINT32_C(1) << 7);	// flip horizontal
-	rot_ctl |= !! (flags & BITBLT_FLAG_YMIRROR) * (UINT32_C(1) << 6);	// flip vertical
+	rot_ctl |= !! (keyflag & BITBLT_FLAG_XMIRROR) * (UINT32_C(1) << 7);	// flip horizontal
+	rot_ctl |= !! (keyflag & BITBLT_FLAG_YMIRROR) * (UINT32_C(1) << 6);	// flip vertical
 	//rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
 	hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, rot_ctl);
 
@@ -3257,7 +3257,7 @@ void hwaccel_bitblt(
 //	PRINTF("hwaccel_bitblt: tdx/tdy, sdx/sdy: %u/%u, %u/%u\n", (unsigned) tdx, (unsigned) tdy, (unsigned) sdx, (unsigned) sdy);
 //	ASSERT(sdx > 1 && sdy > 1);
 //	ASSERT(sdx > 2 && sdy > 2);
-	const unsigned srcFormat = awxx_get_srcformat(flags);
+	const unsigned srcFormat = awxx_get_srcformat(keyflag);
 	enum { PIXEL_SIZE = sizeof (PACKEDCOLORPIP_T) };
 	const unsigned tstride = GXADJ(tdb->dx) * PIXEL_SIZE;
 	const unsigned sstride = GXADJ(sdb->dx) * PIXEL_SIZE;
@@ -3279,17 +3279,17 @@ void hwaccel_bitblt(
 //	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
-	if ((flags & BITBLT_FLAG_XMIRROR) || flags & BITBLT_FLAG_YMIRROR)
+	if ((keyflag & BITBLT_FLAG_XMIRROR) || keyflag & BITBLT_FLAG_YMIRROR)
 	{
 		unsigned rot_ctl = 0;
-		rot_ctl |= !! (flags & BITBLT_FLAG_XMIRROR) * (UINT32_C(1) << 7);	// flip horizontal
-		rot_ctl |= !! (flags & BITBLT_FLAG_YMIRROR) * (UINT32_C(1) << 6);	// flip vertical
+		rot_ctl |= !! (keyflag & BITBLT_FLAG_XMIRROR) * (UINT32_C(1) << 7);	// flip horizontal
+		rot_ctl |= !! (keyflag & BITBLT_FLAG_YMIRROR) * (UINT32_C(1) << 6);	// flip vertical
 		//rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
 		hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, 0);
 	}
 	else
 	{
-		awg2d_bitblt(flags, keycolor, srcFormat, sstride, ssizehw, saddr, tstride,
+		awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride,
 				tsizehw, taddr);
 	}
 
