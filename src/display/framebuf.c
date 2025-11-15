@@ -853,8 +853,6 @@ aw_g2d_fillrect(
 	unsigned fillmask
 	)
 {
-
-	const COLOR24_T color24 = COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color));
 	g2d_rtmx_accure();
 	awxx_g2d_mixer_reset();	/* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
@@ -872,11 +870,12 @@ aw_g2d_fillrect(
 		G2D_UI2->UI_LADD = ptr_lo32(taddr);
 		G2D_UI2->UI_HADD = ptr_hi32(taddr);
 
-		G2D_BLD->BLD_FILL_COLOR [0] = (alpha * (UINT32_C(1) << 24)) | (color24 & 0xFFFFFF); // цвет и alpha канал
 		G2D_BLD->BLD_FILL_COLOR [0] =
-				(alpha * (UINT32_C(1) << 24)) |
-				(color24 & 0xFFFFFF) | // цвет и alpha канал
-				0;
+			(alpha * (UINT32_C(1) << 24)) |
+			(COLORPIP_R(color) * (UINT32_C(1) << 16)) |
+			(COLORPIP_G(color) * (UINT32_C(1) << 8)) |
+			(COLORPIP_B(color) * (UINT32_C(1) << 0)) |
+			0;
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 		G2D_BLD->ROP_CTL = 0*0xAAF0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
 		G2D_BLD->ROP_INDEX [0] = 0;		// ? зависят от ROP_CTL
@@ -901,7 +900,9 @@ aw_g2d_fillrect(
 	{
 		G2D_BLD->BLD_FILL_COLOR [0] =
 			(COLORPIP_A(color) * (UINT32_C(1) << 24)) |
-			(color24 & 0xFFFFFF) | // цвет и alpha канал
+			(COLORPIP_R(color) * (UINT32_C(1) << 16)) |
+			(COLORPIP_G(color) * (UINT32_C(1) << 8)) |
+			(COLORPIP_B(color) * (UINT32_C(1) << 0)) |
 			0;
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 		G2D_BLD->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
