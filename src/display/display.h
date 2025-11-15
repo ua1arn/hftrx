@@ -420,7 +420,7 @@ colpip_fillrect(
 	);
 
 #define FILL_FLAG_NONE		0x00
-#define FILL_FLAG_MIXBG		(1u << 0)	// alpha со старым содержимым буферв
+#define FILL_FLAG_MIXBG		0x01	// alpha со старым содержимым буферв
 
 /* заполнение прямоугольника в буфере произвольным цветом
 */
