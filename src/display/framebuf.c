@@ -32,34 +32,72 @@
 
 #endif /* WITHLVGL */
 
+static COLORPIP_T softmixalpha(COLORPIP_T oldpixel, COLORPIP_T newpixel, unsigned alpha, unsigned oldalpha)
+{
+	return TFTRGB(
+			(oldalpha * COLORPIP_R(oldpixel) + alpha * COLORPIP_R(newpixel)) / 255,
+			(oldalpha * COLORPIP_G(oldpixel) + alpha * COLORPIP_G(newpixel)) / 255,
+			(oldalpha * COLORPIP_B(oldpixel) + alpha * COLORPIP_B(newpixel)) / 255
+	);
+}
+
 static void softfill(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
-	COLORPIP_T color	// цвет
+	COLORPIP_T color,	// цвет
+	unsigned fillmask
 	)
 {
-	// программная реализация
-	const unsigned t = GXADJ(dx) - w;
-	while (h --)
+
+	if (fillmask & FILL_FLAG_MIXBG)	// alpha со старым содержимым буферв
 	{
-		unsigned n = w;
-		while (n)
+		const unsigned alpha = COLORPIP_A(color);
+		const unsigned oldalpha = 255 - alpha;
+		const unsigned t = GXADJ(dx) - w;
+		while (h --)
 		{
-			switch (n)
+			unsigned n = w;
+			while (n)
 			{
-			default:
-				* buffer ++ = color; -- n; // @suppress("No break at end of case")
-			case 3:
-				* buffer ++ = color; -- n; // @suppress("No break at end of case")
-			case 2:
-				* buffer ++ = color; -- n; // @suppress("No break at end of case")
-			case 1:
-				* buffer ++ = color; -- n; // @suppress("No break at end of case")
+				switch (n)
+				{
+				default:
+					* buffer = softmixalpha(* buffer, color, alpha, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
+				case 3:
+					* buffer = softmixalpha(* buffer, color, alpha, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
+				case 2:
+					* buffer = softmixalpha(* buffer, color, alpha, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
+				case 1:
+					* buffer = softmixalpha(* buffer, color, alpha, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
+				}
 			}
+			buffer += t;
 		}
-		buffer += t;
+	}
+	else
+	{
+		const unsigned t = GXADJ(dx) - w;
+		while (h --)
+		{
+			unsigned n = w;
+			while (n)
+			{
+				switch (n)
+				{
+				default:
+					* buffer ++ = color; -- n; // @suppress("No break at end of case")
+				case 3:
+					* buffer ++ = color; -- n; // @suppress("No break at end of case")
+				case 2:
+					* buffer ++ = color; -- n; // @suppress("No break at end of case")
+				case 1:
+					* buffer ++ = color; -- n; // @suppress("No break at end of case")
+				}
+			}
+			buffer += t;
+		}
 	}
 }
 
@@ -514,7 +552,11 @@ static void aw_g2d_initialize(void)
 }
 
 
-static void hwaccel_fillrect(
+// Возврат не-0, если операция выполнена аппаратурой
+static int
+aw_g2d_fillrect(
+	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
+	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uintptr_t taddr,
@@ -549,11 +591,13 @@ static void hwaccel_fillrect(
 	{
 		//const uint_fast32_t ssizehw = ((uint_fast32_t) (DIM_Y - 1) << 16) | ((DIM_X - 1) << 0);	// вызывает странные записи в память если ширниа одинаковая а высота получателя меньше.
 		const uint_fast32_t ssizehw = tsizehw;
+		dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 		hwaccel_rotcopy((uintptr_t) bgscreen, GXADJ(DIM_X) * sizeof (PACKEDCOLORPIP_T), ssizehw, taddr, tstride, tsizehw, 0);
+		return 1;
 	}
 	else
 	{
-		softfill(buffer, dx, w, h, color);	// программная реализация
+		return 0;// программная реализация
 	}
 }
 
@@ -793,7 +837,11 @@ static void vsu_fir_bytable(volatile uint32_t * p, unsigned offset)
 //		} bits;
 //	};
 
-static void hwaccel_fillrect(
+// Возврат не-0, если операция выполнена аппаратурой
+static int
+aw_g2d_fillrect(
+	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
+	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * __restrict buffer_UNUSED,
 	uint_fast16_t dx_UNUSED,	// ширина буфера
 	uintptr_t taddr,
@@ -812,6 +860,7 @@ static void hwaccel_fillrect(
 	awxx_g2d_mixer_reset();	/* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	if (fillmask & FILL_FLAG_MIXBG)
 	{
 		/* установка поверхности - источника (анализируется) */
@@ -876,6 +925,7 @@ static void hwaccel_fillrect(
 
 	awxx_g2d_rtmix_startandwait();		/* Запускаем и ждём завершения обработки */
 	g2d_rtmx_release();
+	return 1;
 }
 #endif
 
@@ -1446,8 +1496,9 @@ draw_awg2d_fill(lv_draw_task_t * t, const lv_draw_fill_dsc_t * dsc, const lv_are
 	const unsigned tstride = layer->draw_buf->header.stride;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	hwaccel_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, fillmask);
+	if (aw_g2d_fillrect(dstinvalidateaddr, dstinvalidatesize, buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, fillmask))
+		return;
+	softfill(buffer, dx, w, h, color, fillmask);	// программная реализация для lvgl
 
 }
 
@@ -2164,7 +2215,8 @@ uint32_t display_get_lvformat(void)
 
 #if LCDMODE_PIXELSIZE == 1
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
-static void
+// Возврат не-0, если операция выполнена аппаратурой
+static int
 hwaccel_fillrect_u8(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
@@ -2177,7 +2229,7 @@ hwaccel_fillrect_u8(
 	)
 {
 	if (w == 0 || h == 0)
-		return;
+		return 1;
 	enum { PIXEL_SIZE = sizeof * buffer };
 	enum { PIXEL_SIZE_CODE = 0 };
 
@@ -2234,16 +2286,11 @@ hwaccel_fillrect_u8(
 		0;
 
 	mdma_startandwait();
+	return 1;
 
 #else /* WITHMDMAHW */
 	// программная реализация
-
-	const size_t t = GXADJ(dx);
-	while (h --)
-	{
-		memset(buffer, color, w);
-		buffer += t;
-	}
+	return 0;
 
 #endif /* WITHMDMAHW */
 }
@@ -2285,7 +2332,8 @@ hwaccel_fillrect_u8(
 #if LCDMODE_PIXELSIZE == 2
 
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
-static void
+// Возврат не-0, если операция выполнена аппаратурой
+static int
 hwaccel_fillrect_u16(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
@@ -2298,7 +2346,8 @@ hwaccel_fillrect_u16(
 	)
 {
 	if (w == 0 || h == 0)
-		return;
+		return 1;
+
 	enum { PIXEL_SIZE = sizeof * buffer };
 	enum { PIXEL_SIZE_CODE = 1 };
 
@@ -2356,6 +2405,7 @@ hwaccel_fillrect_u16(
 
 	//PRINTF("MDMA_CH->CDAR=%08X,dbus=%d, MDMA_CH->CSAR=%08X,sbus=%d, tlen=%u, BNDT-%08lX\n", MDMA_CH->CDAR, dbus, MDMA_CH->CSAR, sbus, tlen, (MDMA_CH->CBNDTR & MDMA_CBNDTR_BNDT_Msk) >> MDMA_CBNDTR_BNDT_Pos);
 	mdma_startandwait();
+	return 1;
 
 #elif WITHDMA2DHW
 	// DMA2D implementation
@@ -2398,28 +2448,22 @@ hwaccel_fillrect_u16(
 
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
+	return 1;
 
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER
 	/* Использование G2D для формирования изображений */
 
 	if (w == 1)
-	{
-		/* Горизонтальные линии в один пиксель рисовать умеет аппаратура. */
-		/* программная реализация отрисовки вертикальной линии в один пиксель */
-		softfill(buffer, dx, w, h, color);	// программная реализация
-		return;
-	}
+		return 0;
 
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uintptr_t taddr = (uintptr_t) buffer;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	hwaccel_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), w, h, color, FILL_FLAG_NONE);
+	return aw_g2d_fillrect(dstinvalidateaddr, dstinvalidatesize, buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color),  COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), w, h, color, FILL_FLAG_NONE);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
-
-	softfill(buffer, dx, w, h, color);	// программная реализация
+	return 0;
 
 #endif /* WITHMDMAHW, WITHDMA2DHW */
 }
@@ -2428,7 +2472,8 @@ hwaccel_fillrect_u16(
 
 #if LCDMODE_PIXELSIZE == 3
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
-static void
+// Возврат не-0, если операция выполнена аппаратурой
+static int
 hwaccel_fillrect_u24(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
@@ -2441,7 +2486,7 @@ hwaccel_fillrect_u24(
 	)
 {
 	if (w == 0 || h == 0)
-		return;
+		return 1;
 	enum { PIXEL_SIZE = sizeof * buffer };
 	//enum { PIXEL_SIZE_CODE = 1 };
 
@@ -2500,6 +2545,7 @@ hwaccel_fillrect_u24(
 		0;
 
 	mdma_startandwait();
+	return 1;
 
 #elif WITHDMA2DHW
 	// DMA2D implementation
@@ -2543,9 +2589,11 @@ hwaccel_fillrect_u24(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 
+	return 1;
+
 #else
 
-	softfill(buffer, dx, w, h, color);	// программная реализация
+	return 0;	// программная реализация
 
 #endif
 }
@@ -2556,7 +2604,8 @@ hwaccel_fillrect_u24(
 //#define FILL_FLAG_NONE		0x00
 //#define FILL_FLAG_MIXBG		0x01	// alpha со старым содержимым буферв
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
-static void
+// Возврат не-0, если операция выполнена аппаратурой
+static int
 hwaccel_fillrect_u32(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
@@ -2570,12 +2619,14 @@ hwaccel_fillrect_u32(
 	)
 {
 	if (w == 0 || h == 0)
-		return;
+		return 1;
 	enum { PIXEL_SIZE = sizeof * buffer };
 	enum { PIXEL_SIZE_CODE = 2 };	// word (32-bit)
 
 #if WITHMDMAHW && (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 	// MDMA implementation
+	if (fillmask & FILL_FLAG_MIXBG)
+		return 0;
 
 	//static ALIGNX_BEGIN volatile uint32_t tgcolor [(DCACHEROWSIZE + sizeof (uint32_t) - 1) / sizeof (uint32_t)] ALIGNX_END;	/* значение цвета для заполнения области памяти */
 	//tgcolor [0] = color;
@@ -2626,10 +2677,12 @@ hwaccel_fillrect_u32(
 		0;
 
 	mdma_startandwait();
+	return 1;
 
 #elif WITHDMA2DHW
 	// DMA2D implementation
-
+	if (fillmask & FILL_FLAG_MIXBG)
+		return 0;
 	// just writes the color defined in the DMA2D_OCOLR register
 	// to the area located at the address pointed by the DMA2D_OMAR
 	// and defined in the DMA2D_NLR and DMA2D_OOR.
@@ -2668,6 +2721,7 @@ hwaccel_fillrect_u32(
 
 	ASSERT((DMA2D->ISR & DMA2D_ISR_CEIF) == 0);	// Configuration Error
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
+	return 1;
 
 #elif WITHGPUHW && 0
 
@@ -2677,32 +2731,22 @@ hwaccel_fillrect_u32(
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	gpu_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color);
+	return 1;
 
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER
 	/* Использование G2D для формирования изображений */
 
 	if (w == 1)
-	{
-		/* программная реализация отрисовки вертикальной линии в один пиксель */
-		const unsigned t = GXADJ(dx);
-		while (h --)
-		{
-			* buffer = color;
-			buffer += t;
-		}
-		return;
-	}
+		return 0;	// программная реализация
 
 	const uintptr_t taddr = (uintptr_t) buffer;
 	const unsigned tstride = GXADJ(dx) * PIXEL_SIZE;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	hwaccel_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, fillmask);
+	return aw_g2d_fillrect(dstinvalidateaddr, dstinvalidatesize, buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, fillmask);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
-
-	softfill(buffer, dx, w, h, color);	// программная реализация
+	return 0;	// программная реализация
 
 #endif /* WITHMDMAHW, WITHDMA2DHW */
 }
@@ -2838,19 +2882,24 @@ hwaccel_fillrect_mux(
 	unsigned fillmask
 	)
 {
+	int done = 0;
 #if LCDMODE_PALETTE256
-	hwaccel_fillrect_u8(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color);
+	done = hwaccel_fillrect_u8(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color);
 
 #elif LCDMODE_RGB565
-	hwaccel_fillrect_u16(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color);
+	done = hwaccel_fillrect_u16(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color);
 
 #elif LCDMODE_MAIN_L24
-	hwaccel_fillrect_u24(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color);
+	done = hwaccel_fillrect_u24(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color);
 
 #elif LCDMODE_ARGB8888
-	hwaccel_fillrect_u32(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color, fillmask);
-
+	done = hwaccel_fillrect_u32(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color, fillmask);
+#else
+	done = 0;
 #endif
+	if (done)
+		return;
+	softfill(buffer, dx, w, h, color, fillmask);	// программная реализация
 }
 
 // заполнение прямоугольной области в видеобуфере
@@ -2871,9 +2920,10 @@ void colpip_rectangle(
 	ASSERT((x + w) <= dx);
 	ASSERT(y < dy);
 	ASSERT((y + h) <= dy);
+
 	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y);
-	const uintptr_t dstinvalidateaddr = (uintptr_t) db->buffer;	// параметры invalidate получателя
-	const int_fast32_t dstinvalidatesize = GXSIZE(dx, dy) * sizeof (PACKEDCOLORPIP_T);
+	const uintptr_t dstinvalidateaddr = db->cachebase;	// параметры invalidate получателя
+	const int_fast32_t dstinvalidatesize = db->cachesize;
 
 	hwaccel_fillrect_mux(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color, fillmask);
 }
@@ -2948,7 +2998,7 @@ void colpip_putpixel(const gxdrawb_t * db,
 /*-----------------------------------------------------  V_Bre
  * void V_Bre (int xn, int yn, int xk, int yk)
  *
- * Подпрограмма иллюстрирующая построение вектора из точки
+ * Построение вектора из точки
  * (xn,yn) в точку (xk, yk) методом Брезенхема.
  *
  * Построение ведется от точки с меньшими  координатами
@@ -4240,7 +4290,7 @@ void gpu_fillrect(
 		* buffer = TFTALPHA(alpha, color24);
 		return;
 	}
-	//hwaccel_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, FILL_FLAG_NONE);
+	//aw_g2d_fillrect(buffer, dx, taddr, tstride, tsizehw, COLORPIP_A(color), (color & 0xFFFFFF), w, h, color, FILL_FLAG_NONE);
 	int32_t triangle0 [3] [2] = { { 0, 0 }, { 0, h - 1}, { w - 1, 0 } };
 	int32_t triangle1 [3] [2] = { { w - 1, h - 1 }, { 0, h - 1}, { w - 1, 0 } };
 }
