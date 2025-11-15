@@ -817,7 +817,7 @@ static void draw_button(const button_t * const bh)
 		c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
 
-		colpip_rectangle(gdb, x1 + 1, y1 + 1, bh->w - 1, bh->h - 1, GUI_DEFAULTCOLOR, FILL_FLAG_NONE);
+		colpip_fillrect(gdb, x1 + 1, y1 + 1, bh->w - 1, bh->h - 1, GUI_DEFAULTCOLOR);
 		colmain_rounded_rect(gdb, x1, y1, x1 + bh->w, y1 + bh->h - 2, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
 		colmain_rounded_rect(gdb, x1, y1, x1 + bh->w, y1 + bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		colmain_rounded_rect(gdb, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
@@ -1292,8 +1292,8 @@ void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, ui
 					display_transparency(gui.gdb, win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) :
 							win->y1, win->x1 + win->w - 1, win->y1 + win->h - 1, alpha);
 #else
-					colpip_rectangle(gui.gdb, win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) :
-							win->y1, win->w, win->h, GUI_WINDOWBGCOLOR, FILL_FLAG_NONE);
+					colpip_fillrect(gui.gdb, win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) :
+							win->y1, win->w, win->h, GUI_WINDOWBGCOLOR);
 #endif /* GUI_TRANSPARENT_WINDOWS */
 				}
 			}
@@ -1328,7 +1328,7 @@ void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, ui
 						break;
 					}
 
-					colpip_rectangle(gui.gdb, win->x1, win->y1, win->w, window_title_height, GUI_WINDOWTITLECOLOR, FILL_FLAG_NONE);
+					colpip_fillrect(gui.gdb, win->x1, win->y1, win->w, window_title_height, GUI_WINDOWTITLECOLOR);
 					colpip_string_tbg(gui.gdb, xt, win->y1 + 5, win->title, COLORPIP_BLACK);
 				}
 

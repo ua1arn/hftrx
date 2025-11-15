@@ -430,7 +430,8 @@ colpip_rectangle(
 	uint_fast16_t x, uint_fast16_t y, 	// координаты в пикселях
 	uint_fast16_t w, uint_fast16_t h, 	// размеры в пикселях
 	COLORPIP_T color,
-	unsigned fillmask
+	unsigned fillmask,
+	unsigned alpha
 	);
 
 #define BITBLT_FLAG_NONE			0u

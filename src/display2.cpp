@@ -1624,6 +1624,7 @@ static COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// Цвет текста час
 	static const int_fast32_t glob_gridmod = 1;	// 10 ^ glob_gridwc
 	static const char  gridfmt_2 [] = ".%0*ld";
 #endif
+	static unsigned gbwalpha = 128;	/* Полупрозрачность при отрисовке прямоугольникв ("шторки") полосы пропускания на водопаде. */
 
 // waterfall/spectrum parameters
 static uint_fast8_t glob_view_style = VIEW_COLOR;		/* стиль отображения спектра и панорамы */
@@ -3702,8 +3703,8 @@ static void display2_demorect(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	colpip_rectangle(db, 0, 0, DIM_X / 2, DIM_Y, COLORPIP_RED, FILL_FLAG_NONE);
-	colpip_rectangle(db, DIM_X / 2, 0, DIM_X / 2, DIM_Y, COLORPIP_BLUE, FILL_FLAG_NONE);
+	colpip_fillrect(db, 0, 0, DIM_X / 2, DIM_Y, COLORPIP_RED);
+	colpip_fillrect(db, DIM_X / 2, 0, DIM_X / 2, DIM_Y, COLORPIP_BLUE);
 }
 
 // dd.dV - 5 places
@@ -7084,13 +7085,12 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 				xright = xleft + 1;
 			if (xright >= alldx)
 				xright = alldx - 1;
-			unsigned picalpha = 128;	// Полупрозрачность
 			colpip_rectangle(
 					db,
 					xleft + x0pix, y0pix,
 					xright + 1 - xleft, alldy, // размер окна источника
-					TFTALPHA(picalpha, pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2),
-					FILL_FLAG_NONE | FILL_FLAG_MIXBG
+					pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2,
+					FILL_FLAG_MIXBG, gbwalpha
 				);
 		}
 	}
@@ -7446,13 +7446,12 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 
 					const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
 					/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
-					unsigned picalpha = 128;	// Полупрозрачность
 					colpip_rectangle(
 							db,
 							xleft, y0pix,
 							xrightv - xleft, wfdy, // размер окна источника
-							TFTALPHA(picalpha, pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2),
-							FILL_FLAG_NONE | FILL_FLAG_MIXBG
+							pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2,
+							FILL_FLAG_MIXBG, gbwalpha
 						);
 
 				}
