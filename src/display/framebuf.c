@@ -853,6 +853,7 @@ aw_g2d_fillrect(
 	unsigned fillmask
 	)
 {
+	const uint_fast32_t toffset = 0;	// не может быть использован в случае использования информации в буфере (FILL_FLAG_MIXBG) ((row) << 16) | ((col) << 0);
 	g2d_rtmx_accure();
 	awxx_g2d_mixer_reset();	/* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
@@ -871,10 +872,10 @@ aw_g2d_fillrect(
 		G2D_UI2->UI_HADD = ptr_hi32(taddr);
 
 		G2D_BLD->BLD_FILL_COLOR [0] =
-			(alpha * (UINT32_C(1) << 24)) |
-			(COLORPIP_R(color) * (UINT32_C(1) << 16)) |
-			(COLORPIP_G(color) * (UINT32_C(1) << 8)) |
-			(COLORPIP_B(color) * (UINT32_C(1) << 0)) |
+			alpha * (UINT32_C(1) << 24) |
+			COLORPIP_R(color) * (UINT32_C(1) << 16) |
+			COLORPIP_G(color) * (UINT32_C(1) << 8) |
+			COLORPIP_B(color) * (UINT32_C(1) << 0) |
 			0;
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 		G2D_BLD->ROP_CTL = 0*0xAAF0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
@@ -884,9 +885,9 @@ aw_g2d_fillrect(
 		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
 
 		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
-		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
+		G2D_BLD->BLD_CH_OFFSET [0] = toffset;
 		G2D_BLD->BLD_CH_ISIZE [1] = tsizehw;
-		G2D_BLD->BLD_CH_OFFSET [1] = 0;// ((row) << 16) | ((col) << 0);
+		G2D_BLD->BLD_CH_OFFSET [1] = toffset;
 
 		G2D_BLD->BLD_FILL_COLOR_CTL =
 			(UINT32_C(1) << 9) |    	// P1_EN: Pipe1 enable - old frame buffer
@@ -899,10 +900,10 @@ aw_g2d_fillrect(
 	else
 	{
 		G2D_BLD->BLD_FILL_COLOR [0] =
-			(COLORPIP_A(color) * (UINT32_C(1) << 24)) |
-			(COLORPIP_R(color) * (UINT32_C(1) << 16)) |
-			(COLORPIP_G(color) * (UINT32_C(1) << 8)) |
-			(COLORPIP_B(color) * (UINT32_C(1) << 0)) |
+			COLORPIP_A(color) * (UINT32_C(1) << 24) |
+			COLORPIP_R(color) * (UINT32_C(1) << 16) |
+			COLORPIP_G(color) * (UINT32_C(1) << 8) |
+			COLORPIP_B(color) * (UINT32_C(1) << 0) |
 			0;
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 		G2D_BLD->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
@@ -912,7 +913,7 @@ aw_g2d_fillrect(
 		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
 
 		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
-		G2D_BLD->BLD_CH_OFFSET [0] = 0;// ((row) << 16) | ((col) << 0);
+		G2D_BLD->BLD_CH_OFFSET [0] = toffset;
 
 		// BLD_FILL_COLOR_CTL: BLD_FILLC [0] или BLD_BK_COLOR
 		G2D_BLD->BLD_FILL_COLOR_CTL =
