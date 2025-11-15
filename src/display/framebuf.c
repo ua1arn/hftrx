@@ -2161,7 +2161,7 @@ uint32_t display_get_lvformat(void)
 #if LCDMODE_PIXELSIZE == 1
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
-hwaccel_rect_u8(
+hwaccel_fillrect_u8(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
 	uint8_t * __restrict buffer,
@@ -2282,7 +2282,7 @@ hwaccel_rect_u8(
 
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
-hwaccel_rect_u16(
+hwaccel_fillrect_u16(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
 	uint16_t * __restrict buffer,
@@ -2425,7 +2425,7 @@ hwaccel_rect_u16(
 #if LCDMODE_PIXELSIZE == 3
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
-hwaccel_rect_u24(
+hwaccel_fillrect_u24(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
 	PACKEDCOLORPIP_T * __restrict buffer,
@@ -2553,7 +2553,7 @@ hwaccel_rect_u24(
 //#define FILL_FLAG_MIXBG		0x01	// alpha со старым содержимым буферв
 // Функция получает координаты и работает над буфером в горизонтальной ориентации.
 static void
-hwaccel_rect_u32(
+hwaccel_fillrect_u32(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
 	uint32_t * __restrict buffer,
@@ -2821,6 +2821,33 @@ void colpip_fillrect(
 
 //#define FILL_FLAG_NONE		0x00
 //#define FILL_FLAG_MIXBG		0x01	// alpha со старым содержимым буферв
+static void
+hwaccel_fillrect_mux(
+	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
+	int_fast32_t dstinvalidatesize,
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	COLORPIP_T color,	// цвет
+	unsigned fillmask
+	)
+{
+#if LCDMODE_PALETTE256
+	hwaccel_fillrect_u8(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color);
+
+#elif LCDMODE_RGB565
+	hwaccel_fillrect_u16(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color);
+
+#elif LCDMODE_MAIN_L24
+	hwaccel_fillrect_u24(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color);
+
+#elif LCDMODE_ARGB8888
+	hwaccel_fillrect_u32(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, w, h, color, fillmask);
+
+#endif
+}
 
 // заполнение прямоугольной области в видеобуфере
 void colpip_rectangle(
@@ -2844,19 +2871,7 @@ void colpip_rectangle(
 	const uintptr_t dstinvalidateaddr = (uintptr_t) db->buffer;	// параметры invalidate получателя
 	const int_fast32_t dstinvalidatesize = GXSIZE(dx, dy) * sizeof (PACKEDCOLORPIP_T);
 
-#if LCDMODE_PALETTE256
-	hwaccel_rect_u8(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
-
-#elif LCDMODE_RGB565
-	hwaccel_rect_u16(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
-
-#elif LCDMODE_MAIN_L24
-	hwaccel_rect_u24(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color);
-
-#elif LCDMODE_ARGB8888
-	hwaccel_rect_u32(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color, fillmask);
-
-#endif
+	hwaccel_fillrect_mux(dstinvalidateaddr, dstinvalidatesize, tgr, dx, dy, w, h, color, fillmask);
 }
 
 // копирование с поворотом
@@ -3079,19 +3094,7 @@ void colpip_fill(
 
 	const uintptr_t dstinvalidateaddr = (uintptr_t) buffer;	// параметры invalidate получателя
 	const int_fast32_t dstinvalidatesize = GXSIZE(dx, dy) * sizeof * buffer;
-#if LCDMODE_PALETTE256
-	hwaccel_rect_u8(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
-
-#elif LCDMODE_RGB565
-	hwaccel_rect_u16(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
-
-#elif LCDMODE_MAIN_L24
-	hwaccel_rect_u24(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color);
-
-#elif LCDMODE_ARGB8888
-	hwaccel_rect_u32(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color, FILL_FLAG_NONE);
-
-#endif
+	hwaccel_fillrect_mux(dstinvalidateaddr, dstinvalidatesize, buffer, dx, dy, dx, dy, color, FILL_FLAG_NONE);
 }
 
 
