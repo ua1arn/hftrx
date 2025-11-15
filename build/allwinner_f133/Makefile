@@ -58,9 +58,8 @@ CORE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector -
 
 # Define optimisation level here
 #OPT = -Og
-#OPT = -Ofast -flto
-#OPT = -Os -flto
-OPT = -Ofast
+OPT = -Ofast -flto
+#OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol

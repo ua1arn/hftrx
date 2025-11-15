@@ -62,8 +62,8 @@ CORE = -march=rv64imafdc_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector 
 
 # Define optimisation level here
 #OPT = -Og
-#OPT = -Ofast -flto
-OPT = -Ofast
+OPT = -Ofast -flto
+#OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 USBXDIR = $(PRJROOT)/src/hal
