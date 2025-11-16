@@ -2678,6 +2678,8 @@ sysinit_mmu_tables(void)
 
 	//ttb_level0_1MB_initialize(ttb_1MB_accessbits, 0, 0);
 
+	// See https://chromite.readthedocs.io/en/latest/mmu.html
+
 	// XuanTie-Openc906 SYSMAP
 
 	// The C906 is fully compatible with the RV64GC instruction set and supports the standard M/S/U privilege program model.
@@ -2706,20 +2708,20 @@ sysinit_mmu_tables(void)
 				//((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
 				((address >> 21) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
 				//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
-				RAM_ATTRS |
+				NCRAM_ATTRS |
 				0;
 		address += addrstep;
 	}
 	// Pointe to 1 GB pages
 	for (i = 0; i < ARRAY_SIZE(ttb0_base); ++ i)
 	{
-		//uintptr_t address = (uintptr_t) (level2_pagetable + 512 * i) | 0x03;
-		uintptr_t address = 0 * (UINT64_C(1) << 30) * i;
+		uintptr_t address = (uintptr_t) (level2_pagetable + 512 * i) | 0x03;
+		//uintptr_t address = 1 * (UINT64_C(1) << 30) * i;
 		ttb0_base [i] =
 			((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
 			//((address >> 24) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
 			//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
-			RAM_ATTRS |
+			TABLE_ATTRS |
 			0;
 	}
 
@@ -2865,17 +2867,19 @@ sysinit_ttbr_initialize(void)
 
 	ASSERT(((uintptr_t) ttb0_base & 0x0FFF) == 0);
 	mmu_flush_cache();
-
+	const unsigned asid = 0;
 	// 5.2.1.1 MMU address translation register (SATP)
 	// When Mode is 0, the MMU is disabled. C906 supports only the MMU disabled and Sv39 modes
 	const uint_fast64_t satp =
-			CSR_SATP_MODE_PHYS * (UINT64_C(1) << 60) | // MODE
-			//CSR_SATP_MODE_SV39 * (UINT64_C(1) << 60) | // MODE
-			0x00 * (UINT64_C(1) << 44) | // ASID
+			//CSR_SATP_MODE_PHYS * (UINT64_C(1) << 60) | // MODE
+			CSR_SATP_MODE_SV39 * (UINT64_C(1) << 60) | // MODE
+			(asid  & UINT64_C(0xFFFF))* (UINT64_C(1) << 44) | // ASID
 			(((uintptr_t) ttb0_base >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
 			0;
-	csr_write_satp(satp);
-//	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
+	PRINTF("1 ttb0_base=%p" "\n", ttb0_base);
+	PRINTF("1 csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
+	//csr_write_satp(satp);
+	PRINTF("2 csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
 
 //	mmu_write_satp(satp);
 //	mmu_flush_cache();
@@ -3456,6 +3460,8 @@ sysinit_cache_initialize(void)
 	//	*/
 	//	csr_write(CSR_MHCR, 0x11ff);
 	csr_write_mhcr(0x011FF);
+	csr_write_mhcr(0x011FF & ~ 0x02);	// D-cache disable for tests
+#warning D-cache disabled
 
 	//
 	//
