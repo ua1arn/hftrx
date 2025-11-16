@@ -629,7 +629,7 @@ const videomode_t * get_videomode_LCD(void);
 size_t getvaltexthdmiformat(char * buff, size_t count, int_fast32_t value);	/* Название видеорежима для отображения в меню */
 #define HDMIFORMATS_count 5
 
-void hardware_ltdc_initialize(const videomode_t * vdmode);	// LCD-TFT Controller (LTDC) with framebuffer
+void hardware_ltdc_initialize(void);	// LCD-TFT Controller (LTDC) with framebuffer
 uint_fast32_t display_getdotclock(const videomode_t * vdmode);
 void hardware_edid_test(void);
 void hardware_tvout_set_format(void);	// Установить режим отображения на выдеовыходе

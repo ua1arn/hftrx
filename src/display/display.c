@@ -2068,7 +2068,7 @@ void display_hardware_initialize(void)
 
 #if WITHLTDCHW
 	{
-		hardware_ltdc_initialize(get_videomode_LCD());
+		hardware_ltdc_initialize();
 	}
 
 	hardware_ltdc_L8_palette();
@@ -2091,7 +2091,7 @@ void display_wakeup(void)
 {
 #if WITHLTDCHW
 	{
-		hardware_ltdc_initialize(get_videomode_LCD());
+		hardware_ltdc_initialize();
 	}
 #endif /* WITHLTDCHW */
 #if LCDMODETX_TC358778XBG
