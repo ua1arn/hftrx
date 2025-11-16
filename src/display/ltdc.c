@@ -749,8 +749,9 @@ static void vdc5fb_update_all(struct st_vdc5 * const vdc)
 }
 
 void
-hardware_ltdc_initialize(const videomode_t * vdmode)
+hardware_ltdc_initialize(void)
 {
+	const videomode_t * const vdmode = get_videomode_LCD();
 	struct st_vdc5 * const vdc = & VDC50;
 	//PRINTF(PSTR("hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 	//const unsigned ROWSIZE = sizeof framebuff [0];	// размер одной строки в байтах
@@ -1385,8 +1386,9 @@ static void LCDx_LayerInitPIP(
 }
 
 void
-hardware_ltdc_initialize(const videomode_t * vdmode)
+hardware_ltdc_initialize(void)
 {
+	const videomode_t * const vdmode = get_videomode_LCD();
 	/* Accumulated parameters for this display */
 	const unsigned HEIGHT = vdmode->height;	/* height */
 	const unsigned WIDTH = vdmode->width;	/* width */
@@ -1681,8 +1683,9 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 
 #elif LINUX_SUBSYSTEM && WITHFBDEV && ! WITHLVGL
 
-void hardware_ltdc_initialize(const videomode_t * vdmode)
+void hardware_ltdc_initialize(void)
 {
+	//const videomode_t * const vdmode = get_videomode_LCD();
 	linux_framebuffer_init();
 }
 
@@ -1718,8 +1721,9 @@ void hardware_tvout_set_format(void)
 
 #elif LINUX_SUBSYSTEM && WITHSDL2VIDEO && ! WITHLVGL
 
-void hardware_ltdc_initialize(const videomode_t * vdmode)
+void hardware_ltdc_initialize(void)
 {
+	//const videomode_t * const vdmode = get_videomode_LCD();
 	ASSERT(sdl2_render_init());
 }
 
@@ -1755,8 +1759,9 @@ void hardware_tvout_set_format(void)
 
 static DisplayCtrl dispCtrl;
 
-void hardware_ltdc_initialize(const videomode_t * vdmode)
+void hardware_ltdc_initialize(void)
 {
+	const videomode_t * const vdmode = get_videomode_LCD();
 	int Status;
 	static XAxiVdma AxiVdma;
 	uintptr_t frames [LCDMODE_MAIN_PAGES];
@@ -8017,7 +8022,7 @@ void hardware_tvout_set_format(void)
 #endif /* WITHHDMITVHW */
 }
 
-void hardware_ltdc_initialize(const videomode_t * vdmode_unused)
+void hardware_ltdc_initialize(void)
 {
     //PRINTF("hardware_ltdc_initialize\n");
 
@@ -8170,8 +8175,9 @@ void hardware_ltdc_L8_palette(void)
 #else
 	//#error Wrong CPUSTYLE_xxxx
 
-void hardware_ltdc_initialize(const videomode_t * vdmode)
+void hardware_ltdc_initialize(void)
 {
+	//const videomode_t * const vdmode = get_videomode_LCD();
 }
 
 /* Set frame buffer address. No waiting for VSYNC. */

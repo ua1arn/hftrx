@@ -1214,7 +1214,7 @@ void arm_hardware_mdma_initialize(void)
 			0;
 		CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// G2D_CLK_GATING
 		local_delay_us(10);
-		PRINTF("allwnr_t507_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_g2d_freq() / 1000 / 1000));
+		//PRINTF("allwnr_t507_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_g2d_freq() / 1000 / 1000));
 
 		//CCU->G2D_BGR_REG = 0;
 		CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		/* Enable gating clock for G2D 1: Pass */
@@ -1233,7 +1233,7 @@ void arm_hardware_mdma_initialize(void)
 		if (1)
 		{
 #if defined (G2D_MIXER)
-			// MIXER
+			// MIXER - нету!
 			G2D_TOP->G2D_SCLK_GATE |= (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
 			G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
 			G2D_TOP->G2D_AHB_RST &= ~ ~ (UINT32_C(1) << 0);	// Assert reset: 0x02: rot, 0x01: mixer
@@ -4400,3 +4400,22 @@ void board_gpu_initialize(void)
 }
 
 #endif /* WITHGPUHW */
+
+
+/* g2d/mdma/gpu/dma2d initialize */
+void display_gpu_initialize(void)
+{
+#if WITHDMA2DHW
+	// Image construction hardware
+	arm_hardware_dma2d_initialize();
+
+#endif /* WITHDMA2DHW */
+#if WITHMDMAHW
+	// Image construction hardware
+	arm_hardware_mdma_initialize();
+#endif /* WITHMDMAHW */
+#if WITHGPUHW
+	board_gpu_initialize();		// GPU controller
+#endif /* WITHGPUHW */
+}
+

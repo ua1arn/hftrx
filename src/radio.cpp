@@ -19170,12 +19170,12 @@ applowinitialize(void)
 
 #endif /* WITHMODEM */
 
-	display_hardware_initialize();
 #if WITHWATCHDOG
 	watchdog_initialize();	/* разрешение сторожевого таймера в устройстве */
 #endif /* WITHWATCHDOG */
 
 	buffers_initialize();
+	display_hardware_initialize();
 
 	txreq_initialize(& txreqst0);
 
@@ -19183,9 +19183,6 @@ applowinitialize(void)
 	if (bootloader_withusb())
 		board_usb_initialize();		// USB device and host support
 #endif /* WITHUSBHW */
-#if WITHGPUHW
-	board_gpu_initialize();		// GPU controller
-#endif /* WITHGPUHW */
 	hardware_encoders_initialize();	//  todo: разобраться - вызов перенесен сюда из board_initialize - иначе не собирается под Cortex-A9.
 	encoders_initialize();
 #if WITHELKEY
@@ -19249,6 +19246,8 @@ void initialize2(void)
 	catbaudrate = findcatbaudrate(catbaudrate, 9600);
 #endif
 #endif /* WITHCAT */
+
+	display_gpu_initialize();	// mdma/g2d/dma2d/gpu init
 	display_reset();
 	display_initialize();
 

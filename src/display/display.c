@@ -2054,23 +2054,8 @@ void display_hardware_initialize(void)
 {
 	PRINTF(PSTR("display_hardware_initialize start\n"));
 
-
-#if WITHDMA2DHW
-	// Image construction hardware
-	arm_hardware_dma2d_initialize();
-
-#endif /* WITHDMA2DHW */
-#if WITHMDMAHW
-	// Image construction hardware
-	arm_hardware_mdma_initialize();
-
-#endif /* WITHMDMAHW */
-
-#if WITHLTDCHW
-	{
-		hardware_ltdc_initialize();
-	}
-
+	#if WITHLTDCHW
+	hardware_ltdc_initialize();
 	hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */
 

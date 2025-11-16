@@ -225,12 +225,14 @@ void gxstyle_setsmallfont(gxstyle_t * dbstyle);
 void gxstyle_setsmallfont2(gxstyle_t * dbstyle);
 
 // Интерфейсные функции, специфические для драйвера дисплея - зависящие от типа микросхемы контроллера.
-void display_hardware_initialize(void);	/* вызывается при запрещённых прерываниях. */
-void display_reset(void);				/* вызывается при разрешённых прерываниях. */
-void display_initialize(void);			/* вызывается при разрешённых прерываниях. */
-void display_uninitialize(void);			/* вызывается при разрешённых прерываниях. */
-void display_lvgl_initialize(void);			/* вызывается при разрешённых прерываниях. */
+void display_hardware_initialize(void);
+void display_reset(void);
+void display_initialize(void);
+void display_uninitialize(void);
+void display_lvgl_initialize(void);
 uint32_t display_get_lvformat(void);	/* получить LVGL код формата цвета, используемый в построении  изображений */
+
+void display_gpu_initialize(void);		/* g2d/mdma/gpu/dma2d initialize */
 
 // Используется при выводе на графический индикатор с кординатами и размерами по сетке
 void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle);		// Выдача строки из ОЗУ в указанное место экрана.
