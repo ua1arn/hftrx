@@ -19175,7 +19175,6 @@ applowinitialize(void)
 #endif /* WITHWATCHDOG */
 
 	buffers_initialize();
-	display_hardware_initialize();
 
 	txreq_initialize(& txreqst0);
 
@@ -19248,8 +19247,11 @@ void initialize2(void)
 #endif /* WITHCAT */
 
 	display_gpu_initialize();	// mdma/g2d/dma2d/gpu init
+
+	display_hardware_initialize();
 	display_reset();
 	display_initialize();
+
 
 	display2_initialize();	// проход по элементам с необходимостью инициализации
 	//display2_needupdate();

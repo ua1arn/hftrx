@@ -1724,7 +1724,7 @@ void hardware_tvout_set_format(void)
 void hardware_ltdc_initialize(void)
 {
 	//const videomode_t * const vdmode = get_videomode_LCD();
-	ASSERT(sdl2_render_init());
+	VERIFY(sdl2_render_init());
 }
 
 /* Palette reload (dummy fuction) */

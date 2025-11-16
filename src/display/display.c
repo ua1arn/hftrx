@@ -783,7 +783,6 @@ uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fa
 #endif /* WITHPRERENDER */
 
 /* аппаратный сброс дисплея - перед инициализаций */
-/* вызывается при разрешённых прерываниях. */
 void
 display_reset(void)
 {
@@ -798,7 +797,6 @@ display_reset(void)
 	local_delay_ms(50); // Delay 50 ms
 }
 
-/* вызывается при разрешённых прерываниях. */
 void display_initialize(void)
 {
 #if WITHLVGL
@@ -2049,12 +2047,11 @@ const videomode_t * get_videomode_DESIGN(void)
  * сигналами дисплея.
  */
 
-/* вызывается при запрещённых прерываниях. */
 void display_hardware_initialize(void)
 {
 	PRINTF(PSTR("display_hardware_initialize start\n"));
 
-	#if WITHLTDCHW
+#if WITHLTDCHW
 	hardware_ltdc_initialize();
 	hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */
@@ -2075,9 +2072,8 @@ void display_hardware_initialize(void)
 void display_wakeup(void)
 {
 #if WITHLTDCHW
-	{
-		hardware_ltdc_initialize();
-	}
+	hardware_ltdc_initialize();
+	hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */
 #if LCDMODETX_TC358778XBG
 	const videomode_t * const vdmode = get_videomode_LCD();
