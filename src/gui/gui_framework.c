@@ -418,7 +418,7 @@ void objects_state (window_t * win)
 			}
 			else
 			{
-				ASSERT(remove_from_gui_list(bh));
+				VERIFY(remove_from_gui_list(bh));
 				debug_num --;
 				gui_object_count--;
 				bh->visible = NON_VISIBLE;
@@ -448,7 +448,7 @@ void objects_state (window_t * win)
 			}
 			else
 			{
-				ASSERT(remove_from_gui_list(lh));
+				VERIFY(remove_from_gui_list(lh));
 				debug_num --;
 				gui_object_count--;
 				lh->visible = NON_VISIBLE;
@@ -478,7 +478,7 @@ void objects_state (window_t * win)
 			}
 			else
 			{
-				ASSERT(remove_from_gui_list(sh));
+				VERIFY(remove_from_gui_list(sh));
 				debug_num --;
 				gui_object_count--;
 				sh->visible = NON_VISIBLE;
@@ -538,7 +538,7 @@ void objects_state (window_t * win)
 			}
 			else
 			{
-				ASSERT(remove_from_gui_list(tff));
+				VERIFY(remove_from_gui_list(tff));
 				debug_num --;
 				gui_object_count--;
 				tff->visible = NON_VISIBLE;
@@ -575,7 +575,7 @@ void objects_state (window_t * win)
 		}
 		else
 		{
-			ASSERT(remove_from_gui_list(& close_button));
+			VERIFY(remove_from_gui_list(& close_button));
 			debug_num --;
 			gui_object_count--;
 			close_button.visible = NON_VISIBLE;
