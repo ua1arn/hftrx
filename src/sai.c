@@ -6188,7 +6188,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	{
 		const uint_fast32_t reg = CCU->PLL_AUDIO0_CTRL_REG;
 		const uint_fast32_t pllPostDivP = 1 + ((reg >> 16) & 0x3F);	// PLL_POST_DIV_P
-		const uint_fast32_t needPLL0Freq = (uint_fast64_t) mclkf * pllPostDivP * 4;
+		const uint_fast32_t needPLL0Freq = (uint_fast32_t) mclkf * pllPostDivP * 4;
 		unsigned N = (((uint_fast64_t) needPLL0Freq << 17) / allwnr_t113_get_hosc_freq()) >> 17;
 		//unsigned N = 86;	// Повторям настройки по умолчанию... Точнее частоту не подобрать
 		//unsigned N = 85;	// А с такой настройкой не щёлкает...
