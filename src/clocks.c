@@ -3003,11 +3003,14 @@ void allwnr_t507_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t *
 void allwnr_t507_module_pll_enable(volatile uint32_t * ctrlreg, unsigned N)
 {
 	* ctrlreg &= ~ (UINT32_C(1) << 31);	// PLL_ENABLE
+	* ctrlreg &= ~ (UINT32_C(1) << 29);	// LOCK_ENABLE
+	* ctrlreg &= ~ (UINT32_C(1) << 27);	// PLL_OUTPUT_ENABLE
 
-	if(!(* ctrlreg & (UINT32_C(1) << 31)))	// PLL_ENABLE
+	//if(!(* ctrlreg & (UINT32_C(1) << 31)))	// PLL_ENABLE
 	{
 		* ctrlreg = (* ctrlreg & ~ (UINT32_C(0xFF) << 8)) | (((N - 1) & UINT32_C(0xFF)) << 8);
 		* ctrlreg |= (UINT32_C(1) << 31);	// PLL_ENABLE
+		* ctrlreg |= (UINT32_C(1) << 27);	// PLL_OUTPUT_ENABLE
 
 		/* Lock enable */
 		* ctrlreg |= (UINT32_C(1) << 29);	// LOCK_ENABLE
@@ -3021,6 +3024,7 @@ void allwnr_t507_module_pll_enable(volatile uint32_t * ctrlreg, unsigned N)
 //		val = * ctrlreg;
 //		val &= ~(1 << 29);
 //		* ctrlreg = val;
+
 	}
 }
 
