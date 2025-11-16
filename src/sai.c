@@ -6185,45 +6185,57 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	//	AudioCodec: allwnr_t113_get_audio1pll_div2_freq()=1536000 kHz
 	//	AudioCodec: allwnr_t113_get_audio1pll_div5_freq()=614400 kHz
 
+	if (1)
 	{
-		const uint_fast32_t reg = CCU->PLL_AUDIO0_CTRL_REG;
-		const uint_fast32_t pllPostDivP = 1 + ((reg >> 16) & 0x3F);	// PLL_POST_DIV_P
-		const uint_fast32_t needPLL0Freq = (uint_fast32_t) mclkf * pllPostDivP * 4;
-		unsigned N = (((uint_fast64_t) needPLL0Freq << 17) / allwnr_t113_get_hosc_freq()) >> 17;
-		//unsigned N = 86;	// Повторям настройки по умолчанию... Точнее частоту не подобрать
-		//unsigned N = 85;	// А с такой настройкой не щёлкает...
-		unsigned FRAC = (((uint_fast64_t) needPLL0Freq << 17) / allwnr_t113_get_hosc_freq()) & 0x1FFFF;
+		// PLL_AUDIO0 not supporting decimal mode
+		// PLL_AUDIO1 supporting decimal mode
+		enum { FRACBITS = 17 };	// 17 bit fraction part
+		const uint_fast32_t FRACMASK = (UINT32_C(1) << FRACBITS) - 1;
+		const uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
+		const uint_fast32_t pat1 = CCU->PLL_AUDIO1_PAT1_CTRL_REG;
+		const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0xFF);
+		const uint_fast32_t M = UINT32_C(1) + ((reg >> 1) & 0x01);
+		const uint_fast32_t P0 = UINT32_C(1) + ((reg >> 16) & 0x07);
+		const uint_fast32_t P1 = UINT32_C(1) + ((reg >> 20) & 0x07);
+//		const uint_fast32_t FRACv = ((pat1 >> 0) & FRACMASK);	// 17 bit fraction part
+//		const uint_fast64_t NFRACv = ((uint_fast64_t) N << FRACBITS) + FRACv;
+		// PLL_AUDIO1(DIV2) = 24MHz*N/M/P0
+		const uint_fast32_t needPLL0Freq = (uint_fast32_t) mclkf * N * M * P0;
+		const uint_fast64_t t = (((uint_fast64_t) needPLL0Freq << FRACBITS) / allwnr_t113_get_hosc_freq());
+		unsigned INTEGERN = t >> FRACBITS;
+		unsigned FRACN = t & FRACMASK;
 
-		CCU->PLL_AUDIO0_PAT0_CTRL_REG |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN
-		CCU->PLL_AUDIO0_PAT1_CTRL_REG =
+		//CCU->PLL_AUDIO1_PAT0_CTRL_REG |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN
+		CCU->PLL_AUDIO1_PAT1_CTRL_REG =
 				0 * (UINT32_C(1) << 24) |	// DITHER_EN
 				1 * (UINT32_C(1) << 20) |	// FRAC_EN
-				(FRAC & 0x1FFFF) * (UINT32_C(1) << 0) | // FRAC_IN
+				(FRACN & FRACMASK) * (UINT32_C(1) << 0) | // FRAC_IN
 				0;
-		CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 24);	// PLL_SDM_EN
-		PRINTF("PLL_AUDIO0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO0_CTRL_REG);
-		PRINTF("PLL_AUDIO0_PAT0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO0_PAT0_CTRL_REG);
-		PRINTF("PLL_AUDIO0_PAT1_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO0_PAT1_CTRL_REG);
+		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 24);	// PLL_SDM_EN
 
-		CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 30);	// PLL_LDO_EN
+//		PRINTF("PLL_AUDIO1_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO1_CTRL_REG);
+//		PRINTF("PLL_AUDIO1_PAT0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO1_PAT0_CTRL_REG);
+//		PRINTF("PLL_AUDIO1_PAT1_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO1_PAT1_CTRL_REG);
+
+		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 30);	// PLL_LDO_EN
 		local_delay_ms(20);
-		CCU->PLL_AUDIO0_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27);
-		CCU->PLL_AUDIO0_CTRL_REG = (CCU->PLL_AUDIO0_CTRL_REG & ~ (UINT32_C(0xFF) << 8)) |
-			(N - 1) * (UINT32_C(1) << 8) |
+		CCU->PLL_AUDIO1_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27);
+		CCU->PLL_AUDIO1_CTRL_REG = (CCU->PLL_AUDIO1_CTRL_REG & ~ (UINT32_C(0xFF) << 8)) |
+			(INTEGERN - 1) * (UINT32_C(1) << 8) |
 			//1 * (UINT32_C(1) << 1) |		// PLL_INPUT_DIV2
 			0;
-		CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 31);	// PLL_EN
-		CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 29);	// LOCK_ENABLE
-		while ((CCU->PLL_AUDIO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)
+		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 31);	// PLL_EN
+		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 29);	// LOCK_ENABLE
+		while ((CCU->PLL_AUDIO1_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 			;
-		CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 27);	// PLL_OUTPUT_GATE
+		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 27);	// PLL_OUTPUT_GATE
 
-		PRINTF("allwnr_t113_get_audio0pll1x_freq()=%u Hz\n", (unsigned) allwnr_t113_get_audio0pll1x_freq());
+		PRINTF("allwnr_t113_get_audio1pll_div2_freq()=%u Hz\n", (unsigned) allwnr_t113_get_audio1pll_div2_freq());
 		PRINTF("need pllfreq=%u Hz\n", (unsigned) needPLL0Freq);
-		PRINTF("need N=%u, FRAC=%05X\n", (unsigned) N, (unsigned) FRAC);
+		PRINTF("need N=%u, FRAC=%05X\n", (unsigned) INTEGERN, (unsigned) FRACN);
 	}
 
-	const unsigned long src = 0x00;
+	const unsigned long src = 0x01;	// Use PLL_AUDIO1(DIV2)
 	//	Clock Source Select
 	//	00: PLL_AUDIO0(1X)
 	//	01: PLL_AUDIO1(DIV2)

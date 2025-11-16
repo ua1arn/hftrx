@@ -4526,6 +4526,10 @@ uint_fast32_t allwnr_t113_get_vepll_freq(void)
 
 //	By default, PLL_AUDIO0(1X) is 24.5714 MHz, and PLL_AUDIO0(4X) is 98.2856 MHz.
 
+//	PLL_AUDIO0(4X) = 24MHz*N/M1/M0/P
+//	PLL_AUDIO0(2X) = (24MHz*N/M1/M0)/P/2
+//	PLL_AUDIO0(1X) = (24MHz*N/M1/M0)/P/4
+// Fractional mode not supported
 uint_fast32_t allwnr_t113_get_audio0pll4x_freq(void)
 {
 	//PLL_AUDIO0(4X) = 24MHz*N/M1/M0/P
@@ -4537,33 +4541,65 @@ uint_fast32_t allwnr_t113_get_audio0pll4x_freq(void)
 	return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / M0 / M1 / pllPostDivP;
 }
 
-// By default,
-//	PLL_AUDIO1 is 3072 MHz,
-// PLL_AUDIO1(DIV2) is 1536 MHz, and
-// PLL_AUDIO1(DIV5) is 614.4 MHz (24.576 MHz*25).
-
-uint_fast32_t allwnr_t113_get_audio1pll1x_freq(void)
-{
-	const uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
-	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0xFF);
-	const uint_fast32_t M1 = UINT32_C(1) + ((reg >> 1) & 0x01);
-	const uint_fast32_t M0 = UINT32_C(1) + ((reg >> 0) & 0x01);
-	return (uint_fast64_t) allwnr_t113_get_hosc_freq() / M0 * N / M1;
-}
-
 uint_fast32_t allwnr_t113_get_audio0pll1x_freq(void)
 {
 	return allwnr_t113_get_audio0pll4x_freq() / 4;
 }
 
+// By default,
+//	PLL_AUDIO1 is 3072 MHz,
+// PLL_AUDIO1(DIV2) is 1536 MHz, and
+// PLL_AUDIO1(DIV5) is 614.4 MHz (24.576 MHz*25).
+
+//	PLL_AUDIO1 = 24MHz*N/M
+//	PLL_AUDIO1(DIV2) = 24MHz*N/M/P0
+//	PLL_AUDIO1(DIV5) = 24MHz*N/M/P1
+
+// Fractional mode supported
+static uint_fast64_t allwnr_t113_get_audio1pll1x_freq(void)
+{
+	enum { FRACBITS = 17 };	// 17 bit fraction part
+	const uint_fast32_t FRACMASK = (UINT32_C(1) << FRACBITS) - 1;
+	const uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
+	const uint_fast32_t pat1 = CCU->PLL_AUDIO1_PAT1_CTRL_REG;
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0xFF);
+	const uint_fast32_t M = UINT32_C(1) + ((reg >> 1) & 0x01);
+	const uint_fast32_t P0 = UINT32_C(1) + ((reg >> 16) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((reg >> 20) & 0x07);
+	const uint_fast32_t FRAC = ((pat1 >> 0) & FRACMASK);	// 17 bit fraction part
+	const uint_fast64_t NFRAC = ((uint_fast64_t) N << FRACBITS) + FRAC;
+	if (reg & (UINT32_C(1) << 24))	// PLL_SDM_EN
+		return ((uint_fast64_t) allwnr_t113_get_hosc_freq() * NFRAC / M) >> FRACBITS;
+	else
+		return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / M;
+}
+
+//	PLL_AUDIO1 = 24MHz*N/M
+//	PLL_AUDIO1(DIV2) = 24MHz*N/M/P0
+//	PLL_AUDIO1(DIV5) = 24MHz*N/M/P1
+
 uint_fast32_t allwnr_t113_get_audio1pll_div2_freq(void)
 {
-	return allwnr_t113_get_audio1pll1x_freq() / 2;
+	const uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0xFF);
+	const uint_fast32_t M = UINT32_C(1) + ((reg >> 1) & 0x01);
+	const uint_fast32_t P0 = UINT32_C(1) + ((reg >> 16) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((reg >> 20) & 0x07);
+	return allwnr_t113_get_audio1pll1x_freq() / P0;
 }
+
+//	PLL_AUDIO1 = 24MHz*N/M
+//	PLL_AUDIO1(DIV2) = 24MHz*N/M/P0
+//	PLL_AUDIO1(DIV5) = 24MHz*N/M/P1
 
 uint_fast32_t allwnr_t113_get_audio1pll_div5_freq(void)
 {
-	return allwnr_t113_get_audio1pll1x_freq() / 5;
+	const uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
+	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0xFF);
+	const uint_fast32_t M = UINT32_C(1) + ((reg >> 1) & 0x01);
+	const uint_fast32_t P0 = UINT32_C(1) + ((reg >> 16) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((reg >> 20) & 0x07);
+	return allwnr_t113_get_audio1pll1x_freq() / P1;
 }
 
 uint_fast32_t allwnr_t113_get_video0_x2_freq(void)

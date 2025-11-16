@@ -206,7 +206,6 @@ uint_fast32_t allwnr_t113_get_audio0pll1x_freq(void);
 uint_fast32_t allwnr_t113_get_audio0pll2x_freq(void);
 uint_fast32_t allwnr_t113_get_audio0pll4x_freq(void);
 uint_fast32_t allwnr_t113_get_audio0pllhs_freq(void);
-uint_fast32_t allwnr_t113_get_audio1pll1x_freq(void);
 uint_fast32_t allwnr_t113_get_audio1pll_div2_freq(void);
 uint_fast32_t allwnr_t113_get_audio1pll_div5_freq(void);
 uint_fast64_t allwnr_t113_get_pll_cpu_freq(void);
