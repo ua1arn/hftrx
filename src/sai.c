@@ -6200,13 +6200,15 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 //		const uint_fast32_t FRACv = ((pat1 >> 0) & FRACMASK);	// 17 bit fraction part
 //		const uint_fast64_t NFRACv = ((uint_fast64_t) N << FRACBITS) + FRACv;
 		// PLL_AUDIO1(DIV2) = 24MHz*N/M/P0
-		const uint_fast32_t NEEDSCLE = 128;
-		const uint_fast32_t needPLL0Freq = (uint_fast32_t) mclkf * NEEDSCLE * M * P0;
+		const uint_fast32_t NEEDSCLE = 60;	// Для обеспечения минимального и максимального INTEGERN
+		const uint_fast64_t needPLL0Freq = (uint_fast64_t) mclkf * NEEDSCLE * M * P0;
 		const uint_fast64_t t = (((uint_fast64_t) needPLL0Freq << FRACBITS) / allwnr_t113_get_hosc_freq());
 		unsigned INTEGERN = t >> FRACBITS;
 		unsigned FRACN = t & FRACMASK;
+		PRINTF("INTEGERN=%u, FRACN=%05X\n", (unsigned) INTEGERN, (unsigned) FRACN);
 
-		ASSERT(INTEGERN >= 12);	// See NEEDSCLE
+		ASSERT(INTEGERN <= 256);
+		ASSERT(INTEGERN >= 12);	// See NEEDSCLE.  The working frequency range of 24 MHz/M*N is from 180 MHz to 3.5 GHz
 
 		CCU->PLL_AUDIO1_PAT0_CTRL_REG |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN Need????
 		CCU->PLL_AUDIO1_PAT1_CTRL_REG =
@@ -6235,7 +6237,6 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 		PRINTF("allwnr_t113_get_audio1pll_div2_freq()=%u Hz\n", (unsigned) allwnr_t113_get_audio1pll_div2_freq());
 		PRINTF("need pllfreq=%u Hz\n", (unsigned) needPLL0Freq);
-		PRINTF("INTEGERN=%u, FRACN=%05X\n", (unsigned) INTEGERN, (unsigned) FRACN);
 	}
 
 	const unsigned long src = 0x01;	// Use PLL_AUDIO1(DIV2)
