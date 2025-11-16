@@ -6186,7 +6186,25 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	//	AudioCodec: allwnr_t113_get_audio1pll_div5_freq()=614400 kHz
 
 	{
-		unsigned N = 86;	// Повторям нстройки по умолчанию... Точнее частоту не подобрать
+		const uint_fast32_t reg = CCU->PLL_AUDIO0_CTRL_REG;
+		const uint_fast32_t pllPostDivP = 1 + ((reg >> 16) & 0x3F);	// PLL_POST_DIV_P
+		const uint_fast32_t needPLL0Freq = (uint_fast64_t) mclkf * pllPostDivP * 4;
+		unsigned N = (((uint_fast64_t) needPLL0Freq << 17) / allwnr_t113_get_hosc_freq()) >> 17;
+		//unsigned N = 86;	// Повторям настройки по умолчанию... Точнее частоту не подобрать
+		//unsigned N = 85;	// А с такой настройкой не щёлкает...
+		unsigned FRAC = (((uint_fast64_t) needPLL0Freq << 17) / allwnr_t113_get_hosc_freq()) & 0x1FFFF;
+
+		CCU->PLL_AUDIO0_PAT0_CTRL_REG |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN
+		CCU->PLL_AUDIO0_PAT1_CTRL_REG =
+				0 * (UINT32_C(1) << 24) |	// DITHER_EN
+				1 * (UINT32_C(1) << 20) |	// FRAC_EN
+				(FRAC & 0x1FFFF) * (UINT32_C(1) << 0) | // FRAC_IN
+				0;
+		CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 24);	// PLL_SDM_EN
+		PRINTF("PLL_AUDIO0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO0_CTRL_REG);
+		PRINTF("PLL_AUDIO0_PAT0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO0_PAT0_CTRL_REG);
+		PRINTF("PLL_AUDIO0_PAT1_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO0_PAT1_CTRL_REG);
+
 		CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 30);	// PLL_LDO_EN
 		local_delay_ms(20);
 		CCU->PLL_AUDIO0_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27);
@@ -6199,6 +6217,10 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 		while ((CCU->PLL_AUDIO0_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 			;
 		CCU->PLL_AUDIO0_CTRL_REG |= (UINT32_C(1) << 27);	// PLL_OUTPUT_GATE
+
+		PRINTF("allwnr_t113_get_audio0pll1x_freq()=%u Hz\n", (unsigned) allwnr_t113_get_audio0pll1x_freq());
+		PRINTF("need pllfreq=%u Hz\n", (unsigned) needPLL0Freq);
+		PRINTF("need N=%u, FRAC=%05X\n", (unsigned) N, (unsigned) FRAC);
 	}
 
 	const unsigned long src = 0x00;
@@ -6249,6 +6271,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	PRINTF("AudioCodec: allwnr_t113_get_audio_codec_adc_freq()=%u kHz\n", (unsigned) (allwnr_t113_get_audio_codec_adc_freq() / 1000));
 	PRINTF("AudioCodec: allwnr_t113_get_audio_codec_dac_freq()=%u kHz\n", (unsigned) (allwnr_t113_get_audio_codec_dac_freq() / 1000));
 
+	PRINTF("AudioCodec: sample rate=%u Hz\n", (unsigned) allwnr_t113_get_audio_codec_dac_freq() / 512);
 #else
 	#warning Unexpected CPUSTYLE_xxx
 
