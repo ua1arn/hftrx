@@ -6201,8 +6201,8 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 //		const uint_fast64_t NFRACv = ((uint_fast64_t) N << FRACBITS) + FRACv;
 		// PLL_AUDIO1(DIV2) = 24MHz*N/M/P0
 		const uint_fast32_t NEEDSCLE = 60;	// Для обеспечения минимального и максимального INTEGERN
-		const uint_fast64_t needPLL0Freq = (uint_fast64_t) mclkf * NEEDSCLE * M * P0;
-		const uint_fast64_t t = (((uint_fast64_t) needPLL0Freq << FRACBITS) / allwnr_t113_get_hosc_freq());
+		const uint_fast64_t needPLL0Freq = (uint_fast64_t) mclkf * NEEDSCLE * P0;
+		const uint_fast64_t t = (((uint_fast64_t) needPLL0Freq << FRACBITS) * M / allwnr_t113_get_hosc_freq());
 		unsigned INTEGERN = t >> FRACBITS;
 		unsigned FRACN = t & FRACMASK;
 		PRINTF("INTEGERN=%u, FRACN=%05X\n", (unsigned) INTEGERN, (unsigned) FRACN);
