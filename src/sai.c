@@ -6221,7 +6221,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 		ASSERT(INTEGERN <= 256);
 		ASSERT(INTEGERN >= 12);	// See NEEDSCLE.  The working frequency range of 24 MHz/M*N is from 180 MHz to 3.5 GHz
 
-		//CCU->PLL_AUDIO1_PAT0_CTRL_REG |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN Need????
+		CCU->PLL_AUDIO1_PAT0_CTRL_REG &= ~ (UINT32_C(1) << 31);	// SIG_DELT_PAT_EN
 		CCU->PLL_AUDIO1_PAT1_CTRL_REG =
 				0 * (UINT32_C(1) << 24) |	// DITHER_EN
 				1 * (UINT32_C(1) << 20) |	// FRAC_EN
@@ -6235,6 +6235,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 30);	// PLL_LDO_EN
 		local_delay_ms(20);
+
 		CCU->PLL_AUDIO1_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27);
 		CCU->PLL_AUDIO1_CTRL_REG = (CCU->PLL_AUDIO1_CTRL_REG & ~ (UINT32_C(0xFF) << 8)) |
 			(INTEGERN - 1) * (UINT32_C(1) << 8) |
