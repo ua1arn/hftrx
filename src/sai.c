@@ -4080,6 +4080,7 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 			0;
 		// i2s0: mclkf=12288000, bclkf=24576000, NSLOTS=16, ahub_freq=258000000
 		PRINTF("i2s%u: needdiv=%u, prei=%u, prei2=%u, mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, (unsigned) calcdivround2(clk, mclkf), prei, prei2, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
+		PRINTF("i2s%u: samplerate=%u\n", ix, (unsigned) (allwnr_t507_get_ahub_freq() / 1024));
 
 	}
 //	PRINTF("allwnr_t507_get_mbus_freq=%u\n", (unsigned) allwnr_t507_get_mbus_freq());
