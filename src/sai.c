@@ -6203,7 +6203,9 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 		// Decimal mode:
 		//	1/2x: 1.1179648 GHz
 		//	1/5x: 471.8592 MHz
-		const uint_fast32_t NEEDSCLE = 30;	// Для обеспечения минимального и максимального INTEGERN
+		const uint_fast64_t MAXPLLFREQ = 2235929600;
+		const uint_fast64_t needPLLoFreq = (uint_fast64_t) mclkf * P0;
+		const uint_fast64_t NEEDSCLE = MAXPLLFREQ / needPLLoFreq;	// Для обеспечения минимального и максимального INTEGERN
 		const uint_fast64_t needPLL0Freq = (uint_fast64_t) mclkf * NEEDSCLE * P0;
 		const uint_fast64_t t = (((uint_fast64_t) needPLL0Freq << FRACBITS) * M / allwnr_t113_get_hosc_freq());
 		unsigned INTEGERN = t >> FRACBITS;
@@ -6233,10 +6235,11 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 			//1 * (UINT32_C(1) << 1) |		// PLL_INPUT_DIV2
 			0;
 		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 31);	// PLL_EN
+		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 27);	// PLL_OUTPUT_GATE
+		CCU->PLL_AUDIO1_CTRL_REG &= ~ (UINT32_C(1) << 29);	// LOCK_ENABLE
 		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 29);	// LOCK_ENABLE
 		while ((CCU->PLL_AUDIO1_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 			;
-		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 27);	// PLL_OUTPUT_GATE
 
 		PRINTF("allwnr_t113_get_audio1pll_div2_freq()=%u Hz\n", (unsigned) allwnr_t113_get_audio1pll_div2_freq());
 		PRINTF("need pllfreq=%u Hz\n", (unsigned) needPLL0Freq);
