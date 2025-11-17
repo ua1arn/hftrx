@@ -4006,6 +4006,7 @@ static void t507_audiopll_initialize(unsigned mclkf)
 		ASSERT(INTEGERN <= 256);
 		ASSERT(INTEGERN >= 12);	// See NEEDSCLE.  The working frequency range of 24 MHz/M*N is from 180 MHz to 3.5 GHz
 		CCU->PLL_AUDIO_PAT0_CTRL_REG &= ~ (UINT32_C(1) << 31);	// SIG_DELT_PAT_EN
+		//CCU->PLL_AUDIO_PAT0_CTRL_REG |= (UINT32_C(1) << 31);	// SIG_DELT_PAT_EN
 		CCU->PLL_AUDIO_PAT1_CTRL_REG =
 				0 * (UINT32_C(1) << 24) |	// DITHER_EN
 				1 * (UINT32_C(1) << 20) |	// FRAC_EN
