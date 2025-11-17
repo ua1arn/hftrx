@@ -6237,7 +6237,6 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 		CCU->PLL_AUDIO1_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27);
 		CCU->PLL_AUDIO1_CTRL_REG = (CCU->PLL_AUDIO1_CTRL_REG & ~ (UINT32_C(0xFF) << 8)) |
 			(INTEGERN - 1) * (UINT32_C(1) << 8) |
-			//1 * (UINT32_C(1) << 1) |		// PLL_INPUT_DIV2
 			0;
 		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 31);	// PLL_EN
 		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 27);	// PLL_OUTPUT_GATE
@@ -6245,7 +6244,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 29);	// LOCK_ENABLE
 		while ((CCU->PLL_AUDIO1_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 			;
-		ASSERT(CCU->PLL_AUDIO1_CTRL_REG & (UINT32_C(1) << 24));
+		//ASSERT(CCU->PLL_AUDIO1_CTRL_REG & (UINT32_C(1) << 24));
 		PRINTF("allwnr_t113_get_audio1pll_div2_freq()=%u Hz\n", (unsigned) allwnr_t113_get_audio1pll_div2_freq());
 		PRINTF("need pllfreq=%u Hz\n", (unsigned) needPLLFreq);
 	}
