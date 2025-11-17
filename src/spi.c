@@ -30,6 +30,13 @@ void spidf_operate_lock(IRQL_t * oldIrql);
 void spidf_operate_unlock(IRQL_t irql);
 
 
+typedef union
+{
+	volatile uint32_t v32;
+	volatile uint16_t v16 [2];
+	volatile uint8_t v8 [4];
+} spiux_t;
+
 char nameDATAFLASH [64] = "NoChip";
 
 #if WITHSPIHW || WITHSPISW
@@ -1273,14 +1280,14 @@ static void aw_spi_write_txbuf_b8(SPI_t * spi, const uint8_t * __restrict buf, i
     {
 		while (len --)
 		{
-            * (volatile uint8_t *) & spi->SPI_TXD = * buf ++;
+			((spiux_t *) & spi->SPI_TXD)->v8 [0] = * buf ++;	/* 8 bit access */
         }
     }
     else
     {
 		while (len --)
         {
- 			* (volatile uint8_t *) & spi->SPI_TXD = 0xFF;
+			((spiux_t *) & spi->SPI_TXD)->v8 [0] = 0xFF;	/* 8 bit access */
         }
     }
 
@@ -1292,7 +1299,7 @@ static void aw_spi_read_rxbuf_b8(SPI_t * spi, uint8_t * __restrict buf, int len)
 	{
 		while (len --)
 		{
-			* buf ++ = * (volatile uint8_t *) & spi->SPI_RXD;
+			* buf ++ = ((spiux_t *) & spi->SPI_RXD)->v8 [0];	/* 8 bit access */
 		}
 
 	}
@@ -1300,7 +1307,7 @@ static void aw_spi_read_rxbuf_b8(SPI_t * spi, uint8_t * __restrict buf, int len)
 	{
 		while (len --)
 		{
-			(void) * (volatile uint8_t *) & spi->SPI_RXD;
+			(void) ((spiux_t *) & spi->SPI_RXD)->v8 [0];	/* 8 bit access */
 		}
 	}
 }
@@ -2037,7 +2044,7 @@ portholder_t hardware_spi_complete_b8(SPI_t * spi)	/* дождаться гот�
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((spi->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 		;
-	return  * (volatile uint8_t *) & spi->SPI_RXD;
+	return ((spiux_t *) & spi->SPI_RXD)->v8 [0];	/* 8 bit access */
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -2126,13 +2133,6 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 #endif
 
 }
-
-typedef union
-{
-	volatile uint32_t v32;
-	volatile uint16_t v16 [2];
-	volatile uint8_t v8 [4];
-} spiux_t;
 
 portholder_t RAMFUNC hardware_spi_complete_b16(SPI_t * spi)	/* дождаться готовности */
 {
@@ -2452,7 +2452,7 @@ void hardware_spi_b8_p1(
 		1 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
-	* (volatile uint8_t *) & spi->SPI_TXD = v; /* 8bit access */
+	((spiux_t *) & spi->SPI_TXD)->v8 [0] = v;	/* 8 bit access */
 
 	spi->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
 
