@@ -3991,25 +3991,30 @@ void T507_AHUB_handler(void)
 }
 
 // Раньше находилось в clocks.c
-static void t507_audiopll_initialize(void)
+static void t507_audiopll_initialize(unsigned mclkf)
 {
-	{
-		// Настройки AUDIO PLL используются и AUDIO HUB и аппаратным аужиокодеком - настраиваем ТУТ.
-		//	PLL_AUDIO(hs) = 24 MHz*N/M1
-		//	PLL_AUDIO(4X) = 24 MHz*N/M0/M1/P
-		//	PLL_AUDIO(2X) = 24 MHz*N/M0/M1/P/2
-		//	PLL_AUDIO(1X) = 24 MHz*N/M0/M1/P/4
-		unsigned N = 49;	// 49/24 Повторяем нстройки по умолчанию... Точнее частоту не подобрать
-		unsigned P = 24;	// 1..64
-		allwnr_t507_module_pll_spr(& CCU->PLL_AUDIO_CTRL_REG, & CCU->PLL_AUDIO_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, N);
-		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 1);	// M1 - already 0
-		CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 0);	// M0 - set to zero
-		CCU->PLL_AUDIO_CTRL_REG = (CCU->PLL_AUDIO_CTRL_REG & ~ (0x3F * (UINT32_C(1) << 16))) |
-			(P - 1) * (UINT32_C(1) << 16) |	// P
-			0;
-	}
+	PRINTF("t507_audiopll_initialize: mclkf=%u\n", mclkf);
 	if (1)
+	{
+		unsigned needfreq = mclkf * 32;
+		enum { FRACBITS = 17, FRACMASK = (UINT32_C(1) << FRACBITS) - 1 };	// 17 bit fraction part
+	    CCU->PLL_AUDIO_CTRL_REG = 0xA8010F01;	// N=16, M1=1, M0=2
+		uint_fast64_t t = ((uint_fast64_t) needfreq << FRACBITS) / allwnr_t507_get_hosc_freq();
+		unsigned INTEGERN = t >> FRACBITS;
+		unsigned FRACN = t & FRACMASK;
+		PRINTF("t507_audiopll_initialize: INTEGERN=%u, FRACN=0x%08X\n", INTEGERN, FRACN);
+		ASSERT(INTEGERN <= 256);
+		ASSERT(INTEGERN >= 12);	// See NEEDSCLE.  The working frequency range of 24 MHz/M*N is from 180 MHz to 3.5 GHz
+		CCU->PLL_AUDIO_PAT0_CTRL_REG &= ~ (UINT32_C(1) << 31);	// SIG_DELT_PAT_EN
+		CCU->PLL_AUDIO_PAT1_CTRL_REG =
+				0 * (UINT32_C(1) << 24) |	// DITHER_EN
+				1 * (UINT32_C(1) << 20) |	// FRAC_EN
+				(FRACN & FRACMASK) * (UINT32_C(1) << 0) | // FRAC_IN
+				0;
+		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 24);	// PLL_SDM_EN
+		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, INTEGERN);
+	}
+	if (0)
 	{
 
 	    // Whhen PLL_AUDIO(1X) is 24.576 MHz
@@ -4057,7 +4062,23 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 	if (ix == 1)
 	{
 		// HDMI
-		t507_audiopll_initialize();
+		t507_audiopll_initialize(mclkf);
+
+		//	00: PLL_AUDIO(1X)
+		//	01: PLL_AUDIO(2X)
+		//	10: PLL_AUDIO(4X)
+		//	11: PLL_AUDIO(hs)
+		const uint_fast32_t clk = allwnr_t507_get_pll_audio_4x_freq();
+		// 3072 6144 12288 24576
+		unsigned value;	/* делитель */
+		uint_fast8_t prei2 = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_AudioHUB_CLK_WIDTH, ALLWNT113_AudioHUB_CLK_TAPS, & value, 1);
+		uint_fast8_t prei = 1;
+		CCU->AUDIO_HUB_CLK_REG = (CCU->AUDIO_HUB_CLK_REG & ~ (UINT32_C(3) << 24) & ~ (UINT32_C(3) << 8)) |
+			0x02 * (UINT32_C(1) << 24) | //	10: PLL_AUDIO(4X)
+			prei * (UINT32_C(1) << 8) |	// (0..3) div2
+			0;
+		// i2s0: mclkf=12288000, bclkf=24576000, NSLOTS=16, ahub_freq=258000000
+		PRINTF("i2s%u: needdiv=%u, prei=%u, prei2=%u, mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, (unsigned) calcdivround2(clk, mclkf), prei, prei2, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
 
 	}
 //	PRINTF("allwnr_t507_get_mbus_freq=%u\n", (unsigned) allwnr_t507_get_mbus_freq());
@@ -4066,25 +4087,12 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 
 	CCU->MBUS_CFG_REG |= (1u << 30);
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// DMA_MCLK_GATING
-
-	//	00: PLL_AUDIO(1X)
-	//	01: PLL_AUDIO(2X)
-	//	10: PLL_AUDIO(4X)
-	//	11: PLL_AUDIO(hs)
-
-	// 3072 6144 12288 24576
-	CCU->AUDIO_HUB_CLK_REG = (CCU->AUDIO_HUB_CLK_REG & ~ (UINT32_C(3) << 24) & ~ (UINT32_C(3) << 8)) |
-		0x02 * (UINT32_C(1) << 24) | //	10: PLL_AUDIO(4X)
-		0x01 * (UINT32_C(1) << 8) |	// (0..3) div2
-		0;
 	//CCU->AUDIO_HUB_CLK_REG = 0 * (UINT32_C(1) << 0);	// div 1
 	CCU->AUDIO_HUB_CLK_REG |= UINT32_C(1) << 31; // SCLK_GATING
 
 	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 0;	// AUDIO_HUB_GATING
 	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 16;	// AUDIO_HUB_RST
 
-	// i2s0: mclkf=12288000, bclkf=24576000, NSLOTS=16, ahub_freq=258000000
-//	PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
 
 #elif CPUSTYLE_A64
 	// CCU
