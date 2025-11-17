@@ -6220,9 +6220,9 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 		ASSERT(INTEGERN <= 256);
 		ASSERT(INTEGERN >= 12);	// See NEEDSCLE.  The working frequency range of 24 MHz/M*N is from 180 MHz to 3.5 GHz
 
-		CCU->PLL_AUDIO1_PAT0_CTRL_REG |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN Need????
+		//CCU->PLL_AUDIO1_PAT0_CTRL_REG |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN Need????
 		CCU->PLL_AUDIO1_PAT1_CTRL_REG =
-				1 * (UINT32_C(1) << 24) |	// DITHER_EN
+				0 * (UINT32_C(1) << 24) |	// DITHER_EN
 				1 * (UINT32_C(1) << 20) |	// FRAC_EN
 				(FRACN & FRACMASK) * (UINT32_C(1) << 0) | // FRAC_IN
 				0;
@@ -6232,6 +6232,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 //		PRINTF("PLL_AUDIO1_PAT0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO1_PAT0_CTRL_REG);
 //		PRINTF("PLL_AUDIO1_PAT1_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO1_PAT1_CTRL_REG);
 
+		//allwnr_t113_module_pll_spr(& CCU->PLL_AUDIO1_CTRL_REG, & CCU->PLL_AUDIO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 30);	// PLL_LDO_EN
 		local_delay_ms(20);
 		CCU->PLL_AUDIO1_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27);
