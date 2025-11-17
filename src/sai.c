@@ -6192,7 +6192,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 		enum { FRACBITS = 17 };	// 17 bit fraction part
 		const uint_fast32_t FRACMASK = (UINT32_C(1) << FRACBITS) - 1;
 		const uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
-		const uint_fast32_t pat1 = CCU->PLL_AUDIO1_PAT1_CTRL_REG;
+//		const uint_fast32_t pat1 = CCU->PLL_AUDIO1_PAT1_CTRL_REG;
 //		const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0xFF);
 		const uint_fast32_t M = UINT32_C(1) + ((reg >> 1) & 0x01);
 		const uint_fast32_t P0 = UINT32_C(1) + ((reg >> 16) & 0x07);
@@ -6205,19 +6205,28 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 		//	1/5x: 471.8592 MHz
 		const uint_fast64_t MAXPLLFREQ = 2235929600;
 		const uint_fast64_t needPLLoFreq = (uint_fast64_t) mclkf * P0;
-		const uint_fast64_t NEEDSCLE = MAXPLLFREQ / needPLLoFreq;	// Для обеспечения минимального и максимального INTEGERN
+		unsigned NEEDSCLE = MAXPLLFREQ / needPLLoFreq;	// Для обеспечения минимального и максимального INTEGERN
+		NEEDSCLE = NEEDSCLE / 2 * 2;	// Для обеспечения точного делителя в CCU->AUDIO_CODEC_ADC_CLK_REG т CCU->AUDIO_CODEC_DAC_CLK_REG
+//		NEEDSCLE /= 2;	// Для обеспечения точного делителя в CCU->AUDIO_CODEC_ADC_CLK_REG т CCU->AUDIO_CODEC_DAC_CLK_REG
+//		NEEDSCLE = 64;	// Для обеспечения точного делителя в CCU->AUDIO_CODEC_ADC_CLK_REG т CCU->AUDIO_CODEC_DAC_CLK_REG
 		const uint_fast64_t needPLL0Freq = (uint_fast64_t) mclkf * NEEDSCLE * P0;
-		const uint_fast64_t t = (((uint_fast64_t) needPLL0Freq << FRACBITS) * M / allwnr_t113_get_hosc_freq());
+		const uint_fast64_t t = (needPLL0Freq << FRACBITS) / (allwnr_t113_get_hosc_freq() / M);
 		unsigned INTEGERN = t >> FRACBITS;
 		unsigned FRACN = t & FRACMASK;
-		PRINTF("INTEGERN=%u, FRACN=%05X\n", (unsigned) INTEGERN, (unsigned) FRACN);
+
+//		PRINTF("t=0x%016" PRIXFAST64 " " "\n", t);
+//		PRINTF("d=%" PRIuFAST64 " " "\n", d);
+//		PRINTF("MAXPLLFREQ=%" PRIuFAST64 " " "\n", MAXPLLFREQ);
+//		PRINTF("needPLLoFreq=%" PRIuFAST64 " " "\n", needPLLoFreq);
+//		PRINTF("needPLL0Freq=%" PRIuFAST64 " " "\n", needPLL0Freq);
+//		PRINTF("INTEGERN=%u, FRACN=%05X, NEEDSCLE=%u, FRACMASK=%05X, P0=%u, M=%u\n", (unsigned) INTEGERN, (unsigned) FRACN, (unsigned) NEEDSCLE, (unsigned) FRACMASK, (unsigned) P0, (unsigned) M);
 
 		ASSERT(INTEGERN <= 256);
 		ASSERT(INTEGERN >= 12);	// See NEEDSCLE.  The working frequency range of 24 MHz/M*N is from 180 MHz to 3.5 GHz
 
 		CCU->PLL_AUDIO1_PAT0_CTRL_REG |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN Need????
 		CCU->PLL_AUDIO1_PAT1_CTRL_REG =
-				0 * (UINT32_C(1) << 24) |	// DITHER_EN
+				1 * (UINT32_C(1) << 24) |	// DITHER_EN
 				1 * (UINT32_C(1) << 20) |	// FRAC_EN
 				(FRACN & FRACMASK) * (UINT32_C(1) << 0) | // FRAC_IN
 				0;
@@ -6240,7 +6249,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 29);	// LOCK_ENABLE
 		while ((CCU->PLL_AUDIO1_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 			;
-
+		ASSERT(CCU->PLL_AUDIO1_CTRL_REG & (UINT32_C(1) << 24));
 		PRINTF("allwnr_t113_get_audio1pll_div2_freq()=%u Hz\n", (unsigned) allwnr_t113_get_audio1pll_div2_freq());
 		PRINTF("need pllfreq=%u Hz\n", (unsigned) needPLL0Freq);
 	}
@@ -6250,7 +6259,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	//	00: PLL_AUDIO0(1X)
 	//	01: PLL_AUDIO1(DIV2)
 	//	10: PLL_AUDIO1(DIV5)
-	unsigned long clk;
+	uint_fast32_t clk;
 	switch (src)
 	{
 	default:
@@ -6268,7 +6277,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	unsigned value;	/* делитель */
 	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_AudioCodec_CLK_WIDTH, ALLWNT113_AudioCodec_CLK_TAPS, & value, 1);
 
-	PRINTF("AudioCodec: prei=%u, value=%u, lrckf=%u, (clk=%lu)\n", prei, value, mclkf, clk);
+	PRINTF("AudioCodec: needDiv=%u, prei=%u, value=%u, lrckf=%u, (clk=%u)\n", (unsigned) calcdivround2(clk, mclkf), prei, value, mclkf, (unsigned) clk);
 
 	// audiocodec_dac_clk
 	// audiocodec_adc_clk

@@ -4569,9 +4569,9 @@ static uint_fast64_t allwnr_t113_get_audio1pll1x_freq(void)
 	const uint_fast32_t FRAC = ((pat1 >> 0) & FRACMASK);	// 17 bit fraction part
 	const uint_fast64_t NFRAC = ((uint_fast64_t) N << FRACBITS) + FRAC;
 	if (reg & (UINT32_C(1) << 24))	// PLL_SDM_EN
-		return ((uint_fast64_t) allwnr_t113_get_hosc_freq() * NFRAC / M) >> FRACBITS;
+		return ((uint_fast64_t) allwnr_t113_get_hosc_freq() / M * NFRAC) >> FRACBITS;
 	else
-		return (uint_fast64_t) allwnr_t113_get_hosc_freq() * N / M;
+		return (uint_fast64_t) allwnr_t113_get_hosc_freq() / M * N;
 }
 
 //	PLL_AUDIO1 = 24MHz*N/M
