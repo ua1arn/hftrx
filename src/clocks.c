@@ -4558,16 +4558,15 @@ uint_fast32_t allwnr_t113_get_audio0pll1x_freq(void)
 // Fractional mode supported
 static uint_fast64_t allwnr_t113_get_audio1pll1x_freq(void)
 {
-	enum { FRACBITS = 17 };	// 17 bit fraction part
-	const uint_fast32_t FRACMASK = (UINT32_C(1) << FRACBITS) - 1;
+	enum { FRACBITS = 17, FRACMASK = (UINT32_C(1) << FRACBITS) - 1 };	// 17 bit fraction part
 	const uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
 	const uint_fast32_t pat1 = CCU->PLL_AUDIO1_PAT1_CTRL_REG;
 	const uint_fast32_t N = UINT32_C(1) + ((reg >> 8) & 0xFF);
 	const uint_fast32_t M = UINT32_C(1) + ((reg >> 1) & 0x01);
 	const uint_fast32_t P0 = UINT32_C(1) + ((reg >> 16) & 0x07);
 	const uint_fast32_t P1 = UINT32_C(1) + ((reg >> 20) & 0x07);
-	const uint_fast32_t FRAC = ((pat1 >> 0) & FRACMASK);	// 17 bit fraction part
-	const uint_fast64_t NFRAC = ((uint_fast64_t) N << FRACBITS) + FRAC;
+	const uint_fast32_t FRAC_IN = ((pat1 >> 0) & FRACMASK);	// 17 bit fraction part
+	const uint_fast64_t NFRAC = ((uint_fast64_t) N << FRACBITS) + FRAC_IN;
 	if (reg & (UINT32_C(1) << 24))	// PLL_SDM_EN
 		return ((uint_fast64_t) allwnr_t113_get_hosc_freq() / M * NFRAC) >> FRACBITS;
 	else

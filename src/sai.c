@@ -6189,6 +6189,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 	{
 		// PLL_AUDIO0 not supporting decimal mode
 		// PLL_AUDIO1 supporting decimal mode
+		// Похоже, одновременное использование spread spectrum и decimal mode не поддерживается
 		enum { FRACBITS = 17, FRACMASK = (UINT32_C(1) << FRACBITS) - 1 };	// 17 bit fraction part
 		const uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
 //		const uint_fast32_t pat1 = CCU->PLL_AUDIO1_PAT1_CTRL_REG;
@@ -6232,7 +6233,6 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 //		PRINTF("PLL_AUDIO1_PAT0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO1_PAT0_CTRL_REG);
 //		PRINTF("PLL_AUDIO1_PAT1_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO1_PAT1_CTRL_REG);
 
-		//allwnr_t113_module_pll_spr(& CCU->PLL_AUDIO1_CTRL_REG, & CCU->PLL_AUDIO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 		CCU->PLL_AUDIO1_CTRL_REG |= (UINT32_C(1) << 30);	// PLL_LDO_EN
 		local_delay_ms(20);
 		CCU->PLL_AUDIO1_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 29) & ~ (UINT32_C(1) << 27);
