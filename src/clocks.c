@@ -3028,10 +3028,6 @@ void allwnr_t507_module_pll_enable(volatile uint32_t * ctrlreg, unsigned N)
 	}
 }
 
-void allwnr_t507_pll_initialize(int forced)
-{
-}
-
 //	https://github.com/torvalds/linux/blob/master/drivers/nvmem/sunxi_sid.c#L62
 
 #define SUN8I_SID_OFFSET_MASK	0x1FF
@@ -3268,9 +3264,9 @@ uint_fast64_t allwnr_t507_get_pll_csi_freq(void)
 	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / (M0 * M1);
 }
 
-
-uint_fast32_t allwnr_t507_get_pll_audio_hs_freq(void)
+uint_fast64_t allwnr_t507_get_pll_audio_hs_freq(void)
 {
+	enum { FRACBITS = 17, FRACMASK = (UINT32_C(1) << FRACBITS) - 1 };	// 17 bit fraction part
     const uint_fast32_t pllreg = CCU->PLL_AUDIO_CTRL_REG;
     const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);    // PLL_FACTOR_N
     const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);    // PLL_INPUT_DIV_M1
@@ -3279,7 +3275,19 @@ uint_fast32_t allwnr_t507_get_pll_audio_hs_freq(void)
     //    PLL_AUDIO(2X) = 24 MHz*N/M0/M1/P/2
     //    PLL_AUDIO(1X) = 24 MHz*N/M0/M1/P/4
     //    The default value of PLL_AUDIO(4X) is 24.5714 MHz.
-    return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M1;
+	if (CCU->PLL_AUDIO_PAT1_CTRL_REG & (UINT32_C(1) << 20)) // FRAC_EN
+	{
+		const uint_fast32_t pat1 = CCU->PLL_AUDIO_PAT1_CTRL_REG;
+		const uint_fast32_t FRAC_IN = ((pat1 >> 0) & FRACMASK);	// 17 bit fraction part
+		const uint_fast64_t NFRAC = ((uint_fast64_t) N << FRACBITS) + FRAC_IN;
+		// Fraction enabled
+		return ((allwnr_t507_get_hosc_freq() * NFRAC) >> FRACBITS) / M1;
+	}
+	else
+	{
+		// Integer mode
+		return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M1;
+	}
 }
 
 uint_fast32_t allwnr_t507_get_pll_audio_4x_freq(void)
@@ -3289,26 +3297,12 @@ uint_fast32_t allwnr_t507_get_pll_audio_4x_freq(void)
 	const uint_fast32_t N = UINT32_C(1) + ((pllreg >> 8) & 0xFF);	// PLL_FACTOR_N
 	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);	// PLL_INPUT_DIV_M1
 	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 0) & 0x01);	// PLL_OUTPUT_DIV _M0
-	if (CCU->PLL_AUDIO_PAT1_CTRL_REG & (UINT32_C(1) << 20)) // FRAC_EN
-	{
-		// Sigma-Delta Pattern Enabled, fraction enabled
-		const uint_fast32_t fracin = (CCU->PLL_AUDIO_PAT1_CTRL_REG >> 0) & 0x1FFF;	// FRAC_IN - 17 bit value
-		//	PLL_AUDIO(hs) = 24 MHz*N/M1
-		//	PLL_AUDIO(4x) = 24 MHz*N/M0/M1/P
-		//	PLL_AUDIO(2X) = 24 MHz*N/M0/M1/P/2
-		//	PLL_AUDIO(1X) =	24 MHz*N/M0/M1/P/4
-		//	The default value of PLL_AUDIO(4X) is 24.5714 MHz.
-		return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M0 / M1 / P;
-	}
-	else
-	{
-		//	PLL_AUDIO(hs) = 24 MHz*N/M1
-		//	PLL_AUDIO(4x) = 24 MHz*N/M0/M1/P
-		//	PLL_AUDIO(2X) = 24 MHz*N/M0/M1/P/2
-		//	PLL_AUDIO(1X) =	24 MHz*N/M0/M1/P/4
-		//	The default value of PLL_AUDIO(4X) is 24.5714 MHz.
-		return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M0 / M1 / P;
-	}
+	//	PLL_AUDIO(hs) = 24 MHz*N/M1
+	//	PLL_AUDIO(4x) = 24 MHz*N/M0/M1/P
+	//	PLL_AUDIO(2X) = 24 MHz*N/M0/M1/P/2
+	//	PLL_AUDIO(1X) =	24 MHz*N/M0/M1/P/4
+	//	The default value of PLL_AUDIO(4X) is 24.5714 MHz.
+	return (uint_fast64_t) allwnr_t507_get_pll_audio_hs_freq() / M0 / P;
 }
 
 uint_fast64_t allwnr_t507_get_pll_peri0_x1_freq(void)
