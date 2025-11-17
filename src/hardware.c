@@ -2202,17 +2202,28 @@ static const uint32_t aarch64_pageattr =
 //	pageAttrRAM=00000740
 //	pageAttrDEVICE=00000748
 
-#undef TTB_PARA_NCACHED
-#undef TTB_PARA_CACHED
-#undef TTB_PARA_DEVICE
-#undef TTB_PARA_NO_ACCESS
-
-#define	TTB_PARA_NCACHED(ro, xn)	(aarch64_pageattr | pageAttrNCRAM | 0x01)
-#define	TTB_PARA_CACHED(ro, xn) 	(aarch64_pageattr | pageAttrRAM | 0x01)
-#define	TTB_PARA_DEVICE 			(aarch64_pageattr | pageAttrDEVICE | 0x01)
-#define	TTB_PARA_NO_ACCESS 			0
+#define	TTB_PARA_NCACHED(addr, ro, xn)		(((addr) & ~ (uintptr_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrNCRAM | 0x01)
+#define	TTB_PARA_CACHED(addr, ro, xn) 		(((addr) & ~ (uintptr_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrRAM | 0x01)
+#define	TTB_PARA_DEVICE(addr) 				(((addr) & ~ (uintptr_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrDEVICE | 0x01)
+#define	TTB_PARA_NO_ACCESS(addr) 			0
 
 #elif (__CORTEX_A != 0)
+
+/*
+ * https://community.st.com/s/question/0D73W000000UagD/what-a-type-of-mmu-memory-regions-recommended-for-regions-with-peripheralsstronglyordered-or-device?s1oid=00Db0000000YtG6&s1nid=0DB0X000000DYbd&emkind=chatterCommentNotification&s1uid=0050X000007vtUt&emtm=1599464922440&fromEmail=1&s1ext=0&t=1599470826880
+ *
+ *
+ * PatrickF (ST Employee)
+
+2 hours ago
+Hello,
+
+"Device" should be used for all peripherals to get best performance.
+There is no rationale to use "Strongly-Ordered" with Cortex-A7
+(explanation should be found by deep analysis/understanding of various ARM documents).
+ *
+ *
+*/
 
 // Short-descriptor format memory region attributes, without TEX remap
 // When using the Short-descriptor translation table formats, TEX remap is disabled when SCTLR.TRE is set to 0.
@@ -2289,7 +2300,8 @@ static const uint32_t aarch64_pageattr =
 
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
-#define	TTB_PARA(TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
+#define	TTB_PARA(addr, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
+		((addr) & ~ (uintptr_t) UINT32_C(0x0FFFFF)) | \
 		(SECTIONval) * (UINT32_C(1) << 0) |	/* 0b10, Section or Supersection, PXN */ \
 		!! (Bv) * (UINT32_C(1) << 2) |	/* B */ \
 		!! (Cv) * (UINT32_C(1) << 3) |	/* C */ \
@@ -2306,19 +2318,41 @@ static const uint32_t aarch64_pageattr =
 		0 \
 	)
 
-#define	TTB_PARA_NCACHED(ro, xn)	 TTB_PARA(TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB_PARA_CACHED(ro, xn) TTB_PARA(TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB_PARA_DEVICE 		TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
-#define	TTB_PARA_NO_ACCESS 		0
+#define	TTB_PARA_NCACHED(addr, ro, xn)	TTB_PARA((addr), TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_CACHED(addr, ro, xn) 	TTB_PARA((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_DEVICE(addr) 			TTB_PARA((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+#define	TTB_PARA_NO_ACCESS(addr) 		0
 
 #elif CPUSTYLE_RISCV
 
-// See Table 4.2: Encoding of PTE Type field.
+	//ttb_level0_1MB_initialize(ttb_1MB_accessbits, 0, 0);
 
-#define	TTB_PARA_CACHED(ro, xn) ((0x00u << 1) | 0x01)
-#define	TTB_PARA_NCACHED(ro, xn) ((0x00u << 1) | 0x01)
-#define	TTB_PARA_DEVICE 		((0x00u << 1) | 0x01)
-#define	TTB_PARA_NO_ACCESS 		0
+	// See https://chromite.readthedocs.io/en/latest/mmu.html
+
+	// XuanTie-Openc906 SYSMAP
+
+	// The C906 is fully compatible with the RV64GC instruction set and supports the standard M/S/U privilege program model.
+	// The C906 includes a standard 8-16 region PMP and Sv39 MMU, which is fully compatible with RISC-V Linux.
+	// The C906 includes standard CLINT and PLIC interrupt controllers, RV compatible HPM.
+	// ? 0xEFFFF000
+	// See https://github.com/sophgo/cvi_alios_open/blob/aca2daa48266cd96b142f83bad4e33a6f13d6a24/components/csi/csi2/include/core/core_rv64.h
+	// Strong Order, Cacheable, Bufferable, Shareable, Security
+
+	// Bit 63 - Strong order
+	// Bit 62 - Cacheable
+	// Bit 61 - Buffer
+	// Bit 0 - Valid
+	#define RAM_ATTRS 		((UINT64_C(0) << 63) | (UINT64_C(1) << 62) | (UINT64_C(1) << 61) | (UINT64_C(0x0E) << 0) | 1)	// Cacheable memory
+	#define NCRAM_ATTRS 	((UINT64_C(0) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x0E) << 0) | 1)	// Non-cacheable memory
+	#define DEVICE_ATTRS 	((UINT64_C(1) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x0E) << 0) | 1)	// Non-bufferable device
+	#define TABLE_ATTRS		((UINT64_C(0) << 63) | 1) // Pointer to next level of page table
+
+	// See Table 4.2: Encoding of PTE Type field.
+
+	#define	TTB_PARA_CACHED(addr, ro, xn) 	((0 * (addr) & ~ UINT64_C(0xFFF)) | (0x00u << 1) | 0x01)
+	#define	TTB_PARA_NCACHED(addr, ro, xn) 	((0 * (addr) & ~ UINT64_C(0xFFF)) | (0x00u << 1) | 0x01)
+	#define	TTB_PARA_DEVICE(addr)			((0 * (addr) & ~ UINT64_C(0xFFF)) | (0x00u << 1) | 0x01)
+	#define	TTB_PARA_NO_ACCESS(addr) 		0
 
 #endif /* __CORTEX_A */
 
@@ -2382,26 +2416,10 @@ static const uint32_t aarch64_pageattr =
 	static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];
 #endif /* defined(__aarch64__) */
 
-/*
- * https://community.st.com/s/question/0D73W000000UagD/what-a-type-of-mmu-memory-regions-recommended-for-regions-with-peripheralsstronglyordered-or-device?s1oid=00Db0000000YtG6&s1nid=0DB0X000000DYbd&emkind=chatterCommentNotification&s1uid=0050X000007vtUt&emtm=1599464922440&fromEmail=1&s1ext=0&t=1599470826880
- *
- *
- * PatrickF (ST Employee)
-
-2 hours ago
-Hello,
-
-"Device" should be used for all peripherals to get best performance.
-There is no rationale to use "Strongly-Ordered" with Cortex-A7
-(explanation should be found by deep analysis/understanding of various ARM documents).
- *
- *
-*/
-
 static uintptr_t
 ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 {
-	const uintptr_t addrbase = a & ~ (uintptr_t) UINT32_C(0x0FFFFF);
+	//const uintptr_t addrbase = a & ~ (uintptr_t) UINT32_C(0x0FFFFF);
 
 #if ! CPUSTYLE_R7S721020
 	// На Renesas RZA1 недостаточно памяти для выделения выровненной на 1 мегабайт некешируесой области.
@@ -2412,7 +2430,7 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
 	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return addrbase | TTB_PARA_NCACHED(ro, 1 || xn);
+		return TTB_PARA_NCACHED(a, ro, 1 || xn);
 #endif
 
 #if CPUSTYLE_R7S721020
@@ -2420,146 +2438,146 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (a == 0x00000000)
-		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
+		return TTB_PARA_NO_ACCESS(a);		// NULL pointers access trap
 
 	if (a >= 0x18000000 && a < 0x20000000)			// FIXME: QSPI memory mapped should be R/O, but...
-		return addrbase | TTB_PARA_CACHED(ro || 0, 0);
+		return TTB_PARA_CACHED(a, ro || 0, 0);
 
 	if (a >= 0x00000000 && a < 0x00A00000)			// up to 10 MB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 	if (a >= 0x20000000 && a < 0x20A00000)			// up to 10 MB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return TTB_PARA_DEVICE(a);
 
 #elif CPUSTYLE_STM32MP1
 
 	// Все сравнения должны быть не точнее 1 MB
 	if (a >= 0x20000000 && a < 0x30000000)			// SYSRAM
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 	// 1 GB DDR RAM memory size allowed
 	if (a >= 0xC0000000)							// DDR memory
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
-	return addrbase | TTB_PARA_NO_ACCESS;
+	return TTB_PARA_DEVICE(a);
+	return TTB_PARA_NO_ACCESS(a);
 
 #elif CPUSTYLE_XC7Z
 
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (a >= 0x00000000 && a < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
 	if (a >= 0x00100000 && a < 0x40000000)			//  DDR3 - 255 MB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
 	if (a >= 0xE1000000 && a < 0xE6000000)			//  SMC (Static Memory Controller)
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
 	if (a >= 0x40000000 && a < 0xFC000000)	// PL, peripherials
-		return addrbase | TTB_PARA_DEVICE;
+		return TTB_PARA_DEVICE(a);
 
 	if (a >= 0xFC000000 && a < 0xFE000000)			//  Quad-SPI linear address for linear mode
-		return addrbase | TTB_PARA_CACHED(ro || 0, 0);
+		return TTB_PARA_CACHED(a, ro || 0, 0);
 
 	if (a >= 0xFFF00000)			// OCM (On Chip Memory) is mapped high
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return TTB_PARA_DEVICE(a);
 
 #elif CPUSTYLE_T113
 
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (a < 0x00400000)
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 //	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
-//		return addrbase | TTB_PARA_CACHED(ro, 0);
+//		return TTB_PARA_CACHED(a, ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return TTB_PARA_DEVICE(a);
 
 #elif CPUSTYLE_F133
 
 	// Все сравнения должны быть не точнее 2 MB
 
 	if (a < 0x00400000)
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 //	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
-//		return addrbase | TTB_PARA_CACHED(ro, 0);
+//		return TTB_PARA_CACHED(a, ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return TTB_PARA_DEVICE(a);
 
 #elif CPUSTYLE_V3S
 
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (a < 0x00400000)
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 //	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
-//		return addrbase | TTB_PARA_CACHED(ro, 0);
+//		return TTB_PARA_CACHED(a, ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return TTB_PARA_DEVICE(a);
 
 #elif CPUSTYLE_H3
 
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (a < 0x01000000)
-		return addrbase | TTB_PARA_CACHED(ro, 0);	// SRAM A1, SRAM A2, SRAM C
+		return TTB_PARA_CACHED(a, ro, 0);	// SRAM A1, SRAM A2, SRAM C
 
 	if (a >= 0xC0000000)
-		return addrbase | TTB_PARA_CACHED(ro, 0);	// N-BROM, S-BROM
+		return TTB_PARA_CACHED(a, ro, 0);	// N-BROM, S-BROM
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return TTB_PARA_DEVICE(a);
 
 #elif CPUSTYLE_A64
 
 	// Все сравнения должны быть не точнее 2 MB
 
 	if (a < 0x01000000)
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
 	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return TTB_PARA_DEVICE(a);
 
 #elif CPUSTYLE_T507
 
 	// Все сравнения должны быть не точнее 2 MB
 
 	if (a < 0x01000000)			// BROM, SYSRAM A1, SRAM C
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 	// 1 GB DDR RAM memory size allowed
 	if (a >= 0x40000000)			//  DRAM - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return TTB_PARA_DEVICE(a);
 
 #elif CPUSTYLE_A133 || CPUSTYLE_R818
 
 	// Все сравнения должны быть не точнее 2 MB
 
 	if (a < 0x01000000)			// BROM, SYSRAM A1, SRAM C
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 	// 1 GB DDR RAM memory size allowed
 	if (a >= 0x40000000)			//  DRAM - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return TTB_PARA_DEVICE(a);
 
 #elif CPUSTYLE_VM14
 
@@ -2567,12 +2585,12 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (a >= 0x20000000 && a < 0x20100000)			//  SRAM - 64K
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
 	if (a >= 0x40000000 && a < 0xC0000000)			//  DDR - 2 GB
-		return addrbase | TTB_PARA_CACHED(ro, 0);
+		return TTB_PARA_CACHED(a, ro, 0);
 
-	return addrbase | TTB_PARA_DEVICE;
+	return TTB_PARA_DEVICE(a);
 
 #else
 
@@ -2580,7 +2598,7 @@ ttb_1MB_accessbits(uintptr_t a, int ro, int xn)
 
 	#warning ttb_1MB_accessbits: Unhandled CPUSTYLE_xxxx
 
-	return addrbase | TTB_PARA_DEVICE;
+	return TTB_PARA_DEVICE(a);
 
 #endif
 }
@@ -2675,28 +2693,6 @@ sysinit_mmu_tables(void)
 	#warning To be implemented
 	// RISC-V MMU initialize
 
-
-	//ttb_level0_1MB_initialize(ttb_1MB_accessbits, 0, 0);
-
-	// See https://chromite.readthedocs.io/en/latest/mmu.html
-
-	// XuanTie-Openc906 SYSMAP
-
-	// The C906 is fully compatible with the RV64GC instruction set and supports the standard M/S/U privilege program model.
-	// The C906 includes a standard 8-16 region PMP and Sv39 MMU, which is fully compatible with RISC-V Linux.
-	// The C906 includes standard CLINT and PLIC interrupt controllers, RV compatible HPM.
-	// ? 0xEFFFF000
-	// See https://github.com/sophgo/cvi_alios_open/blob/aca2daa48266cd96b142f83bad4e33a6f13d6a24/components/csi/csi2/include/core/core_rv64.h
-	// Strong Order, Cacheable, Bufferable, Shareable, Security
-
-	// Bit 63 - Strong order
-	// Bit 62 - Cacheable
-	// Bit 61 - Buffer
-	// Bit 0 - Valid
-	#define RAM_ATTRS 		((UINT64_C(0) << 63) | (UINT64_C(1) << 62) | (UINT64_C(1) << 61) | (UINT64_C(0x0E) << 0) | 1)	// Cacheable memory
-	#define NCRAM_ATTRS 	((UINT64_C(0) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x0E) << 0) | 1)	// Non-cacheable memory
-	#define DEVICE_ATTRS 	((UINT64_C(1) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x0E) << 0) | 1)	// Non-bufferable device
-	#define TABLE_ATTRS		((UINT64_C(0) << 63) | 1) // Pointer to next level of page table
 
 	// When the page table size is set to 4 KB, 2 MB, or 1 GB, the page table is indexed by 3, 2, or 1 times, respectively.
 	uintptr_t address = 0;
