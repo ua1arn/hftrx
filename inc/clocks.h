@@ -258,6 +258,7 @@ uint_fast32_t allwnr_t113_get_chipid(void);
 
 // Allwinner A64
 #if CPUSTYLE_A64
+void allwnr_a64_module_pll_enable(volatile uint32_t * reg);
 uint_fast32_t allwnr_a64_get_hosc_freq(void);
 uint_fast32_t allwnr_a64_get_pll_hsic_freq(void);
 uint_fast64_t allwnr_a64_get_pll_ddr0_freq(void);

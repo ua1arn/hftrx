@@ -2286,7 +2286,7 @@ static void allwnr_a64_mbus_initialize(void)
 }
 
 // A64
-static void allwnr_a64_module_pll_enable(volatile uint32_t * reg)
+void allwnr_a64_module_pll_enable(volatile uint32_t * reg)
 {
 
 	if(!(* reg & (UINT32_C(1) << 31)))
@@ -2308,64 +2308,6 @@ static void allwnr_a64_module_pll_enable(volatile uint32_t * reg)
 //		val = * reg;
 //		val &= ~(1 << 29);
 //		* reg = val;
-	}
-}
-
-// A64
-static void allwnr_a64_module_pllaudio_enable(void)
-{
-	const unsigned p = 5;
-	const unsigned n = 64;
-	const unsigned m = 25;
-	// 0x90035514
-	//	CCU->PLL_AUDIO_CTRL_REG =
-	//		(0x03 << 16) | // P
-	//		(0x3fu << 8) | // N
-	//		(0x14 << 0) | // M
-	//		0;
-	//	The PLL_AUDIO= (24MHz*N)/(M*P).
-	//	The PLL_AUDIO(8X) = (24MHz*N*2)/M
-
-	// Need same as PLL_AUDIO1_CTRL_REG in t1113-s3
-	//	PLL_AUDIO1 = 24MHz*N/M
-	//	PLL_AUDIO1(DIV2) = 24MHz*N/M/P0
-	//	PLL_AUDIO1(DIV5) = 24MHz*N/M/P1
-
-	// pll0: p=0x14, n=0x55, m1,m0=0
-	// pll1: p1=4(5), p0=1(2), n=0x7F, m=0
-
-	// (24MHz*N)/P must be in the range of 72MHz~504MHz.
-	CCU->PLL_AUDIO_CTRL_REG &= ~ (UINT32_C(1) << 31);
-	(void) CCU->PLL_AUDIO_CTRL_REG;
-	// 307.2
-	CCU->PLL_AUDIO_CTRL_REG =
-		((p - 1) << 16) | // P The range is from 1 to 16.	- pre-divider
-		((n - 1) << 8) | // N 1..128
-		((m - 1) << 0) | // M 1..32
-		0;
-	(void) CCU->PLL_AUDIO_CTRL_REG;
-
-
-	if(!(CCU->PLL_AUDIO_CTRL_REG & (UINT32_C(1) << 31)))
-	{
-		uint32_t val;
-		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
-		(void) CCU->PLL_AUDIO_CTRL_REG;
-
-		/* Lock enable */
-		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 29);
-		(void) CCU->PLL_AUDIO_CTRL_REG;
-		//local_delay_ms(10);
-
-		/* Wait pll stable */
-		while(!(CCU->PLL_AUDIO_CTRL_REG & (UINT32_C(1) << 28)))
-			;
-		//local_delay_ms(20);
-
-		/* Lock disable */
-//		val = CCU->PLL_AUDIO_CTRL_REG;
-//		val &= ~(1 << 29);
-//		CCU->PLL_AUDIO_CTRL_REG = val;
 	}
 }
 
@@ -9879,8 +9821,6 @@ sysinit_pll_initialize(int forced)
 	//	The PLL_PERIPH1(2X) = 24MHz*N*K.
 	allwnr_a64_module_pll_enable(& CCU->PLL_PERIPH1_CTRL_REG);
 
-	//allwnr_a64_module_pllaudio_enable();
-	allwnr_a64_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG);
 
 	allwnr_a64_module_pll_enable(& CCU->PLL_HSIC_CTRL_REG);
 
