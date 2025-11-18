@@ -1386,7 +1386,7 @@ enum {
 	 */
 
 	static const struct {
-		unsigned char code;
+		uint8_t code;
 		const char * label;
 		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
@@ -1645,9 +1645,9 @@ static uint_fast8_t mainsubrxmode;		// Левый/правый, A - main RX, B -
 #if 1//WITHTX && WITHIF4DSP
 
 static const struct {
-	uint_fast8_t code;
+	uint8_t code;
 	const char * label;
-}  txaudiosrcs [] =	// todo: remove
+}  txaudiosrcs [] =
 {
 	{ BOARD_TXAUDIO_MIKE, 	"MIKE", },
 #if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
