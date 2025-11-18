@@ -3606,10 +3606,21 @@ SystemInit(void)
 }
 #else /* LINUX_SUBSYSTEM */
 
+void softdevay(void)
+{
+	volatile int i = 100;
+	while (i --)
+	{
+		__NOP();
+	}
+}
+
 // watchdog disable, clock initialize, cache enable
 void
 SystemInit(void)
 {
+	//PRINTF("CCU->PLL_CPU_CTRL_REG=%08X\n", (unsigned) CCU->PLL_CPU_CTRL_REG);
+	//PRINTF("CCU->MBUS_MAT_CLK_GATING_REG=%08X\n", (unsigned) CCU->MBUS_MAT_CLK_GATING_REG);
 #if CPUSTYLE_VM14
 	resetCPU(1);
 #endif /* CPUSTYLE_VM14 */

@@ -4111,17 +4111,22 @@ uint_fast32_t allwnr_a133_get_s_twi_freq(void)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-static void t113_set_pll_cpu(unsigned n)
+static void t113_set_pll_cpu(unsigned N)
 {
+	// F133: CCU->PLL_CPU_CTRL_REG=0xCA002900
 	uint32_t val;
+#if CPUSTYLE_F133
+	CCU->PLL_CPU_CTRL_REG = 0xCA002900;
+#else
 	CCU->PLL_CPU_CTRL_REG = 0x4A001000;
+#endif
 	(void) CCU->PLL_CPU_CTRL_REG;
 	local_delay_ms(10);
 
 	/* Set default clk to 1008mhz */
 	val = CCU->PLL_CPU_CTRL_REG;
 	val &= ~ (UINT32_C(0xFF) << 8);
-	val |= ((n - 1) << 8);
+	val |= ((N - 1) << 8);
 	CCU->PLL_CPU_CTRL_REG = val;
 	(void) CCU->PLL_CPU_CTRL_REG;
 //
@@ -4144,7 +4149,7 @@ static void t113_set_pll_cpu(unsigned n)
 }
 //#if CPUSTYLE_F133
 
-static void f133_set_axi(unsigned sel)
+static void f133_set_axi(unsigned sel, unsigned RISC_AXI_DIV_CFG, unsigned RISC_DIV_CFG)
 {
 	uint32_t val;
 
@@ -4156,10 +4161,10 @@ static void f133_set_axi(unsigned sel)
 
 	/* Select cpux clock src to osc24m, axi divide ratio is 3, system apb clk ratio is 4 */
 	CCU->RISC_CLK_REG =
-			(sel << 24) | // 000: HOSC or 191
-			0x01 * (1 << 8) |	// RISC_AXI_DIV_CFG
-			0x00 * (1 << 0) |	// RISC_DIV_CFG
-			0;
+		sel * (UINT32_C(1) << 8)| // 000: HOSC or 191
+		(RISC_AXI_DIV_CFG - 1) * (UINT32_C(1) << 8) |	// RISC_AXI_DIV_CFG
+		(RISC_DIV_CFG - 1) * (UINT32_C(1) << 0) |	// RISC_DIV_CFG
+		0;
 	(void) CCU->RISC_CLK_REG;
 }
 //#endif /* CPUSTYLE_F133 */
@@ -5355,6 +5360,7 @@ void allwnr_t113_pll_initialize(int N)
 #if CPUSTYLE_T113
 	t113_set_axi(0x00, 1, 1);	// Switch CPU to OSC24
 #elif CPUSTYLE_F133
+	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// RISC_MCLK_EN
 	f133_set_axi(0x00);	// OSC24
 #endif
 	local_delay_initialize();
@@ -5376,7 +5382,7 @@ void allwnr_t113_pll_initialize(int N)
 #if CPUSTYLE_T113
 	t113_set_axi(0x03, 4, 2);
 #elif CPUSTYLE_F133
-	f133_set_axi(0x05);	// 101: PLL_CPU
+	f133_set_axi(0x05, 2, 1);	// 101: PLL_CPU
 #endif
 	local_delay_initialize();
 
@@ -5384,6 +5390,9 @@ void allwnr_t113_pll_initialize(int N)
 	t113_set_psi_ahb();
 	t113_set_apb0(UINT32_C(100) * 1000 * 1000);	// 100 MHz
 	t113_set_apb1(UINT32_C(300) * 1000 * 1000);	// 192 MHz - for 4M baud rate
+#if CPUSTYLE_F133
+	CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);	// не проищзволит видимого эффекта
+#endif
 }
 
 #endif /* CPUSTYLE_STM32MP1 */
@@ -9828,7 +9837,7 @@ sysinit_pll_initialize(int forced)
 	CCU->APB2_CFG_REG = 0x02000307;	// PLL_PERIPH0(2X) / 8 / 5- allwnr_a64_get_apb2_freq()=240 MHz
 	allwnr_a64_mbus_initialize();
 
-#elif CPUSTYLE_T113
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	{
 		// Disable SD hosts
@@ -9852,38 +9861,11 @@ sysinit_pll_initialize(int forced)
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RSTN
 	}
-	allwnr_t113_pll_initialize(forced ? PLL_CPU_N : 17);
-
-#elif CPUSTYLE_F133
-
-	{
-		// Disable SD hosts
-
-		CCU->SMHC0_CLK_REG = 0;
-		CCU->SMHC1_CLK_REG = 0;
-		CCU->SMHC2_CLK_REG = 0;
-
-		CCU->SMHC_BGR_REG = 0x0000FFFF;
-		(void) CCU->SMHC_BGR_REG;
-		CCU->SMHC_BGR_REG = 000000000;
-		(void) CCU->SMHC_BGR_REG;
-	}
-	/* Off bootloader USB */
-	{
-		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
-		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
-		CCU->USB_BGR_REG &= ~  (UINT32_C(1) << 24);	// USBOTG0_RST
-
-		CCU->USB0_CLK_REG &= ~  (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-		CCU->USB0_CLK_REG &= ~  (UINT32_C(1) << 30);	// USBPHY0_RSTN
-	}
-
-	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// RISC_MCLK_EN
+#if CPUSTYLE_F133
 	allwnr_t113_pll_initialize(forced ? RV_PLL_CPU_N : 17);
-
-	CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);	// не проищзволит видимого эффекта
-
-	//CCU->RISC_GATING_REG = (1 * 1u << 31) | (0x16AA << 0);
+#else
+	allwnr_t113_pll_initialize(forced ? PLL_CPU_N : 17);
+#endif
 
 #elif CPUSTYLE_H3
 

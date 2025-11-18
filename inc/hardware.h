@@ -989,6 +989,9 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
 void ohciehci_clk_init(void);
 void usbdevice_clk_init(void);
 
+void SystemInit(void);
+void softdevay(void);
+
 #include "utils.h"
 // Substitutions for t507 ddr ram init
 //#define i2c_read local_i2c_read
