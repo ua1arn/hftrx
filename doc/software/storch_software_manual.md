@@ -11,8 +11,7 @@
   - [ARM GNU Toolchain](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)  
     Проверенная версия: `arm-none-eabi-gcc 14.2.1`
   - [RISC-V Toolchain](https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/)  
-    ⚠️ Для RISC-V требуется патч: применить `cmsis_5_riscv_patch.diff` к файлу  
-    `CMSIS_5/CMSIS/Core_A/Include/cmsis_gcc.h`
+    Проверенная версия: `riscv-none-elf-gcc (xPack GNU RISC-V Embedded GCC x86_64) 15.2.0`
 
 2. **Вспомогательные утилиты:**
   - [Windows Build Tools](https://xpack-dev-tools.github.io/windows-build-tools-xpack/docs/releases/)
