@@ -4584,6 +4584,24 @@ static uint_fast8_t gforcexvrtr;	/* принудительно включить 
 	#endif /* defined (WITHBBOX) && defined (WITHBBOXREC) */
 #endif /* WITHUSEAUDIOREC */
 
+#if WITHHDMITVHW
+
+static uint_fast8_t ghdmiformat;
+/* Видеорежим внешнего HDMI монитора */
+static const struct paramdefdef xhdmiformat =
+{
+	QLABEL3("HDMI FMT", "HDMI format", "HDMI FMT"), 7, 5, RJ_CB, ISTEP1,
+	ITEM_VALUE | ITEM_LISTSELECT,
+	0, HDMIFORMATS_count - 1,
+	OFFSETOF(struct nvmap, ghdmiformat),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& ghdmiformat,
+	getzerobase, /* складывается со смещением и отображается */
+	getvaltexthdmiformat, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+#endif /* WITHHDMITVHW */
+
 #if WITHLO1LEVELADJ
 	static uint_fast8_t lo1level = WITHLO1LEVELADJINITIAL; //100;	/* уровень (амплитуда) LO1 в процентах */
 #endif /* WITHLO1LEVELADJ */
@@ -4692,24 +4710,6 @@ static const struct paramdefdef xgspectrumpart =
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
-
-#if WITHHDMITVHW
-
-static uint_fast8_t ghdmiformat;
-/* Видеорежим внешнего HDMI монитора */
-static const struct paramdefdef xhdmiformat =
-{
-	QLABEL3("HDMI FMT", "HDMI format", "HDMI FMT"), 7, 5, RJ_CB, ISTEP1,
-	ITEM_VALUE | ITEM_LISTSELECT,
-	0, HDMIFORMATS_count - 1,
-	OFFSETOF(struct nvmap, ghdmiformat),
-	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& ghdmiformat,
-	getzerobase, /* складывается со смещением и отображается */
-	getvaltexthdmiformat, /* getvaltext получить текст значения параметра - see RJ_CB */
-};
-#endif /* WITHHDMITVHW */
 
 #if WITHSPECTRUMWF
 
