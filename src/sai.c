@@ -3991,54 +3991,67 @@ void T507_AHUB_handler(void)
 }
 
 // Раньше находилось в clocks.c
-static void t507_audiopll_initialize(uint_fast32_t needfreq)
+static void t507_audiopll_initialize(uint_fast32_t mclkf)
 {
+	unsigned M1 = 1;
+	unsigned M0 = 2;
+	unsigned PLL_POST_DIV_P = 2;
+	enum { FRACBITS = 17, FRACMASK = (UINT32_C(1) << FRACBITS) - 1 };	// 17 bit fraction part
+	uint_fast32_t needfreq = mclkf * 32;
 	PRINTF("t507_audiopll_initialize: needfreq=%u\n", needfreq);
-	if (1)
-	{
-		enum { FRACBITS = 17, FRACMASK = (UINT32_C(1) << FRACBITS) - 1 };	// 17 bit fraction part
-	    CCU->PLL_AUDIO_CTRL_REG = 0xA8010F01;	// N=16, M1=1, M0=2
-		uint_fast64_t t = ((uint_fast64_t) needfreq << FRACBITS) / allwnr_t507_get_hosc_freq();
-		unsigned INTEGERN = t >> FRACBITS;
-		unsigned FRACN = t & FRACMASK;
-		PRINTF("t507_audiopll_initialize: INTEGERN=%u, FRACN=0x%08X\n", INTEGERN, FRACN);
-		ASSERT(INTEGERN <= 256);
-		ASSERT(INTEGERN >= 12);	// See NEEDSCLE.  The working frequency range of 24 MHz/M*N is from 180 MHz to 3.5 GHz
-		CCU->PLL_AUDIO_PAT0_CTRL_REG &= ~ (UINT32_C(1) << 31);	// SIG_DELT_PAT_EN
-		//CCU->PLL_AUDIO_PAT0_CTRL_REG |= (UINT32_C(1) << 31);	// SIG_DELT_PAT_EN
-		CCU->PLL_AUDIO_PAT1_CTRL_REG =
-				0 * (UINT32_C(1) << 24) |	// DITHER_EN
-				1 * (UINT32_C(1) << 20) |	// FRAC_EN
-				(FRACN & FRACMASK) * (UINT32_C(1) << 0) | // FRAC_IN
-				0;
-		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 24);	// PLL_SDM_EN
-		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, INTEGERN);
-	}
+	uint_fast64_t t = ((uint_fast64_t) needfreq << FRACBITS) / allwnr_t507_get_hosc_freq();
+	unsigned INTEGERN = t >> FRACBITS;
+	unsigned FRACN = t & FRACMASK;
+	ASSERT(INTEGERN <= 256);
+	ASSERT(INTEGERN >= 12);	// See NEEDSCLE.  The working frequency range of 24 MHz/M*N is from 180 MHz to 3.5 GHz
+    CCU->PLL_AUDIO_CTRL_REG =
+		(PLL_POST_DIV_P - 1) * (UINT32_C(1) << 16) |	// M1
+		(INTEGERN - 1) * (UINT32_C(1) << 8) |	// PLL_FACTOR_N
+		(M1 - 1) * (UINT32_C(1) << 1) |	// M1
+		(M0 - 1) * (UINT32_C(1) << 0) |	// M0
+		0;
+    PRINTF("INTEGERN=%08X, FRACN=%08X, ~FRACN=%08X\n", INTEGERN, FRACN, ~ FRACN & FRACMASK);
+
 	if (0)
 	{
 
+	}
+	else if (0)
+	{
+		CCU->PLL_AUDIO_CTRL_REG |= (UINT32_C(1) << 24);	// PLL_SDM_EN
+		CCU->PLL_AUDIO_PAT0_CTRL_REG &= ~ (UINT32_C(1) << 31);	// SIG_DELT_PAT_EN
+		//CCU->PLL_AUDIO_PAT0_CTRL_REG |= (UINT32_C(1) << 31);	// SIG_DELT_PAT_EN
+		CCU->PLL_AUDIO_PAT1_CTRL_REG =
+				1 * (UINT32_C(1) << 24) |	// DITHER_EN
+				1 * (UINT32_C(1) << 20) |	// FRAC_EN
+				(FRACN & FRACMASK) * (UINT32_C(1) << 0) | // FRAC_IN
+				0;
+		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, INTEGERN);
+	}
+	else if (1)
+	{
 	    // Whhen PLL_AUDIO(1X) is 24.576 MHz
 	    // AUDIO_HUB_CLK_REG should use 01: PLL_AUDIO(2X)
-	    CCU->PLL_AUDIO_CTRL_REG = 0xA8010F01;	// N=16, M1=1, M0=2
-	    CCU->PLL_AUDIO_PAT0_CTRL_REG = 0xE000C49B; //SIG_DELT_PAT_EN=1, SPR_FREQ_MODE=3, WAVE_STEP=0, WAVE_BOT=0xC49B
+	    //CCU->PLL_AUDIO_PAT0_CTRL_REG = 0xE000C49B; //SIG_DELT_PAT_EN=1, SPR_FREQ_MODE=3, WAVE_STEP=0, WAVE_BOT=0xC49B
 	    PRINTF("1 t507_audiopll_initialize: PLL_AUDIO_CTRL_REG=%08X PLL_AUDIO_PAT0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG, (unsigned) CCU->PLL_AUDIO_PAT0_CTRL_REG);
 	    // 384000
 	    // 48000
 	    // 49152
-		uint_fast64_t mod = UINT64_C(1) << 17;
-	    uint_fast32_t z = mod - ( (mod * 4800) / 49152);
+		uint_fast64_t mod = UINT64_C(1) << FRACBITS;
+	    uint_fast32_t z = mod - ( (mod * 48000) / 49152);
 	    PRINTF("z 1 = %08X\n", (unsigned) z);
 	    z = 0x8300;	// 0x8300 - нчинает выкиывать сэмплы, 0x8301 - добавлять
+	    //z = (FRACN & FRACMASK);
 	    PRINTF("z 2 = %08X\n", (unsigned) z);
 	    CCU->PLL_AUDIO_PAT0_CTRL_REG =
 			1 * (UINT32_C(1) << 31) |	// SIG_DELT_PAT_EN
 			0x03 * (UINT32_C(1) << 29) |	// SPR_FREQ_MODE 11: Triangular(n bit)
 			0x00 * (UINT32_C(1) << 20) |	// WAVE_STEP (9 bit)
 			//0x0C49B * (UINT32_C(1) << 0) |	// WAVE_BOT (17 bit)
-			(z & 0x1FFFF) * (UINT32_C(1) << 0) |	// WAVE_BOT (17 bit)
+			(z & FRACMASK) * (UINT32_C(1) << 0) |	// WAVE_BOT (17 bit)
 			0;
 
-		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, 16);
+		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, INTEGERN);
 	    //local_delay_ms(2);
 	    PRINTF("2 t507_audiopll_initialize: PLL_AUDIO_CTRL_REG=%08X PLL_AUDIO_PAT0_CTRL_REG=%08X PLL_AUDIO_PAT1_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG, (unsigned) CCU->PLL_AUDIO_PAT0_CTRL_REG, (unsigned) CCU->PLL_AUDIO_PAT1_CTRL_REG);
 
@@ -4121,7 +4134,7 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 	if (ix == 1)
 	{
 		// HDMI
-		t507_audiopll_initialize(mclkf * 32);
+		t507_audiopll_initialize(mclkf);
 
 		//	00: PLL_AUDIO(1X)
 		//	01: PLL_AUDIO(2X)
@@ -6174,7 +6187,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 #elif CPUSTYLE_T507
 
-	t507_audiopll_initialize(mclkf * 32);
+	t507_audiopll_initialize(mclkf);
 	// Default CCU settings:
 	//	AudioCodec: allwnr_t113_get_audio0pllhs_freq()=1032000 kHz
 	//	AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=1032000 kHz
