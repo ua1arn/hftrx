@@ -3990,14 +3990,19 @@ void T507_AHUB_handler(void)
 	}
 }
 
-// Раньше находилось в clocks.c
-static void t507_audiopll_initialize(uint_fast32_t mclkf)
+
+static void t507_audiopll_initialize(uint_fast32_t mclkf, unsigned X)
 {
 	unsigned M1 = 1;
 	unsigned M0 = 2;
 	unsigned PLL_POST_DIV_P = 2;
 	enum { FRACBITS = 17, FRACMASK = (UINT32_C(1) << FRACBITS) - 1 };	// 17 bit fraction part
-	uint_fast32_t needfreq = mclkf * 32;
+	// Далее будет использоваться allwnr_t507_get_pll_audio_4x_freq()
+	//	PLL_AUDIO(hs) = 24 MHz*N/M1
+	//	PLL_AUDIO(4X) = 24 MHz*N/M0/M1/P
+	//	PLL_AUDIO(2X) = 24 MHz*N/M0/M1/P/2
+	//	PLL_AUDIO(1X) = 24 MHz*N/M0/M1/P/4
+	uint_fast32_t needfreq = mclkf * M0 * M1 * PLL_POST_DIV_P * X;
 	PRINTF("t507_audiopll_initialize: needfreq=%u\n", needfreq);
 	uint_fast64_t t = ((uint_fast64_t) needfreq << FRACBITS) / allwnr_t507_get_hosc_freq();
 	unsigned INTEGERN = t >> FRACBITS;
@@ -4134,7 +4139,7 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 	if (ix == 1)
 	{
 		// HDMI
-		t507_audiopll_initialize(mclkf);
+		t507_audiopll_initialize(mclkf, 8);
 
 		//	00: PLL_AUDIO(1X)
 		//	01: PLL_AUDIO(2X)
@@ -6187,7 +6192,7 @@ static void hardware_AudioCodec_master_duplex_initialize_codec1(void)
 
 #elif CPUSTYLE_T507
 
-	t507_audiopll_initialize(mclkf);
+	t507_audiopll_initialize(mclkf, 8);
 	// Default CCU settings:
 	//	AudioCodec: allwnr_t113_get_audio0pllhs_freq()=1032000 kHz
 	//	AudioCodec: allwnr_t507_get_audio_codec_4x_freq()=1032000 kHz
