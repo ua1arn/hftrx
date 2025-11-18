@@ -5361,7 +5361,7 @@ void allwnr_t113_pll_initialize(int N)
 	t113_set_axi(0x00, 1, 1);	// Switch CPU to OSC24
 #elif CPUSTYLE_F133
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// RISC_MCLK_EN
-	f133_set_axi(0x00);	// OSC24
+	f133_set_axi(0x00, 1, 1);	// OSC24
 #endif
 	local_delay_initialize();
 	CCU->PSI_CLK_REG = 0;	// AHB freq from OSC24
