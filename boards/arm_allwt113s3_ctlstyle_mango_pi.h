@@ -136,7 +136,7 @@
 	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
-	//#define WITHFLATLINK 1	/* Работа с TFT панелью через LVDS интерфейс	*/
+	#define WITHFLATLINK 1	/* Работа с TFT панелью через LVDS интерфейс	*/
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
 	#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
 
