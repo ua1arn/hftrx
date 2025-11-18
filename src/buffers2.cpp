@@ -16,7 +16,7 @@
 //#undef RAMNC
 //#define RAMNC
 
-//#define WITHBUFFERSDEBUG WITHDEBUG
+#define WITHBUFFERSDEBUG WITHDEBUG
 #ifndef BUFOVERSIZE
 	#define BUFOVERSIZE 1
 #endif /* BUFOVERSIZE */
@@ -1002,6 +1002,8 @@ void savespeexbuffer(speexel_t * t)
 	denoise16list.save_readybuffer(p);
 }
 
+#if defined CODEC1_TYPE
+
 // DMA data from codec
 typedef ALIGNX_BEGIN struct voice16rx_tag
 {
@@ -1223,6 +1225,7 @@ uintptr_t getfilled_dmabuffer16tx(void)
 
 	return (uintptr_t) dest->buff;
 }
+#endif /* defined CODEC1_TYPE */
 
 ////////////////////////////////////////////////////
 ///
@@ -4306,15 +4309,17 @@ void buffers_diagnostics(void)
 #if WITHINTEGRATEDDSP
 #if 1
 	//denoise16list.debug();
+#if defined CODEC1_TYPE
 	codec16rx.debug();
 	codec16tx.debug();
+#endif
 //	moni16.debug();
 //	voice32tx.debug();
 //	voice32rx.debug();
 #endif
 #if 1
 	// USB
-#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) && 0
+#if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) && 1
 	uacout48.debug();
 #endif
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) && 0
@@ -4358,8 +4363,10 @@ static void buffers_spool(void * ctx)
 #if WITHINTEGRATEDDSP
 	// internal sources/targets
 	denoise16list.spool100ms();
+#if defined CODEC1_TYPE
 	codec16rx.spool100ms();
 	codec16tx.spool100ms();
+#endif
 	moni16.spool100ms();
 	voice32tx.spool100ms();
 	voice32rx.spool100ms();
@@ -4601,7 +4608,9 @@ void buffers_initialize(void)
 	static subscribefloat_t afsample16register;
 	static subscribefloat_t afsample16registertospeex;
 
+#if defined CODEC1_TYPE
 	subscribefloat(& speexoutfloat, & afsample16register, NULL, savesampleout16stereo_float);
+#endif /* defined CODEC1_TYPE */
 	subscribefloat(& afdemodoutfloat, & afsample16registertospeex, NULL, savesampleout16tospeex);
 
 #endif /* WITHSKIPUSERMODE */

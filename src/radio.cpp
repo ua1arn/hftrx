@@ -1642,7 +1642,30 @@ static const struct {
 static uint_fast8_t mainsubrxmode;		// Левый/правый, A - main RX, B - sub RX
 #endif /* WITHUSEDUALWATCH */
 
-#if WITHTX && WITHIF4DSP
+#if 1//WITHTX && WITHIF4DSP
+
+static const struct {
+	uint_fast8_t code;
+	const char * label;
+}  txaudiosrcs [] =	// todo: remove
+{
+	{ BOARD_TXAUDIO_MIKE, 	"MIKE", },
+#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
+	{ BOARD_TXAUDIO_LINE, 	"LINE", },
+#endif /* WITHAFCODEC1HAVELINEINLEVEL */
+#if WITHUSBHW && WITHUSBUACOUT
+	{ BOARD_TXAUDIO_USB, 	"USB", },
+#endif /* WITHUSBHW && WITHUSBUACOUT */
+#if WITHUSBHW && WITHUSEUSBBT
+	{ BOARD_TXAUDIO_BT, 	"BT", },
+#endif /* WITHUSBHW && WITHUSEUSBBT */
+	{ BOARD_TXAUDIO_2TONE, 	"2TONE", },
+	{ BOARD_TXAUDIO_NOISE, 	"NOISE", },
+	{ BOARD_TXAUDIO_1TONE, 	"1TONE", },
+	{ BOARD_TXAUDIO_MUTE, 	"MUTE", },
+};
+
+#define TXAUDIOSRC_COUNT (ARRAY_SIZE(txaudiosrcs))
 
 static uint_fast8_t findtxaudioindex(uint_fast8_t code)
 {
@@ -8776,13 +8799,9 @@ getdefaultbandsubmode(
 }
 
 
-#if WITHIF4DSP && WITHTX
+static uint_fast8_t gtxaudio [MODE_COUNT];
 
-	static uint_fast8_t gtxaudio [MODE_COUNT];
-
-#endif /* WITHIF4DSP && WITHTX */
-
-	static uint_fast8_t gmiddlepos [MODE_COUNT];
+static uint_fast8_t gmiddlepos [MODE_COUNT];
 
 #if WITHIF4DSP
 
