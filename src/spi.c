@@ -892,7 +892,7 @@ prog_select_init(void)
 	#elif CPUSTYLE_XC7Z
 		static portholder_t spi_cr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_ALLWINNER
-		static portholder_t ccu_spi_clk_reg_val [SPIC_SPEEDS_COUNT];
+		//static portholder_t ccu_spi_clk_reg_val [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_tcr_reg_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];
 		static portholder_t spi_wcr_reg_val [SPIC_SPEEDS_COUNT];
 		static portholder_t spi_ccr_reg_val [SPIC_SPEEDS_COUNT];
@@ -1208,6 +1208,28 @@ void hardware_spi_master_initialize(void)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 	unsigned ix = SPIHARD_IX;	// SPI0
+
+	SPIHARD_CCU_CLK_REG =
+		SPIHARD_CCU_CLK_SRC_SEL_VAL * (UINT32_C(1) << 24) |	/* CLK_SRC_SEL */
+		0;
+	//SPIHARD_CCU_CLK_REG |= (UINT32_C(1) << 31);	// 1: Clock is ON - Allwinner all
+
+
+	// SCLK = Clock Source/M/N.
+	unsigned value;
+	const int_fast32_t upspeed = SPISPEEDUFAST * 2;	// 50 MHz
+	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, upspeed), ALLWNT_SPI_CLK_WIDTH, ALLWNT_SPI_CLK_TAPS, & value, 1);
+	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%u)\n", prei, value, (unsigned) spispeed, HARDWARE_SPI_FREQ);
+	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
+	const uint_fast32_t ccu_spi_clk_reg =
+		SPIHARD_CCU_CLK_SRC_SEL_VAL * (UINT32_C(1) << 24) |
+		factorN * (UINT32_C(1) << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+		factorM * (UINT32_C(1) << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
+		(UINT32_C(1) << 31) |	// 1: Clock is ON
+		0;
+	//ccu_spi_clk_reg_val [spispeedindex] = ccu_spi_clk_reg;
+	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg;
 
 	/* Open the clock gate for SPI0 */
 	CCU->SPI_BGR_REG |= UINT32_C(1) << (ix + 0);
@@ -1731,29 +1753,6 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 #elif CPUSTYLE_ALLWINNER
 
-	enum { ALLWNT_SPI_CLK_WIDTH = 4, ALLWNT_SPI_CLK_TAPS = ( 8 | 4 | 2 | 1) };	// CCU register
-	enum { ALLWNT_SPI_CCI_WIDTH = 8, ALLWNT_SPI_CCI_TAPS = 1 };		// SPI register
-
-	SPIHARD_CCU_CLK_REG =
-		SPIHARD_CCU_CLK_SRC_SEL_VAL * (UINT32_C(1) << 24) |	/* CLK_SRC_SEL */
-		0;
-	SPIHARD_CCU_CLK_REG |= (UINT32_C(1) << 31);	// 1: Clock is ON - Allwinner all
-
-	// SCLK = Clock Source/M/N.
-	unsigned value;
-	const int_fast32_t upspeed = ulmax32(spispeed, SPISPEEDUFAST * 2);	// 50 MHz
-	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, upspeed), ALLWNT_SPI_CLK_WIDTH, ALLWNT_SPI_CLK_TAPS, & value, 1);
-	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%u)\n", prei, value, (unsigned) spispeed, HARDWARE_SPI_FREQ);
-	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
-	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
-	const uint_fast32_t ccu_spi_clk_reg =
-		SPIHARD_CCU_CLK_SRC_SEL_VAL * (UINT32_C(1) << 24) |
-		factorN * (UINT32_C(1) << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
-		factorM * (UINT32_C(1) << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
-		(UINT32_C(1) << 31) |	// 1: Clock is ON
-		0;
-	ccu_spi_clk_reg_val [spispeedindex] = ccu_spi_clk_reg;
-
 	const portholder_t tcr =
 			1 * (UINT32_C(1) << 13) |	// SDM: 1: Normal sample mode
 			0 * (UINT32_C(1) << 11) |	// SDC: 0: Normal sample mode
@@ -1767,15 +1766,14 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 	const portholder_t wcr_reg = 0;
 
-	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];	// чтобы работал HARDWARE_SPI_FREQ
+	//SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];	// чтобы работал HARDWARE_SPI_FREQ
 
-	unsigned divider2;
-	unsigned divpower2 = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, spispeed * 2), ALLWNT_SPI_CCI_WIDTH, ALLWNT_SPI_CCI_TAPS, & divider2, 1);
+	unsigned divider;
+	calcdivider(calcdivround2(HARDWARE_SPI_FREQ, spispeed * 2), ALLWNT_SPI_CCI_WIDTH, ALLWNT_SPI_CCI_TAPS, & divider, 1);
 	/* В случае переключения на делитель со степенями, точный делитель игнорируется */
 	const portholder_t ccr_reg =
 		1 * (UINT32_C(1) << 12) |		// DRS 1: Select Clock Divide Rate 2
-		//(0x0F & divpower2) * (UINT32_C(1) << 8) |		// CDR1_N: SPI_CLK = Source_CLK / (2^CDR1_M).
-		(0xFF & divider2) * (UINT32_C(1) << 0) |		// CDR2_N: SPI_CLK = Source_CLK / (2*(CDR2_N + 1)).
+		(0xFF & divider) * (UINT32_C(1) << 0) |		// CDR2_N: SPI_CLK = Source_CLK / (2*(CDR2_N + 1)).
 		0;
 	//PRINTF("hardware_spi_master_setfreq 2: spispeed=%u, divpower2=%u, divider2=%u, HW=%u\n", (unsigned) spispeed, (unsigned) divpower2, (unsigned) divider2, (unsigned) HARDWARE_SPI_FREQ);
 
@@ -1908,7 +1906,7 @@ void hardware_spi_connect(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes_t s
 
 #elif CPUSTYLE_ALLWINNER
 
-	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+	//SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	spi->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 	spi->SPI_WCR = spi_wcr_reg_val [spispeedindex];
 	spi->SPI_CCR = spi_ccr_reg_val [spispeedindex];
@@ -2114,7 +2112,7 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 
 #elif CPUSTYLE_ALLWINNER
 
-	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+	//SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	spi->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 	spi->SPI_WCR = spi_wcr_reg_val [spispeedindex];
 	spi->SPI_CCR = spi_ccr_reg_val [spispeedindex];
@@ -2299,7 +2297,7 @@ void hardware_spi_connect_b32(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 
 #elif CPUSTYLE_ALLWINNER
 
-	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+	//SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	spi->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 	spi->SPI_WCR = spi_wcr_reg_val [spispeedindex];
 	spi->SPI_CCR = spi_ccr_reg_val [spispeedindex];

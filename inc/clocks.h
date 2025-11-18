@@ -567,6 +567,8 @@ calcdivider(
 		ALLWNT113_AudioCodec_CLK_WIDTH = 5, ALLWNT113_AudioCodec_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
 		ALLWNT113_AudioHUB_CLK_WIDTH = 0, ALLWNT113_AudioHUB_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
 		ALLWNT113_DMIC_CLK_WIDTH = 5, ALLWNT113_DMIC_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
+		ALLWNT_SPI_CLK_WIDTH = 4, ALLWNT_SPI_CLK_TAPS = ( 8 | 4 | 2 | 1),	// CCU register
+		ALLWNT_SPI_CCI_WIDTH = 8, ALLWNT_SPI_CCI_TAPS = 1,	// SPI register
 		//
 		ALLWNT113_pad
 	};

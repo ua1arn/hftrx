@@ -5372,11 +5372,6 @@ void allwnr_t113_pll_initialize(int N)
 	//allwnr_t113_module_pll_n(& CCU->PLL_PERI_CTRL_REG, 96);
 	allwnr_t113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
 
-//	allwnr_t113_module_pll_spr(& CCU->PLL_AUDIO0_CTRL_REG, & CCU->PLL_AUDIO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-//	allwnr_t113_module_pll_enable(& CCU->PLL_AUDIO0_CTRL_REG);
-	allwnr_t113_module_pll_spr(& CCU->PLL_AUDIO1_CTRL_REG, & CCU->PLL_AUDIO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-	allwnr_t113_module_pll_enable(& CCU->PLL_AUDIO1_CTRL_REG);
-
 	t113_set_pll_cpu(N);	// see sdram.c
 
 #if CPUSTYLE_T113
