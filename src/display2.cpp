@@ -2078,6 +2078,8 @@ static void smeter_arrow(const gxdrawb_t * db, uint_fast16_t target_pixel_x, uin
 	}
 }
 
+static uint_fast8_t first_tx = 0;
+
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
 static void
 pix_display2_smeter15(const gxdrawb_t * db,
@@ -2096,7 +2098,6 @@ pix_display2_smeter15(const gxdrawb_t * db,
 	const int yc = y0 + 120 + dial_shift;
 
 	const uint_fast8_t is_tx = hamradio_get_tx();
-	static uint_fast8_t first_tx = 0;
 
 	uint_fast16_t gp = smpr->gs, gv = smpr->gs, gv_trace = smpr->gs, gswr = smpr->gs;
 
@@ -2292,11 +2293,10 @@ pix_display2_smeter15(const gxdrawb_t * db,
 					SM_BG_W, SM_BG_H,	// размер окна источника
 					BITBLT_FLAG_NONE, 0
 					);
-
-			if(gv > smpr->gs)
-				colpip_rect(db, x0 + smpr->gs, y0 + smpr->r1 + 5, x0 + gv, y0 + smpr->r1 + 20, COLORPIP_GREEN, 1);
-
-			if(gv_trace > smpr->gs)
+			// Уровень сигнала
+			colpip_rect(db, x0 + smpr->gs, y0 + smpr->r1 + 5, x0 + gv, y0 + smpr->r1 + 20, COLORPIP_GREEN, 1);
+			// Пиковый уровень сигнала
+			if (gv_trace > gv)
 				colpip_line(db, x0 + gv_trace, y0 + smpr->r1 + 5, x0 + gv_trace, y0 + smpr->r1 + 20, COLORPIP_YELLOW, 0);
 		}
 
@@ -10422,7 +10422,11 @@ board_set_afspechigh(int_fast16_t v)
 void display2_set_smetertype(uint_fast8_t v)
 {
 	ASSERT(v < SMETER_TYPE_COUNT);
-	glob_smetertype = v;
+	if (glob_smetertype != v)
+	{
+		glob_smetertype = v;
+		first_tx = 1;
+	}
 }
 
 #if WITHTOUCHGUI

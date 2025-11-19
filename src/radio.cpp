@@ -4363,14 +4363,6 @@ static const struct paramdefdef xggainnfmrx10 =
 };
 #endif /* WITHIF4DSP */
 
-#if (WITHSWRMTR || WITHSHOWSWRPWR)
-#if WITHAFSPECTRE
-	static uint_fast8_t gsmetertype = SMETER_TYPE_BARS;
-#else
-	static uint_fast8_t gsmetertype = SMETER_TYPE_DIAL;	/* выбор внешнего вида прибора - стрелочный или градусник */
-#endif /* WITHAFSPECTRE */
-#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
-
 #if WITHIFSHIFT
 	enum { IFSHIFTTMIN = 0, IFSHIFTHALF = 3000, IFSHIFTMAX = 2 * IFSHIFTHALF };
 	#if WITHIFSHIFTOFFSET
@@ -6022,7 +6014,14 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 
 #endif /* WITHTX */
 
+
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
+#if WITHAFSPECTRE
+	static uint_fast8_t gsmetertype = SMETER_TYPE_BARS;
+#else
+	static uint_fast8_t gsmetertype = SMETER_TYPE_DIAL;	/* выбор внешнего вида прибора - стрелочный или градусник */
+#endif /* WITHAFSPECTRE */
+
 static size_t getvaltextsmetertype(char * buff, size_t count, int_fast32_t value)
 {
 	static const char msg_dial [] = "DIAL";
@@ -12601,7 +12600,7 @@ updateboard_noui(
 	#endif /* defined (DAC1_TYPE) */
 
 	#if (WITHSWRMTR || WITHSHOWSWRPWR)
-		display2_set_smetertype(gsmetertype);
+		display2_set_smetertype(param_getvalue(& xgsmetertype));
 	#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 		codec1_directupdate();

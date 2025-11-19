@@ -3759,8 +3759,8 @@ void colpip_rect(
 		const uint_fast16_t w = x2 - x1 + 1;	// размер по горизонтали
 		const uint_fast16_t h = y2 - y1 + 1;	// размер по вертикали
 
-		if (w < 3 || h < 3)
-			return;
+//		if (w < 3 || h < 3)
+//			return;
 
 		colpip_fillrect(db, x1, y1, w, h, color);
 	}
