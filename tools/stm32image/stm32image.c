@@ -38,8 +38,10 @@
 	#define ATTRPACKED __attribute__ ((packed))
 #else
 	#define ATTRPACKED
-typedef unsigned int uint32_t;
-typedef unsigned char uint8_t;
+
+	typedef unsigned __int64 uint64_t;
+	typedef unsigned int uint32_t;
+	typedef unsigned char uint8_t;
 
 #endif /* __GNUC__ */
 
@@ -50,9 +52,9 @@ struct stm32_header {
 	uint8_t  header_version [4]; //4
 	uint32_t image_length; //4
 	uint32_t image_entry_point; //4
-	uint32_t reserved1; //4 - high 32 bit for aarch64
+	uint32_t image_entry_point_hi; //4 - high 32 bit for aarch64
 	uint32_t load_address; //4
-	uint32_t reserved2; //4 - high 32 bit for aarch64
+	uint32_t load_address_hi; //4 - high 32 bit for aarch64
 	uint32_t version_number; //4
 	uint32_t option_flags; //4
 	uint32_t ecdsa_algorithm ; //4
@@ -60,6 +62,16 @@ struct stm32_header {
 	uint8_t padding[83] ; //83
 	uint8_t binary_type; //1
 } ATTRPACKED;
+
+static uint32_t low32addr(uint64_t addr)
+{
+	return (uint32_t) (addr >> 0);
+}
+
+static uint32_t high32addr(uint64_t addr)
+{
+	return (uint32_t) (addr >> 32);
+}
 
 static struct stm32_header stm32image_header;
 
@@ -116,14 +128,14 @@ static void stm32image_print_header(const void *ptr)
 }
 
 static void stm32image_set_header(struct stm32_header *stm32hdr, uint32_t image_length, 
-				  uint32_t loadaddr, uint32_t ep, uint32_t ver, uint32_t checksum)
+				  uint64_t loadaddr, uint64_t ep, uint32_t ver, uint32_t checksum)
 {
 	stm32image_default_header(stm32hdr);
 
-	stm32hdr->load_address = __cpu_to_le32(loadaddr);
-	stm32hdr->reserved2 = __cpu_to_le32(0);	// high part
-	stm32hdr->image_entry_point = __cpu_to_le32(ep);
-	stm32hdr->reserved1 = __cpu_to_le32(0);	// high part
+	stm32hdr->load_address = __cpu_to_le32(low32addr(loadaddr));
+	stm32hdr->load_address_hi =  __cpu_to_le32(high32addr(loadaddr));
+	stm32hdr->image_entry_point = __cpu_to_le32(low32addr(ep));
+	stm32hdr->image_entry_point_hi = __cpu_to_le32(high32addr(ep));
 	stm32hdr->image_length = __cpu_to_le32(image_length);
 	stm32hdr->image_checksum = checksum;
 	stm32hdr->version_number = __cpu_to_le32(ver);
@@ -148,7 +160,7 @@ static int stm32image_info_file(const char *srcname)
 }
 
 static int stm32image_create_header_file(const char *srcname, const char *destname,
-					 uint32_t loadaddr, uint32_t entry,
+					 uint64_t loadaddr, uint64_t entry,
 					 uint32_t version)
 {
 	FILE * src_fp;
