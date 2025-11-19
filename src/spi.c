@@ -5952,9 +5952,8 @@ void board_fpga_loader_initialize(void)
 
 #if WITHFPGALOAD_PS
 
-#if ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY
+#if LCDMODE_DUMMY || ! CPUSTYLE_R7S721
 
-/* на процессоре renesas образ располагается в памяти, используемой для хранений буферов DSP части */
 static ALIGNX_BEGIN const uint8_t rbfimage0 [] ALIGNX_END =
 {
 #include BOARD_BITIMAGE_NAME
@@ -5967,7 +5966,7 @@ const uint8_t * getrbfimage(size_t * count)
 	return & rbfimage0 [0];
 }
 
-#endif /* ! (CPUSTYLE_R7S721 || 0) || LCDMODE_DUMMY */
+#endif /* LCDMODE_DUMMY || ! CPUSTYLE_R7S721 */
 
 /* FPGA загружается процессором с помощью SPI */
 static void board_fpga_loader_PS_gated(void)
@@ -5987,7 +5986,8 @@ restart:
 		size_t rbflength;
 		const uint8_t * const rbfbase = getrbfimage(& rbflength);
 		//unsigned score = 0;
-
+		if (rbfbase == NULL || rbflength == 0)
+			break;
 		PRINTF("fpga: board_fpga_loader_PS start\n");
 		/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
 

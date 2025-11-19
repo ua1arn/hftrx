@@ -5255,33 +5255,34 @@ struct ustatesx
 
 static scbfi_t scbf;
 
-#if (CPUSTYLE_R7S721 || 0)
-
-union states
+#if CPUSTYLE_R7S721
+#warning To be done
+static union states
 {
 	struct ustatesx gvarsv;
-	//uint8_t rbfimage_dummy [1];	// для предотвращения ругани компилятора на приведение типов
-};
-
-static const uint8_t rbfimage0 [] =
+	uint8_t rbfimage0 [758554];
+	//uint8_t rbfimage0 [sizeof (struct ustatesx)];
+} uu =
 {
-#include BOARD_BITIMAGE_NAME
+	.rbfimage0 = {
+	#include BOARD_BITIMAGE_NAME
+	}
 };
 
 /* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
 const uint8_t * getrbfimage(size_t * count)
 {
-	ASSERT(sizeof rbfimage0 >= sizeof (union states));
-
-	* count = sizeof rbfimage0 / sizeof rbfimage0 [0];
-	return & rbfimage0 [0];
+//	* count = 0;
+//	return NULL;
+	* count = sizeof uu.rbfimage0 / sizeof uu.rbfimage0 [0];
+	return & uu.rbfimage0 [0];
 }
 
-#define gvars ((* (union states *) rbfimage0).gvarsv)
+#define gvars (uu.gvarsv)
 
 #else /* (CPUSTYLE_R7S721 || 0) */
 
-static RAMBIGDTCM struct ustatesx gvars;
+static struct ustatesx gvars;
 
 #endif /* (CPUSTYLE_R7S721 || 0) */
 
