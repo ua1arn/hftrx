@@ -64,7 +64,7 @@
 		0x18, 0x04, 0x1a
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
-	//#define WITHGPUHW	1	/* Graphic processor unit */
+	//#define WITHGPUHW	1	/* Graphic processor unit - Mali G31 MP2 (Panfrost) */
 
 	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
 	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
@@ -137,7 +137,7 @@
 	#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через интерфйс LVDS	*/
-	//#define WITHGPUHW	1	/* Graphic processor unit */
+	//#define WITHGPUHW	1	/* Graphic processor unit - Mali G31 MP2 (Panfrost)*/
 	#define WITHHDMITVHW 1	/* HDMI hardware output */
 	#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
 #endif
