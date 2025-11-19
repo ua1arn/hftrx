@@ -5805,7 +5805,7 @@ uint_fast16_t approximate(
 		const uint_fast16_t offset = v - left;
 		const uint_fast16_t range = right - left + 1;
 		const uint_fast16_t delta = maximal - minimal + 1;
-		return (uint_fast32_t) offset * delta / range;
+		return (uint_fast32_t) offset * delta / range + minimal;
 	}
 	return angles [n - 1];	// при выходе за максимальное значение - уприраемся в правое значение
 }
