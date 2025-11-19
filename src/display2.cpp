@@ -2088,7 +2088,7 @@ pix_display2_smeter15(const gxdrawb_t * db,
 		uint_fast8_t pathi	// тракт, испольуемый для показа s-метра
 		)
 {
-	smeter_params_t * const smpr = & smprms [glob_smetertype];
+	const smeter_params_t * const smpr = & smprms [glob_smetertype];
 
 	/* получение координат прямоугольника с изображением */
 	const int dial_shift = GRID2Y(2);
