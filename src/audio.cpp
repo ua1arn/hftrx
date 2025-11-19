@@ -3386,10 +3386,9 @@ dsp_getsmeter10(uint_fast16_t * tracemax, uint_fast16_t lower, uint_fast16_t upp
 int_fast16_t dsp_rssi10(int_fast16_t * tracemax, uint_fast8_t pathi)
 {
 	FLOAT_t tmaxf;
-	int level = computeslevel_10(agc_forvard_getstreigthlog10(& tmaxf, pathi));
-	int tmax = computeslevel_10(tmaxf);
-	* tracemax = tmaxf * 10;
-	return level * 10;
+	const int level = computeslevel_10(agc_forvard_getstreigthlog10(& tmaxf, pathi));
+	* tracemax = computeslevel_10(tmaxf);
+	return level;
 }
 
 static FLOAT_t mickecliplevelp [NPROF] = { + 1, + 1 };	/* positive limit */
