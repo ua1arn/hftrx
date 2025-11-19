@@ -5782,19 +5782,10 @@ hardware_txpath_initialize(void)
 
 /* получить значение от АЦП s-метра */
 uint_fast8_t 
-board_getsmeter(uint_fast8_t * tracemax, uint_fast8_t minval, uint_fast8_t maxval, uint_fast8_t clean)
+board_getsmeter(uint_fast8_t * tracemax, uint_fast8_t minval, uint_fast8_t maxval)
 {
 #if WITHBARS || WITHINTEGRATEDDSP
-	#if WITHINTEGRATEDDSP
-		return dsp_getsmeter(tracemax, minval, maxval, clean);
-	#elif WITHCPUADCHW
-		const uint_fast8_t v = board_getadc_filtered_u8(SMETERIX, minval, maxval);
-		* tracemax = v;
-		return v;
-	#else
-		* tracemax = minval;
-		return minval;
-	#endif /* WITHINTEGRATEDDSP */
+	return dsp_getsmeter(tracemax, minval, maxval);
 #else /* WITHBARS || WITHINTEGRATEDDSP */
 	* tracemax = minval;
 	return minval;
@@ -5805,12 +5796,8 @@ board_getsmeter(uint_fast8_t * tracemax, uint_fast8_t minval, uint_fast8_t maxva
 
 uint_fast8_t board_getvox(void)	/* получить значение от детектора VOX 0..UINT8_MAX */
 {
-#if WITHTX && WITHVOX
-	#if WITHINTEGRATEDDSP
-		return dsp_getvox(UINT8_MAX);
-	#else /* WITHINTEGRATEDDSP */
-		return board_getadc_unfiltered_u8(VOXIX, 0, UINT8_MAX);
-	#endif /* WITHINTEGRATEDDSP */
+#if WITHTX && WITHVOX && WITHINTEGRATEDDSP
+	return dsp_getvox(UINT8_MAX);
 #else /* WITHTX && WITHVOX */
 	return 0;
 #endif /* WITHTX && WITHVOX */
@@ -5818,12 +5805,8 @@ uint_fast8_t board_getvox(void)	/* получить значение от дет
 
 uint_fast8_t board_getavox(void)	/* получить значение от детектора Anti-VOX 0..UINT8_MAX */
 {
-#if WITHTX && WITHVOX
-	#if WITHINTEGRATEDDSP
-		return dsp_getavox(UINT8_MAX);
-	#else /* WITHINTEGRATEDDSP */
-		return board_getadc_unfiltered_u8(AVOXIX, 0, UINT8_MAX);
-	#endif /* WITHINTEGRATEDDSP */
+#if WITHTX && WITHVOX && WITHINTEGRATEDDSP
+	return dsp_getavox(UINT8_MAX);
 #else /* WITHTX && WITHVOX */
 	return 0;
 #endif /* WITHTX && WITHVOX */

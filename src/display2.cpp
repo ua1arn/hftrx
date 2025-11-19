@@ -2084,7 +2084,8 @@ pix_display2_smeter15(const gxdrawb_t * db,
 		uint_fast16_t x0,
 		uint_fast16_t y0,
 		uint_fast16_t width,
-		uint_fast16_t height
+		uint_fast16_t height,
+		uint_fast8_t pathi	// тракт, испольуемый для показа s-метра
 		)
 {
 	smeter_params_t * const smpr = & smprms [glob_smetertype];
@@ -2138,13 +2139,13 @@ pix_display2_smeter15(const gxdrawb_t * db,
 	{
 #if WITHRLEDECOMPRESS
 		uint_fast16_t tracemax;
-		uint_fast16_t value = dsp_getsmeter10(& tracemax, 0, UINT8_MAX * 10, 0);
+		uint_fast16_t value = dsp_getsmeter10(& tracemax, 0, UINT8_MAX * 10, pathi);
 		tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
 
 		gv = normalize3(value, (s9level - s9delta) * 10, s9level * 10, (s9level + s9_60_delta) * 10, smpr->gm - smpr->gs, smpr->ge - smpr->gs);
 #else
 		uint_fast8_t tracemax;
-		uint_fast8_t value = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+		uint_fast8_t value = board_getsmeter(& tracemax, 0, UINT8_MAX);
 		tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
 
 		gv =
@@ -2293,7 +2294,8 @@ display2_smeter15(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	pix_display2_smeter15(db, GRID2X(xgrid), GRID2Y(ygrid), GRID2X(xspan), GRID2Y(yspan));
+	const uint_fast8_t pathi = 0;	// тракт, испольуемый для показа s-метра
+	pix_display2_smeter15(db, GRID2X(xgrid), GRID2Y(ygrid), GRID2X(xspan), GRID2Y(yspan), pathi);
 }
 
 #endif /* LCDMODE_LTDC */
@@ -3930,7 +3932,7 @@ static void display_siglevel7(const gxdrawb_t * db,
 {
 #if WITHIF4DSP
 	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX);
 
 	char buf2 [8];
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
@@ -3952,7 +3954,7 @@ static void display2_siglevel4(const gxdrawb_t * db,
 {
 #if WITHIF4DSP
 	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX);
 
 	char buf2 [5];
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
@@ -4000,7 +4002,7 @@ static void display_smeter5(const gxdrawb_t * db,
 {
 #if WITHIF4DSP
 	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX);
 
 	char buf2 [6];
 	const int s9level = - 73;
@@ -8115,7 +8117,7 @@ static void smtr2_draw(lv_smtr2_t * smtr2, const lv_area_t * coords, lv_layer_t 
 	const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);
 	// без возможных тормозов на SPI при чтении
 	uint_fast8_t tracemax;
-	uint_fast8_t smtrvalue = board_getsmeter(&tracemax, 0, UINT8_MAX, 0);
+	uint_fast8_t smtrvalue = board_getsmeter(&tracemax, 0, UINT8_MAX);
 	int_fast32_t gv_pos = gs + normalize31(smtrvalue, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
 	int_fast32_t gv_trace = gs + normalize31(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
 	if (1)
@@ -9040,6 +9042,7 @@ void hftrxgd::get_image_size(const char *src, const char *baseurl, litehtml::siz
 
 void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, const std::string &url, const std::string &base_url)
 {
+	const uint_fast8_t pathi = 0;	// тракт, испольуемый для показа s-метра
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//PRINTF("draw_image: url='%s', base_url='%s'\n", url.c_str(), base_url.c_str());
 	if (0)
@@ -9048,7 +9051,7 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 	}
 	else if (! strcmp(url.c_str(), dzi_smtr2.id))
 	{
-		pix_display2_smeter15(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height);
+		pix_display2_smeter15(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, pathi);
 	}
 	else if (! strcmp(url.c_str(), dzi_freqa.id))
 	{
@@ -9059,7 +9062,7 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 
 		enum { blinkpos = UINT8_MAX, blinkstate = 0 };
 
-		const uint_fast32_t freq = hamradio_get_freq_a();
+		const uint_fast32_t freq = hamradio_get_freq_pathi(pathi);
 
 #if WITHPRERENDER
 		pix_rendered_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
@@ -10087,7 +10090,7 @@ display2_bars_rx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast
 {
 #if WITHBARS
 	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX);
 	display_smeter(db, x, y, v, tracemax, s9level, s9delta, s9_60_delta, colspan, rowspan);
 #endif /* WITHBARS */
 }

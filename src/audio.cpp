@@ -3338,7 +3338,7 @@ static int computeslevel_10(
 /* -73.01dBm == 50 uV rms == S9 */
 /* Вызывается из user-mode программы */
 uint_fast8_t 
-dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper, uint_fast8_t clean)
+dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper)
 {
 	const uint_fast8_t pathi = 0;	// тракт, испольуемый для показа s-метра
 	FLOAT_t tmaxf;
@@ -3362,9 +3362,8 @@ dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper, u
 /* -73.01dBm == 50 uV rms == S9 */
 /* Вызывается из user-mode программы */
 uint_fast16_t
-dsp_getsmeter10(uint_fast16_t * tracemax, uint_fast16_t lower, uint_fast16_t upper, uint_fast8_t clean)
+dsp_getsmeter10(uint_fast16_t * tracemax, uint_fast16_t lower, uint_fast16_t upper, uint_fast8_t pathi)
 {
-	const uint_fast8_t pathi = 0;	// тракт, испольуемый для показа s-метра
 	FLOAT_t tmaxf;
 	int level = upper + computeslevel_10(agc_forvard_getstreigthlog10(& tmaxf, pathi));
 	int tmax = upper + computeslevel_10(tmaxf);
@@ -3381,6 +3380,16 @@ dsp_getsmeter10(uint_fast16_t * tracemax, uint_fast16_t lower, uint_fast16_t upp
 
 	* tracemax = tmax;
 	return level;
+}
+
+/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+int_fast16_t dsp_rssi10(int_fast16_t * tracemax, uint_fast8_t pathi)
+{
+	FLOAT_t tmaxf;
+	int level = computeslevel_10(agc_forvard_getstreigthlog10(& tmaxf, pathi));
+	int tmax = computeslevel_10(tmaxf);
+	* tracemax = tmaxf * 10;
+	return level * 10;
 }
 
 static FLOAT_t mickecliplevelp [NPROF] = { + 1, + 1 };	/* positive limit */

@@ -177,7 +177,7 @@ enum
 };
 
 
-uint_fast8_t board_getsmeter(uint_fast8_t * tracemax, uint_fast8_t minval, uint_fast8_t maxval, uint_fast8_t clean);	/* получить значение от АЦП s-метра */
+uint_fast8_t board_getsmeter(uint_fast8_t * tracemax, uint_fast8_t minval, uint_fast8_t maxval);	/* получить значение от АЦП s-метра */
 
 uint_fast8_t board_getvox(void);	/* получить значение от детектора VOX 0..UINT8_MAX */
 uint_fast8_t board_getavox(void);	/* получить значение от детектора Anti-VOX 0..UINT8_MAX */

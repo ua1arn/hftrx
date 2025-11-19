@@ -15291,7 +15291,7 @@ static void sm0answer(uint_fast8_t arg)
 
 	uint_fast8_t tracemax;
 	const int p1 = 0;
-	const int p2 = gtx ? kenwoodpowermeter() : scaletopointssmeter(board_getsmeter(& tracemax, 0, UINT8_MAX, 0), 0, UINT8_MAX);
+	const int p2 = gtx ? kenwoodpowermeter() : scaletopointssmeter(board_getsmeter(& tracemax, 0, UINT8_MAX), 0, UINT8_MAX);
 
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt0_2,
 		p1,
@@ -15312,7 +15312,7 @@ static void sm9answer(uint_fast8_t arg)
 		";";				// 1 char - line terminator
 
 	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 1);
+	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX);
 
 	// answer mode
 	int level = ((int) v - (int) UINT8_MAX);
@@ -22435,7 +22435,7 @@ int infocb_siglevel(char * b, size_t len, int * pstate)
 {
 #if WITHIF4DSP
 	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
+	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX);
 
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
 	return local_snprintf_P(b, len, PSTR("%-+4d" "dBm"), (int) tracemax - (int) UINT8_MAX);
