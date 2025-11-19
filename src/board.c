@@ -5780,18 +5780,35 @@ hardware_txpath_initialize(void)
 
 #endif /* WITHTX */
 
-/* получить значение от АЦП s-метра */
-uint_fast8_t 
-board_getsmeter(uint_fast8_t * tracemax, uint_fast8_t minval, uint_fast8_t maxval)
+uint_fast16_t approximate(
+	const int16_t * points,		// массив позиций входных значений
+	const uint_fast16_t * angles,		// массив позицый выходных значений
+	unsigned n,					// размерность массивов
+	int_fast16_t v				// значение для анализа
+	)
 {
-#if WITHBARS || WITHINTEGRATEDDSP
-	return dsp_getsmeter(tracemax, minval, maxval);
-#else /* WITHBARS || WITHINTEGRATEDDSP */
-	* tracemax = minval;
-	return minval;
-#endif /* WITHBARS || WITHINTEGRATEDDSP */
+	unsigned i;
+	if (n < 2)
+		return 0;
+	for (i = 0; i < (n - 1); ++ i)
+	{
+		const int_fast16_t left = points [i];
+		const int_fast16_t right = points [i + 1];
+		const uint_fast16_t minimal = angles [i];
+		const uint_fast16_t maximal = angles [i + 1];
+		ASSERT(left < right);
+		ASSERT(minimal < maximal);
+		if (v < left)
+			return minimal;
+		if (v > right)
+			continue;
+		const uint_fast16_t offset = v - left;
+		const uint_fast16_t range = right - left + 1;
+		const uint_fast16_t delta = maximal - minimal + 1;
+		return (uint_fast32_t) offset * delta / range;
+	}
+	return angles [n - 1];	// при выходе за максимальное значение - уприраемся в правое значение
 }
-
 
 
 uint_fast8_t board_getvox(void)	/* получить значение от детектора VOX 0..UINT8_MAX */

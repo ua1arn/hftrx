@@ -2137,22 +2137,42 @@ pix_display2_smeter15(const gxdrawb_t * db,
 	}
 	else
 	{
-#if WITHRLEDECOMPRESS
-		uint_fast16_t tracemax;
-		uint_fast16_t value = dsp_getsmeter10(& tracemax, 0, UINT8_MAX * 10, pathi);
-		tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
+		/* точки на шкале s-метра, к которым надо привязать измеренное значение */
+		static const int16_t smeterpoints [] =
+		{
+			- 1090,	// S3 level -109.0 dBm
+			- 730,	// S9 level -73.0 dBm
+			- 130,	// S9+60 level -13.0 dBm
+		};
 
-		gv = normalize3(value, (s9level - s9delta) * 10, s9level * 10, (s9level + s9_60_delta) * 10, smpr->gm - smpr->gs, smpr->ge - smpr->gs);
-#else
-		uint_fast8_t tracemax;
-		uint_fast8_t value = board_getsmeter(& tracemax, 0, UINT8_MAX);
-		tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
+		/* Значения углов на индикаторе */
+		const uint_fast16_t smeterangles [ARRAY_SIZE(smeterpoints)] =
+		{
+			smpr->gs,	// S3 level -109.0 dBm
+			smpr->gm,	// S9 level -73.0 dBm
+			smpr->ge,	// S9+60 level -13.0 dBm
+		};
+		int_fast16_t tracemaxi10;
+		int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+		gv = approximate(smeterpoints, smeterangles, ARRAY_SIZE(smeterpoints), rssi10);
+		gv_trace = approximate(smeterpoints, smeterangles, ARRAY_SIZE(smeterpoints), tracemaxi10);
 
-		gv =
-			smpr->gs + normalize3(value, 	s9level - s9delta, s9level, s9level + s9_60_delta, smpr->gm - smpr->gs, smpr->ge - smpr->gs);
-		gv_trace =
-			smpr->gs + normalize3(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, smpr->gm - smpr->gs, smpr->ge - smpr->gs);
-#endif
+//#if WITHRLEDECOMPRESS
+//		uint_fast16_t tracemax;
+//		uint_fast16_t value = dsp_getsmeter10(& tracemax, 0, UINT8_MAX * 10, pathi);
+//		tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
+//
+//		gv = normalize3(value, (s9level - s9delta) * 10, s9level * 10, (s9level + s9_60_delta) * 10, smpr->gm - smpr->gs, smpr->ge - smpr->gs);
+//#else
+//		uint_fast8_t tracemax;
+//		uint_fast8_t value = board_getsmeter(& tracemax, 0, UINT8_MAX);
+//		tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
+//
+//		gv =
+//			smpr->gs + normalize3(value, 	s9level - s9delta, s9level, s9level + s9_60_delta, smpr->gm - smpr->gs, smpr->ge - smpr->gs);
+//		gv_trace =
+//			smpr->gs + normalize3(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, smpr->gm - smpr->gs, smpr->ge - smpr->gs);
+//#endif
 
 		first_tx = 1;
 	}
@@ -3931,13 +3951,12 @@ static void display_siglevel7(const gxdrawb_t * db,
 		)
 {
 #if WITHIF4DSP
-	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX);
+	int_fast16_t tracemaxi10;
+	int_fast16_t rssi = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 
 	char buf2 [8];
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
-	local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%-+4d" "dBm", tracemax - UINT8_MAX);
-	(void) v;
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%-+4d" "dBm", (int) (tracemaxi10 / 10));
 	const char * const labels [1] = { buf2, };
 	display2_text(db, x, y, labels, & dbstylev_1statevoltage, 0, xspan, yspan);
 #endif /* WITHIF4DSP */
@@ -3953,13 +3972,12 @@ static void display2_siglevel4(const gxdrawb_t * db,
 		)
 {
 #if WITHIF4DSP
-	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX);
+	int_fast16_t tracemaxi10;
+	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 
 	char buf2 [5];
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
-	int j = local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%-+4d", (int) (tracemax - UINT8_MAX));
-	(void) v;
+	int j = local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%-+4d", (int) (tracemaxi10 / 10));
 	const char * const labels [1] = { buf2, };
 	display2_text(db, x, y, labels, & dbstylev_1statevoltage, 0, xspan, yspan);
 #endif /* WITHIF4DSP */
@@ -4001,54 +4019,53 @@ static void display_smeter5(const gxdrawb_t * db,
 		)
 {
 #if WITHIF4DSP
-	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX);
+	int_fast16_t tracemaxi10;
+	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 
+	const int v = rssi10 / 10;
 	char buf2 [6];
 	const int s9level = - 73;
 	const int s9step = 6;
-	const int alevel = tracemax - UINT8_MAX;
 
-	(void) v;
-	if (alevel < (s9level - s9step * 9))
+	if (v < - 121)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S0   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S0"));
 	}
-	else if (alevel < (s9level - s9step * 7))
+	else if (v < - 115)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S1   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S1"));
 	}
-	else if (alevel < (s9level - s9step * 6))
+	else if (v < - 109)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S2   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S2"));
 	}
-	else if (alevel < (s9level - s9step * 5))
+	else if (v < - 103)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S3   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S3"));
 	}
-	else if (alevel < (s9level - s9step * 4))
+	else if (v < - 97)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S4   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S4"));
 	}
-	else if (alevel < (s9level - s9step * 3))
+	else if (v < - 91)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S5   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S5"));
 	}
-	else if (alevel < (s9level - s9step * 2))
+	else if (v < - 85)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S6   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S6"));
 	}
-	else if (alevel < (s9level - s9step * 1))
+	else if (v < - 79)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S7   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S7"));
 	}
-	else if (alevel < (s9level - s9step * 0))
+	else if (v < - 73)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S8   "));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S8"));
 	}
 	else
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S9+%02d"), alevel - s9level);
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S9+%02d"), v - (- 73));
 	}
 	const char * const labels [1] = { buf2, };
 	display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
@@ -4311,12 +4328,12 @@ static void display2_dummy(const gxdrawb_t * db,
 
 //+++ bars
 
-static uint_fast8_t display_mapbar(
-	uint_fast8_t val,
-	uint_fast8_t bottom, uint_fast8_t top,
-	uint_fast8_t mapleft,
-	uint_fast8_t mapinside,
-	uint_fast8_t mapright
+static int_fast16_t display_mapbar(
+	int_fast16_t val,
+	int_fast16_t bottom, int_fast16_t top,
+	int_fast16_t mapleft,
+	int_fast16_t mapinside,
+	int_fast16_t mapright
 	)
 {
 	if (val < bottom)
@@ -4476,11 +4493,8 @@ static void display_pwrmeter(const gxdrawb_t * db,
 static void display_smeter(const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
-	uint_fast8_t value,		// текущее значение
-	uint_fast8_t tracemax,	// метка запомненного максимума
-	uint_fast8_t level9,	// s9 level
-	uint_fast8_t delta1,	// s9 - s0 delta
-	uint_fast8_t delta2,	// s9+50 - s9 delta
+	int_fast16_t value10,		// текущее значение в dBm
+	int_fast16_t tracemax10,	// метка запомненного максимума в dBm
 	uint_fast8_t colspan,
 	uint_fast8_t rowspan
 	)
@@ -4488,14 +4502,17 @@ static void display_smeter(const gxdrawb_t * db,
 #if WITHBARS
 	gxstyle_t dbstylev;
 	gxstyle_initialize(& dbstylev);
-	tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
+	//tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
 	//delta1 = delta1 > level9 ? level9 : delta1;
 
-	const uint_fast8_t leftmin = level9 - delta1;
-	const uint_fast8_t mapleftval = display_mapbar(value, leftmin, level9, 0, value - leftmin, delta1);
-	const uint_fast8_t mapleftmax = display_mapbar(tracemax, leftmin, level9, delta1, tracemax - leftmin, delta1); // delta1 - invisible
-	const uint_fast8_t maprightval = display_mapbar(value, level9, level9 + delta2, 0, value - level9, delta2);
-	const uint_fast8_t maprightmax = display_mapbar(tracemax, level9, level9 + delta2, delta2, tracemax - level9, delta2); // delta2 - invisible
+	const int_fast16_t leftmin = - 109 * 10;	// S3 = -109.0 dBm
+	const int_fast16_t delta1 = 6 * 10;	// S0..S9
+	const int_fast16_t level9 = - 73 * 10;	// S9 = -73.0 dBm
+	const int_fast16_t delta2 = 60 * 10;	// to S9+60
+	const int_fast16_t mapleftval = display_mapbar(value10, leftmin, level9, 0, value10 - leftmin, delta1);
+	const int_fast16_t mapleftmax = display_mapbar(tracemax10, leftmin, level9, delta1, tracemax10 - leftmin, delta1); // delta1 - invisible
+	const int_fast16_t maprightval = display_mapbar(value10, level9, level9 + delta2, 0, value10 - level9, delta2);
+	const int_fast16_t maprightmax = display_mapbar(tracemax10, level9, level9 + delta2, delta2, tracemax10 - level9, delta2); // delta2 - invisible
 
 	gxstyle_textcolor(& dbstylev, LCOLOR, BGCOLOR);
 	uint_fast16_t ypix;
@@ -8116,8 +8133,8 @@ static void smtr2_draw(lv_smtr2_t * smtr2, const lv_area_t * coords, lv_layer_t 
 	int_fast32_t ge = lv_area_get_width(&smeterbar) - 1;
 	const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);
 	// без возможных тормозов на SPI при чтении
-	uint_fast8_t tracemax;
-	uint_fast8_t smtrvalue = board_getsmeter(&tracemax, 0, UINT8_MAX);
+	int_fast16_t tracemaxi10;
+	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 	int_fast32_t gv_pos = gs + normalize31(smtrvalue, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
 	int_fast32_t gv_trace = gs + normalize31(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
 	if (1)
@@ -10089,9 +10106,9 @@ void
 display2_bars_rx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
 #if WITHBARS
-	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX);
-	display_smeter(db, x, y, v, tracemax, s9level, s9delta, s9_60_delta, colspan, rowspan);
+	int_fast16_t tracemaxi10;
+	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+	display_smeter(db, x, y, rssi10, tracemaxi10, colspan, rowspan);
 #endif /* WITHBARS */
 }
 

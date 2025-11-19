@@ -4097,12 +4097,6 @@ struct nvmap
 
 	uint8_t gattpresh;	/* корректировка показаний с-метра по включенному аттенюатору и предусилителю */
 
-#if WITHBARS
-	uint8_t s9level;			/* уровни калибровки S-метра */
-	uint8_t s9delta;
-	uint8_t s9_60_delta;
-#endif /* WITHBARS */
-
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	uint8_t gsmetertype;		/* выбор внешнего вида прибора - стрелочный или градусник */
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
@@ -5876,17 +5870,6 @@ static uint_fast8_t stayfreq;			/* при изменении режимов кн
 static uint_fast8_t dctxmodecw;	/* при передаче предполагается, что частоты if2 и далее равны 0 - формирование телеграфа на передачу DDS */
 
 #if 1//WITHBARS
-
-	#if WITHINTEGRATEDDSP
-		enum { S9FENCE = - 73 };	// -73.01dBm == 50 uV rms == S9
-		uint_fast8_t s9level = UINT8_MAX + S9FENCE;					/* уровни калибровки S-метра */
-		uint_fast8_t s9delta = (6 * 8);		// 9 баллов - 8 интервалов - по 6 децибел каждый
-		uint_fast8_t s9_60_delta = 60;		// 60 dB
-	#else
-		uint_fast8_t s9level = 88;			/* уровни калибровки S-метра */
-		uint_fast8_t s9delta = 34;
-		uint_fast8_t s9_60_delta = 45;
-	#endif
 
 	uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 32;
 	uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра 1.00 */
@@ -15181,23 +15164,28 @@ static void psanswer(uint_fast8_t arg)
 	cat_answer(len);
 }
 
-// used s9level, s9delta, s9_60_delta values for calculate s-meter points
 static uint_fast8_t
-scaletopointssmeter(
-	uint_fast8_t v,
-	uint_fast8_t minval, uint_fast8_t maxval
-	)
+scaletopointssmeter(void)
 {
 #if WITHBARS
-	const int s0level = s9level - s9delta;
-	const int s9_60level = s9level + s9_60_delta;
+	int_fast16_t tracemaxi10;
+	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+	/* точки на шкале s-метра, к которым надо привязать измеренное значение */
+	static const int16_t smetervalues [] =
+	{
+		- 1090,	// S3 level -109.0 dBm
+		- 730,	// S9 level -73.0 dBm
+		- 130,	// S9+60 level -13.0 dBm
+	};
 
-	if ((int) v < s0level)
-		v = s0level;
-	if ((int) v > s9_60level)
-		v = s9_60level;
-
-	return ((v - s0level) * 30) / (s9delta + s9_60_delta);
+	/* Значения углов на индикаторе */
+	const uint_fast16_t smeterpoints [ARRAY_SIZE(smetervalues)] =
+	{
+		0,	// S3 level -109.0 dBm
+		15,	// S9 level -73.0 dBm
+		30,	// S9+60 level -13.0 dBm
+	};
+	return approximate(smetervalues, smeterpoints, ARRAY_SIZE(smetervalues), tracemaxi10);
 #else
 	return 0;
 #endif
@@ -15289,9 +15277,9 @@ static void sm0answer(uint_fast8_t arg)
 		"%04d"				// 4 chars - s-meter points (0000..0030)
 		";";				// 1 char - line terminator
 
-	uint_fast8_t tracemax;
 	const int p1 = 0;
-	const int p2 = gtx ? kenwoodpowermeter() : scaletopointssmeter(board_getsmeter(& tracemax, 0, UINT8_MAX), 0, UINT8_MAX);
+
+	const int p2 = gtx ? kenwoodpowermeter() : scaletopointssmeter();
 
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt0_2,
 		p1,
@@ -15311,17 +15299,12 @@ static void sm9answer(uint_fast8_t arg)
 		"%+d"				// level in dBm
 		";";				// 1 char - line terminator
 
-	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX);
+	int_fast16_t tracemaxi10;
+	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 
 	// answer mode
-	int level = ((int) v - (int) UINT8_MAX);
-	if (level < - 170)
-		level = - 170;
-	else if (level > 20)
-		level = 20;
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt9_1,
-		(int) level
+		(int) (tracemaxi10 / 10)
 		);
 	cat_answer(len);
 
@@ -22434,11 +22417,11 @@ int infocb_rxbw(char * b, size_t len, int * pstate)
 int infocb_siglevel(char * b, size_t len, int * pstate)
 {
 #if WITHIF4DSP
-	uint_fast8_t tracemax;
-	uint_fast8_t v = board_getsmeter(& tracemax, 0, UINT8_MAX);
+	int_fast16_t tracemaxi10;
+	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
-	return local_snprintf_P(b, len, PSTR("%-+4d" "dBm"), (int) tracemax - (int) UINT8_MAX);
+	return local_snprintf_P(b, len, PSTR("%-+4d" "dBm"), (int) (tracemaxi10 / 10));
 #else
 	return 0;
 #endif

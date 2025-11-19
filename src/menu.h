@@ -3443,39 +3443,6 @@ static const struct menudef menutable [] =
 
 #if WITHBARS
 	(const struct paramdefdef [1]) {
-		QLABEL("S9 LEVEL"), 7, 0, RJ_UNSIGNED, ISTEP1,
-		ITEM_VALUE,
-		1, UINT8_MAX - 1, 
-		OFFSETOF(struct nvmap, s9level),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,			/* калибровка уровней S-метра */
-		& s9level,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("S9 DELTA"), 7, 0, RJ_UNSIGNED, ISTEP1,
-		ITEM_VALUE,
-		1, UINT8_MAX - 1, 
-		OFFSETOF(struct nvmap, s9delta),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,			/* калибровка уровней S-метра */
-		& s9delta,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("+60DELTA"), 7, 0, RJ_UNSIGNED, ISTEP1,
-		ITEM_VALUE,
-		1, UINT8_MAX - 1, 
-		OFFSETOF(struct nvmap, s9_60_delta),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,			/* калибровка уровней S-метра */
-		& s9_60_delta,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
 		QLABEL("ATTPRESH"), 7, 0, RJ_ON,	ISTEP1,	/* attenuator-preamplifier shift */
 		ITEM_VALUE,
 		0, 1,

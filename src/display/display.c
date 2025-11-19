@@ -54,9 +54,9 @@ void display_bar(
 	uint_fast16_t y,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
 	uint_fast8_t rowspan,	/* количество ячеек по вертикали, занимаемых индикатором */
-	uint_fast8_t value,		/* значение, которое надо отобразить */
-	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
-	uint_fast8_t topvalue,	/* значение, соответствующее полностью заполненному индикатору */
+	int_fast16_t value,		/* значение, которое надо отобразить */
+	int_fast16_t tracevalue,		/* значение маркера, которое надо отобразить */
+	int_fast16_t topvalue,	/* значение, соответствующее полностью заполненному индикатору */
 	uint_fast8_t vpattern,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL */
 	uint_fast8_t patternmax,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL - для отображения запомненного значения */
 	uint_fast8_t emptyp,			/* паттерн для заполнения между штрихами */
@@ -67,8 +67,8 @@ void display_bar(
 	ASSERT(tracevalue <= topvalue);
 	const uint_fast16_t wfull = GRID2X(width);
 	const uint_fast16_t h = GRID2Y(rowspan);
-	const uint_fast16_t wpart = (uint_fast32_t) wfull * value / topvalue;
-	const uint_fast16_t wmark = (uint_fast32_t) wfull * tracevalue / topvalue;
+	const uint_fast16_t wpart = (int_fast32_t) wfull * value / topvalue;
+	const uint_fast16_t wmark = (int_fast32_t) wfull * tracevalue / topvalue;
 	const uint_fast8_t hpattern = 0x33;
 
 	colpip_fillrect(db, 	x, y, 			wpart, h, 			dbstyle->textfg);

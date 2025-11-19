@@ -176,12 +176,15 @@ enum
 	DSPCTL_MODE_COUNT
 };
 
-
-uint_fast8_t board_getsmeter(uint_fast8_t * tracemax, uint_fast8_t minval, uint_fast8_t maxval);	/* получить значение от АЦП s-метра */
-
 uint_fast8_t board_getvox(void);	/* получить значение от детектора VOX 0..UINT8_MAX */
 uint_fast8_t board_getavox(void);	/* получить значение от детектора Anti-VOX 0..UINT8_MAX */
 
+uint_fast16_t approximate(
+	const int16_t * points,		// массив позиций входных значений
+	const uint_fast16_t * angles,		// массив позицый выходных значений
+	unsigned n,					// размерность массивов
+	int_fast16_t v				// значение для анализа
+	);
 
 // filters.c interface
 
@@ -3253,9 +3256,9 @@ void spool_0p128(void);	// OPERA support
 #define IF3_FMASK_17P0	(1U << 14)	/* наличие фильтра 17.0 кГц	*/
 #define IF3_FMASK_120P0	(1U << 15)	/* наличие фильтра 120 кГц	*/
 
-extern uint_fast8_t s9level;		/* уровни калибровки S-метра */
-extern uint_fast8_t s9delta;		// 9 баллов - 8 интервалов - по 6 децибел каждый
-extern uint_fast8_t s9_60_delta;		// 60 dB
+//extern uint_fast8_t s9level;		/* уровни калибровки S-метра */
+//extern uint_fast8_t s9delta;		// 9 баллов - 8 интервалов - по 6 децибел каждый
+//extern uint_fast8_t s9_60_delta;		// 60 dB
 extern uint_fast16_t minforward;
 extern uint_fast8_t swrcalibr;
 extern uint_fast8_t maxpwrcali;

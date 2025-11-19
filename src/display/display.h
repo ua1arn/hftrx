@@ -374,9 +374,9 @@ void display_bar(
 	uint_fast16_t ypix,
 	uint_fast8_t width,	/* количество знакомест, занимаемых индикатором */
 	uint_fast8_t rowspan,	/* количество ячеек по вертикали, занимаемых индикатором */
-	uint_fast8_t value,		/* значение, которое надо отобразить */
-	uint_fast8_t tracevalue,		/* значение маркера, которое надо отобразить */
-	uint_fast8_t topvalue,	/* значение, соответствующее полностью заполненному индикатору */
+	int_fast16_t value,		/* значение, которое надо отобразить */
+	int_fast16_t tracevalue,		/* значение маркера, которое надо отобразить */
+	int_fast16_t topvalue,	/* значение, соответствующее полностью заполненному индикатору */
 	uint_fast8_t pattern,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL */
 	uint_fast8_t patternmax,	/* DISPLAY_BAR_HALF или DISPLAY_BAR_FULL - для отображения запомненного значения */
 	uint_fast8_t emptyp,			/* паттерн для заполнения между штрихами */

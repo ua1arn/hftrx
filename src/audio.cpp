@@ -3386,9 +3386,11 @@ dsp_getsmeter10(uint_fast16_t * tracemax, uint_fast16_t lower, uint_fast16_t upp
 int_fast16_t dsp_rssi10(int_fast16_t * tracemax, uint_fast8_t pathi)
 {
 	FLOAT_t tmaxf;
-	const int level = computeslevel_10(agc_forvard_getstreigthlog10(& tmaxf, pathi));
-	* tracemax = computeslevel_10(tmaxf);
-	return level;
+	const int_fast16_t rssi10 = computeslevel_10(agc_forvard_getstreigthlog10(& tmaxf, pathi));
+	int_fast16_t tracemaxi10 = computeslevel_10(tmaxf);
+	tracemaxi10 = rssi10 > tracemaxi10 ? rssi10 : tracemaxi10;	// защита от рассогласования значений
+	* tracemax = tracemaxi10;
+	return rssi10;
 }
 
 static FLOAT_t mickecliplevelp [NPROF] = { + 1, + 1 };	/* positive limit */
