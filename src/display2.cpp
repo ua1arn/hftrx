@@ -1840,8 +1840,9 @@ display2_smeter15_layout(
 	{
 
 	case SMETER_TYPE_DIAL:
-
+		// Фон для TX
 		gxdrawb_initialize(& smbgdb, smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], SM_BG_W, SM_BG_H);
+
 #if WITHRLEDECOMPRESS
 		graw_picture_RLE_buf(& smbgdb, 0, 0, & smeter_bg_new, COLORPIP_BLACK);
 #else
@@ -1877,7 +1878,9 @@ display2_smeter15_layout(
 		colpip_segm(& smbgdb, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeter, 1, 1);
 		colpip_segm(& smbgdb, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORPIP_WHITE, 1, 1);
 #endif /* WITHRLEDECOMPRESS */
+		dcache_clean(smbgdb.cachebase, smbgdb.cachesize);
 
+		// Фон для RX
 		gxdrawb_initialize(& smbgdb, smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], SM_BG_W, SM_BG_H);
 #if WITHRLEDECOMPRESS
 		graw_picture_RLE_buf(& smbgdb, 0, 0, & smeter_bg_new, COLORPIP_BLACK);
@@ -1917,12 +1920,14 @@ display2_smeter15_layout(
 		colpip_segm(& smbgdb, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeterplus, 1, 1);
 		colpip_segm(& smbgdb, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORPIP_WHITE, 1, 1);
 #endif /* WITHRLEDECOMPRESS */
+		dcache_clean(smbgdb.cachebase, smbgdb.cachesize);
 		break;
 
 	default:
 	case SMETER_TYPE_BARS:
 
-		gxdrawb_initialize(& smbgdb, smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], SM_BG_W, SM_BG_H);
+		// Фон для TX
+		gxdrawb_initialize(& smbgdb, smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], SM_BG_W, SM_BG_H);
 
 		colpip_rect(& smbgdb, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_BLACK, 1);
 //		colpip_rect(& smbgdb, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_WHITE, 0);
@@ -1950,7 +1955,9 @@ display2_smeter15_layout(
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
 			colpip_string3_tbg(& smbgdb, markersTX_swr [i] - strwidth3(buf2) / 2, smpr->r2 + 12, buf2, COLORPIP_YELLOW);
 		}
+		dcache_clean(smbgdb.cachebase, smbgdb.cachesize);
 
+		// Фон для RX
 		gxdrawb_initialize(& smbgdb, smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], SM_BG_W, SM_BG_H);
 
 		colpip_rect(& smbgdb, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_BLACK, 1);
@@ -1986,6 +1993,7 @@ display2_smeter15_layout(
 			colpip_line(& smbgdb, markers2R [i], smpr->r1, markers2R [i], smpr->r1 - 5, COLORPIP_RED, 0);
 		}
 
+		dcache_clean(smbgdb.cachebase, smbgdb.cachesize);
 		break;
 	}
 }
@@ -2191,7 +2199,7 @@ pix_display2_smeter15(const gxdrawb_t * db,
 			colpip_bitblt(
 					db->cachebase, db->cachesize,
 					db, x0, y0 + dial_shift,
-					smbgdb.cachebase, smbgdb.cachesize,
+					smbgdb.cachebase, 0*smbgdb.cachesize,
 					& smbgdb,
 					0, 0,	// координаты окна источника
 					SM_BG_W, SM_BG_H - dial_shift, // размер окна источника
@@ -2227,7 +2235,7 @@ pix_display2_smeter15(const gxdrawb_t * db,
 			colpip_bitblt(
 					db->cachebase, db->cachesize,
 					db, x0, y0 + dial_shift,
-					smbgdb.cachebase, smbgdb.cachesize,
+					smbgdb.cachebase, 0*smbgdb.cachesize,
 					& smbgdb,
 					0, 0,	// координаты окна источника
 					SM_BG_W, SM_BG_H - dial_shift, // размер окна источника
@@ -2268,7 +2276,7 @@ pix_display2_smeter15(const gxdrawb_t * db,
 			colpip_bitblt(
 					db->cachebase, db->cachesize,
 					db, x0, y0,
-					smbgdb.cachebase, smbgdb.cachesize,
+					smbgdb.cachebase, 0*smbgdb.cachesize,
 					& smbgdb,
 					0, 0,	// координаты окна источника
 					SM_BG_W, SM_BG_H, // размер окна источника
@@ -2287,7 +2295,7 @@ pix_display2_smeter15(const gxdrawb_t * db,
 			colpip_bitblt(
 					db->cachebase, db->cachesize,
 					db, x0, y0,
-					smbgdb.cachebase, smbgdb.cachesize,
+					smbgdb.cachebase, 0*smbgdb.cachesize,
 					& smbgdb,
 					0, 0,	// координаты окна источника
 					SM_BG_W, SM_BG_H,	// размер окна источника
