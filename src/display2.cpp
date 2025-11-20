@@ -1726,6 +1726,14 @@ typedef struct {
 
 static smeter_params_t smprms [SMETER_TYPE_COUNT];
 
+/* точки на шкале s-метра, к которым надо привязать измеренное значение */
+static const int16_t smeterpointsRX [] =
+{
+	- 1090,	// S3 level -109.0 dBm
+	- 730,	// S9 level -73.0 dBm
+	- 130,	// S9+60 level -13.0 dBm
+};
+
 static void
 display2_smeter15_layout(
 	uint_fast8_t xgrid,
@@ -2124,13 +2132,14 @@ pix_display2_smeter15(const gxdrawb_t * db,
 			gswr_smooth = smpr->gs;
 		}
 
-		const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
-		gp = smpr->gs + normalize(power, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
+		const adcvalholder_t powerV = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
+		gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
 
 		// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
 		// Для тюнера и измерений не годится, для показа - без торомозов.
 		const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале ииндикатора
-		gswr = smpr->gs + normalize(get_swr(swr_fullscale), 0, swr_fullscale, smpr->ge - smpr->gs);
+		const uint_fast16_t swrV = get_swr(swr_fullscale);
+		gswr = smpr->gs + normalize(swrV, 0, swr_fullscale, smpr->ge - smpr->gs);
 
 		if (gp > smpr->gs)
 			gp_smooth = gp;
@@ -2146,42 +2155,27 @@ pix_display2_smeter15(const gxdrawb_t * db,
 	}
 	else
 	{
-		/* точки на шкале s-метра, к которым надо привязать измеренное значение */
-		static const int16_t smeterpoints [] =
-		{
-			- 1090,	// S3 level -109.0 dBm
-			- 730,	// S9 level -73.0 dBm
-			- 130,	// S9+60 level -13.0 dBm
-		};
-
+#if WITHRLEDECOMPRESS
 		/* Значения углов на индикаторе */
-		const uint_fast16_t smeterangles [ARRAY_SIZE(smeterpoints)] =
+		const uint_fast16_t smeteranglesRX [ARRAY_SIZE(smeterpointsRX)] =
 		{
 			smpr->gs,	// S3 level -109.0 dBm
 			smpr->gm,	// S9 level -73.0 dBm
 			smpr->ge,	// S9+60 level -13.0 dBm
 		};
+#else
+		/* Значения углов на индикаторе */
+		const uint_fast16_t smeteranglesRX [ARRAY_SIZE(smeterpointsRX)] =
+		{
+			smpr->gs,	// S3 level -109.0 dBm
+			smpr->gm,	// S9 level -73.0 dBm
+			smpr->ge,	// S9+60 level -13.0 dBm
+		};
+#endif
 		int_fast16_t tracemaxi10;
 		int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
-		gv = approximate(smeterpoints, smeterangles, ARRAY_SIZE(smeterpoints), rssi10);
-		gv_trace = approximate(smeterpoints, smeterangles, ARRAY_SIZE(smeterpoints), tracemaxi10);
-
-//#if WITHRLEDECOMPRESS
-//		uint_fast16_t tracemax;
-//		uint_fast16_t value = dsp_getsmeter10(& tracemax, 0, UINT8_MAX * 10, pathi);
-//		tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
-//
-//		gv = normalize3(value, (s9level - s9delta) * 10, s9level * 10, (s9level + s9_60_delta) * 10, smpr->gm - smpr->gs, smpr->ge - smpr->gs);
-//#else
-//		uint_fast8_t tracemax;
-//		uint_fast8_t value = board_getsmeter(& tracemax, 0, UINT8_MAX);
-//		tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
-//
-//		gv =
-//			smpr->gs + normalize3(value, 	s9level - s9delta, s9level, s9level + s9_60_delta, smpr->gm - smpr->gs, smpr->ge - smpr->gs);
-//		gv_trace =
-//			smpr->gs + normalize3(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, smpr->gm - smpr->gs, smpr->ge - smpr->gs);
-//#endif
+		gv = approximate(smeterpointsRX, smeteranglesRX, ARRAY_SIZE(smeterpointsRX), rssi10);
+		gv_trace = approximate(smeterpointsRX, smeteranglesRX, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
 
 		first_tx = 1;
 	}
