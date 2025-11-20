@@ -1734,6 +1734,8 @@ static const int16_t smeterpointsRX [] =
 	- 130,	// S9+60 level -13.0 dBm
 };
 
+static uint_fast16_t smeteranglesRXTX  [SMETER_TYPE_COUNT] [SM_STATE_COUNT] [ARRAY_SIZE(smeterpointsRX)];
+
 static void
 display2_smeter15_layout(
 	uint_fast8_t xgrid,
@@ -1844,6 +1846,8 @@ display2_smeter15_layout(
 	unsigned p;
 	unsigned i;
 
+	uint_fast16_t * const smeteranglesTX = smeteranglesRXTX [SM_STATE_TX] [smetertype];
+	uint_fast16_t * const smeteranglesRX = smeteranglesRXTX [SM_STATE_RX] [smetertype];
 	switch (smetertype)
 	{
 
@@ -1887,6 +1891,9 @@ display2_smeter15_layout(
 		colpip_segm(& smbgdb, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORPIP_WHITE, 1, 1);
 #endif /* WITHRLEDECOMPRESS */
 		dcache_clean(smbgdb.cachebase, smbgdb.cachesize);
+		smeteranglesTX [0] = smpr->gs;
+		smeteranglesTX [1] = smpr->gm;
+		smeteranglesTX [2] = smpr->ge;
 
 		// Фон для RX
 		gxdrawb_initialize(& smbgdb, smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], SM_BG_W, SM_BG_H);
@@ -1929,6 +1936,9 @@ display2_smeter15_layout(
 		colpip_segm(& smbgdb, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORPIP_WHITE, 1, 1);
 #endif /* WITHRLEDECOMPRESS */
 		dcache_clean(smbgdb.cachebase, smbgdb.cachesize);
+		smeteranglesRX [0] = smpr->gs;
+		smeteranglesRX [1] = smpr->gm;
+		smeteranglesRX [2] = smpr->ge;
 		break;
 
 	default:
@@ -1964,6 +1974,9 @@ display2_smeter15_layout(
 			colpip_string3_tbg(& smbgdb, markersTX_swr [i] - strwidth3(buf2) / 2, smpr->r2 + 12, buf2, COLORPIP_YELLOW);
 		}
 		dcache_clean(smbgdb.cachebase, smbgdb.cachesize);
+		smeteranglesTX [0] = smpr->gs;
+		smeteranglesTX [1] = smpr->gm;
+		smeteranglesTX [2] = smpr->ge;
 
 		// Фон для RX
 		gxdrawb_initialize(& smbgdb, smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], SM_BG_W, SM_BG_H);
@@ -2002,6 +2015,9 @@ display2_smeter15_layout(
 		}
 
 		dcache_clean(smbgdb.cachebase, smbgdb.cachesize);
+		smeteranglesRX [0] = smpr->gs;
+		smeteranglesRX [1] = smpr->gm;
+		smeteranglesRX [2] = smpr->ge;
 		break;
 	}
 }
@@ -2115,10 +2131,13 @@ pix_display2_smeter15(const gxdrawb_t * db,
 
 	const uint_fast8_t is_tx = hamradio_get_tx();
 
-	uint_fast16_t gp = smpr->gs, gv = smpr->gs, gv_trace = smpr->gs, gswr = smpr->gs;
+	uint_fast16_t gp = smpr->gs;
+	uint_fast16_t gv = smpr->gs;
+	uint_fast16_t gv_trace = smpr->gs;
+	uint_fast16_t gswr = smpr->gs;
 
 	//colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x0, y0, x0 + width - 1, y0 + height - 1, COLORPIP_GREEN, 1);
-
+	const uint_fast16_t * const smeterangles = smeteranglesRXTX [is_tx] [glob_smetertype];
 	if (is_tx)
 	{
 		enum { gx_hyst = 3 };		// гистерезис в градусах
@@ -2155,27 +2174,10 @@ pix_display2_smeter15(const gxdrawb_t * db,
 	}
 	else
 	{
-#if WITHRLEDECOMPRESS
-		/* Значения углов на индикаторе */
-		const uint_fast16_t smeteranglesRX [ARRAY_SIZE(smeterpointsRX)] =
-		{
-			smpr->gs,	// S3 level -109.0 dBm
-			smpr->gm,	// S9 level -73.0 dBm
-			smpr->ge,	// S9+60 level -13.0 dBm
-		};
-#else
-		/* Значения углов на индикаторе */
-		const uint_fast16_t smeteranglesRX [ARRAY_SIZE(smeterpointsRX)] =
-		{
-			smpr->gs,	// S3 level -109.0 dBm
-			smpr->gm,	// S9 level -73.0 dBm
-			smpr->ge,	// S9+60 level -13.0 dBm
-		};
-#endif
 		int_fast16_t tracemaxi10;
 		int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
-		gv = approximate(smeterpointsRX, smeteranglesRX, ARRAY_SIZE(smeterpointsRX), rssi10);
-		gv_trace = approximate(smeterpointsRX, smeteranglesRX, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
+		gv = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), rssi10);
+		gv_trace = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
 
 		first_tx = 1;
 	}
