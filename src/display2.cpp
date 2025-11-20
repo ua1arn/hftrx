@@ -1708,6 +1708,14 @@ enum {
 };
 enum { SM_BG_W = GRID2X(15), SM_BG_H = GRID2Y(20) };
 
+/* точки на шкале s-метра, к которым надо привязать измеренное значение */
+static const int16_t smeterpointsRX [] =
+{
+	- 1090,	// S3 level -109.0 dBm
+	- 730,	// S9 level -73.0 dBm
+	- 130,	// S9+60 level -13.0 dBm
+};
+
 typedef ALIGNX_BEGIN PACKEDCOLORPIP_T smeter_bg_t [GXSIZE(SM_BG_W, SM_BG_H)] ALIGNX_END;
 static smeter_bg_t smeter_bg [SMETER_TYPE_COUNT][SM_STATE_COUNT];
 
@@ -1722,19 +1730,10 @@ typedef struct {
 	uint_fast8_t step1;
 	uint_fast8_t step2;
 	uint_fast8_t step3;
+	uint_fast16_t smeteranglesRXTX [SM_STATE_COUNT] [ARRAY_SIZE(smeterpointsRX)];
 } smeter_params_t;
 
 static smeter_params_t smprms [SMETER_TYPE_COUNT];
-
-/* точки на шкале s-метра, к которым надо привязать измеренное значение */
-static const int16_t smeterpointsRX [] =
-{
-	- 1090,	// S3 level -109.0 dBm
-	- 730,	// S9 level -73.0 dBm
-	- 130,	// S9+60 level -13.0 dBm
-};
-
-static uint_fast16_t smeteranglesRXTX  [SMETER_TYPE_COUNT] [SM_STATE_COUNT] [ARRAY_SIZE(smeterpointsRX)];
 
 static void
 display2_smeter15_layout(
@@ -1846,8 +1845,8 @@ display2_smeter15_layout(
 	unsigned p;
 	unsigned i;
 
-	uint_fast16_t * const smeteranglesTX = smeteranglesRXTX [SM_STATE_TX] [smetertype];
-	uint_fast16_t * const smeteranglesRX = smeteranglesRXTX [SM_STATE_RX] [smetertype];
+	uint_fast16_t * const smeteranglesTX = smpr->smeteranglesRXTX [SM_STATE_TX];
+	uint_fast16_t * const smeteranglesRX = smpr->smeteranglesRXTX [SM_STATE_RX];
 	switch (smetertype)
 	{
 
@@ -2123,13 +2122,14 @@ pix_display2_smeter15(const gxdrawb_t * db,
 		)
 {
 	const smeter_params_t * const smpr = & smprms [glob_smetertype];
+	const uint_fast8_t is_tx = hamradio_get_tx();
+	const uint_fast16_t * const smeterangles = smpr->smeteranglesRXTX [is_tx];
 
 	/* получение координат прямоугольника с изображением */
 	const int dial_shift = GRID2Y(2);
 	const int xc = x0 + width / 2;
 	const int yc = y0 + 120 + dial_shift;
 
-	const uint_fast8_t is_tx = hamradio_get_tx();
 
 	uint_fast16_t gp = smpr->gs;
 	uint_fast16_t gv = smpr->gs;
@@ -2137,7 +2137,6 @@ pix_display2_smeter15(const gxdrawb_t * db,
 	uint_fast16_t gswr = smpr->gs;
 
 	//colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x0, y0, x0 + width - 1, y0 + height - 1, COLORPIP_GREEN, 1);
-	const uint_fast16_t * const smeterangles = smeteranglesRXTX [is_tx] [glob_smetertype];
 	if (is_tx)
 	{
 		enum { gx_hyst = 3 };		// гистерезис в градусах
