@@ -179,13 +179,6 @@ enum
 uint_fast8_t board_getvox(void);	/* получить значение от детектора VOX 0..UINT8_MAX */
 uint_fast8_t board_getavox(void);	/* получить значение от детектора Anti-VOX 0..UINT8_MAX */
 
-uint_fast16_t approximate(
-	const int16_t * points,		// массив позиций входных значений
-	const uint_fast16_t * angles,		// массив позицый выходных значений
-	unsigned n,					// размерность массивов
-	int_fast16_t v				// значение для анализа
-	);
-
 // filters.c interface
 
 /* перечисление всех возможных режимов принимаемых приемником.

@@ -1699,6 +1699,39 @@ uint_fast16_t normalize3(
 		return normalize(raw - rawmid, 0, rawmax - rawmid, range2 - range1) + range1;
 }
 
+
+uint_fast16_t approximate(
+	const int16_t * points,		// массив позиций входных значений
+	const uint_fast16_t * angles,		// массив позицый выходных значений
+	unsigned n,					// размерность массивов
+	int_fast16_t v				// значение для анализа
+	)
+{
+	unsigned i;
+	if (n < 2)
+		return 0;
+	for (i = 0; i < (n - 1); ++ i)
+	{
+		const int_fast16_t left = points [i];
+		const int_fast16_t right = points [i + 1];
+		const uint_fast16_t minimal = angles [i];
+		const uint_fast16_t maximal = angles [i + 1];
+		ASSERT(left < right);
+		ASSERT(minimal < maximal);
+		if (v < left)
+			return minimal;
+		if (v > right)
+			continue;
+		const uint_fast16_t offset = v - left;
+		const uint_fast16_t range = right - left + 1;	// диапазон входных значение на данном участке
+		const uint_fast16_t delta = maximal - minimal + 1;	// диапазон выходных значение на данном участке
+		return (uint_fast32_t) offset * delta / range + minimal;
+	}
+	return angles [n - 1];	// при выходе за максимальное значение - уприраемся в правое значение
+}
+
+static uint_fast8_t first_tx = 0;
+
 #if LCDMODE_LTDC && WITHBARS
 
 enum {
@@ -2117,7 +2150,6 @@ static void smeter_arrow(const gxdrawb_t * db, uint_fast16_t target_pixel_x, uin
 	}
 }
 
-static uint_fast8_t first_tx = 0;
 
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
 static void
