@@ -975,16 +975,12 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 
 #endif /* WITHLVGL //&& ! LINUX_SUBSYSTEM */
 
-// Используется при выводе на графический индикатор с кординатами и размерами по сетке
+// Используется при выводе на графический индикатор с кординатами и размерами в пикселях
 void
-display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle)
+pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstyle, const char * s)
 {
 	size_t len;
 	char c;
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
-	const uint_fast16_t h = GRID2Y(yspan);
-	const uint_fast16_t w = GRID2X(xspan);
 	const COLORPIP_T fg = dbstyle->textfg;
 
 	savestring = s;
@@ -1040,6 +1036,17 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 		break;
 	}
 
+}
+
+// Используется при выводе на графический индикатор с кординатами и размерами по сетке
+void
+display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle)
+{
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
+	const uint_fast16_t h = GRID2Y(yspan);
+	const uint_fast16_t w = GRID2X(xspan);
+	pix_display_text(db, xpix, ypix, w, h, dbstyle, s);
 }
 
 static const FLASHMEM int32_t vals10 [] =
