@@ -7479,3 +7479,52 @@ void iq_cic_test(uint32_t val)
 }
 
 #endif /* WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM */
+
+#if 0
+//void chip_t113_id(void)
+//{
+//  uint32_t id[4];
+//    char sid;
+//
+//  id[0] = read32(0x03006200 + 0x0);
+//  id[1] = read32(0x03006200 + 0x4);
+//  id[2] = read32(0x03006200 + 0x8);
+//  id[3] = read32(0x03006200 + 0xc);
+//
+//  PRINTF("ID= %02x-%02x-%02x-%02x \n", id[0], id[1], id[2], id[3]);
+//  //flag_VSync=1;
+//  sprintf(text,"ID=%02x-%02x-%02x-%02x",(int)id[0]>>24, (int)id[1]>>24, (int)id[2]>>24, (int)id[3]>>24);
+//}
+
+#define Vref 1350.f
+
+///LRADC_DATA=Vin/Vref*64
+
+void init_adc(void)
+{
+
+	CCU->GPADC_BGR_REG |= (1uL << 16);///1: De-assert reset  HOSC
+	CCU->GPADC_BGR_REG |= (1uL << 0);///1: Pass clock
+
+	GPADC->GP_SR_CON |= (0x2f << 0);
+	GPADC->GP_CTRL |= (0x2 << 18);///continuous mode
+
+	GPADC->GP_CS_EN |= (1uL << 0);///enable
+
+	GPADC->GP_CTRL |= (1uL << 17);///calibration
+
+	GPADC->GP_CTRL |= (1uL << 16);
+
+	while((GPADC->GP_DATA_INTS)&(1uL << 0))///if 1 complete
+		;
+
+}
+
+void wiev_5v(void)
+{
+  float Vin;
+  ///Vin=GPADC->GP_CH0_DATA*Vref/4095.f*2.8f;///2.8f my divide resistors
+  Vin=GPADC->GP_CH0_DATA;//*Vref/64.f;
+  PRINTF("5V= %d \n",(uint32_t)Vin);
+}
+#endif
