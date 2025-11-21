@@ -27,6 +27,7 @@
 #include "gui_objects.h"
 #include "gui_events.h"
 #include "utils.h"
+#include "gui_port.h"
 
 #if WITHTOUCHGUI
 
@@ -642,12 +643,13 @@ void gui_put_event(gui_event_type type, uint16_t code)
 static void draw_slider(slider_t * sl)
 {
 	window_t * win = get_win(sl->parent);
+	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
 
 	if (sl->orientation)		// ORIENTATION_HORIZONTAL
 	{
 		if (sl->value_old != sl->value)
 		{
-			uint_fast16_t mid_w = sl->y + sliders_scale_thickness / 2;
+			uint16_t mid_w = sl->y + sliders_scale_thickness / 2;
 			sl->value_p = sl->x + sl->size * sl->value / 100;
 			sl->y1_p = mid_w - sliders_w;
 			sl->x1_p = sl->value_p - sliders_h;
@@ -655,16 +657,16 @@ static void draw_slider(slider_t * sl)
 			sl->x2_p = sl->value_p + sliders_h;
 			sl->value_old = sl->value;
 		}
-		colpip_rect(gui.gdb, win->x1 + sl->x, win->y1 + sl->y,  win->x1 + sl->x + sl->size, win->y1 + sl->y + sliders_scale_thickness, COLORPIP_BLACK, 1);
-		colpip_rect(gui.gdb, win->x1 + sl->x, win->y1 + sl->y,  win->x1 + sl->x + sl->size, win->y1 + sl->y + sliders_scale_thickness, COLORPIP_WHITE, 0);
-		colpip_rect(gui.gdb, win->x1 + sl->x1_p, win->y1 + sl->y1_p,  win->x1 + sl->x2_p, win->y1 + sl->y2_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
-		colpip_line(gui.gdb, win->x1 + sl->value_p, win->y1 + sl->y1_p,  win->x1 + sl->value_p, win->y1 + sl->y2_p, COLORPIP_WHITE, 0);
+		__gui_draw_rect(gdb, win->x1 + sl->x, win->y1 + sl->y,  sl->size, sliders_scale_thickness, COLORPIP_BLACK, 1);
+		__gui_draw_rect(gdb, win->x1 + sl->x, win->y1 + sl->y,  sl->size, sliders_scale_thickness, COLORPIP_WHITE, 0);
+		__gui_draw_rect(gdb, win->x1 + sl->x1_p, win->y1 + sl->y1_p,  sl->x2_p - sl->x1_p, sl->y2_p - sl->y1_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
+		__gui_draw_line(gdb, win->x1 + sl->value_p, win->y1 + sl->y1_p,  win->x1 + sl->value_p, win->y1 + sl->y2_p, COLORPIP_WHITE);
 	}
 	else						// ORIENTATION_VERTICAL
 	{
 		if (sl->value_old != sl->value)
 		{
-			uint_fast16_t mid_w = sl->x + sliders_scale_thickness / 2;
+			uint16_t mid_w = sl->x + sliders_scale_thickness / 2;
 			sl->value_p = sl->y + sl->size * sl->value / 100;
 			sl->x1_p = mid_w - sliders_w;
 			sl->y1_p = sl->value_p - sliders_h;
@@ -672,10 +674,10 @@ static void draw_slider(slider_t * sl)
 			sl->y2_p = sl->value_p + sliders_h;
 			sl->value_old = sl->value;
 		}
-		colpip_rect(gui.gdb, win->x1 + sl->x + 1, win->y1 + sl->y + 1, win->x1 + sl->x + sliders_scale_thickness - 1, win->y1 + sl->y + sl->size - 1, COLORPIP_BLACK, 1);
-		colpip_rect(gui.gdb, win->x1 + sl->x, win->y1 + sl->y, win->x1 + sl->x + sliders_scale_thickness, win->y1 + sl->y + sl->size, COLORPIP_WHITE, 0);
-		colpip_rect(gui.gdb, win->x1 + sl->x1_p, win->y1 + sl->y1_p, win->x1 + sl->x2_p, win->y1 + sl->y2_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
-		colpip_line(gui.gdb, win->x1 + sl->x1_p, win->y1 + sl->value_p, win->x1 + sl->x2_p, win->y1 + sl->value_p, COLORPIP_WHITE, 0);
+		__gui_draw_rect(gdb, win->x1 + sl->x + 1, win->y1 + sl->y + 1, sliders_scale_thickness - 1, sl->size - 1, COLORPIP_BLACK, 1);
+		__gui_draw_rect(gdb, win->x1 + sl->x, win->y1 + sl->y, sliders_scale_thickness, sl->size, COLORPIP_WHITE, 0);
+		__gui_draw_rect(gdb, win->x1 + sl->x1_p, win->y1 + sl->y1_p, sl->x2_p - sl->x1_p, sl->y2_p - sl->y1_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
+		__gui_draw_line(gdb, win->x1 + sl->x1_p, win->y1 + sl->value_p, win->x1 + sl->x2_p, win->y1 + sl->value_p, COLORPIP_WHITE);
 	}
 }
 
@@ -694,102 +696,70 @@ static void fill_button_bg_buf(btn_bg_t * v)
 {
 	const uint_fast16_t w = v->w;
 	const uint_fast16_t h = v->h;
-	const size_t s = GXSIZE(w, h) * sizeof (PACKEDCOLORPIP_T);
+	const size_t s = GXSIZE(w, h) * sizeof (gui_color_t);
 
-	v->bg_non_pressed = 	(PACKEDCOLORPIP_T *) malloc(s);
+	v->bg_non_pressed = 	(gui_color_t *) malloc(s);
 	GUI_MEM_ASSERT(v->bg_non_pressed);
-	v->bg_pressed = 		(PACKEDCOLORPIP_T *) malloc(s);
+	v->bg_pressed = 		(gui_color_t *) malloc(s);
 	GUI_MEM_ASSERT(v->bg_pressed);
-	v->bg_locked = 			(PACKEDCOLORPIP_T *) malloc(s);
+	v->bg_locked = 			(gui_color_t *) malloc(s);
 	GUI_MEM_ASSERT(v->bg_locked);
-	v->bg_locked_pressed = 	(PACKEDCOLORPIP_T *) malloc(s);
+	v->bg_locked_pressed = 	(gui_color_t *) malloc(s);
 	GUI_MEM_ASSERT(v->bg_locked_pressed);
-	v->bg_disabled = 		(PACKEDCOLORPIP_T *) malloc(s);
+	v->bg_disabled = 		(gui_color_t *) malloc(s);
 	GUI_MEM_ASSERT(v->bg_disabled);
 
 	{
-		gxdrawb_t butdbv;
-		gxdrawb_initialize(& butdbv, v->bg_non_pressed, w, h);
-		colpip_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
-		colmain_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_NON_LOCKED, 1);
-		colmain_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		colmain_rounded_rect(& butdbv, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		gui_drawbuf_t butdbv;
+		__gui_drawbuf_init(& butdbv, v->bg_non_pressed, w, h);
+		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
+		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_NON_LOCKED, 1);
+		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
+		__gui_draw_rounded_rect(& butdbv, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
 	}
 
 	{
-		gxdrawb_t butdbv;
-		gxdrawb_initialize(& butdbv, v->bg_pressed, w, h);
-		colpip_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
-		colmain_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_NON_LOCKED, 1);
-		colmain_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		colmain_rounded_rect(& butdbv, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		gui_drawbuf_t butdbv;
+		__gui_drawbuf_init(& butdbv, v->bg_pressed, w, h);
+		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
+		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_NON_LOCKED, 1);
+		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
+		__gui_draw_rounded_rect(& butdbv, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
 	}
 
 	{
-		gxdrawb_t butdbv;
-		gxdrawb_initialize(& butdbv, v->bg_locked, w, h);
-		colpip_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
-		colmain_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_LOCKED, 1);
-		colmain_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		colmain_rounded_rect(& butdbv, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		gui_drawbuf_t butdbv;
+		__gui_drawbuf_init(& butdbv, v->bg_locked, w, h);
+		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
+		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_LOCKED, 1);
+		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
+		__gui_draw_rounded_rect(& butdbv, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
 	}
 
 	{
-		gxdrawb_t butdbv;
-		gxdrawb_initialize(& butdbv, v->bg_locked_pressed, w, h);
-		colpip_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
-		colmain_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_LOCKED, 1);
-		colmain_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		colmain_rounded_rect(& butdbv, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		gui_drawbuf_t butdbv;
+		__gui_drawbuf_init(& butdbv, v->bg_locked_pressed, w, h);
+		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
+		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_LOCKED, 1);
+		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
+		__gui_draw_rounded_rect(& butdbv, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
 	}
 
 	{
-		gxdrawb_t butdbv;
-		gxdrawb_initialize(& butdbv, v->bg_disabled, w, h);
-		colpip_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
-		colmain_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_DISABLED, 1);
-		colmain_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		colmain_rounded_rect(& butdbv, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		gui_drawbuf_t butdbv;
+		__gui_drawbuf_init(& butdbv, v->bg_disabled, w, h);
+		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
+		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_DISABLED, 1);
+		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
+		__gui_draw_rounded_rect(& butdbv, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
 	}
-}
-
-static void drawDashedRectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t dashLength)
-{
-    if (width == 0 || height == 0 || dashLength == 0) return;
-
-    const gxdrawb_t * gdb = gui_get_drawbuf();
-    uint16_t x1 = x;
-    uint16_t y1 = y;
-    uint16_t x2 = x + width - 1;
-    uint16_t y2 = y + height - 1;
-    uint16_t pos = 0;
-
-    // Верхняя линия (слева направо)
-    for (uint16_t i = 0; i < width; i ++)
-        if ((pos ++ / dashLength) % 2 == 0)
-        	colpip_point(gdb, x1 + i, y1, COLOR_BLACK);
-
-    // Правая линия (сверху вниз)
-    for (uint16_t i = 1; i < height; i ++)
-        if ((pos ++ / dashLength) % 2 == 0)
-        	colpip_point(gdb, x2, y1 + i, COLOR_BLACK);
-
-    // Нижняя линия (справа налево)
-    for (uint16_t i = 1; i < width; i ++)
-        if ((pos ++ / dashLength) % 2 == 0)
-        	colpip_point(gdb, x2 - i, y2, COLOR_BLACK);
-
-    // Левая линия (снизу вверх)
-    for (uint16_t i = 1; i < height - 1; i ++)
-        if ((pos ++ / dashLength) % 2 == 0)
-        	colpip_point(gdb, x1, y2 - i, COLOR_BLACK);
 }
 
 static void draw_button(const button_t * const bh)
 {
-	PACKEDCOLORPIP_T * bg = NULL;
+	gui_color_t * bg = NULL;
 	window_t * win = get_win(bh->parent);
-	const gxdrawb_t * gdb = gui_get_drawbuf();
+	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
 	uint_fast8_t i = 0;
 	static const char delimeters[] = "|";
 	uint_fast16_t x1 = win->x1 + bh->x1;
@@ -813,14 +783,14 @@ static void draw_button(const button_t * const bh)
 	// если не найден заполненный буфер фона по размерам, программная отрисовка
 	if (b1 == NULL)
 	{
-		PACKEDCOLORPIP_T c1, c2;
+		gui_color_t c1, c2;
 		c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
 
-		colpip_fillrect(gdb, x1 + 1, y1 + 1, bh->w - 1, bh->h - 1, GUI_DEFAULTCOLOR);
-		colmain_rounded_rect(gdb, x1, y1, x1 + bh->w, y1 + bh->h - 2, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
-		colmain_rounded_rect(gdb, x1, y1, x1 + bh->w, y1 + bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		colmain_rounded_rect(gdb, x1 + 2, y1 + 2, x1 + bh->w - 2, y1 + bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		__gui_draw_rect(gdb, x1 + 1, y1 + 1, bh->w - 1, bh->h - 1, GUI_DEFAULTCOLOR, 1);
+		__gui_draw_rounded_rect(gdb, x1, y1, bh->w - 1, bh->h - 2, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
+		__gui_draw_rounded_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
+		__gui_draw_rounded_rect(gdb, x1 + 2, y1 + 2, bh->w - 2, bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
 	}
 	else
 	{
@@ -836,14 +806,9 @@ static void draw_button(const button_t * const bh)
 			bg = b1->bg_non_pressed;
 		ASSERT(bg != NULL);
 
-		gxdrawb_t bgv;
-		gxdrawb_initialize(& bgv, bg, bh->w, bh->h);
-		colpip_bitblt(
-				gdb->cachebase, gdb->cachesize,	// cache parameters
-				gdb, 	// target window
-				x1, y1,	// target position
-				bgv.cachebase, bgv.cachesize, 	// cache parameters
-				& bgv, 0, 0, bh->w, bh->h, BITBLT_FLAG_NONE, 0);
+		gui_drawbuf_t bgv;
+		__gui_drawbuf_init(& bgv, bg, bh->w, bh->h);
+		__gui_drawbuf_copy(gdb, & bgv, x1, y1, bh->w, bh->h);
 	}
 
 	const uint_fast16_t shiftX = bh->state == PRESSED ? 1 : 0;
@@ -853,8 +818,9 @@ static void draw_button(const button_t * const bh)
 	if (strchr(bh->text, delimeters[0]) == NULL)
 	{
 		/* Однострочная надпись */
+		int strlenP = getwidth_Pstring(bh->text, & FONT_BUTTONS);
 		UB_Font_DrawPString(gdb,
-				shiftX + x1 + (bh->w - (getwidth_Pstring(bh->text, & FONT_BUTTONS))) / 2,
+				shiftX + x1 + (bh->w - strlenP) / 2,
 				shiftY + y1 + (bh->h - FONT_BUTTONS.height) / 2,
 				bh->text, & FONT_BUTTONS, textcolor
 				);
@@ -868,22 +834,24 @@ static void draw_button(const button_t * const bh)
 		strcpy(buf, bh->text);
 		char * text2 = strtok_r(buf, delimeters, & next);
 
+		int strlenP = getwidth_Pstring(text2, & FONT_BUTTONS);
 		UB_Font_DrawPString(gdb,
-				shiftX + x1 + (bh->w - (getwidth_Pstring(text2, & FONT_BUTTONS))) / 2,
+				shiftX + x1 + (bh->w - strlenP) / 2,
 				shiftY + y1 + j,
 				text2, & FONT_BUTTONS, textcolor
 				);
 
 		text2 = strtok_r(NULL, delimeters, & next);
+		strlenP = getwidth_Pstring(text2, & FONT_BUTTONS);
 		UB_Font_DrawPString(gdb,
-				shiftX + x1 + (bh->w - getwidth_Pstring(text2, & FONT_BUTTONS)) / 2,
+				shiftX + x1 + (bh->w - strlenP) / 2,
 				shiftY + bh->h + y1 - FONT_BUTTONS.height - j,
 				text2, & FONT_BUTTONS, textcolor
 				);
 	}
 
 	if (bh->is_focus)
-		drawDashedRectangle(x1 + 4, y1 + 4, bh->w - 8, bh->h - 8, 4);
+		gui_drawDashedRectangle(x1 + 4, y1 + 4, bh->w - 8, bh->h - 8, 4);
 }
 
 static void objects_init(void)
@@ -1273,6 +1241,7 @@ void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, ui
 	char buf[TEXT_ARRAY_SIZE];
 	uint_fast8_t str_len = 0;
 	gui.gdb = db;
+	__gui_set_drawbuf(db);
 
 	process_gui();
 
