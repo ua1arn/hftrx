@@ -214,7 +214,7 @@ typedef struct gxstyle_tag
 	PACKEDCOLORPIP_T textfg, textbg;
 	enum gxstyle_texthalign	texthalign;
 	enum gxstyle_textvalign textvalign;
-	uint_fast16_t (* put_char_small)(
+	uint_fast16_t (* font_draw_char)(
 		const gxdrawb_t * db,
 		uint_fast16_t x,
 		uint_fast16_t y,

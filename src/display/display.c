@@ -92,7 +92,7 @@ void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t
 void gxstyle_setsmallfont(gxstyle_t * dbstyle)
 {
 #if defined (SMALLCHARW)
-	dbstyle->put_char_small = colorpip_put_char_small;
+	dbstyle->font_draw_char = colorpip_put_char_small;
 	dbstyle->font_width = smallfont_width;
 	dbstyle->font_height = smallfont_height;
 #endif /* defined (SMALLCHARW) */
@@ -100,7 +100,7 @@ void gxstyle_setsmallfont(gxstyle_t * dbstyle)
 void gxstyle_setsmallfont2(gxstyle_t * dbstyle)
 {
 #if defined (SMALLCHARH2)
-	dbstyle->put_char_small = colorpip_put_char_small2;
+	dbstyle->font_draw_char = colorpip_put_char_small2;
 	dbstyle->font_width = smallfont2_width;
 	dbstyle->font_height = smallfont2_height;
 #endif /* defined (SMALLCHARH2) */
@@ -1043,11 +1043,11 @@ pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, u
 	case GXSTYLE_HALIGN_RIGHT:
 		xpix = textw < w ? xpix + w - textw : xpix;
 		while ((c = * s ++) != '\0' && xpix - xpix0 + dbstyle->font_width(c) <= w)
-			xpix = dbstyle->put_char_small(db, xpix, ypix, c, fg);
+			xpix = dbstyle->font_draw_char(db, xpix, ypix, c, fg);
 		break;
 	case GXSTYLE_HALIGN_LEFT:
 		while ((c = * s ++) != '\0' && xpix - xpix0 + dbstyle->font_width(c) <= w)
-			xpix = dbstyle->put_char_small(db, xpix, ypix, c, fg);
+			xpix = dbstyle->font_draw_char(db, xpix, ypix, c, fg);
 		break;
 	case GXSTYLE_HALIGN_CENTER:
 		// todo: to be implemented
@@ -1367,13 +1367,13 @@ display_value_small(
 		z = 0;
 		if (freq < 0)
 		{
-			xpix = dbstyle->put_char_small(db, xpix, ypix, '-', fg);
+			xpix = dbstyle->font_draw_char(db, xpix, ypix, '-', fg);
 			freq = - freq;
 		}
 		else if (wsign)
-			xpix = dbstyle->put_char_small(db, xpix, ypix, '+', fg);
+			xpix = dbstyle->font_draw_char(db, xpix, ypix, '+', fg);
 		else
-			xpix = dbstyle->put_char_small(db, xpix, ypix, ' ', fg);
+			xpix = dbstyle->font_draw_char(db, xpix, ypix, ' ', fg);
 	}
 	for (; i < j; ++ i)
 	{
@@ -1382,20 +1382,20 @@ display_value_small(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = dbstyle->put_char_small(db, xpix, ypix, (z == 0) ? '.' : ' ', fg);
+			xpix = dbstyle->font_draw_char(db, xpix, ypix, (z == 0) ? '.' : ' ', fg);
 		}
 		else if (comma == g)
 		{
 			z = 0;
-			xpix = dbstyle->put_char_small(db, xpix, ypix, '.', fg);
+			xpix = dbstyle->font_draw_char(db, xpix, ypix, '.', fg);
 		}
 
 		if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = dbstyle->put_char_small(db, xpix, ypix, ' ', fg);	// supress zero
+			xpix = dbstyle->font_draw_char(db, xpix, ypix, ' ', fg);	// supress zero
 		else
 		{
 			z = 0;
-			xpix = dbstyle->put_char_small(db, xpix, ypix, '0' + res.quot, fg);
+			xpix = dbstyle->font_draw_char(db, xpix, ypix, '0' + res.quot, fg);
 		}
 		freq = res.rem;
 	}
