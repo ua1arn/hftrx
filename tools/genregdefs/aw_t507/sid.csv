@@ -1,4 +1,4 @@
-#type; SID
+#type; SID; Security ID
 #base; SID 0x03006000
 
 ## https://github.com/torvalds/linux/blob/master/drivers/nvmem/sunxi_sid.c#L62

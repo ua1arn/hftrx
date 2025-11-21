@@ -224,7 +224,7 @@ typedef enum IRQn
 #define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU Clock Controller Unit (CCU) Base */
 #define DMAC_BASE ((uintptr_t) 0x03002000)            /*!< DMAC  Base */
 #define HSTIMER_BASE ((uintptr_t) 0x03005000)         /*!< HSTIMER High Speed Timer (HSTimer) Base */
-#define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID  Base */
+#define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Security ID Base */
 #define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC  Base */
 #define SPC_BASE ((uintptr_t) 0x03008000)             /*!< SPC  Base */
 #define TIMER_BASE ((uintptr_t) 0x03009000)           /*!< TIMER  Base */
@@ -2662,7 +2662,7 @@ typedef struct R_CAN_Type
 /*
  * @brief SID
  */
-/*!< SID  */
+/*!< SID Security ID */
 typedef struct SID_Type
 {
          RESERVED(0x000[0x0040 - 0x0000], uint8_t)
@@ -3776,7 +3776,7 @@ typedef struct VE_Type
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define HSTIMER ((HSTIMER_TypeDef *) HSTIMER_BASE)    /*!< HSTIMER High Speed Timer (HSTimer) register set access pointer */
-#define SID ((SID_TypeDef *) SID_BASE)                /*!< SID  register set access pointer */
+#define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
 #define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC  register set access pointer */
 #define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC  register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */

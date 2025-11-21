@@ -17305,6 +17305,24 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+   <register>
+    <name>SID_PRCTL</name>
+    <displayName>SID_PRCTL</displayName>
+    <description></description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SID_RDKEY</name>
+    <displayName>SID_RDKEY</displayName>
+    <description></description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
    <cluster>
     <dim>4</dim>
     <addressOffset>0x00000200</addressOffset>

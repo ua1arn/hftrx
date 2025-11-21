@@ -2884,7 +2884,11 @@ typedef struct SID_Type
     __IO uint32_t SID_RKEY3;                          /*!< Offset 0x00C Securiy root key[127:96] */
          RESERVED(0x010[0x0014 - 0x0010], uint8_t)
     __IO uint32_t SID_THS;                            /*!< Offset 0x014 [27:16]: The calibration value of the T-sensor. */
-         RESERVED(0x018[0x0200 - 0x0018], uint8_t)
+         RESERVED(0x018[0x0040 - 0x0018], uint8_t)
+    __IO uint32_t SID_PRCTL;                          /*!< Offset 0x040  */
+         RESERVED(0x044[0x0060 - 0x0044], uint8_t)
+    __IO uint32_t SID_RDKEY;                          /*!< Offset 0x060  */
+         RESERVED(0x064[0x0200 - 0x0064], uint8_t)
     __IO uint32_t SID_DATA [0x004];                   /*!< Offset 0x200 SID data (xfel display as 'sid' replay) */
     __IO uint32_t BOOT_MODE;                          /*!< Offset 0x210 [27:16]: eFUSE boot select status, [0]: 0: GPIO boot select, 1: eFuse boot select */
     __IO uint32_t SID_UNDOC [0x1FB];                  /*!< Offset 0x214  */

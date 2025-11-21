@@ -2970,23 +2970,7 @@ void allwnr_t507_module_pll_enable(volatile uint32_t * ctrlreg, unsigned N)
 	}
 }
 
-//	https://github.com/torvalds/linux/blob/master/drivers/nvmem/sunxi_sid.c#L62
 
-#define SUN8I_SID_OFFSET_MASK	0x1FF
-#define SUN8I_SID_OFFSET_SHIFT	16
-#define SUN8I_SID_OP_LOCK	(0xAC << 8)
-#define SUN8I_SID_READ		(UINT32_C(1) << 1)
-
-uint_fast32_t allwnr_t507_sid_read(unsigned offs)
-{
-	ASSERT(! (offs % 4));
-	SID->SID_PRCTL = ((offs & SUN8I_SID_OFFSET_MASK) << SUN8I_SID_OFFSET_SHIFT) | SUN8I_SID_OP_LOCK | SUN8I_SID_READ;
-	while ((SID->SID_PRCTL & (UINT32_C(1) << 1)) != 0)
-		;
-	const uint_fast32_t val = SID->SID_RDKEY;
-	SID->SID_PRCTL = 0;
-	return val;
-}
 //	#define CHIPID_F133A 		0x5C00
 //	#define CHIPID_T113S3 		0x6000
 //	#define CHIPID_T113M4020DC0 0x7200	// A.K.A. T11-s4
@@ -12046,3 +12030,24 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 }
 
 #endif /* WITHELKEY */
+
+
+#if CPUSTYLE_ALLWINNER && defined (SID)
+//	https://github.com/torvalds/linux/blob/master/drivers/nvmem/sunxi_sid.c#L62
+
+#define SUN8I_SID_OFFSET_MASK	0x1FF
+#define SUN8I_SID_OFFSET_SHIFT	16
+#define SUN8I_SID_OP_LOCK	(0xAC << 8)
+#define SUN8I_SID_READ		(UINT32_C(1) << 1)
+
+uint_fast32_t allwnr_sid_read(unsigned offs)
+{
+	ASSERT(! (offs % 4));
+	SID->SID_PRCTL = ((offs & SUN8I_SID_OFFSET_MASK) << SUN8I_SID_OFFSET_SHIFT) | SUN8I_SID_OP_LOCK | SUN8I_SID_READ;
+	while ((SID->SID_PRCTL & (UINT32_C(1) << 1)) != 0)
+		;
+	const uint_fast32_t val = SID->SID_RDKEY;
+	SID->SID_PRCTL = 0;
+	return val;
+}
+#endif /* CPUSTYLE_ALLWINNER && defined (SID) */
