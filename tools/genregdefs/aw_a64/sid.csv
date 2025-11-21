@@ -6,4 +6,9 @@
 #regdef; SID_RKEY2; 0x008; Securiy root key[95:64]
 #regdef; SID_RKEY3; 0x00C; Securiy root key[127:96]
 
+#regdef; SID_PRCTL; 0x0040;
+#regdef; SID_RDKEY; 0x0060;
+#regdef; SID_DATA; 0x200 256;	SID data (xfel display as 'sid' replay)
+
+#regdef; align 0; 0x1000; set size
 #typeend;

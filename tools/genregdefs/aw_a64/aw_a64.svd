@@ -14355,6 +14355,38 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+   <register>
+    <name>SID_PRCTL</name>
+    <displayName>SID_PRCTL</displayName>
+    <description></description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SID_RDKEY</name>
+    <displayName>SID_RDKEY</displayName>
+    <description></description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>256</dim>
+    <addressOffset>0x00000200</addressOffset>
+    <register>
+     <name>SID_DATA</name>
+     <displayName>SID_DATA</displayName>
+     <description>SID data (xfel display as &apos;sid&apos; replay)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x400</dimIncrement>
+   </cluster>
   </registers>
   </peripheral>
   <peripheral>

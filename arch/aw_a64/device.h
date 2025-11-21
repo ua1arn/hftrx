@@ -2311,7 +2311,14 @@ typedef struct SID_Type
     __IO uint32_t SID_RKEY1;                          /*!< Offset 0x004 Securiy root key[63:32] */
     __IO uint32_t SID_RKEY2;                          /*!< Offset 0x008 Securiy root key[95:64] */
     __IO uint32_t SID_RKEY3;                          /*!< Offset 0x00C Securiy root key[127:96] */
-} SID_TypeDef; /* size of structure = 0x010 */
+         RESERVED(0x010[0x0040 - 0x0010], uint8_t)
+    __IO uint32_t SID_PRCTL;                          /*!< Offset 0x040  */
+         RESERVED(0x044[0x0060 - 0x0044], uint8_t)
+    __IO uint32_t SID_RDKEY;                          /*!< Offset 0x060  */
+         RESERVED(0x064[0x0200 - 0x0064], uint8_t)
+    __IO uint32_t SID_DATA [0x100];                   /*!< Offset 0x200 SID data (xfel display as 'sid' replay) */
+         RESERVED(0x600[0x1000 - 0x0600], uint8_t)
+} SID_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief SMHC
  */
