@@ -65,11 +65,17 @@ void display_uninitialize(void)
 void gxstyle_initialize(gxstyle_t * dbstyle)
 {
 	gxstyle_texthalign(dbstyle, GXSTYLE_HALIGN_RIGHT);
+	gxstyle_textvalign(dbstyle, GXSTYLE_VALIGN_CENTER);
 }
 
-void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_textalign a)
+void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a)
 {
-	dbstyle->textalign = a;
+	dbstyle->texhtalign = a;
+}
+
+void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a)
+{
+	dbstyle->textvalign = a;
 }
 
 uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s)

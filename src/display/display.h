@@ -195,17 +195,25 @@ typedef struct gxdrawb_tag
 void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy);
 void gxdrawb_initlvgl(gxdrawb_t * db, void * layer);
 
-enum gxstyle_textalign
+enum gxstyle_texthalign
 {
 	GXSTYLE_HALIGN_LEFT,
 	GXSTYLE_HALIGN_CENTER,
 	GXSTYLE_HALIGN_RIGHT
 };
 
+enum gxstyle_textvalign
+{
+	GXSTYLE_VALIGN_TOP,
+	GXSTYLE_VALIGN_CENTER,
+	GXSTYLE_VALIGN_BOTTOM
+};
+
 typedef struct gxstyle_tag
 {
 	PACKEDCOLORPIP_T textfg, textbg;
-	enum gxstyle_textalign	textalign;
+	enum gxstyle_texthalign	texthalign;
+	enum gxstyle_textvalign textvalign;
 	uint_fast16_t (* put_char_small)(
 		const gxdrawb_t * db,
 		uint_fast16_t x,
@@ -219,7 +227,8 @@ typedef struct gxstyle_tag
 
 void gxstyle_initialize(gxstyle_t * dbstyle);
 void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg);
-void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_textalign a);
+void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a);
+void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a);
 uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s);
 void gxstyle_setsmallfont(gxstyle_t * dbstyle);
 void gxstyle_setsmallfont2(gxstyle_t * dbstyle);

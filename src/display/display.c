@@ -111,6 +111,7 @@ void gxstyle_initialize(gxstyle_t * dbstyle)
 	gxstyle_textcolor(dbstyle, COLORPIP_WHITE, COLORPIP_BLACK);
 	gxstyle_setsmallfont(dbstyle);
 	gxstyle_texthalign(dbstyle, GXSTYLE_HALIGN_RIGHT);
+	gxstyle_textvalign(dbstyle, GXSTYLE_VALIGN_CENTER);
 }
 
 
@@ -131,9 +132,14 @@ void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg)
 
 }
 
-void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_textalign a)
+void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a)
 {
-	dbstyle->textalign = a;
+	dbstyle->texthalign = a;
+}
+
+void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a)
+{
+	dbstyle->textvalign = a;
 }
 
 uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s)
@@ -1013,13 +1019,25 @@ pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, u
 
 
 	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->textbg);
-	if (h > smallfont_height())
+	switch (dbstyle->textvalign)
 	{
-		ypix += (h - dbstyle->font_height()) / 2;
+	default:
+	case GXSTYLE_VALIGN_CENTER:
+		if (h > smallfont_height())
+			ypix += (h - dbstyle->font_height()) / 2;
+		break;
+	case GXSTYLE_VALIGN_TOP:
+		break;
+
+	case GXSTYLE_VALIGN_BOTTOM:
+		if (h > smallfont_height())
+			ypix += (h - dbstyle->font_height());
+		break;
 	}
+
 	const uint_fast16_t textw = gxstyle_strwidth(dbstyle, s);
 	const uint_fast16_t xpix0 = xpix;
-	switch (dbstyle->textalign)
+	switch (dbstyle->texthalign)
 	{
 	default:
 	case GXSTYLE_HALIGN_RIGHT:
