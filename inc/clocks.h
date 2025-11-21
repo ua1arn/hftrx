@@ -577,6 +577,8 @@ calcdivider(
 	//#warning Undefined CPUSTYLE_XXX
 #endif
 
+void sysinit_pll_initialize(int forced);	// PLL initialize
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

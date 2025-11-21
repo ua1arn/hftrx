@@ -485,7 +485,6 @@ void tickers_initialize(void);
 void tickers_deinitialize(void);
 void spool_systimerbundle(void);
 void spool_elkeybundle(void);
-void sysinit_pll_initialize(int forced);	// PLL initialize
 void sysinit_gpio_initialize(void);	// временная подготовка к работе с gpio.
 void sysinit_pmic_initialize(void);	// инициализация контроллера питания (не только DDR память. бывает и GPIO)
 void hardware_adc_startonescan(void);

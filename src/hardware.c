@@ -3597,6 +3597,13 @@ SystemInit_BOOT0(void)
 
 #endif /* CPUSTYLE_VM14 */
 
+uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
+
+void SystemCoreClockUpdate(void)
+{
+	SystemCoreClock = CPU_FREQ;
+}
+
 #if LINUX_SUBSYSTEM
 // Stub
 void
@@ -3629,7 +3636,11 @@ SystemInit(void)
 	sysinit_smp_initialize();
 	sysinit_perfmeter_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
+#ifdef USE_HAL_DRIVER
+	HAL_Init();
+#endif /* USE_HAL_DRIVER */
 	sysinit_pll_initialize(0);		// PLL iniitialize - minimal freq
+	SystemCoreClockUpdate();
 	local_delay_initialize();
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
@@ -3637,7 +3648,11 @@ SystemInit(void)
 	BOARD_BLINK_INITIALIZE();
 #endif
 	sysinit_pmic_initialize();
+#ifdef USE_HAL_DRIVER
+	HAL_Init();
+#endif /* USE_HAL_DRIVER */
 	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
+	SystemCoreClockUpdate();
 	sysinit_debug_initialize();
 	local_delay_initialize();
 	sysinit_sdram_initialize();

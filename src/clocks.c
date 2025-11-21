@@ -2074,14 +2074,38 @@ void allwnr_v3s_pll_initialize(void)
 	local_delay_us(10);
 }
 
+// Allwinner V3s PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
+
+	{
+		// Disable SD hosts
+
+		CCU->SMHC0_CLK_REG = 0;
+		CCU->SMHC1_CLK_REG = 0;
+		CCU->SMHC2_CLK_REG = 0;
+
+		CCU->SMHC_BGR_REG = 0x0000FFFF;
+		(void) CCU->SMHC_BGR_REG;
+		CCU->SMHC_BGR_REG = 000000000;
+		(void) CCU->SMHC_BGR_REG;
+	}
+	/* Off bootloader USB */
+	{
+//		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
+//		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
+//		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG0_RST
+//
+//		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+//		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RSTN
+	}
+	allwnr_v3s_pll_initialize();
+}
+
 #elif CPUSTYLE_H3
 
 // H3
-void allwnr_h3_pll_initialize(void)
-{
-
-
-}
 
 // H3
 uint_fast32_t allwnr_h3_get_losc_freq(void)
@@ -2183,6 +2207,13 @@ uint_fast32_t allwnr_h3_get_hdmi_freq(void)
 uint_fast32_t allwnr_h3_get_hdmi_slow_freq(void)
 {
 	return allwnr_h3_get_hosc_freq();
+}
+
+// Allwinner H3
+sysinit_pll_initialize(int forced)
+{
+
+
 }
 
 #elif CPUSTYLE_A64
@@ -2885,6 +2916,61 @@ uint_fast32_t allwnr_a64_get_smhc1_freq(void)
 	case 0x02:
 		return allwnr_a64_get_pll_periph1_x2_freq() / (N * M);
 	}
+}
+
+// Allwinner A64 PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
+
+	{
+		// Disable SD hosts
+
+		CCU->SDMMC0_CLK_REG = 0;
+		CCU->SDMMC1_CLK_REG = 0;
+		CCU->SDMMC2_CLK_REG = 0;
+
+//		CCU->SMHC_BGR_REG = 0x0000FFFF;
+//		(void) CCU->SMHC_BGR_REG;
+//		CCU->SMHC_BGR_REG = 000000000;
+//		(void) CCU->SMHC_BGR_REG;
+	}
+	/* Off bootloader USB */
+	CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << 29);	// USB-OHCI0_RST.
+	CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << 25);	// USB-EHCI0_RST.
+
+	CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << 28);	// USB-OTG-OHCI_RST.
+	CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << 24);	// USB-OTG-EHCI_RST
+	CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << 23);	// USB-OTG-Device_RST.
+
+	/* Off host-only USB */
+	CCU->BUS_CLK_GATING_REG0 &= ~ (UINT32_C(1) << 29);	// USBOHCI0_GATING.
+	CCU->BUS_CLK_GATING_REG0 &= ~ (UINT32_C(1) << 25);	// USBEHCI0_GATING.
+
+	CCU->BUS_CLK_GATING_REG0 &= ~ (UINT32_C(1) << 28);	// USB-OTG-OHCI_GATING.
+	CCU->BUS_CLK_GATING_REG0 &= ~ (UINT32_C(1) << 24);	// USB-OTG-EHCI_GATING.
+	CCU->BUS_CLK_GATING_REG0 &= ~ (UINT32_C(1) << 23);	// USB-OTG-Device_GATING.
+
+	CCU->USBPHY_CFG_REG = 0;
+
+	USBPHY0->HCI_ICR = 0;
+	USBPHY1->HCI_ICR = 0;
+
+	allwnr_a64_pll_initialize();
+
+	//	The PLL_PERIPH0(1X) = 24MHz*N*K/2.
+	//	The PLL_PERIPH0(2X) = 24MHz*N*K.
+	allwnr_a64_module_pll_enable(& CCU->PLL_PERIPH0_CTRL_REG);
+	//	The PLL_PERIPH1(1X) = 24MHz*N*K/2.
+	//	The PLL_PERIPH1(2X) = 24MHz*N*K.
+	allwnr_a64_module_pll_enable(& CCU->PLL_PERIPH1_CTRL_REG);
+
+
+	allwnr_a64_module_pll_enable(& CCU->PLL_HSIC_CTRL_REG);
+
+	//CCU->APB2_CFG_REG = 0x02000303;	// PLL_PERIPH0(2X) / 8 / 4 - allwnr_a64_get_apb2_freq()=300 MHz
+	CCU->APB2_CFG_REG = 0x02000307;	// PLL_PERIPH0(2X) / 8 / 5- allwnr_a64_get_apb2_freq()=240 MHz
+	allwnr_a64_mbus_initialize();
 }
 
 #elif CPUSTYLE_T507
@@ -4037,6 +4123,138 @@ uint_fast32_t allwnr_t507_get_smhc2_freq(void)
 	}
 }
 
+// Allwinner T507/H618/H616 PLL initialize
+void sysinit_pll_initialize(int forced)
+{
+	{
+		// Disable SD hosts
+
+		CCU->SMHC0_CLK_REG = 0;
+		CCU->SMHC1_CLK_REG = 0;
+		CCU->SMHC2_CLK_REG = 0;
+
+		CCU->SMHC_BGR_REG = 0x0000FFFF;
+		(void) CCU->SMHC_BGR_REG;
+		CCU->SMHC_BGR_REG = 000000000;
+		(void) CCU->SMHC_BGR_REG;
+	}
+
+	{
+		// Disable XFEL enabled device
+
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG_RST
+		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 8);	// USBOTG_GATING
+	}
+
+	/* IOMMU off */
+	{
+#if ! defined(__aarch64__)
+		IOMMU->IOMMU_RESET_REG &= ~ (UINT32_C(1) << 31);	// IOMMU_RESET
+		IOMMU->IOMMU_ENABLE_REG &= ~ (UINT32_C(1) << 0);	// ENABLE
+#endif
+		CCU->IOMMU_BGR_REG &= ~ (UINT32_C(1) << 0);
+	}
+
+	set_t507_axi_sel(0x00, 1, 1);	// OSC24 as source
+
+	CCU->PSI_AHB1_AHB2_CFG_REG = 0;
+	PRCM->CPUS_CFG_REG = 0;
+	PRCM->APBS1_CFG_REG = 0;
+
+	allwnr_t507_module_pll_spr(& CCU->PLL_PERI0_CTRL_REG, & CCU->PLL_PERI0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+	allwnr_t507_module_pll_enable(& CCU->PLL_PERI0_CTRL_REG, 50);	// No SPR mode: 10.1 !!!! 28.283 !!! увёл поражённую точку с 28.571 МГц на 30.285 МГц
+
+	allwnr_t507_module_pll_spr(& CCU->PLL_PERI1_CTRL_REG, & CCU->PLL_PERI1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+	allwnr_t507_module_pll_enable(& CCU->PLL_PERI1_CTRL_REG, 50);
+
+//	allwnr_t507_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+//	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
+
+//	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG, 99);
+//	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG, 99);
+
+#if WITHGPUHW
+	allwnr_t507_module_pll_spr(& CCU->PLL_GPU0_CTRL_REG, & CCU->PLL_GPU0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+	allwnr_t507_module_pll_enable(& CCU->PLL_GPU0_CTRL_REG, 36);
+#endif /* WITHGPUHW */
+
+	// [02.507]CPU=1008 MHz,PLL6=600 Mhz,AHB=200 Mhz, APB1=100Mhz  MBus=400Mhz
+
+#if 1
+	PRCM->CPUS_CFG_REG =
+		0x03 * (UINT32_C(1) << 24) | // CPUS_CLK_SRC_SEL PLL_PERI0(X1)
+		(0) * (UINT32_C(1) << 8) |	// CLK_DIV_RATIO_N /1
+		(6 - 1) * (UINT32_C(1) << 0) | 	// FACTOR_M /6
+		0;
+	PRCM->APBS1_CFG_REG =
+		(4 - 1) |
+		0;
+#else
+	PRCM->CPUS_CFG_REG = 0;
+	PRCM->APBS1_CFG_REG = 0;
+#endif
+
+	if (forced)
+	{
+		const uint_fast32_t desiredAXIfreq = 600;	// AXI не выше 600 MHz
+		const uint_fast32_t desiredAPBfreq = 400;	// AРB не выше 400 MHz
+		const uint_fast32_t fCPU = (24u * PLL_CPU_N) >> PLL_CPU_P_POW;
+		// Рабочая частота
+		set_t507_pll_cpux(PLL_CPU_N, PLL_CPU_P_POW);
+		unsigned apbDIV = 4;//ulmax(1, ulmin(4, (fCPU + (desiredAPBfreq - 1)) / desiredAPBfreq));	// 1..4
+		unsigned axiDIV = fCPU > 1200 ? 3 : 2;//ulmax(1, ulmin(4, (fCPU + (desiredAXIfreq - 1)) / desiredAXIfreq));	// 1..4	- if CPU_FREQ=1200, axi_freq=600
+		set_t507_axi_sel(0x03, apbDIV, axiDIV);	// 011: PLL_CPUX - CPUX_AXI_CFG_REG
+	}
+	else
+	{
+		set_t507_pll_cpux(17, 0);
+		unsigned apbDIV = 4;	// 1..4
+		unsigned axiDIV = 2;	// 1..4	- if CPU_FREQ=1200, axi_freq=600
+		set_t507_axi_sel(0x03, apbDIV, axiDIV);	// 011: PLL_CPUX - CPUX_AXI_CFG_REG
+	}
+
+
+	// PSI_AHB1_AHB2 CLK = Clock Source/M/N
+	// old default=0x03000102
+	// The default value of PLL_PERI0(2X) is 1.2 GHz. It is not recommended to modify the value
+	// allwnr_t507_get_psi_ahb1_ahb2_freq()=300 MHz
+	// is a peripheral bus interconnect device based on AHB and APB protocol
+	CCU->PSI_AHB1_AHB2_CFG_REG =
+		0x03 * (UINT32_C(1) << 24) |	// 11: PLL_PERI0(1X)
+		(1) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
+		//(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M - AXI divider 1..4
+		0;
+
+	CCU->APB2_CFG_REG =
+		0x03 * (UINT32_C(1) << 24) |	// 11: PLL_PERI0(1X)
+		(0) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
+		(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M 1..4
+		0;
+
+	CCU->MBUS_CFG_REG =
+		(UINT32_C(1) << 31) |	// CLK_GATING
+		(UINT32_C(1) << 30) |	// MBUS_RST
+		0x01 * (UINT32_C(1) << 24) |	// 01: PLL_PERI0(2X)
+		(3 - 1) * (UINT32_C(1) << 0) |	// MBUS freq = 400 MHz (01: PLL_PERI0(2X) / 3)
+		0;
+
+	CCU->APB1_CFG_REG =
+		0x02 * (UINT32_C(1) << 24) |	// 10: PSI
+		(0) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
+		(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M 1..4
+		0;
+
+#if CPUSTYLE_H616
+	CPU_SUBSYS_CTRL_H616->GENER_CTRL_REG1 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
+	CPU_SUBSYS_CTRL_H616->GENER_CTRL_REG1 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
+#else /* CPUSTYLE_H616 */
+	C0_CPUX_CFG->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
+	C0_CPUX_CFG->C0_CTRL_REG0 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
+#endif /* CPUSTYLE_H616 */
+
+}
+
 #elif (CPUSTYLE_A133 || CPUSTYLE_R828)
 
 
@@ -4091,6 +4309,43 @@ uint_fast32_t allwnr_a133_get_twi_freq(void)
 uint_fast32_t allwnr_a133_get_s_twi_freq(void)
 {
 	return allwnr_a133_get_hosc_freq();
+}
+
+// Allwinner A133 PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
+	{
+		// Disable SD hosts
+
+		CCU->SMHC0_CLK_REG = 0;
+		CCU->SMHC1_CLK_REG = 0;
+		CCU->SMHC2_CLK_REG = 0;
+		CCU->SMHC_BGR_REG = 0;
+	}
+
+	{
+		// Disable XFEL enabled device
+
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG_RST
+		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 8);	// USBOTG_GATING
+	}
+
+#if 0
+	set_a133_axi_sel(0x00, 1, 1);	// OSC24 as source
+
+	CCU->PSI_AHB1_AHB2_CFG_REG = 0;
+
+	CCU->MBUS_CFG_REG = 0x80000000;
+	local_delay_ms(1);
+	CCU->MBUS_CFG_REG = 0xC0000000;
+
+	PRCM->CPUS_CFG_REG = 0;
+	PRCM->APBS1_CFG_REG = 0;
+
+	CCU->PLL_DDR_CTRL_REG;
+#endif
 }
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
@@ -5374,7 +5629,41 @@ void allwnr_t113_pll_initialize(int N)
 #endif
 }
 
-#endif /* CPUSTYLE_STM32MP1 */
+// Allwinner T113/F133/D1s PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
+
+	{
+		// Disable SD hosts
+
+		CCU->SMHC0_CLK_REG = 0;
+		CCU->SMHC1_CLK_REG = 0;
+		CCU->SMHC2_CLK_REG = 0;
+
+		CCU->SMHC_BGR_REG = 0x0000FFFF;
+		(void) CCU->SMHC_BGR_REG;
+		CCU->SMHC_BGR_REG = 000000000;
+		(void) CCU->SMHC_BGR_REG;
+	}
+	/* Off bootloader USB */
+	if (1)
+	{
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
+		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG0_RST
+
+		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RSTN
+	}
+#if CPUSTYLE_F133
+	allwnr_t113_pll_initialize(forced ? RV_PLL_CPU_N : 17);
+#else
+	allwnr_t113_pll_initialize(forced ? PLL_CPU_N : 17);
+#endif
+}
+
+#endif
 
 
 #if CPUSTYLE_VM14
@@ -5610,6 +5899,19 @@ void vm14_pll_initialize(void)
 #endif
 }
 
+// 1892ВМ14Я PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
+	/* 1892ВМ14Я */
+
+	PMCTR->CORE_PWR_UP = 1;
+	CMCTR->GATE_CORE_CTR |= (UINT32_C(1) << 0);	// L0_EN
+	CMCTR->GATE_SYS_CTR |= (UINT32_C(1) << 0);	// SYS_EN - Разрешение для тактовых частот L1_HCLK, L3_PCLK и связанных с ними частот
+
+	vm14_pll_initialize();
+}
+
 #endif /* CPUSTYLE_VM14 */
 
 // ATMega32 timers:
@@ -5660,88 +5962,124 @@ void vm14_pll_initialize(void)
 
 #elif CPUSTYLE_R7S721
 
-	/* для устройств тактирующихся от P0 clock */
-	static uint_fast32_t
-	calcdivround_p0clock(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
-		)
+/* для устройств тактирующихся от P0 clock */
+static uint_fast32_t
+calcdivround_p0clock(
+	uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+	)
+{
+	return calcdivround2(P0CLOCK_FREQ, freq);
+}
+
+/* для устройств тактирующихся от P1 clock */
+uint_fast32_t
+calcdivround_p1clock(
+	uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+	)
+{
+	return calcdivround2(P1CLOCK_FREQ, freq);
+}
+
+
+/*******************************************************************************
+* Function Name: r7s721_pll_initialize
+* Description  : Executes initial setting for the CPG.
+*              : In the sample code, the internal clock ratio is set to be
+*              : I:G:B:P1:P0 = 30:20:10:5:5/2 in the state that the
+*              : clock mode is 0. The frequency is set to be as below when the
+*              : input clock is 13.33MHz.
+*              : CPU clock (I clock)              : 400MHz
+*              : Image processing clock (G clock) : 266.67MHz
+*              : Internal bus clock (B clock)     : 133.33MHz
+*              : Peripheral clock1 (P1 clock)     : 66.67MHz
+*              : Peripheral clock0 (P0 clock)     : 33.33MHz
+*              : Sets the data-retention RAM area (H'2000 0000 to H'2001 FFFF)
+*              : to be enabled for writing.
+* Arguments    : none
+* Return Value : none
+*******************************************************************************/
+static
+void r7s721_pll_initialize(void)
+{
+	/* Cancel L2C standby status before clock change */
+	L2CREG15_POWER_CTRL = 0x00000001;
+	(void) L2CREG15_POWER_CTRL;
+
+	/* standby_mode_en bit of Power Control Register setting */
+	//*(volatile uint32_t *)(0x3fffff80) = 0x00000001;
+	//(void) *(volatile uint32_t *)(0x3fffff80);
+
+	/* ==== CPG Settings ==== */
+
+	/* PLL(x30), I:G:B:P1:P0 = 30:20:10:5:5/2 */
+	//CPG.FRQCR  = 0x1035u;
+	CPG.FRQCR =
+		CPG_FRQCR_CKOEN |	/* CKIO pin: Output off (Hi-Z) */
+		0x35 |	/* reserved bits state */
+		0;
+	(void) CPG.FRQCR;
+
+	/* CKIO:Output at time usually output     *
+	 * when bus right is opened output at     *
+	 * standby "L"                            *
+	 * Clockin  = 13.33MHz, CKIO = 66.67MHz,  *
+	 * I  Clock = 400.00MHz,                  *
+	 * G  Clock = 266.67MHz,                  *
+	 * B  Clock = 133.33MHz,                  *
+	 * P1 Clock =  66.67MHz,                  *
+	 * P0 Clock =  33.33MHz                   */
+
+	/* CKIO:Output at time usually output     *
+	 * when bus right is opened output at     *
+	 * standby "L"                            *
+	 * Clockin  = 12.00MHz, CKIO = 60.0MHz,  *
+	 * I  Clock = 360.00MHz,                  *
+	 * G  Clock = 240.00MHz,                  *
+	 * B  Clock = 120.00MHz,                  *
+	 * P1 Clock =  60.00MHz,                  *
+	 * P0 Clock =  30.00MHz                   */
+
+#if ((TARGET_RZA1 == TARGET_RZA1H) || (TARGET_RZA1 == TARGET_RZA1M))
+	CPG.FRQCR2 = 0x0001u;
+#endif
+}
+
+// r7s721 PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
+
+#if WITHISBOOTLOADER
+	r7s721_pll_initialize();
+#endif /* WITHISBOOTLOADER */
+	// Программа исполняется из SERIAL FLASH - переключать режимы пока нельзя.
+	//while ((SPIBSC0.CMNSR & (UINT32_C(1) << 0)) == 0)	// TEND bit
+	//	;
+	//SPIBSC0.SSLDR = 0x00;
+	//SPIBSC0.SPBCR = 0x200;
+	//SPIBSC0.DRCR = 0x0100;
+
+//	/* Установить скорость обмена с SERIAL FLASH повыше */
+//	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)
+//	{
+//		SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
+//			(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
+//			(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
+//			0;
+//	}
+
+#if WITHISBOOTLOADER
 	{
-		return calcdivround2(P0CLOCK_FREQ, freq);
+		/* ----  Writing to On-Chip Data-Retention RAM is enabled. ---- */
+		// Нельзя отключить - т.к. r7s721_ttb_map работает со страницами по 1 мегабайту
+		// Нельзя отключить - botloader не может загрузить программу на выполнение по DFU.
+		// Странно, почему? Судя по описанию, области перекрываются...
+		CPG.SYSCR3 |= (CPG_SYSCR3_RRAMWE3 | CPG_SYSCR3_RRAMWE2 | CPG_SYSCR3_RRAMWE1 | CPG_SYSCR3_RRAMWE0);
+		(void) CPG.SYSCR3;
 	}
-
-	/* для устройств тактирующихся от P1 clock */
-	uint_fast32_t
-	calcdivround_p1clock(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
-		)
-	{
-		return calcdivround2(P1CLOCK_FREQ, freq);
-	}
-
-
-	/*******************************************************************************
-	* Function Name: r7s721_pll_initialize
-	* Description  : Executes initial setting for the CPG.
-	*              : In the sample code, the internal clock ratio is set to be
-	*              : I:G:B:P1:P0 = 30:20:10:5:5/2 in the state that the
-	*              : clock mode is 0. The frequency is set to be as below when the
-	*              : input clock is 13.33MHz.
-	*              : CPU clock (I clock)              : 400MHz
-	*              : Image processing clock (G clock) : 266.67MHz
-	*              : Internal bus clock (B clock)     : 133.33MHz
-	*              : Peripheral clock1 (P1 clock)     : 66.67MHz
-	*              : Peripheral clock0 (P0 clock)     : 33.33MHz
-	*              : Sets the data-retention RAM area (H'2000 0000 to H'2001 FFFF)
-	*              : to be enabled for writing.
-	* Arguments    : none
-	* Return Value : none
-	*******************************************************************************/
-	static
-	void r7s721_pll_initialize(void)
-	{
-	    /* Cancel L2C standby status before clock change */
-	    L2CREG15_POWER_CTRL = 0x00000001;
-		(void) L2CREG15_POWER_CTRL;
-
-	    /* standby_mode_en bit of Power Control Register setting */
-	    //*(volatile uint32_t *)(0x3fffff80) = 0x00000001;
-	    //(void) *(volatile uint32_t *)(0x3fffff80);
-
-	    /* ==== CPG Settings ==== */
-
-	    /* PLL(x30), I:G:B:P1:P0 = 30:20:10:5:5/2 */
-	    //CPG.FRQCR  = 0x1035u;
-	    CPG.FRQCR =
-	    	CPG_FRQCR_CKOEN |	/* CKIO pin: Output off (Hi-Z) */
-	    	0x35 |	/* reserved bits state */
-			0;
-		(void) CPG.FRQCR;
-
-	    /* CKIO:Output at time usually output     *
-	     * when bus right is opened output at     *
-	     * standby "L"                            *
-		 * Clockin  = 13.33MHz, CKIO = 66.67MHz,  *
-		 * I  Clock = 400.00MHz,                  *
-		 * G  Clock = 266.67MHz,                  *
-		 * B  Clock = 133.33MHz,                  *
-		 * P1 Clock =  66.67MHz,                  *
-		 * P0 Clock =  33.33MHz                   */
-
-	    /* CKIO:Output at time usually output     *
-	     * when bus right is opened output at     *
-	     * standby "L"                            *
-		 * Clockin  = 12.00MHz, CKIO = 60.0MHz,  *
-		 * I  Clock = 360.00MHz,                  *
-		 * G  Clock = 240.00MHz,                  *
-		 * B  Clock = 120.00MHz,                  *
-		 * P1 Clock =  60.00MHz,                  *
-		 * P0 Clock =  30.00MHz                   */
-
-	#if ((TARGET_RZA1 == TARGET_RZA1H) || (TARGET_RZA1 == TARGET_RZA1M))
-	    CPG.FRQCR2 = 0x0001u;
-	#endif
-	}
-
+#endif /* WITHISBOOTLOADER */
+	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
+}
 
 
 #else
@@ -6991,6 +7329,21 @@ uint_fast32_t hardware_get_dotclock(uint_fast32_t dotfreq)
 {
 	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
 	return stm32mp1_get_pll4_freq() / pll4divq;
+}
+
+// STM32MP1 PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
+
+#if WITHISBOOTLOADER
+	// PLL только в bootloader.
+	// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
+	stm32mp1_pll_initialize();
+#endif /* WITHISBOOTLOADER */
+
+	stm32mp1_usb_clocks_initialize();
+	stm32mp1_audio_clocks_initialize();
 }
 
 #endif /* CPUSTYLE_STM32MP1 */
@@ -9465,55 +9818,84 @@ void hardware_set_dotclock(uint_fast32_t dotfreq)
 #endif
 }
 
-#endif /* CPUSTYLE_XC7Z  && ! LINUX_SUBSYSTEM */
-
-uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
-
-// PLL initialize
+// ZYNQ 7000 PLL initialize
 void
 sysinit_pll_initialize(int forced)
 {
-#ifdef USE_HAL_DRIVER
-	HAL_Init();
-#endif /* USE_HAL_DRIVER */
-#if CPUSTYLE_STM32F1XX
+#if WITHISBOOTLOADER
 
-	lowlevel_stm32f10x_pll_clock();
-	if (1)
-	{
-		// PC13, PC14 and PC15 as the common IO:
-		RCC->APB1ENR |=  RCC_APB1ENR_BKPEN;     // включить тактирование Backup interface
-		__DSB();
+if (! forced)
+{
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (UINT32_C(1) << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
+	SCLR->FPGA_RST_CTRL	= 0xF;	// Assert FPGA top-level output resets.
+	SCLR->LVL_SHFTR_EN 	= 0;	// Disable the level shifters.
 
-		PWR->CR |= PWR_CR_DBP; // cancel the backup area write protection
-		//RCC->BDCR &= ~ RCC_BDCR_LSEON; // close external low-speed oscillator, PC14, PC15 as ordinary IO
-		BKP->CR &= ~ BKP_CR_TPE; // TAMPER pin; intrusion detection (PC13) used as a universal IO port
-		PWR->CR &= ~ PWR_CR_DBP; // backup area write protection </span>
+	// Нельзя - перестает работать DEBUG
+	//SCLR->APER_CLK_CTRL = 0;	// All AMBA Clock control disable
 
-		RCC->APB1ENR &=  ~ RCC_APB1ENR_BKPEN;     // выключить тактирование Backup interface
-		__DSB();
-	}
+	// PLL только в bootloader.
+	// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
 
-	cpu_stm32f1xx_setmapr(0);	/* переключить отладочный интерфейс в SWD */
-	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     //включить тактирование power management
-	(void) RCC->APB1ENR;
-	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_2V8 | PWR_CR_PVDE;
+	xc7z_arm_pll_initialize();
+	xc7z_ddr_pll_initialize();
+	xc7z_io_pll_initialize();
 
-#elif CPUSTYLE_STM32F4XX
 
-	stm32f4xx_pll_initialize();
-	stm32f4xx_MCOx_test();
-	stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	XDCFG->CTRL &= ~ (UINT32_C(1) << 29);	// PCFG_POR_CNT_4K
 
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
-	(void) RCC->APB1ENR;
+	////EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
 
-	#if WITHUSESAIPLL
-		stm32f4xx_pllsai_initialize();
-	#endif /* WITHUSESAIPLL */
+	// PL Clock 0 Output control
+	SCLR->FPGA0_CLK_CTRL = (SCLR->FPGA0_CLK_CTRL & ~ (0x03F03F30U)) |
+			((uint_fast32_t) SCLR_FPGA0_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+			((uint_fast32_t) SCLR_FPGA0_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+			0;
 
-#elif CPUSTYLE_STM32H7XX
+	// PL Clock 1 Output control
+	SCLR->FPGA1_CLK_CTRL = (SCLR->FPGA1_CLK_CTRL & ~ (0x03F03F30U)) |
+			((uint_fast32_t) SCLR_FPGA1_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+			((uint_fast32_t) SCLR_FPGA1_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+			0;
+
+	// PL Clock 2 Output control
+	SCLR->FPGA2_CLK_CTRL = (SCLR->FPGA2_CLK_CTRL & ~ (0x03F03F30U)) |
+			((uint_fast32_t) SCLR_FPGA2_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+			((uint_fast32_t) SCLR_FPGA2_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+			0;
+
+	// PL Clock 3 Output control
+	SCLR->FPGA3_CLK_CTRL = (SCLR->FPGA3_CLK_CTRL & ~ (0x03F03F30U)) |
+			((uint_fast32_t) SCLR_FPGA3_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+			((uint_fast32_t) SCLR_FPGA3_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+			0;
+
+	////EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
+	SCLR->CLK_621_TRUE = (SCLR->CLK_621_TRUE & ~ (0x00000001U)) |
+			0x00000001U |
+			0;
+
+	SCLR->APER_CLK_CTRL |= (UINT32_C(1) << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
+}
+local_delay_initialize();
+local_delay_ms(50);
+
+#endif /* WITHISBOOTLOADER */
+}
+
+#endif /* CPUSTYLE_XC7Z  && ! LINUX_SUBSYSTEM */
+
+#if CPUSTYLE_STM32H7XX
+
+// STM32H7xx PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
 
 	stm32h7xx_pll_initialize();
 	stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
@@ -9547,8 +9929,15 @@ sysinit_pll_initialize(int forced)
 	#if WITHUSESAIPLL
 		stm32h7xx_pllsai_initialize();
 	#endif /* WITHUSESAIPLL */
+}
+#endif /* CPUSTYLE_STM32H7XX */
 
-#elif CPUSTYLE_STM32F7XX
+#if CPUSTYLE_STM32F7XX
+
+// STM32F7xx PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
 
 	stm32f7xx_pll_initialize();
 	stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
@@ -9559,510 +9948,13 @@ sysinit_pll_initialize(int forced)
 	RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
 	(void) RCC->APB1ENR;
 
-#elif CPUSTYLE_STM32F30X
-
-	stm32f30x_pll_clock();
-	stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-
-	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
-	(void) RCC->APB1ENR;
-	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
-
-#elif CPUSTYLE_STM32F0XX
-
-	stm32f0xx_pll_clock();
-	//stm32f0xx_hsi_clock();
-
-	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
-	(void) RCC->APB1ENR;
-	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
-
-#elif CPUSTYLE_STM32L0XX
-
-// Плата с процессором STM32L051K6T (TQFP-32)
-
-	#if ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
-		// power on bit
-		{
-			enum { WORKMASK = UINT32_C(1) << 11 };	/* PA11 */
-			arm_hardware_pioa_outputs(WORKMASK, WORKMASK * (1 != 0));
-
-		}
-	#endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
-	//lowlevel_stm32l0xx_pll_clock();
-	lowlevel_stm32l0xx_hsi_clock();
-
-	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
-	(void) RCC->APB1ENR;
-	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
-
-#elif CPUSTYLE_ATSAM3S
-
-	// Disable Watchdog
-	WDT->WDT_MR = WDT_MR_WDDIS;
-	sam3s_init_clock_12_RC12();	// программирует на работу от 12 МГц RC - для ускорения работы.
-	// только из SRAM
-	arm_cpu_atsam3s_pll_initialize();
-
-#elif CPUSTYLE_ATSAM4S
-
-	// Disable Watchdog
-	WDT->WDT_MR = WDT_MR_WDDIS;
-	sam4s_init_clock_12_RC12();	// программирует на работу от 12 МГц RC - для ускорения работы.
-	// только из SRAM
-	arm_cpu_atsam4s_pll_initialize();
-
-#elif CPUSTYLE_AT91SAM7S
-
-	// Disable Watchdog
-	AT91C_BASE_WDTC->WDTC_WDMR = AT91C_WDTC_WDDIS;
-
-	// Enable NRST input. Требуется для удобства при отладке.
-	AT91C_BASE_RSTC->RSTC_RMR = AT91C_RSTC_URSTEN | (AT91C_RSTC_KEY & (0xA5UL << 24));
-
-	// init clock sources and memory timings
-	// use one of alternatives
-	//
-
-	#if CPU_FREQ == 48000000UL
-		sam7s_pll_init_clock_xtal(8, 1);
-	#elif CPU_FREQ == ((18432000UL * 73) / 14 / 2)
-		sam7s_pll_init_clock_xtal(73, 14);
-	#elif CPU_FREQ == 12000000UL
-		sam7s_pll_init_clock_from_xtal();
-	#else
-		#error Unsupported CPU_FREQ value
-	#endif
-
-	usb_disable();
-
-#elif CPUSTYLE_AT91SAM9XE
-
-	// Disable Watchdog
-	AT91C_BASE_WDTC->WDTC_WDMR = AT91C_WDTC_WDDIS;
-
-	// Enable NRST input. Требуется для удобства при отладке.
-	AT91C_BASE_RSTC->RSTC_RMR = AT91C_RSTC_URSTEN | (AT91C_RSTC_KEY & (0xA5UL << 24));
-
-	at91sam9x_pll_initialize(96, 9);
-	//at91sam9x_pll_48x4_initialize();
-
-	//cp15_enable_i_cache();
-	__set_SCTLR(__get_SCTLR() | SCTLR_I_Msk);
-
-	usb_disable();
-
-#elif CPUSTYLE_R7S721
-
-#if WITHISBOOTLOADER
-	r7s721_pll_initialize();
-#endif /* WITHISBOOTLOADER */
-	// Программа исполняется из SERIAL FLASH - переключать режимы пока нельзя.
-	//while ((SPIBSC0.CMNSR & (UINT32_C(1) << 0)) == 0)	// TEND bit
-	//	;
-	//SPIBSC0.SSLDR = 0x00;
-	//SPIBSC0.SPBCR = 0x200;
-	//SPIBSC0.DRCR = 0x0100;
-
-//	/* Установить скорость обмена с SERIAL FLASH повыше */
-//	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)
-//	{
-//		SPIBSC0.SPBCR = (SPIBSC0.SPBCR & ~ (SPIBSC_SPBCR_BRDV | SPIBSC_SPBCR_SPBR)) |
-//			(0 << SPIBSC_SPBCR_BRDV_SHIFT) |	// 0..3
-//			(2 << SPIBSC_SPBCR_SPBR_SHIFT) |	// 0..255
-//			0;
-//	}
-
-#if WITHISBOOTLOADER
-	{
-		/* ----  Writing to On-Chip Data-Retention RAM is enabled. ---- */
-		// Нельзя отключить - т.к. r7s721_ttb_map работает со страницами по 1 мегабайту
-		// Нельзя отключить - botloader не может загрузить программу на выполнение по DFU.
-		// Странно, почему? Судя по описанию, области перекрываются...
-		CPG.SYSCR3 |= (CPG_SYSCR3_RRAMWE3 | CPG_SYSCR3_RRAMWE2 | CPG_SYSCR3_RRAMWE1 | CPG_SYSCR3_RRAMWE0);
-		(void) CPG.SYSCR3;
-	}
-#endif /* WITHISBOOTLOADER */
-	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
-
-#elif CPUSTYLE_STM32MP1
-
-	#if WITHISBOOTLOADER
-		// PLL только в bootloader.
-		// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
-		stm32mp1_pll_initialize();
-	#endif /* WITHISBOOTLOADER */
-
-	stm32mp1_usb_clocks_initialize();
-	stm32mp1_audio_clocks_initialize();
-
-#elif CPUSTYLE_XC7Z
-	#if WITHISBOOTLOADER
-
-	if (! forced)
-	{
-		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-		SCLR->APER_CLK_CTRL |= (UINT32_C(1) << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
-		SCLR->FPGA_RST_CTRL	= 0xF;	// Assert FPGA top-level output resets.
-		SCLR->LVL_SHFTR_EN 	= 0;	// Disable the level shifters.
-
-		// Нельзя - перестает работать DEBUG
-		//SCLR->APER_CLK_CTRL = 0;	// All AMBA Clock control disable
-
-		// PLL только в bootloader.
-		// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
-
-		xc7z_arm_pll_initialize();
-		xc7z_ddr_pll_initialize();
-		xc7z_io_pll_initialize();
-
-
-		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-		XDCFG->CTRL &= ~ (UINT32_C(1) << 29);	// PCFG_POR_CNT_4K
-
-		////EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
-
-		// PL Clock 0 Output control
-		SCLR->FPGA0_CLK_CTRL = (SCLR->FPGA0_CLK_CTRL & ~ (0x03F03F30U)) |
-				((uint_fast32_t) SCLR_FPGA0_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
-				((uint_fast32_t) SCLR_FPGA0_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
-				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
-				0;
-
-		// PL Clock 1 Output control
-		SCLR->FPGA1_CLK_CTRL = (SCLR->FPGA1_CLK_CTRL & ~ (0x03F03F30U)) |
-				((uint_fast32_t) SCLR_FPGA1_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
-				((uint_fast32_t) SCLR_FPGA1_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
-				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
-				0;
-
-		// PL Clock 2 Output control
-		SCLR->FPGA2_CLK_CTRL = (SCLR->FPGA2_CLK_CTRL & ~ (0x03F03F30U)) |
-				((uint_fast32_t) SCLR_FPGA2_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
-				((uint_fast32_t) SCLR_FPGA2_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
-				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
-				0;
-
-		// PL Clock 3 Output control
-		SCLR->FPGA3_CLK_CTRL = (SCLR->FPGA3_CLK_CTRL & ~ (0x03F03F30U)) |
-				((uint_fast32_t) SCLR_FPGA3_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
-				((uint_fast32_t) SCLR_FPGA3_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
-				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
-				0;
-
-		////EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
-		SCLR->CLK_621_TRUE = (SCLR->CLK_621_TRUE & ~ (0x00000001U)) |
-				0x00000001U |
-				0;
-
-		SCLR->APER_CLK_CTRL |= (UINT32_C(1) << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
-	}
-	local_delay_initialize();
-	local_delay_ms(50);
-
-	#endif /* WITHISBOOTLOADER */
-
-#elif CPUSTYLE_A64
-
-	{
-		// Disable SD hosts
-
-		CCU->SDMMC0_CLK_REG = 0;
-		CCU->SDMMC1_CLK_REG = 0;
-		CCU->SDMMC2_CLK_REG = 0;
-
-//		CCU->SMHC_BGR_REG = 0x0000FFFF;
-//		(void) CCU->SMHC_BGR_REG;
-//		CCU->SMHC_BGR_REG = 000000000;
-//		(void) CCU->SMHC_BGR_REG;
-	}
-	/* Off bootloader USB */
-	CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << 29);	// USB-OHCI0_RST.
-	CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << 25);	// USB-EHCI0_RST.
-
-	CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << 28);	// USB-OTG-OHCI_RST.
-	CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << 24);	// USB-OTG-EHCI_RST
-	CCU->BUS_SOFT_RST_REG0 &= ~ (UINT32_C(1) << 23);	// USB-OTG-Device_RST.
-
-	/* Off host-only USB */
-	CCU->BUS_CLK_GATING_REG0 &= ~ (UINT32_C(1) << 29);	// USBOHCI0_GATING.
-	CCU->BUS_CLK_GATING_REG0 &= ~ (UINT32_C(1) << 25);	// USBEHCI0_GATING.
-
-	CCU->BUS_CLK_GATING_REG0 &= ~ (UINT32_C(1) << 28);	// USB-OTG-OHCI_GATING.
-	CCU->BUS_CLK_GATING_REG0 &= ~ (UINT32_C(1) << 24);	// USB-OTG-EHCI_GATING.
-	CCU->BUS_CLK_GATING_REG0 &= ~ (UINT32_C(1) << 23);	// USB-OTG-Device_GATING.
-
-	CCU->USBPHY_CFG_REG = 0;
-
-	USBPHY0->HCI_ICR = 0;
-	USBPHY1->HCI_ICR = 0;
-
-	allwnr_a64_pll_initialize();
-
-	//	The PLL_PERIPH0(1X) = 24MHz*N*K/2.
-	//	The PLL_PERIPH0(2X) = 24MHz*N*K.
-	allwnr_a64_module_pll_enable(& CCU->PLL_PERIPH0_CTRL_REG);
-	//	The PLL_PERIPH1(1X) = 24MHz*N*K/2.
-	//	The PLL_PERIPH1(2X) = 24MHz*N*K.
-	allwnr_a64_module_pll_enable(& CCU->PLL_PERIPH1_CTRL_REG);
-
-
-	allwnr_a64_module_pll_enable(& CCU->PLL_HSIC_CTRL_REG);
-
-	//CCU->APB2_CFG_REG = 0x02000303;	// PLL_PERIPH0(2X) / 8 / 4 - allwnr_a64_get_apb2_freq()=300 MHz
-	CCU->APB2_CFG_REG = 0x02000307;	// PLL_PERIPH0(2X) / 8 / 5- allwnr_a64_get_apb2_freq()=240 MHz
-	allwnr_a64_mbus_initialize();
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-
-	{
-		// Disable SD hosts
-
-		CCU->SMHC0_CLK_REG = 0;
-		CCU->SMHC1_CLK_REG = 0;
-		CCU->SMHC2_CLK_REG = 0;
-
-		CCU->SMHC_BGR_REG = 0x0000FFFF;
-		(void) CCU->SMHC_BGR_REG;
-		CCU->SMHC_BGR_REG = 000000000;
-		(void) CCU->SMHC_BGR_REG;
-	}
-	/* Off bootloader USB */
-	if (1)
-	{
-		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
-		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
-		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG0_RST
-
-		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RSTN
-	}
-#if CPUSTYLE_F133
-	allwnr_t113_pll_initialize(forced ? RV_PLL_CPU_N : 17);
-#else
-	allwnr_t113_pll_initialize(forced ? PLL_CPU_N : 17);
-#endif
-
-#elif CPUSTYLE_H3
-
-	allwnr_h3_pll_initialize();
-
-#elif CPUSTYLE_V3S
-
-	{
-		// Disable SD hosts
-
-		CCU->SMHC0_CLK_REG = 0;
-		CCU->SMHC1_CLK_REG = 0;
-		CCU->SMHC2_CLK_REG = 0;
-
-		CCU->SMHC_BGR_REG = 0x0000FFFF;
-		(void) CCU->SMHC_BGR_REG;
-		CCU->SMHC_BGR_REG = 000000000;
-		(void) CCU->SMHC_BGR_REG;
-	}
-	/* Off bootloader USB */
-	{
-//		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 16);	// USBOHCI0_RST
-//		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 20);	// USBEHCI0_RST
-//		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG0_RST
-//
-//		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-//		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RSTN
-	}
-	allwnr_v3s_pll_initialize();
-
-
-#elif (CPUSTYLE_T507)
-
-	{
-		// Disable SD hosts
-
-		CCU->SMHC0_CLK_REG = 0;
-		CCU->SMHC1_CLK_REG = 0;
-		CCU->SMHC2_CLK_REG = 0;
-
-		CCU->SMHC_BGR_REG = 0x0000FFFF;
-		(void) CCU->SMHC_BGR_REG;
-		CCU->SMHC_BGR_REG = 000000000;
-		(void) CCU->SMHC_BGR_REG;
-	}
-
-	{
-		// Disable XFEL enabled device
-
-		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG_RST
-		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
-		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 8);	// USBOTG_GATING
-	}
-
-	/* IOMMU off */
-	{
-#if ! defined(__aarch64__)
-		IOMMU->IOMMU_RESET_REG &= ~ (UINT32_C(1) << 31);	// IOMMU_RESET
-		IOMMU->IOMMU_ENABLE_REG &= ~ (UINT32_C(1) << 0);	// ENABLE
-#endif
-		CCU->IOMMU_BGR_REG &= ~ (UINT32_C(1) << 0);
-	}
-
-	set_t507_axi_sel(0x00, 1, 1);	// OSC24 as source
-
-	CCU->PSI_AHB1_AHB2_CFG_REG = 0;
-	PRCM->CPUS_CFG_REG = 0;
-	PRCM->APBS1_CFG_REG = 0;
-
-	allwnr_t507_module_pll_spr(& CCU->PLL_PERI0_CTRL_REG, & CCU->PLL_PERI0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-	allwnr_t507_module_pll_enable(& CCU->PLL_PERI0_CTRL_REG, 50);	// No SPR mode: 10.1 !!!! 28.283 !!! увёл поражённую точку с 28.571 МГц на 30.285 МГц
-
-	allwnr_t507_module_pll_spr(& CCU->PLL_PERI1_CTRL_REG, & CCU->PLL_PERI1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-	allwnr_t507_module_pll_enable(& CCU->PLL_PERI1_CTRL_REG, 50);
-
-//	allwnr_t507_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-//	allwnr_t507_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
-
-//	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG, 99);
-//	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG, 99);
-
-#if WITHGPUHW
-	allwnr_t507_module_pll_spr(& CCU->PLL_GPU0_CTRL_REG, & CCU->PLL_GPU0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-	allwnr_t507_module_pll_enable(& CCU->PLL_GPU0_CTRL_REG, 36);
-#endif /* WITHGPUHW */
-
-	// [02.507]CPU=1008 MHz,PLL6=600 Mhz,AHB=200 Mhz, APB1=100Mhz  MBus=400Mhz
-
-#if 1
-	PRCM->CPUS_CFG_REG =
-		0x03 * (UINT32_C(1) << 24) | // CPUS_CLK_SRC_SEL PLL_PERI0(X1)
-		(0) * (UINT32_C(1) << 8) |	// CLK_DIV_RATIO_N /1
-		(6 - 1) * (UINT32_C(1) << 0) | 	// FACTOR_M /6
-		0;
-	PRCM->APBS1_CFG_REG =
-		(4 - 1) |
-		0;
-#else
-	PRCM->CPUS_CFG_REG = 0;
-	PRCM->APBS1_CFG_REG = 0;
-#endif
-
-	if (forced)
-	{
-		const uint_fast32_t desiredAXIfreq = 600;	// AXI не выше 600 MHz
-		const uint_fast32_t desiredAPBfreq = 400;	// AРB не выше 400 MHz
-		const uint_fast32_t fCPU = (24u * PLL_CPU_N) >> PLL_CPU_P_POW;
-		// Рабочая частота
-		set_t507_pll_cpux(PLL_CPU_N, PLL_CPU_P_POW);
-		unsigned apbDIV = 4;//ulmax(1, ulmin(4, (fCPU + (desiredAPBfreq - 1)) / desiredAPBfreq));	// 1..4
-		unsigned axiDIV = fCPU > 1200 ? 3 : 2;//ulmax(1, ulmin(4, (fCPU + (desiredAXIfreq - 1)) / desiredAXIfreq));	// 1..4	- if CPU_FREQ=1200, axi_freq=600
-		set_t507_axi_sel(0x03, apbDIV, axiDIV);	// 011: PLL_CPUX - CPUX_AXI_CFG_REG
-	}
-	else
-	{
-		set_t507_pll_cpux(17, 0);
-		unsigned apbDIV = 4;	// 1..4
-		unsigned axiDIV = 2;	// 1..4	- if CPU_FREQ=1200, axi_freq=600
-		set_t507_axi_sel(0x03, apbDIV, axiDIV);	// 011: PLL_CPUX - CPUX_AXI_CFG_REG
-	}
-
-
-	// PSI_AHB1_AHB2 CLK = Clock Source/M/N
-	// old default=0x03000102
-	// The default value of PLL_PERI0(2X) is 1.2 GHz. It is not recommended to modify the value
-	// allwnr_t507_get_psi_ahb1_ahb2_freq()=300 MHz
-	// is a peripheral bus interconnect device based on AHB and APB protocol
-	CCU->PSI_AHB1_AHB2_CFG_REG =
-		0x03 * (UINT32_C(1) << 24) |	// 11: PLL_PERI0(1X)
-		(1) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
-		//(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M - AXI divider 1..4
-		0;
-
-	CCU->APB2_CFG_REG =
-		0x03 * (UINT32_C(1) << 24) |	// 11: PLL_PERI0(1X)
-		(0) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
-		(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M 1..4
-		0;
-
-	CCU->MBUS_CFG_REG =
-		(UINT32_C(1) << 31) |	// CLK_GATING
-		(UINT32_C(1) << 30) |	// MBUS_RST
-		0x01 * (UINT32_C(1) << 24) |	// 01: PLL_PERI0(2X)
-		(3 - 1) * (UINT32_C(1) << 0) |	// MBUS freq = 400 MHz (01: PLL_PERI0(2X) / 3)
-		0;
-
-	CCU->APB1_CFG_REG =
-		0x02 * (UINT32_C(1) << 24) |	// 10: PSI
-		(0) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
-		(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M 1..4
-		0;
-
-#if CPUSTYLE_H616
-	CPU_SUBSYS_CTRL_H616->GENER_CTRL_REG1 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
-	CPU_SUBSYS_CTRL_H616->GENER_CTRL_REG1 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
-#else /* CPUSTYLE_H616 */
-	C0_CPUX_CFG->C0_CTRL_REG0 &= ~ (UINT32_C(1) << 7);	// AXI to MBUS Clock Gating disable, the priority of this bit is higher than bit[6]
-	C0_CPUX_CFG->C0_CTRL_REG0 |= (UINT32_C(1) << 6);	// AXI to MBUS Clock Gating enable
-#endif /* CPUSTYLE_H616 */
-
-#elif (CPUSTYLE_A133 || CPUSTYLE_R828)
-
-
-	{
-		// Disable SD hosts
-
-		CCU->SMHC0_CLK_REG = 0;
-		CCU->SMHC1_CLK_REG = 0;
-		CCU->SMHC2_CLK_REG = 0;
-		CCU->SMHC_BGR_REG = 0;
-	}
-
-	{
-		// Disable XFEL enabled device
-
-		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG_RST
-		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
-		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 8);	// USBOTG_GATING
-	}
-
-#if 0
-	set_a133_axi_sel(0x00, 1, 1);	// OSC24 as source
-
-	CCU->PSI_AHB1_AHB2_CFG_REG = 0;
-
-	CCU->MBUS_CFG_REG = 0x80000000;
-	local_delay_ms(1);
-	CCU->MBUS_CFG_REG = 0xC0000000;
-
-	PRCM->CPUS_CFG_REG = 0;
-	PRCM->APBS1_CFG_REG = 0;
-
-	CCU->PLL_DDR_CTRL_REG;
-
-#endif
-
-#elif CPUSTYLE_VM14
-	/* 1892ВМ14Я */
-
-	PMCTR->CORE_PWR_UP = 1;
-	CMCTR->GATE_CORE_CTR |= (UINT32_C(1) << 0);	// L0_EN
-	CMCTR->GATE_SYS_CTR |= (UINT32_C(1) << 0);	// SYS_EN - Разрешение для тактовых частот L1_HCLK, L3_PCLK и связанных с ними частот
-
-	vm14_pll_initialize();
-
-#else
-	//#warning Undefined CPUSTYLE_xxx
-
-#endif
-
-	SystemCoreClock = CPU_FREQ;
 }
+#endif /* CPUSTYLE_STM32F7XX */
 
-void SystemCoreClockUpdate(void)
-{
-	SystemCoreClock = CPU_FREQ;
-}
 
+
+#if CPUSTYLE_XC7Z
+#endif /* CPUSTYLE_XC7Z */
 
 #if (WITHDCDCFREQCTL || WITHBLPWMCTL) && ! LINUX_SUBSYSTEM
 
