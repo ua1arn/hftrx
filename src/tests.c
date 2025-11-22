@@ -10905,7 +10905,7 @@ void hightests(void)
 
 	}
 #endif
-#if 0 && LCDMODE_LTDC && WITHLTDCHW
+#if 1 && LCDMODE_LTDC && WITHLTDCHW
 	{
 		// "Squash" test
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -10955,9 +10955,9 @@ void hightests(void)
 			snprintf(s, ARRAY_SIZE(s), "%u", steps ++);
 			// Erase background
 			//colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
-			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
+			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 0, 0));
 			// Draw rextangle
-			colpip_fillrect(& dbv, posX, posY, rectX, rectY, TFTRGB(0, 0, 0));
+			colpip_fillrect(& dbv, posX, posY, rectX, rectY, TFTRGB(0, 255, 0));
 			colpip_string_tbg(& dbv, posX, posY + rectY / 2, s, TFTRGB(255, 255, 255));
 
 			colmain_nextfb();
@@ -11011,8 +11011,8 @@ void hightests(void)
 				change = 1;
 			}
 
-			if (change && -- count == 0)
-				break;
+//			if (change && -- count == 0)
+//				break;
 
 			posX += stepX;
 			posY += stepY;

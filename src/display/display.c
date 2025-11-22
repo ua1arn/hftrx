@@ -1535,13 +1535,12 @@ static const videomode_t vdmode0 =
 	// SEE ALSO https://admin.osptek.com/uploads/ICNL_9707_Datasheet_310cf76474.pdf
 
 	.width = 480,			/* LCD PIXEL WIDTH            */
-	.height = 1280,			/* LCD PIXEL HEIGHT           */
-
 	.hsync = 2,				/* Horizontal synchronization */
-	.hbp = 6,				/* Horizontal back porch      */
+	.hbp = 30,				/* Horizontal back porch      */
 	.hfp = 24,				/* Horizontal front porch */
 
-	.vsync = 2,				/* Vertical synchronization */
+	.height = 1280,			/* LCD PIXEL HEIGHT           */
+	.vsync = 4,				/* Vertical synchronization */
 	.vbp = 8,				/* Vertical back porch */
 	.vfp = 16,				/* Vertical front porch */
 
@@ -1552,7 +1551,6 @@ static const videomode_t vdmode0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60,	/* frames per second */
 	.ntsc = 0,
 	.interlaced = 0

@@ -1047,6 +1047,10 @@
 		0)
 
 	#define HARDWARE_LVDS_INITIALIZE() do { \
+		arm_hardware_piod_outputs(UINT32_C(1) << 22, 1 * UINT32_C(1) << 22); \
+		arm_hardware_piog_outputs(UINT32_C(1) << 11, 0 * UINT32_C(1) << 22); \
+		local_delay_ms(50); \
+		arm_hardware_piog_outputs(UINT32_C(1) << 11, 1 * UINT32_C(1) << 22); \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF3); 	/* PD0 LVDS0_V0P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF3); 	/* PD1 LVDS0_V0N */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF3); 	/* PD2 LVDS0_V1P */ \
@@ -1057,16 +1061,6 @@
 		arm_hardware_piod_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF3); 	/* PD7 LVDS0_CKN */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF3); 	/* PD8 LVDS0_V3P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF3); /* PD10 LVDS1_V0P */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF3); /* PD11 LVDS1_V0N */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 12, GPIO_CFG_AF3); /* PD12 LVDS1_V1P */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF3); /* PD13 LVDS1_V1N */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF3); /* PD14 LVDS1_V2P */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF3); /* PD15 LVDS1_V2N */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 16, GPIO_CFG_AF3); /* PD16 LVDS1_CKP */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 17, GPIO_CFG_AF3); /* PD17 LVDS1_CKN */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 18, GPIO_CFG_AF3); /* PD18 LVDS1_V3P */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 19, GPIO_CFG_AF3); /* PD19 LVDS1_V3N */ \
 	} while (0)
 
 	// PD0..PD9: mipi-dsi connect
@@ -1188,7 +1182,7 @@
 
 	#define BOARD_BLINK_BIT (UINT32_C(1) << 22)	// PD22 (PWM7) - led on mq-r board (from VCC33
 
-#if 1
+#if 0
 	#define BOARD_BLINK_INITIALIZE() do { \
 			arm_hardware_piod_outputs(BOARD_BLINK_BIT, 0 * BOARD_BLINK_BIT); \
 		} while (0)
@@ -1212,7 +1206,6 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-		BOARD_BLINK_INITIALIZE(); \
 		/*HARDWARE_KBD_INITIALIZE(); */\
 		/*HARDWARE_DAC_INITIALIZE(); */\
 		/*HARDWARE_BL_INITIALIZE(); */\

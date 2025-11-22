@@ -122,12 +122,13 @@
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
 	#define LCDMODE_RGB565 1	/* Видеобуфер 16 бит */
+	#define WITHFLATLINK 1	/* Работа с TFT панелью через LVDS интерфейс	*/
 
 	
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
 	#define BOARD_DSTYLE "g_x480_y272_spectrum_notouch.h"
 
-#elif 1
+#elif 0
 
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
@@ -145,7 +146,7 @@
 //	#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 	//#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 
-#elif 1
+#elif 0
 
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 
@@ -160,7 +161,7 @@
 	#define BOARD_DSTYLE "g_x1024_y600.h"
 
 
-#elif 1
+#elif 0
 
 	#define LCDMODE_LQ123K3LG01 1	/* LQ123K3LG01 panel (1280*480) - 12.3" display LVDS mode */
 
@@ -177,7 +178,7 @@
 	#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
 	//#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 
-#elif 1
+#elif 0
 
 	#define LCDMODE_TCG104XGLPAPNN 1	/* TCG104XGLPAPNN-AN30 panel (1024*768) - 10.4" display - DE mode required */
 	#define LCDMODE_RGB565 1	/* Видеобуфер 16 бит */
@@ -560,8 +561,8 @@
 	//#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
 	//#define WITHRTCLSI	1				/* тестирование без кварца 32.768 кГц */
 
-	#define WITHTSC5PCALIBRATE 1	/* Калибровка по пяти точкам */
-	#define TSC1_TYPE TSC_TYPE_AWTPADC	/* Allwinner F133/t113-s3 resistive touch screen controller */
+//	#define WITHTSC5PCALIBRATE 1	/* Калибровка по пяти точкам */
+//	#define TSC1_TYPE TSC_TYPE_AWTPADC	/* Allwinner F133/t113-s3 resistive touch screen controller */
 	//#define TSC1_TYPE TSC_TYPE_XPT2046 	/* Resistive touch screen controller XPTEK XPT2046 */
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
