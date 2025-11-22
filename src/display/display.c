@@ -1434,7 +1434,6 @@ static const videomode_t vdmode0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 1,		/* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
-	//.ltdc_dotclk = 9000000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60,	/* frames per second */
 	.ntsc = 0,
 	.interlaced = 0
@@ -1472,7 +1471,6 @@ static const videomode_t vdmode0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60,	/* frames per second */
 	.ntsc = 0,
 	.interlaced = 0
@@ -1511,7 +1509,6 @@ static const videomode_t vdmode0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	//.ltdc_dotclk = 51200000uL,	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
 	.fps = 60,	/* frames per second */
 	.ntsc = 0,
 	.interlaced = 0
@@ -1532,18 +1529,17 @@ static const videomode_t vdmode0 =
 	// tvb 8
 	// tvfp 16
 
-	// SEE ALSO https://admin.osptek.com/uploads/ICNL_9707_Datasheet_310cf76474.pdf
+	// SEE ALSO NV3051F1 chip NV3051.pdf
 
-	.width = 480,			/* LCD PIXEL WIDTH            */
-	.height = 1280,			/* LCD PIXEL HEIGHT           */
+	 .width = 480,   /* LCD PIXEL WIDTH            */
+	 .hsync = 2,    /* Horizontal synchronization */
+	 .hbp = 30,    /* Horizontal back porch      */
+	 .hfp = 24,    /* Horizontal front porch */
 
-	.hsync = 2,				/* Horizontal synchronization */
-	.hbp = 6,				/* Horizontal back porch      */
-	.hfp = 24,				/* Horizontal front porch */
-
-	.vsync = 2,				/* Vertical synchronization */
-	.vbp = 8,				/* Vertical back porch */
-	.vfp = 16,				/* Vertical front porch */
+	 .height = 1280,   /* LCD PIXEL HEIGHT           */
+	 .vsync = 2,    /* Vertical synchronization */
+	 .vbp = 14,    /* Vertical back porch */
+	 .vfp = 16,    /* Vertical front porch */
 
 	// MODE: DE/SYNC mode select.
 	// DE MODE: MODE="1", VS and HS must pull high.
@@ -1552,7 +1548,6 @@ static const videomode_t vdmode0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60,	/* frames per second */
 	.ntsc = 0,
 	.interlaced = 0
@@ -1587,7 +1582,6 @@ static const videomode_t vdmode0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	///.ltdc_dotclk = 54835000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60,	/* frames per second */
 	.ntsc = 0,
 	.interlaced = 0
@@ -1620,7 +1614,6 @@ static const videomode_t vdmode0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	//.ltdc_dotclk = 51200000uL,	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
 	.fps = 60,	/* frames per second 50 60 70 */
 	.ntsc = 0,
 	.interlaced = 0
@@ -1648,7 +1641,6 @@ static const videomode_t vdmode0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	//.ltdc_dotclk = 24000000u,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60,	/* frames per second */
 	.ntsc = 0,
 	.interlaced = 0
@@ -1677,7 +1669,6 @@ static static const const videomode_t vdmode0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	//.ltdc_dotclk = 3000000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60,	/* frames per second */
 	.ntsc = 0,
 	.interlaced = 0
@@ -1716,7 +1707,6 @@ static const videomode_t vdmode0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	//.ltdc_dotclk = 3000000uL	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60,	/* frames per second */
 	.ntsc = 0,
 	.interlaced = 0
@@ -1755,7 +1745,6 @@ static const videomode_t vdmode0 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	//.ltdc_dotclk = 3000000uL	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60,	/* frames per second */
 	.ntsc = 0,
 	.interlaced = 0
@@ -1794,7 +1783,6 @@ static const videomode_t vdmode0 =
 	.hsyncneg = 1,      /* Negative polarity required for HSYNC signal */
 	.deneg = 0,        /* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,  // LQ043T3DX02K require DE reset
-	///.ltdc_dotclk = 53000000uL,  // частота пикселей при работе с интерфейсом RGB
 	.fps = 60,  /* frames per second */
 	.ntsc = 0,
 	.interlaced = 0
@@ -1831,7 +1819,6 @@ static const videomode_t vdmode_800x480 =
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60,	/* frames per second */
 	.ntsc = 0,
 	.interlaced = 0
@@ -2412,5 +2399,4 @@ uint_fast32_t display_getdotclock(const videomode_t * vdmode)
 
 	return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL;
 	//return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL / (vdmode->interlaced + 1);
-	//return vdmode->ltdc_dotclk;
 }
