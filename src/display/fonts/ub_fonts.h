@@ -97,6 +97,9 @@ uint16_t getwidth_Pstring32(const char * str, const UB_pFont32 * font);
 // Возврат ширины строки в пикселях, пропорциональный шрифт меньше 32 бит
 uint16_t getwidth_Pstring(const char * str, const UB_pFont * font);
 
+// Возвращает ширину строки в пикселях, моноширинный шрифт
+uint16_t getwidth_Mstring(const char * str, const UB_Font * font);
+
 extern UB_pFont gothic_12x16_p;
 extern UB_Font gothic_11x13;
 

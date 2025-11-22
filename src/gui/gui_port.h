@@ -81,6 +81,16 @@ static inline void __gui_draw_string_mono(const gui_drawbuf_t * buf, unsigned in
 	UB_Font_DrawString(buf, x, y, text, font, color);
 }
 
+static inline uint16_t __gui_get_pixw_string_mono(const char * str, const gui_mono_font_t * font)
+{
+	return getwidth_Mstring(str, font);
+}
+
+static inline uint16_t __gui_get_pixw_string_prop(const char * str, const gui_prop_font_t * font)
+{
+	return getwidth_Pstring(str, font);
+}
+
 #endif /* WITHTOUCHGUI */
 
 #endif /* GUI_PORT_H_INCLUDED */

@@ -45,6 +45,11 @@ uint_fast8_t get_parent_window(void)
 		return NO_PARENT_WINDOW;
 }
 
+uint8_t get_current_drawing_window(void)
+{
+	return gui.current_drawing_window;
+}
+
 void set_parent_window(uint8_t p)
 {
 	gui.win[1] = p;
@@ -1233,6 +1238,7 @@ static void process_gui(void)
 	{
 		const window_t * const win = get_win(gui.win[i]);
 		uint_fast8_t f = win->first_call;
+		gui.current_drawing_window = gui.win[i];
 
 		if (win->state == VISIBLE)
 		{
