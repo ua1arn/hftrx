@@ -6,7 +6,7 @@
 //
 // Touch GUI от RA4ASN
 
-#include "gui/gui_port_include.h"
+#include "src/gui/gui_port_include.h"
 
 #if WITHTOUCHGUI
 
