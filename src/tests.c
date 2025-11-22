@@ -10488,7 +10488,9 @@ void user_uart1_onrxchar(uint_fast8_t c)
 // callback по готовности последовательного порта к пердаче
 void user_uart1_ontxchar(void * ctx)
 {
+#if WITHUART1HW
 	hardware_uart1_enabletx(0);
+#endif /* WITHUART1HW */
 }
 
 //	C0 03 2C 13 62 0B

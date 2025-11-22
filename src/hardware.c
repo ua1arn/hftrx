@@ -3108,7 +3108,7 @@ uint_fast32_t cpu_getdebugticks(void)
 #elif __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 	return DWT->CYCCNT;	// use TIMESTAMP_GET();
 
-#elif defined(__aarch64__)
+#elif defined(__aarch64__) && ! LINUX_SUBSYSTEM
 	return __get_PMCCNTR_EL0();
 
 #elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)

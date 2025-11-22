@@ -22200,17 +22200,21 @@ int infocb_rxbwval(char * b, size_t len, int * pstate)
 	return local_snprintf_P(b, len, "%s", hamradio_get_rxbw_value4());
 }
 
+#if WITHELKEY
 int infocb_wpm(char * b, size_t len, int * pstate)
 {
 	return local_snprintf_P(b, len, "%uwpm", (int) hamradio_get_cw_wpm());
 }
+#endif /* WITHELKEY */
 
+#if WITHUSEAUDIOREC
 int infocb_rec(char * b, size_t len, int * pstate)
 {
 	const uint_fast8_t state = hamradio_get_rec_value();	// не-0: запись включена
 	* pstate = state;
 	return local_snprintf_P(b, len, "%s", state ? "REC" : "PAU");
 }
+#endif /* WITHUSEAUDIOREC */
 
 int infocb_spk(char * b, size_t len, int * pstate)
 {
