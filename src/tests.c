@@ -10849,7 +10849,7 @@ void hightests(void)
 			char c;
 			if (hardware_uart1_getchar(& c))
 				lidar_parse(c);
-			board_dpc_processing();		// обработка отложенного вызова user mode функций
+			testsloopprocessing();		// обработка отложенного вызова user mode функций
 		}
 		static const uint8_t data [] =
 		{
@@ -10922,7 +10922,7 @@ void hightests(void)
 			TP();
 			for (;0;)
 			{
-				board_dpc_processing();
+				testsloopprocessing();		// обработка отложенного вызова user mode функций
 				char c;
 				if (dbg_getchar(& c))
 				{
@@ -10961,7 +10961,7 @@ void hightests(void)
 			colmain_nextfb();
 
 
-			board_dpc_processing();		// обработка отложенного вызова user mode функций
+			testsloopprocessing();		// обработка отложенного вызова user mode функций
 			char c;
 			if (dbg_getchar(& c))
 			{
@@ -11123,7 +11123,7 @@ void hightests(void)
 					(unsigned) mcp3208_read(target, 0, 3, & valid),
 					(unsigned) mcp3208_read(target, 0, 4, & valid)
 					);
-			board_dpc_processing();		// обработка отложенного вызова user mode функций
+			testsloopprocessing();		// обработка отложенного вызова user mode функций
 		}
 	}
 #endif
@@ -11393,7 +11393,7 @@ void hightests(void)
 		testpng(Cobra_png);
 		for (;;)
 		{
-			board_dpc_processing();		// обработка отложенного вызова user mode функций
+			testsloopprocessing();		// обработка отложенного вызова user mode функций
 		}
 	}
 #endif
@@ -11412,7 +11412,7 @@ void hightests(void)
 		testpng_no_stretch(png, 0);	// становить формат DE2_FORMAT_XBGR_8888
 		for (;;)
 		{
-			board_dpc_processing();		// обработка отложенного вызова user mode функций
+			testsloopprocessing();		// обработка отложенного вызова user mode функций
 		}
 	}
 #endif
