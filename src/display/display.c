@@ -1517,6 +1517,47 @@ static const videomode_t vdmode0 =
 	.interlaced = 0
 };
 
+#elif LCDMODE_HXD_C067BHW8843ANT
+
+/* HXD-C067BHW8843ANT  6.75" 480*1280 LVDS */
+static const videomode_t vdmode0 =
+{
+	// thd 480
+	// thpw 2
+	// thb 30
+	// thfp 24
+
+	// tvd 1280
+	// tvpw 2
+	// tvb 8
+	// tvfp 16
+
+	// SEE ALSO https://admin.osptek.com/uploads/ICNL_9707_Datasheet_310cf76474.pdf
+
+	.width = 480,			/* LCD PIXEL WIDTH            */
+	.height = 1280,			/* LCD PIXEL HEIGHT           */
+
+	.hsync = 2,				/* Horizontal synchronization */
+	.hbp = 6,				/* Horizontal back porch      */
+	.hfp = 24,				/* Horizontal front porch */
+
+	.vsync = 2,				/* Vertical synchronization */
+	.vbp = 8,				/* Vertical back porch */
+	.vfp = 16,				/* Vertical front porch */
+
+	// MODE: DE/SYNC mode select.
+	// DE MODE: MODE="1", VS and HS must pull high.
+	// SYNC MODE: MODE="0". DE must be grounded
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
+	//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
+};
+
 #elif LCDMODE_LQ123K3LG01
 
 /* LQ123K3LG01 panel (1280*480) - 12.3" display LVDS mode */

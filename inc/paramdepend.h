@@ -1160,6 +1160,12 @@ extern "C" {
 
 #endif /* LCDMODE_H497TLB01P4 */
 
+#if LCDMODE_HXD_C067BHW8843ANT
+	#define DIM_X 480
+	#define DIM_Y 1280
+	#define LCDMODE_COLORED	1
+#endif
+
 /*
  * Выбор описателя расположения элементов, отбражаемых на дисплее.
  */
@@ -1171,6 +1177,13 @@ extern "C" {
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif (DIM_X == 800 && DIM_Y == 480) || (DIM_X == 1366 && DIM_Y == 768)
+	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+
+#elif (DIM_X == 480 && DIM_Y == 1280)
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
 	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
@@ -1349,7 +1362,6 @@ extern "C" {
 
 	#define DISPLAY_FPS	10	/* обновление показаний частоты за секунду */
 	#define DISPLAYSWR_FPS 5	/* количество обновлений SWR за секунду */
-
 #else
 	#error Unrecognized dislay layout used (LCDMODE_XXXX)
 #endif
