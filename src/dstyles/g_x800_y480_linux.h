@@ -122,7 +122,7 @@
 		{	0,	4,	15,	0,	display2_af_spectre15,		& dzi_default, PG0, },
 #endif /* WITHAFSPECTRE */
 
-		{	0,	0, 4,	0,	display2_siglevel4, 	& dzi_default, PG0, },	// signal level dBm
+		{	0,	0, 4,	4,	display2_siglevel4, 	& dzi_default, PG0, },	// signal level dBm
 		{	0,	DLES,	50,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	50,	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	50,	BDCV_ALLRX,	display2_gcombo,	& dzi_default, PG0_1, },// подготовка изображения спектра

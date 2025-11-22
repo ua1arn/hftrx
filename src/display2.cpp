@@ -2604,7 +2604,7 @@ display2_text(const gxdrawb_t * db,
 	#else /* LCDMODE_COLORED */
 	#endif /* LCDMODE_COLORED */
 #if WITHALTERNATIVELAYOUT
-	layout_label1_medium(db, xcell, ycell, labels [state], strlen(labels [state]), 5, COLORPIP_BLACK, dbstylep->textbg);
+	layout_label1_medium(db, xcell, ycell, labels [state], strlen(labels [state]), 5, COLORPIP_BLACK, dbstylep->textfg);
 #else
 	display_text(db, xcell, ycell, labels [state], width, yspan, dbstylep + state);
 #endif /* WITHALTERNATIVELAYOUT */
