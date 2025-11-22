@@ -6,15 +6,9 @@
 //
 // Touch GUI от RA4ASN
 
+#include "gui/gui_port_include.h"
 
-#include <string.h>
-#include <math.h>
-
-#include "hardware.h"
-#include "keyboard.h"
-#include "formats.h"
-#include "src/display/display.h"
-#include "src/display/fontmaps.h"
+#if WITHTOUCHGUI
 
 #include "gui.h"
 #include "gui_user.h"
@@ -23,8 +17,6 @@
 #include "gui_settings.h"
 #include "gui_windows.h"
 #include "gui_objects.h"
-
-#if WITHTOUCHGUI
 
 void gui_user_actions_after_close_window(void);
 

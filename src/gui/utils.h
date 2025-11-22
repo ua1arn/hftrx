@@ -1,8 +1,7 @@
 #ifndef UTILS_H_INCLUDED
 #define UTILS_H_INCLUDED
 
-#include "hardware.h"
-#include "formats.h"
+#include "gui/gui_port_include.h"
 
 int safe_strcmp(const char * s1, const char * s2);
 int is_valid_datetime(int year, int month, int day, int hour, int minute, int second);

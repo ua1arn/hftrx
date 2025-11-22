@@ -1,7 +1,7 @@
 #ifndef GUI_SYSTEM_H_INCLUDED
 #define GUI_SYSTEM_H_INCLUDED
 
-#include "hardware.h"
+#include "gui/gui_port_include.h"
 
 #if WITHTOUCHGUI
 #include "gui_structs.h"
@@ -21,13 +21,15 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...);
 wm_message_t get_from_wm_queue(uint8_t win_id, uint8_t * type, int32_t * action, char * name);
 void dump_queue(window_t * win);
 
-uint_fast16_t gui_get_window_draw_width(void);
-uint_fast16_t gui_get_window_draw_height(void);
-void gui_drawstring(uint_fast16_t x, uint_fast16_t y, const char * str, font_size_t font, COLORPIP_T color);
-void gui_drawline(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORPIP_T color);
-void gui_drawpoint(uint_fast16_t x1, uint_fast16_t y1, COLORPIP_T color);
-void gui_drawrect(uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORPIP_T color, uint_fast8_t fill);
-void gui_print_UB(uint16_t x, uint16_t y, const char * text, const UB_Font * font, COLORPIP_T color);
+uint16_t gui_get_window_draw_width(void);
+uint16_t gui_get_window_draw_height(void);
+void gui_drawstring(uint16_t x, uint16_t y, const char * str, font_size_t font, COLORPIP_T color);
+void gui_drawline(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, COLORPIP_T color);
+void gui_drawpoint(uint16_t x1, uint16_t y1, COLORPIP_T color);
+void gui_drawrect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, COLORPIP_T color, uint_fast8_t fill);
+void gui_print_mono(uint16_t x, uint16_t y, const char * text, const gui_mono_font_t * font, gui_color_t color);
+void gui_print_prop(uint16_t x, uint16_t y, const char * text, const gui_prop_font_t * font, gui_color_t color);
+void gui_print_UB(uint16_t x, uint16_t y, const char * text, const UB_Font * font, gui_color_t color);
 void gui_drawDashedRectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t dashLength);
 const gxdrawb_t * gui_get_drawbuf(void);
 

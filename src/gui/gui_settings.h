@@ -1,7 +1,10 @@
 #ifndef GUI_SETTINGS_H_INCLUDED
 #define GUI_SETTINGS_H_INCLUDED
 
-#include "hardware.h"
+#include "gui/gui_port_include.h"
+
+#if WITHTOUCHGUI
+
 #include "src/gui/gui.h"
 
 #if LCDMODE_MAIN_L8
@@ -65,5 +68,7 @@ enum {
 	#include "../display/fonts/ub_fonts.h"
 	#define FONT_BUTTONS	gothic_12x16_p
 #endif /* WITHALTERNATIVEFONTS */
+
+#endif /* WITHTOUCHGUI */
 
 #endif /* GUI_STRUCTS_H_INCLUDED */

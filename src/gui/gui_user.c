@@ -6,26 +6,11 @@
 //
 // Touch GUI от RA4ASN
 
-#include "hardware.h"
-#include "board.h"
-#include "audio.h"
-#include "dspdefines.h"
-
-#include "src/display/display.h"
-#include "src/display/fontmaps.h"
-#include "formats.h"
-
-#include <string.h>
-#include <math.h>
-
-#include "keyboard.h"
-#include "codecs.h"
-
-#include "gui.h"
-#include "xc7z_inc.h"
+#include "gui/gui_port_include.h"
 
 #if WITHTOUCHGUI
 
+#include "gui.h"
 #include "gui_user.h"
 #include "gui_system.h"
 #include "gui_structs.h"
@@ -861,7 +846,7 @@ void gui_main_process(void)
 	for(uint8_t i = 1; i < infobar_num_places; i++)
 	{
 		uint_fast16_t x = infobar_label_width * i;
-		colpip_line(db, x, infobar_1st_str_y, x, infobar_2nd_str_y + SMALLCHARH2, COLORPIP_GREEN, 0);
+		__gui_draw_line(db, x, infobar_1st_str_y, x, infobar_2nd_str_y + SMALLCHARH2, COLORPIP_GREEN);
 	}
 
 	if (infobar_hl)
