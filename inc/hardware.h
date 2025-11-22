@@ -987,6 +987,13 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
 
 void ohciehci_clk_init(void);
 void usbdevice_clk_init(void);
+void OTG_HS_IRQHandler(void);
+void device_USBI0_IRQHandler(void);
+void device_USBI1_IRQHandler(void);
+void device_OTG_HS_EP1_OUT_IRQHandler(void);
+void device_OTG_HS_EP1_IN_IRQHandler(void);
+void device_OTG_HS_IRQHandler(void);
+void device_OTG_FS_IRQHandler(void);
 
 void SystemInit(void);
 void softdevay(void);

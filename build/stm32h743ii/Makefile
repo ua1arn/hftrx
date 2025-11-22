@@ -128,11 +128,55 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 SRCDIRS += $(PRJROOT)/src
 #SRCDIRS += $(RTOSXDIR)/RTX/Source $(RTOSXDIR)/Source
 SRCDIRS += $(ARCHDIR)
-SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
+SRCDIRS += $(HALDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
+
+ifeq (1, 1)
+# ST USB DEVICE
+MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
+DINCDIR += $(MDLWUSBDIR)/Core/Inc
+SRCDIRS += $(MDLWUSBDIR)
+endif
+
+ifeq (1, 0)
+# ST USB HOST
+MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
+DINCDIR += $(MDLWHOSTDIR)/Core/Inc
+SRCDIRS += $(MDLWHOSTDIR)
+endif
+
+# cmsis-dsp
+include ../cmsis_dsp.mak
+
+# CherryUSB
+include ../cherryusb.mak
+
+# tinyusb
+include ../tinyusb.mak
+
+# rt-thread
+include ../rtthread.mak
+
+# lvgl
+include ../lvgl.mak
 
 # LuPng
 include ../lupng.mak
+
+# FreeRTOS
+include ../freertos.mak
+
+# btstack
+include ../btstack.mak
+
+# litehtml
+include ../litehtml.mak
+
+# LWIP
+include ../lwip.mak
+
+# custom application
+include ../custom0.mak
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)

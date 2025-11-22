@@ -153,13 +153,6 @@ void SystemClock_Config(void);
                        LL Driver Callbacks (PCD -> USB Device Library)
 *******************************************************************************/
 /* MSP Init */
-void OTG_HS_IRQHandler(void);
-void device_USBI0_IRQHandler(void);
-void device_USBI1_IRQHandler(void);
-void device_OTG_HS_EP1_OUT_IRQHandler(void);
-void device_OTG_HS_EP1_IN_IRQHandler(void);
-void device_OTG_HS_IRQHandler(void);
-void device_OTG_FS_IRQHandler(void);
 
 
 void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)

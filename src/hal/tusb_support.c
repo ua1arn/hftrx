@@ -804,7 +804,12 @@ void usbdevice_clk_init(void)
 
 	if (WITHUSBHW_DEVICE == USB1_OTG_HS)	// legacy name is USB_OTG_HS
 	{
-		if (pcdHandle->Init.phy_itface == USB_OTG_ULPI_PHY)
+		if (0)
+		{
+
+		}
+#if 0
+		else if (pcdHandle->Init.phy_itface == USB_OTG_ULPI_PHY)
 		{
 			USBD_HS_ULPI_INITIALIZE();
 			RCC->AHB1ENR |= RCC_AHB1ENR_USB1OTGHSEN | RCC_AHB1ENR_USB1OTGHSULPIEN;	/* USB/OTG HS with ULPI */
@@ -814,6 +819,7 @@ void usbdevice_clk_init(void)
 			RCC->AHB1LPENR |= RCC_AHB1LPENR_USB1OTGHSULPILPEN; /* USB/OTG HS ULPI  */
 			(void) RCC->AHB1LPENR;
 		}
+#endif
 		else
 		{
 			USBD_HS_FS_INITIALIZE();
@@ -837,22 +843,30 @@ void usbdevice_clk_init(void)
 		(void) RCC->AHB2ENR;
 
 
-		if (pcdHandle->Init.use_dedicated_ep1 == ENABLE)
+		if (0)
+			;
+#if 0
+		else if (pcdHandle->Init.use_dedicated_ep1 == ENABLE)
 		{
 			arm_hardware_set_handler_system(OTG_HS_EP1_OUT_IRQn, device_OTG_HS_EP1_OUT_IRQHandler);
 			arm_hardware_set_handler_system(OTG_HS_EP1_IN_IRQn, device_OTG_HS_EP1_IN_IRQHandler);
 		}
+#endif
 		arm_hardware_set_handler_system(OTG_HS_IRQn, USBDxx_IRQHandler);
 
 	}
 	else if (WITHUSBHW_DEVICE == USB2_OTG_FS)	// legacy name is USB_OTG_FS
 	{
-		if (pcdHandle->Init.phy_itface == USB_OTG_ULPI_PHY)
+		if (0)
+			;
+#if 0
+		else if (pcdHandle->Init.phy_itface == USB_OTG_ULPI_PHY)
 		{
 			USBD_FS_INITIALIZE();
 			RCC->AHB1ENR |= RCC_AHB1ENR_USB2OTGHSEN | RCC_AHB1ENR_USB2OTGHSULPIEN;	/* USB/OTG HS with ULPI */
 			(void) RCC->AHB1ENR;
 		}
+#endif
 		else
 		{
 			USBD_FS_INITIALIZE();
