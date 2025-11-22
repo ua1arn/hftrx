@@ -3610,9 +3610,9 @@ enum
 
 typedef struct paramdefdef
 {
-	const char * qlabel;		/* текст - название пункта меню */
-	const char * label;
-	const char * enc2label;
+	const char * qlabel;		/* название пункта меню для компактного отображения */
+	const char * label;			/* название пункта меню для широкого меню */
+	const char * enc2label;		/* название пункта меню для FUNC меню */
 
 	uint8_t qwidth_unused, qcomma, qrj;
 	uint8_t qistep;

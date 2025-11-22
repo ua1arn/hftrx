@@ -4278,12 +4278,12 @@ static uint_fast8_t gagcmode;
 
 
 #if WITHIF4DSP
-static uint_fast8_t gnoisereducts [MODE_COUNT];	// noise reduction
+static uint_fast8_t gnoisereducts [MODE_COUNT];	// noise reduction level
 static uint_fast8_t gnoisereductvl = 25;	// noise reduction
 
 static const struct paramdefdef xgnoisereduct =
 {
-	QLABEL("NR"), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+	QLABEL3("NR", "NR", "NR"), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
 	ITEM_VALUE,
 	0, 1,
 	RMT_NR_BASE(0),							/* управление режимом NOTCH */
@@ -4306,7 +4306,7 @@ static size_t getvaltextmaisubrxmode(char * buff, size_t count, int_fast32_t val
 // Левый/правый, A - main RX, B - sub RX
 static const struct paramdefdef xmainsubrxmode =
 {
-	QLABEL("DUAL"), 7, 0, RJ_CB,	ISTEP1,
+	QLABEL3("DUAL", "Dual RX", "DUAL"), 7, 0, RJ_CB,	ISTEP1,
 	ITEM_VALUE | ITEM_LISTSELECT,
 	0, MAINSUBRXMODE_COUNT - 1,
 	OFFSETOF(struct nvmap, mainsubrxmode),
@@ -4323,7 +4323,7 @@ static const struct paramdefdef xmainsubrxmode =
 static dualctl8_t gsquelch = { 0, 0 };	/* squelch level */
 static const struct paramdefdef xgsquelch =
 {
-	QLABEL("SQUELCH"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* squelch level */
+	QLABEL3("SQUELCH", "Squelech", "SQUELCH"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* squelch level */
 	ITEM_VALUE,
 	0, SQUELCHMAX,
 	OFFSETOF(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
@@ -4337,7 +4337,7 @@ static const struct paramdefdef xgsquelch =
 static uint_fast8_t gsquelchNFM;	/* squelch level for NFM */
 static const struct paramdefdef xgsquelchNFM =
 {
-	QLABEL3("SQLC NFM", "SQUELCH NFM", "SQUELCHFM"), 0, 0, RJ_UNSIGNED, ISTEP1,		/* squelch level for NFM */
+	QLABEL3("SQLC NFM", "Squelech NFM", "SQUELCHFM"), 0, 0, RJ_UNSIGNED, ISTEP1,		/* squelch level for NFM */
 	ITEM_VALUE,
 	0, SQUELCHMAX,
 	OFFSETOF(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
@@ -4351,7 +4351,7 @@ static const struct paramdefdef xgsquelchNFM =
 static uint_fast8_t ggainnfmrx10 = 30;	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 static const struct paramdefdef xggainnfmrx10 =
 {
-	QLABEL("NFM GAIN"), 7, 1, RJ_UNSIGNED, ISTEP1,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+	QLABEL3("NFM GAIN", "NFM Gain", "NFM GAIN"), 7, 1, RJ_UNSIGNED, ISTEP1,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 	ITEM_VALUE,
 	10, 100,
 	OFFSETOF(struct nvmap, ggainnfmrx10),	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
@@ -4416,7 +4416,7 @@ static const struct paramdefdef xggainnfmrx10 =
 
 static const struct paramdefdef xgcwpitch10 =
 {
-	QLABEL("CW PITCH"), 7, 2, RJ_UNSIGNED, 	ISTEP1,
+	QLABEL3("CW PITCH", "CW Pitch", "CW PITCH"), 7, 2, RJ_UNSIGNED, 	ISTEP1,
 	ITEM_VALUE,
 	CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 10 Hz steps */
 	OFFSETOF(struct nvmap, gcwpitch10),
@@ -4465,7 +4465,7 @@ static uint_fast8_t gusefast;
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 static const struct paramdefdef xgnotch =
 {
-	QLABEL("NOTCH"), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+	QLABEL3("NOTCH", "Notch", "NOTCH"), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
 	ITEM_VALUE,
 	0, NOTCHMODE_COUNT - 1,
 	RMT_NOTCH_BASE,							/* управление режимом NOTCH */
@@ -4499,7 +4499,7 @@ static const struct paramdefdef xgnotch =
 static uint_fast8_t gbandsetbcast = 0;	/* Broadcast radio bands */
 static const struct paramdefdef xgbandsetbcast =
 {
-	QLABEL("BAND BC"), 7, 3, RJ_YES,	ISTEP1,
+	QLABEL3("BAND BC", "Bands BC", "BANDS BC"), 7, 3, RJ_YES,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, gbandsetbcast),
@@ -4516,7 +4516,7 @@ enum { gbandsetbcast = 0 };
 static uint_fast8_t bandset11m;
 static const struct paramdefdef xgbandset11m =
 {
-	QLABEL("BAND 27"), 7, 3, RJ_YES,	ISTEP1,
+	QLABEL3("BAND 27", "Band 27", "BAND 27"), 7, 3, RJ_YES,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, bandset11m),
@@ -4531,7 +4531,7 @@ static const struct paramdefdef xgbandset11m =
 static uint_fast8_t bandset6m = 1;	/* используется ли диапазон 6 метров */
 static const struct paramdefdef xgbandset6m =
 {
-	QLABEL("BAND 50"), 8, 3, RJ_ON,	ISTEP1,
+	QLABEL3("BAND 50", "Band 50", "BAND 50"), 8, 3, RJ_ON,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, bandset6m),
@@ -4546,7 +4546,7 @@ static const struct paramdefdef xgbandset6m =
 static uint_fast8_t bandset4m = 1;	/* используется ли диапазон 4 метров */
 static const struct paramdefdef xgbandset4m =
 {
-	QLABEL("BAND 70"), 8, 3, RJ_ON,	ISTEP1,
+	QLABEL3("BAND 70", "Band 70", "BAND 70"), 8, 3, RJ_ON,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, bandset4m),
@@ -4561,7 +4561,7 @@ static const struct paramdefdef xgbandset4m =
 static uint_fast8_t bandset2m = 1;	/* используется ли диапазон 2 метра */
 static const struct paramdefdef xgbandset2m =
 {
-	QLABEL("BAND 144"), 8, 3, RJ_ON,	ISTEP1,
+	QLABEL3("BAND 144", "Band 144", "BAND 144"), 8, 3, RJ_ON,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, bandset2m),
@@ -4599,7 +4599,7 @@ static uint_fast8_t ghdmiformat;
 /* Видеорежим внешнего HDMI монитора */
 static const struct paramdefdef xhdmiformat =
 {
-	QLABEL3("HDMI FMT", "HDMI format", "HDMI FMT"), 7, 5, RJ_CB, ISTEP1,
+	QLABEL3("HDMI FMT", "HDMI Format", "HDMI FMT"), 7, 5, RJ_CB, ISTEP1,
 	ITEM_VALUE | ITEM_LISTSELECT,
 	0, HDMIFORMATS_count - 1,
 	OFFSETOF(struct nvmap, ghdmiformat),
@@ -5040,7 +5040,7 @@ enum
 	// Громкость в процентах
 	static const struct paramdefdef xafgain1 =
 	{
-		QLABEL2("AF GAIN", "VOLUME"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		QLABEL3("AF Gain", "Volume", "VOLUME"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 #if WITHPOTAFGAIN
@@ -5057,7 +5057,7 @@ enum
 	// Усиление ПЧ/ВЧ в процентах
 	static const struct paramdefdef xrfgain1 =
 	{
-		QLABEL2("RF GAIN", "RF GAIN"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		QLABEL3("RF GAIN", "RF Gain", "RF GAIN"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 #if WITHPOTIFGAIN
@@ -5150,7 +5150,7 @@ enum
 		/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		static const struct paramdefdef xgdatatx =
 		{
-			QLABEL("USB DATA"), 8, 3, RJ_ON,	ISTEP1,		/* автоматическое изменение источника при появлении звука со стороны компьютера */
+			QLABEL3("USB DATA", "USB Data", "USB DATA"), 8, 3, RJ_ON,	ISTEP1,		/* автоматическое изменение источника при появлении звука со стороны компьютера */
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, gdatatx),
@@ -5163,7 +5163,7 @@ enum
 		/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		static const struct paramdefdef xguacplayer =
 		{
-			QLABEL("PLAY USB"), 7, 3, RJ_YES,	ISTEP1,
+			QLABEL3("PLAY USB", "Play USB", "PLAY USB"), 7, 3, RJ_YES,	ISTEP1,
 			ITEM_VALUE,
 			0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 			OFFSETOF(struct nvmap, guacplayer),
@@ -5176,7 +5176,7 @@ enum
 		/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		static const struct paramdefdef xgbtaudioplayer =
 		{
-			QLABEL("PLAY BT"), 7, 3, RJ_YES,	ISTEP1,
+			QLABEL3("PLAY BT", "Play BT", "PLAY BT"), 7, 3, RJ_YES,	ISTEP1,
 			ITEM_VALUE,
 			0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 			OFFSETOF(struct nvmap, gbtaudioplayer),
@@ -5203,7 +5203,7 @@ enum
 		/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		static const struct paramdefdef xgswapiq =
 		{
-			QLABEL("I/Q SWAP"), 7, 3, RJ_YES,	ISTEP1,
+			QLABEL3("SWAP I/Q", "Swap I/Q", "SWAP I/Q"), 7, 3, RJ_YES,	ISTEP1,
 			ITEM_VALUE,
 			0, 1, 					/* Поменять местами I и Q сэмплы в потоке RTS96 */
 			OFFSETOF(struct nvmap, gswapiq),
