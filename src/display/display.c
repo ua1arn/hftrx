@@ -1540,8 +1540,8 @@ static const videomode_t vdmode0 =
 	.hfp = 24,				/* Horizontal front porch */
 
 	.height = 1280,			/* LCD PIXEL HEIGHT           */
-	.vsync = 4,				/* Vertical synchronization */
-	.vbp = 8,				/* Vertical back porch */
+	.vsync = 2,				/* Vertical synchronization */
+	.vbp = 14,				/* Vertical back porch */
 	.vfp = 16,				/* Vertical front porch */
 
 	// MODE: DE/SYNC mode select.
