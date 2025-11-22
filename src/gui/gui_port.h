@@ -1,14 +1,14 @@
 #ifndef GUI_PORT_H_INCLUDED
 #define GUI_PORT_H_INCLUDED
 
-#include "hardware.h"
-
 #if WITHTOUCHGUI
 
 typedef PACKEDCOLORPIP_T 	gui_color_t;
 typedef gxdrawb_t 			gui_drawbuf_t;
+typedef UB_Font				gui_mono_font_t;
+typedef UB_pFont			gui_prop_font_t;
 
-static const gui_drawbuf_t * drawbuf = NULL;
+extern const gui_drawbuf_t * drawbuf;
 
 static inline void __gui_set_drawbuf(const gui_drawbuf_t * buf)
 {
@@ -52,11 +52,44 @@ static inline void __gui_draw_rounded_rect(const gui_drawbuf_t * buf, unsigned i
 	colmain_rounded_rect(buf, x, y, x + w, y + h, radius, color, fill);
 }
 
-static inline void __gui_draw_line(const gui_drawbuf_t * buf, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, gui_color_t color)
+static inline void __gui_draw_line(const gui_drawbuf_t * buf, unsigned int x1, unsigned int y1,
+		unsigned int x2, unsigned int y2, gui_color_t color)
 {
 	colpip_line(buf, x1, y1, x2, y2, color, 1);
 }
 
+static inline void __gui_draw_point(const gui_drawbuf_t * buf, unsigned int x, unsigned int y, gui_color_t color)
+{
+	colpip_point(buf, x, y, color);
+}
+
+static inline void __gui_draw_semitransparent_rect(const gui_drawbuf_t * buf, unsigned int x1, unsigned int y1,
+		unsigned int x2, unsigned int y2, unsigned int alpha)
+{
+	display_transparency(buf, x1, y1, x2, y2, alpha);
+}
+
+static inline void __gui_draw_string_prop(const gui_drawbuf_t * buf, unsigned int x, unsigned int y,
+		const char * text, const gui_prop_font_t * font, gui_color_t color)
+{
+	UB_Font_DrawPString(buf, x, y, text, font, color);
+}
+
+static inline void __gui_draw_string_mono(const gui_drawbuf_t * buf, unsigned int x, unsigned int y,
+		const char * text, const gui_mono_font_t * font, gui_color_t color)
+{
+	UB_Font_DrawString(buf, x, y, text, font, color);
+}
+
+static inline uint16_t __gui_get_pixw_string_mono(const char * str, const gui_mono_font_t * font)
+{
+	return getwidth_Mstring(str, font);
+}
+
+static inline uint16_t __gui_get_pixw_string_prop(const char * str, const gui_prop_font_t * font)
+{
+	return getwidth_Pstring(str, font);
+}
 
 #endif /* WITHTOUCHGUI */
 

@@ -329,6 +329,13 @@ uint16_t getwidth_Pstring(const char * str, const UB_pFont * font)
 	return width;
 }
 
+// Возвращает ширину строки в пикселях, моноширинный шрифт
+uint16_t getwidth_Mstring(const char * str, const UB_Font * font)
+{
+	ASSERT(str != NULL);
+	return strlen(str) * font->width;
+}
+
 // *********************************************************************************************************************
 
 //--------------------------------------------------------------

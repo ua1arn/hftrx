@@ -7,16 +7,9 @@
 // Touch GUI от RA4ASN
 
 
-#include <string.h>
-#include <math.h>
+#include "gui/gui_port_include.h"
 
-#include "hardware.h"
-#include "keyboard.h"
-#include "formats.h"
-#include "mslist.h"
-#include "src/touch/touch.h"
-#include "src/display/display.h"
-#include "src/display/fontmaps.h"
+#if WITHTOUCHGUI
 
 #include "gui.h"
 #include "gui_user.h"
@@ -28,8 +21,6 @@
 #include "gui_events.h"
 #include "utils.h"
 #include "gui_port.h"
-
-#if WITHTOUCHGUI
 
 static btn_bg_t btn_bg[] = {
 	{ 130, 35, },
@@ -43,6 +34,7 @@ static LIST_ENTRY gui_objects_list;
 static uint_fast8_t gui_object_count = 0;
 static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, INT32_MAX, "btс_close", "", };
 static uint8_t opened_windows_count = 1;
+const gui_drawbuf_t * drawbuf = NULL;
 
 /* Возврат id parent window */
 uint_fast8_t get_parent_window(void)
@@ -51,6 +43,11 @@ uint_fast8_t get_parent_window(void)
 		return gui.win[1];
 	else
 		return NO_PARENT_WINDOW;
+}
+
+uint8_t get_current_drawing_window(void)
+{
+	return gui.current_drawing_window;
 }
 
 void set_parent_window(uint8_t p)
@@ -365,7 +362,7 @@ not_found:
 
 const gxdrawb_t * gui_get_drawbuf(void)
 {
-	return gui.gdb;
+	return __gui_get_drawbuf();
 }
 
 static uint8_t remove_from_gui_list(void * link)
@@ -715,7 +712,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
 		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_NON_LOCKED, 1);
 		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		__gui_draw_rounded_rect(& butdbv, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		__gui_draw_rounded_rect(& butdbv, 1, 1, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
 	}
 
 	{
@@ -724,7 +721,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
 		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_NON_LOCKED, 1);
 		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		__gui_draw_rounded_rect(& butdbv, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		__gui_draw_rounded_rect(& butdbv, 1, 1, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
 	}
 
 	{
@@ -733,7 +730,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
 		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_LOCKED, 1);
 		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		__gui_draw_rounded_rect(& butdbv, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		__gui_draw_rounded_rect(& butdbv, 1, 1, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
 	}
 
 	{
@@ -742,7 +739,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
 		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_LOCKED, 1);
 		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		__gui_draw_rounded_rect(& butdbv, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		__gui_draw_rounded_rect(& butdbv, 1, 1, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
 	}
 
 	{
@@ -751,7 +748,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
 		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_DISABLED, 1);
 		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		__gui_draw_rounded_rect(& butdbv, 2, 2, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		__gui_draw_rounded_rect(& butdbv, 1, 1, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
 	}
 }
 
@@ -787,10 +784,10 @@ static void draw_button(const button_t * const bh)
 		c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
 
-		__gui_draw_rect(gdb, x1 + 1, y1 + 1, bh->w - 1, bh->h - 1, GUI_DEFAULTCOLOR, 1);
-		__gui_draw_rounded_rect(gdb, x1, y1, bh->w - 1, bh->h - 2, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
+		__gui_draw_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, GUI_DEFAULTCOLOR, 1);
+		__gui_draw_rounded_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
 		__gui_draw_rounded_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		__gui_draw_rounded_rect(gdb, x1 + 2, y1 + 2, bh->w - 2, bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		__gui_draw_rounded_rect(gdb, x1 + 1, y1 + 1, bh->w - 3, bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
 	}
 	else
 	{
@@ -1094,9 +1091,8 @@ static void process_gui(void)
 		gui.is_after_touch = 0;
 	}
 
-
-	if (IsListEmpty(& gui_objects_list))
-		return;
+//	if (IsListEmpty(& gui_objects_list))
+//		return;
 
 	if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
 	{
@@ -1232,23 +1228,17 @@ static void process_gui(void)
 		gui.state = PRESSED;
 		is_long_press = 1;				// долгое нажатие обработано
 	}
-}
 
-/* Запуск state mashine и отрисовка элементов GUI */
-void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xpan, uint_fast8_t yspan, dctx_t * pctx)
-{
 	uint_fast8_t alpha = DEFAULT_ALPHA; // на сколько затемнять цвета
 	char buf[TEXT_ARRAY_SIZE];
 	uint_fast8_t str_len = 0;
-	gui.gdb = db;
-	__gui_set_drawbuf(db);
-
-	process_gui();
+	const gui_drawbuf_t * drawbuf = __gui_get_drawbuf();
 
 	for(uint_fast8_t i = 0; i < opened_windows_count; i ++)
 	{
 		const window_t * const win = get_win(gui.win[i]);
 		uint_fast8_t f = win->first_call;
+		gui.current_drawing_window = gui.win[i];
 
 		if (win->state == VISIBLE)
 		{
@@ -1258,11 +1248,11 @@ void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, ui
 				{
 					ASSERT(win->w > 0 || win->h > 0);
 #if GUI_TRANSPARENT_WINDOWS
-					display_transparency(gui.gdb, win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) :
+					__gui_draw_semitransparent_rect(drawbuf, win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) :
 							win->y1, win->x1 + win->w - 1, win->y1 + win->h - 1, alpha);
 #else
-					colpip_fillrect(gui.gdb, win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) :
-							win->y1, win->w, win->h, GUI_WINDOWBGCOLOR);
+					__gui_draw_rect(drawbuf, win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) :
+							win->y1, win->w, win->h, GUI_WINDOWBGCOLOR, 1);
 #endif /* GUI_TRANSPARENT_WINDOWS */
 				}
 			}
@@ -1297,8 +1287,9 @@ void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, ui
 						break;
 					}
 
-					colpip_fillrect(gui.gdb, win->x1, win->y1, win->w, window_title_height, GUI_WINDOWTITLECOLOR);
-					colpip_string_tbg(gui.gdb, xt, win->y1 + 5, win->title, COLORPIP_BLACK);
+					__gui_draw_rect(drawbuf, win->x1, win->y1, win->w, window_title_height, GUI_WINDOWTITLECOLOR, 1);
+					//colpip_string_tbg(drawbuf, xt, win->y1 + 5, win->title, COLORPIP_BLACK);
+					__gui_draw_string_prop(drawbuf, xt, win->y1 + 5, win->title, & FONT_BUTTONS, COLORPIP_BLACK);
 				}
 
 				// отрисовка принадлежащих окну элементов
@@ -1318,12 +1309,12 @@ void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, ui
 						button_t * bh = (button_t *) p->link;
 						if (bh->visible && bh->parent == win->window_id)
 						{
-							colpip_rect(gui.gdb, win->x1 + bh->x1, win->y1 + bh->y1,
-									win->x1 + bh->x1 + bh->w,  win->y1 + bh->y1 + bh->h, COLORPIP_BLACK, 0);
-							colpip_line(gui.gdb, win->x1 + bh->x1, win->y1 + bh->y1,
-									win->x1 + bh->x1 + bh->w, win->y1 + bh->y1 + bh->h, COLORPIP_BLACK, 0);
-							colpip_line(gui.gdb, win->x1 + bh->x1, win->y1 + bh->y1 + bh->h,
-									win->x1 + bh->x1 + bh->w, win->y1 + bh->y1, COLORPIP_BLACK, 0);
+							__gui_draw_rect(drawbuf, win->x1 + bh->x1, win->y1 + bh->y1,
+									bh->w,  bh->h, COLORPIP_BLACK, 0);
+							__gui_draw_line(drawbuf, win->x1 + bh->x1, win->y1 + bh->y1,
+									win->x1 + bh->x1 + bh->w, win->y1 + bh->y1 + bh->h, COLORPIP_BLACK);
+							__gui_draw_line(drawbuf, win->x1 + bh->x1, win->y1 + bh->y1 + bh->h,
+									win->x1 + bh->x1 + bh->w, win->y1 + bh->y1, COLORPIP_BLACK);
 						}
 					}
 					else if (p->type == TYPE_LABEL)
@@ -1332,11 +1323,11 @@ void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, ui
 						if (lh->visible && lh->parent == win->window_id)
 						{
 							if (lh->font_size == FONT_LARGE)
-								colpip_string_tbg(gui.gdb,  win->x1 + lh->x, win->y1 + lh->y, lh->text, lh->color);
+								colpip_string_tbg(drawbuf,  win->x1 + lh->x, win->y1 + lh->y, lh->text, lh->color);
 							else if (lh->font_size == FONT_MEDIUM)
-								colpip_string2_tbg(gui.gdb, win->x1 + lh->x, win->y1 + lh->y, lh->text, lh->color);
+								colpip_string2_tbg(drawbuf, win->x1 + lh->x, win->y1 + lh->y, lh->text, lh->color);
 							else if (lh->font_size == FONT_SMALL)
-								colpip_string3_tbg(gui.gdb, win->x1 + lh->x, win->y1 + lh->y, lh->text, lh->color);
+								colpip_string3_tbg(drawbuf, win->x1 + lh->x, win->y1 + lh->y, lh->text, lh->color);
 						}
 					}
 					else if (p->type == TYPE_SLIDER)
@@ -1358,12 +1349,12 @@ void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, ui
 
 								if (tf->font)
 								{
-									UB_Font_DrawString(gui.gdb, win->x1 + tf->x1, win->y1 + tf->y1 + tf->font->height * pos,
+									__gui_draw_string_mono(drawbuf, win->x1 + tf->x1, win->y1 + tf->y1 + tf->font->height * pos,
 											tf->string[j].text, tf->font, tf->string[j].color_line);
 								}
 								else
 								{
-									colpip_string2_tbg(gui.gdb, win->x1 + tf->x1, win->y1 + tf->y1 + SMALLCHARH2 * pos,
+									colpip_string2_tbg(drawbuf, win->x1 + tf->x1, win->y1 + tf->y1 + SMALLCHARH2 * pos,
 											tf->string[j].text, tf->string[j].color_line);
 								}
 
@@ -1376,6 +1367,13 @@ void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, ui
 			}
 		}
 	}
+}
+
+/* Запуск state mashine и отрисовка элементов GUI */
+void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xpan, uint_fast8_t yspan, dctx_t * pctx)
+{
+	__gui_set_drawbuf(db);
+	process_gui();
 }
 
 #endif /* WITHTOUCHGUI */

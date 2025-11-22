@@ -1,9 +1,7 @@
 #ifndef GUI_H_INCLUDED
 #define GUI_H_INCLUDED
 
-#include "hardware.h"
-#include "../display/display.h"
-#include "display2.h"
+#include "gui/gui_port_include.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,9 +31,6 @@ enum {
 	callsign_max_lenght = 15,
 	qth_max_lenght = 10,
 	end_max_lenght = 6,
-	wifiAPname_max_lenght = 20,
-	wifiAPkey_max_lenght = 20,
-	wifiAPmaxcount = 10,
 };
 
 /* структура для размещения в конфигурационном ОЗУ */

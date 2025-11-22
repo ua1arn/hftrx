@@ -6,26 +6,11 @@
 //
 // Touch GUI от RA4ASN
 
-#include "hardware.h"
-#include "board.h"
-#include "audio.h"
-#include "dspdefines.h"
-
-#include "src/display/display.h"
-#include "src/display/fontmaps.h"
-#include "formats.h"
-
-#include <string.h>
-#include <math.h>
-
-#include "keyboard.h"
-#include "codecs.h"
-
-#include "gui.h"
-#include "xc7z_inc.h"
+#include "gui/gui_port_include.h"
 
 #if WITHTOUCHGUI
 
+#include "gui.h"
 #include "gui_user.h"
 #include "gui_system.h"
 #include "gui_structs.h"
@@ -539,7 +524,6 @@ void footer_buttons_state(uint_fast8_t state, ...)
 
 void gui_main_process(void)
 {
-	const gxdrawb_t * db = gui_get_drawbuf();
 	char buf[TEXT_ARRAY_SIZE];
 	const uint8_t buflen = ARRAY_SIZE(buf);
 	uint8_t update = 0;
@@ -559,8 +543,6 @@ void gui_main_process(void)
 
 		uint16_t w = gui_obj_get_int_prop("tf_debug", GUI_OBJ_WIDTH);
 		uint16_t h = gui_obj_get_int_prop("tf_debug", GUI_OBJ_HEIGHT);
-
-		gui_obj_set_prop("tf_debug", GUI_OBJ_POS, DIM_X / 2 - w / 2, DIM_Y / 2 - h / 2);
 #endif /* WITHGUIDEBUG */
 
 		gui_obj_create("btn_main00", 86, 44, 0, 1, "RX");				// btn_txrx
@@ -599,12 +581,15 @@ void gui_main_process(void)
 		hamradio_set_lfmmode(0);
 #endif /* WITHLFM */
 
+		calculate_window_position(WINDOW_POSITION_FULLSCREEN);
+
 #if WITHGUIDEBUG
+		window_t * win = get_win(WINDOW_MAIN);
+		gui_obj_set_prop("tf_debug", GUI_OBJ_POS, win->w / 2 - w / 2, win->h / 2 - h / 2);
+
 		for (uint8_t i = 0; i < tmpstr_index; i ++)
 			textfield_add_string("tf_debug", tmpbuf[i].text, COLORPIP_WHITE);
 #endif /* WITHGUIDEBUG */
-
-		calculate_window_position(WINDOW_POSITION_FULLSCREEN);
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_MAIN)
@@ -861,21 +846,24 @@ void gui_main_process(void)
 	for(uint8_t i = 1; i < infobar_num_places; i++)
 	{
 		uint_fast16_t x = infobar_label_width * i;
-		colpip_line(db, x, infobar_1st_str_y, x, infobar_2nd_str_y + SMALLCHARH2, COLORPIP_GREEN, 0);
+		gui_drawline(x, infobar_1st_str_y, x, infobar_2nd_str_y + SMALLCHARH2, COLORPIP_GREEN);
 	}
 
 	if (infobar_hl)
 	{
-		uint16_t x1 = infobar_selected * infobar_label_width + 2;
-		uint16_t x2 = x1 + infobar_label_width - 4;
+		uint16_t x = infobar_selected * infobar_label_width + 2;
+		uint16_t w = infobar_label_width - 4;
+		uint16_t h = infobar_2nd_str_y - infobar_1st_str_y + SMALLCHARH2 - 2;
 
-		colmain_rounded_rect(db, x1, infobar_1st_str_y, x2, infobar_2nd_str_y + SMALLCHARH2 - 2, 5, COLORPIP_YELLOW, 1);
+		gui_drawrect_rounded(x, infobar_1st_str_y, w, h, 5, COLORPIP_YELLOW, 1);
 	}
 
 	for (uint8_t current_place = 0; current_place < infobar_num_places; current_place ++)
 	{
 		uint_fast8_t infobar = infobar_places[current_place] & INFOBAR_VALID_MASK;
 		COLORPIP_T str_color = (current_place == infobar_selected) && infobar_hl ? COLORPIP_BLACK : COLORPIP_WHITE;
+		uint16_t strl;
+		const gui_prop_font_t * font = & gothic_12x16_p;
 
 		switch (infobar)
 		{
@@ -889,9 +877,11 @@ void gui_main_process(void)
 				hamradio_get_vfomode3_value(& val);
 
 			local_snprintf_P(buf, buflen, "Dual RX");
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, str_color);
 			local_snprintf_P(buf, buflen, "VFO %s", hamradio_get_gvfoab() ? "2" : "1");
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, str_color);
 #endif /* WITHUSEDUALWATCH */
 		}
 			break;
@@ -901,16 +891,17 @@ void gui_main_process(void)
 			static uint_fast8_t vol;
 			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
 
-			if (update)
-				vol = hamradio_get_afgain();
+			if (update) vol = hamradio_get_afgain();
 
 			local_snprintf_P(buf, buflen, "AF gain");
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, str_color);
 			if (hamradio_get_gmutespkr())
 				local_snprintf_P(buf, buflen, "muted");
 			else
 				local_snprintf_P(buf, buflen, "%d", vol);
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font , str_color);
 		}
 			break;
 
@@ -927,9 +918,11 @@ void gui_main_process(void)
 			}
 
 			local_snprintf_P(buf, buflen, "TX %d\%%", (int) tx_pwr);
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, str_color);
 			local_snprintf_P(buf, buflen, "Tune %d\%%", (int) tune_pwr);
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, str_color);
 		#endif /* WITHTX */
 					}
 			break;
@@ -940,13 +933,14 @@ void gui_main_process(void)
 			static uint_fast8_t state = 0;
 			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
 
-			if (update)
-				state = hamradio_get_nrvalue(& grade);
+			if (update) state = hamradio_get_nrvalue(& grade);
 
 			local_snprintf_P(buf, buflen, "DNR");
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, state ? str_color : COLORPIP_GRAY);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, state ? str_color : COLORPIP_GRAY);
 			local_snprintf_P(buf, buflen, state ? "on" : "off");
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, state ? str_color : COLORPIP_GRAY);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, state ? str_color : COLORPIP_GRAY);
 		}
 
 			break;
@@ -956,7 +950,7 @@ void gui_main_process(void)
 		{
 			static uint_fast8_t bp_wide;
 			static uint_fast16_t bp_low, bp_high;
-			uint_fast16_t xx;
+			uint16_t xx = current_place * infobar_label_width + 7;
 
 			if (update)
 			{
@@ -965,37 +959,39 @@ void gui_main_process(void)
 				bp_low = hamradio_get_low_bp(0) * 10;
 				bp_high = bp_wide ? (bp_high * 100) : (bp_high * 10);
 			}
+
 			local_snprintf_P(buf, buflen, "AF");
-			xx = current_place * infobar_label_width + 7;
-			colpip_string2_tbg(db, xx, y_mid, buf, str_color);
-			xx += SMALLCHARW2 * 3;
+			gui_print_prop(xx, y_mid, buf, font, str_color);
+			xx += 30;
 			local_snprintf_P(buf, buflen, bp_wide ? "L %u" : "W %u", bp_low);
-			colpip_string2_tbg(db, xx, infobar_1st_str_y, buf, str_color);
+			gui_print_prop(xx, infobar_1st_str_y, buf, font, str_color);
 			local_snprintf_P(buf, buflen, bp_wide ? "H %u" : "P %u", bp_high);
-			colpip_string2_tbg(db, xx, infobar_2nd_str_y, buf, str_color);
+			gui_print_prop(xx, infobar_2nd_str_y, buf, font, str_color);
 		}
 			break;
 
 		case INFOBAR_IF_SHIFT:
 		// значение сдвига частоты
 		{
-			static int_fast16_t if_shift;
-			uint_fast16_t xx;
+			static int16_t if_shift;
+			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
 
-			if (update)
-				if_shift = hamradio_if_shift(0);
-			xx = current_place * infobar_label_width + infobar_label_width / 2;
+			if (update) if_shift = hamradio_if_shift(0);
+
 			if (if_shift)
 			{
 				local_snprintf_P(buf, buflen, "IF shift");
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+				strl = get_strwidth_prop(buf, font);
+				gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, str_color);
 				local_snprintf_P(buf, buflen, if_shift == 0 ? "%d" : "%+d Hz", if_shift);
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+				strl = get_strwidth_prop(buf, font);
+				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, str_color);
 			}
 			else
 			{
 				local_snprintf_P(buf, buflen, "IF shift");
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, y_mid, buf, COLORPIP_GRAY);
+				strl = get_strwidth_prop(buf, font);
+				gui_print_prop(xx - strl / 2, y_mid, buf, font, COLORPIP_GRAY);
 			}
 		}
 			break;
@@ -1004,20 +1000,20 @@ void gui_main_process(void)
 		// attenuator
 		{
 			static uint8_t atten;
-			uint_fast16_t xx;
+			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
 
-			if (update)
-				atten  = hamradio_get_att_db();
+			if (update) atten  = hamradio_get_att_db();
 
-			xx = current_place * infobar_label_width + infobar_label_width / 2;
 			local_snprintf_P(buf, buflen, "ATT");
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, str_color);
 			if (atten)
 				local_snprintf_P(buf, buflen, "%d db", atten);
 			else
 				local_snprintf_P(buf, buflen, "off");
 
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, str_color);
 		}
 			break;
 
@@ -1026,15 +1022,16 @@ void gui_main_process(void)
 		{
 #if WITHIF4DSP
 			static int_fast32_t z;
-			uint_fast16_t xx;
+			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
 
-			if (update)
-				z = display2_zoomedbw() / 1000;
+			if (update) z = display2_zoomedbw() / 1000;
+
 			local_snprintf_P(buf, buflen, "SPAN");
-			xx = current_place * infobar_label_width + infobar_label_width / 2;
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, str_color);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, str_color);
 			local_snprintf_P(buf, buflen, "%dk", z);
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, str_color);
 #endif /* WITHIF4DSP */
 		}
 			break;
@@ -1044,36 +1041,28 @@ void gui_main_process(void)
 #if WITHVOLTLEVEL
 			// напряжение питания
 			static ldiv_t v;
-			uint_fast16_t xx;
+			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
 
-			if (update)
-				v = ldiv(hamradio_get_volt_value(), 10);
-			local_snprintf_P(buf, buflen, "%d.%1dV", (int) v.quot, (int) v.rem);
-			xx = current_place * infobar_label_width + infobar_label_width / 2;
+			if (update) v = ldiv(hamradio_get_volt_value(), 10);
+
 #if WITHCURRLEVEL || WITHCURRLEVEL2
 			uint_fast16_t yy = hamradio_get_tx() ? infobar_1st_str_y : y_mid;
 #else
 			uint_fast16_t yy = y_mid;
 #endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, yy, buf, str_color);
+
+			local_snprintf_P(buf, buflen, "%d.%1dV", (int) v.quot, (int) v.rem);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, yy, buf, font, str_color);
 #endif /* WITHVOLTLEVEL */
 
 #if WITHCURRLEVEL || WITHCURRLEVEL2
 		// ток PA (при передаче)
 			if (hamradio_get_tx())
 			{
-				uint_fast16_t xx;
-				xx = current_place * infobar_label_width + infobar_label_width / 2;
-
-				static int_fast16_t drain;
+				static int16_t drain;
 				if (update)
-				{
-					drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (может быть отрицательным)
-	//				if (drain < 0)
-	//				{
-	//					drain = 0;	// FIXME: без калибровки нуля (как у нас сейчас) могут быть ошибки установки тока
-	//				}
-				}
+					drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (может быть отрицательным - для чего?)
 
 #if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 				// для больших токов (более 9 ампер)
@@ -1087,7 +1076,8 @@ void gui_main_process(void)
 
 #endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, str_color);
+				strl = get_strwidth_prop(buf, font);
+				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, str_color);
 			}
 #endif /* WITHCURRLEVEL */
 		}
@@ -1098,14 +1088,16 @@ void gui_main_process(void)
 #if defined (GET_CPU_TEMPERATURE)
 			// вывод температуры процессора, если поддерживается
 			static float cpu_temp = 0;
-			if (update)
-				cpu_temp = GET_CPU_TEMPERATURE();
-
 			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
+
+			if (update) cpu_temp = GET_CPU_TEMPERATURE();
+
 			local_snprintf_P(buf, buflen, "CPU temp");
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, COLORPIP_WHITE);
 			local_snprintf_P(buf, buflen, "%2.1f", cpu_temp);
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, cpu_temp > 60.0 ? COLORPIP_RED : COLORPIP_WHITE);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, cpu_temp > 60.0 ? COLORPIP_RED : COLORPIP_WHITE);
 #endif /* defined (GET_CPU_TEMPERATURE) */
 		}
 			break;
@@ -1114,18 +1106,21 @@ void gui_main_process(void)
 		{
 #if defined (GET_BATTERY_CAPACITY)
 			static int capacity = 0;
+			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
+
 			if (update) capacity = GET_BATTERY_CAPACITY();
 
-			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
 			local_snprintf_P(buf, buflen, "Battery");
-			colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
+			strl = get_strwidth_prop(buf, font);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, COLORPIP_WHITE);
 			if (capacity >= 0)
 			{
 				local_snprintf_P(buf, buflen, "%d%%", capacity);
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, capacity < 30 ? COLORPIP_RED : COLORPIP_WHITE);
+				strl = get_strwidth_prop(buf, font);
+				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, capacity < 30 ? COLORPIP_RED : COLORPIP_WHITE);
 			}
 			else
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, "error", COLORPIP_RED);
+				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, "error", font, COLORPIP_RED);
 #endif /* defined (GET_BATTERY_CAPACITY) */
 		}
 			break;
@@ -1134,27 +1129,30 @@ void gui_main_process(void)
 		{
 			// быстрое меню 2-го энкодера
 			hamradio_gui_enc2_update();
+			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
 
 			if (gui_enc2_menu.state)
 			{
 				local_snprintf_P(buf, buflen, "%s", gui_enc2_menu.param);
 				remove_end_line_spaces(buf);
-				uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
+				strl = get_strwidth_prop(buf, font);
+				gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, COLORPIP_WHITE);
 				local_snprintf_P(buf, buflen, "%s", gui_enc2_menu.val);
 				remove_end_line_spaces(buf);
+				strl = get_strwidth_prop(buf, font);
 				COLORPIP_T color_lbl = gui_enc2_menu.state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, color_lbl);
+				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, color_lbl);
 			}
 			else
 			{
 #if defined (RTC1_TYPE)
 				// текущее время
 				local_snprintf_P(buf, buflen, "%02d.%02d", day, month);
-				uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORPIP_WHITE);
+				strl = get_strwidth_prop(buf, font);
+				gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, COLORPIP_WHITE);
 				local_snprintf_P(buf, buflen, "%02d%c%02d", hour, ((seconds & 1) ? ' ' : ':'), minute);
-				colpip_string2_tbg(db, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORPIP_WHITE);
+				strl = get_strwidth_prop(buf, font);
+				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, COLORPIP_WHITE);
 #endif 	/* defined (RTC1_TYPE) */
 			}
 		}
@@ -1186,7 +1184,7 @@ void gui_main_process(void)
 		uint16_t y = gui_obj_get_int_prop("tf_debug", GUI_OBJ_POS_Y);
 		uint16_t w = gui_obj_get_int_prop("tf_debug", GUI_OBJ_WIDTH);
 		uint16_t h = gui_obj_get_int_prop("tf_debug", GUI_OBJ_HEIGHT);
-		display_transparency(db, x - 5, y - 5, x + w + 5, y + h + 5, DEFAULT_ALPHA);
+		gui_drawrect_transparent(x - 5, y - 5, x + w + 5, y + h + 5, DEFAULT_ALPHA);
 	}
 #endif /* WITHGUIDEBUG */
 }
@@ -1801,7 +1799,7 @@ void window_swrscan_process(void)
 		uint8_t charw = gothic_11x13.width, charh = gothic_11x13.height;
 
 		local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", l ++);
-		gui_print_UB(x0 - charw, y0 - charh / 2, buf, & gothic_11x13, COLORPIP_WHITE);
+		gui_print_mono(x0 - charw, y0 - charh / 2, buf, & gothic_11x13, COLORPIP_WHITE);
 
 		for(int_fast16_t yy = y0 - row_step; yy > y1; yy -= row_step)
 		{
@@ -1810,7 +1808,7 @@ void window_swrscan_process(void)
 
 			gui_drawline(x0 + 1, yy, x1, yy, COLORPIP_DARKGREEN);
 			local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", l ++);
-			gui_print_UB(x0 - charw, yy - charh / 2, buf, & gothic_11x13, COLORPIP_WHITE);
+			gui_print_mono(x0 - charw, yy - charh / 2, buf, & gothic_11x13, COLORPIP_WHITE);
 		}
 
 		if (gui_obj_get_int_prop("lbl_swr_error", GUI_OBJ_VISIBLE))				// фон сообщения об ошибке

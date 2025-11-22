@@ -1,11 +1,12 @@
 #ifndef GUI_STRUCTS_H_INCLUDED
 #define GUI_STRUCTS_H_INCLUDED
 
-#include "hardware.h"
+#include "gui/gui_port_include.h"
 
 #if WITHTOUCHGUI
 
 #include "src/gui/gui_settings.h"
+#include "src/gui/gui_port.h"
 
 #define IS_BUTTON_PRESS			(type == TYPE_BUTTON && action == PRESSED)
 #define IS_BUTTON_LONG_PRESS	(type == TYPE_BUTTON && action == LONG_PRESSED)
@@ -142,7 +143,7 @@ typedef struct {
 	uint8_t parent;
 	uint8_t visible;
 	tf_direction_t direction;
-	UB_Font * font;		// NULL - SMALLCHAR2
+	const gui_mono_font_t * font;
 	char name[NAME_ARRAY_SIZE];
 	uint8_t index;
 	tf_entry_t * string;
@@ -332,7 +333,7 @@ typedef struct {
 	int16_t vector_move_x;	 	  	// в т.ч. и за границами элемента, при state == PRESSED
 	int16_t vector_move_y;
 	uint8_t win[WIN_GUI_COUNT];		// на экране не более 2х окон, одно из которых - основное на весь экран
-	const gxdrawb_t * gdb;
+	uint8_t current_drawing_window;
 } gui_t;
 
 #endif /* WITHTOUCHGUI */
