@@ -64,9 +64,9 @@ enum {
 	footer_buttons_count = 9
 };
 
-#if 1 //WITHALTERNATIVEFONTS
-	#define FONT_BUTTONS	arial_14x13_prop
-#endif /* WITHALTERNATIVEFONTS */
+
+#define BUTTONS_FONTP	msgothic_15x17_prop
+#define INFOBAR_FONTP	msgothic_13x16_prop
 
 #endif /* WITHTOUCHGUI */
 

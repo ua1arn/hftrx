@@ -863,7 +863,6 @@ void gui_main_process(void)
 		uint_fast8_t infobar = infobar_places[current_place] & INFOBAR_VALID_MASK;
 		COLORPIP_T str_color = (current_place == infobar_selected) && infobar_hl ? COLORPIP_BLACK : COLORPIP_WHITE;
 		uint16_t strl;
-		const gui_prop_font_t * font = & arial_14x13_prop;
 
 		switch (infobar)
 		{
@@ -877,11 +876,11 @@ void gui_main_process(void)
 				hamradio_get_vfomode3_value(& val);
 
 			local_snprintf_P(buf, buflen, "Dual RX");
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, str_color);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
 			local_snprintf_P(buf, buflen, "VFO %s", hamradio_get_gvfoab() ? "2" : "1");
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, str_color);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
 #endif /* WITHUSEDUALWATCH */
 		}
 			break;
@@ -894,14 +893,14 @@ void gui_main_process(void)
 			if (update) vol = hamradio_get_afgain();
 
 			local_snprintf_P(buf, buflen, "AF gain");
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, str_color);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
 			if (hamradio_get_gmutespkr())
 				local_snprintf_P(buf, buflen, "muted");
 			else
 				local_snprintf_P(buf, buflen, "%d", vol);
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font , str_color);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP , str_color);
 		}
 			break;
 
@@ -918,11 +917,11 @@ void gui_main_process(void)
 			}
 
 			local_snprintf_P(buf, buflen, "TX %d\%%", (int) tx_pwr);
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, str_color);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
 			local_snprintf_P(buf, buflen, "Tune %d\%%", (int) tune_pwr);
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, str_color);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
 		#endif /* WITHTX */
 					}
 			break;
@@ -936,11 +935,11 @@ void gui_main_process(void)
 			if (update) state = hamradio_get_nrvalue(& grade);
 
 			local_snprintf_P(buf, buflen, "DNR");
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, state ? str_color : COLORPIP_GRAY);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, state ? str_color : COLORPIP_GRAY);
 			local_snprintf_P(buf, buflen, state ? "on" : "off");
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, state ? str_color : COLORPIP_GRAY);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, state ? str_color : COLORPIP_GRAY);
 		}
 
 			break;
@@ -961,12 +960,12 @@ void gui_main_process(void)
 			}
 
 			local_snprintf_P(buf, buflen, "AF");
-			gui_print_prop(xx, y_mid, buf, font, str_color);
+			gui_print_prop(xx, y_mid, buf, & INFOBAR_FONTP, str_color);
 			xx += 30;
 			local_snprintf_P(buf, buflen, bp_wide ? "L %u" : "W %u", bp_low);
-			gui_print_prop(xx, infobar_1st_str_y, buf, font, str_color);
+			gui_print_prop(xx, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
 			local_snprintf_P(buf, buflen, bp_wide ? "H %u" : "P %u", bp_high);
-			gui_print_prop(xx, infobar_2nd_str_y, buf, font, str_color);
+			gui_print_prop(xx, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
 		}
 			break;
 
@@ -981,17 +980,17 @@ void gui_main_process(void)
 			if (if_shift)
 			{
 				local_snprintf_P(buf, buflen, "IF shift");
-				strl = get_strwidth_prop(buf, font);
-				gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, str_color);
+				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+				gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
 				local_snprintf_P(buf, buflen, if_shift == 0 ? "%d" : "%+d Hz", if_shift);
-				strl = get_strwidth_prop(buf, font);
-				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, str_color);
+				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
 			}
 			else
 			{
 				local_snprintf_P(buf, buflen, "IF shift");
-				strl = get_strwidth_prop(buf, font);
-				gui_print_prop(xx - strl / 2, y_mid, buf, font, COLORPIP_GRAY);
+				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+				gui_print_prop(xx - strl / 2, y_mid, buf, & INFOBAR_FONTP, COLORPIP_GRAY);
 			}
 		}
 			break;
@@ -1005,15 +1004,15 @@ void gui_main_process(void)
 			if (update) atten  = hamradio_get_att_db();
 
 			local_snprintf_P(buf, buflen, "ATT");
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, str_color);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
 			if (atten)
 				local_snprintf_P(buf, buflen, "%d db", atten);
 			else
 				local_snprintf_P(buf, buflen, "off");
 
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, str_color);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
 		}
 			break;
 
@@ -1027,11 +1026,11 @@ void gui_main_process(void)
 			if (update) z = display2_zoomedbw() / 1000;
 
 			local_snprintf_P(buf, buflen, "SPAN");
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, str_color);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
 			local_snprintf_P(buf, buflen, "%dk", z);
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, str_color);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
 #endif /* WITHIF4DSP */
 		}
 			break;
@@ -1052,8 +1051,8 @@ void gui_main_process(void)
 #endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
 
 			local_snprintf_P(buf, buflen, "%d.%1dV", (int) v.quot, (int) v.rem);
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, yy, buf, font, str_color);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, yy, buf, & INFOBAR_FONTP, str_color);
 #endif /* WITHVOLTLEVEL */
 
 #if WITHCURRLEVEL || WITHCURRLEVEL2
@@ -1076,8 +1075,8 @@ void gui_main_process(void)
 
 #endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 
-				strl = get_strwidth_prop(buf, font);
-				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, str_color);
+				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
 			}
 #endif /* WITHCURRLEVEL */
 		}
@@ -1093,11 +1092,11 @@ void gui_main_process(void)
 			if (update) cpu_temp = GET_CPU_TEMPERATURE();
 
 			local_snprintf_P(buf, buflen, "CPU temp");
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, COLORPIP_WHITE);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, COLORPIP_WHITE);
 			local_snprintf_P(buf, buflen, "%2.1f", cpu_temp);
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, cpu_temp > 60.0 ? COLORPIP_RED : COLORPIP_WHITE);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, cpu_temp > 60.0 ? COLORPIP_RED : COLORPIP_WHITE);
 #endif /* defined (GET_CPU_TEMPERATURE) */
 		}
 			break;
@@ -1111,16 +1110,16 @@ void gui_main_process(void)
 			if (update) capacity = GET_BATTERY_CAPACITY();
 
 			local_snprintf_P(buf, buflen, "Battery");
-			strl = get_strwidth_prop(buf, font);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, COLORPIP_WHITE);
+			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, COLORPIP_WHITE);
 			if (capacity >= 0)
 			{
 				local_snprintf_P(buf, buflen, "%d%%", capacity);
-				strl = get_strwidth_prop(buf, font);
-				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, capacity < 30 ? COLORPIP_RED : COLORPIP_WHITE);
+				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, capacity < 30 ? COLORPIP_RED : COLORPIP_WHITE);
 			}
 			else
-				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, "error", font, COLORPIP_RED);
+				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, "error", & INFOBAR_FONTP, COLORPIP_RED);
 #endif /* defined (GET_BATTERY_CAPACITY) */
 		}
 			break;
@@ -1135,24 +1134,24 @@ void gui_main_process(void)
 			{
 				local_snprintf_P(buf, buflen, "%s", gui_enc2_menu.param);
 				remove_end_line_spaces(buf);
-				strl = get_strwidth_prop(buf, font);
-				gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, COLORPIP_WHITE);
+				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+				gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, COLORPIP_WHITE);
 				local_snprintf_P(buf, buflen, "%s", gui_enc2_menu.val);
 				remove_end_line_spaces(buf);
-				strl = get_strwidth_prop(buf, font);
+				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
 				COLORPIP_T color_lbl = gui_enc2_menu.state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
-				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, color_lbl);
+				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, color_lbl);
 			}
 			else
 			{
 #if defined (RTC1_TYPE)
 				// текущее время
 				local_snprintf_P(buf, buflen, "%02d.%02d", day, month);
-				strl = get_strwidth_prop(buf, font);
-				gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, font, COLORPIP_WHITE);
+				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+				gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, COLORPIP_WHITE);
 				local_snprintf_P(buf, buflen, "%02d%c%02d", hour, ((seconds & 1) ? ' ' : ':'), minute);
-				strl = get_strwidth_prop(buf, font);
-				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, font, COLORPIP_WHITE);
+				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, COLORPIP_WHITE);
 #endif 	/* defined (RTC1_TYPE) */
 			}
 		}
@@ -3905,7 +3904,7 @@ void window_menu_params_process(void)
 			local_snprintf_P(btn_names[i], TEXT_ARRAY_SIZE, "btn_params_%02d", i);
 			remove_end_line_spaces(menup[i].name);
 
-			if (__gui_get_pixw_string_prop(menup[i].name, & FONT_BUTTONS) > 110)   // переделать
+			if (__gui_get_pixw_string_prop(menup[i].name, & BUTTONS_FONTP) > 110)   // переделать
 				split_string(menup[i].name, '|');
 
 			gui_obj_create(btn_names[i], 120, 40, 0, 0, menup[i].name);
@@ -3992,7 +3991,7 @@ void window_menu_process(void)
 			local_snprintf_P(btn_names[i], TEXT_ARRAY_SIZE, "btn_groups_%02d", i);
 			remove_end_line_spaces(menu[i].name);
 
-			if (__gui_get_pixw_string_prop(menu[i].name, & FONT_BUTTONS) > 110)
+			if (__gui_get_pixw_string_prop(menu[i].name, & BUTTONS_FONTP) > 110)  // переделать
 				split_string(menu[i].name, '|');
 
 			gui_obj_create(btn_names[i], 120, 40, 0, 0, menu[i].name);
