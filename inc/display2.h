@@ -489,11 +489,6 @@ typedef struct
 	#define DSGN_BIGCOLOR 			COLORPIP_RED 	// цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
-	#define DSGN_BIGCOLORB 			COLORPIP_RED		// цвет частоты и режима дополнительного приемника
-	#define DSGN_BIGCOLORBBACK 		COLORPIP_BLACK
-	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKRED	// цвет частоты и режима дополнительного приемника, когда не включён
-	#define DSGN_BIGCOLORBBACKINACTIVE COLORPIP_BLACK
-
 	#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
 	#define DSGN_FMENUACTIVEBACK	COLORPIP_DARKRED
 	#define DSGN_FMENUINACTIVETEXT	COLORPIP_BLACK
@@ -520,11 +515,6 @@ typedef struct
 	/* цветовая схема для эксперементов */
 	#define DSGN_BIGCOLOR 			COLORPIP_YELLOW 	// цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
-
-	#define DSGN_BIGCOLORB 			COLORPIP_YELLOW		// цвет частоты и режима дополнительного приемника
-	#define DSGN_BIGCOLORBBACK 		COLORPIP_BLACK
-	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKGREEN	// цвет частоты и режима дополнительного приемника, когда не включён
-	#define DSGN_BIGCOLORBBACKINACTIVE COLORPIP_BLACK
 
 	#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
 	#define DSGN_FMENUACTIVEBACK	COLORPIP_DARKGREEN
@@ -555,11 +545,6 @@ typedef struct
 
 	#define DSGN_BIGCOLOR 			COLORPIP_WHITE 	// цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
-
-	#define DSGN_BIGCOLORB 			COLORPIP_WHITE		// цвет частоты и режима дополнительного приемника
-	#define DSGN_BIGCOLORBBACK 		COLORPIP_BLACK
-	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKGREEN	// цвет частоты и режима дополнительного приемника, когда не включён
-	#define DSGN_BIGCOLORBBACKINACTIVE COLORPIP_BLACK
 
 	#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
 	#define DSGN_FMENUACTIVEBACK	COLORPIP_BLACK
@@ -608,11 +593,6 @@ typedef struct
 		#define DSGN_BIGCOLOR 			COLORPIP_WHITE 	// цвет частоты и режима основного приемника
 		#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
-		#define DSGN_BIGCOLORB 			COLORPIP_WHITE		// цвет частоты и режима дополнительного приемника
-		#define DSGN_BIGCOLORBBACK 		COLORPIP_BLACK
-		#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKGREEN	// цвет частоты и режима дополнительного приемника, когда не включён
-		#define DSGN_BIGCOLORBBACKINACTIVE COLORPIP_BLACK
-
 		#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
 		#define DSGN_FMENUACTIVEBACK	COLORPIP_BLACK
 
@@ -642,11 +622,6 @@ typedef struct
 	#else /* LCDMODE_PALETTE256 */
 		#define DSGN_BIGCOLOR 			COLORPIP_WHITE 	// цвет частоты и режима основного приемника
 		#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
-
-		#define DSGN_BIGCOLORB 			COLORPIP_WHITE		// цвет частоты и режима дополнительного приемника
-		#define DSGN_BIGCOLORBBACK 		COLORPIP_BLACK
-		#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_GRAY	// цвет частоты и режима дополнительного приемника, когда не включён
-		#define DSGN_BIGCOLORBBACKINACTIVE COLORPIP_BLACK
 
 		#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
 		#define DSGN_FMENUACTIVEBACK	COLORPIP_GRAY
