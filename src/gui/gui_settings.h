@@ -64,9 +64,8 @@ enum {
 	footer_buttons_count = 9
 };
 
-#if WITHALTERNATIVEFONTS
-	#include "../display/fonts/ub_fonts.h"
-	#define FONT_BUTTONS	gothic_12x16_p
+#if 1 //WITHALTERNATIVEFONTS
+	#define FONT_BUTTONS	arial_14x13_prop
 #endif /* WITHALTERNATIVEFONTS */
 
 #endif /* WITHTOUCHGUI */

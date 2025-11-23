@@ -5,8 +5,8 @@
 
 typedef PACKEDCOLORPIP_T 	gui_color_t;
 typedef gxdrawb_t 			gui_drawbuf_t;
-typedef UB_Font				gui_mono_font_t;
-typedef UB_pFont			gui_prop_font_t;
+typedef UB_Font32			gui_mono_font_t;
+typedef UB_pFont32			gui_prop_font_t;
 
 extern const gui_drawbuf_t * drawbuf;
 
@@ -72,23 +72,23 @@ static inline void __gui_draw_semitransparent_rect(const gui_drawbuf_t * buf, un
 static inline void __gui_draw_string_prop(const gui_drawbuf_t * buf, unsigned int x, unsigned int y,
 		const char * text, const gui_prop_font_t * font, gui_color_t color)
 {
-	UB_Font_DrawPString(buf, x, y, text, font, color);
+	gui_UB_Font_DrawPString32(buf, x, y, text, font, color);
 }
 
 static inline void __gui_draw_string_mono(const gui_drawbuf_t * buf, unsigned int x, unsigned int y,
 		const char * text, const gui_mono_font_t * font, gui_color_t color)
 {
-	UB_Font_DrawString(buf, x, y, text, font, color);
+	gui_UB_Font_DrawString32(buf, x, y, text, font, color);
 }
 
 static inline uint16_t __gui_get_pixw_string_mono(const char * str, const gui_mono_font_t * font)
 {
-	return getwidth_Mstring(str, font);
+	return gui_getwidth_Mstring32(str, font);
 }
 
 static inline uint16_t __gui_get_pixw_string_prop(const char * str, const gui_prop_font_t * font)
 {
-	return getwidth_Pstring(str, font);
+	return gui_getwidth_Pstring32(str, font);
 }
 
 #endif /* WITHTOUCHGUI */

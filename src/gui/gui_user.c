@@ -863,7 +863,7 @@ void gui_main_process(void)
 		uint_fast8_t infobar = infobar_places[current_place] & INFOBAR_VALID_MASK;
 		COLORPIP_T str_color = (current_place == infobar_selected) && infobar_hl ? COLORPIP_BLACK : COLORPIP_WHITE;
 		uint16_t strl;
-		const gui_prop_font_t * font = & gothic_12x16_p;
+		const gui_prop_font_t * font = & arial_14x13_prop;
 
 		switch (infobar)
 		{
@@ -1796,10 +1796,10 @@ void window_swrscan_process(void)
 
 		char buf[5];
 		uint_fast8_t l = 1, row_step = roundf((y0 - y1) / 3);
-		uint8_t charw = gothic_11x13.width, charh = gothic_11x13.height;
+		uint8_t charw = arial_14x13_mono.width, charh = arial_14x13_mono.height;
 
 		local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", l ++);
-		gui_print_mono(x0 - charw, y0 - charh / 2, buf, & gothic_11x13, COLORPIP_WHITE);
+		gui_print_mono(x0 - charw, y0 - charh / 2, buf, & arial_14x13_mono, COLORPIP_WHITE);
 
 		for(int_fast16_t yy = y0 - row_step; yy > y1; yy -= row_step)
 		{
@@ -1808,7 +1808,7 @@ void window_swrscan_process(void)
 
 			gui_drawline(x0 + 1, yy, x1, yy, COLORPIP_DARKGREEN);
 			local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", l ++);
-			gui_print_mono(x0 - charw, yy - charh / 2, buf, & gothic_11x13, COLORPIP_WHITE);
+			gui_print_mono(x0 - charw, yy - charh / 2, buf, & arial_14x13_mono, COLORPIP_WHITE);
 		}
 
 		if (gui_obj_get_int_prop("lbl_swr_error", GUI_OBJ_VISIBLE))				// фон сообщения об ошибке
@@ -2927,7 +2927,7 @@ void window_ft8_process(void)
 		gui_obj_create("lbl_txmsg1", FONT_MEDIUM, COLORPIP_WHITE, 10);
 		gui_obj_create("lbl_txmsg2", FONT_MEDIUM, COLORPIP_WHITE, 10);
 		gui_obj_create("lbl_txmsg3", FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("tf_ft8", 37, 26, UP, & gothic_11x13);
+		gui_obj_create("tf_ft8", 37, 26, UP, & arial_14x13_mono);
 
 		gui_obj_set_prop("lbl_cq_title", GUI_OBJ_TEXT, "CQ:");
 		gui_obj_set_prop("lbl_cq_title", GUI_OBJ_STATE, DISABLED);
@@ -3793,7 +3793,7 @@ void window_3d_process(void)
 
 	if (is_win_init())
 	{
-		gui_obj_create("tf_3d", 60, 22, UP, & gothic_11x13);
+		gui_obj_create("tf_3d", 60, 22, UP, & arial_14x13_mono);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
@@ -3905,7 +3905,7 @@ void window_menu_params_process(void)
 			local_snprintf_P(btn_names[i], TEXT_ARRAY_SIZE, "btn_params_%02d", i);
 			remove_end_line_spaces(menup[i].name);
 
-			if (getwidth_Pstring(menup[i].name, & FONT_BUTTONS) > 110)
+			if (__gui_get_pixw_string_prop(menup[i].name, & FONT_BUTTONS) > 110)   // переделать
 				split_string(menup[i].name, '|');
 
 			gui_obj_create(btn_names[i], 120, 40, 0, 0, menup[i].name);
@@ -3992,7 +3992,7 @@ void window_menu_process(void)
 			local_snprintf_P(btn_names[i], TEXT_ARRAY_SIZE, "btn_groups_%02d", i);
 			remove_end_line_spaces(menu[i].name);
 
-			if (getwidth_Pstring(menu[i].name, & FONT_BUTTONS) > 110)
+			if (__gui_get_pixw_string_prop(menu[i].name, & FONT_BUTTONS) > 110)
 				split_string(menu[i].name, '|');
 
 			gui_obj_create(btn_names[i], 120, 40, 0, 0, menu[i].name);

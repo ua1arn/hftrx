@@ -15,6 +15,7 @@
 #include "gui_structs.h"
 #include "gui_settings.h"
 #include "gui_windows.h"
+#include "gui_fonts.h"
 #include "gui_port.h"
 
 void gui_drawstring(uint16_t x, uint16_t y, const char * str, font_size_t font, COLORPIP_T color)

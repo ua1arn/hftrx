@@ -815,10 +815,10 @@ void rendered_value_big_initialize(COLORPIP_T fg, COLORPIP_T bg);	// Подго�
 void
 pix_display_value_small(
 	const gxdrawb_t * db,
-	uint_fast8_t xcell,	// x координата начала вывода значения
-	uint_fast8_t ycell,	// y координата начала вывода значения
-	uint_fast8_t xspan,
-	uint_fast8_t yspan,
+	uint_fast16_t xpix,	// x координата начала вывода значения
+	uint_fast16_t ypix,	// y координата начала вывода значения
+	uint_fast16_t w,
+	uint_fast16_t h,
 	int_fast32_t freq,
 	uint_fast8_t width,	// full width (if >= 128 - display with sign)
 	uint_fast8_t comma,		// comma position (from right, inside width)

@@ -20,6 +20,7 @@
 #include "gui_objects.h"
 #include "gui_events.h"
 #include "utils.h"
+#include "gui_fonts.h"
 #include "gui_port.h"
 
 static btn_bg_t btn_bg[] = {
@@ -815,8 +816,8 @@ static void draw_button(const button_t * const bh)
 	if (strchr(bh->text, delimeters[0]) == NULL)
 	{
 		/* Однострочная надпись */
-		int strlenP = getwidth_Pstring(bh->text, & FONT_BUTTONS);
-		UB_Font_DrawPString(gdb,
+		int strlenP = __gui_get_pixw_string_prop(bh->text, & FONT_BUTTONS);
+		__gui_draw_string_prop(gdb,
 				shiftX + x1 + (bh->w - strlenP) / 2,
 				shiftY + y1 + (bh->h - FONT_BUTTONS.height) / 2,
 				bh->text, & FONT_BUTTONS, textcolor
@@ -831,16 +832,16 @@ static void draw_button(const button_t * const bh)
 		strcpy(buf, bh->text);
 		char * text2 = strtok_r(buf, delimeters, & next);
 
-		int strlenP = getwidth_Pstring(text2, & FONT_BUTTONS);
-		UB_Font_DrawPString(gdb,
+		int strlenP = __gui_get_pixw_string_prop(text2, & FONT_BUTTONS);
+		__gui_draw_string_prop(gdb,
 				shiftX + x1 + (bh->w - strlenP) / 2,
 				shiftY + y1 + j,
 				text2, & FONT_BUTTONS, textcolor
 				);
 
 		text2 = strtok_r(NULL, delimeters, & next);
-		strlenP = getwidth_Pstring(text2, & FONT_BUTTONS);
-		UB_Font_DrawPString(gdb,
+		strlenP = __gui_get_pixw_string_prop(text2, & FONT_BUTTONS);
+		__gui_draw_string_prop(gdb,
 				shiftX + x1 + (bh->w - strlenP) / 2,
 				shiftY + bh->h + y1 - FONT_BUTTONS.height - j,
 				text2, & FONT_BUTTONS, textcolor
@@ -1288,7 +1289,6 @@ static void process_gui(void)
 					}
 
 					__gui_draw_rect(drawbuf, win->x1, win->y1, win->w, window_title_height, GUI_WINDOWTITLECOLOR, 1);
-					//colpip_string_tbg(drawbuf, xt, win->y1 + 5, win->title, COLORPIP_BLACK);
 					__gui_draw_string_prop(drawbuf, xt, win->y1 + 5, win->title, & FONT_BUTTONS, COLORPIP_BLACK);
 				}
 
