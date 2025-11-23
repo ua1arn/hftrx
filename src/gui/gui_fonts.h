@@ -36,6 +36,8 @@ extern UB_Font32 arial_14x13_mono;
 extern UB_pFont32 arial_14x13_prop;
 extern UB_Font32 arial_18x16_mono;
 extern UB_pFont32 arial_18x16_prop;
+extern UB_pFont32 msgothic_15x17_prop;
+extern UB_pFont32 msgothic_13x16_prop;
 
 #endif /* WITHTOUCHGUI */
 

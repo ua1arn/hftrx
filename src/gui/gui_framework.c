@@ -816,11 +816,11 @@ static void draw_button(const button_t * const bh)
 	if (strchr(bh->text, delimeters[0]) == NULL)
 	{
 		/* Однострочная надпись */
-		int strlenP = __gui_get_pixw_string_prop(bh->text, & FONT_BUTTONS);
+		int strlenP = __gui_get_pixw_string_prop(bh->text, & BUTTONS_FONTP);
 		__gui_draw_string_prop(gdb,
 				shiftX + x1 + (bh->w - strlenP) / 2,
-				shiftY + y1 + (bh->h - FONT_BUTTONS.height) / 2,
-				bh->text, & FONT_BUTTONS, textcolor
+				shiftY + y1 + (bh->h - BUTTONS_FONTP.height) / 2,
+				bh->text, & BUTTONS_FONTP, textcolor
 				);
 	}
 	else
@@ -832,19 +832,19 @@ static void draw_button(const button_t * const bh)
 		strcpy(buf, bh->text);
 		char * text2 = strtok_r(buf, delimeters, & next);
 
-		int strlenP = __gui_get_pixw_string_prop(text2, & FONT_BUTTONS);
+		int strlenP = __gui_get_pixw_string_prop(text2, & BUTTONS_FONTP);
 		__gui_draw_string_prop(gdb,
 				shiftX + x1 + (bh->w - strlenP) / 2,
 				shiftY + y1 + j,
-				text2, & FONT_BUTTONS, textcolor
+				text2, & BUTTONS_FONTP, textcolor
 				);
 
 		text2 = strtok_r(NULL, delimeters, & next);
-		strlenP = __gui_get_pixw_string_prop(text2, & FONT_BUTTONS);
+		strlenP = __gui_get_pixw_string_prop(text2, & BUTTONS_FONTP);
 		__gui_draw_string_prop(gdb,
 				shiftX + x1 + (bh->w - strlenP) / 2,
-				shiftY + bh->h + y1 - FONT_BUTTONS.height - j,
-				text2, & FONT_BUTTONS, textcolor
+				shiftY + bh->h + y1 - BUTTONS_FONTP.height - j,
+				text2, & BUTTONS_FONTP, textcolor
 				);
 	}
 
@@ -1289,7 +1289,7 @@ static void process_gui(void)
 					}
 
 					__gui_draw_rect(drawbuf, win->x1, win->y1, win->w, window_title_height, GUI_WINDOWTITLECOLOR, 1);
-					__gui_draw_string_prop(drawbuf, xt, win->y1 + 5, win->title, & FONT_BUTTONS, COLORPIP_BLACK);
+					__gui_draw_string_prop(drawbuf, xt, win->y1 + 5, win->title, & BUTTONS_FONTP, COLORPIP_BLACK);
 				}
 
 				// отрисовка принадлежащих окну элементов

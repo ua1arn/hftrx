@@ -1496,11 +1496,6 @@ extern "C" {
 	#define WITHGUIHEAP 		(80 * 1024uL)			// требуемый размер кучи для touch GUI
 #endif /* ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL) */
 
-//#if ! defined WITHALTERNATIVEFONTS || ! WITHALTERNATIVEFONTS
-//	#undef WITHALTERNATIVEFONTS
-//	#define WITHALTERNATIVEFONTS	1
-//#endif
-
 #if ! defined WITHALTERNATIVELAYOUT || ! WITHALTERNATIVELAYOUT
 	#undef WITHALTERNATIVELAYOUT
 	#define WITHALTERNATIVELAYOUT	1
@@ -1534,11 +1529,6 @@ extern "C" {
 #if defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_GPS) && ! defined WITHNMEA
 	#error RTC_TYPE_GPS and WITHNMEA must be used in same time
 #endif /* defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_GPS) && ! defined WITHNMEA */
-
-//#if LINUX_SUBSYSTEM && WITHLVGL
-//	#undef WITHTOUCHGUI
-//	#undef TSC1_TYPE
-//#endif /* LINUX_SUBSYSTEM && WITHLVGL */
 
 #ifdef __cplusplus
 }
