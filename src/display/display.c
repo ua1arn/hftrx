@@ -1627,27 +1627,16 @@ colpip_segm(
 			colpip_line(db, xo, yo, x, y, color, antialiasing);
 			xo = x, yo = y;
 		}
+		gs = ((gs + 360) + step) % 360;
 		if (ge == 360)
 			ge = 0;
-		if (step < 0)
-		{
-			gs += step;
-			if (gs >= 360)
-				gs += 360;
-		}
-		else
-		{
-			gs += step;
-			if (gs >= 360)
-				gs -= 360;
-		}
 	}
 
 	if (first == 0)
 	{
 		// завершение окружности
 		vsin = isin(ge, r);
-		vcos = icos(ge, style ? r << 1 : r);
+		vcos = icos(ge, style ? r * 2 : r);
 		x = xc + vcos;
 		y = yc + vsin;
 
@@ -1676,20 +1665,20 @@ void colmain_rounded_rect(
 	ASSERT((r * 2) < (x2 - x1));
 	ASSERT((r * 2) < (y2 - y1));
 
-	const uint_fast16_t whalf = (x2 - x1 + 1 + 1) / 2;
-	const uint_fast16_t hhalf = (y2 - y1 + 1 + 1) / 2;
-
-	if (whalf == 0 || hhalf == 0)
-		return;
-
 #if CPUSTYLE_ALLWINNER && ! LINUX_SUBSYSTEM
+
+	const uint_fast16_t wpartial = (x2 - x1 + 1 + 1) / 2;
+	const uint_fast16_t hpartial = (y2 - y1 + 1 + 1) / 2;
+
+	if (wpartial == 0 || hpartial == 0)
+		return;
 	// Использование аппаартного копирования при построении
 	// Рисуем левую верхнюю левую четверть
 	colpip_segm(db, x1 + r, y1 + r, 180, 270, r, 1, color, 1, 0); // up left
-	colpip_line(db, x1 + r, y1, x1 + whalf - 1, y1, color, 0); // up
-	colpip_line(db, x1, y1 + r, x1, y1 + hhalf - 1, color, 0); // left
-	colpip_line(db, x1, y1 + hhalf, x1 + whalf - 1, y1 + hhalf, color, 0); // horisontal center
-	colpip_line(db, x1 + whalf, y1, x1 + whalf, y1 + hhalf - 1, color, 0); // vertical center
+	colpip_line(db, x1 + r, y1, x1 + wpartial - 1, y1, color, 0); // up
+	colpip_line(db, x1, y1 + r, x1, y1 + hpartial - 1, color, 0); // left
+	colpip_line(db, x1, y1 + hpartial, x1 + wpartial - 1, y1 + hpartial, color, 0); // horisontal center
+	colpip_line(db, x1 + wpartial, y1, x1 + wpartial, y1 + hpartial - 1, color, 0); // vertical center
 	if (fill)
 	{
 		PACKEDCOLORPIP_T * const oldColor = colpip_mem_at(db, x1 + r, y1 + r);
@@ -1699,19 +1688,19 @@ void colmain_rounded_rect(
 	colpip_bitblt(
 			db->cachebase, db->cachesize,
 			db,
-			x1, y2 - hhalf,
+			x1, y2 - hpartial,
 			db->cachebase, db->cachesize,
 			db,
-			x1, y1, whalf, hhalf,
+			x1, y1, wpartial, hpartial,
 			BITBLT_FLAG_YMIRROR, 0);
 	// Копируем левую половину в правую
 	colpip_bitblt(
 			db->cachebase, 0*db->cachesize,
 			db,
-			x2 - whalf, y1,
+			x2 - wpartial, y1,
 			db->cachebase, 0*db->cachesize,
 			db,
-			x1, y1, whalf, y2 - y1 + 1,	// часть по ширине, всю по высоте
+			x1, y1, wpartial, y2 - y1 + 1,	// часть по ширине, всю по высоте
 			BITBLT_FLAG_XMIRROR, 0);
 
 #else
