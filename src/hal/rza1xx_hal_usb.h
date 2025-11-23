@@ -16,10 +16,6 @@
 extern "C" {
 #endif
 
-
-void device_USBI0_IRQHandler(void);
-void device_USBI1_IRQHandler(void);
-
 #define __HAL_PCD_ENABLE(__HANDLE__)    do { \
 	if ((__HANDLE__)->Instance == & USB200) { \
 			arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler); \

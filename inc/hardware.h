@@ -899,6 +899,7 @@ uint32_t sys_now(void);
 uint32_t board_millis(void);	// tinyusb
 int sys_dram_init(void);	// 0 - error
 int main(void);
+void SystemInit(void);
 
 // RTOS test stuff
 int blinky_main(void);
@@ -916,6 +917,18 @@ void applowinitialize(void);
 void initialize2(void);
 void application_mainloop(void);
 void application_initialize(void);
+
+void ohciehci_clk_init(void);
+void usbdevice_clk_init(void);
+void OTG_HS_IRQHandler(void);
+void device_USBI0_IRQHandler(void);
+void device_USBI1_IRQHandler(void);
+void device_OTG_HS_EP1_OUT_IRQHandler(void);
+void device_OTG_HS_EP1_IN_IRQHandler(void);
+void device_OTG_HS_IRQHandler(void);
+void device_OTG_FS_IRQHandler(void);
+
+void softdevay(void);
 
 #ifdef __cplusplus
 }
@@ -983,20 +996,6 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
 }
 
 #endif /* (__CORTEX_A == 53U) */
-
-
-void ohciehci_clk_init(void);
-void usbdevice_clk_init(void);
-void OTG_HS_IRQHandler(void);
-void device_USBI0_IRQHandler(void);
-void device_USBI1_IRQHandler(void);
-void device_OTG_HS_EP1_OUT_IRQHandler(void);
-void device_OTG_HS_EP1_IN_IRQHandler(void);
-void device_OTG_HS_IRQHandler(void);
-void device_OTG_FS_IRQHandler(void);
-
-void SystemInit(void);
-void softdevay(void);
 
 #include "utils.h"
 // Substitutions for t507 ddr ram init
