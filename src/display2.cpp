@@ -1600,8 +1600,6 @@ static gxstyle_t dbstylev_2freqB [2];
 static gxstyle_t dbstylev_2modeB [2];
 // Параметры отображения частоты основного приемника
 static gxstyle_t dbstylev_1freqv;
-// Параметры отображения режима основного приемника
-static gxstyle_t dbstylev_1mode;
 
 // Параметры отображения спектра и водопада - устанавливаются в display2_stylesupdate().
 static COLORPIP_T colorcmarker = DSGN_GRIDCOLOR0;	// Цвет макркера на центре
@@ -3717,7 +3715,7 @@ static void display2_mode3_a(const gxdrawb_t * db,
 		)
 {
 	const char * const labels [1] = { hamradio_get_mode_a_value_P(), };
-	display2_text(db, x, y, labels, & dbstylev_1mode, 0, xspan, yspan);
+	display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 }
 
 #if WITHTOUCHGUI
@@ -3732,7 +3730,7 @@ static void display2_mode_lower_a(const gxdrawb_t * db,
 {
 	char labels[5];
 	local_snprintf_P(labels, ARRAY_SIZE(labels), PSTR(" %s"), hamradio_get_mode_a_value_P());
-	colpip_string2_tbg(db, GRID2X(x), GRID2Y(y), labels, dbstylev_1mode.textfg);
+	colpip_string2_tbg(db, GRID2X(x), GRID2Y(y), labels, dbstylev_1state.textfg);
 }
 
 #endif /* WITHTOUCHGUI */
@@ -9771,18 +9769,13 @@ static void display2_stylesupdate(void)
 	gxstyle_initialize(& dbstylev_2fmenu [1]);
 	gxstyle_textcolor(& dbstylev_2fmenu [1], DSGN_FMENUACTIVETEXT, DSGN_FMENUACTIVEBACK);
 
-	// Параметры отображения текстов без вариантов
+	// Параметры отображения состояний FUNC MENU без вариантов
 	gxstyle_initialize(& dbstylev_1fmenu);
 	gxstyle_textcolor(& dbstylev_1fmenu, DSGN_FMENUTEXT, DSGN_FMENUBACK);
 
-	// Параметры отображения текстов без вариантов
-	// синий
+	// Параметры отображения текстов без вариантов (синий)
 	gxstyle_initialize(& dbstylev_1stateBlue);
 	gxstyle_textcolor(& dbstylev_1stateBlue, DSGN_BIGCOLORB, DSGN_LABELBACK);
-
-	// Параметры отображения режима основного приемника
-	gxstyle_initialize(& dbstylev_1mode);
-	gxstyle_textcolor(& dbstylev_1mode, DSGN_BIGCOLOR, DSGN_LABELBACK);
 
 	// Параметры отображения спектра и водопада
 	colorcmarker = DSGN_GRIDCOLOR0;	// Цвет макркера на центре
