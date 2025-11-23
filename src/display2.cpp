@@ -1868,10 +1868,12 @@ display2_smeter15_layout(
 		smpr->gm + 5 * smpr->step2,
 	};
 
-	const COLORPIP_T smeter = COLORPIP_WHITE;
-	const COLORPIP_T smeterplus = COLORPIP_DARKRED;
+	const COLORPIP_T bgcolor = display2_getbgcolor();
+	const COLORPIP_T smetercolor = COLORPIP_WHITE;
+	const COLORPIP_T smeterpluscolor = COLORPIP_DARKRED;
 	const uint_fast16_t pad2w3 = strwidth3("ZZ");
 
+	// SMETER_TYPE_DIAL data
 	uint_fast16_t xb = 120, yb = 120;	// In pixels
 	unsigned p;
 	unsigned i;
@@ -1884,7 +1886,6 @@ display2_smeter15_layout(
 	// Angles (positions)
 	uint_fast16_t * const smeteranglesTX = smpr->smeteranglesRXTX [SM_STATE_TX];
 	uint_fast16_t * const smeteranglesRX = smpr->smeteranglesRXTX [SM_STATE_RX];
-	const COLORPIP_T bgcolor = display2_getbgcolor();
 	switch (smetertype)
 	{
 
@@ -1904,13 +1905,13 @@ display2_smeter15_layout(
 				char buf2 [10];
 				uint_fast16_t xx, yy;
 
-				colpip_radius(smbgdbTX, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 8, smeter, 1, 1);
+				colpip_radius(smbgdbTX, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 8, smetercolor, 1, 1);
 				polar_to_dek(xb, yb, markersTX_pwr [i], smpr->r1 + 6, & xx, & yy, 1);
 				local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
 				colpip_string3_tbg(smbgdbTX, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORPIP_YELLOW);
 			}
 			else
-				colpip_radius(smbgdbTX, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 4, smeter, 1, 1);
+				colpip_radius(smbgdbTX, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 4, smetercolor, 1, 1);
 		}
 
 		for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
@@ -1918,13 +1919,13 @@ display2_smeter15_layout(
 			char buf2 [10];
 			uint_fast16_t xx, yy;
 
-			colpip_radius(smbgdbTX, xb, yb, markersTX_swr [i], smpr->r2, smpr->r2 - 8, smeter, 1, 1);
+			colpip_radius(smbgdbTX, xb, yb, markersTX_swr [i], smpr->r2, smpr->r2 - 8, smetercolor, 1, 1);
 			polar_to_dek(xb, yb, markersTX_swr [i], smpr->r2 - 16, & xx, & yy, 1);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
 			colpip_string3_tbg(smbgdbTX, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf2, COLORPIP_YELLOW);
 		}
-		colpip_segm(smbgdbTX, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smeter, 1, 1);
-		colpip_segm(smbgdbTX, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeter, 1, 1);
+		colpip_segm(smbgdbTX, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smetercolor, 1, 1);
+		colpip_segm(smbgdbTX, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smetercolor, 1, 1);
 		colpip_segm(smbgdbTX, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORPIP_WHITE, 1, 1);
 #endif /* WITHRLEDECOMPRESS */
 		dcache_clean(smbgdbTX->cachebase, smbgdbTX->cachesize);
@@ -1944,14 +1945,14 @@ display2_smeter15_layout(
 			char buf2 [10];
 			uint_fast16_t xx, yy;
 
-			colpip_radius(smbgdbRX, xb, yb, markers [i], smpr->r1, smpr->r1 + 8, smeter, 1, 1);
+			colpip_radius(smbgdbRX, xb, yb, markers [i], smpr->r1, smpr->r1 + 8, smetercolor, 1, 1);
 			polar_to_dek(xb, yb, markers [i], smpr->r1 + 6, & xx, & yy, 1);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
 			colpip_string3_tbg(smbgdbRX, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf2, COLORPIP_YELLOW);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 		{
-			colpip_radius(smbgdbRX, xb, yb, markers2 [i], smpr->r1, smpr->r1 + 4, smeter, 1, 1);
+			colpip_radius(smbgdbRX, xb, yb, markers2 [i], smpr->r1, smpr->r1 + 4, smetercolor, 1, 1);
 		}
 
 		for (p = 20, i = 0; i < ARRAY_SIZE(markersR); ++ i, p += 20)
@@ -1959,17 +1960,17 @@ display2_smeter15_layout(
 			char buf2 [10];
 			uint_fast16_t xx, yy;
 
-			colpip_radius(smbgdbRX, xb, yb, markersR [i], smpr->r1, smpr->r1 + 8, smeterplus, 1, 1);
+			colpip_radius(smbgdbRX, xb, yb, markersR [i], smpr->r1, smpr->r1 + 8, smeterpluscolor, 1, 1);
 			polar_to_dek(xb, yb, markersR [i], smpr->r1 + 6, & xx, & yy, 1);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("+%u"), p);
 			colpip_string3_tbg(smbgdbRX, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORPIP_RED);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 		{
-			colpip_radius(smbgdbRX, xb, yb, markers2R [i], smpr->r1, smpr->r1 + 4, smeterplus, 1, 1);
+			colpip_radius(smbgdbRX, xb, yb, markers2R [i], smpr->r1, smpr->r1 + 4, smeterpluscolor, 1, 1);
 		}
-		colpip_segm(smbgdbRX, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smeter, 1, 1);
-		colpip_segm(smbgdbRX, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeterplus, 1, 1);
+		colpip_segm(smbgdbRX, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smetercolor, 1, 1);
+		colpip_segm(smbgdbRX, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeterpluscolor, 1, 1);
 		colpip_segm(smbgdbRX, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORPIP_WHITE, 1, 1);
 #endif /* WITHRLEDECOMPRESS */
 		dcache_clean(smbgdbRX->cachebase, smbgdbRX->cachesize);
