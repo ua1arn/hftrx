@@ -1495,7 +1495,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 
 static const struct {
 	uint8_t code;
-	char label2 [3];
+	const char * label;
 }  antmodes [] =
 {
 	{	0,	"A1" },
@@ -1503,7 +1503,7 @@ static const struct {
 
 static const struct {
 	uint8_t code;
-	char label2 [3];
+	const char * label;
 }  rxantmodes [] =
 {
 	{	0,	"" },
@@ -1514,7 +1514,7 @@ static const struct {
 
 static const struct {
 	uint8_t code;
-	char label2 [3];
+	const char * label;
 }  antmodes [] =
 {
 	{	0,	"A1" },
@@ -1523,7 +1523,7 @@ static const struct {
 
 static const struct {
 	uint8_t code;
-	char label2 [3];
+	const char * label;
 }  rxantmodes [] =
 {
 	{	0,	"" },
@@ -1552,7 +1552,7 @@ static const struct {
 
 static const struct {
 	uint8_t code;
-	char label2 [3];
+	const char * label;
 }  antmodes [] =
 {
 	{	0,	"A1" },
@@ -12739,7 +12739,7 @@ const char * hamradio_get_ant5_value_P(void)
 	static char b [6];
 	local_snprintf_P(b, ARRAY_SIZE(b),
 			PSTR("   %s"),
-			rxantmodes[grxantenna].label2
+			rxantmodes[grxantenna].label
 	);
 	return b;
 }
@@ -12750,11 +12750,11 @@ const char * hamradio_get_ant5_value_P(void)
 const char * hamradio_get_ant5_value_P(void)
 {
 	static char b [6];
-	local_snprintf_P(b, ARRAY_SIZE(b),
-			PSTR("%s %s"),
-			antmodes [gantenna].label2,
-			rxantmodes[grxantenna].label2
-	);
+	if (strlen(rxantmodes[grxantenna].label))
+		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%s %s"), antmodes [gantenna].label, rxantmodes[grxantenna].label);
+	else
+		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%s"), antmodes [gantenna].label);
+
 	return b;
 }
 
@@ -12775,7 +12775,7 @@ const char * hamradio_get_ant5_value_P(void)
 	static char b [6];
 	local_snprintf_P(b, ARRAY_SIZE(b),
 			PSTR("%s %s"),
-			antmodes [geteffantenna(gfreqs [bi])].label2,
+			antmodes [geteffantenna(gfreqs [bi])].label,
 			gantmanual ? "MN" : "AU"
 	);
 	return b;
