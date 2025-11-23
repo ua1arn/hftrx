@@ -118,7 +118,7 @@
 		//{	19, 25,
 		//{	23, 25,
 		//{	27, 25,
-		{	33, 25,	3, 5, display2_rec3,		& dzi_compat, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	32, 25,	4, 5, display2_rec3,		& dzi_compat, PGALL, },	// Отображение режима записи аудио фрагмента
 		{	36, 25,	4, 5, display2_spk3,		& dzi_compat, PGALL, },	// отображение признака включения динамика
 		{	40, 25, 4, 5, display2_bkin3,		& dzi_compat, PGALL, },	// BREAK-IN
 		{	44,	25,	6, 5, display2_wpm5, 		& dzi_compat, PGALL, },	// 22WPM
