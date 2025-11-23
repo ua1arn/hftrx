@@ -810,20 +810,6 @@ pix_rendered_value_big(
 void rendered_value_big_initialize(COLORPIP_T fg, COLORPIP_T bg);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
 
 void
-display_value_lower(
-	const gxdrawb_t * db,
-	uint_fast8_t xcell,	// x координата начала вывода значения
-	uint_fast8_t ycell,	// y координата начала вывода значения
-	uint_fast8_t xspan,
-	uint_fast8_t yspan,
-	int_fast32_t freq,
-	uint_fast8_t width, // = 8;	// full width
-	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
-	uint_fast8_t rj,
-	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
-	);
-
-void
 pix_display_value_small(
 	const gxdrawb_t * db,
 	uint_fast8_t xcell,	// x координата начала вывода значения

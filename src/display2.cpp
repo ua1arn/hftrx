@@ -2354,7 +2354,7 @@ display2_smeter15(const gxdrawb_t * db,
 #endif /* LCDMODE_LTDC */
 
 // Отображение частоты. Герцы так же большим шрифтом.
-static void display_freqXbig_a(const gxdrawb_t * db,
+static void display_freqXa_big(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -2447,24 +2447,6 @@ static void display2_freqX_a(
 		display_value_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	#endif /* WITHPRERENDER */
 	}
-}
-
-/* заглушка - в 320*200 */
-static void display2_freqx_a(
-	const gxdrawb_t * db,
-	uint_fast8_t xcell,
-	uint_fast8_t ycell,
-	uint_fast8_t xspan,
-	uint_fast8_t yspan,
-	dctx_t * pctx
-	)
-{
-	uint_fast8_t rj;
-	uint_fast8_t fullwidth = display_getfreqformat(& rj);
-	const uint_fast8_t comma = 3 - rj;
-	const uint_fast32_t freq = hamradio_get_freq_a();
-
-	display_value_lower(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, rj, & dbstylev_1freqv);
 }
 
 // Верстия отображения без точки между мегагерцами и сотнями килогерц (для текстовых дисплееев)

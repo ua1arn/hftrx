@@ -1375,56 +1375,6 @@ rendered_value_big(
 
 void
 NOINLINEAT
-display_value_lower(
-	const gxdrawb_t * db,
-	uint_fast8_t xcell,	// x координата начала вывода значения
-	uint_fast8_t ycell,	// y координата начала вывода значения
-	uint_fast8_t xspan,
-	uint_fast8_t yspan,
-	int_fast32_t freq,
-	uint_fast8_t width, // = 8;	// full width
-	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
-	uint_fast8_t rj,	// = 1;		// right truncated
-	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
-	)
-{
-//	if (width > ARRAY_SIZE(vals10))
-//		width = ARRAY_SIZE(vals10);
-	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
-	uint_fast8_t i = (j - width);
-	uint_fast8_t z = 1;	// only zeroes
-	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
-
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
-	const uint_fast16_t w = GRID2X(xspan);
-	const uint_fast16_t h = GRID2Y(yspan);
-	const COLORPIP_T fg = dbstyle->textcolor;
-	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->bgcolor);
-	for (; i < j; ++ i)
-	{
-		const ldiv_t res = ldiv(freq, vals10 [i]);
-		const uint_fast8_t g = (j - i);		// десятичная степень текущего разряда на отображении
-
-		if (comma == g || comma + 3 == g)
-		{
-			z = 0;
-			xpix = display_put_char_big(db, xpix, ypix, '.', fg);
-		}
-
-		if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_big(db, xpix, ypix, ' ', fg);	// supress zero
-		else
-		{
-			z = 0;
-			xpix = display_put_char_half(db, xpix, ypix, '0' + res.quot, fg);
-		}
-		freq = res.rem;
-	}
-}
-
-void
-NOINLINEAT
 pix_display_value_small(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
