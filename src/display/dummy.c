@@ -70,7 +70,7 @@ void gxstyle_initialize(gxstyle_t * dbstyle)
 
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a)
 {
-	dbstyle->texhtalign = a;
+	dbstyle->texthalign = a;
 }
 
 void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a)
