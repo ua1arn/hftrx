@@ -114,8 +114,8 @@ static const dzone_t dzones [] =
 
 	{	37, 10,	3,	4,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 	{	41, 10,	3,	4,	display2_rxbw3,	& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
-	//{	46, 10,	3,	4,	display2_agc3,	& dzi_agc, PGALL, },	// AGC mode
-	{	46,	10,	4,	4,	display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
+	//{	45, 10,	5,	4,	display2_agc3,	& dzi_agc, PGALL, },	// AGC mode
+	{	45,	10,	5,	4,	display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
 
 	{	37, 15,	3,	4,	display2_nr3,	& dzi_nr, PGALL, },	// NR : was: AGC
 	{	41, 15,	3,	4,	display2_datamode3,	& dzi_datamode, PGALL, },	// DATA mode indicator
@@ -126,7 +126,7 @@ static const dzone_t dzones [] =
 	{	24,	20,	12,	4,	display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ
 	{	37, 20,	3,	4,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
 	{	41, 20,	3,	4,	display2_voxtune3,	& dzi_voxtune, PGALL, },	// VOX
-	//{	45,	20,	4,	4,	display2_dummy, & dzi_lockstate, PGALL, },	// LOCK
+	//{	45,	20,	5,	4,	display2_dummy, & dzi_lockstate, PGALL, },	// LOCK
 
 	// размещены под S-метром (15 ячеек)
 	{	0, 	25,	5,	4,	display2_voltlevelV5, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
@@ -139,7 +139,7 @@ static const dzone_t dzones [] =
 	{	37, 25,	3,	4,	display2_spk3,	& dzi_spk, PGALL, },	// отображение признака включения динамика
 	{	41, 25, 3,	4,	display2_bkin3,	& dzi_bkin, PGALL, },	// BREAK-IN
 	//{	45,	25,	5,	4,	display2_wpm5, & dzi_wpm, PGALL, },	// 22WPM
-	{	45,	25,	4,	4,	display2_lockstate4, & dzi_lock, PGALL, },	// LOCK
+	{	45,	25,	5,	4,	display2_lockstate4, & dzi_lock, PGALL, },	// LOCK
 
 	//{	24, 30,	10,	4,	display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 	//{	37, 30,	8,	4,	display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
