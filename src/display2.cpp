@@ -1215,8 +1215,6 @@ static const dzitem_t dzi_voxtune =
 	#include "display/pictures_RLE.h"
 #endif /* WITHRLEDECOMPRESS */
 
-#define WITHPLACEHOLDERS 1	//  отображение макета с еще незанятыми полями
-
 #if LCDMODE_LTDC
 
 	#include "display/fontmaps.h"
@@ -2668,18 +2666,6 @@ static void display2_rec3(const gxdrawb_t * db,
 #endif /* WITHUSEAUDIOREC */
 }
 
-
-void display2_swrsts(const gxdrawb_t * db,
-		uint_fast8_t xcell,
-		uint_fast8_t ycell,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-
-}
-
 static void display_2states(const gxdrawb_t * db,
 	uint_fast8_t xcell,
 	uint_fast8_t ycell,
@@ -3116,34 +3102,6 @@ static void display_vfomode5(const gxdrawb_t * db,
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const labels [1] = { hamradio_get_vfomode5_value(& state), };
 	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
-}
-
-static void display_XXXXX3(const gxdrawb_t * db,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-#if WITHPLACEHOLDERS
-	const uint_fast8_t state = 0;
-	display_2states(db, x, y, state, "", "", xspan, yspan);
-#endif /* WITHPLACEHOLDERS */
-}
-
-static void display_XXXXX5(const gxdrawb_t * db,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-#if WITHPLACEHOLDERS
-	const uint_fast8_t state = 0;
-	display_2states(db, x, y, state, "", "", xspan, yspan);
-#endif /* WITHPLACEHOLDERS */
 }
 
 // Отображение режима передачи аудио с USB
@@ -4384,16 +4342,20 @@ static void display2_datetime12(const gxdrawb_t * db,
 #endif /* defined (RTC1_TYPE) */
 }
 
-static void display2_dummy(const gxdrawb_t * db,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
+// Отображение места для какого-либо элемента
+static void display2_dummy(
+	const gxdrawb_t * db,
+	uint_fast8_t x,
+	uint_fast8_t y,
+	uint_fast8_t xspan,
+	uint_fast8_t yspan,
+	dctx_t * pctx
+	)
 {
-
+	const uint_fast8_t state = 0;
+	display_text(db, x, y, "", xspan, yspan, & dbstylev_1state);
 }
+
 
 //+++ bars
 

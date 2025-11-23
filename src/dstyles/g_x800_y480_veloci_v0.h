@@ -101,7 +101,7 @@ static const dzone_t dzones [] =
 #if WITHBARS
 	{   0, 	5,  0,	0,	display2_smeter15_init,	NULL, PGINI, },	//  Инициализация стрелочного прибора
 	{   0, 	4,  15,	20,	display2_smeter15,		& dzi_compat, PGALL, },	//  Инициализация стрелочного прибора
-//	{   0, 	5,	15,	19,	display2_dummy, 		& dzi_smtr2, PGALL, },	// Изображение стрелочного прибора
+//	{   0, 	5,	15,	19,	display2_dummy, 		& dzi_smtr2, PGALL, },	// Placeholder
 #endif /* WITHBARS */
 #if WITHAFSPECTRE
 	{	0,	5,	0,	0,	display2_af_spectre15_init,		NULL, PGINI, },
@@ -127,7 +127,7 @@ static const dzone_t dzones [] =
 	{	24,	20,	12,	5,	display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ 144.150.000
 	{	36, 20,	4,	5,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
 	{	40, 20,	4,	5,	display2_voxtune3,	& dzi_voxtune, PGALL, },	// VOX
-	//{	44,	20,	6,	5,	display2_dummy, & dzi_lockstate, PGALL, },	// LOCK
+	{	44,	20,	6,	5,	display2_dummy, & dzi_default, PGALL, },	// Placeholder
 
 	// размещены под S-метром (15 ячеек)
 	{	0, 	25,	6,	5,	display2_voltlevelV, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
@@ -135,7 +135,7 @@ static const dzone_t dzones [] =
 
 	{	18,	25,	6,	5,	display2_ant5,	& dzi_antenna, PGALL, },
 	{	24, 25,	4,	5,	display2_byp3,	& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
-
+	{ 	28, 25, 4,	5,	display2_dummy, & dzi_default, PGALL, },	// Placeholder
 	{	32, 25,	4,	5,	display2_rec3,	& dzi_rec, PGALL, },	// Отображение режима записи аудио фрагмента
 	{	36, 25,	4,	5,	display2_spk3,	& dzi_spk, PGALL, },	// отображение признака включения динамика
 	{	40, 25, 4,	5,	display2_bkin3,	& dzi_bkin, PGALL, },	// BREAK-IN
