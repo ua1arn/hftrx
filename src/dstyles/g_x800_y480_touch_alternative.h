@@ -113,7 +113,7 @@
 		{	42, 20,	4,	0,	display2_byp4alt,		& dzi_default, PGALL, },	// TUNER BYPASS state (optional)
 
 		{	17,	7,	0,	0,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
-		{	17,	7,	0,	0,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+		{	17,	7,	21,	11,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 		{	38, 10,	3,	0,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 		{	42, 10,	3,	0,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
 		{	46, 10,	3,	0,	display2_nr3,		& dzi_default, PGALL, },	// NR : was: AGC
