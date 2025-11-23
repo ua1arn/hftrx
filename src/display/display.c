@@ -1066,6 +1066,94 @@ pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, u
 
 }
 
+// Многострочное отображение
+void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstyle, const char * const * slines, unsigned nlines)
+{
+	size_t len;
+	char c;
+	const COLORPIP_T fg = dbstyle->textcolor;
+
+	savewhere = __func__;
+	if (dbstyle->bgradius)
+	{
+		w -= 2;
+		h -= 2;
+	}
+#if WITHLVGL
+	lv_layer_t * const layer = (lv_layer_t *) db->layerv;
+	if (layer)
+	{
+		//PRINTF("x/y=%d/%d '%s'\n", xpix, ypix, s);
+		lv_draw_rect_dsc_t d;
+	    lv_draw_label_dsc_t l;
+		lv_area_t coords;
+	    lv_draw_label_dsc_init(& l);
+		lv_draw_rect_dsc_init(& d);
+		lv_area_set(& coords, xpix, ypix, xpix + GRID2X(xspan) - 1, ypix + GRID2Y(yspan) - 1);
+	    d.bg_color = display_lvlcolor(dbstyle->bgcolor);
+	    l.color = display_lvlcolor(fg);
+	    l.align = LV_TEXT_ALIGN_RIGHT;
+	    l.flag = 0*LV_TEXT_FLAG_EXPAND | LV_TEXT_FLAG_FIT;
+	    l.text = s;
+	    l.font = & Epson_LTDC_small;
+	    //PRINTF("display_string: x/y=%d/%d '%s'\n", (int) xpix, (int) xpix, s);
+		lv_draw_rect(layer, & d, & coords);
+        lv_draw_label(layer, & l, & coords);
+
+        return;
+	}
+#endif
+	ASSERT3(w >= (dbstyle->bgradius * 2), __FILE__, __LINE__, slines [0]);
+	ASSERT3(h >= (dbstyle->bgradius * 2), __FILE__, __LINE__, slines [0]);
+	const uint_fast16_t avlw = w - (dbstyle->bgradius * 2);
+	const uint_fast16_t avlh = h - (dbstyle->bgradius * 2);
+	colmain_rounded_rect(db, xpixB, ypix, xpixB + w - 1, ypix + h - 1, dbstyle->bgradius, dbstyle->bgcolor, 1);
+	ypix += dbstyle->bgradius;
+	const uint_fast16_t vstep = avlh / nlines;
+	for (; nlines --; ypix += vstep)
+	{
+		uint_fast16_t xpix = xpixB + dbstyle->bgradius;
+		const char * s = * slines ++;
+		savestring = s;
+		switch (dbstyle->textvalign)
+		{
+		default:
+		case GXSTYLE_VALIGN_CENTER:
+			if (vstep > smallfont_height())
+				ypix += (vstep - dbstyle->font_height()) / 2;
+			break;
+		case GXSTYLE_VALIGN_TOP:
+			break;
+
+		case GXSTYLE_VALIGN_BOTTOM:
+			if (vstep > smallfont_height())
+				ypix += (vstep - dbstyle->font_height());
+			break;
+		}
+
+		const uint_fast16_t textw = ulmin16(avlw, gxstyle_strwidth(dbstyle, s));
+		const uint_fast16_t xpix0 = xpix;
+		//ASSERT3(avlw >= textw, __FILE__, __LINE__, s);
+		switch (dbstyle->texthalign)
+		{
+		default:
+		case GXSTYLE_HALIGN_RIGHT:
+			xpix = textw < w ? xpix + avlw - textw : xpix;
+			while ((c = * s ++) != '\0' && xpix - xpix0 + dbstyle->font_width(c) <= avlw)
+				xpix = dbstyle->font_draw_char(db, xpix, ypix, c, fg);
+			break;
+		case GXSTYLE_HALIGN_LEFT:
+			while ((c = * s ++) != '\0' && xpix - xpix0 + dbstyle->font_width(c) <= avlw)
+				xpix = dbstyle->font_draw_char(db, xpix, ypix, c, fg);
+			break;
+		case GXSTYLE_HALIGN_CENTER:
+			// todo: to be implemented
+			break;
+		}
+	}
+
+}
+
 // Используется при выводе на графический индикатор с кординатами и размерами по сетке
 void
 display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle)

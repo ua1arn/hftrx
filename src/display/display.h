@@ -248,6 +248,7 @@ void display_gpu_initialize(void);		/* g2d/mdma/gpu/dma2d initialize */
 void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle);		// Выдача строки из ОЗУ в указанное место экрана.
 // Используется при выводе на графический индикатор с кординатами и размерами в пикселях
 void pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstyle, const char * s);
+void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstyle, const char * const * slines, unsigned nlines);
 
 uint_fast16_t colorpip_put_char_small(
 	const gxdrawb_t * db,

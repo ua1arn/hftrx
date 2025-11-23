@@ -1580,6 +1580,8 @@ static gxstyle_t dbstylev_2rxtx [2];
 static gxstyle_t dbstylev_4state [4];
 // Параметры отображения состояний из двух вариантов
 static gxstyle_t dbstylev_2state [2];
+// Параметры отображения состояний из двух вариантов
+static gxstyle_t dbstylev_2stateSmall [2];
 // Параметры отображения состояний из двух вариантов (активный - на красном фонк)
 static gxstyle_t dbstylev_2state_rec [2];
 // Параметры отображения текстов без вариантов
@@ -2756,21 +2758,16 @@ void display2_midbar(const gxdrawb_t * db,
 	const uint_fast16_t alldx = GRID2X(xspan);
 	const uint_fast16_t alldy = GRID2Y(yspan);				// размер по вертикали в пикселях части отведенной спектру
 	const uint_fast16_t cellwidth = alldx / MIDCELLS;
-	const uint_fast16_t rowheight = alldy / 2;
 
 	uint_fast8_t section;
 	for (section = 0; section < MIDCELLS; ++ section)
 	{
-		const uint_fast16_t xpos = 1 + cellwidth * section;
-		const uint_fast16_t w = cellwidth - 2;
+		const uint_fast16_t xpos = cellwidth * section;
 		uint_fast8_t active;
 		const char * const label = hamradio_midlabel5(section, & active);
 		const char * const value = hamradio_midvalue5(section, & active);
-        const COLORPIP_T fg = dbstylev_2state [active].textcolor;
-        const COLORPIP_T bg = dbstylev_2state [active].bgcolor;
-        colmain_rounded_rect(db, xpos, y0pix, xpos + w - 1, y0pix + alldy - 1, display2_gettileradius(), bg, 1);
-		colpip_string2_tbg(db, xpos + 1, y0pix + 1, label, fg);
-		colpip_string2_tbg(db, xpos + 1, y0pix + alldy / 2 + 1, value, fg);
+		const char * const texts [] = { label, value, };
+		pix_display_texts(db, xpos, y0pix, cellwidth, alldy, & dbstylev_2stateSmall [active], texts, ARRAY_SIZE(texts));
 
 	}
 }
@@ -9751,6 +9748,16 @@ static void display2_stylesupdate(void)
 	gxstyle_textcolor(& dbstylev_2state [0], DSGN_LABELINACTIVETEXT, DSGN_LABELINACTIVEBACK);
 	gxstyle_initialize(& dbstylev_2state [1]);
 	gxstyle_textcolor(& dbstylev_2state [1], DSGN_LABELACTIVETEXT, DSGN_LABELACTIVEBACK);
+	// Параметры отображения состояний из двух вариантов
+
+	gxstyle_initialize(& dbstylev_2stateSmall [0]);
+	gxstyle_initialize(& dbstylev_2stateSmall [1]);
+	gxstyle_textcolor(& dbstylev_2stateSmall [0], DSGN_LABELINACTIVETEXT, DSGN_LABELINACTIVEBACK);
+	gxstyle_textcolor(& dbstylev_2stateSmall [1], DSGN_LABELACTIVETEXT, DSGN_LABELACTIVEBACK);
+	gxstyle_setsmallfont2(& dbstylev_2stateSmall [0]);
+	gxstyle_setsmallfont2(& dbstylev_2stateSmall [1]);
+	gxstyle_texthalign(& dbstylev_2stateSmall [0], GXSTYLE_HALIGN_LEFT);
+	gxstyle_texthalign(& dbstylev_2stateSmall [1], GXSTYLE_HALIGN_LEFT);
 
 	// Параметры отображения текстов без вариантов
 	gxstyle_initialize(& dbstylev_1state);
