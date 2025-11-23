@@ -2559,7 +2559,7 @@ static void display2_freqX_b(const gxdrawb_t * db,
 
 	const uint_fast32_t freq = hamradio_get_freq_b();
 
-	display_value_small(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, dbstylep);
+	pix_display_value_small(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, fullwidth, comma, comma + 3, rj, dbstylep);
 }
 
 // отладочная функция измерителя опорной частоты

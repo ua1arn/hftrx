@@ -1425,12 +1425,12 @@ display_value_lower(
 
 void
 NOINLINEAT
-display_value_small(
+pix_display_value_small(
 	const gxdrawb_t * db,
-	uint_fast8_t x,	// x координата начала вывода значения
-	uint_fast8_t y,	// y координата начала вывода значения
-	uint_fast8_t xspan,
-	uint_fast8_t yspan,
+	uint_fast16_t xpix,	// x координата начала вывода значения
+	uint_fast16_t ypix,	// y координата начала вывода значения
+	uint_fast16_t w,
+	uint_fast16_t h,
 	int_fast32_t freq,
 	uint_fast8_t width,	// full width (if >= 128 - display with sign)
 	uint_fast8_t comma,		// comma position (from right, inside width)
@@ -1447,12 +1447,6 @@ display_value_small(
 	uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
 	uint_fast8_t z = 1;	// если в позиции встретился '0' - не отоображать
 
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(x, y, & ypix);
-//    const uint_fast16_t x = GRID2X(xcell);
-//    const uint_fast16_t y = GRID2Y(ycell);
-	uint_fast16_t w = GRID2X(xspan);
-	uint_fast16_t h = GRID2Y(yspan);
 	const COLORPIP_T fg = dbstyle->textcolor;
 	if (dbstyle->bgradius)
 	{

@@ -824,7 +824,7 @@ display_value_lower(
 	);
 
 void
-display_value_small(
+pix_display_value_small(
 	const gxdrawb_t * db,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
