@@ -2889,19 +2889,6 @@ static void t113_de_set_layerval(int rtmixid, uint_fast32_t val)
 	}
 }
 
-/* Для обнуления регистров периферии не очень
- * подходит системный memset - иногда может группировать обращения к соседним ячейкам
-*/
-static void memset32(void * d, uint32_t v, unsigned sz)
-{
-	uint32_t volatile * dst = (uint32_t volatile *) d;
-	while (sz > 4)
-	{
-		* dst ++ = v;
-		sz -= 4;
-	}
-}
-
 static void t113_de_rtmix_initialize(int rtmixid)
 {
 	DE_GLB_TypeDef * const glb = de3_getglb(rtmixid);

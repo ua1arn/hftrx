@@ -465,3 +465,17 @@ uint_fast32_t ptr_lo32(uintptr_t v)
 }
 
 #pragma GCC diagnostic pop
+
+/* Для обнуления регистров периферии не очень
+ * подходит системный memset - иногда может группировать обращения к соседним ячейкам
+*/
+void memset32(void * d, uint32_t v, unsigned sz)
+{
+	uint32_t volatile * dst = (uint32_t volatile *) d;
+	while (sz > 4)
+	{
+		* dst ++ = v;
+		sz -= 4;
+	}
+}
+

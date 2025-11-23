@@ -4375,6 +4375,7 @@ void board_gpu_initialize(void)
 
 	unsigned i;
 
+	memset32(GPU_MMU->MMU_AS, ~ UINT32_C(0), sizeof GPU_MMU->MMU_AS);
 	for (i = 0; i < ARRAY_SIZE(GPU_MMU->MMU_AS); ++ i)
 	{
 		printhex32((uintptr_t) & GPU_MMU->MMU_AS [i], & GPU_MMU->MMU_AS [i], sizeof GPU_MMU->MMU_AS [i]);
