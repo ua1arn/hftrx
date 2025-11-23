@@ -484,11 +484,13 @@ typedef struct
 
 #if COLORSTYLE_RED
 	// "All-in-red": FT1000 inspired color scheme
-	#define DSGN_BIGCOLOR 			COLORPIP_RED 		// DARK RED
+	#define DSGN_BIGCOLOR 			COLORPIP_RED 	// цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
-	#define DSGN_BIGCOLORB 			COLORPIP_RED		// цвет частоты дополнительного приемника
-	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKRED
+	#define DSGN_BIGCOLORB 			COLORPIP_RED		// цвет частоты и режима дополнительного приемника
+	#define DSGN_BIGCOLORBBACK 		COLORPIP_BLACK
+	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKRED	// цвет частоты и режима дополнительного приемника, когда не включён
+	#define DSGN_BIGCOLORBBACKINACTIVE COLORPIP_BLACK
 
 	#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
 	#define DSGN_FMENUACTIVEBACK	COLORPIP_DARKRED
@@ -501,11 +503,12 @@ typedef struct
 	#define DSGN_LABELACTIVEBACK	COLORPIP_DARKRED
 	#define DSGN_LABELINACTIVETEXT	COLORPIP_BLACK
 	#define DSGN_LABELINACTIVEBACK	COLORPIP_RED
+// поля отображения, не имеющие вариантов по состоянию вкл/выкл
 	#define DSGN_LABELTEXT			COLORPIP_RED
 	#define DSGN_LABELBACK			COLORPIP_BLACK
 
-	#define DSGN_STATETEXT			COLORPIP_RED	// температура, напряжение - was DSGN_LABELTEXT
-	#define DSGN_STATEBACK			COLORPIP_BLACK
+	#define DSGN_PSUSTATETEXT			COLORPIP_RED	// температура, напряжение - was DSGN_LABELTEXT
+	#define DSGN_PSUSTATEBACK			COLORPIP_BLACK
 	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
 	#define DSGN_SMLABELBACK		COLORPIP_BLACK
 	#define DSGN_SMLABELPLKUSTEXT		COLORPIP_RED
@@ -513,11 +516,13 @@ typedef struct
 
 #elif COLORSTYLE_GREEN
 	/* цветовая схема для эксперементов */
-	#define DSGN_BIGCOLOR 			COLORPIP_YELLOW 	// GOLD
+	#define DSGN_BIGCOLOR 			COLORPIP_YELLOW 	// цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
-	#define DSGN_BIGCOLORB 			COLORPIP_YELLOW		// цвет частоты и режима ополнительного приемника
-	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKGREEN
+	#define DSGN_BIGCOLORB 			COLORPIP_YELLOW		// цвет частоты и режима дополнительного приемника
+	#define DSGN_BIGCOLORBBACK 		COLORPIP_BLACK
+	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKGREEN	// цвет частоты и режима дополнительного приемника, когда не включён
+	#define DSGN_BIGCOLORBBACKINACTIVE COLORPIP_BLACK
 
 	#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
 	#define DSGN_FMENUACTIVEBACK	COLORPIP_DARKGREEN
@@ -533,12 +538,12 @@ typedef struct
 
 	#define DSGN_LABELINACTIVETEXT	COLORPIP_BLACK
 	#define DSGN_LABELINACTIVEBACK	COLORPIP_DARKGREEN
+	// поля отображения, не имеющие вариантов по состоянию вкл/выкл
+	#define DSGN_LABELTEXT			COLORPIP_WHITE//COLORPIP_GREEN
+	#define DSGN_LABELBACK			COLORPIP_DARKGREEN//COLORPIP_BLACK
 
-	#define DSGN_LABELTEXT			COLORPIP_GREEN
-	#define DSGN_LABELBACK			COLORPIP_BLACK
-
-	#define DSGN_STATETEXT			COLORPIP_GREEN	// температура, напряжение - was DSGN_LABELTEXT
-	#define DSGN_STATEBACK			COLORPIP_BLACK
+	#define DSGN_PSUSTATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
+	#define DSGN_PSUSTATEBACK			COLORPIP_DARKGREEN
 	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
 	#define DSGN_SMLABELBACK		COLORPIP_BLACK
 	#define DSGN_SMLABELPLKUSTEXT		COLORPIP_RED
@@ -546,10 +551,13 @@ typedef struct
 
 #elif COLORSTYLE_BLUE
 
-	#define DSGN_BIGCOLOR 			COLORPIP_WHITE //COLORPIP_YELLOW 	// GOLD
+	#define DSGN_BIGCOLOR 			COLORPIP_WHITE 	// цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
-	#define DSGN_BIGCOLORB 			COLORPIP_YELLOW //DSGN_SPECTRUMBG2		// цвет частоты дополнительного приемника
-	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKCYAN
+
+	#define DSGN_BIGCOLORB 			COLORPIP_WHITE		// цвет частоты и режима дополнительного приемника
+	#define DSGN_BIGCOLORBBACK 		COLORPIP_BLACK
+	#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKGREEN	// цвет частоты и режима дополнительного приемника, когда не включён
+	#define DSGN_BIGCOLORBBACKINACTIVE COLORPIP_BLACK
 
 	#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
 	#define DSGN_FMENUACTIVEBACK	COLORPIP_BLACK
@@ -569,8 +577,10 @@ typedef struct
 	#define DSGN_LABELINACTIVETEXT	COLORPIP_BLACK
 	#define DSGN_LABELINACTIVEBACK	COLORPIP_DARKCYAN
 #endif
+	// поля отображения, не имеющие вариантов по состоянию вкл/выкл
 	#define DSGN_LABELTEXT			COLORPIP_WHITE
 	#define DSGN_LABELBACK			COLORPIP_BLACK
+
 	#define DSGN_GRIDCOLOR      	COLORPIP_OLIVE        // center marker
 	#define DSGN_GRIDCOLOR0     	COLORPIP_DARKRED        // other markers
 	#define DSGN_GRIDCOLOR2     	COLORPIP_DARKRED        // other markers
@@ -582,8 +592,8 @@ typedef struct
 	#define DSGN_SPECTRUMLINE		COLORPIP_YELLOW
 	#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
 	#define DSGN_GRIDDIGITS 		COLORPIP_YELLOW
-	#define DSGN_STATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
-	#define DSGN_STATEBACK			COLORPIP_BLACK
+	#define DSGN_PSUSTATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
+	#define DSGN_PSUSTATEBACK			COLORPIP_BLACK
 	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
 	#define DSGN_SMLABELBACK		COLORPIP_BLACK
 	#define DSGN_SMLABELPLKUSTEXT		COLORPIP_RED
@@ -593,10 +603,13 @@ typedef struct
 #else /* COLORSTYLE_RED */
 
 	#if LCDMODE_PALETTE256
-		#define DSGN_BIGCOLOR 			COLORPIP_WHITE //COLORPIP_YELLOW 	// GOLD
+		#define DSGN_BIGCOLOR 			COLORPIP_WHITE 	// цвет частоты и режима основного приемника
 		#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
-		#define DSGN_BIGCOLORB 			COLORPIP_WHITE //DSGN_SPECTRUMBG2		// цвет частоты дополнительного приемника
-		#define DSGN_BIGCOLORBINACTIVE 	DSGN_SPECTRUMBG2
+
+		#define DSGN_BIGCOLORB 			COLORPIP_WHITE		// цвет частоты и режима дополнительного приемника
+		#define DSGN_BIGCOLORBBACK 		COLORPIP_BLACK
+		#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_DARKGREEN	// цвет частоты и режима дополнительного приемника, когда не включён
+		#define DSGN_BIGCOLORBBACKINACTIVE COLORPIP_BLACK
 
 		#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
 		#define DSGN_FMENUACTIVEBACK	COLORPIP_BLACK
@@ -610,11 +623,12 @@ typedef struct
 		#define DSGN_LABELINACTIVETEXT	DSGN_SPECTRUMBG2
 		#define DSGN_LABELINACTIVEBACK	COLORPIP_BLACK
 
+		// поля отображения, не имеющие вариантов по состоянию вкл/выкл
 		#define DSGN_LABELTEXT			COLORPIP_WHITE
 		#define DSGN_LABELBACK			COLORPIP_BLACK
 
-		#define DSGN_STATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
-		#define DSGN_STATEBACK			COLORPIP_BLACK
+		#define DSGN_PSUSTATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
+		#define DSGN_PSUSTATEBACK			COLORPIP_BLACK
 
 		#define DSGN_FMENUTEXT			COLORPIP_GREEN
 		#define DSGN_FMENUBACK			COLORPIP_BLACK
@@ -624,10 +638,13 @@ typedef struct
 		#define DSGN_SMLABELPLKUSBACK		COLORPIP_BLACK
 
 	#else /* LCDMODE_PALETTE256 */
-		#define DSGN_BIGCOLOR 			COLORPIP_WHITE //COLORPIP_YELLOW 	// GOLD
+		#define DSGN_BIGCOLOR 			COLORPIP_WHITE 	// цвет частоты и режима основного приемника
 		#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
-		#define DSGN_BIGCOLORB 			COLORPIP_WHITE //DSGN_SPECTRUMBG2		// цвет частоты дополнительного приемника
-		#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_GRAY
+
+		#define DSGN_BIGCOLORB 			COLORPIP_WHITE		// цвет частоты и режима дополнительного приемника
+		#define DSGN_BIGCOLORBBACK 		COLORPIP_BLACK
+		#define DSGN_BIGCOLORBINACTIVE 	COLORPIP_GRAY	// цвет частоты и режима дополнительного приемника, когда не включён
+		#define DSGN_BIGCOLORBBACKINACTIVE COLORPIP_BLACK
 
 		#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
 		#define DSGN_FMENUACTIVEBACK	COLORPIP_GRAY
@@ -640,11 +657,12 @@ typedef struct
 		#define DSGN_LABELINACTIVETEXT	COLORPIP_BLACK
 		#define DSGN_LABELINACTIVEBACK	COLORPIP_GRAY
 
+		// поля отображения, не имеющие вариантов по состоянию вкл/выкл
 		#define DSGN_LABELTEXT			COLORPIP_WHITE
 		#define DSGN_LABELBACK			COLORPIP_BLACK
 
-		#define DSGN_STATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
-		#define DSGN_STATEBACK			COLORPIP_BLACK
+		#define DSGN_PSUSTATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
+		#define DSGN_PSUSTATEBACK			COLORPIP_BLACK
 
 		#define DSGN_FMENUTEXT			COLORPIP_GREEN
 		#define DSGN_FMENUBACK			COLORPIP_BLACK

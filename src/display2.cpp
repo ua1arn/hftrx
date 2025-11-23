@@ -1587,13 +1587,13 @@ static gxstyle_t dbstylev_2state_rec [2];
 // Параметры отображения текстов без вариантов
 static gxstyle_t dbstylev_1state;
 // Параметры отображения текстов без вариантов
-static gxstyle_t dbstylev_1statevoltage;
+static gxstyle_t dbstylev_1statePSU;
 // Параметры отображения состояний FUNC MENU из двух вариантов
 static gxstyle_t dbstylev_2fmenu [2];
 // Параметры отображения текстов без вариантов
 static gxstyle_t dbstylev_1fmenu;
 // Параметры отображения текстов без вариантов (синий)
-static gxstyle_t dbstylev_1stateBlue;
+static gxstyle_t dbstylev_1stateTime;
 // Параметры отображения частоты дополнительного приемника
 static gxstyle_t dbstylev_2freqB [2];
 // Параметры отображения режима дополнительного приемника
@@ -3442,7 +3442,7 @@ static void display2_rxbwval4(const gxdrawb_t * db,
 		)
 {
 	const char * const labels [1] = { hamradio_get_rxbw_value4(), };
-	display2_text(db, x, y, labels, & dbstylev_1statevoltage, 0, xspan, yspan);
+	display2_text(db, x, y, labels, & dbstylev_1statePSU, 0, xspan, yspan);
 }
 
 // RX path bandwidth
@@ -3572,6 +3572,7 @@ static void display2_preovf3(const gxdrawb_t * db,
 	}
 	else
 	{
+		// поля отображения, не имеющие вариантов по состоянию вкл/выкл
 		gxstyle_textcolor(& dbstylev, DSGN_LABELTEXT, DSGN_LABELBACK);
 		display_text(db, x, y, hamradio_get_pre_value_P(), xspan, yspan, & dbstylev);
 	}
@@ -3776,8 +3777,8 @@ static void display2_voltlevelV5(const gxdrawb_t * db,
 #if WITHVOLTLEVEL
 	uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 	//PRINTF("display2_voltlevelV5: volt=%u\n", volt);
-	display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, volt, 3, 1, UINT8_MAX, 0, & dbstylev_1statevoltage);
-	display_text(db, x + CHARS2GRID(4), y, PSTR("V"), 1, yspan, & dbstylev_1statevoltage);
+	display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, volt, 3, 1, UINT8_MAX, 0, & dbstylev_1statePSU);
+	display_text(db, x + CHARS2GRID(4), y, PSTR("V"), 1, yspan, & dbstylev_1statePSU);
 #endif /* WITHVOLTLEVEL */
 }
 
@@ -3794,7 +3795,7 @@ static void display_voltlevel4(const gxdrawb_t * db,
 	const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
 	//PRINTF("display_voltlevel4: volt=%u\n", volt);
 
-	display_value_small(db, x, y, xspan, yspan, volt, 3, 1, UINT8_MAX, 0, & dbstylev_1statevoltage);
+	display_value_small(db, x, y, xspan, yspan, volt, 3, 1, UINT8_MAX, 0, & dbstylev_1statePSU);
 #endif /* WITHVOLTLEVEL */
 }
 
@@ -3887,17 +3888,17 @@ static void display2_currlevelA6(const gxdrawb_t * db,
 
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 1, UINT8_MAX, 1, & dbstylev_1statevoltage);
+		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 1, UINT8_MAX, 1, & dbstylev_1statePSU);
 		// last character
-		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev_1statevoltage);
+		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev_1statePSU);
 
 	#else /* WITHCURRLEVEL_ACS712_30A */
 		// dd.d - 6 places (without "A")
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 2, UINT8_MAX, 0, & dbstylev_1statevoltage);
+		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 2, UINT8_MAX, 0, & dbstylev_1statePSU);
 		// last character
-		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev_1statevoltage);
+		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev_1statePSU);
 
 	#endif /* WITHCURRLEVEL_ACS712_30A */
 #endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
@@ -3918,14 +3919,14 @@ static void display2_currlevel5(const gxdrawb_t * db,
 
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 1, UINT8_MAX, 1, & dbstylev_1statevoltage);
+		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 1, UINT8_MAX, 1, & dbstylev_1statePSU);
 		//display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev);
 
 	#else /* WITHCURRLEVEL_ACS712_30A */
 		// dd.d - 5 places (without "A")
 		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
 
-		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 2, UINT8_MAX, 0, & dbstylev_1statevoltage);
+		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 2, UINT8_MAX, 0, & dbstylev_1statePSU);
 		//display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev);
 
 	#endif /* WITHCURRLEVEL_ACS712_30A */
@@ -3993,7 +3994,7 @@ static void display_siglevel7(const gxdrawb_t * db,
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%-+4d" "dBm", (int) (tracemaxi10 / 10));
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, & dbstylev_1statevoltage, 0, xspan, yspan);
+	display2_text(db, x, y, labels, & dbstylev_1statePSU, 0, xspan, yspan);
 #endif /* WITHIF4DSP */
 }
 
@@ -4014,7 +4015,7 @@ static void display2_siglevel4(const gxdrawb_t * db,
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
 	int j = local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%-+4d", (int) (tracemaxi10 / 10));
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, & dbstylev_1statevoltage, 0, xspan, yspan);
+	display2_text(db, x, y, labels, & dbstylev_1statePSU, 0, xspan, yspan);
 #endif /* WITHIF4DSP */
 }
 
@@ -4039,7 +4040,7 @@ static void display2_span9(const gxdrawb_t * db,
 
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("SPAN:%3dk"), (int) ((display2_zoomedbw() + 0) / 1000));
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, & dbstylev_1statevoltage, 0, xspan, yspan);
+	display2_text(db, x, y, labels, & dbstylev_1statePSU, 0, xspan, yspan);
 
 #endif /* WITHIF4DSP */
 }
@@ -4251,7 +4252,7 @@ static void display_time5(const gxdrawb_t * db,
 		);
 
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, & dbstylev_1stateBlue, 0, xspan, yspan);
+	display2_text(db, x, y, labels, & dbstylev_1stateTime, 0, xspan, yspan);
 
 #endif /* defined (RTC1_TYPE) */
 }
@@ -4300,7 +4301,7 @@ static void display2_freqsof9(const gxdrawb_t * db,
 		);
 
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, & dbstylev_1stateBlue, 0, xspan, yspan);
+	display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 }
 
 // Печать времени - только часы и минуты, без секунд
@@ -4346,7 +4347,7 @@ static void display2_datetime12(const gxdrawb_t * db,
 		);
 
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, & dbstylev_1stateBlue, 0, xspan, yspan);
+	display2_text(db, x, y, labels, & dbstylev_1stateTime, 0, xspan, yspan);
 #endif /* defined (RTC1_TYPE) */
 }
 
@@ -9730,9 +9731,9 @@ static void display2_stylesupdate(void)
 
 	// Параметры отображения частоты дополнительного приемника
 	gxstyle_initialize(& dbstylev_2freqB [0]);
-	gxstyle_textcolor(& dbstylev_2freqB [0], DSGN_BIGCOLORBINACTIVE, DSGN_LABELBACK);
+	gxstyle_textcolor(& dbstylev_2freqB [0], DSGN_BIGCOLORBINACTIVE, DSGN_BIGCOLORBBACKINACTIVE);
 	gxstyle_initialize(& dbstylev_2freqB [1]);
-	gxstyle_textcolor(& dbstylev_2freqB [1], DSGN_BIGCOLORB, DSGN_LABELBACK);
+	gxstyle_textcolor(& dbstylev_2freqB [1], DSGN_BIGCOLORB, DSGN_BIGCOLORBBACK);
 
 
 	// Параметры отображения режима дополнительного приемника
@@ -9742,20 +9743,18 @@ static void display2_stylesupdate(void)
 	gxstyle_textcolor(& dbstylev_2modeB [1], DSGN_BIGCOLORB, DSGN_LABELBACK);
 
 	// Параметры отображения текстов без вариантов
-	gxstyle_initialize(& dbstylev_1state);
-	gxstyle_textcolor(& dbstylev_1state, DSGN_LABELTEXT, DSGN_LABELBACK);
-
-	// Параметры отображения текстов без вариантов
-
-	// Параметры отображения текстов без вариантов
-	gxstyle_initialize(& dbstylev_1statevoltage);
-	gxstyle_textcolor(& dbstylev_1statevoltage, DSGN_STATETEXT, DSGN_STATEBACK);
+	gxstyle_initialize(& dbstylev_1statePSU);
+	gxstyle_textcolor(& dbstylev_1statePSU, DSGN_PSUSTATETEXT, DSGN_PSUSTATEBACK);
 
 	// Параметры отображения состояний из двух вариантов
 	gxstyle_initialize(& dbstylev_2state [0]);
 	gxstyle_textcolor(& dbstylev_2state [0], DSGN_LABELINACTIVETEXT, DSGN_LABELINACTIVEBACK);
 	gxstyle_initialize(& dbstylev_2state [1]);
 	gxstyle_textcolor(& dbstylev_2state [1], DSGN_LABELACTIVETEXT, DSGN_LABELACTIVEBACK);
+
+	// Параметры отображения текстов без вариантов
+	gxstyle_initialize(& dbstylev_1state);
+	gxstyle_textcolor(& dbstylev_1state, DSGN_LABELTEXT, DSGN_LABELBACK);
 
 	// Параметры отображения состояний из двух вариантов (активный - на красном фонк)
 	gxstyle_initialize(& dbstylev_2state_rec [0]);
@@ -9773,9 +9772,9 @@ static void display2_stylesupdate(void)
 	gxstyle_initialize(& dbstylev_1fmenu);
 	gxstyle_textcolor(& dbstylev_1fmenu, DSGN_FMENUTEXT, DSGN_FMENUBACK);
 
-	// Параметры отображения текстов без вариантов (синий)
-	gxstyle_initialize(& dbstylev_1stateBlue);
-	gxstyle_textcolor(& dbstylev_1stateBlue, DSGN_BIGCOLORB, DSGN_LABELBACK);
+	// Параметры отображения текстов без вариантов (время)
+	gxstyle_initialize(& dbstylev_1stateTime);
+	gxstyle_textcolor(& dbstylev_1stateTime, DSGN_BIGCOLOR, DSGN_BIGCOLORBACK);
 
 	// Параметры отображения спектра и водопада
 	colorcmarker = DSGN_GRIDCOLOR0;	// Цвет макркера на центре
