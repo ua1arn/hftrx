@@ -1771,8 +1771,6 @@ static smeter_params_t smprms [SMETER_TYPE_COUNT];
 
 static void
 display2_smeter15_layout(
-	uint_fast8_t xgrid,
-	uint_fast8_t ygrid,
 	uint_fast8_t smetertype
 	)
 {
@@ -1886,6 +1884,7 @@ display2_smeter15_layout(
 	// Angles (positions)
 	uint_fast16_t * const smeteranglesTX = smpr->smeteranglesRXTX [SM_STATE_TX];
 	uint_fast16_t * const smeteranglesRX = smpr->smeteranglesRXTX [SM_STATE_RX];
+	const COLORPIP_T bgcolor = display2_getbgcolor();
 	switch (smetertype)
 	{
 
@@ -1894,9 +1893,9 @@ display2_smeter15_layout(
 		gxdrawb_initialize(smbgdbTX, * smbgTX, SM_BG_W, SM_BG_H);
 
 #if WITHRLEDECOMPRESS
-		graw_picture_RLE_buf(smbgdbTX, 0, 0, & smeter_bg_new, COLORPIP_BLACK);
+		graw_picture_RLE_buf(smbgdbTX, 0, 0, & smeter_bg_new, bgcolor);
 #else
-		colpip_rect(smbgdbTX, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_BLACK, 1);
+		colpip_fillrect(smbgdbTX, 0, 0, SM_BG_W, SM_BG_H, bgcolor);
 
 		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr) - 1; ++ i, p += 10)
 		{
@@ -1936,9 +1935,9 @@ display2_smeter15_layout(
 		// Фон для RX
 		gxdrawb_initialize(smbgdbRX, * smbgRX, SM_BG_W, SM_BG_H);
 #if WITHRLEDECOMPRESS
-		graw_picture_RLE_buf(smbgdbRX, 0, 0, & smeter_bg_new, COLORPIP_BLACK);
+		graw_picture_RLE_buf(smbgdbRX, 0, 0, & smeter_bg_new, bgcolor);
 #else
-		colpip_rect(smbgdbRX, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_BLACK, 1);
+		colpip_fillrect(smbgdbRX, 0, 0, SM_BG_W, SM_BG_H, bgcolor);
 
 		for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 		{
@@ -1985,7 +1984,7 @@ display2_smeter15_layout(
 		// Фон для TX
 		gxdrawb_initialize(smbgdbTX, * smbgTX, SM_BG_W, SM_BG_H);
 
-		colpip_rect(smbgdbTX, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_BLACK, 1);
+		colpip_rect(smbgdbTX, 0, 0, SM_BG_W - 1, SM_BG_H - 1, bgcolor, 1);
 //		colpip_rect(smbgdbTX, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_WHITE, 0);
 //		colpip_rect(smbgdbTX, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
 
@@ -2019,7 +2018,7 @@ display2_smeter15_layout(
 		// Фон для RX
 		gxdrawb_initialize(smbgdbRX, * smbgRX, SM_BG_W, SM_BG_H);
 
-		colpip_rect(smbgdbRX, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_BLACK, 1);
+		colpip_rect(smbgdbRX, 0, 0, SM_BG_W - 1, SM_BG_H - 1, bgcolor, 1);
 //		colpip_rect(smbgdbRX, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_WHITE, 0);
 //		colpip_rect(smbgdbRX, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
 
@@ -2065,10 +2064,10 @@ static uint_fast8_t smprmsinited;
 static void
 display2_smeter15_init(
 		const gxdrawb_t * db_unused,	// NULL
-		uint_fast8_t xgrid,
-		uint_fast8_t ygrid,
-		uint_fast8_t xspan,	// 0
-		uint_fast8_t yspan,	// 0
+		uint_fast8_t xgrid_unused,
+		uint_fast8_t ygrid_unused,
+		uint_fast8_t xspan_unused,	// 0
+		uint_fast8_t yspan_unused,	// 0
 		dctx_t * pctx
 		)
 {
@@ -2077,7 +2076,7 @@ display2_smeter15_init(
 
 	for (uint_fast8_t i = 0; i < SMETER_TYPE_COUNT; ++ i)
 	{
-		display2_smeter15_layout(xgrid, ygrid, i);
+		display2_smeter15_layout(i);
 	}
 	smprmsinited = 1;
 }
