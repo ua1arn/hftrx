@@ -92,8 +92,7 @@
 		{	21,	0,	4,	0,	display2_lockstate4, REDRM_MODE, PGALL, },	// LOCK
 
 	#if WITHENCODER2
-		{	41, 0,	9,	0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-		{	41,	4,	9,	0,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+		{	41, 0,	9,	8,	display2_fnblock9,	REDRM_MODE, PGALL, },	// FUNC menu item label & value
 		{	45, 15,	5,	0,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 	#else /* WITHENCODER2 */
 		{	45, 0,	5,	0,	display2_notch5,		REDRM_MODE, PGALL, },	// FUNC item label

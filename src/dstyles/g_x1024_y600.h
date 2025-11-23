@@ -98,8 +98,7 @@
 		{	15,	6,	0, 0, display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
 		{	15,	6,	21, 13, display2_freqX_a,		& dzi_freqa, PGALL, },	// MAIN FREQ Герцы маленьким шрифтом.
 
-		{	41, 0,	9, 4, display2_fnlabel9,	& dzi_default, PGALL, },	// FUNC item label
-		{	41,	4,	9, 4, display2_fnvalue9,	& dzi_default, PGALL, },	// FUNC item value
+		{	41, 0,	9, 9, display2_fnblock9,	& dzi_default, PGALL, },	// FUNC menu item label & value
 
 		{	37, 10,	3, 4, display2_mode3_a,		& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 10,	3, 4, display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR

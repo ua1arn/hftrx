@@ -93,8 +93,7 @@
 
 		{	15,	5,	21, 15, display2_dummy,		& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
-		{	41, 0,	9, 5, display2_fnlabel9,	& dzi_compat, PGALL, },	// FUNC item label
-		{	41,	5,	9, 5, display2_fnvalue9,	& dzi_compat, PGALL, },	// FUNC item value
+		{	41, 0,	9, 10, display2_fnblock9,	& dzi_compat, PGALL, },	// FUNC menu item label & value
 
 		//{	36,	5,	5, 5, display2_dummy,		& dzi_default, PGALL, },	// placeholder
 		{	36, 10,	5, 5, display2_dummy,		& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...

@@ -9232,9 +9232,9 @@ uif_encoder2_rotate(
 
 
 // FUNC item label
-void display2_fnlabel9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
-{
 #if WITHENCODER2 && ! WITHTOUCHGUI
+static void display2_fnlabel(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
 	const char * const text = enc2menu_label_P(enc2menus [enc2pos]);
 	switch (enc2state)
 	{
@@ -9248,15 +9248,12 @@ void display2_fnlabel9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 		display_2fmenus(db, x, y, 1, text, text, xspan, yspan);
 		break;
 	}
-#endif /* WITHENCODER2 && ! WITHTOUCHGUI */
 }
 
 // FUNC item value
-void display2_fnvalue9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_fnvalue(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
-#if WITHENCODER2 && ! WITHTOUCHGUI
-	enum { WDTH = 9 };	// ширина поля для отображения
-	char b [WDTH + 1];	// тут формируется текст для отображения
+	char bval [xspan + 1];	// тут формируется текст для отображения
 
 	switch (enc2state)
 	{
@@ -9264,14 +9261,23 @@ void display2_fnvalue9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 		display_1fmenu(db, x, y, "", xspan, yspan);
 		break;
 	case ENC2STATE_SELECTITEM:
-		param_format(enc2menus [enc2pos], b, ARRAY_SIZE(b), param_getvalue(enc2menus [enc2pos]));
-		display_2fmenus(db, x, y, 0, b, b, xspan, yspan);
+		param_format(enc2menus [enc2pos], bval, ARRAY_SIZE(bval), param_getvalue(enc2menus [enc2pos]));
+		display_2fmenus(db, x, y, 0, bval, bval, xspan, yspan);
 		break;
 	case ENC2STATE_EDITITEM:
-		param_format(enc2menus [enc2pos], b, ARRAY_SIZE(b), param_getvalue(enc2menus [enc2pos]));
-		display_2fmenus(db, x, y, 1, b, b, xspan, yspan);
+		param_format(enc2menus [enc2pos], bval, ARRAY_SIZE(bval), param_getvalue(enc2menus [enc2pos]));
+		display_2fmenus(db, x, y, 1, bval, bval, xspan, yspan);
 		break;
 	}
+}
+#endif /* WITHENCODER2 && ! WITHTOUCHGUI */
+
+void display2_fnblock9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+#if WITHENCODER2 && ! WITHTOUCHGUI
+	uint_fast8_t ypart = yspan / 2;
+	display2_fnlabel(db, x, y + 0, xspan, ypart, pctx);
+	display2_fnvalue(db, x, y + ypart, xspan, yspan - ypart, pctx);
 #endif /* WITHENCODER2 && ! WITHTOUCHGUI */
 }
 

@@ -91,9 +91,6 @@ static const dzone_t dzones [] =
 	{	22,	0,	5,	5,	display2_att4,		& dzi_attenuator, PGALL, },
 	{	27,	0,	4,	5,	display2_preovf3,		& dzi_preamp_ovf, PGALL, },
 
-//	{	40, 0,	10,	5,	display2_fnlabel9,	& dzi_compat, PGALL, },	// FUNC item label
-//	{	40,	4,	10,	5,	display2_fnvalue9,	& dzi_compat, PGALL, },	// FUNC item value
-
 	{	32,	0,	9,	5,	display2_ENC3F,	& dzi_compat, PGALL, },
 	{	41,	0,	9,	5,	display2_ENC4F,	& dzi_compat, PGALL, },
 

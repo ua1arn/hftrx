@@ -90,8 +90,7 @@
 		{	18,	0,	1,	3,	display_lockstate1,	& dzi_default, PGALL, },	// LOCK (*)
 
 	#if WITHENCODER2
-		{	21, 0,	9,	3,	display2_fnlabel9,	& dzi_default, PGALL, },	// FUNC item label
-		{	21,	3,	9,	3,	display2_fnvalue9,	& dzi_default, PGALL, },	// FUNC item value
+		{	21, 0,	9,	10,	display2_fnblock9,	& dzi_default, PGALL, },	// FUNC menu item label & value
 		{	25, 11,	5,	3,	display2_notch5,		& dzi_default, PGALL, },	// NOTCH on/off
 	#else /* WITHENCODER2 */
 		{	25, 0,	5,	3,	display2_notch5,		& dzi_default, PGALL, },	// FUNC item label
