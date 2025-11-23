@@ -236,7 +236,7 @@ uint8_t gui_obj_create(const char * name, ...)
 		tf->w_sim = va_arg(arg, uint32_t);
 		tf->h_str = va_arg(arg, uint32_t);
 		tf->direction = (tf_direction_t) va_arg(arg, uint32_t);
-		tf->font = va_arg(arg, UB_Font *);
+		tf->font = va_arg(arg, gui_mono_font_t *);
 		strncpy(tf->name, obj_name, NAME_ARRAY_SIZE - 1);
 		tf->visible = 1;
 		tf->index = win->tf_count;

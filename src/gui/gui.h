@@ -7,7 +7,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#if 1//WITHTOUCHGUI
+#if WITHTOUCHGUI
 
 #define WITHGUIMAXX				800
 #define WITHGUIMAXY				480

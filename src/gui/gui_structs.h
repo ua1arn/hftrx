@@ -5,8 +5,10 @@
 
 #if WITHTOUCHGUI
 
-#include "src/gui/gui_settings.h"
-#include "src/gui/gui_port.h"
+#include "gui_fonts.h"
+#include "gui_settings.h"
+#include "gui_fonts.h"
+#include "gui_port.h"
 
 #define IS_BUTTON_PRESS			(type == TYPE_BUTTON && action == PRESSED)
 #define IS_BUTTON_LONG_PRESS	(type == TYPE_BUTTON && action == LONG_PRESSED)
