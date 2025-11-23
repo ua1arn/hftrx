@@ -30,6 +30,10 @@
 //--------------------------------------------------------------
 // Includes
 //--------------------------------------------------------------
+#include "src/gui/gui_port_include.h"
+
+#if WITHTOUCHGUI
+
 #include "..\gui_fonts.h"
 
 //--------------------------------------------------------------
@@ -148,3 +152,4 @@ UB_Font32 arial_14x13_mono = {
   13,              // Hoehe eines Zeichens  (in Pixel)
 };
 
+#endif /* WITHTOUCHGUI */

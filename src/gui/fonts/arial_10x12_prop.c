@@ -31,6 +31,10 @@
 //--------------------------------------------------------------
 // Includes
 //--------------------------------------------------------------
+#include "src/gui/gui_port_include.h"
+
+#if WITHTOUCHGUI
+
 #include "..\gui_fonts.h"
 
 //--------------------------------------------------------------
@@ -150,3 +154,4 @@ UB_pFont32 arial_10x12_prop = {
   126,              // letztes Zeichen (Ascii-Nr)
 };
 
+#endif /* WITHTOUCHGUI */
