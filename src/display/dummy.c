@@ -26,8 +26,8 @@ display_clear(const gxdrawb_t * db)
 void
 gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg)
 {
-	dbstyle->textfg = fg;
-	dbstyle->textbg = bg;
+	dbstyle->textcolor = fg;
+	dbstyle->bgcolor = bg;
 }
 
 uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)

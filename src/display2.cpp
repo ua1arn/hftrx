@@ -2404,7 +2404,7 @@ static void display2_freqX_a_init(
 {
 #if WITHPRERENDER
 	/* valid chars: "0123456789 #._" */
-	rendered_value_big_initialize(dbstylev_1freqv.textfg, dbstylev_1freqv.textbg);
+	rendered_value_big_initialize(dbstylev_1freqv.textcolor, dbstylev_1freqv.bgcolor);
 #endif /* WITHPRERENDER */
 }
 
@@ -2602,7 +2602,7 @@ display2_text(const gxdrawb_t * db,
 	#else /* LCDMODE_COLORED */
 	#endif /* LCDMODE_COLORED */
 #if WITHALTERNATIVELAYOUT
-	layout_label1_medium(db, xcell, ycell, labels [state], strlen(labels [state]), 5, COLORPIP_BLACK, dbstylep->textfg);
+	layout_label1_medium(db, xcell, ycell, labels [state], strlen(labels [state]), 5, COLORPIP_BLACK, dbstylep->textcolor);
 #else
 	display_text(db, xcell, ycell, labels [state], width, yspan, dbstylep + state);
 #endif /* WITHALTERNATIVELAYOUT */
@@ -2707,7 +2707,7 @@ static void display_2states(const gxdrawb_t * db,
 			db,
 			x, y, x + w - 1, y + h - 1,
 			5,
-			state ? COLORPIP_WHITE : dbstylev_2state [1].textbg,
+			state ? COLORPIP_WHITE : dbstylev_2state [1].bgcolor,
 			0
 			);
 #else
@@ -2780,9 +2780,9 @@ void display2_midbar(const gxdrawb_t * db,
 		uint_fast8_t active;
 		const char * const label = hamradio_midlabel5(section, & active);
 		const char * const value = hamradio_midvalue5(section, & active);
-        const COLORPIP_T fg = dbstylev_2state [active].textfg;
-        const COLORPIP_T bg = dbstylev_2state [active].textbg;
-        colmain_rounded_rect(db, xpos, y0pix, xpos + w - 1, y0pix + alldy - 1, 5, bg, 1);
+        const COLORPIP_T fg = dbstylev_2state [active].textcolor;
+        const COLORPIP_T bg = dbstylev_2state [active].bgcolor;
+        colmain_rounded_rect(db, xpos, y0pix, xpos + w - 1, y0pix + alldy - 1, display2_gettileradius(), bg, 1);
 		colpip_string2_tbg(db, xpos + 1, y0pix + 1, label, fg);
 		colpip_string2_tbg(db, xpos + 1, y0pix + alldy / 2 + 1, value, fg);
 
@@ -3731,7 +3731,7 @@ static void display2_mode_lower_a(const gxdrawb_t * db,
 {
 	char labels[5];
 	local_snprintf_P(labels, ARRAY_SIZE(labels), PSTR(" %s"), hamradio_get_mode_a_value_P());
-	colpip_string2_tbg(db, GRID2X(x), GRID2Y(y), labels, dbstylev_1state.textfg);
+	colpip_string2_tbg(db, GRID2X(x), GRID2Y(y), labels, dbstylev_1state.textcolor);
 }
 
 #endif /* WITHTOUCHGUI */

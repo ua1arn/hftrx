@@ -70,6 +70,11 @@ enum
 #define DISPLC_WIDTH	9	// количество цифр в отображении частоты
 #define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
 
+unsigned display2_gettileradius(void)
+{
+	return 5;
+}
+
 // 480/5 = 96, 800/16=50
 // 272/5 = 54, 480/16=30 (old)
 //#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
@@ -86,7 +91,7 @@ static const dzone_t dzones [] =
 //	{	0,	0, 	7,	0,	display_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
 	//{	0,	0, 	5,	0,	display2_smeors5, 	& dzi_compat, PGALL, },	// уровень сигнала в баллах S или dBm
 	//{	10,	0,	4,	0,	display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
-	{	19,	0,	2,	0,	display_txrxstate2, 	& dzi_txrx, PGALL, },
+	{	19,	0,	2,	4,	display_txrxstate2, 	& dzi_txrx, PGALL, },
 	{	22,	0,	4,	4,	display2_att4,		& dzi_attenuator, PGALL, },
 	{	27,	0,	3,	4,	display2_preovf3,		& dzi_preamp_ovf, PGALL, },
 

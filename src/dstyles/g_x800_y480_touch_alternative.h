@@ -168,3 +168,7 @@
 		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
+	unsigned display2_gettileradius(void)
+	{
+		return 0;
+	}

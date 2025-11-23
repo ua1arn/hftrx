@@ -71,10 +71,10 @@ void display_bar(
 	const uint_fast16_t wmark = (int_fast32_t) wfull * tracevalue / topvalue;
 	const uint_fast8_t hpattern = 0x33;
 
-	colpip_fillrect(db, 	x, y, 			wpart, h, 			dbstyle->textfg);
-	colpip_fillrect(db, 	x + wpart, y, 	wfull - wpart, h, 	dbstyle->textbg);
+	colpip_fillrect(db, 	x, y, 			wpart, h, 			dbstyle->textcolor);
+	colpip_fillrect(db, 	x + wpart, y, 	wfull - wpart, h, 	dbstyle->bgcolor);
 	if (wmark < wfull && wmark >= wpart)
-		colpip_fillrect(db, x + wmark, y, 	1, h, 				dbstyle->textfg);
+		colpip_fillrect(db, x + wmark, y, 	1, h, 				dbstyle->textcolor);
 }
 
 void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy)
@@ -112,21 +112,22 @@ void gxstyle_initialize(gxstyle_t * dbstyle)
 	gxstyle_setsmallfont(dbstyle);
 	gxstyle_texthalign(dbstyle, GXSTYLE_HALIGN_RIGHT);
 	gxstyle_textvalign(dbstyle, GXSTYLE_VALIGN_CENTER);
+	dbstyle->bgradius = 0;
 }
 
 
 void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg)
 {
 #if ! LCDMODE_LTDC_L24
-	dbstyle->textfg = fg;
-	dbstyle->textbg = bg;
+	dbstyle->textcolor = fg;
+	dbstyle->bgcolor = bg;
 #else /* ! LCDMODE_LTDC_L24 */
-	dbstyle->textfg.r = COLORPIP_R(fg);
-	dbstyle->textfg.g = COLORPIP_G(fg);
-	dbstyle->textfg.b = COLORPIP_B(fg);
-	dbstyle->textbg.r = COLORPIP_R(bg);
-	dbstyle->textbg.g = COLORPIP_G(bg);
-	dbstyle->textbg.b = COLORPIP_B(bg);
+	dbstyle->textcolor.r = COLORPIP_R(fg);
+	dbstyle->textcolor.g = COLORPIP_G(fg);
+	dbstyle->textcolor.b = COLORPIP_B(fg);
+	dbstyle->bgcolor.r = COLORPIP_R(bg);
+	dbstyle->bgcolor.g = COLORPIP_G(bg);
+	dbstyle->bgcolor.b = COLORPIP_B(bg);
 
 #endif /* ! LCDMODE_LTDC_L24 */
 
@@ -165,7 +166,7 @@ ltdc_pixel(
 	)
 {
 	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y);
-	* tgr = v ? dbstyle->textfg : dbstyle->textbg;
+	* tgr = v ? dbstyle->textcolor : dbstyle->bgcolor;
 }
 
 
@@ -987,7 +988,7 @@ pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, u
 {
 	size_t len;
 	char c;
-	const COLORPIP_T fg = dbstyle->textfg;
+	const COLORPIP_T fg = dbstyle->textcolor;
 
 	savestring = s;
 	savewhere = __func__;
@@ -1003,7 +1004,7 @@ pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, u
 	    lv_draw_label_dsc_init(& l);
 		lv_draw_rect_dsc_init(& d);
 		lv_area_set(& coords, xpix, ypix, xpix + GRID2X(xspan) - 1, ypix + GRID2Y(yspan) - 1);
-	    d.bg_color = display_lvlcolor(dbstyle->textbg);
+	    d.bg_color = display_lvlcolor(dbstyle->bgcolor);
 	    l.color = display_lvlcolor(fg);
 	    l.align = LV_TEXT_ALIGN_RIGHT;
 	    l.flag = 0*LV_TEXT_FLAG_EXPAND | LV_TEXT_FLAG_FIT;
@@ -1016,9 +1017,13 @@ pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, u
         return;
 	}
 #endif
-
-
-	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->textbg);
+	ASSERT3(w >= (dbstyle->bgradius * 2), __FILE__, __LINE__, s);
+	ASSERT3(h >= (dbstyle->bgradius * 2), __FILE__, __LINE__, s);
+	const uint_fast16_t avlw = w - (dbstyle->bgradius * 2);
+	const uint_fast16_t avlh = h - (dbstyle->bgradius * 2);
+	colmain_rounded_rect(db, xpix, ypix, xpix + w - 1, ypix + h - 1, dbstyle->bgradius, dbstyle->bgcolor, 1);
+	xpix += dbstyle->bgradius;
+	ypix += dbstyle->bgradius;
 	switch (dbstyle->textvalign)
 	{
 	default:
@@ -1037,16 +1042,17 @@ pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, u
 
 	const uint_fast16_t textw = gxstyle_strwidth(dbstyle, s);
 	const uint_fast16_t xpix0 = xpix;
+	ASSERT3(avlw >= textw, __FILE__, __LINE__, s);
 	switch (dbstyle->texthalign)
 	{
 	default:
 	case GXSTYLE_HALIGN_RIGHT:
-		xpix = textw < w ? xpix + w - textw : xpix;
-		while ((c = * s ++) != '\0' && xpix - xpix0 + dbstyle->font_width(c) <= w)
+		xpix = textw < w ? xpix + avlw - textw : xpix;
+		while ((c = * s ++) != '\0' && xpix - xpix0 + dbstyle->font_width(c) <= avlw)
 			xpix = dbstyle->font_draw_char(db, xpix, ypix, c, fg);
 		break;
 	case GXSTYLE_HALIGN_LEFT:
-		while ((c = * s ++) != '\0' && xpix - xpix0 + dbstyle->font_width(c) <= w)
+		while ((c = * s ++) != '\0' && xpix - xpix0 + dbstyle->font_width(c) <= avlw)
 			xpix = dbstyle->font_draw_char(db, xpix, ypix, c, fg);
 		break;
 	case GXSTYLE_HALIGN_CENTER:
@@ -1117,13 +1123,13 @@ pix_display_value_big(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = display_put_char_big(db, xpix, ypix, (z == 0) ? '.' : '#', dbstyle->textfg);	// '#' - узкий пробел. Точка всегда узкая
+			xpix = display_put_char_big(db, xpix, ypix, (z == 0) ? '.' : '#', dbstyle->textcolor);	// '#' - узкий пробел. Точка всегда узкая
 		}
 		else if (comma == g)
 		{
 			z = 0;
 			half = withhalf;
-			xpix = display_put_char_big(db, xpix, ypix, '.', dbstyle->textfg);
+			xpix = display_put_char_big(db, xpix, ypix, '.', dbstyle->textcolor);
 		}
 
 		if (blinkpos == g)
@@ -1132,19 +1138,19 @@ pix_display_value_big(
 			// эта позиция редактирования частоты. Справа от неё включаем все нули
 			z = 0;
 			if (half)
-				xpix = display_put_char_half(db, xpix, ypix, bc, dbstyle->textfg);
+				xpix = display_put_char_half(db, xpix, ypix, bc, dbstyle->textcolor);
 			else
-				xpix = display_put_char_big(db, xpix, ypix, bc, dbstyle->textfg);
+				xpix = display_put_char_big(db, xpix, ypix, bc, dbstyle->textcolor);
 		}
 		else if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_big(db, xpix, ypix, ' ', dbstyle->textfg);	// supress zero
+			xpix = display_put_char_big(db, xpix, ypix, ' ', dbstyle->textcolor);	// supress zero
 		else
 		{
 			z = 0;
 			if (half)
-				xpix = display_put_char_half(db, xpix, ypix, '0' + res.quot, dbstyle->textfg);
+				xpix = display_put_char_half(db, xpix, ypix, '0' + res.quot, dbstyle->textcolor);
 			else
-				xpix = display_put_char_big(db, xpix, ypix, '0' + res.quot, dbstyle->textfg);
+				xpix = display_put_char_big(db, xpix, ypix, '0' + res.quot, dbstyle->textcolor);
 		}
 		freq = res.rem;
 	}
@@ -1301,8 +1307,8 @@ display_value_lower(
 	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
 	const uint_fast16_t w = GRID2X(xspan);
 	const uint_fast16_t h = GRID2Y(yspan);
-	const COLORPIP_T fg = dbstyle->textfg;
-	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->textbg);
+	const COLORPIP_T fg = dbstyle->textcolor;
+	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->bgcolor);
 	for (; i < j; ++ i)
 	{
 		const ldiv_t res = ldiv(freq, vals10 [i]);
@@ -1355,8 +1361,8 @@ display_value_small(
 //    const uint_fast16_t y = GRID2Y(ycell);
 	const uint_fast16_t w = GRID2X(xspan);
 	const uint_fast16_t h = GRID2Y(yspan);
-	const COLORPIP_T fg = dbstyle->textfg;
-	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->textbg);
+	const COLORPIP_T fg = dbstyle->textcolor;
+	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->bgcolor);
 	if (h > smallfont_height())
 	{
 		ypix += (h - dbstyle->font_height()) / 2;

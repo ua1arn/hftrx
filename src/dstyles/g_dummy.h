@@ -67,6 +67,10 @@ static const dzone_t dzones [] =
 	{	0,	0,	0, 0, display2_dummy,	& dzi_default,	REDRSUBSET_SLEEP | REDRSUBSET_MENU },
 	{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 };
+unsigned display2_gettileradius(void)
+{
+	return 0;
+}
 
 #if WITHMENU
 	void display2_getmultimenu(multimenuwnd_t * p)

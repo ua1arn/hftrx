@@ -211,7 +211,8 @@ enum gxstyle_textvalign
 
 typedef struct gxstyle_tag
 {
-	PACKEDCOLORPIP_T textfg, textbg;
+	PACKEDCOLORPIP_T textcolor, bgcolor;
+	uint8_t bgradius;
 	enum gxstyle_texthalign	texthalign;
 	enum gxstyle_textvalign textvalign;
 	uint_fast16_t (* font_draw_char)(
