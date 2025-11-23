@@ -1594,10 +1594,8 @@ static gxstyle_t dbstylev_2fmenu [2];
 static gxstyle_t dbstylev_1fmenu;
 // Параметры отображения текстов без вариантов (синий)
 static gxstyle_t dbstylev_1stateTime;
-// Параметры отображения частоты дополнительного приемника
-static gxstyle_t dbstylev_2freqB [2];
-// Параметры отображения режима дополнительного приемника
-static gxstyle_t dbstylev_2modeB [2];
+// Параметры отображения частоты и режима дополнительного приемника
+static gxstyle_t dbstylev_2rxB [2];
 // Параметры отображения частоты основного приемника
 static gxstyle_t dbstylev_1freqv;
 
@@ -2521,7 +2519,7 @@ static void display_freqchr_b(const gxdrawb_t * db,
 	const uint_fast8_t comma = 3 - rj;
 	uint_fast8_t state;
 	hamradio_get_vfomode3_value(& state);	// state - признак активного SPLIT (0/1)
-	const gxstyle_t * const dbstylep = & dbstylev_2freqB [state];
+	const gxstyle_t * const dbstylep = & dbstylev_2rxB [state];
 	if (0)
 	{
 
@@ -2557,7 +2555,7 @@ static void display2_freqX_b(const gxdrawb_t * db,
 	const uint_fast8_t comma = 3 - rj;
 	uint_fast8_t state;
 	hamradio_get_vfomode3_value(& state);	// state - признак активного SPLIT (0/1)
-	const gxstyle_t * const dbstylep = & dbstylev_2freqB [state];
+	const gxstyle_t * const dbstylep = & dbstylev_2rxB [state];
 
 	const uint_fast32_t freq = hamradio_get_freq_b();
 
@@ -3704,7 +3702,7 @@ static void display2_mode3_b(const gxdrawb_t * db,
 	const char * const labels [2] = { label, label };
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	hamradio_get_vfomode3_value(& state);
-	display2text_states(db, x, y, labels, dbstylev_2freqB, state, xspan, yspan);
+	display2text_states(db, x, y, labels, dbstylev_2rxB, state, xspan, yspan);
 }
 
 
@@ -9726,18 +9724,11 @@ static void display2_stylesupdate(void)
 	gxstyle_initialize(& dbstylev_1freqv);
 	gxstyle_textcolor(& dbstylev_1freqv, DSGN_BIGCOLOR,	DSGN_BIGCOLORBACK);
 
-	// Параметры отображения частоты дополнительного приемника
-	gxstyle_initialize(& dbstylev_2freqB [0]);
-	gxstyle_textcolor(& dbstylev_2freqB [0], DSGN_BIGCOLORBINACTIVE, DSGN_BIGCOLORBBACKINACTIVE);
-	gxstyle_initialize(& dbstylev_2freqB [1]);
-	gxstyle_textcolor(& dbstylev_2freqB [1], DSGN_BIGCOLORB, DSGN_BIGCOLORBBACK);
-
-
-	// Параметры отображения режима дополнительного приемника
-	gxstyle_initialize(& dbstylev_2modeB [0]);
-	gxstyle_textcolor(& dbstylev_2modeB [0], DSGN_BIGCOLORBINACTIVE, DSGN_LABELBACK);
-	gxstyle_initialize(& dbstylev_2modeB [1]);
-	gxstyle_textcolor(& dbstylev_2modeB [1], DSGN_BIGCOLORB, DSGN_LABELBACK);
+	// Параметры отображения частоты и режима дополнительного приемника
+	gxstyle_initialize(& dbstylev_2rxB [0]);
+	gxstyle_textcolor(& dbstylev_2rxB [0], DSGN_LABELINACTIVETEXT, DSGN_LABELINACTIVEBACK);
+	gxstyle_initialize(& dbstylev_2rxB [1]);
+	gxstyle_textcolor(& dbstylev_2rxB [1], DSGN_LABELACTIVETEXT, DSGN_LABELACTIVEBACK);
 
 	// Параметры отображения текстов без вариантов
 	gxstyle_initialize(& dbstylev_1statePSU);

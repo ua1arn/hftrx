@@ -226,6 +226,7 @@ typedef struct gxstyle_tag
 	uint_fast8_t (* font_height)(void);
 } gxstyle_t;
 
+#define GXSTYLE_BACKOFF 2	// на столько пикселей уменьшается высота и ширина при наличии радиуса в стиле
 void gxstyle_initialize(gxstyle_t * dbstyle);
 void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg);
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a);

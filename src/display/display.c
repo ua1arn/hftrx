@@ -994,8 +994,8 @@ pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, u
 	savewhere = __func__;
 	if (dbstyle->bgradius)
 	{
-		w -= 2;
-		h -= 2;
+		w -= GXSTYLE_BACKOFF;
+		h -= GXSTYLE_BACKOFF;
 	}
 #if WITHLVGL
 	lv_layer_t * const layer = (lv_layer_t *) db->layerv;
@@ -1451,13 +1451,24 @@ display_value_small(
 	uint_fast16_t xpix = display_wrdata_begin(x, y, & ypix);
 //    const uint_fast16_t x = GRID2X(xcell);
 //    const uint_fast16_t y = GRID2Y(ycell);
-	const uint_fast16_t w = GRID2X(xspan);
-	const uint_fast16_t h = GRID2Y(yspan);
+	uint_fast16_t w = GRID2X(xspan);
+	uint_fast16_t h = GRID2Y(yspan);
 	const COLORPIP_T fg = dbstyle->textcolor;
-	colpip_fillrect(db, xpix, ypix, w, h, dbstyle->bgcolor);
-	if (h > smallfont_height())
+	if (dbstyle->bgradius)
 	{
-		ypix += (h - dbstyle->font_height()) / 2;
+		w -= GXSTYLE_BACKOFF;
+		h -= GXSTYLE_BACKOFF;
+	}
+
+	const uint_fast16_t avlw = w - (dbstyle->bgradius * 2);
+	const uint_fast16_t avlh = h - (dbstyle->bgradius * 2);
+	colmain_rounded_rect(db, xpix, ypix, xpix + w - 1, ypix + h - 1, dbstyle->bgradius, dbstyle->bgcolor, 1);
+	xpix += dbstyle->bgradius;
+	ypix += dbstyle->bgradius;
+
+	if (avlh > smallfont_height())
+	{
+		ypix += (avlh - dbstyle->font_height()) / 2;
 	}
 	if (wsign || wminus)
 	{
