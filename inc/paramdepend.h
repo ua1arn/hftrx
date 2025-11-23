@@ -111,9 +111,7 @@ extern "C" {
 
 			#define HSIFREQ 64000000u
 			#define HSI48FREQ 48000000u
-			#if !defined  (CSI_VALUE)
-			  #define CSI_VALUE    4000000U /*!< Value of the Internal oscillator in Hz*/
-			#endif /* CSI_VALUE */
+			#define CSI_VALUE    4000000U /*!< Value of the Internal oscillator in Hz*/
 
 			#define LSEFREQ 32768u	// должно быть в файле конфигурации платы
 
@@ -311,7 +309,7 @@ extern "C" {
 
 	/* Частоты встроенных RC генераторов процессора */
 	#define HSI64FREQ 64000000u
-	#define CSI_VALUE 4000000U
+	#define CSI_VALUE 4000000U /*!< Value of the Internal oscillator in Hz*/
 	#define LSIFREQ 32000u
 
 	//
