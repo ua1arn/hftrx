@@ -97,7 +97,7 @@ static const dzone_t dzones [] =
 
 #if WITHBARS
 	{   0, 	5,  0,	0,	display2_smeter15_init,	NULL, PGINI, },	//  Инициализация стрелочного прибора
-	{   0, 	4,  15,	20,	display2_smeter15,		& dzi_compat, PGALL, },	//  Инициализация стрелочного прибора
+	{   0, 	4,  SM_BG_W_CELLS, SM_BG_H_CELLS, display2_smeter15,		& dzi_compat, PGALL, },	//  Инициализация стрелочного прибора
 //	{   0, 	5,	15,	19,	display2_dummy, 		& dzi_smtr2, PGALL, },	// Placeholder
 #endif /* WITHBARS */
 #if WITHAFSPECTRE

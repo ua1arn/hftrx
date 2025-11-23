@@ -1735,7 +1735,8 @@ enum {
 	SM_STATE_TX,
 	SM_STATE_COUNT
 };
-enum { SM_BG_W = GRID2X(15), SM_BG_H = GRID2Y(20) };
+
+enum { SM_BG_W = GRID2X(SM_BG_W_CELLS), SM_BG_H = GRID2Y(SM_BG_H_CELLS) };
 
 /* точки на шкале s-метра, к которым надо привязать измеренное значение */
 static const int16_t smeterpointsRX [] =
