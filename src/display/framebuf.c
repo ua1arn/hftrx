@@ -4225,9 +4225,9 @@ static void gpu_command(unsigned cmd)
 	while ((GPU_CONTROL->GPU_STATUS & (UINT32_C(1) << 0)) != 0)
 		;
 	GPU_CONTROL->GPU_COMMAND = cmd;
-//	unsigned v1 = GPU->GPU_STATUS;
-//	unsigned v2 = GPU->GPU_STATUS;
-//	unsigned v3 = GPU->GPU_STATUS;
+//	unsigned v1 = GPU_CONTROL->GPU_STATUS;
+//	unsigned v2 = GPU_CONTROL->GPU_STATUS;
+//	unsigned v3 = GPU_CONTROL->GPU_STATUS;
 //	PRINTF("cmd: %08X, Status: %08X, %08X, %08X\n", cmd, v1, v2, v3);
 }
 
@@ -4312,7 +4312,7 @@ void board_gpu_initialize(void)
 	{
 		//PRINTF("1 CCU->PLL_GPU0_CTRL_REG = %08X\n", (unsigned) CCU->PLL_GPU0_CTRL_REG);
 
-		const unsigned N = 432 * 2 / 24;
+		const unsigned N = 600 * 2 / 24;
 		const unsigned M1 = 1;
 		const unsigned M0 = 2;
 		// PLL_GPU0 = 24 MHz*N/M0/M1
@@ -4372,6 +4372,13 @@ void board_gpu_initialize(void)
 	// https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/panfrost/panfrost_mmu.c
 
 	PRINTF("board_gpu_initialize done.\n");
+
+	unsigned i;
+
+	for (i = 0; i < ARRAY_SIZE(GPU_MMU->MMU_AS); ++ i)
+	{
+		printhex32((uintptr_t) & GPU_MMU->MMU_AS [i], & GPU_MMU->MMU_AS [i], sizeof GPU_MMU->MMU_AS [i]);
+	}
 }
 
 #elif CPUSTYLE_STM32MP1
