@@ -247,6 +247,7 @@ void window_infobar_menu_process(void)
 			local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "btn_%d", i);
 			gui_obj_create(btn_name, 86, 30, 0, 0, "");
 			gui_obj_set_prop(btn_name, GUI_OBJ_VISIBLE, 0);
+			gui_obj_set_prop(btn_name, GUI_OBJ_FONT, & msgothic_13x16_prop);
 		}
 
 		switch (infobar)
@@ -861,7 +862,7 @@ void gui_main_process(void)
 	for (uint8_t current_place = 0; current_place < infobar_num_places; current_place ++)
 	{
 		uint_fast8_t infobar = infobar_places[current_place] & INFOBAR_VALID_MASK;
-		COLORPIP_T str_color = (current_place == infobar_selected) && infobar_hl ? COLORPIP_BLACK : COLORPIP_WHITE;
+		gui_color_t str_color = (current_place == infobar_selected) && infobar_hl ? COLORPIP_BLACK : COLORPIP_WHITE;
 		uint16_t strl;
 
 		switch (infobar)
@@ -1139,7 +1140,7 @@ void gui_main_process(void)
 				local_snprintf_P(buf, buflen, "%s", gui_enc2_menu.val);
 				remove_end_line_spaces(buf);
 				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-				COLORPIP_T color_lbl = gui_enc2_menu.state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
+				gui_color_t color_lbl = gui_enc2_menu.state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
 				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, color_lbl);
 			}
 			else
@@ -2750,7 +2751,7 @@ void hamradio_gui_parse_ft8buf(void)
 	memset(cq_call, 0, sizeof(cq_call));
 }
 
-static void parse_ft8_answer(char * str, COLORPIP_T * color, uint8_t * cq_flag)
+static void parse_ft8_answer(char * str, gui_color_t * color, uint8_t * cq_flag)
 {
 	* color = COLORPIP_WHITE;
 	* cq_flag = 0;
@@ -2999,7 +3000,7 @@ void window_ft8_process(void)
 			char * msg = ft8.rx_text[i];
 			remove_end_line_spaces(msg);
 			if (! strlen(msg)) break;
-			COLORPIP_T colorline;
+			gui_color_t colorline;
 			uint8_t cq_flag = 0;
 			parse_ft8_answer(msg, & colorline, & cq_flag);
 			if (cq_filter)
@@ -3904,7 +3905,7 @@ void window_menu_params_process(void)
 			local_snprintf_P(btn_names[i], TEXT_ARRAY_SIZE, "btn_params_%02d", i);
 			remove_end_line_spaces(menup[i].name);
 
-			if (__gui_get_pixw_string_prop(menup[i].name, & BUTTONS_FONTP) > 110)   // переделать
+			if (__gui_get_pixw_string_prop(menup[i].name, & BUTTONS_FONTP_DEFAULT) > 110)   // переделать
 				split_string(menup[i].name, '|');
 
 			gui_obj_create(btn_names[i], 120, 40, 0, 0, menup[i].name);
@@ -3991,7 +3992,7 @@ void window_menu_process(void)
 			local_snprintf_P(btn_names[i], TEXT_ARRAY_SIZE, "btn_groups_%02d", i);
 			remove_end_line_spaces(menu[i].name);
 
-			if (__gui_get_pixw_string_prop(menu[i].name, & BUTTONS_FONTP) > 110)  // переделать
+			if (__gui_get_pixw_string_prop(menu[i].name, & BUTTONS_FONTP_DEFAULT) > 110)  // переделать
 				split_string(menu[i].name, '|');
 
 			gui_obj_create(btn_names[i], 120, 40, 0, 0, menu[i].name);
@@ -4153,7 +4154,7 @@ void window_lfm_spectre_process(void)
 {
 #if WITHLFM
 	enum { xmax = 600, ymax = 200, i1 = (800 / 2) - 100, i2 = (800 / 2) + 100 };
-	static COLORPIP_T d[xmax][ymax];
+	static gui_color_t d[xmax][ymax];
 	static int shift = 0;
 
 	static uint16_t xx = 0;
@@ -4494,7 +4495,7 @@ void window_as_process(void)
 #if WITHAUDIOSAMPLESREC
 	uint8_t update = 0;
 	enum { len = 320, lim = 25 };
-	static COLORPIP_T d[len];
+	static gui_color_t d[len];
 
 	if (is_win_init())
 	{
@@ -4529,7 +4530,7 @@ void window_as_process(void)
 		{
 			if (gui_check_obj(name, "btn_rec"))
 			{
-				memset(d, 0, len * sizeof(COLORPIP_T));
+				memset(d, 0, len * sizeof(gui_color_t));
 				as_toggle_record();
 			}
 			else if (gui_check_obj(name, "btn_play"))

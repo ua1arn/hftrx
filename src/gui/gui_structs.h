@@ -121,6 +121,7 @@ typedef enum {
 	GUI_OBJ_REPEAT,
 	GUI_OBJ_INDEX,
 	GUI_OBJ_LONG_PRESS,
+	GUI_OBJ_FONT,
 } object_prop_t;
 
 typedef struct {
@@ -185,6 +186,7 @@ typedef struct {
 	uint8_t index;
 	uint16_t x1;					// координаты от начала окна
 	uint16_t y1;
+	gui_prop_font_t * font;
 } button_t;
 
 typedef enum {

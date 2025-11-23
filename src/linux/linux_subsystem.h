@@ -118,7 +118,7 @@ uint8_t as_get_progress(void);
 void as_toggle_record(void);
 void as_toggle_play(void);
 void as_toggle_trx(void);
-void as_draw_spectrogram(COLORPIP_T * d, uint16_t len, uint16_t lim);
+void as_draw_spectrogram(uint32_t * d, uint16_t len, uint16_t lim);
 void as_tx(uint32_t * buf);
 void as_rx(uint32_t * buf);
 

@@ -73,7 +73,7 @@ void textfield_update_size(text_field_t * tf)
 }
 
 /* Добавить строку в текстовое поле */
-void textfield_add_string_old(text_field_t * tf, const char * str, COLORPIP_T color)
+void textfield_add_string_old(text_field_t * tf, const char * str, gui_color_t color)
 {
 	ASSERT(tf != NULL);
 
@@ -84,7 +84,7 @@ void textfield_add_string_old(text_field_t * tf, const char * str, COLORPIP_T co
 	tf->index = tf->index >= tf->h_str ? 0 : tf->index;
 }
 
-void textfield_add_string(const char * name, const char * str, COLORPIP_T color)
+void textfield_add_string(const char * name, const char * str, gui_color_t color)
 {
 	window_t * win = get_win(get_parent_window());
 	text_field_t * tf = (text_field_t *) find_gui_obj(TYPE_TEXT_FIELD, win, name);
@@ -168,7 +168,7 @@ uint8_t gui_obj_create(const char * name, ...)
 
 		lh->parent = window_id;
 		lh->font_size = (font_size_t) va_arg(arg, int);
-		lh->color = va_arg(arg, COLORPIP_T);
+		lh->color = va_arg(arg, gui_color_t);
 		lh->visible = 1;
 		lh->index = win->lh_count;
 		lh->x = 0;
@@ -218,6 +218,7 @@ uint8_t gui_obj_create(const char * name, ...)
 		bh->index = win->bh_count;
 		bh->x1 = 0;
 		bh->y1 = 0;
+		bh->font = & BUTTONS_FONTP_DEFAULT;
 
 		idx = win->bh_count;
 		win->bh_count ++;
@@ -526,7 +527,7 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_TEXT) strncpy(lh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
 		else if (prop == GUI_OBJ_TEXT_FMT) vsnprintf(lh->text, TEXT_ARRAY_SIZE - 1, va_arg(arg, char *), arg);
 		else if (prop == GUI_OBJ_STATE) lh->state = va_arg(arg, int);
-		else if (prop == GUI_OBJ_COLOR) lh->color = va_arg(arg, COLORPIP_T);
+		else if (prop == GUI_OBJ_COLOR) lh->color = va_arg(arg, gui_color_t);
 		break;
 
 	case TYPE_BUTTON:
@@ -545,6 +546,7 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_SIZE) { bh->w = va_arg(arg, int); bh->h = va_arg(arg, int); }
 		else if (prop == GUI_OBJ_REPEAT) bh->is_repeating = !! va_arg(arg, int);
 		else if (prop == GUI_OBJ_LONG_PRESS) bh->is_long_press = !! va_arg(arg, int);
+		else if (prop == GUI_OBJ_FONT) bh->font = va_arg(arg, gui_prop_font_t *);
 		break;
 
 	case TYPE_SLIDER:

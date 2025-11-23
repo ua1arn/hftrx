@@ -811,40 +811,40 @@ static void draw_button(const button_t * const bh)
 
 	const uint_fast16_t shiftX = bh->state == PRESSED ? 1 : 0;
 	const uint_fast16_t shiftY = bh->state == PRESSED ? 1 : 0;
-	const COLORPIP_T textcolor = COLORPIP_BLACK;
+	const gui_color_t textcolor = COLORPIP_BLACK;
 
 	if (strchr(bh->text, delimeters[0]) == NULL)
 	{
 		/* Однострочная надпись */
-		int strlenP = __gui_get_pixw_string_prop(bh->text, & BUTTONS_FONTP);
+		int strlenP = __gui_get_pixw_string_prop(bh->text, bh->font);
 		__gui_draw_string_prop(gdb,
 				shiftX + x1 + (bh->w - strlenP) / 2,
-				shiftY + y1 + (bh->h - BUTTONS_FONTP.height) / 2,
-				bh->text, & BUTTONS_FONTP, textcolor
+				shiftY + y1 + (bh->h - bh->font->height) / 2,
+				bh->text, bh->font, textcolor
 				);
 	}
 	else
 	{
 		char * next;
 		/* Двухстрочная надпись */
-		uint_fast8_t j = (bh->h - SMALLCHARH2 * 2) / 2;
+		uint_fast8_t j = (bh->h - bh->font->height * 2) / 2;
 		char buf[TEXT_ARRAY_SIZE];
 		strcpy(buf, bh->text);
 		char * text2 = strtok_r(buf, delimeters, & next);
 
-		int strlenP = __gui_get_pixw_string_prop(text2, & BUTTONS_FONTP);
+		int strlenP = __gui_get_pixw_string_prop(text2, bh->font);
 		__gui_draw_string_prop(gdb,
 				shiftX + x1 + (bh->w - strlenP) / 2,
 				shiftY + y1 + j,
-				text2, & BUTTONS_FONTP, textcolor
+				text2, bh->font, textcolor
 				);
 
 		text2 = strtok_r(NULL, delimeters, & next);
-		strlenP = __gui_get_pixw_string_prop(text2, & BUTTONS_FONTP);
+		strlenP = __gui_get_pixw_string_prop(text2, bh->font);
 		__gui_draw_string_prop(gdb,
 				shiftX + x1 + (bh->w - strlenP) / 2,
-				shiftY + bh->h + y1 - BUTTONS_FONTP.height - j,
-				text2, & BUTTONS_FONTP, textcolor
+				shiftY + bh->h + y1 - bh->font->height - j,
+				text2, bh->font, textcolor
 				);
 	}
 
@@ -1289,7 +1289,7 @@ static void process_gui(void)
 					}
 
 					__gui_draw_rect(drawbuf, win->x1, win->y1, win->w, window_title_height, GUI_WINDOWTITLECOLOR, 1);
-					__gui_draw_string_prop(drawbuf, xt, win->y1 + 5, win->title, & BUTTONS_FONTP, COLORPIP_BLACK);
+					__gui_draw_string_prop(drawbuf, xt, win->y1 + 5, win->title, & WINDOW_TITLE_FONTP, COLORPIP_BLACK);
 				}
 
 				// отрисовка принадлежащих окну элементов

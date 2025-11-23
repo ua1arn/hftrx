@@ -272,7 +272,7 @@ void as_toggle_trx(void)
 	pthread_mutex_unlock(& mutex_as);
 }
 
-void as_draw_spectrogram(COLORPIP_T * d, uint16_t len, uint16_t lim)
+void as_draw_spectrogram(uint32_t * d, uint16_t len, uint16_t lim)
 {
 	const uint16_t step = as_idx_stop / len;
 	uint32_t d_max = 0;

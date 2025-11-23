@@ -65,8 +65,9 @@ enum {
 };
 
 
-#define BUTTONS_FONTP	msgothic_15x17_prop
-#define INFOBAR_FONTP	msgothic_13x16_prop
+#define BUTTONS_FONTP_DEFAULT	msgothic_15x17_prop
+#define INFOBAR_FONTP			msgothic_13x16_prop
+#define WINDOW_TITLE_FONTP		msgothic_15x17_prop
 
 #endif /* WITHTOUCHGUI */
 
