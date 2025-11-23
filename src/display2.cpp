@@ -2588,7 +2588,7 @@ static void display_freqmeter10(const gxdrawb_t * db,
 
 // отображение текста с атрибутами по состоянию
 static void
-display2_text(const gxdrawb_t * db,
+display2text_states(const gxdrawb_t * db,
 	uint_fast8_t xcell,
 	uint_fast8_t ycell,
 	const char * const * labels,	// массив указателей на текст
@@ -2623,7 +2623,7 @@ static void display_txrxstate2(const gxdrawb_t * db,
 	static const char text0 [] = "RX";
 	static const char text1 [] = "TX";
 	const char * const labels [2] = { text0, text1 };
-	display2_text(db, xcell, ycell, labels, dbstylev_2rxtx, state, xspan, yspan);
+	display2text_states(db, xcell, ycell, labels, dbstylev_2rxtx, state, xspan, yspan);
 #endif /* WITHTX */
 }
 
@@ -2663,7 +2663,7 @@ static void display2_rec3(const gxdrawb_t * db,
 	const char * const labels [2] = { text_pau, text_rec };
 
 	/* формирование мигающей надписи REC */
-	display2_text(db, xcell, ycell, labels, hamradio_get_blinkphase() ? dbstylev_2state_rec : dbstylev_2state, state, xspan, yspan);
+	display2text_states(db, xcell, ycell, labels, hamradio_get_blinkphase() ? dbstylev_2state_rec : dbstylev_2state, state, xspan, yspan);
 
 #endif /* WITHUSEAUDIOREC */
 }
@@ -2701,7 +2701,7 @@ static void display_2states(const gxdrawb_t * db,
 	const uint_fast16_t w = SMALLCHARW * xspan;
 	const uint_fast16_t h = SMALLCHARH;
 
-	display2_text(db, xcell, ycell, labels, dbstylev_2state, 1, xspan, yspan);
+	display2text_states(db, xcell, ycell, labels, dbstylev_2state, 1, xspan, yspan);
 
 	colmain_rounded_rect(
 			db,
@@ -2711,7 +2711,7 @@ static void display_2states(const gxdrawb_t * db,
 			0
 			);
 #else
-	display2_text(db, xcell, ycell, labels, dbstylev_2state, state, xspan, yspan);
+	display2text_states(db, xcell, ycell, labels, dbstylev_2state, state, xspan, yspan);
 #endif
 }
 
@@ -2724,7 +2724,7 @@ static void display_1state(const gxdrawb_t * db,
 	uint_fast8_t yspan
 	)
 {
-	display2_text(db, x, y, & label, & dbstylev_1state, 0, xspan, yspan);
+	display2text_states(db, x, y, & label, & dbstylev_1state, 0, xspan, yspan);
 }
 
 
@@ -2742,7 +2742,7 @@ void display_2fmenus(const gxdrawb_t * db,
 	#else /* LCDMODE_COLORED */
 		const char * const labels [2] = { state0, state1, };
 	#endif /* LCDMODE_COLORED */
-	display2_text(db, x, y, labels, dbstylev_2fmenu, state, xspan, yspan);
+	display2text_states(db, x, y, labels, dbstylev_2fmenu, state, xspan, yspan);
 }
 
 // Параметры, не меняющие состояния цветом
@@ -2753,7 +2753,7 @@ void display_1fmenu(const gxdrawb_t * db,
 	uint_fast8_t xspan, uint_fast8_t yspan
 	)
 {
-	display2_text(db, x, y, & label, & dbstylev_1fmenu, 0, xspan, yspan);
+	display2text_states(db, x, y, & label, & dbstylev_1fmenu, 0, xspan, yspan);
 }
 
 /* Middle bar rendering */
@@ -2999,7 +2999,7 @@ static void display2_wpm5(const gxdrawb_t * db,
 	const char * const labels [1] = { buf2, };
 
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%2dwpm"), (int) value);
-	display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 	(void) pctx;
 #endif /* WITHELKEY */
 }
@@ -3018,7 +3018,7 @@ static void display2_notch5(const gxdrawb_t * db,
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
 	const char * const label = hamradio_get_notchtype5_P();
 	const char * const labels [2] = { label, label, };
-	display2_text(db, x, y, labels, dbstylev_2state, state, xspan, yspan);
+	display2text_states(db, x, y, labels, dbstylev_2state, state, xspan, yspan);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
@@ -3087,7 +3087,7 @@ static void display2_vfomode3(const gxdrawb_t * db,
 {
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const labels [1] = { hamradio_get_vfomode3_value(& state), };
-	display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 }
 
 // VFO mode
@@ -3115,7 +3115,7 @@ static void display_vfomode5(const gxdrawb_t * db,
 {
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const labels [1] = { hamradio_get_vfomode5_value(& state), };
-	display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 }
 
 static void display_XXXXX3(const gxdrawb_t * db,
@@ -3311,7 +3311,7 @@ static void display2_voxtune3(const gxdrawb_t * db,
 		const char * const labels [4] = { text_nul, text_vox, text_tun, text_tun, };
 	#endif /* LCDMODE_COLORED */
 
-	display2_text(db, x, y, labels, dbstylev_4state, tunev * 2 + voxv, xspan, yspan);
+	display2text_states(db, x, y, labels, dbstylev_4state, tunev * 2 + voxv, xspan, yspan);
 
 #else /* WITHVOX */
 
@@ -3342,7 +3342,7 @@ static void display_voxtune4(const gxdrawb_t * db,
 	static const char text0 [] = "VOX ";
 	static const char text1 [] = "TUNE";
 	const char * const labels [4] = { text0, text0, text1, text1, };
-	display2_text(db, x, y, labels, dbstylev_4state, tunev * 2 + voxv, xspan, yspan);
+	display2text_states(db, x, y, labels, dbstylev_4state, tunev * 2 + voxv, xspan, yspan);
 
 #else /* WITHVOX */
 
@@ -3373,7 +3373,7 @@ static void display_lockstate3(const gxdrawb_t * db,
 #else /* LCDMODE_COLORED */
 	const char * const labels [4] = { text0, text2, text1, text1, };
 #endif
-	display2_text(db, x, y, labels, dbstylev_4state, lockv * 2 + fastv, xspan, yspan);
+	display2text_states(db, x, y, labels, dbstylev_4state, lockv * 2 + fastv, xspan, yspan);
 }
 
 static void display2_lockstate4(const gxdrawb_t * db,
@@ -3395,7 +3395,7 @@ static void display2_lockstate4(const gxdrawb_t * db,
 #else /* LCDMODE_COLORED */
 	const char * const labels [4] = { text0, text2, text1, text1, };
 #endif
-	display2_text(db, x, y, labels, dbstylev_4state, lockv * 2 + fastv, xspan, yspan);
+	display2text_states(db, x, y, labels, dbstylev_4state, lockv * 2 + fastv, xspan, yspan);
 }
 
 static void display2_lockstate5alt(const gxdrawb_t * db,
@@ -3442,7 +3442,7 @@ static void display2_rxbwval4(const gxdrawb_t * db,
 		)
 {
 	const char * const labels [1] = { hamradio_get_rxbw_value4(), };
-	display2_text(db, x, y, labels, & dbstylev_1statePSU, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1statePSU, 0, xspan, yspan);
 }
 
 // RX path bandwidth
@@ -3470,7 +3470,7 @@ static void display2_rxbw3(const gxdrawb_t * db,
 		)
 {
 	const char * const labels [1] = { hamradio_get_rxbw_label3_P(), };
-	display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 }
 
 // текущее состояние DUAL WATCH
@@ -3501,7 +3501,7 @@ static void display_pre3(const gxdrawb_t * db,
 		)
 {
 	const char * const labels [1] = { hamradio_get_pre_value_P(), };
-	display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 }
 
 // переполнение АЦП (надо показывать как REDRM_BARS - с таймерным обновлением)
@@ -3517,7 +3517,7 @@ static void display2_ovf3(const gxdrawb_t * db,
 	gxstyle_t dbstylev;
 	gxstyle_initialize(& dbstylev);
 	//const char * const labels [1] = { hamradio_get_pre_value_P(), };
-	//display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	//display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 
 	const char * labels [1];
 	if (hamradio_get_bringSWR(labels))
@@ -3616,10 +3616,10 @@ static void display2_ant5(const gxdrawb_t * db,
 {
 #if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
 	const char * const labels [1] = { hamradio_get_ant5_value_P(), };
-	display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 #elif WITHANTSELECT
 	const char * const labels [1] = { hamradio_get_ant5_value_P(), };
-	display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 #endif /* WITHANTSELECT */
 }
 
@@ -3651,7 +3651,7 @@ static void display2_att4(const gxdrawb_t * db,
 		)
 {
 	const char * const labels [1] = { hamradio_get_att_value_P(), };
-	display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 }
 
 // RX att (or att/pre)
@@ -3716,7 +3716,7 @@ static void display2_mode3_a(const gxdrawb_t * db,
 		)
 {
 	const char * const labels [1] = { hamradio_get_mode_a_value_P(), };
-	display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 }
 
 #if WITHTOUCHGUI
@@ -3749,7 +3749,7 @@ static void display2_mode3_b(const gxdrawb_t * db,
 	const char * const labels [2] = { label, label };
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	hamradio_get_vfomode3_value(& state);
-	display2_text(db, x, y, labels, dbstylev_2freqB, state, xspan, yspan);
+	display2text_states(db, x, y, labels, dbstylev_2freqB, state, xspan, yspan);
 }
 
 
@@ -3766,7 +3766,7 @@ static void display2_demorect(const gxdrawb_t * db,
 }
 
 // dd.dV - 5 places
-static void display2_voltlevelV5(const gxdrawb_t * db,
+static void display2_voltlevelV(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -3776,14 +3776,16 @@ static void display2_voltlevelV5(const gxdrawb_t * db,
 {
 #if WITHVOLTLEVEL
 	uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
-	//PRINTF("display2_voltlevelV5: volt=%u\n", volt);
-	display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, volt, 3, 1, UINT8_MAX, 0, & dbstylev_1statePSU);
-	display_text(db, x + CHARS2GRID(4), y, PSTR("V"), 1, yspan, & dbstylev_1statePSU);
+	//PRINTF("display2_voltlevelV: volt=%u\n", volt);
+	char b [xspan + 1];
+	const div_t v = div(volt, 10);
+	local_snprintf_P(b, ARRAY_SIZE(b), "%d.%dV", v.quot, v.rem);
+	display_text(db, x, y, b, xspan, yspan, & dbstylev_1statePSU);
 #endif /* WITHVOLTLEVEL */
 }
 
 // dd.d - 4 places
-static void display_voltlevel4(const gxdrawb_t * db,
+static void display_voltlevel(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -3793,9 +3795,11 @@ static void display_voltlevel4(const gxdrawb_t * db,
 {
 #if WITHVOLTLEVEL
 	const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
-	//PRINTF("display_voltlevel4: volt=%u\n", volt);
-
-	display_value_small(db, x, y, xspan, yspan, volt, 3, 1, UINT8_MAX, 0, & dbstylev_1statePSU);
+	//PRINTF("display_voltlevel: volt=%u\n", volt);
+	char b [xspan + 1];
+	const div_t v = div(volt, 10);
+	local_snprintf_P(b, ARRAY_SIZE(b), "%d.%d", v.quot, v.rem);
+	display_text(db, x, y, b, xspan, yspan, & dbstylev_1statePSU);
 #endif /* WITHVOLTLEVEL */
 }
 
@@ -3836,7 +3840,7 @@ static void display2_thermo4(const gxdrawb_t * db,
 }
 
 // отображение градусов с десятыми долями и "C" без отрицательных температур
-static void display2_thermo5(const gxdrawb_t * db,
+static void display2_thermo(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -3875,7 +3879,7 @@ static void display2_thermo5(const gxdrawb_t * db,
 // Signed value display
 // +d.ddA - 6 places (with "A")
 // +dd.dA - 6 places (with "A")
-static void display2_currlevelA6(const gxdrawb_t * db,
+static void display2_currlevelA(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -3885,20 +3889,20 @@ static void display2_currlevelA6(const gxdrawb_t * db,
 {
 #if WITHCURRLEVEL || WITHCURRLEVEL2
 	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
-
-		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
-
-		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 1, UINT8_MAX, 1, & dbstylev_1statePSU);
-		// last character
-		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev_1statePSU);
+		// dd.d
+		int_fast16_t drain = hamradio_get_pacurrent_value() / 10;	// Ток в десятках милиампер), может быть отрицательным
+		const div_t v = div(drain, 10);
+		char b [xspan + 1];
+		local_snprintf_P(b, ARRAY_SIZE(b), "%d.%01dA", v.quot, iabs(v.rem));
+		display_text(db, x, y, b, xspan, yspan, & dbstylev_1statePSU);
 
 	#else /* WITHCURRLEVEL_ACS712_30A */
-		// dd.d - 6 places (without "A")
-		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
-
-		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 2, UINT8_MAX, 0, & dbstylev_1statePSU);
-		// last character
-		display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev_1statePSU);
+		// d.dd
+		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер, может быть отрицательным
+		const div_t v = div(drain, 100);
+		char b [xspan + 1];
+		local_snprintf_P(b, ARRAY_SIZE(b), "%d.%02dA", v.quot, iabs(v.rem));
+		display_text(db, x, y, b, xspan, yspan, & dbstylev_1statePSU);
 
 	#endif /* WITHCURRLEVEL_ACS712_30A */
 #endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
@@ -3906,7 +3910,7 @@ static void display2_currlevelA6(const gxdrawb_t * db,
 
 // +d.dd - 5 places (without "A")
 // +dd.d - 5 places (without "A")
-static void display2_currlevel5(const gxdrawb_t * db,
+static void display2_currlevel(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -3916,18 +3920,20 @@ static void display2_currlevel5(const gxdrawb_t * db,
 {
 #if WITHCURRLEVEL || WITHCURRLEVEL2
 	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
-
-		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
-
-		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 1, UINT8_MAX, 1, & dbstylev_1statePSU);
-		//display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev);
+		// dd.d
+		int_fast16_t drain = hamradio_get_pacurrent_value() / 10;	// Ток в десятках милиампер), может быть отрицательным
+		const div_t v = div(drain, 10);
+		char b [xspan + 1];
+		local_snprintf_P(b, ARRAY_SIZE(b), "%d.%01d", v.quot, iabs(v.rem));
+		display_text(db, x, y, b, xspan, yspan, & dbstylev_1statePSU);
 
 	#else /* WITHCURRLEVEL_ACS712_30A */
-		// dd.d - 5 places (without "A")
-		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (до 2.55 ампера), может быть отрицательным
-
-		display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, drain, 3 | WMINUSFLAG, 2, UINT8_MAX, 0, & dbstylev_1statePSU);
-		//display_text(db, x + CHARS2GRID(5), y, PSTR("A"), 1, yspan, & dbstylev);
+		// d.dd
+		int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер, может быть отрицательным
+		const div_t v = div(drain, 100);
+		char b [xspan + 1];
+		local_snprintf_P(b, ARRAY_SIZE(b), "%d.%02d", v.quot, iabs(v.rem));
+		display_text(db, x, y, b, xspan, yspan, & dbstylev_1statePSU);
 
 	#endif /* WITHCURRLEVEL_ACS712_30A */
 #endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
@@ -3994,7 +4000,7 @@ static void display_siglevel7(const gxdrawb_t * db,
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%-+4d" "dBm", (int) (tracemaxi10 / 10));
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, & dbstylev_1statePSU, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1statePSU, 0, xspan, yspan);
 #endif /* WITHIF4DSP */
 }
 
@@ -4015,7 +4021,7 @@ static void display2_siglevel4(const gxdrawb_t * db,
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
 	int j = local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%-+4d", (int) (tracemaxi10 / 10));
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, & dbstylev_1statePSU, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1statePSU, 0, xspan, yspan);
 #endif /* WITHIF4DSP */
 }
 
@@ -4040,7 +4046,7 @@ static void display2_span9(const gxdrawb_t * db,
 
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("SPAN:%3dk"), (int) ((display2_zoomedbw() + 0) / 1000));
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, & dbstylev_1statePSU, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1statePSU, 0, xspan, yspan);
 
 #endif /* WITHIF4DSP */
 }
@@ -4104,7 +4110,7 @@ static void display_smeter5(const gxdrawb_t * db,
 		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S9+%02d"), v - (- 73));
 	}
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 #endif /* WITHIF4DSP */
 }
 
@@ -4227,7 +4233,7 @@ static void display_time8(const gxdrawb_t * db,
 		);
 
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 #endif /* defined (RTC1_TYPE) */
 }
 
@@ -4252,7 +4258,7 @@ static void display_time5(const gxdrawb_t * db,
 		);
 
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, & dbstylev_1stateTime, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1stateTime, 0, xspan, yspan);
 
 #endif /* defined (RTC1_TYPE) */
 }
@@ -4301,7 +4307,7 @@ static void display2_freqsof9(const gxdrawb_t * db,
 		);
 
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 }
 
 // Печать времени - только часы и минуты, без секунд
@@ -4347,7 +4353,7 @@ static void display2_datetime12(const gxdrawb_t * db,
 		);
 
 	const char * const labels [1] = { buf2, };
-	display2_text(db, x, y, labels, & dbstylev_1stateTime, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1stateTime, 0, xspan, yspan);
 #endif /* defined (RTC1_TYPE) */
 }
 

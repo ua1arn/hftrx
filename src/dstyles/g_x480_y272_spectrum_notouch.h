@@ -135,9 +135,9 @@
 		//{	6, 	51,	3,	3,	display2_atu3,		& dzi_tune, PG0, },	// TUNER state (optional)
 		{	10, 51,	3,	3,	display2_byp3,		& dzi_bypass, PG0, },	// TUNER BYPASS state (optional)
 	#endif /* WITH_LPFBOARD_UA1CEI */
-		{	14, 51,	5,	3,	display2_thermo5,	& dzi_default, PG0, },	// thermo sensor 20.7C
-		{	19, 51,	5,	3,	display2_currlevel5, & dzi_default, PG0, },	// PA drain current d.dd without "A"
-		{	25, 51,	5,	3,	display2_voltlevelV5, & dzi_voltlevel, PG0, },	// voltmeter with "V"
+		{	14, 51,	5,	3,	display2_thermo,	& dzi_default, PG0, },	// thermo sensor 20.7C
+		{	19, 51,	5,	3,	display2_currlevel, & dzi_default, PG0, },	// PA drain current d.dd without "A"
+		{	25, 51,	5,	3,	display2_voltlevelV, & dzi_voltlevel, PG0, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
 		{	25, 51,	5,	3,	display_amfmhighcut5,& dzi_default, PGALL, },	// 13.70
 	#endif /* WITHAMHIGHKBDADJ */
@@ -150,7 +150,7 @@
 
 		// sleep mode display
 		{	5,	24,	12,	3,	display2_datetime12,	& dzi_datetime12, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 24,	5,	3,	display2_voltlevelV5, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
+		{	20, 24,	5,	3,	display2_voltlevelV, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
 		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 	};
 

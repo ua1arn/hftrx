@@ -101,7 +101,7 @@
 
 		{	37, 10,	3, 4, display2_mode3_a,		& dzi_compat,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 10,	3, 4, display2_rxbw3,		& dzi_compat, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	46, 10,	3, 4, display2_agc3,		& dzi_compat, PGALL, },	// AGC mode
+		{	45, 10,	5, 4, display2_agc3,		& dzi_compat, PGALL, },	// AGC mode
 
 		{	37, 15,	3, 4, display2_nr3,			& dzi_compat, PGALL, },	// NR : was: AGC
 		{	41, 15,	3, 4, display2_datamode3,	& dzi_compat, PGALL, },	// DATA mode indicator
@@ -112,11 +112,11 @@
 		{	24,	20,	12, 4, display2_freqX_b,	& dzi_compat, PGALL, },	// SUB FREQ
 		{	37, 20,	3, 4, display2_mode3_b,		& dzi_compat,	PGALL, },	// SSB/CW/AM/FM/...
 		{	41, 20,	3, 4, display2_voxtune3,	& dzi_compat, PGALL, },	// VOX
-		{	45,	20,	4, 4, display2_lockstate4, 	& dzi_compat, PGALL, },	// LOCK
+		{	45,	20,	5, 4, display2_lockstate4, 	& dzi_compat, PGALL, },	// LOCK
 
 		// размещены под S-метром (15 ячеек)
-		{	1, 	25,	5, 4, display2_voltlevelV5, & dzi_compat, PGALL, },	// voltmeter with "V"
-		{	7, 	25,	6, 4, display2_currlevelA6, & dzi_compat, PGALL, },	// PA drain current d.dd with "A"
+		{	1, 	25,	5, 4, display2_voltlevelV, & dzi_compat, PGALL, },	// voltmeter with "V"
+		{	7, 	25,	6, 4, display2_currlevelA, & dzi_compat, PGALL, },	// PA drain current d.dd with "A"
 
 		//{	14, 25,
 		//{	19, 25,
@@ -153,7 +153,7 @@
 
 		// sleep mode display
 		{	5,	25,	12, 4, display2_datetime12,	& dzi_compat, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 25,	5, 4, display2_voltlevelV5, & dzi_compat, PGSLP, },	// voltmeter with "V"
+		{	20, 25,	5, 4, display2_voltlevelV, & dzi_compat, PGSLP, },	// voltmeter with "V"
 
 	#if 0
 		{	0,	0,	0, 0, display2_vtty_init,	& dzi_compat,	PGINI, },	// Подготовка видеобуфера окна протокола

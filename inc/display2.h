@@ -157,6 +157,8 @@ COLORPIP_T display2_get_spectrum(int x);
 int_fast32_t display2_zoomedbw(void);
 const char * display2_gethtml(uint_fast8_t page);
 
+unsigned display2_gettileradius(void);
+
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
 
 
@@ -684,8 +686,6 @@ typedef struct
 /* выделенный текст в значениях */
 #define MENUVALSELCOLOR	COLORPIP_BLACK
 #define MENUVALSELBGCOLOR	COLORPIP_GRAY
-
-unsigned display2_gettileradius(void);
 
 #define MIDCELLS 8
 

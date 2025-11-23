@@ -112,7 +112,7 @@ void gxstyle_initialize(gxstyle_t * dbstyle)
 	gxstyle_setsmallfont(dbstyle);
 	gxstyle_texthalign(dbstyle, GXSTYLE_HALIGN_RIGHT);
 	gxstyle_textvalign(dbstyle, GXSTYLE_VALIGN_CENTER);
-	dbstyle->bgradius = 0;
+	dbstyle->bgradius = display2_gettileradius();
 }
 
 
@@ -992,7 +992,11 @@ pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, u
 
 	savestring = s;
 	savewhere = __func__;
-
+	if (dbstyle->bgradius)
+	{
+		w -= 2;
+		h -= 2;
+	}
 #if WITHLVGL
 	lv_layer_t * const layer = (lv_layer_t *) db->layerv;
 	if (layer)
@@ -1028,15 +1032,15 @@ pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, u
 	{
 	default:
 	case GXSTYLE_VALIGN_CENTER:
-		if (h > smallfont_height())
-			ypix += (h - dbstyle->font_height()) / 2;
+		if (avlh > smallfont_height())
+			ypix += (avlh - dbstyle->font_height()) / 2;
 		break;
 	case GXSTYLE_VALIGN_TOP:
 		break;
 
 	case GXSTYLE_VALIGN_BOTTOM:
-		if (h > smallfont_height())
-			ypix += (h - dbstyle->font_height());
+		if (avlh > smallfont_height())
+			ypix += (avlh - dbstyle->font_height());
 		break;
 	}
 

@@ -145,8 +145,8 @@
 		{	28, DLE1,	3,	0,	display2_usbsts3,		REDRM_BARS, PGALL, },	// USB host status
 		//{	28, DLE1,	0,	0,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
-		{	39, DLE1,	5,	0,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
-		{	45, DLE1,	5,	0,	display2_voltlevelV5, REDRM_VOLT, PGALL, },	// voltmeter with "V"
+		{	39, DLE1,	5,	0,	display2_currlevel, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
+		{	45, DLE1,	5,	0,	display2_voltlevelV, REDRM_VOLT, PGALL, },	// voltmeter with "V"
 	#if WITHAMHIGHKBDADJ
 		//{	XX, DLE1,	display_amfmhighcut4,REDRM_MODE, PGALL, },	// 3.70
 	#endif /* WITHAMHIGHKBDADJ */
@@ -158,7 +158,7 @@
 
 		// sleep mode display
 		{	5,	25,	12,	0,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 25,	5,	0,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+		{	20, 25,	5,	0,	display2_voltlevelV, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
 		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 	};

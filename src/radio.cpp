@@ -17472,11 +17472,6 @@ void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint
 }
 #endif /* WITHMENU */
 
-static int_fast32_t iabs(int_fast32_t v)
-{
-	return v > 0 ? v : - v;
-}
-
 size_t
 param_format(
 	const struct paramdefdef * pd,
