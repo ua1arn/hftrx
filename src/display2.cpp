@@ -1740,7 +1740,8 @@ enum { SM_BG_W = GRID2X(15), SM_BG_H = GRID2Y(20) };
 /* точки на шкале s-метра, к которым надо привязать измеренное значение */
 static const int16_t smeterpointsRX [] =
 {
-	- 1090,	// S3 level -109.0 dBm
+	- 1270,	// S9 level -127.0 dBm
+	//- 1090,	// S3 level -109.0 dBm
 	- 730,	// S9 level -73.0 dBm
 	- 130,	// S9+60 level -13.0 dBm
 };
