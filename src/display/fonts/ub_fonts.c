@@ -1,5 +1,6 @@
 #include "hardware.h"
 #include "formats.h"
+#include <string.h>
 
 #if WITHALTERNATIVEFONTS
 #include "ub_fonts.h"

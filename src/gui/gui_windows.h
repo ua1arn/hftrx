@@ -1,7 +1,7 @@
 #ifndef GUI_WINDOWS_H
 #define GUI_WINDOWS_H
 
-#include "gui/gui_port_include.h"
+#include "src/gui/gui_port_include.h"
 
 #if WITHTOUCHGUI
 

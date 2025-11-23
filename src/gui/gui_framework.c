@@ -87,19 +87,19 @@ void dump_queue(window_t * win)
 			break;
 
 		case WM_MESSAGE_ACTION:
-			PRINTF("%d: WM_MESSAGE_ACTION: object type - %d, action - %d\n", i, win->queue.data[i].type, win->queue.data[i].action);
+			PRINTF("%d: WM_MESSAGE_ACTION: object type - %d, action - %d\n", i, (int) win->queue.data[i].type, (int) win->queue.data[i].action);
 			break;
 
 		case WM_MESSAGE_ENC2_ROTATE:
-			PRINTF("%d: WM_MESSAGE_ENC2_ROTATE: direction - %d\n", i, win->queue.data[i].action);
+			PRINTF("%d: WM_MESSAGE_ENC2_ROTATE: direction - %d\n", i, (int) win->queue.data[i].action);
 			break;
 
 		case WM_MESSAGE_KEYB_CODE:
-			PRINTF("%d: WM_MESSAGE_KEYB_CODE: code - %d\n", i, win->queue.data[i].action);
+			PRINTF("%d: WM_MESSAGE_KEYB_CODE: code - %d\n", i, (int) win->queue.data[i].action);
 			break;
 
 		default:
-			PRINTF("%d: unknown message type! - %d\n", i, win->queue.data[i].message);
+			PRINTF("%d: unknown message type! - %d\n", i, (int) win->queue.data[i].message);
 			break;
 		}
 	}

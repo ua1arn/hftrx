@@ -1,7 +1,7 @@
 #ifndef GUI_OBJECTS_H_INCLUDED
 #define GUI_OBJECTS_H_INCLUDED
 
-#include "gui/gui_port_include.h"
+#include "src/gui/gui_port_include.h"
 
 #if WITHTOUCHGUI
 

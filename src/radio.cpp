@@ -18756,7 +18756,7 @@ processmainloopkeyboard(inputevent_t * ev)
 #if WITHMENU && ! WITHTOUCHGUI
 		ASSERT(ginmenu0 == 0);
 		{
-			nvramaddress_t menupos = loadvfy16up(RMT_GROUP_BASE, 0, menutable_size() - 1, 0);
+			uint_fast16_t menupos = loadvfy16up(RMT_GROUP_BASE, 0, menutable_size() - 1, 0);
 			const struct menudef * mpgroup = menutable + menupos;
 			gmenulevel = 0;
 			setinmenu(1, mpgroup);
@@ -20678,10 +20678,10 @@ void hamradio_enable_encoder2_redirect(void)
 }
 
 #if WITHMENU
-uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
+uint_fast16_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 {
 	uint_fast16_t el;
-	uint_fast8_t count = 0;
+	uint_fast16_t count = 0;
 
 #if defined (RTC1_TYPE)
 	getstamprtc();
@@ -20700,10 +20700,10 @@ uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 	return count;
 }
 
-uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index, uint_fast8_t max_count)
+uint_fast16_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index, uint_fast8_t max_count)
 {
 	uint_fast16_t el;
-	uint_fast8_t count = 0;
+	uint_fast16_t count = 0;
 
 	for (el = index + 1; el < menutable_size(); el ++)
 	{
@@ -20742,7 +20742,7 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 	}
 }
 
-const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_least16_t rotate)
+const char * hamradio_gui_edit_menu_item(uint_fast16_t index, int_least16_t rotate)
 {
 	const struct paramdefdef * const pd = menutable [index].pd;
 	if (param_rotate(pd, rotate))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */

@@ -1,7 +1,7 @@
 #ifndef GUI_SYSTEM_H_INCLUDED
 #define GUI_SYSTEM_H_INCLUDED
 
-#include "gui/gui_port_include.h"
+#include "src/gui/gui_port_include.h"
 
 #if WITHTOUCHGUI
 #include "gui_structs.h"
@@ -27,7 +27,7 @@ uint16_t gui_get_window_draw_height(void);
 void gui_drawstring(uint16_t x, uint16_t y, const char * str, font_size_t font, COLORPIP_T color);
 void gui_drawline(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, COLORPIP_T color);
 void gui_drawpoint(uint16_t x1, uint16_t y1, COLORPIP_T color);
-void gui_drawrect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, COLORPIP_T color, uint_fast8_t fill);
+void gui_drawrect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, COLORPIP_T color, uint8_t fill);
 void gui_drawrect_rounded(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint8_t radius, COLORPIP_T color, uint8_t fill);
 void gui_drawrect_transparent(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint8_t alpha);
 void gui_print_mono(uint16_t x, uint16_t y, const char * text, const gui_mono_font_t * font, gui_color_t color);
