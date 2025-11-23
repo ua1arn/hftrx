@@ -773,17 +773,6 @@ ismenukinddp(
 	return (pd->qspecial & itemmask) != 0;
 }
 
-
-/* входит ли данный пункт меню в группу разрешённых для показа */
-static uint_fast8_t
-ismenukind(
-	const struct menudef * mp,
-	uint_fast8_t itemmask
-	)
-{
-	return ismenukinddp(mp->pd, itemmask);
-}
-
 /* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
 static uint_fast8_t
 ismenufilterusb(
@@ -17158,6 +17147,7 @@ defaultsettings(void)
 #endif /* WITHSPECTRUMWF */
 }
 
+#if WITHMENU
 //+++ menu support
 
 // название редактируемого параметра
@@ -17201,7 +17191,7 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 
 	//ищем границы текущей группы параметров
 	uint_fast16_t selected_group_finder = index;
-	while (selected_group_finder > 0 && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
+	while (selected_group_finder > 0 && ! ismenukinddp(menutable [selected_group_finder].pd, ITEM_GROUP))
 		selected_group_finder --;
 	selected_group_left_margin = selected_group_finder;
 
@@ -17280,11 +17270,11 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 
 	// ищем границы текущей группы параметров
 	uint_fast16_t selected_group_finder = index;
-	while (selected_group_finder > 0 && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
+	while (selected_group_finder > 0 && ! ismenukinddp(menutable [selected_group_finder].pd, ITEM_GROUP))
 		selected_group_finder --;
 	selected_group_left_margin = selected_group_finder;
 	selected_group_finder ++;
-	while (selected_group_finder < menutable_size() && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
+	while (selected_group_finder < menutable_size() && ! ismenukinddp(menutable [selected_group_finder].pd, ITEM_GROUP))
 		selected_group_finder ++;
 	selected_group_right_margin = selected_group_finder - 1;	// последний элмент в списке параметров данной группы
 
@@ -17369,11 +17359,11 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 
 	//ищем границы текущей группы параметров
 	uint_fast16_t selected_group_finder = index;
-	while (selected_group_finder > 0 && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
+	while (selected_group_finder > 0 && ! ismenukinddp(menutable [selected_group_finder].pd, ITEM_GROUP))
 		selected_group_finder --;
 	selected_group_left_margin = selected_group_finder;
 	selected_group_finder ++;
-	while (selected_group_finder < menutable_size() && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
+	while (selected_group_finder < menutable_size() && ! ismenukinddp(menutable [selected_group_finder].pd, ITEM_GROUP))
 		selected_group_finder ++;
 	selected_group_right_margin = selected_group_finder - 1;	// последний элмент в списке параметров данной группы
 
@@ -17480,6 +17470,7 @@ void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint
 		display2_multilinemenu_block_vals(db, valuesx, ycell, valuesspan, yspan, pctx);
 	}
 }
+#endif /* WITHMENU */
 
 static int_fast32_t iabs(int_fast32_t v)
 {
