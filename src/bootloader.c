@@ -291,6 +291,8 @@ bootloader_launch_app(uintptr_t startfunc, uint_fast8_t x64bit)
 	}
 
 #endif
+	for (;;)
+		;
 }
 
 /* Вызов заказан вызывется из обработчика USB прерываний EP0 */
