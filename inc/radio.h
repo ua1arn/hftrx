@@ -3631,6 +3631,13 @@ typedef struct paramdefdef
 	size_t (* getvaltext)(char * buff, size_t count, int_fast32_t value);	/* получить текст значения параметра - see RJ_CB */
 } paramdefdef_t;
 
+struct menudef
+{
+	const struct paramdefdef * pd;
+};
+extern const struct menudef menutable [];
+uint_fast16_t menutable_size(void);
+
 uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit);
 void hamradio_set_bw(uint_fast8_t v);
 uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit);

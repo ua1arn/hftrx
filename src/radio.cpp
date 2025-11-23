@@ -707,11 +707,6 @@ const char * pd_getshortlabel(const struct paramdefdef * pd)
 
 static const struct paramdefdef * getmiddlemenu(uint_fast8_t section, uint_fast8_t * active);
 
-struct menudef
-{
-	const struct paramdefdef * pd;
-};
-
 // Интерфейсные функции доступа к NVRAM
 static uint_fast8_t
 //NOINLINEAT
@@ -17048,6 +17043,11 @@ const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active)
 
 #define MENUROW_COUNT (ARRAY_SIZE(menutable))
 
+uint_fast16_t menutable_size(void)
+{
+	return MENUROW_COUNT;
+}
+
 static uint_fast8_t ginmenu0;
 static const struct menudef * gmp0 = menutable;
 
@@ -17092,9 +17092,9 @@ static void
 //NOINLINEAT
 loadsettings(void)
 {
-	uint_fast8_t i;
+	uint_fast16_t i;
 
-	for (i = 0; i < MENUROW_COUNT; ++ i)
+	for (i = 0; i < menutable_size(); ++ i)
 	{
 		const struct menudef * const mp = & menutable [i];
 		const struct paramdefdef * const pd = mp->pd;
@@ -17136,10 +17136,10 @@ loadsettings(void)
 static void
 defaultsettings(void)
 {
-	uint_fast8_t i;
+	uint_fast16_t i;
 	PRINTF("Loading NVRAM default settings\n");
 
-	for (i = 0; i < MENUROW_COUNT; ++ i)
+	for (i = 0; i < menutable_size(); ++ i)
 	{
 		const struct menudef * const mp = & menutable [i];
 		if (! ismenukinddp(mp->pd, ITEM_NOINITNVRAM))
@@ -17208,7 +17208,7 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 	// предварительно расчитываем скролл
 	uint_fast16_t selected_group_index = 0;
 	uint_fast16_t selected_params_index = 0;
-	for (el = 0; el < MENUROW_COUNT; el ++)
+	for (el = 0; el < menutable_size(); el ++)
 	{
 		const struct menudef * const mv = & menutable [el];
 		if (ismenukinddp(mv->pd, ITEM_GROUP))
@@ -17222,7 +17222,7 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 	const uint_fast16_t menu_block_scroll_offset_groups = window.multilinemenu_max_rows * (selected_group_index / window.multilinemenu_max_rows);
 
 	// выводим на экран блок с параметрами
-	for (el = 0; el < MENUROW_COUNT; el ++)
+	for (el = 0; el < menutable_size(); el ++)
 	{
 		const struct menudef * const mv = & menutable [el];
 		if (ismenukinddp(mv->pd, ITEM_GROUP))
@@ -17284,13 +17284,13 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 		selected_group_finder --;
 	selected_group_left_margin = selected_group_finder;
 	selected_group_finder ++;
-	while (selected_group_finder < MENUROW_COUNT && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
+	while (selected_group_finder < menutable_size() && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
 		selected_group_finder ++;
 	selected_group_right_margin = selected_group_finder - 1;	// последний элмент в списке параметров данной группы
 
 	// предварительно расчитываем скролл
 	uint_fast16_t selected_params_index = 0;
-	for (el = 0; el < MENUROW_COUNT; el ++)
+	for (el = 0; el < menutable_size(); el ++)
 	{
 		const struct menudef * const mv = & menutable [el];
 		if (ismenukinddp(mv->pd, ITEM_VALUE))
@@ -17306,7 +17306,7 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 	const uint_fast16_t menu_block_scroll_offset_params = window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
 
 	// выводим на экран блок с параметрами
-	for (el = 0; el < MENUROW_COUNT; el ++)
+	for (el = 0; el < menutable_size(); el ++)
 	{
 		const struct menudef * const mv = & menutable [el];
 		if (ismenukinddp(mv->pd, ITEM_VALUE))
@@ -17325,7 +17325,7 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 			{
 				//подсвечиваем выбранный элемент
 				//display_text(db, xcell_marker, y_position_params, PSTR(">"), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
-				gxstyle_textcolor(& dbstylev, MENUSELCOLOR, MENUSELBGCOLOR);
+				gxstyle_textcolor(& dbstylev, MENUVALSELCOLOR, MENUVALSELBGCOLOR);
 			}
 			else
 			{
@@ -17373,13 +17373,13 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 		selected_group_finder --;
 	selected_group_left_margin = selected_group_finder;
 	selected_group_finder ++;
-	while (selected_group_finder < MENUROW_COUNT && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
+	while (selected_group_finder < menutable_size() && ! ismenukind(& menutable [selected_group_finder], ITEM_GROUP))
 		selected_group_finder ++;
 	selected_group_right_margin = selected_group_finder - 1;	// последний элмент в списке параметров данной группы
 
 	// предварительно расчитываем скролл
 	uint_fast16_t selected_params_index = 0;
-	for (el = 0; el < MENUROW_COUNT; el ++)
+	for (el = 0; el < menutable_size(); el ++)
 	{
 		const struct menudef * const mv = & menutable [el];
 		if (ismenukinddp(mv->pd, ITEM_VALUE))
@@ -17395,7 +17395,7 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 	const uint_fast16_t menu_block_scroll_offset_params = window.multilinemenu_max_rows * (selected_params_index / window.multilinemenu_max_rows);
 
 	// выводим на экран блок с параметрами
-	for (el = 0; el < MENUROW_COUNT; el ++)
+	for (el = 0; el < menutable_size(); el ++)
 	{
 		const struct paramdefdef * const pd = menutable [el].pd;
 		if (ismenukinddp(pd, ITEM_VALUE))
@@ -17412,7 +17412,7 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 
             if (el == index)
             {
-                gxstyle_textcolor(& dbstylev, MENUSELCOLOR, MENUSELBGCOLOR);
+                gxstyle_textcolor(& dbstylev, MENUVALSELCOLOR, MENUVALSELBGCOLOR);
             }
             else
             {
@@ -17591,7 +17591,7 @@ static uint_fast16_t menulooklast(uint_fast16_t menupos)
 	do
 	{
 		mp = & menutable [++ menupos];
-	} while (menupos < MENUROW_COUNT && ismenukinddp(mp->pd, ITEM_VALUE) != 0);
+	} while (menupos < menutable_size() && ismenukinddp(mp->pd, ITEM_VALUE) != 0);
 	return menupos - 1;
 }
 
@@ -17697,7 +17697,7 @@ processmenukeyandencoder(inputevent_t * ev)
 			do
 			{
 				/* найти группу в которой находимся */
-				menupos = calc_prev(menupos, 0, MENUROW_COUNT - 1);
+				menupos = calc_prev(menupos, 0, menutable_size() - 1);
 				mp = & menutable [menupos];
 			}
 			while (ismenukinddp(mp->pd, ITEM_VALUE));
@@ -17859,7 +17859,7 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 		return;
 #endif /* WITHAUTOTUNER */
 
-	for (menupos = 0; menupos < MENUROW_COUNT; ++ menupos)
+	for (menupos = 0; menupos < menutable_size(); ++ menupos)
 	{
 		const struct menudef * const mp = & menutable [menupos];
 		if (ismenukinddp(mp->pd, ITEM_VALUE) == 0)
@@ -17868,7 +17868,7 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 		if (r == 0)
 			break;
 	}
-	if (menupos >= MENUROW_COUNT)
+	if (menupos >= menutable_size())
 	{
 		// Не нашли такой пункт
 		return;
@@ -17906,7 +17906,7 @@ int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t 
 void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem))
 {
 	uint_fast16_t menupos;
-	for (menupos = 0; menupos < MENUROW_COUNT; ++ menupos)
+	for (menupos = 0; menupos < menutable_size(); ++ menupos)
 	{
         const struct menudef * mp = & menutable [menupos];
         if (ismenukinddp(mp->pd, ITEM_GROUP) == 0)
@@ -17914,7 +17914,7 @@ void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const 
         const struct menudef * const mpgroup = mp ++;	/* группа */
         void * const groupctx = groupcb ? (* groupcb)(walkctx, mpgroup->pd) : NULL;
         //PRINTF("group: %s\n", mpgroup->pd->qlabel);
-        for (; mp < (menutable + MENUROW_COUNT) && ismenukinddp(mp->pd, ITEM_VALUE); ++ mp)
+        for (; mp < (menutable + menutable_size()) && ismenukinddp(mp->pd, ITEM_VALUE); ++ mp)
         {
             //PRINTF(" item: %s\n", mp->pd->qlabel);
         	if (itemcb)
@@ -18765,7 +18765,7 @@ processmainloopkeyboard(inputevent_t * ev)
 #if WITHMENU && ! WITHTOUCHGUI
 		ASSERT(ginmenu0 == 0);
 		{
-			nvramaddress_t menupos = loadvfy16up(RMT_GROUP_BASE, 0, MENUROW_COUNT - 1, 0);
+			nvramaddress_t menupos = loadvfy16up(RMT_GROUP_BASE, 0, menutable_size() - 1, 0);
 			const struct menudef * mpgroup = menutable + menupos;
 			gmenulevel = 0;
 			setinmenu(1, mpgroup);
@@ -20695,7 +20695,7 @@ uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 #if defined (RTC1_TYPE)
 	getstamprtc();
 #endif /* defined (RTC1_TYPE) */
-	for (el = 0; el < MENUROW_COUNT; el ++)
+	for (el = 0; el < menutable_size(); el ++)
 	{
 		const struct menudef * const mv = & menutable [el];
 		if (ismenukinddp(mv->pd, ITEM_GROUP))
@@ -20714,7 +20714,7 @@ uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_f
 	uint_fast16_t el;
 	uint_fast8_t count = 0;
 
-	for (el = index + 1; el < MENUROW_COUNT; el ++)
+	for (el = index + 1; el < menutable_size(); el ++)
 	{
 		const struct menudef * const mv = & menutable [el];
 		if (ismenukinddp(mv->pd, ITEM_GROUP))

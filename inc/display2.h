@@ -663,6 +663,9 @@ typedef struct
 /* выделенный текст в меню */
 #define MENUSELCOLOR	COLORPIP_BLACK
 #define MENUSELBGCOLOR	COLORPIP_DARKCYAN
+/* выделенный текст в значениях */
+#define MENUVALSELCOLOR	COLORPIP_BLACK
+#define MENUVALSELBGCOLOR	COLORPIP_GRAY
 
 #define MIDCELLS 8
 

@@ -7,7 +7,7 @@
 // Описание меню, используется только в main.c
 //
 
-static const struct menudef menutable [] =
+const struct menudef menutable [] =
 {
 #if WITHAUTOTUNER && 1 // Tuner parameters debug
 /* group name +++ */
