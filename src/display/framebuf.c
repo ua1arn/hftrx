@@ -2811,8 +2811,7 @@ colpip_const_mem_at_debug(
 }
 
 
-/// Нарисовать вертикальную цветную полосу
-// Формат RGB565
+// Нарисовать вертикальную цветную полосу
 void
 colpip_xor_vline(
 	const gxdrawb_t * db,
@@ -2827,7 +2826,6 @@ colpip_xor_vline(
 }
 
 // Нарисовать вертикальную цветную полосу
-// Формат RGB565
 void
 colpip_set_vline(
 	const gxdrawb_t * db,
@@ -2844,7 +2842,6 @@ colpip_set_vline(
 }
 
 // Нарисовать горизонтальную цветную полосу
-// Формат RGB565
 void
 colpip_set_hline(
 	const gxdrawb_t * db,

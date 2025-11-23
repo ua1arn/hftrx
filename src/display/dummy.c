@@ -66,6 +66,8 @@ void gxstyle_initialize(gxstyle_t * dbstyle)
 {
 	gxstyle_texthalign(dbstyle, GXSTYLE_HALIGN_RIGHT);
 	gxstyle_textvalign(dbstyle, GXSTYLE_VALIGN_CENTER);
+	dbstyle->bgradius = 0;
+	dbstyle->bgfilled = 1;
 }
 
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a)

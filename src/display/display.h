@@ -212,7 +212,8 @@ enum gxstyle_textvalign
 typedef struct gxstyle_tag
 {
 	PACKEDCOLORPIP_T textcolor, bgcolor;
-	uint8_t bgradius;
+	uint8_t bgradius;	// радиус углов прямоугольника контура
+	uint8_t bgfilled;	// необходимость заполнения прямоугольника контура
 	enum gxstyle_texthalign	texthalign;
 	enum gxstyle_textvalign textvalign;
 	uint_fast16_t (* font_draw_char)(
@@ -563,7 +564,7 @@ colpip_segm(
 	unsigned r, int step,
 	COLORPIP_T color,
 	int antialiasing,
-	int style);			// 1 - растягивание по горизонтали;
+	int style);			// не-0: x2 растягивание по горизонтали
 
 // Нарисовать вертикальную цветную полосу
 void

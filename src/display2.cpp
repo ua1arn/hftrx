@@ -2668,6 +2668,7 @@ static void display_2states(const gxdrawb_t * db,
 	const uint_fast16_t y = GRID2Y(ycell);
 	const uint_fast16_t w = SMALLCHARW * xspan;
 	const uint_fast16_t h = SMALLCHARH;
+	const gxstyle_t * const dbstylep = & dbstylev_2state [1],			// массив стилей
 
 	display2text_states(db, xcell, ycell, labels, dbstylev_2state, 1, xspan, yspan);
 
@@ -2676,7 +2677,8 @@ static void display_2states(const gxdrawb_t * db,
 			x, y, x + w - 1, y + h - 1,
 			5,
 			state ? COLORPIP_WHITE : dbstylev_2state [1].bgcolor,
-			0
+			dbstylep->bgradius,
+			dbstylep->bgfilled
 			);
 #else
 	display2text_states(db, xcell, ycell, labels, dbstylev_2state, state, xspan, yspan);

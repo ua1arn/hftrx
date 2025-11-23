@@ -113,6 +113,7 @@ void gxstyle_initialize(gxstyle_t * dbstyle)
 	gxstyle_texthalign(dbstyle, GXSTYLE_HALIGN_RIGHT);
 	gxstyle_textvalign(dbstyle, GXSTYLE_VALIGN_CENTER);
 	dbstyle->bgradius = display2_gettileradius();
+	dbstyle->bgfilled = 1;
 }
 
 
@@ -1022,7 +1023,7 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 	ASSERT3(h >= (dbstyle->bgradius * 2), __FILE__, __LINE__, slines [0]);
 	const uint_fast16_t avlw = w - (dbstyle->bgradius * 2);
 	const uint_fast16_t avlh = h - (dbstyle->bgradius * 2);
-	colmain_rounded_rect(db, xpixB, ypix, xpixB + w - 1, ypix + h - 1, dbstyle->bgradius, dbstyle->bgcolor, 1);
+	colmain_rounded_rect(db, xpixB, ypix, xpixB + w - 1, ypix + h - 1, dbstyle->bgradius, dbstyle->bgcolor, dbstyle->bgfilled);
 	ypix += dbstyle->bgradius;
 	const uint_fast16_t vstep = avlh / nlines;
 	for (; nlines --; ypix += vstep)
@@ -1311,7 +1312,7 @@ pix_display_value_small(
 	uint_fast8_t comma,		// comma position (from right, inside width)
 	uint_fast8_t comma2,
 	uint_fast8_t rj,		// right truncated
-	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
+	const gxstyle_t * dbstylep	/* foreground and background colors, text alignment */
 	)
 {
 //	if (width > ARRAY_SIZE(vals10))
@@ -1322,22 +1323,22 @@ pix_display_value_small(
 	uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
 	uint_fast8_t z = 1;	// если в позиции встретился '0' - не отоображать
 
-	const COLORPIP_T fg = dbstyle->textcolor;
-	if (dbstyle->bgradius)
+	const COLORPIP_T fg = dbstylep->textcolor;
+	if (dbstylep->bgradius)
 	{
 		w -= GXSTYLE_BACKOFF;
 		h -= GXSTYLE_BACKOFF;
 	}
 
-	const uint_fast16_t avlw = w - (dbstyle->bgradius * 2);
-	const uint_fast16_t avlh = h - (dbstyle->bgradius * 2);
-	colmain_rounded_rect(db, xpix, ypix, xpix + w - 1, ypix + h - 1, dbstyle->bgradius, dbstyle->bgcolor, 1);
-	xpix += dbstyle->bgradius;
-	ypix += dbstyle->bgradius;
+	const uint_fast16_t avlw = w - (dbstylep->bgradius * 2);
+	const uint_fast16_t avlh = h - (dbstylep->bgradius * 2);
+	colmain_rounded_rect(db, xpix, ypix, xpix + w - 1, ypix + h - 1, dbstylep->bgradius, dbstylep->bgcolor, dbstylep->bgfilled);
+	xpix += dbstylep->bgradius;
+	ypix += dbstylep->bgradius;
 
 	if (avlh > smallfont_height())
 	{
-		ypix += (avlh - dbstyle->font_height()) / 2;
+		ypix += (avlh - dbstylep->font_height()) / 2;
 	}
 	if (wsign || wminus)
 	{
@@ -1345,13 +1346,13 @@ pix_display_value_small(
 		z = 0;
 		if (freq < 0)
 		{
-			xpix = dbstyle->font_draw_char(db, xpix, ypix, '-', fg);
+			xpix = dbstylep->font_draw_char(db, xpix, ypix, '-', fg);
 			freq = - freq;
 		}
 		else if (wsign)
-			xpix = dbstyle->font_draw_char(db, xpix, ypix, '+', fg);
+			xpix = dbstylep->font_draw_char(db, xpix, ypix, '+', fg);
 		else
-			xpix = dbstyle->font_draw_char(db, xpix, ypix, ' ', fg);
+			xpix = dbstylep->font_draw_char(db, xpix, ypix, ' ', fg);
 	}
 	for (; i < j; ++ i)
 	{
@@ -1360,20 +1361,20 @@ pix_display_value_small(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = dbstyle->font_draw_char(db, xpix, ypix, (z == 0) ? '.' : ' ', fg);
+			xpix = dbstylep->font_draw_char(db, xpix, ypix, (z == 0) ? '.' : ' ', fg);
 		}
 		else if (comma == g)
 		{
 			z = 0;
-			xpix = dbstyle->font_draw_char(db, xpix, ypix, '.', fg);
+			xpix = dbstylep->font_draw_char(db, xpix, ypix, '.', fg);
 		}
 
 		if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = dbstyle->font_draw_char(db, xpix, ypix, ' ', fg);	// supress zero
+			xpix = dbstylep->font_draw_char(db, xpix, ypix, ' ', fg);	// supress zero
 		else
 		{
 			z = 0;
-			xpix = dbstyle->font_draw_char(db, xpix, ypix, '0' + res.quot, fg);
+			xpix = dbstylep->font_draw_char(db, xpix, ypix, '0' + res.quot, fg);
 		}
 		freq = res.rem;
 	}
@@ -1463,25 +1464,29 @@ polar_to_dek(
 // нач.-x, нач.-y, градус начала, градус конуа, радиус, шаг приращения угла
 void
 colpip_segm(
-		const gxdrawb_t * db,
-		int xc, int yc,
-		unsigned gs, unsigned ge,
-		unsigned r, int step,
-		COLORPIP_T color,
-		int antialiasing,
-		int style)			// 1 - растягивание по горизонтали
+	const gxdrawb_t * db,
+	int xc, int yc,
+	unsigned gs, unsigned ge,
+	unsigned r, int step,
+	COLORPIP_T color,
+	int antialiasing,
+	int style)			// не-0: x2 растягивание по горизонтали
 {
 	int     x, y;
 	int     xo, yo;
 	char     first;
 	int     vcos, vsin;
 
-	if (gs == ge)   return;
+	if (gs == ge) return;
+
+	// Даёт артефакты с использованием flood fill
+	if (r < 20) step = 15;
+
 	first = 1;
 	while (gs != ge)
 	{
 		vsin = isin(gs, r);
-		vcos = icos(gs, style ? r << 1 : r);
+		vcos = icos(gs, style ? r * 2 : r);
 		x = xc + vcos;
 		y = yc + vsin;
 
@@ -1544,10 +1549,10 @@ void colmain_rounded_rect(
 	// Использование аппаартного копирования при построении
 	// Рисуем левую верхнюю левую четверть
 	colpip_segm(db, x1 + r, y1 + r, 180, 270, r, 1, color, 1, 0); // up left
-	colpip_line(db, x1 + r, y1, x1 + wpartial - 1, y1, color, 0); // up
-	colpip_line(db, x1, y1 + r, x1, y1 + hpartial - 1, color, 0); // left
-	colpip_line(db, x1, y1 + hpartial, x1 + wpartial - 1, y1 + hpartial, color, 0); // horisontal center
-	colpip_line(db, x1 + wpartial, y1, x1 + wpartial, y1 + hpartial - 1, color, 0); // vertical center
+	colpip_set_hline(db, x1 + r, y1, wpartial - r, color); // top
+	colpip_set_vline(db, x1, y1 + r, hpartial - r, color); // left
+	colpip_set_hline(db, x1, y1 + hpartial, wpartial, color); // horisontal center
+	colpip_set_vline(db, x1 + wpartial, y1, hpartial, color); // vertical center
 	if (fill)
 	{
 		PACKEDCOLORPIP_T * const oldColor = colpip_mem_at(db, x1 + r, y1 + r);
