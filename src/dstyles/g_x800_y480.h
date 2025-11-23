@@ -110,8 +110,8 @@
 		{	44,	20,	6, 5, display2_lockstate4, 	& dzi_compat, PGALL, },	// LOCK
 
 		// размещены под S-метром (15 ячеек)
-		{	1, 	25,	5, 5, display2_voltlevelV, & dzi_compat, PGALL, },	// voltmeter with "V"
-		{	7, 	25,	6, 5, display2_currlevelA, & dzi_compat, PGALL, },	// PA drain current d.dd with "A"
+		{	0, 	25,	6, 5, display2_voltlevelV, & dzi_compat, PGALL, },	// voltmeter with "V"
+		{	6, 	25,	8, 5, display2_currlevelA, & dzi_compat, PGALL, },	// PA drain current d.dd with "A"
 
 		//{	14, 25,
 		//{	19, 25,

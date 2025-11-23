@@ -91,6 +91,11 @@ void gxstyle_setsmallfont2(gxstyle_t * dbstyle)
 {
 }
 
+void
+display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle)
+{
+}
+
 #endif /* LCDMODE_DUMMY */
 
 

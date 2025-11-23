@@ -63,7 +63,7 @@ enum
 //#define SMALLCHARW 16 /* Font width */
 static const dzone_t dzones [] =
 {
-		{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
+	{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 	{	0,	0,	0, 0, display2_dummy,	& dzi_default,	REDRSUBSET_SLEEP | REDRSUBSET_MENU },
 	{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 };

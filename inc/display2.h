@@ -44,8 +44,9 @@ typedef struct dctx_tag
 void display2_vtty(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 void display2_vtty_init(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
-// FUNC item label & value
+// FUNC menu item label & value
 void display2_fnblock9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+
 void display2_swrsts20(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
 
 // вызывается по dzones
@@ -112,23 +113,16 @@ uint_fast16_t approximate(
 
 // FUNC menu
 
-void display_2fmenus(const gxdrawb_t * db,
+void display_2fmenuslines(
+	const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
-	uint_fast8_t state,
-	const char * state1,	// активное
-	const char * state0,
-	uint_fast8_t xspan, uint_fast8_t yspan
-	);
-
-// параметры, не меняющие состояния цветом
-void display_1fmenu(const gxdrawb_t * db,
-	uint_fast8_t x,
-	uint_fast8_t y,
+	uint_fast8_t xspan,
+	uint_fast8_t yspan,
+	uint_fast8_t active,
 	const char * label,
-	uint_fast8_t xspan, uint_fast8_t yspan
+	const char * value
 	);
-
 
 void board_set_topdb(int_fast16_t v);			/* верхний предел FFT */
 void board_set_bottomdb(int_fast16_t v);		/* нижний предел FFT */

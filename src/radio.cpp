@@ -9108,8 +9108,6 @@ enum
 	ENC2STATE_COUNT
 };
 
-static const char text_nul9_P [] = "         ";
-
 static uint_fast8_t enc2state = ENC2STATE_INITIALIZE;
 static uint_fast8_t enc2pos;	// выбраный пунки меню
 
@@ -9230,54 +9228,26 @@ uif_encoder2_rotate(
 
 #endif /* WITHENCODER2 */
 
-
-// FUNC item label
-#if WITHENCODER2 && ! WITHTOUCHGUI
-static void display2_fnlabel(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
-{
-	const char * const text = enc2menu_label_P(enc2menus [enc2pos]);
-	switch (enc2state)
-	{
-	case ENC2STATE_INITIALIZE:
-		display_1fmenu(db, x, y, text_nul9_P, xspan, yspan);
-		break;
-	case ENC2STATE_SELECTITEM:
-		display_2fmenus(db, x, y, 0, text, text, xspan, yspan);
-		break;
-	case ENC2STATE_EDITITEM:
-		display_2fmenus(db, x, y, 1, text, text, xspan, yspan);
-		break;
-	}
-}
-
-// FUNC item value
-void display2_fnvalue(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
-{
-	char bval [xspan + 1];	// тут формируется текст для отображения
-
-	switch (enc2state)
-	{
-	case ENC2STATE_INITIALIZE:
-		display_1fmenu(db, x, y, "", xspan, yspan);
-		break;
-	case ENC2STATE_SELECTITEM:
-		param_format(enc2menus [enc2pos], bval, ARRAY_SIZE(bval), param_getvalue(enc2menus [enc2pos]));
-		display_2fmenus(db, x, y, 0, bval, bval, xspan, yspan);
-		break;
-	case ENC2STATE_EDITITEM:
-		param_format(enc2menus [enc2pos], bval, ARRAY_SIZE(bval), param_getvalue(enc2menus [enc2pos]));
-		display_2fmenus(db, x, y, 1, bval, bval, xspan, yspan);
-		break;
-	}
-}
-#endif /* WITHENCODER2 && ! WITHTOUCHGUI */
-
+// FUNC menu item label & value
 void display2_fnblock9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 #if WITHENCODER2 && ! WITHTOUCHGUI
-	uint_fast8_t ypart = yspan / 2;
-	display2_fnlabel(db, x, y + 0, xspan, ypart, pctx);
-	display2_fnvalue(db, x, y + ypart, xspan, yspan - ypart, pctx);
+	const char * const label = enc2menu_label_P(enc2menus [enc2pos]);
+	char bval [xspan + 1];	// тут формируется текст для отображения
+	switch (enc2state)
+	{
+	case ENC2STATE_INITIALIZE:
+		display_2fmenuslines(db, x, y, xspan, yspan, 0, "", "");
+		break;
+	case ENC2STATE_SELECTITEM:
+		param_format(enc2menus [enc2pos], bval, ARRAY_SIZE(bval), param_getvalue(enc2menus [enc2pos]));
+		display_2fmenuslines(db, x, y, xspan, yspan, 0, label, bval);
+		break;
+	case ENC2STATE_EDITITEM:
+		param_format(enc2menus [enc2pos], bval, ARRAY_SIZE(bval), param_getvalue(enc2menus [enc2pos]));
+		display_2fmenuslines(db, x, y, xspan, yspan, 1, label, bval);
+		break;
+	}
 #endif /* WITHENCODER2 && ! WITHTOUCHGUI */
 }
 

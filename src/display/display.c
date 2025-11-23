@@ -1082,13 +1082,9 @@ pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, u
 
 // Используется при выводе на графический индикатор с кординатами и размерами по сетке
 void
-display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle)
+display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstylep)
 {
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
-	const uint_fast16_t h = GRID2Y(yspan);
-	const uint_fast16_t w = GRID2X(xspan);
-	pix_display_text(db, xpix, ypix, w, h, dbstyle, s);
+	pix_display_text(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), dbstylep, s);
 }
 
 static const FLASHMEM int32_t vals10 [] =

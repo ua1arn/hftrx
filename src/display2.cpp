@@ -2697,43 +2697,29 @@ static void display_1state(const gxdrawb_t * db,
 	display2text_states(db, x, y, & label, & dbstylev_1state, 0, xspan, yspan);
 }
 
-
-void display_2fmenus(const gxdrawb_t * db,
+void display_2fmenuslines(
+	const gxdrawb_t * db,
 	uint_fast8_t x,
 	uint_fast8_t y,
-	uint_fast8_t state,
-	const char * state1,	// активное
-	const char * state0,
-	uint_fast8_t xspan, uint_fast8_t yspan
-	)
-{
-	#if LCDMODE_COLORED
-		const char * const labels [2] = { state1, state1, };
-	#else /* LCDMODE_COLORED */
-		const char * const labels [2] = { state0, state1, };
-	#endif /* LCDMODE_COLORED */
-	display2text_states(db, x, y, labels, dbstylev_2fmenu, state, xspan, yspan);
-}
-
-// Параметры, не меняющие состояния цветом
-void display_1fmenu(const gxdrawb_t * db,
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t xspan,
+	uint_fast8_t yspan,
+	uint_fast8_t active,
 	const char * label,
-	uint_fast8_t xspan, uint_fast8_t yspan
+	const char * value
 	)
 {
-	display2text_states(db, x, y, & label, & dbstylev_1fmenu, 0, xspan, yspan);
+	const char * strings [] = { label, value, };
+	pix_display_texts(db, GRID2X(x), GRID2Y(y), GRID2X(xspan), GRID2Y(yspan), & dbstylev_2fmenu [active], strings,ARRAY_SIZE(strings));
 }
 
 /* Middle bar rendering */
 void display2_midbar(const gxdrawb_t * db,
-		uint_fast8_t x0,
-		uint_fast8_t y0,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
+	uint_fast8_t x0,
+	uint_fast8_t y0,
+	uint_fast8_t xspan,
+	uint_fast8_t yspan,
+	dctx_t * pctx
+	)
 {
 	const uint_fast16_t x0pix = GRID2X(x0);
 	const uint_fast16_t y0pix = GRID2Y(y0);				// смещение по вертикали в пикселях части отведенной спектру
@@ -3941,13 +3927,14 @@ static void display_siglevel7(const gxdrawb_t * db,
 }
 
 // Отображение уровня сигнала в dBm
-static void display2_siglevel4(const gxdrawb_t * db,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
+static void display2_siglevel4(
+	const gxdrawb_t * db,
+	uint_fast8_t x,
+	uint_fast8_t y,
+	uint_fast8_t xspan,
+	uint_fast8_t yspan,
+	dctx_t * pctx
+	)
 {
 #if WITHIF4DSP
 	int_fast16_t tracemaxi10;
@@ -4004,13 +3991,14 @@ static void display2_span9(const gxdrawb_t * db,
 }
 // Отображение уровня сигнала в баллах шкалы S
 // S9+60
-static void display_smeter5(const gxdrawb_t * db,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
+static void display_smeter5(
+	const gxdrawb_t * db,
+	uint_fast8_t x,
+	uint_fast8_t y,
+	uint_fast8_t xspan,
+	uint_fast8_t yspan,
+	dctx_t * pctx
+	)
 {
 #if WITHIF4DSP
 	int_fast16_t tracemaxi10;
