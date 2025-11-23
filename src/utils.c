@@ -479,7 +479,12 @@ void memset32(void * d, uint32_t v, unsigned sz)
 	}
 }
 
-int_fast32_t iabs(int_fast32_t v)
+int_fast32_t iabs32(int_fast32_t v)
+{
+	return v > 0 ? v : - v;
+}
+
+int iabs(int v)
 {
 	return v > 0 ? v : - v;
 }

@@ -207,7 +207,8 @@ uint_fast8_t revbits8(uint_fast8_t v);	// Функция разворота мл
 uint_fast32_t ptr_hi32(uintptr_t v);
 uint_fast32_t ptr_lo32(uintptr_t v);
 void memset32(void * d, uint32_t v, unsigned sz);
-int_fast32_t iabs(int_fast32_t v);
+int_fast32_t iabs32(int_fast32_t v);
+int iabs(int v);
 
 #ifdef __cplusplus
 }

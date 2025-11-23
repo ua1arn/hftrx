@@ -315,6 +315,11 @@ adcvalholder_t board_getswrpair_filtered(
 uint_fast8_t board_getpwrmeter(
 	uint_fast8_t * toptrace	// peak hold
 	); 
+uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf);
+
+#define TUS_SWRMIN (100)			// 1.0
+#define TUS_SWRMAX (TUS_SWRMIN * 9)			// 9.0
+#define TUS_SWR1p1 (TUS_SWRMIN * 11 / 10)	// SWR=1.1
 
 uint_fast16_t
 mcp3208_read(

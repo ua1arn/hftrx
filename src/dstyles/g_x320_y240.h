@@ -217,10 +217,7 @@
 			p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
 		}
 	#endif /* WITHMENU */
-	unsigned display2_gettileradius(void)
-	{
-		return 0;
-	}
+	#define DISPLC_RADIUS 	0	// радиус закругления углов плиток в dzones
 
 	#endif /* DSTYLE_UR3LMZMOD && WITHONEATTONEAMP */
 

@@ -6675,12 +6675,8 @@ static void bringtimers(void)
 
 #if WITHTX
 
-#define TUS_SWRMIN (100)			// 1.0
-#define TUS_SWRMAX (TUS_SWRMIN * 9)			// 4.0
-#define TUS_SWR1p1 (TUS_SWRMIN * 11 / 10)	// SWR=1.1
-
 // SWR=1 = озвращаем 0
-static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
+uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
 {
 	const uint_fast8_t fs = fullscale - TUS_SWRMIN;
 	adcvalholder_t r;
@@ -6703,24 +6699,6 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 
 	const uint_fast16_t swr10 = (uint_fast32_t) (f + r) * TUS_SWRMIN / (f - r) - TUS_SWRMIN;
 	return swr10 > fs ? fs : swr10;
-}
-
-// Отображение КСВ в меню
-void display2_swrsts20(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
-{
-	adcvalholder_t r;
-	adcvalholder_t f;
-	const uint_fast16_t swr = tuner_get_swr0(TUS_SWRMAX, & r, & f);
-	char b [xspan + 1];
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
-
-	local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%u.%02u f=%-5u r=%-5u"),
-		(unsigned) (swr + TUS_SWRMIN) / TUS_SWRMIN,
-		(unsigned) (swr + TUS_SWRMIN) % TUS_SWRMIN,
-		f,
-		r);
-	display_text(db, x, y, b, xspan, yspan, & dbstylev);
 }
 
 // Used with WITHMGLOOP
@@ -17525,11 +17503,11 @@ param_format(
 		case 0:
 			return local_snprintf_P(buff, count, "%+" PRIdFAST32, value);
 		case 1:
-			return local_snprintf_P(buff, count, "%+" PRIdFAST32 ".%01" PRIdFAST32, value / 10, iabs(value % 10));
+			return local_snprintf_P(buff, count, "%+" PRIdFAST32 ".%01" PRIdFAST32, value / 10, iabs32(value % 10));
 		case 2:
-			return local_snprintf_P(buff, count, "%+" PRIdFAST32 ".%02" PRIdFAST32, value / 100, iabs(value % 100));
+			return local_snprintf_P(buff, count, "%+" PRIdFAST32 ".%02" PRIdFAST32, value / 100, iabs32(value % 100));
 		case 3:
-			return local_snprintf_P(buff, count, "%+" PRIdFAST32 ".%03" PRIdFAST32, value / 1000, iabs(value % 1000));
+			return local_snprintf_P(buff, count, "%+" PRIdFAST32 ".%03" PRIdFAST32, value / 1000, iabs32(value % 1000));
 		}
 
 	default:

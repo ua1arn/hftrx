@@ -69,11 +69,7 @@ enum
 
 #define DISPLC_WIDTH	9	// количество цифр в отображении частоты
 #define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
-
-unsigned display2_gettileradius(void)
-{
-	return 5;
-}
+#define DISPLC_RADIUS 	5	// радиус закругления углов плиток в dzones
 
 // 480/5 = 96, 800/16=50
 // 272/5 = 54, 480/16=30 (old)
@@ -85,8 +81,8 @@ static const dzone_t dzones [] =
 {
 	{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 
-	{	0,	0,	8,	5,	display2_ENC1F,	& dzi_compat, PGALL, },
-	{	9,	0,	8,	5,	display2_ENC2F,	& dzi_compat, PGALL, },
+	{	0,	0,	9,	5,	display2_ENC1F,	& dzi_compat, PGALL, },
+	{	9,	0,	9,	5,	display2_ENC2F,	& dzi_compat, PGALL, },
 
 //	{	0,	0, 	7,	5,	display_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
 	//{	0,	0, 	5,	5,	display2_smeors5, 	& dzi_compat, PGALL, },	// уровень сигнала в баллах S или dBm
@@ -98,8 +94,8 @@ static const dzone_t dzones [] =
 //	{	40, 0,	10,	5,	display2_fnlabel9,	& dzi_compat, PGALL, },	// FUNC item label
 //	{	40,	4,	10,	5,	display2_fnvalue9,	& dzi_compat, PGALL, },	// FUNC item value
 
-	{	33,	0,	8,	5,	display2_ENC3F,	& dzi_compat, PGALL, },
-	{	42,	0,	8,	5,	display2_ENC4F,	& dzi_compat, PGALL, },
+	{	32,	0,	9,	5,	display2_ENC3F,	& dzi_compat, PGALL, },
+	{	41,	0,	9,	5,	display2_ENC4F,	& dzi_compat, PGALL, },
 
 
 #if WITHBARS
@@ -126,7 +122,7 @@ static const dzone_t dzones [] =
 	{	40, 15,	4,	5,	display2_datamode3,	& dzi_datamode, PGALL, },	// DATA mode indicator
 	{	44, 15,	6,	5,	display2_notch5,	& dzi_notch, PGALL, },	// NOTCH on/off
 
-	{	15, 20,	4,	5,	display2_mainsub3,	& dzi_compat, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+	{	16, 20,	4,	5,	display2_mainsub3,	& dzi_compat, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 	{	20,	20,	4,	5,	display2_vfomode3,	& dzi_vfomode, PGALL, },	// SPL
 	{	24,	20,	12,	5,	display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ 144.150.000
 	{	36, 20,	4,	5,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
@@ -137,8 +133,8 @@ static const dzone_t dzones [] =
 	{	0, 	25,	6,	5,	display2_voltlevelV, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
 	{	6, 	25,	6,	5,	display2_currlevelA, & dzi_currlevel, PGALL, },	// PA drain current d.dd with "A"
 
-	{	18,	25,	5,	5,	display2_ant5,	& dzi_antenna, PGALL, },
-	{	25, 25,	4,	5,	display2_byp3,	& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
+	{	18,	25,	6,	5,	display2_ant5,	& dzi_antenna, PGALL, },
+	{	24, 25,	4,	5,	display2_byp3,	& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
 
 	{	32, 25,	4,	5,	display2_rec3,	& dzi_rec, PGALL, },	// Отображение режима записи аудио фрагмента
 	{	36, 25,	4,	5,	display2_spk3,	& dzi_spk, PGALL, },	// отображение признака включения динамика
@@ -160,17 +156,17 @@ static const dzone_t dzones [] =
 
 	{	0,	DLEB,	13,	5,	display2_datetime12,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
 	//{	13,	DLEB,	10,	5,	display2_span9,			& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-	{	23, DLEB,	5,	5,	display2_thermo4,		& dzi_thermo, PGALL, },	// thermo sensor
-	{	28, DLEB,	4,	5,	display2_usbsts3,		& dzi_usbact, PG0, },	// USB host status
-	{	32, DLEB,	3,	5,	display2_btsts2,		& dzi_btact, PG0, },	// USB host status
-	{	35, DLEB,	8,	5,	display2_classa7,		& dzi_classa, PG0, },	// Class-A power amplifier
+	{	23, DLEB,	6,	5,	display2_thermo,		& dzi_thermo, PG0, },	// thermo sensor
+	{	29, DLEB,	4,	5,	display2_usbsts3,		& dzi_usbact, PG0, },	// USB host status
+	{	33, DLEB,	3,	5,	display2_btsts2,		& dzi_btact, PG0, },	// USB host status
+	{	36, DLEB,	8,	5,	display2_classa7,		& dzi_classa, PG0, },	// Class-A power amplifier
+	{	44, DLEB, 	6,  5, 	display2_rxctcss5, 		& dzi_compat, PG0, },
 	//{	28, DLEB,	10,	5,	display_freqmeter10, 	& dzi_default, PGALL, },	// измеренная частота опоры
-	{	43, DLEB, 	6,  5, 	display2_rxctcss5, 		& dzi_compat, PGALL, },
 
 #if WITHMENU
 	{	0,				DLEM,	BDTH_ALLRX, (DLEB - DLEM) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 #if WITHAUTOTUNER
-	{	28, 			DLEB,	21,	5,	display2_swrsts20,	& dzi_compat, REDRSUBSET_MENU, },	// SWR METER display
+	{	29, 			DLEB,	21,	5,	display2_swrsts20,	& dzi_compat, REDRSUBSET_MENU, },	// SWR METER display
 #endif /* WITHAUTOTUNER */
 #endif /* WITHMENU */
 

@@ -138,10 +138,10 @@
 
 		{	0,	DLE1,	12, 4, display2_datetime12,	& dzi_compat, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	9, 4, display2_span9,		& dzi_compat, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	23, DLE1,	4, 4, display2_thermo4,		& dzi_compat, PGALL, },	// thermo sensor
-		{	28, DLE1,	3, 4, display2_usbsts3,		& dzi_compat, PG0, },	// USB host status
-		{	32, DLE1,	2, 4, display2_btsts2,		& dzi_compat, PG0, },	// USB host status
-		{	35, DLE1,	7, 4, display2_classa7,		& dzi_compat, PG0, },	// Class-A power amplifier
+		{	23, DLE1,	5, 4, display2_thermo,		& dzi_compat, PGALL, },	// thermo sensor
+		{	29, DLE1,	3, 4, display2_usbsts3,		& dzi_compat, PG0, },	// USB host status
+		{	33, DLE1,	2, 4, display2_btsts2,		& dzi_compat, PG0, },	// USB host status
+		{	36, DLE1,	7, 4, display2_classa7,		& dzi_compat, PG0, },	// Class-A power amplifier
 		//{	28, DLE1,	10, 5, display_freqmeter10, & dzi_compat, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
@@ -185,10 +185,7 @@
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
-	unsigned display2_gettileradius(void)
-	{
-		return 0;
-	}
+	#define DISPLC_RADIUS 	0	// радиус закругления углов плиток в dzones
 
 #if WITHRENDERHTML
 

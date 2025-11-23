@@ -1044,9 +1044,9 @@ pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, u
 		break;
 	}
 
-	const uint_fast16_t textw = gxstyle_strwidth(dbstyle, s);
+	const uint_fast16_t textw = ulmin16(avlw, gxstyle_strwidth(dbstyle, s));
 	const uint_fast16_t xpix0 = xpix;
-	ASSERT3(avlw >= textw, __FILE__, __LINE__, s);
+	//ASSERT3(avlw >= textw, __FILE__, __LINE__, s);
 	switch (dbstyle->texthalign)
 	{
 	default:

@@ -141,7 +141,7 @@
 
 		{	0,	DLE1,	12,	0,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	9,	0,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	23, DLE1,	0,	0,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
+		{	23, DLE1,	0,	0,	display2_thermo,	REDRM_VOLT, PGALL, },	// thermo sensor
 		{	28, DLE1,	3,	0,	display2_usbsts3,		REDRM_BARS, PGALL, },	// USB host status
 		//{	28, DLE1,	0,	0,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
@@ -182,7 +182,4 @@
 		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
-	unsigned display2_gettileradius(void)
-	{
-		return 0;
-	}
+	#define DISPLC_RADIUS 	0	// радиус закругления углов плиток в dzones

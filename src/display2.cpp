@@ -3804,42 +3804,6 @@ static void display_voltlevel(const gxdrawb_t * db,
 }
 
 // отображение градусов с десятыми долями без отрицательных температур
-static void display2_thermo4(const gxdrawb_t * db,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
-	int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
-
-	// 50+ - красный
-	// 30+ - желтый
-	// ниже 30 зеленый
-	if (tempv > 999)
-		tempv = 999; //- tempv;
-
-	if (tempv < 0)
-	{
-		tempv = 0; //- tempv;
-		gxstyle_textcolor(& dbstylev, COLORPIP_WHITE, display2_getbgcolor());
-	}
-	else if (tempv >= 500)
-		gxstyle_textcolor(& dbstylev, COLORPIP_RED, display2_getbgcolor());
-	else if (tempv >= 300)
-		gxstyle_textcolor(& dbstylev, COLORPIP_YELLOW, display2_getbgcolor());
-	else
-		gxstyle_textcolor(& dbstylev, COLORPIP_GREEN, display2_getbgcolor());
-
-	display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, tempv, 3, 1, UINT8_MAX, 0, & dbstylev);
-#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
-}
-
-// отображение градусов с десятыми долями и "C" без отрицательных температур
 static void display2_thermo(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
@@ -3852,27 +3816,62 @@ static void display2_thermo(const gxdrawb_t * db,
 	int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях
 	gxstyle_t dbstylev;
 	gxstyle_initialize(& dbstylev);
+	char b [xspan + 1];
 
 	// 50+ - красный
 	// 30+ - желтый
 	// ниже 30 зеленый
 	if (tempv > 999)
-		tempv = 999; //- tempv;
+		tempv = 999;
+	else if (tempv < - 999)
+		tempv = - 999;
 
-	if (tempv < 0)
-	{
-		tempv = 0; //- tempv;
-		gxstyle_textcolor(& dbstylev, COLORPIP_WHITE, display2_getbgcolor());
-	}
-	else if (tempv >= 500)
+	const div_t d = div(tempv, 10);
+	local_snprintf_P(b, ARRAY_SIZE(b), "%+d.%1d", d.quot, iabs(d.rem));
+	if (tempv >= 500)
 		gxstyle_textcolor(& dbstylev, COLORPIP_RED, display2_getbgcolor());
 	else if (tempv >= 300)
 		gxstyle_textcolor(& dbstylev, COLORPIP_YELLOW, display2_getbgcolor());
 	else
-		gxstyle_textcolor(& dbstylev, COLORPIP_GREEN, display2_getbgcolor());
+		gxstyle_textcolor(& dbstylev, dbstylev_1statePSU.textcolor, dbstylev_1statePSU.bgcolor);
 
-	display_value_small(db, x + CHARS2GRID(0), y, xspan, yspan, tempv, 3, 1, UINT8_MAX, 0, & dbstylev);
-	display_text(db, x + CHARS2GRID(4), y, PSTR("C"), 1, yspan, & dbstylev);
+	display_text(db, x , y, b, xspan, yspan, & dbstylev);
+#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
+}
+
+// отображение градусов с десятыми долями и "C" без отрицательных температур
+static void display2_thermoC(const gxdrawb_t * db,
+		uint_fast8_t x,
+		uint_fast8_t y,
+		uint_fast8_t xspan,
+		uint_fast8_t yspan,
+		dctx_t * pctx
+		)
+{
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
+	int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
+	char b [xspan + 1];
+
+	// 50+ - красный
+	// 30+ - желтый
+	// ниже 30 зеленый
+	if (tempv > 999)
+		tempv = 999;
+	else if (tempv < - 999)
+		tempv = - 999;
+
+	const div_t d = div(tempv, 10);
+	local_snprintf_P(b, ARRAY_SIZE(b), "%+d.%1dC", d.quot, iabs(d.rem));
+	if (tempv >= 500)
+		gxstyle_textcolor(& dbstylev, COLORPIP_RED, display2_getbgcolor());
+	else if (tempv >= 300)
+		gxstyle_textcolor(& dbstylev, COLORPIP_YELLOW, display2_getbgcolor());
+	else
+		gxstyle_textcolor(& dbstylev, dbstylev_1statePSU.textcolor, dbstylev_1statePSU.bgcolor);
+
+	display_text(db, x , y, b, xspan, yspan, & dbstylev);
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 }
 
@@ -4025,6 +4024,22 @@ static void display2_siglevel4(const gxdrawb_t * db,
 #endif /* WITHIF4DSP */
 }
 
+// Отображение КСВ в меню
+void display2_swrsts20(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+	adcvalholder_t r;
+	adcvalholder_t f;
+	const uint_fast16_t swr = tuner_get_swr0(TUS_SWRMAX, & r, & f);
+	char b [xspan + 1];
+
+	local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%u.%02u f=%-5u r=%-5u"),
+		(unsigned) (swr + TUS_SWRMIN) / TUS_SWRMIN,
+		(unsigned) (swr + TUS_SWRMIN) % TUS_SWRMIN,
+		f,
+		r);
+	display_text(db, x, y, b, xspan, yspan, & dbstylev_1statePSU);
+}
+
 #if WITHIF4DSP
 int_fast32_t display2_zoomedbw(void)
 {
@@ -4147,7 +4162,9 @@ static void display2_freqdelta8(const gxdrawb_t * db,
 	deltaf = - deltaf;	// ошибка по частоте преобразуется в расстройку
 	if (f != 0)
 	{
-		display_value_small(db, x, y, xspan, yspan, deltaf, 6 | WSIGNFLAG, 1, UINT8_MAX, 0, & dbstylev_1state);
+		char b [xspan + 1];
+		local_snprintf_P(b, ARRAY_SIZE(b), "%+" PRIiFAST32 "", deltaf);
+		display_text(db, x, y, b, xspan, yspan, & dbstylev_1state);
 	}
 	else
 	{
@@ -4171,7 +4188,9 @@ static void display_samfreqdelta8(const gxdrawb_t * db,
 	deltaf = - deltaf;	// ошибка по частоте преобразуется в расстройку
 	if (f != 0)
 	{
-		display_value_small(db, x, y, xspan, yspan, deltaf, 6 | WSIGNFLAG, 1, UINT8_MAX, 0, & dbstylev_1state);
+		char b [xspan + 1];
+		local_snprintf_P(b, ARRAY_SIZE(b), "%+" PRIiFAST32 "", deltaf);
+		display_text(db, x, y, b, xspan, yspan, & dbstylev_1state);
 	}
 	else
 	{
@@ -4190,11 +4209,15 @@ static void display_amfmhighcut4(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-#if WITHAMHIGHKBDADJ
+#if WITHINTEGRATEDDSP
 	uint_fast8_t flag;
 	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
-	display_value_small(db, x, y, xspan, yspan, v, 3, 2, UINT8_MAX, 0, & colors_2state [flag]);
-#endif /* WITHAMHIGHKBDADJ */
+	const div_t d = div(v, 10);
+	char b [xspan + 1];
+	local_snprintf_P(b, ARRAY_SIZE(b), "%d.%d", d.quot, d.rem);
+	const char * const labels [2] = { b, b, };
+	display2text_states(db, x, y, labels, dbstylev_2state, flag, xspan, yspan);
+#endif /* WITHINTEGRATEDDSP */
 }
 
 // dd.d - 4 places
@@ -4207,11 +4230,15 @@ static void display_amfmhighcut5(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-#if WITHAMHIGHKBDADJ
+#if WITHINTEGRATEDDSP
 	uint_fast8_t flag;
 	const uint_fast8_t v = hamradio_get_amfm_highcut10_value(& flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
-	display_value_small(db, x, y, xspan, yspan, v, 4, 2, UINT8_MAX, 0, & dbstylev_2state [flag]);
-#endif /* WITHAMHIGHKBDADJ */
+	const div_t d = div(v, 10);
+	char b [xspan + 1];
+	local_snprintf_P(b, ARRAY_SIZE(b), "%d.%d", d.quot, d.rem);
+	const char * const labels [2] = { b, b, };
+	display2text_states(db, x, y, labels, dbstylev_2state, flag, xspan, yspan);
+#endif /* WITHINTEGRATEDDSP */
 }
 
 // Печать времени - часы, минуты и секунды
@@ -4225,7 +4252,7 @@ static void display_time8(const gxdrawb_t * db,
 {
 #if defined (RTC1_TYPE)
 	uint_fast8_t hour, minute, seconds;
-	char buf2 [9];
+	char buf2 [xspan + 1];
 
 	board_rtc_cached_gettime(& hour, & minute, & seconds);
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%02d:%02d:%02d"),
@@ -9482,6 +9509,11 @@ uint_fast8_t display2_getswrmax(void)
 	return SWRMAX;
 }
 #endif /* WITHSHOWSWRPWR */
+
+unsigned display2_gettileradius(void)
+{
+	return DISPLC_RADIUS;
+}
 
 
 static uint_fast8_t

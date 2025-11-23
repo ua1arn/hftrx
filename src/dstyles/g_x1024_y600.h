@@ -140,7 +140,7 @@
 
 		{	0,	DLE1,	12, 4, display2_datetime12,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	9, 4, display2_span9,		& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	23, DLE1,	4, 4, display2_thermo4,	& dzi_default, PGALL, },	// thermo sensor
+		{	23, DLE1,	4, 4, display2_thermo,	& dzi_default, PGALL, },	// thermo sensor
 		{	28, DLE1,	3, 4, display2_usbsts3,		& dzi_default, PG0, },	// USB host status
 		{	32, DLE1,	7, 4, display2_classa7,		& dzi_default, PG0, },	// Class-A power amplifier
 		//{	28, DLE1,	10, 4, display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
@@ -185,8 +185,5 @@
 		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
-	unsigned display2_gettileradius(void)
-	{
-		return 0;
-	}
+	#define DISPLC_RADIUS 	0	// радиус закругления углов плиток в dzones
 

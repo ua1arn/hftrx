@@ -123,7 +123,7 @@
 			{	0,	51,	5,	0,	display_time5,		& dzi_default, PGALL,	},	// TIME
 			{	6, 	51,	3,	0,	display2_atu3,		& dzi_tune, PGALL, },	// TUNER state (optional)
 			{	10, 51,	3,	0,	display2_byp3,		& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
-			{	14, 51,	5,	0,	display2_thermo,	& dzi_default, PGALL, },	// thermo sensor 20.7C
+			{	14, 51,	6,	0,	display2_thermoC,	& dzi_default, PGALL, },	// thermo sensor 20.7C
 			{	19, 51,	5,	0,	display2_currlevel, & dzi_default, PGALL, },	// PA drain current d.dd without "A"
 			{	25, 51,	5,	0,	display2_voltlevelV, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
 		#if WITHAMHIGHKBDADJ
@@ -163,7 +163,4 @@
 			p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 			p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 		}
-		unsigned display2_gettileradius(void)
-		{
-			return 0;
-		}
+	#define DISPLC_RADIUS 	0	// радиус закругления углов плиток в dzones
