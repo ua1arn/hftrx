@@ -3340,13 +3340,13 @@ void hwaccel_bitblt(
 //	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
-	if ((keyflag & BITBLT_FLAG_XMIRROR) || keyflag & BITBLT_FLAG_YMIRROR)
+	if ((keyflag & BITBLT_FLAG_XMIRROR) || (keyflag & BITBLT_FLAG_YMIRROR))
 	{
 		unsigned rot_ctl = 0;
 		rot_ctl |= !! (keyflag & BITBLT_FLAG_XMIRROR) * (UINT32_C(1) << 7);	// flip horizontal
 		rot_ctl |= !! (keyflag & BITBLT_FLAG_YMIRROR) * (UINT32_C(1) << 6);	// flip vertical
 		//rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
-		hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, 0);
+		hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, rot_ctl);
 	}
 	else
 	{
