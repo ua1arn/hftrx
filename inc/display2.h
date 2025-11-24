@@ -447,6 +447,20 @@ typedef struct
 		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
 		#define DSGN_GRIDDIGITS 		COLORPIP_YELLOW
 
+	#elif COLORSTYLE_WHITE
+		// Spectrum/waterfall colors
+		#define DSGN_GRIDCOLOR0        COLOR_OLIVE
+		#define DSGN_GRIDCOLOR2     COLOR_GRAY        //COLOR_DARKRED - other markers
+		#define DSGN_GRIDDIGITS     COLOR_YELLOW
+		#define DSGN_SPECTRUMBG     COLOR_BLACK
+		#define DSGN_SPECTRUMBG2    COLOR_CYAN                //COLOR_CYAN - полоса пропускания приемника
+		#define DSGN_SPECTRUMBG2RX2    COLOR_DARKRED                //COLOR_CYAN - полоса пропускания приемника
+		#define DSGN_SPECTRUMFG        COLOR_GREEN        // цвет спектра при сполошном заполнении
+		#define DSGN_SPECTRUMFENCE    COLOR_WHITE    //COLOR_WHITE
+		//#define DSGN_SPECTRUMLINE    COLORPIP_GREEN
+		#define DSGN_SPECTRUMLINE    COLORPIP_YELLOW
+		#define DSGN_LOCKED       TFTRGB(0x3C, 0x3C, 0x00)
+		#define DSGN_SPECTRUMPEAKS         COLORPIP_DARKGRAY
 	#else
 		#error Undefined color scheme - set COLORSTYLE_xxx
 
@@ -527,6 +541,35 @@ typedef struct
 	#define DSGN_PSUSTATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
 	#define DSGN_PSUSTATEBACK			COLORPIP_BLACK
 
+#elif COLORSTYLE_WHITE
+
+	#define DSGN_BIGCOLOR             COLORPIP_WHITE     // цвет частоты и режима основного приемника
+	#define DSGN_BIGCOLORBACK         COLORPIP_BLACK
+
+	#define DSGN_FMENUACTIVETEXT    COLORPIP_WHITE
+	#define DSGN_FMENUACTIVEBACK    COLORPIP_GRAY
+	#define DSGN_FMENUINACTIVETEXT    COLORPIP_BLACK
+	#define DSGN_FMENUINACTIVEBACK    COLORPIP_GRAY
+
+	#define DSGN_LABELACTIVETEXT    COLORPIP_WHITE
+	#define DSGN_LABELACTIVEBACK    COLORPIP_GRAY
+
+	#define DSGN_LABELINACTIVETEXT    COLORPIP_BLACK
+	#define DSGN_LABELINACTIVEBACK    COLORPIP_GRAY
+
+	// поля отображения, не имеющие вариантов по состоянию вкл/выкл
+	#define DSGN_LABELTEXT            COLORPIP_WHITE
+	#define DSGN_LABELBACK            COLORPIP_BLACK
+
+	#define DSGN_PSUSTATETEXT            COLORPIP_WHITE    // температура, напряжение - was DSGN_LABELTEXT
+	#define DSGN_PSUSTATEBACK            COLORPIP_BLACK
+
+	#define DSGN_FMENUTEXT            COLORPIP_GREEN
+	#define DSGN_FMENUBACK            COLORPIP_BLACK
+	#define DSGN_SMLABELTEXT        COLORPIP_GREEN
+	#define DSGN_SMLABELBACK        COLORPIP_BLACK
+	#define DSGN_SMLABELPLKUSTEXT        COLORPIP_RED
+	#define DSGN_SMLABELPLKUSBACK        COLORPIP_BLACK
 #else /* COLORSTYLE_RED */
 	#error Undefined color scheme - set COLORSTYLE_xxx
 
