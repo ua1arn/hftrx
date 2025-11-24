@@ -1895,10 +1895,6 @@ display2_smeter15_layout_tx(
 		colpip_segm(db, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smetercolor, 1, 1);
 		colpip_segm(db, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORPIP_WHITE, 1, 1);
 #endif /* WITHRLEDECOMPRESS */
-		dcache_clean(db->cachebase, db->cachesize);
-		smeteranglesTX [0] = smpr->gs;
-		smeteranglesTX [1] = smpr->gm;
-		smeteranglesTX [2] = smpr->ge;
 		break;
 
 	default:
@@ -1930,12 +1926,12 @@ display2_smeter15_layout_tx(
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
 			colpip_string3_tbg(db, markersTX_swr [i] - strwidth3(buf2) / 2, smpr->r2 + 12, buf2, COLORPIP_YELLOW);
 		}
-		dcache_clean(db->cachebase, db->cachesize);
-		smeteranglesTX [0] = smpr->gs;
-		smeteranglesTX [1] = smpr->gm;
-		smeteranglesTX [2] = smpr->ge;
 		break;
 	}
+	dcache_clean(db->cachebase, db->cachesize);
+	smeteranglesTX [0] = smpr->gs;
+	smeteranglesTX [1] = smpr->gm;
+	smeteranglesTX [2] = smpr->ge;
 }
 
 static void
@@ -2033,10 +2029,6 @@ display2_smeter15_layout_rx(
 		colpip_segm(db, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeterpluscolor, 1, 1);
 		colpip_segm(db, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORPIP_WHITE, 1, 1);
 #endif /* WITHRLEDECOMPRESS */
-		dcache_clean(db->cachebase, db->cachesize);
-		smeteranglesRX [0] = smpr->gs;
-		smeteranglesRX [1] = smpr->gm;
-		smeteranglesRX [2] = smpr->ge;
 		break;
 
 	default:
@@ -2075,13 +2067,13 @@ display2_smeter15_layout_rx(
 		{
 			colpip_line(db, markers2R [i], smpr->r1, markers2R [i], smpr->r1 - 5, COLORPIP_RED, 0);
 		}
-
-		dcache_clean(db->cachebase, db->cachesize);
-		smeteranglesRX [0] = smpr->gs;
-		smeteranglesRX [1] = smpr->gm;
-		smeteranglesRX [2] = smpr->ge;
 		break;
 	}
+
+	dcache_clean(db->cachebase, db->cachesize);
+	smeteranglesRX [0] = smpr->gs;
+	smeteranglesRX [1] = smpr->gm;
+	smeteranglesRX [2] = smpr->ge;
 }
 
 static uint_fast8_t smprmsinited;
