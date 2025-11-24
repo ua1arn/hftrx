@@ -127,11 +127,11 @@ typedef enum {
 typedef struct {
 	uint16_t w;
 	uint16_t h;
-	PACKEDCOLORPIP_T * bg_non_pressed;
-	PACKEDCOLORPIP_T * bg_pressed;
-	PACKEDCOLORPIP_T * bg_locked;
-	PACKEDCOLORPIP_T * bg_locked_pressed;
-	PACKEDCOLORPIP_T * bg_disabled;
+	gui_color_t * bg_non_pressed;
+	gui_color_t * bg_pressed;
+	gui_color_t * bg_locked;
+	gui_color_t * bg_locked_pressed;
+	gui_color_t * bg_disabled;
 } btn_bg_t;
 
 typedef struct {
@@ -186,7 +186,7 @@ typedef struct {
 	uint8_t index;
 	uint16_t x1;					// координаты от начала окна
 	uint16_t y1;
-	gui_prop_font_t * font;
+	const gui_prop_font_t * font;
 } button_t;
 
 typedef enum {
@@ -202,8 +202,7 @@ typedef struct {
 	uint8_t visible;
 	char name[NAME_ARRAY_SIZE];
 	char text[TEXT_ARRAY_SIZE];
-	font_size_t font_size;
-	PACKEDCOLORPIP_T color;
+	gui_color_t color;
 	int32_t payload;
 	uint8_t index;
 	uint8_t width;			// ширина в символах
@@ -211,6 +210,7 @@ typedef struct {
 	uint16_t height_pix;
 	uint16_t x;
 	uint16_t y;
+	const gui_mono_font_t * font;
 } label_t;
 
 typedef enum  {

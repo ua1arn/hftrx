@@ -1321,14 +1321,8 @@ static void process_gui(void)
 					{
 						label_t * lh = (label_t *) p->link;
 						if (lh->visible && lh->parent == win->window_id)
-						{
-							if (lh->font_size == FONT_LARGE)
-								colpip_string_tbg(drawbuf,  win->x1 + lh->x, win->y1 + lh->y, lh->text, lh->color);
-							else if (lh->font_size == FONT_MEDIUM)
-								colpip_string2_tbg(drawbuf, win->x1 + lh->x, win->y1 + lh->y, lh->text, lh->color);
-							else if (lh->font_size == FONT_SMALL)
-								colpip_string3_tbg(drawbuf, win->x1 + lh->x, win->y1 + lh->y, lh->text, lh->color);
-						}
+							__gui_draw_string_mono(drawbuf, win->x1 + lh->x, win->y1 + lh->y,
+									lh->text, lh->font, lh->color);
 					}
 					else if (p->type == TYPE_SLIDER)
 					{
@@ -1347,16 +1341,8 @@ static void process_gui(void)
 								uint_fast8_t pos = tf->direction ? i : (tf->h_str - i - 1);
 								j = j < 0 ? (tf->h_str - 1) : j;
 
-								if (tf->font)
-								{
-									__gui_draw_string_mono(drawbuf, win->x1 + tf->x1, win->y1 + tf->y1 + tf->font->height * pos,
-											tf->string[j].text, tf->font, tf->string[j].color_line);
-								}
-								else
-								{
-									colpip_string2_tbg(drawbuf, win->x1 + tf->x1, win->y1 + tf->y1 + SMALLCHARH2 * pos,
-											tf->string[j].text, tf->string[j].color_line);
-								}
+								__gui_draw_string_mono(drawbuf, win->x1 + tf->x1, win->y1 + tf->y1 + tf->font->height * pos,
+										tf->string[j].text, tf->font, tf->string[j].color_line);
 
 								j --;
 							}

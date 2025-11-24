@@ -30,14 +30,10 @@ void gui_UB_Font_DrawPString32(const void * db, uint16_t x, uint16_t y, const ch
 uint16_t gui_getwidth_Pstring32(const char * str, const UB_pFont32 * font);
 uint16_t gui_getwidth_Mstring32(const char * str, const UB_Font32 * font);
 
-extern UB_Font32 arial_10x12_mono;
-extern UB_pFont32 arial_10x12_prop;
-extern UB_Font32 arial_14x13_mono;
-extern UB_pFont32 arial_14x13_prop;
-extern UB_Font32 arial_18x16_mono;
-extern UB_pFont32 arial_18x16_prop;
 extern UB_pFont32 msgothic_15x17_prop;
 extern UB_pFont32 msgothic_13x16_prop;
+extern UB_Font32 msgothic_15x17_mono;
+extern UB_Font32 msgothic_11x13_mono;
 
 #endif /* WITHTOUCHGUI */
 

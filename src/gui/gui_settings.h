@@ -66,6 +66,7 @@ enum {
 
 
 #define BUTTONS_FONTP_DEFAULT	msgothic_15x17_prop
+#define LABELS_FONT_DEFAULT		msgothic_15x17_mono
 #define INFOBAR_FONTP			msgothic_13x16_prop
 #define WINDOW_TITLE_FONTP		msgothic_15x17_prop
 

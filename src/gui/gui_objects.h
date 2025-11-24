@@ -13,8 +13,8 @@ uint16_t get_label_height2(const char * name);
 uint16_t get_label_width2(const char * name);
 
 void textfield_update_size(text_field_t * tf);
-void textfield_add_string(const char * name, const char * str, COLORPIP_T color);
-void textfield_add_string_old(text_field_t * tf, const char * str, COLORPIP_T color);
+void textfield_add_string(const char * name, const char * str, gui_color_t color);
+void textfield_add_string_old(text_field_t * tf, const char * str, gui_color_t color);
 void textfield_clean(const char * name);
 
 uint8_t gui_obj_create(const char * obj_name, ...);

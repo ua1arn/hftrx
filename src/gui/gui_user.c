@@ -539,7 +539,7 @@ void gui_main_process(void)
 		update = 1;
 
 #if WITHGUIDEBUG
-		gui_obj_create("tf_debug", TEXT_ARRAY_SIZE, 25, DOWN, NULL);
+		gui_obj_create("tf_debug", 70, 25, DOWN, & msgothic_11x13_mono);
 		gui_obj_set_prop("tf_debug", GUI_OBJ_VISIBLE, 0);
 
 		uint16_t w = gui_obj_get_int_prop("tf_debug", GUI_OBJ_WIDTH);
@@ -1256,6 +1256,7 @@ void window_memory_process(void)
 		gui_obj_create("lbl_note1", FONT_MEDIUM, COLORPIP_WHITE, 54);
 		gui_obj_set_prop("lbl_note1", GUI_OBJ_TEXT, "Long press on empty cell - save,on saved cell - clean");
 		gui_obj_set_prop("lbl_note1", GUI_OBJ_POS_Y, 205);
+		gui_obj_set_prop("lbl_note1", GUI_OBJ_FONT, & msgothic_11x13_mono);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
@@ -1796,10 +1797,10 @@ void window_swrscan_process(void)
 
 		char buf[5];
 		uint_fast8_t l = 1, row_step = roundf((y0 - y1) / 3);
-		uint8_t charw = arial_14x13_mono.width, charh = arial_14x13_mono.height;
+		uint8_t charw = msgothic_11x13_mono.width, charh = msgothic_11x13_mono.height;
 
 		local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", l ++);
-		gui_print_mono(x0 - charw, y0 - charh / 2, buf, & arial_14x13_mono, COLORPIP_WHITE);
+		gui_print_mono(x0 - charw, y0 - charh / 2, buf, & msgothic_11x13_mono, COLORPIP_WHITE);
 
 		for(int_fast16_t yy = y0 - row_step; yy > y1; yy -= row_step)
 		{
@@ -1808,7 +1809,7 @@ void window_swrscan_process(void)
 
 			gui_drawline(x0 + 1, yy, x1, yy, COLORPIP_DARKGREEN);
 			local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", l ++);
-			gui_print_mono(x0 - charw, yy - charh / 2, buf, & arial_14x13_mono, COLORPIP_WHITE);
+			gui_print_mono(x0 - charw, yy - charh / 2, buf, & msgothic_11x13_mono, COLORPIP_WHITE);
 		}
 
 		if (gui_obj_get_int_prop("lbl_swr_error", GUI_OBJ_VISIBLE))				// фон сообщения об ошибке
@@ -2927,7 +2928,7 @@ void window_ft8_process(void)
 		gui_obj_create("lbl_txmsg1", FONT_MEDIUM, COLORPIP_WHITE, 10);
 		gui_obj_create("lbl_txmsg2", FONT_MEDIUM, COLORPIP_WHITE, 10);
 		gui_obj_create("lbl_txmsg3", FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("tf_ft8", 37, 26, UP, & arial_14x13_mono);
+		gui_obj_create("tf_ft8", 37, 26, UP, & msgothic_11x13_mono);
 
 		gui_obj_set_prop("lbl_cq_title", GUI_OBJ_TEXT, "CQ:");
 		gui_obj_set_prop("lbl_cq_title", GUI_OBJ_STATE, DISABLED);
@@ -3793,7 +3794,7 @@ void window_3d_process(void)
 
 	if (is_win_init())
 	{
-		gui_obj_create("tf_3d", 60, 22, UP, & arial_14x13_mono);
+		gui_obj_create("tf_3d", 60, 22, UP, & msgothic_11x13_mono);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
@@ -4216,7 +4217,7 @@ void window_stream_process(void)
 
 	if (is_win_init())
 	{
-		gui_obj_create("tf_log", 50, 15, DOWN, & gothic_11x13);
+		gui_obj_create("tf_log", 50, 15, DOWN, & msgothic_11x13_mono);
 		gui_obj_create("btn_state", 130, 40, 0, 0, "");
 
 		gui_obj_set_prop("tf_log", GUI_OBJ_POS, 0, 0);
@@ -4495,7 +4496,7 @@ void window_as_process(void)
 #if WITHAUDIOSAMPLESREC
 	uint8_t update = 0;
 	enum { len = 320, lim = 25 };
-	static gui_color_t d[len];
+	static uint32_t d[len];
 
 	if (is_win_init())
 	{
@@ -4530,7 +4531,7 @@ void window_as_process(void)
 		{
 			if (gui_check_obj(name, "btn_rec"))
 			{
-				memset(d, 0, len * sizeof(gui_color_t));
+				memset(d, 0, len * sizeof(uint32_t));
 				as_toggle_record();
 			}
 			else if (gui_check_obj(name, "btn_play"))

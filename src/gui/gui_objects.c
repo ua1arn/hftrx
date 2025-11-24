@@ -58,16 +58,10 @@ uint16_t get_label_height2(const char * name)
 void textfield_update_size(text_field_t * tf)
 {
 	ASSERT(tf != NULL);
-	if (tf->font)
-	{
-		tf->w = tf->font->width * tf->w_sim;
-		tf->h = tf->font->height * tf->h_str;
-	}
-	else
-	{
-		tf->w = SMALLCHARW2 * tf->w_sim;
-		tf->h = SMALLCHARH2 * tf->h_str;
-	}
+
+	tf->w = tf->font->width * tf->w_sim;
+	tf->h = tf->font->height * tf->h_str;
+
 	ASSERT(tf->w < WITHGUIMAXX);
 	ASSERT(tf->h < WITHGUIMAXY - window_title_height);
 }
@@ -167,32 +161,19 @@ uint8_t gui_obj_create(const char * name, ...)
 		memcpy(lh, & label_default, sizeof(label_t));
 
 		lh->parent = window_id;
-		lh->font_size = (font_size_t) va_arg(arg, int);
+		int dummy = (font_size_t) va_arg(arg, int); // убрать после правки gui_user.c
 		lh->color = va_arg(arg, gui_color_t);
 		lh->visible = 1;
 		lh->index = win->lh_count;
 		lh->x = 0;
 		lh->y = 0;
+		lh->font = & LABELS_FONT_DEFAULT;
+		lh->height_pix = lh->font->height;
 
 		strncpy(lh->name, obj_name, NAME_ARRAY_SIZE - 1);
 		lh->width = va_arg(arg, uint32_t);
 		memset(lh->text, '*', lh->width);		// для совместимости, потом убрать
-
-		if (lh->font_size == FONT_LARGE)
-		{
-			lh->width_pix = lh->width * SMALLCHARW;
-			lh->height_pix = SMALLCHARH;
-		}
-		else if (lh->font_size == FONT_MEDIUM)
-		{
-			lh->width_pix = lh->width * SMALLCHARW2;
-			lh->height_pix = SMALLCHARH2;
-		}
-		else if (lh->font_size == FONT_SMALL)
-		{
-			lh->width_pix = lh->width * SMALLCHARW3;
-			lh->height_pix = SMALLCHARH3;
-		}
+		lh->width_pix = __gui_get_pixw_string_mono(lh->text, lh->font);
 
 		idx = win->lh_count;
 		win->lh_count ++;
@@ -524,10 +505,18 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_POS_Y) lh->y = va_arg(arg, int);
 		else if (prop == GUI_OBJ_POS) { lh->x = va_arg(arg, int); lh->y = va_arg(arg, int); }
 		else if (prop == GUI_OBJ_PAYLOAD) lh->payload = va_arg(arg, int);
-		else if (prop == GUI_OBJ_TEXT) strncpy(lh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
+		else if (prop == GUI_OBJ_TEXT) {
+			strncpy(lh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
+			lh->width_pix = __gui_get_pixw_string_mono(lh->text, lh->font);
+		}
 		else if (prop == GUI_OBJ_TEXT_FMT) vsnprintf(lh->text, TEXT_ARRAY_SIZE - 1, va_arg(arg, char *), arg);
 		else if (prop == GUI_OBJ_STATE) lh->state = va_arg(arg, int);
 		else if (prop == GUI_OBJ_COLOR) lh->color = va_arg(arg, gui_color_t);
+		else if (prop == GUI_OBJ_FONT) {
+			lh->font = va_arg(arg, gui_mono_font_t *);
+			lh->height_pix = lh->font->height;
+			lh->width_pix = __gui_get_pixw_string_mono(lh->text, lh->font);
+		}
 		break;
 
 	case TYPE_BUTTON:
