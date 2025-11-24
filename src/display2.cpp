@@ -1753,16 +1753,16 @@ static const int16_t smeterpointsRX [] =
 	- 130,	// S9+60 level -13.0 dBm
 };
 
-typedef ALIGNX_BEGIN PACKEDCOLORPIP_T smeter_bg_t [GXSIZE(SM_BG_W, SM_BG_H)] ALIGNX_END;
-static smeter_bg_t smeter_bg [SMETER_TYPE_COUNT][SM_STATE_COUNT];
+typedef PACKEDCOLORPIP_T smeter_bg_t [GXSIZE(SM_BG_W, SM_BG_H)];
 
 typedef struct smeter_params_tag
 {
+	ALIGNX_BEGIN smeter_bg_t smeter_bg ALIGNX_END;
 	uint_fast16_t gs;
 	uint_fast16_t gm;
 	uint_fast16_t ge;
-	uint_fast16_t smeteranglesRXTX [SM_STATE_COUNT] [ARRAY_SIZE(smeterpointsRX)];	// gs, gm, ge
-	gxdrawb_t smbgdbRXTX [SM_STATE_COUNT];
+	uint_fast16_t smeterangles [ARRAY_SIZE(smeterpointsRX)];	// gs, gm, ge
+	gxdrawb_t smbgdb;
 
 	uint_fast16_t r1;
 	uint_fast16_t r2;
@@ -1773,56 +1773,50 @@ typedef struct smeter_params_tag
 	uint_fast8_t step3;
 } smeter_params_t;
 
-static smeter_params_t smprms [SMETER_TYPE_COUNT];
+static smeter_params_t smprms [SMETER_TYPE_COUNT] [SM_STATE_COUNT];
 
 static void
-display2_smeter15_layout(
+display2_smeter15_layout_dial(smeter_params_t * smpr)
+{
+	const uint_fast8_t halfsect = 30;	// Градусы
+	const int stripewidth = 12; //16;
+#if WITHRLEDECOMPRESS
+	smpr->gs = 0;
+	smpr->gm = 108;
+	smpr->ge = 206;
+#else
+	smpr->gm = 270;
+	smpr->gs = smpr->gm - halfsect;
+	smpr->ge = smpr->gm + halfsect;
+#endif /* WITHRLEDECOMPRESS */
+	smpr->rv1 = 7 * GRID2Y(3);
+	smpr->rv2 = smpr->rv1 - 3 * GRID2Y(3);
+	smpr->r1 = 7 * GRID2Y(3) - 8;	//350;
+	smpr->r2 = smpr->r1 - stripewidth;
+	smpr->step1 = 3;	// шаг для оцифровки S
+	smpr->step2 = 4;	// шаг для оцифровки плюсов
+	smpr->step3 = 20;	// swr
+}
+
+static void
+display2_smeter15_layout_bars(smeter_params_t * smpr)
+{
+	smpr->gs = 20;
+	smpr->ge = 220;
+	smpr->gm = 240 / 2;
+	smpr->step1 = 10;	// шаг для оцифровки S
+	smpr->step2 = 14;	// шаг для оцифровки плюсов
+	smpr->step3 = 67;	// swr
+	smpr->r1 = SM_BG_H / 4;					// горизонталь первой шкалы
+	smpr->r2 = SM_BG_H - smpr->r1; 	// горизонталь второй шкалы
+}
+
+static void
+display2_smeter15_layout_tx(
+	smeter_params_t * const smpr,
 	uint_fast8_t smetertype
 	)
 {
-	const uint_fast8_t halfsect = 30;
-	const int stripewidth = 12; //16;
-
-	smeter_params_t * const smpr = & smprms [smetertype];
-
-	switch (smetertype)
-	{
-	case SMETER_TYPE_DIAL:
-		{
-#if WITHRLEDECOMPRESS
-			smpr->gs = 0;
-			smpr->gm = 108;
-			smpr->ge = 206;
-#else
-			smpr->gm = 270;
-			smpr->gs = smpr->gm - halfsect;
-			smpr->ge = smpr->gm + halfsect;
-#endif /* WITHRLEDECOMPRESS */
-			smpr->rv1 = 7 * GRID2Y(3);
-			smpr->rv2 = smpr->rv1 - 3 * GRID2Y(3);
-			smpr->r1 = 7 * GRID2Y(3) - 8;	//350;
-			smpr->r2 = smpr->r1 - stripewidth;
-			smpr->step1 = 3;	// шаг для оцифровки S
-			smpr->step2 = 4;	// шаг для оцифровки плюсов
-			smpr->step3 = 20;	// swr
-		}
-		break;
-
-	default:
-	case SMETER_TYPE_BARS:
-		{
-			smpr->gs = 20;
-			smpr->ge = 220;
-			smpr->gm = 240 / 2;
-			smpr->step1 = 10;	// шаг для оцифровки S
-			smpr->step2 = 14;	// шаг для оцифровки плюсов
-			smpr->step3 = 67;	// swr
-			smpr->r1 = SM_BG_H / 4;					// горизонталь первой шкалы
-			smpr->r2 = SM_BG_H - smpr->r1; 	// горизонталь второй шкалы
-		}
-		break;
-	}
-
 	const uint_fast16_t markersTX_pwr [] =
 	{
 		smpr->gs,
@@ -1844,6 +1838,112 @@ display2_smeter15_layout(
 		smpr->gs + 2 * smpr->step3,
 		smpr->gs + 3 * smpr->step3,
 	};
+
+	const COLORPIP_T bgcolor = display2_getbgcolor();
+	const COLORPIP_T smetercolor = COLORPIP_WHITE;
+	const COLORPIP_T smeterpluscolor = COLORPIP_DARKRED;
+	const uint_fast16_t pad2w3 = strwidth3("ZZ");
+
+	// SMETER_TYPE_DIAL data
+	// координаты оси стрелки
+	const uint_fast16_t xb = SM_BG_W / 2, yb = SM_YCENTEROFFS;	// In pixels
+	unsigned p;
+	unsigned i;
+
+	// Raster buffers
+	gxdrawb_t * const db = & smpr->smbgdb;
+	gxdrawb_initialize(db, smpr->smeter_bg, SM_BG_W, SM_BG_H);
+	// Angles (positions)
+	uint_fast16_t * const smeteranglesTX = smpr->smeterangles;
+	switch (smetertype)
+	{
+
+	case SMETER_TYPE_DIAL:
+		// Фон для TX
+#if WITHRLEDECOMPRESS
+		graw_picture_RLE_buf(db, 0, 0, & smeter_bg_new, bgcolor);
+#else
+		colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, bgcolor);
+
+		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr) - 1; ++ i, p += 10)
+		{
+			if (i % 2 == 0)
+			{
+				char buf2 [10];
+				uint_fast16_t xx, yy;
+
+				colpip_radius(db, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 8, smetercolor, 1, 1);
+				polar_to_dek(xb, yb, markersTX_pwr [i], smpr->r1 + 6, & xx, & yy, 1);
+				local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
+				colpip_string3_tbg(db, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORPIP_YELLOW);
+			}
+			else
+				colpip_radius(db, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 4, smetercolor, 1, 1);
+		}
+
+		for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
+		{
+			char buf2 [10];
+			uint_fast16_t xx, yy;
+
+			colpip_radius(db, xb, yb, markersTX_swr [i], smpr->r2, smpr->r2 - 8, smetercolor, 1, 1);
+			polar_to_dek(xb, yb, markersTX_swr [i], smpr->r2 - 16, & xx, & yy, 1);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
+			colpip_string3_tbg(db, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf2, COLORPIP_YELLOW);
+		}
+		colpip_segm(db, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smetercolor, 1, 1);
+		colpip_segm(db, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smetercolor, 1, 1);
+		colpip_segm(db, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORPIP_WHITE, 1, 1);
+#endif /* WITHRLEDECOMPRESS */
+		dcache_clean(db->cachebase, db->cachesize);
+		smeteranglesTX [0] = smpr->gs;
+		smeteranglesTX [1] = smpr->gm;
+		smeteranglesTX [2] = smpr->ge;
+		break;
+
+	default:
+	case SMETER_TYPE_BARS:
+		// Фон для TX
+		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, bgcolor, 1);
+//		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_WHITE, 0);
+//		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
+
+		colpip_line(db, smpr->gs, smpr->r1, smpr->ge, smpr->r1, COLORPIP_WHITE, 0);
+		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr); ++ i, p += 10)
+		{
+			if (i % 2 == 0)
+			{
+				char buf2 [10];
+				colpip_line(db, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 10, COLORPIP_WHITE, 0);
+				local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
+				colpip_string3_tbg(db, markersTX_pwr [i] - strwidth3(buf2) / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORPIP_YELLOW);
+			}
+			else
+				colpip_line(db, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 5, COLORPIP_WHITE, 0);
+		}
+
+		colpip_line(db, smpr->gs, smpr->r2, smpr->ge, smpr->r2, COLORPIP_WHITE, 0);
+		for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
+		{
+			char buf2 [10];
+			colpip_line(db, markersTX_swr [i], smpr->r2, markersTX_swr [i], smpr->r2 + 10, COLORPIP_WHITE, 0);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
+			colpip_string3_tbg(db, markersTX_swr [i] - strwidth3(buf2) / 2, smpr->r2 + 12, buf2, COLORPIP_YELLOW);
+		}
+		dcache_clean(db->cachebase, db->cachesize);
+		smeteranglesTX [0] = smpr->gs;
+		smeteranglesTX [1] = smpr->gm;
+		smeteranglesTX [2] = smpr->ge;
+		break;
+	}
+}
+
+static void
+display2_smeter15_layout_rx(
+	smeter_params_t * const smpr,
+	uint_fast8_t smetertype
+	)
+{
 	const uint_fast16_t markers [] =
 	{
 		//smpr->gs + 0 * smpr->step1,
@@ -1886,80 +1986,33 @@ display2_smeter15_layout(
 	unsigned i;
 
 	// Raster buffers
-	smeter_bg_t * const smbgTX = & smeter_bg [smetertype] [SM_STATE_TX];
-	smeter_bg_t * const smbgRX = & smeter_bg [smetertype] [SM_STATE_RX];
-	gxdrawb_t * const smbgdbTX = & smpr->smbgdbRXTX [SM_STATE_TX];
-	gxdrawb_t * const smbgdbRX = & smpr->smbgdbRXTX [SM_STATE_RX];
+	gxdrawb_t * const db = & smpr->smbgdb;
+	gxdrawb_initialize(db, smpr->smeter_bg, SM_BG_W, SM_BG_H);
 	// Angles (positions)
-	uint_fast16_t * const smeteranglesTX = smpr->smeteranglesRXTX [SM_STATE_TX];
-	uint_fast16_t * const smeteranglesRX = smpr->smeteranglesRXTX [SM_STATE_RX];
+	uint_fast16_t * const smeteranglesRX = smpr->smeterangles;
 	switch (smetertype)
 	{
 
 	case SMETER_TYPE_DIAL:
-		// Фон для TX
-		gxdrawb_initialize(smbgdbTX, * smbgTX, SM_BG_W, SM_BG_H);
-
-#if WITHRLEDECOMPRESS
-		graw_picture_RLE_buf(smbgdbTX, 0, 0, & smeter_bg_new, bgcolor);
-#else
-		colpip_fillrect(smbgdbTX, 0, 0, SM_BG_W, SM_BG_H, bgcolor);
-
-		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr) - 1; ++ i, p += 10)
-		{
-			if (i % 2 == 0)
-			{
-				char buf2 [10];
-				uint_fast16_t xx, yy;
-
-				colpip_radius(smbgdbTX, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 8, smetercolor, 1, 1);
-				polar_to_dek(xb, yb, markersTX_pwr [i], smpr->r1 + 6, & xx, & yy, 1);
-				local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
-				colpip_string3_tbg(smbgdbTX, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORPIP_YELLOW);
-			}
-			else
-				colpip_radius(smbgdbTX, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 4, smetercolor, 1, 1);
-		}
-
-		for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
-		{
-			char buf2 [10];
-			uint_fast16_t xx, yy;
-
-			colpip_radius(smbgdbTX, xb, yb, markersTX_swr [i], smpr->r2, smpr->r2 - 8, smetercolor, 1, 1);
-			polar_to_dek(xb, yb, markersTX_swr [i], smpr->r2 - 16, & xx, & yy, 1);
-			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
-			colpip_string3_tbg(smbgdbTX, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf2, COLORPIP_YELLOW);
-		}
-		colpip_segm(smbgdbTX, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smetercolor, 1, 1);
-		colpip_segm(smbgdbTX, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smetercolor, 1, 1);
-		colpip_segm(smbgdbTX, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORPIP_WHITE, 1, 1);
-#endif /* WITHRLEDECOMPRESS */
-		dcache_clean(smbgdbTX->cachebase, smbgdbTX->cachesize);
-		smeteranglesTX [0] = smpr->gs;
-		smeteranglesTX [1] = smpr->gm;
-		smeteranglesTX [2] = smpr->ge;
-
 		// Фон для RX
-		gxdrawb_initialize(smbgdbRX, * smbgRX, SM_BG_W, SM_BG_H);
 #if WITHRLEDECOMPRESS
-		graw_picture_RLE_buf(smbgdbRX, 0, 0, & smeter_bg_new, bgcolor);
+		graw_picture_RLE_buf(db, 0, 0, & smeter_bg_new, bgcolor);
 #else
-		colpip_fillrect(smbgdbRX, 0, 0, SM_BG_W, SM_BG_H, bgcolor);
+		colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, bgcolor);
 
 		for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 		{
 			char buf2 [10];
 			uint_fast16_t xx, yy;
 
-			colpip_radius(smbgdbRX, xb, yb, markers [i], smpr->r1, smpr->r1 + 8, smetercolor, 1, 1);
+			colpip_radius(db, xb, yb, markers [i], smpr->r1, smpr->r1 + 8, smetercolor, 1, 1);
 			polar_to_dek(xb, yb, markers [i], smpr->r1 + 6, & xx, & yy, 1);
-			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
-			colpip_string3_tbg(smbgdbRX, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf2, COLORPIP_YELLOW);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
+			colpip_string3_tbg(db, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf2, COLORPIP_YELLOW);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 		{
-			colpip_radius(smbgdbRX, xb, yb, markers2 [i], smpr->r1, smpr->r1 + 4, smetercolor, 1, 1);
+			colpip_radius(db, xb, yb, markers2 [i], smpr->r1, smpr->r1 + 4, smetercolor, 1, 1);
 		}
 
 		for (p = 20, i = 0; i < ARRAY_SIZE(markersR); ++ i, p += 20)
@@ -1967,20 +2020,20 @@ display2_smeter15_layout(
 			char buf2 [10];
 			uint_fast16_t xx, yy;
 
-			colpip_radius(smbgdbRX, xb, yb, markersR [i], smpr->r1, smpr->r1 + 8, smeterpluscolor, 1, 1);
+			colpip_radius(db, xb, yb, markersR [i], smpr->r1, smpr->r1 + 8, smeterpluscolor, 1, 1);
 			polar_to_dek(xb, yb, markersR [i], smpr->r1 + 6, & xx, & yy, 1);
-			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("+%u"), p);
-			colpip_string3_tbg(smbgdbRX, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORPIP_RED);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), "+%u", p);
+			colpip_string3_tbg(db, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORPIP_RED);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 		{
-			colpip_radius(smbgdbRX, xb, yb, markers2R [i], smpr->r1, smpr->r1 + 4, smeterpluscolor, 1, 1);
+			colpip_radius(db, xb, yb, markers2R [i], smpr->r1, smpr->r1 + 4, smeterpluscolor, 1, 1);
 		}
-		colpip_segm(smbgdbRX, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smetercolor, 1, 1);
-		colpip_segm(smbgdbRX, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeterpluscolor, 1, 1);
-		colpip_segm(smbgdbRX, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORPIP_WHITE, 1, 1);
+		colpip_segm(db, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smetercolor, 1, 1);
+		colpip_segm(db, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeterpluscolor, 1, 1);
+		colpip_segm(db, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORPIP_WHITE, 1, 1);
 #endif /* WITHRLEDECOMPRESS */
-		dcache_clean(smbgdbRX->cachebase, smbgdbRX->cachesize);
+		dcache_clean(db->cachebase, db->cachesize);
 		smeteranglesRX [0] = smpr->gs;
 		smeteranglesRX [1] = smpr->gm;
 		smeteranglesRX [2] = smpr->ge;
@@ -1988,78 +2041,42 @@ display2_smeter15_layout(
 
 	default:
 	case SMETER_TYPE_BARS:
-
-		// Фон для TX
-		gxdrawb_initialize(smbgdbTX, * smbgTX, SM_BG_W, SM_BG_H);
-
-		colpip_rect(smbgdbTX, 0, 0, SM_BG_W - 1, SM_BG_H - 1, bgcolor, 1);
-//		colpip_rect(smbgdbTX, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_WHITE, 0);
-//		colpip_rect(smbgdbTX, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
-
-		colpip_line(smbgdbTX, smpr->gs, smpr->r1, smpr->ge, smpr->r1, COLORPIP_WHITE, 0);
-		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr); ++ i, p += 10)
-		{
-			if (i % 2 == 0)
-			{
-				char buf2 [10];
-				colpip_line(smbgdbTX, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 10, COLORPIP_WHITE, 0);
-				local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
-				colpip_string3_tbg(smbgdbTX, markersTX_pwr [i] - strwidth3(buf2) / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORPIP_YELLOW);
-			}
-			else
-				colpip_line(smbgdbTX, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 5, COLORPIP_WHITE, 0);
-		}
-
-		colpip_line(smbgdbTX, smpr->gs, smpr->r2, smpr->ge, smpr->r2, COLORPIP_WHITE, 0);
-		for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
-		{
-			char buf2 [10];
-			colpip_line(smbgdbTX, markersTX_swr [i], smpr->r2, markersTX_swr [i], smpr->r2 + 10, COLORPIP_WHITE, 0);
-			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
-			colpip_string3_tbg(smbgdbTX, markersTX_swr [i] - strwidth3(buf2) / 2, smpr->r2 + 12, buf2, COLORPIP_YELLOW);
-		}
-		dcache_clean(smbgdbTX->cachebase, smbgdbTX->cachesize);
-		smeteranglesTX [0] = smpr->gs;
-		smeteranglesTX [1] = smpr->gm;
-		smeteranglesTX [2] = smpr->ge;
-
 		// Фон для RX
-		gxdrawb_initialize(smbgdbRX, * smbgRX, SM_BG_W, SM_BG_H);
 
-		colpip_rect(smbgdbRX, 0, 0, SM_BG_W - 1, SM_BG_H - 1, bgcolor, 1);
-//		colpip_rect(smbgdbRX, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_WHITE, 0);
-//		colpip_rect(smbgdbRX, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
+		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, bgcolor, 1);
+//		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_WHITE, 0);
+//		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
 
-		colpip_line(smbgdbRX, smpr->gs, smpr->r1, smpr->gm, smpr->r1, COLORPIP_WHITE, 0);
-		colpip_line(smbgdbRX, smpr->gm, smpr->r1, smpr->ge, smpr->r1, COLORPIP_RED, 0);
-		colpip_string2_tbg(smbgdbRX, smpr->gs - SMALLCHARW2, smpr->r1 - SMALLCHARH2 - 2, "Sm", COLORPIP_YELLOW);
+		colpip_line(db, smpr->gs, smpr->r1, smpr->gm, smpr->r1, COLORPIP_WHITE, 0);
+		colpip_line(db, smpr->gm, smpr->r1, smpr->ge, smpr->r1, COLORPIP_RED, 0);
+		colpip_string2_tbg(db, smpr->gs - SMALLCHARW2, smpr->r1 - SMALLCHARH2 - 2, "Sm", COLORPIP_YELLOW);
 
 		for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 		{
 			char buf2 [10];
 			uint_fast16_t xx, yy;
-			colpip_line(smbgdbRX, markers [i], smpr->r1, markers [i], smpr->r1 - 10, COLORPIP_WHITE, 0);
-			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
-			colpip_string3_tbg(smbgdbRX, markers [i] - SMALLCHARW3 / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORPIP_YELLOW);
+			colpip_line(db, markers [i], smpr->r1, markers [i], smpr->r1 - 10, COLORPIP_WHITE, 0);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
+			colpip_string3_tbg(db, markers [i] - SMALLCHARW3 / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORPIP_YELLOW);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 		{
-			colpip_line(smbgdbRX, markers2 [i], smpr->r1, markers2 [i], smpr->r1 - 5, COLORPIP_WHITE, 0);
+			colpip_line(db, markers2 [i], smpr->r1, markers2 [i], smpr->r1 - 5, COLORPIP_WHITE, 0);
 		}
 
 		for (p = 20, i = 0; i < ARRAY_SIZE(markersR); ++ i, p += 20)
 		{
 			char buf2 [10];
-			colpip_line(smbgdbRX, markersR [i], smpr->r1, markersR [i], smpr->r1 - 10, COLORPIP_RED, 0);
-			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("+%u"), p);
-			colpip_string3_tbg(smbgdbRX, markersR [i] - strwidth3(buf2) / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORPIP_YELLOW);
+			colpip_line(db, markersR [i], smpr->r1, markersR [i], smpr->r1 - 10, COLORPIP_RED, 0);
+			local_snprintf_P(buf2, ARRAY_SIZE(buf2), "+%u", p);
+			colpip_string3_tbg(db, markersR [i] - strwidth3(buf2) / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORPIP_YELLOW);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 		{
-			colpip_line(smbgdbRX, markers2R [i], smpr->r1, markers2R [i], smpr->r1 - 5, COLORPIP_RED, 0);
+			colpip_line(db, markers2R [i], smpr->r1, markers2R [i], smpr->r1 - 5, COLORPIP_RED, 0);
 		}
 
-		dcache_clean(smbgdbRX->cachebase, smbgdbRX->cachesize);
+		dcache_clean(db->cachebase, db->cachesize);
 		smeteranglesRX [0] = smpr->gs;
 		smeteranglesRX [1] = smpr->gm;
 		smeteranglesRX [2] = smpr->ge;
@@ -2084,7 +2101,21 @@ display2_smeter15_init(
 
 	for (uint_fast8_t i = 0; i < SMETER_TYPE_COUNT; ++ i)
 	{
-		display2_smeter15_layout(i);
+		switch (i)
+		{
+		case SMETER_TYPE_DIAL:
+			display2_smeter15_layout_dial(& smprms [i] [1]);
+			display2_smeter15_layout_dial(& smprms [i] [0]);
+			break;
+
+		default:
+		case SMETER_TYPE_BARS:
+			display2_smeter15_layout_bars(& smprms [i] [1]);
+			display2_smeter15_layout_bars(& smprms [i] [0]);
+			break;
+		}
+		display2_smeter15_layout_tx(& smprms [i] [1], i);
+		display2_smeter15_layout_rx(& smprms [i] [0], i);
 	}
 	smprmsinited = 1;
 }
@@ -2164,10 +2195,11 @@ pix_display2_smeter15(const gxdrawb_t * db,
 		uint_fast8_t pathi	// тракт, испольуемый для показа s-метра
 		)
 {
-	const smeter_params_t * const smpr = & smprms [glob_smetertype];
+	const COLORPIP_T bgcolor = display2_getbgcolor();
 	const uint_fast8_t is_tx = hamradio_get_tx();
-	const uint_fast16_t * const smeterangles = smpr->smeteranglesRXTX [is_tx];
-	const gxdrawb_t * const smbgdb = & smpr->smbgdbRXTX [is_tx];
+	const smeter_params_t * const smpr = & smprms [glob_smetertype] [is_tx];
+	const uint_fast16_t * const smeterangles = smpr->smeterangles;
+	const gxdrawb_t * const smbgdb = & smpr->smbgdb;
 
 	// координаты оси стрелки
 	const int xc = x0 + width / 2;
@@ -2254,7 +2286,7 @@ pix_display2_smeter15(const gxdrawb_t * db,
 				colpip_radius(db, xc, yc, smpr->gs, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
 				colpip_radius(db, xc, yc, gswr, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
 				polar_to_dek(xc, yc, gswr - 1, smpr->r1 - 4, & xx, & yy, 1);
-				display_floodfill(db, xx, yy, color, COLORPIP_BLACK);
+				display_floodfill(db, xx, yy, color, bgcolor);
 			}
 
 			const COLORPIP_T color = COLORPIP_GREEN;
@@ -2564,7 +2596,7 @@ static void display_freqmeter10(const gxdrawb_t * db,
 
 	local_snprintf_P(
 		buf2, ARRAY_SIZE(buf2),
-		PSTR("%010lu"),
+		"%010lu",
 		(unsigned long) board_get_fqmeter()
 		);
 
@@ -2807,7 +2839,7 @@ static void display2_usbsts3(const gxdrawb_t * db,
 		static const char text_usb [] = "USB";
 		display_2states(db, x, y, active, text_usb, text_usb, xspan, yspan);
 	#else /* LCDMODE_COLORED */
-		display_text(db, x, y, active ? PSTR("USB") : PSTR(""), xspan, yspan, & dbstylev);
+		display_text(db, x, y, active ? "USB" : "", xspan, yspan, & dbstylev);
 	#endif /* LCDMODE_COLORED */
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 }
@@ -2905,7 +2937,7 @@ static void display2_nr3(const gxdrawb_t * db,
 #if WITHIF4DSP
 	int_fast32_t grade;
 	const uint_fast8_t state = hamradio_get_nrvalue(& grade);
-	display_2states(db, x, y, state, PSTR("NR"), "", xspan, yspan);
+	display_2states(db, x, y, state, "NR", "", xspan, yspan);
 #endif /* WITHIF4DSP */
 }
 
@@ -2920,7 +2952,7 @@ static void display2_bkin3(const gxdrawb_t * db,
 {
 #if WITHELKEY
 	const uint_fast8_t state = hamradio_get_bkin_value();
-	display_2states(db, x, y, state, PSTR("BKN"), "", xspan, yspan);
+	display_2states(db, x, y, state, "BKN", "", xspan, yspan);
 	(void) pctx;
 #endif /* WITHELKEY */
 }
@@ -2955,7 +2987,7 @@ static void display2_wpm5(const gxdrawb_t * db,
 	char buf2 [6];
 	const char * const labels [1] = { buf2, };
 
-	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%2dwpm"), (int) value);
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%2dwpm", (int) value);
 	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 	(void) pctx;
 #endif /* WITHELKEY */
@@ -3010,7 +3042,7 @@ static void display2_notchfreq5(const gxdrawb_t * db,
 	int_fast32_t freq;
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
 	char buf2 [6];
-	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%5u"), (unsigned) freq);
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%5u", (unsigned) freq);
 	display_2states(db, x, y, state, buf2, "", xspan, yspan);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
@@ -3027,8 +3059,7 @@ static void display_notch3(const gxdrawb_t * db,
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 	int_fast32_t freq;
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
-	static const char text_nch [] = "NCH";
-	display_2states(db, x, y, state, PSTR("NCH"), "", xspan, yspan);
+	display_2states(db, x, y, state, "NCH", "", xspan, yspan);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
@@ -3087,7 +3118,7 @@ static void display_datamode4(const gxdrawb_t * db,
 #if WITHTX
 	#if WITHIF4DSP && WITHUSBUAC && WITHDATAMODE
 		const uint_fast8_t state = hamradio_get_datamode();
-		display_2states(db, x, y, state, PSTR("DATA"), "", xspan, yspan);
+		display_2states(db, x, y, state, "DATA", "", xspan, yspan);
 	#endif /* WITHIF4DSP && WITHUSBUAC && WITHDATAMODE */
 #endif /* WITHTX */
 }
@@ -3104,7 +3135,7 @@ static void display2_datamode3(const gxdrawb_t * db,
 #if WITHTX
 	#if WITHIF4DSP && WITHUSBUAC && WITHDATAMODE
 		const uint_fast8_t state = hamradio_get_datamode();
-		display_2states(db, x, y, state, PSTR("DAT"), "", xspan, yspan);
+		display_2states(db, x, y, state, "DAT", "", xspan, yspan);
 	#endif /* WITHIF4DSP && WITHUSBUAC && WITHDATAMODE */
 #endif /* WITHTX */
 }
@@ -3157,7 +3188,7 @@ static void display2_genham1(const gxdrawb_t * db,
 
 	const uint_fast8_t state = hamradio_get_genham_value();
 
-	display_2states(db, x, y, state, PSTR("G"), PSTR("H"), xspan, yspan);
+	display_2states(db, x, y, state, "G", "H", xspan, yspan);
 
 #endif /* WITHBCBANDS */
 }
@@ -3358,7 +3389,7 @@ static void display_lockstate1(const gxdrawb_t * db,
 	gxstyle_t dbstylev;
 	gxstyle_initialize(& dbstylev);
 	gxstyle_textcolor(& dbstylev, LOCKCOLOR, BGCOLOR);
-	display_text(db, x, y, hamradio_get_lockvalue() ? PSTR("*") : PSTR(""), xspan, yspan, & dbstylev);
+	display_text(db, x, y, hamradio_get_lockvalue() ? "*" : "", xspan, yspan, & dbstylev);
 }
 
 // RX path bandwidth
@@ -3457,17 +3488,17 @@ static void display2_ovf3(const gxdrawb_t * db,
 	else if (boad_fpga_adcoverflow() != 0)
 	{
 		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
-		display_text(db, x, y, PSTR("OVF"), xspan, yspan, & dbstylev);
+		display_text(db, x, y, "OVF", xspan, yspan, & dbstylev);
 	}
 	else if (boad_mike_adcoverflow() != 0)
 	{
 		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
-		display_text(db, x, y, PSTR("MIK"), xspan, yspan, & dbstylev);
+		display_text(db, x, y, "MIK", xspan, yspan, & dbstylev);
 	}
 	else
 	{
 		gxstyle_textcolor(& dbstylev, BGCOLOR, BGCOLOR);
-		display_text(db, x, y, PSTR(""), xspan, yspan, & dbstylev);
+		display_text(db, x, y, "", xspan, yspan, & dbstylev);
 	}
 #endif /* WITHDSPEXTDDC */
 }
@@ -3492,12 +3523,12 @@ static void display2_preovf3(const gxdrawb_t * db,
 	else if (boad_fpga_adcoverflow() != 0)
 	{
 		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
-		display_text(db, x, y, PSTR("OVF"), xspan, yspan, & dbstylev);
+		display_text(db, x, y, "OVF", xspan, yspan, & dbstylev);
 	}
 	else if (boad_mike_adcoverflow() != 0)
 	{
 		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
-		display_text(db, x, y, PSTR("MIK"), xspan, yspan, & dbstylev);
+		display_text(db, x, y, "MIK", xspan, yspan, & dbstylev);
 	}
 	else
 	{
@@ -3606,7 +3637,7 @@ static void display_att_tx3(const gxdrawb_t * db,
 		)
 {
 	const uint_fast8_t tx = hamradio_get_tx();
-	const char * text = tx ? PSTR("TX  ") : hamradio_get_att_value_P();
+	const char * text = tx ? "TX" : hamradio_get_att_value_P();
 
 	display_text(db, x, y, text, xspan, yspan, & dbstylev_1state);
 }
@@ -3659,7 +3690,7 @@ static void display2_mode_lower_a(const gxdrawb_t * db,
 		)
 {
 	char labels[5];
-	local_snprintf_P(labels, ARRAY_SIZE(labels), PSTR(" %s"), hamradio_get_mode_a_value_P());
+	local_snprintf_P(labels, ARRAY_SIZE(labels), " %s", hamradio_get_mode_a_value_P());
 	colpip_string2_tbg(db, GRID2X(x), GRID2Y(y), labels, dbstylev_1state.textcolor);
 }
 
@@ -3962,7 +3993,7 @@ void display2_swrsts20(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 	const uint_fast16_t swr = tuner_get_swr0(TUS_SWRMAX, & r, & f);
 	char b [xspan + 1];
 
-	local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%u.%02u f=%-5u r=%-5u"),
+	local_snprintf_P(b, ARRAY_SIZE(b), "%u.%02u f=%-5u r=%-5u",
 		(unsigned) (swr + TUS_SWRMIN) / TUS_SWRMIN,
 		(unsigned) (swr + TUS_SWRMIN) % TUS_SWRMIN,
 		f,
@@ -3989,7 +4020,7 @@ static void display2_span9(const gxdrawb_t * db,
 
 	char buf2 [10];
 
-	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("SPAN:%3dk"), (int) ((display2_zoomedbw() + 0) / 1000));
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), "SPAN:%3dk", (int) ((display2_zoomedbw() + 0) / 1000));
 	const char * const labels [1] = { buf2, };
 	display2text_states(db, x, y, labels, & dbstylev_1statePSU, 0, xspan, yspan);
 
@@ -4017,43 +4048,43 @@ static void display_smeter5(
 
 	if (v < - 121)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S0"));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "S0");
 	}
 	else if (v < - 115)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S1"));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "S1");
 	}
 	else if (v < - 109)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S2"));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "S2");
 	}
 	else if (v < - 103)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S3"));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "S3");
 	}
 	else if (v < - 97)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S4"));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "S4");
 	}
 	else if (v < - 91)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S5"));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "S5");
 	}
 	else if (v < - 85)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S6"));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "S6");
 	}
 	else if (v < - 79)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S7"));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "S7");
 	}
 	else if (v < - 73)
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S8"));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "S8");
 	}
 	else
 	{
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("S9+%02d"), v - (- 73));
+		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "S9+%02d", v - (- 73));
 	}
 	const char * const labels [1] = { buf2, };
 	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
@@ -4186,7 +4217,7 @@ static void display_time8(const gxdrawb_t * db,
 	char buf2 [xspan + 1];
 
 	board_rtc_cached_gettime(& hour, & minute, & seconds);
-	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%02d:%02d:%02d"),
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%02d:%02d:%02d",
 			(int) hour, (int) minute, (int) seconds
 		);
 
@@ -4209,7 +4240,7 @@ static void display_time5(const gxdrawb_t * db,
 	char buf2 [6];
 
 	board_rtc_cached_gettime(& hour, & minute, & seconds);
-	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%02d%c%02d"),
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%02d%c%02d",
 		(int) hour,
 		((seconds & 1) ? ' ' : ':'),	// мигающее двоеточие с периодом две секунды
 		(int) minute
@@ -4260,7 +4291,7 @@ static void display2_freqsof9(const gxdrawb_t * db,
 	char buf2 [13];
 	unsigned v = hamradio_get_getsoffreq();
 	v = ulmin(v, 99999);
-	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("Sof:%5u"),
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), "Sof:%5u",
 			v
 		);
 
@@ -4302,7 +4333,7 @@ static void display2_datetime12(const gxdrawb_t * db,
 
 	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & seconds);
 
-	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%s-%02d %02d%c%02d"),
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%s-%02d %02d%c%02d",
 		months [month - 1],
 		(int) day,
 		(int) hour,
@@ -4436,7 +4467,7 @@ void display_swrmeter(const gxdrawb_t * db,
 	// swr10 = 0..30 for swr 1..4
 	const uint_fast8_t mapleftval = display_mapbar(swr10, 0, fullscale, 0, swr10, fullscale);
 
-	//PRINTF(PSTR("swr10=%d, mapleftval=%d, fs=%d\n"), swr10, mapleftval, display_getmaxswrlimb());
+	//PRINTF("swr10=%d, mapleftval=%d, fs=%d\n", swr10, mapleftval, display_getmaxswrlimb());
 
 	gxstyle_t dbstylev;
 	gxstyle_initialize(& dbstylev);
@@ -5309,14 +5340,14 @@ static void printsigwnd(void)
 {
 	int i;
 
-	PRINTF(PSTR("static const FLOAT_t gvars.ifspec_wndfn [%u] =\n"), (unsigned) NORMALFFT);
-	PRINTF(PSTR("{\n"));
+	PRINTF("static const FLOAT_t gvars.ifspec_wndfn [%u] =\n", (unsigned) NORMALFFT);
+	PRINTF("{\n");
 	for (i = 0; i < NORMALFFT; ++ i)
 	{
 		int el = ((i + 1) % 4) == 0;
-		PRINTF(PSTR("\t" "%+1.20f%s"), gvars.ifspec_wndfn [i], el ? ",\n" : ", ");
+		PRINTF("\t" "%+1.20f%s", gvars.ifspec_wndfn [i], el ? ",\n" : ", ");
 	}
-	PRINTF(PSTR("};\n"));
+	PRINTF("};\n");
 }
 
 #endif /*  (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
