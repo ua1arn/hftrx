@@ -114,12 +114,12 @@
 //		{	0,	0,	0,	0,	wait_iq, 			& dzi_default,	PG0, },
 #if WITHBARS
 		{    0, 4,  0,	0,	display2_smeter15_init,	& dzi_default, PGINI, },	//  Инициализация стрелочного прибора
-		{    0, 4,  SM_BG_W_CELLS, SM_BG_H_CELLS, display2_smeter15, 		& dzi_compat, PG0, },	// Изображение стрелочного прибора
+		{    0, 5,  SM_BG_W_CELLS, SM_BG_H_CELLS, display2_smeter15, 		& dzi_compat, PG0, },	// Изображение стрелочного прибора
 #endif /* WITHBARS */
 #if WITHAFSPECTRE
-		{	0,	4,	0,	0,	display2_af_spectre15_init,	& dzi_default, PGINI, },
-		{	0,	4,	0,	0,	display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
-		{	0,	4,	15,	0,	display2_af_spectre15,		& dzi_default, PG0, },
+		{	0,	8,	0,	0,	display2_af_spectre15_init,	& dzi_default, PGINI, },
+		{	0,	8,	0,	0,	display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
+		{	0,	8,	15,	0,	display2_af_spectre15,		& dzi_default, PG0, },
 #endif /* WITHAFSPECTRE */
 
 		{	0,	0, 4,	4,	display2_siglevel4, 	& dzi_default, PG0, },	// signal level dBm
