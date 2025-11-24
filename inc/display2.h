@@ -349,7 +349,7 @@ typedef struct
 		#define DSGN_GRIDDIGITS  DSGN_GRIDCOLOR2
 		#define COLORPIP_DARKRED  DSGN_GRIDCOLOR2
 
-	#endif /* LCDMODE_MAIN_L8 */
+	#endif /* LCDMODE_PALETTE256 */
 
 #else /* */
 
@@ -421,7 +421,7 @@ typedef struct
 	#define COLORPIP_DARKRED   	 COLOR_DARKRED
 
 	#if COLORSTYLE_RED
-		//
+		// Spectrum/waterfall colors
 		#define DSGN_GRIDCOLOR0     	COLORPIP_RED        	// center marker
 		#define DSGN_GRIDCOLOR2     	COLORPIP_DARKRED      // other markers
 		#define DSGN_GRIDDIGITS 		COLORPIP_RED
@@ -436,7 +436,7 @@ typedef struct
 		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
 
 	#elif COLORSTYLE_GREEN
-		// old
+		// Spectrum/waterfall colors
 		#define DSGN_GRIDCOLOR0     	COLORPIP_GREEN        	// center marker
 		#define DSGN_GRIDCOLOR2     	COLORPIP_DARKGREEN      // other markers
 		#define DSGN_GRIDDIGITS 		COLORPIP_GREEN
@@ -452,9 +452,22 @@ typedef struct
 
 
 	#elif COLORSTYLE_BLUE
+		// Spectrum/waterfall colors
+		#define DSGN_GRIDCOLOR      	COLORPIP_OLIVE        // center marker
+		#define DSGN_GRIDCOLOR0     	COLORPIP_DARKRED        // other markers
+		#define DSGN_GRIDCOLOR2     	COLORPIP_DARKRED        // other markers
+
+		#define DSGN_SPECTRUMBG     	COLORPIP_BLACK
+		#define DSGN_SPECTRUMBG2    	COLORPIP_DARKCYAN        //  полоса пропускания приемника
+		#define DSGN_SPECTRUMBG2RX2    	COLORPIP_DARKRED        //  полоса пропускания приемника RX2
+		#define DSGN_SPECTRUMFG			COLORPIP_GREEN
+		#define DSGN_SPECTRUMFENCE		COLORPIP_WHITE
+		#define DSGN_SPECTRUMLINE		COLORPIP_YELLOW
+		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
+		#define DSGN_GRIDDIGITS 		COLORPIP_YELLOW
 
 	#else
-		// old
+		// Spectrum/waterfall colors
 		#define DSGN_GRIDCOLOR0    	COLOR_OLIVE
 		#define DSGN_GRIDCOLOR2     COLOR_GRAY        //COLOR_DARKRED - other markers
 		#define DSGN_GRIDDIGITS 	COLOR_YELLOW
@@ -556,17 +569,6 @@ typedef struct
 	#define DSGN_LABELTEXT			COLORPIP_WHITE
 	#define DSGN_LABELBACK			COLORPIP_BLACK
 
-	#define DSGN_GRIDCOLOR      	COLORPIP_OLIVE        // center marker
-	#define DSGN_GRIDCOLOR0     	COLORPIP_DARKRED        // other markers
-	#define DSGN_GRIDCOLOR2     	COLORPIP_DARKRED        // other markers
-	#define DSGN_SPECTRUMBG     	COLORPIP_BLACK
-	#define DSGN_SPECTRUMBG2    	COLORPIP_DARKCYAN        //  полоса пропускания приемника
-	#define DSGN_SPECTRUMBG2RX2    	COLORPIP_DARKRED        //  полоса пропускания приемника RX2
-	#define DSGN_SPECTRUMFG			COLORPIP_GREEN
-	#define DSGN_SPECTRUMFENCE		COLORPIP_WHITE
-	#define DSGN_SPECTRUMLINE		COLORPIP_YELLOW
-	#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
-	#define DSGN_GRIDDIGITS 		COLORPIP_YELLOW
 	#define DSGN_PSUSTATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
 	#define DSGN_PSUSTATEBACK			COLORPIP_BLACK
 	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
