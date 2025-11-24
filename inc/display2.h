@@ -287,25 +287,6 @@ typedef struct
 #endif /* __cplusplus */
 
 
-// Цвета используемые для отображения
-// различных элементов на основном экране.
-
-#define BGCOLOR (display2_getbgcolor())
-
-#define LCOLOR	COLORPIP_GREEN		// цвет левой половины S-метра
-#define RCOLOR	COLORPIP_RED			// цвет правой половины S-метра
-#define PWRCOLOR	COLORPIP_RED		// цвет измерителя мощности
-#define SWRCOLOR	COLORPIP_YELLOW		// цвет SWR-метра
-
-#define OVFCOLOR COLORPIP_RED
-#define LOCKCOLOR COLORPIP_RED
-#define TXRXMODECOLOR COLORPIP_BLACK
-#define MODECOLORBG_TX COLORPIP_RED
-#define MODECOLORBG_RX	COLORPIP_GREEN
-
-//#define AFSPECTRE_COLOR COLORPIP_YELLOW
-#define AFSPECTRE_COLOR DSGN_SPECTRUMBG2
-
 #if defined (COLORPIP_SHADED)
 	// LCDMODE_MAIN_L8 also defied
 
@@ -552,20 +533,39 @@ typedef struct
 #endif /* COLORSTYLE_RED */
 
 /* обычный текст в меню */
-#define MENUCOLOR 		COLORPIP_WHITE
-#define MENUBGCOLOR		COLORPIP_BLACK
+#define DSGN_MENUCOLOR 		COLORPIP_WHITE
+#define DSGN_MENUBGCOLOR		COLORPIP_BLACK
 /* выделенный текст в меню */
-#define MENUSELCOLOR	COLORPIP_BLACK
-#define MENUSELBGCOLOR	COLORPIP_DARKCYAN
+#define DSGN_MENUSELCOLOR	COLORPIP_BLACK
+#define DSGN_MENUSELBGCOLOR	COLORPIP_DARKCYAN
 /* выделенный текст в значениях */
-#define MENUVALSELCOLOR	COLORPIP_BLACK
-#define MENUVALSELBGCOLOR	COLORPIP_GRAY
+#define DSGN_MENUVALSELCOLOR	COLORPIP_BLACK
+#define DSGN_MENUVALSELBGCOLOR	COLORPIP_GRAY
 
 // Text-like S-meter bar
 #define DSGN_SMLABELTEXT		COLORPIP_GREEN
 #define DSGN_SMLABELBACK		COLORPIP_BLACK
 #define DSGN_SMLABELPLKUSTEXT		COLORPIP_RED
 #define DSGN_SMLABELPLKUSBACK		COLORPIP_BLACK
+
+// Цвета используемые для отображения
+// различных элементов на основном экране.
+
+#define DSGN_BGCOLOR (display2_getbgcolor())
+
+#define DSGN_SMLCOLOR	COLORPIP_GREEN		// цвет левой половины S-метра
+#define DSGN_SMRCOLOR	COLORPIP_RED			// цвет правой половины S-метра
+#define DSGN_PWRCOLOR	COLORPIP_RED		// цвет измерителя мощности
+#define DSGN_SWRCOLOR	COLORPIP_YELLOW		// цвет SWR-метра
+
+#define DSGN_OVFCOLOR COLORPIP_RED
+#define DSGN_LOCKCOLOR COLORPIP_RED
+#define DSGN_TXRXMODECOLOR COLORPIP_BLACK
+#define DSGN_MODECOLORBG_TX COLORPIP_RED
+#define DSGN_MODECOLORBG_RX	COLORPIP_GREEN
+
+//#define DSGN_AFSPECTRE_COLOR COLORPIP_YELLOW
+#define DSGN_AFSPECTRE_COLOR DSGN_SPECTRUMBG2
 
 #define MIDCELLS 8
 

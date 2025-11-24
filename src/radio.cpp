@@ -17193,13 +17193,13 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 			{
 				//подсвечиваем выбранный элемент
 				//display_text(db, xcell_marker, y_position_groups, PSTR(">"), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
-				gxstyle_textcolor(& dbstylev, MENUSELCOLOR, MENUSELBGCOLOR);
+				gxstyle_textcolor(& dbstylev, DSGN_MENUSELCOLOR, DSGN_MENUSELBGCOLOR);
 			}
 			else
 			{
 				//снять отметку
 				//display_text(db, xcell_marker, y_position_groups, PSTR(" "), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
-				gxstyle_textcolor(& dbstylev, MENUCOLOR, MENUBGCOLOR);
+				gxstyle_textcolor(& dbstylev, DSGN_MENUCOLOR, DSGN_MENUBGCOLOR);
 			}
 			display2_menu_group(db, xcell, y_position_groups, mv, xspan, rowspan, getlabel, & dbstylev); // название группы
 
@@ -17208,7 +17208,7 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 	}
 
 	//стираем ненужные имена групп, оставшиеся от предыдущей страницы
-	gxstyle_textcolor(& dbstylev, MENUCOLOR, MENUBGCOLOR);
+	gxstyle_textcolor(& dbstylev, DSGN_MENUCOLOR, DSGN_MENUBGCOLOR);
 	for (;
 			index_groups - menu_block_scroll_offset_groups < window.multilinemenu_max_rows;
 			++ index_groups, y_position_groups += window.ystep)
@@ -17281,13 +17281,13 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 			{
 				//подсвечиваем выбранный элемент
 				//display_text(db, xcell_marker, y_position_params, PSTR(">"), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
-				gxstyle_textcolor(& dbstylev, MENUVALSELCOLOR, MENUVALSELBGCOLOR);
+				gxstyle_textcolor(& dbstylev, DSGN_MENUVALSELCOLOR, DSGN_MENUVALSELBGCOLOR);
 			}
 			else
 			{
 				//снять подсветку
 				//display_text(db, xcell_marker, y_position_params, PSTR(" "), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
-				gxstyle_textcolor(& dbstylev, MENUCOLOR, MENUBGCOLOR);
+				gxstyle_textcolor(& dbstylev, DSGN_MENUCOLOR, DSGN_MENUBGCOLOR);
 			}
 			display2_menu_lblng(db, xcell, y_position_params, mv, xspan, rowspan, getlabel, & dbstylev); // название редактируемого параметра
 
@@ -17297,7 +17297,7 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 
 	//стираем ненужные имена параметров, оставшиеся от предыдущей страницы
 
-	gxstyle_textcolor(& dbstylev, MENUCOLOR, MENUBGCOLOR);
+	gxstyle_textcolor(& dbstylev, DSGN_MENUCOLOR, DSGN_MENUBGCOLOR);
 	for (;
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)
@@ -17368,11 +17368,11 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 
             if (el == index)
             {
-                gxstyle_textcolor(& dbstylev, MENUVALSELCOLOR, MENUVALSELBGCOLOR);
+                gxstyle_textcolor(& dbstylev, DSGN_MENUVALSELCOLOR, DSGN_MENUVALSELBGCOLOR);
             }
             else
             {
-                gxstyle_textcolor(& dbstylev, MENUCOLOR, MENUBGCOLOR);
+                gxstyle_textcolor(& dbstylev, DSGN_MENUCOLOR, DSGN_MENUBGCOLOR);
             }
         	char buff [xspan + 1];
 
@@ -17385,7 +17385,7 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 
 	/* параметры полей вывода значений в меню */
 	//стираем ненужные значения параметров, оставшиеся от предыдущей страницы
-	gxstyle_textcolor(& dbstylev, MENUCOLOR, MENUBGCOLOR);
+	gxstyle_textcolor(& dbstylev, DSGN_MENUCOLOR, DSGN_MENUBGCOLOR);
 	for (;
 			index_params - menu_block_scroll_offset_params < window.multilinemenu_max_rows;
 			++ index_params, y_position_params += window.ystep)

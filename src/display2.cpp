@@ -3381,7 +3381,7 @@ static void display_lockstate1(const gxdrawb_t * db,
 {
 	gxstyle_t dbstylev;
 	gxstyle_initialize(& dbstylev);
-	gxstyle_textcolor(& dbstylev, LOCKCOLOR, BGCOLOR);
+	gxstyle_textcolor(& dbstylev, DSGN_LOCKCOLOR, DSGN_BGCOLOR);
 	display_text(db, x, y, hamradio_get_lockvalue() ? "*" : "", xspan, yspan, & dbstylev);
 }
 
@@ -3475,22 +3475,22 @@ static void display2_ovf3(const gxdrawb_t * db,
 	const char * labels [1];
 	if (hamradio_get_bringSWR(labels))
 	{
- 		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
+ 		gxstyle_textcolor(& dbstylev, DSGN_BGCOLOR, DSGN_OVFCOLOR);
 		display_text(db, x, y, labels [0], xspan, yspan, & dbstylev);
 	}
 	else if (boad_fpga_adcoverflow() != 0)
 	{
-		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
+		gxstyle_textcolor(& dbstylev, DSGN_BGCOLOR, DSGN_OVFCOLOR);
 		display_text(db, x, y, "OVF", xspan, yspan, & dbstylev);
 	}
 	else if (boad_mike_adcoverflow() != 0)
 	{
-		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
+		gxstyle_textcolor(& dbstylev, DSGN_BGCOLOR, DSGN_OVFCOLOR);
 		display_text(db, x, y, "MIK", xspan, yspan, & dbstylev);
 	}
 	else
 	{
-		gxstyle_textcolor(& dbstylev, BGCOLOR, BGCOLOR);
+		gxstyle_textcolor(& dbstylev, DSGN_BGCOLOR, DSGN_BGCOLOR);
 		display_text(db, x, y, "", xspan, yspan, & dbstylev);
 	}
 #endif /* WITHDSPEXTDDC */
@@ -3510,17 +3510,17 @@ static void display2_preovf3(const gxdrawb_t * db,
 	gxstyle_initialize(& dbstylev);
 	if (hamradio_get_bringSWR(labels))
 	{
- 		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
+ 		gxstyle_textcolor(& dbstylev, DSGN_BGCOLOR, DSGN_OVFCOLOR);
 		display_text(db, x, y, labels [0], xspan, yspan, & dbstylev);
 	}
 	else if (boad_fpga_adcoverflow() != 0)
 	{
-		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
+		gxstyle_textcolor(& dbstylev, DSGN_BGCOLOR, DSGN_OVFCOLOR);
 		display_text(db, x, y, "OVF", xspan, yspan, & dbstylev);
 	}
 	else if (boad_mike_adcoverflow() != 0)
 	{
-		gxstyle_textcolor(& dbstylev, BGCOLOR, OVFCOLOR);
+		gxstyle_textcolor(& dbstylev, DSGN_BGCOLOR, DSGN_OVFCOLOR);
 		display_text(db, x, y, "MIK", xspan, yspan, & dbstylev);
 	}
 	else
@@ -3544,12 +3544,12 @@ static void display2_preovf5alt(const gxdrawb_t * db,
 	if (boad_fpga_adcoverflow() != 0)
 	{
 		const char str [] = "OVF";
-		layout_label1_medium(db, x, y, str, 3, chars_W2, COLORPIP_WHITE, OVFCOLOR);
+		layout_label1_medium(db, x, y, str, 3, chars_W2, COLORPIP_WHITE, DSGN_OVFCOLOR);
 	}
 	else if (boad_mike_adcoverflow() != 0)
 	{
 		const char str [] = "MIC";
-		layout_label1_medium(db, x, y, str, 3, chars_W2, COLORPIP_WHITE, OVFCOLOR);
+		layout_label1_medium(db, x, y, str, 3, chars_W2, COLORPIP_WHITE, DSGN_OVFCOLOR);
 	}
 	else
 	{
@@ -4464,7 +4464,7 @@ void display_swrmeter(const gxdrawb_t * db,
 
 	gxstyle_t dbstylev;
 	gxstyle_initialize(& dbstylev);
-	gxstyle_textcolor(& dbstylev, SWRCOLOR, BGCOLOR);
+	gxstyle_textcolor(& dbstylev, DSGN_SWRCOLOR, DSGN_BGCOLOR);
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_swr(x, CHARS2GRID(0)), y, & ypix);
@@ -4501,7 +4501,7 @@ static void display_pwrmeter(const gxdrawb_t * db,
 
 	gxstyle_t dbstylev;
 	gxstyle_initialize(& dbstylev);
-	gxstyle_textcolor(& dbstylev, PWRCOLOR, BGCOLOR);
+	gxstyle_textcolor(& dbstylev, DSGN_PWRCOLOR, DSGN_BGCOLOR);
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(0)), y, & ypix);
@@ -4542,12 +4542,12 @@ static void display_smeter(const gxdrawb_t * db,
 	const int_fast16_t maprightval = display_mapbar(value10, level9, level9 + delta2, 0, value10 - level9, delta2);
 	const int_fast16_t maprightmax = display_mapbar(tracemax10, level9, level9 + delta2, delta2, tracemax10 - level9, delta2); // delta2 - invisible
 
-	gxstyle_textcolor(& dbstylev, LCOLOR, BGCOLOR);
+	gxstyle_textcolor(& dbstylev, DSGN_SMLCOLOR, DSGN_BGCOLOR);
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_rx(x, CHARS2GRID(0)), y, & ypix);
 	display_bar(db, xpix, ypix, BDTH_LEFTRX, rowspan, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF, & dbstylev);		//ниже 9 баллов ничего
 	//
-	gxstyle_textcolor(& dbstylev, RCOLOR, BGCOLOR);
+	gxstyle_textcolor(& dbstylev, DSGN_SMRCOLOR, DSGN_BGCOLOR);
 	uint_fast16_t ypix2;
 	uint_fast16_t xpix2 = display_wrdata_begin(display_bars_x_rx(x, CHARS2GRID(BDTH_LEFTRX)), y, & ypix2);
 	display_bar(db, xpix2, ypix2, BDTH_RIGHTRX, rowspan, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL, & dbstylev);		// выше 9 баллов ничего нет.
@@ -5481,7 +5481,7 @@ display2_af_spectre15(const gxdrawb_t * db,
 					{
 						colpip_set_vline(db,
 								gvars.afsp.x + x, gvars.afsp.y - y_norm, y_norm,
-								AFSPECTRE_COLOR);
+								DSGN_AFSPECTRE_COLOR);
 					}
 				}
 #if WITHAA

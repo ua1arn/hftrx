@@ -5166,30 +5166,6 @@ fatfs_progspi(void)
 }
 #endif /* defined(targetdataflash) */
 
-#if 0
-
-// показ цифровых значений параметров.
-static void 
-display_debug_digit(
-	uint_fast32_t value,
-	uint_fast8_t width,
-	uint_fast8_t comma,
-	uint_fast8_t rj
-	)
-{
-	enum { col = 0, row = 0 };
-	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
-
-	gxstyle_textcolor(& dbstylev, MNUVALCOLOR, BGCOLOR);
-	do
-	{
-		display_gotoxy(col, row + lowhalf);		// курсор в начало первой строки
-		display2_menu_value(value, width, comma, rj, lowhalf);
-	} while (lowhalf --);
-}
-
-#endif
-
 #if 0 && CPUSTYLE_R7S721
 
 /////////////////////
