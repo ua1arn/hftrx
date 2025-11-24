@@ -2266,7 +2266,7 @@ pix_display2_smeter15(const gxdrawb_t * db,
 					SM_BG_W, SM_BG_H, // размер окна источника
 					BITBLT_FLAG_NONE, 0);
 #if WITHRLEDECOMPRESS
-			smeter_arrow(db, gp, x0, y0 + dial_shift, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
+			smeter_arrow(db, gp, x0, y0, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
 #else
 			if (gswr > smpr->gs)
 			{
@@ -2300,7 +2300,7 @@ pix_display2_smeter15(const gxdrawb_t * db,
 					SM_BG_W, SM_BG_H, // размер окна источника
 					BITBLT_FLAG_NONE, 0);
 #if WITHRLEDECOMPRESS
-			smeter_arrow(db, gv, x0, y0 + dial_shift, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
+			smeter_arrow(db, gv, x0, y0, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
 #else
 			{
 				// Рисование peak value (риска)
@@ -5398,7 +5398,7 @@ display2_af_spectre15_init(
 		)		// вызывать после display2_smeter15_init
 {
 	static subscribefloat_t afspectreregister;
-	smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS];		// отображение НЧ спектра только для режима s-метра BARS
+	smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS][0];		// отображение НЧ спектра только для режима s-метра BARS
 
 	gvars.afsp.x = GRID2X(xgrid) + smpr->gs;
 	gvars.afsp.y = GRID2Y(ygrid) + SM_BG_H - 10;

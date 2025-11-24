@@ -3,7 +3,7 @@
 
 #if WITHTOUCHGUI
 
-typedef PACKEDCOLORPIP_T 	gui_color_t;
+typedef COLORPIP_T 			gui_color_t;
 typedef gxdrawb_t 			gui_drawbuf_t;
 typedef UB_Font32			gui_mono_font_t;
 typedef UB_pFont32			gui_prop_font_t;
@@ -21,10 +21,10 @@ static inline const gui_drawbuf_t * __gui_get_drawbuf(void)
 }
 
 // Инициализация буфера, если это необходимо в портируемом окружении
-static inline void __gui_drawbuf_init(gui_drawbuf_t * buf, gui_color_t * extbuf,
+static inline void __gui_drawbuf_init(gui_drawbuf_t * buf, void * extbuf,
 		unsigned int w, unsigned int h)
 {
-	gxdrawb_initialize(buf, extbuf, w, h);
+	gxdrawb_initialize(buf, (PACKEDCOLORPIP_T *) extbuf, w, h);
 }
 
 static inline void __gui_drawbuf_copy(const gui_drawbuf_t * dstbuf, gui_drawbuf_t * srcbuf,
