@@ -4670,6 +4670,18 @@ static nvramaddress_t nvramoffs_bandgroup(nvramaddress_t base, unsigned bg)
 	return base + RMT_BANDPOS(bg) - RMT_BANDPOS(0);
 }
 
+
+static const char * const view_types [VIEW_count] =
+{
+	"LINE",
+	"FILL",
+	"COLOR",
+	"DOTS",
+#if WITHVIEW_3DSS
+	"3DSS",
+#endif /* WITHVIEW_3DSS */
+};
+
 static size_t getvaltextviewstyle(char * buff, size_t count, int_fast32_t value)
 {
 	/* стиль отображения спектра и панорамы */
@@ -21130,8 +21142,10 @@ const char * hamradio_change_view_style(uint_fast8_t v)
 {
 	if (v)
 	{
-		param_keyclick(& xgviewstyle);
-		updateboard();
+		if (param_keyclick(& xgviewstyle))
+		{
+			updateboard();
+		}
 	}
 
 	return view_types [param_getvalue(& xgviewstyle)];

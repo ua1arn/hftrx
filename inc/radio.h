@@ -3452,6 +3452,7 @@ enum
 {
 	SMETER_TYPE_BARS,
 	SMETER_TYPE_DIAL,
+	//
 	SMETER_TYPE_COUNT
 };
 
@@ -3468,17 +3469,6 @@ enum
 	//
 	VIEW_count
 };
-
-static const char * const view_types [VIEW_count] =
-	{
-		"LINE",
-		"FILL",
-		"COLOR",
-		"DOTS",
-#if WITHVIEW_3DSS
-		"3DSS",
-#endif /* WITHVIEW_3DSS */
-	};
 
 /* Управление частичной полосоц отображением спектра/волопада */
 enum

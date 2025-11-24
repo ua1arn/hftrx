@@ -1733,6 +1733,7 @@ static uint_fast8_t first_tx = 0;
 enum {
 	SM_STATE_RX,
 	SM_STATE_TX,
+	//
 	SM_STATE_COUNT
 };
 
@@ -2096,18 +2097,18 @@ display2_smeter15_init(
 		switch (i)
 		{
 		case SMETER_TYPE_DIAL:
-			display2_smeter15_layout_dial(& smprms [i] [1]);
-			display2_smeter15_layout_dial(& smprms [i] [0]);
+			display2_smeter15_layout_dial(& smprms [i] [SM_STATE_TX]);
+			display2_smeter15_layout_dial(& smprms [i] [SM_STATE_RX]);
 			break;
 
 		default:
 		case SMETER_TYPE_BARS:
-			display2_smeter15_layout_bars(& smprms [i] [1]);
-			display2_smeter15_layout_bars(& smprms [i] [0]);
+			display2_smeter15_layout_bars(& smprms [i] [SM_STATE_TX]);
+			display2_smeter15_layout_bars(& smprms [i] [SM_STATE_RX]);
 			break;
 		}
-		display2_smeter15_layout_tx(& smprms [i] [1], i);
-		display2_smeter15_layout_rx(& smprms [i] [0], i);
+		display2_smeter15_layout_tx(& smprms [i] [SM_STATE_TX], i);
+		display2_smeter15_layout_rx(& smprms [i] [SM_STATE_RX], i);
 	}
 	smprmsinited = 1;
 }
@@ -2189,7 +2190,7 @@ pix_display2_smeter15(const gxdrawb_t * db,
 {
 	const COLORPIP_T bgcolor = display2_getbgcolor();
 	const uint_fast8_t is_tx = hamradio_get_tx();
-	const smeter_params_t * const smpr = & smprms [glob_smetertype] [is_tx];
+	const smeter_params_t * const smpr = & smprms [glob_smetertype] [is_tx ? SM_STATE_TX : SM_STATE_RX];
 	const uint_fast16_t * const smeterangles = smpr->smeterangles;
 	const gxdrawb_t * const smbgdb = & smpr->smbgdb;
 
@@ -5398,7 +5399,7 @@ display2_af_spectre15_init(
 		)		// вызывать после display2_smeter15_init
 {
 	static subscribefloat_t afspectreregister;
-	smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS][0];		// отображение НЧ спектра только для режима s-метра BARS
+	smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS][SM_STATE_RX];		// отображение НЧ спектра только для режима s-метра BARS
 
 	gvars.afsp.x = GRID2X(xgrid) + smpr->gs;
 	gvars.afsp.y = GRID2Y(ygrid) + SM_BG_H - 10;
