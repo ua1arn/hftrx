@@ -4628,7 +4628,7 @@ static void display2_legend(const gxdrawb_t * db,
 }
 
 
-uint_fast16_t calcprev(uint_fast16_t v, uint_fast16_t lim)
+static uint_fast16_t calcprev16(uint_fast16_t v, uint_fast16_t lim)
 {
 	if (v)
 		return -- v;
@@ -4636,7 +4636,7 @@ uint_fast16_t calcprev(uint_fast16_t v, uint_fast16_t lim)
 		return lim - 1;
 }
 
-uint_fast16_t calcnext(uint_fast16_t v, uint_fast16_t lim)
+static uint_fast16_t calcnext16(uint_fast16_t v, uint_fast16_t lim)
 {
 	v ++;
 	if (v >= lim)
@@ -6449,8 +6449,8 @@ enum
 	MAX_DELAY_3DSS = 1
 };
 
-static uint_fast8_t current_3dss_step = 0;
-static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
+static uint_fast16_t current_3dss_step = 0;
+static uint_fast16_t delay_3dss = MAX_DELAY_3DSS;
 
 static WFL3DSS_T * atwfj3dss(uint_fast16_t x, uint_fast16_t y)
 {
@@ -6473,7 +6473,7 @@ static void init_depth_map_3dss(void)
 {
 	const uint_fast16_t HALF_ALLDX = ALLDX / 2;
 
-	for (int_fast8_t i = 0; i < MAX_3DSS_STEP; i ++)
+	for (int_fast16_t i = 0; i < MAX_3DSS_STEP; i ++)
 	{
 		uint_fast16_t range = HALF_ALLDX - 1 - i * Z_STEP_3DSS;
 
@@ -6952,9 +6952,9 @@ static void display2_latchcombo(
 
 #if 0 //WITHVIEW_3DSS
 	// продвижение по истории
-	delay_3dss = calcnext(delay_3dss, MAX_DELAY_3DSS);
+	delay_3dss = calcnext16(delay_3dss, MAX_DELAY_3DSS);
 	if (! delay_3dss)
-		current_3dss_step = calcnext(current_3dss_step, MAX_3DSS_STEP);
+		current_3dss_step = calcnext16(current_3dss_step, MAX_3DSS_STEP);
 #endif /* WITHVIEW_3DSS */
 
 #if WITHVIEW_3DSS
@@ -7323,11 +7323,11 @@ static void display2_3dss(const gxdrawb_t * db0, uint_fast8_t x0, uint_fast8_t y
 
 	const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
 
-	uint_fast8_t draw_step = calcprev(current_3dss_step, MAX_3DSS_STEP);
+	uint_fast16_t draw_step = calcprev16(current_3dss_step, MAX_3DSS_STEP);
 	uint_fast16_t ylast_sp = 0;
 	int i;
 	const COLORPIP_T bgcolor = display2_getbgcolor();
-	for (int_fast8_t i = 0; i < MAX_3DSS_STEP - 1; i ++)
+	for (int_fast16_t i = 0; i < MAX_3DSS_STEP - 1; i ++)
 	{
 		uint_fast16_t y0 = SPY - 5 - i * Z_STEP_3DSS;
 		uint_fast16_t x;
@@ -7396,7 +7396,7 @@ static void display2_3dss(const gxdrawb_t * db0, uint_fast8_t x0, uint_fast8_t y
 				}
 			}
 		}
-		draw_step = calcprev(draw_step, MAX_3DSS_STEP);
+		draw_step = calcprev16(draw_step, MAX_3DSS_STEP);
 	}
 
 	// увеличение контрастности спектра на фоне панорамы
@@ -7419,9 +7419,9 @@ static void display2_3dss(const gxdrawb_t * db0, uint_fast8_t x0, uint_fast8_t y
 
 #if WITHVIEW_3DSS
 	// продвижение по истории
-	delay_3dss = calcnext(delay_3dss, MAX_DELAY_3DSS);
+	delay_3dss = calcnext16(delay_3dss, MAX_DELAY_3DSS);
 	if (! delay_3dss)
-		current_3dss_step = calcnext(current_3dss_step, MAX_3DSS_STEP);
+		current_3dss_step = calcnext16(current_3dss_step, MAX_3DSS_STEP);
 #endif /* WITHVIEW_3DSS */
 }
 #endif /* WITHVIEW_3DSS */
