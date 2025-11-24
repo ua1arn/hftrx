@@ -1534,10 +1534,10 @@ static const videomode_t vdmode0 =
 
 	// SEE ALSO https://admin.osptek.com/uploads/ICNL_9707_Datasheet_310cf76474.pdf
 
-	.width = 480,			/* LCD PIXEL WIDTH            */
+	.width = 640,			/* LCD PIXEL WIDTH            */
 	.hsync = 2,				/* Horizontal synchronization */
-	.hbp = 30,				/* Horizontal back porch      */
-	.hfp = 24,				/* Horizontal front porch */
+	.hbp = 44,				/* Horizontal back porch      */
+	.hfp = 46,				/* Horizontal front porch */
 
 	.height = 1280,			/* LCD PIXEL HEIGHT           */
 	.vsync = 2,				/* Vertical synchronization */

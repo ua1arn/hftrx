@@ -10940,7 +10940,7 @@ void hightests(void)
 		int stepX = 1;
 		int stepY = 1;
 		int posX = DIM_X / 2;
-		int posY = DIM_Y / 2;
+		int posY = DIM_Y / 2 * 0;
 		unsigned steps = 0;
 		for (;;)
 		{
@@ -10955,7 +10955,7 @@ void hightests(void)
 			snprintf(s, ARRAY_SIZE(s), "%u", steps ++);
 			// Erase background
 			//colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
-			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 0, 0));
+			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, TFTRGB(0, 0, 0));
 			// Draw rextangle
 			colpip_fillrect(& dbv, posX, posY, rectX, rectY, TFTRGB(0, 255, 0));
 			colpip_string_tbg(& dbv, posX, posY + rectY / 2, s, TFTRGB(255, 255, 255));
@@ -10964,6 +10964,12 @@ void hightests(void)
 
 
 			testsloopprocessing();		// обработка отложенного вызова user mode функций
+			for (;;)
+			{
+				testsloopprocessing();		// обработка отложенного вызова user mode функций
+
+			}
+				;
 			char c;
 			if (dbg_getchar(& c))
 			{

@@ -18,7 +18,7 @@
 
 #ifndef NIGHTBUILD
 
-//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
+#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
 //#define DEBUGSPEED 500000
 #define DEBUGSPEED 115200
 //#define DEFAULTDIALFREQ	18112000
