@@ -189,12 +189,6 @@ typedef struct {
 	const gui_prop_font_t * font;
 } button_t;
 
-typedef enum {
-	FONT_LARGE,						// S1D13781_smallfont_LTDC
-	FONT_MEDIUM,					// S1D13781_smallfont2_LTDC
-	FONT_SMALL						// S1D13781_smallfont3_LTDC
-} font_size_t;
-
 typedef struct {
 	uint8_t parent;
 	uint8_t state;

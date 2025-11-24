@@ -24,7 +24,6 @@ void dump_queue(window_t * win);
 
 uint16_t gui_get_window_draw_width(void);
 uint16_t gui_get_window_draw_height(void);
-void gui_drawstring(uint16_t x, uint16_t y, const char * str, font_size_t font, gui_color_t color);
 void gui_drawline(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, gui_color_t color);
 void gui_drawpoint(uint16_t x1, uint16_t y1, gui_color_t color);
 void gui_drawrect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, gui_color_t color, uint8_t fill);

@@ -17,7 +17,7 @@
 #include "gui_settings.h"
 #include "gui_windows.h"
 
-const label_t label_default = 	{ 0, CANCELLED, 0, NON_VISIBLE, "", "", FONT_MEDIUM, COLORPIP_WHITE, };
+const label_t label_default = 	{ 0, CANCELLED, 0, NON_VISIBLE, "", "", COLORPIP_WHITE, };
 const button_t button_default = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 1, 0, 0, NON_VISIBLE, INT32_MAX, "", "", };
 const text_field_t tf_default = { 0, 0, CANCELLED, 0, NON_VISIBLE, UP, NULL, "", };
 const touch_area_t ta_default = { 0, 0, 0, 0, 0, "", 0, 0, 0, 0, 0, };
@@ -133,7 +133,7 @@ static void obj_name_user(char * name)
 	name[r - name] = '\0';
 }
 
-// label: font_size, color, width_by_symbols
+// label: color, width_by_symbols
 // button: w, h, is_repeating, is_long_press, text,
 // text_field: w_sim, h_str, direction, font *
 // touch area: x, y, w, h, is_trackable
@@ -161,7 +161,6 @@ uint8_t gui_obj_create(const char * name, ...)
 		memcpy(lh, & label_default, sizeof(label_t));
 
 		lh->parent = window_id;
-		int dummy = (font_size_t) va_arg(arg, int); // убрать после правки gui_user.c
 		lh->color = va_arg(arg, gui_color_t);
 		lh->visible = 1;
 		lh->index = win->lh_count;

@@ -585,8 +585,10 @@ void gui_main_process(void)
 		calculate_window_position(WINDOW_POSITION_FULLSCREEN);
 
 #if WITHGUIDEBUG
-		window_t * win = get_win(WINDOW_MAIN);
-		gui_obj_set_prop("tf_debug", GUI_OBJ_POS, win->w / 2 - w / 2, win->h / 2 - h / 2);
+		uint16_t winw = gui_get_window_draw_width();
+		uint16_t winh = gui_get_window_draw_height();
+
+		gui_obj_set_prop("tf_debug", GUI_OBJ_POS, winw / 2 - w / 2, winh / 2 - h / 2);
 
 		for (uint8_t i = 0; i < tmpstr_index; i ++)
 			textfield_add_string("tf_debug", tmpbuf[i].text, COLORPIP_WHITE);
@@ -1253,7 +1255,7 @@ void window_memory_process(void)
 		char * btn0 = get_obj_name_by_idx(TYPE_BUTTON, 0);
 		gui_arrange_objects_from(btn0, memory_cells_count, 5, 6);
 
-		gui_obj_create("lbl_note1", FONT_MEDIUM, COLORPIP_WHITE, 54);
+		gui_obj_create("lbl_note1", COLORPIP_WHITE, 54);
 		gui_obj_set_prop("lbl_note1", GUI_OBJ_TEXT, "Long press on empty cell - save,on saved cell - clean");
 		gui_obj_set_prop("lbl_note1", GUI_OBJ_POS_Y, 205);
 		gui_obj_set_prop("lbl_note1", GUI_OBJ_FONT, & msgothic_11x13_mono);
@@ -1321,8 +1323,8 @@ void window_bands_process(void)
 		GUI_MEM_ASSERT(bands);
 		hamradio_get_bands(bands, 0, 1);
 
-		gui_obj_create("lbl_ham", FONT_LARGE, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_bcast", FONT_LARGE, COLORPIP_WHITE, 16);
+		gui_obj_create("lbl_ham", COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_bcast", COLORPIP_WHITE, 16);
 
 		gui_obj_set_prop("lbl_ham", GUI_OBJ_TEXT, "HAM bands");
 		gui_obj_set_prop("lbl_bcast", GUI_OBJ_TEXT, "Broadcast bands");
@@ -1509,9 +1511,9 @@ void window_display_process(void)
 		uint8_t interval = 30;
 		update = 1;
 
-		gui_obj_create("lbl_topSP", FONT_MEDIUM, COLORPIP_WHITE, 18);
-		gui_obj_create("lbl_bottomSP", FONT_MEDIUM, COLORPIP_WHITE, 18);
-		gui_obj_create("lbl_partSP", FONT_MEDIUM, COLORPIP_WHITE, 18);
+		gui_obj_create("lbl_topSP", COLORPIP_WHITE, 18);
+		gui_obj_create("lbl_bottomSP", COLORPIP_WHITE, 18);
+		gui_obj_create("lbl_partSP", COLORPIP_WHITE, 18);
 		gui_obj_create("sl_topSP", ORIENTATION_HORIZONTAL, 300, 3);			// index = TYPE_DISPLAY_SP_TOP
 		gui_obj_create("sl_bottomSP", ORIENTATION_HORIZONTAL, 300, 3);		// index = TYPE_DISPLAY_SP_BOTTOM
 		gui_obj_create("sl_partSP", ORIENTATION_HORIZONTAL, 300, 3); 		// index = TYPE_DISPLAY_SP_PART
@@ -1692,9 +1694,9 @@ void window_swrscan_process(void)
 		gui_obj_create("btn_swr_start", 86, 44, 0, 0, "Start");
 		gui_obj_create("btn_swr_OK",    86, 44, 0, 0, "OK");
 
-		gui_obj_create("lbl_swr_bottom", FONT_SMALL, COLORPIP_WHITE, 7);
-		gui_obj_create("lbl_swr_top",    FONT_SMALL, COLORPIP_WHITE, 7);
-		gui_obj_create("lbl_swr_error",  FONT_MEDIUM, COLORPIP_WHITE, 16);
+		gui_obj_create("lbl_swr_bottom", COLORPIP_WHITE, 7);
+		gui_obj_create("lbl_swr_top",    COLORPIP_WHITE, 7);
+		gui_obj_create("lbl_swr_error",  COLORPIP_WHITE, 16);
 
 		gui_obj_set_prop("lbl_swr_top", GUI_OBJ_POS, x1 - 30, y0 + interval);
 		gui_obj_set_prop("lbl_swr_bottom", GUI_OBJ_POS, x0, y0 + interval);
@@ -1877,8 +1879,8 @@ void window_tx_power_process(void)
 
 		hamradio_get_tx_power_limits(& power_min, & power_max);
 
-		gui_obj_create("lbl_power", FONT_MEDIUM, COLORPIP_WHITE, 14);
-		gui_obj_create("lbl_tune", FONT_MEDIUM, COLORPIP_WHITE, 14);
+		gui_obj_create("lbl_power", COLORPIP_WHITE, 14);
+		gui_obj_create("lbl_tune", COLORPIP_WHITE, 14);
 		gui_obj_create("sl_power", ORIENTATION_HORIZONTAL, 300, 3);
 		gui_obj_create("sl_tune", ORIENTATION_HORIZONTAL, 300, 3);
 		gui_obj_create("btn_ok", 40, 40, 0, 0, "OK");
@@ -2036,8 +2038,8 @@ void window_ap_reverb_process(void)
 
 		gui_obj_create("sl_delay", ORIENTATION_HORIZONTAL, 300, 3);
 		gui_obj_create("sl_loss", ORIENTATION_HORIZONTAL, 300, 3);
-		gui_obj_create("lbl_delay", FONT_MEDIUM, COLORPIP_WHITE, 14);
-		gui_obj_create("lbl_loss", FONT_MEDIUM, COLORPIP_WHITE, 14);
+		gui_obj_create("lbl_delay", COLORPIP_WHITE, 14);
+		gui_obj_create("lbl_loss", COLORPIP_WHITE, 14);
 		gui_obj_create("btn_en", 40, 40, 0, 0, "EN");
 		gui_obj_create("btn_ok", 40, 40, 0, 0, "OK");
 
@@ -2123,9 +2125,12 @@ void window_af_eq_process(void)
 		gui_obj_create("sl_eq400", ORIENTATION_VERTICAL, 200, 2);
 		gui_obj_create("sl_eq1500", ORIENTATION_VERTICAL, 200, 2);
 		gui_obj_create("sl_eq2700", ORIENTATION_VERTICAL, 200, 2);
-		gui_obj_create("lbl_eq400", FONT_SMALL, COLORPIP_WHITE, 7);
-		gui_obj_create("lbl_eq1500", FONT_SMALL, COLORPIP_WHITE, 7);
-		gui_obj_create("lbl_eq2700", FONT_SMALL, COLORPIP_WHITE, 7);
+		gui_obj_create("lbl_eq400", COLORPIP_WHITE, 6);
+		gui_obj_create("lbl_eq1500", COLORPIP_WHITE, 7);
+		gui_obj_create("lbl_eq2700", COLORPIP_WHITE, 7);
+		gui_obj_set_prop("lbl_eq400", GUI_OBJ_FONT, & msgothic_11x13_mono);
+		gui_obj_set_prop("lbl_eq1500", GUI_OBJ_FONT, & msgothic_11x13_mono);
+		gui_obj_set_prop("lbl_eq2700", GUI_OBJ_FONT, & msgothic_11x13_mono);
 		gui_obj_create("btn_ok", 40, 40, 0, 0, "OK");
 		gui_obj_create("btn_en", 40, 40, 0, 0, "OK");
 
@@ -2191,14 +2196,16 @@ void window_af_eq_process(void)
 		uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
 		gui_drawline(30, mid_y + yy, ww, mid_y + yy, GUI_SLIDERLAYOUTCOLOR);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), i == 0 ? "%d" : "-%d", i);
-		gui_drawstring(30 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, FONT_MEDIUM, COLORPIP_WHITE);
+		uint16_t w = get_strwidth_prop(buf, & msgothic_10x13_prop);
+		gui_print_prop(30 - w - 5, mid_y + yy - 8, buf, & msgothic_10x13_prop, COLORPIP_WHITE);
 
 		if (i == 0)
 			continue;
 
 		gui_drawline(30, mid_y - yy, ww, mid_y - yy, GUI_SLIDERLAYOUTCOLOR);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", i);
-		gui_drawstring(30 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, FONT_MEDIUM, COLORPIP_WHITE);
+		w = get_strwidth_prop(buf, & msgothic_10x13_prop);
+		gui_print_prop(30 - w - 5, mid_y - yy - 8, buf, & msgothic_10x13_prop, COLORPIP_WHITE);
 	}
 #endif /* WITHAFEQUALIZER */
 }
@@ -2215,9 +2222,9 @@ void window_ap_mic_process(void)
 		hamradio_get_mic_clip_limits(& clip_min, & clip_max);
 		hamradio_get_mic_agc_limits(& agc_min, & agc_max);
 
-		gui_obj_create("lbl_micLevel", FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_micClip", FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_micAGC", FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_micLevel", COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_micClip", COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_micAGC", COLORPIP_WHITE, 10);
 		gui_obj_create("sl_micLevel", ORIENTATION_HORIZONTAL, 300, 3);
 		gui_obj_create("sl_micClip", ORIENTATION_HORIZONTAL, 300, 3);
 		gui_obj_create("sl_micAGC", ORIENTATION_HORIZONTAL, 300, 3);
@@ -2396,8 +2403,8 @@ void window_notch_process(void)
 		notch.change = 0;
 		notch.updated = 1;
 
-		lbls[0] = gui_obj_create("lbl_freq", FONT_MEDIUM, COLORPIP_WHITE, 14);
-		lbls[1] = gui_obj_create("lbl_width", FONT_MEDIUM, COLORPIP_WHITE, 14);
+		lbls[0] = gui_obj_create("lbl_freq", COLORPIP_WHITE, 14);
+		lbls[1] = gui_obj_create("lbl_width", COLORPIP_WHITE, 14);
 		gui_obj_create("btn_type", 80, 40, 0, 0, "");
 		gui_obj_create("btn_add", 40, 40, 0, 0, "+");
 		gui_obj_create("btn_sub", 40, 40, 0, 0, "-");
@@ -2540,10 +2547,10 @@ void window_shift_process(void)
 		enc.select = 0;
 		enc.change = 0;
 
-		lbls[0] = gui_obj_create("lbl_rx_cic_shift", FONT_MEDIUM, COLORPIP_WHITE, 13);
-		lbls[1] = gui_obj_create("lbl_rx_fir_shift", FONT_MEDIUM, COLORPIP_WHITE, 13);
-		lbls[2] = gui_obj_create("lbl_tx_shift", FONT_MEDIUM, COLORPIP_WHITE, 13);
-		gui_obj_create("lbl_iq_test", FONT_MEDIUM, COLORPIP_WHITE, 23);
+		lbls[0] = gui_obj_create("lbl_rx_cic_shift", COLORPIP_WHITE, 13);
+		lbls[1] = gui_obj_create("lbl_rx_fir_shift", COLORPIP_WHITE, 13);
+		lbls[2] = gui_obj_create("lbl_tx_shift", COLORPIP_WHITE, 13);
+		gui_obj_create("lbl_iq_test", COLORPIP_WHITE, 23);
 
 		gui_obj_create("btn_p", 40, 40, 0, 0, "+");
 		gui_obj_create("btn_m", 40, 40, 0, 0, "-");
@@ -2667,7 +2674,7 @@ void window_uif_process(void)
 
 		gui_obj_create("btn_UIF-", 40, 40, 0, 0, "+");
 		gui_obj_create("btn_UIF+", 40, 40, 0, 0, "+");
-		gui_obj_create("lbl_uif_val", FONT_LARGE, COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_uif_val", COLORPIP_WHITE, 10);
 
 		gui_obj_align_to("btn_UIF-", "lbl_uif_val", ALIGN_DOWN_LEFT, 6);
 		gui_obj_align_to("btn_UIF+", "btn_UIF-", ALIGN_RIGHT_UP, 6);
@@ -2837,9 +2844,9 @@ void window_ft8_settings_process(void)
 		gui_obj_create("btn_time0", 86, 44, 0, 0, "Time >0<");
 		gui_obj_create("btn_OK", 44, 44, 0, 0, "OK");
 
-		gui_obj_create("lbl_callsign", FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_qth", FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_txfreq", FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_callsign", COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_qth", COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_txfreq", COLORPIP_WHITE, 10);
 
 		gui_arrange_objects_from("btn_callsign", 4, 1, interval);
 		gui_arrange_objects_from("btn_freq_eq", 3, 3, interval);
@@ -2916,18 +2923,18 @@ void window_ft8_process(void)
 		gui_obj_create("btn_filter", 86, 44, 0, 0, "View|all");
 		gui_obj_create("btn_bands", 86, 44, 0, 0, "FT8|bands");
 		gui_obj_create("btn_settings", 86, 44, 0, 0, "Edit|settings");
-		gui_obj_create("lbl_cq_title", FONT_LARGE, COLORPIP_GREEN, 3);
-		gui_obj_create("lbl_tx_title", FONT_LARGE, COLORPIP_GREEN, 3);
-		gui_obj_create("lbl_cq0", FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq1", FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq2", FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq3", FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq4", FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq5", FONT_MEDIUM, COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_txmsg0", FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_txmsg1", FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_txmsg2", FONT_MEDIUM, COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_txmsg3", FONT_MEDIUM, COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_cq_title", COLORPIP_GREEN, 3);
+		gui_obj_create("lbl_tx_title", COLORPIP_GREEN, 3);
+		gui_obj_create("lbl_cq0", COLORPIP_WHITE, 8);
+		gui_obj_create("lbl_cq1", COLORPIP_WHITE, 8);
+		gui_obj_create("lbl_cq2", COLORPIP_WHITE, 8);
+		gui_obj_create("lbl_cq3", COLORPIP_WHITE, 8);
+		gui_obj_create("lbl_cq4", COLORPIP_WHITE, 8);
+		gui_obj_create("lbl_cq5", COLORPIP_WHITE, 8);
+		gui_obj_create("lbl_txmsg0", COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_txmsg1", COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_txmsg2", COLORPIP_WHITE, 10);
+		gui_obj_create("lbl_txmsg3", COLORPIP_WHITE, 10);
 		gui_obj_create("tf_ft8", 37, 26, UP, & msgothic_11x13_mono);
 
 		gui_obj_set_prop("lbl_cq_title", GUI_OBJ_TEXT, "CQ:");
@@ -3145,9 +3152,9 @@ void window_af_process(void)
 		bp_t.change = 0;
 		bp_t.updated = 1;
 
-		gui_obj_create("lbl_low", FONT_MEDIUM, COLORPIP_WHITE, 16);
-		gui_obj_create("lbl_high", FONT_MEDIUM, COLORPIP_WHITE, 16);
-		gui_obj_create("lbl_afr", FONT_MEDIUM, COLORPIP_WHITE, 16);
+		gui_obj_create("lbl_low", COLORPIP_WHITE, 16);
+		gui_obj_create("lbl_high", COLORPIP_WHITE, 16);
+		gui_obj_create("lbl_afr", COLORPIP_WHITE, 16);
 		gui_obj_create("btn_add", 40, 40, 0, 0, "+");
 		gui_obj_create("btn_sub", 40, 40, 0, 0, "-");
 
@@ -3478,12 +3485,12 @@ void window_time_process(void)
 		update = 1;
 		uint8_t interval = 20;
 
-		gui_obj_create("lbl_day", FONT_MEDIUM, COLORPIP_WHITE, 4);
-		gui_obj_create("lbl_month", FONT_MEDIUM, COLORPIP_WHITE, 4);
-		gui_obj_create("lbl_year", FONT_MEDIUM, COLORPIP_WHITE, 4);
-		gui_obj_create("lbl_hour", FONT_MEDIUM, COLORPIP_WHITE, 4);
-		gui_obj_create("lbl_minute", FONT_MEDIUM, COLORPIP_WHITE, 4);
-		gui_obj_create("lbl_second", FONT_MEDIUM, COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_day", COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_month", COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_year", COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_hour", COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_minute", COLORPIP_WHITE, 4);
+		gui_obj_create("lbl_second", COLORPIP_WHITE, 4);
 
 		gui_obj_create("btn_day+", 40, 40, 0, 0, "+");
 		gui_obj_create("btn_month+", 40, 40, 0, 0, "+");
@@ -3748,8 +3755,8 @@ void window_kbd_test_process(void)
 	{
 		const uint8_t interval = 30;
 
-		gui_obj_create("lbl_text", FONT_MEDIUM, COLORPIP_WHITE, 20);
-		gui_obj_create("lbl_num", FONT_MEDIUM, COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_text", COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_num", COLORPIP_WHITE, 20);
 
 		gui_obj_create("btn_text", 86, 40, 0, 0, "Edit...");
 		gui_obj_create("btn_num", 86, 40, 0, 0, "Edit...");
@@ -4035,10 +4042,10 @@ void window_lfm_process(void)
 		enc.change = 0;
 		enc.updated = 1;
 
-		gui_obj_create("lbl_nmeatime", FONT_MEDIUM, COLORPIP_WHITE, 20);
-		lbls[0] = gui_obj_create("lbl_timeoffset", FONT_MEDIUM, COLORPIP_WHITE, 20);
-		lbls[1] = gui_obj_create("lbl_stopfreq", FONT_MEDIUM, COLORPIP_WHITE, 20);
-		lbls[2] = gui_obj_create("lbl_interval", FONT_MEDIUM, COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_nmeatime", COLORPIP_WHITE, 20);
+		lbls[0] = gui_obj_create("lbl_timeoffset", COLORPIP_WHITE, 20);
+		lbls[1] = gui_obj_create("lbl_stopfreq", COLORPIP_WHITE, 20);
+		lbls[2] = gui_obj_create("lbl_interval", COLORPIP_WHITE, 20);
 
 		gui_obj_create("btn_state", 86, 40, 0, 0, "");
 		gui_obj_create("btn_draw", 86, 40, 0, 0, "Draw|spectre");
@@ -4276,7 +4283,7 @@ void window_wnbconfig_process(void)
 
 		gui_obj_create("btn_add", 40, 40, 0, 0, "+");
 		gui_obj_create("btn_sub", 40, 40, 0, 0, "-");
-		gui_obj_create("lbl_val", FONT_MEDIUM, COLORPIP_WHITE, 14);
+		gui_obj_create("lbl_val", COLORPIP_WHITE, 14);
 
 		gui_obj_set_prop("lbl_val", GUI_OBJ_POS, 0, 15);
 		gui_obj_align_to("btn_sub", "lbl_val", ALIGN_RIGHT_UP_MID, 10);
@@ -4339,10 +4346,10 @@ void window_ad936x_process(void)
 
 	if (is_win_init())
 	{
-		gui_obj_create("lbl_status", FONT_MEDIUM, COLORPIP_WHITE, 9);
-		gui_obj_create("lbl_status_str", FONT_MEDIUM, COLORPIP_WHITE, 20);
-		gui_obj_create("lbl_iio_name", FONT_MEDIUM, COLORPIP_WHITE, 9);
-		gui_obj_create("lbl_iio_val", FONT_MEDIUM, COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_status", COLORPIP_WHITE, 9);
+		gui_obj_create("lbl_status_str", COLORPIP_WHITE, 20);
+		gui_obj_create("lbl_iio_name", COLORPIP_WHITE, 9);
+		gui_obj_create("lbl_iio_val", COLORPIP_WHITE, 20);
 		gui_obj_create("btn_uri_edit", 86, 44, 0, 0, "Edit...");
 		gui_obj_create("btn_action", 86, 44, 0, 0, "Find");
 		gui_obj_create("btn_gain_type", 86, 44, 0, 0, "Gain|manual");

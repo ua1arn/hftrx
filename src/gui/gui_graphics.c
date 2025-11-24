@@ -18,28 +18,9 @@
 #include "gui_fonts.h"
 #include "gui_port.h"
 
-void gui_drawstring(uint16_t x, uint16_t y, const char * str, font_size_t font, COLORPIP_T color)
-{
-	window_t * win = get_win(get_current_drawing_window());
-	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
-
-	const uint16_t x1 = x + win->draw_x1;
-	const uint16_t y1 = y + win->draw_y1;
-
-	ASSERT(x1 < win->draw_x2);
-	ASSERT(y1 < win->draw_y2);
-
-	if (font == FONT_LARGE)
-		colpip_string_tbg(gdb,  x1, y1, str, color);
-	else if (font == FONT_MEDIUM)
-		colpip_string2_tbg(gdb, x1, y1, str, color);
-	else if (font == FONT_SMALL)
-		colpip_string3_tbg(gdb, x1, y1, str, color);
-}
-
 uint16_t gui_get_window_draw_width(void)
 {
-	window_t * win = get_win(get_current_drawing_window());
+	window_t * win = get_win(get_parent_window());
 	return win->draw_x2 - win->draw_x1;
 }
 
