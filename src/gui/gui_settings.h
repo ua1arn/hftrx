@@ -64,7 +64,6 @@ enum {
 	footer_buttons_count = 9
 };
 
-
 #define BUTTONS_FONTP_DEFAULT	msgothic_15x17_prop
 #define LABELS_FONT_DEFAULT		msgothic_15x17_mono
 #define INFOBAR_FONTP			msgothic_13x16_prop

@@ -9,7 +9,7 @@
 // Цвет шрифта и фон (шрифт = макс 32 пикселя в ширину)
 // Шрифт должен быть передан с оператором &
 //--------------------------------------------------------------
-void UB_Font_DrawChar32(const void * db, uint16_t x, uint16_t y, uint8_t ascii, const UB_Font32 * font, uint32_t vg)
+static void UB_Font_DrawChar32(const void * db, uint16_t x, uint16_t y, uint8_t ascii, const UB_Font32 * font, uint32_t vg)
 {
 	uint16_t xn, yn;
 	uint32_t start_maske, maske;
@@ -59,7 +59,7 @@ void gui_UB_Font_DrawString32(const void * db, uint16_t x, uint16_t y, const cha
 // Шрифт должен быть передан с оператором &
 // Возвращает: ширину нарисованного символа
 //--------------------------------------------------------------
-uint16_t UB_Font_DrawPChar32(const void * db, uint16_t x, uint16_t y, uint8_t ascii, const UB_pFont32 * font, gui_color_t vg)
+static uint16_t UB_Font_DrawPChar32(const void * db, uint16_t x, uint16_t y, uint8_t ascii, const UB_pFont32 * font, gui_color_t vg)
 {
 	uint16_t xn, yn, width;
 	uint_fast32_t start_maske, maske;
@@ -111,7 +111,7 @@ void gui_UB_Font_DrawPString32(const void * db, uint16_t x, uint16_t y, const ch
 	}
 }
 
-uint16_t UB_Font_getPcharw32(uint8_t ascii, const UB_pFont32 * font)
+static uint16_t UB_Font_getPcharw32(uint8_t ascii, const UB_pFont32 * font)
 {
 	uint16_t width;
 	uint32_t start_maske, maske;

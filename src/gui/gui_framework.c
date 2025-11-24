@@ -849,7 +849,7 @@ static void draw_button(const button_t * const bh)
 	}
 
 	if (bh->is_focus)
-		gui_drawDashedRectangle(x1 + 4, y1 + 4, bh->w - 8, bh->h - 8, 4);
+		gui_drawDashedRectangle(x1 + 4, y1 + 4, bh->w - 8, bh->h - 8, 4, COLOR_BLACK);
 }
 
 static void objects_init(void)
