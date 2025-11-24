@@ -91,10 +91,6 @@ typedef struct multimenuwnd_tag
 	uint8_t xspan;	/* количество знакомест по горизонтали, отдаваемое под меню */
 } multimenuwnd_t;
 
-// Разиеры S-метра
-#define SM_BG_W_CELLS 15
-#define SM_BG_H_CELLS 20
-
 void display2_getmultimenu(multimenuwnd_t * p); /* получение параметров окна для меню */
 
 uint_fast8_t display2_getswrmax(void);

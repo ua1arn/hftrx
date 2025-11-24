@@ -1736,12 +1736,18 @@ enum {
 	SM_STATE_COUNT
 };
 
+// Размеры S-метра
+#define SM_BG_W_CELLS 15
+#define SM_BG_H_CELLS 18
+#define SM_YCENTEROFFS 120	// Расстояние от верха поля до оси стрелки S-метра
+
 enum { SM_BG_W = GRID2X(SM_BG_W_CELLS), SM_BG_H = GRID2Y(SM_BG_H_CELLS) };
+
 
 /* точки на шкале s-метра, к которым надо привязать измеренное значение */
 static const int16_t smeterpointsRX [] =
 {
-	- 1270,	// S9 level -127.0 dBm
+	- 1270,	// S0 level -127.0 dBm
 	//- 1090,	// S3 level -109.0 dBm
 	- 730,	// S9 level -73.0 dBm
 	- 130,	// S9+60 level -13.0 dBm
@@ -1874,7 +1880,8 @@ display2_smeter15_layout(
 	const uint_fast16_t pad2w3 = strwidth3("ZZ");
 
 	// SMETER_TYPE_DIAL data
-	uint_fast16_t xb = 120, yb = 120;	// In pixels
+	// координаты оси стрелки
+	const uint_fast16_t xb = SM_BG_W / 2, yb = SM_YCENTEROFFS;	// In pixels
 	unsigned p;
 	unsigned i;
 
@@ -2148,8 +2155,6 @@ static void smeter_arrow(const gxdrawb_t * db, uint_fast16_t target_pixel_x, uin
 	}
 }
 
-
-// ширина занимаемого места - 15 ячеек (240/16 = 15)
 static void
 pix_display2_smeter15(const gxdrawb_t * db,
 		uint_fast16_t x0,
@@ -2164,10 +2169,9 @@ pix_display2_smeter15(const gxdrawb_t * db,
 	const uint_fast16_t * const smeterangles = smpr->smeteranglesRXTX [is_tx];
 	const gxdrawb_t * const smbgdb = & smpr->smbgdbRXTX [is_tx];
 
-	/* получение координат прямоугольника с изображением */
-	const int dial_shift = GRID2Y(2);
+	// координаты оси стрелки
 	const int xc = x0 + width / 2;
-	const int yc = y0 + 120 + dial_shift;
+	const int yc = y0 + SM_YCENTEROFFS;
 
 
 	uint_fast16_t gp = smpr->gs;
@@ -2231,11 +2235,11 @@ pix_display2_smeter15(const gxdrawb_t * db,
 			// TX state
 			colpip_bitblt(
 					db->cachebase, db->cachesize,
-					db, x0, y0 + dial_shift,
+					db, x0, y0,
 					smbgdb->cachebase, 0*smbgdb->cachesize,
 					smbgdb,
 					0, 0,	// координаты окна источника
-					SM_BG_W, SM_BG_H - dial_shift, // размер окна источника
+					SM_BG_W, SM_BG_H, // размер окна источника
 					BITBLT_FLAG_NONE, 0);
 #if WITHRLEDECOMPRESS
 			smeter_arrow(db, gp, x0, y0 + dial_shift, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
@@ -2265,11 +2269,11 @@ pix_display2_smeter15(const gxdrawb_t * db,
 			// RX state
 			colpip_bitblt(
 					db->cachebase, db->cachesize,
-					db, x0, y0 + dial_shift,
+					db, x0, y0,
 					smbgdb->cachebase, 0*smbgdb->cachesize,
 					smbgdb,
 					0, 0,	// координаты окна источника
-					SM_BG_W, SM_BG_H - dial_shift, // размер окна источника
+					SM_BG_W, SM_BG_H, // размер окна источника
 					BITBLT_FLAG_NONE, 0);
 #if WITHRLEDECOMPRESS
 			smeter_arrow(db, gv, x0, y0 + dial_shift, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);

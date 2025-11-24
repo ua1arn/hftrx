@@ -80,8 +80,9 @@
 		{	28,	0,	5, 5, display2_att4,		& dzi_compat, PGALL, },
 		{	33,	0,	4, 5, display2_preovf3,		& dzi_compat, PGALL, },
 	#if WITHBARS
-		{   0, 	4,  0, 0, display2_smeter15_init, & dzi_compat, PGINI, },	//  Инициализация стрелочного прибора
-		{   0, 	4,	SM_BG_W_CELLS, SM_BG_H_CELLS, display2_smeter15, 	& dzi_compat, PGALL, },	// Изображение стрелочного прибора
+		{   0, 	5,  0, 0, display2_smeter15_init, & dzi_compat, PGINI, },	//  Инициализация стрелочного прибора
+		{   0, 	5,	SM_BG_W_CELLS, SM_BG_H_CELLS, display2_smeter15, 	& dzi_compat, PGALL, },	// Изображение стрелочного прибора
+		//{   0, 	5,	SM_BG_W_CELLS, SM_BG_H_CELLS, display2_demorect, 	& dzi_compat, PGALL, },	// Изображение стрелочного прибора
 	#endif /* WITHBARS */
 	#if WITHAFSPECTRE
 		{	0,	4,	0, 0, display2_af_spectre15_init,	& dzi_compat, PGINI, },
