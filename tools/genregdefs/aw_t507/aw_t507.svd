@@ -17570,7 +17570,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>TSD</name>
+  <name>TSD0</name>
   <description>Transport Stream Controller</description>
   <baseAddress>0x05060180</baseAddress>
   <registers>
@@ -17613,7 +17613,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>TSF</name>
+  <name>TSF0</name>
   <description>Transport Stream Controller</description>
   <baseAddress>0x05060100</baseAddress>
   <registers>
@@ -17809,7 +17809,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>TSG</name>
+  <name>TSG0</name>
   <description>Transport Stream Controller</description>
   <baseAddress>0x05060040</baseAddress>
   <registers>

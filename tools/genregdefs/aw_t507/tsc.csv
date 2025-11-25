@@ -10,7 +10,7 @@
 #typeend;
 
 #type; TSG; Transport Stream Controller
-#base; TSG 0x05060040
+#base; TSG0 0x05060040
 
 #regdef; TSG_CTLR; 0x00; TSG Control Register
 #regdef; TSG_PPR; 0x04; TSG Packet Parameter Register
@@ -22,7 +22,7 @@
 #typeend;
 
 #type; TSF; Transport Stream Controller
-#base; TSF 0x05060100
+#base; TSF0 0x05060100
 
 #regdef; TSF_CTLR; 0x00; TSF Control Register
 #regdef; TSF_PPR; 0x04; TSF Packet Parameter Register
@@ -48,7 +48,7 @@
 #typeend;
 
 #type; TSD; Transport Stream Controller
-#base; TSD 0x05060180
+#base; TSD0 0x05060180
 
 #regdef; TSD_CTLR; 0x00; TSD Control Register
 #regdef; TSD_STAR; 0x04; TSD Status Register
