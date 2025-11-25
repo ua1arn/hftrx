@@ -51,10 +51,10 @@ typedef enum IRQn
     EMAC0_IRQn = 46,                                  /*!< EMAC The Ethernet Medium Access Controller (EMAC) enables a host to transmi */
     EMAC1_IRQn = 47,                                  /*!< EMAC The Ethernet Medium Access Controller (EMAC) enables a host to transmi */
     PWM_IRQn = 48,                                    /*!< PWM Pulse Width Modulation module */
-    TS_IRQn = 49,                                     /*!< TSC Transport Stream Controller */
+    TS0_IRQn = 49,                                    /*!< TSC Transport Stream Controller */
     GPADC_IRQn = 50,                                  /*!< GPADC  */
     THS_IRQn = 51,                                    /*!< THS THS interrupt */
-    LRADC_IRQn = 52,                                  /*!< LRADC  */
+    LRADC_IRQn = 52,                                  /*!< LRADC The Low Rate ADC(LRADC */
     OWA_IRQn = 53,                                    /*!< OWA One Wire Audio */
     DMIC_IRQn = 54,                                   /*!< DMIC Digital Microphone Interface */
     AudioCodec_ADC_IRQn = 55,                         /*!< AUDIO_CODEC AudioCodec_ADC interrupt */
@@ -274,14 +274,13 @@ typedef enum IRQn
 #define SPI1_BASE ((uintptr_t) 0x05011000)            /*!< SPI Serial Peripheral Interface Base */
 #define EMAC0_BASE ((uintptr_t) 0x05020000)           /*!< EMAC The Ethernet Medium Access Controller (EMAC) enables a host to transmi Base */
 #define EMAC1_BASE ((uintptr_t) 0x05030000)           /*!< EMAC The Ethernet Medium Access Controller (EMAC) enables a host to transmi Base */
-#define TS0_BASE ((uintptr_t) 0x05060000)             /*!< TS0  Base */
-#define TSC_BASE ((uintptr_t) 0x05060000)             /*!< TSC Transport Stream Controller Base */
-#define TSG_BASE ((uintptr_t) 0x05060040)             /*!< TSG Transport Stream Controller Base */
-#define TSF_BASE ((uintptr_t) 0x05060100)             /*!< TSF Transport Stream Controller Base */
-#define TSD_BASE ((uintptr_t) 0x05060180)             /*!< TSD Transport Stream Controller Base */
+#define TS0_BASE ((uintptr_t) 0x05060000)             /*!< TSC Transport Stream Controller Base */
+#define TSG0_BASE ((uintptr_t) 0x05060040)            /*!< TSG Transport Stream Controller Base */
+#define TSF0_BASE ((uintptr_t) 0x05060100)            /*!< TSF Transport Stream Controller Base */
+#define TSD0_BASE ((uintptr_t) 0x05060180)            /*!< TSD Transport Stream Controller Base */
 #define GPADC_BASE ((uintptr_t) 0x05070000)           /*!< GPADC  Base */
 #define THS_BASE ((uintptr_t) 0x05070400)             /*!< THS Thermal Sensor Base */
-#define LRADC_BASE ((uintptr_t) 0x05070800)           /*!< LRADC  Base */
+#define LRADC_BASE ((uintptr_t) 0x05070800)           /*!< LRADC The Low Rate ADC(LRADC Base */
 #define OWA_BASE ((uintptr_t) 0x05093000)             /*!< OWA One Wire Audio Base */
 #define DMIC_BASE ((uintptr_t) 0x05095000)            /*!< DMIC Digital Microphone Interface Base */
 #define AUDIO_CODEC_BASE ((uintptr_t) 0x05096000)     /*!< AUDIO_CODEC Audio Codec Base */
@@ -1318,7 +1317,8 @@ typedef struct DMIC_Type
     __IO uint32_t HPF_EN_CTR;                         /*!< Offset 0x038 High Pass Filter Enable Control Register */
     __IO uint32_t HPF_COEF_REG;                       /*!< Offset 0x03C High Pass Filter Coef Register */
     __IO uint32_t HPF_GAIN_REG;                       /*!< Offset 0x040 High Pass Filter Gain Register */
-} DMIC_TypeDef; /* size of structure = 0x044 */
+         RESERVED(0x044[0x0400 - 0x0044], uint8_t)
+} DMIC_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief DRAM_CTRL
  */
@@ -1485,7 +1485,8 @@ typedef struct GPADC_Type
     __I  uint32_t GP_CH1_DATA;                        /*!< Offset 0x084 GPADC CH1 Data Register */
     __I  uint32_t GP_CH2_DATA;                        /*!< Offset 0x088 GPADC CH2 Data Register */
     __I  uint32_t GP_CH3_DATA;                        /*!< Offset 0x08C GPADC CH3 Data Register */
-} GPADC_TypeDef; /* size of structure = 0x090 */
+         RESERVED(0x090[0x0400 - 0x0090], uint8_t)
+} GPADC_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief GPIO
  */
@@ -2430,14 +2431,15 @@ typedef struct IOMMU_Type
 /*
  * @brief LRADC
  */
-/*!< LRADC  */
+/*!< LRADC The Low Rate ADC(LRADC */
 typedef struct LRADC_Type
 {
     __IO uint32_t LRADC_CTRL;                         /*!< Offset 0x000 LRADC Control Register */
     __IO uint32_t LRADC_INTC;                         /*!< Offset 0x004 LRADC Interrupt Control Register */
     __IO uint32_t LRADC_INTS;                         /*!< Offset 0x008 LRADC Interrupt Status Register */
     __IO uint32_t LRADC_DATA0;                        /*!< Offset 0x00C LRADC Data Register0 */
-} LRADC_TypeDef; /* size of structure = 0x010 */
+         RESERVED(0x010[0x0400 - 0x0010], uint8_t)
+} LRADC_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief MSI_CTRL
  */
@@ -2939,7 +2941,8 @@ typedef struct THS_Type
     __IO uint32_t THSx_CDATA [0x002];                 /*!< Offset 0x0A0 THS0 & THS1, THS2 & THS3  Calibration Data */
          RESERVED(0x0A8[0x00C0 - 0x00A8], uint8_t)
     __IO uint32_t THSx_DATA [0x004];                  /*!< Offset 0x0C0 THS0..THS3 Data Register */
-} THS_TypeDef; /* size of structure = 0x0D0 */
+         RESERVED(0x0D0[0x0400 - 0x00D0], uint8_t)
+} THS_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief TIMER
  */
@@ -2970,14 +2973,6 @@ typedef struct TIMER_Type
     __IO uint32_t AVS_CNT_DIV_REG;                    /*!< Offset 0x0CC AVS Divisor Register */
          RESERVED(0x0D0[0x0400 - 0x00D0], uint8_t)
 } TIMER_TypeDef; /* size of structure = 0x400 */
-/*
- * @brief TS0
- */
-/*!< TS0  */
-typedef struct TS0_Type
-{
-         RESERVED(0x000[0x1000 - 0x0000], uint8_t)
-} TS0_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief TSC
  */
@@ -3825,14 +3820,13 @@ typedef struct VE_Type
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define EMAC0 ((EMAC_TypeDef *) EMAC0_BASE)           /*!< EMAC0 The Ethernet Medium Access Controller (EMAC) enables a host to transmi register set access pointer */
 #define EMAC1 ((EMAC_TypeDef *) EMAC1_BASE)           /*!< EMAC1 The Ethernet Medium Access Controller (EMAC) enables a host to transmi register set access pointer */
-#define TS0 ((TS0_TypeDef *) TS0_BASE)                /*!< TS0  register set access pointer */
-#define TSC ((TSC_TypeDef *) TSC_BASE)                /*!< TSC Transport Stream Controller register set access pointer */
-#define TSG ((TSG_TypeDef *) TSG_BASE)                /*!< TSG Transport Stream Controller register set access pointer */
-#define TSF ((TSF_TypeDef *) TSF_BASE)                /*!< TSF Transport Stream Controller register set access pointer */
-#define TSD ((TSD_TypeDef *) TSD_BASE)                /*!< TSD Transport Stream Controller register set access pointer */
+#define TS0 ((TSC_TypeDef *) TS0_BASE)                /*!< TS0 Transport Stream Controller register set access pointer */
+#define TSG0 ((TSG_TypeDef *) TSG0_BASE)              /*!< TSG0 Transport Stream Controller register set access pointer */
+#define TSF0 ((TSF_TypeDef *) TSF0_BASE)              /*!< TSF0 Transport Stream Controller register set access pointer */
+#define TSD0 ((TSD_TypeDef *) TSD0_BASE)              /*!< TSD0 Transport Stream Controller register set access pointer */
 #define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
 #define THS ((THS_TypeDef *) THS_BASE)                /*!< THS Thermal Sensor register set access pointer */
-#define LRADC ((LRADC_TypeDef *) LRADC_BASE)          /*!< LRADC  register set access pointer */
+#define LRADC ((LRADC_TypeDef *) LRADC_BASE)          /*!< LRADC The Low Rate ADC(LRADC register set access pointer */
 #define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA One Wire Audio register set access pointer */
 #define DMIC ((DMIC_TypeDef *) DMIC_BASE)             /*!< DMIC Digital Microphone Interface register set access pointer */
 #define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)/*!< AUDIO_CODEC Audio Codec register set access pointer */

@@ -14369,7 +14369,7 @@
   </peripheral>
   <peripheral>
   <name>LRADC</name>
-  <description></description>
+  <description>The Low Rate ADC(LRADC</description>
   <baseAddress>0x05070800</baseAddress>
   <interrupt>
    <name>LRADC</name>
@@ -17523,17 +17523,10 @@
   </peripheral>
   <peripheral>
   <name>TS0</name>
-  <description></description>
-  <baseAddress>0x05060000</baseAddress>
-  <registers>
-  </registers>
-  </peripheral>
-  <peripheral>
-  <name>TSC</name>
   <description>Transport Stream Controller</description>
   <baseAddress>0x05060000</baseAddress>
   <interrupt>
-   <name>TS</name>
+   <name>TS0</name>
    <value>49</value>
    <description></description>
   </interrupt>

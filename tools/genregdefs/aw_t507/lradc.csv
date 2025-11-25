@@ -1,6 +1,8 @@
-#type; LRADC; 
+#type; LRADC; The Low Rate ADC(LRADC)
+
 #regdef; LRADC_CTRL; 0x0000; LRADC Control Register
 #regdef; LRADC_INTC; 0x0004; LRADC Interrupt Control Register
 #regdef; LRADC_INTS; 0x0008; LRADC Interrupt Status Register
 #regdef; LRADC_DATA0; 0x000C; LRADC Data Register0
+#regdef; padding 0; 1024; set size
 #typeend;

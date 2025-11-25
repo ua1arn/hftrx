@@ -1,6 +1,7 @@
 #type; TSC; Transport Stream Controller
-#base; TSC 0x05060000
-#irq; TS 49; Transport Stream Controller
+
+#base; TS0 0x05060000
+#irq; TS0 49; Transport Stream Controller
 
 #regdef; TSC_PCTLR; 0x10; TSC Port Control Register
 #regdef; TSC_PPARR; 0x14; TSC Port Parameter Register

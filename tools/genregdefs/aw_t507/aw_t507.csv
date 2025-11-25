@@ -45,7 +45,7 @@
 
 #typeend;
 
-#type; LRADC; 
+#type; LRADC; The Low Rate ADC(LRADC
 #irq; LRADC 52
 #base; LRADC 0x05070800
 #typeend;
