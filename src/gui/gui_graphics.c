@@ -31,7 +31,7 @@ uint16_t gui_get_window_draw_height(void)
 }
 
 // Нарисовать линию в границах окна
-inline void gui_drawline(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, COLORPIP_T color)
+void gui_drawline(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, gui_color_t color)
 {
 	window_t * win = get_win(get_current_drawing_window());
 	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
@@ -49,7 +49,7 @@ inline void gui_drawline(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, COL
 	__gui_draw_line(gdb, xn, yn, xk, yk, color);
 }
 
-void gui_drawrect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, COLORPIP_T color, uint8_t fill)
+void gui_drawrect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, gui_color_t color, uint8_t fill)
 {
 	window_t * win = get_win(get_current_drawing_window());
 	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
@@ -67,7 +67,7 @@ void gui_drawrect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, COLORPIP_T
 	__gui_draw_rect(gdb, xn, yn, xk, yk, color, fill);
 }
 
-void gui_drawrect_rounded(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint8_t radius, COLORPIP_T color, uint8_t fill)
+void gui_drawrect_rounded(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint8_t radius, gui_color_t color, uint8_t fill)
 {
 	window_t * win = get_win(get_current_drawing_window());
 	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
@@ -103,7 +103,7 @@ void gui_drawrect_transparent(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2
 	__gui_draw_semitransparent_rect(gdb, xn, yn, xk, yk, alpha);
 }
 
-void gui_drawpoint(uint16_t x1, uint16_t y1, COLORPIP_T color)
+void gui_drawpoint(uint16_t x1, uint16_t y1, gui_color_t color)
 {
 	window_t * win = get_win(get_current_drawing_window());
 	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
@@ -171,16 +171,6 @@ void gui_print_prop(uint16_t x, uint16_t y, const char * text, const gui_prop_fo
 	const uint16_t yn = y + win->draw_y1;
 
 	__gui_draw_string_prop(gdb, xn, yn,	text, font, color);
-}
-
-uint16_t get_strwidth_mono(const char * str, const gui_mono_font_t * font)
-{
-	return __gui_get_pixw_string_mono(str, font);
-}
-
-uint16_t get_strwidth_prop(const char * str, const gui_prop_font_t * font)
-{
-	return __gui_get_pixw_string_prop(str, font);
 }
 
 #endif /* WITHTOUCHGUI */

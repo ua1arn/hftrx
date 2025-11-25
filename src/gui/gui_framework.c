@@ -816,7 +816,7 @@ static void draw_button(const button_t * const bh)
 	if (strchr(bh->text, delimeters[0]) == NULL)
 	{
 		/* Однострочная надпись */
-		int strlenP = __gui_get_pixw_string_prop(bh->text, bh->font);
+		int strlenP = get_strwidth_prop(bh->text, bh->font);
 		__gui_draw_string_prop(gdb,
 				shiftX + x1 + (bh->w - strlenP) / 2,
 				shiftY + y1 + (bh->h - bh->font->height) / 2,
@@ -832,7 +832,7 @@ static void draw_button(const button_t * const bh)
 		strcpy(buf, bh->text);
 		char * text2 = strtok_r(buf, delimeters, & next);
 
-		int strlenP = __gui_get_pixw_string_prop(text2, bh->font);
+		int strlenP = get_strwidth_prop(text2, bh->font);
 		__gui_draw_string_prop(gdb,
 				shiftX + x1 + (bh->w - strlenP) / 2,
 				shiftY + y1 + j,
@@ -840,7 +840,7 @@ static void draw_button(const button_t * const bh)
 				);
 
 		text2 = strtok_r(NULL, delimeters, & next);
-		strlenP = __gui_get_pixw_string_prop(text2, bh->font);
+		strlenP = get_strwidth_prop(text2, bh->font);
 		__gui_draw_string_prop(gdb,
 				shiftX + x1 + (bh->w - strlenP) / 2,
 				shiftY + bh->h + y1 - bh->font->height - j,

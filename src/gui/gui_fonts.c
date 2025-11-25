@@ -132,7 +132,7 @@ static uint16_t UB_Font_getPcharw32(uint8_t ascii, const UB_pFont32 * font)
 }
 
 // Возврат ширины строки в пикселях, пропорциональный шрифт 32 бит
-uint16_t gui_getwidth_Pstring32(const char * str, const UB_pFont32 * font)
+uint16_t get_strwidth_prop(const char * str, const UB_pFont32 * font)
 {
 	uint16_t width = 0;
 
@@ -146,7 +146,7 @@ uint16_t gui_getwidth_Pstring32(const char * str, const UB_pFont32 * font)
 }
 
 // Возвращает ширину строки в пикселях, моноширинный шрифт
-uint16_t gui_getwidth_Mstring32(const char * str, const UB_Font32 * font) {
+uint16_t get_strwidth_mono(const char * str, const UB_Font32 * font) {
 	ASSERT(str != NULL);
 	return strlen(str) * font->width;
 }

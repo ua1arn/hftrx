@@ -24,11 +24,11 @@ typedef struct UB_pFont32_t {
   uint16_t last_char;    // Последний символ (Ascii код)
 } UB_pFont32;
 
+typedef UB_Font32	gui_mono_font_t;
+typedef UB_pFont32	gui_prop_font_t;
+
 void gui_UB_Font_DrawString32(const void * db, uint16_t x, uint16_t y, const char * ptr, const UB_Font32 * font, uint32_t vg);
 void gui_UB_Font_DrawPString32(const void * db, uint16_t x, uint16_t y, const char * ptr, const UB_pFont32 * font, uint32_t vg);
-
-uint16_t gui_getwidth_Pstring32(const char * str, const UB_pFont32 * font);
-uint16_t gui_getwidth_Mstring32(const char * str, const UB_Font32 * font);
 
 extern UB_pFont32 msgothic_10x13_prop;
 extern UB_pFont32 msgothic_15x17_prop;

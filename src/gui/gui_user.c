@@ -3913,7 +3913,7 @@ void window_menu_params_process(void)
 			local_snprintf_P(btn_names[i], TEXT_ARRAY_SIZE, "btn_params_%02d", i);
 			remove_end_line_spaces(menup[i].name);
 
-			if (__gui_get_pixw_string_prop(menup[i].name, & BUTTONS_FONTP_DEFAULT) > 110)   // переделать
+			if (get_strwidth_prop(menup[i].name, & BUTTONS_FONTP_DEFAULT) > 110)   // переделать
 				split_string(menup[i].name, '|');
 
 			gui_obj_create(btn_names[i], 120, 40, 0, 0, menup[i].name);
@@ -4000,7 +4000,7 @@ void window_menu_process(void)
 			local_snprintf_P(btn_names[i], TEXT_ARRAY_SIZE, "btn_groups_%02d", i);
 			remove_end_line_spaces(menu[i].name);
 
-			if (__gui_get_pixw_string_prop(menu[i].name, & BUTTONS_FONTP_DEFAULT) > 110)  // переделать
+			if (get_strwidth_prop(menu[i].name, & BUTTONS_FONTP_DEFAULT) > 110)  // переделать
 				split_string(menu[i].name, '|');
 
 			gui_obj_create(btn_names[i], 120, 40, 0, 0, menu[i].name);

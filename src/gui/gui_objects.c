@@ -172,7 +172,7 @@ uint8_t gui_obj_create(const char * name, ...)
 		strncpy(lh->name, obj_name, NAME_ARRAY_SIZE - 1);
 		lh->width = va_arg(arg, uint32_t);
 		memset(lh->text, '*', lh->width);		// для совместимости, потом убрать
-		lh->width_pix = __gui_get_pixw_string_mono(lh->text, lh->font);
+		lh->width_pix = get_strwidth_mono(lh->text, lh->font);
 
 		idx = win->lh_count;
 		win->lh_count ++;
@@ -506,7 +506,7 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_PAYLOAD) lh->payload = va_arg(arg, int);
 		else if (prop == GUI_OBJ_TEXT) {
 			strncpy(lh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
-			lh->width_pix = __gui_get_pixw_string_mono(lh->text, lh->font);
+			lh->width_pix = get_strwidth_mono(lh->text, lh->font);
 		}
 		else if (prop == GUI_OBJ_TEXT_FMT) vsnprintf(lh->text, TEXT_ARRAY_SIZE - 1, va_arg(arg, char *), arg);
 		else if (prop == GUI_OBJ_STATE) lh->state = va_arg(arg, int);
@@ -514,7 +514,7 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_FONT) {
 			lh->font = va_arg(arg, gui_mono_font_t *);
 			lh->height_pix = lh->font->height;
-			lh->width_pix = __gui_get_pixw_string_mono(lh->text, lh->font);
+			lh->width_pix = get_strwidth_mono(lh->text, lh->font);
 		}
 		break;
 
