@@ -35,6 +35,12 @@
  *
  */
 
+#include "hardware.h"
+#include "formats.h"
+
+#if WITHUSEUSBBT
+
+
 #define BTSTACK_FILE__ "sco_demo_util.c"
  
 /*
@@ -606,3 +612,5 @@ void sco_demo_close(void){
 
     audio_terminate();
 }
+#endif /* WITHUSEUSBBT */
+
