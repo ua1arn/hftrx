@@ -695,7 +695,9 @@ typedef struct CCU_Type
     __IO uint32_t USB3_CLK_REG;                       /*!< Offset 0xA7C USB3 Clock Register */
          RESERVED(0xA80[0x0A8C - 0x0A80], uint8_t)
     __IO uint32_t USB_BGR_REG;                        /*!< Offset 0xA8C USB Bus Gating Reset Register */
-         RESERVED(0xA90[0x0B00 - 0x0A90], uint8_t)
+         RESERVED(0xA90[0x0A9C - 0x0A90], uint8_t)
+    __IO uint32_t LRADC_BGR_REG;                      /*!< Offset 0xA9C LRADC Bus Gating Reset Register */
+         RESERVED(0xAA0[0x0B00 - 0x0AA0], uint8_t)
     __IO uint32_t HDMI0_CLK_REG;                      /*!< Offset 0xB00 HDMI0 Clock Register */
     __IO uint32_t HDMI0_SLOW_CLK_REG;                 /*!< Offset 0xB04 HDMI0 Slow Clock Register */
          RESERVED(0xB08[0x0B10 - 0x0B08], uint8_t)

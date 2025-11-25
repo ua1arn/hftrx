@@ -2131,6 +2131,15 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
+    <name>LRADC_BGR_REG</name>
+    <displayName>LRADC_BGR_REG</displayName>
+    <description>LRADC Bus Gating Reset Register</description>
+    <addressOffset>0xA9C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>HDMI0_CLK_REG</name>
     <displayName>HDMI0_CLK_REG</displayName>
     <description>HDMI0 Clock Register</description>
