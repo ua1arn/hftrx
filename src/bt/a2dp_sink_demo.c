@@ -121,7 +121,7 @@ static uint8_t  device_id_sdp_service_buffer[100];
 
 // we support all configurations with bitpool 2-53
 static uint8_t media_sbc_codec_capabilities[] = {
-	1*(AVDTP_SBC_32000 << 4) | 1*(AVDTP_SBC_16000 << 4) | 1*(AVDTP_SBC_48000 << 4) | 1*(AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO | AVDTP_SBC_MONO,
+    0xFF,//(AVDTP_SBC_44100 << 4) | AVDTP_SBC_STEREO,
     0xFF,//(AVDTP_SBC_BLOCK_LENGTH_16 << 4) | (AVDTP_SBC_SUBBANDS_8 << 2) | AVDTP_SBC_ALLOCATION_METHOD_LOUDNESS,
     2, 53
 };
@@ -383,7 +383,8 @@ static int setup_demo(void){
 /* LISTING_END */
 
 
-static void playback_handler(int16_t * buffer, uint16_t num_audio_frames){
+static void playback_handler(int16_t * buffer, uint16_t num_audio_frames, const btstack_audio_context_t * context){
+    UNUSED(context);
 
 #ifdef STORE_TO_WAV_FILE
     int       wav_samples = num_audio_frames * NUM_CHANNELS;
@@ -796,8 +797,7 @@ static void avrcp_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
             avrcp_target_support_event(connection->avrcp_cid, AVRCP_NOTIFICATION_EVENT_VOLUME_CHANGED);
             avrcp_target_support_event(connection->avrcp_cid, AVRCP_NOTIFICATION_EVENT_BATT_STATUS_CHANGED);
             avrcp_target_battery_status_changed(connection->avrcp_cid, battery_status);
-			avrcp_target_volume_changed(connection->avrcp_cid, 127);	// ставим максимальную громкость
-
+        
             // query supported events:
             avrcp_controller_get_supported_events(connection->avrcp_cid);
             return;
@@ -939,7 +939,22 @@ static void avrcp_controller_packet_handler(uint8_t packet_type, uint16_t channe
             break;
         
         case AVRCP_SUBEVENT_OPERATION_COMPLETE:
-            printf("AVRCP Controller: %s complete\n", avrcp_operation2str(avrcp_subevent_operation_complete_get_operation_id(packet)));
+            switch ((avrcp_command_opcode_t) avrcp_subevent_operation_complete_get_command_opcode(packet)){
+                case AVRCP_CMD_OPCODE_VENDOR_DEPENDENT:
+                    printf("AVRCP Controller: PDU_ID 0x%02X - status %s\n",
+                           avrcp_subevent_operation_complete_get_pdu_id(packet),
+                           avrcp_subevent_operation_complete_get_status(packet) == ERROR_CODE_SUCCESS ? "done" : "failed");
+                    break;
+                case AVRCP_CMD_OPCODE_SUBUNIT_INFO:
+                case AVRCP_CMD_OPCODE_UNIT_INFO:
+                case AVRCP_CMD_OPCODE_PASS_THROUGH:
+                    printf("AVRCP Controller: Operation ID 0x%02X - status %s\n",
+                           avrcp_subevent_operation_complete_get_operation_id(packet),
+                           avrcp_subevent_operation_complete_get_status(packet) == ERROR_CODE_SUCCESS ? "done" : "failed");
+                    break;
+                default:
+                    break;
+            }
             break;
         
         case AVRCP_SUBEVENT_OPERATION_START:
@@ -1405,3 +1420,4 @@ int a2dp_sink_btstack_main(int argc, const char * argv[]){
 }
 /* EXAMPLE_END */
 #endif /* WITHUSEUSBBT */
+
