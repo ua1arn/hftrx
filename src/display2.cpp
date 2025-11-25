@@ -4530,13 +4530,12 @@ static void display_smeter(const gxdrawb_t * db,
 #if WITHBARS
 	gxstyle_t dbstylev;
 	gxstyle_initialize(& dbstylev);
-	//tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
-	//delta1 = delta1 > level9 ? level9 : delta1;
 
-	const int_fast16_t leftmin = - 109 * 10;	// S3 = -109.0 dBm
-	const int_fast16_t delta1 = 6 * 10;	// S0..S9
-	const int_fast16_t level9 = - 73 * 10;	// S9 = -73.0 dBm
-	const int_fast16_t delta2 = 60 * 10;	// to S9+60
+	// Нормирование значений внутри каждого участка s-meter
+	const int_fast16_t leftmin = - 121 * 10;	// // S1 level -121.0 dBm
+	const int_fast16_t level9 = - 73 * 10;		// S9 = -73.0 dBm
+	const int_fast16_t delta1 = level9 - leftmin;			// S1..S9
+	const int_fast16_t delta2 = 60 * 10;		// to S9+60
 	const int_fast16_t mapleftval = display_mapbar(value10, leftmin, level9, 0, value10 - leftmin, delta1);
 	const int_fast16_t mapleftmax = display_mapbar(tracemax10, leftmin, level9, delta1, tracemax10 - leftmin, delta1); // delta1 - invisible
 	const int_fast16_t maprightval = display_mapbar(value10, level9, level9 + delta2, 0, value10 - level9, delta2);
