@@ -70,7 +70,7 @@
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
 
-	// Выборр используемой цветовой палитры
+	// Выбор используемой цветовой палитры
 	#define COLORSTYLE_GREEN	1
 	//#define COLORSTYLE_BLUE	1
 	//#define COLORSTYLE_WHITE	1

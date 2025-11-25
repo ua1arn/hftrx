@@ -281,7 +281,7 @@
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
 
-	// Выборр используемой цветовой палитры
+	// Выбор используемой цветовой палитры
 	#define COLORSTYLE_GREEN	1
 	//#define COLORSTYLE_BLUE	1
 	//#define COLORSTYLE_WHITE	1

@@ -2433,7 +2433,7 @@ static void display2_freqX_a_init(
 {
 #if WITHPRERENDER
 	/* valid chars: "0123456789 #._" */
-	rendered_value_big_initialize(dbstylev_1freqv.textcolor, dbstylev_1freqv.bgcolor);
+	rendered_value_big_initialize(& dbstylev_1freqv);
 #endif /* WITHPRERENDER */
 }
 

@@ -214,8 +214,8 @@ typedef struct gxstyle_tag
 	PACKEDCOLORPIP_T textcolor, bgcolor;
 	uint8_t bgradius;	// радиус углов прямоугольника контура
 	uint8_t bgfilled;	// необходимость заполнения прямоугольника контура
-	uint_fast16_t bgbackoffw;	// уменьшение размера плашуи по горизонтали
-	uint_fast16_t bgbackoffh;	// уменьшение размера плашуи по вертикали
+	uint_fast16_t bgbackoffw;	// уменьшение размера плашки по горизонтали
+	uint_fast16_t bgbackoffh;	// уменьшение размера плашки по вертикали
 	enum gxstyle_texthalign	texthalign;
 	enum gxstyle_textvalign textvalign;
 	uint_fast16_t (* font_draw_char)(
@@ -225,6 +225,8 @@ typedef struct gxstyle_tag
 		char cc,
 		COLORPIP_T fg
 		);
+	uint_fast16_t (* font_draw_big)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg);
+	uint_fast16_t (* font_draw_half)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg);
 	uint_fast8_t (* font_width)(char cc);
 	uint_fast8_t (* font_height)(void);
 } gxstyle_t;
@@ -406,8 +408,8 @@ void display_bar(
 
 // большие и средние цифры (частота)
 uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, COLORPIP_T fg);
-uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc, COLORPIP_T fg);
+uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
+uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 // большие и средние цифры (частота)
 uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc);
 uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc);
@@ -813,7 +815,7 @@ pix_rendered_value_big(
 	uint_fast8_t withhalf		// 0 - только большие цифры
 	);
 
-void rendered_value_big_initialize(COLORPIP_T fg, COLORPIP_T bg);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
+void rendered_value_big_initialize(const gxstyle_t * gxstylep);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
 
 void
 pix_display_value_small(

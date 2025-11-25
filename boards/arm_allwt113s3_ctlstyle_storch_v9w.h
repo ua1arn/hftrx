@@ -164,6 +164,13 @@
 #endif
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 
+	// Выбор используемой цветовой палитры
+	#define COLORSTYLE_GREEN	1
+	//#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_WHITE	1
+	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
+	//#define WITHALTERNATIVEFONTS	1
+
 #if WITHISBOOTLOADER
 
 	// +++ заглушки для плат с DSP обработкой
@@ -282,12 +289,6 @@
 
 	//#define WITHRENDERHTML	1	/* Использование библиотеки litehtml для формирования изображения на дисплее */
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
-
-	// Выборр используемой цветовой палитры
-	#define COLORSTYLE_GREEN	1
-	//#define COLORSTYLE_BLUE	1
-	//#define COLORSTYLE_WHITE	1
-	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
 
