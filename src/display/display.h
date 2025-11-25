@@ -214,6 +214,8 @@ typedef struct gxstyle_tag
 	PACKEDCOLORPIP_T textcolor, bgcolor;
 	uint8_t bgradius;	// радиус углов прямоугольника контура
 	uint8_t bgfilled;	// необходимость заполнения прямоугольника контура
+	uint_fast16_t bgbackoffw;	// уменьшение размера плашуи по горизонтали
+	uint_fast16_t bgbackoffh;	// уменьшение размера плашуи по вертикали
 	enum gxstyle_texthalign	texthalign;
 	enum gxstyle_textvalign textvalign;
 	uint_fast16_t (* font_draw_char)(
@@ -228,6 +230,7 @@ typedef struct gxstyle_tag
 } gxstyle_t;
 
 #define GXSTYLE_BACKOFF 2	// на столько пикселей уменьшается высота и ширина при наличии радиуса в стиле
+
 void gxstyle_initialize(gxstyle_t * dbstyle);
 void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg);
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a);

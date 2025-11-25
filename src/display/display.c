@@ -114,7 +114,11 @@ void gxstyle_initialize(gxstyle_t * dbstyle)
 	gxstyle_textvalign(dbstyle, GXSTYLE_VALIGN_CENTER);
 	dbstyle->bgradius = display2_gettileradius();
 	dbstyle->bgfilled = 1;
+	dbstyle->bgbackoffw = GXSTYLE_BACKOFF;
+	dbstyle->bgbackoffh = GXSTYLE_BACKOFF;
 }
+uint_fast16_t bgbackoffw;	// уменьшение размера плашуи по горизонтали
+uint_fast16_t bgbackoffh;	// уменьшение размера плашуи по вертикали
 
 
 void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg)
@@ -985,15 +989,15 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 
 // Используется при выводе на графический индикатор с кординатами и размерами в пикселях
 // Многострочное отображение
-void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstyle, const char * const * slines, unsigned nlines)
+void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstylep, const char * const * slines, unsigned nlines)
 {
 	size_t len;
 
 	savewhere = __func__;
-	if (dbstyle->bgradius)
+	if (dbstylep->bgradius)
 	{
-		w -= 2;
-		h -= 2;
+		w -= dbstylep->bgbackoffw;
+		h -= dbstylep->bgbackoffh;
 	}
 #if WITHLVGL
 	lv_layer_t * const layer = (lv_layer_t *) db->layerv;
@@ -1006,7 +1010,7 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 	    lv_draw_label_dsc_init(& l);
 		lv_draw_rect_dsc_init(& d);
 		lv_area_set(& coords, xpix, ypix, xpix + GRID2X(xspan) - 1, ypix + GRID2Y(yspan) - 1);
-	    d.bg_color = display_lvlcolor(dbstyle->bgcolor);
+	    d.bg_color = display_lvlcolor(dbstylep->bgcolor);
 	    l.color = display_lvlcolor(fg);
 	    l.align = LV_TEXT_ALIGN_RIGHT;
 	    l.flag = 0*LV_TEXT_FLAG_EXPAND | LV_TEXT_FLAG_FIT;
@@ -1019,51 +1023,51 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
         return;
 	}
 #endif
-	ASSERT3(w >= (dbstyle->bgradius * 2), __FILE__, __LINE__, slines [0]);
-	ASSERT3(h >= (dbstyle->bgradius * 2), __FILE__, __LINE__, slines [0]);
-	const uint_fast16_t avlw = w - (dbstyle->bgradius * 2);
-	const uint_fast16_t avlh = h - (dbstyle->bgradius * 2);
-	colmain_rounded_rect(db, xpixB, ypix, xpixB + w - 1, ypix + h - 1, dbstyle->bgradius, dbstyle->bgcolor, dbstyle->bgfilled);
-	ypix += dbstyle->bgradius;
+	ASSERT3(w >= (dbstylep->bgradius * 2), __FILE__, __LINE__, slines [0]);
+	ASSERT3(h >= (dbstylep->bgradius * 2), __FILE__, __LINE__, slines [0]);
+	const uint_fast16_t avlw = w - (dbstylep->bgradius * 2);
+	const uint_fast16_t avlh = h - (dbstylep->bgradius * 2);
+	colmain_rounded_rect(db, xpixB, ypix, xpixB + w - 1, ypix + h - 1, dbstylep->bgradius, dbstylep->bgcolor, dbstylep->bgfilled);
+	ypix += dbstylep->bgradius;
 	const uint_fast16_t vstep = avlh / nlines;
 	for (; nlines --; ypix += vstep)
 	{
-		const COLORPIP_T fg = dbstyle->textcolor;
-		uint_fast16_t xpix = xpixB + dbstyle->bgradius;
+		const COLORPIP_T fg = dbstylep->textcolor;
+		uint_fast16_t xpix = xpixB + dbstylep->bgradius;
 		const char * s = * slines ++;
 		char c;
 
 		savestring = s;
-		switch (dbstyle->textvalign)
+		switch (dbstylep->textvalign)
 		{
 		default:
 		case GXSTYLE_VALIGN_CENTER:
 			if (vstep > smallfont_height())
-				ypix += (vstep - dbstyle->font_height()) / 2;
+				ypix += (vstep - dbstylep->font_height()) / 2;
 			break;
 		case GXSTYLE_VALIGN_TOP:
 			break;
 
 		case GXSTYLE_VALIGN_BOTTOM:
 			if (vstep > smallfont_height())
-				ypix += (vstep - dbstyle->font_height());
+				ypix += (vstep - dbstylep->font_height());
 			break;
 		}
 
-		const uint_fast16_t textw = ulmin16(avlw, gxstyle_strwidth(dbstyle, s));
+		const uint_fast16_t textw = ulmin16(avlw, gxstyle_strwidth(dbstylep, s));
 		const uint_fast16_t xpix0 = xpix;
 		//ASSERT3(avlw >= textw, __FILE__, __LINE__, s);
-		switch (dbstyle->texthalign)
+		switch (dbstylep->texthalign)
 		{
 		default:
 		case GXSTYLE_HALIGN_RIGHT:
 			xpix = textw < w ? xpix + avlw - textw : xpix;
-			while ((c = * s ++) != '\0' && xpix - xpix0 + dbstyle->font_width(c) <= avlw)
-				xpix = dbstyle->font_draw_char(db, xpix, ypix, c, fg);
+			while ((c = * s ++) != '\0' && xpix - xpix0 + dbstylep->font_width(c) <= avlw)
+				xpix = dbstylep->font_draw_char(db, xpix, ypix, c, fg);
 			break;
 		case GXSTYLE_HALIGN_LEFT:
-			while ((c = * s ++) != '\0' && xpix - xpix0 + dbstyle->font_width(c) <= avlw)
-				xpix = dbstyle->font_draw_char(db, xpix, ypix, c, fg);
+			while ((c = * s ++) != '\0' && xpix - xpix0 + dbstylep->font_width(c) <= avlw)
+				xpix = dbstylep->font_draw_char(db, xpix, ypix, c, fg);
 			break;
 		case GXSTYLE_HALIGN_CENTER:
 			// todo: to be implemented
@@ -1322,8 +1326,8 @@ pix_display_value_small(
 	const COLORPIP_T fg = dbstylep->textcolor;
 	if (dbstylep->bgradius)
 	{
-		w -= GXSTYLE_BACKOFF;
-		h -= GXSTYLE_BACKOFF;
+		w -= dbstylep->bgbackoffw;
+		h -= dbstylep->bgbackoffh;
 	}
 
 	const uint_fast16_t avlw = w - (dbstylep->bgradius * 2);
