@@ -1697,8 +1697,8 @@ uint_fast16_t normalize3(
 
 
 int_fast32_t approximate(
-	const int16_t * points,		// массив позиций входных значений
-	const int_fast32_t * angles,		// массив позицый выходных значений
+	const int32_t * points,		// массив позиций входных значений
+	const int32_t * angles,		// массив позицый выходных значений
 	unsigned n,					// размерность массивов
 	int_fast16_t v				// значение для анализа
 	)
@@ -1708,8 +1708,8 @@ int_fast32_t approximate(
 		return 0;
 	for (i = 0; i < (n - 1); ++ i)
 	{
-		const int_fast16_t left = points [i];
-		const int_fast16_t right = points [i + 1];
+		const int_fast32_t left = points [i];
+		const int_fast32_t right = points [i + 1];
 		const int_fast32_t minimal = angles [i];
 		const int_fast32_t maximal = angles [i + 1];
 		ASSERT(left < right);
@@ -1746,7 +1746,7 @@ enum { SM_BG_W = GRID2X(SM_BG_W_CELLS), SM_BG_H = GRID2Y(SM_BG_H_CELLS) };
 
 
 /* точки на шкале s-метра, к которым надо привязать измеренное значение */
-static const int16_t smeterpointsRX [] =
+static const int32_t smeterpointsRX [] =
 {
 	- 1270,	// S0 level -127.0 dBm
 	//- 1090,	// S3 level -109.0 dBm
@@ -1759,19 +1759,19 @@ typedef PACKEDCOLORPIP_T smeter_bg_t [GXSIZE(SM_BG_W, SM_BG_H)];
 typedef struct smeter_params_tag
 {
 	ALIGNX_BEGIN smeter_bg_t smeter_bg ALIGNX_END;
-	uint_fast16_t gs;
-	uint_fast16_t gm;
-	uint_fast16_t ge;
-	int_fast32_t smeterangles [ARRAY_SIZE(smeterpointsRX)];	// gs, gm, ge
+	int32_t gs;
+	int32_t gm;
+	int32_t ge;
+	int32_t smeterangles [ARRAY_SIZE(smeterpointsRX)];	// gs, gm, ge
 	gxdrawb_t smbgdb;
 
-	uint_fast16_t r1;
-	uint_fast16_t r2;
-	uint_fast16_t rv1;
-	uint_fast16_t rv2;
-	uint_fast8_t step1;
-	uint_fast8_t step2;
-	uint_fast8_t step3;
+	int32_t r1;
+	int32_t r2;
+	int32_t rv1;
+	int32_t rv2;
+	int32_t step1;
+	int32_t step2;
+	int32_t step3;
 } smeter_params_t;
 
 static smeter_params_t smprms [SMETER_TYPE_COUNT] [SM_STATE_COUNT];
@@ -1818,7 +1818,7 @@ display2_smeter15_layout_tx(
 	uint_fast8_t smetertype
 	)
 {
-	const uint_fast16_t markersTX_pwr [] =
+	const int32_t markersTX_pwr [] =
 	{
 		smpr->gs,
 		smpr->gs + 2 * smpr->step1,
@@ -1832,7 +1832,7 @@ display2_smeter15_layout_tx(
 		smpr->gs + 18 * smpr->step1,
 		smpr->gs + 20 * smpr->step1,
 	};
-	const uint_fast16_t markersTX_swr [] =
+	const int32_t markersTX_swr [] =
 	{
 		smpr->gs,
 		smpr->gs + smpr->step3,
@@ -1855,7 +1855,7 @@ display2_smeter15_layout_tx(
 	gxdrawb_t * const db = & smpr->smbgdb;
 	gxdrawb_initialize(db, smpr->smeter_bg, SM_BG_W, SM_BG_H);
 	// Angles (positions)
-	int_fast32_t * const smeteranglesTX = smpr->smeterangles;
+	int32_t * const smeteranglesTX = smpr->smeterangles;
 	switch (smetertype)
 	{
 
@@ -1941,7 +1941,7 @@ display2_smeter15_layout_rx(
 	uint_fast8_t smetertype
 	)
 {
-	const uint_fast16_t markers [] =
+	const int32_t markers [] =
 	{
 		//smpr->gs + 0 * smpr->step1,
 		smpr->gs + 2 * smpr->step1,		// S1
@@ -1950,13 +1950,13 @@ display2_smeter15_layout_rx(
 		smpr->gs + 8 * smpr->step1,		// S7
 		smpr->gs + 10 * smpr->step1,	// S9
 	};
-	const uint_fast16_t markersR [] =
+	const int32_t markersR [] =
 	{
 		smpr->gm + 2 * smpr->step2,	//
 		smpr->gm + 4 * smpr->step2,
 		smpr->gm + 6 * smpr->step2,
 	};
-	const uint_fast16_t markers2 [] =
+	const int32_t markers2 [] =
 	{
 		//smpr->gs + 1 * smpr->step1,
 		smpr->gs + 3 * smpr->step1,		// S2
@@ -1964,7 +1964,7 @@ display2_smeter15_layout_rx(
 		smpr->gs + 7 * smpr->step1,		// S6
 		smpr->gs + 9 * smpr->step1,		// S8
 	};
-	const uint_fast16_t markers2R [] =
+	const int32_t markers2R [] =
 	{
 		smpr->gm + 1 * smpr->step2,
 		smpr->gm + 3 * smpr->step2,
@@ -1986,7 +1986,7 @@ display2_smeter15_layout_rx(
 	gxdrawb_t * const db = & smpr->smbgdb;
 	gxdrawb_initialize(db, smpr->smeter_bg, SM_BG_W, SM_BG_H);
 	// Angles (positions)
-	int_fast32_t * const smeteranglesRX = smpr->smeterangles;
+	int32_t * const smeteranglesRX = smpr->smeterangles;
 	switch (smetertype)
 	{
 
@@ -2191,7 +2191,7 @@ pix_display2_smeter15(const gxdrawb_t * db,
 	const COLORPIP_T bgcolor = display2_getbgcolor();
 	const uint_fast8_t is_tx = hamradio_get_tx();
 	const smeter_params_t * const smpr = & smprms [glob_smetertype] [is_tx ? SM_STATE_TX : SM_STATE_RX];
-	const int_fast32_t * const smeterangles = smpr->smeterangles;
+	const int32_t * const smeterangles = smpr->smeterangles;
 	const gxdrawb_t * const smbgdb = & smpr->smbgdb;
 
 	// координаты оси стрелки
@@ -2199,17 +2199,17 @@ pix_display2_smeter15(const gxdrawb_t * db,
 	const int yc = y0 + SM_YCENTEROFFS;
 
 
-	uint_fast16_t gp = smpr->gs;
-	uint_fast16_t gv = smpr->gs;
-	uint_fast16_t gv_trace = smpr->gs;
-	uint_fast16_t gswr = smpr->gs;
+	int_fast32_t gp = smpr->gs;
+	int_fast32_t gv = smpr->gs;
+	int_fast32_t gv_trace = smpr->gs;
+	int_fast32_t gswr = smpr->gs;
 
 	//colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, x0, y0, x0 + width - 1, y0 + height - 1, COLORPIP_GREEN, 1);
 	if (is_tx)
 	{
 		enum { gx_hyst = 3 };		// гистерезис в градусах
 		/* фильтрация - (в градусах) */
-		static uint_fast16_t gp_smooth, gswr_smooth;
+		static int_fast32_t gp_smooth, gswr_smooth;
 
 		if (first_tx)				// сброс при переходе на передачу
 		{
@@ -8157,15 +8157,12 @@ static void smtr2_draw(lv_smtr2_t * smtr2, const lv_area_t * coords, lv_layer_t 
 	// Прямоугольник для рисования полосы s-meter
 	lv_area_t smeterbar;
 	lv_area_set(&smeterbar, coords->x1, coords->y1 + h / 3, coords->x2, coords->y1 + h * 2 / 3);
-	int_fast32_t gs = 0;
-	int_fast32_t gm = lv_area_get_width(&smeterbar) / 2;
-	int_fast32_t ge = lv_area_get_width(&smeterbar) - 1;
 	const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);
-	int_fast32_t smeterangles [ARRAY_SIZE(smeterpointsRX)] =
+	int32_t smeterangles [ARRAY_SIZE(smeterpointsRX)] =
 	{
-		gs,
-		gm,
-		ge,
+		0,
+		lv_area_get_width(&smeterbar) / 2,
+		lv_area_get_width(&smeterbar) - 1,
 	};
 	// без возможных тормозов на SPI при чтении
 	int_fast16_t tracemaxi10;

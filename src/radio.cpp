@@ -15120,7 +15120,7 @@ scaletopointssmeter(void)
 	int_fast16_t tracemaxi10;
 	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 	/* точки на шкале s-метра, к которым надо привязать измеренное значение */
-	static const int16_t smetervalues [] =
+	static const int32_t smetervalues [] =
 	{
 		- 1090,	// S3 level -109.0 dBm
 		- 730,	// S9 level -73.0 dBm
@@ -15128,7 +15128,7 @@ scaletopointssmeter(void)
 	};
 
 	/* Значения углов на индикаторе */
-	const int_fast32_t smeterpoints [ARRAY_SIZE(smetervalues)] =
+	const int32_t smeterpoints [ARRAY_SIZE(smetervalues)] =
 	{
 		0,	// S3 level -109.0 dBm
 		15,	// S9 level -73.0 dBm
