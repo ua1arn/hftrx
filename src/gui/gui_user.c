@@ -4592,4 +4592,21 @@ void window_as_process(void)
 #endif /* WITHAUDIOSAMPLESREC */
 }
 
+#if WITHSDL2VIDEO
+#include "gui_port.h"
+void gui_sdl2_walkthrough(const void * db)
+{
+	__gui_set_drawbuf(db);
+	process_gui();
+}
+#else
+#include "gui_port.h"
+/* Запуск state mashine и отрисовка элементов GUI */
+void gui_WM_walkthrough(const gui_drawbuf_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xpan, uint_fast8_t yspan, dctx_t * pctx)
+{
+	__gui_set_drawbuf((gui_drawbuf_t *) db);
+	process_gui();
+}
+#endif /* ! WITHSDL2VIDEO */
+
 #endif /* WITHTOUCHGUI */

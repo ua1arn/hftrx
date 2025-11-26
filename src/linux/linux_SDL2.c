@@ -126,6 +126,22 @@ void sdl2_render_update(uintptr_t frame)
 	SDL_Rect destRect = { 0, 0, DIM_X, DIM_Y };
 	SDL_RenderCopy(renderer, texture, NULL, & destRect);
 
+#if WITHTOUCHGUI
+	SDL_Texture * guitex = SDL_CreateTexture(renderer,
+	    SDL_PIXELFORMAT_ARGB8888,
+	    SDL_TEXTUREACCESS_TARGET,
+	    DIM_X, DIM_Y);
+	SDL_Texture * old_target = SDL_GetRenderTarget(renderer);
+	SDL_SetRenderTarget(renderer, guitex);
+
+	gui_sdl2_walkthrough(renderer);
+
+	SDL_SetRenderTarget(renderer, old_target);
+	SDL_SetTextureBlendMode(guitex, SDL_BLENDMODE_BLEND);
+	SDL_RenderCopy(renderer, guitex, NULL, & destRect);
+	SDL_DestroyTexture(guitex);
+#endif /* WITHTOUCHGUI */
+
 #if MOUSE_EVDEV
     if (mouse_cursor && check_is_mouse_present()) {
     	uint16_t mouse_x, mouse_y;

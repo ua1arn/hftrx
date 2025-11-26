@@ -34,7 +34,9 @@ void gui_print_prop(uint16_t x, uint16_t y, const char * text, const gui_prop_fo
 uint16_t get_strwidth_mono(const char * str, const gui_mono_font_t * font);
 uint16_t get_strwidth_prop(const char * str, const gui_prop_font_t * font);
 void gui_drawDashedRectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t dashLength, gui_color_t color);
-const gxdrawb_t * gui_get_drawbuf(void);
+const gui_drawbuf_t * gui_get_drawbuf(void);
+
+void process_gui(void);
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */

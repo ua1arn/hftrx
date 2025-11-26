@@ -126,7 +126,9 @@
 		{	0,	DLES,	50,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	50,	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	50,	BDCV_ALLRX,	display2_gcombo,	& dzi_default, PG0_1, },// подготовка изображения спектра
+#if ! WITHSDL2VIDEO
 		{	0,	DLES,	0,	0,	gui_WM_walkthrough,	& dzi_default, PG0_1, },
+#endif /* ! WITHSDL2VIDEO */
 
 		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 #endif /* ! WITHLVGL */

@@ -35,7 +35,7 @@ static LIST_ENTRY gui_objects_list;
 static uint_fast8_t gui_object_count = 0;
 static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, INT32_MAX, "btс_close", "", };
 static uint8_t opened_windows_count = 1;
-const gui_drawbuf_t * drawbuf = NULL;
+gui_drawbuf_t * drawbuf = NULL;
 
 /* Возврат id parent window */
 uint_fast8_t get_parent_window(void)
@@ -361,7 +361,7 @@ not_found:
 		return find_gui_obj(type, get_win(WINDOW_MAIN), name);
 }
 
-const gxdrawb_t * gui_get_drawbuf(void)
+const gui_drawbuf_t * gui_get_drawbuf(void)
 {
 	return __gui_get_drawbuf();
 }
@@ -770,6 +770,7 @@ static void draw_button(const button_t * const bh)
 	}
 
 	btn_bg_t * b1 = NULL;
+#if ! WITHSDL2VIDEO // копирование буферов еще не реализовано
 	do {
 		if (bh->h == btn_bg[i].h && bh->w == btn_bg[i].w)
 		{
@@ -777,6 +778,7 @@ static void draw_button(const button_t * const bh)
 			break;
 		}
 	} while ( ++i < BG_COUNT);
+#endif
 
 	// если не найден заполненный буфер фона по размерам, программная отрисовка
 	if (b1 == NULL)
@@ -785,7 +787,7 @@ static void draw_button(const button_t * const bh)
 		c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
 
-		__gui_draw_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, GUI_DEFAULTCOLOR, 1);
+		__gui_draw_rounded_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, button_round_radius, GUI_DEFAULTCOLOR, 1);
 		__gui_draw_rounded_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
 		__gui_draw_rounded_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		__gui_draw_rounded_rect(gdb, x1 + 1, y1 + 1, bh->w - 3, bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
@@ -1068,7 +1070,7 @@ uint8_t lp_delay_10ms(uint8_t init)
 }
 
 /* GUI state mashine */
-static void process_gui(void)
+void process_gui(void)
 {
 	uint_fast16_t tx, ty;
 	static uint_fast16_t x_old = 0, y_old = 0, long_press_counter = 0;
@@ -1353,13 +1355,6 @@ static void process_gui(void)
 			}
 		}
 	}
-}
-
-/* Запуск state mashine и отрисовка элементов GUI */
-void gui_WM_walkthrough(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xpan, uint_fast8_t yspan, dctx_t * pctx)
-{
-	__gui_set_drawbuf(db);
-	process_gui();
 }
 
 #endif /* WITHTOUCHGUI */

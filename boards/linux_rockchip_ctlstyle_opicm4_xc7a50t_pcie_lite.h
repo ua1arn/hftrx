@@ -95,7 +95,7 @@
 	#define WITHALTERNATIVEFONTS	1
 	#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 	#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
-	#define WITHALPHA				42
+	#define WITHALPHA				192
 	#define FORMATFROMLIBRARY 		1
 	#define WITHAFGAINDEFAULT		20
 	#define WITHAFEQUALIZER			1
