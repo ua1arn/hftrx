@@ -239,6 +239,9 @@ uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s);
 void gxstyle_setsmallfont(gxstyle_t * dbstyle);
 void gxstyle_setsmallfont2(gxstyle_t * dbstyle);
 void gxstyle_setsbigandhalffont(gxstyle_t * dbstyle);
+void gxstyle_setbgbackoff(gxstyle_t * dbstyle, unsigned x, unsigned y);
+void gxstyle_setbgradius(gxstyle_t * dbstyle, unsigned r);
+void gxstyle_setbgrfilled(gxstyle_t * dbstyle, unsigned f);
 
 // Интерфейсные функции, специфические для драйвера дисплея - зависящие от типа микросхемы контроллера.
 void display_hardware_initialize(void);

@@ -2591,6 +2591,23 @@ void gxstyle_setsmallfont2(gxstyle_t * dbstyle)
 #endif /* defined (SMALLCHARH2) */
 }
 
+// уменьшение размера плашки
+void gxstyle_setbgbackoff(gxstyle_t * dbstyle, unsigned x, unsigned y)
+{
+	dbstyle->bgbackoffw = x;	// уменьшение размера плашки по горизонтали
+	dbstyle->bgbackoffh = y;	// уменьшение размера плашки по вертикали
+}
+
+void gxstyle_setbgradius(gxstyle_t * dbstyle, unsigned r)
+{
+	dbstyle->bgradius = r;
+}
+
+void gxstyle_setbgrfilled(gxstyle_t * dbstyle, unsigned f)
+{
+	dbstyle->bgfilled = f;
+}
+
 void gxstyle_setsbigandhalffont(gxstyle_t * dbstyle)
 {
 #if ! LCDMODE_LTDC
@@ -2614,11 +2631,9 @@ void gxstyle_initialize(gxstyle_t * dbstyle)
 	gxstyle_setsmallfont(dbstyle);
 	gxstyle_texthalign(dbstyle, GXSTYLE_HALIGN_RIGHT);
 	gxstyle_textvalign(dbstyle, GXSTYLE_VALIGN_CENTER);
-	dbstyle->bgradius = display2_gettileradius();
-	dbstyle->bgfilled = 1;
-	gxstyle_setsbigandhalffont(dbstyle);	// функции отрисовки частоты большим шрифтом
-	dbstyle->bgbackoffw = GXSTYLE_BACKOFF;	// уменьшение размера плашки по горизонтали
-	dbstyle->bgbackoffh = GXSTYLE_BACKOFF;	// уменьшение размера плашки по вертикали
+	gxstyle_setbgradius(dbstyle, display2_gettileradius());
+	gxstyle_setbgrfilled(dbstyle, 1);
+	gxstyle_setbgbackoff(dbstyle, GXSTYLE_BACKOFF, GXSTYLE_BACKOFF); // уменьшение размера плашки
 }
 
 

@@ -9728,6 +9728,9 @@ static void display2_stylesupdate(void)
 	// Параметры отображения частоты основного приемника
 	gxstyle_initialize(& dbstylev_1freqv);
 	gxstyle_textcolor(& dbstylev_1freqv, DSGN_BIGCOLOR,	DSGN_BIGCOLORBACK);
+	gxstyle_setsbigandhalffont(& dbstylev_1freqv);	// функции отрисовки частоты большим шрифтом
+	gxstyle_setbgbackoff(& dbstylev_1freqv, 0, 0); // уменьшение размера плашки
+	gxstyle_setbgradius(& dbstylev_1freqv, 0);
 
 	// Параметры отображения частоты и режима дополнительного приемника
 	gxstyle_initialize(& dbstylev_2rxB [0]);
