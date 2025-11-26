@@ -231,8 +231,6 @@ typedef struct gxstyle_tag
 	uint_fast8_t (* font_height)(void);
 } gxstyle_t;
 
-#define GXSTYLE_BACKOFF 2	// на столько пикселей уменьшается высота и ширина при наличии радиуса в стиле
-
 void gxstyle_initialize(gxstyle_t * dbstyle);
 void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg);
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a);
@@ -240,6 +238,7 @@ void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a);
 uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s);
 void gxstyle_setsmallfont(gxstyle_t * dbstyle);
 void gxstyle_setsmallfont2(gxstyle_t * dbstyle);
+void gxstyle_setsbigandhalffont(gxstyle_t * dbstyle);
 
 // Интерфейсные функции, специфические для драйвера дисплея - зависящие от типа микросхемы контроллера.
 void display_hardware_initialize(void);
@@ -408,6 +407,7 @@ void display_bar(
 
 // большие и средние цифры (частота)
 uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
+uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 // большие и средние цифры (частота)
