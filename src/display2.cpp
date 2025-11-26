@@ -1696,7 +1696,7 @@ uint_fast16_t normalize3(
 }
 
 
-uint_fast16_t approximate(
+int_fast32_t approximate(
 	const int16_t * points,		// массив позиций входных значений
 	const int_fast32_t * angles,		// массив позицый выходных значений
 	unsigned n,					// размерность массивов
