@@ -91,7 +91,7 @@
 		{	0,	5,	15, 20, display2_af_spectre15,		& dzi_default, PG0, },
 	#endif /* WITHAFSPECTRE */
 
-		{	15,	5,	21, 15, display2_dummy,		& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+		{	15,	7,	21, 15, display2_dummy,		& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
 		{	41, 0,	9, 10, display2_fnblock9,	& dzi_compat, PGALL, },	// FUNC menu item label & value
 

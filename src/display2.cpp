@@ -1698,7 +1698,7 @@ uint_fast16_t normalize3(
 
 uint_fast16_t approximate(
 	const int16_t * points,		// массив позиций входных значений
-	const uint_fast16_t * angles,		// массив позицый выходных значений
+	const int_fast32_t * angles,		// массив позицый выходных значений
 	unsigned n,					// размерность массивов
 	int_fast16_t v				// значение для анализа
 	)
@@ -1710,18 +1710,18 @@ uint_fast16_t approximate(
 	{
 		const int_fast16_t left = points [i];
 		const int_fast16_t right = points [i + 1];
-		const uint_fast16_t minimal = angles [i];
-		const uint_fast16_t maximal = angles [i + 1];
+		const int_fast32_t minimal = angles [i];
+		const int_fast32_t maximal = angles [i + 1];
 		ASSERT(left < right);
 		ASSERT(minimal < maximal);
 		if (v < left)
 			return minimal;
 		if (v > right)
 			continue;
-		const uint_fast16_t offset = v - left;
-		const uint_fast16_t range = right - left + 1;	// диапазон входных значение на данном участке
-		const uint_fast16_t delta = maximal - minimal + 1;	// диапазон выходных значение на данном участке
-		return (uint_fast32_t) offset * delta / range + minimal;
+		const int_fast32_t offset = v - left;
+		const int_fast32_t range = right - left + 1;	// диапазон входных значение на данном участке
+		const int_fast32_t delta = maximal - minimal + 1;	// диапазон выходных значение на данном участке
+		return (int_fast64_t) offset * delta / range + minimal;
 	}
 	return angles [n - 1];	// при выходе за максимальное значение - уприраемся в правое значение
 }
@@ -1762,7 +1762,7 @@ typedef struct smeter_params_tag
 	uint_fast16_t gs;
 	uint_fast16_t gm;
 	uint_fast16_t ge;
-	uint_fast16_t smeterangles [ARRAY_SIZE(smeterpointsRX)];	// gs, gm, ge
+	int_fast32_t smeterangles [ARRAY_SIZE(smeterpointsRX)];	// gs, gm, ge
 	gxdrawb_t smbgdb;
 
 	uint_fast16_t r1;
@@ -1855,7 +1855,7 @@ display2_smeter15_layout_tx(
 	gxdrawb_t * const db = & smpr->smbgdb;
 	gxdrawb_initialize(db, smpr->smeter_bg, SM_BG_W, SM_BG_H);
 	// Angles (positions)
-	uint_fast16_t * const smeteranglesTX = smpr->smeterangles;
+	int_fast32_t * const smeteranglesTX = smpr->smeterangles;
 	switch (smetertype)
 	{
 
@@ -1986,7 +1986,7 @@ display2_smeter15_layout_rx(
 	gxdrawb_t * const db = & smpr->smbgdb;
 	gxdrawb_initialize(db, smpr->smeter_bg, SM_BG_W, SM_BG_H);
 	// Angles (positions)
-	uint_fast16_t * const smeteranglesRX = smpr->smeterangles;
+	int_fast32_t * const smeteranglesRX = smpr->smeterangles;
 	switch (smetertype)
 	{
 
@@ -2191,7 +2191,7 @@ pix_display2_smeter15(const gxdrawb_t * db,
 	const COLORPIP_T bgcolor = display2_getbgcolor();
 	const uint_fast8_t is_tx = hamradio_get_tx();
 	const smeter_params_t * const smpr = & smprms [glob_smetertype] [is_tx ? SM_STATE_TX : SM_STATE_RX];
-	const uint_fast16_t * const smeterangles = smpr->smeterangles;
+	const int_fast32_t * const smeterangles = smpr->smeterangles;
 	const gxdrawb_t * const smbgdb = & smpr->smbgdb;
 
 	// координаты оси стрелки
@@ -7690,7 +7690,7 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
 					l.width = 1;
 					l.round_end = 0;
 					l.round_start = 0;
-					l.colorgridlines = display_lvlcolor(colorgridlines);
+					l.color = display_lvlcolor(colorgridlines);
 
 					lv_point_precise_set(& l.p1, coord->x1, coord->y1 + yval);
 					lv_point_precise_set(& l.p2, coord->x2, coord->y1 + yval);
@@ -7719,7 +7719,7 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
 		            l.width = 1;
 		            l.round_end = 0;
 		            l.round_start = 0;
-		            l.colorgridlines = display_lvlcolor(colorgridlines);
+		            l.color = display_lvlcolor(colorgridlines);
 
 		            lv_point_precise_set(& l.p1, coord->x1 + xmarker, coord->y1);
 		            lv_point_precise_set(& l.p2, coord->x1 + xmarker, coord->y2);
@@ -7729,7 +7729,7 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
 		            // текст маркера частоты
 		    	    lv_draw_label_dsc_t label;
 		    	    lv_draw_label_dsc_init(& label);
-		            label.colorgridlines = display_lvlcolor(colordigits);
+		            label.color = display_lvlcolor(colordigits);
 		            label.align = LV_TEXT_ALIGN_CENTER;
 		            label.text = buf2;
 		            // позиция (текст, выходящий за границы окне отрежется библиотекой)
@@ -7749,7 +7749,7 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
             l.width = 1;
             l.round_end = 0;
             l.round_start = 0;
-            l.colorgridlines = display_lvlcolor(colorcmarker);
+            l.color = display_lvlcolor(colorcmarker);
 
             lv_point_precise_set(& l.p1, coord->x1 + dm->xcenter, coord->y1 + 0);
             lv_point_precise_set(& l.p2, coord->x1 + dm->xcenter, coord->y1 + alldy - 1);
@@ -8151,6 +8151,7 @@ int_fast32_t normalize31(
 
 static void smtr2_draw(lv_smtr2_t * smtr2, const lv_area_t * coords, lv_layer_t * layer)
 {
+	const uint_fast8_t pathi = 0;
 	const int_fast32_t h = lv_area_get_height(coords);
 	const int_fast32_t w = lv_area_get_width(coords);
 	// Прямоугольник для рисования полосы s-meter
@@ -8160,11 +8161,17 @@ static void smtr2_draw(lv_smtr2_t * smtr2, const lv_area_t * coords, lv_layer_t 
 	int_fast32_t gm = lv_area_get_width(&smeterbar) / 2;
 	int_fast32_t ge = lv_area_get_width(&smeterbar) - 1;
 	const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);
+	int_fast32_t smeterangles [ARRAY_SIZE(smeterpointsRX)] =
+	{
+		gs,
+		gm,
+		ge,
+	};
 	// без возможных тормозов на SPI при чтении
 	int_fast16_t tracemaxi10;
-	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
-	int_fast32_t gv_pos = gs + normalize31(smtrvalue, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
-	int_fast32_t gv_trace = gs + normalize31(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, gm - gs, ge - gs);
+	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+	int_fast32_t gv_pos = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), rssi10);
+	int_fast32_t gv_trace = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
 	if (1)
 	{
 		lv_draw_rect_dsc_t rect;
@@ -8649,7 +8656,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 					l.width = 1;
 					l.round_end = 0;
 					l.round_start = 0;
-					l.colorgridlines = display_lvlcolor(colorgridlines);
+					l.color = display_lvlcolor(colorgridlines);
 
 					lv_point_precise_set(& l.p1, coord->x1, coord->y1 + yval);
 					lv_point_precise_set(& l.p2, coord->x2, coord->y1 + yval);
@@ -8678,7 +8685,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 		            l.width = 1;
 		            l.round_end = 0;
 		            l.round_start = 0;
-		            l.colorgridlines = display_lvlcolor(colorgridlines);
+		            l.color = display_lvlcolor(colorgridlines);
 
 		            lv_point_precise_set(& l.p1, coord->x1 + xmarker, coord->y1);
 		            lv_point_precise_set(& l.p2, coord->x1 + xmarker, coord->y2);
@@ -8688,7 +8695,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 		            // текст маркера частоты
 		    	    lv_draw_label_dsc_t label;
 		    	    lv_draw_label_dsc_init(& label);
-		            label.colorgridlines = display_lvlcolor(colordigits);
+		            label.color = display_lvlcolor(colordigits);
 		            label.align = LV_TEXT_ALIGN_CENTER;
 		            label.font = &lv_font_montserrat_14;
 		            label.text = buf2;
@@ -8709,7 +8716,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
             l.width = 1;
             l.round_end = 0;
             l.round_start = 0;
-            l.colorgridlines = display_lvlcolor(colorcmarker);
+            l.color = display_lvlcolor(colorcmarker);
 
             lv_point_precise_set(& l.p1, coord->x1 + dm->xcenter, coord->y1 + 0);
             lv_point_precise_set(& l.p2, coord->x1 + dm->xcenter, coord->y1 + alldy - 1);

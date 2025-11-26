@@ -941,33 +941,11 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 	size_t len;
 
 	savewhere = __func__;
+#if !WITHLVGL
 	if (dbstylep->bgradius)
 	{
 		w -= dbstylep->bgbackoffw;
 		h -= dbstylep->bgbackoffh;
-	}
-#if WITHLVGL
-	lv_layer_t * const layer = (lv_layer_t *) db->layerv;
-	if (layer)
-	{
-		//PRINTF("x/y=%d/%d '%s'\n", xpix, ypix, s);
-		lv_draw_rect_dsc_t d;
-	    lv_draw_label_dsc_t l;
-		lv_area_t coords;
-	    lv_draw_label_dsc_init(& l);
-		lv_draw_rect_dsc_init(& d);
-		lv_area_set(& coords, xpix, ypix, xpix + GRID2X(xspan) - 1, ypix + GRID2Y(yspan) - 1);
-	    d.bg_color = display_lvlcolor(dbstylep->bgcolor);
-	    l.color = display_lvlcolor(fg);
-	    l.align = LV_TEXT_ALIGN_RIGHT;
-	    l.flag = 0*LV_TEXT_FLAG_EXPAND | LV_TEXT_FLAG_FIT;
-	    l.text = s;
-	    l.font = & Epson_LTDC_small;
-	    //PRINTF("display_string: x/y=%d/%d '%s'\n", (int) xpix, (int) xpix, s);
-		lv_draw_rect(layer, & d, & coords);
-        lv_draw_label(layer, & l, & coords);
-
-        return;
 	}
 #endif
 	ASSERT3(w >= (dbstylep->bgradius * 2), __FILE__, __LINE__, slines [0]);
@@ -982,6 +960,30 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 		const COLORPIP_T fg = dbstylep->textcolor;
 		uint_fast16_t xpix = xpixB + dbstylep->bgradius;
 		const char * s = * slines ++;
+#if WITHLVGL
+		lv_layer_t * const layer = (lv_layer_t *) db->layerv;
+		if (layer)
+		{
+			//PRINTF("x/y=%d/%d '%s'\n", xpix, ypix, s);
+			lv_draw_rect_dsc_t d;
+			lv_draw_label_dsc_t l;
+			lv_area_t coords;
+			lv_draw_label_dsc_init(& l);
+			lv_draw_rect_dsc_init(& d);
+			lv_area_set(& coords, xpix, ypix, xpix + w - 1, ypix + h - 1);
+			d.bg_color = display_lvlcolor(dbstylep->bgcolor);
+			l.color = display_lvlcolor(fg);
+			l.align = LV_TEXT_ALIGN_RIGHT;
+			l.flag = 0*LV_TEXT_FLAG_EXPAND | LV_TEXT_FLAG_FIT;
+			l.text = s;
+			l.font = & Epson_LTDC_small;
+			//PRINTF("display_string: x/y=%d/%d '%s'\n", (int) xpix, (int) xpix, s);
+			lv_draw_rect(layer, & d, & coords);
+			lv_draw_label(layer, & l, & coords);
+
+			continue;
+		}
+#endif
 		char c;
 
 		savestring = s;

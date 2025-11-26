@@ -15128,7 +15128,7 @@ scaletopointssmeter(void)
 	};
 
 	/* Значения углов на индикаторе */
-	const uint_fast16_t smeterpoints [ARRAY_SIZE(smetervalues)] =
+	const int_fast32_t smeterpoints [ARRAY_SIZE(smetervalues)] =
 	{
 		0,	// S3 level -109.0 dBm
 		15,	// S9 level -73.0 dBm
