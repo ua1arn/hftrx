@@ -2795,7 +2795,7 @@ static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_
 		return;
 	}
 //	const uint32_t ovl_ui_mbsize = (((uint_fast32_t) (vdmode_CRT->height - 1) << 16) | (vdmode_CRT->width - 1));
-//	const uint32_t uipitch = vdmode_CRT->width;//LCDMODE_PIXELSIZE * GXADJ(vdmode_CRT->width);
+//	const uint32_t uipitch = vdmode_CRT->width;
 	const uint_fast32_t ovl_ui_mbsize = (((uint_fast32_t) (TVD_HEIGHT - 1) << 16) | (TVD_WIDTH - 1));
 	const uint_fast32_t uipitch = TVD_WIDTH;
 	const uint_fast32_t attr =

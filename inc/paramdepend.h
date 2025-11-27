@@ -1402,27 +1402,7 @@ extern "C" {
 
 /* Зависимости для поределения конфигурации видеосистемы */
 
-#if LCDMODE_PALETTE256
-	/* Экран с двумя видеобуферами L8 */
-	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
-	#define LCDMODE_MAIN_L8	1
-	#define LCDMODE_PIXELSIZE 1
-
-	// 0..COLORPIP_BASE-1 - волопад
-	// COLORPIP_BASE..127 - надписи и элементы дизайна
-	// то же с кодом больше на 128 - затененные цвета для получения полупрозрачности
-	// 0..95 - палитра водопада
-	// 96..111 - норм цвета
-	// 112..127 - первая степень AA
-	// Заполнение палитры производится в display2_xltrgb24()
-
-	//#define COLORPIP_SHADED 128
-	#define COLORPIP_ALIASED 16
-	#define COLORPIP_BASE 96	// should be match to PALETTESIZE
-
-	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
-
-#elif LCDMODE_PALETTE256_NO_SHADES
+#if LCDMODE_PALETTE256_WITH_SHADES
 	/* Экран с двумя видеобуферами L8 */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
@@ -1442,6 +1422,26 @@ extern "C" {
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 
+#elif LCDMODE_PALETTE256
+	/* Экран с двумя видеобуферами L8 */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	#define LCDMODE_MAIN_L8	1
+	#define LCDMODE_PIXELSIZE 1
+
+	// 0..COLORPIP_BASE-1 - волопад
+	// COLORPIP_BASE..127 - надписи и элементы дизайна
+	// то же с кодом больше на 128 - затененные цвета для получения полупрозрачности
+	// 0..95 - палитра водопада
+	// 96..111 - норм цвета
+	// 112..127 - первая степень AA
+	// Заполнение палитры производится в display2_xltrgb24()
+
+	//#define COLORPIP_SHADED 128
+	#define COLORPIP_ALIASED 16
+	#define COLORPIP_BASE 96	// should be match to PALETTESIZE
+
+	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+
 #elif LCDMODE_RGB565
 	/* Экран 16 бит двумя видеобуферами */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
@@ -1456,9 +1456,6 @@ extern "C" {
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 	#define LCDMODE_PIXELSIZE 1
-
-	#define LCDMODE_PIP_PAGES	0
-	//#define COLORPIP_SHADED 128
 
 #endif
 
