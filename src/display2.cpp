@@ -1604,6 +1604,8 @@ static gxstyle_t dbstylev_lock;
 static gxstyle_t dbstylev_ovf;
 static gxstyle_t dbstylev_smlabel;
 static gxstyle_t dbstylev_smlabelplus;
+static gxstyle_t dbstylev_smbar;
+static gxstyle_t dbstylev_smbarplus;
 
 #if ! LCDMODE_DUMMY
 
@@ -4534,9 +4536,6 @@ static void display_smeter(const gxdrawb_t * db,
 	)
 {
 #if WITHBARS
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
-
 	// Нормирование значений внутри каждого участка s-meter
 	const int_fast16_t leftmin = - 121 * 10;	// // S1 level -121.0 dBm
 	const int_fast16_t level9 = - 73 * 10;		// S9 = -73.0 dBm
@@ -4547,21 +4546,19 @@ static void display_smeter(const gxdrawb_t * db,
 	const int_fast16_t maprightval = display_mapbar(value10, level9, level9 + delta2, 0, value10 - level9, delta2);
 	const int_fast16_t maprightmax = display_mapbar(tracemax10, level9, level9 + delta2, delta2, tracemax10 - level9, delta2); // delta2 - invisible
 
-	gxstyle_textcolor(& dbstylev, DSGN_SMLCOLOR, DSGN_BGCOLOR);
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_rx(x, CHARS2GRID(0)), y, & ypix);
-	display_bar(db, xpix, ypix, BDTH_LEFTRX, rowspan, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF, & dbstylev);		//ниже 9 баллов ничего
+	display_bar(db, xpix, ypix, BDTH_LEFTRX, rowspan, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF, & dbstylev_smbar);		//ниже 9 баллов ничего
 	//
-	gxstyle_textcolor(& dbstylev, DSGN_SMRCOLOR, DSGN_BGCOLOR);
 	uint_fast16_t ypix2;
 	uint_fast16_t xpix2 = display_wrdata_begin(display_bars_x_rx(x, CHARS2GRID(BDTH_LEFTRX)), y, & ypix2);
-	display_bar(db, xpix2, ypix2, BDTH_RIGHTRX, rowspan, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL, & dbstylev);		// выше 9 баллов ничего нет.
+	display_bar(db, xpix2, ypix2, BDTH_RIGHTRX, rowspan, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL, & dbstylev_smbarplus);		// выше 9 баллов ничего нет.
 
 	if (BDTH_SPACERX != 0)
 	{
 		uint_fast16_t ypix;
 		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLRX)), y, & ypix);
-		display_bar(db, xpix, ypix, BDTH_SPACERX, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE, & dbstylev);
+		display_bar(db, xpix, ypix, BDTH_SPACERX, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE, & dbstylev_smbarplus);
 	}
 
 #endif /* WITHBARS */
@@ -9798,6 +9795,9 @@ static void display2_stylesupdate(void)
 
 	gxstyle_initialize(& dbstylev_smlabelplus);
 	gxstyle_textcolor(& dbstylev_smlabelplus, DSGN_SMLABELPLKUSTEXT, DSGN_SMLABELPLKUSBACK);
+
+	gxstyle_textcolor(& dbstylev_smbar, DSGN_SMLCOLOR, DSGN_BGCOLOR);
+	gxstyle_textcolor(& dbstylev_smbarplus, DSGN_SMRCOLOR, DSGN_BGCOLOR);
 
 	// Параметры отображения спектра и водопада
 	colorcmarker = DSGN_GRIDCOLOR0;	// Цвет макркера на центре
