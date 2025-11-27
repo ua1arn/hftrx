@@ -17,6 +17,7 @@
 #include <math.h>
 #include "src/gui/gui.h"
 #include "src/touch/touch.h"
+#include <atomic>
 
 #include "dspdefines.h"
 
@@ -4736,12 +4737,14 @@ enum
 };
 
 typedef struct {
+	unsigned rawfillix;
 	FLOAT_t raw_buf [WITHFFTSIZEAF * AFSP_DECIMATION];		// Для последующей децимации /2
 	FLOAT_t fft_buf [WITHFFTSIZEAF * 2];		// комплексные числа
-	uint_fast8_t is_ready;
+	std::atomic<int> is_ready;		// флаг заполнения буфера
 	FLOAT_t max_val;
-	FLOAT_t val_array [DIM_X];
+	FLOAT_t val_array [SM_BG_W];	// Больше, чем пикселей под s-meter - не будет
 	ARM_MORPH(arm_rfft_fast_instance) rfft_instance;
+	subscribefloat_t afspectreregister;
 } afsp_t;
 
 #endif /* WITHAFSPECTRE */
@@ -5374,19 +5377,18 @@ static int raster2fftsingle(
 static void
 afsp_save_sample(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
-	static uint_fast16_t i = 0;
-
-	ASSERT(i < ARRAY_SIZE(gvars.afsp.raw_buf));
-	if (gvars.afsp.is_ready == 0)
+	afsp_t * const afsp = (afsp_t *) ctx;
+	ASSERT(afsp->rawfillix < ARRAY_SIZE(afsp->raw_buf));
+	if (afsp->is_ready == 0)
 	{
-		gvars.afsp.raw_buf [i] = ch0;
-		i ++;
+		afsp->raw_buf [afsp->rawfillix] = ch0;
+		afsp->rawfillix ++;
 	}
 
-	if (i >= ARRAY_SIZE(gvars.afsp.raw_buf))
+	if (afsp->rawfillix >= ARRAY_SIZE(afsp->raw_buf))
 	{
-		gvars.afsp.is_ready = 1;
-		i = 0;
+		afsp->is_ready = 1;
+		afsp->rawfillix = 0;
 	}
 }
 
@@ -5402,25 +5404,25 @@ display2_af_spectre15_init(
 		dctx_t * pctx
 		)		// вызывать после display2_smeter15_init
 {
-	static subscribefloat_t afspectreregister;
-	smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS][SM_STATE_RX];		// отображение НЧ спектра только для режима s-метра BARS
+	afsp_t * const afsp = & gvars.afsp;
 
-	gvars.afsp.is_ready = 0;
+	afsp->is_ready = 0;
+	afsp->rawfillix = 0;
 
-	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_rfft_fast_init)(& gvars.afsp.rfft_instance, WITHFFTSIZEAF));
+	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_rfft_fast_init)(& afsp->rfft_instance, WITHFFTSIZEAF));
 	ARM_MORPH(arm_nuttall4b)(gvars.afspec_wndfn, WITHFFTSIZEAF);	/* оконная функция для показа звукового спектра */
 
-	subscribefloat(& speexoutfloat, & afspectreregister, NULL, afsp_save_sample);	// выход speex и фильтра
+	subscribefloat(& speexoutfloat, & afsp->afspectreregister, & gvars.afsp, afsp_save_sample);	// выход speex и фильтра
 }
 
+// Фильтр визуального отображения AF спектра
 static FLOAT_t af_spectre_filter(FLOAT_t old, FLOAT_t v)
 {
-	// Параметры фильтра визуального отображения AF спектра
-	const FLOAT_t m1 = 0.6;
+	// Параметры фильтра
+	const FLOAT_t m1 = (FLOAT_t) 0.6;
 	const FLOAT_t m2 = 1 - m1;
 
 	return old * m1 + m2 * v;
-
 }
 
 static void
@@ -5433,33 +5435,34 @@ display2_af_spectre15_latch(
 		dctx_t * pctx
 		)
 {
-	if (gvars.afsp.is_ready)
+	afsp_t * const afsp = & gvars.afsp;
+	if (afsp->is_ready)
 	{
 		const unsigned leftfftpos = freq2fft_af(glob_afspeclow);	// нижняя частота (номер бина) отлбражаемая на экране
 		const unsigned rightfftpos = freq2fft_af(glob_afspechigh);	// последний бин буфера FFT, отобрааемый на экране (включитеоьно)
 
-		fftzoom_af(gvars.afsp.raw_buf, AFSP_DECIMATIONPOW2, WITHFFTSIZEAF);
+		fftzoom_af(afsp->raw_buf, AFSP_DECIMATIONPOW2, WITHFFTSIZEAF);
 		// осталась половина буфера
 
-		ARM_MORPH(arm_mult)(gvars.afsp.raw_buf, gvars.afspec_wndfn, gvars.afsp.raw_buf, WITHFFTSIZEAF); // apply window function
-		//VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_rfft_fast)(& gvars.afsp.rfft_instance, gvars.afsp.raw_buf, gvars.afsp.fft_buf, 0)); // 0-прямое, 1-обратное
-		ARM_MORPH(arm_rfft_fast)(& gvars.afsp.rfft_instance, gvars.afsp.raw_buf, gvars.afsp.fft_buf, 0); // 0-прямое, 1-обратное
-		gvars.afsp.is_ready = 0;	// буфер больше не нужен... но он заполняется так же в user mode
-		ARM_MORPH(arm_cmplx_mag)(gvars.afsp.fft_buf, gvars.afsp.fft_buf, WITHFFTSIZEAF);
+		ARM_MORPH(arm_mult)(afsp->raw_buf, gvars.afspec_wndfn, afsp->raw_buf, WITHFFTSIZEAF); // apply window function
+		//VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_rfft_fast)(& afsp->rfft_instance, afsp->raw_buf, afsp->fft_buf, 0)); // 0-прямое, 1-обратное
+		ARM_MORPH(arm_rfft_fast)(& afsp->rfft_instance, afsp->raw_buf, afsp->fft_buf, 0); // 0-прямое, 1-обратное
+		afsp->is_ready = 0;	// буфер больше не нужен... но он заполняется так же в user mode
+		ARM_MORPH(arm_cmplx_mag)(afsp->fft_buf, afsp->fft_buf, WITHFFTSIZEAF);
 
-		smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS][SM_STATE_RX];		// отображение НЧ спектра только для режима s-метра BARS
+		smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS] [SM_STATE_RX];		// отображение НЧ спектра только для режима s-метра BARS
 		const uint_fast16_t w = smpr->ge - smpr->gs;
-		ASSERT(w <= ARRAY_SIZE(gvars.afsp.val_array));
+		ASSERT(w <= ARRAY_SIZE(afsp->val_array));
 		unsigned x;
 		for (x = 0; x < w; x ++)
 		{
 			const uint_fast16_t fftpos = raster2fftsingle(x, w, leftfftpos, rightfftpos);
-			ASSERT(fftpos < ARRAY_SIZE(gvars.afsp.fft_buf));
+			ASSERT(fftpos < ARRAY_SIZE(afsp->fft_buf));
 			// filterig
-			gvars.afsp.val_array [x] = af_spectre_filter(gvars.afsp.val_array [x], gvars.afsp.fft_buf [fftpos]);
+			afsp->val_array [x] = af_spectre_filter(afsp->val_array [x], afsp->fft_buf [fftpos]);
 		}
-		ARM_MORPH(arm_max_no_idx)(gvars.afsp.val_array, w, & gvars.afsp.max_val);	// поиск в отображаемой части
-		gvars.afsp.max_val = FMAXF(gvars.afsp.max_val, (FLOAT_t) 0.001);
+		ARM_MORPH(arm_max_no_idx)(afsp->val_array, w, & afsp->max_val);	// поиск в отображаемой части
+		afsp->max_val = FMAXF(afsp->max_val, (FLOAT_t) 0.001);
 	}
 }
 
@@ -5478,15 +5481,17 @@ display2_af_spectre15(const gxdrawb_t * db,
 		{
 			if (! hamradio_get_tx())
 			{
-				smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS][SM_STATE_RX];		// отображение НЧ спектра только для режима s-метра BARS
+				afsp_t * const afsp = & gvars.afsp;
+				smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS] [SM_STATE_RX];		// отображение НЧ спектра только для режима s-метра BARS
 				const uint_fast16_t w = smpr->ge - smpr->gs;
 				const uint_fast16_t xpix = GRID2X(xgrid) + smpr->gs;
 				const uint_fast16_t ypix = GRID2Y(ygrid);	// верх всего прямоугольника s-meter
 				const uint_fast16_t ypix0 = ypix + SM_AFSP_VOFFS0;	// y координата для 0-го уровня
-				ASSERT(w <= ARRAY_SIZE(gvars.afsp.val_array));
+				ASSERT(w <= ARRAY_SIZE(afsp->val_array));
+				const uint_fast16_t maxval = afsp->max_val * UINT16_MAX;
 				for (unsigned x = 0; x < w; x ++)
 				{
-					const uint_fast16_t y_norm = normalize(gvars.afsp.val_array [x] * 4096, 0, gvars.afsp.max_val * 4096, SM_AF_H - 1);
+					const uint_fast16_t y_norm = normalize(afsp->val_array [x] * UINT16_MAX, 0, maxval, SM_AF_H - 1);
 					ASSERT(y_norm < SM_AF_H);
 					colpip_set_vline(db,
 							xpix + x, ypix0 - y_norm, y_norm,
