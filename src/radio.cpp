@@ -9269,6 +9269,9 @@ void display2_fnblock9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 		display_2fmenuslines(db, x, y, xspan, yspan, 1, label, bval);
 		break;
 	}
+#else
+	display_2fmenuslines(db, x, y, xspan, yspan, 1, "FMENU9", "FVALUE9");
+
 #endif /* WITHENCODER2 && ! WITHTOUCHGUI */
 }
 
