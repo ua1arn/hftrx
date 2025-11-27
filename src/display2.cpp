@@ -1743,10 +1743,11 @@ enum {
 
 // Размеры S-метра
 #define SM_BG_W_CELLS 15
-#define SM_BG_H_CELLS 18
-#define SM_YCENTEROFFS 120	// Расстояние от верха поля до оси стрелки S-метра
+#define SM_BG_H_CELLS 20
 
+#define SM_YCENTEROFFS 120	// Расстояние от верха поля до оси стрелки S-метра
 enum { SM_BG_W = GRID2X(SM_BG_W_CELLS), SM_BG_H = GRID2Y(SM_BG_H_CELLS) };
+enum { SM_AF_H = 40 };	// высота, занятая индикатором спектра AF
 
 
 /* точки на шкале s-метра, к которым надо привязать измеренное значение */
@@ -1844,7 +1845,7 @@ display2_smeter15_layout_tx(
 		smpr->gs + 3 * smpr->step3,
 	};
 
-	const COLORPIP_T bgcolor = display2_getbgcolor();
+	const COLORPIP_T smeterbgcolor = display2_getbgcolor();
 	const COLORPIP_T smetercolor = COLORPIP_WHITE;
 	const COLORPIP_T smeterpluscolor = COLORPIP_DARKRED;
 	const uint_fast16_t pad2w3 = strwidth3("ZZ");
@@ -1868,7 +1869,7 @@ display2_smeter15_layout_tx(
 #if WITHRLEDECOMPRESS
 		graw_picture_RLE_buf(db, 0, 0, & smeter_bg_new, bgcolor);
 #else
-		colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, bgcolor);
+		colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
 
 		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr) - 1; ++ i, p += 10)
 		{
@@ -1905,10 +1906,12 @@ display2_smeter15_layout_tx(
 	default:
 	case SMETER_TYPE_BARS:
 		// Фон для TX
-		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, bgcolor, 1);
+		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, smeterbgcolor, 1);
 //		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_WHITE, 0);
 //		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
 
+		// Power meter
+		// smpr->r1: горизонталь первой шкалы
 		colpip_line(db, smpr->gs, smpr->r1, smpr->ge, smpr->r1, COLORPIP_WHITE, 0);
 		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr); ++ i, p += 10)
 		{
@@ -1923,6 +1926,8 @@ display2_smeter15_layout_tx(
 				colpip_line(db, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 5, COLORPIP_WHITE, 0);
 		}
 
+		// SWR meter
+		// smpr->r2: горизонталь второй шкалы
 		colpip_line(db, smpr->gs, smpr->r2, smpr->ge, smpr->r2, COLORPIP_WHITE, 0);
 		for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
 		{
@@ -1975,7 +1980,7 @@ display2_smeter15_layout_rx(
 		smpr->gm + 5 * smpr->step2,
 	};
 
-	const COLORPIP_T bgcolor = display2_getbgcolor();
+	const COLORPIP_T smeterbgcolor = display2_getbgcolor();
 	const COLORPIP_T smetercolor = COLORPIP_WHITE;
 	const COLORPIP_T smeterpluscolor = COLORPIP_DARKRED;
 	const uint_fast16_t pad2w3 = strwidth3("ZZ");
@@ -1997,9 +2002,9 @@ display2_smeter15_layout_rx(
 	case SMETER_TYPE_DIAL:
 		// Фон для RX
 #if WITHRLEDECOMPRESS
-		graw_picture_RLE_buf(db, 0, 0, & smeter_bg_new, bgcolor);
+		graw_picture_RLE_buf(db, 0, 0, & smeter_bg_new, smeterbgcolor);
 #else
-		colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, bgcolor);
+		colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
 
 		for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 		{
@@ -2039,8 +2044,7 @@ display2_smeter15_layout_rx(
 	default:
 	case SMETER_TYPE_BARS:
 		// Фон для RX
-
-		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, bgcolor, 1);
+		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, smeterbgcolor, 1);
 //		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_WHITE, 0);
 //		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
 
@@ -4733,10 +4737,6 @@ typedef struct {
 	FLOAT_t raw_buf [WITHFFTSIZEAF * AFSP_DECIMATION];		// Для последующей децимации /2
 	FLOAT_t fft_buf [WITHFFTSIZEAF * 2];		// комплексные числа
 	uint_fast8_t is_ready;
-	uint_fast16_t x;
-	uint_fast16_t y;
-	uint_fast16_t w;
-	uint_fast16_t h;
 	FLOAT_t max_val;
 	FLOAT_t val_array [DIM_X];
 	ARM_MORPH(arm_rfft_fast_instance) rfft_instance;
@@ -5403,10 +5403,6 @@ display2_af_spectre15_init(
 	static subscribefloat_t afspectreregister;
 	smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS][SM_STATE_RX];		// отображение НЧ спектра только для режима s-метра BARS
 
-	gvars.afsp.x = GRID2X(xgrid) + smpr->gs;
-	gvars.afsp.y = GRID2Y(ygrid) + SM_BG_H - 10;
-	gvars.afsp.w = smpr->ge - smpr->gs;
-	gvars.afsp.h = 40;
 	gvars.afsp.is_ready = 0;
 
 	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_rfft_fast_init)(& gvars.afsp.rfft_instance, WITHFFTSIZEAF));
@@ -5415,6 +5411,15 @@ display2_af_spectre15_init(
 	subscribefloat(& speexoutfloat, & afspectreregister, NULL, afsp_save_sample);	// выход speex и фильтра
 }
 
+static FLOAT_t af_spectre_filter(FLOAT_t old, FLOAT_t v)
+{
+	// Параметры фильтра визуального отображения AF спектра
+	const FLOAT_t m1 = 0.6;
+	const FLOAT_t m2 = 1 - m1;
+
+	return old * m1 + m2 * v;
+
+}
 
 static void
 display2_af_spectre15_latch(
@@ -5428,8 +5433,6 @@ display2_af_spectre15_latch(
 {
 	if (gvars.afsp.is_ready)
 	{
-		const FLOAT_t m1 = 0.6;
-		const FLOAT_t m2 = 1 - m1;
 		const unsigned leftfftpos = freq2fft_af(glob_afspeclow);	// нижняя частота (номер бина) отлбражаемая на экране
 		const unsigned rightfftpos = freq2fft_af(glob_afspechigh);	// последний бин буфера FFT, отобрааемый на экране (включитеоьно)
 
@@ -5442,15 +5445,19 @@ display2_af_spectre15_latch(
 		gvars.afsp.is_ready = 0;	// буфер больше не нужен... но он заполняется так же в user mode
 		ARM_MORPH(arm_cmplx_mag)(gvars.afsp.fft_buf, gvars.afsp.fft_buf, WITHFFTSIZEAF);
 
-		ASSERT(gvars.afsp.w <= ARRAY_SIZE(gvars.afsp.val_array));
-		for (unsigned x = 0; x < gvars.afsp.w; x ++)
+		smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS][SM_STATE_RX];		// отображение НЧ спектра только для режима s-метра BARS
+		const uint_fast16_t w = smpr->ge - smpr->gs;
+		const uint_fast16_t h = SM_AF_H;
+		ASSERT(w <= ARRAY_SIZE(gvars.afsp.val_array));
+		unsigned x;
+		for (x = 0; x < w; x ++)
 		{
-			const uint_fast16_t fftpos = raster2fftsingle(x, gvars.afsp.w, leftfftpos, rightfftpos);
+			const uint_fast16_t fftpos = raster2fftsingle(x, w, leftfftpos, rightfftpos);
 			ASSERT(fftpos < ARRAY_SIZE(gvars.afsp.fft_buf));
 			// filterig
-			gvars.afsp.val_array [x] = gvars.afsp.val_array [x] * m1 + m2 * gvars.afsp.fft_buf [fftpos];
+			gvars.afsp.val_array [x] = af_spectre_filter(gvars.afsp.val_array [x], gvars.afsp.fft_buf [fftpos]);
 		}
-		ARM_MORPH(arm_max_no_idx)(gvars.afsp.val_array, gvars.afsp.w, & gvars.afsp.max_val);	// поиск в отображаемой части
+		ARM_MORPH(arm_max_no_idx)(gvars.afsp.val_array, w, & gvars.afsp.max_val);	// поиск в отображаемой части
 		gvars.afsp.max_val = FMAXF(gvars.afsp.max_val, (FLOAT_t) 0.001);
 	}
 }
@@ -5470,19 +5477,22 @@ display2_af_spectre15(const gxdrawb_t * db,
 		{
 			if (! hamradio_get_tx())
 			{
-				PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
-
-				ASSERT(gvars.afsp.w <= ARRAY_SIZE(gvars.afsp.val_array));
-				for (unsigned x = 0; x < gvars.afsp.w; x ++)
+				smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS][SM_STATE_RX];		// отображение НЧ спектра только для режима s-метра BARS
+				const uint_fast16_t w = smpr->ge - smpr->gs;
+				const uint_fast16_t h = SM_AF_H;
+				const uint_fast16_t xpix = GRID2X(xgrid) + smpr->gs;
+				const uint_fast16_t ypix = GRID2Y(ygrid) + SM_BG_H - 10;
+				ASSERT(w <= ARRAY_SIZE(gvars.afsp.val_array));
+				for (unsigned x = 0; x < w; x ++)
 				{
-					//const uint_fast16_t y_norm = normalize(gvars.afsp.val_array [x], 0, gvars.afsp.max_val, gvars.afsp.h - 2) + 1;
-					const uint_fast16_t y_norm = normalize(gvars.afsp.val_array [x] * 4096, 0, gvars.afsp.max_val * 4096, gvars.afsp.h - 2) + 1;
-					ASSERT(y_norm <= gvars.afsp.h);
-					ASSERT(gvars.afsp.y >= y_norm);
-					if (gvars.afsp.y >= y_norm)
+					//const uint_fast16_t y_norm = normalize(gvars.afsp.val_array [x], 0, gvars.afsp.max_val, h - 2) + 1;
+					const uint_fast16_t y_norm = normalize(gvars.afsp.val_array [x] * 4096, 0, gvars.afsp.max_val * 4096, h - 2) + 1;
+					ASSERT(y_norm <= h);
+					ASSERT(ypix >= y_norm);
+					if (ypix >= y_norm)
 					{
 						colpip_set_vline(db,
-								gvars.afsp.x + x, gvars.afsp.y - y_norm, y_norm,
+								xpix + x, ypix - y_norm, y_norm,
 								DSGN_AFSPECTRE_COLOR);
 					}
 				}

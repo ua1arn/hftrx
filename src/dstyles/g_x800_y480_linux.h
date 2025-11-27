@@ -119,7 +119,7 @@
 #if WITHAFSPECTRE
 		{	0,	8,	0,	0,	display2_af_spectre15_init,	& dzi_default, PGINI, },
 		{	0,	8,	0,	0,	display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
-		{	0,	8,	15,	0,	display2_af_spectre15,		& dzi_default, PG0, },
+		{	0,	8,	SM_BG_W_CELLS,	SM_BG_H_CELLS,	display2_af_spectre15,		& dzi_default, PG0, },
 #endif /* WITHAFSPECTRE */
 
 		{	0,	0, 4,	4,	display2_siglevel4, 	& dzi_default, PG0, },	// signal level dBm

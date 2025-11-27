@@ -99,7 +99,7 @@
 #if WITHAFSPECTRE
 		{	0,	4,	0,	0,	display2_af_spectre15_init,	& dzi_default, PGINI, },
 		{	0,	4,	0,	0,	display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
-		{	0,	4,	15,	0,	display2_af_spectre15,		& dzi_default, PGSPE, },
+		{	0,	4,	SM_BG_W_CELLS,	SM_BG_H_CELLS,	display2_af_spectre15,		& dzi_default, PGSPE, },
 #endif /* WITHAFSPECTRE */
 
 //		{   47, 20, 3,	0,	display2_bkin3,		& dzi_default, PGALL, },
