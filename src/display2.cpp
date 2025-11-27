@@ -1599,11 +1599,15 @@ static gxstyle_t dbstylev_2rxB [2];
 // Параметры отображения частоты основного приемника
 static gxstyle_t dbstylev_1freqv;
 
+#if ! LCDMODE_DUMMY
+
 // Параметры отображения спектра и водопада - устанавливаются в display2_stylesupdate().
 static COLORPIP_T colorcmarker = DSGN_GRIDCOLOR0;	// Цвет макркера на центре
 static COLORPIP_T colorgridlines = DSGN_GRIDCOLOR2;	// Цвет линий сетки
 static COLORPIP_T colorgridlines3dss = COLORPIP_GREEN;
 static COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// Цвет текста частот сетки
+
+#endif /* ! LCDMODE_DUMMY */
 
 #if 1
 	// полностью частота до килогерц
@@ -3526,7 +3530,7 @@ static void display2_preovf3(const gxdrawb_t * db,
 	else
 	{
 		// поля отображения, не имеющие вариантов по состоянию вкл/выкл
-		gxstyle_textcolor(& dbstylev, DSGN_LABELTEXT, DSGN_LABELBACK);
+		gxstyle_textcolor(& dbstylev, dbstylev_1state.textcolor, dbstylev_1state.bgcolor);
 		display_text(db, x, y, hamradio_get_pre_value_P(), xspan, yspan, & dbstylev);
 	}
 }
@@ -9705,6 +9709,8 @@ void display2_bgprocess(
 #endif
 }
 
+#if ! LCDMODE_DUMMY
+
 // Заполнение стилей для отображения
 static void display2_stylesupdate(void)
 {
@@ -9789,10 +9795,13 @@ static void display2_stylesupdate(void)
 	colorgridlines3dss = COLORPIP_GREEN;
 
 }
+#endif /* ! LCDMODE_DUMMY */
 
 void display2_initialize(void)
 {
+#if ! LCDMODE_DUMMY
 	display2_stylesupdate();
+#endif /* ! LCDMODE_DUMMY */
 
 #if (CPUSTYLE_R7S721 || 0)
 	//scbfi_t * p = new (reinterpret_cast<void *>(& scbf)) scbfi_t;

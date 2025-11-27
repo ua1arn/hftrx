@@ -337,48 +337,6 @@ typedef struct
 	// определение основных цветов
 	///
 
-	/* RGB 24-bits color table definition (RGB888). */
-	#define COLOR_BLACK          TFTRGB(0x00, 0x00, 0x00)
-	#define COLOR_WHITE          TFTRGB(0xFF, 0xFF, 0xFF)
-	#define COLOR_BLUE           TFTRGB(0x00, 0x00, 0xFF)
-	#define COLOR_GREEN          TFTRGB(0x00, 0xFF, 0x00)
-	#define COLOR_RED            TFTRGB(0xFF, 0x00, 0x00)
-	#define COLOR_NAVY           TFTRGB(0x00, 0x00, 0x80)
-	#define COLOR_DARKBLUE       TFTRGB(0x00, 0x00, 0x8B)
-	#define COLOR_DARKGREEN      TFTRGB(0x00, 0x64, 0x00)
-	#define COLOR_DARKGREEN2     TFTRGB(0x00, 0x20, 0x00)
-	#define COLOR_DARKCYAN       TFTRGB(0x00, 0x8B, 0x8B)
-	#define COLOR_CYAN           TFTRGB(0x00, 0xFF, 0xFF)
-	#define COLOR_TURQUOISE      TFTRGB(0x40, 0xE0, 0xD0)
-	#define COLOR_INDIGO         TFTRGB(0x4B, 0x00, 0x82)
-	#define COLOR_DARKRED        TFTRGB(0x80, 0x00, 0x00)
-	#define COLOR_DARKRED2       TFTRGB(0x40, 0x00, 0x00)
-	#define COLOR_OLIVE          TFTRGB(0x80, 0x80, 0x00)
-	#define COLOR_DARKGRAY       TFTRGB(0x80, 0x80, 0x80)
-	#define COLOR_SKYBLUE        TFTRGB(0x87, 0xCE, 0xEB)
-	#define COLOR_BLUEVIOLET     TFTRGB(0x8A, 0x2B, 0xE2)
-	#define COLOR_LIGHTGREEN     TFTRGB(0x90, 0xEE, 0x90)
-	#define COLOR_DARKVIOLET     TFTRGB(0x94, 0x00, 0xD3)
-	#define COLOR_YELLOWGREEN    TFTRGB(0x9A, 0xCD, 0x32)
-	#define COLOR_BROWN          TFTRGB(0xA5, 0x2A, 0x2A)
-	#define COLOR_GRAY       	 TFTRGB(0xA9, 0xA9, 0xA9)
-	#define COLOR_SIENNA         TFTRGB(0xA0, 0x52, 0x2D)
-	#define COLOR_LIGHTBLUE      TFTRGB(0xAD, 0xD8, 0xE6)
-	#define COLOR_GREENYELLOW    TFTRGB(0xAD, 0xFF, 0x2F)
-	#define COLOR_SILVER         TFTRGB(0xC0, 0xC0, 0xC0)
-	#define COLOR_LIGHTGREY      TFTRGB(0xD3, 0xD3, 0xD3)
-	#define COLOR_LIGHTCYAN      TFTRGB(0xE0, 0xFF, 0xFF)
-	#define COLOR_VIOLET         TFTRGB(0xEE, 0x82, 0xEE)
-	#define COLOR_AZUR           TFTRGB(0xF0, 0xFF, 0xFF)
-	#define COLOR_BEIGE          TFTRGB(0xF5, 0xF5, 0xDC)
-	#define COLOR_MAGENTA        TFTRGB(0xFF, 0x00, 0xFF)
-	#define COLOR_TOMATO         TFTRGB(0xFF, 0x63, 0x47)
-	#define COLOR_GOLD           TFTRGB(0xFF, 0xD7, 0x00)
-	#define COLOR_ORANGE         TFTRGB(0xFF, 0xA5, 0x00)
-	#define COLOR_SNOW           TFTRGB(0xFF, 0xFA, 0xFA)
-	#define COLOR_YELLOW         TFTRGB(0xFF, 0xFF, 0x00)
-	#define COLOR_BROWN   		 TFTRGB(0xA5, 0x2A, 0x2A)	// коричневый
-	#define COLOR_PEAR    		 TFTRGB(0xD1, 0xE2, 0x31)	// грушевый
 
 	// Заполнение палитры производится в display2_xltrgb24()
 
@@ -462,7 +420,7 @@ typedef struct
 		#define DSGN_LOCKED       TFTRGB(0x3C, 0x3C, 0x00)
 		#define DSGN_SPECTRUMPEAKS         COLORPIP_DARKGRAY
 	#else
-		#error Undefined color scheme - set COLORSTYLE_xxx
+		//#error Undefined color scheme - set COLORSTYLE_xxx
 
 	#endif
 
@@ -571,7 +529,7 @@ typedef struct
 	#define DSGN_SMLABELPLKUSTEXT        COLORPIP_RED
 	#define DSGN_SMLABELPLKUSBACK        COLORPIP_BLACK
 #else /* COLORSTYLE_RED */
-	#error Undefined color scheme - set COLORSTYLE_xxx
+	//#error Undefined color scheme - set COLORSTYLE_xxx
 
 #endif /* COLORSTYLE_RED */
 
