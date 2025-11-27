@@ -1600,6 +1600,11 @@ static gxstyle_t dbstylev_2rxB [2];
 // Параметры отображения частоты основного приемника
 static gxstyle_t dbstylev_1freqv;
 
+static gxstyle_t dbstylev_lock;
+static gxstyle_t dbstylev_ovf;
+static gxstyle_t dbstylev_smlabel;
+static gxstyle_t dbstylev_smlabelplus;
+
 #if ! LCDMODE_DUMMY
 
 // Параметры отображения спектра и водопада - устанавливаются в display2_stylesupdate().
@@ -1607,6 +1612,10 @@ static COLORPIP_T colorcmarker = DSGN_GRIDCOLOR0;	// Цвет макркера �
 static COLORPIP_T colorgridlines = DSGN_GRIDCOLOR2;	// Цвет линий сетки
 static COLORPIP_T colorgridlines3dss = COLORPIP_GREEN;
 static COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// Цвет текста частот сетки
+
+static COLORPIP_T smeterbgcolor = COLORPIP_BLACK;
+static COLORPIP_T smetercolor = COLORPIP_WHITE;
+static COLORPIP_T smeterpluscolor = COLORPIP_DARKRED;
 
 #endif /* ! LCDMODE_DUMMY */
 
@@ -1848,9 +1857,6 @@ display2_smeter15_layout_tx(
 		smpr->gs + 3 * smpr->step3,
 	};
 
-	const COLORPIP_T smeterbgcolor = display2_getbgcolor();
-	const COLORPIP_T smetercolor = COLORPIP_WHITE;
-	const COLORPIP_T smeterpluscolor = COLORPIP_DARKRED;
 	const uint_fast16_t pad2w3 = strwidth3("ZZ");
 
 	// SMETER_TYPE_DIAL data
@@ -1983,9 +1989,6 @@ display2_smeter15_layout_rx(
 		smpr->gm + 5 * smpr->step2,
 	};
 
-	const COLORPIP_T smeterbgcolor = display2_getbgcolor();
-	const COLORPIP_T smetercolor = COLORPIP_WHITE;
-	const COLORPIP_T smeterpluscolor = COLORPIP_DARKRED;
 	const uint_fast16_t pad2w3 = strwidth3("ZZ");
 
 	// SMETER_TYPE_DIAL data
@@ -3390,10 +3393,7 @@ static void display_lockstate1(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
-	gxstyle_textcolor(& dbstylev, DSGN_LOCKCOLOR, DSGN_BGCOLOR);
-	display_text(db, x, y, hamradio_get_lockvalue() ? "*" : "", xspan, yspan, & dbstylev);
+	display_text(db, x, y, hamradio_get_lockvalue() ? "*" : "", xspan, yspan, & dbstylev_lock);
 }
 
 // RX path bandwidth
@@ -3517,28 +3517,22 @@ static void display2_preovf3(const gxdrawb_t * db,
 		)
 {
 	const char * labels [1];
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
 	if (hamradio_get_bringSWR(labels))
 	{
- 		gxstyle_textcolor(& dbstylev, DSGN_BGCOLOR, DSGN_OVFCOLOR);
-		display_text(db, x, y, labels [0], xspan, yspan, & dbstylev);
+		display_text(db, x, y, labels [0], xspan, yspan, & dbstylev_ovf);
 	}
 	else if (boad_fpga_adcoverflow() != 0)
 	{
-		gxstyle_textcolor(& dbstylev, DSGN_BGCOLOR, DSGN_OVFCOLOR);
-		display_text(db, x, y, "OVF", xspan, yspan, & dbstylev);
+		display_text(db, x, y, "OVF", xspan, yspan, & dbstylev_ovf);
 	}
 	else if (boad_mike_adcoverflow() != 0)
 	{
-		gxstyle_textcolor(& dbstylev, DSGN_BGCOLOR, DSGN_OVFCOLOR);
-		display_text(db, x, y, "MIK", xspan, yspan, & dbstylev);
+		display_text(db, x, y, "MIK", xspan, yspan, & dbstylev_ovf);
 	}
 	else
 	{
 		// поля отображения, не имеющие вариантов по состоянию вкл/выкл
-		gxstyle_textcolor(& dbstylev, dbstylev_1state.textcolor, dbstylev_1state.bgcolor);
-		display_text(db, x, y, hamradio_get_pre_value_P(), xspan, yspan, & dbstylev);
+		display_text(db, x, y, hamradio_get_pre_value_P(), xspan, yspan, & dbstylev_1state);
 	}
 }
 
@@ -3550,6 +3544,7 @@ static void display2_preovf5alt(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
+#if ! LCDMODE_DUMMY
 	enum { chars_W2 = 5 };
 
 	if (boad_fpga_adcoverflow() != 0)
@@ -3567,6 +3562,7 @@ static void display2_preovf5alt(const gxdrawb_t * db,
 		const char * str = hamradio_get_pre_value_P();
 		layout_label1_medium(db, x, y, str, strlen_P(str), chars_W2, COLORPIP_BLACK, colors_2state_alt [1]);
 	}
+#endif /* ! LCDMODE_DUMMY */
 }
 
 // display antenna
@@ -4582,12 +4578,8 @@ static void display2_legend_rx(const gxdrawb_t * db,
 		)
 {
 #if defined(SMETERMAP)
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
-	gxstyle_textcolor(& dbstylev, DSGN_SMLABELTEXT, DSGN_SMLABELBACK);
-	display_text(db, x + 0, y, SMETERMAP, BDTH_LEFTRX, yspan, & dbstylev);
-	gxstyle_textcolor(& dbstylev, DSGN_SMLABELPLKUSTEXT, DSGN_SMLABELPLKUSBACK);
-	display_text(db, x + BDTH_LEFTRX, y, SMETERMAP + BDTH_LEFTRX, xspan - BDTH_LEFTRX, yspan, & dbstylev);
+	display_text(db, x + 0, y, SMETERMAP, BDTH_LEFTRX, yspan, & dbstylev_smlabel);
+	display_text(db, x + BDTH_LEFTRX, y, SMETERMAP + BDTH_LEFTRX, xspan - BDTH_LEFTRX, yspan, & dbstylev_smlabelplus);
 #endif /* defined(SMETERMAP) */
 }
 
@@ -4601,17 +4593,14 @@ static void display2_legend_tx(const gxdrawb_t * db,
 		)
 {
 #if defined(SWRPWRMAP) && WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
-	gxstyle_t dbstylev;
-	gxstyle_initialize(& dbstylev);
-	gxstyle_textcolor(& dbstylev, DSGN_SMLABELTEXT, DSGN_SMLABELBACK);
 	#if WITHSWRMTR
 		#if WITHSHOWSWRPWR /* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-				display_text(db, x, y, SWRPWRMAP, xspan, yspan, & dbstylev);
+				display_text(db, x, y, SWRPWRMAP, xspan, yspan, & dbstylev_smlabel);
 		#else
 				if (swrmode) 	// Если TUNE то показываем шкалу КСВ
-					display_text(db, x, y, SWRMAP, xspan, yspan, & dbstylev);
+					display_text(db, x, y, SWRMAP, xspan, yspan, & dbstylev_smlabel);
 				else
-					display_text(db, x, y, POWERMAP, xspan, yspan, & dbstylev);
+					display_text(db, x, y, POWERMAP, xspan, yspan, & dbstylev_smlabel);
 		#endif
 	#else
 		#warning No TX indication
@@ -9798,11 +9787,27 @@ static void display2_stylesupdate(void)
 	gxstyle_initialize(& dbstylev_1stateTime);
 	gxstyle_textcolor(& dbstylev_1stateTime, DSGN_BIGCOLOR, DSGN_BIGCOLORBACK);
 
+	gxstyle_initialize(& dbstylev_lock);
+	gxstyle_textcolor(& dbstylev_lock, DSGN_LOCKCOLOR, DSGN_BGCOLOR);
+
+	gxstyle_initialize(& dbstylev_ovf);
+	gxstyle_textcolor(& dbstylev_ovf, DSGN_BGCOLOR, DSGN_OVFCOLOR);
+
+	gxstyle_initialize(& dbstylev_smlabel);
+	gxstyle_textcolor(& dbstylev_smlabel, DSGN_SMLABELTEXT, DSGN_SMLABELBACK);
+
+	gxstyle_initialize(& dbstylev_smlabelplus);
+	gxstyle_textcolor(& dbstylev_smlabelplus, DSGN_SMLABELPLKUSTEXT, DSGN_SMLABELPLKUSBACK);
+
 	// Параметры отображения спектра и водопада
 	colorcmarker = DSGN_GRIDCOLOR0;	// Цвет макркера на центре
 	colorgridlines = DSGN_GRIDCOLOR2;	// Цвет линий сетки
 	colordigits = DSGN_GRIDDIGITS;	// Цвет текста частот сетки
 	colorgridlines3dss = COLORPIP_GREEN;
+
+	smeterbgcolor = DSGN_BGCOLOR;
+	smetercolor = COLORPIP_WHITE;
+	smeterpluscolor = COLORPIP_DARKRED;
 
 }
 #endif /* ! LCDMODE_DUMMY */
