@@ -368,14 +368,14 @@ unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 ///
 
 
-void uint8_queue_init(u8queue_t * q, uint8_t * buff, unsigned sz)
+void uint8_queue_init(u8queue_t * __RESTRICT q, uint8_t * buff, unsigned sz)
 {
 	q->qg = q->qp = 0;
 	q->size = sz;
 	q->buffer = buff;
 }
 
-uint_fast8_t uint8_queue_put(u8queue_t * q, uint_fast8_t c)
+uint_fast8_t uint8_queue_put(u8queue_t * __RESTRICT q, uint_fast8_t c)
 {
 	unsigned qpt = q->qp;
 	const unsigned next = (qpt + 1) % q->size;
@@ -388,7 +388,7 @@ uint_fast8_t uint8_queue_put(u8queue_t * q, uint_fast8_t c)
 	return 0;
 }
 
-uint_fast8_t uint8_queue_get(u8queue_t * q, uint_fast8_t * pc)
+uint_fast8_t uint8_queue_get(u8queue_t * __RESTRICT q, uint_fast8_t * pc)
 {
 	unsigned qgt = q->qg;
 	if (q->qp != qgt)
@@ -410,14 +410,14 @@ uint_fast8_t uint8_queue_empty(const u8queue_t * q)
 ///
 
 
-void uint16_queue_init(u16queue_t * q, uint16_t * buff, unsigned sz)
+void uint16_queue_init(u16queue_t * __RESTRICT q, uint16_t * buff, unsigned sz)
 {
 	q->qg = q->qp = 0;
 	q->size = sz;
 	q->buffer = buff;
 }
 
-uint_fast8_t uint16_queue_put(u16queue_t * q, uint_fast16_t c)
+uint_fast8_t uint16_queue_put(u16queue_t * __RESTRICT q, uint_fast16_t c)
 {
 	unsigned qpt = q->qp;
 	const unsigned next = (qpt + 1) % q->size;
@@ -430,7 +430,7 @@ uint_fast8_t uint16_queue_put(u16queue_t * q, uint_fast16_t c)
 	return 0;
 }
 
-uint_fast8_t uint16_queue_get(u16queue_t * q, uint_fast16_t * pc)
+uint_fast8_t uint16_queue_get(u16queue_t * __RESTRICT q, uint_fast16_t * pc)
 {
 	unsigned qgt = q->qg;
 	if (q->qp != qgt)
@@ -442,7 +442,7 @@ uint_fast8_t uint16_queue_get(u16queue_t * q, uint_fast16_t * pc)
 	return 0;
 }
 
-uint_fast8_t uint16_queue_empty(const u16queue_t * q)
+uint_fast8_t uint16_queue_empty(const u16queue_t * __RESTRICT q)
 {
 	return q->qp == q->qg;
 }

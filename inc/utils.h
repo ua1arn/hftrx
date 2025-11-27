@@ -120,10 +120,10 @@ typedef struct u8queue
 	unsigned qp;
 } u8queue_t;
 
-void uint8_queue_init(u8queue_t * q, uint8_t * buff, unsigned sz);
-uint_fast8_t uint8_queue_put(u8queue_t * q, uint_fast8_t c);
-uint_fast8_t uint8_queue_get(u8queue_t * q, uint_fast8_t * pc);
-uint_fast8_t uint8_queue_empty(const u8queue_t * q);
+void uint8_queue_init(u8queue_t * __RESTRICT q, uint8_t * buff, unsigned sz);
+uint_fast8_t uint8_queue_put(u8queue_t * __RESTRICT q, uint_fast8_t c);
+uint_fast8_t uint8_queue_get(u8queue_t * __RESTRICT q, uint_fast8_t * pc);
+uint_fast8_t uint8_queue_empty(const u8queue_t * __RESTRICT q);
 
 /////////////////////
 /// Queue uint16_t support
@@ -137,10 +137,10 @@ typedef struct u16queue
 	unsigned qp;
 } u16queue_t;
 
-void uint16_queue_init(u16queue_t * q, uint16_t * buff, unsigned sz);
-uint_fast8_t uint16_queue_put(u16queue_t * q, uint_fast16_t c);
-uint_fast8_t uint16_queue_get(u16queue_t * q, uint_fast16_t * pc);
-uint_fast8_t uint16_queue_empty(const u16queue_t * q);
+void uint16_queue_init(u16queue_t * __RESTRICT q, uint16_t * buff, unsigned sz);
+uint_fast8_t uint16_queue_put(u16queue_t * __RESTRICT q, uint_fast16_t c);
+uint_fast8_t uint16_queue_get(u16queue_t * __RESTRICT q, uint_fast16_t * pc);
+uint_fast8_t uint16_queue_empty(const u16queue_t * __RESTRICT q);
 
 
 /* поддержка побитового формирования значений для вывода в SPI устройство. */
