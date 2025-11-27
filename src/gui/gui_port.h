@@ -268,14 +268,14 @@ static inline void __gui_drawbuf_copy(const gui_drawbuf_t * dstbuf, void * srcbu
 static inline void __gui_draw_rect(const gui_drawbuf_t * buf, unsigned int x, unsigned int y,
 		unsigned int w, unsigned int h, gui_color_t color, unsigned int fill)
 {
-	colpip_rect(buf, x, y, x + w, y + h, color, fill);
+	colpip_rect(buf, x, y, x + w - 1, y + h - 1, color, fill);
 }
 
 // Отрисовка прямоугольника со скругленными углами
 static inline void __gui_draw_rounded_rect(const gui_drawbuf_t * buf, unsigned int x, unsigned int y,
 		unsigned int w, unsigned int h, unsigned int radius, gui_color_t color, unsigned int fill)
 {
-	colmain_rounded_rect(buf, x, y, x + w, y + h, radius, color, fill);
+	colmain_rounded_rect(buf, x, y, x + w - 1, y + h - 1, radius, color, fill);
 }
 
 static inline void __gui_draw_line(const gui_drawbuf_t * buf, unsigned int x1, unsigned int y1,
