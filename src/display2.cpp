@@ -1656,30 +1656,30 @@ uint_fast16_t normalize(
 	uint_fast16_t raw,
 	uint_fast16_t rawmin,	// включает интервал входного raw
 	uint_fast16_t rawmax,	// включает интервал входного raw
-	uint_fast16_t range		// включает выходное значение
+	uint_fast16_t range		// включает максимальное выходное значение
 	)
 {
 	if (rawmin < rawmax)
 	{
 		// Normal direction
-		const uint_fast16_t distance = rawmax - rawmin;
+		const uint_fast16_t distance = rawmax - rawmin + 1;
 		if (raw < rawmin)
 			return 0;
-		raw = raw - rawmin;
-		if (raw > distance)
+		const uint_fast16_t rawoffset = raw - rawmin;
+		if (rawoffset > distance)
 			return range;
-		return (uint_fast32_t) raw * range / distance;
+		return (uint_fast32_t) rawoffset * range / distance;
 	}
 	else
 	{
 		// reverse direction
-		const uint_fast16_t distance = rawmin - rawmax;
+		const uint_fast16_t distance = rawmin - rawmax + 1;	//
 		if (raw >= rawmin)
 			return 0;
-		raw = rawmin - raw;
-		if (raw > distance)
+		const uint_fast16_t rawoffset = rawmin - raw;
+		if (rawoffset > distance)
 			return range;
-		return (uint_fast32_t) raw * range / distance;
+		return (uint_fast32_t) rawoffset * range / distance;
 	}
 }
 
@@ -1747,7 +1747,9 @@ enum {
 
 #define SM_YCENTEROFFS 120	// Расстояние от верха поля до оси стрелки S-метра
 enum { SM_BG_W = GRID2X(SM_BG_W_CELLS), SM_BG_H = GRID2Y(SM_BG_H_CELLS) };
-enum { SM_AF_H = 40 };	// высота, занятая индикатором спектра AF
+
+enum { SM_AF_H = GRID2Y(9) };	// высота, занятая индикатором спектра AF (cвязать с r1, r2)
+enum { SM_AFSP_VOFFS0 = SM_BG_H - GRID2Y(1) };	// смещение линии нулевого уровня AF spectre - нижний край
 
 
 /* точки на шкале s-метра, к которым надо привязать измеренное значение */
@@ -5447,7 +5449,6 @@ display2_af_spectre15_latch(
 
 		smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS][SM_STATE_RX];		// отображение НЧ спектра только для режима s-метра BARS
 		const uint_fast16_t w = smpr->ge - smpr->gs;
-		const uint_fast16_t h = SM_AF_H;
 		ASSERT(w <= ARRAY_SIZE(gvars.afsp.val_array));
 		unsigned x;
 		for (x = 0; x < w; x ++)
@@ -5479,22 +5480,17 @@ display2_af_spectre15(const gxdrawb_t * db,
 			{
 				smeter_params_t * const smpr = & smprms [SMETER_TYPE_BARS][SM_STATE_RX];		// отображение НЧ спектра только для режима s-метра BARS
 				const uint_fast16_t w = smpr->ge - smpr->gs;
-				const uint_fast16_t h = SM_AF_H;
 				const uint_fast16_t xpix = GRID2X(xgrid) + smpr->gs;
-				const uint_fast16_t ypix = GRID2Y(ygrid) + SM_BG_H - 10;
+				const uint_fast16_t ypix = GRID2Y(ygrid);	// верх всего прямоугольника s-meter
+				const uint_fast16_t ypix0 = ypix + SM_AFSP_VOFFS0;	// y координата для 0-го уровня
 				ASSERT(w <= ARRAY_SIZE(gvars.afsp.val_array));
 				for (unsigned x = 0; x < w; x ++)
 				{
-					//const uint_fast16_t y_norm = normalize(gvars.afsp.val_array [x], 0, gvars.afsp.max_val, h - 2) + 1;
-					const uint_fast16_t y_norm = normalize(gvars.afsp.val_array [x] * 4096, 0, gvars.afsp.max_val * 4096, h - 2) + 1;
-					ASSERT(y_norm <= h);
-					ASSERT(ypix >= y_norm);
-					if (ypix >= y_norm)
-					{
-						colpip_set_vline(db,
-								xpix + x, ypix - y_norm, y_norm,
-								DSGN_AFSPECTRE_COLOR);
-					}
+					const uint_fast16_t y_norm = normalize(gvars.afsp.val_array [x] * 4096, 0, gvars.afsp.max_val * 4096, SM_AF_H - 1);
+					ASSERT(y_norm < SM_AF_H);
+					colpip_set_vline(db,
+							xpix + x, ypix0 - y_norm, y_norm,
+							DSGN_AFSPECTRE_COLOR);
 				}
 #if WITHAA
 				display_do_AA(db, GRID2X(xgrid), GRID2Y(ygrid), SM_BG_W, SM_BG_H);

@@ -99,7 +99,7 @@ uint_fast16_t normalize(
 	uint_fast16_t raw,
 	uint_fast16_t rawmin,	// включает интервал входного raw
 	uint_fast16_t rawmax,	// включает интервал входного raw
-	uint_fast16_t range		// включает выходное значение
+	uint_fast16_t range		// включает максимальное выходное значение
 	);
 
 int_fast32_t approximate(
