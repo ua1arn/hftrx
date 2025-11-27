@@ -236,6 +236,12 @@ void hardware_uartx_flush(UART_t * uart)
 #endif
 }
 
+/* разрешить упрвлять аппаратным сигналом разрешения передачи */
+void hardware_uartx_set_rs485(UART_t * uart, uint_fast8_t state)
+{
+
+}
+
 /* приём символа, если готов порт */
 uint_fast8_t
 hardware_uartx_getchar(UART_t * uart, char * cp)
