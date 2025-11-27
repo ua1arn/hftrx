@@ -261,7 +261,7 @@ static inline void __gui_drawbuf_copy(const gui_drawbuf_t * dstbuf, void * srcbu
 			dst_x, dst_y,	// target position
 			((gui_drawbuf_t *)srcbuf)->cachebase,
 			((gui_drawbuf_t *)srcbuf)->cachesize, 	// cache parameters
-			b, 0, 0, src_w, src_h, BITBLT_FLAG_NONE, 0);
+			srcbuf, 0, 0, src_w, src_h, BITBLT_FLAG_NONE, 0);
 }
 
 // Отрисовка закрашенного прямоугольника
