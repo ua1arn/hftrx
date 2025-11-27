@@ -111,7 +111,7 @@ extern "C" {
 
 			#define HSIFREQ 64000000u
 			#define HSI48FREQ 48000000u
-			#define CSI_VALUE    4000000U /*!< Value of the Internal oscillator in Hz*/
+			//#define CSI_VALUE    4000000U /*!< Value of the Internal oscillator in Hz*/
 
 			#define LSEFREQ 32768u	// должно быть в файле конфигурации платы
 
@@ -1416,7 +1416,7 @@ extern "C" {
 	// 112..127 - первая степень AA
 	// Заполнение палитры производится в display2_xltrgb24()
 
-	#define COLORPIP_SHADED 128
+	//#define COLORPIP_SHADED 128
 	#define COLORPIP_ALIASED 16
 	#define COLORPIP_BASE 96	// should be match to PALETTESIZE
 

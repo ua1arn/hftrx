@@ -318,9 +318,52 @@ typedef struct
 	#define DSGN_SPECTRUMFG		(COLORPIP_BASE + 14) // TFTRGB(0, 255, 0)		// цвет спектра при сполошном заполнении
 	#define COLORPIP_DARKGRAY   (COLORPIP_BASE + 15) // TFTRGB(0x00, 0x64, 0x00)
 
+	#define DSGN_BIGCOLOR 			COLORPIP_YELLOW 	// цвет частоты и режима основного приемника
+	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
+
 	#define DSGN_SPECTRUMPEAKS 	COLORPIP_DARKGRAY
 	#define DSGN_SPECTRUMLINE	COLORPIP_YELLOW
 	#define DSGN_SPECTRUMFENCE	COLORPIP_WHITE
+
+	#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
+	#define DSGN_FMENUACTIVEBACK	COLORPIP_DARKGREEN
+
+	#define DSGN_FMENUINACTIVETEXT	COLORPIP_BLACK
+	#define DSGN_FMENUINACTIVEBACK	COLORPIP_DARKGREEN
+
+	#define DSGN_FMENUTEXT            COLORPIP_GREEN
+	#define DSGN_FMENUBACK            COLORPIP_BLACK
+	#define DSGN_SMLABELTEXT        COLORPIP_GREEN
+	#define DSGN_SMLABELBACK        COLORPIP_BLACK
+	#define DSGN_SMLABELPLKUSTEXT        COLORPIP_RED
+	#define DSGN_SMLABELPLKUSBACK        COLORPIP_BLACK
+
+	#define DSGN_LABELACTIVETEXT	COLORPIP_WHITE
+	#define DSGN_LABELACTIVEBACK	COLORPIP_DARKRED
+	#define DSGN_LABELINACTIVETEXT	COLORPIP_BLACK
+	#define DSGN_LABELINACTIVEBACK	COLORPIP_RED
+
+	// поля отображения, не имеющие вариантов по состоянию вкл/выкл
+	#define DSGN_LABELTEXT			COLORPIP_RED
+	#define DSGN_LABELBACK			COLORPIP_BLACK
+
+	#define DSGN_PSUSTATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
+	#define DSGN_PSUSTATEBACK			COLORPIP_BLACK
+
+	/* обычный текст в меню */
+	#define DSGN_MENUCOLOR 		COLORPIP_WHITE
+	#define DSGN_MENUBGCOLOR		COLORPIP_BLACK
+	/* выделенный текст в меню */
+	#define DSGN_MENUSELCOLOR	COLORPIP_BLACK
+	#define DSGN_MENUSELBGCOLOR	COLORPIP_DARKCYAN
+	/* выделенный текст в значениях */
+	#define DSGN_MENUVALSELCOLOR	COLORPIP_BLACK
+	#define DSGN_MENUVALSELBGCOLOR	COLORPIP_GRAY
+
+	#define DSGN_SMLCOLOR	COLORPIP_GREEN		// цвет левой половины S-метра
+	#define DSGN_SMRCOLOR	COLORPIP_RED			// цвет правой половины S-метра
+	#define DSGN_PWRCOLOR	COLORPIP_RED		// цвет измерителя мощности
+	#define DSGN_SWRCOLOR	COLORPIP_YELLOW		// цвет SWR-метра
 
 	#if LCDMODE_PALETTE256
 		// Цвета, используемые на основном экране
@@ -331,6 +374,10 @@ typedef struct
 		#define COLORPIP_DARKRED  DSGN_GRIDCOLOR2
 
 	#endif /* LCDMODE_PALETTE256 */
+
+	#define DSGN_OVFCOLOR COLORPIP_RED
+	#define DSGN_LOCKCOLOR COLORPIP_RED
+	#define DSGN_BGCOLOR (display2_getbgcolor())
 
 #else /* */
 
@@ -457,7 +504,7 @@ typedef struct
 	#define DSGN_LABELACTIVEBACK	COLORPIP_DARKRED
 	#define DSGN_LABELINACTIVETEXT	COLORPIP_BLACK
 	#define DSGN_LABELINACTIVEBACK	COLORPIP_RED
-// поля отображения, не имеющие вариантов по состоянию вкл/выкл
+	// поля отображения, не имеющие вариантов по состоянию вкл/выкл
 	#define DSGN_LABELTEXT			COLORPIP_RED
 	#define DSGN_LABELBACK			COLORPIP_BLACK
 
