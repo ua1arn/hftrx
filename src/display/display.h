@@ -927,7 +927,7 @@ void board_set_tvoutformat(uint_fast8_t v);	/* установить видеор
 
 /* RGB 24-bits color table definition (RGB888). */
 #define COLOR_BLACK          TFTRGB(0x00, 0x00, 0x00)
-#define COLOR_WHITE          TFTRGB(0xFF, 0xFF, 0xFF)
+#define COLOR_WHITEALL          TFTRGB(0xFF, 0xFF, 0xFF)
 #define COLOR_BLUE           TFTRGB(0x00, 0x00, 0xFF)
 #define COLOR_GREEN          TFTRGB(0x00, 0xFF, 0x00)
 #define COLOR_RED            TFTRGB(0xFF, 0x00, 0x00)

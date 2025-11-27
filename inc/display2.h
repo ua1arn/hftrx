@@ -392,7 +392,7 @@ typedef struct
 	#define COLORPIP_YELLOW      COLOR_YELLOW
 	#define COLORPIP_ORANGE      COLOR_ORANGE
 	#define COLORPIP_BLACK       COLOR_BLACK
-	#define COLORPIP_WHITE       COLOR_WHITE
+	#define COLORPIP_WHITE       COLOR_WHITEALL
 	#define COLORPIP_GRAY        COLOR_GRAY
 	#define COLORPIP_CYAN        COLOR_CYAN
 	#define COLORPIP_OLIVE		 COLOR_OLIVE
@@ -416,7 +416,7 @@ typedef struct
 		#define DSGN_SPECTRUMBG2   		COLORPIP_DARKRED      // полоса пропускания приемника
 		#define DSGN_SPECTRUMBG2RX2   	COLORPIP_DARKGREEN      	// полоса пропускания приемника RX2
 		#define DSGN_SPECTRUMFG			COLORPIP_RED			// цвет спектра при сполошном заполнении
-		#define DSGN_SPECTRUMFENCE	COLOR_WHITE
+		#define DSGN_SPECTRUMFENCE	COLOR_WHITEALL
 		#define DSGN_SPECTRUMLINE		COLORPIP_RED
 		#define DSGN_LOCKED  	 TFTRGB(0x3C, 0x3C, 0x00)
 		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
@@ -431,7 +431,7 @@ typedef struct
 		#define DSGN_SPECTRUMBG2   		COLORPIP_DARKGREEN      // полоса пропускания приемника
 		#define DSGN_SPECTRUMBG2RX2   	COLORPIP_DARKGRED      	// полоса пропускания приемника RX2
 		#define DSGN_SPECTRUMFG			COLORPIP_GREEN			// цвет спектра при сполошном заполнении
-		#define DSGN_SPECTRUMFENCE		COLOR_WHITE
+		#define DSGN_SPECTRUMFENCE		COLOR_WHITEALL
 		#define DSGN_SPECTRUMLINE		COLORPIP_GREEN
 		#define DSGN_LOCKED  	 		TFTRGB(0x3C, 0x3C, 0x00)
 		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
@@ -462,7 +462,7 @@ typedef struct
 		#define DSGN_SPECTRUMBG2   		COLORPIP_DARKGREEN      // полоса пропускания приемника
 		#define DSGN_SPECTRUMBG2RX2   	COLORPIP_DARKGRED      	// полоса пропускания приемника RX2
 		#define DSGN_SPECTRUMFG			COLORPIP_GREEN			// цвет спектра при сполошном заполнении
-		#define DSGN_SPECTRUMFENCE		COLOR_WHITE
+		#define DSGN_SPECTRUMFENCE		COLOR_WHITEALL
 		#define DSGN_SPECTRUMLINE		COLORPIP_GREEN
 		#define DSGN_LOCKED  	 		TFTRGB(0x3C, 0x3C, 0x00)
 		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
@@ -476,7 +476,7 @@ typedef struct
 		#define DSGN_SPECTRUMBG2    COLOR_CYAN                //COLOR_CYAN - полоса пропускания приемника
 		#define DSGN_SPECTRUMBG2RX2    COLOR_DARKRED                //COLOR_CYAN - полоса пропускания приемника
 		#define DSGN_SPECTRUMFG        COLOR_GREEN        // цвет спектра при сполошном заполнении
-		#define DSGN_SPECTRUMFENCE    COLOR_WHITE    //COLOR_WHITE
+		#define DSGN_SPECTRUMFENCE    COLOR_WHITEALL    //COLOR_WHITEALL
 		//#define DSGN_SPECTRUMLINE    COLORPIP_GREEN
 		#define DSGN_SPECTRUMLINE    COLORPIP_YELLOW
 		#define DSGN_LOCKED       TFTRGB(0x3C, 0x3C, 0x00)

@@ -222,7 +222,7 @@ static void lvstales_initialize(void)
 	    lv_style_init(s);
 		lv_style_set_border_width(s, 0);
 		lv_style_set_radius(s, 0);
-	    lv_style_set_text_color(s, display_lvlcolor(COLOR_WHITE));
+	    lv_style_set_text_color(s, lv_color_white());
 	    lv_style_set_bg_color(s, display_lvlcolor(display2_getbgcolor()));
 	}
 
