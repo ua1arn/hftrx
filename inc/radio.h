@@ -3278,7 +3278,7 @@ uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p);		// Notch filter ON/OFF
 const char * hamradio_get_notchtype5_P(void);	// FREQ/ANOTCH
 uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p);		// NR ON/OFF
 const char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
-const char * hamradio_get_mode_b_value_P(void);	// SSB/CW/AM/FM/..
+const char * hamradio_get_mode_b_value_P(uint_fast8_t * flag);	// SSB/CW/AM/FM/..
 const char * hamradio_get_rxbw_label3_P(void);	// RX bandwidth - name
 const char * hamradio_get_rxbw_value4(void);	// RX bandwidth - value
 const char * hamradio_get_pre_value_P(void);	// RX preamplifier

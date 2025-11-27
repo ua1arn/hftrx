@@ -8502,8 +8502,17 @@ const char * hamradio_get_mode_a_value_P(void)
 }
 
 // SSB/CW/AM/FM/..
-const char * hamradio_get_mode_b_value_P(void)
+const char * hamradio_get_mode_b_value_P(uint_fast8_t * flag)
 {
+	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
+	{
+	default:
+	case VFOMODES_VFOINIT:	/* no SPLIT -  Обычная перестройка */
+		* flag = 0;
+	case VFOMODES_VFOSPLIT:
+		* flag = 1;
+		//return (gvfoab != tx) ? b : a;
+	}
 	return submodes [getsubmode(getbankindex_ab_fordisplay(1))].qlabel;	/* VFO B modifications */
 }
 
@@ -22108,9 +22117,9 @@ int infocb_modea(char * b, size_t len, int * pstate)
 int infocb_modeb(char * b, size_t len, int * pstate)
 {
 	uint_fast8_t state;
-	hamradio_get_vfomode3_value(& state);
+	const char * const name = hamradio_get_mode_b_value_P(& state);
 	* pstate = state;
-	return local_snprintf_P(b, len, "%s", hamradio_get_mode_b_value_P());
+	return local_snprintf_P(b, len, "%s", name);
 }
 
 int infocb_ant5(char * b, size_t len, int * pstate)
