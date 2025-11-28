@@ -898,7 +898,7 @@ void lvglhw_initialize(void);
 extern const char * savestring;
 extern const char * savewhere;
 
-#if WITHRLEDECOMPRESS
+#if 1//WITHRLEDECOMPRESS
 
 typedef struct
 {

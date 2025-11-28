@@ -1743,6 +1743,8 @@ int_fast32_t approximate(
 }
 
 static uint_fast8_t first_tx = 0;
+static int_fast32_t gp_smooth, gswr_smooth;/* фильтрация - (в градусах) */
+enum { gx_hyst = 3 };		// гистерезис в градусах
 
 #if LCDMODE_LTDC && WITHBARS
 
@@ -1888,6 +1890,7 @@ static void smeter_arrow_rle(const gxdrawb_t * db, uint_fast16_t target_pixel_x,
 		colpip_line(db, x0 - 1, y0, x1 - 1, y1, color, 1);
 	}
 }
+
 static void sm_dial_tx_draw_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_t y0, uint_fast16_t width, uint_fast16_t height, uint_fast8_t pathi, struct smeter_params_tag * const smpr)
 {
 	const COLORPIP_T bgcolor = display2_getbgcolor();
@@ -1900,16 +1903,7 @@ static void sm_dial_tx_draw_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fas
 	int_fast32_t gp = smpr->gs;
 	int_fast32_t gswr = smpr->gs;
 
-	enum { gx_hyst = 3 };		// гистерезис в градусах
 	/* фильтрация - (в градусах) */
-	static int_fast32_t gp_smooth, gswr_smooth;
-
-	if (first_tx)				// сброс при переходе на передачу
-	{
-		first_tx = 0;
-		gp_smooth = smpr->gs;
-		gswr_smooth = smpr->gs;
-	}
 
 	const adcvalholder_t powerV = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
 	gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
@@ -1963,8 +1957,6 @@ static void sm_dial_rx_draw_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fas
 	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 	int_fast32_t gv = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), rssi10);
 	//int_fast32_t gv_trace = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
-
-	first_tx = 1;
 
 	// RX state
 	colpip_bitblt(
@@ -2059,8 +2051,6 @@ static void sm_dial_rx_draw(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 	int_fast32_t gv = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), rssi10);
 	int_fast32_t gv_trace = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
-
-	first_tx = 1;
 
 	// RX state
 	colpip_bitblt(
@@ -2196,16 +2186,7 @@ static void sm_dial_tx_draw(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 	int_fast32_t gv_trace = smpr->gs;
 	int_fast32_t gswr = smpr->gs;
 
-	enum { gx_hyst = 3 };		// гистерезис в градусах
 	/* фильтрация - (в градусах) */
-	static int_fast32_t gp_smooth, gswr_smooth;
-
-	if (first_tx)				// сброс при переходе на передачу
-	{
-		first_tx = 0;
-		gp_smooth = smpr->gs;
-		gswr_smooth = smpr->gs;
-	}
 
 	const adcvalholder_t powerV = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
 	gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
@@ -2355,8 +2336,6 @@ static void sm_bars_rx_draw(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 	gv = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), rssi10);
 	gv_trace = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
 
-	first_tx = 1;
-
 	colpip_bitblt(
 			db->cachebase, db->cachesize,
 			db, x0, y0,
@@ -2388,17 +2367,6 @@ static void sm_bars_tx_draw(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 	int_fast32_t gv = smpr->gs;
 	int_fast32_t gv_trace = smpr->gs;
 	int_fast32_t gswr = smpr->gs;
-
-	enum { gx_hyst = 3 };		// гистерезис в градусах
-	/* фильтрация - (в градусах) */
-	static int_fast32_t gp_smooth, gswr_smooth;
-
-	if (first_tx)				// сброс при переходе на передачу
-	{
-		first_tx = 0;
-		gp_smooth = smpr->gs;
-		gswr_smooth = smpr->gs;
-	}
 
 	const adcvalholder_t powerV = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
 	gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
@@ -2655,6 +2623,18 @@ pix_display2_smeter15(const gxdrawb_t * db,
 {
 	const uint_fast8_t is_tx = hamradio_get_tx();
 	smeter_params_t * const smpr = & smprms [glob_smetertype] [is_tx ? SM_STATE_TX : SM_STATE_RX];
+
+	if (first_tx)				// сброс при переходе на передачу
+	{
+		first_tx = 0;
+		gp_smooth = smpr->gs;
+		gswr_smooth = smpr->gs;
+	}
+	else
+	{
+		first_tx = 1;
+
+	}
 	smpr->draw(db, x0, y0, width, width, pathi, smpr);
 }
 
