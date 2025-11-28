@@ -8,6 +8,7 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"	// for debug prints
 
+//#define MMUUSE4KPAGES 1
 
 #if CPUSTYLE_ARM_CM7
 
@@ -750,7 +751,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 		0 \
 	)
 
-// Small page
+// Small page (4KB memory page)
 #define	TTB_PARA_AARCH32_4k(addr, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
 		((addr) & ~ (uint64_t) UINT32_C(0x0FFF)) | /* 4k granulation address */ \
 		0 * (UINT32_C(1) << 11) |	/* nG */ \
@@ -765,6 +766,18 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 		0 \
 	)
 
+// B3.5.1 Short-descriptor translation table format descriptors
+// Short-descriptor translation table first-level descriptor formats
+
+#define	TTB_PARA_AARCH32_4k_table(addr, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
+		((addr) & ~ (uint64_t) UINT32_C(0x07FF)) | /* Page table base address, bits[31:10]. bits 31::10 */ \
+		0 * (UINT32_C(1) << 9) |	/* implementation defined */ \
+		(DOMAINv) * (UINT32_C(1) << 5) |	/* DOMAIN */ \
+		0 * (UINT32_C(1) << 3) |	/* NS */ \
+		0x01 * (UINT32_C(1) << 0) |	/* */ \
+		0 \
+	)
+
 #define	TTB_PARA_AARCH32_1M_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32_1M((addr), TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32_1M((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_AARCH32_1M_DEVICE(addr) 			TTB_PARA_AARCH32_1M((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
@@ -773,7 +786,8 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 #define	TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32_4k((addr), TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32_4k((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_AARCH32_4k_DEVICE(addr) 			TTB_PARA_AARCH32_4k((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
-#define	TTB_PARA_AARCH32_4k_TABLE(addr) 			TTB_PARA_AARCH32_4k((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+// First-level table entry - Page table
+#define	TTB_PARA_AARCH32_4k_TABLE(addr) 			TTB_PARA_AARCH32_4k_table((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 
 static uint_fast64_t arch32_1M_mcached(uint_fast64_t addr, int ro, int xn)
 {
@@ -825,7 +839,7 @@ static uint_fast64_t arch32_4k_mnoaccess(uint_fast64_t addr)
 // Next level table
 static uint_fast64_t arch32_4k_mtable(uint_fast64_t addr)
 {
-	return TTB_PARA_AARCH32_4k_TABLE(addr);
+	return TTB_PARA_AARCH32_4k_TABLE(addr);	// First-level table entry - Page table
 }
 
 static const getmmudesc_t arch32table4k =
@@ -927,7 +941,7 @@ static const getmmudesc_t arch32table4k =
 #else /* defined(__aarch64__) */
 
 	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
-	static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];	// для 4k pages - требуется 1024 элемента
+	static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];	//
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint32_t ttb_L1_base [1024 * 1024];	// дескрипторы страниц памяти
 #endif /* defined(__aarch64__) */
 
@@ -988,7 +1002,7 @@ ttb_level0_4k_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(cons
 	unsigned i;
 	const uint_fast32_t pagesize = (UINT32_C(1) << 12);	// 4k step
 
-	for (i = 0; i <  1024 /*ARRAY_SIZE(ttb0_base) */; ++ i)
+	for (i = 0; i <  ARRAY_SIZE(ttb0_base); ++ i)
 	{
 		const uintptr_t phyaddr = (uintptr_t) ttb_L1_base + (i * pagesize);
 		ttb0_base [i] =  arch->mtable(phyaddr);
@@ -1041,7 +1055,7 @@ sysinit_mmu_tables(void)
 	#else
 		// MMU iniitialize
 
-	#if 0
+	#if MMUUSE4KPAGES
 		ttb_level1_4k_initialize(& arch32table4k, ttb_mempage_accessbits);
 		ttb_level0_4k_initialize(& arch32table4k, ttb_mempage_accessbits);
 	#else
@@ -1178,7 +1192,7 @@ sysinit_ttbr_initialize(void)
 	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
 	__set_TTBR0(
-			(uintptr_t) ttb0_base |
+			(uintptr_t) ttb0_base |	/* Translation table base 0 address, bits[31:x]. */
 			((uint_fast32_t) !! (IRGN_attr & 0x01) << 6) |	// IRGN[0]
 			((uint_fast32_t) !! (IRGN_attr & 0x02) << 0) |	// IRGN[1]
 			(RGN_attr << 3) |	// RGN
@@ -1188,7 +1202,7 @@ sysinit_ttbr_initialize(void)
 #else /* WITHSMPSYSTEM */
 	// TTBR0
 	__set_TTBR0(
-			(uintptr_t) ttb0_base |
+			(uintptr_t) ttb0_base |	/* Translation table base 0 address, bits[31:x]. */
 			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
 			(UINT32_C(1) << 3) |	// RGN
 			0*(UINT32_C(1) << 5) |	// NOS
