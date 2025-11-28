@@ -933,13 +933,13 @@ static const getmmudesc_t arch32table4k =
 	// Last x4 - for 34 bit address (16 GB address space)
 	// Check TCR_EL3 setup
 	// pages of 2 MB
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level2_pagetable [512 * 4 * 4];	// ttb0_base must be a 4KB-aligned address.
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base [ARRAY_SIZE(level2_pagetable) / 512];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level2_pagetable_u64 [512 * 4 * 4];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base_u64 [ARRAY_SIZE(level2_pagetable_u64) / 512];	// ttb0_base must be a 4KB-aligned address.
 
 #elif CPUSTYLE_RISCV
 
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level2_pagetable [512 * 4];	// Used as PPN in SATP register
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base [512];	// Used as PPN in SATP register
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level2_pagetable_u64 [512 * 4];	// Used as PPN in SATP register
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base_u64 [512];	// Used as PPN in SATP register
 
 	// https://lupyuen.codeberg.page/articles/mmu.html#appendix-flush-the-mmu-cache-for-t-head-c906
 	// https://github.com/apache/nuttx/blob/4d63921f0a28aeee89b3a2ae861aaa83d731d28d/arch/risc-v/src/common/riscv_mmu.h#L220
@@ -1083,11 +1083,11 @@ static const getmmudesc_t arch32table4k =
 
 	#if MMUUSE4KPAGES
 		/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
-		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base [4096];	//
-		static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint32_t ttb_L1_base [4096 * 256];	// дескрипторы страниц памяти
+		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base_u32 [4096];	//
+		static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint32_t ttb_L1_base_u32 [4096 * 256];	// дескрипторы страниц памяти
 	#else /* MMUUSE4KPAGES */
 		/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
-		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base [4096];	//
+		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base_u32 [4096];	//
 	#endif /* MMUUSE4KPAGES */
 
 #endif /* defined(__aarch64__) */
@@ -1102,8 +1102,8 @@ ttb_level2_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits
 	//const uint_fast64_t pagesize = (UINT32_C(1) << 21);	// 2M step
 
 	uint_fast64_t phyaddr = 0;	// начальный адрес памяти
-	uint8_t * tb = (uint8_t *) level2_pagetable;	// table base
-	for (i = 0; i < ARRAY_SIZE(level2_pagetable); ++ i, phyaddr += pagesize)
+	uint8_t * tb = (uint8_t *) level2_pagetable_u64;	// table base
+	for (i = 0; i < ARRAY_SIZE(level2_pagetable_u64); ++ i, phyaddr += pagesize)
 	{
 		//level2_pagetable [i] = accessbits(arch, phyaddr, 0, 0);
 		tb += USBD_poke_u64(tb, accessbits(arch, phyaddr, 0, 0));
@@ -1120,8 +1120,8 @@ ttb_level2_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits
 static void ttb_level0_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn), const uint_fast32_t pagesize, uint_fast64_t nextlevel)
 {
 	unsigned i;
-	uint8_t * tb = (uint8_t *) ttb0_base;	// table base
-	for (i = 0; i < ARRAY_SIZE(ttb0_base); ++ i, nextlevel += pagesize)
+	uint8_t * tb = (uint8_t *) ttb0_base_u64;	// table base
+	for (i = 0; i < ARRAY_SIZE(ttb0_base_u64); ++ i, nextlevel += pagesize)
 	{
 		//ttb0_base [i] = arch->mtable(nextlevel);
 		tb += USBD_poke_u64(tb, arch->mtable(nextlevel));
@@ -1129,6 +1129,8 @@ static void ttb_level0_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (
 }
 
 #endif
+
+#if ! defined(__aarch64__) && ! CPUSTYLE_RISCV
 
 // вся физическая память
 static void
@@ -1138,16 +1140,14 @@ ttb_level0_1MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits
 	//const uint_fast64_t pagesize = (UINT32_C(1) << 20);	// 1M step
 
 	uint_fast64_t phyaddr = 0;	// начальный адрес памяти
-	uint8_t * tb = (uint8_t *) ttb0_base;	// table base
-	for (i = 0; i <  ARRAY_SIZE(ttb0_base); ++ i, phyaddr += pagesize)
+	uint8_t * tb = (uint8_t *) ttb0_base_u32;	// table base
+	for (i = 0; i <  ARRAY_SIZE(ttb0_base_u32); ++ i, phyaddr += pagesize)
 	{
 		//ttb0_base [i] = accessbits(arch, phyaddr, 0, 0);
 		tb += USBD_poke_u32(tb, accessbits(arch, phyaddr, 0, 0));
 	}
 }
-
-#if MMUUSE4KPAGES && ! defined(__aarch64__) && ! CPUSTYLE_RISCV
-
+#if MMUUSE4KPAGES
 // вся физическая память
 static void
 ttb_level1_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn), const uint_fast64_t pagesize)
@@ -1156,8 +1156,8 @@ ttb_level1_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)
 	//const uint_fast64_t pagesize = (UINT32_C(1) << 12);	// 4k step
 
 	uint_fast64_t phyaddr = 0;	// начальный адрес памяти
-	uint8_t * tb = (uint8_t *) ttb_L1_base;	// table base
-	for (i = 0; i <  ARRAY_SIZE(ttb_L1_base); ++ i, phyaddr += pagesize)
+	uint8_t * tb = (uint8_t *) ttb_L1_base_u32;	// table base
+	for (i = 0; i <  ARRAY_SIZE(ttb_L1_base_u32); ++ i, phyaddr += pagesize)
 	{
 		//ttb_L1_base [i] =  accessbits(arch, phyaddr, 0, 0);
 		tb += USBD_poke_u32(tb, accessbits(arch, phyaddr, 0, 0));
@@ -1173,14 +1173,15 @@ ttb_level0_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)
 	unsigned i;
 	//const uint_fast64_t pagesize = (UINT32_C(1) << 10);	// 1k step
 
-	uint8_t * tb = (uint8_t *) ttb0_base;	// table base
-	for (i = 0; i <  ARRAY_SIZE(ttb0_base); ++ i, nextlevel += pagesize)
+	uint8_t * tb = (uint8_t *) ttb0_base_u32;	// table base
+	for (i = 0; i <  ARRAY_SIZE(ttb0_base_u32); ++ i, nextlevel += pagesize)
 	{
 		//ttb0_base [i] =  arch->mtable(nextlevel);
 		tb += USBD_poke_u32(tb, arch->mtable(nextlevel));
 	}
 }
-#endif /* MMUUSE4KPAGES && ! defined(__aarch64__) && ! CPUSTYLE_RISCV */
+#endif /* MMUUSE4KPAGES */
+#endif /* ! defined(__aarch64__) && ! CPUSTYLE_RISCV */
 
 #endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV */
 void
@@ -1218,9 +1219,9 @@ sysinit_mmu_tables(void)
 		// MMU iniitialize
 
 		ttb_level2_2MB_initialize(& arch64table2M, ttb_mempage_accessbits, (UINT32_C(1) << 21));	// 2M step
-		dcache_clean_invalidate((uintptr_t) level2_pagetable, sizeof level2_pagetable);
-		ttb_level0_2MB_initialize(& arch64table2M, ttb_mempage_accessbits, (UINT32_C(1) << 12), (uintptr_t) level2_pagetable);	// 512 bytes step
-		dcache_clean_invalidate((uintptr_t) ttb0_base, sizeof ttb0_base);
+		dcache_clean_invalidate((uintptr_t) level2_pagetable_u64, sizeof level2_pagetable_u64);
+		ttb_level0_2MB_initialize(& arch64table2M, ttb_mempage_accessbits, (UINT32_C(1) << 12), (uintptr_t) level2_pagetable_u64);	// 512 bytes step
+		dcache_clean_invalidate((uintptr_t) ttb0_base_u64, sizeof ttb0_base_u64);
 
 
 	#else
@@ -1228,12 +1229,12 @@ sysinit_mmu_tables(void)
 
 	#if MMUUSE4KPAGES
 		ttb_level1_4k_initialize(& arch32table4k, ttb_mempage_accessbits, (UINT32_C(1) << 12));	// 4k step
-		dcache_clean_invalidate((uintptr_t) ttb_L1_base, sizeof ttb_L1_base);
-		ttb_level0_4k_initialize(& arch32table4k, ttb_mempage_accessbits, (UINT32_C(1) << 10), (uintptr_t) ttb_L1_base);	// 1k step
-		dcache_clean_invalidate((uintptr_t) ttb0_base, sizeof ttb0_base);
+		dcache_clean_invalidate((uintptr_t) ttb_L1_base_u32, sizeof ttb_L1_base_u32);
+		ttb_level0_4k_initialize(& arch32table4k, ttb_mempage_accessbits, (UINT32_C(1) << 10), (uintptr_t) ttb_L1_base_u32);	// 1k step
+		dcache_clean_invalidate((uintptr_t) ttb0_base_u32, sizeof ttb0_base_u32);
 	#else
 		ttb_level0_1MB_initialize(& arch32table1M, ttb_mempage_accessbits, (UINT32_C(1) << 20)); 	// 1M step
-		dcache_clean_invalidate((uintptr_t) ttb0_base, sizeof ttb0_base);
+		dcache_clean_invalidate((uintptr_t) ttb0_base_u32, sizeof ttb0_base_u32);
 	#endif
 
 	#endif	/* defined (__aarch64__) */
@@ -1248,9 +1249,9 @@ sysinit_mmu_tables(void)
 	uintptr_t address = 0;
 	uintptr_t addrstep = UINT64_C(1) << 21;	// 2 MB
 	unsigned i;
-	for (i = 0; i < ARRAY_SIZE(level2_pagetable); ++ i)
+	for (i = 0; i < ARRAY_SIZE(level2_pagetable_u64); ++ i)
 	{
-		level2_pagetable [i] =
+		level2_pagetable_u64 [i] =
 				//((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
 				((address >> 21) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
 				//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
@@ -1259,11 +1260,11 @@ sysinit_mmu_tables(void)
 		address += addrstep;
 	}
 	// Pointe to 1 GB pages
-	for (i = 0; i < ARRAY_SIZE(ttb0_base); ++ i)
+	for (i = 0; i < ARRAY_SIZE(ttb0_base_u64); ++ i)
 	{
-		uintptr_t address = (uintptr_t) (level2_pagetable + 512 * i) | 0x03;
+		uintptr_t address = (uintptr_t) (level2_pagetable_u64 + 512 * i) | 0x03;
 		//uintptr_t address = 1 * (UINT64_C(1) << 30) * i;
-		ttb0_base [i] =
+		ttb0_base_u64 [i] =
 			((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
 			//((address >> 24) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
 			//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
@@ -1286,17 +1287,17 @@ sysinit_ttbr_initialize(void)
 	//PRINTF("sysinit_ttbr_initialize.\n");
 #if defined(__aarch64__)
 
-	ASSERT(((uintptr_t) ttb0_base & 0x0FFF) == 0); // 4 KB
+	ASSERT(((uintptr_t) ttb0_base_u64 & 0x0FFF) == 0); // 4 KB
 
 	//__set_TTBR0_EL1((uintptr_t) ttb0_base);
 	//__set_TTBR0_EL2((uintptr_t) ttb0_base);
-	__set_TTBR0_EL3((uintptr_t) ttb0_base);
+	__set_TTBR0_EL3((uintptr_t) ttb0_base_u64);
 
 	// DDI0500J_cortex_a53_r0p4_trm.pdf
 	// 4.3.53 Translation Control Register, EL3
 	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
-	const unsigned aspacebits = 21 + __log2_up(ARRAY_SIZE(level2_pagetable));	// pages of 2 MB
+	const unsigned aspacebits = 21 + __log2_up(ARRAY_SIZE(level2_pagetable_u64));	// pages of 2 MB
 	uint_fast32_t tcrv =
 			0x00 * (UINT32_C(1) << 14) | 	// TG0 TTBR0_EL3 granule size 0b00 4 KB
 			0x03 * (UINT32_C(1) << 12) |	// 0x03 - Inner shareable
@@ -1348,7 +1349,7 @@ sysinit_ttbr_initialize(void)
 
 #elif (__CORTEX_A != 0)
 
-	ASSERT(((uintptr_t) ttb0_base & 0x3FFF) == 0);
+	ASSERT(((uintptr_t) ttb0_base_u32 & 0x3FFF) == 0);
 
 	//CP15_writeTTBCR(0);
 	   /* Set location of level 1 page table
@@ -1367,7 +1368,7 @@ sysinit_ttbr_initialize(void)
 	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
 	__set_TTBR0(
-			(uintptr_t) ttb0_base |	/* Translation table base 0 address, bits[31:x]. */
+			(uintptr_t) ttb0_base_u32 |	/* Translation table base 0 address, bits[31:x]. */
 			((uint_fast32_t) !! (IRGN_attr & 0x01) << 6) |	// IRGN[0]
 			((uint_fast32_t) !! (IRGN_attr & 0x02) << 0) |	// IRGN[1]
 			(RGN_attr << 3) |	// RGN
@@ -1377,7 +1378,7 @@ sysinit_ttbr_initialize(void)
 #else /* WITHSMPSYSTEM */
 	// TTBR0
 	__set_TTBR0(
-			(uintptr_t) ttb0_base |	/* Translation table base 0 address, bits[31:x]. */
+			(uintptr_t) ttb0_base_u32 |	/* Translation table base 0 address, bits[31:x]. */
 			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
 			(UINT32_C(1) << 3) |	// RGN
 			0*(UINT32_C(1) << 5) |	// NOS
@@ -1413,7 +1414,7 @@ sysinit_ttbr_initialize(void)
 	#define CSR_SATP_MODE_SV48   9
 	#define CSR_SATP_MODE_SV57   10
 
-	ASSERT(((uintptr_t) ttb0_base & 0x0FFF) == 0);
+	ASSERT(((uintptr_t) ttb0_base_u64 & 0x0FFF) == 0);
 	mmu_flush_cache();
 	const unsigned asid = 0;
 	// 5.2.1.1 MMU address translation register (SATP)
@@ -1422,9 +1423,9 @@ sysinit_ttbr_initialize(void)
 			//CSR_SATP_MODE_PHYS * (UINT64_C(1) << 60) | // MODE
 			CSR_SATP_MODE_SV39 * (UINT64_C(1) << 60) | // MODE
 			(asid  & UINT64_C(0xFFFF))* (UINT64_C(1) << 44) | // ASID
-			(((uintptr_t) ttb0_base >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
+			(((uintptr_t) ttb0_base_u64 >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
 			0;
-	PRINTF("1 ttb0_base=%p" "\n", ttb0_base);
+	PRINTF("1 ttb0_base=%p" "\n", ttb0_base_u64);
 	PRINTF("1 csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
 	//csr_write_satp(satp);
 	PRINTF("2 csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
