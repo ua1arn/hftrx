@@ -2345,21 +2345,21 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 		0 \
 	)
 
-#define	TTB_PARA_AARCH32_2M_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32((addr), TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB_PARA_AARCH32_2M_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB_PARA_AARCH32_2M_DEVICE(addr) 			TTB_PARA_AARCH32((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+#define	TTB_PARA_AARCH32_1M_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32((addr), TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_AARCH32_1M_DEVICE(addr) 			TTB_PARA_AARCH32((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 
 static uint64_t arch32_mcached(uint64_t addr, int ro, int xn)
 {
-	return TTB_PARA_AARCH32_2M_CACHED(addr, ro, xn);
+	return TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn);
 }
 static uint64_t arch32_mncached(uint64_t addr, int ro, int xn)
 {
-	return TTB_PARA_AARCH32_2M_NCACHED(addr, ro, xn);
+	return TTB_PARA_AARCH32_1M_NCACHED(addr, ro, xn);
 }
 static uint64_t arch32_mdevice(uint64_t addr)
 {
-	return TTB_PARA_AARCH32_2M_DEVICE(addr);
+	return TTB_PARA_AARCH32_1M_DEVICE(addr);
 }
 static uint64_t arch32_mnoaccess(uint64_t addr)
 {
