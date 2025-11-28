@@ -2155,6 +2155,7 @@ typedef struct getmmudesc_tag
 	uint64_t (* mncached)(uint64_t a, int ro, int xn);
 	uint64_t (* mdevice)(uint64_t a);
 	uint64_t (* mnoaccess)(uint64_t a);
+	uint64_t (* mtable)(uint64_t a);	// next level table
 } getmmudesc_t;
 
 #if defined (__aarch64__)
@@ -2225,13 +2226,19 @@ static uint64_t arch64_mnoaccess(uint64_t addr)
 {
 	return 0;
 }
+// Next level table
+static uint64_t arch64_mtable(uint64_t addr)
+{
+	return 0;
+}
 
 static const getmmudesc_t arch64table2M =
 {
 	.mcached = arch64_mcached,
 	.mncached = arch64_mncached,
 	.mdevice = arch64_mdevice,
-	.mnoaccess = arch64_mnoaccess
+	.mnoaccess = arch64_mnoaccess,
+	.mtable = arch64_mtable
 };
 
 #elif (__CORTEX_A != 0)
@@ -2327,7 +2334,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
-#define	TTB_PARA_AARCH32(addr, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
+#define	TTB_PARA_AARCH32_1M(addr, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
 		((addr) & ~ (uint64_t) UINT32_C(0x0FFFFF)) | \
 		(SECTIONval) * (UINT32_C(1) << 0) |	/* 0b10, Section or Supersection, PXN */ \
 		!! (Bv) * (UINT32_C(1) << 2) |	/* B */ \
@@ -2345,9 +2352,14 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 		0 \
 	)
 
-#define	TTB_PARA_AARCH32_1M_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32((addr), TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB_PARA_AARCH32_1M_DEVICE(addr) 			TTB_PARA_AARCH32((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+#define	TTB_PARA_AARCH32_1M_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32_1M((addr), TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32_1M((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_AARCH32_1M_DEVICE(addr) 			TTB_PARA_AARCH32_1M((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+
+// TODO: implementing
+#define	TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32_1M((addr), TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32_1M((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_AARCH32_4k_DEVICE(addr) 			TTB_PARA_AARCH32_1M((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 
 static uint64_t arch32_1M_mcached(uint64_t addr, int ro, int xn)
 {
@@ -2365,18 +2377,55 @@ static uint64_t arch32_1M_mnoaccess(uint64_t addr)
 {
 	return 0;
 }
+// Next level table
+static uint64_t arch32_1M_mtable(uint64_t addr)
+{
+	return 0;
+}
 
 static const getmmudesc_t arch32table1M =
 {
 	.mcached = arch32_1M_mcached,
 	.mncached = arch32_1M_mncached,
 	.mdevice = arch32_1M_mdevice,
-	.mnoaccess = arch32_1M_mnoaccess
+	.mnoaccess = arch32_1M_mnoaccess,
+	.mtable = arch32_1M_mtable
+};
+
+static uint64_t arch32_4k_mcached(uint64_t addr, int ro, int xn)
+{
+	return TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn);
+}
+static uint64_t arch32_4k_mncached(uint64_t addr, int ro, int xn)
+{
+	return TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn);
+}
+static uint64_t arch32_4k_mdevice(uint64_t addr)
+{
+	return TTB_PARA_AARCH32_4k_DEVICE(addr);
+}
+static uint64_t arch32_4k_mnoaccess(uint64_t addr)
+{
+	return 0;
+}
+// Next level table
+static uint64_t arch32_4k_mtable(uint64_t addr)
+{
+	return 0;
+}
+
+static const getmmudesc_t arch32table4k =
+{
+	.mcached = arch32_4k_mcached,
+	.mncached = arch32_4k_mncached,
+	.mdevice = arch32_4k_mdevice,
+	.mnoaccess = arch32_4k_mnoaccess,
+	.mtable = arch32_4k_mtable
 };
 
 #elif CPUSTYLE_RISCV
 
-	//ttb_level0_1MB_initialize(ttb_1MB_accessbits, 0, 0);
+	//ttb_level0_1MB_initialize(ttb_mempage_accessbits, 0, 0);
 
 	// See https://chromite.readthedocs.io/en/latest/mmu.html
 
@@ -2465,11 +2514,12 @@ static const getmmudesc_t arch32table1M =
 
 	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
 	static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint32_t ttb_L1_base [1024 * 1024];
 #endif /* defined(__aarch64__) */
 
 
-static uintptr_t
-ttb_1MB_accessbits(const getmmudesc_t * arch, uintptr_t a, int ro, int xn)
+static uint64_t
+ttb_mempage_accessbits(const getmmudesc_t * arch, uint64_t a, int ro, int xn)
 {
 	//const uintptr_t addrbase = a & ~ (uintptr_t) UINT32_C(0x0FFFFF);
 
@@ -2648,7 +2698,7 @@ ttb_1MB_accessbits(const getmmudesc_t * arch, uintptr_t a, int ro, int xn)
 
 	// Все сравнения должны быть не точнее 1 MB
 
-	#warning ttb_1MB_accessbits: Unhandled CPUSTYLE_xxxx
+	#warning ttb_mempage_accessbits: Unhandled CPUSTYLE_xxxx
 
 	return arch->mdevice(a);
 
@@ -2661,7 +2711,7 @@ static void
 ttb_level2_2MB_initialize(const getmmudesc_t * arch, uintptr_t (* accessbits)(const getmmudesc_t * arch, uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
 {
 	unsigned i;
-	const uint_fast32_t pagesize = (UINT32_C(1) << 21);
+	const uint_fast32_t pagesize = (UINT32_C(1) << 21);	// 2M step
 
 	for (i = 0; i < ARRAY_SIZE(level2_pagetable); ++ i)
 	{
@@ -2679,10 +2729,10 @@ ttb_level2_2MB_initialize(const getmmudesc_t * arch, uintptr_t (* accessbits)(co
 #endif
 
 static void
-ttb_level0_1MB_initialize(const getmmudesc_t * arch, uintptr_t (* accessbits)(const getmmudesc_t * arch, uintptr_t a, int ro, int xn))
+ttb_level0_1MB_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn))
 {
 	unsigned i;
-	const uint_fast32_t pagesize = (UINT32_C(1) << 20);
+	const uint_fast32_t pagesize = (UINT32_C(1) << 20);	// 1M step
 
 	for (i = 0; i <  ARRAY_SIZE(ttb0_base); ++ i)
 	{
@@ -2690,6 +2740,22 @@ ttb_level0_1MB_initialize(const getmmudesc_t * arch, uintptr_t (* accessbits)(co
 		ttb0_base [i] =  accessbits(arch, address, 0, 0);
 	}
 }
+
+#if ! defined (__aarch64__)
+
+static void
+ttb_level1_4k_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn))
+{
+	unsigned i;
+	const uint_fast32_t pagesize = (UINT32_C(1) << 12);	// 4k step
+
+	for (i = 0; i <  ARRAY_SIZE(ttb_L1_base); ++ i)
+	{
+		const uintptr_t address = (uintptr_t) i << 20;
+		ttb_L1_base [i] =  accessbits(arch, address, 0, 0);
+	}
+}
+#endif
 
 static void
 sysinit_mmu_tables(void)
@@ -2731,12 +2797,17 @@ sysinit_mmu_tables(void)
 			ttb0_base [i] = (uintptr_t) (level2_pagetable + 512 * i) | 0x03;
 		}
 
-		ttb_level2_2MB_initialize(& arch64table2M, ttb_1MB_accessbits, 0, 0);
+		ttb_level2_2MB_initialize(& arch64table2M, ttb_mempage_accessbits, 0, 0);
 
 	#else
 		// MMU iniitialize
 
-		ttb_level0_1MB_initialize(& arch32table1M, ttb_1MB_accessbits);
+	#if 0
+		ttb_level1_4k_initialize(& arch32table4k, ttb_mempage_accessbits);
+		ttb_level0_1MB_initialize(& arch32table4k, ttb_mempage_accessbits);
+	#else
+		ttb_level0_1MB_initialize(& arch32table1M, ttb_mempage_accessbits);
+	#endif
 
 	#endif	/* defined (__aarch64__) */
 
@@ -2773,7 +2844,7 @@ sysinit_mmu_tables(void)
 			0;
 	}
 
-	//ttb_level2_2MB_initialize(& archtable, ttb_1MB_accessbits, 0, 0);
+	//ttb_level2_2MB_initialize(& archtable, ttb_mempage_accessbits, 0, 0);
 
 #endif
 
