@@ -1029,7 +1029,7 @@ ttb_level0_1MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits
 	}
 }
 
-#if MMUUSE4KPAGES
+#if MMUUSE4KPAGES && ! defined(__aarch64__)
 
 static void
 ttb_level1_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn))
@@ -1059,7 +1059,7 @@ ttb_level0_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)
 		ttb0_base [i] =  arch->mtable(phyaddr);
 	}
 }
-#endif /* MMUUSE4KPAGES */
+#endif /* MMUUSE4KPAGES && ! defined(__aarch64__) */
 
 void
 sysinit_mmu_tables(void)
