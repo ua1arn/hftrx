@@ -169,7 +169,7 @@ uint8_t gui_obj_create(const char * name, ...)
 		lh->font = & LABELS_FONT_DEFAULT;
 		lh->height_pix = lh->font->height;
 
-		strncpy(lh->name, obj_name, NAME_ARRAY_SIZE - 1);
+		strncpy(lh->name, obj_name, NAME_ARRAY_SIZE);
 		lh->width = va_arg(arg, uint32_t);
 		memset(lh->text, '*', lh->width);		// для совместимости, потом убрать
 		lh->width_pix = get_strwidth_mono(lh->text, lh->font);
@@ -192,7 +192,7 @@ uint8_t gui_obj_create(const char * name, ...)
 		bh->h = va_arg(arg, uint_fast16_t);
 		bh->is_repeating = va_arg(arg, uint32_t);
 		bh->is_long_press = va_arg(arg, uint32_t);
-		strncpy(bh->name, obj_name, NAME_ARRAY_SIZE - 1);
+		strncpy(bh->name, obj_name, NAME_ARRAY_SIZE);
 		strncpy(bh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
 		bh->visible = 1;
 		bh->index = win->bh_count;
@@ -218,7 +218,7 @@ uint8_t gui_obj_create(const char * name, ...)
 		tf->h_str = va_arg(arg, uint32_t);
 		tf->direction = (tf_direction_t) va_arg(arg, uint32_t);
 		tf->font = va_arg(arg, gui_mono_font_t *);
-		strncpy(tf->name, obj_name, NAME_ARRAY_SIZE - 1);
+		strncpy(tf->name, obj_name, NAME_ARRAY_SIZE);
 		tf->visible = 1;
 		tf->index = win->tf_count;
 		tf->x1 = 0;
@@ -249,7 +249,7 @@ uint8_t gui_obj_create(const char * name, ...)
 		ta->w = va_arg(arg, uint_fast16_t);
 		ta->h = va_arg(arg, uint_fast16_t);
 		ta->is_trackable = va_arg(arg, uint_fast16_t);
-		strncpy(ta->name, obj_name, NAME_ARRAY_SIZE - 1);
+		strncpy(ta->name, obj_name, NAME_ARRAY_SIZE);
 		ta->visible = 1;
 		ta->index = win->ta_count;
 
@@ -268,7 +268,7 @@ uint8_t gui_obj_create(const char * name, ...)
 
 		sh->parent = window_id;
 		sh->orientation = va_arg(arg, int);
-		strncpy(sh->name, obj_name, NAME_ARRAY_SIZE - 1);
+		strncpy(sh->name, obj_name, NAME_ARRAY_SIZE);
 		sh->state = CANCELLED;
 		sh->visible = 1;
 		sh->size = va_arg(arg, int);
@@ -313,7 +313,7 @@ void gui_obj_align_to(const char * name1, const char * name2, object_alignment_t
 	if (oh1 == oh2)
 		return;
 
-	uint16_t x2, y2, w2, h2;
+	uint16_t x2 = 0, y2 = 0, w2 = 0, h2 = 0;
 
 	switch(type2)
 	{
@@ -613,21 +613,21 @@ char * get_obj_name_by_idx(obj_type_t type, uint8_t idx)
 	{
 		ASSERT(idx < win->bh_count);
 
-		strncpy(obj_name, win->bh_ptr[idx].name, NAME_ARRAY_SIZE - 1);
+		strncpy(obj_name, win->bh_ptr[idx].name, NAME_ARRAY_SIZE);
 		obj_name_user(obj_name);
 		return obj_name;
 	}
 	else if (type == TYPE_LABEL)
 	{
 		ASSERT(idx < win->lh_count);
-		strncpy(obj_name, win->lh_ptr[idx].name, NAME_ARRAY_SIZE - 1);
+		strncpy(obj_name, win->lh_ptr[idx].name, NAME_ARRAY_SIZE);
 		obj_name_user(obj_name);
 		return obj_name;
 	}
 	else if (type == TYPE_SLIDER)
 	{
 		ASSERT(idx < win->sh_count);
-		strncpy(obj_name, win->sh_ptr[idx].name, NAME_ARRAY_SIZE - 1);
+		strncpy(obj_name, win->sh_ptr[idx].name, NAME_ARRAY_SIZE);
 		obj_name_user(obj_name);
 		return obj_name;
 	}

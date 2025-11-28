@@ -3,6 +3,46 @@
 
 #if WITHTOUCHGUI
 
+#if LCDMODE_MAIN_L8
+	// Indexed, one byte colors
+	#define GUI_WINDOWTITLECOLOR		20
+	#define GUI_WINDOWBGCOLOR			2
+	#define GUI_SLIDERLAYOUTCOLOR		100
+	#define GUI_MENUSELECTCOLOR			109
+	#define COLOR_BUTTON_NON_LOCKED		COLORPIP_GREEN
+	#define COLOR_BUTTON_PR_NON_LOCKED	COLORPIP_DARKGREEN	// was: COLORPIP_DARKGREEN2
+	#define COLOR_BUTTON_LOCKED			COLORPIP_YELLOW
+	#define COLOR_BUTTON_PR_LOCKED		DSGN_LOCKED // TFTRGB(0x3C, 0x3C, 0x00)
+	#define COLOR_BUTTON_DISABLED		COLORPIP_GRAY // TFTRGB(0x50, 0x50, 0x50) FIXME: use right value
+
+#elif 0
+	// Can be used TFTRGB(r, g, b) macro
+	// Experemental
+
+	#define GUI_WINDOWTITLECOLOR		COLOR_SKYBLUE
+	#define GUI_WINDOWBGCOLOR			COLOR_DARKGRAY
+	#define GUI_SLIDERLAYOUTCOLOR		COLOR_GREEN
+	#define GUI_MENUSELECTCOLOR			COLOR_GREEN
+    #define COLOR_BUTTON_NON_LOCKED     COLOR_WHITEALL
+    #define COLOR_BUTTON_PR_NON_LOCKED  COLOR_WHITEALL
+	#define COLOR_BUTTON_LOCKED			COLOR_YELLOW
+	#define COLOR_BUTTON_PR_LOCKED		DSGN_LOCKED
+	#define COLOR_BUTTON_DISABLED		COLOR_GRAY
+
+#else /* LCDMODE_MAIN_L8 */
+	// Can be used TFTRGB(r, g, b) macro
+	#define GUI_WINDOWTITLECOLOR		COLOR_SKYBLUE
+	#define GUI_WINDOWBGCOLOR			COLOR_DARKGRAY
+	#define GUI_SLIDERLAYOUTCOLOR		COLOR_GREEN
+	#define GUI_MENUSELECTCOLOR			COLOR_GREEN
+	#define COLOR_BUTTON_NON_LOCKED		COLOR_GREEN
+	#define COLOR_BUTTON_PR_NON_LOCKED	COLOR_DARKGREEN
+	#define COLOR_BUTTON_LOCKED			COLOR_YELLOW
+	#define COLOR_BUTTON_PR_LOCKED		DSGN_LOCKED
+	#define COLOR_BUTTON_DISABLED		COLOR_GRAY
+
+#endif /* LCDMODE_MAIN_L8 */
+
 #if WITHSDL2VIDEO
 
 #include <SDL2/SDL.h>
@@ -13,6 +53,8 @@ typedef struct {
 } gui_drawbuf_t;
 
 extern gui_drawbuf_t * drawbuf;
+
+#define GUI_DEFAULTCOLOR			0	// fully transparent color
 
 static inline void __gui_set_drawbuf(const void * buf)
 {
@@ -56,12 +98,15 @@ static inline void __gui_draw_rect(const gui_drawbuf_t * buf, unsigned int x, un
 		.h = h
 	};
 
+	SDL_SetRenderDrawBlendMode(buf->renderer, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor(buf->renderer, r, g, b, a);
 
 	if (fill)
 		SDL_RenderFillRect(buf->renderer, & rect);
 	else
 		SDL_RenderDrawRect(buf->renderer, & rect);
+
+	SDL_SetRenderDrawBlendMode(buf->renderer, SDL_BLENDMODE_NONE);
 }
 
 // Отрисовка прямоугольника со скругленными углами
@@ -234,6 +279,8 @@ typedef COLORPIP_T 			gui_color_t;
 typedef gxdrawb_t 			gui_drawbuf_t;
 
 extern gui_drawbuf_t * drawbuf;
+
+#define GUI_DEFAULTCOLOR			COLOR_BLACK
 
 static inline void __gui_set_drawbuf(gui_drawbuf_t * buf)
 {

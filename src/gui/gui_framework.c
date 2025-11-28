@@ -244,7 +244,7 @@ wm_message_t get_from_wm_queue(uint8_t win_id, uint8_t * type, int32_t * action,
 		strncpy(obj_name, win->queue.data[win->queue.size].name, NAME_ARRAY_SIZE - 1);
 		char * r = strrchr(obj_name, '#');
 		obj_name[r - obj_name] = '\0';
-		strncpy(name, obj_name, NAME_ARRAY_SIZE - 1);
+		strncpy(name, obj_name, NAME_ARRAY_SIZE);
 	}
 
 	wm_message_t m = win->queue.data[win->queue.size].message;
@@ -602,7 +602,7 @@ void gui_put_event(gui_event_type type, uint16_t code)
 
 	if (type == EVENT_TYPE_CONTROL)
 	{
-		int p;
+		int p = 0;
 		if (code == CODE_CURSOR_LEFT) p = -1;
 		else if (code == CODE_CURSOR_RIGHT) p = 1;
 		else if (code == CODE_KEY_ENTER && win->idx_bh_focus_old != UINT8_MAX)
@@ -788,7 +788,7 @@ static void draw_button(const button_t * const bh)
 		c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
 
-		__gui_draw_rounded_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, button_round_radius, GUI_DEFAULTCOLOR, 1);
+		__gui_draw_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, GUI_DEFAULTCOLOR, 1);
 		__gui_draw_rounded_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
 		__gui_draw_rounded_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		__gui_draw_rounded_rect(gdb, x1 + 1, y1 + 1, bh->w - 3, bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);

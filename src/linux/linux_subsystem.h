@@ -146,6 +146,10 @@ uint_fast8_t dummy_getchar(char * cp);
 
 #define __DMB()	do { } while (0)
 
+#ifndef   __RESTRICT
+  #define __RESTRICT                        __restrict
+#endif
+
 typedef pthread_mutex_t lclspinlock_t;
 
 void linux_exit(void);
