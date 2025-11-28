@@ -751,6 +751,22 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 		0 \
 	)
 
+// B3.5.1 Short-descriptor translation table format descriptors
+// Short-descriptor translation table first-level descriptor formats
+
+#define	TTB_PARA_AARCH32_4k_table(addr, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
+		((addr) & ~ (uint64_t) UINT32_C(0x03FF)) | /* Page table base address, bits[31:10]. bits 31:10 */ \
+		0 * (UINT32_C(1) << 9) |	/* implementation defined */ \
+		(DOMAINv) * (UINT32_C(1) << 5) |	/* DOMAIN */ \
+		0 * (UINT32_C(1) << 3) |	/* NS */ \
+		0x01 * (UINT32_C(1) << 2) |	/* PXN */ \
+		0x01 * (UINT32_C(1) << 0) |	/* */ \
+		0 \
+	)
+
+// B3.5.1 Short-descriptor translation table format descriptors
+// Short-descriptor translation table second-level descriptor formats
+
 // Small page (4KB memory page)
 #define	TTB_PARA_AARCH32_4k(addr, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
 		((addr) & ~ (uint64_t) UINT32_C(0x0FFF)) | /* 4k granulation address */ \
@@ -763,18 +779,6 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 		!! (Bv) * (UINT32_C(1) << 2) |	/* B */ \
 		1 * (UINT32_C(1) << 1) |	/* 1 */ \
 		!! (XNv) * (UINT32_C(1) << 0) |	/* XN The Execute-never bit. */ \
-		0 \
-	)
-
-// B3.5.1 Short-descriptor translation table format descriptors
-// Short-descriptor translation table first-level descriptor formats
-
-#define	TTB_PARA_AARCH32_4k_table(addr, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
-		((addr) & ~ (uint64_t) UINT32_C(0x07FF)) | /* Page table base address, bits[31:10]. bits 31::10 */ \
-		0 * (UINT32_C(1) << 9) |	/* implementation defined */ \
-		(DOMAINv) * (UINT32_C(1) << 5) |	/* DOMAIN */ \
-		0 * (UINT32_C(1) << 3) |	/* NS */ \
-		0x01 * (UINT32_C(1) << 0) |	/* */ \
 		0 \
 	)
 
@@ -940,9 +944,15 @@ static const getmmudesc_t arch32table4k =
 
 #else /* defined(__aarch64__) */
 
-	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
-	static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];	//
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint32_t ttb_L1_base [1024 * 1024];	// дескрипторы страниц памяти
+	#if MMUUSE4KPAGES
+		/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
+		static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];	//
+		static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint32_t ttb_L1_base [4096 * 256];	// дескрипторы страниц памяти
+	#else /* MMUUSE4KPAGES */
+		/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
+		static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];	//
+	#endif /* MMUUSE4KPAGES */
+
 #endif /* defined(__aarch64__) */
 
 #if defined (__aarch64__)
@@ -981,7 +991,7 @@ ttb_level0_1MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits
 	}
 }
 
-#if ! defined (__aarch64__) && ! CPUSTYLE_RISCV
+#if MMUUSE4KPAGES
 
 static void
 ttb_level1_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn))
@@ -996,19 +1006,22 @@ ttb_level1_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)
 	}
 }
 
+// элементы указывают на Second-level table - каждая содержит описание 256 страниц по 4 килобайта - итого 1 мегабайт памяти
+// размер одной страницы - 1 килобайт
+
 static void
-ttb_level0_4k_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn))
+ttb_level0_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn))
 {
 	unsigned i;
-	const uint_fast32_t pagesize = (UINT32_C(1) << 12);	// 4k step
+	const uint_fast64_t pagesize = (UINT32_C(1) << 10);	// 1k step
 
 	for (i = 0; i <  ARRAY_SIZE(ttb0_base); ++ i)
 	{
-		const uintptr_t phyaddr = (uintptr_t) ttb_L1_base + (i * pagesize);
+		const uint_fast64_t phyaddr = (uint_fast64_t) (uintptr_t) ttb_L1_base + (i * pagesize);
 		ttb0_base [i] =  arch->mtable(phyaddr);
 	}
 }
-#endif
+#endif /* MMUUSE4KPAGES */
 
 void
 sysinit_mmu_tables(void)
