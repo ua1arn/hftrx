@@ -733,15 +733,15 @@ void dcache_clean_all(void);
 
 typedef struct getmmudesc_tag
 {
-	uint64_t (* mcached)(uint64_t a, int ro, int xn);
-	uint64_t (* mncached)(uint64_t a, int ro, int xn);
-	uint64_t (* mdevice)(uint64_t a);
-	uint64_t (* mnoaccess)(uint64_t a);
-	uint64_t (* mtable)(uint64_t a);	// next level table
+	uint_fast64_t (* mcached)(uint_fast64_t a, int ro, int xn);
+	uint_fast64_t (* mncached)(uint_fast64_t a, int ro, int xn);
+	uint_fast64_t (* mdevice)(uint_fast64_t a);
+	uint_fast64_t (* mnoaccess)(uint_fast64_t a);
+	uint_fast64_t (* mtable)(uint_fast64_t a);	// next level table
 } getmmudesc_t;
 
 /* зависящая от процессора карта распределения memory regions */
-uint64_t ttb_mempage_accessbits(const getmmudesc_t * arch, uint64_t a, int ro, int xn);
+uint_fast64_t ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn);
 
 int_fast32_t icache_rowsize(void);
 int_fast32_t dcache_rowsize(void);

@@ -368,8 +368,8 @@ int_fast32_t icache_rowsize(void)
 
 
 /* зависящая от процессора карта распределения memory regions */
-uint64_t
-ttb_mempage_accessbits(const getmmudesc_t * arch, uint64_t phyaddr, int ro, int xn)
+uint_fast64_t
+ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro, int xn)
 {
 	//const uintptr_t addrbase = phyaddr & ~ (uintptr_t) UINT32_C(0x0FFFFF);
 
@@ -607,11 +607,11 @@ static const uint32_t aarch64_pageattr =
 //	pageAttrRAM=00000740
 //	pageAttrDEVICE=00000748
 
-static uint64_t arch64_mcached(uint64_t addr, int ro, int xn)
+static uint_fast64_t arch64_mcached(uint_fast64_t addr, int ro, int xn)
 {
 	return (addr & ~ (uint64_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrRAM | 0x01;
 }
-static uint64_t arch64_mncached(uint64_t addr, int ro, int xn)
+static uint_fast64_t arch64_mncached(uint_fast64_t addr, int ro, int xn)
 {
 	return (addr & ~ (uint64_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrNCRAM | 0x01;
 }
@@ -619,12 +619,12 @@ static uint64_t arch64_mdevice(uint64_t addr)
 {
 	return (addr & ~ (uint64_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrDEVICE | 0x01;
 }
-static uint64_t arch64_mnoaccess(uint64_t addr)
+static uint_fast64_t arch64_mnoaccess(uint_fast64_t addr)
 {
 	return 0;
 }
 // Next level table
-static uint64_t arch64_mtable(uint64_t addr)
+static uint_fast64_t arch64_mtable(uint_fast64_t addr)
 {
 	return 0;
 }
@@ -775,24 +775,24 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 #define	TTB_PARA_AARCH32_4k_DEVICE(addr) 			TTB_PARA_AARCH32_4k((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 #define	TTB_PARA_AARCH32_4k_TABLE(addr) 			TTB_PARA_AARCH32_4k((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 
-static uint64_t arch32_1M_mcached(uint64_t addr, int ro, int xn)
+static uint_fast64_t arch32_1M_mcached(uint_fast64_t addr, int ro, int xn)
 {
 	return TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn);
 }
-static uint64_t arch32_1M_mncached(uint64_t addr, int ro, int xn)
+static uint_fast64_t arch32_1M_mncached(uint_fast64_t addr, int ro, int xn)
 {
 	return TTB_PARA_AARCH32_1M_NCACHED(addr, ro, xn);
 }
-static uint64_t arch32_1M_mdevice(uint64_t addr)
+static uint_fast64_t arch32_1M_mdevice(uint_fast64_t addr)
 {
 	return TTB_PARA_AARCH32_1M_DEVICE(addr);
 }
-static uint64_t arch32_1M_mnoaccess(uint64_t addr)
+static uint_fast64_t arch32_1M_mnoaccess(uint_fast64_t addr)
 {
 	return 0;
 }
 // Next level table
-static uint64_t arch32_1M_mtable(uint64_t addr)
+static uint_fast64_t arch32_1M_mtable(uint_fast64_t addr)
 {
 	return 0;
 }
@@ -806,24 +806,24 @@ static const getmmudesc_t arch32table1M =
 	.mtable = arch32_1M_mtable
 };
 
-static uint64_t arch32_4k_mcached(uint64_t addr, int ro, int xn)
+static uint_fast64_t arch32_4k_mcached(uint_fast64_t addr, int ro, int xn)
 {
 	return TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn);
 }
-static uint64_t arch32_4k_mncached(uint64_t addr, int ro, int xn)
+static uint_fast64_t arch32_4k_mncached(uint_fast64_t addr, int ro, int xn)
 {
 	return TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn);
 }
-static uint64_t arch32_4k_mdevice(uint64_t addr)
+static uint_fast64_t arch32_4k_mdevice(uint_fast64_t addr)
 {
 	return TTB_PARA_AARCH32_4k_DEVICE(addr);
 }
-static uint64_t arch32_4k_mnoaccess(uint64_t addr)
+static uint_fast64_t arch32_4k_mnoaccess(uint_fast64_t addr)
 {
 	return 0;
 }
 // Next level table
-static uint64_t arch32_4k_mtable(uint64_t addr)
+static uint_fast64_t arch32_4k_mtable(uint_fast64_t addr)
 {
 	return TTB_PARA_AARCH32_4k_TABLE(addr);
 }
@@ -934,15 +934,15 @@ static const getmmudesc_t arch32table4k =
 #if defined (__aarch64__)
 
 static void
-ttb_level2_2MB_initialize(const getmmudesc_t * arch, uintptr_t (* accessbits)(const getmmudesc_t * arch, uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
+ttb_level2_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
 {
 	unsigned i;
-	const uint_fast32_t pagesize = (UINT32_C(1) << 21);	// 2M step
+	const uint_fast64_t pagesize = (UINT32_C(1) << 21);	// 2M step
 
 	for (i = 0; i < ARRAY_SIZE(level2_pagetable); ++ i)
 	{
-		const uintptr_t address = (uintptr_t) i << 21;
-		level2_pagetable [i] =  accessbits(arch, address, 0, 0);
+		const uint_fast64_t phyaddr = pagesize * i;
+		level2_pagetable [i] =  accessbits(arch, phyaddr, 0, 0);
 	}
 	/* Установить R/O атрибуты для указанной области */
 	while (textsize >= pagesize)
@@ -955,14 +955,14 @@ ttb_level2_2MB_initialize(const getmmudesc_t * arch, uintptr_t (* accessbits)(co
 #endif
 
 static void
-ttb_level0_1MB_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn))
+ttb_level0_1MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn))
 {
 	unsigned i;
-	const uint_fast32_t pagesize = (UINT32_C(1) << 20);	// 1M step
+	const uint_fast64_t pagesize = (UINT32_C(1) << 20);	// 1M step
 
 	for (i = 0; i <  ARRAY_SIZE(ttb0_base); ++ i)
 	{
-		const uintptr_t phyaddr = (uintptr_t) i << 20;
+		const uint_fast64_t phyaddr = pagesize * i;
 		ttb0_base [i] =  accessbits(arch, phyaddr, 0, 0);
 	}
 }
@@ -970,14 +970,14 @@ ttb_level0_1MB_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(con
 #if ! defined (__aarch64__) && ! CPUSTYLE_RISCV
 
 static void
-ttb_level1_4k_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn))
+ttb_level1_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn))
 {
 	unsigned i;
-	const uint_fast32_t pagesize = (UINT32_C(1) << 12);	// 4k step
+	const uint_fast64_t pagesize = (UINT32_C(1) << 12);	// 4k step
 
 	for (i = 0; i <  ARRAY_SIZE(ttb_L1_base); ++ i)
 	{
-		const uintptr_t phyaddr = pagesize * i;
+		const uint_fast64_t phyaddr = pagesize * i;
 		ttb_L1_base [i] =  accessbits(arch, phyaddr, 0, 0);
 	}
 }
