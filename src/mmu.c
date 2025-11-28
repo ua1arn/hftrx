@@ -7,6 +7,7 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"	// for debug prints
+#include "utils.h"	// peek/poke
 
 //#define MMUUSE4KPAGES 1
 
@@ -1185,7 +1186,7 @@ ttb_level0_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)
 void
 sysinit_mmu_tables(void)
 {
-	PRINTF("sysinit_mmu_tables\n");
+	//PRINTF("sysinit_mmu_tables\n");
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	// MMU iniitialize
@@ -1275,14 +1276,14 @@ sysinit_mmu_tables(void)
 #elif defined (__CORTEX_M)
 #endif
 
-	PRINTF("sysinit_mmu_tables done.\n");
+	//PRINTF("sysinit_mmu_tables done.\n");
 }
 
 /* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 void
 sysinit_ttbr_initialize(void)
 {
-	PRINTF("sysinit_ttbr_initialize.\n");
+	//PRINTF("sysinit_ttbr_initialize.\n");
 #if defined(__aarch64__)
 
 	ASSERT(((uintptr_t) ttb0_base & 0x0FFF) == 0); // 4 KB
@@ -1470,5 +1471,5 @@ sysinit_ttbr_initialize(void)
 #elif defined (__CORTEX_M)
 
 #endif
-	PRINTF("sysinit_ttbr_initialize done.\n");
+	//PRINTF("sysinit_ttbr_initialize done.\n");
 }
