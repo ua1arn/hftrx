@@ -1891,10 +1891,10 @@ static void smeter_arrow_rle(const gxdrawb_t * db, uint_fast16_t target_pixel_x,
 	}
 }
 
-static void sm_dial_tx_draw_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_t y0, uint_fast16_t width, uint_fast16_t height, uint_fast8_t pathi, struct smeter_params_tag * const smpr)
+static void sm_draw_dial_tx_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_t y0, uint_fast16_t width, uint_fast16_t height, uint_fast8_t pathi, struct smeter_params_tag * const smpr)
 {
 	const COLORPIP_T bgcolor = display2_getbgcolor();
-	const int32_t * const smeterangles = smpr->smeterangles;
+//	const int32_t * const smeterangles = smpr->smeterangles;
 	const gxdrawb_t * const smbgdb = & smpr->smbgdb;
 
 	// координаты оси стрелки
@@ -1943,7 +1943,7 @@ static void sm_dial_tx_draw_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fas
 
 }
 
-static void sm_dial_rx_draw_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_t y0, uint_fast16_t width, uint_fast16_t height, uint_fast8_t pathi, struct smeter_params_tag * const smpr)
+static void sm_draw_dial_rx_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_t y0, uint_fast16_t width, uint_fast16_t height, uint_fast8_t pathi, struct smeter_params_tag * const smpr)
 {
 	const COLORPIP_T bgcolor = display2_getbgcolor();
 	const int32_t * const smeterangles = smpr->smeterangles;
@@ -1954,9 +1954,9 @@ static void sm_dial_rx_draw_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fas
 	const uint_fast16_t yc = y0 + smpr->ycneddle;
 
 	int_fast16_t tracemaxi10;
-	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
-	int_fast32_t gv = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), rssi10);
-	//int_fast32_t gv_trace = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
+	const int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+	const int_fast32_t gv = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), rssi10);
+	//const int_fast32_t gv_trace = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
 
 	// RX state
 	colpip_bitblt(
@@ -1979,8 +1979,6 @@ static void
 display2_smeter15_layout_tx_dial_rle(smeter_params_t * const smpr)
 {
 	display2_smeter15_layout_dial_rle(smpr);
-	// Angles (positions)
-	int32_t * const smeteranglesTX = smpr->smeterangles;
 	// Raster buffers
 	gxdrawb_t * const db = & smpr->smbgdb;
 	gxdrawb_initialize(db, smpr->smeter_bg, SM_BG_W, SM_BG_H);
@@ -1988,18 +1986,17 @@ display2_smeter15_layout_tx_dial_rle(smeter_params_t * const smpr)
 	graw_picture_RLE_buf(db, 0, 0, & smeter_bg_new, smeterbgcolor);
 
 	dcache_clean(db->cachebase, db->cachesize);
-	smeteranglesTX [0] = smpr->gs;
-	smeteranglesTX [1] = smpr->gm;
-	smeteranglesTX [2] = smpr->ge;
-	smpr->draw = sm_dial_tx_draw_rle;
+	// Angles (positions)
+	smpr->smeterangles [0] = smpr->gs;
+	smpr->smeterangles [1] = smpr->gm;
+	smpr->smeterangles [2] = smpr->ge;
+	smpr->draw = sm_draw_dial_tx_rle;
 }
 
 static void
 display2_smeter15_layout_rx_dial_rle(smeter_params_t * const smpr)
 {
 	display2_smeter15_layout_dial_rle(smpr);
-	// Angles (positions)
-	int32_t * const smeteranglesRX = smpr->smeterangles;
 	// Raster buffers
 	gxdrawb_t * const db = & smpr->smbgdb;
 	gxdrawb_initialize(db, smpr->smeter_bg, SM_BG_W, SM_BG_H);
@@ -2007,10 +2004,11 @@ display2_smeter15_layout_rx_dial_rle(smeter_params_t * const smpr)
 	graw_picture_RLE_buf(db, 0, 0, & smeter_bg_new, smeterbgcolor);
 
 	dcache_clean(db->cachebase, db->cachesize);
-	smeteranglesRX [0] = smpr->gs;
-	smeteranglesRX [1] = smpr->gm;
-	smeteranglesRX [2] = smpr->ge;
-	smpr->draw = sm_dial_rx_draw_rle;
+	// Angles (positions)
+	smpr->smeterangles [0] = smpr->gs;
+	smpr->smeterangles [1] = smpr->gm;
+	smpr->smeterangles [2] = smpr->ge;
+	smpr->draw = sm_draw_dial_rx_rle;
 }
 
 #else /* WITHRLEDECOMPRESS */
@@ -2037,7 +2035,7 @@ display2_smeter15_layout_dial(smeter_params_t * smpr)
 	smpr->ycneddle = SM_YCENTEROFFS;
 }
 
-static void sm_dial_rx_draw(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_t y0, uint_fast16_t width, uint_fast16_t height, uint_fast8_t pathi, struct smeter_params_tag * const smpr)
+static void sm_draw_dial_rx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_t y0, uint_fast16_t width, uint_fast16_t height, uint_fast8_t pathi, struct smeter_params_tag * const smpr)
 {
 	const COLORPIP_T bgcolor = display2_getbgcolor();
 	const int32_t * const smeterangles = smpr->smeterangles;
@@ -2048,9 +2046,9 @@ static void sm_dial_rx_draw(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 	const uint_fast16_t yc = y0 + smpr->ycneddle;
 
 	int_fast16_t tracemaxi10;
-	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
-	int_fast32_t gv = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), rssi10);
-	int_fast32_t gv_trace = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
+	const int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+	const int_fast32_t gv = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), rssi10);
+	const int_fast32_t gv_trace = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
 
 	// RX state
 	colpip_bitblt(
@@ -2167,10 +2165,10 @@ display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 	smeteranglesRX [0] = smpr->gs;
 	smeteranglesRX [1] = smpr->gm;
 	smeteranglesRX [2] = smpr->ge;
-	smpr->draw = sm_dial_rx_draw;
+	smpr->draw = sm_draw_dial_rx;
 }
 
-static void sm_dial_tx_draw(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_t y0, uint_fast16_t width, uint_fast16_t height, uint_fast8_t pathi, struct smeter_params_tag * const smpr)
+static void sm_draw_dial_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_t y0, uint_fast16_t width, uint_fast16_t height, uint_fast8_t pathi, struct smeter_params_tag * const smpr)
 {
 	const COLORPIP_T bgcolor = display2_getbgcolor();
 	const int32_t * const smeterangles = smpr->smeterangles;
@@ -2181,22 +2179,16 @@ static void sm_dial_tx_draw(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 	const uint_fast16_t yc = y0 + smpr->ycneddle;
 
 
-	int_fast32_t gp = smpr->gs;
-	int_fast32_t gv = smpr->gs;
-	int_fast32_t gv_trace = smpr->gs;
-	int_fast32_t gswr = smpr->gs;
-
-	/* фильтрация - (в градусах) */
-
 	const adcvalholder_t powerV = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
-	gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
+	int_fast32_t gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
 
 	// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
 	// Для тюнера и измерений не годится, для показа - без торомозов.
 	const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале ииндикатора
 	const uint_fast16_t swrV = get_swr(swr_fullscale);
-	gswr = smpr->gs + normalize(swrV, 0, swr_fullscale, smpr->ge - smpr->gs);
+	int_fast32_t gswr = smpr->gs + normalize(swrV, 0, swr_fullscale, smpr->ge - smpr->gs);
 
+	/* фильтрация - (в градусах) */
 	if (gp > smpr->gs)
 		gp_smooth = gp;
 
@@ -2315,26 +2307,21 @@ display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 	smeteranglesTX [0] = smpr->gs;
 	smeteranglesTX [1] = smpr->gm;
 	smeteranglesTX [2] = smpr->ge;
-	smpr->draw = sm_dial_tx_draw;
+	smpr->draw = sm_draw_dial_tx;
 }
 
 #endif /* WITHRLEDECOMPRESS */
 
-static void sm_bars_rx_draw(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_t y0, uint_fast16_t width, uint_fast16_t height, uint_fast8_t pathi, struct smeter_params_tag * const smpr)
+static void sm_draw_bars_rx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_t y0, uint_fast16_t width, uint_fast16_t height, uint_fast8_t pathi, struct smeter_params_tag * const smpr)
 {
 	const COLORPIP_T bgcolor = display2_getbgcolor();
 	const int32_t * const smeterangles = smpr->smeterangles;
 	const gxdrawb_t * const smbgdb = & smpr->smbgdb;
 
-	int_fast32_t gp = smpr->gs;
-	int_fast32_t gv = smpr->gs;
-	int_fast32_t gv_trace = smpr->gs;
-	int_fast32_t gswr = smpr->gs;
-
 	int_fast16_t tracemaxi10;
-	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
-	gv = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), rssi10);
-	gv_trace = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
+	const int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+	const int_fast32_t gv = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), rssi10);
+	const int_fast32_t gv_trace = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
 
 	colpip_bitblt(
 			db->cachebase, db->cachesize,
@@ -2352,7 +2339,7 @@ static void sm_bars_rx_draw(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 		colpip_line(db, x0 + gv_trace, y0 + smpr->r1 + 5, x0 + gv_trace, y0 + smpr->r1 + 20, COLORPIP_YELLOW, 0);
 }
 
-static void sm_bars_tx_draw(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_t y0, uint_fast16_t width, uint_fast16_t height, uint_fast8_t pathi, struct smeter_params_tag * const smpr)
+static void sm_draw_bars_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_t y0, uint_fast16_t width, uint_fast16_t height, uint_fast8_t pathi, struct smeter_params_tag * const smpr)
 {
 	const COLORPIP_T bgcolor = display2_getbgcolor();
 	const int32_t * const smeterangles = smpr->smeterangles;
@@ -2362,20 +2349,14 @@ static void sm_bars_tx_draw(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 	const uint_fast16_t xc = x0 + smpr->xcneddle;
 	const uint_fast16_t yc = y0 + smpr->ycneddle;
 
-
-	int_fast32_t gp = smpr->gs;
-	int_fast32_t gv = smpr->gs;
-	int_fast32_t gv_trace = smpr->gs;
-	int_fast32_t gswr = smpr->gs;
-
 	const adcvalholder_t powerV = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
-	gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
+	int_fast32_t gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
 
 	// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
 	// Для тюнера и измерений не годится, для показа - без торомозов.
 	const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале ииндикатора
 	const uint_fast16_t swrV = get_swr(swr_fullscale);
-	gswr = smpr->gs + normalize(swrV, 0, swr_fullscale, smpr->ge - smpr->gs);
+	int_fast32_t gswr = smpr->gs + normalize(swrV, 0, swr_fullscale, smpr->ge - smpr->gs);
 
 	if (gp > smpr->gs)
 		gp_smooth = gp;
@@ -2493,7 +2474,7 @@ display2_smeter15_layout_tx_bars(smeter_params_t * const smpr)
 	smeteranglesTX [0] = smpr->gs;
 	smeteranglesTX [1] = smpr->gm;
 	smeteranglesTX [2] = smpr->ge;
-	smpr->draw = sm_bars_tx_draw;
+	smpr->draw = sm_draw_bars_tx;
 }
 
 static void
@@ -2578,7 +2559,7 @@ display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 	smeteranglesRX [0] = smpr->gs;
 	smeteranglesRX [1] = smpr->gm;
 	smeteranglesRX [2] = smpr->ge;
-	smpr->draw = sm_bars_rx_draw;
+	smpr->draw = sm_draw_bars_rx;
 }
 
 
