@@ -700,69 +700,56 @@ static const getmmudesc_t gpu_mali400_table4k =
 //#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through Cacheable
 //#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back no Write-Allocate Cacheable
 
-static const uint32_t aarch64_pageattr =
-			0x01 * (UINT32_C(1) << 10) |	// AF
-			0x00 * (UINT32_C(1) << 5) |		// NS
-			0x01 * (UINT32_C(1) << 6) |		// AP[1:0]
-			0x03 * (UINT32_C(1) << 8) |		// SH[1:0]
-			0;
+// Lower attributes
+#define AARCH64_LOWER_ATTR(AttrIndx) ( \
+	0x01 * (UINT32_C(1) << 10) |	/*  AF */ \
+	0x03 * (UINT32_C(1) << 8) |		/* SH[1:0] */ \
+	0x01 * (UINT32_C(1) << 6) |		/* AP[2:1] (AP = 0x02) */ \
+	0x00 * (UINT32_C(1) << 5) |		/* NS */ \
+	(AttrIndx & 0x07) * (UINT32_C(1) << 2) | /* AttrIndx[2:0] */ \
+	0)
+#define AARCH64_UPPER_ATTR 0
 
-//	//PRINTF("aarch64_pageattr=%08X\n", (unsigned) aarch64_pageattr);
-//	//ASSERT(0x00000740 == aarch64_pageattr);
-//	//uintptr_t ttb_base1_addr = (uintptr_t) ttb_base1 & ~ UINT64_C(0x3FFFFFFF);
-//	// 0x740 - BLOCK_1GB
-//	// 0x74C - BLOCK_2MB
+enum aarch64_attrindex
+{
+	AARCH64_ATTR_INDEX_CACHED = 0,
+	AARCH64_ATTR_INDEX_NCACHED,
+	AARCH64_ATTR_INDEX_DEVICE
 
-	enum aarch64_attrindex
-	{
-		AARCH64_ATTR_CACHED = 0,
-		AARCH64_ATTR_NCACHED,
-		AARCH64_ATTR_DEVICE
-
-	};
-
-	static const uint32_t pageAttrDEVICE =
-			aarch64_pageattr |
-			AARCH64_ATTR_DEVICE * (UINT32_C(1) << 2) |
-			0
-			;
-	static const uint32_t pageAttrRAM =
-			aarch64_pageattr |
-			AARCH64_ATTR_CACHED * (UINT32_C(1) << 2) |
-			0
-			;
-	static const uint32_t pageAttrNCRAM =
-			aarch64_pageattr |
-			AARCH64_ATTR_NCACHED * (UINT32_C(1) << 2) |
-			0
-			;
-//	PRINTF("pageAttrNCRAM=%08X\n", pageAttrNCRAM);
-//	PRINTF("pageAttrRAM=%08X\n", pageAttrRAM);
-//	PRINTF("pageAttrDEVICE=%08X\n", pageAttrDEVICE);
-//	pageAttrNCRAM=00000744
-//	pageAttrRAM=00000740
-//	pageAttrDEVICE=00000748
+};
 
 static uint_fast64_t arch64_mcached(uint_fast64_t addr, int ro, int xn)
 {
-	return (addr & ~ (uint64_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrRAM | 0x01;
+	return AARCH64_UPPER_ATTR |
+			(addr & ~ UINT64_C(0x0FFFFF)) |
+			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_CACHED) |
+			0x01;
 }
 static uint_fast64_t arch64_mncached(uint_fast64_t addr, int ro, int xn)
 {
-	return (addr & ~ (uint64_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrNCRAM | 0x01;
+	return AARCH64_UPPER_ATTR |
+			(addr & ~ UINT64_C(0x0FFFFF)) |
+			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_NCACHED) |
+			0x01;
 }
-static uint64_t arch64_mdevice(uint64_t addr)
+static uint64_t arch64_mdevice(uint_fast64_t addr)
 {
-	return (addr & ~ (uint64_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrDEVICE | 0x01;
+	return AARCH64_UPPER_ATTR
+			| (addr & ~ UINT64_C(0x0FFFFF)) |
+			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_DEVICE) |
+			0x01;
+}
+// Next level table
+// DDI0487_I_a_a-profile_architecture_reference_manual.pdf
+// D8.3.1 Table Descriptor format
+static uint_fast64_t arch64_mtable(uint_fast64_t addr)
+{
+	return (addr & ~ UINT64_C(0x0FFF)) |
+			0x03;
 }
 static uint_fast64_t arch64_mnoaccess(uint_fast64_t addr)
 {
 	return 0;
-}
-// Next level table
-static uint_fast64_t arch64_mtable(uint_fast64_t addr)
-{
-	return addr | 0x03;
 }
 
 static const getmmudesc_t arch64_table_2M =
@@ -1075,6 +1062,11 @@ void mmu_flush_cache(void) {
 
 #if defined (__CORTEX_M)
 
+#elif CPUSTYLE_RISCV
+
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level1_pagetable_u64 [512 * 4];	// Used as PPN in SATP register
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base_u64 [512];	// Used as PPN in SATP register
+
 #elif defined(__aarch64__)
 
 	// Last x4 - for 34 bit address (16 GB address space)
@@ -1083,20 +1075,17 @@ void mmu_flush_cache(void) {
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level1_pagetable_u64 [512 * 4 * 4];	// ttb0_base must be a 4KB-aligned address.
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base_u64 [ARRAY_SIZE(level1_pagetable_u64) / 512];	// ttb0_base must be a 4KB-aligned address.
 
-#elif CPUSTYLE_RISCV
-
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level1_pagetable_u64 [512 * 4];	// Used as PPN in SATP register
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base_u64 [512];	// Used as PPN in SATP register
-
 #else /* defined(__aarch64__) */
 
 	#if MMUUSE4KPAGES
 
+	// pages of 4 k
 		static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint32_t level1_pagetable_u32 [4096 * 256];	// вся физическая память страницами по 4 килобайта
 		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base_u32 [4096];
 
 	#else /* MMUUSE4KPAGES */
 
+		// pages of 1 MB
 		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base_u32 [4096];	// вся физическая память страницами по 1 мегабайт
 
 	#endif /* MMUUSE4KPAGES */
@@ -1334,9 +1323,9 @@ sysinit_ttbr_initialize(void)
 	__set_TCR_EL3(tcrv);
 
 	const uint_fast32_t mairv =
-			0xFF * (UINT32_C(1) << (AARCH64_ATTR_CACHED * 8)) |		// Normal Memory, Inner/Outer Write-back non-transient
-			0x44 * (UINT32_C(1) << (AARCH64_ATTR_NCACHED * 8)) |	// Normal memory, Inner/Outer Non-Cacheable
-			0x00 * (UINT32_C(1) << (AARCH64_ATTR_DEVICE * 8)) | 	// Device-nGnRnE memory
+			0xFF * (UINT32_C(1) << (AARCH64_ATTR_INDEX_CACHED * 8)) |		// Normal Memory, Inner/Outer Write-back non-transient
+			0x44 * (UINT32_C(1) << (AARCH64_ATTR_INDEX_NCACHED * 8)) |	// Normal memory, Inner/Outer Non-Cacheable
+			0x00 * (UINT32_C(1) << (AARCH64_ATTR_INDEX_DEVICE * 8)) | 	// Device-nGnRnE memory
 			0;
 	// Program the domain access register
 	//__set_DACR32_EL2(0xFFFFFFFF); 	// domain 15: access are not checked
