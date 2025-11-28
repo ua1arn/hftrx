@@ -2209,26 +2209,21 @@ static const uint32_t aarch64_pageattr =
 //	pageAttrRAM=00000740
 //	pageAttrDEVICE=00000748
 
-#define	TTB_PARA_AARCH64_NCACHED(addr, ro, xn)		(((addr) & ~ (uintptr_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrNCRAM | 0x01)
-#define	TTB_PARA_AARCH64_CACHED(addr, ro, xn) 		(((addr) & ~ (uintptr_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrRAM | 0x01)
-#define	TTB_PARA_AARCH64_DEVICE(addr) 				(((addr) & ~ (uintptr_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrDEVICE | 0x01)
-#define	TTB_PARA_AARCH64_NO_ACCESS(addr) 			0
-
-static uint64_t arch64_mcached(uint64_t a, int ro, int xn)
+static uint64_t arch64_mcached(uint64_t addr, int ro, int xn)
 {
-	return TTB_PARA_AARCH64_CACHED(a, ro, xn);
+	return (addr & ~ (uintptr_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrRAM | 0x01;
 }
-static uint64_t arch64_mncached(uint64_t a, int ro, int xn)
+static uint64_t arch64_mncached(uint64_t addr, int ro, int xn)
 {
-	return TTB_PARA_AARCH64_NCACHED(a, ro, xn);
+	return (addr & ~ (uintptr_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrNCRAM | 0x01;
 }
-static uint64_t arch64_mdevice(uint64_t a)
+static uint64_t arch64_mdevice(uint64_t addr)
 {
-	return TTB_PARA_AARCH64_DEVICE(a);
+	return (addr & ~ (uintptr_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrDEVICE | 0x01;
 }
-static uint64_t arch64_mnoaccess(uint64_t a)
+static uint64_t arch64_mnoaccess(uint64_t addr)
 {
-	return TTB_PARA_AARCH64_NO_ACCESS(a);
+	return 0;
 }
 
 static const getmmudesc_t arch64table2M =
@@ -2353,23 +2348,22 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 #define	TTB_PARA_AARCH32_2M_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32((addr), TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_AARCH32_2M_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_AARCH32_2M_DEVICE(addr) 			TTB_PARA_AARCH32((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
-#define	TTB_PARA_AARCH32_2M_NO_ACCESS(addr) 		0
 
-static uint64_t arch32_mcached(uint64_t a, int ro, int xn)
+static uint64_t arch32_mcached(uint64_t addr, int ro, int xn)
 {
-	return TTB_PARA_AARCH32_2M_CACHED(a, ro, xn);
+	return TTB_PARA_AARCH32_2M_CACHED(addr, ro, xn);
 }
-static uint64_t arch32_mncached(uint64_t a, int ro, int xn)
+static uint64_t arch32_mncached(uint64_t addr, int ro, int xn)
 {
-	return TTB_PARA_AARCH32_2M_NCACHED(a, ro, xn);
+	return TTB_PARA_AARCH32_2M_NCACHED(addr, ro, xn);
 }
-static uint64_t arch32_mdevice(uint64_t a)
+static uint64_t arch32_mdevice(uint64_t addr)
 {
-	return TTB_PARA_AARCH32_2M_DEVICE(a);
+	return TTB_PARA_AARCH32_2M_DEVICE(addr);
 }
-static uint64_t arch32_mnoaccess(uint64_t a)
+static uint64_t arch32_mnoaccess(uint64_t addr)
 {
-	return TTB_PARA_AARCH32_2M_NO_ACCESS(a);
+	return 0;
 }
 
 static const getmmudesc_t arch32table1M =
