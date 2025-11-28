@@ -2211,15 +2211,15 @@ static const uint32_t aarch64_pageattr =
 
 static uint64_t arch64_mcached(uint64_t addr, int ro, int xn)
 {
-	return (addr & ~ (uintptr_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrRAM | 0x01;
+	return (addr & ~ (uint64_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrRAM | 0x01;
 }
 static uint64_t arch64_mncached(uint64_t addr, int ro, int xn)
 {
-	return (addr & ~ (uintptr_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrNCRAM | 0x01;
+	return (addr & ~ (uint64_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrNCRAM | 0x01;
 }
 static uint64_t arch64_mdevice(uint64_t addr)
 {
-	return (addr & ~ (uintptr_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrDEVICE | 0x01;
+	return (addr & ~ (uint64_t) UINT32_C(0x0FFFFF)) | aarch64_pageattr | pageAttrDEVICE | 0x01;
 }
 static uint64_t arch64_mnoaccess(uint64_t addr)
 {
@@ -2328,7 +2328,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
 #define	TTB_PARA_AARCH32(addr, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
-		((addr) & ~ (uintptr_t) UINT32_C(0x0FFFFF)) | \
+		((addr) & ~ (uint64_t) UINT32_C(0x0FFFFF)) | \
 		(SECTIONval) * (UINT32_C(1) << 0) |	/* 0b10, Section or Supersection, PXN */ \
 		!! (Bv) * (UINT32_C(1) << 2) |	/* B */ \
 		!! (Cv) * (UINT32_C(1) << 3) |	/* C */ \
