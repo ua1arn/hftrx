@@ -926,8 +926,8 @@ static const getmmudesc_t arch32table4k =
 #else /* defined(__aarch64__) */
 
 	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
-	static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint32_t ttb_L1_base [1024 * 1024];
+	static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];	// для 4k pages - требуется 1024 элемента
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint32_t ttb_L1_base [1024 * 1024];	// дескрипторы страниц памяти
 #endif /* defined(__aarch64__) */
 
 #if defined (__aarch64__)
@@ -977,7 +977,7 @@ ttb_level1_4k_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(cons
 	for (i = 0; i <  ARRAY_SIZE(ttb_L1_base); ++ i)
 	{
 		const uintptr_t phyaddr = (uintptr_t) i << 12;
-		ttb_L1_base [i] =  arch->mtable(phyaddr);
+		ttb_L1_base [i] =  accessbits(arch, phyaddr, 0, 0);
 	}
 }
 
@@ -990,7 +990,7 @@ ttb_level0_4k_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(cons
 	for (i = 0; i <  1024 /*ARRAY_SIZE(ttb0_base) */; ++ i)
 	{
 		const uintptr_t phyaddr = (uintptr_t) ttb_L1_base + (i * pagesize);
-		ttb0_base [i] =  accessbits(arch, phyaddr, 0, 0);
+		ttb0_base [i] =  arch->mtable(phyaddr);
 	}
 }
 #endif
@@ -998,7 +998,7 @@ ttb_level0_4k_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(cons
 void
 sysinit_mmu_tables(void)
 {
-	//PRINTF("sysinit_mmu_tables\n");
+	PRINTF("sysinit_mmu_tables\n");
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	// MMU iniitialize
@@ -1086,13 +1086,14 @@ sysinit_mmu_tables(void)
 
 #endif
 
-	//PRINTF("sysinit_mmu_tables done.\n");
+	PRINTF("sysinit_mmu_tables done.\n");
 }
 
 /* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 void
 sysinit_ttbr_initialize(void)
 {
+	PRINTF("sysinit_ttbr_initialize.\n");
 #if defined(__aarch64__)
 
 	ASSERT(((uintptr_t) ttb0_base & 0x0FFF) == 0); // 4 KB
@@ -1279,6 +1280,7 @@ sysinit_ttbr_initialize(void)
 
 
 #endif
+	PRINTF("sysinit_ttbr_initialize done.\n");
 }
 
 #elif defined (__CORTEX_M)
