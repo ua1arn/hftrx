@@ -1094,31 +1094,31 @@ static const getmmudesc_t arch32table4k =
 #if defined (__aarch64__)
 
 static void
-ttb_level2_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uintptr_t a, int ro, int xn), uintptr_t textstart, uint_fast32_t textsize)
+ttb_level2_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uintptr_t a, int ro, int xn), const uint_fast64_t pagesize)
 {
 	unsigned i;
-	const uint_fast64_t pagesize = (UINT32_C(1) << 21);	// 2M step
+	//const uint_fast64_t pagesize = (UINT32_C(1) << 21);	// 2M step
 
 	for (i = 0; i < ARRAY_SIZE(level2_pagetable); ++ i)
 	{
 		const uint_fast64_t phyaddr = pagesize * i;
 		level2_pagetable [i] =  accessbits(arch, phyaddr, 0, 0);
 	}
-	/* Установить R/O атрибуты для указанной области */
-	while (textsize >= pagesize)
-	{
-		level2_pagetable [textstart / pagesize] =  accessbits(arch, textstart, 0 * 1, 0);
-		textsize -= pagesize;
-		textstart += pagesize;
-	}
+//	/* Установить R/O атрибуты для указанной области */
+//	while (textsize >= pagesize)
+//	{
+//		level2_pagetable [textstart / pagesize] =  accessbits(arch, textstart, 0 * 1, 0);
+//		textsize -= pagesize;
+//		textstart += pagesize;
+//	}
 }
 #endif
 
 static void
-ttb_level0_1MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn))
+ttb_level0_1MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn), const uint_fast64_t pagesize)
 {
 	unsigned i;
-	const uint_fast64_t pagesize = (UINT32_C(1) << 20);	// 1M step
+	//const uint_fast64_t pagesize = (UINT32_C(1) << 20);	// 1M step
 
 	for (i = 0; i <  ARRAY_SIZE(ttb0_base); ++ i)
 	{
@@ -1130,10 +1130,10 @@ ttb_level0_1MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits
 #if MMUUSE4KPAGES && ! defined(__aarch64__) && ! CPUSTYLE_RISCV
 
 static void
-ttb_level1_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn))
+ttb_level1_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn), const uint_fast64_t pagesize)
 {
 	unsigned i;
-	const uint_fast64_t pagesize = (UINT32_C(1) << 12);	// 4k step
+	//const uint_fast64_t pagesize = (UINT32_C(1) << 12);	// 4k step
 
 	for (i = 0; i <  ARRAY_SIZE(ttb_L1_base); ++ i)
 	{
@@ -1146,10 +1146,10 @@ ttb_level1_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)
 // размер одной страницы - 1 килобайт
 
 static void
-ttb_level0_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn))
+ttb_level0_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn), const uint_fast64_t pagesize)
 {
 	unsigned i;
-	const uint_fast64_t pagesize = (UINT32_C(1) << 10);	// 1k step
+	//const uint_fast64_t pagesize = (UINT32_C(1) << 10);	// 1k step
 
 	for (i = 0; i <  ARRAY_SIZE(ttb0_base); ++ i)
 	{
@@ -1200,16 +1200,16 @@ sysinit_mmu_tables(void)
 			ttb0_base [i] = (uintptr_t) (level2_pagetable + 512 * i) | 0x03;
 		}
 
-		ttb_level2_2MB_initialize(& arch64table2M, ttb_mempage_accessbits, 0, 0);
+		ttb_level2_2MB_initialize(& arch64table2M, ttb_mempage_accessbits, (UINT32_C(1) << 21));	// 2M step
 
 	#else
 		// MMU iniitialize
 
 	#if MMUUSE4KPAGES
-		ttb_level1_4k_initialize(& arch32table4k, ttb_mempage_accessbits);
-		ttb_level0_4k_initialize(& arch32table4k, ttb_mempage_accessbits);
+		ttb_level1_4k_initialize(& arch32table4k, ttb_mempage_accessbits, (UINT32_C(1) << 12));	// 4k step
+		ttb_level0_4k_initialize(& arch32table4k, ttb_mempage_accessbits, (UINT32_C(1) << 10));	// 1k step
 	#else
-		ttb_level0_1MB_initialize(& arch32table1M, ttb_mempage_accessbits);
+		ttb_level0_1MB_initialize(& arch32table1M, ttb_mempage_accessbits, (UINT32_C(1) << 20)); 	// 1M step
 	#endif
 
 	#endif	/* defined (__aarch64__) */
@@ -1247,7 +1247,7 @@ sysinit_mmu_tables(void)
 			0;
 	}
 
-	//ttb_level2_2MB_initialize(& archtable, ttb_mempage_accessbits, 0, 0);
+	//ttb_level2_2MB_initialize(& archtable, ttb_mempage_accessbits, (UINT32_C(1) << 21));
 
 #elif defined (__CORTEX_M)
 #endif
