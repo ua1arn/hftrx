@@ -791,7 +791,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 #define	TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32_4k((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_AARCH32_4k_DEVICE(addr) 			TTB_PARA_AARCH32_4k((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 // First-level table entry - Page table
-#define	TTB_PARA_AARCH32_4k_TABLE(addr) 			TTB_PARA_AARCH32_4k_table((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+#define	TTB_PARA_AARCH32_4k_PAGE(addr) 			TTB_PARA_AARCH32_4k_table((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 
 static uint_fast64_t arch32_1M_mcached(uint_fast64_t addr, int ro, int xn)
 {
@@ -843,7 +843,8 @@ static uint_fast64_t arch32_4k_mnoaccess(uint_fast64_t addr)
 // Next level table
 static uint_fast64_t arch32_4k_mtable(uint_fast64_t addr)
 {
-	return TTB_PARA_AARCH32_4k_TABLE(addr);	// First-level table entry - Page table
+	// 1KB granulation address
+	return TTB_PARA_AARCH32_4k_PAGE(addr);	// First-level table entry - Page table
 }
 
 static const getmmudesc_t arch32table4k =
@@ -947,7 +948,7 @@ static const getmmudesc_t arch32table4k =
 	#if MMUUSE4KPAGES
 		/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
 		static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];	//
-		static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint32_t ttb_L1_base [4096 * 256];	// дескрипторы страниц памяти
+		static RAMFRAMEBUFF __ALIGNED(1 * 1024) volatile uint32_t ttb_L1_base [4096 * 256];	// дескрипторы страниц памяти
 	#else /* MMUUSE4KPAGES */
 		/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
 		static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];	//
