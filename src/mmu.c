@@ -556,6 +556,43 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 #endif
 }
 
+#if 1
+// GPU MMU
+
+static uint_fast64_t gpu_mali400_4k_mcached(uint_fast64_t addr, int ro, int xn)
+{
+	return 0;//TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn);
+}
+static uint_fast64_t gpu_mali400_4k_mncached(uint_fast64_t addr, int ro, int xn)
+{
+	return 0;//TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn);
+}
+static uint_fast64_t gpu_mali400_4k_mdevice(uint_fast64_t addr)
+{
+	return 0;//TTB_PARA_AARCH32_4k_DEVICE(addr);
+}
+static uint_fast64_t gpu_mali400_4k_mnoaccess(uint_fast64_t addr)
+{
+	return 0;
+}
+// Next level table
+static uint_fast64_t gpu_mali400_4k_mtable(uint_fast64_t addr)
+{
+	// 1KB granulation address
+	return 0;//TTB_PARA_AARCH32_4k_PAGE(addr);	// First-level table entry - Page table
+}
+
+static const getmmudesc_t gpu_mali400_table4k =
+{
+	.mcached = gpu_mali400_4k_mcached,
+	.mncached = gpu_mali400_4k_mncached,
+	.mdevice = gpu_mali400_4k_mdevice,
+	.mnoaccess = gpu_mali400_4k_mnoaccess,
+	.mtable = gpu_mali400_4k_mtable
+};
+
+#endif
+
 #if defined (__aarch64__)
 // 13.3 Memory attributes
 
