@@ -2755,6 +2755,19 @@ ttb_level1_4k_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(cons
 		ttb_L1_base [i] =  accessbits(arch, address, 0, 0);
 	}
 }
+
+static void
+ttb_level0_4k_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn))
+{
+	unsigned i;
+	const uint_fast32_t pagesize = (UINT32_C(1) << 12);	// 4k step
+
+	for (i = 0; i <  ARRAY_SIZE(ttb0_base); ++ i)
+	{
+		const uintptr_t address = (uintptr_t) i << 20;
+		ttb0_base [i] =  accessbits(arch, address, 0, 0);
+	}
+}
 #endif
 
 static void
@@ -2804,7 +2817,7 @@ sysinit_mmu_tables(void)
 
 	#if 0
 		ttb_level1_4k_initialize(& arch32table4k, ttb_mempage_accessbits);
-		ttb_level0_1MB_initialize(& arch32table4k, ttb_mempage_accessbits);
+		ttb_level0_4k_initialize(& arch32table4k, ttb_mempage_accessbits);
 	#else
 		ttb_level0_1MB_initialize(& arch32table1M, ttb_mempage_accessbits);
 	#endif
