@@ -730,6 +730,24 @@ void dcache_clean(uintptr_t base, int_fast32_t size);	// Сейчас эта п�
 void dcache_clean_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 void dcache_clean_all(void);
 
+
+typedef struct getmmudesc_tag
+{
+	uint64_t (* mcached)(uint64_t a, int ro, int xn);
+	uint64_t (* mncached)(uint64_t a, int ro, int xn);
+	uint64_t (* mdevice)(uint64_t a);
+	uint64_t (* mnoaccess)(uint64_t a);
+	uint64_t (* mtable)(uint64_t a);	// next level table
+} getmmudesc_t;
+
+/* зависящая от процессора карта распределения memory regions */
+uint64_t ttb_mempage_accessbits(const getmmudesc_t * arch, uint64_t a, int ro, int xn);
+
+int_fast32_t icache_rowsize(void);
+int_fast32_t dcache_rowsize(void);
+void sysinit_mmu_tables(void);
+void sysinit_ttbr_initialize(void);
+
 void r7s721_sdhi0_dma_handler(void);
 
 uint_fast32_t 
