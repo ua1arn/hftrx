@@ -133,6 +133,7 @@
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
 	//#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
 	//#define BOARD_DSTYLE "g_x800_y480.h"
+	//#define BOARD_DSTYLE "g_x480_y272_spectrum_notouch.h"
 	#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 	//#define BOARD_DSTYLE "g_x800_y480_linux.h"
 	//#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
@@ -350,6 +351,9 @@
 
 	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
+//	#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+//	#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+//	#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
