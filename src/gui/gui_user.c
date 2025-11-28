@@ -4594,9 +4594,14 @@ void window_as_process(void)
 
 #if WITHSDL2VIDEO
 #include "gui_port.h"
-void gui_sdl2_walkthrough(const void * db)
+
+void gui_sdl2_set_renderer(void * r)
 {
-	__gui_set_drawbuf(db);
+	__gui_set_drawbuf(r);
+}
+
+void gui_sdl2_walkthrough(void)
+{
 	process_gui();
 }
 #else

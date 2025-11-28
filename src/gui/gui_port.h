@@ -47,10 +47,12 @@
 
 #include <SDL2/SDL.h>
 
-typedef COLORPIP_T 			gui_color_t;
 typedef struct {
 	SDL_Renderer * renderer;
 } gui_drawbuf_t;
+
+typedef gui_drawbuf_t		gui_objbgbuf_t;
+typedef COLORPIP_T 			gui_color_t;
 
 extern gui_drawbuf_t * drawbuf;
 
@@ -78,6 +80,13 @@ static inline void __gui_drawbuf_copy(const gui_drawbuf_t * dstbuf, gui_drawbuf_
 		unsigned int dst_x, unsigned int dst_y, unsigned int src_w, unsigned int src_h)
 {
 
+}
+
+static inline gui_objbgbuf_t * __gui_object_bgbuf_init(unsigned int w, unsigned int h)
+{
+	gui_objbgbuf_t * buf = calloc(1, sizeof(gui_objbgbuf_t));
+	ASSERT(buf);
+	return buf;
 }
 
 // Отрисовка закрашенного прямоугольника
@@ -277,6 +286,7 @@ static inline void __gui_draw_string_mono(const gui_drawbuf_t * buf, unsigned in
 
 typedef COLORPIP_T 			gui_color_t;
 typedef gxdrawb_t 			gui_drawbuf_t;
+typedef COLORPIP_T			gui_objbgbuf_t;
 
 extern gui_drawbuf_t * drawbuf;
 
@@ -311,18 +321,25 @@ static inline void __gui_drawbuf_copy(const gui_drawbuf_t * dstbuf, void * srcbu
 			srcbuf, 0, 0, src_w, src_h, BITBLT_FLAG_NONE, 0);
 }
 
+static inline gui_objbgbuf_t * __gui_object_bgbuf_init(unsigned int w, unsigned int h)
+{
+	gui_objbgbuf_t * buf = (gui_objbgbuf_t *) calloc(GXSIZE(w, h), sizeof (gui_objbgbuf_t));
+	ASSERT(buf);
+	return buf;
+}
+
 // Отрисовка закрашенного прямоугольника
 static inline void __gui_draw_rect(const gui_drawbuf_t * buf, unsigned int x, unsigned int y,
 		unsigned int w, unsigned int h, gui_color_t color, unsigned int fill)
 {
-	colpip_rect(buf, x, y, x + w - 1, y + h - 1, color, fill);
+	colpip_rect(buf, x, y, x + w, y + h, color, fill);
 }
 
 // Отрисовка прямоугольника со скругленными углами
 static inline void __gui_draw_rounded_rect(const gui_drawbuf_t * buf, unsigned int x, unsigned int y,
 		unsigned int w, unsigned int h, unsigned int radius, gui_color_t color, unsigned int fill)
 {
-	colmain_rounded_rect(buf, x, y, x + w - 1, y + h - 1, radius, color, fill);
+	colmain_rounded_rect(buf, x, y, x + w, y + h, radius, color, fill);
 }
 
 static inline void __gui_draw_line(const gui_drawbuf_t * buf, unsigned int x1, unsigned int y1,

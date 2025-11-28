@@ -29,7 +29,16 @@ static btn_bg_t btn_bg[] = {
 	{ 100, 44, },
 	{ 86, 44, },
 };
-enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
+enum { BG_DEF_COUNT = ARRAY_SIZE(btn_bg) };
+
+const gui_color_t btn_bg_colors[BG_COUNT] =
+		{
+				COLOR_BUTTON_NON_LOCKED,
+				COLOR_BUTTON_PR_NON_LOCKED,
+				COLOR_BUTTON_LOCKED,
+				COLOR_BUTTON_PR_LOCKED,
+				COLOR_BUTTON_DISABLED,
+		};
 
 static gui_t gui = { 0, 0, CANCELLED, 0, 0, 0, 0, 0, };
 static LIST_ENTRY gui_objects_list;
@@ -693,62 +702,17 @@ static void slider_process(slider_t * sl)
 
 static void fill_button_bg_buf(btn_bg_t * v)
 {
-	const uint_fast16_t w = v->w;
-	const uint_fast16_t h = v->h;
-	const size_t s = GXSIZE(w, h) * sizeof (gui_color_t);
+	const uint16_t w = v->w;
+	const uint16_t h = v->h;
 
-	v->bg_non_pressed = 	(gui_color_t *) malloc(s);
-	GUI_MEM_ASSERT(v->bg_non_pressed);
-	v->bg_pressed = 		(gui_color_t *) malloc(s);
-	GUI_MEM_ASSERT(v->bg_pressed);
-	v->bg_locked = 			(gui_color_t *) malloc(s);
-	GUI_MEM_ASSERT(v->bg_locked);
-	v->bg_locked_pressed = 	(gui_color_t *) malloc(s);
-	GUI_MEM_ASSERT(v->bg_locked_pressed);
-	v->bg_disabled = 		(gui_color_t *) malloc(s);
-	GUI_MEM_ASSERT(v->bg_disabled);
-
+	for (int i = 0; i < BG_COUNT; i ++)
 	{
-		gui_drawbuf_t butdbv;
-		__gui_drawbuf_init(& butdbv, v->bg_non_pressed, w, h);
-		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
-		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_NON_LOCKED, 1);
-		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		__gui_draw_rounded_rect(& butdbv, 1, 1, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
-	}
+		v->bgs[i] = __gui_object_bgbuf_init(w, h);
 
-	{
 		gui_drawbuf_t butdbv;
-		__gui_drawbuf_init(& butdbv, v->bg_pressed, w, h);
+		__gui_drawbuf_init(& butdbv, v->bgs[i], w, h);
 		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
-		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_NON_LOCKED, 1);
-		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		__gui_draw_rounded_rect(& butdbv, 1, 1, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
-	}
-
-	{
-		gui_drawbuf_t butdbv;
-		__gui_drawbuf_init(& butdbv, v->bg_locked, w, h);
-		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
-		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_LOCKED, 1);
-		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		__gui_draw_rounded_rect(& butdbv, 1, 1, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
-	}
-
-	{
-		gui_drawbuf_t butdbv;
-		__gui_drawbuf_init(& butdbv, v->bg_locked_pressed, w, h);
-		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
-		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_PR_LOCKED, 1);
-		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		__gui_draw_rounded_rect(& butdbv, 1, 1, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
-	}
-
-	{
-		gui_drawbuf_t butdbv;
-		__gui_drawbuf_init(& butdbv, v->bg_disabled, w, h);
-		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
-		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLOR_BUTTON_DISABLED, 1);
+		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, btn_bg_colors[i], 1);
 		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		__gui_draw_rounded_rect(& butdbv, 1, 1, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
 	}
@@ -756,7 +720,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 
 static void draw_button(const button_t * const bh)
 {
-	gui_color_t * bg = NULL;
+	gui_objbgbuf_t * bg = NULL;
 	window_t * win = get_win(bh->parent);
 	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
 	uint_fast8_t i = 0;
@@ -778,7 +742,7 @@ static void draw_button(const button_t * const bh)
 			b1 = & btn_bg[i];
 			break;
 		}
-	} while ( ++i < BG_COUNT);
+	} while ( ++i < BG_DEF_COUNT);
 #endif
 
 	// если не найден заполненный буфер фона по размерам, программная отрисовка
@@ -796,15 +760,15 @@ static void draw_button(const button_t * const bh)
 	else
 	{
 		if (bh->state == DISABLED)
-			bg = b1->bg_disabled;
+			bg = b1->bgs[BG_DISABLED];
 		else if (bh->is_locked && bh->state == PRESSED)
-			bg = b1->bg_locked_pressed;
+			bg = b1->bgs[BG_LOCKED_PRESED];
 		else if (bh->is_locked && bh->state != PRESSED)
-			bg = b1->bg_locked;
+			bg = b1->bgs[BG_LOCKED];
 		else if (! bh->is_locked && bh->state == PRESSED)
-			bg = b1->bg_pressed;
+			bg = b1->bgs[BG_PRESSED];
 		else if (! bh->is_locked && bh->state != PRESSED)
-			bg = b1->bg_non_pressed;
+			bg = b1->bgs[BG_NON_PRESSED];
 		ASSERT(bg != NULL);
 
 		gui_drawbuf_t bgv;
@@ -858,7 +822,7 @@ static void draw_button(const button_t * const bh)
 static void objects_init(void)
 {
 	// Buttons background init
-	for (int i = 0; i < BG_COUNT; i ++)
+	for (int i = 0; i < BG_DEF_COUNT; i ++)
 		fill_button_bg_buf(& btn_bg[i]);
 }
 

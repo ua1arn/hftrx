@@ -124,14 +124,20 @@ typedef enum {
 	GUI_OBJ_FONT,
 } object_prop_t;
 
+enum {
+	BG_NON_PRESSED,
+	BG_PRESSED,
+	BG_LOCKED,
+	BG_LOCKED_PRESED,
+	BG_DISABLED,
+	//
+	BG_COUNT
+};
+
 typedef struct {
 	uint16_t w;
 	uint16_t h;
-	gui_color_t * bg_non_pressed;
-	gui_color_t * bg_pressed;
-	gui_color_t * bg_locked;
-	gui_color_t * bg_locked_pressed;
-	gui_color_t * bg_disabled;
+	gui_objbgbuf_t * bgs[BG_COUNT];
 } btn_bg_t;
 
 typedef struct {

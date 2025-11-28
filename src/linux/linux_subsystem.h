@@ -229,5 +229,10 @@ void usb_iq_start(void);
 int linux_usb_init(void);
 void linux_usb_stop(void);
 
+void dcache_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас в эту память будем читать по DMA
+void dcache_clean(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то
+void dcache_clean_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
+void dcache_clean_all(void);
+
 #endif /* LINUX_SUBSYSTEM */
 #endif /* LINUX_SUBSYSTEM_H */
