@@ -2349,29 +2349,29 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 #define	TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_AARCH32_1M_DEVICE(addr) 			TTB_PARA_AARCH32((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 
-static uint64_t arch32_mcached(uint64_t addr, int ro, int xn)
+static uint64_t arch32_1M_mcached(uint64_t addr, int ro, int xn)
 {
 	return TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn);
 }
-static uint64_t arch32_mncached(uint64_t addr, int ro, int xn)
+static uint64_t arch32_1M_mncached(uint64_t addr, int ro, int xn)
 {
 	return TTB_PARA_AARCH32_1M_NCACHED(addr, ro, xn);
 }
-static uint64_t arch32_mdevice(uint64_t addr)
+static uint64_t arch32_1M_mdevice(uint64_t addr)
 {
 	return TTB_PARA_AARCH32_1M_DEVICE(addr);
 }
-static uint64_t arch32_mnoaccess(uint64_t addr)
+static uint64_t arch32_1M_mnoaccess(uint64_t addr)
 {
 	return 0;
 }
 
 static const getmmudesc_t arch32table1M =
 {
-	.mcached = arch32_mcached,
-	.mncached = arch32_mncached,
-	.mdevice = arch32_mdevice,
-	.mnoaccess = arch32_mnoaccess
+	.mcached = arch32_1M_mcached,
+	.mncached = arch32_1M_mncached,
+	.mdevice = arch32_1M_mdevice,
+	.mnoaccess = arch32_1M_mnoaccess
 };
 
 #elif CPUSTYLE_RISCV
