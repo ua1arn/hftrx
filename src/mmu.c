@@ -980,6 +980,104 @@ static const getmmudesc_t arch32table4k =
 	  );
 	}
 
+#elif defined (__CORTEX_M)
+
+	#if CPUSTYLE_STM32H7XX
+
+	// MPU initialize
+	static void lowlevel_stm32h7xx_mpu_initialize(void)
+	{
+		/* Disables the MPU */
+		MPU->CTRL = (MPU->CTRL & ~ (MPU_CTRL_ENABLE_Msk)) |
+			0 * MPU_CTRL_ENABLE_Msk |
+			0;
+
+
+
+	#define INNER_NORMAL_WB_RWA_TYPE(x)   (( 0x04 << MPU_RASR_TEX_Pos ) | ( DISABLE  << MPU_RASR_C_Pos ) | ( ENABLE  << MPU_RASR_B_Pos )  | ( x << MPU_RASR_S_Pos ))
+	#define INNER_NORMAL_WB_NWA_TYPE(x)   (( 0x04 << MPU_RASR_TEX_Pos ) | ( ENABLE  << MPU_RASR_C_Pos )  | ( ENABLE  << MPU_RASR_B_Pos )  | ( x << MPU_RASR_S_Pos ))
+	#define STRONGLY_ORDERED_SHAREABLE_TYPE      (( 0x00 << MPU_RASR_TEX_Pos ) | ( DISABLE << MPU_RASR_C_Pos ) | ( DISABLE << MPU_RASR_B_Pos ))     // DO not care //
+	#define SHAREABLE_DEVICE_TYPE                (( 0x00 << MPU_RASR_TEX_Pos ) | ( DISABLE << MPU_RASR_C_Pos ) | ( ENABLE  << MPU_RASR_B_Pos ))     // DO not care //
+
+
+		// SRAM
+		/* Set the Region base address and region number */
+		MPU->RBAR = D1_AXISRAM_BASE | MPU_RBAR_VALID_Msk | 0x00;
+		MPU->RASR =
+			(0x00 << MPU_RASR_XN_Pos)   |	// DisableExec
+			(0x03 << MPU_RASR_AP_Pos)   |	// AccessPermission
+			(0x04 << MPU_RASR_TEX_Pos)  |	// TypeExtField
+			(0x01 << MPU_RASR_C_Pos)    |	// IsCacheable
+			(0x01 << MPU_RASR_B_Pos)    |	// IsBufferable
+			(0x00 << MPU_RASR_S_Pos)    |	// IsShareable
+			(0x00 << MPU_RASR_SRD_Pos)  |	// SubRegionDisable (8 bits mask)
+			(0x12 << MPU_RASR_SIZE_Pos) |	// Size 512 kB
+			(0x01 << MPU_RASR_ENABLE_Pos) |	// Enable
+			0;
+		// ITCM
+		/* Set the Region base address and region number */
+		MPU->RBAR = D1_ITCMRAM_BASE | MPU_RBAR_VALID_Msk | 0x01;
+		MPU->RASR =
+			(0x00 << MPU_RASR_XN_Pos)   |	// DisableExec
+			(0x03 << MPU_RASR_AP_Pos)   |	// AccessPermission
+			(0x04 << MPU_RASR_TEX_Pos)  |	// TypeExtField
+			(0x01 << MPU_RASR_C_Pos)    |	// IsCacheable
+			(0x01 << MPU_RASR_B_Pos)    |	// IsBufferable
+			(0x00 << MPU_RASR_S_Pos)    |	// IsShareable
+			(0x00 << MPU_RASR_SRD_Pos)  |	// SubRegionDisable (8 bits mask)
+			(0x0F << MPU_RASR_SIZE_Pos) |	// Size 64 kB
+			(0x01 << MPU_RASR_ENABLE_Pos) |	// Enable
+			0;
+		// DTCM
+		/* Set the Region base address and region number */
+		MPU->RBAR = D1_DTCMRAM_BASE | MPU_RBAR_VALID_Msk | 0x02;
+		MPU->RASR =
+			(0x00 << MPU_RASR_XN_Pos)   |	// DisableExec
+			(0x03 << MPU_RASR_AP_Pos)   |	// AccessPermission
+			(0x04 << MPU_RASR_TEX_Pos)  |	// TypeExtField
+			(0x01 << MPU_RASR_C_Pos)    |	// IsCacheable
+			(0x01 << MPU_RASR_B_Pos)    |	// IsBufferable
+			(0x00 << MPU_RASR_S_Pos)    |	// IsShareable
+			(0x00 << MPU_RASR_SRD_Pos)  |	// SubRegionDisable (8 bits mask)
+			(0x10 << MPU_RASR_SIZE_Pos) |	// Size 128 kB
+			(0x01 << MPU_RASR_ENABLE_Pos) |	// Enable
+			0;
+		// FLASH
+		/* Set the Region base address and region number */
+		MPU->RBAR = D1_AXIFLASH_BASE | MPU_RBAR_VALID_Msk | 0x03;
+		MPU->RASR =
+			(0x00 << MPU_RASR_XN_Pos)   |	// DisableExec
+			(0x03 << MPU_RASR_AP_Pos)   |	// AccessPermission
+			(0x04 << MPU_RASR_TEX_Pos)  |	// TypeExtField
+			(0x01 << MPU_RASR_C_Pos)    |	// IsCacheable
+			(0x01 << MPU_RASR_B_Pos)    |	// IsBufferable
+			(0x00 << MPU_RASR_S_Pos)    |	// IsShareable
+			(0x00 << MPU_RASR_SRD_Pos)  |	// SubRegionDisable (8 bits mask)
+			(0x14 << MPU_RASR_SIZE_Pos) |	// Size 2 MB
+			(0x01 << MPU_RASR_ENABLE_Pos) |	// Enable
+			0;
+		// DEVICE
+		/* Set the Region base address and region number */
+		MPU->RBAR = PERIPH_BASE | MPU_RBAR_VALID_Msk | 0x04;
+		MPU->RASR =
+			(0x00 << MPU_RASR_XN_Pos)   |	// DisableExec
+			(0x03 << MPU_RASR_AP_Pos)   |	// AccessPermission
+			(0x04 << MPU_RASR_TEX_Pos)  |	// TypeExtField
+			(0x00 << MPU_RASR_C_Pos)    |	// IsCacheable
+			(0x00 << MPU_RASR_B_Pos)    |	// IsBufferable
+			(0x00 << MPU_RASR_S_Pos)    |	// IsShareable
+			(0x00 << MPU_RASR_SRD_Pos)  |	// SubRegionDisable (8 bits mask)
+			(0x1B << MPU_RASR_SIZE_Pos) |	// Size 256 MB
+			(0x01 << MPU_RASR_ENABLE_Pos) |	// Enable
+			0;
+		/* Enables the MPU */
+		MPU->CTRL = (MPU->CTRL & ~ (MPU_CTRL_ENABLE_Msk)) |
+			1 * MPU_CTRL_ENABLE_Msk |
+			0;
+	}
+
+	#endif /* CPUSTYLE_STM32H7XX */
+
 #else /* defined(__aarch64__) */
 
 	#if MMUUSE4KPAGES
@@ -1061,6 +1159,7 @@ ttb_level0_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)
 }
 #endif /* MMUUSE4KPAGES && ! defined(__aarch64__) && ! CPUSTYLE_RISCV */
 
+#endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV */
 void
 sysinit_mmu_tables(void)
 {
@@ -1150,6 +1249,7 @@ sysinit_mmu_tables(void)
 
 	//ttb_level2_2MB_initialize(& archtable, ttb_mempage_accessbits, 0, 0);
 
+#elif defined (__CORTEX_M)
 #endif
 
 	PRINTF("sysinit_mmu_tables done.\n");
@@ -1344,17 +1444,8 @@ sysinit_ttbr_initialize(void)
 	// 15.1.2 M-mode exception configuration register group
 	// https://riscv.org/wp-content/uploads/2019/08/riscv-privileged-20190608-1.pdf
 
+#elif defined (__CORTEX_M)
 
 #endif
 	PRINTF("sysinit_ttbr_initialize done.\n");
 }
-
-#elif defined (__CORTEX_M)
-
-void
-sysinit_ttbr_initialize(void)
-{
-}
-
-#endif /* CPUSTYLE_R7S721 */
-
