@@ -2378,9 +2378,9 @@ RGB_t hsv2rgb(HSV_t hsv)
 
 COLORPIP_T convert_565_to_a888(uint16_t color)
 {
-	uint8_t b5 = (color & 0x1F) << 3;
-	uint8_t g6 = ((color & 0x7E0) >> 5) << 2;
-	uint8_t r5 = ((color & 0xF800) >> 11) << 3;
+	uint8_t b5 = RGB565_B(color);
+	uint8_t g6 = RGB565_G(color);
+	uint8_t r5 = RGB565_R(color);
 
 	return TFTRGB(r5, g6, b5);
 }

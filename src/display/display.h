@@ -169,6 +169,12 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
 #endif /* LCDMODE_LTDC */
 
+// Get color components from RGB565 value
+#define RGB565_A(v) (255)
+#define RGB565_R(v) ((((v) & 0xF800) >> 8) | (((v) & 0xE000) >> 13))
+#define RGB565_G(v) ((((v) & 0x07E0) >> 3) | (((v) & 0x0600) >> 9))
+#define RGB565_B(v) ((((v) & 0x001F) << 3) | (((v) & 0x001C) >> 2))
+
 #ifndef DCACHEROWSIZE
 	#define GXALIGN 1	/* количество пикселей в строке видеобуфера кратно этому заначению */
 #elif defined (LCDMODE_PIXELSIZE)
