@@ -2334,8 +2334,9 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 
 // See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 
+// Large page
 #define	TTB_PARA_AARCH32_1M(addr, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
-		((addr) & ~ (uint64_t) UINT32_C(0x0FFFFF)) | \
+		((addr) & ~ (uint64_t) UINT32_C(0x0FFFFF)) | /* 1M granulation address */ \
 		(SECTIONval) * (UINT32_C(1) << 0) |	/* 0b10, Section or Supersection, PXN */ \
 		!! (Bv) * (UINT32_C(1) << 2) |	/* B */ \
 		!! (Cv) * (UINT32_C(1) << 3) |	/* C */ \
@@ -2352,14 +2353,29 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 		0 \
 	)
 
+// Small page
+#define	TTB_PARA_AARCH32_4k(addr, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
+		((addr) & ~ (uint64_t) UINT32_C(0x0FFF)) | /* 4k granulation address */ \
+		0 * (UINT32_C(1) << 11) |	/* nG */ \
+		!! (SHAREDv) * (UINT32_C(1) << 10) |	/* ! S */ \
+		(((APv) >> 2) & 0x01) * (UINT32_C(1) << 9) |	/* AP[2] */ \
+		((TEXv) & 0x07) * (UINT32_C(1) << 6) |	/* TEX */ \
+		(((APv) >> 0) & 0x03) * (UINT32_C(1) << 4) |	/* AP [1..0] */ \
+		!! (Cv) * (UINT32_C(1) << 3) |	/* C */ \
+		!! (Bv) * (UINT32_C(1) << 2) |	/* B */ \
+		1 * (UINT32_C(1) << 1) |	/* 1 */ \
+		!! (XNv) * (UINT32_C(1) << 0) |	/* XN The Execute-never bit. */ \
+		0 \
+	)
+
 #define	TTB_PARA_AARCH32_1M_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32_1M((addr), TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32_1M((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_AARCH32_1M_DEVICE(addr) 			TTB_PARA_AARCH32_1M((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 
 // TODO: implementing
-#define	TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32_1M((addr), TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32_1M((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB_PARA_AARCH32_4k_DEVICE(addr) 			TTB_PARA_AARCH32_1M((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+#define	TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32_4k((addr), TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32_4k((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
+#define	TTB_PARA_AARCH32_4k_DEVICE(addr) 			TTB_PARA_AARCH32_4k((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 
 static uint64_t arch32_1M_mcached(uint64_t addr, int ro, int xn)
 {
@@ -2764,7 +2780,7 @@ ttb_level0_4k_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(cons
 
 	for (i = 0; i <  ARRAY_SIZE(ttb0_base); ++ i)
 	{
-		const uintptr_t address = (uintptr_t) i << 20;
+		const uintptr_t address = (uintptr_t) ttb_L1_base + (i * 1024);
 		ttb0_base [i] =  accessbits(arch, address, 0, 0);
 	}
 }
