@@ -175,6 +175,20 @@ unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
 	return 4;
 }
 
+/* Little endian memory layout */
+unsigned USBD_poke_u64(uint8_t * buff, uint_fast64_t v)
+{
+	buff [0] = (uint8_t) (v >> 0);
+	buff [1] = (uint8_t) (v >> 8);
+	buff [2] = (uint8_t) (v >> 16);
+	buff [3] = (uint8_t) (v >> 24);
+	buff [4] = (uint8_t) (v >> 32);
+	buff [5] = (uint8_t) (v >> 40);
+	buff [6] = (uint8_t) (v >> 48);
+	buff [7] = (uint8_t) (v >> 56);
+	return 8;
+}
+
 /* получить 32-бит значение */
 /* Little endian memory layout */
 float

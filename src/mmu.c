@@ -932,13 +932,13 @@ static const getmmudesc_t arch32table4k =
 	// Last x4 - for 34 bit address (16 GB address space)
 	// Check TCR_EL3 setup
 	// pages of 2 MB
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t level2_pagetable [512 * 4 * 4];	// ttb0_base must be a 4KB-aligned address.
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [ARRAY_SIZE(level2_pagetable) / 512];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level2_pagetable [512 * 4 * 4];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base [ARRAY_SIZE(level2_pagetable) / 512];	// ttb0_base must be a 4KB-aligned address.
 
 #elif CPUSTYLE_RISCV
 
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t level2_pagetable [512 * 4];	// Used as PPN in SATP register
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) volatile uint64_t ttb0_base [512];	// Used as PPN in SATP register
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level2_pagetable [512 * 4];	// Used as PPN in SATP register
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base [512];	// Used as PPN in SATP register
 
 	// https://lupyuen.codeberg.page/articles/mmu.html#appendix-flush-the-mmu-cache-for-t-head-c906
 	// https://github.com/apache/nuttx/blob/4d63921f0a28aeee89b3a2ae861aaa83d731d28d/arch/risc-v/src/common/riscv_mmu.h#L220
@@ -1082,11 +1082,11 @@ static const getmmudesc_t arch32table4k =
 
 	#if MMUUSE4KPAGES
 		/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
-		static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];	//
-		static RAMFRAMEBUFF __ALIGNED(1 * 1024) volatile uint32_t ttb_L1_base [4096 * 256];	// дескрипторы страниц памяти
+		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base [4096];	//
+		static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint32_t ttb_L1_base [4096 * 256];	// дескрипторы страниц памяти
 	#else /* MMUUSE4KPAGES */
 		/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
-		static RAMFRAMEBUFF __ALIGNED(16 * 1024) volatile uint32_t ttb0_base [4096];	//
+		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base [4096];	//
 	#endif /* MMUUSE4KPAGES */
 
 #endif /* defined(__aarch64__) */
@@ -1101,9 +1101,11 @@ ttb_level2_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits
 	//const uint_fast64_t pagesize = (UINT32_C(1) << 21);	// 2M step
 
 	uint_fast64_t phyaddr = 0;	// начальный адрес памяти
+	uint8_t * tb = (uint8_t *) level2_pagetable;	// table base
 	for (i = 0; i < ARRAY_SIZE(level2_pagetable); ++ i, phyaddr += pagesize)
 	{
-		level2_pagetable [i] = accessbits(arch, phyaddr, 0, 0);
+		//level2_pagetable [i] = accessbits(arch, phyaddr, 0, 0);
+		tb += USBD_poke_u64(tb, accessbits(arch, phyaddr, 0, 0));
 	}
 //	/* Установить R/O атрибуты для указанной области */
 //	while (textsize >= pagesize)
@@ -1117,9 +1119,11 @@ ttb_level2_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits
 static void ttb_level0_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn), const uint_fast32_t pagesize, uint_fast64_t nextlevel)
 {
 	unsigned i;
+	uint8_t * tb = (uint8_t *) ttb0_base;	// table base
 	for (i = 0; i < ARRAY_SIZE(ttb0_base); ++ i, nextlevel += pagesize)
 	{
-		ttb0_base [i] = arch->mtable(nextlevel);
+		//ttb0_base [i] = arch->mtable(nextlevel);
+		tb += USBD_poke_u64(tb, arch->mtable(nextlevel));
 	}
 }
 
@@ -1133,9 +1137,11 @@ ttb_level0_1MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits
 	//const uint_fast64_t pagesize = (UINT32_C(1) << 20);	// 1M step
 
 	uint_fast64_t phyaddr = 0;	// начальный адрес памяти
+	uint8_t * tb = (uint8_t *) ttb0_base;	// table base
 	for (i = 0; i <  ARRAY_SIZE(ttb0_base); ++ i, phyaddr += pagesize)
 	{
-		ttb0_base [i] =  accessbits(arch, phyaddr, 0, 0);
+		//ttb0_base [i] = accessbits(arch, phyaddr, 0, 0);
+		tb += USBD_poke_u32(tb, accessbits(arch, phyaddr, 0, 0));
 	}
 }
 
@@ -1149,9 +1155,11 @@ ttb_level1_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)
 	//const uint_fast64_t pagesize = (UINT32_C(1) << 12);	// 4k step
 
 	uint_fast64_t phyaddr = 0;	// начальный адрес памяти
+	uint8_t * tb = (uint8_t *) ttb_L1_base;	// table base
 	for (i = 0; i <  ARRAY_SIZE(ttb_L1_base); ++ i, phyaddr += pagesize)
 	{
-		ttb_L1_base [i] =  accessbits(arch, phyaddr, 0, 0);
+		//ttb_L1_base [i] =  accessbits(arch, phyaddr, 0, 0);
+		tb += USBD_poke_u32(tb, accessbits(arch, phyaddr, 0, 0));
 	}
 }
 
@@ -1164,9 +1172,11 @@ ttb_level0_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)
 	unsigned i;
 	//const uint_fast64_t pagesize = (UINT32_C(1) << 10);	// 1k step
 
+	uint8_t * tb = (uint8_t *) ttb0_base;	// table base
 	for (i = 0; i <  ARRAY_SIZE(ttb0_base); ++ i, nextlevel += pagesize)
 	{
-		ttb0_base [i] =  arch->mtable(nextlevel);
+		//ttb0_base [i] =  arch->mtable(nextlevel);
+		tb += USBD_poke_u32(tb, arch->mtable(nextlevel));
 	}
 }
 #endif /* MMUUSE4KPAGES && ! defined(__aarch64__) && ! CPUSTYLE_RISCV */
@@ -1207,7 +1217,9 @@ sysinit_mmu_tables(void)
 		// MMU iniitialize
 
 		ttb_level2_2MB_initialize(& arch64table2M, ttb_mempage_accessbits, (UINT32_C(1) << 21));	// 2M step
+		dcache_clean_invalidate((uintptr_t) level2_pagetable, sizeof level2_pagetable);
 		ttb_level0_2MB_initialize(& arch64table2M, ttb_mempage_accessbits, (UINT32_C(1) << 12), (uintptr_t) level2_pagetable);	// 512 bytes step
+		dcache_clean_invalidate((uintptr_t) ttb0_base, sizeof ttb0_base);
 
 
 	#else
@@ -1215,9 +1227,12 @@ sysinit_mmu_tables(void)
 
 	#if MMUUSE4KPAGES
 		ttb_level1_4k_initialize(& arch32table4k, ttb_mempage_accessbits, (UINT32_C(1) << 12));	// 4k step
+		dcache_clean_invalidate((uintptr_t) ttb_L1_base, sizeof ttb_L1_base);
 		ttb_level0_4k_initialize(& arch32table4k, ttb_mempage_accessbits, (UINT32_C(1) << 10), (uintptr_t) ttb_L1_base);	// 1k step
+		dcache_clean_invalidate((uintptr_t) ttb0_base, sizeof ttb0_base);
 	#else
 		ttb_level0_1MB_initialize(& arch32table1M, ttb_mempage_accessbits, (UINT32_C(1) << 20)); 	// 1M step
+		dcache_clean_invalidate((uintptr_t) ttb0_base, sizeof ttb0_base);
 	#endif
 
 	#endif	/* defined (__aarch64__) */
