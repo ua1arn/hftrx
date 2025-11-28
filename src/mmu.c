@@ -773,6 +773,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 #define	TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32_4k((addr), TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32_4k((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
 #define	TTB_PARA_AARCH32_4k_DEVICE(addr) 			TTB_PARA_AARCH32_4k((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+#define	TTB_PARA_AARCH32_4k_TABLE(addr) 			TTB_PARA_AARCH32_4k((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
 
 static uint64_t arch32_1M_mcached(uint64_t addr, int ro, int xn)
 {
@@ -824,7 +825,7 @@ static uint64_t arch32_4k_mnoaccess(uint64_t addr)
 // Next level table
 static uint64_t arch32_4k_mtable(uint64_t addr)
 {
-	return 0;
+	return TTB_PARA_AARCH32_4k_TABLE(addr);
 }
 
 static const getmmudesc_t arch32table4k =
@@ -966,7 +967,7 @@ ttb_level0_1MB_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(con
 	}
 }
 
-#if ! defined (__aarch64__)
+#if ! defined (__aarch64__) && ! CPUSTYLE_RISCV
 
 static void
 ttb_level1_4k_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn))
@@ -976,7 +977,7 @@ ttb_level1_4k_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(cons
 
 	for (i = 0; i <  ARRAY_SIZE(ttb_L1_base); ++ i)
 	{
-		const uintptr_t phyaddr = (uintptr_t) i << 12;
+		const uintptr_t phyaddr = pagesize * i;
 		ttb_L1_base [i] =  accessbits(arch, phyaddr, 0, 0);
 	}
 }
