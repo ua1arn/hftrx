@@ -594,7 +594,104 @@ static const getmmudesc_t gpu_mali400_table4k =
 
 #endif
 
-#if defined (__aarch64__)
+#if defined (__CORTEX_M)
+	#if CPUSTYLE_STM32H7XX
+
+	// MPU initialize
+	static void lowlevel_stm32h7xx_mpu_initialize(void)
+	{
+		/* Disables the MPU */
+		MPU->CTRL = (MPU->CTRL & ~ (MPU_CTRL_ENABLE_Msk)) |
+			0 * MPU_CTRL_ENABLE_Msk |
+			0;
+
+
+
+	#define INNER_NORMAL_WB_RWA_TYPE(x)   (( 0x04 << MPU_RASR_TEX_Pos ) | ( DISABLE  << MPU_RASR_C_Pos ) | ( ENABLE  << MPU_RASR_B_Pos )  | ( x << MPU_RASR_S_Pos ))
+	#define INNER_NORMAL_WB_NWA_TYPE(x)   (( 0x04 << MPU_RASR_TEX_Pos ) | ( ENABLE  << MPU_RASR_C_Pos )  | ( ENABLE  << MPU_RASR_B_Pos )  | ( x << MPU_RASR_S_Pos ))
+	#define STRONGLY_ORDERED_SHAREABLE_TYPE      (( 0x00 << MPU_RASR_TEX_Pos ) | ( DISABLE << MPU_RASR_C_Pos ) | ( DISABLE << MPU_RASR_B_Pos ))     // DO not care //
+	#define SHAREABLE_DEVICE_TYPE                (( 0x00 << MPU_RASR_TEX_Pos ) | ( DISABLE << MPU_RASR_C_Pos ) | ( ENABLE  << MPU_RASR_B_Pos ))     // DO not care //
+
+
+		// SRAM
+		/* Set the Region base address and region number */
+		MPU->RBAR = D1_AXISRAM_BASE | MPU_RBAR_VALID_Msk | 0x00;
+		MPU->RASR =
+			(0x00 << MPU_RASR_XN_Pos)   |	// DisableExec
+			(0x03 << MPU_RASR_AP_Pos)   |	// AccessPermission
+			(0x04 << MPU_RASR_TEX_Pos)  |	// TypeExtField
+			(0x01 << MPU_RASR_C_Pos)    |	// IsCacheable
+			(0x01 << MPU_RASR_B_Pos)    |	// IsBufferable
+			(0x00 << MPU_RASR_S_Pos)    |	// IsShareable
+			(0x00 << MPU_RASR_SRD_Pos)  |	// SubRegionDisable (8 bits mask)
+			(0x12 << MPU_RASR_SIZE_Pos) |	// Size 512 kB
+			(0x01 << MPU_RASR_ENABLE_Pos) |	// Enable
+			0;
+		// ITCM
+		/* Set the Region base address and region number */
+		MPU->RBAR = D1_ITCMRAM_BASE | MPU_RBAR_VALID_Msk | 0x01;
+		MPU->RASR =
+			(0x00 << MPU_RASR_XN_Pos)   |	// DisableExec
+			(0x03 << MPU_RASR_AP_Pos)   |	// AccessPermission
+			(0x04 << MPU_RASR_TEX_Pos)  |	// TypeExtField
+			(0x01 << MPU_RASR_C_Pos)    |	// IsCacheable
+			(0x01 << MPU_RASR_B_Pos)    |	// IsBufferable
+			(0x00 << MPU_RASR_S_Pos)    |	// IsShareable
+			(0x00 << MPU_RASR_SRD_Pos)  |	// SubRegionDisable (8 bits mask)
+			(0x0F << MPU_RASR_SIZE_Pos) |	// Size 64 kB
+			(0x01 << MPU_RASR_ENABLE_Pos) |	// Enable
+			0;
+		// DTCM
+		/* Set the Region base address and region number */
+		MPU->RBAR = D1_DTCMRAM_BASE | MPU_RBAR_VALID_Msk | 0x02;
+		MPU->RASR =
+			(0x00 << MPU_RASR_XN_Pos)   |	// DisableExec
+			(0x03 << MPU_RASR_AP_Pos)   |	// AccessPermission
+			(0x04 << MPU_RASR_TEX_Pos)  |	// TypeExtField
+			(0x01 << MPU_RASR_C_Pos)    |	// IsCacheable
+			(0x01 << MPU_RASR_B_Pos)    |	// IsBufferable
+			(0x00 << MPU_RASR_S_Pos)    |	// IsShareable
+			(0x00 << MPU_RASR_SRD_Pos)  |	// SubRegionDisable (8 bits mask)
+			(0x10 << MPU_RASR_SIZE_Pos) |	// Size 128 kB
+			(0x01 << MPU_RASR_ENABLE_Pos) |	// Enable
+			0;
+		// FLASH
+		/* Set the Region base address and region number */
+		MPU->RBAR = D1_AXIFLASH_BASE | MPU_RBAR_VALID_Msk | 0x03;
+		MPU->RASR =
+			(0x00 << MPU_RASR_XN_Pos)   |	// DisableExec
+			(0x03 << MPU_RASR_AP_Pos)   |	// AccessPermission
+			(0x04 << MPU_RASR_TEX_Pos)  |	// TypeExtField
+			(0x01 << MPU_RASR_C_Pos)    |	// IsCacheable
+			(0x01 << MPU_RASR_B_Pos)    |	// IsBufferable
+			(0x00 << MPU_RASR_S_Pos)    |	// IsShareable
+			(0x00 << MPU_RASR_SRD_Pos)  |	// SubRegionDisable (8 bits mask)
+			(0x14 << MPU_RASR_SIZE_Pos) |	// Size 2 MB
+			(0x01 << MPU_RASR_ENABLE_Pos) |	// Enable
+			0;
+		// DEVICE
+		/* Set the Region base address and region number */
+		MPU->RBAR = PERIPH_BASE | MPU_RBAR_VALID_Msk | 0x04;
+		MPU->RASR =
+			(0x00 << MPU_RASR_XN_Pos)   |	// DisableExec
+			(0x03 << MPU_RASR_AP_Pos)   |	// AccessPermission
+			(0x04 << MPU_RASR_TEX_Pos)  |	// TypeExtField
+			(0x00 << MPU_RASR_C_Pos)    |	// IsCacheable
+			(0x00 << MPU_RASR_B_Pos)    |	// IsBufferable
+			(0x00 << MPU_RASR_S_Pos)    |	// IsShareable
+			(0x00 << MPU_RASR_SRD_Pos)  |	// SubRegionDisable (8 bits mask)
+			(0x1B << MPU_RASR_SIZE_Pos) |	// Size 256 MB
+			(0x01 << MPU_RASR_ENABLE_Pos) |	// Enable
+			0;
+		/* Enables the MPU */
+		MPU->CTRL = (MPU->CTRL & ~ (MPU_CTRL_ENABLE_Msk)) |
+			1 * MPU_CTRL_ENABLE_Msk |
+			0;
+	}
+
+	#endif /* CPUSTYLE_STM32H7XX */
+
+#elif defined (__aarch64__)
 // 13.3 Memory attributes
 
 // Also see TCR_EL3 parameter
@@ -668,7 +765,7 @@ static uint_fast64_t arch64_mtable(uint_fast64_t addr)
 	return addr | 0x03;
 }
 
-static const getmmudesc_t arch64table2M =
+static const getmmudesc_t arch64_table_2M =
 {
 	.mcached = arch64_mcached,
 	.mncached = arch64_mncached,
@@ -853,7 +950,7 @@ static uint_fast64_t arch32_1M_mtable(uint_fast64_t addr)
 	return 0;
 }
 
-static const getmmudesc_t arch32table1M =
+static const getmmudesc_t arch32_table_1M =
 {
 	.mcached = arch32_1M_mcached,
 	.mncached = arch32_1M_mncached,
@@ -885,7 +982,7 @@ static uint_fast64_t arch32_4k_mtable(uint_fast64_t addr)
 	return TTB_PARA_AARCH32_4k_PAGE(addr);	// First-level table entry - Page table
 }
 
-static const getmmudesc_t arch32table4k =
+static const getmmudesc_t arch32_table_4k =
 {
 	.mcached = arch32_4k_mcached,
 	.mncached = arch32_4k_mncached,
@@ -925,169 +1022,83 @@ static const getmmudesc_t arch32table4k =
 	#define	TTB_PARA_RV64_DEVICE(addr)			((0 * (addr) & ~ UINT64_C(0xFFF)) | (0x00u << 1) | 0x01)
 	#define	TTB_PARA_RV64_NO_ACCESS(addr) 		0
 
-#endif /* __CORTEX_A */
 
-#if defined(__aarch64__)
+static const getmmudesc_t rv64_table_4k =
+{
+	.mcached = rv64_4k_mcached,
+	.mncached = rv64_4k_mncached,
+	.mdevice = rv64_4k_mdevice,
+	.mnoaccess = rv64_4k_mnoaccess,
+	.mtable = rv64_4k_mtable
+};
+// https://lupyuen.codeberg.page/articles/mmu.html#appendix-flush-the-mmu-cache-for-t-head-c906
+// https://github.com/apache/nuttx/blob/4d63921f0a28aeee89b3a2ae861aaa83d731d28d/arch/risc-v/src/common/riscv_mmu.h#L220
+static inline void mmu_write_satp(uintptr_t reg)
+{
+  __ASM volatile
+    (
+      "csrw satp, %0\n"
+      "sfence.vma x0, x0\n"
+      "fence rw, rw\n"
+      //"fence.i\n"
+      :
+      : "rK" (reg)
+      : "memory"
+    );
 
-	/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
-	// Last x4 - for 34 bit address (16 GB address space)
-	// Check TCR_EL3 setup
-	// pages of 2 MB
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level2_pagetable_u64 [512 * 4 * 4];	// ttb0_base must be a 4KB-aligned address.
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base_u64 [ARRAY_SIZE(level2_pagetable_u64) / 512];	// ttb0_base must be a 4KB-aligned address.
-
-#elif CPUSTYLE_RISCV
-
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level2_pagetable_u64 [512 * 4];	// Used as PPN in SATP register
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base_u64 [512];	// Used as PPN in SATP register
-
-	// https://lupyuen.codeberg.page/articles/mmu.html#appendix-flush-the-mmu-cache-for-t-head-c906
-	// https://github.com/apache/nuttx/blob/4d63921f0a28aeee89b3a2ae861aaa83d731d28d/arch/risc-v/src/common/riscv_mmu.h#L220
-	static inline void mmu_write_satp(uintptr_t reg)
-	{
-	  __ASM volatile
-	    (
-	      "csrw satp, %0\n"
-	      "sfence.vma x0, x0\n"
-	      "fence rw, rw\n"
-	      //"fence.i\n"
-	      :
-	      : "rK" (reg)
-	      : "memory"
-	    );
-
-	  /* Flush the MMU Cache if needed (T-Head C906) */
+  /* Flush the MMU Cache if needed (T-Head C906) */
 
 //	  if (mmu_flush_cache != NULL)
 //	    {
 //	      mmu_flush_cache(reg);
 //	    }
-	}
+}
 
 
-	// https://lupyuen.codeberg.page/articles/mmu.html#appendix-flush-the-mmu-cache-for-t-head-c906
+// https://lupyuen.codeberg.page/articles/mmu.html#appendix-flush-the-mmu-cache-for-t-head-c906
 
-	// Flush the MMU Cache for T-Head C906.  Called by mmu_write_satp() after
-	// updating the MMU SATP Register, when swapping MMU Page Tables.
-	// This operation executes RISC-V Instructions that are specific to
-	// T-Head C906.
-	void mmu_flush_cache(void) {
-	  __ASM volatile (
-	    // DCACHE.IALL: Invalidate all Page Table Entries in the D-Cache
-	    ".4byte 0x0020000b\n"
+// Flush the MMU Cache for T-Head C906.  Called by mmu_write_satp() after
+// updating the MMU SATP Register, when swapping MMU Page Tables.
+// This operation executes RISC-V Instructions that are specific to
+// T-Head C906.
+void mmu_flush_cache(void) {
+  __ASM volatile (
+    // DCACHE.IALL: Invalidate all Page Table Entries in the D-Cache
+    ".4byte 0x0020000b\n"
 
-	    // SYNC.S: Ensure that all Cache Operations are completed
-	    ".4byte 0x0190000b\n"
-	  );
-	}
+    // SYNC.S: Ensure that all Cache Operations are completed
+    ".4byte 0x0190000b\n"
+  );
+}
 
-#elif defined (__CORTEX_M)
+#endif /* __CORTEX_A */
 
-	#if CPUSTYLE_STM32H7XX
+#if defined (__CORTEX_M)
 
-	// MPU initialize
-	static void lowlevel_stm32h7xx_mpu_initialize(void)
-	{
-		/* Disables the MPU */
-		MPU->CTRL = (MPU->CTRL & ~ (MPU_CTRL_ENABLE_Msk)) |
-			0 * MPU_CTRL_ENABLE_Msk |
-			0;
+#elif defined(__aarch64__)
 
+	// Last x4 - for 34 bit address (16 GB address space)
+	// Check TCR_EL3 setup
+	// pages of 2 MB
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level1_pagetable_u64 [512 * 4 * 4];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base_u64 [ARRAY_SIZE(level1_pagetable_u64) / 512];	// ttb0_base must be a 4KB-aligned address.
 
+#elif CPUSTYLE_RISCV
 
-	#define INNER_NORMAL_WB_RWA_TYPE(x)   (( 0x04 << MPU_RASR_TEX_Pos ) | ( DISABLE  << MPU_RASR_C_Pos ) | ( ENABLE  << MPU_RASR_B_Pos )  | ( x << MPU_RASR_S_Pos ))
-	#define INNER_NORMAL_WB_NWA_TYPE(x)   (( 0x04 << MPU_RASR_TEX_Pos ) | ( ENABLE  << MPU_RASR_C_Pos )  | ( ENABLE  << MPU_RASR_B_Pos )  | ( x << MPU_RASR_S_Pos ))
-	#define STRONGLY_ORDERED_SHAREABLE_TYPE      (( 0x00 << MPU_RASR_TEX_Pos ) | ( DISABLE << MPU_RASR_C_Pos ) | ( DISABLE << MPU_RASR_B_Pos ))     // DO not care //
-	#define SHAREABLE_DEVICE_TYPE                (( 0x00 << MPU_RASR_TEX_Pos ) | ( DISABLE << MPU_RASR_C_Pos ) | ( ENABLE  << MPU_RASR_B_Pos ))     // DO not care //
-
-
-		// SRAM
-		/* Set the Region base address and region number */
-		MPU->RBAR = D1_AXISRAM_BASE | MPU_RBAR_VALID_Msk | 0x00;
-		MPU->RASR =
-			(0x00 << MPU_RASR_XN_Pos)   |	// DisableExec
-			(0x03 << MPU_RASR_AP_Pos)   |	// AccessPermission
-			(0x04 << MPU_RASR_TEX_Pos)  |	// TypeExtField
-			(0x01 << MPU_RASR_C_Pos)    |	// IsCacheable
-			(0x01 << MPU_RASR_B_Pos)    |	// IsBufferable
-			(0x00 << MPU_RASR_S_Pos)    |	// IsShareable
-			(0x00 << MPU_RASR_SRD_Pos)  |	// SubRegionDisable (8 bits mask)
-			(0x12 << MPU_RASR_SIZE_Pos) |	// Size 512 kB
-			(0x01 << MPU_RASR_ENABLE_Pos) |	// Enable
-			0;
-		// ITCM
-		/* Set the Region base address and region number */
-		MPU->RBAR = D1_ITCMRAM_BASE | MPU_RBAR_VALID_Msk | 0x01;
-		MPU->RASR =
-			(0x00 << MPU_RASR_XN_Pos)   |	// DisableExec
-			(0x03 << MPU_RASR_AP_Pos)   |	// AccessPermission
-			(0x04 << MPU_RASR_TEX_Pos)  |	// TypeExtField
-			(0x01 << MPU_RASR_C_Pos)    |	// IsCacheable
-			(0x01 << MPU_RASR_B_Pos)    |	// IsBufferable
-			(0x00 << MPU_RASR_S_Pos)    |	// IsShareable
-			(0x00 << MPU_RASR_SRD_Pos)  |	// SubRegionDisable (8 bits mask)
-			(0x0F << MPU_RASR_SIZE_Pos) |	// Size 64 kB
-			(0x01 << MPU_RASR_ENABLE_Pos) |	// Enable
-			0;
-		// DTCM
-		/* Set the Region base address and region number */
-		MPU->RBAR = D1_DTCMRAM_BASE | MPU_RBAR_VALID_Msk | 0x02;
-		MPU->RASR =
-			(0x00 << MPU_RASR_XN_Pos)   |	// DisableExec
-			(0x03 << MPU_RASR_AP_Pos)   |	// AccessPermission
-			(0x04 << MPU_RASR_TEX_Pos)  |	// TypeExtField
-			(0x01 << MPU_RASR_C_Pos)    |	// IsCacheable
-			(0x01 << MPU_RASR_B_Pos)    |	// IsBufferable
-			(0x00 << MPU_RASR_S_Pos)    |	// IsShareable
-			(0x00 << MPU_RASR_SRD_Pos)  |	// SubRegionDisable (8 bits mask)
-			(0x10 << MPU_RASR_SIZE_Pos) |	// Size 128 kB
-			(0x01 << MPU_RASR_ENABLE_Pos) |	// Enable
-			0;
-		// FLASH
-		/* Set the Region base address and region number */
-		MPU->RBAR = D1_AXIFLASH_BASE | MPU_RBAR_VALID_Msk | 0x03;
-		MPU->RASR =
-			(0x00 << MPU_RASR_XN_Pos)   |	// DisableExec
-			(0x03 << MPU_RASR_AP_Pos)   |	// AccessPermission
-			(0x04 << MPU_RASR_TEX_Pos)  |	// TypeExtField
-			(0x01 << MPU_RASR_C_Pos)    |	// IsCacheable
-			(0x01 << MPU_RASR_B_Pos)    |	// IsBufferable
-			(0x00 << MPU_RASR_S_Pos)    |	// IsShareable
-			(0x00 << MPU_RASR_SRD_Pos)  |	// SubRegionDisable (8 bits mask)
-			(0x14 << MPU_RASR_SIZE_Pos) |	// Size 2 MB
-			(0x01 << MPU_RASR_ENABLE_Pos) |	// Enable
-			0;
-		// DEVICE
-		/* Set the Region base address and region number */
-		MPU->RBAR = PERIPH_BASE | MPU_RBAR_VALID_Msk | 0x04;
-		MPU->RASR =
-			(0x00 << MPU_RASR_XN_Pos)   |	// DisableExec
-			(0x03 << MPU_RASR_AP_Pos)   |	// AccessPermission
-			(0x04 << MPU_RASR_TEX_Pos)  |	// TypeExtField
-			(0x00 << MPU_RASR_C_Pos)    |	// IsCacheable
-			(0x00 << MPU_RASR_B_Pos)    |	// IsBufferable
-			(0x00 << MPU_RASR_S_Pos)    |	// IsShareable
-			(0x00 << MPU_RASR_SRD_Pos)  |	// SubRegionDisable (8 bits mask)
-			(0x1B << MPU_RASR_SIZE_Pos) |	// Size 256 MB
-			(0x01 << MPU_RASR_ENABLE_Pos) |	// Enable
-			0;
-		/* Enables the MPU */
-		MPU->CTRL = (MPU->CTRL & ~ (MPU_CTRL_ENABLE_Msk)) |
-			1 * MPU_CTRL_ENABLE_Msk |
-			0;
-	}
-
-	#endif /* CPUSTYLE_STM32H7XX */
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level1_pagetable_u64 [512 * 4];	// Used as PPN in SATP register
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base_u64 [512];	// Used as PPN in SATP register
 
 #else /* defined(__aarch64__) */
 
 	#if MMUUSE4KPAGES
-		/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
-		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base_u32 [4096];	//
-		static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint32_t ttb_L1_base_u32 [4096 * 256];	// дескрипторы страниц памяти
+
+		static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint32_t level1_pagetable_u32 [4096 * 256];	// вся физическая память страницами по 4 килобайта
+		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base_u32 [4096];
+
 	#else /* MMUUSE4KPAGES */
-		/* TTB должна размещаться в памяти, не инициализируемой перед запуском системы */
-		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base_u32 [4096];	//
+
+		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base_u32 [4096];	// вся физическая память страницами по 1 мегабайт
+
 	#endif /* MMUUSE4KPAGES */
 
 #endif /* defined(__aarch64__) */
@@ -1096,14 +1107,14 @@ static const getmmudesc_t arch32table4k =
 
 // вся физическая память
 static void
-ttb_level2_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uintptr_t a, int ro, int xn), const uint_fast64_t pagesize)
+ttb_level1_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uintptr_t a, int ro, int xn), const uint_fast64_t pagesize)
 {
 	unsigned i;
 	//const uint_fast64_t pagesize = (UINT32_C(1) << 21);	// 2M step
 
 	uint_fast64_t phyaddr = 0;	// начальный адрес памяти
-	uint8_t * tb = (uint8_t *) level2_pagetable_u64;	// table base
-	for (i = 0; i < ARRAY_SIZE(level2_pagetable_u64); ++ i, phyaddr += pagesize)
+	uint8_t * tb = (uint8_t *) level1_pagetable_u64;	// table base
+	for (i = 0; i < ARRAY_SIZE(level1_pagetable_u64); ++ i, phyaddr += pagesize)
 	{
 		//level2_pagetable [i] = accessbits(arch, phyaddr, 0, 0);
 		tb += USBD_poke_u64(tb, accessbits(arch, phyaddr, 0, 0));
@@ -1156,8 +1167,8 @@ ttb_level1_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)
 	//const uint_fast64_t pagesize = (UINT32_C(1) << 12);	// 4k step
 
 	uint_fast64_t phyaddr = 0;	// начальный адрес памяти
-	uint8_t * tb = (uint8_t *) ttb_L1_base_u32;	// table base
-	for (i = 0; i <  ARRAY_SIZE(ttb_L1_base_u32); ++ i, phyaddr += pagesize)
+	uint8_t * tb = (uint8_t *) level1_pagetable_u32;	// table base
+	for (i = 0; i <  ARRAY_SIZE(level1_pagetable_u32); ++ i, phyaddr += pagesize)
 	{
 		//ttb_L1_base [i] =  accessbits(arch, phyaddr, 0, 0);
 		tb += USBD_poke_u32(tb, accessbits(arch, phyaddr, 0, 0));
@@ -1181,6 +1192,43 @@ ttb_level0_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)
 	}
 }
 #endif /* MMUUSE4KPAGES */
+#elif CPUSTYLE_RISCV
+
+static void ttb_level1_xk_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn), const uint_fast32_t pagesize)
+{
+	// When the page table size is set to 4 KB, 2 MB, or 1 GB, the page table is indexed by 3, 2, or 1 times, respectively.
+	uintptr_t address = 0;
+	uintptr_t addrstep = UINT64_C(1) << 21;	// 2 MB
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(level1_pagetable_u64); ++ i)
+	{
+		level1_pagetable_u64 [i] =
+				//((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
+				((address >> 21) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
+				//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
+				NCRAM_ATTRS |
+				0;
+		address += addrstep;
+	}
+}
+
+static void ttb_level0_xk_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn), const uint_fast32_t pagesize, uint_fast64_t nextlevel)
+{
+	// Pointe to 1 GB pages
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(ttb0_base_u64); ++ i)
+	{
+		uintptr_t address = (uintptr_t) (level1_pagetable_u64 + 512 * i) | 0x03;
+		//uintptr_t address = 1 * (UINT64_C(1) << 30) * i;
+		ttb0_base_u64 [i] =
+			((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
+			//((address >> 24) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
+			//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
+			TABLE_ATTRS |
+			0;
+	}
+}
+
 #endif /* ! defined(__aarch64__) && ! CPUSTYLE_RISCV */
 
 #endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV */
@@ -1218,9 +1266,9 @@ sysinit_mmu_tables(void)
 	#if defined (__aarch64__)
 		// MMU iniitialize
 
-		ttb_level2_2MB_initialize(& arch64table2M, ttb_mempage_accessbits, (UINT32_C(1) << 21));	// 2M step
-		dcache_clean_invalidate((uintptr_t) level2_pagetable_u64, sizeof level2_pagetable_u64);
-		ttb_level0_2MB_initialize(& arch64table2M, ttb_mempage_accessbits, (UINT32_C(1) << 12), (uintptr_t) level2_pagetable_u64);	// 512 bytes step
+		ttb_level1_2MB_initialize(& arch64_table_2M, ttb_mempage_accessbits, (UINT32_C(1) << 21));	// 2M step
+		dcache_clean_invalidate((uintptr_t) level1_pagetable_u64, sizeof level1_pagetable_u64);
+		ttb_level0_2MB_initialize(& arch64_table_2M, ttb_mempage_accessbits, (UINT32_C(1) << 12), (uintptr_t) level1_pagetable_u64);	// 512 bytes step
 		dcache_clean_invalidate((uintptr_t) ttb0_base_u64, sizeof ttb0_base_u64);
 
 
@@ -1228,13 +1276,15 @@ sysinit_mmu_tables(void)
 		// MMU iniitialize
 
 	#if MMUUSE4KPAGES
-		ttb_level1_4k_initialize(& arch32table4k, ttb_mempage_accessbits, (UINT32_C(1) << 12));	// 4k step
-		dcache_clean_invalidate((uintptr_t) ttb_L1_base_u32, sizeof ttb_L1_base_u32);
-		ttb_level0_4k_initialize(& arch32table4k, ttb_mempage_accessbits, (UINT32_C(1) << 10), (uintptr_t) ttb_L1_base_u32);	// 1k step
+		ttb_level1_4k_initialize(& arch32_table_4k, ttb_mempage_accessbits, (UINT32_C(1) << 12));	// 4k step
+		dcache_clean_invalidate((uintptr_t) level1_pagetable_u32, sizeof level1_pagetable_u32);
+		ttb_level0_4k_initialize(& arch32_table_4k, ttb_mempage_accessbits, (UINT32_C(1) << 10), (uintptr_t) level1_pagetable_u32);	// 1k step
 		dcache_clean_invalidate((uintptr_t) ttb0_base_u32, sizeof ttb0_base_u32);
+
 	#else
-		ttb_level0_1MB_initialize(& arch32table1M, ttb_mempage_accessbits, (UINT32_C(1) << 20)); 	// 1M step
+		ttb_level0_1MB_initialize(& arch32_table_1M, ttb_mempage_accessbits, (UINT32_C(1) << 20)); 	// 1M step
 		dcache_clean_invalidate((uintptr_t) ttb0_base_u32, sizeof ttb0_base_u32);
+
 	#endif
 
 	#endif	/* defined (__aarch64__) */
@@ -1244,37 +1294,13 @@ sysinit_mmu_tables(void)
 	#warning To be implemented
 	// RISC-V MMU initialize
 
+	ttb_level1_xk_initialize(& rv64_table_4k, ttb_mempage_accessbits, 0);
+	ttb_level0_xk_initialize(& rv64_table_4k, ttb_mempage_accessbits, 0, 0);
 
-	// When the page table size is set to 4 KB, 2 MB, or 1 GB, the page table is indexed by 3, 2, or 1 times, respectively.
-	uintptr_t address = 0;
-	uintptr_t addrstep = UINT64_C(1) << 21;	// 2 MB
-	unsigned i;
-	for (i = 0; i < ARRAY_SIZE(level2_pagetable_u64); ++ i)
-	{
-		level2_pagetable_u64 [i] =
-				//((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
-				((address >> 21) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
-				//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
-				NCRAM_ATTRS |
-				0;
-		address += addrstep;
-	}
-	// Pointe to 1 GB pages
-	for (i = 0; i < ARRAY_SIZE(ttb0_base_u64); ++ i)
-	{
-		uintptr_t address = (uintptr_t) (level2_pagetable_u64 + 512 * i) | 0x03;
-		//uintptr_t address = 1 * (UINT64_C(1) << 30) * i;
-		ttb0_base_u64 [i] =
-			((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
-			//((address >> 24) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
-			//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
-			TABLE_ATTRS |
-			0;
-	}
-
-	//ttb_level2_2MB_initialize(& archtable, ttb_mempage_accessbits, (UINT32_C(1) << 21));
+	//ttb_level1_2MB_initialize(& archtable, ttb_mempage_accessbits, (UINT32_C(1) << 21));
 
 #elif defined (__CORTEX_M)
+
 #endif
 
 	//PRINTF("sysinit_mmu_tables done.\n");
@@ -1297,7 +1323,7 @@ sysinit_ttbr_initialize(void)
 	// 4.3.53 Translation Control Register, EL3
 	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
-	const unsigned aspacebits = 21 + __log2_up(ARRAY_SIZE(level2_pagetable_u64));	// pages of 2 MB
+	const unsigned aspacebits = 21 + __log2_up(ARRAY_SIZE(level1_pagetable_u64));	// pages of 2 MB
 	uint_fast32_t tcrv =
 			0x00 * (UINT32_C(1) << 14) | 	// TG0 TTBR0_EL3 granule size 0b00 4 KB
 			0x03 * (UINT32_C(1) << 12) |	// 0x03 - Inner shareable
