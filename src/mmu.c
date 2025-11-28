@@ -369,9 +369,9 @@ int_fast32_t icache_rowsize(void)
 
 /* зависящая от процессора карта распределения memory regions */
 uint64_t
-ttb_mempage_accessbits(const getmmudesc_t * arch, uint64_t a, int ro, int xn)
+ttb_mempage_accessbits(const getmmudesc_t * arch, uint64_t phyaddr, int ro, int xn)
 {
-	//const uintptr_t addrbase = a & ~ (uintptr_t) UINT32_C(0x0FFFFF);
+	//const uintptr_t addrbase = phyaddr & ~ (uintptr_t) UINT32_C(0x0FFFFF);
 
 #if ! CPUSTYLE_R7S721020
 	// На Renesas RZA1 недостаточно памяти для выделения выровненной на 1 мегабайт некешируесой области.
@@ -381,168 +381,168 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint64_t a, int ro, int xn)
 	extern uint32_t __RAMNC_TOP;
 	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
 	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
-	if (a >= __ramnc_base && a < __ramnc_top)			// non-cached DRAM
-		return arch->mncached(a, ro, 1 || xn);
+	if (phyaddr >= __ramnc_base && phyaddr < __ramnc_top)			// non-cached DRAM
+		return arch->mncached(phyaddr, ro, 1 || xn);
 #endif
 
 #if CPUSTYLE_R7S721020
 
 	// Все сравнения должны быть не точнее 1 MB
 
-	if (a == 0x00000000)
-		return TTB_PARA_NO_ACCESS(a);		// NULL pointers access trap
+	if (phyaddr == 0x00000000)
+		return TTB_PARA_NO_ACCESS(phyaddr);		// NULL pointers access trap
 
-	if (a >= 0x18000000 && a < 0x20000000)			// FIXME: QSPI memory mapped should be R/O, but...
-		return arch->mcached(a, ro || 0, 0);
+	if (phyaddr >= 0x18000000 && phyaddr < 0x20000000)			// FIXME: QSPI memory mapped should be R/O, but...
+		return arch->mcached(phyaddr, ro || 0, 0);
 
-	if (a >= 0x00000000 && a < 0x00A00000)			// up to 10 MB
-		return arch->mcached(a, ro, 0);
-	if (a >= 0x20000000 && a < 0x20A00000)			// up to 10 MB
-		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0x00000000 && phyaddr < 0x00A00000)			// up to 10 MB
+		return arch->mcached(phyaddr, ro, 0);
+	if (phyaddr >= 0x20000000 && phyaddr < 0x20A00000)			// up to 10 MB
+		return arch->mcached(phyaddr, ro, 0);
 
-	return arch->mdevice(a);
+	return arch->mdevice(phyaddr);
 
 #elif CPUSTYLE_STM32MP1
 
 	// Все сравнения должны быть не точнее 1 MB
-	if (a >= 0x20000000 && a < 0x30000000)			// SYSRAM
-		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0x20000000 && phyaddr < 0x30000000)			// SYSRAM
+		return arch->mcached(phyaddr, ro, 0);
 	// 1 GB DDR RAM memory size allowed
-	if (a >= 0xC0000000)							// DDR memory
-		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0xC0000000)							// DDR memory
+		return arch->mcached(phyaddr, ro, 0);
 
-	return arch->mdevice(a);
-	return TTB_PARA_NO_ACCESS(a);
+	return arch->mdevice(phyaddr);
+	return TTB_PARA_NO_ACCESS(phyaddr);
 
 #elif CPUSTYLE_XC7Z
 
 	// Все сравнения должны быть не точнее 1 MB
 
-	if (a >= 0x00000000 && a < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
-		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0x00000000 && phyaddr < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
+		return arch->mcached(phyaddr, ro, 0);
 
-	if (a >= 0x00100000 && a < 0x40000000)			//  DDR3 - 255 MB
-		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0x00100000 && phyaddr < 0x40000000)			//  DDR3 - 255 MB
+		return arch->mcached(phyaddr, ro, 0);
 
-	if (a >= 0xE1000000 && a < 0xE6000000)			//  SMC (Static Memory Controller)
-		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0xE1000000 && phyaddr < 0xE6000000)			//  SMC (Static Memory Controller)
+		return arch->mcached(phyaddr, ro, 0);
 
-	if (a >= 0x40000000 && a < 0xFC000000)	// PL, peripherials
-		return arch->mdevice(a);
+	if (phyaddr >= 0x40000000 && phyaddr < 0xFC000000)	// PL, peripherials
+		return arch->mdevice(phyaddr);
 
-	if (a >= 0xFC000000 && a < 0xFE000000)			//  Quad-SPI linear address for linear mode
-		return arch->mcached(a, ro || 0, 0);
+	if (phyaddr >= 0xFC000000 && phyaddr < 0xFE000000)			//  Quad-SPI linear address for linear mode
+		return arch->mcached(phyaddr, ro || 0, 0);
 
-	if (a >= 0xFFF00000)			// OCM (On Chip Memory) is mapped high
-		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0xFFF00000)			// OCM (On Chip Memory) is mapped high
+		return arch->mcached(phyaddr, ro, 0);
 
-	return arch->mdevice(a);
+	return arch->mdevice(phyaddr);
 
 #elif CPUSTYLE_T113
 
 	// Все сравнения должны быть не точнее 1 MB
 
-	if (a < 0x00400000)
-		return arch->mcached(a, ro, 0);
+	if (phyaddr < 0x00400000)
+		return arch->mcached(phyaddr, ro, 0);
 
-	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return arch->mcached(a, ro, 0);
-//	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
-//		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0x40000000)			//  DDR3 - 2 GB
+		return arch->mcached(phyaddr, ro, 0);
+//	if (phyaddr >= 0x000020000 && phyaddr < 0x000038000)			//  SYSRAM - 64 kB
+//		return arch->mcached(phyaddr, ro, 0);
 
-	return arch->mdevice(a);
+	return arch->mdevice(phyaddr);
 
 #elif CPUSTYLE_F133
 
 	// Все сравнения должны быть не точнее 2 MB
 
-	if (a < 0x00400000)
-		return arch->mcached(a, ro, 0);
+	if (phyaddr < 0x00400000)
+		return arch->mcached(phyaddr, ro, 0);
 
-	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return arch->mcached(a, ro, 0);
-//	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
-//		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0x40000000)			//  DDR3 - 2 GB
+		return arch->mcached(phyaddr, ro, 0);
+//	if (phyaddr >= 0x000020000 && phyaddr < 0x000038000)			//  SYSRAM - 64 kB
+//		return arch->mcached(phyaddr, ro, 0);
 
-	return arch->mdevice(a);
+	return arch->mdevice(phyaddr);
 
 #elif CPUSTYLE_V3S
 
 	// Все сравнения должны быть не точнее 1 MB
 
-	if (a < 0x00400000)
-		return arch->mcached(a, ro, 0);
+	if (phyaddr < 0x00400000)
+		return arch->mcached(phyaddr, ro, 0);
 
-	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return arch->mcached(a, ro, 0);
-//	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
-//		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0x40000000)			//  DDR3 - 2 GB
+		return arch->mcached(phyaddr, ro, 0);
+//	if (phyaddr >= 0x000020000 && phyaddr < 0x000038000)			//  SYSRAM - 64 kB
+//		return arch->mcached(phyaddr, ro, 0);
 
-	return arch->mdevice(a);
+	return arch->mdevice(phyaddr);
 
 #elif CPUSTYLE_H3
 
 	// Все сравнения должны быть не точнее 1 MB
 
-	if (a < 0x01000000)
-		return arch->mcached(a, ro, 0);	// SRAM A1, SRAM A2, SRAM C
+	if (phyaddr < 0x01000000)
+		return arch->mcached(phyaddr, ro, 0);	// SRAM A1, SRAM A2, SRAM C
 
-	if (a >= 0xC0000000)
-		return arch->mcached(a, ro, 0);	// N-BROM, S-BROM
+	if (phyaddr >= 0xC0000000)
+		return arch->mcached(phyaddr, ro, 0);	// N-BROM, S-BROM
 
-	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0x40000000)			//  DDR3 - 2 GB
+		return arch->mcached(phyaddr, ro, 0);
 
-	return arch->mdevice(a);
+	return arch->mdevice(phyaddr);
 
 #elif CPUSTYLE_A64
 
 	// Все сравнения должны быть не точнее 2 MB
 
-	if (a < 0x01000000)
-		return arch->mcached(a, ro, 0);
+	if (phyaddr < 0x01000000)
+		return arch->mcached(phyaddr, ro, 0);
 
-	if (a >= 0x40000000)			//  DDR3 - 2 GB
-		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0x40000000)			//  DDR3 - 2 GB
+		return arch->mcached(phyaddr, ro, 0);
 
-	return arch->mdevice(a);
+	return arch->mdevice(phyaddr);
 
 #elif CPUSTYLE_T507
 
 	// Все сравнения должны быть не точнее 2 MB
 
-	if (a < 0x01000000)			// BROM, SYSRAM A1, SRAM C
-		return arch->mcached(a, ro, 0);
+	if (phyaddr < 0x01000000)			// BROM, SYSRAM A1, SRAM C
+		return arch->mcached(phyaddr, ro, 0);
 	// 1 GB DDR RAM memory size allowed
-	if (a >= 0x40000000)			//  DRAM - 2 GB
-		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0x40000000)			//  DRAM - 2 GB
+		return arch->mcached(phyaddr, ro, 0);
 
-	return arch->mdevice(a);
+	return arch->mdevice(phyaddr);
 
 #elif CPUSTYLE_A133 || CPUSTYLE_R818
 
 	// Все сравнения должны быть не точнее 2 MB
 
-	if (a < 0x01000000)			// BROM, SYSRAM A1, SRAM C
-		return arch->mcached(a, ro, 0);
+	if (phyaddr < 0x01000000)			// BROM, SYSRAM A1, SRAM C
+		return arch->mcached(phyaddr, ro, 0);
 	// 1 GB DDR RAM memory size allowed
-	if (a >= 0x40000000)			//  DRAM - 2 GB
-		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0x40000000)			//  DRAM - 2 GB
+		return arch->mcached(phyaddr, ro, 0);
 
-	return arch->mdevice(a);
+	return arch->mdevice(phyaddr);
 
 #elif CPUSTYLE_VM14
 
 	// 1892ВМ14Я ELVEES multicore.ru
 	// Все сравнения должны быть не точнее 1 MB
 
-	if (a >= 0x20000000 && a < 0x20100000)			//  SRAM - 64K
-		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0x20000000 && phyaddr < 0x20100000)			//  SRAM - 64K
+		return arch->mcached(phyaddr, ro, 0);
 
-	if (a >= 0x40000000 && a < 0xC0000000)			//  DDR - 2 GB
-		return arch->mcached(a, ro, 0);
+	if (phyaddr >= 0x40000000 && phyaddr < 0xC0000000)			//  DDR - 2 GB
+		return arch->mcached(phyaddr, ro, 0);
 
-	return arch->mdevice(a);
+	return arch->mdevice(phyaddr);
 
 #else
 
@@ -550,7 +550,7 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint64_t a, int ro, int xn)
 
 	#warning ttb_mempage_accessbits: Unhandled CPUSTYLE_xxxx
 
-	return arch->mdevice(a);
+	return arch->mdevice(phyaddr);
 
 #endif
 }
@@ -961,8 +961,8 @@ ttb_level0_1MB_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(con
 
 	for (i = 0; i <  ARRAY_SIZE(ttb0_base); ++ i)
 	{
-		const uintptr_t address = (uintptr_t) i << 20;
-		ttb0_base [i] =  accessbits(arch, address, 0, 0);
+		const uintptr_t phyaddr = (uintptr_t) i << 20;
+		ttb0_base [i] =  accessbits(arch, phyaddr, 0, 0);
 	}
 }
 
@@ -976,8 +976,8 @@ ttb_level1_4k_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(cons
 
 	for (i = 0; i <  ARRAY_SIZE(ttb_L1_base); ++ i)
 	{
-		const uintptr_t address = (uintptr_t) i << 20;
-		ttb_L1_base [i] =  accessbits(arch, address, 0, 0);
+		const uintptr_t phyaddr = (uintptr_t) i << 12;
+		ttb_L1_base [i] =  arch->mtable(phyaddr);
 	}
 }
 
@@ -989,8 +989,8 @@ ttb_level0_4k_initialize(const getmmudesc_t * arch, uint64_t (* accessbits)(cons
 
 	for (i = 0; i <  1024 /*ARRAY_SIZE(ttb0_base) */; ++ i)
 	{
-		const uintptr_t address = (uintptr_t) ttb_L1_base + (i * pagesize);
-		ttb0_base [i] =  accessbits(arch, address, 0, 0);
+		const uintptr_t phyaddr = (uintptr_t) ttb_L1_base + (i * pagesize);
+		ttb0_base [i] =  accessbits(arch, phyaddr, 0, 0);
 	}
 }
 #endif
