@@ -814,6 +814,11 @@ sysinit_ttbr_initialize(void)
 	// 4.3.53 Translation Control Register, EL3
 	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
+
+	// определение размера физической памяти, на который настраиваем MMU
+	// __log2_up(AARCH64_LEVEL1_SIZE)=13, mmuinfo [0].pgszlog2=21
+	//PRINTF("__log2_up(AARCH64_LEVEL1_SIZE)=%u, mmuinfo [0].pgszlog2=%u\n", (unsigned) __log2_up(AARCH64_LEVEL1_SIZE), mmuinfo [0].phypageszlog2);
+
 	const unsigned aspacebits = 21 + __log2_up(AARCH64_LEVEL1_SIZE);	// pages of 2 MB
 	uint_fast32_t tcrv =
 			0x00 * (UINT32_C(1) << 14) | 	// TG0 TTBR0_EL3 granule size 0b00 4 KB
