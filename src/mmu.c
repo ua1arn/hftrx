@@ -41,12 +41,12 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 		return TTB_PARA_NO_ACCESS(phyaddr);		// NULL pointers access trap
 
 	if (phyaddr >= 0x18000000 && phyaddr < 0x20000000)			// FIXME: QSPI memory mapped should be R/O, but...
-		return arch->mcached(phyaddr, ro || 0, 0);
+		return arch->mcached(phyaddr, ro || 0, xn);
 
 	if (phyaddr >= 0x00000000 && phyaddr < 0x00A00000)			// up to 10 MB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 	if (phyaddr >= 0x20000000 && phyaddr < 0x20A00000)			// up to 10 MB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -54,10 +54,10 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 
 	// Все сравнения должны быть не точнее 1 MB
 	if (phyaddr >= 0x20000000 && phyaddr < 0x30000000)			// SYSRAM
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 	// 1 GB DDR RAM memory size allowed
 	if (phyaddr >= 0xC0000000)							// DDR memory
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 	return TTB_PARA_NO_ACCESS(phyaddr);
@@ -67,22 +67,22 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (phyaddr >= 0x00000000 && phyaddr < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0x00100000 && phyaddr < 0x40000000)			//  DDR3 - 255 MB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0xE1000000 && phyaddr < 0xE6000000)			//  SMC (Static Memory Controller)
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0x40000000 && phyaddr < 0xFC000000)	// PL, peripherials
 		return arch->mdevice(phyaddr);
 
 	if (phyaddr >= 0xFC000000 && phyaddr < 0xFE000000)			//  Quad-SPI linear address for linear mode
-		return arch->mcached(phyaddr, ro || 0, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0xFFF00000)			// OCM (On Chip Memory) is mapped high
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -91,12 +91,12 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (phyaddr < 0x00400000)
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0x40000000)			//  DDR3 - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 //	if (phyaddr >= 0x000020000 && phyaddr < 0x000038000)			//  SYSRAM - 64 kB
-//		return arch->mcached(phyaddr, ro, 0);
+//		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -105,12 +105,12 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 2 MB
 
 	if (phyaddr < 0x00400000)
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0x40000000)			//  DDR3 - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 //	if (phyaddr >= 0x000020000 && phyaddr < 0x000038000)			//  SYSRAM - 64 kB
-//		return arch->mcached(phyaddr, ro, 0);
+//		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -119,12 +119,12 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (phyaddr < 0x00400000)
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0x40000000)			//  DDR3 - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 //	if (phyaddr >= 0x000020000 && phyaddr < 0x000038000)			//  SYSRAM - 64 kB
-//		return arch->mcached(phyaddr, ro, 0);
+//		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -133,13 +133,13 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (phyaddr < 0x01000000)
-		return arch->mcached(phyaddr, ro, 0);	// SRAM A1, SRAM A2, SRAM C
+		return arch->mcached(phyaddr, ro, xn);	// SRAM A1, SRAM A2, SRAM C
 
 	if (phyaddr >= 0xC0000000)
-		return arch->mcached(phyaddr, ro, 0);	// N-BROM, S-BROM
+		return arch->mcached(phyaddr, ro, xn);	// N-BROM, S-BROM
 
 	if (phyaddr >= 0x40000000)			//  DDR3 - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -148,10 +148,10 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 2 MB
 
 	if (phyaddr < 0x01000000)
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0x40000000)			//  DDR3 - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -160,10 +160,10 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 2 MB
 
 	if (phyaddr < 0x01000000)			// BROM, SYSRAM A1, SRAM C
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 	// 1 GB DDR RAM memory size allowed
 	if (phyaddr >= 0x40000000)			//  DRAM - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -172,10 +172,10 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 2 MB
 
 	if (phyaddr < 0x01000000)			// BROM, SYSRAM A1, SRAM C
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 	// 1 GB DDR RAM memory size allowed
 	if (phyaddr >= 0x40000000)			//  DRAM - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -185,10 +185,10 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (phyaddr >= 0x20000000 && phyaddr < 0x20100000)			//  SRAM - 64K
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0x40000000 && phyaddr < 0xC0000000)			//  DDR - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -756,6 +756,8 @@ typedef struct mmulayout_tag
 	uint8_t * table;
 	unsigned (* poke)(uint8_t * b, uint_fast64_t v);
 	unsigned flag;	// 0 - дескрипторы памяти, 1 - таблицы (mtable)
+	int ro;	// read-only area
+	int xn;	// no-execute
 } mmulayout_t;
 
 static void fillmmu(const mmulayout_t * p, unsigned n, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn))
@@ -767,7 +769,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, uint_fast64_t (* accessbi
 		uint_fast64_t phyaddr = p->phyaddr;
 		for (; pages --; phyaddr += p->pagesize)
 		{
-			tb += p->poke(tb, p->flag ? p->arch->mtable(phyaddr) : accessbits(p->arch, phyaddr, 0, 0));
+			tb += p->poke(tb, p->flag ? p->arch->mtable(phyaddr) : accessbits(p->arch, phyaddr, p->ro, p->xn));
 		}
 		const ptrdiff_t cachesize = tb - p->table;
 		dcache_clean_invalidate((uintptr_t) p->table, cachesize);
@@ -815,7 +817,8 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.pagecount = 512 * 4,
 			.table = (uint8_t *) xlevel1_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
-			.flag = 0
+			.flag = 0,
+			.ro = 0, xn = 0
 		},
 		{
 			.arch = rv64_table_4k,
@@ -824,7 +827,8 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.pagecount = ARRAY_SIZE(xttb0_base_u64),
 			.table = (uint8_t *) xttb0_base_u64,
 			.poke = mmulayout_poke_u64_le,
-			.flag = 1
+			.flag = 1,
+			.ro = 0, .xn = 0
 		},
 	};
 
@@ -847,7 +851,8 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.pagecount = AARCH64_LEVEL1_SIZE,
 			.table = xxlevel1_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
-			.flag = 0
+			.flag = 0,
+			.ro = 0, .xn = 0
 		},
 		{
 			.arch = & arch64_table_2M,
@@ -856,7 +861,8 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.pagecount = AARCH64_LEVEL0_SIZE,
 			.table = ttb0_base_u64,
 			.poke = mmulayout_poke_u64_le,
-			.flag = 1
+			.flag = 1,
+			.ro = 0, .xn = 0
 		},
 	};
 #else /* defined(__aarch64__) */
@@ -877,7 +883,8 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 				.pagecount = AARCH32_4K_LEVEL1_SIZE,
 				.table = level1_pagetable_u32,
 				.poke = mmulayout_poke_u32_le,
-				.flag = 0
+				.flag = 0,
+				.ro = 0, .xn = 0
 			},
 			{
 				.arch = & arch32_table_4k,
@@ -886,7 +893,8 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 				.pagecount = AARCH32_4K_LEVEL0_SIZE,
 				.table = ttb0_base_u32,
 				.poke = mmulayout_poke_u32_le,
-				.flag = 1
+				.flag = 1,
+				.ro = 0, .xn = 0
 			},
 		};
 
@@ -904,7 +912,8 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 				.pagecount = AARCH32_1MB_LEVEL0_SIZE,
 				.table = ttb0_base_u32,
 				.poke = mmulayout_poke_u32_le,
-				.flag = 0
+				.flag = 0,
+				.ro = 0, .xn = 0
 			},
 		};
 
