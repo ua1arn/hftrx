@@ -6156,11 +6156,13 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 
     // CCU_32K select as CEC clock as default
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
+
+	unsigned sel = 0x00; 	// 000: PLL_VIDEO0(1X) 001: PLL_VIDEO0(4X) 010: PLL_VIDEO1(1X) 011: PLL_VIDEO1(4X)
 	unsigned tcontv_divider;
 	unsigned tcontv_prei = calcdivider(calcdivround2(allwnr_t507_get_pll_video0_x1_freq(), dotclock), 4, (8 | 4 | 2 | 1), & tcontv_divider, 1);
 
 	TCONTV_CCU_CLK_REG =
-			0x00 * (UINT32_C(1) << 24) | 	// 000: PLL_VIDEO0(1X) 001: PLL_VIDEO0(4X)
+			sel * (UINT32_C(1) << 24) |
 			(tcontv_prei) * (UINT32_C(1) << 8) | // prescaler code
 			(tcontv_divider) * (UINT32_C(1) << 0) |
 			0;
