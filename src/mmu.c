@@ -60,7 +60,7 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
-	return TTB_PARA_NO_ACCESS(phyaddr);
+	return arch->mnoaccess(phyaddr);
 
 #elif CPUSTYLE_XC7Z
 
@@ -223,7 +223,7 @@ static uint_fast64_t gpu_mali400_4k_mnoaccess(uint_fast64_t addr)
 	return 0;
 }
 // Next level table
-static uint_fast64_t gpu_mali400_4k_mtable(uint_fast64_t addr)
+static uint_fast64_t gpu_mali400_4k_mtable(uint_fast64_t addr, int level)
 {
 	// 1KB granulation address
 	return 0;//TTB_PARA_AARCH32_4k_PAGE(addr);	// First-level table entry - Page table
@@ -388,7 +388,7 @@ static uint64_t arch64_mdevice(uint_fast64_t addr)
 // Next level table
 // DDI0487_I_a_a-profile_architecture_reference_manual.pdf
 // D8.3.1 Table Descriptor format
-static uint_fast64_t arch64_mtable(uint_fast64_t addr)
+static uint_fast64_t arch64_mtable(uint_fast64_t addr, int level)
 {
 	return (addr & ~ UINT64_C(0x0FFF)) |
 			0x03;
@@ -578,7 +578,7 @@ static uint_fast64_t arch32_1M_mnoaccess(uint_fast64_t addr)
 	return 0;
 }
 // Next level table
-static uint_fast64_t arch32_1M_mtable(uint_fast64_t addr)
+static uint_fast64_t arch32_1M_mtable(uint_fast64_t addr, int level)
 {
 	return 0;
 }
@@ -609,7 +609,7 @@ static uint_fast64_t arch32_4k_mnoaccess(uint_fast64_t addr)
 	return 0;
 }
 // Next level table
-static uint_fast64_t arch32_4k_mtable(uint_fast64_t addr)
+static uint_fast64_t arch32_4k_mtable(uint_fast64_t addr, int level)
 {
 	// 1KB granulation address
 	return TTB_PARA_AARCH32_4k_PAGE(addr);	// First-level table entry - Page table
@@ -655,6 +655,28 @@ static const getmmudesc_t arch32_table_4k =
 	#define	TTB_PARA_RV64_DEVICE(addr)			((0 * (addr) & ~ UINT64_C(0xFFF)) | (0x00u << 1) | 0x01)
 	#define	TTB_PARA_RV64_NO_ACCESS(addr) 		0
 
+static uint_fast64_t rv64_4k_mcached(uint_fast64_t addr, int ro, int xn)
+{
+	return 0;//TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn);
+}
+static uint_fast64_t rv64_4k_mncached(uint_fast64_t addr, int ro, int xn)
+{
+	return 0;//TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn);
+}
+static uint_fast64_t rv64_4k_mdevice(uint_fast64_t addr)
+{
+	return 0;//TTB_PARA_AARCH32_4k_DEVICE(addr);
+}
+// Next level table
+static uint_fast64_t rv64_4k_mtable(uint_fast64_t addr, int level)
+{
+	// 1KB granulation address
+	return 0;//TTB_PARA_AARCH32_4k_PAGE(addr);	// First-level table entry - Page table
+}
+static uint_fast64_t rv64_4k_mnoaccess(uint_fast64_t addr)
+{
+	return 0;
+}
 
 static const getmmudesc_t rv64_table_4k =
 {
@@ -756,6 +778,7 @@ typedef struct mmulayout_tag
 	uint8_t * table;
 	unsigned (* poke)(uint8_t * b, uint_fast64_t v);
 	unsigned flag;	// 0 - дескрипторы памяти, 1 - таблицы (mtable)
+	int level;	// table level
 	int ro;	// read-only area
 	int xn;	// no-execute
 } mmulayout_t;
@@ -769,7 +792,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, uint_fast64_t (* accessbi
 		uint_fast64_t phyaddr = p->phyaddr;
 		for (; pages --; phyaddr += p->pagesize)
 		{
-			tb += p->poke(tb, p->flag ? p->arch->mtable(phyaddr) : accessbits(p->arch, phyaddr, p->ro, p->xn));
+			tb += p->poke(tb, p->flag ? p->arch->mtable(phyaddr, p->level) : accessbits(p->arch, phyaddr, p->ro, p->xn));
 		}
 		const ptrdiff_t cachesize = tb - p->table;
 		dcache_clean_invalidate((uintptr_t) p->table, cachesize);
@@ -929,13 +952,8 @@ sysinit_mmu_tables(void)
 {
 	//PRINTF("sysinit_mmu_tables\n");
 
-#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
-	// MMU iniitialize
-	fillmmu(mmuinfo, ARRAY_SIZE(mmuinfo), ttb_mempage_accessbits);
-
-#elif CPUSTYLE_RISCV
-	#warning To be implemented
-	// RISC-V MMU initialize
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
+	// MMU tables iniitialize
 	fillmmu(mmuinfo, ARRAY_SIZE(mmuinfo), ttb_mempage_accessbits);
 
 #elif defined (__CORTEX_M)
@@ -1158,6 +1176,9 @@ sysinit_ttbr_initialize(void)
 	// https://riscv.org/wp-content/uploads/2019/08/riscv-privileged-20190608-1.pdf
 
 #elif defined (__CORTEX_M)
+	#if CPUSTYLE_STM32H7XX
+		//lowlevel_stm32h7xx_mpu_initialize();
+	#endif /* CPUSTYLE_STM32H7XX */
 
 #endif
 	//PRINTF("sysinit_ttbr_initialize done.\n");
