@@ -582,5 +582,39 @@ int_fast32_t icache_rowsize(void)
 #else /* ! LINUX_SUBSYSTEM */
 
 
+// Заглушки
+// Сейчас в эту память будем читать по DMA
+void dcache_invalidate(uintptr_t base, int_fast32_t dsize)
+{
+}
+
+// Сейчас эта память будет записываться по DMA куда-то
+void dcache_clean(uintptr_t base, int_fast32_t dsize)
+{
+}
+
+// Записать содержимое кэша данных в память
+// применяется после начальной инициализации среды выполнния
+void dcache_clean_all(void)
+{
+}
+
+// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
+void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
+{
+}
+
+//
+//int_fast32_t dcache_rowsize(void)
+//{
+//	return DCACHEROWSIZE;
+//}
+//
+//
+//int_fast32_t icache_rowsize(void)
+//{
+//	return ICACHEROWSIZE;
+//}
+
 #endif /* ! LINUX_SUBSYSTEM */
 
