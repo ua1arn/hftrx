@@ -815,6 +815,12 @@ static void fillmmu(const mmulayout_t * p, unsigned n, uint_fast64_t (* accessbi
 //	}
 }
 
+static unsigned mmulayout_poke_u128_le(uint8_t * b, uint_fast64_t v)
+{
+	USBD_poke_u64(b, v);
+	return 16;
+}
+
 static unsigned mmulayout_poke_u64_le(uint8_t * b, uint_fast64_t v)
 {
 	return USBD_poke_u64(b, v);
@@ -829,8 +835,10 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 
 #elif CPUSTYLE_RISCV
 
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t xlevel1_pagetable_u64 [512 * 4];	// Used as PPN in SATP register
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t xttb0_base_u64 [512];	// Used as PPN in SATP register
+	#define RV64_LEVEL0_SIZE 512
+	#define RV64_LEVEL1_SIZE (RV64_LEVEL0_SIZE * 4)
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t xlevel1_pagetable_u64 [RV64_LEVEL1_SIZE];	// Used as PPN in SATP register
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t xttb0_base_u64 [RV64_LEVEL0_SIZE];	// Used as PPN in SATP register
 
 	static const mmulayout_t mmuinfo [] =
 	{
@@ -838,20 +846,22 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.arch = & rv64_table_4k,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
 			.pagesizepow2 = 21,	// 2MB
-			.pagecount = 512 * 4,
+			.pagecount = RV64_LEVEL1_SIZE,
 			.table = (uint8_t *) xlevel1_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
 			.flag = 0,
+			.level = 0, // page table level (pass to mtable)
 			.ro = 0, .xn = 0
 		},
 		{
 			.arch = & rv64_table_4k,
 			.phyaddr = (uintptr_t) xlevel1_pagetable_u64,
 			.pagesizepow2 = 12,	// 4KB
-			.pagecount = ARRAY_SIZE(xttb0_base_u64),
+			.pagecount = RV64_LEVEL0_SIZE,
 			.table = (uint8_t *) xttb0_base_u64,
 			.poke = mmulayout_poke_u64_le,
 			.flag = 1,
+			.level = 0, // page table level (pass to mtable)
 			.ro = 0, .xn = 0
 		},
 	};
@@ -876,6 +886,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.table = xxlevel1_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
 			.flag = 0,
+			.level = 0, // page table level (pass to mtable)
 			.ro = 0, .xn = 0
 		},
 		{
@@ -886,6 +897,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.table = ttb0_base_u64,
 			.poke = mmulayout_poke_u64_le,
 			.flag = 1,
+			.level = 0, // page table level (pass to mtable)
 			.ro = 0, .xn = 0
 		},
 	};
@@ -908,6 +920,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 				.table = level1_pagetable_u32,
 				.poke = mmulayout_poke_u32_le,
 				.flag = 0,
+				.level = 0, // page table level (pass to mtable)
 				.ro = 0, .xn = 0
 			},
 			{
@@ -918,6 +931,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 				.table = ttb0_base_u32,
 				.poke = mmulayout_poke_u32_le,
 				.flag = 1,
+				.level = 0, // page table level (pass to mtable)
 				.ro = 0, .xn = 0
 			},
 		};
@@ -937,6 +951,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 				.table = ttb0_base_u32,
 				.poke = mmulayout_poke_u32_le,
 				.flag = 0,
+				.level = 0, // page table level (pass to mtable)
 				.ro = 0, .xn = 0
 			},
 		};
