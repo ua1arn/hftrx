@@ -14,8 +14,8 @@
 
 uint_fast32_t
 calcdivround2(
-	uint_fast32_t ref,	/* частота на входе делителя, в герцах. */
-	uint_fast32_t freq	/* требуемая частота на выходе делителя, в герцах. */
+	uint_fast64_t ref,	/* частота на входе делителя, в герцах. */
+	uint_fast64_t freq	/* требуемая частота на выходе делителя, в герцах. */
 	)
 {
 	return (ref < freq) ? 1 : ((ref + freq / 2) / freq);

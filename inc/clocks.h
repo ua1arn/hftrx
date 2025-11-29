@@ -401,6 +401,12 @@ uint_fast32_t allwnr_v3s_get_apb1_freq(void);
 uint_fast32_t elveesvm14_get_arm_freq(void);
 uint_fast32_t elveesvm14_get_usart_freq(void);
 
+uint_fast32_t
+calcdivround2(
+	uint_fast64_t ref,	/* частота на входе делителя, в герцах. */
+	uint_fast64_t freq	/* требуемая частота на выходе делителя, в герцах. */
+	);
+
 uint_fast8_t
 calcdivider(
 	uint_fast32_t divisor, // ожидаемый коэффициент деления всей системы

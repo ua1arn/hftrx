@@ -753,14 +753,7 @@ void sysinit_ttbr_initialize(void);	/* на каждом процессоре */
 
 void r7s721_sdhi0_dma_handler(void);
 
-uint_fast32_t 
-calcdivround2(
-	uint_fast32_t ref,	/* частота на входе делителя, в герцах. */
-	uint_fast32_t freq	/* требуемая частота на выходе делителя, в герцах. */
-	);
-
 #include "mslist.h"
-
 
 enum ticker_mode
 {
