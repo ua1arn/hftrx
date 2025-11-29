@@ -11,363 +11,9 @@
 
 //#define MMUUSE4KPAGES 1
 
-#if CPUSTYLE_ARM_CM7
-
-// Сейчас в эту память будем читать по DMA
-// Убрать копию этой области из кэша
-// Используется только в startup
-void dcache_invalidate(uintptr_t base, int_fast32_t dsize)
-{
-	//ASSERT((base % 32) == 0);		// при работе с BACKUP SRAM невыровненно
-	SCB_InvalidateDCache_by_Addr((void *) base, dsize);	// DCIMVAC register used.
-}
-
-// Сейчас эта память будет записываться по DMA куда-то
-// Записать содержимое кэша данных в память
-void dcache_clean(uintptr_t base, int_fast32_t dsize)
-{
-	//ASSERT((base % 32) == 0);		// при работе с BACKUP SRAM невыровненно
-	SCB_CleanDCache_by_Addr((void *) base, dsize);	// DCCMVAC register used.
-}
-
-// Записать содержимое кэша данных в память
-// применяется после начальной инициализации среды выполнния
-void dcache_clean_all(void)
-{
-	SCB_CleanDCache();	// DCCMVAC register used.
-}
-
-// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-// Записать содержимое кэша данных в память
-// Убрать копию этой области из кэша
-void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
-{
-	//ASSERT((base % 32) == 0);		// при работе с BACKUP SRAM невыровненно
-	SCB_CleanInvalidateDCache_by_Addr((void *) base, dsize);	// DCCIMVAC register used.
-}
-
-int_fast32_t dcache_rowsize(void)
-{
-	return DCACHEROWSIZE;
-}
-
-
-int_fast32_t icache_rowsize(void)
-{
-	return ICACHEROWSIZE;
-}
-
-#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
-
-//	MVA
-//	For more information about the possible meaning when the table shows that an MVA is required
-// 	see Terms used in describing the maintenance operations on page B2-1272.
-// 	When the data is stated to be an MVA, it does not have to be cache line aligned.
-
-void L1_CleanDCache_by_Addr(void * addr, int32_t op_size)
-{
-	if (op_size > 0)
-	{
-		//int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
-		uintptr_t op_mva = (uintptr_t) addr;
-		__DSB();
-		do
-		{
-			__set_DCCMVAC(op_mva);	// Clean data cache line by address.
-			op_mva += DCACHEROWSIZE;
-			op_size -= DCACHEROWSIZE;
-		} while (op_size > 0);
-		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
-	}
-}
-
-void L1_CleanInvalidateDCache_by_Addr(void * addr, int32_t op_size)
-{
-	if (op_size > 0)
-	{
-		//int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
-		uintptr_t op_mva = (uintptr_t) addr;
-		__DSB();
-		do
-		{
-			__set_DCCIMVAC(op_mva);	// Clean and Invalidate data cache by address.
-			op_mva += DCACHEROWSIZE;
-			op_size -= DCACHEROWSIZE;
-		} while (op_size > 0);
-		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
-	}
-}
-
-void L1_InvalidateDCache_by_Addr(void * addr, int32_t op_size)
-{
-	if (op_size > 0)
-	{
-		//int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
-		uintptr_t op_mva = (uintptr_t) addr;
-		do
-		{
-			__set_DCIMVAC(op_mva);	// Invalidate data cache line by address.
-			op_mva += DCACHEROWSIZE;
-			op_size -= DCACHEROWSIZE;
-		} while (op_size > 0);
-		// Cache Invalidate operation is not follow by memory-writes
-	}
-}
-
-#if (! defined(__aarch64__))
-/** \brief  Get CTR
-\return		Cache Type Register value
-*/
-uint32_t __get_CTR(void)
-{
-	uint32_t result;
-	__get_CP(15, 0, result, 0, 0, 1);
-	return result;
-}
-#endif
-
-int_fast32_t dcache_rowsize(void)
-{
-	const uint32_t v = __get_CTR();
-	const uint32_t DminLine = (v >> 16) & 0x0F;	// Log2 of the number of words in the smallest cache line of all the data caches and unified caches that are controlled by the processor
-	return 4 << DminLine;
-}
-
-int_fast32_t icache_rowsize(void)
-{
-	const uint32_t v = __get_CTR();
-	const uint32_t IminLine = (v >> 0) & 0x0F;	// Log2 of the number of words in the smallest cache line of all the instruction caches and unified caches that are controlled by the processor
-	return 4 << IminLine;
-}
-
-#if (__L2C_PRESENT == 1)
-
-void L2_CleanDCache_by_Addr(void *__restrict addr, int32_t dsize)
-{
-	if (dsize > 0)
-	{
-		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
-		uintptr_t op_addr = (uintptr_t) addr /* & ~ (uintptr_t) (DCACHEROWSIZE - 1U) */;
-		do
-		{
-			// Clean cache by physical address
-			L2C_310->CLEAN_LINE_PA = op_addr;	// Atomic operation. These operations stall the slave ports until they are complete.
-			op_addr += DCACHEROWSIZE;
-			op_size -= DCACHEROWSIZE;
-		} while (op_size > 0);
-	}
-}
-
-void L2_CleanInvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
-{
-	if (dsize > 0)
-	{
-		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
-		uintptr_t op_addr = (uintptr_t) addr /* & ~ (uintptr_t) (DCACHEROWSIZE - 1U) */;
-		do
-		{
-			// Clean and Invalidate cache by physical address
-			L2C_310->CLEAN_INV_LINE_PA = op_addr;	// Atomic operation. These operations stall the slave ports until they are complete.
-			op_addr += DCACHEROWSIZE;
-			op_size -= DCACHEROWSIZE;
-		} while (op_size > 0);
-	}
-}
-
-void L2_InvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
-{
-	if (dsize > 0)
-	{
-		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
-		uintptr_t op_addr = (uintptr_t) addr /* & ~ (uintptr_t) (DCACHEROWSIZE - 1U) */;
-		do
-		{
-			// Invalidate cache by physical address
-			L2C_310->INV_LINE_PA = op_addr;	// Atomic operation. These operations stall the slave ports until they are complete.
-			op_addr += DCACHEROWSIZE;
-			op_size -= DCACHEROWSIZE;
-		} while (op_size > 0);
-	}
-}
-#endif /* (__L2C_PRESENT == 1) */
-
-// Записать содержимое кэша данных в память
-// применяется после начальной инициализации среды выполнния
-void dcache_clean_all(void)
-{
-	L1C_CleanInvalidateDCacheAll();
-#if (__L2C_PRESENT == 1)
-	L2C_CleanInvAllByWay();
-#endif
-}
-
-// Сейчас в эту память будем читать по DMA
-void dcache_invalidate(uintptr_t addr, int_fast32_t dsize)
-{
-	L1_InvalidateDCache_by_Addr((void *) addr, dsize);
-#if (__L2C_PRESENT == 1)
-	L2_InvalidateDCache_by_Addr((void *) addr, dsize);
-#endif /* (__L2C_PRESENT == 1) */
-}
-
-// Сейчас эта память будет записываться по DMA куда-то
-void dcache_clean(uintptr_t addr, int_fast32_t dsize)
-{
-	L1_CleanDCache_by_Addr((void *) addr, dsize);
-#if (__L2C_PRESENT == 1)
-	L2_CleanDCache_by_Addr((void *) addr, dsize);
-#endif /* (__L2C_PRESENT == 1) */
-}
-
-// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-void dcache_clean_invalidate(uintptr_t addr, int_fast32_t dsize)
-{
-	L1_CleanInvalidateDCache_by_Addr((void *) addr, dsize);
-#if (__L2C_PRESENT == 1)
-	L2_CleanInvalidateDCache_by_Addr((void *) addr, dsize);
-#endif /* (__L2C_PRESENT == 1) */
-}
-
-#elif CPUSTYLE_F133
-
-// C906 core specific cache operations
-
-
-//	cache.c/iva means three instructions:
-//	 - dcache.cva %0  : writeback     by virtual address cacheline
-//	 - dcache.iva %0  : invalid       by virtual address cacheline
-//	 - dcache.civa %0 : writeback+inv by virtual address cacheline
-
-//static inline void local_flush_icache_all(void)
-//{
-//	asm volatile ("fence.i" ::: "memory");
-//}
-
-
-//      __ASM volatile(".4byte 0x0245000b\n":::"memory"); /* dcache.cva a0 */
-//      __ASM volatile(".4byte 0x0285000b\n":::"memory"); /* dcache.cpa a0 */
-//      __ASM volatile(".4byte 0x0265000b\n":::"memory"); /* dcache.iva a0 */
-//      __ASM volatile(".4byte 0x02a5000b\n":::"memory"); /* dcache.ipa a0 */
-//      __ASM volatile(".4byte 0x0275000b\n":::"memory"); /* dcache.civa a0 */
-//      __ASM volatile(".4byte 0x02b5000b\n":::"memory"); /* dcache.cipa a0 */
-//      __ASM volatile(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
-//
-
-// Сейчас в эту память будем читать по DMA
-void dcache_invalidate(uintptr_t base, int_fast32_t dsize)
-{
-	if (dsize > 0)
-	{
-		//base &= ~ (uintptr_t) (DCACHEROWSIZE - 1);
-		for(; dsize > 0; dsize -= DCACHEROWSIZE, base += DCACHEROWSIZE)
-		{
-			__ASM volatile(
-					"\t" "mv a0,%0\n"
-					//"\t" ".4byte 0x0265000b\n" /* dcache.iva a0 */
-					"\t" ".4byte 0x02a5000b\n" /* dcache.ipa a0 */
-					:: "r"(base):"a0");
-		}
-		__ASM volatile(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
-	}
-}
-
-// Сейчас эта память будет записываться по DMA куда-то
-void dcache_clean(uintptr_t base, int_fast32_t dsize)
-{
-	if (dsize > 0)
-	{
-		//base &= ~ (uintptr_t) (DCACHEROWSIZE - 1);
-		for(; dsize > 0; dsize -= DCACHEROWSIZE, base += DCACHEROWSIZE)
-		{
-			__ASM volatile(
-					"\t" "mv a0,%0\n"
-					//"\t" ".4byte 0x0245000b\n" /* dcache.cva a0 */
-					"\t" ".4byte 0x0285000b\n" /* dcache.cpa a0 */
-					:: "r"(base):"a0");
-		}
-		__ASM volatile(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
-	}
-}
-
-// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
-{
-	if (dsize > 0)
-	{
-		//base &= ~ (uintptr_t) (DCACHEROWSIZE - 1);
-		for(; dsize > 0; dsize -= DCACHEROWSIZE, base += DCACHEROWSIZE)
-		{
-			__ASM volatile(
-					"\t" "mv a0,%0\n"
-					//"\t" ".4byte 0x0275000b\n" /* dcache.civa a0 */
-					"\t" ".4byte 0x02b5000b\n" /* dcache.cipa a0 */
-					:: "r"(base):"a0");
-		}
-		__ASM volatile(".4byte 0x01b0000b\n":::"memory");		/* sync.is */
-	}
-}
-
-// Записать содержимое кэша данных в память
-// применяется после начальной инициализации среды выполнния
-void dcache_clean_all(void)
-{
-	__ASM volatile(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
-}
-
-
-int_fast32_t dcache_rowsize(void)
-{
-	return DCACHEROWSIZE;
-}
-
-
-int_fast32_t icache_rowsize(void)
-{
-	return ICACHEROWSIZE;
-}
-
-#else
-
-// Заглушки
-// Сейчас в эту память будем читать по DMA
-void dcache_invalidate(uintptr_t base, int_fast32_t dsize)
-{
-}
-
-// Сейчас эта память будет записываться по DMA куда-то
-void dcache_clean(uintptr_t base, int_fast32_t dsize)
-{
-}
-
-// Записать содержимое кэша данных в память
-// применяется после начальной инициализации среды выполнния
-void dcache_clean_all(void)
-{
-}
-
-// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
-{
-}
-
-
-int_fast32_t dcache_rowsize(void)
-{
-	return DCACHEROWSIZE;
-}
-
-
-int_fast32_t icache_rowsize(void)
-{
-	return ICACHEROWSIZE;
-}
-
-#endif /* CPUSTYLE_ARM_CM7 */
-
+#if ! LINUX_SUBSYSTEM
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
-
-
 
 /* зависящая от процессора карта распределения memory regions */
 uint_fast64_t
@@ -395,12 +41,12 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 		return TTB_PARA_NO_ACCESS(phyaddr);		// NULL pointers access trap
 
 	if (phyaddr >= 0x18000000 && phyaddr < 0x20000000)			// FIXME: QSPI memory mapped should be R/O, but...
-		return arch->mcached(phyaddr, ro || 0, 0);
+		return arch->mcached(phyaddr, ro || 0, xn);
 
 	if (phyaddr >= 0x00000000 && phyaddr < 0x00A00000)			// up to 10 MB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 	if (phyaddr >= 0x20000000 && phyaddr < 0x20A00000)			// up to 10 MB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -408,35 +54,35 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 
 	// Все сравнения должны быть не точнее 1 MB
 	if (phyaddr >= 0x20000000 && phyaddr < 0x30000000)			// SYSRAM
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 	// 1 GB DDR RAM memory size allowed
 	if (phyaddr >= 0xC0000000)							// DDR memory
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
-	return TTB_PARA_NO_ACCESS(phyaddr);
+	return arch->mnoaccess(phyaddr);
 
 #elif CPUSTYLE_XC7Z
 
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (phyaddr >= 0x00000000 && phyaddr < 0x00100000)			//  OCM (On Chip Memory), DDR3_SCU
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0x00100000 && phyaddr < 0x40000000)			//  DDR3 - 255 MB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0xE1000000 && phyaddr < 0xE6000000)			//  SMC (Static Memory Controller)
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0x40000000 && phyaddr < 0xFC000000)	// PL, peripherials
 		return arch->mdevice(phyaddr);
 
 	if (phyaddr >= 0xFC000000 && phyaddr < 0xFE000000)			//  Quad-SPI linear address for linear mode
-		return arch->mcached(phyaddr, ro || 0, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0xFFF00000)			// OCM (On Chip Memory) is mapped high
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -445,12 +91,12 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (phyaddr < 0x00400000)
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0x40000000)			//  DDR3 - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 //	if (phyaddr >= 0x000020000 && phyaddr < 0x000038000)			//  SYSRAM - 64 kB
-//		return arch->mcached(phyaddr, ro, 0);
+//		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -459,12 +105,12 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 2 MB
 
 	if (phyaddr < 0x00400000)
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0x40000000)			//  DDR3 - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 //	if (phyaddr >= 0x000020000 && phyaddr < 0x000038000)			//  SYSRAM - 64 kB
-//		return arch->mcached(phyaddr, ro, 0);
+//		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -473,12 +119,12 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (phyaddr < 0x00400000)
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0x40000000)			//  DDR3 - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 //	if (phyaddr >= 0x000020000 && phyaddr < 0x000038000)			//  SYSRAM - 64 kB
-//		return arch->mcached(phyaddr, ro, 0);
+//		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -487,13 +133,13 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (phyaddr < 0x01000000)
-		return arch->mcached(phyaddr, ro, 0);	// SRAM A1, SRAM A2, SRAM C
+		return arch->mcached(phyaddr, ro, xn);	// SRAM A1, SRAM A2, SRAM C
 
 	if (phyaddr >= 0xC0000000)
-		return arch->mcached(phyaddr, ro, 0);	// N-BROM, S-BROM
+		return arch->mcached(phyaddr, ro, xn);	// N-BROM, S-BROM
 
 	if (phyaddr >= 0x40000000)			//  DDR3 - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -502,10 +148,10 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 2 MB
 
 	if (phyaddr < 0x01000000)
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0x40000000)			//  DDR3 - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -514,10 +160,10 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 2 MB
 
 	if (phyaddr < 0x01000000)			// BROM, SYSRAM A1, SRAM C
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 	// 1 GB DDR RAM memory size allowed
 	if (phyaddr >= 0x40000000)			//  DRAM - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -526,10 +172,10 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 2 MB
 
 	if (phyaddr < 0x01000000)			// BROM, SYSRAM A1, SRAM C
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 	// 1 GB DDR RAM memory size allowed
 	if (phyaddr >= 0x40000000)			//  DRAM - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -539,10 +185,10 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (phyaddr >= 0x20000000 && phyaddr < 0x20100000)			//  SRAM - 64K
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	if (phyaddr >= 0x40000000 && phyaddr < 0xC0000000)			//  DDR - 2 GB
-		return arch->mcached(phyaddr, ro, 0);
+		return arch->mcached(phyaddr, ro, xn);
 
 	return arch->mdevice(phyaddr);
 
@@ -577,7 +223,7 @@ static uint_fast64_t gpu_mali400_4k_mnoaccess(uint_fast64_t addr)
 	return 0;
 }
 // Next level table
-static uint_fast64_t gpu_mali400_4k_mtable(uint_fast64_t addr)
+static uint_fast64_t gpu_mali400_4k_mtable(uint_fast64_t addr, int level)
 {
 	// 1KB granulation address
 	return 0;//TTB_PARA_AARCH32_4k_PAGE(addr);	// First-level table entry - Page table
@@ -742,7 +388,7 @@ static uint64_t arch64_mdevice(uint_fast64_t addr)
 // Next level table
 // DDI0487_I_a_a-profile_architecture_reference_manual.pdf
 // D8.3.1 Table Descriptor format
-static uint_fast64_t arch64_mtable(uint_fast64_t addr)
+static uint_fast64_t arch64_mtable(uint_fast64_t addr, int level)
 {
 	return (addr & ~ UINT64_C(0x0FFF)) |
 			0x03;
@@ -932,7 +578,7 @@ static uint_fast64_t arch32_1M_mnoaccess(uint_fast64_t addr)
 	return 0;
 }
 // Next level table
-static uint_fast64_t arch32_1M_mtable(uint_fast64_t addr)
+static uint_fast64_t arch32_1M_mtable(uint_fast64_t addr, int level)
 {
 	return 0;
 }
@@ -963,7 +609,7 @@ static uint_fast64_t arch32_4k_mnoaccess(uint_fast64_t addr)
 	return 0;
 }
 // Next level table
-static uint_fast64_t arch32_4k_mtable(uint_fast64_t addr)
+static uint_fast64_t arch32_4k_mtable(uint_fast64_t addr, int level)
 {
 	// 1KB granulation address
 	return TTB_PARA_AARCH32_4k_PAGE(addr);	// First-level table entry - Page table
@@ -1009,6 +655,28 @@ static const getmmudesc_t arch32_table_4k =
 	#define	TTB_PARA_RV64_DEVICE(addr)			((0 * (addr) & ~ UINT64_C(0xFFF)) | (0x00u << 1) | 0x01)
 	#define	TTB_PARA_RV64_NO_ACCESS(addr) 		0
 
+static uint_fast64_t rv64_4k_mcached(uint_fast64_t addr, int ro, int xn)
+{
+	return 0;//TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn);
+}
+static uint_fast64_t rv64_4k_mncached(uint_fast64_t addr, int ro, int xn)
+{
+	return 0;//TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn);
+}
+static uint_fast64_t rv64_4k_mdevice(uint_fast64_t addr)
+{
+	return 0;//TTB_PARA_AARCH32_4k_DEVICE(addr);
+}
+// Next level table
+static uint_fast64_t rv64_4k_mtable(uint_fast64_t addr, int level)
+{
+	// 1KB granulation address
+	return 0;//TTB_PARA_AARCH32_4k_PAGE(addr);	// First-level table entry - Page table
+}
+static uint_fast64_t rv64_4k_mnoaccess(uint_fast64_t addr)
+{
+	return 0;
+}
 
 static const getmmudesc_t rv64_table_4k =
 {
@@ -1018,6 +686,47 @@ static const getmmudesc_t rv64_table_4k =
 	.mnoaccess = rv64_4k_mnoaccess,
 	.mtable = rv64_4k_mtable
 };
+
+
+#if 0//CPUSTYLE_RISCV
+
+static void ttb_level1_xk_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn), const uint_fast32_t pagesize)
+{
+	// When the page table size is set to 4 KB, 2 MB, or 1 GB, the page table is indexed by 3, 2, or 1 times, respectively.
+	uintptr_t address = 0;
+	uintptr_t addrstep = UINT64_C(1) << 21;	// 2 MB
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(xlevel1_pagetable_u64); ++ i)
+	{
+		level1_pagetable_u64 [i] =
+				//((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
+				((address >> 21) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
+				//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
+				NCRAM_ATTRS |
+				0;
+		address += addrstep;
+	}
+}
+
+static void ttb_level0_xk_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn), const uint_fast32_t pagesize, uint_fast64_t nextlevel)
+{
+	// Pointe to 1 GB pages
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(ttb0_base_u64); ++ i)
+	{
+		uintptr_t address = (uintptr_t) (xlevel1_pagetable_u64 + 512 * i) | 0x03;
+		//uintptr_t address = 1 * (UINT64_C(1) << 30) * i;
+		xttb0_base_u64 [i] =
+			((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
+			//((address >> 24) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
+			//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
+			TABLE_ATTRS |
+			0;
+	}
+}
+
+#endif /* CPUSTYLE_RISCV */
+
 // https://lupyuen.codeberg.page/articles/mmu.html#appendix-flush-the-mmu-cache-for-t-head-c906
 // https://github.com/apache/nuttx/blob/4d63921f0a28aeee89b3a2ae861aaa83d731d28d/arch/risc-v/src/common/riscv_mmu.h#L220
 static inline void mmu_write_satp(uintptr_t reg)
@@ -1060,233 +769,192 @@ void mmu_flush_cache(void) {
 
 #endif /* __CORTEX_A */
 
+typedef struct mmulayout_tag
+{
+	const getmmudesc_t * arch;
+	uintptr_t phyaddr;	// Начальное значение
+	uint32_t pagesize;	// размер страниц
+	uint32_t pagecount;
+	uint8_t * table;
+	unsigned (* poke)(uint8_t * b, uint_fast64_t v);
+	unsigned flag;	// 0 - дескрипторы памяти, 1 - таблицы (mtable)
+	int level;	// table level
+	int ro;	// read-only area
+	int xn;	// no-execute
+} mmulayout_t;
+
+static void fillmmu(const mmulayout_t * p, unsigned n, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn))
+{
+	while (n --)
+	{
+		unsigned pages = p->pagecount;
+		uint8_t * tb = p->table;	// table base
+		uint_fast64_t phyaddr = p->phyaddr;
+		for (; pages --; phyaddr += p->pagesize)
+		{
+			tb += p->poke(tb, p->flag ? p->arch->mtable(phyaddr, p->level) : accessbits(p->arch, phyaddr, p->ro, p->xn));
+		}
+		const ptrdiff_t cachesize = tb - p->table;
+		dcache_clean_invalidate((uintptr_t) p->table, cachesize);
+		++ p;
+	}
+//
+//	if (n --)
+//	{
+//		unsigned pages = p->pagecount;
+//		uint8_t * tb = p->table;	// table base
+//		uint_fast64_t phyaddr = p->phyaddr;
+//		for (; pages --; phyaddr += p->pagesize)
+//		{
+//			tb += p->poke(tb, arch->mtable(phyaddr));
+//		}
+//		const ptrdiff_t cachesize = tb - p->table;
+//		dcache_clean_invalidate((uintptr_t) p->table, cachesize);
+//		++ p;
+//	}
+}
+
+static unsigned mmulayout_poke_u64_le(uint8_t * b, uint_fast64_t v)
+{
+	return USBD_poke_u64(b, v);
+}
+
+static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
+{
+	return USBD_poke_u32(b, v);
+}
+
 #if defined (__CORTEX_M)
 
 #elif CPUSTYLE_RISCV
 
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level1_pagetable_u64 [512 * 4];	// Used as PPN in SATP register
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base_u64 [512];	// Used as PPN in SATP register
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t xlevel1_pagetable_u64 [512 * 4];	// Used as PPN in SATP register
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t xttb0_base_u64 [512];	// Used as PPN in SATP register
+
+	static const mmulayout_t mmuinfo [] =
+	{
+		{
+			.arch = & rv64_table_4k,
+			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.pagesize = (UINT32_C(1) << 21),	// 2M
+			.pagecount = 512 * 4,
+			.table = (uint8_t *) xlevel1_pagetable_u64,
+			.poke = mmulayout_poke_u64_le,
+			.flag = 0,
+			.ro = 0, .xn = 0
+		},
+		{
+			.arch = & rv64_table_4k,
+			.phyaddr = (uintptr_t) xlevel1_pagetable_u64,
+			.pagesize = (UINT32_C(1) << 12),	// 4k
+			.pagecount = ARRAY_SIZE(xttb0_base_u64),
+			.table = (uint8_t *) xttb0_base_u64,
+			.poke = mmulayout_poke_u64_le,
+			.flag = 1,
+			.ro = 0, .xn = 0
+		},
+	};
 
 #elif defined(__aarch64__)
 
 	// Last x4 - for 34 bit address (16 GB address space)
 	// Check TCR_EL3 setup
 	// pages of 2 MB
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level1_pagetable_u64 [512 * 4 * 4];	// ttb0_base must be a 4KB-aligned address.
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base_u64 [ARRAY_SIZE(level1_pagetable_u64) / 512];	// ttb0_base must be a 4KB-aligned address.
+	#define AARCH64_LEVEL0_SIZE (4 * 4)
+	#define AARCH64_LEVEL1_SIZE (AARCH64_LEVEL0_SIZE * 512)
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t ttb0_base_u64 [AARCH64_LEVEL0_SIZE * 8];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xxlevel1_pagetable_u64 [AARCH64_LEVEL1_SIZE * 8];	// ttb0_base must be a 4KB-aligned address.
 
+	static const mmulayout_t mmuinfo [] =
+	{
+		{
+			.arch = & arch64_table_2M,
+			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.pagesize = (UINT32_C(1) << 21),	// 2M
+			.pagecount = AARCH64_LEVEL1_SIZE,
+			.table = xxlevel1_pagetable_u64,
+			.poke = mmulayout_poke_u64_le,
+			.flag = 0,
+			.ro = 0, .xn = 0
+		},
+		{
+			.arch = & arch64_table_2M,
+			.phyaddr = (uintptr_t) xxlevel1_pagetable_u64,
+			.pagesize = (UINT32_C(1) << 12),	// 4k
+			.pagecount = AARCH64_LEVEL0_SIZE,
+			.table = ttb0_base_u64,
+			.poke = mmulayout_poke_u64_le,
+			.flag = 1,
+			.ro = 0, .xn = 0
+		},
+	};
 #else /* defined(__aarch64__) */
 
 	#if MMUUSE4KPAGES
 
-	// pages of 4 k
-		static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint32_t level1_pagetable_u32 [4096 * 256];	// вся физическая память страницами по 4 килобайта
-		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base_u32 [4096];
+		// pages of 4 k
+		#define AARCH32_4K_LEVEL0_SIZE (4096)
+		#define AARCH32_4K_LEVEL1_SIZE (AARCH32_4K_LEVEL0_SIZE * 256)
+		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_4K_LEVEL0_SIZE * 4];
+		static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint8_t level1_pagetable_u32 [AARCH32_4K_LEVEL1_SIZE * 4];	// вся физическая память страницами по 4 килобайта
+		static const mmulayout_t mmuinfo [] =
+		{
+			{
+				.arch = & arch32_table_4k,
+				.phyaddr = 0x00000000,	/* Начало физической памяти */
+				.pagesize = (UINT32_C(1) << 12),	// 4k
+				.pagecount = AARCH32_4K_LEVEL1_SIZE,
+				.table = level1_pagetable_u32,
+				.poke = mmulayout_poke_u32_le,
+				.flag = 0,
+				.ro = 0, .xn = 0
+			},
+			{
+				.arch = & arch32_table_4k,
+				.phyaddr = (uintptr_t) level1_pagetable_u32,
+				.pagesize = (UINT32_C(1) << 10),	// 1k
+				.pagecount = AARCH32_4K_LEVEL0_SIZE,
+				.table = ttb0_base_u32,
+				.poke = mmulayout_poke_u32_le,
+				.flag = 1,
+				.ro = 0, .xn = 0
+			},
+		};
 
 	#else /* MMUUSE4KPAGES */
 
 		// pages of 1 MB
-		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base_u32 [4096];	// вся физическая память страницами по 1 мегабайт
+		#define AARCH32_1MB_LEVEL0_SIZE (4096)
+		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_1MB_LEVEL0_SIZE * 4];	// вся физическая память страницами по 1 мегабайт
+		static const mmulayout_t mmuinfo [] =
+		{
+			{
+				.arch = & arch32_table_1M,
+				.phyaddr = 0x00000000,	/* Начало физической памяти */
+				.pagesize = (UINT32_C(1) << 20),	// 1M
+				.pagecount = AARCH32_1MB_LEVEL0_SIZE,
+				.table = ttb0_base_u32,
+				.poke = mmulayout_poke_u32_le,
+				.flag = 0,
+				.ro = 0, .xn = 0
+			},
+		};
 
 	#endif /* MMUUSE4KPAGES */
 
 #endif /* defined(__aarch64__) */
 
-#if defined (__aarch64__)
-
-// вся физическая память
-static void
-ttb_level1_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uintptr_t a, int ro, int xn), const uint_fast64_t pagesize)
-{
-	unsigned i;
-	//const uint_fast64_t pagesize = (UINT32_C(1) << 21);	// 2M step
-
-	uint_fast64_t phyaddr = 0;	// начальный адрес памяти
-	uint8_t * tb = (uint8_t *) level1_pagetable_u64;	// table base
-	for (i = 0; i < ARRAY_SIZE(level1_pagetable_u64); ++ i, phyaddr += pagesize)
-	{
-		//level2_pagetable [i] = accessbits(arch, phyaddr, 0, 0);
-		tb += USBD_poke_u64(tb, accessbits(arch, phyaddr, 0, 0));
-	}
-//	/* Установить R/O атрибуты для указанной области */
-//	while (textsize >= pagesize)
-//	{
-//		level2_pagetable [textstart / pagesize] =  accessbits(arch, textstart, 0 * 1, 0);
-//		textsize -= pagesize;
-//		textstart += pagesize;
-//	}
-}
-
-static void ttb_level0_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn), const uint_fast32_t pagesize, uint_fast64_t nextlevel)
-{
-	unsigned i;
-	uint8_t * tb = (uint8_t *) ttb0_base_u64;	// table base
-	for (i = 0; i < ARRAY_SIZE(ttb0_base_u64); ++ i, nextlevel += pagesize)
-	{
-		//ttb0_base [i] = arch->mtable(nextlevel);
-		tb += USBD_poke_u64(tb, arch->mtable(nextlevel));
-	}
-}
-
-#endif
-
-#if ! defined(__aarch64__) && ! CPUSTYLE_RISCV
-
-// вся физическая память
-static void
-ttb_level0_1MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn), const uint_fast32_t pagesize)
-{
-	unsigned i;
-	//const uint_fast64_t pagesize = (UINT32_C(1) << 20);	// 1M step
-
-	uint_fast64_t phyaddr = 0;	// начальный адрес памяти
-	uint8_t * tb = (uint8_t *) ttb0_base_u32;	// table base
-	for (i = 0; i <  ARRAY_SIZE(ttb0_base_u32); ++ i, phyaddr += pagesize)
-	{
-		//ttb0_base [i] = accessbits(arch, phyaddr, 0, 0);
-		tb += USBD_poke_u32(tb, accessbits(arch, phyaddr, 0, 0));
-	}
-}
-#if MMUUSE4KPAGES
-// вся физическая память
-static void
-ttb_level1_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint64_t a, int ro, int xn), const uint_fast64_t pagesize)
-{
-	unsigned i;
-	//const uint_fast64_t pagesize = (UINT32_C(1) << 12);	// 4k step
-
-	uint_fast64_t phyaddr = 0;	// начальный адрес памяти
-	uint8_t * tb = (uint8_t *) level1_pagetable_u32;	// table base
-	for (i = 0; i <  ARRAY_SIZE(level1_pagetable_u32); ++ i, phyaddr += pagesize)
-	{
-		//ttb_L1_base [i] =  accessbits(arch, phyaddr, 0, 0);
-		tb += USBD_poke_u32(tb, accessbits(arch, phyaddr, 0, 0));
-	}
-}
-
-// элементы указывают на Second-level table - каждая содержит описание 256 страниц по 4 килобайта - итого 1 мегабайт памяти
-// размер одной страницы - 1 килобайт
-
-static void
-ttb_level0_4k_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn), const uint_fast32_t pagesize, uint_fast64_t nextlevel)
-{
-	unsigned i;
-	//const uint_fast64_t pagesize = (UINT32_C(1) << 10);	// 1k step
-
-	uint8_t * tb = (uint8_t *) ttb0_base_u32;	// table base
-	for (i = 0; i <  ARRAY_SIZE(ttb0_base_u32); ++ i, nextlevel += pagesize)
-	{
-		//ttb0_base [i] =  arch->mtable(nextlevel);
-		tb += USBD_poke_u32(tb, arch->mtable(nextlevel));
-	}
-}
-#endif /* MMUUSE4KPAGES */
-#elif CPUSTYLE_RISCV
-
-static void ttb_level1_xk_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn), const uint_fast32_t pagesize)
-{
-	// When the page table size is set to 4 KB, 2 MB, or 1 GB, the page table is indexed by 3, 2, or 1 times, respectively.
-	uintptr_t address = 0;
-	uintptr_t addrstep = UINT64_C(1) << 21;	// 2 MB
-	unsigned i;
-	for (i = 0; i < ARRAY_SIZE(level1_pagetable_u64); ++ i)
-	{
-		level1_pagetable_u64 [i] =
-				//((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
-				((address >> 21) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
-				//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
-				NCRAM_ATTRS |
-				0;
-		address += addrstep;
-	}
-}
-
-static void ttb_level0_xk_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn), const uint_fast32_t pagesize, uint_fast64_t nextlevel)
-{
-	// Pointe to 1 GB pages
-	unsigned i;
-	for (i = 0; i < ARRAY_SIZE(ttb0_base_u64); ++ i)
-	{
-		uintptr_t address = (uintptr_t) (level1_pagetable_u64 + 512 * i) | 0x03;
-		//uintptr_t address = 1 * (UINT64_C(1) << 30) * i;
-		ttb0_base_u64 [i] =
-			((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
-			//((address >> 24) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
-			//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
-			TABLE_ATTRS |
-			0;
-	}
-}
-
-#endif /* ! defined(__aarch64__) && ! CPUSTYLE_RISCV */
-
 #endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV */
+
+/* Один раз - инициализация таблиц в памяти */
 void
 sysinit_mmu_tables(void)
 {
 	//PRINTF("sysinit_mmu_tables\n");
 
-#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
-	// MMU iniitialize
-
-	#if (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE)
-		{
-			// SCU inut
-			// SCU Control Register
-			((volatile uint32_t *) SCU_CONTROL_BASE) [0] &= ~ 0x01;
-	//
-	//
-	//		// Filtering Start Address Register
-	//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] & ~ (0xFFFuL << 20)) |
-	//				(0x001uL << 20) |
-	//				0;
-	//		TP();
-	//		// Filtering End Address Register
-	//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] & ~ (0xFFFuL << 20)) |
-	//				(0xFFEuL << 20) |
-	//				0;
-
-			((volatile uint32_t *) SCU_CONTROL_BASE) [0x3] = 0;		// SCU Invalidate All Registers in Secure State
-			((volatile uint32_t *) SCU_CONTROL_BASE) [0] |= 0x01;	// SCU Control Register
-		}
-	#endif /* 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE) */
-
-
-	#if defined (__aarch64__)
-		// MMU iniitialize
-
-		ttb_level1_2MB_initialize(& arch64_table_2M, ttb_mempage_accessbits, (UINT32_C(1) << 21));	// 2M step
-		dcache_clean_invalidate((uintptr_t) level1_pagetable_u64, sizeof level1_pagetable_u64);
-		ttb_level0_2MB_initialize(& arch64_table_2M, ttb_mempage_accessbits, (UINT32_C(1) << 12), (uintptr_t) level1_pagetable_u64);	// 512 bytes step
-		dcache_clean_invalidate((uintptr_t) ttb0_base_u64, sizeof ttb0_base_u64);
-
-
-	#else
-		// MMU iniitialize
-
-	#if MMUUSE4KPAGES
-		ttb_level1_4k_initialize(& arch32_table_4k, ttb_mempage_accessbits, (UINT32_C(1) << 12));	// 4k step
-		dcache_clean_invalidate((uintptr_t) level1_pagetable_u32, sizeof level1_pagetable_u32);
-		ttb_level0_4k_initialize(& arch32_table_4k, ttb_mempage_accessbits, (UINT32_C(1) << 10), (uintptr_t) level1_pagetable_u32);	// 1k step
-		dcache_clean_invalidate((uintptr_t) ttb0_base_u32, sizeof ttb0_base_u32);
-
-	#else
-		ttb_level0_1MB_initialize(& arch32_table_1M, ttb_mempage_accessbits, (UINT32_C(1) << 20)); 	// 1M step
-		dcache_clean_invalidate((uintptr_t) ttb0_base_u32, sizeof ttb0_base_u32);
-
-	#endif
-
-	#endif	/* defined (__aarch64__) */
-
-
-#elif CPUSTYLE_RISCV
-	#warning To be implemented
-	// RISC-V MMU initialize
-
-	ttb_level1_xk_initialize(& rv64_table_4k, ttb_mempage_accessbits, 0);
-	ttb_level0_xk_initialize(& rv64_table_4k, ttb_mempage_accessbits, 0, 0);
-
-	//ttb_level1_2MB_initialize(& archtable, ttb_mempage_accessbits, (UINT32_C(1) << 21));
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
+	// MMU tables iniitialize
+	fillmmu(mmuinfo, ARRAY_SIZE(mmuinfo), ttb_mempage_accessbits);
 
 #elif defined (__CORTEX_M)
 
@@ -1295,12 +963,35 @@ sysinit_mmu_tables(void)
 	//PRINTF("sysinit_mmu_tables done.\n");
 }
 
-/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
+/* На каждом процессоре - Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 void
 sysinit_ttbr_initialize(void)
 {
 	//PRINTF("sysinit_ttbr_initialize.\n");
-#if defined(__aarch64__) && ! LINUX_SUBSYSTEM
+
+#if (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE)
+	{
+		// SCU inut
+		// SCU Control Register
+		((volatile uint32_t *) SCU_CONTROL_BASE) [0] &= ~ 0x01;
+//
+//
+//		// Filtering Start Address Register
+//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] & ~ (0xFFFuL << 20)) |
+//				(0x001uL << 20) |
+//				0;
+//		TP();
+//		// Filtering End Address Register
+//		((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] & ~ (0xFFFuL << 20)) |
+//				(0xFFEuL << 20) |
+//				0;
+
+		((volatile uint32_t *) SCU_CONTROL_BASE) [0x3] = 0;		// SCU Invalidate All Registers in Secure State
+		((volatile uint32_t *) SCU_CONTROL_BASE) [0] |= 0x01;	// SCU Control Register
+	}
+#endif
+
+#if defined(__aarch64__)
 
 	ASSERT(((uintptr_t) ttb0_base_u64 & 0x0FFF) == 0); // 4 KB
 
@@ -1312,7 +1003,7 @@ sysinit_ttbr_initialize(void)
 	// 4.3.53 Translation Control Register, EL3
 	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
-	const unsigned aspacebits = 21 + __log2_up(ARRAY_SIZE(level1_pagetable_u64));	// pages of 2 MB
+	const unsigned aspacebits = 21 + __log2_up(AARCH64_LEVEL1_SIZE);	// pages of 2 MB
 	uint_fast32_t tcrv =
 			0x00 * (UINT32_C(1) << 14) | 	// TG0 TTBR0_EL3 granule size 0b00 4 KB
 			0x03 * (UINT32_C(1) << 12) |	// 0x03 - Inner shareable
@@ -1429,7 +1120,7 @@ sysinit_ttbr_initialize(void)
 	#define CSR_SATP_MODE_SV48   9
 	#define CSR_SATP_MODE_SV57   10
 
-	ASSERT(((uintptr_t) ttb0_base_u64 & 0x0FFF) == 0);
+	ASSERT(((uintptr_t) xttb0_base_u64 & 0x0FFF) == 0);
 	mmu_flush_cache();
 	const unsigned asid = 0;
 	// 5.2.1.1 MMU address translation register (SATP)
@@ -1438,9 +1129,9 @@ sysinit_ttbr_initialize(void)
 			//CSR_SATP_MODE_PHYS * (UINT64_C(1) << 60) | // MODE
 			CSR_SATP_MODE_SV39 * (UINT64_C(1) << 60) | // MODE
 			(asid  & UINT64_C(0xFFFF))* (UINT64_C(1) << 44) | // ASID
-			(((uintptr_t) ttb0_base_u64 >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
+			(((uintptr_t) xttb0_base_u64 >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
 			0;
-	PRINTF("1 ttb0_base=%p" "\n", ttb0_base_u64);
+	PRINTF("1 ttb0_base=%p" "\n", xttb0_base_u64);
 	PRINTF("1 csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
 	//csr_write_satp(satp);
 	PRINTF("2 csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
@@ -1485,7 +1176,14 @@ sysinit_ttbr_initialize(void)
 	// https://riscv.org/wp-content/uploads/2019/08/riscv-privileged-20190608-1.pdf
 
 #elif defined (__CORTEX_M)
+	#if CPUSTYLE_STM32H7XX
+		//lowlevel_stm32h7xx_mpu_initialize();
+	#endif /* CPUSTYLE_STM32H7XX */
 
 #endif
 	//PRINTF("sysinit_ttbr_initialize done.\n");
 }
+
+#endif /* ! LINUX_SUBSYSTEM */
+
+
