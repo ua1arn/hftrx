@@ -1300,7 +1300,7 @@ void
 sysinit_ttbr_initialize(void)
 {
 	//PRINTF("sysinit_ttbr_initialize.\n");
-#if defined(__aarch64__)
+#if defined(__aarch64__) && ! LINUX_SUBSYSTEM
 
 	ASSERT(((uintptr_t) ttb0_base_u64 & 0x0FFF) == 0); // 4 KB
 
