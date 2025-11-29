@@ -715,6 +715,7 @@ static void fill_button_bg_buf(btn_bg_t * v)
 		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, btn_bg_colors[i], 1);
 		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		__gui_draw_rounded_rect(& butdbv, 1, 1, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		__gui_drawbuf_end(& butdbv);
 	}
 }
 
@@ -735,7 +736,7 @@ static void draw_button(const button_t * const bh)
 	}
 
 	btn_bg_t * b1 = NULL;
-#if ! WITHSDL2VIDEO // копирование буферов еще не реализовано
+#if ! WITHSDL2VIDEO // копирование буферов нормально не работает
 	do {
 		if (bh->h == btn_bg[i].h && bh->w == btn_bg[i].w)
 		{
@@ -774,6 +775,7 @@ static void draw_button(const button_t * const bh)
 		gui_drawbuf_t bgv;
 		__gui_drawbuf_init(& bgv, bg, bh->w, bh->h);
 		__gui_drawbuf_copy(gdb, & bgv, x1, y1, bh->w, bh->h);
+		__gui_drawbuf_end(& bgv);
 	}
 
 	const uint_fast16_t shiftX = bh->state == PRESSED ? 1 : 0;

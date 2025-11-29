@@ -49,6 +49,8 @@
 
 typedef struct {
 	SDL_Renderer * renderer;
+	SDL_Texture * texture;
+	uint8_t slave;
 } gui_drawbuf_t;
 
 typedef gui_drawbuf_t		gui_objbgbuf_t;
@@ -62,6 +64,7 @@ static inline void __gui_set_drawbuf(const void * buf)
 {
 	if (drawbuf == NULL) drawbuf = malloc(sizeof(gui_drawbuf_t));
 	drawbuf->renderer = (SDL_Renderer *) buf;
+	drawbuf->texture = SDL_GetRenderTarget(drawbuf->renderer);
 }
 
 static inline const gui_drawbuf_t * __gui_get_drawbuf(void)
@@ -70,22 +73,52 @@ static inline const gui_drawbuf_t * __gui_get_drawbuf(void)
 }
 
 // Инициализация буфера, если это необходимо в портируемом окружении
-static inline void __gui_drawbuf_init(gui_drawbuf_t * buf, void * extbuf,
+static inline void __gui_drawbuf_init(gui_drawbuf_t * buf, gui_drawbuf_t * extbuf,
 		unsigned int w, unsigned int h)
 {
+	ASSERT(buf);
+	ASSERT(extbuf);
+	ASSERT(extbuf->texture);
 
+	if (extbuf->slave)
+	{
+		extbuf->slave = 0;
+		SDL_SetRenderTarget(extbuf->renderer, extbuf->texture);
+	}
+
+	buf->renderer = extbuf->renderer;
+	buf->texture = extbuf->texture;
 }
 
 static inline void __gui_drawbuf_copy(const gui_drawbuf_t * dstbuf, gui_drawbuf_t * srcbuf,
 		unsigned int dst_x, unsigned int dst_y, unsigned int src_w, unsigned int src_h)
 {
+	SDL_Rect destRect = { dst_x, dst_y, src_w, src_h };
+	SDL_RenderCopy(dstbuf->renderer, srcbuf->texture, NULL, & destRect);
+}
 
+static inline void __gui_drawbuf_end(gui_drawbuf_t * buf)
+{
+	ASSERT(buf);
+
+	const gui_drawbuf_t * db = __gui_get_drawbuf();
+	SDL_SetRenderTarget(db->renderer, db->texture);
 }
 
 static inline gui_objbgbuf_t * __gui_object_bgbuf_init(unsigned int w, unsigned int h)
 {
 	gui_objbgbuf_t * buf = calloc(1, sizeof(gui_objbgbuf_t));
 	ASSERT(buf);
+
+	const gui_drawbuf_t * db = __gui_get_drawbuf();
+
+	buf->slave = 1;
+	buf->renderer = db->renderer;
+	buf->texture = SDL_CreateTexture(db->renderer, SDL_PIXELFORMAT_ARGB8888,
+		    SDL_TEXTUREACCESS_TARGET, w, h);
+	ASSERT(buf->texture);
+	SDL_SetTextureBlendMode(buf->texture, SDL_BLENDMODE_BLEND);
+
 	return buf;
 }
 
@@ -319,6 +352,11 @@ static inline void __gui_drawbuf_copy(const gui_drawbuf_t * dstbuf, void * srcbu
 			((gui_drawbuf_t *)srcbuf)->cachebase,
 			((gui_drawbuf_t *)srcbuf)->cachesize, 	// cache parameters
 			srcbuf, 0, 0, src_w, src_h, BITBLT_FLAG_NONE, 0);
+}
+
+static inline void __gui_drawbuf_end(gui_drawbuf_t * buf)
+{
+
 }
 
 static inline gui_objbgbuf_t * __gui_object_bgbuf_init(unsigned int w, unsigned int h)
