@@ -1060,6 +1060,56 @@ void mmu_flush_cache(void) {
 
 #endif /* __CORTEX_A */
 
+typedef struct mmulayout_tag
+{
+	uint64_t phyaddr;	// Начальное значение
+	uint32_t pagesize;	// размер страниц
+	uint32_t pagecount;
+	uint8_t * table;
+	unsigned (* poke)(uint8_t * b, uint_fast64_t v);
+} mmulayout_t;
+
+static void fillmmu(const getmmudesc_t * arch, const mmulayout_t * p, unsigned n, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uintptr_t a, int ro, int xn))
+{
+	if (n --)
+	{
+		unsigned pages = p->pagecount;
+		uint8_t * tb = p->table;	// table base
+		uint_fast64_t phyaddr = p->phyaddr;
+		for (; pages --; phyaddr += p->pagesize)
+		{
+			tb += p->poke(tb, accessbits(arch, phyaddr, 0, 0));
+		}
+		const ptrdiff_t cachesize = tb - p->table;
+		dcache_clean_invalidate((uintptr_t) p->table, cachesize);
+		++ p;
+	}
+
+	if (n --)
+	{
+		unsigned pages = p->pagecount;
+		uint8_t * tb = p->table;	// table base
+		uint_fast64_t phyaddr = p->phyaddr;
+		for (; pages --; phyaddr += p->pagesize)
+		{
+			tb += p->poke(tb, arch->mtable(phyaddr));
+		}
+		const ptrdiff_t cachesize = tb - p->table;
+		dcache_clean_invalidate((uintptr_t) p->table, cachesize);
+		++ p;
+	}
+}
+
+static unsigned poke_u64_le(uint8_t * b, uint_fast64_t v)
+{
+	return USBD_poke_u64(b, v);
+}
+
+static unsigned poke_u32_le(uint8_t * b, uint_fast64_t v)
+{
+	return USBD_poke_u32(b, v);
+}
+
 #if defined (__CORTEX_M)
 
 #elif CPUSTYLE_RISCV
@@ -1075,6 +1125,23 @@ void mmu_flush_cache(void) {
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t level1_pagetable_u64 [512 * 4 * 4];	// ttb0_base must be a 4KB-aligned address.
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint64_t ttb0_base_u64 [ARRAY_SIZE(level1_pagetable_u64) / 512];	// ttb0_base must be a 4KB-aligned address.
 
+	static const mmulayout_t mmuinfo [] =
+	{
+		{
+			.phyaddr = 0x0,
+			.pagesize = (UINT32_C(1) << 21),	// 2M
+			.pagecount = 512 * 4 * 4,
+			.table = (uint8_t *) level1_pagetable_u64,
+			.poke = poke_u64_le
+		},
+		{
+			.phyaddr = (uintptr_t) level1_pagetable_u64,
+			.pagesize = (UINT32_C(1) << 12),	// 4k
+			.pagecount = ARRAY_SIZE(level1_pagetable_u64) / 512,
+			.table = (uint8_t *) ttb0_base_u64,
+			.poke = poke_u64_le
+		},
+	};
 #else /* defined(__aarch64__) */
 
 	#if MMUUSE4KPAGES
@@ -1082,6 +1149,23 @@ void mmu_flush_cache(void) {
 	// pages of 4 k
 		static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint32_t level1_pagetable_u32 [4096 * 256];	// вся физическая память страницами по 4 килобайта
 		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base_u32 [4096];
+		static const mmulayout_t mmuinfo [] =
+		{
+				{
+					.phyaddr = 0x0,
+					.pagesize = (UINT32_C(1) << 12),	// 4k
+					.pagecount = 4096,
+					.table = (uint8_t *) level1_pagetable_u32,
+					.poke = poke_u32_le
+				},
+				{
+					.phyaddr = (uintptr_t) level1_pagetable_u64,
+					.pagesize = (UINT32_C(1) << 12),	// 4k
+					.pagecount = ARRAY_SIZE(level1_pagetable_u64) / 512,
+					.table = (uint8_t *) ttb0_base_u32,
+					.poke = poke_u32_le
+				},
+		};
 
 	#else /* MMUUSE4KPAGES */
 
@@ -1255,11 +1339,11 @@ sysinit_mmu_tables(void)
 	#if defined (__aarch64__)
 		// MMU iniitialize
 
-		ttb_level1_2MB_initialize(& arch64_table_2M, ttb_mempage_accessbits, (UINT32_C(1) << 21));	// 2M step
-		dcache_clean_invalidate((uintptr_t) level1_pagetable_u64, sizeof level1_pagetable_u64);
-		ttb_level0_2MB_initialize(& arch64_table_2M, ttb_mempage_accessbits, (UINT32_C(1) << 12), (uintptr_t) level1_pagetable_u64);	// 512 bytes step
-		dcache_clean_invalidate((uintptr_t) ttb0_base_u64, sizeof ttb0_base_u64);
-
+//		ttb_level1_2MB_initialize(& arch64_table_2M, ttb_mempage_accessbits, (UINT32_C(1) << 21));	// 2M step
+//		dcache_clean_invalidate((uintptr_t) level1_pagetable_u64, sizeof level1_pagetable_u64);
+//		ttb_level0_2MB_initialize(& arch64_table_2M, ttb_mempage_accessbits, (UINT32_C(1) << 12), (uintptr_t) level1_pagetable_u64);	// 512 bytes step
+//		dcache_clean_invalidate((uintptr_t) ttb0_base_u64, sizeof ttb0_base_u64);
+		fillmmu(& arch64_table_2M, mmuinfo, ARRAY_SIZE(mmuinfo), ttb_mempage_accessbits);
 
 	#else
 		// MMU iniitialize
