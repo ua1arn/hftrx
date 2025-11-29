@@ -15,7 +15,7 @@
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
 
-#if 1
+#if WITHGPUHW
 // GPU MMU
 
 static uint_fast64_t gpu_mali400_4k_mcached(uint_fast64_t addr, int ro, int xn)
@@ -50,7 +50,7 @@ static const getmmudesc_t gpu_mali400_table4k =
 	.mtable = gpu_mali400_4k_mtable
 };
 
-#endif
+#endif /* WITHGPUHW */
 
 #if defined (__CORTEX_M)
 	#if CPUSTYLE_STM32H7XX
@@ -438,65 +438,62 @@ static const getmmudesc_t arch32_table_4k =
 
 #elif CPUSTYLE_RISCV
 
-	//ttb_level0_1MB_initialize(ttb_mempage_accessbits, 0, 0);
+// See https://chromite.readthedocs.io/en/latest/mmu.html
 
-	// See https://chromite.readthedocs.io/en/latest/mmu.html
+// XuanTie-Openc906 SYSMAP
 
-	// XuanTie-Openc906 SYSMAP
+// The C906 is fully compatible with the RV64GC instruction set and supports the standard M/S/U privilege program model.
+// The C906 includes a standard 8-16 region PMP and Sv39 MMU, which is fully compatible with RISC-V Linux.
+// The C906 includes standard CLINT and PLIC interrupt controllers, RV compatible HPM.
+// ? 0xEFFFF000
+// See https://github.com/sophgo/cvi_alios_open/blob/aca2daa48266cd96b142f83bad4e33a6f13d6a24/components/csi/csi2/include/core/core_rv64.h
+// Strong Order, Cacheable, Bufferable, Shareable, Security
 
-	// The C906 is fully compatible with the RV64GC instruction set and supports the standard M/S/U privilege program model.
-	// The C906 includes a standard 8-16 region PMP and Sv39 MMU, which is fully compatible with RISC-V Linux.
-	// The C906 includes standard CLINT and PLIC interrupt controllers, RV compatible HPM.
-	// ? 0xEFFFF000
-	// See https://github.com/sophgo/cvi_alios_open/blob/aca2daa48266cd96b142f83bad4e33a6f13d6a24/components/csi/csi2/include/core/core_rv64.h
-	// Strong Order, Cacheable, Bufferable, Shareable, Security
+// Bit 63 - Strong order
+// Bit 62 - Cacheable
+// Bit 61 - Buffer
+// Bit 0 - Valid
+#define RAM_ATTRS 		((UINT64_C(0) << 63) | (UINT64_C(1) << 62) | (UINT64_C(1) << 61) | (UINT64_C(0x07) << 1) | 1)	// Cacheable memory
+#define NCRAM_ATTRS 	((UINT64_C(0) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x07) << 1) | 1)	// Non-cacheable memory
+#define DEVICE_ATTRS 	((UINT64_C(1) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x07) << 1) | 1)	// Non-bufferable device
+#define TABLE_ATTRS		((UINT64_C(0) << 63) | 1) // Pointer to next level of page table
 
-	// Bit 63 - Strong order
-	// Bit 62 - Cacheable
-	// Bit 61 - Buffer
-	// Bit 0 - Valid
-	#define RAM_ATTRS 		((UINT64_C(0) << 63) | (UINT64_C(1) << 62) | (UINT64_C(1) << 61) | (UINT64_C(0x0E) << 0) | 1)	// Cacheable memory
-	#define NCRAM_ATTRS 	((UINT64_C(0) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x0E) << 0) | 1)	// Non-cacheable memory
-	#define DEVICE_ATTRS 	((UINT64_C(1) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x0E) << 0) | 1)	// Non-bufferable device
-	#define TABLE_ATTRS		((UINT64_C(0) << 63) | 1) // Pointer to next level of page table
+// See Table 4.2: Encoding of PTE Type field.
 
-	// See Table 4.2: Encoding of PTE Type field.
+#define	TTB_PARA_RV64_CACHED(addr, ro, xn) 	((0 * (addr) & ~ UINT64_C(0xFFF)) | (0x00u << 1) | 0x01)
+#define	TTB_PARA_RV64_NCACHED(addr, ro, xn) 	((0 * (addr) & ~ UINT64_C(0xFFF)) | (0x00u << 1) | 0x01)
+#define	TTB_PARA_RV64_DEVICE(addr)			((0 * (addr) & ~ UINT64_C(0xFFF)) | (0x00u << 1) | 0x01)
+#define	TTB_PARA_RV64_PAGE(addr) 		0
+#define	TTB_PARA_RV64_NO_ACCESS(addr) 		0
 
-	#define	TTB_PARA_RV64_CACHED(addr, ro, xn) 	((0 * (addr) & ~ UINT64_C(0xFFF)) | (0x00u << 1) | 0x01)
-	#define	TTB_PARA_RV64_NCACHED(addr, ro, xn) 	((0 * (addr) & ~ UINT64_C(0xFFF)) | (0x00u << 1) | 0x01)
-	#define	TTB_PARA_RV64_DEVICE(addr)			((0 * (addr) & ~ UINT64_C(0xFFF)) | (0x00u << 1) | 0x01)
-	#define	TTB_PARA_RV64_NO_ACCESS(addr) 		0
-
-static uint_fast64_t rv64_4k_mcached(uint_fast64_t addr, int ro, int xn)
+static uint_fast64_t rv64_mcached(uint_fast64_t addr, int ro, int xn)
 {
-	return 0;//TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn);
+	return TTB_PARA_RV64_CACHED(addr, ro, xn);
 }
-static uint_fast64_t rv64_4k_mncached(uint_fast64_t addr, int ro, int xn)
+static uint_fast64_t rv64_mncached(uint_fast64_t addr, int ro, int xn)
 {
-	return 0;//TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn);
+	return TTB_PARA_RV64_NCACHED(addr, ro, xn);
 }
-static uint_fast64_t rv64_4k_mdevice(uint_fast64_t addr)
+static uint_fast64_t rv64_mdevice(uint_fast64_t addr)
 {
-	return 0;//TTB_PARA_AARCH32_4k_DEVICE(addr);
+	return TTB_PARA_RV64_DEVICE(addr);
 }
-// Next level table
-static uint_fast64_t rv64_4k_mtable(uint_fast64_t addr, int level)
+static uint_fast64_t rv64_mtable(uint_fast64_t addr, int level)
 {
-	// 1KB granulation address
-	return 0;//TTB_PARA_AARCH32_4k_PAGE(addr);	// First-level table entry - Page table
+	return TTB_PARA_RV64_PAGE(addr);
 }
-static uint_fast64_t rv64_4k_mnoaccess(uint_fast64_t addr)
+static uint_fast64_t rv64_mnoaccess(uint_fast64_t addr)
 {
 	return 0;
 }
 
-static const getmmudesc_t rv64_table_4k =
+static const getmmudesc_t rv64_table =
 {
-	.mcached = rv64_4k_mcached,
-	.mncached = rv64_4k_mncached,
-	.mdevice = rv64_4k_mdevice,
-	.mnoaccess = rv64_4k_mnoaccess,
-	.mtable = rv64_4k_mtable
+	.mcached = rv64_mcached,
+	.mncached = rv64_mncached,
+	.mdevice = rv64_mdevice,
+	.mnoaccess = rv64_mnoaccess,
+	.mtable = rv64_mtable
 };
 
 
@@ -585,7 +582,7 @@ typedef struct mmulayout_tag
 {
 	const getmmudesc_t * arch;
 	uintptr_t phyaddr;	// Начальное значение
-	unsigned phypageszpow2;	// log2 от размера страниц на phyaddr
+	unsigned phypageszlog2;	// log2 от размера страниц на phyaddr
 	unsigned pagecount;
 	uint8_t * table;
 	unsigned (* poke)(uint8_t * b, uint_fast64_t v);
@@ -599,7 +596,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, uint_fast64_t (* accessbi
 {
 	while (n --)
 	{
-		const uint_fast32_t pagesize = UINT32_C(1) << p->phypageszpow2;
+		const uint_fast32_t pagesize = UINT32_C(1) << p->phypageszlog2;
 		unsigned pages = p->pagecount;
 		uint8_t * tb = p->table;	// table base
 		uint_fast64_t phyaddr = p->phyaddr;
@@ -641,26 +638,26 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 	static const mmulayout_t mmuinfo [] =
 	{
 		{
-			.arch = & rv64_table_4k,
+			.arch = & rv64_table,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
-			.phypageszpow2 = 21,	// 2MB
+			.phypageszlog2 = 21,	// 2MB
 			.pagecount = RV64_LEVEL1_SIZE,
 			.table = xlevel1_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
 			.flag = 0,
 			.level = 0, // page table level (pass to mtable)
-			.ro = 0, .xn = 0
+			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 		{
-			.arch = & rv64_table_4k,
+			.arch = & rv64_table,
 			.phyaddr = (uintptr_t) xlevel1_pagetable_u64,
-			.phypageszpow2 = 12,	// 4KB
+			.phypageszlog2 = 12,	// 4KB
 			.pagecount = RV64_LEVEL0_SIZE,
 			.table = xttb0_base_u64,
 			.poke = mmulayout_poke_u64_le,
 			.flag = 1,
 			.level = 0, // page table level (pass to mtable)
-			.ro = 0, .xn = 0
+			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 	};
 
@@ -679,24 +676,24 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 		{
 			.arch = & arch64_table_2M,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
-			.phypageszpow2 = 21,	// 2MB
+			.phypageszlog2 = 21,	// 2MB
 			.pagecount = AARCH64_LEVEL1_SIZE,
 			.table = xxlevel1_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
 			.flag = 0,
 			.level = 0, // page table level (pass to mtable)
-			.ro = 0, .xn = 0
+			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 		{
 			.arch = & arch64_table_2M,
 			.phyaddr = (uintptr_t) xxlevel1_pagetable_u64,
-			.phypageszpow2 = 12,	// 4KB
+			.phypageszlog2 = 12,	// 4KB
 			.pagecount = AARCH64_LEVEL0_SIZE,
 			.table = ttb0_base_u64,
 			.poke = mmulayout_poke_u64_le,
 			.flag = 1,
 			.level = 0, // page table level (pass to mtable)
-			.ro = 0, .xn = 0
+			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 	};
 #else /* defined(__aarch64__) */
@@ -713,24 +710,24 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			{
 				.arch = & arch32_table_4k,
 				.phyaddr = 0x00000000,	/* Начало физической памяти */
-				.phypageszpow2 = 12,	// 4KB
+				.phypageszlog2 = 12,	// 4KB
 				.pagecount = AARCH32_4K_LEVEL1_SIZE,
 				.table = level1_pagetable_u32,
 				.poke = mmulayout_poke_u32_le,
 				.flag = 0,
 				.level = 0, // page table level (pass to mtable)
-				.ro = 0, .xn = 0
+				.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 			},
 			{
 				.arch = & arch32_table_4k,
 				.phyaddr = (uintptr_t) level1_pagetable_u32,
-				.phypageszpow2 = 10,	// 1KB
+				.phypageszlog2 = 10,	// 1KB
 				.pagecount = AARCH32_4K_LEVEL0_SIZE,
 				.table = ttb0_base_u32,
 				.poke = mmulayout_poke_u32_le,
 				.flag = 1,
 				.level = 0, // page table level (pass to mtable)
-				.ro = 0, .xn = 0
+				.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 			},
 		};
 
@@ -744,13 +741,13 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			{
 				.arch = & arch32_table_1M,
 				.phyaddr = 0x00000000,	/* Начало физической памяти */
-				.phypageszpow2 = 20,	// 1MB
+				.phypageszlog2 = 20,	// 1MB
 				.pagecount = AARCH32_1MB_LEVEL0_SIZE,
 				.table = ttb0_base_u32,
 				.poke = mmulayout_poke_u32_le,
 				.flag = 0,
 				.level = 0, // page table level (pass to mtable)
-				.ro = 0, .xn = 0
+				.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 			},
 		};
 
