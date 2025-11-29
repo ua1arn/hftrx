@@ -717,7 +717,7 @@ typedef struct mmulayout_tag
 	unsigned (* poke)(uint8_t * b, uint_fast64_t v);
 } mmulayout_t;
 
-static void fillmmu(const getmmudesc_t * arch, const mmulayout_t * p, unsigned n, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uintptr_t a, int ro, int xn))
+static void fillmmu(const getmmudesc_t * arch, const mmulayout_t * p, unsigned n, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn))
 {
 	if (n --)
 	{
@@ -819,6 +819,16 @@ static unsigned poke_u32_le(uint8_t * b, uint_fast64_t v)
 
 		// pages of 1 MB
 		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint32_t ttb0_base_u32 [4096];	// вся физическая память страницами по 1 мегабайт
+		static const mmulayout_t mmuinfo [] =
+		{
+			{
+				.phyaddr = 0x0,
+				.pagesize = (UINT32_C(1) << 20),	// 1M
+				.pagecount = 4096,
+				.table = (uint8_t *) ttb0_base_u32,
+				.poke = poke_u32_le
+			},
+		};
 
 	#endif /* MMUUSE4KPAGES */
 
@@ -828,7 +838,7 @@ static unsigned poke_u32_le(uint8_t * b, uint_fast64_t v)
 
 // вся физическая память
 static void
-ttb_level1_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uintptr_t a, int ro, int xn), const uint_fast64_t pagesize)
+ttb_level1_2MB_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn), const uint_fast64_t pagesize)
 {
 	unsigned i;
 	//const uint_fast64_t pagesize = (UINT32_C(1) << 21);	// 2M step
@@ -1005,8 +1015,9 @@ sysinit_mmu_tables(void)
 		dcache_clean_invalidate((uintptr_t) ttb0_base_u32, sizeof ttb0_base_u32);
 
 	#else
-		ttb_level0_1MB_initialize(& arch32_table_1M, ttb_mempage_accessbits, (UINT32_C(1) << 20)); 	// 1M step
-		dcache_clean_invalidate((uintptr_t) ttb0_base_u32, sizeof ttb0_base_u32);
+//		ttb_level0_1MB_initialize(& arch32_table_1M, ttb_mempage_accessbits, (UINT32_C(1) << 20)); 	// 1M step
+//		dcache_clean_invalidate((uintptr_t) ttb0_base_u32, sizeof ttb0_base_u32);
+		fillmmu(& arch32_table_1M, mmuinfo, ARRAY_SIZE(mmuinfo), ttb_mempage_accessbits);
 
 	#endif
 
