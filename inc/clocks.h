@@ -417,8 +417,8 @@ calcdivider(
 
 typedef struct freqsrc_tag
 {
-	uint_fast64_t clk;
 	unsigned sel;
+	uint_fast64_t clk;
 } freqsrc_t;
 
 uint_fast8_t
