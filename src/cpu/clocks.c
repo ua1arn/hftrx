@@ -3228,17 +3228,17 @@ uint_fast64_t allwnr_t507_get_pll_video2_x4_freq(void)
 	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M;
 }
 
-uint_fast64_t allwnr_t507_get_pll_video0_x1_freq(void)
+uint_fast32_t allwnr_t507_get_pll_video0_x1_freq(void)
 {
 	return allwnr_t507_get_pll_video0_x4_freq() / 4;
 }
 
-uint_fast64_t allwnr_t507_get_pll_video1_x1_freq(void)
+uint_fast32_t allwnr_t507_get_pll_video1_x1_freq(void)
 {
 	return allwnr_t507_get_pll_video1_x4_freq() / 4;
 }
 
-uint_fast64_t allwnr_t507_get_pll_video2_x1_freq(void)
+uint_fast32_t allwnr_t507_get_pll_video2_x1_freq(void)
 {
 	return allwnr_t507_get_pll_video2_x4_freq() / 4;
 }
@@ -3778,7 +3778,7 @@ uint_fast32_t allwnr_t507_get_dram_freq(void)
 	}
 }
 
-uint_fast32_t allwnr_t507_get_tcon_lcd0_freq(void)
+uint_fast64_t allwnr_t507_get_tcon_lcd0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON_LCD0_CLK_REG;
 	switch ((clkreg >> 24) & 0x07)	/* CLK_SRC_SEL */
@@ -3799,7 +3799,7 @@ uint_fast32_t allwnr_t507_get_tcon_lcd0_freq(void)
 	}
 }
 
-uint_fast32_t allwnr_t507_get_tcon_lcd1_freq(void)
+uint_fast64_t allwnr_t507_get_tcon_lcd1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON_LCD1_CLK_REG;
 	switch ((clkreg >> 24) & 0x07)	/* CLK_SRC_SEL */
@@ -3821,7 +3821,7 @@ uint_fast32_t allwnr_t507_get_tcon_lcd1_freq(void)
 }
 
 // T507
-uint_fast32_t allwnr_t507_get_tcon_tv0_freq(void)
+uint_fast64_t allwnr_t507_get_tcon_tv0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON_TV0_CLK_REG;
 	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
@@ -3853,7 +3853,7 @@ uint_fast32_t allwnr_t507_get_tcon_tv0_freq(void)
 }
 
 // T507
-uint_fast32_t allwnr_t507_get_tcon_tv1_freq(void)
+uint_fast64_t allwnr_t507_get_tcon_tv1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON_TV1_CLK_REG;
 	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
@@ -3885,7 +3885,7 @@ uint_fast32_t allwnr_t507_get_tcon_tv1_freq(void)
 }
 
 // T507
-uint_fast32_t allwnr_t507_get_hdmi0_freq(void)
+uint_fast64_t allwnr_t507_get_hdmi0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->HDMI0_CLK_REG;
 	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
