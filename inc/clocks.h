@@ -415,6 +415,23 @@ calcdivider(
 	unsigned * dvalue,		// Значение для записи в регистр сравнения делителя
 	uint_fast8_t substract);
 
+typedef struct freqsrc_tag
+{
+	uint_fast64_t clk;
+	unsigned sel;
+} freqsrc_t;
+
+uint_fast8_t
+calcdividerselect(
+	uint_fast32_t freq, // желаемая частота на выходе
+	const freqsrc_t * tbl,
+	size_t n,
+	uint_fast8_t width,			// количество разрядов в счётчике
+	uint_fast32_t taps,			// маска битов - выходов прескалера. 0x01 - означает bypass, 0x02 - делитель на 2... 0x400 - делитель на 1024
+	unsigned * dvalue,		// Значение для записи в регистр сравнения делителя
+	unsigned * sel,		// выбраный источник
+	uint_fast8_t substract);
+
 
 #if CPUSTYLE_AT91SAM7S
 
