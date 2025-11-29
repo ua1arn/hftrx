@@ -9,6 +9,7 @@
 #include "formats.h"	// for debug prints
 #include "utils.h"	// peek/poke
 
+#if ! LINUX_SUBSYSTEM
 //#define MMUUSE4KPAGES 1
 
 #if CPUSTYLE_ARM_CM7
@@ -1305,6 +1306,8 @@ static void ttb_level0_xk_initialize(const getmmudesc_t * arch, uint_fast64_t (*
 #endif /* ! defined(__aarch64__) && ! CPUSTYLE_RISCV */
 
 #endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV */
+
+/* Один раз - инициализация таблиц в памяти */
 void
 sysinit_mmu_tables(void)
 {
@@ -1379,12 +1382,12 @@ sysinit_mmu_tables(void)
 	//PRINTF("sysinit_mmu_tables done.\n");
 }
 
-/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
+/* На каждом процессоре - Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 void
 sysinit_ttbr_initialize(void)
 {
 	//PRINTF("sysinit_ttbr_initialize.\n");
-#if defined(__aarch64__) && ! LINUX_SUBSYSTEM
+#if defined(__aarch64__)
 
 	ASSERT(((uintptr_t) ttb0_base_u64 & 0x0FFF) == 0); // 4 KB
 
@@ -1573,3 +1576,19 @@ sysinit_ttbr_initialize(void)
 #endif
 	//PRINTF("sysinit_ttbr_initialize done.\n");
 }
+#else /* ! LINUX_SUBSYSTEM */
+
+void
+sysinit_mmu_tables(void)
+{
+
+}
+
+void
+sysinit_ttbr_initialize(void)
+{
+
+}
+#endif /* ! LINUX_SUBSYSTEM */
+
+
