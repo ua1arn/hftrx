@@ -38,7 +38,7 @@ ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t phyaddr, int ro,
 	// Все сравнения должны быть не точнее 1 MB
 
 	if (phyaddr == 0x00000000)
-		return TTB_PARA_NO_ACCESS(phyaddr);		// NULL pointers access trap
+		return arch->mnoaccess(phyaddr);		// NULL pointers access trap
 
 	if (phyaddr >= 0x18000000 && phyaddr < 0x20000000)			// FIXME: QSPI memory mapped should be R/O, but...
 		return arch->mcached(phyaddr, ro || 0, xn);
@@ -773,7 +773,7 @@ typedef struct mmulayout_tag
 {
 	const getmmudesc_t * arch;
 	uintptr_t phyaddr;	// Начальное значение
-	uint32_t pagesize;	// размер страниц
+	uint8_t pagesizepow2;	// размер страниц
 	uint32_t pagecount;
 	uint8_t * table;
 	unsigned (* poke)(uint8_t * b, uint_fast64_t v);
@@ -787,10 +787,11 @@ static void fillmmu(const mmulayout_t * p, unsigned n, uint_fast64_t (* accessbi
 {
 	while (n --)
 	{
+		const uint_fast32_t pagesize = UINT32_C(1) << p->pagesizepow2;
 		unsigned pages = p->pagecount;
 		uint8_t * tb = p->table;	// table base
 		uint_fast64_t phyaddr = p->phyaddr;
-		for (; pages --; phyaddr += p->pagesize)
+		for (; pages --; phyaddr += pagesize)
 		{
 			tb += p->poke(tb, p->flag ? p->arch->mtable(phyaddr, p->level) : accessbits(p->arch, phyaddr, p->ro, p->xn));
 		}
@@ -836,7 +837,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 		{
 			.arch = & rv64_table_4k,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
-			.pagesize = (UINT32_C(1) << 21),	// 2M
+			.pagesizepow2 = 21,	// 2MB
 			.pagecount = 512 * 4,
 			.table = (uint8_t *) xlevel1_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
@@ -846,7 +847,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 		{
 			.arch = & rv64_table_4k,
 			.phyaddr = (uintptr_t) xlevel1_pagetable_u64,
-			.pagesize = (UINT32_C(1) << 12),	// 4k
+			.pagesizepow2 = 12,	// 4KB
 			.pagecount = ARRAY_SIZE(xttb0_base_u64),
 			.table = (uint8_t *) xttb0_base_u64,
 			.poke = mmulayout_poke_u64_le,
@@ -862,15 +863,15 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 	// pages of 2 MB
 	#define AARCH64_LEVEL0_SIZE (4 * 4)
 	#define AARCH64_LEVEL1_SIZE (AARCH64_LEVEL0_SIZE * 512)
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t ttb0_base_u64 [AARCH64_LEVEL0_SIZE * 8];	// ttb0_base must be a 4KB-aligned address.
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xxlevel1_pagetable_u64 [AARCH64_LEVEL1_SIZE * 8];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t ttb0_base_u64 [AARCH64_LEVEL0_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xxlevel1_pagetable_u64 [AARCH64_LEVEL1_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
 
 	static const mmulayout_t mmuinfo [] =
 	{
 		{
 			.arch = & arch64_table_2M,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
-			.pagesize = (UINT32_C(1) << 21),	// 2M
+			.pagesizepow2 = 21,	// 2MB
 			.pagecount = AARCH64_LEVEL1_SIZE,
 			.table = xxlevel1_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
@@ -880,7 +881,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 		{
 			.arch = & arch64_table_2M,
 			.phyaddr = (uintptr_t) xxlevel1_pagetable_u64,
-			.pagesize = (UINT32_C(1) << 12),	// 4k
+			.pagesizepow2 = 12,	// 4KB
 			.pagecount = AARCH64_LEVEL0_SIZE,
 			.table = ttb0_base_u64,
 			.poke = mmulayout_poke_u64_le,
@@ -895,14 +896,14 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 		// pages of 4 k
 		#define AARCH32_4K_LEVEL0_SIZE (4096)
 		#define AARCH32_4K_LEVEL1_SIZE (AARCH32_4K_LEVEL0_SIZE * 256)
-		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_4K_LEVEL0_SIZE * 4];
-		static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint8_t level1_pagetable_u32 [AARCH32_4K_LEVEL1_SIZE * 4];	// вся физическая память страницами по 4 килобайта
+		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_4K_LEVEL0_SIZE * sizeof (uint32_t)];
+		static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint8_t level1_pagetable_u32 [AARCH32_4K_LEVEL1_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 4 килобайта
 		static const mmulayout_t mmuinfo [] =
 		{
 			{
 				.arch = & arch32_table_4k,
 				.phyaddr = 0x00000000,	/* Начало физической памяти */
-				.pagesize = (UINT32_C(1) << 12),	// 4k
+				.pagesizepow2 = 12,	// 4KB
 				.pagecount = AARCH32_4K_LEVEL1_SIZE,
 				.table = level1_pagetable_u32,
 				.poke = mmulayout_poke_u32_le,
@@ -912,7 +913,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			{
 				.arch = & arch32_table_4k,
 				.phyaddr = (uintptr_t) level1_pagetable_u32,
-				.pagesize = (UINT32_C(1) << 10),	// 1k
+				.pagesizepow2 = 10,	// 1KB
 				.pagecount = AARCH32_4K_LEVEL0_SIZE,
 				.table = ttb0_base_u32,
 				.poke = mmulayout_poke_u32_le,
@@ -925,13 +926,13 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 
 		// pages of 1 MB
 		#define AARCH32_1MB_LEVEL0_SIZE (4096)
-		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_1MB_LEVEL0_SIZE * 4];	// вся физическая память страницами по 1 мегабайт
+		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_1MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
 		static const mmulayout_t mmuinfo [] =
 		{
 			{
 				.arch = & arch32_table_1M,
 				.phyaddr = 0x00000000,	/* Начало физической памяти */
-				.pagesize = (UINT32_C(1) << 20),	// 1M
+				.pagesizepow2 = 20,	// 1MB
 				.pagecount = AARCH32_1MB_LEVEL0_SIZE,
 				.table = ttb0_base_u32,
 				.poke = mmulayout_poke_u32_le,
