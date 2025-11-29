@@ -811,18 +811,18 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 	static const mmulayout_t mmuinfo [] =
 	{
 		{
-			.arch = rv64_table_4k,
+			.arch = & rv64_table_4k,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
 			.pagesize = (UINT32_C(1) << 21),	// 2M
 			.pagecount = 512 * 4,
 			.table = (uint8_t *) xlevel1_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
 			.flag = 0,
-			.ro = 0, xn = 0
+			.ro = 0, .xn = 0
 		},
 		{
-			.arch = rv64_table_4k,
-			.phyaddr = (uintptr_t) level1_pagetable_u64,
+			.arch = & rv64_table_4k,
+			.phyaddr = (uintptr_t) xlevel1_pagetable_u64,
 			.pagesize = (UINT32_C(1) << 12),	// 4k
 			.pagecount = ARRAY_SIZE(xttb0_base_u64),
 			.table = (uint8_t *) xttb0_base_u64,
@@ -1102,7 +1102,7 @@ sysinit_ttbr_initialize(void)
 	#define CSR_SATP_MODE_SV48   9
 	#define CSR_SATP_MODE_SV57   10
 
-	ASSERT(((uintptr_t) ttb0_base_u64 & 0x0FFF) == 0);
+	ASSERT(((uintptr_t) xttb0_base_u64 & 0x0FFF) == 0);
 	mmu_flush_cache();
 	const unsigned asid = 0;
 	// 5.2.1.1 MMU address translation register (SATP)
@@ -1113,7 +1113,7 @@ sysinit_ttbr_initialize(void)
 			(asid  & UINT64_C(0xFFFF))* (UINT64_C(1) << 44) | // ASID
 			(((uintptr_t) xttb0_base_u64 >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
 			0;
-	PRINTF("1 ttb0_base=%p" "\n", ttb0_base_u64);
+	PRINTF("1 ttb0_base=%p" "\n", xttb0_base_u64);
 	PRINTF("1 csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
 	//csr_write_satp(satp);
 	PRINTF("2 csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
