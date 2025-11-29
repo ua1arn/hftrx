@@ -730,6 +730,11 @@ void dcache_clean(uintptr_t base, int_fast32_t size);	// Сейчас эта п�
 void dcache_clean_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 void dcache_clean_all(void);
 
+int_fast32_t icache_rowsize(void);
+int_fast32_t dcache_rowsize(void);
+void sysinit_cache_initialize(void);	/* на каждом процессоре */
+void sysinit_cache_L2_initialize(void);	/* инициадизации кеш-памяти, специфические для CORE0 */
+
 
 typedef struct getmmudesc_tag
 {
@@ -743,10 +748,8 @@ typedef struct getmmudesc_tag
 /* зависящая от процессора карта распределения memory regions */
 uint_fast64_t ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn);
 
-int_fast32_t icache_rowsize(void);
-int_fast32_t dcache_rowsize(void);
 void sysinit_mmu_tables(void);
-void sysinit_ttbr_initialize(void);
+void sysinit_ttbr_initialize(void);	/* на каждом процессоре */
 
 void r7s721_sdhi0_dma_handler(void);
 
