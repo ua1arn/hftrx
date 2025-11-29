@@ -3391,8 +3391,9 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
 	//PRINTF("t113_tconlvds_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
+	const unsigned sel = 0x02; // 000: PLL_VIDEO0(1X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(1X),  011: PLL_VIDEO1(4X)
 	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-		2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
+		sel * (UINT32_C(1) << 24) |
 		0;
  	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 	//PRINTF("t113_tconlvds_CCU_configuration: BOARD_TCONLCDFREQ=%" PRIuFAST32 " MHz\n", (uint_fast32_t) BOARD_TCONLCDFREQ / 1000 / 1000);
@@ -3419,12 +3420,13 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 
 	/* Configure TCONLCD clock */
 	unsigned prei = 0;
+	const unsigned sel = 0x03;	// CLK_SRC_SEL 011: PLL_VIDEO1(4X)
 	const unsigned divider = calcdivround2(allwnr_t113_get_video1pllx4_freq(), needfreq);
 	//PRINTF("t113_tconlvds_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
 	ASSERT(divider >= 1 && divider <= 16);
 	// LVDS
     TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x0F) << 0)) |
-		0x03 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 011: PLL_VIDEO1(4X)
+		sel * (UINT32_C(1) << 24) |
 		prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
 		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
 		0;
