@@ -5981,7 +5981,7 @@ restart:
 	}
 	;
 
-	unsigned w = 5000;
+	unsigned w = 500;
 	do {
 		size_t rbflength;
 		const uint8_t * const rbfbase = getrbfimage(& rbflength);
