@@ -191,7 +191,7 @@
 
 #elif 1
 
-	#define LCDMODE_HXD_C067BHW8843ANT 1	/* HXD-C067BHW8843ANT panel (480*1280) */
+	#define LCDMODE_HXD_C067BHW8843ANT 1	/* HXD-C067BHW8843ANT panel (600*1280) */
 
 	//#define LCDMODE_PALETTE256 1	/* Экран 8 бит, L8 */
 	#define LCDMODE_RGB565 1	/* Экран 16 бит */

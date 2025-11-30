@@ -1049,8 +1049,9 @@
 	#define HARDWARE_LVDS_INITIALIZE() do { \
 		arm_hardware_piod_outputs(UINT32_C(1) << 22, 1 * UINT32_C(1) << 22); \
 		arm_hardware_piog_outputs(UINT32_C(1) << 11, 0 * UINT32_C(1) << 22); \
-		local_delay_ms(50); \
+		local_delay_ms(100); \
 		arm_hardware_piog_outputs(UINT32_C(1) << 11, 1 * UINT32_C(1) << 22); \
+		local_delay_ms(120); \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF3); 	/* PD0 LVDS0_V0P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF3); 	/* PD1 LVDS0_V0N */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF3); 	/* PD2 LVDS0_V1P */ \

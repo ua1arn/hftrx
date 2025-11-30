@@ -1519,7 +1519,7 @@ static const videomode_t vdmode0 =
 
 #elif LCDMODE_HXD_C067BHW8843ANT
 
-/* HXD-C067BHW8843ANT  6.75" 480*1280 LVDS */
+/* HXD-C067BHW8843ANT  6.75" 600*1280 LVDS */
 static const videomode_t vdmode0 =
 {
 	// thd 480

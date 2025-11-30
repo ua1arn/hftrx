@@ -3534,7 +3534,17 @@ static void t113_lvds_set_digital_logic(const videomode_t * vdmode)
 #if defined (LCD_LVDS_IF_REG_VALUE)
 
 	TCONLCD_PTR->LCD_LVDS_IF_REG = LCD_LVDS_IF_REG_VALUE;
-
+	// Vasilius st.Rock
+	TCONLCD_PTR->LCD_LVDS_IF_REG =
+					  (0x1 << 31) |  // LCD_LVDS_CLK_SEL
+					  (0x1 << 20) |  // LCD_LVDS_EN
+					  (0x0 << 27) |  // 0: NS mode 1: JEIDA mode
+					  (0x0 << 23) |  // LCD_LVDS_CORRECT_MODE  0: Mode0  1: Mode1
+					  (0x0 <<  4) |	 // LCD_LVDS_CLK_POL 0: Reverse  1: Normal
+					  (0x0 <<  0) |  // LCD_LVDS_DATA_POL  0: Reverse  1: Normal
+					   0;
+	// Vasilius st.Rock
+	TCONLCD_PTR->LCD_HV_IF_REG = 0x0000000;
 #elif CPUSTYLE_H3
 	// No LVDS outpit
 
@@ -3795,6 +3805,19 @@ static void t113_tconlcd_set_sequence_parameters(const videomode_t * vdmode)
 		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
 		0;
 
+	// Vasilius st.Rock
+	TCONLCD_PTR->LCD_BASIC0_REG = (((600  - 1) & 0xFFF) << 16) |
+	           (((1280 - 1) & 0xFFF) <<  0) | 0;
+
+	TCONLCD_PTR->LCD_BASIC1_REG = (((692  - 1) & 0xFFF) << 16) |
+	           (((36 - 1) & 0xFFF) << 0) | 0;
+
+	TCONLCD_PTR->LCD_BASIC2_REG = (((1306  * 2) & 0xFFF) << 16) |
+	           (((8 - 1) & 0xFFF) << 0) | 0;
+
+	TCONLCD_PTR->LCD_BASIC3_REG = (((10 - 1) & 0x3FF) << 16) |
+	           (((2 - 1) & 0x3FF) << 0)  | 0;
+
 #endif
 #endif /* defined (TCONLCD_PTR) */
 }
@@ -3852,14 +3875,16 @@ static void t113_open_IO_output(const videomode_t * vdmode)
 	TCONLCD_PTR->LCD_IO_TRI_REG = 0;
 	// 5.1.6.20 0x0088 LCD volatile Polarity Register (Default Value: 0x0000_0000)
 	// io_polarity
-	TCONLCD_PTR->LCD_IO_POL_REG = val;
+	// Vasilius st.Rock
+	TCONLCD_PTR->LCD_IO_POL_REG = 0;//val;
 	//t113_tconlcd_set_dither(pdat);
 	// 31: TCON_FRM_EN: 0: disable, 1: enable
 	// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
 	// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
 	// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
 	/* режим и формат выхода */
-	TCONLCD_PTR->LCD_FRM_CTL_REG = TCON_FRM_MODE_VAL;
+	// Vasilius st.Rock
+	TCONLCD_PTR->LCD_FRM_CTL_REG = 0;//TCON_FRM_MODE_VAL;
 #endif
 #endif /* defined (TCONLCD_PTR) */
 }
