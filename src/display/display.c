@@ -1534,7 +1534,7 @@ static const videomode_t vdmode0 =
 
 	// SEE ALSO https://admin.osptek.com/uploads/ICNL_9707_Datasheet_310cf76474.pdf
 
-	.width = 640,			/* LCD PIXEL WIDTH            */
+	.width = 600,			/* LCD PIXEL WIDTH            */
 	.hsync = 2,				/* Horizontal synchronization */
 	.hbp = 44,				/* Horizontal back porch      */
 	.hfp = 46,				/* Horizontal front porch */
@@ -1547,8 +1547,8 @@ static const videomode_t vdmode0 =
 	// MODE: DE/SYNC mode select.
 	// DE MODE: MODE="1", VS and HS must pull high.
 	// SYNC MODE: MODE="0". DE must be grounded
-	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
-	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.vsyncneg = !1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = !1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 	.fps = 60,	/* frames per second */
