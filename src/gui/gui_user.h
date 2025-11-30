@@ -1,12 +1,12 @@
 #ifndef GUI_USER_H_INCLUDED
 #define GUI_USER_H_INCLUDED
 
-#include "src/gui/gui_port_include.h"
+#include "gui_port_include.h"
 
 #if WITHTOUCHGUI
 
-#include "src/gui/gui.h"
-#include "src/gui/gui_structs.h"
+#include "framework/gui.h"
+#include "framework/gui_structs.h"
 
 void gui_user_actions_after_close_window(void);
 void footer_buttons_state(uint_fast8_t state, ...);

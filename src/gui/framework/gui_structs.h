@@ -1,14 +1,14 @@
 #ifndef GUI_STRUCTS_H_INCLUDED
 #define GUI_STRUCTS_H_INCLUDED
 
-#include "src/gui/gui_port_include.h"
+#include "../gui_port_include.h"
 
 #if WITHTOUCHGUI
 
 #include "gui_fonts.h"
 #include "gui_settings.h"
 #include "gui_fonts.h"
-#include "gui_port.h"
+#include "../gui_port.h"
 
 #define IS_BUTTON_PRESS			(type == TYPE_BUTTON && action == PRESSED)
 #define IS_BUTTON_LONG_PRESS	(type == TYPE_BUTTON && action == LONG_PRESSED)

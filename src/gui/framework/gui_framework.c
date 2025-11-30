@@ -7,12 +7,11 @@
 // Touch GUI от RA4ASN
 
 
-#include "src/gui/gui_port_include.h"
+#include "../gui_port_include.h"
 
 #if WITHTOUCHGUI
 
 #include "gui.h"
-#include "gui_user.h"
 #include "gui_system.h"
 #include "gui_structs.h"
 #include "gui_settings.h"
@@ -21,7 +20,8 @@
 #include "gui_events.h"
 #include "utils.h"
 #include "gui_fonts.h"
-#include "gui_port.h"
+#include "../gui_user.h"
+#include "../gui_port.h"
 
 static btn_bg_t btn_bg[] = {
 	{ 130, 35, },

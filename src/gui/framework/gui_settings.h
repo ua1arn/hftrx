@@ -5,7 +5,7 @@
 
 #if WITHTOUCHGUI
 
-#include "src/gui/gui.h"
+#include "gui.h"
 
 enum {
 	sliders_scale_thickness = 8,// ширина шкалы слайдера

@@ -6,24 +6,24 @@
 //
 // Touch GUI от RA4ASN
 
-#include "src/gui/gui_port_include.h"
+#include "../gui_port_include.h"
 
 #if WITHTOUCHGUI
 
 #include "gui.h"
-#include "gui_user.h"
 #include "gui_system.h"
 #include "gui_structs.h"
 #include "gui_settings.h"
 #include "gui_windows.h"
 #include "gui_objects.h"
+#include "../gui_user.h"
 
 void gui_user_actions_after_close_window(void);
 
 static window_t windows[] = {
 	#define X(window_id, parent_id, align_mode, title, is_close, onVisibleProcess) \
 		{ WINDOW_##window_id, WINDOW_##parent_id, align_mode, title, is_close, onVisibleProcess, },
-	#include "window_list.h"
+	#include "../window_list.h"
 	WINDOW_LIST(X)
 	#undef X
 	#undef WINDOW_LIST

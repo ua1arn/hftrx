@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 #include "formats.h"
-#include "gui/gui.h"
+#include "gui/framework/gui.h"
 
 #include <stdarg.h>
 #include <stdio.h>

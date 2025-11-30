@@ -6,18 +6,18 @@
 //
 // Touch GUI от RA4ASN
 
-#include "src/gui/gui_port_include.h"
+#include "gui_port_include.h"
 
 #if WITHTOUCHGUI
 
-#include "gui.h"
+#include "framework/gui.h"
+#include "framework/gui_system.h"
+#include "framework/gui_structs.h"
+#include "framework/gui_settings.h"
+#include "framework/gui_windows.h"
+#include "framework/gui_objects.h"
+#include "framework/utils.h"
 #include "gui_user.h"
-#include "gui_system.h"
-#include "gui_structs.h"
-#include "gui_settings.h"
-#include "gui_windows.h"
-#include "gui_objects.h"
-#include "utils.h"
 
 val_step_t enc2step[] = {
 	{ 100, "100 Hz", },

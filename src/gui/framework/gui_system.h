@@ -1,7 +1,7 @@
 #ifndef GUI_SYSTEM_H_INCLUDED
 #define GUI_SYSTEM_H_INCLUDED
 
-#include "src/gui/gui_port_include.h"
+#include "../gui_port_include.h"
 
 #if WITHTOUCHGUI
 #include "gui_structs.h"

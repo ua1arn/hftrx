@@ -6,7 +6,7 @@
 //
 // Touch GUI от RA4ASN
 
-#include "src/gui/gui_port_include.h"
+#include "../gui_port_include.h"
 
 #if WITHTOUCHGUI
 
@@ -16,7 +16,7 @@
 #include "gui_settings.h"
 #include "gui_windows.h"
 #include "gui_fonts.h"
-#include "gui_port.h"
+#include "../gui_port.h"
 
 uint16_t gui_get_window_draw_width(void)
 {

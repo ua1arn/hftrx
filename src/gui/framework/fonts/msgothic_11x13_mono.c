@@ -30,11 +30,11 @@
 //--------------------------------------------------------------
 // Includes
 //--------------------------------------------------------------
-#include "src/gui/gui_port_include.h"
+#include "../../gui_port_include.h"
 
 #if WITHTOUCHGUI
 
-#include "..\gui_fonts.h"
+#include "../gui_fonts.h"
 //--------------------------------------------------------------
 // Font-Daten
 // erstellt von UB mit PixelFontGenerator 1.8

@@ -1,8 +1,8 @@
-#include "src/gui/gui_port_include.h"
+#include "../gui_port_include.h"
 
 #if WITHTOUCHGUI
 #include "gui_fonts.h"
-#include "gui_port.h"
+#include "../gui_port.h"
 
 //--------------------------------------------------------------
 // Рисует ASCII символ шрифтом одного размера на позиции х, у.

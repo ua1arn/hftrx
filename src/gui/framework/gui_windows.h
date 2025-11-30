@@ -1,11 +1,11 @@
 #ifndef GUI_WINDOWS_H
 #define GUI_WINDOWS_H
 
-#include "src/gui/gui_port_include.h"
+#include "../gui_port_include.h"
 
 #if WITHTOUCHGUI
 
-#include "src/gui/gui_structs.h"
+#include "gui_structs.h"
 
 window_t * get_win(uint8_t window_id);
 void move_window(window_t * win, int_fast16_t ax, int_fast16_t ay);
@@ -21,7 +21,7 @@ uint8_t is_winmain_init(void);
 
 typedef enum {
     #define X(window_id, parent_id, align_mode, title, is_close, onVisibleProcess) WINDOW_##window_id,
-	#include "window_list.h"
+	#include "../window_list.h"
     WINDOW_LIST(X)
     #undef X
 	#undef WINDOW_LIST

@@ -8,7 +8,7 @@
 #if LINUX_SUBSYSTEM && WITHSDL2VIDEO
 
 #include "linux_subsystem.h"
-#include "gui/gui_events.h"
+#include "gui/framework/gui_events.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
