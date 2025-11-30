@@ -489,11 +489,11 @@ static const getmmudesc_t arch32_table_4k =
 // Bit 63 - Strong order
 // Bit 62 - Cacheable
 // Bit 61 - Buffer
-#define vRAM_PBMT 0x03
-#define vNCRAM_PBMT 0x00
-#define vDEVICE_PBMT 0x04
+#define vRAM_PBMT 0x03		// Cacheable memory
+#define vNCRAM_PBMT 0x00	// Non-cacheable memory
+#define vDEVICE_PBMT 0x04	// Non-bufferable device
 
-#define vTABLE_PBMT 0x00
+#define vTABLE_PBMT 0x00	// Pointer to next level of page table
 
 #define vRSW 0x00
 #define vD 0x01
@@ -530,7 +530,7 @@ static uint_fast64_t rv64_sv39_mtable(uint_fast64_t addr, int level)
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return RV64_SV39_PTE(vTABLE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
+	return RV64_SV39_PTE(vTABLE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, 0*vX, 0*vW, 0*vR);
 }
 static uint_fast64_t rv64_mnoaccess(uint_fast64_t addr)
 {
