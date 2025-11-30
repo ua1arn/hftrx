@@ -476,6 +476,12 @@ static const getmmudesc_t arch32_table_4k =
 		(1) * (UINT64_C(1) << 0) | /* V: it indicates whether the PTE is valid or not */ \
 	0)
 
+//	for Sv39 PTESIZE=8 and LEVELS=3
+//	for Sv48 PTESIZE=8 and LEVELS=4
+//	for Sv57 PTESIZE=8 and LEVELS=5
+// 	Any level of PTE may be a leaf PTE, so
+//		in addition to 4 KiB pages, Sv39 supports 2 MiB megapages and 1 GiB gigapages
+
 #define RV64_SV39_VA_PPN2(va) ((va >> 30) & UINT64_C(0x1FF))	// get PPN[2] from virtual address
 #define RV64_SV39_VA_PPN1(va) ((va >> 21) & UINT64_C(0x1FF))	// get PPN[1] from virtual address
 #define RV64_SV39_VA_PPN0(va) ((va >> 12) & UINT64_C(0x1FF))	// get PPN[0] from virtual address
