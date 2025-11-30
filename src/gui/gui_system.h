@@ -33,6 +33,8 @@ void gui_print_mono(uint16_t x, uint16_t y, const char * text, const gui_mono_fo
 void gui_print_prop(uint16_t x, uint16_t y, const char * text, const gui_prop_font_t * font, gui_color_t color);
 uint16_t get_strwidth_mono(const char * str, const gui_mono_font_t * font);
 uint16_t get_strwidth_prop(const char * str, const gui_prop_font_t * font);
+uint16_t get_strheight_mono(const UB_Font32 * font);
+uint16_t get_strheight_prop(const UB_pFont32 * font);
 void gui_drawDashedRectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t dashLength, gui_color_t color);
 const gui_drawbuf_t * gui_get_drawbuf(void);
 

@@ -532,7 +532,6 @@ void gui_main_process(void)
 
 	if (is_winmain_init())
 	{
-		uint8_t interval_btn = 3, x = 0;
 		gui_enc2_menu.updated = 1;
 		gui_keyboard.clean = 0;
 		gui_keyboard.digits_only = 0;
@@ -546,15 +545,15 @@ void gui_main_process(void)
 		uint16_t h = gui_obj_get_int_prop("tf_debug", GUI_OBJ_HEIGHT);
 #endif /* WITHGUIDEBUG */
 
-		gui_obj_create("btn_main00", 86, 44, 0, 1, "RX");				// btn_txrx
-		gui_obj_create("btn_main01", 86, 44, 0, 0, "Bands");			// btn_Bands
-		gui_obj_create("btn_main02", 86, 44, 0, 0, "Memory");			// btn_Memory
-		gui_obj_create("btn_main03", 86, 44, 0, 0, "Receive|options");	// btn_Receive
-		gui_obj_create("btn_main04", 86, 44, 0, 1, "");					// btn_notch
-		gui_obj_create("btn_main05", 86, 44, 0, 0, "Speaker|on air");	// btn_speaker
-		gui_obj_create("btn_main06", 86, 44, 0, 0, "");					// btn_var
-		gui_obj_create("btn_main07", 86, 44, 0, 0, "");					// btn_ft8
-		gui_obj_create("btn_main08", 86, 44, 0, 0, "Options");			// btn_Options
+		gui_obj_create("btn_main00", common_btn_width, common_btn_height, 0, 1, "RX");				// btn_txrx
+		gui_obj_create("btn_main01", common_btn_width, common_btn_height, 0, 0, "Bands");			// btn_Bands
+		gui_obj_create("btn_main02", common_btn_width, common_btn_height, 0, 0, "Memory");			// btn_Memory
+		gui_obj_create("btn_main03", common_btn_width, common_btn_height, 0, 0, "Receive|options");	// btn_Receive
+		gui_obj_create("btn_main04", common_btn_width, common_btn_height, 0, 1, "");					// btn_notch
+		gui_obj_create("btn_main05", common_btn_width, common_btn_height, 0, 0, "Speaker|on air");	// btn_speaker
+		gui_obj_create("btn_main06", common_btn_width, common_btn_height, 0, 0, "");					// btn_var
+		gui_obj_create("btn_main07", common_btn_width, common_btn_height, 0, 0, "");					// btn_ft8
+		gui_obj_create("btn_main08", common_btn_width, common_btn_height, 0, 0, "Options");			// btn_Options
 
 #if WITHFT8
 		gui_obj_set_prop("btn_main07", GUI_OBJ_TEXT, "FT8");
@@ -569,12 +568,12 @@ void gui_main_process(void)
 			gui_obj_create(buf, i * infobar_label_width, infobar_1st_str_y, infobar_label_width, infobar_2nd_str_y, 0);
 		}
 
-		uint16_t p = infobar_2nd_str_y + SMALLCHARH2 + 5;
+		uint16_t p = infobar_2nd_str_y + get_strheight_prop(& INFOBAR_FONTP) + 5;
 		gui_obj_create("ta_freq", 0, p, WITHGUIMAXX, WITHGUIMAXY - FOOTER_HEIGHT - p, 1);
 
 		char * btn0 = get_obj_name_by_idx(TYPE_BUTTON, 0);
-		gui_obj_set_prop(btn0, GUI_OBJ_POS, 0, WITHGUIMAXY - 45);
-		gui_arrange_objects_from(btn0, 9, 9, interval_btn);
+		gui_obj_set_prop(btn0, GUI_OBJ_POS, 0, WITHGUIMAXY - common_btn_height - 1);
+		gui_arrange_objects_from(btn0, 9, 9, common_btn_interval);
 
 		load_settings();
 		hamradio_set_lock(0);

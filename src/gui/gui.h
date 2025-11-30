@@ -9,10 +9,10 @@ extern "C" {
 
 #if WITHTOUCHGUI
 
-#define WITHGUIMAXX				800
-#define WITHGUIMAXY				480
+#define WITHGUIMAXX				DIM_X
+#define WITHGUIMAXY				DIM_Y
 #define GUI_TRANSPARENT_WINDOWS	1
-#define FOOTER_HEIGHT			50
+#define FOOTER_HEIGHT			(WITHGUIMAXX / 16)
 
 typedef struct {
 	char name[20];

@@ -151,4 +151,14 @@ uint16_t get_strwidth_mono(const char * str, const UB_Font32 * font) {
 	return strlen(str) * font->width;
 }
 
+uint16_t get_strheight_mono(const UB_Font32 * font)
+{
+	return font->height;
+}
+
+uint16_t get_strheight_prop(const UB_pFont32 * font)
+{
+	return font->height;
+}
+
 #endif /* WITHTOUCHGUI */
