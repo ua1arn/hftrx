@@ -486,7 +486,15 @@ static const getmmudesc_t arch32_table_4k =
 #define RV64_SV39_VA_PPN1(va) ((va >> 21) & UINT64_C(0x1FF))	// get PPN[1] from virtual address
 #define RV64_SV39_VA_PPN0(va) ((va >> 12) & UINT64_C(0x1FF))	// get PPN[0] from virtual address
 
-#define vPMBT 0x00
+// Bit 63 - Strong order
+// Bit 62 - Cacheable
+// Bit 61 - Buffer
+#define vRAM_PMBT 0x03
+#define vNCRAM_PMBT 0x00
+#define vDEVICE_PMBT 0x04
+
+#define vTABLE_PMBT 0x00
+
 #define vRSW 0x00
 #define vD 0x01
 #define vA 0x01
@@ -501,28 +509,28 @@ static uint_fast64_t rv64_sv39_mcached(uint_fast64_t addr, int ro, int xn)
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return RV64_SV39_PTE(vPMBT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
+	return RV64_SV39_PTE(vRAM_PMBT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
 static uint_fast64_t rv64_sv39_mncached(uint_fast64_t addr, int ro, int xn)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return RV64_SV39_PTE(vPMBT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
+	return RV64_SV39_PTE(vNCRAM_PMBT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
 static uint_fast64_t rv64_sv39_mdevice(uint_fast64_t addr)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return RV64_SV39_PTE(vPMBT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
+	return RV64_SV39_PTE(vDEVICE_PMBT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
 static uint_fast64_t rv64_sv39_mtable(uint_fast64_t addr, int level)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return RV64_SV39_PTE(vPMBT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
+	return RV64_SV39_PTE(vTABLE_PMBT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
 static uint_fast64_t rv64_mnoaccess(uint_fast64_t addr)
 {
