@@ -460,31 +460,67 @@ static const getmmudesc_t arch32_table_4k =
 
 // See Table 4.2: Encoding of PTE Type field.
 
-#define	TTB_PARA_RV64_CACHED(addr, ro, xn) 	((0 * (addr) & ~ UINT64_C(0xFFF)) | (0x00u << 1) | 0x01)
-#define	TTB_PARA_RV64_NCACHED(addr, ro, xn) 	((0 * (addr) & ~ UINT64_C(0xFFF)) | (0x00u << 1) | 0x01)
-#define	TTB_PARA_RV64_DEVICE(addr)			((0 * (addr) & ~ UINT64_C(0xFFF)) | (0x00u << 1) | 0x01)
-#define	TTB_PARA_RV64_PAGE(addr) 		0
-#define	TTB_PARA_RV64_NO_ACCESS(addr) 		0
+#define RV64_SV39_PTE(pbmt, ppn2, ppn1, ppn0, rsw, d, a, g, u, x, w, r) ( \
+		((pbmt) & 0x03) * (UINT64_C(1) << 61) | /* PBMT */ \
+		((ppn2) & 0x03FFFFFF) * (UINT64_C(1) << 28) | /* PPN[2] */ \
+		((ppn1) & 0x1FF) * (UINT64_C(1) << 19) | /* PPN[1] */ \
+		((ppn0) & 0x1FF) * (UINT64_C(1) << 10) | /* PPN[0] */ \
+		((rsw) & 0x03) * (UINT64_C(1) << 8) | /* RSW */ \
+		!! (d) * (UINT64_C(1) << 7) | /* D */ \
+		!! (a) * (UINT64_C(1) << 6) | /* A */ \
+		!! (g) * (UINT64_C(1) << 5) | /* G */ \
+		!! (u) * (UINT64_C(1) << 4) | /* U */ \
+		!! (x) * (UINT64_C(1) << 3) | /* X */ \
+		!! (w) * (UINT64_C(1) << 2) | /* W */ \
+		!! (r) * (UINT64_C(1) << 1) | /* R */ \
+		(1) * (UINT64_C(1) << 0) | /* V */ \
+	0)
+
+#define RV64_SV39_VA_PPN2(va) ((va >> 30) & UINT64_C(0x1FF))	// get PPN[2] from virtual address
+#define RV64_SV39_VA_PPN1(va) ((va >> 21) & UINT64_C(0x1FF))	// get PPN[1] from virtual address
+#define RV64_SV39_VA_PPN0(va) ((va >> 12) & UINT64_C(0x1FF))	// get PPN[0] from virtual address
+
+#define vPMBT 0x00
+#define vRSW 0x00
+#define vD 0x00
+#define vA 0x00
+#define vG 0x00
+#define vU 0x00
+#define vX 0x00
+#define vW 0x00
+#define vR 0x00
 
 static uint_fast64_t rv64_mcached(uint_fast64_t addr, int ro, int xn)
 {
-	return TTB_PARA_RV64_CACHED(addr, ro, xn);
+	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
+	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
+	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
+	return RV64_SV39_PTE(vPMBT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
 static uint_fast64_t rv64_mncached(uint_fast64_t addr, int ro, int xn)
 {
-	return TTB_PARA_RV64_NCACHED(addr, ro, xn);
+	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
+	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
+	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
+	return RV64_SV39_PTE(vPMBT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
 static uint_fast64_t rv64_mdevice(uint_fast64_t addr)
 {
-	return TTB_PARA_RV64_DEVICE(addr);
+	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
+	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
+	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
+	return RV64_SV39_PTE(vPMBT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
 static uint_fast64_t rv64_mtable(uint_fast64_t addr, int level)
 {
-	return TTB_PARA_RV64_PAGE(addr);
+	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
+	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
+	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
+	return RV64_SV39_PTE(vPMBT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
 static uint_fast64_t rv64_mnoaccess(uint_fast64_t addr)
 {
-	return 0;
+	return UINT64_C(0);
 }
 
 static const getmmudesc_t rv64_table =
@@ -630,8 +666,9 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 
 #elif CPUSTYLE_RISCV
 
-	#define RV64_LEVEL0_SIZE 512
-	#define RV64_LEVEL1_SIZE (RV64_LEVEL0_SIZE * 4)
+	// SV39 model - with 4KB size pages of phy memory
+	#define RV64_LEVEL1_SIZE (1024)	// 4 GB
+	#define RV64_LEVEL0_SIZE 1
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xlevel1_pagetable_u64 [RV64_LEVEL1_SIZE * sizeof (uint64_t)];	// Used as PPN in SATP register
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xttb0_base_u64 [RV64_LEVEL0_SIZE * sizeof (uint64_t)];	// Used as PPN in SATP register
 
@@ -640,7 +677,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 		{
 			.arch = & rv64_table,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
-			.phypageszlog2 = 21,	// 2MB
+			.phypageszlog2 = 12,	// 4KB
 			.pagecount = RV64_LEVEL1_SIZE,
 			.table = xlevel1_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
