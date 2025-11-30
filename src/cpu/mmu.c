@@ -466,14 +466,14 @@ static const getmmudesc_t arch32_table_4k =
 		((ppn1) & 0x1FF) * (UINT64_C(1) << 19) | /* PPN[1] */ \
 		((ppn0) & 0x1FF) * (UINT64_C(1) << 10) | /* PPN[0] */ \
 		((rsw) & 0x03) * (UINT64_C(1) << 8) | /* RSW */ \
-		!! (d) * (UINT64_C(1) << 7) | /* D */ \
-		!! (a) * (UINT64_C(1) << 6) | /* A */ \
-		!! (g) * (UINT64_C(1) << 5) | /* G */ \
-		!! (u) * (UINT64_C(1) << 4) | /* U */ \
-		!! (x) * (UINT64_C(1) << 3) | /* X */ \
-		!! (w) * (UINT64_C(1) << 2) | /* W */ \
-		!! (r) * (UINT64_C(1) << 1) | /* R */ \
-		(1) * (UINT64_C(1) << 0) | /* V */ \
+		!! (d) * (UINT64_C(1) << 7) | /* D: it indicates whether the virtual page has been written since the last time the D bit was cleared. */ \
+		!! (a) * (UINT64_C(1) << 6) | /* A: it indicates whether the virtual page has been read written, or fetched from since the last time the A bit was cleared. */ \
+		!! (g) * (UINT64_C(1) << 5) | /* G: this bit designates Global mapping. Global mappings are those that exist in all address space. */ \
+		!! (u) * (UINT64_C(1) << 4) | /* U: it indicates whether the page is accessible to user mode or not. U-mode software may only access the page when U=1 if the SUM bit in the sstatus registeris set, supervisor mode software may also access pages with U=1 */ \
+		!! (x) * (UINT64_C(1) << 3) | /* it indicate if the PTE is executable or not */ \
+		!! (w) * (UINT64_C(1) << 2) | /* W: it indicate if the PTE is writeable or not */ \
+		!! (r) * (UINT64_C(1) << 1) | /* R: it indicates if the PTE is readable or not */ \
+		(1) * (UINT64_C(1) << 0) | /* V: it indicates whether the PTE is valid or not */ \
 	0)
 
 #define RV64_SV39_VA_PPN2(va) ((va >> 30) & UINT64_C(0x1FF))	// get PPN[2] from virtual address
@@ -482,13 +482,13 @@ static const getmmudesc_t arch32_table_4k =
 
 #define vPMBT 0x00
 #define vRSW 0x00
-#define vD 0x00
-#define vA 0x00
-#define vG 0x00
-#define vU 0x00
-#define vX 0x00
-#define vW 0x00
-#define vR 0x00
+#define vD 0x01
+#define vA 0x01
+#define vG 0x01
+#define vU 0x01
+#define vX 0x01
+#define vW 0x01
+#define vR 0x01
 
 static uint_fast64_t rv64_sv39_mcached(uint_fast64_t addr, int ro, int xn)
 {
