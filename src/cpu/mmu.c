@@ -490,28 +490,28 @@ static const getmmudesc_t arch32_table_4k =
 #define vW 0x00
 #define vR 0x00
 
-static uint_fast64_t rv64_mcached(uint_fast64_t addr, int ro, int xn)
+static uint_fast64_t rv64_sv39_mcached(uint_fast64_t addr, int ro, int xn)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
 	return RV64_SV39_PTE(vPMBT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
-static uint_fast64_t rv64_mncached(uint_fast64_t addr, int ro, int xn)
+static uint_fast64_t rv64_sv39_mncached(uint_fast64_t addr, int ro, int xn)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
 	return RV64_SV39_PTE(vPMBT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
-static uint_fast64_t rv64_mdevice(uint_fast64_t addr)
+static uint_fast64_t rv64_sv39_mdevice(uint_fast64_t addr)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
 	return RV64_SV39_PTE(vPMBT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
-static uint_fast64_t rv64_mtable(uint_fast64_t addr, int level)
+static uint_fast64_t rv64_sv39_mtable(uint_fast64_t addr, int level)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
@@ -523,13 +523,13 @@ static uint_fast64_t rv64_mnoaccess(uint_fast64_t addr)
 	return UINT64_C(0);
 }
 
-static const getmmudesc_t rv64_table =
+static const getmmudesc_t rv64_sv32_table =
 {
-	.mcached = rv64_mcached,
-	.mncached = rv64_mncached,
-	.mdevice = rv64_mdevice,
+	.mcached = rv64_sv39_mcached,
+	.mncached = rv64_sv39_mncached,
+	.mdevice = rv64_sv39_mdevice,
 	.mnoaccess = rv64_mnoaccess,
-	.mtable = rv64_mtable
+	.mtable = rv64_sv39_mtable
 };
 
 
@@ -675,7 +675,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 	static const mmulayout_t mmuinfo [] =
 	{
 		{
-			.arch = & rv64_table,
+			.arch = & rv64_sv32_table,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
 			.phypageszlog2 = 12,	// 4KB
 			.pagecount = RV64_LEVEL1_SIZE,
@@ -686,7 +686,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 		{
-			.arch = & rv64_table,
+			.arch = & rv64_sv32_table,
 			.phyaddr = (uintptr_t) xlevel1_pagetable_u64,
 			.phypageszlog2 = 12,	// 4KB
 			.pagecount = RV64_LEVEL0_SIZE,
