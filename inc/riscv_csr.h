@@ -3971,32 +3971,26 @@ static inline void csr_clr_bits_mhint(uint_xlen_t mask) {
 }
 
 
-// todo:
-//	../../src/cpu/mmu.c:698: Error: unknown CSR `smeh'
-//	../../src/cpu/mmu.c:705: Error: unknown CSR `smel'
-//	../../src/cpu/mmu.c:629: Error: unknown CSR `smcir'
-//	../../src/cpu/mmu.c:639: Error: unknown CSR `smir'
-
 static inline void csr_write_smeh(uint_xlen_t value) {
-    __asm__ volatile ("csrw    0x7C5, %0"
+    __asm__ volatile ("csrw    0x9C2, %0"
                       : /* output: none */
                       : "r" (value) /* input : from register */
                       : /* clobbers: none */);
 }
 static inline void csr_write_smel(uint_xlen_t value) {
-    __asm__ volatile ("csrw    0x7C5, %0"
+    __asm__ volatile ("csrw    0x9C1, %0"
                       : /* output: none */
                       : "r" (value) /* input : from register */
                       : /* clobbers: none */);
 }
 static inline void csr_write_smcir(uint_xlen_t value) {
-    __asm__ volatile ("csrw    0x7C5, %0"
+    __asm__ volatile ("csrw    0x9C3, %0"
                       : /* output: none */
                       : "r" (value) /* input : from register */
                       : /* clobbers: none */);
 }
 static inline void csr_write_smir(uint_xlen_t value) {
-    __asm__ volatile ("csrw    0x7C5, %0"
+    __asm__ volatile ("csrw    0x9C0, %0"
                       : /* output: none */
                       : "r" (value) /* input : from register */
                       : /* clobbers: none */);
