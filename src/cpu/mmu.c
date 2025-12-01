@@ -814,33 +814,43 @@ int RV_Sv39_Create_PageMapping(Sv39_PTE_cfg_t *cfg, uintptr_t *tlb_index, volati
 #define vW 0x01
 #define vR 0x01
 
+// 4 KB pages
 static uint_fast64_t rv64_sv39_mcached(uint_fast64_t addr, int ro, int xn)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return 0;//RV64_SV39_PTE(vRAM_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
+	return RV64_SV39_PTE(vRAM_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
+// 4 KB pages
 static uint_fast64_t rv64_sv39_mncached(uint_fast64_t addr, int ro, int xn)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return 0;//RV64_SV39_PTE(vNCRAM_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
+	return RV64_SV39_PTE(vNCRAM_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
+// 4 KB pages
 static uint_fast64_t rv64_sv39_mdevice(uint_fast64_t addr)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return 0;//RV64_SV39_PTE(vDEVICE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
+	return RV64_SV39_PTE(vDEVICE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
 static uint_fast64_t rv64_sv39_mtable(uint_fast64_t addr, int level)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return 0;//RV64_SV39_PTE(vTABLE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, 0*vX, 0*vW, 0*vR);
+	switch (level)
+	{
+	default:
+	case 0:	// 1 GB pages
+		return RV64_SV39_PTE(vTABLE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, 0*vX, 0*vW, 0*vR);
+	case 1:	// 2 MB pages
+		return RV64_SV39_PTE(vTABLE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, 0*vX, 0*vW, 0*vR);
+	}
 }
 static uint_fast64_t rv64_mnoaccess(uint_fast64_t addr)
 {
@@ -978,11 +988,15 @@ static unsigned mmulayout_poke_u128_le(uint8_t * b, uint_fast64_t v)
 
 static unsigned mmulayout_poke_u64_le(uint8_t * b, uint_fast64_t v)
 {
+	* (uint64_t *) b = v;
+	return 8;
 	return USBD_poke_u64(b, v);
 }
 
 static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 {
+	* (uint32_t *) b = v;
+	return 4;
 	return USBD_poke_u32(b, v);
 }
 
@@ -996,8 +1010,8 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 	/* third level: 4KB */
 	#define nGB	4	// system RAM size in GiB
 	#define RV64_LEVEL0_SIZE (nGB)
-	#define RV64_LEVEL1_SIZE (256 * nGB)
-	#define RV64_LEVEL2_SIZE (256 * nGB)
+	#define RV64_LEVEL1_SIZE (512 * nGB)
+	#define RV64_LEVEL2_SIZE (512 * 512 * nGB)
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xlevel2_pagetable_u64 [RV64_LEVEL2_SIZE * sizeof (uint64_t)];	// Used as PPN in SATP register
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xlevel1_pagetable_u64 [RV64_LEVEL1_SIZE * sizeof (uint64_t)];	// Used as PPN in SATP register
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xlevel0_pagetable_u64 [RV64_LEVEL0_SIZE * sizeof (uint64_t)];	// Used as PPN in SATP register
@@ -1013,26 +1027,26 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.table = xlevel2_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
 			.flag = 0,
-			.level = 0, // page table level (pass to mtable)
+			.level = 2,
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 		/* second level: 2MB */
 		{
 			.arch = & rv64_sv39_table,
 			.phyaddr = (uintptr_t) xlevel2_pagetable_u64,
-			.phypageszlog2 = 9,
+			.phypageszlog2 = 13,
 			.pagecount = RV64_LEVEL1_SIZE,
 			.table = xlevel1_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
 			.flag = 1,
-			.level = 0, // page table level (pass to mtable)
+			.level = 1,
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 		/* top level: 1GB */
 		{
 			.arch = & rv64_sv39_table,
 			.phyaddr = (uintptr_t) xlevel1_pagetable_u64,
-			.phypageszlog2 = 9,
+			.phypageszlog2 = 13,
 			.pagecount = RV64_LEVEL0_SIZE,
 			.table = xlevel0_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
