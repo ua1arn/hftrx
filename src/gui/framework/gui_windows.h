@@ -12,10 +12,10 @@ void move_window(window_t * win, int_fast16_t ax, int_fast16_t ay);
 void window_set_title_align(title_align_t align);
 void window_set_title(const char * text);
 void enable_window_move(void);
-void close_window(uint_fast8_t parent);
+void close_window(uint8_t parent);
 void open_window(window_t * win);
 void close_all_windows(void);
-void calculate_window_position(uint_fast8_t mode, ...);
+void calculate_window_position(uint8_t mode, ...);
 uint8_t is_win_init(void);
 uint8_t is_winmain_init(void);
 

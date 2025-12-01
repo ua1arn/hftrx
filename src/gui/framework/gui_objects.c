@@ -57,19 +57,19 @@ uint16_t get_label_height2(const char * name)
 /* Рассчитать размеры текстового поля */
 void textfield_update_size(text_field_t * tf)
 {
-	ASSERT(tf != NULL);
+	GUI_ASSERT(tf != NULL);
 
 	tf->w = tf->font->width * tf->w_sim;
 	tf->h = tf->font->height * tf->h_str;
 
-	ASSERT(tf->w < WITHGUIMAXX);
-	ASSERT(tf->h < WITHGUIMAXY - window_title_height);
+	GUI_ASSERT(tf->w < WITHGUIMAXX);
+	GUI_ASSERT(tf->h < WITHGUIMAXY - window_title_height);
 }
 
 /* Добавить строку в текстовое поле */
 void textfield_add_string_old(text_field_t * tf, const char * str, gui_color_t color)
 {
-	ASSERT(tf != NULL);
+	GUI_ASSERT(tf != NULL);
 
 	tf_entry_t * rec = &  tf->string[tf->index];
 	strncpy(rec->text, str, TEXT_ARRAY_SIZE - 1);
@@ -84,7 +84,7 @@ void textfield_add_string(const char * name, const char * str, gui_color_t color
 	text_field_t * tf = (text_field_t *) find_gui_obj(TYPE_TEXT_FIELD, win, name);
 
 	tf_entry_t * rec = &  tf->string[tf->index];
-	ASSERT(rec);
+	GUI_ASSERT(rec);
 	strncpy(rec->text, str, TEXT_ARRAY_SIZE - 1);
 	rec->color_line = color;
 	tf->index ++;
@@ -105,7 +105,7 @@ void textfield_clean(const char * name)
 
 static obj_type_t parse_obj_name(const char * name)
 {
-	ASSERT(name);
+	GUI_ASSERT(name);
 
 	if (! strncmp(name, "btn_", 4))
 		return TYPE_BUTTON;
@@ -122,7 +122,7 @@ static obj_type_t parse_obj_name(const char * name)
 	else
 	{
 		PRINTF("Unrecognized GUI object type: %s\n", name);
-		ASSERT(0);
+		GUI_ASSERT(0);
 		return TYPE_DUMMY;
 	}
 }
@@ -188,8 +188,8 @@ uint8_t gui_obj_create(const char * name, ...)
 		memcpy(bh, & button_default, sizeof(button_t));
 
 		bh->parent = window_id;
-		bh->w = va_arg(arg, uint_fast16_t);
-		bh->h = va_arg(arg, uint_fast16_t);
+		bh->w = va_arg(arg, int);
+		bh->h = va_arg(arg, int);
 		bh->is_repeating = va_arg(arg, uint32_t);
 		bh->is_long_press = va_arg(arg, uint32_t);
 		strncpy(bh->name, obj_name, NAME_ARRAY_SIZE);
@@ -244,11 +244,11 @@ uint8_t gui_obj_create(const char * name, ...)
 		memcpy(ta, & ta_default, sizeof(touch_area_t));
 
 		ta->parent = window_id;
-		ta->x1 = va_arg(arg, uint_fast16_t);
-		ta->y1 = va_arg(arg, uint_fast16_t);
-		ta->w = va_arg(arg, uint_fast16_t);
-		ta->h = va_arg(arg, uint_fast16_t);
-		ta->is_trackable = va_arg(arg, uint_fast16_t);
+		ta->x1 = va_arg(arg, int);
+		ta->y1 = va_arg(arg, int);
+		ta->w = va_arg(arg, int);
+		ta->h = va_arg(arg, int);
+		ta->is_trackable = va_arg(arg, int);
 		strncpy(ta->name, obj_name, NAME_ARRAY_SIZE);
 		ta->visible = 1;
 		ta->index = win->ta_count;
@@ -577,7 +577,7 @@ void gui_arrange_objects(const char names[][NAME_ARRAY_SIZE], uint8_t count, uin
 	if (type != TYPE_BUTTON && type != TYPE_LABEL && type != TYPE_SLIDER)
 	{
 		PRINTF("%s: idx %d unsupported object type to arrange\n", __func__, 0);
-		ASSERT(0);
+		GUI_ASSERT(0);
 	}
 
 	uint16_t x = gui_obj_get_int_prop(names[0], GUI_OBJ_POS_X);
@@ -596,7 +596,7 @@ void gui_arrange_objects(const char names[][NAME_ARRAY_SIZE], uint8_t count, uin
 		if (typex != type)
 		{
 			PRINTF("%s: idx %d - arrange various objects not supported\n", __func__, i);
-			ASSERT(0);
+			GUI_ASSERT(0);
 		}
 
 		gui_obj_set_prop(obj, GUI_OBJ_POS_X, x + (w + interval) * col);
@@ -611,7 +611,7 @@ char * get_obj_name_by_idx(obj_type_t type, uint8_t idx)
 
 	if (type == TYPE_BUTTON)
 	{
-		ASSERT(idx < win->bh_count);
+		GUI_ASSERT(idx < win->bh_count);
 
 		strncpy(obj_name, win->bh_ptr[idx].name, NAME_ARRAY_SIZE);
 		obj_name_user(obj_name);
@@ -619,20 +619,20 @@ char * get_obj_name_by_idx(obj_type_t type, uint8_t idx)
 	}
 	else if (type == TYPE_LABEL)
 	{
-		ASSERT(idx < win->lh_count);
+		GUI_ASSERT(idx < win->lh_count);
 		strncpy(obj_name, win->lh_ptr[idx].name, NAME_ARRAY_SIZE);
 		obj_name_user(obj_name);
 		return obj_name;
 	}
 	else if (type == TYPE_SLIDER)
 	{
-		ASSERT(idx < win->sh_count);
+		GUI_ASSERT(idx < win->sh_count);
 		strncpy(obj_name, win->sh_ptr[idx].name, NAME_ARRAY_SIZE);
 		obj_name_user(obj_name);
 		return obj_name;
 	}
 
-	ASSERT(0);
+	GUI_ASSERT(0);
 	return NULL;
 }
 
@@ -647,7 +647,7 @@ static uint8_t get_obj_idx_by_name(window_t * win, obj_type_t type, const char *
 	else if (type == TYPE_SLIDER)
 		return ((slider_t *) p)->index;
 
-	ASSERT(0);
+	GUI_ASSERT(0);
 	return 0;
 }
 
@@ -663,7 +663,7 @@ void gui_arrange_objects_from(const char * name, uint8_t count, uint8_t cols, ui
 	if (type != TYPE_BUTTON && type != TYPE_LABEL && type != TYPE_SLIDER)
 	{
 		PRINTF("%s: idx %d unsupported object type to arrange\n", __func__, 0);
-		ASSERT(0);
+		GUI_ASSERT(0);
 	}
 
 	uint16_t x = gui_obj_get_int_prop(name, GUI_OBJ_POS_X);

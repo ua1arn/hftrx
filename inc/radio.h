@@ -3547,9 +3547,51 @@ typedef struct {
 	char name[10];
 } band_array_t;
 
+typedef struct {
+	char name[20];
+	uint8_t index;
+} menu_names_t;
+
 uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, uint_fast8_t is_bcast_need);
 uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band);
 void hamradio_goto_band_by_freq(uint_fast32_t f);
+uint_fast16_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals);
+uint_fast16_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index, uint_fast8_t max_count);
+void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
+uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, uint_fast8_t is_bcast_need);
+void hamradio_goto_band_by_freq(uint_fast32_t f);
+uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band);
+const char * hamradio_gui_edit_menu_item(uint_fast16_t index, int_least16_t rotate);
+void hamradio_clean_memory_cells(uint_fast8_t i);
+void hamradio_save_memory_cells(uint_fast8_t i);
+uint_fast32_t hamradio_load_memory_cells(uint_fast8_t cell, uint_fast8_t set);
+uint_fast8_t hamradio_get_submode(void);
+const char * hamradio_get_submode_label(uint8_t v);
+uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set);
+void hamradio_save_mic_profile(uint_fast8_t cell);
+void hamradio_clean_mic_profile(uint_fast8_t cell);
+void hamradio_load_gui_settings(void * ptr);
+void hamradio_save_gui_settings(const void * ptr);
+void hamradio_gui_enc2_update(void);
+uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit);
+uint_fast8_t hamradio_get_att_db(void);
+void hamradio_set_att_db(uint_fast8_t db);
+void hamradio_set_bw(uint_fast8_t v);
+uint_fast8_t hamradio_change_nr(uint_fast8_t v);
+uint_fast8_t hamradio_split_toggle(void);
+void hamradio_split_vfo_swap(void);
+void hamradio_split_mode_toggle(void);
+uint_fast8_t hamradio_get_gvfoab(void);
+uint_fast8_t hamradio_get_lfmmode(void);
+void hamradio_set_lfmmode(uint_fast8_t v);
+uint_fast16_t hamradio_get_lfmstop100k(void);
+void hamradio_set_lfmstop100k(uint_fast16_t v);
+uint_fast16_t hamradio_get_lfmtoffset(void);
+void hamradio_set_lfmtoffset(uint_fast16_t v);
+uint_fast16_t hamradio_get_lfmtinterval(void);
+void hamradio_set_lfmtinterval(uint_fast16_t v);
+void hamradio_lfm_disable(void);
+void hamradio_get_nmea_time(char * p, size_t sz);
 
 // шаг изменения значения параметра
 enum

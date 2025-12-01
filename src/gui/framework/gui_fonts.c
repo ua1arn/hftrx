@@ -147,7 +147,7 @@ uint16_t get_strwidth_prop(const char * str, const UB_pFont32 * font)
 
 // Возвращает ширину строки в пикселях, моноширинный шрифт
 uint16_t get_strwidth_mono(const char * str, const UB_Font32 * font) {
-	ASSERT(str != NULL);
+	GUI_ASSERT(str != NULL);
 	return strlen(str) * font->width;
 }
 

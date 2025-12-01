@@ -58,7 +58,7 @@ window_t * get_win(uint8_t window_id)
 	if (window_id == NO_PARENT_WINDOW)	//	костыль
 		return & windows[0];
 
-	ASSERT(window_id < WINDOWS_COUNT);
+	GUI_ASSERT(window_id < WINDOWS_COUNT);
 	return & windows[window_id];
 }
 
@@ -101,7 +101,7 @@ static void free_win_ptr (window_t * win)
 }
 
 /* Установка признака видимости окна */
-void close_window(uint_fast8_t parent_action) // 0 - не открывать parent window, 1 - открыть
+void close_window(uint8_t parent_action) // 0 - не открывать parent window, 1 - открыть
 {
 	uint8_t pwin = get_parent_window();
 
@@ -145,7 +145,7 @@ void enable_window_move(void)
 
 void move_window(window_t * win, int_fast16_t ax, int_fast16_t ay)
 {
-	ASSERT(win != NULL);
+	GUI_ASSERT(win != NULL);
 
 	// защита от переполнения экранных координат
 	if (win->x1 + ax < 0 || win->x1 + win->w + ax >= WITHGUIMAXX || win->y1 + ay < 0 || win->y1 + win->h + ay >= WITHGUIMAXY - FOOTER_HEIGHT)
@@ -161,13 +161,13 @@ void move_window(window_t * win, int_fast16_t ax, int_fast16_t ay)
 
 /* Расчет экранных координат окна */
 /* при mode = WINDOW_POSITION_MANUAL_SIZE в качестве необязательных параметров передать xmax и ymax */
-void calculate_window_position(uint_fast8_t mode, ...)
+void calculate_window_position(uint8_t mode, ...)
 {
 	window_t * win = get_win(get_parent_window());
-	uint_fast16_t title_length = strlen(win->title) * SMALLCHARW;
-	uint_fast16_t xmax = 0, ymax = 0, shift_x, shift_y, x_start, y_start;
+	uint16_t title_length = strlen(win->title) * SMALLCHARW;
+	uint16_t xmax = 0, ymax = 0, shift_x, shift_y, x_start, y_start;
 
-	ASSERT(win != NULL);
+	GUI_ASSERT(win != NULL);
 	win->size_mode = mode;
 
 	switch (mode)
@@ -176,8 +176,8 @@ void calculate_window_position(uint_fast8_t mode, ...)
 		{
 			va_list arg;
 			va_start(arg, mode);
-			xmax = va_arg(arg, uint_fast16_t);
-			ymax = va_arg(arg, uint_fast16_t);
+			xmax = va_arg(arg, int);
+			ymax = va_arg(arg, int);
 			va_end(arg);
 		}
 		break;
@@ -186,8 +186,8 @@ void calculate_window_position(uint_fast8_t mode, ...)
 		{
 			va_list arg;
 			va_start(arg, mode);
-			x_start = va_arg(arg, uint_fast16_t);
-			y_start = va_arg(arg, uint_fast16_t);
+			x_start = va_arg(arg, int);
+			y_start = va_arg(arg, int);
 			va_end(arg);
 		}
 		// no break
@@ -197,43 +197,43 @@ void calculate_window_position(uint_fast8_t mode, ...)
 		{
 			if (win->bh_ptr != NULL)
 			{
-				for (uint_fast8_t i = 0; i < win->bh_count; i++)
+				for (uint8_t i = 0; i < win->bh_count; i++)
 				{
 					const button_t * bh = & win->bh_ptr[i];
 					xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
 					ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
-					ASSERT(xmax < WITHGUIMAXX);
-					ASSERT(ymax < WITHGUIMAXY);
+					GUI_ASSERT(xmax < WITHGUIMAXX);
+					GUI_ASSERT(ymax < WITHGUIMAXY);
 				}
 			}
 
 			if (win->lh_ptr != NULL)
 			{
-				for (uint_fast8_t i = 0; i < win->lh_count; i++)
+				for (uint8_t i = 0; i < win->lh_count; i++)
 				{
 					const label_t * lh = & win->lh_ptr[i];
 					xmax = (xmax > lh->x + get_label_width(lh)) ? xmax : (lh->x + get_label_width(lh));
 					ymax = (ymax > lh->y + get_label_height(lh)) ? ymax : (lh->y + get_label_height(lh));
-					ASSERT(xmax < WITHGUIMAXX);
-					ASSERT(ymax < WITHGUIMAXY);
+					GUI_ASSERT(xmax < WITHGUIMAXX);
+					GUI_ASSERT(ymax < WITHGUIMAXY);
 				}
 			}
 
 			if (win->tf_ptr != NULL)
 			{
-				for (uint_fast8_t i = 0; i < win->tf_count; i++)
+				for (uint8_t i = 0; i < win->tf_count; i++)
 				{
 					const text_field_t * tf = & win->tf_ptr[i];
 					xmax = (xmax > tf->x1 + tf->w) ? xmax : (tf->x1 + tf->w);
 					ymax = (ymax > tf->y1 + tf->h) ? ymax : (tf->y1+ tf->h);
-					ASSERT(xmax < WITHGUIMAXX);
-					ASSERT(ymax < WITHGUIMAXY);
+					GUI_ASSERT(xmax < WITHGUIMAXX);
+					GUI_ASSERT(ymax < WITHGUIMAXY);
 				}
 			}
 
 			if (win->sh_ptr != NULL)
 			{
-				for (uint_fast8_t i = 0; i < win->sh_count; i++)
+				for (uint8_t i = 0; i < win->sh_count; i++)
 				{
 					const slider_t * sh = & win->sh_ptr[i];
 					if (sh->orientation)	// ORIENTATION_HORIZONTAL
@@ -246,8 +246,8 @@ void calculate_window_position(uint_fast8_t mode, ...)
 						xmax = (xmax > sh->x + sliders_w * 2) ? xmax : (sh->x + sliders_w * 2);
 						ymax = (ymax > sh->y + sh->size + sliders_h) ? ymax : (sh->y + sh->size + sliders_h);
 					}
-					ASSERT(xmax < WITHGUIMAXX);
-					ASSERT(ymax < WITHGUIMAXY);
+					GUI_ASSERT(xmax < WITHGUIMAXX);
+					GUI_ASSERT(ymax < WITHGUIMAXY);
 				}
 			}
 		}
@@ -266,61 +266,61 @@ void calculate_window_position(uint_fast8_t mode, ...)
 	{
 		if (win->bh_ptr != NULL)
 		{
-			for (uint_fast8_t i = 0; i < win->bh_count; i++)
+			for (uint8_t i = 0; i < win->bh_count; i++)
 			{
 				button_t * bh = & win->bh_ptr[i];
 				bh->x1 += shift_x;
 				bh->y1 += shift_y;
-				ASSERT(bh->x1 + bh->w < WITHGUIMAXX);
-				ASSERT(bh->y1 + bh->h < WITHGUIMAXY);
+				GUI_ASSERT(bh->x1 + bh->w < WITHGUIMAXX);
+				GUI_ASSERT(bh->y1 + bh->h < WITHGUIMAXY);
 			}
 		}
 
 		if (win->lh_ptr != NULL)
 		{
-			for (uint_fast8_t i = 0; i < win->lh_count; i++)
+			for (uint8_t i = 0; i < win->lh_count; i++)
 			{
 				label_t * lh = & win->lh_ptr[i];
 				lh->x += shift_x;
 				lh->y += shift_y;
-				ASSERT(lh->x + get_label_width(lh) < WITHGUIMAXX);
-				ASSERT(lh->y + get_label_height(lh) < WITHGUIMAXY);
+				GUI_ASSERT(lh->x + get_label_width(lh) < WITHGUIMAXX);
+				GUI_ASSERT(lh->y + get_label_height(lh) < WITHGUIMAXY);
 			}
 		}
 
 		if (win->tf_ptr != NULL)
 		{
-			for (uint_fast8_t i = 0; i < win->tf_count; i++)
+			for (uint8_t i = 0; i < win->tf_count; i++)
 			{
 				text_field_t * tf = & win->tf_ptr[i];
 				tf->x1 += shift_x;
 				tf->y1 += shift_y;
-				ASSERT(tf->x1 + tf->w < WITHGUIMAXX);
-				ASSERT(tf->y1 + tf->h < WITHGUIMAXY);
+				GUI_ASSERT(tf->x1 + tf->w < WITHGUIMAXX);
+				GUI_ASSERT(tf->y1 + tf->h < WITHGUIMAXY);
 			}
 		}
 
 		if (win->ta_ptr != NULL)
 		{
-			for (uint_fast8_t i = 0; i < win->ta_count; i++)
+			for (uint8_t i = 0; i < win->ta_count; i++)
 			{
 				touch_area_t * ta = & win->ta_ptr[i];
 				ta->x1 += shift_x;
 				ta->y1 += shift_y;
-				ASSERT(ta->x1 + ta->w < WITHGUIMAXX);
-				ASSERT(ta->y1 + ta->h < WITHGUIMAXY);
+				GUI_ASSERT(ta->x1 + ta->w < WITHGUIMAXX);
+				GUI_ASSERT(ta->y1 + ta->h < WITHGUIMAXY);
 			}
 		}
 
 		if (win->sh_ptr != NULL)
 		{
-			for (uint_fast8_t i = 0; i < win->sh_count; i++)
+			for (uint8_t i = 0; i < win->sh_count; i++)
 			{
 				slider_t * sh = & win->sh_ptr[i];
 				sh->x += shift_x;
 				sh->y += shift_y;
-				ASSERT(sh->x < WITHGUIMAXX);
-				ASSERT(sh->y < WITHGUIMAXY);
+				GUI_ASSERT(sh->x < WITHGUIMAXX);
+				GUI_ASSERT(sh->y < WITHGUIMAXY);
 			}
 		}
 	}
@@ -328,7 +328,7 @@ void calculate_window_position(uint_fast8_t mode, ...)
 	if (mode == WINDOW_POSITION_FULLSCREEN)
 	{
 		const window_t * win_main = get_win(WINDOW_MAIN);
-		const uint_fast8_t h = win_main->bh_ptr[0].h;
+		const uint8_t h = win_main->bh_ptr[0].h;
 
 		win->x1 = 0;
 		win->y1 = 0;
@@ -344,8 +344,8 @@ void calculate_window_position(uint_fast8_t mode, ...)
 		if (win->x1 + win->w >= WITHGUIMAXX)
 			win->x1 = WITHGUIMAXX - win->w - 1;
 
-		ASSERT(win->x1 + win->w < WITHGUIMAXX);
-		ASSERT(win->y1 + win->h < WITHGUIMAXY);
+		GUI_ASSERT(win->x1 + win->w < WITHGUIMAXX);
+		GUI_ASSERT(win->y1 + win->h < WITHGUIMAXY);
 	}
 	else
 	{
@@ -376,8 +376,8 @@ void calculate_window_position(uint_fast8_t mode, ...)
 			break;
 		}
 
-		ASSERT(win->x1 + win->w < WITHGUIMAXX);
-		ASSERT(win->y1 + win->h < WITHGUIMAXY);
+		GUI_ASSERT(win->x1 + win->w < WITHGUIMAXX);
+		GUI_ASSERT(win->y1 + win->h < WITHGUIMAXY);
 	}
 
 	if (win->window_id == WINDOW_MAIN)	// для главного окна рисование без отступов

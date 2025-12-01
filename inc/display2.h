@@ -147,6 +147,10 @@ const char * display2_gethtml(uint_fast8_t page);
 
 unsigned display2_gettileradius(void);
 
+void display2_set_page_temp(uint_fast8_t page);
+uint_fast8_t display_getpage0(void);
+uint_fast8_t display_getpagegui(void);
+
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
 
 

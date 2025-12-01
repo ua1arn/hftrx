@@ -613,7 +613,7 @@ void gui_main_process(void)
 			if (gui_check_obj(name, "ta_freq")) break;
 
 			infobar_selected = gui_obj_get_int_prop(name, GUI_OBJ_INDEX);
-			ASSERT(infobar_selected < infobar_num_places);
+			GUI_ASSERT(infobar_selected < infobar_num_places);
 			uint8_t infobar = infobar_places[infobar_selected];
 
 			if (infobar != INFOBAR_EMPTY && ! ((infobar & INFOBAR_NOACTION) >> INFOBAR_NOACTION_POS))
@@ -1212,7 +1212,7 @@ static uint32_t load_mems(uint_fast8_t cell, uint_fast8_t set)
 static void clean_mems(uint_fast8_t cell)
 {
 #if LINUX_SUBSYSTEM
-	ASSERT(cell < memory_cells_count);
+	GUI_ASSERT(cell < memory_cells_count);
 	mems[cell] = 0;
 	write_memory_cells(mems, memory_cells_count);
 #else
@@ -1223,7 +1223,7 @@ static void clean_mems(uint_fast8_t cell)
 static void write_mems(uint_fast8_t cell)
 {
 #if LINUX_SUBSYSTEM
-	ASSERT(cell < memory_cells_count);
+	GUI_ASSERT(cell < memory_cells_count);
 	mems[cell] = hamradio_get_freq_rx();
 	write_memory_cells(mems, memory_cells_count);
 #else
@@ -2639,7 +2639,7 @@ void window_shift_process(void)
 // *********************************************************************************************************************************************************************
 
 //todo: необходима проверка работоспособности этих окон на трансивере с кнопками
-void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey)
+void gui_uif_editmenu(const char * name, uint16_t menupos, uint8_t exitkey)
 {
 	window_t * const win = get_win(WINDOW_UIF);
 	if (win->state == NON_VISIBLE)
@@ -3225,7 +3225,7 @@ void window_af_process(void)
 		for(uint8_t i = 0; i < ARRAY_SIZE(lbl_array); i ++)
 			gui_obj_set_prop(lbl_array[i], GUI_OBJ_COLOR, COLORPIP_WHITE);
 
-		ASSERT(bp_t.select < 3);
+		GUI_ASSERT(bp_t.select < 3);
 		gui_obj_set_prop(lbl_array[bp_t.select], GUI_OBJ_COLOR, COLORPIP_YELLOW);
 
 		uint16_t val_low = hamradio_get_low_bp(bp_t.select == TYPE_BP_LOW ? (bp_t.change * 5) : 0);
@@ -3992,7 +3992,7 @@ void window_menu_process(void)
 		char btn_names[MENU_GROUPS_MAX][NAME_ARRAY_SIZE];
 
 		const uint8_t count = hamradio_get_multilinemenu_block_groups(menu);
-		ASSERT(count < MENU_GROUPS_MAX);
+		GUI_ASSERT(count < MENU_GROUPS_MAX);
 
 		for (uint8_t i = 0; i < count; i ++)
 		{
@@ -4120,7 +4120,7 @@ void window_lfm_process(void)
 		for(uint8_t i = 0; i < ARRAY_SIZE(lbls); i ++)
 			gui_obj_set_prop(get_obj_name_by_idx(TYPE_LABEL, lbls[i]), GUI_OBJ_COLOR, COLORPIP_WHITE);
 
-		ASSERT(enc.select < 3);
+		GUI_ASSERT(enc.select < 3);
 		gui_obj_set_prop(get_obj_name_by_idx(TYPE_LABEL, lbls[enc.select]), GUI_OBJ_COLOR, COLORPIP_YELLOW);
 
 		if (enc.select == 0)

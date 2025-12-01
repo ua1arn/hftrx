@@ -41,10 +41,10 @@ void gui_drawline(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, gui_color_
 	const uint16_t xk = x2 + win->draw_x1;
 	const uint16_t yk = y2 + win->draw_y1;
 
-	ASSERT(xn < win->draw_x2);
-	ASSERT(xk < win->draw_x2);
-	ASSERT(yn < win->draw_y2);
-	ASSERT(yk < win->draw_y2);
+	GUI_ASSERT(xn < win->draw_x2);
+	GUI_ASSERT(xk < win->draw_x2);
+	GUI_ASSERT(yn < win->draw_y2);
+	GUI_ASSERT(yk < win->draw_y2);
 
 	__gui_draw_line(gdb, xn, yn, xk, yk, color);
 }
@@ -59,10 +59,10 @@ void gui_drawrect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, gui_color_
 	const uint16_t xk = x2 + win->draw_x1;
 	const uint16_t yk = y2 + win->draw_y1;
 
-	ASSERT(xn < win->draw_x2);
-	ASSERT(xk < win->draw_x2);
-	ASSERT(yn < win->draw_y2);
-	ASSERT(yk < win->draw_y2);
+	GUI_ASSERT(xn < win->draw_x2);
+	GUI_ASSERT(xk < win->draw_x2);
+	GUI_ASSERT(yn < win->draw_y2);
+	GUI_ASSERT(yk < win->draw_y2);
 
 	__gui_draw_rect(gdb, xn, yn, xk, yk, color, fill);
 }
@@ -77,10 +77,10 @@ void gui_drawrect_rounded(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, ui
 	const uint16_t xk = x2 + win->draw_x1;
 	const uint16_t yk = y2 + win->draw_y1;
 
-	ASSERT(xn < win->draw_x2);
-	ASSERT(xk < win->draw_x2);
-	ASSERT(yn < win->draw_y2);
-	ASSERT(yk < win->draw_y2);
+	GUI_ASSERT(xn < win->draw_x2);
+	GUI_ASSERT(xk < win->draw_x2);
+	GUI_ASSERT(yn < win->draw_y2);
+	GUI_ASSERT(yk < win->draw_y2);
 
 	__gui_draw_rounded_rect(gdb, xn, yn, xk, yk, radius, color, fill);
 }
@@ -95,10 +95,10 @@ void gui_drawrect_transparent(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2
 	const uint16_t xk = x2 + win->draw_x1;
 	const uint16_t yk = y2 + win->draw_y1;
 
-	ASSERT(xn < win->draw_x2);
-	ASSERT(xk < win->draw_x2);
-	ASSERT(yn < win->draw_y2);
-	ASSERT(yk < win->draw_y2);
+	GUI_ASSERT(xn < win->draw_x2);
+	GUI_ASSERT(xk < win->draw_x2);
+	GUI_ASSERT(yn < win->draw_y2);
+	GUI_ASSERT(yk < win->draw_y2);
 
 	__gui_draw_semitransparent_rect(gdb, xn, yn, xk, yk, alpha);
 }
@@ -111,8 +111,8 @@ void gui_drawpoint(uint16_t x1, uint16_t y1, gui_color_t color)
 	const uint16_t xp = x1 + win->draw_x1;
 	const uint16_t yp = y1 + win->draw_y1;
 
-	ASSERT(xp < win->draw_x2);
-	ASSERT(xp < win->draw_x2);
+	GUI_ASSERT(xp < win->draw_x2);
+	GUI_ASSERT(xp < win->draw_x2);
 
 	__gui_draw_point(gdb, xp, yp, color);
 }

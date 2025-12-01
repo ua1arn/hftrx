@@ -42,13 +42,13 @@ const gui_color_t btn_bg_colors[BG_COUNT] =
 
 static gui_t gui = { 0, 0, CANCELLED, 0, 0, 0, 0, 0, };
 static LIST_ENTRY gui_objects_list;
-static uint_fast8_t gui_object_count = 0;
+static uint8_t gui_object_count = 0;
 static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, INT32_MAX, "btс_close", "", };
 static uint8_t opened_windows_count = 1;
 gui_drawbuf_t * drawbuf = NULL;
 
 /* Возврат id parent window */
-uint_fast8_t get_parent_window(void)
+uint8_t get_parent_window(void)
 {
 	if (opened_windows_count == 2)
 		return gui.win[1];
@@ -89,7 +89,7 @@ void dump_queue(window_t * win)
 	if (win->queue.size == WM_MAX_QUEUE_SIZE)
 		PRINTF("WM stack full!\n");
 
-	for (uint_fast8_t i = 0; i < win->queue.size; i ++)
+	for (uint8_t i = 0; i < win->queue.size; i ++)
 	{
 		switch(win->queue.data[i].message)
 		{
@@ -121,7 +121,7 @@ void dump_queue(window_t * win)
 // WM_MESSAGE_KEYB_CODE:	int_fast8_t keyb_code
 // WM_MESSAGE_UPDATE: 		nothing
 // WM_MESSAGE_CLOSE: 		nothing
-uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
+uint8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 {
 	if (win->queue.size >= WM_MAX_QUEUE_SIZE)
 		return 0;					// очередь переполнена, ошибка
@@ -142,7 +142,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 
 		va_end(arg);
 
-		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;
+		uint8_t ind = win->queue.size ? (win->queue.size - 1) : 0;
 		if (win->queue.data[ind].message == WM_MESSAGE_ACTION && win->queue.data[ind].type == type && win->queue.data[ind].action == action)
 			return 1;
 		else
@@ -164,7 +164,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		int32_t r = va_arg(arg, int32_t);
 		va_end(arg);
 
-		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;				// если первое в очереди сообщение - WM_MESSAGE_ENC2_ROTATE,
+		uint8_t ind = win->queue.size ? (win->queue.size - 1) : 0;				// если первое в очереди сообщение - WM_MESSAGE_ENC2_ROTATE,
 		if (win->queue.data[ind].message == WM_MESSAGE_ENC2_ROTATE)				// просуммировать текущее и новое значения поворота,
 		{																			// иначе добавить новое сообщение
 			win->queue.data[ind].action += r;
@@ -198,7 +198,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 
 	case WM_MESSAGE_UPDATE:
 	{
-		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;
+		uint8_t ind = win->queue.size ? (win->queue.size - 1) : 0;
 		if (win->queue.data[ind].message != WM_MESSAGE_UPDATE)		// предотвращение дублей сообщения WM_MESSAGE_UPDATE
 		{
 			win->queue.data[win->queue.size].message = WM_MESSAGE_UPDATE;
@@ -212,7 +212,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 
 	case WM_MESSAGE_CLOSE:
 	{
-		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;
+		uint8_t ind = win->queue.size ? (win->queue.size - 1) : 0;
 		if (win->queue.data[ind].message != WM_MESSAGE_CLOSE)		// предотвращение дублей сообщения WM_MESSAGE_CLOSE
 		{
 			win->queue.data[win->queue.size].message = WM_MESSAGE_CLOSE;
@@ -231,7 +231,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	}
 
 	PRINTF("put_to_wm_queue: no valid type of messages found\n");
-	ASSERT(0);
+	GUI_ASSERT(0);
 	return 0;
 }
 
@@ -277,7 +277,7 @@ void gui_update(void)
 {
 	put_to_wm_queue(get_win(WINDOW_MAIN), WM_MESSAGE_UPDATE);	// главное окно всегда нужно обновлять
 
-	uint_fast8_t win2 = get_parent_window();
+	uint8_t win2 = get_parent_window();
 
 	if (win2 != NO_PARENT_WINDOW)								// если открыто второе окно,
 		put_to_wm_queue(get_win(win2), WM_MESSAGE_UPDATE);		// добавить сообщение на обновление в его очередь
@@ -296,8 +296,8 @@ void get_gui_tracking(int_fast16_t * x, int_fast16_t * y)
 /* Возврат ссылки на запись в структуре по названию и типу окна */
 void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 {
-	ASSERT(win);
-	ASSERT(name);
+	GUI_ASSERT(win);
+	GUI_ASSERT(name);
 
 	char obj_name[NAME_ARRAY_SIZE] = { 0 };
 	local_snprintf_P(obj_name, NAME_ARRAY_SIZE, "%s#%02d", name, win->window_id);
@@ -305,7 +305,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 	switch (type)
 	{
 	case TYPE_BUTTON:
-		for (uint_fast8_t i = 0; i < win->bh_count; i ++)
+		for (uint8_t i = 0; i < win->bh_count; i ++)
 		{
 			button_t * bh = & win->bh_ptr[i];
 			if (! strcmp(bh->name, obj_name))
@@ -315,7 +315,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 		break;
 
 	case TYPE_LABEL:
-		for (uint_fast8_t i = 0; i < win->lh_count; i ++)
+		for (uint8_t i = 0; i < win->lh_count; i ++)
 		{
 			label_t * lh = & win->lh_ptr[i];
 			if (! strcmp(lh->name, obj_name))
@@ -325,7 +325,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 		break;
 
 	case TYPE_SLIDER:
-		for (uint_fast8_t i = 0; i < win->sh_count; i ++)
+		for (uint8_t i = 0; i < win->sh_count; i ++)
 		{
 			slider_t * sh = & win->sh_ptr[i];
 			if (! strcmp(sh->name, obj_name))
@@ -335,7 +335,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 		break;
 
 	case TYPE_TOUCH_AREA:
-		for (uint_fast8_t i = 0; i < win->ta_count; i ++)
+		for (uint8_t i = 0; i < win->ta_count; i ++)
 		{
 			touch_area_t * ta = & win->ta_ptr[i];
 			if (! strcmp(ta->name, obj_name))
@@ -345,7 +345,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 		break;
 
 	case TYPE_TEXT_FIELD:
-		for (uint_fast8_t i = 0; i < win->tf_count; i ++)
+		for (uint8_t i = 0; i < win->tf_count; i ++)
 		{
 			text_field_t * tf = & win->tf_ptr[i];
 			if (! strcmp(tf->name, obj_name))
@@ -356,7 +356,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 
 	default:
 		PRINTF("%s: undefined type %d\n", __func__, type);
-		ASSERT(0);
+		GUI_ASSERT(0);
 		return NULL;
 	}
 
@@ -364,7 +364,7 @@ not_found:
 	if (win->window_id == WINDOW_MAIN)
 	{
 		PRINTF("%s: object '%s' not found\n", __func__, name);
-		ASSERT(0);
+		GUI_ASSERT(0);
 		return NULL;
 	}
 	else
@@ -398,13 +398,13 @@ static uint8_t remove_from_gui_list(void * link)
 /* Установка статуса элементов после инициализации */
 void objects_state (window_t * win)
 {
-	ASSERT(win != NULL);
+	GUI_ASSERT(win != NULL);
 	int debug_num = 0;
 
 	button_t * b = win->bh_ptr;
 	if (b != NULL)
 	{
-		for (uint_fast8_t i = 0; i < win->bh_count; i ++)
+		for (uint8_t i = 0; i < win->bh_count; i ++)
 		{
 			button_t * bh = & b[i];
 			if (win->state)
@@ -412,7 +412,7 @@ void objects_state (window_t * win)
 				if (bh->is_long_press && bh->is_repeating)
 				{
 					PRINTF("ERROR: invalid combination of properties 'is_long_press' and 'is_repeating' on button %s\n", bh->name);
-					ASSERT(0);
+					GUI_ASSERT(0);
 				}
 				gui_object_t * new_obj = (gui_object_t *) calloc(1, sizeof(gui_object_t));
 				GUI_MEM_ASSERT(new_obj);
@@ -431,7 +431,7 @@ void objects_state (window_t * win)
 				debug_num --;
 				gui_object_count--;
 				bh->visible = NON_VISIBLE;
-				ASSERT(gui_object_count >= footer_buttons_count);
+				GUI_ASSERT(gui_object_count >= footer_buttons_count);
 			}
 		}
 	}
@@ -439,7 +439,7 @@ void objects_state (window_t * win)
 	label_t * l = win->lh_ptr;
 	if(l != NULL)
 	{
-		for (uint_fast8_t i = 0; i < win->lh_count; i ++)
+		for (uint8_t i = 0; i < win->lh_count; i ++)
 		{
 			label_t * lh = & l[i];
 			if (win->state)
@@ -461,7 +461,7 @@ void objects_state (window_t * win)
 				debug_num --;
 				gui_object_count--;
 				lh->visible = NON_VISIBLE;
-				ASSERT(gui_object_count >= footer_buttons_count);
+				GUI_ASSERT(gui_object_count >= footer_buttons_count);
 			}
 		}
 	}
@@ -469,7 +469,7 @@ void objects_state (window_t * win)
 	slider_t * s = win->sh_ptr;
 	if(s != NULL)
 	{
-		for (uint_fast8_t i = 0; i < win->sh_count; i ++)
+		for (uint8_t i = 0; i < win->sh_count; i ++)
 		{
 			slider_t * sh = & s[i];
 			if (win->state)
@@ -491,7 +491,7 @@ void objects_state (window_t * win)
 				debug_num --;
 				gui_object_count--;
 				sh->visible = NON_VISIBLE;
-				ASSERT(gui_object_count >= footer_buttons_count);
+				GUI_ASSERT(gui_object_count >= footer_buttons_count);
 			}
 		}
 	}
@@ -499,7 +499,7 @@ void objects_state (window_t * win)
 	touch_area_t * t = win->ta_ptr;
 	if(t != NULL)
 	{
-		for (uint_fast8_t i = 0; i < win->ta_count; i ++)
+		for (uint8_t i = 0; i < win->ta_count; i ++)
 		{
 			touch_area_t * ta = & t[i];
 			if (win->state)
@@ -517,11 +517,11 @@ void objects_state (window_t * win)
 			}
 			else
 			{
-				ASSERT(remove_from_gui_list(ta));
+				GUI_ASSERT(remove_from_gui_list(ta));
 				debug_num --;
 				gui_object_count--;
 				ta->visible = NON_VISIBLE;
-				ASSERT(gui_object_count >= footer_buttons_count);
+				GUI_ASSERT(gui_object_count >= footer_buttons_count);
 			}
 		}
 	}
@@ -529,7 +529,7 @@ void objects_state (window_t * win)
 	text_field_t * tf = win->tf_ptr;
 	if(tf != NULL)
 	{
-		for (uint_fast8_t i = 0; i < win->tf_count; i ++)
+		for (uint8_t i = 0; i < win->tf_count; i ++)
 		{
 			text_field_t * tff = & tf[i];
 			if (win->state)
@@ -553,7 +553,7 @@ void objects_state (window_t * win)
 				tff->visible = NON_VISIBLE;
 				free(tff->string);
 				tff->string = NULL;
-				ASSERT(gui_object_count >= footer_buttons_count);
+				GUI_ASSERT(gui_object_count >= footer_buttons_count);
 			}
 		}
 	}
@@ -588,7 +588,7 @@ void objects_state (window_t * win)
 			debug_num --;
 			gui_object_count--;
 			close_button.visible = NON_VISIBLE;
-			ASSERT(gui_object_count >= footer_buttons_count);
+			GUI_ASSERT(gui_object_count >= footer_buttons_count);
 		}
 	}
 //	PRINTF("%s: %s, gui_object_count: %d %+d\n", __func__, win->title, gui_object_count, debug_num);
@@ -596,7 +596,7 @@ void objects_state (window_t * win)
 }
 
 /* Передать менеджеру GUI код нажатой кнопки на клавиатуре */
-void gui_put_keyb_code (uint_fast8_t kbch)
+void gui_put_keyb_code (uint8_t kbch)
 {
 	// перенаправить код нажатой аппаратной кнопки в активное окно
 	if (get_parent_window() == NO_PARENT_WINDOW)
@@ -724,15 +724,15 @@ static void draw_button(const button_t * const bh)
 	gui_objbgbuf_t * bg = NULL;
 	window_t * win = get_win(bh->parent);
 	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
-	uint_fast8_t i = 0;
+	uint8_t i = 0;
 	static const char delimeters[] = "|";
-	uint_fast16_t x1 = win->x1 + bh->x1;
-	uint_fast16_t y1 = win->y1 + bh->y1;
+	uint16_t x1 = win->x1 + bh->x1;
+	uint16_t y1 = win->y1 + bh->y1;
 
 	if ((x1 + bh->w >= WITHGUIMAXX) || (y1 + bh->h >= WITHGUIMAXY))
 	{
 		PRINTF("%s %s x+w: %d y+h: %d\n", bh->name, bh->text, x1 + bh->w, y1 + bh->h);
-		ASSERT(0);
+		GUI_ASSERT(0);
 	}
 
 	btn_bg_t * b1 = NULL;
@@ -770,7 +770,7 @@ static void draw_button(const button_t * const bh)
 			bg = b1->bgs[BG_PRESSED];
 		else if (! bh->is_locked && bh->state != PRESSED)
 			bg = b1->bgs[BG_NON_PRESSED];
-		ASSERT(bg != NULL);
+		GUI_ASSERT(bg != NULL);
 
 		gui_drawbuf_t bgv;
 		__gui_drawbuf_init(& bgv, bg, bh->w, bh->h);
@@ -778,8 +778,8 @@ static void draw_button(const button_t * const bh)
 		__gui_drawbuf_end(& bgv);
 	}
 
-	const uint_fast16_t shiftX = bh->state == PRESSED ? 1 : 0;
-	const uint_fast16_t shiftY = bh->state == PRESSED ? 1 : 0;
+	const uint16_t shiftX = bh->state == PRESSED ? 1 : 0;
+	const uint16_t shiftY = bh->state == PRESSED ? 1 : 0;
 	const gui_color_t textcolor = COLORPIP_BLACK;
 
 	if (strchr(bh->text, delimeters[0]) == NULL)
@@ -796,7 +796,7 @@ static void draw_button(const button_t * const bh)
 	{
 		char * next;
 		/* Двухстрочная надпись */
-		uint_fast8_t j = (bh->h - bh->font->height * 2) / 2;
+		uint8_t j = (bh->h - bh->font->height * 2) / 2;
 		char buf[TEXT_ARRAY_SIZE];
 		strcpy(buf, bh->text);
 		char * text2 = strtok_r(buf, delimeters, & next);
@@ -917,12 +917,12 @@ static void update_gui_objects_list(void)
 /* Селектор запуска функций обработки событий */
 static void set_state_record(gui_object_t * val)
 {
-	ASSERT(val != NULL);
+	GUI_ASSERT(val != NULL);
 	switch (val->type)
 	{
 		case TYPE_CLOSE_BUTTON:
 		{
-			ASSERT(val->link != NULL);
+			GUI_ASSERT(val->link != NULL);
 			button_t * bh = (button_t *) val->link;
 			bh->state = val->state;
 			if (bh->state == RELEASED) close_all_windows();
@@ -931,7 +931,7 @@ static void set_state_record(gui_object_t * val)
 
 		case TYPE_BUTTON:
 		{
-			ASSERT(val->link != NULL);
+			GUI_ASSERT(val->link != NULL);
 			button_t * bh = (button_t *) val->link;
 			bh->state = val->state;
 			if (bh->state == RELEASED || bh->state == LONG_PRESSED || bh->state == PRESS_REPEATING)
@@ -944,7 +944,7 @@ static void set_state_record(gui_object_t * val)
 
 		case TYPE_LABEL:
 		{
-			ASSERT(val->link != NULL);
+			GUI_ASSERT(val->link != NULL);
 			label_t * lh = (label_t *) val->link;
 			lh->state = val->state;
 			if (lh->state == RELEASED)
@@ -962,7 +962,7 @@ static void set_state_record(gui_object_t * val)
 
 		case TYPE_SLIDER:
 		{
-			ASSERT(val->link != NULL);
+			GUI_ASSERT(val->link != NULL);
 			slider_t * sh = (slider_t *) val->link;
 			sh->state = val->state;
 			if (sh->state == PRESSED)
@@ -976,7 +976,7 @@ static void set_state_record(gui_object_t * val)
 
 		case TYPE_TOUCH_AREA:
 		{
-			ASSERT(val->link != NULL);
+			GUI_ASSERT(val->link != NULL);
 			touch_area_t * ta = (touch_area_t *) val->link;
 			ta->state = val->state;
 			if (ta->state == RELEASED)
@@ -1004,7 +1004,7 @@ static void set_state_record(gui_object_t * val)
 		default:
 		{
 			PRINTF("set_state_record: undefined type %d\n", val->type);
-			ASSERT(0);
+			GUI_ASSERT(0);
 		}
 			break;
 	}
@@ -1040,12 +1040,12 @@ uint8_t lp_delay_10ms(uint8_t init)
 void process_gui(void)
 {
 	uint_fast16_t tx, ty;
-	static uint_fast16_t x_old = 0, y_old = 0, long_press_counter = 0;
+	static uint16_t x_old = 0, y_old = 0, long_press_counter = 0;
 	static gui_object_t * p = NULL;
 	static window_t * w = NULL;
-	const uint_fast8_t long_press_limit = 20;
-	static uint_fast8_t is_long_press = 0;		// 1 - долгое нажатие уже обработано
-	static uint_fast8_t is_repeating = 0, repeating_cnt = 0;
+	const uint8_t long_press_limit = 20;
+	static uint8_t is_long_press = 0;		// 1 - долгое нажатие уже обработано
+	static uint8_t is_repeating = 0, repeating_cnt = 0;
 
 	if (board_tsc_getxy(& tx, & ty))
 	{
@@ -1066,16 +1066,16 @@ void process_gui(void)
 
 	if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
 	{
-		ASSERT(! IsListEmpty(& gui_objects_list));
+		GUI_ASSERT(! IsListEmpty(& gui_objects_list));
 
 		PLIST_ENTRY current_entry = gui_objects_list.Blink; // Обход списка в обратном порядке
 		while (current_entry != & gui_objects_list)
 		{
 			p = CONTAINING_RECORD(current_entry, gui_object_t, list_entry);
 			w = p->win;
-			ASSERT(w != NULL);
-			uint_fast16_t x1 = p->x1 + w->x1, y1 = p->y1 + w->y1;
-			uint_fast16_t x2 = p->x2 + w->x1, y2 = p->y2 + w->y1;
+			GUI_ASSERT(w != NULL);
+			uint16_t x1 = p->x1 + w->x1, y1 = p->y1 + w->y1;
+			uint16_t x2 = p->x2 + w->x1, y2 = p->y2 + w->y1;
 
 			if (x1 < gui.last_pressed_x && x2 > gui.last_pressed_x && y1 < gui.last_pressed_y && y2 > gui.last_pressed_y
 					&& p->state != DISABLED && p->visible == VISIBLE)
@@ -1101,7 +1101,7 @@ void process_gui(void)
 
 	if (gui.state == PRESSED)
 	{
-		ASSERT(p != NULL);
+		GUI_ASSERT(p != NULL);
 		if (p->is_trackable && gui.is_touching_screen)
 		{
 			gui.vector_move_x = x_old ? gui.last_pressed_x - x_old : 0;
@@ -1124,7 +1124,7 @@ void process_gui(void)
 		{
 			if (gui.is_touching_screen)
 			{
-				ASSERT(p != NULL);
+				GUI_ASSERT(p != NULL);
 				p->state = PRESSED;
 
 				if (is_repeating)
@@ -1169,7 +1169,7 @@ void process_gui(void)
 		}
 		else
 		{
-			ASSERT(p != NULL);
+			GUI_ASSERT(p != NULL);
 			gui.state = CANCELLED;
 			p->state = CANCELLED;
 			set_state_record(p);
@@ -1179,7 +1179,7 @@ void process_gui(void)
 
 	if (gui.state == RELEASED)
 	{
-		ASSERT(p != NULL);
+		GUI_ASSERT(p != NULL);
 		p->state = RELEASED;			// для запуска обработчика нажатия
 		if(! is_long_press)				// если было долгое нажатие, обработчик по короткому не запускать
 			set_state_record(p);
@@ -1199,15 +1199,15 @@ void process_gui(void)
 		is_long_press = 1;				// долгое нажатие обработано
 	}
 
-	uint_fast8_t alpha = DEFAULT_ALPHA; // на сколько затемнять цвета
+	uint8_t alpha = DEFAULT_ALPHA; // на сколько затемнять цвета
 	char buf[TEXT_ARRAY_SIZE];
-	uint_fast8_t str_len = 0;
+	uint8_t str_len = 0;
 	const gui_drawbuf_t * drawbuf = __gui_get_drawbuf();
 
-	for(uint_fast8_t i = 0; i < opened_windows_count; i ++)
+	for(uint8_t i = 0; i < opened_windows_count; i ++)
 	{
 		const window_t * const win = get_win(gui.win[i]);
-		uint_fast8_t f = win->first_call;
+		uint8_t f = win->first_call;
 		gui.current_drawing_window = gui.win[i];
 
 		if (win->state == VISIBLE)
@@ -1216,7 +1216,7 @@ void process_gui(void)
 			{
 				if (win->window_id != WINDOW_MAIN)
 				{
-					ASSERT(win->w > 0 || win->h > 0);
+					GUI_ASSERT(win->w > 0 || win->h > 0);
 #if GUI_TRANSPARENT_WINDOWS
 					__gui_draw_semitransparent_rect(drawbuf, win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) :
 							win->y1, win->x1 + win->w - 1, win->y1 + win->h - 1, alpha);
@@ -1253,7 +1253,7 @@ void process_gui(void)
 
 					default:
 						PRINTF("Title alignment value %d incorrect for window %s\n", win->title_align, win->title);
-						ASSERT(0);
+						GUI_ASSERT(0);
 						break;
 					}
 
@@ -1307,7 +1307,7 @@ void process_gui(void)
 							int_fast8_t j = tf->index - 1;
 							for (uint8_t i = 0; i < tf->h_str; i ++)
 							{
-								uint_fast8_t pos = tf->direction ? i : (tf->h_str - i - 1);
+								uint8_t pos = tf->direction ? i : (tf->h_str - i - 1);
 								j = j < 0 ? (tf->h_str - 1) : j;
 
 								__gui_draw_string_mono(drawbuf, win->x1 + tf->x1, win->y1 + tf->y1 + tf->font->height * pos,

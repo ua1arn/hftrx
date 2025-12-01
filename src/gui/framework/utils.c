@@ -69,7 +69,7 @@ void remove_end_line_spaces(char * str)
 const char * remove_start_line_spaces(const char * str)
 {
 	size_t len = strlen(str);
-	uint_fast8_t i = 0;
+	uint8_t i = 0;
 
 	if (len == 0)
 		return NULL;

@@ -43,6 +43,12 @@
 
 #endif /* LCDMODE_MAIN_L8 */
 
+#define GUI_ASSERT(v) 		ASSERT(v)
+#define GUI_MEM_ASSERT(v) 	do { if (((v) == NULL)) { \
+		PRINTF("%s: %d ('%s') - memory allocate failed!\n", __FILE__, __LINE__, (# v)); \
+		for (;;) ; \
+		} } while (0)
+
 #if WITHSDL2VIDEO
 
 #include <SDL2/SDL.h>
