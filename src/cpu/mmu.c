@@ -153,10 +153,10 @@ static const getmmudesc_t gpu_mali400_table4k =
 // 13.3 Memory attributes
 
 // Also see TCR_EL3 parameter
-#define CACHEATTR_NOCACHE 0x00		// Non-cacheable
-#define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back Write-Allocate Cacheable
-//#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through Cacheable
-//#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back no Write-Allocate Cacheable
+#define AARCH64_CACHEATTR_NOCACHE 0x00		// Non-cacheable
+#define AARCH64_CACHEATTR_WB_WA_CACHE 0x01	// Write-Back Write-Allocate Cacheable
+//#define AARCH64_CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through Cacheable
+//#define AARCH64_CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back no Write-Allocate Cacheable
 
 // Lower attributes
 #define AARCH64_LOWER_ATTR(AttrIndx) ( \
@@ -176,21 +176,21 @@ enum aarch64_attrindex
 
 };
 
-static uint_fast64_t arch64_mcached(uint_fast64_t addr, int ro, int xn)
+static uint_fast64_t aarch64_mcached(uint_fast64_t addr, int ro, int xn)
 {
 	return AARCH64_UPPER_ATTR |
 			(addr & ~ UINT64_C(0x0FFFFF)) |
 			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_CACHED) |
 			0x01;
 }
-static uint_fast64_t arch64_mncached(uint_fast64_t addr, int ro, int xn)
+static uint_fast64_t aarch64_mncached(uint_fast64_t addr, int ro, int xn)
 {
 	return AARCH64_UPPER_ATTR |
 			(addr & ~ UINT64_C(0x0FFFFF)) |
 			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_NCACHED) |
 			0x01;
 }
-static uint64_t arch64_mdevice(uint_fast64_t addr)
+static uint64_t aarch64_mdevice(uint_fast64_t addr)
 {
 	return AARCH64_UPPER_ATTR
 			| (addr & ~ UINT64_C(0x0FFFFF)) |
@@ -200,23 +200,23 @@ static uint64_t arch64_mdevice(uint_fast64_t addr)
 // Next level table
 // DDI0487_I_a_a-profile_architecture_reference_manual.pdf
 // D8.3.1 Table Descriptor format
-static uint_fast64_t arch64_mtable(uint_fast64_t addr, int level)
+static uint_fast64_t aarch64_mtable(uint_fast64_t addr, int level)
 {
 	return (addr & ~ UINT64_C(0x0FFF)) |
 			0x03;
 }
-static uint_fast64_t arch64_mnoaccess(uint_fast64_t addr)
+static uint_fast64_t aarch64_mnoaccess(uint_fast64_t addr)
 {
 	return 0;
 }
 
-static const getmmudesc_t arch64_table_2M =
+static const getmmudesc_t aarch64_table_2M =
 {
-	.mcached = arch64_mcached,
-	.mncached = arch64_mncached,
-	.mdevice = arch64_mdevice,
-	.mnoaccess = arch64_mnoaccess,
-	.mtable = arch64_mtable
+	.mcached = aarch64_mcached,
+	.mncached = aarch64_mncached,
+	.mdevice = aarch64_mdevice,
+	.mnoaccess = aarch64_mnoaccess,
+	.mtable = aarch64_mtable
 };
 
 #elif (__CORTEX_A != 0)
@@ -243,10 +243,10 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 // For TRE - see
 // B4.1.127 PRRR, Primary Region Remap Register, VMSA
 
-#define APRWval 		0x03	/* Full access */
-#define APROval 		0x06	/* All write accesses generate Permission faults */
-#define DOMAINval		0x0F
-#define SECTIONval		0x02	/* 0b10, Section or Supersection, PXN  */
+#define AARCH32_APRWval 		0x03	/* Full access */
+#define AARCH32_APROval 		0x06	/* All write accesses generate Permission faults */
+#define AARCH32_DOMAINval		0x0F
+#define AARCH32_SECTIONval		0x02	/* 0b10, Section or Supersection, PXN  */
 
 /* Table B3-10 TEX, C, and B encodings when TRE == 0 */
 
@@ -255,58 +255,58 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 // DDI0406C_d_armv7ar_arm.pdf
 // Table B3-11 Inner and Outer cache attribute encoding
 
-#define MKATTR_TEXval(cacheattr) (0x04u | ((cacheattr) & 0x03u))
-#define MKATTR_Cval(cacheattr) (!! ((cacheattr) & 0x02u))
-#define MKATTR_Bval(cacheattr) (!! ((cacheattr) & 0x01u))
+#define AARCH32_MKATTR_TEXval(cacheattr) (0x04u | ((cacheattr) & 0x03u))
+#define AARCH32_MKATTR_Cval(cacheattr) (!! ((cacheattr) & 0x02u))
+#define AARCH32_MKATTR_Bval(cacheattr) (!! ((cacheattr) & 0x01u))
 
 // Also see __set_TTBR0 parameter
-#define CACHEATTR_NOCACHE 0x00		// Non-cacheable
-#define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back, Write-Allocate
+#define AARCH32_CACHEATTR_NOCACHE 0x00		// Non-cacheable
+#define AARCH32_CACHEATTR_WB_WA_CACHE 0x01	// Write-Back, Write-Allocate
 //#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through, no Write-Allocate
 //#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back, no Write-Allocate
 
 /* атрибуты для разных областей памяти (при TEX[2]=1 способе задания) */
-#define RAM_ATTRS CACHEATTR_WB_WA_CACHE
-//#define RAM_ATTRS CACHEATTR_WB_NWA_CACHE
-#define DEVICE_ATTRS CACHEATTR_NOCACHE
-#define NCRAM_ATTRS CACHEATTR_NOCACHE
+#define AARCH32_RAM_ATTRS AARCH32_CACHEATTR_WB_WA_CACHE
+//#define AARCH32_RAM_ATTRS AARCH32_CACHEATTR_WB_NWA_CACHE
+#define AARCH32_DEVICE_ATTRS AARCH32_CACHEATTR_NOCACHE
+#define AARCH32_NCRAM_ATTRS AARCH32_CACHEATTR_NOCACHE
 
-#define TEXval_RAM		MKATTR_TEXval(RAM_ATTRS)	// Define the Outer cache attribute
-#define Cval_RAM		MKATTR_Cval(RAM_ATTRS)		// Define the Inner cache attribute
-#define Bval_RAM		MKATTR_Bval(RAM_ATTRS)		// Define the Inner cache attribute
+#define AARCH32_TEXval_RAM		AARCH32_MKATTR_TEXval(AARCH32_RAM_ATTRS)	// Define the Outer cache attribute
+#define AARCH32_Cval_RAM		AARCH32_MKATTR_Cval(AARCH32_RAM_ATTRS)		// Define the Inner cache attribute
+#define AARCH32_Bval_RAM		AARCH32_MKATTR_Bval(AARCH32_RAM_ATTRS)		// Define the Inner cache attribute
 
 #if WITHSMPSYSTEM
-	#define SHAREDval_RAM 1		// required for ldrex.. and strex.. functionality
+	#define AARCH32_SHAREDval_RAM 1		// required for ldrex.. and strex.. functionality
 #else /* WITHSMPSYSTEM */
-	#define SHAREDval_RAM 0		// If non-zero, Renesas Cortex-A9 hung by buffers
+	#define AARCH32_SHAREDval_RAM 0		// If non-zero, Renesas Cortex-A9 hung by buffers
 #endif /* WITHSMPSYSTEM */
 
-#define TEXval_NCRAM	MKATTR_TEXval(NCRAM_ATTRS)	// Define the Outer cache attribute
-#define Cval_NCRAM		MKATTR_Cval(NCRAM_ATTRS)	// Define the Inner cache attribute
-#define Bval_NCRAM		MKATTR_Bval(NCRAM_ATTRS)	// Define the Inner cache attribute
+#define AARCH32_TEXval_NCRAM	AARCH32_MKATTR_TEXval(AARCH32_NCRAM_ATTRS)	// Define the Outer cache attribute
+#define AARCH32_Cval_NCRAM		AARCH32_MKATTR_Cval(AARCH32_NCRAM_ATTRS)	// Define the Inner cache attribute
+#define AARCH32_Bval_NCRAM		AARCH32_MKATTR_Bval(AARCH32_NCRAM_ATTRS)	// Define the Inner cache attribute
 
 #if WITHSMPSYSTEM
-	#define SHAREDval_NCRAM 1		// required for ldrex.. and strex.. functionality
+	#define AARCH32_SHAREDval_NCRAM 1		// required for ldrex.. and strex.. functionality
 #else /* WITHSMPSYSTEM */
-	#define SHAREDval_NCRAM 0		// If non-zero, Renesas Cortex-A9 hung by buffers
+	#define AARCH32_SHAREDval_NCRAM 0		// If non-zero, Renesas Cortex-A9 hung by buffers
 #endif /* WITHSMPSYSTEM */
 
 #if 1
 	/* Shareable Device */
-	#define TEXval_DEVICE       0x00
-	#define Cval_DEVICE         0
-	#define Bval_DEVICE         1
-	#define SHAREDval_DEVICE 	0
+	#define AARCH32_TEXval_DEVICE       0x00
+	#define AARCH32_Cval_DEVICE         0
+	#define AARCH32_Bval_DEVICE         1
+	#define AARCH32_SHAREDval_DEVICE 	0
 #else
 	/* Shareable Device */
-	#define TEXval_DEVICE	MKATTR_TEXval(DEVICE_ATTRS)	// Define the Outer cache attribute
-	#define Cval_DEVICE		MKATTR_Cval(DEVICE_ATTRS)	// Define the Inner cache attribute
-	#define Bval_DEVICE		MKATTR_Bval(DEVICE_ATTRS)	// Define the Inner cache attribute
+	#define AARCH32_TEXval_DEVICE	AARCH32_MKATTR_TEXval(AARCH32_DEVICE_ATTRS)	// Define the Outer cache attribute
+	#define AARCH32_Cval_DEVICE		AARCH32_MKATTR_Cval(AARCH32_DEVICE_ATTRS)	// Define the Inner cache attribute
+	#define AARCH32_Bval_DEVICE		AARCH32_MKATTR_Bval(AARCH32_DEVICE_ATTRS)	// Define the Inner cache attribute
 
 	#if WITHSMPSYSTEM
-		#define SHAREDval_DEVICE 1		// required for ldrex.. and strex.. functionality
+		#define AARCH32_SHAREDval_DEVICE 1		// required for ldrex.. and strex.. functionality
 	#else /* WITHSMPSYSTEM */
-		#define SHAREDval_DEVICE 0		// If non-zero, Renesas Cortex-A9 hung by buffers
+		#define AARCH32_SHAREDval_DEVICE 0		// If non-zero, Renesas Cortex-A9 hung by buffers
 	#endif /* WITHSMPSYSTEM */
 #endif
 
@@ -315,7 +315,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 // Large page
 #define	TTB_PARA_AARCH32_1M(addr, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
 		((addr) & ~ (uint64_t) UINT32_C(0x0FFFFF)) | /* 1M granulation address */ \
-		(SECTIONval) * (UINT32_C(1) << 0) |	/* 0b10, Section or Supersection, PXN */ \
+		(AARCH32_SECTIONval) * (UINT32_C(1) << 0) |	/* 0b10, Section or Supersection, PXN */ \
 		!! (Bv) * (UINT32_C(1) << 2) |	/* B */ \
 		!! (Cv) * (UINT32_C(1) << 3) |	/* C */ \
 		!! (XNv) * (UINT32_C(1) << 4) |	/* XN The Execute-never bit. */ \
@@ -362,16 +362,16 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 		0 \
 	)
 
-#define	TTB_PARA_AARCH32_1M_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32_1M((addr), TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32_1M((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB_PARA_AARCH32_1M_DEVICE(addr) 			TTB_PARA_AARCH32_1M((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+#define	TTB_PARA_AARCH32_1M_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32_1M((addr), AARCH32_TEXval_NCRAM, AARCH32_Bval_NCRAM, AARCH32_Cval_NCRAM, AARCH32_DOMAINval, AARCH32_SHAREDval_NCRAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
+#define	TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32_1M((addr), AARCH32_TEXval_RAM, AARCH32_Bval_RAM, AARCH32_Cval_RAM, AARCH32_DOMAINval, AARCH32_SHAREDval_RAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
+#define	TTB_PARA_AARCH32_1M_DEVICE(addr) 			TTB_PARA_AARCH32_1M((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
 
 // TODO: implementing
-#define	TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32_4k((addr), TEXval_NCRAM, Bval_NCRAM, Cval_NCRAM, DOMAINval, SHAREDval_NCRAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32_4k((addr), TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
-#define	TTB_PARA_AARCH32_4k_DEVICE(addr) 			TTB_PARA_AARCH32_4k((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+#define	TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32_4k((addr), AARCH32_TEXval_NCRAM, AARCH32_Bval_NCRAM, AARCH32_Cval_NCRAM, AARCH32_DOMAINval, AARCH32_SHAREDval_NCRAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
+#define	TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32_4k((addr), AARCH32_TEXval_RAM, AARCH32_Bval_RAM, AARCH32_Cval_RAM, AARCH32_DOMAINval, AARCH32_SHAREDval_RAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
+#define	TTB_PARA_AARCH32_4k_DEVICE(addr) 			TTB_PARA_AARCH32_4k((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
 // First-level table entry - Page table
-#define	TTB_PARA_AARCH32_4k_PAGE(addr) 			TTB_PARA_AARCH32_4k_table((addr), TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+#define	TTB_PARA_AARCH32_4k_PAGE(addr) 			TTB_PARA_AARCH32_4k_table((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
 
 static uint_fast64_t arch32_1M_mcached(uint_fast64_t addr, int ro, int xn)
 {
@@ -1069,7 +1069,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 	static const mmulayout_t mmuinfo [] =
 	{
 		{
-			.arch = & arch64_table_2M,
+			.arch = & aarch64_table_2M,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
 			.phypageszlog2 = 21,	// 2MB
 			.pagecount = AARCH64_LEVEL1_SIZE,
@@ -1080,7 +1080,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 		{
-			.arch = & arch64_table_2M,
+			.arch = & aarch64_table_2M,
 			.phyaddr = (uintptr_t) xxlevel1_pagetable_u64,
 			.phypageszlog2 = 12,	// 4KB
 			.pagecount = AARCH64_LEVEL0_SIZE,
@@ -1207,8 +1207,8 @@ sysinit_ttbr_initialize(void)
 
 	// DDI0500J_cortex_a53_r0p4_trm.pdf
 	// 4.3.53 Translation Control Register, EL3
-	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
-	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
+	const uint_fast32_t IRGN_attr = AARCH64_CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
+	const uint_fast32_t RGN_attr = AARCH64_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
 
 	// определение размера физической памяти, на который настраиваем MMU
 	// __log2_up(AARCH64_LEVEL1_SIZE)=13, mmuinfo [0].pgszlog2=21
@@ -1282,8 +1282,8 @@ sysinit_ttbr_initialize(void)
 	// B4.1.154 TTBR0, Translation Table Base Register 0, VMSA
 #if WITHSMPSYSTEM
 	// TTBR0
-	const uint_fast32_t IRGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
-	const uint_fast32_t RGN_attr = CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
+	const uint_fast32_t IRGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
+	const uint_fast32_t RGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
 	__set_TTBR0(
 			(uintptr_t) ttb0_base_u32 |	/* Translation table base 0 address, bits[31:x]. */
 			((uint_fast32_t) !! (IRGN_attr & 0x01) << 6) |	// IRGN[0]
