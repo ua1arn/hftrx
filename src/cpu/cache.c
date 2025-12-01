@@ -128,8 +128,8 @@ sysinit_cache_initialize(void)
 	//	*/
 	//	csr_write(CSR_MHCR, 0x11ff);
 	csr_write_mhcr(0x011FF);
-	csr_write_mhcr(0x011FF & ~ 0x02);	// D-cache disable for tests
-#warning D-cache disabled
+//	csr_write_mhcr(0x011FF & ~ 0x02);	// D-cache disable for tests
+//#warning D-cache disabled
 
 	//
 	//

@@ -819,35 +819,35 @@ static uint_fast64_t rv64_sv39_mcached(uint_fast64_t addr, int ro, int xn)
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return RV64_SV39_PTE(vRAM_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
+	return 0;//RV64_SV39_PTE(vRAM_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
 static uint_fast64_t rv64_sv39_mncached(uint_fast64_t addr, int ro, int xn)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return RV64_SV39_PTE(vNCRAM_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
+	return 0;//RV64_SV39_PTE(vNCRAM_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
 static uint_fast64_t rv64_sv39_mdevice(uint_fast64_t addr)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return RV64_SV39_PTE(vDEVICE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
+	return 0;//RV64_SV39_PTE(vDEVICE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
 }
 static uint_fast64_t rv64_sv39_mtable(uint_fast64_t addr, int level)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return RV64_SV39_PTE(vTABLE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, 0*vX, 0*vW, 0*vR);
+	return 0;//RV64_SV39_PTE(vTABLE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, 0*vX, 0*vW, 0*vR);
 }
 static uint_fast64_t rv64_mnoaccess(uint_fast64_t addr)
 {
 	return UINT64_C(0);
 }
 
-static const getmmudesc_t rv64_sv32_table =
+static const getmmudesc_t rv64_sv39_table =
 {
 	.mcached = rv64_sv39_mcached,
 	.mncached = rv64_sv39_mncached,
@@ -991,30 +991,50 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 #elif CPUSTYLE_RISCV
 
 	// SV39 model - with 4KB size pages of phy memory
-	#define RV64_LEVEL1_SIZE (1024)	// 4 GB
-	#define RV64_LEVEL0_SIZE 1
+	/* top level: 1GB */
+	/* second level: 2MB */
+	/* third level: 4KB */
+	#define nGB	4	// system RAM size in GiB
+	#define RV64_LEVEL0_SIZE (nGB)
+	#define RV64_LEVEL1_SIZE (256 * nGB)
+	#define RV64_LEVEL2_SIZE (256 * nGB)
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xlevel2_pagetable_u64 [RV64_LEVEL2_SIZE * sizeof (uint64_t)];	// Used as PPN in SATP register
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xlevel1_pagetable_u64 [RV64_LEVEL1_SIZE * sizeof (uint64_t)];	// Used as PPN in SATP register
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xttb0_base_u64 [RV64_LEVEL0_SIZE * sizeof (uint64_t)];	// Used as PPN in SATP register
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xlevel0_pagetable_u64 [RV64_LEVEL0_SIZE * sizeof (uint64_t)];	// Used as PPN in SATP register
 
 	static const mmulayout_t mmuinfo [] =
 	{
+		/* third level: 4KB */
 		{
-			.arch = & rv64_sv32_table,
+			.arch = & rv64_sv39_table,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
 			.phypageszlog2 = 12,	// 4KB
-			.pagecount = RV64_LEVEL1_SIZE,
-			.table = xlevel1_pagetable_u64,
+			.pagecount = RV64_LEVEL2_SIZE,
+			.table = xlevel2_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
 			.flag = 0,
 			.level = 0, // page table level (pass to mtable)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
+		/* second level: 2MB */
 		{
-			.arch = & rv64_sv32_table,
+			.arch = & rv64_sv39_table,
+			.phyaddr = (uintptr_t) xlevel2_pagetable_u64,
+			.phypageszlog2 = 9,
+			.pagecount = RV64_LEVEL1_SIZE,
+			.table = xlevel1_pagetable_u64,
+			.poke = mmulayout_poke_u64_le,
+			.flag = 1,
+			.level = 0, // page table level (pass to mtable)
+			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
+		},
+		/* top level: 1GB */
+		{
+			.arch = & rv64_sv39_table,
 			.phyaddr = (uintptr_t) xlevel1_pagetable_u64,
-			.phypageszlog2 = 12,	// 4KB
+			.phypageszlog2 = 9,
 			.pagecount = RV64_LEVEL0_SIZE,
-			.table = xttb0_base_u64,
+			.table = xlevel0_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
 			.flag = 1,
 			.level = 0, // page table level (pass to mtable)
@@ -1297,7 +1317,7 @@ sysinit_ttbr_initialize(void)
 	#define CSR_SATP_MODE_SV48   9
 	#define CSR_SATP_MODE_SV57   10
 
-	ASSERT(((uintptr_t) xttb0_base_u64 & 0x0FFF) == 0);
+	ASSERT(((uintptr_t) xlevel0_pagetable_u64 & 0x0FFF) == 0);
 	mmu_flush_cache();
 	const unsigned asid = 0;
 	// 5.2.1.1 MMU address translation register (SATP)
@@ -1306,12 +1326,28 @@ sysinit_ttbr_initialize(void)
 			//CSR_SATP_MODE_PHYS * (UINT64_C(1) << 60) | // MODE
 			CSR_SATP_MODE_SV39 * (UINT64_C(1) << 60) | // MODE
 			(asid  & UINT64_C(0xFFFF))* (UINT64_C(1) << 44) | // ASID
-			(((uintptr_t) xttb0_base_u64 >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
+			(((uintptr_t) xlevel0_pagetable_u64 >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
 			0;
-	PRINTF("1 ttb0_base=%p" "\n", xttb0_base_u64);
+	PRINTF("1 ttb0_base=%p" "\n", xlevel0_pagetable_u64);
+	PRINTF("1 satp=%016" PRIX64 "\n", satp);
 	PRINTF("1 csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
-	//csr_write_satp(satp);
+	csr_write_satp(satp);
 	PRINTF("2 csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
+
+	csr_write_smir(UINT64_MAX);
+	csr_write_smel(UINT64_MAX);
+	csr_write_smeh(UINT64_MAX);
+	csr_write_smcir(UINT64_MAX);
+
+//	2 csr_read_smir()=00000000000001FF
+//	2 csr_read_smel()=FF80000FFFFFFFFF
+//	2 csr_read_smeh()=00003FFFFFFFFFFF
+//	2 csr_read_smcir()=000000000000FFFF
+
+	PRINTF("2 csr_read_smir()=%016" PRIX64 "\n", csr_read_smir());
+	PRINTF("2 csr_read_smel()=%016" PRIX64 "\n", csr_read_smel());
+	PRINTF("2 csr_read_smeh()=%016" PRIX64 "\n", csr_read_smeh());
+	PRINTF("2 csr_read_smcir()=%016" PRIX64 "\n", csr_read_smcir());
 
 //	mmu_write_satp(satp);
 //	mmu_flush_cache();
