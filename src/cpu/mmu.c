@@ -176,21 +176,21 @@ enum aarch64_attrindex
 
 };
 
-static uint_fast64_t aarch64_mcached(uint_fast64_t addr, int ro, int xn)
+static uint_fast64_t aarch64_2M_mcached(uint_fast64_t addr, int ro, int xn)
 {
 	return AARCH64_UPPER_ATTR |
 			(addr & ~ UINT64_C(0x0FFFFF)) |
 			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_CACHED) |
 			0x01;
 }
-static uint_fast64_t aarch64_mncached(uint_fast64_t addr, int ro, int xn)
+static uint_fast64_t aarch64_2M_mncached(uint_fast64_t addr, int ro, int xn)
 {
 	return AARCH64_UPPER_ATTR |
 			(addr & ~ UINT64_C(0x0FFFFF)) |
 			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_NCACHED) |
 			0x01;
 }
-static uint64_t aarch64_mdevice(uint_fast64_t addr)
+static uint64_t aarch64_2M_mdevice(uint_fast64_t addr)
 {
 	return AARCH64_UPPER_ATTR
 			| (addr & ~ UINT64_C(0x0FFFFF)) |
@@ -200,7 +200,7 @@ static uint64_t aarch64_mdevice(uint_fast64_t addr)
 // Next level table
 // DDI0487_I_a_a-profile_architecture_reference_manual.pdf
 // D8.3.1 Table Descriptor format
-static uint_fast64_t aarch64_mtable(uint_fast64_t addr, int level)
+static uint_fast64_t aarch64_2M_mtable(uint_fast64_t addr, int level)
 {
 	return (addr & ~ UINT64_C(0x0FFF)) |
 			0x03;
@@ -212,11 +212,11 @@ static uint_fast64_t aarch64_mnoaccess(uint_fast64_t addr)
 
 static const getmmudesc_t aarch64_table_2M =
 {
-	.mcached = aarch64_mcached,
-	.mncached = aarch64_mncached,
-	.mdevice = aarch64_mdevice,
+	.mcached = aarch64_2M_mcached,
+	.mncached = aarch64_2M_mncached,
+	.mdevice = aarch64_2M_mdevice,
 	.mnoaccess = aarch64_mnoaccess,
-	.mtable = aarch64_mtable
+	.mtable = aarch64_2M_mtable
 };
 
 #elif (__CORTEX_A != 0)
