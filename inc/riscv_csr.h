@@ -3970,25 +3970,37 @@ static inline void csr_clr_bits_mhint(uint_xlen_t mask) {
                       : /* clobbers: none */);
 }
 
+// MMU
 
+// 超级用户模式MMU EntryHi 寄存器
+// 15.2.5.3 S-mode MMU control register (SMEH)
 static inline void csr_write_smeh(uint_xlen_t value) {
     __asm__ volatile ("csrw    0x9C2, %0"
                       : /* output: none */
                       : "r" (value) /* input : from register */
                       : /* clobbers: none */);
 }
+
+// 超级用户模式MMU EntryLo 寄存器
+// 15.2.5.4 S-mode MMU control register (SMEL)
 static inline void csr_write_smel(uint_xlen_t value) {
     __asm__ volatile ("csrw    0x9C1, %0"
                       : /* output: none */
                       : "r" (value) /* input : from register */
                       : /* clobbers: none */);
 }
+
+// 15.2.5.1 S-mode MMU control register (SMCIR)
+// 超级用户模式MMU 控制寄存器
 static inline void csr_write_smcir(uint_xlen_t value) {
     __asm__ volatile ("csrw    0x9C3, %0"
                       : /* output: none */
                       : "r" (value) /* input : from register */
                       : /* clobbers: none */);
 }
+
+// 15.2.5.2 S-mode MMU control register (SMIR)
+// 超级用户模式MMU Index 寄存器
 static inline void csr_write_smir(uint_xlen_t value) {
     __asm__ volatile ("csrw    0x9C0, %0"
                       : /* output: none */
@@ -3996,9 +4008,11 @@ static inline void csr_write_smir(uint_xlen_t value) {
                       : /* clobbers: none */);
 }
 
+// 15.2.5.2 S-mode MMU control register (SMIR)
+// 超级用户模式MMU Index 寄存器
 static inline uint_xlen_t csr_read_smir(void) {
     uint_xlen_t value;
-    __asm__ volatile ("csrr    %0, 0x7C5"
+    __asm__ volatile ("csrr    %0, 0x9C0"
                       : "=r" (value)  /* output : register */
                       : /* input : none */
                       : /* clobbers: none */);
