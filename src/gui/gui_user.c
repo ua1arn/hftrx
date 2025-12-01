@@ -1256,7 +1256,7 @@ void window_memory_process(void)
 
 		gui_obj_create("lbl_note1", COLORPIP_WHITE, 54);
 		gui_obj_set_prop("lbl_note1", GUI_OBJ_TEXT, "Long press on empty cell - save,on saved cell - clean");
-		gui_obj_set_prop("lbl_note1", GUI_OBJ_POS_Y, 205);
+		gui_obj_set_prop("lbl_note1", GUI_OBJ_POS_Y, common_btn_height * 5);
 		gui_obj_set_prop("lbl_note1", GUI_OBJ_FONT, & msgothic_11x13_mono);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
@@ -1328,7 +1328,7 @@ void window_bands_process(void)
 		gui_obj_set_prop("lbl_ham", GUI_OBJ_TEXT, "HAM bands");
 		gui_obj_set_prop("lbl_bcast", GUI_OBJ_TEXT, "Broadcast bands");
 
-		gui_obj_align_to("lbl_bcast", "lbl_ham", ALIGN_RIGHT_UP, 140);
+		gui_obj_align_to("lbl_bcast", "lbl_ham", ALIGN_RIGHT_UP, common_btn_width * 2);
 
 		for (; i < bandnum; i ++)
 		{
@@ -4501,7 +4501,7 @@ void window_as_process(void)
 {
 #if WITHAUDIOSAMPLESREC
 	uint8_t update = 0;
-	enum { len = 320, lim = 25 };
+	enum { len = common_btn_width * 4, lim = WITHGUIMAXY / 20 };
 	static uint32_t d[len];
 
 	if (is_win_init())
@@ -4510,7 +4510,7 @@ void window_as_process(void)
 		gui_obj_create("btn_play", LONG_BUTTON_STYLE, 0, 0, "Play");
 		gui_obj_create("btn_tx", LONG_BUTTON_STYLE, 0, 0, "Transmit");
 
-		gui_obj_set_prop("btn_rec", GUI_OBJ_POS_Y, 65);
+		gui_obj_set_prop("btn_rec", GUI_OBJ_POS_Y, lim * 3);
 		gui_obj_align_to("btn_play", "btn_rec", ALIGN_RIGHT_UP, 10);
 		gui_obj_align_to("btn_tx", "btn_play", ALIGN_RIGHT_UP, 10);
 
