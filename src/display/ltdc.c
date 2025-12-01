@@ -3003,6 +3003,12 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 	TCONLCD_PTR->TCON1_CTL_REG =
 		0;
 #else
+    // Сперва сбрасываем всё
+    TCONLCD_PTR->LCD_CPU_IF_REG = 0;
+    TCONLCD_PTR->LCD_HV_IF_REG = 0;
+    TCONLCD_PTR->LCD_LVDS_IF_REG = 0;
+    // ставим нужное
+
 	//uint_fast32_t start_dly = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
 	uint_fast32_t start_dly = 2; //0x1F;	// 1,2 - need for 4.3 inch panel 272*480 - should be tested
 	TCONLCD_PTR->LCD_CTL_REG =
@@ -3520,31 +3526,42 @@ static void t113_MIPIDSI_clock_configuration(const videomode_t * vdmode, unsigne
 static void t113_lvds_set_digital_logic(const videomode_t * vdmode)
 {
 #if defined (TCONLCD_PTR)
-#if defined (LCD_LVDS_IF_REG_VALUE)
 
-	TCONLCD_PTR->LCD_LVDS_IF_REG = LCD_LVDS_IF_REG_VALUE;
-
-#elif CPUSTYLE_H3
+#if CPUSTYLE_H3
 	// No LVDS outpit
 
 #elif CPUSTYLE_A64
 	// No LVDS outpit
 
-#else /* defined (LCD_LVDS_IF_REG_VALUE) */
+#else
 
-	TCONLCD_PTR->LCD_LVDS_IF_REG =
-		1 * (UINT32_C(1) << 31) |	/* LCD_LVDS_EN */
-		0 * (UINT32_C(1) << 30) |	/* LCD_LVDS_LINK: 0: single link */
-		0 * (UINT32_C(1) << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter) */
-		0 * (UINT32_C(1) << 26) |	/* LCD_LVDS_BITWIDTH 0: 24-bit */
-		1 * (UINT32_C(1) << 20) |	/* LCD_LVDS_CLK_SEL 1: LCD CLK */
-		0 * (UINT32_C(1) << 25) |		/* LCD_LVDS_DEBUG_EN */
-		0 * (UINT32_C(1) << 24) |		/* LCD_LVDS_DEBUG_MODE */
-		0 * (UINT32_C(1) << 4) |				/* LCD_LVDS_CLK_POL: 0: reverse, 1: normal */
-		0 * 0x0F * (UINT32_C(1) << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */
-		0;
+	// Сперва сбрасываем всё
+	TCONLCD_PTR->LCD_CPU_IF_REG = 0;
+	TCONLCD_PTR->LCD_HV_IF_REG = 0;
+	TCONLCD_PTR->LCD_LVDS_IF_REG = 0;
+	// ставим нужное
+	#if defined (LCD_LVDS_IF_REG_VALUE)
 
-#endif /* defined (LCD_LVDS_IF_REG_VALUE) */
+		// Сперва сбрасываем всё
+		TCONLCD_PTR->LCD_CPU_IF_REG = 0;
+		TCONLCD_PTR->LCD_HV_IF_REG = 0;
+		TCONLCD_PTR->LCD_LVDS_IF_REG = 0;
+		// ставим нужное
+		TCONLCD_PTR->LCD_LVDS_IF_REG = LCD_LVDS_IF_REG_VALUE;
+	#else /* defined (LCD_LVDS_IF_REG_VALUE) */
+		TCONLCD_PTR->LCD_LVDS_IF_REG =
+			1 * (UINT32_C(1) << 31) |	/* LCD_LVDS_EN */
+			0 * (UINT32_C(1) << 30) |	/* LCD_LVDS_LINK: 0: single link */
+			0 * (UINT32_C(1) << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter) */
+			0 * (UINT32_C(1) << 26) |	/* LCD_LVDS_BITWIDTH 0: 24-bit */
+			1 * (UINT32_C(1) << 20) |	/* LCD_LVDS_CLK_SEL 1: LCD CLK */
+			0 * (UINT32_C(1) << 25) |		/* LCD_LVDS_DEBUG_EN */
+			0 * (UINT32_C(1) << 24) |		/* LCD_LVDS_DEBUG_MODE */
+			0 * (UINT32_C(1) << 4) |				/* LCD_LVDS_CLK_POL: 0: reverse, 1: normal */
+			0 * 0x0F * (UINT32_C(1) << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */
+			0;
+	#endif /* defined (LCD_LVDS_IF_REG_VALUE) */
+#endif /* CPUSTYLE_xxx */
 #endif /* defined (TCONLCD_PTR) */
 }
 
@@ -7738,7 +7755,7 @@ static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 	// step4 - same as step4 in HV mode: Open volatile output
 	t113_tcontv_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
-	//t113_lvds_set_digital_logic(vdmode);
+	//t113_tcontv_set_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
 	//t113_DSI_controller_configuration(vdmode);
 	//t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
