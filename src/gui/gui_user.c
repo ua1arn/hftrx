@@ -3361,7 +3361,7 @@ void window_receive_process(void)
 
 	if (update)
 	{
-		const char * a = remove_start_line_spaces(hamradio_get_att_value());
+		const char * a = remove_start_line_spaces(hamradio_get_att_value_P());
 		gui_obj_set_prop("btn_att", GUI_OBJ_TEXT_FMT, "Attenuator|%s", a == NULL ? "off" : a);
 		gui_obj_set_prop("btn_preamp", GUI_OBJ_LOCK, hamradio_change_preamp(0));
 		gui_obj_set_prop("btn_dnr", GUI_OBJ_LOCK, hamradio_change_nr(0));

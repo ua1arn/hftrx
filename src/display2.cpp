@@ -3670,7 +3670,7 @@ static void display2_rxbw3(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	const char * const labels [1] = { hamradio_get_rxbw_label3_P(), };
+	const char * const labels [1] = { hamradio_get_rxbw_label3(), };
 	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 }
 
@@ -3701,7 +3701,7 @@ static void display_pre3(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	const char * const labels [1] = { hamradio_get_pre_value_P(), };
+	const char * const labels [1] = { hamradio_get_pre_value(), };
 	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 }
 
@@ -3717,7 +3717,7 @@ static void display2_ovf3(const gxdrawb_t * db,
 #if WITHDSPEXTDDC
 	gxstyle_t dbstylev;
 	gxstyle_initialize(& dbstylev);
-	//const char * const labels [1] = { hamradio_get_pre_value_P(), };
+	//const char * const labels [1] = { hamradio_get_pre_value(), };
 	//display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 
 	const char * labels [1];
@@ -3769,7 +3769,7 @@ static void display2_preovf3(const gxdrawb_t * db,
 	else
 	{
 		// поля отображения, не имеющие вариантов по состоянию вкл/выкл
-		display_text(db, x, y, hamradio_get_pre_value_P(), xspan, yspan, & dbstylev_1state);
+		display_text(db, x, y, hamradio_get_pre_value(), xspan, yspan, & dbstylev_1state);
 	}
 }
 
@@ -3796,7 +3796,7 @@ static void display2_preovf5alt(const gxdrawb_t * db,
 	}
 	else
 	{
-		const char * str = hamradio_get_pre_value_P();
+		const char * str = hamradio_get_pre_value();
 		layout_label1_medium(db, x, y, str, strlen_P(str), chars_W2, COLORPIP_BLACK, colors_2state_alt [1]);
 	}
 #endif /* ! LCDMODE_DUMMY */
@@ -3812,10 +3812,10 @@ static void display2_ant5(const gxdrawb_t * db,
 		)
 {
 #if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
-	const char * const labels [1] = { hamradio_get_ant5_value_P(), };
+	const char * const labels [1] = { hamradio_get_ant5_value(), };
 	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 #elif WITHANTSELECT
-	const char * const labels [1] = { hamradio_get_ant5_value_P(), };
+	const char * const labels [1] = { hamradio_get_ant5_value(), };
 	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 #endif /* WITHANTSELECT */
 }
@@ -3830,10 +3830,10 @@ static void display2_ant7alt(const gxdrawb_t * db,
 		)
 {
 #if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
-	const char * const labels [1] = { hamradio_get_ant5_value_P(), };
+	const char * const labels [1] = { hamradio_get_ant5_value(), };
 	layout_label1_medium(db, x, y, labels [0], strlen_P(labels [0]), 7, COLORPIP_BLACK, colors_2state_alt [1]);
 #elif WITHANTSELECT
-	const char * const labels [1] = { hamradio_get_ant5_value_P(), };
+	const char * const labels [1] = { hamradio_get_ant5_value(), };
 	layout_label1_medium(db, x, y, labels [0], strlen_P(labels [0]), 7, COLORPIP_BLACK, colors_2state_alt [1]);
 #endif /* WITHANTSELECT */
 }
@@ -3888,7 +3888,7 @@ static void display2_agc3(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	display_1state(db, x, y, hamradio_get_agc3_value_P(), xspan, yspan);
+	display_1state(db, x, y, hamradio_get_agc3_value(), xspan, yspan);
 }
 
 // RX agc
@@ -3900,7 +3900,7 @@ static void display_agc4(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	display_1state(db, x, y, hamradio_get_agc4_value_P(), xspan, yspan);
+	display_1state(db, x, y, hamradio_get_agc4_value(), xspan, yspan);
 }
 
 // SSB/CW/AM/FM/...
