@@ -160,13 +160,13 @@ static const getmmudesc_t gpu_mali400_table4k =
 
 // Lower attributes
 #define AARCH64_LOWER_ATTR(AttrIndx) ( \
-	0x01 * (UINT32_C(1) << 10) |	/*  AF */ \
-	0x03 * (UINT32_C(1) << 8) |		/* SH[1:0] */ \
-	0x01 * (UINT32_C(1) << 6) |		/* AP[2:1] (AP = 0x02) */ \
-	0x00 * (UINT32_C(1) << 5) |		/* NS */ \
-	(AttrIndx & 0x07) * (UINT32_C(1) << 2) | /* AttrIndx[2:0] */ \
+	0x01 * (UINT64_C(1) << 10) |	/*  AF */ \
+	0x03 * (UINT64_C(1) << 8) |		/* SH[1:0] */ \
+	0x01 * (UINT64_C(1) << 6) |		/* AP[2:1] (AP = 0x02) */ \
+	0x00 * (UINT64_C(1) << 5) |		/* NS */ \
+	(AttrIndx & 0x07) * (UINT64_C(1) << 2) | /* AttrIndx[2:0] */ \
 	0)
-#define AARCH64_UPPER_ATTR 0
+#define AARCH64_UPPER_ATTR (UINT64_C(0))
 
 enum aarch64_attrindex
 {
