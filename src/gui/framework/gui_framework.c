@@ -24,10 +24,9 @@
 #include "../gui_port.h"
 
 static btn_bg_t btn_bg[] = {
-	{ 130, 35, },
-	{ 120, 40, },
-	{ 100, 44, },
-	{ 86, 44, },
+	{ COMMON_BUTTON_STYLE, },
+	{ SMALL_BUTTON_STYLE, },
+	{ LONG_BUTTON_STYLE, },
 };
 enum { BG_DEF_COUNT = ARRAY_SIZE(btn_bg) };
 

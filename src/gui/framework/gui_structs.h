@@ -142,7 +142,7 @@ typedef struct {
 
 typedef struct {
    char text[TEXT_ARRAY_SIZE];
-   COLORPIP_T color_line;
+   gui_color_t color_line;
 } tf_entry_t;
 
 typedef struct {

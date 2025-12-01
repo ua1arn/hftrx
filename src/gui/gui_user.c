@@ -545,15 +545,15 @@ void gui_main_process(void)
 		uint16_t h = gui_obj_get_int_prop("tf_debug", GUI_OBJ_HEIGHT);
 #endif /* WITHGUIDEBUG */
 
-		gui_obj_create("btn_main00", common_btn_width, common_btn_height, 0, 1, "RX");				// btn_txrx
-		gui_obj_create("btn_main01", common_btn_width, common_btn_height, 0, 0, "Bands");			// btn_Bands
-		gui_obj_create("btn_main02", common_btn_width, common_btn_height, 0, 0, "Memory");			// btn_Memory
-		gui_obj_create("btn_main03", common_btn_width, common_btn_height, 0, 0, "Receive|options");	// btn_Receive
-		gui_obj_create("btn_main04", common_btn_width, common_btn_height, 0, 1, "");					// btn_notch
-		gui_obj_create("btn_main05", common_btn_width, common_btn_height, 0, 0, "Speaker|on air");	// btn_speaker
-		gui_obj_create("btn_main06", common_btn_width, common_btn_height, 0, 0, "");					// btn_var
-		gui_obj_create("btn_main07", common_btn_width, common_btn_height, 0, 0, "");					// btn_ft8
-		gui_obj_create("btn_main08", common_btn_width, common_btn_height, 0, 0, "Options");			// btn_Options
+		gui_obj_create("btn_main00", COMMON_BUTTON_STYLE, 0, 1, "RX");				// btn_txrx
+		gui_obj_create("btn_main01", COMMON_BUTTON_STYLE, 0, 0, "Bands");			// btn_Bands
+		gui_obj_create("btn_main02", COMMON_BUTTON_STYLE, 0, 0, "Memory");			// btn_Memory
+		gui_obj_create("btn_main03", COMMON_BUTTON_STYLE, 0, 0, "Receive|options");	// btn_Receive
+		gui_obj_create("btn_main04", COMMON_BUTTON_STYLE, 0, 1, "");				// btn_notch
+		gui_obj_create("btn_main05", COMMON_BUTTON_STYLE, 0, 0, "Speaker|on air");	// btn_speaker
+		gui_obj_create("btn_main06", COMMON_BUTTON_STYLE, 0, 0, "");				// btn_var
+		gui_obj_create("btn_main07", COMMON_BUTTON_STYLE, 0, 0, "");				// btn_ft8
+		gui_obj_create("btn_main08", COMMON_BUTTON_STYLE, 0, 0, "Options");			// btn_Options
 
 #if WITHFT8
 		gui_obj_set_prop("btn_main07", GUI_OBJ_TEXT, "FT8");
@@ -1247,7 +1247,7 @@ void window_memory_process(void)
 			else
 				local_snprintf_P(text, NAME_ARRAY_SIZE, "---");
 
-			gui_obj_create(name, 100, 44, 0, 1, text);
+			gui_obj_create(name, LONG_BUTTON_STYLE, 0, 1, text);
 			gui_obj_set_prop(name, GUI_OBJ_PAYLOAD, freq > 0);
 		}
 
@@ -1335,7 +1335,7 @@ void window_bands_process(void)
 			if (bands[i].type != BAND_TYPE_HAM)
 			{
 				// кнопка прямого ввода частоты
-				gui_obj_create("btn_freq", 86, 44, 0, 0, "Freq|enter");
+				gui_obj_create("btn_freq", COMMON_BUTTON_STYLE, 0, 0, "Freq|enter");
 				i ++;
 
 				break;
@@ -1348,7 +1348,7 @@ void window_bands_process(void)
 
 			strncpy(text, bands[i].name, NAME_ARRAY_SIZE - 1);
 
-			gui_obj_create(name, 86, 44, 0, 0, text);
+			gui_obj_create(name, COMMON_BUTTON_STYLE, 0, 0, text);
 
 			if (hamradio_check_current_freq_by_band(bands[i].index))
 				gui_obj_set_prop(name, GUI_OBJ_LOCK, BUTTON_LOCKED);
@@ -1377,7 +1377,7 @@ void window_bands_process(void)
 
 			strncpy(text, bands[j - 1].name, NAME_ARRAY_SIZE - 1);
 
-			gui_obj_create(name, 86, 44, 0, 0, text);
+			gui_obj_create(name, COMMON_BUTTON_STYLE, 0, 0, text);
 
 			if (hamradio_check_current_freq_by_band(bands[j - 1].index))
 				gui_obj_set_prop(name, GUI_OBJ_LOCK, BUTTON_LOCKED);
@@ -1436,20 +1436,20 @@ void window_options_process(void)
 	{
 		uint8_t idx;
 
-		idx = gui_obj_create("btn_SysMenu", 100, 44, 0, 0, "System|settings");
-		idx = gui_obj_create("btn_AUDsett", 100, 44, 0, 0, "Audio|settings");
-		idx = gui_obj_create("btn_TXsett", 100, 44, 0, 0, "Transmit|settings");
-		idx = gui_obj_create("btn_Display", 100, 44, 0, 0, "Display|settings");
-		idx = gui_obj_create("btn_gui", 100, 44, 0, 0, "GUI|settings");
-		idx = gui_obj_create("btn_Utils", 100, 44, 0, 0, "Utils");
+		idx = gui_obj_create("btn_SysMenu", LONG_BUTTON_STYLE, 0, 0, "System|settings");
+		idx = gui_obj_create("btn_AUDsett", LONG_BUTTON_STYLE, 0, 0, "Audio|settings");
+		idx = gui_obj_create("btn_TXsett", LONG_BUTTON_STYLE, 0, 0, "Transmit|settings");
+		idx = gui_obj_create("btn_Display", LONG_BUTTON_STYLE, 0, 0, "Display|settings");
+		idx = gui_obj_create("btn_gui", LONG_BUTTON_STYLE, 0, 0, "GUI|settings");
+		idx = gui_obj_create("btn_Utils", LONG_BUTTON_STYLE, 0, 0, "Utils");
 #if WITHAD936XIIO || WITHAD936XDEV
-		idx = gui_obj_create("btn_936x", 100, 44, 0, 0, "AD936x");
+		idx = gui_obj_create("btn_936x", LONG_BUTTON_STYLE, 0, 0, "AD936x");
 #endif /* WITHAD936XIIO || WITHAD936XDEV */
 #if defined (RTC1_TYPE)
-		idx = gui_obj_create("btn_Time", 100, 44, 0, 0, "Set time|& date");
+		idx = gui_obj_create("btn_Time", LONG_BUTTON_STYLE, 0, 0, "Set time|& date");
 #endif /* defined (RTC1_TYPE) */
 #if LINUX_SUBSYSTEM
-		idx = gui_obj_create("btn_exit", 100, 44, 0, 0, "Terminate|program");
+		idx = gui_obj_create("btn_exit", LONG_BUTTON_STYLE, 0, 0, "Terminate|program");
 #endif /* LINUX_SUBSYSTEM */
 
 		gui_arrange_objects_from(get_obj_name_by_idx(TYPE_BUTTON, 0), idx + 1, 4, 6);
@@ -1516,8 +1516,8 @@ void window_display_process(void)
 		gui_obj_create("sl_topSP", ORIENTATION_HORIZONTAL, 300, 3);			// index = TYPE_DISPLAY_SP_TOP
 		gui_obj_create("sl_bottomSP", ORIENTATION_HORIZONTAL, 300, 3);		// index = TYPE_DISPLAY_SP_BOTTOM
 		gui_obj_create("sl_partSP", ORIENTATION_HORIZONTAL, 300, 3); 		// index = TYPE_DISPLAY_SP_PART
-		gui_obj_create("btn_zoom", 100, 44, 0, 0, "");
-		gui_obj_create("btn_view", 100, 44, 0, 0, "");
+		gui_obj_create("btn_zoom", LONG_BUTTON_STYLE, 0, 0, "");
+		gui_obj_create("btn_view", LONG_BUTTON_STYLE, 0, 0, "");
 
 		gui_arrange_objects_from("lbl_topSP", 3, 1, interval);
 		gui_obj_align_to("sl_topSP", "lbl_topSP", ALIGN_RIGHT_UP_MID, interval);
@@ -1593,23 +1593,23 @@ void window_utilites_process(void)
 		uint8_t idx;
 
 #if WITHGUIDEBUG
-		idx = gui_obj_create("btn_debug", 100, 44, 0, 0, "Debug|view");
+		idx = gui_obj_create("btn_debug", LONG_BUTTON_STYLE, 0, 0, "Debug|view");
 #endif /* WITHGUIDEBUG */
 #if WITHSWRSCAN
-		idx = gui_obj_create("btn_SWRscan", 100, 44, 0, 0, "SWR|scanner");
+		idx = gui_obj_create("btn_SWRscan", LONG_BUTTON_STYLE, 0, 0, "SWR|scanner");
 #endif /* WITHSWRSCAN */
-		idx = gui_obj_create("btn_3d", 100, 44, 0, 0, "Donut|3d");
+		idx = gui_obj_create("btn_3d", LONG_BUTTON_STYLE, 0, 0, "Donut|3d");
 #if WITHLFM
-		idx = gui_obj_create("btn_lfm", 100, 44, 0, 0, "LFM|receive");
+		idx = gui_obj_create("btn_lfm", LONG_BUTTON_STYLE, 0, 0, "LFM|receive");
 #endif /* WITHLFM  */
 #if WITHIQSHIFT
-		idx = gui_obj_create("btn_shift", 100, 44, 0, 0, "IQ shift");
+		idx = gui_obj_create("btn_shift", LONG_BUTTON_STYLE, 0, 0, "IQ shift");
 #endif /* WITHIQSHIFT */
 #if LINUX_SUBSYSTEM && WITHEXTIO_LAN
-		idx = gui_obj_create("btn_stream", 100, 44, 0, 0, "IQ LAN|Stream");
+		idx = gui_obj_create("btn_stream", LONG_BUTTON_STYLE, 0, 0, "IQ LAN|Stream");
 #endif /* LINUX_SUBSYSTEM && WITHEXTIO_LAN */
 #if 0
-		idx = gui_obj_create("btn_kbdtest", 100, 44, 0, 0, "Keyboard|test");
+		idx = gui_obj_create("btn_kbdtest", LONG_BUTTON_STYLE, 0, 0, "Keyboard|test");
 #endif
 
 		gui_arrange_objects_from(get_obj_name_by_idx(TYPE_BUTTON, 0), idx + 1, 4, 6);
@@ -1690,8 +1690,8 @@ void window_swrscan_process(void)
 		swr_scan_stop = 0;
 		backup_freq = hamradio_get_freq_rx();
 
-		gui_obj_create("btn_swr_start", 86, 44, 0, 0, "Start");
-		gui_obj_create("btn_swr_OK",    86, 44, 0, 0, "OK");
+		gui_obj_create("btn_swr_start", COMMON_BUTTON_STYLE, 0, 0, "Start");
+		gui_obj_create("btn_swr_OK",    COMMON_BUTTON_STYLE, 0, 0, "OK");
 
 		gui_obj_create("lbl_swr_bottom", COLORPIP_WHITE, 7);
 		gui_obj_create("lbl_swr_top",    COLORPIP_WHITE, 7);
@@ -1838,7 +1838,7 @@ void window_tx_process(void)
 
 	if (is_win_init())
 	{
-		gui_obj_create("btn_tx_power", 100, 44, 0, 0, "TX power");
+		gui_obj_create("btn_tx_power", LONG_BUTTON_STYLE, 0, 0, "TX power");
 
 #if ! WITHPOWERTRIM
 		gui_obj_set_prop("btn_tx_power", GUI_OBJ_STATE, DISABLED);
@@ -1882,7 +1882,7 @@ void window_tx_power_process(void)
 		gui_obj_create("lbl_tune", COLORPIP_WHITE, 14);
 		gui_obj_create("sl_power", ORIENTATION_HORIZONTAL, 300, 3);
 		gui_obj_create("sl_tune", ORIENTATION_HORIZONTAL, 300, 3);
-		gui_obj_create("btn_ok", 40, 40, 0, 0, "OK");
+		gui_obj_create("btn_ok", SMALL_BUTTON_STYLE, 0, 0, "OK");
 
 		gui_obj_set_prop("lbl_power", GUI_OBJ_POS_Y, 10);
 		gui_obj_set_prop("sl_power", GUI_OBJ_PAYLOAD, normalize(hamradio_get_tx_power(), power_min, power_max, 100));
@@ -1944,12 +1944,12 @@ void window_audiosettings_process(void)
 	{
 		update = 1;
 
-		gui_obj_create("btn_mic_settings", 100, 44, 0, 0, "MIC|settings");
-		gui_obj_create("btn_mic_profiles", 100, 44, 0, 0, "MIC|profiles");
-		gui_obj_create("btn_reverb_settings", 100, 44, 0, 0, "Reverb|settings");
-		gui_obj_create("btn_monitor", 100, 44, 0, 0, "Monitor|disabled");
-		gui_obj_create("btn_af_eq", 100, 44, 0, 0, "AF|equalizer");
-		gui_obj_create("btn_audio_switch", 100, 44, 0, 0, "Audio|switch");
+		gui_obj_create("btn_mic_settings", LONG_BUTTON_STYLE, 0, 0, "MIC|settings");
+		gui_obj_create("btn_mic_profiles", LONG_BUTTON_STYLE, 0, 0, "MIC|profiles");
+		gui_obj_create("btn_reverb_settings", LONG_BUTTON_STYLE, 0, 0, "Reverb|settings");
+		gui_obj_create("btn_monitor", LONG_BUTTON_STYLE, 0, 0, "Monitor|disabled");
+		gui_obj_create("btn_af_eq", LONG_BUTTON_STYLE, 0, 0, "AF|equalizer");
+		gui_obj_create("btn_audio_switch", LONG_BUTTON_STYLE, 0, 0, "Audio|switch");
 
 		gui_arrange_objects_from("btn_mic_settings", 6, 4, 10);
 
@@ -2039,8 +2039,8 @@ void window_ap_reverb_process(void)
 		gui_obj_create("sl_loss", ORIENTATION_HORIZONTAL, 300, 3);
 		gui_obj_create("lbl_delay", COLORPIP_WHITE, 14);
 		gui_obj_create("lbl_loss", COLORPIP_WHITE, 14);
-		gui_obj_create("btn_en", 40, 40, 0, 0, "EN");
-		gui_obj_create("btn_ok", 40, 40, 0, 0, "OK");
+		gui_obj_create("btn_en", SMALL_BUTTON_STYLE, 0, 0, "EN");
+		gui_obj_create("btn_ok", SMALL_BUTTON_STYLE, 0, 0, "OK");
 
 		gui_obj_set_prop("lbl_delay", GUI_OBJ_POS_Y, 10);
 		gui_obj_set_prop("sl_delay", GUI_OBJ_PAYLOAD, normalize(hamradio_get_reverb_delay(), delay_min, delay_max, 100));
@@ -2130,8 +2130,8 @@ void window_af_eq_process(void)
 		gui_obj_set_prop("lbl_eq400", GUI_OBJ_FONT, & msgothic_11x13_mono);
 		gui_obj_set_prop("lbl_eq1500", GUI_OBJ_FONT, & msgothic_11x13_mono);
 		gui_obj_set_prop("lbl_eq2700", GUI_OBJ_FONT, & msgothic_11x13_mono);
-		gui_obj_create("btn_ok", 40, 40, 0, 0, "OK");
-		gui_obj_create("btn_en", 40, 40, 0, 0, "OK");
+		gui_obj_create("btn_ok", SMALL_BUTTON_STYLE, 0, 0, "OK");
+		gui_obj_create("btn_en", SMALL_BUTTON_STYLE, 0, 0, "OK");
 
 		gui_obj_set_prop("sl_eq400", GUI_OBJ_POS, 50, 10);
 		gui_arrange_objects_from("sl_eq400", 3, 3, 70);
@@ -2227,9 +2227,9 @@ void window_ap_mic_process(void)
 		gui_obj_create("sl_micLevel", ORIENTATION_HORIZONTAL, 300, 3);
 		gui_obj_create("sl_micClip", ORIENTATION_HORIZONTAL, 300, 3);
 		gui_obj_create("sl_micAGC", ORIENTATION_HORIZONTAL, 300, 3);
-		gui_obj_create("btn_mic_agc", 86, 44, 0, 0, "AGC|OFF");
-		gui_obj_create("btn_mic_boost", 86, 44, 0, 0, "Boost|OFF");
-		gui_obj_create("btn_mic_OK", 86, 44, 0, 0, "OK");
+		gui_obj_create("btn_mic_agc", COMMON_BUTTON_STYLE, 0, 0, "AGC|OFF");
+		gui_obj_create("btn_mic_boost", COMMON_BUTTON_STYLE, 0, 0, "Boost|OFF");
+		gui_obj_create("btn_mic_OK", COMMON_BUTTON_STYLE, 0, 0, "OK");
 
 		gui_obj_set_prop("lbl_micLevel", GUI_OBJ_POS_Y, 10);
 		gui_arrange_objects_from("lbl_micLevel", 3, 1, 50);
@@ -2328,7 +2328,7 @@ void window_ap_mic_prof_process(void)
 		for (uint8_t i = 0; i < NMICPROFCELLS; i ++)
 		{
 			local_snprintf_P(name, NAME_ARRAY_SIZE, "btn_mic_profile_%01d", i);
-			gui_obj_create(name, 100, 44, 0, 1, "");
+			gui_obj_create(name, LONG_BUTTON_STYLE, 0, 1, "");
 			uint8_t cell_saved = hamradio_load_mic_profile(i, 0);
 			gui_obj_set_prop(name, GUI_OBJ_PAYLOAD, (i << 16) | cell_saved);
 		}
@@ -2404,9 +2404,9 @@ void window_notch_process(void)
 
 		lbls[0] = gui_obj_create("lbl_freq", COLORPIP_WHITE, 14);
 		lbls[1] = gui_obj_create("lbl_width", COLORPIP_WHITE, 14);
-		gui_obj_create("btn_type", 80, 40, 0, 0, "");
-		gui_obj_create("btn_add", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_sub", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_type", COMMON_BUTTON_STYLE, 0, 0, "");
+		gui_obj_create("btn_add", SMALL_BUTTON_STYLE, 0, 0, "+");
+		gui_obj_create("btn_sub", SMALL_BUTTON_STYLE, 0, 0, "-");
 
 		gui_arrange_objects_from("lbl_freq", 2, 1, interval);
 		gui_obj_align_to("btn_add", "lbl_freq", ALIGN_RIGHT_UP, interval);
@@ -2489,9 +2489,9 @@ void window_gui_settings_process(void)
 	{
 		update = 1;
 
-		gui_obj_create("btn_enc2_step", 100, 44, 0, 0, "");
-		gui_obj_create("btn_freq_swipe", 100, 44, 0, 0, "");
-		gui_obj_create("btn_freq_swipe_step", 100, 44, 0, 0, "");
+		gui_obj_create("btn_enc2_step", LONG_BUTTON_STYLE, 0, 0, "");
+		gui_obj_create("btn_freq_swipe", LONG_BUTTON_STYLE, 0, 0, "");
+		gui_obj_create("btn_freq_swipe_step", LONG_BUTTON_STYLE, 0, 0, "");
 
 		gui_arrange_objects_from("btn_enc2_step", 3, 3, 6);
 
@@ -2551,9 +2551,9 @@ void window_shift_process(void)
 		lbls[2] = gui_obj_create("lbl_tx_shift", COLORPIP_WHITE, 13);
 		gui_obj_create("lbl_iq_test", COLORPIP_WHITE, 23);
 
-		gui_obj_create("btn_p", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_m", 40, 40, 0, 0, "-");
-		gui_obj_create("btn_test", 95, 40, 0, 0, "CIC|test");
+		gui_obj_create("btn_p", SMALL_BUTTON_STYLE, 0, 0, "+");
+		gui_obj_create("btn_m", SMALL_BUTTON_STYLE, 0, 0, "-");
+		gui_obj_create("btn_test", COMMON_BUTTON_STYLE, 0, 0, "CIC|test");
 
 		gui_obj_set_prop("lbl_rx_cic_shift", GUI_OBJ_PAYLOAD, 0);
 		gui_obj_set_prop("lbl_rx_fir_shift", GUI_OBJ_PAYLOAD, 1);
@@ -2671,8 +2671,8 @@ void window_uif_process(void)
 	{
 		reinit = 1;
 
-		gui_obj_create("btn_UIF-", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_UIF+", 40, 40, 0, 0, "+");
+		gui_obj_create("btn_UIF-", SMALL_BUTTON_STYLE, 0, 0, "+");
+		gui_obj_create("btn_UIF+", SMALL_BUTTON_STYLE, 0, 0, "+");
 		gui_obj_create("lbl_uif_val", COLORPIP_WHITE, 10);
 
 		gui_obj_align_to("btn_UIF-", "lbl_uif_val", ALIGN_DOWN_LEFT, 6);
@@ -2803,7 +2803,7 @@ void window_ft8_bands_process(void)
 		for (int i = 0; i < ft8_bands_count; i ++)
 		{
 			local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "btn_bands_%02d", i);
-			gui_obj_create(btn_name, 86, 44, 0, 0, "");
+			gui_obj_create(btn_name, COMMON_BUTTON_STYLE, 0, 0, "");
 			gui_obj_set_prop(btn_name, GUI_OBJ_TEXT_FMT, "%dk", ft8_bands[i] / 1000);
 			gui_obj_set_prop(btn_name, GUI_OBJ_PAYLOAD, i);
 			gui_obj_set_prop(btn_name, GUI_OBJ_LOCK, rx_freq == ft8_bands[i]);
@@ -2836,12 +2836,12 @@ void window_ft8_settings_process(void)
 	{
 		uint8_t interval = 20;
 
-		gui_obj_create("btn_callsign", 86, 44, 0, 0, "Callsign");
-		gui_obj_create("btn_qth", 86, 44, 0, 0, "QTH");
-		gui_obj_create("btn_freq", 86, 44, 0, 0, "TX freq");
-		gui_obj_create("btn_freq_eq", 86, 44, 0, 0, "TX on RX|freq");
-		gui_obj_create("btn_time0", 86, 44, 0, 0, "Time >0<");
-		gui_obj_create("btn_OK", 44, 44, 0, 0, "OK");
+		gui_obj_create("btn_callsign", COMMON_BUTTON_STYLE, 0, 0, "Callsign");
+		gui_obj_create("btn_qth", COMMON_BUTTON_STYLE, 0, 0, "QTH");
+		gui_obj_create("btn_freq", COMMON_BUTTON_STYLE, 0, 0, "TX freq");
+		gui_obj_create("btn_freq_eq", COMMON_BUTTON_STYLE, 0, 0, "TX on RX|freq");
+		gui_obj_create("btn_time0", COMMON_BUTTON_STYLE, 0, 0, "Time >0<");
+		gui_obj_create("btn_OK", SMALL_BUTTON_STYLE, 0, 0, "OK");
 
 		gui_obj_create("lbl_callsign", COLORPIP_WHITE, 10);
 		gui_obj_create("lbl_qth", COLORPIP_WHITE, 10);
@@ -2918,10 +2918,10 @@ void window_ft8_process(void)
 	{
 		uint8_t interval = 20;
 
-		gui_obj_create("btn_tx", 86, 44, 0, 0, "Transmit");
-		gui_obj_create("btn_filter", 86, 44, 0, 0, "View|all");
-		gui_obj_create("btn_bands", 86, 44, 0, 0, "FT8|bands");
-		gui_obj_create("btn_settings", 86, 44, 0, 0, "Edit|settings");
+		gui_obj_create("btn_tx", COMMON_BUTTON_STYLE, 0, 0, "Transmit");
+		gui_obj_create("btn_filter", COMMON_BUTTON_STYLE, 0, 0, "View|all");
+		gui_obj_create("btn_bands", COMMON_BUTTON_STYLE, 0, 0, "FT8|bands");
+		gui_obj_create("btn_settings", COMMON_BUTTON_STYLE, 0, 0, "Edit|settings");
 		gui_obj_create("lbl_cq_title", COLORPIP_GREEN, 3);
 		gui_obj_create("lbl_tx_title", COLORPIP_GREEN, 3);
 		gui_obj_create("lbl_cq0", COLORPIP_WHITE, 8);
@@ -3154,8 +3154,8 @@ void window_af_process(void)
 		gui_obj_create("lbl_low", COLORPIP_WHITE, 16);
 		gui_obj_create("lbl_high", COLORPIP_WHITE, 16);
 		gui_obj_create("lbl_afr", COLORPIP_WHITE, 16);
-		gui_obj_create("btn_add", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_sub", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_add", SMALL_BUTTON_STYLE, 0, 0, "+");
+		gui_obj_create("btn_sub", SMALL_BUTTON_STYLE, 0, 0, "-");
 
 		gui_obj_set_prop("lbl_low", GUI_OBJ_PAYLOAD, TYPE_BP_LOW);
 		gui_obj_set_prop("lbl_high", GUI_OBJ_PAYLOAD, TYPE_BP_HIGH);
@@ -3248,14 +3248,14 @@ void window_mode_process(void)
 {
 	if (is_win_init())
 	{
-		gui_obj_create("btn_ModeLSB", 86, 44, 0, 0, "LSB");
-		gui_obj_create("btn_ModeCW", 86, 44, 0, 0, "CW");
-		gui_obj_create("btn_ModeAM", 86, 44, 0, 0, "AM");
-		gui_obj_create("btn_ModeDGL", 86, 44, 0, 0, "DGL");
-		gui_obj_create("btn_ModeUSB", 86, 44, 0, 0, "USB");
-		gui_obj_create("btn_ModeCWR", 86, 44, 0, 0, "CWR");
-		gui_obj_create("btn_ModeNFM", 86, 44, 0, 0, "NFM");
-		gui_obj_create("btn_ModeDGU", 86, 44, 0, 0, "DGU");
+		gui_obj_create("btn_ModeLSB", COMMON_BUTTON_STYLE, 0, 0, "LSB");
+		gui_obj_create("btn_ModeCW", COMMON_BUTTON_STYLE, 0, 0, "CW");
+		gui_obj_create("btn_ModeAM", COMMON_BUTTON_STYLE, 0, 0, "AM");
+		gui_obj_create("btn_ModeDGL", COMMON_BUTTON_STYLE, 0, 0, "DGL");
+		gui_obj_create("btn_ModeUSB", COMMON_BUTTON_STYLE, 0, 0, "USB");
+		gui_obj_create("btn_ModeCWR", COMMON_BUTTON_STYLE, 0, 0, "CWR");
+		gui_obj_create("btn_ModeNFM", COMMON_BUTTON_STYLE, 0, 0, "NFM");
+		gui_obj_create("btn_ModeDGU", COMMON_BUTTON_STYLE, 0, 0, "DGU");
 
 		gui_obj_set_prop("btn_ModeLSB", GUI_OBJ_PAYLOAD, SUBMODE_LSB);
 		gui_obj_set_prop("btn_ModeCW", GUI_OBJ_PAYLOAD, SUBMODE_CW);
@@ -3302,7 +3302,7 @@ void window_receive_process(void)
 		const char btn_names[][NAME_ARRAY_SIZE] = { "btn_att", "btn_agc", "btn_mode", "btn_preamp", "btn_af", "btn_dnr", "btn_wnb", };
 
 		for (int i = 0; i < ARRAY_SIZE(btn_names); i ++)
-			gui_obj_create(btn_names[i], 100, 44, 0, 0, "");
+			gui_obj_create(btn_names[i], LONG_BUTTON_STYLE, 0, 0, "");
 
 		gui_arrange_objects(btn_names, ARRAY_SIZE(btn_names), 4, 6);
 
@@ -3491,20 +3491,20 @@ void window_time_process(void)
 		gui_obj_create("lbl_minute", COLORPIP_WHITE, 4);
 		gui_obj_create("lbl_second", COLORPIP_WHITE, 4);
 
-		gui_obj_create("btn_day+", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_month+", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_year+", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_hour+", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_minute+", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_second+", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_sec0", 40, 40, 0, 0, ">0");
-		gui_obj_create("btn_day-", 40, 40, 0, 0, "-");
-		gui_obj_create("btn_month-", 40, 40, 0, 0, "-");
-		gui_obj_create("btn_year-", 40, 40, 0, 0, "-");
-		gui_obj_create("btn_hour-", 40, 40, 0, 0, "-");
-		gui_obj_create("btn_minute-", 40, 40, 0, 0, "-");
-		gui_obj_create("btn_second-", 40, 40, 0, 0, "-");
-		gui_obj_create("btn_set", 40, 40, 0, 0, "Set");
+		gui_obj_create("btn_day+", SMALL_BUTTON_STYLE, 0, 0, "+");
+		gui_obj_create("btn_month+", SMALL_BUTTON_STYLE, 0, 0, "+");
+		gui_obj_create("btn_year+", SMALL_BUTTON_STYLE, 0, 0, "+");
+		gui_obj_create("btn_hour+", SMALL_BUTTON_STYLE, 0, 0, "+");
+		gui_obj_create("btn_minute+", SMALL_BUTTON_STYLE, 0, 0, "+");
+		gui_obj_create("btn_second+", SMALL_BUTTON_STYLE, 0, 0, "+");
+		gui_obj_create("btn_sec0", SMALL_BUTTON_STYLE, 0, 0, ">0");
+		gui_obj_create("btn_day-", SMALL_BUTTON_STYLE, 0, 0, "-");
+		gui_obj_create("btn_month-", SMALL_BUTTON_STYLE, 0, 0, "-");
+		gui_obj_create("btn_year-", SMALL_BUTTON_STYLE, 0, 0, "-");
+		gui_obj_create("btn_hour-", SMALL_BUTTON_STYLE, 0, 0, "-");
+		gui_obj_create("btn_minute-", SMALL_BUTTON_STYLE, 0, 0, "-");
+		gui_obj_create("btn_second-", SMALL_BUTTON_STYLE, 0, 0, "-");
+		gui_obj_create("btn_set", SMALL_BUTTON_STYLE, 0, 0, "Set");
 
 		gui_arrange_objects_from("lbl_day", 6, 6, interval);
 		gui_obj_align_to("btn_day+", "lbl_day", ALIGN_DOWN_LEFT, interval);
@@ -3757,8 +3757,8 @@ void window_kbd_test_process(void)
 		gui_obj_create("lbl_text", COLORPIP_WHITE, 20);
 		gui_obj_create("lbl_num", COLORPIP_WHITE, 20);
 
-		gui_obj_create("btn_text", 86, 40, 0, 0, "Edit...");
-		gui_obj_create("btn_num", 86, 40, 0, 0, "Edit...");
+		gui_obj_create("btn_text", COMMON_BUTTON_STYLE, 0, 0, "Edit...");
+		gui_obj_create("btn_num", COMMON_BUTTON_STYLE, 0, 0, "Edit...");
 
 		gui_obj_set_prop("lbl_text", GUI_OBJ_POS_Y, 20);
 
@@ -3922,8 +3922,8 @@ void window_menu_params_process(void)
 		gui_arrange_objects(btn_names, count, cols, interval);
 
 #if 1	// Добавить экранные кнопки "+" и "-" при необходимости
-		gui_obj_create("btn_p", 40, 40, 1, 0, "+");
-		gui_obj_create("btn_m", 40, 40, 1, 0, "-");
+		gui_obj_create("btn_p", SMALL_BUTTON_STYLE, 1, 0, "+");
+		gui_obj_create("btn_m", SMALL_BUTTON_STYLE, 1, 0, "-");
 
 		char buf[TEXT_ARRAY_SIZE];
 		local_snprintf_P(buf, TEXT_ARRAY_SIZE, "btn_params_%02d", count < cols ? count - 1 : cols - 1);
@@ -4046,10 +4046,10 @@ void window_lfm_process(void)
 		lbls[1] = gui_obj_create("lbl_stopfreq", COLORPIP_WHITE, 20);
 		lbls[2] = gui_obj_create("lbl_interval", COLORPIP_WHITE, 20);
 
-		gui_obj_create("btn_state", 86, 40, 0, 0, "");
-		gui_obj_create("btn_draw", 86, 40, 0, 0, "Draw|spectre");
-		gui_obj_create("btn_p", 35, 35, 0, 0, "+");
-		gui_obj_create("btn_m", 35, 35, 0, 0, "-");
+		gui_obj_create("btn_state", COMMON_BUTTON_STYLE, 0, 0, "");
+		gui_obj_create("btn_draw", COMMON_BUTTON_STYLE, 0, 0, "Draw|spectre");
+		gui_obj_create("btn_p", SMALL_BUTTON_STYLE, 0, 0, "+");
+		gui_obj_create("btn_m", SMALL_BUTTON_STYLE, 0, 0, "-");
 
 		gui_arrange_objects_from("lbl_nmeatime", 4, 1, interval);
 		gui_obj_align_to("btn_state", "lbl_interval", ALIGN_DOWN_LEFT, interval);
@@ -4224,7 +4224,7 @@ void window_stream_process(void)
 	if (is_win_init())
 	{
 		gui_obj_create("tf_log", 50, 15, DOWN, & msgothic_11x13_mono);
-		gui_obj_create("btn_state", 130, 40, 0, 0, "");
+		gui_obj_create("btn_state", LONG_BUTTON_STYLE, 0, 0, "");
 
 		gui_obj_set_prop("tf_log", GUI_OBJ_POS, 0, 0);
 		gui_obj_align_to("btn_state", "tf_log", ALIGN_DOWN_MID, 10);
@@ -4280,8 +4280,8 @@ void window_wnbconfig_process(void)
 	{
 		enc.updated = 1;
 
-		gui_obj_create("btn_add", 40, 40, 0, 0, "+");
-		gui_obj_create("btn_sub", 40, 40, 0, 0, "-");
+		gui_obj_create("btn_add", SMALL_BUTTON_STYLE, 0, 0, "+");
+		gui_obj_create("btn_sub", SMALL_BUTTON_STYLE, 0, 0, "-");
 		gui_obj_create("lbl_val", COLORPIP_WHITE, 14);
 
 		gui_obj_set_prop("lbl_val", GUI_OBJ_POS, 0, 15);
@@ -4349,11 +4349,11 @@ void window_ad936x_process(void)
 		gui_obj_create("lbl_status_str", COLORPIP_WHITE, 20);
 		gui_obj_create("lbl_iio_name", COLORPIP_WHITE, 9);
 		gui_obj_create("lbl_iio_val", COLORPIP_WHITE, 20);
-		gui_obj_create("btn_uri_edit", 86, 44, 0, 0, "Edit...");
-		gui_obj_create("btn_action", 86, 44, 0, 0, "Find");
-		gui_obj_create("btn_gain_type", 86, 44, 0, 0, "Gain|manual");
-		gui_obj_create("btn_gain_add", 44, 44, 0, 0, "+");
-		gui_obj_create("btn_gain_sub", 44, 44, 0, 0, "-");
+		gui_obj_create("btn_uri_edit", COMMON_BUTTON_STYLE, 0, 0, "Edit...");
+		gui_obj_create("btn_action", COMMON_BUTTON_STYLE, 0, 0, "Find");
+		gui_obj_create("btn_gain_type", COMMON_BUTTON_STYLE, 0, 0, "Gain|manual");
+		gui_obj_create("btn_gain_add", SMALL_BUTTON_STYLE, 0, 0, "+");
+		gui_obj_create("btn_gain_sub", SMALL_BUTTON_STYLE, 0, 0, "-");
 
 		gui_obj_set_prop("lbl_status", GUI_OBJ_POS, 0, 0);
 		gui_obj_set_prop("lbl_status", GUI_OBJ_TEXT, "Status: ");
@@ -4452,7 +4452,7 @@ void window_ad936x_process(void)
 		uint8_t p = ad936xdev_present();
 		uint8_t s = get_ad936x_stream_status();
 
-		gui_obj_create("btn_switch", 100, 40, 0, 0, "");
+		gui_obj_create("btn_switch", LONG_BUTTON_STYLE, 0, 0, "");
 
 		if (s)
 			gui_obj_set_prop("btn_switch", GUI_OBJ_TEXT, "Switch|to HF");
@@ -4506,9 +4506,9 @@ void window_as_process(void)
 
 	if (is_win_init())
 	{
-		gui_obj_create("btn_rec", 100, 40, 0, 0, "Record");
-		gui_obj_create("btn_play", 100, 40, 0, 0, "Play");
-		gui_obj_create("btn_tx", 100, 40, 0, 0, "Transmit");
+		gui_obj_create("btn_rec", LONG_BUTTON_STYLE, 0, 0, "Record");
+		gui_obj_create("btn_play", LONG_BUTTON_STYLE, 0, 0, "Play");
+		gui_obj_create("btn_tx", LONG_BUTTON_STYLE, 0, 0, "Transmit");
 
 		gui_obj_set_prop("btn_rec", GUI_OBJ_POS_Y, 65);
 		gui_obj_align_to("btn_play", "btn_rec", ALIGN_RIGHT_UP, 10);
@@ -4519,15 +4519,6 @@ void window_as_process(void)
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
 		update = 1;
-	}
-
-	for (int x = 0; x < len; x ++)
-		gui_drawline(x, lim - d[x], x, lim + d[x], COLORPIP_WHITE);
-
-	if (as_get_state() == AS_PLAYING || as_get_state() == AS_TX)
-	{
-		uint16_t pos = len * as_get_progress() / 100;
-		gui_drawline(pos, 0, pos, lim * 2, COLORPIP_GREEN);
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_AS)
@@ -4552,8 +4543,20 @@ void window_as_process(void)
 		update = 1;
 		break;
 
+	case WM_MESSAGE_CLOSE:
+		return;
+
 	default:
 		break;
+	}
+
+	for (int x = 0; x < len; x ++)
+		gui_drawline(x, lim - d[x], x, lim + d[x], COLORPIP_WHITE);
+
+	if (as_get_state() == AS_PLAYING || as_get_state() == AS_TX)
+	{
+		uint16_t pos = len * as_get_progress() / 100;
+		gui_drawline(pos, 0, pos, lim * 2, COLORPIP_GREEN);
 	}
 
 	if (update)
