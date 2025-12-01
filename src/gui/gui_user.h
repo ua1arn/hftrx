@@ -132,10 +132,6 @@ enum {
 	infobar_2nd_str_y = 145,
 	infobar_num_places = 8,
 	infobar_label_width = 100,
-
-	common_btn_interval = 3,
-	common_btn_width = WITHGUIMAXX / 9 + 1 - common_btn_interval,
-	common_btn_height = FOOTER_HEIGHT - 6,
 };
 
 #define INFOBAR_EMPTY 		0x3F

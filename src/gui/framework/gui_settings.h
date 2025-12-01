@@ -18,8 +18,15 @@ enum {
 	window_title_indent = 20,	// горизонтальный отступ заголовка
 	touch_area_enlarge = 5,		// увеличение области вокруг элементов для упрощения попадания по мелким элементам
 	autorepeat_delay = 4,		// задержка автоповтора действий
-	footer_buttons_count = 9
+	footer_buttons_count = 9,
+	common_btn_interval = 3,
+	common_btn_width = WITHGUIMAXX / 9 + 1 - common_btn_interval,
+	common_btn_height = FOOTER_HEIGHT - 6,
 };
+
+#define COMMON_BUTTON_STYLE		common_btn_width, common_btn_height
+#define SMALL_BUTTON_STYLE		common_btn_height, common_btn_height
+#define LONG_BUTTON_STYLE		(common_btn_width + common_btn_width / 3), common_btn_height
 
 #define BUTTONS_FONTP_DEFAULT	msgothic_15x17_prop
 #define LABELS_FONT_DEFAULT		msgothic_15x17_mono
