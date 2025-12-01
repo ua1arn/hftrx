@@ -52,7 +52,6 @@
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 	#define LCDMODE_AT070TNA2 	1	/* 1024x600 */
-	#define WITHTFT_OVER_LVDS	1	// LVDS receiver THC63LVDF84B
 	#define COLORSTYLE_WHITE	1
 	#define BOARD_DSTYLE		"g_x1024_y600_linux.h"
 
