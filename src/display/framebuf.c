@@ -234,12 +234,12 @@ static void awxx_g2d_mixer_reset(void)
 {
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 
-	//	memset(G2D_V0, 0, sizeof * G2D_V0);
-	//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
-	//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
-	//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
-	//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
-	//	memset(G2D_WB, 0, sizeof * G2D_WB);
+	//	memset32(G2D_V0, 0, sizeof * G2D_V0);
+	//	memset32(G2D_UI0, 0, sizeof * G2D_UI0);
+	//	memset32(G2D_UI1, 0, sizeof * G2D_UI1);
+	//	memset32(G2D_UI2, 0, sizeof * G2D_UI2);
+	//	memset32(G2D_BLD, 0, sizeof * G2D_BLD);
+	//	memset32(G2D_WB, 0, sizeof * G2D_WB);
 
 	//	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 	//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
@@ -319,12 +319,12 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		uintptr_t taddr
 		)
 {
-	//	memset(G2D_V0, 0, sizeof * G2D_V0);
-	//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
-	//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
-	//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
-	//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
-	//	memset(G2D_WB, 0, sizeof * G2D_WB);
+	//	memset32(G2D_V0, 0, sizeof * G2D_V0);
+	//	memset32(G2D_UI0, 0, sizeof * G2D_UI0);
+	//	memset32(G2D_UI1, 0, sizeof * G2D_UI1);
+	//	memset32(G2D_UI2, 0, sizeof * G2D_UI2);
+	//	memset32(G2D_BLD, 0, sizeof * G2D_BLD);
+	//	memset32(G2D_WB, 0, sizeof * G2D_WB);
 	//	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 	//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 	g2d_rtmx_accure();
@@ -1309,7 +1309,7 @@ void arm_hardware_mdma_initialize(void)
 	// G2D version=01100114
 	//PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
 
-	//memset(G2D_TOP, 0xFF, sizeof * G2D_TOP);
+	//memset32(G2D_TOP, 0xFF, sizeof * G2D_TOP);
 	awxx_rcq(0xDEADBEEF, 64);
 //	PRINTF("G2D_TOP:\n");
 //	printhex32(G2D_TOP_BASE, G2D_TOP, 256);
@@ -3329,12 +3329,12 @@ void hwaccel_bitblt(
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-//	memset(G2D_V0, 0, sizeof * G2D_V0);
-//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
-//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
-//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
-//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
-//	memset(G2D_WB, 0, sizeof * G2D_WB);
+//	memset32(G2D_V0, 0, sizeof * G2D_V0);
+//	memset32(G2D_UI0, 0, sizeof * G2D_UI0);
+//	memset32(G2D_UI1, 0, sizeof * G2D_UI1);
+//	memset32(G2D_UI2, 0, sizeof * G2D_UI2);
+//	memset32(G2D_BLD, 0, sizeof * G2D_BLD);
+//	memset32(G2D_WB, 0, sizeof * G2D_WB);
 
 //	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
@@ -3442,12 +3442,12 @@ void hwaccel_stretchblt(
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER && defined (G2D_MIXER)
 	/* Использование G2D для формирования изображений */
 
-//	memset(G2D_V0, 0, sizeof * G2D_V0);
-//	memset(G2D_UI0, 0, sizeof * G2D_UI0);
-//	memset(G2D_UI1, 0, sizeof * G2D_UI1);
-//	memset(G2D_UI2, 0, sizeof * G2D_UI2);
-//	memset(G2D_BLD, 0, sizeof * G2D_BLD);
-//	memset(G2D_WB, 0, sizeof * G2D_WB);
+//	memset32(G2D_V0, 0, sizeof * G2D_V0);
+//	memset32(G2D_UI0, 0, sizeof * G2D_UI0);
+//	memset32(G2D_UI1, 0, sizeof * G2D_UI1);
+//	memset32(G2D_UI2, 0, sizeof * G2D_UI2);
+//	memset32(G2D_BLD, 0, sizeof * G2D_BLD);
+//	memset32(G2D_WB, 0, sizeof * G2D_WB);
 
 //	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 //	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
