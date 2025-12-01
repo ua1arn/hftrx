@@ -3552,9 +3552,6 @@ typedef struct {
 	uint8_t index;
 } menu_names_t;
 
-uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, uint_fast8_t is_bcast_need);
-uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band);
-void hamradio_goto_band_by_freq(uint_fast32_t f);
 uint_fast16_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals);
 uint_fast16_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index, uint_fast8_t max_count);
 void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
