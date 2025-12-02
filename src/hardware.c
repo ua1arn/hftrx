@@ -2028,6 +2028,7 @@ sysinit_vbar_initialize(void)
 	//csr_write_utvec(vbaseval);	/* for user privilege*/
 
 	ASSERT(csr_read_mtvec() == vbaseval);
+	ASSERT(csr_read_stvec() == vbaseval);
 
 	PLIC->PLIC_MTH_REG = ARM_USER_PRIORITY;
 	{
@@ -2039,6 +2040,8 @@ sysinit_vbar_initialize(void)
 	csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); // Enable interrupts routing
 	csr_set_bits_mie(MIE_MEI_BIT_MASK);	// MEI
 	//csr_set_bits_mie(MIE_MTI_BIT_MASK);	// MTI - timer
+	csr_set_bits_sstatus(MSTATUS_MIE_BIT_MASK); // Enable interrupts routing
+	csr_set_bits_sie(MIE_MEI_BIT_MASK);	// MEI
 
 #endif /* CPUSTYLE_RISCV */
 #if (__GIC_PRESENT == 1)
