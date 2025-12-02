@@ -155,6 +155,11 @@ __STATIC_INLINE void __NOP(void)
 	__asm volatile ("nop":::);
 }
 
+__STATIC_INLINE void __MRET(void)
+{
+	__asm volatile ("MRET":::);
+}
+
 /**
  \brief   Reverse byte order (32 bit)
  \details Reverses the byte order in unsigned integer value. For example, 0x12345678 becomes 0x78563412.

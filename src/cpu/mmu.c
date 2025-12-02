@@ -1359,7 +1359,7 @@ sysinit_ttbr_initialize(void)
 	// 3.1.6 Virtualization Management Field in mstatus Register
 	// Table 3.3: Encoding of virtualization management field VM[4:0]
 
-	if (1)
+	if (0)
 	{
 		{
 			//	Step 1: Configure the mstatus and mpp registers
@@ -1367,10 +1367,11 @@ sysinit_ttbr_initialize(void)
 			//	Set the MIE (Machine Interrupt Enable) bit: Set the MIE bit in the mstatus register to enable machine mode interrupts.
 			//	Set the SIE (Supervisor Interrupt Enable) bit: Set the SIE bit in the mstatus register to enable supervisor mode interrupts.
 			unsigned vMPP = 0x01;	 // When MPP is 2’b01, the CPU is in S-mode before accessing the exception service program
+			//unsigned vMPP = 0x03;	 // When MPP is 2’b11, the CPU is in M-mode before entering the exception service program
 			unsigned vMIE = 0x01;
 			unsigned vSIE = 0x01;
 			uint_xlen_t mstatus = csr_read_mstatus();
-			mstatus = (mstatus & ~ (UINT64_C(0x03) << 11)) | vMPP * (UINT64_C(1) << 11);	// MPP
+			mstatus = (mstatus & ~ MSTATUS_MPP_BIT_MASK) | vMPP * (UINT64_C(1) << MSTATUS_MPP_BIT_OFFSET);	// MPP
 			mstatus = (mstatus & ~ (UINT64_C(1) << 3)) | vMIE * (UINT64_C(1) << 3);	// MIE
 			mstatus = (mstatus & ~ (UINT64_C(1) << 1)) | vSIE * (UINT64_C(1) << 1);	// SIE
 			csr_write_mstatus(mstatus);
@@ -1389,13 +1390,14 @@ sysinit_ttbr_initialize(void)
 
 		}
 
-		// Step 3: Execute the mret instruction
-		//return;
-		void rv64_xmret(void);
-		csr_write_sepc((uintptr_t) rv64_xmret2);
-		PRINTF("rv64_xmret2=%p\n", rv64_xmret2);
-		//rv64_xmret();
-		//asm volatile ("mret" ::: "memory");
+		{
+			// Step 3: Execute the mret instruction
+			csr_write_sepc((uintptr_t) rv64_xmret2);
+			csr_write_mepc((uintptr_t) rv64_xmret2);
+			PRINTF("rv64_xmret2=%p\n", rv64_xmret2);
+			csr_set_bits_mstatus(MSTATUS_MPIE_BIT_MASK);
+			__MRET();
+		}
 	}
 
 
