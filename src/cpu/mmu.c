@@ -1359,7 +1359,7 @@ sysinit_ttbr_initialize(void)
 	// 3.1.6 Virtualization Management Field in mstatus Register
 	// Table 3.3: Encoding of virtualization management field VM[4:0]
 
-	if (0)
+	if (1)
 	{
 		{
 			//	Step 1: Configure the mstatus and mpp registers
