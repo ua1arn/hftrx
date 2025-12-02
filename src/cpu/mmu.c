@@ -763,10 +763,10 @@ int RV_Sv39_Create_PageMapping(Sv39_PTE_cfg_t *cfg, uintptr_t *tlb_index, volati
 // Bit 62 - Cacheable
 // Bit 61 - Buffer
 // Bit 0 - Valid
-#define RAM_ATTRS 		((UINT64_C(0) << 63) | (UINT64_C(1) << 62) | (UINT64_C(1) << 61) | (UINT64_C(0x07) << 1) | 1)	// Cacheable memory
-#define NCRAM_ATTRS 	((UINT64_C(0) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x07) << 1) | 1)	// Non-cacheable memory
-#define DEVICE_ATTRS 	((UINT64_C(1) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x07) << 1) | 1)	// Non-bufferable device
-#define TABLE_ATTRS		((UINT64_C(0) << 63) | 1) // Pointer to next level of page table
+//#define RAM_ATTRS 		((UINT64_C(0) << 63) | (UINT64_C(1) << 62) | (UINT64_C(1) << 61) | (UINT64_C(0x07) << 1) | 1)	// Cacheable memory
+//#define NCRAM_ATTRS 	((UINT64_C(0) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x07) << 1) | 1)	// Non-cacheable memory
+//#define DEVICE_ATTRS 	((UINT64_C(1) << 63) | (UINT64_C(0) << 62) | (UINT64_C(0) << 61) | (UINT64_C(0x07) << 1) | 1)	// Non-bufferable device
+//#define TABLE_ATTRS		((UINT64_C(0) << 63) | 1) // Pointer to next level of page table
 
 // See Table 4.2: Encoding of PTE Type field.
 
@@ -796,6 +796,8 @@ int RV_Sv39_Create_PageMapping(Sv39_PTE_cfg_t *cfg, uintptr_t *tlb_index, volati
 #define RV64_SV39_VA_PPN1(va) ((va >> 21) & UINT64_C(0x1FF))	// get PPN[1] from virtual address
 #define RV64_SV39_VA_PPN0(va) ((va >> 12) & UINT64_C(0x1FF))	// get PPN[0] from virtual address
 
+#define vASID 0x0000	// ASID: the current address space identifier (ASID)
+
 // Bit 63 - Strong order
 // Bit 62 - Cacheable
 // Bit 61 - Buffer
@@ -805,12 +807,12 @@ int RV_Sv39_Create_PageMapping(Sv39_PTE_cfg_t *cfg, uintptr_t *tlb_index, volati
 
 #define vTABLE_PBMT 0x00	// Pointer to next level of page table
 
-#define vRSW 0x00
-#define vD 0x01
-#define vA 0x01
-#define vG 0x01
-#define vU 0x01
-#define vX 0x01
+#define vRSW 0x00	// A bit reserved for software to implement custom page table features. The default value is 2’b0
+#define vD 0x01		// Dirty
+#define vA 0x01		// Accessed
+#define vG 0x01		// 1’b0: indicates that the page is non-shareable and that the ASID is exclusive,  1’b1: indicates that the page is shareable
+#define vU 0x01		// User
+#define vX 0x01		//  X: executable, W: writable, R: readable
 #define vW 0x01
 #define vR 0x01
 
@@ -1034,7 +1036,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 		{
 			.arch = & rv64_sv39_table,
 			.phyaddr = (uintptr_t) xlevel2_pagetable_u64,
-			.phypageszlog2 = 13,
+			.phypageszlog2 = (9 + 3),	// 512 items by 8 bytes each in xlevel2_pagetable_u64
 			.pagecount = RV64_LEVEL1_SIZE,
 			.table = xlevel1_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
@@ -1046,7 +1048,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 		{
 			.arch = & rv64_sv39_table,
 			.phyaddr = (uintptr_t) xlevel1_pagetable_u64,
-			.phypageszlog2 = 13,
+			.phypageszlog2 = (9 + 3),	// 512 items by 8 bytes each in xlevel1_pagetable_u64
 			.pagecount = RV64_LEVEL0_SIZE,
 			.table = xlevel0_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
@@ -1333,39 +1335,41 @@ sysinit_ttbr_initialize(void)
 
 	ASSERT(((uintptr_t) xlevel0_pagetable_u64 & 0x0FFF) == 0);
 	mmu_flush_cache();
-	const unsigned asid = 0;
+
 	// 5.2.1.1 MMU address translation register (SATP)
 	// When Mode is 0, the MMU is disabled. C906 supports only the MMU disabled and Sv39 modes
 	const uint_fast64_t satp =
 			//CSR_SATP_MODE_PHYS * (UINT64_C(1) << 60) | // MODE
 			CSR_SATP_MODE_SV39 * (UINT64_C(1) << 60) | // MODE
-			(asid  & UINT64_C(0xFFFF))* (UINT64_C(1) << 44) | // ASID
+			(vASID  & UINT64_C(0xFFFF)) * (UINT64_C(1) << 44) | // ASID
 			(((uintptr_t) xlevel0_pagetable_u64 >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
 			0;
 	PRINTF("1 ttb0_base=%p" "\n", xlevel0_pagetable_u64);
 	PRINTF("1 satp=%016" PRIX64 "\n", satp);
-	PRINTF("1 csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
+	PRINTF("1 csr_read_satp()=0x%016" PRIX64 "\n", csr_read_satp());
 	csr_write_satp(satp);
-	PRINTF("2 csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
+	PRINTF("2 csr_read_satp()=0x%016" PRIX64 "\n", csr_read_satp());
 
 	csr_write_smir(UINT64_MAX);
 	csr_write_smel(UINT64_MAX);
 	csr_write_smeh(UINT64_MAX);
 	csr_write_smcir(UINT64_MAX);
 
-//	2 csr_read_smir()=00000000000001FF
-//	2 csr_read_smel()=FF80000FFFFFFFFF
-//	2 csr_read_smeh()=00003FFFFFFFFFFF
-//	2 csr_read_smcir()=000000000000FFFF
+//	2 csr_read_smir()=0x00000000000001FF
+//	2 csr_read_smel()=0xFF80000FFFFFFFFF
+//	2 csr_read_smeh()=0x00003FFFFFFFFFFF
+//	2 csr_read_smcir()=0x000000000000FFFF
 
-	PRINTF("2 csr_read_smir()=%016" PRIX64 "\n", csr_read_smir());
-	PRINTF("2 csr_read_smel()=%016" PRIX64 "\n", csr_read_smel());
-	PRINTF("2 csr_read_smeh()=%016" PRIX64 "\n", csr_read_smeh());
-	PRINTF("2 csr_read_smcir()=%016" PRIX64 "\n", csr_read_smcir());
+	PRINTF("2 csr_read_smir()=0x%016" PRIX64 "\n", csr_read_smir());
+	PRINTF("2 csr_read_smel()=0x%016" PRIX64 "\n", csr_read_smel());
+	PRINTF("2 csr_read_smeh()=0x%016" PRIX64 "\n", csr_read_smeh());
+	PRINTF("2 csr_read_smcir()=0x%016" PRIX64 "\n", csr_read_smcir());
 
 //	mmu_write_satp(satp);
 //	mmu_flush_cache();
-//	PRINTF("csr_read_satp()=%016" PRIX64 "\n", csr_read_satp());
+//	PRINTF("csr_read_satp()=0x%016" PRIX64 "\n", csr_read_satp());
+	csr_write_satp(satp);
+	PRINTF("3 csr_read_satp()=0x%016" PRIX64 "\n", csr_read_satp());
 
 	// MAEE in MXSTATUS
 	//
