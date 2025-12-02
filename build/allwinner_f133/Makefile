@@ -59,8 +59,8 @@ CORE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector -
 
 # Define optimisation level here
 #OPT = -Og
-OPT = -Ofast -flto
-#OPT = -Ofast
+#OPT = -Ofast -flto
+OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
@@ -270,7 +270,6 @@ erase:
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
-	$(OBJDUMP) -d $(PROJECT)_app.elf >$(PROJECT)_app.lst
 
 fsbl.f133: $(PROJECT)_boot.bin
 	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }' | busybox sort
@@ -298,6 +297,7 @@ $(OBJSA_APP) $(ZOBJSA):
 %_app.elf: $(OBJS) $(OBJSA_APP) $(LDSCRIPT_APP)
 	$(GPP) $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
+	$(OBJDUMP) -d $(PROJECT)_app.elf >$(PROJECT)_app.lst
 
 %hex: %elf
 	$(HEX) $< $@

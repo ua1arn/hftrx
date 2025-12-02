@@ -870,6 +870,14 @@ static const getmmudesc_t rv64_sv39_table =
 
 static void rv64_xmret2(void)
 {
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
 	TP();
 	for (;;)
 		;
@@ -1331,7 +1339,7 @@ sysinit_ttbr_initialize(void)
 	PRINTF("1 ttb0_base=%p" "\n", xlevel0_pagetable_u64);
 	PRINTF("1 satp=0x%016" PRIX64 "\n", satp);
 	PRINTF("1 csr_read_satp()=0x%016" PRIX64 "\n", csr_read_satp());
-	//csr_write_satp(satp);
+	csr_write_satp(satp);
 	PRINTF("2 csr_read_satp()=0x%016" PRIX64 "\n", csr_read_satp());
 
 	// MAEE in MXSTATUS
