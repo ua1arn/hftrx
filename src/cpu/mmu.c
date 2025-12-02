@@ -1344,16 +1344,11 @@ sysinit_ttbr_initialize(void)
 			(vASID  & UINT64_C(0xFFFF)) * (UINT64_C(1) << 44) | // ASID
 			(((uintptr_t) xlevel0_pagetable_u64 >> 12) & UINT64_C(0x0FFFFFFF)) * (UINT64_C(1) << 0) |	// PPN - 28 bit
 			0;
-	PRINTF("1 ttb0_base=%p" "\n", xlevel0_pagetable_u64);
-	PRINTF("1 satp=%016" PRIX64 "\n", satp);
-	PRINTF("1 csr_read_satp()=0x%016" PRIX64 "\n", csr_read_satp());
-	csr_write_satp(satp);
-	PRINTF("2 csr_read_satp()=0x%016" PRIX64 "\n", csr_read_satp());
 
-	csr_write_smir(UINT64_MAX);
-	csr_write_smel(UINT64_MAX);
-	csr_write_smeh(UINT64_MAX);
-	csr_write_smcir(UINT64_MAX);
+//	csr_write_smir(UINT64_MAX);
+//	csr_write_smel(UINT64_MAX);
+//	csr_write_smeh(UINT64_MAX);
+//	csr_write_smcir(UINT64_MAX);
 
 //	2 csr_read_smir()=0x00000000000001FF
 //	2 csr_read_smel()=0xFF80000FFFFFFFFF
@@ -1367,9 +1362,11 @@ sysinit_ttbr_initialize(void)
 
 //	mmu_write_satp(satp);
 //	mmu_flush_cache();
-//	PRINTF("csr_read_satp()=0x%016" PRIX64 "\n", csr_read_satp());
-	csr_write_satp(satp);
-	PRINTF("3 csr_read_satp()=0x%016" PRIX64 "\n", csr_read_satp());
+	PRINTF("1 ttb0_base=%p" "\n", xlevel0_pagetable_u64);
+	PRINTF("1 satp=0x%016" PRIX64 "\n", satp);
+	PRINTF("1 csr_read_satp()=0x%016" PRIX64 "\n", csr_read_satp());
+	//csr_write_satp(satp);
+	PRINTF("2 csr_read_satp()=0x%016" PRIX64 "\n", csr_read_satp());
 
 	// MAEE in MXSTATUS
 	//
@@ -1389,18 +1386,46 @@ sysinit_ttbr_initialize(void)
 
 //	//#warning Implement for RISC-C
 //	// 4.1.11 Supervisor Page-Table Base Register (sptbr)
-//	csr_write_sptbr((uintptr_t) ttb0_base >> 10);
+	//csr_write_sasid(vASID);
+	//csr_write_sptbr((uintptr_t) xlevel0_pagetable_u64);
 
 	// https://people.eecs.berkeley.edu/~krste/papers/riscv-priv-spec-1.7.pdf
 	// 3.1.6 Virtualization Management Field in mstatus Register
 	// Table 3.3: Encoding of virtualization management field VM[4:0]
 
-//	{
-//		uint_xlen_t v = csr_read_mstatus();
-//		v &= ~ ((uint_xlen_t) 0x1F) << 24;	// VM[4:0]
-//		v |= ((uint_xlen_t) 0x08) << 24;	// Set Page-based 32-bit virtual addressing.
-//		//csr_write_mstatus(v);
-//	}
+	if (1)
+	{
+		{
+			//	Step 1: Configure the mstatus and mpp registers
+			//	Set the MPP (Machine Previous Privilege Mode) field: Write a value of 01 to the MPP field of the mstatus register. This indicates that the previous privilege mode was supervisor mode.
+			//	Set the MIE (Machine Interrupt Enable) bit: Set the MIE bit in the mstatus register to enable machine mode interrupts.
+			//	Set the SIE (Supervisor Interrupt Enable) bit: Set the SIE bit in the mstatus register to enable supervisor mode interrupts.
+			unsigned vMPP = 0x01;	 // When MPP is 2’b01, the CPU is in S-mode before accessing the exception service program
+			unsigned vMIE = 0x01;
+			unsigned vSIE = 0x01;
+			uint_xlen_t mstatus = csr_read_mstatus();
+			mstatus = (mstatus & ~ (UINT64_C(0x03) << 11)) | vMPP * (UINT64_C(1) << 11);	// MPP
+			mstatus = (mstatus & ~ (UINT64_C(1) << 3)) | vMIE * (UINT64_C(1) << 3);	// MIE
+			mstatus = (mstatus & ~ (UINT64_C(1) << 1)) | vSIE * (UINT64_C(1) << 1);	// SIE
+			csr_write_mstatus(mstatus);
+		}
+
+		{
+			// Step 2: Configure the sstatus and satp registers
+			//	Configure the sstatus.SUM bit: Set the SUM (Supervisor User Memory access) bit to control how user-mode memory accesses are handled in supervisor mode.
+			//	Configure the satp register: Write the base address of your page table to the PPN (Physical Page Number) field of the satp register. The MODE field of satp should be set to the appropriate value (e.g., 9 for Sv39, 10 for Sv48) to enable supervisor-mode address translation.
+			unsigned vSUM = 0x01;
+			uint_xlen_t sstatus = csr_read_sstatus();
+			sstatus = (sstatus & ~ (UINT64_C(1) << 18)) | vSUM * (UINT64_C(1) << 18);	// SUM
+			csr_write_sstatus(sstatus);
+
+		}
+
+		// Step 3: Execute the mret instruction
+		//return;
+		void rv64_xmret(void);
+		//rv64_xmret();
+	}
 
 
 	// 15.1.2 M-mode exception configuration register group

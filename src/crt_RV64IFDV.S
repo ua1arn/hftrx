@@ -274,6 +274,10 @@ Reset_Handler:
     addi x2,x0,-1
     sw x1, 0(x2)
 
+	.global rv64_xmret
+rv64_xmret:
+	mret
+
 .section ".isr_vector", "ax"
 .align 8, 0		/* 256 bytes alignment */
 
