@@ -868,46 +868,12 @@ static const getmmudesc_t rv64_sv39_table =
 	.mtable = rv64_sv39_mtable
 };
 
-
-#if 0//CPUSTYLE_RISCV
-
-static void ttb_level1_xk_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn), const uint_fast32_t pagesize)
+static void rv64_xmret2(void)
 {
-	// When the page table size is set to 4 KB, 2 MB, or 1 GB, the page table is indexed by 3, 2, or 1 times, respectively.
-	uintptr_t address = 0;
-	uintptr_t addrstep = UINT64_C(1) << 21;	// 2 MB
-	unsigned i;
-	for (i = 0; i < ARRAY_SIZE(xlevel1_pagetable_u64); ++ i)
-	{
-		level1_pagetable_u64 [i] =
-				//((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
-				((address >> 21) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
-				//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
-				NCRAM_ATTRS |
-				0;
-		address += addrstep;
-	}
+	TP();
+	for (;;)
+		;
 }
-
-static void ttb_level0_xk_initialize(const getmmudesc_t * arch, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn), const uint_fast32_t pagesize, uint_fast64_t nextlevel)
-{
-	// Pointe to 1 GB pages
-	unsigned i;
-	for (i = 0; i < ARRAY_SIZE(ttb0_base_u64); ++ i)
-	{
-		uintptr_t address = (uintptr_t) (xlevel1_pagetable_u64 + 512 * i) | 0x03;
-		//uintptr_t address = 1 * (UINT64_C(1) << 30) * i;
-		xttb0_base_u64 [i] =
-			((address >> 12) & 0x1FF) * (UINT64_C(1) << 10) |	// 9 bits PPN [0], 4 KB granulation
-			//((address >> 24) & 0x1FF) * (UINT64_C(1) << 19) |	// 9 bits PPN [1]
-			//((address >> 36) & 0x7FF) * (UINT64_C(1) << 28) |	// 11 bits PPN [2]
-			TABLE_ATTRS |
-			0;
-	}
-}
-
-#endif /* CPUSTYLE_RISCV */
-
 // https://lupyuen.codeberg.page/articles/mmu.html#appendix-flush-the-mmu-cache-for-t-head-c906
 // https://github.com/apache/nuttx/blob/4d63921f0a28aeee89b3a2ae861aaa83d731d28d/arch/risc-v/src/common/riscv_mmu.h#L220
 static inline void mmu_write_satp(uintptr_t reg)
@@ -1408,6 +1374,8 @@ sysinit_ttbr_initialize(void)
 			mstatus = (mstatus & ~ (UINT64_C(1) << 3)) | vMIE * (UINT64_C(1) << 3);	// MIE
 			mstatus = (mstatus & ~ (UINT64_C(1) << 1)) | vSIE * (UINT64_C(1) << 1);	// SIE
 			csr_write_mstatus(mstatus);
+			csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+			csr_set_bits_mstatus(MSTATUS_SIE_BIT_MASK);
 		}
 
 		{
@@ -1424,7 +1392,10 @@ sysinit_ttbr_initialize(void)
 		// Step 3: Execute the mret instruction
 		//return;
 		void rv64_xmret(void);
+		csr_write_sepc((uintptr_t) rv64_xmret2);
+		PRINTF("rv64_xmret2=%p\n", rv64_xmret2);
 		//rv64_xmret();
+		//asm volatile ("mret" ::: "memory");
 	}
 
 
