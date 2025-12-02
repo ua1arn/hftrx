@@ -48,6 +48,7 @@ SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex
 BIN  = $(CP) -O binary
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/15.2.0/liblto_plugin.dll
+OBJDUMP   = $(TRGT)objdump
 
 # The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).
 
@@ -269,6 +270,7 @@ erase:
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
+	$(OBJDUMP) -d $(PROJECT)_app.elf >$(PROJECT)_app.lst
 
 fsbl.f133: $(PROJECT)_boot.bin
 	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }' | busybox sort
