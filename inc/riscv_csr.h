@@ -192,33 +192,35 @@ static inline uint_xlen_t csr_read_clr_bits_mstatus(uint_xlen_t mask) {
                       : /* output: none */                      \
                       : "i" (MASK)  /* input : immediate */     \
                       : /* clobbers: none */)
+
+// 16.1.2.1 机器模式处理器状态寄存器（MSTATUS）
 #define MSTATUS_MIE_BIT_OFFSET   3
 #define MSTATUS_MIE_BIT_WIDTH    1
-#define MSTATUS_MIE_BIT_MASK     0x8
+#define MSTATUS_MIE_BIT_MASK     (UINT64_C(0x01) << MSTATUS_MIE_BIT_OFFSET)
 #define MSTATUS_MIE_ALL_SET_MASK 0x1
-#define MSTATUS_SIE_BIT_OFFSET   2
+#define MSTATUS_SIE_BIT_OFFSET   1
 #define MSTATUS_SIE_BIT_WIDTH    1
-#define MSTATUS_SIE_BIT_MASK     0x4
+#define MSTATUS_SIE_BIT_MASK     (UINT64_C(0x01) << MSTATUS_SIE_BIT_OFFSET)
 #define MSTATUS_SIE_ALL_SET_MASK 0x1
 #define MSTATUS_MPIE_BIT_OFFSET   7
 #define MSTATUS_MPIE_BIT_WIDTH    1
-#define MSTATUS_MPIE_BIT_MASK     0x80
+#define MSTATUS_MPIE_BIT_MASK     (UINT64_C(0x01) << MSTATUS_MPIE_BIT_OFFSET)
 #define MSTATUS_MPIE_ALL_SET_MASK 0x1
 #define MSTATUS_SPIE_BIT_OFFSET   5
 #define MSTATUS_SPIE_BIT_WIDTH    1
-#define MSTATUS_SPIE_BIT_MASK     0x20
+#define MSTATUS_SPIE_BIT_MASK     (UINT64_C(0x01) << MSTATUS_SPIE_BIT_OFFSET)
 #define MSTATUS_SPIE_ALL_SET_MASK 0x1
 #define MSTATUS_MPRV_BIT_OFFSET   17
 #define MSTATUS_MPRV_BIT_WIDTH    1
-#define MSTATUS_MPRV_BIT_MASK     0x20000
+#define MSTATUS_MPRV_BIT_MASK     (UINT64_C(0x01) << MSTATUS_MPRV_BIT_OFFSET)
 #define MSTATUS_MPRV_ALL_SET_MASK 0x1
 #define MSTATUS_MPP_BIT_OFFSET   11
 #define MSTATUS_MPP_BIT_WIDTH    2
-#define MSTATUS_MPP_BIT_MASK     0x1800
+#define MSTATUS_MPP_BIT_MASK     (UINT64_C(0x03) << MSTATUS_MPP_BIT_OFFSET)
 #define MSTATUS_MPP_ALL_SET_MASK 0x3
 #define MSTATUS_SPP_BIT_OFFSET   8
 #define MSTATUS_SPP_BIT_WIDTH    1
-#define MSTATUS_SPP_BIT_MASK     0x100
+#define MSTATUS_SPP_BIT_MASK     (UINT64_C(0x01) << MSTATUS_SPP_BIT_OFFSET)
 #define MSTATUS_SPP_ALL_SET_MASK 0x1
 
 /*******************************************
