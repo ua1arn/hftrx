@@ -32,9 +32,9 @@
 //--------------------------------------------------------------
 #include "../../gui_port_include.h"
 
-#if WITHTOUCHGUI
+#if WITHTOUCHGUI && ! GUI_EXTERNAL_FONTS
 
-#include "../gui_fonts.h"
+#include "embedded_fonts.h"
 //--------------------------------------------------------------
 // Font-Daten
 // erstellt von UB mit PixelFontGenerator 1.8
@@ -150,4 +150,4 @@ UB_Font32 msgothic_11x13_mono = {
   13,              // Hoehe eines Zeichens  (in Pixel)
 };
 
-#endif /* WITHTOUCHGUI */
+#endif /* WITHTOUCHGUI && ! GUI_EXTERNAL_FONTS */

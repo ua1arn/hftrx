@@ -308,19 +308,6 @@ static inline void __gui_draw_semitransparent_rect(const gui_drawbuf_t * buf, un
 	SDL_SetRenderDrawBlendMode(buf->renderer, SDL_BLENDMODE_NONE);
 }
 
-//todo: выводить шрифты библиотекой SDL2_TTF
-static inline void __gui_draw_string_prop(const gui_drawbuf_t * buf, unsigned int x, unsigned int y,
-		const char * text, const gui_prop_font_t * font, gui_color_t color)
-{
-	gui_UB_Font_DrawPString32(buf, x, y, text, font, color);
-}
-
-static inline void __gui_draw_string_mono(const gui_drawbuf_t * buf, unsigned int x, unsigned int y,
-		const char * text, const gui_mono_font_t * font, gui_color_t color)
-{
-	gui_UB_Font_DrawString32(buf, x, y, text, font, color);
-}
-
 #else
 
 typedef COLORPIP_T 			gui_color_t;
@@ -401,18 +388,6 @@ static inline void __gui_draw_semitransparent_rect(const gui_drawbuf_t * buf, un
 		unsigned int x2, unsigned int y2, unsigned int alpha)
 {
 	display_transparency(buf, x1, y1, x2, y2, alpha);
-}
-
-static inline void __gui_draw_string_prop(const gui_drawbuf_t * buf, unsigned int x, unsigned int y,
-		const char * text, const gui_prop_font_t * font, gui_color_t color)
-{
-	gui_UB_Font_DrawPString32(buf, x, y, text, font, color);
-}
-
-static inline void __gui_draw_string_mono(const gui_drawbuf_t * buf, unsigned int x, unsigned int y,
-		const char * text, const gui_mono_font_t * font, gui_color_t color)
-{
-	gui_UB_Font_DrawString32(buf, x, y, text, font, color);
 }
 
 #endif /*  */
