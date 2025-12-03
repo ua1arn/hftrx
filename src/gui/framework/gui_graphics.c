@@ -15,7 +15,6 @@
 #include "gui_structs.h"
 #include "gui_settings.h"
 #include "gui_windows.h"
-#include "gui_fonts.h"
 #include "../gui_port.h"
 
 uint16_t gui_get_window_draw_width(void)
@@ -149,28 +148,6 @@ void gui_drawDashedRectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t he
     for (uint16_t i = 1; i < height - 1; i ++)
         if ((pos ++ / dashLength) % 2 == 0)
         	__gui_draw_point(gdb, x1, y2 - i, color);
-}
-
-void gui_print_mono(uint16_t x, uint16_t y, const char * text, const gui_mono_font_t * font, gui_color_t color)
-{
-	window_t * win = get_win(get_current_drawing_window());
-	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
-
-	const uint16_t xn = x + win->draw_x1;
-	const uint16_t yn = y + win->draw_y1;
-
-	__gui_draw_string_mono(gdb, xn, yn,	text, font, color);
-}
-
-void gui_print_prop(uint16_t x, uint16_t y, const char * text, const gui_prop_font_t * font, gui_color_t color)
-{
-	window_t * win = get_win(get_current_drawing_window());
-	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
-
-	const uint16_t xn = x + win->draw_x1;
-	const uint16_t yn = y + win->draw_y1;
-
-	__gui_draw_string_prop(gdb, xn, yn,	text, font, color);
 }
 
 #endif /* WITHTOUCHGUI */

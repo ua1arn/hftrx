@@ -5,9 +5,8 @@
 
 #if WITHTOUCHGUI
 
-#include "gui_fonts.h"
+#include "gui_system.h"
 #include "gui_settings.h"
-#include "gui_fonts.h"
 #include "../gui_port.h"
 
 #define IS_BUTTON_PRESS			(type == TYPE_BUTTON && action == PRESSED)

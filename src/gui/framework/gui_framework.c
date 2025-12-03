@@ -19,7 +19,6 @@
 #include "gui_objects.h"
 #include "gui_events.h"
 #include "utils.h"
-#include "gui_fonts.h"
 #include "../gui_user.h"
 #include "../gui_port.h"
 
@@ -785,7 +784,7 @@ static void draw_button(const button_t * const bh)
 	{
 		/* Однострочная надпись */
 		int strlenP = get_strwidth_prop(bh->text, bh->font);
-		__gui_draw_string_prop(gdb,
+		__gui_print_prop(gdb,
 				shiftX + x1 + (bh->w - strlenP) / 2,
 				shiftY + y1 + (bh->h - bh->font->height) / 2,
 				bh->text, bh->font, textcolor
@@ -801,7 +800,7 @@ static void draw_button(const button_t * const bh)
 		char * text2 = strtok_r(buf, delimeters, & next);
 
 		int strlenP = get_strwidth_prop(text2, bh->font);
-		__gui_draw_string_prop(gdb,
+		__gui_print_prop(gdb,
 				shiftX + x1 + (bh->w - strlenP) / 2,
 				shiftY + y1 + j,
 				text2, bh->font, textcolor
@@ -809,7 +808,7 @@ static void draw_button(const button_t * const bh)
 
 		text2 = strtok_r(NULL, delimeters, & next);
 		strlenP = get_strwidth_prop(text2, bh->font);
-		__gui_draw_string_prop(gdb,
+		__gui_print_prop(gdb,
 				shiftX + x1 + (bh->w - strlenP) / 2,
 				shiftY + bh->h + y1 - bh->font->height - j,
 				text2, bh->font, textcolor
@@ -1257,7 +1256,7 @@ void process_gui(void)
 					}
 
 					__gui_draw_rect(drawbuf, win->x1, win->y1, win->w, window_title_height, GUI_WINDOWTITLECOLOR, 1);
-					__gui_draw_string_prop(drawbuf, xt, win->y1 + 5, win->title, & WINDOW_TITLE_FONTP, COLORPIP_BLACK);
+					__gui_print_prop(drawbuf, xt, win->y1 + 5, win->title, & WINDOW_TITLE_FONTP, COLORPIP_BLACK);
 				}
 
 				// отрисовка принадлежащих окну элементов
@@ -1289,7 +1288,7 @@ void process_gui(void)
 					{
 						label_t * lh = (label_t *) p->link;
 						if (lh->visible && lh->parent == win->window_id)
-							__gui_draw_string_mono(drawbuf, win->x1 + lh->x, win->y1 + lh->y,
+							__gui_print_mono(drawbuf, win->x1 + lh->x, win->y1 + lh->y,
 									lh->text, lh->font, lh->color);
 					}
 					else if (p->type == TYPE_SLIDER)
@@ -1309,7 +1308,7 @@ void process_gui(void)
 								uint8_t pos = tf->direction ? i : (tf->h_str - i - 1);
 								j = j < 0 ? (tf->h_str - 1) : j;
 
-								__gui_draw_string_mono(drawbuf, win->x1 + tf->x1, win->y1 + tf->y1 + tf->font->height * pos,
+								__gui_print_mono(drawbuf, win->x1 + tf->x1, win->y1 + tf->y1 + tf->font->height * pos,
 										tf->string[j].text, tf->font, tf->string[j].color_line);
 
 								j --;
