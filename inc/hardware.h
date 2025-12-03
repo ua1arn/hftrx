@@ -554,6 +554,9 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 ///* все возможные в данной конфигурации фильтры */
 //#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_1P8 | IF3_FMASK_2P7 | IF3_FMASK_3P1)
 
+
+#include "mslist.h"
+
 void spool_nmeapps(void * ctx);	// Обработчик вызывается при приходе очередного импульса PPS
 
 // получить прескалер и значение для программирования таймера
@@ -735,14 +738,15 @@ int_fast32_t dcache_rowsize(void);
 void sysinit_cache_initialize(void);	/* на каждом процессоре */
 void sysinit_cache_L2_initialize(void);	/* инициадизации кеш-памяти, специфические для CORE0 */
 
+typedef unsigned (* mmupokefn_t)(uint8_t * b, uint_fast64_t v);
 
 typedef struct getmmudesc_tag
 {
-	unsigned (* mcached)(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
-	unsigned (* mncached)(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
-	unsigned (* mdevice)(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t phyaddr);
-	unsigned (* mnoaccess)(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t phyaddr);
-	unsigned (* mtable)(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t phyaddr, int level);	// next level table
+	unsigned (* mcached)(mmupokefn_t poke, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
+	unsigned (* mncached)(mmupokefn_t poke, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
+	unsigned (* mdevice)(mmupokefn_t poke, uint8_t * b, uint_fast64_t phyaddr);
+	unsigned (* mnoaccess)(mmupokefn_t poke, uint8_t * b, uint_fast64_t phyaddr);
+	unsigned (* mtable)(mmupokefn_t poke, uint8_t * b, uint_fast64_t phyaddr, int level);	// next level table
 } getmmudesc_t;
 
 typedef struct mmulayout_tag
@@ -765,8 +769,6 @@ void sysinit_mmu_tables(void);
 void sysinit_ttbr_initialize(void);	/* на каждом процессоре */
 
 void r7s721_sdhi0_dma_handler(void);
-
-#include "mslist.h"
 
 enum ticker_mode
 {

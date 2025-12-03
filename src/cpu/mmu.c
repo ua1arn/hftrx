@@ -10,7 +10,7 @@
 #include "utils.h"	// peek/poke
 
 #include <limits.h>
-#define MMUUSE4KPAGES 1
+//#define MMUUSE4KPAGES 1
 
 #if ! LINUX_SUBSYSTEM
 
@@ -19,24 +19,24 @@
 #if WITHGPUHW
 // GPU MMU
 
-static unsigned gpu_mali400_4k_mcached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
+static unsigned gpu_mali400_4k_mcached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
 	return poke(b, UINT64_C(0));//TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn);
 }
-static unsigned gpu_mali400_4k_mncached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
+static unsigned gpu_mali400_4k_mncached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
 	return poke(b, UINT64_C(0));//TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn);
 }
-static unsigned gpu_mali400_4k_mdevice(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
+static unsigned gpu_mali400_4k_mdevice(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
 	return poke(b, UINT64_C(0));//TTB_PARA_AARCH32_4k_DEVICE(addr);
 }
-static unsigned gpu_mali400_4k_mnoaccess(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
+static unsigned gpu_mali400_4k_mnoaccess(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
 	return poke(b, UINT64_C(0));
 }
 // Next level table
-static unsigned gpu_mali400_4k_mtable(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int level)
+static unsigned gpu_mali400_4k_mtable(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int level)
 {
 	// 1KB granulation address
 	return poke(b, UINT64_C(0));//TTB_PARA_AARCH32_4k_PAGE(addr);	// First-level table entry - Page table
@@ -177,21 +177,21 @@ enum aarch64_attrindex
 
 };
 
-static unsigned aarch64_2M_mcached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
+static unsigned aarch64_2M_mcached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
 	return poke(b, AARCH64_UPPER_ATTR |
 			(addr & ~ UINT64_C(0x0FFFFF)) |
 			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_CACHED) |
 			0x01);
 }
-static unsigned aarch64_2M_mncached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
+static unsigned aarch64_2M_mncached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
 	return poke(b, AARCH64_UPPER_ATTR |
 			(addr & ~ UINT64_C(0x0FFFFF)) |
 			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_NCACHED) |
 			0x01);
 }
-static unsigned aarch64_2M_mdevice(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
+static unsigned aarch64_2M_mdevice(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
 	return poke(b, AARCH64_UPPER_ATTR
 			| (addr & ~ UINT64_C(0x0FFFFF)) |
@@ -201,12 +201,12 @@ static unsigned aarch64_2M_mdevice(unsigned (* poke)(uint8_t * b, uint_fast64_t 
 // Next level table
 // DDI0487_I_a_a-profile_architecture_reference_manual.pdf
 // D8.3.1 Table Descriptor format
-static unsigned aarch64_2M_mtable(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int level)
+static unsigned aarch64_2M_mtable(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int level)
 {
 	return poke(b, (addr & ~ UINT64_C(0x0FFF)) |
 			0x03);
 }
-static unsigned aarch64_mnoaccess(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
+static unsigned aarch64_mnoaccess(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
 	return poke(b, UINT64_C(0));
 }
@@ -374,24 +374,24 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 // First-level table entry - Page table
 #define	TTB_PARA_AARCH32_4k_PAGE(addr) 			TTB_PARA_AARCH32_4k_table((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
 
-static unsigned arch32_1M_mcached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
+static unsigned arch32_1M_mcached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
 	return poke(b, TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn));
 }
-static unsigned arch32_1M_mncached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
+static unsigned arch32_1M_mncached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
 	return poke(b, TTB_PARA_AARCH32_1M_NCACHED(addr, ro, xn));
 }
-static unsigned arch32_1M_mdevice(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
+static unsigned arch32_1M_mdevice(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
 	return poke(b, TTB_PARA_AARCH32_1M_DEVICE(addr));
 }
-static unsigned arch32_1M_mnoaccess(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
+static unsigned arch32_1M_mnoaccess(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
 	return poke(b, UINT64_C(0));
 }
 // Next level table
-static unsigned arch32_1M_mtable(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int level)
+static unsigned arch32_1M_mtable(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int level)
 {
 	return poke(b, UINT64_C(0));
 }
@@ -405,24 +405,24 @@ static const getmmudesc_t arch32_table_1M =
 	.mtable = arch32_1M_mtable
 };
 
-static unsigned arch32_4k_mcached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
+static unsigned arch32_4k_mcached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
 	return poke(b, TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn));
 }
-static unsigned arch32_4k_mncached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
+static unsigned arch32_4k_mncached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
 	return poke(b, TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn));
 }
-static unsigned arch32_4k_mdevice(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
+static unsigned arch32_4k_mdevice(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
 	return poke(b, TTB_PARA_AARCH32_4k_DEVICE(addr));
 }
-static unsigned arch32_4k_mnoaccess(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
+static unsigned arch32_4k_mnoaccess(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
 	return poke(b, UINT64_C(0));
 }
 // Next level table
-static unsigned arch32_4k_mtable(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int level)
+static unsigned arch32_4k_mtable(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int level)
 {
 	// 1KB granulation address
 	return poke(b, TTB_PARA_AARCH32_4k_PAGE(addr));	// First-level table entry - Page table
@@ -818,7 +818,7 @@ int RV_Sv39_Create_PageMapping(Sv39_PTE_cfg_t *cfg, uintptr_t *tlb_index, volati
 #define vR 0x01
 
 // 4 KB pages
-static unsigned rv64_sv39_mcached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
+static unsigned rv64_sv39_mcached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
@@ -826,7 +826,7 @@ static unsigned rv64_sv39_mcached(unsigned (* poke)(uint8_t * b, uint_fast64_t v
 	return poke(b, RV64_SV39_PTE(vRAM_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR));
 }
 // 4 KB pages
-static unsigned rv64_sv39_mncached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
+static unsigned rv64_sv39_mncached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
@@ -834,14 +834,14 @@ static unsigned rv64_sv39_mncached(unsigned (* poke)(uint8_t * b, uint_fast64_t 
 	return poke(b, RV64_SV39_PTE(vNCRAM_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR));
 }
 // 4 KB pages
-static unsigned rv64_sv39_mdevice(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
+static unsigned rv64_sv39_mdevice(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
 	return poke(b, RV64_SV39_PTE(vDEVICE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR));
 }
-static unsigned rv64_sv39_mtable(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int level)
+static unsigned rv64_sv39_mtable(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int level)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
@@ -855,7 +855,7 @@ static unsigned rv64_sv39_mtable(unsigned (* poke)(uint8_t * b, uint_fast64_t v)
 		return poke(b, RV64_SV39_PTE(vTABLE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, 0*vX, 0*vW, 0*vR));
 	}
 }
-static unsigned rv64_mnoaccess(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
+static unsigned rv64_mnoaccess(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
 	return poke(b, UINT64_C(0));
 }
