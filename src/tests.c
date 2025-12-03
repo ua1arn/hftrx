@@ -11952,6 +11952,17 @@ void hightests(void)
 		RTC->FBOOT_INFO_REG0 = (UINT32_C(1) << 28);	// Try process: SMHC0->SPI NOR->SPI NAND->EMMC2_USER->EMMC2_BOOT.
 	}
 #endif
+#if 0
+	{
+		// SPI test
+		uint8_t b [32];
+		memset(b, 0x55, sizeof b);
+		for (;;)
+		{
+			prog_spi_io(targetctl1, CTLREG_SPISPEED, SPIC_MODE3, b, sizeof b, NULL, 0, NULL, 0);
+		}
+	}
+#endif
 #if 0 && (WIHSPIDFSW || WIHSPIDFHW || WIHSPIDFOVERSPI)
 	{
 		// QSPI test
