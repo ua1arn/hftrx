@@ -738,15 +738,28 @@ void sysinit_cache_L2_initialize(void);	/* инициадизации кеш-п�
 
 typedef struct getmmudesc_tag
 {
-	uint_fast64_t (* mcached)(uint_fast64_t a, int ro, int xn);
-	uint_fast64_t (* mncached)(uint_fast64_t a, int ro, int xn);
-	uint_fast64_t (* mdevice)(uint_fast64_t a);
-	uint_fast64_t (* mnoaccess)(uint_fast64_t a);
-	uint_fast64_t (* mtable)(uint_fast64_t a, int level);	// next level table
+	unsigned (* mcached)(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
+	unsigned (* mncached)(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
+	unsigned (* mdevice)(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t phyaddr);
+	unsigned (* mnoaccess)(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t phyaddr);
+	unsigned (* mtable)(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t phyaddr, int level);	// next level table
 } getmmudesc_t;
 
+typedef struct mmulayout_tag
+{
+	const getmmudesc_t * arch;
+	uintptr_t phyaddr;	// Начальное значение
+	unsigned phypageszlog2;	// log2 от размера страниц на phyaddr
+	unsigned pagecount;
+	uint8_t * table;
+	unsigned (* poke)(uint8_t * b, uint_fast64_t v);
+	int level;	// table level (INT_MAX - дескрипторы памяти)
+	int ro;	// read-only area
+	int xn;	// no-execute
+} mmulayout_t;
+
 /* зависящая от процессора карта распределения memory regions */
-uint_fast64_t ttb_mempage_accessbits(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn);
+unsigned ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
 
 void sysinit_mmu_tables(void);
 void sysinit_ttbr_initialize(void);	/* на каждом процессоре */

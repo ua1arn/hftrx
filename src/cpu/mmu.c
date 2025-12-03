@@ -9,7 +9,8 @@
 #include "formats.h"	// for debug prints
 #include "utils.h"	// peek/poke
 
-//#define MMUUSE4KPAGES 1
+#include <limits.h>
+#define MMUUSE4KPAGES 1
 
 #if ! LINUX_SUBSYSTEM
 
@@ -18,27 +19,27 @@
 #if WITHGPUHW
 // GPU MMU
 
-static uint_fast64_t gpu_mali400_4k_mcached(uint_fast64_t addr, int ro, int xn)
+static unsigned gpu_mali400_4k_mcached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return 0;//TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn);
+	return poke(b, UINT64_C(0));//TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn);
 }
-static uint_fast64_t gpu_mali400_4k_mncached(uint_fast64_t addr, int ro, int xn)
+static unsigned gpu_mali400_4k_mncached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return 0;//TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn);
+	return poke(b, UINT64_C(0));//TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn);
 }
-static uint_fast64_t gpu_mali400_4k_mdevice(uint_fast64_t addr)
+static unsigned gpu_mali400_4k_mdevice(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
 {
-	return 0;//TTB_PARA_AARCH32_4k_DEVICE(addr);
+	return poke(b, UINT64_C(0));//TTB_PARA_AARCH32_4k_DEVICE(addr);
 }
-static uint_fast64_t gpu_mali400_4k_mnoaccess(uint_fast64_t addr)
+static unsigned gpu_mali400_4k_mnoaccess(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
 {
-	return 0;
+	return poke(b, UINT64_C(0));
 }
 // Next level table
-static uint_fast64_t gpu_mali400_4k_mtable(uint_fast64_t addr, int level)
+static unsigned gpu_mali400_4k_mtable(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int level)
 {
 	// 1KB granulation address
-	return 0;//TTB_PARA_AARCH32_4k_PAGE(addr);	// First-level table entry - Page table
+	return poke(b, UINT64_C(0));//TTB_PARA_AARCH32_4k_PAGE(addr);	// First-level table entry - Page table
 }
 
 static const getmmudesc_t gpu_mali400_table4k =
@@ -176,38 +177,38 @@ enum aarch64_attrindex
 
 };
 
-static uint_fast64_t aarch64_2M_mcached(uint_fast64_t addr, int ro, int xn)
+static unsigned aarch64_2M_mcached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return AARCH64_UPPER_ATTR |
+	return poke(b, AARCH64_UPPER_ATTR |
 			(addr & ~ UINT64_C(0x0FFFFF)) |
 			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_CACHED) |
-			0x01;
+			0x01);
 }
-static uint_fast64_t aarch64_2M_mncached(uint_fast64_t addr, int ro, int xn)
+static unsigned aarch64_2M_mncached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return AARCH64_UPPER_ATTR |
+	return poke(b, AARCH64_UPPER_ATTR |
 			(addr & ~ UINT64_C(0x0FFFFF)) |
 			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_NCACHED) |
-			0x01;
+			0x01);
 }
-static uint64_t aarch64_2M_mdevice(uint_fast64_t addr)
+static unsigned aarch64_2M_mdevice(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
 {
-	return AARCH64_UPPER_ATTR
+	return poke(b, AARCH64_UPPER_ATTR
 			| (addr & ~ UINT64_C(0x0FFFFF)) |
 			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_DEVICE) |
-			0x01;
+			0x01);
 }
 // Next level table
 // DDI0487_I_a_a-profile_architecture_reference_manual.pdf
 // D8.3.1 Table Descriptor format
-static uint_fast64_t aarch64_2M_mtable(uint_fast64_t addr, int level)
+static unsigned aarch64_2M_mtable(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int level)
 {
-	return (addr & ~ UINT64_C(0x0FFF)) |
-			0x03;
+	return poke(b, (addr & ~ UINT64_C(0x0FFF)) |
+			0x03);
 }
-static uint_fast64_t aarch64_mnoaccess(uint_fast64_t addr)
+static unsigned aarch64_mnoaccess(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
 {
-	return 0;
+	return poke(b, UINT64_C(0));
 }
 
 static const getmmudesc_t aarch64_table_2M =
@@ -373,26 +374,26 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 // First-level table entry - Page table
 #define	TTB_PARA_AARCH32_4k_PAGE(addr) 			TTB_PARA_AARCH32_4k_table((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
 
-static uint_fast64_t arch32_1M_mcached(uint_fast64_t addr, int ro, int xn)
+static unsigned arch32_1M_mcached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn);
+	return poke(b, TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn));
 }
-static uint_fast64_t arch32_1M_mncached(uint_fast64_t addr, int ro, int xn)
+static unsigned arch32_1M_mncached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return TTB_PARA_AARCH32_1M_NCACHED(addr, ro, xn);
+	return poke(b, TTB_PARA_AARCH32_1M_NCACHED(addr, ro, xn));
 }
-static uint_fast64_t arch32_1M_mdevice(uint_fast64_t addr)
+static unsigned arch32_1M_mdevice(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
 {
-	return TTB_PARA_AARCH32_1M_DEVICE(addr);
+	return poke(b, TTB_PARA_AARCH32_1M_DEVICE(addr));
 }
-static uint_fast64_t arch32_1M_mnoaccess(uint_fast64_t addr)
+static unsigned arch32_1M_mnoaccess(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
 {
-	return 0;
+	return poke(b, UINT64_C(0));
 }
 // Next level table
-static uint_fast64_t arch32_1M_mtable(uint_fast64_t addr, int level)
+static unsigned arch32_1M_mtable(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int level)
 {
-	return 0;
+	return poke(b, UINT64_C(0));
 }
 
 static const getmmudesc_t arch32_table_1M =
@@ -404,27 +405,27 @@ static const getmmudesc_t arch32_table_1M =
 	.mtable = arch32_1M_mtable
 };
 
-static uint_fast64_t arch32_4k_mcached(uint_fast64_t addr, int ro, int xn)
+static unsigned arch32_4k_mcached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn);
+	return poke(b, TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn));
 }
-static uint_fast64_t arch32_4k_mncached(uint_fast64_t addr, int ro, int xn)
+static unsigned arch32_4k_mncached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn);
+	return poke(b, TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn));
 }
-static uint_fast64_t arch32_4k_mdevice(uint_fast64_t addr)
+static unsigned arch32_4k_mdevice(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
 {
-	return TTB_PARA_AARCH32_4k_DEVICE(addr);
+	return poke(b, TTB_PARA_AARCH32_4k_DEVICE(addr));
 }
-static uint_fast64_t arch32_4k_mnoaccess(uint_fast64_t addr)
+static unsigned arch32_4k_mnoaccess(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
 {
-	return 0;
+	return poke(b, UINT64_C(0));
 }
 // Next level table
-static uint_fast64_t arch32_4k_mtable(uint_fast64_t addr, int level)
+static unsigned arch32_4k_mtable(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int level)
 {
 	// 1KB granulation address
-	return TTB_PARA_AARCH32_4k_PAGE(addr);	// First-level table entry - Page table
+	return poke(b, TTB_PARA_AARCH32_4k_PAGE(addr));	// First-level table entry - Page table
 }
 
 static const getmmudesc_t arch32_table_4k =
@@ -817,30 +818,30 @@ int RV_Sv39_Create_PageMapping(Sv39_PTE_cfg_t *cfg, uintptr_t *tlb_index, volati
 #define vR 0x01
 
 // 4 KB pages
-static uint_fast64_t rv64_sv39_mcached(uint_fast64_t addr, int ro, int xn)
+static unsigned rv64_sv39_mcached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return RV64_SV39_PTE(vRAM_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
+	return poke(b, RV64_SV39_PTE(vRAM_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR));
 }
 // 4 KB pages
-static uint_fast64_t rv64_sv39_mncached(uint_fast64_t addr, int ro, int xn)
+static unsigned rv64_sv39_mncached(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return RV64_SV39_PTE(vNCRAM_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
+	return poke(b, RV64_SV39_PTE(vNCRAM_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR));
 }
 // 4 KB pages
-static uint_fast64_t rv64_sv39_mdevice(uint_fast64_t addr)
+static unsigned rv64_sv39_mdevice(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
 	const uint_fast64_t ppn0 = RV64_SV39_VA_PPN0(addr);
-	return RV64_SV39_PTE(vDEVICE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR);
+	return poke(b, RV64_SV39_PTE(vDEVICE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, vX, vW, vR));
 }
-static uint_fast64_t rv64_sv39_mtable(uint_fast64_t addr, int level)
+static unsigned rv64_sv39_mtable(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr, int level)
 {
 	const uint_fast64_t ppn2 = RV64_SV39_VA_PPN2(addr);
 	const uint_fast64_t ppn1 = RV64_SV39_VA_PPN1(addr);
@@ -849,14 +850,14 @@ static uint_fast64_t rv64_sv39_mtable(uint_fast64_t addr, int level)
 	{
 	default:
 	case 0:	// 1 GB pages
-		return RV64_SV39_PTE(vTABLE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, 0*vX, 0*vW, 0*vR);
+		return poke(b, RV64_SV39_PTE(vTABLE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, 0*vX, 0*vW, 0*vR));
 	case 1:	// 2 MB pages
-		return RV64_SV39_PTE(vTABLE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, 0*vX, 0*vW, 0*vR);
+		return poke(b, RV64_SV39_PTE(vTABLE_PBMT, ppn2, ppn1, ppn0, vRSW, vD, vA, vG, vU, 0*vX, 0*vW, 0*vR));
 	}
 }
-static uint_fast64_t rv64_mnoaccess(uint_fast64_t addr)
+static unsigned rv64_mnoaccess(unsigned (* poke)(uint8_t * b, uint_fast64_t v), uint8_t * b, uint_fast64_t addr)
 {
-	return UINT64_C(0);
+	return poke(b, UINT64_C(0));
 }
 
 static const getmmudesc_t rv64_sv39_table =
@@ -870,6 +871,14 @@ static const getmmudesc_t rv64_sv39_table =
 
 static void rv64_xmret2(void)
 {
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
 	TP();
 	for (;;)
 		;
@@ -915,22 +924,8 @@ void mmu_flush_cache(void) {
 }
 
 #endif /* __CORTEX_A */
+static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(const mmulayout_t * layout, const getmmudesc_t * arch, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn))
 
-typedef struct mmulayout_tag
-{
-	const getmmudesc_t * arch;
-	uintptr_t phyaddr;	// Начальное значение
-	unsigned phypageszlog2;	// log2 от размера страниц на phyaddr
-	unsigned pagecount;
-	uint8_t * table;
-	unsigned (* poke)(uint8_t * b, uint_fast64_t v);
-	int flag;	// 0 - дескрипторы памяти, 1 - таблицы (mtable)
-	int level;	// table level
-	int ro;	// read-only area
-	int xn;	// no-execute
-} mmulayout_t;
-
-static void fillmmu(const mmulayout_t * p, unsigned n, uint_fast64_t (* accessbits)(const getmmudesc_t * arch, uint_fast64_t a, int ro, int xn))
 {
 	while (n --)
 	{
@@ -940,7 +935,9 @@ static void fillmmu(const mmulayout_t * p, unsigned n, uint_fast64_t (* accessbi
 		uint_fast64_t phyaddr = p->phyaddr;
 		for (; pages --; phyaddr += pagesize)
 		{
-			tb += p->poke(tb, p->flag ? p->arch->mtable(phyaddr, p->level) : accessbits(p->arch, phyaddr, p->ro, p->xn));
+			tb += p->level != INT_MAX ?
+					p->arch->mtable(p->poke, tb, phyaddr, p->level) :
+					accessbits(p, p->arch, tb, phyaddr, p->ro, p->xn);
 		}
 		const ptrdiff_t cachesize = tb - p->table;
 		dcache_clean_invalidate((uintptr_t) p->table, cachesize);
@@ -956,15 +953,11 @@ static unsigned mmulayout_poke_u128_le(uint8_t * b, uint_fast64_t v)
 
 static unsigned mmulayout_poke_u64_le(uint8_t * b, uint_fast64_t v)
 {
-	* (uint64_t *) b = v;
-	return 8;
 	return USBD_poke_u64(b, v);
 }
 
 static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 {
-	* (uint32_t *) b = v;
-	return 4;
 	return USBD_poke_u32(b, v);
 }
 
@@ -994,8 +987,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.pagecount = RV64_LEVEL2_SIZE,
 			.table = xlevel2_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
-			.flag = 0,
-			.level = 2,
+			.level = INT_MAX,	// memory pages with access bits
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 		/* second level: 2MB */
@@ -1006,7 +998,6 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.pagecount = RV64_LEVEL1_SIZE,
 			.table = xlevel1_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
-			.flag = 1,
 			.level = 1,
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1018,7 +1009,6 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.pagecount = RV64_LEVEL0_SIZE,
 			.table = xlevel0_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
-			.flag = 1,
 			.level = 0, // page table level (pass to mtable)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1043,8 +1033,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.pagecount = AARCH64_LEVEL1_SIZE,
 			.table = xxlevel1_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
-			.flag = 0,
-			.level = 0, // page table level (pass to mtable)
+			.level = INT_MAX,	// memory pages with access bits
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 		{
@@ -1054,7 +1043,6 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.pagecount = AARCH64_LEVEL0_SIZE,
 			.table = ttb0_base_u64,
 			.poke = mmulayout_poke_u64_le,
-			.flag = 1,
 			.level = 0, // page table level (pass to mtable)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1077,8 +1065,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 				.pagecount = AARCH32_4K_LEVEL1_SIZE,
 				.table = level1_pagetable_u32,
 				.poke = mmulayout_poke_u32_le,
-				.flag = 0,
-				.level = 0, // page table level (pass to mtable)
+				.level = INT_MAX,	// memory pages with access bits
 				.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 			},
 			{
@@ -1088,7 +1075,6 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 				.pagecount = AARCH32_4K_LEVEL0_SIZE,
 				.table = ttb0_base_u32,
 				.poke = mmulayout_poke_u32_le,
-				.flag = 1,
 				.level = 0, // page table level (pass to mtable)
 				.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 			},
@@ -1108,8 +1094,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 				.pagecount = AARCH32_1MB_LEVEL0_SIZE,
 				.table = ttb0_base_u32,
 				.poke = mmulayout_poke_u32_le,
-				.flag = 0,
-				.level = 0, // page table level (pass to mtable)
+				.level = INT_MAX,	// memory pages with access bits
 				.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 			},
 		};
@@ -1331,7 +1316,7 @@ sysinit_ttbr_initialize(void)
 	PRINTF("1 ttb0_base=%p" "\n", xlevel0_pagetable_u64);
 	PRINTF("1 satp=0x%016" PRIX64 "\n", satp);
 	PRINTF("1 csr_read_satp()=0x%016" PRIX64 "\n", csr_read_satp());
-	//csr_write_satp(satp);
+	csr_write_satp(satp);
 	PRINTF("2 csr_read_satp()=0x%016" PRIX64 "\n", csr_read_satp());
 
 	// MAEE in MXSTATUS
@@ -1359,7 +1344,7 @@ sysinit_ttbr_initialize(void)
 	// 3.1.6 Virtualization Management Field in mstatus Register
 	// Table 3.3: Encoding of virtualization management field VM[4:0]
 
-	if (0)
+	if (1)
 	{
 		{
 			//	Step 1: Configure the mstatus and mpp registers
