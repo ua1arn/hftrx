@@ -1016,12 +1016,11 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 
 #elif defined(__aarch64__)
 
-	// Last x4 - for 34 bit address (16 GB address space)
-	// Check TCR_EL3 setup
 	// pages of 2 MB
-	#define AARCH64_LEVEL0_SIZE (4 * 4)
-	#define AARCH64_LEVEL1_SIZE (AARCH64_LEVEL0_SIZE * 512)
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t ttb0_base_u64 [AARCH64_LEVEL0_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
+	#define nGB	8 // address space in GB - Check TCR_EL3 setup
+	#define AARCH64_LEVEL1_SIZE (nGB * 512)		// pages of 2 MB
+	#define AARCH64_LEVEL0_SIZE (AARCH64_LEVEL1_SIZE / 512)
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xxlevel0_pagetable_u64 [AARCH64_LEVEL0_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xxlevel1_pagetable_u64 [AARCH64_LEVEL1_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
 
 	static const mmulayout_t mmuinfo [] =
@@ -1039,67 +1038,67 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 		{
 			.arch = & aarch64_table_2M,
 			.phyaddr = (uintptr_t) xxlevel1_pagetable_u64,
-			.phypageszlog2 = 12,	// 4KB
+			.phypageszlog2 = 9 + 3,	// 512 elements by 8 bytes in each page of xxlevel1_pagetable_u64
 			.pagecount = AARCH64_LEVEL0_SIZE,
-			.table = ttb0_base_u64,
+			.table = xxlevel0_pagetable_u64,
 			.poke = mmulayout_poke_u64_le,
 			.level = 0, // page table level (pass to mtable)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 	};
-#else /* defined(__aarch64__) */
 
-	#if MMUUSE4KPAGES
+#elif MMUUSE4KPAGES
 
-		// pages of 4 k
-		#define AARCH32_4K_LEVEL0_SIZE (4096)
-		#define AARCH32_4K_LEVEL1_SIZE (AARCH32_4K_LEVEL0_SIZE * 256)
-		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_4K_LEVEL0_SIZE * sizeof (uint32_t)];
-		static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint8_t level1_pagetable_u32 [AARCH32_4K_LEVEL1_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 4 килобайта
-		static const mmulayout_t mmuinfo [] =
+	// AARCH32
+	// pages of 4 k
+	#define nGB	4
+	#define AARCH32_4K_LEVEL1_SIZE (nGB * 256 * 1024)	// физическая память - страницы по 4 KB
+	#define AARCH32_4K_LEVEL0_SIZE (AARCH32_4K_LEVEL1_SIZE / 256)
+	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_4K_LEVEL0_SIZE * sizeof (uint32_t)];
+	static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint8_t level1_pagetable_u32 [AARCH32_4K_LEVEL1_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 4 килобайта
+	static const mmulayout_t mmuinfo [] =
+	{
 		{
-			{
-				.arch = & arch32_table_4k,
-				.phyaddr = 0x00000000,	/* Начало физической памяти */
-				.phypageszlog2 = 12,	// 4KB
-				.pagecount = AARCH32_4K_LEVEL1_SIZE,
-				.table = level1_pagetable_u32,
-				.poke = mmulayout_poke_u32_le,
-				.level = INT_MAX,	// memory pages with access bits
-				.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
-			},
-			{
-				.arch = & arch32_table_4k,
-				.phyaddr = (uintptr_t) level1_pagetable_u32,
-				.phypageszlog2 = 10,	// 1KB
-				.pagecount = AARCH32_4K_LEVEL0_SIZE,
-				.table = ttb0_base_u32,
-				.poke = mmulayout_poke_u32_le,
-				.level = 0, // page table level (pass to mtable)
-				.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
-			},
-		};
-
-	#else /* MMUUSE4KPAGES */
-
-		// pages of 1 MB
-		#define AARCH32_1MB_LEVEL0_SIZE (4096)
-		static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_1MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
-		static const mmulayout_t mmuinfo [] =
+			.arch = & arch32_table_4k,
+			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.phypageszlog2 = 12,	// 4KB
+			.pagecount = AARCH32_4K_LEVEL1_SIZE,
+			.table = level1_pagetable_u32,
+			.poke = mmulayout_poke_u32_le,
+			.level = INT_MAX,	// memory pages with access bits
+			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
+		},
 		{
-			{
-				.arch = & arch32_table_1M,
-				.phyaddr = 0x00000000,	/* Начало физической памяти */
-				.phypageszlog2 = 20,	// 1MB
-				.pagecount = AARCH32_1MB_LEVEL0_SIZE,
-				.table = ttb0_base_u32,
-				.poke = mmulayout_poke_u32_le,
-				.level = INT_MAX,	// memory pages with access bits
-				.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
-			},
-		};
+			.arch = & arch32_table_4k,
+			.phyaddr = (uintptr_t) level1_pagetable_u32,
+			.phypageszlog2 = 10,	// 1KB
+			.pagecount = AARCH32_4K_LEVEL0_SIZE,
+			.table = ttb0_base_u32,
+			.poke = mmulayout_poke_u32_le,
+			.level = 0, // page table level (pass to mtable)
+			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
+		},
+	};
 
-	#endif /* MMUUSE4KPAGES */
+#else /* MMUUSE4KPAGES */
+
+	// pages of 1 MB
+	#define nGB	4
+	#define AARCH32_1MB_LEVEL0_SIZE (nGB * 1024)
+	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_1MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
+	static const mmulayout_t mmuinfo [] =
+	{
+		{
+			.arch = & arch32_table_1M,
+			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.phypageszlog2 = 20,	// 1MB
+			.pagecount = AARCH32_1MB_LEVEL0_SIZE,
+			.table = ttb0_base_u32,
+			.poke = mmulayout_poke_u32_le,
+			.level = INT_MAX,	// memory pages with access bits
+			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
+		},
+	};
 
 #endif /* defined(__aarch64__) */
 
@@ -1152,11 +1151,14 @@ sysinit_ttbr_initialize(void)
 
 #if defined(__aarch64__)
 
-	ASSERT(((uintptr_t) ttb0_base_u64 & 0x0FFF) == 0); // 4 KB
+	// D17.2.146  TTBR0_EL3, Translation Table Base Register 0 (EL3)
+	const uintptr_t ttb0 = (uintptr_t) xxlevel0_pagetable_u64;
+	ASSERT((ttb0 & 0x0FFF) == 0); // 4 KB
 
-	//__set_TTBR0_EL1((uintptr_t) ttb0_base);
-	//__set_TTBR0_EL2((uintptr_t) ttb0_base);
-	__set_TTBR0_EL3((uintptr_t) ttb0_base_u64);
+	// 48 bit address
+//	__set_TTBR0_EL1(ttb0);
+//	__set_TTBR0_EL2(ttb0);
+	__set_TTBR0_EL3(ttb0);	// нужно только это
 
 	// DDI0500J_cortex_a53_r0p4_trm.pdf
 	// 4.3.53 Translation Control Register, EL3
@@ -1167,24 +1169,46 @@ sysinit_ttbr_initialize(void)
 	// __log2_up(AARCH64_LEVEL1_SIZE)=13, mmuinfo [0].pgszlog2=21
 	//PRINTF("__log2_up(AARCH64_LEVEL1_SIZE)=%u, mmuinfo [0].pgszlog2=%u\n", (unsigned) __log2_up(AARCH64_LEVEL1_SIZE), mmuinfo [0].phypageszlog2);
 
-	const unsigned aspacebits = 21 + __log2_up(AARCH64_LEVEL1_SIZE);	// pages of 2 MB
+	//const unsigned aspacebits = 21 + __log2_up(AARCH64_LEVEL1_SIZE);	// pages of 2 MB
+	const unsigned aspacebits = __log2_up(nGB) + 30;
+	//ASSERT(aspacebits == aspacebits2);
 	uint_fast32_t tcrv =
-			0x00 * (UINT32_C(1) << 14) | 	// TG0 TTBR0_EL3 granule size 0b00 4 KB
-			0x03 * (UINT32_C(1) << 12) |	// 0x03 - Inner shareable
-			RGN_attr * (UINT32_C(1) << 10) |	// Outer cacheability attribute
-			IRGN_attr * (UINT32_C(1) << 8) |	// Inner cacheability attribute
-			(64 - aspacebits) * (UINT32_C(1) << 0) |		// n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
-			0;
-	__set_TCR_EL3(tcrv);
+		0 * (UINT32_C(1) << 30) |	// TCMA
+		0 * (UINT32_C(1) << 29) |	// TBID
+		0 * (UINT32_C(1) << 28) |	// HWU62
+		0 * (UINT32_C(1) << 27) |	// HWU61
+		0 * (UINT32_C(1) << 26) |	// HWU60
+		0 * (UINT32_C(1) << 25) |	// HWU59
+		0 * (UINT32_C(1) << 22) |	// HD - see FEAT_HAFDBS
+		0 * (UINT32_C(1) << 21) |	// HA - see FEAT_HAFDBS
+		1 * (UINT32_C(1) << 20) |	// TBI - Top Byte Ignored. Indicates whether the top byte of an address is used for address match for the TTBR0_EL3 region, or ignored and used for tagged addresses.
+		0x00 * (UINT32_C(1) << 16) |	// 18:16 PS
+		0x00 * (UINT32_C(1) << 14) | 	// TG0 TTBR0_EL3 granule size 0b00 4 KB
+		0x03 * (UINT32_C(1) << 12) |	// SH0 0x03 - Inner shareable
+		RGN_attr * (UINT32_C(1) << 10) |	// ORGN0 Outer cacheability attribute
+		IRGN_attr * (UINT32_C(1) << 8) |	// IRGN0 Inner cacheability attribute
+		(0x3F & (64 - aspacebits)) * (UINT32_C(1) << 0) |		// T0SZ n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
+		0;
+//	__set_TCR_EL1(tcrv);
+//	__set_TCR_EL2(tcrv);
+	__set_TCR_EL3(tcrv);	// нужно только это
 
+	//  D17.2.99 MAIR_EL3, Memory Attribute Indirection Register (EL3)
 	const uint_fast32_t mairv =
-			0xFF * (UINT32_C(1) << (AARCH64_ATTR_INDEX_CACHED * 8)) |		// Normal Memory, Inner/Outer Write-back non-transient
-			0x44 * (UINT32_C(1) << (AARCH64_ATTR_INDEX_NCACHED * 8)) |	// Normal memory, Inner/Outer Non-Cacheable
-			0x00 * (UINT32_C(1) << (AARCH64_ATTR_INDEX_DEVICE * 8)) | 	// Device-nGnRnE memory
-			0;
+		0xFF * (UINT32_C(1) << (AARCH64_ATTR_INDEX_CACHED * 8)) |		// Normal Memory, Inner/Outer Write-back non-transient
+		0x44 * (UINT32_C(1) << (AARCH64_ATTR_INDEX_NCACHED * 8)) |	// Normal memory, Inner/Outer Non-Cacheable
+		0x00 * (UINT32_C(1) << (AARCH64_ATTR_INDEX_DEVICE * 8)) | 	// Device-nGnRnE memory
+		0;
+//	__set_MAIR_EL1(mairv);
+//	__set_MAIR_EL2(mairv);
+	__set_MAIR_EL3(mairv);	// нужно только это
+
+	//  D17.2.35 DACR32_EL2, Domain Access Control Register
 	// Program the domain access register
-	//__set_DACR32_EL2(0xFFFFFFFF); 	// domain 15: access are not checked
-	__set_MAIR_EL3(mairv);
+	const uint_fast32_t dacr32v =
+		UINT32_C(0x55555555) * 0x03 |	// domain 15..0: Manager. Accesses are not checked against the permission bits in the translation tables.
+		0;
+	__set_DACR32_EL2(dacr32v);
 
 	__ISB();
 
