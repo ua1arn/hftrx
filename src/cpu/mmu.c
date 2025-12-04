@@ -1173,18 +1173,18 @@ sysinit_ttbr_initialize(void)
 	const unsigned aspacebits = __log2_up(nGB) + 30;
 	//ASSERT(aspacebits == aspacebits2);
 	uint_fast32_t tcrv =
-		0 * (UINT32_C(1) << 30) |	// TCMA
-		0 * (UINT32_C(1) << 29) |	// TBID
-		0 * (UINT32_C(1) << 28) |	// HWU62
-		0 * (UINT32_C(1) << 27) |	// HWU61
-		0 * (UINT32_C(1) << 26) |	// HWU60
-		0 * (UINT32_C(1) << 25) |	// HWU59
+		0 * (UINT32_C(1) << 30) |	// TCMA - see FEAT_MTE2
+		0 * (UINT32_C(1) << 29) |	// TBID - see FEAT_PAuth (top byte Id)
+		0 * (UINT32_C(1) << 28) |	// HWU62 - see FEAT_HPDS2
+		0 * (UINT32_C(1) << 27) |	// HWU61 - see FEAT_HPDS2
+		0 * (UINT32_C(1) << 26) |	// HWU60 - see FEAT_HPDS2
+		0 * (UINT32_C(1) << 25) |	// HWU59 - see FEAT_HPDS2
 		0 * (UINT32_C(1) << 22) |	// HD - see FEAT_HAFDBS
 		0 * (UINT32_C(1) << 21) |	// HA - see FEAT_HAFDBS
 		1 * (UINT32_C(1) << 20) |	// TBI - Top Byte Ignored. Indicates whether the top byte of an address is used for address match for the TTBR0_EL3 region, or ignored and used for tagged addresses.
-		0x00 * (UINT32_C(1) << 16) |	// 18:16 PS
-		0x00 * (UINT32_C(1) << 14) | 	// TG0 TTBR0_EL3 granule size 0b00 4 KB
-		0x03 * (UINT32_C(1) << 12) |	// SH0 0x03 - Inner shareable
+		0x01 * (UINT32_C(1) << 16) |	// 18:16 PS - Physical Address Size. 36 bits, 64GB
+		0x00 * (UINT32_C(1) << 14) | 	// TG0 Granule size for the TTBR0_EL3. 0x00 4KB, 0x01 64KB, 0x02 16KB
+		0x03 * (UINT32_C(1) << 12) |	// SH0 0x03 - Inner shareable (Shareability attribute for memory associated with translation table walks using TTBR0_EL3)
 		RGN_attr * (UINT32_C(1) << 10) |	// ORGN0 Outer cacheability attribute
 		IRGN_attr * (UINT32_C(1) << 8) |	// IRGN0 Inner cacheability attribute
 		(0x3F & (64 - aspacebits)) * (UINT32_C(1) << 0) |		// T0SZ n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
