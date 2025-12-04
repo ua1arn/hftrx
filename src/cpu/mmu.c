@@ -248,7 +248,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 #define AARCH32_APRWval 		0x03	/* Full access */
 #define AARCH32_APROval 		0x06	/* All write accesses generate Permission faults */
 #define AARCH32_DOMAINval		0x0F
-#define AARCH32_PXNval		0x02	/* 0b10, Section or Supersection, PXN  */
+#define AARCH32_PXNval		0x01	/* PXN  */
 
 /* Table B3-10 TEX, C, and B encodings when TRE == 0 */
 
@@ -331,7 +331,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 		!! (Cv) * (UINT32_C(1) << 3) |	/* C */ \
 		!! (Bv) * (UINT32_C(1) << 2) |	/* B */ \
 		1 * (UINT32_C(1) << 1) |	/* 1, Section or Supersection */ \
-		(AARCH32_PXNval) * (UINT32_C(1) << 0) |	/* PXN */ \
+		!! (AARCH32_PXNval) * (UINT32_C(1) << 0) |	/* PXN */ \
 		0 \
 	)
 
@@ -354,7 +354,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 		!! (Cv) * (UINT32_C(1) << 3) |	/* C */ \
 		!! (Bv) * (UINT32_C(1) << 2) |	/* B */ \
 		1 * (UINT32_C(1) << 1) |	/* 1, Section or Supersection */ \
-		(AARCH32_PXNval) * (UINT32_C(1) << 0) |	/* PXN */ \
+		!! (AARCH32_PXNval) * (UINT32_C(1) << 0) |	/* PXN */ \
 		0 \
 	)
 
