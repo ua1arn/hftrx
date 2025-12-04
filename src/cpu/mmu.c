@@ -343,7 +343,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 		(((pa) >> 24) & 0xFF) * (UINT32_C(1) << 24) |	/* Supersection base address, PA[31:24] */ \
 		(((pa) >> 32) & 0x0F) * (UINT32_C(1) << 20) |	/* Extended base address, PA[35:32] */ \
 		0 * (UINT32_C(1) << 19) |	/* NS */ \
-		1 * (UINT32_C(1) << 18) |	/* v7: 0, v8: 0 - section, 1 - supersection */ \
+		1 * (UINT32_C(1) << 18) |	/* 0 - section, 1 - supersection */ \
 		0 * (UINT32_C(1) << 17) |	/* nG */ \
 		!! (SHAREDv) * (UINT32_C(1) << 16) |	/* S */ \
 		(((APv) >> 2) & 0x01) * (UINT32_C(1) << 15) |	/* AP[2] */ \
@@ -395,13 +395,13 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 		0 \
 	)
 
-#define	TTB_SECTION_AARCH32_1M_NCACHED(addr, ro, xn)	TTB_SECTION_AARCH32_1M((addr), AARCH32_TEXval_NCRAM, AARCH32_Bval_NCRAM, AARCH32_Cval_NCRAM, AARCH32_DOMAINval, AARCH32_SHAREDval_NCRAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
-#define	TTB_SECTION_AARCH32_1M_CACHED(addr, ro, xn) 	TTB_SECTION_AARCH32_1M((addr), AARCH32_TEXval_RAM, AARCH32_Bval_RAM, AARCH32_Cval_RAM, AARCH32_DOMAINval, AARCH32_SHAREDval_RAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
-#define	TTB_SECTION_AARCH32_1M_DEVICE(addr) 			TTB_SECTION_AARCH32_1M((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
-
 #define	TTB_SUPERSECTION_AARCH32_16M_NCACHED(addr, ro, xn)	TTB_SUPERSECTION_AARCH32_16M((addr), AARCH32_TEXval_NCRAM, AARCH32_Bval_NCRAM, AARCH32_Cval_NCRAM, AARCH32_SHAREDval_NCRAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
 #define	TTB_SUPERSECTION_AARCH32_16M_CACHED(addr, ro, xn) 	TTB_SUPERSECTION_AARCH32_16M((addr), AARCH32_TEXval_RAM, AARCH32_Bval_RAM, AARCH32_Cval_RAM, AARCH32_SHAREDval_RAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
 #define	TTB_SUPERSECTION_AARCH32_16M_DEVICE(addr) 			TTB_SUPERSECTION_AARCH32_16M((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
+
+#define	TTB_SECTION_AARCH32_1M_NCACHED(addr, ro, xn)	TTB_SECTION_AARCH32_1M((addr), AARCH32_TEXval_NCRAM, AARCH32_Bval_NCRAM, AARCH32_Cval_NCRAM, AARCH32_DOMAINval, AARCH32_SHAREDval_NCRAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
+#define	TTB_SECTION_AARCH32_1M_CACHED(addr, ro, xn) 	TTB_SECTION_AARCH32_1M((addr), AARCH32_TEXval_RAM, AARCH32_Bval_RAM, AARCH32_Cval_RAM, AARCH32_DOMAINval, AARCH32_SHAREDval_RAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
+#define	TTB_SECTION_AARCH32_1M_DEVICE(addr) 			TTB_SECTION_AARCH32_1M((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
 
 #define	TTB_SMALLSECTION_AARCH32_4K_NCACHED(addr, ro, xn)	TTB_SMALLSECTION_AARCH32_4K((addr), AARCH32_TEXval_NCRAM, AARCH32_Bval_NCRAM, AARCH32_Cval_NCRAM, AARCH32_DOMAINval, AARCH32_SHAREDval_NCRAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
 #define	TTB_SMALLSECTION_AARCH32_4K_CACHED(addr, ro, xn) 	TTB_SMALLSECTION_AARCH32_4K((addr), AARCH32_TEXval_RAM, AARCH32_Bval_RAM, AARCH32_Cval_RAM, AARCH32_DOMAINval, AARCH32_SHAREDval_RAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
@@ -522,6 +522,19 @@ static const getmmudesc_t aarch32_v7_table_4k =
 __STATIC_FORCEINLINE void __set_TTBCR(uint32_t ttbcr)
 {
   __set_CP(15, 0, ttbcr, 2, 0, 2);
+}
+
+/** \brief  Get ID_MMFR3
+
+    This function returns the value of theMemory Model Feature Register 3
+
+    \return               Memory Model Feature Register 3 value
+ */
+__STATIC_FORCEINLINE uint32_t __get_ID_MMFR3(void)
+{
+  uint32_t result;
+  __get_CP(15, 0, result, 0, 1, 7);
+  return result;
 }
 
 #elif CPUSTYLE_RISCV
@@ -1323,6 +1336,7 @@ sysinit_ttbr_initialize(void)
 
 	ASSERT(((uintptr_t) ttb0_base_u32 & 0x3FFF) == 0);
 
+	PRINTF("__get_ID_MMFR3()=0x%08X\n", (unsigned) __get_ID_MMFR3());
 	//CP15_writeTTBCR(0);
 	   /* Set location of level 1 page table
 	    ; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
