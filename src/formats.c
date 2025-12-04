@@ -374,17 +374,23 @@ safestrcpy(char * dst, size_t blen, const char * src)
 /*	User-side of console output.			*/
 // использование библиотечной функции (поддержка печати чисел с плавающей точкой).
 
+//IRQLSPINLOCK_t printflock = IRQLSPINLOCK_INIT;
+
 void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 {
 	char b [256];	// see stack sizes for interrupt handlers
 	va_list	ap;
 
+//	IRQL_t irql;
+//	IRQLSPIN_LOCK(& printflock, & irql, IRQL_IPC_ONLY);
+
 	va_start(ap, format);
-	vsnprintf(b, sizeof b / sizeof b [0] - 1, format, ap);
+	vsnprintf(b, sizeof b / sizeof b [0], format, ap);
 	va_end(ap);
 	b [ARRAY_SIZE(b) - 1] = '\0';
 
 	dbg_puts_impl(b);
+//	IRQLSPIN_UNLOCK(& printflock, irql);
 }
 
 #else /* FORMATFROMLIBRARY */
