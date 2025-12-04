@@ -313,18 +313,19 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 #endif
 
 // For v7 - See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
-// Large page
+//  B3.5.1  Short-descriptor translation table format descriptors
+//  Short-descriptor translation table first-level descriptor formats
 // 1MB memory region
 #define	TTB_SECTION_AARCH32_1M(pa, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
 		(((pa) >> 20) & 0xFFF) * (UINT32_C(1) << 20) |	/* Section base address, PA[31:20] */ \
-		0 * (UINT32_C(1) << 9) |	/* implementation defined */ \
-		!! (SHAREDv) * (UINT32_C(1) << 16) |	/* S */ \
 		0 * (UINT32_C(1) << 19) |	/* NS */ \
 		0 * (UINT32_C(1) << 18) |	/* v7: 0, v8: 0 - section, 1 - supersection */ \
 		0 * (UINT32_C(1) << 17) |	/* nG */ \
+		!! (SHAREDv) * (UINT32_C(1) << 16) |	/* S */ \
 		(((APv) >> 2) & 0x01) * (UINT32_C(1) << 15) |	/* AP[2] */ \
 		((TEXv) & 0x07) * (UINT32_C(1) << 12) |	/* TEX[2:0] */ \
 		(((APv) >> 0) & 0x03) * (UINT32_C(1) << 10) |	/* AP[1..0] */ \
+		0 * (UINT32_C(1) << 9) |	/* implementation defined */ \
 		(DOMAINv) * (UINT32_C(1) << 5) |	/* DOMAIN */ \
 		!! (XNv) * (UINT32_C(1) << 4) |	/* XN The Execute-never bit. */ \
 		!! (Cv) * (UINT32_C(1) << 3) |	/* C */ \
@@ -334,6 +335,8 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 		0 \
 	)
 
+//  B3.5.1 Short-descriptor translation table format descriptors
+//  Short-descriptor translation table first-level descriptor formats
 // 16MB memory region
 #define	TTB_SUPERSECTION_AARCH32_16M(pa, TEXv, Bv, Cv, SHAREDv, APv, XNv) ( \
 		(((pa) >> 24) & 0xFF) * (UINT32_C(1) << 24) |	/* Supersection base address, PA[31:24] */ \
@@ -508,6 +511,17 @@ static const getmmudesc_t aarch32_v7_table_4k =
 	.mnoaccess = arch32_4k_mnoaccess,
 	.mtable = arch32_4k_mtable
 };
+
+/** \brief  Set TTBR0
+
+    This function assigns the given value to the Translation Table Base Register 0.
+
+    \param [in]    ttbr0  Translation Table Base Register 0 value to set
+ */
+__STATIC_FORCEINLINE void __set_TTBCR(uint32_t ttbcr)
+{
+  __set_CP(15, 0, ttbcr, 2, 0, 2);
+}
 
 #elif CPUSTYLE_RISCV
 
@@ -1346,25 +1360,26 @@ sysinit_ttbr_initialize(void)
 
 	// B4.1.154 TTBR0, Translation Table Base Register 0, VMSA
 #if WITHSMPSYSTEM
+	__set_TTBCR(0);
 	// TTBR0
 	const uint_fast32_t IRGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
-	const uint_fast32_t RGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
+	const uint_fast32_t ORGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
 	__set_TTBR0(
 			(uintptr_t) ttb0_base_u32 |	/* Translation table base 0 address, bits[31:x]. */
-			((uint_fast32_t) !! (IRGN_attr & 0x01) << 6) |	// IRGN[0]
-			((uint_fast32_t) !! (IRGN_attr & 0x02) << 0) |	// IRGN[1]
-			(RGN_attr << 3) |	// RGN
-			!1*(UINT32_C(1) << 5) |	// NOS - Not Outer Shareable bit - TEST for RAMNC
-			1*(UINT32_C(1) << 1) |	// S - Shareable bit. Indicates the Shareable attribute for the memory associated with the translation table
+			!! (IRGN_attr & 0x01) * (UINT32_C(1) << 6) |	// IRGN[0]
+			!! (IRGN_attr & 0x02) * (UINT32_C(1) << 0) |	// IRGN[1]
+			ORGN_attr * (UINT32_C(1) << 3) |	// RGN
+			!1 * (UINT32_C(1) << 5) |	// NOS - Not Outer Shareable bit - TEST for RAMNC
+			1 * (UINT32_C(1) << 1) |	// S - Shareable bit. Indicates the Shareable attribute for the memory associated with the translation table
 			0);
 #else /* WITHSMPSYSTEM */
 	// TTBR0
 	__set_TTBR0(
 			(uintptr_t) ttb0_base_u32 |	/* Translation table base 0 address, bits[31:x]. */
 			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
-			(UINT32_C(1) << 3) |	// RGN
-			0*(UINT32_C(1) << 5) |	// NOS
-			0*(UINT32_C(1) << 1) |	// S
+			1 * (UINT32_C(1) << 3) |	// RGN
+			0 * (UINT32_C(1) << 5) |	// NOS
+			0 * (UINT32_C(1) << 1) |	// S
 			0);
 #endif /* WITHSMPSYSTEM */
 	//CP15_writeTTB1((unsigned int) ttb0_base | 0x48);	// TTBR1
