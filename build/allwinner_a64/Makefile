@@ -246,8 +246,8 @@ fsbl.bt0: $(PROJECT)_boot.bin
 	./egontool -old -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_a64_boot.map
-SystemDRAMInit = 0x00019450
-SystemExecAARCH64 = 0x0001cb28
+SystemDRAMInit = 0x0001ba28
+SystemExecAARCH64 = 0x0001aa04
 
 # Invoke SystemInit 
 ddr_init: fsbl_frz.alw32
