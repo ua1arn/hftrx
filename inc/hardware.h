@@ -738,15 +738,13 @@ int_fast32_t dcache_rowsize(void);
 void sysinit_cache_initialize(void);	/* на каждом процессоре */
 void sysinit_cache_L2_initialize(void);	/* инициадизации кеш-памяти, специфические для CORE0 */
 
-typedef unsigned (* mmupokefn_t)(uint8_t * b, uint_fast64_t v);
-
 typedef struct getmmudesc_tag
 {
-	unsigned (* mcached)(mmupokefn_t poke, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
-	unsigned (* mncached)(mmupokefn_t poke, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
-	unsigned (* mdevice)(mmupokefn_t poke, uint8_t * b, uint_fast64_t phyaddr);
-	unsigned (* mnoaccess)(mmupokefn_t poke, uint8_t * b, uint_fast64_t phyaddr);
-	unsigned (* mtable)(mmupokefn_t poke, uint8_t * b, uint_fast64_t phyaddr, int level);	// next level table
+	unsigned (* mcached)(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
+	unsigned (* mncached)(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
+	unsigned (* mdevice)(uint8_t * b, uint_fast64_t phyaddr);
+	unsigned (* mnoaccess)(uint8_t * b, uint_fast64_t phyaddr);
+	unsigned (* mtable)(uint8_t * b, uint_fast64_t phyaddr, int level);	// next level table
 } getmmudesc_t;
 
 typedef struct mmulayout_tag
@@ -756,7 +754,7 @@ typedef struct mmulayout_tag
 	unsigned phypageszlog2;	// log2 от размера страниц на phyaddr
 	unsigned pagecount;
 	uint8_t * table;
-	unsigned (* poke)(uint8_t * b, uint_fast64_t v);
+	//unsigned (* poke)(uint8_t * b, uint_fast64_t v);
 	int level;	// table level (INT_MAX - дескрипторы памяти)
 	int ro;	// read-only area
 	int xn;	// no-execute
