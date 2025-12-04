@@ -188,13 +188,13 @@ SECTIONS
 		*(.framebuff*)
 	} > RAM
 
-	.ramnc BLOCK(2M) (NOLOAD):
+	.ramnc BLOCK(16M) (NOLOAD):
 	{
 		PROVIDE(__RAMNC_BASE = .);
 		__bss2_start__ = .;
 		*(.ramnc*)
 		__bss2_end__ = .;
-		. = ALIGN(2M);
+		. = ALIGN(16M);
 		PROVIDE(__RAMNC_TOP = .);
 		
 		. = ALIGN(64);

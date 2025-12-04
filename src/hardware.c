@@ -2877,7 +2877,7 @@ ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, ui
 
 #if ! CPUSTYLE_R7S721020
 	// На Renesas RZA1 недостаточно памяти для выделения выровненной на 1 мегабайт некешируесой области.
-	// Все сравнения должны быть не точнее 2 MB
+	// Все сравнения должны быть не точнее 2 MB (или 16 MB для supersections)
 
 	extern uint32_t __RAMNC_BASE;
 	extern uint32_t __RAMNC_TOP;
@@ -2942,7 +2942,7 @@ ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, ui
 
 #elif CPUSTYLE_T113
 
-	// Все сравнения должны быть не точнее 1 MB
+	// Все сравнения должны быть не точнее 16 MB
 
 	if (phyaddr < 0x00400000)
 		return arch->mcached(poke, b, phyaddr, ro, xn);
@@ -2970,7 +2970,7 @@ ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, ui
 
 #elif CPUSTYLE_V3S
 
-	// Все сравнения должны быть не точнее 1 MB
+	// Все сравнения должны быть не точнее 16 MB
 
 	if (phyaddr < 0x00400000)
 		return arch->mcached(poke, b, phyaddr, ro, xn);
@@ -2984,7 +2984,7 @@ ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, ui
 
 #elif CPUSTYLE_H3
 
-	// Все сравнения должны быть не точнее 1 MB
+	// Все сравнения должны быть не точнее 16 MB
 
 	if (phyaddr < 0x01000000)
 		return arch->mcached(poke, b, phyaddr, ro, xn);	// SRAM A1, SRAM A2, SRAM C
@@ -2999,7 +2999,7 @@ ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, ui
 
 #elif CPUSTYLE_A64
 
-	// Все сравнения должны быть не точнее 2 MB
+	// Все сравнения должны быть не точнее 16 MB
 
 	if (phyaddr < 0x01000000)
 		return arch->mcached(poke, b, phyaddr, ro, xn);

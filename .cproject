@@ -596,7 +596,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.1231476640" name="allwinner_t113-s3" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.1231476640" name="allwinner_t113-s3" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release">
 					<folderInfo id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.1231476640." name="/" resourcePath="">
 						<toolChain id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release.1708518608" name="ARM Cross GCC" superClass="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release">
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.1279428853" name="Create flash image" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash" value="true" valueType="boolean"/>
@@ -868,6 +868,7 @@
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A64=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
+									<listOptionValue builtIn="false" value="__ARM_ARCH=8"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.994338581" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
@@ -878,11 +879,12 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1044358057" name="GNU ARM Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.655635174" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="NDEBUG=1"/>
-									<listOptionValue builtIn="false" value="__CORTEX_A=7"/>
+									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A64=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
+									<listOptionValue builtIn="false" value="__ARM_ARCH=8"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.535680558" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
@@ -893,11 +895,12 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.885955490" name="GNU ARM Cross C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs.1502612025" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="NDEBUG=1"/>
-									<listOptionValue builtIn="false" value="__CORTEX_A=7"/>
+									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A64=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
+									<listOptionValue builtIn="false" value="__ARM_ARCH=8"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1716955617" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
@@ -985,6 +988,7 @@
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_T507=1"/>
+									<listOptionValue builtIn="false" value="__ARM_ARCH=8"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.660523279" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
@@ -995,11 +999,12 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1625879121" name="GNU ARM Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.1688144581" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="NDEBUG=1"/>
-									<listOptionValue builtIn="false" value="__CORTEX_A=7"/>
+									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_T507=1"/>
+									<listOptionValue builtIn="false" value="__ARM_ARCH=8"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.447406554" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
@@ -1010,11 +1015,12 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.313664717" name="GNU ARM Cross C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs.1645736478" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="NDEBUG=1"/>
-									<listOptionValue builtIn="false" value="__CORTEX_A=7"/>
+									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_T507=1"/>
+									<listOptionValue builtIn="false" value="__ARM_ARCH=8"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.644222320" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
@@ -1330,6 +1336,7 @@
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A133=1"/>
+									<listOptionValue builtIn="false" value="__ARM_ARCH=8"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.384841313" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
@@ -1340,11 +1347,12 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.193265917" name="GNU ARM Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.1774290407" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="NDEBUG=1"/>
-									<listOptionValue builtIn="false" value="__CORTEX_A=7"/>
+									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A133=1"/>
+									<listOptionValue builtIn="false" value="__ARM_ARCH=8"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.160776762" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
@@ -1355,11 +1363,12 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.186074125" name="GNU ARM Cross C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs.171407707" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="NDEBUG=1"/>
-									<listOptionValue builtIn="false" value="__CORTEX_A=7"/>
+									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A133=1"/>
+									<listOptionValue builtIn="false" value="__ARM_ARCH=8"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.991164810" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>

@@ -11,6 +11,7 @@
 
 #include <limits.h>
 //#define MMUUSE4KPAGES 1
+//#define MMUUSE16MPAGES (1 && defined (__ARM_ARCH) && (__ARM_ARCH == 8))
 
 #if ! LINUX_SUBSYSTEM
 
@@ -21,15 +22,15 @@
 
 static unsigned gpu_mali400_4k_mcached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return poke(b, UINT64_C(0));//TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn);
+	return poke(b, UINT64_C(0));//TTB_SMALLSECTION_AARCH32_4K_CACHED(addr, ro, xn);
 }
 static unsigned gpu_mali400_4k_mncached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return poke(b, UINT64_C(0));//TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn);
+	return poke(b, UINT64_C(0));//TTB_SMALLSECTION_AARCH32_4K_NCACHED(addr, ro, xn);
 }
 static unsigned gpu_mali400_4k_mdevice(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
-	return poke(b, UINT64_C(0));//TTB_PARA_AARCH32_4k_DEVICE(addr);
+	return poke(b, UINT64_C(0));//TTB_SMALLSECTION_AARCH32_4K_DEVICE(addr);
 }
 static unsigned gpu_mali400_4k_mnoaccess(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
@@ -39,7 +40,7 @@ static unsigned gpu_mali400_4k_mnoaccess(mmupokefn_t poke, uint8_t * b, uint_fas
 static unsigned gpu_mali400_4k_mtable(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int level)
 {
 	// 1KB granulation address
-	return poke(b, UINT64_C(0));//TTB_PARA_AARCH32_4k_PAGE(addr);	// First-level table entry - Page table
+	return poke(b, UINT64_C(0));//TTB_AARCH32_PAGETABLE(addr);	// First-level table entry - Page table
 }
 
 static const getmmudesc_t gpu_mali400_table4k =
@@ -247,7 +248,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 #define AARCH32_APRWval 		0x03	/* Full access */
 #define AARCH32_APROval 		0x06	/* All write accesses generate Permission faults */
 #define AARCH32_DOMAINval		0x0F
-#define AARCH32_SECTIONval		0x02	/* 0b10, Section or Supersection, PXN  */
+#define AARCH32_PXNval		0x02	/* 0b10, Section or Supersection, PXN  */
 
 /* Table B3-10 TEX, C, and B encodings when TRE == 0 */
 
@@ -311,37 +312,64 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 	#endif /* WITHSMPSYSTEM */
 #endif
 
-// See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
-
+// For v7 - See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
 // Large page
-#define	TTB_PARA_AARCH32_1M(addr, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
-		((addr) & ~ (uint64_t) UINT32_C(0x0FFFFF)) | /* 1M granulation address */ \
-		(AARCH32_SECTIONval) * (UINT32_C(1) << 0) |	/* 0b10, Section or Supersection, PXN */ \
-		!! (Bv) * (UINT32_C(1) << 2) |	/* B */ \
-		!! (Cv) * (UINT32_C(1) << 3) |	/* C */ \
-		!! (XNv) * (UINT32_C(1) << 4) |	/* XN The Execute-never bit. */ \
-		(DOMAINv) * (UINT32_C(1) << 5) |	/* DOMAIN */ \
+// 1MB memory region
+#define	TTB_SECTION_AARCH32_1M(pa, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
+		(((pa) >> 20) & 0xFFF) * (UINT32_C(1) << 20) |	/* Section base address, PA[31:20] */ \
 		0 * (UINT32_C(1) << 9) |	/* implementation defined */ \
-		(((APv) >> 0) & 0x03) * (UINT32_C(1) << 10) |	/* AP [1..0] */ \
-		((TEXv) & 0x07) * (UINT32_C(1) << 12) |	/* TEX */ \
-		(((APv) >> 2) & 0x01) * (UINT32_C(1) << 15) |	/* AP[2] */ \
 		!! (SHAREDv) * (UINT32_C(1) << 16) |	/* S */ \
-		0 * (UINT32_C(1) << 17) |	/* nG */ \
-		0 * (UINT32_C(1) << 18) |	/* 0 */ \
 		0 * (UINT32_C(1) << 19) |	/* NS */ \
+		0 * (UINT32_C(1) << 18) |	/* v7: 0, v8: 0 - section, 1 - supersection */ \
+		0 * (UINT32_C(1) << 17) |	/* nG */ \
+		(((APv) >> 2) & 0x01) * (UINT32_C(1) << 15) |	/* AP[2] */ \
+		((TEXv) & 0x07) * (UINT32_C(1) << 12) |	/* TEX[2:0] */ \
+		(((APv) >> 0) & 0x03) * (UINT32_C(1) << 10) |	/* AP[1..0] */ \
+		(DOMAINv) * (UINT32_C(1) << 5) |	/* DOMAIN */ \
+		!! (XNv) * (UINT32_C(1) << 4) |	/* XN The Execute-never bit. */ \
+		!! (Cv) * (UINT32_C(1) << 3) |	/* C */ \
+		!! (Bv) * (UINT32_C(1) << 2) |	/* B */ \
+		1 * (UINT32_C(1) << 1) |	/* 1, Section or Supersection */ \
+		(AARCH32_PXNval) * (UINT32_C(1) << 0) |	/* PXN */ \
 		0 \
 	)
+
+// 16MB memory region
+#define	TTB_SUPERSECTION_AARCH32_16M(pa, TEXv, Bv, Cv, SHAREDv, APv, XNv) ( \
+		(((pa) >> 24) & 0xFF) * (UINT32_C(1) << 24) |	/* Supersection base address, PA[31:24] */ \
+		(((pa) >> 32) & 0x0F) * (UINT32_C(1) << 20) |	/* Extended base address, PA[35:32] */ \
+		0 * (UINT32_C(1) << 19) |	/* NS */ \
+		1 * (UINT32_C(1) << 18) |	/* v7: 0, v8: 0 - section, 1 - supersection */ \
+		0 * (UINT32_C(1) << 17) |	/* nG */ \
+		!! (SHAREDv) * (UINT32_C(1) << 16) |	/* S */ \
+		(((APv) >> 2) & 0x01) * (UINT32_C(1) << 15) |	/* AP[2] */ \
+		((TEXv) & 0x07) * (UINT32_C(1) << 12) |	/* TEX[2:0] */ \
+		(((APv) >> 0) & 0x03) * (UINT32_C(1) << 10) |	/* AP[1..0] */ \
+		0 * (UINT32_C(1) << 9) |	/* implementation defined */ \
+		(((pa) >> 36) & 0x0F) * (UINT32_C(1) << 5) |	/*  Extended base address, PA[39:36] */ \
+		!! (XNv) * (UINT32_C(1) << 4) |	/* XN The Execute-never bit. */ \
+		!! (Cv) * (UINT32_C(1) << 3) |	/* C */ \
+		!! (Bv) * (UINT32_C(1) << 2) |	/* B */ \
+		1 * (UINT32_C(1) << 1) |	/* 1, Section or Supersection */ \
+		(AARCH32_PXNval) * (UINT32_C(1) << 0) |	/* PXN */ \
+		0 \
+	)
+
+// For v8 - See G5.4 The VMSAv8-32 Short-descriptor translation table format
+// in DDI0487_I_a_a-profile_architecture_reference_manual.pdf
+// Section (1 MB 1MB memory region)
+
 
 // B3.5.1 Short-descriptor translation table format descriptors
 // Short-descriptor translation table first-level descriptor formats
 
-#define	TTB_PARA_AARCH32_4k_table(addr, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
-		((addr) & ~ (uint64_t) UINT32_C(0x03FF)) | /* Page table base address, bits[31:10]. bits 31:10 */ \
+#define	TTB_AARCH32_PAGETABLE_RAW(pa, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
+		(((pa) >> 10) & 0x3FFFFF) * (UINT32_C(1) << 10) |	/* Page table base address, bits[31:10] */ \
 		0 * (UINT32_C(1) << 9) |	/* implementation defined */ \
 		(DOMAINv) * (UINT32_C(1) << 5) |	/* DOMAIN */ \
 		0 * (UINT32_C(1) << 3) |	/* NS */ \
 		0x01 * (UINT32_C(1) << 2) |	/* PXN */ \
-		0x01 * (UINT32_C(1) << 0) |	/* */ \
+		0x01 * (UINT32_C(1) << 0) |	/* bits [1:0]*/ \
 		0 \
 	)
 
@@ -349,8 +377,8 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 // Short-descriptor translation table second-level descriptor formats
 
 // Small page (4KB memory page)
-#define	TTB_PARA_AARCH32_4k(addr, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
-		((addr) & ~ (uint64_t) UINT32_C(0x0FFF)) | /* 4k granulation address */ \
+#define	TTB_SMALLSECTION_AARCH32_4K(pa, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
+		(((pa) >> 12) & 0xFFFFF) * (UINT32_C(1) << 12) |	/* Section base address, PA[31:12] */ \
 		0 * (UINT32_C(1) << 11) |	/* nG */ \
 		!! (SHAREDv) * (UINT32_C(1) << 10) |	/* ! S */ \
 		(((APv) >> 2) & 0x01) * (UINT32_C(1) << 9) |	/* AP[2] */ \
@@ -363,59 +391,98 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 		0 \
 	)
 
-#define	TTB_PARA_AARCH32_1M_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32_1M((addr), AARCH32_TEXval_NCRAM, AARCH32_Bval_NCRAM, AARCH32_Cval_NCRAM, AARCH32_DOMAINval, AARCH32_SHAREDval_NCRAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
-#define	TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32_1M((addr), AARCH32_TEXval_RAM, AARCH32_Bval_RAM, AARCH32_Cval_RAM, AARCH32_DOMAINval, AARCH32_SHAREDval_RAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
-#define	TTB_PARA_AARCH32_1M_DEVICE(addr) 			TTB_PARA_AARCH32_1M((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
+#define	TTB_SECTION_AARCH32_1M_NCACHED(addr, ro, xn)	TTB_SECTION_AARCH32_1M((addr), AARCH32_TEXval_NCRAM, AARCH32_Bval_NCRAM, AARCH32_Cval_NCRAM, AARCH32_DOMAINval, AARCH32_SHAREDval_NCRAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
+#define	TTB_SECTION_AARCH32_1M_CACHED(addr, ro, xn) 	TTB_SECTION_AARCH32_1M((addr), AARCH32_TEXval_RAM, AARCH32_Bval_RAM, AARCH32_Cval_RAM, AARCH32_DOMAINval, AARCH32_SHAREDval_RAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
+#define	TTB_SECTION_AARCH32_1M_DEVICE(addr) 			TTB_SECTION_AARCH32_1M((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
 
-// TODO: implementing
-#define	TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn)	TTB_PARA_AARCH32_4k((addr), AARCH32_TEXval_NCRAM, AARCH32_Bval_NCRAM, AARCH32_Cval_NCRAM, AARCH32_DOMAINval, AARCH32_SHAREDval_NCRAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
-#define	TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn) 	TTB_PARA_AARCH32_4k((addr), AARCH32_TEXval_RAM, AARCH32_Bval_RAM, AARCH32_Cval_RAM, AARCH32_DOMAINval, AARCH32_SHAREDval_RAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
-#define	TTB_PARA_AARCH32_4k_DEVICE(addr) 			TTB_PARA_AARCH32_4k((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
+#define	TTB_SUPERSECTION_AARCH32_16M_NCACHED(addr, ro, xn)	TTB_SUPERSECTION_AARCH32_16M((addr), AARCH32_TEXval_NCRAM, AARCH32_Bval_NCRAM, AARCH32_Cval_NCRAM, AARCH32_SHAREDval_NCRAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
+#define	TTB_SUPERSECTION_AARCH32_16M_CACHED(addr, ro, xn) 	TTB_SUPERSECTION_AARCH32_16M((addr), AARCH32_TEXval_RAM, AARCH32_Bval_RAM, AARCH32_Cval_RAM, AARCH32_SHAREDval_RAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
+#define	TTB_SUPERSECTION_AARCH32_16M_DEVICE(addr) 			TTB_SUPERSECTION_AARCH32_16M((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
+
+#define	TTB_SMALLSECTION_AARCH32_4K_NCACHED(addr, ro, xn)	TTB_SMALLSECTION_AARCH32_4K((addr), AARCH32_TEXval_NCRAM, AARCH32_Bval_NCRAM, AARCH32_Cval_NCRAM, AARCH32_DOMAINval, AARCH32_SHAREDval_NCRAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
+#define	TTB_SMALLSECTION_AARCH32_4K_CACHED(addr, ro, xn) 	TTB_SMALLSECTION_AARCH32_4K((addr), AARCH32_TEXval_RAM, AARCH32_Bval_RAM, AARCH32_Cval_RAM, AARCH32_DOMAINval, AARCH32_SHAREDval_RAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
+#define	TTB_SMALLSECTION_AARCH32_4K_DEVICE(addr) 			TTB_SMALLSECTION_AARCH32_4K((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
 // First-level table entry - Page table
-#define	TTB_PARA_AARCH32_4k_PAGE(addr) 			TTB_PARA_AARCH32_4k_table((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
+#define	TTB_AARCH32_PAGETABLE(addr) 			TTB_AARCH32_PAGETABLE_RAW((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
 
-static unsigned arch32_1M_mcached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
+
+///////////////
+///
+static unsigned aarch32_v7_1M_mcached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return poke(b, TTB_PARA_AARCH32_1M_CACHED(addr, ro, xn));
+	return poke(b, TTB_SECTION_AARCH32_1M_CACHED(addr, ro, xn));
 }
-static unsigned arch32_1M_mncached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
+static unsigned aarch32_v7_1M_mncached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return poke(b, TTB_PARA_AARCH32_1M_NCACHED(addr, ro, xn));
+	return poke(b, TTB_SECTION_AARCH32_1M_NCACHED(addr, ro, xn));
 }
-static unsigned arch32_1M_mdevice(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
+static unsigned aarch32_v7_1M_mdevice(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
-	return poke(b, TTB_PARA_AARCH32_1M_DEVICE(addr));
+	return poke(b, TTB_SECTION_AARCH32_1M_DEVICE(addr));
 }
-static unsigned arch32_1M_mnoaccess(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
+static unsigned aarch32_v7_1M_mnoaccess(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
 	return poke(b, UINT64_C(0));
 }
-// Next level table
-static unsigned arch32_1M_mtable(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int level)
+static unsigned aarch32_v7_1M_mtable(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int level)
+{
+	// Next level table - dummy
+	return aarch32_v7_1M_mnoaccess(poke, b, addr);
+}
+
+static const getmmudesc_t aarch32_table_1M =
+{
+	.mcached = aarch32_v7_1M_mcached,
+	.mncached = aarch32_v7_1M_mncached,
+	.mdevice = aarch32_v7_1M_mdevice,
+	.mnoaccess = aarch32_v7_1M_mnoaccess,
+	.mtable = aarch32_v7_1M_mtable
+};
+
+///////////////
+///
+static unsigned aarch32_v7_16M_mcached(mmupokefn_t poke, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn)
+{
+	return poke(b, TTB_SUPERSECTION_AARCH32_16M_CACHED(phyaddr, ro, xn));
+}
+static unsigned aarch32_v7_16M_mncached(mmupokefn_t poke, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn)
+{
+	return poke(b, TTB_SUPERSECTION_AARCH32_16M_NCACHED(phyaddr, ro, xn));
+}
+static unsigned aarch32_v7_16M_mdevice(mmupokefn_t poke, uint8_t * b, uint_fast64_t phyaddr)
+{
+	return poke(b, TTB_SUPERSECTION_AARCH32_16M_DEVICE(phyaddr));
+}
+static unsigned aarch32_v7_16M_mnoaccess(mmupokefn_t poke, uint8_t * b, uint_fast64_t phyaddr)
 {
 	return poke(b, UINT64_C(0));
 }
-
-static const getmmudesc_t arch32_table_1M =
+static unsigned aarch32_v7_16M_mtable(mmupokefn_t poke, uint8_t * b, uint_fast64_t phyaddr, int level)
 {
-	.mcached = arch32_1M_mcached,
-	.mncached = arch32_1M_mncached,
-	.mdevice = arch32_1M_mdevice,
-	.mnoaccess = arch32_1M_mnoaccess,
-	.mtable = arch32_1M_mtable
+	// Next level table - dummy
+	return aarch32_v7_16M_mnoaccess(poke, b, phyaddr);
+}
+
+static const getmmudesc_t aarch32_table_16M =
+{
+	.mcached = aarch32_v7_16M_mcached,
+	.mncached = aarch32_v7_16M_mncached,
+	.mdevice = aarch32_v7_16M_mdevice,
+	.mnoaccess = aarch32_v7_16M_mnoaccess,
+	.mtable = aarch32_v7_16M_mtable
 };
 
 static unsigned arch32_4k_mcached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return poke(b, TTB_PARA_AARCH32_4k_CACHED(addr, ro, xn));
+	return poke(b, TTB_SMALLSECTION_AARCH32_4K_CACHED(addr, ro, xn));
 }
 static unsigned arch32_4k_mncached(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return poke(b, TTB_PARA_AARCH32_4k_NCACHED(addr, ro, xn));
+	return poke(b, TTB_SMALLSECTION_AARCH32_4K_NCACHED(addr, ro, xn));
 }
 static unsigned arch32_4k_mdevice(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
-	return poke(b, TTB_PARA_AARCH32_4k_DEVICE(addr));
+	return poke(b, TTB_SMALLSECTION_AARCH32_4K_DEVICE(addr));
 }
 static unsigned arch32_4k_mnoaccess(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr)
 {
@@ -425,10 +492,15 @@ static unsigned arch32_4k_mnoaccess(mmupokefn_t poke, uint8_t * b, uint_fast64_t
 static unsigned arch32_4k_mtable(mmupokefn_t poke, uint8_t * b, uint_fast64_t addr, int level)
 {
 	// 1KB granulation address
-	return poke(b, TTB_PARA_AARCH32_4k_PAGE(addr));	// First-level table entry - Page table
+	return poke(b, TTB_AARCH32_PAGETABLE(addr));	// First-level table entry - Page table
 }
 
-static const getmmudesc_t arch32_table_4k =
+#if defined (__ARM_ARCH) && (__ARM_ARCH == 8)
+	// Use DDI0487_I_a_a-profile_architecture_reference_manual.pdf
+	//#warning __aarch32 v8
+#endif
+
+static const getmmudesc_t aarch32_v7_table_4k =
 {
 	.mcached = arch32_4k_mcached,
 	.mncached = arch32_4k_mncached,
@@ -1046,7 +1118,25 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 	};
-
+#elif MMUUSE16MPAGES
+	// AARCH32
+	#define nGB	4
+	// pages of 16 MB (supersections)
+	#define AARCH32_16MB_LEVEL0_SIZE (nGB * 64)
+	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_16MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
+	static const mmulayout_t mmuinfo [] =
+	{
+		{
+			.arch = & aarch32_table_16M,
+			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.phypageszlog2 = 24,	// 16MB
+			.pagecount = AARCH32_16MB_LEVEL0_SIZE,
+			.table = ttb0_base_u32,
+			.poke = mmulayout_poke_u32_le,
+			.level = INT_MAX,	// memory pages with access bits
+			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
+		},
+	};
 #elif MMUUSE4KPAGES
 
 	// AARCH32
@@ -1059,7 +1149,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 	static const mmulayout_t mmuinfo [] =
 	{
 		{
-			.arch = & arch32_table_4k,
+			.arch = & aarch32_v7_table_4k,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
 			.phypageszlog2 = 12,	// 4KB
 			.pagecount = AARCH32_4K_LEVEL1_SIZE,
@@ -1069,7 +1159,7 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 		{
-			.arch = & arch32_table_4k,
+			.arch = & aarch32_v7_table_4k,
 			.phyaddr = (uintptr_t) level1_pagetable_u32,
 			.phypageszlog2 = 10,	// 1KB
 			.pagecount = AARCH32_4K_LEVEL0_SIZE,
@@ -1081,15 +1171,14 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 	};
 
 #else /* MMUUSE4KPAGES */
-
-	// pages of 1 MB
 	#define nGB	4
+	// pages of 1 MB
 	#define AARCH32_1MB_LEVEL0_SIZE (nGB * 1024)
 	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_1MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
 	static const mmulayout_t mmuinfo [] =
 	{
 		{
-			.arch = & arch32_table_1M,
+			.arch = & aarch32_table_1M,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
 			.phypageszlog2 = 20,	// 1MB
 			.pagecount = AARCH32_1MB_LEVEL0_SIZE,
@@ -1099,7 +1188,6 @@ static unsigned mmulayout_poke_u32_le(uint8_t * b, uint_fast64_t v)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 	};
-
 #endif /* defined(__aarch64__) */
 
 #endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV */
