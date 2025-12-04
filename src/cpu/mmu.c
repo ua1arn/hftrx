@@ -15,6 +15,10 @@
 
 #if ! LINUX_SUBSYSTEM
 
+#if ! defined (HARDWARE_ADDRSPACE_GB)
+	#define HARDWARE_ADDRSPACE_GB 4		// // Размер адресного пространства (для 4 ГБ памяти надо 8 ГБ - базовый адрес ОЗУ 0x40000000).
+#endif /* ! defined (HARDWARE_ADDRSPACE_GB) */
+
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
 
 #if WITHGPUHW
@@ -1067,10 +1071,9 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 	/* top level: 1GB */
 	/* second level: 2MB */
 	/* third level: 4KB */
-	#define nGB	4	// system RAM size in GiB
-	#define RV64_LEVEL0_SIZE (nGB)
-	#define RV64_LEVEL1_SIZE (512 * nGB)
-	#define RV64_LEVEL2_SIZE (512 * 512 * nGB)
+	#define RV64_LEVEL0_SIZE (HARDWARE_ADDRSPACE_GB)
+	#define RV64_LEVEL1_SIZE (512 * HARDWARE_ADDRSPACE_GB)
+	#define RV64_LEVEL2_SIZE (512 * 512 * HARDWARE_ADDRSPACE_GB)
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xlevel2_pagetable_u64 [RV64_LEVEL2_SIZE * sizeof (uint64_t)];	// Used as PPN in SATP register
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xlevel1_pagetable_u64 [RV64_LEVEL1_SIZE * sizeof (uint64_t)];	// Used as PPN in SATP register
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xlevel0_pagetable_u64 [RV64_LEVEL0_SIZE * sizeof (uint64_t)];	// Used as PPN in SATP register
@@ -1112,8 +1115,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 #elif defined(__aarch64__)
 
 	// pages of 2 MB
-	#define nGB	8 // address space in GB - Check TCR_EL3 setup
-	#define AARCH64_LEVEL1_SIZE (nGB * 512)		// pages of 2 MB
+	#define AARCH64_LEVEL1_SIZE (HARDWARE_ADDRSPACE_GB * 512)		// pages of 2 MB
 	#define AARCH64_LEVEL0_SIZE (AARCH64_LEVEL1_SIZE / 512)
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xxlevel0_pagetable_u64 [AARCH64_LEVEL0_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xxlevel1_pagetable_u64 [AARCH64_LEVEL1_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
@@ -1141,9 +1143,8 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 	};
 #elif MMUUSE16MPAGES
 	// AARCH32
-	#define nGB	8
 	// pages of 16 MB (supersections)
-	#define AARCH32_16MB_LEVEL0_SIZE (nGB * 64)
+	#define AARCH32_16MB_LEVEL0_SIZE (HARDWARE_ADDRSPACE_GB * 64)
 	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH3_SUPERPAGE_REP * AARCH32_16MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
 	static const mmulayout_t mmuinfo [] =
 	{
@@ -1159,10 +1160,10 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 	};
 #elif MMUUSE4KPAGES
 
+	#define vHARDWARE_ADDRSPACE_GB 4
 	// AARCH32
 	// pages of 4 k
-	#define nGB	4
-	#define AARCH32_4K_LEVEL1_SIZE (nGB * 256 * 1024)	// физическая память - страницы по 4 KB
+	#define AARCH32_4K_LEVEL1_SIZE (vHARDWARE_ADDRSPACE_GB * 256 * 1024)	// физическая память - страницы по 4 KB
 	#define AARCH32_4K_LEVEL0_SIZE (AARCH32_4K_LEVEL1_SIZE / 256)
 	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_4K_LEVEL0_SIZE * sizeof (uint32_t)];
 	static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint8_t level1_pagetable_u32 [AARCH32_4K_LEVEL1_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 4 килобайта
@@ -1189,9 +1190,8 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 	};
 
 #else /* MMUUSE4KPAGES */
-	#define nGB	4
 	// pages of 1 MB
-	#define AARCH32_1MB_LEVEL0_SIZE (nGB * 1024)
+	#define AARCH32_1MB_LEVEL0_SIZE (HARDWARE_ADDRSPACE_GB * 1024)
 	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_1MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
 	static const mmulayout_t mmuinfo [] =
 	{
@@ -1275,7 +1275,7 @@ sysinit_ttbr_initialize(void)
 	//PRINTF("__log2_up(AARCH64_LEVEL1_SIZE)=%u, mmuinfo [0].pgszlog2=%u\n", (unsigned) __log2_up(AARCH64_LEVEL1_SIZE), mmuinfo [0].phypageszlog2);
 
 	//const unsigned aspacebits = 21 + __log2_up(AARCH64_LEVEL1_SIZE);	// pages of 2 MB
-	const unsigned aspacebits = __log2_up(nGB) + 30;
+	const unsigned aspacebits = __log2_up(HARDWARE_ADDRSPACE_GB) + 30;
 	//ASSERT(aspacebits == aspacebits2);
 	uint_fast32_t tcrv =
 		0 * (UINT32_C(1) << 30) |	// TCMA - see FEAT_MTE2
