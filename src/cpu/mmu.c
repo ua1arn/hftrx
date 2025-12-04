@@ -338,6 +338,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 //  B3.5.1 Short-descriptor translation table format descriptors
 //  Short-descriptor translation table first-level descriptor formats
 // 16MB memory region
+// Memory described by Supersections is in domain 0
 #define	TTB_SUPERSECTION_AARCH32_16M(pa, TEXv, Bv, Cv, SHAREDv, APv, XNv) ( \
 		(((pa) >> 24) & 0xFF) * (UINT32_C(1) << 24) |	/* Supersection base address, PA[31:24] */ \
 		(((pa) >> 32) & 0x0F) * (UINT32_C(1) << 20) |	/* Extended base address, PA[35:32] */ \
@@ -1056,7 +1057,6 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phypageszlog2 = 12,	// 4KB
 			.pagecount = RV64_LEVEL2_SIZE,
 			.table = xlevel2_pagetable_u64,
-			//.poke = mmulayout_poke_u64_le,
 			.level = INT_MAX,	// memory pages with access bits
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1067,7 +1067,6 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phypageszlog2 = (9 + 3),	// 512 items by 8 bytes each in xlevel2_pagetable_u64
 			.pagecount = RV64_LEVEL1_SIZE,
 			.table = xlevel1_pagetable_u64,
-			//.poke = mmulayout_poke_u64_le,
 			.level = 1,
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1078,7 +1077,6 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phypageszlog2 = (9 + 3),	// 512 items by 8 bytes each in xlevel1_pagetable_u64
 			.pagecount = RV64_LEVEL0_SIZE,
 			.table = xlevel0_pagetable_u64,
-			//.poke = mmulayout_poke_u64_le,
 			.level = 0, // page table level (pass to mtable)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1101,7 +1099,6 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phypageszlog2 = 21,	// 2MB
 			.pagecount = AARCH64_LEVEL1_SIZE,
 			.table = xxlevel1_pagetable_u64,
-			//.poke = mmulayout_poke_u64_le,
 			.level = INT_MAX,	// memory pages with access bits
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1111,7 +1108,6 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phypageszlog2 = 9 + 3,	// 512 elements by 8 bytes in each page of xxlevel1_pagetable_u64
 			.pagecount = AARCH64_LEVEL0_SIZE,
 			.table = xxlevel0_pagetable_u64,
-			//.poke = mmulayout_poke_u64_le,
 			.level = 0, // page table level (pass to mtable)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1130,7 +1126,6 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phypageszlog2 = 24,	// 16MB
 			.pagecount = AARCH32_16MB_LEVEL0_SIZE,
 			.table = ttb0_base_u32,
-			//.poke = mmulayout_poke_u32_le,
 			.level = INT_MAX,	// memory pages with access bits
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1152,7 +1147,6 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phypageszlog2 = 12,	// 4KB
 			.pagecount = AARCH32_4K_LEVEL1_SIZE,
 			.table = level1_pagetable_u32,
-			//.poke = mmulayout_poke_u32_le,
 			.level = INT_MAX,	// memory pages with access bits
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1162,7 +1156,6 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phypageszlog2 = 10,	// 1KB
 			.pagecount = AARCH32_4K_LEVEL0_SIZE,
 			.table = ttb0_base_u32,
-			//.poke = mmulayout_poke_u32_le,
 			.level = 0, // page table level (pass to mtable)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1181,7 +1174,6 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phypageszlog2 = 20,	// 1MB
 			.pagecount = AARCH32_1MB_LEVEL0_SIZE,
 			.table = ttb0_base_u32,
-			//.poke = mmulayout_poke_u32_le,
 			.level = INT_MAX,	// memory pages with access bits
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
