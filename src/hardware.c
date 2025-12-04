@@ -2665,7 +2665,7 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	sysinit_ttbr_initialize();		// Загрузка TTBR, инвалидация кеш памяти и включение MMU
 
 	GIC_Enable();
-	InitializeIrql(IRQL_IPC_ONLU);	// nested interrupts support
+	InitializeIrql(IRQL_IPC_ONLY);	// nested interrupts support
 
 	cortexa_cpuinfo();
 	arm_hardware_populte_second_initialize();
