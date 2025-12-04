@@ -443,23 +443,37 @@ static const getmmudesc_t aarch32_table_1M =
 	.mtable = aarch32_v7_1M_mtable
 };
 
+#define AARCH3_SUPERPAGE_REP 16
+
+static unsigned poke16u32(uint8_t * __RESTRICT buff, uint_fast32_t v)
+{
+	unsigned n;
+	unsigned c = AARCH3_SUPERPAGE_REP;
+	for (n = 0; c --; )
+	{
+		n += USBD_poke_u32(buff + n, v);
+	}
+	return n;
+}
+
 ///////////////
 ///
 static unsigned aarch32_v7_16M_mcached(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn)
 {
-	return USBD_poke_u32(b, TTB_SUPERSECTION_AARCH32_16M_CACHED(phyaddr, ro, xn));
+	return poke16u32(b, TTB_SUPERSECTION_AARCH32_16M_CACHED(phyaddr, ro, xn));
 }
 static unsigned aarch32_v7_16M_mncached(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn)
 {
-	return USBD_poke_u32(b, TTB_SUPERSECTION_AARCH32_16M_NCACHED(phyaddr, ro, xn));
+	return poke16u32(b, TTB_SUPERSECTION_AARCH32_16M_NCACHED(phyaddr, ro, xn));
 }
 static unsigned aarch32_v7_16M_mdevice(uint8_t * b, uint_fast64_t phyaddr)
 {
-	return USBD_poke_u32(b, TTB_SUPERSECTION_AARCH32_16M_DEVICE(phyaddr));
+	return poke16u32(b, TTB_SUPERSECTION_AARCH32_16M_DEVICE(phyaddr));
 }
 static unsigned aarch32_v7_16M_mnoaccess(uint8_t * b, uint_fast64_t phyaddr)
 {
-	return USBD_poke_u32(b, UINT64_C(0));
+	ASSERT(0);
+	return poke16u32(b, UINT64_C(0));
 }
 static unsigned aarch32_v7_16M_mtable(uint8_t * b, uint_fast64_t phyaddr, int level)
 {
@@ -1127,10 +1141,10 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 	};
 #elif MMUUSE16MPAGES
 	// AARCH32
-	#define nGB	4
+	#define nGB	8
 	// pages of 16 MB (supersections)
 	#define AARCH32_16MB_LEVEL0_SIZE (nGB * 64)
-	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_16MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
+	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH3_SUPERPAGE_REP * AARCH32_16MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
 	static const mmulayout_t mmuinfo [] =
 	{
 		{
@@ -1336,7 +1350,7 @@ sysinit_ttbr_initialize(void)
 
 	ASSERT(((uintptr_t) ttb0_base_u32 & 0x3FFF) == 0);
 
-	PRINTF("__get_ID_MMFR3()=0x%08X\n", (unsigned) __get_ID_MMFR3());
+	//PRINTF("__get_ID_MMFR3()=0x%08X\n", (unsigned) __get_ID_MMFR3());
 	//CP15_writeTTBCR(0);
 	   /* Set location of level 1 page table
 	    ; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
