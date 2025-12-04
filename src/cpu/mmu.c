@@ -1194,7 +1194,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 void
 sysinit_mmu_tables(void)
 {
-	PRINTF("sysinit_mmu_tables\n");
+	//PRINTF("sysinit_mmu_tables\n");
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
 	// MMU tables iniitialize
@@ -1204,14 +1204,14 @@ sysinit_mmu_tables(void)
 
 #endif
 
-	PRINTF("sysinit_mmu_tables done.\n");
+	//PRINTF("sysinit_mmu_tables done.\n");
 }
 
 /* На каждом процессоре - Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 void
 sysinit_ttbr_initialize(void)
 {
-	PRINTF("sysinit_ttbr_initialize.\n");
+	//PRINTF("sysinit_ttbr_initialize.\n");
 
 #if (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE)
 	{
@@ -1368,13 +1368,10 @@ sysinit_ttbr_initialize(void)
 #endif /* WITHSMPSYSTEM */
 	//CP15_writeTTB1((unsigned int) ttb0_base | 0x48);	// TTBR1
 	  __ISB();
-	  TP();
 	// Program the domain access register
 	__set_DACR(0xFFFFFFFF); // domain 15: access are not checked
-	  TP();
 
 	MMU_InvalidateTLB();
-	  TP();
 
 	// Обеспечиваем нормальную обработку RESEТ
 	L1C_InvalidateDCacheAll();
@@ -1384,9 +1381,7 @@ sysinit_ttbr_initialize(void)
 	L2C_InvAllByWay();
 #endif
 
-	  TP();
 	MMU_Enable();
-	  TP();
 
 #elif CPUSTYLE_RISCV
 
@@ -1510,7 +1505,7 @@ sysinit_ttbr_initialize(void)
 	#endif /* CPUSTYLE_STM32H7XX */
 
 #endif
-	PRINTF("sysinit_ttbr_initialize done.\n");
+	//PRINTF("sysinit_ttbr_initialize done.\n");
 }
 
 #endif /* ! LINUX_SUBSYSTEM */
