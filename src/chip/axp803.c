@@ -72,9 +72,9 @@ static int pmic_bus_read(uint8_t reg, uint8_t * data)
 {
 #if WITHTWIHW
 	uint8_t bufw = reg;
-	if (i2chw_write(PMIC_I2C_W, & bufw, 1))
+	if (i2chwx_write(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1))
 		return 1;
-	return i2chw_read(PMIC_I2C_R, data, 1);
+	return i2chwx_read(TWIHARD_S_PTR, PMIC_I2C_R, data, 1);
 #elif WITHTWISW
 	unsigned addrw = PMIC_I2C_W;
 	unsigned addrr = PMIC_I2C_R;
@@ -91,7 +91,7 @@ static int pmic_bus_write(uint8_t reg, uint8_t data)
 {
 #if WITHTWIHW
 	uint8_t bufw [] = { reg, data };
-	return i2chw_write(PMIC_I2C_W, bufw, ARRAY_SIZE(bufw));
+	return i2chwx_write(TWIHARD_S_PTR, PMIC_I2C_W, bufw, ARRAY_SIZE(bufw));
 #elif WITHTWISW
 	unsigned addrw = PMIC_I2C_W;
 	unsigned addrr = PMIC_I2C_R;

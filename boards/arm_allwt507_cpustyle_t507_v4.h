@@ -780,85 +780,66 @@
 
 #endif /* WITHKEYBOARD */
 
-#if WITHISBOOTLOADER
+#if 1
 	// I2C/TWI
-	// BOOTLOASER version
+	// S_TWI access (Контроллер питания AXP305)
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+	#define WITHSTWI0HW 	1	/* Использование аппаратного контроллера S_TWI0 (I2C) */
+
 	// PL0 S-TWI0-SCK - На плате нет pull-up резисторов
 	// PL1 S-TWI0-SDA - На плате нет pull-up резисторов
-	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
-	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOL))
-	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOL, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setopendrain(GPIOL, (v), 1 * (v)); } while (0)
+	#define TARGET_S_TWI0_TWCK		(UINT32_C(1) << 0)
+	#define TARGET_S_TWI0_TWD		(UINT32_C(1) << 1)
 
-	#define TARGET_TWI_TWD		(UINT32_C(1) << 1)
-	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOL))
-	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setopendrain(GPIOL, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setopendrain(GPIOL, (v), 1 * (v)); } while (0)
+	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
+	// присоединение выводов к периферийному устройству
+	#define	HARDWARE_S_TWI0_INITIALIZE() do { \
+		arm_hardware_piol_altfn2m(TARGET_S_TWI0_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
+		arm_hardware_piol_altfn2m(TARGET_S_TWI0_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
+		arm_hardware_piol_updown(TARGET_S_TWI0_TWCK, TARGET_S_TWI0_TWCK, 0); \
+		arm_hardware_piol_updown(TARGET_S_TWI0_TWD, TARGET_S_TWI0_TWD, 0); \
+	} while (0)
 
-	// Инициализация битов портов ввода-вывода для программной реализации I2C
-	#define	TWISOFT_INITIALIZE() do { \
-		arm_hardware_piol_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
-		arm_hardware_piol_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
-		arm_hardware_piol_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
-		arm_hardware_piol_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
-	} while (0)
-	#define	TWISOFT_DEINITIALIZE() do { \
-		arm_hardware_piol_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-		arm_hardware_piol_inputs(TARGET_TWI_TWD);	/* SDA */ \
-	} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piol_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
-		arm_hardware_piol_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
-		arm_hardware_piol_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
-		arm_hardware_piol_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
+		HARDWARE_S_TWI0_INITIALIZE(); \
 	} while (0)
-	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnr_t507_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
-#else /* WITHISBOOTLOADER */
+	#define	TWIHARD_S_IX 0	/* 0 - TWI0, 1: TWI1... */
+	//#define	TWIHARD_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_S_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
+	//#define	TWIHARD_FREQ (allwnr_t507_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_S_FREQ (allwnr_t507_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+#endif
+
+#if 1
 	// I2C/TWI
-	/* Not WITHISBOOTLOADER */
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	#define WITHTWI0HW 	1	/* Использование аппаратного контроллера TWI0 (I2C) */
 	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 	// PA0 - TWI0_SCL
 	// PA1 - TWI0_SDA
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
-	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOA))
-	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOA, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setopendrain(GPIOA, (v), 1 * (v)); } while (0)
-
 	#define TARGET_TWI_TWD		(UINT32_C(1) << 1)
-	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOA))
-	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setopendrain(GPIOA, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setopendrain(GPIOA, (v), 1 * (v)); } while (0)
 
-	// Инициализация битов портов ввода-вывода для программной реализации I2C
-	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_pioa_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
-			arm_hardware_pioa_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
-		} while (0) 
-	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_pioa_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-			arm_hardware_pioa_inputs(TARGET_TWI_TWD);	/* SDA */ \
-		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_INITIALIZE() do { \
+	#define	HARDWARE_TWI0_INITIALIZE() do { \
 			arm_hardware_pioa_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* PA0 - TWI0_SCL */ \
 			arm_hardware_pioa_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* PA1 - TWI0_SDA */ \
 			arm_hardware_pioa_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 			arm_hardware_pioa_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
+		} while (0)
+#if 0
+	#define	TWIHARD_INITIALIZE() do { \
+			HARDWARE_TWI0_INITIALIZE(); \
 		} while (0) 
+#endif
 	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnr_t507_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
-
-#endif /* WITHTWISW || WITHTWIHW */
+#endif
 
 #if WITHUSBHW
 
