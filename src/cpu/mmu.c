@@ -435,7 +435,8 @@ static unsigned aarch32_v7_1M_mnoaccess(uint8_t * b, uint_fast64_t addr)
 static unsigned aarch32_v7_1M_mtable(uint8_t * b, uint_fast64_t addr, int level)
 {
 	// Next level table - dummy
-	return aarch32_v7_1M_mnoaccess(b, addr);
+	ASSERT(0);
+	return USBD_poke_u32(b, UINT64_C(0));
 }
 
 static const getmmudesc_t aarch32_table_1M =
@@ -463,13 +464,13 @@ static unsigned aarch32_v7_16M_mdevice(uint8_t * b, uint_fast64_t phyaddr)
 }
 static unsigned aarch32_v7_16M_mnoaccess(uint8_t * b, uint_fast64_t phyaddr)
 {
-	ASSERT(0);
 	return USBD_poke_u32(b, UINT64_C(0));
 }
 static unsigned aarch32_v7_16M_mtable(uint8_t * b, uint_fast64_t phyaddr, int level)
 {
 	// Next level table - dummy
-	return aarch32_v7_16M_mnoaccess(b, phyaddr);
+	ASSERT(0);
+	return USBD_poke_u32(b, UINT64_C(0));
 }
 
 static const getmmudesc_t aarch32_table_16M =
