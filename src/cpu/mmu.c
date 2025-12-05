@@ -16,7 +16,7 @@
 #if ! LINUX_SUBSYSTEM
 
 #if ! defined (HARDWARE_ADDRSPACE_GB)
-	#define HARDWARE_ADDRSPACE_GB 4		// // Размер адресного пространства (для 4 ГБ памяти надо 8 ГБ - базовый адрес ОЗУ 0x40000000).
+	#define HARDWARE_ADDRSPACE_GB 4		// Размер адресного пространства (для 4 ГБ памяти надо 8 ГБ - базовый адрес ОЗУ 0x40000000).
 #endif /* ! defined (HARDWARE_ADDRSPACE_GB) */
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
@@ -447,37 +447,24 @@ static const getmmudesc_t aarch32_table_1M =
 	.mtable = aarch32_v7_1M_mtable
 };
 
-#define AARCH3_SUPERPAGE_REP 16
-
-static unsigned poke16u32(uint8_t * __RESTRICT buff, uint_fast32_t v)
-{
-	unsigned n;
-	unsigned c = AARCH3_SUPERPAGE_REP;
-	for (n = 0; c --; )
-	{
-		n += USBD_poke_u32(buff + n, v);
-	}
-	return n;
-}
-
 ///////////////
 ///
 static unsigned aarch32_v7_16M_mcached(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn)
 {
-	return poke16u32(b, TTB_SUPERSECTION_AARCH32_16M_CACHED(phyaddr, ro, xn));
+	return USBD_poke_u32(b, TTB_SUPERSECTION_AARCH32_16M_CACHED(phyaddr, ro, xn));
 }
 static unsigned aarch32_v7_16M_mncached(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn)
 {
-	return poke16u32(b, TTB_SUPERSECTION_AARCH32_16M_NCACHED(phyaddr, ro, xn));
+	return USBD_poke_u32(b, TTB_SUPERSECTION_AARCH32_16M_NCACHED(phyaddr, ro, xn));
 }
 static unsigned aarch32_v7_16M_mdevice(uint8_t * b, uint_fast64_t phyaddr)
 {
-	return poke16u32(b, TTB_SUPERSECTION_AARCH32_16M_DEVICE(phyaddr));
+	return USBD_poke_u32(b, TTB_SUPERSECTION_AARCH32_16M_DEVICE(phyaddr));
 }
 static unsigned aarch32_v7_16M_mnoaccess(uint8_t * b, uint_fast64_t phyaddr)
 {
 	ASSERT(0);
-	return poke16u32(b, UINT64_C(0));
+	return USBD_poke_u32(b, UINT64_C(0));
 }
 static unsigned aarch32_v7_16M_mtable(uint8_t * b, uint_fast64_t phyaddr, int level)
 {
@@ -1144,14 +1131,14 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 #elif MMUUSE16MPAGES
 	// AARCH32
 	// pages of 16 MB (supersections)
-	#define AARCH32_16MB_LEVEL0_SIZE (HARDWARE_ADDRSPACE_GB * 64)
-	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH3_SUPERPAGE_REP * AARCH32_16MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
+	#define AARCH32_16MB_LEVEL0_SIZE (HARDWARE_ADDRSPACE_GB * 1024)
+	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_16MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
 	static const mmulayout_t mmuinfo [] =
 	{
 		{
 			.arch = & aarch32_table_16M,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
-			.phypageszlog2 = 24,	// 16MB
+			.phypageszlog2 = 20,	// каждые 16 ячеек заполняются одинаковой иформацией
 			.pagecount = AARCH32_16MB_LEVEL0_SIZE,
 			.table = ttb0_base_u32,
 			.level = INT_MAX,	// memory pages with access bits
