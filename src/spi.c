@@ -45,7 +45,7 @@ char nameDATAFLASH [64] = "NoChip";
 #ifndef FPGALOADER_SPISPEED
 #define FPGALOADER_SPISPEED SPIC_SPEEDFAST
 #endif
-#define FPGALOADER_SPIMODE SPIC_MODE0
+#define FPGALOADER_SPIMODE SPIC_MODE3	// FPGA ACCESS SPI MODE SHOULD BE mode3 (gates used)
 
 
 // Эти три функции должны использоваться везде, где надо работать с SPI.
@@ -5855,19 +5855,19 @@ board_fpga_fir_connect(SPI_t * spi, IRQL_t * oldIrql)
 	TARGET_FPGA_GATE(1);
 #endif
 #if WITHSPI32BIT
-	hardware_spi_connect_b32(spi, FPGALOADER_SPISPEED, SPIC_MODE3);
+	hardware_spi_connect_b32(spi, FPGALOADER_SPISPEED, FPGALOADER_SPIMODE);
 
 	hardware_spi_b32_p1(spi, 0x00000000);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b32(spi);
 
 #elif WITHSPI16BIT
-	hardware_spi_connect_b16(spi, FPGALOADER_SPISPEED, SPIC_MODE3);
+	hardware_spi_connect_b16(spi, FPGALOADER_SPISPEED, FPGALOADER_SPIMODE);
 
 	hardware_spi_b16_p1(spi, 0x0000);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b16(spi);
 
 #elif WITHSPIHW
-	hardware_spi_connect(spi, FPGALOADER_SPISPEED, SPIC_MODE3);
+	hardware_spi_connect(spi, FPGALOADER_SPISPEED, FPGALOADER_SPIMODE);
 
 	hardware_spi_b8_p1(spi, 0x00);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b8(spi);
