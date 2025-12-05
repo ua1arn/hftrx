@@ -608,8 +608,8 @@
 #define HARDWARE_UART0_INITIALIZE() do { \
 		const portholder_t TXMASK = (UINT32_C(1) << 8); /* PB8 UART0-TX */ \
 		const portholder_t RXMASK = (UINT32_C(1) << 9); /* PB9 UART0-RX - pull-up RX data */  \
-		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF3); \
-		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF3); \
+		arm_hardware_piob_altfn2m(TXMASK, GPIO_CFG_AF3); \
+		arm_hardware_piob_altfn2m(RXMASK, GPIO_CFG_AF3); \
 		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
@@ -617,8 +617,8 @@
 #define HARDWARE_UART1_INITIALIZE() do { \
 		const portholder_t TXMASK = (UINT32_C(1) << 21); /* PE21 UART1-TX */ \
 		const portholder_t RXMASK = (UINT32_C(1) << 22); /* PE22 UART1-RX - pull-up RX data */  \
-		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF4); \
-		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF4); \
+		arm_hardware_pioe_altfn2m(TXMASK, GPIO_CFG_AF4); \
+		arm_hardware_pioe_altfn2m(RXMASK, GPIO_CFG_AF4); \
 		arm_hardware_pioe_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
@@ -627,8 +627,8 @@
 #define HARDWARE_UART2_INITIALIZE() do { \
 		const portholder_t TXMASK = (UINT32_C(1) << 0); /* PB0 UART2-TX */ \
 		const portholder_t RXMASK = (UINT32_C(1) << 1); /* PB1 UART2-RX - pull-up RX data */  \
-		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF2); \
-		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piob_altfn2m(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piob_altfn2m(RXMASK, GPIO_CFG_AF2); \
 		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
@@ -693,8 +693,8 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piod_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI2-SCK PD20 SCL */ \
-		arm_hardware_piod_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI2-SDA PD21 SDA */ \
+		arm_hardware_piod_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI2-SCK PD20 SCL */ \
+		arm_hardware_piod_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI2-SDA PD21 SDA */ \
 		arm_hardware_piod_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_piod_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 		} while (0)
@@ -728,8 +728,8 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piog_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI1-SCK PG8 SCL */ \
-		arm_hardware_piog_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI1-SDA PG9 SDA */ \
+		arm_hardware_piog_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI1-SCK PG8 SCL */ \
+		arm_hardware_piog_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI1-SDA PG9 SDA */ \
 		arm_hardware_piog_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_piog_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 		} while (0) 
@@ -883,7 +883,7 @@
 	// TIM17_CH1 AF1
 	// TIM4_CH4	AF2	AF_TIM4
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_piob_altfn2((UINT32_C(1) << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
+		arm_hardware_piob_altfn2m((UINT32_C(1) << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
 		hardware_dcdcfreq_tim17_ch1_initialize(); \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
@@ -923,7 +923,7 @@
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		const portholder_t ENmask = (UINT32_C(1) << 22); /* PD22 (PWM7, Alt FN 5) */ \
 		hardware_dcdcfreq_pwm_initialize(HARDWARE_BL_PWMCH); \
-		arm_hardware_piod_altfn2(ENmask, GPIO_CFG_AF5); /* PD22 - PWM7 */ \
+		arm_hardware_piod_altfn2m(ENmask, GPIO_CFG_AF5); /* PD22 - PWM7 */ \
 	} while (0)
 	// en: 0/1, level=WITHLCDBACKLIGHTMIN..WITHLCDBACKLIGHTMAX
 	// level=WITHLCDBACKLIGHTMIN не приводит к выключениию подсветки
@@ -1031,8 +1031,8 @@
 		arm_hardware_piod_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF4); 	/* PD8 DSI-D3P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF4); 	/* PD9 DSI-D3N */ \
 		/* I2C control */ \
-		/*arm_hardware_piod_altfn2(UINT32_C(1) << 20, GPIO_CFG_AF3);*/	/* PD20 TWI2-SCK SCL */ \
-		/*arm_hardware_piod_altfn2(UINT32_C(1) << 21, GPIO_CFG_AF3);	*//* PD21 TWI2-SDA SDA */ \
+		/*arm_hardware_piod_altfn2m(UINT32_C(1) << 20, GPIO_CFG_AF3);*/	/* PD20 TWI2-SCK SCL */ \
+		/*arm_hardware_piod_altfn2m(UINT32_C(1) << 21, GPIO_CFG_AF3);	*//* PD21 TWI2-SDA SDA */ \
 	} while (0)
 
 #endif /* WITHLTDCHW */

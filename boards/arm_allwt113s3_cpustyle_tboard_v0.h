@@ -577,8 +577,8 @@
 #define HARDWARE_UART1_INITIALIZE() do { \
 		const portholder_t TXMASK = (1u << 6); /* PG6 UART1-TX */ \
 		const portholder_t RXMASK = (1u << 7); /* PG7 UART1-RX - pull-up RX data */  \
-		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF2); \
-		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piog_altfn2m(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piog_altfn2m(RXMASK, GPIO_CFG_AF2); \
 		arm_hardware_piog_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
@@ -640,8 +640,8 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piog_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI1-SCK PG8 SCL */ \
-		arm_hardware_piog_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI1-SDA PG9 SDA */ \
+		arm_hardware_piog_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI1-SCK PG8 SCL */ \
+		arm_hardware_piog_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI1-SDA PG9 SDA */ \
 		arm_hardware_piog_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_piog_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 		} while (0) 
@@ -795,7 +795,7 @@
 	// TIM17_CH1 AF1
 	// TIM4_CH4	AF2	AF_TIM4
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_piob_altfn2((1U << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
+		arm_hardware_piob_altfn2m((1U << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
 		hardware_dcdcfreq_tim17_ch1_initialize(); \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \

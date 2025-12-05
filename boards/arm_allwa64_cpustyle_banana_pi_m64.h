@@ -669,9 +669,9 @@
 	#define HARDWARE_SPI_FREQ (allwnr_a64_get_spi1_freq())
 
 	#define SPIIO_INITIALIZE() do { \
-		arm_hardware_piod_altfn2(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PD1 SPI1_CLK */ \
-		arm_hardware_piod_altfn2(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PD2 SPI1_MOSI */ \
-		arm_hardware_piod_altfn2(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PD3 SPI1_MISO */ \
+		arm_hardware_piod_altfn2m(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PD1 SPI1_CLK */ \
+		arm_hardware_piod_altfn2m(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PD2 SPI1_MOSI */ \
+		arm_hardware_piod_altfn2m(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PD3 SPI1_MISO */ \
 	} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
 	} while (0)
@@ -695,8 +695,8 @@
 #define HARDWARE_UART0_INITIALIZE() do { \
 		const portholder_t TXMASK = (UINT32_C(1) << 8); /* PB8 UART0-TX */ \
 		const portholder_t RXMASK = (UINT32_C(1) << 9); /* PB9 UART0-RX - pull-up RX data */  \
-		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF4); \
-		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF4); \
+		arm_hardware_piob_altfn2m(TXMASK, GPIO_CFG_AF4); \
+		arm_hardware_piob_altfn2m(RXMASK, GPIO_CFG_AF4); \
 		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
@@ -762,8 +762,8 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
+		arm_hardware_piol_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
+		arm_hardware_piol_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
 		arm_hardware_piol_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_piol_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 	} while (0)
@@ -800,8 +800,8 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_pioh_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF2);	/* PH0 - TWI0-SCK */ \
-		arm_hardware_pioh_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF2);		/* PH1 - TWI0-SDA */ \
+		arm_hardware_pioh_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF2);	/* PH0 - TWI0-SCK */ \
+		arm_hardware_pioh_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF2);		/* PH1 - TWI0-SDA */ \
 		arm_hardware_pioh_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_pioh_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 	} while (0)
@@ -955,7 +955,7 @@
 	// TIM17_CH1 AF1
 	// TIM4_CH4	AF2	AF_TIM4
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_piob_altfn2((UINT32_C(1) << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
+		arm_hardware_piob_altfn2m((UINT32_C(1) << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
 		hardware_dcdcfreq_tim17_ch1_initialize(); \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \

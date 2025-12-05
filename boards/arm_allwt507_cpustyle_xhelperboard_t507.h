@@ -736,8 +736,8 @@ void user_uart5_ontxchar(void * ctx);
 #define HARDWARE_UART0_INITIALIZE() do { \
 		const portholder_t TXMASK = UINT32_C(1) << 0; /* PH0 UART0-TX */ \
 		const portholder_t RXMASK = UINT32_C(1) << 1; /* PH1 UART0-RX - pull-up RX data */  \
-		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_pioh_altfn2m(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_pioh_altfn2m(RXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
@@ -749,8 +749,8 @@ void user_uart5_ontxchar(void * ctx);
 		/*arm_hardware_pioh_outputs(UINT32_C(1) << 4, 0); *//* PH4 BT_RESETN */ \
 		/*arm_hardware_piog_outputs(UINT32_C(1) << 14, 0); *//* PG14 AP_WKE */ \
 		/*arm_hardware_piog_outputs(UINT32_C(1) << 12, 0); *//* PG12 BT_WAKE */ \
-		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF2); \
-		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piog_altfn2m(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piog_altfn2m(RXMASK, GPIO_CFG_AF2); \
 		arm_hardware_piog_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
@@ -759,8 +759,8 @@ void user_uart5_ontxchar(void * ctx);
 #define HARDWARE_UART2_INITIALIZE() do { \
 		const portholder_t TXMASK = UINT32_C(1) << 5; /* PI5 UART2-TX */ \
 		const portholder_t RXMASK = UINT32_C(1) << 6; /* PI6 UART2-RX - pull-up RX data */  \
-		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
+		arm_hardware_pioi_altfn2m(TXMASK, GPIO_CFG_AF3); \
+		arm_hardware_pioi_altfn2m(RXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioi_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
@@ -769,8 +769,8 @@ void user_uart5_ontxchar(void * ctx);
 #define HARDWARE_UART3_INITIALIZE() do { \
 		const portholder_t TXMASK = UINT32_C(1) << 9; /* PI9 UART3-TX */ \
 		const portholder_t RXMASK = UINT32_C(1) << 10; /* PI10 UART3-RX - pull-up RX data */  \
-		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
+		arm_hardware_pioi_altfn2m(TXMASK, GPIO_CFG_AF3); \
+		arm_hardware_pioi_altfn2m(RXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioi_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 // WITHUART4HW
@@ -778,8 +778,8 @@ void user_uart5_ontxchar(void * ctx);
 #define HARDWARE_UART4_INITIALIZE() do { \
 		const portholder_t TXMASK = UINT32_C(1) << 13; /* PI13 UART4-TX */ \
 		const portholder_t RXMASK = UINT32_C(1) << 14; /* PI14 UART4-RX - pull-up RX data */  \
-		arm_hardware_pioi_altfn2(TXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioi_altfn2(RXMASK, GPIO_CFG_AF3); \
+		arm_hardware_pioi_altfn2m(TXMASK, GPIO_CFG_AF3); \
+		arm_hardware_pioi_altfn2m(RXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioi_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
@@ -788,8 +788,8 @@ void user_uart5_ontxchar(void * ctx);
 #define HARDWARE_UART5_INITIALIZE() do { \
 		const portholder_t TXMASK = UINT32_C(1) << 2; /* PH2 UART5-TX */ \
 		const portholder_t RXMASK = UINT32_C(1) << 3; /* PH3 UART5-RX - pull-up RX data */  \
-		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_pioh_altfn2m(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_pioh_altfn2m(RXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
@@ -857,8 +857,8 @@ void user_uart5_ontxchar(void * ctx);
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
+		arm_hardware_piol_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
+		arm_hardware_piol_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
 		arm_hardware_piol_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_piol_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 	} while (0)
@@ -895,8 +895,8 @@ void user_uart5_ontxchar(void * ctx);
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-			arm_hardware_pioa_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* PA0 - TWI0_SCL */ \
-			arm_hardware_pioa_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* PA1 - TWI0_SDA */ \
+			arm_hardware_pioa_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* PA0 - TWI0_SCL */ \
+			arm_hardware_pioa_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* PA1 - TWI0_SDA */ \
 			arm_hardware_pioa_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 			arm_hardware_pioa_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 		} while (0) 

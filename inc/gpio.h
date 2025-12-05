@@ -433,19 +433,19 @@ void arm_hardware_pioj_onchangeinterrupt(portholder_t ipins, portholder_t raise,
 void arm_hardware_piok_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h);
 void arm_hardware_pioz_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h);
 
-void arm_hardware_pioa_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_piob_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_pioc_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_piod_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_pioe_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_piof_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_piog_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_pioh_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_pioi_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_pioj_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_piok_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_piol_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_pioz_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_pioa_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_piob_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_pioc_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_piod_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_pioe_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_piof_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_piog_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_pioh_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_pioi_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_pioj_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_piok_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_piol_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_pioz_altfn2m(portholder_t opins, unsigned af);
 
 void arm_hardware_pioa_altfn20(portholder_t opins, unsigned af);
 void arm_hardware_piob_altfn20(portholder_t opins, unsigned af);
@@ -505,19 +505,19 @@ void arm_hardware_piok_debounce(portholder_t ipins, portholder_t mask);
 void arm_hardware_piol_debounce(portholder_t ipins, portholder_t mask);
 void arm_hardware_pioz_debounce(portholder_t ipins, portholder_t mask);
 
-void arm_hardware_pioa_periphopendrain_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_piob_periphopendrain_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_pioc_periphopendrain_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_piod_periphopendrain_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_pioe_periphopendrain_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_piof_periphopendrain_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_piog_periphopendrain_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_pioh_periphopendrain_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_pioi_periphopendrain_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_pioj_periphopendrain_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_piok_periphopendrain_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_piol_periphopendrain_altfn2(portholder_t opins, unsigned af);
-void arm_hardware_pioz_periphopendrain_altfn2(portholder_t opins, unsigned af);
+void arm_hardware_pioa_periphopendrain_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_piob_periphopendrain_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_pioc_periphopendrain_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_piod_periphopendrain_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_pioe_periphopendrain_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_piof_periphopendrain_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_piog_periphopendrain_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_pioh_periphopendrain_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_pioi_periphopendrain_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_pioj_periphopendrain_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_piok_periphopendrain_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_piol_periphopendrain_altfn2m(portholder_t opins, unsigned af);
+void arm_hardware_pioz_periphopendrain_altfn2m(portholder_t opins, unsigned af);
 
 /* Вернуть выводы в начальное состояние - как после reset процессора */
 void arm_hardware_pioa_deinitialize(portholder_t iopins);

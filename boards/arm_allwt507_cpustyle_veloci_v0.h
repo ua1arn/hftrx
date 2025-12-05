@@ -996,8 +996,8 @@
 #define HARDWARE_UART0_INITIALIZE() do { \
 		const portholder_t TXMASK = UINT32_C(1) << 0; /* PH0 UART0-TX */ \
 		const portholder_t RXMASK = UINT32_C(1) << 1; /* PH1 UART0-RX - pull-up RX data */  \
-		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_pioh_altfn2m(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_pioh_altfn2m(RXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
@@ -1006,8 +1006,8 @@
 #define HARDWARE_UART5_INITIALIZE() do { \
 		const portholder_t TXMASK = UINT32_C(1) << 2; /* PH2 UART5-TX */ \
 		const portholder_t RXMASK = UINT32_C(1) << 3; /* PH3 UART5-RX - pull-up RX data */  \
-		arm_hardware_pioh_altfn2(TXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_pioh_altfn2m(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_pioh_altfn2m(RXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
@@ -1064,8 +1064,8 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	HARDWARE_S_TWI0_INITIALIZE() do { \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
-		arm_hardware_piol_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
+		arm_hardware_piol_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
+		arm_hardware_piol_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
 		arm_hardware_piol_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_piol_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 	} while (0)
@@ -1109,8 +1109,8 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	HARDWARE_TWI0_INITIALIZE() do { \
-			arm_hardware_pioa_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* PA0 - TWI0_SCL */ \
-			arm_hardware_pioa_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* PA1 - TWI0_SDA */ \
+			arm_hardware_pioa_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* PA0 - TWI0_SCL */ \
+			arm_hardware_pioa_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* PA1 - TWI0_SDA */ \
 			arm_hardware_pioa_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 			arm_hardware_pioa_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 		} while (0)
@@ -1254,7 +1254,7 @@
 	// PWM5 AF2
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
 		hardware_dcdcfreq_pwm_initialize(HARDWARE_DCDC_PWMCH); \
-		arm_hardware_pioa_altfn2((UINT32_C(1) << 12), GPIO_CFG_AF2); /* PA12 - PWM5 */ \
+		arm_hardware_pioa_altfn2m((UINT32_C(1) << 12), GPIO_CFG_AF2); /* PA12 - PWM5 */ \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
 		hardware_dcdcfreq_pwm_setdiv(HARDWARE_DCDC_PWMCH, f); \
@@ -1282,7 +1282,7 @@
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		const portholder_t ENmask = (UINT32_C(1) << 28); /* PD28 */ \
 		hardware_dcdcfreq_pwm_initialize(HARDWARE_BL_PWMCH); \
-		arm_hardware_piod_altfn2(ENmask, GPIO_CFG_AF2); /* PD28 - PWM0 */ \
+		arm_hardware_piod_altfn2m(ENmask, GPIO_CFG_AF2); /* PD28 - PWM0 */ \
 	} while (0)
 	// en: 0/1, level=WITHLCDBACKLIGHTMIN..WITHLCDBACKLIGHTMAX
 	// level=WITHLCDBACKLIGHTMIN не приводит к выключениию подсветки
@@ -1461,7 +1461,7 @@
 		static einthandler_t h; \
 		einthandler_initialize(& h, BOARD_XPT2046_INT_PIN, xpt2406_interrupt_handler, NULL); \
 		arm_hardware_pioe_inputs(BOARD_XPT2046_INT_PIN); \
-		arm_hardware_pioe_altfn2(BOARD_XPT2046_INT_PIN, GPIO_CFG_EINT); \
+		arm_hardware_pioe_altfn2m(BOARD_XPT2046_INT_PIN, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(BOARD_XPT2046_INT_PIN, BOARD_XPT2046_INT_PIN, 0); \
 		arm_hardware_pioe_onchangeinterrupt(BOARD_XPT2046_INT_PIN, 0 * BOARD_XPT2046_INT_PIN, 1 * BOARD_XPT2046_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); /* Low level active */ \
 	} while (0)

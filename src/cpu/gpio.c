@@ -5856,7 +5856,7 @@ arm_hardware_piod_altfn50(portholder_t opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioa_altfn2(portholder_t opins, unsigned af)
+arm_hardware_pioa_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -5986,7 +5986,7 @@ arm_hardware_pioa_altfn20(portholder_t opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_piob_altfn2(portholder_t opins, unsigned af)
+arm_hardware_piob_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6116,7 +6116,7 @@ arm_hardware_piob_altfn20(portholder_t opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioc_altfn2(portholder_t opins, unsigned af)
+arm_hardware_pioc_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6246,7 +6246,7 @@ arm_hardware_pioc_altfn20(portholder_t opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_piod_altfn2(portholder_t opins, unsigned af)
+arm_hardware_piod_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6313,7 +6313,7 @@ arm_hardware_piod_altfn2(portholder_t opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioe_altfn2(portholder_t opins, unsigned af)
+arm_hardware_pioe_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6491,7 +6491,7 @@ arm_hardware_pioe_altfn50(portholder_t opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_piof_altfn2(portholder_t opins, unsigned af)
+arm_hardware_piof_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6660,7 +6660,7 @@ arm_hardware_piof_altfn50(portholder_t opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_piog_altfn2(portholder_t opins, unsigned af)
+arm_hardware_piog_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6855,7 +6855,7 @@ arm_hardware_pioh_inputs(portholder_t ipins)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioh_altfn2(portholder_t opins, unsigned af)
+arm_hardware_pioh_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7050,7 +7050,7 @@ arm_hardware_pioi_inputs(portholder_t ipins)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioi_altfn2(portholder_t opins, unsigned af)
+arm_hardware_pioi_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7238,7 +7238,7 @@ arm_hardware_pioj_inputs(portholder_t ipins)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioj_altfn2(portholder_t opins, unsigned af)
+arm_hardware_pioj_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7407,7 +7407,7 @@ arm_hardware_piok_inputs(portholder_t ipins)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_piok_altfn2(portholder_t opins, unsigned af)
+arm_hardware_piok_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7641,7 +7641,7 @@ arm_hardware_piol_inputs(portholder_t ipins)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void
-arm_hardware_piol_altfn2(portholder_t opins, unsigned af)
+arm_hardware_piol_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7872,7 +7872,7 @@ arm_hardware_piol_updown(portholder_t ipins, portholder_t up, portholder_t down)
 #if defined (GPIOA)
 
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_pioa_periphopendrain_altfn2(portholder_t opins, unsigned af)
+void arm_hardware_pioa_periphopendrain_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7937,7 +7937,7 @@ void arm_hardware_pioa_periphopendrain_altfn2(portholder_t opins, unsigned af)
 #if defined (GPIOB)
 
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_piob_periphopendrain_altfn2(portholder_t opins, unsigned af)
+void arm_hardware_piob_periphopendrain_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8002,7 +8002,7 @@ void arm_hardware_piob_periphopendrain_altfn2(portholder_t opins, unsigned af)
 #if defined (GPIOC)
 
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_pioc_periphopendrain_altfn2(portholder_t opins, unsigned af)
+void arm_hardware_pioc_periphopendrain_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8066,7 +8066,7 @@ void arm_hardware_pioc_periphopendrain_altfn2(portholder_t opins, unsigned af)
 
 #if defined (GPIOD)
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_piod_periphopendrain_altfn2(portholder_t opins, unsigned af)
+void arm_hardware_piod_periphopendrain_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8130,7 +8130,7 @@ void arm_hardware_piod_periphopendrain_altfn2(portholder_t opins, unsigned af)
 
 #if defined (GPIOE)
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_pioe_periphopendrain_altfn2(portholder_t opins, unsigned af)
+void arm_hardware_pioe_periphopendrain_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8192,7 +8192,7 @@ void arm_hardware_pioe_periphopendrain_altfn2(portholder_t opins, unsigned af)
 #if defined (GPIOF)
 
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_piof_periphopendrain_altfn2(portholder_t opins, unsigned af)
+void arm_hardware_piof_periphopendrain_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX && defined(RCC_APB2ENR_IOPFEN)
 
@@ -8242,7 +8242,7 @@ void arm_hardware_piof_periphopendrain_altfn2(portholder_t opins, unsigned af)
 
 #if defined (GPIOG)
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_piog_periphopendrain_altfn2(portholder_t opins, unsigned af)
+void arm_hardware_piog_periphopendrain_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPGEN)
 

@@ -2391,7 +2391,7 @@ static void tpteinit(void)
 //	tim3_initialize(1000);
 //
 //	// PC7: TIM3_CH2, AF2
-//	arm_hardware_pioc_altfn2(TE, 2);
+//	arm_hardware_pioc_altfn2m(TE, 2);
 //	//arm_hardware_pioc_outputs(TE, 0 * TE);	// Brightness: 0 - full, 1: off
 //	arm_hardware_piod_outputs(OTP_PWR, 0 * OTP_PWR);	// 0: panel power ON
 //#elif LCDMODE_TV101WXM
@@ -2408,7 +2408,7 @@ static void tptepoweron(int state)
 //	if (state)
 //	{
 //		// PC7: TIM3_CH2, AF2
-//		arm_hardware_pioc_altfn2(TE, 2);
+//		arm_hardware_pioc_altfn2m(TE, 2);
 //	}
 //	else
 //	{

@@ -342,13 +342,13 @@
 	// Инициализируются I2S2 в дуплексном режиме.
 	#define I2S2HW_SLAVE_INITIALIZE() do { \
 			SPI2->CFG2 |= SPI_CFG2_IOSWP; \
-			arm_hardware_piob_altfn2(UINT32_C(1) << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
+			arm_hardware_piob_altfn2m(UINT32_C(1) << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
 			arm_hardware_piob_updown(UINT32_C(1) << 12, 0, 1u << 12); \
-			arm_hardware_piob_altfn2(UINT32_C(1) << 13,	AF_SPI2); /* PB13 I2S2_CK	*/ \
+			arm_hardware_piob_altfn2m(UINT32_C(1) << 13,	AF_SPI2); /* PB13 I2S2_CK	*/ \
 			arm_hardware_piob_updown(UINT32_C(1) << 13, 0, 1u << 13); \
-			arm_hardware_piob_altfn2(UINT32_C(1) << 15,	AF_SPI2); /* PB15 I2S2_SDO - передача */ \
+			arm_hardware_piob_altfn2m(UINT32_C(1) << 15,	AF_SPI2); /* PB15 I2S2_SDO - передача */ \
 			arm_hardware_piob_updown(UINT32_C(1) << 15, 0, 1u << 15); \
-			arm_hardware_piob_altfn2(UINT32_C(1) << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
+			arm_hardware_piob_altfn2m(UINT32_C(1) << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
 			arm_hardware_piob_updown(UINT32_C(1) << 14, 0, 1u << 14); \
 		} while (0)
 
@@ -379,10 +379,10 @@
 	 */
 	#define SAI1HW_INITIALIZE()	do { \
 		/*arm_hardware_pioe_altfn20(UINT32_C(1) << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
-		arm_hardware_pioe_altfn2(UINT32_C(1) << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
+		arm_hardware_pioe_altfn2m(UINT32_C(1) << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
 		arm_hardware_pioe_altfn20(UINT32_C(1) << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
-		arm_hardware_pioe_altfn2(UINT32_C(1) << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
-		arm_hardware_pioe_altfn2(UINT32_C(1) << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_pioe_altfn2m(UINT32_C(1) << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
+		arm_hardware_pioe_altfn2m(UINT32_C(1) << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
 		arm_hardware_pioe_updown(UINT32_C(1) << 3, 1u << 3, 0); \
 	} while (0)
 #endif /* WITHSAI1HW */
@@ -393,7 +393,7 @@
 	из внешних сигналов требуется только SAI2_SD_A
 	*/
 	#define SAI2HW_INITIALIZE()	do { \
-		arm_hardware_pioe_altfn2(UINT32_C(1) << 11, AF_SAI2);	/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
+		arm_hardware_pioe_altfn2m(UINT32_C(1) << 11, AF_SAI2);	/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
 	} while (0)
 #else
 	#define SAI2HW_INITIALIZE()	do { \
@@ -693,8 +693,8 @@
 #define HARDWARE_UART1_INITIALIZE() do { \
 		const uint_fast32_t TXMASK = 0 * (UINT32_C(1) << 11); /* PG11: TX DATA line (2 MHz) */ \
 		const uint_fast32_t RXMASK = 0 * (UINT32_C(1) << 2); /* PB2: RX DATA line (2 MHz) - pull-up RX data */  \
-		arm_hardware_piog_altfn2(TXMASK, AF_USART1); /* AF4 */ \
-		arm_hardware_piob_altfn2(RXMASK, AF_USART1); /* AF4 */ \
+		arm_hardware_piog_altfn2m(TXMASK, AF_USART1); /* AF4 */ \
+		arm_hardware_piob_altfn2m(RXMASK, AF_USART1); /* AF4 */ \
 		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
@@ -764,8 +764,8 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-			arm_hardware_piod_periphopendrain_altfn2(TARGET_TWI_TWCK, AF_I2C1);	/* I2C1_SCL AF=4 */ \
-			arm_hardware_piob_periphopendrain_altfn2(TARGET_TWI_TWD, AF_I2C1);	/* I2C1_SDA AF=4 */ \
+			arm_hardware_piod_periphopendrain_altfn2m(TARGET_TWI_TWCK, AF_I2C1);	/* I2C1_SCL AF=4 */ \
+			arm_hardware_piob_periphopendrain_altfn2m(TARGET_TWI_TWD, AF_I2C1);	/* I2C1_SDA AF=4 */ \
 		} while (0) 
 
 
@@ -908,7 +908,7 @@
 	// TIM17_CH1 AF1
 	// TIM4_CH4	AF2	AF_TIM4
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_piob_altfn2((UINT32_C(1) << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
+		arm_hardware_piob_altfn2m((UINT32_C(1) << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
 		hardware_dcdcfreq_tim17_ch1_initialize(); \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
