@@ -11955,11 +11955,16 @@ void hightests(void)
 #if 0
 	{
 		// SPI test
-		uint8_t b [32];
-		memset(b, 0x55, sizeof b);
+		uint8_t b0 [32];
+		uint8_t b1 [32];
+		memset(b0, 0x00, sizeof b0);
+		memset(b1, 0xFF, sizeof b1);
 		for (;;)
 		{
-			prog_spi_io(targetctl1, CTLREG_SPISPEED, SPIC_MODE3, b, sizeof b, NULL, 0, NULL, 0);
+			prog_spi_io(targetctl1, CTLREG_SPISPEED, SPIC_MODE3, b0, sizeof b0, NULL, 0, NULL, 0);
+			local_delay_ms(750);
+			prog_spi_io(targetctl1, CTLREG_SPISPEED, SPIC_MODE3, b1, sizeof b1, NULL, 0, NULL, 0);
+			local_delay_ms(750);
 		}
 	}
 #endif
