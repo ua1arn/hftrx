@@ -111,39 +111,16 @@ static int pmic_bus_init(void)
 
 static int pmic_bus_read(uint8_t reg, uint8_t * data)
 {
-#if WITHTWIHW
 	uint8_t bufw = reg;
-	if (i2chw_write(PMIC_I2C_W, & bufw, 1))
+	if (i2chwx_write(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1))
 		return 1;
-	return i2chw_read(PMIC_I2C_R, data, 1);
-#elif WITHTWISW
-	unsigned addrw = PMIC_I2C_W;
-	unsigned addrr = PMIC_I2C_R;
-
-	i2cp_start(& pmic_i2cp, addrw);
-	i2cp_write_withrestart(& pmic_i2cp, reg);
-	i2cp_start(& pmic_i2cp, addrr);
-	i2cp_read(& pmic_i2cp, data, I2C_READ_ACK_NACK);
-	return 0;
-#endif
+	return i2chwx_read(TWIHARD_S_PTR, PMIC_I2C_R, data, 1);
 }
 
 static int pmic_bus_write(uint8_t reg, uint8_t data)
 {
-#if WITHTWIHW
 	uint8_t bufw [] = { reg, data };
-	return i2chw_write(PMIC_I2C_W, bufw, ARRAY_SIZE(bufw));
-#elif WITHTWISW
-	unsigned addrw = PMIC_I2C_W;
-	unsigned addrr = PMIC_I2C_R;
-
-	i2cp_start(& pmic_i2cp, addrw);
-	i2cp_write(& pmic_i2cp, reg);
-	i2cp_write(& pmic_i2cp, data);
-	i2cp_waitsend(& pmic_i2cp);
-	i2cp_stop(& pmic_i2cp);
-	return 0;
-#endif
+	return i2chwx_write(TWIHARD_S_PTR, PMIC_I2C_W, bufw, ARRAY_SIZE(bufw));
 }
 
 static int pmic_bus_setbits(uint8_t reg, uint8_t bits)
