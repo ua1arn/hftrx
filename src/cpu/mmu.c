@@ -184,90 +184,6 @@ enum aarch64_attrindex
 
 };
 
-// DDI0487_I_a_a-profile_architecture_reference_manual.pdf
-// D8.3.2  Block descriptor and Page descriptor formats
-
-// Granule size for the TTBR0_EL3. 0x00 4KB, 0x01 64KB, 0x02 16KB
-static const unsigned vTG0 = 0x00;
-
-// Figure D8-14 Block descriptor formats
-// 4KB, 16KB, and 64KB granules, 48-bit OA
-static uint_fast64_t aarch64_2M_addrmaskmem(uint_fast64_t addr)
-{
-	const uint_fast64_t mask48 = UINT64_C(0xFFFFFFFFFFFF);	// bits 47..0
-	switch (vTG0)
-	{
-	case 0x00:	// 4KB
-		return (addr >> 21 << 21) & mask48;
-	case 0x01:	// 64KB
-		return (addr >> 25 << 25) & mask48;
-	case 0x02:	// 16KB
-		return (addr >> 29 << 29) & mask48;
-	}
-}
-
-// Figure D8-15 Page descriptor formats
-static uint_fast64_t aarch64_2M_addrmasktable(uint_fast64_t addr)
-{
-	const uint_fast64_t mask48 = UINT64_C(0xFFFFFFFFFFFF);	// bits 47..0
-	switch (vTG0)
-	{
-	case 0x00:	// 4KB
-		return (addr >> 12 << 12) & mask48;
-	case 0x01:	// 64KB
-		return (addr >> 16 << 16) & mask48;
-	case 0x02:	// 16KB
-		return (addr >> 14 << 14) & mask48;
-	}
-}
-static unsigned aarch64_2M_mcached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
-{
-	return USBD_poke_u64(b,
-			AARCH64_UPPER_ATTR |
-			aarch64_2M_addrmaskmem(addr) |
-			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_CACHED) |
-			0x01);
-}
-static unsigned aarch64_2M_mncached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
-{
-	return USBD_poke_u64(b,
-			AARCH64_UPPER_ATTR |
-			aarch64_2M_addrmaskmem(addr) |
-			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_NCACHED) |
-			0x01);
-}
-static unsigned aarch64_2M_mdevice(uint8_t * b, uint_fast64_t addr)
-{
-	return USBD_poke_u64(b,
-			AARCH64_UPPER_ATTR |
-			aarch64_2M_addrmaskmem(addr) |
-			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_DEVICE) |
-			0x01);
-}
-// Next level table
-// DDI0487_I_a_a-profile_architecture_reference_manual.pdf
-// D8.3.1 Table Descriptor format
-
-static unsigned aarch64_2M_mtable(uint8_t * b, uint_fast64_t addr, int level)
-{
-	return USBD_poke_u64(b,
-			aarch64_2M_addrmasktable(addr) |
-			0x03);
-}
-static unsigned aarch64_mnoaccess(uint8_t * b, uint_fast64_t addr)
-{
-	return USBD_poke_u64(b, UINT64_C(0));
-}
-
-static const getmmudesc_t aarch64_table_2M =
-{
-	.mcached = aarch64_2M_mcached,
-	.mncached = aarch64_2M_mncached,
-	.mdevice = aarch64_2M_mdevice,
-	.mnoaccess = aarch64_mnoaccess,
-	.mtable = aarch64_2M_mtable
-};
-
 //#elif (__CORTEX_A != 0)
 
 /*
@@ -456,6 +372,90 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 // First-level table entry - Page table
 #define	TTB_AARCH32_PAGETABLE(addr) 			TTB_AARCH32_PAGETABLE_RAW((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
 
+
+// DDI0487_I_a_a-profile_architecture_reference_manual.pdf
+// D8.3.2  Block descriptor and Page descriptor formats
+
+// Granule size for the TTBR0_EL3. 0x00 4KB, 0x01 64KB, 0x02 16KB
+static const unsigned vTG0 = 0x00;
+
+// Figure D8-14 Block descriptor formats
+// 4KB, 16KB, and 64KB granules, 48-bit OA
+static uint_fast64_t aarch64_2M_addrmaskmem(uint_fast64_t addr)
+{
+	const uint_fast64_t mask48 = UINT64_C(0xFFFFFFFFFFFF);	// bits 47..0
+	switch (vTG0)
+	{
+	case 0x00:	// 4KB
+		return (addr >> 21 << 21) & mask48;
+	case 0x01:	// 64KB
+		return (addr >> 25 << 25) & mask48;
+	case 0x02:	// 16KB
+		return (addr >> 29 << 29) & mask48;
+	}
+}
+
+// Figure D8-15 Page descriptor formats
+static uint_fast64_t aarch64_2M_addrmasktable(uint_fast64_t addr)
+{
+	const uint_fast64_t mask48 = UINT64_C(0xFFFFFFFFFFFF);	// bits 47..0
+	switch (vTG0)
+	{
+	case 0x00:	// 4KB
+		return (addr >> 12 << 12) & mask48;
+	case 0x01:	// 64KB
+		return (addr >> 16 << 16) & mask48;
+	case 0x02:	// 16KB
+		return (addr >> 14 << 14) & mask48;
+	}
+}
+static unsigned aarch64_2M_mcached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
+{
+	return USBD_poke_u64(b,
+			AARCH64_UPPER_ATTR |
+			aarch64_2M_addrmaskmem(addr) |
+			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_CACHED) |
+			0x01);
+}
+static unsigned aarch64_2M_mncached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
+{
+	return USBD_poke_u64(b,
+			AARCH64_UPPER_ATTR |
+			aarch64_2M_addrmaskmem(addr) |
+			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_NCACHED) |
+			0x01);
+}
+static unsigned aarch64_2M_mdevice(uint8_t * b, uint_fast64_t addr)
+{
+	return USBD_poke_u64(b,
+			AARCH64_UPPER_ATTR |
+			aarch64_2M_addrmaskmem(addr) |
+			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_DEVICE) |
+			0x01);
+}
+// Next level table
+// DDI0487_I_a_a-profile_architecture_reference_manual.pdf
+// D8.3.1 Table Descriptor format
+
+static unsigned aarch64_2M_mtable(uint8_t * b, uint_fast64_t addr, int level)
+{
+	return USBD_poke_u64(b,
+			aarch64_2M_addrmasktable(addr) |
+			0x03);
+}
+static unsigned aarch64_2M_mnoaccess(uint8_t * b, uint_fast64_t addr)
+{
+	return USBD_poke_u64(b, UINT64_C(0));
+}
+
+static const getmmudesc_t aarch64_table_2M =
+{
+	.mcached = aarch64_2M_mcached,
+	.mncached = aarch64_2M_mncached,
+	.mdevice = aarch64_2M_mdevice,
+	.mnoaccess = aarch64_2M_mnoaccess,
+	.mtable = aarch64_2M_mtable
+};
 
 ///////////////
 ///
