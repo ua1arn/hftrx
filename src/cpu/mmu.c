@@ -1105,7 +1105,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 	// pages of 2 MB
 	#define AARCH64_LEVEL1_SIZE (HARDWARE_ADDRSPACE_GB * 512)		// pages of 2 MB
 	#define AARCH64_LEVEL0_SIZE (AARCH64_LEVEL1_SIZE / 512)
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xxlevel0_pagetable_u64 [AARCH64_LEVEL0_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t ttb0_base [AARCH64_LEVEL0_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
 	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xxlevel1_pagetable_u64 [AARCH64_LEVEL1_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
 
 	static const mmulayout_t mmuinfo [] =
@@ -1124,7 +1124,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phyaddr = (uintptr_t) xxlevel1_pagetable_u64,
 			.phypageszlog2 = 9 + 3,	// 512 elements by 8 bytes in each page of xxlevel1_pagetable_u64
 			.pagecount = AARCH64_LEVEL0_SIZE,
-			.table = xxlevel0_pagetable_u64,
+			.table = ttb0_base,
 			.level = 0, // page table level (pass to mtable)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1133,7 +1133,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 	// AARCH32
 	// pages of 16 MB (supersections)
 	#define AARCH32_16MB_LEVEL0_SIZE (HARDWARE_ADDRSPACE_GB * 1024)
-	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_16MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
+	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base [AARCH32_16MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
 	static const mmulayout_t mmuinfo [] =
 	{
 		{
@@ -1141,7 +1141,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
 			.phypageszlog2 = 20,	// каждые 16 ячеек заполняются одинаковой иформацией
 			.pagecount = AARCH32_16MB_LEVEL0_SIZE,
-			.table = ttb0_base_u32,
+			.table = ttb0_base,
 			.level = INT_MAX,	// memory pages with access bits
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1153,7 +1153,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 	// pages of 4 k
 	#define AARCH32_4K_LEVEL1_SIZE (vHARDWARE_ADDRSPACE_GB * 256 * 1024)	// физическая память - страницы по 4 KB
 	#define AARCH32_4K_LEVEL0_SIZE (AARCH32_4K_LEVEL1_SIZE / 256)
-	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_4K_LEVEL0_SIZE * sizeof (uint32_t)];
+	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base [AARCH32_4K_LEVEL0_SIZE * sizeof (uint32_t)];
 	static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint8_t level1_pagetable_u32 [AARCH32_4K_LEVEL1_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 4 килобайта
 	static const mmulayout_t mmuinfo [] =
 	{
@@ -1171,7 +1171,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phyaddr = (uintptr_t) level1_pagetable_u32,
 			.phypageszlog2 = 10,	// 1KB
 			.pagecount = AARCH32_4K_LEVEL0_SIZE,
-			.table = ttb0_base_u32,
+			.table = ttb0_base,
 			.level = 0, // page table level (pass to mtable)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1180,7 +1180,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 #else /* MMUUSE4KPAGES */
 	// pages of 1 MB
 	#define AARCH32_1MB_LEVEL0_SIZE (HARDWARE_ADDRSPACE_GB * 1024)
-	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base_u32 [AARCH32_1MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
+	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base [AARCH32_1MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
 	static const mmulayout_t mmuinfo [] =
 	{
 		{
@@ -1188,7 +1188,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
 			.phypageszlog2 = 20,	// 1MB
 			.pagecount = AARCH32_1MB_LEVEL0_SIZE,
-			.table = ttb0_base_u32,
+			.table = ttb0_base,
 			.level = INT_MAX,	// memory pages with access bits
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1245,7 +1245,7 @@ sysinit_ttbr_initialize(void)
 #if defined(__aarch64__)
 
 	// D17.2.146  TTBR0_EL3, Translation Table Base Register 0 (EL3)
-	const uintptr_t ttb0 = (uintptr_t) xxlevel0_pagetable_u64;
+	const uintptr_t ttb0 = (uintptr_t) ttb0_base;
 	ASSERT((ttb0 & 0x0FFF) == 0); // 4 KB
 
 	// 48 bit address
@@ -1336,11 +1336,11 @@ sysinit_ttbr_initialize(void)
 
 #elif (__CORTEX_A != 0)
 
+	const uintptr_t ttb0 = (uintptr_t) ttb0_base;
+
 	// Short-descriptor
-	const uintptr_t ttb0 = (uintptr_t) ttb0_base_u32;
 	ASSERT((ttb0 & 0x3FFF) == 0);
 	// Long-descriptor
-	//const uintptr_t ttb0 = (uintptr_t) xxlevel0_pagetable_u64;
 	//ASSERT((ttb0 & 0x0FFF) == 0); // 4 KB
 
 	//PRINTF("__get_ID_MMFR3()=0x%08X\n", (unsigned) __get_ID_MMFR3());
