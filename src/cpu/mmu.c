@@ -1370,7 +1370,7 @@ static void progttbcr(int uselongdesc)
 
 static void progttbr(uintptr_t ttb0, size_t ttb0_size, int uselongdesc)
 {
-
+	const unsigned TTBR_ASIDv = 0x00;
 
 #if defined(__aarch64__)
 
@@ -1408,7 +1408,7 @@ static void progttbr(uintptr_t ttb0, size_t ttb0_size, int uselongdesc)
 		0;
 #else /* WITHSMPSYSTEM */
 		const uint_fast32_t arch32_ttbr0v =
-		ttb0 |	/* Translation table base 0 address, bits[31:x]. */
+		(ttb0 & ~ arch32_ttb0mask) |	/* Translation table base 0 address, bits[31:x], where x is 14-(TTBCR.N) */
 		//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
 		1 * (UINT32_C(1) << 3) |	// RGN
 		0 * (UINT32_C(1) << 5) |	// NOS
@@ -1416,9 +1416,13 @@ static void progttbr(uintptr_t ttb0, size_t ttb0_size, int uselongdesc)
 		0;
 #endif /* WITHSMPSYSTEM */
 
+	const uint_fast64_t arch32_ttbr0v_64 =
+		(TTBR_ASIDv & 0xFF) * (UINT64_C(1) << 48) |
+		(ttb0 & ~ arch32_ttb0mask) |	/* Translation table base 0 address, bits[31:x], where x is 14-(TTBCR.N) */
+		0;
 	// B4.1.154 TTBR0, Translation Table Base Register 0, VMSA
 	__set_TTBR0(arch32_ttbr0v);
-	//__set_TTBR0_64(arch32_ttbr0v);	// для TTBCR.EAE == 1 будет другой формат
+	//__set_TTBR0_64(arch32_ttbr0v_64);	// для TTBCR.EAE == 1 будет другой формат
 
 #endif /* defined(__aarch64__) */
 }
