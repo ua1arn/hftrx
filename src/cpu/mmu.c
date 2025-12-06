@@ -530,6 +530,22 @@ __STATIC_FORCEINLINE void __set_TTBCR(uint32_t ttbcr)
   __set_CP(15, 0, ttbcr, 2, 0, 2);
 }
 
+/** \brief  Set MAIR
+
+    MAIR0 and MAIR1, Memory Attribute Indirection Registers 0 and 1, VMSA
+
+    \param [in]    mair
+ */
+__STATIC_FORCEINLINE void __set_MAIR(uint32_t mair)
+{
+  __set_CP(15, 0, mair, 10, 2, 1);
+}
+
+__STATIC_FORCEINLINE void __set_TTBR0_64(uint64_t ttbr0)
+{
+	__set_CP64(15, 0, ttbr0, 2);
+}
+
 /** \brief  Get ID_MMFR3
 
     This function returns the value of theMemory Model Feature Register 3
@@ -1105,8 +1121,8 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 	// pages of 2 MB
 	#define AARCH64_LEVEL1_SIZE (HARDWARE_ADDRSPACE_GB * 512)		// pages of 2 MB
 	#define AARCH64_LEVEL0_SIZE (AARCH64_LEVEL1_SIZE / 512)
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t ttb0_base [AARCH64_LEVEL0_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
-	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xxlevel1_pagetable_u64 [AARCH64_LEVEL1_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 4 * 1024) uint8_t ttb0_base [AARCH64_LEVEL0_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 4 * 1024) uint8_t xxlevel1_pagetable_u64 [AARCH64_LEVEL1_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
 
 	static const mmulayout_t mmuinfo [] =
 	{
@@ -1214,6 +1230,161 @@ sysinit_mmu_tables(void)
 	//PRINTF("sysinit_mmu_tables done.\n");
 }
 
+#if (__CORTEX_A != 0)
+
+static void progttbr(uintptr_t ttb0)
+{
+    // Short-descriptor
+    ASSERT((ttb0 & 0x3FFF) == 0);
+    // Long-descriptor
+    //ASSERT((ttb0 & 0x0FFF) == 0); // 4 KB
+
+	// D17.2.146  TTBR0_EL3, Translation Table Base Register 0 (EL3)
+	// DDI0500J_cortex_a53_r0p4_trm.pdf
+	// 4.3.53 Translation Control Register, EL3
+	const uint_fast32_t IRGN_attr = AARCH64_CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
+	const uint_fast32_t ORGN_attr = AARCH64_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
+//	const uint_fast32_t IRGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
+//	const uint_fast32_t ORGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
+
+	// определение размера физической памяти, на который настраиваем MMU
+	// __log2_up(AARCH64_LEVEL1_SIZE)=13, mmuinfo [0].pgszlog2=21
+	//PRINTF("__log2_up(AARCH64_LEVEL1_SIZE)=%u, mmuinfo [0].pgszlog2=%u\n", (unsigned) __log2_up(AARCH64_LEVEL1_SIZE), mmuinfo [0].phypageszlog2);
+
+	//const unsigned aspacebits = 21 + __log2_up(AARCH64_LEVEL1_SIZE);	// pages of 2 MB
+	const unsigned aspacebits = __log2_up(HARDWARE_ADDRSPACE_GB) + 30;
+	//ASSERT(aspacebits == aspacebits2);
+	uint_fast32_t tcrv =
+		0 * (UINT32_C(1) << 30) |	// TCMA - see FEAT_MTE2
+		0 * (UINT32_C(1) << 29) |	// TBID - see FEAT_PAuth (top byte Id)
+		0 * (UINT32_C(1) << 28) |	// HWU62 - see FEAT_HPDS2
+		0 * (UINT32_C(1) << 27) |	// HWU61 - see FEAT_HPDS2
+		0 * (UINT32_C(1) << 26) |	// HWU60 - see FEAT_HPDS2
+		0 * (UINT32_C(1) << 25) |	// HWU59 - see FEAT_HPDS2
+		0 * (UINT32_C(1) << 22) |	// HD - see FEAT_HAFDBS
+		0 * (UINT32_C(1) << 21) |	// HA - see FEAT_HAFDBS
+		1 * (UINT32_C(1) << 20) |	// TBI - Top Byte Ignored. Indicates whether the top byte of an address is used for address match for the TTBR0_EL3 region, or ignored and used for tagged addresses.
+		0x01 * (UINT32_C(1) << 16) |	// 18:16 PS - Physical Address Size. 36 bits, 64GB
+		0x00 * (UINT32_C(1) << 14) | 	// TG0 Granule size for the TTBR0_EL3. 0x00 4KB, 0x01 64KB, 0x02 16KB
+		0x03 * (UINT32_C(1) << 12) |	// SH0 0x03 - Inner shareable (Shareability attribute for memory associated with translation table walks using TTBR0_EL3)
+		ORGN_attr * (UINT32_C(1) << 10) |	// ORGN0 Outer cacheability attribute
+		IRGN_attr * (UINT32_C(1) << 8) |	// IRGN0 Inner cacheability attribute
+		(0x3F & (64 - aspacebits)) * (UINT32_C(1) << 0) |		// T0SZ n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
+		0;
+
+
+#if defined(__aarch64__)
+
+	ASSERT((ttb0 & 0x0FFF) == 0); // 4 KB
+
+	// 48 bit address
+//	__set_TTBR0_EL1(ttb0);
+//	__set_TTBR0_EL2(ttb0);
+	__set_TTBR0_EL3(ttb0);	// нужно только это
+
+//	__set_TCR_EL1(tcrv);
+//	__set_TCR_EL2(tcrv);
+	__set_TCR_EL3(tcrv);	// нужно только это
+
+#else
+	//CP15_writeTTBCR(0);
+	   /* Set location of level 1 page table
+	    ; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
+	    ; 13:7  - 0x0
+	    ; 6     - IRGN[0] 0x1  (Inner WB WA)
+	    ; 5     - NOS     0x0  (Non-shared)
+	    ; 4:3   - RGN     0x01 (Outer WB WA)
+	    ; 2     - IMP     0x0  (Implementation Defined)
+	    ; 1     - S       0x0  (Non-shared)
+	    ; 0     - IRGN[1] 0x0  (Inner WB WA) */
+
+	// B4.1.154 TTBR0, Translation Table Base Register 0, VMSA
+#if WITHSMPSYSTEM
+	__set_TTBCR(0);
+	// TTBR0
+	__set_TTBR0(
+			ttb0 |	/* Translation table base 0 address, bits[31:x]. */
+			!! (IRGN_attr & 0x01) * (UINT32_C(1) << 6) |	// IRGN[0]
+			!! (IRGN_attr & 0x02) * (UINT32_C(1) << 0) |	// IRGN[1]
+			ORGN_attr * (UINT32_C(1) << 3) |	// RGN
+			!1 * (UINT32_C(1) << 5) |	// NOS - Not Outer Shareable bit - TEST for RAMNC
+			1 * (UINT32_C(1) << 1) |	// S - Shareable bit. Indicates the Shareable attribute for the memory associated with the translation table
+			0);
+#else /* WITHSMPSYSTEM */
+	__set_TTBCR(0);
+	// TTBR0
+	__set_TTBR0(
+			ttb0 |	/* Translation table base 0 address, bits[31:x]. */
+			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
+			1 * (UINT32_C(1) << 3) |	// RGN
+			0 * (UINT32_C(1) << 5) |	// NOS
+			0 * (UINT32_C(1) << 1) |	// S
+			0);
+#endif /* WITHSMPSYSTEM */
+#endif
+}
+static void progmair(void)
+{
+	//  D17.2.99 MAIR_EL3, Memory Attribute Indirection Register (EL3)
+	const uint_fast32_t mairv =
+		0xFF * (UINT32_C(1) << (AARCH64_ATTR_INDEX_CACHED * 8)) |		// Normal Memory, Inner/Outer Write-back non-transient
+		0x44 * (UINT32_C(1) << (AARCH64_ATTR_INDEX_NCACHED * 8)) |	// Normal memory, Inner/Outer Non-Cacheable
+		0x00 * (UINT32_C(1) << (AARCH64_ATTR_INDEX_DEVICE * 8)) | 	// Device-nGnRnE memory
+		0;
+
+#if defined(__aarch64__)
+//	__set_MAIR_EL1(mairv);
+//	__set_MAIR_EL2(mairv);
+	__set_MAIR_EL3(mairv);	// нужно только это
+#else
+	__set_MAIR(mairv);
+#endif
+}
+static void progdomain(void)
+{
+#if defined(__aarch64__)
+	//  D17.2.35 DACR32_EL2, Domain Access Control Register
+	// Program the domain access register
+	const uint_fast32_t dacr32v =
+		UINT32_C(0x55555555) * 0x03 |	// domain 15..0: Manager. Accesses are not checked against the permission bits in the translation tables.
+		0;
+	__set_DACR32_EL2(dacr32v);
+#else
+	// Program the domain access register
+	__set_DACR(0xFFFFFFFF); // domain 15: access are not checked
+#endif
+}
+
+static void printdebug(void)
+{
+
+	// Cortex-A53, aarch32:
+	// __get_ID_MMFR3()=0x02102211
+	// Cortex-A7
+	// __get_ID_MMFR3()=0x02102211
+
+	//PRINTF("__get_ID_MMFR3()=0x%08X\n", (unsigned) __get_ID_MMFR3());
+#if 0
+	PRINTF("aspacebits=%u\n", aspacebits);
+	//PRINTF("log2=%u\n", __log2_up(ARRAY_SIZE(level2_pagetable)));
+	PRINTF("__get_TCR_EL3=%016" PRIX32 "\n", __get_TCR_EL3());
+	PRINTF("__get_MAIR_EL3=%016" PRIX64 "\n", __get_MAIR_EL3());
+	uint64_t mair = __get_MAIR_EL3();
+	PRINTF("a7=%02X a6=%02X a5=%02X a4=%02X a3=%02X a2=%02X a1=%02X a0=%02X\n",
+			(unsigned) (mair >> 56) & 0xFF,
+			(unsigned) (mair >> 48) & 0xFF,
+			(unsigned) (mair >> 40) & 0xFF,
+			(unsigned) (mair >> 32) & 0xFF,
+			(unsigned) (mair >> 24) & 0xFF,
+			(unsigned) (mair >> 16) & 0xFF,
+			(unsigned) (mair >> 8) & 0xFF,
+			(unsigned) (mair >> 0) & 0xFF
+			);
+#endif
+
+}
+#endif
+
 /* На каждом процессоре - Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 void
 sysinit_ttbr_initialize(void)
@@ -1242,147 +1413,14 @@ sysinit_ttbr_initialize(void)
 	}
 #endif
 
-#if defined(__aarch64__)
+#if(__CORTEX_A != 0)
 
-	// D17.2.146  TTBR0_EL3, Translation Table Base Register 0 (EL3)
-	const uintptr_t ttb0 = (uintptr_t) ttb0_base;
-	ASSERT((ttb0 & 0x0FFF) == 0); // 4 KB
-
-	// 48 bit address
-//	__set_TTBR0_EL1(ttb0);
-//	__set_TTBR0_EL2(ttb0);
-	__set_TTBR0_EL3(ttb0);	// нужно только это
-
-	// DDI0500J_cortex_a53_r0p4_trm.pdf
-	// 4.3.53 Translation Control Register, EL3
-	const uint_fast32_t IRGN_attr = AARCH64_CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
-	const uint_fast32_t RGN_attr = AARCH64_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
-
-	// определение размера физической памяти, на который настраиваем MMU
-	// __log2_up(AARCH64_LEVEL1_SIZE)=13, mmuinfo [0].pgszlog2=21
-	//PRINTF("__log2_up(AARCH64_LEVEL1_SIZE)=%u, mmuinfo [0].pgszlog2=%u\n", (unsigned) __log2_up(AARCH64_LEVEL1_SIZE), mmuinfo [0].phypageszlog2);
-
-	//const unsigned aspacebits = 21 + __log2_up(AARCH64_LEVEL1_SIZE);	// pages of 2 MB
-	const unsigned aspacebits = __log2_up(HARDWARE_ADDRSPACE_GB) + 30;
-	//ASSERT(aspacebits == aspacebits2);
-	uint_fast32_t tcrv =
-		0 * (UINT32_C(1) << 30) |	// TCMA - see FEAT_MTE2
-		0 * (UINT32_C(1) << 29) |	// TBID - see FEAT_PAuth (top byte Id)
-		0 * (UINT32_C(1) << 28) |	// HWU62 - see FEAT_HPDS2
-		0 * (UINT32_C(1) << 27) |	// HWU61 - see FEAT_HPDS2
-		0 * (UINT32_C(1) << 26) |	// HWU60 - see FEAT_HPDS2
-		0 * (UINT32_C(1) << 25) |	// HWU59 - see FEAT_HPDS2
-		0 * (UINT32_C(1) << 22) |	// HD - see FEAT_HAFDBS
-		0 * (UINT32_C(1) << 21) |	// HA - see FEAT_HAFDBS
-		1 * (UINT32_C(1) << 20) |	// TBI - Top Byte Ignored. Indicates whether the top byte of an address is used for address match for the TTBR0_EL3 region, or ignored and used for tagged addresses.
-		0x01 * (UINT32_C(1) << 16) |	// 18:16 PS - Physical Address Size. 36 bits, 64GB
-		0x00 * (UINT32_C(1) << 14) | 	// TG0 Granule size for the TTBR0_EL3. 0x00 4KB, 0x01 64KB, 0x02 16KB
-		0x03 * (UINT32_C(1) << 12) |	// SH0 0x03 - Inner shareable (Shareability attribute for memory associated with translation table walks using TTBR0_EL3)
-		RGN_attr * (UINT32_C(1) << 10) |	// ORGN0 Outer cacheability attribute
-		IRGN_attr * (UINT32_C(1) << 8) |	// IRGN0 Inner cacheability attribute
-		(0x3F & (64 - aspacebits)) * (UINT32_C(1) << 0) |		// T0SZ n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
-		0;
-//	__set_TCR_EL1(tcrv);
-//	__set_TCR_EL2(tcrv);
-	__set_TCR_EL3(tcrv);	// нужно только это
-
-	//  D17.2.99 MAIR_EL3, Memory Attribute Indirection Register (EL3)
-	const uint_fast32_t mairv =
-		0xFF * (UINT32_C(1) << (AARCH64_ATTR_INDEX_CACHED * 8)) |		// Normal Memory, Inner/Outer Write-back non-transient
-		0x44 * (UINT32_C(1) << (AARCH64_ATTR_INDEX_NCACHED * 8)) |	// Normal memory, Inner/Outer Non-Cacheable
-		0x00 * (UINT32_C(1) << (AARCH64_ATTR_INDEX_DEVICE * 8)) | 	// Device-nGnRnE memory
-		0;
-//	__set_MAIR_EL1(mairv);
-//	__set_MAIR_EL2(mairv);
-	__set_MAIR_EL3(mairv);	// нужно только это
-
-	//  D17.2.35 DACR32_EL2, Domain Access Control Register
-	// Program the domain access register
-	const uint_fast32_t dacr32v =
-		UINT32_C(0x55555555) * 0x03 |	// domain 15..0: Manager. Accesses are not checked against the permission bits in the translation tables.
-		0;
-	__set_DACR32_EL2(dacr32v);
+	progttbr((uintptr_t) ttb0_base);
+	progmair();
+	progdomain();
+	printdebug();
 
 	__ISB();
-
-	MMU_InvalidateTLB();
-
-	// Обеспечиваем нормальную обработку RESEТ
-	L1C_InvalidateDCacheAll();
-	L1C_InvalidateICacheAll();
-	L1C_InvalidateBTAC();
-#if (__L2C_PRESENT == 1)
-	L2C_InvAllByWay();
-#endif
-
-#if 0
-	PRINTF("aspacebits=%u\n", aspacebits);
-	//PRINTF("log2=%u\n", __log2_up(ARRAY_SIZE(level2_pagetable)));
-	PRINTF("__get_TCR_EL3=%016" PRIX32 "\n", __get_TCR_EL3());
-	PRINTF("__get_MAIR_EL3=%016" PRIX64 "\n", __get_MAIR_EL3());
-	uint64_t mair = __get_MAIR_EL3();
-	PRINTF("a7=%02X a6=%02X a5=%02X a4=%02X a3=%02X a2=%02X a1=%02X a0=%02X\n",
-			(unsigned) (mair >> 56) & 0xFF,
-			(unsigned) (mair >> 48) & 0xFF,
-			(unsigned) (mair >> 40) & 0xFF,
-			(unsigned) (mair >> 32) & 0xFF,
-			(unsigned) (mair >> 24) & 0xFF,
-			(unsigned) (mair >> 16) & 0xFF,
-			(unsigned) (mair >> 8) & 0xFF,
-			(unsigned) (mair >> 0) & 0xFF
-			);
-#endif
-	MMU_Enable();
-
-#elif (__CORTEX_A != 0)
-
-	const uintptr_t ttb0 = (uintptr_t) ttb0_base;
-
-	// Short-descriptor
-	ASSERT((ttb0 & 0x3FFF) == 0);
-	// Long-descriptor
-	//ASSERT((ttb0 & 0x0FFF) == 0); // 4 KB
-
-	//PRINTF("__get_ID_MMFR3()=0x%08X\n", (unsigned) __get_ID_MMFR3());
-	//CP15_writeTTBCR(0);
-	   /* Set location of level 1 page table
-	    ; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
-	    ; 13:7  - 0x0
-	    ; 6     - IRGN[0] 0x1  (Inner WB WA)
-	    ; 5     - NOS     0x0  (Non-shared)
-	    ; 4:3   - RGN     0x01 (Outer WB WA)
-	    ; 2     - IMP     0x0  (Implementation Defined)
-	    ; 1     - S       0x0  (Non-shared)
-	    ; 0     - IRGN[1] 0x0  (Inner WB WA) */
-
-	// B4.1.154 TTBR0, Translation Table Base Register 0, VMSA
-#if WITHSMPSYSTEM
-	__set_TTBCR(0);
-	// TTBR0
-	const uint_fast32_t IRGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
-	const uint_fast32_t ORGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
-	__set_TTBR0(
-			ttb0 |	/* Translation table base 0 address, bits[31:x]. */
-			!! (IRGN_attr & 0x01) * (UINT32_C(1) << 6) |	// IRGN[0]
-			!! (IRGN_attr & 0x02) * (UINT32_C(1) << 0) |	// IRGN[1]
-			ORGN_attr * (UINT32_C(1) << 3) |	// RGN
-			!1 * (UINT32_C(1) << 5) |	// NOS - Not Outer Shareable bit - TEST for RAMNC
-			1 * (UINT32_C(1) << 1) |	// S - Shareable bit. Indicates the Shareable attribute for the memory associated with the translation table
-			0);
-#else /* WITHSMPSYSTEM */
-	// TTBR0
-	__set_TTBR0(
-			ttb0 |	/* Translation table base 0 address, bits[31:x]. */
-			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
-			1 * (UINT32_C(1) << 3) |	// RGN
-			0 * (UINT32_C(1) << 5) |	// NOS
-			0 * (UINT32_C(1) << 1) |	// S
-			0);
-#endif /* WITHSMPSYSTEM */
-	//CP15_writeTTB1((unsigned int) ttb0_base | 0x48);	// TTBR1
-	  __ISB();
-	// Program the domain access register
-	__set_DACR(0xFFFFFFFF); // domain 15: access are not checked
 
 	MMU_InvalidateTLB();
 
