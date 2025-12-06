@@ -10,6 +10,7 @@
 #include "utils.h"	// peek/poke
 
 #include <limits.h>
+
 //#define MMUUSE4KPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
 //#define MMUUSE16MPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
 #define MMUUSE2MPAGES (1 && defined (__ARM_ARCH) && defined (__aarch64__))
@@ -1299,17 +1300,6 @@ sysinit_mmu_tables(void)
 
 static void progttbr(uintptr_t ttb0, size_t ttb0_size, int uselongdesc)
 {
-	if (uselongdesc)
-	{
-		// Long-descriptor
-		//ASSERT((ttb0 & 0x0FFF) == 0); // 4 KB
-	}
-	else
-	{
-	    // Short-descriptor
-	    //ASSERT((ttb0 & 0x3FFF) == 0);
-	}
-
 	// D17.2.146  TTBR0_EL3, Translation Table Base Register 0 (EL3)
 	// DDI0500J_cortex_a53_r0p4_trm.pdf
 	// 4.3.53 Translation Control Register, EL3
@@ -1319,6 +1309,9 @@ static void progttbr(uintptr_t ttb0, size_t ttb0_size, int uselongdesc)
 //	const uint_fast32_t ORGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
 	unsigned SH1_attr = 0x03;
 	unsigned SH0_attr = 0x03;
+
+
+#if defined(__aarch64__)
 
 	// определение размера физической памяти, на который настраиваем MMU
 	// __log2_up(AARCH64_LEVEL1_SIZE)=13, mmuinfo [0].pgszlog2=21
@@ -1345,6 +1338,30 @@ static void progttbr(uintptr_t ttb0, size_t ttb0_size, int uselongdesc)
 		(0x3F & (64 - aspacebits)) * (UINT32_C(1) << 0) |		// T0SZ n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
 		0;
 
+	// 48 bit address
+	//	A translation table is required to be aligned to the size of the table. If a table contains fewer than
+	//	eight entries, it must be aligned on a 64 byte address boundary.
+	const uintptr_t ttb0mask = ((uintptr_t) 1 << __log2_up(ttb0_size)) - 1;
+	const uint_fast64_t ttbr0v =
+		(ttb0 & ~ ttb0mask) |
+		0 * (UINT64_C(1) << 0) |	// When FEAT_TTCNP is implemented: Common not Private
+		0;
+	//	A translation table is required to be aligned to the size of the table. If a table contains fewer than
+	//	eight entries, it must be aligned on a 64 byte address boundary.
+	ASSERT(HARDWARE_ADDRSPACE_GB >= 8);
+	ASSERT((ttb0 & ttb0mask) == 0);
+
+
+	__set_TTBR0_EL1(ttbr0v);
+	__set_TTBR0_EL2(ttbr0v);
+	__set_TTBR0_EL3(ttbr0v);	// нужно только это
+
+	__set_TCR_EL1(tcrv);
+	__set_TCR_EL2(tcrv);
+	__set_TCR_EL3(tcrv);	// нужно только это
+
+#else /* defined(__aarch64__) */
+
 	// AArch32 System register TTBCR bits [31:0] are architecturally mapped to AArch64 System  register TCR_EL1[31:0].
 
 	const uint_fast32_t ttbcrv_short =
@@ -1362,32 +1379,6 @@ static void progttbr(uintptr_t ttb0, size_t ttb0_size, int uselongdesc)
 		IRGN_attr * (UINT32_C(1) << 8) |	// IRGN0
 		0 * (UINT32_C(1) << 0) |		// T0SZ Input address range using for TTBR0 and TTBR1
 		0;
-
-
-#if defined(__aarch64__)
-		// 48 bit address
-		//	A translation table is required to be aligned to the size of the table. If a table contains fewer than
-		//	eight entries, it must be aligned on a 64 byte address boundary.
-		const uintptr_t ttb0mask = ((uintptr_t) 1 << __log2_up(ttb0_size)) - 1;
-		const uint_fast64_t ttbr0v =
-			(ttb0 & ~ ttb0mask) |
-			0 * (UINT64_C(1) << 0) |	// When FEAT_TTCNP is implemented: Common not Private
-			0;
-		//	A translation table is required to be aligned to the size of the table. If a table contains fewer than
-		//	eight entries, it must be aligned on a 64 byte address boundary.
-		ASSERT(HARDWARE_ADDRSPACE_GB >= 8);
-		ASSERT((ttb0 & ttb0mask) == 0);
-
-
-	__set_TTBR0_EL1(ttbr0v);
-	__set_TTBR0_EL2(ttbr0v);
-	__set_TTBR0_EL3(ttbr0v);	// нужно только это
-
-	__set_TCR_EL1(tcrv);
-	__set_TCR_EL2(tcrv);
-	__set_TCR_EL3(tcrv);	// нужно только это
-
-#else /* defined(__aarch64__) */
 
 	const uint_fast32_t arch32_ttb0mask = ((uintptr_t) 1 << 14) - 1;
 	ASSERT((ttb0 & arch32_ttb0mask) == 0);
