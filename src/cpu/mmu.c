@@ -1145,6 +1145,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 	};
+	static const int glongdesc = 1;
 #elif MMUUSE16MPAGES
 	// AARCH32
 	// pages of 16 MB (supersections)
@@ -1162,6 +1163,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 	};
+	static const int glongdesc = 0;
 #elif MMUUSE4KPAGES
 
 	#define vHARDWARE_ADDRSPACE_GB 4
@@ -1192,6 +1194,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 	};
+	static const int glongdesc = 0;
 
 #else /* MMUUSE4KPAGES */
 	// pages of 1 MB
@@ -1209,6 +1212,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 	};
+	static const int glongdesc = 0;
 #endif /* defined(__aarch64__) */
 
 #endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV */
@@ -1232,7 +1236,7 @@ sysinit_mmu_tables(void)
 
 #if (__CORTEX_A != 0)
 
-static void progttbr(uintptr_t ttb0)
+static void progttbr(uintptr_t ttb0, int uselongdesc)
 {
     // Short-descriptor
     ASSERT((ttb0 & 0x3FFF) == 0);
@@ -1254,7 +1258,7 @@ static void progttbr(uintptr_t ttb0)
 	//const unsigned aspacebits = 21 + __log2_up(AARCH64_LEVEL1_SIZE);	// pages of 2 MB
 	const unsigned aspacebits = __log2_up(HARDWARE_ADDRSPACE_GB) + 30;
 	//ASSERT(aspacebits == aspacebits2);
-	uint_fast32_t tcrv =
+	const uint_fast32_t tcrv_long =
 		0 * (UINT32_C(1) << 30) |	// TCMA - see FEAT_MTE2
 		0 * (UINT32_C(1) << 29) |	// TBID - see FEAT_PAuth (top byte Id)
 		0 * (UINT32_C(1) << 28) |	// HWU62 - see FEAT_HPDS2
@@ -1272,55 +1276,45 @@ static void progttbr(uintptr_t ttb0)
 		(0x3F & (64 - aspacebits)) * (UINT32_C(1) << 0) |		// T0SZ n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
 		0;
 
+	const uint_fast32_t tcrv_short =
+		0 |
+		0;
+
+	const uint_fast32_t ttbrv =
+#if WITHSMPSYSTEM
+		ttb0 |	/* Translation table base 0 address, bits[31:x]. */
+		!! (IRGN_attr & 0x01) * (UINT32_C(1) << 6) |	// IRGN[0]
+		!! (IRGN_attr & 0x02) * (UINT32_C(1) << 0) |	// IRGN[1]
+		ORGN_attr * (UINT32_C(1) << 3) |	// RGN
+		!1 * (UINT32_C(1) << 5) |	// NOS - Not Outer Shareable bit - TEST for RAMNC
+		1 * (UINT32_C(1) << 1) |	// S - Shareable bit. Indicates the Shareable attribute for the memory associated with the translation table
+#else /* WITHSMPSYSTEM */
+		ttb0 |	/* Translation table base 0 address, bits[31:x]. */
+		//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
+		1 * (UINT32_C(1) << 3) |	// RGN
+		0 * (UINT32_C(1) << 5) |	// NOS
+		0 * (UINT32_C(1) << 1) |	// S
+#endif /* WITHSMPSYSTEM */
+		0;
 
 #if defined(__aarch64__)
 
-	ASSERT((ttb0 & 0x0FFF) == 0); // 4 KB
+//	__set_TCR_EL1(uselongdesc ? tcrv_long : tcrv_short);
+//	__set_TCR_EL2(uselongdesc ? tcrv_long : tcrv_short);
+	__set_TCR_EL3(uselongdesc ? tcrv_long : tcrv_short);	// нужно только это
 
 	// 48 bit address
 //	__set_TTBR0_EL1(ttb0);
 //	__set_TTBR0_EL2(ttb0);
 	__set_TTBR0_EL3(ttb0);	// нужно только это
 
-//	__set_TCR_EL1(tcrv);
-//	__set_TCR_EL2(tcrv);
-	__set_TCR_EL3(tcrv);	// нужно только это
-
 #else
-	//CP15_writeTTBCR(0);
-	   /* Set location of level 1 page table
-	    ; 31:14 - Translation table base addr (31:14-TTBCR.N, TTBCR.N is 0 out of reset)
-	    ; 13:7  - 0x0
-	    ; 6     - IRGN[0] 0x1  (Inner WB WA)
-	    ; 5     - NOS     0x0  (Non-shared)
-	    ; 4:3   - RGN     0x01 (Outer WB WA)
-	    ; 2     - IMP     0x0  (Implementation Defined)
-	    ; 1     - S       0x0  (Non-shared)
-	    ; 0     - IRGN[1] 0x0  (Inner WB WA) */
+
+	__set_TTBCR(uselongdesc ? tcrv_long : tcrv_short);
 
 	// B4.1.154 TTBR0, Translation Table Base Register 0, VMSA
-#if WITHSMPSYSTEM
-	__set_TTBCR(0);
-	// TTBR0
-	__set_TTBR0(
-			ttb0 |	/* Translation table base 0 address, bits[31:x]. */
-			!! (IRGN_attr & 0x01) * (UINT32_C(1) << 6) |	// IRGN[0]
-			!! (IRGN_attr & 0x02) * (UINT32_C(1) << 0) |	// IRGN[1]
-			ORGN_attr * (UINT32_C(1) << 3) |	// RGN
-			!1 * (UINT32_C(1) << 5) |	// NOS - Not Outer Shareable bit - TEST for RAMNC
-			1 * (UINT32_C(1) << 1) |	// S - Shareable bit. Indicates the Shareable attribute for the memory associated with the translation table
-			0);
-#else /* WITHSMPSYSTEM */
-	__set_TTBCR(0);
-	// TTBR0
-	__set_TTBR0(
-			ttb0 |	/* Translation table base 0 address, bits[31:x]. */
-			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
-			1 * (UINT32_C(1) << 3) |	// RGN
-			0 * (UINT32_C(1) << 5) |	// NOS
-			0 * (UINT32_C(1) << 1) |	// S
-			0);
-#endif /* WITHSMPSYSTEM */
+	__set_TTBR0(ttbrv);
+
 #endif
 }
 static void progmair(void)
@@ -1415,7 +1409,7 @@ sysinit_ttbr_initialize(void)
 
 #if(__CORTEX_A != 0)
 
-	progttbr((uintptr_t) ttb0_base);
+	progttbr((uintptr_t) ttb0_base, glongdesc);
 	progmair();
 	progdomain();
 	printdebug();
