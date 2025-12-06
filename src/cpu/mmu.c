@@ -12,8 +12,8 @@
 #include <limits.h>
 //#define MMUUSE4KPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
 //#define MMUUSE16MPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
-#define MMUUSE2MPAGES 1//(1 && defined (__ARM_ARCH) && defined (__aarch64__))
-//#define MMUUSE1MPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
+#define MMUUSE2MPAGES (1 && defined (__ARM_ARCH) && defined (__aarch64__))
+#define MMUUSE1MPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
 
 #if ! LINUX_SUBSYSTEM
 
