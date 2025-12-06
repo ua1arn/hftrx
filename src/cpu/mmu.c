@@ -155,7 +155,7 @@ static const getmmudesc_t gpu_mali400_table4k =
 
 	#endif /* CPUSTYLE_STM32H7XX */
 
-#elif defined (__aarch64__)
+#elif (__CORTEX_A != 0)
 // 13.3 Memory attributes
 
 // Also see TCR_EL3 parameter
@@ -225,7 +225,7 @@ static const getmmudesc_t aarch64_table_2M =
 	.mtable = aarch64_2M_mtable
 };
 
-#elif (__CORTEX_A != 0)
+//#elif (__CORTEX_A != 0)
 
 /*
  * https://community.st.com/s/question/0D73W000000UagD/what-a-type-of-mmu-memory-regions-recommended-for-regions-with-peripheralsstronglyordered-or-device?s1oid=00Db0000000YtG6&s1nid=0DB0X000000DYbd&emkind=chatterCommentNotification&s1uid=0050X000007vtUt&emtm=1599464922440&fromEmail=1&s1ext=0&t=1599470826880
@@ -1336,7 +1336,12 @@ sysinit_ttbr_initialize(void)
 
 #elif (__CORTEX_A != 0)
 
-	ASSERT(((uintptr_t) ttb0_base_u32 & 0x3FFF) == 0);
+	// Short-descriptor
+	const uintptr_t ttb0 = (uintptr_t) ttb0_base_u32;
+	ASSERT((ttb0 & 0x3FFF) == 0);
+	// Long-descriptor
+	//const uintptr_t ttb0 = (uintptr_t) xxlevel0_pagetable_u64;
+	//ASSERT((ttb0 & 0x0FFF) == 0); // 4 KB
 
 	//PRINTF("__get_ID_MMFR3()=0x%08X\n", (unsigned) __get_ID_MMFR3());
 	//CP15_writeTTBCR(0);
@@ -1357,7 +1362,7 @@ sysinit_ttbr_initialize(void)
 	const uint_fast32_t IRGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 	const uint_fast32_t ORGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
 	__set_TTBR0(
-			(uintptr_t) ttb0_base_u32 |	/* Translation table base 0 address, bits[31:x]. */
+			ttb0 |	/* Translation table base 0 address, bits[31:x]. */
 			!! (IRGN_attr & 0x01) * (UINT32_C(1) << 6) |	// IRGN[0]
 			!! (IRGN_attr & 0x02) * (UINT32_C(1) << 0) |	// IRGN[1]
 			ORGN_attr * (UINT32_C(1) << 3) |	// RGN
@@ -1367,7 +1372,7 @@ sysinit_ttbr_initialize(void)
 #else /* WITHSMPSYSTEM */
 	// TTBR0
 	__set_TTBR0(
-			(uintptr_t) ttb0_base_u32 |	/* Translation table base 0 address, bits[31:x]. */
+			ttb0 |	/* Translation table base 0 address, bits[31:x]. */
 			//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
 			1 * (UINT32_C(1) << 3) |	// RGN
 			0 * (UINT32_C(1) << 5) |	// NOS
