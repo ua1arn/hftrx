@@ -184,33 +184,74 @@ enum aarch64_attrindex
 
 };
 
+// DDI0487_I_a_a-profile_architecture_reference_manual.pdf
+// D8.3.2  Block descriptor and Page descriptor formats
+
+// Granule size for the TTBR0_EL3. 0x00 4KB, 0x01 64KB, 0x02 16KB
+static const unsigned vTG0 = 0x00;
+
+// Figure D8-14 Block descriptor formats
+// 4KB, 16KB, and 64KB granules, 48-bit OA
+static uint_fast64_t aarch64_2M_addrmaskmem(uint_fast64_t addr)
+{
+	const uint_fast64_t mask48 = UINT64_C(0xFFFFFFFFFFFF);	// bits 47..0
+	switch (vTG0)
+	{
+	case 0x00:	// 4KB
+		return (addr >> 21 << 21) & mask48;
+	case 0x01:	// 64KB
+		return (addr >> 25 << 25) & mask48;
+	case 0x02:	// 16KB
+		return (addr >> 29 << 29) & mask48;
+	}
+}
+
+// Figure D8-15 Page descriptor formats
+static uint_fast64_t aarch64_2M_addrmasktable(uint_fast64_t addr)
+{
+	const uint_fast64_t mask48 = UINT64_C(0xFFFFFFFFFFFF);	// bits 47..0
+	switch (vTG0)
+	{
+	case 0x00:	// 4KB
+		return (addr >> 12 << 12) & mask48;
+	case 0x01:	// 64KB
+		return (addr >> 16 << 16) & mask48;
+	case 0x02:	// 16KB
+		return (addr >> 14 << 14) & mask48;
+	}
+}
 static unsigned aarch64_2M_mcached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return USBD_poke_u64(b, AARCH64_UPPER_ATTR |
-			(addr & ~ UINT64_C(0x0FFFFF)) |
+	return USBD_poke_u64(b,
+			AARCH64_UPPER_ATTR |
+			aarch64_2M_addrmaskmem(addr) |
 			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_CACHED) |
 			0x01);
 }
 static unsigned aarch64_2M_mncached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
 {
-	return USBD_poke_u64(b, AARCH64_UPPER_ATTR |
-			(addr & ~ UINT64_C(0x0FFFFF)) |
+	return USBD_poke_u64(b,
+			AARCH64_UPPER_ATTR |
+			aarch64_2M_addrmaskmem(addr) |
 			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_NCACHED) |
 			0x01);
 }
 static unsigned aarch64_2M_mdevice(uint8_t * b, uint_fast64_t addr)
 {
-	return USBD_poke_u64(b, AARCH64_UPPER_ATTR
-			| (addr & ~ UINT64_C(0x0FFFFF)) |
+	return USBD_poke_u64(b,
+			AARCH64_UPPER_ATTR |
+			aarch64_2M_addrmaskmem(addr) |
 			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_DEVICE) |
 			0x01);
 }
 // Next level table
 // DDI0487_I_a_a-profile_architecture_reference_manual.pdf
 // D8.3.1 Table Descriptor format
+
 static unsigned aarch64_2M_mtable(uint8_t * b, uint_fast64_t addr, int level)
 {
-	return USBD_poke_u64(b, (addr & ~ UINT64_C(0x0FFF)) |
+	return USBD_poke_u64(b,
+			aarch64_2M_addrmasktable(addr) |
 			0x03);
 }
 static unsigned aarch64_mnoaccess(uint8_t * b, uint_fast64_t addr)
@@ -1263,7 +1304,6 @@ static void progttbr(uintptr_t ttb0, int uselongdesc)
 	const uint_fast32_t ORGN_attr = AARCH64_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
 //	const uint_fast32_t IRGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 //	const uint_fast32_t ORGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
-
 	unsigned SH1_attr = 0x03;
 	unsigned SH0_attr = 0x03;
 
@@ -1274,7 +1314,7 @@ static void progttbr(uintptr_t ttb0, int uselongdesc)
 	//const unsigned aspacebits = 21 + __log2_up(AARCH64_LEVEL1_SIZE);	// pages of 2 MB
 	const unsigned aspacebits = __log2_up(HARDWARE_ADDRSPACE_GB) + 30;
 	//ASSERT(aspacebits == aspacebits2);
-	const uint_fast32_t tcrv_long =
+	const uint_fast32_t tcrv =
 		0 * (UINT32_C(1) << 30) |	// TCMA - see FEAT_MTE2
 		0 * (UINT32_C(1) << 29) |	// TBID - see FEAT_PAuth (top byte Id)
 		0 * (UINT32_C(1) << 28) |	// HWU62 - see FEAT_HPDS2
@@ -1285,16 +1325,15 @@ static void progttbr(uintptr_t ttb0, int uselongdesc)
 		0 * (UINT32_C(1) << 21) |	// HA - see FEAT_HAFDBS
 		1 * (UINT32_C(1) << 20) |	// TBI - Top Byte Ignored. Indicates whether the top byte of an address is used for address match for the TTBR0_EL3 region, or ignored and used for tagged addresses.
 		0x01 * (UINT32_C(1) << 16) |	// 18:16 PS - Physical Address Size. 36 bits, 64GB
-		0x00 * (UINT32_C(1) << 14) | 	// TG0 Granule size for the TTBR0_EL3. 0x00 4KB, 0x01 64KB, 0x02 16KB
+		vTG0 * (UINT32_C(1) << 14) | 	// TG0 Granule size for the TTBR0_EL3. 0x00 4KB, 0x01 64KB, 0x02 16KB
 		SH0_attr * (UINT32_C(1) << 12) |	// SH0 0x03 - Inner shareable (Shareability attribute for memory associated with translation table walks using TTBR0_EL3)
 		ORGN_attr * (UINT32_C(1) << 10) |	// ORGN0 Outer cacheability attribute
 		IRGN_attr * (UINT32_C(1) << 8) |	// IRGN0 Inner cacheability attribute
 		(0x3F & (64 - aspacebits)) * (UINT32_C(1) << 0) |		// T0SZ n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
 		0;
 
-	const uint_fast32_t tcrv_short =
-		0 |
-		0;
+	// AArch32 System register TTBCR bits [31:0] are architecturally mapped to AArch64 System  register TCR_EL1[31:0].
+
 	const uint_fast32_t ttbcrv_short =
 		0 * (UINT32_C(1) << 31) | /* EAE */
 		0 * (UINT32_C(1) << 0) |	/* N */
@@ -1330,13 +1369,13 @@ static void progttbr(uintptr_t ttb0, int uselongdesc)
 
 #if defined(__aarch64__)
 
-//	__set_TCR_EL1(uselongdesc ? tcrv_long : tcrv_short);
-//	__set_TCR_EL2(uselongdesc ? tcrv_long : tcrv_short);
-	__set_TCR_EL3(uselongdesc ? tcrv_long : tcrv_short);	// нужно только это
+	__set_TCR_EL1(tcrv);
+	__set_TCR_EL2(tcrv);
+	__set_TCR_EL3(tcrv);	// нужно только это
 
 	// 48 bit address
-//	__set_TTBR0_EL1(ttb0);
-//	__set_TTBR0_EL2(ttb0);
+	__set_TTBR0_EL1(ttb0);
+	__set_TTBR0_EL2(ttb0);
 	__set_TTBR0_EL3(ttb0);	// нужно только это
 
 #else
