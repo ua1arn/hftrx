@@ -10,8 +10,10 @@
 #include "utils.h"	// peek/poke
 
 #include <limits.h>
-//#define MMUUSE4KPAGES 1
-//#define MMUUSE16MPAGES (1 && defined (__ARM_ARCH) && (__ARM_ARCH == 8))
+//#define MMUUSE4KPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
+//#define MMUUSE16MPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
+#define MMUUSE2MPAGES (1 && defined (__ARM_ARCH) && defined (__aarch64__))
+#define MMUUSE1MPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
 
 #if ! LINUX_SUBSYSTEM
 
@@ -1116,7 +1118,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		},
 	};
 
-#elif defined(__aarch64__)
+#elif MMUUSE2MPAGES
 
 	// pages of 2 MB
 	#define AARCH64_LEVEL1_SIZE (HARDWARE_ADDRSPACE_GB * 512)		// pages of 2 MB
@@ -1196,7 +1198,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 	};
 	static const int glongdesc = 0;
 
-#else /* MMUUSE4KPAGES */
+#elif MMUUSE1MPAGES
 	// pages of 1 MB
 	#define AARCH32_1MB_LEVEL0_SIZE (HARDWARE_ADDRSPACE_GB * 1024)
 	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base [AARCH32_1MB_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
