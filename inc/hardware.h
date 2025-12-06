@@ -750,7 +750,8 @@ typedef struct getmmudesc_tag
 typedef struct mmulayout_tag
 {
 	const getmmudesc_t * arch;
-	uintptr_t phyaddr;	// Начальное значение
+	uint8_t * phybytes;	// если не-NULL - данная таблица указывает на массив страниц следующего уровня
+	uint64_t phyaddr;	// Начальное значение (обычно начинаем с 0)
 	unsigned phypageszlog2;	// log2 от размера страниц на phyaddr
 	unsigned pagecount;
 	uint8_t * table;

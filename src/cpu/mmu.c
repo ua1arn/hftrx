@@ -12,8 +12,8 @@
 #include <limits.h>
 //#define MMUUSE4KPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
 //#define MMUUSE16MPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
-#define MMUUSE2MPAGES (1 && defined (__ARM_ARCH) && defined (__aarch64__))
-#define MMUUSE1MPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
+#define MMUUSE2MPAGES 1//(1 && defined (__ARM_ARCH) && defined (__aarch64__))
+//#define MMUUSE1MPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
 
 #if ! LINUX_SUBSYSTEM
 
@@ -1056,7 +1056,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		const uint_fast32_t pagesize = UINT32_C(1) << p->phypageszlog2;
 		unsigned pages = p->pagecount;
 		uint8_t * tb = p->table;	// table base
-		uint_fast64_t phyaddr = p->phyaddr;
+		uint_fast64_t phyaddr = p->phybytes ? (uintptr_t) p->phybytes : p->phyaddr;
 		for (; pages --; phyaddr += pagesize)
 		{
 			tb += p->level != INT_MAX ?
@@ -1090,6 +1090,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		{
 			.arch = & rv64_sv39_table,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.phybytes = NULL,
 			.phypageszlog2 = 12,	// 4KB
 			.pagecount = RV64_LEVEL2_SIZE,
 			.table = xlevel2_pagetable_u64,
@@ -1099,7 +1100,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		/* second level: 2MB */
 		{
 			.arch = & rv64_sv39_table,
-			.phyaddr = (uintptr_t) xlevel2_pagetable_u64,
+			.phybytes = xlevel2_pagetable_u64,
 			.phypageszlog2 = (9 + 3),	// 512 items by 8 bytes each in xlevel2_pagetable_u64
 			.pagecount = RV64_LEVEL1_SIZE,
 			.table = xlevel1_pagetable_u64,
@@ -1109,7 +1110,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		/* top level: 1GB */
 		{
 			.arch = & rv64_sv39_table,
-			.phyaddr = (uintptr_t) xlevel1_pagetable_u64,
+			.phybytes = xlevel1_pagetable_u64,
 			.phypageszlog2 = (9 + 3),	// 512 items by 8 bytes each in xlevel1_pagetable_u64
 			.pagecount = RV64_LEVEL0_SIZE,
 			.table = xlevel0_pagetable_u64,
@@ -1131,6 +1132,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		{
 			.arch = & aarch64_table_2M,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.phybytes = NULL,
 			.phypageszlog2 = 21,	// 2MB
 			.pagecount = AARCH64_LEVEL1_SIZE,
 			.table = xxlevel1_pagetable_u64,
@@ -1139,7 +1141,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		},
 		{
 			.arch = & aarch64_table_2M,
-			.phyaddr = (uintptr_t) xxlevel1_pagetable_u64,
+			.phybytes = xxlevel1_pagetable_u64,
 			.phypageszlog2 = 9 + 3,	// 512 elements by 8 bytes in each page of xxlevel1_pagetable_u64
 			.pagecount = AARCH64_LEVEL0_SIZE,
 			.table = ttb0_base,
@@ -1158,6 +1160,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		{
 			.arch = & aarch32_table_16M,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.phybytes = NULL,
 			.phypageszlog2 = 20,	// каждые 16 ячеек заполняются одинаковой иформацией
 			.pagecount = AARCH32_16MB_LEVEL0_SIZE,
 			.table = ttb0_base,
@@ -1180,6 +1183,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		{
 			.arch = & aarch32_v7_table_4k,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.phybytes = NULL,
 			.phypageszlog2 = 12,	// 4KB
 			.pagecount = AARCH32_4K_LEVEL1_SIZE,
 			.table = level1_pagetable_u32,
@@ -1188,7 +1192,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		},
 		{
 			.arch = & aarch32_v7_table_4k,
-			.phyaddr = (uintptr_t) level1_pagetable_u32,
+			.phybytes = level1_pagetable_u32,
 			.phypageszlog2 = 10,	// 1KB
 			.pagecount = AARCH32_4K_LEVEL0_SIZE,
 			.table = ttb0_base,
@@ -1207,6 +1211,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		{
 			.arch = & aarch32_table_1M,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.phybytes = NULL,
 			.phypageszlog2 = 20,	// 1MB
 			.pagecount = AARCH32_1MB_LEVEL0_SIZE,
 			.table = ttb0_base,
