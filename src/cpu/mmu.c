@@ -377,10 +377,20 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 // D8.3.2  Block descriptor and Page descriptor formats
 
 // Granule size for the TTBR0_EL3. 0x00 4KB, 0x01 64KB, 0x02 16KB
-static const unsigned vTG0 = 0x00;
+// Обратить внимание на выравнивание ttb0_base
+//	A translation table is required to be aligned to the size of the table. If a table contains fewer than
+//	eight entries, it must be aligned on a 64 byte address boundary.
+
+// aarch64: D17.2.133  TCR_EL3, Translation Control Register (EL3)
+// aarch32: G8.2.164 TTBCR, Translation Table Base Control Register
+static const unsigned vTG0 = 0x00;	// TCR_EL3.TG0
 
 // Figure D8-14 Block descriptor formats
 // 4KB, 16KB, and 64KB granules, 48-bit OA
+//	For the 4KB granule size, the level 1 descriptor n is 30, and the level 2 descriptor n is 21.
+//	For the 16KB granule size, the level 2 descriptor n is 25.
+//	For the 64KB granule size, the level 2 descriptor n is 29
+
 static uint_fast64_t aarch64_2M_addrmaskmem(uint_fast64_t addr)
 {
 	const uint_fast64_t mask48 = UINT64_C(0xFFFFFFFFFFFF);	// bits 47..0
@@ -388,9 +398,9 @@ static uint_fast64_t aarch64_2M_addrmaskmem(uint_fast64_t addr)
 	{
 	case 0x00:	// 4KB
 		return (addr >> 21 << 21) & mask48;
-	case 0x01:	// 64KB
-		return (addr >> 25 << 25) & mask48;
 	case 0x02:	// 16KB
+		return (addr >> 25 << 25) & mask48;
+	case 0x01:	// 64KB
 		return (addr >> 29 << 29) & mask48;
 	}
 }
@@ -403,10 +413,10 @@ static uint_fast64_t aarch64_2M_addrmasktable(uint_fast64_t addr)
 	{
 	case 0x00:	// 4KB
 		return (addr >> 12 << 12) & mask48;
-	case 0x01:	// 64KB
-		return (addr >> 16 << 16) & mask48;
 	case 0x02:	// 16KB
 		return (addr >> 14 << 14) & mask48;
+	case 0x01:	// 64KB
+		return (addr >> 16 << 16) & mask48;
 	}
 }
 static unsigned aarch64_2M_mcached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
@@ -1159,14 +1169,17 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 	};
+	static const int glongdesc = 1;
 
 #elif MMUUSE2MPAGES
 
 	// pages of 2 MB
+	#define AARCH64_LEVEL0_SIZE (HARDWARE_ADDRSPACE_GB)
 	#define AARCH64_LEVEL1_SIZE (HARDWARE_ADDRSPACE_GB * 512)		// pages of 2 MB
-	#define AARCH64_LEVEL0_SIZE (AARCH64_LEVEL1_SIZE / 512)
-	static RAMFRAMEBUFF __ALIGNED(4 * 4 * 1024) uint8_t ttb0_base [AARCH64_LEVEL0_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
-	static RAMFRAMEBUFF __ALIGNED(4 * 4 * 1024) uint8_t xxlevel1_pagetable_u64 [AARCH64_LEVEL1_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
+	//	A translation table is required to be aligned to the size of the table. If a table contains fewer than
+	//	eight entries, it must be aligned on a 64 byte address boundary.
+	static RAMFRAMEBUFF __ALIGNED(AARCH64_LEVEL0_SIZE * sizeof (uint64_t)) uint8_t ttb0_base [AARCH64_LEVEL0_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xxlevel1_pagetable_u64 [AARCH64_LEVEL1_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
 
 	static const mmulayout_t mmuinfo [] =
 	{
@@ -1284,17 +1297,24 @@ sysinit_mmu_tables(void)
 
 #if (__CORTEX_A != 0)
 
-static void progttbr(uintptr_t ttb0, int uselongdesc)
+static void progttbr(uintptr_t ttb0, size_t ttb0_size, int uselongdesc)
 {
+#if defined(__aarch64__)
+	//	A translation table is required to be aligned to the size of the table. If a table contains fewer than
+	//	eight entries, it must be aligned on a 64 byte address boundary.
+	uintptr_t ttb0mask = ((uintptr_t) 1 << __log2_up(ttb0_size)) - 1;
+	ASSERT(HARDWARE_ADDRSPACE_GB >= 8);
+	ASSERT((ttb0 & ttb0mask) == 0);
+#endif
 	if (uselongdesc)
 	{
 		// Long-descriptor
-		ASSERT((ttb0 & 0x0FFF) == 0); // 4 KB
+		//ASSERT((ttb0 & 0x0FFF) == 0); // 4 KB
 	}
 	else
 	{
 	    // Short-descriptor
-	    ASSERT((ttb0 & 0x3FFF) == 0);
+	    //ASSERT((ttb0 & 0x3FFF) == 0);
 	}
 
 	// D17.2.146  TTBR0_EL3, Translation Table Base Register 0 (EL3)
@@ -1347,25 +1367,27 @@ static void progttbr(uintptr_t ttb0, int uselongdesc)
 		SH0_attr * (UINT32_C(1) << 12) |	// SH1
 		ORGN_attr * (UINT32_C(1) << 10) |	// ORGN0
 		IRGN_attr * (UINT32_C(1) << 8) |	// IRGN0
-		(0x07 & (32 - aspacebits)) * (UINT32_C(1) << 0) |		// T0SZ n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
+		0 * (UINT32_C(1) << 0) |		// T0SZ Input address range using for TTBR0 and TTBR1
 		0;
 
-	const uint_fast32_t ttbrv =
 #if WITHSMPSYSTEM
+	const uint_fast32_t ttbrv =
 		ttb0 |	/* Translation table base 0 address, bits[31:x]. */
 		!! (IRGN_attr & 0x01) * (UINT32_C(1) << 6) |	// IRGN[0]
 		!! (IRGN_attr & 0x02) * (UINT32_C(1) << 0) |	// IRGN[1]
 		ORGN_attr * (UINT32_C(1) << 3) |	// RGN
 		!1 * (UINT32_C(1) << 5) |	// NOS - Not Outer Shareable bit - TEST for RAMNC
 		1 * (UINT32_C(1) << 1) |	// S - Shareable bit. Indicates the Shareable attribute for the memory associated with the translation table
+		0;
 #else /* WITHSMPSYSTEM */
+		const uint_fast32_t ttbrv =
 		ttb0 |	/* Translation table base 0 address, bits[31:x]. */
 		//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
 		1 * (UINT32_C(1) << 3) |	// RGN
 		0 * (UINT32_C(1) << 5) |	// NOS
 		0 * (UINT32_C(1) << 1) |	// S
-#endif /* WITHSMPSYSTEM */
 		0;
+#endif /* WITHSMPSYSTEM */
 
 #if defined(__aarch64__)
 
@@ -1374,9 +1396,12 @@ static void progttbr(uintptr_t ttb0, int uselongdesc)
 	__set_TCR_EL3(tcrv);	// нужно только это
 
 	// 48 bit address
-	__set_TTBR0_EL1(ttb0);
-	__set_TTBR0_EL2(ttb0);
-	__set_TTBR0_EL3(ttb0);	// нужно только это
+	//	A translation table is required to be aligned to the size of the table. If a table contains fewer than
+	//	eight entries, it must be aligned on a 64 byte address boundary.
+
+	__set_TTBR0_EL1(ttb0 & ~ UINT64_C(0x3F));
+	__set_TTBR0_EL2(ttb0 & ~ UINT64_C(0x3F));
+	__set_TTBR0_EL3(ttb0 & ~ UINT64_C(0x3F));	// нужно только это
 
 #else
 
@@ -1479,7 +1504,7 @@ sysinit_ttbr_initialize(void)
 
 #if(__CORTEX_A != 0)
 
-	progttbr((uintptr_t) ttb0_base, glongdesc);
+	progttbr((uintptr_t) ttb0_base, sizeof ttb0_base, glongdesc);
 	progmair();
 	progdomain();
 	printdebug();
