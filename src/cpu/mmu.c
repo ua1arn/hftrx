@@ -519,11 +519,11 @@ static const getmmudesc_t aarch32_v7_table_4k =
 	.mtable = arch32_4k_mtable
 };
 
-/** \brief  Set TTBR0
+/** \brief  Set TTBCR
 
     This function assigns the given value to the Translation Table Base Register 0.
 
-    \param [in]    ttbr0  Translation Table Base Register 0 value to set
+    \param [in]    ttbcr  Translation Table Base Register 0 value to set
  */
 __STATIC_FORCEINLINE void __set_TTBCR(uint32_t ttbcr)
 {
@@ -1257,6 +1257,9 @@ static void progttbr(uintptr_t ttb0, int uselongdesc)
 //	const uint_fast32_t IRGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 //	const uint_fast32_t ORGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
 
+	unsigned SH1_attr = 0x03;
+	unsigned SH0_attr = 0x03;
+
 	// определение размера физической памяти, на который настраиваем MMU
 	// __log2_up(AARCH64_LEVEL1_SIZE)=13, mmuinfo [0].pgszlog2=21
 	//PRINTF("__log2_up(AARCH64_LEVEL1_SIZE)=%u, mmuinfo [0].pgszlog2=%u\n", (unsigned) __log2_up(AARCH64_LEVEL1_SIZE), mmuinfo [0].phypageszlog2);
@@ -1276,7 +1279,7 @@ static void progttbr(uintptr_t ttb0, int uselongdesc)
 		1 * (UINT32_C(1) << 20) |	// TBI - Top Byte Ignored. Indicates whether the top byte of an address is used for address match for the TTBR0_EL3 region, or ignored and used for tagged addresses.
 		0x01 * (UINT32_C(1) << 16) |	// 18:16 PS - Physical Address Size. 36 bits, 64GB
 		0x00 * (UINT32_C(1) << 14) | 	// TG0 Granule size for the TTBR0_EL3. 0x00 4KB, 0x01 64KB, 0x02 16KB
-		0x03 * (UINT32_C(1) << 12) |	// SH0 0x03 - Inner shareable (Shareability attribute for memory associated with translation table walks using TTBR0_EL3)
+		SH0_attr * (UINT32_C(1) << 12) |	// SH0 0x03 - Inner shareable (Shareability attribute for memory associated with translation table walks using TTBR0_EL3)
 		ORGN_attr * (UINT32_C(1) << 10) |	// ORGN0 Outer cacheability attribute
 		IRGN_attr * (UINT32_C(1) << 8) |	// IRGN0 Inner cacheability attribute
 		(0x3F & (64 - aspacebits)) * (UINT32_C(1) << 0) |		// T0SZ n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
@@ -1284,6 +1287,21 @@ static void progttbr(uintptr_t ttb0, int uselongdesc)
 
 	const uint_fast32_t tcrv_short =
 		0 |
+		0;
+	const uint_fast32_t ttbcrv_short =
+		0 * (UINT32_C(1) << 31) | /* EAE */
+		0 * (UINT32_C(1) << 0) |	/* N */
+		0;
+	const uint_fast32_t ttbcrv_long =
+		1 * (UINT32_C(1) << 31) | /* EAE */
+		SH1_attr * (UINT32_C(1) << 28) |	// SH1
+		IRGN_attr * (UINT32_C(1) << 24) |	// IRGN1
+		ORGN_attr * (UINT32_C(1) << 26) |	// ORGN1
+		0 * (UINT32_C(1) << 16) | /* T1SZ */
+		SH0_attr * (UINT32_C(1) << 12) |	// SH1
+		ORGN_attr * (UINT32_C(1) << 10) |	// ORGN0
+		IRGN_attr * (UINT32_C(1) << 8) |	// IRGN0
+		(0x07 & (32 - aspacebits)) * (UINT32_C(1) << 0) |		// T0SZ n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
 		0;
 
 	const uint_fast32_t ttbrv =
@@ -1316,7 +1334,7 @@ static void progttbr(uintptr_t ttb0, int uselongdesc)
 
 #else
 
-	__set_TTBCR(uselongdesc ? tcrv_long : tcrv_short);
+	__set_TTBCR(uselongdesc ? ttbcrv_long : ttbcrv_short);
 
 	// B4.1.154 TTBR0, Translation Table Base Register 0, VMSA
 	__set_TTBR0(ttbrv);
@@ -1389,7 +1407,7 @@ static void printdebug(void)
 void
 sysinit_ttbr_initialize(void)
 {
-	//PRINTF("sysinit_ttbr_initialize.\n");
+	PRINTF("sysinit_ttbr_initialize.\n");
 
 #if (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE)
 	{
@@ -1556,7 +1574,7 @@ sysinit_ttbr_initialize(void)
 	#endif /* CPUSTYLE_STM32H7XX */
 
 #endif
-	//PRINTF("sysinit_ttbr_initialize done.\n");
+	PRINTF("sysinit_ttbr_initialize done.\n");
 }
 
 #endif /* ! LINUX_SUBSYSTEM */
