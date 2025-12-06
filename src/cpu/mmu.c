@@ -1238,10 +1238,16 @@ sysinit_mmu_tables(void)
 
 static void progttbr(uintptr_t ttb0, int uselongdesc)
 {
-    // Short-descriptor
-    ASSERT((ttb0 & 0x3FFF) == 0);
-    // Long-descriptor
-    //ASSERT((ttb0 & 0x0FFF) == 0); // 4 KB
+	if (uselongdesc)
+	{
+		// Long-descriptor
+		ASSERT((ttb0 & 0x0FFF) == 0); // 4 KB
+	}
+	else
+	{
+	    // Short-descriptor
+	    ASSERT((ttb0 & 0x3FFF) == 0);
+	}
 
 	// D17.2.146  TTBR0_EL3, Translation Table Base Register 0 (EL3)
 	// DDI0500J_cortex_a53_r0p4_trm.pdf
