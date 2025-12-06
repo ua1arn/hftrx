@@ -573,6 +573,7 @@ static const getmmudesc_t aarch32_v7_table_4k =
 	.mtable = arch32_4k_mtable
 };
 
+#if ! defined(__aarch64__)
 /** \brief  Set TTBCR
 
     This function assigns the given value to the Translation Table Base Register 0.
@@ -612,6 +613,8 @@ __STATIC_FORCEINLINE uint32_t __get_ID_MMFR3(void)
   __get_CP(15, 0, result, 0, 1, 7);
   return result;
 }
+
+#endif /* ! defined(__aarch64__) */
 
 #elif CPUSTYLE_RISCV
 
