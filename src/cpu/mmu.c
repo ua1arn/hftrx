@@ -1409,6 +1409,7 @@ static void progttbr(uintptr_t ttb0, size_t ttb0_size, int uselongdesc)
 
 	// B4.1.154 TTBR0, Translation Table Base Register 0, VMSA
 	__set_TTBR0(arch32_ttbr0v);
+	//__set_TTBR0_64(arch32_ttbr0v);	// для TTBCR.EAE == 1 будет другой формат
 
 #endif /* defined(__aarch64__) */
 }
@@ -1479,7 +1480,7 @@ static void printdebug(void)
 void
 sysinit_ttbr_initialize(void)
 {
-	PRINTF("sysinit_ttbr_initialize.\n");
+	//PRINTF("sysinit_ttbr_initialize.\n");
 
 #if (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE)
 	{
@@ -1646,7 +1647,7 @@ sysinit_ttbr_initialize(void)
 	#endif /* CPUSTYLE_STM32H7XX */
 
 #endif
-	PRINTF("sysinit_ttbr_initialize done.\n");
+	//PRINTF("sysinit_ttbr_initialize done.\n");
 }
 
 #endif /* ! LINUX_SUBSYSTEM */
