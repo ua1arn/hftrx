@@ -570,6 +570,12 @@
 	//#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
 	#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
 
+	// сделать зависящим от target
+	#define SPI_GET_PTR(target) ((targetnone == (target)) ? HARDWARE_FPGA_LOADER_SPIHARD_PTR : SPIHARD_PTR )
+
+	#define	HARDWARE_FPGA_FIR_SPIHARD_PTR SPIHARD_PTR
+	#define	HARDWARE_FPGA_LOADER_SPIHARD_PTR SPIHARD_PTR
+
 #endif
 
 #define HARDWARE_UART1_INITIALIZE() do { \
