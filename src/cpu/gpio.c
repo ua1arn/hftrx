@@ -789,35 +789,34 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx
 
 // PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
-#define ALWNR_GPIO_DRV_OUTPUT 0x03
-#define ALWNR_GPIO_PULL_OUTPUT 0x00
-
-#define ALWNR_GPIO_DRV_OUTPUT2M 0x01
+#define ALWNR_GPIO_DRV_OUTPUT2M 0x01	//  impedance value is r0/2.
 #define ALWNR_GPIO_PULL_OUTPUT2M 0x00
 
-#define ALWNR_GPIO_DRV_OUTPUT20M 0x02
+#define ALWNR_GPIO_DRV_OUTPUT20M 0x02	//  impedance value is r0/3.
 #define ALWNR_GPIO_PULL_OUTPUT20M 0x00
 
-#define ALWNR_GPIO_DRV_OUTPUT50M 0x03	// Maximum streingth (50 OHm)
+#define ALWNR_GPIO_DRV_OUTPUT50M 0x03	//  impedance value is r0/4.  Maximum streingth (50 OHm)
 #define ALWNR_GPIO_PULL_OUTPUT50M 0x00
-
-#define ALWNR_GPIO_DRV_OPENDRAIN 0x03	// Maximum streingth (50 OHm)
-#define ALWNR_GPIO_PULL_OPENDRAIN 0x00	// Pull-up/down disable
 
 #define ALWNR_GPIO_DRV_INPUT 0x02
 #define ALWNR_GPIO_PULL_INPUT 0x01	// pull-up
 
-#define ALWNR_GPIO_DRV_AF2M 0x00	// 180 OHm
+#define ALWNR_GPIO_DRV_AF2M 0x00	//  impedance value is r0.
 #define ALWNR_GPIO_PULL_AF2M 0x01	// pull-up
 
-#define ALWNR_GPIO_DRV_OPENDRAINAF2M 0x03
-#define ALWNR_GPIO_PULL_OPENDRAINAF2M 0x00	// Pull-up/down disable
-
-#define ALWNR_GPIO_DRV_AF20M 0x02
+#define ALWNR_GPIO_DRV_AF20M 0x02	//  impedance value is r0/3.
 #define ALWNR_GPIO_PULL_AF20M 0x00
 
-#define ALWNR_GPIO_DRV_AF50M 0x03	// Maximum streingth (50 OHm)
+#define ALWNR_GPIO_DRV_AF50M 0x03	//  impedance value is r0/4. Maximum streingth (50 OHm)
 #define ALWNR_GPIO_PULL_AF50M 0x00
+
+// И в случае opendrain для программного управления и для альтернативной функции
+// всегда используется drv=3 (минимальное выходное сопротивление)
+#define ALWNR_GPIO_DRV_OPENDRAIN 0x03	// impedance value is r0/4.  Maximum streingth (50 OHm)
+#define ALWNR_GPIO_PULL_OPENDRAIN 0x01	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
+
+#define ALWNR_GPIO_DRV_OPENDRAINAF2M 0x03//  impedance value is r0/4.
+#define ALWNR_GPIO_PULL_OPENDRAINAF2M 0x01	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
 typedef struct gpio_ctx
 {
@@ -1061,14 +1060,15 @@ void gpioX_setopendrain(
 	portholder_t state
 	)
 {
+	unsigned drv = ALWNR_GPIO_DRV_OPENDRAIN;
 	IRQL_t oldIrql;
 
 	/* на этом процессоре имитируем open drain перепрограммированием на вход */
 
 	gpioX_lock(gpio, & oldIrql);
 
-	gpioX_progUnsafeNoPull(gpio, mask & state, GPIO_CFG_IN, ALWNR_GPIO_DRV_OPENDRAIN);
-	gpioX_progUnsafeNoPull(gpio, mask & ~ state, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OPENDRAIN);	// tie to GND
+	gpioX_progUnsafeNoPull(gpio, mask & state, GPIO_CFG_IN, drv);
+	gpioX_progUnsafeNoPull(gpio, mask & ~ state, GPIO_CFG_OUT, drv);	// tie to GND
 
 	gpioX_unlock(gpio, oldIrql);
 }
@@ -1076,7 +1076,8 @@ void gpioX_setopendrain(
 static void gpioX_opendrain_iniialize(
 	GPIO_TypeDef * gpio,
 	portholder_t mask,
-	portholder_t state
+	portholder_t state,
+	unsigned drv
 	)
 {
 	IRQL_t oldIrql;
@@ -1085,7 +1086,7 @@ static void gpioX_opendrain_iniialize(
 
 	gpioX_lock(gpio, & oldIrql);
 
-	gpioX_progUnsafeNoPull(gpio, mask, GPIO_CFG_IODISABLE, ALWNR_GPIO_DRV_OPENDRAIN);
+	gpioX_progUnsafeNoPull(gpio, mask, GPIO_CFG_IODISABLE, drv);
 
 	/* установить регистр данных для всех относящихся выводов в 0 */
 	portholder_t * const data = & gpioX_get_ctx(gpio)->data;
@@ -1094,8 +1095,8 @@ static void gpioX_opendrain_iniialize(
 	gpio->DATA = * data;	/* если не в режиме вывода или disabled, записи игнорируются */
 	(void) gpio->DATA;
 
-	gpioX_progUnsafeNoPull(gpio, mask & state, GPIO_CFG_IN, ALWNR_GPIO_DRV_OPENDRAIN);
-	gpioX_progUnsafeNoPull(gpio, mask & ~ state, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OPENDRAIN);	// tie to GND
+	gpioX_progUnsafeNoPull(gpio, mask & state, GPIO_CFG_IN, drv);
+	gpioX_progUnsafeNoPull(gpio, mask & ~ state, GPIO_CFG_OUT, drv);	// tie to GND
 
 	gpioX_unlock(gpio, oldIrql);
 }
@@ -4906,7 +4907,7 @@ arm_hardware_pioa_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 //	//gpioX_poweron(GPIOA);
-	gpioX_opendrain_iniialize(GPIOA, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOA, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #elif CPUSTYLE_VM14
 
@@ -4975,7 +4976,7 @@ arm_hardware_piob_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOB);
-	gpioX_opendrain_iniialize(GPIOB, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOB, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #elif CPUSTYLE_VM14
 
@@ -5044,7 +5045,7 @@ arm_hardware_pioc_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOC);
-	gpioX_opendrain_iniialize(GPIOC, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOC, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #elif CPUSTYLE_VM14
 
@@ -5113,7 +5114,7 @@ arm_hardware_piod_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
-	gpioX_opendrain_iniialize(GPIOD, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOD, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #elif CPUSTYLE_VM14
 
@@ -5182,7 +5183,7 @@ arm_hardware_pioe_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOE);
-	gpioX_opendrain_iniialize(GPIOE, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOE, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5238,7 +5239,7 @@ arm_hardware_piof_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOF);
-	gpioX_opendrain_iniialize(GPIOF, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOF, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5291,7 +5292,7 @@ arm_hardware_piog_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
-	gpioX_opendrain_iniialize(GPIOG, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOG, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5345,7 +5346,7 @@ arm_hardware_pioh_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
-	gpioX_opendrain_iniialize(GPIOH, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOH, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7830,7 +7831,7 @@ arm_hardware_piol_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
-	gpioX_opendrain_iniialize(GPIOL, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOL, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #else
 	#error Undefined CPUSTYLE_XXX
