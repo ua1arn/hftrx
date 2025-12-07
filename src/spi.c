@@ -4184,7 +4184,7 @@ static void spidf_unselect(QSPI_t * qspi, IRQL_t irql)
 		;
 	// Disconnect I/O pins
 	SPIDF_HANGOFF();
-	spidf_operate_unlock(irql);
+	spidf_operate_unlock(qspi, irql);
 }
 
 void spidf_initialize(void)
@@ -4275,7 +4275,7 @@ static IRQL_t spidf_iostart(
 	)
 {
 	IRQL_t oldcsIRQL;
-	spidf_operate_lock(& oldcsIRQL);
+	spidf_operate_lock(qspi, & oldcsIRQL);
 	ASSERT(readnb == SPDFIO_1WIRE);
 	// Connect I/O pins
 	SPIDF_HARDINITIALIZE();

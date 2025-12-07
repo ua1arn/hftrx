@@ -59,11 +59,12 @@ AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/14.2.1/liblto_plugin.dll
 # debug architecture ARMv7.1.
 CORE = -mcpu=cortex-a7 --specs=nosys.specs -mfloat-abi=hard -mfpu=neon-vfpv4
 #CORE = -march=rv64imafdc_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector --specs=nosys.specs
+CORE += -mlong-calls
 
 # Define optimisation level here
 #OPT = -Og
 #OPT = -Ofast -flto -save-temps
-OPT = -Ofast -flto -mlong-calls
+OPT = -Ofast -flto
 #OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS

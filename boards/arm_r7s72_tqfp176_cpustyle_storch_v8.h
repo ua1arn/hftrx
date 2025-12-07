@@ -554,8 +554,6 @@
 ////#define TARGET_CS4272_RESET_BIT		(1U << 2)	// PD2
 #if WITHSPIHW
 	// RSPI0 used
-	#define SPIHARD_PTR (& RSPI1)
-	#define SPIHARD_IX 1		// 0: RSPI0, 1: RSPI1
 
 	// MOSI & SCK port
 	#define	SPI_SCLK_BIT			(1U << 12)	// * P6_12 бит, через который идет синхронизация SPI RSPI1
@@ -574,6 +572,11 @@
 	#define HARDWARE_SPI_DISCONNECT() do { \
 			arm_hardware_pio6_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT);	/* PIO enable */ \
 		} while (0)
+
+	// RSPI0 used
+	#define SPIHARD_IX 1		// 0: RSPI0, 1: RSPI1
+	#define SPIHARD_PTR (& RSPI1)
+	#define HARDWARE_FPGA_FIR_SPIHARD_PTR SPIHARD_PTR
 
 #endif /* WITHSPIHW */
 

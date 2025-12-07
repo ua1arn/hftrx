@@ -82,9 +82,7 @@ static volatile uint_fast8_t 	glob_catmux = BOARD_CATMUX_USBCDC;
 	static uint_fast8_t 	glob_bglightoff = 0;	// выключаем дисплей
 #endif /* WITHLCDBACKLIGHT */
 
-#if WITHKBDBACKLIGHT
 static uint_fast8_t 	glob_kblight = 1;
-#endif /* WITHKBDBACKLIGHT */
 static uint_fast8_t 	glob_poweron = 1;
 
 static uint_fast8_t		glob_fanflag;	/* включение вентилятора */
