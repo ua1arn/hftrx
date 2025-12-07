@@ -157,8 +157,8 @@
 	
 	//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
-	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
@@ -741,6 +741,8 @@
 
 	#define GET_TWCK() (gpio_readpin(TARGET_TWI_TWCK_MIO))
 	#define GET_TWD() (gpio_readpin(TARGET_TWI_TWD_MIO))
+
+	//#define TWIHARD_PTR I2C0
 
 #endif /* WITHTWISW || WITHTWIHW */
 

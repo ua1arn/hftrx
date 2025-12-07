@@ -14,6 +14,12 @@
 		#error Wrong CPU selected. XC7Z020 expected
 	#endif /* ! defined(XC7Z020) */
 
+	// Выбор используемой цветовой палитры
+	#define COLORSTYLE_GREEN	1
+	//#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_WHITE	1
+	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
+
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
