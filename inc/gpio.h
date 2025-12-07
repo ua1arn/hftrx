@@ -613,6 +613,13 @@ void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, 
 	portholder_t gpioX_getinputs(
 		GPIO_TypeDef * gpio
 		);
+	void gpioX_prog(
+		GPIO_TypeDef * gpio,
+		portholder_t iopins,	// mask
+		unsigned cfg,	// GPIO_CFG_xxx
+		unsigned drv,	// 0..3: minimal..maximal drive strength
+		unsigned pull	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
+		);
 
 #endif /* (CPUSTYLE_ALLWINNER || CPUSTYLE_T507 || CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX || CPUSTYLE_VM14) */
 

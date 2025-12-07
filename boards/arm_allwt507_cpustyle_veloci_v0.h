@@ -880,8 +880,8 @@
 	#define targetnone 0x00
 	#define targetcodec1pulse 0xFE	// pulse for NAU8822L
 
-	#define FPGALOADER_SPISPEED SPIC_SPEED12M
-	#define FPGAREG_V1_SPISPEED SPIC_SPEED12M
+	#define FPGALOADER_SPISPEED SPIC_SPEED4M
+	#define FPGAREG_V1_SPISPEED SPIC_SPEED4M
 	#define SPIDF_SPEEDC 		SPIC_SPEED4M
 	#define NVRAM_SPISPEED 		SPIC_SPEED4M
 	#define NAU8822_SPISPEED 	SPIC_SPEED4M
@@ -973,9 +973,12 @@
 	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
 
 	#define HARDWARE_SPI1_INITIALIZE() do { \
-		arm_hardware_pioh_altfn20(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
-		arm_hardware_pioh_altfn20(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
-		arm_hardware_pioh_altfn20(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
+		arm_hardware_pioh_altfn2m(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
+		arm_hardware_pioh_altfn2m(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
+		arm_hardware_pioh_altfn2m(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
+		gpioX_prog(GPIOH, SPI_SCLK_BIT, GPIO_CFG_AF4, 0, 0x00); 	/* PH6 SPI1_CLK */ \
+		gpioX_prog(GPIOH, SPI_MOSI_BIT, GPIO_CFG_AF4, 0, 0x00); 	/* PH7 SPI1_MOSI */ \
+		gpioX_prog(GPIOH, SPI_MISO_BIT, GPIO_CFG_AF4, 0, 0x00); 	/* PH8 SPI1_MISO */ \
 	} while (0)
 	#define WITHSPI1HW	1	// Use SPI1
 
@@ -1050,6 +1053,8 @@
 		arm_hardware_piol_altfn2m(TARGET_S_TWI0_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
 		arm_hardware_piol_updown(TARGET_S_TWI0_TWCK, TARGET_S_TWI0_TWCK, 0); \
 		arm_hardware_piol_updown(TARGET_S_TWI0_TWD, TARGET_S_TWI0_TWD, 0); \
+		gpioX_prog(GPIOL, 0*TARGET_S_TWI0_TWCK, GPIO_CFG_AF3, 0x03, 0x01);	/* PL0 - S_TWI0_SCK */ \
+		gpioX_prog(GPIOL, 0*TARGET_S_TWI0_TWD, GPIO_CFG_AF3, 0x03, 0x01);	/* PL1 - S_TWI0_SDA */ \
 	} while (0)
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
@@ -1082,6 +1087,8 @@
 			arm_hardware_pioa_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* PA1 - TWI0_SDA */ \
 			arm_hardware_pioa_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 			arm_hardware_pioa_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
+			gpioX_prog(GPIOA, 0*TARGET_TWI_TWCK, GPIO_CFG_AF4, 0x03, 0x01);	/* PA0 - TWI0_SCL */ \
+			gpioX_prog(GPIOA, 0*TARGET_TWI_TWD, GPIO_CFG_AF4, 0x03, 0x01);	/* PA1 - TWI0_SDA */ \
 		} while (0)
 #if 0
 	#define	TWIHARD_INITIALIZE() do { \

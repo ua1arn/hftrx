@@ -10,6 +10,7 @@
 #include "utils.h"	// peek/poke
 
 #include <limits.h>
+
 //#define MMUUSE4KPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
 //#define MMUUSE16MPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
 #define MMUUSE2MPAGES (1 && defined (__ARM_ARCH) && defined (__aarch64__))
@@ -182,49 +183,6 @@ enum aarch64_attrindex
 	AARCH64_ATTR_INDEX_NCACHED,
 	AARCH64_ATTR_INDEX_DEVICE
 
-};
-
-static unsigned aarch64_2M_mcached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
-{
-	return USBD_poke_u64(b, AARCH64_UPPER_ATTR |
-			(addr & ~ UINT64_C(0x0FFFFF)) |
-			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_CACHED) |
-			0x01);
-}
-static unsigned aarch64_2M_mncached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
-{
-	return USBD_poke_u64(b, AARCH64_UPPER_ATTR |
-			(addr & ~ UINT64_C(0x0FFFFF)) |
-			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_NCACHED) |
-			0x01);
-}
-static unsigned aarch64_2M_mdevice(uint8_t * b, uint_fast64_t addr)
-{
-	return USBD_poke_u64(b, AARCH64_UPPER_ATTR
-			| (addr & ~ UINT64_C(0x0FFFFF)) |
-			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_DEVICE) |
-			0x01);
-}
-// Next level table
-// DDI0487_I_a_a-profile_architecture_reference_manual.pdf
-// D8.3.1 Table Descriptor format
-static unsigned aarch64_2M_mtable(uint8_t * b, uint_fast64_t addr, int level)
-{
-	return USBD_poke_u64(b, (addr & ~ UINT64_C(0x0FFF)) |
-			0x03);
-}
-static unsigned aarch64_mnoaccess(uint8_t * b, uint_fast64_t addr)
-{
-	return USBD_poke_u64(b, UINT64_C(0));
-}
-
-static const getmmudesc_t aarch64_table_2M =
-{
-	.mcached = aarch64_2M_mcached,
-	.mncached = aarch64_2M_mncached,
-	.mdevice = aarch64_2M_mdevice,
-	.mnoaccess = aarch64_mnoaccess,
-	.mtable = aarch64_2M_mtable
 };
 
 //#elif (__CORTEX_A != 0)
@@ -416,6 +374,100 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 #define	TTB_AARCH32_PAGETABLE(addr) 			TTB_AARCH32_PAGETABLE_RAW((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
 
 
+// DDI0487_I_a_a-profile_architecture_reference_manual.pdf
+// D8.3.2  Block descriptor and Page descriptor formats
+
+// Granule size for the TTBR0_EL3. 0x00 4KB, 0x01 64KB, 0x02 16KB
+// Обратить внимание на выравнивание ttb0_base
+//	A translation table is required to be aligned to the size of the table. If a table contains fewer than
+//	eight entries, it must be aligned on a 64 byte address boundary.
+
+// aarch64: D17.2.133  TCR_EL3, Translation Control Register (EL3)
+// aarch32: G8.2.164 TTBCR, Translation Table Base Control Register
+static const unsigned vTG0 = 0x00;	// TCR_EL3.TG0
+
+// Figure D8-14 Block descriptor formats
+// 4KB, 16KB, and 64KB granules, 48-bit OA
+//	For the 4KB granule size, the level 1 descriptor n is 30, and the level 2 descriptor n is 21.
+//	For the 16KB granule size, the level 2 descriptor n is 25.
+//	For the 64KB granule size, the level 2 descriptor n is 29
+
+static uint_fast64_t aarch64_2M_addrmaskmem(uint_fast64_t addr)
+{
+	const uint_fast64_t mask48 = UINT64_C(0xFFFFFFFFFFFF);	// bits 47..0
+	switch (vTG0)
+	{
+	case 0x00:	// 4KB
+		return (addr >> 21 << 21) & mask48;
+	case 0x02:	// 16KB
+		return (addr >> 25 << 25) & mask48;
+	case 0x01:	// 64KB
+		return (addr >> 29 << 29) & mask48;
+	}
+}
+
+// Figure D8-15 Page descriptor formats
+static uint_fast64_t aarch64_2M_addrmasktable(uint_fast64_t addr)
+{
+	const uint_fast64_t mask48 = UINT64_C(0xFFFFFFFFFFFF);	// bits 47..0
+	switch (vTG0)
+	{
+	case 0x00:	// 4KB
+		return (addr >> 12 << 12) & mask48;
+	case 0x02:	// 16KB
+		return (addr >> 14 << 14) & mask48;
+	case 0x01:	// 64KB
+		return (addr >> 16 << 16) & mask48;
+	}
+}
+static unsigned aarch64_2M_mcached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
+{
+	return USBD_poke_u64(b,
+			AARCH64_UPPER_ATTR |
+			aarch64_2M_addrmaskmem(addr) |
+			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_CACHED) |
+			0x01);
+}
+static unsigned aarch64_2M_mncached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
+{
+	return USBD_poke_u64(b,
+			AARCH64_UPPER_ATTR |
+			aarch64_2M_addrmaskmem(addr) |
+			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_NCACHED) |
+			0x01);
+}
+static unsigned aarch64_2M_mdevice(uint8_t * b, uint_fast64_t addr)
+{
+	return USBD_poke_u64(b,
+			AARCH64_UPPER_ATTR |
+			aarch64_2M_addrmaskmem(addr) |
+			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_DEVICE) |
+			0x01);
+}
+// Next level table
+// DDI0487_I_a_a-profile_architecture_reference_manual.pdf
+// D8.3.1 Table Descriptor format
+
+static unsigned aarch64_2M_mtable(uint8_t * b, uint_fast64_t addr, int level)
+{
+	return USBD_poke_u64(b,
+			aarch64_2M_addrmasktable(addr) |
+			0x03);
+}
+static unsigned aarch64_2M_mnoaccess(uint8_t * b, uint_fast64_t addr)
+{
+	return USBD_poke_u64(b, UINT64_C(0));
+}
+
+static const getmmudesc_t aarch64_table_2M =
+{
+	.mcached = aarch64_2M_mcached,
+	.mncached = aarch64_2M_mncached,
+	.mdevice = aarch64_2M_mdevice,
+	.mnoaccess = aarch64_2M_mnoaccess,
+	.mtable = aarch64_2M_mtable
+};
+
 ///////////////
 ///
 static unsigned aarch32_v7_1M_mcached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
@@ -521,6 +573,7 @@ static const getmmudesc_t aarch32_v7_table_4k =
 	.mtable = arch32_4k_mtable
 };
 
+#if ! defined(__aarch64__)
 /** \brief  Set TTBCR
 
     This function assigns the given value to the Translation Table Base Register 0.
@@ -560,6 +613,8 @@ __STATIC_FORCEINLINE uint32_t __get_ID_MMFR3(void)
   __get_CP(15, 0, result, 0, 1, 7);
   return result;
 }
+
+#endif /* ! defined(__aarch64__) */
 
 #elif CPUSTYLE_RISCV
 
@@ -1056,7 +1111,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		const uint_fast32_t pagesize = UINT32_C(1) << p->phypageszlog2;
 		unsigned pages = p->pagecount;
 		uint8_t * tb = p->table;	// table base
-		uint_fast64_t phyaddr = p->phyaddr;
+		uint_fast64_t phyaddr = p->phybytes ? (uintptr_t) p->phybytes : p->phyaddr;
 		for (; pages --; phyaddr += pagesize)
 		{
 			tb += p->level != INT_MAX ?
@@ -1090,6 +1145,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		{
 			.arch = & rv64_sv39_table,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.phybytes = NULL,
 			.phypageszlog2 = 12,	// 4KB
 			.pagecount = RV64_LEVEL2_SIZE,
 			.table = xlevel2_pagetable_u64,
@@ -1099,7 +1155,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		/* second level: 2MB */
 		{
 			.arch = & rv64_sv39_table,
-			.phyaddr = (uintptr_t) xlevel2_pagetable_u64,
+			.phybytes = xlevel2_pagetable_u64,
 			.phypageszlog2 = (9 + 3),	// 512 items by 8 bytes each in xlevel2_pagetable_u64
 			.pagecount = RV64_LEVEL1_SIZE,
 			.table = xlevel1_pagetable_u64,
@@ -1109,7 +1165,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		/* top level: 1GB */
 		{
 			.arch = & rv64_sv39_table,
-			.phyaddr = (uintptr_t) xlevel1_pagetable_u64,
+			.phybytes = xlevel1_pagetable_u64,
 			.phypageszlog2 = (9 + 3),	// 512 items by 8 bytes each in xlevel1_pagetable_u64
 			.pagecount = RV64_LEVEL0_SIZE,
 			.table = xlevel0_pagetable_u64,
@@ -1117,20 +1173,24 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
 	};
+	static const int glongdesc = 1;
 
 #elif MMUUSE2MPAGES
 
 	// pages of 2 MB
+	#define AARCH64_LEVEL0_SIZE (HARDWARE_ADDRSPACE_GB)
 	#define AARCH64_LEVEL1_SIZE (HARDWARE_ADDRSPACE_GB * 512)		// pages of 2 MB
-	#define AARCH64_LEVEL0_SIZE (AARCH64_LEVEL1_SIZE / 512)
-	static RAMFRAMEBUFF __ALIGNED(4 * 4 * 1024) uint8_t ttb0_base [AARCH64_LEVEL0_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
-	static RAMFRAMEBUFF __ALIGNED(4 * 4 * 1024) uint8_t xxlevel1_pagetable_u64 [AARCH64_LEVEL1_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
+	//	A translation table is required to be aligned to the size of the table. If a table contains fewer than
+	//	eight entries, it must be aligned on a 64 byte address boundary.
+	static RAMFRAMEBUFF __ALIGNED(AARCH64_LEVEL0_SIZE * sizeof (uint64_t)) uint8_t ttb0_base [AARCH64_LEVEL0_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
+	static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t xxlevel1_pagetable_u64 [AARCH64_LEVEL1_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
 
 	static const mmulayout_t mmuinfo [] =
 	{
 		{
 			.arch = & aarch64_table_2M,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.phybytes = NULL,
 			.phypageszlog2 = 21,	// 2MB
 			.pagecount = AARCH64_LEVEL1_SIZE,
 			.table = xxlevel1_pagetable_u64,
@@ -1139,7 +1199,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		},
 		{
 			.arch = & aarch64_table_2M,
-			.phyaddr = (uintptr_t) xxlevel1_pagetable_u64,
+			.phybytes = xxlevel1_pagetable_u64,
 			.phypageszlog2 = 9 + 3,	// 512 elements by 8 bytes in each page of xxlevel1_pagetable_u64
 			.pagecount = AARCH64_LEVEL0_SIZE,
 			.table = ttb0_base,
@@ -1158,6 +1218,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		{
 			.arch = & aarch32_table_16M,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.phybytes = NULL,
 			.phypageszlog2 = 20,	// каждые 16 ячеек заполняются одинаковой иформацией
 			.pagecount = AARCH32_16MB_LEVEL0_SIZE,
 			.table = ttb0_base,
@@ -1180,6 +1241,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		{
 			.arch = & aarch32_v7_table_4k,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.phybytes = NULL,
 			.phypageszlog2 = 12,	// 4KB
 			.pagecount = AARCH32_4K_LEVEL1_SIZE,
 			.table = level1_pagetable_u32,
@@ -1188,7 +1250,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		},
 		{
 			.arch = & aarch32_v7_table_4k,
-			.phyaddr = (uintptr_t) level1_pagetable_u32,
+			.phybytes = level1_pagetable_u32,
 			.phypageszlog2 = 10,	// 1KB
 			.pagecount = AARCH32_4K_LEVEL0_SIZE,
 			.table = ttb0_base,
@@ -1207,6 +1269,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		{
 			.arch = & aarch32_table_1M,
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.phybytes = NULL,
 			.phypageszlog2 = 20,	// 1MB
 			.pagecount = AARCH32_1MB_LEVEL0_SIZE,
 			.table = ttb0_base,
@@ -1238,29 +1301,19 @@ sysinit_mmu_tables(void)
 
 #if (__CORTEX_A != 0)
 
-static void progttbr(uintptr_t ttb0, int uselongdesc)
-{
-	if (uselongdesc)
-	{
-		// Long-descriptor
-		ASSERT((ttb0 & 0x0FFF) == 0); // 4 KB
-	}
-	else
-	{
-	    // Short-descriptor
-	    ASSERT((ttb0 & 0x3FFF) == 0);
-	}
+static const uint_fast32_t IRGN_attr = AARCH64_CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
+static const uint_fast32_t ORGN_attr = AARCH64_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
+//static const uint_fast32_t IRGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
+//const uint_fast32_t ORGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
+static unsigned SH1_attr = 0x03;
+static unsigned SH0_attr = 0x03;
 
+static void progttbcr(int uselongdesc)
+{
 	// D17.2.146  TTBR0_EL3, Translation Table Base Register 0 (EL3)
 	// DDI0500J_cortex_a53_r0p4_trm.pdf
 	// 4.3.53 Translation Control Register, EL3
-	const uint_fast32_t IRGN_attr = AARCH64_CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
-	const uint_fast32_t ORGN_attr = AARCH64_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
-//	const uint_fast32_t IRGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
-//	const uint_fast32_t ORGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
-
-	unsigned SH1_attr = 0x03;
-	unsigned SH0_attr = 0x03;
+#if defined(__aarch64__)
 
 	// определение размера физической памяти, на который настраиваем MMU
 	// __log2_up(AARCH64_LEVEL1_SIZE)=13, mmuinfo [0].pgszlog2=21
@@ -1269,7 +1322,7 @@ static void progttbr(uintptr_t ttb0, int uselongdesc)
 	//const unsigned aspacebits = 21 + __log2_up(AARCH64_LEVEL1_SIZE);	// pages of 2 MB
 	const unsigned aspacebits = __log2_up(HARDWARE_ADDRSPACE_GB) + 30;
 	//ASSERT(aspacebits == aspacebits2);
-	const uint_fast32_t tcrv_long =
+	const uint_fast32_t tcrv =
 		0 * (UINT32_C(1) << 30) |	// TCMA - see FEAT_MTE2
 		0 * (UINT32_C(1) << 29) |	// TBID - see FEAT_PAuth (top byte Id)
 		0 * (UINT32_C(1) << 28) |	// HWU62 - see FEAT_HPDS2
@@ -1280,16 +1333,20 @@ static void progttbr(uintptr_t ttb0, int uselongdesc)
 		0 * (UINT32_C(1) << 21) |	// HA - see FEAT_HAFDBS
 		1 * (UINT32_C(1) << 20) |	// TBI - Top Byte Ignored. Indicates whether the top byte of an address is used for address match for the TTBR0_EL3 region, or ignored and used for tagged addresses.
 		0x01 * (UINT32_C(1) << 16) |	// 18:16 PS - Physical Address Size. 36 bits, 64GB
-		0x00 * (UINT32_C(1) << 14) | 	// TG0 Granule size for the TTBR0_EL3. 0x00 4KB, 0x01 64KB, 0x02 16KB
+		vTG0 * (UINT32_C(1) << 14) | 	// TG0 Granule size for the TTBR0_EL3. 0x00 4KB, 0x01 64KB, 0x02 16KB
 		SH0_attr * (UINT32_C(1) << 12) |	// SH0 0x03 - Inner shareable (Shareability attribute for memory associated with translation table walks using TTBR0_EL3)
 		ORGN_attr * (UINT32_C(1) << 10) |	// ORGN0 Outer cacheability attribute
 		IRGN_attr * (UINT32_C(1) << 8) |	// IRGN0 Inner cacheability attribute
 		(0x3F & (64 - aspacebits)) * (UINT32_C(1) << 0) |		// T0SZ n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
 		0;
 
-	const uint_fast32_t tcrv_short =
-		0 |
-		0;
+	__set_TCR_EL1(tcrv);
+	__set_TCR_EL2(tcrv);
+	__set_TCR_EL3(tcrv);	// нужно только это
+#else /* defined(__aarch64__) */
+
+	// AArch32 System register TTBCR bits [31:0] are architecturally mapped to AArch64 System  register TCR_EL1[31:0].
+
 	const uint_fast32_t ttbcrv_short =
 		0 * (UINT32_C(1) << 31) | /* EAE */
 		0 * (UINT32_C(1) << 0) |	/* N */
@@ -1303,46 +1360,73 @@ static void progttbr(uintptr_t ttb0, int uselongdesc)
 		SH0_attr * (UINT32_C(1) << 12) |	// SH1
 		ORGN_attr * (UINT32_C(1) << 10) |	// ORGN0
 		IRGN_attr * (UINT32_C(1) << 8) |	// IRGN0
-		(0x07 & (32 - aspacebits)) * (UINT32_C(1) << 0) |		// T0SZ n=0..63. T0SZ=2^(64-n): n=28: 64GB, n=30: 16GB, n=32: 4GB, n=43: 2MB
+		0 * (UINT32_C(1) << 0) |		// T0SZ Input address range using for TTBR0 and TTBR1
 		0;
 
-	const uint_fast32_t ttbrv =
+	__set_TTBCR(uselongdesc ? ttbcrv_long : ttbcrv_short);
+
+#endif /* defined(__aarch64__) */
+}
+
+static void progttbr(uintptr_t ttb0, size_t ttb0_size, int uselongdesc)
+{
+	const unsigned TTBR_ASIDv = 0x00;
+
+#if defined(__aarch64__)
+
+	// 48 bit address
+	//	A translation table is required to be aligned to the size of the table. If a table contains fewer than
+	//	eight entries, it must be aligned on a 64 byte address boundary.
+	const uintptr_t ttb0mask = ((uintptr_t) 1 << __log2_up(ttb0_size)) - 1;
+	const uint_fast64_t ttbr0v =
+		(ttb0 & ~ ttb0mask) |
+		0 * (UINT64_C(1) << 0) |	// When FEAT_TTCNP is implemented: Common not Private
+		0;
+	//	A translation table is required to be aligned to the size of the table. If a table contains fewer than
+	//	eight entries, it must be aligned on a 64 byte address boundary.
+	ASSERT(HARDWARE_ADDRSPACE_GB >= 8);
+	ASSERT((ttb0 & ttb0mask) == 0);
+
+
+	__set_TTBR0_EL1(ttbr0v);
+	__set_TTBR0_EL2(ttbr0v);
+	__set_TTBR0_EL3(ttbr0v);	// нужно только это
+
+#else /* defined(__aarch64__) */
+
+	const uint_fast32_t arch32_ttb0mask = ((uintptr_t) 1 << 14) - 1;
+	ASSERT((ttb0 & arch32_ttb0mask) == 0);
+	//  G8.2.166 TTBR0, Translation Table Base Register 0
 #if WITHSMPSYSTEM
-		ttb0 |	/* Translation table base 0 address, bits[31:x]. */
+	const uint_fast32_t arch32_ttbr0v =
+		(ttb0 & ~ arch32_ttb0mask) |	/* Translation table base 0 address, bits[31:x], where x is 14-(TTBCR.N) */
 		!! (IRGN_attr & 0x01) * (UINT32_C(1) << 6) |	// IRGN[0]
 		!! (IRGN_attr & 0x02) * (UINT32_C(1) << 0) |	// IRGN[1]
 		ORGN_attr * (UINT32_C(1) << 3) |	// RGN
 		!1 * (UINT32_C(1) << 5) |	// NOS - Not Outer Shareable bit - TEST for RAMNC
 		1 * (UINT32_C(1) << 1) |	// S - Shareable bit. Indicates the Shareable attribute for the memory associated with the translation table
+		0;
 #else /* WITHSMPSYSTEM */
-		ttb0 |	/* Translation table base 0 address, bits[31:x]. */
+		const uint_fast32_t arch32_ttbr0v =
+		(ttb0 & ~ arch32_ttb0mask) |	/* Translation table base 0 address, bits[31:x], where x is 14-(TTBCR.N) */
 		//(!! (IRGN_attr & 0x02) << 6) | (!! (IRGN_attr & 0x01) << 0) |
 		1 * (UINT32_C(1) << 3) |	// RGN
 		0 * (UINT32_C(1) << 5) |	// NOS
 		0 * (UINT32_C(1) << 1) |	// S
-#endif /* WITHSMPSYSTEM */
 		0;
+#endif /* WITHSMPSYSTEM */
 
-#if defined(__aarch64__)
-
-//	__set_TCR_EL1(uselongdesc ? tcrv_long : tcrv_short);
-//	__set_TCR_EL2(uselongdesc ? tcrv_long : tcrv_short);
-	__set_TCR_EL3(uselongdesc ? tcrv_long : tcrv_short);	// нужно только это
-
-	// 48 bit address
-//	__set_TTBR0_EL1(ttb0);
-//	__set_TTBR0_EL2(ttb0);
-	__set_TTBR0_EL3(ttb0);	// нужно только это
-
-#else
-
-	__set_TTBCR(uselongdesc ? ttbcrv_long : ttbcrv_short);
-
+	const uint_fast64_t arch32_ttbr0v_64 =
+		(TTBR_ASIDv & 0xFF) * (UINT64_C(1) << 48) |
+		(ttb0 & ~ arch32_ttb0mask) |	/* Translation table base 0 address, bits[31:x], where x is 14-(TTBCR.N) */
+		0;
 	// B4.1.154 TTBR0, Translation Table Base Register 0, VMSA
-	__set_TTBR0(ttbrv);
+	__set_TTBR0(arch32_ttbr0v);
+	//__set_TTBR0_64(arch32_ttbr0v_64);	// для TTBCR.EAE == 1 будет другой формат
 
-#endif
+#endif /* defined(__aarch64__) */
 }
+
 static void progmair(void)
 {
 	//  D17.2.99 MAIR_EL3, Memory Attribute Indirection Register (EL3)
@@ -1409,7 +1493,7 @@ static void printdebug(void)
 void
 sysinit_ttbr_initialize(void)
 {
-	PRINTF("sysinit_ttbr_initialize.\n");
+	//PRINTF("sysinit_ttbr_initialize.\n");
 
 #if (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE)
 	{
@@ -1435,7 +1519,8 @@ sysinit_ttbr_initialize(void)
 
 #if(__CORTEX_A != 0)
 
-	progttbr((uintptr_t) ttb0_base, glongdesc);
+	progttbcr(glongdesc);
+	progttbr((uintptr_t) ttb0_base, sizeof ttb0_base, glongdesc);
 	progmair();
 	progdomain();
 	printdebug();
@@ -1576,7 +1661,7 @@ sysinit_ttbr_initialize(void)
 	#endif /* CPUSTYLE_STM32H7XX */
 
 #endif
-	PRINTF("sysinit_ttbr_initialize done.\n");
+	//PRINTF("sysinit_ttbr_initialize done.\n");
 }
 
 #endif /* ! LINUX_SUBSYSTEM */
