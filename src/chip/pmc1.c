@@ -34,13 +34,14 @@ static int initialize_pmic_i2c(void)
 #if WITHTWISW
 	i2c_initialize();
 #elif WITHTWIHW
+	i2c_initialize();
 #endif /* WITHTWISW */
 
 
 	return 1;
 }
 
-static int stpmic1_register_read(uint8_t register_id,  uint8_t *value)
+static int stpmic1_register_read(uint8_t register_id,  uint8_t *data)
 {
 #if WITHTWISW
 	uint8_t v;
@@ -50,7 +51,7 @@ static int stpmic1_register_read(uint8_t register_id,  uint8_t *value)
 	i2c_start(PMIC_I2C_R);
 	i2c_read(& v, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
 
-	* value = v;
+	* data = v;
 	return 0;
 
 #elif WITHTWIHW
