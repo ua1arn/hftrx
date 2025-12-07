@@ -29,6 +29,9 @@
 	#define PLL_CPU_N 	50
 	#define PLL_CPU_P_POW 0
 
+	#define ARMI2SMCLK 12280000
+	#define ARMSAIMCLK 12280000
+
 	/* модели синтезаторов - схемы частотообразования */
 
 	/* Версии частотных схем - с преобразованием "наверх" */
@@ -254,6 +257,7 @@
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 	//#define COLORSTYLE_GREEN	1
 	//#define COLORSTYLE_RED	1
+	#define COLORSTYLE_WHITE	1
 
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24

@@ -5769,7 +5769,7 @@ static uint32_t InitQspi(void)
 
 #endif /* CPUSTYLE_XC7Z && WIHSPIDFHW */
 
-#if ! LINUX_SUBSYSTEM && FPGA_ARTIX7
+#if WITHDSPEXTFIR && ! LINUX_SUBSYSTEM && FPGA_ARTIX7
 
 void board_reload_fir_artix7_p1(spitarget_t target, uint_fast8_t v1, uint_fast32_t v2)
 {

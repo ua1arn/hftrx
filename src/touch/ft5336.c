@@ -13,6 +13,7 @@
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_FT5336)
 
+#include "gpio.h"
 #include "touch.h"
 #include "ft5336.h"
 
