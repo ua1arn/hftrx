@@ -17,13 +17,15 @@
 #include "board.h"
 #include "gpio.h"
 
-#if TSC_TYPE_STMPE811_USE_SPI
+#ifndef STMPE811_TWIPTR
+	#define STMPE811_TWIPTR	TWIHARD_PTR
+#endif
 
-#elif ! defined (BOARD_I2C_STMPE811)
-	#define BOARD_I2C_STMPE811	(0x82)           /* 8-bit address of STMPE811 Controller A0=0: 0x82, A0=1: 0x88 */
-#else /* TSC_TYPE_STMPE811_USE_SPI */
-
+#if ! defined (STMPE811_I2C_ADDR8)
+	#define STMPE811_I2C_ADDR7	(0x41)           /* 8-bit address of STMPE811 Controller A0=0: 0x82, A0=1: 0x88 */
 #endif /* TSC_TYPE_STMPE811_USE_SPI */
+
+#define STMPE811_I2C_ADDR8	(STMPE811_I2C_ADDR7 << 1)
 
 static uint_fast8_t tscpresent;
 static volatile uint_fast8_t tsc_int = 0;
@@ -64,13 +66,7 @@ static int i2cperiph_readN(uint_fast8_t d_adr, uint_fast8_t r_adr, uint32_t r_by
 #elif WITHTWIHW
 
 	const uint8_t bufw [] = { r_adr };
-#if 1
-	i2chw_write(d_adr, bufw, ARRAY_SIZE(bufw));
-	return i2chw_read(d_adr, r_buffer, r_byte);
-#else
-	// Need test
-	return i2chw_exchange(d_adr, bufw, ARRAY_SIZE(bufw), r_buffer, r_byte);
-#endif
+	return i2chwx_exchange(STMPE811_TWIPTR, d_adr, bufw, ARRAY_SIZE(bufw), r_buffer, r_byte);
 
 #endif
 }
@@ -86,7 +82,7 @@ static void i2cperiph_write8(uint_fast8_t DeviceAddr, uint_fast8_t reg, uint_fas
 	i2cp_stop(p1);
 #elif WITHTWIHW
 	const uint8_t bufw [] = { reg, val, };
-	i2chw_write(DeviceAddr, bufw, ARRAY_SIZE(bufw));
+	i2chwx_write(STMPE811_TWIPTR, DeviceAddr, bufw, ARRAY_SIZE(bufw));
 #endif
 }
 
@@ -151,7 +147,7 @@ uint_fast8_t stmpe811_TS_GetXYZ(
 	uint_fast8_t * Z
 	)
 {
-	uint_fast8_t DeviceAddr = BOARD_I2C_STMPE811;
+	uint_fast8_t DeviceAddr = STMPE811_I2C_ADDR8;
 	uint8_t dataXYZ [4];
 	uint_fast32_t vdataXY;
 	uint_fast16_t xx, yy;
@@ -288,17 +284,17 @@ void board_tsc_initialize(void)
 	i2cp_intiialize(& tp_i2cp, I2CP_I2C1, 400000);
 #endif /* (WITHTWISW) && ! LINUX_SUBSYSTEM */
 	/* Soft reset */
-	i2cperiph_write8(BOARD_I2C_STMPE811, STMPE811_REG_SYS_CTRL1, 0x02);
+	i2cperiph_write8(STMPE811_I2C_ADDR8, STMPE811_REG_SYS_CTRL1, 0x02);
 
-	chip_id = i2cperiph_read16(BOARD_I2C_STMPE811, STMPE811_REG_CHP_ID);
-	ver = i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_ID_VER);
+	chip_id = i2cperiph_read16(STMPE811_I2C_ADDR8, STMPE811_REG_CHP_ID);
+	ver = i2cperiph_read8(STMPE811_I2C_ADDR8, STMPE811_REG_ID_VER);
 	PRINTF(PSTR("stmpe811_initialize: chip_id=%04X, expected %04X, ver=%02x\n"), chip_id, STMPE811_ID, ver);
 
 	tscpresent = chip_id == STMPE811_ID;
 
 	if (tscpresent != 0 && ver == 0x03)
 	{
-		stmpe811_TS_Start(BOARD_I2C_STMPE811);
+		stmpe811_TS_Start(STMPE811_I2C_ADDR8);
 
 	#if WITH_STMPE811_INTERRUPTS
 		BOARD_STMPE811_INT_CONNECT();
@@ -311,7 +307,7 @@ void board_tsc_initialize(void)
 uint_fast8_t stmpe811_is_pressed(void) /* Return 1 if touch detection */
 {
 	return tscpresent &&
-			((i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_TSC_CTRL) & STMPE811_TS_CTRL_STATUS) >> STMPE811_TS_CTRL_STATUS_POS) != 0;
+			((i2cperiph_read8(STMPE811_I2C_ADDR8, STMPE811_REG_TSC_CTRL) & STMPE811_TS_CTRL_STATUS) >> STMPE811_TS_CTRL_STATUS_POS) != 0;
 }
 
 #if WITHTSC5PCALIBRATE

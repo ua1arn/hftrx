@@ -71,9 +71,7 @@ static int pmic_bus_init(void)
 static int pmic_bus_read(uint8_t reg, uint8_t * data)
 {
 	uint8_t bufw = reg;
-	if (i2chwx_write(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1))
-		return 1;
-	return i2chwx_read(TWIHARD_S_PTR, PMIC_I2C_R, data, 1);
+	return i2chwx_exchange(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1, data, 1);
 }
 
 static int pmic_bus_write(uint8_t reg, uint8_t data)

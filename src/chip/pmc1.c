@@ -56,9 +56,7 @@ static int stpmic1_register_read(uint8_t register_id,  uint8_t *data)
 
 #elif WITHTWIHW
 	uint8_t bufw = register_id;
-	if (i2chwx_write(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1))
-		return 1;
-	return i2chwx_read(TWIHARD_S_PTR, PMIC_I2C_R, data, 1);
+	return i2chwx_exchange(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1, data, 1);
 #endif /* WITHTWISW */
 /*
 	return stm32_i2c_mem_read(pmic_i2c_handle, pmic_i2c_addr,

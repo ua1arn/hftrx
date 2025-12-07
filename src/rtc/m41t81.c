@@ -15,10 +15,16 @@
 #include "board.h"
 #include <string.h>
 
-#define M41T81_ADDRESS7 0x68
+#ifndef M41T81_I2C_ADDR7
+	#define M41T81_I2C_ADDR7 0x68
+#endif
 
-#define M41T81_ADDRESS_W	(M41T81_ADDRESS7 * 2)
+#define M41T81_ADDRESS_W	(M41T81_I2C_ADDR7 * 2)
 #define M41T81_ADDRESS_R	(M41T81_ADDRESS_W | 0x01)
+
+#ifndef M41T81_TWIPTR
+	#define M41T81_TWIPTR	TWIHARD_PTR
+#endif
 
 /* return non-zero then error */
 static int m41t81_readbuff(
@@ -31,10 +37,7 @@ static int m41t81_readbuff(
 
 	uint8_t bufw [] = { r };
 
-	return i2chw_exchange(M41T81_ADDRESS_W, bufw, ARRAY_SIZE(bufw), b, n);
-	if (i2chw_write(M41T81_ADDRESS_W, bufw, ARRAY_SIZE(bufw)))
-		return 1;
-	return (i2chw_read(M41T81_ADDRESS_R, b, n));
+	return i2chwx_exchange(M41T81_TWIPTR, M41T81_ADDRESS_W, bufw, ARRAY_SIZE(bufw), b, n);
 
 #elif WITHTWISW
 	i2c_start(M41T81_ADDRESS_W);
@@ -68,7 +71,7 @@ static int m41t81_writebuff(
 	uint8_t buff [n + 1];
 	buff [0] = r;
 	memcpy(buff + 1, b, n);
-	return i2chw_write(M41T81_ADDRESS_W, buff, n + 1);
+	return i2chwx_write(M41T81_TWIPTR, M41T81_ADDRESS_W, buff, n + 1);
 
 #elif WITHTWISW
 	i2c_start(M41T81_ADDRESS_W);
