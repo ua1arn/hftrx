@@ -62,7 +62,8 @@ CORE = -mcpu=cortex-a7 --specs=nosys.specs -mfloat-abi=hard -mfpu=neon-vfpv4
 
 # Define optimisation level here
 #OPT = -Og
-OPT = -Ofast -flto
+#OPT = -Ofast -flto -save-temps
+OPT = -Ofast -flto -mlong-calls
 #OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
