@@ -479,7 +479,7 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
 //#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 	// Набор определений для работы без внешнего дешифратора
 	#define SPI_ALLCS_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
@@ -549,7 +549,7 @@
 	#define SPI_TARGET_MISO_PIN		(GPIOB->IDR)
 	#define	SPI_MISO_BIT			(UINT32_C(1) << 4)	// * PB4 бит, через который идет ввод с SPI.
 
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI1_INITIALIZE() do { \
 			arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
 			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
 			arm_hardware_piob_inputs(SPI_MISO_BIT); \
@@ -564,20 +564,6 @@
 			arm_hardware_piob_inputs(SPI_MISO_BIT); \
 		} while (0)
 
-	#define HARDWARE_UART1_INITIALIZE() do { \
-			const uint_fast32_t TXMASK = (UINT32_C(1) << 9); /* PA9: TX DATA line (2 MHz) */ \
-			const uint_fast32_t RXMASK = (UINT32_C(1) << 10); /* PA10: RX DATA line (2 MHz) - pull-up RX data */  \
-			arm_hardware_pioa_altfn2m(TXMASK, AF_USART1);  \
-			arm_hardware_pioa_altfn2m(RXMASK, AF_USART1);  \
-			arm_hardware_pioa_updown(RXMASK, RXMASK, 0); \
-		} while (0)
-	#define HARDWARE_UART2_INITIALIZE() do { \
-			const uint_fast32_t TXMASK = (UINT32_C(1) << 5); /* PD5: TX DATA line (2 MHz) */ \
-			const uint_fast32_t RXMASK = (UINT32_C(1) << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
-			arm_hardware_piod_altfn2m(TXMASK, AF_USART2); \
-			arm_hardware_piod_altfn2m(RXMASK, AF_USART2); \
-			arm_hardware_piod_updown(RXMASK, RXMASK, 0); \
-		} while (0)
 
 	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
@@ -585,6 +571,21 @@
 	#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
 
 #endif
+
+#define HARDWARE_UART1_INITIALIZE() do { \
+		const uint_fast32_t TXMASK = (UINT32_C(1) << 9); /* PA9: TX DATA line (2 MHz) */ \
+		const uint_fast32_t RXMASK = (UINT32_C(1) << 10); /* PA10: RX DATA line (2 MHz) - pull-up RX data */  \
+		arm_hardware_pioa_altfn2m(TXMASK, AF_USART1);  \
+		arm_hardware_pioa_altfn2m(RXMASK, AF_USART1);  \
+		arm_hardware_pioa_updown(RXMASK, RXMASK, 0); \
+	} while (0)
+#define HARDWARE_UART2_INITIALIZE() do { \
+		const uint_fast32_t TXMASK = (UINT32_C(1) << 5); /* PD5: TX DATA line (2 MHz) */ \
+		const uint_fast32_t RXMASK = (UINT32_C(1) << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
+		arm_hardware_piod_altfn2m(TXMASK, AF_USART2); \
+		arm_hardware_piod_altfn2m(RXMASK, AF_USART2); \
+		arm_hardware_piod_updown(RXMASK, RXMASK, 0); \
+	} while (0)
 
 #define HARDWARE_SIDETONE_INITIALIZE() do { \
 	} while (0)

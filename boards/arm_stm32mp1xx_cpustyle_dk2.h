@@ -475,7 +475,7 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
 //#define SPI_IOUPDATE_BIT		(1uL << 15)	// * PA15
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 	// Набор определений для работы без внешнего дешифратора
 	#define SPI_ALLCS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
@@ -527,7 +527,7 @@
 	#define SPI_TARGET_MISO_PIN		(GPIOB->IDR)
 	#define	SPI_MISO_BIT			(1uL << 4)	// * PB4 бит, через который идет ввод с SPI.
 
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI1_INITIALIZE() do { \
 			arm_hardware_piob_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PB3 */ \
 			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PB5 */ \
 			arm_hardware_piob_inputs(SPI_MISO_BIT); /* PB4 */ \
@@ -548,7 +548,7 @@
 	#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
 	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW */
 
 // WITHUART1HW
 #define HARDWARE_UART1_INITIALIZE() do { \

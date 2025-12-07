@@ -171,10 +171,10 @@ void prog_spi_io(
 	);
 void spi_cs_ping(spitarget_t target);
 
-void spi_operate_lock(IRQL_t * oldIrql);
-void spi_operate_unlock(IRQL_t irql);
-void spidf_operate_lock(IRQL_t * oldIrql);
-void spidf_operate_unlock(IRQL_t irql);
+void spi_operate_lock(SPI_t * const spi, IRQL_t * oldIrql);
+void spi_operate_unlock(SPI_t * const spi, IRQL_t irql);
+void spidf_operate_lock(QSPI_t * const qspi, IRQL_t * oldIrql);
+void spidf_operate_unlock(QSPI_t * const qspi, IRQL_t irql);
 
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
@@ -201,13 +201,13 @@ void hardware_spi_slave_enable(uint_fast8_t spimode);
 void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len);
 
 
-void hardware_spi_master_initialize(void);		/* инициализация и перевод в состояние "отключено" */
-void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispeed);
+void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix);		/* инициализация и перевод в состояние "отключено" */
+void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, int_fast32_t spispeed);
 
 void board_reload_fir_artix7_p1(spitarget_t target, uint_fast8_t v1, uint_fast32_t v2);
 void board_reload_fir_artix7_p2(spitarget_t target, uint_fast8_t v1, uint_fast32_t v2);
-void board_reload_fir_artix7_spistart(IRQL_t * irql);
-void board_reload_fir_artix7_spidone(IRQL_t irql);
+void board_reload_fir_artix7_spistart(SPI_t * spi, IRQL_t * irql);
+void board_reload_fir_artix7_spidone(SPI_t * spi, IRQL_t irql);
 
 void board_fpga_fir_coef_p1(SPI_t * spi, int_fast32_t v);	// Передача одного (первого) 32-битного значения и формирование строба.
 void board_fpga_fir_coef_p2(SPI_t * spi, int_fast32_t v);	// Передача одного (последующего) 32-битного значения и формирование строба.

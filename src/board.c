@@ -82,9 +82,7 @@ static volatile uint_fast8_t 	glob_catmux = BOARD_CATMUX_USBCDC;
 	static uint_fast8_t 	glob_bglightoff = 0;	// выключаем дисплей
 #endif /* WITHLCDBACKLIGHT */
 
-#if WITHKBDBACKLIGHT
 static uint_fast8_t 	glob_kblight = 1;
-#endif /* WITHKBDBACKLIGHT */
 static uint_fast8_t 	glob_poweron = 1;
 
 static uint_fast8_t		glob_fanflag;	/* включение вентилятора */
@@ -4576,7 +4574,7 @@ void board_fpga_fir_initialize(void)
 	/* FPGA FIR коэффициенты */
 	plfircoefsout = malloc(sizeof(adapter_t));
 	adpt_initialize(plfircoefsout, HARDWARE_COEFWIDTH, 0, "plfircoefsout");
-	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
+	hardware_spi_master_setfreq(HARDWARE_FPGA_FIR_SPIHARD_PTR, SPIC_SPEEDUFAST, SPISPEEDUFAST);
 }
 
 void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
@@ -4635,7 +4633,7 @@ void board_fpga_fir_initialize(void)
 
 	TARGET_FPGA_FIR_INITIALIZE();
 
-	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
+	hardware_spi_master_setfreq(HARDWARE_FPGA_FIR_SPIHARD_PTR, SPIC_SPEEDUFAST, SPISPEEDUFAST);
 
 	/* Сброс fir filter в FPGA */
 	board_set_flt_reset_n(1);	// снять сигнал сброса
@@ -4831,7 +4829,7 @@ board_fpga_fir_send(
 	const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth
 	)
 {
-	SPI_t * spi = SPIHARD_PTR;
+	SPI_t * spi = HARDWARE_FPGA_FIR_SPIHARD_PTR;
 	//ASSERT(CWidth <= 24);
 	//PRINTF(PSTR("board_fpga_fir_send: ifir=%u, Ntap=%u\n"), ifir, Ntap);
 	IRQL_t irql;

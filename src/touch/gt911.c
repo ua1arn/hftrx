@@ -6,12 +6,12 @@
 //
 
 #include "hardware.h"
-#include "board.h"
 #include "formats.h"
-#include "gpio.h"
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
+#include "board.h"
+#include "gpio.h"
 
 // При необходимости разместить в файле конфигурации платы.
 //#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.

@@ -502,7 +502,7 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); (void) GPIOA->BSRR; } while (0)
 //#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 	// Набор определений для работы без внешнего дешифратора
 
 	#define targetdataflash 0xFF
@@ -582,17 +582,13 @@
 	#define	SPIDFHARD_PTR SPI	/* 0 - SPI0, 1: SPI1... */
 	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0
 
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI_INITIALIZE() do { \
 		arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF3); 	/* PC2 SPI_CLK */ \
 		arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF3); 	/* PC4 SPI_MOSI */ \
 		arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF3); 	/* PC5 SPI_MISO */ \
 	} while (0)
-	#define HARDWARE_SPI_CONNECT() do { \
-	} while (0)
-	#define HARDWARE_SPI_DISCONNECT() do { \
-	} while (0)
 
-#else /* WITHSPIHW || WITHSPISW */
+#else /* WITHSPIHW */
 
 	#define targetext1		(0)		// PE8 ext1 on front panel
 	#define targetxad2		(0)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
@@ -602,7 +598,7 @@
 	#define targetadc2		(0) 		// PE9 ADC MCP3208-BI/SL chip select (potentiometers)
 	#define targetfpga1		(0)		// PE10 FPGA control registers CS1
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW */
 
 // WITHUART0HW
 #define HARDWARE_UART0_INITIALIZE() do { \
@@ -698,7 +694,6 @@
 		arm_hardware_piod_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_piod_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 		} while (0)
-	#define	TWIHARD_IX 2	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnr_v3s_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
@@ -733,7 +728,6 @@
 		arm_hardware_piog_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_piog_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 		} while (0) 
-	#define	TWIHARD_IX 1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnr_v3s_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 

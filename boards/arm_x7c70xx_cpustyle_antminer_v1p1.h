@@ -611,10 +611,6 @@
 		xc7z_gpio_output(SPI_MOSI_MIO); \
 		xc7z_gpio_input(SPI_MISO_MIO); \
 		} while (0)
-	#define HARDWARE_SPI_CONNECT() do { \
-		} while (0)
-	#define HARDWARE_SPI_DISCONNECT() do { \
-		} while (0)
 
 #endif /* WITHSPIHW || WITHSPISW */
 

@@ -17,8 +17,6 @@
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 
-//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
-
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 //#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
 //#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
@@ -45,6 +43,8 @@
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
 
 #if WITHISBOOTLOADER
+
+	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 
 	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 	#define WITHSDHC0HW	1		/* TF CARD */
@@ -121,6 +121,9 @@
 	} while (0)
 
 #else /* WITHISBOOTLOADER */
+
+	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+
 
 	#define WITHETHHW 1	/* Hardware Ethernet controller */
 
@@ -966,8 +969,6 @@
 	//#define SPDIF_D2_BIT (UINT32_C(1) << 6)		// PC6 SPI0_WP/D2
 	//#define SPDIF_D3_BIT (UINT32_C(1) << 7)		// PC7 SPI0_HOLD/D3
 
-	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
-	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
 	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0x03	/* t507: 000: OSC24M 001: PLL_PERI0(1X) 010: PLL_PERI1 (1X) 011: PLL_PERI0(2X) 100: PLL_PERI1 (2X) */
 	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
@@ -982,17 +983,16 @@
 	} while (0)
 	#define WITHSPI1HW	1	// Use SPI1
 
-	/* compatibility define (should be removed) */
-	#define SPIIO_INITIALIZE() do { \
-		HARDWARE_SPI1_INITIALIZE(); \
-	} while (0)
+	/* to be removed... */
+	#define SPIHARD_IX 1    /* 0 - SPI0, 1: SPI1... */
+	#define SPIHARD_PTR SPI1    /* 0 - SPI0, 1: SPI1... */
+	#define	SPIDFHARD_PTR SPIHARD_PTR
+	#define SPIDFHARD_IX SPIHARD_IX
 
-	#define HARDWARE_SPI_CONNECT() do { \
-	} while (0)
-	#define HARDWARE_SPI_DISCONNECT() do { \
-	} while (0)
+	#define HARDWARE_FPGA_LOADER_SPIHARD_PTR SPIHARD_PTR
+	#define HARDWARE_FPGA_FIR_SPIHARD_PTR SPIHARD_PTR
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW */
 
 // WITHUART0HW
 // Используется периферийный контроллер последовательного порта UART0 */
@@ -1035,10 +1035,9 @@
 
 #endif /* WITHKEYBOARD */
 
-#if 1
+#if WITHTWIHW
 	// I2C/TWI
 	// S_TWI access (Контроллер питания AXP305)
-	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	#define WITHSTWI0HW 	1	/* Использование аппаратного контроллера S_TWI0 (I2C) */
 
 	// PL0 S-TWI0-SCK - На плате нет pull-up резисторов
@@ -1057,24 +1056,13 @@
 		gpioX_prog(GPIOL, 0*TARGET_S_TWI0_TWD, GPIO_CFG_AF3, 0x03, 0x01);	/* PL1 - S_TWI0_SDA */ \
 	} while (0)
 
-	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
-	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_INITIALIZE() do { \
-		HARDWARE_S_TWI0_INITIALIZE(); \
-	} while (0)
-
-	#define	TWIHARD_S_IX 0	/* 0 - TWI0, 1: TWI1... */
-	//#define	TWIHARD_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_S_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
-	//#define	TWIHARD_FREQ (allwnr_t507_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
-	#define	TWIHARD_S_FREQ (allwnr_t507_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
-#endif
+	#define	TWIHARD_S_TWI0_FREQ (allwnr_t507_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+#endif /* WITHTWIHW */
 
-#if 1
+#if WITHTWIHW
 	// I2C/TWI
-	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	#define WITHTWI0HW 	1	/* Использование аппаратного контроллера TWI0 (I2C) */
-	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 	// PA0 - TWI0_SCL
 	// PA1 - TWI0_SDA
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
@@ -1090,12 +1078,7 @@
 			gpioX_prog(GPIOA, 0*TARGET_TWI_TWCK, GPIO_CFG_AF4, 0x03, 0x01);	/* PA0 - TWI0_SCL */ \
 			gpioX_prog(GPIOA, 0*TARGET_TWI_TWD, GPIO_CFG_AF4, 0x03, 0x01);	/* PA1 - TWI0_SDA */ \
 		} while (0)
-#if 0
-	#define	TWIHARD_INITIALIZE() do { \
-			HARDWARE_TWI0_INITIALIZE(); \
-		} while (0) 
-#endif
-	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
+
 	#define	TWIHARD_PTR TWI0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnr_t507_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 #endif

@@ -373,7 +373,7 @@ static void SDCARD_CS_HIGH(void)
 // установить скорость SPI для указанного канала контроллера
 void hardware_sdhost_setspeed(unsigned long ticksfreq)
 {
-	hardware_spi_master_setfreq(SPIC_SPEEDSDCARD, ticksfreq);
+	hardware_spi_master_setfreq(HARDWARE_SDCARD_SPIHARD_PTR, SPIC_SPEEDSDCARD, ticksfreq);
 }
 
 void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
@@ -3695,7 +3695,7 @@ static void SDCARD_CS_HIGH(void)
 // установить скорость SPI для указанного канала контроллера
 static void sdcard_spi_setfreq(unsigned long freq)
 {
-	hardware_spi_master_setfreq(SPIC_SPEEDSDCARD, freq);
+	hardware_spi_master_setfreq(HARDWARE_SDCARD_SPIHARD_PTR, SPIC_SPEEDSDCARD, freq);
 }
 
 #define RESPLIMIT 64000U

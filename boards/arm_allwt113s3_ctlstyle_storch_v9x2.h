@@ -481,7 +481,7 @@
 
 	//#define WITHTSC5PCALIBRATE 1	/* Калибровка по пяти точкам */
 	//#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
-	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller ST STMPE811 */
+	#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller ST STMPE811 */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
 	//#define WITH_STMPE811_INTERRUPTS	1
 	//#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */

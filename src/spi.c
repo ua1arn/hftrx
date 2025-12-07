@@ -24,12 +24,6 @@ enum { SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE, SPDFIO_numwires };
 #define USESPILOCK (WITHSPILOWSUPPORTT || CPUSTYLE_ALLWINNER)	/* доступ к SPI разделяет DFU устройство и user mode программа */
 #define USESPIDFSHARESPI (WIHSPIDFHW && CPUSTYLE_ALLWINNER)
 
-void spi_operate_lock(IRQL_t * oldIrql);
-void spi_operate_unlock(IRQL_t irql);
-void spidf_operate_lock(IRQL_t * oldIrql);
-void spidf_operate_unlock(IRQL_t irql);
-
-
 typedef union
 {
 	volatile uint32_t v32;
@@ -465,6 +459,7 @@ typedef struct lowspiexchange_tag
 
 typedef struct lowspiio_tag
 {
+	SPI_t * spi;
 	spitarget_t target;
 	spi_speeds_t spispeedindex;
 	spi_modes_t spimode;
@@ -479,7 +474,8 @@ static IRQLSPINLOCK_t spicslock = IRQLSPINLOCK_INIT;
 #define SPICSLOCK_IRQL IRQL_SYSTEM
 #endif /* USESPILOCK */
 
-void spi_operate_lock(IRQL_t * oldIrql)
+// todo: сделать в контексте одного канала SPI
+void spi_operate_lock(SPI_t * const spi, IRQL_t * oldIrql)
 {
 #if USESPILOCK
 	IRQLSPIN_LOCK(& spicslock, oldIrql, SPICSLOCK_IRQL);
@@ -488,7 +484,8 @@ void spi_operate_lock(IRQL_t * oldIrql)
 #endif /* USESPILOCK */
 }
 
-void spi_operate_unlock(IRQL_t irql)
+// todo: сделать в контексте одного канала SPI
+void spi_operate_unlock(SPI_t * const spi, IRQL_t irql)
 {
 #if USESPILOCK
 	IRQLSPIN_UNLOCK(& spicslock, irql);
@@ -499,14 +496,16 @@ void spi_operate_unlock(IRQL_t irql)
 
 #if USESPIDFSHARESPI
 
-void spidf_operate_lock(IRQL_t * oldIrql)
+// todo: сделать в контексте одного канала QSPI
+void spidf_operate_lock(QSPI_t * const qspi, IRQL_t * oldIrql)
 {
-	spi_operate_lock(oldIrql);
+	spi_operate_lock(qspi, oldIrql);
 }
 
-void spidf_operate_unlock(IRQL_t irql)
+// todo: сделать в контексте одного канала ASPI
+void spidf_operate_unlock(QSPI_t * const qspi, IRQL_t irql)
 {
-	spi_operate_unlock(irql);
+	spi_operate_unlock(qspi, irql);
 }
 
 #else /* USESPIDFSHARESPI */
@@ -514,12 +513,14 @@ void spidf_operate_unlock(IRQL_t irql)
 static IRQLSPINLOCK_t spidfcslock = IRQLSPINLOCK_INIT;
 #define SPIDFCSLOCK_IRQL IRQL_SYSTEM
 
-void spidf_operate_lock(IRQL_t * oldIrql)
+// todo: сделать в контексте одного канала QSPI
+void spidf_operate_lock(QSPI_t * const qspi, IRQL_t * oldIrql)
 {
 	IRQLSPIN_LOCK(& spidfcslock, oldIrql, SPIDFCSLOCK_IRQL);
 }
 
-void spidf_operate_unlock(IRQL_t irql)
+// todo: сделать в контексте одного канала QSPI
+void spidf_operate_unlock(QSPI_t * const qspi, IRQL_t irql)
 {
 	IRQLSPIN_UNLOCK(& spidfcslock, irql);
 }
@@ -534,25 +535,26 @@ static void spi_transfer_b32(SPI_t * spi, spitarget_t target, const uint32_t * t
 
 void spi_cs_ping(spitarget_t target)
 {
+	SPI_t * const spi = SPIHARD_PTR;	// сделать зависящим от target
 	IRQL_t oldIrql;
 
-	spi_operate_lock(& oldIrql);
+	spi_operate_lock(spi, & oldIrql);
 	prog_select(target);
 	SPI_CS_DELAY(target);	/* Perform delay after assert or de-assert specific CS line */
 	prog_unselect(target);
 
-	spi_operate_unlock(oldIrql);
+	spi_operate_unlock(spi, oldIrql);
 
 }
 
 static void spi_operate(lowspiio_t * iospi)
 {
-	SPI_t * const spi = SPIHARD_PTR;
+	SPI_t * const spi = iospi->spi;
 	const spitarget_t target = iospi->target;
 	unsigned i;
 	IRQL_t oldIrql;
 
-	spi_operate_lock(& oldIrql);
+	spi_operate_lock(spi, & oldIrql);
 
 	switch (iospi->spiiosize)
 	{
@@ -684,7 +686,7 @@ static void spi_operate(lowspiio_t * iospi)
 	}
 	SPI_CS_DELAY(target);	/* Perform delay after assert or de-assert specific CS line */
 
-	spi_operate_unlock(oldIrql);
+	spi_operate_unlock(spi, oldIrql);
 }
 
 // Работа совместно с фоновым обменом SPI по прерываниям
@@ -698,6 +700,7 @@ void prog_spi_io(
 {
 	unsigned i = 0;
 	lowspiio_t io;
+	io.spi = SPIHARD_PTR;	// сделать зависящим от target
 	io.target = target;
 	io.spispeedindex = spispeedindex;
 	io.spimode = spimode;
@@ -747,7 +750,7 @@ void prog_spi_exchange(
 	)
 {
 	lowspiio_t io;
-
+	io.spi = SPIHARD_PTR;	// сделать зависящим от target
 	io.target = target;
 	io.spispeedindex = spispeedindex;
 	io.spimode = spimode;
@@ -780,7 +783,7 @@ void prog_spi_exchange32(
 	)
 {
 	lowspiio_t io;
-
+	io.spi = SPIHARD_PTR;	// сделать зависящим от target
 	io.target = target;
 	io.spispeedindex = spispeedindex;
 	io.spimode = spimode;
@@ -986,19 +989,15 @@ static void spi_transfer_b32(SPI_t * spi, spitarget_t target, const uint32_t * t
    на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается
    */
 /* инициализация и перевод в состояние "отключено" */
-void hardware_spi_master_initialize(void)
+void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 {
-	SPI_t * const spi = SPIHARD_PTR;
-	//PRINTF("hardware_spi_master_initialize\n");
+	//PRINTF("hardware_spi_master_initialize spi=%p\n", spi);
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	// инициализация контроллера SPI
 
 	// Get clock
     PMC->PMC_PCER0 = (UINT32_C(1) << ID_PIOA) | (UINT32_C(1) << ID_SPI);	/* Need PIO too */
-
-    // setup PIO pins for SPI bus, disconnect from peripherials
-	SPIIO_INITIALIZE();
 
     // reset and enable SPI
     SPI->SPI_CR = SPI_CR_SWRST;
@@ -1022,10 +1021,7 @@ void hardware_spi_master_initialize(void)
    // Get clock
     AT91C_BASE_PMC->PMC_PCER = (UINT32_C(1) << AT91C_ID_PIOA) | (UINT32_C(1) << AT91C_ID_SPI);/* Need PIO too */
 
-    // setup PIO pins for SPI bus, disconnect from peripherials
-	SPIIO_INITIALIZE();
-
-    // reset and enable SPI
+     // reset and enable SPI
     spi->SPI_CR = AT91C_SPI_SWRST;
     spi->SPI_CR = AT91C_SPI_SWRST;
     spi->SPI_CR = AT91C_SPI_SPIDIS;
@@ -1051,8 +1047,6 @@ void hardware_spi_master_initialize(void)
 	spi->CR1 = 0x0000;             //очистить первый управляющий регистр
 	spi->CR2 = 0x0000;	// SPI_CR2_SSOE;             //очистить второй управляющий регистр
 
-	/* настраиваем в режиме disconnect */
-	SPIIO_INITIALIZE();
 
 #elif CPUSTYLE_STM32F4XX
 	// Начнем с настройки порта:
@@ -1066,9 +1060,6 @@ void hardware_spi_master_initialize(void)
 	spi->CR1 = 0x0000;             //очистить первый управляющий регистр
 	spi->CR2 = 0x0000;	// SPI_CR2_SSOE;             //очистить второй управляющий регистр
 
-	/* настраиваем в режиме disconnect */
-	SPIIO_INITIALIZE();
-
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
 	// Настроим модуль SPI.
@@ -1078,9 +1069,6 @@ void hardware_spi_master_initialize(void)
 	(void) RCC->APB2LPENR;
 	//spi->CR1 = 0x0000;             //очистить первый управляющий регистр
 	//spi->CR2 = 0x0000;
-
-	/* настраиваем в режиме disconnect */
-	SPIIO_INITIALIZE();
 
 #elif CPUSTYLE_R7S721
 	// Renesas Serial Peripheral Interface 0
@@ -1140,17 +1128,12 @@ void hardware_spi_master_initialize(void)
 		(1U << 7) |		// SPRIE  - Receive Interrupt Enable (for DMA transfers)
 		0;
 
-
-	SPIIO_INITIALIZE();
-
 #elif CPUSTYLE_STM32MP1
 
 	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SPI1EN; // подать тактирование
 	(void) RCC->MP_APB2ENSETR;
 	RCC->MP_APB2LPENSETR = RCC_MP_APB2LPENSETR_SPI1LPEN; // подать тактирование
 	(void) RCC->MP_APB2LPENSETR;
-	/* настраиваем в режиме disconnect */
-	SPIIO_INITIALIZE();
 
 #elif CPUSTYLE_XC7Z
 
@@ -1176,10 +1159,7 @@ void hardware_spi_master_initialize(void)
 	//PRINTF("SPI0->Mod_id_reg0=%08lX (expected 0x00090106)\n", SPI0->Mod_id_reg0);
 	ASSERT(SPI0->Mod_id_reg0 == 0x00090106uL);
 
-	SPIIO_INITIALIZE();
-
 #elif CPUSTYLE_A64
-	unsigned ix = SPIHARD_IX;	// SPI0
 	/* Open the clock gate for SPI */
 	CCU->BUS_CLK_GATING_REG0 |= (UINT32_C(1) << (20 + ix));	// SPI_GATING
 
@@ -1204,10 +1184,8 @@ void hardware_spi_master_initialize(void)
 
 	// De-assert hardware CS
 	//spi->SPI_TCR |= (1u << 7);
-	SPIIO_INITIALIZE();
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
-	unsigned ix = SPIHARD_IX;	// SPI0
 
 	SPIHARD_CCU_CLK_REG =
 		SPIHARD_CCU_CLK_SRC_SEL_VAL * (UINT32_C(1) << 24) |	/* CLK_SRC_SEL */
@@ -1256,7 +1234,6 @@ void hardware_spi_master_initialize(void)
 
 	// De-assert hardware CS
 	//spi->SPI_TCR |= (1u << 7);
-	SPIIO_INITIALIZE();
 
 #elif CPUSTYLE_V3S
 
@@ -1284,7 +1261,6 @@ void hardware_spi_master_initialize(void)
 
 	// De-assert hardware CS
 	//spi->SPI_TCR |= (1u << 7);
-	SPIIO_INITIALIZE();
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -1479,7 +1455,7 @@ static void spi_transfer_b8(SPI_t * spi, spitarget_t target, const uint8_t * txb
 #if WITHSPIHW
 
 
-void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispeed)
+void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, int_fast32_t spispeed)
 {
 	//PRINTF("hardware_spi_master_setfreq: %d %d\n", spispeedindex, spispeed);
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -1826,6 +1802,20 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 #endif
 }
 
+static void hardware_spi_pinsconnect(SPI_t * spi)
+{
+#ifdef HARDWARE_SPI_CONNECT
+	HARDWARE_SPI_CONNECT();
+#endif
+}
+
+static void hardware_spi_pinsdisconnect(SPI_t * spi)
+{
+#ifdef HARDWARE_SPI_DISCONNECT
+	HARDWARE_SPI_DISCONNECT();
+#endif
+}
+
 /* управление состоянием "подключено" */
 void hardware_spi_connect(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes_t spimode)
 {
@@ -1840,7 +1830,7 @@ void hardware_spi_connect(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes_t s
 
 	(void) SPI->SPI_RDR;		/* clear AT91C_SPI_RDRF in status register */
 
-	HARDWARE_SPI_CONNECT();
+	hardware_spi_pinsconnect(spi);
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -1852,12 +1842,12 @@ void hardware_spi_connect(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes_t s
 
 	(void) spi->SPI_RDR;		/* clear AT91C_SPI_RDRF in status register */
 
-	HARDWARE_SPI_CONNECT();
+	hardware_spi_pinsconnect(spi);
 
 #elif CPUSTYLE_STM32F7XX
 
 	// В этих процессорах и входы и выходы переключаются на ALT FN
-	HARDWARE_SPI_CONNECT();
+	hardware_spi_pinsconnect(spi);
 
 	spi->CR1 = spi_cr1_val8w [spispeedindex][spimode];
 	spi->CR2 = (spi->CR2 & ~ (SPI_CR2_DS)) |
@@ -1867,7 +1857,7 @@ void hardware_spi_connect(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes_t s
 
 #elif CPUSTYLE_STM32H7XX
 
-	HARDWARE_SPI_CONNECT();
+	hardware_spi_pinsconnect(spi);
 
 	spi->CFG1 = spi_cfg1_val8w [spispeedindex];
 	spi->CFG2 = spi_cfg2_val [spimode];
@@ -1884,11 +1874,11 @@ void hardware_spi_connect(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes_t s
 	spi->SPBR = spi_spbr_val [spispeedindex];
 	spi->SPCMD0 = spi_spcmd0_val8w [spispeedindex][spimode];
 
-	HARDWARE_SPI_CONNECT();
+	hardware_spi_pinsconnect(spi);
 
 #elif CPUSTYLE_STM32MP1
 
-	HARDWARE_SPI_CONNECT();
+	hardware_spi_pinsconnect(spi);
 
 	spi->CFG1 = spi_cfg1_val8w [spispeedindex];
 	spi->CFG2 = spi_cfg2_val [spimode];
@@ -1902,7 +1892,7 @@ void hardware_spi_connect(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes_t s
 	SPI0->CR = spi_cr_val [spispeedindex][spimode];
 	SPI0->ER = 0x0001;	// 1: enable the SPI
 
-	HARDWARE_SPI_CONNECT();
+	hardware_spi_pinsconnect(spi);
 
 #elif CPUSTYLE_ALLWINNER
 
@@ -1918,7 +1908,7 @@ void hardware_spi_connect(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes_t s
 //		spi->SPI_TCR = val;
 //		(void) spi->SPI_TCR;
 //	}
- 	HARDWARE_SPI_CONNECT();
+ 	hardware_spi_pinsconnect(spi);
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -1932,11 +1922,11 @@ void hardware_spi_disconnect(SPI_t * spi)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	HARDWARE_SPI_DISCONNECT();
+	hardware_spi_pinsdisconnect(spi);
 
 #elif CPUSTYLE_AT91SAM7S
 
-	HARDWARE_SPI_DISCONNECT();
+	hardware_spi_pinsdisconnect(spi);
 
 #elif CPUSTYLE_STM32H7XX
 
@@ -1945,18 +1935,18 @@ void hardware_spi_disconnect(SPI_t * spi)
 		;
 	spi->CR1 &= ~ SPI_CR1_SPE;
 	// connect back to GPIO
-	HARDWARE_SPI_DISCONNECT();
+	hardware_spi_pinsdisconnect(spi);
 
 #elif CPUSTYLE_STM32F
 
 	spi->CR1 &= ~ SPI_CR1_SPE;
 
 	// connect back to GPIO
-	HARDWARE_SPI_DISCONNECT();
+	hardware_spi_pinsdisconnect(spi);
 
 #elif CPUSTYLE_R7S721
 
-	HARDWARE_SPI_DISCONNECT();
+	hardware_spi_pinsdisconnect(spi);
 
 #elif CPUSTYLE_STM32MP1
 	//#warning Insert code for CPUSTYLE_STM32MP1
@@ -1966,12 +1956,12 @@ void hardware_spi_disconnect(SPI_t * spi)
 		;
 	spi->CR1 &= ~ SPI_CR1_SPE;
 	// connect back to GPIO
-	HARDWARE_SPI_DISCONNECT();
+	hardware_spi_pinsdisconnect(spi);
 
 #elif CPUSTYLE_XC7Z
 
 	SPI0->ER = 0x0000;	// 0: disable the SPI
-	HARDWARE_SPI_DISCONNECT();
+	hardware_spi_pinsdisconnect(spi);
 
 #elif CPUSTYLE_ALLWINNER
 
@@ -1983,7 +1973,7 @@ void hardware_spi_disconnect(SPI_t * spi)
 		//(void) spi->SPI_TCR;
 	}
 
-	HARDWARE_SPI_DISCONNECT();
+	hardware_spi_pinsdisconnect(spi);
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -2065,7 +2055,7 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 	SPI->SPI_CSR [0] = spi_csr_val16w [spispeedindex] [spimode];
 
 	(void) SPI->SPI_RDR;		/* clear AT91C_SPI_RDRF in status register */
-	HARDWARE_SPI_CONNECT();
+	hardware_spi_pinsconnect(spi);
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -2076,12 +2066,12 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 	spi->SPI_CSR [0] = spi_csr_val16w [spispeedindex] [spimode];
 
 	(void) spi->SPI_RDR;		/* clear AT91C_SPI_RDRF in status register */
-	HARDWARE_SPI_CONNECT();
+	hardware_spi_pinsconnect(spi);
 
 #elif CPUSTYLE_STM32F7XX
 
 	// В этих процессорах и входы и выходы переключаются на ALT FN
-	HARDWARE_SPI_CONNECT();
+	hardware_spi_pinsconnect(spi);
 
 	spi->CR1 = spi_cr1_val16w [spispeedindex] [spimode];
 	spi->CR2 = (spi->CR2 & ~ (SPI_CR2_DS)) |
@@ -2091,7 +2081,7 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
-		HARDWARE_SPI_CONNECT();
+		hardware_spi_pinsconnect(spi);
 
 		spi->CFG1 = spi_cfg1_val16w [spispeedindex];
 		spi->CFG2 = spi_cfg2_val [spimode];
@@ -2108,7 +2098,7 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 	spi->SPBR = spi_spbr_val [spispeedindex];
 	spi->SPCMD0 = spi_spcmd0_val16w [spispeedindex] [spimode];
 
-	HARDWARE_SPI_CONNECT();
+	hardware_spi_pinsconnect(spi);
 
 #elif CPUSTYLE_ALLWINNER
 
@@ -2124,7 +2114,7 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 //		SPI0->SPI_TCR = val;
 //		(void) SPI0->SPI_TCR;
 //	}
- 	HARDWARE_SPI_CONNECT();
+ 	hardware_spi_pinsconnect(spi);
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -2265,7 +2255,7 @@ void hardware_spi_connect_b32(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 {
 #if CPUSTYLE_STM32H7XX
 
-	HARDWARE_SPI_CONNECT();
+	hardware_spi_pinsconnect(spi);
 
 	spi->CFG1 = spi_cfg1_val32w [spispeedindex];
 	spi->CFG2 = spi_cfg2_val [spimode];
@@ -2282,11 +2272,11 @@ void hardware_spi_connect_b32(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 	spi->SPBR = spi_spbr_val [spispeedindex];
 	spi->SPCMD0 = spi_spcmd0_val32w [spispeedindex] [spimode];
 
-	HARDWARE_SPI_CONNECT();
+	hardware_spi_pinsconnect(spi);
 
 #elif CPUSTYLE_STM32MP1
 
-	HARDWARE_SPI_CONNECT();
+	hardware_spi_pinsconnect(spi);
 
 	spi->CFG1 = spi_cfg1_val32w [spispeedindex];
 	spi->CFG2 = spi_cfg2_val [spimode];
@@ -2309,7 +2299,7 @@ void hardware_spi_connect_b32(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 //		spi->SPI_TCR = val;
 //		(void) spi->SPI_TCR;
 //	}
- 	HARDWARE_SPI_CONNECT();
+ 	hardware_spi_pinsconnect(spi);
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -2485,8 +2475,9 @@ portholder_t hardware_spi_b8(
 
 // При отсутствующем аппаратном контроллере ничего не делает.
 
-void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispeed)
+void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, int_fast32_t spispeed)
 {
+	(void) spi;
 	(void) spispeedindex;
 	(void) spispeed;
 }
@@ -2500,15 +2491,14 @@ void spi_initialize(void)
 #endif /* USESPILOCK */
 
 #if WITHSPIHW && WITHSPISW
+	#error Wrong config. Turn off WITHSPISW
+
 	// программный и аппаратный SPI
 
 	// Для работы Hittite HMC830 в Open mode инициализация требутеn условие "b":
 	// a. If a rising edge on SEN is detected first HMC Mode is selected.
 	// b. If a rising edge on SCLK is detected first Open mode is selected.
 
-	SPIIO_INITIALIZE();			// основные сигналы SPI при программном управлении
-	hardware_spi_master_initialize();
-	prog_select_init();		// spi CS initialize
 
 #elif WITHSPIHW
 	// только аппаратный SPI
@@ -2517,7 +2507,40 @@ void spi_initialize(void)
 	// a. If a rising edge on SEN is detected first HMC Mode is selected.
 	// b. If a rising edge on SCLK is detected first Open mode is selected.
 
-	hardware_spi_master_initialize();
+#if defined (SPIHARD_PTR) && defined (SPIIO_INITIALIZE)
+	hardware_spi_master_initialize(SPIHARD_PTR, SPIHARD_IX);
+	SPIIO_INITIALIZE();
+#endif
+
+#if WITHSPI0HW
+	hardware_spi_master_initialize(SPIBASENAME(0), 0);
+	HARDWARE_SPI0_INITIALIZE();
+#endif
+#if WITHSPI1HW
+	hardware_spi_master_initialize(SPIBASENAME(1), 1);
+	HARDWARE_SPI1_INITIALIZE();
+#endif
+#if WITHSPI2W
+	hardware_spi_master_initialize(SPIBASENAME(2), 2);
+	HARDWARE_SPI2_INITIALIZE();
+#endif
+#if WITHSPI3HW
+	hardware_spi_master_initialize(SPIBASENAME(3), 3);
+	HARDWARE_SPI3_INITIALIZE();
+#endif
+#if WITHSPI4HW
+	hardware_spi_master_initialize(SPIBASENAME(4), 4);
+	HARDWARE_SPI4_INITIALIZE();
+#endif
+#if WITHSPI5HW
+	hardware_spi_master_initialize(SPIBASENAME(5), 5);
+	HARDWARE_SPI5_INITIALIZE();
+#endif
+#if WITHSPI6HW
+	hardware_spi_master_initialize(SPIBASENAME(6), 6);
+	HARDWARE_SPI6_INITIALIZE();
+#endif
+
 	prog_select_init();		// spi CS initialize
 
 #elif WITHSPISW
@@ -2534,19 +2557,19 @@ void spi_initialize(void)
 
 #if WITHSPIHW
 	// аппаратный SPI
+	SPI_t * const spi = SPIHARD_PTR;
+	hardware_spi_master_setfreq(spi, SPIC_SPEED100k, 100000);	/* 100 kHz для XPT2046 */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED200k, 200000);	/* 200 kHz для XPT2046 */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED400k, 400000);	/* 400 kHz для MCP3208, DS1305 */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED1M, 1000000);	/* 1 MHz для XPT2046 */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED2M, 2000000);	/* 2 MHz */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED4M, 4000000);	/* 4 MHz для CS4272 */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED10M, 10000000);	/* 10 MHz для ILI9341 */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED12M, 12000000);	/* 12 MHz */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED25M, 25000000);	/* 25 MHz  */
 
-	hardware_spi_master_setfreq(SPIC_SPEED100k, 100000);	/* 100 kHz для XPT2046 */
-	hardware_spi_master_setfreq(SPIC_SPEED200k, 200000);	/* 200 kHz для XPT2046 */
-	hardware_spi_master_setfreq(SPIC_SPEED400k, 400000);	/* 400 kHz для MCP3208, DS1305 */
-	hardware_spi_master_setfreq(SPIC_SPEED1M, 1000000);	/* 1 MHz для XPT2046 */
-	hardware_spi_master_setfreq(SPIC_SPEED2M, 2000000);	/* 2 MHz */
-	hardware_spi_master_setfreq(SPIC_SPEED4M, 4000000);	/* 4 MHz для CS4272 */
-	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000);	/* 10 MHz для ILI9341 */
-	hardware_spi_master_setfreq(SPIC_SPEED12M, 12000000);	/* 12 MHz */
-	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000);	/* 25 MHz  */
-
-	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
-	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
+	hardware_spi_master_setfreq(spi, SPIC_SPEEDFAST, SPISPEED);
+	hardware_spi_master_setfreq(spi, SPIC_SPEEDUFAST, SPISPEEDUFAST);
 
 #endif /* WITHSPIHW */
 }
@@ -2851,6 +2874,7 @@ static uint8_t gnab = 3;
 
 void spidf_initialize(void)
 {
+	QSPI_t * const qspi = SPIDFHARD_PTR;
 	IRQLSPINLOCK_INITIALIZE(& spidflock);
 #if ! USESPIDFSHARESPI
 	IRQLSPINLOCK_INITIALIZE(& spidfcslock);
@@ -3115,14 +3139,15 @@ static int spi_verify_b8(SPI_t * spi, spitarget_t target, const void * buf, int 
 
 void spidf_initialize(void)
 {
+	QSPI_t * const qspi = SPIDFHARD_PTR;
 	IRQLSPINLOCK_INITIALIZE(& spidflock);
 #if ! USESPIDFSHARESPI
 	IRQLSPINLOCK_INITIALIZE(& spidfcslock);
 #endif /* ! USESPIDFSHARESPI */
-	hardware_spi_master_initialize();
+	hardware_spi_master_initialize(SPIDFHARD_PTR, SPIDFHARD_IX);
 	prog_select_init();		// spi CS initialize
-	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
-	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
+	hardware_spi_master_setfreq(SPIDFHARD_PTR, SPIC_SPEEDUFAST, SPISPEEDUFAST);
+	hardware_spi_master_setfreq(SPIDFHARD_PTR, SPIC_SPEEDFAST, SPISPEED);
 }
 
 static void spidf_unselect(QSPI_t * qspi, IRQL_t irql)
@@ -3132,7 +3157,7 @@ static void spidf_unselect(QSPI_t * qspi, IRQL_t irql)
 
 	// Disconnect I/O pins
 	hardware_spi_disconnect(qspi);
-	spidf_operate_unlock(irql);
+	spidf_operate_unlock(qspi, irql);
 }
 
 // Отключить процессор от SERIAL FLASH
@@ -3156,7 +3181,7 @@ static IRQL_t spidf_iostart(
 	)
 {
 	IRQL_t oldcsIRQL;
-	spidf_operate_lock(& oldcsIRQL);
+	spidf_operate_lock(qspi, & oldcsIRQL);
 //	/* код ширины шины */
 //	static const uint8_t nbits [3] =
 //	{
@@ -3598,6 +3623,7 @@ static uint32_t SendBankSelect(uint8_t BankSel);
 
 void spidf_initialize(void)
 {
+	QSPI_t * const qspi = SPIDFHARD_PTR;
 	IRQLSPINLOCK_INITIALIZE(& spidflock);
 
 	PRINTF("%s:\n", __func__);
@@ -3876,9 +3902,9 @@ static void spidf_read(QSPI_t * qspi, uint8_t * buff, uint_fast32_t size, uint_f
 {
 	while (size --)
 	{
-		while ((QUADSPI->SR & QUADSPI_SR_FTF_Msk) == 0)
+		while ((qspi->SR & QUADSPI_SR_FTF_Msk) == 0)
 			;
-		* buff ++ = * (volatile uint8_t *) & QUADSPI->DR;
+		* buff ++ = * (volatile uint8_t *) & qspi->DR;
 	}
 }
 
@@ -3888,9 +3914,9 @@ static void spidf_write(QSPI_t * qspi, const uint8_t * buff, uint_fast32_t size,
 {
 	while (size --)
 	{
-		while ((QUADSPI->SR & QUADSPI_SR_FTF_Msk) == 0)
+		while ((qspi->SR & QUADSPI_SR_FTF_Msk) == 0)
 			;
-		* (volatile uint8_t *) & QUADSPI->DR = * buff ++;
+		* (volatile uint8_t *) & qspi->DR = * buff ++;
 	}
 }
 
@@ -3901,20 +3927,20 @@ static uint_fast8_t spidf_verify(QSPI_t * qspi, const uint8_t * buff, uint_fast3
 	uint_fast8_t err = 0;
 	while (size --)
 	{
-		while ((QUADSPI->SR & QUADSPI_SR_FTF_Msk) == 0)
+		while ((qspi->SR & QUADSPI_SR_FTF_Msk) == 0)
 			;
-		err |= * buff ++ != * (volatile uint8_t *) & QUADSPI->DR;
+		err |= * buff ++ != * (volatile uint8_t *) & qspi->DR;
 	}
 	return err;
 }
 
 static void spidf_unselect(QSPI_t * qspi, IRQL_t irql)
 {
-	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
+	while ((qspi->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
 	// Disconnect I/O pins
 	SPIDF_HANGOFF();
-	spidf_operate_unlock(irql);
+	spidf_operate_unlock(qspi, irql);
 }
 
 // readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
@@ -3930,7 +3956,7 @@ static IRQL_t spidf_iostart(
 	)
 {
 	IRQL_t oldcsIRQL;
-	spidf_operate_lock(& oldcsIRQL);
+	spidf_operate_lock(qspi, & oldcsIRQL);
 	/* код ширины шины */
 	static const uint8_t nbits [3] =
 	{
@@ -3948,25 +3974,25 @@ static IRQL_t spidf_iostart(
 	const uint_fast32_t bw = nbits [readnb];
 	const uint_fast32_t ml = nmuls [readnb];
 
-	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
+	while ((qspi->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
 
 	// Connect I/O pins
 	SPIDF_HARDINITIALIZE();
 
-	//QUADSPI->AR = address;
-	QUADSPI->DLR = size ? (size - 1) : 0;
-	(void) QUADSPI->DLR;
+	//qspi->AR = address;
+	qspi->DLR = size ? (size - 1) : 0;
+	(void) qspi->DLR;
 
-	//PRINTF("QUADSPI->DR=%08x\n", QUADSPI->DR);
-	QUADSPI->FCR = QUADSPI_FCR_CTCF_Msk;	// Clear Transfer Complete Flag
-	(void) QUADSPI->FCR;
-	QUADSPI->FCR = QUADSPI_FCR_CTEF_Msk;	// Clear Transfer Error Flag
-	(void) QUADSPI->FCR;
+	//PRINTF("qspi->DR=%08x\n", qspi->DR);
+	qspi->FCR = QUADSPI_FCR_CTCF_Msk;	// Clear Transfer Complete Flag
+	(void) qspi->FCR;
+	qspi->FCR = QUADSPI_FCR_CTEF_Msk;	// Clear Transfer Error Flag
+	(void) qspi->FCR;
 
-	ASSERT((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) == 0);
+	ASSERT((qspi->SR & QUADSPI_SR_BUSY_Msk) == 0);
 
-	QUADSPI->CCR =
+	qspi->CCR =
 		//(0 << QUADSPI_CCR_DDRM_Pos) |	// 0: DDR Mode disabled
 		//(0 << QUADSPI_CCR_DHHC_Pos) |	// 0: Delay the data output using analog delay
 		//(0 << QUADSPI_CCR_FRCM_Pos) |	// 0: Normal mode
@@ -3982,20 +4008,21 @@ static IRQL_t spidf_iostart(
 		((uint_fast32_t) cmd << QUADSPI_CCR_INSTRUCTION_Pos) |	// Instruction to be send to the external SPI device.
 		0;
 
-	ASSERT(((QUADSPI->CCR & QUADSPI_CCR_INSTRUCTION_Msk) >> QUADSPI_CCR_INSTRUCTION_Pos) == cmd);
+	ASSERT(((qspi->CCR & QUADSPI_CCR_INSTRUCTION_Msk) >> QUADSPI_CCR_INSTRUCTION_Pos) == cmd);
 
-	if ((QUADSPI->CCR & QUADSPI_CCR_ADMODE_Msk) != 0)
+	if ((qspi->CCR & QUADSPI_CCR_ADMODE_Msk) != 0)
 	{
 		// Initiate operation
-		QUADSPI->AR = address & 0x00FFFFFF;	// В indirect режимах адрес должен быть в допустимых для указанного при ините размера памяти
-		//PRINTF("spidf_iostart QUADSPI->AR=%08lX, QUADSPI->SR=%08lX\n", QUADSPI->AR, QUADSPI->SR);
-		(void) QUADSPI->AR;
+		qspi->AR = address & 0x00FFFFFF;	// В indirect режимах адрес должен быть в допустимых для указанного при ините размера памяти
+		//PRINTF("spidf_iostart qspi->AR=%08lX, qspi->SR=%08lX\n", qspi->AR, qspi->SR);
+		(void) qspi->AR;
 	}
     return oldcsIRQL;
 }
 
 void spidf_initialize(void)
 {
+	QSPI_t * const qspi = SPIDFHARD_PTR;
 	IRQLSPINLOCK_INITIALIZE(& spidflock);
 
 #if CPUSTYLE_STM32MP1
@@ -4017,40 +4044,41 @@ void spidf_initialize(void)
 	// Connect I/O pins
 	//SPIDF_HARDINITIALIZE();
 
-	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
-	(void) QUADSPI->CR;
+	qspi->CR &= ~ QUADSPI_CR_EN_Msk;
+	(void) qspi->CR;
 
-	QUADSPI->CCR = 0;
-	(void) QUADSPI->CCR;
+	qspi->CCR = 0;
+	(void) qspi->CCR;
 
 	// qspipre in range 1..256
 	const unsigned long qspipre = ulmax32(1, ulmin32(calcdivround2(BOARD_QSPI_FREQ, SPISPEEDUFAST), 256));
 	//PRINTF("spidf_initialize: qspipre=%lu\n", qspipre);
 
-	QUADSPI->DCR = ((QUADSPI->DCR & ~ (QUADSPI_DCR_FSIZE_Msk | QUADSPI_DCR_CSHT_Msk | QUADSPI_DCR_CKMODE_Msk))) |
+	qspi->DCR = ((qspi->DCR & ~ (QUADSPI_DCR_FSIZE_Msk | QUADSPI_DCR_CSHT_Msk | QUADSPI_DCR_CKMODE_Msk))) |
 		(23 << QUADSPI_DCR_FSIZE_Pos) |	// FSIZE+1 is effectively the number of address bits required to address the Flash memory.
 		(7u << QUADSPI_DCR_CSHT_Pos) |	// 0: nCS stays high for at least 1 cycle between Flash memory commands
 		//(0 << QUADSPI_DCR_CKMODE_Pos) |	// 0: CLK must stay low while nCS is high (chip select released). This is referred to as mode 0.
 		(1u << QUADSPI_DCR_CKMODE_Pos) |	// 1: CLK must stay high while nCS is high (chip select released). This is referred to as mode 3.
 		0;
-	(void) QUADSPI->DCR;
+	(void) qspi->DCR;
 
-	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk | QUADSPI_CR_FTHRES_Msk | QUADSPI_CR_EN_Msk))) |
+	qspi->CR = ((qspi->CR & ~ (QUADSPI_CR_PRESCALER_Msk | QUADSPI_CR_FTHRES_Msk | QUADSPI_CR_EN_Msk))) |
 		(0u << QUADSPI_CR_FTHRES_Pos) | // FIFO threshold level - one byte
 		(((unsigned long) qspipre - 1) << QUADSPI_CR_PRESCALER_Pos) |
 		0;
-	(void) QUADSPI->CR;
+	(void) qspi->CR;
 
-	QUADSPI->CR |= QUADSPI_CR_EN_Msk;
-	(void) QUADSPI->CR;
+	qspi->CR |= QUADSPI_CR_EN_Msk;
+	(void) qspi->CR;
 }
 
 void hangoffDATAFLASH(void)
 {
+	QSPI_t * const qspi = SPIDFHARD_PTR;
 	IRQL_t oldIrql;
 	accureDATAFLASH(& oldIrql);
 
-	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
+	while ((qspi->SR & QUADSPI_SR_BUSY_Msk) != 0)
 		;
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 
@@ -4156,7 +4184,7 @@ static void spidf_unselect(QSPI_t * qspi, IRQL_t irql)
 		;
 	// Disconnect I/O pins
 	SPIDF_HANGOFF();
-	spidf_operate_unlock(irql);
+	spidf_operate_unlock(qspi, irql);
 }
 
 void spidf_initialize(void)
@@ -4247,7 +4275,7 @@ static IRQL_t spidf_iostart(
 	)
 {
 	IRQL_t oldcsIRQL;
-	spidf_operate_lock(& oldcsIRQL);
+	spidf_operate_lock(qspi, & oldcsIRQL);
 	ASSERT(readnb == SPDFIO_1WIRE);
 	// Connect I/O pins
 	SPIDF_HARDINITIALIZE();
@@ -5741,7 +5769,7 @@ static uint32_t InitQspi(void)
 
 #endif /* CPUSTYLE_XC7Z && WIHSPIDFHW */
 
-#if ! LINUX_SUBSYSTEM && FPGA_ARTIX7
+#if WITHDSPEXTFIR && ! LINUX_SUBSYSTEM && FPGA_ARTIX7
 
 void board_reload_fir_artix7_p1(spitarget_t target, uint_fast8_t v1, uint_fast32_t v2)
 {
@@ -5761,17 +5789,17 @@ void board_reload_fir_artix7_p2(spitarget_t target, uint_fast8_t v1, uint_fast32
 	spi_progval8_p2(target, v2 >> 0);
 }
 
-void board_reload_fir_artix7_spistart(IRQL_t * irql)
+void board_reload_fir_artix7_spistart(SPI_t * spi, IRQL_t * irql)
 {
-	spi_operate_lock(irql);
+	spi_operate_lock(spi, irql);
 	spi_select(targetfpga1, SPIC_MODE3);
 }
 
-void board_reload_fir_artix7_spidone(IRQL_t irql)
+void board_reload_fir_artix7_spidone(SPI_t * spi, IRQL_t irql)
 {
 	spi_complete(targetfpga1);
 	spi_unselect(targetfpga1);
-	spi_operate_unlock(irql);
+	spi_operate_unlock(spi, irql);
 }
 
 #elif WITHDSPEXTFIR && ! LINUX_SUBSYSTEM
@@ -5850,7 +5878,7 @@ board_fpga_fir_complete(SPI_t * spi)
 void
 board_fpga_fir_connect(SPI_t * spi, IRQL_t * oldIrql)
 {
-	spi_operate_lock(oldIrql);
+	spi_operate_lock(spi, oldIrql);
 #ifdef TARGET_FPGA_GATE
 	TARGET_FPGA_GATE(1);
 #endif
@@ -5906,7 +5934,7 @@ board_fpga_fir_disconnect(SPI_t * spi, IRQL_t irql)
 #ifdef TARGET_FPGA_GATE
 	TARGET_FPGA_GATE(0);
 #endif
-	spi_operate_unlock(irql);
+	spi_operate_unlock(spi, irql);
 }
 #endif /* WITHDSPEXTFIR && ! LINUX_SUBSYSTEM */
 

@@ -576,7 +576,7 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); (void) GPIOA->BSRR; } while (0)
 //#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 	// Набор определений для работы без внешнего дешифратора
 
 	#define OE_CTL1_BIT	(UINT32_C(1) << 13)	/* PI13 */
@@ -660,27 +660,13 @@
 	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0
 	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
 
-	#if WITHSPIHW
-		#define SPIIO_INITIALIZE() do { \
-			arm_hardware_pioh_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
-			arm_hardware_pioh_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
-			arm_hardware_pioh_altfn50(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
-		} while (0)
-
-	#elif WITHSPISW
-
-		#define SPIIO_INITIALIZE() do { \
-			arm_hardware_pioh_outputs(SPI_SCLK_BIT, 1 * SPI_SCLK_BIT); 	/* PH6 SPI1_CLK */ \
-			arm_hardware_pioh_outputs(SPI_MOSI_BIT, 1 * SPI_MOSI_BIT); 	/* PH7 SPI1_MOSI */ \
-			arm_hardware_pioh_inputs(SPI_MISO_BIT); 	/* PH8 SPI1_MISO */ \
-		} while (0)
-	#endif
-	#define HARDWARE_SPI_CONNECT() do { \
-	} while (0)
-	#define HARDWARE_SPI_DISCONNECT() do { \
+	#define HARDWARE_SPI1_INITIALIZE() do { \
+		arm_hardware_pioh_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
+		arm_hardware_pioh_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
+		arm_hardware_pioh_altfn50(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
 	} while (0)
 
-#else /* WITHSPIHW || WITHSPISW */
+#else /* WITHSPIHW */
 
 	#define targetext1		(0)		// PE8 ext1 on front panel
 	#define targetxad2		(0)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
@@ -690,7 +676,7 @@
 	#define targetadc2		(0) 		// PE9 ADC MCP3208-BI/SL chip select (potentiometers)
 	#define targetfpga1		(0)		// PE10 FPGA control registers CS1
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW */
 
 // WITHUART2HW
 // Используется периферийный контроллер последовательного порта UART2 */
@@ -805,11 +791,8 @@
 		HARDWARE_S_TWI0_INITIALIZE(); \
 	} while (0)
 
-	#define	TWIHARD_S_IX 0	/* 0 - TWI0, 1: TWI1... */
-	//#define	TWIHARD_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_S_PTR S_TWI0	/* 0 - TWI0, 1: TWI1... */
-	//#define	TWIHARD_FREQ (allwnr_t507_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
-	#define	TWIHARD_S_FREQ (allwnr_t507_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_S_TWI0_FREQ (allwnr_t507_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 #endif
 
 #if 1
@@ -835,7 +818,6 @@
 			HARDWARE_TWI0_INITIALIZE(); \
 		} while (0) 
 #endif
-	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnr_t507_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 #endif

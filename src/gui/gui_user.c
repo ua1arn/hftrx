@@ -1241,7 +1241,7 @@ void window_memory_process(void)
 		{
 			local_snprintf_P(name, NAME_ARRAY_SIZE, "btn_memory_%d", i);
 
-			uint32_t freq = load_mems(i, 0);
+			long freq = load_mems(i, 0);
 			if (freq > 0)
 				local_snprintf_P(text, NAME_ARRAY_SIZE, "%ldk", freq / 1000);
 			else

@@ -580,7 +580,7 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); (void) GPIOA->BSRR; } while (0)
 //#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 	// Набор определений для работы без внешнего дешифратора
 
 	#define targetdataflash 0xFF
@@ -668,17 +668,13 @@
 	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0x01	/* A64: 00: OSC24M 01: PLL_PERIPH0(1X) 10: PLL_PERIPH1(1X) */
 	#define HARDWARE_SPI_FREQ (allwnr_a64_get_spi1_freq())
 
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI1_INITIALIZE() do { \
 		arm_hardware_piod_altfn2m(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PD1 SPI1_CLK */ \
 		arm_hardware_piod_altfn2m(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PD2 SPI1_MOSI */ \
 		arm_hardware_piod_altfn2m(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PD3 SPI1_MISO */ \
 	} while (0)
-	#define HARDWARE_SPI_CONNECT() do { \
-	} while (0)
-	#define HARDWARE_SPI_DISCONNECT() do { \
-	} while (0)
 
-#else /* WITHSPIHW || WITHSPISW */
+#else /* WITHSPIHW */
 
 	#define targetext1		(0)		// PE8 ext1 on front panel
 	#define targetxad2		(0)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
@@ -688,7 +684,7 @@
 	#define targetadc2		(0) 		// PE9 ADC MCP3208-BI/SL chip select (potentiometers)
 	#define targetfpga1		(0)		// PE10 FPGA control registers CS1
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW */
 
 // WITHUART0HW
 // tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #0 UART0 */
@@ -751,9 +747,8 @@
 		arm_hardware_piol_updown(TARGET_S_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_piol_updown(TARGET_S_TWI_TWD, TARGET_TWI_TWD, 0); \
 	} while (0)
-	#define	TWIHARD_S_IX 0		/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_S_PTR R_TWI	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_S_FREQ (allwnr_a64_get_s_twi_freq()) // APBS2_CLK allwnr_a64_get_apb2_freq() or allwnr_a64_get_apbs2_freq()
+	#define	TWIHARD_S_TWI0_FREQ (allwnr_a64_get_s_twi_freq()) // APBS2_CLK allwnr_a64_get_apb2_freq() or allwnr_a64_get_apbs2_freq()
 #endif
 
 #if 1
@@ -781,7 +776,6 @@
 		arm_hardware_pioh_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_pioh_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 	} while (0)
-	#define	TWIHARD_IX 0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI0	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnr_a64_get_twi_freq()) // APBS2_CLK allwnr_a64_get_apb2_freq() or allwnr_a64_get_apbs2_freq()
 
