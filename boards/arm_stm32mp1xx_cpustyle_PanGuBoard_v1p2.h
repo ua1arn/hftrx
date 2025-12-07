@@ -52,7 +52,19 @@
 	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	//#define WITHSDRAM_PMC1	1	/* power management chip */
+	#define WITHSDRAM_PMC1	1	/* ST PMC1 power management chip */
+
+	// PMC1 on MYIC-YA157C-xxx board
+	#define PMIC_I2C_W 0x66	// 7bit: 0x33
+	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
+
+	// See WITHSDRAM_PMC1
+	void board_pangu_pmc1_initialize(void);
+
+	/* Контроллер питания AXP305 */
+	#define BOARD_PMIC_INITIALIZE() do { \
+		board_pangu_pmc1_initialize(); /* Voltages are set here */ \
+	} while (0)
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
