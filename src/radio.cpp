@@ -3612,9 +3612,9 @@ struct nvmap
 	uint16_t	ggrpsecial;		// последний посещённый пункт группы
 	uint16_t	ggrpaudio;		// последний посещённый пункт группы
 	uint16_t	ggrpmike;		// последний посещённый пункт группы
-#if WITHSUBTONES && WITHTX
+#if WITHSUBTONES
 	uint16_t ggrpctcss;		// последний посещённый пункт группы
-#endif /* WITHSUBTONES && WITHTX */
+#endif /* WITHSUBTONES */
 #if defined (RTC1_TYPE)
 	uint16_t	ggrpclock; // последний посещённый пункт группы
 #endif /* defined (RTC1_TYPE) */
@@ -4032,10 +4032,6 @@ struct nvmap
 		uint8_t swrmode;	/* 1 - показ SWR шкалы, 0 - мощность */
 	#endif
 
-#if WITHSUBTONES
-	uint8_t gsubtoneitx;	// номер subtone
-	uint8_t gsubtoneirx;	// номер subtone
-#endif /* WITHSUBTONES */
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	uint8_t gtempvmax;
 	uint8_t gheatprot;	/* защита от перегрева */
@@ -4045,6 +4041,10 @@ struct nvmap
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	uint8_t gdownatcwtune;	/* снижаем мощность до "тюнерной" при нажатии TUNE */
 #endif /* WITHTX */
+#if WITHSUBTONES
+	uint8_t gsubtoneitx;	// номер subtone
+	uint8_t gsubtoneirx;	// номер subtone
+#endif /* WITHSUBTONES */
 
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
 	uint8_t voltcalibr100mV;	/* калибровочный параметр измерителя напряжения АКБ - Напряжение fullscale = VREF * 5.3 = 3.3 * 5.3 = 17.5 вольта */
@@ -5311,7 +5311,7 @@ enum
 
 #endif /* WITHAUTOTUNER */
 
-#if WITHTX && WITHSUBTONES && WITHIF4DSP
+#if WITHSUBTONES && WITHIF4DSP
 	// частоты  Continuous Tone-Coded Squelch System or CTCSS с точностью 0.1 герца.
 	// https://en.wikipedia.org/wiki/Continuous_Tone-Coded_Squelch_System#List_of_tones
 	static const uint_least16_t gsubtones [] =
@@ -6909,6 +6909,7 @@ static int n7ddc_display(void * ctx)
 
 static enum phases auto_tune0(void)
 {
+#if WITHTX
 	switch (n7ddc_tune(gn7ddclinearC, gn7ddclinearL, n7ddc_display, NULL))
 	{
 	default:
@@ -6921,6 +6922,10 @@ static enum phases auto_tune0(void)
 	case N7DDCTUNE_OK:
 		return PHASE_DONE; // сохранение будет в auto_tune2
 	}
+#else /* WITHTX */
+	txreq_rx(& txreqst0, "ABT");
+	return PHASE_ABORT; // восстановление будет в auto_tune3
+#endif /* WITHTX */
 }
 
 static void auto_tune1_init(void)

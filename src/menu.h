@@ -23,6 +23,7 @@ const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
+#if WITHTX
 #if WITHPOWERTRIM
 	#if WITHLOWPOWEREXTTUNE
 		(const struct paramdefdef [1]) {
@@ -52,6 +53,7 @@ const struct menudef menutable [] =
 	},
 	#endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHPOWERTRIM */
+#endif /* WITHTX */
 	(const struct paramdefdef [1]) {
 		QLABEL("TUNER L"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,

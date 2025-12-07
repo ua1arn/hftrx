@@ -4224,6 +4224,7 @@ static void display2_siglevel4(
 // Отображение КСВ в меню
 void display2_swrsts20(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
+#if WITHTX
 	adcvalholder_t r;
 	adcvalholder_t f;
 	const uint_fast16_t swr = tuner_get_swr0(TUS_SWRMAX, & r, & f);
@@ -4235,6 +4236,7 @@ void display2_swrsts20(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 		f,
 		r);
 	display_text(db, x, y, b, xspan, yspan, & dbstylev_1statePSU);
+#endif /* WITHTX */
 }
 
 #if WITHIF4DSP
