@@ -790,19 +790,19 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx
 // PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
 #define ALWNR_GPIO_DRV_OUTPUT2M 0x01	//  impedance value is r0/2.
-#define ALWNR_GPIO_PULL_OUTPUT2M 0x00
+#define ALWNR_GPIO_PULL_OUTPUT2M 0x00	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
 #define ALWNR_GPIO_DRV_OUTPUT20M 0x02	//  impedance value is r0/3.
-#define ALWNR_GPIO_PULL_OUTPUT20M 0x00
+#define ALWNR_GPIO_PULL_OUTPUT20M 0x00	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
 #define ALWNR_GPIO_DRV_OUTPUT50M 0x03	//  impedance value is r0/4.  Maximum streingth (50 OHm)
-#define ALWNR_GPIO_PULL_OUTPUT50M 0x00
+#define ALWNR_GPIO_PULL_OUTPUT50M 0x00	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
 #define ALWNR_GPIO_DRV_INPUT 0x02
-#define ALWNR_GPIO_PULL_INPUT 0x01	// pull-up
+#define ALWNR_GPIO_PULL_INPUT 0x01	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
 #define ALWNR_GPIO_DRV_AF2M 0x00	//  impedance value is r0.
-#define ALWNR_GPIO_PULL_AF2M 0x01	// pull-up
+#define ALWNR_GPIO_PULL_AF2M 0x01	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
 #define ALWNR_GPIO_DRV_AF20M 0x02	//  impedance value is r0/3.
 #define ALWNR_GPIO_PULL_AF20M 0x00
@@ -1037,12 +1037,12 @@ static void gpioX_progUnsafeNoPull(
 #endif
 }
 
-static void gpioX_prog(
+void gpioX_prog(
 	GPIO_TypeDef * gpio,
-	portholder_t iopins,
-	unsigned cfg,
-	unsigned drv,
-	unsigned pull
+	portholder_t iopins,	// mask
+	unsigned cfg,	// GPIO_CFG_xxx
+	unsigned drv,	// 0..3: minimal..maximal drive strength
+	unsigned pull	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 	)
 {
 	IRQL_t oldIrql;
