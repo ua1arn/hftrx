@@ -552,29 +552,21 @@
 ////#define TARGET_CS4272_RESET_PORT_S(v)		do { R7S721_TARGET_PORT_S(7, v); } while (0)
 ////#define TARGET_CS4272_RESET_PORT_C(v)		do { R7S721_TARGET_PORT_C(7, v); } while (0)
 ////#define TARGET_CS4272_RESET_BIT		(1U << 2)	// PD2
+#if WITHSPIHW
+	// RSPI0 used
+	#define SPIHARD_PTR (& RSPI1)
+	#define SPIHARD_IX 1		// 0: RSPI0, 1: RSPI1
 
-// RSPI0 used
-#define SPIHARD_PTR (& RSPI1)
-#define SPIHARD_IX 1		// 0: RSPI0, 1: RSPI1
+	// MOSI & SCK port
+	#define	SPI_SCLK_BIT			(1U << 12)	// * P6_12 бит, через который идет синхронизация SPI RSPI1
+	#define	SPI_MOSI_BIT			(1U << 14)	// * P6_14 бит, через который идет вывод (или ввод в случае двунаправленного SPI).RSPI1
+	#define	SPI_MISO_BIT			(1U << 15)	// * P6_15 бит, через который идет ввод с SPI.RSPI1
 
-// MOSI & SCK port
-#define SPI_TARGET_SCLK_PORT_S(v) do {	R7S721_TARGET_PORT_S(6, v); } while (0)
-#define SPI_TARGET_SCLK_PORT_C(v) do {	R7S721_TARGET_PORT_C(6, v); } while (0)
-#define	SPI_SCLK_BIT			(1U << 12)	// * P6_12 бит, через который идет синхронизация SPI RSPI1
-
-#define SPI_TARGET_MOSI_PORT_S(v) do {	R7S721_TARGET_PORT_S(6, v); } while (0)
-#define SPI_TARGET_MOSI_PORT_C(v) do {	R7S721_TARGET_PORT_C(6, v); } while (0)
-#define	SPI_MOSI_BIT			(1U << 14)	// * P6_14 бит, через который идет вывод (или ввод в случае двунаправленного SPI).RSPI1
-
-#define SPI_TARGET_MISO_PIN		(R7S721_INPUT_PORT(6))		// was PINA 
-#define	SPI_MISO_BIT			(1U << 15)	// * P6_15 бит, через который идет ввод с SPI.RSPI1
-
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI1_INITIALIZE() do { \
 			arm_hardware_pio6_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT); \
 			arm_hardware_pio6_inputs(SPI_MISO_BIT); \
 		} while (0)
 
-#if WITHSPIHW
 
 	#define HARDWARE_SPI_CONNECT() do { \
 			arm_hardware_pio6_alternative(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, R7S721_PIOALT_3);	/* PIO disable */ \
@@ -582,7 +574,6 @@
 	#define HARDWARE_SPI_DISCONNECT() do { \
 			arm_hardware_pio6_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT);	/* PIO enable */ \
 		} while (0)
-
 
 #endif /* WITHSPIHW */
 
@@ -603,7 +594,7 @@
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
 			arm_hardware_pio1_outputs(TARGET_TWI_TWCK | TARGET_TWI_TWD, TARGET_TWI_TWCK | TARGET_TWI_TWD); \
-		} while (0) 
+		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \

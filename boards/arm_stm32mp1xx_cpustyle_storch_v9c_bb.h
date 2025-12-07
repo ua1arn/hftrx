@@ -606,7 +606,7 @@ void user_uart4_onrxchar(uint_fast8_t c);
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); (void) GPIOA->BSRR; } while (0)
 //#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 	// Набор определений для работы без внешнего дешифратора
 	#define SPI_ALLCS_PORT_S(v)	do { GPIOH->BSRR = BSRR_S(v); (void) GPIOH->BSRR; } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOH->BSRR = BSRR_C(v); (void) GPIOH->BSRR; } while (0)
@@ -684,7 +684,7 @@ void user_uart4_onrxchar(uint_fast8_t c);
 	#define SPI_TARGET_MISO_PIN		(gpioX_getinputs(GPIOZ))
 	#define	SPI_MISO_BIT			(UINT32_C(1) << 1)	// PZ1 бит, через который идет ввод с SPI.
 
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI1_INITIALIZE() do { \
 			arm_hardware_pioz_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PZ0 */ \
 			arm_hardware_pioz_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PZ2 */ \
 			arm_hardware_pioz_inputs(SPI_MISO_BIT); /* PZ1 */ \
@@ -700,13 +700,17 @@ void user_uart4_onrxchar(uint_fast8_t c);
 			arm_hardware_pioz_inputs(SPI_MISO_BIT); \
 		} while (0)
 
-	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
-	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
-	//#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+	/* to be removed... */
+	#define SPIHARD_IX 1    /* 0 - SPI0, 1: SPI1... */
+	#define SPIHARD_PTR SPI1    /* 0 - SPI0, 1: SPI1... */
+
+	#define HARDWARE_FPGA_LOADER_SPIHARD_PTR SPI1
+	#define HARDWARE_FPGA_FIR_SPIHARD_PTR SPI1
+
 	#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
 	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW */
 
 // WITHUART4HW
 // PB8 UART4-RX, PH13 UART4-TX

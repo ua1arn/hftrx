@@ -610,7 +610,7 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { gpioX_setstate(GPIOA, (v), 1 * (v)); } while (0)
 //#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 	// Набор определений для работы без внешнего дешифратора
 	#define SPI_ALLCS_PORT_S(v)	do { gpioX_setstate(GPIOH, (v), 1 * (v)); } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { gpioX_setstate(GPIOH, (v), 0 * (v)); } while (0)
@@ -673,18 +673,11 @@
 	//	SPI1_SCK	PZ0	AF_5
 	//	SPI1_MISO	PZ1 AF_5
 	//	SPI1_MOSI	PZ2 AF_5
-	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpioX_setstate(GPIOZ, (v), 0 * (v)); } while (0)
-	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpioX_setstate(GPIOZ, (v), 1 * (v)); } while (0)
 	#define	SPI_SCLK_BIT			(UINT32_C(1) << 0)	// PZ0 бит, через который идет синхронизация SPI
-
-	#define SPI_TARGET_MOSI_PORT_C(v)	do { gpioX_setstate(GPIOZ, (v), 0 * (v)); } while (0)
-	#define SPI_TARGET_MOSI_PORT_S(v)	do { gpioX_setstate(GPIOZ, (v), 1 * (v)); } while (0)
 	#define	SPI_MOSI_BIT			(UINT32_C(1) << 2)	// PZ2 бит, через который идет вывод
-
-	#define SPI_TARGET_MISO_PIN		(gpioX_getinputs(GPIOZ))
 	#define	SPI_MISO_BIT			(UINT32_C(1) << 1)	// PZ1 бит, через который идет ввод с SPI.
 
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI1_INITIALIZE() do { \
 			arm_hardware_pioz_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PZ0 */ \
 			arm_hardware_pioz_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PZ2 */ \
 			arm_hardware_pioz_inputs(SPI_MISO_BIT); /* PZ1 */ \
@@ -700,13 +693,17 @@
 			arm_hardware_pioz_inputs(SPI_MISO_BIT); \
 		} while (0)
 
-	//#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
-	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
-	//#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+	/* to be removed... */
+	#define SPIHARD_IX 1    /* 0 - SPI0, 1: SPI1... */
+	#define SPIHARD_PTR SPI1    /* 0 - SPI0, 1: SPI1... */
+
+	#define HARDWARE_FPGA_LOADER_SPIHARD_PTR SPI1
+	#define HARDWARE_FPGA_FIR_SPIHARD_PTR SPI1
+
 	#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
 	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW */
 
 // WITHUART1HW
 // UART1_TX PG11, UART1_RX PB2

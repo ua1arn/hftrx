@@ -528,7 +528,7 @@
 
 // All CS trough EMIO
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 
 	#define WITHSPICSEMIO	1	/* специфицеская конфигурация - управление сигналами CS SPI периферии выполняется через EMIO */
 
@@ -595,7 +595,7 @@
 
 	#define SPI_TARGET_MISO_PIN		(gpio_readpin(SPI_MISO_MIO))
 
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI0_INITIALIZE() do { \
 		enum { IOTYPE = TARGET_SPI_IOTYPE }; \
 		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 1); \
 		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 0); \
@@ -625,7 +625,7 @@
 	} while (0)
 
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW */
 
 #if WITHUART0HW
 
