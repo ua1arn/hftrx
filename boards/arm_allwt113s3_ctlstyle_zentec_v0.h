@@ -110,6 +110,12 @@
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
+	// Выбор используемой цветовой палитры
+	#define COLORSTYLE_GREEN	1
+	//#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_WHITE	1
+	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
+
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #if WITHISBOOTLOADER
 
@@ -132,8 +138,8 @@
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
 	//#define LCDMODE_PALETTE256 1	/* Экран 8 бит, L8 */
-	#define LCDMODE_RGB565 1	/* Экран 16 бит */
-	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
+	//#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через LVDS интерфейс	*/
@@ -326,7 +332,7 @@
 	
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
-	#if 0
+	#if 1
 		#define WITHLWIP 1
 	#endif
 	#if 0
@@ -375,7 +381,7 @@
 
 	//#define WITHWFM	1			/* используется WFM */
 
-	
+	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	//#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
 	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */

@@ -1535,7 +1535,7 @@ void EMPTY_Handler(void)
 void SYNCTRAP_Handler(void)
 {
 	PRINTF("SYNCTRAP_Handler (%p)\n", SYNCTRAP_Handler);
-	PRINTF("mepc=%p, mtval=%p\n", (void *) csr_read_mepc(), (void *) csr_read_mtval());
+	PRINTF("mepc=%p, mtval=%p, sepc=%p, mstatus=%p\n", (void *) csr_read_mepc(), (void *) csr_read_mtval(), (void *) csr_read_sepc(), (void *) csr_read_mstatus());
 	const uint_xlen_t mcause = csr_read_mcause();
 	switch (mcause & 0xFFF)
 	{
@@ -2537,6 +2537,7 @@ uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 /* добавить функцию для периодического вызова */
 uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid)
 {
+	//PRINTF("board_dpc_addentry: dp=%p, coreid=%u\n", dp, (unsigned) coreid);
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
 	IRQLSPINLOCK_t * const lock = & dpc->lock;
@@ -2565,6 +2566,11 @@ void board_dpc_processing(void)
 	const uint_fast8_t coreid = board_dpc_coreid();
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
 	IRQLSPINLOCK_t * const lock = & dpc->lock;
+//	char b [32];
+//	local_snprintf_P(b, ARRAY_SIZE(b), "coreid=%u", coreid);
+//	ASSERT3(coreid < HARDWARE_NCORES, __FILE__, __LINE__, b);
+//	ASSERT3(dpc == dpc->tag1, __FILE__, __LINE__, b);
+//	ASSERT3(dpc == dpc->tag2, __FILE__, __LINE__, b);
 	ASSERT(coreid < HARDWARE_NCORES);
 	ASSERT(dpc == dpc->tag1);
 	ASSERT(dpc == dpc->tag2);
@@ -2581,6 +2587,8 @@ void board_dpc_processing(void)
 			tnext = t->Blink;
 			dpcobj_t * const dp = CONTAINING_RECORD(t, dpcobj_t, item);
 			IRQLSPIN_UNLOCK(lock, oldIrql);
+//			ASSERT3(dp == dp->tag1, __FILE__, __LINE__, b);
+//			ASSERT3(dp == dp->tag2, __FILE__, __LINE__, b);
 			ASSERT(dp == dp->tag1);
 			ASSERT(dp == dp->tag2);
 

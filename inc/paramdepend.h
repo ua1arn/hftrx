@@ -111,7 +111,7 @@ extern "C" {
 
 			#define HSIFREQ 64000000u
 			#define HSI48FREQ 48000000u
-			#define CSI_VALUE    4000000U /*!< Value of the Internal oscillator in Hz*/
+			//#define CSI_VALUE    4000000U /*!< Value of the Internal oscillator in Hz*/
 
 			#define LSEFREQ 32768u	// должно быть в файле конфигурации платы
 
@@ -853,7 +853,7 @@ extern "C" {
 
 	// value for GIC_SetInterfacePriorityMask
 	#define IRQL_IPC 			(GICI_ENCODE_IRQL(PRIOv_IPC))
-	#define IRQL_IPC_ONLU 		(GICI_ENCODE_IRQL(PRIOv_IPC_ONLY))
+	#define IRQL_IPC_ONLY 		(GICI_ENCODE_IRQL(PRIOv_IPC_ONLY))
 	#define IRQL_OVERREALTIME 	(GICI_ENCODE_IRQL(PRIOv_OVRT))
 	#define IRQL_REALTIME	 	(GICI_ENCODE_IRQL(PRIOv_RT))
 	#define IRQL_SYSTEM 		(GICI_ENCODE_IRQL(PRIOv_SYS))
@@ -1158,12 +1158,6 @@ extern "C" {
 
 #endif /* LCDMODE_H497TLB01P4 */
 
-#if LCDMODE_HXD_C067BHW8843ANT
-	#define DIM_X 480
-	#define DIM_Y 1280
-	#define LCDMODE_COLORED	1
-#endif
-
 /*
  * Выбор описателя расположения элементов, отбражаемых на дисплее.
  */
@@ -1175,13 +1169,6 @@ extern "C" {
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif (DIM_X == 800 && DIM_Y == 480) || (DIM_X == 1366 && DIM_Y == 768)
-	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-
-#elif (DIM_X == 480 && DIM_Y == 1280)
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
 	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
@@ -1402,7 +1389,7 @@ extern "C" {
 
 /* Зависимости для поределения конфигурации видеосистемы */
 
-#if LCDMODE_PALETTE256
+#if LCDMODE_PALETTE256_WITH_SHADES
 	/* Экран с двумя видеобуферами L8 */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
@@ -1422,7 +1409,7 @@ extern "C" {
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 
-#elif LCDMODE_PALETTE256_NO_SHADES
+#elif LCDMODE_PALETTE256
 	/* Экран с двумя видеобуферами L8 */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
@@ -1436,7 +1423,7 @@ extern "C" {
 	// 112..127 - первая степень AA
 	// Заполнение палитры производится в display2_xltrgb24()
 
-	#define COLORPIP_SHADED 128
+	//#define COLORPIP_SHADED 128
 	#define COLORPIP_ALIASED 16
 	#define COLORPIP_BASE 96	// should be match to PALETTESIZE
 
@@ -1456,9 +1443,6 @@ extern "C" {
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
 	#define LCDMODE_PIXELSIZE 1
-
-	#define LCDMODE_PIP_PAGES	0
-	//#define COLORPIP_SHADED 128
 
 #endif
 

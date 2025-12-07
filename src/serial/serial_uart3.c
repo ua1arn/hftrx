@@ -186,6 +186,12 @@ void hardware_uart3_flush(void)
 	hardware_uartx_flush(UARTBASENAME(thisPORT));
 }
 
+/* разрешить упрвлять аппаратным сигналом разрешения передачи */
+void hardware_uart3_set_rs485(uint_fast8_t state)
+{
+	hardware_uartx_set_rs485(UARTBASENAME(thisPORT), state);
+}
+
 /* приём символа, если готов порт */
 uint_fast8_t
 hardware_uart3_getchar(char * cp)

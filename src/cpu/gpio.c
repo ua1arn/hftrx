@@ -789,35 +789,34 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx
 
 // PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
-#define ALWNR_GPIO_DRV_OUTPUT 0x03
-#define ALWNR_GPIO_PULL_OUTPUT 0x00
+#define ALWNR_GPIO_DRV_OUTPUT2M 0x01	//  impedance value is r0/2.
+#define ALWNR_GPIO_PULL_OUTPUT2M 0x00	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
-#define ALWNR_GPIO_DRV_OUTPUT2M 0x01
-#define ALWNR_GPIO_PULL_OUTPUT2M 0x00
+#define ALWNR_GPIO_DRV_OUTPUT20M 0x02	//  impedance value is r0/3.
+#define ALWNR_GPIO_PULL_OUTPUT20M 0x00	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
-#define ALWNR_GPIO_DRV_OUTPUT20M 0x02
-#define ALWNR_GPIO_PULL_OUTPUT20M 0x00
-
-#define ALWNR_GPIO_DRV_OUTPUT50M 0x03	// Maximum streingth (50 OHm)
-#define ALWNR_GPIO_PULL_OUTPUT50M 0x00
-
-#define ALWNR_GPIO_DRV_OPENDRAIN 0x03	// Maximum streingth (50 OHm)
-#define ALWNR_GPIO_PULL_OPENDRAIN 0x00	// Pull-up/down disable
+#define ALWNR_GPIO_DRV_OUTPUT50M 0x03	//  impedance value is r0/4.  Maximum streingth (50 OHm)
+#define ALWNR_GPIO_PULL_OUTPUT50M 0x00	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
 #define ALWNR_GPIO_DRV_INPUT 0x02
-#define ALWNR_GPIO_PULL_INPUT 0x01	// pull-up
+#define ALWNR_GPIO_PULL_INPUT 0x01	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
-#define ALWNR_GPIO_DRV_AF2M 0x00	// 180 OHm
-#define ALWNR_GPIO_PULL_AF2M 0x01	// pull-up
+#define ALWNR_GPIO_DRV_AF2M 0x00	//  impedance value is r0.
+#define ALWNR_GPIO_PULL_AF2M 0x01	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
-#define ALWNR_GPIO_DRV_OPENDRAINAF2M 0x03
-#define ALWNR_GPIO_PULL_OPENDRAINAF2M 0x00	// Pull-up/down disable
-
-#define ALWNR_GPIO_DRV_AF20M 0x02
+#define ALWNR_GPIO_DRV_AF20M 0x02	//  impedance value is r0/3.
 #define ALWNR_GPIO_PULL_AF20M 0x00
 
-#define ALWNR_GPIO_DRV_AF50M 0x03	// Maximum streingth (50 OHm)
+#define ALWNR_GPIO_DRV_AF50M 0x03	//  impedance value is r0/4. Maximum streingth (50 OHm)
 #define ALWNR_GPIO_PULL_AF50M 0x00
+
+// И в случае opendrain для программного управления и для альтернативной функции
+// всегда используется drv=3 (минимальное выходное сопротивление)
+#define ALWNR_GPIO_DRV_OPENDRAIN 0x03	// impedance value is r0/4.  Maximum streingth (50 OHm)
+#define ALWNR_GPIO_PULL_OPENDRAIN 0x01	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
+
+#define ALWNR_GPIO_DRV_OPENDRAINAF2M 0x03//  impedance value is r0/4.
+#define ALWNR_GPIO_PULL_OPENDRAINAF2M 0x01	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
 typedef struct gpio_ctx
 {
@@ -1038,12 +1037,12 @@ static void gpioX_progUnsafeNoPull(
 #endif
 }
 
-static void gpioX_prog(
+void gpioX_prog(
 	GPIO_TypeDef * gpio,
-	portholder_t iopins,
-	unsigned cfg,
-	unsigned drv,
-	unsigned pull
+	portholder_t iopins,	// mask
+	unsigned cfg,	// GPIO_CFG_xxx
+	unsigned drv,	// 0..3: minimal..maximal drive strength
+	unsigned pull	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 	)
 {
 	IRQL_t oldIrql;
@@ -1061,14 +1060,15 @@ void gpioX_setopendrain(
 	portholder_t state
 	)
 {
+	unsigned drv = ALWNR_GPIO_DRV_OPENDRAIN;
 	IRQL_t oldIrql;
 
 	/* на этом процессоре имитируем open drain перепрограммированием на вход */
 
 	gpioX_lock(gpio, & oldIrql);
 
-	gpioX_progUnsafeNoPull(gpio, mask & state, GPIO_CFG_IN, ALWNR_GPIO_DRV_OPENDRAIN);
-	gpioX_progUnsafeNoPull(gpio, mask & ~ state, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OPENDRAIN);	// tie to GND
+	gpioX_progUnsafeNoPull(gpio, mask & state, GPIO_CFG_IN, drv);
+	gpioX_progUnsafeNoPull(gpio, mask & ~ state, GPIO_CFG_OUT, drv);	// tie to GND
 
 	gpioX_unlock(gpio, oldIrql);
 }
@@ -1076,7 +1076,8 @@ void gpioX_setopendrain(
 static void gpioX_opendrain_iniialize(
 	GPIO_TypeDef * gpio,
 	portholder_t mask,
-	portholder_t state
+	portholder_t state,
+	unsigned drv
 	)
 {
 	IRQL_t oldIrql;
@@ -1085,7 +1086,7 @@ static void gpioX_opendrain_iniialize(
 
 	gpioX_lock(gpio, & oldIrql);
 
-	gpioX_progUnsafeNoPull(gpio, mask, GPIO_CFG_IODISABLE, ALWNR_GPIO_DRV_OPENDRAIN);
+	gpioX_progUnsafeNoPull(gpio, mask, GPIO_CFG_IODISABLE, drv);
 
 	/* установить регистр данных для всех относящихся выводов в 0 */
 	portholder_t * const data = & gpioX_get_ctx(gpio)->data;
@@ -1094,8 +1095,8 @@ static void gpioX_opendrain_iniialize(
 	gpio->DATA = * data;	/* если не в режиме вывода или disabled, записи игнорируются */
 	(void) gpio->DATA;
 
-	gpioX_progUnsafeNoPull(gpio, mask & state, GPIO_CFG_IN, ALWNR_GPIO_DRV_OPENDRAIN);
-	gpioX_progUnsafeNoPull(gpio, mask & ~ state, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OPENDRAIN);	// tie to GND
+	gpioX_progUnsafeNoPull(gpio, mask & state, GPIO_CFG_IN, drv);
+	gpioX_progUnsafeNoPull(gpio, mask & ~ state, GPIO_CFG_OUT, drv);	// tie to GND
 
 	gpioX_unlock(gpio, oldIrql);
 }
@@ -4906,7 +4907,7 @@ arm_hardware_pioa_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 //	//gpioX_poweron(GPIOA);
-	gpioX_opendrain_iniialize(GPIOA, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOA, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #elif CPUSTYLE_VM14
 
@@ -4975,7 +4976,7 @@ arm_hardware_piob_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOB);
-	gpioX_opendrain_iniialize(GPIOB, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOB, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #elif CPUSTYLE_VM14
 
@@ -5044,7 +5045,7 @@ arm_hardware_pioc_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOC);
-	gpioX_opendrain_iniialize(GPIOC, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOC, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #elif CPUSTYLE_VM14
 
@@ -5113,7 +5114,7 @@ arm_hardware_piod_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOD);
-	gpioX_opendrain_iniialize(GPIOD, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOD, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #elif CPUSTYLE_VM14
 
@@ -5182,7 +5183,7 @@ arm_hardware_pioe_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOE);
-	gpioX_opendrain_iniialize(GPIOE, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOE, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5238,7 +5239,7 @@ arm_hardware_piof_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOF);
-	gpioX_opendrain_iniialize(GPIOF, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOF, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5291,7 +5292,7 @@ arm_hardware_piog_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
-	gpioX_opendrain_iniialize(GPIOG, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOG, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5345,7 +5346,7 @@ arm_hardware_pioh_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
-	gpioX_opendrain_iniialize(GPIOH, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOH, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5856,7 +5857,7 @@ arm_hardware_piod_altfn50(portholder_t opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioa_altfn2(portholder_t opins, unsigned af)
+arm_hardware_pioa_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -5986,7 +5987,7 @@ arm_hardware_pioa_altfn20(portholder_t opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_piob_altfn2(portholder_t opins, unsigned af)
+arm_hardware_piob_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6116,7 +6117,7 @@ arm_hardware_piob_altfn20(portholder_t opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioc_altfn2(portholder_t opins, unsigned af)
+arm_hardware_pioc_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6246,7 +6247,7 @@ arm_hardware_pioc_altfn20(portholder_t opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_piod_altfn2(portholder_t opins, unsigned af)
+arm_hardware_piod_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6313,7 +6314,7 @@ arm_hardware_piod_altfn2(portholder_t opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioe_altfn2(portholder_t opins, unsigned af)
+arm_hardware_pioe_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6491,7 +6492,7 @@ arm_hardware_pioe_altfn50(portholder_t opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_piof_altfn2(portholder_t opins, unsigned af)
+arm_hardware_piof_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6660,7 +6661,7 @@ arm_hardware_piof_altfn50(portholder_t opins, unsigned af)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_piog_altfn2(portholder_t opins, unsigned af)
+arm_hardware_piog_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -6855,7 +6856,7 @@ arm_hardware_pioh_inputs(portholder_t ipins)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioh_altfn2(portholder_t opins, unsigned af)
+arm_hardware_pioh_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7050,7 +7051,7 @@ arm_hardware_pioi_inputs(portholder_t ipins)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioi_altfn2(portholder_t opins, unsigned af)
+arm_hardware_pioi_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7238,7 +7239,7 @@ arm_hardware_pioj_inputs(portholder_t ipins)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_pioj_altfn2(portholder_t opins, unsigned af)
+arm_hardware_pioj_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7407,7 +7408,7 @@ arm_hardware_piok_inputs(portholder_t ipins)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void 
-arm_hardware_piok_altfn2(portholder_t opins, unsigned af)
+arm_hardware_piok_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7641,7 +7642,7 @@ arm_hardware_piol_inputs(portholder_t ipins)
 
 /* подключаем к периферии, 2 МГц, push-pull */
 void
-arm_hardware_piol_altfn2(portholder_t opins, unsigned af)
+arm_hardware_piol_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7830,7 +7831,7 @@ arm_hardware_piol_opendrain(portholder_t opins, portholder_t initialstate)
 #elif CPUSTYLE_ALLWINNER
 
 	//gpioX_poweron(GPIOG);
-	gpioX_opendrain_iniialize(GPIOL, opins, initialstate);
+	gpioX_opendrain_iniialize(GPIOL, opins, initialstate, ALWNR_GPIO_DRV_OPENDRAIN);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7872,7 +7873,7 @@ arm_hardware_piol_updown(portholder_t ipins, portholder_t up, portholder_t down)
 #if defined (GPIOA)
 
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_pioa_periphopendrain_altfn2(portholder_t opins, unsigned af)
+void arm_hardware_pioa_periphopendrain_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -7937,7 +7938,7 @@ void arm_hardware_pioa_periphopendrain_altfn2(portholder_t opins, unsigned af)
 #if defined (GPIOB)
 
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_piob_periphopendrain_altfn2(portholder_t opins, unsigned af)
+void arm_hardware_piob_periphopendrain_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8002,7 +8003,7 @@ void arm_hardware_piob_periphopendrain_altfn2(portholder_t opins, unsigned af)
 #if defined (GPIOC)
 
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_pioc_periphopendrain_altfn2(portholder_t opins, unsigned af)
+void arm_hardware_pioc_periphopendrain_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8066,7 +8067,7 @@ void arm_hardware_pioc_periphopendrain_altfn2(portholder_t opins, unsigned af)
 
 #if defined (GPIOD)
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_piod_periphopendrain_altfn2(portholder_t opins, unsigned af)
+void arm_hardware_piod_periphopendrain_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8130,7 +8131,7 @@ void arm_hardware_piod_periphopendrain_altfn2(portholder_t opins, unsigned af)
 
 #if defined (GPIOE)
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_pioe_periphopendrain_altfn2(portholder_t opins, unsigned af)
+void arm_hardware_pioe_periphopendrain_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -8192,7 +8193,7 @@ void arm_hardware_pioe_periphopendrain_altfn2(portholder_t opins, unsigned af)
 #if defined (GPIOF)
 
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_piof_periphopendrain_altfn2(portholder_t opins, unsigned af)
+void arm_hardware_piof_periphopendrain_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX && defined(RCC_APB2ENR_IOPFEN)
 
@@ -8242,7 +8243,7 @@ void arm_hardware_piof_periphopendrain_altfn2(portholder_t opins, unsigned af)
 
 #if defined (GPIOG)
 /* подключаем к периферии, 2 МГц, open-drain */
-void arm_hardware_piog_periphopendrain_altfn2(portholder_t opins, unsigned af)
+void arm_hardware_piog_periphopendrain_altfn2m(portholder_t opins, unsigned af)
 {
 #if CPUSTYLE_STM32F1XX && defined (RCC_APB2ENR_IOPGEN)
 

@@ -6,7 +6,7 @@
 //
 // Touch GUI от RA4ASN
 
-#include "src/gui/gui_port_include.h"
+#include "../gui_port_include.h"
 
 #if WITHTOUCHGUI
 
@@ -15,8 +15,7 @@
 #include "gui_structs.h"
 #include "gui_settings.h"
 #include "gui_windows.h"
-#include "gui_fonts.h"
-#include "gui_port.h"
+#include "../gui_port.h"
 
 uint16_t gui_get_window_draw_width(void)
 {
@@ -41,10 +40,10 @@ void gui_drawline(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, gui_color_
 	const uint16_t xk = x2 + win->draw_x1;
 	const uint16_t yk = y2 + win->draw_y1;
 
-	ASSERT(xn < win->draw_x2);
-	ASSERT(xk < win->draw_x2);
-	ASSERT(yn < win->draw_y2);
-	ASSERT(yk < win->draw_y2);
+	GUI_ASSERT(xn < win->draw_x2);
+	GUI_ASSERT(xk < win->draw_x2);
+	GUI_ASSERT(yn < win->draw_y2);
+	GUI_ASSERT(yk < win->draw_y2);
 
 	__gui_draw_line(gdb, xn, yn, xk, yk, color);
 }
@@ -59,10 +58,10 @@ void gui_drawrect(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, gui_color_
 	const uint16_t xk = x2 + win->draw_x1;
 	const uint16_t yk = y2 + win->draw_y1;
 
-	ASSERT(xn < win->draw_x2);
-	ASSERT(xk < win->draw_x2);
-	ASSERT(yn < win->draw_y2);
-	ASSERT(yk < win->draw_y2);
+	GUI_ASSERT(xn < win->draw_x2);
+	GUI_ASSERT(xk < win->draw_x2);
+	GUI_ASSERT(yn < win->draw_y2);
+	GUI_ASSERT(yk < win->draw_y2);
 
 	__gui_draw_rect(gdb, xn, yn, xk, yk, color, fill);
 }
@@ -77,10 +76,10 @@ void gui_drawrect_rounded(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, ui
 	const uint16_t xk = x2 + win->draw_x1;
 	const uint16_t yk = y2 + win->draw_y1;
 
-	ASSERT(xn < win->draw_x2);
-	ASSERT(xk < win->draw_x2);
-	ASSERT(yn < win->draw_y2);
-	ASSERT(yk < win->draw_y2);
+	GUI_ASSERT(xn < win->draw_x2);
+	GUI_ASSERT(xk < win->draw_x2);
+	GUI_ASSERT(yn < win->draw_y2);
+	GUI_ASSERT(yk < win->draw_y2);
 
 	__gui_draw_rounded_rect(gdb, xn, yn, xk, yk, radius, color, fill);
 }
@@ -95,10 +94,10 @@ void gui_drawrect_transparent(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2
 	const uint16_t xk = x2 + win->draw_x1;
 	const uint16_t yk = y2 + win->draw_y1;
 
-	ASSERT(xn < win->draw_x2);
-	ASSERT(xk < win->draw_x2);
-	ASSERT(yn < win->draw_y2);
-	ASSERT(yk < win->draw_y2);
+	GUI_ASSERT(xn < win->draw_x2);
+	GUI_ASSERT(xk < win->draw_x2);
+	GUI_ASSERT(yn < win->draw_y2);
+	GUI_ASSERT(yk < win->draw_y2);
 
 	__gui_draw_semitransparent_rect(gdb, xn, yn, xk, yk, alpha);
 }
@@ -111,8 +110,8 @@ void gui_drawpoint(uint16_t x1, uint16_t y1, gui_color_t color)
 	const uint16_t xp = x1 + win->draw_x1;
 	const uint16_t yp = y1 + win->draw_y1;
 
-	ASSERT(xp < win->draw_x2);
-	ASSERT(xp < win->draw_x2);
+	GUI_ASSERT(xp < win->draw_x2);
+	GUI_ASSERT(xp < win->draw_x2);
 
 	__gui_draw_point(gdb, xp, yp, color);
 }
@@ -149,28 +148,6 @@ void gui_drawDashedRectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t he
     for (uint16_t i = 1; i < height - 1; i ++)
         if ((pos ++ / dashLength) % 2 == 0)
         	__gui_draw_point(gdb, x1, y2 - i, color);
-}
-
-void gui_print_mono(uint16_t x, uint16_t y, const char * text, const gui_mono_font_t * font, gui_color_t color)
-{
-	window_t * win = get_win(get_current_drawing_window());
-	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
-
-	const uint16_t xn = x + win->draw_x1;
-	const uint16_t yn = y + win->draw_y1;
-
-	__gui_draw_string_mono(gdb, xn, yn,	text, font, color);
-}
-
-void gui_print_prop(uint16_t x, uint16_t y, const char * text, const gui_prop_font_t * font, gui_color_t color)
-{
-	window_t * win = get_win(get_current_drawing_window());
-	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
-
-	const uint16_t xn = x + win->draw_x1;
-	const uint16_t yn = y + win->draw_y1;
-
-	__gui_draw_string_prop(gdb, xn, yn,	text, font, color);
 }
 
 #endif /* WITHTOUCHGUI */

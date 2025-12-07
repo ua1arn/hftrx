@@ -7,7 +7,7 @@
 
 #include "hardware.h"
 #include "buffers.h"
-#include "gui/gui.h"
+#include "gui/framework/gui.h"
 #include "synthcalcs.h"
 #include "board.h"
 #include "keyboard.h"
@@ -8502,8 +8502,17 @@ const char * hamradio_get_mode_a_value_P(void)
 }
 
 // SSB/CW/AM/FM/..
-const char * hamradio_get_mode_b_value_P(void)
+const char * hamradio_get_mode_b_value_P(uint_fast8_t * flag)
 {
+	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
+	{
+	default:
+	case VFOMODES_VFOINIT:	/* no SPLIT -  Обычная перестройка */
+		* flag = 0;
+	case VFOMODES_VFOSPLIT:
+		* flag = 1;
+		//return (gvfoab != tx) ? b : a;
+	}
 	return submodes [getsubmode(getbankindex_ab_fordisplay(1))].qlabel;	/* VFO B modifications */
 }
 
@@ -9260,6 +9269,9 @@ void display2_fnblock9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 		display_2fmenuslines(db, x, y, xspan, yspan, 1, label, bval);
 		break;
 	}
+#else
+	display_2fmenuslines(db, x, y, xspan, yspan, 1, "FMENU9", "FVALUE9");
+
 #endif /* WITHENCODER2 && ! WITHTOUCHGUI */
 }
 
@@ -12171,8 +12183,8 @@ updateboard_noui(
 				PRINTF(PSTR(" lo1="));	printfreq(synth_freq2lo1(freq, pathi));
 				PRINTF(PSTR(" pbt="));	printfreq(pbt);
 				PRINTF(PSTR(" ifshift="));	printfreq(ifshift);
-				PRINTF(PSTR(" bw="));	PRINTF(workfilter->labelf3);
-				PRINTF(PSTR(" dbw="));	PRINTF(hamradio_get_rxbw_label3_P());
+				PRINTF(" bw=%s", workfilter->labelf3);
+				PRINTF(" dbw=%s", hamradio_get_rxbw_label3());
 				PRINTF(PSTR("\n"));
 				PRINTF(
 					PSTR("mixXlsbs[0]=%d, [1]=%d, [2]=%d, [3]=%d, [4]=%d, [5]=%d, [6]=%d dc=%d tx=%d\n"),
@@ -12700,7 +12712,7 @@ uint_fast8_t hamradio_get_voxvalue(void)
 #if WITHANTSELECT1RX
 
 // antenna
-const char * hamradio_get_ant5_value_P(void)
+const char * hamradio_get_ant5_value(void)
 {
 	static char b [6];
 	local_snprintf_P(b, ARRAY_SIZE(b),
@@ -12713,7 +12725,7 @@ const char * hamradio_get_ant5_value_P(void)
 #elif WITHANTSELECTRX
 
 // antenna
-const char * hamradio_get_ant5_value_P(void)
+const char * hamradio_get_ant5_value(void)
 {
 	static char b [6];
 	if (strlen(rxantmodes[grxantenna].label))
@@ -12728,14 +12740,14 @@ const char * hamradio_get_ant5_value_P(void)
 #elif WITHANTSELECT
 
 // antenna
-const char * hamradio_get_ant5_value_P(void)
+const char * hamradio_get_ant5_value(void)
 {
 	return antmodes [gantenna].label5;
 }
 
 #elif WITHANTSELECT2
 // antenna
-const char * hamradio_get_ant5_value_P(void)
+const char * hamradio_get_ant5_value(void)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	static char b [6];
@@ -13745,7 +13757,7 @@ uint_fast8_t hamradio_get_tx(void)
 #if WITHIF4DSP
 
 // Three-character wide printed current RX/TX bandwidth namw
-const char * hamradio_get_rxbw_label3_P(void)
+const char * hamradio_get_rxbw_label3(void)
 {
 	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
 	return bwsetsc [bwseti].labels [bwsetpos[bwseti]];
@@ -13772,7 +13784,7 @@ const char * hamradio_get_rxbw_value4(void)
 
 #else /* WITHIF4DSP */
 
-const char * hamradio_get_rxbw_label3_P(void)
+const char * hamradio_get_rxbw_label3(void)
 {
 #if WITHFIXEDBFO
 	return PSTR("");
@@ -13806,7 +13818,7 @@ const char * hamradio_get_rxbw_value4(void)
 #endif /* WITHIF4DSP */
 
 // RX preamplifier
-const char * hamradio_get_pre_value_P(void)
+const char * hamradio_get_pre_value(void)
 {
 #if ! WITHONEATTONEAMP
 	return pampmodes [gpamp].label;
@@ -13822,7 +13834,7 @@ const char * hamradio_get_att_value_P(void)
 }
 
 // RX agc time - 3 символа
-const char * hamradio_get_agc3_value_P(void)
+const char * hamradio_get_agc3_value(void)
 {
 #if ! WITHAGCMODENONE
 	return agcmodes [gagcmode].label3;
@@ -13832,7 +13844,7 @@ const char * hamradio_get_agc3_value_P(void)
 }
 
 // RX agc time - 4 символа
-const char * hamradio_get_agc4_value_P(void)
+const char * hamradio_get_agc4_value(void)
 {
 #if ! WITHAGCMODENONE
 	return agcmodes [gagcmode].label4;
@@ -21217,11 +21229,6 @@ void hamradio_set_spectrumpart(uint8_t v)
 
 #endif /* WITHSPECTRUMWF && WITHMENU */
 
-const char * hamradio_get_att_value(void)
-{
-	return attmodes [gatt].label;
-}
-
 const char * hamradio_get_preamp_value(void)
 {
 #if ! WITHONEATTONEAMP
@@ -22108,15 +22115,15 @@ int infocb_modea(char * b, size_t len, int * pstate)
 int infocb_modeb(char * b, size_t len, int * pstate)
 {
 	uint_fast8_t state;
-	hamradio_get_vfomode3_value(& state);
+	const char * const name = hamradio_get_mode_b_value_P(& state);
 	* pstate = state;
-	return local_snprintf_P(b, len, "%s", hamradio_get_mode_b_value_P());
+	return local_snprintf_P(b, len, "%s", name);
 }
 
 int infocb_ant5(char * b, size_t len, int * pstate)
 {
 #if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 || WITHANTSELECT
-	return local_snprintf_P(b, len, "%s", hamradio_get_ant5_value_P());
+	return local_snprintf_P(b, len, "%s", hamradio_get_ant5_value());
 #else
 	return 0;
 #endif /* xxx */
@@ -22124,7 +22131,7 @@ int infocb_ant5(char * b, size_t len, int * pstate)
 
 int infocb_preamp_ovf(char * b, size_t len, int * pstate)
 {
-	return local_snprintf_P(b, len, "%s", hamradio_get_pre_value_P());
+	return local_snprintf_P(b, len, "%s", hamradio_get_pre_value());
 }
 
 int infocb_tune(char * b, size_t len, int * pstate)
@@ -22249,7 +22256,7 @@ int infocb_notch(char * b, size_t len, int * pstate)
 
 int infocb_agc(char * b, size_t len, int * pstate)
 {
-	return local_snprintf_P(b, len, "%s", hamradio_get_agc3_value_P());
+	return local_snprintf_P(b, len, "%s", hamradio_get_agc3_value());
 }
 
 int infocb_lock(char * b, size_t len, int * pstate)
@@ -22368,7 +22375,7 @@ int infocb_freqb(char * b, size_t len, int * pstate)
 
 int infocb_rxbw(char * b, size_t len, int * pstate)
 {
-	return local_snprintf_P(b, len, "%s", hamradio_get_rxbw_label3_P());
+	return local_snprintf_P(b, len, "%s", hamradio_get_rxbw_label3());
 }
 
 int infocb_siglevel(char * b, size_t len, int * pstate)

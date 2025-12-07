@@ -2795,7 +2795,7 @@ static void t113_de_set_address_vi2(int rtmixid, uintptr_t vram, int vich, uint_
 		return;
 	}
 //	const uint32_t ovl_ui_mbsize = (((uint_fast32_t) (vdmode_CRT->height - 1) << 16) | (vdmode_CRT->width - 1));
-//	const uint32_t uipitch = vdmode_CRT->width;//LCDMODE_PIXELSIZE * GXADJ(vdmode_CRT->width);
+//	const uint32_t uipitch = vdmode_CRT->width;
 	const uint_fast32_t ovl_ui_mbsize = (((uint_fast32_t) (TVD_HEIGHT - 1) << 16) | (TVD_WIDTH - 1));
 	const uint_fast32_t uipitch = TVD_WIDTH;
 	const uint_fast32_t attr =
@@ -3003,6 +3003,12 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 	TCONLCD_PTR->TCON1_CTL_REG =
 		0;
 #else
+    // Сперва сбрасываем всё
+    TCONLCD_PTR->LCD_CPU_IF_REG = 0;
+    TCONLCD_PTR->LCD_HV_IF_REG = 0;
+    TCONLCD_PTR->LCD_LVDS_IF_REG = 0;
+    // ставим нужное
+
 	//uint_fast32_t start_dly = (vdmode->vfp + vdmode->vbp + vdmode->vsync) / 2;
 	uint_fast32_t start_dly = 2; //0x1F;	// 1,2 - need for 4.3 inch panel 272*480 - should be tested
 	TCONLCD_PTR->LCD_CTL_REG =
@@ -3391,8 +3397,9 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
 	//PRINTF("t113_tconlvds_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
+	const unsigned sel = 0x02; // 000: PLL_VIDEO0(1X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(1X),  011: PLL_VIDEO1(4X)
 	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-		2 * (UINT32_C(1) << 24) | // 010: PLL_VIDEO1(1X)
+		sel * (UINT32_C(1) << 24) |
 		0;
  	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 	//PRINTF("t113_tconlvds_CCU_configuration: BOARD_TCONLCDFREQ=%" PRIuFAST32 " MHz\n", (uint_fast32_t) BOARD_TCONLCDFREQ / 1000 / 1000);
@@ -3419,12 +3426,13 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 
 	/* Configure TCONLCD clock */
 	unsigned prei = 0;
+	const unsigned sel = 0x03;	// CLK_SRC_SEL 011: PLL_VIDEO1(4X)
 	const unsigned divider = calcdivround2(allwnr_t113_get_video1pllx4_freq(), needfreq);
 	//PRINTF("t113_tconlvds_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
 	ASSERT(divider >= 1 && divider <= 16);
 	// LVDS
     TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x0F) << 0)) |
-		0x03 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 011: PLL_VIDEO1(4X)
+		sel * (UINT32_C(1) << 24) |
 		prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
 		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
 		0;
@@ -3518,31 +3526,42 @@ static void t113_MIPIDSI_clock_configuration(const videomode_t * vdmode, unsigne
 static void t113_lvds_set_digital_logic(const videomode_t * vdmode)
 {
 #if defined (TCONLCD_PTR)
-#if defined (LCD_LVDS_IF_REG_VALUE)
 
-	TCONLCD_PTR->LCD_LVDS_IF_REG = LCD_LVDS_IF_REG_VALUE;
-
-#elif CPUSTYLE_H3
+#if CPUSTYLE_H3
 	// No LVDS outpit
 
 #elif CPUSTYLE_A64
 	// No LVDS outpit
 
-#else /* defined (LCD_LVDS_IF_REG_VALUE) */
+#else
 
-	TCONLCD_PTR->LCD_LVDS_IF_REG =
-		1 * (UINT32_C(1) << 31) |	/* LCD_LVDS_EN */
-		0 * (UINT32_C(1) << 30) |	/* LCD_LVDS_LINK: 0: single link */
-		0 * (UINT32_C(1) << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter) */
-		0 * (UINT32_C(1) << 26) |	/* LCD_LVDS_BITWIDTH 0: 24-bit */
-		1 * (UINT32_C(1) << 20) |	/* LCD_LVDS_CLK_SEL 1: LCD CLK */
-		0 * (UINT32_C(1) << 25) |		/* LCD_LVDS_DEBUG_EN */
-		0 * (UINT32_C(1) << 24) |		/* LCD_LVDS_DEBUG_MODE */
-		0 * (UINT32_C(1) << 4) |				/* LCD_LVDS_CLK_POL: 0: reverse, 1: normal */
-		0 * 0x0F * (UINT32_C(1) << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */
-		0;
+	// Сперва сбрасываем всё
+	TCONLCD_PTR->LCD_CPU_IF_REG = 0;
+	TCONLCD_PTR->LCD_HV_IF_REG = 0;
+	TCONLCD_PTR->LCD_LVDS_IF_REG = 0;
+	// ставим нужное
+	#if defined (LCD_LVDS_IF_REG_VALUE)
 
-#endif /* defined (LCD_LVDS_IF_REG_VALUE) */
+		// Сперва сбрасываем всё
+		TCONLCD_PTR->LCD_CPU_IF_REG = 0;
+		TCONLCD_PTR->LCD_HV_IF_REG = 0;
+		TCONLCD_PTR->LCD_LVDS_IF_REG = 0;
+		// ставим нужное
+		TCONLCD_PTR->LCD_LVDS_IF_REG = LCD_LVDS_IF_REG_VALUE;
+	#else /* defined (LCD_LVDS_IF_REG_VALUE) */
+		TCONLCD_PTR->LCD_LVDS_IF_REG =
+			1 * (UINT32_C(1) << 31) |	/* LCD_LVDS_EN */
+			0 * (UINT32_C(1) << 30) |	/* LCD_LVDS_LINK: 0: single link */
+			0 * (UINT32_C(1) << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter) */
+			0 * (UINT32_C(1) << 26) |	/* LCD_LVDS_BITWIDTH 0: 24-bit */
+			1 * (UINT32_C(1) << 20) |	/* LCD_LVDS_CLK_SEL 1: LCD CLK */
+			0 * (UINT32_C(1) << 25) |		/* LCD_LVDS_DEBUG_EN */
+			0 * (UINT32_C(1) << 24) |		/* LCD_LVDS_DEBUG_MODE */
+			0 * (UINT32_C(1) << 4) |				/* LCD_LVDS_CLK_POL: 0: reverse, 1: normal */
+			0 * 0x0F * (UINT32_C(1) << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */
+			0;
+	#endif /* defined (LCD_LVDS_IF_REG_VALUE) */
+#endif /* CPUSTYLE_xxx */
 #endif /* defined (TCONLCD_PTR) */
 }
 
@@ -6154,11 +6173,19 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 
     // CCU_32K select as CEC clock as default
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
+	const freqsrc_t sources [] =
+	{
+		{ 0x00, allwnr_t507_get_pll_video0_x1_freq() }, //000: PLL_VIDEO0(1X)
+//		{ 0x01, allwnr_t507_get_pll_video0_x4_freq() }, //001: PLL_VIDEO0(4X)
+//		{ 0x02, allwnr_t507_get_pll_video1_x1_freq() }, //010: PLL_VIDEO1(1X)
+//		{ 0x03, allwnr_t507_get_pll_video1_x4_freq() }, //011: PLL_VIDEO1(4X)
+	};
+	unsigned sel = 0x00; 	// 000: PLL_VIDEO0(1X) 001: PLL_VIDEO0(4X) 010: PLL_VIDEO1(1X) 011: PLL_VIDEO1(4X)
 	unsigned tcontv_divider;
-	unsigned tcontv_prei = calcdivider(calcdivround2(allwnr_t507_get_pll_video0_x1_freq(), dotclock), 4, (8 | 4 | 2 | 1), & tcontv_divider, 1);
-
+	//unsigned tcontv_prei = calcdivider(calcdivround2(allwnr_t507_get_pll_video0_x1_freq(), dotclock), ALLWNR_TCONTV_WIDTH, ALLWNR_TCONTV_TAPS, & tcontv_divider, 1);
+	unsigned tcontv_prei = calcdividerselect(dotclock, sources, ARRAY_SIZE(sources), ALLWNR_TCONTV_WIDTH, ALLWNR_TCONTV_TAPS, & tcontv_divider, & sel, 1);
 	TCONTV_CCU_CLK_REG =
-			0x00 * (UINT32_C(1) << 24) | 	// 000: PLL_VIDEO0(1X) 001: PLL_VIDEO0(4X)
+			sel * (UINT32_C(1) << 24) |
 			(tcontv_prei) * (UINT32_C(1) << 8) | // prescaler code
 			(tcontv_divider) * (UINT32_C(1) << 0) |
 			0;
@@ -7728,7 +7755,7 @@ static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 	// step4 - same as step4 in HV mode: Open volatile output
 	t113_tcontv_open_IO_output(vdmode);
 	// step5 - set LVDS digital logic configuration
-	//t113_lvds_set_digital_logic(vdmode);
+	//t113_tcontv_set_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
 	//t113_DSI_controller_configuration(vdmode);
 	//t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);

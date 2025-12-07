@@ -16,7 +16,7 @@
 #include "clocks.h"
 #include "touch/touch.h"
 #include "display/display.h"
-#include "gui/gui.h"
+#include "gui/framework/gui.h"
 
 #include <string.h>
 #include <math.h>

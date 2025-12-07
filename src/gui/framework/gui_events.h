@@ -1,7 +1,7 @@
 #ifndef GUI_EVENTS_H_INCLUDED
 #define GUI_EVENTS_H_INCLUDED
 
-#include "hardware.h"
+#include "../gui_port_include.h"
 
 typedef enum {
 	CODE_CURSOR_LEFT,

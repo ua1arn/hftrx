@@ -1,8 +1,14 @@
-#include "src/gui/gui_port_include.h"
+#include "../../gui_port_include.h"
 
-#if WITHTOUCHGUI
-#include "gui_fonts.h"
-#include "gui_port.h"
+#if WITHTOUCHGUI && ! GUI_EXTERNAL_FONTS
+
+#include "../gui.h"
+#include "../gui_system.h"
+#include "../gui_structs.h"
+#include "../gui_settings.h"
+#include "../gui_windows.h"
+#include "embedded_fonts.h"
+#include "../../gui_port.h"
 
 //--------------------------------------------------------------
 // Рисует ASCII символ шрифтом одного размера на позиции х, у.
@@ -147,8 +153,50 @@ uint16_t get_strwidth_prop(const char * str, const UB_pFont32 * font)
 
 // Возвращает ширину строки в пикселях, моноширинный шрифт
 uint16_t get_strwidth_mono(const char * str, const UB_Font32 * font) {
-	ASSERT(str != NULL);
+	GUI_ASSERT(str != NULL);
 	return strlen(str) * font->width;
 }
 
-#endif /* WITHTOUCHGUI */
+uint16_t get_strheight_mono(const UB_Font32 * font)
+{
+	return font->height;
+}
+
+uint16_t get_strheight_prop(const UB_pFont32 * font)
+{
+	return font->height;
+}
+
+void __gui_print_mono(const gui_drawbuf_t * gdb, uint16_t x, uint16_t y, const char * text, const gui_mono_font_t * font, gui_color_t color)
+{
+	gui_UB_Font_DrawString32(gdb, x, y,	text, font, color);
+}
+
+void __gui_print_prop(const gui_drawbuf_t * gdb, uint16_t x, uint16_t y, const char * text, const gui_prop_font_t * font, gui_color_t color)
+{
+	gui_UB_Font_DrawPString32(gdb, x, y, text, font, color);
+}
+
+void gui_print_mono(uint16_t x, uint16_t y, const char * text, const gui_mono_font_t * font, gui_color_t color)
+{
+	window_t * win = get_win(get_current_drawing_window());
+	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
+
+	const uint16_t xn = x + win->draw_x1;
+	const uint16_t yn = y + win->draw_y1;
+
+	gui_UB_Font_DrawString32(gdb, xn, yn,	text, font, color);
+}
+
+void gui_print_prop(uint16_t x, uint16_t y, const char * text, const gui_prop_font_t * font, gui_color_t color)
+{
+	window_t * win = get_win(get_current_drawing_window());
+	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
+
+	const uint16_t xn = x + win->draw_x1;
+	const uint16_t yn = y + win->draw_y1;
+
+	gui_UB_Font_DrawPString32(gdb, xn, yn,	text, font, color);
+}
+
+#endif /* WITHTOUCHGUI && ! GUI_EXTERNAL_FONTS */

@@ -1,9 +1,7 @@
 #include "hardware.h"
 #include "display.h"
 
-#if WITHRLEDECOMPRESS
-
-const picRLE_t smeter_bg_new =
+static const picRLE_t smeter_bg_new =
 {
 	.width = 215,
 	.height = 80,
@@ -2760,5 +2758,3 @@ const picRLE_t storch_logo =
 		0x1082, 0x0279, 0x0000
 	},
 };
-
-#endif /* WITHRLEDECOMPRESS */

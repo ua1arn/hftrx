@@ -547,10 +547,20 @@ uint_fast16_t strwidth(
 
 #endif /* defined (SMALLCHARW) && defined (SMALLCHARH) */
 
+// обычный шрифт
+uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
+{
+	if (dbstyle->font_draw_char == NULL)
+		return x;
+	savewhere = __func__;
+	return dbstyle->font_draw_char(db, x, y, cc, dbstyle->textcolor);
+}
+
 // большой шрифт
 uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
 {
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	if (dbstyle->font_draw_big == NULL)
+		return x;
     const uint_fast8_t width = bigfont_width(cc);
     const uint_fast8_t ci = bigfont_decode(cc);
 	savewhere = __func__;
@@ -559,6 +569,8 @@ uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_f
 
 uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
 {
+	if (dbstyle->font_draw_half == NULL)
+		return x;
 	const uint_fast8_t width = halffont_width(cc);
 	const uint_fast8_t ci = halffont_decode(cc);
 	savewhere = __func__;
@@ -941,7 +953,9 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 	size_t len;
 
 	savewhere = __func__;
-#if !WITHLVGL
+#if ! WITHLVGL
+	if (dbstylep->font_draw_char == NULL)
+		return;
 	if (dbstylep->bgradius)
 	{
 		w -= dbstylep->bgbackoffw;
@@ -957,7 +971,6 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 	const uint_fast16_t vstep = avlh / nlines;
 	for (; nlines --; ypix += vstep)
 	{
-		const COLORPIP_T fg = dbstylep->textcolor;
 		uint_fast16_t xpix = xpixB + dbstylep->bgradius;
 		const char * s = * slines ++;
 #if WITHLVGL
@@ -972,7 +985,7 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 			lv_draw_rect_dsc_init(& d);
 			lv_area_set(& coords, xpix, ypix, xpix + w - 1, ypix + h - 1);
 			d.bg_color = display_lvlcolor(dbstylep->bgcolor);
-			l.color = display_lvlcolor(fg);
+			l.color = display_lvlcolor(dbstylep->textcolor);
 			l.align = LV_TEXT_ALIGN_RIGHT;
 			l.flag = 0*LV_TEXT_FLAG_EXPAND | LV_TEXT_FLAG_FIT;
 			l.text = s;
@@ -985,7 +998,6 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 		}
 #endif
 		char c;
-
 		savestring = s;
 		switch (dbstylep->textvalign)
 		{
@@ -1012,11 +1024,11 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 		case GXSTYLE_HALIGN_RIGHT:
 			xpix = textw < w ? xpix + avlw - textw : xpix;
 			while ((c = * s ++) != '\0' && xpix - xpix0 + dbstylep->font_width(c) <= avlw)
-				xpix = dbstylep->font_draw_char(db, xpix, ypix, c, fg);
+				xpix = dbstylep->font_draw_char(db, xpix, ypix, c, dbstylep->textcolor);
 			break;
 		case GXSTYLE_HALIGN_LEFT:
 			while ((c = * s ++) != '\0' && xpix - xpix0 + dbstylep->font_width(c) <= avlw)
-				xpix = dbstylep->font_draw_char(db, xpix, ypix, c, fg);
+				xpix = dbstylep->font_draw_char(db, xpix, ypix, c, dbstylep->textcolor);
 			break;
 		case GXSTYLE_HALIGN_CENTER:
 			// todo: to be implemented
@@ -1024,20 +1036,6 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 		}
 	}
 
-}
-
-// Используется при выводе на графический индикатор с кординатами и размерами в пикселях
-void
-pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstyle, const char * s)
-{
-	pix_display_texts(db, xpix, ypix, w, h, dbstyle, & s, 1);	// одга строка для multi-line
-}
-
-// Используется при выводе на графический индикатор с кординатами и размерами по сетке
-void
-display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstylep)
-{
-	pix_display_texts(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), dbstylep, & s, 1);
 }
 
 static const FLASHMEM int32_t vals10 [] =
@@ -1126,7 +1124,7 @@ pix_display_value_big(
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 void
 NOINLINEAT
-display_value_big(
+display_freq(
 	const gxdrawb_t * db,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
@@ -1272,7 +1270,6 @@ pix_display_value_small(
 	uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
 	uint_fast8_t z = 1;	// если в позиции встретился '0' - не отоображать
 
-	const COLORPIP_T fg = dbstylep->textcolor;
 	if (dbstylep->bgradius)
 	{
 		w -= dbstylep->bgbackoffw;
@@ -1295,13 +1292,13 @@ pix_display_value_small(
 		z = 0;
 		if (freq < 0)
 		{
-			xpix = dbstylep->font_draw_char(db, xpix, ypix, '-', fg);
+			xpix = display_put_char_small(db, xpix, ypix, '-', dbstylep);
 			freq = - freq;
 		}
 		else if (wsign)
-			xpix = dbstylep->font_draw_char(db, xpix, ypix, '+', fg);
+			xpix = display_put_char_small(db, xpix, ypix, '+', dbstylep);
 		else
-			xpix = dbstylep->font_draw_char(db, xpix, ypix, ' ', fg);
+			xpix = display_put_char_small(db, xpix, ypix, ' ', dbstylep);
 	}
 	for (; i < j; ++ i)
 	{
@@ -1310,20 +1307,20 @@ pix_display_value_small(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = dbstylep->font_draw_char(db, xpix, ypix, (z == 0) ? '.' : ' ', fg);
+			xpix = display_put_char_small(db, xpix, ypix, (z == 0) ? '.' : ' ', dbstylep);
 		}
 		else if (comma == g)
 		{
 			z = 0;
-			xpix = dbstylep->font_draw_char(db, xpix, ypix, '.', fg);
+			xpix = display_put_char_small(db, xpix, ypix, '.', dbstylep);
 		}
 
 		if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = dbstylep->font_draw_char(db, xpix, ypix, ' ', fg);	// supress zero
+			xpix = display_put_char_small(db, xpix, ypix, ' ', dbstylep);	// supress zero
 		else
 		{
 			z = 0;
-			xpix = dbstylep->font_draw_char(db, xpix, ypix, '0' + res.quot, fg);
+			xpix = display_put_char_small(db, xpix, ypix, '0' + res.quot, dbstylep);
 		}
 		freq = res.rem;
 	}
@@ -1558,79 +1555,6 @@ void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t
 	db->layerv = NULL;
 }
 
-void gxstyle_setsmallfont(gxstyle_t * dbstyle)
-{
-#if defined (SMALLCHARW)
-	dbstyle->font_draw_char = colorpip_put_char_small;
-	dbstyle->font_width = smallfont_width;
-	dbstyle->font_height = smallfont_height;
-#endif /* defined (SMALLCHARW) */
-}
-void gxstyle_setsmallfont2(gxstyle_t * dbstyle)
-{
-#if defined (SMALLCHARH2)
-	dbstyle->font_draw_char = colorpip_put_char_small2;
-	dbstyle->font_width = smallfont2_width;
-	dbstyle->font_height = smallfont2_height;
-#endif /* defined (SMALLCHARH2) */
-}
-
-void gxstyle_initialize(gxstyle_t * dbstyle)
-{
-	gxstyle_textcolor(dbstyle, COLORPIP_WHITE, COLORPIP_BLACK);
-	gxstyle_setsmallfont(dbstyle);
-	gxstyle_texthalign(dbstyle, GXSTYLE_HALIGN_RIGHT);
-	gxstyle_textvalign(dbstyle, GXSTYLE_VALIGN_CENTER);
-	dbstyle->bgradius = display2_gettileradius();
-	dbstyle->bgfilled = 1;
-	dbstyle->bgbackoffw = GXSTYLE_BACKOFF;	// уменьшение размера плашки по горизонтали
-	dbstyle->bgbackoffh = GXSTYLE_BACKOFF;	// уменьшение размера плашки по вертикали
-#if WITHALTERNATIVEFONTS
-	dbstyle->font_draw_big = ltdc_put_char_big_alt;
-	dbstyle->font_draw_half = ltdc_put_char_half_alt;
-#else /* WITHALTERNATIVEFONTS */
-	dbstyle->font_draw_big = ltdc_put_char_big;
-	dbstyle->font_draw_half = ltdc_put_char_half;
-#endif /* WITHALTERNATIVEFONTS */
-}
-
-
-void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg)
-{
-#if ! LCDMODE_LTDC_L24
-	dbstyle->textcolor = fg;
-	dbstyle->bgcolor = bg;
-#else /* ! LCDMODE_LTDC_L24 */
-	dbstyle->textcolor.r = COLORPIP_R(fg);
-	dbstyle->textcolor.g = COLORPIP_G(fg);
-	dbstyle->textcolor.b = COLORPIP_B(fg);
-	dbstyle->bgcolor.r = COLORPIP_R(bg);
-	dbstyle->bgcolor.g = COLORPIP_G(bg);
-	dbstyle->bgcolor.b = COLORPIP_B(bg);
-
-#endif /* ! LCDMODE_LTDC_L24 */
-
-}
-
-void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a)
-{
-	dbstyle->texthalign = a;
-}
-
-void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a)
-{
-	dbstyle->textvalign = a;
-}
-
-uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s)
-{
-	char c;
-	uint_fast16_t n = 0;
-	while ((c = * s ++ != '\0'))
-		n += dbstyle->font_width(c);
-	return n;
-}
-
 #endif /* LCDMODE_LTDC */
 
 #if WITHLTDCHW || 1
@@ -1731,45 +1655,6 @@ static const videomode_t vdmode0 =
 	.vsync = 3,				/* Vertical synchronization 1..20 */
 	.vbp = 20,				/* Vertical back porch */
 	.vfp = 12,				/* Vertical front porch  1..127  (r6dan: 2-12-22) */
-
-	// MODE: DE/SYNC mode select.
-	// DE MODE: MODE="1", VS and HS must pull high.
-	// SYNC MODE: MODE="0". DE must be grounded
-	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
-	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
-	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
-	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-	.fps = 60,	/* frames per second */
-	.ntsc = 0,
-	.interlaced = 0
-};
-
-#elif LCDMODE_HXD_C067BHW8843ANT
-
-/* HXD-C067BHW8843ANT  6.75" 480*1280 LVDS */
-static const videomode_t vdmode0 =
-{
-	// thd 480
-	// thpw 2
-	// thb 30
-	// thfp 24
-
-	// tvd 1280
-	// tvpw 2
-	// tvb 8
-	// tvfp 16
-
-	// SEE ALSO NV3051F1 chip NV3051.pdf
-
-	 .width = 480,   /* LCD PIXEL WIDTH            */
-	 .hsync = 2,    /* Horizontal synchronization */
-	 .hbp = 30,    /* Horizontal back porch      */
-	 .hfp = 24,    /* Horizontal front porch */
-
-	 .height = 1280,   /* LCD PIXEL HEIGHT           */
-	 .vsync = 2,    /* Vertical synchronization */
-	 .vbp = 14,    /* Vertical back porch */
-	 .vfp = 16,    /* Vertical front porch */
 
 	// MODE: DE/SYNC mode select.
 	// DE MODE: MODE="1", VS and HS must pull high.
@@ -2454,9 +2339,9 @@ RGB_t hsv2rgb(HSV_t hsv)
 
 COLORPIP_T convert_565_to_a888(uint16_t color)
 {
-	uint8_t b5 = (color & 0x1F) << 3;
-	uint8_t g6 = ((color & 0x7E0) >> 5) << 2;
-	uint8_t r5 = ((color & 0xF800) >> 11) << 3;
+	uint8_t b5 = RGB565_B(color);
+	uint8_t g6 = RGB565_G(color);
+	uint8_t r5 = RGB565_R(color);
 
 	return TFTRGB(r5, g6, b5);
 }
@@ -2629,4 +2514,124 @@ uint_fast32_t display_getdotclock(const videomode_t * vdmode)
 
 	return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL;
 	//return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL / (vdmode->interlaced + 1);
+}
+
+// Используется при выводе на графический индикатор с кординатами и размерами в пикселях
+void
+pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstyle, const char * s)
+{
+	pix_display_texts(db, xpix, ypix, w, h, dbstyle, & s, 1);	// одга строка для multi-line
+}
+
+// Используется при выводе на графический индикатор с кординатами и размерами по сетке
+void
+display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstylep)
+{
+	pix_display_texts(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), dbstylep, & s, 1);
+}
+
+void gxstyle_setsmallfont(gxstyle_t * dbstyle)
+{
+#if ! LCDMODE_LTDC
+	dbstyle->font_draw_char = NULL;
+#elif defined (SMALLCHARW)
+	dbstyle->font_draw_char = colorpip_put_char_small;
+	dbstyle->font_width = smallfont_width;
+	dbstyle->font_height = smallfont_height;
+#endif /* defined (SMALLCHARW) */
+}
+
+void gxstyle_setsmallfont2(gxstyle_t * dbstyle)
+{
+#if ! LCDMODE_LTDC
+	dbstyle->font_draw_char = NULL;
+#elif defined (SMALLCHARH2)
+	dbstyle->font_draw_char = colorpip_put_char_small2;
+	dbstyle->font_width = smallfont2_width;
+	dbstyle->font_height = smallfont2_height;
+#endif /* defined (SMALLCHARH2) */
+}
+
+// уменьшение размера плашки
+void gxstyle_setbgbackoff(gxstyle_t * dbstyle, unsigned x, unsigned y)
+{
+	dbstyle->bgbackoffw = x;	// уменьшение размера плашки по горизонтали
+	dbstyle->bgbackoffh = y;	// уменьшение размера плашки по вертикали
+}
+
+void gxstyle_setbgradius(gxstyle_t * dbstyle, unsigned r)
+{
+	dbstyle->bgradius = r;
+}
+
+void gxstyle_setbgrfilled(gxstyle_t * dbstyle, unsigned f)
+{
+	dbstyle->bgfilled = f;
+}
+
+void gxstyle_setsbigandhalffont(gxstyle_t * dbstyle)
+{
+#if ! LCDMODE_LTDC
+	dbstyle->font_draw_big = NULL;
+	dbstyle->font_draw_half = NULL;
+#elif WITHALTERNATIVEFONTS
+	dbstyle->font_draw_big = ltdc_put_char_big_alt;
+	dbstyle->font_draw_half = ltdc_put_char_half_alt;
+#else /* WITHALTERNATIVEFONTS */
+	dbstyle->font_draw_big = ltdc_put_char_big;
+	dbstyle->font_draw_half = ltdc_put_char_half;
+#endif /* WITHALTERNATIVEFONTS */
+}
+
+#define GXSTYLE_BACKOFF 2	// на столько пикселей уменьшается высота и ширина при наличии радиуса в стиле
+
+void gxstyle_initialize(gxstyle_t * dbstyle)
+{
+	memset(dbstyle, 0, sizeof * dbstyle);
+	gxstyle_textcolor(dbstyle, COLORPIP_WHITE, COLORPIP_BLACK);
+	gxstyle_setsmallfont(dbstyle);
+	gxstyle_texthalign(dbstyle, GXSTYLE_HALIGN_RIGHT);
+	gxstyle_textvalign(dbstyle, GXSTYLE_VALIGN_CENTER);
+	gxstyle_setbgradius(dbstyle, display2_gettileradius());
+	gxstyle_setbgrfilled(dbstyle, 1);
+	gxstyle_setbgbackoff(dbstyle, GXSTYLE_BACKOFF, GXSTYLE_BACKOFF); // уменьшение размера плашки
+}
+
+
+void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg)
+{
+#if ! LCDMODE_LTDC_L24
+	dbstyle->textcolor = fg;
+	dbstyle->bgcolor = bg;
+#else /* ! LCDMODE_LTDC_L24 */
+	dbstyle->textcolor.r = COLORPIP_R(fg);
+	dbstyle->textcolor.g = COLORPIP_G(fg);
+	dbstyle->textcolor.b = COLORPIP_B(fg);
+	dbstyle->bgcolor.r = COLORPIP_R(bg);
+	dbstyle->bgcolor.g = COLORPIP_G(bg);
+	dbstyle->bgcolor.b = COLORPIP_B(bg);
+
+#endif /* ! LCDMODE_LTDC_L24 */
+
+}
+
+void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a)
+{
+	dbstyle->texthalign = a;
+}
+
+void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a)
+{
+	dbstyle->textvalign = a;
+}
+
+uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s)
+{
+	if (dbstyle->font_draw_char == NULL)
+		return 0;
+	char c;
+	uint_fast16_t n = 0;
+	while ((c = * s ++ != '\0'))
+		n += dbstyle->font_width(c);
+	return n;
 }

@@ -226,46 +226,46 @@
 	// Инициализируются I2S2 и I2S3
 	#define I2S2HW_SLAVE_INITIALIZE() do { \
 		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
-		arm_hardware_piob_altfn2(UINT32_C(1) << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
+		arm_hardware_piob_altfn2m(UINT32_C(1) << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
 		arm_hardware_piob_updown(UINT32_C(1) << 12, 0, 1uL << 12); \
-		arm_hardware_piob_altfn2(UINT32_C(1) << 10,	AF_SPI2); /* PB10 I2S2_CK	*/ \
+		arm_hardware_piob_altfn2m(UINT32_C(1) << 10,	AF_SPI2); /* PB10 I2S2_CK	*/ \
 		arm_hardware_piob_updown(UINT32_C(1) << 10, 0, 1uL << 10); \
-		arm_hardware_pioc_altfn2(UINT32_C(1) << 3,	AF_SPI2); /* PC3 I2S2_SD - передача */ \
-		arm_hardware_pioa_altfn2(UINT32_C(1) << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
+		arm_hardware_pioc_altfn2m(UINT32_C(1) << 3,	AF_SPI2); /* PC3 I2S2_SD - передача */ \
+		arm_hardware_pioa_altfn2m(UINT32_C(1) << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
 		arm_hardware_pioa_updown(UINT32_C(1) << 15, 0, 1uL << 15); \
-		arm_hardware_piob_altfn2(UINT32_C(1) << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \
+		arm_hardware_piob_altfn2m(UINT32_C(1) << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \
 		arm_hardware_piob_updown(UINT32_C(1) << 3, 0, 1uL << 3); \
-		arm_hardware_piob_altfn2(UINT32_C(1) << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
+		arm_hardware_piob_altfn2m(UINT32_C(1) << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
 	} while (0)
 	// Инициализируются I2S2
 	#define I2S2HW_MASTER_INITIALIZE() do { \
 		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
-		arm_hardware_piob_altfn2(UINT32_C(1) << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
+		arm_hardware_piob_altfn2m(UINT32_C(1) << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
 		arm_hardware_piob_updown(UINT32_C(1) << 12, 0, 1uL << 12); \
-		arm_hardware_piob_altfn2(UINT32_C(1) << 10,	AF_SPI2); /* PB10 I2S2_CK	*/ \
+		arm_hardware_piob_altfn2m(UINT32_C(1) << 10,	AF_SPI2); /* PB10 I2S2_CK	*/ \
 		arm_hardware_piob_updown(UINT32_C(1) << 10, 0, 1uL << 10); \
-		arm_hardware_pioc_altfn2(UINT32_C(1) << 3,	AF_SPI2); /* PC3 I2S2_SD - передача */ \
+		arm_hardware_pioc_altfn2m(UINT32_C(1) << 3,	AF_SPI2); /* PC3 I2S2_SD - передача */ \
 	} while (0)
 #endif /* WITHI2S2HW */
 
 #if WITHI2S3HW
 	// Инициализируются I2S3
 	#define I2S3HW_SLAVE_RX_INITIALIZE() do { \
-		arm_hardware_pioa_altfn2(UINT32_C(1) << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
+		arm_hardware_pioa_altfn2m(UINT32_C(1) << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
 		arm_hardware_pioa_updown(UINT32_C(1) << 15, 0, 1uL << 15); \
-		arm_hardware_piob_altfn2(UINT32_C(1) << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \
+		arm_hardware_piob_altfn2m(UINT32_C(1) << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \
 		arm_hardware_piob_updown(UINT32_C(1) << 3, 0, 1uL << 3); \
-		arm_hardware_piob_altfn2(UINT32_C(1) << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
+		arm_hardware_piob_altfn2m(UINT32_C(1) << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
 	} while (0)
 #endif /* WITHI2S3HW */
 
 #if WITHSAI1HW
 	#define SAI1HW_INITIALIZE()	do { \
 		/*arm_hardware_pioe_altfn20(UINT32_C(1) << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
-		arm_hardware_pioe_altfn2(UINT32_C(1) << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
+		arm_hardware_pioe_altfn2m(UINT32_C(1) << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
 		arm_hardware_pioe_altfn20(UINT32_C(1) << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
-		arm_hardware_pioe_altfn2(UINT32_C(1) << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
-		arm_hardware_pioe_altfn2(UINT32_C(1) << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_pioe_altfn2m(UINT32_C(1) << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
+		arm_hardware_pioe_altfn2m(UINT32_C(1) << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
 	} while (0)
 	#define SAI1HW_SLAVE_INITIALIZE()	do { \
 		SAI1HW_INITIALIZE(); \
@@ -282,10 +282,10 @@
 	*/
 	#define SAI2HW_INITIALIZE()	do { \
 		/* arm_hardware_pioe_altfn20(UINT32_C(1) << 0, AF_SAI2); */	/* PE0 - SAI2_MCK_A - 12.288 MHz	*/ \
-		/* arm_hardware_piod_altfn2(UINT32_C(1) << 12, AF_SAI2); */	/* PD12 - SAI2_FS_A	- 48 kHz	*/ \
+		/* arm_hardware_piod_altfn2m(UINT32_C(1) << 12, AF_SAI2); */	/* PD12 - SAI2_FS_A	- 48 kHz	*/ \
 		/* arm_hardware_piod_altfn20(UINT32_C(1) << 13, AF_SAI2); */	/* PD13 - SAI2_SCK_A	*/ \
-		/* arm_hardware_piod_altfn2(UINT32_C(1) << 11, AF_SAI2); */	/* PD11 - SAI2_SD_A	(i2s data to codec)	*/ \
-		/* arm_hardware_pioe_altfn2(UINT32_C(1) << 11, AF_SAI2);	*/ /* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
+		/* arm_hardware_piod_altfn2m(UINT32_C(1) << 11, AF_SAI2); */	/* PD11 - SAI2_SD_A	(i2s data to codec)	*/ \
+		/* arm_hardware_pioe_altfn2m(UINT32_C(1) << 11, AF_SAI2);	*/ /* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
@@ -567,15 +567,15 @@
 	#define HARDWARE_UART1_INITIALIZE() do { \
 			const uint_fast32_t TXMASK = (UINT32_C(1) << 9); /* PA9: TX DATA line (2 MHz) */ \
 			const uint_fast32_t RXMASK = (UINT32_C(1) << 10); /* PA10: RX DATA line (2 MHz) - pull-up RX data */  \
-			arm_hardware_pioa_altfn2(TXMASK, AF_USART1);  \
-			arm_hardware_pioa_altfn2(RXMASK, AF_USART1);  \
+			arm_hardware_pioa_altfn2m(TXMASK, AF_USART1);  \
+			arm_hardware_pioa_altfn2m(RXMASK, AF_USART1);  \
 			arm_hardware_pioa_updown(RXMASK, RXMASK, 0); \
 		} while (0)
 	#define HARDWARE_UART2_INITIALIZE() do { \
 			const uint_fast32_t TXMASK = (UINT32_C(1) << 5); /* PD5: TX DATA line (2 MHz) */ \
 			const uint_fast32_t RXMASK = (UINT32_C(1) << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
-			arm_hardware_piod_altfn2(TXMASK, AF_USART2); \
-			arm_hardware_piod_altfn2(RXMASK, AF_USART2); \
+			arm_hardware_piod_altfn2m(TXMASK, AF_USART2); \
+			arm_hardware_piod_altfn2m(RXMASK, AF_USART2); \
 			arm_hardware_piod_updown(RXMASK, RXMASK, 0); \
 		} while (0)
 
@@ -606,7 +606,7 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-			arm_hardware_piob_periphopendrain_altfn2(TARGET_TWI_TWCK | TARGET_TWI_TWD, AF_I2C1);	/* AF=4 */ \
+			arm_hardware_piob_periphopendrain_altfn2m(TARGET_TWI_TWCK | TARGET_TWI_TWD, AF_I2C1);	/* AF=4 */ \
 		} while (0) 
 
 
@@ -795,7 +795,7 @@
 	// PF6 - DC-DC synchro output
 	// TIM16_CH1 AF1
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_piof_altfn2((UINT32_C(1) << 6), AF_TIM1); /* PF6 - TIM16_CH1 */ \
+		arm_hardware_piof_altfn2m((UINT32_C(1) << 6), AF_TIM1); /* PF6 - TIM16_CH1 */ \
 		hardware_dcdcfreq_tim16_ch1_initialize(); \
 		} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \

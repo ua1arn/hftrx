@@ -315,8 +315,8 @@ uint_fast32_t allwnr_t507_get_pll_audio_4x_freq(void);
 uint_fast64_t allwnr_t507_get_pll_audio_hs_freq(void);
 uint_fast64_t allwnr_t507_get_pll_video0_x4_freq(void);
 uint_fast64_t allwnr_t507_get_pll_video1_x4_freq(void);
-uint_fast64_t allwnr_t507_get_pll_video0_x1_freq(void);
-uint_fast64_t allwnr_t507_get_pll_video1_x1_freq(void);
+uint_fast32_t allwnr_t507_get_pll_video0_x1_freq(void);
+uint_fast32_t allwnr_t507_get_pll_video1_x1_freq(void);
 uint_fast64_t allwnr_t507_get_pll_peri0_x2_freq(void);
 
 uint_fast32_t allwnr_t507_get_hosc_freq(void);
@@ -341,11 +341,11 @@ uint_fast32_t allwnr_t507_get_ce_freq(void);
 uint_fast32_t allwnr_t507_get_ve_freq(void);
 uint_fast32_t allwnr_t507_get_avs_freq(void);
 uint_fast32_t allwnr_t507_get_dram_freq(void);
-uint_fast32_t allwnr_t507_get_tcon_lcd0_freq(void);
-uint_fast32_t allwnr_t507_get_tcon_lcd1_freq(void);
-uint_fast32_t allwnr_t507_get_tcon_tv0_freq(void);
-uint_fast32_t allwnr_t507_get_tcon_tv1_freq(void);
-uint_fast32_t allwnr_t507_get_hdmi0_freq(void);
+uint_fast64_t allwnr_t507_get_tcon_lcd0_freq(void);
+uint_fast64_t allwnr_t507_get_tcon_lcd1_freq(void);
+uint_fast64_t allwnr_t507_get_tcon_tv0_freq(void);
+uint_fast64_t allwnr_t507_get_tcon_tv1_freq(void);
+uint_fast64_t allwnr_t507_get_hdmi0_freq(void);
 uint_fast32_t allwnr_t507_get_hdmi_hdcp_freq(void);
 uint_fast32_t allwnr_t507_get_tve0_freq(void);
 uint_fast32_t allwnr_t507_get_ahub_freq(void);
@@ -401,12 +401,35 @@ uint_fast32_t allwnr_v3s_get_apb1_freq(void);
 uint_fast32_t elveesvm14_get_arm_freq(void);
 uint_fast32_t elveesvm14_get_usart_freq(void);
 
+uint_fast32_t
+calcdivround2(
+	uint_fast64_t ref,	/* частота на входе делителя, в герцах. */
+	uint_fast64_t freq	/* требуемая частота на выходе делителя, в герцах. */
+	);
+
 uint_fast8_t
 calcdivider(
 	uint_fast32_t divisor, // ожидаемый коэффициент деления всей системы
 	uint_fast8_t width,			// количество разрядов в счётчике
 	uint_fast16_t taps,			// маска битов - выходов прескалера. 0x01 - означает bypass, 0x02 - делитель на 2... 0x400 - делитель на 1024
 	unsigned * dvalue,		// Значение для записи в регистр сравнения делителя
+	uint_fast8_t substract);
+
+typedef struct freqsrc_tag
+{
+	unsigned sel;
+	uint_fast64_t clk;
+} freqsrc_t;
+
+uint_fast8_t
+calcdividerselect(
+	uint_fast32_t freq, // желаемая частота на выходе
+	const freqsrc_t * tbl,
+	size_t n,
+	uint_fast8_t width,			// количество разрядов в счётчике
+	uint_fast32_t taps,			// маска битов - выходов прескалера. 0x01 - означает bypass, 0x02 - делитель на 2... 0x400 - делитель на 1024
+	unsigned * dvalue,		// Значение для записи в регистр сравнения делителя
+	unsigned * sel,		// выбраный источник
 	uint_fast8_t substract);
 
 
@@ -569,6 +592,7 @@ calcdivider(
 		ALLWNT113_DMIC_CLK_WIDTH = 5, ALLWNT113_DMIC_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
 		ALLWNT_SPI_CLK_WIDTH = 4, ALLWNT_SPI_CLK_TAPS = ( 8 | 4 | 2 | 1),	// CCU register
 		ALLWNT_SPI_CCI_WIDTH = 8, ALLWNT_SPI_CCI_TAPS = 1,	// SPI register
+		ALLWNR_TCONTV_WIDTH = 4, ALLWNR_TCONTV_TAPS = (8 | 4 | 2 | 1), // TCON_TV0_CLK_REG
 		//
 		ALLWNT113_pad
 	};

@@ -12,7 +12,7 @@ extern "C" {
 
 extern const phase_t phase_0;
 
-#define FPGAREG_V1_SPIMODE		SPIC_MODE3
+#define FPGAREG_V1_SPIMODE		SPIC_MODE3	// FPGA ACCESS SPI MODE SHOULD BE mode3 (gates used)
 #ifndef FPGAREG_V1_SPISPEED
 	#define FPGAREG_V1_SPISPEED		SPIC_SPEEDUFAST
 #endif

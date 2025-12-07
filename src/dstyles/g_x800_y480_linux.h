@@ -117,16 +117,18 @@
 		{    0, 5,  SM_BG_W_CELLS, SM_BG_H_CELLS, display2_smeter15, 		& dzi_compat, PG0, },	// Изображение стрелочного прибора
 #endif /* WITHBARS */
 #if WITHAFSPECTRE
-		{	0,	8,	0,	0,	display2_af_spectre15_init,	& dzi_default, PGINI, },
-		{	0,	8,	0,	0,	display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
-		{	0,	8,	15,	0,	display2_af_spectre15,		& dzi_default, PG0, },
+		{	0,	5,	0,	0,	display2_af_spectre15_init,	& dzi_default, PGINI, },
+		{	0,	5,	0,	0,	display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
+		{	0,	5,	SM_BG_W_CELLS,	SM_BG_H_CELLS,	display2_af_spectre15,		& dzi_default, PG0, },
 #endif /* WITHAFSPECTRE */
 
 		{	0,	0, 4,	4,	display2_siglevel4, 	& dzi_default, PG0, },	// signal level dBm
 		{	0,	DLES,	50,	BDCV_ALLRX,	display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
 		{	0,	DLES,	50,	BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	50,	BDCV_ALLRX,	display2_gcombo,	& dzi_default, PG0_1, },// подготовка изображения спектра
+#if ! WITHSDL2VIDEO
 		{	0,	DLES,	0,	0,	gui_WM_walkthrough,	& dzi_default, PG0_1, },
+#endif /* ! WITHSDL2VIDEO */
 
 		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
 #endif /* ! WITHLVGL */

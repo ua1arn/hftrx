@@ -359,6 +359,16 @@ __STATIC_FORCEINLINE uint64_t __get_MAIR_EL3(void)
 	return result;
 }
 
+__STATIC_FORCEINLINE void __set_MAIR_EL1(uint64_t value)
+{
+	__set_RG64("MAIR_EL1", value);
+}
+
+__STATIC_FORCEINLINE void __set_MAIR_EL2(uint64_t value)
+{
+	__set_RG64("MAIR_EL2", value);
+}
+
 __STATIC_FORCEINLINE void __set_MAIR_EL3(uint64_t value)
 {
 	__set_RG64("MAIR_EL3", value);
@@ -380,6 +390,18 @@ __STATIC_FORCEINLINE void __set_TTBR0_EL3(uint64_t value)
 {
 	// MSR TTBR0_EL3, <Xt> ; Write Xt to TTBR0_EL3
 	__set_RG64("TTBR0_EL3", value);
+}
+
+__STATIC_FORCEINLINE void __set_TCR_EL1(uint32_t value)
+{
+	// MSR TCR_EL1, <Xt> ; Write Xt to TCR_EL1
+	__set_RG32("TCR_EL1", value);
+}
+
+__STATIC_FORCEINLINE void __set_TCR_EL2(uint32_t value)
+{
+	// MSR TCR_EL2, <Xt> ; Write Xt to TCR_EL2
+	__set_RG32("TCR_EL2", value);
 }
 
 __STATIC_FORCEINLINE void __set_TCR_EL3(uint32_t value)

@@ -88,7 +88,7 @@
 	#if WITHAFSPECTRE
 		{	0,	5,	0, 0, display2_af_spectre15_init,	& dzi_default, PGINI, },
 		{	0,	5,	0, 0, display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
-		{	0,	5,	15, 20, display2_af_spectre15,		& dzi_default, PG0, },
+		{	0,	5,	SM_BG_W_CELLS,	SM_BG_H_CELLS, display2_af_spectre15,		& dzi_default, PG0, },
 	#endif /* WITHAFSPECTRE */
 
 		{	15,	7,	21, 15, display2_dummy,		& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.

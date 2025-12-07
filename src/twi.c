@@ -119,6 +119,7 @@ static void i2c_delay(const i2cp_t * p)
 
 static void i2c_softbusrelease(void)
 {
+#if 0
 	uint_fast8_t i;
 	// release I2C bus
 	CLR_TWD();
@@ -133,6 +134,7 @@ static void i2c_softbusrelease(void)
 		CLR_TWCK();
 		SET_TWCK();
 	}
+#endif
 }
 
 #endif /* defined (TWISOFT_INITIALIZE) */
@@ -1951,8 +1953,10 @@ void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq
 
 void i2c_initialize(void)
 {
+#if defined (TWISOFT_INITIALIZE)
 	TWISOFT_INITIALIZE();
 	i2c_softbusrelease();
+#endif
 
 	hardware_twi_master_configure();
 
@@ -1965,6 +1969,11 @@ void i2c_initialize(void)
 	TWIHARD2_INITIALIZE();
 	t113_i2c_stop(TWIHARD2_PTR);
 #endif /* defined (TWIHARD2_PTR) */
+
+#if WITHSTWI0HW
+	i2chwx_initialize(TWIHARD_S_PTR, TWIHARD_FREQ, 400000);
+	HARDWARE_S_TWI0_INITIALIZE();
+#endif
 
 #if WITHTWI0HW
 	i2chwx_initialize(TWIBASENAME(0), TWIHARD_FREQ, 400000);
@@ -2554,6 +2563,24 @@ void hardware_twi_master_configure(void)
 #elif CPUSTYLE_ALLWINNER
 
 	const uint_fast32_t sclfreq = 400000;
+
+#if defined (TWIHARD_S_PTR)
+	{
+		const unsigned TWIx = TWIHARD_S_IX;
+		TWI_TypeDef * const twi = TWIHARD_S_PTR;
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
+		PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
+
+		t113_i2c_set_rate(twi, sclfreq, TWIHARD_S_FREQ);
+
+		twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
+
+		twi->TWI_SRST |= UINT32_C(1) << 0;
+		while ((twi->TWI_SRST & (UINT32_C(1) << 0)) != 0)
+			;
+	}
+#endif /* defined (TWIHARD_S_PTR) */
 
 #if defined (TWIHARD_PTR)
 	{

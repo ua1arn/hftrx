@@ -164,7 +164,7 @@ SECTIONS
 
 	__etext2 = .;
 
-	.bss :
+	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
 		. = ALIGN(64);

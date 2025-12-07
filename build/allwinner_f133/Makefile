@@ -48,6 +48,7 @@ SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex
 BIN  = $(CP) -O binary
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/15.2.0/liblto_plugin.dll
+OBJDUMP   = $(TRGT)objdump
 
 # The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).
 
@@ -58,8 +59,8 @@ CORE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector -
 
 # Define optimisation level here
 #OPT = -Og
-OPT = -Ofast -flto
-#OPT = -Ofast
+#OPT = -Ofast -flto
+OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
@@ -296,6 +297,7 @@ $(OBJSA_APP) $(ZOBJSA):
 %_app.elf: $(OBJS) $(OBJSA_APP) $(LDSCRIPT_APP)
 	$(GPP) $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
+	$(OBJDUMP) -d $(PROJECT)_app.elf >$(PROJECT)_app.lst
 
 %hex: %elf
 	$(HEX) $< $@

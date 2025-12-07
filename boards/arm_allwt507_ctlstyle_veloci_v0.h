@@ -24,6 +24,7 @@
 
 	#define WITHCPUXTAL 24000000u	/* На процессоре установлен кварц 24.000 МГц */
 	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */
+	#define HARDWARE_ADDRSPACE_GB (8)	// Размер адресного пространства (для 4 ГБ памяти надо 8 ГБ - базовый адрес ОЗУ 0x40000000).
 
 	//  PLL_CPUX=24MHz*N/P
 #if 0
@@ -233,6 +234,7 @@
 	// Выбор используемой цветовой палитры
 	#define COLORSTYLE_GREEN	1
 	//#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_BLUE2 1
 	//#define COLORSTYLE_WHITE	1
 	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */

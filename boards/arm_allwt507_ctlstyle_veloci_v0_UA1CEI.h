@@ -24,6 +24,7 @@
 
 	#define WITHCPUXTAL 24000000u	/* На процессоре установлен кварц 24.000 МГц */
 	//#define WITHCPUXOSC 24000000u	/* На процессоре установлен генератор 24.000 МГц */
+	#define HARDWARE_ADDRSPACE_GB (8)	// Размер адресного пространства (для 4 ГБ памяти надо 8 ГБ - базовый адрес ОЗУ 0x40000000).
 
 	//  PLL_CPUX=24MHz*N/P
 #if 0
@@ -133,21 +134,10 @@
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
 	//#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
 	//#define BOARD_DSTYLE "g_x800_y480.h"
+	//#define BOARD_DSTYLE "g_x480_y272_spectrum_notouch.h"
 	#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 	//#define BOARD_DSTYLE "g_x800_y480_linux.h"
 	//#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
-
-#elif 1
-
-	#define LCDMODE_HXD_C067BHW8843ANT 1	/* HXD-C067BHW8843ANT panel (480*1280) */
-
-	//#define LCDMODE_PALETTE256 1	/* Экран 8 бит, L8 */
-	#define LCDMODE_RGB565 1	/* Экран 16 бит */
-	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
-	#define WITHFLATLINK 1	/* Работа с TFT панелью через интерфйс LVDS	*/
-	#define BOARD_DSTYLE "g_x800_y480.h"
-	//#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
-
 
 #elif 1
 
@@ -249,6 +239,7 @@
 	// Выбор используемой цветовой палитры
 	//#define COLORSTYLE_GREEN	1
 	#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_BLUE2 1
 	//#define COLORSTYLE_WHITE	1
 	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
@@ -349,6 +340,9 @@
 
 	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
+//	#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+//	#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+//	#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
@@ -357,7 +351,6 @@
 		#if 0
 			#define WITHTOUCHGUI		1
 			#define WITHGUIDEBUG		1	/* вывод отладочной информации на экран по удержанию Break-In */
-			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHDISPLAY_FPS		15
 			#define WITHDISPLAYSWR_FPS	15
 			#define WITHALPHA			24

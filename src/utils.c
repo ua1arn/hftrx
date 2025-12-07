@@ -110,7 +110,7 @@ uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 /* Little endian memory layout */
 uint_fast16_t
 USBD_peek_u16(
-	const uint8_t * buff
+	const uint8_t * __RESTRICT buff
 	)
 {
 #if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
@@ -126,7 +126,7 @@ USBD_peek_u16(
 /* Little endian memory layout */
 uint_fast32_t
 USBD_peek_u24(
-	const uint8_t * buff
+	const uint8_t * __RESTRICT buff
 	)
 {
 #if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
@@ -145,7 +145,7 @@ USBD_peek_u24(
 /* Little endian memory layout */
 uint_fast32_t
 USBD_peek_u32(
-	const uint8_t * buff
+	const uint8_t * __RESTRICT buff
 	)
 {
 #if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
@@ -161,7 +161,7 @@ USBD_peek_u32(
 
 /* записать в буфер для ответа 32-бит значение */
 /* Little endian memory layout */
-unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
+unsigned USBD_poke_u32(uint8_t * __RESTRICT buff, uint_fast32_t v)
 {
 #if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
 	__UNALIGNED_UINT32_WRITE(buff, v);
@@ -175,11 +175,25 @@ unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
 	return 4;
 }
 
+/* Little endian memory layout */
+unsigned USBD_poke_u64(uint8_t * __RESTRICT buff, uint_fast64_t v)
+{
+	buff [0] = (uint8_t) (v >> 0);
+	buff [1] = (uint8_t) (v >> 8);
+	buff [2] = (uint8_t) (v >> 16);
+	buff [3] = (uint8_t) (v >> 24);
+	buff [4] = (uint8_t) (v >> 32);
+	buff [5] = (uint8_t) (v >> 40);
+	buff [6] = (uint8_t) (v >> 48);
+	buff [7] = (uint8_t) (v >> 56);
+	return 8;
+}
+
 /* получить 32-бит значение */
 /* Little endian memory layout */
 float
 USBD_peek_IEEE_FLOAT(
-	const uint8_t * buff
+	const uint8_t * __RESTRICT buff
 	)
 {
 	union
@@ -204,7 +218,7 @@ USBD_peek_IEEE_FLOAT(
 
 /* записать в буфер для ответа 32-бит значение */
 /* Little endian memory layout */
-unsigned USBD_poke_IEEE_FLOAT(uint8_t * buff, float f)
+unsigned USBD_poke_IEEE_FLOAT(uint8_t * __RESTRICT buff, float f)
 {
 	union
 	{
@@ -231,7 +245,7 @@ unsigned USBD_poke_IEEE_FLOAT(uint8_t * buff, float f)
 /* Big endian memory layout */
 uint_fast16_t
 USBD_peek_u16_BE(
-	const uint8_t * buff
+	const uint8_t * __RESTRICT buff
 	)
 {
 #if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
@@ -247,7 +261,7 @@ USBD_peek_u16_BE(
 /* Big endian memory layout */
 uint_fast32_t
 USBD_peek_u32_BE(
-	const uint8_t * buff
+	const uint8_t * __RESTRICT buff
 	)
 {
 #if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
@@ -265,7 +279,7 @@ USBD_peek_u32_BE(
 /* Big endian memory layout */
 uint_fast64_t
 USBD_peek_u64_BE(
-	const uint8_t * buff
+	const uint8_t * __RESTRICT buff
 	)
 {
 	return
@@ -281,7 +295,7 @@ USBD_peek_u64_BE(
 
 /* записать в буфер для ответа 32-бит значение */
 /* Big endian memory layout */
-unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v)
+unsigned USBD_poke_u32_BE(uint8_t * __RESTRICT buff, uint_fast32_t v)
 {
 #if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
 	__UNALIGNED_UINT32_WRITE(buff, __REV(v));
@@ -297,7 +311,7 @@ unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v)
 
 /* записать в буфер для ответа 64-бит значение */
 /* Big endian memory layout */
-unsigned USBD_poke_u64_BE(uint8_t * buff, uint_fast64_t v)
+unsigned USBD_poke_u64_BE(uint8_t * __RESTRICT buff, uint_fast64_t v)
 {
 	buff [0] = (v >> 56) & 0xFF;
 	buff [1] = (v >> 48) & 0xFF;
@@ -313,7 +327,7 @@ unsigned USBD_poke_u64_BE(uint8_t * buff, uint_fast64_t v)
 
 /* записать в буфер для ответа 24-бит значение */
 /* Little endian memory layout */
-unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
+unsigned USBD_poke_u24(uint8_t * __RESTRICT buff, uint_fast32_t v)
 {
 #if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
 	__UNALIGNED_UINT16_WRITE(buff, v);
@@ -329,7 +343,7 @@ unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
 
 /* записать в буфер для ответа 16-бит значение */
 /* Little endian memory layout */
-unsigned USBD_poke_u16(uint8_t * buff, uint_fast16_t v)
+unsigned USBD_poke_u16(uint8_t * __RESTRICT buff, uint_fast16_t v)
 {
 #if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
 	__UNALIGNED_UINT16_WRITE(buff, v);
@@ -343,7 +357,7 @@ unsigned USBD_poke_u16(uint8_t * buff, uint_fast16_t v)
 
 /* записать в буфер для ответа 16-бит значение */
 /* Big endian memory layout */
-unsigned USBD_poke_u16_BE(uint8_t * buff, uint_fast16_t v)
+unsigned USBD_poke_u16_BE(uint8_t * __RESTRICT buff, uint_fast16_t v)
 {
 #if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
 	__UNALIGNED_UINT16_WRITE(buff, __REV16(v));
@@ -356,7 +370,7 @@ unsigned USBD_poke_u16_BE(uint8_t * buff, uint_fast16_t v)
 }
 
 /* записать в буфер для ответа 8-бит значение */
-unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
+unsigned USBD_poke_u8(uint8_t * __RESTRICT buff, uint_fast8_t v)
 {
 	buff [0] = v;
 
@@ -368,14 +382,14 @@ unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 ///
 
 
-void uint8_queue_init(u8queue_t * q, uint8_t * buff, unsigned sz)
+void uint8_queue_init(u8queue_t * __RESTRICT q, uint8_t * buff, unsigned sz)
 {
 	q->qg = q->qp = 0;
 	q->size = sz;
 	q->buffer = buff;
 }
 
-uint_fast8_t uint8_queue_put(u8queue_t * q, uint_fast8_t c)
+uint_fast8_t uint8_queue_put(u8queue_t * __RESTRICT q, uint_fast8_t c)
 {
 	unsigned qpt = q->qp;
 	const unsigned next = (qpt + 1) % q->size;
@@ -388,7 +402,7 @@ uint_fast8_t uint8_queue_put(u8queue_t * q, uint_fast8_t c)
 	return 0;
 }
 
-uint_fast8_t uint8_queue_get(u8queue_t * q, uint_fast8_t * pc)
+uint_fast8_t uint8_queue_get(u8queue_t * __RESTRICT q, uint_fast8_t * pc)
 {
 	unsigned qgt = q->qg;
 	if (q->qp != qgt)
@@ -410,14 +424,14 @@ uint_fast8_t uint8_queue_empty(const u8queue_t * q)
 ///
 
 
-void uint16_queue_init(u16queue_t * q, uint16_t * buff, unsigned sz)
+void uint16_queue_init(u16queue_t * __RESTRICT q, uint16_t * buff, unsigned sz)
 {
 	q->qg = q->qp = 0;
 	q->size = sz;
 	q->buffer = buff;
 }
 
-uint_fast8_t uint16_queue_put(u16queue_t * q, uint_fast16_t c)
+uint_fast8_t uint16_queue_put(u16queue_t * __RESTRICT q, uint_fast16_t c)
 {
 	unsigned qpt = q->qp;
 	const unsigned next = (qpt + 1) % q->size;
@@ -430,7 +444,7 @@ uint_fast8_t uint16_queue_put(u16queue_t * q, uint_fast16_t c)
 	return 0;
 }
 
-uint_fast8_t uint16_queue_get(u16queue_t * q, uint_fast16_t * pc)
+uint_fast8_t uint16_queue_get(u16queue_t * __RESTRICT q, uint_fast16_t * pc)
 {
 	unsigned qgt = q->qg;
 	if (q->qp != qgt)
@@ -442,7 +456,7 @@ uint_fast8_t uint16_queue_get(u16queue_t * q, uint_fast16_t * pc)
 	return 0;
 }
 
-uint_fast8_t uint16_queue_empty(const u16queue_t * q)
+uint_fast8_t uint16_queue_empty(const u16queue_t * __RESTRICT q)
 {
 	return q->qp == q->qg;
 }

@@ -169,6 +169,12 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
 #endif /* LCDMODE_LTDC */
 
+// Get color components from RGB565 value
+#define RGB565_A(v) (255)
+#define RGB565_R(v) ((((v) & 0xF800) >> 8) | (((v) & 0xE000) >> 13))
+#define RGB565_G(v) ((((v) & 0x07E0) >> 3) | (((v) & 0x0600) >> 9))
+#define RGB565_B(v) ((((v) & 0x001F) << 3) | (((v) & 0x001C) >> 2))
+
 #ifndef DCACHEROWSIZE
 	#define GXALIGN 1	/* количество пикселей в строке видеобуфера кратно этому заначению */
 #elif defined (LCDMODE_PIXELSIZE)
@@ -231,8 +237,6 @@ typedef struct gxstyle_tag
 	uint_fast8_t (* font_height)(void);
 } gxstyle_t;
 
-#define GXSTYLE_BACKOFF 2	// на столько пикселей уменьшается высота и ширина при наличии радиуса в стиле
-
 void gxstyle_initialize(gxstyle_t * dbstyle);
 void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg);
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a);
@@ -240,6 +244,10 @@ void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a);
 uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s);
 void gxstyle_setsmallfont(gxstyle_t * dbstyle);
 void gxstyle_setsmallfont2(gxstyle_t * dbstyle);
+void gxstyle_setsbigandhalffont(gxstyle_t * dbstyle);
+void gxstyle_setbgbackoff(gxstyle_t * dbstyle, unsigned x, unsigned y);
+void gxstyle_setbgradius(gxstyle_t * dbstyle, unsigned r);
+void gxstyle_setbgrfilled(gxstyle_t * dbstyle, unsigned f);
 
 // Интерфейсные функции, специфические для драйвера дисплея - зависящие от типа микросхемы контроллера.
 void display_hardware_initialize(void);
@@ -408,6 +416,7 @@ void display_bar(
 
 // большие и средние цифры (частота)
 uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
+uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 // большие и средние цифры (частота)
@@ -746,7 +755,7 @@ void colpip_line(
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 void
-display_value_big(
+display_freq(
 	const gxdrawb_t * db,
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
@@ -895,7 +904,7 @@ void lvglhw_initialize(void);
 extern const char * savestring;
 extern const char * savewhere;
 
-#if WITHRLEDECOMPRESS
+#if 1//WITHRLEDECOMPRESS
 
 typedef struct
 {
@@ -921,5 +930,48 @@ void board_set_tvoutformat(uint_fast8_t v);	/* установить видеор
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+/* RGB 24-bits color table definition (RGB888). */
+#define COLOR_BLACK          TFTRGB(0x00, 0x00, 0x00)
+#define COLOR_WHITEALL          TFTRGB(0xFF, 0xFF, 0xFF)
+#define COLOR_BLUE           TFTRGB(0x00, 0x00, 0xFF)
+#define COLOR_GREEN          TFTRGB(0x00, 0xFF, 0x00)
+#define COLOR_RED            TFTRGB(0xFF, 0x00, 0x00)
+#define COLOR_NAVY           TFTRGB(0x00, 0x00, 0x80)
+#define COLOR_DARKBLUE       TFTRGB(0x00, 0x00, 0x8B)
+#define COLOR_DARKGREEN      TFTRGB(0x00, 0x64, 0x00)
+#define COLOR_DARKGREEN2     TFTRGB(0x00, 0x20, 0x00)
+#define COLOR_DARKCYAN       TFTRGB(0x00, 0x8B, 0x8B)
+#define COLOR_CYAN           TFTRGB(0x00, 0xFF, 0xFF)
+#define COLOR_TURQUOISE      TFTRGB(0x40, 0xE0, 0xD0)
+#define COLOR_INDIGO         TFTRGB(0x4B, 0x00, 0x82)
+#define COLOR_DARKRED        TFTRGB(0x80, 0x00, 0x00)
+#define COLOR_DARKRED2       TFTRGB(0x40, 0x00, 0x00)
+#define COLOR_OLIVE          TFTRGB(0x80, 0x80, 0x00)
+#define COLOR_DARKGRAY       TFTRGB(0x80, 0x80, 0x80)
+#define COLOR_SKYBLUE        TFTRGB(0x87, 0xCE, 0xEB)
+#define COLOR_BLUEVIOLET     TFTRGB(0x8A, 0x2B, 0xE2)
+#define COLOR_LIGHTGREEN     TFTRGB(0x90, 0xEE, 0x90)
+#define COLOR_DARKVIOLET     TFTRGB(0x94, 0x00, 0xD3)
+#define COLOR_YELLOWGREEN    TFTRGB(0x9A, 0xCD, 0x32)
+#define COLOR_BROWN          TFTRGB(0xA5, 0x2A, 0x2A)
+#define COLOR_GRAY       	 TFTRGB(0xA9, 0xA9, 0xA9)
+#define COLOR_SIENNA         TFTRGB(0xA0, 0x52, 0x2D)
+#define COLOR_LIGHTBLUE      TFTRGB(0xAD, 0xD8, 0xE6)
+#define COLOR_GREENYELLOW    TFTRGB(0xAD, 0xFF, 0x2F)
+#define COLOR_SILVER         TFTRGB(0xC0, 0xC0, 0xC0)
+#define COLOR_LIGHTGREY      TFTRGB(0xD3, 0xD3, 0xD3)
+#define COLOR_LIGHTCYAN      TFTRGB(0xE0, 0xFF, 0xFF)
+#define COLOR_VIOLET         TFTRGB(0xEE, 0x82, 0xEE)
+#define COLOR_AZUR           TFTRGB(0xF0, 0xFF, 0xFF)
+#define COLOR_BEIGE          TFTRGB(0xF5, 0xF5, 0xDC)
+#define COLOR_MAGENTA        TFTRGB(0xFF, 0x00, 0xFF)
+#define COLOR_TOMATO         TFTRGB(0xFF, 0x63, 0x47)
+#define COLOR_GOLD           TFTRGB(0xFF, 0xD7, 0x00)
+#define COLOR_ORANGE         TFTRGB(0xFF, 0xA5, 0x00)
+#define COLOR_SNOW           TFTRGB(0xFF, 0xFA, 0xFA)
+#define COLOR_YELLOW         TFTRGB(0xFF, 0xFF, 0x00)
+#define COLOR_BROWN   		 TFTRGB(0xA5, 0x2A, 0x2A)	// коричневый
+#define COLOR_PEAR    		 TFTRGB(0xD1, 0xE2, 0x31)	// грушевый
 
 #endif /* DISPLAY_H_INCLUDED */

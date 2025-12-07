@@ -5,30 +5,31 @@
  * автор Гена Завидовский mgs2001@mail.ru
  * UA1ARN
  *
- * Clockwork uConsole на основе модуля Raspberry Pi CM4 Lite (BCM2711, 4Гб LPDDR4-3200)
+ * Плата на основе вычислительного модуля Orange Pi CM4 (Rockchip RK3566 + 2Гб DDR4)
+ * и FPGA Artix-7 XC7A50T, интерфейс связи - PCI Express x1, AD9226 и DAC904E, by RA4ASN
  *
  */
 
-#ifndef LINUX_BROADCOM_CTLSTYLE_UCONSOLE_H_INCLUDED
-#define LINUX_BROADCOM_CTLSTYLE_UCONSOLE_H_INCLUDED 1
+#ifndef LINUX_ROCKCHIP_CTLSTYLE_OPICM4_XC7A50T_PCIE_ALT_GUI_H_INCLUDED
+#define LINUX_ROCKCHIP_CTLSTYLE_OPICM4_XC7A50T_PCIE_ALT_GUI_H_INCLUDED 1
 
-	#if ! defined(BCM2711)
-		#error Wrong CPU selected. BCM2711 expected
-	#endif /* ! defined(BCM2711) */
+	#if ! defined(RK3566)
+		#error Wrong CPU selected. RK3566 expected
+	#endif /* ! defined(RK3566) */
 
 //	#define DIRECT_122M88_X1			1	/* Тактовый генератор 122.880 МГц */
-	#define DIRECT_49M152_X1	1
-	#define BANDSELSTYLERE_UPCONV32M	1
+	#define DIRECT_61M440_X1	1
+	#define BANDSELSTYLERE_UPCONV56M	1
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
-//	#define XVTR_R820T2			1	// ad936x
-//	#define	WITHAD936XIIO		1	// External AD936x board
+	#define XVTR_R820T2			1	// ad936x
+	#define	WITHAD936XIIO		1	// External AD936x board
 //todo: объединить эти 2 дефайна
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_NOCTLREG	1
-//	#define CTLREGMODE_RA4ASN_LITE	1
+//	#define CTLREGMODE_NOCTLREG	1
+	#define CTLREGMODE_RA4ASN_LITE	1
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -50,19 +51,20 @@
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
-	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
-	#define WITHTFT_OVER_LVDS	1	// LVDS receiver THC63LVDF84B
-
+	#define LCDMODE_AT070TNA2 	1	/* 1024x600 */
+	#define COLORSTYLE_WHITE	1
+	#define BOARD_DSTYLE		"g_x1024_y600_linux.h"
 
 	#define ENCRES_DEFAULT ENCRES_128
 	#define WITHDIRECTFREQENER	1 // прямой ввод частоты с клавиш
 	
 	#define WITHENCODER		1
-//	#define WITHENCODER2	1		/* есть второй валкодер */
-//	#define ENCODER2_EVDEV	1		// Linux Input device
+	#define WITHENCODER2	1		/* есть второй валкодер */
+	#define ENCODER2_EVDEV	1		// Linux Input device
 	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	#define CODEC1_TYPE CODEC_TYPE_ALSA
+	#define CODEC2_TYPE CODEC_TYPE_LINUX
 	#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма
 	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
@@ -71,8 +73,8 @@
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-//	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
+	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
+	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHDSPLOCALTXFIR 1
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
@@ -90,9 +92,10 @@
 	#define WITHAFSPECTRE			1		/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHFFTSIZEAF 			512		/* Отображение спектра НЧ сигнвлв */
 	#define WITHTOUCHGUI			1
+	#define WITHALTERNATIVEFONTS	1
 	#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 	#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
-	#define WITHALPHA				42
+	#define WITHALPHA				192
 	#define FORMATFROMLIBRARY 		1
 	#define WITHAFGAINDEFAULT		20
 	#define WITHAFEQUALIZER			1
@@ -109,22 +112,14 @@
 //	#define WITHCPUFANPWM			1
 	#define WITHCPUTEMPERATURE		1
 //	#define WITHEXTIO_LAN			1 	// ExtIO_Storch.dll for SDRSharper
-//	#define WITHWNB					1	// Simple noise blanker
+	#define WITHWNB					1	// Simple noise blanker
 	#define WITHAUDIOSAMPLESREC		1	// запись и воспроизведение коротких фрагментов звука из эфира
-//	#define REALREFERENCE_FREQ 		61443000L
+	#define REALREFERENCE_FREQ 		61443000L
+	#define MOUSE_EVDEV				1
+	#define MOUSE_CURSOR_PATH		"/usr/hftrx_data/arrow.png"
 //	#define BLUETOOTH_ALSA			1
 	#define WITHSWRSCAN				1
 	#define WITHREVERB				1
-
-	#define INFOBAR_CUSTOM 		\
-		INFOBAR_AF, 			\
-		INFOBAR_AF_VOLUME, 		\
-		INFOBAR_ATT, 			\
-		INFOBAR_DNR, 			\
-		INFOBAR_TX_POWER, 		\
-		INFOBAR_BATTERY | INFOBAR_NOACTION, 	\
-		INFOBAR_CPU_TEMP | INFOBAR_NOACTION, 	\
-		INFOBAR_2ND_ENC_MENU
 
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
@@ -153,9 +148,8 @@
 	/* Board hardware configuration */
 	#define DDS1_TYPE 		DDS_TYPE_LINUX
 	#define TSC1_TYPE 		TSC_TYPE_EVDEV
-	#define SDL2_EVENTS		1
-	#define TSC_EVDEV_RAWX	1270
-	#define TSC_EVDEV_RAWY	710
+	#define TSC_EVDEV_RAWX	1024	// 2048
+	#define TSC_EVDEV_RAWY	600		// 2048
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
@@ -226,4 +220,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* LINUX_BROADCOM_CTLSTYLE_UCONSOLE_H_INCLUDED */
+#endif /* LINUX_ROCKCHIP_CTLSTYLE_OPICM4_XC7A50T_PCIE_ALT_GUI_H_INCLUDED */

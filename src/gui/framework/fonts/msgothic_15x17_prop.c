@@ -31,11 +31,11 @@
 //--------------------------------------------------------------
 // Includes
 //--------------------------------------------------------------
-#include "src/gui/gui_port_include.h"
+#include "../../gui_port_include.h"
 
-#if WITHTOUCHGUI
+#if WITHTOUCHGUI && ! GUI_EXTERNAL_FONTS
 
-#include "..\gui_fonts.h"
+#include "embedded_fonts.h"
 //--------------------------------------------------------------
 // Font-Daten
 // erstellt von UB mit PixelFontGenerator 1.8
@@ -152,4 +152,4 @@ UB_pFont32 msgothic_15x17_prop = {
 		126,             // letztes Zeichen (Ascii-Nr)
 };
 
-#endif /* WITHTOUCHGUI */
+#endif /* WITHTOUCHGUI && ! GUI_EXTERNAL_FONTS */

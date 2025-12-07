@@ -14,8 +14,8 @@
 
 uint_fast32_t
 calcdivround2(
-	uint_fast32_t ref,	/* частота на входе делителя, в герцах. */
-	uint_fast32_t freq	/* требуемая частота на выходе делителя, в герцах. */
+	uint_fast64_t ref,	/* частота на входе делителя, в герцах. */
+	uint_fast64_t freq	/* требуемая частота на выходе делителя, в герцах. */
 	)
 {
 	return (ref < freq) ? 1 : ((ref + freq / 2) / freq);
@@ -3228,17 +3228,17 @@ uint_fast64_t allwnr_t507_get_pll_video2_x4_freq(void)
 	return (uint_fast64_t) allwnr_t507_get_hosc_freq() * N / M;
 }
 
-uint_fast64_t allwnr_t507_get_pll_video0_x1_freq(void)
+uint_fast32_t allwnr_t507_get_pll_video0_x1_freq(void)
 {
 	return allwnr_t507_get_pll_video0_x4_freq() / 4;
 }
 
-uint_fast64_t allwnr_t507_get_pll_video1_x1_freq(void)
+uint_fast32_t allwnr_t507_get_pll_video1_x1_freq(void)
 {
 	return allwnr_t507_get_pll_video1_x4_freq() / 4;
 }
 
-uint_fast64_t allwnr_t507_get_pll_video2_x1_freq(void)
+uint_fast32_t allwnr_t507_get_pll_video2_x1_freq(void)
 {
 	return allwnr_t507_get_pll_video2_x4_freq() / 4;
 }
@@ -3778,7 +3778,7 @@ uint_fast32_t allwnr_t507_get_dram_freq(void)
 	}
 }
 
-uint_fast32_t allwnr_t507_get_tcon_lcd0_freq(void)
+uint_fast64_t allwnr_t507_get_tcon_lcd0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON_LCD0_CLK_REG;
 	switch ((clkreg >> 24) & 0x07)	/* CLK_SRC_SEL */
@@ -3799,7 +3799,7 @@ uint_fast32_t allwnr_t507_get_tcon_lcd0_freq(void)
 	}
 }
 
-uint_fast32_t allwnr_t507_get_tcon_lcd1_freq(void)
+uint_fast64_t allwnr_t507_get_tcon_lcd1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON_LCD1_CLK_REG;
 	switch ((clkreg >> 24) & 0x07)	/* CLK_SRC_SEL */
@@ -3821,7 +3821,7 @@ uint_fast32_t allwnr_t507_get_tcon_lcd1_freq(void)
 }
 
 // T507
-uint_fast32_t allwnr_t507_get_tcon_tv0_freq(void)
+uint_fast64_t allwnr_t507_get_tcon_tv0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON_TV0_CLK_REG;
 	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
@@ -3853,7 +3853,7 @@ uint_fast32_t allwnr_t507_get_tcon_tv0_freq(void)
 }
 
 // T507
-uint_fast32_t allwnr_t507_get_tcon_tv1_freq(void)
+uint_fast64_t allwnr_t507_get_tcon_tv1_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->TCON_TV1_CLK_REG;
 	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
@@ -3885,7 +3885,7 @@ uint_fast32_t allwnr_t507_get_tcon_tv1_freq(void)
 }
 
 // T507
-uint_fast32_t allwnr_t507_get_hdmi0_freq(void)
+uint_fast64_t allwnr_t507_get_hdmi0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->HDMI0_CLK_REG;
 	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
@@ -6089,10 +6089,26 @@ sysinit_pll_initialize(int forced)
 
 #endif
 
- // возврат позиции старшего значащего бита в числе
+// подсчёт ненулевых битов в числе
+static uint_fast8_t
+countbits(
+	uint_fast32_t v		// число на анализ
+	)
+{
+	uint_fast8_t n;
+
+	for (n = 0; v != 0; )
+	{
+		n += !! (v & 0x01);
+		v >>= 1;
+	}
+	return n;
+}
+
+// возврат позиции старшего значащего бита в числе
 static uint_fast8_t
 countbits2(
-	unsigned long v		// число на анализ
+	uint_fast32_t v		// число на анализ
 	)
 {
 	uint_fast8_t n;
@@ -6104,17 +6120,16 @@ countbits2(
 }
 
 
-// Вариант функции для расчёта делителя определяющего скорость передачи
-// на UART AT91SAM7S, делитель для АЦП ATMega (значение делителя не требуется уменьшать на 1).
-uint_fast8_t
-calcdivider(
+// Расчёт параметров предделителя (степень 2-ки) и делителя по заданному коэффициенту деления
+static uint_fast8_t
+calcdivider0(
 	uint_fast32_t divisor, // ожидаемый коэффициент деления всей системы
 	uint_fast8_t width,			// количество разрядов в счётчике
-	uint_fast16_t taps,			// маска битов - выходов прескалера. 0x01 - означает bypass, 0x02 - делитель на 2... 0x400 - делитель на 1024
+	uint_fast32_t taps,			// маска битов - выходов прескалера. 0x01 - означает bypass, 0x02 - делитель на 2... 0x400 - делитель на 1024
 	unsigned * dvalue,		// Значение для записи в регистр сравнения делителя
 	uint_fast8_t substract)
 {
-	const uint_fast8_t rbmax = 16; //позиция старшего значащего бита в маске TAPS
+	const uint_fast8_t rbmax = 31; //позиция старшего значащего бита в маске TAPS
 	uint_fast8_t rb, rbi;
 	uint_fast32_t prescaler = 1;
 
@@ -6137,11 +6152,57 @@ calcdivider(
 		}
 	}
 
-	PRINTF("calcdivider: no parameters for divisor=%lu, width=%u, taps=%08X\n", (unsigned long) divisor, (unsigned) width, (unsigned) taps);
+	return UINT8_MAX;
+}
 
+uint_fast8_t
+calcdivider(
+	uint_fast32_t divisor, // ожидаемый коэффициент деления всей системы
+	uint_fast8_t width,			// количество разрядов в счётчике
+	uint_fast32_t taps,			// маска битов - выходов прескалера. 0x01 - означает bypass, 0x02 - делитель на 2... 0x400 - делитель на 1024
+	unsigned * dvalue,		// Значение для записи в регистр сравнения делителя
+	uint_fast8_t substract)
+{
+	const uint_fast8_t prei = calcdivider0(divisor, width, taps, dvalue, substract);
+	if (prei == UINT8_MAX)
+	{
+		const uint_fast8_t rbi = countbits(taps);
+		// Не подобрать комбинацию прескалера и делителя для ожидаемого коэффициента деления.
+		PRINTF("calcdivider: no parameters for divisor=%u, width=%u, taps=%08X\n", (unsigned) divisor, (unsigned) width, (unsigned) taps);
+		* dvalue = (UINT64_C(1) << width) - 1;	// просто пустышка - максимальный делитель
+		return rbi ? (rbi - 1) : 0;	// если надо обраьатывать невозможность подбора - возврат rbmax
+	}
+	return prei;
+}
+
+uint_fast8_t
+calcdividerselect(
+	uint_fast32_t freq, // желаемая частота на выходе
+	const freqsrc_t * tbl,
+	size_t n,
+	uint_fast8_t width,			// количество разрядов в счётчике
+	uint_fast32_t taps,			// маска битов - выходов прескалера. 0x01 - означает bypass, 0x02 - делитель на 2... 0x400 - делитель на 1024
+	unsigned * dvalue,		// Значение для записи в регистр сравнения делителя
+	unsigned * sel,		// выбраный источник
+	uint_fast8_t substract)
+{
+	unsigned i;
+	for (i = 0; n --; ++ i, ++ tbl)
+	{
+		const uint_fast32_t divisor = calcdivround2(tbl->clk, freq);
+		const uint_fast8_t prei = calcdivider0(divisor, width, taps, dvalue, substract);
+		if (prei != UINT8_MAX)
+		{
+			* sel = tbl->sel;
+			return prei;
+		}
+	}
+	const uint_fast8_t rbi = countbits(taps);
 	// Не подобрать комбинацию прескалера и делителя для ожидаемого коэффициента деления.
-	* dvalue = (UINT32_C(1) << width) - 1;	// просто пустышка - максимальный делитель
-	return (rbi - 1);	// если надо обраьатывать невозможность подбора - возврат rbmax
+	PRINTF("calcdivider: no parameters for freq=%u, width=%u, taps=%08X\n", (unsigned) freq, (unsigned) width, (unsigned) taps);
+	* dvalue = (UINT64_C(1) << width) - 1;	// просто пустышка - максимальный делитель
+	* sel = 0;
+	return rbi ? (rbi - 1) : 0;	// если надо обраьатывать невозможность подбора - возврат rbmax
 }
 
 void hardware_spi_io_delay(void)

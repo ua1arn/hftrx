@@ -1,5 +1,6 @@
 #include "hardware.h"
 #include "formats.h"
+#include "radio.h"
 #include "board.h"
 #include "audio.h"
 #include "dspdefines.h"

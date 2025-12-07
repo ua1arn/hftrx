@@ -99,7 +99,7 @@ uint_fast16_t normalize(
 	uint_fast16_t raw,
 	uint_fast16_t rawmin,	// включает интервал входного raw
 	uint_fast16_t rawmax,	// включает интервал входного raw
-	uint_fast16_t range		// включает выходное значение
+	uint_fast16_t range		// включает максимальное выходное значение
 	);
 
 int_fast32_t approximate(
@@ -146,6 +146,10 @@ int_fast32_t display2_zoomedbw(void);
 const char * display2_gethtml(uint_fast8_t page);
 
 unsigned display2_gettileradius(void);
+
+void display2_set_page_temp(uint_fast8_t page);
+uint_fast8_t display_getpage0(void);
+uint_fast8_t display_getpagegui(void);
 
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
 
@@ -318,9 +322,52 @@ typedef struct
 	#define DSGN_SPECTRUMFG		(COLORPIP_BASE + 14) // TFTRGB(0, 255, 0)		// цвет спектра при сполошном заполнении
 	#define COLORPIP_DARKGRAY   (COLORPIP_BASE + 15) // TFTRGB(0x00, 0x64, 0x00)
 
+	#define DSGN_BIGCOLOR 			COLORPIP_YELLOW 	// цвет частоты и режима основного приемника
+	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
+
 	#define DSGN_SPECTRUMPEAKS 	COLORPIP_DARKGRAY
 	#define DSGN_SPECTRUMLINE	COLORPIP_YELLOW
 	#define DSGN_SPECTRUMFENCE	COLORPIP_WHITE
+
+	#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
+	#define DSGN_FMENUACTIVEBACK	COLORPIP_DARKGREEN
+
+	#define DSGN_FMENUINACTIVETEXT	COLORPIP_BLACK
+	#define DSGN_FMENUINACTIVEBACK	COLORPIP_DARKGREEN
+
+	#define DSGN_FMENUTEXT            COLORPIP_GREEN
+	#define DSGN_FMENUBACK            COLORPIP_BLACK
+	#define DSGN_SMLABELTEXT        COLORPIP_GREEN
+	#define DSGN_SMLABELBACK        COLORPIP_BLACK
+	#define DSGN_SMLABELPLKUSTEXT        COLORPIP_RED
+	#define DSGN_SMLABELPLKUSBACK        COLORPIP_BLACK
+
+	#define DSGN_LABELACTIVETEXT	COLORPIP_WHITE
+	#define DSGN_LABELACTIVEBACK	COLORPIP_DARKRED
+	#define DSGN_LABELINACTIVETEXT	COLORPIP_BLACK
+	#define DSGN_LABELINACTIVEBACK	COLORPIP_RED
+
+	// поля отображения, не имеющие вариантов по состоянию вкл/выкл
+	#define DSGN_LABELTEXT			COLORPIP_RED
+	#define DSGN_LABELBACK			COLORPIP_BLACK
+
+	#define DSGN_PSUSTATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
+	#define DSGN_PSUSTATEBACK			COLORPIP_BLACK
+
+	/* обычный текст в меню */
+	#define DSGN_MENUCOLOR 		COLORPIP_WHITE
+	#define DSGN_MENUBGCOLOR		COLORPIP_BLACK
+	/* выделенный текст в меню */
+	#define DSGN_MENUSELCOLOR	COLORPIP_BLACK
+	#define DSGN_MENUSELBGCOLOR	COLORPIP_DARKCYAN
+	/* выделенный текст в значениях */
+	#define DSGN_MENUVALSELCOLOR	COLORPIP_BLACK
+	#define DSGN_MENUVALSELBGCOLOR	COLORPIP_GRAY
+
+	#define DSGN_SMLCOLOR	COLORPIP_GREEN		// цвет левой половины S-метра
+	#define DSGN_SMRCOLOR	COLORPIP_RED			// цвет правой половины S-метра
+	#define DSGN_PWRCOLOR	COLORPIP_RED		// цвет измерителя мощности
+	#define DSGN_SWRCOLOR	COLORPIP_YELLOW		// цвет SWR-метра
 
 	#if LCDMODE_PALETTE256
 		// Цвета, используемые на основном экране
@@ -332,53 +379,15 @@ typedef struct
 
 	#endif /* LCDMODE_PALETTE256 */
 
+	#define DSGN_OVFCOLOR COLORPIP_RED
+	#define DSGN_LOCKCOLOR COLORPIP_RED
+	#define DSGN_BGCOLOR (display2_getbgcolor())
+
 #else /* */
 
 	// определение основных цветов
 	///
 
-	/* RGB 24-bits color table definition (RGB888). */
-	#define COLOR_BLACK          TFTRGB(0x00, 0x00, 0x00)
-	#define COLOR_WHITE          TFTRGB(0xFF, 0xFF, 0xFF)
-	#define COLOR_BLUE           TFTRGB(0x00, 0x00, 0xFF)
-	#define COLOR_GREEN          TFTRGB(0x00, 0xFF, 0x00)
-	#define COLOR_RED            TFTRGB(0xFF, 0x00, 0x00)
-	#define COLOR_NAVY           TFTRGB(0x00, 0x00, 0x80)
-	#define COLOR_DARKBLUE       TFTRGB(0x00, 0x00, 0x8B)
-	#define COLOR_DARKGREEN      TFTRGB(0x00, 0x64, 0x00)
-	#define COLOR_DARKGREEN2     TFTRGB(0x00, 0x20, 0x00)
-	#define COLOR_DARKCYAN       TFTRGB(0x00, 0x8B, 0x8B)
-	#define COLOR_CYAN           TFTRGB(0x00, 0xFF, 0xFF)
-	#define COLOR_TURQUOISE      TFTRGB(0x40, 0xE0, 0xD0)
-	#define COLOR_INDIGO         TFTRGB(0x4B, 0x00, 0x82)
-	#define COLOR_DARKRED        TFTRGB(0x80, 0x00, 0x00)
-	#define COLOR_DARKRED2       TFTRGB(0x40, 0x00, 0x00)
-	#define COLOR_OLIVE          TFTRGB(0x80, 0x80, 0x00)
-	#define COLOR_DARKGRAY       TFTRGB(0x80, 0x80, 0x80)
-	#define COLOR_SKYBLUE        TFTRGB(0x87, 0xCE, 0xEB)
-	#define COLOR_BLUEVIOLET     TFTRGB(0x8A, 0x2B, 0xE2)
-	#define COLOR_LIGHTGREEN     TFTRGB(0x90, 0xEE, 0x90)
-	#define COLOR_DARKVIOLET     TFTRGB(0x94, 0x00, 0xD3)
-	#define COLOR_YELLOWGREEN    TFTRGB(0x9A, 0xCD, 0x32)
-	#define COLOR_BROWN          TFTRGB(0xA5, 0x2A, 0x2A)
-	#define COLOR_GRAY       	 TFTRGB(0xA9, 0xA9, 0xA9)
-	#define COLOR_SIENNA         TFTRGB(0xA0, 0x52, 0x2D)
-	#define COLOR_LIGHTBLUE      TFTRGB(0xAD, 0xD8, 0xE6)
-	#define COLOR_GREENYELLOW    TFTRGB(0xAD, 0xFF, 0x2F)
-	#define COLOR_SILVER         TFTRGB(0xC0, 0xC0, 0xC0)
-	#define COLOR_LIGHTGREY      TFTRGB(0xD3, 0xD3, 0xD3)
-	#define COLOR_LIGHTCYAN      TFTRGB(0xE0, 0xFF, 0xFF)
-	#define COLOR_VIOLET         TFTRGB(0xEE, 0x82, 0xEE)
-	#define COLOR_AZUR           TFTRGB(0xF0, 0xFF, 0xFF)
-	#define COLOR_BEIGE          TFTRGB(0xF5, 0xF5, 0xDC)
-	#define COLOR_MAGENTA        TFTRGB(0xFF, 0x00, 0xFF)
-	#define COLOR_TOMATO         TFTRGB(0xFF, 0x63, 0x47)
-	#define COLOR_GOLD           TFTRGB(0xFF, 0xD7, 0x00)
-	#define COLOR_ORANGE         TFTRGB(0xFF, 0xA5, 0x00)
-	#define COLOR_SNOW           TFTRGB(0xFF, 0xFA, 0xFA)
-	#define COLOR_YELLOW         TFTRGB(0xFF, 0xFF, 0x00)
-	#define COLOR_BROWN   		 TFTRGB(0xA5, 0x2A, 0x2A)	// коричневый
-	#define COLOR_PEAR    		 TFTRGB(0xD1, 0xE2, 0x31)	// грушевый
 
 	// Заполнение палитры производится в display2_xltrgb24()
 
@@ -387,7 +396,7 @@ typedef struct
 	#define COLORPIP_YELLOW      COLOR_YELLOW
 	#define COLORPIP_ORANGE      COLOR_ORANGE
 	#define COLORPIP_BLACK       COLOR_BLACK
-	#define COLORPIP_WHITE       COLOR_WHITE
+	#define COLORPIP_WHITE       COLOR_WHITEALL
 	#define COLORPIP_GRAY        COLOR_GRAY
 	#define COLORPIP_CYAN        COLOR_CYAN
 	#define COLORPIP_OLIVE		 COLOR_OLIVE
@@ -411,7 +420,7 @@ typedef struct
 		#define DSGN_SPECTRUMBG2   		COLORPIP_DARKRED      // полоса пропускания приемника
 		#define DSGN_SPECTRUMBG2RX2   	COLORPIP_DARKGREEN      	// полоса пропускания приемника RX2
 		#define DSGN_SPECTRUMFG			COLORPIP_RED			// цвет спектра при сполошном заполнении
-		#define DSGN_SPECTRUMFENCE	COLOR_WHITE
+		#define DSGN_SPECTRUMFENCE	COLOR_WHITEALL
 		#define DSGN_SPECTRUMLINE		COLORPIP_RED
 		#define DSGN_LOCKED  	 TFTRGB(0x3C, 0x3C, 0x00)
 		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
@@ -426,7 +435,7 @@ typedef struct
 		#define DSGN_SPECTRUMBG2   		COLORPIP_DARKGREEN      // полоса пропускания приемника
 		#define DSGN_SPECTRUMBG2RX2   	COLORPIP_DARKGRED      	// полоса пропускания приемника RX2
 		#define DSGN_SPECTRUMFG			COLORPIP_GREEN			// цвет спектра при сполошном заполнении
-		#define DSGN_SPECTRUMFENCE		COLOR_WHITE
+		#define DSGN_SPECTRUMFENCE		COLOR_WHITEALL
 		#define DSGN_SPECTRUMLINE		COLORPIP_GREEN
 		#define DSGN_LOCKED  	 		TFTRGB(0x3C, 0x3C, 0x00)
 		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
@@ -447,6 +456,21 @@ typedef struct
 		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
 		#define DSGN_GRIDDIGITS 		COLORPIP_YELLOW
 
+	#elif COLORSTYLE_BLUE2
+		// Spectrum/waterfall colors
+		#define DSGN_GRIDCOLOR0     	COLORPIP_GREEN        	// center marker
+		#define DSGN_GRIDCOLOR2     	COLORPIP_DARKGREEN      // other markers
+		#define DSGN_GRIDDIGITS 		COLORPIP_GREEN
+
+		#define DSGN_SPECTRUMBG     	COLORPIP_BLACK
+		#define DSGN_SPECTRUMBG2   		COLORPIP_DARKGREEN      // полоса пропускания приемника
+		#define DSGN_SPECTRUMBG2RX2   	COLORPIP_DARKGRED      	// полоса пропускания приемника RX2
+		#define DSGN_SPECTRUMFG			COLORPIP_GREEN			// цвет спектра при сполошном заполнении
+		#define DSGN_SPECTRUMFENCE		COLOR_WHITEALL
+		#define DSGN_SPECTRUMLINE		COLORPIP_GREEN
+		#define DSGN_LOCKED  	 		TFTRGB(0x3C, 0x3C, 0x00)
+		#define DSGN_SPECTRUMPEAKS 		COLORPIP_DARKGRAY
+
 	#elif COLORSTYLE_WHITE
 		// Spectrum/waterfall colors
 		#define DSGN_GRIDCOLOR0        COLOR_OLIVE
@@ -456,13 +480,13 @@ typedef struct
 		#define DSGN_SPECTRUMBG2    COLOR_CYAN                //COLOR_CYAN - полоса пропускания приемника
 		#define DSGN_SPECTRUMBG2RX2    COLOR_DARKRED                //COLOR_CYAN - полоса пропускания приемника
 		#define DSGN_SPECTRUMFG        COLOR_GREEN        // цвет спектра при сполошном заполнении
-		#define DSGN_SPECTRUMFENCE    COLOR_WHITE    //COLOR_WHITE
+		#define DSGN_SPECTRUMFENCE    COLOR_WHITEALL    //COLOR_WHITEALL
 		//#define DSGN_SPECTRUMLINE    COLORPIP_GREEN
 		#define DSGN_SPECTRUMLINE    COLORPIP_YELLOW
 		#define DSGN_LOCKED       TFTRGB(0x3C, 0x3C, 0x00)
 		#define DSGN_SPECTRUMPEAKS         COLORPIP_DARKGRAY
 	#else
-		#error Undefined color scheme - set COLORSTYLE_xxx
+		//#error Undefined color scheme - set COLORSTYLE_xxx
 
 	#endif
 
@@ -484,15 +508,49 @@ typedef struct
 	#define DSGN_LABELACTIVEBACK	COLORPIP_DARKRED
 	#define DSGN_LABELINACTIVETEXT	COLORPIP_BLACK
 	#define DSGN_LABELINACTIVEBACK	COLORPIP_RED
-// поля отображения, не имеющие вариантов по состоянию вкл/выкл
+	// поля отображения, не имеющие вариантов по состоянию вкл/выкл
 	#define DSGN_LABELTEXT			COLORPIP_RED
 	#define DSGN_LABELBACK			COLORPIP_BLACK
 
 	#define DSGN_PSUSTATETEXT			COLORPIP_RED	// температура, напряжение - was DSGN_LABELTEXT
 	#define DSGN_PSUSTATEBACK			COLORPIP_BLACK
 
+	/* обычный текст в меню */
+	#define DSGN_MENUCOLOR 		COLORPIP_WHITE
+	#define DSGN_MENUBGCOLOR		COLORPIP_BLACK
+	/* выделенный текст в меню */
+	#define DSGN_MENUSELCOLOR	COLORPIP_BLACK
+	#define DSGN_MENUSELBGCOLOR	COLORPIP_DARKCYAN
+	/* выделенный текст в значениях */
+	#define DSGN_MENUVALSELCOLOR	COLORPIP_BLACK
+	#define DSGN_MENUVALSELBGCOLOR	COLORPIP_GRAY
+
+	// Text-like S-meter bar
+	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
+	#define DSGN_SMLABELBACK		COLORPIP_BLACK
+	#define DSGN_SMLABELPLKUSTEXT		COLORPIP_RED
+	#define DSGN_SMLABELPLKUSBACK		COLORPIP_BLACK
+
+	// Цвета используемые для отображения
+	// различных элементов на основном экране.
+
+	#define DSGN_BGCOLOR (display2_getbgcolor())
+
+	#define DSGN_SMLCOLOR	COLORPIP_GREEN		// цвет левой половины S-метра
+	#define DSGN_SMRCOLOR	COLORPIP_RED			// цвет правой половины S-метра
+	#define DSGN_PWRCOLOR	COLORPIP_RED		// цвет измерителя мощности
+	#define DSGN_SWRCOLOR	COLORPIP_YELLOW		// цвет SWR-метра
+
+	#define DSGN_OVFCOLOR COLORPIP_RED
+	#define DSGN_LOCKCOLOR COLORPIP_RED
+	#define DSGN_TXRXMODECOLOR COLORPIP_BLACK
+	#define DSGN_MODECOLORBG_TX COLORPIP_RED
+	#define DSGN_MODECOLORBG_RX	COLORPIP_GREEN
+
+	//#define DSGN_AFSPECTRE_COLOR COLORPIP_YELLOW
+	#define DSGN_AFSPECTRE_COLOR DSGN_SPECTRUMBG2
+
 #elif COLORSTYLE_GREEN
-	/* цветовая схема для эксперементов */
 	#define DSGN_BIGCOLOR 			COLORPIP_YELLOW 	// цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
@@ -517,6 +575,41 @@ typedef struct
 	#define DSGN_PSUSTATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
 	#define DSGN_PSUSTATEBACK			COLORPIP_DARKGREEN
 
+	/* обычный текст в меню */
+	#define DSGN_MENUCOLOR 		COLORPIP_WHITE
+	#define DSGN_MENUBGCOLOR		COLORPIP_BLACK
+	/* выделенный текст в меню */
+	#define DSGN_MENUSELCOLOR	COLORPIP_BLACK
+	#define DSGN_MENUSELBGCOLOR	COLORPIP_DARKCYAN
+	/* выделенный текст в значениях */
+	#define DSGN_MENUVALSELCOLOR	COLORPIP_BLACK
+	#define DSGN_MENUVALSELBGCOLOR	COLORPIP_GRAY
+
+	// Text-like S-meter bar
+	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
+	#define DSGN_SMLABELBACK		COLORPIP_BLACK
+	#define DSGN_SMLABELPLKUSTEXT		COLORPIP_RED
+	#define DSGN_SMLABELPLKUSBACK		COLORPIP_BLACK
+
+	// Цвета используемые для отображения
+	// различных элементов на основном экране.
+
+	#define DSGN_BGCOLOR (display2_getbgcolor())
+
+	#define DSGN_SMLCOLOR	COLORPIP_GREEN		// цвет левой половины S-метра
+	#define DSGN_SMRCOLOR	COLORPIP_RED			// цвет правой половины S-метра
+	#define DSGN_PWRCOLOR	COLORPIP_RED		// цвет измерителя мощности
+	#define DSGN_SWRCOLOR	COLORPIP_YELLOW		// цвет SWR-метра
+
+	#define DSGN_OVFCOLOR COLORPIP_RED
+	#define DSGN_LOCKCOLOR COLORPIP_RED
+	#define DSGN_TXRXMODECOLOR COLORPIP_BLACK
+	#define DSGN_MODECOLORBG_TX COLORPIP_RED
+	#define DSGN_MODECOLORBG_RX	COLORPIP_GREEN
+
+	//#define DSGN_AFSPECTRE_COLOR COLORPIP_YELLOW
+	#define DSGN_AFSPECTRE_COLOR DSGN_SPECTRUMBG2
+
 #elif COLORSTYLE_BLUE
 
 	#define DSGN_BIGCOLOR 			COLORPIP_WHITE 	// цвет частоты и режима основного приемника
@@ -540,6 +633,102 @@ typedef struct
 
 	#define DSGN_PSUSTATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
 	#define DSGN_PSUSTATEBACK			COLORPIP_BLACK
+
+	/* обычный текст в меню */
+	#define DSGN_MENUCOLOR 		COLORPIP_WHITE
+	#define DSGN_MENUBGCOLOR		COLORPIP_BLACK
+	/* выделенный текст в меню */
+	#define DSGN_MENUSELCOLOR	COLORPIP_BLACK
+	#define DSGN_MENUSELBGCOLOR	COLORPIP_DARKCYAN
+	/* выделенный текст в значениях */
+	#define DSGN_MENUVALSELCOLOR	COLORPIP_BLACK
+	#define DSGN_MENUVALSELBGCOLOR	COLORPIP_GRAY
+
+	// Text-like S-meter bar
+	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
+	#define DSGN_SMLABELBACK		COLORPIP_BLACK
+	#define DSGN_SMLABELPLKUSTEXT		COLORPIP_RED
+	#define DSGN_SMLABELPLKUSBACK		COLORPIP_BLACK
+
+	// Цвета используемые для отображения
+	// различных элементов на основном экране.
+
+	#define DSGN_BGCOLOR (display2_getbgcolor())
+
+	#define DSGN_SMLCOLOR	COLORPIP_GREEN		// цвет левой половины S-метра
+	#define DSGN_SMRCOLOR	COLORPIP_RED			// цвет правой половины S-метра
+	#define DSGN_PWRCOLOR	COLORPIP_RED		// цвет измерителя мощности
+	#define DSGN_SWRCOLOR	COLORPIP_YELLOW		// цвет SWR-метра
+
+	#define DSGN_OVFCOLOR COLORPIP_RED
+	#define DSGN_LOCKCOLOR COLORPIP_RED
+	#define DSGN_TXRXMODECOLOR COLORPIP_BLACK
+	#define DSGN_MODECOLORBG_TX COLORPIP_RED
+	#define DSGN_MODECOLORBG_RX	COLORPIP_GREEN
+
+	//#define DSGN_AFSPECTRE_COLOR COLORPIP_YELLOW
+	#define DSGN_AFSPECTRE_COLOR DSGN_SPECTRUMBG2
+
+#elif COLORSTYLE_BLUE2
+
+	#define DSGN_BIGCOLOR 			COLORPIP_DARKCYAN 	// цвет частоты и режима основного приемника
+	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
+
+	#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
+	#define DSGN_FMENUACTIVEBACK	COLORPIP_DARKCYAN
+
+	#define DSGN_FMENUINACTIVETEXT	COLORPIP_BLACK
+	#define DSGN_FMENUINACTIVEBACK	COLORPIP_DARKCYAN
+
+	#define DSGN_FMENUTEXT			COLORPIP_BLUE
+	#define DSGN_FMENUBACK			COLORPIP_BLACK
+
+	#define DSGN_LABELACTIVETEXT	COLORPIP_WHITE
+	#define DSGN_LABELACTIVEBACK	COLORPIP_DARKCYAN
+
+	#define DSGN_LABELINACTIVETEXT	COLORPIP_BLACK
+	#define DSGN_LABELINACTIVEBACK	COLORPIP_DARKCYAN
+	// поля отображения, не имеющие вариантов по состоянию вкл/выкл
+	#define DSGN_LABELTEXT			COLORPIP_WHITE//COLORPIP_GREEN
+	#define DSGN_LABELBACK			COLORPIP_DARKCYAN//COLORPIP_BLACK
+
+	#define DSGN_PSUSTATETEXT			COLORPIP_WHITE	// температура, напряжение - was DSGN_LABELTEXT
+	#define DSGN_PSUSTATEBACK			COLORPIP_DARKCYAN
+
+	/* обычный текст в меню */
+	#define DSGN_MENUCOLOR 		COLORPIP_WHITE
+	#define DSGN_MENUBGCOLOR		COLORPIP_BLACK
+	/* выделенный текст в меню */
+	#define DSGN_MENUSELCOLOR	COLORPIP_BLACK
+	#define DSGN_MENUSELBGCOLOR	COLORPIP_DARKCYAN
+	/* выделенный текст в значениях */
+	#define DSGN_MENUVALSELCOLOR	COLORPIP_BLACK
+	#define DSGN_MENUVALSELBGCOLOR	COLORPIP_GRAY
+
+	// Text-like S-meter bar
+	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
+	#define DSGN_SMLABELBACK		COLORPIP_BLACK
+	#define DSGN_SMLABELPLKUSTEXT		COLORPIP_RED
+	#define DSGN_SMLABELPLKUSBACK		COLORPIP_BLACK
+
+	// Цвета используемые для отображения
+	// различных элементов на основном экране.
+
+	#define DSGN_BGCOLOR (display2_getbgcolor())
+
+	#define DSGN_SMLCOLOR	COLORPIP_GREEN		// цвет левой половины S-метра
+	#define DSGN_SMRCOLOR	COLORPIP_RED			// цвет правой половины S-метра
+	#define DSGN_PWRCOLOR	COLORPIP_RED		// цвет измерителя мощности
+	#define DSGN_SWRCOLOR	COLORPIP_YELLOW		// цвет SWR-метра
+
+	#define DSGN_OVFCOLOR COLORPIP_RED
+	#define DSGN_LOCKCOLOR COLORPIP_RED
+	#define DSGN_TXRXMODECOLOR COLORPIP_BLACK
+	#define DSGN_MODECOLORBG_TX COLORPIP_RED
+	#define DSGN_MODECOLORBG_RX	COLORPIP_GREEN
+
+	//#define DSGN_AFSPECTRE_COLOR COLORPIP_YELLOW
+	#define DSGN_AFSPECTRE_COLOR DSGN_SPECTRUMBG2
 
 #elif COLORSTYLE_WHITE
 
@@ -570,45 +759,46 @@ typedef struct
 	#define DSGN_SMLABELBACK        COLORPIP_BLACK
 	#define DSGN_SMLABELPLKUSTEXT        COLORPIP_RED
 	#define DSGN_SMLABELPLKUSBACK        COLORPIP_BLACK
+
+	/* обычный текст в меню */
+	#define DSGN_MENUCOLOR 		COLORPIP_WHITE
+	#define DSGN_MENUBGCOLOR		COLORPIP_BLACK
+	/* выделенный текст в меню */
+	#define DSGN_MENUSELCOLOR	COLORPIP_BLACK
+	#define DSGN_MENUSELBGCOLOR	COLORPIP_DARKCYAN
+	/* выделенный текст в значениях */
+	#define DSGN_MENUVALSELCOLOR	COLORPIP_BLACK
+	#define DSGN_MENUVALSELBGCOLOR	COLORPIP_GRAY
+
+	// Text-like S-meter bar
+	#define DSGN_SMLABELTEXT		COLORPIP_GREEN
+	#define DSGN_SMLABELBACK		COLORPIP_BLACK
+	#define DSGN_SMLABELPLKUSTEXT		COLORPIP_RED
+	#define DSGN_SMLABELPLKUSBACK		COLORPIP_BLACK
+
+	// Цвета используемые для отображения
+	// различных элементов на основном экране.
+
+	#define DSGN_BGCOLOR (display2_getbgcolor())
+
+	#define DSGN_SMLCOLOR	COLORPIP_GREEN		// цвет левой половины S-метра
+	#define DSGN_SMRCOLOR	COLORPIP_RED			// цвет правой половины S-метра
+	#define DSGN_PWRCOLOR	COLORPIP_RED		// цвет измерителя мощности
+	#define DSGN_SWRCOLOR	COLORPIP_YELLOW		// цвет SWR-метра
+
+	#define DSGN_OVFCOLOR COLORPIP_RED
+	#define DSGN_LOCKCOLOR COLORPIP_RED
+	#define DSGN_TXRXMODECOLOR COLORPIP_BLACK
+	#define DSGN_MODECOLORBG_TX COLORPIP_RED
+	#define DSGN_MODECOLORBG_RX	COLORPIP_GREEN
+
+	//#define DSGN_AFSPECTRE_COLOR COLORPIP_YELLOW
+	#define DSGN_AFSPECTRE_COLOR DSGN_SPECTRUMBG2
+
 #else /* COLORSTYLE_RED */
-	#error Undefined color scheme - set COLORSTYLE_xxx
+	//#error Undefined color scheme - set COLORSTYLE_xxx
 
 #endif /* COLORSTYLE_RED */
-
-/* обычный текст в меню */
-#define DSGN_MENUCOLOR 		COLORPIP_WHITE
-#define DSGN_MENUBGCOLOR		COLORPIP_BLACK
-/* выделенный текст в меню */
-#define DSGN_MENUSELCOLOR	COLORPIP_BLACK
-#define DSGN_MENUSELBGCOLOR	COLORPIP_DARKCYAN
-/* выделенный текст в значениях */
-#define DSGN_MENUVALSELCOLOR	COLORPIP_BLACK
-#define DSGN_MENUVALSELBGCOLOR	COLORPIP_GRAY
-
-// Text-like S-meter bar
-#define DSGN_SMLABELTEXT		COLORPIP_GREEN
-#define DSGN_SMLABELBACK		COLORPIP_BLACK
-#define DSGN_SMLABELPLKUSTEXT		COLORPIP_RED
-#define DSGN_SMLABELPLKUSBACK		COLORPIP_BLACK
-
-// Цвета используемые для отображения
-// различных элементов на основном экране.
-
-#define DSGN_BGCOLOR (display2_getbgcolor())
-
-#define DSGN_SMLCOLOR	COLORPIP_GREEN		// цвет левой половины S-метра
-#define DSGN_SMRCOLOR	COLORPIP_RED			// цвет правой половины S-метра
-#define DSGN_PWRCOLOR	COLORPIP_RED		// цвет измерителя мощности
-#define DSGN_SWRCOLOR	COLORPIP_YELLOW		// цвет SWR-метра
-
-#define DSGN_OVFCOLOR COLORPIP_RED
-#define DSGN_LOCKCOLOR COLORPIP_RED
-#define DSGN_TXRXMODECOLOR COLORPIP_BLACK
-#define DSGN_MODECOLORBG_TX COLORPIP_RED
-#define DSGN_MODECOLORBG_RX	COLORPIP_GREEN
-
-//#define DSGN_AFSPECTRE_COLOR COLORPIP_YELLOW
-#define DSGN_AFSPECTRE_COLOR DSGN_SPECTRUMBG2
 
 #define MIDCELLS 8
 

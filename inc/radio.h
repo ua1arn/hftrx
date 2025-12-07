@@ -3260,178 +3260,6 @@ extern uint_fast8_t swrmode;
 void updateboard(void);	/* полная перенастройка */
 void updateboard_freq(void);	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 
-uint_fast8_t hamradio_get_tx(void);
-int_fast32_t hamradio_get_pbtvalue(void);	// Для отображения на дисплее
-uint_fast8_t hamradio_get_atuvalue(void);
-uint_fast8_t hamradio_get_genham_value(void);
-uint_fast8_t hamradio_get_bypvalue(void);
-uint_fast8_t hamradio_get_lockvalue(void);	// текущее состояние LOCK
-uint_fast8_t hamradio_get_usefastvalue(void);	// текущее состояние FAST
-uint_fast8_t hamradio_get_voxvalue(void);	// текущее состояние VOX
-uint_fast8_t hamradio_get_tunemodevalue(void);	// текущее состояние TUNE
-uint_fast32_t hamradio_get_freq_pathi(uint_fast8_t pathi);		// Частота VFO A/B для отображения на дисплее
-uint_fast32_t hamradio_get_freq_a(void);		// Частота VFO A для отображения на дисплее
-uint_fast32_t hamradio_get_freq_b(void);		// Частота VFO B для отображения на дисплее
-uint_fast32_t hamradio_get_freq_rx(void);		// Частота VFO A для маркировки файлов
-uint_fast32_t hamradio_get_modem_baudrate100(void);	// скорость передачи BPSK * 100
-uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p);		// Notch filter ON/OFF
-const char * hamradio_get_notchtype5_P(void);	// FREQ/ANOTCH
-uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p);		// NR ON/OFF
-const char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
-const char * hamradio_get_mode_b_value_P(void);	// SSB/CW/AM/FM/..
-const char * hamradio_get_rxbw_label3_P(void);	// RX bandwidth - name
-const char * hamradio_get_rxbw_value4(void);	// RX bandwidth - value
-const char * hamradio_get_pre_value_P(void);	// RX preamplifier
-const char * hamradio_get_att_value_P(void);	// RX attenuator
-const char * hamradio_get_agc3_value_P(void);	// RX agc time - 3-х буквенные абревиатуры
-const char * hamradio_get_agc4_value_P(void);	// RX agc time - 4-х буквенные абревиатуры
-const char * hamradio_get_ant5_value_P(void);	// antenna
-const char * hamradio_get_mainsubrxmode3_value_P(void);	// текущее состояние DUAL WATCH
-const char * hamradio_get_vfomode3_value(uint_fast8_t * flag);	// VFO mode
-const char * hamradio_get_vfomode5_value(uint_fast8_t * flag);	// VFO mode
-uint_fast8_t hamradio_get_volt_value(void);	// Вольты в десятых долях
-int_fast16_t hamradio_get_PAtemp_value(void);	// Градусы в десятых долях
-int_fast16_t hamradio_get_pacurrent_value(void);	// Ток в десятках милиампер, может быть отрицательным
-const char * hamradio_get_hplp_value_P(void);	// HP/LP
-uint_fast8_t hamradio_get_rec_value(void);	// AUDIO recording state
-uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
-uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
-uint_fast8_t hamradio_get_usbmsc_active(void);	// usb storage
-uint_fast8_t hamradio_get_usbbth_active(void);	// usb bt
-unsigned hamradio_get_getsoffreq(void);
-void hamradio_tick_sof(void);
-uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB AUDIO
-int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить левый (низкочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
-int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
-uint_fast8_t hamradio_get_bkin_value(void);
-uint_fast8_t hamradio_get_spkon_value(void);	// не-0: динамик включен
-uint_fast8_t hamradio_get_blinkphase(void);	/* состояние для мерцающих индикаторов на диспле */
-uint_fast8_t hamradio_get_bringtuneA(void);	// Разрешить отображение текущей частоты на водопаде
-uint_fast8_t hamradio_get_bringtuneB(void);	// Разрешить отображение текущей частоты на водопаде
-
-uint_fast8_t hamradio_get_bringENC1F(void);	// Вращали 3-й валкодер (ENC1F)
-uint_fast8_t hamradio_get_bringENC2F(void);	// Вращали 4-й валкодер (ENC2F)
-uint_fast8_t hamradio_get_bringENC3F(void);	// Вращали 5-й валкодер (ENC3F)
-uint_fast8_t hamradio_get_bringENC4F(void);	// Вращали 6-й валкодер (ENC4F)
-uint_fast8_t hamradio_get_bringSWR(const char * * label);	// Была ошибка SWR или что-то другое
-
-void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC1F */
-void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояняя ENC2F */
-void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC3F */
-void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC4F */
-
-const char * hamradio_midlabel5(uint_fast8_t section, uint_fast8_t * active);
-const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active);
-
-void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq);
-uint_fast8_t hamradio_get_low_bp(int_least16_t rotate);
-uint_fast8_t hamradio_get_high_bp(int_least16_t rotate);
-uint_fast8_t hamradio_get_bp_type_wide(void);	// не-0: параметры полосы пропускания - пара нижний срез/верхний срез
-void hamradio_set_agc_slow(void);
-void hamradio_set_agc_fast(void);
-uint_fast8_t hamradio_get_agc_type(void);
-void hamradio_disable_keyboard_redirect(void);
-void hamradio_enable_keyboard_redirect(void);
-void hamradio_disable_encoder2_redirect (void);
-void hamradio_enable_encoder2_redirect (void);
-uint_fast8_t hamradio_set_freq(uint_fast32_t freq);
-void hamradio_set_lock (uint_fast8_t lock);
-int_fast16_t hamradio_if_shift(int_fast8_t step);
-uint_fast8_t hamradio_get_cw_wpm(void);
-uint_fast8_t hamradio_get_gmikeequalizer(void);
-void hamradio_set_gmikeequalizer(uint_fast8_t v);
-uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i);
-void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v);
-int_fast32_t hamradio_getequalizerbase(void);
-uint_fast8_t hamradio_get_gzoomxpow2(void);
-void hamradio_set_gzoomxpow2(uint_fast8_t v);
-void hamradio_set_bottomdb(int_fast16_t v);	/* значения со знаком */
-void hamradio_set_topdb(int_fast16_t v);	/* значения со знаком */
-int_fast16_t hamradio_get_bottomdb(void);	/* значения со знаком */
-int_fast16_t hamradio_get_topdb(void);	/* значения со знаком */
-uint8_t hamradio_get_spectrumpart(void);
-void hamradio_set_spectrumpart(uint8_t v);
-const char * hamradio_change_view_style(uint_fast8_t v);
-uint_fast8_t hamradio_get_viewstyle(void);
-void hamradio_settemp_viewstyle(uint_fast8_t v);
-int_fast8_t hamradio_afresponce(int_fast8_t v);
-uint_fast8_t hamradio_get_classa(void);
-
-void hamradio_set_greverb(uint_fast8_t v);
-uint_fast8_t hamradio_get_greverb(void);
-void hamradio_get_reverb_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
-void hamradio_get_reverb_loss_limits(uint_fast8_t * min, uint_fast8_t * max);
-uint_fast8_t hamradio_get_reverb_delay(void);
-uint_fast8_t hamradio_get_reverb_loss(void);
-void hamradio_set_reverb_delay(uint_fast8_t v);
-void hamradio_set_reverb_loss(uint_fast8_t v);
-
-uint_fast16_t hamradio_notch_freq(int_fast8_t step);
-uint_fast16_t hamradio_notch_width(int_fast8_t step);
-uint_fast8_t hamradio_get_gnotch(void);
-void hamradio_set_gnotch(uint_fast8_t v);
-uint_fast8_t hamradio_get_gnotchtype(void);
-void hamradio_set_gnotchtype(uint_fast8_t v);
-void hamradio_set_gmoniflag(uint_fast8_t v);
-uint_fast8_t hamradio_get_gmoniflag(void);
-uint_fast8_t hamradio_get_gmikeboost20db(void);
-void hamradio_set_gmikeboost20db(uint_fast8_t v);
-uint_fast8_t hamradio_get_gmikeagc(void);
-void hamradio_set_gmikeagc(uint_fast8_t v);
-void hamradio_get_mic_level_limits(uint_fast8_t * min, uint_fast8_t * max);
-void hamradio_set_mik1level(uint_fast8_t v);
-uint_fast8_t hamradio_get_mik1level(void);
-void hamradio_get_mic_clip_limits(uint_fast8_t * min, uint_fast8_t * max);
-uint_fast8_t hamradio_get_gmikehclip(void);
-void hamradio_set_gmikehclip(uint_fast8_t v);
-void hamradio_get_mic_agc_limits(uint_fast8_t * min, uint_fast8_t * max);
-uint_fast8_t hamradio_get_gmikeagcgain(void);
-void hamradio_set_gmikeagcgain(uint_fast8_t v);
-uint32_t hamradio_get_gadcrand(void);
-void hamradio_set_gdactest(uint8_t v);
-
-void hamradio_set_gvoxenable(uint_fast8_t v);
-uint_fast8_t hamradio_get_gvoxenable(void);
-void hamradio_get_vox_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
-uint_fast8_t hamradio_get_vox_delay(void);
-void hamradio_set_vox_delay(uint_fast8_t v);
-void hamradio_get_vox_level_limits(uint_fast8_t * min, uint_fast8_t * max);
-uint_fast8_t hamradio_get_vox_level(void);
-void hamradio_set_vox_level(uint_fast8_t v);
-void hamradio_get_antivox_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
-uint_fast8_t hamradio_get_antivox_level(void);
-void hamradio_set_antivox_level(uint_fast8_t v);
-
-void hamradio_set_tune(uint_fast8_t v);
-void hamradio_set_tx_tune_power(uint_fast8_t v);
-uint_fast8_t hamradio_get_tx_tune_power(void);
-void hamradio_set_tx_power(uint_fast8_t v);
-uint_fast8_t hamradio_get_tx_power(void);
-void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max);
-
-uint_fast8_t hamradio_get_gmutespkr(void);
-void hamradio_set_gmutespkr(uint_fast8_t v);
-uint_fast16_t hamradio_get_afgain(void);
-void hamradio_set_afgain(uint_fast16_t v);
-
-uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
-const char * hamradio_get_att_value(void);
-const char * hamradio_get_preamp_value(void);
-void hamradio_change_att(void);
-uint_fast8_t hamradio_change_preamp(uint_fast8_t v);
-uint_fast8_t hamradio_change_nr(uint_fast8_t v);
-uint_fast8_t hamradio_moxmode(uint_fast8_t v);
-void hamradio_setrx(void);
-void hamradio_setautotune(void);
-uint_fast8_t hamradio_tunemode(uint_fast8_t v);
-void hamradio_set_moxmode(uint_fast8_t mode);
-uint_fast8_t hamradio_get_ctcss_active(uint_fast32_t * freq);
-
-void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem));
-int hamradio_walkmenu_getgroupanme(const void * groupitem, char * buff, size_t count);
-int hamradio_walkmenu_getparamanme(const void * paramitem, char * buff, size_t count);
-int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t count);
-
 
 #define DBVALOFFSET_BASE WITHMINFSPOWER	// - 160
 
@@ -3477,9 +3305,6 @@ enum
 	SPECTRUMWIDTH_DENOM = 12,
 };
 
-uint_fast8_t hamradio_get_gsmetertype(void);
-
-
 const char * get_band_label3(unsigned b); /* получение человекопонятного названия диапазона */
 
 #define NMICPROFCELLS	3
@@ -3516,8 +3341,6 @@ uint_fast8_t islfmstart(unsigned now);
 
 void bt_initialize(void);
 
-uint_fast8_t hamradio_get_ft8cn(void);
-
 #define N7DDCTUNE_OK 0
 #define N7DDCTUNE_ERROR 1	// Not enough power
 #define N7DDCTUNE_ABORT 2	// Aborted by keyboard
@@ -3527,7 +3350,6 @@ void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type);
 unsigned n7ddc_get_swr(void);
 
 unsigned get_swr_cached(unsigned rangemax);
-unsigned hamradio_get_pwr(void);
 
 void gui_update(void);
 
@@ -3547,9 +3369,10 @@ typedef struct {
 	char name[10];
 } band_array_t;
 
-uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, uint_fast8_t is_bcast_need);
-uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band);
-void hamradio_goto_band_by_freq(uint_fast32_t f);
+typedef struct {
+	char name[20];
+	uint8_t index;
+} menu_names_t;
 
 // шаг изменения значения параметра
 enum
@@ -3628,15 +3451,210 @@ struct menudef
 extern const struct menudef menutable [];
 uint_fast16_t menutable_size(void);
 
-uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit);
-void hamradio_set_bw(uint_fast8_t v);
-uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit);
-uint_fast8_t hamradio_get_att_db(void);
-void hamradio_set_att_db(uint_fast8_t db);
-void hamradio_set_gbottomdb(uint8_t v);
-void hamradio_set_gtopdb(uint8_t v);
+// sorted version
+const char * hamradio_change_view_style(uint_fast8_t v);
+const char * hamradio_get_agc3_value(void);	// RX agc time - 3-х буквенные абревиатуры
+const char * hamradio_get_agc4_value(void);	// RX agc time - 4-х буквенные абревиатуры
+const char * hamradio_get_ant5_value(void);	// antenna
+const char * hamradio_get_att_value_P(void);	// RX attenuator
+const char * hamradio_get_hplp_value_P(void);	// HP/LP
+const char * hamradio_get_mainsubrxmode3_value_P(void);	// текущее состояние DUAL WATCH
+const char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
+const char * hamradio_get_mode_b_value_P(uint_fast8_t * flag);	// SSB/CW/AM/FM/..
+const char * hamradio_get_notchtype5_P(void);	// FREQ/ANOTCH
+const char * hamradio_get_pre_value(void);	// RX preamplifier
+const char * hamradio_get_preamp_value(void);
+const char * hamradio_get_rxbw_label3(void);	// RX bandwidth - name
+const char * hamradio_get_rxbw_value4(void);	// RX bandwidth - value
+const char * hamradio_get_submode_label(uint8_t v);
+const char * hamradio_get_vfomode3_value(uint_fast8_t * flag);	// VFO mode
+const char * hamradio_get_vfomode5_value(uint_fast8_t * flag);	// VFO mode
+const char * hamradio_gui_edit_menu_item(uint_fast16_t index, int_least16_t rotate);
+const char * hamradio_midlabel5(uint_fast8_t section, uint_fast8_t * active);
+const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active);
+int hamradio_walkmenu_getgroupanme(const void * groupitem, char * buff, size_t count);
+int hamradio_walkmenu_getparamanme(const void * paramitem, char * buff, size_t count);
+int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t count);
+int_fast16_t hamradio_get_PAtemp_value(void);	// Градусы в десятых долях
+int_fast16_t hamradio_get_bottomdb(void);	/* значения со знаком */
+int_fast16_t hamradio_get_pacurrent_value(void);	// Ток в десятках милиампер, может быть отрицательным
+int_fast16_t hamradio_get_topdb(void);	/* значения со знаком */
+int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить левый (низкочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
+int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
+int_fast16_t hamradio_if_shift(int_fast8_t step);
+int_fast32_t hamradio_get_pbtvalue(void);	// Для отображения на дисплее
+int_fast32_t hamradio_getequalizerbase(void);
+int_fast8_t hamradio_afresponce(int_fast8_t v);
+uint32_t hamradio_get_gadcrand(void);
 uint8_t hamradio_get_gbottomdb(void);
 uint8_t hamradio_get_gtopdb(void);
+uint8_t hamradio_get_spectrumpart(void);
+uint_fast16_t hamradio_get_afgain(void);
+uint_fast16_t hamradio_get_lfmstop100k(void);
+uint_fast16_t hamradio_get_lfmtinterval(void);
+uint_fast16_t hamradio_get_lfmtoffset(void);
+uint_fast16_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals);
+uint_fast16_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index, uint_fast8_t max_count);
+uint_fast16_t hamradio_notch_freq(int_fast8_t step);
+uint_fast16_t hamradio_notch_width(int_fast8_t step);
+uint_fast32_t hamradio_get_freq_a(void);		// Частота VFO A для отображения на дисплее
+uint_fast32_t hamradio_get_freq_b(void);		// Частота VFO B для отображения на дисплее
+uint_fast32_t hamradio_get_freq_pathi(uint_fast8_t pathi);		// Частота VFO A/B для отображения на дисплее
+uint_fast32_t hamradio_get_freq_rx(void);		// Частота VFO A для маркировки файлов
+uint_fast32_t hamradio_get_modem_baudrate100(void);	// скорость передачи BPSK * 100
+uint_fast32_t hamradio_load_memory_cells(uint_fast8_t cell, uint_fast8_t set);
+uint_fast8_t hamradio_change_nr(uint_fast8_t v);
+uint_fast8_t hamradio_change_preamp(uint_fast8_t v);
+uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band);
+uint_fast8_t hamradio_get_agc_type(void);
+uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag);	// текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ (в десятках герц)
+uint_fast8_t hamradio_get_antivox_level(void);
+uint_fast8_t hamradio_get_att_db(void);
+uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit);
+uint_fast8_t hamradio_get_atuvalue(void);
+uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, uint_fast8_t is_bcast_need);
+uint_fast8_t hamradio_get_bkin_value(void);
+uint_fast8_t hamradio_get_blinkphase(void);	/* состояние для мерцающих индикаторов на диспле */
+uint_fast8_t hamradio_get_bp_type_wide(void);	// не-0: параметры полосы пропускания - пара нижний срез/верхний срез
+uint_fast8_t hamradio_get_bringENC1F(void);	// Вращали 3-й валкодер (ENC1F)
+uint_fast8_t hamradio_get_bringENC2F(void);	// Вращали 4-й валкодер (ENC2F)
+uint_fast8_t hamradio_get_bringENC3F(void);	// Вращали 5-й валкодер (ENC3F)
+uint_fast8_t hamradio_get_bringENC4F(void);	// Вращали 6-й валкодер (ENC4F)
+uint_fast8_t hamradio_get_bringSWR(const char * * label);	// Была ошибка SWR или что-то другое
+uint_fast8_t hamradio_get_bringtuneA(void);	// Разрешить отображение текущей частоты на водопаде
+uint_fast8_t hamradio_get_bringtuneB(void);	// Разрешить отображение текущей частоты на водопаде
+uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit);
+uint_fast8_t hamradio_get_bypvalue(void);
+uint_fast8_t hamradio_get_classa(void);
+uint_fast8_t hamradio_get_ctcss_active(uint_fast32_t * freq);
+uint_fast8_t hamradio_get_cw_wpm(void);
+uint_fast8_t hamradio_get_datamode(void);	// источник звука для передачи - USB AUDIO
+uint_fast8_t hamradio_get_ft8cn(void);
+uint_fast8_t hamradio_get_genham_value(void);
+uint_fast8_t hamradio_get_gmikeagc(void);
+uint_fast8_t hamradio_get_gmikeagcgain(void);
+uint_fast8_t hamradio_get_gmikeboost20db(void);
+uint_fast8_t hamradio_get_gmikeequalizer(void);
+uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i);
+uint_fast8_t hamradio_get_gmikehclip(void);
+uint_fast8_t hamradio_get_gmoniflag(void);
+uint_fast8_t hamradio_get_gmutespkr(void);
+uint_fast8_t hamradio_get_gnotch(void);
+uint_fast8_t hamradio_get_gnotchtype(void);
+uint_fast8_t hamradio_get_greverb(void);
+uint_fast8_t hamradio_get_gsmetertype(void);
+uint_fast8_t hamradio_get_gvfoab(void);
+uint_fast8_t hamradio_get_gvoxenable(void);
+uint_fast8_t hamradio_get_gzoomxpow2(void);
+uint_fast8_t hamradio_get_high_bp(int_least16_t rotate);
+uint_fast8_t hamradio_get_lfmmode(void);
+uint_fast8_t hamradio_get_lockvalue(void);	// текущее состояние LOCK
+uint_fast8_t hamradio_get_low_bp(int_least16_t rotate);
+uint_fast8_t hamradio_get_mik1level(void);
+uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p);		// Notch filter ON/OFF
+uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p);		// NR ON/OFF
+uint_fast8_t hamradio_get_rec_value(void);	// AUDIO recording state
+uint_fast8_t hamradio_get_reverb_delay(void);
+uint_fast8_t hamradio_get_reverb_loss(void);
+uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
+uint_fast8_t hamradio_get_spkon_value(void);	// не-0: динамик включен
+uint_fast8_t hamradio_get_submode(void);
+uint_fast8_t hamradio_get_tunemodevalue(void);	// текущее состояние TUNE
+uint_fast8_t hamradio_get_tx(void);
+uint_fast8_t hamradio_get_tx_power(void);
+uint_fast8_t hamradio_get_tx_tune_power(void);
+uint_fast8_t hamradio_get_usbbth_active(void);	// usb bt
+uint_fast8_t hamradio_get_usbmsc_active(void);	// usb storage
+uint_fast8_t hamradio_get_usefastvalue(void);	// текущее состояние FAST
+uint_fast8_t hamradio_get_viewstyle(void);
+uint_fast8_t hamradio_get_volt_value(void);	// Вольты в десятых долях
+uint_fast8_t hamradio_get_vox_delay(void);
+uint_fast8_t hamradio_get_vox_level(void);
+uint_fast8_t hamradio_get_voxvalue(void);	// текущее состояние VOX
+uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set);
+uint_fast8_t hamradio_moxmode(uint_fast8_t v);
+uint_fast8_t hamradio_set_freq(uint_fast32_t freq);
+uint_fast8_t hamradio_split_toggle(void);
+uint_fast8_t hamradio_tunemode(uint_fast8_t v);
+uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bottom, uint_fast32_t * top);
+unsigned hamradio_get_getsoffreq(void);
+unsigned hamradio_get_pwr(void);
+void hamradio_change_att(void);
+void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq);
+void hamradio_clean_memory_cells(uint_fast8_t i);
+void hamradio_clean_mic_profile(uint_fast8_t cell);
+void hamradio_disable_encoder2_redirect (void);
+void hamradio_disable_keyboard_redirect(void);
+void hamradio_enable_encoder2_redirect (void);
+void hamradio_enable_keyboard_redirect(void);
+void hamradio_get_antivox_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
+void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC1F */
+void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояняя ENC2F */
+void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC3F */
+void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC4F */
+void hamradio_get_mic_agc_limits(uint_fast8_t * min, uint_fast8_t * max);
+void hamradio_get_mic_clip_limits(uint_fast8_t * min, uint_fast8_t * max);
+void hamradio_get_mic_level_limits(uint_fast8_t * min, uint_fast8_t * max);
+void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
+void hamradio_get_nmea_time(char * p, size_t sz);
+void hamradio_get_reverb_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
+void hamradio_get_reverb_loss_limits(uint_fast8_t * min, uint_fast8_t * max);
+void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max);
+void hamradio_get_vox_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
+void hamradio_get_vox_level_limits(uint_fast8_t * min, uint_fast8_t * max);
+void hamradio_goto_band_by_freq(uint_fast32_t f);
+void hamradio_gui_enc2_update(void);
+void hamradio_lfm_disable(void);
+void hamradio_load_gui_settings(void * ptr);
+void hamradio_save_gui_settings(const void * ptr);
+void hamradio_save_memory_cells(uint_fast8_t i);
+void hamradio_save_mic_profile(uint_fast8_t cell);
+void hamradio_set_afgain(uint_fast16_t v);
+void hamradio_set_agc_fast(void);
+void hamradio_set_agc_slow(void);
+void hamradio_set_antivox_level(uint_fast8_t v);
+void hamradio_set_att_db(uint_fast8_t db);
+void hamradio_set_bottomdb(int_fast16_t v);	/* значения со знаком */
+void hamradio_set_bw(uint_fast8_t v);
+void hamradio_set_gbottomdb(uint8_t v);
+void hamradio_set_gdactest(uint8_t v);
+void hamradio_set_gmikeagc(uint_fast8_t v);
+void hamradio_set_gmikeagcgain(uint_fast8_t v);
+void hamradio_set_gmikeboost20db(uint_fast8_t v);
+void hamradio_set_gmikeequalizer(uint_fast8_t v);
+void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v);
+void hamradio_set_gmikehclip(uint_fast8_t v);
+void hamradio_set_gmoniflag(uint_fast8_t v);
+void hamradio_set_gmutespkr(uint_fast8_t v);
+void hamradio_set_gnotch(uint_fast8_t v);
+void hamradio_set_gnotchtype(uint_fast8_t v);
+void hamradio_set_greverb(uint_fast8_t v);
+void hamradio_set_gtopdb(uint8_t v);
+void hamradio_set_gvoxenable(uint_fast8_t v);
+void hamradio_set_gzoomxpow2(uint_fast8_t v);
+void hamradio_set_lfmmode(uint_fast8_t v);
+void hamradio_set_lfmstop100k(uint_fast16_t v);
+void hamradio_set_lfmtinterval(uint_fast16_t v);
+void hamradio_set_lfmtoffset(uint_fast16_t v);
+void hamradio_set_lock (uint_fast8_t lock);
+void hamradio_set_mik1level(uint_fast8_t v);
+void hamradio_set_moxmode(uint_fast8_t mode);
+void hamradio_set_reverb_delay(uint_fast8_t v);
+void hamradio_set_reverb_loss(uint_fast8_t v);
+void hamradio_set_spectrumpart(uint8_t v);
+void hamradio_set_topdb(int_fast16_t v);	/* значения со знаком */
+void hamradio_set_tune(uint_fast8_t v);
+void hamradio_set_tx_power(uint_fast8_t v);
+void hamradio_set_tx_tune_power(uint_fast8_t v);
+void hamradio_set_vox_delay(uint_fast8_t v);
+void hamradio_set_vox_level(uint_fast8_t v);
+void hamradio_setautotune(void);
+void hamradio_setrx(void);
+void hamradio_settemp_viewstyle(uint_fast8_t v);
+void hamradio_split_mode_toggle(void);
+void hamradio_split_vfo_swap(void);
+void hamradio_tick_sof(void);
+void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem));
 
 // LVGL interface functions
 int infocb_modea(char * b, size_t len, int * pstate);

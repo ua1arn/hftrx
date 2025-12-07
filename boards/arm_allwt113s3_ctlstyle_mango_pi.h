@@ -188,17 +188,6 @@
 	#define WITHMIPIDSISHW_LANES 4	/* mipi-dsi port lanes number */
 	#define BOARD_DSTYLE "g_x1024_y600.h"
 
-#elif 1
-
-	#define LCDMODE_HXD_C067BHW8843ANT 1	/* HXD-C067BHW8843ANT panel (480*1280) */
-
-	//#define LCDMODE_PALETTE256 1	/* Экран 8 бит, L8 */
-	#define LCDMODE_RGB565 1	/* Экран 16 бит */
-	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
-	#define WITHFLATLINK 1	/* Работа с TFT панелью через интерфйс LVDS	*/
-	#define BOARD_DSTYLE "g_x800_y480.h"
-	//#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
-
 #elif 0
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */

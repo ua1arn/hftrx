@@ -554,6 +554,9 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 ///* все возможные в данной конфигурации фильтры */
 //#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_1P8 | IF3_FMASK_2P7 | IF3_FMASK_3P1)
 
+
+#include "mslist.h"
+
 void spool_nmeapps(void * ctx);	// Обработчик вызывается при приходе очередного импульса PPS
 
 // получить прескалер и значение для программирования таймера
@@ -730,16 +733,41 @@ void dcache_clean(uintptr_t base, int_fast32_t size);	// Сейчас эта п�
 void dcache_clean_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 void dcache_clean_all(void);
 
+int_fast32_t icache_rowsize(void);
+int_fast32_t dcache_rowsize(void);
+void sysinit_cache_initialize(void);	/* на каждом процессоре */
+void sysinit_cache_L2_initialize(void);	/* инициадизации кеш-памяти, специфические для CORE0 */
+
+typedef struct getmmudesc_tag
+{
+	unsigned (* mcached)(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
+	unsigned (* mncached)(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
+	unsigned (* mdevice)(uint8_t * b, uint_fast64_t phyaddr);
+	unsigned (* mnoaccess)(uint8_t * b, uint_fast64_t phyaddr);
+	unsigned (* mtable)(uint8_t * b, uint_fast64_t phyaddr, int level);	// next level table
+} getmmudesc_t;
+
+typedef struct mmulayout_tag
+{
+	const getmmudesc_t * arch;
+	uint8_t * phybytes;	// если не-NULL - данная таблица указывает на массив страниц следующего уровня
+	uint64_t phyaddr;	// Начальное значение (обычно начинаем с 0)
+	unsigned phypageszlog2;	// log2 от размера страниц на phyaddr
+	unsigned pagecount;
+	uint8_t * table;
+	//unsigned (* poke)(uint8_t * b, uint_fast64_t v);
+	int level;	// table level (INT_MAX - дескрипторы памяти)
+	int ro;	// read-only area
+	int xn;	// no-execute
+} mmulayout_t;
+
+/* зависящая от процессора карта распределения memory regions */
+unsigned ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
+
+void sysinit_mmu_tables(void);
+void sysinit_ttbr_initialize(void);	/* на каждом процессоре */
+
 void r7s721_sdhi0_dma_handler(void);
-
-uint_fast32_t 
-calcdivround2(
-	uint_fast32_t ref,	/* частота на входе делителя, в герцах. */
-	uint_fast32_t freq	/* требуемая частота на выходе делителя, в герцах. */
-	);
-
-#include "mslist.h"
-
 
 enum ticker_mode
 {

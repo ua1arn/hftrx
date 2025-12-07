@@ -306,7 +306,7 @@ boot.bin: boot_ant.bif $(PROJECT)_boot.elf
 
 $(OBJSC) $(ZOBJSC):
 	@mkdir -p $(@D)
-	$(CC) -o $@ -std=gnu23 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@)))
+	$(CC) -o $@ -std=gnu2x -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@)))
 
 $(OBJSCPP) $(ZOBJSCPP):
 	@mkdir -p $(@D)

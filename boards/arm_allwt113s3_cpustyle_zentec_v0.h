@@ -38,56 +38,96 @@
 
 // WITHUART1HW
 #define HARDWARE_UART1_INITIALIZE() do { \
-		const portholder_t TX485 = (UINT32_C(1) << 12); /* PE12 - 485_TR2 */ \
+		const portholder_t TX485MASK = (UINT32_C(1) << 12); /* PE12 - 485_TR2 */ \
 		const portholder_t TXMASK = (UINT32_C(1) << 6); /* PG6 UART1-TX 485_TX2 */ \
 		const portholder_t RXMASK = (UINT32_C(1) << 7); /* PG7 UART1-RX - pull-up RX data 485_RX2 */  \
-		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF2); \
-		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piog_altfn2m(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piog_altfn2m(RXMASK, GPIO_CFG_AF2); \
 		arm_hardware_piog_updown(RXMASK, RXMASK, 0); \
-		arm_hardware_pioe_outputs(TX485, 0 * TX485); /*  */ \
+		arm_hardware_pioe_outputs(TX485MASK, 0 * TX485MASK); /*  */ \
 	} while (0)
+#define HARDWARE_UART1_RS485_TX(tx) do { \
+		const portholder_t TX485MASK = (UINT32_C(1) << 12); /* PE12 - 485_TR2 */ \
+		gpioX_setstate(GPIOE, TX485MASK, !! (tx) * TX485MASK); \
+	} while (0)
+void user_uart1_onrxchar(uint_fast8_t c);
+void user_uart1_ontxchar(void * ctx);
+void user_uart1_onoverflow(void);
+#define HARDWARE_UART1_ONRXCHAR(c)	do { user_uart1_onrxchar((c)); } while (0)
+#define HARDWARE_UART1_ONTXCHAR(port)	do { user_uart1_ontxchar((port)); } while (0)
+#define HARDWARE_UART1_ONOVERFLOW()	do { user_uart1_onoverflow(); } while (0)
 
 // WITHUART2HW
 #define HARDWARE_UART2_INITIALIZE() do { \
-		const portholder_t TX485 = (UINT32_C(1) << 19); /* PE10 - 485_TR3 */ \
+		const portholder_t TX485MASK = (UINT32_C(1) << 10); /* PE10 - 485_TR3 */ \
 		const portholder_t TXMASK = (UINT32_C(1) << 2); /* PE2 UART2-TX 485_TX3 */ \
 		const portholder_t RXMASK = (UINT32_C(1) << 3); /* PE3 UART2-RX - pull-up RX data 485_RX3 */  \
-		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF3); \
+		arm_hardware_pioe_altfn2m(TXMASK, GPIO_CFG_AF3); \
+		arm_hardware_pioe_altfn2m(RXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioe_updown(RXMASK, RXMASK, 0); \
-		arm_hardware_pioe_outputs(TX485, 0 * TX485); /*  */ \
+		arm_hardware_pioe_outputs(TX485MASK, 0 * TX485MASK); /*  */ \
 	} while (0)
+#define HARDWARE_UART2_RS485_TX(tx) do { \
+		const portholder_t TX485MASK = (UINT32_C(1) << 10); /* PE10 - 485_TR3 */ \
+		gpioX_setstate(GPIOE, TX485MASK, !! (tx) * TX485MASK); \
+	} while (0)
+void user_uart2_onrxchar(uint_fast8_t c);
+void user_uart2_ontxchar(void * ctx);
+void user_uart2_onoverflow(void);
+#define HARDWARE_UART2_ONRXCHAR(c)	do { user_uart2_onrxchar((c)); } while (0)
+#define HARDWARE_UART2_ONTXCHAR(port)	do { user_uart2_ontxchar((port)); } while (0)
+#define HARDWARE_UART2_ONOVERFLOW()	do { user_uart2_onoverflow(); } while (0)
 
 // WITHUART4HW
 #define HARDWARE_UART4_INITIALIZE() do { \
 		const portholder_t TXMASK = (UINT32_C(1) << 4); /* PE4 UART4-TX  */ \
 		const portholder_t RXMASK = (UINT32_C(1) << 5); /* PE5 UART4-RX  - pull-up RX data */  \
-		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF3); \
+		arm_hardware_pioe_altfn2m(TXMASK, GPIO_CFG_AF3); \
+		arm_hardware_pioe_altfn2m(RXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioe_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
 // WITHUART3HW
 #define HARDWARE_UART3_INITIALIZE() do { \
-		const portholder_t TX485 = (UINT32_C(1) << 13); /* PE13 - 485_TR1 */ \
+		const portholder_t TX485MASK = (UINT32_C(1) << 13); /* PE13 - 485_TR1 */ \
 		const portholder_t TXMASK = (UINT32_C(1) << 8); /* PG8 UART3-TX 485_TX1 */ \
 		const portholder_t RXMASK = (UINT32_C(1) << 9); /* PG9 UART3-RX - pull-up RX data 485_RX1 */  \
-		arm_hardware_piog_altfn2(TXMASK, GPIO_CFG_AF5); \
-		arm_hardware_piog_altfn2(RXMASK, GPIO_CFG_AF5); \
+		arm_hardware_piog_altfn2m(TXMASK, GPIO_CFG_AF5); \
+		arm_hardware_piog_altfn2m(RXMASK, GPIO_CFG_AF5); \
 		arm_hardware_piog_updown(RXMASK, RXMASK, 0); \
-		arm_hardware_pioe_outputs(TX485, 0 * TX485); /*  */ \
+		arm_hardware_pioe_outputs(TX485MASK, 0 * TX485MASK); /*  */ \
 	} while (0)
+#define HARDWARE_UART3_RS485_TX(tx) do { \
+		const portholder_t TX485MASK = (UINT32_C(1) << 13); /* PE13 - 485_TR1 */ \
+		gpioX_setstate(GPIOE, TX485MASK, !! (tx) * TX485MASK); \
+	} while (0)
+void user_uart3_onrxchar(uint_fast8_t c);
+void user_uart3_ontxchar(void * ctx);
+void user_uart3_onoverflow(void);
+#define HARDWARE_UART3_ONRXCHAR(c)	do { user_uart3_onrxchar((c)); } while (0)
+#define HARDWARE_UART3_ONTXCHAR(port)	do { user_uart3_ontxchar((port)); } while (0)
+#define HARDWARE_UART3_ONOVERFLOW()	do { user_uart3_onoverflow(); } while (0)
 
 // WITHUART5HW
 #define HARDWARE_UART5_INITIALIZE() do { \
-		const portholder_t TX485 = (UINT32_C(1) << 9); /* PE9 - 485_TR4 */ \
+		const portholder_t TX485MASK = (UINT32_C(1) << 9); /* PE9 - 485_TR4 */ \
 		const portholder_t TXMASK = (UINT32_C(1) << 6); /* PE6 UART5-TX 485_TX4 */ \
 		const portholder_t RXMASK = (UINT32_C(1) << 7); /* PE7 UART5-RX  - pull-up RX data 485_RX4 */  \
-		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF3); \
-		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF3); \
+		arm_hardware_pioe_altfn2m(TXMASK, GPIO_CFG_AF3); \
+		arm_hardware_pioe_altfn2m(RXMASK, GPIO_CFG_AF3); \
 		arm_hardware_pioe_updown(RXMASK, RXMASK, 0); \
-		arm_hardware_pioe_outputs(TX485, 0 * TX485); /*  */ \
+		arm_hardware_pioe_outputs(TX485MASK, 0 * TX485MASK); /*  */ \
 	} while (0)
+#define HARDWARE_UART5_RS485_TX(tx) do { \
+		const portholder_t TX485MASK = (UINT32_C(1) << 9); /* PE9 - 485_TR4 */ \
+		gpioX_setstate(GPIOE, TX485MASK, !! (tx) * TX485MASK); \
+	} while (0)
+void user_uart5_onrxchar(uint_fast8_t c);
+void user_uart5_ontxchar(void * ctx);
+void user_uart5_onoverflow(void);
+#define HARDWARE_UART5_ONRXCHAR(c)	do { user_uart5_onrxchar((c)); } while (0)
+#define HARDWARE_UART5_ONTXCHAR(port)	do { user_uart5_ontxchar((port)); } while (0)
+#define HARDWARE_UART5_ONOVERFLOW()	do { user_uart5_onoverflow(); } while (0)
 
 #define WITHCAN0HW 1
 
@@ -95,8 +135,8 @@
 #define HARDWARE_CAN0_INITIALIZE() do { \
 		const portholder_t TXMASK = UINT32_C(1) << 2; /* PB2 CAN0_TX */ \
 		const portholder_t RXMASK = UINT32_C(1) << 3; /* PB3 CAN0_RX - pull-up RX data */  \
-		arm_hardware_piob_altfn2(TXMASK, GPIO_CFG_AF8); \
-		arm_hardware_piob_altfn2(RXMASK, GPIO_CFG_AF8); \
+		arm_hardware_piob_altfn2m(TXMASK, GPIO_CFG_AF8); \
+		arm_hardware_piob_altfn2m(RXMASK, GPIO_CFG_AF8); \
 		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
 		arm_hardware_pioe_outputs(UINT32_C(1) << 11, 1 * UINT32_C(1) << 11); /* PE11 CAN_TR */ \
 	} while (0)
@@ -187,7 +227,7 @@
 		//#define WITHGPUHW	1	/* Graphic processor unit */
 		#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
 	#endif
-	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
@@ -196,7 +236,7 @@
 	#elif WITHFUSBDHS
 		#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	#else
-		#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+		//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	#endif
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
@@ -208,7 +248,7 @@
 
 	
 
-	#define WITHTINYUSB 1
+	//#define WITHTINYUSB 1
 	
 	#if WITHTINYUSB
 		#define BOARD_TUH_RHPORT 1
@@ -217,17 +257,19 @@
 		//#define TUP_USBIP_EHCI 1
 	#endif /* WITHTINYUSB */
 
-	#define WITHUSBHW_EHCI		USBEHCI1
-	#define WITHUSBHW_EHCI_IRQ	USB1_EHCI_IRQn
-	#define WITHUSBHW_EHCI_IX	1
+	#if 0
+		#define WITHUSBHW_EHCI		USBEHCI1
+		#define WITHUSBHW_EHCI_IRQ	USB1_EHCI_IRQn
+		#define WITHUSBHW_EHCI_IX	1
 
-	#define WITHUSBHW_OHCI		USBOHCI1
-	#define WITHUSBHW_OHCI_IRQ	USB1_OHCI_IRQn
-	#define WITHUSBHW_OHCI_IX	1
+		#define WITHUSBHW_OHCI		USBOHCI1
+		#define WITHUSBHW_OHCI_IRQ	USB1_OHCI_IRQn
+		#define WITHUSBHW_OHCI_IX	1
 
-	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
-	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
-	#define WITHOHCIHW_OHCIPORT 0
+		#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
+		#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
+		#define WITHOHCIHW_OHCIPORT 0
+	#endif
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
@@ -253,10 +295,16 @@
 			#define WITHUSBUACIN	1
 		#endif /* WITHRTS96 || WITHRTS192 */
 		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+	#else
+
+		#define UACOUT_AUDIO48_SAMPLEBYTES	2	/* должны быть 2, 3 или 4 */
+		#define UACIN_AUDIO48_SAMPLEBYTES	2	/* должны быть 2, 3 или 4 */
+		#define WITHUSBUACIN	1
+
 	#endif /* WITHINTEGRATEDDSP */
 
-	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	#define WITHUSBCDCACM_N		1	/* количество виртуальных последовательных портов */
+	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	//#define WITHUSBCDCACM_N		1	/* количество виртуальных последовательных портов */
 	//#define WITHUSBCDCACM_NOINT	1	/* Не использовать NOTIFY endpoint - под Linux не работает */
 
 
@@ -572,8 +620,8 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piod_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI2-SCK PD20 SCL */ \
-		arm_hardware_piod_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI2-SDA PD21 SDA */ \
+		arm_hardware_piod_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI2-SCK PD20 SCL */ \
+		arm_hardware_piod_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI2-SDA PD21 SDA */ \
 		arm_hardware_piod_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_piod_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 		} while (0)
@@ -607,8 +655,8 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		arm_hardware_piog_altfn2(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI1-SCK PG8 SCL */ \
-		arm_hardware_piog_altfn2(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI1-SDA PG9 SDA */ \
+		arm_hardware_piog_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI1-SCK PG8 SCL */ \
+		arm_hardware_piog_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI1-SDA PG9 SDA */ \
 		arm_hardware_piog_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_piog_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 		} while (0) 
@@ -754,7 +802,7 @@
 	// TIM17_CH1 AF1
 	// TIM4_CH4	AF2	AF_TIM4
 	#define	HARDWARE_DCDC_INITIALIZE() do { \
-		arm_hardware_piob_altfn2((UINT32_C(1) << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
+		arm_hardware_piob_altfn2m((UINT32_C(1) << 9), AF_TIM17); /* PB9 - TIM17_CH1 */ \
 		hardware_dcdcfreq_tim17_ch1_initialize(); \
 	} while (0)
 	#define HARDWARE_DCDC_SETDIV(f) do { \
@@ -794,7 +842,7 @@
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		const portholder_t ENmask = (UINT32_C(1) << 5); /* PB5 (PWM0, Alt FN 5) */ \
 		hardware_dcdcfreq_pwm_initialize(HARDWARE_BL_PWMCH); \
-		arm_hardware_piob_altfn2(ENmask, GPIO_CFG_AF5); /* PB5 - PWM7 */ \
+		arm_hardware_piob_altfn2m(ENmask, GPIO_CFG_AF5); /* PB5 - PWM7 */ \
 	} while (0)
 	// en: 0/1, level=WITHLCDBACKLIGHTMIN..WITHLCDBACKLIGHTMAX
 	// level=WITHLCDBACKLIGHTMIN не приводит к выключениию подсветки
