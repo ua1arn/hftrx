@@ -684,8 +684,11 @@
 	#define SPIHARD_IX 1    /* 0 - SPI0, 1: SPI1... */
 	#define SPIHARD_PTR SPI1    /* 0 - SPI0, 1: SPI1... */
 
-	#define HARDWARE_FPGA_LOADER_SPIHARD_PTR SPI1
-	#define HARDWARE_FPGA_FIR_SPIHARD_PTR SPI1
+	#define HARDWARE_FPGA_LOADER_SPIHARD_PTR SPIHARD_PTR
+	#define HARDWARE_FPGA_FIR_SPIHARD_PTR SPIHARD_PTR
+
+	// сделать зависящим от target
+	#define SPI_GET_PTR(target) ((targetnone == (target)) ? HARDWARE_FPGA_LOADER_SPIHARD_PTR : SPIHARD_PTR )
 
 	//#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
 	#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())

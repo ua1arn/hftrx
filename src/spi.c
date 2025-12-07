@@ -689,6 +689,16 @@ static void spi_operate(lowspiio_t * iospi)
 	spi_operate_unlock(spi, oldIrql);
 }
 
+// сделать зависящим от target
+static SPI_t * prog_spi_get(spitarget_t target)
+{
+#if defined (SPI_GET_PTR)
+	return SPI_GET_PTR(target);
+#else
+	return SPIHARD_PTR;
+#endif
+}
+
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 void prog_spi_io(
@@ -700,7 +710,7 @@ void prog_spi_io(
 {
 	unsigned i = 0;
 	lowspiio_t io;
-	io.spi = SPIHARD_PTR;	// сделать зависящим от target
+	io.spi = prog_spi_get(target);
 	io.target = target;
 	io.spispeedindex = spispeedindex;
 	io.spimode = spimode;
@@ -750,7 +760,7 @@ void prog_spi_exchange(
 	)
 {
 	lowspiio_t io;
-	io.spi = SPIHARD_PTR;	// сделать зависящим от target
+	io.spi = prog_spi_get(target);
 	io.target = target;
 	io.spispeedindex = spispeedindex;
 	io.spimode = spimode;
@@ -783,7 +793,7 @@ void prog_spi_exchange32(
 	)
 {
 	lowspiio_t io;
-	io.spi = SPIHARD_PTR;	// сделать зависящим от target
+	io.spi = prog_spi_get(target);
 	io.target = target;
 	io.spispeedindex = spispeedindex;
 	io.spimode = spimode;

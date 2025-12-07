@@ -704,8 +704,11 @@ void user_uart4_onrxchar(uint_fast8_t c);
 	#define SPIHARD_IX 1    /* 0 - SPI0, 1: SPI1... */
 	#define SPIHARD_PTR SPI1    /* 0 - SPI0, 1: SPI1... */
 
-	#define HARDWARE_FPGA_LOADER_SPIHARD_PTR SPI1
-	#define HARDWARE_FPGA_FIR_SPIHARD_PTR SPI1
+	#define HARDWARE_FPGA_LOADER_SPIHARD_PTR SPIHARD_PTR
+	#define HARDWARE_FPGA_FIR_SPIHARD_PTR SPIHARD_PTR
+
+	// сделать зависящим от target
+	#define SPI_GET_PTR(target) ((targetnone == (target)) ? HARDWARE_FPGA_LOADER_SPIHARD_PTR : SPIHARD_PTR )
 
 	#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
 	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())

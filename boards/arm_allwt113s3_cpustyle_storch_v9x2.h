@@ -618,6 +618,9 @@
 	#define HARDWARE_FPGA_LOADER_SPIHARD_PTR SPIHARD_PTR
 	#define HARDWARE_FPGA_FIR_SPIHARD_PTR SPIHARD_PTR
 
+	// сделать зависящим от target
+	#define SPI_GET_PTR(target) ((targetnone == (target)) ? HARDWARE_FPGA_LOADER_SPIHARD_PTR : SPIHARD_PTR )
+
 	#define HARDWARE_SPI0_INITIALIZE() do { \
 		arm_hardware_pioc_altfn20(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
 		arm_hardware_pioc_altfn20(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \

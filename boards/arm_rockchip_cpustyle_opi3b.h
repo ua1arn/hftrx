@@ -660,6 +660,9 @@
 	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0
 	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
 
+	// сделать зависящим от target
+	#define SPI_GET_PTR(target) ((targetnone == (target)) ? HARDWARE_FPGA_LOADER_SPIHARD_PTR : SPIHARD_PTR )
+
 	#define HARDWARE_SPI1_INITIALIZE() do { \
 		arm_hardware_pioh_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
 		arm_hardware_pioh_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
