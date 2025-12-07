@@ -101,7 +101,6 @@
 #else /* WITHISBOOTLOADER */
 
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания
 	#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
@@ -720,31 +719,16 @@
 
 #endif /* WITHKEYBOARD */
 
-#if WITHTWISW || WITHTWIHW
+#if WITHTWIHW
+	#define WITHTWI1HW 	1	/* Использование аппаратного контроллера TWI1 (I2C) */
 	// TWI1-SCK PE0
 	// TWI1-SDA PE1
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)		// TWI1-SCK PE0
-	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOE))
-	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOE, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setopendrain(GPIOE, (v), 1 * (v)); } while (0)
-
 	#define TARGET_TWI_TWD		(UINT32_C(1) << 1)		// TWI1-SDA PE1
-	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOE))
-	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setopendrain(GPIOE, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setopendrain(GPIOE, (v), 1 * (v)); } while (0)
 
-	// Инициализация битов портов ввода-вывода для программной реализации I2C
-	#define	TWISOFT_INITIALIZE() do { \
-		arm_hardware_pioe_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
-		arm_hardware_pioe_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
-	} while (0)
-	#define	TWISOFT_DEINITIALIZE() do { \
-		arm_hardware_pioe_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-		arm_hardware_pioe_inputs(TARGET_TWI_TWD);	/* SDA */ \
-	} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_INITIALIZE() do { \
+	#define	HARDWARE_TWI1_INITIALIZE() do { \
 		arm_hardware_pioe_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* TWI1-SCK PE0 */ \
 		arm_hardware_pioe_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* TWI1-SDA PE1 */ \
 		arm_hardware_pioe_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
@@ -754,7 +738,7 @@
 	#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
-#endif // WITHTWISW || WITHTWIHW
+#endif /* WITHTWIHW */
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 

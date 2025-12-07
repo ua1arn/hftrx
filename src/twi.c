@@ -115,374 +115,10 @@ static void i2c_delay(const i2cp_t * p)
 	#error Undefined CPUSTYLE_xxx
 #endif
 
-#if defined (TWISOFT_INITIALIZE)
-
-static void i2c_softbusrelease(void)
-{
-#if 0
-	uint_fast8_t i;
-	// release I2C bus
-	CLR_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-	SET_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-#endif
-}
-
-#endif /* defined (TWISOFT_INITIALIZE) */
-
-#if defined (TWISOFT2_INITIALIZE)
-
-static void i2c2_softbusrelease(void)
-{
-	uint_fast8_t i;
-	// release I2C bus
-	CLR2_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR2_TWCK();
-		SET2_TWCK();
-	}
-	SET2_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR2_TWCK();
-		SET2_TWCK();
-	}
-}
-
-#endif /* defined (TWISOFT2_INITIALIZE) */
 
 #if WITHTWIHW
 
-#if CPUSTYLE_ATMEGA
-
-#include <util/twi.h>
-
-void i2c_initialize(void)
-{
-	const i2cp_t * const p1 = & i2cp_1;
-	const i2cp_t * const p2 = & i2cp_2;
-
-	TWISOFT_INITIALIZE();
-	i2c_softbusrelease();
-	hardware_twi_master_configure();
-
-#if WITHTWIHW
-	TWIHARD_INITIALIZE();
-#endif
-}
-
-
-enum i2c_read_mode_t
-{
-	I2C_START,
-	I2C_DATA,
-	I2C_DATA_ACK,
-	I2C_STOP
-};
-
-#define MAX_TRIES 1 // 50 
-
-/* START I2C Routine */ 
-static uint_fast8_t 
-i2c_transmit(uint_fast8_t type) 
-{ 
-	uint_fast8_t w;
-
-	switch (type) 
-	{ 
-	default:
-	case I2C_START: // Send Start Condition 
-		TWCR = (1U << TWINT) | (1U << TWSTA) | (1U << TWEN); 
-		break; 
-	case I2C_DATA: // Send Data with No-Acknowledge 
-		TWCR = (1U << TWINT) | (1U << TWEN); 
-		break; 
-	case I2C_DATA_ACK: // Send Data with Acknowledge 
-		TWCR = (1U << TWEA) | (1U << TWINT) | (1U << TWEN); 
-		break; 
-	case I2C_STOP: // Send Stop Condition 
-		TWCR = (1U << TWINT) | (1U << TWEN) | (1U << TWSTO); 
-		return 0; 
-	} 
-
-	// Wait for TWINT flag set on Register TWCR 
-	w = 255;
-	while (w -- && !(TWCR & (1U << TWINT)))
-		local_delay_us(1);
-
-	// Return TWI Status Register, mask the prescaller bits (TWPS1,TWPS0) 
-	return (TWSR & TW_STATUS_MASK); 
-	//return TW_STATUS;
-} 
-
-/* char */ void i2c_start(
-	//uint_fast8_t dev_id, uint_fast8_t dev_addr, uint_fast8_t rw_type
-	uint_fast8_t addr
-	) 
-{ 
-	uint_fast8_t n = 0; 
-	uint_fast8_t twi_status; 
-	//char r_val = -1; 
-
-i2c_retry: 
-	if (n++ >= MAX_TRIES) 
-	{
-		return ; //r_val; 
-	}
-
-	// Transmit Start Condition 
-	twi_status = i2c_transmit(I2C_START); 
-
-	// Check the TWI Status 
-	if (twi_status == TW_MT_ARB_LOST) 
-		goto i2c_retry; 
-	if ((twi_status != TW_START) && (twi_status != TW_REP_START)) 
-		goto i2c_quit; 
-
-	// Send slave address (SLA_W) 
-	TWDR = addr; // (dev_id & 0xF0) | (dev_addr & 0x07) | rw_type; 
-
-	// Transmit I2C Data 
-	twi_status = i2c_transmit(I2C_DATA); 
-
-	// Check the TWSR status 
-	if ((twi_status == TW_MT_SLA_NACK) || (twi_status == TW_MT_ARB_LOST)) 
-		goto i2c_retry; 
-	if (twi_status != TW_MT_SLA_ACK) 
-		goto i2c_quit; 
-
-	//r_val=0; 
-
-i2c_quit: 
-	return; // r_val; 
-} 
-
-// Вызвать после последнего i2c_write()
-void i2c_waitsend(void)
-{
-
-}
-
-void i2c_stop(void) 
-{ 
-	//uint_fast8_t twi_status; 
-
-	// Transmit I2C Data 
-	/*twi_status = */ i2c_transmit(I2C_STOP); 
-} 
-
-/* char */ void i2c_write(uint_fast8_t data)
-{ 
-	uint_fast8_t twi_status; 
-	//char r_val = -1; 
-
-	// Send the Data to I2C Bus 
-	TWDR = data; 
-
-	// Transmit I2C Data 
-	twi_status = i2c_transmit(I2C_DATA); 
-
-	// Check the TWSR status 
-	if (twi_status != TW_MT_DATA_ACK) goto i2c_quit; 
-
-	//r_val=0; 
-
-i2c_quit: 
-	return; // r_val; 
-} 
-
-// запись, после чего restart
-/* char */ void i2c_write_withrestart(uint_fast8_t data)
-{
-	i2c_write(data);
-	i2c_waitsend();
-
-}
-
-// запись, после чего restart
-/* char */ void i2c_write_withrestart(uint_fast8_t data)
-{
-	i2c_write(data);
-	i2c_waitsend();
-	
-}
-
-//#define I2C_READ_ACK 1  // i2c_read parameter
-//#define I2C_READ_NACK 0		// ack_type - last parameterr in read block
-
-// tested
-void i2c_read(uint8_t *data, uint_fast8_t ack_type)
-{ 
-	uint_fast8_t twi_status; 
-	//char r_val = -1; 
-
-	if (ack_type == I2C_READ_ACK || ack_type == I2C_READ_ACK_1) 
-	{ 
-		// Read I2C Data and Send Acknowledge 
-		twi_status = i2c_transmit(I2C_DATA_ACK); 
-
-		if (twi_status != TW_MR_DATA_ACK) 
-			goto i2c_quit; 
-		// Get the Data 
-		* data = TWDR; 
-		//r_val=0; 
-	} else if (ack_type == I2C_READ_ACK_NACK) { 
-		// чтение первого и единственного байта по I2C
-		// Read I2C Data and Send No Acknowledge 
-		twi_status = i2c_transmit(I2C_DATA); 
-		// Get the Data 
-		* data = TWDR; 
-		//r_val=0; 
-
-		//if (twi_status != TW_MR_DATA_NACK) 
-		//	goto i2c_quit; 
-		////twi_status = i2c_transmit(I2C_STOP); 
-
-		//if (twi_status != TW_MR_DATA_NACK) 
-		//	goto i2c_quit; 
-	} else { 
-		// Read I2C Data and Send No Acknowledge 
-		twi_status = i2c_transmit(I2C_DATA); 
-
-		if (twi_status != TW_MR_DATA_NACK) 
-			goto i2c_quit; 
-		// Get the Data 
-		* data = TWDR; 
-		//r_val=0; 
-	} 
-
-
-
-
-i2c_quit: 
-	return ;//r_val; 
-} 
-
-
-#elif CPUSTYLE_AT91SAM7S
-
-// On ARM machines
-
-/* char */ void i2c_start(
-	uint_fast8_t address
-	) 
-{
-	if (address & 0x01)
-	{	
-		AT91C_BASE_TWI->TWI_MMR = AT91C_TWI_IADRSZ_NO | (AT91C_TWI_DADR & (address << 15)) | AT91C_TWI_MREAD;
-	}
-	else
-	{
-		AT91C_BASE_TWI->TWI_MMR = AT91C_TWI_IADRSZ_NO | (AT91C_TWI_DADR & (address << 15));
-	}
-}
-
-// Вызвать после последнего i2c_write()
-void i2c_waitsend(void)
-{
-
-}
-
-void i2c_stop(void)
-{
-	
-    AT91C_BASE_TWI->TWI_CR = AT91C_TWI_STOP;
-	unsigned w = 255;
-	while (w -- && (AT91C_BASE_TWI->TWI_SR & AT91C_TWI_TXCOMP) == 0)
-		local_delay_us(1);
-
-}
-
-/* char */ void i2c_write(
-	uint_fast8_t byte
-	)
-{
-	unsigned w = 255;
-	while (w -- && (AT91C_BASE_TWI->TWI_SR & AT91C_TWI_TXRDY) == 0)
-		local_delay_us(1);
-    AT91C_BASE_TWI->TWI_THR = byte;
-
-	//return 0;
-}
-	
-// запись, после чего restart
-/* char */ void i2c_write_withrestartX(const i2cp_t * p, uint_fast8_t data)
-{
-	i2c_writeX(p, data);
-	i2c_waitsendX(p);
-	
-}
-
-void i2c_readX(const i2cp_t * p, uint8_t *data, uint_fast8_t ack_type)
-{
-	switch (ack_type)
-	{
-	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
-		{
-			// Чтение единственного (первого и последнего) байта.
-			AT91C_BASE_TWI->TWI_CR = AT91C_TWI_START | AT91C_TWI_STOP;
-			// Дождаться окончания перехода в состояние STOP
-			unsigned w = 255;
-			while (w -- && (AT91C_BASE_TWI->TWI_SR & AT91C_TWI_TXCOMP) == 0)	
-				local_delay_us(1);
-			* data = AT91C_BASE_TWI->TWI_RHR;
-		}
-		break;
-
-	case I2C_READ_NACK:
-		{
-			// Чтение последнего байта.
-			// Дождаться окончания перехода в состояние STOP
-			AT91C_BASE_TWI->TWI_CR = AT91C_TWI_STOP;
-			unsigned w = 255;
-			while ( w -- && (AT91C_BASE_TWI->TWI_SR & AT91C_TWI_TXCOMP) == 0)
-				local_delay_us(1);
-			* data = AT91C_BASE_TWI->TWI_RHR;
-		}
-		break;
-
-	case I2C_READ_ACK_1:
-			AT91C_BASE_TWI->TWI_CR = AT91C_TWI_START;
-	case I2C_READ_ACK:
-		{
-			// первый и последующие байты в последовательном чтении.
-			unsigned w = 255;
-			while (w -- && (AT91C_BASE_TWI->TWI_SR & AT91C_TWI_RXRDY) == 0)
-				local_delay_us(1);
-			* data = AT91C_BASE_TWI->TWI_RHR;
-		}
-		break;
-
-	}
-	return ;//0;
-}
-
-
-void i2c_initialize(void)
-{
-	const i2cp_t * const p1 = & i2cp_1;
-	const i2cp_t * const p2 = & i2cp_2;
-	TWISOFT_INITIALIZE();
-	i2c_softbusrelease();
-
-    // Configure clock
-	hardware_twi_master_configure();
-#if WITHTWIHW
-	TWIHARD_INITIALIZE();
-#endif
-}
-
-#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
+#if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
 
 /** 
@@ -1888,7 +1524,7 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 	return 0;
 }
 
-void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq)
+void i2chwx_initialize(TWI_t * twi, unsigned TWIx, uint_fast32_t busfreq, uint_fast32_t sclfreq)
 {
 #if CPUSTYLE_ALLWINNER
 	if (0)
@@ -1958,49 +1594,57 @@ void i2c_initialize(void)
 	i2c_softbusrelease();
 #endif
 
+#if defined (TWIHARD_PTR) && defined (TWIHARD_INITIALIZE)
+	#warning Change cpuconfix_xxx wint specialized initialization
 	hardware_twi_master_configure();
-
-#if defined (TWIHARD_PTR)
 	TWIHARD_INITIALIZE();
 	t113_i2c_stop(TWIHARD_PTR);
 #endif /* defined (TWIHARD_PTR) */
 
-#if defined (TWIHARD2_PTR)
+#if defined (TWIHARD2_PTR) && defined (TWIHARD2_INITIALIZE)
+	#warning Change cpuconfix_xxx wint specialized initialization
+	hardware_twi_master_configure();
 	TWIHARD2_INITIALIZE();
 	t113_i2c_stop(TWIHARD2_PTR);
 #endif /* defined (TWIHARD2_PTR) */
 
+	// Specialized inits
 #if WITHSTWI0HW
-	i2chwx_initialize(TWIHARD_S_PTR, TWIHARD_FREQ, 400000);
+	i2chwx_initialize(S_TWI0, 0, TWIHARD_FREQ, 400000);
+	HARDWARE_S_TWI0_INITIALIZE();
+#endif
+
+#if WITHSTWI1HW
+	i2chwx_initialize(S_TWI1, 1, TWIHARD_FREQ, 400000);
 	HARDWARE_S_TWI0_INITIALIZE();
 #endif
 
 #if WITHTWI0HW
-	i2chwx_initialize(TWIBASENAME(0), TWIHARD_FREQ, 400000);
+	i2chwx_initialize(TWIBASENAME(0), 0, TWIHARD_FREQ, 400000);
 	HARDWARE_TWI0_INITIALIZE();
 #endif
 #if WITHTWI1HW
-	i2chwx_initialize(TWIBASENAME(1), TWIHARD_FREQ, 400000);
+	i2chwx_initialize(TWIBASENAME(1), 1, TWIHARD_FREQ, 400000);
 	HARDWARE_TWI1_INITIALIZE();
 #endif
 #if WITHTWI2HW
-	i2chwx_initialize(TWIBASENAME(2), TWIHARD_FREQ, 400000);
+	i2chwx_initialize(TWIBASENAME(2), 2, TWIHARD_FREQ, 400000);
 	HARDWARE_TWI2_INITIALIZE();
 #endif
 #if WITHTWI3HW
-	i2chwx_initialize(TWIBASENAME(3), TWIHARD_FREQ, 400000);
+	i2chwx_initialize(TWIBASENAME(3), 3, TWIHARD_FREQ, 400000);
 	HARDWARE_TWI3_INITIALIZE();
 #endif
 #if WITHTWI4HW
-	i2chwx_initialize(TWIBASENAME(4), TWIHARD_FREQ, 400000);
+	i2chwx_initialize(TWIBASENAME(4), 4, TWIHARD_FREQ, 400000);
 	HARDWARE_TWI4_INITIALIZE();
 #endif
 #if WITHTWI5HW
-	i2chwx_initialize(TWIBASENAME(5), TWIHARD_FREQ, 400000);
+	i2chwx_initialize(TWIBASENAME(5), 5, TWIHARD_FREQ, 400000);
 	HARDWARE_TWI5_INITIALIZE();
 #endif
 #if WITHTWI6HW
-	i2chwx_initialize(TWIBASENAME(6), TWIHARD_FREQ, 400000);
+	i2chwx_initialize(TWIBASENAME(6), 6, TWIHARD_FREQ, 400000);
 	HARDWARE_TWI6_INITIALIZE();
 #endif
 
@@ -2020,6 +1664,49 @@ void i2c_initialize(void)
 #if WITHTWISW
 
 // программно-реализованный I2C интерфейс
+#if defined (TWISOFT_INITIALIZE)
+
+static void i2c_softbusrelease(void)
+{
+	uint_fast8_t i;
+	// release I2C bus
+	CLR_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR_TWCK();
+		SET_TWCK();
+	}
+	SET_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR_TWCK();
+		SET_TWCK();
+	}
+}
+
+#endif /* defined (TWISOFT_INITIALIZE) */
+
+#if defined (TWISOFT2_INITIALIZE)
+
+static void i2c2_softbusrelease(void)
+{
+	uint_fast8_t i;
+	// release I2C bus
+	CLR2_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR2_TWCK();
+		SET2_TWCK();
+	}
+	SET2_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR2_TWCK();
+		SET2_TWCK();
+	}
+}
+
+#endif /* defined (TWISOFT2_INITIALIZE) */
 
 //you'll need to change for a different processor.
 
@@ -2039,7 +1726,7 @@ void i2c_initialize(void)
 	// программирование выводов, управляющих I2C
 	TWISOFT_INITIALIZE();
 
-#if 0
+#if 1
 	i2c_softbusrelease();
 
 #endif
@@ -2062,6 +1749,7 @@ void i2c_initialize(void)
 #endif /* WITHTWIHW */
 }
 
+#ifdef TWISOFT_INITIALIZE
 
 //The following 4 functions provide the primitive start, stop, read and write sequences. 
 // All I2C transactions can be built up from these.
@@ -2190,6 +1878,8 @@ void i2c_writeX(const i2cp_t * p, uint_fast8_t d)
 	i2c_writeX(p, data);
 	i2c_waitsendX(p);
 }
+
+#endif /* TWISOFT_INITIALIZE */
 
 #ifdef TWISOFT2_INITIALIZE
 
@@ -2329,6 +2019,7 @@ void i2c2_write(uint_fast8_t d)
 
 #if WITHTWIHW
 
+#if 0
 void hardware_twi_master_configure(void)
 {
 #if CPUSTYLE_ATMEGA
@@ -2663,7 +2354,7 @@ void hardware_twi_master_configure(void)
 	#error Undefined CPUSTYLE_XXX
 #endif
 }
-
+#endif
 #endif /* WITHTWIHW */
 
 #if (WITHTWISW) && ! LINUX_SUBSYSTEM
