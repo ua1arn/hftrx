@@ -167,10 +167,15 @@ static const getmmudesc_t gpu_mali400_table4k =
 //#define AARCH64_CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through Cacheable
 //#define AARCH64_CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back no Write-Allocate Cacheable
 
+// G5.7 Memory region attributes
+// Table G5-16 SH[1:0] field encoding for Normal memory, Long-descriptor format
+#define AARCH64_SH_MEMORY 0x03		// 0x03 - inner shareable
+#define AARCH64_SH_DEVICE 0x02		// 0x02 - Outer shareable
+
 // Lower attributes
-#define AARCH64_LOWER_ATTR(AttrIndx) ( \
+#define AARCH64_LOWER_ATTR(SHattr, AttrIndx) ( \
 	0x01 * (UINT64_C(1) << 10) |	/*  AF */ \
-	0x03 * (UINT64_C(1) << 8) |		/* SH[1:0] */ \
+	(SHattr) * (UINT64_C(1) << 8) |		/* SH[1:0] */ \
 	0x01 * (UINT64_C(1) << 6) |		/* AP[2:1] (AP = 0x02) */ \
 	0x00 * (UINT64_C(1) << 5) |		/* NS */ \
 	(AttrIndx & 0x07) * (UINT64_C(1) << 2) | /* AttrIndx[2:0] */ \
@@ -425,7 +430,7 @@ static unsigned aarch64_2M_mcached(uint8_t * b, uint_fast64_t addr, int ro, int 
 	return USBD_poke_u64(b,
 			AARCH64_UPPER_ATTR |
 			aarch64_2M_addrmaskmem(addr) |
-			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_CACHED) |
+			AARCH64_LOWER_ATTR(AARCH64_SH_MEMORY, AARCH64_ATTR_INDEX_CACHED) |
 			0x01);
 }
 static unsigned aarch64_2M_mncached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
@@ -433,7 +438,7 @@ static unsigned aarch64_2M_mncached(uint8_t * b, uint_fast64_t addr, int ro, int
 	return USBD_poke_u64(b,
 			AARCH64_UPPER_ATTR |
 			aarch64_2M_addrmaskmem(addr) |
-			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_NCACHED) |
+			AARCH64_LOWER_ATTR(AARCH64_SH_MEMORY, AARCH64_ATTR_INDEX_NCACHED) |
 			0x01);
 }
 static unsigned aarch64_2M_mdevice(uint8_t * b, uint_fast64_t addr)
@@ -441,7 +446,7 @@ static unsigned aarch64_2M_mdevice(uint8_t * b, uint_fast64_t addr)
 	return USBD_poke_u64(b,
 			AARCH64_UPPER_ATTR |
 			aarch64_2M_addrmaskmem(addr) |
-			AARCH64_LOWER_ATTR(AARCH64_ATTR_INDEX_DEVICE) |
+			AARCH64_LOWER_ATTR(AARCH64_SH_DEVICE, AARCH64_ATTR_INDEX_DEVICE) |
 			0x01);
 }
 // Next level table
@@ -1305,6 +1310,10 @@ static const uint_fast32_t IRGN_attr = AARCH64_CACHEATTR_WB_WA_CACHE;	// Normal 
 static const uint_fast32_t ORGN_attr = AARCH64_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
 //static const uint_fast32_t IRGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Inner Write-Back Write-Allocate Cacheable.
 //const uint_fast32_t ORGN_attr = AARCH32_CACHEATTR_WB_WA_CACHE;	// Normal memory, Outer Write-Back Write-Allocate Cacheable.
+
+// Table G5-16 SH[1:0] field encoding for Normal memory, Long-descriptor format
+// 0x02 - outer shareable
+// 0x03 - inner shareable
 static unsigned SH1_attr = 0x03;
 static unsigned SH0_attr = 0x03;
 
