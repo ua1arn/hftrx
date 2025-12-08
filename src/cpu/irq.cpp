@@ -1748,7 +1748,7 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 // wasL: uncommon_trap_handler_6
 // Current EL with SPx VIRQ
 // 0x280
-void VIRQ_Handler(void)
+void VIRQ_Handler(void * frame)
 {
 	//dbg_putchar('.');
 	IRQ_Handler_GIC();
@@ -1757,10 +1757,12 @@ void VIRQ_Handler(void)
 // wasL: uncommon_trap_handler_5
 // Current EL with SPx Synchronous
 // 0x200
-void SError_Handler(void)
+void SError_Handler(void * frame)
 {
+	uint64_t marker = 0xDEADBEEFABBA1980;
 	TP();
-	PRINTF("SError_Handler:\n");
+	PRINTF("SError_Handler (core=%u), stack~%p:\n", (unsigned) arm_hardware_cpuid(), & marker);
+	printhex64((uintptr_t) & marker, & marker, 512);
 	unsigned esr_el3 = __get_ESR_EL3();
 	unsigned ec = (esr_el3 >> 26) & 0x1F;
 	unsigned iss = (esr_el3 >> 0) & 0xFFFFFF;
@@ -2521,6 +2523,7 @@ uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 	ASSERT(dp == dp->tag1);
 	ASSERT(dp == dp->tag2);
 
+	//if (coreid == 1) dbg_putchar('#');
 	// предотвращение повторного включения в очередь того же запроса
 	if (dpcobj_accure(dp))
 		return 0;
@@ -2575,6 +2578,7 @@ void board_dpc_processing(void)
 	ASSERT(dpc == dpc->tag1);
 	ASSERT(dpc == dpc->tag2);
 	// Выполнение периодического вызова user-mode функций по списку
+	//if (coreid == 1) dbg_putchar('+');
 	{
 		IRQL_t oldIrql;
 		PRLIST_ENTRY t;
@@ -2609,6 +2613,7 @@ void board_dpc_processing(void)
 		}
 		IRQLSPIN_UNLOCK(lock, oldIrql);
 	}
+	//if (coreid == 1) dbg_putchar('|');
 	// Выполнение однократно вызываемых user-mode функций по списку
 	{
 		IRQL_t oldIrql;
@@ -2635,6 +2640,7 @@ void board_dpc_processing(void)
 	//__DMB();
 	//__WFI();
 #endif /* WITHSMPSYSTEM */
+	//if (coreid == 1) dbg_putchar('-');
 }
 
 void testsloopprocessing(void)

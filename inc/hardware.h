@@ -695,6 +695,27 @@ void GPU_IRQHandler(void);	// STM32MP1 specific
 
 void r7s721_intc_initialize(void);
 
+void uncommon_trap_handler_1(void * frame);
+void uncommon_trap_handler_2(void * frame);
+void uncommon_trap_handler_3(void * frame);
+void uncommon_trap_handler_4(void * frame);
+void uncommon_trap_handler_5(void * frame);
+void uncommon_trap_handler_6(void * frame);
+void uncommon_trap_handler_7(void * frame);
+void uncommon_trap_handler_8(void * frame);
+void uncommon_trap_handler_9(void * frame);
+void uncommon_trap_handler_10(void * frame);
+void uncommon_trap_handler_11(void * frame);
+void uncommon_trap_handler_12(void * frame);
+void uncommon_trap_handler_13(void * frame);
+void uncommon_trap_handler_14(void * frame);
+void uncommon_trap_handler_15(void * frame);
+void uncommon_trap_handler_16(void * frame);
+
+void SError_Handler(void * frame);
+void VIRQ_Handler(void * frame);
+
+
 /* Отображение номеров каналов АЦП процессоров STM32Fxxx в каналы процессора STM32H7 */
 typedef struct adcinmap_tag
 {
