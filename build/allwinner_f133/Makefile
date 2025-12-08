@@ -48,7 +48,7 @@ SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex
 BIN  = $(CP) -O binary
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/15.2.0/liblto_plugin.dll
-OBJDUMP   = $(TRGT)objdump
+OBJDUMP = $(TRGT)objdump
 
 # The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).
 
@@ -297,19 +297,21 @@ $(OBJSA_APP) $(ZOBJSA):
 %_app.elf: $(OBJS) $(OBJSA_APP) $(LDSCRIPT_APP)
 	$(GPP) $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
-	$(OBJDUMP) -d $(PROJECT)_app.elf >$(PROJECT)_app.lst
 
 %hex: %elf
 	$(HEX) $< $@
+	$(OBJDUMP) -d $< >$(PROJECT)_app.lst
 
 %bin: %elf
 	$(BIN) $< $@
+	$(OBJDUMP) -d $< >$(PROJECT)_app.lst
 
 clean: version
 	-$(RM) -R $(OBJDIR)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
 	-$(RM) $(PROJECT)_app.f133 fsbl.f133 $(PROJECT)_app.bin $(PROJECT)_boot.bin 
+	-$(RM) $(PROJECT)_app.lst 
 
 version:
 	$(CC) --version

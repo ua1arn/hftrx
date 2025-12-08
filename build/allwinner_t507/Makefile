@@ -51,6 +51,7 @@ SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex
 BIN  = $(CP) -O binary
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/14.2.1/liblto_plugin.dll
+OBJDUMP = $(TRGT)objdump
 
 # ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
 
@@ -328,9 +329,11 @@ $(OBJSA_APP) $(ZOBJSA):
 
 %hex: %elf
 	$(HEX) $< $@
+	$(OBJDUMP) -d $< >$(PROJECT)_app.lst
 
 %bin: %elf
 	$(BIN) $< $@
+	$(OBJDUMP) -d $< >$(PROJECT)_app.lst
 
 clean: version
 	-$(RM) -R $(OBJDIR)
@@ -341,6 +344,7 @@ clean: version
 	-$(RM) $(PROJECT)_app.alw32 $(PROJECT)_app.bin $(PROJECT)_boot.bin 
 	-$(RM) $(PROJECT64)_app.elf $(PROJECT64)_app.map
 	-$(RM) $(PROJECT64)_app.alw32 $(PROJECT64)_app.bin $(PROJECT64)_boot.bin 
+	-$(RM) $(PROJECT)_app.lst 
 
 version:
 	$(CC) --version
