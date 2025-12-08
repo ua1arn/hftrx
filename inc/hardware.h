@@ -715,6 +715,7 @@ void uncommon_trap_handler_16(void * frame);
 void SError_Handler(void * frame);
 void VIRQ_Handler(void * frame);
 
+void IRQ_Handler_GIC(void);
 
 /* Отображение номеров каналов АЦП процессоров STM32Fxxx в каналы процессора STM32H7 */
 typedef struct adcinmap_tag
