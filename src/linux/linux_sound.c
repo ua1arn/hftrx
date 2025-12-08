@@ -279,7 +279,12 @@ static void dummy_setlineinput (uint_fast8_t linein, uint_fast8_t mikeboost20db,
 
 static void alsa_setvolume (uint_fast16_t gainL, uint_fast16_t gainR, uint_fast8_t mute, uint_fast8_t mutespk)
 {
+#if defined(LOUDSPEAKER_STATE)
+	vol_shift = BOARD_AFGAIN_MAX - gainL;
+	LOUDSPEAKER_STATE(mutespk);
+#else
 	vol_shift = mutespk ? BOARD_AFGAIN_MAX : BOARD_AFGAIN_MAX - gainL;
+#endif
 }
 
 static void alsa_initialize(void (* io_control)(uint_fast8_t on), uint_fast8_t master)
