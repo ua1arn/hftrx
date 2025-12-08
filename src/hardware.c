@@ -2724,6 +2724,7 @@ void cpump_initialize(void)
 		while (p == NULL)
 			;
 		aarch64_stack_top = (uint64_t) (uintptr_t) p + aarch64_stack_size;
+		//PRINTF("core%u stack: 0x%08X..0x%08X\n", core, (unsigned) ((uintptr_t) p), (unsigned) aarch64_stack_top);
 		aarch64_mp_cpuN_start((uintptr_t) Reset_CPUx_Handler, core);
 #else
 		static const uint64_t aarch32_stack_size = UINT32_C(16) * 1024 * 1024;	/* crt_CortexA_CPUn.S */
@@ -2735,6 +2736,7 @@ void cpump_initialize(void)
 		while (p == NULL)
 			;
 		aarch32_stack_top = (uint32_t) (uintptr_t) p + aarch32_stack_size;
+		//PRINTF("core%u stack: 0x%08X..0x%08X\n", core, (unsigned) ((uintptr_t) p), (unsigned) aarch32_stack_top);
 		aarch32_mp_cpuN_start((uintptr_t) Reset_CPUx_Handler, core);
 #endif
 
