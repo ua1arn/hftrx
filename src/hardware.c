@@ -3012,7 +3012,11 @@ ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, ui
 
 	// Все сравнения должны быть не точнее 2 (16) MB
 #if ! WITHISBOOTLOADER
-	if (phyaddr < 0x01000000)			// BROM, SYSRAM A1, SRAM C
+	if (phyaddr < 0x01000000)
+		return arch->mnoaccess(b, phyaddr);
+	if (phyaddr < 0x40000000 && phyaddr >= 0x3F000000)
+		return arch->mnoaccess(b, phyaddr);
+	if (phyaddr >= 0x80000000)
 		return arch->mnoaccess(b, phyaddr);
 #endif /* ! WITHISBOOTLOADER */
 

@@ -9,6 +9,7 @@
 
 #include "board.h"
 #include "formats.h"	// for debug prints
+#include "display2.h"	// for debug prints
 #include <string.h>
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
@@ -1767,9 +1768,10 @@ void SError_Handler(void * frame)
 	unsigned ec = (esr_el3 >> 26) & 0x1F;
 	unsigned iss = (esr_el3 >> 0) & 0xFFFFFF;
 	PRINTF("ESR_EL3=%08X\n", (unsigned) esr_el3);
-	PRINTF("ELR_EL3=%08X\n", (unsigned) __get_ELR_EL3());
-	PRINTF("FAR_EL3=%08X\n", (unsigned) __get_FAR_EL3());
+	PRINTF("ELR_EL3=%08X (where)\n", (unsigned) __get_ELR_EL3());
+	PRINTF("FAR_EL3=%08X (access to)\n", (unsigned) __get_FAR_EL3());
 
+	display2_postmortem();
 	PRINTF("ec=%02X\n", ec);
 	switch (ec)
 	{
@@ -1837,6 +1839,7 @@ static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, i
 //		cbnz	w1, l2
 //		ret
 //	.endfunc //spin_lock
+	ASSERT3((uintptr_t) p >= 0x40000000 && (uintptr_t) p < 0x80000000, file, line, "accure");
 	__SEVL();
 	__WFE();
 	int status;
@@ -1873,6 +1876,7 @@ static void lclspin_unlock_work(lclspinlock_t * __restrict p)
 	// Note: __STLRB CMSIS function
 	//__DMB(); // Ensure memory operations completed before
 	// releasing lock
+	//ASSERT((uintptr_t) p >= 0x40000000 && (uintptr_t) p < 0x80000000);
 	__STLRB(0, & p->lock);
 	//p->lock = 0;
 	return;

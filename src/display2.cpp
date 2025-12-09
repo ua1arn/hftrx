@@ -21,6 +21,7 @@
 
 #include "dspdefines.h"
 
+int d2line;
 //#define WITHSECTRUMPEAKS 1	// Рисование peak value
 
 #if LVGL_VERSION_MAJOR == 9 && LVGL_VERSION_MINOR < 3
@@ -3943,10 +3944,13 @@ static void display2_mode3_b(const gxdrawb_t * db,
 		)
 {
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
+	d2line = __LINE__;
 	const char * const label = hamradio_get_mode_b_value_P(& state);
     const char * const labels [2] = { label, label };
     ASSERT(state < ARRAY_SIZE(labels));
+	d2line = __LINE__;
     display2text_states(db, x, y, labels, dbstylev_2rxB, state, xspan, yspan);
+	d2line = __LINE__;
 }
 
 
@@ -9740,6 +9744,10 @@ static uint_fast8_t getpageix(
 	return inmenu ? PAGEMENU : menuset;
 }
 
+static unsigned lastwalk, lastin;
+static void (* lastpoiner)(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx);
+static unsigned lastcore;
+static unsigned lastsubset;
 // выполнение отрисовки всех элементов за раз.
 // Например при работе в меню
 static void 
@@ -9756,8 +9764,24 @@ display_walktrough(
 
 		if (validforredraw(dzp, subset) == 0)
 			continue;
+		d2line = __LINE__;
+		lastcore = arm_hardware_cpuid();
+		lastpoiner = dzp->redraw;
+		lastwalk = i;
+		lastsubset = subset;
+		lastin = 1;
 		(* dzp->redraw)(db, dzp->x, dzp->y, dzp->colspan, dzp->rowspan, pctx);
+		lastin = 0;
+		d2line = __LINE__;
 	}
+}
+
+extern int bfline;
+extern int gfline;
+
+void display2_postmortem(void)
+{
+	PRINTF("core=%u: lastin=%u, lastwalk=%u(%u), lastsubset=0x%03X %p, bfline=%d, gfline=%d, d2line=%d\n", lastcore, lastin, lastwalk, WALKCOUNT, lastsubset, lastpoiner, bfline, gfline, d2line);
 }
 
 //static int redrawreq;
