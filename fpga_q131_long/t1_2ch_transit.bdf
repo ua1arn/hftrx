@@ -5807,24 +5807,6 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect -1808 -224 -1776 -192)
-	(text "GND" (rect 8 6 29 16)(font "Arial" (font_size 6)))
-	(text "inst125" (rect 3 -1 38 11)(font "Arial" )(invisible))
-	(port
-		(pt 16 32)
-		(output)
-		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
-		(text "1" (rect 18 20 23 32)(font "Courier New" (bold))(invisible))
-		(line (pt 16 24)(pt 16 32))
-	)
-	(drawing
-		(line (pt 8 24)(pt 16 16))
-		(line (pt 16 16)(pt 24 24))
-		(line (pt 8 24)(pt 24 24))
-	)
-	(flipx)
-)
-(symbol
 	(rect -1200 -512 -960 -320)
 	(text "duc_mux" (rect 5 0 56 14)(font "Arial" (font_size 8)))
 	(text "inst32" (rect 8 176 37 188)(font "Arial" ))
@@ -5907,6 +5889,88 @@ applicable agreement for further details.
 	)
 	(drawing
 		(rectangle (rect 16 16 224 176))
+	)
+)
+(symbol
+	(rect -3024 1104 -2976 1136)
+	(text "WIRE" (rect 1 0 24 10)(font "Arial" (font_size 6)))
+	(text "inst85" (rect 3 21 32 33)(font "Arial" ))
+	(port
+		(pt 0 16)
+		(input)
+		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
+		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
+		(line (pt 0 16)(pt 14 16))
+	)
+	(port
+		(pt 48 16)
+		(output)
+		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
+		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
+		(line (pt 32 16)(pt 48 16))
+	)
+	(drawing
+		(line (pt 14 7)(pt 32 16))
+		(line (pt 14 25)(pt 14 7))
+		(line (pt 14 25)(pt 32 16))
+	)
+)
+(symbol
+	(rect -3024 1168 -2976 1200)
+	(text "WIRE" (rect 1 0 24 10)(font "Arial" (font_size 6)))
+	(text "inst102" (rect 3 21 38 33)(font "Arial" ))
+	(port
+		(pt 0 16)
+		(input)
+		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
+		(text "IN" (rect 2 7 13 19)(font "Courier New" (bold))(invisible))
+		(line (pt 0 16)(pt 14 16))
+	)
+	(port
+		(pt 48 16)
+		(output)
+		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
+		(text "OUT" (rect 32 7 49 19)(font "Courier New" (bold))(invisible))
+		(line (pt 32 16)(pt 48 16))
+	)
+	(drawing
+		(line (pt 14 7)(pt 32 16))
+		(line (pt 14 25)(pt 14 7))
+		(line (pt 14 25)(pt 32 16))
+	)
+)
+(symbol
+	(rect -3096 1120 -3064 1152)
+	(text "GND" (rect 8 16 29 26)(font "Arial" (font_size 6)))
+	(text "inst110" (rect 3 21 38 33)(font "Arial" )(invisible))
+	(port
+		(pt 16 0)
+		(output)
+		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
+		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
+		(line (pt 16 8)(pt 16 0))
+	)
+	(drawing
+		(line (pt 8 8)(pt 16 16))
+		(line (pt 16 16)(pt 24 8))
+		(line (pt 8 8)(pt 24 8))
+	)
+)
+(symbol
+	(rect -3096 1184 -3064 1216)
+	(text "GND" (rect 8 16 29 26)(font "Arial" (font_size 6)))
+	(text "inst116" (rect 3 21 38 33)(font "Arial" )(invisible))
+	(port
+		(pt 16 0)
+		(output)
+		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
+		(text "1" (rect 18 0 23 12)(font "Courier New" (bold))(invisible))
+		(line (pt 16 8)(pt 16 0))
+	)
+	(drawing
+		(line (pt 8 8)(pt 16 16))
+		(line (pt 16 16)(pt 24 8))
+		(line (pt 8 8)(pt 24 8))
 	)
 )
 (connector
@@ -7813,12 +7877,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(text "fromcodec[63..0]" (rect -1798 -120 -1714 -108)(font "Arial" ))
-	(pt -1720 -104)
-	(pt -1800 -104)
-	(bus)
-)
-(connector
 	(pt -3528 280)
 	(pt -3544 280)
 )
@@ -8172,29 +8230,14 @@ applicable agreement for further details.
 	(pt -3864 1128)
 )
 (connector
-	(text "decode_nco1" (rect -3790 1112 -3726 1124)(font "Arial" ))
-	(pt -3736 1128)
-	(pt -3816 1128)
-)
-(connector
 	(text "decode[2]" (rect -3934 1144 -3886 1156)(font "Arial" ))
 	(pt -3936 1160)
 	(pt -3864 1160)
 )
 (connector
-	(text "decode_nco2" (rect -3790 1144 -3726 1156)(font "Arial" ))
-	(pt -3816 1160)
-	(pt -3736 1160)
-)
-(connector
 	(text "decode[3]" (rect -3934 1176 -3886 1188)(font "Arial" ))
 	(pt -3936 1192)
 	(pt -3864 1192)
-)
-(connector
-	(text "decode_ncorts" (rect -3782 1176 -3711 1188)(font "Arial" ))
-	(pt -3816 1192)
-	(pt -3736 1192)
 )
 (connector
 	(text "decode[4]" (rect -3934 1208 -3886 1220)(font "Arial" ))
@@ -8205,16 +8248,6 @@ applicable agreement for further details.
 	(text "decode[5]" (rect -3934 1240 -3886 1252)(font "Arial" ))
 	(pt -3936 1256)
 	(pt -3864 1256)
-)
-(connector
-	(text "decode_nco3" (rect -3790 1208 -3726 1220)(font "Arial" ))
-	(pt -3736 1224)
-	(pt -3816 1224)
-)
-(connector
-	(text "decode_nco4" (rect -3790 1240 -3726 1252)(font "Arial" ))
-	(pt -3736 1256)
-	(pt -3816 1256)
 )
 (connector
 	(pt -4816 824)
@@ -9292,16 +9325,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(pt -1720 -120)
-	(pt -1792 -120)
-	(bus)
-)
-(connector
-	(pt -1792 -192)
-	(pt -1792 -120)
-	(bus)
-)
-(connector
 	(text "mode_tx" (rect -1254 -496 -1212 -484)(font "Arial" ))
 	(pt -1200 -480)
 	(pt -1256 -480)
@@ -9368,6 +9391,40 @@ applicable agreement for further details.
 (connector
 	(pt -1240 -384)
 	(pt -1200 -384)
+)
+(connector
+	(text "fpgastatus[31..0]" (rect -2968 1104 -2884 1116)(font "Arial" ))
+	(pt -2976 1120)
+	(pt -2872 1120)
+	(bus)
+)
+(connector
+	(pt -3024 1120)
+	(pt -3080 1120)
+	(bus)
+)
+(connector
+	(text "fqmeter[31..0]" (rect -2968 1168 -2898 1180)(font "Arial" ))
+	(pt -2976 1184)
+	(pt -2872 1184)
+	(bus)
+)
+(connector
+	(text "fromcodec[63..0]" (rect -1822 -120 -1738 -108)(font "Arial" ))
+	(pt -1720 -104)
+	(pt -1824 -104)
+	(bus)
+)
+(connector
+	(text "fpgastatus[31..0],fqmeter[31..0]" (rect -1824 -136 -1665 -124)(font "Arial" ))
+	(pt -1720 -120)
+	(pt -1824 -120)
+	(bus)
+)
+(connector
+	(pt -3080 1184)
+	(pt -3024 1184)
+	(bus)
 )
 (junction (pt -1592 -696))
 (junction (pt -4384 -696))
