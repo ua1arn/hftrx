@@ -7273,6 +7273,41 @@ mcp3208_read(
 
 #endif /* WITHSPIHW || WITHSPISW */
 
+#if WITHFPGAPIPE_FPGASTATUS
+/* получение состояния от FPGA через I2S канал */
+static volatile uint_fast32_t vstatus;
+static volatile uint_fast32_t vfqmeter;
+
+uint_fast8_t board_fpgastatus_getovf(void)
+{
+	return !! (vstatus & (FPGA_STATUS_ADC1OVF | FPGA_STATUS_ADC2OVF | FPGA_STATUS_ADC3OVF | FPGA_STATUS_ADC4OVF));
+}
+
+uint_fast8_t board_fpgastatus_gettxdisable(void)
+{
+	return !! (vstatus & FPGA_STATUS_TXDIS);
+}
+
+void board_savefpgastatus(uint_fast32_t status, uint_fast32_t fqmeter)
+{
+	int update = 0;
+	if (vstatus != status)
+	{
+		vstatus = status;
+		update = 1;
+	}
+	if (vfqmeter != fqmeter)
+	{
+		vfqmeter = fqmeter;
+		update = 1;
+	}
+	if (update)
+	{
+		PRINTF("vstatus=%08X, vfqmeter=%08X\n", (unsigned) vstatus, (unsigned) vfqmeter);
+
+	}
+}
+#endif /* WITHFPGAPIPE_FPGASTATUS */
 #if ! CPUSTYLE_ATMEGA
 
 #if defined(RTC1_TYPE)

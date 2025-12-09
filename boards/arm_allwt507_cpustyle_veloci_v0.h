@@ -153,6 +153,7 @@
 		#define WITHFPGAPIPE_NCORX0 1	/* управление частотой приемника 1 */
 		#define WITHFPGAPIPE_NCORX1 1	/* управление частотой приемника 2 */
 		#define WITHFPGAPIPE_NCORTS 1	/* управление частотой приемника панорамы */
+		#define WITHFPGAPIPE_FPGASTATUS 1	/* получение состояния от FPGA через I2S канал */
 
 		#define WITHI2S0HW	1	/* I2S0 - 16-ти канальный канал обмена с FPGA */
 		#define WITHI2S1HW	(1 && WITHHDMITVHW)	/* Использование I2S1 - звук через HDMI */
@@ -781,16 +782,9 @@
 
 #if WITHTX
 
+	#define HARDWARE_GET_TXDISABLE() (board_fpgastatus_gettxdisable())
 	// +++
 	// TXDISABLE input - PE11
-	#define TXDISABLE_TARGET_PIN				gpioX_getinputs(GPIOE)
-	#define TXDISABLE_BIT_TXDISABLE				(UINT32_C(1) << 11)		// PE11 - TX INHIBIT
-	// получить бит запрета передачи (от усилителя мощности)
-	#define HARDWARE_GET_TXDISABLE() (0) //((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
-	#define TXDISABLE_INITIALIZE() do { \
-			arm_hardware_pioe_inputs(TXDISABLE_BIT_TXDISABLE); \
-			arm_hardware_pioe_updown(TXDISABLE_BIT_TXDISABLE, 0, TXDISABLE_BIT_TXDISABLE); \
-		} while (0)
 	// ---
 
 	// +++
@@ -1148,7 +1142,7 @@
 		} while (0)
 #endif /* WITHDSPEXTFIR */
 
-#if 1
+#if 0
 	/* получение состояния переполнения АЦП */
 	#define TARGET_FPGA_OVF_INPUT		gpioX_getinputs(GPIOE)
 	#define TARGET_FPGA_OVF_BIT			(UINT32_C(1) << 1)	// PE1
@@ -1156,6 +1150,8 @@
 	#define TARGET_FPGA_OVF_INITIALIZE() do { \
 				arm_hardware_pioe_inputs(TARGET_FPGA_OVF_BIT); \
 			} while (0)
+#else
+	#define TARGET_FPGA_OVF_GET			(board_fpgastatus_getovf())
 #endif
 
 #if WITHCPUDACHW
@@ -1512,7 +1508,7 @@
 	/*HARDWARE_DAC_INITIALIZE(); */\
 	HARDWARE_BL_INITIALIZE(); \
 	HARDWARE_DCDC_INITIALIZE(); \
-	TXDISABLE_INITIALIZE(); \
+	/*TXDISABLE_INITIALIZE(); */ \
 	TUNE_INITIALIZE(); \
 	USBD_EHCI_INITIALIZE(); \
 } while (0)

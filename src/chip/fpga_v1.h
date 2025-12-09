@@ -18,10 +18,14 @@ extern const phase_t phase_0;
 #endif
 
 #define FPGA_DECODE_CTLREG	(1u << 0)
-#define FPGA_DECODE_NCO1	(1u << 1)
-#define FPGA_DECODE_FQMETER	(0)
 #define FPGA_DECODE_NBLVL	(1u << 6)
 
+// Bits in status word for 'long' fpga firmware version
+#define FPGA_STATUS_ADC1OVF (UINT32_C(1) << 0)
+#define FPGA_STATUS_ADC2OVF (UINT32_C(1) << 1)
+#define FPGA_STATUS_ADC3OVF (UINT32_C(1) << 2)
+#define FPGA_STATUS_ADC4OVF (UINT32_C(1) << 3)
+#define FPGA_STATUS_TXDIS	(UINT32_C(1) << 4)	// TX disable input
 
 // Send a frame of bytes via SPI
 static void

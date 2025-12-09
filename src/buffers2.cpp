@@ -3696,6 +3696,10 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 		//elfill_dmabuffer16rx(adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_LEFT]), adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_RIGHT]));
 		elfill_dmabuffer16rx_raw(b [DMABUFF32RX_CODEC1_LEFT], b [DMABUFF32RX_CODEC1_RIGHT]);
 #endif /* WITHFPGAPIPE_CODEC1 */
+#if WITHFPGAPIPE_FPGASTATUS
+		/* получение состояния от FPGA через I2S канал */
+		board_savefpgastatus(b [DMABUFF32RX_STATUS0], b [DMABUFF32RX_STATUS1]);
+#endif /* WITHFPGAPIPE_FPGASTATUS */
 #if 0 && WITHDEBUG && defined (DMABUFF32RX_ADCTEST_C0)
 		savetestadc(b [DMABUFF32RX_ADCTEST_C0], b [DMABUFF32RX_ADCTEST_C1]);
 #endif /* WITHDEBUG && defined (DMABUFF32RX_ADCTEST_C0) */
