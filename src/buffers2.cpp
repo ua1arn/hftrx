@@ -15,7 +15,6 @@
 
 //#undef RAMNC
 //#define RAMNC
-int bfline;
 
 //#define WITHBUFFERSDEBUG WITHDEBUG
 #ifndef BUFOVERSIZE
@@ -548,7 +547,6 @@ public:
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& readylist))
 		{
-			bfline = __LINE__;
 			const PLIST_ENTRY t = RemoveTailList(& readylist);
 			ASSERT(readycount);
 			-- readycount;
@@ -592,7 +590,7 @@ public:
 		return false;
 	}
 
-	unsigned take_readys(LIST_ENTRY * __RESTRICT list, unsigned n)
+	unsigned take_readys(LIST_ENTRY * list, unsigned n)
 	{
 		unsigned v = 0;
 		IRQL_t oldIrql;
@@ -612,7 +610,7 @@ public:
 		return v;
 	}
 
-	void save_frees(LIST_ENTRY *  __RESTRICT list)
+	void save_frees(LIST_ENTRY * list)
 	{
 		IRQL_t oldIrql;
 
@@ -3934,22 +3932,18 @@ static colmain0fblist_t colmain0fblist(IRQL_OVERREALTIME, "fb0", colmain0fbbuf, 
 // can not be zero
 uintptr_t allocate_dmabuffercolmain0fb(void) /* take free buffer Frame buffer for display 0 */
 {
-	bfline = __LINE__;
 	colmain0fb_t * dest;
 	// если нет свободного - берём из очереди готовых к отображению - он уже не нужен, будет новое изображение
 	while (! colmain0fblist.get_freebuffer_raw(& dest) && ! colmain0fblist.get_readybuffer_raw(& dest))
 		ASSERT(0);
-	bfline = __LINE__;
 	return (uintptr_t) dest->buff;
 }
 
 uintptr_t getfilled_dmabuffercolmain0fb(void) /* take from queue Frame buffer for display 0 */
 {
-	bfline = __LINE__;
 	colmain0fb_t * dest;
 	if (! colmain0fblist.get_readybuffer_raw(& dest))
 		return 0;
-	bfline = __LINE__;
 	return (uintptr_t) dest->buff;
 }
 
@@ -3999,18 +3993,15 @@ static colmain1fblist_t colmain1fblist(IRQL_OVERREALTIME, "fb1", colmain1fbbuf, 
 uintptr_t allocate_dmabuffercolmain1fb(void) /* take free buffer Frame buffer for display 1 */
 {
 	colmain1fb_t * dest;
-	bfline = __LINE__;
 #if 0
 	while (! colmain1fblist.get_freebufferforced(& dest))
 		ASSERT(0);
 	return (uintptr_t) dest->buff;
 #else
 	// если нет свободного - берём из очереди готовых к отображению - он уже не нужен, будет новое изображение
-	bfline = __LINE__;
 	while (! colmain1fblist.get_freebuffer_raw(& dest) && ! colmain1fblist.get_readybuffer_raw(& dest))
 		ASSERT(0);
 #endif
-	bfline = __LINE__;
 	return (uintptr_t) dest->buff;
 }
 
@@ -4069,20 +4060,15 @@ tvout_fb_draw(void)
 /* поставить на отображение этот буфер, запросить следующий */
 void tvout_nextfb(void)
 {
-	bfline = __LINE__;
 	if (fb1 != 0)
 	{
 	//	char s [32];
 	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb1);
 	//	display_text(db, 0, 0, s, & dbstylev);
-		bfline = __LINE__;
 		dcache_clean_invalidate(fb1, cachesize_dmabuffercolmain1fb());
-		bfline = __LINE__;
 		save_dmabuffercolmain1fb(fb1);
-		bfline = __LINE__;
 	}
 	fb1 = allocate_dmabuffercolmain1fb();
-	bfline = __LINE__;
 }
 
 #endif	/* defined (TCONTV_PTR) */
@@ -4104,7 +4090,6 @@ colmain_fb_draw(void)
 /* поставить на отображение этот буфер, запросить следующий */
 void colmain_nextfb(void)
 {
-	bfline = __LINE__;
 	if (fb0 != 0)
 	{
 	//	char s [32];
@@ -4112,13 +4097,10 @@ void colmain_nextfb(void)
 	//	display_text(db, 0, 0, s, & dbstylev);
 #if WITHHDMITVHW && 1
 		// дублирование буфера
-		bfline = __LINE__;
 		gxdrawb_t fbtfb0;
 		gxdrawb_initialize(& fbtfb0, (PACKEDCOLORPIP_T *) fb0, DIM_X, DIM_Y);
-		bfline = __LINE__;
 		gxdrawb_t fbtvdb;
 		gxdrawb_initialize(& fbtvdb, tvout_fb_draw(), TVD_WIDTH, TVD_HEIGHT);
-		bfline = __LINE__;
 
 		colpip_bitblt(
 			fbtvdb.cachebase, fbtvdb.cachesize,
@@ -4129,16 +4111,12 @@ void colmain_nextfb(void)
 			0, 0, DIM_X, DIM_Y,			/* позиция прямоугольника и размеры источника */
 			BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, 0
 			);
-		bfline = __LINE__;
 		tvout_nextfb();
-		bfline = __LINE__;
 #endif /* WITHHDMITVHW */
 		dcache_clean_invalidate(fb0, cachesize_dmabuffercolmain0fb());
 		save_dmabuffercolmain0fb(fb0);
 	}
-	bfline = __LINE__;
 	fb0 = allocate_dmabuffercolmain0fb();
-	bfline = __LINE__;
 	ASSERT(fb0);
 }
 /* поставить на отображение этот буфер, запросить следующий */

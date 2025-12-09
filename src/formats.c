@@ -66,7 +66,6 @@ static uint_fast8_t local_isdigit(char c)
 static int
 local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pfmt, va_list args)
 {
-	const char * pfmt0 = pfmt;
 	enum { TMP_S_SIZE = 14 };
 	int	rj, altern;
 	char c, signc, fillc;
@@ -179,7 +178,6 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 		case 's':
 			if ((cp = va_arg(args, char *)) == NULL)
 				cp = null_s;
-			ASSERT3(((uintptr_t) cp) >= 0x40000000, __FILE__, __LINE__, pfmt0);
 			i = safestrlen(cp, maxwidth);
 			/*i = strlen(cp);*/
 			goto havelen;

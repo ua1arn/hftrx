@@ -22,7 +22,6 @@
 #include "fontmaps.h"
 #include <string.h>
 
-int gfline;
 
 #if WITHLVGL
 
@@ -445,52 +444,39 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 static int hwacc_rot_waitdone(void)
 {
 	unsigned n = 0x2000000;
-	gfline = __LINE__;
 	for (;;)
 	{
 		const uint_fast32_t MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
 		//const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INTERRUPT;
 		const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
-		gfline = __LINE__;
 //		if (((mixer_int & MASK) != 0))
 //		{
 //			G2D_MIXER->G2D_MIXER_INTERRUPT = MASK;
 //			break;
 //		}
-		gfline = __LINE__;
 		if (((rot_int & MASK) != 0))
 		{
-			gfline = __LINE__;
 			G2D_ROT->ROT_INT = MASK;
-			gfline = __LINE__;
 			break;
 		}
-		gfline = __LINE__;
 		if (-- n == 0)
 		{
-			gfline = __LINE__;
 			//PRINTF("G2D_MIXER->G2D_MIXER_CTRL=%08X, G2D_MIXER->G2D_MIXER_INTERRUPT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL, (unsigned) G2D_MIXER->G2D_MIXER_INTERRUPT);
 			PRINTF("G2D_ROT->ROT_CTL=%08X, G2D_ROT->ROT_INT=%08X\n", (unsigned) G2D_ROT->ROT_CTL, (unsigned) G2D_ROT->ROT_INT);
-			gfline = __LINE__;
 			return 0;
 		}
-		gfline = __LINE__;
 	}
-	gfline = __LINE__;
 	return 1;
 }
 
 static void awxx_g2d_rot_startandwait(void)
 {
-	gfline = __LINE__;
 	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);	// start
-	gfline = __LINE__;
 	if (hwacc_rot_waitdone() == 0)
 	{
 		PRINTF("awxx_g2d_rot_startandwait: timeout G2D_ROT->ROT_CTL=%08X\n", (unsigned) G2D_ROT->ROT_CTL);
 		ASSERT(0);
 	}
-	gfline = __LINE__;
 	ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
 }
 
@@ -508,9 +494,7 @@ hwaccel_rotcopy(
 	uint_fast32_t rot_ctl
 	)
 {
-	gfline = __LINE__;
 	g2d_rot_accure();
-	gfline = __LINE__;
 	ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
 
 	G2D_ROT->ROT_CTL = 0;
@@ -543,11 +527,8 @@ hwaccel_rotcopy(
 	//G2D_ROT->ROT_CTL |= (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg, 2: 180deg, 3: 270deg) CW
 	G2D_ROT->ROT_CTL = rot_ctl;
 	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);		// ENABLE
-	gfline = __LINE__;
 	awxx_g2d_rot_startandwait();		/* Запускаем и ждём завершения обработки */
-	gfline = __LINE__;
 	g2d_rot_release();
-	gfline = __LINE__;
 
 }
 
@@ -607,13 +588,9 @@ aw_g2d_fillrect(
 //	}
 	else if (w > 1 && h > 1 && color == bgcolor)
 	{
-		gfline = __LINE__;
 		const uint_fast32_t ssizehw = tsizehw;
-		gfline = __LINE__;
 		dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-		gfline = __LINE__;
 		hwaccel_rotcopy((uintptr_t) bgscreen, GXADJ(DIM_X) * sizeof (PACKEDCOLORPIP_T), ssizehw, taddr, tstride, tsizehw, 0);
-		gfline = __LINE__;
 		return 1;
 	}
 	else
@@ -1217,7 +1194,7 @@ void arm_hardware_mdma_initialize(void)
 		// G2D101r1p0
 		// 300 MHz clock
 		//PRINTF("arm_hardware_mdma_initialize (G2D)\n");
-		unsigned M = 5;	/* M = 1..32 */
+		unsigned M = 4;	/* M = 1..32 */
 		unsigned divider = 0;
 
 		CCU->MBUS_CFG_REG |= (UINT32_C(1) << 30);				// MBUS Reset 1: De-assert reset
@@ -1236,7 +1213,7 @@ void arm_hardware_mdma_initialize(void)
 			0;
 		CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// G2D_CLK_GATING
 		local_delay_us(10);
-		PRINTF("allwnr_t507_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_g2d_freq() / 1000 / 1000));
+		//PRINTF("allwnr_t507_get_g2d_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_g2d_freq() / 1000 / 1000));
 
 		//CCU->G2D_BGR_REG = 0;
 		CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		/* Enable gating clock for G2D 1: Pass */
@@ -2381,10 +2358,8 @@ hwaccel_fillrect_u16(
 	unsigned alpha	// 0..255 for FILL_FLAG_MIXBG
 	)
 {
-	gfline = __LINE__;
 	if (w == 0 || h == 0)
 		return 1;
-	gfline = __LINE__;
 
 	enum { PIXEL_SIZE = sizeof * buffer };
 	enum { PIXEL_SIZE_CODE = 1 };
@@ -2491,15 +2466,12 @@ hwaccel_fillrect_u16(
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER
 	/* Использование G2D для формирования изображений */
 
-	gfline = __LINE__;
 	if (w == 1)
 		return 0;
 
-	gfline = __LINE__;
 	const uintptr_t taddr = (uintptr_t) buffer;
 	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
 
-	gfline = __LINE__;
 	return aw_g2d_fillrect(dstinvalidateaddr, dstinvalidatesize, buffer, dx, taddr, tstride, tsizehw, alpha, w, h, color, fillmask);
 
 #else /* WITHMDMAHW, WITHDMA2DHW */
@@ -2912,7 +2884,6 @@ hwaccel_fillrect_mux(
 	done = hwaccel_fillrect_u8(dstinvalidateaddr, dstinvalidatesize, tstride, buffer, dx, dy, w, h, color, fillmask, alpha);
 
 #elif LCDMODE_RGB565
-	gfline = __LINE__;
 	done = hwaccel_fillrect_u16(dstinvalidateaddr, dstinvalidatesize, tstride, buffer, dx, dy, w, h, color, fillmask, alpha);
 
 #elif LCDMODE_MAIN_L24
@@ -2925,9 +2896,7 @@ hwaccel_fillrect_mux(
 #endif
 	if (done)
 		return;
-	gfline = __LINE__;
 	softfill(buffer, dx, w, h, color, fillmask, alpha);	// программная реализация
-	gfline = __LINE__;
 }
 
 // заполнение прямоугольной области в видеобуфере
@@ -2954,9 +2923,7 @@ void colpip_rectangle(
 	const uintptr_t dstinvalidateaddr = db->cachebase;	// параметры invalidate получателя
 	const int_fast32_t dstinvalidatesize = db->cachesize;
 
-	gfline = __LINE__;
 	hwaccel_fillrect_mux(dstinvalidateaddr, dstinvalidatesize, tgr, db->stride, dx, dy, w, h, color, fillmask, alpha);
-	gfline = __LINE__;
 }
 
 // заполнение прямоугольной области в видеобуфере
@@ -2969,9 +2936,7 @@ void colpip_fillrect(
 	COLORPIP_T color	// цвет
 	)
 {
-	gfline = __LINE__;
 	colpip_rectangle(db, x, y, w, h, color, FILL_FLAG_NONE, 0);
-	gfline = __LINE__;
 }
 
 // копирование с поворотом
