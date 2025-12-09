@@ -7288,6 +7288,16 @@ uint_fast8_t board_fpgastatus_gettxdisable(void)
 	return !! (vstatus & FPGA_STATUS_TXDIS);
 }
 
+uint_fast8_t board_fpgastatus_getptt(void)
+{
+	return !! (vstatus & (FPGA_STATUS_PTTFRONT | FPGA_STATUS_PTTREAR));
+}
+
+uint_fast8_t board_fpgastatus_gettunereq(void)
+{
+	return !! (vstatus & FPGA_STATUS_TUNEREQ);
+}
+
 void board_savefpgastatus(uint_fast32_t status, uint_fast32_t fqmeter)
 {
 	int update = 0;

@@ -440,6 +440,8 @@ void xcz_dds_rts(const uint_least64_t * val);
 void board_savefpgastatus(uint_fast32_t status0, uint_fast32_t status1);
 uint_fast8_t board_fpgastatus_getovf(void);
 uint_fast8_t board_fpgastatus_gettxdisable(void);
+uint_fast8_t board_fpgastatus_getptt(void);
+uint_fast8_t board_fpgastatus_gettunereq(void);
 
 #ifdef __cplusplus
 }
