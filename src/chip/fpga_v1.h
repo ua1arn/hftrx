@@ -20,16 +20,17 @@ extern const phase_t phase_0;
 #define FPGA_DECODE_CTLREG	(1u << 0)
 #define FPGA_DECODE_NBLVL	(1u << 6)
 
-// Bits in status word for 'long' fpga firmware version
-#define FPGA_STATUS_ADC1OVF 	(UINT32_C(1) << 0)
-#define FPGA_STATUS_ADC2OVF 	(UINT32_C(1) << 1)
-#define FPGA_STATUS_ADC3OVF 	(UINT32_C(1) << 2)
-#define FPGA_STATUS_ADC4OVF 	(UINT32_C(1) << 3)
-#define FPGA_STATUS_TXDIS		(UINT32_C(1) << 4)	// TX disable input
-#define FPGA_STATUS_PTTFRONT 	(UINT32_C(1) << 5)
-#define FPGA_STATUS_PTTREAR 	(UINT32_C(1) << 6)
-#define FPGA_STATUS_TUNEREQ 	(UINT32_C(1) << 7)
-
+#if WITHFPGAIF_FRAMEBITS == 512
+	// Bits in status word for 'long' fpga firmware version
+	#define FPGA_STATUS_ADC1OVF 	(UINT32_C(1) << 0)
+	#define FPGA_STATUS_ADC2OVF 	(UINT32_C(1) << 1)
+	#define FPGA_STATUS_ADC3OVF 	(UINT32_C(1) << 2)
+	#define FPGA_STATUS_ADC4OVF 	(UINT32_C(1) << 3)
+	#define FPGA_STATUS_TXDIS		(UINT32_C(1) << 4)	// TX disable input
+	#define FPGA_STATUS_PTTFRONT 	(UINT32_C(1) << 5)
+	#define FPGA_STATUS_PTTREAR 	(UINT32_C(1) << 6)
+	#define FPGA_STATUS_TUNEREQ 	(UINT32_C(1) << 7)
+#endif
 // Send a frame of bytes via SPI
 static void
 board_fpga1_spi_send_frame(
