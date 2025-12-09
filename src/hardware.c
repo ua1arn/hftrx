@@ -3010,7 +3010,12 @@ ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, ui
 
 #elif CPUSTYLE_T507
 
-	// Все сравнения должны быть не точнее 2 MB
+	// Все сравнения должны быть не точнее 2 (16) MB
+#if ! WITHISBOOTLOADER
+	if (phyaddr < 0x01000000)			// BROM, SYSRAM A1, SRAM C
+		return arch->mnoaccess(b, phyaddr);
+#endif /* ! WITHISBOOTLOADER */
+
 
 	if (phyaddr < 0x01000000)			// BROM, SYSRAM A1, SRAM C
 		return arch->mcached(b, phyaddr, ro, xn);

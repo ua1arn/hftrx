@@ -997,6 +997,10 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 			continue;
 		}
 #endif
+
+		ASSERT(dbstylep->font_height);
+		ASSERT(dbstylep->font_draw_char);
+		ASSERT(dbstylep->font_width);
 		char c;
 		savestring = s;
 		switch (dbstylep->textvalign)

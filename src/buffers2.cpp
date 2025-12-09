@@ -425,7 +425,7 @@ struct buffitem
 	void * tag3;
 };
 
-template <typename buffitem_t, int hasresample, int hacheckready, int SKIPSAMPLES>
+template <typename buffitem_t, int hasresample, int HASCHECKREADY, int SKIPSAMPLES>
 class blists
 {
 	typedef typeof(buffitem_t::v) element_t;
@@ -548,6 +548,7 @@ public:
 		if (! IsListEmpty(& readylist))
 		{
 			const PLIST_ENTRY t = RemoveTailList(& readylist);
+			ASSERT(readycount);
 			-- readycount;
 			fiforeadyupdate();
 	#if WITHBUFFERSDEBUG
@@ -599,6 +600,7 @@ public:
 		while (n -- && ! IsListEmpty(& readylist))
 		{
 			const PLIST_ENTRY t = RemoveTailList(& readylist);
+			ASSERT(readycount);
 			-- readycount;
 			InsertHeadList(list, t);
 			++ v;
@@ -630,27 +632,34 @@ public:
 
 	bool get_readybuffer(element_t * * dest)
 	{
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
+		const bool stoutready = outready;
+		const int streadycount = readycount;
+		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+
 		if (hasresample)
 		{
 			const unsigned wbgss = element_t::ss * element_t::nch;	// кодчиество байтов одного сэмпла на вссе каналы
 			const unsigned total = get_datasize();	// полный размер буфера
 			const unsigned SKIPBUFFS = SKIPSAMPLES / (total / wbgss);
-			if (! outready)
+
+			if (! stoutready)
 				return false;
 			if (wbskip != 0)
 			{
-				-- wbskip;
+				-- wbskip;	// statistics
 				return get_readybufferarj(dest, false, false);
 			}
-			else if (readycount <= MINMLEVEL)
+			else if (streadycount <= MINMLEVEL)
 			{
-				++ wbadded;
+				++ wbadded;	// statistics
 				wbskip = SKIPBUFFS;
 				return get_readybufferarj(dest, true, false);
 			}
-			else if (readycount >= MAXLEVEL)
+			else if (streadycount >= MAXLEVEL)
 			{
-				++ wbdeleted;
+				++ wbdeleted;	// statistics
 				wbskip = SKIPBUFFS;
 				return get_readybufferarj(dest, false, true);
 			}
@@ -661,7 +670,7 @@ public:
 		}
 		else
 		{
-			if (hacheckready && ! outready)
+			if (HASCHECKREADY && ! stoutready)
 				return false;
 			return get_readybuffer_raw(dest);
 		}
@@ -728,8 +737,8 @@ public:
 		unsigned fin = fqin.getfreq();
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
-		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, freecount);
-		PRINTF(" %s:e=%d,y=%d,f=%d,%uH/%uH", name, errallocate, readycount, freecount, (unsigned) fin, (unsigned) fout);
+		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, (unsigned) freecount);
+		PRINTF(" %s:e=%d,y=%d,f=%d,%uH/%uH", name, errallocate, (unsigned) readycount, (unsigned) freecount, (unsigned) fin, (unsigned) fout);
 		if (hasresample)
 		{
 			PRINTF("+%u,-%u", wbadded, wbdeleted);
@@ -828,10 +837,10 @@ public:
 	}
 };
 
-template <typename sample_t, typename element_t, int hasresample, int hacheckready, int skipsamples>
-class dmahandle: public blists<element_t, hasresample, hacheckready, skipsamples>
+template <typename sample_t, typename element_t, int hasresample, int HASCHECKREADY, int skipsamples>
+class dmahandle: public blists<element_t, hasresample, HASCHECKREADY, skipsamples>
 {
-	typedef blists<element_t, hasresample, hacheckready, skipsamples> parent_t;
+	typedef blists<element_t, hasresample, HASCHECKREADY, skipsamples> parent_t;
 	typedef typeof (element_t::v) wel_t;
 	typedef typeof (wel_t::buff [0]) rawsample_t;
 	wel_t * wb;
@@ -2693,7 +2702,7 @@ uintptr_t getfilled_dmabufferuacin48(void)
 		return (uintptr_t) & dest->buff;
 	}
 	uacin48.debug();
-	PRINTF("uacin48.readycount=%u\n", uacin48.readycount);
+	PRINTF("uacin48.readycount=%u\n", (unsigned) uacin48.readycount);
 	ASSERT(0);
 	return 0;
 }

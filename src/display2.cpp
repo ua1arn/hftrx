@@ -3945,6 +3945,7 @@ static void display2_mode3_b(const gxdrawb_t * db,
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const label = hamradio_get_mode_b_value_P(& state);
     const char * const labels [2] = { label, label };
+    ASSERT(state < ARRAY_SIZE(labels));
     display2text_states(db, x, y, labels, dbstylev_2rxB, state, xspan, yspan);
 }
 

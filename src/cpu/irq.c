@@ -1745,7 +1745,7 @@ void uncommon_trap_handler_14(void * frame) { PRINTF("uncommon_trap_handler_14:\
 void uncommon_trap_handler_15(void * frame) { PRINTF("uncommon_trap_handler_15:\n"); for (;;) ; }	// 0x700
 void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\n"); for (;;) ; }	// 0x780
 
-// wasL: uncommon_trap_handler_6
+// was: uncommon_trap_handler_6
 // Current EL with SPx VIRQ
 // 0x280
 void VIRQ_Handler(void * frame)
@@ -1754,7 +1754,7 @@ void VIRQ_Handler(void * frame)
 	IRQ_Handler_GIC();
 }
 
-// wasL: uncommon_trap_handler_5
+// was: uncommon_trap_handler_5
 // Current EL with SPx Synchronous
 // 0x200
 void SError_Handler(void * frame)
