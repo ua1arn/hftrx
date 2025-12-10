@@ -71,7 +71,7 @@
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	#define WITHIF4DSP	1			/*  "Дятел" */
-	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
+	#define WITHDSPEXTDDC 1			/* Квадратуры обрабатываются аппаратным DUC/DDC */
 	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHDSPLOCALTXFIR 1
