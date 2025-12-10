@@ -4311,7 +4311,7 @@ static RAMFUNC FLOAT_t processifadcsampleIQ(
 	uint_fast8_t pathi				// 0/1: main_RX/sub_RX
 	)
 {
-#if WITHDSPLOCALFIR
+#if WITHDSPLOCALRXFIR
 	if (isdspmoderx(dspmode))
 	{
 		FLOAT32P_t vp0 = { { adpt_input(& ifcodecrx, iv0), adpt_input(& ifcodecrx, qv0) } };
@@ -4333,10 +4333,10 @@ static RAMFUNC FLOAT_t processifadcsampleIQ(
 	{
 		return 0;
 	}
-#else /* WITHUSEDUALWATCH */
+#else /* WITHDSPLOCALRXFIR */
 	FLOAT32P_t vp0 = { { adpt_input(& ifcodecrx, iv0), adpt_input(& ifcodecrx, qv0) } };
 	return baseband_demodulator(vp0, dspmode, pathi);
-#endif /* WITHDSPLOCALFIR */
+#endif /* WITHDSPLOCALRXFIR */
 }
 
 #else /* WITHDSPEXTDDC */
@@ -4814,13 +4814,13 @@ RAMFUNC void dsp_processtx(unsigned nsamples)
 		}
 		FLOAT32P_t vfb = baseband_modulator(injectsubtone(v, ctcss), dspmodeA);	// Передатчик - формирование одного сэмпла (пары I/Q).
 
-#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
+#if WITHDSPLOCALRXFIR || WITHDSPLOCALTXFIR
 		if (dspmodeA != DSPCTL_MODE_TX_BPSK /*&& isdspmodetx(dspmodeA)*/)
 		{
 			/* работа без FIR фильтра в FPGA */
 			vfb = filter_firp_tx_SSB_IQ(vfb);
 		}
-#endif /* WITHDSPLOCALFIR */
+#endif /* WITHDSPLOCALRXFIR || WITHDSPLOCALTXFIR */
 
 //		vfb.IV = 0;
 //		vfb.QV = 0;
@@ -5454,9 +5454,12 @@ void dsp_initialize(void)
 	fir_design_windowbuff_half(FIRCwnd_tx_MIKE, Ntap_tx_MIKE, Ntap_tx_MIKE);
 	//fft_lookup = spx_fft_init(2*SPEEXNN);
 
-#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
+#if WITHDSPLOCALTXFIR
 	fir_design_windowbuff_half(FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, Ntap_tx_SSB_IQ);
-#endif /* WITHDSPLOCALFIR || WITHDSPLOCALTXFIR */
+#endif /* WITHDSPLOCALTXFIR */
+#if WITHDSPLOCALRXFIR
+	fir_design_windowbuff_half(FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, Ntap_rx_SSB_IQ);
+#endif /* WITHDSPLOCALRXFIR */
 
 	omega2ftw_k1 = POWF(2, NCOFTWBITS);
 
