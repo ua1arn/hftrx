@@ -298,7 +298,11 @@
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//
-	#define WITHDSPEXTDDC 1			/* Квадратуры обрабатываются аппаратным DUC/DDC */
+	#define WITHDSPEXTDDC 1				/* Квадратуры обрабатываются аппаратным DUC/DDC */
+	#define WITHDSPEXTTXFIR 1			/* Фильтрация квадратур на передаче осуществляется внешней аппаратурой */
+	#define WITHDSPEXTRXFIR 1			/* Фильтрация квадратур на приёме осуществляется внешней аппаратурой */
+	//#define WITHDSPLOCALTXFIR 1			/* Фильтрация квадратур на передаче осуществляется внешней аппаратурой */
+	//#define WITHDSPLOCALRXFIR 1			/* Фильтрация квадратур на приёме осуществляется внешней аппаратурой */
 
 	//#define WITHUSEUSBBT		1	// Включение поддержки USB BT stick
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
