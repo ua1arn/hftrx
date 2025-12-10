@@ -50,13 +50,14 @@ enum
 #define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)	/* Гарантируется пригодность для симметричного фильтра */
 #define NtapCoeffs(n)	((unsigned) (n) / 2 + 1)
 
-#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
+#if WITHDSPLOCALRXFIR || WITHDSPLOCALTXFIR
 
 	/* Фильтрация квадратур осуществляется процессором */
 
 	#if CPUSTYLE_R7S721
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
+
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
 		#define DUALRXFLT		0
@@ -65,6 +66,7 @@ enum
 
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
+
 		#define Ntap_tx_MIKE	NtapValidate(241)	// single samples, floating point implementation
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
 		#define DUALRXFLT		1
@@ -72,6 +74,7 @@ enum
 	#elif CPUSTYLE_STM32F7XX
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
+
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
 		#define DUALRXFLT		0
@@ -79,13 +82,14 @@ enum
 	#else
 		#define Ntap_rx_SSB_IQ	NtapValidate(181)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(181)	// SSB/CW TX filter: complex numbers, floating-point implementation
+
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
 		#define DUALRXFLT		0
 
 	#endif
 
-#else /* WITHDSPLOCALFIR */
+#else /* WITHDSPLOCALRXFIR || WITHDSPLOCALTXFIR */
 
 	/* Фильтрация квадратур осуществляется FPGA */
 
@@ -106,7 +110,9 @@ enum
 
 	#endif /* CPUSTYLE_STM32MP1 */
 
-#endif /* WITHDSPLOCALFIR */
+#endif /* WITHDSPLOCALRXFIR || WITHDSPLOCALTXFIR */
+
+// audio filters
 
 #if WITHCODEC1_WHBLOCK_DUPLEX_MASTER
 
