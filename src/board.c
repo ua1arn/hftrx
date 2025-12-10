@@ -4357,17 +4357,6 @@ void prog_pll2_r(const phase_t * value)
 
 // End of frequency control functions set.
 
-#if WITHFQMETER
-uint_fast32_t board_get_fqmeter(void)
-{
-	uint_fast32_t v = 0;
-	#if (DDS1_TYPE == DDS_TYPE_FPGAV1)
-		v = prog_fpga_getfqmeter(targetfpga1);
-	#endif
-	return v;
-}	
-#endif /* WITHFQMETER */
-
 static
 void
 board_set_dac1value(uint_fast8_t plane, uint_fast8_t v)	/* подстройка опорного генератора */
@@ -7335,6 +7324,11 @@ uint_fast8_t board_fpgastatus_getptt(void)
 uint_fast8_t board_fpgastatus_gettunereq(void)
 {
 	return !! (vstatus & FPGA_STATUS_TUNEREQ);
+}
+
+uint_fast32_t board_get_fqmeter(void)
+{
+	return vfqmeter;
 }
 
 void board_savefpgastatus(uint_fast32_t status, uint_fast32_t fqmeter)
