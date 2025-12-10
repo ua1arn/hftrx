@@ -889,10 +889,10 @@
 	#define targettsc1		(UINT32_C(1) << 19)		// PE19 XPT2046 SPI chip select signal - CSEXT1
 	#define targetnvram		(UINT32_C(1) << 18)		// PE18 NVRAM FM25W256
 	#define targetcodec1	(UINT32_C(1) << 20)		// PE20 on-board codec1 NAU8822L
-	#define targetfpga1		(UINT32_C(1) << 17)		// PE17 FPGA control registers CS1
 	#define targetadck		(UINT32_C(1) << 21)		// PE21 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADC2CS
 	#define targetxad2		(UINT32_C(1) << 16)		// PE16 ext2 external SPI device (PA BOARD ADC) CSEXT2
 	#define targetfpga1mask	(UINT32_C(1) << 11)		// PE11 data gate for all FPGA SPI operations (0: active)
+	#define targetfpga1		((UINT32_C(1) << 17) | targetfpga1mask)	// PE17 FPGA control registers CS1
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target) do { \
