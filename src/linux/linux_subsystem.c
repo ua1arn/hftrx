@@ -2190,6 +2190,7 @@ void board_fpga_fir_initialize(void)
 	fir_reload = (uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR);
 }
 
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
 void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 	if (fir_reload)
@@ -2234,6 +2235,7 @@ void board_fpga_fir_initialize(void)
 	adpt_initialize(& plfircoefsout, HARDWARE_COEFWIDTH, 0, "fpgafircoefsout");
 }
 
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
 void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 	const int iHalfLen = (Ntap - 1) / 2;

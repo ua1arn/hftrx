@@ -4564,6 +4564,7 @@ void board_fpga_fir_initialize(void)
 
 }
 
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
 void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 	const int iHalfLen = (Ntap - 1) / 2;
@@ -4616,6 +4617,7 @@ void board_fpga_fir_initialize(void)
 	hardware_spi_master_setfreq(HARDWARE_FPGA_FIR_SPIHARD_PTR, SPIC_SPEEDUFAST, SPISPEEDUFAST);
 }
 
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
 void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 	const int iHalfLen = (Ntap - 1) / 2;
@@ -4659,7 +4661,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 	board_reload_fir_artix7_spidone(irql);
 }
 
-#elif ! LINUX_SUBSYSTEM
+#elif defined (TARGET_FPGA_FIR_INITIALIZE) && ! LINUX_SUBSYSTEM
 
 static adapter_t plfircoefsout;
 
@@ -4937,7 +4939,7 @@ static int_fast64_t expandsign(int_fast32_t v, unsigned CWidth)
 }
 #endif /* WITHDEBUG */
 
-/* Выдача рассчитанных параметров фильтра в FPGA (симметричные) */
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
 void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 #if 0 && WITHDEBUG
@@ -4949,6 +4951,19 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 #endif /* WITHDEBUG */
 	board_fpga_fir_send(ifir, kf, Ntap, CWidth);		/* загрузить массив коэффициентов в FPGA */
 	boart_tgl_firprofile(ifir);
+}
+
+#else
+// Stub functions
+void board_fpga_fir_initialize(void)
+{
+
+}
+
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+{
+
 }
 
 #endif /* CPUSTYLE_XC7Z */

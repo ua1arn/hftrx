@@ -96,7 +96,6 @@
 
 
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-//	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 //	#define WITHSDHCHW	1	/* Hardware SD HOST CONTROLLER */
 //	#define WITHSDHC0HW	1		/* Hardware SD HOST #0 CONTROLLER */
 //	#define WITHSDHC1HW	1		/* SDIO */
@@ -717,35 +716,19 @@
 
 #endif /* WITHKEYBOARD */
 
-#if (WITHTWISW || WITHTWIHW) && (WITHFLATLINK | WITHMIPIDSISHW)
+#if (WITHTWIHW) && (WITHFLATLINK | WITHMIPIDSISHW)
 	// RaspberyPI mipi-dsi board diagnostics:
 	//	addr8bit=0x70, addr7bit=0x38 - looks like Capacitive Touch Panel Controller FT5406 www.focaltech-systems.com
 	//	addr8bit=0x8A, addr7bit=0x45
-
+	#define WITHTWI2HW	1
 	// TWI2-SCK PD20 SCL
 	// TWI2-SDA PD21 SDA
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 20)		// TWI2-SCK PD20 SCL
-	#define TARGET_TWI_TWCK_PIN		(GPIOD->DATA)
-	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOD, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setopendrain(GPIOD, (v), 1 * (v)); } while (0)
 
 	#define TARGET_TWI_TWD		(UINT32_C(1) << 21)		// TWI2-SDA PD21 SDA
-	#define TARGET_TWI_TWD_PIN		(GPIOD->DATA)
-	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setopendrain(GPIOD, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setopendrain(GPIOD, (v), 1 * (v)); } while (0)
-
-	// Инициализация битов портов ввода-вывода для программной реализации I2C
-	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_piod_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
-			arm_hardware_piod_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
-		} while (0)
-	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_piod_inputs(TARGET_TWI_TWCK); 	/* TWI2-SCK PD20 SCL */ \
-			arm_hardware_piod_inputs(TARGET_TWI_TWD);	/* TWI2-SDA PD21 SDA */ \
-		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_INITIALIZE() do { \
+	#define	HARDWARE_TWI2_INITIALIZE() do { \
 		arm_hardware_piod_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI2-SCK PD20 SCL */ \
 		arm_hardware_piod_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI2-SDA PD21 SDA */ \
 		arm_hardware_piod_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
@@ -758,28 +741,12 @@
 #elif WITHTWISW || WITHTWIHW
 	// TWI1-SCK PG8 SCL
 	// TWI1-SDA PG9 SDA
+	#define WITHTWI1HW	1
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 8)		// TWI1-SCK PG8 SCL
-	#define TARGET_TWI_TWCK_PIN		(GPIOG->DATA)
-	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOG, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setopendrain(GPIOG, (v), 1 * (v)); } while (0)
-
 	#define TARGET_TWI_TWD		(UINT32_C(1) << 9)		// TWI1-SDA PG9 SDA
-	#define TARGET_TWI_TWD_PIN		(GPIOG->DATA)
-	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setopendrain(GPIOG, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setopendrain(GPIOG, (v), 1 * (v)); } while (0)
-
-	// Инициализация битов портов ввода-вывода для программной реализации I2C
-	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_piog_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
-			arm_hardware_piog_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
-		} while (0) 
-	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_piog_inputs(TARGET_TWI_TWCK); 	/* TWI1-SCK PG8 SCL */ \
-			arm_hardware_piog_inputs(TARGET_TWI_TWD);	/* TWI1-SDA PG9 SDA */ \
-		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_INITIALIZE() do { \
+	#define	HARDWARE_TWI1_INITIALIZE() do { \
 		arm_hardware_piog_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI1-SCK PG8 SCL */ \
 		arm_hardware_piog_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI1-SDA PG9 SDA */ \
 		arm_hardware_piog_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \

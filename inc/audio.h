@@ -558,7 +558,7 @@ const codec2if_t * board_getfpgacodecif(void);		// получить интерф
 
 /* загрузка коэффициентов FIR фильтра в FPGA */
 void board_fpga_fir_initialize(void);
-void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth); /* Выдача рассчитанных параметров фильтра в FPGA (симметричные) */
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth); /* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
 
 /* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера.
  * Возврат 0, если нет ничего для воспроизведения.
