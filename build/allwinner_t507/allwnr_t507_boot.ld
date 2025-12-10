@@ -201,12 +201,14 @@ SECTIONS
 		PROVIDE(end = __end__);
 	} > DDR3
 
+/*
 	.debugs 0 (NOLOAD):
 	{
 		*(.debug*)
 		*(.comment*)
 		*(.ARM.attributes*)
 	} : NONE
+*/
 
 	__StackTop = ORIGIN(DDR3) + LENGTH(DDR3);
 	PROVIDE(__stack = __StackTop);
