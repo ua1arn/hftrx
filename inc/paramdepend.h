@@ -1492,10 +1492,6 @@ extern "C" {
 // Поддержка FatFS если запрошена поддержка однорго из носителей
 #define WITHUSEFATFS (WITHUSESDCARD || WITHUSEUSBFLASH || WITHUSERAMDISK)
 
-#if defined WITHDSPLOCALFIR && defined WITHDSPLOCALTXFIR
-	#undef WITHDSPLOCALTXFIR
-#endif
-
 #if (WIHSPIDFSW || WIHSPIDFHW) && WIHSPIDFOVERSPI
 	#error WIHSPIDFOVERSPI and ( WIHSPIDFSW or WIHSPIDFHW ) can not be used together
 #endif /* (WIHSPIDFSW || WIHSPIDFHW) && WIHSPIDFOVERSPI */
