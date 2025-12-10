@@ -583,6 +583,7 @@
 		arm_hardware_piog_outputs(targetxad2, 1 * targetxad2); /*  */ \
 	} while (0)
 
+	#define WITHSPI0HW 		1	/* Использование аппаратного контроллера SPI0 */
 	// MOSI & SCK port
 	#define	SPI_SCLK_BIT			(UINT32_C(1) << 2)	// PC2 SPI0_CLK
 	#define	SPI_MOSI_BIT			(UINT32_C(1) << 4)	// PC4 SPI0_MOSI
