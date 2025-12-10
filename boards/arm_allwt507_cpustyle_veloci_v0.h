@@ -881,7 +881,7 @@
 	#define FPGAREG_V1_SPISPEED SPIC_SPEED4M
 	#define SPIDF_SPEEDC 		SPIC_SPEED4M
 	#define NVRAM_SPISPEED 		SPIC_SPEED4M
-	#define NAU8822_SPISPEED 	SPIC_SPEED4M
+	#define NAU8822_SPISPEED 	SPIC_SPEED400k
 	#define CTLREG_SPISPEED		SPIC_SPEED400k
 	#define XPT2046_SPIC_SPEED 	SPIC_SPEED400k
 
@@ -934,16 +934,16 @@
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
-		/*arm_hardware_pioc_outputs2m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
-		arm_hardware_pioi_outputs2m(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
-		arm_hardware_pioe_outputs2m(targettsc1, 1 * targettsc1); /*  */ \
-		arm_hardware_pioe_outputs2m(targetnvram, 1 * targetnvram); /*  */ \
-		arm_hardware_pioe_outputs2m(targetctl1, 1 * targetctl1); /*  */ \
-		arm_hardware_pioe_outputs2m(targetcodec1, 1 * targetcodec1); /*  */ \
-		arm_hardware_pioe_outputs2m(targetfpga1, 1 * targetfpga1); /*  */ \
-		arm_hardware_pioe_outputs2m(targetadck, 1 * targetadck); /*  */ \
-		arm_hardware_pioe_outputs2m(targetxad2, 1 * targetxad2); /*  */ \
-		arm_hardware_pioe_outputs2m(targetfpga1mask, 1 * targetfpga1mask); /*  */ \
+		/*arm_hardware_pioc_outputs20m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
+		arm_hardware_pioi_outputs20m(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
+		arm_hardware_pioe_outputs20m(targettsc1, 1 * targettsc1); /*  */ \
+		arm_hardware_pioe_outputs20m(targetnvram, 1 * targetnvram); /*  */ \
+		arm_hardware_pioe_outputs20m(targetctl1, 1 * targetctl1); /*  */ \
+		arm_hardware_pioe_outputs20m(targetcodec1, 1 * targetcodec1); /*  */ \
+		arm_hardware_pioe_outputs20m(targetfpga1, 1 * targetfpga1); /*  */ \
+		arm_hardware_pioe_outputs20m(targetadck, 1 * targetadck); /*  */ \
+		arm_hardware_pioe_outputs20m(targetxad2, 1 * targetxad2); /*  */ \
+		arm_hardware_pioe_outputs20m(targetfpga1mask, 1 * targetfpga1mask); /*  */ \
 	} while (0)
 	/* разрешение обмена с FPGA  использованием SPI */
 	#define TARGET_FPGA_GATE(_on) do { \
