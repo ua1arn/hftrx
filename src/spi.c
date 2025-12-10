@@ -5779,7 +5779,7 @@ static uint32_t InitQspi(void)
 
 #endif /* CPUSTYLE_XC7Z && WIHSPIDFHW */
 
-#if WITHDSPEXTFIR && ! LINUX_SUBSYSTEM && FPGA_ARTIX7
+#if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && ! LINUX_SUBSYSTEM && FPGA_ARTIX7
 
 void board_reload_fir_artix7_p1(spitarget_t target, uint_fast8_t v1, uint_fast32_t v2)
 {
@@ -5812,7 +5812,7 @@ void board_reload_fir_artix7_spidone(SPI_t * spi, IRQL_t irql)
 	spi_operate_unlock(spi, irql);
 }
 
-#elif WITHDSPEXTFIR && ! LINUX_SUBSYSTEM
+#elif (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && ! LINUX_SUBSYSTEM
 
 // Передача одного (первого) 32-битного значения и формирование строба.
 void board_fpga_fir_coef_p1(SPI_t * spi, int_fast32_t v)
@@ -5946,7 +5946,7 @@ board_fpga_fir_disconnect(SPI_t * spi, IRQL_t irql)
 #endif
 	spi_operate_unlock(spi, irql);
 }
-#endif /* WITHDSPEXTFIR && ! LINUX_SUBSYSTEM */
+#endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && ! LINUX_SUBSYSTEM */
 
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS

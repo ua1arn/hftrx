@@ -651,7 +651,6 @@
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
-#if WITHDSPEXTFIR
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
 	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { R7S721_TARGET_PORT_C(3, v); } while (0)
 	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { R7S721_TARGET_PORT_S(3, v); } while (0)
@@ -670,7 +669,6 @@
 				arm_hardware_pio1_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
 				arm_hardware_pio1_outputs(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
 			} while (0)
-#endif /* WITHDSPEXTFIR */
 
 	/* получение состояния переполнения АЦП */
 	#define TARGET_FPGA_OVF_BIT		(1u << 8)	// P3_8

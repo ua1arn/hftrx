@@ -4549,7 +4549,7 @@ static void board_fpga_loader_XDCFG(void)
 
 #endif /* WITHFPGALOAD_DCFG */
 
-#if WITHDSPEXTFIR
+#if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR)
 
 #if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
@@ -4953,7 +4953,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 
 #endif /* CPUSTYLE_XC7Z */
 
-#endif /* WITHDSPEXTFIR */
+#endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) */
 
 /* получения признака переполнения АЦП приёмного тракта */
 uint_fast8_t boad_fpga_adcoverflow(void)
@@ -5026,9 +5026,9 @@ void board_initialize(void)
 	board_fpga_loader_PS();
 #endif /* WITHFPGALOAD_PS */
 
-#if WITHDSPEXTFIR
+#if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR)
 	board_fpga_fir_initialize();	// порт формирования стробов перезагрузки коэффициентов FIR фильтра в FPGA
-#endif /* WITHDSPEXTFIR */
+#endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) */
 
 #if (WITHNANDHW || WITHNANDSW)
 	nand_initialize();

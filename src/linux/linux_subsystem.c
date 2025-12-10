@@ -2180,7 +2180,7 @@ void lclspin_unlock(lclspinlock_t * __restrict p)
 	pthread_mutex_unlock(p);
 }
 
-#if WITHDSPEXTFIR && IQ_VIA_ZYNQ_PL
+#if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && IQ_VIA_ZYNQ_PL
 volatile uint32_t * fir_reload = NULL;
 static adapter_t plfircoefsout;		/* параметры преобразования к PL */
 
@@ -2226,7 +2226,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 		}
 	}
 }
-#elif WITHDSPEXTFIR && IQ_VIA_XDMA
+#elif (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && IQ_VIA_XDMA
 static adapter_t plfircoefsout;		/* параметры преобразования к PL */
 
 void board_fpga_fir_initialize(void)
@@ -2270,7 +2270,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 		xdma_write_user(AXI_LITE_FIR_COEFFS, coeff << bits);
 	}
 }
-#endif /* WITHDSPEXTFIR && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL) */
+#endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL) */
 
 #if RTC1_TYPE == RTC_TYPE_LINUX
 void board_rtc_getdate(
@@ -2670,9 +2670,9 @@ void linux_exit(void)
 	munmap((void *) xgpo, sysconf(_SC_PAGESIZE));
 	munmap((void *) xgpi, sysconf(_SC_PAGESIZE));
 
-#if WITHDSPEXTFIR
+#if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR)
 	munmap((void *) fir_reload, sysconf(_SC_PAGESIZE));
-#endif /* WITHDSPEXTFIR */
+#endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) */
 #endif
 #if IQ_VIA_XDMA
 	xdma_close();

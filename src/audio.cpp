@@ -2645,13 +2645,13 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 
 	#endif /* WITHDSPEXTFIR || WITHDSPEXTDDC */
 
-	#if WITHDSPEXTFIR
+	#if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR)
 		#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
 			fir_design_windowbuffL_half(FIRCwndL_trxi_IQ, Ntap_trxi_IQ, iCoefNumLimited);
 		#else
 			fir_design_windowbuff_half(FIRCwnd_trxi_IQ, Ntap_trxi_IQ, iCoefNumLimited);
 		#endif
-	#endif /* WITHDSPEXTFIR */
+	#endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) */
 		const int cutfreq = fullbw6 / 2;
 //		PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
 
