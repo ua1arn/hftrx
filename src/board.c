@@ -7313,7 +7313,7 @@ void board_savefpgastatus(uint_fast32_t status, uint_fast32_t fqmeter)
 	}
 	if (update)
 	{
-		PRINTF("vstatus=%08X, vfqmeter=%08X\n", (unsigned) vstatus, (unsigned) vfqmeter);
+		//PRINTF("vstatus=%08X, vfqmeter=%08X\n", (unsigned) vstatus, (unsigned) vfqmeter);
 
 	}
 }
