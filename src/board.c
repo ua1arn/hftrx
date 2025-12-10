@@ -4549,9 +4549,11 @@ static void board_fpga_loader_XDCFG(void)
 
 #endif /* WITHFPGALOAD_DCFG */
 
+#if ! LINUX_SUBSYSTEM
+
 #if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR)
 
-#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_XC7Z
 
 static adapter_t plfircoefsout;
 
@@ -4587,25 +4589,29 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 
 	for (i = 0; i <= iHalfLen; ++ i)
 	{
-		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, coeff << bits);
-#if ! WITHDSPLOCALTXFIR
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, coeff << bits);
-#endif /* ! WITHDSPLOCALTXFIR */
+		const int32_t coeff = adpt_output(& plfircoefsout, kf [i]) << bits;
+#if WITHDSPEXTRXFIR
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, coeff);
+#endif /* WITHDSPEXTRXFIR */
+#if WITHDSPEXTTXFIR
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, coeff);
+#endif /* WITHDSPEXTTXFIR */
 	}
 
 	i -= 1;
 	for (; -- i >= 0;)
 	{
-		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, coeff << bits);
-#if ! WITHDSPLOCALTXFIR
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, coeff << bits);
-#endif /* ! WITHDSPLOCALTXFIR */
+		const int32_t coeff = adpt_output(& plfircoefsout, kf [i]) << bits;
+#if WITHDSPEXTRXFIR
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, coeff);
+#endif /* WITHDSPEXTRXFIR */
+#if WITHDSPEXTTXFIR
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, coeff);
+#endif /* WITHDSPEXTTXFIR */
 	}
 }
 
-#elif ! LINUX_SUBSYSTEM && FPGA_ARTIX7
+#elif FPGA_ARTIX7
 
 static adapter_t * plfircoefsout = NULL;
 
@@ -4661,7 +4667,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 	board_reload_fir_artix7_spidone(irql);
 }
 
-#elif defined (TARGET_FPGA_FIR_INITIALIZE) && ! LINUX_SUBSYSTEM
+#elif defined (TARGET_FPGA_FIR_INITIALIZE)
 
 static adapter_t plfircoefsout;
 
@@ -4954,6 +4960,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 }
 
 #else
+
 // Stub functions
 void board_fpga_fir_initialize(void)
 {
@@ -4968,7 +4975,23 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 
 #endif /* CPUSTYLE_XC7Z */
 
+#else
+
+// Stub functions
+void board_fpga_fir_initialize(void)
+{
+
+}
+
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+{
+
+}
+
 #endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) */
+
+#endif /* ! LINUX_SUBSYSTEM */
 
 /* получения признака переполнения АЦП приёмного тракта */
 uint_fast8_t boad_fpga_adcoverflow(void)
