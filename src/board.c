@@ -5053,9 +5053,9 @@ void board_initialize(void)
 	board_fpga_loader_PS();
 #endif /* WITHFPGALOAD_PS */
 
-#if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR)
+#if WITHDSPEXTDDC
 	board_fpga_fir_initialize();	// порт формирования стробов перезагрузки коэффициентов FIR фильтра в FPGA
-#endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) */
+#endif /* WITHDSPEXTDDC */
 
 #if (WITHNANDHW || WITHNANDSW)
 	nand_initialize();
