@@ -2708,12 +2708,12 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	}
 #endif
 
-#if WITHDSPEXTDDC
+#if WITHDSPEXTDDC && (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR)
 	// загрузка коэффициентов фильтра в FPGA (если апаратура требует только LOCAL обработки, сделать заглушку).
 	// Загрузка pass trough в фильтр требуется если тестируется локальная обработка
 	//writecoefs(FIRCoef_trxi_IQ, Ntap_trxi_IQ);	/* печать коэффициентов фильтра */
 	board_reload_fir(pathi, FIRCoef_trxi_IQ, dCoeff_trx_IQ, Ntap_trxi_IQ, HARDWARE_COEFWIDTH);
-#endif /* WITHDSPEXTDDC */
+#endif /* WITHDSPEXTDDC && (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) */
 }
 
 // Duplicate symmetrical part of coeffs.

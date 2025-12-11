@@ -2247,7 +2247,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 	for (; i <= iHalfLen; ++ i)
 	{
 		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
-		m = coeff > m ? coeff : m;
+		m = abs(coeff) > m ? coeff : m;
 	}
 
 	while(m > 0)
