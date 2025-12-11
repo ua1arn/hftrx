@@ -2272,6 +2272,11 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 		xdma_write_user(AXI_LITE_FIR_COEFFS, coeff << bits);
 	}
 }
+#else
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+{
+
+}
 #endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL) */
 
 #if RTC1_TYPE == RTC_TYPE_LINUX
