@@ -772,12 +772,12 @@
 #endif /* WITHSDHCHW */
 
 	#define BOARD_SDCARD_DISCONNECT() do { \
-		arm_hardware_piof_altfn50(UINT32_C(1) << 3, GPIO_CFG_IODISABLE);	/* PF3 - SDC0_CMD	*/ \
-		arm_hardware_piof_altfn50(UINT32_C(1) << 2, GPIO_CFG_IODISABLE);	/* PF2 - SDC0_CK	*/ \
-		arm_hardware_piof_altfn50(UINT32_C(1) << 1, GPIO_CFG_IODISABLE);	/* PF1 - SDC0_D0	*/ \
-		arm_hardware_piof_altfn50(UINT32_C(1) << 0, GPIO_CFG_IODISABLE);	/* PF0 - SDC0_D1	*/ \
-		arm_hardware_piof_altfn50(UINT32_C(1) << 5, GPIO_CFG_IODISABLE);	/* PF5 - SDC0_D2	*/ \
-		arm_hardware_piof_altfn50(UINT32_C(1) << 4, GPIO_CFG_IODISABLE);	/* PF4 - SDC0_D3	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 2, GPIO_CFG_IODISABLE);	/* PF2 - SDC0_CK (UART0-TX AF3)	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 4, GPIO_CFG_IODISABLE);	/* PF4 - SDC0_D3 (UART0-RX AF3) */ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF3);	/* PF1 - SDC0_D0 TDI	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF3);	/* PF0 - SDC0_D1 TMS	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF3);	/* PF5 - SDC0_D2 TCK	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF3);	/* PF3 - SDC0_CMD TDO	*/ \
 	} while (0)
 
 #if WITHTX
