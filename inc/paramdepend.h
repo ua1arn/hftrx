@@ -419,17 +419,6 @@ extern "C" {
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
-	typedef enum {
-		GPIO_CFG_IN  = 0x00,
-		GPIO_CFG_OUT = 0x01,
-		GPIO_CFG_AF2 = 0x02,
-		GPIO_CFG_AF3 = 0x03,
-		GPIO_CFG_AF4 = 0x04,
-		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
-		GPIO_CFG_IODISABLE = 0x07,
-	} GPIOMode_TypeDef;
-
 	#define HARDWARE_NCORES 4
 	#if defined(__aarch64__)
 		#define WITHCPUNAME "Allw A64_64"
@@ -464,17 +453,6 @@ extern "C" {
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
-	typedef enum {
-		GPIO_CFG_IN  = 0x00,
-		GPIO_CFG_OUT = 0x01,
-		GPIO_CFG_AF2 = 0x02,
-		GPIO_CFG_AF3 = 0x03,
-		GPIO_CFG_AF4 = 0x04,
-		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
-		GPIO_CFG_IODISABLE = 0x07,
-	} GPIOMode_TypeDef;
-
 	#define HARDWARE_NCORES 4
 	#if defined(__aarch64__)
 		#define WITHCPUNAME "Allw A133_64"
@@ -508,17 +486,6 @@ extern "C" {
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
-	typedef enum {
-		GPIO_CFG_IN  = 0x00,
-		GPIO_CFG_OUT = 0x01,
-		GPIO_CFG_AF2 = 0x02,
-		GPIO_CFG_AF3 = 0x03,
-		GPIO_CFG_AF4 = 0x04,
-		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
-		GPIO_CFG_IODISABLE = 0x07,
-	} GPIOMode_TypeDef;
-
 	#define HARDWARE_NCORES 4
 	#if defined(__aarch64__)
 		#define WITHCPUNAME "Allw T507_64"
@@ -550,25 +517,6 @@ extern "C" {
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
-	typedef enum {
-		GPIO_CFG_IN  = 0x00,
-		GPIO_CFG_OUT = 0x01,
-		GPIO_CFG_AF2 = 0x02,
-		GPIO_CFG_AF3 = 0x03,
-		GPIO_CFG_AF4 = 0x04,
-		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_AF6 = 0x06,
-		GPIO_CFG_AF7 = 0x07,
-		GPIO_CFG_AF8 = 0x08,
-		GPIO_CFG_AF9 = 0x09,
-		GPIO_CFG_AF10 = 0x0A,
-		GPIO_CFG_AF11 = 0x0B,
-		GPIO_CFG_AF12 = 0x0C,
-		GPIO_CFG_AF13 = 0x0D,
-		GPIO_CFG_EINT = 0x0E,	/* external interrupt sense (input) */
-		GPIO_CFG_IODISABLE = 0x0F,
-	} GPIOMode_TypeDef;
-
 	#define HARDWARE_NCORES 2
 	#define WITHCPUNAME "Allw T113-s3"
 
@@ -595,17 +543,6 @@ extern "C" {
 
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
-
-	typedef enum {
-		GPIO_CFG_IN  = 0x00,
-		GPIO_CFG_OUT = 0x01,
-		GPIO_CFG_AF2 = 0x02,
-		GPIO_CFG_AF3 = 0x03,
-		GPIO_CFG_AF4 = 0x04,
-		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
-		GPIO_CFG_IODISABLE = 0x07,
-	} GPIOMode_TypeDef;
 
 	#define HARDWARE_NCORES 4
 	#if defined(__aarch64__)
@@ -639,17 +576,6 @@ extern "C" {
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
-	typedef enum {
-		GPIO_CFG_IN  = 0x00,
-		GPIO_CFG_OUT = 0x01,
-		GPIO_CFG_AF2 = 0x02,
-		GPIO_CFG_AF3 = 0x03,
-		GPIO_CFG_AF4 = 0x04,
-		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
-		GPIO_CFG_IODISABLE = 0x07,
-	} GPIOMode_TypeDef;
-
 	#define HARDWARE_NCORES 1
 	#define WITHCPUNAME "Allw V3s"
 
@@ -675,25 +601,6 @@ extern "C" {
 
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
-
-	typedef enum {
-		GPIO_CFG_IN  = 0x00,
-		GPIO_CFG_OUT = 0x01,
-		GPIO_CFG_AF2 = 0x02,
-		GPIO_CFG_AF3 = 0x03,
-		GPIO_CFG_AF4 = 0x04,
-		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_AF6 = 0x06,
-		GPIO_CFG_AF7 = 0x07,
-		GPIO_CFG_AF8 = 0x08,
-		GPIO_CFG_AF9 = 0x09,
-		GPIO_CFG_AF10 = 0x0A,
-		GPIO_CFG_AF11 = 0x0B,
-		GPIO_CFG_AF12 = 0x0C,
-		GPIO_CFG_AF13 = 0x0D,
-		GPIO_CFG_EINT = 0x0E,	/* external interrupt sense (input) */
-		GPIO_CFG_IODISABLE = 0x0F,
-	} GPIOMode_TypeDef;
 
 	#define HARDWARE_NCORES 1
 	#define WITHCPUNAME "Allw F133-A"

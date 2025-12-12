@@ -37,7 +37,7 @@
 
 typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middleware compatibility */
 
-enum DMAC_SrcReqType
+typedef enum DMAC_SrcReqType
 {
 	DMAC_SrcReqSRAM = 0,
 	DMAC_SrcReqDRAM = 1,
@@ -68,9 +68,9 @@ enum DMAC_SrcReqType
 	DMAC_SrcReqTWI1_RX = 44,
 	DMAC_SrcReqTWI2_RX,
 	DMAC_SrcReqTWI3_RX
-};
+} DMAC_SrcReq_TypeDef;
 
-enum DMAC_DstReqType
+typedef enum DMAC_DstReqType
 {
 	DMAC_DstReqSRAM = 0,
 	DMAC_DstReqDRAM = 1,
@@ -102,7 +102,41 @@ enum DMAC_DstReqType
 	DMAC_DstReqTWI1_TX,
 	DMAC_DstReqTWI2_TX,
 	DMAC_DstReqTWI3_TX
-};
+} DMAC_DstReq_TypeDef;
+
+typedef enum {
+	GPIO_CFG_IN  = 0x00,
+	GPIO_CFG_OUT = 0x01,
+	GPIO_CFG_AF2 = 0x02,
+	GPIO_CFG_AF3 = 0x03,
+	GPIO_CFG_AF4 = 0x04,
+	GPIO_CFG_AF5 = 0x05,
+	GPIO_CFG_AF6 = 0x06,
+	GPIO_CFG_AF7 = 0x07,
+	GPIO_CFG_AF8 = 0x08,
+	GPIO_CFG_AF9 = 0x09,
+	GPIO_CFG_AF10 = 0x0A,
+	GPIO_CFG_AF11 = 0x0B,
+	GPIO_CFG_AF12 = 0x0C,
+	GPIO_CFG_AF13 = 0x0D,
+	GPIO_CFG_EINT = 0x0E,	/* external interrupt sense (input) */
+	GPIO_CFG_IODISABLE = 0x0F,
+} GPIOMode_TypeDef;
+
+typedef enum
+{
+	GPIO_DRV_0 = 0x00,	// Level 0 minimal
+	GPIO_DRV_1 = 0x01,	// Level 1
+	GPIO_DRV_2 = 0x02,	// Level 2
+	GPIO_DRV_3 = 0x03	// LEvel 3 maximal
+} GPIODrv_TypeDef;
+
+typedef enum
+{
+	GPIO_PULL_NONE = 0x00,	// Pull-up/down disable
+	GPIO_PULL_UP = 0x01,	// Pull-up
+	GPIO_PULL_DOWN = 0x02	// Pull-down. Other codes reserved
+} GPIOPull_TypeDef;
 
 #if defined (USE_HAL_DRIVER)
  #include "t113s3_hal.h"

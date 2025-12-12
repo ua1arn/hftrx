@@ -77,6 +77,17 @@ enum DMAC_DstReqType
 	DMAC_DstReqSPI_TX = 23
 };
 
+typedef enum {
+	GPIO_CFG_IN  = 0x00,
+	GPIO_CFG_OUT = 0x01,
+	GPIO_CFG_AF2 = 0x02,
+	GPIO_CFG_AF3 = 0x03,
+	GPIO_CFG_AF4 = 0x04,
+	GPIO_CFG_AF5 = 0x05,
+	GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
+	GPIO_CFG_IODISABLE = 0x07,
+} GPIOMode_TypeDef;
+
 #if defined (USE_HAL_DRIVER)
  #include "t113s3_hal.h"
 #endif /* USE_HAL_DRIVER */

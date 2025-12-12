@@ -789,30 +789,30 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx
 
 // PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
-#define ALWNR_GPIO_DRV_OUTPUT2M 0x01	//  impedance value is r0/2.
-#define ALWNR_GPIO_PULL_OUTPUT2M 0x00	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
+#define ALWNR_GPIO_DRV_OUTPUT2M GPIO_DRV_1	//  impedance value is r0/2.
+#define ALWNR_GPIO_PULL_OUTPUT2M GPIO_PULL_NONE	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
-#define ALWNR_GPIO_DRV_OUTPUT20M 0x02	//  impedance value is r0/3.
-#define ALWNR_GPIO_PULL_OUTPUT20M 0x00	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
+#define ALWNR_GPIO_DRV_OUTPUT20M GPIO_DRV_2	//  impedance value is r0/3.
+#define ALWNR_GPIO_PULL_OUTPUT20M GPIO_PULL_NONE	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
-#define ALWNR_GPIO_DRV_OUTPUT50M 0x03	//  impedance value is r0/4.  Maximum streingth (50 OHm)
-#define ALWNR_GPIO_PULL_OUTPUT50M 0x00	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
+#define ALWNR_GPIO_DRV_OUTPUT50M GPIO_DRV_3	//  impedance value is r0/4.  Maximum streingth (50 OHm)
+#define ALWNR_GPIO_PULL_OUTPUT50M GPIO_PULL_NONE	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
-#define ALWNR_GPIO_DRV_INPUT 0x02
-#define ALWNR_GPIO_PULL_INPUT 0x01	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
+#define ALWNR_GPIO_DRV_INPUT GPIO_DRV_0	// Ignored for inputs
+#define ALWNR_GPIO_PULL_INPUT GPIO_PULL_UP	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
-#define ALWNR_GPIO_DRV_AF2M 0x00	//  impedance value is r0.
-#define ALWNR_GPIO_PULL_AF2M 0x01	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
+#define ALWNR_GPIO_DRV_AF2M GPIO_DRV_0	//  impedance value is r0.
+#define ALWNR_GPIO_PULL_AF2M GPIO_PULL_UP	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
-#define ALWNR_GPIO_DRV_AF20M 0x02	//  impedance value is r0/3.
-#define ALWNR_GPIO_PULL_AF20M 0x00
+#define ALWNR_GPIO_DRV_AF20M GPIO_DRV_2	//  impedance value is r0/3.
+#define ALWNR_GPIO_PULL_AF20M GPIO_PULL_NONE
 
-#define ALWNR_GPIO_DRV_AF50M 0x03	//  impedance value is r0/4. Maximum streingth (50 OHm)
-#define ALWNR_GPIO_PULL_AF50M 0x00
+#define ALWNR_GPIO_DRV_AF50M GPIO_DRV_3	//  impedance value is r0/4. Maximum streingth (50 OHm)
+#define ALWNR_GPIO_PULL_AF50M GPIO_PULL_NONE
 
 // И в случае opendrain для программного управления и для альтернативной функции
 // всегда используется drv=3 (минимальное выходное сопротивление)
-#define ALWNR_GPIO_DRV_OPENDRAIN 0x03	// impedance value is r0/4.  Maximum streingth (50 OHm)
+#define ALWNR_GPIO_DRV_OPENDRAIN GPIO_DRV_3	// impedance value is r0/4.  Maximum streingth (50 OHm)
 #define ALWNR_GPIO_PULL_OPENDRAIN 0x01	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 
 #define ALWNR_GPIO_DRV_OPENDRAINAF2M 0x03//  impedance value is r0/4.
