@@ -85,7 +85,7 @@ typedef enum {
 	GPIO_CFG_AF4 = 0x04,
 	GPIO_CFG_AF5 = 0x05,
 	GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
-	GPIO_CFG_IODISABLE = 0x07,
+	GPIO_CFG_IODISABLE = 0x07
 } GPIOMode_TypeDef;
 
 #if defined (USE_HAL_DRIVER)
