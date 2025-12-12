@@ -116,6 +116,33 @@ enum DMAC_DstReqType
 	DMAC_SrcReqS_TWI0_TX = 48	// S_TWI0
 };
 
+typedef enum
+{
+	GPIO_CFG_IN  = 0x00,
+	GPIO_CFG_OUT = 0x01,
+	GPIO_CFG_AF2 = 0x02,
+	GPIO_CFG_AF3 = 0x03,
+	GPIO_CFG_AF4 = 0x04,
+	GPIO_CFG_AF5 = 0x05,
+	GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
+	GPIO_CFG_IODISABLE = 0x07,
+} GPIOMode_TypeDef;
+
+typedef enum
+{
+	GPIO_DRV_0 = 0x00,	// Level 0 minimal
+	GPIO_DRV_1 = 0x01,	// Level 1
+	GPIO_DRV_2 = 0x02,	// Level 2
+	GPIO_DRV_3 = 0x03	// LEvel 3 maximal
+} GPIODrv_TypeDef;
+
+typedef enum
+{
+	GPIO_PULL_NONE = 0x00,	// Pull-up/down disable
+	GPIO_PULL_UP = 0x01,	// Pull-up
+	GPIO_PULL_DOWN = 0x02	// Pull-down. Other codes reserved
+} GPIOPull_TypeDef;
+
 #if defined (USE_HAL_DRIVER)
   #include "t113s3_hal.h"
 #endif /* USE_HAL_DRIVER */
