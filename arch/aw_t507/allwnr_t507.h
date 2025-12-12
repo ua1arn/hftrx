@@ -39,7 +39,7 @@
 
 typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middleware compatibility */
 
-enum DMAC_SrcReqType
+typedef enum DMAC_SrcReqType
 {
 	DMAC_SrcReqSRAM = 0,
 	DMAC_SrcReqDRAM = 1,
@@ -75,9 +75,9 @@ enum DMAC_SrcReqType
 	DMAC_SrcReqTWI4_RX,
 
 	DMAC_SrcReqS_TWI0_RX = 48	// S_TWI0
-};
+} DMAC_SrcReq_TypeDef;
 
-enum DMAC_DstReqType
+typedef enum DMAC_DstReqType
 {
 	DMAC_DstReqSRAM = 0,
 	DMAC_DstReqDRAM = 1,
@@ -114,7 +114,7 @@ enum DMAC_DstReqType
 	DMAC_DstReqTWI4_TX,
 
 	DMAC_SrcReqS_TWI0_TX = 48	// S_TWI0
-};
+} DMAC_DstReq_TypeDef;
 
 typedef enum
 {
