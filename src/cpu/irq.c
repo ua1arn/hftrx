@@ -1765,17 +1765,20 @@ void SError_Handler(void * frame)
 	printhex64((uintptr_t) & marker, & marker, 512);
 	unsigned esr_el3 = __get_ESR_EL3();
 	unsigned ec = (esr_el3 >> 26) & 0x1F;
-	unsigned iss = (esr_el3 >> 0) & 0xFFFFFF;
+	unsigned il = (esr_el3 >> 5) & 0x01;
+	unsigned iss = (esr_el3 >> 0) & 0x1FFFFFF;
 	PRINTF("ESR_EL3=%08X\n", (unsigned) esr_el3);
-	PRINTF("ELR_EL3=%08X\n", (unsigned) __get_ELR_EL3());
-	PRINTF("FAR_EL3=%08X\n", (unsigned) __get_FAR_EL3());
+	PRINTF("ELR_EL3=0x%016" PRIX64 " (where)\n", __get_ELR_EL3());
+	PRINTF("FAR_EL3=0x%016" PRIX64 " (access)\n", __get_FAR_EL3());
 
-	PRINTF("ec=%02X\n", ec);
+	PRINTF("ec=%02X, il=%02X\n", ec, il);
 	switch (ec)
 	{
+	case 0x01:	PRINTF("Trapped WF* instruction execution\n"); break;
 	case 0x03:	PRINTF("Trapped MCR or MRC access with (coproc==0b1111) iss=%06X\n", iss); break;
 	case 0x04:	PRINTF("Trapped MCRR or MRRC access with (coproc==0b1111) iss=%06X\n", iss); break;
 	case 0x05:	PRINTF("Trapped MCR or MRC access with (coproc==0b1110) iss=%06X\n", iss); break;
+	case 0x06:	PRINTF("Trapped LDC or STC access.\n"); break;
 	default: break;
 	}
 	for (;;)

@@ -17720,6 +17720,14 @@ processmenukeyandencoder(inputevent_t * ev)
 		ev->frontkeyevent.kbready = 0;
 		return 0;
 
+#if WITHSPKMUTE
+	case KBD_CODE_LDSPTGL:
+		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		uif_key_loudsp();
+		ev->frontkeyevent.kbready = 0;
+		return 1;	// требуется обновление индикатора
+#endif /* WITHSPKMUTE */
+
 #if WITHTX
 	case KBD_CODE_MOX:
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */

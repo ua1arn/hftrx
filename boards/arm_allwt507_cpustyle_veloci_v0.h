@@ -772,12 +772,12 @@
 #endif /* WITHSDHCHW */
 
 	#define BOARD_SDCARD_DISCONNECT() do { \
-		arm_hardware_piof_altfn50(UINT32_C(1) << 3, GPIO_CFG_IODISABLE);	/* PF3 - SDC0_CMD	*/ \
-		arm_hardware_piof_altfn50(UINT32_C(1) << 2, GPIO_CFG_IODISABLE);	/* PF2 - SDC0_CK	*/ \
-		arm_hardware_piof_altfn50(UINT32_C(1) << 1, GPIO_CFG_IODISABLE);	/* PF1 - SDC0_D0	*/ \
-		arm_hardware_piof_altfn50(UINT32_C(1) << 0, GPIO_CFG_IODISABLE);	/* PF0 - SDC0_D1	*/ \
-		arm_hardware_piof_altfn50(UINT32_C(1) << 5, GPIO_CFG_IODISABLE);	/* PF5 - SDC0_D2	*/ \
-		arm_hardware_piof_altfn50(UINT32_C(1) << 4, GPIO_CFG_IODISABLE);	/* PF4 - SDC0_D3	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 2, GPIO_CFG_IODISABLE);	/* PF2 - SDC0_CK (UART0-TX AF3)	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 4, GPIO_CFG_IODISABLE);	/* PF4 - SDC0_D3 (UART0-RX AF3) */ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF3);	/* PF1 - SDC0_D0 TDI	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF3);	/* PF0 - SDC0_D1 TMS	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF3);	/* PF5 - SDC0_D2 TCK	*/ \
+		arm_hardware_piof_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF3);	/* PF3 - SDC0_CMD TDO	*/ \
 	} while (0)
 
 #if WITHTX
@@ -881,7 +881,7 @@
 	#define FPGAREG_V1_SPISPEED SPIC_SPEED4M
 	#define SPIDF_SPEEDC 		SPIC_SPEED4M
 	#define NVRAM_SPISPEED 		SPIC_SPEED4M
-	#define NAU8822_SPISPEED 	SPIC_SPEED4M
+	#define NAU8822_SPISPEED 	SPIC_SPEED400k
 	#define CTLREG_SPISPEED		SPIC_SPEED400k
 	#define XPT2046_SPIC_SPEED 	SPIC_SPEED400k
 
@@ -889,10 +889,10 @@
 	#define targettsc1		(UINT32_C(1) << 19)		// PE19 XPT2046 SPI chip select signal - CSEXT1
 	#define targetnvram		(UINT32_C(1) << 18)		// PE18 NVRAM FM25W256
 	#define targetcodec1	(UINT32_C(1) << 20)		// PE20 on-board codec1 NAU8822L
-	#define targetfpga1		(UINT32_C(1) << 17)		// PE17 FPGA control registers CS1
 	#define targetadck		(UINT32_C(1) << 21)		// PE21 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADC2CS
 	#define targetxad2		(UINT32_C(1) << 16)		// PE16 ext2 external SPI device (PA BOARD ADC) CSEXT2
 	#define targetfpga1mask	(UINT32_C(1) << 11)		// PE11 data gate for all FPGA SPI operations (0: active)
+	#define targetfpga1		((UINT32_C(1) << 17) | targetfpga1mask)	// PE17 FPGA control registers CS1
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target) do { \
@@ -934,16 +934,16 @@
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
-		/*arm_hardware_pioc_outputs2m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
-		arm_hardware_pioi_outputs2m(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
-		arm_hardware_pioe_outputs2m(targettsc1, 1 * targettsc1); /*  */ \
-		arm_hardware_pioe_outputs2m(targetnvram, 1 * targetnvram); /*  */ \
-		arm_hardware_pioe_outputs2m(targetctl1, 1 * targetctl1); /*  */ \
-		arm_hardware_pioe_outputs2m(targetcodec1, 1 * targetcodec1); /*  */ \
-		arm_hardware_pioe_outputs2m(targetfpga1, 1 * targetfpga1); /*  */ \
-		arm_hardware_pioe_outputs2m(targetadck, 1 * targetadck); /*  */ \
-		arm_hardware_pioe_outputs2m(targetxad2, 1 * targetxad2); /*  */ \
-		arm_hardware_pioe_outputs2m(targetfpga1mask, 1 * targetfpga1mask); /*  */ \
+		/*arm_hardware_pioc_outputs20m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
+		arm_hardware_pioi_outputs20m(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
+		arm_hardware_pioe_outputs20m(targettsc1, 1 * targettsc1); /*  */ \
+		arm_hardware_pioe_outputs20m(targetnvram, 1 * targetnvram); /*  */ \
+		arm_hardware_pioe_outputs20m(targetctl1, 1 * targetctl1); /*  */ \
+		arm_hardware_pioe_outputs20m(targetcodec1, 1 * targetcodec1); /*  */ \
+		arm_hardware_pioe_outputs20m(targetfpga1, 1 * targetfpga1); /*  */ \
+		arm_hardware_pioe_outputs20m(targetadck, 1 * targetadck); /*  */ \
+		arm_hardware_pioe_outputs20m(targetxad2, 1 * targetxad2); /*  */ \
+		arm_hardware_pioe_outputs20m(targetfpga1mask, 1 * targetfpga1mask); /*  */ \
 	} while (0)
 	/* разрешение обмена с FPGA  использованием SPI */
 	#define TARGET_FPGA_GATE(_on) do { \
@@ -968,12 +968,9 @@
 	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
 
 	#define HARDWARE_SPI1_INITIALIZE() do { \
-		arm_hardware_pioh_altfn2m(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
-		arm_hardware_pioh_altfn2m(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
-		arm_hardware_pioh_altfn2m(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
-		gpioX_prog(GPIOH, SPI_SCLK_BIT, GPIO_CFG_AF4, 1, 0x00); 	/* PH6 SPI1_CLK */ \
-		gpioX_prog(GPIOH, SPI_MOSI_BIT, GPIO_CFG_AF4, 1, 0x00); 	/* PH7 SPI1_MOSI */ \
-		gpioX_prog(GPIOH, SPI_MISO_BIT, GPIO_CFG_AF4, 1, 0x00); 	/* PH8 SPI1_MISO */ \
+		arm_hardware_pioh_altfn20(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
+		arm_hardware_pioh_altfn20(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
+		arm_hardware_pioh_altfn20(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
 	} while (0)
 	#define WITHSPI1HW	1	// Use SPI1
 
@@ -1117,7 +1114,7 @@
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
-#if WITHDSPEXTFIR
+#if 1
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
 
 	// FPGA PIN_23
@@ -1140,7 +1137,7 @@
 			arm_hardware_pioe_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
 			arm_hardware_pioe_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 		} while (0)
-#endif /* WITHDSPEXTFIR */
+#endif
 
 #if 0
 	/* получение состояния переполнения АЦП */

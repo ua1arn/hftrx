@@ -1235,7 +1235,7 @@ const struct menudef menutable [] =
 	& xgcwssbtx,
 #endif /* WITHTX && WITHIF4DSP */
 #endif /* WITHELKEY */
-#if WITHDSPEXTDDC	/* Квадратуры получаются внешней аппаратурой */
+#if WITHDSPEXTDDC	/* Квадратуры обрабатываются аппаратным DUC/DDC */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("RF ADC"), 0, 0, 0, 0,

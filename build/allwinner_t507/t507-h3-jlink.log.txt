@@ -1,0 +1,40 @@
+JTAG chain detection found 1 devices:
+ #0 Id: 0x5BA00477, IRLen: 04, CoreSight JTAG-DP
+DPv0 detected
+Scanning AP map to find all available APs
+AP[2]: Stopped AP scan as end of AP map has been reached
+AP[0]: AHB-AP (IDR: 0x64770001)
+AP[1]: APB-AP (IDR: 0x44770002)
+Iterating through AP map to find APB-AP to use
+AP[0]: Skipped. Not an APB-AP
+AP[1]: APB-AP found
+ROMTbl[0][0]: CompAddr: 80050000 CID: B105900D, PID: 004BB906 CTI (?)
+ROMTbl[0][1]: CompAddr: 81000000 CID: B105100D, PID: 00A9CC64 ROM Table
+ROMTbl[1][0]: CompAddr: 81010000 CID: 00000000, PID: 00000000 ???
+ROMTbl[1][1]: CompAddr: 81020000 CID: 00000000, PID: 00000000 ???
+ROMTbl[1][2]: CompAddr: 81400000 CID: B105100D, PID: 004BB4A1 ROM Table
+ROMTbl[2][0]: CompAddr: 81410000 CID: B105900D, PID: 004BBD03 Cortex-A53
+ROMTbl[2][1]: CompAddr: 81420000 CID: B105900D, PID: 004BB9A8 CSS600-CTI
+ROMTbl[2][2]: CompAddr: 81430000 CID: B105900D, PID: 004BB9D3 PMU
+ROMTbl[2][3]: CompAddr: 81440000 CID: B105900D, PID: 004BB95D ETM
+ROMTbl[2][4]: CompAddr: 81510000 CID: B105900D, PID: 004BBD03 Cortex-A53
+ROMTbl[2][5]: CompAddr: 81520000 CID: B105900D, PID: 004BB9A8 CSS600-CTI
+ROMTbl[2][6]: CompAddr: 81530000 CID: B105900D, PID: 004BB9D3 PMU
+ROMTbl[2][7]: CompAddr: 81540000 CID: B105900D, PID: 004BB95D ETM
+ROMTbl[2][8]: CompAddr: 81610000 CID: B105900D, PID: 004BBD03 Cortex-A53
+ROMTbl[2][9]: CompAddr: 81620000 CID: B105900D, PID: 004BB9A8 CSS600-CTI
+ROMTbl[2][10]: CompAddr: 81630000 CID: B105900D, PID: 004BB9D3 PMU
+ROMTbl[2][11]: CompAddr: 81640000 CID: B105900D, PID: 004BB95D ETM
+ROMTbl[2][12]: CompAddr: 81710000 CID: B105900D, PID: 004BBD03 Cortex-A53
+ROMTbl[2][13]: CompAddr: 81720000 CID: B105900D, PID: 004BB9A8 CSS600-CTI
+ROMTbl[2][14]: CompAddr: 81730000 CID: B105900D, PID: 004BB9D3 PMU
+ROMTbl[2][15]: CompAddr: 81740000 CID: B105900D, PID: 004BB95D ETM
+ROMTbl[0][2]: CompAddr: 81800000 CID: FFFFFFEF, PID: FFFFFFEF ???
+Connect failed. Resetting via Reset pin and trying again.
+TotalIRLen = 4, IRPrint = 0x01
+JTAG chain detection found 1 devices:
+ #0 Id: 0x5BA00477, IRLen: 04, CoreSight JTAG-DP
+
+****** Error: Cortex-A/R (connect): Could not determine address of core debug registers. Incorrect CoreSight ROM table in device?
+Cannot connect to target.
+J-Link>

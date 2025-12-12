@@ -14492,7 +14492,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && WITHDSPEXTFIR
+#if 0 && (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR)
 	{
 		// Тестирование сигналов управления загрузкой параметров фильтров FPGA
 

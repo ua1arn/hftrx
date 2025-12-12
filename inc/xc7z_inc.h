@@ -18,9 +18,9 @@
 	#include "lib/zynq/src_7010/xparameters.h"
 	#include "lib/zynq/src_7010/xil_exception.h"
 	#include "lib/zynq/src_7010/xil_types.h"
-	#if WITHTX || WITHDSPEXTFIR
+	#if WITHTX || (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR)
 		#include "lib/zynq/src_7010/axidma_v9_13/xaxidma.h"
-	#endif /* WITHTX || WITHDSPEXTFIR */
+	#endif /* WITHTX || (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) */
 	#if WITHETHHW
 		#include "lib/zynq/src_7010/emacps_v3_14/xemacps.h"
 	#endif /* WITHETHHW */

@@ -4357,17 +4357,6 @@ void prog_pll2_r(const phase_t * value)
 
 // End of frequency control functions set.
 
-#if WITHFQMETER
-uint_fast32_t board_get_fqmeter(void)
-{
-	uint_fast32_t v = 0;
-	#if (DDS1_TYPE == DDS_TYPE_FPGAV1)
-		v = prog_fpga_getfqmeter(targetfpga1);
-	#endif
-	return v;
-}	
-#endif /* WITHFQMETER */
-
 static
 void
 board_set_dac1value(uint_fast8_t plane, uint_fast8_t v)	/* подстройка опорного генератора */
@@ -4549,9 +4538,11 @@ static void board_fpga_loader_XDCFG(void)
 
 #endif /* WITHFPGALOAD_DCFG */
 
-#if WITHDSPEXTFIR
+#if ! LINUX_SUBSYSTEM
 
-#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR)
+
+#if CPUSTYLE_XC7Z
 
 static adapter_t plfircoefsout;
 
@@ -4564,6 +4555,7 @@ void board_fpga_fir_initialize(void)
 
 }
 
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
 void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 	const int iHalfLen = (Ntap - 1) / 2;
@@ -4586,25 +4578,29 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 
 	for (i = 0; i <= iHalfLen; ++ i)
 	{
-		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, coeff << bits);
-#if ! WITHDSPLOCALTXFIR
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, coeff << bits);
-#endif /* ! WITHDSPLOCALTXFIR */
+		const int32_t coeff = adpt_output(& plfircoefsout, kf [i]) << bits;
+#if WITHDSPEXTRXFIR
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, coeff);
+#endif /* WITHDSPEXTRXFIR */
+#if WITHDSPEXTTXFIR
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, coeff);
+#endif /* WITHDSPEXTTXFIR */
 	}
 
 	i -= 1;
 	for (; -- i >= 0;)
 	{
-		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, coeff << bits);
-#if ! WITHDSPLOCALTXFIR
-		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, coeff << bits);
-#endif /* ! WITHDSPLOCALTXFIR */
+		const int32_t coeff = adpt_output(& plfircoefsout, kf [i]) << bits;
+#if WITHDSPEXTRXFIR
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, coeff);
+#endif /* WITHDSPEXTRXFIR */
+#if WITHDSPEXTTXFIR
+		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_TX_BASEADDR, coeff);
+#endif /* WITHDSPEXTTXFIR */
 	}
 }
 
-#elif ! LINUX_SUBSYSTEM && FPGA_ARTIX7
+#elif FPGA_ARTIX7
 
 static adapter_t * plfircoefsout = NULL;
 
@@ -4616,6 +4612,7 @@ void board_fpga_fir_initialize(void)
 	hardware_spi_master_setfreq(HARDWARE_FPGA_FIR_SPIHARD_PTR, SPIC_SPEEDUFAST, SPISPEEDUFAST);
 }
 
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
 void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 	const int iHalfLen = (Ntap - 1) / 2;
@@ -4659,7 +4656,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 	board_reload_fir_artix7_spidone(irql);
 }
 
-#elif ! LINUX_SUBSYSTEM
+#elif defined (TARGET_FPGA_FIR_INITIALIZE)
 
 static adapter_t plfircoefsout;
 
@@ -4937,7 +4934,7 @@ static int_fast64_t expandsign(int_fast32_t v, unsigned CWidth)
 }
 #endif /* WITHDEBUG */
 
-/* Выдача рассчитанных параметров фильтра в FPGA (симметричные) */
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
 void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 #if 0 && WITHDEBUG
@@ -4951,9 +4948,39 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 	boart_tgl_firprofile(ifir);
 }
 
+#else
+
+// Stub functions
+void board_fpga_fir_initialize(void)
+{
+
+}
+
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+{
+
+}
+
 #endif /* CPUSTYLE_XC7Z */
 
-#endif /* WITHDSPEXTFIR */
+#else
+
+// Stub functions
+void board_fpga_fir_initialize(void)
+{
+
+}
+
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+{
+
+}
+
+#endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) */
+
+#endif /* ! LINUX_SUBSYSTEM */
 
 /* получения признака переполнения АЦП приёмного тракта */
 uint_fast8_t boad_fpga_adcoverflow(void)
@@ -5026,9 +5053,9 @@ void board_initialize(void)
 	board_fpga_loader_PS();
 #endif /* WITHFPGALOAD_PS */
 
-#if WITHDSPEXTFIR
+#if WITHDSPEXTDDC
 	board_fpga_fir_initialize();	// порт формирования стробов перезагрузки коэффициентов FIR фильтра в FPGA
-#endif /* WITHDSPEXTFIR */
+#endif /* WITHDSPEXTDDC */
 
 #if (WITHNANDHW || WITHNANDSW)
 	nand_initialize();
@@ -7297,6 +7324,11 @@ uint_fast8_t board_fpgastatus_getptt(void)
 uint_fast8_t board_fpgastatus_gettunereq(void)
 {
 	return !! (vstatus & FPGA_STATUS_TUNEREQ);
+}
+
+uint_fast32_t board_get_fqmeter(void)
+{
+	return vfqmeter;
 }
 
 void board_savefpgastatus(uint_fast32_t status, uint_fast32_t fqmeter)
