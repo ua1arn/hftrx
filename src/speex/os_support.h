@@ -54,7 +54,7 @@ static inline void *speex_alloc (int size)
    /* WARNING: this is not equivalent to malloc(). If you want to use malloc()
       or your own allocator, YOU NEED TO CLEAR THE MEMORY ALLOCATED. Otherwise
       you will experience strange bugs */
-   return _calloc_r(NULL, size,1);
+   return calloc(size,1);
 }
 #else
 void *speex_alloc (int size);
@@ -65,7 +65,7 @@ void *speex_alloc (int size);
 static inline void *speex_alloc_scratch (int size)
 {
    /* Scratch space doesn't need to be cleared */
-   return _calloc_r(NULL, size,1);
+   return calloc(size,1);
 }
 #else
 void *speex_alloc_scratch (int size);
@@ -75,7 +75,7 @@ void *speex_alloc_scratch (int size);
 #ifndef OVERRIDE_SPEEX_REALLOC
 static inline void *speex_realloc (void *ptr, int size)
 {
-   return _realloc_r(NULL, ptr, size);
+   return realloc(ptr, size);
 }
 #else
 void *speex_realloc (void *ptr, int size);
@@ -85,7 +85,7 @@ void *speex_realloc (void *ptr, int size);
 #ifndef OVERRIDE_SPEEX_FREE
 static inline void speex_free (void *ptr)
 {
-   _free_r(NULL, ptr);
+   free(ptr);
 }
 #else
 void speex_free (void *ptr);
