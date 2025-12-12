@@ -248,6 +248,40 @@ size_t strlen(const char * s1)
 }
 #endif /* defined(__aarch64__) */
 
+void *_calloc_r(struct _reent *ptr, size_t size, size_t len)
+{
+	return calloc(size, len);
+}
+void *_realloc_r(struct _reent *ptr, void *old, size_t newlen)
+{
+	return realloc(old, newlen);
+}
+void *_malloc_r(struct _reent *, size_t size)
+{
+	return malloc(size);
+}
+void _free_r(struct _reent *ptr, void *addr)
+{
+    free(addr);
+}
+#else /* ! LINUX_SUBSYSTEM */
+// stubs for linux
+void *_calloc_r(struct _reent *ptr, size_t size, size_t len)
+{
+	return calloc(size, len);
+}
+void *_realloc_r(struct _reent *ptr, void *old, size_t newlen)
+{
+	return realloc(old, newlen);
+}
+void *_malloc_r(struct _reent *, size_t size)
+{
+	return malloc(size);
+}
+void _free_r(struct _reent *ptr, void *addr)
+{
+    free(addr);
+}
 #endif /* ! LINUX_SUBSYSTEM */
 
 #ifdef __cplusplus
