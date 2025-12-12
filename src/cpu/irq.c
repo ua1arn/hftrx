@@ -1774,9 +1774,11 @@ void SError_Handler(void * frame)
 	PRINTF("ec=%02X, il=%02X\n", ec, il);
 	switch (ec)
 	{
+	case 0x01:	PRINTF("Trapped WF* instruction execution\n"); break;
 	case 0x03:	PRINTF("Trapped MCR or MRC access with (coproc==0b1111) iss=%06X\n", iss); break;
 	case 0x04:	PRINTF("Trapped MCRR or MRRC access with (coproc==0b1111) iss=%06X\n", iss); break;
 	case 0x05:	PRINTF("Trapped MCR or MRC access with (coproc==0b1110) iss=%06X\n", iss); break;
+	case 0x06:	PRINTF("Trapped LDC or STC access.\n"); break;
 	default: break;
 	}
 	for (;;)
