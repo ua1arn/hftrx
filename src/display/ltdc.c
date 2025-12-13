@@ -6071,23 +6071,6 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 #endif /* defined (TCONTV_PTR) */
 }
 
-#if WITHHDMITVHW
-static uint_fast32_t hdmi_realclock(const videomode_t * vdmode)
-{
-#if defined (TCONTV_PTR)
-#if CPUSTYLE_H3
-	return allwnr_h3_get_hdmi_freq();
-#elif CPUSTYLE_A64
-	return allwnr_a64_get_hdmi_freq();
-#elif CPUSTYLE_T507
-	return allwnr_t507_get_hdmi0_freq();
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-	return allwnr_t113_get_hdmi_freq();
-#endif
-#endif /* defined (TCONTV_PTR) */
-	return display_getdotclock(vdmode);
-}
-#endif
 
 static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 {
@@ -7767,13 +7750,30 @@ static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 }
 
 #if WITHHDMITVHW
+static uint_fast32_t hdmi_realclock(const videomode_t * vdmode)
+{
+#if defined (TCONTV_PTR)
 
+#if CPUSTYLE_H3
+	return allwnr_h3_get_hdmi_freq();
+#elif CPUSTYLE_A64
+	return allwnr_a64_get_hdmi_freq();
+#elif CPUSTYLE_T507
+	return allwnr_t507_get_hdmi0_freq();
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	return allwnr_t113_get_hdmi_freq();
 #endif
+
+#else /* defined (TCONTV_PTR) */
+
+	return display_getdotclock(vdmode);
+
+#endif /* defined (TCONTV_PTR) */
+}
 
 static void t113_hdmi_init(const videomode_t * vdmode)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-#if WITHHDMITVHW
 	const uint_fast32_t dotclock = hdmi_realclock(vdmode);
 
 #if CPUSTYLE_T507
@@ -7835,8 +7835,8 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	dw_hdmi_clear_overflow(hdmi);
 //	t507_hdmi_edid_test();
 
-#endif /* WITHHDMITVHW */
 }
+#endif /* WITHHDMITVHW */
 
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
@@ -7975,21 +7975,21 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 }
 #endif
 
+#if WITHHDMITVHW
 static void t113_hdmi_initsteps(const videomode_t * vdmode)
 {
 	t113_tcontv_initsteps0(vdmode);
-#if WITHHDMITVHW
 	t113_hdmi_init(vdmode);	// PHY initialize
-#endif /* WITHHDMITVHW */
 }
+#endif /* WITHHDMITVHW */
 
+#if defined (TVENCODER_PTR)
 static void t113_composite_initsteps(const videomode_t * vdmode)
 {
 	t113_tcontv_initsteps0(vdmode);
-#if defined (TVENCODER_PTR)
 	t113_tvoutDAC_init(vdmode);	// TV OUT DAC initialize
-#endif /* WITHHDMITVHW */
 }
+#endif /* WITHHDMITVHW */
 
 /* Инициализация одного видеовыхода */
 static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, void (* tcon_init)(const videomode_t * vdmode), uint_least32_t defcolor)
