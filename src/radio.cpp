@@ -13597,6 +13597,13 @@ uint_fast8_t hamradio_get_volt_value(void)
 #endif /* WITHREFSENSOR */
 }
 
+#elif WITHVOLTLEVEL_1117
+
+uint_fast8_t hamradio_get_volt_value(void)
+{
+	return get_voltage_1117();
+}
+
 #endif /* WITHVOLTLEVEL */
 
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)

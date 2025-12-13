@@ -58,7 +58,7 @@ const uint8_t infobar_places[infobar_num_places] = {
 		INFOBAR_ATT,
 		INFOBAR_DNR,
 		INFOBAR_TX_POWER,
-#if WITHVOLTLEVEL
+#if WITHVOLTLEVEL || WITHVOLTLEVEL_1117
 		INFOBAR_VOLTAGE | INFOBAR_NOACTION,
 #elif WITHUSEDUALWATCH
 		INFOBAR_DUAL_RX,
@@ -1039,7 +1039,7 @@ void gui_main_process(void)
 
 		case INFOBAR_VOLTAGE:
 		{
-#if WITHVOLTLEVEL
+#if WITHVOLTLEVEL || WITHVOLTLEVEL_1117
 			// напряжение питания
 			static ldiv_t v;
 			uint16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
@@ -1055,7 +1055,7 @@ void gui_main_process(void)
 			local_snprintf_P(buf, buflen, "%d.%1dV", (int) v.quot, (int) v.rem);
 			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
 			gui_print_prop(xx - strl / 2, yy, buf, & INFOBAR_FONTP, str_color);
-#endif /* WITHVOLTLEVEL */
+#endif /* WITHVOLTLEVEL || WITHVOLTLEVEL_1117 */
 
 #if WITHCURRLEVEL || WITHCURRLEVEL2
 		// ток PA (при передаче)

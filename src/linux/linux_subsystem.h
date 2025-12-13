@@ -235,5 +235,8 @@ void dcache_clean(uintptr_t base, int_fast32_t size);	// Сейчас эта п�
 void dcache_clean_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 void dcache_clean_all(void);
 
+int get_voltage_1117(void);
+int get_current_1117(void);
+
 #endif /* LINUX_SUBSYSTEM */
 #endif /* LINUX_SUBSYSTEM_H */

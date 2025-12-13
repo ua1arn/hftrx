@@ -166,8 +166,20 @@
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
-	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
-	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
+	#define AMS1117_ONBOARDADC	1
+	#define WITHCURRLEVEL_1117	1
+	#define WITHVOLTLEVEL_1117	1
+	#define VBUS_DIVIDER_RATIO  5.61 * 10.0
+	#define ACS712_SENSITIVITY  0.066
+
+	enum {
+		ams1117_cnannel_fwd,
+		ams1117_cnannel_ref,
+		ams1117_cnannel_asc712,
+		ams1117_cnannel_voltage,
+
+		ams1117_channels_count
+	};
 
 	// Назначения входов АЦП процессора.
 	enum
@@ -179,7 +191,7 @@
 		// толькло основная плата - 5W усилитель
 
 		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
-		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		//#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 		#if WITHCURRLEVEL
@@ -197,7 +209,7 @@
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
 			FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
-			
+
 		#endif /* WITHSWRMTR */
 
 

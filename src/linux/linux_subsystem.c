@@ -884,7 +884,7 @@ void prog_spi_exchange(
 
 void * iq_rx_blkmem;
 volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_rx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
-volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0;
+volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, adc_driver = 0;
 volatile static uint8_t fir_load_rst = 0, iq_test = 0, wnb_state = 0, resetn_stream = 0;
 int fd_int = 0;
 
@@ -894,7 +894,7 @@ void update_modem_ctrl(void)
 {
 	uint32_t v = ((rx_fir_shift & 0xFF) << rx_fir_shift_pos) 	| ((tx_shift & 0xFF) << tx_shift_pos)
 			| ((rx_cic_shift & 0xFF) << rx_cic_shift_pos) 		| (!! tx_state << tx_state_pos)
-			| (!! resetn_modem << resetn_modem_pos) 			| (!! hw_vfo_sel << hw_vfo_sel_pos)
+			| (!! resetn_modem << resetn_modem_pos) 			| (!! adc_driver << adc_driver_pos)
 			| (!! hamradio_get_gadcrand() << adc_rand_pos) 		| (!! iq_test << iq_test_pos)
 			| (!! wnb_state << wnb_pos)							| (!! resetn_stream << stream_reset_pos)
 			| (!! fir_load_rst << fir_load_reset_pos)			| 0;
@@ -2063,6 +2063,142 @@ int linux_get_battery_charge_level(void)
 
 #endif /* WITHSYSFSBATTERY */
 
+#if AMS1117_ONBOARDADC
+
+#define ADS1117_ADDR_8BIT   (0x48 << 1)
+#define ACS712_SENSITIVITY  0.066
+
+#define PGA_4_096V          (0b001 << 9)
+#define DR_128SPS           (0b100 << 5)
+#define COMP_QUE_DISABLE    0b11
+#define CONVERSION_DELAY_US 10000
+#define MUX_SINGLE(x)       (((0b100) | (x)) << 12)
+
+pthread_mutex_t g_adc_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_t ams1117_thread;
+double v_adc[ams1117_channels_count];
+
+int ams1117_write_reg(uint8_t reg, uint16_t value)
+{
+    uint8_t buf[3] = { reg, (value >> 8) & 0xFF, value & 0xFF };
+    return i2chw_write(ADS1117_ADDR_8BIT, buf, 3);
+}
+
+int16_t ams1117_read_reg16(uint8_t reg)
+{
+	uint8_t buf[2] = { reg, 0 };
+
+    if (i2chw_write(ADS1117_ADDR_8BIT, buf, 1)) return -1;
+    if (i2chw_read(ADS1117_ADDR_8BIT, buf, 2)) return -1;
+
+    return (buf[0] << 8) | buf[1];
+}
+
+int16_t ams1117_read_channel_once(uint8_t ch)
+{
+    if (ch >= ams1117_channels_count) return -1;
+
+    uint16_t config = 0;
+    config |= 0x8000;
+    config |= MUX_SINGLE(ch);
+    config |= PGA_4_096V;
+    config |= (1 << 8);
+    config |= DR_128SPS;
+    config |= COMP_QUE_DISABLE;
+
+    if (ams1117_write_reg(0x01, config)) return -1;
+
+    usleep(CONVERSION_DELAY_US);
+    return ams1117_read_reg16(0x00);
+}
+
+double raw_to_voltage(int16_t raw)
+{
+    return ((double) raw * 4.096) / 32768.0;
+}
+
+#if WITHCURRLEVEL_1117
+double acs712_vzero = 0.0;
+
+void asc712_offset_calibrate(void)
+{
+    // Калибровка смещения ACS712
+    printf("Calibrating ACS712 zero offset...\n");
+    double vsum = 0.0;
+    int valid = 0;
+    for (int i = 0; i < 10; i ++)
+    {
+        int16_t raw = ams1117_read_channel_once(ams1117_cnannel_asc712);
+        if (raw >= 0) {
+            vsum += raw_to_voltage(raw);
+            valid ++;
+        }
+        usleep(5000);
+    }
+
+    acs712_vzero = (valid > 0) ? vsum / valid : 0.0;
+    printf("Calibration done: Vzero = %.4f V\n", acs712_vzero);
+}
+
+int get_current_1117(void)
+{
+	pthread_mutex_lock(& g_adc_mutex);
+	int c = (v_adc[ams1117_cnannel_asc712] - acs712_vzero) / ACS712_SENSITIVITY;
+	pthread_mutex_unlock(& g_adc_mutex);
+
+	return c;
+}
+
+#endif /* WITHCURRLEVEL_1117 */
+
+#if WITHVOLTLEVEL_1117
+int get_voltage_1117(void)
+{
+	pthread_mutex_lock(& g_adc_mutex);
+	int v = (int) (v_adc[ams1117_cnannel_voltage] * VBUS_DIVIDER_RATIO);
+	pthread_mutex_unlock(& g_adc_mutex);
+
+	return v;
+}
+#endif /* WITHVOLTLEVEL_1117 */
+
+void * ams1117_loop_thread(void * args)
+{
+#if WITHCURRLEVEL_1117
+	asc712_offset_calibrate();
+#endif /* WITHCURRLEVEL_1117 */
+
+    while (1)
+    {
+    	int16_t raw_values[ams1117_channels_count];
+
+		pthread_mutex_lock(& g_adc_mutex);
+
+		for (int ch = 0; ch < ams1117_channels_count; ch++)
+		{
+			raw_values[ch] = ams1117_read_channel_once(ch);
+			v_adc[ch] = raw_to_voltage(raw_values[ch]);
+		}
+
+		pthread_mutex_unlock(& g_adc_mutex);
+
+#if 0
+		for (int ch = 0; ch < ams1117_channels_count; ch++)
+			printf("Ch%d: raw=%6d  V=%.2f V\n", ch, raw_values[ch], v_adc[ch]);
+
+		printf("-----------------------------\n");
+
+		usleep(500000);
+#else
+		usleep(50000);
+#endif
+    }
+
+    return NULL;
+}
+
+#endif /* AMS1117_ONBOARDADC */
+
 void linux_subsystem_init(void)
 {
     if (check_and_terminate_existing_instance() != 0) {
@@ -2104,6 +2240,10 @@ void linux_subsystem_init(void)
 void linux_user_init(void)
 {
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, spool_thread_core);
+
+#if AMS1117_ONBOARDADC
+	linux_create_thread(& ams1117_thread, ams1117_loop_thread, 50, spool_thread_core);
+#endif /* AMS1117_ONBOARDADC */
 
 	evdev_initialize();
 #if WITHNMEA && WITHLFM && CPUSTYLE_XC7Z
