@@ -7862,7 +7862,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	t113_set_and_open_interrupt_function();
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_open_module_enable(vdmode);
-	PRINTF("lvdsfreq=%u (desired dclk=%u), BOARD_TCONLCDFREQ=%u, dclk=%u\n", (unsigned) lvdsfreq, (unsigned) (lvdsfreq / 7), (unsigned) BOARD_TCONLCDFREQ, (unsigned) (BOARD_TCONLCDFREQ / 7));
+	//PRINTF("lvdsfreq=%u (desired dclk=%u), BOARD_TCONLCDFREQ=%u, dclk=%u\n", (unsigned) lvdsfreq, (unsigned) (lvdsfreq / 7), (unsigned) BOARD_TCONLCDFREQ, (unsigned) (BOARD_TCONLCDFREQ / 7));
 
 #endif /* defined (TCONLCD_PTR) */
 }

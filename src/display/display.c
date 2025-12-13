@@ -2221,7 +2221,7 @@ const videomode_t * get_videomode_DESIGN(void)
 
 void display_hardware_initialize(void)
 {
-	PRINTF(PSTR("display_hardware_initialize start\n"));
+	//PRINTF(PSTR("display_hardware_initialize start\n"));
 
 #if WITHLTDCHW
 	hardware_ltdc_initialize();
@@ -2238,7 +2238,7 @@ void display_hardware_initialize(void)
 	sii9022x_initialize(vdmode);
 #endif /* LCDMODEX_SII9022A */
 
-	PRINTF(PSTR("display_hardware_initialize done\n"));
+	//PRINTF(PSTR("display_hardware_initialize done\n"));
 }
 
 void display_wakeup(void)
