@@ -243,6 +243,12 @@ size_t strlen(const char * s1)
 #endif /* defined(__aarch64__) */
 
 #if 0
+#if defined __SINGLE_THREAD__
+	#warning Have __SINGLE_THREAD__
+#endif
+#if defined __DYNAMIC_REENT__
+	#warning Have __DYNAMIC_REENT__
+#endif
 
 #include <sys/reent.h>
 
