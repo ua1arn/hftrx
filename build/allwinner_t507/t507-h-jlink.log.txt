@@ -1,0 +1,53 @@
+Connecting to target via JTAG
+TotalIRLen = 4, IRPrint = 0x01
+JTAG chain detection found 1 devices:
+ #0 Id: 0x5BA00477, IRLen: 04, CoreSight JTAG-DP
+DPv0 detected
+Scanning AP map to find all available APs
+AP[2]: Stopped AP scan as end of AP map has been reached
+AP[0]: AHB-AP (IDR: 0x64770001)
+AP[1]: APB-AP (IDR: 0x44770002)
+Iterating through AP map to find APB-AP to use
+AP[0]: Skipped. Not an APB-AP
+AP[1]: APB-AP found
+No AP map specified by user. Setting auto-detected AP map.
+Scanning ROMTbl @ 0x80000000
+[0]Comp[0] @ 0x80050000: CTI (?)
+[0]Comp[1] @ 0x81000000: ROM Table
+Scanning ROMTbl @ 0x81000000
+[1]Comp[0] @ 0x81010000: ???: 0x00000000, PID: 0x00000000
+[1]Comp[1] @ 0x81020000: ???: 0x00000000, PID: 0x00000000
+[1]Comp[2] @ 0x81400000: ROM Table
+Scanning ROMTbl @ 0x81400000
+[2]Comp[0] @ 0x81410000: Cortex-A53
+[2]Comp[1] @ 0x81420000: CSS600-CTI
+Core found. Stopped ROM table scan: https://wiki.segger.com/ROMTableScan
+Cortex-A53 @ 0x81410000 (detected)
+CoreCTI @ 0x81420000 (detected)
+Debug architecture: ARMv8.0
+6 code breakpoints, 4 data breakpoints
+Processor features:
+  EL0 support: AArch64 + AArch32
+  EL1 support: AArch64 + AArch32
+  EL2 support: AArch64 + AArch32
+  EL3 support: AArch64 + AArch32
+  FPU support: Single + Double + Conversion
+Add. info (CPU temp. halted)
+Current exception level: EL3
+Exception level AArch usage:
+  EL0: AArch32
+  EL1: AArch32
+  EL2: AArch32
+  EL3: AArch32
+Non-secure status: Secure
+Cache info:
+  Inner cache boundary: none
+  LoU Uniprocessor: 1
+  LoC: 2
+  LoU Inner Shareable: 1
+I-Cache L1: 32 KB, 256 Sets, 64 Bytes/Line, 2-Way
+D-Cache L1: 32 KB, 128 Sets, 64 Bytes/Line, 4-Way
+Unified-Cache L2: 1024 KB, 1024 Sets, 64 Bytes/Line, 16-Way
+Memory zones:
+  Zone: "Default" Description: Default access mode
+Cortex-A53 identified.
