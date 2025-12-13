@@ -4003,7 +4003,7 @@ static void t507_audiopll_initialize(uint_fast32_t mclkf, unsigned X)
 	//	PLL_AUDIO(2X) = 24 MHz*N/M0/M1/P/2
 	//	PLL_AUDIO(1X) = 24 MHz*N/M0/M1/P/4
 	uint_fast32_t needfreq = mclkf * M0 * M1 * PLL_POST_DIV_P * X;
-	PRINTF("t507_audiopll_initialize: needfreq=%u\n", needfreq);
+	//PRINTF("t507_audiopll_initialize: needfreq=%u\n", needfreq);
 	uint_fast64_t t = ((uint_fast64_t) needfreq << FRACBITS) / allwnr_t507_get_hosc_freq();
 	unsigned INTEGERN = t >> FRACBITS;
 	unsigned FRACN = t & FRACMASK;
@@ -4015,7 +4015,7 @@ static void t507_audiopll_initialize(uint_fast32_t mclkf, unsigned X)
 		(M1 - 1) * (UINT32_C(1) << 1) |	// M1
 		(M0 - 1) * (UINT32_C(1) << 0) |	// M0
 		0;
-    PRINTF("INTEGERN=%08X, FRACN=%08X, ~FRACN=%08X\n", INTEGERN, FRACN, ~ FRACN & FRACMASK);
+    //PRINTF("INTEGERN=%08X, FRACN=%08X, ~FRACN=%08X\n", INTEGERN, FRACN, ~ FRACN & FRACMASK);
 
 	if (0)
 	{
@@ -4038,16 +4038,16 @@ static void t507_audiopll_initialize(uint_fast32_t mclkf, unsigned X)
 	    // Whhen PLL_AUDIO(1X) is 24.576 MHz
 	    // AUDIO_HUB_CLK_REG should use 01: PLL_AUDIO(2X)
 	    //CCU->PLL_AUDIO_PAT0_CTRL_REG = 0xE000C49B; //SIG_DELT_PAT_EN=1, SPR_FREQ_MODE=3, WAVE_STEP=0, WAVE_BOT=0xC49B
-	    PRINTF("1 t507_audiopll_initialize: PLL_AUDIO_CTRL_REG=%08X PLL_AUDIO_PAT0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG, (unsigned) CCU->PLL_AUDIO_PAT0_CTRL_REG);
+	    //PRINTF("1 t507_audiopll_initialize: PLL_AUDIO_CTRL_REG=%08X PLL_AUDIO_PAT0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG, (unsigned) CCU->PLL_AUDIO_PAT0_CTRL_REG);
 	    // 384000
 	    // 48000
 	    // 49152
 		uint_fast64_t mod = UINT64_C(1) << FRACBITS;
 	    uint_fast32_t z = mod - ( (mod * 48000) / 49152);
-	    PRINTF("z 1 = %08X\n", (unsigned) z);
+	    //PRINTF("z 1 = %08X\n", (unsigned) z);
 	    z = 0x8300;	// 0x8300 - нчинает выкиывать сэмплы, 0x8301 - добавлять
 	    //z = (FRACN & FRACMASK);
-	    PRINTF("z 2 = %08X\n", (unsigned) z);
+	    //PRINTF("z 2 = %08X\n", (unsigned) z);
 	    CCU->PLL_AUDIO_PAT0_CTRL_REG =
 			1 * (UINT32_C(1) << 31) |	// SIG_DELT_PAT_EN
 			0x03 * (UINT32_C(1) << 29) |	// SPR_FREQ_MODE 11: Triangular(n bit)
@@ -4058,13 +4058,13 @@ static void t507_audiopll_initialize(uint_fast32_t mclkf, unsigned X)
 
 		allwnr_t507_module_pll_enable(& CCU->PLL_AUDIO_CTRL_REG, INTEGERN);
 	    //local_delay_ms(2);
-	    PRINTF("2 t507_audiopll_initialize: PLL_AUDIO_CTRL_REG=%08X PLL_AUDIO_PAT0_CTRL_REG=%08X PLL_AUDIO_PAT1_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG, (unsigned) CCU->PLL_AUDIO_PAT0_CTRL_REG, (unsigned) CCU->PLL_AUDIO_PAT1_CTRL_REG);
+	    //PRINTF("2 t507_audiopll_initialize: PLL_AUDIO_CTRL_REG=%08X PLL_AUDIO_PAT0_CTRL_REG=%08X PLL_AUDIO_PAT1_CTRL_REG=%08X\n", (unsigned) CCU->PLL_AUDIO_CTRL_REG, (unsigned) CCU->PLL_AUDIO_PAT0_CTRL_REG, (unsigned) CCU->PLL_AUDIO_PAT1_CTRL_REG);
 
 	    // Работает:
 		//	1 t507_audiopll_initialize: PLL_AUDIO_CTRL_REG=B8010F01 PLL_AUDIO_PAT0_CTRL_REG=E000C49B
 		//	2 t507_audiopll_initialize: PLL_AUDIO_CTRL_REG=B8010F01 PLL_AUDIO_PAT0_CTRL_REG=E0008300
 
-	    PRINTF("allwnr_t507_get_pll_audio_4x_freq()=%u\n", (unsigned) allwnr_t507_get_pll_audio_4x_freq());
+	    //PRINTF("allwnr_t507_get_pll_audio_4x_freq()=%u\n", (unsigned) allwnr_t507_get_pll_audio_4x_freq());
 	}
 }
 #elif CPUSTYLE_A64
@@ -4155,10 +4155,10 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 			prei * (UINT32_C(1) << 8) |	// (0..3) div2
 			0;
 		// i2s0: mclkf=12288000, bclkf=24576000, NSLOTS=16, ahub_freq=258000000
-		PRINTF("i2s%u: needdiv=%u, prei=%u, preirecommended=%u, mclkf=%u, bclkf=%u, NSLOTS=%u\n", ix, (unsigned) calcdivround2(clk, mclkf), prei, preirecommended, mclkf, bclkf, NSLOTS);
-		PRINTF("i2s%u: clk=%u\n", ix, (unsigned) clk);
-		PRINTF("i2s%u: ahub_freq=%u\n", ix, (unsigned) allwnr_t507_get_ahub_freq());
-		PRINTF("i2s%u: samplerate=%u\n", ix, (unsigned) (allwnr_t507_get_ahub_freq() / 1024));
+//		PRINTF("i2s%u: needdiv=%u, prei=%u, preirecommended=%u, mclkf=%u, bclkf=%u, NSLOTS=%u\n", ix, (unsigned) calcdivround2(clk, mclkf), prei, preirecommended, mclkf, bclkf, NSLOTS);
+//		PRINTF("i2s%u: clk=%u\n", ix, (unsigned) clk);
+//		PRINTF("i2s%u: ahub_freq=%u\n", ix, (unsigned) allwnr_t507_get_ahub_freq());
+//		PRINTF("i2s%u: samplerate=%u\n", ix, (unsigned) (allwnr_t507_get_ahub_freq() / 1024));
 
 	}
 //	PRINTF("allwnr_t507_get_mbus_freq=%u\n", (unsigned) allwnr_t507_get_mbus_freq());
@@ -4361,9 +4361,9 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 			const uint_fast32_t clk = allwnr_t507_get_ahub_freq();
 			const unsigned mclkdiv = 2;//calcdivround2(clk, mclkf);	// 2
 			const unsigned bclkdiv = 16;//calcdivround2(clk, bclkf);	// 16
-			PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
-			PRINTF("i2s%u: need mclkdiv=%u, bclkdiv=%u\n", ix, mclkdiv, bclkdiv);
-			PRINTF("i2s%u: bclkout=%u\n", ix, (unsigned) (allwnr_t507_get_ahub_freq() / bclkdiv));
+//			PRINTF("i2s%u: mclkf=%u, bclkf=%u, NSLOTS=%u, ahub_freq=%u\n", ix, mclkf, bclkf, NSLOTS, (unsigned) allwnr_t507_get_ahub_freq());
+//			PRINTF("i2s%u: need mclkdiv=%u, bclkdiv=%u\n", ix, mclkdiv, bclkdiv);
+//			PRINTF("i2s%u: bclkout=%u\n", ix, (unsigned) (allwnr_t507_get_ahub_freq() / bclkdiv));
 
 			i2s->I2Sn_CLKD =
 				!! master * (UINT32_C(1) << 8) |	// 1: Enable MCLK Output
@@ -4375,9 +4375,9 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		{
 			// Slave
 			i2s->I2Sn_CLKD =
-				0 * (UINT32_C(1) << 8) |	// 1: Enable MCLK Output
-				0x0F * (UINT32_C(1) << 0) |		/* MCLKDIV */
-				0x0F * (UINT32_C(1) << 4) |		/* BCLKDIV */
+				!! master * (UINT32_C(1) << 8) |	// 1: Enable MCLK Output
+				0x0F * (UINT32_C(1) << 0) |		/* MCLKDIV CLKD_Div192 */
+				0x0F * (UINT32_C(1) << 4) |		/* BCLKDIV CLKD_Div192 */
 				0;
 		}
 
