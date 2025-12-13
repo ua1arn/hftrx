@@ -5,15 +5,22 @@
 // UA1ARN
 //
 
-#include "hardware.h"	/* зависящие от процессора функции работы с портами */
-#include "formats.h"	/* зависящие от процессора функции работы с портами */
+#include "hardware.h"
+
+#if ! LINUX_SUBSYSTEM
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
+#include "formats.h"	/* Отладочная печать */
 
-#if ! LINUX_SUBSYSTEM
+#include <sys/stat.h>
+#include <sys/unistd.h>
+#include <sys/reent.h>
+#include <string.h>
+#include <errno.h>
+#include <malloc.h>
 
 #if (CPUSTYLE_RISCV || defined(__aarch64__))
 
@@ -105,11 +112,6 @@ void _stack_init(void)
 {
 
 }
-
-#include <sys/stat.h>
-#include <sys/unistd.h>
-#include <string.h>
-#include <errno.h>
 
 static int SER_GetChar(void)
 {
@@ -244,7 +246,6 @@ size_t strlen(const char * s1)
 
 #if 0
 
-#include <malloc.h>
 static LCLSPINLOCK_t lockmalloc = LCLSPINLOCK_INIT;
 
 void __malloc_lock(struct _reent * reent)
@@ -269,7 +270,6 @@ void __malloc_unlock(struct _reent * reent)
 	#warning Have __DYNAMIC_REENT__
 #endif
 
-#include <sys/reent.h>
 
 // Check __DYNAMIC_REENT__ and __SINGLE_THREAD__
 struct _reent * __getreent(void)
@@ -278,8 +278,6 @@ struct _reent * __getreent(void)
     PRINTF("__getreent: CPU%u\n", arm_hardware_cpuid());
     return r + arm_hardware_cpuid();
 }
-
-//#include <sys/lock.h>
 
 /* Make sure that Newlib was compiled with retargetable locking support. */
 #ifndef _RETARGETABLE_LOCKING
@@ -385,9 +383,9 @@ void __retarget_lock_release_recursive(_LOCK_T lock)
 }
 #endif
 
-#endif /* ! LINUX_SUBSYSTEM */
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+#endif /* ! LINUX_SUBSYSTEM */
 
