@@ -1,0 +1,7 @@
+https://habr.com/ru/sandbox/156180/
+
+
+https://habr.com/ru/articles/565544/
+
+
+https://github.com/espressif/openocd-esp32/blob/master/tcl/interface/ftdi/esp_ftdi.cfg
