@@ -514,6 +514,11 @@ printhex32(uintptr_t voffs, const void * buff, unsigned length)
 {
 }
 
+void
+printhex64(uintptr_t voffs, const void * buff, unsigned length)
+{
+}
+
 #endif /* WITHDEBUG */
 
 void strtrim(char * s)
