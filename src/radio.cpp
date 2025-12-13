@@ -509,13 +509,6 @@ void inputevent_fill(inputevent_t * e)
 #define WITHPOWERTRIMMAX    100    	// Верхний предел регулировки (показываемый на дисплее)
 #define WITHPOWERTRIMATU    10    	// Значение для работы автотюнера
 
-#if WITHTOUCHGUI
-static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
-static enc2_menu_t enc2_menu;
-static uint_fast8_t encoder2_redirect = 0;
-
-#endif /* WITHTOUCHGUI */
-
 static uint_fast32_t
 nextfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 							   uint_fast32_t step, uint_fast32_t top);
@@ -692,15 +685,21 @@ static uint_fast8_t getactualmainsubrx(void);
 static uint_fast8_t getfreqbandgroup(const uint_fast32_t freq);
 
 
-const char * pd_getlonglabel(const struct paramdefdef * pd)
+static const char * pd_getlonglabel(const struct paramdefdef * pd)
 {
 	return pd->label;
 }
 
 
-const char * pd_getshortlabel(const struct paramdefdef * pd)
+static const char * pd_getshortlabel(const struct paramdefdef * pd)
 {
 	return pd->qlabel;
+}
+
+/* получение названия редактируемого параметра */
+static const char * pd_getenc2label(const struct paramdefdef * pd)
+{
+	return pd->enc2label;
 }
 
 static const struct paramdefdef * getmiddlemenu(uint_fast8_t section, uint_fast8_t * active);
@@ -809,14 +808,14 @@ savemenuvalue(
 			return;
 		if (pv16 != NULL)
 		{
-			ASSERT3(* pv16 <= pd->qupper, __FILE__, __LINE__, pd->label);
-			ASSERT3(* pv16 >= pd->qbottom, __FILE__, __LINE__, pd->label);
+			ASSERT3(* pv16 <= pd->qupper, __FILE__, __LINE__, pd_getlonglabel(pd));
+			ASSERT3(* pv16 >= pd->qbottom, __FILE__, __LINE__, pd_getlonglabel(pd));
 			save_i16(nvram, * pv16);		/* сохраняем отредактированное значение */
 		}
 		else if (pv8 != NULL)
 		{
-			ASSERT3(* pv8 <= pd->qupper, __FILE__, __LINE__, pd->label);
-			ASSERT3(* pv8 >= pd->qbottom, __FILE__, __LINE__, pd->label);
+			ASSERT3(* pv8 <= pd->qupper, __FILE__, __LINE__, pd_getlonglabel(pd));
+			ASSERT3(* pv8 >= pd->qbottom, __FILE__, __LINE__, pd_getlonglabel(pd));
 			save_i8(nvram, * pv8);		/* сохраняем отредактированное значение */
 		}
 	}
@@ -9113,16 +9112,6 @@ static const struct paramdefdef * enc2menus [] =
 
 #define ENC2POS_COUNT (sizeof enc2menus / sizeof enc2menus [0])
 
-/* получение названия редактируемого параметра */
-static
-const char *
-enc2menu_label_P(
-	const struct paramdefdef * const pd
-	)
-{
-	return pd->enc2label;
-}
-
 enum
 {
 	ENC2STATE_INITIALIZE,
@@ -9137,6 +9126,13 @@ static uint_fast8_t enc2pos;	// выбраный пунки меню
 
 #define RMT_ENC2STATE_BASE OFFSETOF(struct nvmap, enc2state)
 #define RMT_ENC2POS_BASE OFFSETOF(struct nvmap, enc2pos)
+
+#if WITHTOUCHGUI
+static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
+static enc2_menu_t enc2_menu;
+static uint_fast8_t encoder2_redirect = 0;
+
+#endif /* WITHTOUCHGUI */
 
 /* нажатие на второй валкодер */
 static void
@@ -9256,7 +9252,7 @@ uif_encoder2_rotate(
 void display2_fnblock9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 #if WITHENCODER2 && ! WITHTOUCHGUI
-	const char * const label = enc2menu_label_P(enc2menus [enc2pos]);
+	const char * const label = pd_getenc2label(enc2menus [enc2pos]);
 	char bval [xspan + 1];	// тут формируется текст для отображения
 	switch (enc2state)
 	{
@@ -17454,6 +17450,17 @@ void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint
 #endif /* WITHMENU */
 
 size_t
+param_formatabel(
+	const struct paramdefdef * pd,
+	char * buff,
+	size_t count,	// размер буфера
+	const char * (* getlabel)(const struct paramdefdef * pd)
+	)
+{
+	return local_snprintf_P(buff, count, "%s", getlabel(pd));
+}
+
+size_t
 param_format(
 	const struct paramdefdef * pd,
 	char * buff,
@@ -20676,7 +20683,7 @@ uint_fast16_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 		if (ismenukinddp(mv->pd, ITEM_GROUP))
 		{
 			menu_names_t * const v = & vals [count];
-			safestrcpy(v->name, ARRAY_SIZE(v->name), mv->pd->label);
+			param_formatabel(mv->pd, v->name, ARRAY_SIZE(v->name), pd_getlonglabel);
 			v->index = el;
 			count++;
 		}
@@ -20697,7 +20704,7 @@ uint_fast16_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_
 		if (ismenukinddp(mv->pd, ITEM_VALUE))
 		{
 			menu_names_t * const v = & vals [count];
-			safestrcpy (v->name, ARRAY_SIZE(v->name), mv->pd->label);
+			param_formatabel(mv->pd, v->name, ARRAY_SIZE(v->name), pd_getlonglabel);
 			v->index = el;
 			count++;
 		}
@@ -21362,8 +21369,7 @@ void hamradio_save_gui_settings(const void * ptrv)
 #if WITHENCODER2
 void hamradio_gui_enc2_update(void)
 {
-	const char * const text = enc2menu_label_P(enc2menus [enc2pos]);
-	safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
+	param_formatabel(enc2menus [enc2pos], enc2_menu.param, ARRAY_SIZE(enc2_menu.param), pd_getenc2label);
 	param_format(enc2menus [enc2pos], enc2_menu.val, ARRAY_SIZE(enc2_menu.val), param_getvalue(enc2menus [enc2pos]));
 	enc2_menu.updated = 1;
 	enc2_menu.state = enc2state;

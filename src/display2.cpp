@@ -1294,6 +1294,7 @@ typedef struct {
 	gxdrawb_t dbv;
 } label_bg_t;
 
+// Заготовленные background
 static label_bg_t label_bg [] = {
 		{ 5, & colors_2state_alt [0], },
 		{ 5, & colors_2state_alt [1], },
@@ -1319,6 +1320,42 @@ void layout_init(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t ygrid, u
 	} while (++ i < ARRAY_SIZE(label_bg));
 }
 
+static void local_strtrim(char * s)
+{
+	// удаляем пробелы и табы с начала строки:
+	int i = 0;
+	// Пoиск первого не-пробела
+	while ((s [i] == ' ') || (s [i] == '\t'))
+	{
+		i ++;
+	}
+	if (i > 0)
+	{
+		size_t slen = strlen(s);
+		// todo: memmove use
+		size_t j;
+		for (j = 0; j < slen; j ++)
+		{
+			s [j] = s [j + i];
+		}
+		s [j] = '\0';
+	}
+
+	// удаляем пробелы и табы с конца строки:
+	if (strlen(s))
+	{
+		size_t i = strlen(s) - 1;
+		while ((s [i] == ' ') || (s [i] == '\t'))
+		{
+			i --;
+		}
+		if (i < (strlen(s) - 1))
+		{
+			s [i + 1] = '\0';
+		}
+	}
+}
+
 void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORPIP_T color_fg, COLORPIP_T color_bg)
 {
 	uint_fast16_t xx = GRID2X(xgrid);
@@ -1327,7 +1364,7 @@ void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t
 	uint_fast8_t i = 0;
 	char buf [slen + 1];
 	strcpy(buf, str);
-	strtrim(buf);
+	local_strtrim(buf);
 #if WITHALTERNATIVEFONTS
 	const uint_fast16_t width_str = getwidth_Pstring(buf, & gothic_12x16_p);
 #else

@@ -24,9 +24,6 @@ int local_vsnprintf_P( char * __restrict buffer, size_t count, const char * __re
 // Отладочная печать
 void debug_printf_P(const char * __restrict format, ... ) __attribute__ ((__format__ (__printf__, 1, 2)));
 
-char * safestrcpy(char * dst, size_t blen, const char * src);
-void strtrim(char * s);
-
 void printhex(uintptr_t offs, const void * buff, unsigned length);
 void printhex32(uintptr_t voffs, const void * vbuff, unsigned length);
 void printhex64(uintptr_t voffs, const void * vbuff, unsigned length);
