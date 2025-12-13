@@ -10515,7 +10515,6 @@ static void enctest(void)
 
 #endif
 
-
 void hightests(void)
 {
 #if LCDMODE_LTDC
@@ -10534,6 +10533,15 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0
+	{
+		PRINTF("Malloc test\n");
+		void * p = malloc(100);
+		p = realloc(p, 200);
+		free(p);
+		PRINTF("Malloc test done\n");
+	}
+#endif
 #if 0
 	{
 		enctest();

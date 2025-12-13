@@ -243,6 +243,25 @@ size_t strlen(const char * s1)
 #endif /* defined(__aarch64__) */
 
 #if 0
+
+#include <malloc.h>
+static LCLSPINLOCK_t lockmalloc = LCLSPINLOCK_INIT;
+
+void __malloc_lock(struct _reent * reent)
+{
+	PRINTF("%s: %p core%u\n", __func__, reent, board_dpc_coreid());
+	//LCLSPIN_LOCK(& lockmalloc);
+}
+
+void __malloc_unlock(struct _reent * reent)
+{
+	PRINTF("%s: %p core%u\n", __func__, reent, board_dpc_coreid());
+	//LCLSPIN_UNLOCK(& lockmalloc);
+}
+
+#endif
+
+#if 0
 #if defined __SINGLE_THREAD__
 	#warning Have __SINGLE_THREAD__
 #endif
