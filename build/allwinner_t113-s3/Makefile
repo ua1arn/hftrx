@@ -22,6 +22,7 @@ TRGT = $(TRGT2)-
 
 #XFEL = ../../tools/xfel-windows-v1.3.4/xfel
 XFEL = ./xfel_fixed_t113-s3
+BUSYBOX = busybox
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -260,7 +261,7 @@ DDR_INIT=ddr_init_s4
 ddr_init_s4:
 	$(XFEL) write 0x00028000 fsbl_frz_s4.alw32
 	$(XFEL) exec $(SystemDRAMInit) 
-	busybox sleep 0.5s
+	$(BUSYBOX) sleep 0.5s
 
 app_run64: $(PROJECT)_app.alw32 $(DDR_INIT)
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
@@ -292,14 +293,14 @@ BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP2: $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.bt0: $(PROJECT)_boot.bin
-	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }' | busybox sort
+	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
 	./egontool -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin
 	./stm32image -v 0 -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
 
 $(PROJECT)_app.alw32_TEST: $(PROJECT)_app.bin
-	./stm32image -v 0 \`busybox -l 0x40000100 -e `grep -E -e ' Reset_Handler$$' $(PROJECT)_app.map | cut -F 2` -s $(PROJECT)_app.bin -d $@\`
+	./stm32image -v 0 \`$(BUSYBOX) -l 0x40000100 -e `grep -E -e ' Reset_Handler$$' $(PROJECT)_app.map | cut -F 2` -s $(PROJECT)_app.bin -d $@\`
 
 $(OBJSC):
 	@mkdir -p $(@D)

@@ -21,6 +21,7 @@ TRGT2 = arm-none-eabi
 TRGT = $(TRGT2)-
 
 DFUUTIL = ./dfu-util
+BUSYBOX = busybox
 
 #UADEFS += -D"WITHSMPSYSTEM"
 

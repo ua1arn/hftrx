@@ -21,6 +21,7 @@ TRGT2 = arm-none-eabi
 TRGT = $(TRGT2)-
 
 XFEL = ../../tools/xfel-windows-v1.3.4/xfel
+BUSYBOX = busybox
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -242,7 +243,7 @@ bootloader: BOOT2
 BOOT2: fsbl.bt0
 
 fsbl.bt0: $(PROJECT)_boot.bin
-	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }' | busybox sort
+	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
 	./egontool -old -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_a64_boot.map
@@ -253,6 +254,7 @@ SystemExecAARCH64 = 0x0001aa04
 ddr_init: fsbl_frz.alw32
 	$(XFEL) write 0x00018000 fsbl_frz.alw32
 	$(XFEL) exec $(SystemDRAMInit)
+	$(BUSYBOX) sleep 0.5s
 
 # test bootloader
 _app_run: fsbl.bt0

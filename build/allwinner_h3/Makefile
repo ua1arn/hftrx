@@ -21,6 +21,7 @@ TRGT = $(TRGT2)-
 
 XFEL = ../../tools/xfel-windows-v1.3.4/xfel
 #XFEL = ./xfel_fixed_t113-s3
+BUSYBOX = busybox
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -242,7 +243,7 @@ bootloader: BOOT2 fsbl.bt0
 
 ddr_init:
 	$(XFEL) ddr h3
-	busybox sleep 0.5s
+	$(BUSYBOX) sleep 0.5s
 
 app_run: $(PROJECT)_app.alw32 ddr_init
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
@@ -266,7 +267,7 @@ BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP2: $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.bt0: $(PROJECT)_boot.bin
-	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }' | busybox sort
+	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
 	./egontool -old -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin

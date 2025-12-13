@@ -23,6 +23,7 @@ TRGT = $(TRGT2)-
 
 _XFEL = ../../tools/xfel-windows-v1.3.2/xfel
 XFEL = ./xfel_lpddr4
+BUSYBOX = busybox
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -236,7 +237,7 @@ allZ:
 	@echo $(abspath $(OBJS))
 
 bootloader: BOOT2
-	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }' | busybox sort
+	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
 	./egontool -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_a133_boot.map - address of SystemDRAMInit
@@ -257,7 +258,7 @@ ddrinit_a133__: ddrinit_a133.bin
 
 ddrinit_a133_:
 	$(XFEL) ddr lpddr4
-	busybox sleep 1s
+	$(BUSYBOX) sleep 1s
 
 ddrinit_a133: ddrinit_a133.bin
 	$(XFEL) write 0x00028000 ddrinit_a133.bin

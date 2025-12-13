@@ -22,6 +22,7 @@ TRGT2 = aarch64-none-elf
 TRGT = $(TRGT2)-
 
 XROCK = ../../tools/xrock-windows-v1.1.2/xrock
+BUSYBOX = busybox
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -243,7 +244,7 @@ allZ:
 	@echo $(abspath $(OBJS))
 
 bootloader: BOOT2
-	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }' | busybox sort
+	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
 	./egontool $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_t507_boot.map - address of SystemDRAMInit
@@ -264,7 +265,7 @@ ddrinit_h616: ddrinit_h616_lpddr3.bin
 
 ddrinit_t507_:
 	$(XROCK) ddr lpddr4
-	busybox sleep 1s
+	$(BUSYBOX) sleep 1s
 
 ddrinit_t507:
 	$(XROCK) write 0x00028000 ddrinit_t507_lpddr4.bin

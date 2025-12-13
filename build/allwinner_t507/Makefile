@@ -23,6 +23,7 @@ TRGT = $(TRGT2)-
 
 _XFEL = ../../tools/xfel-windows-v1.3.2/xfel
 XFEL = ./xfel_lpddr4
+BUSYBOX = busybox
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -241,7 +242,7 @@ allZ:
 	@echo $(abspath $(OBJS))
 
 bootloader: BOOT2
-	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }' | busybox sort
+	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
 	./egontool -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_t507_boot.map - address of SystemDRAMInit, SystemExecAARCH64
@@ -269,7 +270,7 @@ ddrinit_h618_lpddr4: ddrinit_h618_lpddr4.bin
 
 ddrinit_t507_:
 	$(XFEL) ddr lpddr4
-	busybox sleep 1s
+	$(BUSYBOX) sleep 1s
 
 ddrinit_t507: ddrinit_t507_lpddr4.bin
 	$(XFEL) write 0x00028000 ddrinit_t507_lpddr4.bin
@@ -304,7 +305,7 @@ $(PROJECT)_app.alw32: $(PROJECT)_app.bin
 	./stm32image -v 0 -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
 
 $(PROJECT)_app.alw32_TEST: $(PROJECT)_app.bin
-	./stm32image -v 0 \`busybox -l 0x40000100 -e `grep -E -e ' Reset_Handler$$' $(PROJECT)_app.map | cut -F 2` -s $(PROJECT)_app.bin -d $@\`
+	./stm32image -v 0 \`$(BUSYBOX) -l 0x40000100 -e `grep -E -e ' Reset_Handler$$' $(PROJECT)_app.map | cut -F 2` -s $(PROJECT)_app.bin -d $@\`
 
 $(OBJSC):
 	@mkdir -p $(@D)
