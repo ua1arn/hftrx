@@ -5917,13 +5917,13 @@ void calcnormaltriangle(const float * model)
 
 static void SecondCPUTaskSGI13(void)
 {
-	const int cpu = __get_MPIDR() & 0x03;
+	const int cpu = arm_hardware_cpuid();
 	PRINTF("mSGI13 Run debug thread test: I am CPU=%d\n", cpu);
 }
 
 static void SecondCPUTaskSGI15(void)
 {
-	const int cpu = __get_MPIDR() & 0x03;
+	const int cpu = arm_hardware_cpuid();
 	PRINTF("mSGI15 Run debug thread test: I am CPU=%d\n", cpu);
 }
 
@@ -12140,7 +12140,7 @@ void hightests(void)
 		PRINTF("main: gARM_BASEPRI_ALL_ENABLED=%02X, %02X, %02X, bpr=%02X\n", gARM_BASEPRI_ALL_ENABLED, GIC_ENCODE_PRIORITY(PRI_USER), GIC_GetInterfacePriorityMask(), GIC_GetBinaryPoint());
 		enum { TGCPUMASK1 = UINT32_C(1) << 1 };
 		enum { TGCPUMASK0 = UINT32_C(1) << 0 };
-		const int cpu = __get_MPIDR() & 0x03;
+		const int cpu = arm_hardware_cpuid();
 
 		PRINTF("Main thread test: I am CPU=%d\n", cpu);
 		local_delay_ms(100);

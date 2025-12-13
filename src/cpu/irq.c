@@ -1792,38 +1792,6 @@ void SError_Handler(void * frame)
 
 #if defined(__aarch64__) //defined(__ARM_ARCH) && (__ARM_ARCH == 8)
 
-
-
-///**
-//\brief   Store-Release Exclusive (8 bit)
-//\details Executes a STLB exclusive instruction for 8 bit values.
-//\param [in]  value  Value to store
-//\param [in]    ptr  Pointer to location
-//\return          0  Function succeeded
-//\return          1  Function failed
-//*/
-//__STATIC_FORCEINLINE uint32_t __STXRB(uint8_t value, volatile uint8_t *ptr)
-//{
-//	uint32_t result;
-//
-//	__ASM volatile ("STXRB %0, %2, %1" : "=&r" (result), "=Q" (*ptr) : "r" ((uint32_t)value) : "memory" );
-//	return (result);
-//}
-//
-///**
-//\brief   Load-Acquire Exclusive (8 bit)
-//\details Executes a LDAB exclusive instruction for 8 bit value.
-//\param [in]    ptr  Pointer to data
-//\return             value of type uint8_t at (*ptr)
-//*/
-//__STATIC_FORCEINLINE uint8_t __LDAXRB(volatile uint8_t *ptr)
-//{
-//	uint32_t result;
-//
-//	__ASM volatile ("ldaxrb %0, %1" : "=r" (result) : "Q" (*ptr) : "memory" );
-//	return ((uint8_t)result);    /* Add explicit type cast here */
-//}
-
 static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, int line)
 {
 #if WITHDEBUG
@@ -1871,6 +1839,36 @@ static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, i
 #endif /* WITHDEBUG */
 }
 
+static int lclspin_traylock_work(lclspinlock_t * __restrict p, const char * file, int line)
+{
+	// Note:__SEVL,  __LDAXRB and __STXRB are CMSIS functions
+//	.func spin_lock
+//		mov	w2, #1
+//		sevl
+//	l1:	wfe
+//	l2:	ldaxr	w1, [x0]
+//		cbnz	w1, l1
+//		stxr	w1, w2, [x0]
+//		cbnz	w1, l2
+//		ret
+//	.endfunc //spin_lock
+	__SEVL();
+	__WFE();
+	if (__LDAXRB(& p->lock) != 0)// Wait until
+		return 0;
+	// Lock_Variable is free
+	if (__STXRB(1, & p->lock)) // Try to set
+		return 0;
+	//__DMB();		// Do not start any other memory access
+	// until memory barrier is completed
+#if WITHDEBUG
+	p->file = file;
+	p->line = line;
+	p->cpuid = arm_hardware_cpuid();
+#endif /* WITHDEBUG */
+	return 1;
+}
+
 static void lclspin_unlock_work(lclspinlock_t * __restrict p)
 {
 	// Note: __STLRB CMSIS function
@@ -1884,6 +1882,24 @@ static void lclspin_unlock_work(lclspinlock_t * __restrict p)
 #else
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
+static int lclspin_traylock_work(lclspinlock_t * __restrict p, const char * file, int line)
+{
+	// Note: __LDREXW and __STREXW are CMSIS functions
+	int status;
+	if (__LDREXB(& p->lock) != 0)// Wait until
+		return 0;
+	// Lock_Variable is free
+	if (__STREXB(1, & p->lock)) // Try to set
+		return 0;
+	__DMB();		// Do not start any other memory access
+	// until memory barrier is completed
+#if WITHDEBUG
+	p->file = file;
+	p->line = line;
+	p->cpuid = arm_hardware_cpuid();
+#endif /* WITHDEBUG */
+	return 1;
+}
 static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, int line)
 {
 #if WITHDEBUG
@@ -1966,16 +1982,27 @@ static void lclspin_lock_dummy(lclspinlock_t * __restrict p, const char * file, 
 {
 }
 
+static int lclspin_traylock_dummy(lclspinlock_t * __restrict p, const char * file, int line)
+{
+	return 1;
+}
+
 void lclspin_unlock_dummy(lclspinlock_t * __restrict p)
 {
 }
 
 static void (* lclspin_lock_p)(lclspinlock_t * __restrict p, const char * file, int line) = & lclspin_lock_dummy;
+static int (* lclspin_traylock_p)(lclspinlock_t * __restrict p, const char * file, int line) = & lclspin_traylock_dummy;
 static void (* lclspin_unlock_p)(lclspinlock_t * __restrict p) = & lclspin_unlock_dummy;
 
 void lclspin_lock(lclspinlock_t * __restrict p, const char * file, int line)
 {
 	lclspin_lock_p(p, file, line);
+}
+
+int lclspin_traylock(lclspinlock_t * __restrict p, const char * file, int line)
+{
+	return lclspin_traylock_p(p, file, line);
 }
 
 void lclspin_unlock(lclspinlock_t * __restrict p)
@@ -1987,6 +2014,7 @@ void lclspin_unlock(lclspinlock_t * __restrict p)
 void lclspin_enable(void)
 {
 	lclspin_lock_p = & lclspin_lock_work;
+	lclspin_traylock_p = & lclspin_traylock_work;
 	lclspin_unlock_p = & lclspin_unlock_work;
 }
 

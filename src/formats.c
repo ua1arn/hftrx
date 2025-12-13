@@ -557,16 +557,6 @@ int dbg_getchar(char * r)
 	return HARDWARE_DEBUG_GETCHAR(r);
 }
 
-int dbg_putchar(int c)
-{
-	if (c == '\n')
-		dbg_putchar('\r');
-
-	while (HARDWARE_DEBUG_PUTCHAR(c) == 0)
-		;
-	return c;
-}
-
 int dbg_writechar(int c)
 {
 	while (HARDWARE_DEBUG_PUTCHAR(c) == 0)
@@ -574,14 +564,12 @@ int dbg_writechar(int c)
 	return c;
 }
 
-int dbg_puts_impl_P(const FLASHMEM char * s)
+int dbg_putchar(int c)
 {
-	char c;
-	while ((c = * s ++) != '\0')
-	{
-		dbg_putchar(c);
-	}
-	return 0;
+	if (c == '\n')
+		dbg_putchar('\r');
+
+	return dbg_writechar(c);
 }
 
 int dbg_puts_impl(const char * s)
@@ -620,11 +608,6 @@ int dbg_writechar(int c)
 	return c;
 }
 
-int dbg_puts_impl_P(const FLASHMEM char * s)
-{
-	(void) s;
-	return 0;
-}
 int dbg_puts_impl(const char * s)
 {
 	(void) s;

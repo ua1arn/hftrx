@@ -265,9 +265,11 @@ typedef struct lclspinlock_tag {
 #if WITHDEBUG
 	#define LCLSPINLOCK_INIT { 0, "z", 0, 255 }
 	#define LCLSPINLOCK_INITIALIZE(p) do { (p)->lock = 0; (p)->file = "n"; (p)->line = 0, (p)->cpuid = 255; } while (0)
+	#define LCLSPINLOCK_UNINITIALIZE(p) do { } while (0)
 #else /* WITHDEBUG */
 	#define LCLSPINLOCK_INIT { 0, }
 	#define LCLSPINLOCK_INITIALIZE(p) do { (p)->lock = 0; } while (0)
+	#define LCLSPINLOCK_UNINITIALIZE(p) do { } while (0)
 #endif /* WITHDEBUG */
 
 typedef struct irqlspinlock_tag
@@ -277,6 +279,7 @@ typedef struct irqlspinlock_tag
 
 #define IRQLSPINLOCK_INIT { LCLSPINLOCK_INIT }
 #define IRQLSPINLOCK_INITIALIZE(p) do { LCLSPINLOCK_INITIALIZE(& (p)->lock); } while (0)
+#define IRQLSPINLOCK_UNINITIALIZE(p) do { LCLSPINLOCK_UNINITIALIZE(p); } while (0)
 
 #else /* ! LINUX_SUBSYSTEM */
 
@@ -289,6 +292,7 @@ typedef struct irqlspinlock_tag
 extern pthread_mutex_t linux_md;	/* added by mgs */
 #define IRQLSPINLOCK_INIT PTHREAD_MUTEX_INITIALIZER
 #define IRQLSPINLOCK_INITIALIZE(p) do { LCLSPINLOCK_INITIALIZE(p); } while (0)
+#define IRQLSPINLOCK_UNINITIALIZE(p) do { LCLSPINLOCK_UNINITIALIZE(p); } while (0)
 
 #endif /* ! LINUX_SUBSYSTEM */
 
@@ -314,10 +318,12 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define TARGETCPU_CPU1 (1u << 1)		// CPU #1
 
 	void lclspin_lock(lclspinlock_t * __restrict lock, const char * file, int line);
+	int lclspin_traylock(lclspinlock_t * __restrict lock, const char * file, int line);
 	void lclspin_unlock(lclspinlock_t * __restrict lock);
 	void lclspin_enable(void);	// Allwinner H3 - может работать с блокировками только после включения MMU
 
 	#define LCLSPIN_LOCK(p) do { lclspin_lock(p, __FILE__, __LINE__); } while (0)
+	#define LCLSPIN_TRAYLOCK(p) do { lclspin_traylock(p, __FILE__, __LINE__); } while (0)
 	#define LCLSPIN_UNLOCK(p) do { lclspin_unlock(p); } while (0)
 
 #else /* WITHSMPSYSTEM */

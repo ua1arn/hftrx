@@ -19172,7 +19172,7 @@ applowinitialize(void)
 	kbd_initialize();
 
 #if WITHDEBUG
-	dbg_puts_impl_P(PSTR("Most of hardware initialized.\n"));
+	dbg_puts_impl("Most of hardware initialized.\n");
 #endif
 	//for (;;);
 	//hardware_cw_diagnostics_noirq(1, 1, 0);	// 'S'
@@ -19494,7 +19494,7 @@ void initialize2(void)
 	(void) mclearnvram;
 
 #if WITHDEBUG
-	dbg_puts_impl_P(PSTR("initialize2: finished.\n"));
+	dbg_puts_impl("initialize2: finished.\n");
 #endif
 }
 

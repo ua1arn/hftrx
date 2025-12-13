@@ -191,12 +191,6 @@ _READ_WRITE_RETURN_TYPE __attribute__((used)) (_write)(int fd, const void * ptr,
 	return (i);
 }
 
-struct _reent * __getreent(void)
-{
-    static struct _reent r [4];
-    PRINTF("__getreent: CPU%u\n", arm_hardware_cpuid());
-    return r + arm_hardware_cpuid();
-}
 
 #if defined(__aarch64__) && 0
 
@@ -249,23 +243,123 @@ size_t strlen(const char * s1)
 #endif /* defined(__aarch64__) */
 
 #if 0
-void *_calloc_r(struct _reent *ptr, size_t size, size_t len)
+
+#include <sys/reent.h>
+
+// Check __DYNAMIC_REENT__ and __SINGLE_THREAD__
+struct _reent * __getreent(void)
 {
-	return calloc(size, len);
+    static struct _reent r [16];
+    PRINTF("__getreent: CPU%u\n", arm_hardware_cpuid());
+    return r + arm_hardware_cpuid();
 }
-void *_realloc_r(struct _reent *ptr, void *old, size_t newlen)
+
+//#include <sys/lock.h>
+
+/* Make sure that Newlib was compiled with retargetable locking support. */
+#ifndef _RETARGETABLE_LOCKING
+#error "Newlib must be compiled with retargetable locking support"
+#endif
+
+struct custom_lock
 {
-	return realloc(old, newlen);
+	LCLSPINLOCK_t lock;
+	IRQL_t oldIrql;
+};
+
+/* Static locks */
+struct custom_lock __lock___malloc_recursive_mutex;		// Используется ld и при работе программы
+struct custom_lock __lock___env_recursive_mutex;		// Используется ld
+struct custom_lock __lock___sfp_recursive_mutex;		// Используется ld
+struct custom_lock __lock___sinit_recursive_mutex;
+struct custom_lock __lock___atexit_recursive_mutex;
+
+struct custom_lock __lock___at_quick_exit_mutex;
+struct custom_lock __lock___tz_mutex;
+struct custom_lock __lock___dd_hash_mutex;
+struct custom_lock __lock___arc4random_mutex;
+
+// 	Allocate lock related resources.
+void __retarget_lock_init(_LOCK_T *lock)
+{
+	struct custom_lock * * const lpp = (struct custom_lock * *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lpp, board_dpc_coreid());
+	LCLSPINLOCK_INITIALIZE(& (* lpp)->lock);
 }
-void *_malloc_r(struct _reent *, size_t size)
+
+// Allocate recursive lock related resources.
+void __retarget_lock_init_recursive(_LOCK_T *lock)
 {
-	return malloc(size);
+	struct custom_lock * * const lpp = (struct custom_lock * *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lpp, board_dpc_coreid());
+	LCLSPINLOCK_INITIALIZE(& (* lpp)->lock);
 }
-void _free_r(struct _reent *ptr, void *addr)
+
+// Free lock related resources.
+void __retarget_lock_close(_LOCK_T lock)
 {
-    free(addr);
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	LCLSPINLOCK_UNINITIALIZE((* lpp)->lock);
+}
+
+// Free recursive lock related resources.
+void __retarget_lock_close_recursive(_LOCK_T lock)
+{
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	LCLSPINLOCK_UNINITIALIZE((* lpp)->lock);
+}
+
+// Acquire lock immediately after the lock object is available.
+void __retarget_lock_acquire(_LOCK_T lock)
+{
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	LCLSPIN_LOCK(& lp->lock);
+}
+
+// Acquire recursive lock immediately after the lock object is available.
+void __retarget_lock_acquire_recursive(_LOCK_T lock)
+{
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	//LCLSPIN_LOCK(& lp->lock);
+}
+
+// Acquire lock if the lock object is available.
+int __retarget_lock_try_acquire(_LOCK_T lock)
+{
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	return 0;
+}
+
+// Acquire recursive lock if the lock object is available.
+int __retarget_lock_try_acquire_recursive(_LOCK_T lock)
+{
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	return 0;
+}
+
+// Relinquish the lock ownership.
+void __retarget_lock_release(_LOCK_T lock)
+{
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	LCLSPIN_UNLOCK(& lp->lock);
+}
+
+// Relinquish the recursive lock ownership.
+void __retarget_lock_release_recursive(_LOCK_T lock)
+{
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	//LCLSPIN_UNLOCK(& lp->lock);
 }
 #endif
+
 #endif /* ! LINUX_SUBSYSTEM */
 
 #ifdef __cplusplus

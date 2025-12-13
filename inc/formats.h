@@ -32,8 +32,7 @@ void printhex32(uintptr_t voffs, const void * vbuff, unsigned length);
 void printhex64(uintptr_t voffs, const void * vbuff, unsigned length);
 
 // spool-based functions for debug
-int dbg_puts_impl_P(const char * s);
-int dbg_puts_impl(const char * s);
+int dbg_puts_impl(const char * s);	/* печать строки без использования форматных преоьразования */
 int dbg_putchar(int c);
 int dbg_writechar(int c);	/* вывод символа без преобразования '\n' в пару символов '\r' '\n' */
 int dbg_getchar(char * r);

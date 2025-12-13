@@ -477,7 +477,7 @@ void ft8_irqhandler_core0(void)
 void ft8_irqhandler_core1(void)
 {
 	uint8_t msg = ft8.int_core1;
-//	PRINTF("ft8_irqhandler_core1 CPU%u\n", (unsigned) (__get_MPIDR() & 0x03));
+//	PRINTF("ft8_irqhandler_core1 CPU%u\n", (unsigned) (arm_hardware_cpuid()));
 
 	if (msg == FT8_MSG_DECODE_1) // start decode
 	{
@@ -500,13 +500,13 @@ void ft8_irqhandler_core1(void)
 	else if (msg == FT8_MSG_ENABLE)	// enable ft8
 	{
 		ft8_enable = 1;
-		PRINTF("core %d: ft8 enabled\n", (unsigned) (__get_MPIDR() & 0x03));
+		PRINTF("core %d: ft8 enabled\n", (unsigned) (arm_hardware_cpuid()));
 	}
 	else if (msg == FT8_MSG_DISABLE)  // disable ft8
 	{
 		ft8_enable = 0;
 		ft8_stop_fill();
-		PRINTF("core %d: ft8 disabled\n", (unsigned) (__get_MPIDR() & 0x03));
+		PRINTF("core %d: ft8 disabled\n", (unsigned) (arm_hardware_cpuid()));
 	}
 	else if (msg == FT8_MSG_TX_DONE)
 	{
