@@ -55,6 +55,7 @@
 	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
+	STACKSIZEALL = 4096
 
 	.section ".text"
 
@@ -72,7 +73,7 @@ aarch64_stack_top:
     .func   Reset_CPUx_Handler
     /* invoked at ARM_MODE_SVC */
 Reset_CPUx_Handler:
-	ldr x29, = 4096
+	ldr x29, = STACKSIZEALL
 	ldr x30, = aarch64_stack_top
 	ldr x30, [x30]
 

@@ -55,7 +55,8 @@
 	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
- 
+ 	STACKSIZEALL = 512
+
 	.section ".text"
 	.code 32
 
@@ -91,7 +92,7 @@ Reset_CPUx_Handler:
 	*/
 	ldr		r2, = aarch32_stack_top
 	ldr		r2, [r2]
-	mov		r3, #4096
+	mov		r3, #STACKSIZEALL
 	msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
 	mov   sp, r2
 	mov   lr, #0
@@ -125,7 +126,6 @@ Reset_CPUx_Handler:
 	msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
 	mov   sp, r2
 	mov   lr, #0
-	sub	r2, r3, r2
 
 	ldr		r2, =Reset_CPUn_Handler
 	mov		lr, pc
