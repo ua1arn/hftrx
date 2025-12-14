@@ -118,13 +118,13 @@ Reset_Handler:
 	ldr x29, = 4096
 	ldr x30, =__stack
 	MSR SPSR_fiq, x30
-	sub x30, x29, x30
+	sub x30, x30, x29
 	MSR SPSR_und, x30
-	sub x30, x29, x30
+	sub x30, x30, x29
 	MSR SPSR_abt, x30
-	sub x30, x29, x30
+	sub x30, x30, x29
 	MSR SPSR_irq, x30
-	sub x30, x29, x30
+	sub x30, x30, x29
 	mov sp, x30
 	mov x30, XZR
 /*

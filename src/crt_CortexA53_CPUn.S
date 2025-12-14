@@ -78,13 +78,13 @@ Reset_CPUx_Handler:
 	ldr x30, [x30]
 
 	MSR SPSR_fiq, x30
-	sub x30, x29, x30
+	sub x30, x30, x29
 	MSR SPSR_und, x30
-	sub x30, x29, x30
+	sub x30, x30, x29
 	MSR SPSR_abt, x30
-	sub x30, x29, x30
+	sub x30, x30, x29
 	MSR SPSR_irq, x30
-	sub x30, x29, x30
+	sub x30, x30, x29
 	mov sp, x30
 	mov x30, XZR
 	B Reset_CPUn_Handler
