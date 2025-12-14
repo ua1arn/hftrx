@@ -10426,7 +10426,7 @@ static void csrftest(void)
 
 #endif
 
-#if 1
+#if 0
 
 static uint8_t data [6];
 static volatile uint_fast32_t pd;
