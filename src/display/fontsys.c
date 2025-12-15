@@ -344,72 +344,6 @@ void rendered_value_big_initialize(const gxstyle_t * gxstylep)
 	}
 }
 
-uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const unifont_t * font, char cc)
-{
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-    const uint_fast8_t width = font->font_charwidth(font, cc);
-    const uint_fast8_t ci = font->decode(font, cc);
-	savewhere = __func__;
-
-	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	/* копируем изображение БЕЗ цветового ключа */
-	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
-	colpip_bitblt(
-			db->cachebase, db->cachesize,
-			db,
-			xpix, ypix,	// координаты в окне получатля
-			dbvbig.cachebase, 0 * dbvbig.cachesize,
-			& dbvbig,
-			ci * BIGCHARW, 0,	// координаты окна источника
-			width, BIGCHARH, // размер окна источника
-			BITBLT_FLAG_NONE, COLORPIP_KEY
-			);
-
-	return xpix + width;
-}
-
-uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const unifont_t * font, char cc)
-{
-	const uint_fast8_t width = font->font_charwidth(font, cc);
-	const uint_fast8_t ci = font->decode(font, cc);
-	savewhere = __func__;
-
-	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	/* копируем изображение БЕЗ цветового ключа */
-	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
-	colpip_bitblt(
-			db->cachebase, db->cachesize,
-			db,
-			xpix, ypix,	// координаты в окне получатля
-			dbvhalf.cachebase, 0 * dbvhalf.cachesize,
-			& dbvhalf,
-			ci * HALFCHARW, 0,	// координаты окна источника
-			width, HALFCHARH, // размер окна источника
-			BITBLT_FLAG_NONE, COLORPIP_KEY
-			);
-
-	return xpix + width;
-}
-
-static uint_fast16_t
-unifont_put_char_bighalf_prerender(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
-	const unifont_t * font,
-	char cc,		// код символа для отображения
-	COLORPIP_T fg
-	)
-{
-	const uint_fast16_t ci = font->decode(font, cc);
-	const uint8_t * const charraster = font->fontraster + ci * font->font_charheight(font, cc) * font->bytesw;
-	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
-	const uint_fast16_t height2 = font->font_charheight(font, cc);	// number of rows
-	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
-	return unifont_put_char(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
-}
-
 static uint_fast16_t
 unifont_put_char_half_rendered(
 	const gxdrawb_t * db,
@@ -432,10 +366,10 @@ unifont_put_char_half_rendered(
 			db->cachebase, db->cachesize,
 			db,
 			xpix, ypix,	// координаты в окне получатля
-			dbvbig.cachebase, 0 * dbvbig.cachesize,
-			& dbvbig,
-			ci * BIGCHARW, 0,	// координаты окна источника
-			width2, BIGCHARH, // размер окна источника
+			dbvhalf.cachebase, 0 * dbvhalf.cachesize,
+			& dbvhalf,
+			ci * HALFCHARW, 0,	// координаты окна источника
+			width2, HALFCHARH, // размер окна источника
 			BITBLT_FLAG_NONE, COLORPIP_KEY
 			);
 
@@ -473,8 +407,49 @@ unifont_put_char_big_rendered(
 
 	return xpix + width2;
 }
+#else
+static uint_fast16_t
+unifont_put_char_big_rendered(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	)
+{
+	return unifont_put_char_small(db, xpix, ypix, font, cc, fg);
+}
+
+static uint_fast16_t
+unifont_put_char_half_rendered(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	)
+{
+	return unifont_put_char_small(db, xpix, ypix, font, cc, fg);
+}
 
 #endif /* WITHPRERENDER */
+
+static uint_fast16_t
+unifont_put_char_bighalf_prerender(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	)
+{
+	const uint_fast16_t ci = font->decode(font, cc);
+	const uint8_t * const charraster = font->fontraster + ci * font->font_charheight(font, cc) * font->bytesw;
+	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
+	const uint_fast16_t height2 = font->font_charheight(font, cc);	// number of rows
+	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
+	return unifont_put_char(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
+}
 
 #if defined (SMALLCHARW)
 // возвращаем на сколько пикселей вправо занимет отрисованный символ

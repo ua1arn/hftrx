@@ -497,8 +497,6 @@ display_freq(
 	pix_display_value_big(db, xpix, ypix, w, h, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep);
 }
 
-#if WITHPRERENDER
-
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 /* использование предварительно построенных изображений при отображении частоты */
 void
@@ -514,11 +512,10 @@ pix_rendered_value_big(
 	uint_fast8_t rj,	// = 1;		// right truncated
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf		// 0 - только большие цифры
+	uint_fast8_t withhalf,		// 0 - только большие цифры
+	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
 	)
 {
-	const unifont_t * const fontbig = & unifont_big;
-	const unifont_t * const fonthalf = & unifont_half;
 	//	if (width > ARRAY_SIZE(vals10))
 	//		width = ARRAY_SIZE(vals10);
 	//const uint_fast8_t comma2 = comma + 3;		// comma position (from right, inside width)
@@ -534,13 +531,13 @@ pix_rendered_value_big(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = render_char_big(db, xpix, ypix, fontbig, (z == 0) ? '.' : '#');	// '#' - узкий пробел. Точка всегда узкая
+			xpix = display_put_char_big(db, xpix, ypix, (z == 0) ? '.' : '#', dbstyle);	// '#' - узкий пробел. Точка всегда узкая
 		}
 		else if (comma == g)
 		{
 			z = 0;
 			half = withhalf;
-			xpix = render_char_big(db, xpix, ypix, fontbig, '.');
+			xpix = display_put_char_big(db, xpix, ypix, '.', dbstyle);
 		}
 
 		if (blinkpos == g)
@@ -549,20 +546,20 @@ pix_rendered_value_big(
 			// эта позиция редактирования частоты. Справа от неё включаем все нули
 			z = 0;
 			if (half)
-				xpix = render_char_half(db, xpix, ypix, fonthalf, bc);
+				xpix = display_put_char_half(db, xpix, ypix, bc, dbstyle);
 			else
-				xpix = render_char_big(db, xpix, ypix, fontbig, bc);
+				xpix = display_put_char_big(db, xpix, ypix, bc, dbstyle);
 		}
 		else if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = render_char_big(db, xpix, ypix, fontbig, ' ');	// supress zero
+			xpix = display_put_char_big(db, xpix, ypix, ' ', dbstyle);	// supress zero
 		else
 		{
 			z = 0;
 			if (half)
-				xpix = render_char_half(db, xpix, ypix, fonthalf, '0' + res.quot);
+				xpix = display_put_char_half(db, xpix, ypix, '0' + res.quot, dbstyle);
 
 			else
-				xpix = render_char_big(db, xpix, ypix, fontbig, '0' + res.quot);
+				xpix = display_put_char_big(db, xpix, ypix, '0' + res.quot, dbstyle);
 		}
 		freq = res.rem;
 	}
@@ -585,15 +582,14 @@ rendered_value_big(
 	uint_fast8_t rj,	// = 1;		// right truncated
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf		// 0 - только большие цифры
+	uint_fast8_t withhalf,		// 0 - только большие цифры
+	const gxstyle_t * dbstylep	/* foreground and background colors, text alignment */
 	)
 {
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
-	pix_rendered_value_big(db, xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf);
+	pix_rendered_value_big(db, xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep);
 }
-
-#endif /* WITHPRERENDER */
 
 void
 NOINLINEAT

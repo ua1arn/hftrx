@@ -420,9 +420,6 @@ uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_
 uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
-// большие и средние цифры (частота)
-uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const unifont_t * font, char cc);
-uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const unifont_t * font, char cc);
 
 void display_swrmeter(const gxdrawb_t * db,
 	uint_fast8_t x,
@@ -799,7 +796,8 @@ rendered_value_big(
 	uint_fast8_t rj,	// = 1;		// right truncated
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf		// 0 - только большие цифры
+	uint_fast8_t withhalf,		// 0 - только большие цифры
+	const gxstyle_t * dbstylep	/* foreground and background colors, text alignment */
 	);
 
 void
@@ -814,7 +812,8 @@ pix_rendered_value_big(
 	uint_fast8_t rj,	// = 1;		// right truncated
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf		// 0 - только большие цифры
+	uint_fast8_t withhalf,		// 0 - только большие цифры
+	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
 	);
 
 void rendered_value_big_initialize(const gxstyle_t * gxstylep);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
