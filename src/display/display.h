@@ -210,10 +210,10 @@ typedef struct unifont_tag
 	uint_fast8_t (* font_charheight)(const struct unifont_tag * font, char cc);	// высота в пикселях
 	uint_fast16_t (* font_draw)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
 	uint_fast16_t (* font_prerender)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
-	uint8_t renderw;	// фиксированная ширниа при рендеринге
 	uint8_t bytesw;		// байтов в одной строке знакогенератора символа
 	const uint8_t * fontraster;		// начало знакогенератора в памяти
 	const char * label;		// название для диагностики
+	const void * ubf;	// UB_Font / UBp_Font
 } unifont_t;
 
 enum gxstyle_texthalign
@@ -882,6 +882,98 @@ typedef struct pipparams_tag
 void display2_getpipparams(pipparams_t * p);	/* получить координаты окна с панорамой и/или водопадом. */
 void board_set_tvoutformat(uint_fast8_t v);	/* установить видеорежим */
 
+//--------------------------------------------------------------
+// Структура шрифта одного размера (не более 16 пикселей шириной)
+//--------------------------------------------------------------
+typedef struct UB_Font_t {
+  const uint16_t *table; // Таблица с данными
+  uint16_t width;        // Ширина символа (в пикселях)
+  uint16_t height;       // Высота символа (в пикселях)
+}UB_Font;
+
+
+//--------------------------------------------------------------
+// Структура шрифта одного размера (неболее 32 пикселей шириной)
+//--------------------------------------------------------------
+typedef struct UB_Font32_t {
+  const uint32_t *table; // Таблица с данными
+  uint16_t width;        // Ширина символа (в пикселях)
+  uint16_t height;       // Высота символа (в пикселях)
+}UB_Font32;
+
+//--------------------------------------------------------------
+// Структура пропорционального шрифта (не более 16 пикселей шириной)
+//--------------------------------------------------------------
+typedef struct UB_pFont_t {
+  const uint16_t *table; // Таблица с данными
+  uint16_t height;       // Высота символа (в пикселях)
+  uint16_t first_char;   // Первый символ  (Ascii код)
+  uint16_t last_char;    // Последний символ (Ascii код)
+}UB_pFont;
+
+//--------------------------------------------------------------
+// Рисует строку шрифтом одного размера на позиции х, у.
+// Цвет шрифта и фон (шрифт = макс 16 пикселей в ширину)
+// Шрифт должен быть передан с оператором &
+//--------------------------------------------------------------
+void UB_Font_DrawString(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char *ptr, const UB_Font *font, COLORPIP_T vg);
+
+//--------------------------------------------------------------
+// Рисует строку шрифтом одного размера на позиции х, у.
+// Цвет шрифта и фон (шрифт = макс 32 пикселя в ширину)
+// Шрифт должен быть передан с оператором &
+//--------------------------------------------------------------
+void UB_Font_DrawString32(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char *ptr, const UB_Font32 *font, COLORPIP_T vg);
+
+
+//--------------------------------------------------------------
+// Структура пропорционального шрифта (не более 32 пикселей шириной)
+//--------------------------------------------------------------
+typedef struct UB_pFont32_t {
+  const uint32_t *table; // Таблица с данными
+  uint16_t height;       // Высота символа (в пикселях)
+  uint16_t first_char;   // Первый символ  (Ascii код)
+  uint16_t last_char;    // Последний символ (Ascii код)
+}UB_pFont32;
+
+
+//--------------------------------------------------------------
+// Рисование строки пропорционального шрифта с позицией X, Y
+// Цвет шрифта плана и фона (шрифт = макс 16 пикселей в ширину)
+// Шрифт должен быть передан с оператором &
+//--------------------------------------------------------------
+void UB_Font_DrawPStringDbg(
+		const char * file, int line,
+		const gxdrawb_t * db,
+		uint_fast16_t x, uint_fast16_t y,
+		const char * ptr, const UB_pFont * font,
+		COLORPIP_T vg);
+
+#define UB_Font_DrawPString(...) do { \
+	UB_Font_DrawPStringDbg(__FILE__, __LINE__, __VA_ARGS__); \
+	} while (0)
+
+//--------------------------------------------------------------
+// Рисование строку пропорционального шрифта с позицией X, Y
+// Цвет шрифта плана и фона (шрифт = макс 32 пикселя в ширину)
+// Шрифт должен быть передан с оператором &
+//--------------------------------------------------------------
+void UB_Font_DrawPString32(const gxdrawb_t * db,
+		uint_fast16_t x, uint_fast16_t y,
+		const char * ptr, const UB_pFont32 * font,
+		COLORPIP_T vg);
+
+// Возврат ширины строки в пикселях, пропорциональный шрифт 32 бит
+uint16_t getwidth_Pstring32(const char * str, const UB_pFont32 * font);
+
+// Возврат ширины строки в пикселях, пропорциональный шрифт меньше 32 бит
+uint16_t getwidth_Pstring(const char * str, const UB_pFont * font);
+
+// Возвращает ширину строки в пикселях, моноширинный шрифт
+uint16_t getwidth_Mstring(const char * str, const UB_Font * font);
+
+extern UB_pFont gothic_12x16_p;
+extern UB_Font gothic_11x13;
 
 extern const unifont_t unifont_big;
 extern const unifont_t unifont_half;
@@ -889,6 +981,8 @@ extern const unifont_t unifont_small;
 extern const unifont_t unifont_small_x2;
 extern const unifont_t unifont_small2;
 extern const unifont_t unifont_small3;
+extern const unifont_t unifont_gothic_11x13;
+extern const unifont_t unifont_gothic_12x16p;	// proportional
 
 #ifdef __cplusplus
 }

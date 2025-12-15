@@ -1208,10 +1208,6 @@ static const dzitem_t dzi_voxtune =
 };
 
 
-#if WITHALTERNATIVEFONTS
-	#include "display/fonts/ub_fonts.h"
-#endif /* WITHALTERNATIVEFONTS */
-
 #if WITHRLEDECOMPRESS
 	#include "display/pictures_RLE.h"
 #endif /* WITHRLEDECOMPRESS */
