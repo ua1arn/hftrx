@@ -210,8 +210,6 @@ typedef struct unifont_tag
 	uint_fast8_t (* font_charheight)(const struct unifont_tag * font, char cc);	// высота в пикселях
 	uint_fast16_t (* font_draw)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
 	uint_fast16_t (* font_prerender)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
-	uint8_t width;		// пикселей в символе по горизонтали знакогнератора
-	uint8_t height;		// строк в символе по вертикали
 	uint8_t bytesw;		// байтов в одной строке знакогенератора символа
 	const uint8_t * fontraster;		// начало знакогенератора в памяти
 	const char * label;		// название для диагностики

@@ -347,20 +347,21 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 		char c;
 		savestring = s;
 		const unifont_t * font = dbstylep->fontsmall;
+		const uint_fast16_t stringheight = font->font_charheight(font, 'W');
 		ASSERT(font);
 		switch (dbstylep->textvalign)
 		{
 		default:
 		case GXSTYLE_VALIGN_CENTER:
-			if (vstep > font->height)
-				ypix += (vstep - font->height) / 2;
+			if (vstep > stringheight)
+				ypix += (vstep - stringheight) / 2;
 			break;
 		case GXSTYLE_VALIGN_TOP:
 			break;
 
 		case GXSTYLE_VALIGN_BOTTOM:
-			if (vstep > font->height)
-				ypix += (vstep - font->height);
+			if (vstep > stringheight)
+				ypix += (vstep - stringheight);
 			break;
 		}
 
@@ -373,11 +374,11 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 		case GXSTYLE_HALIGN_RIGHT:
 			xpix = textw < w ? xpix + avlw - textw : xpix;
 			while ((c = * s ++) != '\0' && xpix - xpix0 + font->font_charwidth(font, c) <= avlw)
-				xpix = font->font_draw(db, xpix, ypix, font, c, UINT16_MAX, UINT16_MAX, dbstylep->textcolor);
+				xpix = font->font_draw(db, xpix, ypix, font, c, dbstylep->textcolor);
 			break;
 		case GXSTYLE_HALIGN_LEFT:
 			while ((c = * s ++) != '\0' && xpix - xpix0 + font->font_charwidth(font, c) <= avlw)
-				xpix = font->font_draw(db, xpix, ypix, font, c, UINT16_MAX, UINT16_MAX, dbstylep->textcolor);
+				xpix = font->font_draw(db, xpix, ypix, font, c, dbstylep->textcolor);
 			break;
 		case GXSTYLE_HALIGN_CENTER:
 			// todo: to be implemented
@@ -630,10 +631,11 @@ pix_display_value_small(
 	colmain_rounded_rect(db, xpix, ypix, xpix + w - 1, ypix + h - 1, dbstylep->bgradius, dbstylep->bgcolor, dbstylep->bgfilled);
 	xpix += dbstylep->bgradius;
 	ypix += dbstylep->bgradius;
+	const uint_fast16_t stringheight = font->font_charheight(font, 'W');
 
-	if (avlh > dbstylep->fontsmall->height)
+	if (avlh > stringheight)
 	{
-		ypix += (avlh - dbstylep->fontsmall->height) / 2;
+		ypix += (avlh - stringheight) / 2;
 	}
 	if (wsign || wminus)
 	{

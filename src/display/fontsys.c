@@ -51,11 +51,14 @@ smallfont_decode(const unifont_t * font, char cc)
 static uint_fast8_t bigfont_width(const unifont_t * font, char cc)
 {
 	(void) font;
+	(void) cc;
 	return (cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW;	// полная ширина символа в пикселях
 }
 
 static uint_fast8_t bigfont_height(const unifont_t * font, char cc)
 {
+	(void) font;
+	(void) cc;
 	return BIGCHARH;
 }
 #endif /* defined (BIGCHARW_NARROW) && defined (BIGCHARW) */
@@ -70,6 +73,8 @@ static uint_fast8_t halffont_width(const unifont_t * font, char cc)
 
 static uint_fast8_t halffont_height(const unifont_t * font, char cc)
 {
+	(void) font;
+	(void) cc;
 	return HALFCHARH;
 }
 
@@ -78,32 +83,27 @@ static uint_fast8_t halffont_height(const unifont_t * font, char cc)
 #if defined (SMALLCHARW)
 static uint_fast8_t smallfont_width(const unifont_t * font, char cc)
 {
+	(void) font;
 	(void) cc;
 	return SMALLCHARW;	// полная ширина символа в пикселях
 }
 
 static uint_fast8_t smallfont_height(const unifont_t * font, char cc)
 {
+	(void) font;
+	(void) cc;
 	return SMALLCHARH;
 }
 
 #endif /* defined (SMALLCHARW) */
 
-
-// Тривиальная функция получения начала растра символа в массиве шрифта
-// Для моноширинных знакогенераторов
-static const uint8_t * unifont_getcharraster_ci(const unifont_t * font, uint_fast16_t ci)
-{
-	const uint8_t * const charraster = font->fontraster + ci * font->height * font->bytesw;
-	return charraster;
-}
-
-// Тривиальная функция получения начала растра символа в массиве шрифта
+// Тривиальная функция получения начала растра символа в массиве шрифта - вск символы с одинаковыми размерами
 // Для моноширинных знакогенераторов
 static const uint8_t * unifont_getcharraster(const unifont_t * font, char cc)
 {
 	const uint_fast16_t ci = font->decode(font, cc);
-	return unifont_getcharraster_ci(font, ci);
+	const uint8_t * const charraster = font->fontraster + ci * font->font_charheight(font, cc) * font->bytesw;
+	return charraster;
 }
 
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
@@ -267,7 +267,7 @@ unifont_put_char_bighalf(
 	)
 {
 	const uint_fast16_t ci = font->decode(font, cc);
-	const uint8_t * const charraster = unifont_getcharraster_ci(font, ci);
+	const uint8_t * const charraster = font->fontraster + ci * font->font_charheight(font, cc) * font->bytesw;
 	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
 	const uint_fast16_t height2 = font->font_charheight(font, cc);	// number of rows
 	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
@@ -681,8 +681,6 @@ const unifont_t unifont_big =
 	.getcharraster = unifont_getcharraster,
 	.font_charwidth = bigfont_width,
 	.font_charheight = bigfont_height,
-	.width = BIGCHARW,		// пикселей в символе по горизонтали знакогнератора
-	.height = BIGCHARH,		// строк в символе по вертикали
 #if WITHALTERNATIVEFONTS
 	.bytesw = sizeof ltdc_CenturyGothic_big [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = ltdc_CenturyGothic_big [0] [0],		// начало знакогенератора в памяти
@@ -701,8 +699,6 @@ const unifont_t unifont_half =
 	.getcharraster = unifont_getcharraster,
 	.font_charwidth = halffont_width,
 	.font_charheight = halffont_height,
-	.width = HALFCHARW,		// пикселей в символе по горизонтали знакогнератора
-	.height = HALFCHARH,		// строк в символе по вертикали
 #if WITHALTERNATIVEFONTS
 	.bytesw = sizeof ltdc_CenturyGothic_half [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = ltdc_CenturyGothic_half [0] [0],		// начало знакогенератора в памяти
@@ -723,8 +719,6 @@ const unifont_t unifont_small =
 	.getcharraster = unifont_getcharraster,
 	.font_charwidth = smallfont_width,
 	.font_charheight = smallfont_height,
-	.width = SMALLCHARW,		// пикселей в символе по горизонтали знакогнератора
-	.height = SMALLCHARH,		// строк в символе по вертикали
 	.bytesw = sizeof S1D13781_smallfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_smallfont_LTDC [0] [0],		// начало знакогенератора в памяти
 	.font_draw = unifont_put_char_small,
@@ -738,8 +732,6 @@ const unifont_t unifont_small_x2 =
 	.getcharraster = unifont_getcharraster,
 	.font_charwidth = smallfont_width,
 	.font_charheight = smallfont_height,
-	.width = SMALLCHARW,		// пикселей в символе по горизонтали знакогнератора
-	.height = SMALLCHARH,		// строк в символе по вертикали
 	.bytesw = sizeof S1D13781_smallfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_smallfont_LTDC [0] [0],		// начало знакогенератора в памяти
 	.font_draw = unifont_put_char_small_x2,
@@ -756,8 +748,6 @@ const unifont_t unifont_small2 =
 	.getcharraster = unifont_getcharraster,
 	.font_charwidth = smallfont2_width,
 	.font_charheight = smallfont2_height,
-	.width = SMALLCHARW2,		// пикселей в символе по горизонтали знакогнератора
-	.height = SMALLCHARH2,		// строк в символе по вертикали
 	.bytesw = sizeof S1D13781_smallfont2_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_smallfont2_LTDC [0] [0],		// начало знакогенератора в памяти
 	.font_draw = unifont_put_char_small,
@@ -774,8 +764,6 @@ const unifont_t unifont_small3 =
 	.getcharraster = unifont_getcharraster,
 	.font_charwidth = smallfont3_width,
 	.font_charheight = smallfont3_height,
-	.width = SMALLCHARW3,		// пикселей в символе по горизонтали знакогнератора
-	.height = SMALLCHARH3,		// строк в символе по вертикали
 	.bytesw = sizeof S1D13781_smallfont3_LTDC [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_smallfont3_LTDC [0],		// начало знакогенератора в памяти
 	.font_draw = unifont_put_char_small,
