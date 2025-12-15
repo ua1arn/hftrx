@@ -1358,7 +1358,7 @@ extern "C" {
 #endif /* WIHSPIDFSW && WIHSPIDFHW */
 
 #define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
-//#define WITHPRERENDER (1 && WITHLTDCHW && (LCDMODE_RGB565 || LCDMODE_ARGB8888))		/* использование предварительно построенных изображений при отображении частоты */
+#define WITHPRERENDER (1 && WITHLTDCHW && (LCDMODE_RGB565 || LCDMODE_ARGB8888))		/* использование предварительно построенных изображений при отображении частоты */
 
 #if WITHTOUCHGUI
 

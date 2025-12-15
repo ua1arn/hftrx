@@ -257,8 +257,144 @@ unifont_put_char_small_x2(
 	return unifont_put_char_x2(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
 }
 
+
+#if WITHPRERENDER
+/* использование предварительно построенных изображений при отображении частоты */
+
+enum { RENDERCHARS = 14 }; /* valid chars: "0123456789 #._" */
+static const char renderchars [] = "0123456789 #._";
+/* размеры в пикселях альманаха больших символов отображения частоты */
+static const unsigned picx_big = BIGCHARW * RENDERCHARS;
+static const unsigned picy_big = BIGCHARH;
+
+/* размеры в пикселях альманаха средних символов отображения частоты */
+static const unsigned picx_half = HALFCHARW * RENDERCHARS;
+static const unsigned picy_half = HALFCHARH;
+
+/* Изображения символов располагаются в буфере горизонтально, слева направо */
+static PACKEDCOLORPIP_T rendered_big [GXSIZE(BIGCHARW * RENDERCHARS, BIGCHARH)];
+static PACKEDCOLORPIP_T rendered_half [GXSIZE(HALFCHARW * RENDERCHARS, HALFCHARH)];
+static gxdrawb_t dbvbig;
+static gxdrawb_t dbvhalf;
+
+// Подготовка отображения больщих символов
+/* valid chars: "0123456789 #._" */
+void rendered_value_big_initialize(const gxstyle_t * gxstylep)
+{
+	const COLORPIP_T fg = gxstylep->textcolor;
+	const COLORPIP_T bg = gxstylep->bgcolor;
+	const COLORPIP_T keycolor = COLORPIP_KEY;
+	const unsigned picalpha = 255;
+	gxdrawb_initialize(& dbvbig, rendered_big, picx_big, picy_big);
+	gxdrawb_initialize(& dbvhalf, rendered_half, picx_half, picy_half);
+
+	colpip_fillrect(& dbvbig, 0, 0, picx_big, picy_big, bg);	/* при alpha==0 все биты цвета становятся 0 */
+	colpip_fillrect(& dbvhalf, 0, 0, picx_half, picy_half, bg);	/* при alpha==0 все биты цвета становятся 0 */
+
+	uint_fast8_t ci;
+
+	/* Возможно использование подготовленных изображений */
+//	#include "fonts/BigDigits.png.h"
+//	#include "fonts/HalfDigits.png.h"
+//
+//	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
+//	LuImage * BigDigits_png = luPngReadMemory((char *) BigDigits_png);
+//	LuImage * HalfDigits_png = luPngReadMemory((char *) HalfDigits_png);
+//
+//	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) BigDigits_png->data;
+//	const COLORPIP_T keycolor = TFTRGB(BigDigits_png->data [0], BigDigits_png->data [1], BigDigits_png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
+//	const unsigned picdx = BigDigits_png->width;//GXADJ(png->width);
+//	const unsigned picw = BigDigits_png->width;
+//	const unsigned pich = BigDigits_png->height;
+//	PRINTF("testpng: sz=%u data=%p, dataSize=%u, depth=%u, w=%u, h=%u\n", (unsigned) sizeof fbpic [0], png, (unsigned) png->dataSize,  (unsigned) png->depth, (unsigned) png->width, (unsigned) png->height);
+
+	/* big-size characters */
+	{
+		const unifont_t * const font = & unifont_big;
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdata_begin(0, 0, & ypix);
+		for (ci = 0; ci < RENDERCHARS; ++ ci)
+		{
+			/* формирование изображений символов, возможно с эффектами антиалиасинга */
+			/* Изображения символов располагаются в буфере горизонтально, слева направо */
+			ASSERT(xpix == ci * BIGCHARW);
+			ASSERT(font->font_prerender);
+			font->font_prerender(& dbvbig, xpix, ypix, font, renderchars [ci], fg);	// BIGCHARW
+			display_do_AA(& dbvbig, xpix, ypix, BIGCHARW, BIGCHARH);
+			xpix += BIGCHARW;
+		}
+		dcache_clean((uintptr_t) rendered_big, sizeof rendered_big [0] * GXSIZE(BIGCHARW * RENDERCHARS, BIGCHARH));
+	}
+	/* half-size characters */
+	{
+		const unifont_t * const font = & unifont_half;
+		uint_fast16_t ypix;
+		uint_fast16_t xpix = display_wrdata_begin(0, 0, & ypix);
+		for (ci = 0; ci < RENDERCHARS; ++ ci)
+		{
+			/* формирование изображений символов, возможно с эффектами антиалиасинга */
+			/* Изображения символов располагаются в буфере горизонтально, слева направо */
+			ASSERT(xpix == ci * HALFCHARW);
+			ASSERT(font->font_prerender);
+			font->font_prerender(& dbvhalf, xpix, ypix, font, renderchars [ci], fg);	// HALFCHARW
+			display_do_AA(& dbvhalf, xpix, ypix, HALFCHARW, HALFCHARH);
+			xpix += HALFCHARW;
+		}
+		dcache_clean((uintptr_t) rendered_half, sizeof rendered_half [0] * GXSIZE(HALFCHARW * RENDERCHARS, HALFCHARH));
+	}
+}
+
+uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const unifont_t * font, char cc)
+{
+	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+    const uint_fast8_t width = font->font_charwidth(font, cc);
+    const uint_fast8_t ci = font->decode(font, cc);
+	savewhere = __func__;
+
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+	/* копируем изображение БЕЗ цветового ключа */
+	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
+	colpip_bitblt(
+			db->cachebase, db->cachesize,
+			db,
+			xpix, ypix,	// координаты в окне получатля
+			dbvbig.cachebase, 0 * dbvbig.cachesize,
+			& dbvbig,
+			ci * BIGCHARW, 0,	// координаты окна источника
+			width, BIGCHARH, // размер окна источника
+			BITBLT_FLAG_NONE, COLORPIP_KEY
+			);
+
+	return xpix + width;
+}
+
+uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const unifont_t * font, char cc)
+{
+	const uint_fast8_t width = font->font_charwidth(font, cc);
+	const uint_fast8_t ci = font->decode(font, cc);
+	savewhere = __func__;
+
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+	/* копируем изображение БЕЗ цветового ключа */
+	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
+	colpip_bitblt(
+			db->cachebase, db->cachesize,
+			db,
+			xpix, ypix,	// координаты в окне получатля
+			dbvhalf.cachebase, 0 * dbvhalf.cachesize,
+			& dbvhalf,
+			ci * HALFCHARW, 0,	// координаты окна источника
+			width, HALFCHARH, // размер окна источника
+			BITBLT_FLAG_NONE, COLORPIP_KEY
+			);
+
+	return xpix + width;
+}
+
 static uint_fast16_t
-unifont_put_char_bighalf(
+unifont_put_char_bighalf_prerender(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
 	const unifont_t * font,
@@ -273,6 +409,72 @@ unifont_put_char_bighalf(
 	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
 	return unifont_put_char(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
 }
+
+static uint_fast16_t
+unifont_put_char_half_rendered(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	)
+{
+	const uint_fast16_t ci = font->decode(font, cc);
+//	const uint8_t * const charraster = font->fontraster + ci * font->font_charheight(font, cc) * font->bytesw;
+	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
+//	const uint_fast16_t height2 = font->font_charheight(font, cc);	// number of rows
+//	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
+//	return unifont_put_char(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+	/* копируем изображение БЕЗ цветового ключа */
+	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
+	colpip_bitblt(
+			db->cachebase, db->cachesize,
+			db,
+			xpix, ypix,	// координаты в окне получатля
+			dbvbig.cachebase, 0 * dbvbig.cachesize,
+			& dbvbig,
+			ci * BIGCHARW, 0,	// координаты окна источника
+			width2, BIGCHARH, // размер окна источника
+			BITBLT_FLAG_NONE, COLORPIP_KEY
+			);
+
+	return xpix + width2;
+}
+
+static uint_fast16_t
+unifont_put_char_big_rendered(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	)
+{
+	const uint_fast16_t ci = font->decode(font, cc);
+//	const uint8_t * const charraster = font->fontraster + ci * font->font_charheight(font, cc) * font->bytesw;
+	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
+//	const uint_fast16_t height2 = font->font_charheight(font, cc);	// number of rows
+//	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
+//	return unifont_put_char(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
+	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+	/* копируем изображение БЕЗ цветового ключа */
+	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
+	colpip_bitblt(
+			db->cachebase, db->cachesize,
+			db,
+			xpix, ypix,	// координаты в окне получатля
+			dbvbig.cachebase, 0 * dbvbig.cachesize,
+			& dbvbig,
+			ci * BIGCHARW, 0,	// координаты окна источника
+			width2, BIGCHARH, // размер окна источника
+			BITBLT_FLAG_NONE, COLORPIP_KEY
+			);
+
+	return xpix + width2;
+}
+
+#endif /* WITHPRERENDER */
 
 #if defined (SMALLCHARW)
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
@@ -542,142 +744,6 @@ uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_
 	return GRID2X(xcell);
 }
 
-#if WITHPRERENDER
-/* использование предварительно построенных изображений при отображении частоты */
-
-enum { RENDERCHARS = 14 }; /* valid chars: "0123456789 #._" */
-
-/* размеры в пикселях альманаха больших символов отображения частоты */
-static const unsigned picx_big = BIGCHARW * RENDERCHARS;
-static const unsigned picy_big = BIGCHARH;
-
-/* размеры в пикселях альманаха средних символов отображения частоты */
-static const unsigned picx_half = HALFCHARW * RENDERCHARS;
-static const unsigned picy_half = HALFCHARH;
-
-/* Изображения символов располагаются в буфере горизонтально, слева направо */
-static PACKEDCOLORPIP_T rendered_big [GXSIZE(BIGCHARW * RENDERCHARS, BIGCHARH)];
-static PACKEDCOLORPIP_T rendered_half [GXSIZE(HALFCHARW * RENDERCHARS, HALFCHARH)];
-static gxdrawb_t dbvbig;
-static gxdrawb_t dbvhalf;
-
-// Подготовка отображения больщих символов
-/* valid chars: "0123456789 #._" */
-void rendered_value_big_initialize(const gxstyle_t * gxstylep)
-{
-	const COLORPIP_T fg = gxstylep->textcolor;
-	const COLORPIP_T bg = gxstylep->bgcolor;
-	const COLORPIP_T keycolor = COLORPIP_KEY;
-	const unsigned picalpha = 255;
-	gxdrawb_initialize(& dbvbig, rendered_big, picx_big, picy_big);
-	gxdrawb_initialize(& dbvhalf, rendered_half, picx_half, picy_half);
-
-	colpip_fillrect(& dbvbig, 0, 0, picx_big, picy_big, bg);	/* при alpha==0 все биты цвета становятся 0 */
-	colpip_fillrect(& dbvhalf, 0, 0, picx_half, picy_half, bg);	/* при alpha==0 все биты цвета становятся 0 */
-
-	uint_fast8_t ci;
-
-	/* Возможно использование подготовленных изображений */
-//	#include "fonts/BigDigits.png.h"
-//	#include "fonts/HalfDigits.png.h"
-//
-//	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
-//	LuImage * BigDigits_png = luPngReadMemory((char *) BigDigits_png);
-//	LuImage * HalfDigits_png = luPngReadMemory((char *) HalfDigits_png);
-//
-//	PACKEDCOLORPIP_T * const fbpic = (PACKEDCOLORPIP_T *) BigDigits_png->data;
-//	const COLORPIP_T keycolor = TFTRGB(BigDigits_png->data [0], BigDigits_png->data [1], BigDigits_png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
-//	const unsigned picdx = BigDigits_png->width;//GXADJ(png->width);
-//	const unsigned picw = BigDigits_png->width;
-//	const unsigned pich = BigDigits_png->height;
-//	PRINTF("testpng: sz=%u data=%p, dataSize=%u, depth=%u, w=%u, h=%u\n", (unsigned) sizeof fbpic [0], png, (unsigned) png->dataSize,  (unsigned) png->depth, (unsigned) png->width, (unsigned) png->height);
-
-	/* big-size characters */
-	{
-		const unifont_t * const font = & unifont_big;
-		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(0, 0, & ypix);
-		for (ci = 0; ci < RENDERCHARS; ++ ci)
-		{
-			/* формирование изображений символов, возможно с эффектами антиалиасинга */
-			/* Изображения символов располагаются в буфере горизонтально, слева направо */
-			ASSERT(xpix == ci * BIGCHARW);
-			font->font_draw(& dbvbig, xpix, ypix, font, ' ', ci, BIGCHARW, fg);
-			display_do_AA(& dbvbig, xpix, ypix, BIGCHARW, BIGCHARH);
-			xpix += BIGCHARW;
-		}
-		dcache_clean((uintptr_t) rendered_big, sizeof rendered_big [0] * GXSIZE(BIGCHARW * RENDERCHARS, BIGCHARH));
-	}
-	/* half-size characters */
-	{
-		const unifont_t * const font = & unifont_half;
-		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(0, 0, & ypix);
-		for (ci = 0; ci < RENDERCHARS; ++ ci)
-		{
-			/* формирование изображений символов, возможно с эффектами антиалиасинга */
-			/* Изображения символов располагаются в буфере горизонтально, слева направо */
-			ASSERT(xpix == ci * HALFCHARW);
-			font->font_draw(& dbvhalf, xpix, ypix, font, ' ', ci, HALFCHARW, fg);
-			display_do_AA(& dbvhalf, xpix, ypix, HALFCHARW, HALFCHARH);
-			xpix += HALFCHARW;
-		}
-		dcache_clean((uintptr_t) rendered_half, sizeof rendered_half [0] * GXSIZE(HALFCHARW * RENDERCHARS, HALFCHARH));
-	}
-}
-
-uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const unifont_t * font, char cc)
-{
-	PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
-	const uint_fast16_t dx = DIM_X;
-	const uint_fast16_t dy = DIM_Y;
-    const uint_fast8_t width = font->font_charwidth(font, cc);
-    const uint_fast8_t ci = font->decode(font, cc);
-	savewhere = __func__;
-
-	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	/* копируем изображение БЕЗ цветового ключа */
-	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
-	colpip_bitblt(
-			db->cachebase, db->cachesize,
-			db,
-			xpix, ypix,	// координаты в окне получатля
-			dbvbig.cachebase, 0 * dbvbig.cachesize,
-			& dbvbig,
-			ci * BIGCHARW, 0,	// координаты окна источника
-			width, BIGCHARH, // размер окна источника
-			BITBLT_FLAG_NONE, COLORPIP_KEY
-			);
-
-	return xpix + width;
-}
-
-uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const unifont_t * font, char cc)
-{
-	const uint_fast8_t width = font->font_charwidth(font, cc);
-	const uint_fast8_t ci = font->decode(font, cc);
-	savewhere = __func__;
-
-	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	/* копируем изображение БЕЗ цветового ключа */
-	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
-	colpip_bitblt(
-			db->cachebase, db->cachesize,
-			db,
-			xpix, ypix,	// координаты в окне получатля
-			dbvhalf.cachebase, 0 * dbvhalf.cachesize,
-			& dbvhalf,
-			ci * HALFCHARW, 0,	// координаты окна источника
-			width, HALFCHARH, // размер окна источника
-			BITBLT_FLAG_NONE, COLORPIP_KEY
-			);
-
-	return xpix + width;
-}
-
-#endif /* WITHPRERENDER */
-
-
 const unifont_t unifont_big =
 {
 	.decode = bighalffont_decode,
@@ -691,8 +757,9 @@ const unifont_t unifont_big =
 	.bytesw = sizeof S1D13781_bigfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_bigfont_LTDC [0] [0],		// начало знакогенератора в памяти
 #endif /* WITHALTERNATIVEFONTS */
-	.font_draw = unifont_put_char_bighalf,
-	.font_prerender = unifont_put_char_bighalf,
+	.font_draw = unifont_put_char_big_rendered,
+	.font_prerender = unifont_put_char_bighalf_prerender,
+	.renderw = BIGCHARW,
 	.label = "unifont_big"
 };
 
@@ -709,8 +776,9 @@ const unifont_t unifont_half =
 	.bytesw = sizeof S1D13781_halffont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_halffont_LTDC [0] [0],		// начало знакогенератора в памяти
 #endif /* WITHALTERNATIVEFONTS */
-	.font_draw = unifont_put_char_bighalf,
-	.font_prerender = unifont_put_char_bighalf,
+	.font_draw = unifont_put_char_half_rendered,
+	.font_prerender = unifont_put_char_bighalf_prerender,
+	.renderw = HALFCHARW,
 	.label = "unifont_half"
 };
 
@@ -725,7 +793,7 @@ const unifont_t unifont_small =
 	.bytesw = sizeof S1D13781_smallfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_smallfont_LTDC [0] [0],		// начало знакогенератора в памяти
 	.font_draw = unifont_put_char_small,
-	.font_prerender = unifont_put_char_small,
+	.font_prerender = NULL,
 	.label = "unifont_small"
 };
 
@@ -738,7 +806,7 @@ const unifont_t unifont_small_x2 =
 	.bytesw = sizeof S1D13781_smallfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_smallfont_LTDC [0] [0],		// начало знакогенератора в памяти
 	.font_draw = unifont_put_char_small_x2,
-	.font_prerender = unifont_put_char_small_x2,
+	.font_prerender = NULL,
 	.label = "unifont_small"
 };
 #endif /* SMALLCHARH */
@@ -754,7 +822,7 @@ const unifont_t unifont_small2 =
 	.bytesw = sizeof S1D13781_smallfont2_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_smallfont2_LTDC [0] [0],		// начало знакогенератора в памяти
 	.font_draw = unifont_put_char_small,
-	.font_prerender = unifont_put_char_small,
+	.font_prerender = NULL,
 	.label = "unifont_small2"
 };
 #endif /* SMALLCHARH2 */
@@ -770,7 +838,7 @@ const unifont_t unifont_small3 =
 	.bytesw = sizeof S1D13781_smallfont3_LTDC [0][0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_smallfont3_LTDC [0],		// начало знакогенератора в памяти
 	.font_draw = unifont_put_char_small,
-	.font_prerender = unifont_put_char_small,
+	.font_prerender = NULL,
 	.label = "unifont_small3"
 };
 #endif /* SMALLCHARH3 */
