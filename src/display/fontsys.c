@@ -147,7 +147,7 @@ static void ltdc_horizontal_pixels_tbg(
 // удвоенный по ширине растр
 static void ltdc_horizontal_x2_pixels_tbg(
 	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
-	const FLASHMEM uint8_t * __restrict raster,
+	const uint8_t * __restrict raster,
 	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
 	COLORPIP_T fg
 	)
@@ -185,25 +185,93 @@ unifont_put_char(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
 	const unifont_t * font,
-	char cc,
-	uint_fast16_t ci,	// если не используется - UINT16_MAX
-	uint_fast16_t width2, 	// если не используется - UINT16_MAX
+	const uint8_t * const charraster,
+	uint_fast16_t width2,
+	uint_fast16_t height2,
+	uint_fast16_t bytesw,
 	COLORPIP_T fg
 	)
 {
-	ASSERT(font);
-	ASSERT3(width2 != UINT16_MAX || font->font_charwidth, __FILE__, __LINE__, font->label);
-	ASSERT3(ci != UINT16_MAX || font->getcharraster, __FILE__, __LINE__, font->label);
-	width2 = (width2 == UINT16_MAX) ? font->font_charwidth(font, cc) : width2;
-	const uint8_t * const charraster = (ci == UINT16_MAX) ? font->getcharraster(font, cc) : unifont_getcharraster_ci(font, ci);
-
 	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < font->height; ++ cgrow)
+	for (cgrow = 0; cgrow < height2; ++ cgrow)
 	{
 		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, xpix, ypix + cgrow);
-		ltdc_horizontal_pixels_tbg(tgr, & charraster [cgrow * font->bytesw], width2, fg);
+		ltdc_horizontal_pixels_tbg(tgr, & charraster [cgrow * bytesw], width2, fg);
 	}
 	return xpix + width2;
+}
+
+// return new x coordinate
+static uint_fast16_t
+unifont_put_char_x2(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	const uint8_t * const charraster,
+	uint_fast16_t width2,
+	uint_fast16_t height2,
+	uint_fast16_t bytesw,
+	COLORPIP_T fg
+	)
+{
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < height2; ++ cgrow)
+	{
+		PACKEDCOLORPIP_T * const tgr0 = colpip_mem_at(db, xpix, ypix + cgrow * 2 + 0);
+		ltdc_horizontal_x2_pixels_tbg(tgr0, & charraster [cgrow * bytesw], width2, fg);
+		PACKEDCOLORPIP_T * const tgr1 = colpip_mem_at(db, xpix, ypix + cgrow * 2 + 1);
+		ltdc_horizontal_x2_pixels_tbg(tgr1, & charraster [cgrow * bytesw], width2, fg);
+	}
+	return xpix + width2 * 2;
+}
+
+static uint_fast16_t
+unifont_put_char_small(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	)
+{
+	const uint8_t * const charraster = font->getcharraster(font, cc);
+	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
+	const uint_fast16_t height2 = font->font_charheight(font, cc);	// number of rows
+	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
+	return unifont_put_char(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
+}
+
+static uint_fast16_t
+unifont_put_char_small_x2(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	)
+{
+	const uint8_t * const charraster = font->getcharraster(font, cc);
+	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
+	const uint_fast16_t height2 = font->font_charheight(font, cc);	// number of rows
+	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
+	return unifont_put_char_x2(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
+}
+
+static uint_fast16_t
+unifont_put_char_bighalf(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	)
+{
+	const uint_fast16_t ci = font->decode(font, cc);
+	const uint8_t * const charraster = unifont_getcharraster_ci(font, ci);
+	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
+	const uint_fast16_t height2 = font->font_charheight(font, cc);	// number of rows
+	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
+	return unifont_put_char(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
 }
 
 #if defined (SMALLCHARW)
@@ -212,14 +280,13 @@ unifont_put_char(
 // return new x coordinate
 uint_fast16_t colorpip_put_char_small(
 	const gxdrawb_t * db,
-	uint_fast16_t xpix,
-	uint_fast16_t ypix,
-	char cc,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	char cc,		// код символа для отображения
 	COLORPIP_T fg
 	)
 {
 	const unifont_t * const font = & unifont_small;
-	return font->font_draw(db, xpix, ypix, font, cc, UINT16_MAX, UINT16_MAX, fg);
+	return font->font_draw(db, xpix, ypix, font, cc, fg);
 }
 
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
@@ -227,24 +294,13 @@ uint_fast16_t colorpip_put_char_small(
 // return new x coordinate
 uint_fast16_t colorpip_x2_put_char_small(
 	const gxdrawb_t * db,
-	uint_fast16_t xpix,
-	uint_fast16_t ypix,
-	char cc,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	char cc,		// код символа для отображения
 	COLORPIP_T fg
 	)
 {
-	const unifont_t * const font = & unifont_small;
-	const uint_fast8_t width = SMALLCHARW;
-	const uint_fast8_t ci = font->decode(& unifont_small, cc);
-	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
-	{
-		PACKEDCOLORPIP_T * const tgr0 = colpip_mem_at(db, xpix, ypix + cgrow * 2 + 0);
-		ltdc_horizontal_x2_pixels_tbg(tgr0, S1D13781_smallfont_LTDC [ci] [cgrow], width, fg);
-		PACKEDCOLORPIP_T * const tgr1 = colpip_mem_at(db, xpix, ypix + cgrow * 2 + 1);
-		ltdc_horizontal_x2_pixels_tbg(tgr1, S1D13781_smallfont_LTDC [ci] [cgrow], width, fg);
-	}
-	return xpix + width * 2;
+	const unifont_t * const font = & unifont_small_x2;
+	return font->font_draw(db, xpix, ypix, font, cc, fg);
 }
 
 #endif /* defined (SMALLCHARW) */
@@ -275,7 +331,7 @@ uint_fast16_t colorpip_put_char_small2(
 	)
 {
 	const unifont_t * const font = & unifont_small2;
-	return font->font_draw(db, xpix, ypix, font, cc, UINT16_MAX, UINT16_MAX, fg);
+	return font->font_draw(db, xpix, ypix, font, cc, fg);
 }
 
 // Используется при выводе на графический индикатор,
@@ -334,7 +390,7 @@ static uint_fast16_t colorpip_put_char_small3_tbg(
 	)
 {
 	const unifont_t * const font = & unifont_small3;
-	return font->font_draw(db, xpix, ypix, font, cc, UINT16_MAX, UINT16_MAX, fg);
+	return font->font_draw(db, xpix, ypix, font, cc, fg);
 }
 
 // Используется при выводе на графический индикатор,
@@ -415,7 +471,7 @@ uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t x, uint
 		return x;
 	savewhere = __func__;
 	//PRINTF("display_put_char_small: '%c'\n", cc);
-	return dbstyle->fontsmall->font_draw(db, x, y, dbstyle->fontsmall, cc, UINT16_MAX, UINT16_MAX, dbstyle->textcolor);
+	return dbstyle->fontsmall->font_draw(db, x, y, dbstyle->fontsmall, cc, dbstyle->textcolor);
 }
 
 // большой шрифт
@@ -425,9 +481,10 @@ uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_f
 	if (font == NULL)
 		return x;
 	savewhere = __func__;
+	const uint_fast16_t ci = font->decode(font, cc);
 	// todo: use pre-rendered chars
 	//PRINTF("display_put_char_big: '%c' ci=%u\n", cc, font->decode(font, cc));
-	return font->font_draw(db, x, y, font, cc, font->decode(font, cc), font->font_charwidth(font, cc), dbstyle->textcolor);
+	return font->font_draw(db, x, y, font, cc, dbstyle->textcolor);
 }
 
 uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
@@ -438,7 +495,7 @@ uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_
 	savewhere = __func__;
 	// todo: use pre-rendered chars
 	//PRINTF("display_put_char_half: '%c' ci=%u\n", cc, font->decode(font, cc));
-	return font->font_draw(db, x, y, font, cc, font->decode(font, cc), font->font_charwidth(font, cc), dbstyle->textcolor);
+	return font->font_draw(db, x, y, font, cc, dbstyle->textcolor);
 }
 
 // обычный шрифт
@@ -460,7 +517,7 @@ ltdc_horizontal_put_char_small3(
 {
 	savewhere = __func__;
 	const unifont_t * const font = & unifont_small3;
-	return font->font_draw(db, xpix, ypix, font, cc, UINT16_MAX, UINT16_MAX, fg);
+	return font->font_draw(db, xpix, ypix, font, cc, fg);
 }
 
 void
@@ -633,8 +690,8 @@ const unifont_t unifont_big =
 	.bytesw = sizeof S1D13781_bigfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_bigfont_LTDC [0] [0],		// начало знакогенератора в памяти
 #endif /* WITHALTERNATIVEFONTS */
-	.font_draw = unifont_put_char,
-	.font_prerender = unifont_put_char,
+	.font_draw = unifont_put_char_bighalf,
+	.font_prerender = unifont_put_char_bighalf,
 	.label = "unifont_big"
 };
 
@@ -653,8 +710,8 @@ const unifont_t unifont_half =
 	.bytesw = sizeof S1D13781_halffont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_halffont_LTDC [0] [0],		// начало знакогенератора в памяти
 #endif /* WITHALTERNATIVEFONTS */
-	.font_draw = unifont_put_char,
-	.font_prerender = unifont_put_char,
+	.font_draw = unifont_put_char_bighalf,
+	.font_prerender = unifont_put_char_bighalf,
 	.label = "unifont_half"
 };
 
@@ -670,8 +727,23 @@ const unifont_t unifont_small =
 	.height = SMALLCHARH,		// строк в символе по вертикали
 	.bytesw = sizeof S1D13781_smallfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_smallfont_LTDC [0] [0],		// начало знакогенератора в памяти
-	.font_draw = unifont_put_char,
-	.font_prerender = unifont_put_char,
+	.font_draw = unifont_put_char_small,
+	.font_prerender = unifont_put_char_small,
+	.label = "unifont_small"
+};
+
+const unifont_t unifont_small_x2 =
+{
+	.decode = smallfont_decode,
+	.getcharraster = unifont_getcharraster,
+	.font_charwidth = smallfont_width,
+	.font_charheight = smallfont_height,
+	.width = SMALLCHARW,		// пикселей в символе по горизонтали знакогнератора
+	.height = SMALLCHARH,		// строк в символе по вертикали
+	.bytesw = sizeof S1D13781_smallfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
+	.fontraster = S1D13781_smallfont_LTDC [0] [0],		// начало знакогенератора в памяти
+	.font_draw = unifont_put_char_small_x2,
+	.font_prerender = unifont_put_char_small_x2,
 	.label = "unifont_small"
 };
 #endif /* SMALLCHARH */
@@ -688,8 +760,8 @@ const unifont_t unifont_small2 =
 	.height = SMALLCHARH2,		// строк в символе по вертикали
 	.bytesw = sizeof S1D13781_smallfont2_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_smallfont2_LTDC [0] [0],		// начало знакогенератора в памяти
-	.font_draw = unifont_put_char,
-	.font_prerender = unifont_put_char,
+	.font_draw = unifont_put_char_small,
+	.font_prerender = unifont_put_char_small,
 	.label = "unifont_small2"
 };
 #endif /* SMALLCHARH2 */
@@ -706,8 +778,8 @@ const unifont_t unifont_small3 =
 	.height = SMALLCHARH3,		// строк в символе по вертикали
 	.bytesw = sizeof S1D13781_smallfont3_LTDC [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_smallfont3_LTDC [0],		// начало знакогенератора в памяти
-	.font_draw = unifont_put_char,
-	.font_prerender = unifont_put_char,
+	.font_draw = unifont_put_char_small,
+	.font_prerender = unifont_put_char_small,
 	.label = "unifont_small3"
 };
 #endif /* SMALLCHARH3 */

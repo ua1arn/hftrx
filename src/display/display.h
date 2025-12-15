@@ -208,8 +208,8 @@ typedef struct unifont_tag
 	const uint8_t * (* getcharraster)(const struct unifont_tag * font, char c);	// получение начального адреса растра для символа
 	uint_fast8_t (* font_charwidth)(const struct unifont_tag * font, char cc);	// ширина в пиксеях данного символа (может быть меньше чем поле width)
 	uint_fast8_t (* font_charheight)(const struct unifont_tag * font, char cc);	// высота в пикселях
-	uint_fast16_t (* font_draw)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, uint_fast16_t ci, uint_fast16_t width2, COLORPIP_T fg);
-	uint_fast16_t (* font_prerender)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, uint_fast16_t ci, uint_fast16_t width2, COLORPIP_T fg);
+	uint_fast16_t (* font_draw)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
+	uint_fast16_t (* font_prerender)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
 	uint8_t width;		// пикселей в символе по горизонтали знакогнератора
 	uint8_t height;		// строк в символе по вертикали
 	uint8_t bytesw;		// байтов в одной строке знакогенератора символа
@@ -929,6 +929,7 @@ void board_set_tvoutformat(uint_fast8_t v);	/* установить видеор
 extern const unifont_t unifont_big;
 extern const unifont_t unifont_half;
 extern const unifont_t unifont_small;
+extern const unifont_t unifont_small_x2;
 extern const unifont_t unifont_small2;
 extern const unifont_t unifont_small3;
 
