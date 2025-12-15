@@ -397,10 +397,6 @@ uint_fast16_t strwidth2(
 uint_fast16_t strwidth(
 	const char * s
 	);
-// Возвращает высоту строки в пикселях
-uint_fast16_t strheight(
-	const char * s
-	);
 
 void display_bar(
 	const gxdrawb_t * db,

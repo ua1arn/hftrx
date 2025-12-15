@@ -15,7 +15,7 @@
 
 #include "fontmaps.h"
 
-#include <string.h>
+//#include <string.h>
 
 /* valid chars: "0123456789 #._" */
 // Возвращает индекс символа в знакогенераторе
@@ -303,6 +303,20 @@ uint_fast16_t colorpip_x2_put_char_small(
 	return font->font_draw(db, xpix, ypix, font, cc, fg);
 }
 
+// Возвращает ширину строки в пикселях
+uint_fast16_t strwidth(
+	const char * s
+	)
+{
+	ASSERT(s != NULL);
+	const unifont_t * const font = & unifont_small;
+	uint_fast16_t w = 0;
+	char cc;
+	while ((cc = * s ++) != '\0')
+		w += font->font_charwidth(font, cc);
+	return w;
+}
+
 #endif /* defined (SMALLCHARW) */
 
 
@@ -359,7 +373,12 @@ uint_fast16_t strwidth2(
 	)
 {
 	ASSERT(s != NULL);
-	return SMALLCHARW2 * strlen(s);
+	const unifont_t * const font = & unifont_small2;
+	uint_fast16_t w = 0;
+	char cc;
+	while ((cc = * s ++) != '\0')
+		w += font->font_charwidth(font, cc);
+	return w;
 }
 
 #endif /* defined (SMALLCHARW2) */
@@ -449,8 +468,14 @@ uint_fast16_t strwidth3(
 	const char * s
 	)
 {
+
 	ASSERT(s != NULL);
-	return SMALLCHARW3 * strlen(s);
+	const unifont_t * const font = & unifont_small3;
+	uint_fast16_t w = 0;
+	char cc;
+	while ((cc = * s ++) != '\0')
+		w += font->font_charwidth(font, cc);
+	return w;
 }
 
 #endif /* defined (SMALLCHARW3) */
@@ -482,26 +507,12 @@ colpip_string_tbg(
 #endif /* defined (SMALLCHARW) */
 
 
-
-#if defined (SMALLCHARW) && defined (SMALLCHARH)
-// Возвращает ширину строки в пикселях
-uint_fast16_t strwidth(
-	const char * s
-	)
-{
-	ASSERT(s != NULL);
-	return SMALLCHARW * strlen(s);
-}
-
-#endif /* defined (SMALLCHARW) && defined (SMALLCHARH) */
-
 // обычный шрифт
 uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
 {
 	if (dbstyle->fontsmall == NULL)
 		return x;
 	savewhere = __func__;
-	//PRINTF("display_put_char_small: '%c'\n", cc);
 	return dbstyle->fontsmall->font_draw(db, x, y, dbstyle->fontsmall, cc, dbstyle->textcolor);
 }
 
@@ -512,9 +523,6 @@ uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_f
 	if (font == NULL)
 		return x;
 	savewhere = __func__;
-	const uint_fast16_t ci = font->decode(font, cc);
-	// todo: use pre-rendered chars
-	//PRINTF("display_put_char_big: '%c' ci=%u\n", cc, font->decode(font, cc));
 	return font->font_draw(db, x, y, font, cc, dbstyle->textcolor);
 }
 
@@ -524,8 +532,6 @@ uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_
 	if (font == NULL)
 		return x;
 	savewhere = __func__;
-	// todo: use pre-rendered chars
-	//PRINTF("display_put_char_half: '%c' ci=%u\n", cc, font->decode(font, cc));
 	return font->font_draw(db, x, y, font, cc, dbstyle->textcolor);
 }
 

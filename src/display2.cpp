@@ -9306,7 +9306,7 @@ int hftrxgd::text_width(const char *text, litehtml::uint_ptr hFont)
 {
 	//PRINTF("text_width: text='%s'\n", text);
 	(void) hFont;
-	return SMALLCHARW * strlen(text);
+	return strwidth(text);
 }
 
 void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos)
