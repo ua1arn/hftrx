@@ -395,20 +395,6 @@ ltdc_horizontal_put_char_small3(
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
-static uint_fast16_t new_colorpip_put_char_small3_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix,
-	uint_fast16_t ypix,
-	char cc,
-	COLORPIP_T fg
-	)
-{
-	const unifont_t * const font = & unifont_small3;
-	return font->font_draw(db, xpix, ypix, font, cc, fg);
-}
-// возвращаем на сколько пикселей вправо занимет отрисованный символ
-// Фон не трогаем
-// return new x coordinate
 static uint_fast16_t colorpip_put_char_small3_tbg(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,
@@ -418,17 +404,7 @@ static uint_fast16_t colorpip_put_char_small3_tbg(
 	)
 {
 	const unifont_t * const font = & unifont_small3;
-	const uint_fast8_t width = font->font_charwidth(font, cc);
-	const uint_fast8_t height = font->font_charheight(font, cc);
-	const uint_fast8_t ci = font->decode(font, cc);
-	const uint8_t * const charraster = & S1D13781_smallfont3_LTDC [ci] [0];
-	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < height; ++ cgrow)
-	{
-		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, xpix, ypix + cgrow);
-		ltdc_horizontal_pixels_tbg(tgr, charraster + cgrow, width, fg);
-	}
-	return xpix + width;
+	return font->font_draw(db, xpix, ypix, font, cc, fg);
 }
 
 // Используется при выводе на графический индикатор,
@@ -785,7 +761,7 @@ const unifont_t unifont_small3 =
 	.getcharraster = unifont_getcharraster,
 	.font_charwidth = smallfont3_width,
 	.font_charheight = smallfont3_height,
-	.bytesw = sizeof S1D13781_smallfont3_LTDC [0],		// байтов в одной строке знакогенератора символа
+	.bytesw = sizeof S1D13781_smallfont3_LTDC [0][0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_smallfont3_LTDC [0],		// начало знакогенератора в памяти
 	.font_draw = unifont_put_char_small,
 	.font_prerender = unifont_put_char_small,
