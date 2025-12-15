@@ -365,7 +365,41 @@ uint_fast16_t strwidth2(
 #endif /* defined (SMALLCHARW2) */
 
 
-#if defined (SMALLCHARH3)
+
+#if SMALLCHARH3
+
+static uint_fast16_t
+new_ltdc_horizontal_put_char_small3(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,
+	char cc,
+	COLORPIP_T fg
+	)
+{
+	savewhere = __func__;
+	const unifont_t * const font = & unifont_small3;
+	return font->font_draw(db, xpix, ypix, font, cc, fg);
+}
+
+static uint_fast16_t
+ltdc_horizontal_put_char_small3(
+		const gxdrawb_t * db,
+		uint_fast16_t xpix, uint_fast16_t ypix,
+		char cc,
+		COLORPIP_T fg
+	)
+{
+	savewhere = __func__;
+	const unifont_t * const font = & unifont_small3;
+	//uint8_t const * const fontraster = S1D13781_smallfont3_LTDC [0];	// байтов в одной строке знакогенератора символа
+	const uint_fast8_t fontcharw = 8;//sizeof S1D13781_smallfont3_LTDC [0];
+	const uint_fast16_t ci = smallfont_decode(font, cc);
+	const size_t charheight = SMALLCHARH3;
+	const uint8_t * const charraster = S1D13781_smallfont3_LTDC [ci];
+	return unifont_put_char(db, xpix, ypix, font,
+			charraster, fontcharw, charheight, fontcharw,  	// параметры растра со шрифтом
+			fg);
+}
 
 uint_fast8_t smallfont3_width(const unifont_t * font, char cc)
 {
@@ -390,6 +424,7 @@ static uint_fast16_t colorpip_put_char_small3_tbg(
 	)
 {
 	const unifont_t * const font = & unifont_small3;
+	return ltdc_horizontal_put_char_small3(db, xpix, ypix, cc, fg);
 	return font->font_draw(db, xpix, ypix, font, cc, fg);
 }
 
@@ -411,6 +446,23 @@ colpip_string3_tbg(
 	{
 		x = colorpip_put_char_small3_tbg(db, x, y, c, fg);
 	}
+}
+
+void
+display_string3(
+	const gxdrawb_t * db,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	uint_fast16_t w,
+	uint_fast16_t h,
+	const char * __restrict s,
+	COLORPIP_T fg, COLORPIP_T bg
+	)
+{
+	char c;
+	colpip_fillrect(db, x, y, w, h, bg);
+	while ((c = * s ++) != '\0')
+		x = colorpip_put_char_small3_tbg(db, x, y, c, fg);
 }
 
 // Возвращает ширину строки в пикселях
@@ -504,40 +556,6 @@ uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_
 	* yp = GRID2Y(ycell);
 	return GRID2X(xcell);
 }
-
-#if SMALLCHARH3
-
-static uint_fast16_t
-ltdc_horizontal_put_char_small3(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix, uint_fast16_t ypix,
-	char cc,
-	COLORPIP_T fg
-	)
-{
-	savewhere = __func__;
-	const unifont_t * const font = & unifont_small3;
-	return font->font_draw(db, xpix, ypix, font, cc, fg);
-}
-
-void
-display_string3(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	uint_fast16_t w,
-	uint_fast16_t h,
-	const char * __restrict s,
-	COLORPIP_T fg, COLORPIP_T bg
-	)
-{
-	char c;
-	colpip_fillrect(db, x, y, w, h, bg);
-	while ((c = * s ++) != '\0')
-		x = ltdc_horizontal_put_char_small3(db, x, y, c, fg);
-}
-
-#endif /* SMALLCHARH3 */
 
 #if WITHPRERENDER
 /* использование предварительно построенных изображений при отображении частоты */
