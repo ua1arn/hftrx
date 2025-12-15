@@ -110,7 +110,7 @@ static const uint8_t * unifont_getcharraster(const unifont_t * font, char cc)
 // Фон не трогаем
 static void ltdc_horizontal_pixels_tbg(
 	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
-	const FLASHMEM uint8_t * __restrict raster,
+	const uint8_t * __restrict raster,
 	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
 	COLORPIP_T fg
 	)
@@ -411,22 +411,24 @@ static uint_fast16_t new_colorpip_put_char_small3_tbg(
 // return new x coordinate
 static uint_fast16_t colorpip_put_char_small3_tbg(
 	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
 	char cc,
 	COLORPIP_T fg
 	)
 {
 	const unifont_t * const font = & unifont_small3;
-	const uint_fast8_t width = SMALLCHARW3;
-	const uint_fast8_t c = smallfont_decode(font, cc);
+	const uint_fast8_t width = font->font_charwidth(font, cc);
+	const uint_fast8_t height = font->font_charheight(font, cc);
+	const uint_fast8_t ci = font->decode(font, cc);
+	const uint8_t * const charraster = & S1D13781_smallfont3_LTDC [ci] [0];
 	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
+	for (cgrow = 0; cgrow < height; ++ cgrow)
 	{
-		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
-		ltdc_horizontal_pixels_tbg(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width, fg);
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, xpix, ypix + cgrow);
+		ltdc_horizontal_pixels_tbg(tgr, charraster + cgrow, width, fg);
 	}
-	return x + width;
+	return xpix + width;
 }
 
 // Используется при выводе на графический индикатор,
