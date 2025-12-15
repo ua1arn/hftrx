@@ -175,11 +175,10 @@ static uint_fast16_t
 ltdc_put_char_unified(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
-	const uint8_t * fontraster,
+	const uint8_t * charraster,		// начало символа в знакогенераторе
 	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
 	uint_fast8_t height,	// строк в символе по вертикали
 	uint_fast8_t bytesw,	// байтов в одной строке знакогенератора символа
-	uint_fast8_t ci,	// индекс символа в знакогенераторе
 	uint_fast8_t width2,	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов больших шрифтов)
 	COLORPIP_T fg
 	)
@@ -188,14 +187,14 @@ ltdc_put_char_unified(
 	for (cgrow = 0; cgrow < height; ++ cgrow)
 	{
 		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, xpix, ypix + cgrow);
-		ltdc_horizontal_pixels_tbg(tgr, & fontraster [(ci * height + cgrow) * bytesw], width2, fg);
+		ltdc_horizontal_pixels_tbg(tgr, & charraster [cgrow * bytesw], width2, fg);
 	}
 	return xpix + width2;
 }
 
 /* valid chars: "0123456789 #._" */
 // Возвращает индекс символа в знакогенераторе
-static uint_fast8_t
+static uint_fast16_t
 bigfont_decode(char cc)
 {
 	const uint_fast8_t c = (unsigned char) cc;
@@ -213,7 +212,7 @@ bigfont_decode(char cc)
 
 /* valid chars: "0123456789 #._" */
 // Возвращает индекс символа в знакогенераторе
-static uint_fast8_t
+static uint_fast16_t
 halffont_decode(char cc)
 {
 	const uint_fast8_t c = (unsigned char) cc;
@@ -230,7 +229,7 @@ halffont_decode(char cc)
 }
 
 // Возвращает индекс символа в знакогенераторе
-static uint_fast8_t
+static uint_fast16_t
 smallfont_decode(char cc)
 {
 	const uint_fast8_t c = (unsigned char) cc;
@@ -271,61 +270,65 @@ uint_fast8_t smallfont_height(void)
 #if WITHALTERNATIVEFONTS
 
 // return new x coordinate
-static uint_fast16_t ltdc_put_char_big_alt(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg)
+static uint_fast16_t ltdc_put_char_big_alt(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t ci, uint_fast8_t width2, COLORPIP_T fg)
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
 
-	uint8_t const * const font_big = ltdc_CenturyGothic_big [0] [0];
-	const size_t size_bigfont = sizeof ltdc_CenturyGothic_big [0] [0];	// байтов в одной строке знакогенератора символа
-
+	uint8_t const * const fontraster = ltdc_CenturyGothic_big [0] [0];
+	const uint_fast8_t fontcharw = sizeof ltdc_CenturyGothic_big [0] [0];	// байтов в одной строке знакогенератора символа
+	const uint_fast8_t charheight = BIGCHARH;
+	const uint8_t * const charraster = fontraster + ci * charheight * fontcharw;
 	return ltdc_put_char_unified(db, xpix, ypix,
-			font_big, BIGCHARW, BIGCHARH, size_bigfont,  	// параметры растра со шрифтом
-			ci, width2, fg);
+			charraster, fontcharw, charheight, fontcharw,  	// параметры растра со шрифтом
+			width2, fg);
 }
 
 // return new x coordinate
-static uint_fast16_t ltdc_put_char_half_alt(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg)
+static uint_fast16_t ltdc_put_char_half_alt(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t ci, uint_fast8_t width2, COLORPIP_T fg)
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
 
-	uint8_t const * const font_half = ltdc_CenturyGothic_half [0] [0];
-	const size_t size_halffont = sizeof ltdc_CenturyGothic_half [0] [0];
-
+	uint8_t const * const fontraster = ltdc_CenturyGothic_half [0] [0];
+	const uint_fast8_t fontcharw = sizeof ltdc_CenturyGothic_half [0] [0];	// байтов в одной строке знакогенератора символа
+	const uint_fast8_t charheight = HALFCHARH;
+	const uint8_t * const charraster = fontraster + ci * charheight * fontcharw;
 	return ltdc_put_char_unified(db, xpix, ypix,
-			font_half, HALFCHARW, HALFCHARH, size_halffont, 	// параметры растра со шрифтом
-			ci, width2, fg);
+			charraster, fontcharw, charheight, fontcharw, 	// параметры растра со шрифтом
+			width2, fg);
 }
 
 #else /* WITHALTERNATIVEFONTS */
 
 // return new x coordinate
-static uint_fast16_t ltdc_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg)
+static uint_fast16_t ltdc_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t ci, uint_fast8_t width2, COLORPIP_T fg)
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
 
-	uint8_t const * const font_big = S1D13781_bigfont_LTDC [0] [0];
-	const size_t size_bigfont = sizeof S1D13781_bigfont_LTDC [0] [0];	// байтов в одной строке знакогенератора символа
-
+	uint8_t const * const fontraster = S1D13781_bigfont_LTDC [0] [0];
+	const uint_fast8_t fontcharw = sizeof S1D13781_bigfont_LTDC [0] [0];	// байтов в одной строке знакогенератора символа
+	const uint_fast8_t charheight = BIGCHARH;
+	const uint8_t * const charraster = fontraster + ci * charheight * fontcharw;
 	return ltdc_put_char_unified(db, xpix, ypix,
-			font_big, BIGCHARW, BIGCHARH, size_bigfont,  	// параметры растра со шрифтом
-			ci, width2, fg);
+			charraster, fontcharw, charheight, fontcharw,  	// параметры растра со шрифтом
+			width2, fg);
 }
 
 // return new x coordinate
-static uint_fast16_t ltdc_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg)
+static uint_fast16_t ltdc_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t ci, uint_fast8_t width2, COLORPIP_T fg)
 {
 	ASSERT(xpix < DIM_X);
 	ASSERT(ypix < DIM_Y);
 
-	uint8_t const * const font_half = S1D13781_halffont_LTDC [0] [0];
-	const size_t size_halffont = sizeof S1D13781_halffont_LTDC [0] [0];
-
+	uint8_t const * const fontraster = S1D13781_halffont_LTDC [0] [0];
+	const uint_fast8_t fontcharw = sizeof S1D13781_halffont_LTDC [0] [0];	// байтов в одной строке знакогенератора символа
+	const uint_fast8_t charheight = HALFCHARH;
+	const uint8_t * const charraster = fontraster + ci * charheight * fontcharw;
 	return ltdc_put_char_unified(db, xpix, ypix,
-			font_half, HALFCHARW, HALFCHARH, size_halffont, 	// параметры растра со шрифтом
-			ci, width2, fg);
+			charraster, fontcharw, charheight, fontcharw, 	// параметры растра со шрифтом
+			width2, fg);
 }
 
 #endif
@@ -594,10 +597,14 @@ ltdc_horizontal_put_char_small3(
 	COLORPIP_T fg
 	)
 {
-	const uint_fast8_t ci = smallfont_decode(cc);
+	uint8_t const * const fontraster = S1D13781_smallfont3_LTDC [0];	// байтов в одной строке знакогенератора символа
+	const uint_fast8_t fontcharw = sizeof S1D13781_smallfont3_LTDC [0];
+	const uint_fast16_t ci = smallfont_decode(cc);
+	const size_t charheight = SMALLCHARH3;
+	const uint8_t * const charraster = fontraster + ci * charheight * fontcharw;
 	return ltdc_put_char_unified(db, xpix, ypix,
-			S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0],  	// параметры растра со шрифтом
-			ci, SMALLCHARW3, fg);
+			charraster, fontcharw, charheight, fontcharw,  	// параметры растра со шрифтом
+			fontcharw, fg);
 }
 
 void
