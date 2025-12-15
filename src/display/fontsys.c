@@ -368,39 +368,6 @@ uint_fast16_t strwidth2(
 
 #if SMALLCHARH3
 
-static uint_fast16_t
-new_ltdc_horizontal_put_char_small3(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix, uint_fast16_t ypix,
-	char cc,
-	COLORPIP_T fg
-	)
-{
-	savewhere = __func__;
-	const unifont_t * const font = & unifont_small3;
-	return font->font_draw(db, xpix, ypix, font, cc, fg);
-}
-
-static uint_fast16_t
-ltdc_horizontal_put_char_small3(
-		const gxdrawb_t * db,
-		uint_fast16_t xpix, uint_fast16_t ypix,
-		char cc,
-		COLORPIP_T fg
-	)
-{
-	savewhere = __func__;
-	const unifont_t * const font = & unifont_small3;
-	//uint8_t const * const fontraster = S1D13781_smallfont3_LTDC [0];	// байтов в одной строке знакогенератора символа
-	const uint_fast8_t fontcharw = 8;//sizeof S1D13781_smallfont3_LTDC [0];
-	const uint_fast16_t ci = smallfont_decode(font, cc);
-	const size_t charheight = SMALLCHARH3;
-	const uint8_t * const charraster = S1D13781_smallfont3_LTDC [ci];
-	return unifont_put_char(db, xpix, ypix, font,
-			charraster, fontcharw, charheight, fontcharw,  	// параметры растра со шрифтом
-			fg);
-}
-
 uint_fast8_t smallfont3_width(const unifont_t * font, char cc)
 {
 	(void) cc;
@@ -412,10 +379,23 @@ uint_fast8_t smallfont3_height(const unifont_t * font, char cc)
 	return SMALLCHARH3;	// полная ширина символа в пикселях
 }
 
+static uint_fast16_t
+ltdc_horizontal_put_char_small3(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,
+	char cc,
+	COLORPIP_T fg
+	)
+{
+	savewhere = __func__;
+	const unifont_t * const font = & unifont_small3;
+	return font->font_draw(db, xpix, ypix, font, cc, fg);
+}
+
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
 // return new x coordinate
-static uint_fast16_t colorpip_put_char_small3_tbg(
+static uint_fast16_t new_colorpip_put_char_small3_tbg(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,
 	uint_fast16_t ypix,
@@ -424,8 +404,29 @@ static uint_fast16_t colorpip_put_char_small3_tbg(
 	)
 {
 	const unifont_t * const font = & unifont_small3;
-	return ltdc_horizontal_put_char_small3(db, xpix, ypix, cc, fg);
 	return font->font_draw(db, xpix, ypix, font, cc, fg);
+}
+// возвращаем на сколько пикселей вправо занимет отрисованный символ
+// Фон не трогаем
+// return new x coordinate
+static uint_fast16_t colorpip_put_char_small3_tbg(
+	const gxdrawb_t * db,
+	uint_fast16_t x,
+	uint_fast16_t y,
+	char cc,
+	COLORPIP_T fg
+	)
+{
+	const unifont_t * const font = & unifont_small3;
+	const uint_fast8_t width = SMALLCHARW3;
+	const uint_fast8_t c = smallfont_decode(font, cc);
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
+	{
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y + cgrow);
+		ltdc_horizontal_pixels_tbg(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width, fg);
+	}
+	return x + width;
 }
 
 // Используется при выводе на графический индикатор,
