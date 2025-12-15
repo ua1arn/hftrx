@@ -10018,8 +10018,8 @@ static void display2_stylesupdate(void)
 	gxstyle_initialize(& dbstylev_2stateSmall [1]);
 	gxstyle_textcolor(& dbstylev_2stateSmall [0], DSGN_LABELINACTIVETEXT, DSGN_LABELINACTIVEBACK);
 	gxstyle_textcolor(& dbstylev_2stateSmall [1], DSGN_LABELACTIVETEXT, DSGN_LABELACTIVEBACK);
-	gxstyle_setsmallfont2(& dbstylev_2stateSmall [0]);
-	gxstyle_setsmallfont2(& dbstylev_2stateSmall [1]);
+	gxstyle_setsmallfont(& dbstylev_2stateSmall [0], & unifont_small2);
+	gxstyle_setsmallfont(& dbstylev_2stateSmall [1], & unifont_small2);
 	gxstyle_texthalign(& dbstylev_2stateSmall [0], GXSTYLE_HALIGN_LEFT);
 	gxstyle_texthalign(& dbstylev_2stateSmall [1], GXSTYLE_HALIGN_LEFT);
 

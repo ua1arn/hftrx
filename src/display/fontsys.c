@@ -687,10 +687,11 @@ colpip_string_tbg(
 // обычный шрифт
 uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
 {
-	if (dbstyle->fontsmall == NULL)
+	const unifont_t * const font = dbstyle->font;
+	if (font == NULL)
 		return x;
 	savewhere = __func__;
-	return dbstyle->fontsmall->font_draw(db, x, y, dbstyle->fontsmall, cc, dbstyle->textcolor);
+	return font->font_draw(db, x, y, font, cc, dbstyle->textcolor);
 }
 
 // большой шрифт

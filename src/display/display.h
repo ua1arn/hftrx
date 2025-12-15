@@ -239,7 +239,7 @@ typedef struct gxstyle_tag
 	uint_fast16_t bgbackoffh;	// уменьшение размера плашки по вертикали
 	enum gxstyle_texthalign	texthalign;
 	enum gxstyle_textvalign textvalign;
-	const unifont_t * fontsmall;
+	const unifont_t * font;		// Шрифт, который будет использоваться
 } gxstyle_t;
 
 void gxstyle_initialize(gxstyle_t * dbstyle);
@@ -247,8 +247,7 @@ void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg);
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a);
 void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a);
 uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s);
-void gxstyle_setsmallfont(gxstyle_t * dbstyle);
-void gxstyle_setsmallfont2(gxstyle_t * dbstyle);
+void gxstyle_setsmallfont(gxstyle_t * dbstyle, const unifont_t * font);
 void gxstyle_setsbigandhalffont(gxstyle_t * dbstyle);
 void gxstyle_setbgbackoff(gxstyle_t * dbstyle, unsigned x, unsigned y);
 void gxstyle_setbgradius(gxstyle_t * dbstyle, unsigned r);

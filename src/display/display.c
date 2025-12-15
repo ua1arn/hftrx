@@ -294,10 +294,11 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstylep, const char * const * slines, unsigned nlines)
 {
 	size_t len;
+	const unifont_t * font = dbstylep->font;
 
 	savewhere = __func__;
 #if ! WITHLVGL
-	if (dbstylep->fontsmall == NULL)
+	if (font == NULL)
 		return;
 	if (dbstylep->bgradius)
 	{
@@ -346,7 +347,9 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 //		ASSERT(dbstylep->font_width);
 		char c;
 		savestring = s;
-		const unifont_t * font = dbstylep->fontsmall;
+		const unifont_t * font = dbstylep->font;
+		if (font == NULL)
+			return;
 		const uint_fast16_t stringheight = font->font_charheight(font, 'W');
 		ASSERT(font);
 		switch (dbstylep->textvalign)
@@ -1781,22 +1784,9 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	pix_display_texts(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), dbstylep, & s, 1);
 }
 
-void gxstyle_setsmallfont(gxstyle_t * dbstyle)
+void gxstyle_setsmallfont(gxstyle_t * dbstyle, const unifont_t * font)
 {
-#if ! LCDMODE_LTDC
-	dbstyle->font_draw_char = NULL;
-#elif defined (SMALLCHARW)
-	dbstyle->fontsmall = & unifont_small;
-#endif /* defined (SMALLCHARW) */
-}
-
-void gxstyle_setsmallfont2(gxstyle_t * dbstyle)
-{
-#if ! LCDMODE_LTDC
-	dbstyle->font_draw_char = NULL;
-#elif defined (SMALLCHARH2)
-	dbstyle->fontsmall = & unifont_small2;
-#endif /* defined (SMALLCHARH2) */
+	dbstyle->font = font;
 }
 
 // уменьшение размера плашки
@@ -1829,7 +1819,7 @@ void gxstyle_initialize(gxstyle_t * dbstyle)
 {
 	memset(dbstyle, 0, sizeof * dbstyle);
 	gxstyle_textcolor(dbstyle, COLORPIP_WHITE, COLORPIP_BLACK);
-	gxstyle_setsmallfont(dbstyle);
+	gxstyle_setsmallfont(dbstyle, & unifont_small);
 	gxstyle_texthalign(dbstyle, GXSTYLE_HALIGN_RIGHT);
 	gxstyle_textvalign(dbstyle, GXSTYLE_VALIGN_CENTER);
 	gxstyle_setbgradius(dbstyle, display2_gettileradius());
@@ -1867,11 +1857,12 @@ void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a)
 
 uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s)
 {
-	if (dbstyle->fontsmall == NULL)
+	const unifont_t * font = dbstyle->font;
+	if (font == NULL)
 		return 0;
 	char c;
 	uint_fast16_t n = 0;
 	while ((c = * s ++ != '\0'))
-		n += dbstyle->fontsmall->font_charwidth(dbstyle->fontsmall, c);
+		n += font->font_charwidth(font, c);
 	return n;
 }
