@@ -170,16 +170,17 @@ static void ltdc_horizontal_x2_pixels_tbg(
 	}
 }
 
-static void
+// return new x coordinate
+static uint_fast16_t
 ltdc_put_char_unified(
-	const FLASHMEM uint8_t * fontraster,
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const uint8_t * fontraster,
 	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
 	uint_fast8_t height,	// строк в символе по вертикали
 	uint_fast8_t bytesw,	// байтов в одной строке знакогенератора символа
-	const gxdrawb_t * db,
-	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
 	uint_fast8_t ci,	// индекс символа в знакогенераторе
-	uint_fast8_t width2,	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
+	uint_fast8_t width2,	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов больших шрифтов)
 	COLORPIP_T fg
 	)
 {
@@ -189,6 +190,7 @@ ltdc_put_char_unified(
 		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, xpix, ypix + cgrow);
 		ltdc_horizontal_pixels_tbg(tgr, & fontraster [(ci * height + cgrow) * bytesw], width2, fg);
 	}
+	return xpix + width2;
 }
 
 /* valid chars: "0123456789 #._" */
@@ -277,9 +279,9 @@ static uint_fast16_t ltdc_put_char_big_alt(const gxdrawb_t * db, uint_fast16_t x
 	uint8_t const * const font_big = ltdc_CenturyGothic_big [0] [0];
 	const size_t size_bigfont = sizeof ltdc_CenturyGothic_big [0] [0];	// байтов в одной строке знакогенератора символа
 
-	ltdc_put_char_unified(font_big, BIGCHARW, BIGCHARH, size_bigfont,  	// параметры растра со шрифтом
-			db, xpix, ypix, ci, width2, fg);
- 	return xpix + width2;
+	return ltdc_put_char_unified(db, xpix, ypix,
+			font_big, BIGCHARW, BIGCHARH, size_bigfont,  	// параметры растра со шрифтом
+			ci, width2, fg);
 }
 
 // return new x coordinate
@@ -291,10 +293,9 @@ static uint_fast16_t ltdc_put_char_half_alt(const gxdrawb_t * db, uint_fast16_t 
 	uint8_t const * const font_half = ltdc_CenturyGothic_half [0] [0];
 	const size_t size_halffont = sizeof ltdc_CenturyGothic_half [0] [0];
 
-	ltdc_put_char_unified(
+	return ltdc_put_char_unified(db, xpix, ypix,
 			font_half, HALFCHARW, HALFCHARH, size_halffont, 	// параметры растра со шрифтом
-			db, xpix, ypix, ci, width2, fg);
-	return xpix + width2;
+			ci, width2, fg);
 }
 
 #else /* WITHALTERNATIVEFONTS */
@@ -308,9 +309,9 @@ static uint_fast16_t ltdc_put_char_big(const gxdrawb_t * db, uint_fast16_t xpix,
 	uint8_t const * const font_big = S1D13781_bigfont_LTDC [0] [0];
 	const size_t size_bigfont = sizeof S1D13781_bigfont_LTDC [0] [0];	// байтов в одной строке знакогенератора символа
 
-	ltdc_put_char_unified(font_big, BIGCHARW, BIGCHARH, size_bigfont,  	// параметры растра со шрифтом
-			db, xpix, ypix, ci, width2, fg);
- 	return xpix + width2;
+	return ltdc_put_char_unified(db, xpix, ypix,
+			font_big, BIGCHARW, BIGCHARH, size_bigfont,  	// параметры растра со шрифтом
+			ci, width2, fg);
 }
 
 // return new x coordinate
@@ -322,10 +323,9 @@ static uint_fast16_t ltdc_put_char_half(const gxdrawb_t * db, uint_fast16_t xpix
 	uint8_t const * const font_half = S1D13781_halffont_LTDC [0] [0];
 	const size_t size_halffont = sizeof S1D13781_halffont_LTDC [0] [0];
 
-	ltdc_put_char_unified(
+	return ltdc_put_char_unified(db, xpix, ypix,
 			font_half, HALFCHARW, HALFCHARH, size_halffont, 	// параметры растра со шрифтом
-			db, xpix, ypix, ci, width2, fg);
-	return xpix + width2;
+			ci, width2, fg);
 }
 
 #endif
@@ -589,16 +589,15 @@ uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_
 static uint_fast16_t
 ltdc_horizontal_put_char_small3(
 	const gxdrawb_t * db,
-	uint_fast16_t x, uint_fast16_t y,
+	uint_fast16_t xpix, uint_fast16_t ypix,
 	char cc,
 	COLORPIP_T fg
 	)
 {
 	const uint_fast8_t ci = smallfont_decode(cc);
-	ltdc_put_char_unified(
+	return ltdc_put_char_unified(db, xpix, ypix,
 			S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0],  	// параметры растра со шрифтом
-			db, x, y, ci, SMALLCHARW3, fg);
-	return x + SMALLCHARW3;
+			ci, SMALLCHARW3, fg);
 }
 
 void
