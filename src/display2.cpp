@@ -2747,7 +2747,7 @@ static void display2_freqX_a(
 	else if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
-		rendered_value_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
+		display_freq(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 #endif /* WITHDIRECTFREQENER */
 	else
@@ -2756,7 +2756,7 @@ static void display2_freqX_a(
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		rendered_value_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
+		display_freq(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -9380,7 +9380,7 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 
 		const uint_fast32_t freq = hamradio_get_freq_pathi(pathi);
 
-		pix_rendered_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+		pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 	}
 	else if (! strcmp(url.c_str(), dzi_gcombo.id))
 	{

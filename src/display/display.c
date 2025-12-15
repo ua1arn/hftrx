@@ -409,8 +409,8 @@ pix_display_value_big(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
-	uint_fast16_t xspanpix,
-	uint_fast16_t yspanpix,
+	uint_fast16_t w,
+	uint_fast16_t h,
 	int_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
@@ -492,103 +492,7 @@ display_freq(
 
 	uint_fast16_t ypix;
 	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
-	const uint_fast16_t w = GRID2X(xspan);
-	const uint_fast16_t h = GRID2Y(yspan);
-	pix_display_value_big(db, xpix, ypix, w, h, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep);
-}
-
-// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
-/* использование предварительно построенных изображений при отображении частоты */
-void
-NOINLINEAT
-pix_rendered_value_big(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix,	// x координата начала вывода значения
-	uint_fast16_t ypix,	// y координата начала вывода значения
-	int_fast32_t freq,
-	uint_fast8_t width, // = 8;	// full width
-	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
-	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
-	uint_fast8_t rj,	// = 1;		// right truncated
-	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
-	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf,		// 0 - только большие цифры
-	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
-	)
-{
-	//	if (width > ARRAY_SIZE(vals10))
-	//		width = ARRAY_SIZE(vals10);
-	//const uint_fast8_t comma2 = comma + 3;		// comma position (from right, inside width)
-	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
-	uint_fast8_t i = (j - width);
-	uint_fast8_t z = blinkpos == 255 ? 1 : 0;	// only zeroes
-	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
-	for (; i < j; ++ i)
-	{
-		const ldiv_t res = ldiv(freq, vals10 [i]);
-		const uint_fast8_t g = (j - i);		// десятичная степень текущего разряда на отображении
-
-		// разделитель десятков мегагерц
-		if (comma2 == g)
-		{
-			xpix = display_put_char_big(db, xpix, ypix, (z == 0) ? '.' : '#', dbstyle);	// '#' - узкий пробел. Точка всегда узкая
-		}
-		else if (comma == g)
-		{
-			z = 0;
-			half = withhalf;
-			xpix = display_put_char_big(db, xpix, ypix, '.', dbstyle);
-		}
-
-		if (blinkpos == g)
-		{
-			const uint_fast8_t bc = blinkstate ? '_' : ' ';
-			// эта позиция редактирования частоты. Справа от неё включаем все нули
-			z = 0;
-			if (half)
-				xpix = display_put_char_half(db, xpix, ypix, bc, dbstyle);
-			else
-				xpix = display_put_char_big(db, xpix, ypix, bc, dbstyle);
-		}
-		else if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_big(db, xpix, ypix, ' ', dbstyle);	// supress zero
-		else
-		{
-			z = 0;
-			if (half)
-				xpix = display_put_char_half(db, xpix, ypix, '0' + res.quot, dbstyle);
-
-			else
-				xpix = display_put_char_big(db, xpix, ypix, '0' + res.quot, dbstyle);
-		}
-		freq = res.rem;
-	}
-}
-
-// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
-/* использование предварительно построенных изображений при отображении частоты */
-void
-NOINLINEAT
-rendered_value_big(
-	const gxdrawb_t * db,
-	uint_fast8_t xcell,	// x координата начала вывода значения
-	uint_fast8_t ycell,	// y координата начала вывода значения
-	uint_fast8_t xspan,
-	uint_fast8_t yspan,
-	int_fast32_t freq,
-	uint_fast8_t width, // = 8;	// full width
-	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
-	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
-	uint_fast8_t rj,	// = 1;		// right truncated
-	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
-	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf,		// 0 - только большие цифры
-	const gxstyle_t * dbstylep	/* foreground and background colors, text alignment */
-	)
-{
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
-	pix_rendered_value_big(db, xpix, ypix, freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep);
+	pix_display_value_big(db, xpix, ypix, GRID2X(xspan), GRID2Y(yspan), freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep);
 }
 
 void
