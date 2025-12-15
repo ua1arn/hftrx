@@ -10529,7 +10529,7 @@ void hightests(void)
 		gxstyle_t dbstylev;
 		gxstyle_initialize(& dbstylev);
 		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
-		display_text(& dbv, 0, 0, "Start...", 10, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+		display_text(& dbv, 0, 0, "Start...", 10, 16, & dbstylev);
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */

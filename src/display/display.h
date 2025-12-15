@@ -201,6 +201,21 @@ typedef struct gxdrawb_tag
 void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy);
 void gxdrawb_initlvgl(gxdrawb_t * db, void * layer);
 
+
+typedef struct unifont_tag
+{
+	uint_fast16_t (* decode)(const struct unifont_tag * font, char cc);	// получение ci
+	const uint8_t * (* getcharraster)(const struct unifont_tag * font, char c);	// получение начального адреса растра для символа
+	uint_fast8_t (* font_charwidth)(const struct unifont_tag * font, char cc);	// ширина в пиксеях данного символа (может быть меньше чем поле width)
+	uint_fast16_t (* font_draw)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, uint_fast16_t ci, uint_fast16_t width2, COLORPIP_T fg);
+	uint_fast16_t (* font_draw_rendered)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, uint_fast16_t ci, uint_fast16_t width2, COLORPIP_T fg);
+	uint8_t width;		// пикселей в символе по горизонтали знакогнератора
+	uint8_t height;		// строк в символе по вертикали
+	uint8_t bytesw;		// байтов в одной строке знакогенератора символа
+	const uint8_t * fontraster;		// начало знакогенератора в памяти
+	const char * label;		// название для диагностики
+} unifont_t;
+
 enum gxstyle_texthalign
 {
 	GXSTYLE_HALIGN_LEFT,
@@ -224,17 +239,9 @@ typedef struct gxstyle_tag
 	uint_fast16_t bgbackoffh;	// уменьшение размера плашки по вертикали
 	enum gxstyle_texthalign	texthalign;
 	enum gxstyle_textvalign textvalign;
-	uint_fast16_t (* font_draw_char)(
-		const gxdrawb_t * db,
-		uint_fast16_t x,
-		uint_fast16_t y,
-		char cc,
-		COLORPIP_T fg
-		);
-	uint_fast16_t (* font_draw_big)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg);
-	uint_fast16_t (* font_draw_half)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg);
-	uint_fast8_t (* font_width)(char cc);
-	uint_fast8_t (* font_height)(void);
+	const unifont_t * fontsmall;
+	const unifont_t * fontbig;
+	const unifont_t * fonthalf;
 } gxstyle_t;
 
 void gxstyle_initialize(gxstyle_t * dbstyle);
@@ -420,8 +427,8 @@ uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t x, uint
 uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 // большие и средние цифры (частота)
-uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc);
-uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc);
+uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const unifont_t * font, char cc);
+uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const unifont_t * font, char cc);
 
 void display_swrmeter(const gxdrawb_t * db,
 	uint_fast8_t x,
@@ -726,13 +733,11 @@ void gpu_fillrect(
 	COLORPIP_T color	// цвет
 	);
 
-uint_fast8_t bigfont_width(char cc);
-uint_fast8_t halffont_width(char cc);
-uint_fast8_t smallfont_width(char cc);
-uint_fast8_t smallfont2_width(char cc);
-uint_fast8_t smallfont2_height(void);
-uint_fast8_t smallfont3_width(char cc);
-uint_fast8_t smallfont_height(void);
+uint_fast8_t bigfont_width(const unifont_t * font, char cc);
+uint_fast8_t halffont_width(const unifont_t * font, char cc);
+uint_fast8_t smallfont_width(const unifont_t * font, char cc);
+uint_fast8_t smallfont2_width(const unifont_t * font, char cc);
+uint_fast8_t smallfont3_width(const unifont_t * font, char cc);
 
 void
 display_string3(
