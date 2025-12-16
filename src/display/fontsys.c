@@ -142,47 +142,21 @@ static void ltdc_horizontal_pixels_tbg(
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 // Фон не трогаем
 // Самый старший (левый) из указанного количества бит выдвигается первым.
-static void ltdc_horizontal_pixels16_tbg(
+static void ubpfont_pixels16(
 	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
-	const uint16_t * __restrict raster,
+	uint_fast16_t v,
 	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
+	const uint16_t * maskv,	// массив масок для отображаемых битов в порядке отображеня
 	COLORPIP_T fg
 	)
 {
-	uint_fast16_t w = width;
-	enum { WD = 8 * (sizeof * raster) };
-	ASSERT(WD == 16);
-	for (; w >= WD; w -= WD, tgr += WD)
+	if (width != 0)
 	{
-		const uint_fast16_t v = * raster ++;
-		if (v & (UINT16_C(1) << 15))	tgr [0] = fg;
-		if (v & (UINT16_C(1) << 14))	tgr [1] = fg;
-		if (v & (UINT16_C(1) << 13))	tgr [2] = fg;
-		if (v & (UINT16_C(1) << 12))	tgr [3] = fg;
-		if (v & (UINT16_C(1) << 11))	tgr [4] = fg;
-		if (v & (UINT16_C(1) << 10))	tgr [5] = fg;
-		if (v & (UINT16_C(1) << 9))		tgr [6] = fg;
-		if (v & (UINT16_C(1) << 8))		tgr [7] = fg;
-		if (v & (UINT16_C(1) << 7))		tgr [8] = fg;
-		if (v & (UINT16_C(1) << 6))		tgr [9] = fg;
-		if (v & (UINT16_C(1) << 5))		tgr [10] = fg;
-		if (v & (UINT16_C(1) << 4))		tgr [11] = fg;
-		if (v & (UINT16_C(1) << 3))		tgr [12] = fg;
-		if (v & (UINT16_C(1) << 2))		tgr [13] = fg;
-		if (v & (UINT16_C(1) << 1))		tgr [14] = fg;
-		if (v & (UINT16_C(1) << 0))		tgr [15] = fg;
-	}
-	if (w != 0)
-	{
-		// w = 15..1
-		const uint_fast16_t v = * raster;
-		uint_fast16_t mask = UINT16_C(1) << (w - 1);
 		do
 		{
-			if (v & mask) * tgr = fg;
+			if (v & * maskv ++) * tgr = fg;
 			tgr += 1;
-			mask >>= 1;
-		} while (-- w);
+		} while (-- width);
 	}
 }
 
@@ -244,15 +218,15 @@ unifont_put_char(
 	}
 	return xpix + width2;
 }
-
 // return new x coordinate
 // Одна строка целиком в элементе массива charraster
 static uint_fast16_t
-unifont_put_char16(
+ubxfont_put_char16(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
 	const unifont_t * font,
 	const uint16_t * const charraster,
+	const uint16_t * maskv,	// массив масок для отображаемых битов в порядке отображеня
 	uint_fast16_t width2,
 	uint_fast16_t height2,
 	uint_fast16_t bytesw_unused,
@@ -264,7 +238,7 @@ unifont_put_char16(
 	for (cgrow = 0; cgrow < height2; ++ cgrow)
 	{
 		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, xpix, ypix + cgrow);
-		ltdc_horizontal_pixels16_tbg(tgr, & charraster [cgrow], width2, fg);
+		ubpfont_pixels16(tgr, charraster [cgrow], width2, maskv, fg);
 	}
 	return xpix + width2;
 }
@@ -1291,7 +1265,10 @@ static uint_fast16_t
 ubmfont_decode(const unifont_t * font, char cc)
 {
 	//const UB_Font * const ub = (const UB_Font *) font->fontraster;
-	return (unsigned char) cc - 0x20;
+	const unsigned char c = (unsigned char) cc;
+	if (c < 0x20)
+		return 0;
+	return c - 0x20;
 }
 
 // Для моноширинных знакогенераторов
@@ -1313,12 +1290,34 @@ ubmfont_render_char16(
 	COLORPIP_T fg
 	)
 {
+
+	static const uint16_t mask16 [16] =
+	{
+		UINT16_C(1) << 15,
+		UINT16_C(1) << 14,
+		UINT16_C(1) << 13,
+		UINT16_C(1) << 12,
+		UINT16_C(1) << 11,
+		UINT16_C(1) << 10,
+		UINT16_C(1) << 9,
+		UINT16_C(1) << 8,
+		UINT16_C(1) << 7,
+		UINT16_C(1) << 6,
+		UINT16_C(1) << 5,
+		UINT16_C(1) << 4,
+		UINT16_C(1) << 3,
+		UINT16_C(1) << 2,
+		UINT16_C(1) << 1,
+		UINT16_C(1) << 0,
+	};
 	//const UB_Font * const ub = (const UB_Font *) font->fontraster;
 	const uint16_t * const charraster = (const uint16_t *) font->getcharraster(font, cc);
 	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
 	const uint_fast16_t height2 = font->font_charheight(font);	// number of rows
 	//const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row (unused)
-	return unifont_put_char16(db, xpix, ypix, font, charraster, width2, height2, 0 /* (unused) */, fg);
+	PRINTF("ubmfont_render_char16: cc=%02X(%c),width2=%u\n", (unsigned char) cc, cc, width2);
+	printhex16(0, charraster, height2 * 2);
+	return ubxfont_put_char16(db, xpix, ypix, font, charraster, mask16, width2, height2, 0 /* (unused) */, fg);
 }
 
 // Для пропорциональных знакогенераторов
@@ -1376,7 +1375,29 @@ ubpfont_render_char16(
 	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
 	const uint_fast16_t height2 = font->font_charheight(font);	// number of rows
 	//const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row (unused)
-	return unifont_put_char16(db, xpix, ypix, font, charraster, width2, height2, 0 /* (unused) */, fg);
+	PRINTF("ubpfont_render_char16: cc=%02X(%c),width2=%u\n", (unsigned char) cc, cc, width2);
+	printhex16(0, charraster, height2 * 2);
+
+	static const uint16_t mask16 [16] =
+	{
+		UINT16_C(1) << 15,
+		UINT16_C(1) << 14,
+		UINT16_C(1) << 13,
+		UINT16_C(1) << 12,
+		UINT16_C(1) << 11,
+		UINT16_C(1) << 10,
+		UINT16_C(1) << 9,
+		UINT16_C(1) << 8,
+		UINT16_C(1) << 7,
+		UINT16_C(1) << 6,
+		UINT16_C(1) << 5,
+		UINT16_C(1) << 4,
+		UINT16_C(1) << 3,
+		UINT16_C(1) << 2,
+		UINT16_C(1) << 1,
+		UINT16_C(1) << 0,
+	};
+	return ubxfont_put_char16(db, xpix, ypix, font, charraster, mask16, width2, height2, 0 /* (unused) */, fg);
 }
 
 // *********************************************************************************************************************
