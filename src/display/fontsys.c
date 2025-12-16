@@ -1810,6 +1810,7 @@ aptechfont_render_char(
 
 	// Пиксели идут вертикальной полосой слеыв направо
 	// Младший бит - верхний
+	// заполняется полосой 8 бит, далее перходит на следующую полосу
 #if 1
 	const unsigned bytespervertical = (height2 + 7) / 8;
 	PRINTF("aptechfont_render_char: cc=%02X (%c), width2=%u, height2=%u, bytespervertical=%u\n", (unsigned char) cc, cc, width2, height2, bytespervertical);
@@ -1820,9 +1821,9 @@ aptechfont_render_char(
 		uint_fast16_t col;
 		for (col = 0; col < width2; ++ col)
 		{
-			const unsigned bitoffset = col * bytespervertical * 8 + row;
-			const unsigned byteoffset = bitoffset / 8;
-			const unsigned byteshift = bitoffset % 8;
+			const unsigned strype = row / 8;
+			const unsigned byteoffset = strype * width2 + col;
+			const unsigned byteshift = row % 8;
 
 			//ASSERT(byteshift == row);
 			if (charraster [byteoffset] & (1u << byteshift))
