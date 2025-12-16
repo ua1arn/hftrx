@@ -1046,7 +1046,7 @@ void gui_main_process(void)
 
 			if (update) v = ldiv(hamradio_get_volt_value(), 10);
 
-#if WITHCURRLEVEL || WITHCURRLEVEL2
+#if WITHCURRLEVEL || WITHCURRLEVEL2 || WITHCURRLEVEL_1117
 			uint_fast16_t yy = hamradio_get_tx() ? infobar_1st_str_y : y_mid;
 #else
 			uint_fast16_t yy = y_mid;
@@ -1057,7 +1057,7 @@ void gui_main_process(void)
 			gui_print_prop(xx - strl / 2, yy, buf, & INFOBAR_FONTP, str_color);
 #endif /* WITHVOLTLEVEL || WITHVOLTLEVEL_1117 */
 
-#if WITHCURRLEVEL || WITHCURRLEVEL2
+#if WITHCURRLEVEL || WITHCURRLEVEL2 || WITHCURRLEVEL_1117
 		// ток PA (при передаче)
 			if (hamradio_get_tx())
 			{

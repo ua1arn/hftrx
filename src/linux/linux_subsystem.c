@@ -2066,7 +2066,6 @@ int linux_get_battery_charge_level(void)
 #if AMS1117_ONBOARDADC
 
 #define ADS1117_ADDR_8BIT   (0x48 << 1)
-#define ACS712_SENSITIVITY  0.066
 
 #define PGA_4_096V          (0b001 << 9)
 #define DR_128SPS           (0b100 << 5)
@@ -2118,7 +2117,7 @@ double raw_to_voltage(int16_t raw)
 }
 
 #if WITHCURRLEVEL_1117
-double acs712_vzero = 0.0;
+double acs712_vzero = 2.5;
 
 void asc712_offset_calibrate(void)
 {

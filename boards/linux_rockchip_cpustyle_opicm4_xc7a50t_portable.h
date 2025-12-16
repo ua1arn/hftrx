@@ -68,7 +68,7 @@ enum {
 
 #define CALIBRATION_IQ_FIR_RX_SHIFT		56	// 56 - sw FIR, 50 - hw FIR
 #define CALIBRATION_IQ_CIC_RX_SHIFT		64
-#define CALIBRATION_TX_SHIFT			27
+#define CALIBRATION_TX_SHIFT			25
 
 #define LINUX_XDMA_IQ_EVENT_FILE	"/dev/xdma0_events_0"
 #define LINUX_I2C_FILE			"/dev/i2c-2"

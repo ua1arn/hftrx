@@ -170,7 +170,7 @@
 	#define WITHCURRLEVEL_1117	1
 	#define WITHVOLTLEVEL_1117	1
 	#define VBUS_DIVIDER_RATIO  5.61 * 10.0
-	#define ACS712_SENSITIVITY  0.066
+	#define ACS712_SENSITIVITY  0.00066
 
 	enum {
 		ams1117_cnannel_fwd,

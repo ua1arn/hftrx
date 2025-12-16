@@ -111,11 +111,13 @@ int sdl2_render_init(void)
 	SDL_FreeSurface(surface);
 #endif /* MOUSE_EVDEV */
 
+#if GUI_EXTERNAL_FONTS
 	if (TTF_Init() == -1)
 	{
 		printf("TTF init error\n");
 		return 0;
 	}
+#endif /* GUI_EXTERNAL_FONTS */
 
 #if WITHTOUCHGUI
 	gui_sdl2_set_renderer(renderer);

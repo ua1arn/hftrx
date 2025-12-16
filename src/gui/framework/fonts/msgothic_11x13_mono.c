@@ -144,7 +144,7 @@ const uint32_t msgothic_11x13_mono_Table[] = {
 //--------------------------------------------------------------
 // Font-Struktur
 //--------------------------------------------------------------
-UB_Font32 msgothic_11x13_mono = {
+gui_mono_font_t msgothic_11x13_mono = {
   msgothic_11x13_mono_Table, // Font-Daten
   11,               // Breite eines Zeichens (in Pixel)
   13,              // Hoehe eines Zeichens  (in Pixel)

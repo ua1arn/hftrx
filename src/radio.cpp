@@ -13752,6 +13752,13 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 	return curr10 + (gipacali + getipacalibase());
 }
 
+#elif WITHCURRLEVEL_1117
+
+int_fast16_t hamradio_get_pacurrent_value(void)
+{
+	return get_current_1117();
+}
+
 #endif /* (WITHCURRLEVEL || WITHCURRLEVEL2) */
 
 uint_fast8_t hamradio_get_tx(void)

@@ -144,7 +144,7 @@ const uint32_t msgothic_15x17_mono_Table[] = {
 //--------------------------------------------------------------
 // Font-Struktur
 //--------------------------------------------------------------
-UB_Font32 msgothic_15x17_mono = {
+gui_mono_font_t msgothic_15x17_mono = {
 	  msgothic_15x17_mono_Table, // Font-Daten
 	  15,               // Breite eines Zeichens (in Pixel)
 	  17,              // Hoehe eines Zeichens  (in Pixel)

@@ -145,7 +145,7 @@ const uint32_t msgothic_15x17_prop_Table[] = {
 //--------------------------------------------------------------
 // Font-Struktur
 //--------------------------------------------------------------
-UB_pFont32 msgothic_15x17_prop = {
+gui_prop_font_t msgothic_15x17_prop = {
 		msgothic_15x17_prop_Table, // Font-Daten
 		17,              // Hoehe eines Zeichens  (in Pixel)
 		32,              // erstes Zeichen  (Ascii-Nr)
