@@ -540,6 +540,15 @@ colpip_string_width(
 	return w;
 }
 
+uint_fast16_t
+colpip_string_height(
+	const unifont_t * font,
+	const char * s
+	)
+{
+	return font->font_charheight(font);
+}
+
 
 #if defined (SMALLCHARW)
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
@@ -1370,7 +1379,11 @@ ubpfont_render_char16(
 	COLORPIP_T fg
 	)
 {
-	//const UB_pFont * const ubp = (const UB_pFont *) font->fontraster;
+#if 1
+	const UB_pFont * const ubp = (const UB_pFont *) font->fontraster;
+	UB_Font_DrawPChar(db, xpix, ypix, cc, ubp, fg);
+	return xpix + font->font_charwidth(font, cc);
+#else
 	const uint16_t * const charraster = (const uint16_t *) font->getcharraster(font, cc);
 	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
 	const uint_fast16_t height2 = font->font_charheight(font);	// number of rows
@@ -1380,14 +1393,6 @@ ubpfont_render_char16(
 
 	static const uint16_t mask16 [16] =
 	{
-		UINT16_C(1) << 15,
-		UINT16_C(1) << 14,
-		UINT16_C(1) << 13,
-		UINT16_C(1) << 12,
-		UINT16_C(1) << 11,
-		UINT16_C(1) << 10,
-		UINT16_C(1) << 9,
-		UINT16_C(1) << 8,
 		UINT16_C(1) << 7,
 		UINT16_C(1) << 6,
 		UINT16_C(1) << 5,
@@ -1396,8 +1401,17 @@ ubpfont_render_char16(
 		UINT16_C(1) << 2,
 		UINT16_C(1) << 1,
 		UINT16_C(1) << 0,
+		UINT16_C(1) << 15,
+		UINT16_C(1) << 14,
+		UINT16_C(1) << 13,
+		UINT16_C(1) << 12,
+		UINT16_C(1) << 11,
+		UINT16_C(1) << 10,
+		UINT16_C(1) << 9,
+		UINT16_C(1) << 8,
 	};
-	return ubxfont_put_char16(db, xpix, ypix, font, charraster, mask16, width2, height2, 0 /* (unused) */, fg);
+	return ubxfont_put_char16(db, xpix, ypix, font, charraster, mask16 + 15 - width2, width2, height2, 0 /* (unused) */, fg);
+#endif
 }
 
 // *********************************************************************************************************************

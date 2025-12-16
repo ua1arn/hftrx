@@ -294,6 +294,12 @@ colpip_string_width(
 	const char * s
 	);
 
+uint_fast16_t
+colpip_string_height(
+	const unifont_t * font,
+	const char * s
+	);
+
 uint_fast16_t colorpip_put_char_small(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,

@@ -10545,11 +10545,11 @@ void hightests(void)
 		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_small2, "HELLO! hello! test", COLOR_WHITEALL);
 		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_small3, "HELLO! hello! test", COLOR_WHITEALL);
 		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_gothic_11x13, "HELLO! hello! test", COLOR_WHITEALL);
-		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_gothic_11x13, "!!!!!!!!!!!!!!!", COLOR_WHITEALL);
 		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_gothic_12x16p, "HELLO! hello! test", COLOR_WHITEALL);
+		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_small, "HELLO! hello! test", COLOR_WHITEALL);
 		colmain_nextfb();
 		for (;;)
-			;
+	    	testsloopprocessing();
 	}
 #endif
 #if 0
