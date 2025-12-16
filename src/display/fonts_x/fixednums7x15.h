@@ -18,7 +18,7 @@
 //#include <avr/pgmspace.h>
 
 
-static const uint8_t fixednums7x15[] PROGMEM = {
+static const uint8_t fixednums7x15[] = {
     0x0, 0x0,	// size of zero indicates fixed width font
     7,		// width
     15,		// height

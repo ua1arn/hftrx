@@ -45,7 +45,7 @@
 #define ROBOTO32_WIDTH 10
 #define ROBOTO32_HEIGHT 33
 
-static const uint8_t roboto32[] PROGMEM = {
+static const uint8_t roboto32[] = {
     0x9C, 0x81, // size
     0x0A, // width
     0x21, // height

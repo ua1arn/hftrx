@@ -45,7 +45,7 @@
 #define JOKERMAN_255_WIDTH 10
 #define JOKERMAN_255_HEIGHT 253
 
-static const uint8_t jokerman_255[] PROGMEM = {
+static const uint8_t jokerman_255[] = {
     0x88, 0x45, // size
     0x0A, // width
     0xFD, // height

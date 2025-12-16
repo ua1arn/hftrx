@@ -45,7 +45,7 @@
 #define HELVNEUETH70_WIDTH 10
 #define HELVNEUETH70_HEIGHT 70
 
-static const uint8_t helvNeueTh70[] PROGMEM = {
+static const uint8_t helvNeueTh70[] = {
     0xE6, 0x82, // size
     0x0A, // width
     0x46, // height

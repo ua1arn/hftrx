@@ -45,7 +45,7 @@
 #define ROBOTO70NUMS_WIDTH 10
 #define ROBOTO70NUMS_HEIGHT 51
 
-static const uint8_t roboto70nums[] PROGMEM = {
+static const uint8_t roboto70nums[] = {
     0x3D, 0x07, // size
     0x0A, // width
     0x33, // height

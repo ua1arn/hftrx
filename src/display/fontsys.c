@@ -1714,7 +1714,124 @@ const unifont_t unifont_Tahoma_Regular_88x77 =
 // http://www.apetech.de/fontCreator
 // GLCD library?
 
+// **********************************
+
+static uint_fast16_t
+aptechfont_decode(const unifont_t * font, char cc)
+{
+	const uint8_t * const blob = (const uint8_t * const) font->fontraster;
+	const uint_fast16_t   font_Size_in_Bytes_over_all_included_Size_it_self;
+	const uint_fast8_t    font_Width_in_Pixel_for_fixed_drawing = blob [2];
+	const uint_fast8_t    font_Height_in_Pixel_for_all_characters = blob [3];
+	const uint_fast8_t    font_First_Char = blob [4];
+	const uint_fast8_t    font_Char_Count = blob [5];
+	const uint_fast8_t c = (unsigned char) cc;
+	if (c < font_First_Char)
+		return 0;
+	if (c >= (font_First_Char + font_Char_Count))
+		return 0;
+	return c - font_First_Char;
+}
+
+// Для пропорциональных знакогенераторов
+static uint_fast8_t aptechfont_width(const unifont_t * font, char cc)
+{
+	const uint8_t * const blob = (const uint8_t * const) font->fontraster;
+	const uint_fast16_t   font_Size_in_Bytes_over_all_included_Size_it_self = USBD_peek_u16(blob + 0); // size of zero indicates fixed width font, actual length is width * height
+	const uint_fast16_t ci = font->decode(font, cc);
+	const uint_fast8_t    font_Width_in_Pixel_for_fixed_drawing = blob [2];
+	const uint_fast8_t    font_Height_in_Pixel_for_all_characters = blob [3];
+	const uint_fast8_t    font_First_Char = blob [4];
+	const uint_fast8_t    font_Char_Count = blob [5];
+
+	if (font_Size_in_Bytes_over_all_included_Size_it_self == 0)
+	{
+		return font_Width_in_Pixel_for_fixed_drawing;
+	}
+	// Proportional widths
+	const uint_fast16_t		widthsoffset = 6 + font_Char_Count;
+
+	const uint_fast8_t w = blob [widthsoffset + ci];
+	return w == 0 ? font_Width_in_Pixel_for_fixed_drawing : w;
+}
+
+static const void * aptechfont_getcharraster(const unifont_t * font, char cc)
+{
+	const uint_fast16_t ci = font->decode(font, cc);
+	const uint8_t * const blob = (const uint8_t * const) font->fontraster;
+	const uint_fast16_t   font_Size_in_Bytes_over_all_included_Size_it_self = USBD_peek_u16(blob + 0); // size of zero indicates fixed width font, actual length is width * height
+	const uint_fast8_t    font_First_Char = blob [4];
+	const uint_fast8_t    font_Char_Count = blob [5];
+	if (font_Size_in_Bytes_over_all_included_Size_it_self == 0)
+	{
+		const uint_fast8_t    font_Width_in_Pixel_for_fixed_drawing = blob [2];
+		const uint_fast8_t    font_Height_in_Pixel_for_all_characters = blob [3];
+		// fixed chars
+	    // Fixed width; char width table not used !!!!
+		unsigned charbytes = (font_Width_in_Pixel_for_fixed_drawing * font_Height_in_Pixel_for_all_characters + 7) / 8;
+		//PRINTF("aptechfont_getcharraster: cc=%02X, ci=%u, charbytes=%u\n", cc, ci, charbytes);
+		return blob + 6 + ci * charbytes;
+	}
+	uint_fast16_t i;
+	uint_fast16_t dataoffs = 6 + font_Char_Count;
+	const uint_fast16_t		widthsoffset = 6 + font_Char_Count;
+	for (i = 0; i < ci; ++ i)
+	{
+		dataoffs += blob [widthsoffset + i];
+	}
+	return blob + dataoffs;
+}
+
+// Для пропорциональных знакогенераторов
+static uint_fast8_t aptechfont_height(const unifont_t * font)
+{
+	const uint8_t * const blob = (const uint8_t * const) font->fontraster;
+	const uint_fast16_t   font_Size_in_Bytes_over_all_included_Size_it_self = USBD_peek_u16(blob + 0); // size of zero indicates fixed width font, actual length is width * height
+	const uint_fast8_t    font_Width_in_Pixel_for_fixed_drawing = blob [2];
+	const uint_fast8_t    font_Height_in_Pixel_for_all_characters = blob [3];
+
+	return font_Height_in_Pixel_for_all_characters;
+}
+
+static uint_fast16_t
+aptechfont_render_char(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	)
+{
+	const uint8_t * const charraster = (const uint8_t * const) font->getcharraster(font, cc);
+	const uint_fast16_t width2 = font->font_charwidth(font, cc);
+	const uint_fast16_t height2 = font->font_charheight(font);
+
+	PRINTF("aptechfont_render_char: cc=%02X (%c), width2=%u, height2=%u\n", (unsigned char) cc, cc, width2, height2);
+	printhex(0, charraster, (width2 * height2 + 7) / 8);
+	// Пиксели идут вертикальной полосой слеыв направо
+#if 0
+	uint_fast16_t row;
+	for (row = 0; row < height2; ++ row)
+	{
+		uint_fast16_t col;
+		for (col = 0; col < width2; ++ col)
+		{
+			const unsigned bitoffset = row * width2 + col;
+			const unsigned byteoffset = bitoffset / 8;
+			const unsigned byteshift = bitoffset % 8;
+
+			if (charraster [byteoffset] & (1u << bitoffset))
+				* colpip_mem_at(db, xpix + col, ypix + row) = fg;
+		}
+	}
+#endif
+	return width2;
+}
+
+// **********************************
+
 #include "fonts_x/roboto32.h"
+#include "fonts_x/SystemFont5x7.h"
 
 const unifont_t unifont_roboto32 =
 {
@@ -1722,9 +1839,9 @@ const unifont_t unifont_roboto32 =
 	.getcharraster = aptechfont_getcharraster,
 	.font_charwidth = aptechfont_width,
 	.font_charheight = aptechfont_height,
-	.font_draw = aptechfont_render_char16,
+	.font_draw = aptechfont_render_char,
 	//
-	.fontraster = (const void *) roboto32,
+	.fontraster = (const void *) System5x7,//roboto32,
 	.label = "Tahoma_Regular_88x77"
 };
 

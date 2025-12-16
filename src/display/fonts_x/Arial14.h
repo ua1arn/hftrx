@@ -52,7 +52,7 @@
 
 #define Arial14 Arial_14 
 
-static const uint8_t Arial_14[] PROGMEM = {
+static const uint8_t Arial_14[] = {
     0x1E, 0x6C, // size
     0x0A, // width
     0x0E, // height
