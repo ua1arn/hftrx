@@ -155,7 +155,7 @@ static void ltdc_horizontal_pixels16_tbg(
 
 	for (; w >= 16; w -= 16, tgr += 16)
 	{
-		const uint_fast16_t v = * raster ++;
+		const uint_fast16_t v = __REV16(* raster ++);
 		if (v & 0x0001)	tgr [0x00] = fg;
 		if (v & 0x0002)	tgr [0x01] = fg;
 		if (v & 0x0004)	tgr [0x02] = fg;
@@ -175,7 +175,7 @@ static void ltdc_horizontal_pixels16_tbg(
 	}
 	if (w != 0)
 	{
-		uint_fast16_t vlast = * raster;
+		uint_fast16_t vlast = __REV16(* raster);
 		do
 		{
 			if (vlast & 0x01)
@@ -246,6 +246,7 @@ unifont_put_char(
 }
 
 // return new x coordinate
+// Одна строка целиком в элементе массива charraster
 static uint_fast16_t
 unifont_put_char16(
 	const gxdrawb_t * db,
@@ -258,11 +259,12 @@ unifont_put_char16(
 	COLORPIP_T fg
 	)
 {
+	(void) bytesw;
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < height2; ++ cgrow)
 	{
 		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, xpix, ypix + cgrow);
-		ltdc_horizontal_pixels16_tbg(tgr, & charraster [cgrow * bytesw], width2, fg);
+		ltdc_horizontal_pixels16_tbg(tgr, & charraster [cgrow], width2, fg);
 	}
 	return xpix + width2;
 }
@@ -1499,7 +1501,7 @@ static const void * ubfont_getcharraster(const unifont_t * font, char cc)
 
 // Для моноширинных знакогенераторов
 static uint_fast16_t
-ubfont_put_char_small(
+ubfont_render_char16(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
 	const unifont_t * font,
@@ -1523,8 +1525,9 @@ const unifont_t unifont_gothic_11x13 =
 	.getcharraster = ubfont_getcharraster,
 	.font_charwidth = ubfont_width,
 	.font_charheight = ubfont_height,
-	.font_draw = ubfont_put_char_small,
+	.font_draw = ubfont_render_char16,
 	.font_prerender = NULL,
+	.bytesw = 2,
 	.fontraster = (const void *) & gothic_11x13,
 	.label = "unifont_gothic_11x13"
 };
@@ -1571,7 +1574,7 @@ static const void * ubpfont_getcharraster(const unifont_t * font, char cc)
 
 // Для пропорциональных знакогенераторов
 static uint_fast16_t
-ubpfont_put_char_small(
+ubpfont_render_char16(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
 	const unifont_t * font,
@@ -1595,8 +1598,9 @@ const unifont_t unifont_gothic_12x16p =
 	.getcharraster = ubpfont_getcharraster,
 	.font_charwidth = ubpfont_width,
 	.font_charheight = ubpfont_height,
-	.font_draw = ubpfont_put_char_small,
+	.font_draw = ubpfont_render_char16,
 	.font_prerender = NULL,
+	.bytesw = 2,
 	.fontraster = (const void *) & gothic_12x16_p,
 	.label = "unifont_gothic_12x16p"
 };
