@@ -205,15 +205,14 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layer);
 typedef struct unifont_tag
 {
 	uint_fast16_t (* decode)(const struct unifont_tag * font, char cc);	// получение ci
-	const uint8_t * (* getcharraster)(const struct unifont_tag * font, char c);	// получение начального адреса растра для символа
+	const void * (* getcharraster)(const struct unifont_tag * font, char c);	// получение начального адреса растра для символа
 	uint_fast8_t (* font_charwidth)(const struct unifont_tag * font, char cc);	// ширина в пиксеях данного символа (может быть меньше чем поле width)
 	uint_fast8_t (* font_charheight)(const struct unifont_tag * font, char cc);	// высота в пикселях
 	uint_fast16_t (* font_draw)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
 	uint_fast16_t (* font_prerender)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
 	uint8_t bytesw;		// байтов в одной строке знакогенератора символа
-	const uint8_t * fontraster;		// начало знакогенератора в памяти
+	const void * fontraster;		// начало знакогенератора в памяти
 	const char * label;		// название для диагностики
-	const void * ubf;	// UB_Font / UBp_Font
 } unifont_t;
 
 enum gxstyle_texthalign
