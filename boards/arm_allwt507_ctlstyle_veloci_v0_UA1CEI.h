@@ -238,8 +238,8 @@
 
 	// Выбор используемой цветовой палитры
 	//#define COLORSTYLE_GREEN	1
-	#define COLORSTYLE_BLUE	1
-	//#define COLORSTYLE_BLUE2 1
+	//#define COLORSTYLE_BLUE	1
+	#define COLORSTYLE_BLUE2 1
 	//#define COLORSTYLE_WHITE	1
 	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */

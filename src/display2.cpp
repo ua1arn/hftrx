@@ -1208,10 +1208,6 @@ static const dzitem_t dzi_voxtune =
 };
 
 
-#if WITHALTERNATIVEFONTS
-	#include "display/fonts/ub_fonts.h"
-#endif /* WITHALTERNATIVEFONTS */
-
 #if WITHRLEDECOMPRESS
 	#include "display/pictures_RLE.h"
 #endif /* WITHRLEDECOMPRESS */
@@ -2747,11 +2743,7 @@ static void display2_freqX_a(
 	else if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
-	#if WITHPRERENDER
-		rendered_value_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
-	#else /* WITHPRERENDER */
 		display_freq(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
-	#endif /* WITHPRERENDER */
 	}
 #endif /* WITHDIRECTFREQENER */
 	else
@@ -2760,11 +2752,7 @@ static void display2_freqX_a(
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-	#if WITHPRERENDER
-		rendered_value_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
-	#else /* WITHPRERENDER */
 		display_freq(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
-	#endif /* WITHPRERENDER */
 	}
 }
 
@@ -9306,7 +9294,7 @@ int hftrxgd::text_width(const char *text, litehtml::uint_ptr hFont)
 {
 	//PRINTF("text_width: text='%s'\n", text);
 	(void) hFont;
-	return SMALLCHARW * strlen(text);
+	return strwidth(text);
 }
 
 void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos)
@@ -9388,11 +9376,7 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 
 		const uint_fast32_t freq = hamradio_get_freq_pathi(pathi);
 
-#if WITHPRERENDER
-		pix_rendered_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
-#else /* WITHPRERENDER */
-		pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
-#endif /* WITHPRERENDER */
+		pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
 	}
 	else if (! strcmp(url.c_str(), dzi_gcombo.id))
 	{
@@ -10030,8 +10014,8 @@ static void display2_stylesupdate(void)
 	gxstyle_initialize(& dbstylev_2stateSmall [1]);
 	gxstyle_textcolor(& dbstylev_2stateSmall [0], DSGN_LABELINACTIVETEXT, DSGN_LABELINACTIVEBACK);
 	gxstyle_textcolor(& dbstylev_2stateSmall [1], DSGN_LABELACTIVETEXT, DSGN_LABELACTIVEBACK);
-	gxstyle_setsmallfont2(& dbstylev_2stateSmall [0]);
-	gxstyle_setsmallfont2(& dbstylev_2stateSmall [1]);
+	gxstyle_setsmallfont(& dbstylev_2stateSmall [0], & unifont_small2);
+	gxstyle_setsmallfont(& dbstylev_2stateSmall [1], & unifont_small2);
 	gxstyle_texthalign(& dbstylev_2stateSmall [0], GXSTYLE_HALIGN_LEFT);
 	gxstyle_texthalign(& dbstylev_2stateSmall [1], GXSTYLE_HALIGN_LEFT);
 

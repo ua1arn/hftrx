@@ -17210,13 +17210,13 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 			if (el == selected_group_left_margin)
 			{
 				//подсвечиваем выбранный элемент
-				//display_text(db, xcell_marker, y_position_groups, PSTR(">"), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+				//display_text(db, xcell_marker, y_position_groups, PSTR(">"), 1, (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
 				gxstyle_textcolor(& dbstylev, DSGN_MENUSELCOLOR, DSGN_MENUSELBGCOLOR);
 			}
 			else
 			{
 				//снять отметку
-				//display_text(db, xcell_marker, y_position_groups, PSTR(" "), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+				//display_text(db, xcell_marker, y_position_groups, PSTR(" "), 1, (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
 				gxstyle_textcolor(& dbstylev, DSGN_MENUCOLOR, DSGN_MENUBGCOLOR);
 			}
 			display2_menu_group(db, xcell, y_position_groups, mv, xspan, rowspan, getlabel, & dbstylev); // название группы
@@ -17298,13 +17298,13 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 			if (el == index)
 			{
 				//подсвечиваем выбранный элемент
-				//display_text(db, xcell_marker, y_position_params, PSTR(">"), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+				//display_text(db, xcell_marker, y_position_params, PSTR(">"), 1, (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
 				gxstyle_textcolor(& dbstylev, DSGN_MENUVALSELCOLOR, DSGN_MENUVALSELBGCOLOR);
 			}
 			else
 			{
 				//снять подсветку
-				//display_text(db, xcell_marker, y_position_params, PSTR(" "), 1, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+				//display_text(db, xcell_marker, y_position_params, PSTR(" "), 1, (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
 				gxstyle_textcolor(& dbstylev, DSGN_MENUCOLOR, DSGN_MENUBGCOLOR);
 			}
 			display2_menu_lblng(db, xcell, y_position_params, mv, xspan, rowspan, getlabel, & dbstylev); // название редактируемого параметра
@@ -18037,7 +18037,7 @@ static void dispvfocode(
 	uint_fast32_t freq = getvcoranges(vco, top);
 	synth_lo1_setfreq(0, freq, getlo1div(gtx));
 
-	display_text(db, 0, 1, label, (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+	display_text(db, 0, 1, label, (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
 	display_menu_digit(db, 0, 0, freq, 9, 3, 0);
 
 }
@@ -19255,7 +19255,7 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 #if ! LCDMODE_DUMMY
 		display2_fillbg(& dbv);
-		display_text(& dbv, 0, 0, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+		display_text(& dbv, 0, 0, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
 		colmain_nextfb();
 #endif /*  ! LCDMODE_DUMMY */
 		PRINTF(PSTR("%s\n"), msg);
@@ -19287,7 +19287,7 @@ void initialize2(void)
 		local_snprintf_P(msg, ARRAY_SIZE(msg), "TOO LARGE nvmap %d", (int) sizeof (struct nvmap));
 
 		display2_fillbg(& dbv);
-		display_text(& dbv, 0, 1, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+		display_text(& dbv, 0, 1, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
 		colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -19303,7 +19303,7 @@ void initialize2(void)
 		static const char msg  [] = "nvmap size";
 
 		display_menu_digit(sizeof (struct nvmap), 9, 0, 0);
-		display_text(& dbv, 0, 0, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+		display_text(& dbv, 0, 0, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
 		colmain_nextfb();
 
 
@@ -19357,7 +19357,7 @@ void initialize2(void)
 #if ! LCDMODE_DUMMY
 			static const char msg [] = "ERASE: Press SPL";
 			display2_fillbg(& dbv);
-			display_text(db, 0, 0, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+			display_text(db, 0, 0, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -19402,8 +19402,8 @@ void initialize2(void)
 			char msg [32];
 			local_snprintf_P(msg, ARRAY_SIZE(msg), "NVRAM fault1 %d", (int) (NVRAM_END + 1));
 			display2_fillbg(& dbv);
-			display_text(& dbv, 0, 0, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
-			display_text(& dbv, 10, 20, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+			display_text(& dbv, 0, 0, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+			display_text(& dbv, 10, 20, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -19442,7 +19442,7 @@ void initialize2(void)
 #if ! LCDMODE_DUMMY
 			static const char msg [] = "ERASE: Press SPL";
 			display2_fillbg(& dbv);
-			display_text(& dbv, 0, 0, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+			display_text(& dbv, 0, 0, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -19485,8 +19485,8 @@ void initialize2(void)
 			char msg [32];
 			local_snprintf_P(msg, ARRAY_SIZE(msg), "NVRAM fault %d", (int) (NVRAM_END + 1));
 			display2_fillbg(& dbv);
-			display_text(& dbv, 0, 0, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
-			display_text(& dbv, 10, 20, msg, strlen(msg), (smallfont_height() + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+			display_text(& dbv, 0, 0, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+			display_text(& dbv, 10, 20, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 

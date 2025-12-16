@@ -201,6 +201,20 @@ typedef struct gxdrawb_tag
 void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy);
 void gxdrawb_initlvgl(gxdrawb_t * db, void * layer);
 
+
+typedef struct unifont_tag
+{
+	uint_fast16_t (* decode)(const struct unifont_tag * font, char cc);	// получение ci
+	const void * (* getcharraster)(const struct unifont_tag * font, char c);	// получение начального адреса растра для символа
+	uint_fast8_t (* font_charwidth)(const struct unifont_tag * font, char cc);	// ширина в пиксеях данного символа (может быть меньше чем поле width)
+	uint_fast8_t (* font_charheight)(const struct unifont_tag * font, char cc);	// высота в пикселях
+	uint_fast16_t (* font_draw)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
+	uint_fast16_t (* font_prerender)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
+	uint8_t bytesw;		// байтов в одной строке знакогенератора символа
+	const void * fontraster;		// начало знакогенератора в памяти
+	const char * label;		// название для диагностики
+} unifont_t;
+
 enum gxstyle_texthalign
 {
 	GXSTYLE_HALIGN_LEFT,
@@ -224,17 +238,7 @@ typedef struct gxstyle_tag
 	uint_fast16_t bgbackoffh;	// уменьшение размера плашки по вертикали
 	enum gxstyle_texthalign	texthalign;
 	enum gxstyle_textvalign textvalign;
-	uint_fast16_t (* font_draw_char)(
-		const gxdrawb_t * db,
-		uint_fast16_t x,
-		uint_fast16_t y,
-		char cc,
-		COLORPIP_T fg
-		);
-	uint_fast16_t (* font_draw_big)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg);
-	uint_fast16_t (* font_draw_half)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg);
-	uint_fast8_t (* font_width)(char cc);
-	uint_fast8_t (* font_height)(void);
+	const unifont_t * font;		// Шрифт, который будет использоваться
 } gxstyle_t;
 
 void gxstyle_initialize(gxstyle_t * dbstyle);
@@ -242,8 +246,7 @@ void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg);
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a);
 void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a);
 uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s);
-void gxstyle_setsmallfont(gxstyle_t * dbstyle);
-void gxstyle_setsmallfont2(gxstyle_t * dbstyle);
+void gxstyle_setsmallfont(gxstyle_t * dbstyle, const unifont_t * font);
 void gxstyle_setsbigandhalffont(gxstyle_t * dbstyle);
 void gxstyle_setbgbackoff(gxstyle_t * dbstyle, unsigned x, unsigned y);
 void gxstyle_setbgradius(gxstyle_t * dbstyle, unsigned r);
@@ -267,24 +270,33 @@ void pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t yp
 // Многострочное отображение
 void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstyle, const char * const * slines, unsigned nlines);
 
+uint_fast16_t colorpip_put_char_any(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
+	const unifont_t * font,
+	char cc,
+	COLORPIP_T fg
+	);
+
 uint_fast16_t colorpip_put_char_small(
 	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
 	char cc,
 	COLORPIP_T fg
 	);
 uint_fast16_t colorpip_put_char_small2(
 	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
 	char cc,
 	COLORPIP_T fg
 	);
 uint_fast16_t colorpip_x2_put_char_small(
 	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
 	char cc,
 	COLORPIP_T fg
 	);
@@ -393,10 +405,6 @@ uint_fast16_t strwidth2(
 uint_fast16_t strwidth(
 	const char * s
 	);
-// Возвращает высоту строки в пикселях
-uint_fast16_t strheight(
-	const char * s
-	);
 
 void display_bar(
 	const gxdrawb_t * db,
@@ -419,9 +427,6 @@ uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_
 uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
-// большие и средние цифры (частота)
-uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc);
-uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc);
 
 void display_swrmeter(const gxdrawb_t * db,
 	uint_fast8_t x,
@@ -726,14 +731,6 @@ void gpu_fillrect(
 	COLORPIP_T color	// цвет
 	);
 
-uint_fast8_t bigfont_width(char cc);
-uint_fast8_t halffont_width(char cc);
-uint_fast8_t smallfont_width(char cc);
-uint_fast8_t smallfont2_width(char cc);
-uint_fast8_t smallfont2_height(void);
-uint_fast8_t smallfont3_width(char cc);
-uint_fast8_t smallfont_height(void);
-
 void
 display_string3(
 	const gxdrawb_t * db,
@@ -777,8 +774,8 @@ pix_display_value_big(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
-	uint_fast16_t xspanpix,
-	uint_fast16_t yspanpix,
+	uint_fast16_t w,
+	uint_fast16_t h,
 	int_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
@@ -788,40 +785,6 @@ pix_display_value_big(
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
 	uint_fast8_t withhalf,		// 0 - только большие цифры
 	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
-	);
-
-// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
-/* из предварительно подготовленных буферов */
-void
-rendered_value_big(
-	const gxdrawb_t * db,
-	uint_fast8_t xcell,	// x координата начала вывода значения
-	uint_fast8_t ycell,	// y координата начала вывода значения
-	uint_fast8_t xspan,
-	uint_fast8_t yspan,
-	int_fast32_t freq,
-	uint_fast8_t width, // = 8;	// full width
-	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
-	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
-	uint_fast8_t rj,	// = 1;		// right truncated
-	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
-	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf		// 0 - только большие цифры
-	);
-
-void
-pix_rendered_value_big(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix,	// x координата начала вывода значения
-	uint_fast16_t ypix,	// y координата начала вывода значения
-	int_fast32_t freq,
-	uint_fast8_t width, // = 8;	// full width
-	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
-	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
-	uint_fast8_t rj,	// = 1;		// right truncated
-	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
-	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf		// 0 - только большие цифры
 	);
 
 void rendered_value_big_initialize(const gxstyle_t * gxstylep);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
@@ -926,6 +889,108 @@ typedef struct pipparams_tag
 
 void display2_getpipparams(pipparams_t * p);	/* получить координаты окна с панорамой и/или водопадом. */
 void board_set_tvoutformat(uint_fast8_t v);	/* установить видеорежим */
+
+//--------------------------------------------------------------
+// Структура шрифта одного размера (не более 16 пикселей шириной)
+//--------------------------------------------------------------
+typedef struct UB_Font_t {
+  const uint16_t *table; // Таблица с данными
+  uint16_t width;        // Ширина символа (в пикселях)
+  uint16_t height;       // Высота символа (в пикселях)
+}UB_Font;
+
+
+//--------------------------------------------------------------
+// Структура шрифта одного размера (неболее 32 пикселей шириной)
+//--------------------------------------------------------------
+typedef struct UB_Font32_t {
+  const uint32_t *table; // Таблица с данными
+  uint16_t width;        // Ширина символа (в пикселях)
+  uint16_t height;       // Высота символа (в пикселях)
+}UB_Font32;
+
+//--------------------------------------------------------------
+// Структура пропорционального шрифта (не более 16 пикселей шириной)
+//--------------------------------------------------------------
+typedef struct UB_pFont_t {
+  const uint16_t *table; // Таблица с данными
+  uint16_t height;       // Высота символа (в пикселях)
+  uint16_t first_char;   // Первый символ  (Ascii код)
+  uint16_t last_char;    // Последний символ (Ascii код)
+}UB_pFont;
+
+//--------------------------------------------------------------
+// Рисует строку шрифтом одного размера на позиции х, у.
+// Цвет шрифта и фон (шрифт = макс 16 пикселей в ширину)
+// Шрифт должен быть передан с оператором &
+//--------------------------------------------------------------
+void UB_Font_DrawString(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char *ptr, const UB_Font *font, COLORPIP_T vg);
+
+//--------------------------------------------------------------
+// Рисует строку шрифтом одного размера на позиции х, у.
+// Цвет шрифта и фон (шрифт = макс 32 пикселя в ширину)
+// Шрифт должен быть передан с оператором &
+//--------------------------------------------------------------
+void UB_Font_DrawString32(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char *ptr, const UB_Font32 *font, COLORPIP_T vg);
+
+
+//--------------------------------------------------------------
+// Структура пропорционального шрифта (не более 32 пикселей шириной)
+//--------------------------------------------------------------
+typedef struct UB_pFont32_t {
+  const uint32_t *table; // Таблица с данными
+  uint16_t height;       // Высота символа (в пикселях)
+  uint16_t first_char;   // Первый символ  (Ascii код)
+  uint16_t last_char;    // Последний символ (Ascii код)
+}UB_pFont32;
+
+
+//--------------------------------------------------------------
+// Рисование строки пропорционального шрифта с позицией X, Y
+// Цвет шрифта плана и фона (шрифт = макс 16 пикселей в ширину)
+// Шрифт должен быть передан с оператором &
+//--------------------------------------------------------------
+void UB_Font_DrawPStringDbg(
+		const char * file, int line,
+		const gxdrawb_t * db,
+		uint_fast16_t x, uint_fast16_t y,
+		const char * ptr, const UB_pFont * font,
+		COLORPIP_T vg);
+
+#define UB_Font_DrawPString(...) do { \
+	UB_Font_DrawPStringDbg(__FILE__, __LINE__, __VA_ARGS__); \
+	} while (0)
+
+//--------------------------------------------------------------
+// Рисование строку пропорционального шрифта с позицией X, Y
+// Цвет шрифта плана и фона (шрифт = макс 32 пикселя в ширину)
+// Шрифт должен быть передан с оператором &
+//--------------------------------------------------------------
+void UB_Font_DrawPString32(const gxdrawb_t * db,
+		uint_fast16_t x, uint_fast16_t y,
+		const char * ptr, const UB_pFont32 * font,
+		COLORPIP_T vg);
+
+// Возврат ширины строки в пикселях, пропорциональный шрифт 32 бит
+uint16_t getwidth_Pstring32(const char * str, const UB_pFont32 * font);
+
+// Возврат ширины строки в пикселях, пропорциональный шрифт меньше 32 бит
+uint16_t getwidth_Pstring(const char * str, const UB_pFont * font);
+
+// Возвращает ширину строки в пикселях, моноширинный шрифт
+uint16_t getwidth_Mstring(const char * str, const UB_Font * font);
+
+extern UB_pFont gothic_12x16_p;
+extern UB_Font gothic_11x13;
+
+extern const unifont_t unifont_big;
+extern const unifont_t unifont_half;
+extern const unifont_t unifont_small;
+extern const unifont_t unifont_small_x2;
+extern const unifont_t unifont_small2;
+extern const unifont_t unifont_small3;
+extern const unifont_t unifont_gothic_11x13;
+extern const unifont_t unifont_gothic_12x16p;	// proportional
 
 #ifdef __cplusplus
 }
