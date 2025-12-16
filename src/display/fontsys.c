@@ -1750,9 +1750,7 @@ static uint_fast8_t aptechfont_width(const unifont_t * font, char cc)
 		return font_Width_in_Pixel_for_fixed_drawing;
 	}
 	// Proportional widths
-	const uint_fast16_t		widthsoffset = 6 + font_Char_Count;
-
-	const uint_fast8_t w = blob [widthsoffset + ci];
+	const uint_fast8_t w = blob [6 + ci];
 	return w == 0 ? font_Width_in_Pixel_for_fixed_drawing : w;
 }
 
@@ -1763,23 +1761,30 @@ static const void * aptechfont_getcharraster(const unifont_t * font, char cc)
 	const uint_fast16_t   font_Size_in_Bytes_over_all_included_Size_it_self = USBD_peek_u16(blob + 0); // size of zero indicates fixed width font, actual length is width * height
 	const uint_fast8_t    font_First_Char = blob [4];
 	const uint_fast8_t    font_Char_Count = blob [5];
+	const uint_fast8_t    font_Height_in_Pixel_for_all_characters = blob [3];
+	const uint_fast8_t bytespervertical = (font_Height_in_Pixel_for_all_characters + 7) / 8;
 	if (font_Size_in_Bytes_over_all_included_Size_it_self == 0)
 	{
-		const uint_fast8_t    font_Width_in_Pixel_for_fixed_drawing = blob [2];
-		const uint_fast8_t    font_Height_in_Pixel_for_all_characters = blob [3];
-		const uint_fast8_t bytespervertical = (font_Height_in_Pixel_for_all_characters + 7) / 8;
 		// fixed chars
 	    // Fixed width; char width table not used !!!!
+		const uint_fast8_t    font_Width_in_Pixel_for_fixed_drawing = blob [2];
 		unsigned charbytes = bytespervertical * font_Width_in_Pixel_for_fixed_drawing;
 		//PRINTF("aptechfont_getcharraster: cc=%02X, ci=%u, charbytes=%u\n", cc, ci, charbytes);
 		return blob + 6 + ci * charbytes;
 	}
 	uint_fast16_t i;
-	uint_fast16_t dataoffs = 6 + font_Char_Count;
-	const uint_fast16_t		widthsoffset = 6 + font_Char_Count;
+	uint_fast16_t dataoffs = 6 + font_Char_Count;	// Начало таблицы растров - сразу за таблицей ширины символов
+	//printhex(0xdead, blob + dataoffs, 10);
+	const uint_fast16_t		widthsoffset = 6;
+//	PRINTF("width table:\n");
+//	printhex(0, blob + widthsoffset, font_Char_Count);
+	if (blob [widthsoffset + ci] == 0)
+		return NULL;	// Для этого символа растра нет
 	for (i = 0; i < ci; ++ i)
 	{
-		dataoffs += blob [widthsoffset + i];
+		const unsigned w = blob [widthsoffset + i];
+		//PRINTF("i=%u, ci=%u, widthsoffset=%u, dataoffs=%u, w=%u, bytespervertical=%u\n", i, ci, widthsoffset, dataoffs, w, bytespervertical);
+		dataoffs += w * bytespervertical;
 	}
 	return blob + dataoffs;
 }
@@ -1811,42 +1816,44 @@ aptechfont_render_char(
 	// Пиксели идут вертикальной полосой слеыв направо
 	// Младший бит - верхний
 	// заполняется полосой 8 бит, далее перходит на следующую полосу
-#if 1
-	const unsigned bytespervertical = (height2 + 7) / 8;
-	PRINTF("aptechfont_render_char: cc=%02X (%c), width2=%u, height2=%u, bytespervertical=%u\n", (unsigned char) cc, cc, width2, height2, bytespervertical);
-	printhex(0, charraster, (width2 * height2 + 7) / 8);
-	uint_fast16_t row;
-	for (row = 0; row < height2; ++ row)
-	{
-		uint_fast16_t col;
-		for (col = 0; col < width2; ++ col)
-		{
-			const unsigned strype = row / 8;
-			const unsigned byteoffset = strype * width2 + col;
-			const unsigned byteshift = row % 8;
 
-			//ASSERT(byteshift == row);
-			if (charraster [byteoffset] & (1u << byteshift))
+	if (charraster != NULL)
+	{
+		const unsigned bytespervertical = (height2 + 7) / 8;
+	//	PRINTF("aptechfont_render_char: cc=%02X (%c), width2=%u, height2=%u, bytespervertical=%u\n", (unsigned char) cc, cc, width2, height2, bytespervertical);
+	//	printhex(0, charraster, bytespervertical * width2);
+		uint_fast16_t row;
+		for (row = 0; row < height2; ++ row)
+		{
+			uint_fast16_t col;
+			for (col = 0; col < width2; ++ col)
 			{
-				* colpip_mem_at(db, xpix + col, ypix + row) = fg;
-				PRINTF("*");
+				const unsigned strype = row / 8;
+				const unsigned byteoffset = strype * width2 + col;
+				const unsigned byteshift = row % 8;
+
+				//ASSERT(byteshift == row);
+				if (charraster [byteoffset] & (1u << byteshift))
+				{
+					* colpip_mem_at(db, xpix + col, ypix + row) = fg;
+					//PRINTF("*");
+				}
+				else
+				{
+					//PRINTF("-");
+				}
 			}
-			else
-			{
-				PRINTF("-");
-			}
+			//PRINTF("\n");
 		}
-		PRINTF("\n");
 	}
-#endif
 	return xpix + width2;
 }
 
 // **********************************
 
-//#include "fonts_x/roboto32.h"
-#include "fonts_x/SystemFont5x7.h"
-#include "fonts_x/fixednums15x31.h"
+#include "fonts_x/roboto32.h"
+//#include "fonts_x/SystemFont5x7.h"
+//#include "fonts_x/fixednums15x31.h"
 
 const unifont_t unifont_roboto32 =
 {
@@ -1856,8 +1863,24 @@ const unifont_t unifont_roboto32 =
 	.font_charheight = aptechfont_height,
 	.font_draw = aptechfont_render_char,
 	//
-	.fontraster = (const void *) SystemFont5x7,//fixednums15x31,//roboto32,
+	.fontraster = (const void *) roboto32,
 	.label = "Tahoma_Regular_88x77"
+};
+
+#include "fonts_x/helvNeueTh70.h"
+//#include "fonts_x/SystemFont5x7.h"
+//#include "fonts_x/fixednums15x31.h"
+
+const unifont_t unifont_helvNeueTh70 =
+{
+	.decode = aptechfont_decode,
+	.getcharraster = aptechfont_getcharraster,
+	.font_charwidth = aptechfont_width,
+	.font_charheight = aptechfont_height,
+	.font_draw = aptechfont_render_char,
+	//
+	.fontraster = (const void *) helvNeueTh70,
+	.label = "helvNeueTh70"
 };
 
 #endif
