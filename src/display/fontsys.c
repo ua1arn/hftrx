@@ -1315,8 +1315,8 @@ ubmfont_render_char16(
 	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
 	const uint_fast16_t height2 = font->font_charheight(font);	// number of rows
 	//const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row (unused)
-	PRINTF("ubmfont_render_char16: cc=%02X(%c),width2=%u\n", (unsigned char) cc, cc, width2);
-	printhex16(0, charraster, height2 * 2);
+//	PRINTF("ubmfont_render_char16: cc=%02X(%c),width2=%u\n", (unsigned char) cc, cc, width2);
+//	printhex16(0, charraster, height2 * 2);
 	return ubxfont_put_char16(db, xpix, ypix, font, charraster, mask16, width2, height2, 0 /* (unused) */, fg);
 }
 
