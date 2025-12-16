@@ -1663,7 +1663,6 @@ const unifont_t unifont_gothic_11x13 =
 };
 
 // Для пропорциональных знакогенераторов
-// почти работает
 const unifont_t unifont_gothic_12x16p =
 {
 	.decode = ubpfont_decode,
@@ -1678,4 +1677,36 @@ const unifont_t unifont_gothic_12x16p =
 
 #endif /* WITHALTERNATIVEFONTS */
 
+#if 0
+
+#include "Tahoma_Regular_88x77.h"
+// CP Font Generator support
+
+static uint_fast16_t
+cpfont_decode(const unifont_t * font, char cc)
+{
+	const uint8_t * const blob = (const uint8_t * const) font->fontraster;
+	const unsigned first = USBD_peek_u16(blob + 2);
+	const unsigned lasr = USBD_peek_u16(blob + 4);
+	const uint_fast8_t c = (unsigned char) cc;
+	if (c < ubp->first_char)
+		return 0;
+	if (c > ubp->last_char)
+		return 0;
+	return c - ubp->first_char;
+}
+
+const unifont_t unifont_Tahoma_Regular_88x77 =
+{
+	.decode = cpfont_decode,
+	.getcharraster = cpfont_getcharraster,
+	.font_charwidth = cpfont_width,
+	.font_charheight = cpfont_height,
+	.font_draw = cpfont_render_char16,
+	//
+	.fontraster = (const void *) Tahoma_Regular_88x77,
+	.label = "Tahoma_Regular_88x77"
+};
+
+#endif
 #endif /* LCDMODE_LTDC */
