@@ -270,24 +270,33 @@ void pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t yp
 // Многострочное отображение
 void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstyle, const char * const * slines, unsigned nlines);
 
+uint_fast16_t colorpip_put_char_any(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
+	const unifont_t * font,
+	char cc,
+	COLORPIP_T fg
+	);
+
 uint_fast16_t colorpip_put_char_small(
 	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
 	char cc,
 	COLORPIP_T fg
 	);
 uint_fast16_t colorpip_put_char_small2(
 	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
 	char cc,
 	COLORPIP_T fg
 	);
 uint_fast16_t colorpip_x2_put_char_small(
 	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
 	char cc,
 	COLORPIP_T fg
 	);

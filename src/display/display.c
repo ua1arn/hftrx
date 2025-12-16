@@ -514,7 +514,7 @@ pix_display_value_small(
 	const gxstyle_t * dbstylep	/* foreground and background colors, text alignment */
 	)
 {
-	const unifont_t * const font = & unifont_small;
+	const unifont_t * const font = dbstylep->font;
 //	if (width > ARRAY_SIZE(vals10))
 //		width = ARRAY_SIZE(vals10);
 	const uint_fast8_t wsign = (width & WSIGNFLAG) != 0;
