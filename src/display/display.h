@@ -278,7 +278,7 @@ uint_fast16_t colorpip_put_char_any(
 	COLORPIP_T fg
 	);
 
-void
+uint_fast16_t
 colpip_string_any(
 	const gxdrawb_t * db,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо

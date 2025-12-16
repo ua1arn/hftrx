@@ -533,11 +533,11 @@ uint_fast16_t colorpip_put_char_any(
 
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
-void
+uint_fast16_t
 colpip_string_any(
 	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	uint_fast16_t xpix,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t ypix,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	const unifont_t * font,
 	const char * s,
 	COLORPIP_T fg		// цвет вывода текста
@@ -548,8 +548,9 @@ colpip_string_any(
 	ASSERT(s != NULL);
 	while ((c = * s ++) != '\0')
 	{
-		x = colorpip_put_char_any(db, x, y, font, c, fg);
+		xpix = colorpip_put_char_any(db, xpix, ypix, font, c, fg);
 	}
+	return xpix;
 }
 
 uint_fast16_t
@@ -1316,8 +1317,8 @@ ubmfont_render_char16(
 	const uint16_t * const charraster = (const uint16_t *) font->getcharraster(font, cc);
 	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
 	const uint_fast16_t height2 = font->font_charheight(font);	// number of rows
-	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
-	return unifont_put_char16(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
+	//const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row (unused)
+	return unifont_put_char16(db, xpix, ypix, font, charraster, width2, height2, 0 /* (unused) */, fg);
 }
 
 // Для пропорциональных знакогенераторов
@@ -1374,8 +1375,8 @@ ubpfont_render_char16(
 	const uint16_t * const charraster = (const uint16_t *) font->getcharraster(font, cc);
 	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
 	const uint_fast16_t height2 = font->font_charheight(font);	// number of rows
-	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
-	return unifont_put_char16(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
+	//const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row (unused)
+	return unifont_put_char16(db, xpix, ypix, font, charraster, width2, height2, 0 /* (unused) */, fg);
 }
 
 // *********************************************************************************************************************
@@ -1621,8 +1622,6 @@ const unifont_t unifont_gothic_11x13 =
 	.font_charwidth = ubmfont_width,
 	.font_charheight = ubmfont_height,
 	.font_draw = ubmfont_render_char16,
-	.font_prerender = NULL,
-	.bytesw = 2,	// dummy parameter
 	//
 	.fontraster = (const void *) & gothic_11x13,
 	.label = "unifont_gothic_11x13"
@@ -1637,8 +1636,6 @@ const unifont_t unifont_gothic_12x16p =
 	.font_charwidth = ubpfont_width,
 	.font_charheight = ubpfont_height,
 	.font_draw = ubpfont_render_char16,
-	.font_prerender = NULL,
-	.bytesw = 2,	// dummy parameter
 	//
 	.fontraster = (const void *) & gothic_12x16_p,
 	.label = "unifont_gothic_12x16p"

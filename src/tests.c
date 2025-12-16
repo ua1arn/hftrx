@@ -10520,19 +10520,38 @@ void hightests(void)
 #if LCDMODE_LTDC
 	gxdrawb_t dbv;
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+	gxstyle_t dbstylev;
+	gxstyle_initialize(& dbstylev);
 #endif /* LCDMODE_LTDC */
 
 #if WITHLTDCHW && LCDMODE_LTDC
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
-		gxstyle_t dbstylev;
-		gxstyle_initialize(& dbstylev);
 		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 		display_text(& dbv, 0, 0, "Start...", 10, 16, & dbstylev);
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0
+	{
+		// Font drawing tests
+		gxdrawb_t dbv;
+		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
+		//display_text(& dbv, 0, 0, "Start2...", 10, 16, & dbstylev);
+		unsigned row = 0;
+		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_small, "HELLO! hello! test", COLOR_WHITEALL);
+		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_small2, "HELLO! hello! test", COLOR_WHITEALL);
+		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_small3, "HELLO! hello! test", COLOR_WHITEALL);
+		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_gothic_11x13, "HELLO! hello! test", COLOR_WHITEALL);
+		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_gothic_11x13, "!!!!!!!!!!!!!!!", COLOR_WHITEALL);
+		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_gothic_12x16p, "HELLO! hello! test", COLOR_WHITEALL);
+		colmain_nextfb();
+		for (;;)
+			;
+	}
+#endif
 #if 0
 	{
 		PRINTF("Malloc test\n");
