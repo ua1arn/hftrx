@@ -1710,7 +1710,8 @@ const unifont_t unifont_Tahoma_Regular_88x77 =
 
 #endif
 
-#if 0
+#if 1
+
 // http://www.apetech.de/fontCreator
 // GLCD library?
 
@@ -1766,9 +1767,10 @@ static const void * aptechfont_getcharraster(const unifont_t * font, char cc)
 	{
 		const uint_fast8_t    font_Width_in_Pixel_for_fixed_drawing = blob [2];
 		const uint_fast8_t    font_Height_in_Pixel_for_all_characters = blob [3];
+		const uint_fast8_t bytespervertical = (font_Height_in_Pixel_for_all_characters + 7) / 8;
 		// fixed chars
 	    // Fixed width; char width table not used !!!!
-		unsigned charbytes = (font_Width_in_Pixel_for_fixed_drawing * font_Height_in_Pixel_for_all_characters + 7) / 8;
+		unsigned charbytes = bytespervertical * font_Width_in_Pixel_for_fixed_drawing;
 		//PRINTF("aptechfont_getcharraster: cc=%02X, ci=%u, charbytes=%u\n", cc, ci, charbytes);
 		return blob + 6 + ci * charbytes;
 	}
@@ -1806,32 +1808,44 @@ aptechfont_render_char(
 	const uint_fast16_t width2 = font->font_charwidth(font, cc);
 	const uint_fast16_t height2 = font->font_charheight(font);
 
-	PRINTF("aptechfont_render_char: cc=%02X (%c), width2=%u, height2=%u\n", (unsigned char) cc, cc, width2, height2);
-	printhex(0, charraster, (width2 * height2 + 7) / 8);
 	// Пиксели идут вертикальной полосой слеыв направо
-#if 0
+	// Младший бит - верхний
+#if 1
+	const unsigned bytespervertical = (height2 + 7) / 8;
+	PRINTF("aptechfont_render_char: cc=%02X (%c), width2=%u, height2=%u, bytespervertical=%u\n", (unsigned char) cc, cc, width2, height2, bytespervertical);
+	printhex(0, charraster, (width2 * height2 + 7) / 8);
 	uint_fast16_t row;
 	for (row = 0; row < height2; ++ row)
 	{
 		uint_fast16_t col;
 		for (col = 0; col < width2; ++ col)
 		{
-			const unsigned bitoffset = row * width2 + col;
+			const unsigned bitoffset = col * bytespervertical * 8 + row;
 			const unsigned byteoffset = bitoffset / 8;
 			const unsigned byteshift = bitoffset % 8;
 
-			if (charraster [byteoffset] & (1u << bitoffset))
+			//ASSERT(byteshift == row);
+			if (charraster [byteoffset] & (1u << byteshift))
+			{
 				* colpip_mem_at(db, xpix + col, ypix + row) = fg;
+				PRINTF("*");
+			}
+			else
+			{
+				PRINTF("-");
+			}
 		}
+		PRINTF("\n");
 	}
 #endif
-	return width2;
+	return xpix + width2;
 }
 
 // **********************************
 
-#include "fonts_x/roboto32.h"
+//#include "fonts_x/roboto32.h"
 #include "fonts_x/SystemFont5x7.h"
+#include "fonts_x/fixednums15x31.h"
 
 const unifont_t unifont_roboto32 =
 {
@@ -1841,7 +1855,7 @@ const unifont_t unifont_roboto32 =
 	.font_charheight = aptechfont_height,
 	.font_draw = aptechfont_render_char,
 	//
-	.fontraster = (const void *) System5x7,//roboto32,
+	.fontraster = (const void *) SystemFont5x7,//fixednums15x31,//roboto32,
 	.label = "Tahoma_Regular_88x77"
 };
 
