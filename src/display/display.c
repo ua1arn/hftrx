@@ -294,7 +294,7 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstylep, const char * const * slines, unsigned nlines)
 {
 	size_t len;
-	const unifont_t * font = dbstylep->font;
+	const unifont_t * const font = dbstylep->font;
 
 	savewhere = __func__;
 #if ! WITHLVGL
@@ -347,10 +347,7 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 //		ASSERT(dbstylep->font_width);
 		char c;
 		savestring = s;
-		const unifont_t * font = dbstylep->font;
-		if (font == NULL)
-			return;
-		const uint_fast16_t stringheight = font->font_charheight(font, 'W');
+		const uint_fast16_t stringheight = font->font_charheight(font);
 		ASSERT(font);
 		switch (dbstylep->textvalign)
 		{
@@ -368,7 +365,7 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 			break;
 		}
 
-		const uint_fast16_t textw = ulmin16(avlw, gxstyle_strwidth(dbstylep, s));
+		const uint_fast16_t textw = ulmin16(avlw, colpip_string_width(font, s));
 		const uint_fast16_t xpix0 = xpix;
 		//ASSERT3(avlw >= textw, __FILE__, __LINE__, s);
 		switch (dbstylep->texthalign)
@@ -534,7 +531,7 @@ pix_display_value_small(
 	colmain_rounded_rect(db, xpix, ypix, xpix + w - 1, ypix + h - 1, dbstylep->bgradius, dbstylep->bgcolor, dbstylep->bgfilled);
 	xpix += dbstylep->bgradius;
 	ypix += dbstylep->bgradius;
-	const uint_fast16_t stringheight = font->font_charheight(font, 'W');
+	const uint_fast16_t stringheight = font->font_charheight(font);
 
 	if (avlh > stringheight)
 	{
@@ -1853,16 +1850,4 @@ void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a)
 void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a)
 {
 	dbstyle->textvalign = a;
-}
-
-uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s)
-{
-	const unifont_t * font = dbstyle->font;
-	if (font == NULL)
-		return 0;
-	char c;
-	uint_fast16_t n = 0;
-	while ((c = * s ++ != '\0'))
-		n += font->font_charwidth(font, c);
-	return n;
 }

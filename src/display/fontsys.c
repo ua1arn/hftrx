@@ -55,10 +55,9 @@ static uint_fast8_t bigfont_width(const unifont_t * font, char cc)
 	return (cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW;	// полная ширина символа в пикселях
 }
 
-static uint_fast8_t bigfont_height(const unifont_t * font, char cc)
+static uint_fast8_t bigfont_height(const unifont_t * font)
 {
 	(void) font;
-	(void) cc;
 	return BIGCHARH;
 }
 #endif /* defined (BIGCHARW_NARROW) && defined (BIGCHARW) */
@@ -71,10 +70,9 @@ static uint_fast8_t halffont_width(const unifont_t * font, char cc)
 	return HALFCHARW;	// полная ширина символа в пикселях
 }
 
-static uint_fast8_t halffont_height(const unifont_t * font, char cc)
+static uint_fast8_t halffont_height(const unifont_t * font)
 {
 	(void) font;
-	(void) cc;
 	return HALFCHARH;
 }
 
@@ -88,10 +86,9 @@ static uint_fast8_t smallfont_width(const unifont_t * font, char cc)
 	return SMALLCHARW;	// полная ширина символа в пикселях
 }
 
-static uint_fast8_t smallfont_height(const unifont_t * font, char cc)
+static uint_fast8_t smallfont_height(const unifont_t * font)
 {
 	(void) font;
-	(void) cc;
 	return SMALLCHARH;
 }
 
@@ -102,7 +99,7 @@ static uint_fast8_t smallfont_height(const unifont_t * font, char cc)
 static const void * unifont_getcharraster(const unifont_t * font, char cc)
 {
 	const uint_fast16_t ci = font->decode(font, cc);
-	const uint8_t * const charraster = (const uint8_t *) font->fontraster + ci * font->font_charheight(font, cc) * font->bytesw;
+	const uint8_t * const charraster = (const uint8_t *) font->fontraster + ci * font->font_charheight(font) * font->bytesw;
 	return charraster;
 }
 
@@ -144,6 +141,7 @@ static void ltdc_horizontal_pixels_tbg(
 
 // функции работы с colorbuffer не занимаются выталкиванеим кэш-памяти
 // Фон не трогаем
+// Самый старший (левый) из указанного количества бит выдвигается первым.
 static void ltdc_horizontal_pixels16_tbg(
 	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
 	const uint16_t * __restrict raster,
@@ -152,36 +150,38 @@ static void ltdc_horizontal_pixels16_tbg(
 	)
 {
 	uint_fast16_t w = width;
-
-	for (; w >= 16; w -= 16, tgr += 16)
+	enum { WD = 8 * (sizeof * raster) };
+	ASSERT(WD == 16);
+	for (; w >= WD; w -= WD, tgr += WD)
 	{
-		const uint_fast16_t v = __REV16(* raster ++);
-		if (v & 0x0001)	tgr [0x00] = fg;
-		if (v & 0x0002)	tgr [0x01] = fg;
-		if (v & 0x0004)	tgr [0x02] = fg;
-		if (v & 0x0008)	tgr [0x03] = fg;
-		if (v & 0x0010)	tgr [0x04] = fg;
-		if (v & 0x0020)	tgr [0x05] = fg;
-		if (v & 0x0040)	tgr [0x06] = fg;
-		if (v & 0x0080)	tgr [0x07] = fg;
-		if (v & 0x0100)	tgr [0x08] = fg;
-		if (v & 0x0200)	tgr [0x09] = fg;
-		if (v & 0x0400)	tgr [0x0A] = fg;
-		if (v & 0x0800)	tgr [0x0B] = fg;
-		if (v & 0x1000)	tgr [0x0C] = fg;
-		if (v & 0x2000)	tgr [0x0D] = fg;
-		if (v & 0x4000)	tgr [0x0E] = fg;
-		if (v & 0x8000)	tgr [0x0F] = fg;
+		const uint_fast16_t v = * raster ++;
+		if (v & (UINT16_C(1) << 15))	tgr [0] = fg;
+		if (v & (UINT16_C(1) << 14))	tgr [1] = fg;
+		if (v & (UINT16_C(1) << 13))	tgr [2] = fg;
+		if (v & (UINT16_C(1) << 12))	tgr [3] = fg;
+		if (v & (UINT16_C(1) << 11))	tgr [4] = fg;
+		if (v & (UINT16_C(1) << 10))	tgr [5] = fg;
+		if (v & (UINT16_C(1) << 9))		tgr [6] = fg;
+		if (v & (UINT16_C(1) << 8))		tgr [7] = fg;
+		if (v & (UINT16_C(1) << 7))		tgr [8] = fg;
+		if (v & (UINT16_C(1) << 6))		tgr [9] = fg;
+		if (v & (UINT16_C(1) << 5))		tgr [10] = fg;
+		if (v & (UINT16_C(1) << 4))		tgr [11] = fg;
+		if (v & (UINT16_C(1) << 3))		tgr [12] = fg;
+		if (v & (UINT16_C(1) << 2))		tgr [13] = fg;
+		if (v & (UINT16_C(1) << 1))		tgr [14] = fg;
+		if (v & (UINT16_C(1) << 0))		tgr [15] = fg;
 	}
 	if (w != 0)
 	{
-		uint_fast16_t vlast = __REV16(* raster);
+		// w = 15..1
+		const uint_fast16_t v = * raster;
+		uint_fast16_t mask = UINT16_C(1) << (w - 1);
 		do
 		{
-			if (vlast & 0x01)
-				* tgr = fg;
+			if (v & mask) * tgr = fg;
 			tgr += 1;
-			vlast >>= 1;
+			mask >>= 1;
 		} while (-- w);
 	}
 }
@@ -255,11 +255,11 @@ unifont_put_char16(
 	const uint16_t * const charraster,
 	uint_fast16_t width2,
 	uint_fast16_t height2,
-	uint_fast16_t bytesw,
+	uint_fast16_t bytesw_unused,
 	COLORPIP_T fg
 	)
 {
-	(void) bytesw;
+	(void) bytesw_unused;
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < height2; ++ cgrow)
 	{
@@ -304,7 +304,7 @@ unifont_put_char_small(
 {
 	const uint8_t * const charraster = (const uint8_t *) font->getcharraster(font, cc);
 	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
-	const uint_fast16_t height2 = font->font_charheight(font, cc);	// number of rows
+	const uint_fast16_t height2 = font->font_charheight(font);	// number of rows
 	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
 	return unifont_put_char(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
 }
@@ -320,7 +320,7 @@ unifont_put_char_small_x2(
 {
 	const uint8_t * const charraster = (const uint8_t *) font->getcharraster(font, cc);
 	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
-	const uint_fast16_t height2 = font->font_charheight(font, cc);	// number of rows
+	const uint_fast16_t height2 = font->font_charheight(font);	// number of rows
 	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
 	return unifont_put_char_x2(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
 }
@@ -510,9 +510,9 @@ unifont_put_char_bighalf_prerender(
 	)
 {
 	const uint_fast16_t ci = font->decode(font, cc);
-	const uint8_t * const charraster = (const uint8_t *) font->fontraster + ci * font->font_charheight(font, cc) * font->bytesw;
+	const uint8_t * const charraster = (const uint8_t *) font->fontraster + ci * font->font_charheight(font) * font->bytesw;
 	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
-	const uint_fast16_t height2 = font->font_charheight(font, cc);	// number of rows
+	const uint_fast16_t height2 = font->font_charheight(font);	// number of rows
 	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
 	return unifont_put_char(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
 }
@@ -529,6 +529,42 @@ uint_fast16_t colorpip_put_char_any(
 	savewhere = __func__;
 	return font->font_draw(db, xpix, ypix, font, cc, fg);
 }
+
+
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+void
+colpip_string_any(
+	const gxdrawb_t * db,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const unifont_t * font,
+	const char * s,
+	COLORPIP_T fg		// цвет вывода текста
+	)
+{
+	char c;
+
+	ASSERT(s != NULL);
+	while ((c = * s ++) != '\0')
+	{
+		x = colorpip_put_char_any(db, x, y, font, c, fg);
+	}
+}
+
+uint_fast16_t
+colpip_string_width(
+	const unifont_t * font,
+	const char * s
+	)
+{
+	uint_fast16_t w = 0;
+	char c;
+	while ((c = * s ++) != '\0')
+		w += font->font_charwidth(font, c);
+	return w;
+}
+
 
 #if defined (SMALLCHARW)
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
@@ -584,7 +620,7 @@ uint_fast8_t smallfont2_width(const unifont_t * font, char cc)
 	return SMALLCHARW2;	// полная ширина символа в пикселях
 }
 
-uint_fast8_t smallfont2_height(const unifont_t * font, char cc)
+uint_fast8_t smallfont2_height(const unifont_t * font)
 {
 	return SMALLCHARH2;	// полная ширина символа в пикселях
 }
@@ -649,7 +685,7 @@ uint_fast8_t smallfont3_width(const unifont_t * font, char cc)
 	return SMALLCHARW3;	// полная ширина символа в пикселях
 }
 
-uint_fast8_t smallfont3_height(const unifont_t * font, char cc)
+uint_fast8_t smallfont3_height(const unifont_t * font)
 {
 	return SMALLCHARH3;	// полная ширина символа в пикселях
 }
@@ -896,7 +932,7 @@ const unifont_t unifont_small3 =
 #endif /* SMALLCHARH3 */
 
 
-#if WITHALTERNATIVEFONTS
+#if 1//WITHALTERNATIVEFONTS
 
 //--------------------------------------------------------------
 // Рисует ASCII символ шрифтом одного размера на позиции х, у.
@@ -1230,6 +1266,118 @@ uint16_t getwidth_Mstring(const char * str, const UB_Font * font)
 	return strlen(str) * font->width;
 }
 
+// ***************************************
+
+
+// Для моноширинных знакогенераторов
+static uint_fast8_t ubmfont_width(const unifont_t * font, char cc)
+{
+	const UB_Font * const ub = (const UB_Font *) font->fontraster;
+	(void) cc;
+	return ub->width;	// полная ширина символа в пикселях
+}
+
+// Для моноширинных знакогенераторов
+static uint_fast8_t ubmfont_height(const unifont_t * font)
+{
+	const UB_Font * const ub = (const UB_Font *) font->fontraster;
+	return ub->height;
+}
+
+// Возвращает индекс символа в знакогенераторе
+// Для моноширинных знакогенераторов
+static uint_fast16_t
+ubmfont_decode(const unifont_t * font, char cc)
+{
+	//const UB_Font * const ub = (const UB_Font *) font->fontraster;
+	return (unsigned char) cc - 0x20;
+}
+
+// Для моноширинных знакогенераторов
+static const void * ubmfont_getcharraster(const unifont_t * font, char cc)
+{
+	const UB_Font * const ub = (const UB_Font *) font->fontraster;
+	const uint_fast16_t ci = font->decode(font, cc);
+	const uint16_t * const table = ub->table; // Таблица с данными
+	return table + ci * ub->height;
+}
+
+// Для моноширинных знакогенераторов
+static uint_fast16_t
+ubmfont_render_char16(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	)
+{
+	//const UB_Font * const ub = (const UB_Font *) font->fontraster;
+	const uint16_t * const charraster = (const uint16_t *) font->getcharraster(font, cc);
+	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
+	const uint_fast16_t height2 = font->font_charheight(font);	// number of rows
+	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
+	return unifont_put_char16(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
+}
+
+// Для пропорциональных знакогенераторов
+static uint_fast8_t ubpfont_width(const unifont_t * font, char cc)
+{
+	const UB_pFont * const ubp = (const UB_pFont *) font->fontraster;
+	const uint16_t * const table = ubp->table; // Таблица с данными
+	const uint_fast16_t ci = font->decode(font, cc);
+	const uint_fast8_t width = table [ci * (ubp->height + 1)];	// первый элемент содержит ширину
+	return width;
+}
+
+// Для пропорциональных знакогенераторов
+static uint_fast8_t ubpfont_height(const unifont_t * font)
+{
+	const UB_pFont * const ubp = (const UB_pFont *) font->fontraster;
+	return ubp->height;
+}
+
+// Возвращает индекс символа в знакогенераторе
+// Для пропорциональных знакогенераторов
+static uint_fast16_t
+ubpfont_decode(const unifont_t * font, char cc)
+{
+	const UB_pFont * const ubp = (const UB_pFont *) font->fontraster;
+	const uint_fast8_t c = (unsigned char) cc;
+	if (c < ubp->first_char)
+		return 0;
+	if (c > ubp->last_char)
+		return 0;
+	return c - ubp->first_char;
+}
+
+// Для пропорциональных знакогенераторов
+static const void * ubpfont_getcharraster(const unifont_t * font, char cc)
+{
+	const UB_pFont * const ubp = (const UB_pFont *) font->fontraster;
+	const uint_fast16_t ci = font->decode(font, cc);
+	const uint16_t * const table = ubp->table; // Таблица с данными
+	return table + ci * (ubp->height + 1) + 1;
+}
+
+// Для пропорциональных знакогенераторов
+static uint_fast16_t
+ubpfont_render_char16(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	)
+{
+	//const UB_pFont * const ubp = (const UB_pFont *) font->fontraster;
+	const uint16_t * const charraster = (const uint16_t *) font->getcharraster(font, cc);
+	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
+	const uint_fast16_t height2 = font->font_charheight(font);	// number of rows
+	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
+	return unifont_put_char16(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
+}
+
 // *********************************************************************************************************************
 
 //--------------------------------------------------------------
@@ -1466,132 +1614,22 @@ UB_Font gothic_11x13 = {
 };
 
 // Для моноширинных знакогенераторов
-static uint_fast8_t ubfont_width(const unifont_t * font, char cc)
-{
-	const UB_Font * const ub = (const UB_Font *) font->fontraster;
-	(void) cc;
-	return ub->width;	// полная ширина символа в пикселях
-}
-
-// Для моноширинных знакогенераторов
-static uint_fast8_t ubfont_height(const unifont_t * font, char cc)
-{
-	const UB_Font * const ub = (const UB_Font *) font->fontraster;
-	(void) cc;
-	return ub->height;
-}
-
-// Возвращает индекс символа в знакогенераторе
-// Для моноширинных знакогенераторов
-static uint_fast16_t
-ubfont_decode(const unifont_t * font, char cc)
-{
-	const UB_Font * const ub = (const UB_Font *) font->fontraster;
-	return (unsigned char) cc;
-}
-
-// Для моноширинных знакогенераторов
-static const void * ubfont_getcharraster(const unifont_t * font, char cc)
-{
-	const UB_Font * const ub = (const UB_Font *) font->fontraster;
-	const uint_fast16_t ci = font->decode(font, cc);
-	const uint16_t * const table = ub->table; // Таблица с данными
-	return table + ci * ub->height;
-}
-
-// Для моноширинных знакогенераторов
-static uint_fast16_t
-ubfont_render_char16(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
-	const unifont_t * font,
-	char cc,		// код символа для отображения
-	COLORPIP_T fg
-	)
-{
-	const UB_Font * const ub = (const UB_Font *) font->fontraster;
-	const uint16_t * const table = ub->table; // Таблица с данными
-	const uint16_t * const charraster = (const uint16_t *) font->getcharraster(font, cc);
-	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
-	const uint_fast16_t height2 = font->font_charheight(font, cc);	// number of rows
-	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
-	return unifont_put_char16(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
-}
-
-// Для моноширинных знакогенераторов
 const unifont_t unifont_gothic_11x13 =
 {
-	.decode = ubfont_decode,
-	.getcharraster = ubfont_getcharraster,
-	.font_charwidth = ubfont_width,
-	.font_charheight = ubfont_height,
-	.font_draw = ubfont_render_char16,
+	.decode = ubmfont_decode,
+	.getcharraster = ubmfont_getcharraster,
+	.font_charwidth = ubmfont_width,
+	.font_charheight = ubmfont_height,
+	.font_draw = ubmfont_render_char16,
 	.font_prerender = NULL,
-	.bytesw = 2,
+	.bytesw = 2,	// dummy parameter
+	//
 	.fontraster = (const void *) & gothic_11x13,
 	.label = "unifont_gothic_11x13"
 };
 
 // Для пропорциональных знакогенераторов
-static uint_fast8_t ubpfont_width(const unifont_t * font, char cc)
-{
-	const UB_pFont * const ubp = (const UB_pFont *) font->fontraster;
-	const uint16_t * const table = ubp->table; // Таблица с данными
-	const uint_fast8_t width = table [0];	// первый элемент содержит ширину
-	return width;
-}
-
-// Для пропорциональных знакогенераторов
-static uint_fast8_t ubpfont_height(const unifont_t * font, char cc)
-{
-	const UB_pFont * const ubp = (const UB_pFont *) font->fontraster;
-	(void) cc;
-	return ubp->height;
-}
-
-// Возвращает индекс символа в знакогенераторе
-// Для пропорциональных знакогенераторов
-static uint_fast16_t
-ubpfont_decode(const unifont_t * font, char cc)
-{
-	const UB_pFont * const ubp = (const UB_pFont *) font->fontraster;
-	const uint_fast8_t c = (unsigned char) cc;
-	if (c < ubp->first_char)
-		return 0;
-	if (c > ubp->last_char)
-		return 0;
-	return c - ubp->first_char;
-}
-
-// Для пропорциональных знакогенераторов
-static const void * ubpfont_getcharraster(const unifont_t * font, char cc)
-{
-	const UB_pFont * const ubp = (const UB_pFont *) font->fontraster;
-	const uint_fast16_t ci = font->decode(font, cc);
-	const uint16_t * const table = ubp->table; // Таблица с данными
-	return table + ci * (ubp->height + 1);
-}
-
-// Для пропорциональных знакогенераторов
-static uint_fast16_t
-ubpfont_render_char16(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
-	const unifont_t * font,
-	char cc,		// код символа для отображения
-	COLORPIP_T fg
-	)
-{
-	const UB_pFont * const ubp = (const UB_pFont *) font->fontraster;
-	const uint16_t * const table = ubp->table; // Таблица с данными
-	const uint16_t * const charraster = (const uint16_t *) font->getcharraster(font, cc);
-	const uint_fast16_t width2 = font->font_charwidth(font, cc);	// number of bits (start from LSB first byte in raster)
-	const uint_fast16_t height2 = font->font_charheight(font, cc);	// number of rows
-	const uint_fast16_t bytesw = font->bytesw;	// bytes in each chargen row
-	return unifont_put_char16(db, xpix, ypix, font, charraster, width2, height2, bytesw, fg);
-}
-
-// Для пропорциональных знакогенераторов
+// почти работает
 const unifont_t unifont_gothic_12x16p =
 {
 	.decode = ubpfont_decode,
@@ -1600,7 +1638,8 @@ const unifont_t unifont_gothic_12x16p =
 	.font_charheight = ubpfont_height,
 	.font_draw = ubpfont_render_char16,
 	.font_prerender = NULL,
-	.bytesw = 2,
+	.bytesw = 2,	// dummy parameter
+	//
 	.fontraster = (const void *) & gothic_12x16_p,
 	.label = "unifont_gothic_12x16p"
 };

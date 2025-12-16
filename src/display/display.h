@@ -207,7 +207,7 @@ typedef struct unifont_tag
 	uint_fast16_t (* decode)(const struct unifont_tag * font, char cc);	// получение ci
 	const void * (* getcharraster)(const struct unifont_tag * font, char c);	// получение начального адреса растра для символа
 	uint_fast8_t (* font_charwidth)(const struct unifont_tag * font, char cc);	// ширина в пиксеях данного символа (может быть меньше чем поле width)
-	uint_fast8_t (* font_charheight)(const struct unifont_tag * font, char cc);	// высота в пикселях
+	uint_fast8_t (* font_charheight)(const struct unifont_tag * font);	// высота в пикселях (се символы шрифта одной высоты)
 	uint_fast16_t (* font_draw)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
 	uint_fast16_t (* font_prerender)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
 	uint8_t bytesw;		// байтов в одной строке знакогенератора символа
@@ -245,7 +245,6 @@ void gxstyle_initialize(gxstyle_t * dbstyle);
 void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg);
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a);
 void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a);
-uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s);
 void gxstyle_setsmallfont(gxstyle_t * dbstyle, const unifont_t * font);
 void gxstyle_setsbigandhalffont(gxstyle_t * dbstyle);
 void gxstyle_setbgbackoff(gxstyle_t * dbstyle, unsigned x, unsigned y);
@@ -277,6 +276,22 @@ uint_fast16_t colorpip_put_char_any(
 	const unifont_t * font,
 	char cc,
 	COLORPIP_T fg
+	);
+
+void
+colpip_string_any(
+	const gxdrawb_t * db,
+	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const unifont_t * font,
+	const char * s,
+	COLORPIP_T fg		// цвет вывода текста
+	);
+
+uint_fast16_t
+colpip_string_width(
+	const unifont_t * font,
+	const char * s
 	);
 
 uint_fast16_t colorpip_put_char_small(
