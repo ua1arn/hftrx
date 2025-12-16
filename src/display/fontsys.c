@@ -1709,4 +1709,24 @@ const unifont_t unifont_Tahoma_Regular_88x77 =
 };
 
 #endif
+
+#if 0
+// http://www.apetech.de/fontCreator
+// GLCD library?
+
+#include "fonts_x/roboto32.h"
+
+const unifont_t unifont_roboto32 =
+{
+	.decode = aptechfont_decode,
+	.getcharraster = aptechfont_getcharraster,
+	.font_charwidth = aptechfont_width,
+	.font_charheight = aptechfont_height,
+	.font_draw = aptechfont_render_char16,
+	//
+	.fontraster = (const void *) roboto32,
+	.label = "Tahoma_Regular_88x77"
+};
+
+#endif
 #endif /* LCDMODE_LTDC */

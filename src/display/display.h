@@ -1013,6 +1013,7 @@ extern const unifont_t unifont_small3;
 extern const unifont_t unifont_gothic_11x13;
 extern const unifont_t unifont_gothic_12x16p;	// proportional
 extern const unifont_t unifont_Tahoma_Regular_88x77;
+extern const unifont_t unifont_roboto32;
 
 #ifdef __cplusplus
 }
