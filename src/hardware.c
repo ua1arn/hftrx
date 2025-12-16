@@ -19,14 +19,6 @@
 #include <stdlib.h>	 // For aligned_alloc
 #include <math.h>
 
-#if 0
-#define DBGC(c) do { \
-	while ((UART0->UART_USR & (1u << 1)) == 0) \
-		; \
-	UART0->UART_RBR_THR_DLL = (c); \
-} while (0)
-#endif
-
 #if WITHRTOS
 #include "FreeRTOS.h"
 //#include "task.h"
@@ -1974,13 +1966,8 @@ sysinit_vbar_initialize(void)
 {
 #if defined(__aarch64__) && ! LINUX_SUBSYSTEM
 
-#if WITHRTOS
-	extern unsigned long __Vectors64_rtos;
-	const uintptr_t vbase = (uintptr_t) & __Vectors64_rtos;
-#else /* WITHRTOS */
 	extern unsigned long __Vectors64;
 	const uintptr_t vbase = (uintptr_t) & __Vectors64;
-#endif /* WITHRTOS */
 
 	ASSERT((vbase & 0x7FF) == 0);
 
@@ -1991,13 +1978,9 @@ sysinit_vbar_initialize(void)
 	__set_SCR_EL3(__get_SCR_EL3() | (UINT32_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
 
 #elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
-#if WITHRTOS
-	extern unsigned long __Vectors_rtos;
-	const uintptr_t vbase = (uintptr_t) & __Vectors_rtos;
-#else /* WITHRTOS */
+
 	extern unsigned long __Vectors;
 	const uintptr_t vbase = (uintptr_t) & __Vectors;
-#endif /* WITHRTOS */
 
 	ASSERT((vbase & 0x01F) == 0);
 	__set_VBAR(vbase);	 // Set Vector Base Address Register (bits 4..0 should be zero)
@@ -2265,7 +2248,7 @@ static void cortexa_cpuinfo(void)
 #endif
 }
 
-#if WITHSMPSYSTEM && ! WITHRTOS
+#if WITHSMPSYSTEM
 
 
 static __ALIGNED(4) const uint32_t trampoline32 [] =
