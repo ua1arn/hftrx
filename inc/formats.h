@@ -25,6 +25,7 @@ int local_vsnprintf_P( char * __restrict buffer, size_t count, const char * __re
 void debug_printf_P(const char * __restrict format, ... ) __attribute__ ((__format__ (__printf__, 1, 2)));
 
 void printhex(uintptr_t offs, const void * buff, unsigned length);
+void printhex16(uintptr_t voffs, const void * vbuff, unsigned length);
 void printhex32(uintptr_t voffs, const void * vbuff, unsigned length);
 void printhex64(uintptr_t voffs, const void * vbuff, unsigned length);
 

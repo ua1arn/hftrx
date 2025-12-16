@@ -447,6 +447,26 @@ printhex(uintptr_t voffs, const void * vbuff, unsigned length)
 }
 
 void
+printhex16(uintptr_t voffs, const void * vbuff, unsigned length)
+{
+	const volatile uint16_t * buff = (const volatile uint16_t *) vbuff;
+	enum { ROWSIZE = 16 };	/* elements in one row */
+	unsigned i, j;
+	unsigned rows = ((length + 3) / 4 + ROWSIZE - 1) / ROWSIZE;
+
+	for (i = 0; i < rows; ++ i)
+	{
+		const int remaining = (length + 1) / 2 - i * ROWSIZE;
+		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
+		debug_printf_P(PSTR("%08" PRIX32 ":"), (uint32_t) (voffs + i * ROWSIZE * 2));
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR(" %04" PRIX16), buff [i * ROWSIZE + j]);
+
+		debug_printf_P(PSTR("\n"));
+	}
+}
+
+void
 printhex32(uintptr_t voffs, const void * vbuff, unsigned length)
 {
 	const volatile uint32_t * buff = (const volatile uint32_t *) vbuff;
