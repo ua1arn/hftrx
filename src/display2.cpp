@@ -2177,6 +2177,9 @@ display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 		colpip_radius(db, smpr->xcneddle, smpr->ycneddle, markers [i], smpr->r1, smpr->r1 + 8, smetercolor, 1, 1);
 		polar_to_dek(smpr->xcneddle, smpr->ycneddle, markers [i], smpr->r1 + 6, & xx, & yy, 1);
 		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
+		uint_fast16_t sh3;
+		const uint_fast16_t sw3 = colpip_string_widthheight(font, buf2, & sh3);
+		// todo: usage of pad2w3 in vertial coordinate is right?
 		colpip_string_any(db, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, font, buf2, COLORPIP_YELLOW);
 	}
 	for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
@@ -2344,6 +2347,9 @@ display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 		colpip_radius(db, smpr->xcneddle, smpr->ycneddle, markersTX_swr [i], smpr->r2, smpr->r2 - 8, smetercolor, 1, 1);
 		polar_to_dek(smpr->xcneddle, smpr->ycneddle, markersTX_swr [i], smpr->r2 - 16, & xx, & yy, 1);
 		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
+		uint_fast16_t sh3;
+		const uint_fast16_t sw3 = colpip_string_widthheight(font, buf2, & sh3);
+		// todo: usage of SMALLCHARW3 in vertial coordinate is right?
 		colpip_string_any(db, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, font, buf2, COLORPIP_YELLOW);
 	}
 	colpip_segm(db, smpr->xcneddle, smpr->ycneddle, smpr->gs, smpr->gm, smpr->r1, 1, smetercolor, 1, 1);

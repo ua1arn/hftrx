@@ -411,20 +411,6 @@ colpip_string2_tbg(
 	const char * s,
 	COLORPIP_T fg		// цвет вывода текста
 	);
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void colpip_string3_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLORPIP_T fg		// цвет вывода текста
-	);
-// Используется при выводе на графический индикатор,
-// Возвращает ширину строки в пикселях
-uint_fast16_t strwidth3(
-	const char * s
-	);
 // Возвращает ширину строки в пикселях
 uint_fast16_t strwidth2(
 	const char * s
@@ -757,17 +743,6 @@ void gpu_fillrect(
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
 	COLORPIP_T color	// цвет
-	);
-
-void
-display_string3(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	uint_fast16_t w,
-	uint_fast16_t h,
-	const char * __restrict s,
-	COLORPIP_T fg, COLORPIP_T bg
 	);
 
 void colpip_line(
