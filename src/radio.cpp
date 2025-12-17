@@ -5098,18 +5098,8 @@ enum
 	#endif /* WITHREVERB */
 
 	#if WITHUSBHW && WITHUSBUAC
-		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
-		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
-		static uint_fast8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
-		static uint_fast8_t guacplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-#if WITHUSBDEV_HSDESC
-		static uint_fast8_t gusb_hs = 1;	/* Использование USB HS dvtcn USB FS */
-#else /* WITHUSBDEV_HSDESC */
-		static uint_fast8_t gusb_hs = 0;	/* Использование USB HS dvtcn USB FS */
-#endif /* WITHUSBDEV_HSDESC */
-		static uint_fast8_t gbtaudioplayer = 0;
-		static uint_fast8_t gswapiq;	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		/* передача звука с USB вместо обычного источника */
+		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		static const struct paramdefdef xgdatamode =
 		{
 			QLABEL2("DATA MDE", "DATA MODE"), 8, 3, RJ_ON,	ISTEP1,
@@ -5124,6 +5114,7 @@ enum
 		};
 		uint_fast8_t hamradio_get_datamode(void) { return param_getvalue(& xgdatamode); }
 		/* совместимость VID/PID для работы с программой FT8CN */
+		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 		static const struct paramdefdef xgusb_ft8cn =
 		{
 			QLABEL2("FT8CN", "FT8CN compat"), 7, 3, RJ_YES,	ISTEP1,
@@ -5138,6 +5129,7 @@ enum
 		};
 		uint_fast8_t hamradio_get_ft8cn(void) { return param_getvalue(& xgusb_ft8cn); }
 		/* автоматическое изменение источника при появлении звука со стороны компьютера */
+		static uint_fast8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		static const struct paramdefdef xgdatatx =
 		{
 			QLABEL3("USB DATA", "USB Data", "USB DATA"), 8, 3, RJ_ON,	ISTEP1,		/* автоматическое изменение источника при появлении звука со стороны компьютера */
@@ -5150,6 +5142,7 @@ enum
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
+		static uint_fast8_t guacplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		static const struct paramdefdef xguacplayer =
 		{
@@ -5164,6 +5157,7 @@ enum
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		static uint_fast8_t gbtaudioplayer = 0;
 		static const struct paramdefdef xgbtaudioplayer =
 		{
 			QLABEL3("PLAY BT", "Play BT", "PLAY BT"), 7, 3, RJ_YES,	ISTEP1,
@@ -5176,7 +5170,12 @@ enum
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
-		/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		/* USB в режиме HS (480 мегабит) */
+#if WITHUSBDEV_HSDESC
+		static uint_fast8_t gusb_hs = 1;	/* Использование USB HS dvtcn USB FS */
+#else /* WITHUSBDEV_HSDESC */
+		static uint_fast8_t gusb_hs = 0;	/* Использование USB HS dvtcn USB FS */
+#endif /* WITHUSBDEV_HSDESC */
 		static const struct paramdefdef xgusb_hs =
 		{
 			QLABEL("HS USB"), 7, 3, RJ_YES,	ISTEP1,
@@ -5191,6 +5190,7 @@ enum
 		};
 	#if WITHRTS96 || WITHRTS192
 		/* Поменять местами I и Q сэмплы в потоке RTS96 */
+		static uint_fast8_t gswapiq;	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		static const struct paramdefdef xgswapiq =
 		{
 			QLABEL3("SWAP I/Q", "Swap I/Q", "SWAP I/Q"), 7, 3, RJ_YES,	ISTEP1,
@@ -11957,9 +11957,10 @@ updateboard_noui(
 	static uint_fast8_t txreqhint = UINT8_MAX;
 	uint_fast8_t full2 = full;
 
-	PRINTF("gtx=%u,txreqhint=%u,txreq_gethint=%u\n", gtx, txreqhint, txreq_gethint(& txreqst0));
+	//PRINTF("gtx=%u,txreqhint=%u,txreq_gethint=%u\n", gtx, txreqhint, txreq_gethint(& txreqst0));
 	full2 |= flagne_u8(& txreqhint, txreq_gethint(& txreqst0));
 	full2 |= flagne_u8(& gtx, seq_get_txstate());
+
 	uint_fast8_t pathi;
 	ASSERT(gtx < 2);
 	const uint_fast8_t pathn = gtx ? 1 : NTRX;
