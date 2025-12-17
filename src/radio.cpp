@@ -3999,9 +3999,6 @@ struct nvmap
 #endif /* WITHAUTOTUNER */
 
 #if WITHTX
-	#if WITHMUTEALL
-		uint8_t gmuteall;	/* Отключить микрофон всегда. */
-	#endif /* WITHMUTEALL */
 	#if WITHVOX
 		uint16_t	ggrpvox; // последний посещённый пункт группы
 		uint8_t gvoxenable;	/* автоматическое управление передатчиком (от голоса) */
@@ -5612,12 +5609,6 @@ enum
 	#else /* WITHVOX */
 		enum { gvoxenable = 0 };	/* автоматическое управление передатчиком (от голоса) */
 	#endif /* WITHVOX */
-
-	#if WITHMUTEALL
-		static uint_fast8_t gmuteall;	/* Отключить микрофон всегда. */
-	#else /* WITHMUTEALL */
-		enum { gmuteall = 0 };
-	#endif /* WITHMUTEALL */
 
 	#if ! WITHPACLASSA
 		enum { gclassamode = 0 };	/* использование режима клвсс А при передаче */
@@ -11966,9 +11957,9 @@ updateboard_noui(
 	static uint_fast8_t txreqhint = UINT8_MAX;
 	uint_fast8_t full2 = full;
 
+	PRINTF("gtx=%u,txreqhint=%u,txreq_gethint=%u\n", gtx, txreqhint, txreq_gethint(& txreqst0));
 	full2 |= flagne_u8(& txreqhint, txreq_gethint(& txreqst0));
 	full2 |= flagne_u8(& gtx, seq_get_txstate());
-
 	uint_fast8_t pathi;
 	ASSERT(gtx < 2);
 	const uint_fast8_t pathn = gtx ? 1 : NTRX;
@@ -12279,7 +12270,7 @@ updateboard_noui(
 				seq_set_vox_time(voxdelay);		/* разрешение голосового управления переходом на передачу */
 				vox_set_levels(gvoxlevel, gavoxlevel);		/* установка параметров vox */
 			#endif /* WITHVOX */
-			board_set_mikemute(gmuteall || getactualtune() || getmodetempl(txsubmode)->mute);	/* отключить микрофонный усилитель */
+			board_set_mikemute(getactualtune() || getmodetempl(txsubmode)->mute);	/* отключить микрофонный усилитель */
 			seq_set_txgate(pamodetempl->txgfva, pamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
 			board_set_txlevel(getactualtxboard());	/* BOARDPOWERMIN..BOARDPOWERMAX */
 

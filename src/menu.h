@@ -1386,19 +1386,6 @@ const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP */
-#if WITHMUTEALL && WITHTX
-	(const struct paramdefdef [1]) {
-		QLABEL("MUTE ALL"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		OFFSETOF(struct nvmap, gmuteall),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gmuteall,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-#endif /* WITHMUTEALL && WITHTX */
 #if WITHIF4DSP
 	& xgsquelch,
 #if ! WITHPOTNFMSQL
