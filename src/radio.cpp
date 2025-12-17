@@ -8985,6 +8985,13 @@ static const struct paramdefdef xfltsofter_cwnarrow =
 };
 #endif /* WITHIF4DSP */
 
+#if WITHTOUCHGUI
+static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
+static enc2_menu_t enc2_menu;
+static uint_fast8_t encoder2_redirect = 0;
+
+#endif /* WITHTOUCHGUI */
+
 #if WITHENCODER2
 
 static const struct paramdefdef * enc2menus [] =
@@ -18655,13 +18662,6 @@ void playhandler(uint8_t code)
 
 }
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
-
-#if WITHTOUCHGUI
-static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
-static enc2_menu_t enc2_menu;
-static uint_fast8_t encoder2_redirect = 0;
-
-#endif /* WITHTOUCHGUI */
 
 /* возврат ненуля - было какое-либо нажатие,
 	требуется обновление дисплея и состояния аппаратуры */
