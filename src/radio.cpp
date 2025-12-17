@@ -9118,13 +9118,6 @@ static uint_fast8_t enc2pos;	// выбраный пунки меню
 #define RMT_ENC2STATE_BASE OFFSETOF(struct nvmap, enc2state)
 #define RMT_ENC2POS_BASE OFFSETOF(struct nvmap, enc2pos)
 
-#if WITHTOUCHGUI
-static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
-static enc2_menu_t enc2_menu;
-static uint_fast8_t encoder2_redirect = 0;
-
-#endif /* WITHTOUCHGUI */
-
 /* нажатие на второй валкодер */
 static void
 uif_encoder2_press(void)
@@ -18662,6 +18655,13 @@ void playhandler(uint8_t code)
 
 }
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
+
+#if WITHTOUCHGUI
+static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
+static enc2_menu_t enc2_menu;
+static uint_fast8_t encoder2_redirect = 0;
+
+#endif /* WITHTOUCHGUI */
 
 /* возврат ненуля - было какое-либо нажатие,
 	требуется обновление дисплея и состояния аппаратуры */

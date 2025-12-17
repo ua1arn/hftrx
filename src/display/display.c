@@ -544,13 +544,13 @@ pix_display_value_small(
 		z = 0;
 		if (freq < 0)
 		{
-			xpix = display_put_char_small(db, xpix, ypix, '-', dbstylep);
+			xpix = display_put_char(db, xpix, ypix, '-', dbstylep);
 			freq = - freq;
 		}
 		else if (wsign)
-			xpix = display_put_char_small(db, xpix, ypix, '+', dbstylep);
+			xpix = display_put_char(db, xpix, ypix, '+', dbstylep);
 		else
-			xpix = display_put_char_small(db, xpix, ypix, ' ', dbstylep);
+			xpix = display_put_char(db, xpix, ypix, ' ', dbstylep);
 	}
 	for (; i < j; ++ i)
 	{
@@ -559,20 +559,20 @@ pix_display_value_small(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = display_put_char_small(db, xpix, ypix, (z == 0) ? '.' : ' ', dbstylep);
+			xpix = display_put_char(db, xpix, ypix, (z == 0) ? '.' : ' ', dbstylep);
 		}
 		else if (comma == g)
 		{
 			z = 0;
-			xpix = display_put_char_small(db, xpix, ypix, '.', dbstylep);
+			xpix = display_put_char(db, xpix, ypix, '.', dbstylep);
 		}
 
 		if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_small(db, xpix, ypix, ' ', dbstylep);	// supress zero
+			xpix = display_put_char(db, xpix, ypix, ' ', dbstylep);	// supress zero
 		else
 		{
 			z = 0;
-			xpix = display_put_char_small(db, xpix, ypix, '0' + res.quot, dbstylep);
+			xpix = display_put_char(db, xpix, ypix, '0' + res.quot, dbstylep);
 		}
 		freq = res.rem;
 	}

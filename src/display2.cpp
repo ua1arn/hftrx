@@ -1354,6 +1354,11 @@ static void local_strtrim(char * s)
 
 void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORPIP_T color_fg, COLORPIP_T color_bg)
 {
+#if WITHALTERNATIVEFONTS
+	const unifont_t * const font = & unifont_gothic_12x16p;
+#else /* WITHALTERNATIVEFONTS */
+	const unifont_t * const font = & unifont_small2;
+#endif /* WITHALTERNATIVEFONTS */
 	uint_fast16_t xx = GRID2X(xgrid);
 	uint_fast16_t yy = GRID2Y(ygrid);
 	label_bg_t * lbl_bg = NULL;
@@ -1361,6 +1366,11 @@ void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t
 	char buf [slen + 1];
 	strcpy(buf, str);
 	local_strtrim(buf);
+
+	// todo: use colpip_string_widthheight(buf, font, * width)
+//	uint_fast16_t height_str;
+//	const uint_fast16_t width_str = colpip_string_widthheight(buf, font, & height);
+
 #if WITHALTERNATIVEFONTS
 	const uint_fast16_t width_str = getwidth_Pstring(buf, & gothic_12x16_p);
 #else
@@ -1393,18 +1403,14 @@ void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t
 	}
 	else
 	{
-		colmain_rounded_rect(db, xx, yy, xx + width_p, yy + SMALLCHARH2 + 5, 5, color_bg, 1);
+		colmain_rounded_rect(db, xx, yy, xx + width_p - 1, yy + SMALLCHARH2 + 5, 5, color_bg, 1);
 	}
 
 	//ASSERT(width_p >= width_str);
 	if (width_p >= width_str)
 	{
-#if WITHALTERNATIVEFONTS
 		//PRINTF("%s: xx=%d, width_p=%d, width_str=%d, buf='%s'\n", __func__, xx, width_p, width_str, buf);
-		UB_Font_DrawPString(db, xx + (width_p - width_str) / 2 , yy + 2, buf, & gothic_12x16_p, color_fg);
-#else
-		colpip_string2_tbg(db, xx + (width_p - width_str) / 2 , yy + 4, buf, color_fg);
-#endif /* WITHALTERNATIVEFONTS */
+		colpip_string_any(db, xx + (width_p - width_str) / 2 , yy + 2, font, buf, color_fg);
 	}
 
 }

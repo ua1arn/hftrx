@@ -69,8 +69,8 @@
 	// 272/5 = 54, 480/16=30 (old)
 	//#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	//#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-	//#define SMALLCHARH 15 /* Font height */
-	//#define SMALLCHARW 16 /* Font width */
+	
+	
 	static const dzone_t dzones [] =
 	{
 		{	0,	0, 	7, 5, display2_dummy, 	& dzi_siglevel, PGALL, },	// signal level dBm

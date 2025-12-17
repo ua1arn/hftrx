@@ -452,7 +452,7 @@ void display_bar(
 
 // большие и средние цифры (частота)
 uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
+uint_fast16_t display_put_char(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 
@@ -1008,6 +1008,50 @@ uint16_t getwidth_Pstring(const char * str, const UB_pFont * font);
 // Возвращает ширину строки в пикселях, моноширинный шрифт
 uint16_t getwidth_Mstring(const char * str, const UB_Font * font);
 
+// Функуии (поля unifont_t) для работы с UB_pFont и UB_Font
+
+// Для моноширинных знакогенераторов
+uint_fast8_t ubmfont_width(const unifont_t * font, char cc);
+uint_fast8_t ubmfont_height(const unifont_t * font);
+uint_fast16_t ubmfont_decode(const unifont_t * font, char cc);
+const void * ubmfont_getcharraster(const unifont_t * font, char cc);
+uint_fast16_t ubmfont_render_char16(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	);
+uint_fast16_t ubmfont_render_char32(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	);
+
+// Для пропорциональных знакогенераторов
+uint_fast8_t ubpfont_width(const unifont_t * font, char cc);
+uint_fast8_t ubpfont_height(const unifont_t * font);
+uint_fast16_t ubpfont_decode(const unifont_t * font, char cc);
+const void * ubpfont_getcharraster(const unifont_t * font, char cc);
+uint_fast16_t ubpfont_render_char16(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	);
+uint_fast16_t ubpfont_render_char32(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	const unifont_t * font,
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	);
+
+
+// Готовые шрифты
 extern UB_pFont gothic_12x16_p;
 extern UB_Font gothic_11x13;
 
