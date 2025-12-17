@@ -549,6 +549,21 @@ colpip_string_height(
 	return font->font_charheight(font);
 }
 
+// получить оба размера текстовой строки
+uint_fast16_t
+colpip_string_widthheight(
+	const unifont_t * font,
+	const char * s,
+	uint_fast16_t * height
+	)
+{
+	ASSERT(font);
+	ASSERT(s);
+	ASSERT(height);
+	* height = font->font_charheight(font);
+	return colpip_string_width(font, s);
+}
+
 
 #if defined (SMALLCHARW)
 // возвращаем на сколько пикселей вправо занимет отрисованный символ

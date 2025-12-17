@@ -347,7 +347,8 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 //		ASSERT(dbstylep->font_width);
 		char c;
 		savestring = s;
-		const uint_fast16_t stringheight = font->font_charheight(font);
+		uint_fast16_t stringheight;
+		const uint_fast16_t stringwidth = colpip_string_widthheight(font, s, & stringheight);
 		ASSERT(font);
 		switch (dbstylep->textvalign)
 		{
@@ -365,7 +366,7 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 			break;
 		}
 
-		const uint_fast16_t textw = ulmin16(avlw, colpip_string_width(font, s));
+		const uint_fast16_t textw = ulmin16(avlw, stringwidth);
 		const uint_fast16_t xpix0 = xpix;
 		//ASSERT3(avlw >= textw, __FILE__, __LINE__, s);
 		switch (dbstylep->texthalign)

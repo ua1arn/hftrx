@@ -299,6 +299,13 @@ colpip_string_height(
 	const unifont_t * font,
 	const char * s
 	);
+// получить оба размера текстовой строки
+uint_fast16_t
+colpip_string_widthheight(
+	const unifont_t * font,
+	const char * s,
+	uint_fast16_t * height
+	);
 
 uint_fast16_t colorpip_put_char_small(
 	const gxdrawb_t * db,
