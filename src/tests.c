@@ -13379,6 +13379,7 @@ void hightests(void)
 #if 0 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		// test: вывод палитры на экран
+		const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
 		display2_fillbg(db);
 		PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 		int sepx = 3, sepy = 3;
@@ -13395,7 +13396,7 @@ void hightests(void)
 			{
 				char buf [4];
 				local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d"), i);
-				colpip_string3_tbg(fr, DIM_X, DIM_Y, x, y, buf, COLORPIP_WHITE);
+				colpip_string_any(fr, DIM_X, DIM_Y, x, y, font, buf, COLORPIP_WHITE);
 			}
 
 			x = x + wx;
