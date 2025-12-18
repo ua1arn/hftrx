@@ -2,9 +2,6 @@
 	// TFT панель 320 * 240 ADI_3.2_AM-240320D4TOQW-T00H(R)
 	// 320*240 SF-TC240T-9370-T с контроллером ILI9341
 	// 32*15 знакомест 10*16
-	#define CHAR_W	10
-	#define CHAR_H	8
-	#define SMALLCHARH 16 /* Font height */
 
 	#if DSTYLE_UR3LMZMOD && WITHONEATTONEAMP
 		// TFT панель 320 * 240

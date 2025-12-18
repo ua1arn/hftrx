@@ -1117,88 +1117,88 @@ extern "C" {
 
 #elif DIM_X == 220 && DIM_Y == 176
 	#define DSTYLE_G_X220_Y176	1	// Индикатор 220*176 SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15 с контроллером ILI9225С
-	#define CHAR_W	8
-	#define CHAR_H	8
+	#define DSGNCHAR_W	8
+	#define DSGNCHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+	#define GRID2X(cellsx) ((cellsx) * DSGNCHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * DSGNCHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 		
 #elif DIM_X == 240 && DIM_Y == 128
 	#define DSTYLE_G_X240_Y128	1
-	#define CHAR_W	8
-	#define CHAR_H	8
+	#define DSGNCHAR_W	8
+	#define DSGNCHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+	#define GRID2X(cellsx) ((cellsx) * DSGNCHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * DSGNCHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 160 && DIM_Y == 128
 	#define DSTYLE_G_X160_Y128	1	// ST7735
-	#define CHAR_W	8
-	#define CHAR_H	8
+	#define DSGNCHAR_W	8
+	#define DSGNCHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+	#define GRID2X(cellsx) ((cellsx) * DSGNCHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * DSGNCHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 128 && DIM_Y == 64
 	#define DSTYLE_G_X128_Y64	1	
-	#define CHAR_W	6
-	#define CHAR_H	8
+	#define DSGNCHAR_W	6
+	#define DSGNCHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+	#define GRID2X(cellsx) ((cellsx) * DSGNCHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * DSGNCHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 132 && DIM_Y == 64
 	#define DSTYLE_G_X132_Y64	1
 	//#define DSTYLE_G_X128_Y64	1	/* RDX0077 - проверки дизайна на других индикаторах	*/
-	#define CHAR_W	6
-	#define CHAR_H	8
+	#define DSGNCHAR_W	6
+	#define DSGNCHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+	#define GRID2X(cellsx) ((cellsx) * DSGNCHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * DSGNCHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 133 && DIM_Y == 64
 	// LCDMODE_TIC154
 	// LCDMODE_TIC218
 	#define DSTYLE_G_X132_Y64	1
 	//#define DSTYLE_G_X128_Y64	1	/* RDX0077 - проверки дизайна на других индикаторах	*/
-	#define CHAR_W	6
-	#define CHAR_H	8
+	#define DSGNCHAR_W	6
+	#define DSGNCHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+	#define GRID2X(cellsx) ((cellsx) * DSGNCHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * DSGNCHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 176 && DIM_Y == 132		
 	#define DSTYLE_G_X176_Y132	1		// ls020/lph88
-	#define CHAR_W	8
-	#define CHAR_H	8
+	#define DSGNCHAR_W	8
+	#define DSGNCHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+	#define GRID2X(cellsx) ((cellsx) * DSGNCHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * DSGNCHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 320 && DIM_Y == 240
 	#define DSTYLE_G_X320_Y240	1	
-	#define CHAR_W	10
-	#define CHAR_H	8
+	#define DSGNCHAR_W	10
+	#define DSGNCHAR_H	8
 	#define SMALLCHARH 16 /* Font height */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+	#define GRID2X(cellsx) ((cellsx) * DSGNCHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * DSGNCHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 64 && DIM_Y == 32
 	#define DSTYLE_G_X64_Y32	1	
-	#define CHAR_W	6
-	#define CHAR_H	8
+	#define DSGNCHAR_W	6
+	#define DSGNCHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+	#define GRID2X(cellsx) ((cellsx) * DSGNCHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * DSGNCHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 128 && DIM_Y == 32
 	#define DSTYLE_G_X64_Y32	1	/* G1203H - проверки	*/
 	//#define DSTYLE_G_X128_Y32	1	
-	#define CHAR_W	6
-	#define CHAR_H	8
+	#define DSGNCHAR_W	6
+	#define DSGNCHAR_H	8
 	#define SMALLCHARH 8 /* Font height */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+	#define GRID2X(cellsx) ((cellsx) * DSGNCHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * DSGNCHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif LCDMODE_DUMMY
 
@@ -1208,25 +1208,17 @@ extern "C" {
 	#define DIM_Y 272
 	#define LCDMODE_COLORED	1
 
-	#define CHAR_W 6
-	#define CHAR_H 8
+	#define DSGNCHAR_W 6
+	#define DSGNCHAR_H 8
 
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+	#define GRID2X(cellsx) ((cellsx) * DSGNCHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * DSGNCHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 	#define DISPLAY_FPS	10	/* обновление показаний частоты за секунду */
 	#define DISPLAYSWR_FPS 5	/* количество обновлений SWR за секунду */
 #else
 	#error Unrecognized dislay layout used (LCDMODE_XXXX)
 #endif
-
-#define X2GRID(pix) ((pix) / GRID2X(1))	// переход от пикселей к ячейкам разметки экрана
-#define Y2GRID(pix) ((pix) / GRID2Y(1))	// переход от пикселей к ячейкам разметки экрана
-
-
-#define HALFCOUNT_FREQA 1
-#define HALFCOUNT_SMALL 1
-#define HALFCOUNT_BIG 1
 
 // Определения функциональности в зависимости от того, какой набор управляющих битов имеется.
 #if CTLREGMODE_NOCTLREG			// Отсутствующий регистр управления

@@ -39,6 +39,7 @@
 #include <math.h>
 //#include <stdbool.h>
 
+#define HALFCOUNT_SMALL 1
 
 #if 0
 // Печать параметров на экране
