@@ -1168,27 +1168,12 @@
 
 #if WITHUSBHW
 
-	#define TARGET_GPIOE_VBUSON_BIT 0//(UINT32_C(1) << 18)	// PE18 - единицей включение питания для device
-	#define	USBD_EHCI_INITIALIZE() do { \
-		arm_hardware_pioe_outputs(TARGET_GPIOE_VBUSON_BIT, 0 * TARGET_GPIOE_VBUSON_BIT); \
-	} while (0)
-
-	#define TARGET_USBFS_VBUSON_SET(on)	do { \
-		gpioX_setstate(GPIOE, TARGET_GPIOE_VBUSON_BIT, !! (on) * TARGET_GPIOE_VBUSON_BIT); \
-	} while (0)
-
-	/**USB_OTG_HS GPIO Configuration    
-	PB13     ------> USB_OTG_HS_VBUS
-	PB14     ------> USB_OTG_HS_DM
-	PB15     ------> USB_OTG_HS_DP 
-	*/
 	#define	USBD_HS_FS_INITIALIZE() do { \
-		/*arm_hardware_pioa_altfn50((UINT32_C(1) << 11) | (UINT32_C(1) << 12), AF_OTGFS);	*/		/* PA10, PA11, PA12 - USB_OTG_FS	*/ \
-		/* arm_hardware_pioa_inputs(UINT32_C(1) << 9);	*/	/* PA9 - USB_OTG_FS_VBUS */ \
-		} while (0)
-
+	} while (0)
 	#define	USBD_HS_ULPI_INITIALIZE() do { \
-		} while (0)
+	} while (0)
+	#define	USBD_EHCI_INITIALIZE() do { \
+	} while (0)
 
 #else /* WITHUSBHW */
 
