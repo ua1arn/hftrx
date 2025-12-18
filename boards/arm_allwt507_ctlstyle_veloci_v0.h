@@ -436,7 +436,7 @@
 	#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 	//#define WITHANTSELECT	1	/* Управление переключением антенн */
 
-	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	
 //	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
 //	#define WITHHEATPROT 0			/* ОТЛАДКА - отключенна защит по перегреву */
 

@@ -552,7 +552,7 @@
 		#define FULLSET7	1
 	#else
 	#endif
-	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	
 
 
 	//#define WITHIFSHIFT	1	/* используется IF SHIFT */

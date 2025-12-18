@@ -419,7 +419,7 @@
 	#else
 		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#endif
-	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	
 
 	//#define WITHRENDERHTML	1	/* Использование библиотеки litehtml для формирования изображения на дисплее */
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */

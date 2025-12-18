@@ -122,7 +122,7 @@
 //	#define MOUSE_CURSOR_PATH		"./arrow.png"
 //	#define BLUETOOTH_ALSA			1
 
-	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	
 
 	#define WITHTX	1
 	#if WITHTX

@@ -757,15 +757,6 @@ prog_gpioreg(void)
 	HARDWARE_BL_SET(! glob_bglightoff, glob_bglight);
 #endif /* defined (HARDWARE_BL_SET) */
 
-#if defined (HARDWARE_DAC_ALC)
-//#if WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL
-	// ALC
-	// регулировка напряжения на REFERENCE INPUT TXDAC AD9744
-	//HARDWARE_DAC_ALC((glob_opowerlevel - BOARDPOWERMIN) * dac_dacfs_coderange / (BOARDPOWERMAX - BOARDPOWERMIN) + dac_dacfs_lowcode);
-	HARDWARE_DAC_ALC((BOARDPOWERMAX - BOARDPOWERMIN) * dac_dacfs_coderange / (BOARDPOWERMAX - BOARDPOWERMIN) + dac_dacfs_lowcode);
-//#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
-#endif /* defined (HARDWARE_DAC_ALC) */
-
 #if defined (PREAMP_GPIO_SETSTATE)
 	PREAMP_GPIO_SETSTATE(1);
 #endif

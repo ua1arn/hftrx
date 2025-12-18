@@ -395,7 +395,7 @@
 	#else
 		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#endif
-	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	
 
 
 	//#define WITHIFSHIFT	1	/* используется IF SHIFT */

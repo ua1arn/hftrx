@@ -472,7 +472,7 @@
 		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
 		#define FULLSET7	1
 	#endif
-	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	
 
 
 	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
