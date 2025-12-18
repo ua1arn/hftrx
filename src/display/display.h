@@ -205,7 +205,7 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layer);
 typedef struct unifont_tag
 {
 	uint_fast16_t (* decode)(const struct unifont_tag * font, char cc);	// получение ci
-	const void * (* getcharraster)(const struct unifont_tag * font, char c);	// получение начального адреса растра для символа
+	const void * (* getcharraster)(const struct unifont_tag * font, char cc);	// получение начального адреса растра для символа
 	uint_fast8_t (* font_drawwidth)(const struct unifont_tag * font, char cc);	// ширина в пиксеях данного символа (может быть меньше чем поле width)
 	uint_fast8_t (* font_drawheight)(const struct unifont_tag * font);	// высота в пикселях (се символы шрифта одной высоты)
 	uint_fast16_t (* font_draw)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
@@ -959,6 +959,28 @@ uint_fast16_t ubpfont_render_char32(
 	COLORPIP_T fg
 	);
 
+// Поддержка шрифтов Adafruit-GFX-Library
+//	https://github.com/adafruit/Adafruit-GFX-Library.git
+
+typedef struct hftrx_GFXglyph_tag
+{
+	uint16_t bitmapOffset; ///< Pointer into GFXfont->bitmap
+	uint8_t width;         ///< Bitmap dimensions in pixels
+	uint8_t height;        ///< Bitmap dimensions in pixels
+	uint8_t xAdvance;      ///< Distance to advance cursor (x axis)
+	int8_t xOffset;        ///< X dist from cursor pos to UL corner
+	int8_t yOffset;        ///< Y dist from cursor pos to UL corner
+} hftrx_GFXglyph_t;
+
+typedef struct hftrx_GFXfont_tag
+{
+	uint8_t *bitmap;  ///< Glyph bitmaps, concatenated
+	hftrx_GFXglyph_t *glyph;  ///< Glyph array
+	uint16_t first;   ///< ASCII extents (first char)
+	uint16_t last;    ///< ASCII extents (last char)
+	uint8_t yAdvance; ///< Newline distance (y axis)
+} hftrx_GFXfont_t;
+
 
 // Готовые шрифты
 extern UB_pFont gothic_12x16_p;
@@ -975,6 +997,7 @@ extern const unifont_t unifont_gothic_12x16p;	// proportional
 extern const unifont_t unifont_Tahoma_Regular_88x77;
 extern const unifont_t unifont_roboto32;
 extern const unifont_t unifont_helvNeueTh70;
+extern const unifont_t unifont_FreeMono24pt7b;	// Adafruit-GFX-Library
 
 #ifdef __cplusplus
 }

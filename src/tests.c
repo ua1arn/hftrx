@@ -10550,7 +10550,8 @@ void hightests(void)
 		colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_small_x2, "HELLO! hello! test", COLOR_WHITEALL);
 		//colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_Tahoma_Regular_88x77, "HELLO! hello! test", COLOR_WHITEALL);
 		//colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_roboto32, "HELLO! hello! test", COLOR_WHITEALL);
-		colpip_string(& dbv, 0, DIM_Y / 2, & unifont_helvNeueTh70, "HELLO! hello! test", COLOR_WHITEALL);
+		//colpip_string(& dbv, 0, DIM_Y / 2, & unifont_helvNeueTh70, "HELLO! hello! test", COLOR_WHITEALL);
+		colpip_string(& dbv, 0, DIM_Y / 2, & unifont_FreeMono24pt7b, "HELLO! hello! test", COLOR_WHITEALL);
 		colmain_nextfb();
 		for (;;)
 	    	testsloopprocessing();
