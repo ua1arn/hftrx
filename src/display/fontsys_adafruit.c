@@ -44,18 +44,23 @@ static const void * adafruitfont_getcharraster(const unifont_t * font, char cc)
 	return glyph->width ? & gfxfont->bitmap [glyph->bitmapOffset] : NULL;
 }
 
+static int imin(int a, int b) { return a < b ? a : b; }
+static int imax(int a, int b) { return a > b ? a : b; }
+
 // Для пропорциональных знакогенераторов
 static uint_fast8_t adafruitfont_height(const unifont_t * font)
 {
 	const hftrx_GFXfont_t * const gfxfont = (const hftrx_GFXfont_t * const) font->fontraster;
 	uint_fast16_t ci;
-	uint_fast16_t hmax = 0;
+	int_fast16_t ymin = 0;
+	int_fast16_t ymax = 0;
 	for (ci = 0; ci < (gfxfont->last - gfxfont->first + 1); ++ ci)
 	{
 		const hftrx_GFXglyph_t * const glyph = & gfxfont->glyph [ci];
-		hmax = ulmax16(hmax, glyph->yOffset + glyph->height);
+		ymin = imin(ymin, - glyph->yOffset + (int) glyph->height);
+		ymax = imax(ymax, - glyph->yOffset + (int) glyph->height);
 	}
-	return hmax;
+	return ymax - ymin;
 }
 
 static uint_fast16_t
@@ -76,15 +81,22 @@ adafruitfont_render_char(
 	{
 		const uint_fast16_t width2 = font->font_drawwidth(font, cc);
 		const uint_fast16_t height2 = font->font_drawheight(font);
-//		const unsigned bytespervertical = (height2 + 7) / 8;
-		PRINTF("adafruitfont_render_char: cc=%02X (%c), width2=%u, height2=%u, bytespervertical=%u\n", (unsigned char) cc, cc, width2, height2, bytespervertical);
+		const unsigned bytesperrow = (glyph->width + 7) / 8;
+		PRINTF("adafruitfont_render_char: cc=%02X (%c), width2=%u, height2=%u\n", (unsigned char) cc, cc, width2, height2);
 		printhex(0, charraster, (glyph->height * glyph->width + 7) / 8);
-		uint_fast16_t row;
-		for (row = glyph->yOffset; row < (glyph->yOffset + glyph->height); ++ row)
+		int_fast16_t row;	// source bitmap pos
+		for (row = 0; row < glyph->height; ++ row)
 		{
-			uint_fast16_t col;
-			for (col = glyph->xOffset; col < (glyph->xOffset + glyph->width); ++ col)
+			int_fast16_t col;	// source bitmap pos
+			for (col = 0; col < glyph->width; ++ col)
 			{
+				unsigned bitpos = row * bytesperrow + col;
+				unsigned byteoffset = bitpos / 8;
+				unsigned bitoffset = bitpos % 8;
+				if ((charraster [byteoffset] >> bitoffset) & 0x01)
+				{
+					* colpip_mem_at(db, xpix + col + glyph->xOffset, ypix + row + glyph->yOffset) = fg;
+				}
 			}
 		}
 	}
