@@ -90,10 +90,8 @@ adafruitfont_render_char(
 			int_fast16_t col;	// source bitmap pos
 			for (col = 0; col < glyph->width; ++ col)
 			{
-				unsigned bitpos = row * bytesperrow + col;
-				unsigned byteoffset = bitpos / 8;
-				unsigned bitoffset = bitpos % 8;
-				if ((charraster [byteoffset] >> bitoffset) & 0x01)
+				const unsigned bitoffset = col % 8;
+				if ((charraster [row * bytesperrow] >> bitoffset) & 0x01)
 				{
 					* colpip_mem_at(db, xpix + col + glyph->xOffset, ypix + row + glyph->yOffset) = fg;
 				}
