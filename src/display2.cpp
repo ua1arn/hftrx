@@ -9230,17 +9230,16 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 
 #if WITHRENDERHTML
 
-#include <string.h>
-#include <stdexcept>
-
 #include "display/display.h"
-#include "display/fontmaps.h"
 #include "display2.h"
 
 #include "litehtml.h"
-#include <litehtml/encodings.h>
-#include <litehtml/el_text.h>
-#include <litehtml/render_item.h>
+#include "litehtml/encodings.h"
+#include "litehtml/el_text.h"
+#include "litehtml/render_item.h"
+
+#include <string.h>
+#include <stdexcept>
 
 
 namespace litehtml
