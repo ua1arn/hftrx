@@ -9252,10 +9252,10 @@ class hftrxgd: public litehtml::document_container
 public:
 	litehtml::uint_ptr create_font(const font_description& descr, const document* doc, litehtml::font_metrics* fm);
 	void delete_font(litehtml::uint_ptr hFont);
-	int text_width(const char *text, litehtml::uint_ptr hFont);
+	pixel_t text_width(const char *text, litehtml::uint_ptr hFont);
 	void draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos);
-	int pt_to_px(int pt) const;
-	int get_default_font_size() const;
+	pixel_t pt_to_px(float pt) const;
+	pixel_t get_default_font_size() const;
 	const char* get_default_font_name() const;
 	void draw_list_marker(litehtml::uint_ptr hdc, const litehtml::list_marker &marker);
 	void load_image(const char *src, const char *baseurl, bool redraw_on_ready);
@@ -9307,17 +9307,18 @@ static COLORPIP_T getCOLORPIP(const litehtml::web_color &color)
 
 litehtml::uint_ptr hftrxgd::create_font(const font_description& descr, const document* doc, litehtml::font_metrics* fm)
 {
+	const unifont_t * const font = & unifont_small;
 	//PRINTF("create_font: faceName='%s', size=%d\n", faceName, size);
 	if (fm)
 	{
-		fm->font_size = 12; //?????size;
+		fm->font_size = font->font_drawheight(font); //?????size;
 		fm->ascent = 0; //PANGO_PIXELS((double)pango_font_metrics_get_ascent(metrics));
 		fm->descent = 0; //PANGO_PIXELS((double)pango_font_metrics_get_descent(metrics));
-		fm->height = SMALLCHARH; //PANGO_PIXELS((double)pango_font_metrics_get_height(metrics));
-		fm->x_height = fm->height;
+		fm->height = font->font_drawheight(font); //PANGO_PIXELS((double)pango_font_metrics_get_height(metrics));
+		fm->x_height = font->font_drawheight(font);
 		fm->draw_spaces = true;
 	}
-	return 1;
+	return litehtml::uint_ptr(font);
 }
 
 void hftrxgd::delete_font(litehtml::uint_ptr hFont)
@@ -9325,19 +9326,18 @@ void hftrxgd::delete_font(litehtml::uint_ptr hFont)
 	(void) hFont;
 }
 
-int hftrxgd::text_width(const char *text, litehtml::uint_ptr hFont)
+pixel_t hftrxgd::text_width(const char *text, litehtml::uint_ptr hFont)
 {
-	const unifont_t * const font = & unifont_small;
+	const unifont_t * const font = (const unifont_t *) hFont;
 	//PRINTF("text_width: text='%s'\n", text);
 	uint_fast16_t height_str;
 	const uint_fast16_t width_str = colpip_string_widthheight(font, text, & height_str);
-	(void) hFont;
 	return width_str;
 }
 
 void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos)
 {
-	const unifont_t * const font = & unifont_small;
+	const unifont_t * const font = (const unifont_t *) hFont;
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//PRINTF("draw_text: text='%s'\n", text);
 
@@ -9345,12 +9345,12 @@ void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint
 	colpip_string(db, pos.left(), pos.top(), font, text, getCOLORPIP(color));
 }
 
-int hftrxgd::pt_to_px(int pt) const
+pixel_t hftrxgd::pt_to_px(float pt) const
 {
 	return pt;
 }
 
-int hftrxgd::get_default_font_size() const
+pixel_t hftrxgd::get_default_font_size() const
 {
 	return 12;
 }
@@ -9415,7 +9415,7 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 
 		const uint_fast32_t freq = hamradio_get_freq_pathi(pathi);
 
-		pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
+		pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 	else if (! strcmp(url.c_str(), dzi_gcombo.id))
 	{
@@ -10385,7 +10385,7 @@ void display2_initialize(void)
 				sel.parse("#id3", no_quirks_mode);	// select by id
 				//sel.parse(".BIG-FREQ", no_quirks_mode);	// Select by class
 				hftrx_timeels = hftrxmain_docs [page]->root()->select_all(sel);
-				PRINTF("hftrx_timeels size=%d\n", hftrx_timeels.size());
+				PRINTF("hftrx_timeels size=%d\n", (int) hftrx_timeels.size());
 	//			for (litehtml::element::ptr& el : hftrx_timeels)
 	//			{
 	//				for (const litehtml::element::ptr& el2 : el->children())
