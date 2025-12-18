@@ -107,34 +107,6 @@ spi_allcs_disable(void)
 	#endif
 	hardware_spi_io_delay(); 
 
-#elif (CPUSTYLE_ATMEGA)
-
-	#if WITHSPISPLIT
-		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
-		SPI0_TARGET_CS_PORT |= SPI0_CS_BIT;
-		SPI1_TARGET_CS_PORT |= SPI1_CS_BIT;
-		#if defined (SPI_CSEL2)
-			SPI2_TARGET_CS_PORT |= SPI2_CS_BIT;
-		#endif
-	#endif /* WITHSPISPLIT */
-
-	#if SPI_ALLCS_BITS != 0 && SPI_ALLCS_BITSNEG != 0
-
-		SPI_ALLCS_PORT |= (SPI_ALLCS_BITS & (SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG));	// Запрещение - все биты чипселектов в 1, ту что активны "1" - в "0".
-		SPI_ALLCS_PORT &= ~ (SPI_ALLCS_BITS & SPI_ALLCS_BITSNEG);	// Запрещение - все биты чипселектов в 1, ту что активны "1" - в "0".
-
-	#elif SPI_ALLCS_BITS != 0
-
-		SPI_ALLCS_PORT |= SPI_ALLCS_BITS;	// Все биты чипселектов в 1
-
-	#endif /* defined (SPI_ALLCS_BITS) */
-
-	#if defined (SPI_NAEN_BIT)
-		SPI_NAEN_PORT |= SPI_NAEN_BIT;	// Запрещение чипселектов единицей
-	#elif defined (SPI_AEN_BIT)
-		SPI_AEN_PORT &= ~ SPI_AEN_BIT;	// Запрещение чипселектов нулём
-	#endif
-	hardware_spi_io_delay(); 
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -209,47 +181,6 @@ spi_cs_enable(
 	#endif
 	hardware_spi_io_delay(); 
 
-#elif (CPUSTYLE_ATMEGA)
-
-	#if WITHSPISPLIT
-		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
-		switch (target)
-		{
-		case SPI_CSEL0:
-			SPI0_TARGET_CS_PORT &= ~ SPI0_CS_BIT;
-			break;
-		case SPI_CSEL1:
-			SPI1_TARGET_CS_PORT &= ~ SPI1_CS_BIT;
-			break;
-	  #if defined (SPI_CSEL2)
-		case SPI_CSEL2:
-			SPI2_TARGET_CS_PORT &= ~ SPI2_CS_BIT;
-			break;
-	  #endif
-		}
-	#endif /* WITHSPISPLIT */
-
-	// бездешифраторная схема управления - CS формируются выходами процессора напрямую.
-	#if SPI_ALLCS_BITS != 0 && SPI_ALLCS_BITSNEG != 0
-		if ((target & SPI_ALLCS_BITSNEG) != 0)
-			SPI_ALLCS_PORT |= (target & SPI_ALLCS_BITSNEG);	// установить в "1", если этот выход требует "1" как активное состояние
-		else if ((target & SPI_ALLCS_BITS) != 0)
-			SPI_ALLCS_PORT &= ~ (SPI_ALLCS_BITS & (target ^ SPI_ALLCS_BITSNEG));
-	#elif SPI_ALLCS_BITS != 0
-		if ((target & SPI_ALLCS_BITS) != 0)
-			SPI_ALLCS_PORT &= ~ target;
-	#endif /* defined (SPI_ALLCS_BITS) */
-
-	// Управление стробом дешифратора
-	#if defined (SPI_NAEN_BIT)
-		if ((target & SPI_ALLCS_BITS) == 0)
-			SPI_NAEN_PORT &= ~ SPI_NAEN_BIT;
-	#elif defined (SPI_AEN_BIT)
-		if ((target & SPI_ALLCS_BITS) == 0)
-			SPI_AEN_PORT |= SPI_AEN_BIT;
-	#endif
-	hardware_spi_io_delay(); 
-
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -284,16 +215,6 @@ spi_setaddress(
 		}
 	#endif
 
-#elif (CPUSTYLE_ATMEGA)
-
-	#if defined (SPI_NAEN_BIT)
-		SPI_ADDRESS_PORT = (SPI_ADDRESS_PORT & ~ SPI_ADDRESS_BITS) | target;
-		hardware_spi_io_delay(); 
-	#elif defined (SPI_AEN_BIT)
-		SPI_ADDRESS_PORT = (SPI_ADDRESS_PORT & ~ SPI_ADDRESS_BITS) | target;
-		hardware_spi_io_delay(); 
-	#endif
-
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -307,21 +228,11 @@ prog_pulse_ioupdate(void)
 {
 	// SPI_IOUPDATE_PORT was SPI_TARGET_PORT
 #if defined (SPI_IOUPDATE_BIT)
-	#if CPUSTYLE_ARM || CPUSTYLE_RISCV
 
-		SPI_IOUPDATE_PORT_C(SPI_IOUPDATE_BIT);
-		hardware_spi_io_delay();
-		SPI_IOUPDATE_PORT_S(SPI_IOUPDATE_BIT);
+	SPI_IOUPDATE_PORT_C(SPI_IOUPDATE_BIT);
+	hardware_spi_io_delay();
+	SPI_IOUPDATE_PORT_S(SPI_IOUPDATE_BIT);
 
-	#elif CPUSTYLE_ATMEGA
-
-		SPI_IOUPDATE_PORT &= ~ SPI_IOUPDATE_BIT;
-		hardware_spi_io_delay();
-		SPI_IOUPDATE_PORT |= SPI_IOUPDATE_BIT;
-
-	#else
-		#error Undefined CPUSTYLE_XXX
-	#endif
 #elif defined (targetupd1)
 
 	// Если для DDS требуется сигнал IOUPDAYE и не выделен бит в порту - управляем тут.
@@ -1840,7 +1751,7 @@ void hardware_spi_connect(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes_t s
 
 	(void) SPI->SPI_RDR;		/* clear AT91C_SPI_RDRF in status register */
 
-	hardware_spi_pinsconnect(spi);
+	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -1852,12 +1763,12 @@ void hardware_spi_connect(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes_t s
 
 	(void) spi->SPI_RDR;		/* clear AT91C_SPI_RDRF in status register */
 
-	hardware_spi_pinsconnect(spi);
+	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 #elif CPUSTYLE_STM32F7XX
 
 	// В этих процессорах и входы и выходы переключаются на ALT FN
-	hardware_spi_pinsconnect(spi);
+	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 	spi->CR1 = spi_cr1_val8w [spispeedindex][spimode];
 	spi->CR2 = (spi->CR2 & ~ (SPI_CR2_DS)) |
@@ -1867,7 +1778,7 @@ void hardware_spi_connect(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes_t s
 
 #elif CPUSTYLE_STM32H7XX
 
-	hardware_spi_pinsconnect(spi);
+	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 	spi->CFG1 = spi_cfg1_val8w [spispeedindex];
 	spi->CFG2 = spi_cfg2_val [spimode];
@@ -1884,11 +1795,11 @@ void hardware_spi_connect(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes_t s
 	spi->SPBR = spi_spbr_val [spispeedindex];
 	spi->SPCMD0 = spi_spcmd0_val8w [spispeedindex][spimode];
 
-	hardware_spi_pinsconnect(spi);
+	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 #elif CPUSTYLE_STM32MP1
 
-	hardware_spi_pinsconnect(spi);
+	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 	spi->CFG1 = spi_cfg1_val8w [spispeedindex];
 	spi->CFG2 = spi_cfg2_val [spimode];
@@ -1902,7 +1813,7 @@ void hardware_spi_connect(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes_t s
 	SPI0->CR = spi_cr_val [spispeedindex][spimode];
 	SPI0->ER = 0x0001;	// 1: enable the SPI
 
-	hardware_spi_pinsconnect(spi);
+	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 #elif CPUSTYLE_ALLWINNER
 
@@ -1918,7 +1829,7 @@ void hardware_spi_connect(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes_t s
 //		spi->SPI_TCR = val;
 //		(void) spi->SPI_TCR;
 //	}
- 	hardware_spi_pinsconnect(spi);
+ 	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -1932,11 +1843,11 @@ void hardware_spi_disconnect(SPI_t * spi)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	hardware_spi_pinsdisconnect(spi);
+	hardware_spi_pinsdisconnect(spi); // опциональное программирование GPIO
 
 #elif CPUSTYLE_AT91SAM7S
 
-	hardware_spi_pinsdisconnect(spi);
+	hardware_spi_pinsdisconnect(spi); // опциональное программирование GPIO
 
 #elif CPUSTYLE_STM32H7XX
 
@@ -1945,18 +1856,18 @@ void hardware_spi_disconnect(SPI_t * spi)
 		;
 	spi->CR1 &= ~ SPI_CR1_SPE;
 	// connect back to GPIO
-	hardware_spi_pinsdisconnect(spi);
+	hardware_spi_pinsdisconnect(spi); // опциональное программирование GPIO
 
 #elif CPUSTYLE_STM32F
 
 	spi->CR1 &= ~ SPI_CR1_SPE;
 
 	// connect back to GPIO
-	hardware_spi_pinsdisconnect(spi);
+	hardware_spi_pinsdisconnect(spi); // опциональное программирование GPIO
 
 #elif CPUSTYLE_R7S721
 
-	hardware_spi_pinsdisconnect(spi);
+	hardware_spi_pinsdisconnect(spi); // опциональное программирование GPIO
 
 #elif CPUSTYLE_STM32MP1
 	//#warning Insert code for CPUSTYLE_STM32MP1
@@ -1966,12 +1877,12 @@ void hardware_spi_disconnect(SPI_t * spi)
 		;
 	spi->CR1 &= ~ SPI_CR1_SPE;
 	// connect back to GPIO
-	hardware_spi_pinsdisconnect(spi);
+	hardware_spi_pinsdisconnect(spi); // опциональное программирование GPIO
 
 #elif CPUSTYLE_XC7Z
 
 	SPI0->ER = 0x0000;	// 0: disable the SPI
-	hardware_spi_pinsdisconnect(spi);
+	hardware_spi_pinsdisconnect(spi); // опциональное программирование GPIO
 
 #elif CPUSTYLE_ALLWINNER
 
@@ -1983,7 +1894,7 @@ void hardware_spi_disconnect(SPI_t * spi)
 		//(void) spi->SPI_TCR;
 	}
 
-	hardware_spi_pinsdisconnect(spi);
+	hardware_spi_pinsdisconnect(spi); // опциональное программирование GPIO
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -2065,7 +1976,7 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 	SPI->SPI_CSR [0] = spi_csr_val16w [spispeedindex] [spimode];
 
 	(void) SPI->SPI_RDR;		/* clear AT91C_SPI_RDRF in status register */
-	hardware_spi_pinsconnect(spi);
+	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -2076,12 +1987,12 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 	spi->SPI_CSR [0] = spi_csr_val16w [spispeedindex] [spimode];
 
 	(void) spi->SPI_RDR;		/* clear AT91C_SPI_RDRF in status register */
-	hardware_spi_pinsconnect(spi);
+	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 #elif CPUSTYLE_STM32F7XX
 
 	// В этих процессорах и входы и выходы переключаются на ALT FN
-	hardware_spi_pinsconnect(spi);
+	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 	spi->CR1 = spi_cr1_val16w [spispeedindex] [spimode];
 	spi->CR2 = (spi->CR2 & ~ (SPI_CR2_DS)) |
@@ -2091,7 +2002,7 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
-		hardware_spi_pinsconnect(spi);
+		hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 		spi->CFG1 = spi_cfg1_val16w [spispeedindex];
 		spi->CFG2 = spi_cfg2_val [spimode];
@@ -2108,7 +2019,7 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 	spi->SPBR = spi_spbr_val [spispeedindex];
 	spi->SPCMD0 = spi_spcmd0_val16w [spispeedindex] [spimode];
 
-	hardware_spi_pinsconnect(spi);
+	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 #elif CPUSTYLE_ALLWINNER
 
@@ -2124,7 +2035,7 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 //		SPI0->SPI_TCR = val;
 //		(void) SPI0->SPI_TCR;
 //	}
- 	hardware_spi_pinsconnect(spi);
+ 	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -2265,7 +2176,7 @@ void hardware_spi_connect_b32(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 {
 #if CPUSTYLE_STM32H7XX
 
-	hardware_spi_pinsconnect(spi);
+	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 	spi->CFG1 = spi_cfg1_val32w [spispeedindex];
 	spi->CFG2 = spi_cfg2_val [spimode];
@@ -2282,11 +2193,11 @@ void hardware_spi_connect_b32(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 	spi->SPBR = spi_spbr_val [spispeedindex];
 	spi->SPCMD0 = spi_spcmd0_val32w [spispeedindex] [spimode];
 
-	hardware_spi_pinsconnect(spi);
+	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 #elif CPUSTYLE_STM32MP1
 
-	hardware_spi_pinsconnect(spi);
+	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 	spi->CFG1 = spi_cfg1_val32w [spispeedindex];
 	spi->CFG2 = spi_cfg2_val [spimode];
@@ -2309,7 +2220,7 @@ void hardware_spi_connect_b32(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 //		spi->SPI_TCR = val;
 //		(void) spi->SPI_TCR;
 //	}
- 	hardware_spi_pinsconnect(spi);
+ 	hardware_spi_pinsconnect(spi); // опциональное программирование GPIO
 
 #else
 	#error Wrong CPUSTYLE macro

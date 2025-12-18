@@ -977,10 +977,6 @@ extern "C" {
 
 		#define NVRAM_END 32767U		/* на самом деле 64 килобайт, но в этом применении использeем не более 32K */
 
-	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_CPUEEPROM) && CPUSTYLE_ATMEGA
-
-		#define NVRAM_END E2END
-
 	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM) && CPUSTYLE_STM32F
 
 		#define NVRAM_END 4095U		/* 4K of RAM at BKPSRAM_BASE */

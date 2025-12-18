@@ -9572,18 +9572,6 @@ RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 	#endif /* BOARD_STMPE811_INT_PIN */
 	}
 
-#elif CPUSTYLE_ATMEGA
-
-	ISR(INT0_vect)
-	{
-		spool_encinterrupts(& encoder1);	/* прерывание по изменению сигнала на входах от валкодера */
-	}
-
-	ISR(INT1_vect)
-	{
-		spool_encinterrupts(& encoder1);	/* прерывание по изменению сигнала на входах от валкодера */
-	}
-
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 
 #else

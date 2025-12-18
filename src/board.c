@@ -7348,8 +7348,6 @@ void board_savefpgastatus(uint_fast32_t status, uint_fast32_t fqmeter)
 }
 #endif /* WITHFPGAPIPE_FPGASTATUS */
 
-#if ! CPUSTYLE_ATMEGA
-
 #if defined(RTC1_TYPE)
 
 #include <time.h>
@@ -7452,7 +7450,6 @@ int _gettimeofday(struct timeval *p, void *tz)
 }
 
 #endif
-#endif /* ! CPUSTYLE_ATMEGA */
 
 
 // CRC-CCITT calculations:

@@ -685,52 +685,6 @@ RAMFUNC_NONILINE void AT91F_ADC_IRQHandler(void)
 	}
 }
 
-#elif CPUSTYLE_ATMEGA
-	///////adc
-	// получение кода выбора входа
-	static uint_fast8_t hardware_atmega_admux(uint_fast8_t ch)
-	{
-		enum { ATMEGA_ADC_VREF_TYPE = ((0UL << REFS1) | (1UL << REFS0))	}; // AVCC used as reference volage
-		#if HARDWARE_ADCBITS == 8
-			return ch | ATMEGA_ADC_VREF_TYPE | (1UL << ADLAR);
-		#else
-			return ch | ATMEGA_ADC_VREF_TYPE;
-		#endif
-	}
-
-	ISR(ADC_vect)
-	{
-		#if HARDWARE_ADCBITS == 8
-			// Read the 8 most significant bits
-			// of the AD conversion result
-			board_adc_store_data(board_get_adcch(adc_input), ADCH);
-		#else
-			// Read the AD conversion result
-			board_adc_store_data(board_get_adcch(adc_input), ADCW);
-		#endif 
-		// Select next ADC input
-		for (;;)
-		{
-			if (++ adc_input >= board_get_adcinputs())
-			{
-				spool_adcdonebundle();
-				break;
-			}
-			else
-			{
-				// Select next ADC input (only one)
-				const uint_fast8_t adci = board_get_adcch(adc_input);
-				if (isadchw(adci))
-				{
-					ADMUX = hardware_atmega_admux(adci);
-					ADCSRA |= (1U << ADSC);			// Start the AD conversion
-					break;
-				}
-			}
-		}
-	}
-
-
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 // For SM32H7XXX: ADC_IRQn is a same vector as ADC1_2_IRQn (decimal 18)

@@ -20,12 +20,8 @@
 
 #if ! FORMATFROMLIBRARY
 
-//#if CPUSTYLE_ATMEGA
-//#define FETCH(c, fmt) ((c) = pgm_read_byte((fmt) ++))
-//#else
 #define FETCH(c, fmt) ((c) = * (fmt) ++)
 #define LOOK(fmt) (* (fmt))
-//#endif
 
 static	char *
 uconvert(long unsigned n, uint_fast8_t base, char * s, const FLASHMEM char * dg)

@@ -2025,10 +2025,6 @@ void lclspin_enable(void)
 void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line)
 {
 #if LINUX_SUBSYSTEM
-#elif CPUSTYLE_ATMEGA
-	* oldIrql = SREG;
-    __asm__ volatile ("" ::: "memory");
-	cli();
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	const IRQL_t oldv = GIC_GetInterfacePriorityMask();
 	ASSERT2(oldv != 0, file, line);
@@ -2067,9 +2063,6 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 void LowerIrql_DEBUG(IRQL_t newIRQL, const char * file, int line)
 {
 #if LINUX_SUBSYSTEM
-#elif CPUSTYLE_ATMEGA
-    SREG = newIRQL;
-    __asm__ volatile ("" ::: "memory");
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
     ASSERT2(newIRQL != 0, file, line);
 	GIC_SetInterfacePriorityMask(GICInterface_PMR_Priority(newIRQL));

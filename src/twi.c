@@ -47,24 +47,7 @@ static void i2c_delay(const i2cp_t * p)
 #endif /* PCF8576C */
 }
 
-#if CPUSTYLE_ATMEGA
-	#define SET_TWCK() do { TARGET_TWI_TWCK_DDR &= ~ TARGET_TWI_TWCK; } while (0)	// SCL = 1
-	#define CLR_TWCK() do { TARGET_TWI_TWCK_DDR |= TARGET_TWI_TWCK; } while (0)	// SCL = 0
-	#define SET_TWD() do { TARGET_TWI_TWD_DDR &= ~ TARGET_TWI_TWD;  } while (0)	// SDA = 1
-	#define CLR_TWD() do { TARGET_TWI_TWD_DDR |= TARGET_TWI_TWD; } while (0)	// SDA = 0
-
-	#define GET_TWCK() ((TARGET_TWI_TWCK_PIN & TARGET_TWI_TWCK) != 0)
-	#define GET_TWD() ((TARGET_TWI_TWD_PIN & TARGET_TWI_TWD) != 0)
-
-	#define SET2_TWCK() do { TARGET_TWI2_TWCK_DDR &= ~ TARGET_TWI2_TWCK; } while (0)	// SCL = 1
-	#define CLR2_TWCK() do { TARGET_TWI2_TWCK_DDR |= TARGET_TWI2_TWCK; } while (0)	// SCL = 0
-	#define SET2_TWD() do { TARGET_TWI2_TWD_DDR &= ~ TARGET_TWI2_TWD; } while (0)	// SDA = 1
-	#define CLR2_TWD() do { TARGET_TWI2_TWD_DDR |= TARGET_TWI2_TWD; } while (0)	// SDA = 0
-
-	#define GET2_TWCK() ((TARGET_TWI2_TWCK_PIN & TARGET_TWI2_TWCK) != 0)
-	#define GET2_TWD() ((TARGET_TWI2_TWD_PIN & TARGET_TWI2_TWD) != 0)
-
-#elif CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z
 
 	#if WITHTWISW && ! defined (TWISOFT_INITIALIZE)
 
@@ -1655,7 +1638,7 @@ void i2c_initialize(void)
 #else
 	#error I2C hardware implementation for CPUSTYLE_xxx is not avaliable
 
-#endif // CPUSTYLE_ATMEGA
+#endif
 
 #endif
 

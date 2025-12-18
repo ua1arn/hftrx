@@ -11571,18 +11571,6 @@ void hardware_adc_initialize(void)
 
 
 #if SIDETONE_TARGET_BIT != 0
-
-
-#if CPUSTYLE_ATMEGA
-
-	#if CPUSTYLE_ATMEGA_XXX4
-		//enum { TCCR2A_WORK = (UINT32_C(1) << COM2A0) | (UINT32_C(1) << WGM21), TCCR2A_DISCONNECT = (UINT32_C(1) << WGM21) };
-	#elif CPUSTYLE_ATMEGA328
-	#else
-		enum { TCCR2WGM = (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20) };	// 0x18
-	#endif
-#endif
-
 /* после изменения набора формируемых звуков - обновление программирования таймера. */
 void hardware_sounds_disable(void)
 {
@@ -11764,24 +11752,7 @@ hardware_beep_initialize(void)
 void
 hardware_elkey_timer_initialize(void)
 {
-#if CPUSTYLE_ATMEGA
-
-	// Timer/Counter 1 used for electronic key synchronisation with 1/20 of dot length
-	//// TCCR1B = (UINT32_C(1) << WGM12) | (UINT32_C(1) << CS12) | (UINT32_C(1) << CS10);		// CTC mode (mode4) and 1/1024 prescaler
-	//// OCR1A = 0xffff;
-
-	#if CPUSTYLE_ATMEGA_XXX4
-		// Timer/Counter 1 Interrupt(s) initialization
-		TIMSK1 |= (UINT32_C(1) << OCIE1A);	// Timer/Counter 1 interrupt enable
-	#elif CPUSTYLE_ATMEGA328
-		// Timer/Counter 1 Interrupt(s) initialization
-		TIMSK1 |= (UINT32_C(1) << OCIE1A);	// Timer/Counter 1 interrupt enable
-	#else /* CPUSTYLE_ATMEGA_XXX4 */
-		TIMSK |= (UINT32_C(1) << OCIE1A);	// Timer/Counter 1 interrupt enable
-		//TIMSK |= 0x10;	// Timer/Counter 1 interrupt enable
-	#endif /* CPUSTYLE_ATMEGA_XXX4 */
-
-#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 	// TC2 used for electronic key synchronisation with 1/20 of dot length
 	// TC2 used for generate 1/20 of morse dot length intervals
 	//
