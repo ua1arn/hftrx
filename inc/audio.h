@@ -672,7 +672,7 @@ void biquad_init_bandstop(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f1, FLOAT_t 
 void biquad_init_highpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f);
 void iir_freq_resp(iir_filter_t *filter, FLOAT_t *hcomplex, FLOAT_t fs, FLOAT_t f);
 
-#if __STDC__ && ! CPUSTYLE_ATMEGA
+#if __STDC__
 
 #define MAXFLOAT	3.40282347e+38F
 
@@ -703,7 +703,7 @@ void iir_freq_resp(iir_filter_t *filter, FLOAT_t *hcomplex, FLOAT_t fs, FLOAT_t 
 #define M_LOG2_E        _M_LN2
 #define M_INVLN2        1.4426950408889633870E0  /* 1 / log(2) */
 
-#endif /* __STDC__ && ! CPUSTYLE_ATMEGA */
+#endif /* __STDC__ */
 
 /* установка параметров приемника, передаваемых чрез I2S канал в FPGA */
 uint_fast32_t dspfpga_get_nco1(void);
