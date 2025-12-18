@@ -1798,13 +1798,6 @@ uint_fast32_t display_getdotclock(const videomode_t * vdmode)
 	//return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL / (vdmode->interlaced + 1);
 }
 
-// Используется при выводе на графический индикатор с кординатами и размерами в пикселях
-void
-pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstyle, const char * s)
-{
-	pix_display_texts(db, xpix, ypix, w, h, dbstyle, & s, 1);	// одга строка для multi-line
-}
-
 // Используется при выводе на графический индикатор с кординатами и размерами по сетке
 void
 display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstylep)
@@ -1812,7 +1805,7 @@ display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const
 	pix_display_texts(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), dbstylep, & s, 1);
 }
 
-void gxstyle_setsmallfont(gxstyle_t * dbstyle, const unifont_t * font)
+void gxstyle_setfont(gxstyle_t * dbstyle, const unifont_t * font)
 {
 	dbstyle->font = font;
 }
@@ -1847,7 +1840,7 @@ void gxstyle_initialize(gxstyle_t * dbstyle)
 {
 	memset(dbstyle, 0, sizeof * dbstyle);
 	gxstyle_textcolor(dbstyle, COLORPIP_WHITE, COLORPIP_BLACK);
-	gxstyle_setsmallfont(dbstyle, & unifont_small);
+	gxstyle_setfont(dbstyle, & unifont_small);
 	gxstyle_texthalign(dbstyle, GXSTYLE_HALIGN_RIGHT);
 	gxstyle_textvalign(dbstyle, GXSTYLE_VALIGN_CENTER);
 	gxstyle_setbgradius(dbstyle, display2_gettileradius());

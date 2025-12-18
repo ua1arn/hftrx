@@ -245,7 +245,7 @@ void gxstyle_initialize(gxstyle_t * dbstyle);
 void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg);
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a);
 void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a);
-void gxstyle_setsmallfont(gxstyle_t * dbstyle, const unifont_t * font);
+void gxstyle_setfont(gxstyle_t * dbstyle, const unifont_t * font);
 void gxstyle_setsbigandhalffont(gxstyle_t * dbstyle);
 void gxstyle_setbgbackoff(gxstyle_t * dbstyle, unsigned x, unsigned y);
 void gxstyle_setbgradius(gxstyle_t * dbstyle, unsigned r);
@@ -263,8 +263,6 @@ void display_gpu_initialize(void);		/* g2d/mdma/gpu/dma2d initialize */
 
 // Используется при выводе на графический индикатор с кординатами и размерами по сетке
 void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle);		// Выдача строки из ОЗУ в указанное место экрана.
-// Используется при выводе на графический индикатор с кординатами и размерами в пикселях
-void pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstyle, const char * s);
 // Используется при выводе на графический индикатор с кординатами и размерами в пикселях
 // Многострочное отображение
 void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstyle, const char * const * slines, unsigned nlines);
