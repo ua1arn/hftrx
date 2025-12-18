@@ -374,11 +374,11 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 		default:
 		case GXSTYLE_HALIGN_RIGHT:
 			xpix = textw < w ? xpix + avlw - textw : xpix;
-			while ((c = * s ++) != '\0' && xpix - xpix0 + font->font_charwidth(font, c) <= avlw)
+			while ((c = * s ++) != '\0' && xpix - xpix0 + font->font_drawwidth(font, c) <= avlw)
 				xpix = font->font_draw(db, xpix, ypix, font, c, dbstylep->textcolor);
 			break;
 		case GXSTYLE_HALIGN_LEFT:
-			while ((c = * s ++) != '\0' && xpix - xpix0 + font->font_charwidth(font, c) <= avlw)
+			while ((c = * s ++) != '\0' && xpix - xpix0 + font->font_drawwidth(font, c) <= avlw)
 				xpix = font->font_draw(db, xpix, ypix, font, c, dbstylep->textcolor);
 			break;
 		case GXSTYLE_HALIGN_CENTER:
@@ -387,6 +387,25 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 		}
 	}
 
+}
+
+// большой шрифт
+static uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
+{
+	const unifont_t * const font = & unifont_big;
+	if (font == NULL)
+		return x;
+	savewhere = __func__;
+	return font->font_draw(db, x, y, font, cc, dbstyle->textcolor);
+}
+
+static uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
+{
+	const unifont_t * const font = & unifont_half;
+	if (font == NULL)
+		return x;
+	savewhere = __func__;
+	return font->font_draw(db, x, y, font, cc, dbstyle->textcolor);
 }
 
 static const FLASHMEM int32_t vals10 [] =
@@ -496,6 +515,17 @@ display_freq(
 	pix_display_value_big(db, xpix, ypix, GRID2X(xspan), GRID2Y(yspan), freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep);
 }
 
+// обычный шрифт
+// вывести единственный символ
+static uint_fast16_t display_put_char(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
+{
+	const unifont_t * const font = dbstyle->font;
+	if (font == NULL)
+		return x;
+	savewhere = __func__;
+	return font->font_draw(db, x, y, font, cc, dbstyle->textcolor);
+}
+
 void
 NOINLINEAT
 pix_display_value_small(
@@ -532,7 +562,7 @@ pix_display_value_small(
 	colmain_rounded_rect(db, xpix, ypix, xpix + w - 1, ypix + h - 1, dbstylep->bgradius, dbstylep->bgcolor, dbstylep->bgfilled);
 	xpix += dbstylep->bgradius;
 	ypix += dbstylep->bgradius;
-	const uint_fast16_t stringheight = font->font_charheight(font);
+	const uint_fast16_t stringheight = font->font_drawheight(font);
 
 	if (avlh > stringheight)
 	{

@@ -10542,15 +10542,15 @@ void hightests(void)
 		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 		//display_text(& dbv, 0, 0, "Start2...", 10, 16, & dbstylev);
 		unsigned row = 0;
-		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_small, "HELLO! hello! test", COLOR_WHITEALL);
-		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_small2, "HELLO! hello! test", COLOR_WHITEALL);
-		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_small3, "HELLO! hello! test", COLOR_WHITEALL);
-		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_gothic_11x13, "HELLO! hello! test", COLOR_WHITEALL);
-		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_gothic_12x16p, "HELLO! hello! test", COLOR_WHITEALL);
-		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_small, "HELLO! hello! test", COLOR_WHITEALL);
-		//colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_Tahoma_Regular_88x77, "HELLO! hello! test", COLOR_WHITEALL);
-		colpip_string_any(& dbv, 0, 0 + row ++ * 16, & unifont_roboto32, "HELLO! hello! test", COLOR_WHITEALL);
-		colpip_string_any(& dbv, 0, DIM_Y / 2, & unifont_helvNeueTh70, "HELLO! hello! test", COLOR_WHITEALL);
+		colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_small, "HELLO! hello! test", COLOR_WHITEALL);
+		colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_small2, "HELLO! hello! test", COLOR_WHITEALL);
+		colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_small3, "HELLO! hello! test", COLOR_WHITEALL);
+		colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_gothic_11x13, "HELLO! hello! test", COLOR_WHITEALL);
+		colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_gothic_12x16p, "HELLO! hello! test", COLOR_WHITEALL);
+		colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_small_x2, "HELLO! hello! test", COLOR_WHITEALL);
+		//colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_Tahoma_Regular_88x77, "HELLO! hello! test", COLOR_WHITEALL);
+		//colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_roboto32, "HELLO! hello! test", COLOR_WHITEALL);
+		colpip_string(& dbv, 0, DIM_Y / 2, & unifont_helvNeueTh70, "HELLO! hello! test", COLOR_WHITEALL);
 		colmain_nextfb();
 		for (;;)
 	    	testsloopprocessing();
@@ -10965,7 +10965,7 @@ void hightests(void)
 			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
 			// Draw rextangle
 			colpip_fillrect(& dbv, posX, posY, rectX, rectY, TFTRGB(0, 0, 0));
-			colpip_string_tbg(& dbv, posX, posY + rectY / 2, s, TFTRGB(255, 255, 255));
+			colpip_string_small(& dbv, posX, posY + rectY / 2, s, TFTRGB(255, 255, 255));
 
 			colmain_nextfb();
 
@@ -11545,7 +11545,7 @@ void hightests(void)
 		colpip_line(& dbv_fbpic, 0, 0, picx - 1, picy - 1, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
 		colpip_line(& dbv_fbpic, 0, picy - 1, picx - 1, 0, TFTALPHA(picalpha, COLORPIP_WHITE), 0);
 		colpip_fillrect(& dbv_fbpic, picx / 4 + 5, picy / 4 + 5, picx / 2 - 10, picy / 2 - 10, TFTALPHA(0 * picalpha, COLORPIP_WHITE));
-		colpip_string_tbg(& dbv_fbpic, 5, 6, "Hello!", TFTALPHA(picalpha, COLORPIP_WHITE));
+		colpip_string_small(& dbv_fbpic, 5, 6, "Hello!", TFTALPHA(picalpha, COLORPIP_WHITE));
 		dcache_clean(dbv_fbpic.cachebase, dbv_fbpic.cachesize);
 
 		unsigned pic2alpha = 44;
@@ -11553,7 +11553,7 @@ void hightests(void)
 		colpip_fillrect(& dbv_fbpic2, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic2alpha, COLORPIP_WHITE));
 		colpip_line(& dbv_fbpic2, 0, 0, picx - 1, picy - 1, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
 		colpip_line(& dbv_fbpic2, 0, picy - 1, picx - 1, 0, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
-		colpip_string_tbg(& dbv_fbpic2, 5, 6, "LY2", TFTALPHA(pic2alpha, COLORPIP_WHITE));
+		colpip_string_small(& dbv_fbpic2, 5, 6, "LY2", TFTALPHA(pic2alpha, COLORPIP_WHITE));
 		dcache_clean(dbv_fbpic2.cachebase, dbv_fbpic2.cachesize);
 
 		unsigned pic3alpha = 33;
@@ -11561,7 +11561,7 @@ void hightests(void)
 		colpip_fillrect(& dbv_fbpic3, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic3alpha, COLORPIP_WHITE));
 		colpip_line(& dbv_fbpic3, 0, 0, picx - 1, picy - 1, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
 		colpip_line(& dbv_fbpic3, 0, picy - 1, picx - 1, 0, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
-		colpip_string_tbg(& dbv_fbpic3, 5, 6, "LY3", TFTALPHA(pic3alpha, COLORPIP_WHITE));
+		colpip_string_small(& dbv_fbpic3, 5, 6, "LY3", TFTALPHA(pic3alpha, COLORPIP_WHITE));
 		dcache_clean(dbv_fbpic3.cachebase, dbv_fbpic3.cachesize);
 
 		/* непрозрачный фон */
@@ -11575,18 +11575,18 @@ void hightests(void)
 		/* полупрозрачный фон */
 		unsigned fgalpha = 128;
 		colpip_fillrect(& dbv_layer1, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLORPIP_GREEN));	/* opaque color transparent black */
-		colpip_string_tbg(& dbv_layer1, 0, DIM_Y - 16 * 1, "ly1", TFTALPHA(255, COLORPIP_GREEN));
+		colpip_string_small(& dbv_layer1, 0, DIM_Y - 16 * 1, "ly1", TFTALPHA(255, COLORPIP_GREEN));
 		colpip_fillrect(& dbv_layer1, 110, 110, DIM_X - 200, DIM_Y - 200, TFTALPHA(fgalpha, COLORPIP_BLUE));	/* transparent black */
 		/* полупрозрачный прямоугольник на фоне */
 		colpip_fillrect(& dbv_layer1, 120, 120, 200, 200, TFTALPHA(fgalpha, COLORPIP_GREEN));	// GREEN
 		/* прозрачный слой */
 		unsigned l2alpha = 0;
 		colpip_fillrect(& dbv_layer2, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_RED));	/* opaque color transparent black */
-		colpip_string_tbg(& dbv_layer2, 0, DIM_Y - 16 * 2, "ly2", TFTALPHA(255, COLORPIP_RED));
+		colpip_string_small(& dbv_layer2, 0, DIM_Y - 16 * 2, "ly2", TFTALPHA(255, COLORPIP_RED));
 		/* прозрачный слой */
 		unsigned l3alpha = 0;
 		colpip_fillrect(& dbv_layer3, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_GREEN));	/* opaque color transparent black */
-		colpip_string_tbg(& dbv_layer3, 0, DIM_Y - 16 * 3, "ly3", TFTALPHA(255, COLORPIP_GREEN));
+		colpip_string_small(& dbv_layer3, 0, DIM_Y - 16 * 3, "ly3", TFTALPHA(255, COLORPIP_GREEN));
 
 		TP();
 		/* копируем изображение в верхний слой с цветовым ключем */
@@ -11757,7 +11757,7 @@ void hightests(void)
 		/* тестовое изображение */
 		unsigned fgalpha = 255;
 		colpip_fillrect(fgpic, picx, picy, 0, 0, picx, picy, TFTALPHA(fgalpha, COLORPIP_BLUE));	/* opaque color transparent black */
-		colpip_string_tbg(fgpic, picx, picy, 0, 0, "F", TFTALPHA(fgalpha, COLORPIP_RED));
+		colpip_string_small(fgpic, picx, picy, 0, 0, "F", TFTALPHA(fgalpha, COLORPIP_RED));
 		dcache_clean((uintptr_t) fgpic, GXSIZE(picx, picy) * sizeof fgpic [0]);
 
 		unsigned grid = picx + 5;
@@ -13397,7 +13397,7 @@ void hightests(void)
 			{
 				char buf [4];
 				local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d"), i);
-				colpip_string_any(fr, DIM_X, DIM_Y, x, y, font, buf, COLORPIP_WHITE);
+				colpip_string(fr, DIM_X, DIM_Y, x, y, font, buf, COLORPIP_WHITE);
 			}
 
 			x = x + wx;
@@ -13424,7 +13424,7 @@ void hightests(void)
 		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 
 		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-		colpip_string_tbg(& dbv, DIM_X / 3, DIM_Y / 2, "TEST TSC", COLOR_GREEN);
+		colpip_string_small(& dbv, DIM_X / 3, DIM_Y / 2, "TEST TSC", COLOR_GREEN);
 		colmain_nextfb();
 		for (;;)
 		{
@@ -13440,9 +13440,9 @@ void hightests(void)
 				gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 				// стереть фон
 				colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-				colpip_string_tbg(& dbv, DIM_X / 3, DIM_Y / 2, "TEST TSC", COLOR_GREEN);
+				colpip_string_small(& dbv, DIM_X / 3, DIM_Y / 2, "TEST TSC", COLOR_GREEN);
 				local_snprintf_P(msg, ARRAY_SIZE(msg), PSTR("X=%5d, Y=%5d"), (int) x, (int) y);
-				colpip_string_tbg(& dbv, 0, 0, msg, COLOR_GREEN);
+				colpip_string_small(& dbv, 0, 0, msg, COLOR_GREEN);
 				enum { RSZ = 5 };	// размер метки касания
 				if (x < DIM_X - RSZ && y < DIM_Y - RSZ)
 					colpip_fillrect(& dbv, x, y, RSZ, RSZ, COLOR_WHITEALL);

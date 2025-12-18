@@ -216,7 +216,7 @@ void board_tsc_calibration(void)
 					colpip_segm(& dbv, p_display [i].x, p_display [i].y, 0, 360, 15, r0, COLOR_WHITEALL, 0, 0);
 				}
 			}
-			colpip_string_tbg(& dbv, xstep * 2, ystep * 5, "CALIBRATE", COLOR_WHITEALL);
+			colpip_string_small(& dbv, xstep * 2, ystep * 5, "CALIBRATE", COLOR_WHITEALL);
 			colmain_nextfb();
 			// wait answer
 			unsigned as;
@@ -236,7 +236,7 @@ void board_tsc_calibration(void)
 			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 			// стереть фон
 			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-			colpip_string_tbg(& dbv, xstep * 2, ystep * 5, "CALIBRATE DONE", COLOR_WHITEALL);
+			colpip_string_small(& dbv, xstep * 2, ystep * 5, "CALIBRATE DONE", COLOR_WHITEALL);
 			colmain_nextfb();
 			//PRINTF("tsc: calibrate target %u done\n", (unsigned) tg);
 		}

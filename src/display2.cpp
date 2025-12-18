@@ -1402,7 +1402,7 @@ void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t
 	if (width_p >= width_str)
 	{
 		//PRINTF("%s: xx=%d, width_p=%d, width_str=%d, buf='%s'\n", __func__, xx, width_p, width_str, buf);
-		colpip_string_any(db, xx + (width_p - width_str) / 2 , yy + 2, font, buf, color_fg);
+		colpip_string(db, xx + (width_p - width_str) / 2 , yy + 2, font, buf, color_fg);
 	}
 
 }
@@ -2172,7 +2172,7 @@ display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 		uint_fast16_t sh3;
 		const uint_fast16_t sw3 = colpip_string_widthheight(font, buf2, & sh3);
 		// todo: usage of pad2w3 in vertial coordinate is right?
-		colpip_string_any(db, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, font, buf2, COLORPIP_YELLOW);
+		colpip_string(db, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, font, buf2, COLORPIP_YELLOW);
 	}
 	for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 	{
@@ -2189,7 +2189,7 @@ display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "+%u", p);
 		uint_fast16_t sh3;
 		const uint_fast16_t sw3 = colpip_string_widthheight(font, buf2, & sh3);
-		colpip_string_any(db, xx - sw3 / 2, yy - pad2w3 + 1, font, buf2, COLORPIP_RED);
+		colpip_string(db, xx - sw3 / 2, yy - pad2w3 + 1, font, buf2, COLORPIP_RED);
 	}
 	for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 	{
@@ -2325,7 +2325,7 @@ display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
 			uint_fast16_t sh3;
 			const uint_fast16_t sw3 = colpip_string_widthheight(font, buf2, & sh3);
-			colpip_string_any(db, xx - sw3 / 2, yy - pad2w3 + 1, font, buf2, COLORPIP_YELLOW);
+			colpip_string(db, xx - sw3 / 2, yy - pad2w3 + 1, font, buf2, COLORPIP_YELLOW);
 		}
 		else
 			colpip_radius(db, smpr->xcneddle, smpr->ycneddle, markersTX_pwr [i], smpr->r1, smpr->r1 + 4, smetercolor, 1, 1);
@@ -2342,7 +2342,7 @@ display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 		uint_fast16_t sh3;
 		const uint_fast16_t sw3 = colpip_string_widthheight(font, buf2, & sh3);
 		// todo: usage of SMALLCHARW3 in vertial coordinate is right?
-		colpip_string_any(db, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, font, buf2, COLORPIP_YELLOW);
+		colpip_string(db, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, font, buf2, COLORPIP_YELLOW);
 	}
 	colpip_segm(db, smpr->xcneddle, smpr->ycneddle, smpr->gs, smpr->gm, smpr->r1, 1, smetercolor, 1, 1);
 	colpip_segm(db, smpr->xcneddle, smpr->ycneddle, smpr->gm, smpr->ge, smpr->r1, 1, smetercolor, 1, 1);
@@ -2502,7 +2502,7 @@ display2_smeter15_layout_tx_bars(smeter_params_t * const smpr)
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
 			uint_fast16_t sh3;
 			const uint_fast16_t sw3 = colpip_string_widthheight(font, buf2, & sh3);
-			colpip_string_any(db, markersTX_pwr [i] - sw3 / 2, smpr->r1 - 10 - sh3 - 2, font, buf2, COLORPIP_YELLOW);
+			colpip_string(db, markersTX_pwr [i] - sw3 / 2, smpr->r1 - 10 - sh3 - 2, font, buf2, COLORPIP_YELLOW);
 		}
 		else
 			colpip_line(db, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 5, COLORPIP_WHITE, 0);
@@ -2518,7 +2518,7 @@ display2_smeter15_layout_tx_bars(smeter_params_t * const smpr)
 		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
 		uint_fast16_t sh3;
 		const uint_fast16_t sw3 = colpip_string_widthheight(font, buf2, & sh3);
-		colpip_string_any(db, markersTX_swr [i] - sw3 / 2, smpr->r2 + 12, font, buf2, COLORPIP_YELLOW);
+		colpip_string(db, markersTX_swr [i] - sw3 / 2, smpr->r2 + 12, font, buf2, COLORPIP_YELLOW);
 	}
 
 	dcache_clean(db->cachebase, db->cachesize);
@@ -2532,6 +2532,7 @@ static void
 display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 {
 	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
+	const unifont_t * const fontsm2 = & unifont_small2;	// SMALL2
 	display2_smeter15_layout_bars(smpr);
 	const int32_t markers [] =
 	{
@@ -2581,7 +2582,7 @@ display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 
 	colpip_line(db, smpr->gs, smpr->r1, smpr->gm, smpr->r1, COLORPIP_WHITE, 0);
 	colpip_line(db, smpr->gm, smpr->r1, smpr->ge, smpr->r1, COLORPIP_RED, 0);
-	colpip_string2_tbg(db, smpr->gs - SMALLCHARW2, smpr->r1 - SMALLCHARH2 - 2, "Sm", COLORPIP_YELLOW);
+	colpip_string(db, smpr->gs - SMALLCHARW2, smpr->r1 - SMALLCHARH2 - 2, fontsm2, "Sm", COLORPIP_YELLOW);
 
 	for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 	{
@@ -2591,7 +2592,7 @@ display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
         uint_fast16_t sh3;
         const uint_fast16_t sw3 = colpip_string_widthheight(font, buf2, & sh3);
-        colpip_string_any(db, markers [i] - sw3 / 2, smpr->r1 - 10 - sh3 - 2, font, buf2, COLORPIP_YELLOW);
+        colpip_string(db, markers [i] - sw3 / 2, smpr->r1 - 10 - sh3 - 2, font, buf2, COLORPIP_YELLOW);
 	}
 	for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 	{
@@ -2605,7 +2606,7 @@ display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "+%u", p);
 		uint_fast16_t sh3;
 		const uint_fast16_t sw3 = colpip_string_widthheight(font, buf2, & sh3);
-		colpip_string_any(db, markersR [i] - sw3 / 2, smpr->r1 - 10 - sh3 - 2, font, buf2, COLORPIP_YELLOW);
+		colpip_string(db, markersR [i] - sw3 / 2, smpr->r1 - 10 - sh3 - 2, font, buf2, COLORPIP_YELLOW);
 	}
 	for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 	{
@@ -3975,9 +3976,10 @@ static void display2_mode_lower_a(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	char labels[5];
-	local_snprintf_P(labels, ARRAY_SIZE(labels), " %s", hamradio_get_mode_a_value_P());
-	colpip_string2_tbg(db, GRID2X(x), GRID2Y(y), labels, dbstylev_1state.textcolor);
+	const unifont_t * const fontsm2 = & unifont_small2;	// SMALL2
+	char label[5];
+	local_snprintf_P(label, ARRAY_SIZE(label), " %s", hamradio_get_mode_a_value_P());
+	colpip_string(db, GRID2X(x), GRID2Y(y), fontsm2, label, dbstylev_1state.textcolor);
 }
 
 #endif /* WITHTOUCHGUI */
@@ -7053,7 +7055,7 @@ display_colorgrid_xor(
 				uint_fast16_t xtext = xmarker >= (freqw + 1) / 2 ? xmarker - (freqw + 1) / 2 : UINT16_MAX;
 				if (isvisibletext(DIM_X, xtext, freqw))
 				{
-					colpip_string_any(db, xtext, row0, font, buf2, colordigits);
+					colpip_string(db, xtext, row0, font, buf2, colordigits);
 					colpip_xor_vline(db, xmarker, row0 + MARKERH, h - MARKERH, colorgridlines);
 				}
 				else
@@ -7113,7 +7115,7 @@ display_colorgrid_set(
 				uint_fast16_t xtext = xmarker >= (freqw + 1) / 2 ? xmarker - (freqw + 1) / 2 : UINT16_MAX;
 				if (isvisibletext(DIM_X, xtext, freqw))
 				{
-					colpip_string_any(db, xtext, y, font, buf2, colordigits);
+					colpip_string(db, xtext, y, font, buf2, colordigits);
 					colpip_set_vline(db, xmarker, y + markerh, h - markerh, colorgridlines);
 				}
 				else
@@ -7161,7 +7163,7 @@ display_colorgrid_3dss(
 				freqw = sw3;
 				uint_fast16_t xtext = xmarker >= (freqw + 1) / 2 ? xmarker - (freqw + 1) / 2 : UINT16_MAX;
 				if (isvisibletext(DIM_X, xtext, freqw))
-					colpip_string_any(db, xtext, row, font, buf2, colordigits);
+					colpip_string(db, xtext, row, font, buf2, colordigits);
 
 				colpip_set_vline(db, xmarker, row0, h, colorgridlines3dss);
 			}
@@ -8032,7 +8034,7 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
 		            lv_area_t labelcoord;
 		            lv_area_set(& labelcoord, coord->x1 + xmarker - 100, coord->y1, coord->x1 + xmarker + 100, coord->y2);
 		            lv_draw_label(layer, & label, & labelcoord);
-		            //colpip_string_any(db, xtext, y, font, buf2, colordigits);
+		            //colpip_string(db, xtext, y, font, buf2, colordigits);
     			}
     		}
     	}
@@ -8996,7 +8998,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 		            lv_area_t labelcoord;
 		            lv_area_set(& labelcoord, coord->x1 + xmarker - 100, coord->y1, coord->x1 + xmarker + 100, coord->y2);
 		            lv_draw_label(layer, & label, & labelcoord);
-		            //colpip_string_any(db, xtext, y, font, buf2, colordigits);
+		            //colpip_string(db, xtext, y, font, buf2, colordigits);
     			}
     		}
     	}
@@ -9325,18 +9327,22 @@ void hftrxgd::delete_font(litehtml::uint_ptr hFont)
 
 int hftrxgd::text_width(const char *text, litehtml::uint_ptr hFont)
 {
+	const unifont_t * const font = & unifont_small;
 	//PRINTF("text_width: text='%s'\n", text);
+	uint_fast16_t height_str;
+	const uint_fast16_t width_str = colpip_string_widthheight(font, text, & height_str);
 	(void) hFont;
-	return strwidth(text);
+	return width_str;
 }
 
 void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos)
 {
+	const unifont_t * const font = & unifont_small;
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//PRINTF("draw_text: text='%s'\n", text);
 
 	//colpip_fillrect(db, pos.left(), pos.top(), pos.width, pos.height, getCOLORPIP(color));
-	colpip_string_tbg(db, pos.left(), pos.top(), text, getCOLORPIP(color));
+	colpip_string(db, pos.left(), pos.top(), font, text, getCOLORPIP(color));
 }
 
 int hftrxgd::pt_to_px(int pt) const

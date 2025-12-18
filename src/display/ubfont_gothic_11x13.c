@@ -121,10 +121,10 @@ const unifont_t unifont_gothic_11x13 =
 {
 	.decode = ubmfont_decode,
 	.getcharraster = ubmfont_getcharraster,
-	.font_charwidth = ubmfont_width,
-	.font_charheight = ubmfont_height,
+	.font_drawwidth = ubmfont_width,
+	.font_drawheight = ubmfont_height,
 	.font_draw = ubmfont_render_char16,
 	//
-	.fontraster = (const void *) & gothic_11x13,
+	.fontraster = & gothic_11x13,
 	.label = "unifont_gothic_11x13"
 };

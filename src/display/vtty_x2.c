@@ -72,6 +72,35 @@ int display_vtty_x2_putchar(char ch);
 void display_vtty_x2_printf(const char * format, ...);
 void display_vtty_x2_gotoxy(unsigned x, unsigned y);
 
+// возвращаем на сколько пикселей вправо занимет отрисованный символ
+// Фон не трогаем
+// return new x coordinate
+// vtty support
+static uint_fast16_t draw_char_small_x2(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	)
+{
+	const unifont_t * const font = & unifont_small_x2;
+	return font->font_draw(db, xpix, ypix, font, cc, fg);
+}
+// возвращаем на сколько пикселей вправо занимет отрисованный символ
+// Фон не трогаем
+// return new x coordinate
+// vtty support
+static uint_fast16_t draw_char_small(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	)
+{
+	const unifont_t * const font = & unifont_small;
+	return font->font_draw(db, xpix, ypix, font, cc, fg);
+}
+
 void display_vtty_x2_initialize(void)
 {
 	vtty_x2_t * const vt = & vtty_x2_0;
@@ -230,12 +259,12 @@ static void vtput(vtty_x2_t * const vt, unsigned col, unsigned row, char ch, COL
 			col * VTTYx2_CHARPIX, vpos * VTTYx2_ROWSPIX,
 			VTTYx2_CHARPIX, VTTYx2_ROWSPIX, bg);	// очищаем видеобуфер под выыодимыи символом
 #if DIM_X == 720
-	colorpip_x2_put_char_small(
+	draw_char_small_x2(
 			& vt->dbvfb,
 			col * VTTYx2_CHARPIX, vpos * VTTYx2_ROWSPIX,
 			ch, fg);
 #else
-	colorpip_put_char_small(
+	draw_char_small(
 			& vt->dbvfb,
 			col * VTTYx2_CHARPIX, vpos * VTTYx2_ROWSPIX,
 			ch, fg);

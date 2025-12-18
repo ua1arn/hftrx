@@ -206,8 +206,8 @@ typedef struct unifont_tag
 {
 	uint_fast16_t (* decode)(const struct unifont_tag * font, char cc);	// получение ci
 	const void * (* getcharraster)(const struct unifont_tag * font, char c);	// получение начального адреса растра для символа
-	uint_fast8_t (* font_charwidth)(const struct unifont_tag * font, char cc);	// ширина в пиксеях данного символа (может быть меньше чем поле width)
-	uint_fast8_t (* font_charheight)(const struct unifont_tag * font);	// высота в пикселях (се символы шрифта одной высоты)
+	uint_fast8_t (* font_drawwidth)(const struct unifont_tag * font, char cc);	// ширина в пиксеях данного символа (может быть меньше чем поле width)
+	uint_fast8_t (* font_drawheight)(const struct unifont_tag * font);	// высота в пикселях (се символы шрифта одной высоты)
 	uint_fast16_t (* font_draw)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
 	uint_fast16_t (* font_prerender)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
 	uint8_t bytesw;		// байтов в одной строке знакогенератора символа
@@ -269,17 +269,8 @@ void pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t yp
 // Многострочное отображение
 void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstyle, const char * const * slines, unsigned nlines);
 
-uint_fast16_t colorpip_put_char_any(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix,
-	uint_fast16_t ypix,
-	const unifont_t * font,
-	char cc,
-	COLORPIP_T fg
-	);
-
 uint_fast16_t
-colpip_string_any(
+colpip_string(
 	const gxdrawb_t * db,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
@@ -287,46 +278,12 @@ colpip_string_any(
 	const char * s,
 	COLORPIP_T fg		// цвет вывода текста
 	);
-
-uint_fast16_t
-colpip_string_width(
-	const unifont_t * font,
-	const char * s
-	);
-
-uint_fast16_t
-colpip_string_height(
-	const unifont_t * font,
-	const char * s
-	);
 // получить оба размера текстовой строки
 uint_fast16_t
 colpip_string_widthheight(
 	const unifont_t * font,
 	const char * s,
 	uint_fast16_t * height
-	);
-
-uint_fast16_t colorpip_put_char_small(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix,
-	uint_fast16_t ypix,
-	char cc,
-	COLORPIP_T fg
-	);
-uint_fast16_t colorpip_put_char_small2(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix,
-	uint_fast16_t ypix,
-	char cc,
-	COLORPIP_T fg
-	);
-uint_fast16_t colorpip_x2_put_char_small(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix,
-	uint_fast16_t ypix,
-	char cc,
-	COLORPIP_T fg
 	);
 
 void tc358768_initialize(const videomode_t * vdmode);
@@ -381,8 +338,8 @@ void colpip_point_xor(
 
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
-void
-colpip_string_tbg(
+uint_fast16_t
+colpip_string_small(
 	const gxdrawb_t * db,
 	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
@@ -400,20 +357,6 @@ colpip_string_x2ra90_count(
 	COLORPIP_T bg,		// цвет вывода текста
 	const char * s,		// строка для вывода
 	size_t len			// количество символов
-	);
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void
-colpip_string2_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLORPIP_T fg		// цвет вывода текста
-	);
-// Возвращает ширину строки в пикселях
-uint_fast16_t strwidth(
-	const char * s
 	);
 
 void display_bar(
@@ -434,9 +377,6 @@ void display_bar(
 
 // большие и средние цифры (частота)
 uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t display_put_char(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
-uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
-uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
 
 void display_swrmeter(const gxdrawb_t * db,
 	uint_fast8_t x,

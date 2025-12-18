@@ -68,6 +68,22 @@ void display_vtty_gotoxy(unsigned x, unsigned y);
 int display_vtty_maxx(void);
 int display_vtty_maxy(void);
 
+// возвращаем на сколько пикселей вправо занимет отрисованный символ
+// Фон не трогаем
+// return new x coordinate
+// vtty support
+static uint_fast16_t draw_char_small(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
+	char cc,		// код символа для отображения
+	COLORPIP_T fg
+	)
+{
+	savewhere = __func__;
+	const unifont_t * const font = & unifont_small;
+	return font->font_draw(db, xpix, ypix, font, cc, fg);
+}
+
 static void display_vtty_initialize(void)
 {
 	vtty_t * const vt = & vtty0;
@@ -223,7 +239,7 @@ static void display_vtty_cout(
 
 	default:
 		{
-			colorpip_put_char_small(
+			draw_char_small(
 					& vt->dbvfb,
 					vt->col * VTTY_CHARPIX, (vt->row + vt->scroll) % VTTY_ROWS * VTTY_ROWSPIX,
 					ch, VTTY_FG);

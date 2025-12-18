@@ -123,10 +123,10 @@ const unifont_t unifont_gothic_12x16p =
 {
 	.decode = ubpfont_decode,
 	.getcharraster = ubpfont_getcharraster,
-	.font_charwidth = ubpfont_width,
-	.font_charheight = ubpfont_height,
+	.font_drawwidth = ubpfont_width,
+	.font_drawheight = ubpfont_height,
 	.font_draw = ubpfont_render_char16,
 	//
-	.fontraster = (const void *) & gothic_12x16_p,
+	.fontraster = & gothic_12x16_p,
 	.label = "unifont_gothic_12x16p"
 };
