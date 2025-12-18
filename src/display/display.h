@@ -412,10 +412,6 @@ colpip_string2_tbg(
 	COLORPIP_T fg		// цвет вывода текста
 	);
 // Возвращает ширину строки в пикселях
-uint_fast16_t strwidth2(
-	const char * s
-	);
-// Возвращает ширину строки в пикселях
 uint_fast16_t strwidth(
 	const char * s
 	);

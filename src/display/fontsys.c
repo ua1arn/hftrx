@@ -658,20 +658,6 @@ colpip_string2_tbg(
 	}
 }
 
-// Возвращает ширину строки в пикселях
-uint_fast16_t strwidth2(
-	const char * s
-	)
-{
-	ASSERT(s != NULL);
-	const unifont_t * const font = & unifont_small2;
-	uint_fast16_t w = 0;
-	char cc;
-	while ((cc = * s ++) != '\0')
-		w += font->font_charwidth(font, cc);
-	return w;
-}
-
 #endif /* defined (SMALLCHARH2) && defined (SMALLCHARW2) */
 
 

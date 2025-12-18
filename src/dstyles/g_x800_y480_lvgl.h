@@ -16,7 +16,7 @@
 		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
 
 		BDTH_ALLRX = 50, 		// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = ROWS2GRID(DLE1 - DLES - 1),	// количество строк, отведенное под панораму и волопад.
+		BDCV_ALLRX = (DLE1 - DLES - 1),	// количество строк, отведенное под панораму и волопад.
 
 		BDTH_LEFTRX = 17,	// ширина индикатора баллов (без плюсов)
 		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
@@ -128,9 +128,9 @@
 		//{	37, 30,	8, 5, display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
 
 	#if WITHSPECTRUMWF
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_dummy,	& dzi_gcombo, PG0, },// подготовка изображения спектра
+		{	0,	DLES,	(BDTH_ALLRX), BDCV_ALLRX, display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	(BDTH_ALLRX), BDCV_ALLRX,	display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	DLES,	(BDTH_ALLRX), BDCV_ALLRX, display2_dummy,	& dzi_gcombo, PG0, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 
 		{	0,	DLE1,	12, 5, display2_dummy,		& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
@@ -177,7 +177,7 @@
 	{
 		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
-		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->w = GRID2X((BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
 	#define DISPLC_RADIUS 	0	// радиус закругления углов плиток в dzones

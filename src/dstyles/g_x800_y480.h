@@ -123,9 +123,9 @@
 		//{	36, 30,	8, 5, display2_freqdelta8, & dzi_compat, PGALL, },	// выход ЧМ демодулятора
 
 	#if WITHSPECTRUMWF
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_wfl_init,	& dzi_compat,	PGINI, },	// формирование палитры водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX,	display2_latchcombo,	& dzi_compat,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_gcombo,	& dzi_compat, PG0, },// подготовка изображения спектра
+		{	0,	DLES,	(BDTH_ALLRX), BDCV_ALLRX, display2_wfl_init,	& dzi_compat,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	(BDTH_ALLRX), BDCV_ALLRX,	display2_latchcombo,	& dzi_compat,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	DLES,	(BDTH_ALLRX), BDCV_ALLRX, display2_gcombo,	& dzi_compat, PG0, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 
 		{	0,	DLE1,	13, 5, display2_datetime12,	& dzi_compat, PGALL,	},	// DATE&TIME Jan-01 13:40
@@ -174,7 +174,7 @@
 	{
 		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
-		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->w = GRID2X((BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
 

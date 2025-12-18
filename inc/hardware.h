@@ -512,7 +512,6 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 
 	#define FLASHMEM //__flash
 	#define NOINLINEAT // __attribute__((noinline))
-	#define strlen_P(s) strlen(s)
 
 	#define ATTRWEAK __WEAK
 	// Use __attribute__ ((weak, alias("Default_Handler")))
@@ -534,7 +533,6 @@ void watchdog_ping(void);	/* перезапуск сторожевого тай�
 
 	#define FLASHMEM //__flash
 	#define NOINLINEAT // __attribute__((noinline))
-	#define strlen_P(s) strlen(s)
 
 	#define ATTRWEAK __WEAK
 	// Use __attribute__ ((weak, alias("Default_Handler")))

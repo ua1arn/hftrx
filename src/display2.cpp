@@ -1367,16 +1367,8 @@ void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t
 	strcpy(buf, str);
 	local_strtrim(buf);
 
-	// todo: use colpip_string_widthheight(buf, font, * width)
-//	uint_fast16_t height_str;
-//	const uint_fast16_t width_str = colpip_string_widthheight(buf, font, & height);
-
-#if WITHALTERNATIVEFONTS
-	const uint_fast16_t width_str = getwidth_Pstring(buf, & gothic_12x16_p);
-#else
-	const uint_fast16_t width_str = strwidth2(buf);
-#endif /* WITHALTERNATIVEFONTS */
-
+	uint_fast16_t height_str;
+	const uint_fast16_t width_str = colpip_string_widthheight(font, buf, & height_str);
 	const uint_fast16_t width_p = chars_W2 * SMALLCHARW2;
 
 	if (! width_str)
@@ -1403,7 +1395,7 @@ void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t
 	}
 	else
 	{
-		colmain_rounded_rect(db, xx, yy, xx + width_p - 1, yy + SMALLCHARH2 + 5, 5, color_bg, 1);
+		colmain_rounded_rect(db, xx, yy, xx + width_p - 1, yy + height_str + 5, 5, color_bg, 1);
 	}
 
 	//ASSERT(width_p >= width_str);
@@ -3326,7 +3318,7 @@ static void display2_notch7alt(const gxdrawb_t * db,
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
 	const char * const label = hamradio_get_notchtype5_P();
 	const char * const labels [2] = { label, label, };
-	layout_label1_medium(db, x, y, label, strlen_P(label), 7, COLORPIP_BLACK, colors_2state_alt [state]);
+	layout_label1_medium(db, x, y, label, strlen(label), 7, COLORPIP_BLACK, colors_2state_alt [state]);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
@@ -3390,7 +3382,7 @@ static void display2_vfomode5alt(const gxdrawb_t * db,
 {
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const labels [1] = { hamradio_get_vfomode3_value(& state), };
-	layout_label1_medium(db, x, y, labels [0], strlen_P(labels [0]), 5, COLORPIP_BLACK, colors_2state_alt [state]);
+	layout_label1_medium(db, x, y, labels [0], strlen(labels [0]), 5, COLORPIP_BLACK, colors_2state_alt [state]);
 }
 
 // VFO mode with memory ch info
@@ -3854,7 +3846,7 @@ static void display2_preovf5alt(const gxdrawb_t * db,
 	else
 	{
 		const char * str = hamradio_get_pre_value();
-		layout_label1_medium(db, x, y, str, strlen_P(str), chars_W2, COLORPIP_BLACK, colors_2state_alt [1]);
+		layout_label1_medium(db, x, y, str, strlen(str), chars_W2, COLORPIP_BLACK, colors_2state_alt [1]);
 	}
 #endif /* ! LCDMODE_DUMMY */
 }
@@ -3888,10 +3880,10 @@ static void display2_ant7alt(const gxdrawb_t * db,
 {
 #if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
 	const char * const labels [1] = { hamradio_get_ant5_value(), };
-	layout_label1_medium(db, x, y, labels [0], strlen_P(labels [0]), 7, COLORPIP_BLACK, colors_2state_alt [1]);
+	layout_label1_medium(db, x, y, labels [0], strlen(labels [0]), 7, COLORPIP_BLACK, colors_2state_alt [1]);
 #elif WITHANTSELECT
 	const char * const labels [1] = { hamradio_get_ant5_value(), };
-	layout_label1_medium(db, x, y, labels [0], strlen_P(labels [0]), 7, COLORPIP_BLACK, colors_2state_alt [1]);
+	layout_label1_medium(db, x, y, labels [0], strlen(labels [0]), 7, COLORPIP_BLACK, colors_2state_alt [1]);
 #endif /* WITHANTSELECT */
 }
 
@@ -3918,7 +3910,7 @@ static void display2_att5alt(const gxdrawb_t * db,
 		)
 {
 	const char * const labels [1] = { hamradio_get_att_value_P(), };
-	layout_label1_medium(db, x, y, labels [0], strlen_P(labels [0]), 5, COLORPIP_BLACK, colors_2state_alt [1]);
+	layout_label1_medium(db, x, y, labels [0], strlen(labels [0]), 5, COLORPIP_BLACK, colors_2state_alt [1]);
 }
 
 // RX att, при передаче показывает TX
@@ -4697,7 +4689,7 @@ void wait_iq(const gxdrawb_t * db,
 // количество точек в отображении мощности на диспле
 static uint_fast16_t display_getpwrfullwidth(void)
 {
-	return GRID2X(CHARS2GRID(BDTH_ALLPWR));
+	return GRID2X(BDTH_ALLPWR);
 }
 
 #endif /* WITHBARS */
@@ -4730,7 +4722,7 @@ display_bars_x_pwr(
 	)
 {
 #if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-	return display_bars_x_rx(x, xoffs + CHARS2GRID(BDTH_ALLSWR + BDTH_SPACESWR));
+	return display_bars_x_rx(x, xoffs + BDTH_ALLSWR + BDTH_SPACESWR);
 #else
 	return display_bars_x_rx(x, xoffs);
 #endif
@@ -4770,14 +4762,14 @@ void display_swrmeter(const gxdrawb_t * db,
 	gxstyle_textcolor(& dbstylev, DSGN_SWRCOLOR, DSGN_BGCOLOR);
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_swr(x, CHARS2GRID(0)), y, & ypix);
+	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_swr(x, 0), y, & ypix);
 	display_bar(db, xpix, ypix, BDTH_ALLSWR, rowspan, mapleftval, fullscale, fullscale, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL, & dbstylev);
 
 	if (BDTH_SPACESWR != 0)
 	{
 		// заполняем пустое место за индикаторм КСВ
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_swr(x, CHARS2GRID(BDTH_ALLSWR)), y, & ypix);
+		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_swr(x, BDTH_ALLSWR), y, & ypix);
 		display_bar(db, xpix, ypix, BDTH_SPACESWR, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE, & dbstylev);
 	}
 
@@ -4807,14 +4799,14 @@ static void display_pwrmeter(const gxdrawb_t * db,
 	gxstyle_textcolor(& dbstylev, DSGN_PWRCOLOR, DSGN_BGCOLOR);
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(0)), y, & ypix);
+	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, 0), y, & ypix);
 	display_bar(db, xpix, ypix, BDTH_ALLPWR, rowspan, mapleftval, mapleftmax, fullscale, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF, & dbstylev);
 
 	if (BDTH_SPACEPWR != 0)
 	{
 		// заполняем пустое место за индикаторм мощности
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLPWR)), y, & ypix);
+		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, BDTH_ALLPWR), y, & ypix);
 		display_bar(db, xpix, ypix, BDTH_SPACEPWR, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE, & dbstylev);
 	}
 
@@ -4842,17 +4834,17 @@ static void display_smeter(const gxdrawb_t * db,
 	const int_fast16_t maprightmax = display_mapbar(tracemax10, level9, level9 + delta2, delta2, tracemax10 - level9, delta2); // delta2 - invisible
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_rx(x, CHARS2GRID(0)), y, & ypix);
+	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_rx(x, 0), y, & ypix);
 	display_bar(db, xpix, ypix, BDTH_LEFTRX, rowspan, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF, & dbstylev_smbar);		//ниже 9 баллов ничего
 	//
 	uint_fast16_t ypix2;
-	uint_fast16_t xpix2 = display_wrdata_begin(display_bars_x_rx(x, CHARS2GRID(BDTH_LEFTRX)), y, & ypix2);
+	uint_fast16_t xpix2 = display_wrdata_begin(display_bars_x_rx(x, BDTH_LEFTRX), y, & ypix2);
 	display_bar(db, xpix2, ypix2, BDTH_RIGHTRX, rowspan, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL, & dbstylev_smbarplus);		// выше 9 баллов ничего нет.
 
 	if (BDTH_SPACERX != 0)
 	{
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLRX)), y, & ypix);
+		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, BDTH_ALLRX), y, & ypix);
 		display_bar(db, xpix, ypix, BDTH_SPACERX, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE, & dbstylev_smbarplus);
 	}
 
@@ -4971,7 +4963,7 @@ static COLORPIP_T display2_rxbwcolor(COLORPIP_T colorfg, COLORPIP_T colorbg)
 
 #if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 
-enum { ALLDX = GRID2X(CHARS2GRID(BDTH_ALLRX)) };
+enum { ALLDX = GRID2X(BDTH_ALLRX) };
 
 // Параметры фильтров данных спектра и водопада
 // устанавливаются через меню
