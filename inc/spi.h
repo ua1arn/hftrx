@@ -22,7 +22,10 @@ extern "C" {
 #define SPIBASEconcat(base, index) base ## index
 #define QSPIBASEconcat(base, index) base ## index
 
-#if CPUSTYLE_R7S721
+#if WITHSPIDEV && LINUX_SUBSYSTEM
+	typedef void SPI_t;
+	typedef void QSPI_t;
+#elif CPUSTYLE_R7S721
 	typedef struct st_rspi SPI_t;
 	typedef struct st_spibsc QSPI_t;
 	#define SPIBASENAME(port) SPIBASEconcat(& RSPI, port)

@@ -128,7 +128,7 @@ void board_set_autotune(uint_fast8_t v);	/* Находимся в режиме �
 void board_set_showovf(uint_fast8_t v);		/* Показ индикатора переполнения АЦП */
 void board_set_forcexvrtr(uint_fast8_t v);	/* принудительно включить коммутацию трансвертора */
 void board_set_mikemute(uint_fast8_t v);	/* отключить микрофонный усилитель */
-
+void board_tsc_reset_state(uint_fast8_t v);
 void board_set_user1(uint_fast8_t v);
 void board_set_user2(uint_fast8_t v);
 void board_set_user3(uint_fast8_t v);

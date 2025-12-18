@@ -3619,7 +3619,7 @@ void
 board_tsc_reset_state(uint_fast8_t v)
 {
 	glob_tsc_reset = v;
-	prog_ctrlreg(0);	// todo: other planes?
+	board_update_ctrlreg();
 }
 
 
@@ -7275,7 +7275,7 @@ mcp3208_read(
 	return (rv >> LSBPOS) & 0xFFF;
 }
 
-#else
+#else /* WITHSPIHW || WITHSPISW || WITHSPIDEV */
 
 // Read ADC MCP3204/MCP3208
 uint_fast16_t
@@ -7289,7 +7289,7 @@ mcp3208_read(
 	return 0;
 }
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW || WITHSPISW || WITHSPIDEV */
 
 #if WITHFPGAPIPE_FPGASTATUS
 
