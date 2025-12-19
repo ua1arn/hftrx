@@ -212,6 +212,7 @@ typedef struct unifont_tag
 	uint_fast16_t (* font_prerender)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
 	uint8_t bytesw;		// байтов в одной строке знакогенератора символа
 	const void * fontraster;		// начало знакогенератора в памяти
+	void * fontdata;			// например, для adafruint требуется место с предрасчитаной высотой шрифта и смещением baseline
 	const char * label;		// название для диагностики
 } unifont_t;
 
