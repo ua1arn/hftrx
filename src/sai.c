@@ -4136,7 +4136,8 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 
 #if CPUSTYLE_T507
 	// CCU
-	if (ix == 1)
+	// AHUB требуется тактировать, даже если все каналы SLAVE
+	//if (ix == 1)
 	{
 		// HDMI
 		t507_audiopll_initialize(mclkf, 8);
@@ -4165,9 +4166,8 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 //	PRINTF("allwnr_t507_get_apb1_freq=%u\n", (unsigned) allwnr_t507_get_apb1_freq());
 //	PRINTF("allwnr_t507_get_apb2_freq=%u\n", (unsigned) allwnr_t507_get_apb2_freq());
 
-	CCU->MBUS_CFG_REG |= (1u << 30);
+	CCU->MBUS_CFG_REG |= (UINT32_C(1) << 30);
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// DMA_MCLK_GATING
-	//CCU->AUDIO_HUB_CLK_REG = 0 * (UINT32_C(1) << 0);	// div 1
 	CCU->AUDIO_HUB_CLK_REG |= UINT32_C(1) << 31; // SCLK_GATING
 
 	CCU->AUDIO_HUB_BGR_REG |= UINT32_C(1) << 0;	// AUDIO_HUB_GATING
