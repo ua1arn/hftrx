@@ -1334,15 +1334,6 @@ void local_delay_ms(int timeMS)
 #endif /* LINUX_SUBSYSTEM */
 }
 
-// задержка до того как включили MMU и cache */
-void local_delay_ms_nocache(int timeMS)
-{
-	int t = timeMS / 25;
-	if (t == 0)
-		t = 1;
-	local_delay_ms(t);
-}
-
 void local_delay_initialize(void)
 {
 	cpufreqMHz = CPU_FREQ / 1000000;
@@ -2136,7 +2127,6 @@ SystemInit(void)
 #ifdef BOARD_BLINK_INITIALIZE
 	BOARD_BLINK_INITIALIZE();
 #endif
-	sysinit_pmic_initialize();
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
@@ -2163,7 +2153,6 @@ void __attribute__((used)) SystemDRAMInit(void)
 	sysinit_gpio_initialize();
 	local_delay_initialize();
 	sysinit_debug_initialize();
-	sysinit_pmic_initialize();
 	sysinit_sdram_initialize();
 }
 

@@ -5602,7 +5602,6 @@ void allwnr_t113_pll_initialize(int N)
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// RISC_MCLK_EN
 	f133_set_axi(0x00, 1, 1);	// OSC24
 #endif
-	local_delay_initialize();
 	CCU->PSI_CLK_REG = 0;	// AHB freq from OSC24
 	CCU->APB0_CLK_REG = 0;	// переключаем источник APB0 на HOSC
 	CCU->APB1_CLK_REG = 0;	// переключаем источник APB1 на HOSC
@@ -5618,7 +5617,6 @@ void allwnr_t113_pll_initialize(int N)
 #elif CPUSTYLE_F133
 	f133_set_axi(0x05, 2, 1);	// 101: PLL_CPU
 #endif
-	local_delay_initialize();
 
 	t113_set_mbus();
 	t113_set_psi_ahb();

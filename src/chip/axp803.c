@@ -1209,12 +1209,12 @@ int board_helperboard_t507_axp853_initialize(void)
 	VERIFY(0 == axp858_set_dcdc2(1000));	// VDD-CPU 0.88..1.2 volt recommended
 	VERIFY(0 == axp858_set_dcdc3(950));		// VDD-SYS 0.9..0.99 volt recommended
 	VERIFY(0 == axp858_set_dcdc4(1100));		// VDD-GPU 0.81..1.2 volt recommended
-	VERIFY(0 == axp858_set_dcdc5(1100));	// VCC-DRAM - 1.1 volt for LPDDR4
+	//VERIFY(0 == axp858_set_dcdc5(1100));	// VCC-DRAM - 1.1 volt for LPDDR4
 
 	VERIFY(0 == axp858_set_aldo1(1800));	// VCC_PG, SDIO, eMMC I/O
 	VERIFY(0 == axp858_set_aldo2(1800));	// AVCC/VCC-PLL/VCC-DCXO/AC107-DVCC
-	VERIFY(0 == axp858_set_aldo3(2500));	// VPP DRAM
-	VERIFY(0 == axp858_set_aldo4(1800));	// 1.8V for LPDDR4 VDD18-DRAM/VDD18-LPDDR
+	//VERIFY(0 == axp858_set_aldo3(2500));	// VPP DRAM
+	//VERIFY(0 == axp858_set_aldo4(1800));	// 1.8V for LPDDR4 VDD18-DRAM/VDD18-LPDDR
 	VERIFY(0 == axp858_set_aldo5(3300));	// VCC-PE 2.8/3.3 volt
 
 	VERIFY(0 == axp858_set_bldo1(1800));	// 1.8V VCC-MCSI/VCC-HDMI/VCC-LVDS
@@ -1228,10 +1228,9 @@ int board_helperboard_t507_axp853_initialize(void)
 //					1U << 6);	// DCDC 2&3 polyphase control
 
 	PRINTF("PMIC: AXP853T/AXP858 ON\n");
-	local_delay_initialize();
-	local_delay_ms_nocache(100);
+	local_delay_ms(100);
 	axp858_set_sw(1);
-	local_delay_ms_nocache(100);
+	local_delay_ms(100);
 	PRINTF("PMIC: AXP853T/AXP858 done\n");
 	dbg_flush();
 
@@ -1407,10 +1406,9 @@ int board_helperboard_a133_axp707_initialize(void)
 //					1U << 6);	// DCDC 2&3 polyphase control
 
 	PRINTF("PMIC: axp707 ON\n");
-	local_delay_initialize();
-	local_delay_ms_nocache(100);
+	local_delay_ms(100);
 	axp707_set_sw(1);
-	local_delay_ms_nocache(100);
+	local_delay_ms(100);
 	PRINTF("PMIC: axp707 done\n");
 	dbg_flush();
 #endif

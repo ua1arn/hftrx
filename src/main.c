@@ -58,17 +58,10 @@ main(void)
 {
 #if LINUX_SUBSYSTEM
 	linux_subsystem_init();
-#endif /* LINUX_SUBSYSTEM */
-#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
+#else /* LINUX_SUBSYSTEM */
 	sysinit_gpio_initialize();
 	local_delay_initialize();
-#endif /* (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM */
-#if WITHDEBUG && (! (CPUSTYLE_ARM || CPUSTYLE_RISCV) /* || WITHISBOOTLOADER */)
-
-	HARDWARE_DEBUG_INITIALIZE();
-	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-
-#endif /* WITHDEBUG && (! (CPUSTYLE_ARM || CPUSTYLE_RISCV) */
+#endif /* LINUX_SUBSYSTEM */
 
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 
@@ -77,6 +70,7 @@ main(void)
 	lowinitialize();	/* вызывается при запрещённых прерываниях. */
 	applowinitialize();	/* вызывается при запрещённых прерываниях. */
 	global_enableIRQ();
+	sysinit_pmic_initialize();
 	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
 	midtests();
 

@@ -25,6 +25,7 @@
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
+#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 
 
 #if WITHDEBUG
@@ -44,7 +45,6 @@
 
 #if WITHISBOOTLOADER
 
-	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 
 	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 	#define WITHSDHC0HW	1		/* TF CARD */
@@ -107,23 +107,7 @@
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
 
-	#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
-	// AXP853T on HelperBoard T507 Core Board
-	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
-	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
-
-	// See WITHSDRAM_AXP853
-	int board_helperboard_t507_axp853_initialize(void);
-
-	/* Контроллер питания AXP305 */
-	#define BOARD_PMIC_INITIALIZE() do { \
-		board_helperboard_t507_axp853_initialize(); /* Voltages are set here */ \
-	} while (0)
-
 #else /* WITHISBOOTLOADER */
-
-	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-
 
 	#define WITHETHHW 1	/* Hardware Ethernet controller */
 
@@ -144,6 +128,19 @@
 	#define WITHHDMITVHW 1	/* HDMI hardware output */
 	#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
 #endif
+
+	#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
+	// AXP853T on HelperBoard T507 Core Board
+	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
+	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
+
+	// See WITHSDRAM_AXP853
+	int board_helperboard_t507_axp853_initialize(void);
+
+	/* Контроллер питания AXP305 */
+	#define BOARD_PMIC_INITIALIZE() do { \
+		board_helperboard_t507_axp853_initialize(); /* Voltages are set here */ \
+	} while (0)
 
 	#if WITHINTEGRATEDDSP
 
