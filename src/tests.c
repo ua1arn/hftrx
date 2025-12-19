@@ -10551,8 +10551,8 @@ void hightests(void)
 			& unifont_gothic_12x16p,
 			& unifont_small_x2,
 			//& unifont_Tahoma_Regular_88x77,	// CP Font Generator support
-			& unifont_roboto32,
-			& unifont_helvNeueTh70,
+//			& unifont_roboto32,	// aptech
+//			& unifont_helvNeueTh70,	// aptech
 			& unifont_FreeMono9pt7b,
 			& unifont_FreeMono12pt7b,
 			& unifont_FreeMono18pt7b,

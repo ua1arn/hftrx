@@ -1235,6 +1235,7 @@ aptechfont_decode(const unifont_t * font, char cc)
 }
 
 // Для пропорциональных знакогенераторов
+// todo: нет зазора между символами
 static uint_fast8_t aptechfont_width(const unifont_t * font, char cc)
 {
 	const uint8_t * const blob = (const uint8_t * const) font->fontraster;
