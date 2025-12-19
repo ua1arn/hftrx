@@ -1195,7 +1195,7 @@ int board_helperboard_t507_axp853_initialize(void)
 	}
 
 	pmu_axp858_ap_reset_enable();	// без этой строчки не инициализируется после reset
-	axp858_set_sw(0);
+	//axp858_set_sw(0);
 
 	// https://artmemtech.com/
 	// artmem atl4b0832
@@ -1205,7 +1205,7 @@ int board_helperboard_t507_axp853_initialize(void)
 	// F1 ball VDD1: 1.8
 	// A4 ball VDD2: vcc_dram 1.1
 
-	VERIFY(0 == axp858_set_dcdc1(3300));	// VCC-PA/VCC-PG/VCC-WIFI/VCC-CTP/VCC-3V3/VCC-IO/VCC-PI/VCC-PC/VCC-USB/VCC-EMMC/AC107-VCC-DIO/AC107-AVCC
+	//VERIFY(0 == axp858_set_dcdc1(3300));	// VCC-PA/VCC-PG/VCC-WIFI/VCC-CTP/VCC-3V3/VCC-IO/VCC-PI/VCC-PC/VCC-USB/VCC-EMMC/AC107-VCC-DIO/AC107-AVCC
 	VERIFY(0 == axp858_set_dcdc2(1000));	// VDD-CPU 0.88..1.2 volt recommended
 	VERIFY(0 == axp858_set_dcdc3(950));		// VDD-SYS 0.9..0.99 volt recommended
 	VERIFY(0 == axp858_set_dcdc4(1100));		// VDD-GPU 0.81..1.2 volt recommended
@@ -1228,8 +1228,7 @@ int board_helperboard_t507_axp853_initialize(void)
 //					1U << 6);	// DCDC 2&3 polyphase control
 
 	PRINTF("PMIC: AXP853T/AXP858 ON\n");
-	local_delay_ms(100);
-	axp858_set_sw(1);
+	axp858_set_sw(1);		// 3.3V VCC-PD/VCC-LCD
 	local_delay_ms(100);
 	PRINTF("PMIC: AXP853T/AXP858 done\n");
 	dbg_flush();
