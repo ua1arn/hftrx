@@ -1120,7 +1120,7 @@ enum {
 };
 
 struct i2c_msg_t {
-	int addr;
+	int addr7;
 	int len;
 	void * buf;
 };
@@ -1218,7 +1218,7 @@ static int t113_i2c_read(TWI_TypeDef * twi, struct i2c_msg_t * msg){
 	uint8_t * p = msg->buf;
 	int len = msg->len;
 
-	if (t113_i2c_send_data(twi, (uint8_t)((msg->addr << 1) | 1)) != I2C_STAT_TX_AR_ACK)
+	if (t113_i2c_send_data(twi, (uint8_t)((msg->addr7 << 1) | 1)) != I2C_STAT_TX_AR_ACK)
 		return -1;
 	if (len == 0)	/* Handle zero count for probes */
 		return 0;
@@ -1244,7 +1244,7 @@ static int t113_i2c_write(TWI_TypeDef * twi, struct i2c_msg_t * msg)
 	uint8_t * p = msg->buf;
 	int len = msg->len;
 
-	if (t113_i2c_send_data(twi, (uint8_t)(msg->addr << 1)) != I2C_STAT_TX_AW_ACK){
+	if (t113_i2c_send_data(twi, (uint8_t)(msg->addr7 << 1)) != I2C_STAT_TX_AW_ACK){
 		return -1;
 	}
 	if (len == 0)	/* Handle zero count for probes */
@@ -1402,7 +1402,7 @@ int i2chwx_read(TWI_t * const twi, uint16_t slave_address8b, uint8_t * buf, uint
 {
 	int res;
 	struct i2c_msg_t  msgs;
-	msgs.addr = slave_address8b >> 1;
+	msgs.addr7 = slave_address8b >> 1;
 	msgs.len = size;
 	msgs.buf = (void *) buf;
 
@@ -1432,7 +1432,7 @@ int i2chwx_write(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * bu
 {
 	int res;
 	struct i2c_msg_t  msgs;
-	msgs.addr = slave_address8b >> 1;
+	msgs.addr7 = slave_address8b >> 1;
 	msgs.len = size;
 	msgs.buf = (void *) buf;
 
@@ -1462,7 +1462,7 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 {
 	int res;
 	struct i2c_msg_t  msgs;
-	msgs.addr = slave_address8b >> 1;
+	msgs.addr7 = slave_address8b >> 1;
 	msgs.len = wsize;
 	msgs.buf = (void *) wbuf;
 
