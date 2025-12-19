@@ -14666,7 +14666,7 @@ void cat2_parsechar(uint_fast8_t c)
 
 #if WITHELKEY
 	case CATSTATE_WAITMORSE:
-		if (c == '\0')	// такой симвоь недопустим
+		if (c == '\0')	// такой символ недопустим
 		{
 			cathasparamerror = 1;
 		}
@@ -15534,8 +15534,15 @@ static void
 NOINLINEAT
 cat_answer_request(uint_fast8_t catindex)
 {
-	if (CAT_MAX_INDEX == catindex)
+	if (CAT_MAX_INDEX <= catindex)
 		return;
+	if (CAT_BADCOMMAND_INDEX == catindex)
+	{
+		uint_fast8_t i;
+		for (i = 0; i < (sizeof cat_answer_map / sizeof cat_answer_map [0]); ++ i)
+			cat_answer_map [i] = 0;
+
+	}
 	//PRINTF(PSTR("cat_answer_request: catindex=%u\n"), catindex);
 	cat_answer_map [catindex] = 1;
 }
@@ -16203,7 +16210,7 @@ processcatmsg(
 		if (cathasparam)
 		{
 			// set param
-			cat_answer_request(CAT_PS_INDEX);
+			//cat_answer_request(CAT_PS_INDEX);
 		}
 		else
 		{
@@ -16275,15 +16282,16 @@ processcatmsg(
 				txreq_txtone(& txreqst0);
 				break;
 			}
-
-			if (aistate != 0)
-				cat_answer_request(CAT_TX_INDEX);	// ignore main/sub rx selection (0 - main. 1 - sub);
+			// В переходе на передачу может быть отказано - ответ идёт в updateboard
+//			if (aistate != 0)
+//				cat_answer_request(CAT_TX_INDEX);	// ignore main/sub rx selection (0 - main. 1 - sub);
 		}
 		else
 		{
+			// В переходе на передачу может быть отказано - ответ идёт в updateboard
 			txreq_mox(& txreqst0);
-			if (aistate != 0)
-				cat_answer_request(CAT_TX_INDEX);
+//			if (aistate != 0)
+//				cat_answer_request(CAT_TX_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('R', 'X'))
@@ -16300,14 +16308,16 @@ processcatmsg(
 		if (cathasparam != 0)
 		{
 			txreq_rx(& txreqst0, NULL);
-			if (aistate != 0)
-				cat_answer_request(CAT_RX_INDEX);	// POSSIBLE: ignore main/sub rx selection (0 - main. 1 - sub);
+			// ответ идёт в updateboard
+//			if (aistate != 0)
+//				cat_answer_request(CAT_RX_INDEX);	// POSSIBLE: ignore main/sub rx selection (0 - main. 1 - sub);
 		}
 		else
 		{
+			// ответ идёт в updateboard
 			txreq_rx(& txreqst0, NULL);
-			if (aistate != 0)
-				cat_answer_request(CAT_RX_INDEX);
+//			if (aistate != 0)
+//				cat_answer_request(CAT_RX_INDEX);
 		}
 	}
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
