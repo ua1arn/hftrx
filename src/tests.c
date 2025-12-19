@@ -10553,6 +10553,9 @@ void hightests(void)
 			//& unifont_Tahoma_Regular_88x77,	// CP Font Generator support
 			& unifont_roboto32,
 			& unifont_helvNeueTh70,
+			& unifont_FreeMono9pt7b,
+			& unifont_FreeMono12pt7b,
+			& unifont_FreeMono18pt7b,
 			& unifont_FreeMono24pt7b,
 		};
 		unsigned row;

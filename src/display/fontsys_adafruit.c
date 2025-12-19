@@ -118,11 +118,64 @@ adafruitfont_render_char(
 }
 
 
+#if 1
+
+#include "FreeMono9pt7b.h"
+static adafruitfont_data_t unifontdata_FreeMono9pt7b;
+const unifont_t unifont_FreeMono9pt7b =
+{
+		.decode = adafruitfont_decode,
+		.getcharraster = adafruitfont_getcharraster,
+		.font_drawwidth = adafruitfont_width,
+		.font_drawheight = adafruitfont_height,
+		.font_draw = adafruitfont_render_char,
+		//
+		.fontraster = & FreeMono9pt7b,
+		.fontdata = & unifontdata_FreeMono9pt7b,
+		.label = "FreeMono9pt7b"
+};
+#endif
+
+#if 1
+
+#include "FreeMono12pt7b.h"
+static adafruitfont_data_t unifontdata_FreeMono12pt7b;
+const unifont_t unifont_FreeMono12pt7b =
+{
+		.decode = adafruitfont_decode,
+		.getcharraster = adafruitfont_getcharraster,
+		.font_drawwidth = adafruitfont_width,
+		.font_drawheight = adafruitfont_height,
+		.font_draw = adafruitfont_render_char,
+		//
+		.fontraster = & FreeMono12pt7b,
+		.fontdata = & unifontdata_FreeMono12pt7b,
+		.label = "FreeMono12pt7b"
+};
+#endif
+
+#if 1
+
+#include "FreeMono18pt7b.h"
+static adafruitfont_data_t unifontdata_FreeMono18pt7b;
+const unifont_t unifont_FreeMono18pt7b =
+{
+		.decode = adafruitfont_decode,
+		.getcharraster = adafruitfont_getcharraster,
+		.font_drawwidth = adafruitfont_width,
+		.font_drawheight = adafruitfont_height,
+		.font_draw = adafruitfont_render_char,
+		//
+		.fontraster = & FreeMono18pt7b,
+		.fontdata = & unifontdata_FreeMono18pt7b,
+		.label = "FreeMono18pt7b"
+};
+#endif
+
+#if 1
 
 #include "FreeMono24pt7b.h"
-
 static adafruitfont_data_t unifontdata_FreeMono24pt7b;
-
 const unifont_t unifont_FreeMono24pt7b =
 {
 		.decode = adafruitfont_decode,
@@ -135,5 +188,6 @@ const unifont_t unifont_FreeMono24pt7b =
 		.fontdata = & unifontdata_FreeMono24pt7b,
 		.label = "FreeMono24pt7b"
 };
+#endif
 
 #endif	/* LCDMODE_LTDC */

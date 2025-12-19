@@ -998,6 +998,13 @@ extern const unifont_t unifont_gothic_12x16p;	// proportional
 extern const unifont_t unifont_Tahoma_Regular_88x77;
 extern const unifont_t unifont_roboto32;
 extern const unifont_t unifont_helvNeueTh70;
+
+#define GFXglyph hftrx_GFXglyph_t
+#define GFXfont hftrx_GFXfont_t
+#define PROGMEM /* */
+extern const unifont_t unifont_FreeMono9pt7b;	// Adafruit-GFX-Library
+extern const unifont_t unifont_FreeMono12pt7b;	// Adafruit-GFX-Library
+extern const unifont_t unifont_FreeMono18pt7b;	// Adafruit-GFX-Library
 extern const unifont_t unifont_FreeMono24pt7b;	// Adafruit-GFX-Library
 
 #ifdef __cplusplus
