@@ -2186,6 +2186,7 @@ static void cortexa_cpuinfo(void)
 			(unsigned) (uintptr_t) & vvv,
 			(unsigned) __get_MPIDR_EL1()
 			);
+	dbg_flush();
 #else
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
@@ -2199,6 +2200,7 @@ static void cortexa_cpuinfo(void)
 			& vvv,
 			(unsigned) __get_MPIDR()
 			);
+	dbg_flush();
 #endif
 }
 
