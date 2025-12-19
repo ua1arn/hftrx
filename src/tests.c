@@ -10534,24 +10534,40 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 0
+#if 0 && WITHLTDCHW && LCDMODE_LTDC
 	{
 		// Font drawing tests
 		gxdrawb_t dbv;
 		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 		//display_text(& dbv, 0, 0, "Start2...", 10, 16, & dbstylev);
-		unsigned row = 0;
-		colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_small, "HELLO! hello! test", COLOR_WHITEALL);
-		colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_small2, "HELLO! hello! test", COLOR_WHITEALL);
-		colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_small3, "HELLO! hello! test", COLOR_WHITEALL);
-		colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_gothic_11x13, "HELLO! hello! test", COLOR_WHITEALL);
-		colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_gothic_12x16p, "HELLO! hello! test", COLOR_WHITEALL);
-		colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_small_x2, "HELLO! hello! test", COLOR_WHITEALL);
-		//colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_Tahoma_Regular_88x77, "HELLO! hello! test", COLOR_WHITEALL);
-		//colpip_string(& dbv, 0, 0 + row ++ * 16, & unifont_roboto32, "HELLO! hello! test", COLOR_WHITEALL);
-		//colpip_string(& dbv, 0, DIM_Y / 2, & unifont_helvNeueTh70, "HELLO! hello! test", COLOR_WHITEALL);
-		colpip_string(& dbv, 0, DIM_Y / 2, & unifont_FreeMono24pt7b, "HELLO! hello! test", COLOR_WHITEALL);
+		static const char msg [] = "HELLO! hello! test";
+		static const unifont_t * const fonts [] =
+		{
+			& unifont_small,
+			& unifont_small2,
+			& unifont_small3,	// шрифт, используемый при отриосовке надписей на шкале
+			& unifont_gothic_11x13,
+			& unifont_gothic_12x16p,
+			& unifont_small_x2,
+			//& unifont_Tahoma_Regular_88x77,
+			& unifont_roboto32,
+			& unifont_helvNeueTh70,
+			& unifont_FreeMono24pt7b,
+		};
+		unsigned row;
+
+		uint_fast16_t xpix = 0;
+		uint_fast16_t ypix = 0;
+		for (row = 0; row < ARRAY_SIZE(fonts); ++ row)
+		{
+			uint_fast16_t h;
+			const unifont_t * const font = fonts [row];
+			uint_fast16_t w = colpip_string_widthheight(font, msg, & h);
+			colpip_rectangle(& dbv, xpix, ypix, w, h, COLOR_GREEN, 0, 0);
+			colpip_string(& dbv, xpix, ypix, font, msg, COLOR_WHITEALL);
+			ypix += h;
+		}
 		colmain_nextfb();
 		for (;;)
 	    	testsloopprocessing();
