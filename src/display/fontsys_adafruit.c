@@ -18,7 +18,7 @@
 typedef struct adafruitfont_data_tag
 {
 	uint16_t	baseline;
-	//uint16_t	height;
+	uint16_t	height;
 } adafruitfont_data_t;
 
 
@@ -28,7 +28,7 @@ static int imax(int a, int b) { return a > b ? a : b; }
 static const adafruitfont_data_t * adafruitfont_preparedata(const unifont_t * font)
 {
 	adafruitfont_data_t * data = (adafruitfont_data_t *) font->fontdata;
-	if (data->baseline == 0)
+	if (data->baseline == 0 && data->height == 0)
 	{
 		const hftrx_GFXfont_t * const gfxfont = (const hftrx_GFXfont_t * const) font->fontraster;
 		uint_fast16_t ci;
@@ -41,7 +41,7 @@ static const adafruitfont_data_t * adafruitfont_preparedata(const unifont_t * fo
 			bottom = imax(bottom, glyph->yOffset + (int) glyph->height);
 		}
 		data->baseline = baseline;
-		//data->height = baseline + bottom;
+		data->height = baseline + bottom;
 	}
 	return data;
 }
@@ -79,8 +79,8 @@ static const void * adafruitfont_getcharraster(const unifont_t * font, char cc)
 static uint_fast8_t adafruitfont_height(const unifont_t * font)
 {
 	const hftrx_GFXfont_t * const gfxfont = (const hftrx_GFXfont_t * const) font->fontraster;
-	return gfxfont->yAdvance;
-	//return adafruitfont_preparedata(font)->height;
+	//return gfxfont->yAdvance;
+	return adafruitfont_preparedata(font)->height;
 }
 
 static uint_fast16_t
@@ -189,6 +189,24 @@ const unifont_t unifont_FreeMono24pt7b =
 		.fontraster = & FreeMono24pt7b,
 		.fontdata = & unifontdata_FreeMono24pt7b,
 		.label = "FreeMono24pt7b"
+};
+#endif
+
+#if 1
+
+#include "FreeSans12pt7b.h"
+static adafruitfont_data_t unifontdata_FreeSans12pt7b;
+const unifont_t unifont_FreeSans12pt7b =
+{
+		.decode = adafruitfont_decode,
+		.getcharraster = adafruitfont_getcharraster,
+		.font_drawwidth = adafruitfont_width,
+		.font_drawheight = adafruitfont_height,
+		.font_draw = adafruitfont_render_char,
+		//
+		.fontraster = & FreeSans12pt7b,
+		.fontdata = & unifontdata_FreeSans12pt7b,
+		.label = "FreeSans12pt7b"
 };
 #endif
 

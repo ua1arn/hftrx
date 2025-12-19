@@ -1002,6 +1002,7 @@ extern const unifont_t unifont_FreeMono9pt7b;	// Adafruit-GFX-Library
 extern const unifont_t unifont_FreeMono12pt7b;	// Adafruit-GFX-Library
 extern const unifont_t unifont_FreeMono18pt7b;	// Adafruit-GFX-Library
 extern const unifont_t unifont_FreeMono24pt7b;	// Adafruit-GFX-Library
+extern const unifont_t unifont_FreeSans12pt7b;	// Adafruit-GFX-Library
 
 #ifdef __cplusplus
 }

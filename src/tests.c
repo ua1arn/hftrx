@@ -10557,6 +10557,7 @@ void hightests(void)
 			& unifont_FreeMono12pt7b,
 			& unifont_FreeMono18pt7b,
 			& unifont_FreeMono24pt7b,
+			& unifont_FreeSans12pt7b,
 		};
 		unsigned row;
 
@@ -10567,8 +10568,8 @@ void hightests(void)
 			uint_fast16_t h;
 			const unifont_t * const font = fonts [row];
 			uint_fast16_t w = colpip_string_widthheight(font, msg, & h);
-			colpip_rectangle(& dbv, xpix, ypix, w, h, COLOR_GREEN, 0, 0);
-			colpip_string(& dbv, xpix, ypix, font, msg, COLOR_WHITEALL);
+			colpip_rectangle(& dbv, xpix, ypix, w, h, COLOR_DARKCYAN, 0, 0);
+			colpip_string(& dbv, xpix, ypix, font, msg, COLOR_BLACK);
 			ypix += h;
 		}
 		colmain_nextfb();
