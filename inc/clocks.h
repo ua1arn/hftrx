@@ -181,8 +181,6 @@ uint_fast32_t allwnr_a133_get_s_twi_freq(void);
 void allwnr_t113_module_pll_spr(volatile uint32_t * ctrlreg, volatile uint32_t * pat0);	// Set Spread Frequency Mode
 void allwnr_t113_module_pll_enable(volatile uint32_t * ctrlreg);
 
-void allwnr_t113_pll_initialize(int forced);
-
 uint_fast32_t allwnr_t113_get_hosc_freq(void);
 uint_fast32_t allwnr_t113_get_uart_freq(void);
 uint_fast32_t allwnr_t113_get_can_freq(void);
@@ -550,6 +548,8 @@ calcdividerselect(
 #endif
 
 void sysinit_pll_initialize(int forced);	// PLL initialize
+void sysinit_debug_initialize(void);
+void sysinit_disconnect_boot(void);		// отключение USB контроллера и SD CARD загрузчика
 
 #ifdef __cplusplus
 }

@@ -157,6 +157,8 @@ void user_uart5_ontxchar(void * ctx);
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
 
+#else /* WITHISBOOTLOADER */
+
 	#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
 	// AXP853T on HelperBoard T507 Core Board
 	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
@@ -169,8 +171,6 @@ void user_uart5_ontxchar(void * ctx);
 	#define BOARD_PMIC_INITIALIZE() do { \
 		board_helperboard_t507_axp853_initialize(); /* Voltages are set here */ \
 	} while (0)
-
-#else /* WITHISBOOTLOADER */
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 

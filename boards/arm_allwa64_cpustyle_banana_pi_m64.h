@@ -23,6 +23,8 @@
 //#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
 //#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
+#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
@@ -731,9 +733,7 @@
 
 #if 1
 
-	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	#define WITHSTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 	// PL0 - S_TWI_SCK
 	// PL1 - S_TWI_SDA
@@ -741,7 +741,7 @@
 	#define TARGET_S_TWI_TWD		(UINT32_C(1) << 1)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_S_INITIALIZE() do { \
+	#define	HARDWARE_S_TWI_INITIALIZE() do { \
 		arm_hardware_piol_altfn2m(TARGET_S_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
 		arm_hardware_piol_altfn2m(TARGET_S_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
 		arm_hardware_piol_updown(TARGET_S_TWI_TWCK, TARGET_TWI_TWCK, 0); \
@@ -753,8 +753,7 @@
 
 #if 1
 
-	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+	#define WITHTWI0HW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 
 	// PH0 - TWI0-SCK
 	// PH1 - TWI0-SDA
@@ -770,7 +769,7 @@
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_INITIALIZE() do { \
+	#define	HARDWARE_TWI0_INITIALIZE() do { \
 		arm_hardware_pioh_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF2);	/* PH0 - TWI0-SCK */ \
 		arm_hardware_pioh_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF2);		/* PH1 - TWI0-SDA */ \
 		arm_hardware_pioh_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \

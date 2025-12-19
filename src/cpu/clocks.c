@@ -2918,9 +2918,7 @@ uint_fast32_t allwnr_a64_get_smhc1_freq(void)
 	}
 }
 
-// Allwinner A64 PLL initialize
-void
-sysinit_pll_initialize(int forced)
+void sysinit_disconnect_boot(void)
 {
 
 	{
@@ -2955,6 +2953,12 @@ sysinit_pll_initialize(int forced)
 
 	USBPHY0->HCI_ICR = 0;
 	USBPHY1->HCI_ICR = 0;
+
+}
+// Allwinner A64 PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
 
 	allwnr_a64_pll_initialize();
 
@@ -4122,9 +4126,8 @@ uint_fast32_t allwnr_t507_get_smhc2_freq(void)
 		return allwnr_t507_get_pll_peri1_x2_freq() / pgdiv;
 	}
 }
-
-// Allwinner T507/H618/H616 PLL initialize
-void sysinit_pll_initialize(int forced)
+// отключение USB контроллера и SD CARD загрузчика
+void sysinit_disconnect_boot(void)
 {
 	{
 		// Disable SD hosts
@@ -4155,7 +4158,11 @@ void sysinit_pll_initialize(int forced)
 #endif
 		CCU->IOMMU_BGR_REG &= ~ (UINT32_C(1) << 0);
 	}
+}
 
+// Allwinner T507/H618/H616 PLL initialize
+void sysinit_pll_initialize(int forced)
+{
 	set_t507_axi_sel(0x00, 1, 1);	// OSC24 as source
 
 	CCU->PSI_AHB1_AHB2_CFG_REG = 0;
@@ -4310,10 +4317,8 @@ uint_fast32_t allwnr_a133_get_s_twi_freq(void)
 {
 	return allwnr_a133_get_hosc_freq();
 }
-
-// Allwinner A133 PLL initialize
-void
-sysinit_pll_initialize(int forced)
+// отключение USB контроллера и SD CARD загрузчика
+void sysinit_disconnect_boot(void)
 {
 	{
 		// Disable SD hosts
@@ -4331,6 +4336,11 @@ sysinit_pll_initialize(int forced)
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
 		CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 8);	// USBOTG_GATING
 	}
+}
+// Allwinner A133 PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
 
 #if 0
 	set_a133_axi_sel(0x00, 1, 1);	// OSC24 as source
@@ -5594,7 +5604,7 @@ uint_fast32_t allwnr_t113_get_hdmi_freq(void)
 }
 #endif
 
-void allwnr_t113_pll_initialize(int N)
+static void allwnr_t113_pll_initialize(int N)
 {
 #if CPUSTYLE_T113
 	t113_set_axi(0x00, 1, 1);	// Switch CPU to OSC24
@@ -5626,10 +5636,8 @@ void allwnr_t113_pll_initialize(int N)
 	CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);	// не проищзволит видимого эффекта
 #endif
 }
-
-// Allwinner T113/F133/D1s PLL initialize
-void
-sysinit_pll_initialize(int forced)
+// отключение USB контроллера и SD CARD загрузчика
+void sysinit_disconnect_boot(void)
 {
 
 	{
@@ -5654,6 +5662,11 @@ sysinit_pll_initialize(int forced)
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RSTN
 	}
+}
+// Allwinner T113/F133/D1s PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
 #if CPUSTYLE_F133
 	allwnr_t113_pll_initialize(forced ? RV_PLL_CPU_N : 17);
 #else

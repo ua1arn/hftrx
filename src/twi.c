@@ -1590,6 +1590,11 @@ void i2c_initialize(void)
 #endif /* defined (TWIHARD2_PTR) */
 
 	// Specialized inits
+#if WITHSTWIHW
+	i2chwx_initialize(R_TWI, 0, TWIHARD_S_TWI0_FREQ, 400000);
+	HARDWARE_S_TWI_INITIALIZE();
+#endif
+	// Specialized inits
 #if WITHSTWI0HW
 	i2chwx_initialize(S_TWI0, 0, TWIHARD_S_TWI0_FREQ, 400000);
 	HARDWARE_S_TWI0_INITIALIZE();

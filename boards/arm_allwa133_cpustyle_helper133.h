@@ -28,6 +28,7 @@
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
+#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 
 #if WITHDEBUG
 	#define WITHUART0HW	1	/* tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта UART0 */
@@ -638,7 +639,6 @@
 
 #if WITHISBOOTLOADER
 
-	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 	// PL0 S_TWI0_SCK
@@ -673,7 +673,6 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 	// 26-pin CON4 pin 01 - +3.3, pin 09 - GND

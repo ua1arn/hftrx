@@ -1740,7 +1740,7 @@ sysinit_sdram_initialize(void)
 #endif /* CPUSTYLE_F133 */
 }
 
-static void
+void
 sysinit_debug_initialize(void)
 {
 #if WITHDEBUG && ! LINUX_SUBSYSTEM
@@ -2119,6 +2119,7 @@ SystemInit(void)
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
+	sysinit_disconnect_boot();		// отключение USB контроллера и SD CARD загрузчика
 	sysinit_pll_initialize(0);		// PLL iniitialize - minimal freq
 	SystemCoreClockUpdate();
 	local_delay_initialize();
@@ -2130,10 +2131,6 @@ SystemInit(void)
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
-	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
-	SystemCoreClockUpdate();
-	sysinit_debug_initialize();
-	local_delay_initialize();
 	sysinit_sdram_initialize();
 	sysinit_mmu_tables();			// Инициализация таблиц. */
 	sysinit_cache_initialize();		// caches iniitialize

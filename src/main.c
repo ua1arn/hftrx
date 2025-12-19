@@ -9,6 +9,7 @@
 #include "board.h"
 #include "bootloader.h"
 #include "formats.h"
+#include "clocks.h"
 
 
 /* вызывается при запрещённых прерываниях. */
@@ -70,7 +71,13 @@ main(void)
 	lowinitialize();	/* вызывается при запрещённых прерываниях. */
 	applowinitialize();	/* вызывается при запрещённых прерываниях. */
 	global_enableIRQ();
+
 	sysinit_pmic_initialize();
+	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
+	SystemCoreClockUpdate();
+	sysinit_debug_initialize();
+	local_delay_initialize();
+
 	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
 	midtests();
 
