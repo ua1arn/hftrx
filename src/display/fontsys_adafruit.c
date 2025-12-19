@@ -53,7 +53,7 @@ adafruitfont_decode(const unifont_t * font, char cc)
 	const uint_fast16_t c = (unsigned char) cc;
 	if (c < gfxfont->first)
 		return 0;
-	if (c >= (gfxfont->last))
+	if (c > gfxfont->last)
 		return 0;
 	return c - gfxfont->first;
 }
