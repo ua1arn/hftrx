@@ -2074,6 +2074,10 @@ void allwnr_v3s_pll_initialize(void)
 	local_delay_us(10);
 }
 
+void sysinit_disconnect_boot(void)
+{
+}
+
 // Allwinner V3s PLL initialize
 void
 sysinit_pll_initialize(int forced)
@@ -2207,6 +2211,10 @@ uint_fast32_t allwnr_h3_get_hdmi_freq(void)
 uint_fast32_t allwnr_h3_get_hdmi_slow_freq(void)
 {
 	return allwnr_h3_get_hosc_freq();
+}
+
+void sysinit_disconnect_boot(void)
+{
 }
 
 // Allwinner H3
@@ -7403,6 +7411,10 @@ uint_fast32_t hardware_get_dotclock(uint_fast32_t dotfreq)
 	return stm32mp1_get_pll4_freq() / pll4divq;
 }
 
+void sysinit_disconnect_boot(void)
+{
+}
+
 // STM32MP1 PLL initialize
 void
 sysinit_pll_initialize(int forced)
@@ -9890,6 +9902,10 @@ void hardware_set_dotclock(uint_fast32_t dotfreq)
 #endif
 }
 
+void sysinit_disconnect_boot(void)
+{
+}
+
 // ZYNQ 7000 PLL initialize
 void
 sysinit_pll_initialize(int forced)
@@ -9964,6 +9980,10 @@ local_delay_ms(50);
 
 #if CPUSTYLE_STM32H7XX
 
+void sysinit_disconnect_boot(void)
+{
+}
+
 // STM32H7xx PLL initialize
 void
 sysinit_pll_initialize(int forced)
@@ -10005,6 +10025,10 @@ sysinit_pll_initialize(int forced)
 #endif /* CPUSTYLE_STM32H7XX */
 
 #if CPUSTYLE_STM32F7XX
+
+void sysinit_disconnect_boot(void)
+{
+}
 
 // STM32F7xx PLL initialize
 void
