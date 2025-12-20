@@ -38,16 +38,16 @@ static const adafruitfont_data_t * adafruitfont_preparedata(const unifont_t * fo
 	{
 		const hftrx_GFXfont_t * const gfxfont = (const hftrx_GFXfont_t * const) font->fontraster;
 		uint_fast16_t ci;
-		int_fast16_t baseline = 0;
+		int_fast16_t yOffset = 0;
 		int_fast16_t bottom = 0;
 		for (ci = 0; ci < (gfxfont->last - gfxfont->first + 1); ++ ci)
 		{
 			const hftrx_GFXglyph_t * const glyph = & gfxfont->glyph [ci];
-			baseline = imax(baseline, - glyph->yOffset);
+			yOffset = imin(yOffset, glyph->yOffset);
 			bottom = imax(bottom, glyph->yOffset + (int) glyph->height);
 		}
-		data->baseline = baseline;
-		data->height = baseline + bottom;
+		data->baseline = - yOffset;	// 0 - включет нижний пиксель растра
+		data->height = data->baseline + bottom + 1;
 	}
 	return data;
 }
@@ -250,6 +250,24 @@ const unifont_t unifont_small3 =
 		.fontraster = & adafruit_8x8,
 		.fontdata = & unifontdata_small8x8,
 		.label = "adafruit_8x8"
+};
+#endif
+
+#if 1
+
+#include "adafruit_16x10.h"
+static adafruitfont_data_t unifontdata_small16x10;
+const unifont_t unifont_small2 =
+{
+		.decode = adafruitfont_decode,
+		.getcharraster = adafruitfont_getcharraster,
+		.font_drawwidth = adafruitfont_width,
+		.font_drawheight = adafruitfont_height,
+		.font_draw = adafruitfont_render_char,
+		//
+		.fontraster = & adafruit_16x10,
+		.fontdata = & unifontdata_small16x10,
+		.label = "adafruit_16x16"
 };
 #endif
 
