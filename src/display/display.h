@@ -970,7 +970,7 @@ extern UB_Font gothic_11x13;
 extern const unifont_t unifont_big;
 extern const unifont_t unifont_half;
 extern const unifont_t unifont_small;
-extern const unifont_t unifont_small_x2;
+//extern const unifont_t unifont_small_x2;
 extern const unifont_t unifont_small2;
 extern const unifont_t unifont_small3;
 extern const unifont_t unifont_gothic_11x13;

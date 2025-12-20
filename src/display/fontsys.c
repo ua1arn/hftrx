@@ -583,6 +583,8 @@ uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_
 	return GRID2X(xcell);
 }
 
+#if 0
+
 const unifont_t unifont_big =
 {
 	.decode = bighalffont_decode,
@@ -618,7 +620,7 @@ const unifont_t unifont_half =
 	.font_prerender = unifont_put_char_bighalf_prerender,
 	.label = "unifont_half"
 };
-
+#endif
 
 #if defined (SMALLCHARH) && defined (SMALLCHARW)
 

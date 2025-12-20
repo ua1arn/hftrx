@@ -20,6 +20,7 @@
 
 #include "formats.h"
 #include "display.h"
+#include <Adafruit_GFX.h>
 
 typedef struct adafruitfont_data_tag
 {
@@ -268,6 +269,42 @@ const unifont_t unifont_small2 =
 		.fontraster = & adafruit_16x10,
 		.fontdata = & unifontdata_small16x10,
 		.label = "adafruit_16x16"
+};
+#endif
+
+#if 1
+
+#include "adafruit_28x54.h"
+static adafruitfont_data_t unifontdata_small28x54;
+const unifont_t unifont_half =
+{
+		.decode = adafruitfont_decode,
+		.getcharraster = adafruitfont_getcharraster,
+		.font_drawwidth = adafruitfont_width,
+		.font_drawheight = adafruitfont_height,
+		.font_draw = adafruitfont_render_char,
+		//
+		.fontraster = & adafruit_28x54,
+		.fontdata = & unifontdata_small28x54,
+		.label = "adafruit_28x54"
+};
+#endif
+
+#if 1
+
+#include "adafruit_36x54.h"
+static adafruitfont_data_t unifontdata_small36x54;
+const unifont_t unifont_big =
+{
+		.decode = adafruitfont_decode,
+		.getcharraster = adafruitfont_getcharraster,
+		.font_drawwidth = adafruitfont_width,
+		.font_drawheight = adafruitfont_height,
+		.font_draw = adafruitfont_render_char,
+		//
+		.fontraster = & adafruit_36x54,
+		.fontdata = & unifontdata_small36x54,
+		.label = "adafruit_36x54"
 };
 #endif
 
