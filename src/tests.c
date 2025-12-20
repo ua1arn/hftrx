@@ -10536,6 +10536,8 @@ void hightests(void)
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 #if 0 && WITHLTDCHW && LCDMODE_LTDC
 	{
+		// Font test
+		// Fonts test
 		// Font drawing tests
 		gxdrawb_t dbv;
 		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
@@ -10547,9 +10549,9 @@ void hightests(void)
 			& unifont_small,
 			& unifont_small2,
 			& unifont_small3,	// шрифт, используемый при отриосовке надписей на шкале
+			//& unifont_small_x2,	// vtty_x2.c
 			& unifont_gothic_11x13,
 			& unifont_gothic_12x16p,
-			& unifont_small_x2,
 			//& unifont_Tahoma_Regular_88x77,	// CP Font Generator support
 //			& unifont_roboto32,	// aptech
 //			& unifont_helvNeueTh70,	// aptech
@@ -10560,7 +10562,6 @@ void hightests(void)
 			& unifont_FreeSans12pt7b,
 		};
 		unsigned row;
-
 		uint_fast16_t xpix = 0;
 		uint_fast16_t ypix = 0;
 		for (row = 0; row < ARRAY_SIZE(fonts); ++ row)
@@ -10568,7 +10569,7 @@ void hightests(void)
 			uint_fast16_t h;
 			const unifont_t * const font = fonts [row];
 			uint_fast16_t w = colpip_string_widthheight(font, msg, & h);
-			colpip_rectangle(& dbv, xpix, ypix, w, h, COLOR_DARKCYAN, 0, 0);
+			colpip_rectangle(& dbv, xpix, ypix, w, h, row % 2 ? COLOR_DARKCYAN : COLOR_GRAY, 0, 0);
 			colpip_string(& dbv, xpix, ypix, font, msg, COLOR_BLACK);
 			ypix += h;
 		}
