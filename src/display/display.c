@@ -372,12 +372,12 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 		default:
 		case GXSTYLE_HALIGN_RIGHT:
 			xpix = textw < w ? xpix + avlw - textw : xpix;
-			while ((c = * s ++) != '\0' && xpix - xpix0 + font->font_drawwidth(font, c) <= avlw)
-				xpix = font->font_draw(db, xpix, ypix, font, c, dbstylep->textcolor);
+			while ((c = * s ++) != '\0' && xpix - xpix0 + font->font_drawwidthci(font, font->decode(font, c)) <= avlw)
+				xpix = font->font_drawci(db, xpix, ypix, font, font->decode(font, c), dbstylep->textcolor);
 			break;
 		case GXSTYLE_HALIGN_LEFT:
-			while ((c = * s ++) != '\0' && xpix - xpix0 + font->font_drawwidth(font, c) <= avlw)
-				xpix = font->font_draw(db, xpix, ypix, font, c, dbstylep->textcolor);
+			while ((c = * s ++) != '\0' && xpix - xpix0 + font->font_drawwidthci(font, font->decode(font, c)) <= avlw)
+				xpix = font->font_drawci(db, xpix, ypix, font, font->decode(font, c), dbstylep->textcolor);
 			break;
 		case GXSTYLE_HALIGN_CENTER:
 			// todo: to be implemented
@@ -394,7 +394,7 @@ static uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x,
 	if (font == NULL)
 		return x;
 	savewhere = __func__;
-	return font->font_draw(db, x, y, font, cc, dbstyle->textcolor);
+	return font->font_drawci(db, x, y, font, font->decode(font, cc), dbstyle->textcolor);
 }
 
 static uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
@@ -403,7 +403,7 @@ static uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x
 	if (font == NULL)
 		return x;
 	savewhere = __func__;
-	return font->font_draw(db, x, y, font, cc, dbstyle->textcolor);
+	return font->font_drawci(db, x, y, font, font->decode(font, cc), dbstyle->textcolor);
 }
 
 static const FLASHMEM int32_t vals10 [] =
@@ -496,7 +496,7 @@ static uint_fast16_t display_put_char(const gxdrawb_t * db, uint_fast16_t x, uin
 	if (font == NULL)
 		return x;
 	savewhere = __func__;
-	return font->font_draw(db, x, y, font, cc, dbstyle->textcolor);
+	return font->font_drawci(db, x, y, font, font->decode(font, cc), dbstyle->textcolor);
 }
 
 void

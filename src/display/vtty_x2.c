@@ -83,7 +83,7 @@ static uint_fast16_t draw_char_small_x2(
 	)
 {
 	const unifont_t * const font = & unifont_small_x2;
-	return font->font_draw(db, xpix, ypix, font, cc, fg);
+	return font->font_drawci(db, xpix, ypix, font, font->decode(font, cc), fg);
 }
 // возвращаем на сколько пикселей вправо занимет отрисованный символ
 // Фон не трогаем
@@ -97,7 +97,7 @@ static uint_fast16_t draw_char_small(
 	)
 {
 	const unifont_t * const font = & unifont_small;
-	return font->font_draw(db, xpix, ypix, font, cc, fg);
+	return font->font_drawci(db, xpix, ypix, font, font->decode(font, cc), fg);
 }
 
 void display_vtty_x2_initialize(void)
