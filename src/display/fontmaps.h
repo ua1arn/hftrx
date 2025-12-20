@@ -36,7 +36,6 @@ extern const uint8_t ltdc_CenturyGothic_half [];
 	// Дисплеи, не требующие растров знакогенераторов
 #else
 	// в знакогенераторе изображения символов "по горизонтали"
-	#include "./fonts/S1D13781_font_small3_LTDC.h"
 	#include "./fonts/S1D13781_font_small2_LTDC.h"
 #if WITHALTERNATIVEFONTS
 	#include "./fonts/ltdc_CenturyGothic_big.h"
