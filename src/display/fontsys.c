@@ -83,25 +83,25 @@ static uint_fast8_t smallfont_width(const unifont_t * font, char cc)
 {
 	(void) font;
 	(void) cc;
-	return SMALLCHARW;	// полная ширина символа в пикселях
+	return SMALLCHARW;	// ширина символа в пикселях
 }
 
 static uint_fast8_t smallfont_height(const unifont_t * font)
 {
 	(void) font;
-	return SMALLCHARH;
+	return SMALLCHARH;	// высота символа в пикселях
 }
 static uint_fast8_t smallfont_x2_width(const unifont_t * font, char cc)
 {
 	(void) font;
 	(void) cc;
-	return SMALLCHARW * 2;	// полная ширина символа в пикселях
+	return SMALLCHARW * 2;	// ширина символа в пикселях
 }
 
 static uint_fast8_t smallfont_x2_height(const unifont_t * font)
 {
 	(void) font;
-	return SMALLCHARH * 2;
+	return SMALLCHARH * 2;	// высота символа в пикселях
 }
 
 #endif /* defined (SMALLCHARW) */
@@ -164,22 +164,21 @@ static void ltdc_horizontal_pixels_tbg(
 // Фон не трогаем
 // Самый старший (левый) из указанного количества бит выдвигается первым.
 // 16/32 bit raster support
-static void ubpfont_pixels(
+static void ubxfont_pixels(
 	PACKEDCOLORPIP_T * __restrict tgr,		// target raster
-	uint_fast32_t v,
-	uint_fast16_t width,	// number of bits (start from LSB first byte in raster)
+	uint_fast32_t rasterrow,
 	uint_fast32_t mask,	// начальный бит маски (сдвигаем вправо)
 	COLORPIP_T fg
 	)
 {
-	if (width != 0)
+	if (mask != 0)
 	{
 		do
 		{
-			if (v & mask) * tgr = fg;
+			if (rasterrow & mask)
+				* tgr = fg;
 			tgr += 1;
-			mask >>= 1;
-		} while (-- width);
+		} while (mask >>= 1);
 	}
 }
 
@@ -261,7 +260,7 @@ ubxfont_put_char16(
 	for (cgrow = 0; cgrow < height2; ++ cgrow)
 	{
 		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, xpix, ypix + cgrow);
-		ubpfont_pixels(tgr, charraster [cgrow], width2, mask, fg);
+		ubxfont_pixels(tgr, charraster [cgrow], mask, fg);
 	}
 	return xpix + width2;
 }
@@ -582,7 +581,7 @@ static uint_fast8_t smallfont2_width(const unifont_t * font, char cc)
 
 static uint_fast8_t smallfont2_height(const unifont_t * font)
 {
-	return SMALLCHARH2;	// полная ширина символа в пикселях
+	return SMALLCHARH2;	// высота символа в пикселях
 }
 
 #endif /* defined (SMALLCHARH2) && defined (SMALLCHARW2) */
@@ -599,7 +598,7 @@ static uint_fast8_t smallfont3_width(const unifont_t * font, char cc)
 
 static uint_fast8_t smallfont3_height(const unifont_t * font)
 {
-	return SMALLCHARH3;	// полная ширина символа в пикселях
+	return SMALLCHARH3;	// ширина символа в пикселях
 }
 
 #endif /* defined (SMALLCHARH3) && defined (SMALLCHARW3)) */
