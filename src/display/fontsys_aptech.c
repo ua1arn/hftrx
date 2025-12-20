@@ -36,11 +36,10 @@ aptechfont_decode(const unifont_t * font, char cc)
 
 // Для пропорциональных знакогенераторов
 // todo: нет зазора между символами
-static uint_fast8_t aptechfont_width(const unifont_t * font, char cc)
+static uint_fast8_t aptechfont_width(const unifont_t * font, uint_fast16_t ci)
 {
 	const uint8_t * const blob = (const uint8_t * const) font->fontraster;
 	const uint_fast16_t   font_Size_in_Bytes_over_all_included_Size_it_self = USBD_peek_u16(blob + 0); // size of zero indicates fixed width font, actual length is width * height
-	const uint_fast16_t ci = font->decode(font, cc);
 	const uint_fast8_t    font_Width_in_Pixel_for_fixed_drawing = blob [2];
 	const uint_fast8_t    font_Height_in_Pixel_for_all_characters = blob [3];
 	const uint_fast8_t    font_First_Char = blob [4];
@@ -55,9 +54,8 @@ static uint_fast8_t aptechfont_width(const unifont_t * font, char cc)
 	return w == 0 ? font_Width_in_Pixel_for_fixed_drawing : w;
 }
 
-static const void * aptechfont_getcharraster(const unifont_t * font, char cc)
+static const void * aptechfont_getcharraster(const unifont_t * font, uint_fast16_t ci)
 {
-	const uint_fast16_t ci = font->decode(font, cc);
 	const uint8_t * const blob = (const uint8_t * const) font->fontraster;
 	const uint_fast16_t   font_Size_in_Bytes_over_all_included_Size_it_self = USBD_peek_u16(blob + 0); // size of zero indicates fixed width font, actual length is width * height
 	const uint_fast8_t    font_First_Char = blob [4];
@@ -106,12 +104,12 @@ aptechfont_render_char(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
 	const unifont_t * font,
-	char cc,		// код символа для отображения
+	uint_fast16_t ci,
 	COLORPIP_T fg
 	)
 {
-	const uint8_t * const charraster = (const uint8_t * const) font->getcharraster(font, cc);
-	const uint_fast16_t width2 = font->font_drawwidth(font, cc);
+	const uint8_t * const charraster = (const uint8_t * const) font->getcharrasterci(font, ci);
+	const uint_fast16_t width2 = font->font_drawwidthci(font, ci);
 	const uint_fast16_t height2 = font->font_drawheight(font);
 
 	// Пиксели идут вертикальной полосой слеыв направо
@@ -162,10 +160,10 @@ aptechfont_render_char(
 const unifont_t unifont_roboto32 =
 {
 	.decode = aptechfont_decode,
-	.getcharraster = aptechfont_getcharraster,
-	.font_drawwidth = aptechfont_width,
+	.getcharrasterci = aptechfont_getcharraster,
+	.font_drawwidthci = aptechfont_width,
 	.font_drawheight = aptechfont_height,
-	.font_draw = aptechfont_render_char,
+	.font_drawci = aptechfont_render_char,
 	//
 	.fontraster = roboto32,
 	.label = "Tahoma_Regular_88x77"
@@ -178,10 +176,10 @@ const unifont_t unifont_roboto32 =
 const unifont_t unifont_helvNeueTh70 =
 {
 	.decode = aptechfont_decode,
-	.getcharraster = aptechfont_getcharraster,
-	.font_drawwidth = aptechfont_width,
+	.getcharrasterci = aptechfont_getcharraster,
+	.font_drawwidthci = aptechfont_width,
 	.font_drawheight = aptechfont_height,
-	.font_draw = aptechfont_render_char,
+	.font_drawci = aptechfont_render_char,
 	//
 	.fontraster = helvNeueTh70,
 	.label = "helvNeueTh70"

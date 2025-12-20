@@ -21,7 +21,6 @@
 #include <stdarg.h>
 
 #include "formats.h"
-#include "fontmaps.h"
 
 enum { VTTY_CHARPIX = SMALLCHARW };	// количество пикселей по горизонтали на один символ текста
 enum { VTTY_ROWSPIX = SMALLCHARH + 2 };	// количество пикселей по вертикали на одну строку текста
@@ -81,7 +80,7 @@ static uint_fast16_t draw_char_small(
 {
 	savewhere = __func__;
 	const unifont_t * const font = & unifont_small;
-	return font->font_draw(db, xpix, ypix, font, cc, fg);
+	return font->font_drawci(db, xpix, ypix, font, font->decode(font, cc), fg);
 }
 
 static void display_vtty_initialize(void)

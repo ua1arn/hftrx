@@ -19,7 +19,6 @@
 #include "src/touch/touch.h"
 #include <atomic>
 
-#include "display/fontmaps.h"
 #include "dspdefines.h"
 
 //#define WITHSECTRUMPEAKS 1	// Рисование peak value

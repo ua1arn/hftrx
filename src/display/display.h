@@ -205,12 +205,12 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layer);
 typedef struct unifont_tag
 {
 	uint_fast16_t (* decode)(const struct unifont_tag * font, char cc);	// получение ci
-	const void * (* getcharraster)(const struct unifont_tag * font, char cc);	// получение начального адреса растра для символа
-	uint_fast8_t (* font_drawwidth)(const struct unifont_tag * font, char cc);	// ширина в пиксеях данного символа (может быть меньше чем поле width)
+	const void * (* getcharrasterci)(const struct unifont_tag * font, uint_fast16_t ci);	// получение начального адреса растра для символа
+	uint_fast8_t (* font_drawwidthci)(const struct unifont_tag * font, uint_fast16_t ci);	// ширина в пиксеях данного символа (может быть меньше чем поле width)
 	uint_fast8_t (* font_drawheight)(const struct unifont_tag * font);	// высота в пикселях (се символы шрифта одной высоты)
-	uint_fast16_t (* font_draw)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
-	uint_fast16_t (* font_prerender)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, char cc, COLORPIP_T fg);
-	uint8_t bytesw;		// байтов в одной строке знакогенератора символа
+	uint_fast16_t (* font_drawci)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, uint_fast16_t ci, COLORPIP_T fg);
+	uint_fast16_t (* font_prerenderci)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, uint_fast16_t ci, COLORPIP_T fg);
+	//uint8_t bytesw;		// байтов в одной строке знакогенератора символа
 	const void * fontraster;		// начало знакогенератора в памяти
 	void * fontdata;			// например, для adafruint требуется место с предрасчитаной высотой шрифта и смещением baseline
 	const char * label;		// название для диагностики
@@ -901,42 +901,42 @@ uint16_t getwidth_Mstring(const char * str, const UB_Font * font);
 // Функуии (поля unifont_t) для работы с UB_pFont и UB_Font
 
 // Для моноширинных знакогенераторов
-uint_fast8_t ubmfont_width(const unifont_t * font, char cc);
+uint_fast8_t ubmfont_width(const struct unifont_tag * font, uint_fast16_t ci);
 uint_fast8_t ubmfont_height(const unifont_t * font);
 uint_fast16_t ubmfont_decode(const unifont_t * font, char cc);
-const void * ubmfont_getcharraster(const unifont_t * font, char cc);
+const void * ubmfont_getcharraster(const unifont_t * font, uint_fast16_t ci);
 uint_fast16_t ubmfont_render_char16(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
 	const unifont_t * font,
-	char cc,		// код символа для отображения
+	uint_fast16_t ci,
 	COLORPIP_T fg
 	);
 uint_fast16_t ubmfont_render_char32(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
 	const unifont_t * font,
-	char cc,		// код символа для отображения
+	uint_fast16_t ci,
 	COLORPIP_T fg
 	);
 
 // Для пропорциональных знакогенераторов
-uint_fast8_t ubpfont_width(const unifont_t * font, char cc);
+uint_fast8_t ubpfont_width(const struct unifont_tag * font, uint_fast16_t ci);
 uint_fast8_t ubpfont_height(const unifont_t * font);
 uint_fast16_t ubpfont_decode(const unifont_t * font, char cc);
-const void * ubpfont_getcharraster(const unifont_t * font, char cc);
+const void * ubpfont_getcharraster(const struct unifont_tag * font, uint_fast16_t ci);
 uint_fast16_t ubpfont_render_char16(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
 	const unifont_t * font,
-	char cc,		// код символа для отображения
+	uint_fast16_t ci,
 	COLORPIP_T fg
 	);
 uint_fast16_t ubpfont_render_char32(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
 	const unifont_t * font,
-	char cc,		// код символа для отображения
+	uint_fast16_t ci,
 	COLORPIP_T fg
 	);
 
@@ -970,7 +970,7 @@ extern UB_Font gothic_11x13;
 extern const unifont_t unifont_big;
 extern const unifont_t unifont_half;
 extern const unifont_t unifont_small;
-extern const unifont_t unifont_small_x2;
+//extern const unifont_t unifont_small_x2;
 extern const unifont_t unifont_small2;
 extern const unifont_t unifont_small3;
 extern const unifont_t unifont_gothic_11x13;
@@ -983,6 +983,17 @@ extern const unifont_t unifont_FreeMono12pt7b;	// Adafruit-GFX-Library
 extern const unifont_t unifont_FreeMono18pt7b;	// Adafruit-GFX-Library
 extern const unifont_t unifont_FreeMono24pt7b;	// Adafruit-GFX-Library
 extern const unifont_t unifont_FreeSans12pt7b;	// Adafruit-GFX-Library
+
+#if LCDMODE_LTDC
+
+	#define SMALLCHARH 15 /* Font height */
+	#define SMALLCHARW 16 /* Font width */
+	#define SMALLCHARH2 16 /* Font height */
+	#define SMALLCHARW2 10 /* Font width */
+	#define SMALLCHARH3 8 /* Font height */
+	#define SMALLCHARW3 8 /* Font width */
+
+#endif /* LCDMODE_LTDC */
 
 #ifdef __cplusplus
 }
