@@ -231,7 +231,25 @@ const unifont_t unifont_small =
 		//
 		.fontraster = & adafruit_16x15,
 		.fontdata = & unifontdata_small16x15,
-		.label = "FreeSans12pt7b"
+		.label = "adafruit_16x15"
+};
+#endif
+
+#if 1
+
+#include "adafruit_8x8.h"
+static adafruitfont_data_t unifontdata_small8x8;
+const unifont_t unifont_small3 =
+{
+		.decode = adafruitfont_decode,
+		.getcharraster = adafruitfont_getcharraster,
+		.font_drawwidth = adafruitfont_width,
+		.font_drawheight = adafruitfont_height,
+		.font_draw = adafruitfont_render_char,
+		//
+		.fontraster = & adafruit_8x8,
+		.fontdata = & unifontdata_small8x8,
+		.label = "adafruit_8x8"
 };
 #endif
 

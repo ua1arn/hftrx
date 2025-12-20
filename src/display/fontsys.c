@@ -667,18 +667,18 @@ const unifont_t unifont_small2 =
 
 #if defined (SMALLCHARH3) && defined (SMALLCHARW3)
 
-const unifont_t unifont_small3 =
-{
-	.decode = smallfont_decode,
-	.getcharraster = unifont_getcharraster,
-	.font_drawwidth = smallfont3_width,
-	.font_drawheight = smallfont3_height,
-	.bytesw = (SMALLCHARW3 + 7) / 8,//sizeof S1D13781_smallfont3_LTDC [0][0],		// байтов в одной строке знакогенератора символа
-	.fontraster = S1D13781_smallfont3_LTDC,		// начало знакогенератора в памяти
-	.font_draw = unifont_put_char_small,
-	.font_prerender = NULL,
-	.label = "unifont_small3"
-};
+//const unifont_t unifont_small3 =
+//{
+//	.decode = smallfont_decode,
+//	.getcharraster = unifont_getcharraster,
+//	.font_drawwidth = smallfont3_width,
+//	.font_drawheight = smallfont3_height,
+//	.bytesw = (SMALLCHARW3 + 7) / 8,//sizeof S1D13781_smallfont3_LTDC [0][0],		// байтов в одной строке знакогенератора символа
+//	.fontraster = S1D13781_smallfont3_LTDC,		// начало знакогенератора в памяти
+//	.font_draw = unifont_put_char_small,
+//	.font_prerender = NULL,
+//	.label = "unifont_small3"
+//};
 #endif /* defined (SMALLCHARH3) && defined (SMALLCHARW3) */
 
 // *********************************************************************************************************************
