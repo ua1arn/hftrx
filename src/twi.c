@@ -101,6 +101,21 @@ static void i2c_delay(const i2cp_t * p)
 
 #if WITHTWIHW
 
+// получение одномилисекундных значений
+// проблема c sys_now():
+// при иициализации PMIC система прерываний ешё не работает.
+// обнуление bss так же не произошло
+// пока решение - "остановленный" таймер
+
+static uint32_t i2c_sys_now(void)
+{
+#if WITHISBOOTLOADER
+	return 0;//cpu_getdebugticks();// / (cpu_getdebugticksfreq() / 1000);
+#else /* WITHISBOOTLOADER */
+	return sys_now();
+#endif
+}
+
 #if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
 
@@ -1143,17 +1158,15 @@ static void t113_i2c_set_rate(TWI_TypeDef * twi, uint_fast32_t rate, uint_fast32
 		0;
 }
 
-//const uint32_t timeout1;
-
 static int t113_i2c_wait_status(TWI_TypeDef * twi){
-	const uint32_t timeout = sys_now()+5*10;	//sys_now()+5мс
+	const uint32_t timeout = i2c_sys_now()+5*10;	//i2c_sys_now()+5мс
 	do {
 		if ((twi->TWI_CNTR & (1 << 3))){	// INT_FLAG
 			unsigned int stat = twi->TWI_STAT;
 			//PRINTF("t113_i2c_wait_status1 = 0x%02X\n", stat);
 			return stat;
 		}
-	} while (sys_now()<timeout);
+	} while (i2c_sys_now()<timeout);
 
 	//I2C_ERROR_COUNT++;
 	// PRINTF("t113_i2c_wait_status = I2C_STAT_BUS_ERROR\n");
@@ -1163,14 +1176,14 @@ static int t113_i2c_wait_status(TWI_TypeDef * twi){
 static int t113_i2c_start(TWI_TypeDef * twi){
 	//PRINTF("I2C start\n");
 	twi->TWI_CNTR |= (1u << 5) | (1u << 3);	// M_STA INT_FLAG
-	const uint32_t timeout = sys_now()+5*100;	//sys_now()+5мс
+	const uint32_t timeout = i2c_sys_now()+5*100;	//i2c_sys_now()+5мс
 	do {
 		if (!(twi->TWI_CNTR & (1 << 5)))	// M_STA
 		{
 			//PRINTF("I2C start ok\n");
 			return t113_i2c_wait_status(twi);
 		}
-	} while (sys_now()<timeout);
+	} while (i2c_sys_now()<timeout);
 	//PRINTF("I2C start out\n");
 	return t113_i2c_wait_status(twi);
 }
@@ -1181,27 +1194,27 @@ static int t113_i2c_stop(TWI_TypeDef * twi){
 	val = twi->TWI_CNTR;
 	val |= (1 << 4) | (1 << 3);	// M_STP INT_FLAG
 	twi->TWI_CNTR = val;
-	const uint32_t timeout = sys_now()+5*10;
+	const uint32_t timeout = i2c_sys_now()+5*10;
 	do {
 		if (!(twi->TWI_CNTR & (1 << 4)))	// M_STP
 		{
 			return 0;
 		}
-	} while (sys_now()<timeout);
+	} while (i2c_sys_now()<timeout);
 	return 1;
 }
 
 static int t113_i2c_restart(TWI_TypeDef * twi){
 	//PRINTF("I2C start\n");
 	twi->TWI_CNTR |= (1u << 5) | (1u << 3);	// M_STA INT_FLAG
-	const uint32_t timeout = sys_now()+5*100;	//sys_now()+5мс
+	const uint32_t timeout = i2c_sys_now()+5*100;	//i2c_sys_now()+5мс
 	do {
 		if (!(twi->TWI_CNTR & (1 << 5)))	// M_STA
 		{
 			//PRINTF("I2C start ok\n");
 			return t113_i2c_wait_status(twi);
 		}
-	} while (sys_now()<timeout);
+	} while (i2c_sys_now()<timeout);
 	//PRINTF("I2C start out\n");
 	return t113_i2c_wait_status(twi);
 }
