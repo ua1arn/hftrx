@@ -19,6 +19,7 @@
 #include "src/touch/touch.h"
 #include <atomic>
 
+#include "display/fontmaps.h"
 #include "dspdefines.h"
 
 //#define WITHSECTRUMPEAKS 1	// Рисование peak value
@@ -1214,8 +1215,6 @@ static const dzitem_t dzi_voxtune =
 
 #if LCDMODE_LTDC
 
-	#include "display/fontmaps.h"
-
 	// получить адрес в видеобуфере, соответствующий ячейке
 	static PACKEDCOLORPIP_T * getscratchwnd(
 		const gxdrawb_t * db,
@@ -1277,8 +1276,6 @@ void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t
 
 
 #if WITHALTERNATIVELAYOUT
-
-#if SMALLCHARW2
 
 typedef struct {
 	uint_fast8_t chars_W2;
@@ -1406,7 +1403,6 @@ void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t
 	}
 
 }
-#endif /* SMALLCHARW2 */
 #else
 void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORPIP_T color_fg, COLORPIP_T color_bg)
 {
@@ -2572,7 +2568,10 @@ display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 
 	colpip_line(db, smpr->gs, smpr->r1, smpr->gm, smpr->r1, COLORPIP_WHITE, 0);
 	colpip_line(db, smpr->gm, smpr->r1, smpr->ge, smpr->r1, COLORPIP_RED, 0);
-	colpip_string(db, smpr->gs - SMALLCHARW2, smpr->r1 - SMALLCHARH2 - 2, fontsm2, "Sm", COLORPIP_YELLOW);
+	static const char sm_text [] = "Sm";
+	uint_fast16_t shx;
+	const uint_fast16_t swx = colpip_string_widthheight(fontsm2, sm_text, & shx);
+	colpip_string(db, smpr->gs - swx / 2, smpr->r1 - shx - 2, fontsm2, sm_text, COLORPIP_YELLOW);
 
 	for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 	{

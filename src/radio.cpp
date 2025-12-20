@@ -5142,7 +5142,7 @@ enum
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
-		static uint_fast8_t guacplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+		static uint_fast8_t guacplayer = !0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		static const struct paramdefdef xguacplayer =
 		{
@@ -18041,7 +18041,7 @@ static void dispvfocode(
 	uint_fast32_t freq = getvcoranges(vco, top);
 	synth_lo1_setfreq(0, freq, getlo1div(gtx));
 
-	display_text(db, 0, 1, label, (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+	display_text(db, 0, 1, label, MSGYCELLS, & dbstylev);
 	display_menu_digit(db, 0, 0, freq, 9, 3, 0);
 
 }
@@ -19212,7 +19212,7 @@ keyboard_test(void)
 	}
 	return 0;
 }
-
+#define MSGYCELLS 5
 /* вызывается при разрешённых прерываниях. */
 void initialize2(void)
 {
@@ -19259,7 +19259,7 @@ void initialize2(void)
 #endif /* WITHLCDBACKLIGHT */
 #if ! LCDMODE_DUMMY
 		display2_fillbg(& dbv);
-		display_text(& dbv, 0, 0, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+		display_text(& dbv, 0, 0, msg, strlen(msg), MSGYCELLS, & dbstylev);
 		colmain_nextfb();
 #endif /*  ! LCDMODE_DUMMY */
 		PRINTF(PSTR("%s\n"), msg);
@@ -19291,7 +19291,7 @@ void initialize2(void)
 		local_snprintf_P(msg, ARRAY_SIZE(msg), "TOO LARGE nvmap %d", (int) sizeof (struct nvmap));
 
 		display2_fillbg(& dbv);
-		display_text(& dbv, 0, 1, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+		display_text(& dbv, 0, 1, msg, strlen(msg), MSGYCELLS, & dbstylev);
 		colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -19307,7 +19307,7 @@ void initialize2(void)
 		static const char msg  [] = "nvmap size";
 
 		display_menu_digit(sizeof (struct nvmap), 9, 0, 0);
-		display_text(& dbv, 0, 0, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+		display_text(& dbv, 0, 0, msg, strlen(msg), MSGYCELLS, & dbstylev);
 		colmain_nextfb();
 
 
@@ -19361,7 +19361,7 @@ void initialize2(void)
 #if ! LCDMODE_DUMMY
 			static const char msg [] = "ERASE: Press SPL";
 			display2_fillbg(& dbv);
-			display_text(db, 0, 0, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+			display_text(db, 0, 0, msg, strlen(msg), MSGYCELLS, & dbstylev);
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -19406,8 +19406,8 @@ void initialize2(void)
 			char msg [32];
 			local_snprintf_P(msg, ARRAY_SIZE(msg), "NVRAM fault1 %d", (int) (NVRAM_END + 1));
 			display2_fillbg(& dbv);
-			display_text(& dbv, 0, 0, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
-			display_text(& dbv, 10, 20, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+			display_text(& dbv, 0, 0, msg, strlen(msg), MSGYCELLS, & dbstylev);
+			display_text(& dbv, 10, 20, msg, strlen(msg), MSGYCELLS, & dbstylev);
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -19446,7 +19446,7 @@ void initialize2(void)
 #if ! LCDMODE_DUMMY
 			static const char msg [] = "ERASE: Press SPL";
 			display2_fillbg(& dbv);
-			display_text(& dbv, 0, 0, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+			display_text(& dbv, 0, 0, msg, strlen(msg), MSGYCELLS, & dbstylev);
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -19489,8 +19489,8 @@ void initialize2(void)
 			char msg [32];
 			local_snprintf_P(msg, ARRAY_SIZE(msg), "NVRAM fault %d", (int) (NVRAM_END + 1));
 			display2_fillbg(& dbv);
-			display_text(& dbv, 0, 0, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
-			display_text(& dbv, 10, 20, msg, strlen(msg), (SMALLCHARH + GRID2Y(1) - 1) / GRID2Y(1), & dbstylev);
+			display_text(& dbv, 0, 0, msg, strlen(msg), MSGYCELLS, & dbstylev);
+			display_text(& dbv, 10, 20, msg, strlen(msg), MSGYCELLS, & dbstylev);
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 

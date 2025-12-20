@@ -21,8 +21,6 @@ const char * savewhere = "no func";
 
 #if LCDMODE_LTDC
 
-#include "fontmaps.h"
-
 /* рисование линии на основном экране произвольным цветом
 */
 void

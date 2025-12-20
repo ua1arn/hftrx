@@ -19,7 +19,6 @@
 #include "spi.h"	// hardware_spi_master_send_frame
 #include "utils.h"
 #include "display2.h"
-#include "fontmaps.h"
 #include <string.h>
 
 
