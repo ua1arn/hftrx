@@ -20,14 +20,14 @@ extern const uint8_t ILI9341_smallfont [][20];
 extern const uint8_t ls020_bigfont [13][4 * 18];
 extern const uint8_t ls020_halffont [13][4 * 14];
 extern const uint8_t ls020_smallfont [][16];
-extern const uint8_t S1D13781_smallfont_LTDC [][15][2];
-extern const uint8_t S1D13781_smallfont2_LTDC [][16][2];
-extern const uint8_t S1D13781_smallfont3_LTDC [][8];
+extern const uint8_t S1D13781_smallfont_LTDC [];
+extern const uint8_t S1D13781_smallfont2_LTDC [];
+extern const uint8_t S1D13781_smallfont3_LTDC [];
 
-extern const uint8_t S1D13781_bigfont_LTDC [13][54][5];
-extern const uint8_t S1D13781_halffont_LTDC [13][54][4];
-extern const uint8_t ltdc_CenturyGothic_big [13][54][5];
-extern const uint8_t ltdc_CenturyGothic_half [13][54][4];
+extern const uint8_t S1D13781_bigfont_LTDC [];
+extern const uint8_t S1D13781_halffont_LTDC [];
+extern const uint8_t ltdc_CenturyGothic_big [];
+extern const uint8_t ltdc_CenturyGothic_half [];
 
 //
 #if LCDMODE_LTDC
