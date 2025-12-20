@@ -18,7 +18,7 @@
 /* использование предварительно построенных изображений при отображении частоты */
 
 enum { RENDERCHARS = 14 }; /* valid chars: "0123456789 #._" */
-static const char renderchars [] = "0123456789 #._";
+//static const char renderchars [] = "0123456789 #._";
 /* размеры в пикселях альманаха больших символов отображения частоты */
 static const unsigned picx_big = BIGCHARW * RENDERCHARS;
 static const unsigned picy_big = BIGCHARH;
@@ -74,8 +74,8 @@ void rendered_value_big_initialize(const gxstyle_t * gxstylep)
 			/* формирование изображений символов, возможно с эффектами антиалиасинга */
 			/* Изображения символов располагаются в буфере горизонтально, слева направо */
 			ASSERT(xpix == ci * BIGCHARW);
-			ASSERT(font->font_prerender);
-			font->font_prerender(& dbvbig, xpix, ypix, font, renderchars [ci], fg);	// BIGCHARW
+			ASSERT(font->font_prerenderci);
+			font->font_prerenderci(& dbvbig, xpix, ypix, font, ci, fg);	// BIGCHARW
 			display_do_AA(& dbvbig, xpix, ypix, BIGCHARW, BIGCHARH);
 			xpix += BIGCHARW;
 		}
@@ -91,8 +91,8 @@ void rendered_value_big_initialize(const gxstyle_t * gxstylep)
 			/* формирование изображений символов, возможно с эффектами антиалиасинга */
 			/* Изображения символов располагаются в буфере горизонтально, слева направо */
 			ASSERT(xpix == ci * HALFCHARW);
-			ASSERT(font->font_prerender);
-			font->font_prerender(& dbvhalf, xpix, ypix, font, renderchars [ci], fg);	// HALFCHARW
+			ASSERT(font->font_prerenderci);
+			font->font_prerenderci(& dbvhalf, xpix, ypix, font, ci, fg);	// HALFCHARW
 			display_do_AA(& dbvhalf, xpix, ypix, HALFCHARW, HALFCHARH);
 			xpix += HALFCHARW;
 		}

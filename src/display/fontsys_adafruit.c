@@ -48,7 +48,7 @@ static const adafruitfont_data_t * adafruitfont_preparedata(const unifont_t * fo
 			bottom = imax(bottom, glyph->yOffset + (int) glyph->height);
 		}
 		data->baseline = - yOffset;	// 0 - включет нижний пиксель растра
-		data->height = data->baseline + bottom + 1;
+		data->height = data->baseline + bottom;
 	}
 	return data;
 }
