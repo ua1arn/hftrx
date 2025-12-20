@@ -1170,10 +1170,18 @@ ubpfont_render_char16(
 	COLORPIP_T fg
 	)
 {
+#if 1
+	const UB_pFont * const ubp = (const UB_pFont *) font->fontraster;
+	UB_Font_DrawPChar(db, xpix, ypix, cc, ubp, fg);
+	const uint_fast16_t width2 = font->font_drawwidth(font, cc);	// number of bits (start from LSB first byte in raster)
+	return xpix + width2;
+#else
+
 	const uint16_t * const charraster = (const uint16_t *) font->getcharraster(font, cc);
 	const uint_fast16_t width2 = font->font_drawwidth(font, cc);	// number of bits (start from LSB first byte in raster)
 	const uint_fast16_t height2 = font->font_drawheight(font);	// number of rows
 	return ubxfont_put_char16(db, xpix, ypix, font, charraster, UINT16_C(1) << (15 - width2), width2, height2, 0 /* (unused) */, fg);
+#endif
 }
 
 // *********************************************************************************************************************
