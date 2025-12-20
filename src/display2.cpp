@@ -3956,24 +3956,6 @@ static void display2_mode3_a(const gxdrawb_t * db,
 	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 }
 
-#if WITHTOUCHGUI
-
-static void display2_mode_lower_a(const gxdrawb_t * db,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	const unifont_t * const fontsm2 = & unifont_small2;	// SMALL2
-	char label[5];
-	local_snprintf_P(label, ARRAY_SIZE(label), " %s", hamradio_get_mode_a_value_P());
-	colpip_string(db, GRID2X(x), GRID2Y(y), fontsm2, label, dbstylev_1state.textcolor);
-}
-
-#endif /* WITHTOUCHGUI */
-
 // SSB/CW/AM/FM/...
 static void display2_mode3_b(const gxdrawb_t * db,
 		uint_fast8_t x,
