@@ -244,6 +244,6 @@ const GFXglyph adafruit_16x10Glyphs[] PROGMEM = {
 
 const GFXfont adafruit_16x10 PROGMEM = {
     (uint8_t *)adafruit_16x10Bitmaps,
-    (GFXglyph *)adafruit_16x10Glyphs, 0x20, 0x7F,  20};
+    (GFXglyph *)adafruit_16x10Glyphs, 0x20, 0x7F,  16};
 
 // Approx. 3263 bytes
