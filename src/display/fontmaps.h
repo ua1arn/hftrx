@@ -21,6 +21,7 @@ extern const uint8_t ls020_bigfont [13][4 * 18];
 extern const uint8_t ls020_halffont [13][4 * 14];
 extern const uint8_t ls020_smallfont [][16];
 extern const uint8_t S1D13781_smallfont_LTDC [];
+extern const uint8_t S1D13781_smallfont_RU_LTDC [];
 extern const uint8_t S1D13781_smallfont2_LTDC [];
 extern const uint8_t S1D13781_smallfont3_LTDC [];
 
