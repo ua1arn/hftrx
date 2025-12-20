@@ -8,6 +8,12 @@
 // Поддержка шрифтов Adafruit-GFX-Library
 //	https://github.com/adafruit/Adafruit-GFX-Library.git
 
+//	You can also use this GFX Font Customiser tool (web version here)
+// 	https://github.com/tchapi/Adafruit-GFX-Font-Customiser
+//	https://tchapi.github.io/Adafruit-GFX-Font-Customiser/
+//	to customize or correct the output from fontconvert,
+//	and create fonts with only a subset of characters to optimize size.
+
 #include "hardware.h"
 
 #if LCDMODE_LTDC
