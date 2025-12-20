@@ -129,7 +129,7 @@ adafruitfont_render_char(
 
 #if 1
 
-#include "FreeMono9pt7b.h"
+#include "fonts/FreeMono9pt7b.h"
 static adafruitfont_data_t unifontdata_FreeMono9pt7b;
 const unifont_t unifont_FreeMono9pt7b =
 {
@@ -147,7 +147,7 @@ const unifont_t unifont_FreeMono9pt7b =
 
 #if 1
 
-#include "FreeMono12pt7b.h"
+#include "fonts/FreeMono12pt7b.h"
 static adafruitfont_data_t unifontdata_FreeMono12pt7b;
 const unifont_t unifont_FreeMono12pt7b =
 {
@@ -165,7 +165,7 @@ const unifont_t unifont_FreeMono12pt7b =
 
 #if 1
 
-#include "FreeMono18pt7b.h"
+#include "fonts/FreeMono18pt7b.h"
 static adafruitfont_data_t unifontdata_FreeMono18pt7b;
 const unifont_t unifont_FreeMono18pt7b =
 {
@@ -183,7 +183,7 @@ const unifont_t unifont_FreeMono18pt7b =
 
 #if 1
 
-#include "FreeMono24pt7b.h"
+#include "fonts/FreeMono24pt7b.h"
 static adafruitfont_data_t unifontdata_FreeMono24pt7b;
 const unifont_t unifont_FreeMono24pt7b =
 {
@@ -201,7 +201,7 @@ const unifont_t unifont_FreeMono24pt7b =
 
 #if 1
 
-#include "FreeSans12pt7b.h"
+#include "fonts/FreeSans12pt7b.h"
 static adafruitfont_data_t unifontdata_FreeSans12pt7b;
 const unifont_t unifont_FreeSans12pt7b =
 {
@@ -220,7 +220,7 @@ const unifont_t unifont_FreeSans12pt7b =
 
 #if 1
 
-#include "adafruit_16x15.h"
+#include "fonts/adafruit_16x15.h"
 static adafruitfont_data_t unifontdata_small16x15;
 const unifont_t unifont_small =
 {
@@ -238,7 +238,7 @@ const unifont_t unifont_small =
 
 #if 1
 
-#include "adafruit_8x8.h"
+#include "fonts/adafruit_8x8.h"
 static adafruitfont_data_t unifontdata_small8x8;
 const unifont_t unifont_small3 =
 {
@@ -256,7 +256,7 @@ const unifont_t unifont_small3 =
 
 #if 1
 
-#include "adafruit_16x10.h"
+#include "fonts/adafruit_16x10.h"
 static adafruitfont_data_t unifontdata_small16x10;
 const unifont_t unifont_small2 =
 {
@@ -274,7 +274,7 @@ const unifont_t unifont_small2 =
 
 #if WITHALTERNATIVEFONTS
 
-#include "CenturyHothic_28x54.h"
+#include "fonts/CenturyHothic_28x54.h"
 static adafruitfont_data_t unifontdata_small28x54;
 const unifont_t unifont_half =
 {
@@ -289,7 +289,7 @@ const unifont_t unifont_half =
 		.label = "CenturyHothic_28x54"
 };
 
-#include "CenturyHothic_36x54.h"
+#include "fonts/CenturyHothic_36x54.h"
 static adafruitfont_data_t unifontdata_small36x54;
 const unifont_t unifont_big =
 {
@@ -305,7 +305,7 @@ const unifont_t unifont_big =
 };
 #else /* WITHALTERNATIVEFONTS */
 
-#include "adafruit_28x54.h"
+#include "fonts/adafruit_28x54.h"
 static adafruitfont_data_t unifontdata_small28x54;
 const unifont_t unifont_half =
 {
@@ -320,7 +320,7 @@ const unifont_t unifont_half =
 		.label = "adafruit_28x54"
 };
 
-#include "adafruit_36x54.h"
+#include "fonts/adafruit_36x54.h"
 static adafruitfont_data_t unifontdata_small36x54;
 const unifont_t unifont_big =
 {

@@ -521,57 +521,6 @@ colpip_string_widthheight(
 	return w;
 }
 
-#if defined (SMALLCHARH2) && defined (SMALLCHARW2)
-
-static uint_fast8_t smallfont2_width(const unifont_t * font, char cc)
-{
-	(void) cc;
-	return SMALLCHARW2;	// полная ширина символа в пикселях
-}
-
-static uint_fast8_t smallfont2_height(const unifont_t * font)
-{
-	return SMALLCHARH2;	// высота символа в пикселях
-}
-
-#endif /* defined (SMALLCHARH2) && defined (SMALLCHARW2) */
-
-
-
-#if defined (SMALLCHARH3) && defined (SMALLCHARW3)
-
-static uint_fast8_t smallfont3_width(const unifont_t * font, char cc)
-{
-	(void) cc;
-	return SMALLCHARW3;	// полная ширина символа в пикселях
-}
-
-static uint_fast8_t smallfont3_height(const unifont_t * font)
-{
-	return SMALLCHARH3;	// ширина символа в пикселях
-}
-
-#endif /* defined (SMALLCHARH3) && defined (SMALLCHARW3)) */
-
-#if defined (SMALLCHARH) && defined (SMALLCHARW)
-
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-uint_fast16_t
-colpip_string_small(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLORPIP_T fg		// цвет вывода текста
-	)
-{
-	return colpip_string(db, x, y, & unifont_small, s, fg);
-}
-
-
-#endif /* defined (SMALLCHARH) && defined (SMALLCHARW) */
-
 // обычный шрифт
 uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
@@ -618,73 +567,12 @@ const unifont_t unifont_half =
 };
 #endif
 
-#if defined (SMALLCHARH) && defined (SMALLCHARW)
-
-//const unifont_t unifont_small =
-//{
-//	.decode = smallfont_decode,
-//	.getcharraster = unifont_getcharraster,
-//	.font_drawwidth = smallfont_width,
-//	.font_drawheight = smallfont_height,
-//	.bytesw = 2,//sizeof S1D13781_smallfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
-//	.fontraster = S1D13781_smallfont_LTDC,		// начало знакогенератора в памяти
-//	.font_draw = unifont_put_char_small,
-//	.font_prerender = NULL,
-//	.label = "unifont_small"
-//};
-
-//const unifont_t unifont_small_x2 =
-//{
-//	.decode = smallfont_decode,
-//	.getcharraster = unifont_getcharraster_x2,
-//	.font_drawwidth = smallfont_x2_width,
-//	.font_drawheight = smallfont_x2_height,
-//	.bytesw = 2,//sizeof S1D13781_smallfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
-//	.fontraster = S1D13781_smallfont_LTDC,		// начало знакогенератора в памяти
-//	.font_draw = unifont_put_char_small_x2,
-//	.font_prerender = NULL,
-//	.label = "unifont_small_x2"
-//};
-#endif /* defined (SMALLCHARH) && defined (SMALLCHARW) */
-
-#if defined (SMALLCHARH2) && defined (SMALLCHARW2)
-
-//const unifont_t unifont_small2 =
-//{
-//	.decode = smallfont_decode,
-//	.getcharraster = unifont_getcharraster,
-//	.font_drawwidth = smallfont2_width,
-//	.font_drawheight = smallfont2_height,
-//	.bytesw = (SMALLCHARW2 + 7) / 8,//sizeof S1D13781_smallfont2_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
-//	.fontraster = S1D13781_smallfont2_LTDC,		// начало знакогенератора в памяти
-//	.font_draw = unifont_put_char_small,
-//	.font_prerender = NULL,
-//	.label = "unifont_small2"
-//};
-#endif /* defined (SMALLCHARH2) && defined (SMALLCHARW2) */
-
-#if defined (SMALLCHARH3) && defined (SMALLCHARW3)
-
-//const unifont_t unifont_small3 =
-//{
-//	.decode = smallfont_decode,
-//	.getcharraster = unifont_getcharraster,
-//	.font_drawwidth = smallfont3_width,
-//	.font_drawheight = smallfont3_height,
-//	.bytesw = (SMALLCHARW3 + 7) / 8,//sizeof S1D13781_smallfont3_LTDC [0][0],		// байтов в одной строке знакогенератора символа
-//	.fontraster = S1D13781_smallfont3_LTDC,		// начало знакогенератора в памяти
-//	.font_draw = unifont_put_char_small,
-//	.font_prerender = NULL,
-//	.label = "unifont_small3"
-//};
-#endif /* defined (SMALLCHARH3) && defined (SMALLCHARW3) */
-
 // *********************************************************************************************************************
 
 #if 0
 // CP Font Generator support
 
-#include "Tahoma_Regular_88x77.h"
+#include "fonts/Tahoma_Regular_88x77.h"
 // CP Font Generator support
 
 static uint_fast16_t

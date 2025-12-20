@@ -1,5 +1,5 @@
 #include "hardware.h"
-#include "display.h"
+#include "../display.h"
 //--------------------------------------------------------------
 // Font-Daten
 // erstellt von UB mit PixelFontGenerator 1.8
