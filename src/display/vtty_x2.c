@@ -17,7 +17,6 @@
 #include <stdarg.h>
 
 #include "formats.h"
-#include "fontmaps.h"
 
 #if DIM_X == 720
 	enum { VTTYx2_CHARPIX = SMALLCHARW * 2 };	// количество пикселей по горизонтали на один символ текста

@@ -11,10 +11,6 @@
 #include "formats.h"
 #include "display.h"
 
-#define FONTSHERE 1
-
-#include "fontmaps.h"
-
 #include <string.h>
 
 /* valid chars: "0123456789 #._" */

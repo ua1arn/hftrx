@@ -21,7 +21,6 @@
 #include <stdarg.h>
 
 #include "formats.h"
-#include "fontmaps.h"
 
 enum { VTTY_CHARPIX = SMALLCHARW };	// количество пикселей по горизонтали на один символ текста
 enum { VTTY_ROWSPIX = SMALLCHARH + 2 };	// количество пикселей по вертикали на одну строку текста

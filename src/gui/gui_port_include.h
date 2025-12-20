@@ -6,7 +6,6 @@
 #include "dspdefines.h"
 #include "display2.h"
 #include "src/display/display.h"
-#include "src/display/fontmaps.h"
 #include "src/touch/touch.h"
 #include "keyboard.h"
 #include "codecs.h"

@@ -984,6 +984,17 @@ extern const unifont_t unifont_FreeMono18pt7b;	// Adafruit-GFX-Library
 extern const unifont_t unifont_FreeMono24pt7b;	// Adafruit-GFX-Library
 extern const unifont_t unifont_FreeSans12pt7b;	// Adafruit-GFX-Library
 
+#if LCDMODE_LTDC
+
+	#define SMALLCHARH 15 /* Font height */
+	#define SMALLCHARW 16 /* Font width */
+	#define SMALLCHARH2 16 /* Font height */
+	#define SMALLCHARW2 10 /* Font width */
+	#define SMALLCHARH3 8 /* Font height */
+	#define SMALLCHARW3 8 /* Font width */
+
+#endif /* LCDMODE_LTDC */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
