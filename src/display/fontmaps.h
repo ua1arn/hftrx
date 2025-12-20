@@ -8,13 +8,13 @@
 #ifndef DISPLAY_FONTMAPS_H_INCLUDED
 #define DISPLAY_FONTMAPS_H_INCLUDED
 
-extern const uint8_t S1D13781_smallfont_LTDC [];
-extern const uint8_t S1D13781_smallfont_RU_LTDC [];
+//extern const uint8_t S1D13781_smallfont_LTDC [];
+//extern const uint8_t S1D13781_smallfont_RU_LTDC [];
 extern const uint8_t S1D13781_smallfont2_LTDC [];
 extern const uint8_t S1D13781_smallfont3_LTDC [];
 
-extern const uint8_t S1D13781_bigfont_LTDC [];
-extern const uint8_t S1D13781_halffont_LTDC [];
+//extern const uint8_t S1D13781_bigfont_LTDC [];
+//extern const uint8_t S1D13781_halffont_LTDC [];
 extern const uint8_t ltdc_CenturyGothic_big [];
 extern const uint8_t ltdc_CenturyGothic_half [];
 
@@ -39,7 +39,7 @@ extern const uint8_t ltdc_CenturyGothic_half [];
 	#include "./fonts/S1D13781_font_small3_LTDC.h"
 	#include "./fonts/S1D13781_font_small2_LTDC.h"
 	#include "./fonts/S1D13781_font_small_LTDC.h"
-	#include "./fonts/S1D13781_font_small_RU_LTDC.h"
+	//#include "./fonts/S1D13781_font_small_RU_LTDC.h"
 	#include "./fonts/S1D13781_font_half_LTDC.h"
 	#include "./fonts/S1D13781_font_big_LTDC.h"
 	#include "./fonts/ltdc_CenturyGothic_big.h"

@@ -216,4 +216,23 @@ const unifont_t unifont_FreeSans12pt7b =
 };
 #endif
 
+
+#if 1
+
+#include "adafruit_16x15.h"
+static adafruitfont_data_t unifontdata_small16x15;
+const unifont_t unifont_small =
+{
+		.decode = adafruitfont_decode,
+		.getcharraster = adafruitfont_getcharraster,
+		.font_drawwidth = adafruitfont_width,
+		.font_drawheight = adafruitfont_height,
+		.font_draw = adafruitfont_render_char,
+		//
+		.fontraster = & adafruit_16x15,
+		.fontdata = & unifontdata_small16x15,
+		.label = "FreeSans12pt7b"
+};
+#endif
+
 #endif	/* LCDMODE_LTDC */

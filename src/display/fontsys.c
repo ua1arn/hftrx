@@ -622,31 +622,31 @@ const unifont_t unifont_half =
 
 #if defined (SMALLCHARH) && defined (SMALLCHARW)
 
-const unifont_t unifont_small =
-{
-	.decode = smallfont_decode,
-	.getcharraster = unifont_getcharraster,
-	.font_drawwidth = smallfont_width,
-	.font_drawheight = smallfont_height,
-	.bytesw = 2,//sizeof S1D13781_smallfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
-	.fontraster = S1D13781_smallfont_LTDC,		// начало знакогенератора в памяти
-	.font_draw = unifont_put_char_small,
-	.font_prerender = NULL,
-	.label = "unifont_small"
-};
+//const unifont_t unifont_small =
+//{
+//	.decode = smallfont_decode,
+//	.getcharraster = unifont_getcharraster,
+//	.font_drawwidth = smallfont_width,
+//	.font_drawheight = smallfont_height,
+//	.bytesw = 2,//sizeof S1D13781_smallfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
+//	.fontraster = S1D13781_smallfont_LTDC,		// начало знакогенератора в памяти
+//	.font_draw = unifont_put_char_small,
+//	.font_prerender = NULL,
+//	.label = "unifont_small"
+//};
 
-const unifont_t unifont_small_x2 =
-{
-	.decode = smallfont_decode,
-	.getcharraster = unifont_getcharraster_x2,
-	.font_drawwidth = smallfont_x2_width,
-	.font_drawheight = smallfont_x2_height,
-	.bytesw = 2,//sizeof S1D13781_smallfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
-	.fontraster = S1D13781_smallfont_LTDC,		// начало знакогенератора в памяти
-	.font_draw = unifont_put_char_small_x2,
-	.font_prerender = NULL,
-	.label = "unifont_small_x2"
-};
+//const unifont_t unifont_small_x2 =
+//{
+//	.decode = smallfont_decode,
+//	.getcharraster = unifont_getcharraster_x2,
+//	.font_drawwidth = smallfont_x2_width,
+//	.font_drawheight = smallfont_x2_height,
+//	.bytesw = 2,//sizeof S1D13781_smallfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
+//	.fontraster = S1D13781_smallfont_LTDC,		// начало знакогенератора в памяти
+//	.font_draw = unifont_put_char_small_x2,
+//	.font_prerender = NULL,
+//	.label = "unifont_small_x2"
+//};
 #endif /* defined (SMALLCHARH) && defined (SMALLCHARW) */
 
 #if defined (SMALLCHARH2) && defined (SMALLCHARW2)
