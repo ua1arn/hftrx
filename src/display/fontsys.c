@@ -590,10 +590,10 @@ const unifont_t unifont_big =
 	.font_drawwidth = bigfont_width,
 	.font_drawheight = bigfont_height,
 #if WITHALTERNATIVEFONTS
-	.bytesw = 5,//sizeof ltdc_CenturyGothic_big [0] [0],		// байтов в одной строке знакогенератора символа
+	.bytesw = (BIGCHARW + 7) / 8,//sizeof ltdc_CenturyGothic_big [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = ltdc_CenturyGothic_big,		// начало знакогенератора в памяти
 #else /* WITHALTERNATIVEFONTS */
-	.bytesw = 5,//sizeof S1D13781_bigfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
+	.bytesw = (BIGCHARW + 7) / 8,//sizeof S1D13781_bigfont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_bigfont_LTDC,		// начало знакогенератора в памяти
 #endif /* WITHALTERNATIVEFONTS */
 	.font_draw = unifont_put_char_big_rendered,
@@ -608,10 +608,10 @@ const unifont_t unifont_half =
 	.font_drawwidth = halffont_width,
 	.font_drawheight = halffont_height,
 #if WITHALTERNATIVEFONTS
-	.bytesw = 4,//sizeof ltdc_CenturyGothic_half [0] [0],		// байтов в одной строке знакогенератора символа
+	.bytesw = (HALFCHARW + 7) / 8,//sizeof ltdc_CenturyGothic_half [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = ltdc_CenturyGothic_half,		// начало знакогенератора в памяти
 #else /* WITHALTERNATIVEFONTS */
-	.bytesw = 4,//sizeof S1D13781_halffont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
+	.bytesw = (HALFCHARW + 7) / 8,//sizeof S1D13781_halffont_LTDC [0] [0],		// байтов в одной строке знакогенератора символа
 	.fontraster = S1D13781_halffont_LTDC,		// начало знакогенератора в памяти
 #endif /* WITHALTERNATIVEFONTS */
 	.font_draw = unifont_put_char_half_rendered,

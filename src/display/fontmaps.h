@@ -38,12 +38,14 @@ extern const uint8_t ltdc_CenturyGothic_half [];
 	// в знакогенераторе изображения символов "по горизонтали"
 	#include "./fonts/S1D13781_font_small3_LTDC.h"
 	#include "./fonts/S1D13781_font_small2_LTDC.h"
-	#include "./fonts/S1D13781_font_small_LTDC.h"
-	//#include "./fonts/S1D13781_font_small_RU_LTDC.h"
-	#include "./fonts/S1D13781_font_half_LTDC.h"
-	#include "./fonts/S1D13781_font_big_LTDC.h"
+#if WITHALTERNATIVEFONTS
 	#include "./fonts/ltdc_CenturyGothic_big.h"
 	#include "./fonts/ltdc_CenturyGothic_half.h"
+#else /* WITHALTERNATIVEFONTS */
+	#include "./fonts/S1D13781_font_half_LTDC.h"
+	#include "./fonts/S1D13781_font_big_LTDC.h"
+#endif /* WITHALTERNATIVEFONTS */
+
 #endif
 
 #endif /* FONTSHERE */
