@@ -1852,28 +1852,28 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 //	RTMIX0: VI1, UI1
 //	RTMIX1: VI2, UI2
 
-static DE_VI_TypeDef * rtmix0_vimap [] =
+static DE_VI_TypeDef * const rtmix0_vimap [] =
 {
 		DE_VI1,
 		NULL,
 		NULL,
 };
 
-static DE_VI_TypeDef * rtmix1_vimap [] =
+static DE_VI_TypeDef * const rtmix1_vimap [] =
 {
 		DE_VI2,
 		NULL,
 		NULL,
 };
 
-static DE_UI_TypeDef * rtmix0_uimap [] =
+static DE_UI_TypeDef * const rtmix0_uimap [] =
 {
 		DE_UI1,
 		NULL,
 		NULL,
 };
 
-static DE_UI_TypeDef * rtmix1_uimap [] =
+static DE_UI_TypeDef * const rtmix1_uimap [] =
 {
 		DE_UI2,
 		NULL,
