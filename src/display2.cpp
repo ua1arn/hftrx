@@ -2146,9 +2146,6 @@ display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 		smpr->gm + 5 * smpr->step2,
 	};
 
-	uint_fast16_t pad2h3;
-	const uint_fast16_t pad2w3 = colpip_string_widthheight(font, "ZZ", & pad2h3);
-
 	unsigned p;
 	unsigned i;
 
@@ -2171,8 +2168,7 @@ display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
 		uint_fast16_t sh3;
 		const uint_fast16_t sw3 = colpip_string_widthheight(font, buf2, & sh3);
-		// todo: usage of pad2w3 in vertial coordinate is right?
-		colpip_string(db, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, font, buf2, COLORPIP_YELLOW);
+		colpip_string(db, xx - sw3 / 2, yy - sh3 * 3 / 2, font, buf2, COLORPIP_YELLOW);
 	}
 	for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 	{
@@ -2189,7 +2185,7 @@ display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "+%u", p);
 		uint_fast16_t sh3;
 		const uint_fast16_t sw3 = colpip_string_widthheight(font, buf2, & sh3);
-		colpip_string(db, xx - sw3 / 2, yy - pad2w3 + 1, font, buf2, COLORPIP_RED);
+		colpip_string(db, xx - sw3 / 2, yy - sh3 * 3 / 2, font, buf2, COLORPIP_RED);
 	}
 	for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 	{
@@ -2299,8 +2295,6 @@ display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 		smpr->gs + 2 * smpr->step3,
 		smpr->gs + 3 * smpr->step3,
 	};
-	uint_fast16_t pad2h3;
-	const uint_fast16_t pad2w3 = colpip_string_widthheight(font, "ZZ", & pad2h3);
 
 	unsigned p;
 	unsigned i;
@@ -2313,6 +2307,7 @@ display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 
 	colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
 
+	// Разметка шкалы мощности
 	for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr) - 1; ++ i, p += 10)
 	{
 		if (i % 2 == 0)
@@ -2325,12 +2320,13 @@ display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
 			uint_fast16_t sh3;
 			const uint_fast16_t sw3 = colpip_string_widthheight(font, buf2, & sh3);
-			colpip_string(db, xx - sw3 / 2, yy - pad2w3 + 1, font, buf2, COLORPIP_YELLOW);
+			colpip_string(db, xx - sw3 / 2, yy - sh3 * 3 / 2, font, buf2, COLORPIP_YELLOW);
 		}
 		else
 			colpip_radius(db, smpr->xcneddle, smpr->ycneddle, markersTX_pwr [i], smpr->r1, smpr->r1 + 4, smetercolor, 1, 1);
 	}
 
+	// Разметка шкалы КСВ
 	for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
 	{
 		char buf2 [10];
@@ -2341,8 +2337,7 @@ display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
 		uint_fast16_t sh3;
 		const uint_fast16_t sw3 = colpip_string_widthheight(font, buf2, & sh3);
-		// todo: usage of SMALLCHARW3 in vertial coordinate is right?
-		colpip_string(db, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, font, buf2, COLORPIP_YELLOW);
+		colpip_string(db, xx - sw3 / 2, yy, font, buf2, COLORPIP_YELLOW);
 	}
 	colpip_segm(db, smpr->xcneddle, smpr->ycneddle, smpr->gs, smpr->gm, smpr->r1, 1, smetercolor, 1, 1);
 	colpip_segm(db, smpr->xcneddle, smpr->ycneddle, smpr->gm, smpr->ge, smpr->r1, 1, smetercolor, 1, 1);
@@ -2471,8 +2466,6 @@ display2_smeter15_layout_tx_bars(smeter_params_t * const smpr)
 		smpr->gs + 2 * smpr->step3,
 		smpr->gs + 3 * smpr->step3,
 	};
-	uint_fast16_t pad2h3;
-	const uint_fast16_t pad2w3 = colpip_string_widthheight(font, "ZZ", & pad2h3);
 
 	// SMETER_TYPE_DIAL data
 	// координаты оси стрелки
@@ -2563,9 +2556,6 @@ display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 		smpr->gm + 3 * smpr->step2,
 		smpr->gm + 5 * smpr->step2,
 	};
-
-	uint_fast16_t pad2h3;
-	const uint_fast16_t pad2w3 = colpip_string_widthheight(font, "ZZ", & pad2h3);
 
 	unsigned p;
 	unsigned i;
