@@ -272,7 +272,38 @@ const unifont_t unifont_small2 =
 };
 #endif
 
-#if 1
+#if WITHALTERNATIVEFONTS
+
+#include "CenturyHothic_28x54.h"
+static adafruitfont_data_t unifontdata_small28x54;
+const unifont_t unifont_half =
+{
+		.decode = adafruitfont_decode,
+		.getcharraster = adafruitfont_getcharraster,
+		.font_drawwidth = adafruitfont_width,
+		.font_drawheight = adafruitfont_height,
+		.font_draw = adafruitfont_render_char,
+		//
+		.fontraster = & CenturyHothic_28x54,
+		.fontdata = & unifontdata_small28x54,
+		.label = "CenturyHothic_28x54"
+};
+
+#include "CenturyHothic_36x54.h"
+static adafruitfont_data_t unifontdata_small36x54;
+const unifont_t unifont_big =
+{
+		.decode = adafruitfont_decode,
+		.getcharraster = adafruitfont_getcharraster,
+		.font_drawwidth = adafruitfont_width,
+		.font_drawheight = adafruitfont_height,
+		.font_draw = adafruitfont_render_char,
+		//
+		.fontraster = & CenturyHothic_36x54,
+		.fontdata = & unifontdata_small36x54,
+		.label = "CenturyHothic_36x54"
+};
+#else /* WITHALTERNATIVEFONTS */
 
 #include "adafruit_28x54.h"
 static adafruitfont_data_t unifontdata_small28x54;
@@ -288,9 +319,6 @@ const unifont_t unifont_half =
 		.fontdata = & unifontdata_small28x54,
 		.label = "adafruit_28x54"
 };
-#endif
-
-#if 1
 
 #include "adafruit_36x54.h"
 static adafruitfont_data_t unifontdata_small36x54;
@@ -306,6 +334,7 @@ const unifont_t unifont_big =
 		.fontdata = & unifontdata_small36x54,
 		.label = "adafruit_36x54"
 };
-#endif
+
+#endif /* WITHALTERNATIVEFONTS */
 
 #endif	/* LCDMODE_LTDC */
