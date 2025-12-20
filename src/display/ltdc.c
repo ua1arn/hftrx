@@ -90,6 +90,23 @@ static void ltdc_tfcon_cfg(int rtmixid, const videomode_t * vdmode)
 	}
 }
 
+/* Получить желаемую частоту pixel clock для данного видеорежима. */
+uint_fast32_t display_getdotclock(const videomode_t * vdmode)
+{
+	/* Accumulated parameters for this display */
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
+	const unsigned HSYNC = vdmode->hsync;	/*  */
+	const unsigned VSYNC = vdmode->vsync;	/*  */
+	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
+	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
+	const unsigned HTOTAL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VTOTAL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+
+	return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL;
+	//return (uint_fast32_t) vdmode->fps * HTOTAL * VTOTAL / (vdmode->interlaced + 1);
+}
+
 static void hardware_ltdc_vsync(int rtmixid);
 
 #if CPUSTYLE_R7S721
