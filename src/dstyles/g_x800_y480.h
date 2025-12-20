@@ -119,7 +119,7 @@
 		{	40, 25, 4, 5, display2_bkin3,		& dzi_compat, PGALL, },	// BREAK-IN
 		{	44,	25,	6, 5, display2_wpm5, 		& dzi_compat, PGALL, },	// 22WPM
 
-		//{	24, 30,	10, 5, display_freqmeter10, & dzi_compat, PGALL, },	// измеренная частота опоры
+		//{	24, 30,	10, 5, display2_freqmeter10, & dzi_compat, PGALL, },	// измеренная частота опоры
 		//{	36, 30,	8, 5, display2_freqdelta8, & dzi_compat, PGALL, },	// выход ЧМ демодулятора
 
 	#if WITHSPECTRUMWF
@@ -134,7 +134,7 @@
 		{	29, DLE1,	4, 5, display2_usbsts3,		& dzi_compat, PG0, },	// USB host status
 		{	33, DLE1,	3, 5, display2_btsts2,		& dzi_compat, PG0, },	// USB host status
 		{	36, DLE1,	8, 5, display2_classa7,		& dzi_compat, PG0, },	// Class-A power amplifier
-		//{	28, DLE1,	10, 5, display_freqmeter10, & dzi_compat, PGALL, },	// измеренная частота опоры
+		//{	28, DLE1,	10, 5, display2_freqmeter10, & dzi_compat, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
 		{	0,				DLES,	BDTH_ALLRX, (DLE1 - DLES) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)

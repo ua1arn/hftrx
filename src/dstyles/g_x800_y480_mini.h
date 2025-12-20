@@ -142,7 +142,7 @@
 		{	13,	DLE1,	9,	0,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	0,	0,	display2_thermo,	REDRM_VOLT, PGALL, },	// thermo sensor
 		{	28, DLE1,	3,	0,	display2_usbsts3,		REDRM_BARS, PGALL, },	// USB host status
-		//{	28, DLE1,	0,	0,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
+		//{	28, DLE1,	0,	0,	display2_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
 		{	39, DLE1,	5,	0,	display2_currlevel, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 		{	45, DLE1,	5,	0,	display2_voltlevelV, REDRM_VOLT, PGALL, },	// voltmeter with "V"

@@ -2683,8 +2683,33 @@ display2_smeter15(const gxdrawb_t * db,
 
 #endif /* LCDMODE_LTDC */
 
+// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
+static void
+display2_freq_big(
+	const gxdrawb_t * db,
+	uint_fast8_t xcell,	// x координата начала вывода значения
+	uint_fast8_t ycell,	// y координата начала вывода значения
+	uint_fast8_t xspan,
+	uint_fast8_t yspan,
+	int_fast32_t freq,
+	uint_fast8_t width, // = 8;	// full width
+	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
+	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
+	uint_fast8_t rj,	// = 1;		// right truncated
+	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
+	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
+	uint_fast8_t withhalf,		// 0 - только большие цифры
+	const gxstyle_t * dbstylep	/* foreground and background colors, text alignment */
+	)
+{
+
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
+	pix_display_value_big(db, xpix, ypix, GRID2X(xspan), GRID2Y(yspan), freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep);
+}
+
 // Отображение частоты. Герцы так же большим шрифтом.
-static void display_freqXa_big(const gxdrawb_t * db,
+static void display2_freqXa_big(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -2706,7 +2731,7 @@ static void display_freqXa_big(const gxdrawb_t * db,
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
 
-		display_freq(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 0, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
+		display2_freq_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 0, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 #endif /* WITHDIRECTFREQENER */
 	else
@@ -2715,7 +2740,7 @@ static void display_freqXa_big(const gxdrawb_t * db,
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		display_freq(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
+		display2_freq_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -2758,7 +2783,7 @@ static void display2_freqX_a(
 	else if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
-		display_freq(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
+		display2_freq_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 #endif /* WITHDIRECTFREQENER */
 	else
@@ -2767,13 +2792,13 @@ static void display2_freqX_a(
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		display_freq(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
+		display2_freq_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 }
 
 // Верстия отображения без точки между мегагерцами и сотнями килогерц (для текстовых дисплееев)
 // FREQ B
-static void display_freqchr_a(
+static void display2_freqchr_a(
 	const gxdrawb_t * db,
 	uint_fast8_t xcell,
 	uint_fast8_t ycell,
@@ -2795,7 +2820,7 @@ static void display_freqchr_a(
 	{
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
-		display_freq(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
+		display2_freq_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 #endif /* WITHDIRECTFREQENER */
 	else
@@ -2804,13 +2829,13 @@ static void display_freqchr_a(
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		display_freq(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
+		display2_freq_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 }
 
 // Верстия отображения без точки между мегагерцами и сотнями килогерц (для текстовых дисплееев)
 // FREQ B
-static void display_freqchr_b(const gxdrawb_t * db,
+static void display2_freqchr_b(const gxdrawb_t * db,
 	uint_fast8_t xcell,
 	uint_fast8_t ycell,
 	uint_fast8_t xspan,
@@ -2833,7 +2858,7 @@ static void display_freqchr_b(const gxdrawb_t * db,
 	{
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
-		display_freq(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, UINT8_MAX, rj, efp->blinkpos + 1, efp->blinkstate, 1, dbstylep);	// отрисовываем верхнюю часть строки
+		display2_freq_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, UINT8_MAX, rj, efp->blinkpos + 1, efp->blinkstate, 1, dbstylep);	// отрисовываем верхнюю часть строки
 	}
 #endif /* WITHDIRECTFREQENER */
 	else
@@ -2842,7 +2867,7 @@ static void display_freqchr_b(const gxdrawb_t * db,
 
 		const uint_fast32_t freq = hamradio_get_freq_b();
 
-		display_freq(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, UINT8_MAX, 1, blinkpos, blinkstate, 1, dbstylep);	// отрисовываем верхнюю часть строки
+		display2_freq_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, UINT8_MAX, 1, blinkpos, blinkstate, 1, dbstylep);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -2867,7 +2892,7 @@ static void display2_freqX_b(const gxdrawb_t * db,
 }
 
 // отладочная функция измерителя опорной частоты
-static void display_freqmeter10(const gxdrawb_t * db,
+static void display2_freqmeter10(const gxdrawb_t * db,
 		uint_fast8_t xcell,
 		uint_fast8_t ycell,
 		uint_fast8_t xspan,
@@ -9999,7 +10024,6 @@ static void display2_stylesupdate(void)
 	// Параметры отображения частоты основного приемника
 	gxstyle_initialize(& dbstylev_1freqv);
 	gxstyle_textcolor(& dbstylev_1freqv, DSGN_BIGCOLOR,	DSGN_BIGCOLORBACK);
-	gxstyle_setsbigandhalffont(& dbstylev_1freqv);	// функции отрисовки частоты большим шрифтом
 	gxstyle_setbgbackoff(& dbstylev_1freqv, 0, 0); // уменьшение размера плашки
 	gxstyle_setbgradius(& dbstylev_1freqv, 0);
 

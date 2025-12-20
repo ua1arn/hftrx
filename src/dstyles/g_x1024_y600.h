@@ -128,7 +128,7 @@
 		{	41, 25, 0, 4, display2_bkin3,		& dzi_default, PGALL, },	// BREAK-IN
 		{	45,	25,	5, 4, display2_wpm5, 		& dzi_default, PGALL, },	// 22WPM
 
-		//{	24, 30,	10, 0, display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
+		//{	24, 30,	10, 0, display2_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 		{	37, 30,	8, 0, display2_freqdelta8, 	& dzi_default, PGALL, },	// выход ЧМ демодулятора
 
 	#if WITHSPECTRUMWF
@@ -142,7 +142,7 @@
 		{	23, DLE1,	4, 4, display2_thermo,	& dzi_default, PGALL, },	// thermo sensor
 		{	28, DLE1,	3, 4, display2_usbsts3,		& dzi_default, PG0, },	// USB host status
 		{	32, DLE1,	7, 4, display2_classa7,		& dzi_default, PG0, },	// Class-A power amplifier
-		//{	28, DLE1,	10, 4, display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
+		//{	28, DLE1,	10, 4, display2_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
 		{	0,				DLES,	BDTH_ALLRX, (DLE1 - DLES) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)

@@ -247,7 +247,6 @@ void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg);
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a);
 void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a);
 void gxstyle_setfont(gxstyle_t * dbstyle, const unifont_t * font);
-void gxstyle_setsbigandhalffont(gxstyle_t * dbstyle);
 void gxstyle_setbgbackoff(gxstyle_t * dbstyle, unsigned x, unsigned y);
 void gxstyle_setbgradius(gxstyle_t * dbstyle, unsigned r);
 void gxstyle_setbgrfilled(gxstyle_t * dbstyle, unsigned f);
@@ -686,25 +685,6 @@ void colpip_line(
 	int xk, int yk,
 	COLORPIP_T color,
 	int antialiasing
-	);
-
-// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
-void
-display_freq(
-	const gxdrawb_t * db,
-	uint_fast8_t xcell,	// x координата начала вывода значения
-	uint_fast8_t ycell,	// y координата начала вывода значения
-	uint_fast8_t xspan,
-	uint_fast8_t yspan,
-	int_fast32_t freq,
-	uint_fast8_t width, // = 8;	// full width
-	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
-	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
-	uint_fast8_t rj,	// = 1;		// right truncated
-	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
-	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf,		// 0 - только большие цифры
-	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
 	);
 
 void

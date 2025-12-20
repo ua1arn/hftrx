@@ -139,7 +139,7 @@ static const dzone_t dzones [] =
 	//{	44,	25,	6,	5,	display2_wpm5, & dzi_wpm, PGALL, },	// 22WPM
 	{	44,	25,	6,	5,	display2_lockstate4, & dzi_lock, PGALL, },	// LOCK
 
-	//{	24, 30,	10,	5,	display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
+	//{	24, 30,	10,	5,	display2_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 	//{	36, 30,	8,	5,	display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
 
 #if 1
@@ -158,7 +158,7 @@ static const dzone_t dzones [] =
 	{	33, DLEB,	3,	5,	display2_btsts2,		& dzi_btact, PG0, },	// USB host status
 	{	36, DLEB,	8,	5,	display2_classa7,		& dzi_classa, PG0, },	// Class-A power amplifier
 	{	44, DLEB, 	6,  5, 	display2_rxctcss5, 		& dzi_compat, PG0, },
-	//{	28, DLEB,	10,	5,	display_freqmeter10, 	& dzi_default, PGALL, },	// измеренная частота опоры
+	//{	28, DLEB,	10,	5,	display2_freqmeter10, 	& dzi_default, PGALL, },	// измеренная частота опоры
 
 #if WITHMENU
 	{	0,				DLEM,	BDTH_ALLRX, (DLEB - DLEM) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)

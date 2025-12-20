@@ -490,31 +490,6 @@ pix_display_value_big(
 	}
 }
 
-// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
-void
-display_freq(
-	const gxdrawb_t * db,
-	uint_fast8_t xcell,	// x координата начала вывода значения
-	uint_fast8_t ycell,	// y координата начала вывода значения
-	uint_fast8_t xspan,
-	uint_fast8_t yspan,
-	int_fast32_t freq,
-	uint_fast8_t width, // = 8;	// full width
-	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
-	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
-	uint_fast8_t rj,	// = 1;		// right truncated
-	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
-	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf,		// 0 - только большие цифры
-	const gxstyle_t * dbstylep	/* foreground and background colors, text alignment */
-	)
-{
-
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
-	pix_display_value_big(db, xpix, ypix, GRID2X(xspan), GRID2Y(yspan), freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep);
-}
-
 // обычный шрифт
 // вывести единственный символ
 static uint_fast16_t display_put_char(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
@@ -1807,13 +1782,6 @@ void gxstyle_setbgradius(gxstyle_t * dbstyle, unsigned r)
 void gxstyle_setbgrfilled(gxstyle_t * dbstyle, unsigned f)
 {
 	dbstyle->bgfilled = f;
-}
-
-void gxstyle_setsbigandhalffont(gxstyle_t * dbstyle)
-{
-#if ! LCDMODE_LTDC
-#else /* WITHALTERNATIVEFONTS */
-#endif /* WITHALTERNATIVEFONTS */
 }
 
 #define GXSTYLE_BACKOFF 2	// на столько пикселей уменьшается высота и ширина при наличии радиуса в стиле
