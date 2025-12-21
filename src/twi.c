@@ -1528,6 +1528,7 @@ void i2chwx_initialize(TWI_t * twi, unsigned TWIx, uint_fast32_t busfreq, uint_f
 
 	}
 #if defined (S_TWI0) && defined (PRCM)
+	// T507, H6161, H618, A133
 	else if (twi == S_TWI0)
 	{
 		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
@@ -1536,6 +1537,7 @@ void i2chwx_initialize(TWI_t * twi, unsigned TWIx, uint_fast32_t busfreq, uint_f
 	}
 #endif /* defined (S_TWI0) */
 #if defined (S_TWI1) && defined (PRCM)
+	// A133
 	else if (twi == S_TWI1)
 	{
 		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 1);	// Open the clock gate
@@ -1578,6 +1580,16 @@ void i2chwx_initialize(TWI_t * twi, unsigned TWIx, uint_fast32_t busfreq, uint_f
 		;
 
 	t113_i2c_stop(twi);
+
+#elif CPUSTYLE_STM32MP1
+
+#elif CPUSTYLE_STM32H7XX
+
+#elif CPUSTYLE_STM32F
+
+#elif CPUSTYLE_RK356X
+
+#elif CPUSTYLE_R7S721
 
 #endif
 }
