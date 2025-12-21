@@ -127,28 +127,30 @@ static uint_fast16_t ufcached_drawci(const gxdrawb_t * db, uint_fast16_t xpix, u
 	const unifont_t * const pf = (const unifont_t *) font->fontraster;	// parent unifont_t object
 #if WITHPRERENDER
 	ufcache_t * const cache = (ufcache_t *) font->fontdata;
-	const uint_fast16_t width2 = pf->font_drawwidthci(pf, ci);	// number of bits (start from LSB first byte in raster)
-	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
-	/* копируем изображение БЕЗ цветового ключа */
-	/* dcache_clean исходного изображения уже выполнено при построении изображения. */
-	colpip_bitblt(
-			db->cachebase, db->cachesize,
-			db,
-			xpix, ypix,	// координаты в окне получатля
-			cache->dbv.cachebase, 0 * cache->dbv.cachesize,
-			& cache->dbv,
-			ci * cache->cellw, 0,	// координаты окна источника
-			width2, cache->cellh, // размер окна источника
-			BITBLT_FLAG_NONE, COLORPIP_KEY
-			);
+	if (cache->rendered)
+	{
+		const uint_fast16_t width2 = pf->font_drawwidthci(pf, ci);	// number of bits (start from LSB first byte in raster)
+		// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
+		/* копируем изображение БЕЗ цветового ключа */
+		/* dcache_clean исходного изображения уже выполнено при построении изображения. */
+		colpip_bitblt(
+				db->cachebase, db->cachesize,
+				db,
+				xpix, ypix,	// координаты в окне получатля
+				cache->dbv.cachebase, 0 * cache->dbv.cachesize,
+				& cache->dbv,
+				ci * cache->cellw, 0,	// координаты окна источника
+				width2, cache->cellh, // размер окна источника
+				BITBLT_FLAG_NONE, COLORPIP_KEY
+				);
 
-	return xpix + width2;
+		return xpix + width2;
+	}
 
-#else /* WITHPRERENDER */
+#endif /* WITHPRERENDER */
 
 	return pf->font_drawci(db, xpix, ypix, pf, ci, fg);
 
-#endif /* WITHPRERENDER */
 }
 
 static void ufcached_prerender(const unifont_t * font, COLORPIP_T fg, COLORPIP_T bg)
@@ -165,19 +167,21 @@ static void ufcached_prerender(const unifont_t * font, COLORPIP_T fg, COLORPIP_T
 	cache->cellw = w;	// самый большой размер
 	cache->cellh = pf->font_drawheight(pf);
 
-	PACKEDCOLORPIP_T * b = (PACKEDCOLORPIP_T *) calloc(GXSIZE(cache->cellw * cicount, cache->cellh), sizeof (PACKEDCOLORPIP_T));
+	PACKEDCOLORPIP_T * const b = (PACKEDCOLORPIP_T *) aligned_alloc(DCACHEROWSIZE, GXSIZE(cache->cellw * cicount, cache->cellh) * sizeof (PACKEDCOLORPIP_T));
 	ASSERT(b);
+	if (b == NULL)
+		return;
 	cache->rendered = b;
 	gxdrawb_initialize(& cache->dbv, b, cache->cellw * cicount, cache->cellh);
+	// заполнение фона
 	colpip_fillrect(& cache->dbv, 0, 0, cache->cellw * cicount, cache->cellh, bg);	/* при alpha==0 все биты цвета становятся 0 */
 
-	uint_fast16_t ypix = 0;
+	const uint_fast16_t ypix = 0;
 	uint_fast16_t xpix = 0;
-	for (ci = 0; ci < cicount; ++ ci)
+	for (ci = 0; ci < cicount; ++ ci, xpix += cache->cellw)
 	{
 		pf->font_drawci(& cache->dbv, xpix, ypix, pf, ci, fg);	// BIGCHARW
 		display_do_AA(& cache->dbv, xpix, ypix, pf->font_drawwidthci(pf, ci), cache->cellh);
-		xpix += w;
 	}
 	dcache_clean(cache->dbv.cachebase, cache->dbv.cachesize);
 }
