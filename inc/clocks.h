@@ -545,6 +545,23 @@ calcdividerselect(
 		ALLWNT113_pad
 	};
 
+#elif CPUSTYLE_R7S721
+
+	struct spcr_spsr_tag { uint_fast8_t scemr, scsmr; };
+
+	extern const struct spcr_spsr_tag scemr_scsmr [];
+
+	enum
+	{
+		R7S721_SCIF_SCBRR_WIDTH = 8,	R7S721_SCIF_SCBRR_TAPS = (2048 | 1024 | 512 | 256 | 128 | 64 | 32 | 16 ),	// Регистр SCIFx.SCBRR требует уменьшение на 1
+		R7S721_RSPI_SPBR_WIDTH = 8,		R7S721_RSPI_SPBR_TAPS = (16 | 8 | 4 | 2),
+	};
+
+	uint_fast32_t
+	calcdivround_p1clock(
+		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
+		);
+
 #else
 	//#warning Undefined CPUSTYLE_XXX
 #endif
