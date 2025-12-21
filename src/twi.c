@@ -1547,10 +1547,11 @@ void i2chwx_initialize(TWI_t * twi, unsigned TWIx, uint_fast32_t busfreq, uint_f
 	// A64
 	else if (twi == R_TWI)
 	{
-		// was: PRCM
-		R_PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
-		R_PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
-		R_PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
+		// https://github.com/torvalds/linux/blob/d4560686726f7a357922f300fc81f5964be8df04/drivers/clk/sunxi-ng/ccu-sun8i-r.c#L62
+
+		R_PRCM->APB0_CLK_GATING_REG |= (UINT32_C(1) << 6);	// R_TWI Open the clock gate
+		R_PRCM->APB0_SOFT_RST_REG &= ~ (UINT32_C(1) << 6);	// Assert R_TWI reset
+		R_PRCM->APB0_SOFT_RST_REG |= (UINT32_C(1) << 6);	// De-assert R_TWI reset
 	}
 	else
 	{
