@@ -288,11 +288,11 @@ const unifont_t unifont_small2 =
 
 #include "fonts/CenturyHothic_28x54.h"
 static adafruitfont_data_t unifontdata_small28x54;
-const unifont_t unifont_half =
+const unifont_t unifont_half_raw =
 {
 	.decode = adafruitfont_decode,
 	.totalci = adafruitfont_totalci,
-	.getcharraster = adafruitfont_getcharraster,
+	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
@@ -304,11 +304,11 @@ const unifont_t unifont_half =
 
 #include "fonts/CenturyHothic_36x54.h"
 static adafruitfont_data_t unifontdata_small36x54;
-const unifont_t unifont_big =
+const unifont_t unifont_big_raw =
 {
 	.decode = adafruitfont_decode,
 	.totalci = adafruitfont_totalci,
-	.getcharraster = adafruitfont_getcharraster,
+	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
