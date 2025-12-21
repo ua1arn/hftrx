@@ -422,6 +422,13 @@ ubmfont_decode(const unifont_t * font, char cc)
 	return c - 0x20;
 }
 
+uint_fast16_t
+ubmfont_totalci(const unifont_t * font)
+{
+	//const UB_Font * const ub = (const UB_Font *) font->fontraster;
+	return 0x7F - 0x20;
+}
+
 // Для моноширинных знакогенераторов
 const void * ubmfont_getcharraster(const unifont_t * font, uint_fast16_t ci)
 {
@@ -478,6 +485,13 @@ ubpfont_decode(const unifont_t * font, char cc)
 	if (c > ubp->last_char)
 		return 0;
 	return c - ubp->first_char;
+}
+
+uint_fast16_t
+ubpfont_totalci(const unifont_t * font)
+{
+	const UB_pFont * const ubp = (const UB_pFont *) font->fontraster;
+	return ubp->last_char - ubp->first_char + 1;
 }
 
 // Для пропорциональных знакогенераторов

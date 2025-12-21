@@ -205,6 +205,7 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layer);
 typedef struct unifont_tag
 {
 	uint_fast16_t (* decode)(const struct unifont_tag * font, char cc);	// получение ci
+	uint_fast16_t (* totalci)(const struct unifont_tag * font);
 	const void * (* getcharrasterci)(const struct unifont_tag * font, uint_fast16_t ci);	// получение начального адреса растра для символа
 	uint_fast8_t (* font_drawwidthci)(const struct unifont_tag * font, uint_fast16_t ci);	// ширина в пиксеях данного символа (может быть меньше чем поле width)
 	uint_fast8_t (* font_drawheight)(const struct unifont_tag * font);	// высота в пикселях (се символы шрифта одной высоты)
@@ -902,6 +903,7 @@ uint16_t getwidth_Mstring(const char * str, const UB_Font * font);
 uint_fast8_t ubmfont_width(const struct unifont_tag * font, uint_fast16_t ci);
 uint_fast8_t ubmfont_height(const unifont_t * font);
 uint_fast16_t ubmfont_decode(const unifont_t * font, char cc);
+uint_fast16_t ubmfont_totalci(const unifont_t * font);
 const void * ubmfont_getcharraster(const unifont_t * font, uint_fast16_t ci);
 uint_fast16_t ubmfont_render_char16(
 	const gxdrawb_t * db,
@@ -922,6 +924,7 @@ uint_fast16_t ubmfont_render_char32(
 uint_fast8_t ubpfont_width(const struct unifont_tag * font, uint_fast16_t ci);
 uint_fast8_t ubpfont_height(const unifont_t * font);
 uint_fast16_t ubpfont_decode(const unifont_t * font, char cc);
+uint_fast16_t ubpfont_totalci(const unifont_t * font);
 const void * ubpfont_getcharraster(const struct unifont_tag * font, uint_fast16_t ci);
 uint_fast16_t ubpfont_render_char16(
 	const gxdrawb_t * db,

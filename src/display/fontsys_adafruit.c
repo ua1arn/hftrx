@@ -65,6 +65,13 @@ adafruitfont_decode(const unifont_t * font, char cc)
 	return c - gfxfont->first;
 }
 
+static uint_fast16_t
+adafruitfont_totalci(const unifont_t * font)
+{
+	const hftrx_GFXfont_t * const gfxfont = (const hftrx_GFXfont_t * const) font->fontraster;
+	return gfxfont->last - gfxfont->first + 1;
+}
+
 // Для пропорциональных знакогенераторов
 static uint_fast8_t adafruitfont_width(const unifont_t * font, uint_fast16_t ci)
 {
@@ -131,6 +138,7 @@ static adafruitfont_data_t unifontdata_FreeMono9pt7b;
 const unifont_t unifont_FreeMono9pt7b =
 {
 	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
 	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
@@ -149,6 +157,7 @@ static adafruitfont_data_t unifontdata_FreeMono12pt7b;
 const unifont_t unifont_FreeMono12pt7b =
 {
 	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
 	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
@@ -167,6 +176,7 @@ static adafruitfont_data_t unifontdata_FreeMono18pt7b;
 const unifont_t unifont_FreeMono18pt7b =
 {
 	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
 	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
@@ -185,6 +195,7 @@ static adafruitfont_data_t unifontdata_FreeMono24pt7b;
 const unifont_t unifont_FreeMono24pt7b =
 {
 	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
 	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
@@ -203,6 +214,7 @@ static adafruitfont_data_t unifontdata_FreeSans12pt7b;
 const unifont_t unifont_FreeSans12pt7b =
 {
 	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
 	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
@@ -222,6 +234,7 @@ static adafruitfont_data_t unifontdata_small16x15;
 const unifont_t unifont_small =
 {
 	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
 	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
@@ -240,6 +253,7 @@ static adafruitfont_data_t unifontdata_small8x8;
 const unifont_t unifont_small3 =
 {
 	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
 	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
@@ -258,6 +272,7 @@ static adafruitfont_data_t unifontdata_small16x10;
 const unifont_t unifont_small2 =
 {
 	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
 	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
@@ -276,6 +291,7 @@ static adafruitfont_data_t unifontdata_small28x54;
 const unifont_t unifont_half =
 {
 	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
 	.getcharraster = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
@@ -291,6 +307,7 @@ static adafruitfont_data_t unifontdata_small36x54;
 const unifont_t unifont_big =
 {
 	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
 	.getcharraster = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
@@ -307,6 +324,7 @@ static adafruitfont_data_t unifontdata_small28x54;
 const unifont_t unifont_half_raw =
 {
 	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
 	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
@@ -322,6 +340,7 @@ static adafruitfont_data_t unifontdata_small36x54;
 const unifont_t unifont_big_raw =
 {
 	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
 	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,

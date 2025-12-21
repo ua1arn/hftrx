@@ -34,6 +34,14 @@ aptechfont_decode(const unifont_t * font, char cc)
 	return c - font_First_Char;
 }
 
+static uint_fast16_t
+aptechfont_totalci(const unifont_t * font)
+{
+	const uint8_t * const blob = (const uint8_t * const) font->fontraster;
+	const uint_fast8_t    font_Char_Count = blob [5];
+	return font_Char_Count;
+}
+
 // Для пропорциональных знакогенераторов
 // todo: нет зазора между символами
 static uint_fast8_t aptechfont_width(const unifont_t * font, uint_fast16_t ci)
@@ -160,6 +168,7 @@ aptechfont_render_char(
 const unifont_t unifont_roboto32 =
 {
 	.decode = aptechfont_decode,
+	.totalci = aptechfont_totalci,
 	.getcharrasterci = aptechfont_getcharraster,
 	.font_drawwidthci = aptechfont_width,
 	.font_drawheight = aptechfont_height,
@@ -176,6 +185,7 @@ const unifont_t unifont_roboto32 =
 const unifont_t unifont_helvNeueTh70 =
 {
 	.decode = aptechfont_decode,
+	.totalci = aptechfont_totalci,
 	.getcharrasterci = aptechfont_getcharraster,
 	.font_drawwidthci = aptechfont_width,
 	.font_drawheight = aptechfont_height,

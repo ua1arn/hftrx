@@ -94,6 +94,14 @@ static uint_fast16_t ufcached_decode(const struct unifont_tag * font, char cc)
 	return pf->decode(pf, cc);
 }
 
+static uint_fast16_t ufcached_totalci(const struct unifont_tag * font)
+{
+	const unifont_t * const pf = (const unifont_t *) font->fontraster;	// parent unifont_t object
+	ASSERT(pf->totalci);
+	return pf->totalci(pf);
+}
+
+
 static uint_fast8_t ufcached_drawwidth(const struct unifont_tag * font, uint_fast16_t ci)	// ширина в пиксеях данного символа (может быть меньше чем поле width)
 {
 	const unifont_t * const pf = (const unifont_t *) font->fontraster;	// parent unifont_t object
@@ -120,9 +128,15 @@ void ufcached_prerender(const unifont_t * font, COLORPIP_T fg, COLORPIP_T bg)
 {
 	const unifont_t * const pf = (const unifont_t *) font->fontraster;	// parent unifont_t object
 	ufcache_t * const cache = (ufcache_t *) font->fontdata;
-	cache->picx = 16;//pf->font_drawwidthci(pf, 0);	// самый большой размер
+	const uint_fast16_t cicount = pf->totalci(pf);
+	uint_fast16_t w;
+	uint_fast16_t ci;
+	for (ci = 0, w = 0; ci < cicount; ++ ci)
+	{
+		w = ulmax16(w, pf->font_drawwidthci(pf, ci));
+	}
+	cache->picx = w;	// самый большой размер
 	cache->picy = pf->font_drawheight(pf);
-	const uint_fast16_t cicount = 32;
 	PACKEDCOLORPIP_T * b = (PACKEDCOLORPIP_T *) calloc(sizeof (PACKEDCOLORPIP_T), GXSIZE(cache->picx * cicount, cache->picy));
 	ASSERT(b);
 	gxdrawb_initialize(& cache->dbv, b, cache->picx, cache->picy);
@@ -133,6 +147,7 @@ static ufcache_t unifont_big0;
 const unifont_t unifont_big =
 {
 	.decode = ufcached_decode,
+	.totalci = ufcached_totalci,
 	.getcharrasterci = ufcached_getcharraster,
 	.font_drawwidthci = ufcached_drawwidth,
 	.font_drawheight = ufcached_drawheight,
@@ -147,6 +162,7 @@ static ufcache_t unifont_half0;
 const unifont_t unifont_half =
 {
 	.decode = ufcached_decode,
+	.totalci = ufcached_totalci,
 	.getcharrasterci = ufcached_getcharraster,
 	.font_drawwidthci = ufcached_drawwidth,
 	.font_drawheight = ufcached_drawheight,
