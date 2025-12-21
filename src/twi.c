@@ -1543,16 +1543,15 @@ void i2chwx_initialize(TWI_t * twi, unsigned TWIx, uint_fast32_t busfreq, uint_f
 		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 17);	// De-assert reset
 	}
 #endif /* defined (S_TWI1) */
-#if defined (R_TWI) && defined (PRCM)
+#if CPUSTYLE_A64
 	// A64
 	else if (twi == R_TWI)
 	{
-		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
-		PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
-		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
+		// was: PRCM
+		R_PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
+		R_PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
+		R_PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
 	}
-#endif /* defined (S_TWI0) */
-#if CPUSTYLE_A64
 	else
 	{
 
@@ -1568,6 +1567,7 @@ void i2chwx_initialize(TWI_t * twi, unsigned TWIx, uint_fast32_t busfreq, uint_f
 		CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
 	}
 #endif
+
 	t113_i2c_set_rate(twi, sclfreq, busfreq);
 
 	twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
@@ -1606,6 +1606,11 @@ void i2c_initialize(void)
 #if WITHSTWI0HW
 	i2chwx_initialize(S_TWI0, 0, TWIHARD_S_TWI0_FREQ, 400000);
 	HARDWARE_S_TWI0_INITIALIZE();
+#endif
+
+#if WITHSTWIHW
+	i2chwx_initialize(R_TWI, 0, TWIHARD_S_TWI_FREQ, 400000);
+	HARDWARE_S_TWI_INITIALIZE();
 #endif
 
 #if WITHSTWI1HW

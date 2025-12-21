@@ -733,7 +733,6 @@
 
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	#define WITHSTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 	// PL0 - S_TWI_SCK
 	// PL1 - S_TWI_SDA
@@ -741,36 +740,28 @@
 	#define TARGET_S_TWI_TWD		(UINT32_C(1) << 1)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_S_INITIALIZE() do { \
+	#define	HARDWARE_S_TWI_INITIALIZE() do { \
 		arm_hardware_piol_altfn2m(TARGET_S_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
 		arm_hardware_piol_altfn2m(TARGET_S_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
 		arm_hardware_piol_updown(TARGET_S_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_piol_updown(TARGET_S_TWI_TWD, TARGET_TWI_TWD, 0); \
 	} while (0)
 	#define	TWIHARD_S_PTR R_TWI	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_S_TWI0_FREQ (allwnr_a64_get_s_twi_freq()) // APBS2_CLK allwnr_a64_get_apb2_freq() or allwnr_a64_get_apbs2_freq()
+	#define	TWIHARD_S_TWI_FREQ (allwnr_a64_get_s_twi_freq()) // APBS2_CLK allwnr_a64_get_apb2_freq() or allwnr_a64_get_apbs2_freq()
 #endif
 
 #if 1
 
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
-
+	#define WITHTWI0HW	1
 	// PH0 - TWI0-SCK
 	// PH1 - TWI0-SDA
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
-	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOH))
-	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOH, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setopendrain(GPIOH, (v), 1 * (v)); } while (0)
-
 	#define TARGET_TWI_TWD		(UINT32_C(1) << 1)
-	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOH))
-	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setopendrain(GPIOH, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setopendrain(GPIOH, (v), 1 * (v)); } while (0)
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_INITIALIZE() do { \
+	#define	HARDWARE_TWI0_INITIALIZE() do { \
 		arm_hardware_pioh_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF2);	/* PH0 - TWI0-SCK */ \
 		arm_hardware_pioh_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF2);		/* PH1 - TWI0-SDA */ \
 		arm_hardware_pioh_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
