@@ -152,4 +152,21 @@ gui_prop_font_t msgothic_15x17_prop = {
 		126,             // letztes Zeichen (Ascii-Nr)
 };
 
+#if 0
+
+// Для пропорциональных знакогенераторов
+const unifont_t unifont_msgothic_15x17_prop =
+{
+	.decode = ubpfont_decode,
+	.totalci = ubpfont_totalci,
+	.getcharrasterci = ubpfont_getcharraster,
+	.font_drawwidthci = ubpfont_width,
+	.font_drawheight = ubpfont_height,
+	.font_drawci = ubpfont_render_char32,
+	//
+	.fontraster = & msgothic_15x17_prop,
+	.label = "unifont_msgothic_15x17_prop"
+};
+#endif
+
 #endif /* WITHTOUCHGUI && ! GUI_EXTERNAL_FONTS */

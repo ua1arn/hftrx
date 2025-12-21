@@ -150,4 +150,20 @@ gui_mono_font_t msgothic_11x13_mono = {
   13,              // Hoehe eines Zeichens  (in Pixel)
 };
 
+#if 0
+// Для моноширинных знакогенераторов
+const unifont_t unifont_msgothic_11x13_mono =
+{
+	.decode = ubmfont_decode,
+	.totalci = ubmfont_totalci,
+	.getcharrasterci = ubmfont_getcharraster,
+	.font_drawwidthci = ubmfont_width,
+	.font_drawheight = ubmfont_height,
+	.font_drawci = ubmfont_render_char32,
+	//
+	.fontraster = & msgothic_11x13_mono,
+	.label = "unifont_msgothic_11x13_mono"
+};
+#endif
+
 #endif /* WITHTOUCHGUI && ! GUI_EXTERNAL_FONTS */
