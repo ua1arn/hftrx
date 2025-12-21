@@ -209,8 +209,6 @@ typedef struct unifont_tag
 	uint_fast8_t (* font_drawwidthci)(const struct unifont_tag * font, uint_fast16_t ci);	// ширина в пиксеях данного символа (может быть меньше чем поле width)
 	uint_fast8_t (* font_drawheight)(const struct unifont_tag * font);	// высота в пикселях (се символы шрифта одной высоты)
 	uint_fast16_t (* font_drawci)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, uint_fast16_t ci, COLORPIP_T fg);
-	uint_fast16_t (* font_prerenderci)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, uint_fast16_t ci, COLORPIP_T fg);
-	//uint8_t bytesw;		// байтов в одной строке знакогенератора символа
 	const void * fontraster;		// начало знакогенератора в памяти
 	void * fontdata;			// например, для adafruint требуется место с предрасчитаной высотой шрифта и смещением baseline
 	const char * label;		// название для диагностики
@@ -967,6 +965,8 @@ typedef struct hftrx_GFXfont_tag
 extern UB_pFont gothic_12x16_p;
 extern UB_Font gothic_11x13;
 
+extern const unifont_t unifont_big_raw;	// non-cached version
+extern const unifont_t unifont_half_raw;	// non-cached version
 extern const unifont_t unifont_big;
 extern const unifont_t unifont_half;
 extern const unifont_t unifont_small;

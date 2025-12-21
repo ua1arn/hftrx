@@ -1307,7 +1307,7 @@ extern "C" {
 	#error WIHSPIDFSW and WIHSPIDFHW can not be used in same time
 #endif /* WIHSPIDFSW && WIHSPIDFHW */
 
-//#define WITHPRERENDER (1 && WITHLTDCHW && (LCDMODE_RGB565 || LCDMODE_ARGB8888))		/* использование предварительно построенных изображений при отображении частоты */
+#define WITHPRERENDER (1 && WITHLTDCHW && (LCDMODE_RGB565 || LCDMODE_ARGB8888))		/* использование предварительно построенных изображений при отображении частоты */
 
 #if WITHTOUCHGUI
 

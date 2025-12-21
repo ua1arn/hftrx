@@ -130,15 +130,15 @@ adafruitfont_render_char(
 static adafruitfont_data_t unifontdata_FreeMono9pt7b;
 const unifont_t unifont_FreeMono9pt7b =
 {
-		.decode = adafruitfont_decode,
-		.getcharrasterci = adafruitfont_getcharraster,
-		.font_drawwidthci = adafruitfont_width,
-		.font_drawheight = adafruitfont_height,
-		.font_drawci = adafruitfont_render_char,
-		//
-		.fontraster = & FreeMono9pt7b,
-		.fontdata = & unifontdata_FreeMono9pt7b,
-		.label = "FreeMono9pt7b"
+	.decode = adafruitfont_decode,
+	.getcharrasterci = adafruitfont_getcharraster,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & FreeMono9pt7b,
+	.fontdata = & unifontdata_FreeMono9pt7b,
+	.label = "FreeMono9pt7b"
 };
 #endif
 
@@ -148,15 +148,15 @@ const unifont_t unifont_FreeMono9pt7b =
 static adafruitfont_data_t unifontdata_FreeMono12pt7b;
 const unifont_t unifont_FreeMono12pt7b =
 {
-		.decode = adafruitfont_decode,
-		.getcharrasterci = adafruitfont_getcharraster,
-		.font_drawwidthci = adafruitfont_width,
-		.font_drawheight = adafruitfont_height,
-		.font_drawci = adafruitfont_render_char,
-		//
-		.fontraster = & FreeMono12pt7b,
-		.fontdata = & unifontdata_FreeMono12pt7b,
-		.label = "FreeMono12pt7b"
+	.decode = adafruitfont_decode,
+	.getcharrasterci = adafruitfont_getcharraster,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & FreeMono12pt7b,
+	.fontdata = & unifontdata_FreeMono12pt7b,
+	.label = "FreeMono12pt7b"
 };
 #endif
 
@@ -166,15 +166,15 @@ const unifont_t unifont_FreeMono12pt7b =
 static adafruitfont_data_t unifontdata_FreeMono18pt7b;
 const unifont_t unifont_FreeMono18pt7b =
 {
-		.decode = adafruitfont_decode,
-		.getcharrasterci = adafruitfont_getcharraster,
-		.font_drawwidthci = adafruitfont_width,
-		.font_drawheight = adafruitfont_height,
-		.font_drawci = adafruitfont_render_char,
-		//
-		.fontraster = & FreeMono18pt7b,
-		.fontdata = & unifontdata_FreeMono18pt7b,
-		.label = "FreeMono18pt7b"
+	.decode = adafruitfont_decode,
+	.getcharrasterci = adafruitfont_getcharraster,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & FreeMono18pt7b,
+	.fontdata = & unifontdata_FreeMono18pt7b,
+	.label = "FreeMono18pt7b"
 };
 #endif
 
@@ -184,15 +184,15 @@ const unifont_t unifont_FreeMono18pt7b =
 static adafruitfont_data_t unifontdata_FreeMono24pt7b;
 const unifont_t unifont_FreeMono24pt7b =
 {
-		.decode = adafruitfont_decode,
-		.getcharrasterci = adafruitfont_getcharraster,
-		.font_drawwidthci = adafruitfont_width,
-		.font_drawheight = adafruitfont_height,
-		.font_drawci = adafruitfont_render_char,
-		//
-		.fontraster = & FreeMono24pt7b,
-		.fontdata = & unifontdata_FreeMono24pt7b,
-		.label = "FreeMono24pt7b"
+	.decode = adafruitfont_decode,
+	.getcharrasterci = adafruitfont_getcharraster,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & FreeMono24pt7b,
+	.fontdata = & unifontdata_FreeMono24pt7b,
+	.label = "FreeMono24pt7b"
 };
 #endif
 
@@ -202,15 +202,15 @@ const unifont_t unifont_FreeMono24pt7b =
 static adafruitfont_data_t unifontdata_FreeSans12pt7b;
 const unifont_t unifont_FreeSans12pt7b =
 {
-		.decode = adafruitfont_decode,
-		.getcharrasterci = adafruitfont_getcharraster,
-		.font_drawwidthci = adafruitfont_width,
-		.font_drawheight = adafruitfont_height,
-		.font_drawci = adafruitfont_render_char,
-		//
-		.fontraster = & FreeSans12pt7b,
-		.fontdata = & unifontdata_FreeSans12pt7b,
-		.label = "FreeSans12pt7b"
+	.decode = adafruitfont_decode,
+	.getcharrasterci = adafruitfont_getcharraster,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & FreeSans12pt7b,
+	.fontdata = & unifontdata_FreeSans12pt7b,
+	.label = "FreeSans12pt7b"
 };
 #endif
 
@@ -221,15 +221,15 @@ const unifont_t unifont_FreeSans12pt7b =
 static adafruitfont_data_t unifontdata_small16x15;
 const unifont_t unifont_small =
 {
-		.decode = adafruitfont_decode,
-		.getcharrasterci = adafruitfont_getcharraster,
-		.font_drawwidthci = adafruitfont_width,
-		.font_drawheight = adafruitfont_height,
-		.font_drawci = adafruitfont_render_char,
-		//
-		.fontraster = & adafruit_16x15,
-		.fontdata = & unifontdata_small16x15,
-		.label = "adafruit_16x15"
+	.decode = adafruitfont_decode,
+	.getcharrasterci = adafruitfont_getcharraster,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & adafruit_16x15,
+	.fontdata = & unifontdata_small16x15,
+	.label = "adafruit_16x15"
 };
 #endif
 
@@ -239,15 +239,15 @@ const unifont_t unifont_small =
 static adafruitfont_data_t unifontdata_small8x8;
 const unifont_t unifont_small3 =
 {
-		.decode = adafruitfont_decode,
-		.getcharrasterci = adafruitfont_getcharraster,
-		.font_drawwidthci = adafruitfont_width,
-		.font_drawheight = adafruitfont_height,
-		.font_drawci = adafruitfont_render_char,
-		//
-		.fontraster = & adafruit_8x8,
-		.fontdata = & unifontdata_small8x8,
-		.label = "adafruit_8x8"
+	.decode = adafruitfont_decode,
+	.getcharrasterci = adafruitfont_getcharraster,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & adafruit_8x8,
+	.fontdata = & unifontdata_small8x8,
+	.label = "adafruit_8x8"
 };
 #endif
 
@@ -257,15 +257,15 @@ const unifont_t unifont_small3 =
 static adafruitfont_data_t unifontdata_small16x10;
 const unifont_t unifont_small2 =
 {
-		.decode = adafruitfont_decode,
-		.getcharrasterci = adafruitfont_getcharraster,
-		.font_drawwidthci = adafruitfont_width,
-		.font_drawheight = adafruitfont_height,
-		.font_drawci = adafruitfont_render_char,
-		//
-		.fontraster = & adafruit_16x10,
-		.fontdata = & unifontdata_small16x10,
-		.label = "adafruit_16x16"
+	.decode = adafruitfont_decode,
+	.getcharrasterci = adafruitfont_getcharraster,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & adafruit_16x10,
+	.fontdata = & unifontdata_small16x10,
+	.label = "adafruit_16x16"
 };
 #endif
 
@@ -275,61 +275,61 @@ const unifont_t unifont_small2 =
 static adafruitfont_data_t unifontdata_small28x54;
 const unifont_t unifont_half =
 {
-		.decode = adafruitfont_decode,
-		.getcharraster = adafruitfont_getcharraster,
-		.font_drawwidthci = adafruitfont_width,
-		.font_drawheight = adafruitfont_height,
-		.font_drawci = adafruitfont_render_char,
-		//
-		.fontraster = & CenturyHothic_28x54,
-		.fontdata = & unifontdata_small28x54,
-		.label = "CenturyHothic_28x54"
+	.decode = adafruitfont_decode,
+	.getcharraster = adafruitfont_getcharraster,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & CenturyHothic_28x54,
+	.fontdata = & unifontdata_small28x54,
+	.label = "CenturyHothic_28x54"
 };
 
 #include "fonts/CenturyHothic_36x54.h"
 static adafruitfont_data_t unifontdata_small36x54;
 const unifont_t unifont_big =
 {
-		.decode = adafruitfont_decode,
-		.getcharraster = adafruitfont_getcharraster,
-		.font_drawwidthci = adafruitfont_width,
-		.font_drawheight = adafruitfont_height,
-		.font_drawci = adafruitfont_render_char,
-		//
-		.fontraster = & CenturyHothic_36x54,
-		.fontdata = & unifontdata_small36x54,
-		.label = "CenturyHothic_36x54"
+	.decode = adafruitfont_decode,
+	.getcharraster = adafruitfont_getcharraster,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & CenturyHothic_36x54,
+	.fontdata = & unifontdata_small36x54,
+	.label = "CenturyHothic_36x54"
 };
 #else /* WITHALTERNATIVEFONTS */
 
 #include "fonts/adafruit_28x54.h"
 static adafruitfont_data_t unifontdata_small28x54;
-const unifont_t unifont_half =
+const unifont_t unifont_half_raw =
 {
-		.decode = adafruitfont_decode,
-		.getcharrasterci = adafruitfont_getcharraster,
-		.font_drawwidthci = adafruitfont_width,
-		.font_drawheight = adafruitfont_height,
-		.font_drawci = adafruitfont_render_char,
-		//
-		.fontraster = & adafruit_28x54,
-		.fontdata = & unifontdata_small28x54,
-		.label = "adafruit_28x54"
+	.decode = adafruitfont_decode,
+	.getcharrasterci = adafruitfont_getcharraster,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & adafruit_28x54,
+	.fontdata = & unifontdata_small28x54,
+	.label = "adafruit_28x54"
 };
 
 #include "fonts/adafruit_36x54.h"
 static adafruitfont_data_t unifontdata_small36x54;
-const unifont_t unifont_big =
+const unifont_t unifont_big_raw =
 {
-		.decode = adafruitfont_decode,
-		.getcharrasterci = adafruitfont_getcharraster,
-		.font_drawwidthci = adafruitfont_width,
-		.font_drawheight = adafruitfont_height,
-		.font_drawci = adafruitfont_render_char,
-		//
-		.fontraster = & adafruit_36x54,
-		.fontdata = & unifontdata_small36x54,
-		.label = "adafruit_36x54"
+	.decode = adafruitfont_decode,
+	.getcharrasterci = adafruitfont_getcharraster,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & adafruit_36x54,
+	.fontdata = & unifontdata_small36x54,
+	.label = "adafruit_36x54"
 };
 
 #endif /* WITHALTERNATIVEFONTS */

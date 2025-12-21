@@ -14,7 +14,160 @@
 #include <string.h>
 
 
-#if WITHPRERENDER
+
+static uint_fast16_t colorpip_draw_char(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix,
+	uint_fast16_t ypix,
+	const unifont_t * font,
+	char cc,
+	COLORPIP_T fg
+	)
+{
+	savewhere = __func__;
+	return font->font_drawci(db, xpix, ypix, font, font->decode(font, cc), fg);
+}
+
+
+// Используется при выводе на графический индикатор,
+// transparent background - не меняем цвет фона.
+uint_fast16_t
+colpip_string(
+	const gxdrawb_t * db,
+	uint_fast16_t xpix,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t ypix,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	const unifont_t * font,
+	const char * s,
+	COLORPIP_T fg		// цвет вывода текста
+	)
+{
+	char c;
+
+	ASSERT(s != NULL);
+	while ((c = * s ++) != '\0')
+	{
+		xpix = colorpip_draw_char(db, xpix, ypix, font, c, fg);
+	}
+	return xpix;
+}
+
+// получить оба размера текстовой строки
+uint_fast16_t
+colpip_string_widthheight(
+	const unifont_t * font,
+	const char * s,
+	uint_fast16_t * height
+	)
+{
+	uint_fast16_t w = 0;
+	char c;
+
+	ASSERT(font);
+	ASSERT(s);
+	ASSERT(height);
+
+	* height = font->font_drawheight(font);
+
+	while ((c = * s ++) != '\0')
+		w += font->font_drawwidthci(font, font->decode(font, c));
+	return w;
+}
+
+// обычный шрифт
+uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+{
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
+}
+
+typedef struct ufcache_tag
+{
+	unsigned picx;// = BIGCHARW * RENDERCHARS;
+	unsigned picy;// = BIGCHARH;
+	PACKEDCOLORPIP_T * rendered;// [GXSIZE(BIGCHARW * RENDERCHARS, BIGCHARH)];
+	gxdrawb_t dbv;
+} ufcache_t;
+
+static uint_fast16_t ufcached_decode(const struct unifont_tag * font, char cc)
+{
+	const unifont_t * const pf = (const unifont_t *) font->fontraster;	// parent unifont_t object
+	return pf->decode(pf, cc);
+}
+
+static uint_fast8_t ufcached_drawwidth(const struct unifont_tag * font, uint_fast16_t ci)	// ширина в пиксеях данного символа (может быть меньше чем поле width)
+{
+	const unifont_t * const pf = (const unifont_t *) font->fontraster;	// parent unifont_t object
+	return pf->font_drawwidthci(pf, ci);
+}
+static uint_fast8_t ufcached_drawheight(const struct unifont_tag * font)	// высота в пикселях (се символы шрифта одной высоты)
+{
+	const unifont_t * const pf = (const unifont_t *) font->fontraster;	// parent unifont_t object
+	return pf->font_drawheight(pf);
+}
+
+static const void * ufcached_getcharraster(const struct unifont_tag * font, uint_fast16_t ci)	// получение начального адреса растра для символа
+{
+	const unifont_t * const pf = (const unifont_t *) font->fontraster;	// parent unifont_t object
+	return pf->getcharrasterci(pf, ci);
+}
+static uint_fast16_t ufcached_drawci(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, uint_fast16_t ci, COLORPIP_T fg)
+{
+	const unifont_t * const pf = (const unifont_t *) font->fontraster;	// parent unifont_t object
+	return pf->font_drawci(db, xpix, ypix, pf, ci, fg);
+}
+
+void ufcached_prerender(const unifont_t * font, COLORPIP_T fg, COLORPIP_T bg)
+{
+	const unifont_t * const pf = (const unifont_t *) font->fontraster;	// parent unifont_t object
+	ufcache_t * const cache = (ufcache_t *) font->fontdata;
+	cache->picx = 16;//pf->font_drawwidthci(pf, 0);	// самый большой размер
+	cache->picy = pf->font_drawheight(pf);
+	const uint_fast16_t cicount = 32;
+	PACKEDCOLORPIP_T * b = (PACKEDCOLORPIP_T *) calloc(sizeof (PACKEDCOLORPIP_T), GXSIZE(cache->picx * cicount, cache->picy));
+	ASSERT(b);
+	gxdrawb_initialize(& cache->dbv, b, cache->picx, cache->picy);
+	colpip_fillrect(& cache->dbv, 0, 0, cache->picx, cache->picy, bg);	/* при alpha==0 все биты цвета становятся 0 */
+}
+
+static ufcache_t unifont_big0;
+const unifont_t unifont_big =
+{
+	.decode = ufcached_decode,
+	.getcharrasterci = ufcached_getcharraster,
+	.font_drawwidthci = ufcached_drawwidth,
+	.font_drawheight = ufcached_drawheight,
+	.font_drawci = ufcached_drawci,
+	//
+	.fontraster = & unifont_big_raw,
+	.fontdata = & unifont_big0,
+	.label = "unifont_bigcached"
+};
+
+static ufcache_t unifont_half0;
+const unifont_t unifont_half =
+{
+	.decode = ufcached_decode,
+	.getcharrasterci = ufcached_getcharraster,
+	.font_drawwidthci = ufcached_drawwidth,
+	.font_drawheight = ufcached_drawheight,
+	.font_drawci = ufcached_drawci,
+	//
+	.fontraster = & unifont_half_raw,
+	.fontdata = & unifont_half0,
+	.label = "unifont_halfcached"
+};
+
+
+void rendered_value_big_initialize(const gxstyle_t * gxstylep)
+{
+	const COLORPIP_T fg = gxstylep->textcolor;
+	const COLORPIP_T bg = gxstylep->bgcolor;
+
+	ufcached_prerender(& unifont_big, fg, bg);
+	ufcached_prerender(& unifont_half, fg, bg);
+}
+
+#if WITHPRERENDER && 0
 /* использование предварительно построенных изображений при отображении частоты */
 
 enum { RENDERCHARS = 14 }; /* valid chars: "0123456789 #._" */
@@ -39,6 +192,11 @@ void rendered_value_big_initialize(const gxstyle_t * gxstylep)
 {
 	const COLORPIP_T fg = gxstylep->textcolor;
 	const COLORPIP_T bg = gxstylep->bgcolor;
+
+	ufcached_prerender(& unifont_bigcached, fg, bg);
+	ufcached_prerender(& unifont_halfcached, fg, bg);
+	return;
+
 	const COLORPIP_T keycolor = COLORPIP_KEY;
 	const unsigned picalpha = 255;
 	gxdrawb_initialize(& dbvbig, rendered_big, picx_big, picy_big);
@@ -164,72 +322,6 @@ unifont_put_char_big_rendered(
 #else
 
 #endif /* WITHPRERENDER */
-
-
-static uint_fast16_t colorpip_draw_char(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix,
-	uint_fast16_t ypix,
-	const unifont_t * font,
-	char cc,
-	COLORPIP_T fg
-	)
-{
-	savewhere = __func__;
-	return font->font_drawci(db, xpix, ypix, font, font->decode(font, cc), fg);
-}
-
-
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-uint_fast16_t
-colpip_string(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t ypix,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const unifont_t * font,
-	const char * s,
-	COLORPIP_T fg		// цвет вывода текста
-	)
-{
-	char c;
-
-	ASSERT(s != NULL);
-	while ((c = * s ++) != '\0')
-	{
-		xpix = colorpip_draw_char(db, xpix, ypix, font, c, fg);
-	}
-	return xpix;
-}
-
-// получить оба размера текстовой строки
-uint_fast16_t
-colpip_string_widthheight(
-	const unifont_t * font,
-	const char * s,
-	uint_fast16_t * height
-	)
-{
-	uint_fast16_t w = 0;
-	char c;
-
-	ASSERT(font);
-	ASSERT(s);
-	ASSERT(height);
-
-	* height = font->font_drawheight(font);
-
-	while ((c = * s ++) != '\0')
-		w += font->font_drawwidthci(font, font->decode(font, c));
-	return w;
-}
-
-// обычный шрифт
-uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
-{
-	* yp = GRID2Y(ycell);
-	return GRID2X(xcell);
-}
 
 #if 0
 
