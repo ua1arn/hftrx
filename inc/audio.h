@@ -429,6 +429,7 @@ void board_set_sidetonelevel(uint_fast8_t n);	/* Уровень сигнала �
 void board_set_moniflag(uint_fast8_t n);	/* разрешение самопрослушивания */
 void board_set_cwssbtx(uint_fast8_t v);	/* разрешение передачи телеграфа как тона в режиме SSB */
 void board_set_subtonelevel(uint_fast8_t n);	/* Уровень сигнала CTCSS в процентах - 0%..100% */
+void board_set_nfmdeviation(int_fast16_t n);	/* deviation */
 void board_set_amdepth(uint_fast8_t n);		/* Глубина модуляции в АМ - 0..100% */
 void board_set_swaprts(uint_fast8_t v);	/* если используется конвертор на Rafael Micro R820T - требуется инверсия спектра */
 void board_set_lo6(int_fast32_t f);

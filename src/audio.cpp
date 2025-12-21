@@ -172,6 +172,7 @@ static uint_fast8_t 	glob_moniflag = 1;		/* Уровень сигнала сам
 static uint_fast8_t		glob_cwssbtx = 1;		/* разрешение передачи телеграфа как тона в режиме SSB */
 static uint_fast8_t 	glob_subtonelevel = 0;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 static uint_fast8_t 	glob_amdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
+static int_fast16_t 	glob_fmdeviation = 7500;
 #if WITHIF4DSP
 static uint_fast16_t	glob_dacscale = BOARDDACSCALEMAX;	/* На какую часть (в процентах в квадрате) от полной амплитуды использцется ЦАП передатчика */
 static uint_fast8_t 	glob_dspagc = BOARD_AGCCODE_ON;
@@ -5428,7 +5429,8 @@ txparam_update(uint_fast8_t profile)
 	subtonevolume = (glob_subtonelevel / (FLOAT_t) 100);
 
 	// Девиация в NFM
-	gnfmdeviationftw = FTWAF(glob_fullbw6 [glob_trxpath] / 2);
+	//gnfmdeviationftw = FTWAF(glob_fullbw6 [glob_trxpath] / 2);
+	gnfmdeviationftw = FTWAF(glob_fmdeviation);
 }
 
 // Передача параметров в DSP модуль
@@ -5864,6 +5866,16 @@ board_set_amdepth(uint_fast8_t n)	/* Глубина модуляции в АМ -
 	if (glob_amdepth != n)
 	{
 		glob_amdepth = n;
+		board_dsp1regchanged();
+	}
+}
+
+void
+board_set_nfmdeviation(int_fast16_t n)	/* deviation */
+{
+	if (glob_fmdeviation != n)
+	{
+		glob_fmdeviation = n;
 		board_dsp1regchanged();
 	}
 }

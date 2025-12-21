@@ -3774,6 +3774,7 @@ struct nvmap
 
 	uint8_t gagcoff;
 	uint8_t gamdepth;		/* Глубина модуляции в АМ - 0..100% */
+	uint16_t gnfmdeviation;
 	uint16_t gtxtot;			/* разрешённое время передачи */
 	uint8_t ggainnfmrx10;		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
@@ -6312,6 +6313,20 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,	// uint_fast16_t value pointer
 		& gamdepth,	// uint_fast8_t value pointer
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	/*  */
+	static uint_fast16_t gnfmdeviation = 7500;
+	static const struct paramdefdef xnfmdeviation =
+	{
+		QLABEL2("NFM DEVI", "NFM Deviation"), 7, 0, RJ_UNSIGNED, ISTEP100,		/* Подстройка глубины модуляции в АМ */
+		ITEM_VALUE,
+		3000, 18000,
+		OFFSETOF(struct nvmap, gnfmdeviation),	/* Глубина модуляции в АМ - 0..100% */
+		getselector0, nvramoffs0, valueoffs0,
+		& gnfmdeviation,	// uint_fast16_t value pointer
+		NULL,	// uint_fast8_t value pointer
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
@@ -12471,6 +12486,7 @@ updateboard_noui(
 			board_set_cwscale(ggaincwtx);	/* Увеличение усиления при передаче в CW режимах 50..100% */
 			board_set_designscale(gdesignscale);	/* используется при калибровке параметров интерполятора */
 			board_set_amdepth(gamdepth);	/* Глубина модуляции в АМ - 0..100% */
+			board_set_nfmdeviation(gnfmdeviation);
 			board_rgrbeep_setfreq(1000);	/* roger beep - установка тона */
 		}
 		#endif /* WITHIF4DSP */
@@ -16955,9 +16971,10 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
 		& xgnoisereduct,
 		& xgsquelchNFM,
 	#endif /* WITHIF4DSP */
-	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
-		& xgzoomxpow2,
-	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
+		& xnfmdeviation,
+//	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
+//		& xgzoomxpow2,
+//	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
