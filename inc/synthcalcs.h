@@ -63,6 +63,8 @@ void synth_lo0_setfreq(
 	uint_fast8_t enable		/* включение конвертора */
 	);
 
+uint_least64_t nfmftw(int f);
+
 void synth_lfm_setparams(uint_fast32_t astart, uint_fast32_t astop, uint_fast32_t aspeed, uint_fast8_t od);
 
 /* Получить частоту lo1 из частоты настройки */

@@ -3722,7 +3722,8 @@ static RAMFUNC FLOAT_t mikeinmux(
 /* получить I/Q пару для передачи в up-converter */
 static RAMFUNC FLOAT32P_t baseband_modulator(
 	FLOAT_t vi,
-	uint_fast8_t dspmode
+	uint_fast8_t dspmode,
+	int32_t * deltanfm
 	)
 {
 	const uint_fast8_t pathi = 0;	// тракт, испольуемый при передаче
@@ -3731,6 +3732,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	{
 	default:
 		{
+			* deltanfm = 0;
 			const FLOAT32P_t vfb = { { 0, 0 } };
 			// В режиме приёма ничего не делаем.
 			return vfb;
@@ -3739,6 +3741,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	#if WITHMODEM
 		case DSPCTL_MODE_TX_BPSK:
 		{
+			* deltanfm = 0;
 				// высокоскоростной модем. Фильтр baseband на выходе не нужен
 				const int txb = modem_get_tx_b(getTxShapeNotComplete());
 		#if WITHMODEMIQLOOPBACK
@@ -3766,6 +3769,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_FREEDV:
 		{
+			* deltanfm = 0;
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
 			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(0, pathi), vi * shape);
 			return vfb;
@@ -3773,6 +3777,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	
 	case DSPCTL_MODE_TX_AM:
 		{
+			* deltanfm = 0;
 			// vi - audio sample in range [- txlevelfenceSSB.. + txlevelfenceSSB]
 			// input range: of vi: (- IFDACMAXVAL) .. (+ IFDACMAXVAL)
 			const FLOAT_t peak = amcarrierHALF + vi * amshapesignalHALF;
@@ -3783,7 +3788,13 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 	case DSPCTL_MODE_TX_NFM:
 		{
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
-			const int32_t deltaftw = (int64_t) gnfmdeviationftw * vi / txlevelfenceSSB;	// Учитывается нормирование источника звука
+#if 1
+			* deltanfm = 0;//nfmftw(glob_fmdeviation * vi / txlevelfenceSSB);
+			const int32_t deltaftw = (int64_t) (int32_t) gnfmdeviationftw * vi / txlevelfenceSSB;	// Учитывается нормирование источника звука
+#else
+			* deltanfm = glob_fmdeviation * 100 * vi;
+			const int32_t deltaftw = 0;//(int64_t) (int32_t) gnfmdeviationftw * vi / txlevelfenceSSB;	// Учитывается нормирование источника звука
+#endif
 			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(deltaftw, pathi), txlevelfenceNFM * shape);
 			return vfb;
 		}
@@ -4812,7 +4823,8 @@ RAMFUNC void dsp_processtx(unsigned nsamples)
 		{
 			v = v * (1 - shapecwssb) + (cwssbtone * shapecwssb);	/* Заменяем передаваемый сигнал на тон пропорционально огибающей. */
 		}
-		FLOAT32P_t vfb = baseband_modulator(injectsubtone(v, ctcss), dspmodeA);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		int32_t deltanfm;
+		FLOAT32P_t vfb = baseband_modulator(injectsubtone(v, ctcss), dspmodeA, & deltanfm);	// Передатчик - формирование одного сэмпла (пары I/Q).
 
 #if WITHDSPLOCALTXFIR
 		/* работа без FIR фильтра в FPGA */
@@ -4823,8 +4835,8 @@ RAMFUNC void dsp_processtx(unsigned nsamples)
 //		vfb.QV = 0;
 
 #if WITHDSPEXTDDC
-
-		elfill_dmabuffer32tx(vfb.IV, vfb.QV);	// Запись в поток к передатчику I/Q значений.
+		//deltanfm = 0;
+		elfill_dmabuffer32tx(vfb.IV, vfb.QV, deltanfm);	// Запись в поток к передатчику I/Q значений.
 
 #else /* WITHDSPEXTDDC */
 		const FLOAT32P_t v_if = get_float4_iflo();	// частота 12 кГц - 1/4 частоты выборок АЦП - можно воспользоваться целыми значениями.

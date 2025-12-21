@@ -861,7 +861,7 @@ public:
 	}
 
 	// поэлементное заполнение буферов
-	void savedata(sample_t ch0, sample_t ch1, unsigned (* putcbf)(rawsample_t * b, sample_t ch0, sample_t ch1))
+	void savedata(sample_t ch0, sample_t ch1,  int32_t v3, unsigned (* putcbf)(rawsample_t * b, sample_t ch0, sample_t ch1, int32_t v3))
 	{
 		if (wb == NULL)
 		{
@@ -869,7 +869,7 @@ public:
 				return;
 			wbn = 0;
 		}
-		wbn += putcbf(wb->buff + wbn, ch0, ch1);
+		wbn += putcbf(wb->buff + wbn, ch0, ch1, v3);
 		if (wbn >= ARRAY_SIZE(wb->buff))
 		{
 			parent_t::save_readybuffer(wb);
@@ -1098,7 +1098,7 @@ static unsigned getcbf_dmabuffer16rx(aubufv_t * b, FLOAT_t * dest)
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabuffer16tx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned putcbf_dmabuffer16tx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1, int32_t v3)
 {
 	b [DMABUFF16TX_LEFT] = adpt_output(& afcodectx, ch0);
 	b [DMABUFF16TX_RIGHT] = adpt_output(& afcodectx, ch1);
@@ -1141,7 +1141,7 @@ void release_dmabuffer16rx(uintptr_t addr)
 
 void elfill_dmabuffer16tx(FLOAT_t ch0, FLOAT_t ch1)
 {
-	codec16tx.savedata(ch0, ch1, putcbf_dmabuffer16tx);
+	codec16tx.savedata(ch0, ch1, 0, putcbf_dmabuffer16tx);
 }
 
 /* Перенос из FPGA PIPE в формируемый буфер виртуального кодекв */
@@ -1323,7 +1323,7 @@ int_fast32_t datasize_dmabufferhdmi48tx(void) /* parameter for DMA CPU to HDMI *
 
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabufferhdmi48tx(hdmi48bufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned putcbf_dmabufferhdmi48tx(hdmi48bufv_t * b, FLOAT_t ch0, FLOAT_t ch1, int32_t v3)
 {
 	b [0] = adpt_output(& adhdmi48tx, ch0);
 	b [1] = adpt_output(& adhdmi48tx, ch1);
@@ -1332,7 +1332,7 @@ static unsigned putcbf_dmabufferhdmi48tx(hdmi48bufv_t * b, FLOAT_t ch0, FLOAT_t 
 
 void elfill_dmabufferhdmi48tx(FLOAT_t ch0, FLOAT_t ch1)
 {
-	hdmi48tx.savedata(ch0, ch1, putcbf_dmabufferhdmi48tx);
+	hdmi48tx.savedata(ch0, ch1, 0, putcbf_dmabufferhdmi48tx);
 }
 
 #endif /* WITHHDMITVHW */
@@ -1351,7 +1351,7 @@ typedef buffitem<moni16_t> moni16buf_t;
 
 // sidetone forming
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned putcbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1, int32_t v3)
 {
 	ASSERT(DMABUFFSTEP16MONI == 2);
 	b [0] = ch0;
@@ -1436,7 +1436,7 @@ int_fast32_t datasize_dmabuffer32tx(void)
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t ch1, int32_t delta)
 {
 
 #if WITHTXCPATHCALIBRATE
@@ -1446,7 +1446,7 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t c
 	buff [DMABUF32TXI] = adpt_output(& ifcodectx, ch0);
 	buff [DMABUF32TXQ] = adpt_output(& ifcodectx, ch1);
 #endif /* WITHTXCPATHCALIBRATE */
-
+	buff [DMABUF32TX_NCO1] = delta;
 #if (CPUSTYLE_XC7Z || CPUSTYLE_RK356X) && WITHLFM
 	if (iflfmactive())
 	{
@@ -1460,9 +1460,9 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t c
 	return DMABUFFSTEP32TX;
 }
 
-void elfill_dmabuffer32tx(FLOAT_t ch0, FLOAT_t ch1)
+void elfill_dmabuffer32tx(FLOAT_t ch0, FLOAT_t ch1, int32_t v3)
 {
-	voice32tx.savedata(ch0, ch1, putcbf_dmabuffer32tx);
+	voice32tx.savedata(ch0, ch1, v3, putcbf_dmabuffer32tx);
 }
 
 void release_dmabuffer32tx(uintptr_t addr)
@@ -1539,7 +1539,8 @@ uintptr_t getfilled_dmabuffer32tx(void)
 	{
 		IFDACvalue_t * const buff = dest->buff + i * DMABUFFSTEP32TX;
 	#if WITHFPGAPIPE_NCORX0
-		buff [DMABUF32TX_NCO1] = dspfpga_get_nco1();
+		buff [DMABUF32TX_NCO1] += dspfpga_get_nco1();
+		//buff [DMABUF32TX_NCO1] = dspfpga_get_nco1();
 	#endif /* WITHFPGAPIPE_NCORX0 */
 	#if WITHFPGAPIPE_NCORX1
 		buff [DMABUF32TX_NCO2] = dspfpga_get_nco2();
@@ -2588,14 +2589,14 @@ typedef enum
 	}
 
 	// Возвращает количество элементов буфера, обработанных за вызов
-	static unsigned putcbf_dmabufferuacinrts96(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
+	static unsigned putcbf_dmabufferuacinrts96(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1, int32_t delta)
 	{
 		return uacinrts96adpt.poketransf_LE(& if2rts96out, b, ch0, ch1);
 	}
 
 	void elfill_dmabufferuacinrts96(int_fast32_t ch0, int_fast32_t ch1)
 	{
-		uacinrts96.savedata(ch0, ch1, putcbf_dmabufferuacinrts96);
+		uacinrts96.savedata(ch0, ch1, 0, putcbf_dmabufferuacinrts96);
 	}
 
 	// can not be zero
@@ -2660,7 +2661,7 @@ static uacin48adpt_t uacin48adpt(UACIN_AUDIO48_SAMPLEBYTES * 8, 0, "uacin48");
 static uacin48dma_t uacin48(IRQL_REALTIME, "uacin48", uacin48buf, ARRAY_SIZE(uacin48buf));
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned uacin48_putcbf(uint8_t * b, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned uacin48_putcbf(uint8_t * b, FLOAT_t ch0, FLOAT_t ch1, int32_t v3)
 {
 	return uacin48adpt.poke_LE(b, ch0, ch1);
 }
@@ -2679,7 +2680,7 @@ int_fast32_t datasize_dmabufferuacin48(void)
 
 void elfill_dmabufferuacin48(FLOAT_t ch0, FLOAT_t ch1)
 {
-	uacin48.savedata(ch0, ch1, uacin48_putcbf);
+	uacin48.savedata(ch0, ch1, 0, uacin48_putcbf);
 }
 
 // can not be zero
@@ -2986,7 +2987,7 @@ typedef dmahandle<FLOAT_t, recordswav48buf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> rec
 static recordswav48dma_t recordswav48dma(IRQL_REALTIME, "rec", recordswav48buf, ARRAY_SIZE(recordswav48buf));
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned recordswav48_putcbf(int16_t * buff, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned recordswav48_putcbf(int16_t * buff, FLOAT_t ch0, FLOAT_t ch1, int32_t v3)
 {
 #if WITHUSEAUDIOREC2CH
 
@@ -3006,7 +3007,7 @@ static unsigned recordswav48_putcbf(int16_t * buff, FLOAT_t ch0, FLOAT_t ch1)
 
 void elfill_recordswav48(FLOAT_t ch0, FLOAT_t ch1)
 {
-	recordswav48dma.savedata(ch0, ch1, recordswav48_putcbf);
+	recordswav48dma.savedata(ch0, ch1, 0, recordswav48_putcbf);
 }
 
 // user-mode function
@@ -3242,12 +3243,12 @@ deliverylist_t speexinfloat;	// вход speex
 
 void elfill_dmabufferrx16rec(FLOAT_t ch0, FLOAT_t ch1)
 {
-	rx16rec.savedata(ch0, ch1, putcbf_dmabuffer16moni);
+	rx16rec.savedata(ch0, ch1, 0, putcbf_dmabuffer16moni);
 }
 
 void elfill_dmabuffermoni16(FLOAT_t ch0, FLOAT_t ch1)
 {
-	moni16.savedata(ch0, ch1, putcbf_dmabuffer16moni);
+	moni16.savedata(ch0, ch1, 0, putcbf_dmabuffer16moni);
 }
 
 uint_fast8_t voicerec16_get(FLOAT32P_t * v)

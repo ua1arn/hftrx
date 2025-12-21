@@ -600,6 +600,39 @@ const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
+		QLABEL("NFM TX HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
+		RMT_BWPROPSRIGHT_BASE(BWPROPI_NFMTX),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& bwprop_nfmtx.right100,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+	(const struct paramdefdef [1]) {
+		QLABEL("NFM TX LO"), 7, 2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
+		RMT_BWPROPSLEFT_BASE(BWPROPI_NFMTX),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& bwprop_nfmtx.left10_width10,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+	(const struct paramdefdef [1]) {
+		QLABEL("NFM TXAFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
+		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_NFMTX),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& bwprop_nfmtx.afresponce,
+		getafresponcebase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+	(const struct paramdefdef [1]) {
 		QLABEL("DIGI HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz

@@ -1794,9 +1794,9 @@ static uint8_t gtxaprofiles [TXAPROFIG_count];	// индекс профиля д
 
 // параметры фильтра на приеме
 
-#define AFRESPONCESHIFT 192
+#define AFRESPONCESHIFT 90
 #define AFRESPONCEMIN 0
-#define AFRESPONCEMAX (AFRESPONCESHIFT + 18)	// -96..+18
+#define AFRESPONCEMAX (AFRESPONCESHIFT + 60)	// -96..+18
 
 static int_fast32_t getafresponcebase(void)
 {
@@ -1821,6 +1821,7 @@ enum
 	BWSETI_CW,
 	BWSETI_SSB,
 	BWSETI_SSBTX,
+	BWSETI_NFMTX,
 	BWSETI_DIGI,
 	BWSETI_AM,
 	BWSETI_NFM,
@@ -1905,6 +1906,7 @@ enum
 	BWPROPI_SSBMEDIUM,
 	BWPROPI_SSBNARROW,
 	BWPROPI_SSBTX,
+	BWPROPI_NFMTX,
 	BWPROPI_AMWIDE,
 	BWPROPI_AMNARROW,
 	BWPROPI_DIGIWIDE,
@@ -1917,6 +1919,7 @@ enum
 
 #define AFRESPONCEDEFAULT (- 72)	// наклон АЧХ для голосовых режимов
 #define AFRESPONCEWFM (+ 18)	// наклон АЧХ для WFM
+#define AFRESPONCETXNFM (+ 36)	// наклон АЧХ для NFM
 #define AFRESPONCEFLAT (0)
 
 // Частоты границ полосы пропускания
@@ -1927,6 +1930,7 @@ static bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWPROPI_SSBWIDE, BWSET_PAIR, 
 static bwprop_t bwprop_ssbmedium = { & bwlimits_ssb, BWPROPI_SSBMEDIUM, BWSET_PAIR, 300 / BWGRANLOW, 2700 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
 static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWPROPI_SSBNARROW, BWSET_PAIR, 300 / BWGRANLOW, 2200 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
 static bwprop_t bwprop_ssbtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
+static bwprop_t bwprop_nfmtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCETXNFM + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
 static bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_PAIR, 100 / BWGRANLOW, 9000 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
 static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_PAIR, 100 / BWGRANLOW, 4500 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
 static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_PAIR, 50 / BWGRANLOW, 5500 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
@@ -1941,6 +1945,7 @@ static const bwsetsc_t bwsetsc [BWSETI_count] =
 	{ 2, { & bwprop_cwwide, & bwprop_cwnarrow, & bwprop_ssbwide, }, { strFlashWide, strFlashNarrow, strFlashNormal, }, },	// BWSETI_CW
 	{ 2, { & bwprop_ssbwide, & bwprop_ssbmedium, & bwprop_ssbnarrow, }, { strFlashWide, strFlashMedium, strFlashNarrow, }, },	// BWSETI_SSB
 	{ 0, { & bwprop_ssbtx, }, { strFlashNormal, }, },	// BWSETI_SSBTX
+	{ 0, { & bwprop_nfmtx, }, { strFlashNormal, }, },	// BWSETI_NFMTX
 	{ 0, { & bwprop_digiwide, }, { strFlashNormal, }, },	// BWSETI_DIGI
 	{ 1, { & bwprop_amwide, & bwprop_amnarrow, }, { strFlashWide, strFlashNarrow, }, },	// BWSETI_AM
 	{ 1, { & bwprop_nfmnarrow, & bwprop_nfmwide, }, { strFlashWide, strFlashNarrow, }, },	// BWSETI_NFM
@@ -1960,6 +1965,7 @@ static bwprop_t * const bwprops [BWPROPI_count] =
 	& bwprop_ssbmedium,	// BWPROPI_SSBMEDIUM,
 	& bwprop_ssbnarrow,	// BWPROPI_SSBNARROW
 	& bwprop_ssbtx,		// BWPROPI_SSBTX
+	& bwprop_nfmtx,		// BWPROPI_NFMTX
 	& bwprop_amwide,	// BWPROPI_AMWIDE,
 	& bwprop_amnarrow,	// BWPROPI_AMNARROW,
 	& bwprop_digiwide,	// BWPROPI_DIGIWIDE,
@@ -2547,7 +2553,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 #endif /* WITHTX */
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_NFM, DSPCTL_MODE_TX_NFM, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
-		{ BWSETI_NFM, BWSETI_SSBTX, },				// индекс банка полос пропускания для данного режима
+		{ BWSETI_NFM, BWSETI_NFMTX, },				// индекс банка полос пропускания для данного режима
 		{ 0, 0, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_NFM,				// группа профилей обработки звука
@@ -6322,7 +6328,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	{
 		QLABEL2("NFM DEVI", "NFM Deviation"), 7, 0, RJ_UNSIGNED, ISTEP100,		/* Подстройка глубины модуляции в АМ */
 		ITEM_VALUE,
-		3000, 18000,
+		1000, 23000,
 		OFFSETOF(struct nvmap, gnfmdeviation),	/* Глубина модуляции в АМ - 0..100% */
 		getselector0, nvramoffs0, valueoffs0,
 		& gnfmdeviation,	// uint_fast16_t value pointer
@@ -16956,7 +16962,7 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
 {
 	static const struct paramdefdef * const middlemenu [] =
 	{
-		& xgcwpitch10,
+		//& xgcwpitch10,
 	#if WITHVOX && WITHTX
 		& xgvoxenable,
 	#endif /* WITHVOX && WITHTX */
@@ -16972,9 +16978,9 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
 		& xgsquelchNFM,
 	#endif /* WITHIF4DSP */
 		& xnfmdeviation,
-//	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
-//		& xgzoomxpow2,
-//	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
+	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
+		& xgzoomxpow2,
+	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
