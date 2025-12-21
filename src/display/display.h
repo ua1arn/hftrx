@@ -987,6 +987,12 @@ extern const unifont_t unifont_FreeMono18pt7b;	// Adafruit-GFX-Library
 extern const unifont_t unifont_FreeMono24pt7b;	// Adafruit-GFX-Library
 extern const unifont_t unifont_FreeSans12pt7b;	// Adafruit-GFX-Library
 
+extern const unifont_t unifont_msgothic_10x13_prop;
+extern const unifont_t unifont_msgothic_11x13_mono;
+extern const unifont_t unifont_msgothic_13x16_prop;
+extern const unifont_t unifont_msgothic_15x17_prop;
+extern const unifont_t unifont_msgothic_15x17_mono;
+
 #if LCDMODE_LTDC
 
 	#define SMALLCHARH 15 /* Font height */
