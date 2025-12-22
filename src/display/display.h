@@ -846,6 +846,9 @@ typedef struct UB_pFont32_t {
   uint16_t last_char;    // Последний символ (Ascii код)
 }UB_pFont32;
 
+// marked for delete
+#if 0
+
 //--------------------------------------------------------------
 // Рисует строку шрифтом одного размера на позиции х, у.
 // Цвет шрифта и фон (шрифт = макс 16 пикселей в ширину)
@@ -896,8 +899,9 @@ uint16_t getwidth_Pstring(const char * str, const UB_pFont * font);
 
 // Возвращает ширину строки в пикселях, моноширинный шрифт
 uint16_t getwidth_Mstring(const char * str, const UB_Font * font);
+#endif
 
-// Функуии (поля unifont_t) для работы с UB_pFont и UB_Font
+// Функции (поля unifont_t) для работы с UB_pFont и UB_Font
 
 // Для моноширинных знакогенераторов
 uint_fast8_t ubmfont_width(const struct unifont_tag * font, uint_fast16_t ci);
