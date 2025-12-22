@@ -1,5 +1,7 @@
 #include "hardware.h"
-#include "../display.h"
+#include "fontsys.h"
+
+#if ! GUI_EXTERNAL_FONTS
 
 //--------------------------------------------------------------
 // Font-Daten
@@ -131,3 +133,5 @@ const unifont_t unifont_gothic_12x16p =
 	.fontraster = & gothic_12x16_p,
 	.label = "unifont_gothic_12x16p"
 };
+
+#endif /* ! GUI_EXTERNAL_FONTS */

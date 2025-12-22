@@ -17,9 +17,11 @@
 #include "hardware.h"
 
 #if LCDMODE_LTDC
+#if ! GUI_EXTERNAL_FONTS
 
 #include "formats.h"
 #include "display.h"
+#include "fontsys.h"
 #include <Adafruit_GFX.h>
 
 typedef struct adafruitfont_data_tag
@@ -352,5 +354,7 @@ const unifont_t unifont_big_raw =
 };
 
 #endif /* WITHALTERNATIVEFONTS */
+
+#endif /* ! GUI_EXTERNAL_FONTS */
 
 #endif	/* LCDMODE_LTDC */

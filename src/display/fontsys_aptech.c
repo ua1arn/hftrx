@@ -7,9 +7,11 @@
 #include "hardware.h"
 
 #if LCDMODE_LTDC
+#if ! GUI_EXTERNAL_FONTS
 
 #include "formats.h"
 #include "display.h"
+#include "fontsys.h"
 
 
 // http://www.apetech.de/fontCreator
@@ -194,5 +196,6 @@ const unifont_t unifont_helvNeueTh70 =
 	.fontraster = helvNeueTh70,
 	.label = "helvNeueTh70"
 };
+#endif /* ! GUI_EXTERNAL_FONTS */
 
 #endif /* LCDMODE_LTDC */

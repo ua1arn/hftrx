@@ -10568,9 +10568,9 @@ void hightests(void)
 		{
 			uint_fast16_t h;
 			const unifont_t * const font = fonts [row];
-			uint_fast16_t w = colpip_string_widthheight(font, msg, & h);
+			uint_fast16_t w = unifont_textsize(font, msg, TEZXTSZIE_AUTO, & h);
 			colpip_rectangle(& dbv, xpix, ypix, w, h, row % 2 ? COLOR_DARKCYAN : COLOR_GRAY, 0, 0);
-			colpip_string(& dbv, xpix, ypix, font, msg, COLOR_BLACK);
+			unifont_text(& dbv, xpix, ypix, font, msg, TEZXTSZIE_AUTO, COLOR_BLACK);
 			ypix += h;
 		}
 		colmain_nextfb();
@@ -13418,8 +13418,8 @@ void hightests(void)
 			if (wx > 24)
 			{
 				char buf [4];
-				local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d"), i);
-				colpip_string(fr, DIM_X, DIM_Y, x, y, font, buf, COLORPIP_WHITE);
+				const size_t bifsz = local_snprintf_P(buf, sizeof buf / sizeof buf [0], PSTR("%d"), i);
+				unifont_text(fr, DIM_X, DIM_Y, x, y, font, buf, bufsz, COLORPIP_WHITE);
 			}
 
 			x = x + wx;

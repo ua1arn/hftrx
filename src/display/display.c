@@ -10,6 +10,7 @@
 #include "hardware.h"
 #include "board.h"
 #include "display.h"
+#include "fontsys.h"
 #include "formats.h"
 #include "spi.h"	// hardware_spi_master_send_frame
 #include "display2.h"
@@ -346,7 +347,7 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 		char c;
 		savestring = s;
 		uint_fast16_t stringheight;
-		const uint_fast16_t stringwidth = colpip_string_widthheight(font, s, & stringheight);
+		const uint_fast16_t stringwidth = unifont_textsize(font, s, TEZXTSZIE_AUTO, & stringheight);
 		ASSERT(font);
 		switch (dbstylep->textvalign)
 		{

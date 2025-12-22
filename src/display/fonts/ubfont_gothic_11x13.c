@@ -1,5 +1,6 @@
 #include "hardware.h"
-#include "../display.h"
+#include "fontsys.h"
+#if ! GUI_EXTERNAL_FONTS
 //--------------------------------------------------------------
 // Font-Daten
 // erstellt von UB mit PixelFontGenerator 1.8
@@ -129,3 +130,4 @@ const unifont_t unifont_gothic_11x13 =
 	.fontraster = & gothic_11x13,
 	.label = "unifont_gothic_11x13"
 };
+#endif /* ! GUI_EXTERNAL_FONTS */

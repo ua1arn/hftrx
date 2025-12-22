@@ -1,4 +1,5 @@
 #include "hardware.h"
+#include "fontsys.h"
 #include "formats.h"
 #include "radio.h"
 #include "board.h"

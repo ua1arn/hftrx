@@ -9,7 +9,7 @@
 #if LCDMODE_LTDC
 
 #include "formats.h"
-#include "display.h"
+#include "fontsys.h"
 
 #include <string.h>
 
@@ -32,44 +32,43 @@ static uint_fast16_t colorpip_draw_char(
 // Используется при выводе на графический индикатор,
 // transparent background - не меняем цвет фона.
 uint_fast16_t
-colpip_string(
+unifont_text(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t ypix,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	const unifont_t * font,
 	const char * s,
+	size_t slength,		// количество символов для печати или TEZXTSZIE_AUTO - если до '\0'
 	COLORPIP_T fg		// цвет вывода текста
 	)
 {
-	char c;
-
 	ASSERT(s != NULL);
-	while ((c = * s ++) != '\0')
+	slength = (slength == TEZXTSZIE_AUTO) ? strlen(s) : slength;
+	while (slength --)
 	{
-		xpix = colorpip_draw_char(db, xpix, ypix, font, c, fg);
+		xpix = colorpip_draw_char(db, xpix, ypix, font, * s ++, fg);
 	}
 	return xpix;
 }
 
 // получить оба размера текстовой строки
 uint_fast16_t
-colpip_string_widthheight(
+unifont_textsize(
 	const unifont_t * font,
 	const char * s,
+	size_t slength,		// количество символов для печати или TEZXTSZIE_AUTO - если до '\0'
 	uint_fast16_t * height
 	)
 {
 	uint_fast16_t w = 0;
-	char c;
-
 	ASSERT(font);
 	ASSERT(s);
 	ASSERT(height);
 
+	slength = (slength == TEZXTSZIE_AUTO) ? strlen(s) : slength;
 	* height = font->font_drawheight(font);
-
-	while ((c = * s ++) != '\0')
-		w += font->font_drawwidthci(font, font->decode(font, c));
+	while (slength --)
+		w += font->font_drawwidthci(font, font->decode(font, * s ++));
 	return w;
 }
 

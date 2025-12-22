@@ -14,6 +14,7 @@
 #if ! LCDMODE_DUMMY && LCDMODE_LTDC
 
 #include "display.h"
+#include "fontsys.h"
 #include "display2.h"
 #include <stdint.h>
 #include <string.h>

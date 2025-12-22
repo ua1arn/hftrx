@@ -8,8 +8,11 @@
 
 #if LCDMODE_LTDC
 
+#if ! GUI_EXTERNAL_FONTS
+
 #include "formats.h"
 #include "display.h"
+#include "fontsys.h"
 
 #include <string.h>
 
@@ -520,6 +523,7 @@ ubpfont_render_char16(
 	return ubxfont_put_char16(db, xpix, ypix, font, charraster, UINT16_C(1) << width2, width2, height2, 0 /* (unused) */, fg);
 }
 
+#endif /* ! GUI_EXTERNAL_FONTS */
 
 
 #endif /* LCDMODE_LTDC */
