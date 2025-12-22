@@ -5149,7 +5149,11 @@ enum
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
-		static uint_fast8_t guacplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+	#if WITHUACPLAYER
+			static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+	#else /* WITHUACPLAYER */
+			static uint_fast8_t guacplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+	#endif /* WITHUACPLAYER */
 		/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		static const struct paramdefdef xguacplayer =
 		{
