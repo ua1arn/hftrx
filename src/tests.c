@@ -12,7 +12,7 @@
 #include "encoder.h"
 #include "bootloader.h"
 
-#include "display/display.h"
+#include "fontsys.h"
 #include "display2.h"
 #include "formats.h"
 #include "codecs.h"

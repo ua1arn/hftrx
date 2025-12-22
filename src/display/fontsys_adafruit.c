@@ -116,16 +116,15 @@ adafruitfont_render_char(
 		int_fast16_t row;	// source bitmap pos
 		for (row = 0; row < glyph->height; ++ row)
 		{
+			PACKEDCOLORPIP_T * tgr = colpip_mem_at(db, xpix + glyph->xOffset, ypix + row + glyph->yOffset + baseline);
 			int_fast16_t col;	// source bitmap pos
-			for (col = 0; col < glyph->width; ++ col)
+			for (col = 0; col < glyph->width; ++ col, ++ tgr)
 			{
 				const unsigned bitpos = row * glyph->width + col;
 				const unsigned byteoffset = bitpos / 8;
 				const unsigned bitoffset = 7 - bitpos % 8;
 				if ((charraster [byteoffset] >> bitoffset) & 0x01)
-				{
-					* colpip_mem_at(db, xpix + col + glyph->xOffset, ypix + row + glyph->yOffset + baseline) = fg;
-				}
+					* tgr = fg;
 			}
 		}
 	}

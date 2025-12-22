@@ -128,31 +128,20 @@ aptechfont_render_char(
 
 	if (charraster != NULL)
 	{
-		const unsigned bytespervertical = (height2 + 7) / 8;
-	//	PRINTF("aptechfont_render_char: cc=%02X (%c), width2=%u, height2=%u, bytespervertical=%u\n", (unsigned char) cc, cc, width2, height2, bytespervertical);
-	//	printhex(0, charraster, bytespervertical * width2);
+		//const unsigned bytespervertical = (height2 + 7) / 8;
 		uint_fast16_t row;
 		for (row = 0; row < height2; ++ row)
 		{
+			PACKEDCOLORPIP_T * tgr = colpip_mem_at(db, xpix, ypix + row);
 			uint_fast16_t col;
-			for (col = 0; col < width2; ++ col)
+			for (col = 0; col < width2; ++ col, ++ tgr)
 			{
 				const unsigned strype = row / 8;
 				const unsigned byteoffset = strype * width2 + col;
 				const unsigned byteshift = row % 8;
-
-				//ASSERT(byteshift == row);
 				if (charraster [byteoffset] & (1u << byteshift))
-				{
-					* colpip_mem_at(db, xpix + col, ypix + row) = fg;
-					//PRINTF("*");
-				}
-				else
-				{
-					//PRINTF("-");
-				}
+					* tgr = fg;
 			}
-			//PRINTF("\n");
 		}
 	}
 	return xpix + width2;
