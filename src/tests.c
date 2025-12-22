@@ -10543,15 +10543,14 @@ void hightests(void)
 		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 		//display_text(& dbv, 0, 0, "Start2...", 10, 16, & dbstylev);
-		static const char msg [] = "HELLO! test: 0123456789+-";
+		//static const char msg [] = "HELLO! test: 0123456789+-";
+		static const char msg [] = "HELLO! test";
 		static const unifont_t * const fonts [] =
 		{
 			& unifont_small,
 			& unifont_small2,
 			& unifont_small3,	// шрифт, используемый при отриосовке надписей на шкале
 			//& unifont_small_x2,	// vtty_x2.c
-			& unifont_gothic_11x13,
-			& unifont_gothic_12x16p,
 			//& unifont_Tahoma_Regular_88x77,	// CP Font Generator support
 //			& unifont_roboto32,	// aptech
 //			& unifont_helvNeueTh70,	// aptech
@@ -10560,6 +10559,13 @@ void hightests(void)
 			& unifont_FreeMono18pt7b,
 			& unifont_FreeMono24pt7b,
 			& unifont_FreeSans12pt7b,
+			& unifont_gothic_11x13,
+			& unifont_gothic_12x16p,
+			& unifont_msgothic_10x13_prop,
+			& unifont_msgothic_11x13_mono,
+			& unifont_msgothic_13x16_prop,
+			& unifont_msgothic_15x17_prop,
+			& unifont_msgothic_15x17_mono,
 		};
 		unsigned row;
 		uint_fast16_t xpix = 0;
