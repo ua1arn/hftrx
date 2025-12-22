@@ -150,10 +150,10 @@ typedef struct gxdrawb_tag gxdrawb_t;
 typedef struct unifont_tag
 {
 	uint_fast16_t (* decode)(const struct unifont_tag * font, char cc);	// получение ci
-	uint_fast16_t (* totalci)(const struct unifont_tag * font);
+	uint_fast16_t (* totalci)(const struct unifont_tag * font);	// количество символов
 	const void * (* getcharrasterci)(const struct unifont_tag * font, uint_fast16_t ci);	// получение начального адреса растра для символа
-	uint_fast8_t (* font_drawwidthci)(const struct unifont_tag * font, uint_fast16_t ci);	// ширина в пиксеях данного символа (может быть меньше чем поле width)
-	uint_fast8_t (* font_drawheight)(const struct unifont_tag * font);	// высота в пикселях (се символы шрифта одной высоты)
+	uint_fast8_t (* font_drawwidthci)(const struct unifont_tag * font, uint_fast16_t ci);	// ширина в пиксеях данного символа на экране
+	uint_fast8_t (* font_drawheight)(const struct unifont_tag * font);	// высота в пикселях на экране (все символы шрифта одной высоты)
 	uint_fast16_t (* font_drawci)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, uint_fast16_t ci, COLORPIP_T fg);
 	const void * fontraster;		// начало знакогенератора в памяти
 	void * fontdata;			// например, для adafruint требуется место с предрасчитаной высотой шрифта и смещением baseline
