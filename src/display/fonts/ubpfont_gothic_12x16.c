@@ -125,7 +125,7 @@ const unifont_t unifont_gothic_12x16p =
 {
 	.decode = ubpfont_decode,
 	.totalci = ubpfont_totalci,
-	.getcharrasterci = ubpfont_getcharraster,
+	.getcharrasterci = ubpfont_getcharraster16,
 	.font_drawwidthci = ubpfont_width,
 	.font_drawheight = ubpfont_height,
 	.font_drawci = ubpfont_render_char16,

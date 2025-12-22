@@ -187,10 +187,15 @@ unifont_textsize(
 
 // Для моноширинных знакогенераторов
 uint_fast8_t ubmfont_width(const struct unifont_tag * font, uint_fast16_t ci);
+uint_fast8_t ubmfont_width32(const struct unifont_tag * font, uint_fast16_t ci);
 uint_fast8_t ubmfont_height(const unifont_t * font);
+uint_fast8_t ubmfont_height32(const unifont_t * font);
 uint_fast16_t ubmfont_decode(const unifont_t * font, char cc);
+uint_fast16_t ubmfont_decode32(const unifont_t * font, char cc);
 uint_fast16_t ubmfont_totalci(const unifont_t * font);
-const void * ubmfont_getcharraster(const unifont_t * font, uint_fast16_t ci);
+uint_fast16_t ubmfont_totalci32(const unifont_t * font);
+const void * ubmfont_getcharraster16(const unifont_t * font, uint_fast16_t ci);
+const void * ubmfont_getcharraster32(const unifont_t * font, uint_fast16_t ci);
 uint_fast16_t ubmfont_render_char16(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
@@ -208,10 +213,15 @@ uint_fast16_t ubmfont_render_char32(
 
 // Для пропорциональных знакогенераторов
 uint_fast8_t ubpfont_width(const struct unifont_tag * font, uint_fast16_t ci);
+uint_fast8_t ubpfont_width32(const struct unifont_tag * font, uint_fast16_t ci);
 uint_fast8_t ubpfont_height(const unifont_t * font);
+uint_fast8_t ubpfont_height32(const unifont_t * font);
 uint_fast16_t ubpfont_decode(const unifont_t * font, char cc);
+uint_fast16_t ubpfont_decode32(const unifont_t * font, char cc);
 uint_fast16_t ubpfont_totalci(const unifont_t * font);
-const void * ubpfont_getcharraster(const struct unifont_tag * font, uint_fast16_t ci);
+uint_fast16_t ubpfont_totalci32(const unifont_t * font);
+const void * ubpfont_getcharraster16(const struct unifont_tag * font, uint_fast16_t ci);
+const void * ubpfont_getcharraster32(const struct unifont_tag * font, uint_fast16_t ci);
 uint_fast16_t ubpfont_render_char16(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере

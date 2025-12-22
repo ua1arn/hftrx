@@ -122,7 +122,7 @@ const unifont_t unifont_gothic_11x13 =
 {
 	.decode = ubmfont_decode,
 	.totalci = ubmfont_totalci,
-	.getcharrasterci = ubmfont_getcharraster,
+	.getcharrasterci = ubmfont_getcharraster16,
 	.font_drawwidthci = ubmfont_width,
 	.font_drawheight = ubmfont_height,
 	.font_drawci = ubmfont_render_char16,

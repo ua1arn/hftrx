@@ -10569,6 +10569,7 @@ void hightests(void)
 			uint_fast16_t h;
 			const unifont_t * const font = fonts [row];
 			uint_fast16_t w = unifont_textsize(font, msg, TEZXTSZIE_AUTO, & h);
+			PRINTF("%s: w/h=%u/%u\n", font->label, w, h);
 			colpip_rectangle(& dbv, xpix, ypix, w, h, row % 2 ? COLOR_DARKCYAN : COLOR_GRAY, 0, 0);
 			unifont_text(& dbv, xpix, ypix, font, msg, TEZXTSZIE_AUTO, COLOR_BLACK);
 			ypix += h;

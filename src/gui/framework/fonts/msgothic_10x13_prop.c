@@ -157,11 +157,11 @@ gui_prop_font_t msgothic_10x13_prop = {
 // Для пропорциональных знакогенераторов
 const unifont_t unifont_msgothic_10x13_prop =
 {
-	.decode = ubpfont_decode,
-	.totalci = ubpfont_totalci,
-	.getcharrasterci = ubpfont_getcharraster,
-	.font_drawwidthci = ubpfont_width,
-	.font_drawheight = ubpfont_height,
+	.decode = ubpfont_decode32,
+	.totalci = ubpfont_totalci32,
+	.getcharrasterci = ubpfont_getcharraster32,
+	.font_drawwidthci = ubpfont_width32,
+	.font_drawheight = ubpfont_height32,
 	.font_drawci = ubpfont_render_char32,
 	//
 	.fontraster = & msgothic_10x13_prop,
