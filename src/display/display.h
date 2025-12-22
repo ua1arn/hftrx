@@ -807,6 +807,7 @@ typedef struct pipparams_tag
 void display2_getpipparams(pipparams_t * p);	/* получить координаты окна с панорамой и/или водопадом. */
 void board_set_tvoutformat(uint_fast8_t v);	/* установить видеорежим */
 
+#if ! GUI_EXTERNAL_FONTS
 //--------------------------------------------------------------
 // Структура шрифта одного размера (не более 16 пикселей шириной)
 //--------------------------------------------------------------
@@ -900,6 +901,8 @@ uint16_t getwidth_Pstring(const char * str, const UB_pFont * font);
 // Возвращает ширину строки в пикселях, моноширинный шрифт
 uint16_t getwidth_Mstring(const char * str, const UB_Font * font);
 #endif
+
+#endif /* ! GUI_EXTERNAL_FONTS */
 
 // Функции (поля unifont_t) для работы с UB_pFont и UB_Font
 
