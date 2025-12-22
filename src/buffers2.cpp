@@ -1446,7 +1446,9 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t c
 	buff [DMABUF32TXI] = adpt_output(& ifcodectx, ch0);
 	buff [DMABUF32TXQ] = adpt_output(& ifcodectx, ch1);
 #endif /* WITHTXCPATHCALIBRATE */
+#if WITHFPGAPIPE_NCORX0
 	buff [DMABUF32TX_NCO1] = delta;
+#endif /* WITHFPGAPIPE_NCORX0 */
 #if (CPUSTYLE_XC7Z || CPUSTYLE_RK356X) && WITHLFM
 	if (iflfmactive())
 	{
