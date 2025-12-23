@@ -16,10 +16,6 @@
 #include "display2.h"
 #include <string.h>
 
-
-const char * savestring = "no data";
-const char * savewhere = "no func";
-
 #if LCDMODE_LTDC
 
 /* рисование линии на основном экране произвольным цветом
@@ -295,7 +291,6 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 	size_t len;
 	const unifont_t * const font = dbstylep->font;
 
-	savewhere = __func__;
 #if ! WITHLVGL
 	if (font == NULL)
 		return;
@@ -345,7 +340,6 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 //		ASSERT(dbstylep->font_draw_char);
 //		ASSERT(dbstylep->font_width);
 		char c;
-		savestring = s;
 		uint_fast16_t stringheight;
 		const uint_fast16_t stringwidth = unifont_textsize(font, s, TEZXTSZIE_AUTO, & stringheight);
 		ASSERT(font);
@@ -394,7 +388,6 @@ static uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x,
 	const unifont_t * const font = & unifont_big;
 	if (font == NULL)
 		return x;
-	savewhere = __func__;
 	return font->font_drawci(db, x, y, font, font->decode(font, cc), dbstyle->textcolor);
 }
 
@@ -403,7 +396,6 @@ static uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x
 	const unifont_t * const font = & unifont_half;
 	if (font == NULL)
 		return x;
-	savewhere = __func__;
 	return font->font_drawci(db, x, y, font, font->decode(font, cc), dbstyle->textcolor);
 }
 
@@ -496,7 +488,6 @@ static uint_fast16_t display_put_char(const gxdrawb_t * db, uint_fast16_t x, uin
 	const unifont_t * const font = dbstyle->font;
 	if (font == NULL)
 		return x;
-	savewhere = __func__;
 	return font->font_drawci(db, x, y, font, font->decode(font, cc), dbstyle->textcolor);
 }
 

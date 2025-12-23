@@ -79,7 +79,6 @@ static uint_fast16_t draw_char_small(
 	COLORPIP_T fg
 	)
 {
-	savewhere = __func__;
 	const unifont_t * const font = & unifont_small;
 	return font->font_drawci(db, xpix, ypix, font, font->decode(font, cc), fg);
 }

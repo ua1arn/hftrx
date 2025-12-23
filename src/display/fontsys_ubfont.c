@@ -257,16 +257,6 @@ void UB_Font_DrawPStringDbg(
 {
 	uint_fast16_t pos = x, width;
 
-	savestring = ptr;
-	savewhere = __func__;
-	if (x >= db->dx)
-	{
-		PRINTF("%s called from %s/%d: x/dx=%d/%d\n", __func__, file, line, (int) x, (int) db->dx);
-	}
-	if (y >= db->dy)
-	{
-		PRINTF("%s called from %s/%d: y/dy=%d/%d\n", __func__, file, line, (int) y, (int) db->dy);
-	}
 	ASSERT(y < db->dy);
 	while (*ptr != '\0')
 	{
@@ -332,8 +322,6 @@ void UB_Font_DrawPString32(const gxdrawb_t * db,
 		COLORPIP_T vg)
 {
 	uint_fast16_t pos = x, width;
-	savestring = ptr;
-	savewhere = __func__;
 	while (* ptr != 0)
 	{
 		ASSERT(pos < db->dx);
@@ -367,8 +355,6 @@ uint16_t UB_Font_getPcharw32(uint8_t ascii, const UB_pFont32 * font)
 uint16_t getwidth_Pstring32(const char * str, const UB_pFont32 * font)
 {
 	uint_fast16_t width = 0;
-	savestring = str;
-	savewhere = __func__;
 	while (* str != 0)
 	{
 		width += UB_Font_getPcharw32(* str, font);

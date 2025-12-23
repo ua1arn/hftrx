@@ -387,6 +387,7 @@ colpip_rectangle(
 	unsigned alpha
 	);
 
+// colpip_bitblt & colpip_stretchblt flags
 #define BITBLT_FLAG_NONE			0u
 #define BITBLT_FLAG_CKEY			(1u << 0)	// colpip_bitblt use keycolor parameter
 #define BITBLT_FLAG_XMIRROR			(1u << 1)
@@ -743,14 +744,7 @@ int display_vtty_x2_maxx(void);
 int display_vtty_x2_maxy(void);
 void display_vtty_x2_gotoxy(unsigned x, unsigned y);
 
-void openvg_init(const uintptr_t * frames);
-void openvg_deinit(void);
-void openvg_next(unsigned page);		// текущий буфер отрисовки становится отображаемым, OpenVG переключается на следующий буфер
-
 void lvglhw_initialize(void);
-
-extern const char * savestring;
-extern const char * savewhere;
 
 #if 1//WITHRLEDECOMPRESS
 

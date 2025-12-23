@@ -2777,7 +2777,7 @@ colpip_mem_at_debug(
 {
 	if (x >= db->dx || y >= db->dy || db->buffer == NULL)
 	{
-		PRINTF("colpip_mem_at(%s/%d): dx=%u, dy=%u, x=%d, y=%d, savestring='%s', savewhere='%s'\n", file, line, db->dx, db->dy, x, y, savestring, savewhere);
+		PRINTF("colpip_mem_at(%s/%d): dx=%u, dy=%u, x=%d, y=%d\n", file, line, db->dx, db->dy, x, y);
 	}
 	ASSERT(x < db->dx);
 	ASSERT(y < db->dy);
@@ -2798,7 +2798,7 @@ colpip_const_mem_at_debug(
 {
 	if (x >= db->dx || y >= db->dy || db->buffer == NULL)
 	{
-		PRINTF("colpip_const_mem_at_debug(%s/%d): dx=%u, dy=%u, x=%d, y=%d, savestring='%s', savewhere='%s'\n", file, line, db->dx, db->dy, x, y, savestring, savewhere);
+		PRINTF("colpip_const_mem_at_debug(%s/%d): dx=%u, dy=%u, x=%d, y=%d\n", file, line, db->dx, db->dy, x, y);
 	}
 	ASSERT(x < db->dx);
 	ASSERT(y < db->dy);

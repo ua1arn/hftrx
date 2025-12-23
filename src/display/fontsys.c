@@ -27,8 +27,6 @@ unifont_text(
 	)
 {
 	ASSERT(s != NULL);
-    savewhere = __func__;
-    savestring = s;
     slength = (slength == TEZXTSZIE_AUTO) ? strlen(s) : slength;
 	while (slength --)
 	{
