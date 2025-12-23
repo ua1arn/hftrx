@@ -61,9 +61,9 @@ adafruitfont_decode(const unifont_t * font, char cc)
 	const hftrx_GFXfont_t * const gfxfont = (const hftrx_GFXfont_t * const) font->fontraster;
 	const uint_fast16_t c = (unsigned char) cc;
 	if (c < gfxfont->first)
-		return 0;
+		return INT16_MAX;
 	if (c > gfxfont->last)
-		return 0;
+		return INT16_MAX;
 	return c - gfxfont->first;
 }
 
@@ -76,6 +76,7 @@ adafruitfont_totalci(const unifont_t * font)
 
 static uint_fast8_t adafruitfont_width(const unifont_t * font, uint_fast16_t ci)
 {
+	if (INT16_MAX == ci) return 0;
 	const hftrx_GFXfont_t * const gfxfont = (const hftrx_GFXfont_t * const) font->fontraster;
 	const hftrx_GFXglyph_t * const glyph = & gfxfont->glyph [ci];
 	return glyph->width ? glyph->xAdvance : 0;
@@ -83,6 +84,7 @@ static uint_fast8_t adafruitfont_width(const unifont_t * font, uint_fast16_t ci)
 
 static const uint8_t * adafruitfont_getcharraster(const unifont_t * font, uint_fast16_t ci)
 {
+	if (INT16_MAX == ci) return NULL;
 	const hftrx_GFXfont_t * const gfxfont = (const hftrx_GFXfont_t * const) font->fontraster;
 	const hftrx_GFXglyph_t * const glyph = & gfxfont->glyph [ci];
 	return glyph->width ? & gfxfont->bitmap [glyph->bitmapOffset] : NULL;
@@ -106,12 +108,12 @@ adafruitfont_render_char(
 	)
 {
 	const hftrx_GFXfont_t * const gfxfont = (const hftrx_GFXfont_t * const) font->fontraster;
-	const hftrx_GFXglyph_t * const glyph = & gfxfont->glyph [ci];
 	const uint8_t * const charraster = adafruitfont_getcharraster(font, ci);
 	const int_fast16_t baseline = adafruitfont_preparedata(font)->baseline;
 
 	if (charraster != NULL)
 	{
+		const hftrx_GFXglyph_t * const glyph = & gfxfont->glyph [ci];
 		int_fast16_t row;	// source bitmap pos
 		for (row = 0; row < glyph->height; ++ row)
 		{

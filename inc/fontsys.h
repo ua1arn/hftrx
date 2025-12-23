@@ -151,7 +151,6 @@ typedef struct unifont_tag
 {
 	uint_fast16_t (* decode)(const struct unifont_tag * font, char cc);	// получение ci
 	uint_fast16_t (* totalci)(const struct unifont_tag * font);	// количество символов
-	const void * (* getcharrasterci)(const struct unifont_tag * font, uint_fast16_t ci);	// получение начального адреса растра для символа
 	uint_fast8_t (* font_drawwidthci)(const struct unifont_tag * font, uint_fast16_t ci);	// ширина в пиксеях данного символа на экране
 	uint_fast8_t (* font_drawheight)(const struct unifont_tag * font);	// высота в пикселях на экране (все символы шрифта одной высоты)
 	uint_fast16_t (* font_drawci)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, uint_fast16_t ci, COLORPIP_T fg);
@@ -194,8 +193,6 @@ uint_fast16_t ubmfont_decode(const unifont_t * font, char cc);
 uint_fast16_t ubmfont_decode32(const unifont_t * font, char cc);
 uint_fast16_t ubmfont_totalci(const unifont_t * font);
 uint_fast16_t ubmfont_totalci32(const unifont_t * font);
-const void * ubmfont_getcharraster16(const unifont_t * font, uint_fast16_t ci);
-const void * ubmfont_getcharraster32(const unifont_t * font, uint_fast16_t ci);
 uint_fast16_t ubmfont_render_char16(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
@@ -220,8 +217,6 @@ uint_fast16_t ubpfont_decode(const unifont_t * font, char cc);
 uint_fast16_t ubpfont_decode32(const unifont_t * font, char cc);
 uint_fast16_t ubpfont_totalci(const unifont_t * font);
 uint_fast16_t ubpfont_totalci32(const unifont_t * font);
-const void * ubpfont_getcharraster16(const struct unifont_tag * font, uint_fast16_t ci);
-const void * ubpfont_getcharraster32(const struct unifont_tag * font, uint_fast16_t ci);
 uint_fast16_t ubpfont_render_char16(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
