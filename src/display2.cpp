@@ -2700,10 +2700,7 @@ display2_freq_big(
 	const gxstyle_t * dbstylep	/* foreground and background colors, text alignment */
 	)
 {
-
-	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(xcell, ycell, & ypix);
-	pix_display_value_big(db, xpix, ypix, GRID2X(xspan), GRID2Y(yspan), freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep);
+	pix_display_value_big(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep);
 }
 
 // Отображение частоты. Герцы так же большим шрифтом.
@@ -4690,6 +4687,12 @@ static uint_fast16_t display_getpwrfullwidth(void)
 
 #endif /* WITHBARS */
 
+static uint_fast16_t display2_cell2pix(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+{
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
+}
+
 // Адресация для s-meter
 static uint_fast8_t
 display_bars_x_rx(
@@ -4758,14 +4761,14 @@ void display_swrmeter(const gxdrawb_t * db,
 	gxstyle_textcolor(& dbstylev, DSGN_SWRCOLOR, DSGN_BGCOLOR);
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_swr(x, 0), y, & ypix);
+	uint_fast16_t xpix = display2_cell2pix(display_bars_x_swr(x, 0), y, & ypix);
 	display_bar(db, xpix, ypix, BDTH_ALLSWR, rowspan, mapleftval, fullscale, fullscale, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL, & dbstylev);
 
 	if (BDTH_SPACESWR != 0)
 	{
 		// заполняем пустое место за индикаторм КСВ
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_swr(x, BDTH_ALLSWR), y, & ypix);
+		uint_fast16_t xpix = display2_cell2pix(display_bars_x_swr(x, BDTH_ALLSWR), y, & ypix);
 		display_bar(db, xpix, ypix, BDTH_SPACESWR, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE, & dbstylev);
 	}
 
@@ -4795,14 +4798,14 @@ static void display_pwrmeter(const gxdrawb_t * db,
 	gxstyle_textcolor(& dbstylev, DSGN_PWRCOLOR, DSGN_BGCOLOR);
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, 0), y, & ypix);
+	uint_fast16_t xpix = display2_cell2pix(display_bars_x_pwr(x, 0), y, & ypix);
 	display_bar(db, xpix, ypix, BDTH_ALLPWR, rowspan, mapleftval, mapleftmax, fullscale, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF, & dbstylev);
 
 	if (BDTH_SPACEPWR != 0)
 	{
 		// заполняем пустое место за индикаторм мощности
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, BDTH_ALLPWR), y, & ypix);
+		uint_fast16_t xpix = display2_cell2pix(display_bars_x_pwr(x, BDTH_ALLPWR), y, & ypix);
 		display_bar(db, xpix, ypix, BDTH_SPACEPWR, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE, & dbstylev);
 	}
 
@@ -4830,17 +4833,17 @@ static void display_smeter(const gxdrawb_t * db,
 	const int_fast16_t maprightmax = display_mapbar(tracemax10, level9, level9 + delta2, delta2, tracemax10 - level9, delta2); // delta2 - invisible
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_rx(x, 0), y, & ypix);
+	uint_fast16_t xpix = display2_cell2pix(display_bars_x_rx(x, 0), y, & ypix);
 	display_bar(db, xpix, ypix, BDTH_LEFTRX, rowspan, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF, & dbstylev_smbar);		//ниже 9 баллов ничего
 	//
 	uint_fast16_t ypix2;
-	uint_fast16_t xpix2 = display_wrdata_begin(display_bars_x_rx(x, BDTH_LEFTRX), y, & ypix2);
+	uint_fast16_t xpix2 = display2_cell2pix(display_bars_x_rx(x, BDTH_LEFTRX), y, & ypix2);
 	display_bar(db, xpix2, ypix2, BDTH_RIGHTRX, rowspan, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL, & dbstylev_smbarplus);		// выше 9 баллов ничего нет.
 
 	if (BDTH_SPACERX != 0)
 	{
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, BDTH_ALLRX), y, & ypix);
+		uint_fast16_t xpix = display2_cell2pix(display_bars_x_pwr(x, BDTH_ALLRX), y, & ypix);
 		display_bar(db, xpix, ypix, BDTH_SPACERX, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE, & dbstylev_smbarplus);
 	}
 

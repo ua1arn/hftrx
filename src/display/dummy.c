@@ -23,12 +23,6 @@ display_clear(const gxdrawb_t * db)
 {
 }
 
-uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
-{
-	* yp = 0;
-	return 0;
-}
-
 
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */

@@ -72,13 +72,6 @@ unifont_textsize(
 	return w;
 }
 
-// обычный шрифт
-uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
-{
-	* yp = GRID2Y(ycell);
-	return GRID2X(xcell);
-}
-
 // *********************************************************************************************************************
 
 
