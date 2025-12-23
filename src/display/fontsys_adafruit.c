@@ -74,15 +74,14 @@ adafruitfont_totalci(const unifont_t * font)
 	return gfxfont->last - gfxfont->first + 1;
 }
 
-// Для пропорциональных знакогенераторов
 static uint_fast8_t adafruitfont_width(const unifont_t * font, uint_fast16_t ci)
 {
 	const hftrx_GFXfont_t * const gfxfont = (const hftrx_GFXfont_t * const) font->fontraster;
 	const hftrx_GFXglyph_t * const glyph = & gfxfont->glyph [ci];
-	return glyph->xAdvance;
+	return glyph->width ? glyph->xAdvance : 0;
 }
 
-static const void * adafruitfont_getcharraster(const unifont_t * font, uint_fast16_t ci)
+static const uint8_t * adafruitfont_getcharraster(const unifont_t * font, uint_fast16_t ci)
 {
 	const hftrx_GFXfont_t * const gfxfont = (const hftrx_GFXfont_t * const) font->fontraster;
 	const hftrx_GFXglyph_t * const glyph = & gfxfont->glyph [ci];
@@ -108,7 +107,7 @@ adafruitfont_render_char(
 {
 	const hftrx_GFXfont_t * const gfxfont = (const hftrx_GFXfont_t * const) font->fontraster;
 	const hftrx_GFXglyph_t * const glyph = & gfxfont->glyph [ci];
-	const uint8_t * const charraster = (const uint8_t *) font->getcharrasterci(font, ci);
+	const uint8_t * const charraster = adafruitfont_getcharraster(font, ci);
 	const int_fast16_t baseline = adafruitfont_preparedata(font)->baseline;
 
 	if (charraster != NULL)
@@ -127,8 +126,10 @@ adafruitfont_render_char(
 					* tgr = fg;
 			}
 		}
+		return xpix + glyph->xAdvance;
 	}
-	return xpix + glyph->xAdvance;
+	// выключенные символы не отображаются
+	return xpix;
 }
 
 
@@ -140,7 +141,6 @@ const unifont_t unifont_FreeMono9pt7b =
 {
 	.decode = adafruitfont_decode,
 	.totalci = adafruitfont_totalci,
-	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
@@ -159,7 +159,6 @@ const unifont_t unifont_FreeMono12pt7b =
 {
 	.decode = adafruitfont_decode,
 	.totalci = adafruitfont_totalci,
-	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
@@ -178,7 +177,6 @@ const unifont_t unifont_FreeMono18pt7b =
 {
 	.decode = adafruitfont_decode,
 	.totalci = adafruitfont_totalci,
-	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
@@ -197,7 +195,6 @@ const unifont_t unifont_FreeMono24pt7b =
 {
 	.decode = adafruitfont_decode,
 	.totalci = adafruitfont_totalci,
-	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
@@ -216,7 +213,6 @@ const unifont_t unifont_FreeSans12pt7b =
 {
 	.decode = adafruitfont_decode,
 	.totalci = adafruitfont_totalci,
-	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
@@ -236,7 +232,6 @@ const unifont_t unifont_small =
 {
 	.decode = adafruitfont_decode,
 	.totalci = adafruitfont_totalci,
-	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
@@ -255,7 +250,6 @@ const unifont_t unifont_small3 =
 {
 	.decode = adafruitfont_decode,
 	.totalci = adafruitfont_totalci,
-	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
@@ -274,7 +268,6 @@ const unifont_t unifont_small2 =
 {
 	.decode = adafruitfont_decode,
 	.totalci = adafruitfont_totalci,
-	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
@@ -293,7 +286,6 @@ const unifont_t unifont_half_raw =
 {
 	.decode = adafruitfont_decode,
 	.totalci = adafruitfont_totalci,
-	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
@@ -309,7 +301,6 @@ const unifont_t unifont_big_raw =
 {
 	.decode = adafruitfont_decode,
 	.totalci = adafruitfont_totalci,
-	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
@@ -326,7 +317,6 @@ const unifont_t unifont_half_raw =
 {
 	.decode = adafruitfont_decode,
 	.totalci = adafruitfont_totalci,
-	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
@@ -342,7 +332,6 @@ const unifont_t unifont_big_raw =
 {
 	.decode = adafruitfont_decode,
 	.totalci = adafruitfont_totalci,
-	.getcharrasterci = adafruitfont_getcharraster,
 	.font_drawwidthci = adafruitfont_width,
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,

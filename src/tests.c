@@ -10561,11 +10561,13 @@ void hightests(void)
 			& unifont_FreeSans12pt7b,
 			& unifont_gothic_11x13,
 			& unifont_gothic_12x16p,
-			& unifont_msgothic_10x13_prop,
-			& unifont_msgothic_11x13_mono,
-			& unifont_msgothic_13x16_prop,
-			& unifont_msgothic_15x17_prop,
-			& unifont_msgothic_15x17_mono,
+//			& unifont_msgothic_10x13_prop,
+//			& unifont_msgothic_11x13_mono,
+//			& unifont_msgothic_13x16_prop,
+//			& unifont_msgothic_15x17_prop,
+//			& unifont_msgothic_15x17_mono,
+			& unifont_big,
+			& unifont_half,
 		};
 		unsigned row;
 		uint_fast16_t xpix = 0;

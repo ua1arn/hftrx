@@ -156,7 +156,6 @@ const unifont_t unifont_msgothic_11x13_mono =
 {
 	.decode = ubmfont_decode32,
 	.totalci = ubmfont_totalci32,
-	.getcharrasterci = ubmfont_getcharraster32,
 	.font_drawwidthci = ubmfont_width32,
 	.font_drawheight = ubmfont_height32,
 	.font_drawci = ubmfont_render_char32,

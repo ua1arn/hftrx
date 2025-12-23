@@ -66,7 +66,7 @@ uint_fast8_t cpfont_bitpacknormal_width(const struct unifont_tag * font, uint_fa
 }
 
 // получение начального адреса растра для символа
-const void * cpfont_bitpacknormal_getcharraster(const struct unifont_tag * font, uint_fast16_t ci)
+static const uint8_t * cpfont_bitpacknormal_getcharraster(const struct unifont_tag * font, uint_fast16_t ci)
 {
 	const uint8_t * const blob = (const uint8_t * const) font->fontraster;
 	const uint_fast8_t bytespervertical = (cpfont_bitpacknormal_height(font) + 7) / 8;
@@ -88,7 +88,7 @@ uint_fast16_t cpfont_bitpacknormal_draw(const gxdrawb_t * db, uint_fast16_t xpix
 	const uint_fast16_t paramstart = cpfont_bitpacknormal_paramstart(font, ci);	// параметры для данного символа
 	const uint_fast16_t width2 = blob [paramstart + 2];
 	const uint_fast16_t height2 = font->font_drawheight(font);
-	const uint8_t * raster = font->getcharrasterci(font, ci);
+	const uint8_t * raster = cpfont_bitpacknormal_getcharraster(font, ci);
 	if (raster)
 	{
 		//printhex(0, raster, 32);
@@ -101,7 +101,6 @@ const unifont_t unifont_Tahoma_Regular_88x77 =
 {
 	.decode = cpfont_bitpacknormal_decode,
 	.totalci = cpfont_bitpacknormal_totalci,
-	.getcharrasterci = cpfont_bitpacknormal_getcharraster,
 	.font_drawwidthci = cpfont_bitpacknormal_width,
 	.font_drawheight = cpfont_bitpacknormal_height,
 	.font_drawci = cpfont_bitpacknormal_draw,

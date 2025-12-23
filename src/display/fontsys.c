@@ -92,20 +92,14 @@ static uint_fast8_t ufcached_drawheight(const struct unifont_tag * font)	// вы
 	return pf->font_drawheight(pf);
 }
 
-static const void * ufcached_getcharraster(const struct unifont_tag * font, uint_fast16_t ci)	// получение начального адреса растра для символа
-{
-	const unifont_t * const pf = (const unifont_t *) font->fontraster;	// parent unifont_t object
-	return pf->getcharrasterci(pf, ci);
-}
-
 static uint_fast16_t ufcached_drawci(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, uint_fast16_t ci, COLORPIP_T fg)
 {
 	const unifont_t * const pf = (const unifont_t *) font->fontraster;	// parent unifont_t object
 #if WITHPRERENDER
 	ufcache_t * const cache = (ufcache_t *) font->fontdata;
-	if (cache->rendered)
+	const uint_fast16_t width2 = pf->font_drawwidthci(pf, ci);	// number of bits (start from LSB first byte in raster)
+	if (cache->rendered && width2)
 	{
-		const uint_fast16_t width2 = pf->font_drawwidthci(pf, ci);	// number of bits (start from LSB first byte in raster)
 		// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 		/* копируем изображение БЕЗ цветового ключа */
 		/* dcache_clean исходного изображения уже выполнено при построении изображения. */
@@ -169,7 +163,6 @@ const unifont_t unifont_big =
 {
 	.decode = ufcached_decode,
 	.totalci = ufcached_totalci,
-	.getcharrasterci = ufcached_getcharraster,
 	.font_drawwidthci = ufcached_drawwidth,
 	.font_drawheight = ufcached_drawheight,
 	.font_drawci = ufcached_drawci,
@@ -184,7 +177,6 @@ const unifont_t unifont_half =
 {
 	.decode = ufcached_decode,
 	.totalci = ufcached_totalci,
-	.getcharrasterci = ufcached_getcharraster,
 	.font_drawwidthci = ufcached_drawwidth,
 	.font_drawheight = ufcached_drawheight,
 	.font_drawci = ufcached_drawci,

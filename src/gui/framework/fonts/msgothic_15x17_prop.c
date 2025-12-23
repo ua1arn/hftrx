@@ -159,7 +159,6 @@ const unifont_t unifont_msgothic_15x17_prop =
 {
 	.decode = ubpfont_decode32,
 	.totalci = ubpfont_totalci32,
-	.getcharrasterci = ubpfont_getcharraster32,
 	.font_drawwidthci = ubpfont_width32,
 	.font_drawheight = ubpfont_height32,
 	.font_drawci = ubpfont_render_char32,

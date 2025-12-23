@@ -64,7 +64,7 @@ static uint_fast8_t aptechfont_width(const unifont_t * font, uint_fast16_t ci)
 	return w == 0 ? font_Width_in_Pixel_for_fixed_drawing : w;
 }
 
-static const void * aptechfont_getcharraster(const unifont_t * font, uint_fast16_t ci)
+static const uint8_t * aptechfont_getcharraster(const unifont_t * font, uint_fast16_t ci)
 {
 	const uint8_t * const blob = (const uint8_t * const) font->fontraster;
 	const uint_fast16_t   font_Size_in_Bytes_over_all_included_Size_it_self = USBD_peek_u16(blob + 0); // size of zero indicates fixed width font, actual length is width * height
@@ -118,7 +118,7 @@ aptechfont_render_char(
 	COLORPIP_T fg
 	)
 {
-	const uint8_t * const charraster = (const uint8_t * const) font->getcharrasterci(font, ci);
+	const uint8_t * const charraster = aptechfont_getcharraster(font, ci);
 	const uint_fast16_t width2 = font->font_drawwidthci(font, ci);
 	const uint_fast16_t height2 = font->font_drawheight(font);
 
@@ -160,7 +160,6 @@ const unifont_t unifont_roboto32 =
 {
 	.decode = aptechfont_decode,
 	.totalci = aptechfont_totalci,
-	.getcharrasterci = aptechfont_getcharraster,
 	.font_drawwidthci = aptechfont_width,
 	.font_drawheight = aptechfont_height,
 	.font_drawci = aptechfont_render_char,
@@ -177,7 +176,6 @@ const unifont_t unifont_helvNeueTh70 =
 {
 	.decode = aptechfont_decode,
 	.totalci = aptechfont_totalci,
-	.getcharrasterci = aptechfont_getcharraster,
 	.font_drawwidthci = aptechfont_width,
 	.font_drawheight = aptechfont_height,
 	.font_drawci = aptechfont_render_char,
