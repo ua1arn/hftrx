@@ -1701,6 +1701,9 @@ void display_do_AA(
 	uint_fast16_t height
 	)
 {
+	//PRINTF("display_do_AA: col=%u, row=%u, widt=%u, height=%u\n", col, row, width, height);
+	if (width < 2 || height < 2)
+		return;	// обрабатывать нечего
 	uint_fast16_t x;
 	for (x = col; x < (col + width - 1); x ++)
 	{
