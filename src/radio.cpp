@@ -158,6 +158,7 @@ void inputevent_initialize(inputevent_t * e)
 	mouseevent_initialize(& e->mouse);
 }
 
+// Параметры ставяться в setgsubmode
 static uint_fast16_t gstep_ENC_MAIN;
 static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
 static uint_fast16_t gencderate = 1;
