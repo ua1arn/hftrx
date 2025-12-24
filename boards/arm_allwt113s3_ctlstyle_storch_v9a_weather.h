@@ -225,6 +225,7 @@
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	
 	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
+	#define COLORSTYLE_GREEN	1
 
 #else /* WITHISBOOTLOADER */
 
@@ -319,7 +320,7 @@
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
-	//#define COLORSTYLE_GREEN	1
+	#define COLORSTYLE_GREEN	1
 	//#define COLORSTYLE_RED	1
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
 
