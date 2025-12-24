@@ -117,6 +117,9 @@ adafruitfont_render_char(
 	const uint8_t * const charraster = adafruitfont_getcharraster(font, ci);
 	const int_fast16_t baseline = adafruitfont_preparedata(font)->baseline;
 
+	const hftrx_GFXglyph_t * const glyph = & gfxfont->glyph [ci];
+	if (adafruitfont_disabled(glyph))
+		return xpix;
 	if (charraster != NULL)
 	{
 		const hftrx_GFXglyph_t * const glyph = & gfxfont->glyph [ci];
@@ -134,10 +137,8 @@ adafruitfont_render_char(
 					* tgr = fg;
 			}
 		}
-		return xpix + glyph->xAdvance;
 	}
-	// выключенные символы не отображаются
-	return xpix;
+	return xpix + glyph->xAdvance;
 }
 
 
