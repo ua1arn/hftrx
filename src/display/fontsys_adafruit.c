@@ -73,21 +73,27 @@ adafruitfont_totalci(const unifont_t * font)
 	const hftrx_GFXfont_t * const gfxfont = (const hftrx_GFXfont_t * const) font->fontraster;
 	return gfxfont->last - gfxfont->first + 1;
 }
+static uint_fast8_t adafruitfont_disabled(const hftrx_GFXglyph_t * const glyph)
+{
+	return ! glyph->height && ! glyph->width && ! glyph->xOffset && ! glyph->yOffset;
+}
 
 static uint_fast8_t adafruitfont_width(const unifont_t * font, uint_fast16_t ci)
 {
-	if (INT16_MAX == ci) return 0;
 	const hftrx_GFXfont_t * const gfxfont = (const hftrx_GFXfont_t * const) font->fontraster;
 	const hftrx_GFXglyph_t * const glyph = & gfxfont->glyph [ci];
-	return glyph->width ? glyph->xAdvance : 0;
+	if (INT16_MAX == ci) return 0;
+	return adafruitfont_disabled(glyph) ? 0 : glyph->xAdvance;
 }
 
 static const uint8_t * adafruitfont_getcharraster(const unifont_t * font, uint_fast16_t ci)
 {
-	if (INT16_MAX == ci) return NULL;
 	const hftrx_GFXfont_t * const gfxfont = (const hftrx_GFXfont_t * const) font->fontraster;
 	const hftrx_GFXglyph_t * const glyph = & gfxfont->glyph [ci];
-	return glyph->width ? & gfxfont->bitmap [glyph->bitmapOffset] : NULL;
+	if (INT16_MAX == ci) return NULL;
+	if (adafruitfont_disabled(glyph))
+		return NULL;
+	return (glyph->width && glyph->height) ? & gfxfont->bitmap [glyph->bitmapOffset] : NULL;
 }
 
 // Для пропорциональных знакогенераторов
@@ -117,7 +123,7 @@ adafruitfont_render_char(
 		int_fast16_t row;	// source bitmap pos
 		for (row = 0; row < glyph->height; ++ row)
 		{
-			PACKEDCOLORPIP_T * tgr = colpip_mem_at(db, xpix + glyph->xOffset, ypix + row + glyph->yOffset + baseline);
+			PACKEDCOLORPIP_T * tgr = colpip_mem_at(db, (int_fast16_t) xpix + glyph->xOffset, (int_fast16_t) ypix + row + glyph->yOffset + baseline);
 			int_fast16_t col;	// source bitmap pos
 			for (col = 0; col < glyph->width; ++ col, ++ tgr)
 			{

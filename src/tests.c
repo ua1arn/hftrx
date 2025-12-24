@@ -10543,8 +10543,8 @@ void hightests(void)
 		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 		//display_text(& dbv, 0, 0, "Start2...", 10, 16, & dbstylev);
-		//static const char msg [] = "HELLO! test: 0123456789+-";
-		static const char msg [] = "HELLO! test";
+		static const char msg [] = "HELLO! test: 0123456789+-.#";
+		//static const char msg [] = "HELLO! test";
 		static const unifont_t * const fonts [] =
 		{
 			& unifont_small,
