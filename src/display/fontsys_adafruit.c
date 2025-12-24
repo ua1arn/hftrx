@@ -26,8 +26,8 @@
 
 typedef struct adafruitfont_data_tag
 {
-	uint16_t	baseline;
-	uint16_t	height;
+	int16_t	baseline;
+	int16_t	height;
 } adafruitfont_data_t;
 
 
@@ -122,15 +122,15 @@ adafruitfont_render_char(
 		return xpix;
 	if (charraster != NULL)
 	{
-		const hftrx_GFXglyph_t * const glyph = & gfxfont->glyph [ci];
 		int_fast16_t row;	// source bitmap pos
 		for (row = 0; row < glyph->height; ++ row)
 		{
+			const unsigned bitrowpos = row * glyph->width;
 			PACKEDCOLORPIP_T * tgr = colpip_mem_at(db, (int_fast16_t) xpix + glyph->xOffset, (int_fast16_t) ypix + row + glyph->yOffset + baseline);
 			int_fast16_t col;	// source bitmap pos
 			for (col = 0; col < glyph->width; ++ col, ++ tgr)
 			{
-				const unsigned bitpos = row * glyph->width + col;
+				const unsigned bitpos = bitrowpos + col;
 				const unsigned byteoffset = bitpos / 8;
 				const unsigned bitoffset = 7 - bitpos % 8;
 				if ((charraster [byteoffset] >> bitoffset) & 0x01)
