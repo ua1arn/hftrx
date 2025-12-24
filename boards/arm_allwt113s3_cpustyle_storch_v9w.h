@@ -529,8 +529,6 @@
 
 	#define targetdataflash 0xFF
 	#define targetnone 0x00
-	#define FPGALOADER_SPISPEED SPIC_SPEEDUFAST
-	#define SPIDF_SPEEDC SPIC_SPEEDFAST
 
 	#define targetext1		(UINT32_C(1) << 0)		// PG0 ext1 on front panel CSEXT1
 	#define targetnvram		(UINT32_C(1) << 7)		// PG7 nvram FM25L16B
@@ -546,6 +544,14 @@
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
 	#define targettsc1 		targetext1	/* XPT2046 SPI chip select signal */
+
+	#define FPGALOADER_SPISPEED SPIC_SPEED4M
+	#define FPGAREG_V1_SPISPEED SPIC_SPEED4M
+	#define SPIDF_SPEEDC 		SPIC_SPEED4M
+	#define NVRAM_SPISPEED 		SPIC_SPEED4M
+	#define NAU8822_SPISPEED 	SPIC_SPEED400k
+	#define CTLREG_SPISPEED		SPIC_SPEED400k
+	#define XPT2046_SPIC_SPEED 	SPIC_SPEED400k
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
