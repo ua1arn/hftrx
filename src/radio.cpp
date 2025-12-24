@@ -4427,7 +4427,7 @@ static const struct paramdefdef xgcwpitch10 =
 	static uint_fast8_t gshowovf = 1;		/* Показ индикатора переполнения АЦП */
 #endif /* WITHOVFHIDE */
 
-static uint_fast8_t glock;
+static uint_fast8_t glocks [2];
 #if WITHLCDBACKLIGHTOFF
 	// Имеется управление включением/выключением подсветки дисплея
 	static uint_fast8_t dimmmode;
@@ -5149,11 +5149,11 @@ enum
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
-	#if WITHUACPLAYER
+	#if WITHUACPLAYER && WITHDEBUG
 			static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-	#else /* WITHUACPLAYER */
+	#else /* WITHUACPLAYER && WITHDEBUG */
 			static uint_fast8_t guacplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-	#endif /* WITHUACPLAYER */
+	#endif /* WITHUACPLAYER && WITHDEBUG */
 		/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		static const struct paramdefdef xguacplayer =
 		{
@@ -6063,19 +6063,6 @@ uint_fast8_t hamradio_get_classa(void)
 #else /* WITHPACLASSA */
 	return 0;
 #endif /* WITHPACLASSA */
-}
-// текущее состояние LOCK
-uint_fast8_t
-hamradio_get_lockvalue(void)
-{
-	return glock;
-}
-
-// текущее состояние FAST
-uint_fast8_t
-hamradio_get_usefastvalue(void)
-{
-	return gusefast;
 }
 
 /* поддержка ABOUT: частота процессора */
@@ -8714,6 +8701,7 @@ storebandstate(const vindex_t b, const uint_fast8_t bi)
 	const uint_fast8_t rxant = geteffrxantenna(freq);
 
 	save_i8(RMT_MODEROW_BASE(b), gmoderows [bi]);
+	save_i8(RMT_LOCKMODE_BASE(b), glocks [bi]);
 
 	uint_fast8_t i;
 	for (i = 0; i < MODEROW_COUNT; ++ i)
@@ -9374,7 +9362,7 @@ loadnewband(
 	//PRINTF(PSTR("loadnewband: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
 
 	gfreqs [bi] = loadvfy32freq(b);		/* восстанавливаем частоту */
-	glock = loadvfy8up(RMT_LOCKMODE_BASE(b), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
+	glocks [bi] = loadvfy8up(RMT_LOCKMODE_BASE(b), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
 	const uint_fast32_t freq = gfreqs [bi];
 	const uint_fast8_t bg = getfreqbandgroup(freq);
 	const uint_fast8_t ant = geteffantenna(freq);
@@ -13336,11 +13324,11 @@ static void
 uif_key_lockencoder(void)
 {
 	const uint_fast8_t bandset_no_check = 0;
-	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
+	const uint_fast8_t bi = getbankindexmain();
+	const vindex_t vi = getvfoindex(bi);
 
-	glock = calc_next(glock, 0, 1);
-	save_i8(RMT_LOCKMODE_BASE(b), glock);
+	glocks [bi] = calc_next(glocks [bi], 0, 1);
+	save_i8(RMT_LOCKMODE_BASE(vi), glocks [bi]);
 	updateboard();
 }
 
@@ -13918,15 +13906,6 @@ const char * hamradio_get_mainsubrxmode3_value_P(void)
 ///////////////////////////
 // обработчики кнопок клавиатуры
 //////////////////////////
-/* переключение шага
-	 - не вызывает сохранение состояния диапазона */
-//static void
-//uif_key_changestep(uint_fast8_t tx)
-//{
-//while (repeat --)
-//	glock = calc_next(glock, 0, 1);
-//save_i8(RMT_LOCKMODE_BASE, glock);
-//}
 
 ///////////////////////////
 // обработчики кнопок клавиатуры
@@ -19990,7 +19969,7 @@ processmainlooptuneknobs(inputevent_t * ev)
 		bring_tuneB();	// Начать отображение текущей частоты на водопаде
 	}
 
-	if (glock == 0)
+	if (glocks [bi_main] == 0)
 	{
 		uint_fast32_t * const pimain = & gfreqs [bi_main];
 		uint_fast32_t * const pisub = & gfreqs [bi_sub];
@@ -20599,18 +20578,16 @@ uint_fast8_t hamradio_get_cw_wpm(void)
 
 void hamradio_set_lock(uint_fast8_t lock)
 {
-	const uint_fast8_t bandset_no_check = 0;
-	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
+	const uint_fast8_t bi = getbankindexmain();
+	const vindex_t vi = getvfoindex(bi);
 
-	glock = lock != 0;
-	save_i8(RMT_LOCKMODE_BASE(b), glock);
+	glocks [bi] = lock != 0;
+	save_i8(RMT_LOCKMODE_BASE(vi), glocks [bi]);
 	updateboard();
 }
 
 uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 {
-	const uint_fast8_t bandset_no_check = 0;
 	if (freqvalid(freq, 0))
 	{
 		const uint_fast8_t bi = getbankindex_tx(gtx);
@@ -22059,7 +22036,7 @@ application_initialize(void)
 	loadsettings();		/* загрузка всех установок из nvram. */
 #endif /* WITHMENU && ! HARDWARE_IGNORENONVRAM */
 	//extmenu = extmenu || alignmode;
-	loadsavedstate();	// split, lock, s-meter display, see also loadsettings().
+	loadsavedstate();	// split, s-meter display, see also loadsettings().
 	loadnewband(getvfoindex(1), 1);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
 	loadnewband(getvfoindex(0), 0);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
 
@@ -22159,6 +22136,20 @@ application_initialize(void)
 	bt_initialize();
 #endif /* WITHUSEUSBBT */
 
+}
+// текущее состояние LOCK
+uint_fast8_t
+hamradio_get_lockvalue(void)
+{
+	const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
+	return glocks [bi_main];
+}
+
+// текущее состояние FAST
+uint_fast8_t
+hamradio_get_usefastvalue(void)
+{
+	return gusefast;
 }
 
 // LVGL interface functions
