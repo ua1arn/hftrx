@@ -19974,14 +19974,12 @@ processmainlooptuneknobs(inputevent_t * ev)
 			/* Валкодер A: вращали "вниз" */
 			* pimain = prevfreq(* pimain, * pimain - ((uint_fast32_t) step_main * jumpsize_main * - nrotate_main), step_main, tune_bottom(bi_main));
 			freqchanged = 1;
-			bring_tuneA();	// Начать отображение текущей частоты на водопаде
 		}
 		else if (nrotate_main > 0)
 		{
 			/* Валкодер A: вращали "вверх" */
 			* pimain = nextfreq(* pimain, * pimain + ((uint_fast32_t) step_main * jumpsize_main * nrotate_main), step_main, tune_top(bi_main));
 			freqchanged = 1;
-			bring_tuneA();	// Начать отображение текущей частоты на водопаде
 		}
 
 #if ! WITHTOUCHGUI
@@ -19991,14 +19989,12 @@ processmainlooptuneknobs(inputevent_t * ev)
 			/* Валкодер B: вращали "вниз" */
 			* pisub = prevfreq(* pisub, * pisub - ((uint_fast32_t) step_sub * jumpsize_sub * - nrotate_sub), step_sub, tune_bottom(bi_sub));
 			freqchanged = 1;
-			bring_tuneB();	// Начать отображение текущей частоты на водопаде
 		}
 		else if (nrotate_sub > 0)
 		{
 			/* Валкодер B: вращали "вверх" */
 			* pisub = nextfreq(* pisub, * pisub + ((uint_fast32_t) step_sub * jumpsize_sub * nrotate_sub), step_sub, tune_top(bi_sub));
 			freqchanged = 1;
-			bring_tuneB();	// Начать отображение текущей частоты на водопаде
 		}
 #endif /* ! WITHTOUCHGUI */
 	}
@@ -20018,6 +20014,11 @@ processmainlooptuneknobs(inputevent_t * ev)
 	freqchanged = 1;
 #endif
 
+	if (freqchanged)
+	{
+		bring_tuneA();	// Начать отображение текущей частоты на водопаде
+		bring_tuneB();	// Начать отображение текущей частоты на водопаде
+	}
 	return freqchanged;
 }
 // работа в главной машине состояний
@@ -20593,6 +20594,8 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 		gfreqs [bi] = freq;
 		sthrl = STHRL_RXTX_FQCHANGED;
 		updateboard_freq();	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
+		bring_tuneA();	// Начать отображение текущей частоты на водопаде
+		bring_tuneB();	// Начать отображение текущей частоты на водопаде
 		return 1;
 	}
 	return 0;
