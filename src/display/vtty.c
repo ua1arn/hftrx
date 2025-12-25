@@ -25,14 +25,12 @@
 
 typedef struct vtty_tag
 {
-	uint_fast16_t alldx;	// размер в пикселях, отведённый на экране
-	uint_fast16_t alldy;
+	uint_fast16_t VTTY_DX;	// размер в пикселях, отведённый на экране
+	uint_fast16_t VTTY_DY;
 	unsigned VTTY_CHARPIX;	// количество пикселей по горизонтали на один символ текста
 	unsigned VTTY_ROWSPIX;	// количество пикселей по вертикали на одну строку текста
 	unsigned VTTY_COLS;// = (DIM_X - 0) / VTTY_CHARPIX;
 	unsigned VTTY_ROWS;// = (DIM_Y - GRID2Y(5)) / VTTY_ROWSPIX;
-	unsigned VTTY_DX;// = VTTY_COLS * VTTY_CHARPIX;
-	unsigned VTTY_DY;// = VTTY_ROWS * VTTY_ROWSPIX;
 	PACKEDCOLORPIP_T fg;
 	PACKEDCOLORPIP_T bg;
 
@@ -113,8 +111,6 @@ static void display_vtty_show(const gxdrawb_t * tdb,
 	uint_fast16_t h
 	)
 {
-//	colpip_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTY_DX, VTTY_DY, bg);	// обозначам место под вывод информации
-//	return;
 	vtty_t * const vt = & vtty0;
 	const int H = vt->VTTY_ROWSPIX;
 	// координаты верхней части в целевом видеобуфере
@@ -184,13 +180,13 @@ void display2_vtty_init(
 
 	vt->font = font;
 	vt->VTTY_CHARPIX = textw;	// количество пикселей по горизонтали на один символ текста
-	vt->VTTY_ROWSPIX = texth + 2;	// количество пикселей по вертикали на одну строку текста
-	vt->alldx = GRID2X(colspan);
-	vt->alldy = GRID2Y(rowspan);
-	vt->VTTY_COLS = vt->alldx / vt->VTTY_CHARPIX;
-	vt->VTTY_ROWS = vt->alldy / vt->VTTY_ROWSPIX;
-	vt->VTTY_DX = vt->VTTY_COLS * vt->VTTY_CHARPIX;
-	vt->VTTY_DY = vt->VTTY_ROWS * vt->VTTY_ROWSPIX;
+	vt->VTTY_ROWSPIX = texth;	// количество пикселей по вертикали на одну строку текста
+	vt->VTTY_DX = GRID2X(colspan);
+	vt->VTTY_DY = GRID2Y(rowspan);
+	vt->VTTY_COLS = vt->VTTY_DX / vt->VTTY_CHARPIX;
+	vt->VTTY_ROWS = vt->VTTY_DY / vt->VTTY_ROWSPIX;
+	if (vt->VTTY_COLS == 0 || vt->VTTY_ROWS == 0)
+		return;
 	// цвета отрисовки
 	vt->fg = COLORPIP_GREEN;
 	vt->bg = COLORPIP_BLACK;
