@@ -83,10 +83,7 @@ static const uint8_t * aptechfont_getcharraster(const unifont_t * font, uint_fas
 	}
 	uint_fast16_t i;
 	uint_fast16_t dataoffs = 6 + font_Char_Count;	// Начало таблицы растров - сразу за таблицей ширины символов
-	//printhex(0xdead, blob + dataoffs, 10);
 	const uint_fast16_t		widthsoffset = 6;
-//	PRINTF("width table:\n");
-//	printhex(0, blob + widthsoffset, font_Char_Count);
 	if (blob [widthsoffset + ci] == 0)
 		return NULL;	// Для этого символа растра нет
 	for (i = 0; i < ci; ++ i)
