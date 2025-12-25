@@ -4896,7 +4896,7 @@ enum
 
 	static const struct paramdefdef xcatenable =
 	{
-		QLABEL("CAT ENAB"), 8, 3, RJ_ON,	ISTEP1,
+		QLABEL3("CAT ENAB", "CAT Enable", "CAT ENABLE"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, catenable),
@@ -4939,7 +4939,7 @@ enum
 		static uint_fast8_t gcatmux;
 		static const struct paramdefdef xgcatmux =
 		{
-			QLABEL("CAT SEL"), 8, 3, RJ_CB,	ISTEP1,
+			QLABEL3("CAT SEL", "CAT Select", "CAT SEL"), 8, 3, RJ_CB,	ISTEP1,
 			ITEM_VALUE | ITEM_LISTSELECT,
 			0, ARRAY_SIZE(catmuxmodes) - 1,
 			OFFSETOF(struct nvmap, gcatmux),
@@ -4951,7 +4951,7 @@ enum
 		};
 		static const struct paramdefdef xcatbaudrate =
 		{
-			QLABEL("CAT SPD"), 7, 0, RJ_CB,	ISTEP1,
+			QLABEL3("CAT SPD", "CAT Speed", "CAT SPD"), 7, 0, RJ_CB,	ISTEP1,
 			ITEM_VALUE | ITEM_LISTSELECT,
 			0, ARRAY_SIZE(catbr2int) - 1,
 			OFFSETOF(struct nvmap, catbaudrate),
@@ -5073,7 +5073,7 @@ enum
 	/* подстройка усиления с линейного входа через меню. */
 	static const struct paramdefdef xglineamp =
 	{
-		QLABEL("LINE LVL"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* подстройка усиления с линейного входа через меню. */
+		QLABEL3("LINE LVL", "LINE Level", "LINE LVL"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* подстройка усиления с линейного входа через меню. */
 		ITEM_VALUE,
 		WITHLINEINGAINMIN, WITHLINEINGAINMAX,
 		OFFSETOF(struct nvmap, glineamp),	/* усиление с линейного входа */
@@ -5110,7 +5110,7 @@ enum
 		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		static const struct paramdefdef xgdatamode =
 		{
-			QLABEL2("DATA MDE", "DATA MODE"), 8, 3, RJ_ON,	ISTEP1,
+			QLABEL3("DATA MDE", "DATA MODE", "DATA MODE"), 8, 3, RJ_ON,	ISTEP1,
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, gdatamode),
@@ -5400,7 +5400,7 @@ enum
 	//  Continuous Tone-Coded Squelch System or CTCSS freq
 	static const struct paramdefdef xgsubtoneitx =
 	{
-		QLABEL2("TCTCSS FQ", "T-CTCSS FREQ"), 7, 1, RJ_CB,	ISTEP1,
+		QLABEL3("TCTCSS FQ", "T-CTCSS FREQ", "TCTCSS FQ"), 7, 1, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_LISTSELECT,
 		0, CTCSS_NFREQUES - 1,
 		OFFSETOF(struct nvmap, gsubtoneitx),
@@ -5413,7 +5413,7 @@ enum
 	//  Continuous Tone-Coded Squelch System or CTCSS freq
 	static const struct paramdefdef xgsubtoneirx =
 	{
-		QLABEL2("RCTCSS FQ", "R-CTCSS FREQ"), 7, 1, RJ_CB,	ISTEP1,
+		QLABEL3("RCTCSS FQ", "R-CTCSS FREQ", "RCTCSS FQ"), 7, 1, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_LISTSELECT,
 		0, CTCSS_NFREQUES - 1,
 		OFFSETOF(struct nvmap, gsubtoneirx),
@@ -5570,7 +5570,7 @@ enum
 
 		static const struct paramdefdef xgvoxenable =
 		{
-			QLABEL2("VOX EN", "VOX ENABLE"), 8, 3, RJ_ON,	ISTEP1,
+			QLABEL3("VOX EN", "VOX Enable", "VOX Enable"), 8, 3, RJ_ON,	ISTEP1,
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, gvoxenable),
@@ -5582,7 +5582,7 @@ enum
 		};
 		static const struct paramdefdef xgvoxlevel =
 		{
-			QLABEL2("VOX LEVL", "VOX LEVEL"), 7, 0, RJ_UNSIGNED, ISTEP1,
+			QLABEL3("VOX LEVL", "VOX Level", "VOX LEVEL"), 7, 0, RJ_UNSIGNED, ISTEP1,
 			ITEM_VALUE,
 			WITHVOXLEVELMIN, WITHVOXLEVELMAX,
 			OFFSETOF(struct nvmap, gvoxlevel),
@@ -5594,7 +5594,7 @@ enum
 		};
 		static const struct paramdefdef xgavoxlevel =
 		{
-			QLABEL2("AVOX LEV", "AVOX LEVEL"), 7, 0, RJ_UNSIGNED, ISTEP1,
+			QLABEL3("AVOX LEV", "Anti-VOX Level", "AVOX LEVEL"), 7, 0, RJ_UNSIGNED, ISTEP1,
 			ITEM_VALUE,
 			WITHAVOXLEVELMIN, WITHAVOXLEVELMAX,
 			OFFSETOF(struct nvmap, gavoxlevel),
@@ -5606,7 +5606,7 @@ enum
 		};
 		static const struct paramdefdef xgvoxdelay =
 		{
-			QLABEL2("VOXDELAY", "VOX DELAY"), 7, 2, RJ_UNSIGNED, ISTEP5,	/* 50 mS step of changing value */
+			QLABEL3("VOXDELAY", "VOX Delay", "VOXDELAY"), 7, 2, RJ_UNSIGNED, ISTEP5,	/* 50 mS step of changing value */
 			ITEM_VALUE,
 			WITHVOXDELAYMIN, WITHVOXDELAYMAX,						/* 0.1..2.5 seconds delay */
 			OFFSETOF(struct nvmap, voxdelay),
