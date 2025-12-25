@@ -3643,29 +3643,6 @@ void hwaccel_stretchblt(
 #endif
 }
 
-// копирование буфера с поворотом вправо на 90 градусов (четверть оборота).
-void hwaccel_ra90(
-	const gxdrawb_t * tdb,	// получатель
-	uint_fast16_t tx,	// горизонтальная координата пикселя (0..dx-1) слева направо - в исходном нижний
-	uint_fast16_t ty,	// вертикальная координата пикселя (0..dy-1) сверху вниз - в исходном левый
-	const gxdrawb_t * sdb	// источник
-	)
-{
-	if (sdb->dx == 0 || sdb->dy == 0)
-		return;
-
-	uint_fast16_t x;	// x получателя
-	for (x = 0; x < sdb->dy; ++ x)
-	{
-		uint_fast16_t y;	// y получателя
-		for (y = 0; y < sdb->dx; ++ y)
-		{
-			const COLORPIP_T pixel = * colpip_const_mem_at(sdb, y, sdb->dy - 1 - x);	// выборка из исхолного битмапа
-			* colpip_mem_at(tdb, tx + x, ty + y) = pixel;
-		}
-	}
-}
-
 
 //// Routine to draw a line in the RGB565 color to the LCD.
 //// The line is drawn from (xmin,ymin) to (xmax,ymax).
@@ -3860,31 +3837,6 @@ void colpip_stretchblt(
 			keyflag, keycolor);
 
 }
-
-// скоприовать прямоугольник с типом пикселей соответствующим pip
-// с поворотом вправо на 90 градусов
-void colpip_bitblt_ra90(
-	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
-	int_fast32_t dstinvalidatesize,
-	const gxdrawb_t * tdb,	// получатель
-	uint_fast16_t x,	// получатель Позиция
-	uint_fast16_t y,	// получатель
-	uintptr_t srcinvalidateaddr,	// параметры clean источника
-	int_fast32_t srcinvalidatesize,
-	const gxdrawb_t * sdb 	// источник
-	)
-{
-	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
-	hwaccel_ra90(
-		//dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
-		tdb,
-		x, y,
-		//srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		sdb
-		);
-}
-
-
 
 #if LCDMODE_COLORED
 

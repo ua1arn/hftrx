@@ -315,18 +315,6 @@ colpip_string_small(
 	COLORPIP_T fg		// цвет вывода текста
 	);
 
-// Используется при выводе на графический индикатор,
-void
-colpip_string_x2ra90_count(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T fg,		// цвет вывода текста
-	COLORPIP_T bg,		// цвет вывода текста
-	const char * s,		// строка для вывода
-	size_t len			// количество символов
-	);
-
 void display_bar(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,
@@ -433,27 +421,6 @@ void colpip_copyrotate(
 	uint_fast8_t mx,	// X mirror flag
 	uint_fast8_t my,	// X mirror flag
 	unsigned angle	// positive CCW angle
-	);
-
-// скоприовать прямоугольник с типом пикселей соответствующим pip
-// с поворотом вправо на 90 градусов
-void colpip_bitblt_ra90(
-	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
-	int_fast32_t dstinvalidatesize,
-	const gxdrawb_t * tdb,	// получатель
-	uint_fast16_t x,	// получатель Позиция
-	uint_fast16_t y,	// получатель
-	uintptr_t srcinvalidateaddr,	// параметры clean источника
-	int_fast32_t srcinvalidatesize,
-	const gxdrawb_t * sdb 	// источник
-	);
-
-void
-colpip_string3_at_xy(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	const char * __restrict s
 	);
 
 uint_fast8_t colpip_hasalpha(void);
@@ -722,27 +689,6 @@ void vtty_printhex(unsigned long voffs, const unsigned char * buff, unsigned len
 int display_vtty_maxx(void);
 int display_vtty_maxy(void);
 void display_vtty_gotoxy(unsigned x, unsigned y);
-
-void display_vtty_x2_initialize(void);
-int display_vtty_x2_putchar(char ch);
-// копирование растра в видеобуфер отображения
-void display_vtty_x2_show(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y
-	);
-// копирование растра в видеобуфер отображения
-// с поворотом вправо на 90 градусов
-void display_vtty_x2_show_ra90(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y
-	);
-void display_vtty_x2_printf(const char * format, ...);
-
-int display_vtty_x2_maxx(void);
-int display_vtty_x2_maxy(void);
-void display_vtty_x2_gotoxy(unsigned x, unsigned y);
 
 void lvglhw_initialize(void);
 
