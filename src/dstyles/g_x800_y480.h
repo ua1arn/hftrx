@@ -148,9 +148,9 @@
 		{	20, 25,	5, 5, display2_voltlevelV, & dzi_compat, PGSLP, },	// voltmeter with "V"
 
 	#if 0
-		{	0,	0,	0, 0, display2_vtty_init,	& dzi_compat,	PGINI, },	// Подготовка видеобуфера окна протокола
-		{	0,	0, 0, 0, display2_vtty,	& dzi_compat, PG0, },		// Вывод текущего состояния протокола
-		{	0,	(DIM_Y - GRID2Y(5)) / 5, 9, 5, display2_freqsof9,	& dzi_compat, PG0, },		// Вывод текущего состояния протокола
+		{	0,	0,	50, 96 - 5, display2_vtty_init,	& dzi_compat,	PGINI, },	// Подготовка видеобуфера окна протокола
+		{	0,	0, 50, 96 - 5, display2_vtty,	& dzi_compat, PG0, },		// Вывод текущего состояния протокола
+		//{	0,	(DIM_Y - GRID2Y(5)) / 5, 9, 5, display2_freqsof9,	& dzi_compat, PG0, },		// Вывод текущего состояния протокола
 	#endif
 
 		//{	0, 0,	0, 0, display2_demorect, & dzi_compat, PGALL, },	// voltmeter with "V"

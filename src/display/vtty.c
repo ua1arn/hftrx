@@ -23,29 +23,26 @@
 
 #include "formats.h"
 
-enum { VTTY_CHARPIX = SMALLCHARW };	// количество пикселей по горизонтали на один символ текста
-enum { VTTY_ROWSPIX = SMALLCHARH + 2 };	// количество пикселей по вертикали на одну строку текста
-#if DIM_X == 720
-	enum { VTTY_COLS = (DIM_X - 16) / VTTY_CHARPIX };
-	enum { VTTY_ROWS = 41 /*(DIM_Y - 20) / VTTY_ROWSPIX */};
-#else
-	enum { VTTY_COLS = (DIM_X - 0) / VTTY_CHARPIX };
-	enum { VTTY_ROWS = (DIM_Y - GRID2Y(5)) / VTTY_ROWSPIX};
-#endif
-enum { VTTY_DX = VTTY_COLS * VTTY_CHARPIX, VTTY_DY = VTTY_ROWS * VTTY_ROWSPIX };
-
-
-// цвета отрисовки
-#define VTTY_FG COLORPIP_GREEN
-#define VTTY_BG COLORPIP_BLACK
-
 typedef struct vtty_tag
 {
-	ALIGNX_BEGIN PACKEDCOLORPIP_T fb [GXSIZE(VTTY_DX, VTTY_DY)] ALIGNX_END;
+	uint_fast16_t alldx;	// размер в пикселях, отведённый на экране
+	uint_fast16_t alldy;
+	unsigned VTTY_CHARPIX;	// количество пикселей по горизонтали на один символ текста
+	unsigned VTTY_ROWSPIX;	// количество пикселей по вертикали на одну строку текста
+	unsigned VTTY_COLS;// = (DIM_X - 0) / VTTY_CHARPIX;
+	unsigned VTTY_ROWS;// = (DIM_Y - GRID2Y(5)) / VTTY_ROWSPIX;
+	unsigned VTTY_DX;// = VTTY_COLS * VTTY_CHARPIX;
+	unsigned VTTY_DY;// = VTTY_ROWS * VTTY_ROWSPIX;
+	PACKEDCOLORPIP_T fg;
+	PACKEDCOLORPIP_T bg;
+
+	//ALIGNX_BEGIN PACKEDCOLORPIP_T fb [GXSIZE(VTTY_DX, VTTY_DY)] ALIGNX_END;
+	PACKEDCOLORPIP_T  * fbp;
 	unsigned scroll;	// эта строка отображается верхней в целевом прямоугольнике. 0..VTTY_ROWS-1
 	unsigned row;		// 0..VTTY_ROWS-1
 	unsigned col;		// 0..VTTY_COLS-1
 	gxdrawb_t dbvfb;
+	const unifont_t * font;// = & unifont_small;
 } vtty_t;
 
 static uint_fast8_t debugvtty_qget(uint_fast8_t * pc);
@@ -73,27 +70,14 @@ int display_vtty_maxy(void);
 // return new x coordinate
 // vtty support
 static uint_fast16_t draw_char_small(
-	const gxdrawb_t * db,
+	vtty_t * const vt,
 	uint_fast16_t xpix, uint_fast16_t ypix,	// позиция символа в целевом буфере
 	char cc,		// код символа для отображения
 	COLORPIP_T fg
 	)
 {
-	const unifont_t * const font = & unifont_small;
-	return font->font_drawci(db, xpix, ypix, font, font->decode(font, cc), fg);
-}
-
-static void display_vtty_initialize(void)
-{
-	vtty_t * const vt = & vtty0;
-	vt->scroll = 0;
-	vt->row = 0;
-	vt->col = 0;
-	gxdrawb_initialize(& vt->dbvfb, vt->fb, VTTY_DX, VTTY_DY);
-	colpip_fillrect(& vt->dbvfb, 0, 0, VTTY_DX, VTTY_DY, VTTY_BG);	// очищаем видеобуфер
-	PRINTF("display_vtty_initialize: rows=%u, cols=%u\n", VTTY_ROWS, VTTY_COLS);
-	vtty_inited = 1;
-	display_vtty_printf("display_vtty_initialize: rows=%u, cols=%u\n", VTTY_ROWS, VTTY_COLS);
+	const unifont_t * const font = vt->font;
+	return font->font_drawci(& vt->dbvfb, xpix, ypix, font, font->decode(font, cc), fg);
 }
 
 void display_vtty_clrscr(void)
@@ -104,41 +88,43 @@ void display_vtty_clrscr(void)
 	vt->row = 0;
 	vt->col = 0;
 
-	colpip_fillrect(& vt->dbvfb, 0, 0, VTTY_DX, VTTY_DY, VTTY_BG);	// очищаем видеобуфер
+	colpip_fillrect(& vt->dbvfb, 0, 0, vt->VTTY_DX, vt->VTTY_DY, vt->bg);	// очищаем видеобуфер
 }
 
 void display_vtty_gotoxy(unsigned x, unsigned y)
 {
 	vtty_t * const vt = & vtty0;
-	if (x >= VTTY_COLS)
+	if (x >= vt->VTTY_COLS)
 		return;
-	if (y >= VTTY_ROWS)
+	if (y >= vt->VTTY_ROWS)
 		return;
 	vt->row = y;
 	vt->col = x;
-	ASSERT(vt->scroll < VTTY_ROWS);
-	ASSERT(vt->row < VTTY_ROWS);
-	ASSERT(vt->col < VTTY_COLS);
+	ASSERT(vt->scroll < vt->VTTY_ROWS);
+	ASSERT(vt->row < vt->VTTY_ROWS);
+	ASSERT(vt->col < vt->VTTY_COLS);
 }
 
 // копирование растра в видеобуфер отображения
 static void display_vtty_show(const gxdrawb_t * tdb,
 	uint_fast16_t x,
-	uint_fast16_t y
+	uint_fast16_t y,
+	uint_fast16_t w,
+	uint_fast16_t h
 	)
 {
-//	colpip_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTY_DX, VTTY_DY, VTTY_BG);	// обозначам место под вывод информации
+//	colpip_fillrect(tfb, DIM_X, DIM_Y, x, y, VTTY_DX, VTTY_DY, bg);	// обозначам место под вывод информации
 //	return;
 	vtty_t * const vt = & vtty0;
-	enum { H = VTTY_ROWSPIX };
+	const int H = vt->VTTY_ROWSPIX;
 	// координаты верхней части в целевом видеобуфере
-	const uint_fast16_t tgh1 = (VTTY_ROWS - vt->scroll) * H;	// высота
+	const uint_fast16_t tgh1 = (vt->VTTY_ROWS - vt->scroll) * H;	// высота
 	const uint_fast16_t tgy1 = 0;
 	// координаты нижней части в целевом видеобуфере
 	const uint_fast16_t tgh2 = vt->scroll * H;	// высота
 	const uint_fast16_t tgy2 = tgh1;
 
-	ASSERT(vt->fb != NULL);
+	ASSERT(vt->fbp != NULL);
 	// отрисовываем буфер двумя кусками
 	if (1)
 	{
@@ -149,7 +135,7 @@ static void display_vtty_show(const gxdrawb_t * tdb,
 				(uintptr_t) vt->dbvfb.buffer, GXSIZE(vt->dbvfb.dx, vt->dbvfb.dy) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
 				& vt->dbvfb,	// источник
 				0, tgh2,	// координаты окна источника
-				VTTY_DX, tgh1,	// размеры окна источника
+				vt->VTTY_DX, tgh1,	// размеры окна источника
 				BITBLT_FLAG_NONE, 0);
 	}
 	if (1 && tgh2 != 0)
@@ -161,16 +147,13 @@ static void display_vtty_show(const gxdrawb_t * tdb,
 				(uintptr_t) vt->dbvfb.buffer, 1 * GXSIZE(vt->dbvfb.dx, vt->dbvfb.dy) * sizeof (PACKEDCOLORPIP_T),	// параметры для clean
 				& vt->dbvfb,	// источник
 				0, 0,	// координаты окна источника
-				VTTY_DX, tgh2,	// размеры окна источника
+				vt->VTTY_DX, tgh2,	// размеры окна источника
 				BITBLT_FLAG_NONE, 0);
 	}
 }
 
 void display2_vtty(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
 {
-	const uint_fast16_t x = GRID2X(x0);
-	const uint_fast16_t y = GRID2Y(y0);
-
 	for (;;)
 	{
 		vtty_t * const vt = & vtty0;
@@ -185,14 +168,48 @@ void display2_vtty(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_
 		display_vtty_cout(vt, c);
 
 	}
-	display_vtty_show(db, x, y);
+	display_vtty_show(db, GRID2X(x0), GRID2Y(y0), GRID2X(colspan), GRID2Y(rowspan));
 }
 
 void display2_vtty_init(
 		const gxdrawb_t * db_unused, 	// NULL
-		uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
+		uint_fast8_t x0, uint_fast8_t y0,
+		uint_fast8_t colspan, uint_fast8_t rowspan,
+		dctx_t * pctx)
 {
-	display_vtty_initialize();
+	vtty_t * const vt = & vtty0;
+	const unifont_t * font = & unifont_gothic_11x13;
+	uint_fast16_t texth;
+	const uint_fast16_t textw = unifont_textsize(font, "W", 1, & texth);	// предполагается, что используется моноширинный шрифт
+
+	vt->font = font;
+	vt->VTTY_CHARPIX = textw;	// количество пикселей по горизонтали на один символ текста
+	vt->VTTY_ROWSPIX = texth + 2;	// количество пикселей по вертикали на одну строку текста
+	vt->alldx = GRID2X(colspan);
+	vt->alldy = GRID2Y(rowspan);
+	vt->VTTY_COLS = vt->alldx / vt->VTTY_CHARPIX;
+	vt->VTTY_ROWS = vt->alldy / vt->VTTY_ROWSPIX;
+	vt->VTTY_DX = vt->VTTY_COLS * vt->VTTY_CHARPIX;
+	vt->VTTY_DY = vt->VTTY_ROWS * vt->VTTY_ROWSPIX;
+	// цвета отрисовки
+	vt->fg = COLORPIP_GREEN;
+	vt->bg = COLORPIP_BLACK;
+
+	//PACKEDCOLORPIP_T * const p = (PACKEDCOLORPIP_T *) aligned_alloc(DCACHEROWSIZE, GXSIZE(vt->VTTY_DX, vt->VTTY_DY) * sizeof (PACKEDCOLORPIP_T));
+	PACKEDCOLORPIP_T * const p = (PACKEDCOLORPIP_T *) malloc(GXSIZE(vt->VTTY_DX, vt->VTTY_DY) * sizeof (PACKEDCOLORPIP_T));
+	if (p == NULL)
+		return;
+	vt->fbp = p;
+	gxdrawb_initialize(& vt->dbvfb, vt->fbp, vt->VTTY_DX, vt->VTTY_DY);
+	colpip_fillrect(& vt->dbvfb, 0, 0, vt->VTTY_DX, vt->VTTY_DY, vt->bg);	// очищаем видеобуфер
+
+	vt->scroll = 0;
+	vt->row = 0;
+	vt->col = 0;
+
+	PRINTF("display_vtty_initialize: rows=%u, cols=%u\n", vt->VTTY_ROWS, vt->VTTY_COLS);
+	vtty_inited = 1;
+	display_vtty_printf("display_vtty_initialize: rows=%u, cols=%u\n", vt->VTTY_ROWS, vt->VTTY_COLS);
 }
 
 static void display_vtty_scrollup(
@@ -200,19 +217,19 @@ static void display_vtty_scrollup(
 	int nlines
 	)
 {
-	enum { H = VTTY_ROWSPIX };
+	const int H = vt->VTTY_ROWSPIX;
 	//TP();
 	// перемещаем начало.
-	vt->scroll = (vt->scroll + nlines) % VTTY_ROWS;
+	vt->scroll = (vt->scroll + nlines) % vt->VTTY_ROWS;
 	// очищаем видеобуфер
 	colpip_fillrect(
 			& vt->dbvfb,
-			0, (VTTY_ROWS - 1 + vt->scroll) % VTTY_ROWS * H,
-			VTTY_DX, nlines * H,
-			VTTY_BG);
-	ASSERT(vt->scroll < VTTY_ROWS);
-	ASSERT(vt->row < VTTY_ROWS);
-	ASSERT(vt->col < VTTY_COLS);
+			0, (vt->VTTY_ROWS - 1 + vt->scroll) % vt->VTTY_ROWS * H,
+			vt->VTTY_DX, nlines * H,
+			vt->bg);
+	ASSERT(vt->scroll < vt->VTTY_ROWS);
+	ASSERT(vt->row < vt->VTTY_ROWS);
+	ASSERT(vt->col < vt->VTTY_COLS);
 }
 
 static void display_vtty_cout(
@@ -220,18 +237,18 @@ static void display_vtty_cout(
 	char ch
 	)
 {
-	ASSERT(vt->scroll < VTTY_ROWS);
-	ASSERT(vt->row < VTTY_ROWS);
-	ASSERT(vt->col < VTTY_COLS);
+	ASSERT(vt->scroll < vt->VTTY_ROWS);
+	ASSERT(vt->row < vt->VTTY_ROWS);
+	ASSERT(vt->col < vt->VTTY_COLS);
 	switch (ch)
 	{
 	case '\r':
 		vt->col = 0;
 		break;
 	case '\n':
-		if (++ vt->row >= VTTY_ROWS)
+		if (++ vt->row >= vt->VTTY_ROWS)
 		{
-			vt->row = VTTY_ROWS - 1;
+			vt->row = vt->VTTY_ROWS - 1;
 			display_vtty_scrollup(vt, 1);
 		}
 		break;
@@ -239,25 +256,38 @@ static void display_vtty_cout(
 	default:
 		{
 			draw_char_small(
-					& vt->dbvfb,
-					vt->col * VTTY_CHARPIX, (vt->row + vt->scroll) % VTTY_ROWS * VTTY_ROWSPIX,
-					ch, VTTY_FG);
+					vt,
+					vt->col * vt->VTTY_CHARPIX,
+					(vt->row + vt->scroll) % vt->VTTY_ROWS * vt->VTTY_ROWSPIX,
+					ch, vt->fg);
 
-			if (++ vt->col >= VTTY_COLS)
+			if (++ vt->col >= vt->VTTY_COLS)
 			{
 				vt->col = 0;
-				if (++ vt->row >= VTTY_ROWS)
+				if (++ vt->row >= vt->VTTY_ROWS)
 				{
-					vt->row = VTTY_ROWS - 1;
+					vt->row = vt->VTTY_ROWS - 1;
 					display_vtty_scrollup(vt, 1);
 				}
 			}
 		}
 		break;
 	}
-	ASSERT(vt->scroll < VTTY_ROWS);
-	ASSERT(vt->row < VTTY_ROWS);
-	ASSERT(vt->col < VTTY_COLS);
+	ASSERT(vt->scroll < vt->VTTY_ROWS);
+	ASSERT(vt->row < vt->VTTY_ROWS);
+	ASSERT(vt->col < vt->VTTY_COLS);
+}
+
+int display_vtty_maxx(void)
+{
+	vtty_t * const vt = & vtty0;
+	return vt->VTTY_COLS;
+}
+
+int display_vtty_maxy(void)
+{
+	vtty_t * const vt = & vtty0;
+	return vt->VTTY_ROWS;
 }
 
 int display_vtty_putchar(char ch)
@@ -345,16 +375,6 @@ void display_vtty_printf_irq(const char * format, ...)
 		display_vtty_putchar_irq(b [i]);
 }
 
-int display_vtty_maxx(void)
-{
-	return VTTY_COLS;
-}
-
-int display_vtty_maxy(void)
-{
-	return VTTY_ROWS;
-}
-
 
 static int
 vtty_toprintc(int c)
@@ -367,7 +387,7 @@ vtty_toprintc(int c)
 void
 vtty_printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 {
-	enum { ROWSIZE = 12 };
+	enum { ROWSIZE = 8 };
 	unsigned row;
 	const unsigned rows = (length + (ROWSIZE - 1)) / ROWSIZE;
 
