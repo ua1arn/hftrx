@@ -13,8 +13,8 @@ extern "C" {
 extern const phase_t phase_0;
 
 #define FPGAREG_V1_SPIMODE		SPIC_MODE3	// FPGA ACCESS SPI MODE SHOULD BE mode3 (gates used)
-#ifndef FPGAREG_V1_SPISPEED
-	#define FPGAREG_V1_SPISPEED		SPIC_SPEEDUFAST
+#ifndef FPGAREG_V1_SPEEDC
+	#define FPGAREG_V1_SPEEDC		SPIC_SPEEDUFAST
 #endif
 
 #define FPGA_DECODE_CTLREG	(1u << 0)
@@ -39,7 +39,7 @@ board_fpga1_spi_send_frame(
 	unsigned int size
 	)
 {
-	prog_spi_io(target, FPGAREG_V1_SPISPEED, FPGAREG_V1_SPIMODE, buff, size, NULL, 0, NULL, 0);
+	prog_spi_io(target, FPGAREG_V1_SPEEDC, FPGAREG_V1_SPIMODE, buff, size, NULL, 0, NULL, 0);
 }
 
 // Read a frame of bytes via SPI
@@ -51,7 +51,7 @@ board_fpga1_spi_exchange_frame(
 	unsigned int size
 	)
 {
-	prog_spi_exchange(target, FPGAREG_V1_SPISPEED, CTLREG_SPIMODE, tbuff, rbuff, size);
+	prog_spi_exchange(target, FPGAREG_V1_SPEEDC, CTLREG_SPIMODE, tbuff, rbuff, size);
 }
 
 /* programming FPGA SPI registers */

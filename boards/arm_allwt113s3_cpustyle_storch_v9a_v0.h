@@ -519,7 +519,7 @@
 
 	#define targetdataflash 0xFF
 	#define targetnone 0x00
-	#define FPGALOADER_SPISPEED SPIC_SPEEDUFAST
+	#define FPGALOADER_SPEEDC SPIC_SPEEDUFAST
 	#define SPIDF_SPEEDC SPIC_SPEEDFAST
 
 	#define targetext1		(UINT32_C(1) << 0)		// PG0 ext1 on front panel CSEXT1

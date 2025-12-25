@@ -877,13 +877,13 @@
 	#define targetnone 0x00
 	#define targetcodec1pulse 0xFE	// pulse for NAU8822L
 
-	#define FPGALOADER_SPISPEED SPIC_SPEED4M
-	#define FPGAREG_V1_SPISPEED SPIC_SPEED4M
+	#define FPGALOADER_SPEEDC SPIC_SPEED4M
+	#define FPGAREG_V1_SPEEDC SPIC_SPEED4M
 	#define SPIDF_SPEEDC 		SPIC_SPEED4M
-	#define NVRAM_SPISPEED 		SPIC_SPEED4M
-	#define NAU8822_SPISPEED 	SPIC_SPEED400k
-	#define CTLREG_SPISPEED		SPIC_SPEED400k
-	#define XPT2046_SPIC_SPEED 	SPIC_SPEED400k
+	#define NVRAM_SPEEDC 		SPIC_SPEED4M
+	#define NAU8822_SPEEDC 	SPIC_SPEED400k
+	#define CTLREG_SPEEDC		SPIC_SPEED400k
+	#define XPT2046_SPEEDC 	SPIC_SPEED400k
 
 	#define targetctl1		(UINT32_C(1) << 22)		// PE22 board control registers chain
 	#define targettsc1		(UINT32_C(1) << 19)		// PE19 XPT2046 SPI chip select signal - CSEXT1

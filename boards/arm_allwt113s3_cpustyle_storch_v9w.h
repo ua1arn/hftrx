@@ -545,13 +545,13 @@
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
 	#define targettsc1 		targetext1	/* XPT2046 SPI chip select signal */
 
-	#define FPGALOADER_SPISPEED SPIC_SPEED4M
-	#define FPGAREG_V1_SPISPEED SPIC_SPEED4M
+	#define FPGALOADER_SPEEDC SPIC_SPEED4M
+	#define FPGAREG_V1_SPEEDC SPIC_SPEED4M
 	#define SPIDF_SPEEDC 		SPIC_SPEED4M
-	#define NVRAM_SPISPEED 		SPIC_SPEED4M
-	#define NAU8822_SPISPEED 	SPIC_SPEED400k
-	#define CTLREG_SPISPEED		SPIC_SPEED400k
-	#define XPT2046_SPIC_SPEED 	SPIC_SPEED400k
+	#define NVRAM_SPEEDC 		SPIC_SPEED4M
+	#define NAU8822_SPEEDC 	SPIC_SPEED400k
+	#define CTLREG_SPEEDC		SPIC_SPEED400k
+	#define XPT2046_SPEEDC 	SPIC_SPEED400k
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \

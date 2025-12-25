@@ -24,8 +24,8 @@
 static void ua1cei_magloop_initialize(void);
 
 #define CTLREG_SPIMODE	SPIC_MODE3
-#ifndef CTLREG_SPISPEED
-	#define CTLREG_SPISPEED	SPIC_SPEED400k
+#ifndef CTLREG_SPEEDC
+	#define CTLREG_SPEEDC	SPIC_SPEED400k
 #endif
 
 //#include "chip/cmx992.c"
@@ -166,7 +166,7 @@ board_ctlregs_spi_send_frame(
 	)
 {
 #if WITHSPIHW || WITHSPISW || WITHSPIDEV
-	prog_spi_io(target, CTLREG_SPISPEED, CTLREG_SPIMODE, buff, size, NULL, 0, NULL, 0);
+	prog_spi_io(target, CTLREG_SPEEDC, CTLREG_SPIMODE, buff, size, NULL, 0, NULL, 0);
 #endif /* WITHSPIHW || WITHSPISW || WITHSPIDEV*/
 }
 

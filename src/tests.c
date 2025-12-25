@@ -12023,9 +12023,9 @@ void hightests(void)
 		memset(b1, 0xFF, sizeof b1);
 		for (;;)
 		{
-			prog_spi_io(targetctl1, CTLREG_SPISPEED, SPIC_MODE3, b0, sizeof b0, NULL, 0, NULL, 0);
+			prog_spi_io(targetctl1, CTLREG_SPEEDC, SPIC_MODE3, b0, sizeof b0, NULL, 0, NULL, 0);
 			local_delay_ms(750);
-			prog_spi_io(targetctl1, CTLREG_SPISPEED, SPIC_MODE3, b1, sizeof b1, NULL, 0, NULL, 0);
+			prog_spi_io(targetctl1, CTLREG_SPEEDC, SPIC_MODE3, b1, sizeof b1, NULL, 0, NULL, 0);
 			local_delay_ms(750);
 		}
 	}
