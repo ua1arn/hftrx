@@ -3004,26 +3004,7 @@ static void display_2states(const gxdrawb_t * db,
 #else /* LCDMODE_COLORED */
 	const char * const labels [2] = { state0, state1, };
 #endif /* LCDMODE_COLORED */
-#if 0
-	const uint_fast16_t x = GRID2X(xcell);
-	const uint_fast16_t y = GRID2Y(ycell);
-	const uint_fast16_t w = SMALLCHARW * xspan;
-	const uint_fast16_t h = SMALLCHARH;
-	const gxstyle_t * const dbstylep = & dbstylev_2state [1],			// массив стилей
-
-	display2text_states(db, xcell, ycell, labels, dbstylev_2state, 1, xspan, yspan);
-
-	colmain_rounded_rect(
-			db,
-			x, y, x + w - 1, y + h - 1,
-			5,
-			state ? COLORPIP_WHITE : dbstylev_2state [1].bgcolor,
-			dbstylep->bgradius,
-			dbstylep->bgfilled
-			);
-#else
 	display2text_states(db, xcell, ycell, labels, dbstylev_2state, state, xspan, yspan);
-#endif
 }
 
 // Параметры, не меняющие состояния цветом
