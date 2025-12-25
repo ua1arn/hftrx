@@ -159,10 +159,10 @@ typedef struct
   const char* pStrDesc;
   USBD_StatusTypeDef (* Init)     (void);
   USBD_StatusTypeDef (* DeInit)   (void);
-  USBD_StatusTypeDef (* Erase)    (uint32_t Add);
-  USBD_StatusTypeDef (* Write)    (uint8_t *src, uint32_t dest, uint32_t Len);
-  uint8_t* (* Read)     (uint32_t src, uint8_t *dest, uint32_t Len);
-  USBD_StatusTypeDef (* GetStatus)(uint32_t Add, uint8_t cmd, uint8_t *buff);
+  USBD_StatusTypeDef (* Erase)    (uintptr_t Add);
+  USBD_StatusTypeDef (* Write)    (uint8_t *src, uintptr_t dest, uint32_t Len);
+  uint8_t* (* Read)     (uintptr_t src, uint8_t *dest, uint32_t Len);
+  USBD_StatusTypeDef (* GetStatus)(uintptr_t Add, uint8_t cmd, uint8_t *buff);
 }
 USBD_DFU_MediaTypeDef;
 /**
@@ -202,7 +202,7 @@ static USBD_StatusTypeDef MEM_If_DeInit_HS(void)
   * @retval USBD_OK if operation is successful, MAL_FAIL else.
   */
 // called on each PAGESIZE region (see strFlashDesc)
-static USBD_StatusTypeDef MEM_If_Erase_HS(uint32_t Addr)
+static USBD_StatusTypeDef MEM_If_Erase_HS(uintptr_t Addr)
 {
 	//PRINTF(PSTR("MEM_If_Erase_HS: addr=%08lX\n"), Addr);
 	if (0)
@@ -238,7 +238,7 @@ static USBD_StatusTypeDef MEM_If_Erase_HS(uint32_t Addr)
   * @param  Len: Number of data to be written (in bytes).
   * @retval USBD_OK if operation is successful, MAL_FAIL else.
   */
-static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t Len)
+static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uintptr_t dest, uint32_t Len)
 {
 	//PRINTF(PSTR("MEM_If_Write_HS: addr=%08lX, len=%03lX\n"), dest, Len);
 	if (0)
@@ -294,7 +294,7 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
   * @param  Len: Number of data to be read (in bytes).
   * @retval Pointer to the physical address where data should be read.
   */
-static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
+static uint8_t *MEM_If_Read_HS(uintptr_t src, uint8_t *dest, uint32_t Len)
 {
 #if WIHSPIDFHW || WIHSPIDFSW
 	//PRINTF(PSTR("MEM_If_Read_HS: src=%08lX, dest=%p, len=%08lX\n"), src, dest, Len);
@@ -317,7 +317,7 @@ static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
   */
 //#define DFU_MEDIA_ERASE                0x00
 //#define DFU_MEDIA_PROGRAM              0x01
-static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Addr, uint8_t Cmd, uint8_t *buffer)
+static USBD_StatusTypeDef MEM_If_GetStatus_HS(uintptr_t Addr, uint8_t Cmd, uint8_t *buffer)
 {
 	//PRINTF(PSTR("MEM_If_GetStatus_HS: Addr=%08lX\n"), Addr);
 	uint_fast8_t st;
