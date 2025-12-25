@@ -62,61 +62,6 @@ typedef struct UB_pFont32_t {
   uint16_t last_char;    // Последний символ (Ascii код)
 }UB_pFont32;
 
-// marked for delete
-#if 0
-
-//--------------------------------------------------------------
-// Рисует строку шрифтом одного размера на позиции х, у.
-// Цвет шрифта и фон (шрифт = макс 16 пикселей в ширину)
-// Шрифт должен быть передан с оператором &
-//--------------------------------------------------------------
-void UB_Font_DrawString(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char *ptr, const UB_Font *font, COLORPIP_T vg);
-
-//--------------------------------------------------------------
-// Рисует строку шрифтом одного размера на позиции х, у.
-// Цвет шрифта и фон (шрифт = макс 32 пикселя в ширину)
-// Шрифт должен быть передан с оператором &
-//--------------------------------------------------------------
-void UB_Font_DrawString32(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, const char *ptr, const UB_Font32 *font, COLORPIP_T vg);
-
-
-
-//--------------------------------------------------------------
-// Рисование строки пропорционального шрифта с позицией X, Y
-// Цвет шрифта плана и фона (шрифт = макс 16 пикселей в ширину)
-// Шрифт должен быть передан с оператором &
-//--------------------------------------------------------------
-void UB_Font_DrawPStringDbg(
-		const char * file, int line,
-		const gxdrawb_t * db,
-		uint_fast16_t x, uint_fast16_t y,
-		const char * ptr, const UB_pFont * font,
-		COLORPIP_T vg);
-
-#define UB_Font_DrawPString(...) do { \
-	UB_Font_DrawPStringDbg(__FILE__, __LINE__, __VA_ARGS__); \
-	} while (0)
-
-//--------------------------------------------------------------
-// Рисование строку пропорционального шрифта с позицией X, Y
-// Цвет шрифта плана и фона (шрифт = макс 32 пикселя в ширину)
-// Шрифт должен быть передан с оператором &
-//--------------------------------------------------------------
-void UB_Font_DrawPString32(const gxdrawb_t * db,
-		uint_fast16_t x, uint_fast16_t y,
-		const char * ptr, const UB_pFont32 * font,
-		COLORPIP_T vg);
-
-// Возврат ширины строки в пикселях, пропорциональный шрифт 32 бит
-uint16_t getwidth_Pstring32(const char * str, const UB_pFont32 * font);
-
-// Возврат ширины строки в пикселях, пропорциональный шрифт меньше 32 бит
-uint16_t getwidth_Pstring(const char * str, const UB_pFont * font);
-
-// Возвращает ширину строки в пикселях, моноширинный шрифт
-uint16_t getwidth_Mstring(const char * str, const UB_Font * font);
-#endif
-
 
 // Поддержка шрифтов Adafruit-GFX-Library
 //	https://github.com/adafruit/Adafruit-GFX-Library.git
