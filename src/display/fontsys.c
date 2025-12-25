@@ -65,6 +65,8 @@ typedef struct ufcache_tag
 	unsigned cellh;	// размер поля символа по вертикали
 	PACKEDCOLORPIP_T * rendered;	// буфер
 	gxdrawb_t dbv;
+	PACKEDCOLORPIP_T fg;	// цыет символа, использовавшийся при создании алманаха
+	PACKEDCOLORPIP_T bg;	// цыет фона, использовавшийся при создании алманаха
 } ufcache_t;
 
 static uint_fast16_t ufcached_decode(const struct unifont_tag * font, char cc)
@@ -137,6 +139,9 @@ static void ufcached_prerender(const unifont_t * font, COLORPIP_T fg, COLORPIP_T
 	}
 	cache->cellw = w;	// самый большой размер
 	cache->cellh = pf->font_drawheight(pf);
+	cache->fg = fg;
+	cache->bg = bg;
+	cache->rendered = NULL;
 
 	PACKEDCOLORPIP_T * const b = (PACKEDCOLORPIP_T *) aligned_alloc(DCACHEROWSIZE, GXSIZE(cache->cellw * cicount, cache->cellh) * sizeof (PACKEDCOLORPIP_T));
 	ASSERT(b);
