@@ -358,8 +358,6 @@ extern "C" {
 
 /* макрооределение для расчёта количества "тиков" для выдержки величин задержек. */
 #define NTICKS(t_mS) ((uint_fast16_t) (((uint_fast32_t) (t_mS) * TICKS_FREQUENCY + 500) / 1000))
-#define NTICKSADC(t_uS) ((uint_fast16_t) (((uint_fast32_t) (t_uS) * ADC_FREQ + 5) / 1000000))
-#define NTICKSADC01(t_uS01) ((uint_fast16_t) (((uint_fast32_t) (t_uS01) * ADC_FREQ + 5) / 10000000))
 
 #define OFFSETOF(s, m) ((size_t) (uintptr_t) & (((s *) (uintptr_t) 0) -> m))
 
@@ -458,8 +456,6 @@ void hardware_sounds_setfreq(
 	);
 // выключаем звук
 void hardware_sounds_disable(void);
-/* вызывается при запрещённых прерываниях. */
-void hardware_beep_initialize(void);
 
 /* SAI, I2S и подключенная на них периферия */
 void hardware_channels_initialize(void);

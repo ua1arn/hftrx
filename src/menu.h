@@ -1406,7 +1406,7 @@ const struct menudef menutable [] =
 	& xrfgain1,	// Усиление ПЧ/ВЧ в процентах
 	#endif /* ! WITHPOTIFGAIN */
 #endif /* WITHIF4DSP */
-#if (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP
+#if WITHINTEGRATEDDSP
 	(const struct paramdefdef [1]) {
 		QLABEL2("KEY BEEP", "Keys Beep"), 6, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
 		ITEM_VALUE,
@@ -1418,7 +1418,7 @@ const struct menudef menutable [] =
 		getzerobase, 
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
-#endif /* (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP */
+#endif /* WITHINTEGRATEDDSP */
 #if WITHIF4DSP
 	& xgsquelch,
 #if ! WITHPOTNFMSQL

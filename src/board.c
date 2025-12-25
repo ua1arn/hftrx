@@ -5976,7 +5976,7 @@ uint_fast8_t board_getpwrmeter(
 #endif
 
 
-#if (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP
+#if WITHINTEGRATEDDSP
 
 //#define WITHSIDETONEDEBUG	1	// всегда пищать с частотой 1 кГц - отладка
 
@@ -6258,7 +6258,6 @@ void board_set_ctcsstx(
 /* вызывается при запрещённых прерываниях. */
 void board_beep_initialize(void)
 {
-	hardware_beep_initialize();
 	hardware_sounds_disable();
 
 #if WITHSIDETONEDEBUG
@@ -6272,11 +6271,12 @@ void board_beep_initialize(void)
 		}
 	}
 #endif /* WITHSIDETONEDEBUG */
+
 	board_errbeep_setfreq(BOARD_ERRBEEP_TONE);	// Частота сигнала об ошибке (герц)
 }
 
+#else /* WITHINTEGRATEDDSP */
 
-#else	 /* SIDETONE_TARGET_BIT != 0 */
 /* функция - заглушка */
 /* подзвучка клавиш */
 /* вызывается из update hardware (манипуляция может происходить из прерываний).	*/
@@ -6327,7 +6327,7 @@ void board_rgrbeep_enable(uint_fast8_t state)
 {
 }
 
-#endif /* SIDETONE_TARGET_BIT != 0 */
+#endif /* WITHINTEGRATEDDSP */
 
 
 // ADC intgerface functions

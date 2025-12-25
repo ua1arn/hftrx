@@ -10843,6 +10843,10 @@ found:
 
 #if WITHCPUADCHW
 
+/* макрооределение для расчёта количества "тиков" для выдержки величин задержек. */
+// STM32 specific
+#define NTICKSADC01(t_uS01) ((uint_fast16_t) (((uint_fast32_t) (t_uS01) * ADC_FREQ + 5) / 10000000))
+
 // Получение битов используемых каналов АЦП (до шестнадцати штук).
 static portholder_t
 build_adc_mask(void)
@@ -10856,24 +10860,6 @@ build_adc_mask(void)
 	}
 	return mask;
 }
-
-#if 0
-	// Set up ADCB0 on PB0 to read temp sensor. More of this can be achieved by using driver from appnote AVR1300
-	PORTQ.PIN2CTRL = (PORTQ.PIN2CTRL & ~PORT_OPC_gm) | PORT_OPC_PULLDOWN_gc;	// This pin must be grounded to "enable" NTC-resistor
-	PORTB.DIRCLR = PIN0;
-	PORTB.PIN0CTRL = (PORTB.PIN0CTRL & ~PORT_OPC_gm);
-
-	ADC_CalibrationValues_Load(&ADCB);  // Load factory calibration data for ADC
-	ADCB.CH0.CTRL = (ADCB.CH0.CTRL & ~ADC_CH_INPUTMODE_gm) | ADC_CH_INPUTMODE_SINGLEENDED_gc; // Single ended input
-	ADCB.CH0.MUXCTRL = (ADCB.CH0.MUXCTRL & ~ADC_CH_MUXPOS_gm) | ADC_CH_MUXPOS_PIN0_gc; // Pin 0 is input
-	ADCB.REFCTRL = (ADCB.REFCTRL & ~ADC_REFSEL_gm) | ADC_REFSEL_VCC_gc;	// Internal AVCC/1.6 as reference
-
-	ADCB.CTRLB |= ADC_FREERUN_bm; // Free running mode
-	ADCB.PRESCALER = (ADCB.PRESCALER & ~ADC_PRESCALER_gm) | ADC_PRESCALER_DIV512_gc; // Divide clock by 1024.
-	ADCB.CTRLB = (ADCB.CTRLB & ~ADC_RESOLUTION_gm) | ADC_RESOLUTION_8BIT_gc; // Set 8 bit resolution
-	ADCB.CTRLA |= ADC_ENABLE_bm; // Enable ADC
-
-#endif
 
 void hardware_adc_initialize(void)
 {
@@ -11568,184 +11554,6 @@ void hardware_adc_initialize(void)
 }
 
 #endif /* WITHCPUADCHW */
-
-
-#if SIDETONE_TARGET_BIT != 0
-/* после изменения набора формируемых звуков - обновление программирования таймера. */
-void hardware_sounds_disable(void)
-{
-
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	HARDWARE_SIDETONE_DISCONNECT();
-
-#elif CPUSTYLE_AT91SAM7S
-
-	HARDWARE_SIDETONE_DISCONNECT();
-
-#elif CPUSTYLE_STM32F
-
-	TIM4->CR1 = 0x00;
-
-#else
-	#warning Undefined CPUSTYLE_XXX
-#endif
-
-}
-
-
-
-
-// called from interrupt or with disabled interrupts
-// всегда включаем генерацию выходного сигнала
-void hardware_sounds_setfreq(
-	uint_fast8_t prei,
-	unsigned value
-	)
-{
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	TC0->TC_CHANNEL [1].TC_CMR =
-		(TC0->TC_CHANNEL [1].TC_CMR & ~ TC_CMR_TCCLKS_Msk) | tc_cmr_tcclks [prei];
-	TC0->TC_CHANNEL [1].TC_RC = value;	// программирование полупериода (выход с триггерам)
-
-	HARDWARE_SIDETONE_CONNECT();
-
-#elif CPUSTYLE_AT91SAM7S
-
-	AT91C_BASE_TCB->TCB_TC1.TC_CMR =
-		(AT91C_BASE_TCB->TCB_TC1.TC_CMR & ~ AT91C_TC_CLKS) | tc_cmr_clks [prei];
-	AT91C_BASE_TCB->TCB_TC1.TC_RC = value;	// программирование полупериода (выход с триггерам)
-
-	HARDWARE_SIDETONE_CONNECT();
-
-#elif CPUSTYLE_STM32F
-
-	TIM4->PSC = ((UINT32_C(1) << prei) - 1) & TIM_PSC_PSC;
-
-	TIM4->CCR3 = (value / 2) & TIM_CCR3_CCR3;	// TIM4_CH3 - sound output
-	TIM4->ARR = value;
-	TIM4->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE;	/* разрешить перезагрузку и включить таймер */
-
-#else
-	#warning Undefined CPUSTYLE_XXX
-#endif
-
-}
-
-/*
-	формирование сигнала самоконтроля.
-	На процессоре AT91SAM7S64 манипуляция осуществляется отключением таймера от выхода.
-	Повторный запуск таймера возможен только с флагом AT91C_TC_SWTRG, а при этом
-	происходит его сброс (перезапуск) - тон искажённый.
-*/
-void
-hardware_beep_initialize(void)
-{
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	// --- TC1 used to generate CW sidetone ---
-	// PA15: Peripheral B: TIOA1
-	PMC->PMC_PCER0 = (UINT32_C(1) << ID_TC1);	 // разрешить тактированние этого блока (ID_TC0..ID_TC5 avaliable)
-
-	//TC0->TC_BMR = (TC0->TC_BMR & ~ TC_BMR_TC1XC1S_Msk) | TC_BMR_TC1XC1S_TIOA0;
-	TC0->TC_CHANNEL [1].TC_CCR = TC_CCR_CLKDIS; // disable TC1 clock
-
-	TC0->TC_CHANNEL [1].TC_CMR =
-					TC_CMR_BSWTRG_NONE | TC_CMR_BEEVT_NONE | TC_CMR_BCPC_NONE | TC_CMR_BCPB_NONE // TIOB: none
-					| TC_CMR_ASWTRG_NONE | TC_CMR_AEEVT_NONE | TC_CMR_ACPC_TOGGLE | TC_CMR_ACPA_NONE // TIOA: toggle on RC
-					| TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC /*TC_CMR_WAVESEL_UP_AUTO */ // waveform mode, up to RC
-					| TC_CMR_ENETRG | TC_CMR_EEVT_XC2 | TC_CMR_EEVTEDG_NONE // no ext. trigger
-					| (0 * TC_CMR_CPCDIS)
-					| (0 * TC_CMR_CPCSTOP)
-					| TC_CMR_BURST_NONE
-					| (0 * TC_CMR_CLKI)
-					| TC_CMR_TCCLKS_TIMER_CLOCK1;
-
-	TC0->TC_CHANNEL [1].TC_CCR = TC_CCR_SWTRG | TC_CCR_CLKEN; // reset and enable clock
-	//AT91C_BASE_TCB->TCB_TC1.TC_CCR = TC_CMR_CLKDIS; // reset and enable TC1 clock
-
-	// Timer outputs, connected to pin(s)
-	HARDWARE_SIDETONE_INITIALIZE();
-
-#elif CPUSTYLE_AT91SAM7S
-
-	// --- TC1 used to generate CW sidetone ---
-	// PA15: Peripheral B: TIOA1
-	AT91C_BASE_PMC->PMC_PCER = (UINT32_C(1) << AT91C_ID_TC1); // разрешить тактированние этого блока (AT91C_ID_TC0..AT91C_ID_TC2 avaliable)
-
-	////AT91C_BASE_TCB->TCB_BMR = (AT91C_BASE_TCB->TCB_BMR & ~ AT91C_TCB_TC1XC1S) | AT91C_TCB_TC1XC1S_TIOA0;
-	AT91C_BASE_TCB->TCB_TC1.TC_CCR = AT91C_TC_CLKDIS; // disable TC1 clock
-
-	AT91C_BASE_TCB->TCB_TC1.TC_CMR =
-					AT91C_TC_BSWTRG_NONE | AT91C_TC_BEEVT_NONE | AT91C_TC_BCPC_NONE | AT91C_TC_BCPB_NONE // TIOB: none
-					| AT91C_TC_ASWTRG_NONE | AT91C_TC_AEEVT_NONE | AT91C_TC_ACPC_TOGGLE | AT91C_TC_ACPA_NONE // TIOA: toggle on RC
-					| AT91C_TC_WAVE | AT91C_TC_WAVESEL_UP_AUTO // waveform mode, up to RC
-					| AT91C_TC_ENETRG | AT91C_TC_EEVT_XC2 | AT91C_TC_EEVTEDG_NONE // no ext. trigger
-					| (0 * AT91C_TC_CPCDIS)
-					| (0 * AT91C_TC_CPCSTOP)
-					| AT91C_TC_BURST_NONE
-					| (0 * AT91C_TC_CLKI)
-					| AT91C_TC_CLKS_TIMER_DIV1_CLOCK;
-
-	AT91C_BASE_TCB->TCB_TC1.TC_CCR = AT91C_TC_SWTRG | AT91C_TC_CLKEN; // reset and enable clock
-	//AT91C_BASE_TCB->TCB_TC1.TC_CCR = AT91C_TC_CLKDIS; // reset and enable TC1 clock
-
-	// Timer outputs, connected to pin(s)
-	HARDWARE_SIDETONE_INITIALIZE();
-
-#elif CPUSTYLE_STM32F
-
-	// apb1
-	RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;   //подаем тактирование на TIM4
-	__DSB();
-
-	TIM4->CCMR2 = TIM_CCMR2_OC3M_0 | TIM_CCMR2_OC3M_1 | TIM_CCMR2_OC3M_2;	// Output Compare 3 Mode
-	TIM4->CCER = TIM_CCER_CC3E;
-
-	HARDWARE_SIDETONE_INITIALIZE();
-
-#else
-	#warning Undefined CPUSTYLE_XXX
-#endif
-
-}
-
-// return code: prescaler
-uint_fast8_t
-hardware_calc_sound_params(
-	uint_least16_t tonefreq,	/* tonefreq - частота в десятых долях герца. Минимум - 400 герц (определено набором команд CAT). */
-	unsigned * pvalue)
-{
-
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, pvalue, 1);
-
-#elif CPUSTYLE_AT91SAM7S
-
-	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, pvalue, 1);
-
-#elif CPUSTYLE_STM32F
-
-	// for tim1 use apb2, for other apb1
-	// now - tim4
-	// TIM4 - 16-bit timer
-	return calcdivider(calcdivround2(10UL * PCLK2_FREQ, tonefreq), STM32F_TIM4_TIMER_WIDTH, STM32F_TIM4_TIMER_TAPS, pvalue, 1);
-
-#else
-	#warning Undefined CPUSTYLE_XXX
-#endif
-}
-
-#else /* SIDETONE_TARGET_BIT != 0 */
-
-void
-hardware_beep_initialize(void)
-{
-}
-
-#endif /* SIDETONE_TARGET_BIT != 0 */
 
 #if WITHELKEY
 
