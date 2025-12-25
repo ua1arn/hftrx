@@ -6,7 +6,7 @@
 //
 #include "hardware.h"
 
-#if LCDMODE_LTDC
+#if LCDMODE_LTDC || WITHTOUCHGUI
 
 #include "formats.h"
 #include "fontsys.h"
@@ -109,4 +109,4 @@ const unifont_t unifont_Tahoma_Regular_88x77 =
 	.label = "Tahoma_Regular_88x77"
 };
 
-#endif /* LCDMODE_LTDC */
+#endif /* LCDMODE_LTDC || WITHTOUCHGUI */

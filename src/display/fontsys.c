@@ -6,7 +6,7 @@
 //
 #include "hardware.h"
 
-#if LCDMODE_LTDC
+#if LCDMODE_LTDC || WITHTOUCHGUI
 
 #include "formats.h"
 #include "fontsys.h"
@@ -203,7 +203,7 @@ void rendered_value_big_initialize(const gxstyle_t * gxstylep)
 #endif /* WITHPRERENDER */
 }
 
-#endif /* LCDMODE_LTDC */
+#endif /* LCDMODE_LTDC || WITHTOUCHGUI */
 
 // **********************************
 
