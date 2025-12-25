@@ -3641,7 +3641,7 @@ static void spidf_unselect(QSPI_t * qspi, IRQL_t irql)
 
 	XQSPIPS->ER = 0;
 	SPIDF_HANGOFF();
-	spidf_operate_unlock(irql);
+	spidf_operate_unlock(qspi, irql);
 }
 
 static void spidf_progval8_p1(uint_fast8_t v)
@@ -3699,7 +3699,7 @@ static IRQL_t spidf_iostart(
 	)
 {
 	IRQL_t oldcsIRQL;
-	spidf_operate_lock(& oldcsIRQL);
+	spidf_operate_lock(qspi, & oldcsIRQL);
 	//PRINTF("spidf_iostart: dir=%d, cmd=%02X, readnb=%d, ndummy=%d, size=%lu, ha=%d, addr=%08lX\n", direction, cmd, readnb, ndummy, size, hasaddress, address);
 	const unsigned cmdlen = 1 + (hasaddress ? 3 : 0) + ndummy;
 	//PRINTF("spidf_iostart: cmdlen=%u\n", cmdlen);

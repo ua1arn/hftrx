@@ -1058,6 +1058,8 @@
 				gpio_peripherial(SPDIF_D3_MIO, qspi_pinmode_io);	/*  */ \
 			} while (0)
 
+		#define SPIDFHARD_PTR XQSPIPS
+
 		#else /* WIHSPIDFHW */
 
 			#define SPIDF_MISO() (gpio_readpin(SPDIF_MISO_MIO))

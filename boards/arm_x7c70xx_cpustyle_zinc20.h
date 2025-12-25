@@ -1051,6 +1051,7 @@
 				gpio_output2(SPDIF_D2_MIO, 1, pinmode_output);  \
 				gpio_output2(SPDIF_D3_MIO, 1, pinmode_output);  \
 			} while (0)
+		#define SPIDFHARD_PTR XQSPIPS
 
 		#else /* WIHSPIDFHW */
 

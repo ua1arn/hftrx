@@ -988,6 +988,7 @@
 					arm_hardware_piof_altfn50(SPDIF_MISO_BIT, AF_QUADSPI_AF10); /* PF9 MISO */ \
 					arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); /* PB6 CS */ \
 				} while (0)
+		#define SPIDFHARD_PTR XQSPIPS
 
 		#else /* WIHSPIDFHW */
 
