@@ -5717,7 +5717,7 @@ uint_fast8_t
 hardware_get_ptt(void)
 {
 #if WITHBBOX && defined (WITHBBOXTX)
-	return WITHBBOXTX;	// автоматический переход на передачу
+	return 0;	// автоматический переход на передачу делается в txreq_process0()
 #elif defined (HARDWARE_GET_PTT)
 	return HARDWARE_GET_PTT();
 #else /*  */

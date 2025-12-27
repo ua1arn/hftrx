@@ -341,6 +341,13 @@
 	//#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
 
 	#if 0
+		// DTMF/CTCSS tests
+		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
+		#define WITHBBOXSUBMODE	SUBMODE_NFM	// единственный режим работы
+		#define WITHBBOXFREQ	(136025000 - 122880000)
+		#define WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
+		#define WITHBBOXTX		1		// автоматический переход на передачу
+	#elif 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		#define WITHBBOXMIKESRC	BOARD_TXAUDIO_USB

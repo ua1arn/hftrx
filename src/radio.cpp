@@ -18972,6 +18972,10 @@ txreq_process0(txreq_t * txreqp)
 #if WITHTX
 	// todo: установка запроса на пердачу может быть вызвана ранее
 	txreq_scaninputs(txreqp);
+#if WITHBBOX && defined (WITHBBOXTX)
+	const uint_fast8_t txreq = WITHBBOXTX;	// автоматический переход на передачу
+	const uint_fast8_t tunereq = 0;
+#else
 	const uint_fast8_t txreq =
 			txreqp->edgphandptt.req ||
 			txreqp->edgpcathwptt.req ||
@@ -18980,6 +18984,7 @@ txreq_process0(txreq_t * txreqp)
 	const uint_fast8_t tunereq =
 			txreqp->edgpexttune.req ||
 			0;
+#endif
 	const uint_fast8_t rxreq =
 			txreqp->edgphandptt.negedge ||
 			txreqp->edgpcathwptt.negedge ||
@@ -19024,6 +19029,7 @@ txreq_process0(txreq_t * txreqp)
 	{
 
 	}
+#if 0
 	else if (txreqa && txtot != 0 && gtxtimer >= txtot)
 	{
 		// ограничение времени передачи
@@ -19034,6 +19040,7 @@ txreq_process0(txreq_t * txreqp)
 		// обработка аппаратного запрета передачи
 		txreq_rx0(txreqp, "DIS");
 	}
+#endif
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_PAtemp_value(), (int) gtempvmax * 10);
 	else if (txreqa && gheatprot != 0 && hamradio_get_PAtemp_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
