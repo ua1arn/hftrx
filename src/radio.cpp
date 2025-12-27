@@ -19018,33 +19018,37 @@ txreq_process0(txreq_t * txreqp)
 //	{
 //		tunreq = 1;
 //	}
-
+	const uint_fast8_t txreqa = txreq_get_tx(txreqp);
 	const uint_fast16_t txtot = param_getvalue(& xgtxtot);
 	if (0)
 	{
 
 	}
-	else if (txreq_get_tx(txreqp) && txtot != 0 && gtxtimer >= txtot)
+	else if (txreqa && txtot != 0 && gtxtimer >= txtot)
 	{
+		// ограничение времени передачи
 		txreq_rx0(txreqp, "TOT");
 	}
-	else if (txreq_get_tx(txreqp) && hardware_get_txdisable())
+	else if (txreqa && hardware_get_txdisable())
 	{
+		// обработка аппаратного запрета передачи
 		txreq_rx0(txreqp, "DIS");
 	}
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_PAtemp_value(), (int) gtempvmax * 10);
-	else if (txreq_get_tx(txreqp) && gheatprot != 0 && hamradio_get_PAtemp_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
+	else if (txreqa && gheatprot != 0 && hamradio_get_PAtemp_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
 	{
+		// перегрев
 		txreq_rx0(txreqp, "OVH");
 	}
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 #if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX
-	else if (txreq_get_tx(txreqp) && getactualdownpower(& txreqst0) == 0 && gswrprot != 0)
+	else if (txreqa && getactualdownpower(& txreqst0) == 0 && gswrprot != 0)
 	{
 		//PRINTF("1 gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower(& txreqst0) == 0, get_swr_cached(4 * SWRMIN));
 		if (get_swr_cached(4 * SWRMIN) >= (4 * SWRMIN))	// SWR >= 4.0
 		{
+			// защита по КСВ
 			txreq_rx0(txreqp, "SWR");
 		}
 	}
