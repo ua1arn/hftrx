@@ -6316,7 +6316,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	};
 	/*  */
 	static uint_fast16_t gnfmdeviation = 7500;
-	static const struct paramdefdef xnfmdeviation =
+	static const struct paramdefdef xgnfmdeviation =
 	{
 		QLABEL2("NFM DEVI", "NFM Deviation"), 7, 0, RJ_UNSIGNED, ISTEP100,		/* Подстройка глубины модуляции в АМ */
 		ITEM_VALUE,
@@ -12484,8 +12484,8 @@ updateboard_noui(
 			board_set_digiscale(ggaindigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 			board_set_cwscale(ggaincwtx);	/* Увеличение усиления при передаче в CW режимах 50..100% */
 			board_set_designscale(gdesignscale);	/* используется при калибровке параметров интерполятора */
-			board_set_amdepth(gamdepth);	/* Глубина модуляции в АМ - 0..100% */
-			board_set_nfmdeviation(gnfmdeviation);
+			board_set_amdepth(param_getvalue(& xgamdepth));	/* Глубина модуляции в АМ - 0..100% */
+			board_set_nfmdeviation(param_getvalue(& xgnfmdeviation));
 			board_rgrbeep_setfreq(1000);	/* roger beep - установка тона */
 		}
 		#endif /* WITHIF4DSP */
@@ -16742,7 +16742,8 @@ static void dpc_1s_timer_fn(void * arg)
 	/* обработка таймера ограничения времени передачи */
 	if (gtx)
 	{
-		gtxtimer = (gtxtot && gtxtimer < gtxtot) ? (gtxtimer + 1) : gtxtimer;
+		const uint_fast16_t txtot = param_getvalue(& xgtxtot);
+		gtxtimer = (txtot && gtxtimer < txtot) ? (gtxtimer + 1) : gtxtimer;
 	}
 	else
 	{
@@ -16961,7 +16962,7 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
 		& xgnoisereduct,
 		& xgsquelchNFM,
 	#endif /* WITHIF4DSP */
-		& xnfmdeviation,
+		& xgnfmdeviation,
 	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
 		& xgzoomxpow2,
 	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
@@ -19018,7 +19019,12 @@ txreq_process0(txreq_t * txreqp)
 //		tunreq = 1;
 //	}
 
-	if (txreq_get_tx(txreqp) && gtxtot != 0 && gtxtimer >= gtxtot)
+	const uint_fast16_t txtot = param_getvalue(& xgtxtot);
+	if (0)
+	{
+
+	}
+	else if (txreq_get_tx(txreqp) && txtot != 0 && gtxtimer >= txtot)
 	{
 		txreq_rx0(txreqp, "TOT");
 	}
