@@ -2883,6 +2883,12 @@ ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, ui
 
 	// Все сравнения должны быть не точнее 16 MB
 
+#if ! WITHISBOOTLOADER && 1
+	if (phyaddr < 0x01000000)
+		return arch->mnoaccess(b, phyaddr);
+//	if (phyaddr < 0x40000000 && phyaddr >= 0x3F000000)
+//		return arch->mnoaccess(b, phyaddr);
+#endif /* ! WITHISBOOTLOADER */
 	if (phyaddr < 0x00400000)
 		return arch->mcached(b, phyaddr, ro, xn);
 
