@@ -26,6 +26,8 @@
 #include "src/usb/usb200.h"
 #include "src/usb/usbch9.h"
 
+//#define WITHCDCWITHDMA 1	// эксперементальная опция, пока в работе не использовать
+
 #define CDC_SET_LINE_CODING                     0x20
 #define CDC_GET_LINE_CODING                     0x21
 #define CDC_SET_CONTROL_LINE_STATE              0x22
@@ -2081,12 +2083,11 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 #define CDC_DTE_PRESENT                         (1 << 0)
 #define CDC_ACTIVATE_CARRIER                    (1 << 1)
 
-//#define WITHCDCWITHDMA 1	// эксперементальная опция, пока в работе не использовать
-
 enum
 {
 	cdc_pipeindma = 0,
 	cdc_pipeoutdma,
+	cdc_pipeintdma,
 	//
 	cdc_pipe_count
 };
@@ -2600,7 +2601,10 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			else
 			{
 				// Dedicated DMA Transfer data from device to host
+				const uint_fast8_t dmach = cdc_pipeindma;
 				set_dma_ep(pusb, pipein, 1);
+//				usb_set_dma_interrupt_enable(pusb, (UINT32_C(1) << dmach));
+//				ASSERT(usb_get_dma_interrupt_enable(pusb) & (UINT32_C(1) << dmach));
 			}
 
 			// Transfer data from host to device
@@ -2613,8 +2617,8 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			else
 			{
 				// Dedicated DMA Transfer data from host to device
-				set_dma_ep(pusb, pipeout, 0);
 				const uint_fast8_t dmach = cdc_pipeoutdma;
+				set_dma_ep(pusb, pipeout, 0);
 				memset(cdc_out_data, 0xE5, sizeof cdc_out_data);
 				WITHUSBHW_DEVICE->USB_DMA [dmach].BC = sizeof cdc_out_data;
 				dcache_clean_invalidate((uintptr_t) cdc_out_data, sizeof cdc_out_data);
@@ -2626,8 +2630,8 @@ static void awxx_setup_fifo(pusb_struct pusb)
 					0;
 				WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
 				usb_fifo_accessed_by_dma(pusb, pipeout, 1);
-				usb_set_dma_interrupt_enable(pusb, (1u << dmach));
-				set_dma_ep(pusb, pipein, 1);
+				usb_set_dma_interrupt_enable(pusb, (UINT32_C(1) << dmach));
+				ASSERT(usb_get_dma_interrupt_enable(pusb) & (UINT32_C(1) << dmach));
 			}
 #if ! WITHUSBCDCACM_NOINT
 			// Transfer interrupt data from device to host
@@ -2639,9 +2643,10 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			else
 			{
 				// stub
-				usb_set_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipeint));
-				ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << pipeint));
-
+				const uint_fast8_t dmach = cdc_pipeintdma;
+				set_dma_ep(pusb, pipeint, 0);
+//				usb_set_dma_interrupt_enable(pusb, (UINT32_C(1) << dmach));
+//				ASSERT(usb_get_dma_interrupt_enable(pusb) & (UINT32_C(1) << dmach));
 			}
 #endif /* ! WITHUSBCDCACM_NOINT */
 		}
