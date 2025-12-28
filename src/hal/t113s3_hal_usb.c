@@ -2458,7 +2458,7 @@ static void set_dma_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 	else
 	{
 		// OUT
-        usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_RXCSR_FLUSHFIFO);
+        usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_FLUSHFIFO);
 
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
