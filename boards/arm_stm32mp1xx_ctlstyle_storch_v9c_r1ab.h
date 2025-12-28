@@ -433,34 +433,36 @@
 
 	//#define WITHUSEUSBBT		1	// Включение поддержки USB BT stick
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
 	//#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
 
-	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
-	#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
+	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
+	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
-	#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
+	//#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 	//#define COLORSTYLE_GREEN	1
-	//#define COLORSTYLE_BLUE	1
-	#define COLORSTYLE_BLUE2	1
+	#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_BLUE2	1
 	//#define COLORSTYLE_RED	1
+	//#define COLORSTYLE_WHITE	1
+	#define WITHALTERNATIVEFONTS	1
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4, x8
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
-		#define WITHVIEW_3DSS		1
-		#define WITHVIEW_3DSS_MARK	1
+//		#define WITHVIEW_3DSS		1
+//		#define WITHVIEW_3DSS_MARK	1
 		#define WITHSPECBETA_DEFAULT	30
-		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
-		#if 1
+//		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+//		#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
+		#if 0
 			#define WITHTOUCHGUI		1
 			#define WITHDISPLAY_FPS		30
 			#define WITHDISPLAYSWR_FPS	30
@@ -473,8 +475,8 @@
 			#define WITHALTERNATIVEFONTS	1
 			//#define WITHAFEQUALIZER		1
 			#define WITHALTERNATIVELAYOUT	1
-			#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
-			#define WITHDEFAULTVIEW		VIEW_3DSS
+			//#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
+			//#define WITHDEFAULTVIEW		VIEW_3DSS
 		#else
 			#define WITHDISPLAY_FPS		15
 			#define WITHDISPLAYSWR_FPS	15
@@ -494,7 +496,7 @@
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
+	//#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
@@ -647,8 +649,8 @@
 	//#define WITH_STMPE811_INTERRUPTS	1
 	//#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
 	//#define WITH_GT911_INTERRUPTS	1
-	#define WITHTSC5PCALIBRATE 1	/* Калибровка по пяти точкам */
-	#define TSC1_TYPE TSC_TYPE_XPT2046	/* Resistive touch screen controller XPTEK XPT2046 */
+//	#define WITHTSC5PCALIBRATE 1	/* Калибровка по пяти точкам */
+//	#define TSC1_TYPE TSC_TYPE_XPT2046	/* Resistive touch screen controller XPTEK XPT2046 */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
 	//#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
