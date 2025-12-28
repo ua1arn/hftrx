@@ -48,11 +48,25 @@ extern "C" {
 #define WITHSPPARTMIN		0		/*  % */
 #define WITHSPPARTMAX		100		/*  % */
 
-#define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
-#define	BOARD_IFGAIN_MAX	24		/* код управления усилением ВЧ тракта */
+#if WITHPOTIFGAIN
+	// потенциометром
+	#define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
+	#define	BOARD_IFGAIN_MAX	255		/* код управления усилением ВЧ тракта */
+#else /* WITHPOTIFGAIN */
+	// валкодером
+	#define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
+	#define	BOARD_IFGAIN_MAX	24		/* код управления усилением ВЧ тракта */
+#endif /* WITHPOTIFGAIN */
 
-#define	BOARD_AFGAIN_MIN	0		/* код управления усилением НЧ тракта */
-#define	BOARD_AFGAIN_MAX	24		/* код управления усилением НЧ тракта */
+#if WITHPOTAFGAIN
+	// потенциометром
+	#define	BOARD_AFGAIN_MIN	0		/* код управления усилением НЧ тракта */
+	#define	BOARD_AFGAIN_MAX	255		/* код управления усилением НЧ тракта */
+#else /* WITHPOTAFGAIN */
+	// валкодером
+	#define	BOARD_AFGAIN_MIN	0		/* код управления усилением НЧ тракта */
+	#define	BOARD_AFGAIN_MAX	24		/* код управления усилением НЧ тракта */
+#endif /* WITHPOTAFGAIN */
 
 #define WITHLINEINGAINMIN	0		/* код управления усилением входа с линии */
 #define WITHLINEINGAINMAX	255		/* код управления усилением входа с линии */

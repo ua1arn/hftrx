@@ -17,6 +17,7 @@
 	#endif /* ! defined(STM32MP157Axx) */
 
 	//#define WITHBRANDSTR "Falcon"
+	#define BUFOVERSIZE 5
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -429,8 +430,8 @@
 
 	//#define WITHGRADIENT_FIXED 1	/* использлвани массива цветов как базы для создания палитры водопада. */
 	// Выбор используемой цветовой палитры
-	#define COLORSTYLE_GREEN	1
-	//#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_GREEN	1
+	#define COLORSTYLE_BLUE2	1
 	//#define COLORSTYLE_WHITE	1
 	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 
@@ -442,7 +443,7 @@
 		#define WITHSPECBETA_DEFAULT	30
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-		#if 1
+		#if 0
 			#define WITHTOUCHGUI		1
 			#define WITHDISPLAY_FPS		30
 			#define WITHDISPLAYSWR_FPS	30

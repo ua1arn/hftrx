@@ -17,6 +17,7 @@
 	#endif /* ! defined(STM32MP157Axx) */
 
 	#define WITHBRANDSTR "Falcon"
+	#define BUFOVERSIZE 5
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -447,6 +448,8 @@
 
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 	//#define COLORSTYLE_GREEN	1
+	//#define COLORSTYLE_BLUE	1
+	#define COLORSTYLE_BLUE2	1
 	//#define COLORSTYLE_RED	1
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
