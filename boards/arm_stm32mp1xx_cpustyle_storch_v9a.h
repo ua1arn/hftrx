@@ -142,7 +142,7 @@
 //	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 //	#define WITHUSBHOST_DMAENABLE 1
 
-	#define WITHTINYUSB 1
+	//#define WITHTINYUSB 1
 	
 	#if WITHTINYUSB
 		#define BOARD_TUH_RHPORT 1
@@ -154,13 +154,13 @@
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
 	#define WITHOHCIHW_OHCIPORT 0
 
-	#define WITHUSBHW_EHCI		USB1_EHCI
-	#define WITHUSBHW_EHCI_IRQ	USBH_EHCI_IRQn
-	#define WITHUSBHW_EHCI_IX	0
-
-	#define WITHUSBHW_OHCI		USB1HSFSP2_BASE
-	#define WITHUSBHW_OHCI_IRQ	USBH_OHCI_IRQn
-	#define WITHUSBHW_OHCI_IX	0
+//	#define WITHUSBHW_EHCI		USB1_EHCI
+//	#define WITHUSBHW_EHCI_IRQ	USBH_EHCI_IRQn
+//	#define WITHUSBHW_EHCI_IX	0
+//
+//	#define WITHUSBHW_OHCI		USB1HSFSP2_BASE
+//	#define WITHUSBHW_OHCI_IRQ	USBH_OHCI_IRQn
+//	#define WITHUSBHW_OHCI_IX	0
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
     #define WITHCAT_LWIP        1    /* использовать виртуальный последовательный порт на USB соединении */
@@ -606,12 +606,12 @@
 	#define SPI_ALLCS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); (void) GPIOE->BSRR; } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); (void) GPIOE->BSRR; } while (0)
 
-	#define FPGALOADER_SPEEDC SPIC_SPEED4M
-	#define FPGAREG_V1_SPEEDC SPIC_SPEED4M
-	#define SPIDF_SPEEDC 		SPIC_SPEED4M
-	#define NVRAM_SPEEDC 		SPIC_SPEED4M
-	#define NAU8822_SPEEDC 	SPIC_SPEED400k
-	#define CTLREG_SPEEDC		SPIC_SPEED400k
+//	#define FPGALOADER_SPEEDC SPIC_SPEED4M
+//	#define FPGAREG_V1_SPEEDC SPIC_SPEED4M
+//	#define SPIDF_SPEEDC 		SPIC_SPEED4M
+//	#define NVRAM_SPEEDC 		SPIC_SPEED4M
+//	#define NAU8822_SPEEDC 	SPIC_SPEED400k
+//	#define CTLREG_SPEEDC		SPIC_SPEED400k
 	#define XPT2046_SPEEDC 	SPIC_SPEED400k
 
 	#define targetext1		(UINT32_C(1) << 8)		// PE8 ext1 on front panel

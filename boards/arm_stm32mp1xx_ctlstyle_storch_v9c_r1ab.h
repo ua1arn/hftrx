@@ -16,8 +16,8 @@
 		#error Wrong CPU selected. STM32MP157Axx expected
 	#endif /* ! defined(STM32MP157Axx) */
 
-	//#define WITHBRANDSTR "Falcon"
-	#define BUFOVERSIZE 2
+	#define WITHBRANDSTR "Falcon"
+	#define BUFOVERSIZE 5
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -61,6 +61,16 @@
 				#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
 				#define PLL2DIVR	1	// DDR clock divider = 528 MHz
 				#define BOARD_DDR_CONFIG "stm32mp15-mx_2G_x2.dtsi"	// 2x128k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_4G_x2.dtsi"	// 2x256k*16 2 x MT41K256M16TW-107 IT:P (FBGA Code D9SHG)
+			#elif 0
+				// PLL2_1600
+				#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
+				#define PLL2DIVN	100	// 1200 MHz Valid division rations for DIVN: between 25 and 100
+				#define PLL2DIVP	5	// AXISS_CK div2=minimum 528/5 = 240 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
+				#define PLL2DIVQ	4	// GPU clock divider = 300 MHz - 533 MHz max for all CPU revisions
+				#define PLL2DIVR	4	// DDR clock divider = 300 MHz
+				#define BOARD_DDR_CONFIG "stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
+				//#define BOARD_DDR_CONFIG "stm32mp15-mx_2G.dtsi"	// 2x128k*16
 				//#define BOARD_DDR_CONFIG "stm32mp15-mx_4G_x2.dtsi"	// 2x256k*16 2 x MT41K256M16TW-107 IT:P (FBGA Code D9SHG)
 			#else
 				// PLL2_1600
@@ -184,9 +194,11 @@
 		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
 		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
 		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
+		#define TUNE_BOTTOM	 	10000L		/* 10 kHz нижняя частота настройки */
+		#define TUNE_TOP 		56000000L		/* верхняя частота настройки */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
-	#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
+	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
 	//#define XVTR_R820T2 	1	/* R820T chip */
 
 	// --- вариации прошивки, специфические для разных частот
@@ -237,6 +249,7 @@
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
 	#define LCDMODE_RGB565 1	/* Экран 16 бит */
+	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
 	
 
@@ -248,6 +261,8 @@
 	#define LCDMODE_RGB565 1	/* Экран 16 бит */
 	//#define LCDMODE_ARGB8888	1	/* Экран с тремя видеобуферами 32 бит ARGB8888 */
 
+//	#define BOARD_DSTYLE "g_x800_y480.h"
+//	#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
 	
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
@@ -356,7 +371,7 @@
 	
 	
 	#define WITHENCODER2	1		/* есть второй валкодер */
-	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
@@ -388,10 +403,12 @@
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	//
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
+	//#define WITHRTOS	1	/* Использование RTOS */
 
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//
+	//#define WITHOVFHIDE 1	/* отключить показ индикатора перегрузки */
 	#define WITHDSPEXTDDC 1				/* Квадратуры обрабатываются аппаратным DUC/DDC */
 	#define WITHDSPEXTTXFIR 1			/* Фильтрация квадратур на передаче осуществляется внешней аппаратурой */
 	#define WITHDSPEXTRXFIR 1			/* Фильтрация квадратур на приёме осуществляется внешней аппаратурой */
@@ -414,6 +431,7 @@
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
+	//#define WITHUSEUSBBT		1	// Включение поддержки USB BT stick
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
@@ -423,27 +441,26 @@
 	#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
-	//#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
+	#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 
-	//#define WITHGRADIENT_FIXED 1	/* использлвани массива цветов как базы для создания палитры водопада. */
-	// Выбор используемой цветовой палитры
+	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 	//#define COLORSTYLE_GREEN	1
+	//#define COLORSTYLE_BLUE	1
 	#define COLORSTYLE_BLUE2	1
-	//#define COLORSTYLE_WHITE	1
-	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
+	//#define COLORSTYLE_RED	1
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4, x8
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
-		//#define WITHVIEW_3DSS		1
+		#define WITHVIEW_3DSS		1
 		#define WITHVIEW_3DSS_MARK	1
 		#define WITHSPECBETA_DEFAULT	30
-//		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-//		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-		#if 0
+		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
+		#if 1
 			#define WITHTOUCHGUI		1
 			#define WITHDISPLAY_FPS		30
 			#define WITHDISPLAYSWR_FPS	30
@@ -454,7 +471,7 @@
 			#define WITHAFGAINDEFAULT	(150 * BOARD_AFGAIN_MAX / 255)
 			//#define WITHTHERMOLEVEL	1
 			#define WITHALTERNATIVEFONTS	1
-			#define WITHAFEQUALIZER		1
+			//#define WITHAFEQUALIZER		1
 			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 			#define WITHDEFAULTVIEW		VIEW_3DSS
@@ -463,14 +480,14 @@
 			#define WITHDISPLAYSWR_FPS	15
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
-		#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4, x8
+		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 		#define WITHDISPLAYSWR_FPS 15
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 	#else
-		#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4, x8
-		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
 		#define WITHDISPLAYSWR_FPS 15
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
@@ -517,11 +534,11 @@
 		//#define WITHBBOXMIKESRC BOARD_TXAUDIO_2TONE
 	#endif
 
-
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	//#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
+
 	#if 1
 		#define WITHTPA100W_UA1CEI_V2 1	/* Есть функция автотюнера */
 	#elif 0
@@ -624,13 +641,14 @@
 	#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
 	//#define WITHRTCLSI	1				/* тестирование без кварца 32.768 кГц */
 
-	//#define WITHTSC5PCALIBRATE 1	/* Калибровка по пяти точкам */
-	//#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
-	#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
+
+	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
 	//#define WITH_STMPE811_INTERRUPTS	1
 	//#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
 	//#define WITH_GT911_INTERRUPTS	1
+	#define WITHTSC5PCALIBRATE 1	/* Калибровка по пяти точкам */
+	#define TSC1_TYPE TSC_TYPE_XPT2046	/* Resistive touch screen controller XPTEK XPT2046 */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
 	//#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
@@ -691,6 +709,8 @@
 	#if WITHTPA100W_UA1CEI_V2
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
@@ -715,7 +735,7 @@
 			XTHERMOIX = BOARD_ADCX2IN(4),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
 		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
+			VOLTSOURCE = BOARD_ADCX1IN(7),		// main board Средняя точка делителя напряжения, для АКБ
 		#endif /* WITHVOLTLEVEL */
 
 		// ST LM235Z
@@ -744,7 +764,7 @@
 			
 		#endif /* WITHSWRMTR */
 
-		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
+		VOLTSOURCE = BOARD_ADCX1IN(7),		// main board MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 
 	#elif 0
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
@@ -769,7 +789,7 @@
 			PASENSEIX = 0,		// PA0 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
 		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
+			VOLTSOURCE = BOARD_ADCX1IN(7),		// main board Средняя точка делителя напряжения, для АКБ
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHTHERMOLEVEL
@@ -808,6 +828,5 @@
 
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-
 
 #endif /* ARM_STM32MP1_TFBGA361_CTLSTYLE_STORCH_V9C_R1AB_H_INCLUDED */
