@@ -623,26 +623,6 @@ static void usb_set_eprx_fifo_addr(pusb_struct pusb, uint32_t addr)
 	WITHUSBHW_DEVICE->USB_RXFIFO = (WITHUSBHW_DEVICE->USB_RXFIFO & ~ (UINT32_C(0x1FFF) << 16)) | (((addr >> 3) & 0x1FFF) << 16);
 }
 
-
-static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t is_rx)
-{
-	uint32_t reg_val;
-
-//	ASSERT(ep_no < USB_MAX_EP_NO);	// количество endpoints, не считая ep0
-//	if (ep_no>USB_MAX_EP_NO)	// количество endpoints, не считая ep0
-//		return;
-	ASSERT(ep_no >= 1 && ep_no <= 8);
-	reg_val = 0;
-//	reg_val |= (ep_no-1) * (UINT32_C(1) << 26); // bit28:26 - EP code
-//	reg_val |= !! is_rx * (UINT32_C(1) << 25);	// bit25: RX endpoint flag
-	reg_val |= UINT32_C(1) << 24;	// bit24: FIFO_BUS_SEL
-
-	WITHUSBHW_DEVICE->USB_GCS = (WITHUSBHW_DEVICE->USB_GCS & ~ (UINT32_C(0x1F) << 24)) | reg_val;
-
-	while ((WITHUSBHW_DEVICE->USB_GCS & (UINT32_C(1) << 24)) == 0)	// FIFO_BUS_SEL
-		;
-}
-
 static uint32_t usb_get_testc(pusb_struct pusb)
 {
 	return (WITHUSBHW_DEVICE->USB_TESTC >> 16) & 0xFF;
@@ -1270,7 +1250,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 		  		uint32_t xfer_count = AWUSB_MIN(pusb->eprx_xfer_residuev[ep_no-1], USB_BO_DEV_BUF_SIZE);
 
 				pusb->dmarx_last_transferv[ep_no-1] = xfer_count;
-		  		usb_fifo_accessed_by_dma(pusb, ep_no, 1);
+		  		usb_fifo_accessed_by_dma(pusb, ep_no, 1);  //rx
 
 		  		dram_addr = usb_dev_get_buf_base(pusb, pusb->eprx_buf_tagv[ep_no-1]);
 
@@ -1423,7 +1403,7 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 			    	break;
 	 			}
 
-				usb_fifo_accessed_by_dma(pusb, ep_no, 0);
+				usb_fifo_accessed_by_dma(pusb, ep_no, 0);  //tx
 		 		if (!(usb_get_fifo_access_config(pusb) & 0x1))
 			    {
 					PRINTF("Error: FIFO Access Config Error!!\n");
@@ -2450,39 +2430,57 @@ static void set_ep_iso(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 #define  BIT_TXCSR_TX_PKT_READY			16
 #define  BIT_TXCSR_PACKET_COUNT0		11
 
-static void set_dma_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint_fast8_t dmach)
+// Настройка для обмена с внешним DMA
+static void set_dma_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 {
 	usb_select_ep(pusb, ep_no);
 	if (ep_dir)
 	{
 		// IN
-		//BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_MODE);
-		//BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_CLEAR_DATA_TOGGLE);
-		//BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_FLUSH_FIFO);
-		//BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_FLUSH_FIFO);
-		//BIT_CLEAR(USB0_REG_TXCSR, BIT_TXCSR_ISO);
-		//usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | (1u << (BIT_TXCSR_MODE - 16)));
-		//usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | (1u << (BIT_TXCSR_CLEAR_DATA_TOGGLE - 16)));
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// 31 AutoSet
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// 28 DMAReqEnab
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 1*USB_TXCSR_DMAREQMODE);	// 26 DMAReqMode
-		usb_fifo_accessed_by_dma(pusb, ep_no, 0);
 
-		//WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG =
-		//	VIRTUAL_COM_PORT_IN_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
-		//	0x00 * (UINT32_C(1) << 4) |	// 0: SDRAM to USB FIFO
-		//	pipe * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
-		//	0;
-		//WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
+        //BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_MODE);
+        //BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_CLEAR_DATA_TOGGLE);
+        //BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_FLUSH_FIFO);
+        //BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_FLUSH_FIFO);
+        //BIT_CLEAR(USB0_REG_TXCSR, BIT_TXCSR_ISO);
+
+        usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_FLUSHFIFO);
+//        usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | (1u << (BIT_TXCSR_MODE - 16)));
+//        usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | (1u << (BIT_TXCSR_CLEAR_DATA_TOGGLE - 16)));
+
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
+		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
 	}
 	else
 	{
 		// OUT
+        usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_RXCSR_FLUSHFIFO);
+
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
 		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 0*USB_RXCSR_DMAREQMODE);	// DMAReqMode
-		usb_fifo_accessed_by_dma(pusb, ep_no, 0);
 	}
+}
+
+// dedicated usb dma
+static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t is_rx)
+{
+	uint32_t reg_val;
+
+//	ASSERT(ep_no < USB_MAX_EP_NO);	// количество endpoints, не считая ep0
+//	if (ep_no>USB_MAX_EP_NO)	// количество endpoints, не считая ep0
+//		return;
+	ASSERT(ep_no >= 1 && ep_no <= 8);
+	reg_val = 0;
+//	reg_val |= (ep_no-1) * (UINT32_C(1) << 26); // bit28:26 - EP code
+//	reg_val |= !! is_rx * (UINT32_C(1) << 25);	// bit25: RX endpoint flag - OUT direction
+	reg_val |= UINT32_C(1) << 24;	// bit24: FIFO_BUS_SEL
+
+	WITHUSBHW_DEVICE->USB_GCS = (WITHUSBHW_DEVICE->USB_GCS & ~ (UINT32_C(0x1F) << 24)) | reg_val;
+
+	while ((WITHUSBHW_DEVICE->USB_GCS & (UINT32_C(1) << 24)) == 0)	// FIFO_BUS_SEL
+		;
 }
 
 static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t is_dpb, uint32_t fifo_addr)
@@ -2540,12 +2538,12 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_NOTIFY & 0x0F), EP_DIR_IN, MTP_CMD_PACKET_SIZE, 1, fifo_addr);
 
 		//PRINTF("USBDMTP: pipein=%d, pipeout=%d, pipeint=%d\n", pipein, pipeout, pipeint);
-		usb_set_eptx_interrupt_enable(pusb, (1u << pipein));
-		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipein));
-		usb_set_eprx_interrupt_enable(pusb, (1u << pipeout));
-		ASSERT(usb_get_eprx_interrupt_enable(pusb) & (1u << pipeout));
-		usb_set_eptx_interrupt_enable(pusb, (1u << pipeint));
-		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipeint));
+		usb_set_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipein));
+		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << pipein));
+		usb_set_eprx_interrupt_enable(pusb, (UINT32_C(1) << pipeout));
+		ASSERT(usb_get_eprx_interrupt_enable(pusb) & (UINT32_C(1) << pipeout));
+		usb_set_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipeint));
+		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << pipeint));
 	}
 #endif /* WITHUSBDMTP */
 
@@ -2564,13 +2562,18 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	#endif /* WITHUSBDEV_HSDESC */
 		//PRINTF("USBDMSC: pipein=%d, pipeout=%d,\n", pipein, pipeout);
 		usb_set_eptx_interrupt_enable(pusb, (1u << pipein));
-		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipein));
+		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << pipein));
 		usb_set_eprx_interrupt_enable(pusb, (1u << pipeout));
-		ASSERT(usb_get_eprx_interrupt_enable(pusb) & (1u << pipeout));
+		ASSERT(usb_get_eprx_interrupt_enable(pusb) & (UINT32_C(1) << pipeout));
 	}
 #endif /* WITHUSBDMSC */
 #if WITHUSBCDCACM
 	{
+#if WITHCDCINDMA
+		enum { SOFTSERVICE = 0 };	// 0 - dedicated DMA
+#else /* WITHCDCINDMA */
+		enum { SOFTSERVICE = 1 };	// 0 - dedicated DMA
+#endif /* WITHCDCINDMA */
 		unsigned offset;
 		for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 		{
@@ -2586,45 +2589,56 @@ static void awxx_setup_fifo(pusb_struct pusb)
 
 			//PRINTF("USBCDCACM: offset=%u, pipein=%d, pipeout=%d, pipeint=%d\n", offset, pipein, pipeout, pipeint);
 			// Transfer data from device to host
-#if WITHCDCINDMA
-			set_dma_ep(pusb, pipein, EP_DIR_IN, cdc_pipeindma);
-#else
+			if (SOFTSERVICE)
 			{
-				usb_set_eptx_interrupt_enable(pusb, (1u << pipein));
-				ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipein));
+				// Interrupt-driven Transfer data from device to host
+				usb_set_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipein));
+				ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << pipein));
 
-			}
-#endif
-			// Transfer data from host to device
-			if (1)
-			{
-				usb_set_eprx_interrupt_enable(pusb, (1u << pipeout));
-				ASSERT(usb_get_eprx_interrupt_enable(pusb) & (1u << pipeout));
 			}
 			else
 			{
+				// Dedicated DMA Transfer data from device to host
+			}
+
+			// Transfer data from host to device
+			if (SOFTSERVICE)
+			{
+				// Interrupt-driven Transfer data from host to device
+				usb_set_eprx_interrupt_enable(pusb, (UINT32_C(1) << pipeout));
+				ASSERT(usb_get_eprx_interrupt_enable(pusb) & (UINT32_C(1) << pipeout));
+			}
+			else
+			{
+				// Dedicated DMA Transfer data from host to device
 				const uint_fast8_t dmach = cdc_pipeoutdma;
-				set_dma_ep(pusb, pipeout, EP_DIR_OUT, dmach);
-				{
-
-					memset(cdc_out_data, 0xE5, sizeof cdc_out_data);
-					WITHUSBHW_DEVICE->USB_DMA [dmach].BC = sizeof cdc_out_data;
-					dcache_clean_invalidate((uintptr_t) cdc_out_data, sizeof cdc_out_data);
-					WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = (uintptr_t) cdc_out_data;
-					WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG =
-						VIRTUAL_COM_PORT_OUT_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
-						0x01 * (UINT32_C(1) << 4) |	// 1: USB FIFO to SDRAM
-						pipeout * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
-						0;
-					WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
-
-				}
+				memset(cdc_out_data, 0xE5, sizeof cdc_out_data);
+				WITHUSBHW_DEVICE->USB_DMA [dmach].BC = sizeof cdc_out_data;
+				dcache_clean_invalidate((uintptr_t) cdc_out_data, sizeof cdc_out_data);
+				WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = (uintptr_t) cdc_out_data;
+				WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG =
+					VIRTUAL_COM_PORT_OUT_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
+					0x01 * (UINT32_C(1) << 4) |	// 1: USB FIFO to SDRAM
+					pipeout * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
+					0;
+				WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
+				usb_fifo_accessed_by_dma(pusb, pipeout, 1);
 				usb_set_dma_interrupt_enable(pusb, (1u << dmach));
 			}
 #if ! WITHUSBCDCACM_NOINT
 			// Transfer interrupt data from device to host
-			usb_set_eptx_interrupt_enable(pusb, (1u << pipeint));
-			ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << pipeint));
+			if (SOFTSERVICE)
+			{
+				usb_set_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipeint));
+				ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << pipeint));
+			}
+			else
+			{
+				// stub
+				usb_set_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipeint));
+				ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << pipeint));
+
+			}
 #endif /* ! WITHUSBCDCACM_NOINT */
 		}
 	}
@@ -2636,14 +2650,10 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_OUT, UACOUT_AUDIO48_DATASIZE_DMAC, 1, fifo_addr);
 		set_ep_iso(pusb, ep_no, EP_DIR_OUT);
 #if 0
-		usb_set_eprx_interrupt_enable(pusb, 1u << ep_no);
-		ASSERT(usb_get_eprx_interrupt_enable(pusb) & (1u << ep_no));
+		usb_set_eprx_interrupt_enable(pusb, UINT32_C(1) << ep_no);
+		ASSERT(usb_get_eprx_interrupt_enable(pusb) & (UINT32_C(1) << ep_no));
 #else
-		usb_select_ep(pusb, ep_no);
-		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
-		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
-		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 0*USB_RXCSR_DMAREQMODE);	// DMAReqMode
-		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_OUT);
+		set_dma_ep(pusb, ep_no, 0);
 #endif
 	}
 #endif /* WITHUSBUACOUT */
@@ -2654,14 +2664,10 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, UACIN_AUDIO48_DATASIZE_DMAC, 1, fifo_addr);
 		set_ep_iso(pusb, ep_no, EP_DIR_IN);
 #if 0
-		usb_set_eptx_interrupt_enable(pusb, (1u << ep_no));
-		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << ep_no));
+		usb_set_eptx_interrupt_enable(pusb, (UINT32_C(1) << ep_no));
+		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << ep_no));
 #else
-		usb_select_ep(pusb, ep_no);
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
-		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
+		set_dma_ep(pusb, ep_no, 1);
 #endif
 	}
 #if WITHUSBUACIN2 && WITHRTS96
@@ -2671,14 +2677,10 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, UACIN_RTS96_DATASIZE_DMAC, 1, fifo_addr);
 		set_ep_iso(pusb, ep_no, EP_DIR_IN);
 #if 0
-		usb_set_eptx_interrupt_enable(pusb, (1u << ep_no));
-		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << ep_no));
+		usb_set_eptx_interrupt_enable(pusb, (UINT32_C(1) << ep_no));
+		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << ep_no));
 #else
-		usb_select_ep(pusb, ep_no);
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
-		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
+		set_dma_ep(pusb, ep_no, 1);
 #endif
 	}
 #endif /* WITHUSBUACIN2 && WITHRTS96 */
@@ -2689,14 +2691,10 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, ep_no, EP_DIR_IN, UACIN_RTS192_DATASIZE_DMAC, 1, fifo_addr);
 		set_ep_iso(pusb, ep_no, EP_DIR_IN);
 #if 0
-		usb_set_eptx_interrupt_enable(pusb, (1u << ep_no));
-		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (1u << ep_no));
+		usb_set_eptx_interrupt_enable(pusb, (UINT32_C(1) << ep_no));
+		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << ep_no));
 #else
-		usb_select_ep(pusb, ep_no);
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
-		//usb_fifo_accessed_by_dma(pusb, ep_no, EP_DIR_IN);
+		set_dma_ep(pusb, ep_no, 1);
 #endif
 	}
 #endif /* WITHUSBUACIN2 && WITHRTS192 */
