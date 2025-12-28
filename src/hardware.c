@@ -2128,6 +2128,7 @@ SystemInit(void)
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
+	sysinit_boot_disconnect();
 	sysinit_pll_initialize(0);		// PLL iniitialize - minimal freq
 	SystemCoreClockUpdate();
 	local_delay_initialize();

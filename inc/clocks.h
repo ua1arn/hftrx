@@ -566,6 +566,7 @@ calcdividerselect(
 	//#warning Undefined CPUSTYLE_XXX
 #endif
 
+void sysinit_boot_disconnect(void);
 void sysinit_pll_initialize(int forced);	// PLL initialize
 
 #ifdef __cplusplus

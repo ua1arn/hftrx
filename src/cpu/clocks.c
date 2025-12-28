@@ -2918,11 +2918,8 @@ uint_fast32_t allwnr_a64_get_smhc1_freq(void)
 	}
 }
 
-// Allwinner A64 PLL initialize
-void
-sysinit_pll_initialize(int forced)
+void sysinit_boot_disconnect(void)
 {
-
 	{
 		// Disable SD hosts
 
@@ -2955,6 +2952,13 @@ sysinit_pll_initialize(int forced)
 
 	USBPHY0->HCI_ICR = 0;
 	USBPHY1->HCI_ICR = 0;
+}
+
+// Allwinner A64 PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
+
 
 	allwnr_a64_pll_initialize();
 
@@ -4123,8 +4127,7 @@ uint_fast32_t allwnr_t507_get_smhc2_freq(void)
 	}
 }
 
-// Allwinner T507/H618/H616 PLL initialize
-void sysinit_pll_initialize(int forced)
+void sysinit_boot_disconnect(void)
 {
 	{
 		// Disable SD hosts
@@ -4155,6 +4158,11 @@ void sysinit_pll_initialize(int forced)
 #endif
 		CCU->IOMMU_BGR_REG &= ~ (UINT32_C(1) << 0);
 	}
+}
+
+// Allwinner T507/H618/H616 PLL initialize
+void sysinit_pll_initialize(int forced)
+{
 
 	set_t507_axi_sel(0x00, 1, 1);	// OSC24 as source
 
@@ -4309,6 +4317,10 @@ uint_fast32_t allwnr_a133_get_twi_freq(void)
 uint_fast32_t allwnr_a133_get_s_twi_freq(void)
 {
 	return allwnr_a133_get_hosc_freq();
+}
+
+void sysinit_boot_disconnect(void)
+{
 }
 
 // Allwinner A133 PLL initialize
@@ -5629,11 +5641,8 @@ void allwnr_t113_pll_initialize(int N)
 #endif
 }
 
-// Allwinner T113/F133/D1s PLL initialize
-void
-sysinit_pll_initialize(int forced)
+void sysinit_boot_disconnect(void)
 {
-
 	{
 		// Disable SD hosts
 
@@ -5656,6 +5665,13 @@ sysinit_pll_initialize(int forced)
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RSTN
 	}
+}
+
+// Allwinner T113/F133/D1s PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
+
 #if CPUSTYLE_F133
 	allwnr_t113_pll_initialize(forced ? RV_PLL_CPU_N : 17);
 #else
@@ -7390,6 +7406,11 @@ uint_fast32_t hardware_get_dotclock(uint_fast32_t dotfreq)
 {
 	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
 	return stm32mp1_get_pll4_freq() / pll4divq;
+}
+
+void sysinit_boot_disconnect(void)
+{
+	SPIDF_HANGOFF();
 }
 
 // STM32MP1 PLL initialize
