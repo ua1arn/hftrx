@@ -700,6 +700,7 @@
 			arm_hardware_pioz_inputs(SPI_MISO_BIT); \
 		} while (0)
 
+	#define WITHSPI1HW 1
 	/* to be removed... */
 	#define SPIHARD_IX 1    /* 0 - SPI0, 1: SPI1... */
 	#define SPIHARD_PTR SPI1    /* 0 - SPI0, 1: SPI1... */
