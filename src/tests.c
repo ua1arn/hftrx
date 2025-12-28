@@ -11493,8 +11493,7 @@ void midtests(void)
 		{
 			//prog_spi_io(targetnvram, SPIC_SPEEDUFAST, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 24 M
 			//prog_spi_io(targetnvram, SPIC_SPEEDFAST, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 12 M
-			prog_spi_io(targetnvram, SPIC_SPEED100k, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 100 kHz
-			//prog_spi_io(targetnvram, SPIC_SPEED400k, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 400 kHz
+			prog_spi_io(targetnvram, SPIC_SPEED400k, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 400 kHz
 			//prog_spi_io(targetnvram, SPIC_SPEED1M, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 1 M
 			//prog_spi_io(targetnvram, SPIC_SPEED4M, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 4 M
 			//prog_spi_io(targetnvram, SPIC_SPEED10M, SPIC_MODE3, buff, sizeof buff, NULL, 0, NULL, 0); // 10 M
