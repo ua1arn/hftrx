@@ -19024,12 +19024,13 @@ txreq_process0(txreq_t * txreqp)
 //		tunreq = 1;
 //	}
 	const uint_fast8_t txreqa = txreq_get_tx(txreqp);
-	const uint_fast16_t txtot = param_getvalue(& xgtxtot);
+	const uint_fast16_t txtot = param_getvalue(& xgtxtot);	// ограгичение времени передачи
 	if (0)
 	{
 
 	}
-#if 0
+#if 1
+	// Обработка защит передатчика
 	else if (txreqa && txtot != 0 && gtxtimer >= txtot)
 	{
 		// ограничение времени передачи
