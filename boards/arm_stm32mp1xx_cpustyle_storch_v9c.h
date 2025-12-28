@@ -628,13 +628,13 @@
 	#define targettsc1 		targetext1	/* XPT2046 SPI chip select signal */
 	#define targetnone 0				/* FPGA image loader pseudo chip select signal */
 
-//	#define FPGALOADER_SPEEDC SPIC_SPEED4M
-//	#define FPGAREG_V1_SPEEDC SPIC_SPEED4M
-//	#define SPIDF_SPEEDC 		SPIC_SPEED4M
-//	#define NVRAM_SPEEDC 		SPIC_SPEED4M
-//	#define NAU8822_SPEEDC 	SPIC_SPEED400k
-//	#define CTLREG_SPEEDC		SPIC_SPEED400k
-//	#define XPT2046_SPEEDC 	SPIC_SPEED400k
+	#define FPGALOADER_SPEEDC SPIC_SPEED4M
+	#define FPGAREG_V1_SPEEDC SPIC_SPEED4M
+	#define SPIDF_SPEEDC 		SPIC_SPEED4M
+	#define NVRAM_SPEEDC 		SPIC_SPEED4M
+	#define NAU8822_SPEEDC 	SPIC_SPEED400k
+	#define CTLREG_SPEEDC		SPIC_SPEED400k
+	#define XPT2046_SPEEDC 	SPIC_SPEED400k
 
 	/* Perform delay after assert or de-assert specific CS line */
 	#define SPI_CS_DELAY(target) do { \

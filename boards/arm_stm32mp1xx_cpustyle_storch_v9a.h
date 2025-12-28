@@ -606,6 +606,14 @@
 	#define SPI_ALLCS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); (void) GPIOE->BSRR; } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); (void) GPIOE->BSRR; } while (0)
 
+	#define FPGALOADER_SPEEDC SPIC_SPEED4M
+	#define FPGAREG_V1_SPEEDC SPIC_SPEED4M
+	#define SPIDF_SPEEDC 		SPIC_SPEED4M
+	#define NVRAM_SPEEDC 		SPIC_SPEED4M
+	#define NAU8822_SPEEDC 	SPIC_SPEED400k
+	#define CTLREG_SPEEDC		SPIC_SPEED400k
+	#define XPT2046_SPEEDC 	SPIC_SPEED400k
+
 	#define targetext1		(UINT32_C(1) << 8)		// PE8 ext1 on front panel
 	#define targetxad2		(UINT32_C(1) << 7)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
 	#define targetnvram		(UINT32_C(1) << 0)		// PE0 nvmem FM25L16B
