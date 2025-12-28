@@ -2209,16 +2209,17 @@ void usbd_cdc_send(const void * buff, size_t length)
 	if (gpusb != NULL)
 	{
 		usb_select_ep(gpusb, bo_ep_in);
-		usb_set_eptx_maxpkt(gpusb, count4, 1);
+		usb_set_eptx_maxpkt(gpusb, count, 1);
 
 	}
 	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
 
 	dcache_clean_invalidate((uintptr_t) tdata, sizeof tdata);
 	WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = (uintptr_t) tdata;
-	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = count4;
+	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = count;
 	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG =
-		VIRTUAL_COM_PORT_IN_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
+			//VIRTUAL_COM_PORT_IN_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
+			count * (UINT32_C(1) << 16) |	// DMA Burst Length
 		0x00 * (UINT32_C(1) << 4) |		// 0: SDRAM to USB FIFO
 		bo_ep_in * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
 		0;
