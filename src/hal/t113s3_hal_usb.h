@@ -173,12 +173,13 @@ typedef struct {
 
 	//uint32_t power_debouce;
 	uSetupPKG setup_packet;
+	// для будущего приведения в порядок
 	pipe_state_t pipe0;
-	pipe_state_t pipe[2][7];   /* pipe[direction][endpoint number - 1] */
+	pipe_state_t pipe[2][USB_MAX_EP_NO];   /* pipe[direction][endpoint number - 1] */
 	uint16_t     remaining_ctrl; /* The number of bytes remaining in data stage of control transfer. */
 	int8_t       status_out;
 
-	#define EPOUT_TIMEOUTMAX 0x1000
+	#define USB_EPOUT_TIMEOUTMAX 0x1000
 	uint32_t epout_timeoutv[USB_MAX_EP_NO];
 
 } usb_struct, *pusb_struct;

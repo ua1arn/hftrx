@@ -1208,7 +1208,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 				{
 					pusb->epout_timeoutv[ep_no-1] ++;
 
-					if (pusb->epout_timeoutv[ep_no-1] < EPOUT_TIMEOUTMAX)
+					if (pusb->epout_timeoutv[ep_no-1] < USB_EPOUT_TIMEOUTMAX)
 					{
 						ret = USB_RETVAL_NOTCOMP;
 					}
@@ -1241,7 +1241,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 				{
 					pusb->epout_timeoutv[ep_no-1] ++;
 
-					if (pusb->epout_timeoutv[ep_no-1] < EPOUT_TIMEOUTMAX)
+					if (pusb->epout_timeoutv[ep_no-1] < USB_EPOUT_TIMEOUTMAX)
 					{
 						ret = USB_RETVAL_NOTCOMP;
 					}
@@ -1349,7 +1349,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 			{
 				pusb->epout_timeoutv[ep_no-1] ++;
 
-				if (pusb->epout_timeoutv[ep_no-1] < EPOUT_TIMEOUTMAX)
+				if (pusb->epout_timeoutv[ep_no-1] < USB_EPOUT_TIMEOUTMAX)
 				{
 					ret = USB_RETVAL_NOTCOMP;
 				}
