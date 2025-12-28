@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-#define USB_MAX_EP_NO		5	// T113: 5 (EP1..EP5), T507: 4 (EP1..EP4)
+#define USB_MAX_EP_NO		15	// T113: 5 (EP1..EP5), T507: 4 (EP1..EP4) - количество endpoints, не считая ep0
 
 typedef enum {
 	USB_RETVAL_NOTCOMP = 0,
@@ -84,9 +84,10 @@ typedef struct {
 	#define USB_SPEED_HS		1
 	#define USB_SPEED_FS		2
 	#define USB_SPEED_LS		3
-	uint32_t speed;
-	uint32_t srp;
-	uint32_t hnp;
+	uint32_t speed;	// USB_SPEED_HS or USB_SPEED_FS
+	unsigned lastepn;	// последний номер EP, который можно использовать
+//	uint32_t srp;
+//	uint32_t hnp;
 
 	//usb irq record
 //	volatile uint32_t busirq_status;
@@ -176,6 +177,9 @@ typedef struct {
 	pipe_state_t pipe[2][7];   /* pipe[direction][endpoint number - 1] */
 	uint16_t     remaining_ctrl; /* The number of bytes remaining in data stage of control transfer. */
 	int8_t       status_out;
+
+	#define EPOUT_TIMEOUTMAX 0x1000
+	uint32_t epout_timeoutv[USB_MAX_EP_NO];
 
 } usb_struct, *pusb_struct;
 

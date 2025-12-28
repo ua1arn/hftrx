@@ -384,8 +384,8 @@ static uint32_t usb_get_frame_number(pusb_struct pusb)
 
 static void usb_select_ep(pusb_struct pusb, uint32_t ep_ind)
 {
-//	ASSERT(ep_no <= USB_MAX_EP_NO);
-//	if (ep_no > USB_MAX_EP_NO)
+//	ASSERT(ep_no <= USB_MAX_EP_NO);	// количество endpoints, не считая ep0
+//	if (ep_no > USB_MAX_EP_NO)	// количество endpoints, не считая ep0
 //		return;
 	ASSERT(ep_ind >= 0 && ep_ind <= 15);
 	WITHUSBHW_DEVICE->USB_GCS = (WITHUSBHW_DEVICE->USB_GCS & ~ (UINT32_C(0x0F) << 16)) |
@@ -628,8 +628,8 @@ static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t 
 {
 	uint32_t reg_val;
 
-//	ASSERT(ep_no < USB_MAX_EP_NO);
-//	if (ep_no>USB_MAX_EP_NO)
+//	ASSERT(ep_no < USB_MAX_EP_NO);	// количество endpoints, не считая ep0
+//	if (ep_no>USB_MAX_EP_NO)	// количество endpoints, не считая ep0
 //		return;
 	ASSERT(ep_no >= 1 && ep_no <= 8);
 	reg_val = 0;
@@ -1130,7 +1130,6 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 {
 	USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 	uint32_t maxpkt;
-	static uint32_t epout_timeoutv[USB_MAX_EP_NO];
 
 #if WITHUSBDEV_DMAENABLE
 	__dma_setting_t  p;
@@ -1203,13 +1202,13 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 					pusb->eprx_xfer_addrv[ep_no-1] += xfer_count;
 					pusb->eprx_xfer_tranferredv[ep_no-1]  += xfer_count;
 					pusb->eprx_xfer_state[ep_no-1] = USB_EPX_DATA;
-					epout_timeoutv[ep_no-1] = 0;
+					pusb->epout_timeoutv[ep_no-1] = 0;
 				}
 				else
 				{
-					epout_timeoutv[ep_no-1] ++;
+					pusb->epout_timeoutv[ep_no-1] ++;
 
-					if (epout_timeoutv[ep_no-1] < 0x1000)
+					if (pusb->epout_timeoutv[ep_no-1] < EPOUT_TIMEOUTMAX)
 					{
 						ret = USB_RETVAL_NOTCOMP;
 					}
@@ -1236,13 +1235,13 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 					pusb->eprx_xfer_tranferredv[ep_no-1]  += byte_count;
 					pusb->eprx_xfer_state[ep_no-1] = USB_EPX_SETUP;
 					ret = USB_RETVAL_COMPOK;
-					epout_timeoutv[ep_no-1] = 0;
+					pusb->epout_timeoutv[ep_no-1] = 0;
 				}
 				else
 				{
-					epout_timeoutv[ep_no-1] ++;
+					pusb->epout_timeoutv[ep_no-1] ++;
 
-					if (epout_timeoutv[ep_no-1] < 0x1000)
+					if (pusb->epout_timeoutv[ep_no-1] < EPOUT_TIMEOUTMAX)
 					{
 						ret = USB_RETVAL_NOTCOMP;
 					}
@@ -1344,13 +1343,13 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 				pusb->eprx_xfer_addrv[ep_no-1] += xfer_count;
 				pusb->eprx_xfer_tranferredv[ep_no-1]  += xfer_count;
 				pusb->eprx_xfer_state[ep_no-1] = USB_EPX_DATA;
-				epout_timeoutv[ep_no-1] = 0;
+				pusb->epout_timeoutv[ep_no-1] = 0;
 			}
 			else
 			{
-				epout_timeoutv[ep_no-1] ++;
+				pusb->epout_timeoutv[ep_no-1] ++;
 
-				if (epout_timeoutv[ep_no-1] < 0x1000)
+				if (pusb->epout_timeoutv[ep_no-1] < EPOUT_TIMEOUTMAX)
 				{
 					ret = USB_RETVAL_NOTCOMP;
 				}
@@ -1933,7 +1932,7 @@ static USB_RETVAL usb_dev_bulk_xfer_msc(pusb_struct pusb)
   				break;
   		 	}
 
-			pusb->eprx_flag[bo_ep_out-1]--;
+			pusb->eprx_flag[bo_ep_out-1] = 0;
 	  		usb_select_ep(pusb, bo_ep_out);
 	  		if (!(usb_get_eprx_csr(pusb) & USB_RXCSR_RXPKTRDY))
 	  		{
@@ -2356,7 +2355,7 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 		{
 			break;
 		}
-		pusb->eprx_flag[bo_ep_out-1]--;
+		pusb->eprx_flag[bo_ep_out-1] = 0;
 
   		usb_select_ep(pusb, bo_ep_out);
   		if (!(usb_get_eprx_csr(pusb) & USB_RXCSR_RXPKTRDY))
@@ -2402,7 +2401,7 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 //		{
 //			break;
 //		}
-//	 	pusb->eptx_flag[bo_ep_in-1]--;
+//	 	pusb->eptx_flag[bo_ep_in-1] = 0;
 	 	//TP();
 
 	} while (0);
@@ -4269,7 +4268,7 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 //	pusb->irq_no = GIC_SRC_USB0;
 //	pusb->drq_no = 0x04;
 
-	pusb->speed = USB0_SPEED;
+	pusb->speed = USB0_SPEED;	// USB_SPEED_HS or USB_SPEED_FS
 
 #if WITHUSBDMSC && WITHWAWXXUSB
 	usb_dev_bulk_xfer_msc_initialize(pusb);
@@ -4327,7 +4326,7 @@ static void usb_struct_init(usb_struct * const pusb)
 	pusb->ep0_maxpktsz = 64;
 	//pusb->ep0_ret = USB_RETVAL_COMPOK;
 
-	for(i = 0; i < USB_MAX_EP_NO; ++ i)
+	for(i = 0; i < pusb->lastepn && i < USB_MAX_EP_NO; ++ i)	// количество endpoints, не считая ep0
 	{
 		pusb->eptx_flag[i] = 0;
 		pusb->eprx_flag[i] = 0;
@@ -4667,11 +4666,11 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		if (temp & 0xfffe)
 		{
 			uint32_t i;
-			for(i = 0; i < USB_MAX_EP_NO; ++ i)
+			for(i = 0; i < pusb->lastepn && i < USB_MAX_EP_NO; ++ i)	// количество endpoints, не считая ep0
 			{
 				if (temp & (0x2<<i))
 				{
-					pusb->eptx_flag[i] ++;
+					pusb->eptx_flag[i] = 1;
 				}
 			}
 			//eptx_irq_count ++;
@@ -4686,11 +4685,11 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		usb_clear_eprx_interrupt_status(pusb, temp);
 		if (temp & 0xfffe)
 		{
-			for(i = 0; i < USB_MAX_EP_NO; ++ i)
+			for(i = 0; i < pusb->lastepn && i < USB_MAX_EP_NO; ++ i)	// количество endpoints, не считая ep0
 			{
 				if (temp & (0x2<<i))
 				{
-					pusb->eprx_flag[i] ++;
+					pusb->eprx_flag[i] = 1;
 				}
 			}
 			//eprx_irq_count ++;
@@ -4894,17 +4893,6 @@ HAL_StatusTypeDef USB_DevInit(USBOTG_TypeDef *USBx, USB_OTG_CfgTypeDef cfg)
 //		* DEVADDn = 0;
 //		(void) * DEVADDn;
 //	}
-	if (1)
-	{
-		usb_struct * const pusb = NULL;
-		// Endpoints configuration test
-		usb_set_eprx_interrupt_enable(pusb, 0xFFFF);
-		usb_set_eptx_interrupt_enable(pusb, 0xFFFF);
-		const unsigned epn = aw_log2(WITHUSBHW_DEVICE->USB_INTTXE);
-		PRINTF("USB device endpoints: RX IRQs=%04X, TX IRQs=%04X (%u endpoints, EP0 included)\n", (unsigned) WITHUSBHW_DEVICE->USB_INTRXE, (unsigned) WITHUSBHW_DEVICE->USB_INTTXE, epn);
-		usb_clear_eprx_interrupt_enable(pusb, 0xFFFF);
-		usb_clear_eptx_interrupt_enable(pusb, 0xFFFF);
-	}
 
 	return HAL_OK;
 }
@@ -4943,6 +4931,7 @@ HAL_StatusTypeDef USB_CoreInit(USBOTG_TypeDef * USBx, USB_OTG_CfgTypeDef cfg)
   */
 HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 {
+	usb_struct * const pusb = & hpcd->awxx_usb;
 	  USBOTG_TypeDef *USBx;
 	  uint8_t i;
 
@@ -5009,12 +4998,23 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 	    hpcd->State = HAL_PCD_STATE_ERROR;
 	    return HAL_ERROR;
 	  }
+		if (1)
+		{
+			// Endpoints configuration test
+			usb_set_eprx_interrupt_enable(pusb, 0xFFFF);
+			usb_set_eptx_interrupt_enable(pusb, 0xFFFF);
+			const unsigned epn = aw_log2(WITHUSBHW_DEVICE->USB_INTTXE);
+			pusb->lastepn = epn - 1;	// последний номер EP, который можно использовать
+			PRINTF("USB device endpoints: RX IRQs=%04X, TX IRQs=%04X (%u endpoints, IN/OUT EP%u..EP%u and EP0)\n", (unsigned) WITHUSBHW_DEVICE->USB_INTRXE, (unsigned) WITHUSBHW_DEVICE->USB_INTTXE, epn, epn - 1, 1);
+			usb_clear_eprx_interrupt_enable(pusb, 0xFFFF);
+			usb_clear_eptx_interrupt_enable(pusb, 0xFFFF);
+		}
 
 	  /* Force Device Mode*/
 	  (void)USB_SetCurrentMode(USBx, USB_DEVICE_MODE);
 
 	  /* Init endpoints structures */
-	  for (i = 0U; i < hpcd->Init.dev_endpoints; ++ i)
+	  for (i = 0U; i < (pusb->lastepn + 1); ++ i)
 	  {
 	    /* Init ep structure */
 	    hpcd->IN_ep[i].is_in = 1U;
@@ -5027,7 +5027,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 	    hpcd->IN_ep[i].xfer_len = 0U;
 	  }
 
-	  for (i = 0U; i < hpcd->Init.dev_endpoints; ++ i)
+	  for (i = 0U; i < (pusb->lastepn + 1); ++ i)
 	  {
 	    hpcd->OUT_ep[i].is_in = 0U;
 	    hpcd->OUT_ep[i].num = i;
