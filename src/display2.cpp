@@ -9787,6 +9787,33 @@ display_walktrough(
 		(* dzp->redraw)(db, dzp->x, dzp->y, dzp->colspan, dzp->rowspan, pctx);
 	}
 }
+// выполнение отрисовки всех элементов за раз.
+// Например при работе в меню
+static void
+display_walktrough_redraw(
+	const gxdrawb_t * db,
+	uint_fast16_t subset,
+	dctx_t * pctx
+	)
+{
+	static uint_fast8_t iredraw = 0;
+	const uint_fast8_t istart = iredraw;
+	for (; ; )
+	{
+		const struct dzone * const dzp = & dzones [iredraw];
+
+		if (validforredraw(dzp, subset) != 0)
+		{
+			(* dzp->redraw)(db, dzp->x, dzp->y, dzp->colspan, dzp->rowspan, pctx);
+			iredraw = (iredraw + 1) % WALKCOUNT;
+			break;
+
+		}
+		iredraw = (iredraw + 1) % WALKCOUNT;
+		if (iredraw == istart)
+			break;
+	}
+}
 
 //static int redrawreq;
 //
@@ -9967,7 +9994,7 @@ void display2_bgprocess(
 	// обычное отображение, без LVGL или litehtml
 	gxdrawb_t dbv;
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-	display_walktrough(& dbv, REDRSUBSET(ix), pctx);
+	display_walktrough_redraw(& dbv, REDRSUBSET(ix), pctx);	// redraw
 #endif
 }
 

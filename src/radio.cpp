@@ -19722,6 +19722,12 @@ dpc_displatch_timer_fn(void * ctx)
 {
 	(void) ctx;
 	display2_latch();
+}
+// User-mode function. Вызывается для выполнения latch спектра и панорамы
+static void
+dpc_displatch_refresh_fn(void * ctx)
+{
+	(void) ctx;
 
 	const struct menudef * mp;
 	if (0)
@@ -19844,6 +19850,15 @@ static void hamradio_main_initialize(void)
 		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL);
 		ticker_initialize_user_display(& displatchticker, NTICKS(calcdivround2(1000, glatchfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
 		ticker_add(& displatchticker);
+	}
+	{
+		static ticker_t refreshticker;
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, dpc_displatch_refresh_fn, NULL);
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+		ticker_initialize_user_display(& refreshticker, NTICKS(calcdivround2(1000, gdisplayfreqsfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_add(& refreshticker);
 	}
 
 	{
