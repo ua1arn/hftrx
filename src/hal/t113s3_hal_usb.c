@@ -2081,7 +2081,7 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 #define CDC_DTE_PRESENT                         (1 << 0)
 #define CDC_ACTIVATE_CARRIER                    (1 << 1)
 
-//#define WITHCDCINDMA 1	// эксперементальная опция, пока в работе не использовать
+//#define WITHCDCWITHDMA 1	// эксперементальная опция, пока в работе не использовать
 
 enum
 {
@@ -2193,28 +2193,29 @@ void usbd_cdc_send(const void * buff, size_t length)
 	IRQL_t oldIrql;
 	if (length == 0)
 		return;
-#if WITHCDCINDMA
+#if WITHCDCWITHDMA
 
 	const uint_fast8_t dmach = cdc_pipeindma;
 	const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
 	static __ALIGNED(4) uint8_t tdata [VIRTUAL_COM_PORT_IN_DATA_SIZE];
 	const unsigned count = AWUSB_MIN(sizeof tdata, length);
-	unsigned ccount4 = (count + 3) / 4 * 4;
+	unsigned count4 = (count + 3) / 4 * 4;
 	memcpy(tdata, buff, count);
+	PRINTF("cdc_acm Send:\n");
 	printhex((uintptr_t) tdata, tdata, count);
 
 	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
 	if (gpusb != NULL)
 	{
 		usb_select_ep(gpusb, bo_ep_in);
-		usb_set_eptx_maxpkt(gpusb, ccount4, 1);
+		usb_set_eptx_maxpkt(gpusb, count4, 1);
 
 	}
 	IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
 
 	dcache_clean_invalidate((uintptr_t) tdata, sizeof tdata);
 	WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = (uintptr_t) tdata;
-	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = ccount4;
+	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = count4;
 	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG =
 		VIRTUAL_COM_PORT_IN_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
 		0x00 * (UINT32_C(1) << 4) |		// 0: SDRAM to USB FIFO
@@ -2252,8 +2253,8 @@ void usbd_cdc_send(const void * buff, size_t length)
 uint_fast8_t usbd_cdc_ready(void)	/* временное решение для передачи */
 {
 	IRQL_t oldIrql;
-#if WITHCDCINDMA
-	return ! (WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG & (UINT32_C(1) << 31));
+#if WITHCDCWITHDMA
+	return ! (WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG & (UINT32_C(1) << 31));	// DMA Channel Enable
 #else
 	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
 	const unsigned offset = MAIN_CDC_OFFSET;
@@ -2362,7 +2363,7 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
   			cdcXout_buffer_save(cdcXbuffout [offset], rx_count, 0);
    		}
 	} while (0);
-#if ! WITHCDCINDMA
+#if ! WITHCDCWITHDMA
 	do
 	{
 		switch (pusb->eptx_ret[bo_ep_in-1])
@@ -2430,7 +2431,7 @@ static void set_ep_iso(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 #define  BIT_TXCSR_TX_PKT_READY			16
 #define  BIT_TXCSR_PACKET_COUNT0		11
 
-// Настройка для обмена с внешним DMA
+// Настройка для обмена с DMA
 static void set_dma_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 {
 	usb_select_ep(pusb, ep_no);
@@ -2569,11 +2570,11 @@ static void awxx_setup_fifo(pusb_struct pusb)
 #endif /* WITHUSBDMSC */
 #if WITHUSBCDCACM
 	{
-#if WITHCDCINDMA
+#if WITHCDCWITHDMA
 		enum { SOFTSERVICE = 0 };	// 0 - dedicated DMA
-#else /* WITHCDCINDMA */
+#else /* WITHCDCWITHDMA */
 		enum { SOFTSERVICE = 1 };	// 0 - dedicated DMA
-#endif /* WITHCDCINDMA */
+#endif /* WITHCDCWITHDMA */
 		unsigned offset;
 		for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 		{
@@ -2599,6 +2600,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			else
 			{
 				// Dedicated DMA Transfer data from device to host
+				set_dma_ep(pusb, pipein, 1);
 			}
 
 			// Transfer data from host to device
@@ -2611,6 +2613,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			else
 			{
 				// Dedicated DMA Transfer data from host to device
+				set_dma_ep(pusb, pipeout, 0);
 				const uint_fast8_t dmach = cdc_pipeoutdma;
 				memset(cdc_out_data, 0xE5, sizeof cdc_out_data);
 				WITHUSBHW_DEVICE->USB_DMA [dmach].BC = sizeof cdc_out_data;
@@ -2624,6 +2627,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
 				usb_fifo_accessed_by_dma(pusb, pipeout, 1);
 				usb_set_dma_interrupt_enable(pusb, (1u << dmach));
+				set_dma_ep(pusb, pipein, 1);
 			}
 #if ! WITHUSBCDCACM_NOINT
 			// Transfer interrupt data from device to host
@@ -4706,20 +4710,21 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			{
 				if (temp & (UINT32_C(1) << i))
 				{
-#if WITHUSBCDCACM && WITHWAWXXUSB
 					const uint_fast8_t pipe = (WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG >> 0) & 0x0F; // DMA Channel for Endpoint
 			  		usb_select_ep(pusb, pipe);
 					unsigned count = usb_get_eprx_count(pusb);
-					printhex((uintptr_t) cdc_out_data, cdc_out_data, sizeof cdc_out_data);
-					PRINTF("DMA%u: BC=%u, RESIDUAL_BC=%u, CHAN_CFG=%08X, n=%04X\n",
+					PRINTF("DMA%u: pipe=%u, BC=%u, SDRAM_ADD=0x%08X, RESIDUAL_BC=%u, CHAN_CFG=0x%08X, count=%u\n",
 							(unsigned) i,
+							(unsigned) pipe,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].BC,
+							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].SDRAM_ADD,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].RESIDUAL_BC,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG,
 							count);
+					printhex((uintptr_t) cdc_out_data, cdc_out_data, sizeof cdc_out_data);
+		  			cdcXout_buffer_save(cdc_out_data, 1, 0);
 					dcache_clean_invalidate((uintptr_t) cdc_out_data, sizeof cdc_out_data);
 					WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
-#endif
 					}
 			}
 		}
