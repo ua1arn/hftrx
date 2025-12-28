@@ -1378,7 +1378,7 @@ static void spi_transfer_b8(SPI_t * spi, spitarget_t target, const uint8_t * txb
 
 void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, int_fast32_t spispeed)
 {
-	//PRINTF("hardware_spi_master_setfreq: %d %d\n", spispeedindex, spispeed);
+	//PRINTF("hardware_spi_master_setfreq: %p %d %d\n", spi, spispeedindex, spispeed);
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	const ldiv_t v = ldiv(CPU_FREQ, spispeed);
@@ -2479,7 +2479,6 @@ void spi_initialize(void)
 #if WITHSPIHW
 	// аппаратный SPI
 	SPI_t * const spi = SPIHARD_PTR;
-	hardware_spi_master_setfreq(spi, SPIC_SPEED100k, 100000);	/* 100 kHz для XPT2046 */
 	hardware_spi_master_setfreq(spi, SPIC_SPEED200k, 200000);	/* 200 kHz для XPT2046 */
 	hardware_spi_master_setfreq(spi, SPIC_SPEED400k, 400000);	/* 400 kHz для MCP3208, DS1305 */
 	hardware_spi_master_setfreq(spi, SPIC_SPEED1M, 1000000);	/* 1 MHz для XPT2046 */
