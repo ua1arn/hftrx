@@ -17,7 +17,7 @@
 	#endif /* ! defined(STM32MP157Axx) */
 
 	//#define WITHBRANDSTR "Falcon"
-	#define BUFOVERSIZE 5
+	#define BUFOVERSIZE 2
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -407,7 +407,7 @@
 	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
-	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
+	#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHCOMPRESSOR 1	// компрессор
@@ -436,13 +436,13 @@
 	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
-		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
-		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
-		#define WITHVIEW_3DSS		1
+		#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4, x8
+		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+		//#define WITHVIEW_3DSS		1
 		#define WITHVIEW_3DSS_MARK	1
 		#define WITHSPECBETA_DEFAULT	30
-		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+//		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+//		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#if 0
 			#define WITHTOUCHGUI		1
 			#define WITHDISPLAY_FPS		30
@@ -463,14 +463,14 @@
 			#define WITHDISPLAYSWR_FPS	15
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
-		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+		#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4, x8
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 		#define WITHDISPLAYSWR_FPS 15
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 	#else
-		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
-		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
+		#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4, x8
+		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 		#define WITHDISPLAYSWR_FPS 15
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
