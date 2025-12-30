@@ -272,7 +272,7 @@
 		#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
-	#endif /* WITHLWIP */
+	#endif /* WITHLWIP && ! WITHETHHW */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
 	#if WIHSPIDFHW || WIHSPIDFSW

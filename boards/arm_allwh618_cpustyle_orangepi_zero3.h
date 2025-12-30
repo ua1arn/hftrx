@@ -234,11 +234,11 @@
 	//#define WITHUSBCDCACM_NOINT	1	/* Не использовать NOTIFY endpoint - под Linux не работает */
 
 
-	#if WITHLWIP
+	#if WITHLWIP && ! WITHETHHW
 		#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
-	#endif /* WITHLWIP */
+	#endif /* WITHLWIP && ! WITHETHHW */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
 	#if WIHSPIDFHW || WIHSPIDFSW
@@ -1004,6 +1004,37 @@
 	#define BOARD_USERBOOT_INITIALIZE() do { \
 		/*arm_hardware_pioa_inputs(BOARD_GPIOA_USERBOOT_BIT); *//* set as input with pull-up */ \
 	} while (0)
+
+#if WITHETHHW
+	#define HARDWARE_ETH_INITIALIZE() do { \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF2); 	/* PI0 RGMII0_RXD3 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF2); 	/* PI1 RGMII0_RXD2 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF2); 	/* PI2 RGMII0_RXD1 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF2); 	/* PI3 RGMII0_RXD0 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 4, GPIO_CFG_AF2); 	/* PI4 RGMII0_RXCK */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF2); 	/* PI5 RGMII0_RXCTL */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF2); 	/* PI7 RGMII0_TXD3 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF2); 	/* PI8 RGMII0_TXD2 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF2); 	/* PI9 RGMII0_TXD1 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF2); /* PI10 RGMII0_TXD0 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF2); /* PI11 RGMII0_TXCK */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 12, GPIO_CFG_AF2); /* PI12 RGMII0_TXCTL */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF2); /* PI13 RGMII0_CLKIN RGMII0_CLK125 */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF2); /* PI14 MDC */ \
+		arm_hardware_pioi_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF2); /* PI15 MDIO */ \
+		arm_hardware_pioi_updown(UINT32_C(1) << 14, UINT32_C(1) << 14, 0); /* PI14 MDC */ \
+		arm_hardware_pioi_updown(UINT32_C(1) << 15, UINT32_C(1) << 15, 0); /*  PI15 MDIO */ \
+		\
+	} while (0)
+	// T507:
+	// 	EMAC0: 10/100/1000 Mbps Ethernet port with RGMII and RMII interfaces;
+	// 	EMAC1: 10/100 Mbps Ethernet port with RMII interface
+	#define HARDWARE_EMAC_IX 0	// 0: EMAC0, 1: EMAC1
+	#define HARDWARE_EMAC_PTR EMAC0
+	#define HARDWARE_EMAC_EPHY_CLK_REG (SYS_CFG->EMAC_EPHY_CLK_REG0)
+	#define HARDWARE_EMAC_IRQ EMAC0_IRQn
+
+#endif /* WITHETHHW */
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
