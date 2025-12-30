@@ -2203,8 +2203,8 @@ void usbd_cdc_send(const void * buff, size_t length)
 	const unsigned count = AWUSB_MIN(sizeof tdata, length);
 	unsigned count4 = (count + 3) / 4 * 4;
 	memcpy(tdata, buff, count);
-	PRINTF("cdc_acm Send:\n");
-	printhex((uintptr_t) tdata, tdata, count);
+//	PRINTF("cdc_acm Send:\n");
+//	printhex((uintptr_t) tdata, tdata, count);
 
 	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
 	if (gpusb != NULL)
@@ -4735,6 +4735,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 			  		usb_select_ep(pusb, pipe);
 					unsigned count = usb_get_eprx_count(pusb);
+#if 0
 					PRINTF("DMA%u: pipe=%u, BC=%u, SDRAM_ADD=0x%08X, RESIDUAL_BC=%u, CHAN_CFG=0x%08X, count=%u, out_dir=%u\n",
 							(unsigned) i,
 							(unsigned) pipe,
@@ -4744,11 +4745,15 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG,
 							count,
 							out_drection);
+#endif
 					if (out_drection)
 					{
 						// OUT direction
-						printhex((uintptr_t) cdc_out_data, cdc_out_data, sizeof cdc_out_data);
-			  			cdcXout_buffer_save(cdc_out_data, 1, 0);
+						//printhex((uintptr_t) cdc_out_data, cdc_out_data, sizeof cdc_out_data);
+						uint8_t * end = (uint8_t *) memchr(cdc_out_data, ';', sizeof cdc_out_data);
+						if (end != NULL)
+				  			cdcXout_buffer_save(cdc_out_data, end - cdc_out_data + 1, 0);
+
 						dcache_clean_invalidate((uintptr_t) cdc_out_data, sizeof cdc_out_data);
 						WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
 					}
