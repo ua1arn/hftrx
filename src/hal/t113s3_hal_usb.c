@@ -1571,7 +1571,6 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 				}
 				else if (!(usb_get_eptx_csr(pusb) & USB_TXCSR_FIFONOTEMP))
 				{
-
 					pusb->eptx_xfer_state[ep_no-1] = USB_EPX_END;
 				}
 			}
@@ -1580,13 +1579,13 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 		break;
 
 		case USB_EPX_END:
-		if (!(usb_get_eptx_csr(pusb) & 0x3))
-		{
-			usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) & USB_TXCSR_ISO);
-			pusb->eptx_xfer_state[ep_no-1] = USB_EPX_SETUP;
-			ret = USB_RETVAL_COMPOK;
-		}
-		break;
+			if (!(usb_get_eptx_csr(pusb) & 0x3))
+			{
+				usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) & USB_TXCSR_ISO);
+				pusb->eptx_xfer_state[ep_no-1] = USB_EPX_SETUP;
+				ret = USB_RETVAL_COMPOK;
+			}
+			break;
 
 		default:
 			PRINTF("Error: Wrong eptx_xfer_state=%d\n", (unsigned) pusb->eptx_xfer_state[ep_no-1]);
@@ -2331,8 +2330,6 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 #if ! WITHCDCWITHDMA_OUT
 	do
 	{
-		uint32_t rx_count=0;
-		USB_RETVAL ret = USB_RETVAL_NOTCOMP;
 		// Handle OUT pipe (from host to device)
 	 	if (!pusb->eprx_flag[bo_ep_out-1])
 		{
@@ -2345,7 +2342,8 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
   		{
   			break;
   		}
-  		rx_count = usb_get_eprx_count(pusb);
+		const uint32_t rx_count = usb_get_eprx_count(pusb);
+		USB_RETVAL ret;
   		do
   		{
   			ret = epx_out_handler_dev(pusb, bo_ep_out, (uintptr_t)cdcXbuffout [offset], rx_count, USB_PRTCL_BULK);
@@ -2359,7 +2357,7 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
   		}
   		else
   		{
-  			ret = USB_RETVAL_NOTCOMP;
+  			//ret = USB_RETVAL_NOTCOMP;
   			// использование данных
   			//printhex(0, cdcXbuffout [offset], rx_count);
   			cdcXout_buffer_save(cdcXbuffout [offset], rx_count, offset);
@@ -4347,7 +4345,7 @@ static void usb_struct_init(usb_struct * const pusb)
 		pusb->eprx_flag[i] = 0;
 		pusb->eptx_xfer_state[i] = USB_EPX_SETUP;
 		pusb->eprx_xfer_state[i] = USB_EPX_SETUP;
-		pusb->eprx_ret[i] = USB_RETVAL_COMPOK;
+		//pusb->eprx_ret[i] = USB_RETVAL_COMPOK;
 		pusb->eptx_ret[i] = USB_RETVAL_COMPOK;
 	}
 

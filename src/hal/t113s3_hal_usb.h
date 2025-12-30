@@ -121,7 +121,7 @@ typedef struct {
 	//USB_RETVAL ep0_ret;
 
 	USB_RETVAL eptx_ret[USB_MAX_EP_NO];
-	USB_RETVAL eprx_ret[USB_MAX_EP_NO];
+	//USB_RETVAL eprx_ret[USB_MAX_EP_NO];
 	volatile uint32_t eptx_flag[USB_MAX_EP_NO];
 	volatile uint32_t eprx_flag[USB_MAX_EP_NO];
 	#define USB_EPX_SETUP					0
