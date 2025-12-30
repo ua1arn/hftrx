@@ -4707,7 +4707,7 @@ static const struct paramdefdef xgviewstyle =
 static uint_fast8_t gspectrumpart = 75;	/* Часть отведенной под спектр высоты экрана 0..100 */
 static const struct paramdefdef xgspectrumpart =
 {
-	QLABEL2("SPEC PRT", "Spectrum part"), 7, 0, RJ_UNSIGNED, ISTEP1,
+	QLABEL3("SPEC PRT", "Spectrum part", "SPEC PRT"), 7, 0, RJ_UNSIGNED, ISTEP1,
 	ITEM_VALUE,
 	WITHSPPARTMIN, WITHSPPARTMAX,			/* Часть отведенной под спектр высоты экрана 0..100 */
 	OFFSETOF(struct nvmap, gspectrumpart),
@@ -4739,7 +4739,7 @@ static const struct paramdefdef xgzoomxpow2 =
 /* нижний предел FFT */
 static const struct paramdefdef xgtopdb =
 {
-	QLABEL("TOP DB"), 7, 0, RJ_SIGNED,	ISTEP1,
+	QLABEL3("TOP DB", "Top dB", "TOP DB"), 7, 0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
 	OFFSETOF(struct nvmap, bandgroups [0].gtopdb),
@@ -4752,7 +4752,7 @@ static const struct paramdefdef xgtopdb =
 /* верхний предел FFT */
 static const struct paramdefdef xgbottomdb =
 {
-	QLABEL2("BOTTM DB", "BOTTOM DB"), 7, 0, RJ_SIGNED,	ISTEP1,
+	QLABEL3("BOTTM DB", "Bottom dB", "BOTTM DB"), 7, 0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
 	OFFSETOF(struct nvmap, bandgroups [0].gbottomdb),
@@ -4765,7 +4765,7 @@ static const struct paramdefdef xgbottomdb =
 /* нижний предел FFT для показа в режиме TX */
 static const struct paramdefdef xgtopdbtx =
 {
-	QLABEL("TOP DB TX"), 7, 0, RJ_SIGNED,	ISTEP_RO,
+	QLABEL3("TOP DB TX", "Top dB TX", "TOP DB TX"), 7, 0, RJ_SIGNED,	ISTEP_RO,
 	ITEM_VALUE,
 	WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
 	MENUNONVRAM,
@@ -4778,7 +4778,7 @@ static const struct paramdefdef xgtopdbtx =
 /* верхний предел FFT для показа в режиме TX */
 static const struct paramdefdef xgbottomdbtx =
 {
-	QLABEL2("BOTTM DB TX", "BOTTOM DB"), 7, 0, RJ_SIGNED,	ISTEP_RO,
+	QLABEL3("BOTTM DB TX", "BOTTOM DBTX", "BOTTM DB TX"), 7, 0, RJ_SIGNED,	ISTEP_RO,
 	ITEM_VALUE,
 	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
 	MENUNONVRAM,
@@ -4804,7 +4804,7 @@ static const struct paramdefdef xgbottomdbtx =
 
 	static const struct paramdefdef xgbglight =
 	{
-		QLABEL2("LCD LIGH", "TFT Backlight"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		QLABEL3("LCD LIGH", "TFT Backlight", "LCD LIGHT"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		WITHLCDBACKLIGHTMIN, WITHLCDBACKLIGHTMAX,
 		OFFSETOF(struct nvmap, gbglight),
@@ -4824,7 +4824,7 @@ static const struct paramdefdef xgbottomdbtx =
 
 	static const struct paramdefdef xgkblight =
 	{
-		QLABEL2("KBD LIGH", "KBD Backlight"), 8, 3, RJ_ON,	ISTEP1,
+		QLABEL3("KBD LIGH", "KBD Backlight", "KBD LIGHT"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gkblight),
@@ -5125,7 +5125,7 @@ enum
 		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 		static const struct paramdefdef xgusb_ft8cn =
 		{
-			QLABEL2("FT8CN", "FT8CN compat"), 7, 3, RJ_YES,	ISTEP1,
+			QLABEL3("FT8CN", "FT8CN compat", "FT8CN"), 7, 3, RJ_YES,	ISTEP1,
 			ITEM_VALUE,
 			0, 1, 					/* совместимость VID/PID для работы с программой FT8CN */
 			OFFSETOF(struct nvmap, gusb_ft8cn),
@@ -5428,7 +5428,7 @@ enum
 	/* Select the CTCSS transmit level. */
 	static const struct paramdefdef xgctsslevel =
 	{
-		QLABEL2("CTCSSLVL", "CTCSS LEVEL"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Select the CTCSS transmit level. */
+		QLABEL3("CTCSSLVL", "CTCSS LEVEL", "CTCSSLVL"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Select the CTCSS transmit level. */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gsubtonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
@@ -5526,7 +5526,7 @@ enum
 			/* усилитель мощности поддерживает переключение в класс А */
 			static const struct paramdefdef xgclassamode =
 			{
-				QLABEL2("CLASSA", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
+				QLABEL3("CLASSA", "Class A", "CLASSA"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
 				ITEM_VALUE,
 				0, 1,
 				OFFSETOF(struct nvmap, gclassamode),
@@ -5680,7 +5680,7 @@ enum
 
 	static const struct paramdefdef xgelkeywpm =
 	{
-		QLABEL2("CW SPEED", "CW SPEED"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		QLABEL3("CW SPEED", "CW Speed", "CW SPEED"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 #if WITHPOTWPM
@@ -5792,7 +5792,7 @@ enum
 	static uint_fast8_t gcwedgetime = 5;	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	static const struct paramdefdef xgcwedgetime =
 	{
-		QLABEL2("EDGE TIM", "EDGE TIME"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Set the rise time of the transmitted CW envelope. */
+		QLABEL3("EDGE TIM", "EDGE TIME", "EDGE TIM"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Set the rise time of the transmitted CW envelope. */
 		ITEM_VALUE,
 		2, 16,
 		OFFSETOF(struct nvmap, gcwedgetime),	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
@@ -5921,7 +5921,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 	static uint_fast8_t gmutespkr;		/*  выключение динамика */
 	static const struct paramdefdef xgmutespkr =
 	{
-		QLABEL2("SPK MUTE", "SPK MUTE"), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL3("SPK MUTE", "SPK MUTE", "SPK MUTE"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gmutespkr),
@@ -5967,7 +5967,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	static const struct paramdefdef xgswrprot =
 	{
-		QLABEL2("SWR PROT", "SWR Protect"), 7, 0, RJ_ON,	ISTEP1,
+		QLABEL3("SWR PROT", "SWR Protect", "SWR PROT"), 7, 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,						/* защита от превышения КСВ */
 		OFFSETOF(struct nvmap, gswrprot),
@@ -5979,7 +5979,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 	};
 	static const struct paramdefdef xminforward =
 	{
-		QLABEL("FWD LOWR"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* нечувствительность SWR-метра */
+		QLABEL3("FWD LOWR", "FWD Lower", "FWD LOWR"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* нечувствительность SWR-метра */
 		ITEM_VALUE,
 		1, (1U << HARDWARE_ADCBITS) - 1,
 		OFFSETOF(struct nvmap, minforward),
@@ -5991,7 +5991,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 	};
 	static const struct paramdefdef xmaxpwrcali =
 	{
-		QLABEL("PWR CALI"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* калибровка PWR-метра */
+		QLABEL3("PWR CALI", "PWR CALI", "PWR CALI"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* калибровка PWR-метра */
 		ITEM_VALUE,
 		1, 255,
 		OFFSETOF(struct nvmap, maxpwrcali),
@@ -6027,7 +6027,7 @@ static size_t getvaltextsmetertype(char * buff, size_t count, int_fast32_t value
 
 static const struct paramdefdef xgsmetertype =
 {
-	QLABEL2("SMETER", "S-meter Type"), 7, 3, RJ_CB,	ISTEP1,
+	QLABEL3("SMETER", "S-meter Type", "SMETER"), 7, 3, RJ_CB,	ISTEP1,
 	ITEM_VALUE | ITEM_LISTSELECT,
 	0, 1,							/* выбор внешнего вида прибора - стрелочный или градусник */
 	OFFSETOF(struct nvmap, gsmetertype),
@@ -6228,7 +6228,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	/* подстройка усиления микрофонного усилителя через меню. */
 	static const struct paramdefdef xgmik1level =
 	{
-		QLABEL2("MIC LEVL", "MIC Level"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		QLABEL3("MIC LEVL", "MIC Level", "MIC LEVL"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
 		OFFSETOF(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
@@ -6276,7 +6276,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 	static const struct paramdefdef xggaindigitx =
 	{
-		QLABEL2("FT8BOOST", "FT8 Boost"),	7, 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		QLABEL3("FT8BOOST", "FT8 Boost", "FT8BOOST"),	7, 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,
 		90, 300,
 		OFFSETOF(struct nvmap, ggaindigitx),
@@ -6331,7 +6331,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	static const struct paramdefdef xggaincwtx =
 	{
-		QLABEL2("CW BOOST", "CW Boost"),	7, 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в CW режимах 30..150% */
+		QLABEL3("CW BOOST", "CW Boost", "CW BOOST"),	7, 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в CW режимах 30..150% */
 		ITEM_VALUE,
 		30, 150,
 		OFFSETOF(struct nvmap, ggaincwtx),
@@ -7585,7 +7585,7 @@ static uint_fast8_t dimmflagch;	/* не-0: изменилось состояни
 
 static const struct paramdefdef xgdimmtime =
 {
-	QLABEL2("DIMM TIM", "Dimmer Time"), 7, 0, RJ_UNSIGNED, ISTEP5,
+	QLABEL3("DIMM TIM", "Dimmer Time", "DIMM TIM"), 7, 0, RJ_UNSIGNED, ISTEP5,
 	ITEM_VALUE,
 	0, 240,
 	OFFSETOF(struct nvmap, gdimmtime),
@@ -7625,7 +7625,7 @@ static uint_fast8_t sleepflagch;	/* не-0: изменилось состоян�
 
 static const struct paramdefdef xgsleeptime =
 {
-	QLABEL2("SLEEPTIM", "Sleep Time"), 7, 0, RJ_UNSIGNED, ISTEP5,
+	QLABEL3("SLEEPTIM", "Sleep Time", "SLEEPTIM"), 7, 0, RJ_UNSIGNED, ISTEP5,
 	ITEM_VALUE,
 	0, 240,
 	OFFSETOF(struct nvmap, gsleeptime),
@@ -8912,7 +8912,7 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel)
 #if WITHPOWERTRIM && ! WITHPOTPOWER
 static const struct paramdefdef xgnormalpower =
 {
-	QLABEL2("TX POWER", "TX Power"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* мощность при обычной работе на передачу */
+	QLABEL3("TX POWER", "TX Power", "TX POWER"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* мощность при обычной работе на передачу */
     ITEM_VALUE,
     WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
     OFFSETOF(struct nvmap, gnormalpower),
@@ -8927,7 +8927,7 @@ static const struct paramdefdef xgnormalpower =
 static uint_fast8_t gtxgate = 1;		/* разрешение драйвера и оконечного усилителя */
 static const struct paramdefdef xgtxgate =
 {
-	QLABEL2("TX GATE", "TX Gate"), 8, 3, RJ_ON,	ISTEP1,
+	QLABEL3("TX GATE", "TX Gate", "TX GATE"), 8, 3, RJ_ON,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, gtxgate),

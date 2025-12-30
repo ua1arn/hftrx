@@ -162,7 +162,7 @@ const struct menudef menutable [] =
 //	},
 #endif
 	(const struct paramdefdef [1]) {
-		QLABEL2("SHOW dBm", "Show dBm"), 8, 3, RJ_YES,	ISTEP1,
+		QLABEL3("SHOW dBm", "Show dBm", "SHOW DBM"), 8, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gshowdbm),
@@ -2359,7 +2359,7 @@ const struct menudef menutable [] =
 #if WITHFANTIMER
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	(const struct paramdefdef [1]) {
-		QLABEL2("FAN TEMP", "FAN Temp"), 7, 0, RJ_ON,	ISTEP1,
+		QLABEL3("FAN TEMP", "FAN Temp", "FAN TEMP"), 7, 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gfanpatempflag),
@@ -2370,7 +2370,7 @@ const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL2("FAN TMIN", "FAN T Min"), 7, 0, RJ_SIGNED,	ISTEP1,
+		QLABEL3("FAN TMIN", "FAN T Min", "FAN TMIN"), 7, 0, RJ_SIGNED,	ISTEP1,
 		ITEM_VALUE,
 		10, 70,
 		OFFSETOF(struct nvmap, gfanpaofftemp),
@@ -2381,7 +2381,7 @@ const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL2("FAN TMAX", "FAN T Max"), 7, 0, RJ_SIGNED,	ISTEP1,
+		QLABEL3("FAN TMAX", "FAN T Max", "FAN TMAX"), 7, 0, RJ_SIGNED,	ISTEP1,
 		ITEM_VALUE,
 		10, 70,
 		OFFSETOF(struct nvmap, gfanpaontemp),
@@ -2393,7 +2393,7 @@ const struct menudef menutable [] =
 	},
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 	(const struct paramdefdef [1]) {
-		QLABEL2("FAN TIME", "FAN Time"), 7, 0, RJ_UNSIGNED,	ISTEP5,
+		QLABEL3("FAN TIME", "FAN Time", "FAN TIME"), 7, 0, RJ_UNSIGNED,	ISTEP5,
 		ITEM_VALUE,
 		0, FANPATIMEMAX,
 		OFFSETOF(struct nvmap, gfanpatime),
@@ -2405,7 +2405,7 @@ const struct menudef menutable [] =
 	},
 	#if WITHFANPWM
 	(const struct paramdefdef [1]) {
-		QLABEL2("FAN FLOW", "FAN Flow"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+		QLABEL3("FAN FLOW", "FAN Flow", "FAN FLOW"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		WITHFANPWMMIN, WITHFANPWMMAX,
 		OFFSETOF(struct nvmap, gfanpapwm),
