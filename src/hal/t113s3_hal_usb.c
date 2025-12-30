@@ -2222,8 +2222,7 @@ void usbd_cdc_send(const void * buff, size_t length)
 		WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = (uintptr_t) tdata;
 		WITHUSBHW_DEVICE->USB_DMA [dmach].BC = count;
 		WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG =
-				//VIRTUAL_COM_PORT_IN_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
-				count * (UINT32_C(1) << 16) |	// DMA Burst Length
+				VIRTUAL_COM_PORT_IN_DATA_SIZE * (UINT32_C(1) << 16) |	// DMA Burst Length
 			0x00 * (UINT32_C(1) << 4) |		// 0: SDRAM to USB FIFO
 			bo_ep_in * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
 			0;
