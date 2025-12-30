@@ -112,6 +112,10 @@
 	#include "boards/arm_allwh618_ctlstyle_orangepi_zero2w.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwh618_cpustyle_orangepi_zero2w.h"
+#elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwh618_ctlstyle_orangepi_zero3.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwh618_cpustyle_orangepi_zero3.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_allwh616_ctlstyle_orangepi_zero2.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
