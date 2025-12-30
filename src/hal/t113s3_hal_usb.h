@@ -287,13 +287,13 @@ typedef USBOTG_TypeDef	PCD_TypeDef;	/* processor peripherial */
 /**
   * @brief  USB Mode definition
   */
-typedef enum
-{
-   USB_OTG_DEVICE_MODE  = 0U,
-   USB_OTG_HOST_MODE    = 1U,
-   USB_OTG_DRD_MODE     = 2U
-
-} xUSB_OTG_ModeTypeDef;
+//typedef enum
+//{
+//   USB_OTG_DEVICE_MODE  = 0U,
+//   USB_OTG_HOST_MODE    = 1U,
+//   USB_OTG_DRD_MODE     = 2U
+//
+//} xUSB_OTG_ModeTypeDef;
 
 /**
   * @brief  URB States definition
@@ -496,15 +496,15 @@ typedef USB_OTG_CfgTypeDef     PCD_InitTypeDef;
 typedef USB_OTG_EPTypeDef      PCD_EPTypeDef;
 
 
-#define PIPE_NUM      (16)
-
-typedef struct {
-	int        enable;
-	uint16_t    status;
-	uint32_t    req_size;
-	uint32_t    data_cnt;
-	uint8_t     *p_data;
-} pipe_ctrl_t;
+//#define PIPE_NUM      (16)
+//
+//typedef struct {
+//	int        enable;
+//	uint16_t    status;
+//	uint32_t    req_size;
+//	uint32_t    data_cnt;
+//	uint8_t     *p_data;
+//} pipe_ctrl_t;
 
 /**
   * @brief  PCD Handle Structure definition
