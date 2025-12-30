@@ -4717,7 +4717,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		}
 	}
 
-#if 0//WITHCDCWITHDMA_OUT || WITHCDCWITHDMA_IN
+#if WITHCDCWITHDMA_OUT || WITHCDCWITHDMA_IN
 	{
 		// DMA interrupt
 		const uint32_t temp = usb_get_dma_interrupt_status(pusb) & usb_get_dma_interrupt_enable(pusb);
