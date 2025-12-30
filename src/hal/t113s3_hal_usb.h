@@ -169,13 +169,11 @@ typedef struct {
 //	uint32_t timeout;   //timeout value (in ms)
 //	uint32_t loop;      //Loop counter
 
-	#define USB_BUFFER_SIZE							256
-
 	//uint32_t power_debouce;
 	uSetupPKG setup_packet;
 	// для будущего приведения в порядок
 	pipe_state_t pipe0;
-	pipe_state_t pipe[2][USB_MAX_EP_NO];   /* pipe[direction][endpoint number - 1] */
+	pipe_state_t pipes[2][USB_MAX_EP_NO];   /* pipe[direction][endpoint number - 1] */
 	uint16_t     remaining_ctrl; /* The number of bytes remaining in data stage of control transfer. */
 	int8_t       status_out;
 
