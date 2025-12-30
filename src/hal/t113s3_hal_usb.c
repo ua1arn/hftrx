@@ -48,13 +48,7 @@
 
 #define DISK_DDR 1
 
-#define AW_RAMDISK_BASE                (getRamDiskBase()) //(AW_USBD_BASE+AW_USBD_SIZE)             /* ������� ����� ������ ����� � ������ */
-
-#define AW_RAMDISK_SIZE                (getRamDiskSize()) //(CARD.capacity) /* (32*0x100000) */       /* ������ ����� � ������ */
-
-#ifndef AWUSB_MIN
 #define AWUSB_MIN( x, y ) ( (x) < (y) ? (x) : (y) )
-#endif
 
 #if WITHUSBDEV_HSDESC
 	#define USB0_SPEED 				USB_SPEED_HS
