@@ -231,10 +231,10 @@ typedef struct
   * @{
   */
 // Эти значения пишутся в регистр USB_OTG_DCFG после умножения на USB_OTG_DCFG_DSPD_0
-#define USB_OTG_SPEED_HIGH                     0U	// 00: High speed
-#define USB_OTG_SPEED_HIGH_IN_FULL             1U	// Full speed using HS
-#define USB_OTG_SPEED_LOW                      2U	// Reserved
-#define USB_OTG_SPEED_FULL                     3U	// Full speed using internal FS PHY
+//#define USB_OTG_SPEED_HIGH                     0U	// 00: High speed
+//#define USB_OTG_SPEED_HIGH_IN_FULL             1U	// Full speed using HS
+//#define USB_OTG_SPEED_LOW                      2U	// Reserved
+//#define USB_OTG_SPEED_FULL                     3U	// Full speed using internal FS PHY
 /**
   * @}
   */
@@ -268,9 +268,9 @@ typedef struct
 /** @defgroup USB_Core_PHY_   USB Core PHY
   * @{
   */
-#define USB_OTG_ULPI_PHY                       1U
-#define USB_OTG_EMBEDDED_PHY                   2U
-#define USB_OTG_HS_EMBEDDED_PHY                3U
+//#define USB_OTG_ULPI_PHY                       1U
+//#define USB_OTG_EMBEDDED_PHY                   2U
+//#define USB_OTG_HS_EMBEDDED_PHY                3U
 /**
   * @}
   */
