@@ -31,12 +31,12 @@
 #define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #if WITHDEBUG
-	#define WITHUART5HW	1	/* tx: PH2, rx: PH3 Используется периферийный контроллер последовательного порта UART5 */
-	//#define WITHUART5HW_FIFO	1	/* испольование FIFO */
+	#define WITHUART0HW	1	/* tx: PH0, rx: PH1 Используется периферийный контроллер последовательного порта UART0 */
+	//#define WITHUART0HW_FIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
 //#define WITHCAT_UART0		1
-#define WITHDEBUG_UART5	1
+#define WITHDEBUG_UART0	1
 
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
@@ -594,6 +594,7 @@
 		arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PC2 SPI0_MOSI */ \
 		arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PC4 SPI0_MISO */ \
 	} while (0)
+	#define WITHSPI0HW	1	// Use SPI0
 
 #else /* WITHSPIHW */
 
@@ -607,11 +608,11 @@
 
 #endif /* WITHSPIHW */
 
-// WITHUART5HW
+// WITHUART0HW
 // Используется периферийный контроллер последовательного порта UART5 */
-#define HARDWARE_UART5_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 2; /* PH2 UART5_TX */ \
-		const portholder_t RXMASK = UINT32_C(1) << 3; /* PH3 UART5_RX - pull-up RX data */  \
+#define HARDWARE_UART0_INITIALIZE() do { \
+		const portholder_t TXMASK = UINT32_C(1) << 0; /* PH0 UART0_TX */ \
+		const portholder_t RXMASK = UINT32_C(1) << 1; /* PH1 UART0_RX - pull-up RX data */  \
 		arm_hardware_pioh_altfn2m(TXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_altfn2m(RXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_updown(RXMASK, RXMASK, 0); \

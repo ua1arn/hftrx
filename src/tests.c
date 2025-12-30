@@ -8642,6 +8642,23 @@ void hightests(void)
 		memset(b, 0xE5, sizeof b);
 		readDATAFLASH(0x00040000, b, ARRAY_SIZE(b));
 		printhex(0x00080000, b, ARRAY_SIZE(b));
+
+		PRINTF("Data flash erase start...\n");
+		fullEraseDATAFLASH();	// стереть
+		PRINTF("Data flash erase done.\n");
+
+		testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
+
+		memset(b, 0xE5, sizeof b);
+		readDATAFLASH(0x000000, b, ARRAY_SIZE(b));
+		printhex(0, b, ARRAY_SIZE(b));
+
+		testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
+
+		memset(b, 0xE5, sizeof b);
+		readDATAFLASH(0x00040000, b, ARRAY_SIZE(b));
+		printhex(0x00080000, b, ARRAY_SIZE(b));
+
 	}
 #endif
 #if 0 && WITHTWISW && WITHDEBUG

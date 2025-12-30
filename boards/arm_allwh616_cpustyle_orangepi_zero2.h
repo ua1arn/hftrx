@@ -588,6 +588,7 @@
 		arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PC2 SPI0_MOSI */ \
 		arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PC4 SPI0_MISO */ \
 	} while (0)
+	#define WITHSPI0HW	1	// Use SPI0
 
 #else /* WITHSPIHW */
 
