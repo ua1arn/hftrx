@@ -2362,7 +2362,7 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
   			ret = USB_RETVAL_NOTCOMP;
   			// использование данных
   			//printhex(0, cdcXbuffout [offset], rx_count);
-  			cdcXout_buffer_save(cdcXbuffout [offset], rx_count, 0);
+  			cdcXout_buffer_save(cdcXbuffout [offset], rx_count, offset);
    		}
 	} while (0);
 #endif
@@ -4742,11 +4742,12 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 #endif
 					if (out_drection)
 					{
+						const unsigned offset = USBD_CDCACM_OFFSET_BY_OUT_EP(pipe & 0x7F, USBD_EP_CDCACM_OUT);
 						// OUT direction
 						//printhex((uintptr_t) cdc_out_data, cdc_out_data, sizeof cdc_out_data);
-						uint8_t * end = (uint8_t *) memchr(cdc_out_data, ';', sizeof cdc_out_data);
+						uint8_t * const end = (uint8_t *) memchr(cdc_out_data, ';', sizeof cdc_out_data);
 						if (end != NULL)
-				  			cdcXout_buffer_save(cdc_out_data, end - cdc_out_data + 1, 0);
+				  			cdcXout_buffer_save(cdc_out_data, end - cdc_out_data + 1, offset);
 
 						dcache_clean_invalidate((uintptr_t) cdc_out_data, sizeof cdc_out_data);
 						WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
