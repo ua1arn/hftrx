@@ -4718,21 +4718,32 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				if (temp & (UINT32_C(1) << i))
 				{
 					const uint_fast8_t pipe = (WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG >> 0) & 0x0F; // DMA Channel for Endpoint
+					const uint_fast8_t out_drection = (WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG >> 4) & 0x01; // 1: USB FIFO to SDRAM, 0: SDRAM to USB FIFO
+
 			  		usb_select_ep(pusb, pipe);
 					unsigned count = usb_get_eprx_count(pusb);
-					PRINTF("DMA%u: pipe=%u, BC=%u, SDRAM_ADD=0x%08X, RESIDUAL_BC=%u, CHAN_CFG=0x%08X, count=%u\n",
+					PRINTF("DMA%u: pipe=%u, BC=%u, SDRAM_ADD=0x%08X, RESIDUAL_BC=%u, CHAN_CFG=0x%08X, count=%u, out_dir=%u\n",
 							(unsigned) i,
 							(unsigned) pipe,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].BC,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].SDRAM_ADD,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].RESIDUAL_BC,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG,
-							count);
-					printhex((uintptr_t) cdc_out_data, cdc_out_data, sizeof cdc_out_data);
-		  			cdcXout_buffer_save(cdc_out_data, 1, 0);
-					dcache_clean_invalidate((uintptr_t) cdc_out_data, sizeof cdc_out_data);
-					WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
+							count,
+							out_drection);
+					if (out_drection)
+					{
+						// OUT direction
+						printhex((uintptr_t) cdc_out_data, cdc_out_data, sizeof cdc_out_data);
+			  			cdcXout_buffer_save(cdc_out_data, 1, 0);
+						dcache_clean_invalidate((uintptr_t) cdc_out_data, sizeof cdc_out_data);
+						WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
 					}
+					else
+					{
+						// In direction
+					}
+				}
 			}
 		}
 	}
@@ -5019,6 +5030,16 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 			PRINTF("USB device endpoints: RX IRQs=%04X, TX IRQs=%04X (%u endpoints, IN/OUT EP%u..EP%u and EP0)\n", (unsigned) WITHUSBHW_DEVICE->USB_INTRXE, (unsigned) WITHUSBHW_DEVICE->USB_INTTXE, epn, epn - 1, 1);
 			usb_clear_eprx_interrupt_enable(pusb, 0xFFFF);
 			usb_clear_eptx_interrupt_enable(pusb, 0xFFFF);
+		}
+		if (1)
+		{
+			// USB embeddded DMA configuration test
+			usb_set_dma_interrupt_enable(pusb, 0xFF);
+			WITHUSBHW_DEVICE->USB_DMA_INTE |= UINT32_C(0xFFFFFFFF);
+			const unsigned dman = aw_log2(WITHUSBHW_DEVICE->USB_DMA_INTE & 0xFF);
+			PRINTF("USB device DMA: %u channels (USB_DMA_INTE=%08X)\n", dman, (unsigned) WITHUSBHW_DEVICE->USB_DMA_INTE);
+			usb_clear_dma_interrupt_enable(pusb, 0xFF);
+			WITHUSBHW_DEVICE->USB_DMA_INTE = 0;
 		}
 
 	  /* Force Device Mode*/
