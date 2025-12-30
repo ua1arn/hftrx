@@ -33,16 +33,12 @@ typedef __PACKED_STRUCT
     uint16_t wLength;
 } uSetupPKG, *pSetupPKG;
 
+#if WITHUSBDMSC
+
 typedef struct {
 
 	//uint32_t ConfigDesc_Len;
 	__ALIGN_BEGIN uint8_t MaxLUNv [4] __ALIGN_END;
-
-	//EP protocol
-	#define USB_PRTCL_ILL  	0
-	#define USB_PRTCL_ISO  	1
-	#define USB_PRTCL_BULK 	2
-	#define USB_PRTCL_INT  	3
 
 	//Bulk Only Device State Machine
 	#define USB_BO_IDLE				0
@@ -62,6 +58,35 @@ typedef struct {
 	uint32_t csw_fail_flag;
 } usb_device_msc;
 
+
+typedef struct
+{
+    uint32_t dCBWSig;
+    uint32_t dCBWTag;
+    uint32_t dCBWDTL;
+    uint8_t  bmCBWFlg;
+    uint8_t  bCBWLUN   : 4;
+    uint8_t  bCBWRes1  : 4;   //Reserved
+    uint8_t  bCBWCBL   : 5;
+    uint8_t  bCBWRes2  : 3;   //Reserved
+    uint8_t  CBWCB[16];
+} uCBWPKG, *pCBWPKG;
+
+typedef struct
+{
+  	uint32_t dCSWSig;
+  	uint32_t dCSWTag;
+  	uint32_t dCSWDataRes;
+  	uint8_t  bCSWStatus;
+} uCSWPKG, *pCSWPKG;
+
+#endif /* WITHUSBDMSC */
+
+//EP protocol
+#define USB_PRTCL_ILL  	0
+#define USB_PRTCL_ISO  	1
+#define USB_PRTCL_BULK 	2
+#define USB_PRTCL_INT  	3
 
 typedef struct
 {
@@ -97,8 +122,8 @@ typedef struct {
 //	volatile uint32_t connect;
 //	volatile uint32_t suspend;
 //	volatile uint32_t reset;
-	#define USB_OTG_A_DEVICE			0
-	#define USB_OTG_B_DEVICE			1
+//	#define USB_OTG_A_DEVICE			0
+//	#define USB_OTG_B_DEVICE			1
 	//volatile uint32_t otg_dev;
 
 	//Signals for usb debug
@@ -158,12 +183,12 @@ typedef struct {
 	uint32_t		 dmatx_last_transferv[USB_MAX_EP_NO];
 #endif /* WITHUSBDEV_DMAENABLE */
 	//Timer
-	#define USB_IDLE_TIMER								0x0
-	#define USB_DEVICE_VBUS_DET_TIMER			0x1
-	#define USB_HOST_RESET_TIMER					0x2
-	#define USB_HOST_RESUME_TIMER					0x3
-	#define USB_HOST_SUSPEND_TIMER				0x4
-	#define USB_HOST_DELAY_TIMER					0x5
+//	#define USB_IDLE_TIMER								0x0
+//	#define USB_DEVICE_VBUS_DET_TIMER			0x1
+//	#define USB_HOST_RESET_TIMER					0x2
+//	#define USB_HOST_RESUME_TIMER					0x3
+//	#define USB_HOST_SUSPEND_TIMER				0x4
+//	#define USB_HOST_DELAY_TIMER					0x5
 //	uint32_t timer;     //timer purpose
 //	#define USB_DEVICE_VBUS_DET_TIMEOUT		10  //10ms
 //	uint32_t timeout;   //timeout value (in ms)
@@ -183,31 +208,6 @@ typedef struct {
 } usb_struct, *pusb_struct;
 
 #define REQUEST_TYPE_INVALID  (0xFFu)
-
-#if WITHUSBDMSC
-
-typedef struct
-{
-    uint32_t dCBWSig;
-    uint32_t dCBWTag;
-    uint32_t dCBWDTL;
-    uint8_t  bmCBWFlg;
-    uint8_t  bCBWLUN   : 4;
-    uint8_t  bCBWRes1  : 4;   //Reserved
-    uint8_t  bCBWCBL   : 5;
-    uint8_t  bCBWRes2  : 3;   //Reserved
-    uint8_t  CBWCB[16];
-} uCBWPKG, *pCBWPKG;
-
-typedef struct
-{
-  	uint32_t dCSWSig;
-  	uint32_t dCSWTag;
-  	uint32_t dCSWDataRes;
-  	uint8_t  bCSWStatus;
-} uCSWPKG, *pCSWPKG;
-
-#endif /* WITHUSBDMSC */
 
 //VBUS Level
 #define USB_VBUS_SESSEND		0
