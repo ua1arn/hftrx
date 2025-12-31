@@ -971,16 +971,12 @@ void playwavstop(void);
 
 // Обслуживание модема
 size_t takemodemtxbuffer(uint8_t * * dest);	// Буферы с данными для передачи через модем
-size_t takemodemtxbuffer_low(uint8_t * * dest);	// Буферы с данными для передачи через модем
 uint_fast8_t statusmodemtxbuffer(void);		// есть ли буферы для передачи
 size_t takemodemrxbuffer(uint8_t * * dest);	// Буферы с принятымти через модем данными
 size_t takemodembuffer(uint8_t * * dest);	// Буферы для заполнения данными
-size_t takemodembuffer_low(uint8_t * * dest);	// Буферы для заполнения данными
 void savemodemrxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфер с принятыми данными
-void savemodemrxbuffer_low(uint8_t * dest, unsigned size_t);	// Готов буфер с принятыми данными
 void savemodemtxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфер с данными для передачи
 void releasemodembuffer(uint8_t * dest);
-void releasemodembuffer_low(uint8_t * dest);
 
 void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);

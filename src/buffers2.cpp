@@ -547,7 +547,7 @@ public:
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& readylist))
 		{
-			const PLIST_ENTRY t = RemoveTailList(& readylist);
+			const PRLIST_ENTRY t = RemoveTailList(& readylist);
 			ASSERT(readycount != 0);
 			-- readycount;
 			fiforeadyupdate();
@@ -572,7 +572,7 @@ public:
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& freelist))
 		{
-			const PLIST_ENTRY t = RemoveTailList(& freelist);
+			const PRLIST_ENTRY t = RemoveTailList(& freelist);
 			ASSERT(freecount != 0);
 			-- freecount;
 			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
@@ -590,6 +590,7 @@ public:
 		return false;
 	}
 
+	// получить не более нужного количества буферов из списка заполненных
 	unsigned take_readys(LIST_ENTRY * list, unsigned n)
 	{
 		unsigned v = 0;
@@ -599,7 +600,7 @@ public:
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 		while (n -- && ! IsListEmpty(& readylist))
 		{
-			const PLIST_ENTRY t = RemoveTailList(& readylist);
+			const PRLIST_ENTRY t = RemoveTailList(& readylist);
 			ASSERT(readycount);
 			-- readycount;
 			InsertHeadList(list, t);
@@ -615,10 +616,9 @@ public:
 		IRQL_t oldIrql;
 
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
-
 		while (! IsListEmpty(list))
 		{
-			const PLIST_ENTRY t = RemoveTailList(list);
+			const PRLIST_ENTRY t = RemoveTailList(list);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
 			ASSERT3(p->tag0 == this, __FILE__, __LINE__, name);
 			ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
@@ -626,7 +626,6 @@ public:
 			InsertHeadList(& freelist, t);
 			++ freecount;
 		}
-
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 	}
 
@@ -2880,8 +2879,8 @@ typedef blists<modems8_t, MODEM8_CAPACITY> modems8list_t;
 
 static RAMFRAMEBUFF modems8list_t modems8list(MODEM8_IRQL, "mdm8");
 
-//static RAMBIGDTCM LIST_HEAD2 modemsfree8;		// Свободные буферы
-//static RAMBIGDTCM LIST_HEAD2 modemsrx8;	// Буферы с принятымти через модем данными
+//static LIST_HEAD modemsfree8;		// Свободные буферы
+//static LIST_HEAD modemsrx8;	// Буферы с принятымти через модем данными
 //static LIST_ENTRY modemstx8;	// Буферы с данными для передачи через модем
 
 
@@ -2890,9 +2889,9 @@ size_t takemodemrxbuffer(uint8_t * * dest)
 {
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_REALTIME, & oldIrql);
-	if (! IsListEmpty2(& modemsrx8))
+	if (! IsListEmpty(& modemsrx8))
 	{
-		PLIST_ENTRY t = RemoveTailList2(& modemsrx8);
+		PRLIST_ENTRY t = RemoveTailList(& modemsrx8);
 		LowerIrql(oldIrql);
 		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
 		* dest = p->buff;
@@ -2908,9 +2907,9 @@ size_t takemodembuffer(uint8_t * * dest)
 {
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_REALTIME, & oldIrql);
-	if (! IsListEmpty2(& modemsfree8))
+	if (! IsListEmpty(& modemsfree8))
 	{
-		PLIST_ENTRY t = RemoveTailList2(& modemsfree8);
+		PRLIST_ENTRY t = RemoveTailList(& modemsfree8);
 		LowerIrql(oldIrql);
 		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
 		* dest = p->buff;
@@ -2921,28 +2920,15 @@ size_t takemodembuffer(uint8_t * * dest)
 	return 0;
 }
 
-// Буферы для заполнения данными
-// вызывается из real-time обработчика прерывания
-size_t takemodembuffer_low(uint8_t * * dest)
-{
-	if (! IsListEmpty2(& modemsfree8))
-	{
-		PLIST_ENTRY t = RemoveTailList2(& modemsfree8);
-		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
-		* dest = p->buff;
-		return (MODEMBUFFERSIZE8 * sizeof p->buff [0]);
-	}
-	* dest = NULL;
-	return 0;
-}
-
 // Готов буфер с принятыми данными
-// вызывается из real-time обработчика прерывания
-void savemodemrxbuffer_low(uint8_t * dest, size_t length)
+void savemodemrxbuffer(uint8_t * dest, size_t length)
 {
+	IRQL_t oldIrql;
 	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
 	p->length = length;
-	InsertHeadList2(& modemsrx8, & p->item);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
+	InsertHeadList(& modemsrx8, & p->item);
+	LowerIrql(oldIrql);
 }
 
 void releasemodembuffer(uint8_t * dest)
@@ -2950,15 +2936,8 @@ void releasemodembuffer(uint8_t * dest)
 	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_REALTIME, & oldIrql);
-	InsertHeadList2(& modemsfree8, & p->item);
+	InsertHeadList(& modemsfree8, & p->item);
 	LowerIrql(oldIrql);
-}
-
-// вызывается из real-time обработчика прерывания
-void releasemodembuffer_low(uint8_t * dest)
-{
-	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
-	InsertHeadList2(& modemsfree8, & p->item);
 }
 
 #endif /* WITHMODEM */
@@ -3821,9 +3800,9 @@ uintptr_t getfilled_dmabufferuacinrtsX(uint_fast16_t * sizep)
 #endif /* WITHUSBUAC */
 
 /* предполагается что тут значения нормирования в диапазоне -1..+1 */
-void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
+void deliveryfloat(deliverylist_t * RESTRICTED_POINTER list, FLOAT_t ch0, FLOAT_t ch1)
 {
-	PLIST_ENTRY t;
+	PRLIST_ENTRY t;
 	IRQL_t oldIrql;
 
 	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
@@ -3836,10 +3815,10 @@ void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 /* предполагается что тут значения нормирования в диапазоне -1..+1 */
-void deliveryfloat_buffer(deliverylist_t * list, const FLOAT_t * ch0, const FLOAT_t * ch1, unsigned n)
+void deliveryfloat_buffer(deliverylist_t * RESTRICTED_POINTER list, const FLOAT_t * ch0, const FLOAT_t * ch1, unsigned n)
 {
 	IRQL_t oldIrql;
-	PLIST_ENTRY t;
+	PRLIST_ENTRY t;
 
 	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
@@ -3854,10 +3833,10 @@ void deliveryfloat_buffer(deliverylist_t * list, const FLOAT_t * ch0, const FLOA
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
-void deliveryint(deliverylist_t * list, int_fast32_t ch0, int_fast32_t ch1)
+void deliveryint(deliverylist_t * RESTRICTED_POINTER list, int_fast32_t ch0, int_fast32_t ch1)
 {
 	IRQL_t oldIrql;
-	PLIST_ENTRY t;
+	PRLIST_ENTRY t;
 
 	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
@@ -3868,7 +3847,7 @@ void deliveryint(deliverylist_t * list, int_fast32_t ch0, int_fast32_t ch1)
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
-void subscribefloat(deliverylist_t * list, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1))
+void subscribefloat(deliverylist_t * RESTRICTED_POINTER list, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1))
 {
 	IRQL_t oldIrql;
 
@@ -3879,7 +3858,7 @@ void subscribefloat(deliverylist_t * list, subscribefloat_t * target, void * ctx
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
-void unsubscribefloat(deliverylist_t * list, subscribefloat_t * target)
+void unsubscribefloat(deliverylist_t * RESTRICTED_POINTER list, subscribefloat_t * target)
 {
 	IRQL_t oldIrql;
 
@@ -3888,7 +3867,7 @@ void unsubscribefloat(deliverylist_t * list, subscribefloat_t * target)
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
-void subscribeint32(deliverylist_t * list, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1))
+void subscribeint32(deliverylist_t * RESTRICTED_POINTER list, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1))
 {
 	IRQL_t oldIrql;
 
@@ -3899,7 +3878,7 @@ void subscribeint32(deliverylist_t * list, subscribeint32_t * target, void * ctx
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
-void unsubscribeint32(deliverylist_t * list, subscribeint32_t * target)
+void unsubscribeint32(deliverylist_t * RESTRICTED_POINTER list, subscribeint32_t * target)
 {
 	IRQL_t oldIrql;
 
@@ -3908,7 +3887,7 @@ void unsubscribeint32(deliverylist_t * list, subscribeint32_t * target)
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
-void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
+void deliverylist_initialize(deliverylist_t * RESTRICTED_POINTER list, IRQL_t irqlv)
 {
 	InitializeListHead(& list->head);
 	list->irql = irqlv;
