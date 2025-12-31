@@ -1611,6 +1611,9 @@ void window_utilites_process(void)
 #if 0
 		idx = gui_obj_create("btn_kbdtest", LONG_BUTTON_STYLE, 0, 0, "Keyboard|test");
 #endif
+#if WITHCPUFANPWM
+		idx = gui_obj_create("btn_fanpwm", LONG_BUTTON_STYLE, 0, 0, "Fan PWM|control");
+#endif /* WITHCPUFANPWM */
 
 		gui_arrange_objects_from(get_obj_name_by_idx(TYPE_BUTTON, 0), idx + 1, 4, 6);
 
@@ -1653,6 +1656,10 @@ void window_utilites_process(void)
 #endif /* LINUX_SUBSYSTEM && WITHEXTIO_LAN */
 			else if (gui_check_obj(name, "btn_kbdtest"))
 				open_window(get_win(WINDOW_KBD_TEST));
+#if WITHCPUFANPWM
+			else if (gui_check_obj(name, "btn_fanpwm"))
+				open_window(get_win(WINDOW_FANPWM));
+#endif /* WITHCPUFANPWM */
 		}
 		break;
 
@@ -4592,6 +4599,35 @@ void window_as_process(void)
 		olds = s;
 	}
 #endif /* WITHAUDIOSAMPLESREC */
+}
+
+void window_fanpwm_process(void)
+{
+#if WITHCPUFANPWM
+	static int8_t duty = 0;
+
+	if (is_win_init())
+	{
+		duty = linux_fan_pwm_set(-1);
+
+		gui_obj_create("lbl_pwm", COLORPIP_YELLOW, 10);
+		gui_obj_set_prop("lbl_pwm", GUI_OBJ_TEXT_FMT, "Duty: %d", duty);
+
+		calculate_window_position(WINDOW_POSITION_AUTO);
+	}
+
+	GET_FROM_WM_QUEUE(WINDOW_FANPWM)
+	{
+		case WM_MESSAGE_ENC2_ROTATE:
+			duty += action;
+			if (duty < 0) duty = 0;
+			if (duty > 100) duty = 100;
+			linux_fan_pwm_set(duty);
+
+			gui_obj_set_prop("lbl_pwm", GUI_OBJ_TEXT_FMT, "Duty: %d", duty);
+	}
+
+#endif /* WITHCPUFANPWM */
 }
 
 #if WITHSDL2VIDEO
