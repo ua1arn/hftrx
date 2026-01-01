@@ -256,8 +256,8 @@ static void awxx_g2d_mixer_reset(unsigned scanorder)
 	//	G2D_SM_DTRL_1  =    0x03,
 
 	G2D_MIXER->G2D_MIXER_CTRL =
-		!! 0x00 * (UINT32_C(1) << 8) |		// не дожидаемся завершения операции при этом бите
-		scanorder * (UINT32_C(1) << 4) |	// не влияет
+		!! 0x00 * (UINT32_C(1) << 8) |		// G2D_MIXER_CTL_BIST_EN
+		scanorder * (UINT32_C(1) << 4) |	// G2D_MIXER_CTL_SCAN_ORDER
 		0;
 
 	//	memset32(G2D_V0, 0, sizeof * G2D_V0);
@@ -280,8 +280,100 @@ static void awxx_g2d_mixer_reset(unsigned scanorder)
 	G2D_BLD->BLD_KEY_CTL = 0;
 }
 
+//	union g2d_rcq_irq_ctl {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int rcq_sel:1;
+//			unsigned int res0:3;
+//			unsigned int task_end_irq_en:1;
+//			unsigned int res1:1;
+//			unsigned int rcq_cfg_finish_irq_en:1;
+//			unsigned int res2:25;
+//		} bits;
+//	};
+//
+//	union g2d_rcq_status {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int task_end_irq:1;
+//			unsigned int res0:1;
+//			unsigned int cfg_finish_irq:1;
+//			unsigned int res1:5;
+//			unsigned int frame_cnt:8;
+//			unsigned int res2:16;
+//		} bits;
+//	};
+//
+//	union g2d_rcq_ctrl {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int update:1;
+//			unsigned int res0:31;
+//		} bits;
+//	};
+//
+//	union g2d_rcq_header_len {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int rcq_header_len:16;
+//			unsigned int res0:16;
+//		} bits;
+//	};
+
+
+static void awxx_g2d_top_rcq_irq_en(void)
+{
+	G2D_TOP->RCQ_IRQ_CTL |= (UINT32_C(1) << 4); //.bits.task_end_irq_en = en; // bit 4
+	//G2D_TOP->RCQ_IRQ_CTL |= (UINT32_C(1) << 7); .bits.rcq_cfg_finish_irq_en = en; // bit 7
+}
+
+static void awxx_g2d_top_rcq_update_en(void)
+{
+	// bit 0
+	G2D_TOP->RCQ_CTRL |= (UINT32_C(1) << 0);	// update
+	while ((G2D_TOP->RCQ_CTRL & (UINT32_C(1) << 0)) != 0)
+		;
+}
+
+static unsigned awxx_g2d_top_rcq_task_irq_query(void)
+{
+	// bit 0
+	const uint_fast32_t status = G2D_TOP->RCQ_STATUS;
+	if (status & (UINT32_C(1) << 0))
+	{
+		G2D_TOP->RCQ_STATUS = (UINT32_C(1) << 0);	// task_end_irq
+		return 1;
+	}
+//	if (G2D_TOP->RCQ_STATUS.bits.task_end_irq & 0x1) {
+//		G2D_TOP->RCQ_STATUS.bits.task_end_irq = 1;
+//		return 1;
+//	}
+	return 0;
+}
+
+static unsigned awxx_g2d_top_rcq_cfg_irq_query(void)
+{
+	// bit 2
+	const uint_fast32_t status = G2D_TOP->RCQ_STATUS;
+	if (status & (UINT32_C(1) << 2))
+	{
+		G2D_TOP->RCQ_STATUS = (UINT32_C(1) << 2);	// cfg_finish_irq
+		return 1;
+	}
+//	if (G2D_TOP->RCQ_STATUS.bits.cfg_finish_irq & 0x1) {
+//		G2D_TOP->RCQ_STATUS.bits.cfg_finish_irq = 1;
+//		return 1;
+//	}
+	return 0;
+}
+
+static unsigned awxx_g2d_top_get_rcq_frame_cnt(void)
+{
+	return (G2D_TOP->RCQ_STATUS >> 8) &  0xFF; //.bits.frame_cnt;
+}
+
 // Register Configuration Queue setup
-static void awxx_rcq(uintptr_t buff, unsigned len)
+static void awxx_g2d_top_set_rcq_head(uintptr_t buff, unsigned len)
 {
 	G2D_TOP->RCQ_CTRL = 0;	// При  0 тут возможна установка параметров
 	G2D_TOP->RCQ_HEADER_LOW_ADDR = ptr_lo32(buff);
@@ -335,7 +427,6 @@ static void awxx_g2d_rtmix_startandwait(void)
 	}
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 }
-
 
 static void
 awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
@@ -861,25 +952,51 @@ static void vsu_fir_bytable(volatile uint32_t * p, unsigned offset)
 	}
 }
 
+
+//	union g2d_mixer_rop_ctrl {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int type:1;	// bit 0
+//			unsigned int res0:3;
+//			unsigned int blue_bypass_en:1;
+//			unsigned int green_bypass_en:1;
+//			unsigned int red_bypass_en:1;
+//			unsigned int alpha_bypass_en:1;
+//			unsigned int blue_ch_sel:2;
+//			unsigned int green_ch_sel:2;
+//			unsigned int red_ch_sel:2;
+//			unsigned int alpha_ch_sel:2;
+//			unsigned int res1:16;
+//		} bits;
+//	};
+
 // https://github.com/DongshanPI/D1s-Melis/blob/b289fdae3e6245c3f185259903c91e7db204cfb5/ekernel/drivers/hal/source/g2d_rcq/g2d_mixer_type.h#L375
 // ROP_INDEX structure:
 //	union g2d_mixer_rop_ch3_index0 {
 //		unsigned int dwval;
 //		struct {
-//			unsigned int index0node0:3;
-//			unsigned int index0node1:1;
+//			unsigned int index0node0:3;		// bit 0..2
+//			unsigned int index0node1:1;		// bit 3
 //			unsigned int index0node2:1;
 //			unsigned int index0node3:1;
 //			unsigned int index0node4:4;
 //			unsigned int index0node5:1;
 //			unsigned int index0node6:4;
 //			unsigned int index0node7:1;
-//			unsigned int ch0ign_en:1;
+//			unsigned int ch0ign_en:1;		// bit 16
 //			unsigned int ch1ign_en:1;
 //			unsigned int ch2ign_en:1;
 //			unsigned int res0:13;
 //		} bits;
 //	};
+
+// https://github.com/snegovick/sunxi-g2d/blob/77a50a4ced54e1f77f6f5cb7fe0f8364a6d9b899/module/sunxi_g2d_regs.h#L172C1-L178C1
+//	#define ROP_CTL         (0x080 + G2D_BLD)
+//	#define ROP_CTL_TYPE  BIT(0)
+//	#define ROP_CTL_BLUE_BYPASS_EN  BIT(4)
+//	#define ROP_CTL_GREEN_BYPASS_EN  BIT(5)
+//	#define ROP_CTL_RED_BYPASS_EN  BIT(6)
+//	#define ROP_CTL_ALPHA_BYPASS_EN  BIT(7)
 
 // Возврат не-0, если операция выполнена аппаратурой
 static int
@@ -1355,7 +1472,7 @@ void arm_hardware_mdma_initialize(void)
 	//PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
 
 	//memset32(G2D_TOP, 0xFF, sizeof * G2D_TOP);
-	awxx_rcq(0xDEADBEEF, 64);
+	awxx_g2d_top_set_rcq_head(0xDEADBEEF, 64);
 //	PRINTF("G2D_TOP:\n");
 //	printhex32(G2D_TOP_BASE, G2D_TOP, 256);
 #else
