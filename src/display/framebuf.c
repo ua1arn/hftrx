@@ -244,7 +244,7 @@ static void awxx_g2d_mixer_reset(void)
 	//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 	G2D_VSU->VS_CTRL = 0;
-	G2D_ROT->ROT_CTL = 0;
+	G2D_ROT->ROT_CTL = 0;// valid rot_ctl bits 400001F2
 	G2D_V0->V0_ATTCTL = 0;
 	G2D_UI0->UI_ATTR = 0;
 	G2D_UI1->UI_ATTR = 0;
@@ -437,6 +437,23 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 #endif /* defined (G2D_MIXER) */
 
 #if defined (G2D_ROT)
+
+static uint_fast32_t g2d_rot_ctl(
+	unsigned mx, unsigned my,
+	unsigned quadrant
+	)
+{
+	uint_fast32_t rot_ctl = 0;	// valid rot_ctl bits 400001F2
+
+	rot_ctl |= 0x00 * (UINT32_C(1) << 30);	// bit 30 ? is not a RESET
+	rot_ctl |= 0x00 * (UINT32_C(1) << 8);	// bit 8 ?
+	rot_ctl |= 0x00 * (UINT32_C(1) << 2);	// bit 2 ?
+	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horizontal
+	rot_ctl |= !! my * (UINT32_C(1) << 6);	// flip vertical
+	rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+	return rot_ctl;
+}
+
 
 /* Запуск и ожидание завершения работы G2D  (ROT) */
 /* 0 - timeout. 1 - OK */
@@ -1848,10 +1865,7 @@ draw_awrot_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
 	unsigned quadrant = 0;
 	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0); // source size
 	const uint_fast32_t tsizehw = tsizehw4 [quadrant];
-	uint_fast32_t rot_ctl = 0;
-	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horizontal
-	rot_ctl |= !! my * (UINT32_C(1) << 6);	// flip vertical
-	rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+	const uint_fast32_t rot_ctl = g2d_rot_ctl(mx, my, quadrant);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
@@ -2977,10 +2991,7 @@ void colpip_copyrotate(
 	const unsigned quadrant = (angle % 360) / 90;
 	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0); // source size
 	const uint_fast32_t tsizehw = tsizehw4 [quadrant];
-	uint_fast32_t rot_ctl = 0;
-	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horizontal
-	rot_ctl |= !! my * (UINT32_C(1) << 6);	// flip vertical
-	rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+	const uint_fast32_t rot_ctl = g2d_rot_ctl(mx, my, quadrant);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
@@ -3303,10 +3314,7 @@ void hwaccel_bitblt(
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-	unsigned rot_ctl = 0;
-	rot_ctl |= !! (keyflag & BITBLT_FLAG_XMIRROR) * (UINT32_C(1) << 7);	// flip horizontal
-	rot_ctl |= !! (keyflag & BITBLT_FLAG_YMIRROR) * (UINT32_C(1) << 6);	// flip vertical
-	//rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+	const uint_fast32_t rot_ctl = g2d_rot_ctl(!! (keyflag & BITBLT_FLAG_XMIRROR), !! (keyflag & BITBLT_FLAG_YMIRROR), 0);
 	hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, rot_ctl);
 
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER && defined (G2D_MIXER)
@@ -3339,10 +3347,7 @@ void hwaccel_bitblt(
 
 	if ((keyflag & BITBLT_FLAG_XMIRROR) || (keyflag & BITBLT_FLAG_YMIRROR))
 	{
-		unsigned rot_ctl = 0;
-		rot_ctl |= !! (keyflag & BITBLT_FLAG_XMIRROR) * (UINT32_C(1) << 7);	// flip horizontal
-		rot_ctl |= !! (keyflag & BITBLT_FLAG_YMIRROR) * (UINT32_C(1) << 6);	// flip vertical
-		//rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+		const uint_fast32_t rot_ctl = g2d_rot_ctl(!! (keyflag & BITBLT_FLAG_XMIRROR), !! (keyflag & BITBLT_FLAG_YMIRROR), 0);
 		hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, rot_ctl);
 	}
 	else
