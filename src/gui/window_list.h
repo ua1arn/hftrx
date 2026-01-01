@@ -40,4 +40,5 @@
 	X(EXTIOLAN,          UTILS,         ALIGN_CENTER_X, "LAN IQ Stream server",      1, window_stream_process) 			\
 	X(WNBCONFIG,         RECEIVE,       ALIGN_CENTER_X, "WNB config",                1, window_wnbconfig_process) 		\
 	X(AD936X,            OPTIONS,       ALIGN_CENTER_X, "AD936x config",             1, window_ad936x_process) 			\
-	X(AS,                DUMMY,         ALIGN_CENTER_X, "AF samples",                1, window_as_process)
+	X(AS,                DUMMY,         ALIGN_CENTER_X, "AF samples",                1, window_as_process)				\
+	X(FANPWM,            UTILS,         ALIGN_CENTER_X, "FAN PWM control",           1, window_fanpwm_process)

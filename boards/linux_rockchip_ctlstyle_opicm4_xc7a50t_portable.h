@@ -107,7 +107,7 @@
 	#define DMABUFSCALE				1
 	#define WITHIQSHIFT				1
 	#define DEFAULTDIALFREQ			7100000uL
-//	#define WITHCPUFANPWM			1
+	#define WITHCPUFANPWM			1
 	#define WITHCPUTEMPERATURE		1
 //	#define WITHEXTIO_LAN			1 	// ExtIO_Storch.dll for SDRSharper
 	#define WITHWNB					1	// Simple noise blanker

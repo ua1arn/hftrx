@@ -887,6 +887,7 @@ volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_r
 volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, adc_driver = 0;
 volatile static uint8_t fir_load_rst = 0, iq_test = 0, wnb_state = 0, resetn_stream = 0;
 int fd_int = 0;
+int32_t iq_test_max = 0;
 
 uint8_t rxbuf[SIZERX8] = { 0 };
 
@@ -1003,7 +1004,7 @@ uint8_t wnb_state_switch(uint8_t v)
 
 uint32_t iq_cic_test_process(void)
 {
-	return 0;
+	return iq_test_max;
 }
 
 void iq_cic_test(uint32_t val)
@@ -1466,6 +1467,12 @@ void xdma_iq_event_handler(void)
 
 	release_dmabuffer32tx(addr32tx);
 
+	if (iq_test)
+	{
+		int32_t * b = (int32_t *) rxbuf;
+		arm_max_no_idx_q31(b, DMABUFFSIZE32RX, & iq_test_max);
+	}
+
 	iq_mutex_unlock();
 }
 
@@ -1798,17 +1805,6 @@ void zynq_pl_init(void)
 	reg_write(AXI_DCDC_PWM_ADDR + 4, dcdc_pwm_duty);
 #endif /* defined AXI_DCDC_PWM_ADDR */
 
-#if WITHCPUFANPWM
-	{
-		const float FS = powf(2, 32);
-		uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
-		reg_write(XPAR_FAN_PWM_RX_BASEADDR + 0, fan_pwm_period);
-
-		uint32_t fan_pwm_duty = FS * (1.0f - 0.6f) - 1;
-		reg_write(XPAR_FAN_PWM_RX_BASEADDR + 4, fan_pwm_duty);
-	}
-#endif /* WITHCPUFANPWM */
-
 	modem_reset(1);
 
 	linux_init_cond(& ct_iq);
@@ -1818,6 +1814,27 @@ void zynq_pl_init(void)
 #endif /* DDS1_TYPE  == DDS_TYPE_ZYNQ_PL */
 
 /*************************************************************/
+
+#if WITHCPUFANPWM
+static uint8_t fan_duty = 0;
+
+uint8_t linux_fan_pwm_set(int8_t d)
+{
+	if (d < 0) return fan_duty;
+
+	fan_duty = d >= 100 ? 100 : d;
+	float dutyF = fan_duty / 100.0f;
+	const float FS = powf(2, 32);
+
+	uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
+	reg_write(AXI_FAN_PWM_BASEADDR + 0, fan_pwm_period);
+
+	uint32_t fan_pwm_duty = FS * (1.0f - dutyF) - 1;
+	reg_write(AXI_FAN_PWM_BASEADDR + 4, fan_pwm_duty);
+
+	return fan_duty;
+}
+#endif /* WITHCPUFANPWM */
 
 int check_and_terminate_existing_instance(void)
 {
@@ -2259,6 +2276,9 @@ void linux_user_init(void)
 #if WITHSYSFSBATTERY
 	sysfs_battery_init();
 #endif /* WITHSYSFSBATTERY */
+#if WITHCPUFANPWM
+	linux_fan_pwm_set(20);
+#endif /* WITHCPUFANPWM */
 }
 
 #if defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_LINUX)
