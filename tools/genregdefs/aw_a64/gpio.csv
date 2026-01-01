@@ -16,7 +16,8 @@
 
 #type; GPIOBLOCK
 #base; GPIOBLOCK 0x01C20800
-#base; GPIOBLOCK_L 0x01F02C00
+##base; GPIOBLOCK_L 0x01F02C00
+
 #aggreg; GPIO_PINS; 0x0000 8; GPIO pin control
 #regdef; CFG; 0x000 4; Configure Register
 #regdef; DATA; 0x0010; Data Register

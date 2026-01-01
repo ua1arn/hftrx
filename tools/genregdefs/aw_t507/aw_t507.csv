@@ -68,7 +68,7 @@
 
 #type; GPIOBLOCK; Port Controller
 #base; GPIOBLOCK 0x0300B000
-#base; GPIOBLOCK_L 0x01F02C00
+##base; GPIOBLOCK_L 0x01F02C00
 #typeend;
 
 #type; GPIOINT

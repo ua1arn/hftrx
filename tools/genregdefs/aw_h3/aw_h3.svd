@@ -2724,10 +2724,6 @@
    </cluster>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="GPIOBLOCK">
-  <name>GPIOBLOCK_L</name>
-  <baseAddress>0x01F02C00</baseAddress>
-  </peripheral>
   <peripheral>
   <name>GPIOINTA</name>
   <description></description>
