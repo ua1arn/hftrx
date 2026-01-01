@@ -1473,6 +1473,7 @@ void arm_hardware_mdma_initialize(void)
 
 	//memset32(G2D_TOP, 0xFF, sizeof * G2D_TOP);
 	awxx_g2d_top_set_rcq_head(0xDEADBEEF, 64);
+	//awxx_g2d_top_rcq_update_en();
 //	PRINTF("G2D_TOP:\n");
 //	printhex32(G2D_TOP_BASE, G2D_TOP, 256);
 #else
