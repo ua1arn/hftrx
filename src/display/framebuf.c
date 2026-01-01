@@ -444,7 +444,8 @@ static uint_fast32_t g2d_rot_ctl(
 	)
 {
 	uint_fast32_t rot_ctl = 0;	// valid rot_ctl bits 400001F2
-
+	// bit 0: enable
+	// bit 31: start (self-cleaning)
 	rot_ctl |= 0x00 * (UINT32_C(1) << 30);	// bit 30 ? is not a RESET
 	rot_ctl |= 0x00 * (UINT32_C(1) << 8);	// bit 8 ?
 	rot_ctl |= 0x00 * (UINT32_C(1) << 2);	// bit 2 ?
@@ -517,6 +518,7 @@ hwaccel_rotcopy(
 	G2D_ROT->ROT_IFMT = ROT_ImageFormat;
 
 	G2D_ROT->ROT_ISIZE = ssizehw;
+	ASSERT(G2D_ROT->ROT_ISIZE == ssizehw);
 	G2D_ROT->ROT_IPITCH0 = sstride;	// Y/RGB/ARGB data memory. Should be 128bit aligned.
 //	G2D_ROT->ROT_IPITCH1 = sstride;	// U/UV data memory
 //	G2D_ROT->ROT_IPITCH2 = sstride; // V data memory
@@ -531,6 +533,7 @@ hwaccel_rotcopy(
 //	G2D_ROT->ROT_OPITCH1 = tstride;
 //	G2D_ROT->ROT_OPITCH2 = tstride;
 	G2D_ROT->ROT_OSIZE = tsizehw;
+	ASSERT(G2D_ROT->ROT_OSIZE == tsizehw);
 	G2D_ROT->ROT_OLADD0 = ptr_lo32(taddr);	// Alignment not required
 	G2D_ROT->ROT_OHADD0 = ptr_hi32(taddr) & 0xff;
 //	G2D_ROT->ROT_OLADD1 = ptr_lo32(taddr);
