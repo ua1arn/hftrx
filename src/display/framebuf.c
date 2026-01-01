@@ -228,10 +228,37 @@ static void aw_g2d_initialize(void)
 {
 }
 
+enum
+{
+	xG2D_SM_TDLR_1 = 0x00,
+	xG2D_SM_DTLR_1 = 0x01,
+	xG2D_SM_TDRL_1 = 0x02,
+	xG2D_SM_DTRL_1 = 0x03,
+};
+
+#define G2D_SCANORFER 3
+
 /* Отключаем все источники */
-static void awxx_g2d_mixer_reset(void)
+static void awxx_g2d_mixer_reset(unsigned scanorder)
 {
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
+//	G2D_MIXER->G2D_MIXER_CTRL = 0x7FFFFFFF;
+//	PRINTF("G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
+
+	// G2D_MIXER_CTRL:
+	// bit 31: start
+	// bit 8: ?
+
+	// bit 7:4 - scan order
+	//	G2D_SM_TDLR_1  =    0x00, ??
+	//	G2D_SM_DTLR_1  = 	0x01,
+	//	G2D_SM_TDRL_1  =    0x02,
+	//	G2D_SM_DTRL_1  =    0x03,
+
+	G2D_MIXER->G2D_MIXER_CTRL =
+		!! 0x00 * (UINT32_C(1) << 8) |		// не дожидаемся завершения операции при этом бите
+		scanorder * (UINT32_C(1) << 4) |	// не влияет
+		0;
 
 	//	memset32(G2D_V0, 0, sizeof * G2D_V0);
 	//	memset32(G2D_UI0, 0, sizeof * G2D_UI0);
@@ -327,8 +354,8 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 	//	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 	//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 	g2d_rtmx_accure();
+	awxx_g2d_mixer_reset(G2D_SCANORFER); /* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
-	awxx_g2d_mixer_reset(); /* Отключаем все источники */
 	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
 		const COLOR24_T keycolor24 = awxx_key_color_conversion(keycolor);
@@ -873,7 +900,7 @@ aw_g2d_fillrect(
 {
 	const uint_fast32_t toffset = 0;	// не может быть использован в случае использования информации в буфере (FILL_FLAG_MIXBG) ((row) << 16) | ((col) << 0);
 	g2d_rtmx_accure();
-	awxx_g2d_mixer_reset();	/* Отключаем все источники */
+	awxx_g2d_mixer_reset(G2D_SCANORFER);	/* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
@@ -3474,7 +3501,7 @@ void hwaccel_stretchblt(
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
 	g2d_rtmx_accure();
-	awxx_g2d_mixer_reset();	/* Отключаем все источники */
+	awxx_g2d_mixer_reset(G2D_SCANORFER);	/* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 
 //	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
