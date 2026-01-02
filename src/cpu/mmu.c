@@ -1650,6 +1650,7 @@ sysinit_ttbr_initialize(void)
 
 		}
 
+		if (0)
 		{
 			// Step 3: Execute the mret instruction
 			csr_write_sepc((uintptr_t) rv64_xmret2);

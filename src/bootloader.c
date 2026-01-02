@@ -595,7 +595,7 @@ void __attribute__((used)) SystemExecAARCH64(void)
 	uint_fast8_t x64bit;
 	if (bootloader_get_start((uintptr_t) header, & ip, & x64bit) == 0)	/* проверка сигнатуры и получение стартового адреса */
 	{
-		PRINTF("Start address ip=%08X\n", (unsigned) ip);
+		PRINTF("Start address ip=%08X (64bit=%u)\n", (unsigned) ip, (unsigned) x64bit);
 		bootloader_launch_app(ip, x64bit);
 		for (;;)
 			;

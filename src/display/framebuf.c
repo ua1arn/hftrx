@@ -228,10 +228,37 @@ static void aw_g2d_initialize(void)
 {
 }
 
+enum
+{
+	xG2D_SM_TDLR_1 = 0x00,
+	xG2D_SM_DTLR_1 = 0x01,
+	xG2D_SM_TDRL_1 = 0x02,
+	xG2D_SM_DTRL_1 = 0x03,
+};
+
+#define G2D_SCANORFER 3
+
 /* Отключаем все источники */
-static void awxx_g2d_mixer_reset(void)
+static void awxx_g2d_mixer_reset(unsigned scanorder)
 {
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
+//	G2D_MIXER->G2D_MIXER_CTRL = 0x7FFFFFFF;
+//	PRINTF("G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
+
+	// G2D_MIXER_CTRL:
+	// bit 31: start
+	// bit 8: ?
+
+	// bit 7:4 - scan order
+	//	G2D_SM_TDLR_1  =    0x00, ??
+	//	G2D_SM_DTLR_1  = 	0x01,
+	//	G2D_SM_TDRL_1  =    0x02,
+	//	G2D_SM_DTRL_1  =    0x03,
+
+	G2D_MIXER->G2D_MIXER_CTRL =
+		!! 0x00 * (UINT32_C(1) << 8) |		// G2D_MIXER_CTL_BIST_EN
+		scanorder * (UINT32_C(1) << 4) |	// G2D_MIXER_CTL_SCAN_ORDER
+		0;
 
 	//	memset32(G2D_V0, 0, sizeof * G2D_V0);
 	//	memset32(G2D_UI0, 0, sizeof * G2D_UI0);
@@ -244,7 +271,7 @@ static void awxx_g2d_mixer_reset(void)
 	//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 	G2D_VSU->VS_CTRL = 0;
-	G2D_ROT->ROT_CTL = 0;
+	G2D_ROT->ROT_CTL = 0;// valid rot_ctl bits 400001F2
 	G2D_V0->V0_ATTCTL = 0;
 	G2D_UI0->UI_ATTR = 0;
 	G2D_UI1->UI_ATTR = 0;
@@ -253,8 +280,100 @@ static void awxx_g2d_mixer_reset(void)
 	G2D_BLD->BLD_KEY_CTL = 0;
 }
 
+//	union g2d_rcq_irq_ctl {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int rcq_sel:1;
+//			unsigned int res0:3;
+//			unsigned int task_end_irq_en:1;
+//			unsigned int res1:1;
+//			unsigned int rcq_cfg_finish_irq_en:1;
+//			unsigned int res2:25;
+//		} bits;
+//	};
+//
+//	union g2d_rcq_status {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int task_end_irq:1;
+//			unsigned int res0:1;
+//			unsigned int cfg_finish_irq:1;
+//			unsigned int res1:5;
+//			unsigned int frame_cnt:8;
+//			unsigned int res2:16;
+//		} bits;
+//	};
+//
+//	union g2d_rcq_ctrl {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int update:1;
+//			unsigned int res0:31;
+//		} bits;
+//	};
+//
+//	union g2d_rcq_header_len {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int rcq_header_len:16;
+//			unsigned int res0:16;
+//		} bits;
+//	};
+
+
+static void awxx_g2d_top_rcq_irq_en(void)
+{
+	G2D_TOP->RCQ_IRQ_CTL |= (UINT32_C(1) << 4); //.bits.task_end_irq_en = en; // bit 4
+	//G2D_TOP->RCQ_IRQ_CTL |= (UINT32_C(1) << 7); .bits.rcq_cfg_finish_irq_en = en; // bit 7
+}
+
+static void awxx_g2d_top_rcq_update_en(void)
+{
+	// bit 0
+	G2D_TOP->RCQ_CTRL |= (UINT32_C(1) << 0);	// update
+	while ((G2D_TOP->RCQ_CTRL & (UINT32_C(1) << 0)) != 0)
+		;
+}
+
+static unsigned awxx_g2d_top_rcq_task_irq_query(void)
+{
+	// bit 0
+	const uint_fast32_t status = G2D_TOP->RCQ_STATUS;
+	if (status & (UINT32_C(1) << 0))
+	{
+		G2D_TOP->RCQ_STATUS = (UINT32_C(1) << 0);	// task_end_irq
+		return 1;
+	}
+//	if (G2D_TOP->RCQ_STATUS.bits.task_end_irq & 0x1) {
+//		G2D_TOP->RCQ_STATUS.bits.task_end_irq = 1;
+//		return 1;
+//	}
+	return 0;
+}
+
+static unsigned awxx_g2d_top_rcq_cfg_irq_query(void)
+{
+	// bit 2
+	const uint_fast32_t status = G2D_TOP->RCQ_STATUS;
+	if (status & (UINT32_C(1) << 2))
+	{
+		G2D_TOP->RCQ_STATUS = (UINT32_C(1) << 2);	// cfg_finish_irq
+		return 1;
+	}
+//	if (G2D_TOP->RCQ_STATUS.bits.cfg_finish_irq & 0x1) {
+//		G2D_TOP->RCQ_STATUS.bits.cfg_finish_irq = 1;
+//		return 1;
+//	}
+	return 0;
+}
+
+static unsigned awxx_g2d_top_get_rcq_frame_cnt(void)
+{
+	return (G2D_TOP->RCQ_STATUS >> 8) &  0xFF; //.bits.frame_cnt;
+}
+
 // Register Configuration Queue setup
-static void awxx_rcq(uintptr_t buff, unsigned len)
+static void awxx_g2d_top_set_rcq_head(uintptr_t buff, unsigned len)
 {
 	G2D_TOP->RCQ_CTRL = 0;	// При  0 тут возможна установка параметров
 	G2D_TOP->RCQ_HEADER_LOW_ADDR = ptr_lo32(buff);
@@ -267,6 +386,51 @@ static void awxx_rcq(uintptr_t buff, unsigned len)
 }
 
 
+//	union rcq_hd_dw0 {
+//		__u32 dwval;
+//		struct {
+//			__u32 len:24;
+//			__u32 high_addr:8;
+//		} bits;
+//	};
+//
+//	union rcq_hd_dirty {
+//		__u32 dwval;
+//		struct {
+//			__u32 dirty:1;
+//			__u32 res0:15;
+//			__u32 n_header_len : 16; /*next frame header length*/
+//		} bits;
+//	};
+//
+//	struct g2d_rcq_head {
+//		__u32 low_addr; /* 32 bytes align */
+//		union rcq_hd_dw0 dw0;
+//		union rcq_hd_dirty dirty;
+//		__u32 reg_offset; /* offset_addr based on g2d_reg_base */
+//	};
+
+typedef struct
+{
+	uint32_t low_addr; /* 32 bytes align */
+	uint32_t dw0;	// 31:24 - high addr, 23:0 - len
+	uint32_t dirty;	// 32:16 - header len, 0 - dirty
+	uint32_t reg_offset;
+} awxx_g2d_rcq_head_t;
+
+static void awxx_g2d_rcq_head_initialize(awxx_g2d_rcq_head_t * h, uintptr_t addr, unsigned hlen, unsigned nextlen, unsigned reg_offset)
+{
+	h->low_addr = ptr_lo32(addr);
+	h->dw0 =
+		(ptr_hi32(addr) & 0xFF) * (UINT32_C(1) << 24) |	// high addr
+		(nextlen & 0xFFFFFF) * (UINT32_C(1) << 0) |	// len (next frame len
+		0;
+	h->dirty =
+		(hlen & 0xFFFF) * (UINT32_C(1) << 16) |	// header len
+		(0) * (UINT32_C(1) << 0) |	// dirty
+		0;
+	h->reg_offset = reg_offset;
+}
 /* Запуск и ожидание завершения работы G2D */
 /* 0 - timeout. 1 - OK */
 static int hwacc_rtmx_waitdone(void)
@@ -309,7 +473,6 @@ static void awxx_g2d_rtmix_startandwait(void)
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 }
 
-
 static void
 awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		unsigned srcFormat, unsigned sstride,
@@ -327,8 +490,8 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 	//	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
 	//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 	g2d_rtmx_accure();
+	awxx_g2d_mixer_reset(G2D_SCANORFER); /* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
-	awxx_g2d_mixer_reset(); /* Отключаем все источники */
 	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
 		const COLOR24_T keycolor24 = awxx_key_color_conversion(keycolor);
@@ -438,6 +601,24 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 
 #if defined (G2D_ROT)
 
+static uint_fast32_t g2d_rot_ctl(
+	unsigned mx, unsigned my,
+	unsigned quadrant
+	)
+{
+	uint_fast32_t rot_ctl = 0;	// valid rot_ctl bits 400001F2
+	// bit 0: enable
+	// bit 31: start (self-cleaning)
+	rot_ctl |= 0x00 * (UINT32_C(1) << 30);	// bit 30 ? is not a RESET
+	rot_ctl |= 0x00 * (UINT32_C(1) << 8);	// bit 8 ?
+	rot_ctl |= 0x00 * (UINT32_C(1) << 2);	// bit 2 ?
+	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horizontal
+	rot_ctl |= !! my * (UINT32_C(1) << 6);	// flip vertical
+	rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+	return rot_ctl;
+}
+
+
 /* Запуск и ожидание завершения работы G2D  (ROT) */
 /* 0 - timeout. 1 - OK */
 static int hwacc_rot_waitdone(void)
@@ -500,6 +681,7 @@ hwaccel_rotcopy(
 	G2D_ROT->ROT_IFMT = ROT_ImageFormat;
 
 	G2D_ROT->ROT_ISIZE = ssizehw;
+	ASSERT(G2D_ROT->ROT_ISIZE == ssizehw);
 	G2D_ROT->ROT_IPITCH0 = sstride;	// Y/RGB/ARGB data memory. Should be 128bit aligned.
 //	G2D_ROT->ROT_IPITCH1 = sstride;	// U/UV data memory
 //	G2D_ROT->ROT_IPITCH2 = sstride; // V data memory
@@ -514,6 +696,7 @@ hwaccel_rotcopy(
 //	G2D_ROT->ROT_OPITCH1 = tstride;
 //	G2D_ROT->ROT_OPITCH2 = tstride;
 	G2D_ROT->ROT_OSIZE = tsizehw;
+	ASSERT(G2D_ROT->ROT_OSIZE == tsizehw);
 	G2D_ROT->ROT_OLADD0 = ptr_lo32(taddr);	// Alignment not required
 	G2D_ROT->ROT_OHADD0 = ptr_hi32(taddr) & 0xff;
 //	G2D_ROT->ROT_OLADD1 = ptr_lo32(taddr);
@@ -814,25 +997,51 @@ static void vsu_fir_bytable(volatile uint32_t * p, unsigned offset)
 	}
 }
 
+
+//	union g2d_mixer_rop_ctrl {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int type:1;	// bit 0
+//			unsigned int res0:3;
+//			unsigned int blue_bypass_en:1;
+//			unsigned int green_bypass_en:1;
+//			unsigned int red_bypass_en:1;
+//			unsigned int alpha_bypass_en:1;
+//			unsigned int blue_ch_sel:2;
+//			unsigned int green_ch_sel:2;
+//			unsigned int red_ch_sel:2;
+//			unsigned int alpha_ch_sel:2;
+//			unsigned int res1:16;
+//		} bits;
+//	};
+
 // https://github.com/DongshanPI/D1s-Melis/blob/b289fdae3e6245c3f185259903c91e7db204cfb5/ekernel/drivers/hal/source/g2d_rcq/g2d_mixer_type.h#L375
 // ROP_INDEX structure:
 //	union g2d_mixer_rop_ch3_index0 {
 //		unsigned int dwval;
 //		struct {
-//			unsigned int index0node0:3;
-//			unsigned int index0node1:1;
+//			unsigned int index0node0:3;		// bit 0..2
+//			unsigned int index0node1:1;		// bit 3
 //			unsigned int index0node2:1;
 //			unsigned int index0node3:1;
 //			unsigned int index0node4:4;
 //			unsigned int index0node5:1;
 //			unsigned int index0node6:4;
 //			unsigned int index0node7:1;
-//			unsigned int ch0ign_en:1;
+//			unsigned int ch0ign_en:1;		// bit 16
 //			unsigned int ch1ign_en:1;
 //			unsigned int ch2ign_en:1;
 //			unsigned int res0:13;
 //		} bits;
 //	};
+
+// https://github.com/snegovick/sunxi-g2d/blob/77a50a4ced54e1f77f6f5cb7fe0f8364a6d9b899/module/sunxi_g2d_regs.h#L172C1-L178C1
+//	#define ROP_CTL         (0x080 + G2D_BLD)
+//	#define ROP_CTL_TYPE  BIT(0)
+//	#define ROP_CTL_BLUE_BYPASS_EN  BIT(4)
+//	#define ROP_CTL_GREEN_BYPASS_EN  BIT(5)
+//	#define ROP_CTL_RED_BYPASS_EN  BIT(6)
+//	#define ROP_CTL_ALPHA_BYPASS_EN  BIT(7)
 
 // Возврат не-0, если операция выполнена аппаратурой
 static int
@@ -853,7 +1062,7 @@ aw_g2d_fillrect(
 {
 	const uint_fast32_t toffset = 0;	// не может быть использован в случае использования информации в буфере (FILL_FLAG_MIXBG) ((row) << 16) | ((col) << 0);
 	g2d_rtmx_accure();
-	awxx_g2d_mixer_reset();	/* Отключаем все источники */
+	awxx_g2d_mixer_reset(G2D_SCANORFER);	/* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
@@ -1308,7 +1517,8 @@ void arm_hardware_mdma_initialize(void)
 	//PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
 
 	//memset32(G2D_TOP, 0xFF, sizeof * G2D_TOP);
-	awxx_rcq(0xDEADBEEF, 64);
+	awxx_g2d_top_set_rcq_head(0xDEADBEEF, 64);
+	//awxx_g2d_top_rcq_update_en();
 //	PRINTF("G2D_TOP:\n");
 //	printhex32(G2D_TOP_BASE, G2D_TOP, 256);
 #else
@@ -1848,10 +2058,7 @@ draw_awrot_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
 	unsigned quadrant = 0;
 	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0); // source size
 	const uint_fast32_t tsizehw = tsizehw4 [quadrant];
-	uint_fast32_t rot_ctl = 0;
-	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horizontal
-	rot_ctl |= !! my * (UINT32_C(1) << 6);	// flip vertical
-	rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+	const uint_fast32_t rot_ctl = g2d_rot_ctl(mx, my, quadrant);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
@@ -2977,10 +3184,7 @@ void colpip_copyrotate(
 	const unsigned quadrant = (angle % 360) / 90;
 	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0); // source size
 	const uint_fast32_t tsizehw = tsizehw4 [quadrant];
-	uint_fast32_t rot_ctl = 0;
-	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horizontal
-	rot_ctl |= !! my * (UINT32_C(1) << 6);	// flip vertical
-	rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+	const uint_fast32_t rot_ctl = g2d_rot_ctl(mx, my, quadrant);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
@@ -3303,10 +3507,7 @@ void hwaccel_bitblt(
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-	unsigned rot_ctl = 0;
-	rot_ctl |= !! (keyflag & BITBLT_FLAG_XMIRROR) * (UINT32_C(1) << 7);	// flip horizontal
-	rot_ctl |= !! (keyflag & BITBLT_FLAG_YMIRROR) * (UINT32_C(1) << 6);	// flip vertical
-	//rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+	const uint_fast32_t rot_ctl = g2d_rot_ctl(!! (keyflag & BITBLT_FLAG_XMIRROR), !! (keyflag & BITBLT_FLAG_YMIRROR), 0);
 	hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, rot_ctl);
 
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER && defined (G2D_MIXER)
@@ -3339,10 +3540,7 @@ void hwaccel_bitblt(
 
 	if ((keyflag & BITBLT_FLAG_XMIRROR) || (keyflag & BITBLT_FLAG_YMIRROR))
 	{
-		unsigned rot_ctl = 0;
-		rot_ctl |= !! (keyflag & BITBLT_FLAG_XMIRROR) * (UINT32_C(1) << 7);	// flip horizontal
-		rot_ctl |= !! (keyflag & BITBLT_FLAG_YMIRROR) * (UINT32_C(1) << 6);	// flip vertical
-		//rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+		const uint_fast32_t rot_ctl = g2d_rot_ctl(!! (keyflag & BITBLT_FLAG_XMIRROR), !! (keyflag & BITBLT_FLAG_YMIRROR), 0);
 		hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, rot_ctl);
 	}
 	else
@@ -3466,7 +3664,7 @@ void hwaccel_stretchblt(
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
 	g2d_rtmx_accure();
-	awxx_g2d_mixer_reset();	/* Отключаем все источники */
+	awxx_g2d_mixer_reset(G2D_SCANORFER);	/* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 
 //	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer

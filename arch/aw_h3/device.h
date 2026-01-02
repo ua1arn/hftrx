@@ -144,7 +144,6 @@ typedef enum IRQn
 #define R_PRCM_BASE ((uintptr_t) 0x01F01400)          /*!< R_PRCM  Base */
 #define CPUCFG_BASE ((uintptr_t) 0x01F01C00)          /*!< CPUCFG CPU Configuration Base */
 #define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< UART  Base */
-#define GPIOBLOCK_L_BASE ((uintptr_t) 0x01F02C00)     /*!< GPIOBLOCK  Base */
 #define GPIOL_BASE ((uintptr_t) 0x01F02C00)           /*!< GPIO  Base */
 
 #include <core_ca.h>
@@ -1529,7 +1528,6 @@ typedef struct USB_OHCI_Capability_Type
 #define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
 #define CPUCFG ((CPUCFG_TypeDef *) CPUCFG_BASE)       /*!< CPUCFG CPU Configuration register set access pointer */
 #define R_UART ((UART_TypeDef *) R_UART_BASE)         /*!< R_UART  register set access pointer */
-#define GPIOBLOCK_L ((GPIOBLOCK_TypeDef *) GPIOBLOCK_L_BASE)/*!< GPIOBLOCK_L  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 
 #ifdef __cplusplus
