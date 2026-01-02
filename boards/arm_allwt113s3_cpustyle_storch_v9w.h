@@ -545,10 +545,10 @@
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
 	#define targettsc1 		targetext1	/* XPT2046 SPI chip select signal */
 
-	#define FPGALOADER_SPEEDC SPIC_SPEED4M
-	#define FPGAREG_V1_SPEEDC SPIC_SPEED4M
-	#define SPIDF_SPEEDC 		SPIC_SPEED4M
-	#define NVRAM_SPEEDC 		SPIC_SPEED4M
+	#define FPGALOADER_SPEEDC SPIC_SPEED12M
+	#define FPGAREG_V1_SPEEDC SPIC_SPEED12M
+	#define SPIDF_SPEEDC 		SPIC_SPEED12M
+	#define NVRAM_SPEEDC 		SPIC_SPEED12M
 	#define NAU8822_SPEEDC 	SPIC_SPEED400k
 	#define CTLREG_SPEEDC		SPIC_SPEED400k
 	#define XPT2046_SPEEDC 	SPIC_SPEED400k
@@ -785,7 +785,7 @@
 		When initialization is complete, the INIT_DONE pin is released and pulled high. 
 		This low-to-high transition signals that the device has entered user mode.
 	*/
-	#define HARDWARE_FPGA_IS_USER_MODE() (local_delay_ms(100), (FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
+	#define HARDWARE_FPGA_IS_USER_MODE() ((FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
 
 #else /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 

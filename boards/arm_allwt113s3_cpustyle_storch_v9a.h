@@ -530,14 +530,6 @@
 	#define targetdataflash 0xFF
 	#define targetnone 0x00
 
-	#define FPGALOADER_SPEEDC SPIC_SPEED4M
-	#define FPGAREG_V1_SPEEDC SPIC_SPEED4M
-	#define SPIDF_SPEEDC 		SPIC_SPEED4M
-	#define NVRAM_SPEEDC 		SPIC_SPEED4M
-	#define NAU8822_SPEEDC 	SPIC_SPEED400k
-	#define CTLREG_SPEEDC		SPIC_SPEED400k
-	#define XPT2046_SPEEDC 	SPIC_SPEED400k
-
 	#define targetext1		(UINT32_C(1) << 0)		// PG0 ext1 on front panel CSEXT1
 	#define targetnvram		(UINT32_C(1) << 7)		// PG7 nvram FM25L16B
 	#define targetctl1		(UINT32_C(1) << 11)		// PG11 board control registers chain
@@ -553,6 +545,14 @@
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
 	#define targettsc1 		targetext1	/* XPT2046 SPI chip select signal */
+
+	#define FPGALOADER_SPEEDC SPIC_SPEED12M
+	#define FPGAREG_V1_SPEEDC SPIC_SPEED12M
+	#define SPIDF_SPEEDC 		SPIC_SPEED12M
+	#define NVRAM_SPEEDC 		SPIC_SPEED12M
+	#define NAU8822_SPEEDC 	SPIC_SPEED400k
+	#define CTLREG_SPEEDC		SPIC_SPEED400k
+	#define XPT2046_SPEEDC 	SPIC_SPEED400k
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
@@ -789,7 +789,7 @@
 		When initialization is complete, the INIT_DONE pin is released and pulled high. 
 		This low-to-high transition signals that the device has entered user mode.
 	*/
-	#define HARDWARE_FPGA_IS_USER_MODE() (local_delay_ms(100), (FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
+	#define HARDWARE_FPGA_IS_USER_MODE() ((FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
 
 #else /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 

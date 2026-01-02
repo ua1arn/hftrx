@@ -35,7 +35,7 @@ char nameDATAFLASH [64] = "NoChip";
 
 #if WITHSPIHW || WITHSPISW
 
-
+// FIR filter and bitstream loader speed
 #ifndef FPGALOADER_SPEEDC
 #define FPGALOADER_SPEEDC SPIC_SPEEDFAST
 #endif
@@ -5882,12 +5882,20 @@ static uint_fast8_t board_fpga_get_NSTATUS(void)
 
 }
 
+/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
+/*
+	After the option bit to enable INIT_DONE is programmed into the device (during the first
+	frame of configuration data), the INIT_DONE pin goes low.
+	When initialization is complete, the INIT_DONE pin is released and pulled high.
+	This low-to-high transition signals that the device has entered user mode.
+*/
 /* не на всех платах соединено с процессором */
 static uint_fast8_t board_fpga_get_USER_MODE(void)
 {
 #if defined HARDWARE_FPGA_IS_USER_MODE
 	return HARDWARE_FPGA_IS_USER_MODE();
 #else
+	local_delay_ms(100);
 	return 1;
 #endif
 }
