@@ -386,6 +386,51 @@ static void awxx_g2d_top_set_rcq_head(uintptr_t buff, unsigned len)
 }
 
 
+//	union rcq_hd_dw0 {
+//		__u32 dwval;
+//		struct {
+//			__u32 len:24;
+//			__u32 high_addr:8;
+//		} bits;
+//	};
+//
+//	union rcq_hd_dirty {
+//		__u32 dwval;
+//		struct {
+//			__u32 dirty:1;
+//			__u32 res0:15;
+//			__u32 n_header_len : 16; /*next frame header length*/
+//		} bits;
+//	};
+//
+//	struct g2d_rcq_head {
+//		__u32 low_addr; /* 32 bytes align */
+//		union rcq_hd_dw0 dw0;
+//		union rcq_hd_dirty dirty;
+//		__u32 reg_offset; /* offset_addr based on g2d_reg_base */
+//	};
+
+typedef struct
+{
+	uint32_t low_addr; /* 32 bytes align */
+	uint32_t dw0;	// 31:24 - high addr, 23:0 - len
+	uint32_t dirty;	// 32:16 - header len, 0 - dirty
+	uint32_t reg_offset;
+} awxx_g2d_rcq_head_t;
+
+static void awxx_g2d_rcq_head_initialize(awxx_g2d_rcq_head_t * h, uintptr_t addr, unsigned hlen, unsigned nextlen, unsigned reg_offset)
+{
+	h->low_addr = ptr_lo32(addr);
+	h->dw0 =
+		(ptr_hi32(addr) & 0xFF) * (UINT32_C(1) << 24) |	// high addr
+		(nextlen & 0xFFFFFF) * (UINT32_C(1) << 0) |	// len (next frame len
+		0;
+	h->dirty =
+		(hlen & 0xFFFF) * (UINT32_C(1) << 16) |	// header len
+		(0) * (UINT32_C(1) << 0) |	// dirty
+		0;
+	h->reg_offset = reg_offset;
+}
 /* Запуск и ожидание завершения работы G2D */
 /* 0 - timeout. 1 - OK */
 static int hwacc_rtmx_waitdone(void)
