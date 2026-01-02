@@ -45,6 +45,13 @@ static void set_indcap(unsigned char Ind, unsigned char Cap) {
 	n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
 }
 
+static void set_indcapSW(unsigned char Ind, unsigned char Cap, unsigned char SW) {
+	lastout_SW = SW;
+	lastout_ind = Ind;
+	lastout_cap = Cap;
+	n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
+}
+
 static void set_sw(unsigned char SW) {  // 0 - IN,  1 - OUT
 	lastout_SW = SW;
 	n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
@@ -236,7 +243,7 @@ static int coarse_tune(int (*cb)(void *ctx), void *ctx) {
 		int ec;
 		set_ind(count * L_mult);
 		ec = coarse_cap(cb, ctx);
-		if (ec)
+		if (N7DDCTUNE_OK != ec)
 			return ec;
 
 		if (local_get_swr(cb, ctx))
@@ -279,7 +286,7 @@ static int sub_tune(int (*cb)(void *ctx), void *ctx) {
 	//
 	swr_mem = SWR;
 	ec = coarse_tune(cb, ctx);
-	if (ec)
+	if (N7DDCTUNE_OK != ec)
 		return ec;
 
 	if (SWR == 0) {
@@ -294,7 +301,7 @@ static int sub_tune(int (*cb)(void *ctx), void *ctx) {
 		return N7DDCTUNE_OK;
 
 	ec = sharp_ind(cb, ctx);
-	if (ec)
+	if (N7DDCTUNE_OK != ec)
 		return ec;
 
 	if (SWR == 0) {
@@ -307,7 +314,7 @@ static int sub_tune(int (*cb)(void *ctx), void *ctx) {
 		return N7DDCTUNE_OK;
 
 	ec = sharp_cap(cb, ctx);
-	if (ec)
+	if (N7DDCTUNE_OK != ec)
 		return ec;
 
 	if (SWR == 0) {
@@ -339,7 +346,7 @@ static int sub_tune(int (*cb)(void *ctx), void *ctx) {
 		return N7DDCTUNE_OK;
 	//
 	ec = coarse_tune(cb, ctx);
-	if (ec)
+	if (N7DDCTUNE_OK != ec)
 		return ec;
 	if (SWR == 0) {
 		//atu_reset();
@@ -352,7 +359,7 @@ static int sub_tune(int (*cb)(void *ctx), void *ctx) {
 	if (SWR < 120)
 		return N7DDCTUNE_OK;
 	ec = sharp_ind(cb, ctx);
-	if (ec)
+	if (N7DDCTUNE_OK != ec)
 		return ec;
 
 	if (SWR == 0) {
@@ -366,7 +373,7 @@ static int sub_tune(int (*cb)(void *ctx), void *ctx) {
 		return N7DDCTUNE_OK;
 
 	ec = sharp_cap(cb, ctx);
-	if (ec)
+	if (N7DDCTUNE_OK != ec)
 		return ec;
 
 	if (SWR == 0) {
@@ -380,11 +387,9 @@ static int sub_tune(int (*cb)(void *ctx), void *ctx) {
 	//
 	if (SWR > swr_mem) {
 		SW = ! SW;
-
-		set_sw(SW);
 		ind = ind_mem;
 		cap = cap_mem;
-		set_indcap(ind, cap);
+		set_indcapSW(ind, cap, SW);
 		SWR = swr_mem;
 	}
 
@@ -412,7 +417,7 @@ static int tune(int (*cb)(void *ctx), void *ctx) {
 		return N7DDCTUNE_OK;
 
 	int ec = sub_tune(cb, ctx);
-	if (ec)
+	if (N7DDCTUNE_OK != ec)
 		return ec;
 
 	if (SWR == 0) {
@@ -429,7 +434,7 @@ static int tune(int (*cb)(void *ctx), void *ctx) {
 		step_ind = L_mult;
 		L_mult = 1;
 		ec = sharp_ind(cb, ctx);
-		if (ec)
+		if (N7DDCTUNE_OK != ec)
 			return ec;
 	}
 	if (SWR < 120)
@@ -438,7 +443,7 @@ static int tune(int (*cb)(void *ctx), void *ctx) {
 		step_cap = C_mult;  // = C_mult
 		C_mult = 1;
 		ec = sharp_cap(cb, ctx);
-		if (ec)
+		if (N7DDCTUNE_OK != ec)
 			return ec;
 	}
 	if (L_q == 5)
