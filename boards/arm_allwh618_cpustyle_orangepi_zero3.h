@@ -6,8 +6,8 @@
 // UA1ARN
 //
 
-// Orange Pi Zero 2W
-// http://www.orangepi.org/orangepiwiki/index.php/Orange_Pi_Zero_2W
+// Orange Pi Zero 3
+// http://www.orangepi.org/orangepiwiki/index.php/Orange_Pi_Zero_3
 
 #ifndef ARM_ALW_H618_CPU_ORANGEPI_ZERO3_H_INCLUDED
 #define ARM_ALW_H618_CPU_ORANGEPI_ZERO3_H_INCLUDED 1
