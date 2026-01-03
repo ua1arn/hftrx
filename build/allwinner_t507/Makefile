@@ -21,7 +21,7 @@ TRGT2 = arm-none-eabi
 #TRGT2 = aarch64-none-elf
 TRGT = $(TRGT2)-
 
-_XFEL = ../../tools/xfel-windows-v1.3.2/xfel
+_XFEL = ../../tools/xfel-windows-v1.3.4/xfel
 XFEL = ./xfel_lpddr4
 BUSYBOX = busybox
 
