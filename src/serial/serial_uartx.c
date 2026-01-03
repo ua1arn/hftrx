@@ -230,7 +230,9 @@ void hardware_uartx_flush(UART_t * uart)
 		if ((uart->UART_TFL & 0xFF) != 0)
 			continue;
 	}
-
+#elif CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
+	while ((uart->ISR & USART_ISR_TC_Msk) == 0)
+		;
 #else
 	//#error Undefined CPUSTYLE_XXX
 #endif
