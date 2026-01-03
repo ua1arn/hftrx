@@ -72,16 +72,7 @@ void user_uart4_onrxchar(uint_fast8_t c);
 	#define WITHUART4HW_FIFO	1	/* использование FIFO */
 #endif /* WITHDEBUG */
 
-
-
-#if WITHISBOOTLOADER
-
-	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
-	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
-	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
-
-	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
+#if 0//WITHISBOOTLOADER
 	#define WITHSDRAM_PMC1	1	/* ST PMC1 power management chip */
 
 	// PMC1 on MYIC-YA157C-xxx board
@@ -95,6 +86,16 @@ void user_uart4_onrxchar(uint_fast8_t c);
 	#define BOARD_PMIC_INITIALIZE() do { \
 		board_myir_pmc1_initialize(); /* Voltages are set here */ \
 	} while (0)
+#endif
+
+#if WITHISBOOTLOADER
+
+	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
+	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
+
+	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */

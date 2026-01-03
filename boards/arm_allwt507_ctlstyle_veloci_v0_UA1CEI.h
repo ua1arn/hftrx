@@ -479,7 +479,7 @@
 	//#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
-	#define WITHAFGAINDEFAULT    (150 * BOARD_AFGAIN_MAX / 255)
+	//#define WITHAFGAINDEFAULT    (150 * BOARD_AFGAIN_MAX / 255)
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 

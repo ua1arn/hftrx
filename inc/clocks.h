@@ -86,7 +86,7 @@ uint_fast32_t stm32h7xx_get_spi4_5_freq(void);
 uint_fast32_t stm32h7xx_get_adc_freq(void);
 uint_fast32_t stm32f7xx_pllq_initialize(void); // Настроить выход PLLQ на 48 МГц
 
-void stm32mp1_pll_initialize(void);
+void stm32mp1_pll_initialize(int forced);
 void stm32mp1_usb_clocks_initialize(void);
 void stm32mp1_audio_clocks_initialize(void);
 uint_fast32_t stm32mp1_get_hse_freq(void);

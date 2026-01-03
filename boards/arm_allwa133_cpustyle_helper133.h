@@ -1002,24 +1002,24 @@
 	} while (0)
 #endif
 
-	#if WITHISBOOTLOADER
+#if 1//WITHISBOOTLOADER
 
-		#define WITHSDRAM_AXP707	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP305 power management chip */
+	#define WITHSDRAM_AXP707	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP305 power management chip */
 
-		// i2c: 0x68/0x69 or 0x6a/0x6b
-		// rsb: 0x01d1 of 0x0273
+	// i2c: 0x68/0x69 or 0x6a/0x6b
+	// rsb: 0x01d1 of 0x0273
 
-		#define PMIC_I2C_W 0x68	// 7bit: 0x36
-		#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
+	#define PMIC_I2C_W 0x68	// 7bit: 0x36
+	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
-		// See WITHSDRAM_AXP707
-		int board_helperboard_a133_axp707_initialize(void);
+	// See WITHSDRAM_AXP707
+	int board_helperboard_a133_axp707_initialize(void);
 
-		/* Контроллер питания AXP305 */
-		#define BOARD_PMIC_INITIALIZE() do { \
-			board_helperboard_a133_axp707_initialize(); \
-		} while (0)
-	#endif /* WITHISBOOTLOADER */
+	/* Контроллер питания AXP305 */
+	#define BOARD_PMIC_INITIALIZE() do { \
+		board_helperboard_a133_axp707_initialize(); \
+	} while (0)
+#endif /* WITHISBOOTLOADER */
 
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_GPIOA_USERBOOT_BIT	(UINT32_C(1) << 8)	/* PA8: ~USER_BOOT - same as BOARD_GPIOA_ENC2BTN_BIT */

@@ -135,7 +135,7 @@
 	#endif /* WITHINTEGRATEDDSP */
 
 	#if ! LCDMODE_DUMMY
-		//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
+		#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 		#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 		//#define WITHGPUHW	1	/* Graphic processor unit */
 		#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
@@ -976,21 +976,21 @@
 	} while (0)
 #endif
 
-	#if WITHISBOOTLOADER
+#if 1//WITHISBOOTLOADER
 
-		#define WITHSDRAM_AXP305	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP305 power management chip */
+	#define WITHSDRAM_AXP305	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP305 power management chip */
 
-		#define PMIC_I2C_W 0x6C	// 7bit: 0x36
-		#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
+	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
+	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
-		// See WITHSDRAM_AXP308
-		int board_orangepi_zero2_axp305_initialize(void);
+	// See WITHSDRAM_AXP308
+	int board_orangepi_zero2_axp305_initialize(void);
 
-		/* Контроллер питания AXP305 */
-		#define BOARD_PMIC_INITIALIZE() do { \
-			board_orangepi_zero2_axp305_initialize(); \
-		} while (0)
-	#endif /* WITHISBOOTLOADER */
+	/* Контроллер питания AXP305 */
+	#define BOARD_PMIC_INITIALIZE() do { \
+		board_orangepi_zero2_axp305_initialize(); \
+	} while (0)
+#endif /* WITHISBOOTLOADER */
 
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_GPIOA_USERBOOT_BIT	(UINT32_C(1) << 8)	/* PA8: ~USER_BOOT - same as BOARD_GPIOA_ENC2BTN_BIT */

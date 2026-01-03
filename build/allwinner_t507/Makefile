@@ -21,8 +21,7 @@ TRGT2 = arm-none-eabi
 #TRGT2 = aarch64-none-elf
 TRGT = $(TRGT2)-
 
-_XFEL = ../../tools/xfel-windows-v1.3.2/xfel
-XFEL = ./xfel_lpddr4
+XFEL = ../../tools/xfel-windows-v1.3.4/xfel
 BUSYBOX = busybox
 
 #UADEFS += -D"WITHSMPSYSTEM"
@@ -248,7 +247,7 @@ bootloader: BOOT2
 # Take from tc1_t507_boot.map - address of SystemDRAMInit, SystemExecAARCH64
 ifeq (1, 1)
 # T507
-SystemDRAMInit = 0x0002d6ec
+SystemDRAMInit = 0x0002d780
 SystemExecAARCH64 = 0x00029514
 DDRINIT=ddrinit_t507
 else
@@ -266,10 +265,12 @@ endif
 ddrinit_h616: ddrinit_h616_lpddr3.bin
 	$(XFEL) write 0x00028000 ddrinit_h616_lpddr3.bin
 	$(XFEL) exec $(SystemDRAMInit)
+	$(BUSYBOX) sleep 1s
 
 ddrinit_h618: ddrinit_h618_lpddr4.bin
 	$(XFEL) write 0x00028000 ddrinit_h618_lpddr4.bin
 	$(XFEL) exec $(SystemDRAMInit)
+	$(BUSYBOX) sleep 1s
 
 ddrinit_t507_:
 	$(XFEL) ddr lpddr4

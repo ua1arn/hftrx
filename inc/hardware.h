@@ -832,6 +832,7 @@ uint32_t board_millis(void);	// tinyusb
 int sys_dram_init(void);	// 0 - error
 int main(void);
 void SystemInit(void);
+void main_SystemInit(void);	// Вызывается из main, при работающих прерываниях
 
 // RTOS test stuff
 int blinky_main(void);

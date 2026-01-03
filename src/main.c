@@ -58,17 +58,9 @@ main(void)
 {
 #if LINUX_SUBSYSTEM
 	linux_subsystem_init();
-#endif /* LINUX_SUBSYSTEM */
-#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
+#else /* LINUX_SUBSYSTEM */
 	sysinit_gpio_initialize();
-	local_delay_initialize();
-#endif /* (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM */
-#if WITHDEBUG && (! (CPUSTYLE_ARM || CPUSTYLE_RISCV) /* || WITHISBOOTLOADER */)
-
-	HARDWARE_DEBUG_INITIALIZE();
-	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-
-#endif /* WITHDEBUG && (! (CPUSTYLE_ARM || CPUSTYLE_RISCV) */
+#endif /* LINUX_SUBSYSTEM */
 
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 
@@ -77,16 +69,15 @@ main(void)
 	lowinitialize();	/* вызывается при запрещённых прерываниях. */
 	applowinitialize();	/* вызывается при запрещённых прерываниях. */
 	global_enableIRQ();
+#if LINUX_SUBSYSTEM
+#else /* LINUX_SUBSYSTEM */
+	main_SystemInit();
+#endif /* LINUX_SUBSYSTEM */
 	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
 	midtests();
-
 	initialize2();	/* вызывается при разрешённых прерываниях. */
-#if WITHLWIP
-	network_initialize();
-#endif /* WITHLWIP */
 	application_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
-
 #if LINUX_SUBSYSTEM
 	linux_user_init();
 #endif /* LINUX_SUBSYSTEM */

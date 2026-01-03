@@ -38,16 +38,7 @@
 
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
-
-#if WITHISBOOTLOADER
-
-//	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-//	#define WITHSDHC0HW	1		/* TF CARD */
-	//#define WITHSDHC1HW	1		/* SDIO */
-	//#define WITHSDHC2HW	1		/* EMMC */
-
-	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-
+#if 1
 
 	#define WITHSDRAM_AXP803	1	/* power management chip */
 
@@ -61,6 +52,18 @@
 		arm_hardware_pioh_outputs(UINT32_C(1) << 5, 1 * UINT32_C(1) << 5); /* PH5 VCC-5V-ON */ \
 		board_banana_pi_axp803_initialize(); \
 	} while (0)
+
+#endif
+
+#if WITHISBOOTLOADER
+
+//	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+//	#define WITHSDHC0HW	1		/* TF CARD */
+	//#define WITHSDHC1HW	1		/* SDIO */
+	//#define WITHSDHC2HW	1		/* EMMC */
+
+	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
+
 
 #if 0
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
@@ -123,10 +126,6 @@
 #endif
 
 #else /* WITHISBOOTLOADER */
-
-	#define BOARD_PMIC_INITIALIZE() do { \
-		arm_hardware_pioh_outputs(UINT32_C(1) << 5, 1 * UINT32_C(1) << 5); /* PH5 VCC-5V-ON */ \
-	} while (0)
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 

@@ -3056,6 +3056,7 @@ void allwnr_t507_module_pll_enable(volatile uint32_t * ctrlreg, unsigned N)
 //		val = * ctrlreg;
 //		val &= ~(1 << 29);
 //		* ctrlreg = val;
+		* ctrlreg &= ~ (UINT32_C(1) << 29);	// LOCK_ENABLE
 
 	}
 }
@@ -4140,6 +4141,7 @@ void sysinit_boot_disconnect(void)
 		(void) CCU->SMHC_BGR_REG;
 		CCU->SMHC_BGR_REG = 000000000;
 		(void) CCU->SMHC_BGR_REG;
+		HARDWARE_SDIO_HANGOFF();
 	}
 
 	{
@@ -4151,13 +4153,20 @@ void sysinit_boot_disconnect(void)
 	}
 
 	/* IOMMU off */
+	if (0)
 	{
 #if ! defined(__aarch64__)
 		IOMMU->IOMMU_RESET_REG &= ~ (UINT32_C(1) << 31);	// IOMMU_RESET
 		IOMMU->IOMMU_ENABLE_REG &= ~ (UINT32_C(1) << 0);	// ENABLE
 #endif
-		CCU->IOMMU_BGR_REG &= ~ (UINT32_C(1) << 0);
+		CCU->IOMMU_BGR_REG &= ~ (UINT32_C(1) << 0);	// IOMMU_GATING (only gating, no RESET bit)
 	}
+//	IOMMU->IOMMU_RESET_REG = 0;
+//	(void) IOMMU->IOMMU_RESET_REG;
+//	IOMMU->IOMMU_ENABLE_REG = 0;
+//	(void) IOMMU->IOMMU_ENABLE_REG;
+
+	//printhex32(IOMMU_BASE, IOMMU, sizeof * IOMMU);
 }
 
 // Allwinner T507/H618/H616 PLL initialize
@@ -6724,7 +6733,7 @@ void stm32mp1_pll1_slow(uint_fast8_t slow)
 }
 
 
-void stm32mp1_pll_initialize(void)
+void stm32mp1_pll_initialize(int forced_unused)
 {
 
 	//return;
@@ -7417,11 +7426,12 @@ void sysinit_boot_disconnect(void)
 void
 sysinit_pll_initialize(int forced)
 {
-
+	if (forced)
+		return;
 #if WITHISBOOTLOADER
 	// PLL только в bootloader.
 	// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
-	stm32mp1_pll_initialize();
+	stm32mp1_pll_initialize(forced);
 #endif /* WITHISBOOTLOADER */
 
 	stm32mp1_usb_clocks_initialize();

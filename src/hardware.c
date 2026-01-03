@@ -2137,19 +2137,29 @@ SystemInit(void)
 #ifdef BOARD_BLINK_INITIALIZE
 	BOARD_BLINK_INITIALIZE();
 #endif
-	sysinit_pmic_initialize();
-#ifdef USE_HAL_DRIVER
-	HAL_Init();
-#endif /* USE_HAL_DRIVER */
-	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
-	SystemCoreClockUpdate();
-	sysinit_debug_initialize();
-	local_delay_initialize();
+#if WITHSDRAM_PMC1
+	main_SystemInit();
+#endif
 	sysinit_sdram_initialize();
 	sysinit_mmu_tables();			// Инициализация таблиц. */
 	sysinit_cache_initialize();		// caches iniitialize
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 	sysinit_ttbr_initialize();		/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
+}
+
+// Вызывается из main, при работающих прерываниях
+void main_SystemInit(void)
+{
+	//sysinit_pmic_initialize();
+#ifdef USE_HAL_DRIVER
+	HAL_Init();
+#endif /* USE_HAL_DRIVER */
+	sysinit_gpio_initialize();	// in main
+	sysinit_pmic_initialize();
+	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
+	SystemCoreClockUpdate();
+	sysinit_debug_initialize();
+	local_delay_initialize();
 }
 
 /* Функция, вызываемая для инициализации DDR памяти из XFEL */
@@ -2161,10 +2171,10 @@ void __attribute__((used)) SystemDRAMInit(void)
 	sysinit_fpu_initialize();
 	sysinit_smp_initialize();
 	sysinit_perfmeter_initialize();
-	sysinit_gpio_initialize();
-	local_delay_initialize();
-	sysinit_debug_initialize();
-	sysinit_pmic_initialize();
+	//sysinit_gpio_initialize();
+	//local_delay_initialize();
+	//sysinit_debug_initialize();
+	//sysinit_pmic_initialize();
 	sysinit_sdram_initialize();
 }
 
