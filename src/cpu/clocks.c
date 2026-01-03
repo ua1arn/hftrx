@@ -4141,6 +4141,7 @@ void sysinit_boot_disconnect(void)
 		(void) CCU->SMHC_BGR_REG;
 		CCU->SMHC_BGR_REG = 000000000;
 		(void) CCU->SMHC_BGR_REG;
+		HARDWARE_SDIO_HANGOFF();
 	}
 
 	{
@@ -4158,8 +4159,14 @@ void sysinit_boot_disconnect(void)
 		IOMMU->IOMMU_RESET_REG &= ~ (UINT32_C(1) << 31);	// IOMMU_RESET
 		IOMMU->IOMMU_ENABLE_REG &= ~ (UINT32_C(1) << 0);	// ENABLE
 #endif
-		CCU->IOMMU_BGR_REG &= ~ (UINT32_C(1) << 0);
+		CCU->IOMMU_BGR_REG &= ~ (UINT32_C(1) << 0);	// IOMMU_GATING (only gating, no RESET bit)
 	}
+//	IOMMU->IOMMU_RESET_REG = 0;
+//	(void) IOMMU->IOMMU_RESET_REG;
+//	IOMMU->IOMMU_ENABLE_REG = 0;
+//	(void) IOMMU->IOMMU_ENABLE_REG;
+
+	//printhex32(IOMMU_BASE, IOMMU, sizeof * IOMMU);
 }
 
 // Allwinner T507/H618/H616 PLL initialize

@@ -608,7 +608,7 @@ void __attribute__((used)) SystemExecAARCH64(void)
 
 #else
 
-void SystemExecAARCH64(void)
+void __attribute__((used)) SystemExecAARCH64(void)
 {
 
 }
