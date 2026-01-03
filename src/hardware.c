@@ -2137,6 +2137,16 @@ SystemInit(void)
 #ifdef BOARD_BLINK_INITIALIZE
 	BOARD_BLINK_INITIALIZE();
 #endif
+	sysinit_sdram_initialize();
+	sysinit_mmu_tables();			// Инициализация таблиц. */
+	sysinit_cache_initialize();		// caches iniitialize
+	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
+	sysinit_ttbr_initialize();		/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
+}
+
+// Вызывается из main, при работающих прерываниях
+void main_SystemInit(void)
+{
 	sysinit_pmic_initialize();
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
@@ -2145,11 +2155,6 @@ SystemInit(void)
 	SystemCoreClockUpdate();
 	sysinit_debug_initialize();
 	local_delay_initialize();
-	sysinit_sdram_initialize();
-	sysinit_mmu_tables();			// Инициализация таблиц. */
-	sysinit_cache_initialize();		// caches iniitialize
-	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
-	sysinit_ttbr_initialize();		/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 }
 
 /* Функция, вызываемая для инициализации DDR памяти из XFEL */

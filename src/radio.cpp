@@ -22075,6 +22075,10 @@ application_initialize(void)
 	loadnewband(getvfoindex(1), 1);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
 	loadnewband(getvfoindex(0), 0);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
 
+#if WITHLWIP
+	network_initialize();
+#endif /* WITHLWIP */
+
 	synthcalc_init();
 	bandf_calc_initialize();
 	bandf2_calc_initialize();
