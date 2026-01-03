@@ -1195,7 +1195,7 @@ int board_helperboard_t507_axp853_initialize(void)
 	}
 
 	pmu_axp858_ap_reset_enable();	// без этой строчки не инициализируется после reset
-	axp858_set_sw(0);
+	//axp858_set_sw(0);
 
 	// https://artmemtech.com/
 	// artmem atl4b0832

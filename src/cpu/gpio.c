@@ -841,6 +841,32 @@ static gpio_ctx_t * gpioX_get_ctx(const GPIO_TypeDef * gpio)
 	return & gpiodatas_ctx [gpio - (GPIO_TypeDef *) GPIOBLOCK_BASE];
 }
 
+static GPIO_TypeDef * gpioX_get_port(const gpio_ctx_t * ctx)
+{
+#if defined (GPIOL)
+	if (ctx == & gpiodata_L_ctx)
+		return GPIOL;
+#endif /* defined (GPIOL) */
+	return (GPIO_TypeDef *) GPIOBLOCK_BASE + (ctx - gpiodatas_ctx);
+}
+
+// чтение выходов, запрограммированных на ВЫВОД. Те, что INPUT - дают бит "0"
+// Надо для обеспечение работы программного open drain
+static portholder_t awx_readoutputs(GPIO_TypeDef * gpio)
+{
+	unsigned pin8;
+	portholder_t v = 0;
+	for (pin8 = 0; pin8 < 8; ++ pin8)
+	{
+		portholder_t iopins = (portholder_t) 1 << pin8;
+		const portholder_t cfg = power4(iopins);	/* CFG0 bits */
+		v |= (iopins << 0) * (((gpio->CFG [0] & cfg) >> (pin8 * 4)) == GPIO_CFG_OUT);
+		v |= (iopins << 8) * (((gpio->CFG [1] & cfg) >> (pin8 * 4)) == GPIO_CFG_OUT);
+		v |= (iopins << 16) * (((gpio->CFG [2] & cfg) >> (pin8 * 4)) == GPIO_CFG_OUT);
+		v |= (iopins << 24) * (((gpio->CFG [3] & cfg) >> (pin8 * 4)) == GPIO_CFG_OUT);
+	}
+	return v;
+}
 
 static uint32_t readl(uintptr_t addr)
 {
@@ -864,12 +890,12 @@ void sysinit_gpio_initialize(void)
 	{
 		gpio_ctx_t * const lck = & gpiodatas_ctx [i];
 		IRQLSPINLOCK_INITIALIZE(& lck->lock);
-		lck->data = 0;
+		lck->data = awx_readoutputs(gpioX_get_port(lck));
 	}
 
 #if defined (GPIOL)
 	IRQLSPINLOCK_INITIALIZE(& gpiodata_L_ctx.lock);
-	gpiodata_L_ctx.data = 0;
+	gpiodata_L_ctx.data = awx_readoutputs(GPIOL);
 #endif /* defined (GPIOL) */
 
 	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)

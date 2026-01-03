@@ -69,11 +69,11 @@ main(void)
 	lowinitialize();	/* вызывается при запрещённых прерываниях. */
 	applowinitialize();	/* вызывается при запрещённых прерываниях. */
 	global_enableIRQ();
+	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
 #if LINUX_SUBSYSTEM
 #else /* LINUX_SUBSYSTEM */
 	main_SystemInit();
 #endif /* LINUX_SUBSYSTEM */
-	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
 	midtests();
 	initialize2();	/* вызывается при разрешённых прерываниях. */
 	application_initialize();

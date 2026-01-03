@@ -2131,6 +2131,9 @@ SystemInit(void)
 	sysinit_boot_disconnect();
 	sysinit_pll_initialize(0);		// PLL iniitialize - minimal freq
 	SystemCoreClockUpdate();
+#ifdef USE_HAL_DRIVER
+	HAL_Init();
+#endif /* USE_HAL_DRIVER */
 	local_delay_initialize();
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
@@ -2150,14 +2153,12 @@ SystemInit(void)
 // Вызывается из main, при работающих прерываниях
 void main_SystemInit(void)
 {
-	//sysinit_pmic_initialize();
-#ifdef USE_HAL_DRIVER
-	HAL_Init();
-#endif /* USE_HAL_DRIVER */
-	sysinit_gpio_initialize();	// in main
 	sysinit_pmic_initialize();
 	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
 	SystemCoreClockUpdate();
+#ifdef USE_HAL_DRIVER
+	HAL_Init();
+#endif /* USE_HAL_DRIVER */
 	sysinit_debug_initialize();
 	local_delay_initialize();
 }
@@ -2171,10 +2172,6 @@ void __attribute__((used)) SystemDRAMInit(void)
 	sysinit_fpu_initialize();
 	sysinit_smp_initialize();
 	sysinit_perfmeter_initialize();
-	//sysinit_gpio_initialize();
-	//local_delay_initialize();
-	//sysinit_debug_initialize();
-	//sysinit_pmic_initialize();
 	sysinit_sdram_initialize();
 }
 
