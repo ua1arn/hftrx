@@ -7586,13 +7586,13 @@ void hightests(void)
 //			for (;;)
 //				;
 			char s [32];
-			snprintf(s, ARRAY_SIZE(s), "%u", steps ++);
+			const size_t len = snprintf(s, ARRAY_SIZE(s), "%u", steps ++);
 			// Erase background
 			//colpip_fillrect(fb, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, TFTRGB(255, 255, 255));
 			// Draw rextangle
 			colpip_fillrect(& dbv, posX, posY, rectX, rectY, TFTRGB(0, 0, 0));
-			colpip_string_small(& dbv, posX, posY + rectY / 2, s, TFTRGB(255, 255, 255));
+			unifont_text(& dbv, posX, posY + rectY / 2, & unifont_small, s, len, TFTRGB(255, 255, 255));
 
 			colmain_nextfb();
 

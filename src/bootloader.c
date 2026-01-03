@@ -545,7 +545,7 @@ void bootloader_mainloop(void)
 		}
 		if (bootloader_get_start(drambase, & ip, & x64bit) == 0)
 		{
-			PRINTF("bootloader: go to ip=%08lX\n", (unsigned long) ip);
+			PRINTF("bootloader: go to ip=%08lX, x64bit=%u\n", (unsigned long) ip, (unsigned) x64bit);
 			/* Perform an Attach-Detach operation on USB bus */
 			bootloader_launch_app(ip, x64bit);
 		}

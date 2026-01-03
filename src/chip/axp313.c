@@ -384,6 +384,48 @@ int board_orangepi_zero2w_axp313_initialize(void)
 	return 0;
 }
 
+int board_orangepi_zero3_axp313_initialize(void)
+{
+	PRINTF("START PMIC \n");
+	uint8_t axp313_chip_id;
+	int ret;
+
+	ret = pmic_bus_init();
+	if (ret)
+		return ret;
+
+	ret = pmic_bus_read(AXP313_CHIP_VERSION, &axp313_chip_id);
+	if (ret)
+		return ret;
+
+	if (0)
+	{
+		unsigned reg;
+		for (reg = 0; reg <= 0xED; ++ reg)
+		{
+			uint8_t v;
+			pmic_bus_read(reg, & v);
+			PRINTF("axp313 reg%02X=0x%02X\n", reg, v);
+		}
+	}
+
+	PRINTF("axp313_chip_id=0x%02X (expected 0x4B)\n", axp313_chip_id);
+	dbg_flush();
+	if (!(axp313_chip_id == 0x4B))
+		return -1;
+    PRINTF("axp313_chip_id=OK\n");
+
+	axp_set_aldo1(1800);///VCC 1V8
+	axp_set_dldo1(1,3300);///VCC3V3
+	axp_set_dcdc1(970);///810-990 VDD-GPU-SYS
+	axp_set_dcdc2(970);///810-1100 VDD-CPU
+	axp_set_dcdc3(1100);///VCC-DRAM - 1.1V for LPDDR4
+
+	PRINTF("axp313 INIT END\n");
+	dbg_flush();
+	return 0;
+}
+
 
 //void read_reg(void)
 //{

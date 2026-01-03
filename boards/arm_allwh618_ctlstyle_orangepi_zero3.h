@@ -219,6 +219,11 @@
 	#define WITHISBOOTLOADERRAWDISK_DEV 0	// device для FatFS diskio
 
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
+	#if 1
+		#define WITHUSESDCARD		1	// Включение поддержки SD CARD - загрузчик работает через eMMC
+		#define WITHISBOOTLOADERRAWDISK	1	// чтение application с предопределённого смещения на накопителе
+		#define WITHISBOOTLOADERRAWDISK_DEV 0	// device для FatFS diskio
+	#endif
 
 #else /* WITHISBOOTLOADER */
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS c*/

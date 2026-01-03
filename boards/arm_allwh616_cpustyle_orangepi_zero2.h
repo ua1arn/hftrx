@@ -983,7 +983,6 @@
 	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
 	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
-	// See WITHSDRAM_AXP308
 	int board_orangepi_zero2_axp305_initialize(void);
 
 	/* Контроллер питания AXP305 */
