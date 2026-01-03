@@ -3056,6 +3056,7 @@ void allwnr_t507_module_pll_enable(volatile uint32_t * ctrlreg, unsigned N)
 //		val = * ctrlreg;
 //		val &= ~(1 << 29);
 //		* ctrlreg = val;
+		* ctrlreg &= ~ (UINT32_C(1) << 29);	// LOCK_ENABLE
 
 	}
 }
@@ -4151,6 +4152,7 @@ void sysinit_boot_disconnect(void)
 	}
 
 	/* IOMMU off */
+	if (0)
 	{
 #if ! defined(__aarch64__)
 		IOMMU->IOMMU_RESET_REG &= ~ (UINT32_C(1) << 31);	// IOMMU_RESET

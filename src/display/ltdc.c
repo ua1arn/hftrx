@@ -6285,7 +6285,7 @@ static void awxx_deoutmapping(int rtmixid)
 
 	// T507, H616
 	//	RTMIX0: VI1, UI1, [vi3]
-	//	RTMIX1: VI2, UI2, UI3
+	//	RTMIX1: VI2, UI2, [UI3]
 	// каждлая четверка битов в DE_PORT2CHN_MUX говорит, какому из битов-источников в
 	// bld->BLD_EN_COLOR_CTL соответствует оверлей. Номера оверлеев начиная с 0 - VI, с 8 - UI
 	{
@@ -6297,14 +6297,22 @@ static void awxx_deoutmapping(int rtmixid)
 			0x01 * (UINT32_C(1) << (4 * 0)) | 	// VI2
 			0x09 * (UINT32_C(1) << (4 * 1)) | 	// UI2
 			0;
-		DE_TOP->DE_PORT2CHN_MUX [2] = 0;
-		DE_TOP->DE_PORT2CHN_MUX [3] = 0;
+		// test
+		DE_TOP->DE_PORT2CHN_MUX [2] =
+			0x02 * (UINT32_C(1) << (4 * 0)) | 	// VI3
+			0x0A * (UINT32_C(1) << (4 * 1)) | 	// UI3
+			0;
+		// test
+		DE_TOP->DE_PORT2CHN_MUX [3] =
+			0;
 
 		DE_TOP->DE_CHN2CORE_MUX =
 				0x00 * (UINT32_C(1) << (2 * 0x00)) | 	// VI1 - CORE0
 				0x00 * (UINT32_C(1) << (2 * 0x08)) | 	// UI1 - CORE0
 				0x01 * (UINT32_C(1) << (2 * 0x01)) | 	// VI2 - CORE1
 				0x01 * (UINT32_C(1) << (2 * 0x09)) | 	// UI2 - CORE1
+				0x02 * (UINT32_C(1) << (2 * 0x02)) | 	// VI3 - CORE2 test
+				0x02 * (UINT32_C(1) << (2 * 0x0A)) | 	// UI3 - CORE2 test
 				0;
 
 //		PRINTF("DE_PORT2CHN_MUX[0]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [0]);
@@ -6354,22 +6362,25 @@ static void awxx_deoutmapping(int rtmixid)
 	// +++++++++++++++++ ПРОВЕРЕНО ++++++++++++++++
 	// DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0
 	// Для работы LVDS на RTMIX0 и TV0->HDMI на RTMIX1
-	DISP_IF_TOP->DE_PORT_PERH_SEL = 0x00000020;
-	DE_TOP->DE2TCON_MUX = 0x000000E4;
+//	DISP_IF_TOP->DE_PORT_PERH_SEL = 0x00000020;
+//	DE_TOP->DE2TCON_MUX = 0x000000E4;
 	// ----------------- ПРОВЕРЕНО ----------------
 
-	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
-	PRINTF("3 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
+//	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+//	PRINTF("3 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
 
+	// DE_PORT_PERH_SEL - all 32 bits writeable
 	DISP_IF_TOP->DE_PORT_PERH_SEL =
-		TG_DE_PORT_PERH_TCONTV0 * (UINT32_C(1) << 4) |
-		TG_DE_PORT_PERH_TCONLCD0 * (UINT32_C(1) << 0) |
+			TG_DE_PORT_PERH_TCONTV1 * (UINT32_C(1) << 12) | // DE_PORT3 PERH Select. TEST
+			TG_DE_PORT_PERH_TCONLCD1 * (UINT32_C(1) << 8) |	// DE_PORT2 PERH Select. TEST
+			TG_DE_PORT_PERH_TCONTV0 * (UINT32_C(1) << 4) | // DE_PORT1 PERH Select.
+			TG_DE_PORT_PERH_TCONLCD0 * (UINT32_C(1) << 0) |	// DE_PORT0 PERH Select.
 		0;
 
 	// Undocumented
 	DE_TOP->DE2TCON_MUX =
-		TG_DE2TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
-		TG_DE2TCONLCD1 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
+		TG_DE2TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output TEST */
+		TG_DE2TCONLCD1 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output TEST */
 		TG_DE2TCONTV1 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
 		TG_DE2TCONLCD0 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
 		0;
@@ -6379,8 +6390,8 @@ static void awxx_deoutmapping(int rtmixid)
 		1 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
 		TG_DE2TCONLCD0 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
 		0;
-	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
-	PRINTF("3 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
+//	PRINTF("4 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+//	PRINTF("4 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
 
 // https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v3x/de_lcd_type.h
 //  0x200
@@ -7548,15 +7559,6 @@ static void t113_tcontv_open_module_enable(void)
 }
 
 #if CPUSTYLE_T507
-static void t507_de2_uis_off(DE_UIS_TypeDef * const uis)
-{
-	memset32(uis, 0, sizeof * uis);
-}
-
-static void t507_de2_vsu_off(DE_VSU_TypeDef * vsu)
-{
-	memset32(vsu, 0, sizeof * vsu);
-}
 
 static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int uich)
 {
@@ -8034,12 +8036,6 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 	t113_de_bld_initialize(rtmixid, vdmode, defcolor);	// RED
 
 #if CPUSTYLE_T507
-	t507_de2_vsu_off(DE_VSU1);
-	t507_de2_vsu_off(DE_VSU2);
-	t507_de2_vsu_off(DE_VSU3);
-	t507_de2_uis_off(DE_UIS1);
-	t507_de2_uis_off(DE_UIS2);
-	t507_de2_uis_off(DE_UIS3);
 
 	t507_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
 	t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
