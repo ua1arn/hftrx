@@ -266,10 +266,12 @@ endif
 ddrinit_h616: ddrinit_h616_lpddr3.bin
 	$(XFEL) write 0x00028000 ddrinit_h616_lpddr3.bin
 	$(XFEL) exec $(SystemDRAMInit)
+	$(BUSYBOX) sleep 1s
 
 ddrinit_h618: ddrinit_h618_lpddr4.bin
 	$(XFEL) write 0x00028000 ddrinit_h618_lpddr4.bin
 	$(XFEL) exec $(SystemDRAMInit)
+	$(BUSYBOX) sleep 1s
 
 ddrinit_t507_:
 	$(XFEL) ddr lpddr4
