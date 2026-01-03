@@ -2046,11 +2046,9 @@ static void sysinit_smp_initialize(void)
 // инициализация контроллера питания (не только DDR память. бывает и GPIO)
 void sysinit_pmic_initialize(void)
 {
-	TP();
 #if defined (BOARD_PMIC_INITIALIZE)
 	BOARD_PMIC_INITIALIZE();
 #endif /* BOARD_PMIC_INITIALIZE */
-	TP();
 }
 
 
