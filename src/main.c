@@ -71,7 +71,9 @@ main(void)
 	global_enableIRQ();
 #if LINUX_SUBSYSTEM
 #else /* LINUX_SUBSYSTEM */
-	main_SystemInit();	// PMIC, PLL на рабочей частоте
+	#if ! WITHSDRAM_PMC1
+		main_SystemInit();
+	#endif
 #endif /* LINUX_SUBSYSTEM */
 	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
 	midtests();
