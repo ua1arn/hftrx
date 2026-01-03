@@ -952,20 +952,24 @@ static void initialize_pmic(void)
 
 	if (!initialize_pmic_i2c()) {
 		PRINTF("No PMIC\n");
+		dbg_flush();
 		return;
 	}
 
 	if (stpmic1_get_version(&pmic_version) != 0) {
 		PRINTF("Failed to access PMIC\n");
+		dbg_flush();
 		ASSERT(0);
 	}
 
 	PRINTF("PMIC version = 0x%02lx\n", pmic_version);
+	dbg_flush();
 	//stpmic1_dump_regulators();
 
 #if defined(IMAGE_BL2)
 	if (dt_pmic_configure_boot_on_regulators() != 0) {
 		ASSERT(0);
+		dbg_flush();
 	};
 #endif
 }
