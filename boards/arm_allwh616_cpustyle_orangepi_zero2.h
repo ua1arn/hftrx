@@ -650,7 +650,7 @@
 	#define WITHSTWI0HW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 
 	// PL0 S_TWI0_SCK
-	// PL1 S_TWI0_DL
+	// PL1 S_TWI0_SDA
 	#define TARGET_S_TWI_TWCK		(UINT32_C(1) << 0)
 	#define TARGET_S_TWI_TWD		(UINT32_C(1) << 1)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C

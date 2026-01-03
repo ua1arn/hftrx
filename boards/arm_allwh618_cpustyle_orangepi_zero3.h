@@ -651,26 +651,25 @@
 
 #endif /* WITHKEYBOARD */
 
-#if WITHISBOOTLOADER
-
+#if 1
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	#define WITHSTWI0HW 1	// S_TWI0
 
 	// PL0 S_TWI0_SCK
-	// PL1 S_TWI0_DL
-	#define TARGET_TWI_TWCK		(UINT32_C(1) << 0)
-	#define TARGET_TWI_TWD		(UINT32_C(1) << 1)
+	// PL1 S_TWI0_SDL
+	#define TARGET_S_TWI_TWCK		(UINT32_C(1) << 0)
+	#define TARGET_S_TWI_TWD		(UINT32_C(1) << 1)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	HARDWARE_S_TWI0_INITIALIZE() do { \
-		arm_hardware_piol_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
-		arm_hardware_piol_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
+		arm_hardware_piol_altfn2m(TARGET_S_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
+		arm_hardware_piol_altfn2m(TARGET_S_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
 	} while (0)
 	#define TWIHARD_S_PTR S_TWI0
 	#define	TWIHARD_S_TWI0_FREQ (allwnr_t507_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+#endif
 
-#else /* WITHISBOOTLOADER */
-
+#if 1
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	#define WITHTWI3HW 1
 
