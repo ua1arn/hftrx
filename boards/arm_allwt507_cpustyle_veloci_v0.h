@@ -38,10 +38,11 @@
 
 #define WITHCAT_MUX 1		/* переключаемый USB UAC или UART канал управления. */
 
-
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
-#if WITHISBOOTLOADER
+
+
+#if 1//WITHISBOOTLOADER
 
 	#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
 	// AXP853T on HelperBoard T507 Core Board

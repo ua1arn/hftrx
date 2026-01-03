@@ -39,10 +39,7 @@
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
 
-#if WITHISBOOTLOADER
-
-	//#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-
+#if 1
 
 	//#define WITHSDRAM_AXP803	1	/* power management chip */
 
@@ -55,6 +52,13 @@
 	#define BOARD_PMIC_INITIALIZE() do { \
 		board_orange_pi_axpXXX_initialize(); \
 	} while (0)
+
+#endif
+
+#if WITHISBOOTLOADER
+
+	//#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
+
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -112,10 +116,6 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 
 #else /* WITHISBOOTLOADER */
-
-	#define BOARD_PMIC_INITIALIZE() do { \
-		/*arm_hardware_pioh_outputs(UINT32_C(1) << 5, 1 * UINT32_C(1) << 5); *//* PH5 VCC-5V-ON */ \
-	} while (0)
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 

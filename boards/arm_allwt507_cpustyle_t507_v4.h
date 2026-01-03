@@ -42,6 +42,22 @@
 	#define WITHUART0HW	1		/* отлдочный порт */
 #endif /* WITHDEBUG */
 
+#if 1//WITHISBOOTLOADER
+
+	#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
+	// AXP853T on HelperBoard T507 Core Board
+	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
+	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
+
+	// See WITHSDRAM_AXP853
+	int board_helperboard_t507_axp853_initialize(void);
+
+	/* Контроллер питания AXP305 */
+	#define BOARD_PMIC_INITIALIZE() do { \
+		board_helperboard_t507_axp853_initialize(); /* Voltages are set here */ \
+	} while (0)
+
+#endif /* WITHISBOOTLOADER */
 
 #if WITHISBOOTLOADER
 
@@ -117,19 +133,6 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
-
-	#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
-	// AXP853T on HelperBoard T507 Core Board
-	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
-	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
-
-	// See WITHSDRAM_AXP853
-	int board_helperboard_t507_axp853_initialize(void);
-
-	/* Контроллер питания AXP305 */
-	#define BOARD_PMIC_INITIALIZE() do { \
-		board_helperboard_t507_axp853_initialize(); /* Voltages are set here */ \
-	} while (0)
 
 #else /* WITHISBOOTLOADER */
 
