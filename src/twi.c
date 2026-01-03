@@ -1901,9 +1901,8 @@ void i2c_writeX(const i2cp_t * p, uint_fast8_t d)
 
 // i2c start bit sequence
 // negative edge on SD while SCL is HIGH
-void i2c2_start(uint_fast8_t address)
+void i2c2_startX(const i2cp_t * p, uint_fast8_t address)
 {
-
 	SET2_TWD();	//SDA = 1;
 	i2c_delay(p);
 	SET2_TWCK();	//SCL = 1;
@@ -1918,13 +1917,13 @@ void i2c2_start(uint_fast8_t address)
 }
 
 // Вызвать после последнего i2c_write()
-void i2c2_waitsend(void)
+void i2c2_waitsendX(const i2cp_t * p)
 {
 
 }
 
 // i2c stop bit sequence
-void i2c2_stop(void)
+void i2c2_stopX(const i2cp_t * p)
 {
 	CLR2_TWD();//SDA = 0;
 	i2c_delay(p);
@@ -1935,7 +1934,7 @@ void i2c2_stop(void)
 
 }
 
-void i2c2_read(uint8_t *data, uint_fast8_t ack_type)
+void i2c2_readX(const i2cp_t * p, uint8_t *data, uint_fast8_t ack_type)
 {
 	char x, d=0;
 	SET2_TWD();
@@ -1977,7 +1976,7 @@ void i2c2_read(uint8_t *data, uint_fast8_t ack_type)
 	//return 0;
 }
 
-void i2c2_write(uint_fast8_t d)
+void i2c2_writeX(const i2cp_t * p, uint_fast8_t d)
 {
 	uint_fast8_t x;
 	//char b;
@@ -2018,7 +2017,7 @@ void i2c2_write(uint_fast8_t d)
 }
 
 // запись, после чего restart
-/* char */ void i2c2_write_withrestart(uint_fast8_t data)
+/* char */ void i2c2_write_withrestartX(const i2cp_t * p, uint_fast8_t data)
 {
 	i2c2_write(data);
 	i2c2_waitsend();

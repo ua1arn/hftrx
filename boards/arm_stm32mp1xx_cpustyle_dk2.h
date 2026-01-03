@@ -66,7 +66,7 @@
 
 
 // OHCI at USB1HSFSP2_BASE
-#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
+//#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
 
 #define WITHSDRAM_PMC1	1	/* power management chip - need for HDMI and AUDIO */
 
@@ -115,8 +115,8 @@
 	#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 
 	
-	#define WITHUSBHW_EHCI		USB1_EHCI
-	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port (Microchip USB2514 USB 2.0 hub controller, shared with USB_OTG_HS), 1 - 2nd PHY port. See USBPHYC_MISC_SWITHOST_VAL
+//	#define WITHUSBHW_EHCI		USB1_EHCI
+//	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port (Microchip USB2514 USB 2.0 hub controller, shared with USB_OTG_HS), 1 - 2nd PHY port. See USBPHYC_MISC_SWITHOST_VAL
 
 #elif 1
 	/* конфигурация для загрузки application через USB DFU */
@@ -342,12 +342,12 @@
 			arm_hardware_pioc_inputs(1uL << 9);	/* PC9 - SDIO_D1	*/ \
 			arm_hardware_pioc_inputs(1uL << 10);	/* PC10 - SDIO_D2	*/ \
 			arm_hardware_pioc_inputs(1uL << 11);	/* PC11 - SDIO_D3	*/ \
-			arm_hardware_piod_updown(_xMask, 0, 1uL << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 9);	/* PC9 - SDIO_D1	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 10);	/* PC10 - SDIO_D2	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 11);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piod_updown(1uL << 2, 0, 1uL << 2);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_updown(1uL << 12, 0, 1uL << 12);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_updown(1uL << 8, 0, 1uL << 8);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_pioc_updown(1uL << 9, 0, 1uL << 9);	/* PC9 - SDIO_D1	*/ \
+			arm_hardware_pioc_updown(1uL << 10, 0, 1uL << 10);	/* PC10 - SDIO_D2	*/ \
+			arm_hardware_pioc_updown(1uL << 11, 0, 1uL << 11);	/* PC11 - SDIO_D3	*/ \
 		} while (0)
 	#else /* WITHSDHCHW4BIT */
 		#define HARDWARE_SDIO_INITIALIZE()	do { \
@@ -611,6 +611,9 @@
 		} while (0)
 
 #endif /* WITHKEYBOARD */
+
+#define PMIC_I2C_W 0x66    // 7bit: 0x33
+#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
 #if 1 // WITHTWISW || WITHTWIHW
 	// list: 0x50, 0x66
@@ -909,7 +912,8 @@
 #endif /* LCDMODE_LTDC */
 
 	#define WITHBOOTSD 1	/* загрузка с SD CARD (если нет - с QSPI FLASH). */
-	#define USERFIRSTSBLOCK (USERFIRSTOFFSET / 512)
+	//#define USERFIRSTSBLOCK (USERFIRSTOFFSET / 512)
+	#define USERFIRSTSBLOCK 0
 
 	#if WIHSPIDFSW || WIHSPIDFHW
 		/* Выводы соединения с QSPI BOOT NOR FLASH */

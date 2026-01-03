@@ -949,7 +949,6 @@ static int stpmic1_get_version(unsigned long *version)
 static void initialize_pmic(void)
 {
 	unsigned long pmic_version;
-	TP();
 	dbg_flush();
 	if (!initialize_pmic_i2c()) {
 		PRINTF("No PMIC\n");
@@ -973,7 +972,6 @@ static void initialize_pmic(void)
 		dbg_flush();
 	};
 #endif
-	TP();
 	dbg_flush();
 }
 

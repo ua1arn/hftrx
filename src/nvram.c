@@ -433,7 +433,9 @@ nvram_write_baremetal(nvramaddress_t addr, const uint8_t * data, unsigned len)
 	}
 	else
 	{
-		memcpy(p, data, len);
+		unsigned i;
+		for (i = 0; len --; ++ i)
+ 			p [i] = data [i];
 	}
 	//dcache_clean((uintptr_t) BKPSRAM_BASE, 4096);
 	stm32f4xx_bddisable();
@@ -504,7 +506,9 @@ nvram_read_baremetal(nvramaddress_t addr, uint8_t * data, unsigned len)
 	}
 	else
 	{
-		memcpy(data, b, len);
+		unsigned i;
+		for (i = 0; len --; ++ i)
+ 			data [i] = p [i];
 	}
 
 #elif (NVRAM_TYPE == NVRAM_TYPE_CPUEEPROM)
