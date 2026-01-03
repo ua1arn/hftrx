@@ -72,7 +72,7 @@ void user_uart4_onrxchar(uint_fast8_t c);
 	#define WITHUART4HW_FIFO	1	/* использование FIFO */
 #endif /* WITHDEBUG */
 
-#if 1
+#if WITHISBOOTLOADER
 	#define WITHSDRAM_PMC1	1	/* ST PMC1 power management chip */
 
 	// PMC1 on MYIC-YA157C-xxx board

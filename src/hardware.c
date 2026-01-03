@@ -2046,9 +2046,11 @@ static void sysinit_smp_initialize(void)
 // инициализация контроллера питания (не только DDR память. бывает и GPIO)
 void sysinit_pmic_initialize(void)
 {
+	TP();
 #if defined (BOARD_PMIC_INITIALIZE)
 	BOARD_PMIC_INITIALIZE();
 #endif /* BOARD_PMIC_INITIALIZE */
+	TP();
 }
 
 
@@ -2154,6 +2156,8 @@ void main_SystemInit(void)
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
+	sysinit_gpio_initialize();	// in main
+	sysinit_pmic_initialize();
 	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
 	SystemCoreClockUpdate();
 	sysinit_debug_initialize();
@@ -2169,10 +2173,10 @@ void __attribute__((used)) SystemDRAMInit(void)
 	sysinit_fpu_initialize();
 	sysinit_smp_initialize();
 	sysinit_perfmeter_initialize();
-	sysinit_gpio_initialize();
-	local_delay_initialize();
-	sysinit_debug_initialize();
-	sysinit_pmic_initialize();
+	//sysinit_gpio_initialize();
+	//local_delay_initialize();
+	//sysinit_debug_initialize();
+	//sysinit_pmic_initialize();
 	sysinit_sdram_initialize();
 }
 

@@ -6733,7 +6733,7 @@ void stm32mp1_pll1_slow(uint_fast8_t slow)
 }
 
 
-void stm32mp1_pll_initialize(void)
+void stm32mp1_pll_initialize(int forced)
 {
 
 	//return;
@@ -7430,7 +7430,7 @@ sysinit_pll_initialize(int forced)
 #if WITHISBOOTLOADER
 	// PLL только в bootloader.
 	// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
-	stm32mp1_pll_initialize();
+	stm32mp1_pll_initialize(forced);
 #endif /* WITHISBOOTLOADER */
 
 	stm32mp1_usb_clocks_initialize();

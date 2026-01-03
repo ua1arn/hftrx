@@ -61,7 +61,7 @@
 	#define WITHCAT_UART1		1
 #endif
 
-#if 1
+#if WITHISBOOTLOADER
 	#define WITHSDRAM_PMC1	1	/* ST PMC1 power management chip */
 
 	// PMC1 on MYIC-YA157C-xxx board
