@@ -679,7 +679,7 @@
 
 #endif // WITHTWISW || WITHTWIHW
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
+#if 0//WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
 	#define FPGA_NCONFIG_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)

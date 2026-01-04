@@ -1081,7 +1081,7 @@
 	#define	TWIHARD_FREQ (allwnr_t507_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 #endif
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
+#if 1//WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
 	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(5); } while (0)

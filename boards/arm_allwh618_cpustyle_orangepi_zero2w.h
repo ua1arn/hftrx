@@ -698,7 +698,7 @@
 
 #endif /* WITHTWISW || WITHTWIHW */
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
+#if 0//WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
 	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0)

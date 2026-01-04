@@ -801,7 +801,7 @@ void user_uart4_onrxchar(uint_fast8_t c);
 
 #endif // WITHTWISW
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
+#if 1//WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	// FPGA INTERFACE
 	//	FPGA_NSTATUS	PA14
