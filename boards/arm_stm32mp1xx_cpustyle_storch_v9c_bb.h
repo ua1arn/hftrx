@@ -835,7 +835,8 @@ void user_uart4_onrxchar(uint_fast8_t c);
 
 	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
 	#define HARDWARE_FPGA_RESET() do { \
-		/* board_fpga_reset(); */ \
+		board_fpga_loader_initialize(); \
+		board_fpga_reset(); \
 	} while (0)
 
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
@@ -850,7 +851,8 @@ void user_uart4_onrxchar(uint_fast8_t c);
 
 	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
 	#define HARDWARE_FPGA_RESET() do { \
-		/* board_fpga_reset(); */ \
+		board_fpga_loader_initialize(); \
+		board_fpga_reset(); \
 	} while (0)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */

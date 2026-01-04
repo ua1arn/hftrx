@@ -5859,8 +5859,12 @@ board_fpga_fir_disconnect(SPI_t * spi, IRQL_t irql)
 #endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && ! LINUX_SUBSYSTEM */
 
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
-
+void board_fpga_loader_initialize(void)
+{
+#if FPGA_CONF_DONE_BIT != 0
+	HARDWARE_FPGA_LOADER_INITIALIZE();
+#endif /* FPGA_CONF_DONE_BIT != 0 */
+}
 
 /* получение сигнала завершения конфигурации FPGA. Возврат: 0 - конфигурация не завершена */
 static uint_fast8_t board_fpga_get_CONF_DONE(void)
@@ -5870,16 +5874,6 @@ static uint_fast8_t board_fpga_get_CONF_DONE(void)
 #else /* FPGA_CONF_DONE_BIT != 0 */
 	return 0;
 #endif /* FPGA_CONF_DONE_BIT != 0 */
-}
-
-static uint_fast8_t board_fpga_get_NSTATUS(void)
-{
-#if FPGA_NSTATUS_BIT != 0
-	return (FPGA_NSTATUS_INPUT & FPGA_NSTATUS_BIT) != 0;
-#else /* FPGA_NSTATUS_BIT != 0 */
-	return 1;
-#endif /* FPGA_NSTATUS_BIT != 0 */
-
 }
 
 /* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
@@ -5900,10 +5894,55 @@ static uint_fast8_t board_fpga_get_USER_MODE(void)
 #endif
 }
 
-void board_fpga_loader_initialize(void)
+
+static uint_fast8_t board_fpga_get_NSTATUS(void)
 {
-	HARDWARE_FPGA_LOADER_INITIALIZE();
+#if FPGA_NSTATUS_BIT != 0
+	return (FPGA_NSTATUS_INPUT & FPGA_NSTATUS_BIT) != 0;
+#else /* FPGA_NSTATUS_BIT != 0 */
+	return 1;
+#endif /* FPGA_NSTATUS_BIT != 0 */
+
 }
+
+/* работоспособность функции под вопросом, были случаи незагрузки аппарата (с новыми версиями EP4CE22) */
+void board_fpga_reset(void)
+{
+#if FPGA_NCONFIG_BIT != 0
+
+	unsigned w = 500;
+	/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
+
+	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+	local_delay_ms(1);
+	/* 1) Выставить "1" на nCONFIG */
+	//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
+	FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
+	/* x) Дождаться "0" на nSTATUS */
+	//PRINTF(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==0\n"));
+	while (board_fpga_get_NSTATUS() != 0)
+	{
+		local_delay_ms(1);
+		if (-- w == 0)
+			goto restart;
+	}
+	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+	/* 2) Дождаться "1" на nSTATUS */
+	//PRINTF(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
+	while (board_fpga_get_NSTATUS() == 0)
+	{
+		local_delay_ms(1);
+		if (-- w == 0)
+			goto restart;
+	}
+restart:
+	;
+	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
+
+#endif /* FPGA_NCONFIG_BIT != 0 */
+}
+
+#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 
 #if WITHFPGALOAD_PS
@@ -6086,43 +6125,6 @@ void board_fpga_loader_wait_AS(void)
 }
 
 #endif
-
-/* работоспособность функции под вопросом, были случаи незагрузки аппарата (с новыми версиями EP4CE22) */
-void board_fpga_reset(void)
-{
-#if FPGA_NCONFIG_BIT != 0
-
-	unsigned w = 500;
-	/* After power up, the Cyclone IV device holds nSTATUS low during POR delay. */
-
-	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
-	local_delay_ms(1);
-	/* 1) Выставить "1" на nCONFIG */
-	//PRINTF(PSTR("fpga: FPGA_NCONFIG_BIT=1\n"));
-	FPGA_NCONFIG_PORT_C(FPGA_NCONFIG_BIT);
-	/* x) Дождаться "0" на nSTATUS */
-	//PRINTF(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==0\n"));
-	while (board_fpga_get_NSTATUS() != 0)
-	{
-		local_delay_ms(1);
-		if (-- w == 0)
-			goto restart;
-	}
-	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
-	/* 2) Дождаться "1" на nSTATUS */
-	//PRINTF(PSTR("fpga: waiting for FPGA_NSTATUS_BIT==1\n"));
-	while (board_fpga_get_NSTATUS() == 0)
-	{
-		local_delay_ms(1);
-		if (-- w == 0)
-			goto restart;
-	}
-restart:
-	;
-	FPGA_NCONFIG_PORT_S(FPGA_NCONFIG_BIT);
-
-#endif
-}
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 

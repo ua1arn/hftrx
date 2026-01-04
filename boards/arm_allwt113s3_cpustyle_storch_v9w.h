@@ -747,7 +747,7 @@
 
 #endif /* WITHTWIHW */
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
+#if 1//WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
 	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(1); } while (0)
@@ -773,11 +773,6 @@
 		local_delay_us(1); \
 	} while (0)
 
-	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
-	#define HARDWARE_FPGA_RESET() do { \
-		/* board_fpga_reset(); */ \
-	} while (0)
-
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	/*
 		After the option bit to enable INIT_DONE is programmed into the device (during the first
@@ -787,14 +782,14 @@
 	*/
 	#define HARDWARE_FPGA_IS_USER_MODE() ((FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
 
-#else /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
-
-	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
-	#define HARDWARE_FPGA_RESET() do { \
-		/* board_fpga_reset(); */ \
-	} while (0)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
+
+/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
+#define HARDWARE_FPGA_RESET() do { \
+	board_fpga_loader_initialize(); \
+	board_fpga_reset(); \
+} while (0)
 
 #if 1
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA

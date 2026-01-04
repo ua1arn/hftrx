@@ -736,7 +736,8 @@
 
 	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
 	#define HARDWARE_FPGA_RESET() do { \
-		/* board_fpga_reset(); */ \
+		board_fpga_loader_initialize(); \
+		board_fpga_reset(); \
 	} while (0)
 
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
@@ -752,7 +753,8 @@
 
 	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
 	#define HARDWARE_FPGA_RESET() do { \
-		/* board_fpga_reset(); */ \
+		board_fpga_loader_initialize(); \
+		board_fpga_reset(); \
 	} while (0)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
