@@ -6069,6 +6069,10 @@ void r7s721_pll_initialize(void)
 #endif
 }
 
+void sysinit_boot_disconnect(void)
+{
+}
+
 // r7s721 PLL initialize
 void
 sysinit_pll_initialize(int forced)
@@ -9910,6 +9914,10 @@ void hardware_set_dotclock(uint_fast32_t dotfreq)
 #endif
 }
 
+void sysinit_boot_disconnect(void)
+{
+}
+
 // ZYNQ 7000 PLL initialize
 void
 sysinit_pll_initialize(int forced)
@@ -9983,6 +9991,11 @@ local_delay_ms(50);
 #endif /* CPUSTYLE_XC7Z  && ! LINUX_SUBSYSTEM */
 
 #if CPUSTYLE_STM32H7XX
+
+
+void sysinit_boot_disconnect(void)
+{
+}
 
 // STM32H7xx PLL initialize
 void

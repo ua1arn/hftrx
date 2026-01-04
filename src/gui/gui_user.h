@@ -50,6 +50,7 @@ void window_stream_process(void);
 void window_wnbconfig_process(void);
 void window_ad936x_process(void);
 void window_as_process(void);
+void window_fanpwm_process(void);
 
 enum {
 	MENU_OFF,
