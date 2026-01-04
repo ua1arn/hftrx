@@ -321,10 +321,18 @@ static void awxx_g2d_mixer_reset(unsigned scanorder)
 //	};
 
 
-static void awxx_g2d_top_rcq_irq_en(void)
+static void awxx_g2d_top_rcq_irq_en(int flag)
 {
-	G2D_TOP->RCQ_IRQ_CTL |= (UINT32_C(1) << 4); //.bits.task_end_irq_en = en; // bit 4
-	//G2D_TOP->RCQ_IRQ_CTL |= (UINT32_C(1) << 7); .bits.rcq_cfg_finish_irq_en = en; // bit 7
+	if (flag)
+	{
+		G2D_TOP->RCQ_IRQ_CTL |= (UINT32_C(1) << 4); //.bits.task_end_irq_en = en; // bit 4
+		//G2D_TOP->RCQ_IRQ_CTL |= (UINT32_C(1) << 7); .bits.rcq_cfg_finish_irq_en = en; // bit 7
+	}
+	else
+	{
+		G2D_TOP->RCQ_IRQ_CTL &= ~ (UINT32_C(1) << 4); //.bits.task_end_irq_en = en; // bit 4
+		//G2D_TOP->RCQ_IRQ_CTL &= ~ (UINT32_C(1) << 7); .bits.rcq_cfg_finish_irq_en = en; // bit 7
+	}
 }
 
 static void awxx_g2d_top_rcq_update_en(void)
