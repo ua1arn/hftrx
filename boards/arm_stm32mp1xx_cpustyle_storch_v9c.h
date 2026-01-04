@@ -832,6 +832,11 @@
 			arm_hardware_piof_inputs(FPGA_INIT_DONE_BIT); \
 		} while (0)
 
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
+	#define HARDWARE_FPGA_RESET() do { \
+		/* board_fpga_reset(); */ \
+	} while (0)
+
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	/*
 		After the option bit to enable INIT_DONE is programmed into the device (during the first
@@ -840,6 +845,13 @@
 		This low-to-high transition signals that the device has entered user mode.
 	*/
 	#define HARDWARE_FPGA_IS_USER_MODE() (local_delay_ms(100), (FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
+
+#else	/* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
+
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
+	#define HARDWARE_FPGA_RESET() do { \
+		/* board_fpga_reset(); */ \
+	} while (0)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
@@ -1252,6 +1264,7 @@
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 		HARDWARE_ETH_RESET(); \
+		HARDWARE_FPGA_RESET(); \
 		BOARD_BLINK_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \

@@ -1107,6 +1107,11 @@
 			local_delay_us(5); \
 		} while (0)
 
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
+	#define HARDWARE_FPGA_RESET() do { \
+		/* board_fpga_reset(); */ \
+	} while (0)
+
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	/*
 		After the option bit to enable INIT_DONE is programmed into the device (during the first
@@ -1115,6 +1120,12 @@
 		This low-to-high transition signals that the device has entered user mode.
 	*/
 	#define HARDWARE_FPGA_IS_USER_MODE() ((FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
+#else
+
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
+	#define HARDWARE_FPGA_RESET() do { \
+		/* board_fpga_reset(); */ \
+	} while (0)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
@@ -1488,6 +1499,7 @@
 /* макроопределение, которое должно включить в себя все инициализации */
 #define	HARDWARE_INITIALIZE() do { \
 	arm_hardware_pioh_outputs(UINT32_C(1) << 4, 0 * UINT32_C(1) << 4); /* PH4 - BT-RST-N		- pin 34 (tied to +3.3) - from host */ \
+	HARDWARE_FPGA_RESET(); \
 	BOARD_SDCARD_DISCONNECT(); \
 	BOARD_BLINK_INITIALIZE(); \
 	HARDWARE_KBD_INITIALIZE(); \

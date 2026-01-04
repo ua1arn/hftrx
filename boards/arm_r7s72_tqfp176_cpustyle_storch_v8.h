@@ -648,6 +648,11 @@
 	#define HARDWARE_FPGA_RESET() do { \
 			/*board_fpga_reset(); */ \
 		} while (0)
+#else /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
+
+	#define HARDWARE_FPGA_RESET() do { \
+			/*board_fpga_reset(); */ \
+		} while (0)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
