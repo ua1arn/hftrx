@@ -26,6 +26,16 @@ void einthandler_initialize(einthandler_t * eih, portholder_t mask, eintcb_t han
 
 }
 
+static void eithlist_initialize(void)
+{
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
+	{
+		InitializeListHead(& einthead [i]);
+	}
+
+}
+
 /* Вызов обработчика для указанных битов порта */
 static void
 gpioX_invokeinterrupt(
@@ -205,11 +215,7 @@ power8(uint_fast8_t v)
 // Вызывается из SystemInit() - после работы память будет затерта
 void sysinit_gpio_initialize(void)
 {
-	unsigned i;
-	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
-	{
-		InitializeListHead(& einthead [i]);
-	}
+	eithlist_initialize();
 }
 
 // R7S721 interrupts
@@ -672,10 +678,7 @@ void sysinit_gpio_initialize(void)
 		IRQLSPINLOCK_t * const lck = & gpiobank_ctx [i];
 		IRQLSPINLOCK_INITIALIZE(lck);
 	}
-	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
-	{
-		InitializeListHead(& einthead [i]);
-	}
+	eithlist_initialize();
 }
 
 void gpiobank_lock(unsigned bank, IRQL_t * oldIrql)
@@ -898,10 +901,7 @@ void sysinit_gpio_initialize(void)
 	gpiodata_L_ctx.data = awx_readoutputs(GPIOL);
 #endif /* defined (GPIOL) */
 
-	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
-	{
-		InitializeListHead(& einthead [i]);
-	}
+	eithlist_initialize();
 #if CPUSTYLE_A64 || CPUSTYLE_H3
 
 	CCU->BUS_CLK_GATING_REG2 |= (UINT32_C(1) << 5);	// PIO_GATING - not need - already set
@@ -1363,10 +1363,7 @@ void sysinit_gpio_initialize(void)
 		IRQLSPINLOCK_t * const lck = & gpiodatas_ctx [i];
 		IRQLSPINLOCK_INITIALIZE(lck);
 	}
-	for (i = 0; i < ARRAY_SIZE(einthead); ++ i)
-	{
-		InitializeListHead(& einthead [i]);
-	}
+	eithlist_initialize();
 }
 
 static IRQLSPINLOCK_t * stm32mp1xx_getgpiolock(GPIO_TypeDef * gpio)
