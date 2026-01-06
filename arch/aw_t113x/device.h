@@ -231,6 +231,7 @@ typedef enum IRQn
 #define DE_MIXER1_VSU1_BASE ((uintptr_t) 0x05220000)  /*!< DE_VSU Video Scaler Unit (VSU), VS Base */
 #define DE_MIXER1_UIS1_BASE ((uintptr_t) 0x05240000)  /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
 #define DI_BASE ((uintptr_t) 0x05400000)              /*!< DI De-interlacer (DI) Base */
+#define G2D_BASE ((uintptr_t) 0x05410000)             /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x05410000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x05410100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
 #define G2D_BLD_BASE ((uintptr_t) 0x05410400)         /*!< G2D_BLD Graphic 2D (G2D) Engine Blender Base */
@@ -4100,6 +4101,7 @@ typedef struct VE_Type
 #define DE_MIXER1_VEP0 ((DE_VEP_TypeDef *) DE_MIXER1_VEP0_BASE)/*!< DE_MIXER1_VEP0 Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks register set access pointer */
 #define DE_MIXER1_VSU1 ((DE_VSU_TypeDef *) DE_MIXER1_VSU1_BASE)/*!< DE_MIXER1_VSU1 Video Scaler Unit (VSU), VS register set access pointer */
 #define DE_MIXER1_UIS1 ((DE_UIS_TypeDef *) DE_MIXER1_UIS1_BASE)/*!< DE_MIXER1_UIS1 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
+#define G2D ((G2D_TOP_TypeDef *) G2D_BASE)            /*!< G2D Graphic 2D top register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */

@@ -1,4 +1,5 @@
 #type; G2D_TOP; Graphic 2D top
+#base; G2D 0x05410000
 #base; G2D_TOP 0x05410000
 
 #irq; G2D 121

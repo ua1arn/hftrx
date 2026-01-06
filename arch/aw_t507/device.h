@@ -210,6 +210,7 @@ typedef enum IRQn
 #define DE_DNS6_BASE ((uintptr_t) 0x01214000)         /*!< DE_DNS Denoise (DNS) Base */
 #define DE_MIXER0_BLD_BASE ((uintptr_t) 0x01281000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define DE_MIXER1_BLD_BASE ((uintptr_t) 0x012A1000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define G2D_BASE ((uintptr_t) 0x01480000)             /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x01480000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT Graphic 2D Rotate Base */
 #define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 (Bifrost) Base */
@@ -3759,6 +3760,7 @@ typedef struct VE_Type
 #define DE_DNS6 ((DE_DNS_TypeDef *) DE_DNS6_BASE)     /*!< DE_DNS6 Denoise (DNS) register set access pointer */
 #define DE_MIXER0_BLD ((DE_BLD_TypeDef *) DE_MIXER0_BLD_BASE)/*!< DE_MIXER0_BLD Display Engine (DE) - Blender register set access pointer */
 #define DE_MIXER1_BLD ((DE_BLD_TypeDef *) DE_MIXER1_BLD_BASE)/*!< DE_MIXER1_BLD Display Engine (DE) - Blender register set access pointer */
+#define G2D ((G2D_TOP_TypeDef *) G2D_BASE)            /*!< G2D Graphic 2D top register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
 #define GPU_CONTROL ((GPU_CONTROL_TypeDef *) GPU_CONTROL_BASE)/*!< GPU_CONTROL  register set access pointer */

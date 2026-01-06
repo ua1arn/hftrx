@@ -8005,7 +8005,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>G2D_TOP</name>
+  <name>G2D</name>
   <description>Graphic 2D top</description>
   <baseAddress>0x05410000</baseAddress>
   <interrupt>
@@ -8114,6 +8114,15 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
+  </peripheral>
+  <peripheral derivedFrom="G2D">
+  <name>G2D_TOP</name>
+  <baseAddress>0x05410000</baseAddress>
+  <interrupt>
+   <name>G2D</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>G2D_UI0</name>
