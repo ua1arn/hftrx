@@ -1542,8 +1542,7 @@ typedef struct G2D_UI_Type
     __IO uint32_t UI_FILLC;                           /*!< Offset 0x014 UIx_FILLC */
     __IO uint32_t UI_HADD;                            /*!< Offset 0x018 UIx_HADD */
     __IO uint32_t UI_SIZE;                            /*!< Offset 0x01C UIx_SIZE */
-         RESERVED(0x020[0x0800 - 0x0020], uint8_t)
-} G2D_UI_TypeDef; /* size of structure = 0x800 */
+} G2D_UI_TypeDef; /* size of structure = 0x020 */
 /*
  * @brief G2D_VI
  */
@@ -1566,8 +1565,7 @@ typedef struct G2D_VI_Type
     __IO uint32_t V0_HDS_CTL1;                        /*!< Offset 0x034 V0_HDS_CTL1 */
     __IO uint32_t V0_VDS_CTL0;                        /*!< Offset 0x038 V0_VDS_CTL0 */
     __IO uint32_t V0_VDS_CTL1;                        /*!< Offset 0x03C V0_VDS_CTL1 */
-         RESERVED(0x040[0x0800 - 0x0040], uint8_t)
-} G2D_VI_TypeDef; /* size of structure = 0x800 */
+} G2D_VI_TypeDef; /* size of structure = 0x040 */
 /*
  * @brief G2D_VSU
  */

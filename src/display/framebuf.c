@@ -340,21 +340,13 @@ static void awxx_g2d_top_rcq_irq_en(int flag)
 	if (flag)
 	{
 		G2D_TOP->RCQ_IRQ_CTL |= (UINT32_C(1) << 4); //.bits.task_end_irq_en = en; // bit 4
-		//G2D_TOP->RCQ_IRQ_CTL |= (UINT32_C(1) << 7); .bits.rcq_cfg_finish_irq_en = en; // bit 7
+		//G2D_TOP->RCQ_IRQ_CTL |= (UINT32_C(1) << 7); //.bits.rcq_cfg_finish_irq_en = en; // bit 7
 	}
 	else
 	{
 		G2D_TOP->RCQ_IRQ_CTL &= ~ (UINT32_C(1) << 4); //.bits.task_end_irq_en = en; // bit 4
-		//G2D_TOP->RCQ_IRQ_CTL &= ~ (UINT32_C(1) << 7); .bits.rcq_cfg_finish_irq_en = en; // bit 7
+		//G2D_TOP->RCQ_IRQ_CTL &= ~ (UINT32_C(1) << 7); //.bits.rcq_cfg_finish_irq_en = en; // bit 7
 	}
-}
-
-static void awxx_g2d_top_rcq_update_en(void)
-{
-	// bit 0
-	G2D_TOP->RCQ_CTRL |= (UINT32_C(1) << 0);	// update
-	while ((G2D_TOP->RCQ_CTRL & (UINT32_C(1) << 0)) != 0)
-		;
 }
 
 static unsigned awxx_g2d_top_rcq_task_irq_query(void)
@@ -397,6 +389,7 @@ static unsigned awxx_g2d_top_get_rcq_frame_cnt(void)
 // Register Configuration Queue setup
 static void awxx_g2d_top_set_rcq_head(void * addr, unsigned len)
 {
+	PRINTF("awxx_g2d_top_set_rcq_head: addr=%p, len=%u\n", addr, len);
 	const uintptr_t buff = (uintptr_t) addr;
 	G2D_TOP->RCQ_CTRL = 0;	// При  0 тут возможна установка параметров
 	G2D_TOP->RCQ_HEADER_LOW_ADDR = ptr_lo32(buff);
@@ -519,8 +512,13 @@ static void awxx_g2d_rtmix_startandwait(void)
 /* Запускаем и ждём завершения обработки */
 static void awxx_g2d_rcq_startandwait(void)
 {
-	awxx_g2d_top_rcq_update_en();
-	//awxx_g2d_top_rcq_irq_en(1);
+	awxx_g2d_top_rcq_irq_en(1);
+
+	// bit 0
+	G2D_TOP->RCQ_CTRL |= (UINT32_C(1) << 0);	// update
+	while ((G2D_TOP->RCQ_CTRL & (UINT32_C(1) << 0)) != 0)
+		;
+
 	//G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
 	//G2D_TOP->RCQ_CTRL;
 	if (hwacc_rcq_waitdone() == 0)
