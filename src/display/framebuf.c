@@ -22,6 +22,8 @@
 #include <string.h>
 
 
+#define WITHRTMXRCQ (0 && (CPUSTYLE_T113 || CPUSTYLE_F133))	// Render Commands Queue use
+
 #if WITHLVGL
 
 #include "draw/lv_draw_private.h"
@@ -220,6 +222,18 @@ static void g2d_rtmx_accure(void)
 static void g2d_rtmx_release(void)
 {
 	LCLSPIN_UNLOCK(& rtmxlock);
+}
+
+// Render Commands Queue lock
+static LCLSPINLOCK_t rtmxrcqlock;
+
+static void g2d_rtmx_rcq_accure(void)
+{
+	LCLSPIN_LOCK(& rtmxrcqlock);
+}
+static void g2d_rtmx_rcq_release(void)
+{
+	LCLSPIN_UNLOCK(& rtmxrcqlock);
 }
 
 #if defined (G2D_MIXER)
@@ -1402,6 +1416,7 @@ void lvglhw_initialize(void)
 void arm_hardware_mdma_initialize(void)
 {
 	LCLSPINLOCK_INITIALIZE(& rtmxlock);
+	LCLSPINLOCK_INITIALIZE(& rtmxrcqlock);
 	LCLSPINLOCK_INITIALIZE(& rotlock);
 
 #if CPUSTYLE_T507
@@ -1563,13 +1578,6 @@ typedef struct _draw_awrot_unit_t {
 
 #if defined (G2D_MIXER)
 
-static void
-awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
-		unsigned srcFormat, unsigned sstride,
-		uint_fast32_t ssizehw, uintptr_t saddr,
-		unsigned tstride, uint_fast32_t tsizehw,
-		uintptr_t taddr);
-
 // на t113 пока не работает правильно (чёрный квадрат под Emma Smith)
 static void
 draw_awg2d_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_area_t * area, lv_layer_t * layer)
@@ -1623,8 +1631,7 @@ draw_awg2d_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-	awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride,
-			tsizehw, taddr);
+	awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride, tsizehw, taddr);
 }
 
 static void
@@ -1679,8 +1686,7 @@ draw_awg2d_layer(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-	awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride,
-			tsizehw, taddr);
+	awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride, tsizehw, taddr);
 }
 
 static void
@@ -3553,8 +3559,7 @@ void hwaccel_bitblt(
 	}
 	else
 	{
-		awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride,
-				tsizehw, taddr);
+		awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride, tsizehw, taddr);
 	}
 
 

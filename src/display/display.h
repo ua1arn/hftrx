@@ -382,7 +382,7 @@ colpip_rectangle(
 #define BITBLT_FLAG_YMIRROR			(1u << 2)
 #define BITBLT_FLAG_SRC_ABGR8888	(1u << 3)	/* исходный имедж - ABGR8888 (от LuPng) */
 
-// скоприовать прямоугольник с типом пикселей соответствующим pip
+// скоприовать прямоугольник
 void colpip_bitblt(
 	uintptr_t dstinvalidateaddr,	int_fast32_t dstinvalidatesize,	// параметры clean invalidate получателя
 	const gxdrawb_t * tdb,	// получатель
@@ -394,7 +394,7 @@ void colpip_bitblt(
 	unsigned bitbltmask, COLORPIP_T keycolor
 	);
 
-// скоприовать прямоугольник с типом пикселей соответствующим pip
+// скоприовать прямоугольник с масштабированием
 void colpip_stretchblt(
 	uintptr_t dstinvalidateaddr,	int_fast32_t dstinvalidatesize,	// параметры clean invalidate получателя
 	const gxdrawb_t * tdb,	// получатель
