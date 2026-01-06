@@ -249,7 +249,7 @@ enum
 	xG2D_SM_DTRL_1 = 0x03,
 };
 
-#define G2D_SCANORFER 3
+#define G2D_SCANORFER 0
 
 /* Отключаем все источники */
 static void awxx_g2d_mixer_reset(unsigned scanorder)
