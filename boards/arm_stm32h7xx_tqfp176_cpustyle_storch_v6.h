@@ -901,7 +901,7 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-		HARDWARE_FPGA_RESET(); \
+		/* HARDWARE_FPGA_RESET(); */ \
 		HARDWARE_SIDETONE_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \
 		HARDWARE_BL_INITIALIZE(); \
