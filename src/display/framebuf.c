@@ -399,7 +399,7 @@ static unsigned awxx_g2d_top_rcq_task_irq_query(void)
 	G2D_TOP->RCQ_STATUS = status;// | (UINT32_C(1) << 0);
 	if (status & (UINT32_C(1) << 0))	// task_end_irq
 	{
-		PRINTF("awxx_g2d_top_rcq_task_irq_query: status=%08X\n", (unsigned) status);
+		//PRINTF("awxx_g2d_top_rcq_task_irq_query: status=%08X\n", (unsigned) status);
 		return 1;
 	}
 //	if (G2D_TOP->RCQ_STATUS.bits.task_end_irq & 0x1) {
@@ -449,11 +449,19 @@ static int hwacc_rcq_waitdone(void)
 	}
 	return 1;
 }
+// Register Configuration Queue setup
+static void awxx_g2d_top_set_rcq_head_reset(void)
+{
+	G2D_TOP->RCQ_HEADER_LEN = 0;
+	G2D_TOP->RCQ_CTRL |= (UINT32_C(1) << 0);	// update
+	while ((G2D_TOP->RCQ_CTRL & (UINT32_C(1) << 0)) != 0)
+		;
+}
 
 // Register Configuration Queue setup
 static void awxx_g2d_top_set_rcq_head(void * addr, unsigned len)
 {
-	PRINTF("h G2D_TOP->RCQ_CTRL=%08X, G2D_TOP->RCQ_STATUS=%08X\n", (unsigned) G2D_TOP->RCQ_CTRL, (unsigned) G2D_TOP->RCQ_STATUS);
+	//PRINTF("h G2D_TOP->RCQ_CTRL=%08X, G2D_TOP->RCQ_STATUS=%08X\n", (unsigned) G2D_TOP->RCQ_CTRL, (unsigned) G2D_TOP->RCQ_STATUS);
 	//PRINTF("awxx_g2d_top_set_rcq_head: addr=%p, len=%u\n", addr, len);
 	const uintptr_t buff = (uintptr_t) addr;
 	ASSERT(len == (len & 0xFFFF));
@@ -520,6 +528,7 @@ typedef struct
 
 static void rcqhinit(awxx_g2d_rcq_head_t * h, int active, void * data, unsigned datalen, unsigned nextlen, unsigned reg_offset)
 {
+	//PRINTF("h=%p, data=%p next=%08X\n", h, data, nextlen);
 	uintptr_t const addr = (uintptr_t) data;
 	ASSERT(nextlen == (nextlen & 0xFFFF));
 	ASSERT(datalen == (datalen & 0xFFFFFF));
@@ -543,27 +552,28 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		uintptr_t taddr
 		)
 {
-	static ALIGNX_BEGIN RAMNC struct
-	{
-		awxx_g2d_rcq_head_t h1;
-		awxx_g2d_rcq_head_t h2;
-		awxx_g2d_rcq_head_t h3;
-		awxx_g2d_rcq_head_t h4;
-	} rcq0 ALIGNX_END;
 	static ALIGNX_BEGIN RAMNC G2D_BLD_TypeDef bldv ALIGNX_END;
 	static ALIGNX_BEGIN RAMNC G2D_UI_TypeDef ui2v ALIGNX_END;
 	static ALIGNX_BEGIN RAMNC G2D_VI_TypeDef vi0v ALIGNX_END;
 	static ALIGNX_BEGIN RAMNC G2D_WB_TypeDef wbv ALIGNX_END;
+	static ALIGNX_BEGIN RAMNC struct rcq
+	{
+		ALIGNX_BEGIN awxx_g2d_rcq_head_t h1 ALIGNX_END;
+		ALIGNX_BEGIN awxx_g2d_rcq_head_t h2 ALIGNX_END;
+		ALIGNX_BEGIN awxx_g2d_rcq_head_t h3 ALIGNX_END;
+		ALIGNX_BEGIN awxx_g2d_rcq_head_t h4 ALIGNX_END;
+	} rcq0 ALIGNX_END;
 
 	G2D_BLD_TypeDef * const bld = & bldv;
 	G2D_UI_TypeDef * const ui2 = & ui2v;
 	G2D_VI_TypeDef * const vi0 = & vi0v;
 	G2D_WB_TypeDef * const wb = & wbv;
 
-	rcqhinit(& rcq0.h1, 1, & bldv, sizeof bldv, 1 * (sizeof rcq0.h1), G2D_BLD_BASE - G2D_BASE);
-	rcqhinit(& rcq0.h2, 1, & ui2v, sizeof ui2v, 1 * (sizeof rcq0.h2), G2D_UI2_BASE - G2D_BASE);
-	rcqhinit(& rcq0.h3, 1, & vi0v, sizeof vi0v, 1 * (sizeof rcq0.h3), G2D_V0_BASE - G2D_BASE);
-	rcqhinit(& rcq0.h4, 1, & wbv, sizeof wbv, 0 * (sizeof rcq0.h4), G2D_WB_BASE - G2D_BASE);
+	//memset(& rcq0, 0, sizeof rcq0);
+	rcqhinit(& rcq0.h1, 1, & bldv, sizeof bldv, offsetof(struct rcq, h2) - offsetof(struct rcq, h1), G2D_BLD_BASE - G2D_BASE);
+	rcqhinit(& rcq0.h2, 1, & ui2v, sizeof ui2v, offsetof(struct rcq, h3) - offsetof(struct rcq, h2), G2D_UI2_BASE - G2D_BASE);
+	rcqhinit(& rcq0.h3, 1, & vi0v, sizeof vi0v, offsetof(struct rcq, h4) - offsetof(struct rcq, h3), G2D_V0_BASE - G2D_BASE);
+	rcqhinit(& rcq0.h4, 1, & wbv, sizeof wbv, 0, G2D_WB_BASE - G2D_BASE);
 
 	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
@@ -618,7 +628,7 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 	}
 	else
 	{
-		rcqhinit(& rcq0.h2, 0, & ui2v, sizeof ui2v, 1 * (sizeof rcq0.h2), G2D_UI2_BASE - G2D_BASE);
+		rcqhinit(& rcq0.h2, 0, & ui2v, sizeof ui2v, offsetof(struct rcq, h3) - offsetof(struct rcq, h2), G2D_UI2_BASE - G2D_BASE);
 		/* без keycolor */
 		/* установка поверхности - источника (безусловно) */
 		//		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr();
@@ -672,11 +682,12 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 	g2d_rtmx_rcq_accure();
 	awxx_g2d_mixer_reset(G2D_SCANORFER); /* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
-	awxx_g2d_top_rcq_task_irq_query();
-	awxx_g2d_top_rcq_cfg_irq_query();
+//	awxx_g2d_top_rcq_task_irq_query();
+//	awxx_g2d_top_rcq_cfg_irq_query();
 	awxx_g2d_top_set_rcq_head(& rcq0, sizeof rcq0);
-	awxx_g2d_top_rcq_task_irq_query();
-	awxx_g2d_top_rcq_cfg_irq_query();
+//	awxx_g2d_top_rcq_task_irq_query();
+//	awxx_g2d_top_rcq_cfg_irq_query();
+//	awxx_g2d_top_set_rcq_head_reset();
 	g2d_rtmx_rcq_release();
 	g2d_rtmx_release();
 }
