@@ -796,7 +796,7 @@ aw_g2d_fillrect(
 	awxx_g2d_mixer_reset(G2D_SCANORFER); /* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 	dcache_clean((uintptr_t) & rcq0, sizeof rcq0);
-	awxx_g2d_top_set_rcq_head(& rcq0, 4 * sizeof (awxx_g2d_rcq_head_t));
+	awxx_g2d_top_set_rcq_head(& rcq0, 3 * sizeof (awxx_g2d_rcq_head_t));
 	g2d_rtmx_rcq_release();
 	g2d_rtmx_release();
 
