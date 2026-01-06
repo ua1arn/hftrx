@@ -70,10 +70,6 @@ main(void)
 	applowinitialize();	/* вызывается при запрещённых прерываниях. */
 	global_enableIRQ();
 	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
-#if LINUX_SUBSYSTEM
-#else /* LINUX_SUBSYSTEM */
-	main_SystemInit();
-#endif /* LINUX_SUBSYSTEM */
 	midtests();
 	initialize2();	/* вызывается при разрешённых прерываниях. */
 	application_initialize();

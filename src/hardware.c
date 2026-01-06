@@ -2140,9 +2140,14 @@ SystemInit(void)
 #ifdef BOARD_BLINK_INITIALIZE
 	BOARD_BLINK_INITIALIZE();
 #endif
-#if WITHSDRAM_PMC1
-	main_SystemInit();
-#endif
+	sysinit_pmic_initialize();
+	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
+	SystemCoreClockUpdate();
+#ifdef USE_HAL_DRIVER
+	HAL_Init();
+#endif /* USE_HAL_DRIVER */
+	sysinit_debug_initialize();
+	local_delay_initialize();
 	sysinit_sdram_initialize();
 	sysinit_mmu_tables();			// Инициализация таблиц. */
 	sysinit_cache_initialize();		// caches iniitialize
@@ -2153,14 +2158,6 @@ SystemInit(void)
 // Вызывается из main, при работающих прерываниях
 void main_SystemInit(void)
 {
-	sysinit_pmic_initialize();
-	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
-	SystemCoreClockUpdate();
-#ifdef USE_HAL_DRIVER
-	HAL_Init();
-#endif /* USE_HAL_DRIVER */
-	sysinit_debug_initialize();
-	local_delay_initialize();
 }
 
 /* Функция, вызываемая для инициализации DDR памяти из XFEL */
