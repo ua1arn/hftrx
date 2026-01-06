@@ -21,7 +21,6 @@
 #include "display2.h"
 #include <string.h>
 
-
 //#define WITHRTMXRCQ (1 && (CPUSTYLE_T113 || CPUSTYLE_F133))	// Render Commands Queue use
 
 #if WITHLVGL
@@ -397,10 +396,10 @@ static unsigned awxx_g2d_top_rcq_task_irq_query(void)
 {
 	// bit 0
 	const uint_fast32_t status = G2D_TOP->RCQ_STATUS;
-	if (status & (UINT32_C(1) << 0))
+	G2D_TOP->RCQ_STATUS = status;// | (UINT32_C(1) << 0);
+	if (status & (UINT32_C(1) << 0))	// task_end_irq
 	{
-		G2D_TOP->RCQ_STATUS = status | (UINT32_C(1) << 0);	// task_end_irq
-		//PRINTF("awxx_g2d_top_rcq_task_irq_query: status=%08X\n", (unsigned) status);
+		PRINTF("awxx_g2d_top_rcq_task_irq_query: status=%08X\n", (unsigned) status);
 		return 1;
 	}
 //	if (G2D_TOP->RCQ_STATUS.bits.task_end_irq & 0x1) {
@@ -409,14 +408,14 @@ static unsigned awxx_g2d_top_rcq_task_irq_query(void)
 //	}
 	return 0;
 }
-#if 0
+#if 1
 static unsigned awxx_g2d_top_rcq_cfg_irq_query(void)
 {
 	// bit 2
 	const uint_fast32_t status = G2D_TOP->RCQ_STATUS;
-	if (status & (UINT32_C(1) << 2))
+	G2D_TOP->RCQ_STATUS = status;
+	if (status & (UINT32_C(1) << 2))	// cfg_finish_irq
 	{
-		G2D_TOP->RCQ_STATUS = status | (UINT32_C(1) << 2);	// cfg_finish_irq
 		return 1;
 	}
 //	if (G2D_TOP->RCQ_STATUS.bits.cfg_finish_irq & 0x1) {
@@ -432,9 +431,29 @@ static unsigned awxx_g2d_top_get_rcq_frame_cnt(void)
 	return (G2D_TOP->RCQ_STATUS >> 8) &  0xFF; //.bits.frame_cnt;
 }
 
+/* Запуск и ожидание завершения работы G2D RCQ */
+/* 0 - timeout. 1 - OK */
+static int hwacc_rcq_waitdone(void)
+{
+	unsigned n = 0x2000000;
+	for (;;)
+	{
+		if (awxx_g2d_top_rcq_task_irq_query())
+			break;
+		if (-- n == 0)
+		{
+			PRINTF("G2D_TOP->RCQ_CTRL=%08X, G2D_TOP->RCQ_STATUS=%08X\n", (unsigned) G2D_TOP->RCQ_CTRL, (unsigned) G2D_TOP->RCQ_STATUS);
+			//PRINTF("G2D_ROT->ROT_CTL=%08X, G2D_ROT->ROT_INT=%08X\n", (unsigned) G2D_ROT->ROT_CTL, (unsigned) G2D_ROT->ROT_INT);
+			return 0;
+		}
+	}
+	return 1;
+}
+
 // Register Configuration Queue setup
 static void awxx_g2d_top_set_rcq_head(void * addr, unsigned len)
 {
+	PRINTF("h G2D_TOP->RCQ_CTRL=%08X, G2D_TOP->RCQ_STATUS=%08X\n", (unsigned) G2D_TOP->RCQ_CTRL, (unsigned) G2D_TOP->RCQ_STATUS);
 	//PRINTF("awxx_g2d_top_set_rcq_head: addr=%p, len=%u\n", addr, len);
 	const uintptr_t buff = (uintptr_t) addr;
 	ASSERT(len == (len & 0xFFFF));
@@ -450,6 +469,20 @@ static void awxx_g2d_top_set_rcq_head(void * addr, unsigned len)
 	G2D_TOP->RCQ_CTRL |= (UINT32_C(1) << 0);	// update
 	while ((G2D_TOP->RCQ_CTRL & (UINT32_C(1) << 0)) != 0)
 		;
+	//awxx_g2d_top_rcq_irq_en(1);
+	//G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
+	//G2D_TOP->RCQ_CTRL;
+	//local_delay_ms(50);
+	if (hwacc_rcq_waitdone() == 0)
+	{
+		//PRINTF("awxx_g2d_rcq_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
+		ASSERT(0);
+	}
+	//PRINTF("G2D_TOP->RCQ_CTRL=%08X, G2D_TOP->RCQ_STATUS=%08X\n", (unsigned) G2D_TOP->RCQ_CTRL, (unsigned) G2D_TOP->RCQ_STATUS);
+//	G2D_TOP->RCQ_CTRL = 0;
+//	G2D_TOP->RCQ_HEADER_LEN = 0;
+	//G2D_TOP->RCQ_STATUS = 0;
+	//ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 }
 
 
@@ -502,44 +535,6 @@ static void rcqhinit(awxx_g2d_rcq_head_t * h, int active, void * data, unsigned 
 	h->reg_offset = reg_offset;
 }
 
-/* Запуск и ожидание завершения работы G2D RCQ */
-/* 0 - timeout. 1 - OK */
-static int hwacc_rcq_waitdone(void)
-{
-	unsigned n = 0x2000000;
-	for (;;)
-	{
-		if (awxx_g2d_top_rcq_task_irq_query())
-			break;
-		if (-- n == 0)
-		{
-			PRINTF("G2D_TOP->RCQ_CTRL=%08X, G2D_TOP->RCQ_STATUS=%08X\n", (unsigned) G2D_TOP->RCQ_CTRL, (unsigned) G2D_TOP->RCQ_STATUS);
-			//PRINTF("G2D_ROT->ROT_CTL=%08X, G2D_ROT->ROT_INT=%08X\n", (unsigned) G2D_ROT->ROT_CTL, (unsigned) G2D_ROT->ROT_INT);
-			return 0;
-		}
-	}
-	return 1;
-}
-/* Запускаем и ждём завершения обработки */
-static void awxx_g2d_rcq_startandwait(void)
-{
-	//awxx_g2d_top_rcq_irq_en(1);
-
-	//G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
-	//G2D_TOP->RCQ_CTRL;
-	local_delay_ms(50);
-	if (hwacc_rcq_waitdone() == 0)
-	{
-		//PRINTF("awxx_g2d_rcq_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
-		ASSERT(0);
-	}
-	//PRINTF("G2D_TOP->RCQ_CTRL=%08X, G2D_TOP->RCQ_STATUS=%08X\n", (unsigned) G2D_TOP->RCQ_CTRL, (unsigned) G2D_TOP->RCQ_STATUS);
-//	G2D_TOP->RCQ_CTRL = 0;
-//	G2D_TOP->RCQ_HEADER_LEN = 0;
-	//G2D_TOP->RCQ_STATUS = 0;
-	//ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
-}
-
 static void
 awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		unsigned srcFormat, unsigned sstride,
@@ -548,38 +543,30 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		uintptr_t taddr
 		)
 {
-	static RAMNC struct
+	static ALIGNX_BEGIN RAMNC struct
 	{
 		awxx_g2d_rcq_head_t h1;
-		//awxx_g2d_rcq_head_t h2;
+		awxx_g2d_rcq_head_t h2;
 		awxx_g2d_rcq_head_t h3;
 		awxx_g2d_rcq_head_t h4;
-	} rcq0;
-	static RAMNC G2D_BLD_TypeDef bldv;
-	//static RAMNC G2D_UI_TypeDef ui2v;
-	static RAMNC G2D_VI_TypeDef vi0v;
-	static RAMNC G2D_WB_TypeDef wbv;
-
-	memset(& rcq0, 0, sizeof rcq0);
-	memset(& bldv, 0, sizeof bldv);
-	//memset(& ui2v, 0, sizeof ui2v);
-	memset(& vi0v, 0, sizeof vi0v);
-	memset(& wbv, 0, sizeof wbv);
+	} rcq0 ALIGNX_END;
+	static ALIGNX_BEGIN RAMNC G2D_BLD_TypeDef bldv ALIGNX_END;
+	static ALIGNX_BEGIN RAMNC G2D_UI_TypeDef ui2v ALIGNX_END;
+	static ALIGNX_BEGIN RAMNC G2D_VI_TypeDef vi0v ALIGNX_END;
+	static ALIGNX_BEGIN RAMNC G2D_WB_TypeDef wbv ALIGNX_END;
 
 	G2D_BLD_TypeDef * const bld = & bldv;
-	//G2D_UI_TypeDef * const ui2 = & ui2v;
+	G2D_UI_TypeDef * const ui2 = & ui2v;
 	G2D_VI_TypeDef * const vi0 = & vi0v;
 	G2D_WB_TypeDef * const wb = & wbv;
 
 	rcqhinit(& rcq0.h1, 1, & bldv, sizeof bldv, 1 * (sizeof rcq0.h1), G2D_BLD_BASE - G2D_BASE);
-	//rcqhinit(& rcq0.h2, 1, & ui2v, sizeof ui2v, 1 * (sizeof rcq0.h2), G2D_UI2_BASE - G2D_BASE);
+	rcqhinit(& rcq0.h2, 1, & ui2v, sizeof ui2v, 1 * (sizeof rcq0.h2), G2D_UI2_BASE - G2D_BASE);
 	rcqhinit(& rcq0.h3, 1, & vi0v, sizeof vi0v, 1 * (sizeof rcq0.h3), G2D_V0_BASE - G2D_BASE);
 	rcqhinit(& rcq0.h4, 1, & wbv, sizeof wbv, 0 * (sizeof rcq0.h4), G2D_WB_BASE - G2D_BASE);
 
 	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
-		return;
-#if 0
 		const COLOR24_T keycolor24 = awxx_key_color_conversion(keycolor);
 		/* 5.10.9.10 BLD color key control register */
 		//G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
@@ -628,11 +615,10 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		bld->ROP_INDEX[0] = 0; // ? зависят от ROP_CTL
 		bld->ROP_INDEX[1] = 0;
 		bld->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
-#endif
 	}
 	else
 	{
-		//rcqhinit(& rcq0.h2, 0, & ui2v, sizeof ui2v, 1 * (sizeof rcq0.h2), G2D_UI2_BASE - G2D_BASE);
+		rcqhinit(& rcq0.h2, 0, & ui2v, sizeof ui2v, 1 * (sizeof rcq0.h2), G2D_UI2_BASE - G2D_BASE);
 		/* без keycolor */
 		/* установка поверхности - источника (безусловно) */
 		//		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr();
@@ -687,13 +673,16 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 	awxx_g2d_mixer_reset(G2D_SCANORFER); /* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 	awxx_g2d_top_rcq_task_irq_query();
-	//awxx_g2d_top_rcq_cfg_irq_query();
+	awxx_g2d_top_rcq_cfg_irq_query();
 	awxx_g2d_top_set_rcq_head(& rcq0, sizeof rcq0);
-	awxx_g2d_rcq_startandwait(); /* Запускаем и ждём завершения обработки */
+	awxx_g2d_top_rcq_task_irq_query();
+	awxx_g2d_top_rcq_cfg_irq_query();
 	g2d_rtmx_rcq_release();
 	g2d_rtmx_release();
 }
+
 #else
+
 static void
 awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		unsigned srcFormat, unsigned sstride,
