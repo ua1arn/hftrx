@@ -5908,6 +5908,7 @@ static uint_fast8_t board_fpga_get_NSTATUS(void)
 /* работоспособность функции под вопросом, были случаи незагрузки аппарата (с новыми версиями EP4CE22) */
 void board_fpga_reset(void)
 {
+	return;
 #if FPGA_NCONFIG_BIT != 0
 
 	unsigned w = 500;
