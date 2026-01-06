@@ -437,13 +437,15 @@ typedef struct
 static void rcqhinit(awxx_g2d_rcq_head_t * h, int active, void * data, unsigned datalen, unsigned nextlen, unsigned reg_offset)
 {
 	uintptr_t const addr = (uintptr_t) data;
+	ASSERT(nextlen == (nextlen & 0xFFFF));
+	ASSERT(datalen == (datalen & 0xFFFFFF));
 	h->low_addr = ptr_lo32(addr);
 	h->dw0 =
 		(ptr_hi32(addr) & 0xFF) * (UINT32_C(1) << 24) |	// high addr
-		(nextlen & 0xFFFFFF) * (UINT32_C(1) << 0) |	// len (next frame len
+		(datalen & 0xFFFFFF) * (UINT32_C(1) << 0) |	// registers for update length
 		0;
 	h->dirty =
-		(datalen & 0xFFFF) * (UINT32_C(1) << 16) |	// header len
+		(nextlen & 0xFFFF) * (UINT32_C(1) << 16) |	// header len
 		!! active * (UINT32_C(1) << 0) |	// dirty
 		0;
 	h->reg_offset = reg_offset;
@@ -546,11 +548,6 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		uintptr_t taddr
 		)
 {
-	g2d_rtmx_accure();
-	g2d_rtmx_rcq_accure();
-	awxx_g2d_mixer_reset(G2D_SCANORFER); /* Отключаем все источники */
-	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
-
 	static RAMNC struct
 	{
 		awxx_g2d_rcq_head_t h1;
@@ -676,6 +673,10 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 	wb->WB_LADD0 = ptr_lo32(taddr);
 	wb->WB_HADD0 = ptr_hi32(taddr);
 
+	g2d_rtmx_accure();
+	g2d_rtmx_rcq_accure();
+	awxx_g2d_mixer_reset(G2D_SCANORFER); /* Отключаем все источники */
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 	awxx_g2d_top_set_rcq_head(& rcq0, sizeof rcq0);
 	awxx_g2d_rcq_startandwait(); /* Запускаем и ждём завершения обработки */
 	g2d_rtmx_rcq_release();
