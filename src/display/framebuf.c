@@ -435,13 +435,13 @@ static void awxx_g2d_top_set_rcq_head(void * addr, unsigned len)
 
 typedef struct
 {
-	uint32_t low_addr; /* 32 bytes align */
-	uint32_t dw0;	// 31:24 - high addr, 23:0 - len
-	uint32_t dirty;	// 32:16 - header len, 0 - dirty
-	uint32_t reg_offset;
+	__IO uint32_t low_addr; /* 32 bytes align */
+	__IO uint32_t dw0;	// 31:24 - high addr, 23:0 - len
+	__IO uint32_t dirty;	// 32:16 - header len, 0 - dirty
+	__IO uint32_t reg_offset;
 } awxx_g2d_rcq_head_t;
 
-static void rcqhinit(awxx_g2d_rcq_head_t * h, int active, void * data, unsigned hlen, unsigned nextlen, unsigned reg_offset)
+static void rcqhinit(awxx_g2d_rcq_head_t * h, int active, void * data, unsigned datalen, unsigned nextlen, unsigned reg_offset)
 {
 	uintptr_t const addr = (uintptr_t) data;
 	h->low_addr = ptr_lo32(addr);
@@ -450,7 +450,7 @@ static void rcqhinit(awxx_g2d_rcq_head_t * h, int active, void * data, unsigned 
 		(nextlen & 0xFFFFFF) * (UINT32_C(1) << 0) |	// len (next frame len
 		0;
 	h->dirty =
-		(hlen & 0xFFFF) * (UINT32_C(1) << 16) |	// header len
+		(datalen & 0xFFFF) * (UINT32_C(1) << 16) |	// header len
 		!! active * (UINT32_C(1) << 0) |	// dirty
 		0;
 	h->reg_offset = reg_offset;
@@ -519,6 +519,8 @@ static void awxx_g2d_rtmix_startandwait(void)
 /* Запускаем и ждём завершения обработки */
 static void awxx_g2d_rcq_startandwait(void)
 {
+	awxx_g2d_top_rcq_update_en();
+	//awxx_g2d_top_rcq_irq_en(1);
 	//G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
 	//G2D_TOP->RCQ_CTRL;
 	if (hwacc_rcq_waitdone() == 0)
@@ -548,22 +550,22 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		awxx_g2d_rcq_head_t h1;
 		G2D_BLD_TypeDef bld;
 		awxx_g2d_rcq_head_t h2;
-		G2D_UI_TypeDef ui;
+		G2D_UI_TypeDef ui2;
 		awxx_g2d_rcq_head_t h3;
-		G2D_VI_TypeDef vi;
+		G2D_VI_TypeDef vi0;
 		awxx_g2d_rcq_head_t h4;
 		G2D_WB_TypeDef wb;
 	} rcq0;
 
 	G2D_BLD_TypeDef * const bld = & rcq0.bld;
-	G2D_UI_TypeDef * const ui = & rcq0.ui;
-	G2D_VI_TypeDef * const vi = & rcq0.vi;
+	G2D_UI_TypeDef * const ui2 = & rcq0.ui2;
+	G2D_VI_TypeDef * const vi0 = & rcq0.vi0;
 	G2D_WB_TypeDef * const wb = & rcq0.wb;
 
-	rcqhinit(& rcq0.h1, 1, & rcq0.bld, sizeof rcq0.h1, 1 * (sizeof rcq0.h1 + sizeof rcq0.bld), G2D_BLD_BASE - G2D_BASE);
-	rcqhinit(& rcq0.h2, 1, & rcq0.ui, sizeof rcq0.h2, 1 * (sizeof rcq0.h2 + sizeof rcq0.ui), G2D_UI2_BASE - G2D_BASE);
-	rcqhinit(& rcq0.h3, 1, & rcq0.vi, sizeof rcq0.h3, 1 * (sizeof rcq0.h3 + sizeof rcq0.vi), G2D_V0_BASE - G2D_BASE);
-	rcqhinit(& rcq0.h4, 1, & rcq0.wb, sizeof rcq0.h4, 0 * (sizeof rcq0.h4 + sizeof rcq0.wb), G2D_WB_BASE - G2D_BASE);
+	rcqhinit(& rcq0.h1, 1, & rcq0.bld, sizeof rcq0.bld, 1 * (sizeof rcq0.h1 + sizeof rcq0.bld), G2D_BLD_BASE - G2D_BASE);
+	rcqhinit(& rcq0.h2, 1, & rcq0.ui2, sizeof rcq0.ui2, 1 * (sizeof rcq0.h2 + sizeof rcq0.ui2), G2D_UI2_BASE - G2D_BASE);
+	rcqhinit(& rcq0.h3, 1, & rcq0.vi0, sizeof rcq0.vi0, 1 * (sizeof rcq0.h3 + sizeof rcq0.vi0), G2D_V0_BASE - G2D_BASE);
+	rcqhinit(& rcq0.h4, 1, & rcq0.wb, sizeof rcq0.wb, 0 * (sizeof rcq0.h4 + sizeof rcq0.wb), G2D_WB_BASE - G2D_BASE);
 
 	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
@@ -583,23 +585,23 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		bld->BLD_KEY_MAX = keycolor24;
 		bld->BLD_KEY_MIN = keycolor24;
 		/* установка поверхности - источника (анализируется) */
-		ui->UI_ATTR = awxx_g2d_get_ui_attr(srcFormat);
-		ui->UI_PITCH = sstride;
-		ui->UI_FILLC = 0;
-		ui->UI_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		ui->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
-		ui->UI_SIZE = ssizehw; // параметры окна исходного буфера
-		ui->UI_LADD = ptr_lo32(saddr);
-		ui->UI_HADD = ptr_hi32(saddr);
+		ui2->UI_ATTR = awxx_g2d_get_ui_attr(srcFormat);
+		ui2->UI_PITCH = sstride;
+		ui2->UI_FILLC = 0;
+		ui2->UI_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		ui2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
+		ui2->UI_SIZE = ssizehw; // параметры окна исходного буфера
+		ui2->UI_LADD = ptr_lo32(saddr);
+		ui2->UI_HADD = ptr_hi32(saddr);
 		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
-		vi->V0_ATTCTL = awxx_g2d_get_vi_attr(VI_ImageFormat);
-		vi->V0_PITCH0 = tstride;
-		vi->V0_FILLC = 0;
-		vi->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		vi->V0_MBSIZE = tsizehw; // сколько брать от исходного буфера
-		vi->V0_SIZE = tsizehw; // параметры окна исходного буфера
-		vi->V0_LADD0 = ptr_lo32(taddr);
-		vi->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
+		vi0->V0_ATTCTL = awxx_g2d_get_vi_attr(VI_ImageFormat);
+		vi0->V0_PITCH0 = tstride;
+		vi0->V0_FILLC = 0;
+		vi0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		vi0->V0_MBSIZE = tsizehw; // сколько брать от исходного буфера
+		vi0->V0_SIZE = tsizehw; // параметры окна исходного буфера
+		vi0->V0_LADD0 = ptr_lo32(taddr);
+		vi0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
 		bld->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
 		/* источник когда есть совпадние */
 		bld->BLD_CH_ISIZE[0] = tsizehw;
@@ -618,7 +620,7 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 	}
 	else
 	{
-		rcqhinit(& rcq0.h2, 0, & rcq0.ui, sizeof rcq0.h2, 1 * (sizeof rcq0.h2 + sizeof rcq0.ui), G2D_UI2_BASE - G2D_BASE);
+		rcqhinit(& rcq0.h2, 0, & rcq0.ui2, sizeof rcq0.h2, 1 * (sizeof rcq0.h2 + sizeof rcq0.ui2), G2D_UI2_BASE - G2D_BASE);
 		/* без keycolor */
 		/* установка поверхности - источника (безусловно) */
 		//		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr();
@@ -629,14 +631,14 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		//		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
 		//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
 		//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
-		vi->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
-		vi->V0_PITCH0 = sstride;
-		vi->V0_FILLC = 0; //TFTRGB(255, 0, 0);    // unused
-		vi->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		vi->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера
-		vi->V0_SIZE = ssizehw; // параметры окна исходного буфера
-		vi->V0_LADD0 = ptr_lo32(saddr);
-		vi->V0_HADD = ptr_hi32(saddr);
+		vi0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
+		vi0->V0_PITCH0 = sstride;
+		vi0->V0_FILLC = 0; //TFTRGB(255, 0, 0);    // unused
+		vi0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		vi0->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера
+		vi0->V0_SIZE = ssizehw; // параметры окна исходного буфера
+		vi0->V0_LADD0 = ptr_lo32(saddr);
+		vi0->V0_HADD = ptr_hi32(saddr);
 		bld->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
 		bld->BLD_CH_ISIZE[0] = ssizehw;
 		bld->BLD_CH_OFFSET[0] = 0; // ((row) << 16) | ((col) << 0);
@@ -669,8 +671,6 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 	wb->WB_HADD0 = ptr_hi32(taddr);
 
 	awxx_g2d_top_set_rcq_head(& rcq0, sizeof rcq0);
-	awxx_g2d_top_rcq_update_en();
-	//awxx_g2d_top_rcq_irq_en(1);
 	awxx_g2d_rcq_startandwait(); /* Запускаем и ждём завершения обработки */
 	g2d_rtmx_rcq_release();
 	g2d_rtmx_release();
