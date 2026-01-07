@@ -1,6 +1,8 @@
 #include "g2d.h"
 #include "formats.h"
 
+#if RTMIXIDLCD && LCDMODE_ARGB8888 && (1 && (CPUSTYLE_T113 || CPUSTYLE_F133))
+
 __ALIGNED(32) TG2D_RCQTask					G2D_RCQTask;
 
 
@@ -148,3 +150,5 @@ void G2D_ROT_Copy_INT(TG2D_ROT_Params* cfg){
 	G2D_Rot->Ctrl.Bits.FlipV = cfg->Flip & 1;
 	G2D_Rot->Ctrl.Bits.Start = 1;
 }
+#endif
+
