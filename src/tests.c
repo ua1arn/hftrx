@@ -7130,6 +7130,17 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0 && LCDMODE_ARGB8888
+	{
+		void rcq_demo(void);
+
+		rcq_demo();
+		TP();
+		for (;;)
+	    	testsloopprocessing();
+
+	}
+#endif
 #if 0 && WITHLTDCHW && LCDMODE_LTDC
 	{
 		// Font test
