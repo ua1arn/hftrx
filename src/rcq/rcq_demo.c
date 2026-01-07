@@ -1,3 +1,6 @@
+#include "hardware.h"
+
+#if RTMIXIDLCD && LCDMODE_ARGB8888 && (1 && (CPUSTYLE_T113 || CPUSTYLE_F133))
 #include "g2d.h"
 #include "fnt0.h"
 #include "fnt1.h"
@@ -5,9 +8,8 @@
 #include "src/display/display.h"
 #include <stdio.h>
 
-#if RTMIXIDLCD && LCDMODE_ARGB8888 && (1 && (CPUSTYLE_T113 || CPUSTYLE_F133))
-TXTX_TText  text1;
-volatile uint32_t g2dRotReady = 0;
+static TXTX_TText  text1;
+static volatile uint32_t g2dRotReady = 0;
 static uint32_t  __ALIGNED(128) layerUI0[GXSIZE(DIM_X, DIM_Y)] = {0x00000000};
 //uint32_t  __ALIGNED(128) layerUI1[GXSIZE(DIM_X, DIM_Y)] = {0x00000000};
 //TG2D_ROT_Params g2dRotCfg;

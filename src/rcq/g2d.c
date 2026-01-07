@@ -1,7 +1,8 @@
-#include "g2d.h"
-#include "formats.h"
+#include "hardware.h"
 
 #if RTMIXIDLCD && LCDMODE_ARGB8888 && (1 && (CPUSTYLE_T113 || CPUSTYLE_F133))
+#include "g2d.h"
+#include "formats.h"
 
 __ALIGNED(32) TG2D_RCQTask					G2D_RCQTask;
 

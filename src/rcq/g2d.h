@@ -1,7 +1,6 @@
 #ifndef G2DH
 #define G2DH
 
-#include "hardware.h"
 #include "g2d_top_type.h"
 #include "g2d_mixer_type.h"
 #include "g2d_rotate_type.h"
