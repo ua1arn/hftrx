@@ -3,6 +3,7 @@
 #define TXTX_H_
 
 #include "hardware.h"
+#include "src/display/display.h"
 
 #define TXTX_MAX_LENGTH				((G2D_RCQ_TASKS_COUNT/2) - 4)
 
@@ -25,9 +26,9 @@ typedef struct {
     uint32_t 		 	FontColor;
     ETXTXJUSTIFY 	 	Justify;
     uint32_t 		 	Interval;
-    FNTX_TFontASCII* 	Font;
+    const FNTX_TFontASCII* 	Font;
 
-    uint32_t* 			Canvas;
+    PACKEDCOLORPIP_T * 			Canvas;
     uint32_t 			CanvasWidth;
     uint32_t 			CanvasHeight;
 
@@ -42,7 +43,7 @@ uint32_t  TXTX_Update(TXTX_TText* txtx, TG2D_RCQTask* task){
 	// Set Canvas
 
 	task->Headers[h].Dw0.Bits.AddrH = 0;
-	task->Headers[h].AddrL = (uint32_t)__va_to_pa((uint32_t) &task->Canvas[c]);
+	task->Headers[h].AddrL = (uintptr_t)__va_to_pa((uintptr_t) &task->Canvas[c]);
 	task->Headers[h].Dw0.Bits.Length = sizeof(struct g2d_mixer_ovl_u_reg);
 	task->Headers[h].Dirty.Bits.Active = 1;
 	task->Headers[h].Dirty.Bits.NextHeaderLength = sizeof(struct g2d_rcq_head);
@@ -59,15 +60,15 @@ uint32_t  TXTX_Update(TXTX_TText* txtx, TG2D_RCQTask* task){
 	task->Canvas[c].Size.Bits.Width = txtx->CanvasWidth  - 1;
 	task->Canvas[c].BlockSize.Bits.Height = txtx->CanvasHeight  - 1;
 	task->Canvas[c].BlockSize.Bits.Width = txtx->CanvasWidth  - 1;
-	task->Canvas[c].Pitch = 4 * txtx->CanvasWidth;
+	task->Canvas[c].Pitch = sizeof (PACKEDCOLORPIP_T) * GXADJ(txtx->CanvasWidth);
 	task->Canvas[c].Coor.Bits.CoorX = 0;
 	task->Canvas[c].Coor.Bits.CoorY = 0;
 	task->Canvas[c].HAddr = 0;
-	task->Canvas[c++].LAddr = (uint32_t)__va_to_pa((uint32_t) txtx->Canvas);
+	task->Canvas[c++].LAddr = (uintptr_t)__va_to_pa((uintptr_t) txtx->Canvas);
 
 	// Set WB
 
-	task->Headers[h].AddrL = (uint32_t)__va_to_pa((uint32_t) &task->WriteBack[w]);
+	task->Headers[h].AddrL = (uintptr_t)__va_to_pa((uintptr_t) &task->WriteBack[w]);
 	task->Headers[h].Dw0.Bits.AddrH = 0;
 	task->Headers[h].Dw0.Bits.Length = sizeof(struct g2d_mixer_write_back_reg);
 	task->Headers[h].Dirty.Bits.Active = 1;
@@ -78,12 +79,12 @@ uint32_t  TXTX_Update(TXTX_TText* txtx, TG2D_RCQTask* task){
     task->WriteBack[w].Size.Bits.Width = txtx->CanvasWidth - 1;
     task->WriteBack[w].Size.Bits.Height = txtx->CanvasHeight - 1;
     task->WriteBack[w].Pitch0 = 4 * txtx->CanvasWidth;
-    task->WriteBack[w].AddrL0 = (uint32_t)__va_to_pa((uint32_t) txtx->Canvas);
+    task->WriteBack[w].AddrL0 = (uintptr_t)__va_to_pa((uintptr_t) txtx->Canvas);
     task->WriteBack[w++].AddrH0 = 0;
 
     // Set Blender
 
-	task->Headers[h].AddrL = (uint32_t)__va_to_pa((uint32_t) &task->Blender[b]);
+	task->Headers[h].AddrL = (uintptr_t)__va_to_pa((uintptr_t) &task->Blender[b]);
 	task->Headers[h].Dw0.Bits.AddrH = 0;
 	task->Headers[h].Dw0.Bits.Length = sizeof(struct g2d_mixer_bld_reg);
 	task->Headers[h].Dirty.Bits.Active = 1;
@@ -124,7 +125,7 @@ uint32_t  TXTX_Update(TXTX_TText* txtx, TG2D_RCQTask* task){
 
 	// To clear the Text area
 
-	task->Headers[h].AddrL = (uint32_t)__va_to_pa((uint32_t) &task->UI[u]);
+	task->Headers[h].AddrL = (uintptr_t)__va_to_pa((uintptr_t) &task->UI[u]);
 	task->Headers[h].Dw0.Bits.AddrH = 0;
 	task->Headers[h].Dw0.Bits.Length = sizeof(struct g2d_mixer_ovl_u_reg);
 	task->Headers[h].Dirty.Bits.Active = 1;
@@ -188,7 +189,7 @@ uint32_t  TXTX_Update(TXTX_TText* txtx, TG2D_RCQTask* task){
 			offset -= symb.Width;
 		}
 
-		task->Headers[h].AddrL = (uint32_t)__va_to_pa((uint32_t) &task->UI[u]);
+		task->Headers[h].AddrL = (uintptr_t)__va_to_pa((uintptr_t) &task->UI[u]);
 		task->Headers[h].Dw0.Bits.AddrH = 0;
 		task->Headers[h].Dw0.Bits.Length = sizeof(struct g2d_mixer_ovl_u_reg);
 		task->Headers[h].Dirty.Bits.Active = 1;
@@ -210,9 +211,9 @@ uint32_t  TXTX_Update(TXTX_TText* txtx, TG2D_RCQTask* task){
 		task->UI[u].Coor.Bits.CoorX = offset - 1;
 		task->UI[u].Coor.Bits.CoorY = txtx->OffsetY - 1;
 		task->UI[u].HAddr = 0;
-		task->UI[u++].LAddr = (uint32_t)__va_to_pa((uint32_t) (txtx->Font->ImagePtr + 4 * symb.OffsetX));
+		task->UI[u++].LAddr = (uintptr_t)__va_to_pa((uintptr_t) (txtx->Font->ImagePtr + 4 * symb.OffsetX));
 
-		task->Headers[h].AddrL = (uint32_t)__va_to_pa((uint32_t) &task->UI[0]);
+		task->Headers[h].AddrL = (uintptr_t)__va_to_pa((uintptr_t) &task->UI[0]);
 		task->Headers[h].Dw0.Bits.AddrH = 0;
 		task->Headers[h].Dw0.Bits.Length = sizeof(uint32_t);
 		task->Headers[h].Dirty.Bits.Active = 1;
@@ -229,11 +230,11 @@ uint32_t  TXTX_Update(TXTX_TText* txtx, TG2D_RCQTask* task){
 
     // Set Blender
 
-	task->Headers[h].AddrL = (uint32_t)__va_to_pa((uint32_t) &task->Blender[1]);
+	task->Headers[h].AddrL = (uintptr_t)__va_to_pa((uintptr_t) &task->Blender[1]);
 	task->Headers[h].Dw0.Bits.AddrH = 0;
 	task->Headers[h].Dw0.Bits.Length = sizeof(struct g2d_mixer_bld_reg);
 	task->Headers[h].Dirty.Bits.Active = 1;
-	task->Headers[h].Dirty.Bits.NextHeaderLength =  0* sizeof(struct g2d_rcq_head);
+	task->Headers[h].Dirty.Bits.NextHeaderLength =  0* sizeof(struct g2d_rcq_head);	// last element
 	task->Headers[h++].Offset = G2D_BLD_BASE - G2D_BASE;
 
 	task->Blender[b].EnableCtrl.Bits.p0_en = 1;

@@ -17,33 +17,33 @@ typedef struct {
 	char			Name[32];
     uint32_t 		ImageWidth;
     uint32_t 		ImageHeight;
-    uint32_t 		ImagePtr;
+    uintptr_t 		ImagePtr;
     FNTX_TSymbInfo	Symbol[95];  // from ' ' (32) to '~' (126). Index = ch - 32
 
 } FNTX_TFontASCII;
 
-inline uint32_t FNTX_GetSymbolOffset(FNTX_TFontASCII* fnt, char ch){
+inline uint32_t FNTX_GetSymbolOffset(const FNTX_TFontASCII* fnt, char ch){
 
 	if (ch < 32 || ch > 126)  return 0;
 
 	return fnt->Symbol[ch - 32].OffsetX;
 }
 
-inline uint32_t FNTX_GetSymbolWidth(FNTX_TFontASCII* fnt, char ch){
+inline uint32_t FNTX_GetSymbolWidth(const FNTX_TFontASCII* fnt, char ch){
 
 	if (ch < 32 || ch > 126)  return 0;
 
 	return fnt->Symbol[ch - 32].Width;
 }
 
-inline uint32_t FNTX_GetSymbolHeight(FNTX_TFontASCII* fnt, char ch){
+inline uint32_t FNTX_GetSymbolHeight(const FNTX_TFontASCII* fnt, char ch){
 
 	if (ch < 32 || ch > 126)  return 0;
 
 	return fnt->Symbol[ch - 32].Height;
 }
 
-inline FNTX_TSymbInfo FNTX_GetSymbol(FNTX_TFontASCII* fnt, char ch){
+inline FNTX_TSymbInfo FNTX_GetSymbol(const FNTX_TFontASCII* fnt, char ch){
 
 	if (ch < 32 || ch > 126)  return fnt->Symbol[0];
 

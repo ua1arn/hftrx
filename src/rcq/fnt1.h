@@ -11,7 +11,7 @@ const FNTX_TFontASCII font_001 = {
 		.Name = "RobotoCondenced 10",
 		.ImageWidth = 1820,
 		.ImageHeight = 47,
-		.ImagePtr = (uint32_t)&fnt1[0],
+		.ImagePtr = (uintptr_t)&fnt1[0],
 		.Symbol = {
 					{1, 	10, 47},      // ' ' (32)
 				    {40, 	5, 	47},      // '!' (33)

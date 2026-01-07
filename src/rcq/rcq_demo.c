@@ -10,7 +10,7 @@
 
 static TXTX_TText  text1;
 static volatile uint32_t g2dRotReady = 0;
-static uint32_t  __ALIGNED(128) layerUI0[GXSIZE(DIM_X, DIM_Y)] = {0x00000000};
+static PACKEDCOLORPIP_T  __ALIGNED(128) layerUI0[GXSIZE(DIM_X, DIM_Y)] = {0x00000000};
 //uint32_t  __ALIGNED(128) layerUI1[GXSIZE(DIM_X, DIM_Y)] = {0x00000000};
 //TG2D_ROT_Params g2dRotCfg;
 
@@ -33,7 +33,7 @@ void rcq_demo(void)
 	arm_hardware_set_handler_system(G2D_IRQn, G2D_IRQHandler);
 
 	  text1.TextLength = snprintf(text1.Text, sizeof(text1.Text), "Hello!1");
-	  text1.Font = (FNTX_TFontASCII*) &font_001;
+	  text1.Font = &font_001;
 	  text1.Height = 47;
 	  text1.Width = 400;
 	  text1.FontColor = 0xFFFFFFFF;
@@ -41,7 +41,7 @@ void rcq_demo(void)
 	  text1.OffsetX = 200;
 	  text1.OffsetY = 100;
 	  text1.Interval = 4;
-	  text1.Canvas = (uint32_t*)__va_to_pa((uint32_t) &layerUI0[0]);
+	  text1.Canvas = (PACKEDCOLORPIP_T*)__va_to_pa((uintptr_t) &layerUI0[0]);
 	  text1.CanvasWidth = DIM_X;
 	  text1.CanvasHeight = DIM_Y;
 

@@ -111,45 +111,45 @@ void G2D_IRQHandler(void){
 //	IRQSetHandler(G2D_IRQ, G2D_IRQHandler);
 //}
 
-void G2D_ROT_Copy_INT(TG2D_ROT_Params* cfg){
-
-	// LBC compression TODO
-
-	G2D_Rot->Ctrl.Reg = 0;
-
-	G2D_Rot->InFmt.Reg = 0;
-
-	G2D_Rot->InSize.Bits.Height = (((cfg->Height - 1) & 0x1FFF));
-	G2D_Rot->InSize.Bits.Width = (((cfg->Width  - 1) & 0x1FFF));
-	G2D_Rot->InPitch[0] = cfg->Width * 4; // x length * fmt size. Should be 128bit aligned.
-
-	G2D_Rot->In_lAddr0 = (uint32_t)__va_to_pa((uint32_t)cfg->srcAddr);
-	G2D_Rot->In_hAddr0 = 0;
-
-	if ((cfg->Angle == G2D_ROT_90) || (cfg->Angle == G2D_ROT_270)){
-
-		G2D_Rot->OutSize.Bits.Width = (((cfg->Height - 1) & 0x1FFF));
-		G2D_Rot->OutSize.Bits.Height = (((cfg->Width  - 1) & 0x1FFF));
-		G2D_Rot->OutPitch[0] = cfg->Height * 4;	// Should be 128bit aligned.
-	}
-	else {
-
-		G2D_Rot->OutSize.Bits.Height = (((cfg->Height - 1) & 0x1FFF));
-		G2D_Rot->OutSize.Bits.Width = (((cfg->Width  - 1) & 0x1FFF));
-		G2D_Rot->OutPitch[0] = cfg->Width * 4;	// Should be 128bit aligned.
-	}
-
-	G2D_Rot->Out_lAddr0 = (uint32_t)__va_to_pa((uint32_t)cfg->dstAddr);
-	G2D_Rot->Out_hAddr0 = 0;
-
-	G2D_Rot->IRQ.Bits.FinishIrq = 1;
-	G2D_Rot->IRQ.Bits.FinishJob = 1;
-
-	G2D_Rot->Ctrl.Bits.ModeSel = 1;
-	G2D_Rot->Ctrl.Bits.Degree = cfg->Angle;
-	G2D_Rot->Ctrl.Bits.FlipH = cfg->Flip >> 1;
-	G2D_Rot->Ctrl.Bits.FlipV = cfg->Flip & 1;
-	G2D_Rot->Ctrl.Bits.Start = 1;
-}
+//void G2D_ROT_Copy_INT(TG2D_ROT_Params* cfg){
+//
+//	// LBC compression TODO
+//
+//	G2D_Rot->Ctrl.Reg = 0;
+//
+//	G2D_Rot->InFmt.Reg = 0;
+//
+//	G2D_Rot->InSize.Bits.Height = (((cfg->Height - 1) & 0x1FFF));
+//	G2D_Rot->InSize.Bits.Width = (((cfg->Width  - 1) & 0x1FFF));
+//	G2D_Rot->InPitch[0] = cfg->Width * 4; // x length * fmt size. Should be 128bit aligned.
+//
+//	G2D_Rot->In_lAddr0 = (uint32_t)__va_to_pa((uint32_t)cfg->srcAddr);
+//	G2D_Rot->In_hAddr0 = 0;
+//
+//	if ((cfg->Angle == G2D_ROT_90) || (cfg->Angle == G2D_ROT_270)){
+//
+//		G2D_Rot->OutSize.Bits.Width = (((cfg->Height - 1) & 0x1FFF));
+//		G2D_Rot->OutSize.Bits.Height = (((cfg->Width  - 1) & 0x1FFF));
+//		G2D_Rot->OutPitch[0] = cfg->Height * 4;	// Should be 128bit aligned.
+//	}
+//	else {
+//
+//		G2D_Rot->OutSize.Bits.Height = (((cfg->Height - 1) & 0x1FFF));
+//		G2D_Rot->OutSize.Bits.Width = (((cfg->Width  - 1) & 0x1FFF));
+//		G2D_Rot->OutPitch[0] = cfg->Width * 4;	// Should be 128bit aligned.
+//	}
+//
+//	G2D_Rot->Out_lAddr0 = (uint32_t)__va_to_pa((uint32_t)cfg->dstAddr);
+//	G2D_Rot->Out_hAddr0 = 0;
+//
+//	G2D_Rot->IRQ.Bits.FinishIrq = 1;
+//	G2D_Rot->IRQ.Bits.FinishJob = 1;
+//
+//	G2D_Rot->Ctrl.Bits.ModeSel = 1;
+//	G2D_Rot->Ctrl.Bits.Degree = cfg->Angle;
+//	G2D_Rot->Ctrl.Bits.FlipH = cfg->Flip >> 1;
+//	G2D_Rot->Ctrl.Bits.FlipV = cfg->Flip & 1;
+//	G2D_Rot->Ctrl.Bits.Start = 1;
+//}
 #endif
 
