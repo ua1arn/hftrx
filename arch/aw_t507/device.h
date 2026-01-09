@@ -1543,9 +1543,9 @@ typedef struct GPIOINT_Type
 /*!< GPU_CONTROL  */
 typedef struct GPU_CONTROL_Type
 {
-    __I  uint32_t GPU_ID;                             /*!< Offset 0x000 (RO) GPU and revision identifier */
+    __I  uint32_t ID;                                 /*!< Offset 0x000 (RO) GPU and revision identifier */
     __I  uint32_t L2_FEATURES;                        /*!< Offset 0x004 (RO) Level 2 cache features */
-         RESERVED(0x008[0x000C - 0x0008], uint8_t)
+    __I  uint32_t CORE_FEATURES;                      /*!< Offset 0x008 (RO) Shader Core Features */
     __I  uint32_t TILER_FEATURES;                     /*!< Offset 0x00C (RO) Tiler Features */
     __I  uint32_t MEM_FEATURES;                       /*!< Offset 0x010 (RO) Memory system features */
     __I  uint32_t MMU_FEATURES;                       /*!< Offset 0x014 (RO) MMU features */

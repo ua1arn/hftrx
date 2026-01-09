@@ -7600,8 +7600,8 @@
   <baseAddress>0x01800000</baseAddress>
   <registers>
    <register>
-    <name>GPU_ID</name>
-    <displayName>GPU_ID</displayName>
+    <name>ID</name>
+    <displayName>ID</displayName>
     <description>(RO) GPU and revision identifier</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
@@ -7613,6 +7613,15 @@
     <displayName>L2_FEATURES</displayName>
     <description>(RO) Level 2 cache features</description>
     <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CORE_FEATURES</name>
+    <displayName>CORE_FEATURES</displayName>
+    <description>(RO) Shader Core Features</description>
+    <addressOffset>0x008</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>

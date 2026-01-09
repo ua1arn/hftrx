@@ -8,7 +8,7 @@
 #ifndef __PANFROST_REGS_H__
 #define __PANFROST_REGS_H__
 
-//#define GPU_ID				0x00
+#define GPU_ID				0x00
 #define GPU_L2_FEATURES			0x004	/* (RO) Level 2 cache features */
 #define GPU_CORE_FEATURES		0x008	/* (RO) Shader Core Features */
 #define GPU_TILER_FEATURES		0x00C	/* (RO) Tiler Features */

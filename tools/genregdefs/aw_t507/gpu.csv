@@ -7,13 +7,15 @@
 #irq; GPU 129; GPU interrupt
 
 # https://github.com/bakhi/GPUReplay/blob/master/Bifrost-kdriver/driver/product/kernel/drivers/gpu/arm/midgard/gpu/mali_kbase_gpu_regmap.h
+# https://elixir.bootlin.com/linux/v6.18.4/source/drivers/gpu/drm/panfrost/panfrost_regs.h
 
 #type; GPU_CONTROL
 #base; GPU_CONTROL 0x01800000
 
 
-#regdefr; GPU_ID                 ; 0x000   ; (RO) GPU and revision identifier
+#regdefr; ID                     ; 0x000   ; (RO) GPU and revision identifier
 #regdefr; L2_FEATURES            ; 0x004   ; (RO) Level 2 cache features
+#regdefr; CORE_FEATURES          ; 0x008   ; (RO) Shader Core Features ???
 #regdefr; TILER_FEATURES         ; 0x00C   ; (RO) Tiler Features
 #regdefr; MEM_FEATURES           ; 0x010   ; (RO) Memory system features
 #regdefr; MMU_FEATURES           ; 0x014   ; (RO) MMU features
