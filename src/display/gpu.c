@@ -16,12 +16,14 @@
 #include "display.h"
 #include "clocks.h"
 #include "formats.h"
-#include "spi.h"	// hardware_spi_master_send_frame
 #include "utils.h"
 #include "display2.h"
 #include <string.h>
 
 #if CPUSTYLE_T507
+
+#include "panthor_regs.h"
+
 //#define GPU_CTRLBASE (GPU_BASE + 0x10000)
 
 // https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/panfrost/panfrost_regs.h
@@ -76,15 +78,13 @@ static void gpu_wait(unsigned mask)
 }
 
 /* AS_COMMAND register commands */
-#define AS_COMMAND_NOP			0x00	/* NOP Operation */
-#define AS_COMMAND_UPDATE		0x01	/* Broadcasts the values in AS_TRANSTAB and ASn_MEMATTR to all MMUs */
-#define AS_COMMAND_LOCK			0x02	/* Issue a lock region command to all MMUs */
-#define AS_COMMAND_UNLOCK		0x03	/* Issue a flush region command to all MMUs */
-#define AS_COMMAND_FLUSH		0x04	/* Flush all L2 caches then issue a flush region command to all MMUs
-						   (deprecated - only for use with T60x) */
-#define AS_COMMAND_FLUSH_PT		0x04	/* Flush all L2 caches then issue a flush region command to all MMUs */
-#define AS_COMMAND_FLUSH_MEM		0x05	/* Wait for memory accesses to complete, flush all the L1s cache then
-						   flush all L2 caches then issue a flush region command to all MMUs */
+//#define AS_COMMAND_NOP			0x00	/* NOP Operation */
+//#define AS_COMMAND_UPDATE		0x01	/* Broadcasts the values in AS_TRANSTAB and ASn_MEMATTR to all MMUs */
+//#define AS_COMMAND_LOCK			0x02	/* Issue a lock region command to all MMUs */
+//#define AS_COMMAND_UNLOCK		0x03	/* Issue a flush region command to all MMUs */
+#define AS_COMMAND_FLUSH		0x04	/* Flush all L2 caches then issue a flush region command to all MMUs (deprecated - only for use with T60x) */
+//#define AS_COMMAND_FLUSH_PT		0x04	/* Flush all L2 caches then issue a flush region command to all MMUs */
+//#define AS_COMMAND_FLUSH_MEM		0x05	/* Wait for memory accesses to complete, flush all the L1s cache then flush all L2 caches then issue a flush region command to all MMUs */
 
 
 static void gpu_as_command(unsigned as, unsigned cmd)
