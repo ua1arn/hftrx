@@ -1718,6 +1718,13 @@ void lvglhw_initialize(void)
 
 // https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
 
+#if WITHAWG2DHW
+void arm_hardware_awg2d_initialize(void)
+{
+
+}
+#endif
+
 void arm_hardware_mdma_initialize(void)
 {
 	LCLSPINLOCK_INITIALIZE(& rtmxlock);
@@ -4768,6 +4775,10 @@ void gpu_fillrect(
 void board_gpu_initialize(void)
 {
 	PRINTF("board_gpu_initialize start.\n");
+//#if WITHGPUHW
+//	allwnr_t507_module_pll_spr(& CCU->PLL_GPU0_CTRL_REG, & CCU->PLL_GPU0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+//	allwnr_t507_module_pll_enable(& CCU->PLL_GPU0_CTRL_REG, 36);
+//#endif /* WITHGPUHW */
 	{
 		//PRINTF("1 CCU->PLL_GPU0_CTRL_REG = %08X\n", (unsigned) CCU->PLL_GPU0_CTRL_REG);
 
@@ -4831,7 +4842,7 @@ void board_gpu_initialize(void)
 	// https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/panfrost/panfrost_mmu.c
 
 	PRINTF("board_gpu_initialize done.\n");
-
+#if 0
 	unsigned i;
 
 	memset32(GPU_MMU->MMU_AS, ~ UINT32_C(0), sizeof GPU_MMU->MMU_AS);
@@ -4839,6 +4850,7 @@ void board_gpu_initialize(void)
 	{
 		printhex32((uintptr_t) & GPU_MMU->MMU_AS [i], & GPU_MMU->MMU_AS [i], sizeof GPU_MMU->MMU_AS [i]);
 	}
+#endif
 }
 
 #elif CPUSTYLE_STM32MP1
@@ -4881,6 +4893,10 @@ void display_gpu_initialize(void)
 	// Image construction hardware
 	arm_hardware_mdma_initialize();
 #endif /* WITHMDMAHW */
+#if WITHAWG2DHW
+	// Image construction hardware
+	arm_hardware_awg2d_initialize();
+#endif /* WITHAWG2DHW */
 #if WITHGPUHW
 	board_gpu_initialize();		// GPU controller
 #endif /* WITHGPUHW */
