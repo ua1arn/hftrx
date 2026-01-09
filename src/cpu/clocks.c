@@ -4172,12 +4172,11 @@ void sysinit_boot_disconnect(void)
 // Allwinner T507/H618/H616 PLL initialize
 void sysinit_pll_initialize(int forced)
 {
-
-	set_t507_axi_sel(0x00, 1, 1);	// OSC24 as source
-
-	CCU->PSI_AHB1_AHB2_CFG_REG = 0;
+	CCU->PSI_AHB1_AHB2_CFG_REG = 0;	// OSC24M/1
+	CCU->APB2_CFG_REG = 0;	// OSC24M/1
 	PRCM->CPUS_CFG_REG = 0;
 	PRCM->APBS1_CFG_REG = 0;
+	set_t507_axi_sel(0x00, 1, 1);	// OSC24 as source
 
 	allwnr_t507_module_pll_spr(& CCU->PLL_PERI0_CTRL_REG, & CCU->PLL_PERI0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t507_module_pll_enable(& CCU->PLL_PERI0_CTRL_REG, 50);	// No SPR mode: 10.1 !!!! 28.283 !!! увёл поражённую точку с 28.571 МГц на 30.285 МГц
@@ -4207,6 +4206,7 @@ void sysinit_pll_initialize(int forced)
 	PRCM->APBS1_CFG_REG =
 		(4 - 1) |
 		0;
+
 #else
 	PRCM->CPUS_CFG_REG = 0;
 	PRCM->APBS1_CFG_REG = 0;
@@ -4232,22 +4232,26 @@ void sysinit_pll_initialize(int forced)
 	}
 
 
-	// PSI_AHB1_AHB2 CLK = Clock Source/M/N
-	// old default=0x03000102
-	// The default value of PLL_PERI0(2X) is 1.2 GHz. It is not recommended to modify the value
-	// allwnr_t507_get_psi_ahb1_ahb2_freq()=300 MHz
-	// is a peripheral bus interconnect device based on AHB and APB protocol
-	CCU->PSI_AHB1_AHB2_CFG_REG =
-		0x03 * (UINT32_C(1) << 24) |	// 11: PLL_PERI0(1X)
-		(1) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
-		//(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M - AXI divider 1..4
-		0;
+	if (forced)
+	{
 
-	CCU->APB2_CFG_REG =
-		0x03 * (UINT32_C(1) << 24) |	// 11: PLL_PERI0(1X)
-		(0) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
-		(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M 1..4
-		0;
+		// PSI_AHB1_AHB2 CLK = Clock Source/M/N
+		// old default=0x03000102
+		// The default value of PLL_PERI0(2X) is 1.2 GHz. It is not recommended to modify the value
+		// allwnr_t507_get_psi_ahb1_ahb2_freq()=300 MHz
+		// is a peripheral bus interconnect device based on AHB and APB protocol
+		CCU->PSI_AHB1_AHB2_CFG_REG =
+			0x03 * (UINT32_C(1) << 24) |	// 11: PLL_PERI0(1X)
+			(1) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
+			//(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M - AXI divider 1..4
+			0;
+
+		CCU->APB2_CFG_REG =
+			0x03 * (UINT32_C(1) << 24) |	// 11: PLL_PERI0(1X)
+			(0) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
+			(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M 1..4
+			0;
+	}
 
 	CCU->MBUS_CFG_REG =
 		(UINT32_C(1) << 31) |	// CLK_GATING

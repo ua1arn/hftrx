@@ -1149,7 +1149,8 @@ static void t113_i2c_set_rate(TWI_TypeDef * twi, uint_fast32_t rate, uint_fast32
 {
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(pclk, rate * 10), 4, (128 | 64 | 32 | 16 | 8 | 4 | 2 | 1), & value, 1);
-	//PRINTF("t113_i2c_set_rate: M=%d, N=%d\n", value, prei);
+//	PRINTF("t113_i2c_set_rate: twi->TWI_CCR=0x%08X\n", (unsigned) twi->TWI_CCR);
+//	PRINTF("t113_i2c_set_rate: M=%d, N=%d\n", value, prei);
 
 	twi->TWI_CCR =
 		0*(UINT32_C(1) << 7) | // CLK_DUTY : 50%

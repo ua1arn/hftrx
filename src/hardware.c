@@ -1216,78 +1216,78 @@ uint32_t hardware_get_random(void)
 #if CPUSTYLE_ARM || CPUSTYLE_RISCV
 
 // количество циклов на микросекунду
-static unsigned long
+static uint_fast32_t
 local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 {
 #if CPUSTYLE_AT91SAM7S
 	#warning TODO: calibrate constant	 looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 175uL / cpufreq_MHz;
-	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = timeUS * 175uL / cpufreq_MHz;
+	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_ATSAM3S
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 270uL / cpufreq_MHz;
-	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = timeUS * 270uL / cpufreq_MHz;
+	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_ATSAM4S
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 270uL / cpufreq_MHz;
-	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = timeUS * 270uL / cpufreq_MHz;
+	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32F0XX
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 190uL / cpufreq_MHz;
-	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = timeUS * 190uL / cpufreq_MHz;
+	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_RP20XX
-	const unsigned long top = timeUS * 1480uL / cpufreq_MHz;
+	const uint_fast32_t top = timeUS * 1480uL / cpufreq_MHz;
 #elif CPUSTYLE_STM32L0XX
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 20uL / cpufreq_MHz;
-	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = timeUS * 20uL / cpufreq_MHz;
+	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32F1XX
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 345uL / cpufreq_MHz;
-	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = timeUS * 345uL / cpufreq_MHz;
+	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32F30X
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 430uL / cpufreq_MHz;
-	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = timeUS * 430uL / cpufreq_MHz;
+	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32F4XX
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 3800uL / cpufreq_MHz;
+	const uint_fast32_t top = timeUS * 3800uL / cpufreq_MHz;
 #elif CPUSTYLE_STM32F7XX
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = 55uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32H7XX
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = 77uL * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = 77uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_R7S721
-	const unsigned long top = 105uL * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = 105uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_XC7Z
-	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = 125uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
-	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = 125uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32MP1
 	// калибровано для 800 МГц Cortex-A7 процессора
-	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = 120uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_H3
 	// калибровано для 800 МГц Cortex-A7 процессора
-	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = 120uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_CA53
 	// калибровано для Cortex-A53 процессора
-	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = 145uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_T113
 	// калибровано для 1200 МГц Cortex-A7 процессора
-	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = 120uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_V3S
 	// калибровано для 1200 МГц Cortex-A7 процессора
-	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = 120uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_F133
 	// калибровано для 1200 МГц RISC-V C906 процессора
-	const unsigned long top = 165uL * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = 165uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_VM14
 	// калибровано для 1200 МГц процессора
-	const unsigned long top = 165uL * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = 165uL * cpufreq_MHz * timeUS / 1000;
 #else
 	#error TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
+	const uint_fast32_t top = 55uL * cpufreq_MHz * timeUS / 1000;
 #endif
 	return top;
 }
@@ -1304,9 +1304,9 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 	usleep(timeUS);
 #else
 	// Частота процессора приволится к мегагерцам.
-	const unsigned long top = local_delay_uscycles(timeUS, cpufreqMHz);
+	const uint_fast32_t top = local_delay_uscycles(timeUS, cpufreqMHz);
 	//
-	volatile unsigned long t;
+	volatile uint_fast32_t t;
 	for (t = 0; t < top; ++ t)
 	{
 	}
@@ -1322,11 +1322,11 @@ void local_delay_ms(int timeMS)
 	if (timeMS == 0)
 		return;
 	// Частота процессора приволится к мегагерцам.
-	const unsigned long top = local_delay_uscycles(1000, cpufreqMHz);
+	const uint_fast32_t top = local_delay_uscycles(1000, cpufreqMHz);
 	int n;
 	for (n = 0; n < timeMS; ++ n)
 	{
-		volatile unsigned long t;
+		volatile uint_fast32_t t;
 		for (t = 0; t < top; ++ t)
 		{
 		}
@@ -2141,13 +2141,14 @@ SystemInit(void)
 	BOARD_BLINK_INITIALIZE();
 #endif
 	sysinit_pmic_initialize();
+	local_delay_ms(10);
 	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
 	SystemCoreClockUpdate();
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
-	sysinit_debug_initialize();
 	local_delay_initialize();
+	sysinit_debug_initialize();
 	sysinit_sdram_initialize();
 	sysinit_mmu_tables();			// Инициализация таблиц. */
 	sysinit_cache_initialize();		// caches iniitialize

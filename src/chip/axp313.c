@@ -344,17 +344,25 @@ static int axp_set_dldo1(int dldo_num, unsigned int mvolt)
 
 int board_orangepi_zero2w_axp313_initialize(void)
 {
-///PRINTF("START PMIC \n");
+	PRINTF("START PMIC \n");
 	uint8_t axp313_chip_id;
 	int ret;
 
 	ret = pmic_bus_init();
 	if (ret)
+	{
+		PRINTF("pmic_bus_init() failure.\n");
+			dbg_flush();
 		return ret;
+	}
 
 	ret = pmic_bus_read(AXP313_CHIP_VERSION, &axp313_chip_id);
 	if (ret)
+	{
+		PRINTF("pmic_bus_read() failure.\n");
+			dbg_flush();
 		return ret;
+	}
 
 	if (0)
 	{
@@ -367,7 +375,8 @@ int board_orangepi_zero2w_axp313_initialize(void)
 		}
 	}
 
-	PRINTF("axp313_chip_id=0x%02X (expected 0x4B)\n", axp313_chip_id);
+	PRINTF("axp313_chip_id=0x%02X (expected 0x%02X)\n", axp313_chip_id, 0x4B);
+
 	dbg_flush();
 	if (!(axp313_chip_id == 0x4B))
 		return -1;
@@ -392,11 +401,19 @@ int board_orangepi_zero3_axp313_initialize(void)
 
 	ret = pmic_bus_init();
 	if (ret)
+	{
+		PRINTF("pmic_bus_init() failure.\n");
+			dbg_flush();
 		return ret;
+	}
 
 	ret = pmic_bus_read(AXP313_CHIP_VERSION, &axp313_chip_id);
 	if (ret)
+	{
+		PRINTF("pmic_bus_read() failure.\n");
+			dbg_flush();
 		return ret;
+	}
 
 	if (0)
 	{
@@ -409,7 +426,8 @@ int board_orangepi_zero3_axp313_initialize(void)
 		}
 	}
 
-	PRINTF("axp313_chip_id=0x%02X (expected 0x4B)\n", axp313_chip_id);
+	PRINTF("axp313_chip_id=0x%02X (expected 0x%02X)\n", axp313_chip_id, 0x4B);
+
 	dbg_flush();
 	if (!(axp313_chip_id == 0x4B))
 		return -1;
