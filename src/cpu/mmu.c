@@ -1307,7 +1307,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 	//static const int gpuglongdesc = 0;
 
 	/* зависящая от процессора карта распределения memory regions */
-	unsigned
+	static unsigned
 	gpu_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn)
 	{
 		return 4;
