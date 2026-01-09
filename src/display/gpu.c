@@ -142,6 +142,11 @@ void gpu_fillrect(
 	int32_t triangle1 [3] [2] = { { w - 1, h - 1 }, { 0, h - 1}, { w - 1, 0 } };
 }
 
+void gpu_test(void)
+{
+
+}
+
 // Graphic processor unit
 void board_gpu_initialize(void)
 {

@@ -670,6 +670,8 @@ typedef struct mmulayout_tag
 unsigned ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
 unsigned gpu_ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
 
+void gpu_test(void);
+
 void sysinit_mmu_tables(void);
 void sysinit_ttbr_initialize(void);	/* на каждом процессоре */
 

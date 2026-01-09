@@ -7141,6 +7141,11 @@ void hightests(void)
 
 	}
 #endif
+#if 0 && WITHGPUHW && LCDMODE_ARGB8888
+	{
+		gpu_test();
+	}
+#endif
 #if 0 && WITHLTDCHW && LCDMODE_LTDC
 	{
 		// Font test
