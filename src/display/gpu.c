@@ -22,7 +22,7 @@
 
 #if CPUSTYLE_T507
 
-#include "panthor_regs.h"
+#include "panfrost_regs.h"
 
 //#define GPU_CTRLBASE (GPU_BASE + 0x10000)
 
@@ -42,8 +42,8 @@
 
 
 /* GPU_STATUS values */
-#define GPU_STATUS_PRFCNT_ACTIVE            (1 << 2)    /* Set if the performance counters are active. */
-#define GPU_STATUS_PROTECTED_MODE_ACTIVE    (1 << 7)    /* Set if protected mode is active */
+//#define GPU_STATUS_PRFCNT_ACTIVE            (1 << 2)    /* Set if the performance counters are active. */
+//#define GPU_STATUS_PROTECTED_MODE_ACTIVE    (1 << 7)    /* Set if protected mode is active */
 
 
 /* IRQ flags */
