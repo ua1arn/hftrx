@@ -4232,7 +4232,7 @@ void sysinit_pll_initialize(int forced)
 	}
 
 
-	if (1 || forced)
+	if (forced)
 	{
 
 		// PSI_AHB1_AHB2 CLK = Clock Source/M/N
