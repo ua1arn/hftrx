@@ -45,7 +45,7 @@
 	//#define WITHUART0HW_FIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
-#if WITHISBOOTLOADER
+#if 1//WITHISBOOTLOADER
 
 	#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
 	// AXP853T on HelperBoard T507 Core Board

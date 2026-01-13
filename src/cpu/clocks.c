@@ -4197,21 +4197,6 @@ void sysinit_pll_initialize(int forced)
 
 	// [02.507]CPU=1008 MHz,PLL6=600 Mhz,AHB=200 Mhz, APB1=100Mhz  MBus=400Mhz
 
-#if 1
-	PRCM->CPUS_CFG_REG =
-		0x03 * (UINT32_C(1) << 24) | // CPUS_CLK_SRC_SEL PLL_PERI0(X1)
-		(0) * (UINT32_C(1) << 8) |	// CLK_DIV_RATIO_N /1
-		(6 - 1) * (UINT32_C(1) << 0) | 	// FACTOR_M /6
-		0;
-	PRCM->APBS1_CFG_REG =
-		(4 - 1) |
-		0;
-
-#else
-	PRCM->CPUS_CFG_REG = 0;
-	PRCM->APBS1_CFG_REG = 0;
-#endif
-
 	if (forced)
 	{
 		const uint_fast32_t desiredAXIfreq = 600;	// AXI не выше 600 MHz
@@ -4232,26 +4217,31 @@ void sysinit_pll_initialize(int forced)
 	}
 
 
-	if (forced)
-	{
+	// PSI_AHB1_AHB2 CLK = Clock Source/M/N
+	// old default=0x03000102
+	// The default value of PLL_PERI0(2X) is 1.2 GHz. It is not recommended to modify the value
+	// allwnr_t507_get_psi_ahb1_ahb2_freq()=300 MHz
+	// is a peripheral bus interconnect device based on AHB and APB protocol
+	CCU->PSI_AHB1_AHB2_CFG_REG =
+		0x03 * (UINT32_C(1) << 24) |	// 11: PLL_PERI0(1X)
+		(1) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
+		//(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M - AXI divider 1..4
+		0;
 
-		// PSI_AHB1_AHB2 CLK = Clock Source/M/N
-		// old default=0x03000102
-		// The default value of PLL_PERI0(2X) is 1.2 GHz. It is not recommended to modify the value
-		// allwnr_t507_get_psi_ahb1_ahb2_freq()=300 MHz
-		// is a peripheral bus interconnect device based on AHB and APB protocol
-		CCU->PSI_AHB1_AHB2_CFG_REG =
-			0x03 * (UINT32_C(1) << 24) |	// 11: PLL_PERI0(1X)
-			(1) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
-			//(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M - AXI divider 1..4
-			0;
+	CCU->APB2_CFG_REG =
+		0x03 * (UINT32_C(1) << 24) |	// 11: PLL_PERI0(1X)
+		(0) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
+		(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M 1..4
+		0;
 
-		CCU->APB2_CFG_REG =
-			0x03 * (UINT32_C(1) << 24) |	// 11: PLL_PERI0(1X)
-			(0) * (UINT32_C(1) << 8) |		// FACTOR_N (1/2/4/8)
-			(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M 1..4
-			0;
-	}
+	PRCM->CPUS_CFG_REG =
+		0x03 * (UINT32_C(1) << 24) | // CPUS_CLK_SRC_SEL PLL_PERI0(X1)
+		(0) * (UINT32_C(1) << 8) |	// CLK_DIV_RATIO_N /1
+		(6 - 1) * (UINT32_C(1) << 0) | 	// FACTOR_M /6
+		0;
+	PRCM->APBS1_CFG_REG =
+		(4 - 1) |
+		0;
 
 	CCU->MBUS_CFG_REG =
 		(UINT32_C(1) << 31) |	// CLK_GATING
