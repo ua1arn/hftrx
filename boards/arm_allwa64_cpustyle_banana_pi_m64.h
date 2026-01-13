@@ -38,7 +38,7 @@
 
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
-#if 1
+#if WITHISBOOTLOADER
 
 	#define WITHSDRAM_AXP803	1	/* power management chip */
 

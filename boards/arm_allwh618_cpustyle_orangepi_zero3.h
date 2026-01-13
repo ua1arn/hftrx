@@ -981,7 +981,7 @@
 	} while (0)
 #endif
 
-#if 1//WITHISBOOTLOADER
+#if WITHISBOOTLOADER
 
 	#define WITHSDRAM_AXP313	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP313A power management chip */
 
