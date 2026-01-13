@@ -42,7 +42,7 @@
 	#define WITHUART0HW	1		/* отлдочный порт */
 #endif /* WITHDEBUG */
 
-#if 1//WITHISBOOTLOADER
+#if WITHISBOOTLOADER
 
 	#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
 	// AXP853T on HelperBoard T507 Core Board
