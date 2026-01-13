@@ -4172,11 +4172,11 @@ void sysinit_boot_disconnect(void)
 // Allwinner T507/H618/H616 PLL initialize
 void sysinit_pll_initialize(int forced)
 {
+	set_t507_axi_sel(0x00, 1, 1);	// OSC24 as source
 	CCU->PSI_AHB1_AHB2_CFG_REG = 0;	// OSC24M/1
 	CCU->APB2_CFG_REG = 0;	// OSC24M/1
 	PRCM->CPUS_CFG_REG = 0;
 	PRCM->APBS1_CFG_REG = 0;
-	set_t507_axi_sel(0x00, 1, 1);	// OSC24 as source
 
 	allwnr_t507_module_pll_spr(& CCU->PLL_PERI0_CTRL_REG, & CCU->PLL_PERI0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t507_module_pll_enable(& CCU->PLL_PERI0_CTRL_REG, 50);	// No SPR mode: 10.1 !!!! 28.283 !!! увёл поражённую точку с 28.571 МГц на 30.285 МГц
@@ -4232,7 +4232,7 @@ void sysinit_pll_initialize(int forced)
 	}
 
 
-	if (forced)
+	if (1 || forced)
 	{
 
 		// PSI_AHB1_AHB2 CLK = Clock Source/M/N
