@@ -243,7 +243,7 @@ bootloader: BOOT2 fsbl.bt0
 
 ddr_init:
 	$(XFEL) ddr h3
-	$(BUSYBOX) sleep 0.5s
+	$(BUSYBOX) sleep 1s
 
 app_run: $(PROJECT)_app.alw32 ddr_init
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
