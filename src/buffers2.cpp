@@ -463,7 +463,7 @@ public:
 //		PRINTF("dmahandle(%s)\n", name);
 //
 //	}
-	blists(IRQL_t airql, const char * aname, buffitem_t * storage, unsigned capacity) :
+	blists(IRQL_t airql, const char * aname, buffitem_t * const storage, unsigned capacity) :
 		irqllockarg(airql),
 #if WITHBUFFERSDEBUG
 		errallocate(0),
