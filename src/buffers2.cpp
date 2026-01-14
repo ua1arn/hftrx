@@ -573,7 +573,7 @@ public:
 		if (! IsListEmpty(& freelist))
 		{
 			const PRLIST_ENTRY t = RemoveTailList(& freelist);
-			ASSERT(freecount != 0);
+			ASSERT3(freecount != 0, __FILE__, __LINE__, name);
 			-- freecount;
 			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
@@ -601,7 +601,7 @@ public:
 		while (n -- && ! IsListEmpty(& readylist))
 		{
 			const PRLIST_ENTRY t = RemoveTailList(& readylist);
-			ASSERT(readycount);
+			ASSERT3(readycount, __FILE__, __LINE__, name);
 			-- readycount;
 			InsertHeadList(list, t);
 			++ v;
