@@ -115,7 +115,7 @@ Reset_Handler:
 	BL SystemInit
 	BL addr64_preparedata	/* fill .bss and prepare constant data */
 
-	ldr x29, = 4096
+	ldr x29, = STACKSIZESYSBOOT
 	ldr x30, =__stack
 	MSR SPSR_fiq, x30
 	sub x30, x30, x29
