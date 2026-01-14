@@ -3361,7 +3361,7 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 #elif CPUSTYLE_ALLWINNER && defined (DMAC)
 
 #define DMACRINGSTAGES 2
-#define RAMNCDESC //RAMNC
+#define RAMNCDESC RAMNC
 
 /* DMA каналы на Allwinner T113-s3. 0..7
  * T507/H616 - 0..15
@@ -3382,7 +3382,7 @@ enum
 	DMAC_Ch_Total
 };
 
-#define DMAC_IRQ_EN_FLAG_VALUE (0x01 << 1)	// 0x04: Queue, 0x02: Pkq, 0x01: half
+#define DMAC_IRQ_EN_FLAG_VALUE (UINT32_C(1) << 1)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
 #define DMAC_delay 7
 
