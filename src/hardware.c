@@ -2141,7 +2141,6 @@ SystemInit(void)
 	BOARD_BLINK_INITIALIZE();
 #endif
 	sysinit_pmic_initialize();
-	local_delay_ms(10);
 	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
 	SystemCoreClockUpdate();
 #ifdef USE_HAL_DRIVER
@@ -2170,6 +2169,8 @@ void __attribute__((used)) SystemDRAMInit(void)
 	sysinit_fpu_initialize();
 	sysinit_smp_initialize();
 	sysinit_perfmeter_initialize();
+	sysinit_gpio_initialize();
+	sysinit_pmic_initialize();
 	sysinit_sdram_initialize();
 }
 

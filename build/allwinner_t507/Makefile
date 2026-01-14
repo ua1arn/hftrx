@@ -247,8 +247,8 @@ bootloader: BOOT2
 # Take from tc1_t507_boot.map - address of SystemDRAMInit, SystemExecAARCH64
 ifeq (1, 1)
 # T507
-SystemDRAMInit = 0x0002d90c
-SystemExecAARCH64 = 0x00029510
+SystemDRAMInit = 0x0002d890
+SystemExecAARCH64 = 0x00029514
 DDRINIT=ddrinit_t507
 else
 # H616
