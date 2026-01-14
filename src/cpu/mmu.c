@@ -169,7 +169,8 @@ static const getmmudesc_t gpu_MaliG31_table4k =
 
 // G5.7 Memory region attributes
 // Table G5-16 SH[1:0] field encoding for Normal memory, Long-descriptor format
-#define AARCH64_SH_MEMORY 0x03		// 0x03 - inner shareable
+//#define AARCH64_SH_MEMORY 0x03		// 0x03 - inner shareable
+#define AARCH64_SH_MEMORY 0x02		// 0x02 - Outer shareable
 #define AARCH64_SH_DEVICE 0x02		// 0x02 - Outer shareable
 
 // Lower attributes
@@ -267,7 +268,7 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 	#define AARCH32_TEXval_DEVICE       0x00
 	#define AARCH32_Cval_DEVICE         0
 	#define AARCH32_Bval_DEVICE         1
-	#define AARCH32_SHAREDval_DEVICE 	0
+	#define AARCH32_SHAREDval_DEVICE 	1
 #else
 	/* Shareable Device */
 	#define AARCH32_TEXval_DEVICE	AARCH32_MKATTR_TEXval(AARCH32_DEVICE_ATTRS)	// Define the Outer cache attribute
@@ -1345,8 +1346,8 @@ static const uint_fast32_t ORGN_attr = AARCH64_CACHEATTR_WB_WA_CACHE;	// Normal 
 // Table G5-16 SH[1:0] field encoding for Normal memory, Long-descriptor format
 // 0x02 - outer shareable
 // 0x03 - inner shareable
-static unsigned SH1_attr = 0x03;
-static unsigned SH0_attr = 0x03;
+static unsigned SH1_attr = 0x02;
+static unsigned SH0_attr = 0x02;
 
 static void progttbcr(int uselongdesc)
 {
