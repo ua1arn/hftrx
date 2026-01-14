@@ -3702,14 +3702,14 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 /* +++ UAC OUT data save */
 
 void
-buffers_set_uacinalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC IN interface */
+buffers_set_uacinalt(uint_fast8_t v, uint_fast8_t ep)	/* выбор альтернативной конфигурации для UAC IN interface */
 {
 	//PRINTF(PSTR("buffers_set_uacinalt: v=%d\n"), (int) v);
 	uacinalt = v;
 }
 
 void
-buffers_set_uacinrtsalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC IN interface */
+buffers_set_uacinrtsalt(uint_fast8_t v, uint_fast8_t ep)	/* выбор альтернативной конфигурации для UAC IN interface */
 {
 	//PRINTF(PSTR("buffers_set_uacinrtsalt: v=%d\n"), (int) v);
 	uacinrtsalt = v;
@@ -3721,7 +3721,7 @@ uint_fast8_t buffers_get_uacoutactive(void)
 }
 
 void
-buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC OUT interface */
+buffers_set_uacoutalt(uint_fast8_t v, uint_fast8_t ep)	/* выбор альтернативной конфигурации для UAC OUT interface */
 {
 	//PRINTF(PSTR("buffers_set_uacoutalt: v=%d\n"), (int) v);
 	uacoutalt = v;

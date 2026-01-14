@@ -3741,18 +3741,18 @@ static void ep0_out_handler(pusb_struct pusb, const uSetupPKG *  ep0_setup)
 #if WITHUSBUACOUT
        		case INTERFACE_AUDIO_SPK:
     	       	//PRINTF("usb_device: out48 Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
-				buffers_set_uacoutalt(LO_BYTE(ep0_setup->wValue));
+				buffers_set_uacoutalt(LO_BYTE(ep0_setup->wValue), USBD_EP_AUDIO_OUT & 0x0F);
 				break;
 #endif /* WITHUSBUACOUT */
 #if WITHUSBUACIN
       		case INTERFACE_AUDIO_MIKE:
     	       	//PRINTF("usb_device: in48 Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
-				buffers_set_uacinalt(LO_BYTE(ep0_setup->wValue));
+				buffers_set_uacinalt(LO_BYTE(ep0_setup->wValue), USBD_EP_AUDIO_IN & 0x0F);
 				break;
 #if WITHUSBUACIN2
       		case INTERFACE_AUDIO_RTS:
     	       	//PRINTF("usb_device: rts Set Interface ifc=%u, alt=0x%02X\n", interfacev, LO_BYTE(ep0_setup->wValue));
-				buffers_set_uacinrtsalt(LO_BYTE(ep0_setup->wValue));
+				buffers_set_uacinrtsalt(LO_BYTE(ep0_setup->wValue), USBD_EP_RTS_IN & 0x0F);
 				break;
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
@@ -4636,12 +4636,12 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << 0));
 
 #if WITHUSBUACOUT
-		buffers_set_uacoutalt(0);
+		buffers_set_uacoutalt(0, USBD_EP_AUDIO_OUT & 0x0F);
 #endif /* WITHUSBUACOUT */
 #if WITHUSBUACIN
-		buffers_set_uacinalt(0);
+		buffers_set_uacinalt(0, USBD_EP_AUDIO_IN & 0x0F);
 #if WITHUSBUACIN2
-		buffers_set_uacinrtsalt(0);
+		buffers_set_uacinrtsalt(0, USBD_EP_RTS_IN & 0x0F);
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
 

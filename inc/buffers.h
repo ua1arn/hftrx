@@ -981,16 +981,16 @@ void releasemodembuffer(uint8_t * dest);
 void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 
-void buffers_set_uacinalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
-void buffers_set_uacoutalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC OUT interface */
-void buffers_set_uacinrtsalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
+void buffers_set_uacinalt(uint_fast8_t v, uint_fast8_t ep_no);	/* выбор альтернативной конфигурации для UAC IN interface */
+void buffers_set_uacoutalt(uint_fast8_t v, uint_fast8_t ep_no);	/* выбор альтернативной конфигурации для UAC OUT interface */
+void buffers_set_uacinrtsalt(uint_fast8_t v, uint_fast8_t ep_no);	/* выбор альтернативной конфигурации для UAC IN RTS interface */
 uint_fast8_t buffers_get_uacoutactive(void);
 uint_fast8_t buffers_get_btoutactive(void);
 
-void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep);
-void DMAC_USB_TX_initialize_UACIN48(uint32_t ep);
-void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep);
-void DMAC_USB_TX_initialize_UACINRTS192(uint32_t ep);
+void DMAC_USB_RX_initialize_UACOUT48(uint_fast8_t ep_no);
+void DMAC_USB_TX_initialize_UACIN48(uint_fast8_t ep_no);
+void DMAC_USB_TX_initialize_UACINRTS96(uint_fast8_t ep_no);
+void DMAC_USB_TX_initialize_UACINRTS192(uint_fast8_t ep_no);
 
 
 #define CATPCOUNTSIZE (13)
