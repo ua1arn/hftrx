@@ -987,10 +987,10 @@ void buffers_set_uacinrtsalt(uint_fast8_t v, uint_fast8_t ep_no);	/* выбор 
 uint_fast8_t buffers_get_uacoutactive(void);
 uint_fast8_t buffers_get_btoutactive(void);
 
-void DMAC_USB_RX_initialize_UACOUT48(uint_fast8_t ep_no);
-void DMAC_USB_TX_initialize_UACIN48(uint_fast8_t ep_no);
-void DMAC_USB_TX_initialize_UACINRTS96(uint_fast8_t ep_no);
-void DMAC_USB_TX_initialize_UACINRTS192(uint_fast8_t ep_no);
+void DMAC_USB_RX_initialize_UACOUT48(uint_fast8_t ep_no, int start);
+void DMAC_USB_TX_initialize_UACIN48(uint_fast8_t ep_no, int start);
+void DMAC_USB_TX_initialize_UACINRTS96(uint_fast8_t ep_no, int start);
+void DMAC_USB_TX_initialize_UACINRTS192(uint_fast8_t ep_no, int start);
 
 
 #define CATPCOUNTSIZE (13)

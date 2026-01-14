@@ -5800,7 +5800,7 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 	save_dmabufferuacout48(addr);
 }
 
-void DMAC_USB_RX_initialize_UACOUT48(uint_fast8_t ep)
+void DMAC_USB_RX_initialize_UACOUT48(uint_fast8_t ep, int start)
 {
 	const unsigned NBYTES = datasize_dmabufferuacout48();
 	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
@@ -5875,7 +5875,7 @@ static void DMAC_USB_TX_handler_UACIN48(unsigned dmach)
 	release_dmabufferuacin48(addr);
 }
 
-void DMAC_USB_TX_initialize_UACIN48(uint_fast8_t ep_no)
+void DMAC_USB_TX_initialize_UACIN48(uint_fast8_t ep_no, int start)
 {
 	const unsigned NBYTES = datasize_dmabufferuacin48();
 	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
@@ -5948,7 +5948,7 @@ static void DMAC_USB_TX_handler_UACINRTS96(unsigned dmach)
 	release_dmabufferuacinrts96(addr);
 }
 
-void DMAC_USB_TX_initialize_UACINRTS96(uint_fast8_t ep_no)
+void DMAC_USB_TX_initialize_UACINRTS96(uint_fast8_t ep_no, int start)
 {
 	const unsigned NBYTES = datasize_dmabufferuacinrts96();
 	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
@@ -6020,7 +6020,7 @@ static void DMAC_USB_TX_handler_UACINRTS192(unsigned dmach)
 	release_dmabufferuacinrts192(addr);
 }
 
-void DMAC_USB_TX_initialize_UACINRTS192(uint_fast8_t ep_no)
+void DMAC_USB_TX_initialize_UACINRTS192(uint_fast8_t ep_no, int start)
 {
 	const unsigned NBYTES = datasize_dmabufferuacinrts192();
 	static ALIGNX_BEGIN RAMNCDESC volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
