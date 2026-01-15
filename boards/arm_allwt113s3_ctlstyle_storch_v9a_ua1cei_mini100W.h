@@ -13,7 +13,7 @@
 #ifndef ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_UA1CEI_MINI100W_H_INCLUDED
 #define ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_UA1CEI_MINI100W_H_INCLUDED 1
 
-	#define WITHBRANDSTR "Falcon"
+	#define WITHBRANDSTR "Sapsan"
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -317,7 +317,7 @@
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 
-	//#define WITHGRADIENT_FIXED 1	/* использлвани массива цветов как базы для создания палитры водопада. */
+	#define WITHGRADIENT_FIXED 1	/* использлвани массива цветов как базы для создания палитры водопада. */
 	//#define COLORSTYLE_GREEN	1
 	#define COLORSTYLE_BLUE	1
 	//#define COLORSTYLE_RED	1
