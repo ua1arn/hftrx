@@ -2170,6 +2170,7 @@ void __attribute__((used)) SystemDRAMInit(void)
 	sysinit_smp_initialize();
 	sysinit_perfmeter_initialize();
 	sysinit_gpio_initialize();
+	sysinit_debug_initialize();
 	sysinit_pmic_initialize();
 	sysinit_sdram_initialize();
 }
