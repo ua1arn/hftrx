@@ -5472,8 +5472,12 @@ void USER_NMEAX_ONTXCHAR(void * ctx)
                 //trx_state = 2 TUNE
   //ответ  $LNA,bnd_num,trx_freq,trxstate,,,*CS <CR><LF>
 
+static int ua1cei_magloop_inited;
+
 static void ua1cei_magloop_send(void)
 {
+	if (! ua1cei_magloop_inited)
+		return;
 	// Буфер для формирования ответа в канал управления
 	static char state [1024];
 	unsigned len = local_snprintf_P(state, ARRAY_SIZE(state),
@@ -5516,6 +5520,8 @@ static void ua1cei_magloop_initialize(void)
 	dpcobj_initialize(& nmeaX_dpc_timed, nmeaX_dpc_spool, NULL);
 	ticker_initialize_user(& nmeaX_ticker, NTICKS(1000), & nmeaX_dpc_timed);
 	ticker_add(& nmeaX_ticker);
+
+	ua1cei_magloop_inited = 1;
 }
 
 #endif /* WITHMGLOOP */
