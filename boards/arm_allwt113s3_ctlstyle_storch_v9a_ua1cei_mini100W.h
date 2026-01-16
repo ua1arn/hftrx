@@ -14,6 +14,7 @@
 #define ARM_ALWT113S3_CTLSTYLE_STORCH_V9A_UA1CEI_MINI100W_H_INCLUDED 1
 
 	#define WITHBRANDSTR "Sapsan"
+	#define USER_BUILD_ID 72
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE

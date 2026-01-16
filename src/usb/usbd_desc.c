@@ -5968,7 +5968,11 @@ void usbd_descriptors_initialize(uint_fast8_t HSdescv, uint_fast8_t ft8cnv)
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_sn;
 		char b [64];
-		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("SN:19640302_%lu_%lu"), (unsigned long) (REFERENCE_FREQ * DDS1_CLK_MUL), (unsigned long) BUILD_ID);
+#ifdef USER_BUILD_ID
+		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("SN:19640302_%lu_%u"), (unsigned long) (REFERENCE_FREQ * DDS1_CLK_MUL), (unsigned) USER_BUILD_ID);
+#else
+		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("SN:19640302_%lu_%u"), (unsigned long) (REFERENCE_FREQ * DDS1_CLK_MUL), (unsigned) BUILD_ID);
+#endif
 		// Unic serial number
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
