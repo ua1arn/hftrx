@@ -4053,7 +4053,7 @@ static void display2_thermo(const gxdrawb_t * db,
 	else if (tempv >= 300)
 		gxstyle_textcolor(& dbstylev, COLORPIP_YELLOW, display2_getbgcolor());
 	else
-		gxstyle_textcolor(& dbstylev, dbstylev_1statePSU.textcolor, dbstylev_1statePSU.bgcolor);
+		gxstyle_textcolor(& dbstylev, COLORPIP_GREEN, dbstylev_1statePSU.bgcolor);
 
 	display_text(db, x , y, b, xspan, yspan, & dbstylev);
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
@@ -4089,7 +4089,7 @@ static void display2_thermoC(const gxdrawb_t * db,
 	else if (tempv >= 300)
 		gxstyle_textcolor(& dbstylev, COLORPIP_YELLOW, display2_getbgcolor());
 	else
-		gxstyle_textcolor(& dbstylev, dbstylev_1statePSU.textcolor, dbstylev_1statePSU.bgcolor);
+		gxstyle_textcolor(& dbstylev, COLORPIP_GREEN, display2_getbgcolor());
 
 	display_text(db, x , y, b, xspan, yspan, & dbstylev);
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
