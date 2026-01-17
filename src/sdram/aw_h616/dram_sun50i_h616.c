@@ -12,15 +12,17 @@
  * (C) Copyright 2020 Jernej Skrabec <jernej.skrabec@siol.net>
  *
  */
-#include <init.h>
-#include <log.h>
-#include <asm/io.h>
-#include <asm/arch/clock.h>
-#include <asm/arch/dram.h>
-#include <asm/arch/cpu.h>
-#include <asm/arch/prcm.h>
-#include <linux/bitops.h>
-#include <linux/delay.h>
+#include "dram_glue.h"
+#if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_H618_LPDDR4 || CONFIG_SUNXI_DRAM_H616_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR4 || 0*CONFIG_SUNXI_DRAM_A133_LPDDR4)
+//#include <init.h>
+//#include <log.h>
+//#include <asm/io.h>
+//#include <asm/arch/clock.h>
+//#include <asm/arch/dram.h>
+//#include <asm/arch/cpu.h>
+//#include <asm/arch/prcm.h>
+//#include <linux/bitops.h>
+//#include <linux/delay.h>
 
 enum {
 	MBUS_QOS_LOWEST = 0,
@@ -50,7 +52,7 @@ static void mbus_configure_port(u8 port,
 			   | (bwl0 << 16) );
 	const u32 cfg1 = ((u32)bwl2 << 16) | (bwl1 & 0xffff);
 
-	debug("MBUS port %d cfg0 %08x cfg1 %08x\n", port, cfg0, cfg1);
+	debug("MBUS port %d cfg0 %08x cfg1 %08x\n", port, (unsigned) cfg0, (unsigned) cfg1);
 	writel_relaxed(cfg0, &mctl_com->master[port].cfg0);
 	writel_relaxed(cfg1, &mctl_com->master[port].cfg1);
 }
@@ -227,7 +229,9 @@ static void mctl_set_addrmap(const struct dram_config *config)
 }
 
 static const u8 phy_init[] = {
-#ifdef CONFIG_SUNXI_DRAM_H616_DDR3_1333
+#ifdef BOARD_DDR_PHY_INIT
+	BOARD_DDR_PHY_INIT_DATA
+#elif CONFIG_SUNXI_DRAM_H616_DDR3_1333
 	0x07, 0x0b, 0x02, 0x16, 0x0d, 0x0e, 0x14, 0x19,
 	0x0a, 0x15, 0x03, 0x13, 0x04, 0x0c, 0x10, 0x06,
 	0x0f, 0x11, 0x1a, 0x01, 0x12, 0x17, 0x00, 0x08,
@@ -1380,7 +1384,7 @@ static void mctl_auto_detect_dram_size(const struct dram_para *para,
 		if (mctl_mem_matches(1ULL << (config->cols + shift)))
 			break;
 	}
-	debug("detected %u columns\n", config->cols);
+	debug("detected %u columns\n", (unsigned) config->cols);
 
 	/* reconfigure to make sure that all active rows are accessible */
 	config->rows = 18;
@@ -1393,7 +1397,7 @@ static void mctl_auto_detect_dram_size(const struct dram_para *para,
 		if (mctl_mem_matches(1ULL << (config->rows + shift)))
 			break;
 	}
-	debug("detected %u rows\n", config->rows);
+	debug("detected %u rows\n", (unsigned) config->rows);
 }
 
 static unsigned long mctl_calc_size(const struct dram_config *config)
@@ -1414,6 +1418,8 @@ static const struct dram_para para = {
 	.type = SUNXI_DRAM_TYPE_LPDDR4,
 #elif defined(CONFIG_SUNXI_DRAM_T507_LPDDR4)
 	.type = SUNXI_DRAM_TYPE_LPDDR4,
+#else
+#error Undefined DRAM type
 #endif
 	.dx_odt = CONFIG_DRAM_SUN50I_H616_DX_ODT,
 	.dx_dri = CONFIG_DRAM_SUN50I_H616_DX_DRI,
@@ -1448,3 +1454,4 @@ unsigned long sunxi_dram_init(void)
 
 	return size;
 };
+#endif

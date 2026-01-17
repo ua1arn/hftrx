@@ -101,6 +101,42 @@ static uint32_t ddr_check_rand(unsigned long sizeee)
 
 	return sizeee;	// OK
 }
+/*
+ * Test if memory at offset offset matches memory at begin of DRAM
+ *
+ * Note: dsb() is not available on ARMv5 in Thumb mode
+ */
+#ifndef CONFIG_MACH_SUNIV
+static int mctl_mem_matches0(uint64_t offset, uint32_t value)
+{
+	/* Try to write different values to RAM at two addresses */
+	writel(0, CONFIG_SYS_SDRAM_BASE);
+	writel(value, (uintptr_t) CONFIG_SYS_SDRAM_BASE + offset);
+	__DSB();
+	/* Check if the same value is actually observed when reading back */
+	return readl(CONFIG_SYS_SDRAM_BASE + 0) ==
+	       readl((uintptr_t)CONFIG_SYS_SDRAM_BASE + offset);
+}
+
+// return 1: wrapped at offset
+// Test if memory at offset offset matches memory at begin of DRAM
+int mctl_mem_matches(uint64_t offset)
+{
+	return mctl_mem_matches0(offset, 0xaa55aa55) || mctl_mem_matches0(offset, 0xdeadbeef);
+}
+// return 1: wrapped at offset
+// Test if memory at offset offset matches memory at begin of DRAM
+int mctl_mem_matches_original(uint64_t offset)
+{
+	/* Try to write different values to RAM at two addresses */
+	writel(0, CONFIG_SYS_SDRAM_BASE);
+	writel(0xaa55aa55, (unsigned long)CONFIG_SYS_SDRAM_BASE + offset);
+	__DSB();
+	/* Check if the same value is actually observed when reading back */
+	return readl(CONFIG_SYS_SDRAM_BASE) ==
+	       readl((unsigned long)CONFIG_SYS_SDRAM_BASE + offset);
+}
+#endif
 
 void arm_hardware_sdram_initialize(void)
 {

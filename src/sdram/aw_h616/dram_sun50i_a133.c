@@ -1700,7 +1700,7 @@ static unsigned long calculate_dram_size(const struct dram_config *config)
 }
 
 static const struct dram_para para = {
-	.clk = BOARD_CONFIG_DRAM_CLK, //CONFIG_DRAM_CLK,
+	.clk = CONFIG_DRAM_CLK, //CONFIG_DRAM_CLK,
 	.type = BOARD_CONFIG_DRAM_TYPE,
 	/* TODO: Populate from config */
 	.dx_odt = CONFIG_DRAM_SUNXI_DX_ODT,
