@@ -45,7 +45,7 @@
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define CONFIG_MACH_SUN50I_A133 1	// chip i/o registers
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
-	#define BOARD_CONFIG_DRAM_CLK 792
+	#define CONFIG_DRAM_CLK 792
 	#define CONFIG_DRAM_CLK 792
 	#define CONFIG_SUNXI_DRAM_A133_LPDDR4 1
 
