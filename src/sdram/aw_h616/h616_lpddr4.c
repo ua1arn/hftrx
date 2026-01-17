@@ -2173,7 +2173,7 @@ static void mctl_auto_detect_dram_size(const struct dram_para *para,
 
 	for (config->cols = 8; config->cols < 11; config->cols++) {
 		/* 8 bits per byte and 16/32 bit width */
-		if (mctl_mem_matches(1 << (config->cols + 1 +
+		if (mctl_mem_matches(UINT64_C(1) << (config->cols + 1 +
 					   config->bus_full_width)))
 			break;
 	}
@@ -2514,7 +2514,7 @@ void arm_hardware_sdram_initialize(void)
 		for (e = 0; e < 4; ++ e)
 		{
 			unsigned uret;
-			unsigned size = memsize * 1024 * 1024;
+			unsigned size = memsizeMB * 1024 * 1024;
 			int partfortest = 4;
 			uret = ddr_check_rand(size / partfortest);
 			if (uret != (size / partfortest)) {
