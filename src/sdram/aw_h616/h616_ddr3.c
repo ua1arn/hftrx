@@ -15,6 +15,7 @@
 #include "formats.h"
 
 #include <string.h>
+#include "dram_glue.h"
 
 #define CONFIG_SYS_SDRAM_BASE 0x40000000
 

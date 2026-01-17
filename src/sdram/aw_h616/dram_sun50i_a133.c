@@ -19,6 +19,7 @@
 #include "formats.h"
 #include "clocks.h"
 #include <string.h>
+#include "dram_glue.h"
 
 #define max(a,b) (ulmax16((a), (b)))
 
