@@ -248,7 +248,7 @@ bootloader: BOOT2
 ifeq (1, 1)
 # T507
 SystemDRAMInit = 0x0002d890
-SystemExecAARCH64 = 0x00029514
+SystemExecAARCH64 = 0x00029510
 DDRINIT=ddrinit_t507
 else
 # H616
@@ -265,16 +265,16 @@ endif
 ddrinit_h616: ddrinit_h616_lpddr3.bin
 	$(XFEL) write 0x00028000 ddrinit_h616_lpddr3.bin
 	$(XFEL) exec $(SystemDRAMInit)
-	$(BUSYBOX) sleep 1s
+	$(BUSYBOX) sleep 2s
 
 ddrinit_h618: ddrinit_h618_lpddr4.bin
 	$(XFEL) write 0x00028000 ddrinit_h618_lpddr4.bin
 	$(XFEL) exec $(SystemDRAMInit)
-	$(BUSYBOX) sleep 1s
+	$(BUSYBOX) sleep 2s
 
 ddrinit_t507_:
 	$(XFEL) ddr lpddr4
-	$(BUSYBOX) sleep 1s
+	$(BUSYBOX) sleep 2s
 
 ddrinit_t507: ddrinit_t507_lpddr4.bin
 	$(XFEL) write 0x00028000 ddrinit_t507_lpddr4.bin

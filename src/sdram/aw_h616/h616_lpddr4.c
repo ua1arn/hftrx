@@ -780,7 +780,7 @@ void mctl_set_timing_params(const struct dram_para *para)
  * Note: dsb() is not available on ARMv5 in Thumb mode
  */
 #ifndef CONFIG_MACH_SUNIV
-static int mctl_mem_matches0(uint32_t offset, uint32_t value)
+static int mctl_mem_matches0(uint64_t offset, uint32_t value)
 {
 	/* Try to write different values to RAM at two addresses */
 	writel(0, CONFIG_SYS_SDRAM_BASE);
@@ -793,7 +793,7 @@ static int mctl_mem_matches0(uint32_t offset, uint32_t value)
 
 // return 1: wrapped at offset
 // Test if memory at offset offset matches memory at begin of DRAM
-int mctl_mem_matches(uint32_t offset)
+int mctl_mem_matches(uint64_t offset)
 {
 	return mctl_mem_matches0(offset, 0xaa55aa55) || mctl_mem_matches0(offset, 0xdeadbeef);
 }
@@ -2162,8 +2162,8 @@ static void mctl_auto_detect_dram_size(const struct dram_para *para,
 
 	for (config->rows = 13; config->rows < 18; config->rows++) {
 		/* 8 banks, 8 bit per byte and 16/32 bit width */
-		if (mctl_mem_matches((UINT32_C(1) << (config->rows + config->cols +
-					    4 + config->bus_full_width))))
+		if (mctl_mem_matches(UINT64_C(1) << (config->rows + config->cols +
+					    4 + config->bus_full_width)))
 			break;
 	}
 
@@ -2190,16 +2190,28 @@ static uint64_t mctl_calc_size(const struct dram_config *config)
 
 #if CPUSTYLE_T507
 
-/* 1GB LPDDR4 @ HelperBoard507 */
-#define CONFIG_DRAM_SUN50I_H616_DX_ODT 0x0c0c0c0c
-#define CONFIG_DRAM_SUN50I_H616_DX_DRI 0x0e0e0e0e
-#define CONFIG_DRAM_SUN50I_H616_CA_DRI 0x0e0e
-#define CONFIG_DRAM_SUN50I_H616_ODT_EN 0x7887bbbb
 #define CONFIG_DRAM_SUN50I_H616_TPR0 0x0
 #define CONFIG_DRAM_SUN50I_H616_TPR2 0x0
-#define CONFIG_DRAM_SUN50I_H616_TPR10 0x402e0000
-#define CONFIG_DRAM_SUN50I_H616_TPR11 0x22262622
-#define CONFIG_DRAM_SUN50I_H616_TPR12 0x0b0c0d0b
+
+/* 1GB LPDDR4 @ HelperBoard507 */
+//#define CONFIG_DRAM_SUN50I_H616_DX_ODT 0x0c0c0c0c
+//#define CONFIG_DRAM_SUN50I_H616_DX_DRI 0x0e0e0e0e
+//#define CONFIG_DRAM_SUN50I_H616_CA_DRI 0x0e0e
+//#define CONFIG_DRAM_SUN50I_H616_ODT_EN 0x7887bbbb
+//#define CONFIG_DRAM_SUN50I_H616_TPR10 0x402e0000
+//#define CONFIG_DRAM_SUN50I_H616_TPR11 0x22262622
+//#define CONFIG_DRAM_SUN50I_H616_TPR12 0x0b0c0d0b
+
+// https://github.com/wirenboard/u-boot-upstream/blob/4eb7bc820e8ed06ba2e2a1e6fd870060906393be/configs/sun50i_wirenboard8_defconfig#L8C1-L16C1
+
+#define CONFIG_DRAM_SUN50I_H616_DX_ODT 0x07070707
+#define CONFIG_DRAM_SUN50I_H616_DX_DRI 0x0e0e0e0e
+#define CONFIG_DRAM_SUN50I_H616_CA_DRI 0x0e0e
+#define CONFIG_DRAM_SUN50I_H616_ODT_EN 0xaaaaeeee
+#define CONFIG_DRAM_SUN50I_H616_TPR6 0x44000000
+#define CONFIG_DRAM_SUN50I_H616_TPR10 0x402f6633
+#define CONFIG_DRAM_SUN50I_H616_TPR11 0x24242624
+#define CONFIG_DRAM_SUN50I_H616_TPR12 0x0f0f100f
 
 static const struct dram_para para = {
 	.clk = BOARD_CONFIG_DRAM_CLK, //CONFIG_DRAM_CLK,
@@ -2207,9 +2219,6 @@ static const struct dram_para para = {
 	.dx_odt = CONFIG_DRAM_SUN50I_H616_DX_ODT,
 	.dx_dri = CONFIG_DRAM_SUN50I_H616_DX_DRI,
 	.ca_dri = CONFIG_DRAM_SUN50I_H616_CA_DRI,
-//	.para1     = 0x30fa,
-//	.para2     = 0x4000000,
-//	.tpr13     = 0x7025,
 	.odt_en = CONFIG_DRAM_SUN50I_H616_ODT_EN,
 	.tpr0 = CONFIG_DRAM_SUN50I_H616_TPR0,
 	.tpr2 = CONFIG_DRAM_SUN50I_H616_TPR2,
