@@ -44,6 +44,9 @@ typedef enum IRQn
     TWI1_IRQn = 40,                                   /*!< TWI  */
     TWI2_IRQn = 41,                                   /*!< TWI  */
     TWI3_IRQn = 42,                                   /*!< TWI  */
+    SPI0_IRQn = 45,                                   /*!< SPI Serial Peripheral Interface */
+    SPI1_IRQn = 46,                                   /*!< SPI Serial Peripheral Interface */
+    SPI2_IRQn = 47,                                   /*!< SPI Serial Peripheral Interface */
     I2S0_IRQn = 58,                                   /*!< I2S_PCM  */
     I2S1_IRQn = 59,                                   /*!< I2S_PCM  */
     I2S2_IRQn = 60,                                   /*!< I2S_PCM  */
@@ -53,6 +56,7 @@ typedef enum IRQn
     USB20_OTG_DEVICE_IRQn = 64,                       /*!< USBOTG USB OTG Dual-Role Device controller */
     USB20_HOST1_EHCI_IRQn = 65,                       /*!< USB_EHCI_Capability  */
     USB20_HOST1_OHCI_IRQn = 66,                       /*!< USB_OHCI_Capability  */
+    DMA_NS_IRQn = 77,                                 /*!< DMAC  */
     TIMER0_IRQn = 83,                                 /*!< TIMER  */
     TIMER1_IRQn = 84,                                 /*!< TIMER  */
     GPIOB_IRQn = 86,                                  /*!< GPIOINT GPIOC interrupt */
@@ -83,6 +87,7 @@ typedef enum IRQn
 /* Peripheral and RAM base address */
 
 #define CCU_BASE ((uintptr_t) 0x03001000)             /*!< CCU  Base */
+#define DMAC_BASE ((uintptr_t) 0x03002000)            /*!< DMAC  Base */
 #define TIMER_BASE ((uintptr_t) 0x03009000)           /*!< TIMER  Base */
 #define GPIOA_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO Port Controller Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x0300B000)       /*!< GPIOBLOCK Port Controller Base */
@@ -117,6 +122,9 @@ typedef enum IRQn
 #define TWI1_BASE ((uintptr_t) 0x05002400)            /*!< TWI  Base */
 #define TWI2_BASE ((uintptr_t) 0x05002800)            /*!< TWI  Base */
 #define TWI3_BASE ((uintptr_t) 0x05002C00)            /*!< TWI  Base */
+#define SPI0_BASE ((uintptr_t) 0x05010000)            /*!< SPI Serial Peripheral Interface Base */
+#define SPI1_BASE ((uintptr_t) 0x05011000)            /*!< SPI Serial Peripheral Interface Base */
+#define SPI2_BASE ((uintptr_t) 0x05012000)            /*!< SPI Serial Peripheral Interface Base */
 #define I2S0_BASE ((uintptr_t) 0x05090000)            /*!< I2S_PCM  Base */
 #define I2S1_BASE ((uintptr_t) 0x05091000)            /*!< I2S_PCM  Base */
 #define I2S2_BASE ((uintptr_t) 0x05092000)            /*!< I2S_PCM  Base */
@@ -413,6 +421,42 @@ typedef struct CPU_SUBSYS_CTRL_Type
     } RVBARADDR [0x004];                              /*!< Offset 0x040 Reset Vector Base Address Register for core [0..3] */
 } CPU_SUBSYS_CTRL_TypeDef; /* size of structure = 0x060 */
 /*
+ * @brief DMAC
+ */
+/*!< DMAC  */
+typedef struct DMAC_Type
+{
+    __IO uint32_t DMAC_IRQ_EN_REG0;                   /*!< Offset 0x000 DMAC IRQ Enable Register 0 */
+    __IO uint32_t DMAC_IRQ_EN_REG1;                   /*!< Offset 0x004 DMAC IRQ Enable Register 1 */
+         RESERVED(0x008[0x0010 - 0x0008], uint8_t)
+    __IO uint32_t DMAC_IRQ_PEND_REG0;                 /*!< Offset 0x010 DMAC IRQ Pending Register 0 */
+    __IO uint32_t DMAC_IRQ_PEND_REG1;                 /*!< Offset 0x014 DMAC IRQ Pending Register 1 */
+         RESERVED(0x018[0x0020 - 0x0018], uint8_t)
+    __IO uint32_t DMAC_SEC_REG;                       /*!< Offset 0x020 DMA Security Register */
+         RESERVED(0x024[0x0028 - 0x0024], uint8_t)
+    __IO uint32_t DMAC_AUTO_GATE_REG;                 /*!< Offset 0x028 DMAC Auto Gating Register */
+         RESERVED(0x02C[0x0030 - 0x002C], uint8_t)
+    __I  uint32_t DMAC_STA_REG;                       /*!< Offset 0x030 DMAC Status Register */
+         RESERVED(0x034[0x0100 - 0x0034], uint8_t)
+    struct
+    {
+        __IO uint32_t DMAC_EN_REGN;                   /*!< Offset 0x100 DMAC Channel Enable Register N (N = 0 to 15) 0x0100 + N*0x0040 */
+        __IO uint32_t DMAC_PAU_REGN;                  /*!< Offset 0x104 DMAC Channel Pause Register N (N = 0 to 15) 0x0104 + N*0x0040 */
+        __IO uint32_t DMAC_DESC_ADDR_REGN;            /*!< Offset 0x108 DMAC Channel Start Address Register N (N = 0 to 15) 0x0108 + N*0x0040 */
+        __I  uint32_t DMAC_CFG_REGN;                  /*!< Offset 0x10C DMAC Channel Configuration Register N (N = 0 to 15) 0x010C + N*0x0040 */
+        __I  uint32_t DMAC_CUR_SRC_REGN;              /*!< Offset 0x110 DMAC Channel Current Source Register N (N = 0 to 15) 0x0110 + N*0x0040 */
+        __I  uint32_t DMAC_CUR_DEST_REGN;             /*!< Offset 0x114 DMAC Channel Current Destination Register N (N = 0 to 15) 0x0114 + N*0x0040 */
+        __I  uint32_t DMAC_BCNT_LEFT_REGN;            /*!< Offset 0x118 DMAC Channel Byte Counter Left Register N (N = 0 to 15) 0x0118 + N*0x0040 */
+        __I  uint32_t DMAC_PARA_REGN;                 /*!< Offset 0x11C DMAC Channel Parameter Register N (N = 0 to 15) 0x011C + N*0x0040 */
+             RESERVED(0x020[0x0028 - 0x0020], uint8_t)
+        __IO uint32_t DMAC_MODE_REGN;                 /*!< Offset 0x128 DMAC Mode Register N (N = 0 to 15) 0x0128 + N*0x0040 */
+        __I  uint32_t DMAC_FDESC_ADDR_REGN;           /*!< Offset 0x12C DMAC Former Descriptor Address Register N (N = 0 to 15) 0x012C + N*0x0040 */
+        __I  uint32_t DMAC_PKG_NUM_REGN;              /*!< Offset 0x130 DMAC Package Number Register N (N = 0 to 15) 0x0130 + N*0x0040 */
+             RESERVED(0x034[0x0040 - 0x0034], uint8_t)
+    } CH [0x010];                                     /*!< Offset 0x100 Channel [0..15] */
+         RESERVED(0x500[0x1000 - 0x0500], uint8_t)
+} DMAC_TypeDef; /* size of structure = 0x1000 */
+/*
  * @brief DSI0
  */
 /*!< DSI0 MIPI DSI System (A133/R818) */
@@ -694,6 +738,40 @@ typedef struct PRCM_Type
     __IO uint32_t PRCM_VERSION_REG;                   /*!< Offset 0x3F0 PRCM Version Register */
 } PRCM_TypeDef; /* size of structure = 0x3F4 */
 /*
+ * @brief SPI
+ */
+/*!< SPI Serial Peripheral Interface */
+typedef struct SPI_Type
+{
+         RESERVED(0x000[0x0004 - 0x0000], uint8_t)
+    __IO uint32_t SPI_GCR;                            /*!< Offset 0x004 SPI Global Control Register */
+    __IO uint32_t SPI_TCR;                            /*!< Offset 0x008 SPI Transfer Control Register */
+         RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
+    __IO uint32_t SPI_IER;                            /*!< Offset 0x010 SPI Interrupt Control Register */
+    __IO uint32_t SPI_ISR;                            /*!< Offset 0x014 SPI Interrupt Status Register */
+    __IO uint32_t SPI_FCR;                            /*!< Offset 0x018 SPI FIFO Control Register */
+    __IO uint32_t SPI_FSR;                            /*!< Offset 0x01C SPI FIFO Status Register */
+    __IO uint32_t SPI_WCR;                            /*!< Offset 0x020 SPI Wait Clock Register */
+    __IO uint32_t SPI_CCR;                            /*!< Offset 0x024 SPI Clock Control Register */
+    __IO uint32_t SPI_SAMP_DL;                        /*!< Offset 0x028 SPI Sample Delay Control Register */
+         RESERVED(0x02C[0x0030 - 0x002C], uint8_t)
+    __IO uint32_t SPI_MBC;                            /*!< Offset 0x030 SPI Master Burst Counter Register */
+    __IO uint32_t SPI_MTC;                            /*!< Offset 0x034 SPI Master Transmit Counter Register */
+    __IO uint32_t SPI_BCC;                            /*!< Offset 0x038 SPI Master Burst Control Register */
+         RESERVED(0x03C[0x0040 - 0x003C], uint8_t)
+    __IO uint32_t SPI_BATCR;                          /*!< Offset 0x040 SPI Bit-Aligned Transfer Configure Register */
+    __IO uint32_t SPI_3W_CCR;                         /*!< Offset 0x044 SPI Bit-Aligned Clock Configuration Register */
+    __IO uint32_t SPI_TBR;                            /*!< Offset 0x048 SPI TX Bit Register */
+    __IO uint32_t SPI_RBR;                            /*!< Offset 0x04C SPI RX Bit Register */
+         RESERVED(0x050[0x0088 - 0x0050], uint8_t)
+    __IO uint32_t SPI_NDMA_MODE_CTL;                  /*!< Offset 0x088 SPI Normal DMA Mode Control Register */
+         RESERVED(0x08C[0x0200 - 0x008C], uint8_t)
+    __IO uint32_t SPI_TXD;                            /*!< Offset 0x200 SPI TX Data Register */
+         RESERVED(0x204[0x0300 - 0x0204], uint8_t)
+    __IO uint32_t SPI_RXD;                            /*!< Offset 0x300 SPI RX Data Register */
+         RESERVED(0x304[0x1000 - 0x0304], uint8_t)
+} SPI_TypeDef; /* size of structure = 0x1000 */
+/*
  * @brief TIMER
  */
 /*!< TIMER  */
@@ -958,6 +1036,7 @@ typedef struct USB_OHCI_Capability_Type
 /* Access pointers */
 
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU  register set access pointer */
+#define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA Port Controller register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK Port Controller register set access pointer */
@@ -989,6 +1068,9 @@ typedef struct USB_OHCI_Capability_Type
 #define TWI1 ((TWI_TypeDef *) TWI1_BASE)              /*!< TWI1  register set access pointer */
 #define TWI2 ((TWI_TypeDef *) TWI2_BASE)              /*!< TWI2  register set access pointer */
 #define TWI3 ((TWI_TypeDef *) TWI3_BASE)              /*!< TWI3  register set access pointer */
+#define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
+#define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
+#define SPI2 ((SPI_TypeDef *) SPI2_BASE)              /*!< SPI2 Serial Peripheral Interface register set access pointer */
 #define I2S0 ((I2S_PCM_TypeDef *) I2S0_BASE)          /*!< I2S0  register set access pointer */
 #define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1  register set access pointer */
 #define I2S2 ((I2S_PCM_TypeDef *) I2S2_BASE)          /*!< I2S2  register set access pointer */

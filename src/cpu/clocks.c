@@ -4322,6 +4322,21 @@ uint_fast32_t allwnr_a133_get_s_twi_freq(void)
 	return allwnr_a133_get_hosc_freq();
 }
 
+uint_fast32_t allwnr_a133_get_spi0_freq(void)
+{
+	return allwnr_a133_get_hosc_freq();
+}
+
+uint_fast32_t allwnr_a133_get_spi1_freq(void)
+{
+	return allwnr_a133_get_hosc_freq();
+}
+
+uint_fast32_t allwnr_a133_get_spi2_freq(void)
+{
+	return allwnr_a133_get_hosc_freq();
+}
+
 void sysinit_boot_disconnect(void)
 {
 }
@@ -11704,6 +11719,9 @@ hardware_elkey_timer_initialize(void)
 
 	arm_hardware_set_handler_overrealtime(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer
 
+#elif CPUSTYLE_A133
+	#warning CPUSTYLE_A133 to be implemented
+
 #else
 	#warning Undefined CPUSTYLE_XXX
 #endif
@@ -11793,6 +11811,9 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	while ((TIMER->TMR [ix].CTRL_REG & (UINT32_C(1) << 1)) != 0)
 		;
 	TIMER->TMR [ix].CTRL_REG |= UINT32_C(1) << 1;	// TMR0_RELOAD
+
+#elif CPUSTYLE_A133
+	#warning CPUSTYLE_A133 to be implemented
 
 #else
 	#warning Undefined CPUSTYLE_XXX

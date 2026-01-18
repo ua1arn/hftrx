@@ -6,8 +6,8 @@ SET FILELIST= ^
 	c0_cpux_cfg.csv ccu.csv cpusubsysctrl.csv ^
 	gic.csv gpio.csv ^
 	i2s_pcm.csv mipi_dsi.csv ^
-	prcm.csv timer.csv ^
-	twi.csv uart.csv ^
+	prcm.csv timer.csv dmac.csv ^
+	twi.csv spi.csv uart.csv ^
 	usbehci.csv usbotg.csv usbphyc.csv usb_ehci_capability.csv usb_ohci_capability.csv ^
 	aw_a133.csv
 	

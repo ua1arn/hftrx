@@ -626,6 +626,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 
 	arm_hardware_set_handler_system(USB_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
+#elif CPUSTYLE_A133
+	#warning CPUSTYLE_A133 should be handled
+
 #else
 	#error HAL_PCD_MspInit should be implemented
 
@@ -746,6 +749,9 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	CCU->BUS_CLK_GATING_REG0 &= ~ (UINT32_C(1) << 24);	// USB OTG_Device_GATING.
 
 	arm_hardware_disable_handler(USB_DEVICE_IRQn);
+
+#elif CPUSTYLE_A133
+	#warning CPUSTYLE_A133 should be handled
 
 #else
 	#error HAL_PCD_MspDeInit should be implemented

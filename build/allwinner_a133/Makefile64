@@ -115,6 +115,20 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
 
+ifeq (1, 1)
+# ST USB DEVICE
+MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
+DINCDIR += $(MDLWUSBDIR)/Core/Inc
+SRCDIRS += $(MDLWUSBDIR)
+endif
+
+ifeq (1, 0)
+# ST USB HOST
+MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
+DINCDIR += $(MDLWHOSTDIR)/Core/Inc
+SRCDIRS += $(MDLWHOSTDIR)
+endif
+
 # cmsis-dsp
 include ../cmsis_dsp.mak
 
@@ -227,12 +241,8 @@ bootloader: BOOT2
 # Take from tc1_a133_boot.map - address of SystemDRAMInit
 ifeq (1, 1)
 # a133
-SystemDRAMInit = 0x000332d0
-SystemExecAARCH64 = 0x000313f8
-# H616
-else
-SystemDRAMInit = 0x00032a84
-SystemExecAARCH64 = 0x00031560
+SystemDRAMInit = 0x0002db68
+SystemExecAARCH64 = 0x00029340
 endif
 
 # Invoke SystemInit 
@@ -244,8 +254,8 @@ ddrinit_a133_:
 	$(XFEL) ddr lpddr4
 	$(BUSYBOX) sleep 1s
 
-ddrinit_a133: ddrinit_a133.bin
-	$(XFEL) write 0x00028000 ddrinit_a133.bin
+ddrinit_a133: ddrinit_a133_lpddr4.bin
+	$(XFEL) write 0x00028000 ddrinit_a133_lpddr4.bin
 	$(XFEL) exec $(SystemDRAMInit)
 
 app_run: $(PROJECT)_app.alw32 ddrinit_a133

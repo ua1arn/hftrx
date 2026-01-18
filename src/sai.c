@@ -3617,6 +3617,9 @@ static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsi
 	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
 	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
 
+#elif CPUSTYLE_A133
+    #warning CPUSTYLE_A133 to be implemented
+
 #else
 	#error Unhandled CPUSTYLE_xxx
 
@@ -3647,6 +3650,9 @@ static void DMAC_clock_initialize(void)
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 0);	// Gating MBUS Clock For DMA
 	CCU->DMA_BGR_REG |= (UINT32_C(1) << 0);			// DMA_GATING 1: Pass clock
 	CCU->DMA_BGR_REG |= (UINT32_C(1) << 16);		// DMA_RST 1: De-assert reset
+
+#elif CPUSTYLE_A133
+    #warning CPUSTYLE_A133 to be implemented
 
 #else
 	#error Unhandled CPUSTYLE_xxx
@@ -4274,6 +4280,9 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 	CCU->I2S_BGR_REG |= (UINT32_C(1) << (16 + ix));	// I2S/PCMx Reset
 	//PRINTF("allwnr_t113_get_i2s1_freq = %" PRIuFAST32 "\n", ix == 1 ? allwnr_t113_get_i2s1_freq() : allwnr_t113_get_i2s2_freq());
 
+#elif CPUSTYLE_A133
+    #warning CPUSTYLE_A133 to be implemented
+
 #else
 	#error Unhandled CPUSTYLE_xxx
 
@@ -4662,6 +4671,9 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 //	i2s->I2S_PCM_INT |= (UINT32_C(1) << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
 
 	//arm_hardware_set_handler_realtime(irq, I2S_PCMx_IrqHandler);
+
+#elif CPUSTYLE_A133
+    #warning CPUSTYLE_A133 to be implemented
 
 #else
 	#error Unhandled CPUSTYLE_xxx

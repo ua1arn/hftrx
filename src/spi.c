@@ -1183,6 +1183,8 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 	// De-assert hardware CS
 	//spi->SPI_TCR |= (1u << 7);
 
+#elif CPUSTYLE_A133
+	#warning CPUSTYLE_A133 to be implemented
 #else
 	#error Wrong CPUSTYLE macro
 

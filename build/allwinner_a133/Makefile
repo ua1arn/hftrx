@@ -243,25 +243,13 @@ bootloader: BOOT2
 # Take from tc1_a133_boot.map - address of SystemDRAMInit
 ifeq (1, 1)
 # a133
-SystemDRAMInit = 0x000332d0
-SystemExecAARCH64 = 0x000313f8
-# H616
-else
-SystemDRAMInit = 0x00032a84
-SystemExecAARCH64 = 0x00031560
+SystemDRAMInit = 0x0002db68
+SystemExecAARCH64 = 0x00029340
 endif
 
 # Invoke SystemInit 
-ddrinit_a133__: ddrinit_a133.bin
-	$(XFEL) write 0x00028000 ddrinit_a133.bin
-	$(XFEL) exec $(SystemDRAMInit)
-
-ddrinit_a133_:
-	$(XFEL) ddr lpddr4
-	$(BUSYBOX) sleep 1s
-
-ddrinit_a133: ddrinit_a133.bin
-	$(XFEL) write 0x00028000 ddrinit_a133.bin
+ddrinit_a133: ddrinit_a133_lpddr4.bin
+	$(XFEL) write 0x00028000 ddrinit_a133_lpddr4.bin
 	$(XFEL) exec $(SystemDRAMInit)
 
 app_run: $(PROJECT)_app.alw32 ddrinit_a133

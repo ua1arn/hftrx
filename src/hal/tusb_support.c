@@ -1152,6 +1152,8 @@ void usbdevice_clk_init(void)
 	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, USBDxx_IRQHandler);
 	arm_hardware_disable_handler(USB0_DEVICE_IRQn);
 
+#elif CPUSTYLE_A133
+	#warning CPUSTYLE_A133 should be handled
 #else
 	#error usbdevice_clk_init should be implemented
 
