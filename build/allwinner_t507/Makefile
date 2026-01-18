@@ -252,11 +252,11 @@ SystemExecAARCH64 = 0x00029510
 DDRINIT=ddrinit_t507
 else
 # H616
-#SystemDRAMInit = 0x0002d648
+#SystemDRAMInit = 0x0002d650
 #SystemExecAARCH64 = 0x0002920c
 #DDRINIT=ddrinit_h616
 # H618 + LPDDR4
-SystemDRAMInit = 0x0002c8bc
+SystemDRAMInit = 0x0002c8c4
 SystemExecAARCH64 = 0x00029014
 DDRINIT=ddrinit_h618
 endif
