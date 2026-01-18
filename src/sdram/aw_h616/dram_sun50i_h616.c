@@ -229,7 +229,7 @@ static void mctl_set_addrmap(const struct dram_config *config)
 }
 
 static const u8 phy_init[] = {
-#ifdef BOARD_DDR_PHY_INIT
+#ifdef BOARD_DDR_PHY_INIT_DATA
 	BOARD_DDR_PHY_INIT_DATA
 #elif CONFIG_SUNXI_DRAM_H616_DDR3_1333
 	0x07, 0x0b, 0x02, 0x16, 0x0d, 0x0e, 0x14, 0x19,
