@@ -2461,14 +2461,15 @@ static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	C0_CPUX_CFG_H616->C0_RST_CTRL |= CORE_RESET_MASK;	// 60... CORE_RESET 1: de-assert
 }
 
-#elif CPUSTYLE_T507
+#elif CPUSTYLE_T507 || CPUSTYLE_A133
 
 // https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/sun50i_h616/include/sunxi_mmap.h#L42
+#define SUNXI_R_CPUCFG_BASE		((uintptr_t) 0x07000400)
 
 static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
-	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
 
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
@@ -2486,52 +2487,7 @@ static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	const uintptr_t startfunc32 = (uintptr_t) trampoline32;
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
-	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
-
-	ASSERT(startfunc32 != 0);
-	ASSERT(ptr_hi32(startfunc32) == 0);
-	ASSERT(startfunc != 0);
-	ASSERT(targetcore != 0);
-
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG  [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
-
-	* rvaddr = ptr_lo32(startfunc32);
-	ASSERT(* rvaddr == startfunc32);
-
-	CPU_SUBSYS_CTRL->CPUx_CTRL_REG [targetcore] = (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
-	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
-
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG  [targetcore] |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
-}
-
-#elif CPUSTYLE_A133
-
-// https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/sun50i_h616/include/sunxi_mmap.h#L42
-
-static void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
-{
-	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
-	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
-
-	ASSERT(startfunc != 0);
-	ASSERT(targetcore != 0);
-
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG  [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
-
-	* rvaddr = startfunc;
-	ASSERT(* rvaddr == startfunc);
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
-
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG  [targetcore] |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
-}
-
-static void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
-{
-	const uintptr_t startfunc32 = (uintptr_t) trampoline32;
-	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
-	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_R_CPUCFG_BASE + 0x1c4 + targetcore * 4));
 
 	ASSERT(startfunc32 != 0);
 	ASSERT(ptr_hi32(startfunc32) == 0);
