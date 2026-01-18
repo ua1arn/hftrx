@@ -10,7 +10,7 @@
 
 #include "hardware.h"
 
-#if WITHSDRAMHW
+#if WITHSDRAMHW && CONFIG_SUNXI_DRAM_A133_LPDDR4
 #include "formats.h"
 #include <string.h>
 
