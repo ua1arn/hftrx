@@ -243,8 +243,8 @@ bootloader: BOOT2
 # Take from tc1_a133_boot.map - address of SystemDRAMInit
 ifeq (1, 1)
 # a133
-SystemDRAMInit = 0x0002db68
-SystemExecAARCH64 = 0x00029340
+SystemDRAMInit = 0x0002c3ac
+SystemExecAARCH64 = 0x00029858
 endif
 
 # Invoke SystemInit 
