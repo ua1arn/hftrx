@@ -45,7 +45,7 @@
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
-	#define CONFIG_DRAM_CLK 800
+	#define CONFIG_DRAM_CLK 720
 	#define CONFIG_MACH_SUN50I_H616 1
 	#define CONFIG_SUNXI_DRAM_H618_LPDDR4 1
 	// szbaijie HelperBoard 1.2 with LPDDR4
