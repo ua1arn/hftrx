@@ -47,7 +47,7 @@
 void lvgl_gui_init(lv_obj_t * parent);
 #endif /* WITHLVGL */
 
-#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
+#if defined(DDS1_TYPE) && ((DDS1_TYPE == DDS_TYPE_FPGAV1) || (DDS1_TYPE == DDS_TYPE_FPGAV2))
 	#error "DDS_TYPE_FPGAV1 not supported with Linux"
 #endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) */
 
