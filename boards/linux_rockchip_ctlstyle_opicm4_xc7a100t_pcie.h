@@ -25,9 +25,9 @@
 
 #if 0
 	#define XVTR_R820T2			1	// ad936x
-//	#define	WITHAD936XIIO		1	// External AD936x board
+//	#define	WITHAD936XIIO		1	// ADALM Pluto clone
 //todo: объединить эти 2 дефайна
-	#define WITHAD936XDEV		1
+	#define WITHAD936XDEV		1	// прямое управление AD936x
 #endif
 
 	// --- вариации прошивки, специфические для разных частот
@@ -52,7 +52,6 @@
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 	
-
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
@@ -102,6 +101,7 @@
 	#define FORMATFROMLIBRARY 		1
 	#define WITHAFGAINDEFAULT		20
 //	#define WITHAFEQUALIZER			1
+	#define WITHALTERNATIVEFONTS	1
 	#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 	#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 //	#define WITHGNSS				1
@@ -114,15 +114,13 @@
 //	#define DEFAULTDIALFREQ			12289000uL
 //	#define WITHCPUFANPWM			1
 	#define WITHCPUTEMPERATURE		1
-//	#define WITHEXTIO_LAN			1 	// ExtIO_Storch.dll for SDRSharper
+	#define WITHEXTIO_LAN			1 	// ExtIO_Storch.dll for SDRSharper
 	#define WITHWNB					1	// Simple noise blanker
 	#define WITHAUDIOSAMPLESREC		1	// запись и воспроизведение коротких фрагментов звука из эфира
 //	#define REALREFERENCE_FREQ 		61443000L
 //	#define MOUSE_EVDEV				1
 //	#define MOUSE_CURSOR_PATH		"./arrow.png"
 //	#define BLUETOOTH_ALSA			1
-
-	
 
 	#define WITHTX	1
 	#if WITHTX

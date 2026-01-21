@@ -99,7 +99,7 @@ static void i2c_delay(const i2cp_t * p)
 #endif
 
 
-#if WITHTWIHW
+#if WITHTWIHW && ! LINUX_SUBSYSTEM
 
 // получение одномилисекундных значений
 // проблема c sys_now():

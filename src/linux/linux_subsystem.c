@@ -46,6 +46,35 @@ int get_mouse_move(uint_fast16_t * x, uint_fast16_t * y);
 #define PIDFILE 		"/var/run/hftrx.pid"
 #define MAX_WAIT_TIME 	1
 
+#if AXI_IRQ_CONTROL && IQ_VIA_XDMA
+
+void pl_irq_disable_all(void)
+{
+	uint32_t reg = xdma_read_user(AXI_LITE_PL_CONTROL);
+	reg &= ~ 0xFF;
+	xdma_write_user(AXI_LITE_PL_CONTROL, reg);
+}
+
+void pl_irq_enable(uint32_t i)
+{
+	ASSERT(i < irq_pl_count);
+
+	uint32_t reg = xdma_read_user(AXI_LITE_PL_CONTROL);
+	reg |= (1 << i);
+	xdma_write_user(AXI_LITE_PL_CONTROL, reg);
+}
+
+void pl_irq_disable(uint32_t i)
+{
+	ASSERT(i < irq_pl_count);
+
+	uint32_t reg = xdma_read_user(AXI_LITE_PL_CONTROL);
+	reg &= ~ (1 << i);
+	xdma_write_user(AXI_LITE_PL_CONTROL, reg);
+}
+
+#endif /* AXI_IRQ_CONTROL && IQ_VIA_XDMA */
+
 #if defined (AXI_LITE_UARTLITE) && IQ_VIA_XDMA
 
 int uartlite_rx_ready(void)
@@ -1312,13 +1341,21 @@ void server_stop(void)
 		server_kill();
 		linux_cancel_thread(eth_main_t);
 		stream_state = STREAM_IDLE;
+#if AXI_IRQ_CONTROL
+	pl_irq_disable(irq_iq_hf_stream);
+#endif /* AXI_IRQ_CONTROL */
 	}
 }
 
 void server_start(void)
 {
 	if (stream_state == STREAM_IDLE)
+	{
+#if AXI_IRQ_CONTROL
+	pl_irq_enable(irq_iq_hf_stream);
+#endif /* AXI_IRQ_CONTROL */
 		linux_create_thread(& eth_main_t, eth_main_thread, 50, stream_thread_core);
+	}
 }
 
 #endif /* WITHEXTIO_LAN */
@@ -1411,7 +1448,7 @@ void linux_iq_init(void)
 	pcie_init();
 	pcie_status = pcie_open();
 	if (pcie_status < 0)
-		perror("pcie init");
+		linux_exit();
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 #if WITHEXTIO_LAN
 #if IQ_VIA_ZYNQ_PL
@@ -1644,6 +1681,10 @@ void xdma_iq_init(void)
 	modem_reset(0);
 	usleep(100);
 	modem_reset(1);
+
+#if AXI_IRQ_CONTROL
+	pl_irq_enable(irq_iq_hf);
+#endif /* AXI_IRQ_CONTROL */
 
 	linux_create_thread(& xdma_t, xdma_event_thread, 95, iq_thread_core);
 	linux_init_cond(& ct_iq);
@@ -2243,6 +2284,9 @@ void linux_subsystem_init(void)
 #endif /* WITHSPIDEV */
 #if IQ_VIA_ZYNQ_PL || IQ_VIA_XDMA
 	linux_iq_init();
+#if AXI_IRQ_CONTROL
+	pl_irq_disable_all();
+#endif /* AXI_IRQ_CONTROL */
 #elif IQ_VIA_USB
 	linux_usb_init();
 #endif /* IQ_VIA_ZYNQ_PL || IQ_VIA_XDMA */
