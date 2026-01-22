@@ -63,7 +63,7 @@ static void nau8822_setreg_16(
 	uint_fast16_t datav			/* 9 bit value */
 	)
 {
-	const uint_fast16_t fulldata = (0x7F & regv) * (UINT32_C(1) << 9) | (datav & 0x1ff);
+	const uint_fast16_t fulldata = (0x7F & regv) * (UINT16_C(1) << 9) | (datav & 0x1ff);
 	//PRINTF("nau8822_setreg: regv=%02X, datav=%03X\n", (unsigned) regv, (unsigned) datav);
 
 #if CODEC_TYPE_NAU8822_USE_SPI
@@ -104,8 +104,8 @@ static void nau8822_setreg_16_2(
 	uint_fast16_t datav2			/* 9 bit value */
 	)
 {
-	const uint_fast16_t fulldata1 = ((0x7F & regv) + 0) * (UINT32_C(1) << 9) | (datav1 & 0x1ff);
-	const uint_fast16_t fulldata2 = ((0x7F & regv) + 1) * (UINT32_C(1) << 9) | (datav2 & 0x1ff);
+	const uint_fast16_t fulldata1 = ((0x7F & regv) + 0) * (UINT16_C(1) << 9) | (datav1 & 0x1ff);
+	const uint_fast16_t fulldata2 = ((0x7F & regv) + 1) * (UINT16_C(1) << 9) | (datav2 & 0x1ff);
 	//PRINTF("nau8822_setreg: regv=%02X, datav=%03X\n", (unsigned) regv, (unsigned) datav);
 
 #if CODEC_TYPE_NAU8822_USE_SPI
@@ -154,7 +154,7 @@ static void nau8822_setreg_24(
 	)
 {
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
-	const uint_fast32_t fulldata = (0x7F & regv) * (UINT32_C(1) << 9) | (datav & 0x1ff);
+	const uint_fast16_t fulldata = (0x7F & regv) * (UINT16_C(1) << 9) | (datav & 0x1ff);
 	const uint8_t txbuf [] =
 	{
 		0x10,
@@ -172,8 +172,8 @@ static void nau8822_setreg_24_2(
 	)
 {
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
-	const uint_fast32_t fulldata1 = ((0x7F & regv) + 0) * (UINT32_C(1) << 9) | (datav1 & 0x1ff);
-	const uint_fast32_t fulldata2 = ((0x7F & regv) + 1) * (UINT32_C(1) << 9) | (datav2 & 0x1ff);
+	const uint_fast16_t fulldata1 = ((0x7F & regv) + 0) * (UINT16_C(1) << 9) | (datav1 & 0x1ff);
+	const uint_fast16_t fulldata2 = ((0x7F & regv) + 1) * (UINT16_C(1) << 9) | (datav2 & 0x1ff);
 	const uint8_t txbuf [] =
 	{
 		0x10,
@@ -189,7 +189,7 @@ static uint_fast16_t nau8822_getreg_32(
 	)
 {
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
-	const uint_fast32_t fulldata = (0x7F & regv) * (UINT32_C(1) << 9);
+	const uint_fast16_t fulldata = (0x7F & regv) * (UINT16_C(1) << 9);
 	const uint8_t txbuf [] =
 	{
 		0x20,
