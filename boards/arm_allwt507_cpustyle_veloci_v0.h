@@ -972,9 +972,9 @@
 	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
 
 	#define HARDWARE_SPI1_INITIALIZE() do { \
-		arm_hardware_pioh_altfn20(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PH6 SPI1_CLK */ \
-		arm_hardware_pioh_altfn20(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PH7 SPI1_MOSI */ \
-		arm_hardware_pioh_altfn20(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PH8 SPI1_MISO */ \
+		gpioX_prog(GPIOH, SPI_SCLK_BIT, GPIO_CFG_AF4, GPIO_DRV_2, GPIO_PULL_NONE); 	/* PH6 SPI1_CLK */ \
+		gpioX_prog(GPIOH, SPI_MOSI_BIT, GPIO_CFG_AF4, GPIO_DRV_2, GPIO_PULL_NONE); 	/* PH7 SPI1_MOSI */ \
+		gpioX_prog(GPIOH, SPI_MISO_BIT, GPIO_CFG_AF4, GPIO_DRV_2, GPIO_PULL_NONE); 	/* PH8 SPI1_MISO */ \
 	} while (0)
 	#define WITHSPI1HW	1	// Use SPI1
 
