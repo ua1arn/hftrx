@@ -860,7 +860,7 @@ public:
 	}
 
 	// поэлементное заполнение буферов
-	void savedata(sample_t ch0, sample_t ch1,  int32_t v3, unsigned (* putcbf)(rawsample_t * b, sample_t ch0, sample_t ch1, int32_t v3))
+	void savedata(sample_t ch0, sample_t ch1, int32_t v3, unsigned (* putcbf)(rawsample_t * b, sample_t ch0, sample_t ch1, int32_t v3))
 	{
 		if (wb == NULL)
 		{
@@ -2260,7 +2260,7 @@ uint_fast8_t elfetch_dmabufferbtout48(FLOAT_t * dest)
 //}
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabufferbtio48(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned putcbf_dmabufferbtio48(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1, int32_t ch_unused)
 {
 	b [0] = ch0;
 	b [1] = ch1;
@@ -2277,7 +2277,7 @@ static unsigned putcbf_dmabufferbtio48(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
 
 void elfill_dmabufferbtin48(FLOAT_t ch0, FLOAT_t ch1)
 {
-	btin48k.savedata(ch0, ch1, putcbf_dmabufferbtio48);
+	btin48k.savedata(ch0, ch1, 0, putcbf_dmabufferbtio48);
 }
 ///////
 // can not be zero
@@ -2517,7 +2517,7 @@ typedef enum
 
 	void elfill_dmabufferuacinrts192(int_fast32_t ch0, int_fast32_t ch1)
 	{
-		uacinrts192.savedata(ch0, ch1, putcbf_dmabufferuacinrts192);
+		uacinrts192.savedata(ch0, ch1, 0, putcbf_dmabufferuacinrts192);
 	}
 
 	// can not be zero
