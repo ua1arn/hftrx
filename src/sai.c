@@ -4340,11 +4340,13 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 	{
 		const unsigned txrx_offset = 1;	// Каналы I2S
+		const unsigned dinmask = 1U << din;
+		const unsigned doutmask = 1U << dout;
 		/* I2S part */
 		i2s->I2Sn_CTL =
 			!! master * (UINT32_C(1) << 18) |	// BCLK/LRCK Direction 0:Input 1:Output
-			1 * (UINT32_C(1) << (din + 12)) |	// SDI0_EN
-			1 * (UINT32_C(1) << (dout + 8)) |	// SDO0_EN
+			(0x0F & dinmask) * (UINT32_C(1) << 12) |	// SDI3_EN..SDI0_EN
+			(0x0F & doutmask) * (UINT32_C(1) << 8) |	// SDO3_EN..SDO0_EN
 			1 * (UINT32_C(1) << 4) |	// MODE_SEL 01: Left mode(offset 0: L-J Mode; offset 1: I2S mode)
 			0;
 		i2s->I2Sn_FMT0 =
