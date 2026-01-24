@@ -26,7 +26,7 @@ arch_no_sym : 0
 num_bank_set : 2
 length : 1023
 num_cycles : 512
-arch_pipeline : 3
+arch_pipeline : 1
 poly_type : 0
 poly_fact : 4
 device_family : 21
