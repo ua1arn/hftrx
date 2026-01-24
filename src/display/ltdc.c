@@ -7921,11 +7921,20 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 // T507: PLL_VIDEO1
 static void t113_tcondsi_PLL_configuration(uint_fast32_t needfreq)
 {
+
+#if CPUSTYLE_A133
+#elif CPUSTYLE_A64
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+
+	allwnr_t113_module_pll_spr(& CCU->PLL_VIDEO1_CTRL_REG, & CCU->PLL_VIDEO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+	allwnr_t113_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
+
+#else
+#endif
 }
 
 static void t113_tcondsi_CCU_configuration(uint_fast32_t needfreq)
 {
-    // MIPI-DSI initialize
 #if CPUSTYLE_A133
 #elif CPUSTYLE_A64
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
@@ -7940,7 +7949,7 @@ static void t113_tcondsi_CCU_configuration(uint_fast32_t needfreq)
 	//	011: PLL_VIDEO1(2X)
 	//	100: PLL_AUDIO1(DIV2)
 	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(0x1F) << 0))) |
-		0x02 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL PLL_VIDEO0(2X)
+		0x03 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL PLL_VIDEO1(2X)
 		(dsidivider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M
 		0;
 	CCU->DSI_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
