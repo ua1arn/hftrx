@@ -1214,8 +1214,9 @@ typedef struct DE_VSU_Type
 /*!< DISPLAY_TOP display interface top (DISPLAY_TOP) */
 typedef struct DISPLAY_TOP_Type
 {
-    __IO uint32_t TV_CLK_SRC_RGB_SRC;                 /*!< Offset 0x000 TCON_TV Clock Select and RGB Source Select Register */
-         RESERVED(0x004[0x001C - 0x0004], uint8_t)
+    __IO uint32_t TV_CLK_SRC_RGB_SRC;                 /*!< Offset 0x000 tcon_tv_setup TCON_TV Clock Select and RGB Source Select Register */
+    __IO uint32_t dsi_src_select;                     /*!< Offset 0x004 dsi_src_select bit 4: dsi1_src_sel bit 0: dsi0_src_sel */
+         RESERVED(0x008[0x001C - 0x0008], uint8_t)
     __IO uint32_t DE_PORT_PERH_SEL;                   /*!< Offset 0x01C DE Source Select TCON R Register */
     __IO uint32_t MODULE_GATING;                      /*!< Offset 0x020 TCON Output to LVDS/DSI/TVE/HDMI Gating Register */
 } DISPLAY_TOP_TypeDef; /* size of structure = 0x024 */

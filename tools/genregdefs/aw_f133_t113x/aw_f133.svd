@@ -5622,8 +5622,17 @@
    <register>
     <name>TV_CLK_SRC_RGB_SRC</name>
     <displayName>TV_CLK_SRC_RGB_SRC</displayName>
-    <description>TCON_TV Clock Select and RGB Source Select Register</description>
+    <description>tcon_tv_setup TCON_TV Clock Select and RGB Source Select Register</description>
     <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>dsi_src_select</name>
+    <displayName>dsi_src_select</displayName>
+    <description>dsi_src_select bit 4: dsi1_src_sel bit 0: dsi0_src_sel</description>
+    <addressOffset>0x004</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>

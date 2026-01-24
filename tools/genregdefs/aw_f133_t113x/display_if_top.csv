@@ -3,8 +3,24 @@
 
 ## comment; display interface top (DISP_IF_TOP) - taken from Allwinner_T5_Series_User_Manual-v1.3.pdf
 
-#regdef; TV_CLK_SRC_RGB_SRC; 0x0000; TCON_TV Clock Select and RGB Source Select Register
+#regdef; TV_CLK_SRC_RGB_SRC; 0x0000; tcon_tv_setup TCON_TV Clock Select and RGB Source Select Register
+#regdef; dsi_src_select; 0x0004; dsi_src_select bit 4: dsi1_src_sel bit 0: dsi0_src_sel
 #regdef; DE_PORT_PERH_SEL; 0x001C; DE Source Select TCON R Register
 #regdef; MODULE_GATING; 0x0020; TCON Output to LVDS/DSI/TVE/HDMI Gating Register
 
 #typeend;
+
+## struct __de_lcd_top_dev_t {
+## 	/* 0x00 - 0x0c */
+## 	union tcon_tv_setup_reg_t tcon_tv_setup;
+## 	union dsi_src_select_reg_t dsi_src_select;
+## 	union tcon_reservd_reg_t tcon_reg_0008;
+## 	union tcon_reservd_reg_t tcon_reg_000c;
+## 	/* 0x10 - 0x1c */
+## 	union tcon_reservd_reg_t tcon_reg_0010;
+## 	union tcon_reservd_reg_t tcon_reg_0014;
+## 	union tcon_reservd_reg_t tcon_reg_0018;
+## 	union tcon_de_perh_reg_t tcon_de_perh;
+## 	/* 0x20 - 0x2c */
+## 	union tcon_clk_gate_reg_t tcon_clk_gate;
+## };

@@ -6244,8 +6244,26 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
+//    union tcon_clk_gate_reg_t {
+//    	u32 dwval;
+//    	struct {
+//    		u32 res4:16;
+//    		u32 dsi_clk_gate:1;
+//    		u32 lcd1_dsi_clk_gate:1;
+//    		u32 res3:2;
+//    		u32 tv0_clk_gate:1;
+//    		u32 res2:3;
+//    		u32 tv1_clk_gate:1;
+//    		u32 res1:3;
+//    		u32 hdmi_src:2;
+//    		u32 res0:2;
+//    	} bits;
+//    };
+
 	DISPLAY_TOP->TV_CLK_SRC_RGB_SRC &= ~ (UINT32_C(1));	// 0 - CCU clock, 1 - TVE clock
 	DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); // enable clk for TCON_TV0
+//	DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 16); // dsi_clk_gate
+//	DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 17); // lcd1_dsi_clk_gate
 
 #endif
 #endif /* defined (TCONTV_PTR) */
