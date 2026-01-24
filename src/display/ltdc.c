@@ -3140,8 +3140,8 @@ static void hardware_de_global_initialize(void)
 	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DPSS_TOP_RST De-assert reset
 	// PLL_VIDEO1 may be used for LVDS synchronization
 	/* Configure DE clock (no FACTOR_N on this CPU) */
-	unsigned divider = 4;
-	ASSERT(divider >= 1 && divider <= 31);
+	const unsigned divider = 4;
+	ASSERT(divider >= 1 && divider <= 32);
 
 	//	CLK_SRC_SEL
 	//	Clock Source Select
@@ -3161,7 +3161,6 @@ static void hardware_de_global_initialize(void)
     CCU->DE_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
     CCU->DE_BGR_REG |= (UINT32_C(1) << 16);		// De-assert reset
     local_delay_us(10);
-
 
 	/* Global DE settings */
 //	PRINTF("DE_TOP before:\n");
@@ -7917,6 +7916,47 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 }
 
 #if WITHMIPIDSISHW
+// Used for MIPIO DSI outputs
+// T113: PLL_VIDEO1
+// T507: PLL_VIDEO1
+static void t113_tcondsi_PLL_configuration(uint_fast32_t needfreq)
+{
+}
+
+static void t113_tcondsi_CCU_configuration(uint_fast32_t needfreq)
+{
+    // MIPI-DSI initialize
+#if CPUSTYLE_A133
+#elif CPUSTYLE_A64
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+//	PRINTF("Before: DISPLAY_TOP->dsi_src_select=%08X\n", (unsigned) DISPLAY_TOP->dsi_src_select);
+//	DISPLAY_TOP->dsi_src_select = ~0;
+//	PRINTF("After: DISPLAY_TOP->dsi_src_select=%08X\n", (unsigned) DISPLAY_TOP->dsi_src_select);
+    const unsigned dsidivider = 2;
+	ASSERT(dsidivider >= 1 && dsidivider <= 16);
+	//	000: HOSC
+	//	001: PLL_PERI(1X)
+	//	010: PLL_VIDEO0(2X)
+	//	011: PLL_VIDEO1(2X)
+	//	100: PLL_AUDIO1(DIV2)
+	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | (UINT32_C(0x1F) << 0))) |
+		0x02 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL PLL_VIDEO0(2X)
+		(dsidivider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M
+		0;
+	CCU->DSI_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+	local_delay_us(10);
+	PRINTF("allwnr_t113_get_dsi_freq()=%u MHz\n", (unsigned) (allwnr_t113_get_dsi_freq() / 1000 / 1000));
+
+	CCU->DSI_BGR_REG |= (UINT32_C(1) << 0);		// Open the clock gate
+	CCU->DSI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
+
+	printhex32(DSI_DPHY_BASE, DSI_DPHY, sizeof * DSI_DPHY);
+//	PRINTF("Before: DSI_DPHY->DPHY_GCTL_REG=%08X\n", (unsigned) DSI_DPHY->DPHY_GCTL_REG);
+//	DSI_DPHY->DPHY_GCTL_REG = ~ 0;
+//	PRINTF("After: DSI_DPHY->DPHY_GCTL_REG=%08X\n", (unsigned) DSI_DPHY->DPHY_GCTL_REG);
+#else
+#endif
+}
 
 //	disp 0, clk: pll(792000000),clk(792000000),dclk(33000000) dsi_rate(33000000)
 //	clk real:pll(792000000),clk(792000000),dclk(198000000) dsi_rate(150000000)
@@ -7928,7 +7968,8 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	const uint_fast32_t dsifreq = display_getdotclock(vdmode) * pixdepth / nlanes;
 	PRINTF("t113_tcon_dsi_initsteps: dsifreq=%" PRIuFAST32 " MHz, lanes=%u, depth=%u, pixelclock=%" PRIuFAST32 " MHz\n", dsifreq / 1000 / 1000, nlanes, pixdepth, display_getdotclock(vdmode) / 1000 / 1000);
 	// step0 - CCU configuration
-	t113_tcondsi_CCU_configuration(vdmode, dsifreq);
+	t113_tcondsi_PLL_configuration(dsifreq);
+	t113_tcondsi_CCU_configuration(dsifreq);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	t113_select_HV_interface_type(vdmode);
 	// step2 - Clock configuration
