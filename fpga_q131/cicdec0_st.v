@@ -157,7 +157,7 @@ wire [52:0] mlu_resx_0_n;
 mlu_nd Umlu_0_n (.clk(clk), .data_in(sym_res_0_n), .coef_in(coef_st_0_n), .clk_en(clk_en), .mlu_out(mlu_resx_0_n) );
 defparam Umlu_0_n.DATA_WIDTH = 29;
 defparam Umlu_0_n.COEF_WIDTH = COEF_WIDTH;
-defparam Umlu_0_n.PIPE = 5;
+defparam Umlu_0_n.PIPE = 3;
 defparam Umlu_0_n.DSP_USE = "YES";
 wire [52:0] mlu_res_0_n;
 mac_tl Umtl_0_n             (.clk(clk), 
@@ -194,7 +194,7 @@ mcv_ctrl_nc ctrl(.rst(rst), .clk(clk), .acc_rst_out(acc_rst_out),.clk_en(clk_en)
  .input_ch_id(input_ch_id), .output_ch_id(output_ch_id), .done_int(done_int), .rdy_int(rdy_int), .coef_ld(coef_ld), 
 .done(done), .data_ld(data_ld), .rdy_to_ld(rdy_to_ld));
 defparam ctrl.REG_LEN   = 512;
-defparam ctrl.PIPE_DLY  = 8;
+defparam ctrl.PIPE_DLY  = 6;
 defparam ctrl.BASE_CYCLE  = 3;
 defparam ctrl.NO_SYM   = 0; 
 defparam ctrl.NUM_CH = 2;  
