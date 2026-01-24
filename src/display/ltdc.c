@@ -3634,20 +3634,6 @@ static void t113_DSI_controller_configuration(const videomode_t * vdmode)
 	// __de_dsi_dphy_dev_t
 	// https://github.com/mangopi-sbc/tina-linux-5.4/blob/0d4903ebd9d2194ad914686d5b0fc1ddacf11a9d/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_lcd.c#L388
 
-	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | UINT32_C(0x0F) << 0)) |
-		0x02 * (UINT32_C(1) << 24) |	// 010: PLL_VIDEO0(2X)	= 594 MHz
-		//(UINT32_C(3) << 24) |	// 011: PLL_VIDEO1(2X)	= 594 MHz
-		((UINT32_C(4) - 1) << 0) |
-		0;
-
-	CCU->DSI_CLK_REG |= UINT32_C(1) << 31;		// DSI_CLK_GATING
-
-	CCU->DSI_BGR_REG |= UINT32_C(1) << 0;	// DSI_GATING
-	CCU->DSI_BGR_REG |= UINT32_C(1) << 16;	// DSI_RST
-
-//	PRINTF("allwnr_t113_get_dsi_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_dsi_freq());
-//	printhex32(DSI0_BASE, DSI0, sizeof * DSI0);
-
 	{
 		// Taken from https://github.com/mangopi-sbc/tina-linux-5.4/blob/a0e8ac494c8b05e2a4f8eb9a2f687e39db463ffe/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v2x/de_dsi_type.h#L977
 
@@ -7995,7 +7981,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	(void) DSI0->DSI_CTL;
+	(void) DSI0->DSI_CTL_REG;
 
 #else
 
