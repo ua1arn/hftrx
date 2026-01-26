@@ -493,6 +493,39 @@ extern "C" {
 		#define WITHCPUNAME "Allw T507"
 	#endif
 
+
+#elif CPUSTYLE_A733
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#define HARDWARE_CLK16M_RC_FREQ 16000000u
+
+	#define CPU_FREQ	(allwnr_t507_get_cpux_freq())
+	#define HARDWARE_UART_FREQ (allwnr_t507_get_uart_freq())
+
+	#define CPU_PL1_FREQ (allwnr_a733_get_hosc_freq())	/* PL1 times source frequency */
+	#define HARDWARE_HOSC_FREQ (allwnr_a733_get_hosc_freq())	/* PL1 times source frequency */
+
+	#define TICKS_FREQUENCY 1000	// Hz
+
+	#define SEQ_TICKS_PERIOD	1	// 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
+	#define ENC_TICKS_PERIOD	5	// 5 ms
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+
+	#define HARDWARE_NCORES 4
+	#if defined(__aarch64__)
+		#define WITHCPUNAME "Allw T507_64"
+	#else
+		#define WITHCPUNAME "Allw T507"
+	#endif
+
 #elif CPUSTYLE_T113
 
 	typedef uint_fast16_t adcvalholder_t;
