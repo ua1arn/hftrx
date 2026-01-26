@@ -1853,6 +1853,9 @@ void arm_hardware_mdma_initialize(void)
 
 //	PRINTF("G2D_TOP:\n");
 //	printhex32(G2D_TOP_BASE, G2D_TOP, 256);
+
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
 #else
 	#error Unhandled CPUSTYLE_xxx
 #endif

@@ -11732,6 +11732,9 @@ hardware_elkey_timer_initialize(void)
 #elif CPUSTYLE_A133
 	#warning CPUSTYLE_A133 to be implemented
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
+
 #else
 	#warning Undefined CPUSTYLE_XXX
 #endif
@@ -11824,6 +11827,9 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 
 #elif CPUSTYLE_A133
 	#warning CPUSTYLE_A133 to be implemented
+
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
 
 #else
 	#warning Undefined CPUSTYLE_XXX

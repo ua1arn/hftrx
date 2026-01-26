@@ -8685,6 +8685,13 @@ arm_hardware_pioa_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	arm_hardware_set_handler(PIOA_IRQn, PIOA_IRQHandler, priority, tgcpu, & einthead ['A' - 'A'], h);
 
+#elif CPUSTYLE_VM14
+	//#warning Undefined CPUSTYLE_VM14
+
+	IRQL_t oldIrql;
+	gpioX_lock(GPIOA, & oldIrql);
+	gpioX_unlock(GPIOA, oldIrql);
+
 #elif CPUSTYLE_STM32F1XX
 
 	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PA, priority, h);	// PORT A
@@ -8717,12 +8724,8 @@ arm_hardware_pioa_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	//gpioX_onchangeinterrupt(GPIOA, GPIOINTA, GPIOA_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA, & einthead ['A' - 'A'], h);	// PORT A
 
-#elif CPUSTYLE_VM14
-	//#warning Undefined CPUSTYLE_VM14
-
-	IRQL_t oldIrql;
-	gpioX_lock(GPIOA, & oldIrql);
-	gpioX_unlock(GPIOA, oldIrql);
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -8852,6 +8855,9 @@ arm_hardware_pioc_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 	gpioX_lock(GPIOC, & oldIrql);
 	gpioX_unlock(GPIOC, oldIrql);
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -8909,6 +8915,9 @@ arm_hardware_piod_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 	gpioX_lock(GPIOD, & oldIrql);
 	gpioX_unlock(GPIOD, oldIrql);
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -8962,6 +8971,9 @@ arm_hardware_pioe_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 #elif (CPUSTYLE_A133)
 
 	gpioX_onchangeinterrupt(GPIOE, GPIOINTE, GPIOE_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE, & einthead ['E' - 'A'], h);	// PORT E
+
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -9018,6 +9030,9 @@ arm_hardware_piof_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 #elif CPUSTYLE_H3
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -9073,6 +9088,9 @@ arm_hardware_piog_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, GPIOG_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG, & einthead ['G' - 'A'], h);	// PORT G
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -9115,6 +9133,9 @@ arm_hardware_pioh_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	gpioX_onchangeinterrupt(GPIOH, GPIOINTH, GPIOH_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH, & einthead ['H' - 'A'], h);	// PORT H
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -9156,6 +9177,9 @@ arm_hardware_pioi_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 #elif (CPUSTYLE_A133)
 
 	gpioX_onchangeinterrupt(GPIOI, GPIOINTI, GPIOI_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI, & einthead ['I' - 'A'], h);	// PORT I
+
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
 
 #else
 	#error Undefined CPUSTYLE_XXX
