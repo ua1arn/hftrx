@@ -4514,6 +4514,12 @@ arm_hardware_piok_outputs(portholder_t opins, portholder_t initialstate)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOK, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_ALLWINNER
+
+	//gpioX_poweron(GPIOB);
+	gpioX_setstate(GPIOK, opins, initialstate);
+	gpioX_prog(GPIOK, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -4561,6 +4567,12 @@ arm_hardware_piok_outputs2m(portholder_t opins, portholder_t initialstate)
 	gpioX_setstate(GPIOK, opins, initialstate);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOK, opins, STM32MP1_GPIO_MODE_GPIO, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_ALLWINNER
+
+	//gpioX_poweron(GPIOB);
+	gpioX_setstate(GPIOK, opins, initialstate);
+	gpioX_prog(GPIOK, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7511,6 +7523,11 @@ arm_hardware_piok_altfn20(portholder_t opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOK, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_ALLWINNER
+
+	//gpioX_poweron(GPIOK);
+	gpioX_prog(GPIOK, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -8780,6 +8797,10 @@ arm_hardware_piob_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, GPIOB_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB, & einthead ['B' - 'A'], h);	// PORT B
 
 #elif (CPUSTYLE_A133)
+
+	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, GPIOB_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB, & einthead ['B' - 'A'], h);	// PORT B
+
+#elif (CPUSTYLE_A733)
 
 	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, GPIOB_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB, & einthead ['B' - 'A'], h);	// PORT B
 

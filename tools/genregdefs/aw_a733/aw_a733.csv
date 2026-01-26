@@ -1,4 +1,4 @@
-# Allwinner A733 peripherials base
+# Allwinner A733 peripherials #base
 
 #type; GPIO; Port Controller
 
@@ -17,7 +17,49 @@
 
 #type; S_GPIO; Secure Port Controller
 
-#base; GPIOL 0x07025000
-#base; GPIOM 0x07025030
+##base; GPIOL 0x07025000
+##base; GPIOM 0x07025030
 
 #typeend;
+
+#type; TWI; Two Wire Interface (TWI)
+#base; TWI0 0x02510000
+#base; TWI1 0x02511000
+#base; TWI2 0x02512000
+#base; TWI3 0x02513000
+#base; TWI4 0x02514000
+#base; TWI5 0x02515000
+#base; TWI6 0x02516000
+#base; TWI7 0x02517000
+#base; TWI8 0x02518000
+#base; TWI9 0x02519000
+#base; TWI10 0x0251A000
+#base; TWI11 0x0251B000
+#base; TWI12 0x0251C000
+
+#base; S_TWI1 0x07084000
+#base; S_TWI2 0x07085000
+
+#typeend;
+
+#type; SPI; Serial Peripheral Interface
+#base; SPI0 0x02540000
+##base; SPI1 0x02541000
+#base; SPI2 0x02542000
+#base; SPI3 0x02543000
+#base; S_SPI 0x07092000
+##irq; SPI0 44
+##irq; SPI1 45
+#typeend;
+
+#type; TIMER0
+#base; Timer0_CPUX 0x03009000 
+#base; Timer0_CPUS 0x07091000
+ 
+#typeend;
+
+#type; TIMER1
+#base; Timer1_CPUX 0x02052000 
+ 
+#typeend;
+

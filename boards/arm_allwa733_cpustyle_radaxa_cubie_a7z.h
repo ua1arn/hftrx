@@ -6,11 +6,11 @@
 // UA1ARN
 //
 
-// Orange Pi Zero 3
-// http://www.orangepi.org/orangepiwiki/index.php/Orange_Pi_Zero_3
+// Radaxa Cubie A7Z
+// https://radxa.com/products/cubie/a7z/
 
-#ifndef ARM_ALW_A733_CPU_RADAXA_CUBE_A7Z_H_INCLUDED
-#define ARM_ALW_A733_CPU_RADAXA_CUBE_A7Z_H_INCLUDED 1
+#ifndef ARM_ALW_A733_CPU_RADAXA_CUBIE_A7Z_H_INCLUDED
+#define ARM_ALW_A733_CPU_RADAXA_CUBIE_A7Z_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -653,7 +653,7 @@
 
 #if 1
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-	#define WITHSTWI0HW 1	// S_TWI0
+	#define WITHSTWI1HW 1	// S_TWI1
 
 	// PL0 S_TWI0_SCK
 	// PL1 S_TWI0_SDL
@@ -661,12 +661,12 @@
 	#define TARGET_S_TWI_TWD		(UINT32_C(1) << 1)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	HARDWARE_S_TWI0_INITIALIZE() do { \
+	#define	HARDWARE_S_TWI1_INITIALIZE() do { \
 		arm_hardware_piol_altfn2m(TARGET_S_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
 		arm_hardware_piol_altfn2m(TARGET_S_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
 	} while (0)
-	#define TWIHARD_S_PTR S_TWI0
-	#define	TWIHARD_S_TWI0_FREQ (allwnr_t507_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define TWIHARD_S_PTR S_TWI1
+	#define	TWIHARD_S_TWI0_FREQ (allwnr_a733_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 #endif
 
 #if 1
@@ -974,10 +974,10 @@
 
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-		arm_hardware_pioc_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
+		arm_hardware_piob_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
 	} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
-		gpioX_setstate(GPIOC, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
+		gpioX_setstate(GPIOB, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
 	} while (0)
 #endif
 
@@ -988,11 +988,11 @@
 	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
 	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
-	int board_orangepi_zero3_axp313_initialize(void);
+	int board_radaxa_cubie_axp318w_initialize(void);
 
 	/* Контроллер питания AXP313 */
 	#define BOARD_PMIC_INITIALIZE() do { \
-		board_orangepi_zero3_axp313_initialize(); \
+		board_radaxa_cubie_axp318w_initialize(); \
 	} while (0)
 #endif /* WITHISBOOTLOADER */
 
@@ -1050,4 +1050,4 @@
 	// TUSB parameters
 	#define TUP_DCD_ENDPOINT_MAX    6
 
-#endif /* ARM_ALW_A733_CPU_RADAXA_CUBE_A7Z_H_INCLUDED */
+#endif /* ARM_ALW_A733_CPU_RADAXA_CUBIE_A7Z_H_INCLUDED */

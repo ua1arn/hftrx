@@ -109,9 +109,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwa133_cpustyle_helper133.h"
 #elif (CPUSTYLE_A733) && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_allwa733_ctlstyle_radaxa_cube_a7z.h"
+	#include "boards/arm_allwa733_ctlstyle_radaxa_cubie_a7z.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_allwa733_cpustyle_radaxa_cube_a7z.h"
+	#include "boards/arm_allwa733_cpustyle_radaxa_cubie_a7z.h"
 ##elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_allwh618_ctlstyle_orangepi_zero2w.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */

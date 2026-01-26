@@ -6318,7 +6318,7 @@ void hardware_spi_io_delay(void)
 	}
 
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_A733)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133) && defined (TIMER)
 
 	// Таймер электронного ключа
 	void TIMER0_IRQHandler(void)
@@ -6670,6 +6670,9 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	TIMER->TMR_IRQ_EN_REG |= (UINT32_C(1) << (0 + ix));	// TMR1_IRQ_EN
 
 	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer
+
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
 
 #elif CPUSTYLE_XC7Z  && ! LINUX_SUBSYSTEM
 

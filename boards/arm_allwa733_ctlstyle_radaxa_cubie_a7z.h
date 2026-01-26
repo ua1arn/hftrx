@@ -5,11 +5,11 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Orange Pi Zero 3
-// http://www.orangepi.org/orangepiwiki/index.php/Orange_Pi_Zero_3
+// Radaxa Cubie A7Z
+// https://radxa.com/products/cubie/a7z/
 
-#ifndef ARM_ALW_A733_CTL_RADAXA_CUBE_A7Z_H_INCLUDED
-#define ARM_ALW_A733_CTL_RADAXA_CUBE_A7Z_H_INCLUDED 1
+#ifndef ARM_ALW_A733_CTL_RADAXA_CUBIE_A7Z_H_INCLUDED
+#define ARM_ALW_A733_CTL_RADAXA_CUBIE_A7Z_H_INCLUDED 1
 
 	#define WITHBRANDSTR "Falcon"
 
@@ -643,4 +643,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_ALW_A733_CTL_RADAXA_CUBE_A7Z_H_INCLUDED */
+#endif /* ARM_ALW_A733_CTL_RADAXA_CUBIE_A7Z_H_INCLUDED */
