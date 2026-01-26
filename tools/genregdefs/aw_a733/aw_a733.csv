@@ -1,1 +1,23 @@
 # Allwinner A733 peripherials base
+
+#type; GPIO; Port Controller
+
+#base; GPIOB 0x02000100
+#base; GPIOC 0x02000180
+#base; GPIOD 0x02000200
+#base; GPIOE 0x02000280
+#base; GPIOF 0x02000300
+#base; GPIOG 0x02000380
+#base; GPIOH 0x02000400
+##base; GPIOI 0x02000480
+#base; GPIOJ 0x02000500
+#base; GPIOK 0x02000580
+
+#typeend;
+
+#type; S_GPIO; Secure Port Controller
+
+#base; GPIOL 0x07025000
+#base; GPIOM 0x07025030
+
+#typeend;

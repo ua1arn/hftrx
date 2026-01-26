@@ -2,8 +2,16 @@
 
 #regdef; CFG; 0x000 4; Configure Register
 #regdef; DATA; 0x0010; Data Register
-#regdef; DRV; 0x014 2; Multi_Driving Register
-#regdef; PULL; 0x01C 2; Pull Register
+#regdef; DATA_SET; 0x0014; Data Set Register
+#regdef; DATA_CLR; 0x0018; Data Clear Register
+#regdef; DRV; 0x020 2; Multi_Driving Register
+#regdef; PULL; 0x030 2; Pull Register
+#regdef; INT_CFG; 0x040 4; External Interrupt Configure Register
+#regdef; INT_CTL; 0x050; External Interrupt Control Register
+#regdef; INT_STA; 0x054; External Interrupt Status Register
+#regdef; INT_DEB; 0x058; External Debounce Configure Register
+#regdef; SECURE; 0x070; SECURE Configure Register
+#regdef; padding 0; 0x080; set size
 
 #typeend;
 
@@ -12,19 +20,24 @@
 #aggreg; GPIO_PINS; 0x0000 9; GPIO pin control
 #regdef; CFG; 0x000 4; Configure Register
 #regdef; DATA; 0x0010; Data Register
-#regdef; DRV; 0x014 2; Multi_Driving Register
-#regdef; PULL; 0x01C 2; Pull Register
+#regdef; DATA_SET; 0x0014; Data Set Register
+#regdef; DATA_CLR; 0x0018; Data Clear Register
+#regdef; DRV; 0x020 2; Multi_Driving Register
+#regdef; PULL; 0x030 2; Pull Register
+#regdef; INT_CFG; 0x040 4; External Interrupt Configure Register
+#regdef; INT_CTL; 0x050; External Interrupt Control Register
+#regdef; INT_STA; 0x054; External Interrupt Status Register
+#regdef; INT_DEB; 0x058; External Debounce Configure Register
+#regdef; SECURE; 0x070; SECURE Configure Register
+#regdef; padding 0; 0x080; set size
 #aggregend;
-#aggreg; GPIO_INTS; 0x0200 9; GPIO interrupt control
-#regdef; EINT_CFG; 0x000 4; External Interrupt Configure Registers
-#regdef; EINT_CTL; 0x010; External Interrupt Control Register
-#regdef; EINT_STATUS; 0x014; External Interrupt Status Register
-#regdef; EINT_DEB; 0x018; External Interrupt Debounce Register
-#regdef; padding 0; 0x020; set size
-#aggregend;
-#regdef; PIO_POW_MOD_SEL; 0x340; PIO Group Withstand Voltage Mode Select Register
-#regdef; PIO_POW_MS_CTL; 0x344; PIO Group Withstand Voltage Mode Select Control Register
-#regdef; PIO_POW_VAL; 0x348; PIO Group Power Value Register
+#typeend;
+
+type; SGPIOBLOCK; S_GPIO Port Controller
+
+#regdef; GPIO_POW_MOD_SEL; 0x340; PIO Group Withstand Voltage Mode Select Register
+#regdef; GPIO_POW_MS_CTL; 0x344; PIO Group Withstand Voltage Mode Select Control Register
+#regdef; GPIO_POW_VAL; 0x348; PIO Group Power Value Register
 #typeend;
 
 #type; GPIOINT
