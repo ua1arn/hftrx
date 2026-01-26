@@ -427,7 +427,7 @@ extern "C" {
 	#endif
 
 
-#elif (CPUSTYLE_A133 || CPUSTYLE_R828)
+#elif (CPUSTYLE_A133)
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений

@@ -8713,7 +8713,7 @@ arm_hardware_pioa_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	gpioX_onchangeinterrupt(GPIOA, GPIOINTA, GPIOA_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA, & einthead ['A' - 'A'], h);	// PORT A
 
-#elif (CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif (CPUSTYLE_A133)
 
 	//gpioX_onchangeinterrupt(GPIOA, GPIOINTA, GPIOA_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOA, & einthead ['A' - 'A'], h);	// PORT A
 
@@ -8776,7 +8776,7 @@ arm_hardware_piob_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, GPIOB_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB, & einthead ['B' - 'A'], h);	// PORT B
 
-#elif (CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif (CPUSTYLE_A133)
 
 	gpioX_onchangeinterrupt(GPIOB, GPIOINTB, GPIOB_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOB, & einthead ['B' - 'A'], h);	// PORT B
 
@@ -8841,7 +8841,7 @@ arm_hardware_pioc_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	gpioX_onchangeinterrupt(GPIOC, GPIOINTC, GPIOC_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC, & einthead ['C' - 'A'], h);	// PORT C
 
-#elif (CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif (CPUSTYLE_A133)
 
 	gpioX_onchangeinterrupt(GPIOC, GPIOINTC, GPIOC_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOC, & einthead ['C' - 'A'], h);	// PORT C
 
@@ -8898,7 +8898,7 @@ arm_hardware_piod_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	gpioX_onchangeinterrupt(GPIOD, GPIOINTD, GPIOD_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD, & einthead ['D' - 'A'], h);	// PORT D
 
-#elif (CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif (CPUSTYLE_A133)
 
 	gpioX_onchangeinterrupt(GPIOD, GPIOINTD, GPIOD_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOD, & einthead ['D' - 'A'], h);	// PORT D
 
@@ -8959,7 +8959,7 @@ arm_hardware_pioe_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	gpioX_onchangeinterrupt(GPIOE, GPIOINTE, GPIOE_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE, & einthead ['E' - 'A'], h);	// PORT E
 
-#elif (CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif (CPUSTYLE_A133)
 
 	gpioX_onchangeinterrupt(GPIOE, GPIOINTE, GPIOE_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOE, & einthead ['E' - 'A'], h);	// PORT E
 
@@ -9009,7 +9009,7 @@ arm_hardware_piof_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	gpioX_onchangeinterrupt(GPIOF, GPIOINTF, GPIOF_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF, & einthead ['F' - 'A'], h);	// PORT F
 
-#elif (CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif (CPUSTYLE_A133)
 
 	gpioX_onchangeinterrupt(GPIOF, GPIOINTF, GPIOF_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOF, & einthead ['F' - 'A'], h);	// PORT F
 
@@ -9069,7 +9069,7 @@ arm_hardware_piog_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, GPIOG_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG, & einthead ['G' - 'A'], h);	// PORT G
 
-#elif (CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif (CPUSTYLE_A133)
 
 	gpioX_onchangeinterrupt(GPIOG, GPIOINTG, GPIOG_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOG, & einthead ['G' - 'A'], h);	// PORT G
 
@@ -9111,7 +9111,7 @@ arm_hardware_pioh_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	gpioX_onchangeinterrupt(GPIOH, GPIOINTH, GPIOH_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH, & einthead ['H' - 'A'], h);	// PORT H
 
-#elif (CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif (CPUSTYLE_A133)
 
 	gpioX_onchangeinterrupt(GPIOH, GPIOINTH, GPIOH_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOH, & einthead ['H' - 'A'], h);	// PORT H
 
@@ -9153,7 +9153,7 @@ arm_hardware_pioi_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 	gpioX_onchangeinterrupt(GPIOI, GPIOINTI, GPIOI_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI, & einthead ['I' - 'A'], h);	// PORT I
 
-#elif (CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif (CPUSTYLE_A133)
 
 	gpioX_onchangeinterrupt(GPIOI, GPIOINTI, GPIOI_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOI, & einthead ['I' - 'A'], h);	// PORT I
 

@@ -164,8 +164,8 @@ uint_fast32_t allwnr_v3s_get_twi_freq(void);
 
 #endif /* (CPUSTYLE_V3S) */
 
-#if (CPUSTYLE_A133 || CPUSTYLE_R828)
-// Allwinner V3s
+#if (CPUSTYLE_A133)
+// Allwinner A133
 
 uint_fast32_t allwnr_a133_get_hosc_freq(void);
 uint_fast32_t allwnr_a133_get_cpux_freq(void);
@@ -259,8 +259,8 @@ uint_fast32_t allwnr_t113_get_chipid(void);
 #define CHIPID_H616			0x2300
 #define CHIPID_T507			0x2300
 
-// Allwinner A64
 #if CPUSTYLE_A64
+// Allwinner A64
 void allwnr_a64_module_pll_enable(volatile uint32_t * reg);
 uint_fast32_t allwnr_a64_get_hosc_freq(void);
 uint_fast32_t allwnr_a64_get_pll_hsic_freq(void);
@@ -295,6 +295,7 @@ uint_fast32_t allwnr_a64_get_nand_freq(void);
 #endif /* CPUSTYLE_A64 */
 
 #if (CPUSTYLE_H3)
+// Allwinner H3
 uint_fast32_t allwnr_h3_get_pll_video_freq(void);
 uint_fast32_t allwnr_h3_get_hosc_freq(void);
 uint_fast32_t allwnr_h3_get_uart_freq(void);
@@ -309,12 +310,13 @@ uint_fast32_t allwnr_h3_get_hdmi_slow_freq(void);
 #endif /* CPUSTYLE_H3 */
 
 #if CPUSTYLE_A733
+// Allwinner A133
 uint_fast32_t allwnr_a733_get_hosc_freq(void);
 uint_fast32_t allwnr_a733_get_losc_freq(void);
 #endif /* CPUSTYLE_T507 */
 
-// Allwinner T507/T507-H/H616
 #if CPUSTYLE_T507
+// Allwinner T507/T507-H/H616
 uint_fast64_t allwnr_t507_get_pll_peri0_x1_freq(void);
 uint_fast64_t allwnr_t507_get_pll_peri1_x1_freq(void);
 uint_fast32_t allwnr_t507_get_pll_audio_1x_freq(void);
@@ -537,7 +539,7 @@ calcdividerselect(
 		XC7Z_SPI_BR_WIDTH = 0, XC7Z_SPI_BR_TAPS = (256 | 128 | 64 | 32 | 16 | 8 | 4)
 	};
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R828
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_A733)
 	enum
 	{
 		ALLWNR_TIMER_WIDTH = 32, ALLWNR_TIMER_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2 | 1),

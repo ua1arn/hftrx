@@ -4276,7 +4276,7 @@ void sysinit_pll_initialize(int forced)
 {
 }
 
-#elif (CPUSTYLE_A133 || CPUSTYLE_R828)
+#elif (CPUSTYLE_A133)
 
 
 static void set_a133_axi_sel(unsigned sel, unsigned APBdiv, unsigned AXIdiv)
@@ -6318,7 +6318,7 @@ void hardware_spi_io_delay(void)
 	}
 
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R828)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_A733)
 
 	// Таймер электронного ключа
 	void TIMER0_IRQHandler(void)
@@ -6647,7 +6647,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Enable timer control
 	PL1_SetControl(1);
 
-#elif defined (TIMER) && (CPUSTYLE_H3 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_A133  || CPUSTYLE_R828 )
+#elif defined (TIMER) && (CPUSTYLE_H3 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_A133 || CPUSTYLE_A733)
 
 	// timebase timer
 	const unsigned ix = 1;
