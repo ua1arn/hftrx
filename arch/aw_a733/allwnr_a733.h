@@ -11,9 +11,9 @@
 #define ARCH_ALLWNR_T507_H_
 
 /**
- * Allwinner T507/T517/T507-H/T517-H
+ * Allwinner A733
  *
- * @brief ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
+ * @brief Dual-core ARM CortexTM-A76 and Hexa-core  ARM CortexTM-A55, up to 2.0 GHz, Single-core RISC-V E902, up to 200 MHz
  *
  * sun50iw9p1
  */

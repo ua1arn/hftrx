@@ -15,7 +15,7 @@
 
 ##############################################################################################
 # Start of default section
-# sun50iw9p1 Allwinner A733/T517/A733-H/T517-H (HelperBoarf A733)
+# sun50iw9p1??? Allwinner A733
 
 TRGT2 = arm-none-eabi
 #TRGT2 = aarch64-none-elf
@@ -55,8 +55,8 @@ OBJDUMP = $(TRGT)objdump
 
 # ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
 
-#CORE = -mcpu=cortex-a53+fp+simd -mstrict-align -momit-leaf-frame-pointer --specs=nosys.specs
-CORE = -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
+#CORE = -mcpu=cortex-a76+fp+simd -mstrict-align -momit-leaf-frame-pointer --specs=nosys.specs
+CORE = -mcpu=cortex-a76 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
 
 # Define optimisation level here
 #OPT = -Og
