@@ -4266,6 +4266,16 @@ void sysinit_pll_initialize(int forced)
 
 }
 
+#elif CPUSTYLE_A733
+
+void sysinit_boot_disconnect(void)
+{
+}
+
+void sysinit_pll_initialize(int forced)
+{
+}
+
 #elif (CPUSTYLE_A133 || CPUSTYLE_R828)
 
 

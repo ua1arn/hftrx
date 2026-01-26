@@ -308,6 +308,11 @@ uint_fast32_t allwnr_h3_get_hdmi_freq(void);
 uint_fast32_t allwnr_h3_get_hdmi_slow_freq(void);
 #endif /* CPUSTYLE_H3 */
 
+#if CPUSTYLE_A733
+uint_fast32_t allwnr_a733_get_hosc_freq(void);
+uint_fast32_t allwnr_a733_get_losc_freq(void);
+#endif /* CPUSTYLE_T507 */
+
 // Allwinner T507/T507-H/H616
 #if CPUSTYLE_T507
 uint_fast64_t allwnr_t507_get_pll_peri0_x1_freq(void);
