@@ -5,11 +5,11 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Orange Pi Zero 3
-// http://www.orangepi.org/orangepiwiki/index.php/Orange_Pi_Zero_3
+// Radaxa Cubie A7Z
+// https://radxa.com/products/cubie/a7z/
 
-#ifndef ARM_ALW_H618_CTL_ORANGEPI_ZERO3_H_INCLUDED
-#define ARM_ALW_H618_CTL_ORANGEPI_ZERO3_H_INCLUDED 1
+#ifndef ARM_ALW_A733_CTL_RADAXA_CUBIE_A7Z_H_INCLUDED
+#define ARM_ALW_A733_CTL_RADAXA_CUBIE_A7Z_H_INCLUDED 1
 
 	#define WITHBRANDSTR "Falcon"
 
@@ -214,8 +214,9 @@
 //	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 //	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
+
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
-	#if 1
+	#if 0
 		#define WITHUSESDCARD		1	// Включение поддержки SD CARD - загрузчик работает через eMMC
 		#define WITHISBOOTLOADERRAWDISK	1	// чтение application с предопределённого смещения на накопителе
 		#define WITHISBOOTLOADERRAWDISK_DEV 0	// device для FatFS diskio
@@ -639,4 +640,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_ALW_H618_CTL_ORANGEPI_ZERO3_H_INCLUDED */
+#endif /* ARM_ALW_A733_CTL_RADAXA_CUBIE_A7Z_H_INCLUDED */

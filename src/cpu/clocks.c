@@ -4266,7 +4266,27 @@ void sysinit_pll_initialize(int forced)
 
 }
 
-#elif (CPUSTYLE_A133 || CPUSTYLE_R828)
+#elif CPUSTYLE_A733
+
+void sysinit_boot_disconnect(void)
+{
+}
+
+void sysinit_pll_initialize(int forced)
+{
+}
+
+uint_fast32_t allwnr_a733_get_cpux_freq(void)
+{
+	return 24000000;
+}
+
+uint_fast32_t allwnr_a733_get_s_twi_freq(void)
+{
+	return 24000000;
+}
+
+#elif (CPUSTYLE_A133)
 
 
 static void set_a133_axi_sel(unsigned sel, unsigned APBdiv, unsigned AXIdiv)
@@ -6308,7 +6328,7 @@ void hardware_spi_io_delay(void)
 	}
 
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R828)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133) && defined (TIMER)
 
 	// Таймер электронного ключа
 	void TIMER0_IRQHandler(void)
@@ -6637,7 +6657,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Enable timer control
 	PL1_SetControl(1);
 
-#elif defined (TIMER) && (CPUSTYLE_H3 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_A133  || CPUSTYLE_R828 )
+#elif defined (TIMER) && (CPUSTYLE_H3 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_A133 || CPUSTYLE_A733)
 
 	// timebase timer
 	const unsigned ix = 1;
@@ -6660,6 +6680,9 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	TIMER->TMR_IRQ_EN_REG |= (UINT32_C(1) << (0 + ix));	// TMR1_IRQ_EN
 
 	arm_hardware_set_handler_system(TIMER1_IRQn, TIMER1_IRQHandler);	// timebase timer
+
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
 
 #elif CPUSTYLE_XC7Z  && ! LINUX_SUBSYSTEM
 
@@ -11722,6 +11745,9 @@ hardware_elkey_timer_initialize(void)
 #elif CPUSTYLE_A133
 	#warning CPUSTYLE_A133 to be implemented
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
+
 #else
 	#warning Undefined CPUSTYLE_XXX
 #endif
@@ -11814,6 +11840,9 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 
 #elif CPUSTYLE_A133
 	#warning CPUSTYLE_A133 to be implemented
+
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
 
 #else
 	#warning Undefined CPUSTYLE_XXX

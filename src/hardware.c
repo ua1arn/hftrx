@@ -2115,6 +2115,18 @@ void softdevay(void)
 void
 SystemInit(void)
 {
+#if 1 && defined (BOARD_BLINK_INITIALIZE) && CPUSTYLE_A733
+	{
+		BOARD_BLINK_INITIALIZE();
+		for (;;)
+		{
+			BOARD_BLINK_SETSTATE(1);
+			local_delay_ms(100);
+			BOARD_BLINK_SETSTATE(0);
+			local_delay_ms(100);
+		}
+	}
+#endif
 	//PRINTF("CCU->PLL_CPU_CTRL_REG=%08X\n", (unsigned) CCU->PLL_CPU_CTRL_REG);
 	//PRINTF("CCU->MBUS_MAT_CLK_GATING_REG=%08X\n", (unsigned) CCU->MBUS_MAT_CLK_GATING_REG);
 #if CPUSTYLE_VM14
@@ -2796,25 +2808,25 @@ void arm_hardware_reset(void)
 void watchdog_initialize(void)
 {
 #if CPUSTYLE_STM32MP1
-#elif CPUSTYLE_ALLWINNER
+#elif CPUSTYLE_ALLWINNER && defined (TIMER)
 	TIMER->WDOG_MODE_REG =
 		0x07 * (UINT32_C(1) << 4) |	// 0111: 256000 cycles (8s)
 		0x01 * (UINT32_C(1) << 0) | // WDOG_EN
 		0;
 	TIMER->WDOG_CFG_REG = 0x01;	// To whole system
-#endif /* CPUSTYLE_STM32MP1 */
+#endif /*  */
 }
 
 /* перезапуск сторожевого таймера */
 void watchdog_ping(void)
 {
 #if CPUSTYLE_STM32MP1
-#elif CPUSTYLE_ALLWINNER
+#elif CPUSTYLE_ALLWINNER && defined (TIMER)
 	TIMER->WDOG_CTRL_REG =
 		0xA57 * (UINT32_C(1) << 1) |
 		0x01 * (UINT32_C(1) << 0) |
 		0;
-#endif /* CPUSTYLE_STM32MP1 */
+#endif /* */
 }
 
 #if ! LINUX_SUBSYSTEM && ((__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV)

@@ -1,0 +1,123 @@
+# Allwinner A733 peripherials #base
+
+#type; GPIO; Port Controller
+
+#base; GPIOB 0x02000100
+#base; GPIOC 0x02000180
+#base; GPIOD 0x02000200
+#base; GPIOE 0x02000280
+#base; GPIOF 0x02000300
+#base; GPIOG 0x02000380
+#base; GPIOH 0x02000400
+##base; GPIOI 0x02000480
+#base; GPIOJ 0x02000500
+#base; GPIOK 0x02000580
+
+#typeend;
+
+#type; GPIOINT
+#base; GPIOINTB 0x02000140
+#base; GPIOINTC 0x020001C0
+#base; GPIOINTD 0x020002$0
+#base; GPIOINTE 0x020002C0
+#base; GPIOINTF 0x02000340
+#base; GPIOINTG 0x020003C0
+#base; GPIOINTH 0x02000440
+##base; GPIOINTI 0x020004C0
+#base; GPIOINTJ 0x02000540
+#base; GPIOINTK 0x020005C0
+#irq; GPIOB 	101; GPIOB_NS
+#irq; GPIOB_S 	102 
+#irq; GPIOC 	103; GPIOC_NS
+#irq; GPIOC_S 	104 
+#irq; GPIOD 	105; GPIOD_NS
+#irq; GPIOD_S 	106 
+#irq; GPIOE 	107; GPIOE_NS
+#irq; GPIOE_S 	108 
+#irq; GPIOF 	109; GPIOF_NS
+#irq; GPIOF_S 	110 
+#irq; GPIOG 	111; GPIOG_NS
+#irq; GPIOG_S 	112 
+#irq; GPIOH 	113; GPIOH_NS
+#irq; GPIOH_S 	114 
+##irq; GPIOI 	115; GPIOI_NS
+##irq; GPIOI_S 	116 
+#irq; GPIOJ 	117; GPIOJ_NS
+#irq; GPIOJ_S 	118 
+#irq; GPIOK 	119; GPIOK_NS
+#irq; GPIOK_S 	120 
+
+#irq; S_GPIOL_S 229
+#irq; S_GPIOL 	230; S_GPIOL_NS
+#irq; S_GPIOM_S 231
+#irq; S_GPIOM 	232; S_GPIOM_NS
+#typeend;
+
+#type; GPIOBLOCK
+#base; GPIOBLOCK 0x02000080; Virtual base for port A
+#typeend;
+
+#type; S_GPIO; Secure Port Controller
+#base; S_GPIOL 0x07025000
+#base; S_GPIOM 0x07025030
+#typeend;
+
+#type; TWI; Two Wire Interface (TWI)
+#base; TWI0 0x02510000
+#base; TWI1 0x02511000
+#base; TWI2 0x02512000
+#base; TWI3 0x02513000
+#base; TWI4 0x02514000
+#base; TWI5 0x02515000
+#base; TWI6 0x02516000
+#base; TWI7 0x02517000
+#base; TWI8 0x02518000
+#base; TWI9 0x02519000
+#base; TWI10 0x0251A000
+#base; TWI11 0x0251B000
+#base; TWI12 0x0251C000
+
+#base; S_TWI1 0x07084000
+#base; S_TWI2 0x07085000
+#typeend;
+
+#type; SPI; Serial Peripheral Interface
+#base; SPI0 0x02540000
+##base; SPI1 0x02541000
+#base; SPI2 0x02542000
+#base; SPI3 0x02543000
+#base; S_SPI 0x07092000
+##irq; SPI0 44
+##irq; SPI1 45
+#typeend;
+
+#type; TIMER0
+#base; Timer0_CPUX 0x03009000 
+#base; Timer0_CPUS 0x07091000
+#typeend;
+
+#type; TIMER1
+#base; Timer1_CPUX 0x02052000 
+#typeend;
+
+#type; UART
+#base; UART0 0x02500000 
+#base; UART1 0x02501000 
+#base; UART2 0x02502000 
+#base; UART3 0x02503000 
+#base; UART4 0x02504000 
+#base; UART5 0x02505000 
+#base; UART6 0x02506000 
+#base; S_UART0 0x07080000 
+#base; S_UART1 0x07081000 
+#irq; UART0 34
+#irq; UART1 35
+#irq; UART2 36
+#irq; UART3 37
+#irq; UART4 38
+#irq; UART5 39
+#irq; UART6 40
+#irq; S_UART0 233
+#irq; S_UART1 234
+#typeend;
+

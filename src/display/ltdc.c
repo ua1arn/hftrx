@@ -1961,6 +1961,9 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 		DE_MIXER1_UI3,
 };
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
+
 #else
 	#error Unsupported CPUSTYLE_xxx
 #endif
