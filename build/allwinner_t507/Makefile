@@ -346,9 +346,9 @@ clean: version
 	-$(RM) fsbl.bt0
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
-	-$(RM) $(PROJECT)_app.alw32 $(PROJECT)_app.bin $(PROJECT)_boot.bin 
+	-$(RM) $(PROJECT)_app.alw32 $(PROJECT)_app.bin $(PROJECT)_boot.bin
 	-$(RM) $(PROJECT64)_app.elf $(PROJECT64)_app.map
-	-$(RM) $(PROJECT64)_app.alw32 $(PROJECT64)_app.bin $(PROJECT64)_boot.bin 
+	-$(RM) $(PROJECT64)_app.alw32 $(PROJECT64)_app.bin $(PROJECT64)_boot.bin
 	-$(RM) $(PROJECT)_app.lst 
 
 version:

@@ -15,7 +15,7 @@
 #typeend;
 
 #type; GPIOBLOCK
-#base; GPIOBLOCK 0x01C20800
+#base; GPIOBLOCK 0x01C20800; Virtual base for port A
 ##base; GPIOBLOCK_L 0x01F02C00
 
 #aggreg; GPIO_PINS; 0x0000 8; GPIO pin control

@@ -8,7 +8,7 @@
 #typeend;
 
 #type; GPIOBLOCK
-#base; GPIOBLOCK 0x02000000
+#base; GPIOBLOCK 0x02000000; Virtual base for port A
 #typeend;
 
 #type; GPIOINT
