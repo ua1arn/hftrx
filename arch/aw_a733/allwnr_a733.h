@@ -124,7 +124,11 @@ typedef enum
 	GPIO_CFG_AF3 = 0x03,
 	GPIO_CFG_AF4 = 0x04,
 	GPIO_CFG_AF5 = 0x05,
-	GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
+	GPIO_CFG_AF6 = 0x06,
+	GPIO_CFG_AF7 = 0x07,
+	GPIO_CFG_AF8 = 0x08,
+	GPIO_CFG_AF9 = 0x09,
+	GPIO_CFG_EINT = 0x0E,	/* external interrupt sense (input) */
 	GPIO_CFG_IODISABLE = 0x0F
 } GPIOMode_TypeDef;
 

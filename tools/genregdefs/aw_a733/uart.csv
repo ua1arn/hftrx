@@ -22,5 +22,11 @@
 #regdef; BUS_IDLE_CHECK; 0x00C8; UART RS485 Bus Idle Check Register
 #regdef; TX_DLY; 0x00CC; UART TX Delay Register
 
-#regdef; padding 0; 0x400; set size
+#regdef; FIFO_TM; 0x00D4; FIFO TEST MODE Register
+#regdef; READ_TX_FIFO; 0x00D8; READ TX FIFO Register
+#regdef; WRITE_RX_FIFO; 0x00DC; WRITE RX FIFO Register
+#regdef; READ_RX_FIFO; 0x00E0; READ RX FIFO Register
+#regdef; RTSN_RST_DLY_TIME; 0x00E4; RS485 RTSN PULL DOWM DELAY TIME Register
+#regdef; UART_FCC; 0x00F0; UART FIFO Clock Control Register
+
 #typeend;

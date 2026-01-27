@@ -4281,6 +4281,11 @@ uint_fast32_t allwnr_a733_get_cpux_freq(void)
 	return 24000000;
 }
 
+uint_fast32_t allwnr_a733_get_uart_freq(void)
+{
+	return 24000000;
+}
+
 uint_fast32_t allwnr_a733_get_s_twi_freq(void)
 {
 	return 24000000;

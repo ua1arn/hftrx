@@ -13,36 +13,49 @@
   <peripheral>
   <name>CCU</name>
   <description>Clock Controller Unit (CCU)</description>
-  <baseAddress>0x03001000</baseAddress>
-  <interrupt>
-   <name>CLK_DET</name>
-   <value>73</value>
-   <description></description>
-  </interrupt>
+  <baseAddress>0x02002000</baseAddress>
   <registers>
    <register>
-    <name>PLL_CPUX_CTRL_REG</name>
-    <displayName>PLL_CPUX_CTRL_REG</displayName>
-    <description>PLL_CPUX Control Register</description>
-    <addressOffset>0x000</addressOffset>
+    <name>PLL_DDR_CTRL_REG</name>
+    <displayName>PLL_DDR_CTRL_REG</displayName>
+    <description>PLL_DDR Control Register </description>
+    <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PLL_DDR0_CTRL_REG</name>
-    <displayName>PLL_DDR0_CTRL_REG</displayName>
-    <description>PLL_DDR0 Control Register</description>
-    <addressOffset>0x010</addressOffset>
+    <name>PLL_DDR_LOCK_CTRL_REG</name>
+    <displayName>PLL_DDR_LOCK_CTRL_REG</displayName>
+    <description>PLL_DDR Lock Control Register </description>
+    <addressOffset>0x024</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PLL_DDR1_CTRL_REG</name>
-    <displayName>PLL_DDR1_CTRL_REG</displayName>
-    <description>PLL_DDR1 Control Register</description>
-    <addressOffset>0x018</addressOffset>
+    <name>PLL_DDR_PAT0_CTRL_REG</name>
+    <displayName>PLL_DDR_PAT0_CTRL_REG</displayName>
+    <description>PLL_DDR Pattern0 Control Register </description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_DDR_PAT1_CTRL_REG</name>
+    <displayName>PLL_DDR_PAT1_CTRL_REG</displayName>
+    <description>PLL_DDR Pattern1 Control Register </description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_DDR_BIAS_REG</name>
+    <displayName>PLL_DDR_BIAS_REG</displayName>
+    <description>PLL_DDR Bias Register </description>
+    <addressOffset>0x030</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -50,107 +63,17 @@
    <register>
     <name>PLL_PERI0_CTRL_REG</name>
     <displayName>PLL_PERI0_CTRL_REG</displayName>
-    <description>PLL_PERI0 Control Register</description>
-    <addressOffset>0x020</addressOffset>
+    <description>PLL_PERI0 Control Register </description>
+    <addressOffset>0x0A0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PLL_PERI1_CTRL_REG</name>
-    <displayName>PLL_PERI1_CTRL_REG</displayName>
-    <description>PLL_PERI1 Control Register</description>
-    <addressOffset>0x028</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_GPU0_CTRL_REG</name>
-    <displayName>PLL_GPU0_CTRL_REG</displayName>
-    <description>PLL_GPU0 Control Register</description>
-    <addressOffset>0x030</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_VIDEO0_CTRL_REG</name>
-    <displayName>PLL_VIDEO0_CTRL_REG</displayName>
-    <description>PLL_VIDEO0 Control Register</description>
-    <addressOffset>0x040</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_VIDEO1_CTRL_REG</name>
-    <displayName>PLL_VIDEO1_CTRL_REG</displayName>
-    <description>PLL_VIDEO1 Control Register</description>
-    <addressOffset>0x048</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_VIDEO2_CTRL_REG</name>
-    <displayName>PLL_VIDEO2_CTRL_REG</displayName>
-    <description>PLL_VIDEO2 Control Register</description>
-    <addressOffset>0x050</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_VE_CTRL_REG</name>
-    <displayName>PLL_VE_CTRL_REG</displayName>
-    <description>PLL_VE Control Register</description>
-    <addressOffset>0x058</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_DE_CTRL_REG</name>
-    <displayName>PLL_DE_CTRL_REG</displayName>
-    <description>PLL_DE Control Register</description>
-    <addressOffset>0x060</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_AUDIO_CTRL_REG</name>
-    <displayName>PLL_AUDIO_CTRL_REG</displayName>
-    <description>PLL_AUDIO Control Register</description>
-    <addressOffset>0x078</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_CSI_CTRL_REG</name>
-    <displayName>PLL_CSI_CTRL_REG</displayName>
-    <description>PLL_CSI Control Register</description>
-    <addressOffset>0x0E0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_DDR0_PAT_CTRL_REG</name>
-    <displayName>PLL_DDR0_PAT_CTRL_REG</displayName>
-    <description>PLL_DDR0 Pattern Control Register</description>
-    <addressOffset>0x110</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_DDR1_PAT_CTRL_REG</name>
-    <displayName>PLL_DDR1_PAT_CTRL_REG</displayName>
-    <description>PLL_DDR1 Pattern Control Register</description>
-    <addressOffset>0x118</addressOffset>
+    <name>PLL_PERI0_LOCK_CTRL_REG</name>
+    <displayName>PLL_PERI0_LOCK_CTRL_REG</displayName>
+    <description>PLL_PERI0 Lock Control Register </description>
+    <addressOffset>0x0A4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -158,8 +81,8 @@
    <register>
     <name>PLL_PERI0_PAT0_CTRL_REG</name>
     <displayName>PLL_PERI0_PAT0_CTRL_REG</displayName>
-    <description>PLL_PERI0 Pattern0 Control Register</description>
-    <addressOffset>0x120</addressOffset>
+    <description>PLL_PERI0 Pattern0 Control Register </description>
+    <addressOffset>0x0A8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -167,8 +90,35 @@
    <register>
     <name>PLL_PERI0_PAT1_CTRL_REG</name>
     <displayName>PLL_PERI0_PAT1_CTRL_REG</displayName>
-    <description>PLL_PERI0 Pattern1 Control Register</description>
-    <addressOffset>0x124</addressOffset>
+    <description>PLL_PERI0 Pattern1 Control Register </description>
+    <addressOffset>0x0AC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_PERI0_BIAS_REG</name>
+    <displayName>PLL_PERI0_BIAS_REG</displayName>
+    <description>PLL_PERI0 Bias Register </description>
+    <addressOffset>0x0B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_PERI1_CTRL_REG</name>
+    <displayName>PLL_PERI1_CTRL_REG</displayName>
+    <description>PLL_PERI1 Control Register </description>
+    <addressOffset>0x0C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_PERI1_LOCK_CTRL_REG</name>
+    <displayName>PLL_PERI1_LOCK_CTRL_REG</displayName>
+    <description>PLL_PERI1 Lock Control Register </description>
+    <addressOffset>0x0C4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -176,8 +126,8 @@
    <register>
     <name>PLL_PERI1_PAT0_CTRL_REG</name>
     <displayName>PLL_PERI1_PAT0_CTRL_REG</displayName>
-    <description>PLL_PERI1 Pattern0 Control Register</description>
-    <addressOffset>0x128</addressOffset>
+    <description>PLL_PERI1 Pattern0 Control Register </description>
+    <addressOffset>0x0C8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -185,8 +135,35 @@
    <register>
     <name>PLL_PERI1_PAT1_CTRL_REG</name>
     <displayName>PLL_PERI1_PAT1_CTRL_REG</displayName>
-    <description>PLL_PERI1 Pattern1 Control Register</description>
-    <addressOffset>0x12C</addressOffset>
+    <description>PLL_PERI1 Pattern1 Control Register </description>
+    <addressOffset>0x0CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_PERI1_BIAS_REG</name>
+    <displayName>PLL_PERI1_BIAS_REG</displayName>
+    <description>PLL_PERI1 Bias Register </description>
+    <addressOffset>0x0D0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_GPU0_CTRL_REG</name>
+    <displayName>PLL_GPU0_CTRL_REG</displayName>
+    <description>PLL_GPU0 Control Register </description>
+    <addressOffset>0x0E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_GPU0_LOCK_CTRL_REG</name>
+    <displayName>PLL_GPU0_LOCK_CTRL_REG</displayName>
+    <description>PLL_GPU0 Lock Control Register </description>
+    <addressOffset>0x0E4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -194,8 +171,8 @@
    <register>
     <name>PLL_GPU0_PAT0_CTRL_REG</name>
     <displayName>PLL_GPU0_PAT0_CTRL_REG</displayName>
-    <description>PLL_GPU0 Pattern0 Control Register</description>
-    <addressOffset>0x130</addressOffset>
+    <description>PLL_GPU0 Pattern0 Control Register </description>
+    <addressOffset>0x0E8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -203,8 +180,35 @@
    <register>
     <name>PLL_GPU0_PAT1_CTRL_REG</name>
     <displayName>PLL_GPU0_PAT1_CTRL_REG</displayName>
-    <description>PLL_GPU0 Pattern1 Control Register</description>
-    <addressOffset>0x134</addressOffset>
+    <description>PLL_GPU0 Pattern1 Control Register </description>
+    <addressOffset>0x0EC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_GPU0_BIAS_REG</name>
+    <displayName>PLL_GPU0_BIAS_REG</displayName>
+    <description>PLL_GPU0 Bias Register </description>
+    <addressOffset>0x0F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VIDEO0_CTRL_REG</name>
+    <displayName>PLL_VIDEO0_CTRL_REG</displayName>
+    <description>PLL_VIDEO0 Control Register </description>
+    <addressOffset>0x120</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VIDEO0_LOCK_CTRL_REG</name>
+    <displayName>PLL_VIDEO0_LOCK_CTRL_REG</displayName>
+    <description>PLL_VIDEO0 Lock Control Register </description>
+    <addressOffset>0x124</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -212,8 +216,8 @@
    <register>
     <name>PLL_VIDEO0_PAT0_CTRL_REG</name>
     <displayName>PLL_VIDEO0_PAT0_CTRL_REG</displayName>
-    <description>PLL_VIDEO0 Pattern0 Control Register</description>
-    <addressOffset>0x140</addressOffset>
+    <description>PLL_VIDEO0 Pattern0 Control Register </description>
+    <addressOffset>0x128</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -221,7 +225,34 @@
    <register>
     <name>PLL_VIDEO0_PAT1_CTRL_REG</name>
     <displayName>PLL_VIDEO0_PAT1_CTRL_REG</displayName>
-    <description>PLL_VIDEO0 Pattern1 Control Register</description>
+    <description>PLL_VIDEO0 Pattern1 Control Register </description>
+    <addressOffset>0x12C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VIDEO0_BIAS_REG</name>
+    <displayName>PLL_VIDEO0_BIAS_REG</displayName>
+    <description>PLL_VIDEO0 Bias Register </description>
+    <addressOffset>0x130</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VIDEO1_CTRL_REG</name>
+    <displayName>PLL_VIDEO1_CTRL_REG</displayName>
+    <description>PLL_VIDEO1 Control Register </description>
+    <addressOffset>0x140</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VIDEO1_LOCK_CTRL_REG</name>
+    <displayName>PLL_VIDEO1_LOCK_CTRL_REG</displayName>
+    <description>PLL_VIDEO1 Lock Control Register </description>
     <addressOffset>0x144</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -230,7 +261,7 @@
    <register>
     <name>PLL_VIDEO1_PAT0_CTRL_REG</name>
     <displayName>PLL_VIDEO1_PAT0_CTRL_REG</displayName>
-    <description>PLL_VIDEO1 Pattern0 Control Register</description>
+    <description>PLL_VIDEO1 Pattern0 Control Register </description>
     <addressOffset>0x148</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -239,161 +270,8 @@
    <register>
     <name>PLL_VIDEO1_PAT1_CTRL_REG</name>
     <displayName>PLL_VIDEO1_PAT1_CTRL_REG</displayName>
-    <description>PLL_VIDEO1 Pattern1 Control Register</description>
+    <description>PLL_VIDEO1 Pattern1 Control Register </description>
     <addressOffset>0x14C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_VIDEO2_PAT0_CTRL_REG</name>
-    <displayName>PLL_VIDEO2_PAT0_CTRL_REG</displayName>
-    <description>PLL_VIDEO2 Pattern0 Control Register</description>
-    <addressOffset>0x150</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_VIDEO2_PAT1_CTRL_REG</name>
-    <displayName>PLL_VIDEO2_PAT1_CTRL_REG</displayName>
-    <description>PLL_VIDEO2 Pattern1 Control Register</description>
-    <addressOffset>0x154</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_VE_PAT0_CTRL_REG</name>
-    <displayName>PLL_VE_PAT0_CTRL_REG</displayName>
-    <description>PLL_VE Pattern0 Control Register</description>
-    <addressOffset>0x158</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_VE_PAT1_CTRL_REG</name>
-    <displayName>PLL_VE_PAT1_CTRL_REG</displayName>
-    <description>PLL_VE Pattern1 Control Register</description>
-    <addressOffset>0x15C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_DE_PAT0_CTRL_REG</name>
-    <displayName>PLL_DE_PAT0_CTRL_REG</displayName>
-    <description>PLL_DE Pattern0 Control Register</description>
-    <addressOffset>0x160</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_DE_PAT1_CTRL_REG</name>
-    <displayName>PLL_DE_PAT1_CTRL_REG</displayName>
-    <description>PLL_DE Pattern1 Control Register</description>
-    <addressOffset>0x164</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_AUDIO_PAT0_CTRL_REG</name>
-    <displayName>PLL_AUDIO_PAT0_CTRL_REG</displayName>
-    <description>PLL_AUDIO Pattern0 Control Register</description>
-    <addressOffset>0x178</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_AUDIO_PAT1_CTRL_REG</name>
-    <displayName>PLL_AUDIO_PAT1_CTRL_REG</displayName>
-    <description>PLL_AUDIO Pattern1 Control Register</description>
-    <addressOffset>0x17C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_CSI_PAT0_CTRL_REG</name>
-    <displayName>PLL_CSI_PAT0_CTRL_REG</displayName>
-    <description>PLL_CSI Pattern0 Control Register</description>
-    <addressOffset>0x1E0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_CSI_PAT1_CTRL_REG</name>
-    <displayName>PLL_CSI_PAT1_CTRL_REG</displayName>
-    <description>PLL_CSI Pattern1 Control Register</description>
-    <addressOffset>0x1E4</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_CPUX_BIAS_REG</name>
-    <displayName>PLL_CPUX_BIAS_REG</displayName>
-    <description>PLL_CPUX Bias Register</description>
-    <addressOffset>0x300</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_DDR0_BIAS_REG</name>
-    <displayName>PLL_DDR0_BIAS_REG</displayName>
-    <description>PLL_DDR0 Bias Register</description>
-    <addressOffset>0x310</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_DDR1_BIAS_REG</name>
-    <displayName>PLL_DDR1_BIAS_REG</displayName>
-    <description>PLL_DDR1 Bias Register</description>
-    <addressOffset>0x318</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_PERI0_BIAS_REG</name>
-    <displayName>PLL_PERI0_BIAS_REG</displayName>
-    <description>PLL_PERI0 Bias Register</description>
-    <addressOffset>0x320</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_PERI1_BIAS_REG</name>
-    <displayName>PLL_PERI1_BIAS_REG</displayName>
-    <description>PLL_PERI1 Bias Register</description>
-    <addressOffset>0x328</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_GPU0_BIAS_REG</name>
-    <displayName>PLL_GPU0_BIAS_REG</displayName>
-    <description>PLL_GPU0 Bias Register</description>
-    <addressOffset>0x330</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_VIDEO0_BIAS_REG</name>
-    <displayName>PLL_VIDEO0_BIAS_REG</displayName>
-    <description>PLL_VIDEO0 Bias Register</description>
-    <addressOffset>0x340</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -401,17 +279,314 @@
    <register>
     <name>PLL_VIDEO1_BIAS_REG</name>
     <displayName>PLL_VIDEO1_BIAS_REG</displayName>
-    <description>PLL_VIDEO1 Bias Register</description>
-    <addressOffset>0x348</addressOffset>
+    <description>PLL_VIDEO1 Bias Register </description>
+    <addressOffset>0x150</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PLL_VE_BIAS_REG</name>
-    <displayName>PLL_VE_BIAS_REG</displayName>
-    <description>PLL_VE Bias Register</description>
-    <addressOffset>0x358</addressOffset>
+    <name>PLL_VIDEO2_CTRL_REG</name>
+    <displayName>PLL_VIDEO2_CTRL_REG</displayName>
+    <description>PLL_VIDEO2 Control Register </description>
+    <addressOffset>0x160</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VIDEO2_LOCK_CTRL_REG</name>
+    <displayName>PLL_VIDEO2_LOCK_CTRL_REG</displayName>
+    <description>PLL_VIDEO2 Lock Control Register </description>
+    <addressOffset>0x164</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VIDEO2_PAT0_CTRL_REG</name>
+    <displayName>PLL_VIDEO2_PAT0_CTRL_REG</displayName>
+    <description>PLL_VIDEO2 Pattern0 Control Register </description>
+    <addressOffset>0x168</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VIDEO2_PAT1_CTRL_REG</name>
+    <displayName>PLL_VIDEO2_PAT1_CTRL_REG</displayName>
+    <description>PLL_VIDEO2 Pattern1 Control Register </description>
+    <addressOffset>0x16C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VIDEO2_BIAS_REG</name>
+    <displayName>PLL_VIDEO2_BIAS_REG</displayName>
+    <description>PLL_VIDEO2 Bias Register </description>
+    <addressOffset>0x170</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VE0_CTRL_REG</name>
+    <displayName>PLL_VE0_CTRL_REG</displayName>
+    <description>PLL_VE0 Control Register </description>
+    <addressOffset>0x220</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VE0_LOCK_CTRL_REG</name>
+    <displayName>PLL_VE0_LOCK_CTRL_REG</displayName>
+    <description>PLL_VE0 Lock Control Register </description>
+    <addressOffset>0x224</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VE0_PAT0_CTRL_REG</name>
+    <displayName>PLL_VE0_PAT0_CTRL_REG</displayName>
+    <description>PLL_VE0 Pattern0 Control Register </description>
+    <addressOffset>0x228</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VE0_PAT1_CTRL_REG</name>
+    <displayName>PLL_VE0_PAT1_CTRL_REG</displayName>
+    <description>PLL_VE0 Pattern1 Control Register </description>
+    <addressOffset>0x22C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VE0_BIAS_REG</name>
+    <displayName>PLL_VE0_BIAS_REG</displayName>
+    <description>PLL_VE0 Bias Register </description>
+    <addressOffset>0x230</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VE1_CTRL_REG</name>
+    <displayName>PLL_VE1_CTRL_REG</displayName>
+    <description>PLL_VE1 Control Register </description>
+    <addressOffset>0x240</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VE1_LOCK_CTRL_REG</name>
+    <displayName>PLL_VE1_LOCK_CTRL_REG</displayName>
+    <description>PLL_VE1 Lock Control Register </description>
+    <addressOffset>0x244</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VE1_PAT0_CTRL_REG</name>
+    <displayName>PLL_VE1_PAT0_CTRL_REG</displayName>
+    <description>PLL_VE1 Pattern0 Control Register </description>
+    <addressOffset>0x248</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VE1_PAT1_CTRL_REG</name>
+    <displayName>PLL_VE1_PAT1_CTRL_REG</displayName>
+    <description>PLL_VE1 Pattern1 Control Register </description>
+    <addressOffset>0x24C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_VE1_BIAS_REG</name>
+    <displayName>PLL_VE1_BIAS_REG</displayName>
+    <description>PLL_VE1 Bias Register </description>
+    <addressOffset>0x250</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_AUDIO0_CTRL_REG</name>
+    <displayName>PLL_AUDIO0_CTRL_REG</displayName>
+    <description>PLL_AUDIO0 Control Register </description>
+    <addressOffset>0x260</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_AUDIO0_LOCK_CTRL_REG</name>
+    <displayName>PLL_AUDIO0_LOCK_CTRL_REG</displayName>
+    <description>PLL_AUDIO0 Lock Control Register </description>
+    <addressOffset>0x264</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_AUDIO0_PAT0_CTRL_REG</name>
+    <displayName>PLL_AUDIO0_PAT0_CTRL_REG</displayName>
+    <description>PLL_AUDIO0 Pattern0 Control Register </description>
+    <addressOffset>0x268</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_AUDIO0_PAT1_CTRL_REG</name>
+    <displayName>PLL_AUDIO0_PAT1_CTRL_REG</displayName>
+    <description>PLL_AUDIO0 Pattern1 Control Register </description>
+    <addressOffset>0x26C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_AUDIO0_BIAS_REG</name>
+    <displayName>PLL_AUDIO0_BIAS_REG</displayName>
+    <description>PLL_AUDIO0 Bias Register </description>
+    <addressOffset>0x270</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_AUDIO1_CTRL_REG</name>
+    <displayName>PLL_AUDIO1_CTRL_REG</displayName>
+    <description>PLL_AUDIO1 Control Register</description>
+    <addressOffset>0x280</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_AUDIO1_LOCK_CTRL_REG</name>
+    <displayName>PLL_AUDIO1_LOCK_CTRL_REG</displayName>
+    <description>PLL_AUDIO1 Lock Control Register</description>
+    <addressOffset>0x284</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_AUDIO1_PAT0_CTRL_REG</name>
+    <displayName>PLL_AUDIO1_PAT0_CTRL_REG</displayName>
+    <description>PLL_AUDIO1 Pattern0 Control Register</description>
+    <addressOffset>0x288</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_AUDIO1_PAT1_CTRL_REG</name>
+    <displayName>PLL_AUDIO1_PAT1_CTRL_REG</displayName>
+    <description>PLL_AUDIO1 Pattern1 Control Register </description>
+    <addressOffset>0x28C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_AUDIO1_BIAS_REG</name>
+    <displayName>PLL_AUDIO1_BIAS_REG</displayName>
+    <description>PLL_AUDIO1 Bias Register</description>
+    <addressOffset>0x290</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_NPU_CTRL_REG</name>
+    <displayName>PLL_NPU_CTRL_REG</displayName>
+    <description>PLL_NPU Control Register </description>
+    <addressOffset>0x2A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_NPU_LOCK_CTRL_REG</name>
+    <displayName>PLL_NPU_LOCK_CTRL_REG</displayName>
+    <description>PLL_NPU Lock Control Register </description>
+    <addressOffset>0x2A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_NPU_PAT0_CTRL_REG</name>
+    <displayName>PLL_NPU_PAT0_CTRL_REG</displayName>
+    <description>PLL_NPU Pattern0 Control Register </description>
+    <addressOffset>0x2A8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_NPU_PAT1_CTRL_REG</name>
+    <displayName>PLL_NPU_PAT1_CTRL_REG</displayName>
+    <description>PLL_NPU Pattern1 Control Register </description>
+    <addressOffset>0x2AC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_NPU_BIAS_REG</name>
+    <displayName>PLL_NPU_BIAS_REG</displayName>
+    <description>PLL_NPU Bias Register </description>
+    <addressOffset>0x2B0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_DE_CTRL_REG</name>
+    <displayName>PLL_DE_CTRL_REG</displayName>
+    <description>PLL_DE Control Register </description>
+    <addressOffset>0x2E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_DE_LOCK_CTRL_REG</name>
+    <displayName>PLL_DE_LOCK_CTRL_REG</displayName>
+    <description>PLL_DE Lock Control Register </description>
+    <addressOffset>0x2E4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_DE_PAT0_CTRL_REG</name>
+    <displayName>PLL_DE_PAT0_CTRL_REG</displayName>
+    <description>PLL_DE Pattern0 Control Register </description>
+    <addressOffset>0x2E8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_DE_PAT1_CTRL_REG</name>
+    <displayName>PLL_DE_PAT1_CTRL_REG</displayName>
+    <description>PLL_DE Pattern1 Control Register </description>
+    <addressOffset>0x2EC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -419,278 +594,161 @@
    <register>
     <name>PLL_DE_BIAS_REG</name>
     <displayName>PLL_DE_BIAS_REG</displayName>
-    <description>PLL_DE Bias Register</description>
-    <addressOffset>0x360</addressOffset>
+    <description>PLL_DE Bias Register </description>
+    <addressOffset>0x2F0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PLL_AUDIO_BIAS_REG</name>
-    <displayName>PLL_AUDIO_BIAS_REG</displayName>
-    <description>PLL_AUDIO Bias Register</description>
-    <addressOffset>0x378</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_CSI_BIAS_REG</name>
-    <displayName>PLL_CSI_BIAS_REG</displayName>
-    <description>PLL_CSI Bias Register</description>
-    <addressOffset>0x3E0</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PLL_CPUX_TUN_REG</name>
-    <displayName>PLL_CPUX_TUN_REG</displayName>
-    <description>PLL_CPUX Tuning Register</description>
-    <addressOffset>0x400</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>CPUX_AXI_CFG_REG</name>
-    <displayName>CPUX_AXI_CFG_REG</displayName>
-    <description>CPUX_AXI Configuration Register</description>
+    <name>AHB_CLK_REG</name>
+    <displayName>AHB_CLK_REG</displayName>
+    <description>AHB Clock Register </description>
     <addressOffset>0x500</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PSI_AHB1_AHB2_CFG_REG</name>
-    <displayName>PSI_AHB1_AHB2_CFG_REG</displayName>
-    <description>PSI_AHB1_AHB2 Configuration Register</description>
+    <name>APB0_CLK_REG</name>
+    <displayName>APB0_CLK_REG</displayName>
+    <description>APB0 Clock Register </description>
     <addressOffset>0x510</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>AHB3_CFG_REG</name>
-    <displayName>AHB3_CFG_REG</displayName>
-    <description>AHB3 Configuration Register</description>
-    <addressOffset>0x51C</addressOffset>
+    <name>APB1_CLK_REG</name>
+    <displayName>APB1_CLK_REG</displayName>
+    <description>APB1 Clock Register </description>
+    <addressOffset>0x518</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>APB1_CFG_REG</name>
-    <displayName>APB1_CFG_REG</displayName>
-    <description>APB1 Configuration Register</description>
-    <addressOffset>0x520</addressOffset>
+    <name>APB_UART_CLK_REG</name>
+    <displayName>APB_UART_CLK_REG</displayName>
+    <description>APB_UART Clock Register </description>
+    <addressOffset>0x538</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>APB2_CFG_REG</name>
-    <displayName>APB2_CFG_REG</displayName>
-    <description>APB2 Configuration Register</description>
-    <addressOffset>0x524</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>MBUS_CFG_REG</name>
-    <displayName>MBUS_CFG_REG</displayName>
-    <description>MBUS Configuration Register</description>
+    <name>TRACE_CLK_REG</name>
+    <displayName>TRACE_CLK_REG</displayName>
+    <description>TRACE Clock Register </description>
     <addressOffset>0x540</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DE_CLK_REG</name>
-    <displayName>DE_CLK_REG</displayName>
-    <description>DE Clock Register</description>
-    <addressOffset>0x600</addressOffset>
+    <name>GIC_CLK_REG</name>
+    <displayName>GIC_CLK_REG</displayName>
+    <description>GIC Clock Register</description>
+    <addressOffset>0x560</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DE_BGR_REG</name>
-    <displayName>DE_BGR_REG</displayName>
-    <description>DE Bus Gating Reset Register</description>
-    <addressOffset>0x60C</addressOffset>
+    <name>CPU_PERI_CLK_REG</name>
+    <displayName>CPU_PERI_CLK_REG</displayName>
+    <description></description>
+    <addressOffset>0x568</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DI_CLK_REG</name>
-    <displayName>DI_CLK_REG</displayName>
-    <description>DI Clock Register</description>
-    <addressOffset>0x620</addressOffset>
+    <name>ITS0_BGR_REG</name>
+    <displayName>ITS0_BGR_REG</displayName>
+    <description>ITS0 Bus Gating Reset Register </description>
+    <addressOffset>0x574</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DI_BGR_REG</name>
-    <displayName>DI_BGR_REG</displayName>
-    <description>DI Bus Gating Reset Register</description>
-    <addressOffset>0x62C</addressOffset>
+    <name>NSI_CLK_REG</name>
+    <displayName>NSI_CLK_REG</displayName>
+    <description>NSI Clock Register </description>
+    <addressOffset>0x580</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>G2D_CLK_REG</name>
-    <displayName>G2D_CLK_REG</displayName>
-    <description>G2D Clock Register</description>
-    <addressOffset>0x630</addressOffset>
+    <name>NSI_BGR_REG</name>
+    <displayName>NSI_BGR_REG</displayName>
+    <description>NSI Bus Gating Reset Register </description>
+    <addressOffset>0x584</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>G2D_BGR_REG</name>
-    <displayName>G2D_BGR_REG</displayName>
-    <description>G2D Bus Gating Reset Register</description>
-    <addressOffset>0x63C</addressOffset>
+    <name>MBUS_CLK_REG</name>
+    <displayName>MBUS_CLK_REG</displayName>
+    <description>MBUS Clock Register </description>
+    <addressOffset>0x588</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>GPU_CLK0_REG</name>
-    <displayName>GPU_CLK0_REG</displayName>
-    <description>GPU Clock0 Register</description>
-    <addressOffset>0x670</addressOffset>
+    <name>IOMMU0_BGR_REG</name>
+    <displayName>IOMMU0_BGR_REG</displayName>
+    <description>IOMMU0 Bus Gating Reset Register </description>
+    <addressOffset>0x58C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>GPU_CLK1_REG</name>
-    <displayName>GPU_CLK1_REG</displayName>
-    <description>GPU Clock1 Register</description>
-    <addressOffset>0x674</addressOffset>
+    <name>MSI_LITE0_BGR_REG</name>
+    <displayName>MSI_LITE0_BGR_REG</displayName>
+    <description>MSI_LITE0 Bus Gating Reset Register </description>
+    <addressOffset>0x594</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>GPU_BGR_REG</name>
-    <displayName>GPU_BGR_REG</displayName>
-    <description>GPU Bus Gating Reset Register</description>
-    <addressOffset>0x67C</addressOffset>
+    <name>MSI_LITE1_BGR_REG</name>
+    <displayName>MSI_LITE1_BGR_REG</displayName>
+    <description>MSI_LITE1 Bus Gating Reset Register </description>
+    <addressOffset>0x59C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CE_CLK_REG</name>
-    <displayName>CE_CLK_REG</displayName>
-    <description>CE Clock Register</description>
-    <addressOffset>0x680</addressOffset>
+    <name>MSI_LITE2_BGR_REG</name>
+    <displayName>MSI_LITE2_BGR_REG</displayName>
+    <description>MSI_LITE2 Bus Gating Reset Register </description>
+    <addressOffset>0x5A4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CE_BGR_REG</name>
-    <displayName>CE_BGR_REG</displayName>
-    <description>CE Bus Gating Reset Register</description>
-    <addressOffset>0x68C</addressOffset>
+    <name>IOMMU1_BGR_REG</name>
+    <displayName>IOMMU1_BGR_REG</displayName>
+    <description>IOMMU1 Bus Gating Reset Register </description>
+    <addressOffset>0x5B4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>VE_CLK_REG</name>
-    <displayName>VE_CLK_REG</displayName>
-    <description>VE Clock Register</description>
-    <addressOffset>0x690</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>VE_BGR_REG</name>
-    <displayName>VE_BGR_REG</displayName>
-    <description>VE Bus Gating Reset Register</description>
-    <addressOffset>0x69C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DMA_BGR_REG</name>
-    <displayName>DMA_BGR_REG</displayName>
-    <description>DMA Bus Gating Reset Register</description>
-    <addressOffset>0x70C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>HSTIMER_BGR_REG</name>
-    <displayName>HSTIMER_BGR_REG</displayName>
-    <description>HSTIMER Bus Gating Reset Register</description>
-    <addressOffset>0x73C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>AVS_CLK_REG</name>
-    <displayName>AVS_CLK_REG</displayName>
-    <description>AVS Clock Register</description>
-    <addressOffset>0x740</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DBGSYS_BGR_REG</name>
-    <displayName>DBGSYS_BGR_REG</displayName>
-    <description>DBGSYS Bus Gating Reset Register</description>
-    <addressOffset>0x78C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PSI_BGR_REG</name>
-    <displayName>PSI_BGR_REG</displayName>
-    <description>PSI Bus Gating Reset Register</description>
-    <addressOffset>0x79C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PWM_BGR_REG</name>
-    <displayName>PWM_BGR_REG</displayName>
-    <description>PWM Bus Gating Reset Register</description>
-    <addressOffset>0x7AC</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>IOMMU_BGR_REG</name>
-    <displayName>IOMMU_BGR_REG</displayName>
-    <description>IOMMU Bus Gating Reset Register</description>
-    <addressOffset>0x7BC</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>DRAM_CLK_REG</name>
-    <displayName>DRAM_CLK_REG</displayName>
-    <description>DRAM Clock Register</description>
-    <addressOffset>0x800</addressOffset>
+    <name>AHB_MAT_CLK_GATING_REG</name>
+    <displayName>AHB_MAT_CLK_GATING_REG</displayName>
+    <description>AHB Master Clock Gating Register </description>
+    <addressOffset>0x5C0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -698,44 +756,404 @@
    <register>
     <name>MBUS_MAT_CLK_GATING_REG</name>
     <displayName>MBUS_MAT_CLK_GATING_REG</displayName>
-    <description>MBUS Master Clock Gating Register</description>
+    <description>MBUS Master Clock Gating Register </description>
+    <addressOffset>0x5E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MBUS_GATE_EN_REG</name>
+    <displayName>MBUS_GATE_EN_REG</displayName>
+    <description>MBUS Gate Enable Register </description>
+    <addressOffset>0x5E4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMA0_BGR_REG</name>
+    <displayName>DMA0_BGR_REG</displayName>
+    <description>DMA0 Bus Gating Reset Register </description>
+    <addressOffset>0x704</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DMA1_BGR_REG</name>
+    <displayName>DMA1_BGR_REG</displayName>
+    <description>DMA1 Bus Gating Reset Register </description>
+    <addressOffset>0x70C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_BGR_REG</name>
+    <displayName>SPINLOCK_BGR_REG</displayName>
+    <description>SPINLOCK Bus Gating Reset Register </description>
+    <addressOffset>0x724</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>MSGBOX0_BGR_REG</name>
+    <displayName>MSGBOX0_BGR_REG</displayName>
+    <description>MSGBOX0 Bus Gating Reset Register </description>
+    <addressOffset>0x744</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PWM0_BGR_REG</name>
+    <displayName>PWM0_BGR_REG</displayName>
+    <description>PWM0 Bus Gating Reset Register </description>
+    <addressOffset>0x784</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PWM1_BGR_REG</name>
+    <displayName>PWM1_BGR_REG</displayName>
+    <description>PWM1 Bus Gating Reset Register </description>
+    <addressOffset>0x78C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DBGSYS_BGR_REG</name>
+    <displayName>DBGSYS_BGR_REG</displayName>
+    <description>DBGSYS Bus Gating Reset Register </description>
+    <addressOffset>0x7A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYSDAP_BGR_REG</name>
+    <displayName>SYSDAP_BGR_REG</displayName>
+    <description>SYSDAP Bus Gating Reset Register </description>
+    <addressOffset>0x7AC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TIMER0_CLK0_CLK_REG</name>
+    <displayName>TIMER0_CLK0_CLK_REG</displayName>
+    <description>TIMER0_CLK0 Clock Register </description>
+    <addressOffset>0x800</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TIMER0_CLK1_CLK_REG</name>
+    <displayName>TIMER0_CLK1_CLK_REG</displayName>
+    <description>TIMER0_CLK1 Clock Register </description>
     <addressOffset>0x804</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DRAM_BGR_REG</name>
-    <displayName>DRAM_BGR_REG</displayName>
-    <description>DRAM Bus Gating Reset Register</description>
+    <name>TIMER0_CLK2_CLK_REG</name>
+    <displayName>TIMER0_CLK2_CLK_REG</displayName>
+    <description>TIMER0_CLK2 Clock Register </description>
+    <addressOffset>0x808</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TIMER0_CLK3_CLK_REG</name>
+    <displayName>TIMER0_CLK3_CLK_REG</displayName>
+    <description>TIMER0_CLK3 Clock Register </description>
     <addressOffset>0x80C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>NAND0_0_CLK_REG</name>
-    <displayName>NAND0_0_CLK_REG</displayName>
-    <description>NAND0_0 Clock Register</description>
+    <name>TIMER0_CLK4_CLK_REG</name>
+    <displayName>TIMER0_CLK4_CLK_REG</displayName>
+    <description>TIMER0_CLK4 Clock Register </description>
     <addressOffset>0x810</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>NAND0_1_CLK_REG</name>
-    <displayName>NAND0_1_CLK_REG</displayName>
-    <description>NAND0_1 Clock Register</description>
+    <name>TIMER0_CLK5_CLK_REG</name>
+    <displayName>TIMER0_CLK5_CLK_REG</displayName>
+    <description>TIMER0_CLK5 Clock Register </description>
     <addressOffset>0x814</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>NAND_BGR_REG</name>
-    <displayName>NAND_BGR_REG</displayName>
-    <description>NAND Bus Gating Reset Register</description>
-    <addressOffset>0x82C</addressOffset>
+    <name>TIMER0_CLK6_CLK_REG</name>
+    <displayName>TIMER0_CLK6_CLK_REG</displayName>
+    <description>TIMER0_CLK6 Clock Register </description>
+    <addressOffset>0x818</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TIMER0_CLK7_CLK_REG</name>
+    <displayName>TIMER0_CLK7_CLK_REG</displayName>
+    <description>TIMER0_CLK7 Clock Register </description>
+    <addressOffset>0x81C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TIMER0_CLK8_CLK_REG</name>
+    <displayName>TIMER0_CLK8_CLK_REG</displayName>
+    <description>TIMER0_CLK8 Clock Register </description>
+    <addressOffset>0x820</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TIMER0_CLK9_CLK_REG</name>
+    <displayName>TIMER0_CLK9_CLK_REG</displayName>
+    <description>TIMER0_CLK9 Clock Register </description>
+    <addressOffset>0x824</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TIMER0_BGR_REG</name>
+    <displayName>TIMER0_BGR_REG</displayName>
+    <description>TIMER0 Bus Gating Reset Register </description>
+    <addressOffset>0x850</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DE0_CLK_REG</name>
+    <displayName>DE0_CLK_REG</displayName>
+    <description>DE0 Clock Register </description>
+    <addressOffset>0xA00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DE0_BGR_REG</name>
+    <displayName>DE0_BGR_REG</displayName>
+    <description>DE0 Bus Gating Reset Register </description>
+    <addressOffset>0xA04</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DI_CLK_REG</name>
+    <displayName>DI_CLK_REG</displayName>
+    <description>DI Clock Register </description>
+    <addressOffset>0xA20</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DI_BGR_REG</name>
+    <displayName>DI_BGR_REG</displayName>
+    <description>DI Bus Gating Reset Register </description>
+    <addressOffset>0xA24</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>G2D_CLK_REG</name>
+    <displayName>G2D_CLK_REG</displayName>
+    <description>G2D Clock Register </description>
+    <addressOffset>0xA40</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>G2D_BGR_REG</name>
+    <displayName>G2D_BGR_REG</displayName>
+    <description>G2D Bus Gating Reset Register </description>
+    <addressOffset>0xA44</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EINK_CLK_REG</name>
+    <displayName>EINK_CLK_REG</displayName>
+    <description>EINK Clock Register </description>
+    <addressOffset>0xA60</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EINK_PANEL_CLK_REG</name>
+    <displayName>EINK_PANEL_CLK_REG</displayName>
+    <description>EINK PANEL Clock Register</description>
+    <addressOffset>0xA64</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EINK_BGR_REG</name>
+    <displayName>EINK_BGR_REG</displayName>
+    <description>EINK Bus Gating Reset Register</description>
+    <addressOffset>0xA6C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DE_SYS_BGR_REG</name>
+    <displayName>DE_SYS_BGR_REG</displayName>
+    <description>DE_SYS Bus Gating Reset Register </description>
+    <addressOffset>0xA74</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_ENC0_CLK_REG</name>
+    <displayName>VE_ENC0_CLK_REG</displayName>
+    <description>VE_ENC0 Clock Register </description>
+    <addressOffset>0xA80</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_DEC_CLK_REG</name>
+    <displayName>VE_DEC_CLK_REG</displayName>
+    <description>VE_DEC Clock Register </description>
+    <addressOffset>0xA88</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VE_BGR_REG</name>
+    <displayName>VE_BGR_REG</displayName>
+    <description>VE Bus Gating Reset Register </description>
+    <addressOffset>0xA8C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_CLK_REG</name>
+    <displayName>CE_CLK_REG</displayName>
+    <description>CE Clock Register </description>
+    <addressOffset>0xAC0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CE_BGR_REG</name>
+    <displayName>CE_BGR_REG</displayName>
+    <description>CE Bus Gating Reset Register </description>
+    <addressOffset>0xAC4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NPU_CLK_REG</name>
+    <displayName>NPU_CLK_REG</displayName>
+    <description>NPU Clock Register </description>
+    <addressOffset>0xB00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NPU_BGR_REG</name>
+    <displayName>NPU_BGR_REG</displayName>
+    <description>NPU Bus Gating Reset Register </description>
+    <addressOffset>0xB04</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPU0_CLK_REG</name>
+    <displayName>GPU0_CLK_REG</displayName>
+    <description>GPU0 Clock Register </description>
+    <addressOffset>0xB20</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPU0_GATING_REG</name>
+    <displayName>GPU0_GATING_REG</displayName>
+    <description>GPU0 Gating Reset Configuration Register </description>
+    <addressOffset>0xB24</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DRAM0_CLK_REG</name>
+    <displayName>DRAM0_CLK_REG</displayName>
+    <description>DRAM0 Clock Register </description>
+    <addressOffset>0xC00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DRAM0_BGR_REG</name>
+    <displayName>DRAM0_BGR_REG</displayName>
+    <description>DRAM0 Bus Gating Reset Register </description>
+    <addressOffset>0xC0C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NAND0_CLK0_CLK_REG</name>
+    <displayName>NAND0_CLK0_CLK_REG</displayName>
+    <description>NAND0 CLK0 Clock Register </description>
+    <addressOffset>0xC80</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NAND0_CLK1_CLK_REG</name>
+    <displayName>NAND0_CLK1_CLK_REG</displayName>
+    <description>NAND0 CLK1 Clock Register </description>
+    <addressOffset>0xC84</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NAND0_BGR_REG</name>
+    <displayName>NAND0_BGR_REG</displayName>
+    <description>NAND0 Bus Gating Reset Register </description>
+    <addressOffset>0xC8C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -743,8 +1161,17 @@
    <register>
     <name>SMHC0_CLK_REG</name>
     <displayName>SMHC0_CLK_REG</displayName>
-    <description>SMHC0 Clock Register</description>
-    <addressOffset>0x830</addressOffset>
+    <description>SMHC0 Clock Register </description>
+    <addressOffset>0xD00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMHC0_BGR_REG</name>
+    <displayName>SMHC0_BGR_REG</displayName>
+    <description>SMHC0 Bus Gating Reset Register </description>
+    <addressOffset>0xD0C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -752,8 +1179,17 @@
    <register>
     <name>SMHC1_CLK_REG</name>
     <displayName>SMHC1_CLK_REG</displayName>
-    <description>SMHC1 Clock Register</description>
-    <addressOffset>0x834</addressOffset>
+    <description>SMHC1 Clock Register </description>
+    <addressOffset>0xD10</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SMHC1_BGR_REG</name>
+    <displayName>SMHC1_BGR_REG</displayName>
+    <description>SMHC1 Bus Gating Reset Register </description>
+    <addressOffset>0xD1C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -761,35 +1197,251 @@
    <register>
     <name>SMHC2_CLK_REG</name>
     <displayName>SMHC2_CLK_REG</displayName>
-    <description>SMHC2 Clock Register</description>
-    <addressOffset>0x838</addressOffset>
+    <description>SMHC2 Clock Register </description>
+    <addressOffset>0xD20</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SMHC_BGR_REG</name>
-    <displayName>SMHC_BGR_REG</displayName>
-    <description>SMHC Bus Gating Reset Register</description>
-    <addressOffset>0x84C</addressOffset>
+    <name>SMHC2_BGR_REG</name>
+    <displayName>SMHC2_BGR_REG</displayName>
+    <description>SMHC2 Bus Gating Reset Register </description>
+    <addressOffset>0xD2C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UART_BGR_REG</name>
-    <displayName>UART_BGR_REG</displayName>
-    <description>UART Bus Gating Reset Register</description>
-    <addressOffset>0x90C</addressOffset>
+    <name>SMHC3_CLK_REG</name>
+    <displayName>SMHC3_CLK_REG</displayName>
+    <description>SMHC3 Clock Register </description>
+    <addressOffset>0xD30</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TWI_BGR_REG</name>
-    <displayName>TWI_BGR_REG</displayName>
-    <description>TWI Bus Gating Reset Register</description>
-    <addressOffset>0x91C</addressOffset>
+    <name>SMHC3_BGR_REG</name>
+    <displayName>SMHC3_BGR_REG</displayName>
+    <description>SMHC3 Bus Gating Reset Register </description>
+    <addressOffset>0xD3C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UFS_AXI_CLK_REG</name>
+    <displayName>UFS_AXI_CLK_REG</displayName>
+    <description>UFS_AXI Clock Register </description>
+    <addressOffset>0xD80</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UFS_CFG_CLK_REG</name>
+    <displayName>UFS_CFG_CLK_REG</displayName>
+    <description>UFS_CFG Clock Register</description>
+    <addressOffset>0xD84</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UFS_BGR_REG</name>
+    <displayName>UFS_BGR_REG</displayName>
+    <description>UFS Bus Gating Reset Register </description>
+    <addressOffset>0xD8C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UFS_REF_CLK_EN_REG</name>
+    <displayName>UFS_REF_CLK_EN_REG</displayName>
+    <description>UFS Reference Clock Enable Register</description>
+    <addressOffset>0xD90</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UART0_BGR_REG</name>
+    <displayName>UART0_BGR_REG</displayName>
+    <description>UART0 Bus Gating Reset Register </description>
+    <addressOffset>0xE00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UART1_BGR_REG</name>
+    <displayName>UART1_BGR_REG</displayName>
+    <description>UART1 Bus Gating Reset Register </description>
+    <addressOffset>0xE04</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UART2_BGR_REG</name>
+    <displayName>UART2_BGR_REG</displayName>
+    <description>UART2 Bus Gating Reset Register </description>
+    <addressOffset>0xE08</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UART3_BGR_REG</name>
+    <displayName>UART3_BGR_REG</displayName>
+    <description>UART3 Bus Gating Reset Register </description>
+    <addressOffset>0xE0C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UART4_BGR_REG</name>
+    <displayName>UART4_BGR_REG</displayName>
+    <description>UART4 Bus Gating Reset Register </description>
+    <addressOffset>0xE10</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UART5_BGR_REG</name>
+    <displayName>UART5_BGR_REG</displayName>
+    <description>UART5 Bus Gating Reset Register </description>
+    <addressOffset>0xE14</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UART6_BGR_REG</name>
+    <displayName>UART6_BGR_REG</displayName>
+    <description>UART6 Bus Gating Reset Register </description>
+    <addressOffset>0xE18</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI0_BGR_REG</name>
+    <displayName>TWI0_BGR_REG</displayName>
+    <description>TWI0 Bus Gating Reset Register </description>
+    <addressOffset>0xE80</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI1_BGR_REG</name>
+    <displayName>TWI1_BGR_REG</displayName>
+    <description>TWI1 Bus Gating Reset Register </description>
+    <addressOffset>0xE84</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI2_BGR_REG</name>
+    <displayName>TWI2_BGR_REG</displayName>
+    <description>TWI2 Bus Gating Reset Register </description>
+    <addressOffset>0xE88</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI3_BGR_REG</name>
+    <displayName>TWI3_BGR_REG</displayName>
+    <description>TWI3 Bus Gating Reset Register </description>
+    <addressOffset>0xE8C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI4_BGR_REG</name>
+    <displayName>TWI4_BGR_REG</displayName>
+    <description>TWI4 Bus Gating Reset Register </description>
+    <addressOffset>0xE90</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI5_BGR_REG</name>
+    <displayName>TWI5_BGR_REG</displayName>
+    <description>TWI5 Bus Gating Reset Register </description>
+    <addressOffset>0xE94</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI6_BGR_REG</name>
+    <displayName>TWI6_BGR_REG</displayName>
+    <description>TWI6 Bus Gating Reset Register </description>
+    <addressOffset>0xE98</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI7_BGR_REG</name>
+    <displayName>TWI7_BGR_REG</displayName>
+    <description>TWI7 Bus Gating Reset Register </description>
+    <addressOffset>0xE9C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI8_BGR_REG</name>
+    <displayName>TWI8_BGR_REG</displayName>
+    <description>TWI8 Bus Gating Reset Register </description>
+    <addressOffset>0xEA0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI9_BGR_REG</name>
+    <displayName>TWI9_BGR_REG</displayName>
+    <description>TWI9 Bus Gating Reset Register</description>
+    <addressOffset>0xEA4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI10_BGR_REG</name>
+    <displayName>TWI10_BGR_REG</displayName>
+    <description>TWI10 Bus Gating Reset Register</description>
+    <addressOffset>0xEA8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI11_BGR_REG</name>
+    <displayName>TWI11_BGR_REG</displayName>
+    <description>TWI11 Bus Gating Reset Register</description>
+    <addressOffset>0xEAC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWI12_BGR_REG</name>
+    <displayName>TWI12_BGR_REG</displayName>
+    <description>TWI12 Bus Gating Reset Register</description>
+    <addressOffset>0xEB0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -797,8 +1449,17 @@
    <register>
     <name>SPI0_CLK_REG</name>
     <displayName>SPI0_CLK_REG</displayName>
-    <description>SPI0 Clock Register</description>
-    <addressOffset>0x940</addressOffset>
+    <description>SPI0 Clock Register </description>
+    <addressOffset>0xF00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPI0_BGR_REG</name>
+    <displayName>SPI0_BGR_REG</displayName>
+    <description>SPI0 Bus Gating Reset Register </description>
+    <addressOffset>0xF04</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -806,80 +1467,260 @@
    <register>
     <name>SPI1_CLK_REG</name>
     <displayName>SPI1_CLK_REG</displayName>
-    <description>SPI1 Clock Register</description>
-    <addressOffset>0x944</addressOffset>
+    <description>SPI1 Clock Register </description>
+    <addressOffset>0xF08</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SPI_BGR_REG</name>
-    <displayName>SPI_BGR_REG</displayName>
-    <description>SPI Bus Gating Reset Register</description>
-    <addressOffset>0x96C</addressOffset>
+    <name>SPI1_BGR_REG</name>
+    <displayName>SPI1_BGR_REG</displayName>
+    <description>SPI1 Bus Gating Reset Register </description>
+    <addressOffset>0xF0C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>EPHY_25M_CLK_REG</name>
-    <displayName>EPHY_25M_CLK_REG</displayName>
-    <description>EPHY_25M Clock Register</description>
-    <addressOffset>0x970</addressOffset>
+    <name>SPI2_CLK_REG</name>
+    <displayName>SPI2_CLK_REG</displayName>
+    <description>SPI2 Clock Register </description>
+    <addressOffset>0xF10</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>EMAC_BGR_REG</name>
-    <displayName>EMAC_BGR_REG</displayName>
-    <description>EMAC Bus Gating Reset Register</description>
-    <addressOffset>0x97C</addressOffset>
+    <name>SPI2_BGR_REG</name>
+    <displayName>SPI2_BGR_REG</displayName>
+    <description>SPI2 Bus Gating Reset Register </description>
+    <addressOffset>0xF14</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TS_CLK_REG</name>
-    <displayName>TS_CLK_REG</displayName>
-    <description>TS Clock Register</description>
-    <addressOffset>0x9B0</addressOffset>
+    <name>SPIF_CLK_REG</name>
+    <displayName>SPIF_CLK_REG</displayName>
+    <description>SPIF Clock Register </description>
+    <addressOffset>0xF18</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TS_BGR_REG</name>
-    <displayName>TS_BGR_REG</displayName>
-    <description>TS Bus Gating Reset Register</description>
-    <addressOffset>0x9BC</addressOffset>
+    <name>SPIF_BGR_REG</name>
+    <displayName>SPIF_BGR_REG</displayName>
+    <description>SPIF Bus Gating Reset Register </description>
+    <addressOffset>0xF1C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>GPADC_BGR_REG</name>
-    <displayName>GPADC_BGR_REG</displayName>
-    <description>GPADC Bus Gating Reset Register</description>
-    <addressOffset>0x9EC</addressOffset>
+    <name>SPI3_CLK_REG</name>
+    <displayName>SPI3_CLK_REG</displayName>
+    <description>SPI3 Clock Register </description>
+    <addressOffset>0xF20</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>THS_BGR_REG</name>
-    <displayName>THS_BGR_REG</displayName>
-    <description>THS Bus Gating Reset Register</description>
-    <addressOffset>0x9FC</addressOffset>
+    <name>SPI3_BGR_REG</name>
+    <displayName>SPI3_BGR_REG</displayName>
+    <description>SPI3 Bus Gating Reset Register </description>
+    <addressOffset>0xF24</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>OWA_CLK_REG</name>
-    <displayName>OWA_CLK_REG</displayName>
-    <description>OWA Clock Register</description>
-    <addressOffset>0xA20</addressOffset>
+    <name>GPADC0_24M_CLK_REG</name>
+    <displayName>GPADC0_24M_CLK_REG</displayName>
+    <description>GPADC0_24M Clock Register </description>
+    <addressOffset>0xFC0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPADC0_BGR_REG</name>
+    <displayName>GPADC0_BGR_REG</displayName>
+    <description>GPADC0 Bus Gating Reset Register </description>
+    <addressOffset>0xFC4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>THS0_BGR_REG</name>
+    <displayName>THS0_BGR_REG</displayName>
+    <description>THS0 Bus Gating Reset Register </description>
+    <addressOffset>0xFE4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IRRX_CLK_REG</name>
+    <displayName>IRRX_CLK_REG</displayName>
+    <description>IRRX Clock Register </description>
+    <addressOffset>0x1000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IRRX_BGR_REG</name>
+    <displayName>IRRX_BGR_REG</displayName>
+    <description>IRRX Bus Gating Reset Register </description>
+    <addressOffset>0x1004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IRTX_CLK_REG</name>
+    <displayName>IRTX_CLK_REG</displayName>
+    <description>IRTX Clock Register </description>
+    <addressOffset>0x1008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IRTX_BGR_REG</name>
+    <displayName>IRTX_BGR_REG</displayName>
+    <description>IRTX Bus Gating Reset Register </description>
+    <addressOffset>0x100C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LRADC_BGR_REG</name>
+    <displayName>LRADC_BGR_REG</displayName>
+    <description>LRADC Bus Gating Reset Register </description>
+    <addressOffset>0x1024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>I2SPCM0_CLK_REG</name>
+    <displayName>I2SPCM0_CLK_REG</displayName>
+    <description>I2SPCM0 Clock Register</description>
+    <addressOffset>0x1200</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>I2SPCM0_BGR_REG</name>
+    <displayName>I2SPCM0_BGR_REG</displayName>
+    <description>I2SPCM0 Bus Gating Reset Register</description>
+    <addressOffset>0x120C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>I2SPCM1_CLK_REG</name>
+    <displayName>I2SPCM1_CLK_REG</displayName>
+    <description>I2SPCM1 Clock Register</description>
+    <addressOffset>0x1210</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>I2SPCM1_BGR_REG</name>
+    <displayName>I2SPCM1_BGR_REG</displayName>
+    <description>I2SPCM1 Bus Gating Reset Register </description>
+    <addressOffset>0x121C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>I2SPCM2_CLK_REG</name>
+    <displayName>I2SPCM2_CLK_REG</displayName>
+    <description>I2SPCM2 Clock Register</description>
+    <addressOffset>0x1220</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>I2SPCM2_ASRC_CLK_REG</name>
+    <displayName>I2SPCM2_ASRC_CLK_REG</displayName>
+    <description>I2SPCM2_ASRC Clock Register</description>
+    <addressOffset>0x1224</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>I2SPCM2_BGR_REG</name>
+    <displayName>I2SPCM2_BGR_REG</displayName>
+    <description>I2SPCM2 Bus Gating Reset Register </description>
+    <addressOffset>0x122C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>I2SPCM3_CLK_REG</name>
+    <displayName>I2SPCM3_CLK_REG</displayName>
+    <description>I2SPCM3 Clock Register</description>
+    <addressOffset>0x1230</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>I2SPCM3_BGR_REG</name>
+    <displayName>I2SPCM3_BGR_REG</displayName>
+    <description>I2SPCM3 Bus Gating Reset Register </description>
+    <addressOffset>0x123C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>I2SPCM4_CLK_REG</name>
+    <displayName>I2SPCM4_CLK_REG</displayName>
+    <description>I2SPCM4 Clock Register</description>
+    <addressOffset>0x1240</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>I2SPCM4_BGR_REG</name>
+    <displayName>I2SPCM4_BGR_REG</displayName>
+    <description>I2SPCM4 Bus Gating Reset Register </description>
+    <addressOffset>0x124C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OWA_TX_CLK_REG</name>
+    <displayName>OWA_TX_CLK_REG</displayName>
+    <description>OWA TX Clock Register</description>
+    <addressOffset>0x1280</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OWA_RX_CLK_REG</name>
+    <displayName>OWA_RX_CLK_REG</displayName>
+    <description>OWA RX Clock Register</description>
+    <addressOffset>0x1284</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -887,8 +1728,8 @@
    <register>
     <name>OWA_BGR_REG</name>
     <displayName>OWA_BGR_REG</displayName>
-    <description>OWA Bus Gating Reset Register</description>
-    <addressOffset>0xA2C</addressOffset>
+    <description>OWA Bus Gating Reset Register </description>
+    <addressOffset>0x128C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -897,7 +1738,7 @@
     <name>DMIC_CLK_REG</name>
     <displayName>DMIC_CLK_REG</displayName>
     <description>DMIC Clock Register</description>
-    <addressOffset>0xA40</addressOffset>
+    <addressOffset>0x12C0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -905,53 +1746,8 @@
    <register>
     <name>DMIC_BGR_REG</name>
     <displayName>DMIC_BGR_REG</displayName>
-    <description>DMIC Bus Gating Reset Register</description>
-    <addressOffset>0xA4C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>AUDIO_CODEC_1X_CLK_REG</name>
-    <displayName>AUDIO_CODEC_1X_CLK_REG</displayName>
-    <description>AUDIO CODEC 1X Clock Register</description>
-    <addressOffset>0xA50</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>AUDIO_CODEC_4X_CLK_REG</name>
-    <displayName>AUDIO_CODEC_4X_CLK_REG</displayName>
-    <description>AUDIO CODEC 4X Clock Register</description>
-    <addressOffset>0xA54</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>AUDIO_CODEC_BGR_REG</name>
-    <displayName>AUDIO_CODEC_BGR_REG</displayName>
-    <description>AUDIO CODEC Bus Gating Reset Register</description>
-    <addressOffset>0xA5C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>AUDIO_HUB_CLK_REG</name>
-    <displayName>AUDIO_HUB_CLK_REG</displayName>
-    <description>AUDIO_HUB Clock Register</description>
-    <addressOffset>0xA60</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>AUDIO_HUB_BGR_REG</name>
-    <displayName>AUDIO_HUB_BGR_REG</displayName>
-    <description>AUDIO_HUB Bus Gating Reset Register</description>
-    <addressOffset>0xA6C</addressOffset>
+    <description>DMIC Bus Gating Reset Register </description>
+    <addressOffset>0x12CC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -960,7 +1756,16 @@
     <name>USB0_CLK_REG</name>
     <displayName>USB0_CLK_REG</displayName>
     <description>USB0 Clock Register</description>
-    <addressOffset>0xA70</addressOffset>
+    <addressOffset>0x1300</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB0_BGR_REG</name>
+    <displayName>USB0_BGR_REG</displayName>
+    <description>USB0 Bus Gating Reset Register </description>
+    <addressOffset>0x1304</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -968,62 +1773,296 @@
    <register>
     <name>USB1_CLK_REG</name>
     <displayName>USB1_CLK_REG</displayName>
-    <description>USB1 Clock Register</description>
-    <addressOffset>0xA74</addressOffset>
+    <description>USB1 Clock Register </description>
+    <addressOffset>0x1308</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>USB2_CLK_REG</name>
-    <displayName>USB2_CLK_REG</displayName>
-    <description>USB2 Clock Register</description>
-    <addressOffset>0xA78</addressOffset>
+    <name>USB1_BGR_REG</name>
+    <displayName>USB1_BGR_REG</displayName>
+    <description>USB1 Bus Gating Reset Register </description>
+    <addressOffset>0x130C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>USB3_CLK_REG</name>
-    <displayName>USB3_CLK_REG</displayName>
-    <description>USB3 Clock Register</description>
-    <addressOffset>0xA7C</addressOffset>
+    <name>USB0_USB1_REF_CLK_REG</name>
+    <displayName>USB0_USB1_REF_CLK_REG</displayName>
+    <description>USB0_USB1_REF Clock Register </description>
+    <addressOffset>0x1340</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>USB_BGR_REG</name>
-    <displayName>USB_BGR_REG</displayName>
-    <description>USB Bus Gating Reset Register</description>
-    <addressOffset>0xA8C</addressOffset>
+    <name>USB2_U2_REF_CLK_REG</name>
+    <displayName>USB2_U2_REF_CLK_REG</displayName>
+    <description>USB2_U2_REF Clock Register </description>
+    <addressOffset>0x1348</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>LRADC_BGR_REG</name>
-    <displayName>LRADC_BGR_REG</displayName>
-    <description>LRADC Bus Gating Reset Register</description>
-    <addressOffset>0xA9C</addressOffset>
+    <name>USB2_SUSPEND_CLK_REG</name>
+    <displayName>USB2_SUSPEND_CLK_REG</displayName>
+    <description>USB2_SUSPEND Clock Register </description>
+    <addressOffset>0x1350</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>HDMI0_CLK_REG</name>
-    <displayName>HDMI0_CLK_REG</displayName>
-    <description>HDMI0 Clock Register</description>
-    <addressOffset>0xB00</addressOffset>
+    <name>USB2_MF_CLK_REG</name>
+    <displayName>USB2_MF_CLK_REG</displayName>
+    <description>USB2_MF Clock Register </description>
+    <addressOffset>0x1354</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>HDMI0_SLOW_CLK_REG</name>
-    <displayName>HDMI0_SLOW_CLK_REG</displayName>
-    <description>HDMI0 Slow Clock Register</description>
-    <addressOffset>0xB04</addressOffset>
+    <name>USB2_BGR_REG</name>
+    <displayName>USB2_BGR_REG</displayName>
+    <description>USB2 Bus Gating Reset Register </description>
+    <addressOffset>0x135C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB2_U3_UTMI_CLK_REG</name>
+    <displayName>USB2_U3_UTMI_CLK_REG</displayName>
+    <description>USB2_U3_UTMI Clock Register</description>
+    <addressOffset>0x1360</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>USB2_U2_PIPE_CLK_REG</name>
+    <displayName>USB2_U2_PIPE_CLK_REG</displayName>
+    <description>USB2_U2_PIPE Clock Register</description>
+    <addressOffset>0x1364</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PCIE0_AUX_CLK_REG</name>
+    <displayName>PCIE0_AUX_CLK_REG</displayName>
+    <description>PCIE0_AUX Clock Register</description>
+    <addressOffset>0x1380</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PCIE0_AXI_SLV_CLK_REG</name>
+    <displayName>PCIE0_AXI_SLV_CLK_REG</displayName>
+    <description>PCIE0_AXI_SLV Clock Register</description>
+    <addressOffset>0x1384</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PCIE0_BGR_REG</name>
+    <displayName>PCIE0_BGR_REG</displayName>
+    <description>PCIE0 Bus Gating Reset Register</description>
+    <addressOffset>0x138C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SERDES_PHY_CFG_CLK_REG</name>
+    <displayName>SERDES_PHY_CFG_CLK_REG</displayName>
+    <description>SERDES_PHY_CFG Clock Register</description>
+    <addressOffset>0x13C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SERDES_BGR_REG</name>
+    <displayName>SERDES_BGR_REG</displayName>
+    <description>SERDES Bus Gating Reset Register </description>
+    <addressOffset>0x13C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GMAC_PTP_CLK_REG</name>
+    <displayName>GMAC_PTP_CLK_REG</displayName>
+    <description>GMAC_PTP Clock Register</description>
+    <addressOffset>0x1400</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GMAC0_PHY_CLK_REG</name>
+    <displayName>GMAC0_PHY_CLK_REG</displayName>
+    <description>GMAC0_PHY Clock Register </description>
+    <addressOffset>0x1410</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GMAC0_BGR_REG</name>
+    <displayName>GMAC0_BGR_REG</displayName>
+    <description>GMAC0 Bus Gating Reset Register </description>
+    <addressOffset>0x141C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VO0_TCONLCD0_CLK_REG</name>
+    <displayName>VO0_TCONLCD0_CLK_REG</displayName>
+    <description>VO0_TCONLCD0 Clock Register</description>
+    <addressOffset>0x1500</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VO0_TCONLCD0_BGR_REG</name>
+    <displayName>VO0_TCONLCD0_BGR_REG</displayName>
+    <description>VO0_TCONLCD0 Bus Gating Reset Register </description>
+    <addressOffset>0x1504</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VO0_TCONLCD1_CLK_REG</name>
+    <displayName>VO0_TCONLCD1_CLK_REG</displayName>
+    <description>VO0_TCONLCD1 Clock Register </description>
+    <addressOffset>0x1508</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VO0_TCONLCD1_BGR_REG</name>
+    <displayName>VO0_TCONLCD1_BGR_REG</displayName>
+    <description>VO0_TCONLCD1 Bus Gating Reset Register </description>
+    <addressOffset>0x150C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LVDS0_BGR_REG</name>
+    <displayName>LVDS0_BGR_REG</displayName>
+    <description>LVDS0 Bus Gating Reset Register </description>
+    <addressOffset>0x1544</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LVDS1_BGR_REG</name>
+    <displayName>LVDS1_BGR_REG</displayName>
+    <description>LVDS1 Bus Gating Reset Register </description>
+    <addressOffset>0x154C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI0_CLK_REG</name>
+    <displayName>DSI0_CLK_REG</displayName>
+    <description>DSI0 Clock Register </description>
+    <addressOffset>0x1580</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI0_BGR_REG</name>
+    <displayName>DSI0_BGR_REG</displayName>
+    <description>DSI0 Bus Gating Reset Register </description>
+    <addressOffset>0x1584</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI1_CLK_REG</name>
+    <displayName>DSI1_CLK_REG</displayName>
+    <description>DSI1 Clock Register </description>
+    <addressOffset>0x1588</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DSI1_BGR_REG</name>
+    <displayName>DSI1_BGR_REG</displayName>
+    <description>DSI1 Bus Gating Reset Register </description>
+    <addressOffset>0x158C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>COMBPHY0_CLK_REG</name>
+    <displayName>COMBPHY0_CLK_REG</displayName>
+    <description>COMBPHY0 Clock Register</description>
+    <addressOffset>0x15C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>COMBPHY1_CLK_REG</name>
+    <displayName>COMBPHY1_CLK_REG</displayName>
+    <description>COMBPHY1 Clock Register</description>
+    <addressOffset>0x15C4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TCONTV0_BGR_REG</name>
+    <displayName>TCONTV0_BGR_REG</displayName>
+    <description>TCONTV0 Bus Gating Reset Register </description>
+    <addressOffset>0x1604</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TCONTV1_BGR_REG</name>
+    <displayName>TCONTV1_BGR_REG</displayName>
+    <description>TCONTV1 Bus Gating Reset Register </description>
+    <addressOffset>0x160C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EDP_TV_CLK_REG</name>
+    <displayName>EDP_TV_CLK_REG</displayName>
+    <description>EDP_TV Clock Register </description>
+    <addressOffset>0x1640</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EDP_BGR_REG</name>
+    <displayName>EDP_BGR_REG</displayName>
+    <description>EDP Bus Gating Reset Register </description>
+    <addressOffset>0x164C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -1031,8 +2070,17 @@
    <register>
     <name>HDMI_CEC_CLK_REG</name>
     <displayName>HDMI_CEC_CLK_REG</displayName>
-    <description>HDMI CEC Clock Register</description>
-    <addressOffset>0xB10</addressOffset>
+    <description>HDMI CEC Clock Register </description>
+    <addressOffset>0x1680</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>HDMI_TV_CLK_REG</name>
+    <displayName>HDMI_TV_CLK_REG</displayName>
+    <description>HDMI_TV Clock Register </description>
+    <addressOffset>0x1684</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -1040,125 +2088,125 @@
    <register>
     <name>HDMI_BGR_REG</name>
     <displayName>HDMI_BGR_REG</displayName>
-    <description>HDMI Bus Gating Reset Register</description>
-    <addressOffset>0xB1C</addressOffset>
+    <description>HDMI Bus Gating Reset Register </description>
+    <addressOffset>0x168C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DISPLAY_IF_TOP_BGR_REG</name>
-    <displayName>DISPLAY_IF_TOP_BGR_REG</displayName>
-    <description>DISPLAY_IF_TOP BUS GATING RESET Register</description>
-    <addressOffset>0xB5C</addressOffset>
+    <name>HDMI_SFR_CLK_REG</name>
+    <displayName>HDMI_SFR_CLK_REG</displayName>
+    <description>HDMI SFR Clock Register</description>
+    <addressOffset>0x1690</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON_LCD0_CLK_REG</name>
-    <displayName>TCON_LCD0_CLK_REG</displayName>
-    <description>TCON LCD0 Clock Register</description>
-    <addressOffset>0xB60</addressOffset>
+    <name>HDCP_ESM_CLK_REG</name>
+    <displayName>HDCP_ESM_CLK_REG</displayName>
+    <description>HDCP ESM Clock Register</description>
+    <addressOffset>0x1694</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON_LCD1_CLK_REG</name>
-    <displayName>TCON_LCD1_CLK_REG</displayName>
-    <description>TCON LCD1 Clock Register</description>
-    <addressOffset>0xB64</addressOffset>
+    <name>DPSS_TOP0_BGR_REG</name>
+    <displayName>DPSS_TOP0_BGR_REG</displayName>
+    <description>DPSS_TOP0 Bus Gating Reset Register </description>
+    <addressOffset>0x16C4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON_LCD_BGR_REG</name>
-    <displayName>TCON_LCD_BGR_REG</displayName>
-    <description>TCON LCD BUS GATING RESET Register</description>
-    <addressOffset>0xB7C</addressOffset>
+    <name>DPSS_TOP1_BGR_REG</name>
+    <displayName>DPSS_TOP1_BGR_REG</displayName>
+    <description>DPSS_TOP1 Bus Gating Reset Register </description>
+    <addressOffset>0x16CC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON_TV0_CLK_REG</name>
-    <displayName>TCON_TV0_CLK_REG</displayName>
-    <description>TCON TV0 Clock Register</description>
-    <addressOffset>0xB80</addressOffset>
+    <name>VIDEO_OUT0_BGR_REG</name>
+    <displayName>VIDEO_OUT0_BGR_REG</displayName>
+    <description>VIDEO_OUT0 Bus Gating Reset Register </description>
+    <addressOffset>0x16E4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON_TV1_CLK_REG</name>
-    <displayName>TCON_TV1_CLK_REG</displayName>
-    <description>TCON TV1 Clock Register</description>
-    <addressOffset>0xB84</addressOffset>
+    <name>VIDEO_OUT1_BGR_REG</name>
+    <displayName>VIDEO_OUT1_BGR_REG</displayName>
+    <description>VIDEO_OUT1 Bus Gating Reset Register </description>
+    <addressOffset>0x16EC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TCON_TV_BGR_REG</name>
-    <displayName>TCON_TV_BGR_REG</displayName>
-    <description>TCON TV GATING RESET Register</description>
-    <addressOffset>0xB9C</addressOffset>
+    <name>LEDC_CLK_REG</name>
+    <displayName>LEDC_CLK_REG</displayName>
+    <description>LEDC Clock Register </description>
+    <addressOffset>0x1700</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>LVDS_BGR_REG</name>
-    <displayName>LVDS_BGR_REG</displayName>
-    <description>LVDS BUS GATING RESET Register</description>
-    <addressOffset>0xBAC</addressOffset>
+    <name>LEDC_BGR_REG</name>
+    <displayName>LEDC_BGR_REG</displayName>
+    <description>LEDC Bus Gating Reset Register </description>
+    <addressOffset>0x1704</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TVE0_CLK_REG</name>
-    <displayName>TVE0_CLK_REG</displayName>
-    <description>TVE0 Clock Register</description>
-    <addressOffset>0xBB0</addressOffset>
+    <name>DSC_BGR_REG</name>
+    <displayName>DSC_BGR_REG</displayName>
+    <description>DSC Bus Gating Reset Register</description>
+    <addressOffset>0x1744</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TVE_BGR_REG</name>
-    <displayName>TVE_BGR_REG</displayName>
-    <description>TVE BUS GATING RESET Register</description>
-    <addressOffset>0xBBC</addressOffset>
+    <name>CSI_MASTER0_CLK_REG</name>
+    <displayName>CSI_MASTER0_CLK_REG</displayName>
+    <description>CSI Master0 Clock Register </description>
+    <addressOffset>0x1800</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CSI_TOP_CLK_REG</name>
-    <displayName>CSI_TOP_CLK_REG</displayName>
-    <description>CSI TOP Clock Register</description>
-    <addressOffset>0xC04</addressOffset>
+    <name>CSI_MASTER1_CLK_REG</name>
+    <displayName>CSI_MASTER1_CLK_REG</displayName>
+    <description>CSI Master1 Clock Register </description>
+    <addressOffset>0x1804</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CSI_MST_CLK0_REG</name>
-    <displayName>CSI_MST_CLK0_REG</displayName>
-    <description>CSI_Master Clock0 Register</description>
-    <addressOffset>0xC08</addressOffset>
+    <name>CSI_MASTER2_CLK_REG</name>
+    <displayName>CSI_MASTER2_CLK_REG</displayName>
+    <description>CSI Master2 Clock Register </description>
+    <addressOffset>0x1808</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CSI_MST_CLK1_REG</name>
-    <displayName>CSI_MST_CLK1_REG</displayName>
-    <description>CSI_Master Clock1 Register</description>
-    <addressOffset>0xC0C</addressOffset>
+    <name>CSI_CLK_REG</name>
+    <displayName>CSI_CLK_REG</displayName>
+    <description>CSI Clock Register </description>
+    <addressOffset>0x1840</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -1166,80 +2214,377 @@
    <register>
     <name>CSI_BGR_REG</name>
     <displayName>CSI_BGR_REG</displayName>
-    <description>CSI Bus Gating Reset Register</description>
-    <addressOffset>0xC2C</addressOffset>
+    <description>CSI Bus Gating Reset Register </description>
+    <addressOffset>0x1844</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>HDMI_HDCP_CLK_REG</name>
-    <displayName>HDMI_HDCP_CLK_REG</displayName>
-    <description>HDMI HDCP Clock Register</description>
-    <addressOffset>0xC40</addressOffset>
+    <name>ISP_CLK_REG</name>
+    <displayName>ISP_CLK_REG</displayName>
+    <description>ISP Clock Register </description>
+    <addressOffset>0x1860</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>HDMI_HDCP_BGR_REG</name>
-    <displayName>HDMI_HDCP_BGR_REG</displayName>
-    <description>HDMI HDCP Bus Gating Reset Register</description>
-    <addressOffset>0xC4C</addressOffset>
+    <name>VIDEO_IN_BGR_REG</name>
+    <displayName>VIDEO_IN_BGR_REG</displayName>
+    <description>VIDEO_IN Bus Gating Reset Register </description>
+    <addressOffset>0x1884</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CCU_SEC_SWITCH_REG</name>
-    <displayName>CCU_SEC_SWITCH_REG</displayName>
-    <description>CCU Security Switch Register</description>
-    <addressOffset>0xF00</addressOffset>
+    <name>DDRPLL_GATE_EN_REG</name>
+    <displayName>DDRPLL_GATE_EN_REG</displayName>
+    <description>DDRPLL Gate Enable Register </description>
+    <addressOffset>0x1904</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PLL_LOCK_DBG_CTRL_REG</name>
-    <displayName>PLL_LOCK_DBG_CTRL_REG</displayName>
-    <description>PLL Lock Debug Control Register</description>
-    <addressOffset>0xF04</addressOffset>
+    <name>PERI0PLL_GATE_EN_REG</name>
+    <displayName>PERI0PLL_GATE_EN_REG</displayName>
+    <description>PERI0PLL Gate Enable Register </description>
+    <addressOffset>0x1908</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>FRE_DET_CTRL_REG</name>
-    <displayName>FRE_DET_CTRL_REG</displayName>
-    <description>Frequency Detect Control Register</description>
-    <addressOffset>0xF08</addressOffset>
+    <name>PERI1PLL_GATE_EN_REG</name>
+    <displayName>PERI1PLL_GATE_EN_REG</displayName>
+    <description>PERI1PLL Gate Enable Register </description>
+    <addressOffset>0x190C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>FRE_UP_LIM_REG</name>
-    <displayName>FRE_UP_LIM_REG</displayName>
-    <description>Frequency Up Limit Register</description>
-    <addressOffset>0xF0C</addressOffset>
+    <name>VIDEOPLL_GATE_EN_REG</name>
+    <displayName>VIDEOPLL_GATE_EN_REG</displayName>
+    <description>VIDEOPLL Gate Enable Register </description>
+    <addressOffset>0x1910</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>FRE_DOWN_LIM_REG</name>
-    <displayName>FRE_DOWN_LIM_REG</displayName>
-    <description>Frequency Down Limit Register</description>
-    <addressOffset>0xF10</addressOffset>
+    <name>GPUPLL_GATE_EN_REG</name>
+    <displayName>GPUPLL_GATE_EN_REG</displayName>
+    <description>GPUPLL Gate Enable Register </description>
+    <addressOffset>0x1914</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CCU_24M_27M_CLK_OUTPUT_REG</name>
-    <displayName>CCU_24M_27M_CLK_OUTPUT_REG</displayName>
-    <description>24M or 27M Clock Output Register</description>
-    <addressOffset>0xF20</addressOffset>
+    <name>VEPLL_GATE_EN_REG</name>
+    <displayName>VEPLL_GATE_EN_REG</displayName>
+    <description>VEPLL Gate Enable Register </description>
+    <addressOffset>0x1918</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AUDIOPLL_GATE_EN_REG</name>
+    <displayName>AUDIOPLL_GATE_EN_REG</displayName>
+    <description>AUDIOPLL Gate Enable Register </description>
+    <addressOffset>0x191C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NPUPLL_GATE_EN_REG</name>
+    <displayName>NPUPLL_GATE_EN_REG</displayName>
+    <description>NPUPLL Gate Enable Register</description>
+    <addressOffset>0x1920</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DEPLL_GATE_EN_REG</name>
+    <displayName>DEPLL_GATE_EN_REG</displayName>
+    <description>DEPLL Gate Enable Register </description>
+    <addressOffset>0x1928</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DDRPLL_GATE_STAT_REG</name>
+    <displayName>DDRPLL_GATE_STAT_REG</displayName>
+    <description>DDRPLL Gate Status Register </description>
+    <addressOffset>0x1984</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PERI0PLL_GATE_STAT_REG</name>
+    <displayName>PERI0PLL_GATE_STAT_REG</displayName>
+    <description>PERI0PLL Gate Status Register </description>
+    <addressOffset>0x1988</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PERI1PLL_GATE_STAT_REG</name>
+    <displayName>PERI1PLL_GATE_STAT_REG</displayName>
+    <description>PERI1PLL Gate Status Register </description>
+    <addressOffset>0x198C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VIDEOPLL_GATE_STAT_REG</name>
+    <displayName>VIDEOPLL_GATE_STAT_REG</displayName>
+    <description>VIDEOPLL Gate Status Register </description>
+    <addressOffset>0x1990</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GPUPLL_GATE_STAT_REG</name>
+    <displayName>GPUPLL_GATE_STAT_REG</displayName>
+    <description>GPUPLL Gate Status Register </description>
+    <addressOffset>0x1994</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VEPLL_GATE_STAT_REG</name>
+    <displayName>VEPLL_GATE_STAT_REG</displayName>
+    <description>VEPLL Gate Status Register </description>
+    <addressOffset>0x1998</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AUDIOPLL_GATE_STAT_REG</name>
+    <displayName>AUDIOPLL_GATE_STAT_REG</displayName>
+    <description>AUDIOPLL Gate Status Register </description>
+    <addressOffset>0x199C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NPUPLL_GATE_STAT_REG</name>
+    <displayName>NPUPLL_GATE_STAT_REG</displayName>
+    <description>NPUPLL Gate Status Register </description>
+    <addressOffset>0x19A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DEPLL_GATE_STAT_REG</name>
+    <displayName>DEPLL_GATE_STAT_REG</displayName>
+    <description>DEPLL Gate Status Register </description>
+    <addressOffset>0x19A8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CLK24M_GATE_EN_REG</name>
+    <displayName>CLK24M_GATE_EN_REG</displayName>
+    <description>CLK24M Gate Enable Register </description>
+    <addressOffset>0x1A00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CM_VI_CFG_REG</name>
+    <displayName>CM_VI_CFG_REG</displayName>
+    <description>CM VI Enable Configuration Register</description>
+    <addressOffset>0x1B00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CM_DESYS_CFG_REG</name>
+    <displayName>CM_DESYS_CFG_REG</displayName>
+    <description>CM DESYS Enable Configuration Register</description>
+    <addressOffset>0x1B04</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CM_VE_DEC_CFG_REG</name>
+    <displayName>CM_VE_DEC_CFG_REG</displayName>
+    <description>CM VE_DEC Enable Configuration Register</description>
+    <addressOffset>0x1B10</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CM_VE_ENC_CFG_REG</name>
+    <displayName>CM_VE_ENC_CFG_REG</displayName>
+    <description>CM VE_ENC Enable Configuration Register</description>
+    <addressOffset>0x1B14</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CM_NPU_CFG_REG</name>
+    <displayName>CM_NPU_CFG_REG</displayName>
+    <description>CM NPU Enable Configuration Register</description>
+    <addressOffset>0x1B1C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CM_PCIE0_CFG_REG</name>
+    <displayName>CM_PCIE0_CFG_REG</displayName>
+    <description>CM PCIE0 Enable Configuration Register</description>
+    <addressOffset>0x1B28</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CM_USB2_CFG_REG</name>
+    <displayName>CM_USB2_CFG_REG</displayName>
+    <description>CM USB2 Enable Configuration Register</description>
+    <addressOffset>0x1B30</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CM_VO_CFG_REG</name>
+    <displayName>CM_VO_CFG_REG</displayName>
+    <description>CM VO Enable Configuration Register</description>
+    <addressOffset>0x1B34</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CM_VO1_CFG_REG</name>
+    <displayName>CM_VO1_CFG_REG</displayName>
+    <description>CM VO1 Enable Configuration Register</description>
+    <addressOffset>0x1B38</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>APB2JTAG_CLK_REG</name>
+    <displayName>APB2JTAG_CLK_REG</displayName>
+    <description>APB2JTAG Clock Register</description>
+    <addressOffset>0x1C00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>APB2JTAG_BGR_REG</name>
+    <displayName>APB2JTAG_BGR_REG</displayName>
+    <description>APB2JTAG Bus Gating Reset Register</description>
+    <addressOffset>0x1C04</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCMU_SEC_SWITCH_REG</name>
+    <displayName>CCMU_SEC_SWITCH_REG</displayName>
+    <description>CCMU Security Switch Register </description>
+    <addressOffset>0x1F00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYSDAP_REQ_CTRL_REG</name>
+    <displayName>SYSDAP_REQ_CTRL_REG</displayName>
+    <description>SYSDAP REQ Control Register</description>
+    <addressOffset>0x1F10</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_CFG0_REG</name>
+    <displayName>PLL_CFG0_REG</displayName>
+    <description>PLL Configuration0 Register </description>
+    <addressOffset>0x1F20</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_CFG1_REG</name>
+    <displayName>PLL_CFG1_REG</displayName>
+    <description>PLL Configuration1 Register </description>
+    <addressOffset>0x1F24</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PLL_CFG2_REG</name>
+    <displayName>PLL_CFG2_REG</displayName>
+    <description>PLL Configuration2 Register </description>
+    <addressOffset>0x1F28</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCMU_FAN_GATE_REG</name>
+    <displayName>CCMU_FAN_GATE_REG</displayName>
+    <description>CCMU FANOUT CLOCK GATE Register</description>
+    <addressOffset>0x1F30</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CLK27M_FAN_REG</name>
+    <displayName>CLK27M_FAN_REG</displayName>
+    <description>CLK27M FANOUT Register</description>
+    <addressOffset>0x1F34</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CLK_FAN_REG</name>
+    <displayName>CLK_FAN_REG</displayName>
+    <description>PCLK FANOUT Register</description>
+    <addressOffset>0x1F38</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCMU_FAN_REG</name>
+    <displayName>CCMU_FAN_REG</displayName>
+    <description>CCMU FANOUT Register</description>
+    <addressOffset>0x1F3C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -3411,6 +4756,60 @@
     <displayName>TX_DLY</displayName>
     <description>UART TX Delay Register</description>
     <addressOffset>0x0CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FIFO_TM</name>
+    <displayName>FIFO_TM</displayName>
+    <description>FIFO TEST MODE Register</description>
+    <addressOffset>0x0D4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>READ_TX_FIFO</name>
+    <displayName>READ_TX_FIFO</displayName>
+    <description>READ TX FIFO Register</description>
+    <addressOffset>0x0D8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WRITE_RX_FIFO</name>
+    <displayName>WRITE_RX_FIFO</displayName>
+    <description>WRITE RX FIFO Register</description>
+    <addressOffset>0x0DC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>READ_RX_FIFO</name>
+    <displayName>READ_RX_FIFO</displayName>
+    <description>READ RX FIFO Register</description>
+    <addressOffset>0x0E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTSN_RST_DLY_TIME</name>
+    <displayName>RTSN_RST_DLY_TIME</displayName>
+    <description>RS485 RTSN PULL DOWM DELAY TIME Register</description>
+    <addressOffset>0x0E4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>UART_FCC</name>
+    <displayName>UART_FCC</displayName>
+    <description>UART FIFO Clock Control Register</description>
+    <addressOffset>0x0F0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
