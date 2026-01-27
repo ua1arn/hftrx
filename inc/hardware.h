@@ -407,6 +407,7 @@ void hardware_adc_initialize(void);
 void watchdog_initialize(void);	/* разрешение сторожевого таймера в устройстве */
 void watchdog_ping(void);	/* перезапуск сторожевого таймера */
 
+void blinkloop(void);
 
 #if CPUSTYLE_ARM
 
