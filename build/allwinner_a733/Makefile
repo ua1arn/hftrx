@@ -243,7 +243,7 @@ allZ:
 
 bootloader: BOOT2
 	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
-	./egontool -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
+	./egontool -base 0x00040000 -reset 0x00040100 $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_a733_boot.map - address of SystemDRAMInit, SystemExecAARCH64
 ifeq (1, 1)
@@ -258,10 +258,10 @@ ddrinit_a733_:
 	$(BUSYBOX) sleep 2s
 
 ddrinit_a733: ddrinit_a733_lpddr4.bin
-	$(XFEL) write 0x00028000 ddrinit_a733_lpddr4.bin
+	$(XFEL) write 0x00074000 ddrinit_a733_lpddr4.bin
 	$(XFEL) exec $(SystemDRAMInit)
 
-app_run: $(PROJECT)_app.alw32 $(DDRINIT)
+_app_run: $(PROJECT)_app.alw32 $(DDRINIT)
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec $(SystemExecAARCH64)
 
@@ -270,9 +270,9 @@ app_run64: $(PROJECT)_app.alw32 $(DDRINIT)
 	$(XFEL) exec $(SystemExecAARCH64)
 
 # debug for bootloader - check .ld file
-_app_run: bootloader
-	$(XFEL) write 0x00028000 fsbl.bt0
-	$(XFEL) exec 0x00028000 
+app_run: bootloader
+	$(XFEL) write 0x00074000 fsbl.bt0
+	$(XFEL) exec 0x00074000 
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.bt0

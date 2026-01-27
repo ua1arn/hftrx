@@ -2115,7 +2115,7 @@ void softdevay(void)
 void
 SystemInit(void)
 {
-#if 0 && defined (BOARD_BLINK_INITIALIZE)
+#if 1 && defined (BOARD_BLINK_INITIALIZE) && CPUSTYLE_A733
 	{
 		BOARD_BLINK_INITIALIZE();
 		for (;;)
