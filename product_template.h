@@ -112,7 +112,7 @@
 	#include "boards/arm_allwa733_ctlstyle_radaxa_cubie_a7z.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwa733_cpustyle_radaxa_cubie_a7z.h"
-##elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 0
+#elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_allwh618_ctlstyle_orangepi_zero2w.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwh618_cpustyle_orangepi_zero2w.h"
