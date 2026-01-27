@@ -313,6 +313,11 @@ uint_fast32_t allwnr_h3_get_hdmi_slow_freq(void);
 // Allwinner A133
 uint_fast32_t allwnr_a733_get_hosc_freq(void);
 uint_fast32_t allwnr_a733_get_losc_freq(void);
+uint_fast32_t allwnr_a733_get_cpux_freq(void);
+uint_fast32_t allwnr_a733_get_uart_freq(void);
+uint_fast32_t allwnr_a733_get_s_uart_freq(void);
+uint_fast32_t allwnr_a733_get_twi_freq(void);
+uint_fast32_t allwnr_a733_get_s_twi_freq(void);
 #endif /* CPUSTYLE_T507 */
 
 #if CPUSTYLE_T507

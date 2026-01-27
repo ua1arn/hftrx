@@ -1027,7 +1027,7 @@ static void gpioX_progUnsafeNoPull(
 	unsigned drv
 	)
 {
-#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133
+#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_A733
 	const portholder_t cfg0 = power4(iopins >> 0);	/* CFG0 bits */
 	const portholder_t cfg1 = power4(iopins >> 8);	/* CFG1 bits */
 	const portholder_t cfg2 = power4(iopins >> 16);	/* CFG2 bits */
@@ -2058,7 +2058,7 @@ arm_hardware_pioa_inputs(portholder_t ipins)
 
 #elif CPUSTYLE_ALLWINNER
 
-	//gpioX_poweron(GPIOH);
+	//gpioX_poweron(GPIOA);
 	gpioX_prog(GPIOA, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif CPUSTYLE_VM14
@@ -7266,6 +7266,11 @@ arm_hardware_pioj_inputs(portholder_t ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOJ, ipins, STM32MP1_GPIO_MODE_INPIUT, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_ALLWINNER
+
+	//gpioX_poweron(GPIOJ);
+	gpioX_prog(GPIOJ, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -7307,6 +7312,11 @@ arm_hardware_pioj_altfn2m(portholder_t opins, unsigned af)
 	stm32mp1_pioX_altfn(GPIOJ, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOJ, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_ALLWINNER
+
+	//gpioX_poweron(GPIOJ);
+	gpioX_prog(GPIOJ, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7350,6 +7360,11 @@ arm_hardware_pioj_altfn20(portholder_t opins, unsigned af)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOJ, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_ALLWINNER
+
+	//gpioX_poweron(GPIOJ);
+	gpioX_prog(GPIOJ, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -7391,6 +7406,11 @@ arm_hardware_pioj_altfn50(portholder_t opins, unsigned af)
 	stm32mp1_pioX_altfn(GPIOJ, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOJ, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_ALLWINNER
+
+	//gpioX_poweron(GPIOJ);
+	gpioX_prog(GPIOJ, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7435,6 +7455,11 @@ arm_hardware_piok_inputs(portholder_t ipins)
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOK, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
+#elif CPUSTYLE_ALLWINNER
+
+	//gpioX_poweron(GPIOK);
+	gpioX_prog(GPIOK, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -7478,6 +7503,11 @@ arm_hardware_piok_altfn2m(portholder_t opins, unsigned af)
 	stm32mp1_pioX_altfn(GPIOK, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOK, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_ALLWINNER
+
+	//gpioX_poweron(GPIOK);
+	gpioX_prog(GPIOK, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7571,6 +7601,11 @@ arm_hardware_piok_altfn50(portholder_t opins, unsigned af)
 	stm32mp1_pioX_altfn(GPIOK, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOK, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_ALLWINNER
+
+	//gpioX_poweron(GPIOK);
+	gpioX_prog(GPIOK, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #else
 	#error Undefined CPUSTYLE_XXX

@@ -55,8 +55,8 @@ OBJDUMP = $(TRGT)objdump
 
 # ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
 
-#CORE = -mcpu=cortex-a76+fp+simd -mstrict-align -momit-leaf-frame-pointer --specs=nosys.specs
-CORE = -mcpu=cortex-a76 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
+#CORE = -mcpu=cortex-a55+fp+simd -mstrict-align -momit-leaf-frame-pointer --specs=nosys.specs
+CORE = -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
 
 # Define optimisation level here
 #OPT = -Og
@@ -326,9 +326,9 @@ clean: version
 	-$(RM) fsbl.bt0
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
-	-$(RM) $(PROJECT)_app.alw32 $(PROJECT)_app.bin $(PROJECT)_boot.bin 
+	-$(RM) $(PROJECT)_app.alw32 $(PROJECT)_app.bin $(PROJECT)_boot.bin
 	-$(RM) $(PROJECT64)_app.elf $(PROJECT64)_app.map
-	-$(RM) $(PROJECT64)_app.alw32 $(PROJECT64)_app.bin $(PROJECT64)_boot.bin 
+	-$(RM) $(PROJECT64)_app.alw32 $(PROJECT64)_app.bin $(PROJECT64)_boot.bin
 	-$(RM) $(PROJECT)_app.lst 
 
 version:

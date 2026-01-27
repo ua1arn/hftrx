@@ -14,24 +14,24 @@
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 
 //#define WITHSPISW 	1	/* Использование программного управления SPI. */
 
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 //#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
-#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 //#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
 //#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 #define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
-#define WITHETHHW 1	/* Hardware Ethernet controller */
+//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #if WITHDEBUG
-	#define WITHUART0HW	1	/* tx: PH0, rx: PH1 Используется периферийный контроллер последовательного порта UART0 */
+	#define WITHUART0HW	1	/* CPUX-TX: PB9, CPUX-RX: PB10 Используется периферийный контроллер последовательного порта UART0 */
 	//#define WITHUART0HW_FIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
@@ -43,7 +43,7 @@
 
 #if WITHISBOOTLOADER
 
-	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
+	//#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
 	#define CONFIG_DRAM_CLK 720
 	#define CONFIG_MACH_SUN50I_H616 1
@@ -609,13 +609,14 @@
 #endif /* WITHSPIHW */
 
 // WITHUART0HW
-// Используется периферийный контроллер последовательного порта UART5 */
+// Используется периферийный контроллер последовательного порта UART0
+// CPUX-TX: PB9, CPUX-RX: PB10
 #define HARDWARE_UART0_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 0; /* PH0 UART0_TX */ \
-		const portholder_t RXMASK = UINT32_C(1) << 1; /* PH1 UART0_RX - pull-up RX data */  \
-		arm_hardware_pioh_altfn2m(TXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_altfn2m(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_updown(RXMASK, RXMASK, 0); \
+		const portholder_t TXMASK = UINT32_C(1) << 9; /* PB9 UART0_TX */ \
+		const portholder_t RXMASK = UINT32_C(1) << 10; /* PB10 UART0_RX - pull-up RX data */  \
+		arm_hardware_piob_altfn2m(TXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piob_altfn2m(RXMASK, GPIO_CFG_AF2); \
+		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
 
@@ -666,7 +667,7 @@
 		arm_hardware_piol_altfn2m(TARGET_S_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
 	} while (0)
 	#define TWIHARD_S_PTR S_TWI1
-	#define	TWIHARD_S_TWI0_FREQ (allwnr_a733_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_S_TWI1_FREQ (allwnr_a733_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 #endif
 
 #if 1
@@ -693,7 +694,7 @@
 		arm_hardware_pioh_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF5);		/* PH5 TWI3-SDA */ \
 	} while (0)
 	#define	TWIHARD_PTR TWI3	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnr_t507_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_a733_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
 
@@ -970,14 +971,15 @@
 
 #if 1
 
-	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 13)	// PC13 STATUS-LED - Green - to ground
+	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 2)	// PM2 - Green - to ground
 
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-		arm_hardware_piob_outputs(BOARD_BLINK_BIT0, 1 * BOARD_BLINK_BIT0); \
+		s_gpioX_setstate(S_GPIOM, BOARD_BLINK_BIT0, 0 * BOARD_BLINK_BIT0); \
+		s_gpioX_prog(S_GPIOM, BOARD_BLINK_BIT0, GPIO_CFG_OUT, GPIO_DRV_3, GPIO_PULL_NONE); \
 	} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
-		gpioX_setstate(GPIOB, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
+		s_gpioX_setstate(S_GPIOM, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
 	} while (0)
 #endif
 

@@ -241,6 +241,8 @@ bootloader_launch_app(uintptr_t startfunc, uint_fast8_t x64bit)
 	#elif CPUSTYLE_A133
 		CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
 		CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+	#elif CPUSTYLE_A733
+		#warning CPUSTYLE_A733 to be implemented
 	#else
 		#error Unexpected CPUSTYLE_xxx
 	#endif

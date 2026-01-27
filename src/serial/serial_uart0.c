@@ -440,7 +440,7 @@ hardware_uart0_set_speed(uint_fast32_t baudrate)
 
 	hardware_uartx_set_speed(UARTBASENAME(thisPORT), xc7z_get_uart_freq(), baudrate);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || (CPUSTYLE_A133)
+#elif CPUSTYLE_ALLWINNER
 
 	hardware_uartx_set_speed(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, baudrate);
 
