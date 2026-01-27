@@ -56,12 +56,13 @@ OBJDUMP = $(TRGT)objdump
 # ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
 
 #CORE = -mcpu=cortex-a55+fp+simd -mstrict-align -momit-leaf-frame-pointer --specs=nosys.specs
-CORE = -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
+#CORE = -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
+CORE = -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=vfpv4 --specs=nosys.specs
 
 # Define optimisation level here
 #OPT = -Og
-#OPT = -Ofast -flto
-OPT = -Ofast
+OPT = -Ofast -flto
+#OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
 USBXDIR = $(PRJROOT)/src/hal

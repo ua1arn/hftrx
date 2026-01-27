@@ -652,7 +652,7 @@
 
 #endif /* WITHKEYBOARD */
 
-#if 1
+#if 0
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	#define WITHSTWI1HW 1	// S_TWI1
 
@@ -670,7 +670,7 @@
 	#define	TWIHARD_S_TWI1_FREQ (allwnr_a733_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 #endif
 
-#if 1
+#if 0
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	#define WITHTWI3HW 1
 
@@ -983,7 +983,7 @@
 	} while (0)
 #endif
 
-#if 1//WITHISBOOTLOADER
+#if 0//WITHISBOOTLOADER
 
 	#define WITHSDRAM_AXP313	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP313A power management chip */
 

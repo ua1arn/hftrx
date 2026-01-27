@@ -2115,6 +2115,18 @@ void softdevay(void)
 void
 SystemInit(void)
 {
+#if 1 && defined (BOARD_BLINK_INITIALIZE)
+	{
+		BOARD_BLINK_INITIALIZE();
+		for (;;)
+		{
+			BOARD_BLINK_SETSTATE(1);
+			local_delay_ms(100);
+			BOARD_BLINK_SETSTATE(0);
+			local_delay_ms(100);
+		}
+	}
+#endif
 	//PRINTF("CCU->PLL_CPU_CTRL_REG=%08X\n", (unsigned) CCU->PLL_CPU_CTRL_REG);
 	//PRINTF("CCU->MBUS_MAT_CLK_GATING_REG=%08X\n", (unsigned) CCU->MBUS_MAT_CLK_GATING_REG);
 #if CPUSTYLE_VM14
