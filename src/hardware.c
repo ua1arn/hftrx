@@ -24,9 +24,10 @@
 //#include "task.h"
 #endif /* WITHRTOS */
 
+#if 0
 void blinkloop(void)
 {
-#if 1 && defined (BOARD_BLINK_INITIALIZE) && CPUSTYLE_A733
+#if 0 && defined (BOARD_BLINK_INITIALIZE)
 	{
 		BOARD_BLINK_INITIALIZE();
 		for (;;)
@@ -40,6 +41,14 @@ void blinkloop(void)
 #endif
 
 }
+
+void xtrap(void)
+{
+	dbg_putchar('#');
+	for (;;)
+		;
+}
+#endif
 
 #if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
@@ -2004,13 +2013,6 @@ sysinit_vbar_initialize(void)
 #endif /* (__GIC_PRESENT == 1) */
 }
 
-void xtrap(void)
-{
-	dbg_putchar('#');
-	for (;;)
-		;
-}
-
 // SystemInit (on Core #0)
 // Reset_CPUn_Handler ((on Core #1..)
 static void sysinit_smp_initialize(void)
@@ -2056,6 +2058,8 @@ static void sysinit_smp_initialize(void)
 	#endif /* WITHSMPSYSTEM */
 	__ISB();
 	__DSB();
+#else
+	#warning Unhandled __CORTEX_A
 #endif /* (__CORTEX_A == 9U) */
 }
 
