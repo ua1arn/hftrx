@@ -8982,6 +8982,53 @@ void hightests(void)
 		}
 	}
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
+#if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	if (1)
+	{
+		// GIC600 specs
+		uintptr_t base = GIC_BASE;
+		for (;base < (GIC_BASE + (64 * 1024 * 1024)); base += 64 * 1024)
+		{
+			//const uint32_t v = * (volatile uint32_t *) (base + 0xFFD0);
+			//PRINTF("0x%08X at 0x%08X\n", (unsigned) v, (unsigned) base);
+			const unsigned GICR_PIDR4 = * (volatile uint32_t *) (base + 0xFFD0);
+			const unsigned GICR_PIDR5 = * (volatile uint32_t *) (base + 0xFFD4);
+			const unsigned GICR_PIDR6 = * (volatile uint32_t *) (base + 0xFFD8);
+			const unsigned GICR_PIDR7 = * (volatile uint32_t *) (base + 0xFFDC);
+			const unsigned GICR_PIDR0 = * (volatile uint32_t *) (base + 0xFFE0);
+			const unsigned GICR_PIDR1 = * (volatile uint32_t *) (base + 0xFFE4);
+			const unsigned GICR_PIDR2 = * (volatile uint32_t *) (base + 0xFFE8);
+			const unsigned GICR_PIDR3 = * (volatile uint32_t *) (base + 0xFFEC);
+			const unsigned GICR_CIDR0 = * (volatile uint32_t *) (base + 0xFFF0);
+			const unsigned GICR_CIDR1 = * (volatile uint32_t *) (base + 0xFFF4);
+			const unsigned GICR_CIDR2 = * (volatile uint32_t *) (base + 0xFFF8);
+			const unsigned GICR_CIDR3 = * (volatile uint32_t *) (base + 0xFFFC);
+			if (GICR_PIDR4 == 0)
+				continue;
+			const char * label;
+			switch (GICR_PIDR0)
+			{
+			case 0x92:	label = "GICD"; break;
+			case 0x93:	label = "GICR"; break;
+			case 0x94:	label = "GITS"; break;
+			case 0x95:	label = "GICT"; break;
+			case 0x96:	label = "GICP"; break;
+			default:	label = "????"; break;
+			}
+			const unsigned GICR_CFGID0 = * (volatile uint32_t *) (base + 0xF000);
+			const unsigned GICR_CFGID1 = * (volatile uint32_t *) (base + 0xF004);
+			PRINTF("%p: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X (%s) GICR_CFGID0=%08X GICR_CFGID1=%08X\n",
+					(void *) base,
+					GICR_PIDR4, GICR_PIDR5, GICR_PIDR6, GICR_PIDR7, GICR_PIDR0, GICR_PIDR1, GICR_PIDR2, GICR_PIDR3,
+					GICR_CIDR0, GICR_CIDR1, GICR_CIDR2, GICR_CIDR3,
+					label,
+					GICR_CFGID0, GICR_CFGID1
+					);
+			//printhex32(b, (void *) b, 48);
+
+		}
+	}
+#endif
 #if 0 && (__CORTEX_A == 9U) && defined (SCU_CONTROL_BASE)
 	{
 		// SCU registers dump
