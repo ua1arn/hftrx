@@ -2594,7 +2594,7 @@
   <peripheral>
   <name>GICVSELF</name>
   <description></description>
-  <baseAddress>0x03024000</baseAddress>
+  <baseAddress>0x03404000</baseAddress>
   <registers>
    <register>
     <name>GICH_HCR</name>
@@ -2699,7 +2699,7 @@
   </peripheral>
   <peripheral derivedFrom="GICVSELF">
   <name>GICV</name>
-  <baseAddress>0x03025000</baseAddress>
+  <baseAddress>0x03405000</baseAddress>
   </peripheral>
   <peripheral>
   <name>GPIOB</name>

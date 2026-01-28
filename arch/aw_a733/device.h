@@ -128,11 +128,11 @@ typedef enum IRQn
 #define SPI2_BASE ((uintptr_t) 0x02542000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI3_BASE ((uintptr_t) 0x02543000)            /*!< SPI Serial Peripheral Interface Base */
 #define Timer0_CPUX_BASE ((uintptr_t) 0x03009000)     /*!< TIMER0  Base */
-#define GIC_BASE ((uintptr_t) 0x03020000)             /*!< GIC  Base */
-#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR  Base */
-#define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!< GIC_INTERFACE GIC CPU IF Base */
-#define GICVSELF_BASE ((uintptr_t) 0x03024000)        /*!< GICV  Base */
-#define GICV_BASE ((uintptr_t) 0x03025000)            /*!< GICV  Base */
+#define GIC_BASE ((uintptr_t) 0x03400000)             /*!< GIC  Base */
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03400000) /*!< GIC_DISTRIBUTOR  Base */
+#define GICVSELF_BASE ((uintptr_t) 0x03404000)        /*!< GICV  Base */
+#define GICV_BASE ((uintptr_t) 0x03405000)            /*!< GICV  Base */
+#define GIC_INTERFACE_BASE ((uintptr_t) 0x03440000)   /*!< GIC_INTERFACE GIC CPU IF Base */
 #define USB20_OTG_DEVICE_BASE ((uintptr_t) 0x05100000)/*!< USBOTG USB OTG Dual-Role Device controller Base */
 #define USB20_HOST0_EHCI_BASE ((uintptr_t) 0x05101000)/*!< USB_EHCI_Capability  Base */
 #define USB20_HOST0_OHCI_BASE ((uintptr_t) 0x05101400)/*!< USB_OHCI_Capability  Base */
