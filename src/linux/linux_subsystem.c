@@ -1158,55 +1158,6 @@ void stream_event_handler(void)
 	}
 }
 
-void * eth_stream_interrupt_thread(void * args)
-{
-	ssize_t nb;
-
-	int fd = open(LINUX_STREAM_INT_FILE, O_RDWR);
-    if (fd < 0) {
-        PRINTF("%s open failed\n", LINUX_STREAM_INT_FILE);
-        return NULL;
-    }
-
-	struct pollfd fds = {
-		.fd = fd,
-		.events = POLLIN,
-	};
-
-	resetn_stream = 1;
-	update_modem_ctrl();
-
-    while(1)
-    {
-    	uint32_t intr = 1; /* unmask */
-
-#if ! IQ_VIA_XDMA
-		nb = write(fd, & intr, sizeof(intr));
-		if (nb != (ssize_t) sizeof(intr)) {
-			perror("write");
-			close(fd);
-			exit(EXIT_FAILURE);
-		}
-#endif /* ! IQ_VIA_XDMA */
-
-		int ret = poll(& fds, 1, -1);
-		if (ret >= 1) {
-			nb = read(fd, & intr, sizeof(intr));
-			if (nb == (ssize_t) sizeof(intr) && stream_state == STREAM_CONNECTED)
-			{
-				uint32_t pos = get_stream_pos();
-				uint16_t offset = pos >= 512 ? 0 : 4096;
-				stream_receive(streambuf, offset);
-				safe_cond_signal(& ct_rts);
-			}
-		} else {
-			perror("poll()");
-			close(fd);
-			exit(EXIT_FAILURE);
-		}
-    }
-}
-
 void * eth_main_thread(void * args)
 {
 	struct sockaddr_in addr, addrClient;
@@ -1341,6 +1292,8 @@ void server_stop(void)
 		server_kill();
 		linux_cancel_thread(eth_main_t);
 		stream_state = STREAM_IDLE;
+		resetn_stream = 0;
+		update_modem_ctrl();
 #if AXI_IRQ_CONTROL
 	pl_irq_disable(irq_iq_hf_stream);
 #endif /* AXI_IRQ_CONTROL */
@@ -1351,8 +1304,10 @@ void server_start(void)
 {
 	if (stream_state == STREAM_IDLE)
 	{
+		resetn_stream = 1;
+		update_modem_ctrl();
 #if AXI_IRQ_CONTROL
-	pl_irq_enable(irq_iq_hf_stream);
+		pl_irq_enable(irq_iq_hf_stream);
 #endif /* AXI_IRQ_CONTROL */
 		linux_create_thread(& eth_main_t, eth_main_thread, 50, stream_thread_core);
 	}
@@ -1461,7 +1416,6 @@ void linux_iq_init(void)
 
 	set_stream_rate(STREAM_RATE_192K);
 	linux_init_cond(& ct_rts);
-	linux_create_thread(& eth_int_t, eth_stream_interrupt_thread, 90, stream_thread_core);
 #endif /* WITHEXTIO_LAN */
 #if defined (XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR)
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
