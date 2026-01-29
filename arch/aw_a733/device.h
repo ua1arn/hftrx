@@ -590,7 +590,57 @@ typedef struct CCU_Type
 /*!< GICD GIC Distributor */
 typedef struct GICD_Type
 {
-         RESERVED(0x000[0x10000 - 0x0000], uint8_t)
+    __IO uint32_t GICD_CTLR;                          /*!< Offset 0x000 (null) */
+    __IO uint32_t GICD_TYPER;                         /*!< Offset 0x004 (null) */
+    __IO uint32_t GICD_IIDR;                          /*!< Offset 0x008 (null) */
+         RESERVED(0x00C[0x0020 - 0x000C], uint8_t)
+    __IO uint32_t GICD_FCTLR;                         /*!< Offset 0x020 (null) */
+    __IO uint32_t GICD_SAC;                           /*!< Offset 0x024 (null) */
+         RESERVED(0x028[0x0040 - 0x0028], uint8_t)
+    __IO uint32_t GICD_SETSPI_NSR;                    /*!< Offset 0x040 (null) */
+         RESERVED(0x044[0x0048 - 0x0044], uint8_t)
+    __IO uint32_t GICD_CLRSPI_NSR;                    /*!< Offset 0x048 (null) */
+         RESERVED(0x04C[0x0050 - 0x004C], uint8_t)
+    __IO uint32_t GICD_SETSPI_SR;                     /*!< Offset 0x050 (null) */
+         RESERVED(0x054[0x0058 - 0x0054], uint8_t)
+    __IO uint32_t GICD_CLRSPI_SR;                     /*!< Offset 0x058 (null) */
+         RESERVED(0x05C[0x0080 - 0x005C], uint8_t)
+    __IO uint32_t GICD_IGROUPRn [0x020];              /*!< Offset 0x080 Interrupt Group Registers */
+    __IO uint32_t GICD_ISENABLERn [0x020];            /*!< Offset 0x100 Interrupt Set-Enable Registers */
+    __IO uint32_t GICD_ICENABLERn [0x020];            /*!< Offset 0x180 Interrupt Clear-Enable Registers */
+    __IO uint32_t GICD_ISPENDRn [0x020];              /*!< Offset 0x200 Interrupt Set-Pending Registers */
+    __IO uint32_t GICD_ICPENDRn [0x020];              /*!< Offset 0x280 Interrupt Clear-Pending Registers */
+    __IO uint32_t GICD_ISACTIVERn [0x020];            /*!< Offset 0x300 Interrupt Set-Active Registers */
+    __IO uint32_t GICD_ICACTIVERn [0x020];            /*!< Offset 0x380 Interrupt Clear-Active Registers */
+    __IO uint32_t GICD_IPRIORITYRn [0x004];           /*!< Offset 0x400 Interrupt Priority Registers */
+         RESERVED(0x410[0x0C00 - 0x0410], uint8_t)
+    __IO uint32_t GICD_ICFGRn [0x004];                /*!< Offset 0xC00 Interrupt Configuration Registers */
+         RESERVED(0xC10[0x0D00 - 0x0C10], uint8_t)
+    __IO uint32_t GICD_IGRPMODRn [0x004];             /*!< Offset 0xD00 Interrupt Group Modifier Registers */
+         RESERVED(0xD10[0x0E00 - 0x0D10], uint8_t)
+    __IO uint32_t GICD_NSACRn [0x004];                /*!< Offset 0xE00 Non-secure Access Control Registers */
+         RESERVED(0xE10[0x6100 - 0x0E10], uint8_t)
+    __IO uint64_t GICD_IROUTERn [0x004];              /*!< Offset 0x6100 Interrupt Routing Registers. */
+         RESERVED(0x6120[0xC000 - 0x6120], uint8_t)
+    __IO uint32_t GICD_CHIPSR;                        /*!< Offset 0xC000 Chip Status Register */
+    __IO uint32_t GICD_DCHIPR;                        /*!< Offset 0xC004 Default Chip Register */
+    __IO uint32_t GICD_CHIPR [0x004];                 /*!< Offset 0xC008 Chip Registers */
+         RESERVED(0xC018[0xF000 - 0xC018], uint8_t)
+    __IO uint64_t GICD_CFGID;                         /*!< Offset 0xF000 Configuration ID Register */
+         RESERVED(0xF008[0xFFD0 - 0xF008], uint8_t)
+    __IO uint32_t GICD_PIDR4;                         /*!< Offset 0xFFD0 Peripherial ID4 Register */
+    __IO uint32_t GICD_PIDR5;                         /*!< Offset 0xFFD4 Peripherial ID5 Register */
+    __IO uint32_t GICD_PIDR6;                         /*!< Offset 0xFFD8 Peripherial ID6 Register */
+    __IO uint32_t GICD_PIDR7;                         /*!< Offset 0xFFDC Peripherial ID7 Register */
+    __IO uint32_t GICD_PIDR0;                         /*!< Offset 0xFFE0 Peripherial ID0 Register */
+    __IO uint32_t GICD_PIDR1;                         /*!< Offset 0xFFE4 Peripherial ID1 Register */
+    __IO uint32_t GICD_PIDR2;                         /*!< Offset 0xFFE8 Peripherial ID2 Register */
+    __IO uint32_t GICD_PIDR3;                         /*!< Offset 0xFFEC Peripherial ID3 Register */
+    __IO uint32_t GICD_CIDR0;                         /*!< Offset 0xFFF0 Component ID 0 Register */
+    __IO uint32_t GICD_CIDR1;                         /*!< Offset 0xFFF4 Component ID 1 Register */
+    __IO uint32_t GICD_CIDR2;                         /*!< Offset 0xFFF8 Component ID 2 Register */
+    __IO uint32_t GICD_CIDR3;                         /*!< Offset 0xFFFC Component ID 3 Register */
+         RESERVED(0x10000[0x10000 - 0x10000], uint8_t)
 } GICD_TypeDef; /* size of structure = 0x10000 */
 /*
  * @brief GICP
