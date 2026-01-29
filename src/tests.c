@@ -8986,25 +8986,6 @@ void hightests(void)
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 #if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	{
-		//printhex32(0x03400000, (void *) 0x03400000, 0x10000);
-		printhex32(0x03460000, (void *) 0x03460000, 256);
-		{
-			#define xICPIDR1	(* (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0x04))
-			unsigned GICR_CFGID1 = * (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0xF004);
-			switch ((xICPIDR1 >> 24) & 0xFF)
-			{
-			case 0x02:	PRINTF("arm_gic_initialize: ARM GICv6\n"); break;
-			default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08X @%p)\n", (unsigned) xICPIDR1, & xICPIDR1); break;
-			}
-			switch ((GICR_CFGID1 >> 24) & 0xFF)
-			{
-			case 0x02:	PRINTF("arm_gic_initialize: ARM GICv6\n"); break;
-			case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
-			case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
-			default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08X @%p)\n", (unsigned) xICPIDR1, & xICPIDR1); break;
-			}
-			PRINTF("ncpus=%u\n", (unsigned) ((* (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0xF004)) >> 4) & 0xFF);
-		}
 		// GIC600 specs
 		uintptr_t base = GIC_BASE;
 		for (;base < (GIC_BASE + (64 * 1024 * 1024)); base += 4 * 1024)
@@ -9051,8 +9032,7 @@ void hightests(void)
 					comp_size
 					);
 			//printhex32(b, (void *) b, 48);
-			PRINTF("ncpus=%u\n", (unsigned) ((* (const volatile uint32_t *) (comp_base + 0xF004)) >> 4) & 0xFF);
-
+			//PRINTF("ncpus=%u\n", (unsigned) ((* (const volatile uint32_t *) (comp_base + 0xF004)) >> 4) & 0xFF);
 		}
 	}
 #endif

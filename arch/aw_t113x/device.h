@@ -12,29 +12,29 @@
 
 typedef enum IRQn
 {
-    SGI0_IRQn = 0,                                    /*!< GIC_INTERFACE GIC CPU IF */
-    SGI1_IRQn = 1,                                    /*!< GIC_INTERFACE GIC CPU IF */
-    SGI2_IRQn = 2,                                    /*!< GIC_INTERFACE GIC CPU IF */
-    SGI3_IRQn = 3,                                    /*!< GIC_INTERFACE GIC CPU IF */
-    SGI4_IRQn = 4,                                    /*!< GIC_INTERFACE GIC CPU IF */
-    SGI5_IRQn = 5,                                    /*!< GIC_INTERFACE GIC CPU IF */
-    SGI6_IRQn = 6,                                    /*!< GIC_INTERFACE GIC CPU IF */
-    SGI7_IRQn = 7,                                    /*!< GIC_INTERFACE GIC CPU IF */
-    SGI8_IRQn = 8,                                    /*!< GIC_INTERFACE GIC CPU IF */
-    SGI9_IRQn = 9,                                    /*!< GIC_INTERFACE GIC CPU IF */
-    SGI10_IRQn = 10,                                  /*!< GIC_INTERFACE GIC CPU IF */
-    SGI11_IRQn = 11,                                  /*!< GIC_INTERFACE GIC CPU IF */
-    SGI12_IRQn = 12,                                  /*!< GIC_INTERFACE GIC CPU IF */
-    SGI13_IRQn = 13,                                  /*!< GIC_INTERFACE GIC CPU IF */
-    SGI14_IRQn = 14,                                  /*!< GIC_INTERFACE GIC CPU IF */
-    SGI15_IRQn = 15,                                  /*!< GIC_INTERFACE GIC CPU IF */
-    VirtualMaintenanceInterrupt_IRQn = 25,            /*!< GIC_INTERFACE GIC CPU IF */
-    HypervisorTimer_IRQn = 26,                        /*!< GIC_INTERFACE GIC CPU IF */
-    VirtualTimer_IRQn = 27,                           /*!< GIC_INTERFACE GIC CPU IF */
-    Legacy_nFIQ_IRQn = 28,                            /*!< GIC_INTERFACE GIC CPU IF */
-    SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE GIC CPU IF */
-    NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE GIC CPU IF */
-    Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE GIC CPU IF */
+    SGI0_IRQn = 0,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI1_IRQn = 1,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI2_IRQn = 2,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI3_IRQn = 3,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI4_IRQn = 4,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI5_IRQn = 5,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI6_IRQn = 6,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI7_IRQn = 7,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI8_IRQn = 8,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI9_IRQn = 9,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI10_IRQn = 10,                                  /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI11_IRQn = 11,                                  /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI12_IRQn = 12,                                  /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI13_IRQn = 13,                                  /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI14_IRQn = 14,                                  /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI15_IRQn = 15,                                  /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    VirtualMaintenanceInterrupt_IRQn = 25,            /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    HypervisorTimer_IRQn = 26,                        /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    VirtualTimer_IRQn = 27,                           /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    Legacy_nFIQ_IRQn = 28,                            /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE GICC GIC CPU Interface */
     CPUX_MSGBOX_R_IRQn = 32,                          /*!< MSGBOX Message Box */
     UART0_IRQn = 34,                                  /*!< UART  */
     UART1_IRQn = 35,                                  /*!< UART  */
@@ -187,8 +187,8 @@ typedef enum IRQn
 #define HSTIMER_BASE ((uintptr_t) 0x03008000)         /*!< HSTIMER High Speed Timer (HSTimer) Base */
 #define DCU_BASE ((uintptr_t) 0x03010000)             /*!< DCU Debug control interface? Base */
 #define GIC_BASE ((uintptr_t) 0x03020000)             /*!< GIC  Base */
-#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR GIC DISTRIBUTOR Base */
-#define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!< GIC_INTERFACE GIC CPU IF Base */
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03021000) /*!< GIC_DISTRIBUTOR GIC DISTRIBUTOR; GICD Base */
+#define GIC_INTERFACE_BASE ((uintptr_t) 0x03022000)   /*!< GIC_INTERFACE GICC GIC CPU Interface Base */
 #define GICVSELF_BASE ((uintptr_t) 0x03024000)        /*!< GICV  Base */
 #define GICV_BASE ((uintptr_t) 0x03025000)            /*!< GICV  Base */
 #define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Crypto Engine (CE) Base */
