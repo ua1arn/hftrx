@@ -34,34 +34,6 @@
 #regdef; pad 0; 0x10000; alignment
 #typeend;
 
-
-#type; GICD; GIC Distributor
-#base; GICD 0x03400000; GIC Distributor 
-#typeend;
-
-#type; GICT; GIC ITS translation
-#base; GICT 0x03420000; GIC ITS translation
-#typeend;
-
-#type; GICP; GIC Performance Monitoring Unit
-#base; GICP 0x03430000; GIC Performance Monitoring Unit
-#typeend;
-
-#type; GITS; GIC Secure Access Control
-#base; GITS 0x03440000; GIC Secure Access Control
-#typeend;
-
-#type; GICR; GIC Redistributor 
-#base; GICR0 0x03460000; GIC Redistributor 
-#base; GICR1 0x03480000; GIC Redistributor 
-#base; GICR2 0x034A0000; GIC Redistributor 
-#base; GICR3 0x034C0000; GIC Redistributor 
-#base; GICR4 0x034E0000; GIC Redistributor 
-#base; GICR5 0x03500000; GIC Redistributor 
-#base; GICR6 0x03520000; GIC Redistributor 
-#base; GICR7 0x03540000; GIC Redistributor 
-#typeend;
-
 #type; GIC_INTERFACE; GICC GIC CPU Interface
 #irq; SGI0 0
 #irq; SGI1 1
