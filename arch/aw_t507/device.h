@@ -1346,7 +1346,7 @@ typedef struct EMAC_Type
     __IO uint32_t EMAC_INT_STA;                       /*!< Offset 0x008 EMAC Interrupt Status Register */
     __IO uint32_t EMAC_INT_EN;                        /*!< Offset 0x00C EMAC Interrupt Enable Register */
     __IO uint32_t EMAC_TX_CTL0;                       /*!< Offset 0x010 EMAC Transmit Control Register0 */
-    __IO uint32_t EMAC_TX_CTL1;                       /*!< Offset 0x014 (null) */
+    __IO uint32_t EMAC_TX_CTL1;                       /*!< Offset 0x014  */
          RESERVED(0x018[0x001C - 0x0018], uint8_t)
     __IO uint32_t EMAC_TX_FLOW_CTL;                   /*!< Offset 0x01C EMAC Transmit Flow Control Register */
     __IO uint32_t EMAC_TX_DMA_DESC_LIST;              /*!< Offset 0x020 EMAC Transmit Descriptor List Address Register */
@@ -2499,7 +2499,7 @@ typedef struct NDFC_Type
 /*!< OWA One Wire Audio */
 typedef struct OWA_Type
 {
-    __IO uint32_t OWA_GEN_CTL;                        /*!< Offset 0x000 (null) */
+    __IO uint32_t OWA_GEN_CTL;                        /*!< Offset 0x000  */
     __IO uint32_t OWA_TX_CFIG;                        /*!< Offset 0x004 OWA TX Configuration Register */
          RESERVED(0x008[0x000C - 0x0008], uint8_t)
     __IO uint32_t OWA_ISTA;                           /*!< Offset 0x00C OWA Interrupt Status Register */

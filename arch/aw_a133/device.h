@@ -515,9 +515,9 @@ typedef struct DSI0_Type
          RESERVED(0x144[0x0148 - 0x0144], uint8_t)
     __IO uint32_t DSI_BASIC_INST13_REG;               /*!< Offset 0x148 DSI Basic INST13 Register */
          RESERVED(0x14C[0x01F0 - 0x014C], uint8_t)
-    __IO uint32_t DSI_SAFE_PERIOD_REG;                /*!< Offset 0x1F0 (null) */
+    __IO uint32_t DSI_SAFE_PERIOD_REG;                /*!< Offset 0x1F0  */
          RESERVED(0x1F4[0x0200 - 0x01F4], uint8_t)
-    __IO uint32_t DSI_CMD_CTL_REG;                    /*!< Offset 0x200 (null) */
+    __IO uint32_t DSI_CMD_CTL_REG;                    /*!< Offset 0x200  */
          RESERVED(0x204[0x0240 - 0x0204], uint8_t)
     __IO uint32_t DSI_CMD_RX_REG [0x008];             /*!< Offset 0x240 DSI Command RX Register (N=0,1,2,3,4,5,6,7) */
          RESERVED(0x260[0x02E0 - 0x0260], uint8_t)
@@ -527,7 +527,7 @@ typedef struct DSI0_Type
     __IO uint32_t DSI_INST_DEBUG_REG;                 /*!< Offset 0x2EC DSI INST Debug Register */
     __IO uint32_t DSI_DEBUG2_REG;                     /*!< Offset 0x2F0 DSI Debug Register2 */
     __IO uint32_t DSI_DEBUG3_REG;                     /*!< Offset 0x2F4 DSI Debug Register3 */
-    __IO uint32_t DSI_DEBUG4_REG;                     /*!< Offset 0x2F8 (null) */
+    __IO uint32_t DSI_DEBUG4_REG;                     /*!< Offset 0x2F8  */
          RESERVED(0x2FC[0x0300 - 0x02FC], uint8_t)
     __IO uint32_t DSI_CMD_TX_REG [0x040];             /*!< Offset 0x300 DSI Command TX Register (N=0,1,2,�,63) */
          RESERVED(0x400[0x0FF8 - 0x0400], uint8_t)

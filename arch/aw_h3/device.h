@@ -332,7 +332,7 @@ typedef struct DE_BLD_Type
 /*!< DE_CSR Copy & Rotation */
 typedef struct DE_CSR_Type
 {
-    __IO uint32_t CSR_CTL;                            /*!< Offset 0x000 (null) */
+    __IO uint32_t CSR_CTL;                            /*!< Offset 0x000  */
     __IO uint32_t INT;                                /*!< Offset 0x004 Interrupt register */
          RESERVED(0x008[0x0020 - 0x0008], uint8_t)
     __IO uint32_t IFMT;                               /*!< Offset 0x020 Input data attribute register */
@@ -351,9 +351,9 @@ typedef struct DE_CSR_Type
          RESERVED(0x058[0x0084 - 0x0058], uint8_t)
     __IO uint32_t ODATA_SIZE;                         /*!< Offset 0x084 Output data size register */
          RESERVED(0x088[0x0090 - 0x0088], uint8_t)
-    __IO uint32_t ODATA_MEN_PITCH0;                   /*!< Offset 0x090 (null) */
-    __IO uint32_t ODATA_MEN_PITCH1;                   /*!< Offset 0x094 (null) */
-    __IO uint32_t ODATA_MEN_PITCH2;                   /*!< Offset 0x098 (null) */
+    __IO uint32_t ODATA_MEN_PITCH0;                   /*!< Offset 0x090  */
+    __IO uint32_t ODATA_MEN_PITCH1;                   /*!< Offset 0x094  */
+    __IO uint32_t ODATA_MEN_PITCH2;                   /*!< Offset 0x098  */
          RESERVED(0x09C[0x00A0 - 0x009C], uint8_t)
     __IO uint32_t OMEN_LADD0;                         /*!< Offset 0x0A0 Output Y/RGB/ARGB memory address register0 */
     __IO uint32_t OMEN_HADD0;                         /*!< Offset 0x0A4 Output Y/RGB/ARGB memory address register1 */
@@ -1196,7 +1196,7 @@ typedef struct RTC_Type
     __IO uint32_t ALARM1_WK_HH_MM_SS;                 /*!< Offset 0x040 Alarm 1 Week HMS Register  */
     __IO uint32_t ALARM1_ENABLE_REG;                  /*!< Offset 0x044 Alarm 1 Enable Register */
     __IO uint32_t ALARM1_IRQ_EN;                      /*!< Offset 0x048 Alarm 1 IRQ Enable Register */
-    __IO uint32_t ALARM1_IRQ_STA_REG;                 /*!< Offset 0x04C (null) */
+    __IO uint32_t ALARM1_IRQ_STA_REG;                 /*!< Offset 0x04C  */
     __IO uint32_t ALARM_CONFIG_REG;                   /*!< Offset 0x050 Alarm Config Register */
          RESERVED(0x054[0x0060 - 0x0054], uint8_t)
     __IO uint32_t LOSC_OUT_GATING_REG;                /*!< Offset 0x060 LOSC output gating register */

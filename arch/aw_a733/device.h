@@ -264,7 +264,7 @@ typedef struct CCU_Type
          RESERVED(0x544[0x0560 - 0x0544], uint8_t)
     __IO uint32_t GIC_CLK_REG;                        /*!< Offset 0x560 GIC Clock Register */
          RESERVED(0x564[0x0568 - 0x0564], uint8_t)
-    __IO uint32_t CPU_PERI_CLK_REG;                   /*!< Offset 0x568 (null) */
+    __IO uint32_t CPU_PERI_CLK_REG;                   /*!< Offset 0x568  */
          RESERVED(0x56C[0x0574 - 0x056C], uint8_t)
     __IO uint32_t ITS0_BGR_REG;                       /*!< Offset 0x574 ITS0 Bus Gating Reset Register  */
          RESERVED(0x578[0x0580 - 0x0578], uint8_t)

@@ -362,7 +362,7 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 				emitline(indent + INDENT, "} %s [0x%03X];", regp->fldname,
 						regp->fldrept);
 				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
-						regp->fldoffs + baseoffset, regp->comment);
+						regp->fldoffs + baseoffset, regp->comment ? regp->comment : "");
 			}
 			else if (regp->fldsize != 0)
 			{
@@ -384,7 +384,7 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 					offs += regp->fldsize;
 				}
 				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
-						regp->fldoffs + baseoffset, regp->comment);
+						regp->fldoffs + baseoffset, regp->comment ? regp->comment : "");
 			}
 		}
 		else
