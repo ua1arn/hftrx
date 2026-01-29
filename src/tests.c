@@ -8006,10 +8006,10 @@ void hightests(void)
 
 		PRINTF("GIC_DISTRIBUTOR_BASE=%08X\n", (unsigned) GIC_DISTRIBUTOR_BASE);
 		PRINTF("GIC_INTERFACE_BASE=%08X\n", (unsigned) GIC_INTERFACE_BASE);
-		//printhex(ca53_cbar, ca53_cbar, 256);
+		//printhex32(GIC_INTERFACE_BASE, (void *) GIC_INTERFACE_BASE, 4096);
 
-		ASSERT(GIC_DISTRIBUTOR_BASE == (periphbase + 0x81000));
-		ASSERT(GIC_INTERFACE_BASE == (periphbase + 0x82000));
+//		ASSERT(GIC_DISTRIBUTOR_BASE == (periphbase + 0x81000));
+//		ASSERT(GIC_INTERFACE_BASE == (periphbase + 0x82000));
 	}
 #endif
 #if 0 && (__CORTEX_A == 7U)
@@ -8971,6 +8971,8 @@ void hightests(void)
 		//	GICInterface->IIDR=3901243B, GICDistributor->IIDR=0102043B
 		// Allwinner T507-H: ARM GICv2
 		//	GICInterface->IIDR=0202143B, GICDistributor->IIDR=0200143B
+		// Allwinner A733: ARM GICv6
+		//	GICInterface->IIDR=00000000, GICDistributor->IIDR=0201643B
 
 		PRINTF("GICInterface->IIDR=%08X, GICDistributor->IIDR=%08X\n", (unsigned) GIC_GetInterfaceId(), (unsigned) GIC_DistributorImplementer());
 
@@ -8983,31 +8985,50 @@ void hightests(void)
 	}
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 #if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-	if (1)
 	{
+		//printhex32(0x03400000, (void *) 0x03400000, 0x10000);
+		printhex32(0x03460000, (void *) 0x03460000, 256);
+		{
+			#define xICPIDR1	(* (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0x04))
+			unsigned GICR_CFGID1 = * (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0xF004);
+			switch ((xICPIDR1 >> 24) & 0xFF)
+			{
+			case 0x02:	PRINTF("arm_gic_initialize: ARM GICv6\n"); break;
+			default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08X @%p)\n", (unsigned) xICPIDR1, & xICPIDR1); break;
+			}
+			switch ((GICR_CFGID1 >> 24) & 0xFF)
+			{
+			case 0x02:	PRINTF("arm_gic_initialize: ARM GICv6\n"); break;
+			case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
+			case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
+			default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08X @%p)\n", (unsigned) xICPIDR1, & xICPIDR1); break;
+			}
+			PRINTF("ncpus=%u\n", (unsigned) ((* (const volatile uint32_t *) (GIC_DISTRIBUTOR_BASE + 0xF004)) >> 4) & 0xFF);
+		}
 		// GIC600 specs
 		uintptr_t base = GIC_BASE;
-		for (;base < (GIC_BASE + (64 * 1024 * 1024)); base += 64 * 1024)
+		for (;base < (GIC_BASE + (64 * 1024 * 1024)); base += 4 * 1024)
 		{
 			//const uint32_t v = * (volatile uint32_t *) (base + 0xFFD0);
 			//PRINTF("0x%08X at 0x%08X\n", (unsigned) v, (unsigned) base);
-			const unsigned GICR_PIDR4 = * (volatile uint32_t *) (base + 0xFFD0);
-			const unsigned GICR_PIDR5 = * (volatile uint32_t *) (base + 0xFFD4);
-			const unsigned GICR_PIDR6 = * (volatile uint32_t *) (base + 0xFFD8);
-			const unsigned GICR_PIDR7 = * (volatile uint32_t *) (base + 0xFFDC);
-			const unsigned GICR_PIDR0 = * (volatile uint32_t *) (base + 0xFFE0);
-			const unsigned GICR_PIDR1 = * (volatile uint32_t *) (base + 0xFFE4);
-			const unsigned GICR_PIDR2 = * (volatile uint32_t *) (base + 0xFFE8);
-			const unsigned GICR_PIDR3 = * (volatile uint32_t *) (base + 0xFFEC);
-			const unsigned GICR_CIDR0 = * (volatile uint32_t *) (base + 0xFFF0);
-			const unsigned GICR_CIDR1 = * (volatile uint32_t *) (base + 0xFFF4);
-			const unsigned GICR_CIDR2 = * (volatile uint32_t *) (base + 0xFFF8);
-			const unsigned GICR_CIDR3 = * (volatile uint32_t *) (base + 0xFFFC);
+			const unsigned GICR_PIDR4 = * (volatile uint32_t *) (base + 0xFD0);
+			const unsigned GICR_PIDR5 = * (volatile uint32_t *) (base + 0xFD4);
+			const unsigned GICR_PIDR6 = * (volatile uint32_t *) (base + 0xFD8);
+			const unsigned GICR_PIDR7 = * (volatile uint32_t *) (base + 0xFDC);
+			const unsigned GICR_PIDR0 = * (volatile uint32_t *) (base + 0xFE0);
+			const unsigned GICR_PIDR1 = * (volatile uint32_t *) (base + 0xFE4);
+			const unsigned GICR_PIDR2 = * (volatile uint32_t *) (base + 0xFE8);
+			const unsigned GICR_PIDR3 = * (volatile uint32_t *) (base + 0xFEC);
+			const unsigned GICR_CIDR0 = * (volatile uint32_t *) (base + 0xFF0);
+			const unsigned GICR_CIDR1 = * (volatile uint32_t *) (base + 0xFF4);
+			const unsigned GICR_CIDR2 = * (volatile uint32_t *) (base + 0xFF8);
+			const unsigned GICR_CIDR3 = * (volatile uint32_t *) (base + 0xFFC);
 			if (GICR_PIDR4 == 0)
 				continue;
 			const char * label;
-			switch (GICR_PIDR0)
+			switch (GICR_PIDR0 & 0xFF)
 			{
+			case 0x90:	label = "GICD2"; break;
 			case 0x92:	label = "GICD"; break;
 			case 0x93:	label = "GICR"; break;
 			case 0x94:	label = "GITS"; break;
@@ -9015,16 +9036,22 @@ void hightests(void)
 			case 0x96:	label = "GICP"; break;
 			default:	label = "????"; break;
 			}
-			const unsigned GICR_CFGID0 = * (volatile uint32_t *) (base + 0xF000);
-			const unsigned GICR_CFGID1 = * (volatile uint32_t *) (base + 0xF004);
-			PRINTF("%p: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X (%s) GICR_CFGID0=%08X GICR_CFGID1=%08X\n",
+			unsigned size = (GICR_PIDR4 >> 4) & 0x0F;
+			uintptr_t comp_size = UINT64_C(1) << (size + 12);
+			uintptr_t comp_base = base & ~ (comp_size - 1);
+			const unsigned GICR_CFGID0 = * (volatile uint32_t *) (base + 0x000);
+			const unsigned GICR_CFGID1 = * (volatile uint32_t *) (base + 0x004);
+			PRINTF("%p: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X (%s) GICR_CFGID0=%08X GICR_CFGID1=%08X %p comp_size=%u\n",
 					(void *) base,
 					GICR_PIDR4, GICR_PIDR5, GICR_PIDR6, GICR_PIDR7, GICR_PIDR0, GICR_PIDR1, GICR_PIDR2, GICR_PIDR3,
 					GICR_CIDR0, GICR_CIDR1, GICR_CIDR2, GICR_CIDR3,
 					label,
-					GICR_CFGID0, GICR_CFGID1
+					GICR_CFGID0, GICR_CFGID1,
+					(void *) comp_base,
+					comp_size
 					);
 			//printhex32(b, (void *) b, 48);
+			PRINTF("ncpus=%u\n", (unsigned) ((* (const volatile uint32_t *) (comp_base + 0xF004)) >> 4) & 0xFF);
 
 		}
 	}
@@ -9066,115 +9093,6 @@ void hightests(void)
 		// board v2: 	stm32mp1_ddr_init results: DX0DQSTR=3DB03001, DX1DQSTR=3DB03001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
 		// voard v3: 	stm32mp1_ddr_init results: DX0DQSTR=3DB03001, DX1DQSTR=3DB03001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
 
-	}
-#endif
-#if 0
-	#include "dsp3D.h"
-	{
-
-
-		static float32_t dsp3dModel [] = {
-				12,3,
-				//         VERTEXES
-				//   coords    normals
-				1,	1, 1, 	1,0,0, // 0
-				1, 1,-1, 	0,-1,0, // 1
-				1,-1, 1, 	-1,0,0, // 2
-				1,-1,-1, 	0,0,-1, // 3
-				3,	1, 1, 	1,0,0, // 0
-				3, 1,-1, 	0,-1,0, // 1
-				3,-1, 1, 	-1,0,0, // 2
-				3,-1,-1, 	0,0,-1, // 3
-				6,	1, 1, 	1,0,0, // 0
-				6, 1,-1, 	0,-1,0, // 1
-				6,-1, 1, 	-1,0,0, // 2
-				6,-1,-1, 	0,0,-1, // 3
-//				3,	1, 1, 	1,0,0, // 0
-//				3, 1,-1, 	0,-1,0, // 1
-//				3,-1, 1, 	-1,0,0, // 2
-//				3,-1,-1, 	0,0,-1, // 3
-
-				//         FACES
-				//    Indexes     RGB
-				0,1,2,   255,0,255,
-				//1,2,3,   255,0,255,
-				4,5,6,   0,0,255,
-				//5,6,7,   0,0,255,
-				8,9,10,   0,255,0,
-				//9,10,11,   0,255,0,
-		};
-
-//		calcnormaltriangle(dsp3dModel);
-//		TP();
-//		for (;;)
-//			;
-		dsp3D_init();
-		dsp3D_setCameraPosition(0,0,10);
-		dsp3D_setLightPosition(0,0,10);
-		dsp3D_setCameraTarget(0,0,0);
-
-		int phase = 0;
-		unsigned cnt = 0;
-		PRINTF("3d: test started, CPU_FREQ=%lu kHz\n", (unsigned long) (CPU_FREQ / 1000));
-		for (;;)
-		{
-			float * const buf = dsp3dModel + 5;
-			float * const buf2 = dsp3dModel + 11;
-			float * const buf3 = dsp3dModel + 17;
-			float * const buf4 = dsp3dModel + 23;
-//			setnormal(buf, phase % 6);
-//			setnormal(buf2, (phase / 6) % 6);
-//			setnormal(buf3, phase / 36);
-			//PRINTF("normal : %d, %d, %d", (int) buf [0], (int) buf [1], (int) buf [2]);
-			const time_t start = time(NULL);
-			meshRotation[0] = 0;
-			meshRotation[1] = 0;
-			meshRotation[2] = 0;
-			float a;
-			for (a = 0; a < 0.1; a += 0.001f)
-			{
-				meshRotation[0]+=a;
-				meshRotation[1]+=a;
-				//meshRotation[2]+=a;
-
-				//dsp3D_renderGouraud(dsp3dModel);
-				dsp3D_renderFlat(dsp3dModel);
-				//dsp3D_renderWireframe(dsp3dModel);
-//				char buff [64];
-//				snprintf(buff, 64, "normal : %d, %d, %d,", (int) buf [0], (int) buf [1], (int) buf [2]);
-//				display_text(20, 10, buff, & dbstylev);
-//				snprintf(buff, 64, "normal : %d, %d, %d,", (int) buf2 [0], (int) buf2 [1], (int) buf2 [2]);
-//				display_text(20, 15, buff, & dbstylev);
-//				snprintf(buff, 64, "normal : %d, %d, %d,", (int) buf3 [0], (int) buf3 [1], (int) buf3 [2]);
-//				display_text(20, 20, buff, & dbstylev);
-				dsp3D_present();
-				local_delay_ms(25);
-				char c;
-				if (0 && dbg_getchar(& c))
-				{
-					switch (c)
-					{
-					case '0':
-					case '1':
-					case '2':
-					case '3':
-					case '4':
-					case '5':
-						setnormal(buf, c - '0');
-					default:
-					case ' ':
-						PRINTF("normal : %d, %d, %d,\n", (int) buf [0], (int) buf [1], (int) buf [2]);
-						break;
-					}
-				}
-
-			}
-			const time_t end = time(NULL);
-			PRINTF("3d: cnt=%u, %d S\n", cnt, (int) (end - start));
-			phase = phase + 1;
-			if (phase >= (6 * 6 * 6))
-				phase = 0;
-		}
 	}
 #endif
 #if 0
