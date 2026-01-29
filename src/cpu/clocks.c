@@ -4270,6 +4270,14 @@ void sysinit_pll_initialize(int forced)
 
 void sysinit_boot_disconnect(void)
 {
+	CCU->USB0_BGR_REG = 0;
+	CCU->USB1_BGR_REG = 0;
+	CCU->USB2_BGR_REG = 0;
+
+	CCU->SMHC0_BGR_REG = 0;
+	CCU->SMHC1_BGR_REG = 0;
+	CCU->SMHC2_BGR_REG = 0;
+	CCU->SMHC3_BGR_REG = 0;
 }
 
 void sysinit_pll_initialize(int forced)
