@@ -61,30 +61,74 @@
 
 #typeend;
 
+## Table 4-35 ITS control register summary
+
 #type; GICT; GIC ITS translation
-#regdef; pad 0; 0x10000; alignment
+
+#regdef;	CTLR;			0x0000;		Distributor Control Register
+#regdef;	TYPER;			0x0004;		Distributor Controller Type Register
+#regdef;	IIDR;			0x0008;		Distributor Implementer Identification Register
+#regdef;	FCTLR;			0x0020;		Function Control Register
+
+#regdef; 	OPR 8; 			0x0028; 	Operations Register
+#regdef; 	OPSR 8; 		0x0030; 	Operation Status Register
+#regdef; 	CBASER 8; 		0x0080; 	Command Queue Control Register
+#regdef; 	CWRITER 8; 		0x0088; 	Command Queue Write Pointer Register
+#regdef; 	CREADR 8; 		0x0090; 	Command Queue Read Pointer Register
+#regdef; 	BASER0 8; 		0x0100; 	ITS Translation Table Descriptor Register0
+#regdef; 	BASER1 8; 		0x0108; 	ITS Translation Table Descriptor Register0
+
+#regdef; 	CFGID 8;		0xF000;		Configuration ID Register
+
+#regdef; 	PIDR4;			0xFFD0;		Peripheral ID 4 Register
+#regdef; 	PIDR5;			0xFFD4;		Peripheral ID 5 Register
+#regdef; 	PIDR6;			0xFFD8;		Peripheral ID 6 Register
+#regdef; 	PIDR7;			0xFFDC;		Peripheral ID 7 Register
+#regdef; 	PIDR0;			0xFFE0;		Peripheral ID 0 Register
+#regdef; 	PIDR1;			0xFFE4;		Peripheral ID 1 Register
+#regdef; 	PIDR2;			0xFFE8;		Peripheral ID 2 Register
+#regdef; 	PIDR3;			0xFFEC;		Peripheral ID 3 Register
+#regdef; 	CIDR0;			0xFFF0;		Component ID 0 Register
+#regdef; 	CIDR1;			0xFFF4;		Component ID 1 Register
+#regdef; 	CIDR2;			0xFFF8;		Component ID 2 Register
+#regdef; 	CIDR3;			0xFFFC;		Component ID 3 Register
+
 #typeend;
 
 #type; GICP; GIC Performance Monitoring Unit
-#regdef; pad 0; 0x10000; alignment
+
+
+#regdef; 	PIDR4;			0xFFD0;		Peripheral ID 4 Register
+#regdef; 	PIDR5;			0xFFD4;		Peripheral ID 5 Register
+#regdef; 	PIDR6;			0xFFD8;		Peripheral ID 6 Register
+#regdef; 	PIDR7;			0xFFDC;		Peripheral ID 7 Register
+#regdef; 	PIDR0;			0xFFE0;		Peripheral ID 0 Register
+#regdef; 	PIDR1;			0xFFE4;		Peripheral ID 1 Register
+#regdef; 	PIDR2;			0xFFE8;		Peripheral ID 2 Register
+#regdef; 	PIDR3;			0xFFEC;		Peripheral ID 3 Register
+#regdef; 	CIDR0;			0xFFF0;		Component ID 0 Register
+#regdef; 	CIDR1;			0xFFF4;		Component ID 1 Register
+#regdef; 	CIDR2;			0xFFF8;		Component ID 2 Register
+#regdef; 	CIDR3;			0xFFFC;		Component ID 3 Register
+
 #typeend;
 
 #type; GICR; GIC Redistributor 
 
-#regdef;  CTLR;  	0x0000; Redistributor Control Register
-#regdef;  IIDR; 	0x0004; 
-#regdef;  TYPER; 	0x0008; 
-#regdef;  WAKER; 	0x0014; 
-#regdef;  FCTLR; 	0x0020; 
-#regdef;  PWRR; 	0x0024; 
-#regdef;  CLASS; 	0x0028; 
-#regdef;  SETLPIR 8; 0x0040; 
-#regdef;  CLRLPIR 8; 0x0048; 
-#regdef;  PROPBASER 8; 0x0070; Redistributor Properties Base Address Register
-#regdef;  PENDBASER 8; 0x0078; Redistributor LPI Pending Table Base Address Register
-#regdef;  INVLPIR 8; 0x00A0; 
-#regdef;  INVALLR 8; 0x00A8; 
-#regdef;  SYNCR; 	0x00C0; 
+#regdef;  CTLR;  			0x0000; 	Redistributor Control Register
+#regdef;  IIDR; 			0x0004; 
+#regdef;  TYPER; 			0x0008; 
+#regdef;  WAKER; 			0x0014; 
+#regdef;  FCTLR; 			0x0020; 
+#regdef;  PWRR; 			0x0024; 
+#regdef;  CLASS; 			0x0028; 
+#regdef;  SETLPIR 8; 		0x0040; 
+#regdef;  CLRLPIR 8; 		0x0048; 
+#regdef;  PROPBASER 8; 		0x0070; 	Redistributor Properties Base Address Register
+#regdef;  PENDBASER 8; 		0x0078; 	Redistributor LPI Pending Table Base Address Register
+#regdef;  INVLPIR 8; 		0x00A0; 
+#regdef;  INVALLR 8; 		0x00A8; 
+#regdef;  SYNCR; 			0x00C0; 
 
 #regdef; 	PIDR4;			0xFFD0;		Peripheral ID 4 Register
 #regdef; 	PIDR5;			0xFFD4;		Peripheral ID 5 Register
