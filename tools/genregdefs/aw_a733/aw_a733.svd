@@ -2889,7 +2889,7 @@
    <register>
     <name>PIDR4</name>
     <displayName>PIDR4</displayName>
-    <description>Peripheral ID4 Register</description>
+    <description>Peripheral ID 4 Register</description>
     <addressOffset>0xFFD0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2898,7 +2898,7 @@
    <register>
     <name>PIDR5</name>
     <displayName>PIDR5</displayName>
-    <description>Peripheral ID5 Register</description>
+    <description>Peripheral ID 5 Register</description>
     <addressOffset>0xFFD4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2907,7 +2907,7 @@
    <register>
     <name>PIDR6</name>
     <displayName>PIDR6</displayName>
-    <description>Peripheral ID6 Register</description>
+    <description>Peripheral ID 6 Register</description>
     <addressOffset>0xFFD8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2916,7 +2916,7 @@
    <register>
     <name>PIDR7</name>
     <displayName>PIDR7</displayName>
-    <description>Peripheral ID7 Register</description>
+    <description>Peripheral ID 7 Register</description>
     <addressOffset>0xFFDC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2925,7 +2925,7 @@
    <register>
     <name>PIDR0</name>
     <displayName>PIDR0</displayName>
-    <description>Peripheral ID0 Register</description>
+    <description>Peripheral ID 0 Register</description>
     <addressOffset>0xFFE0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2934,7 +2934,7 @@
    <register>
     <name>PIDR1</name>
     <displayName>PIDR1</displayName>
-    <description>Peripheral ID1 Register</description>
+    <description>Peripheral ID 1 Register</description>
     <addressOffset>0xFFE4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2943,7 +2943,7 @@
    <register>
     <name>PIDR2</name>
     <displayName>PIDR2</displayName>
-    <description>Peripheral ID2 Register</description>
+    <description>Peripheral ID 2 Register</description>
     <addressOffset>0xFFE8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2952,7 +2952,7 @@
    <register>
     <name>PIDR3</name>
     <displayName>PIDR3</displayName>
-    <description>Peripheral ID3 Register</description>
+    <description>Peripheral ID 3 Register</description>
     <addressOffset>0xFFEC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -3008,6 +3008,240 @@
   <description>GIC Redistributor </description>
   <baseAddress>0x03460000</baseAddress>
   <registers>
+   <register>
+    <name>CTLR</name>
+    <displayName>CTLR</displayName>
+    <description>Redistributor Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IIDR</name>
+    <displayName>IIDR</displayName>
+    <description></description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TYPER</name>
+    <displayName>TYPER</displayName>
+    <description></description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WAKER</name>
+    <displayName>WAKER</displayName>
+    <description></description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>FCTLR</name>
+    <displayName>FCTLR</displayName>
+    <description></description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PWRR</name>
+    <displayName>PWRR</displayName>
+    <description></description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CLASS</name>
+    <displayName>CLASS</displayName>
+    <description></description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SETLPIR</name>
+    <displayName>SETLPIR</displayName>
+    <description></description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x40</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CLRLPIR</name>
+    <displayName>CLRLPIR</displayName>
+    <description></description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x40</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PROPBASER</name>
+    <displayName>PROPBASER</displayName>
+    <description>Redistributor Properties Base Address Register</description>
+    <addressOffset>0x070</addressOffset>
+    <size>0x40</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PENDBASER</name>
+    <displayName>PENDBASER</displayName>
+    <description>Redistributor LPI Pending Table Base Address Register</description>
+    <addressOffset>0x078</addressOffset>
+    <size>0x40</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INVLPIR</name>
+    <displayName>INVLPIR</displayName>
+    <description></description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x40</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INVALLR</name>
+    <displayName>INVALLR</displayName>
+    <description></description>
+    <addressOffset>0x0A8</addressOffset>
+    <size>0x40</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYNCR</name>
+    <displayName>SYNCR</displayName>
+    <description></description>
+    <addressOffset>0x0C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PIDR4</name>
+    <displayName>PIDR4</displayName>
+    <description>Peripheral ID 4 Register</description>
+    <addressOffset>0xFFD0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PIDR5</name>
+    <displayName>PIDR5</displayName>
+    <description>Peripheral ID 5 Register</description>
+    <addressOffset>0xFFD4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PIDR6</name>
+    <displayName>PIDR6</displayName>
+    <description>Peripheral ID 6 Register</description>
+    <addressOffset>0xFFD8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PIDR7</name>
+    <displayName>PIDR7</displayName>
+    <description>Peripheral ID 7 Register</description>
+    <addressOffset>0xFFDC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PIDR0</name>
+    <displayName>PIDR0</displayName>
+    <description>Peripheral ID 0 Register</description>
+    <addressOffset>0xFFE0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PIDR1</name>
+    <displayName>PIDR1</displayName>
+    <description>Peripheral ID 1 Register</description>
+    <addressOffset>0xFFE4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PIDR2</name>
+    <displayName>PIDR2</displayName>
+    <description>Peripheral ID 2 Register</description>
+    <addressOffset>0xFFE8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PIDR3</name>
+    <displayName>PIDR3</displayName>
+    <description>Peripheral ID 3 Register</description>
+    <addressOffset>0xFFEC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CIDR0</name>
+    <displayName>CIDR0</displayName>
+    <description>Component ID 0 Register</description>
+    <addressOffset>0xFFF0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CIDR1</name>
+    <displayName>CIDR1</displayName>
+    <description>Component ID 1 Register</description>
+    <addressOffset>0xFFF4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CIDR2</name>
+    <displayName>CIDR2</displayName>
+    <description>Component ID 2 Register</description>
+    <addressOffset>0xFFF8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CIDR3</name>
+    <displayName>CIDR3</displayName>
+    <description>Component ID 3 Register</description>
+    <addressOffset>0xFFFC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
   </peripheral>
   <peripheral derivedFrom="GICR0">
