@@ -2599,7 +2599,7 @@
    <register>
     <name>CTLR</name>
     <displayName>CTLR</displayName>
-    <description></description>
+    <description>Distributor Control Register</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2608,7 +2608,7 @@
    <register>
     <name>TYPER</name>
     <displayName>TYPER</displayName>
-    <description></description>
+    <description>Distributor Controller Type Register</description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2617,7 +2617,7 @@
    <register>
     <name>IIDR</name>
     <displayName>IIDR</displayName>
-    <description></description>
+    <description>Distributor Implementer Identification Register</description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2626,7 +2626,7 @@
    <register>
     <name>FCTLR</name>
     <displayName>FCTLR</displayName>
-    <description></description>
+    <description>Function Control Register</description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2635,7 +2635,7 @@
    <register>
     <name>SAC</name>
     <displayName>SAC</displayName>
-    <description></description>
+    <description>Secure Access Control Register</description>
     <addressOffset>0x024</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2644,7 +2644,7 @@
    <register>
     <name>SETSPI_NSR</name>
     <displayName>SETSPI_NSR</displayName>
-    <description></description>
+    <description>Non-secure SPI Set Register</description>
     <addressOffset>0x040</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2653,7 +2653,7 @@
    <register>
     <name>CLRSPI_NSR</name>
     <displayName>CLRSPI_NSR</displayName>
-    <description></description>
+    <description>Non-secure SPI Clear Register</description>
     <addressOffset>0x048</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2662,7 +2662,7 @@
    <register>
     <name>SETSPI_SR</name>
     <displayName>SETSPI_SR</displayName>
-    <description></description>
+    <description>Secure SPI Set Register</description>
     <addressOffset>0x050</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2671,7 +2671,7 @@
    <register>
     <name>CLRSPI_SR</name>
     <displayName>CLRSPI_SR</displayName>
-    <description></description>
+    <description>Non-secure SPI Set Register</description>
     <addressOffset>0x058</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2889,7 +2889,7 @@
    <register>
     <name>PIDR4</name>
     <displayName>PIDR4</displayName>
-    <description>Peripherial ID4 Register</description>
+    <description>Peripheral ID4 Register</description>
     <addressOffset>0xFFD0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2898,7 +2898,7 @@
    <register>
     <name>PIDR5</name>
     <displayName>PIDR5</displayName>
-    <description>Peripherial ID5 Register</description>
+    <description>Peripheral ID5 Register</description>
     <addressOffset>0xFFD4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2907,7 +2907,7 @@
    <register>
     <name>PIDR6</name>
     <displayName>PIDR6</displayName>
-    <description>Peripherial ID6 Register</description>
+    <description>Peripheral ID6 Register</description>
     <addressOffset>0xFFD8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2916,7 +2916,7 @@
    <register>
     <name>PIDR7</name>
     <displayName>PIDR7</displayName>
-    <description>Peripherial ID7 Register</description>
+    <description>Peripheral ID7 Register</description>
     <addressOffset>0xFFDC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2925,7 +2925,7 @@
    <register>
     <name>PIDR0</name>
     <displayName>PIDR0</displayName>
-    <description>Peripherial ID0 Register</description>
+    <description>Peripheral ID0 Register</description>
     <addressOffset>0xFFE0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2934,7 +2934,7 @@
    <register>
     <name>PIDR1</name>
     <displayName>PIDR1</displayName>
-    <description>Peripherial ID1 Register</description>
+    <description>Peripheral ID1 Register</description>
     <addressOffset>0xFFE4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2943,7 +2943,7 @@
    <register>
     <name>PIDR2</name>
     <displayName>PIDR2</displayName>
-    <description>Peripherial ID2 Register</description>
+    <description>Peripheral ID2 Register</description>
     <addressOffset>0xFFE8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -2952,7 +2952,7 @@
    <register>
     <name>PIDR3</name>
     <displayName>PIDR3</displayName>
-    <description>Peripherial ID3 Register</description>
+    <description>Peripheral ID3 Register</description>
     <addressOffset>0xFFEC</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

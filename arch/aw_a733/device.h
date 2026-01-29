@@ -590,20 +590,20 @@ typedef struct CCU_Type
 /*!< GICD GIC Distributor */
 typedef struct GICD_Type
 {
-    __IO uint32_t CTLR;                               /*!< Offset 0x000 (null) */
-    __IO uint32_t TYPER;                              /*!< Offset 0x004 (null) */
-    __IO uint32_t IIDR;                               /*!< Offset 0x008 (null) */
+    __IO uint32_t CTLR;                               /*!< Offset 0x000 Distributor Control Register */
+    __IO uint32_t TYPER;                              /*!< Offset 0x004 Distributor Controller Type Register */
+    __IO uint32_t IIDR;                               /*!< Offset 0x008 Distributor Implementer Identification Register */
          RESERVED(0x00C[0x0020 - 0x000C], uint8_t)
-    __IO uint32_t FCTLR;                              /*!< Offset 0x020 (null) */
-    __IO uint32_t SAC;                                /*!< Offset 0x024 (null) */
+    __IO uint32_t FCTLR;                              /*!< Offset 0x020 Function Control Register */
+    __IO uint32_t SAC;                                /*!< Offset 0x024 Secure Access Control Register */
          RESERVED(0x028[0x0040 - 0x0028], uint8_t)
-    __IO uint32_t SETSPI_NSR;                         /*!< Offset 0x040 (null) */
+    __IO uint32_t SETSPI_NSR;                         /*!< Offset 0x040 Non-secure SPI Set Register */
          RESERVED(0x044[0x0048 - 0x0044], uint8_t)
-    __IO uint32_t CLRSPI_NSR;                         /*!< Offset 0x048 (null) */
+    __IO uint32_t CLRSPI_NSR;                         /*!< Offset 0x048 Non-secure SPI Clear Register */
          RESERVED(0x04C[0x0050 - 0x004C], uint8_t)
-    __IO uint32_t SETSPI_SR;                          /*!< Offset 0x050 (null) */
+    __IO uint32_t SETSPI_SR;                          /*!< Offset 0x050 Secure SPI Set Register */
          RESERVED(0x054[0x0058 - 0x0054], uint8_t)
-    __IO uint32_t CLRSPI_SR;                          /*!< Offset 0x058 (null) */
+    __IO uint32_t CLRSPI_SR;                          /*!< Offset 0x058 Non-secure SPI Set Register */
          RESERVED(0x05C[0x0080 - 0x005C], uint8_t)
     __IO uint32_t IGROUPRn [0x020];                   /*!< Offset 0x080 Interrupt Group Registers */
     __IO uint32_t ISENABLERn [0x020];                 /*!< Offset 0x100 Interrupt Set-Enable Registers */
@@ -627,14 +627,14 @@ typedef struct GICD_Type
          RESERVED(0xC018[0xF000 - 0xC018], uint8_t)
     __IO uint64_t CFGID;                              /*!< Offset 0xF000 Configuration ID Register */
          RESERVED(0xF008[0xFFD0 - 0xF008], uint8_t)
-    __IO uint32_t PIDR4;                              /*!< Offset 0xFFD0 Peripherial ID4 Register */
-    __IO uint32_t PIDR5;                              /*!< Offset 0xFFD4 Peripherial ID5 Register */
-    __IO uint32_t PIDR6;                              /*!< Offset 0xFFD8 Peripherial ID6 Register */
-    __IO uint32_t PIDR7;                              /*!< Offset 0xFFDC Peripherial ID7 Register */
-    __IO uint32_t PIDR0;                              /*!< Offset 0xFFE0 Peripherial ID0 Register */
-    __IO uint32_t PIDR1;                              /*!< Offset 0xFFE4 Peripherial ID1 Register */
-    __IO uint32_t PIDR2;                              /*!< Offset 0xFFE8 Peripherial ID2 Register */
-    __IO uint32_t PIDR3;                              /*!< Offset 0xFFEC Peripherial ID3 Register */
+    __IO uint32_t PIDR4;                              /*!< Offset 0xFFD0 Peripheral ID4 Register */
+    __IO uint32_t PIDR5;                              /*!< Offset 0xFFD4 Peripheral ID5 Register */
+    __IO uint32_t PIDR6;                              /*!< Offset 0xFFD8 Peripheral ID6 Register */
+    __IO uint32_t PIDR7;                              /*!< Offset 0xFFDC Peripheral ID7 Register */
+    __IO uint32_t PIDR0;                              /*!< Offset 0xFFE0 Peripheral ID0 Register */
+    __IO uint32_t PIDR1;                              /*!< Offset 0xFFE4 Peripheral ID1 Register */
+    __IO uint32_t PIDR2;                              /*!< Offset 0xFFE8 Peripheral ID2 Register */
+    __IO uint32_t PIDR3;                              /*!< Offset 0xFFEC Peripheral ID3 Register */
     __IO uint32_t CIDR0;                              /*!< Offset 0xFFF0 Component ID 0 Register */
     __IO uint32_t CIDR1;                              /*!< Offset 0xFFF4 Component ID 1 Register */
     __IO uint32_t CIDR2;                              /*!< Offset 0xFFF8 Component ID 2 Register */
