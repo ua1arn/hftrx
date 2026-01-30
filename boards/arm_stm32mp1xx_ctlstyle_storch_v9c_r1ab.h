@@ -195,7 +195,7 @@
 		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
 		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
 		#define TUNE_BOTTOM	 	10000L		/* 10 kHz нижняя частота настройки */
-		#define TUNE_TOP 		56000000L		/* верхняя частота настройки */
+		#define TUNE_TOP 		170000000L		/* верхняя частота настройки */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
@@ -425,7 +425,7 @@
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHCOMPRESSOR 1	// компрессор
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */

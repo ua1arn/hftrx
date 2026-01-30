@@ -4529,7 +4529,7 @@ static const struct paramdefdef xgbandset6m =
 };
 #endif /* TUNE_6MBAND */
 #if TUNE_4MBAND
-static uint_fast8_t bandset4m = 1;	/* используется ли диапазон 4 метров */
+static uint_fast8_t bandset4m = 0;	/* используется ли диапазон 4 метров */
 static const struct paramdefdef xgbandset4m =
 {
 	QLABEL3("BAND 70", "Band 70", "BAND 70"), 8, 3, RJ_ON,	ISTEP1,
