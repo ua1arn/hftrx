@@ -4959,6 +4959,52 @@ arm_hardware_pioz_altfn20(portholder_t opins, unsigned af)
 #endif
 }
 
+/* подключаем к периферии, 20 МГц, push-pull */
+void
+arm_hardware_pioz_altfn50(portholder_t opins, unsigned af)
+{
+#if CPUSTYLE_STM32F1XX
+
+	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN | RCC_APB2ENR_IOPZEN;	/* I/O port Z clock enable */
+	(void) RCC->APB2ENR;
+	// Установка режима выводов
+	arm_stm32f10x_hardware_pio_prog(GPIOZ, opins, 2, 3);	/* Установить CNF=2, MODE=3 (20 MHz) для указанных битов */
+
+#elif (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX)
+
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOZEN;	/* I/O port Z clock enable */
+	(void) RCC->AHB1ENR;
+	stm32h7x_pioX_altfn(GPIOZ, opins, af);
+	// Установка режима выводов
+	stm32h7x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_ALT, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif (CPUSTYLE_STM32H7XX)
+
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOZEN;	/* I/O port Z clock enable */
+	(void) RCC->AHB4ENR;
+	stm32h7x_pioX_altfn(GPIOZ, opins, af);
+	// Установка режима выводов
+	stm32h7x_pioX_prog(GPIOZ, opins, STM32F_GPIO_MODE_ALT, STM32F_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#elif CPUSTYLE_STM32MP1
+
+	RCC->MP_AHB5ENSETR = RCC_MP_AHB5ENSETR_GPIOZEN;	/* I/O port Z clock enable */
+	(void) RCC->MP_AHB5ENSETR;
+	RCC->MP_AHB5LPENSETR = RCC_MP_AHB5LPENSETR_GPIOZLPEN;	/* I/O port Z clock enable */
+	(void) RCC->MP_AHB5LPENSETR;
+
+	//GPIOZ->SECCFGR &= ~ (opins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
+
+	stm32mp1_pioX_altfn(GPIOZ, opins, af);
+	// Установка режима выводов
+	stm32mp1_pioX_prog(GPIOZ, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
+
+#else
+	#error Undefined CPUSTYLE_XXX
+
+#endif
+}
+
 #endif /* defined (GPIOZ) */
 
 
