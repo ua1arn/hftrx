@@ -6315,7 +6315,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	/*  */
-	static uint_fast16_t gnfmdeviation = 7500;
+	static uint_fast16_t gnfmdeviation = 3500;
 	static const struct paramdefdef xgnfmdeviation =
 	{
 		QLABEL2("NFM DEVI", "NFM Deviation"), 7, 0, RJ_UNSIGNED, ISTEP100,		/* Подстройка глубины модуляции в АМ */
