@@ -198,7 +198,7 @@
 		#define TUNE_TOP 		56000000L		/* верхняя частота настройки */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
-	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
+	#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
 	//#define XVTR_R820T2 	1	/* R820T chip */
 
 	// --- вариации прошивки, специфические для разных частот
@@ -425,7 +425,7 @@
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHCOMPRESSOR 1	// компрессор
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
