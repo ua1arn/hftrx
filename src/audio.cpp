@@ -3297,12 +3297,12 @@ static RAMFUNC FLOAT_t agc_getgain_float(
 
 static RAMDTCM FLOAT_t manualsquelch [NTRX];
 
-static RAMFUNC int agc_squelchopen(
+static RAMFUNC int agc_levelsquelchopen(
 	FLOAT_t fltstrengthslow,
 	uint_fast8_t pathi
 	)
 {
-	return ctcss_squelch() || fltstrengthslow > manualsquelch [pathi];
+	return fltstrengthslow > manualsquelch [pathi];
 }
 
 // Функция для S-метра - получение десятичного логарифма уровня сигнала от FS
@@ -4213,7 +4213,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			r = (vp1.QV * af.QV + vp1.IV * af.IV); // переносим на выходную частоту ("+" - без инверсии).
 			//r = (pathi != 0 ? get_rout() : get_lout()) * (FLOAT_t) 0.9;
 			//r = af.IV * 0.9f;
-			r *= agc_squelchopen(fltstrengthslow, pathi);
+			r *= agc_levelsquelchopen(fltstrengthslow, pathi);
 		}
 		break;
 
@@ -4244,7 +4244,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			// значение для прослушивания
 			// 0.707 == M_SQRT1_2
 			const FLOAT_t sample = adpt_input(& nfmdemod, saved_delta_fi [pathi]);
-			r = sample * agc_squelchopen(fltstrengthslow, pathi);
+			r = sample * (ctcss_squelch() && agc_levelsquelchopen(fltstrengthslow, pathi));
 		}
 		else
 			r = 0;
@@ -4262,7 +4262,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			// Демодуляция АМ
 			const FLOAT_t sample = SQRTF(vp1.IV * vp1.IV + vp1.QV * vp1.QV);// * (FLOAT_t) 0.5; //M_SQRT1_2;
 			//saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
-			r = sample * agc_squelchopen(fltstrengthslow, pathi);
+			r = sample * agc_levelsquelchopen(fltstrengthslow, pathi);
 		}
 		else
 			r = 0;
@@ -4285,7 +4285,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			//saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
 			// Демодуляция SАМ
 			const FLOAT_t sample = demodulator_SAM(vp1, pathi);
-			r = sample * agc_squelchopen(fltstrengthslow, pathi);
+			r = sample * agc_levelsquelchopen(fltstrengthslow, pathi);
 		}
 		else
 			r = 0;
