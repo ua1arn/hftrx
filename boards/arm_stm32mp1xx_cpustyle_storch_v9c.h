@@ -686,19 +686,13 @@
 	#define	SPI_MISO_BIT			(UINT32_C(1) << 1)	// PZ1 бит, через который идет ввод с SPI.
 
 	#define HARDWARE_SPI1_INITIALIZE() do { \
-			arm_hardware_pioz_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PZ0 */ \
-			arm_hardware_pioz_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PZ2 */ \
-			arm_hardware_pioz_inputs(SPI_MISO_BIT); /* PZ1 */ \
+		arm_hardware_pioz_altfn20(SPI_SCLK_BIT, AF_SPI1); /* AF_5 В этих процессорах и входы и выходы переключаются на ALT FN */ \
+		arm_hardware_pioz_altfn20(SPI_MOSI_BIT, AF_SPI1); /* AF_5 В этих процессорах и входы и выходы переключаются на ALT FN */ \
+		arm_hardware_pioz_altfn20(SPI_MISO_BIT, AF_SPI1); /* AF_5 В этих процессорах и входы и выходы переключаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_pioz_altfn20(SPI_SCLK_BIT, AF_SPI1); /* AF_5 В этих процессорах и входы и выходы переключаются на ALT FN */ \
-			arm_hardware_pioz_altfn20(SPI_MOSI_BIT, AF_SPI1); /* AF_5 В этих процессорах и входы и выходы переключаются на ALT FN */ \
-			arm_hardware_pioz_altfn20(SPI_MISO_BIT, AF_SPI1); /* AF_5 В этих процессорах и входы и выходы переключаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
-			arm_hardware_pioz_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); \
-			arm_hardware_pioz_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); \
-			arm_hardware_pioz_inputs(SPI_MISO_BIT); \
 		} while (0)
 
 	#define WITHSPI1HW 1
