@@ -120,7 +120,7 @@ endmodule
 // Retrieval info:      <PRIVATE name = "flow_control_output" value="Master Source"  type="STRING"  enable="1" />
 // Retrieval info:      <PRIVATE name = "device_family" value="Cyclone IV E"  type="STRING"  enable="1" />
 // Retrieval info:      <PRIVATE name = "structure" value="Variable/Fixed Coefficient : Multi-Cycle"  type="STRING"  enable="1" />
-// Retrieval info:      <PRIVATE name = "pipeline_level" value="1"  type="INTEGER"  enable="1" />
+// Retrieval info:      <PRIVATE name = "pipeline_level" value="3"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "clocks_to_compute" value="24"  type="INTEGER"  enable="1" />
 // Retrieval info:      <PRIVATE name = "number_of_serial_units" value="2"  type="INTEGER"  enable="0" />
 // Retrieval info:      <PRIVATE name = "data_storage" value="M9K"  type="STRING"  enable="1" />
