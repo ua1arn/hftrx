@@ -7993,7 +7993,6 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 #endif /* defined (TCONLCD_PTR) */
 }
 
-#if WITHMIPIDSISHW
 // Used for MIPIO DSI outputs
 // T113: PLL_VIDEO1
 // T507: PLL_VIDEO1
@@ -8087,8 +8086,6 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 
 }
 
-#else // HW
-
 
 // H3: PLL_VIDEO
 // A64: PLL_VIDEO0
@@ -8150,7 +8147,6 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	// step6 - Open module enable
 	t113_open_module_enable(vdmode);
 }
-#endif
 
 #if WITHHDMITVHW
 static void t113_hdmi_initsteps(const videomode_t * vdmode)
