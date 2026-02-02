@@ -3233,6 +3233,20 @@ static void hardware_de_initialize(int rtmixid)
 	PRINTF("DE_IP_CFG.RTD0_DEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 0) & 0x01);
 #endif
 
+	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | UINT32_C(0x0F) << 0)) |
+		0x02 * (UINT32_C(1) << 24) |	// 010: PLL_VIDEO0(2X)	= 594 MHz
+		//(UINT32_C(3) << 24) |	// 011: PLL_VIDEO1(2X)	= 594 MHz
+		((UINT32_C(4) - 1) << 0) |
+		0;
+
+	CCU->DSI_CLK_REG |= UINT32_C(1) << 31;		// DSI_CLK_GATING
+
+	CCU->DSI_BGR_REG |= UINT32_C(1) << 0;	// DSI_GATING
+	CCU->DSI_BGR_REG |= UINT32_C(1) << 16;	// DSI_RST
+
+//	PRINTF("allwnr_t113_get_dsi_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_dsi_freq());
+//	printhex32(DSI0_BASE, DSI0, sizeof * DSI0);
+
 	{
 		/* Эта часть - как и разрешение тактирования RT Mixer 0 - должна присутствовать для работы RT Mixer 1 */
 		const int rtmixid = 1;
