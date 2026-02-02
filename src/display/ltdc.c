@@ -3025,7 +3025,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 		0 * (UINT32_C(1) << 23) |		// LCD_RB_SWAP
 		1 * (UINT32_C(1) << 20) |		// LCD_INTERLACE_EN (has no effect)
 		(start_dly & 0x1F) * (UINT32_C(1) << 4) |	// LCD_START_DLY
-		0 * (UINT32_C(1) << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
+		1 * (UINT32_C(1) << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
 		0;
 #endif
 #endif /* defined (TCONLCD_PTR) */
@@ -8006,6 +8006,26 @@ static void t113_tcondsi_PLL_configuration(uint_fast32_t needfreq)
 	allwnr_t113_module_pll_spr(& CCU->PLL_VIDEO1_CTRL_REG, & CCU->PLL_VIDEO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t113_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);	// не меняем параметры по умолчанию (частота может поменяться для LVDS)
 
+	{
+		//	Step 1 Write 1 to the PLL_EN, EN_LVS, and, LDO_EN of the DPHY_PLL_REG0.
+		//	Step 2 Set LOCK_ENABLE as 1 in the DPHY_PLL_REG1.
+		//	Step 3 Wait the lock status to change to 1 .Perform the adjudgement for three times.
+		//	Step 4 Wait 20 us latency.
+		//	Step 5 Configure the M0/M1, M2/M3, P, N factors in the DPHY_PLL_REG0.
+		//	Step 6 Write 1 to the PLL_UPDATE of the DPHY_PLL_REG0.
+		//	Step 7 Wait the PLL_UPDATE of the DPHY_PLL_REG0 to be cleared.
+		//	Step 8 Wait the lock status to change to 1 .Perform the adjudgement for three times.
+		//	Step 9 Wait 20 us latency, and then the PLL is available.
+		DSI_DPHY->DPHY_PLL_REG0 |=
+			1 * (UINT32_C(1) << 20) |	// PLL_EN
+			1 * (UINT32_C(1) << 21) |	// EN_LVS
+			1 * (UINT32_C(1) << 22) |	// LDO_EN
+			0;
+		DSI_DPHY->DPHY_PLL_REG1 |=
+			1 * (UINT32_C(1) << 12) |	// LOCKDET_EN
+			0;
+//		while ((DSI_DPHY->DPHY_PLL_REG0 & (())))
+	}
 #else
 #endif
 }
@@ -8015,9 +8035,6 @@ static void t113_tcondsi_CCU_configuration(uint_fast32_t needfreq)
 #if CPUSTYLE_A133
 #elif CPUSTYLE_A64
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
-//	PRINTF("Before: DISPLAY_TOP->dsi_src_select=%08X\n", (unsigned) DISPLAY_TOP->dsi_src_select);
-//	DISPLAY_TOP->dsi_src_select = ~0;
-//	PRINTF("After: DISPLAY_TOP->dsi_src_select=%08X\n", (unsigned) DISPLAY_TOP->dsi_src_select);
 	PRINTF("t113_tcondsi_CCU_configuration: setup DSI_CLK_REG\n");
 
     const unsigned dsidivider = 2;
@@ -8056,7 +8073,13 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	t113_tcondsi_PLL_configuration(dsifreq);
 	t113_tcondsi_CCU_configuration(dsifreq);
 	// step1 - same as step1 in HV mode: Select HV interface type
-	t113_select_HV_interface_type(vdmode);
+	t113_select_HV_interface_type(vdmode);	// set TCONLCD input data
+	{
+		PRINTF("Before: DISPLAY_TOP->dsi_src_select=%08X\n", (unsigned) DISPLAY_TOP->dsi_src_select);
+		DISPLAY_TOP->dsi_src_select = 0x01;
+		PRINTF("After: DISPLAY_TOP->dsi_src_select=%08X\n", (unsigned) DISPLAY_TOP->dsi_src_select);
+
+	}
 	// step2 - Clock configuration
 	t113_MIPIDSI_clock_configuration(vdmode, onepixelclocks);
 	// step3 - same as step3 in HV mode: Set sequuence parameters
