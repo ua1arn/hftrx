@@ -31,7 +31,6 @@
 #include "utils.h"
 #include "gpio.h"
 #include "clocks.h"
-#include "src/touch/touch.h"
 
 #define WITHLVDSHW (WITHFLATLINK && defined (HARDWARE_LVDS_INITIALIZE))
 #define WITHDSIHW (WITHMIPIDSISHW && defined (HARDWARE_MIPIDSI_INITIALIZE))
