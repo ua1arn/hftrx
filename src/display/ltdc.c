@@ -3232,16 +3232,6 @@ static void hardware_de_initialize(int rtmixid)
 	PRINTF("DE_IP_CFG.RTD0_DEP_NO=%u\n", (unsigned) (DE_TOP->DE_IP_CFG >> 0) & 0x01);
 #endif
 
-	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | UINT32_C(0x0F) << 0)) |
-		0x02 * (UINT32_C(1) << 24) |	// 010: PLL_VIDEO0(2X)	= 594 MHz
-		//(UINT32_C(3) << 24) |	// 011: PLL_VIDEO1(2X)	= 594 MHz
-		((UINT32_C(4) - 1) << 0) |
-		0;
-
-	CCU->DSI_CLK_REG |= UINT32_C(1) << 31;		// DSI_CLK_GATING
-
-	CCU->DSI_BGR_REG |= UINT32_C(1) << 0;	// DSI_GATING
-	CCU->DSI_BGR_REG |= UINT32_C(1) << 16;	// DSI_RST
 
 //	PRINTF("allwnr_t113_get_dsi_freq()=%" PRIuFAST32 "\n", allwnr_t113_get_dsi_freq());
 //	printhex32(DSI0_BASE, DSI0, sizeof * DSI0);
@@ -3462,6 +3452,25 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
     local_delay_us(10);
 
     CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
+
+	PRINTF("t113_tconlvds_CCU_configuration(): setup DSI_CLK_REG\n");
+    const unsigned dsidivider = 2;
+	// T113
+	//	000: HOSC
+	//	001: PLL_PERI(1X)
+	//	010: PLL_VIDEO0(2X)
+	//	011: PLL_VIDEO1(2X)
+	//	100: PLL_AUDIO1(DIV2)
+	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | UINT32_C(0x0F) << 0)) |
+		0x03 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL PLL_VIDEO1(2X)
+		(dsidivider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M
+		0;
+
+	CCU->DSI_CLK_REG |= UINT32_C(1) << 31;		// DSI_CLK_GATING
+
+	CCU->DSI_BGR_REG |= UINT32_C(1) << 0;	// DSI_GATING
+	CCU->DSI_BGR_REG |= UINT32_C(1) << 16;	// DSI_RST
+
 
     CCU->LVDS_BGR_REG &= ~ (UINT32_C(1) << 16); // LVDS0_RST: Assert reset
     CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset
@@ -8010,8 +8019,11 @@ static void t113_tcondsi_CCU_configuration(uint_fast32_t needfreq)
 //	PRINTF("Before: DISPLAY_TOP->dsi_src_select=%08X\n", (unsigned) DISPLAY_TOP->dsi_src_select);
 //	DISPLAY_TOP->dsi_src_select = ~0;
 //	PRINTF("After: DISPLAY_TOP->dsi_src_select=%08X\n", (unsigned) DISPLAY_TOP->dsi_src_select);
+	PRINTF("t113_tcondsi_CCU_configuration: setup DSI_CLK_REG\n");
+
     const unsigned dsidivider = 2;
 	ASSERT(dsidivider >= 1 && dsidivider <= 16);
+	// T113
 	//	000: HOSC
 	//	001: PLL_PERI(1X)
 	//	010: PLL_VIDEO0(2X)
