@@ -629,6 +629,18 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 #elif CPUSTYLE_A133
 	#warning CPUSTYLE_A133 should be handled
 
+    arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
+    arm_hardware_disable_handler(USB20_HOST0_EHCI_IRQn);
+    arm_hardware_disable_handler(USB20_HOST0_OHCI_IRQn);
+
+	CCU->USB_BGR_REG |= (UINT32_C(1) << 24);	// USBOTG0_RST
+	CCU->USB_BGR_REG |= (UINT32_C(1) << 8);	// USBOTG0_GATING
+
+	CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
+	CCU->USB0_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY0
+
+	arm_hardware_set_handler_system(USB20_OTG_DEVICE_IRQn, device_OTG_HS_IRQHandler);
+
 #else
 	#error HAL_PCD_MspInit should be implemented
 
@@ -752,8 +764,16 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 
 #elif CPUSTYLE_A133
 	#warning CPUSTYLE_A133 should be handled
+	CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 8);	// USBOTG0_GATING
+
+	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
+	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY0
+	CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG0_RST
+
+	arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
 
 #else
+
 	#error HAL_PCD_MspDeInit should be implemented
 #endif
 }
