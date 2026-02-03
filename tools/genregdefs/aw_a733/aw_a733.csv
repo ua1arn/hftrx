@@ -77,8 +77,27 @@
 #base; TWI11 0x0251B000
 #base; TWI12 0x0251C000
 
+#base; S_TWI0 0x07083000
 #base; S_TWI1 0x07084000
 #base; S_TWI2 0x07085000
+
+#irq; TWI0 43
+#irq; TWI1 44
+#irq; TWI2 45
+#irq; TWI3 46
+#irq; TWI4 47
+#irq; TWI5 48
+#irq; TWI6 49
+#irq; TWI7 50
+#irq; TWI8 51
+#irq; TWI9 52
+#irq; TWI10 53
+#irq; TWI11 54
+#irq; TWI12 55
+
+#irq; S_TWI0 235
+#irq; S_TWI1 236
+#irq; S_TWI2 237
 #typeend;
 
 #type; SPI; Serial Peripheral Interface

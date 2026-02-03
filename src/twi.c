@@ -1565,7 +1565,35 @@ void i2chwx_initialize(TWI_t * twi, unsigned TWIx, uint_fast32_t busfreq, uint_f
 		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 17);	// De-assert reset
 	}
 #endif /* defined (S_TWI1) */
-#if CPUSTYLE_A64
+#if defined (S_TWI2) && defined (PRCM)
+	// A133
+	else if (twi == S_TWI2)
+	{
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 2);	// Open the clock gate
+		PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 18);	// Assert reset
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 18);	// De-assert reset
+	}
+#endif /* defined (S_TWI1) */
+#if CPUSTYLE_A733
+	else if (twi == S_TWI0)
+	{
+		STBY_PRCM->S_TWI_BGR_REG |= (UINT32_C(1) << (TWIx + 0));	// Open the clock gate
+		STBY_PRCM->S_TWI_BGR_REG &= ~ (UINT32_C(1) << (TWIx + 16));	// Assert reset
+		STBY_PRCM->S_TWI_BGR_REG |= (UINT32_C(1) << (TWIx + 16));	// De-assert reset
+	}
+	else if (twi == S_TWI1)
+	{
+		STBY_PRCM->S_TWI_BGR_REG |= (UINT32_C(1) << (TWIx + 0));	// Open the clock gate
+		STBY_PRCM->S_TWI_BGR_REG &= ~ (UINT32_C(1) << (TWIx + 16));	// Assert reset
+		STBY_PRCM->S_TWI_BGR_REG |= (UINT32_C(1) << (TWIx + 16));	// De-assert reset
+	}
+	else if (twi == S_TWI2)
+	{
+		STBY_PRCM->S_TWI_BGR_REG |= (UINT32_C(1) << (TWIx + 0));	// Open the clock gate
+		STBY_PRCM->S_TWI_BGR_REG &= ~ (UINT32_C(1) << (TWIx + 16));	// Assert reset
+		STBY_PRCM->S_TWI_BGR_REG |= (UINT32_C(1) << (TWIx + 16));	// De-assert reset
+	}
+#elif CPUSTYLE_A64
 	// A64
 	else if (twi == R_TWI)
 	{

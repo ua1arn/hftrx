@@ -42,6 +42,19 @@ typedef enum IRQn
     UART4_IRQn = 38,                                  /*!< UART  */
     UART5_IRQn = 39,                                  /*!< UART  */
     UART6_IRQn = 40,                                  /*!< UART  */
+    TWI0_IRQn = 43,                                   /*!< TWI Two Wire Interface (TWI) */
+    TWI1_IRQn = 44,                                   /*!< TWI Two Wire Interface (TWI) */
+    TWI2_IRQn = 45,                                   /*!< TWI Two Wire Interface (TWI) */
+    TWI3_IRQn = 46,                                   /*!< TWI Two Wire Interface (TWI) */
+    TWI4_IRQn = 47,                                   /*!< TWI Two Wire Interface (TWI) */
+    TWI5_IRQn = 48,                                   /*!< TWI Two Wire Interface (TWI) */
+    TWI6_IRQn = 49,                                   /*!< TWI Two Wire Interface (TWI) */
+    TWI7_IRQn = 50,                                   /*!< TWI Two Wire Interface (TWI) */
+    TWI8_IRQn = 51,                                   /*!< TWI Two Wire Interface (TWI) */
+    TWI9_IRQn = 52,                                   /*!< TWI Two Wire Interface (TWI) */
+    TWI10_IRQn = 53,                                  /*!< TWI Two Wire Interface (TWI) */
+    TWI11_IRQn = 54,                                  /*!< TWI Two Wire Interface (TWI) */
+    TWI12_IRQn = 55,                                  /*!< TWI Two Wire Interface (TWI) */
     USB20_OTG_DEVICE_IRQn = 57,                       /*!< USBOTG USB OTG Dual-Role Device controller */
     USB20_HOST0_EHCI_IRQn = 58,                       /*!< USB_EHCI_Capability  */
     USB20_HOST0_OHCI_IRQn = 59,                       /*!< USB_OHCI_Capability  */
@@ -75,6 +88,9 @@ typedef enum IRQn
     S_GPIOM_IRQn = 232,                               /*!< GPIOINT S_GPIOM_NS */
     S_UART0_IRQn = 233,                               /*!< UART  */
     S_UART1_IRQn = 234,                               /*!< UART  */
+    S_TWI0_IRQn = 235,                                /*!< TWI Two Wire Interface (TWI) */
+    S_TWI1_IRQn = 236,                                /*!< TWI Two Wire Interface (TWI) */
+    S_TWI2_IRQn = 237,                                /*!< TWI Two Wire Interface (TWI) */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -152,10 +168,12 @@ typedef enum IRQn
 #define USB20_HOST2_OHCI_BASE ((uintptr_t) 0x05310400)/*!< USB_OHCI_Capability  Base */
 #define USB20_HOST3_EHCI_BASE ((uintptr_t) 0x05311000)/*!< USB_EHCI_Capability  Base */
 #define USB20_HOST3_OHCI_BASE ((uintptr_t) 0x05311400)/*!< USB_OHCI_Capability  Base */
+#define STBY_PRCM_BASE ((uintptr_t) 0x07010000)       /*!< PRCM  Base */
 #define S_GPIOL_BASE ((uintptr_t) 0x07025000)         /*!< S_GPIO Secure Port Controller Base */
 #define S_GPIOM_BASE ((uintptr_t) 0x07025030)         /*!< S_GPIO Secure Port Controller Base */
 #define S_UART0_BASE ((uintptr_t) 0x07080000)         /*!< UART  Base */
 #define S_UART1_BASE ((uintptr_t) 0x07081000)         /*!< UART  Base */
+#define S_TWI0_BASE ((uintptr_t) 0x07083000)          /*!< TWI Two Wire Interface (TWI) Base */
 #define S_TWI1_BASE ((uintptr_t) 0x07084000)          /*!< TWI Two Wire Interface (TWI) Base */
 #define S_TWI2_BASE ((uintptr_t) 0x07085000)          /*!< TWI Two Wire Interface (TWI) Base */
 #define Timer0_CPUS_BASE ((uintptr_t) 0x07091000)     /*!< TIMER0  Base */
@@ -807,6 +825,76 @@ typedef struct GPIOINT_Type
          RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
 /*
+ * @brief PRCM
+ */
+/*!< PRCM  */
+typedef struct PRCM_Type
+{
+    __IO uint32_t AHBS_CLK_REG;                       /*!< Offset 0x000 AHBS Clock Register  */
+         RESERVED(0x004[0x000C - 0x0004], uint8_t)
+    __IO uint32_t APBS0_CLK_REG;                      /*!< Offset 0x00C APBS0 Clock Register  */
+    __IO uint32_t APBS1_CLK_REG;                      /*!< Offset 0x010 APBS1 Clock Register  */
+         RESERVED(0x014[0x0100 - 0x0014], uint8_t)
+    __IO uint32_t S_TIMER0_CLK_REG;                   /*!< Offset 0x100 S_TIMER0 Clock Register  */
+    __IO uint32_t S_TIMER1_CLK_REG;                   /*!< Offset 0x104 S_TIMER1 Clock Register  */
+    __IO uint32_t S_TIMER2_CLK_REG;                   /*!< Offset 0x108 S_TIMER2 Clock Register  */
+    __IO uint32_t S_TIMER3_CLK_REG;                   /*!< Offset 0x10C S_TIMER3 Clock Register  */
+         RESERVED(0x110[0x011C - 0x0110], uint8_t)
+    __IO uint32_t S_TIMER_BGR_REG;                    /*!< Offset 0x11C S_TIMER BUS GATING RESET Register */
+         RESERVED(0x120[0x012C - 0x0120], uint8_t)
+    __IO uint32_t S_TWD_BGR_REG;                      /*!< Offset 0x12C S_TWD BUS GATING RESET Register */
+    __IO uint32_t S_PWM_CLK_REG;                      /*!< Offset 0x130 S_PWM Clock Register  */
+         RESERVED(0x134[0x013C - 0x0134], uint8_t)
+    __IO uint32_t S_PWM_BGR_REG;                      /*!< Offset 0x13C S_PWM BUS GATING RESET Register  */
+         RESERVED(0x140[0x0150 - 0x0140], uint8_t)
+    __IO uint32_t S_SPI_CLK_REG;                      /*!< Offset 0x150 S_SPI Clock Register  */
+         RESERVED(0x154[0x015C - 0x0154], uint8_t)
+    __IO uint32_t S_SPI_BGR_REG;                      /*!< Offset 0x15C S_SPI BUS GATING RESET Register  */
+         RESERVED(0x160[0x017C - 0x0160], uint8_t)
+    __IO uint32_t S_MBOX_BGR_REG;                     /*!< Offset 0x17C S_MBOX BUS GATING RESET Register  */
+         RESERVED(0x180[0x018C - 0x0180], uint8_t)
+    __IO uint32_t S_UART_BGR_REG;                     /*!< Offset 0x18C S_UART BUS GATING RESET Register  */
+         RESERVED(0x190[0x019C - 0x0190], uint8_t)
+    __IO uint32_t S_TWI_BGR_REG;                      /*!< Offset 0x19C S_TWI BUS GATING RESET Register  */
+         RESERVED(0x1A0[0x01AC - 0x01A0], uint8_t)
+    __IO uint32_t S_PPU_BGR_REG;                      /*!< Offset 0x1AC S_PPU BUS GATING RESET Register */
+    __IO uint32_t S_TZMA_BGR_REG;                     /*!< Offset 0x1B0 S_TZMA GATING RESET Register  */
+         RESERVED(0x1B4[0x01BC - 0x01B4], uint8_t)
+    __IO uint32_t S_CPUS_BIST_BGR_REG;                /*!< Offset 0x1BC  */
+    __IO uint32_t S_IRRX_CLK_REG;                     /*!< Offset 0x1C0 S_IRRX Clock Register */
+         RESERVED(0x1C4[0x01CC - 0x01C4], uint8_t)
+    __IO uint32_t S_IRRX_BGR_REG;                     /*!< Offset 0x1CC S_IRRX BUS GATING RESET Register */
+         RESERVED(0x1D0[0x020C - 0x01D0], uint8_t)
+    __IO uint32_t RTC_BGR_REG;                        /*!< Offset 0x20C RTC BUS GATING RESET Register */
+    __IO uint32_t RISCV_24M_CLK_REG;                  /*!< Offset 0x210 RISCV_24M Clock Register */
+         RESERVED(0x214[0x021C - 0x0214], uint8_t)
+    __IO uint32_t RISCV_BGR_REG;                      /*!< Offset 0x21C RISCV BUS GATING RESET Register */
+         RESERVED(0x220[0x022C - 0x0220], uint8_t)
+    __IO uint32_t S_CPUCFG_BGR_REG;                   /*!< Offset 0x22C S_CPUCFG BUS GATING RESET Register */
+         RESERVED(0x230[0x0290 - 0x0230], uint8_t)
+    __IO uint32_t PRCM_SEC_SWITCH_REG;                /*!< Offset 0x290 PRCM Security Switch Register  */
+    __IO uint32_t CPUX_ISO_CONFIG_REG;                /*!< Offset 0x294 CPUX Isolation Configuration Register   */
+         RESERVED(0x298[0x0320 - 0x0298], uint8_t)
+    __IO uint32_t NMI_INT_CTRL_REG;                   /*!< Offset 0x320 NMI Interrupt Control Register */
+    __IO uint32_t NMI_INT_EN_REG;                     /*!< Offset 0x324 NMI Interrupt Enable Register */
+    __IO uint32_t NMI_INT_PEND_REG;                   /*!< Offset 0x328 NMI Interrupt Pending Register */
+         RESERVED(0x32C[0x0338 - 0x032C], uint8_t)
+    __IO uint32_t DEV_BUS_AUTOG_CTRL_REG;             /*!< Offset 0x338 DEV_BUS_AUTOG_CTRL Register */
+    __IO uint32_t BUS_ACG_REG;                        /*!< Offset 0x33C Bus Auto Clock Gating Register */
+         RESERVED(0x340[0x0360 - 0x0340], uint8_t)
+    __IO uint32_t MSRAMOC_CTRL_REG;                   /*!< Offset 0x360 MSRAMOC Control Register */
+         RESERVED(0x364[0x0368 - 0x0364], uint8_t)
+    __IO uint32_t AHBS_RDY_TOUT_CTRL_REG;             /*!< Offset 0x368 AHBS Ready Timeout Control Register */
+         RESERVED(0x36C[0x037C - 0x036C], uint8_t)
+    __IO uint32_t JTAG_PAD_SEL_REG;                   /*!< Offset 0x37C JTAG PAD Select Configuration Register */
+         RESERVED(0x380[0x03A0 - 0x0380], uint8_t)
+    __IO uint32_t CPUX_ISO_EN_REG;                    /*!< Offset 0x3A0 CPUX ISO Enable Register */
+         RESERVED(0x3A4[0x03E0 - 0x03A4], uint8_t)
+    __IO uint32_t CRY_CONFIG_REG;                     /*!< Offset 0x3E0 Crypt Configuration Register */
+    __IO uint32_t CRY_KEY_REG;                        /*!< Offset 0x3E4 Crypt Key Register */
+    __IO uint32_t CRY_EN_REG;                         /*!< Offset 0x3E8 Crypt Enable Register */
+} PRCM_TypeDef; /* size of structure = 0x3EC */
+/*
  * @brief SPI
  */
 /*!< SPI Serial Peripheral Interface */
@@ -1198,10 +1286,12 @@ typedef struct USB_OHCI_Capability_Type
 #define USB20_HOST2_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST2_OHCI_BASE)/*!< USB20_HOST2_OHCI  register set access pointer */
 #define USB20_HOST3_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST3_EHCI_BASE)/*!< USB20_HOST3_EHCI  register set access pointer */
 #define USB20_HOST3_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST3_OHCI_BASE)/*!< USB20_HOST3_OHCI  register set access pointer */
+#define STBY_PRCM ((PRCM_TypeDef *) STBY_PRCM_BASE)   /*!< STBY_PRCM  register set access pointer */
 #define S_GPIOL ((S_GPIO_TypeDef *) S_GPIOL_BASE)     /*!< S_GPIOL Secure Port Controller register set access pointer */
 #define S_GPIOM ((S_GPIO_TypeDef *) S_GPIOM_BASE)     /*!< S_GPIOM Secure Port Controller register set access pointer */
 #define S_UART0 ((UART_TypeDef *) S_UART0_BASE)       /*!< S_UART0  register set access pointer */
 #define S_UART1 ((UART_TypeDef *) S_UART1_BASE)       /*!< S_UART1  register set access pointer */
+#define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0 Two Wire Interface (TWI) register set access pointer */
 #define S_TWI1 ((TWI_TypeDef *) S_TWI1_BASE)          /*!< S_TWI1 Two Wire Interface (TWI) register set access pointer */
 #define S_TWI2 ((TWI_TypeDef *) S_TWI2_BASE)          /*!< S_TWI2 Two Wire Interface (TWI) register set access pointer */
 #define S_SPI ((SPI_TypeDef *) S_SPI_BASE)            /*!< S_SPI Serial Peripheral Interface register set access pointer */

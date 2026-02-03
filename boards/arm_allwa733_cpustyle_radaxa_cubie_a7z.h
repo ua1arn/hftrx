@@ -652,9 +652,9 @@
 
 #endif /* WITHKEYBOARD */
 
-#if 0
+#if 1
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-	#define WITHSTWI1HW 1	// S_TWI1
+	#define WITHSTWI0HW 1	// S_TWI0
 
 	// PL0 S_TWI0_SCK
 	// PL1 S_TWI0_SDL
@@ -662,12 +662,12 @@
 	#define TARGET_S_TWI_TWD		(UINT32_C(1) << 1)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	HARDWARE_S_TWI1_INITIALIZE() do { \
-		arm_hardware_piol_altfn2m(TARGET_S_TWI_TWCK, GPIO_CFG_AF3);	/* PL0 - S_TWI0_SCK */ \
-		arm_hardware_piol_altfn2m(TARGET_S_TWI_TWD, GPIO_CFG_AF3);		/* PL1 - S_TWI0_SDA */ \
+	#define	HARDWARE_S_TWI0_INITIALIZE() do { \
+		s_gpioX_prog(S_GPIOL, BOARD_BLINK_BIT0, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SCK */ \
+		s_gpioX_prog(S_GPIOL, BOARD_BLINK_BIT0, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL1 - S_TWI0_SDA */ \
 	} while (0)
-	#define TWIHARD_S_PTR S_TWI1
-	#define	TWIHARD_S_TWI1_FREQ (allwnr_a733_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define TWIHARD_S_PTR S_TWI0
+	#define	TWIHARD_S_TWI0_FREQ (allwnr_a733_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 #endif
 
 #if 0
@@ -678,14 +678,7 @@
 	// PH4 TWI3-SCK pin 05
 	// PH5 TWI3-SDA pin 03
 	#define TARGET_TWI_TWCK		(UINT32_C(1) << 4)
-	#define TARGET_TWI_TWCK_PIN		(gpioX_getinputs(GPIOH))
-	#define TARGET_TWI_TWCK_PORT_C(v) do { gpioX_setopendrain(GPIOH, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { gpioX_setopendrain(GPIOH, (v), 1 * (v)); } while (0)
-
 	#define TARGET_TWI_TWD		(UINT32_C(1) << 5)
-	#define TARGET_TWI_TWD_PIN		(gpioX_getinputs(GPIOH))
-	#define TARGET_TWI_TWD_PORT_C(v) do { gpioX_setopendrain(GPIOH, (v), 0 * (v)); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { gpioX_setopendrain(GPIOH, (v), 1 * (v)); } while (0)
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
@@ -983,11 +976,11 @@
 	} while (0)
 #endif
 
-#if 0//WITHISBOOTLOADER
+#if 1//WITHISBOOTLOADER
 
-	#define WITHSDRAM_AXP313	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP313A power management chip */
+	#define WITHSDRAM_AXP318	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP318 power management chip */
 
-	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
+	#define PMIC_I2C_W (0x37 << 1)	// 7bit: 0x36/0x37
 	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
 	int board_radaxa_cubie_axp318w_initialize(void);
