@@ -7,7 +7,7 @@
 //	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 //	int axp313_initialize(void)
 
-#if WITHSDRAM_AXP313
+#if WITHSDRAM_AXP313 || WITHSDRAM_AXP318
 
 #include "gpio.h"
 #include "formats.h"
@@ -62,10 +62,10 @@ enum axp313a_reg {
 
 // #define AXP_SHUTDOWN_REG	0x27
 // #define AXP_SHUTDOWN_MASK	BIT(0)
+#define BIT(x)              (1 << (x))
 
 #if WITHSDRAM_AXP313				/* AXP313 */
 
-#define BIT(x)              (1 << (x))
 
 #define AXP_CHIP_VERSION	0x3
 #define AXP_CHIP_VERSION_MASK	0xc8
@@ -75,7 +75,7 @@ enum axp313a_reg {
 
  #else
 
- 	#error "Please define the regulator registers in axp_spl_regulators[]."
+ 	//#error "Please define the regulator registers in axp_spl_regulators[]."
 
  #endif
 
@@ -460,5 +460,79 @@ int board_orangepi_zero3_axp313_initialize(void)
 //PRINTF(" reg=%p data=%p\n",AXP313A_DLDO1_CTRL,data_read);
 //
 //}
+
+int board_radaxa_cubie_axp318w_initialize(void)
+{
+
+	PRINTF("START PMIC \n");
+	uint8_t axp313_chip_id;
+	int ret;
+
+	ret = pmic_bus_init();
+	if (ret)
+	{
+		PRINTF("pmic_bus_init() failure.\n");
+			dbg_flush();
+		return ret;
+	}
+	{
+		// i2c bus test i2c test twi bus test twi test
+		unsigned n = 3;
+		for (;n --;)
+		{
+			unsigned addr;
+			PRINTF("I2C bus scan:\n");
+			for (addr = 2; addr < 254; addr += 2)
+			{
+				uint8_t v = 0xFF;
+				int err = i2chwx_read(TWIHARD_S_PTR, addr | 0x01, & v, 1);
+				if (err == 0)
+				{
+					PRINTF("addr8bit=0x%02X, addr7bit=0x%02X\n", addr, addr / 2);
+				}
+			}
+		}
+		PRINTF("I2C bus scan done\n");
+	}
+
+	ret = pmic_bus_read(AXP313_CHIP_VERSION, &axp313_chip_id);
+	if (ret)
+	{
+		PRINTF("pmic_bus_read() failure.\n");
+			dbg_flush();
+		return ret;
+	}
+
+	if (0)
+	{
+		unsigned reg;
+		for (reg = 0; reg <= 0xED; ++ reg)
+		{
+			uint8_t v;
+			pmic_bus_read(reg, & v);
+			PRINTF("axp313 reg%02X=0x%02X\n", reg, v);
+		}
+	}
+
+	PRINTF("axp313_chip_id=0x%02X (expected 0x%02X)\n", axp313_chip_id, 0x4B);
+
+	dbg_flush();
+	if (!(axp313_chip_id == 0x4B))
+		return -1;
+    PRINTF("axp313_chip_id=OK\n");
+
+    return 0;
+
+	axp_set_aldo1(1800);///VCC 1V8
+	axp_set_dldo1(1,3300);///VCC3V3
+	axp_set_dcdc1(970);///810-990 VDD-GPU-SYS
+	axp_set_dcdc2(970);///810-1100 VDD-CPU
+	axp_set_dcdc3(1100);///VCC-DRAM - 1.1V for LPDDR4
+
+	PRINTF("axp313 INIT END\n");
+	dbg_flush();
+	return 0;
+
+}
 
 #endif

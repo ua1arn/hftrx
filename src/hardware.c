@@ -2017,6 +2017,10 @@ sysinit_vbar_initialize(void)
 // Reset_CPUn_Handler ((on Core #1..)
 static void sysinit_smp_initialize(void)
 {
+#if CPUSTYLE_A733
+	#warning To be done
+	return;
+#endif
 #if (__CORTEX_A == 9U)
 	// not set the ACTLR.SMP
 	// 0x02: L2 Prefetch hint enable

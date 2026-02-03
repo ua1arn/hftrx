@@ -7687,7 +7687,8 @@ void hightests(void)
 			for (addr = 2; addr < 254; addr += 2)
 			{
 				uint8_t v = 0xFF;
-				int err = i2chw_read(addr | 0x01, & v, 1);
+				//int err = i2chwx_read(TWIHARD_S_PTR, addr | 0x01, & v, 1);
+				int err = i2chwx_read(TWIHARD_PTR, addr | 0x01, & v, 1);
 				if (err == 0)
 				{
 					PRINTF("addr8bit=0x%02X, addr7bit=0x%02X\n", addr, addr / 2);
