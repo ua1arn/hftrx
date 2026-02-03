@@ -402,59 +402,6 @@ int board_orangepi_zero2w_axp313_initialize(void)
 	return 0;
 }
 
-int board_orangepi_zero3_axp313_initialize(void)
-{
-	PRINTF("START PMIC \n");
-	uint8_t axp313_chip_id;
-	int ret;
-
-	ret = pmic_bus_init();
-	if (ret)
-	{
-		PRINTF("pmic_bus_init() failure.\n");
-			dbg_flush();
-		return ret;
-	}
-
-	ret = pmic_bus_read(AXP313_CHIP_VERSION, &axp313_chip_id);
-	if (ret)
-	{
-		PRINTF("pmic_bus_read() failure.\n");
-			dbg_flush();
-		return ret;
-	}
-
-	if (0)
-	{
-		uint8_t registers [0xEE];
-		unsigned reg;
-		for (reg = 0; reg < ARRAY_SIZE(registers); ++ reg)
-		{
-			if (pmic_bus_read(reg, & registers [reg]))
-				break;
-		}
-		PRINTF("axp313 registers (count = 0x%02X):\n", reg);
-		printhex(0, registers, reg);
-	}
-
-	PRINTF("axp313_chip_id=0x%02X (expected 0x%02X)\n", axp313_chip_id, 0x4B);
-
-	dbg_flush();
-	if (!(axp313_chip_id == 0x4B))
-		return -1;
-    PRINTF("axp313_chip_id=OK\n");
-
-	axp_set_aldo1(1800);///VCC 1V8
-	axp_set_dldo1(1,3300);///VCC3V3
-	axp_set_dcdc1(970);///810-990 VDD-GPU-SYS
-	axp_set_dcdc2(970);///810-1100 VDD-CPU
-	axp_set_dcdc3(1100);///VCC-DRAM - 1.1V for LPDDR4
-
-	PRINTF("axp313 INIT END\n");
-	dbg_flush();
-	return 0;
-}
-
 int pmic_clrsetbits(unsigned i2caddr, unsigned reg, unsigned clr, unsigned set)
 {
 	//struct uc_pmic_priv *priv = dev_get_uclass_priv(dev);
@@ -605,6 +552,93 @@ static void axpXXX_print(const struct axp_regulator_plat * regs)
 //	uint8_t		split;
 //	const uint16_t	*table;
 //};
+
+/*
+ * The "dcdc1" regulator has another range, beyond 1.54V up to 3.4V, in
+ * steps of 100mV. We cannot model this easily, but also don't need that,
+ * since it's typically only used for ~1.1V anyway, so just ignore it.
+ * Also the DCDC3 regulator is described wrongly in the (available) manual,
+ * experiments show that the split point is at 1200mV, as for DCDC1/2.
+ */
+static const struct axp_regulator_plat axp313_regulators[] = {
+	{ "dcdc1", 0x10, BIT(0), 0x13, 0x7f,  500, 1540,  10, 70 },
+	{ "dcdc2", 0x10, BIT(1), 0x14, 0x7f,  500, 1540,  10, 70 },
+	{ "dcdc3", 0x10, BIT(2), 0x15, 0x7f,  500, 1840,  10, 70 },
+	{ "aldo1", 0x10, BIT(3), 0x16, 0x1f,  500, 3500, 100, NA },
+	{ "dldo1", 0x10, BIT(4), 0x17, 0x1f,  500, 3500, 100, NA },
+	{ }
+};
+
+static int axp313_set(const char * name, unsigned mvolt)
+{
+	return axpXXX_set(axp313_regulators, name, mvolt);
+}
+
+static int axp313_setstate(const char * name, unsigned state)
+{
+	return axpXXX_setstate(axp313_regulators, name, state);
+}
+
+int board_orangepi_zero3_axp313_initialize(void)
+{
+	PRINTF("START PMIC \n");
+	uint8_t axp313_chip_id;
+	int ret;
+
+	ret = pmic_bus_init();
+	if (ret)
+	{
+		PRINTF("pmic_bus_init() failure.\n");
+			dbg_flush();
+		return ret;
+	}
+
+	ret = pmic_bus_read(AXP313_CHIP_VERSION, &axp313_chip_id);
+	if (ret)
+	{
+		PRINTF("pmic_bus_read() failure.\n");
+			dbg_flush();
+		return ret;
+	}
+
+	if (0)
+	{
+		uint8_t registers [0xEE];
+		unsigned reg;
+		for (reg = 0; reg < ARRAY_SIZE(registers); ++ reg)
+		{
+			if (pmic_bus_read(reg, & registers [reg]))
+				break;
+		}
+		PRINTF("axp313 registers (count = 0x%02X):\n", reg);
+		printhex(0, registers, reg);
+	}
+
+	PRINTF("axp313_chip_id=0x%02X (expected 0x%02X)\n", axp313_chip_id, 0x4B);
+
+	dbg_flush();
+	if (!(axp313_chip_id == 0x4B))
+		return -1;
+    PRINTF("axp313_chip_id=OK\n");
+
+	axpXXX_print(axp313_regulators);
+	axp_set_aldo1(1800);///VCC 1V8
+	axp_set_dldo1(1,3300);///VCC3V3
+	axp_set_dcdc1(970);///810-990 VDD-GPU-SYS
+	axp_set_dcdc2(970);///810-1100 VDD-CPU
+	axp_set_dcdc3(1100);///VCC-DRAM - 1.1V for LPDDR4
+#if 0
+	axp313_set("aldo1", 1800);	///VCC 1V8
+	axp313_set("dldo1", 3300);	///VCC3V3
+	axp313_set("dcdc1", 970);	///810-990 VDD-GPU-SYS
+	axp313_set("dcdc2", 970);	///810-1100 VDD-CPU
+	axp313_set("dcdc3", 1100);	///VCC-DRAM - 1.1V for LPDDR4
+#endif
+	PRINTF("axp313 INIT END\n");
+	axpXXX_print(axp313_regulators);
+	dbg_flush();
+	return 0;
+}
 
 /*
  * Only two level step tuning is implemented for DCDC6, 8, 9
