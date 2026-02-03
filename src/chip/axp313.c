@@ -485,7 +485,7 @@ int board_radaxa_cubie_axp318w_initialize(void)
 		return ret;
 	}
 
-	if (1)
+	if (0)
 	{
 		uint8_t registers [0xEE];
 		unsigned reg;
@@ -505,14 +505,52 @@ int board_radaxa_cubie_axp318w_initialize(void)
 		return -1;
     PRINTF("axp318_chip_id=OK\n");
 
-    return 0;
-
-	axp_set_aldo1(1800);///VCC 1V8
-	axp_set_dldo1(1,3300);///VCC3V3
-	axp_set_dcdc1(970);///810-990 VDD-GPU-SYS
-	axp_set_dcdc2(970);///810-1100 VDD-CPU
-	axp_set_dcdc3(1100);///VCC-DRAM - 1.1V for LPDDR4
-
+    // Radaxa Cubie A7Z voltages:
+	//	SWOUT1 VCC33-LDO 3.3V with ON/OFF
+	//	SWOUT2 VCC-CARD 3.3V with ON/OFF
+	//	DCDC2 VDD-SYS, VDD-DRAM, VDD-VE, ... 800 mV
+	//	DCDC3 VDD-CPUB
+	//	DCDC4 VDD-GPU
+	//	DCDC5 VDD-CPUL
+	//	DCDC6 VCC-DRAML, VDD-VDDQ [see options]
+	//	DCDC7 VDD-DRAM, VCC-VDDQ [seee options]
+	//	DCDC8 VCC-UFS-IO,, VCC12-UFS, VCC18-UFS
+	//	DCDC9 ELDO-INPUT
+	//	ALDO1 VCC-PL, VCC22-18-USB, VCC33-USB, VCC-3V3_TYPEC 3300 mV
+	//	BLDO1 VCC-PE, VCC-PK, VCC-MCSI 1800 mV
+	//	BLDO2 VCC-PD, VCC-LVDS0, VCC-PJ, VCC18-LCS 1800 mV
+	//	BLDO4 VCC18-CODEC 1800 mV
+	//	BLDO5 VCC-PG 1800 mV
+	//	CLDO1 VCC-PM, ... 1800 mV
+	//	CLDO2 VCC18-HDMI 1800 mV
+	//	CLDO3 ... 1800 mV
+	//	CLDO5 ... 1800 mV
+	//	DLDO1 VCC-EFUSE 1800 mV
+	//	DLDO6 VCC-UFS 2500 mV
+	//	ELDO6 VDD-CPUS, VDD-USB 800 mV
+	//	RTCLDO-PMU VCC-RTC
+#if 0
+    axp318w_set_dcdc2(800); // VDD-SYS, VDD-DRAM, VDD-VE, ... 800 mV
+    axp318w_set_dcdc3(900); // VDD-CPUB 0.8-1V
+    axp318w_set_dcdc4(900); // VDD-GPU 0.8V-0.96V
+    axp318w_set_dcdc5(900); // VDD-CPUL 0.8V-1V
+    axp318w_set_dcdc6(800); // VCC-DRAML, VDD-VDDQ [see options] 0.8/0.6/0.5V
+    axp318w_set_dcdc7(1100); // VDD-DRAM, VCC-VDDQ [seee options] 1.1/1.05V
+    axp318w_set_dcdc8(1200); // VCC-UFS-IO,, VCC12-UFS, VCC18-UFS 0.8/1.2/1.8V
+    axp318w_set_dcdc9(1200); // ELDO-INPUT 1.25/1.1V
+    axp318w_set_aldo1(3300); // VCC-PL, VCC22-18-USB, VCC33-USB, VCC-3V3_TYPEC 3300 mV
+    axp318w_set_bldo1(1800); // VCC-PE, VCC-PK, VCC-MCSI 1800 mV
+    axp318w_set_bldo2(1800); // VCC-PD, VCC-LVDS0, VCC-PJ, VCC18-LCS 1800 mV
+    axp318w_set_bldo4(1800); // VCC18-CODEC 1800 mV
+    axp318w_set_bldo5(1800); // VCC-PG 1800 mV
+    axp318w_set_cldo1(1800); // VCC-PM, ... 1800 mV
+    axp318w_set_cldo2(1800); // VCC18-HDMI 1800 mV
+    axp318w_set_cldo3(1800); // ... 1800 mV
+    axp318w_set_cldo5(1800); // ... 1800 mV
+    axp318w_set_dldo1(1800); // VCC-EFUSE 1800 mV
+    axp318w_set_dldo6(2500); // VCC-UFS 2500 mV
+    axp318w_set_eldo6(800); // VDD-CPUS, VDD-USB 800 mV
+#endif
 	PRINTF("axp318 INIT END\n");
 	dbg_flush();
 	return 0;
