@@ -1,19 +1,10 @@
 #include "hardware.h"
 
-// TODO: move to config file
-
-//	#define WITHSDRAM_AXP313 1
-//	#define PMIC_I2C_W 0x6C  // 7bit: 0x36
-//	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
-//	int axp313_initialize(void)
-
 #if WITHSDRAM_AXP313 || WITHSDRAM_AXP318
 
-#include "gpio.h"
+//#include "gpio.h"
 #include "formats.h"
 #include <string.h>
-
-//#include "axp313.h"
 
 #define NA 0xff
 
@@ -107,10 +98,36 @@ static int pmic_bus_read(uint8_t reg, uint8_t * data)
 	return i2chwx_exchange(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1, data, 1);
 }
 
+static int pmic_read(unsigned i2caddr, uint8_t reg, uint8_t * data)
+{
+	uint8_t bufw = reg;
+	return i2chwx_exchange(TWIHARD_S_PTR, i2caddr, & bufw, 1, data, 1);
+}
+
 static int pmic_bus_write(uint8_t reg, uint8_t data)
 {
-	uint8_t bufw [] = { reg, data };
+	const uint8_t bufw [] = { reg, data };
 	return i2chwx_write(TWIHARD_S_PTR, PMIC_I2C_W, bufw, ARRAY_SIZE(bufw));
+}
+
+static int pmic_write(unsigned i2caddr, uint8_t reg, uint8_t data)
+{
+	const uint8_t bufw [] = { reg, data };
+	return i2chwx_write(TWIHARD_S_PTR, i2caddr, bufw, ARRAY_SIZE(bufw));
+}
+
+static int pmic_reg_read(unsigned i2caddr, uint8_t reg)
+{
+	const uint8_t bufw = reg;
+	uint8_t rv;
+	int ec = i2chwx_exchange(TWIHARD_S_PTR, i2caddr | 0x01, & bufw, 1, & rv, 1);
+	return (ec < 0) ? ec : rv;
+}
+
+static int pmic_reg_write(unsigned i2caddr, uint8_t reg, uint8_t data)
+{
+	const uint8_t bufw [] = { reg, data };
+	return i2chwx_write(TWIHARD_S_PTR, i2caddr & ~ 0x01, bufw, ARRAY_SIZE(bufw));
 }
 
 static int pmic_bus_setbits(uint8_t reg, uint8_t bits)
@@ -177,7 +194,7 @@ static int axp_set_dcdc(int dcdc_num, unsigned int mvolt)
 		max_mV	= 1840;
 		break;
 	default:
-		return -EINVAL;
+		return - 1;
 	}
 
 	if (mvolt > AXP313_DCDC_SPLIT_MVOLT)
@@ -317,7 +334,7 @@ static int axp_set_dldo1(int dldo_num, unsigned int mvolt)
 	uint8_t cfg = axp313a_mvolt_to_cfg(mvolt, 500, 3500, 100);
 
 	if (dldo_num != 1)
-		return -EINVAL;
+		return - 1;
 
 	if (mvolt == 0)
 		return pmic_bus_clrbits(AXP313A_OUTPUT_CTRL,
@@ -438,63 +455,110 @@ int board_orangepi_zero3_axp313_initialize(void)
 	return 0;
 }
 
+int pmic_clrsetbits(unsigned i2caddr, unsigned reg, unsigned clr, unsigned set)
+{
+	//struct uc_pmic_priv *priv = dev_get_uclass_priv(dev);
+	uint8_t val = 0;
+	int ret;
 
-//void read_reg(void)
-//{
-//uint8_t data_read;
-//pmic_bus_read(AXP313A_DCDC1_CTRL, &data_read);
-//PRINTF(" reg=%p data=%p\n",AXP313A_DCDC1_CTRL,data_read);
-//pmic_bus_read(AXP313A_DCDC2_CTRL, &data_read);
-//PRINTF(" reg=%p data=%p\n",AXP313A_DCDC2_CTRL,data_read);
-//pmic_bus_read(AXP313A_DCDC3_CTRL, &data_read);
-//PRINTF(" reg=%p data=%p\n",AXP313A_DCDC3_CTRL,data_read);
-//pmic_bus_read(AXP313A_ALDO1_CTRL, &data_read);
-//PRINTF(" reg=%p data=%p\n",AXP313A_ALDO1_CTRL,data_read);
-//pmic_bus_read(AXP313A_DLDO1_CTRL, &data_read);
-//PRINTF(" reg=%p data=%p\n",AXP313A_DLDO1_CTRL,data_read);
-//
-//}
+//	if (priv->trans_len < 1 || priv->trans_len > sizeof(val)) {
+//		PRINTF("Wrong transmission size [%d]\n", priv->trans_len);
+//		return -EINVAL;
+//	}
 
+	ret = pmic_read(i2caddr, reg, &val);
+	if (ret < 0)
+		return ret;
+
+	val = (val & ~clr) | set;
+	return pmic_write(i2caddr, reg, val);
+}
+
+
+static int axp_regulator_get_value(const struct axp_regulator_plat *plat)
+{
+	int mV, sel;
+
+	if (plat->volt_reg == NA)
+		return - 1;
+
+	sel = pmic_reg_read(PMIC_I2C_W, plat->volt_reg);
+	if (sel < 0)
+		return sel;
+
+	sel &= plat->volt_mask;
+	sel >>= ffs(plat->volt_mask) - 1;
+
+	if (plat->table) {
+		mV = plat->table[sel];
+	} else {
+		if (sel > plat->split)
+			sel = plat->split + (sel - plat->split) * 2;
+		mV = plat->min_mV + sel * plat->step_mV;
+	}
+
+	return mV * 1000;
+}
+
+static int axp_regulator_set_value(const struct axp_regulator_plat *plat, int uV)
+{
+	int mV = uV / 1000;
+	unsigned sel, shift;
+
+	if (plat->volt_reg == NA)
+		return - 1;
+	if (mV < plat->min_mV || mV > plat->max_mV)
+		return - 1;
+
+	shift = ffs(plat->volt_mask) - 1;
+
+	if (plat->table) {
+		/*
+		 * The table must be monotonically increasing and
+		 * have an entry for each possible field value.
+		 */
+		sel = plat->volt_mask >> shift;
+		while (sel && plat->table[sel] > mV)
+			sel--;
+	} else {
+		sel = (mV - plat->min_mV) / plat->step_mV;
+		if (sel > plat->split)
+			sel = plat->split + (sel - plat->split) / 2;
+	}
+
+	return pmic_clrsetbits(PMIC_I2C_W, plat->volt_reg,
+			       plat->volt_mask, sel << shift);
+}
+
+static int axp_regulator_get_enable(const struct axp_regulator_plat *plat)
+{
+	int reg;
+
+	reg = pmic_reg_read(PMIC_I2C_W, plat->enable_reg);
+	if (reg < 0)
+		return reg;
+
+	return (reg & plat->enable_mask) == plat->enable_mask;
+}
+
+static int axp_regulator_set_enable(const struct axp_regulator_plat *plat, int enable)
+{
+	return pmic_clrsetbits(PMIC_I2C_W, plat->enable_reg,
+			       plat->enable_mask,
+			       enable ? plat->enable_mask : 0);
+}
 
 static int axpXXX_set(const struct axp_regulator_plat * regs, const char * name, unsigned mvolt)
 {
-#if 0
-	int ret = - 1;
 	for (;; ++ regs)
 	{
 		if (regs->name == NULL)
 			break;
 		if (strcmp(name, regs->name))
 			continue;
-
-		PRINTF("Found %s for set %u mV\n", name, mvolt);
-		uint8_t cfg;
-
-		if (regs->split == NA)
-		{
-
-		}
-		else
-		{
-			if (mvolt > regs->split)
-				cfg = AXP313_DCDC_SPLIT_OFFSET + mvolt_to_cfg(mvolt,
-						AXP313_DCDC_SPLIT_MVOLT + 20, max_mV, 20);
-			else
-				cfg = mvolt_to_cfg(mvolt, 500, AXP313_DCDC_SPLIT_MVOLT, 10);
-
-			if (mvolt == 0)
-				return pmic_bus_clrbits(regs->enable_reg, regs->enable_mask);
-
-			//PRINTF("DCDC%d: writing 0x%x to reg 0x%x\n", dcdc_num, cfg, volt_reg);
-			ret = pmic_bus_write(regs->volt_reg, cfg & regs->volt_mask);
-			if (ret)
-				return ret;
-
-			return pmic_bus_setbits(regs->enable_reg, regs->enable_mask);
-		}
+		return axp_regulator_set_value(regs, mvolt * 1000);
 	}
-#endif
-	PRINTF("axpXXX_set: %s not found\n", name);
+	PRINTF("axpXXX_setstate: %s not found\n", name);
 	return - 1;
 }
 
@@ -506,10 +570,7 @@ static int axpXXX_setstate(const struct axp_regulator_plat * regs, const char * 
 			break;
 		if (strcmp(name, regs->name))
 			continue;
-		if (state)
-			return pmic_bus_setbits(regs->enable_reg, regs->enable_mask);
-		else
-			return pmic_bus_clrbits(regs->enable_reg, regs->enable_mask);
+		return axp_regulator_set_enable(regs, state);
 	}
 	PRINTF("axpXXX_setstate: %s not found\n", name);
 	return - 1;
@@ -523,12 +584,10 @@ static void axpXXX_print(const struct axp_regulator_plat * regs)
 		if (regs->name == NULL)
 			break;
 
-		uint8_t enablereg;
-		uint8_t valuereg;
+		int en = axp_regulator_get_enable(regs);
+		int voltage = axp_regulator_get_value(regs);
 
-		if (pmic_bus_read(regs->enable_reg, & enablereg))
-			break;
-		PRINTF("'%s': %s\n", regs->name, (enablereg & regs->enable_mask) ? "On" : "Off");
+		PRINTF("'%s': %s %d mV\n", regs->name, (en & regs->enable_mask) ? "On" : "Off", voltage / 1000);
 	}
 }
 
