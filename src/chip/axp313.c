@@ -417,13 +417,15 @@ int board_orangepi_zero3_axp313_initialize(void)
 
 	if (0)
 	{
+		uint8_t registers [0xEE];
 		unsigned reg;
-		for (reg = 0; reg <= 0xED; ++ reg)
+		for (reg = 0; reg < ARRAY_SIZE(registers); ++ reg)
 		{
-			uint8_t v;
-			pmic_bus_read(reg, & v);
-			PRINTF("axp313 reg%02X=0x%02X\n", reg, v);
+			if (pmic_bus_read(reg, & registers [reg]))
+				break;
 		}
+		PRINTF("axp313 registers (count = 0x%02X):\n", reg);
+		printhex(0, registers, reg);
 	}
 
 	PRINTF("axp313_chip_id=0x%02X (expected 0x%02X)\n", axp313_chip_id, 0x4B);
@@ -465,7 +467,7 @@ int board_radaxa_cubie_axp318w_initialize(void)
 {
 
 	PRINTF("START PMIC \n");
-	uint8_t axp313_chip_id;
+	uint8_t axp318_chip_id;
 	int ret;
 
 	ret = pmic_bus_init();
@@ -475,27 +477,7 @@ int board_radaxa_cubie_axp318w_initialize(void)
 			dbg_flush();
 		return ret;
 	}
-	{
-		// i2c bus test i2c test twi bus test twi test
-		unsigned n = 3;
-		for (;n --;)
-		{
-			unsigned addr;
-			PRINTF("I2C bus scan:\n");
-			for (addr = 2; addr < 254; addr += 2)
-			{
-				uint8_t v = 0xFF;
-				int err = i2chwx_read(TWIHARD_S_PTR, addr | 0x01, & v, 1);
-				if (err == 0)
-				{
-					PRINTF("addr8bit=0x%02X, addr7bit=0x%02X\n", addr, addr / 2);
-				}
-			}
-		}
-		PRINTF("I2C bus scan done\n");
-	}
-
-	ret = pmic_bus_read(AXP313_CHIP_VERSION, &axp313_chip_id);
+	ret = pmic_bus_read(AXP313_CHIP_VERSION, &axp318_chip_id);
 	if (ret)
 	{
 		PRINTF("pmic_bus_read() failure.\n");
@@ -503,23 +485,25 @@ int board_radaxa_cubie_axp318w_initialize(void)
 		return ret;
 	}
 
-	if (0)
+	if (1)
 	{
+		uint8_t registers [0xEE];
 		unsigned reg;
-		for (reg = 0; reg <= 0xED; ++ reg)
+		for (reg = 0; reg < ARRAY_SIZE(registers); ++ reg)
 		{
-			uint8_t v;
-			pmic_bus_read(reg, & v);
-			PRINTF("axp313 reg%02X=0x%02X\n", reg, v);
+			if (pmic_bus_read(reg, & registers [reg]))
+				break;
 		}
+		PRINTF("axp318 registers (count = 0x%02X):\n", reg);
+		printhex(0, registers, reg);
 	}
 
-	PRINTF("axp313_chip_id=0x%02X (expected 0x%02X)\n", axp313_chip_id, 0x4B);
+	PRINTF("axp318_chip_id=0x%02X (expected 0x%02X)\n", axp318_chip_id, 0x4B);
 
 	dbg_flush();
-	if (!(axp313_chip_id == 0x4B))
+	if (!(axp318_chip_id == 0x4B))
 		return -1;
-    PRINTF("axp313_chip_id=OK\n");
+    PRINTF("axp318_chip_id=OK\n");
 
     return 0;
 
@@ -529,7 +513,7 @@ int board_radaxa_cubie_axp318w_initialize(void)
 	axp_set_dcdc2(970);///810-1100 VDD-CPU
 	axp_set_dcdc3(1100);///VCC-DRAM - 1.1V for LPDDR4
 
-	PRINTF("axp313 INIT END\n");
+	PRINTF("axp318 INIT END\n");
 	dbg_flush();
 	return 0;
 

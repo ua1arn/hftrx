@@ -6,6 +6,7 @@
 // UA1ARN
 //
 
+//	compatible = "radxa,cubie-a7z", "arm,sun60iw2p1", "allwinner,sun60i-a733";
 // Radaxa Cubie A7Z
 // https://radxa.com/products/cubie/a7z/
 
@@ -663,8 +664,8 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	HARDWARE_S_TWI0_INITIALIZE() do { \
-		s_gpioX_prog(S_GPIOL, BOARD_BLINK_BIT0, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SCK */ \
-		s_gpioX_prog(S_GPIOL, BOARD_BLINK_BIT0, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL1 - S_TWI0_SDA */ \
+		s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWCK, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SCK */ \
+		s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWD, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL1 - S_TWI0_SDA */ \
 	} while (0)
 	#define TWIHARD_S_PTR S_TWI0
 	#define	TWIHARD_S_TWI0_FREQ (allwnr_a733_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
@@ -980,7 +981,7 @@
 
 	#define WITHSDRAM_AXP318	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP318 power management chip */
 
-	#define PMIC_I2C_W (0x37 << 1)	// 7bit: 0x36/0x37
+	#define PMIC_I2C_W (0x36 << 1)	// 7bit: 0x36/0x37
 	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
 	int board_radaxa_cubie_axp318w_initialize(void);

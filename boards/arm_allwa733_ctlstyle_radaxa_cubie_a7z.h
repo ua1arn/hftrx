@@ -5,6 +5,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
+//	compatible = "radxa,cubie-a7z", "arm,sun60iw2p1", "allwinner,sun60i-a733";
 // Radaxa Cubie A7Z
 // https://radxa.com/products/cubie/a7z/
 

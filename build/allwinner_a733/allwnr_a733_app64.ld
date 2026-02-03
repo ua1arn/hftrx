@@ -1,6 +1,7 @@
 /* $Id$ */
-/* sun50iw9p1 Allwinner T507 (HelperBoarf T507) layout */
+/* sun60iw2p1 Allwinner A733 Radaxa Cubie A7Z layout */
 /* Linker script to configure memory regions. */
+/* compatible = "radxa,cubie-a7z", "arm,sun60iw2p1", "allwinner,sun60i-a733"; */
 
 MEMORY
 {

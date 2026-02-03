@@ -15,7 +15,7 @@
  *
  * @brief Dual-core ARM CortexTM-A76 and Hexa-core  ARM CortexTM-A55, up to 2.0 GHz, Single-core RISC-V E902, up to 200 MHz
  *
- * sun50iw9p1
+ * compatible = "radxa,cubie-a7z", "arm,sun60iw2p1", "allwinner,sun60i-a733";
  */
 
 /******************************************************************************/

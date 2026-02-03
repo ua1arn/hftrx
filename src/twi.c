@@ -110,6 +110,9 @@ static void i2c_delay(const i2cp_t * p)
 static uint32_t i2c_sys_now(const TWI_TypeDef * twi)
 {
 #if WITHISBOOTLOADER
+	static uint32_t n = 100;
+	local_delay_ms(1);
+	return ++ n;
 	return 0;//cpu_getdebugticks();// / (cpu_getdebugticksfreq() / 1000);
 #elif CPUSTYLE_ALLWINNER
 	if (0)
