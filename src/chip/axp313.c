@@ -95,33 +95,9 @@ enum axp313a_reg {
 
  #endif
 
-static i2cp_t pmic_i2cp;	/* ��������� ��� ������ �� I2C. ��������� �������� �� ������������� ����-������, ���� ��������� ��������� ������ ���������� */
-
 static int pmic_bus_init(void)
 {
-#if WITHTWISW
-	i2cp_intiialize(& pmic_i2cp, I2CP_I2C1, 100000000);
-
-
-	TWISOFT_INITIALIZE();
-#elif WITHTWIHW
 	i2c_initialize();
-
-#endif /* WITHTWISW */
-
-//	unsigned addr;
-//	for (addr = 1; addr < 127; ++ addr)
-//	{
-//		uint8_t v;
-//		unsigned addrw = addr * 2;
-//		unsigned addrr = addrw | 0x01;
-//		i2c_start(addrw);
-//		i2c_write_withrestart(0x1B);
-//		i2c_start(addrr);
-//		i2c_read(& v, I2C_READ_ACK_NACK);
-//		PRINTF("I2C 0x%02X: test=0x%02X\n", addrw, v);
-//	}
-
 	return 0;
 }
 
@@ -479,7 +455,97 @@ int board_orangepi_zero3_axp313_initialize(void)
 //
 //}
 
+
+static int axpXXX_set(const struct axp_regulator_plat * regs, const char * name, unsigned mvolt)
+{
+#if 0
+	int ret = - 1;
+	for (;; ++ regs)
+	{
+		if (regs->name == NULL)
+			break;
+		if (strcmp(name, regs->name))
+			continue;
+
+		PRINTF("Found %s for set %u mV\n", name, mvolt);
+		uint8_t cfg;
+
+		if (regs->split == NA)
+		{
+
+		}
+		else
+		{
+			if (mvolt > regs->split)
+				cfg = AXP313_DCDC_SPLIT_OFFSET + mvolt_to_cfg(mvolt,
+						AXP313_DCDC_SPLIT_MVOLT + 20, max_mV, 20);
+			else
+				cfg = mvolt_to_cfg(mvolt, 500, AXP313_DCDC_SPLIT_MVOLT, 10);
+
+			if (mvolt == 0)
+				return pmic_bus_clrbits(regs->enable_reg, regs->enable_mask);
+
+			//PRINTF("DCDC%d: writing 0x%x to reg 0x%x\n", dcdc_num, cfg, volt_reg);
+			ret = pmic_bus_write(regs->volt_reg, cfg & regs->volt_mask);
+			if (ret)
+				return ret;
+
+			return pmic_bus_setbits(regs->enable_reg, regs->enable_mask);
+		}
+	}
+#endif
+	PRINTF("axpXXX_set: %s not found\n", name);
+	return - 1;
+}
+
+static int axpXXX_setstate(const struct axp_regulator_plat * regs, const char * name, unsigned state)
+{
+	for (;; ++ regs)
+	{
+		if (regs->name == NULL)
+			break;
+		if (strcmp(name, regs->name))
+			continue;
+		if (state)
+			return pmic_bus_setbits(regs->enable_reg, regs->enable_mask);
+		else
+			return pmic_bus_clrbits(regs->enable_reg, regs->enable_mask);
+	}
+	PRINTF("axpXXX_setstate: %s not found\n", name);
+	return - 1;
+}
+
+
+static void axpXXX_print(const struct axp_regulator_plat * regs)
+{
+	for (;; ++ regs)
+	{
+		if (regs->name == NULL)
+			break;
+
+		uint8_t enablereg;
+		uint8_t valuereg;
+
+		if (pmic_bus_read(regs->enable_reg, & enablereg))
+			break;
+		PRINTF("'%s': %s\n", regs->name, (enablereg & regs->enable_mask) ? "On" : "Off");
+	}
+}
+
 // https://github.com/u-boot/u-boot/blob/1de103fc29761fa729dffaa15d0cfb2766be05e4/drivers/power/regulator/axp_regulator.c#L198
+
+//struct axp_regulator_plat {
+//	const char	*name;
+//	uint8_t		enable_reg;
+//	uint8_t		enable_mask;
+//	uint8_t		volt_reg;
+//	uint8_t		volt_mask;
+//	uint16_t		min_mV;
+//	uint16_t		max_mV;
+//	uint8_t		step_mV;
+//	uint8_t		split;
+//	const uint16_t	*table;
+//};
 
 /*
  * Only two level step tuning is implemented for DCDC6, 8, 9
@@ -530,22 +596,14 @@ static const struct axp_regulator_plat axp318_regulators[] = {
 	{ }
 };
 
-static int axpXXX_set(const struct axp_regulator_plat * regs, const char * name, unsigned voltage)
+static int axp318w_set(const char * name, unsigned mvolt)
 {
-	for (;; ++ regs)
-	{
-		if (regs->name == NULL)
-			return - 1;
-		if (strcmp(name, regs->name))
-			continue;
-		PRINTF("Found %s for set %u mV\n", name, voltage);
-	}
-	PRINTF("axpXXX_set: %s not found\n", name);
-	return - 1;
+	return axpXXX_set(axp318_regulators, name, mvolt);
 }
-static int axp318w_set(const char * name, unsigned voltage)
+
+static int axp318w_setstate(const char * name, unsigned state)
 {
-	return axpXXX_set(axp318_regulators, name, voltage);
+	return axpXXX_setstate(axp318_regulators, name, state);
 }
 
 int board_radaxa_cubie_axp318w_initialize(void)
@@ -615,6 +673,8 @@ int board_radaxa_cubie_axp318w_initialize(void)
 	//	ELDO6 VDD-CPUS, VDD-USB 800 mV
 	//	RTCLDO-PMU VCC-RTC
 
+	axpXXX_print(axp318_regulators);
+#if 0
     axp318w_set("dcdc2", 800); // VDD-SYS, VDD-DRAM, VDD-VE, ... 800 mV
     axp318w_set("dcdc3", 900); // VDD-CPUB 0.8-1V
     axp318w_set("dcdc4", 900); // VDD-GPU 0.8V-0.96V
@@ -635,7 +695,9 @@ int board_radaxa_cubie_axp318w_initialize(void)
     axp318w_set("dldo1", 1800); // VCC-EFUSE 1800 mV
     axp318w_set("dldo6", 2500); // VCC-UFS 2500 mV
     axp318w_set("eldo6", 800); // VDD-CPUS, VDD-USB 800 mV
-
+    axp318w_setstate("swout1", 1);
+    axp318w_setstate("swout2", 1);
+#endif
 	PRINTF("axp318 INIT END\n");
 	dbg_flush();
 	return 0;
