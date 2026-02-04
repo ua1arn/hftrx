@@ -166,7 +166,7 @@ int board_orangepi_zero3_axp313_initialize(void)
 		return -1;
     PRINTF("axp313_chip_id=OK\n");
 
-	axpXXX_print(axp313_regulators);
+	//axpXXX_print(axp313_regulators);
 
 	axp313_set("aldo1", 1800);	///VCC 1V8
 	axp313_set("dldo1", 3300);	///VCC3V3
@@ -175,8 +175,7 @@ int board_orangepi_zero3_axp313_initialize(void)
 	axp313_set("dcdc3", 1100);	///VCC-DRAM - 1.1V for LPDDR4
 
 	PRINTF("axp313 INIT END\n");
-	axpXXX_print(axp313_regulators);
-	dbg_flush();
+	//axpXXX_print(axp313_regulators);
 	return 0;
 }
 
@@ -222,7 +221,7 @@ int board_orangepi_zero2w_axp313_initialize(void)
 		return -1;
     PRINTF("axp313_chip_id=OK\n");
 
-	axpXXX_print(axp313_regulators);
+	//axpXXX_print(axp313_regulators);
 
 	axp313_set("aldo1", 1800);	///VCC 1V8
 	axp313_set("dldo1", 3300);	///VCC3V3
@@ -231,8 +230,7 @@ int board_orangepi_zero2w_axp313_initialize(void)
 	axp313_set("dcdc3", 1100);	///VCC-DRAM - 1.1V for LPDDR4
 
 	PRINTF("axp313 INIT END\n");
-	axpXXX_print(axp313_regulators);
-	dbg_flush();
+	//axpXXX_print(axp313_regulators);
 	return 0;
 }
 
@@ -367,8 +365,7 @@ int board_radaxa_cubie_axp318w_initialize(void)
 	//	DLDO6 VCC-UFS 2500 mV
 	//	ELDO6 VDD-CPUS, VDD-USB 800 mV
 	//	RTCLDO-PMU VCC-RTC
-	TP();
-	axpXXX_print(axp318_regulators);
+	//axpXXX_print(axp318_regulators);
 
     axp318w_set("dcdc2", 800); // VDD-SYS, VDD-DRAM, VDD-VE, ... 800 mV
     axp318w_set("dcdc3", 900); // VDD-CPUB 0.8-1V
@@ -393,8 +390,7 @@ int board_radaxa_cubie_axp318w_initialize(void)
     axp318w_setstate("swout1", 1);
     axp318w_setstate("swout2", 1);
 
-	TP();
-	axpXXX_print(axp318_regulators);
+	//axpXXX_print(axp318_regulators);
 
 	PRINTF("axp318 INIT END\n");
 	dbg_flush();

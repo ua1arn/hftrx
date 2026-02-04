@@ -214,10 +214,10 @@ void axpXXX_print(const struct axp_regulator_plat * regs)
 		if (regs->name == NULL)
 			break;
 
-		int en = axp_regulator_get_enable(regs);
-		int voltage = axp_regulator_get_value(regs);
+		const int en = axp_regulator_get_enable(regs);
+		const int voltage = axp_regulator_get_value(regs);
 
-		PRINTF("'%s': %s %d mV\n", regs->name, (en & regs->enable_mask) ? "On" : "Off", voltage / 1000);
+		PRINTF("'%s': %s %d mV\n", regs->name, en ? "On" : "Off", voltage / 1000);
 	}
 	dbg_flush();
 }
