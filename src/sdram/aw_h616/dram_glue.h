@@ -53,6 +53,25 @@
 
 #endif
 
+#if CPUSTYLE_A733
+// https://github.com/tinysoul/u-boot-2018-t527/blob/4ab8dcb65922200ee16d6bfa1754be32f7115c07/arch/arm/include/asm/arch-sunxi/cpu_version1.h#L137
+// https://github.com/TrekMax/SyterKit/blob/5caa423ed81c492388ffae9b6c3f1c8d2f60ea40/include/drivers/chips/sun60iw2/reg-ncat.h#L6
+
+#define SUNXI_DRAM_COM_BASE		0x01c62000
+#define SUNXI_DRAM_CTL0_BASE	0x01c63000
+#define SUNXI_DRAM_PHY0_BASE	0x01c65000
+#define SUNXI_GIC400_BASE		0x01c80000
+
+// MSI_LITE1 0x04026000
+// MSI_LITE2 0x04400000
+// MEMC0 0x0A000000
+// DRAMC Common 0x0A020000
+// DRAM Controller0 0x0A100000
+// DRAM Controller1 0x0A500000
+// DRAM􀀁PHY 0x0A900000
+
+#endif
+
 #define DRAM_CLK_ENABLE			BIT_U32(31)
 
 #define SUNXI_PRCM_BASE			0x07010000
