@@ -108,14 +108,20 @@ static const struct axp_regulator_plat axp313_regulators[] = {
 	{ }
 };
 
-static int axp313_set(const char * name, unsigned mvolt)
+static void axp313_set(const char * name, unsigned mvolt)
 {
-	return axpXXX_set_value(axp313_regulators, name, mvolt);
+	const int ec = axpXXX_set_value(axp313_regulators, name, mvolt);
+	ASSERT(ec >= 0);
+	if (ec < 0)
+		return;
+	const int ec2 = axpXXX_set_enable(axp313_regulators, name, 1);
+	ASSERT(ec2 >= 0);
 }
 
-static int axp313_setstate(const char * name, unsigned state)
+static void axp313_setstate(const char * name, unsigned state)
 {
-	return axpXXX_set_enable(axp313_regulators, name, state);
+	const int ec = axpXXX_set_enable(axp313_regulators, name, state);
+	ASSERT(ec >= 0);
 }
 
 int board_orangepi_zero3_axp313_initialize(void)
@@ -279,14 +285,20 @@ static const struct axp_regulator_plat axp318_regulators[] = {
 	{ }
 };
 
-static int axp318w_set(const char * name, unsigned mvolt)
+static void axp318w_set(const char * name, unsigned mvolt)
 {
-	return axpXXX_set_value(axp318_regulators, name, mvolt);
+	const int ec = axpXXX_set_value(axp318_regulators, name, mvolt);
+	ASSERT(ec >= 0);
+	if (ec < 0)
+		return;
+	const int ec2 = axpXXX_set_enable(axp318_regulators, name, 1);
+	ASSERT(ec2 >= 0);
 }
 
-static int axp318w_setstate(const char * name, unsigned state)
+static void axp318w_setstate(const char * name, unsigned state)
 {
-	return axpXXX_set_enable(axp318_regulators, name, state);
+	const int ec = axpXXX_set_enable(axp318_regulators, name, state);
+	ASSERT(ec >= 0);
 }
 
 int board_radaxa_cubie_axp318w_initialize(void)
@@ -355,9 +367,9 @@ int board_radaxa_cubie_axp318w_initialize(void)
 	//	DLDO6 VCC-UFS 2500 mV
 	//	ELDO6 VDD-CPUS, VDD-USB 800 mV
 	//	RTCLDO-PMU VCC-RTC
-
+	TP();
 	axpXXX_print(axp318_regulators);
-#if 1
+
     axp318w_set("dcdc2", 800); // VDD-SYS, VDD-DRAM, VDD-VE, ... 800 mV
     axp318w_set("dcdc3", 900); // VDD-CPUB 0.8-1V
     axp318w_set("dcdc4", 900); // VDD-GPU 0.8V-0.96V
@@ -380,7 +392,10 @@ int board_radaxa_cubie_axp318w_initialize(void)
     axp318w_set("eldo6", 800); // VDD-CPUS, VDD-USB 800 mV
     axp318w_setstate("swout1", 1);
     axp318w_setstate("swout2", 1);
-#endif
+
+	TP();
+	axpXXX_print(axp318_regulators);
+
 	PRINTF("axp318 INIT END\n");
 	dbg_flush();
 	return 0;

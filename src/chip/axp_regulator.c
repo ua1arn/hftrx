@@ -163,7 +163,10 @@ int axp_regulator_get_enable(const struct axp_regulator_plat *plat)
 
 	reg = pmic_reg_read(plat->enable_reg);
 	if (reg < 0)
+	{
+		TP();
 		return reg;
+	}
 
 	return (reg & plat->enable_mask) == plat->enable_mask;
 }
@@ -216,6 +219,7 @@ void axpXXX_print(const struct axp_regulator_plat * regs)
 
 		PRINTF("'%s': %s %d mV\n", regs->name, (en & regs->enable_mask) ? "On" : "Off", voltage / 1000);
 	}
+	dbg_flush();
 }
 
 int axpXXX_bus_init(void)
