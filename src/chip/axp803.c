@@ -1,8 +1,11 @@
+/* $Id$ */
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
+
 /*
  * axp803.c
- *
- *  Created on: 7 февр. 2023 г.
- *      Author: User
  *
  *      Taken from https://github.com/jernejsk/u-boot/blob/25fa60a9ee1a92d751c0c3a4a8d4acc2495800cc/drivers/power/axp803.c
  */
