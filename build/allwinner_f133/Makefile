@@ -20,7 +20,7 @@ TRGT2 = riscv-none-elf
 TRGT = $(TRGT2)-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
-#XFEL = ../../tools/xfel-windows-v1.3.4/xfel
+#XFEL = ../../tools/xfel-windows-v1.3.5/xfel
 XFEL = ./xfel_fixed_t113-s3
 BUSYBOX = busybox
 
