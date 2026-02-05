@@ -143,6 +143,7 @@ typedef enum IRQn
 #define SPI0_BASE ((uintptr_t) 0x02540000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI2_BASE ((uintptr_t) 0x02542000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI3_BASE ((uintptr_t) 0x02543000)            /*!< SPI Serial Peripheral Interface Base */
+#define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Security ID Base */
 #define Timer0_CPUX_BASE ((uintptr_t) 0x03009000)     /*!< TIMER0  Base */
 #define GIC_BASE ((uintptr_t) 0x03400000)             /*!< GIC  Base */
 #define GICD_BASE ((uintptr_t) 0x03400000)            /*!< GICD GIC Distributor Base */
@@ -895,6 +896,20 @@ typedef struct PRCM_Type
     __IO uint32_t CRY_EN_REG;                         /*!< Offset 0x3E8 Crypt Enable Register */
 } PRCM_TypeDef; /* size of structure = 0x3EC */
 /*
+ * @brief SID
+ */
+/*!< SID Security ID */
+typedef struct SID_Type
+{
+         RESERVED(0x000[0x0040 - 0x0000], uint8_t)
+    __IO uint32_t SID_PRCTL;                          /*!< Offset 0x040  */
+         RESERVED(0x044[0x0060 - 0x0044], uint8_t)
+    __IO uint32_t SID_RDKEY;                          /*!< Offset 0x060  */
+         RESERVED(0x064[0x0200 - 0x0064], uint8_t)
+    __IO uint32_t SID_DATA [0x100];                   /*!< Offset 0x200 SID data (xfel display as 'sid' replay) */
+         RESERVED(0x600[0x1000 - 0x0600], uint8_t)
+} SID_TypeDef; /* size of structure = 0x1000 */
+/*
  * @brief SPI
  */
 /*!< SPI Serial Peripheral Interface */
@@ -1265,6 +1280,7 @@ typedef struct USB_OHCI_Capability_Type
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI2 ((SPI_TypeDef *) SPI2_BASE)              /*!< SPI2 Serial Peripheral Interface register set access pointer */
 #define SPI3 ((SPI_TypeDef *) SPI3_BASE)              /*!< SPI3 Serial Peripheral Interface register set access pointer */
+#define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
 #define GICD ((GICD_TypeDef *) GICD_BASE)             /*!< GICD GIC Distributor register set access pointer */
 #define GICT ((GICT_TypeDef *) GICT_BASE)             /*!< GICT GIC ITS translation register set access pointer */
 #define GICP ((GICP_TypeDef *) GICP_BASE)             /*!< GICP GIC Performance Monitoring Unit register set access pointer */

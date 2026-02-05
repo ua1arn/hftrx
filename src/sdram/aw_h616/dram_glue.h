@@ -54,7 +54,6 @@
 #endif
 
 #if CPUSTYLE_A733
-// https://github.com/tinysoul/u-boot-2018-t527/blob/4ab8dcb65922200ee16d6bfa1754be32f7115c07/arch/arm/include/asm/arch-sunxi/cpu_version1.h#L137
 // https://github.com/TrekMax/SyterKit/blob/5caa423ed81c492388ffae9b6c3f1c8d2f60ea40/include/drivers/chips/sun60iw2/reg-ncat.h#L6
 
 #define SUNXI_DRAM_COM_BASE		0x01c62000
@@ -69,6 +68,8 @@
 // DRAM Controller0 0x0A100000
 // DRAM Controller1 0x0A500000
 // DRAM􀀁PHY 0x0A900000
+
+#define SUNXI_CPU_GIC600_BASE 0x03400000
 
 #endif
 

@@ -167,3 +167,7 @@
 #base; GICR6 0x03520000; GIC Redistributor 
 #base; GICR7 0x03540000; GIC Redistributor 
 #typeend;
+
+#type; SID; Security ID
+#base; SID 0x03006000
+#typeend;
