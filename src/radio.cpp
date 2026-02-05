@@ -2350,35 +2350,35 @@ const struct paramdefdef * const * getmiddlemenu_wfm(unsigned * size);
 //#define	STEP_GENERAL	100000		/* приращение при перестройке в режиме general coverage */
 struct modetempl
 {
-	uint_fast8_t step10 [2];		/* индексинуется gbigstep */
-	int_fast16_t autosplitK;		/* смещение в килогерцах для включения режима autosplit */
-	uint_fast8_t nar : 1;			/* разрешение включения НЧ фильтра в этом режиме */
-	uint_fast8_t txcw : 1;			/* Включение передачи в обход балансного модулятора */
-	uint_fast8_t vox : 1;			/* в этом режиме возможно использование VOX */
-	uint_fast8_t wbkin : 1;			/* в этом режиме возможно использование BREAK-IN */
-	uint_fast8_t abkin : 1;			/* в этом режиме возможно использование BREAK-IN если включён режим SSB TXCW */
-	uint_fast8_t mute : 1;			/* в этом режиме запрещён микрофонный усилитель */
-	uint_fast8_t wifshift : 1;		/* в этом режиме разрешено использовать параметры IF SHIFT */
-	uint_fast8_t wpbt : 1;			/* в этом режиме разрешено использовать параметры PBT */
-	uint_fast8_t subtone: 1;		/* в этом режиме разрешено использовать subtones */
+	uint8_t step10 [2];		/* индексинуется gbigstep */
+	int16_t autosplitK;		/* смещение в килогерцах для включения режима autosplit */
+	uint8_t nar : 1;			/* разрешение включения НЧ фильтра в этом режиме */
+	uint8_t txcw : 1;			/* Включение передачи в обход балансного модулятора */
+	uint8_t vox : 1;			/* в этом режиме возможно использование VOX */
+	uint8_t wbkin : 1;			/* в этом режиме возможно использование BREAK-IN */
+	uint8_t abkin : 1;			/* в этом режиме возможно использование BREAK-IN если включён режим SSB TXCW */
+	uint8_t mute : 1;			/* в этом режиме запрещён микрофонный усилитель */
+	uint8_t wifshift : 1;		/* в этом режиме разрешено использовать параметры IF SHIFT */
+	uint8_t wpbt : 1;			/* в этом режиме разрешено использовать параметры PBT */
+	uint8_t subtone: 1;		/* в этом режиме разрешено использовать subtones */
 #if ! defined (LO5_SIDE)
-	uint_fast8_t lo5side [2];		/* в этом режиме не выключать последний гетеродин (RX и TX)  */
+	uint8_t lo5side [2];		/* в этом режиме не выключать последний гетеродин (RX и TX)  */
 #endif /* ! defined (LO5_SIDE) */
-	uint_fast8_t defagcmode;		/* начальный режим АРУ */
+	uint8_t defagcmode;		/* начальный режим АРУ */
 #if WITHTX
 	portholder_t txgfva [TXGFI_SIZE];	// состояния выходов для разных режимов
-	uint_fast8_t sdtnva [TXGFI_SIZE];	// признаки включения самоконтроля для разных режимов
+	uint8_t sdtnva [TXGFI_SIZE];	// признаки включения самоконтроля для разных режимов
 #endif /* WITHTX */
 #if WITHIF4DSP
-	uint_fast8_t dspmode [2];		// Управление для DSP в режиме приёма и передачи
-	uint_fast8_t bwsetis [2];			// индекс банка полос пропускания для данного режима в режиме приёма и передачи
-	int_fast16_t bw6s [2];			// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
-	uint_fast8_t txaudiocode;			// источник звукового сигнала для данного режима (код BOARD_TXAUDIO_xxx)
-	uint_fast8_t txaprofgp;		// группа профилей обработки звука
-	uint_fast8_t agcseti;			// параметры слухового приема
+	uint8_t dspmode [2];		// Управление для DSP в режиме приёма и передачи
+	uint8_t bwsetis [2];			// индекс банка полос пропускания для данного режима в режиме приёма и передачи
+	int16_t bw6s [2];			// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль) в режиме приёма и передачи.
+	uint8_t txaudiocode;			// источник звукового сигнала для данного режима (код BOARD_TXAUDIO_xxx)
+	uint8_t txaprofgp;		// группа профилей обработки звука
+	uint8_t agcseti;			// параметры слухового приема
 	FLOAT_t * (* afproc)(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);	// функция обработки звука в user mode в режиме приёма и передачи
 #else /* WITHIF4DSP */
-	uint_fast8_t detector [2];		/* код детектора RX и TX */
+	uint8_t detector [2];		/* код детектора RX и TX */
 #endif /* WITHIF4DSP */
 	const struct paramdefdef * const * (* middlemenu)(unsigned * size);
 	const char * label;					// для контроля правильности инициализации структуры

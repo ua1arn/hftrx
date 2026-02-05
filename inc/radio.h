@@ -477,7 +477,7 @@ enum
 #define TXGFV_TX_AM		(UINT8_C(1) << 4)
 #define TXGFV_TX_NFM	(UINT8_C(1) << 5)
 
-void seq_set_txgate(const portholder_t * txgfp, const uint_fast8_t * sdtnp);	/* как включать передатчик в данном режиме работы из прерываний */
+void seq_set_txgate(const portholder_t * txgfp, const uint8_t * sdtnp);	/* как включать передатчик в данном режиме работы из прерываний */
 
 void hardware_cw_diagnostics_noirq(
 	uint_fast8_t c1,
