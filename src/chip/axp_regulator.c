@@ -9,7 +9,7 @@
 #include "formats.h"
 #include <string.h>
 
-#if WITHTWIHW
+#if WITHTWIHW && defined (TWIHARD_S_PTR)
 
 int pmic_bus_read(uint8_t reg, uint8_t * data)
 {
@@ -228,4 +228,4 @@ int axpXXX_bus_init(void)
 	return 0;
 }
 
-#endif /* WITHTWIHW */
+#endif /* WITHTWIHW && defined (TWIHARD_S_PTR) */
