@@ -8059,7 +8059,7 @@ static void t113_tcondsi_CCU_configuration(uint_fast32_t needfreq)
 #else
 #endif
 }
-
+#ifdef WITHMIPIDSISHW_LANES
 //	disp 0, clk: pll(792000000),clk(792000000),dclk(33000000) dsi_rate(33000000)
 //	clk real:pll(792000000),clk(792000000),dclk(198000000) dsi_rate(150000000)
 static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
@@ -8074,12 +8074,12 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	t113_tcondsi_CCU_configuration(dsifreq);
 	// step1 - same as step1 in HV mode: Select HV interface type
 	t113_select_HV_interface_type(vdmode);	// set TCONLCD input data
-	{
-		PRINTF("Before: DISPLAY_TOP->dsi_src_select=%08X\n", (unsigned) DISPLAY_TOP->dsi_src_select);
-		DISPLAY_TOP->dsi_src_select = 0x01;
-		PRINTF("After: DISPLAY_TOP->dsi_src_select=%08X\n", (unsigned) DISPLAY_TOP->dsi_src_select);
-
-	}
+//	{
+//		PRINTF("Before: DISPLAY_TOP->dsi_src_select=%08X\n", (unsigned) DISPLAY_TOP->dsi_src_select);
+//		DISPLAY_TOP->dsi_src_select = 0x01;
+//		PRINTF("After: DISPLAY_TOP->dsi_src_select=%08X\n", (unsigned) DISPLAY_TOP->dsi_src_select);
+//
+//	}
 	// step2 - Clock configuration
 	t113_MIPIDSI_clock_configuration(vdmode, onepixelclocks);
 	// step3 - same as step3 in HV mode: Set sequuence parameters
@@ -8108,7 +8108,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	t113_open_module_enable(vdmode);
 
 }
-
+#endif
 
 // H3: PLL_VIDEO
 // A64: PLL_VIDEO0
