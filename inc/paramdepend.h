@@ -519,11 +519,11 @@ extern "C" {
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
-	#define HARDWARE_NCORES 4
+	#define HARDWARE_NCORES 8
 	#if defined(__aarch64__)
-		#define WITHCPUNAME "Allw T507_64"
+		#define WITHCPUNAME "Allw A733_64"
 	#else
-		#define WITHCPUNAME "Allw T507"
+		#define WITHCPUNAME "Allw A733"
 	#endif
 
 #elif CPUSTYLE_T113
