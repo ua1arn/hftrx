@@ -3052,6 +3052,26 @@ ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, ui
 
 	return arch->mdevice(b, phyaddr);
 
+
+#elif CPUSTYLE_A733
+
+	// Все сравнения должны быть не точнее 2 (16) MB
+#if ! WITHISBOOTLOADER && 1
+	if (phyaddr < 0x01000000)			// BROM, SYSRAM A1, SRAM C
+		return arch->mnoaccess(b, phyaddr);
+	if (phyaddr < 0x40000000 && phyaddr >= 0x3F000000)
+		return arch->mnoaccess(b, phyaddr);
+#endif /* ! WITHISBOOTLOADER */
+
+
+	if (phyaddr < 0x01800000)			// BROM, SYSRAM A1, SRAM C
+		return arch->mcached(b, phyaddr, ro, xn);
+	// 1 GB DDR RAM memory size allowed
+	if (phyaddr >= 0x40000000)			//  DRAM - 2 GB
+		return arch->mcached(b, phyaddr, ro, xn);
+
+	return arch->mdevice(b, phyaddr);
+
 #elif CPUSTYLE_A133 || CPUSTYLE_R818
 
 	// Все сравнения должны быть не точнее 2 MB
