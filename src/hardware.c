@@ -2516,7 +2516,7 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
 
-	CLUSTER_CFG->C0_CPU  [targetcore].C0_CPUx_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET 0: assert
+	CLUSTER_CFG->C0_CPU [targetcore].C0_CPUx_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET 0: assert
 
 	* rvaddr = ptr_lo32(startfunc32);
 	ASSERT(* rvaddr == startfunc32);
@@ -2526,7 +2526,7 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	CPU_SUBSYS_CTRL->CLU0 [targetcore].RVBARADDR_H = ptr_hi32(startfunc);
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
-	CLUSTER_CFG->C0_CPU  [targetcore].C0_CPUx_CTRL_REG |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
+	CLUSTER_CFG->C0_CPU [targetcore].C0_CPUx_CTRL_REG |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
 }
 
 #elif CPUSTYLE_T507 || CPUSTYLE_A133
@@ -2542,13 +2542,13 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
 
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG  [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
 
 	* rvaddr = startfunc;
 	ASSERT(* rvaddr == startfunc);
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG  [targetcore] |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
 }
 
 void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
@@ -2562,7 +2562,7 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
 
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG  [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
 
 	* rvaddr = ptr_lo32(startfunc32);
 	ASSERT(* rvaddr == startfunc32);
@@ -2572,7 +2572,7 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG  [targetcore] |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
 }
 
 #elif CPUSTYLE_T113
