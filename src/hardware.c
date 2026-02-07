@@ -2237,6 +2237,7 @@ static void cortexa_cpuinfo(void)
 #endif
 }
 
+// aarch32 opcodes for switch to 64-bit mode
 static __ALIGNED(4) const uint32_t trampoline32 [] =
 {
 	0xE3A03003,	// 	mov	r3, #3
