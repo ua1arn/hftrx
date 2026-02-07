@@ -867,7 +867,6 @@
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A64=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.994338581" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
@@ -882,7 +881,6 @@
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A64=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.535680558" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
@@ -897,7 +895,6 @@
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A64=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1716955617" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
@@ -983,7 +980,6 @@
 									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_T507=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.660523279" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
@@ -998,7 +994,6 @@
 									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_T507=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.447406554" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
@@ -1013,7 +1008,6 @@
 									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_T507=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.644222320" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
@@ -1328,7 +1322,6 @@
 									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A133=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.384841313" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
@@ -1343,7 +1336,6 @@
 									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A133=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.160776762" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
@@ -1358,7 +1350,6 @@
 									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A133=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.991164810" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
@@ -1445,7 +1436,6 @@
 									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_RK356X=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1532439476" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
@@ -1460,7 +1450,6 @@
 									<listOptionValue builtIn="false" value="__CORTEX_A=7"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_RK356X=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.2130779620" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
@@ -1475,7 +1464,6 @@
 									<listOptionValue builtIn="false" value="__CORTEX_A=7"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_RK356X=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1003908037" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
@@ -1562,7 +1550,6 @@
 									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A733=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1185510881" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
@@ -1577,7 +1564,6 @@
 									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A733=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.676509795" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
@@ -1592,7 +1578,6 @@
 									<listOptionValue builtIn="false" value="__CORTEX_A=8"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER=1"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_CA53=1"/>
 									<listOptionValue builtIn="false" value="CPUSTYLE_A733=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.599826426" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">

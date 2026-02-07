@@ -40,7 +40,7 @@ LDSCRIPT_APP = ./allwnr_a733_app.ld
 ARCHDIR = $(PRJROOT)/arch/aw_a733
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_A733"=1 -D"CPUSTYLE_CA53"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_A733"=1
 #UDEFS += -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc

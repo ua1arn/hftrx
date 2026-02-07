@@ -1296,7 +1296,7 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif CPUSTYLE_H3
 	// калибровано для 800 МГц Cortex-A7 процессора
 	const uint_fast32_t top = 120uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_CA53
+#elif ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
 	// калибровано для Cortex-A53 процессора
 	const uint_fast32_t top = 145uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_T113
@@ -2032,10 +2032,10 @@ static void sysinit_smp_initialize(void)
 	#endif /* WITHSMPSYSTEM */
 	__ISB();
 	__DSB();
-#elif (__CORTEX_A == 53U) && defined(__aarch64__)
+#elif ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && defined(__aarch64__)
 	// Всё что надо делается в sysinit_fpu_initialize
 
-#elif (__CORTEX_A == 53U) && ! defined(__aarch64__)
+#elif ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && ! defined(__aarch64__)
 	/**
 	 * DDI0500J_cortex_a53_r0p4_trm.pdf
 	 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.

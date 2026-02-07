@@ -907,7 +907,7 @@ void softdevay(void);
 	#include <src/linux/linux_subsystem.h>
 #endif /* LINUX_SUBSYSTEM */
 
-#if (__CORTEX_A == 53U) && ! __aarch64__
+#if ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && ! __aarch64__
 
 // DDI0500J_cortex_a53_r0p4_trm.pdf
 

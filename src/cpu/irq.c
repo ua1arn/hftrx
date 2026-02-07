@@ -2108,6 +2108,12 @@ uint_fast8_t arm_hardware_cpuid(void)
 	// Cortex-A53 computers
 	return __get_MPIDR_EL1() & 0xFF;	// Aff0
 
+#elif (__CORTEX_A == 55U)
+	// Cortex-A computers
+
+	return 0;
+	return __get_MPIDR() & 0xFF;
+
 #elif (__CORTEX_A == 53U)
 	// Cortex-A computers
 
@@ -2327,8 +2333,11 @@ void arm_hardware_enable_handler(uint_fast16_t int_ida)
 		const unsigned mask = (1u << d.rem);
 		PLIC->PLIC_MIE_REGn [d.quot] |= mask;
 
+#elif (__CORTEX_A == 55U)
+	#warning implement for Cortex-A55
+
 #elif (__CORTEX_A == 53U)
-	#warning implement for CPUSTYLE_CA53
+	#warning implement for Cortex-A53
 
 #elif defined (__CORTEX_M)
 
@@ -2372,6 +2381,9 @@ void arm_hardware_disable_handler(uint_fast16_t int_ida)
 
 		const unsigned mask = (1u << d.rem);
 		PLIC->PLIC_MIE_REGn [d.quot] &= ~ mask;
+
+#elif (__CORTEX_A == 55U)
+	#warning implement for CPUSTYLE_CA55
 
 #elif (__CORTEX_A == 53U)
 	#warning implement for CPUSTYLE_CA53
