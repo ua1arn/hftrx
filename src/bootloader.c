@@ -121,6 +121,52 @@ static uint_fast8_t bootloader_copyapp(
 	return 0;
 }
 
+#if defined (__CORTEX_A) && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && (! defined(__aarch64__))
+void __NO_RETURN
+run64(unsigned targetcore, uintptr_t startfunc)
+{
+	// Start aarch64 core as application
+	//__set_RVBAR_EL3(startfunc);
+#if CPUSTYLE_A64
+	CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+#elif CPUSTYLE_H616
+	C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+#elif CPUSTYLE_T507
+	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+#elif CPUSTYLE_A133
+	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+#elif CPUSTYLE_A733
+	CPU_SUBSYS_CTRL->CLU0 [targetcore].RVBARADDR_L = ptr_lo32(startfunc);
+	CPU_SUBSYS_CTRL->CLU0 [targetcore].RVBARADDR_H = ptr_hi32(startfunc);
+#else
+	#error Unexpected CPUSTYLE_xxx
+#endif
+	// RMR - Reset Management Register
+	// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
+	enum { CODE = 0x03 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+	//enum { CODE = 0x02 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+
+	//__set_CP(15, 0, result, 12, 0, 2);
+	//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
+	// G8.2.123 RMR, Reset Management Register
+	__set_CP(15, 0, CODE, 12, 0, 2);	// RMR_EL1 - work okay
+	//__set_CP(15, 3, result, 12, 0, 2);	// RMR_EL2 - UndefHandler
+	//__set_CP(15, 6, result, 12, 0, 2);	// RMR_EL3 - UndefHandler
+
+	__ISB();
+	__WFI();
+
+	for (;;)
+	{
+		__WFE();
+	}
+}
+#endif
+
 // Сюда попадаем из USB DFU клвсса при приходе команды
 // DFU_Detach после USBD_Stop
 static void __NO_RETURN
@@ -223,49 +269,11 @@ bootloader_launch_app(uintptr_t startfunc, uint_fast8_t x64bit)
 		}
 	}
 
-#elif defined (__CORTEX_A) && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))  && (! defined(__aarch64__))
+#elif defined (__CORTEX_A) && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && (! defined(__aarch64__))
 
 	if (x64bit)
 	{
-		// Start aarch64 core as application
-		//__set_RVBAR_EL3(startfunc);
-	#if CPUSTYLE_A64
-		CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-		CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
-	#elif CPUSTYLE_H616
-		C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-		C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
-	#elif CPUSTYLE_T507
-		CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-		CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
-	#elif CPUSTYLE_A133
-		CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-		CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
-	#elif CPUSTYLE_A733
-		CPU_SUBSYS_CTRL->CLU0 [targetcore].RVBARADDR_L = ptr_lo32(startfunc);
-		CPU_SUBSYS_CTRL->CLU0 [targetcore].RVBARADDR_H = ptr_hi32(startfunc);
-	#else
-		#error Unexpected CPUSTYLE_xxx
-	#endif
-		// RMR - Reset Management Register
-		// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
-		enum { CODE = 0x03 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
-		//enum { CODE = 0x02 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
-
-		//__set_CP(15, 0, result, 12, 0, 2);
-		//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
-		// G8.2.123 RMR, Reset Management Register
-		__set_CP(15, 0, CODE, 12, 0, 2);	// RMR_EL1 - work okay
-		//__set_CP(15, 3, result, 12, 0, 2);	// RMR_EL2 - UndefHandler
-		//__set_CP(15, 6, result, 12, 0, 2);	// RMR_EL3 - UndefHandler
-
-		__ISB();
-		__WFI();
-
-		for (;;)
-		{
-			__WFE();
-		}
+		run64(targetcore, startfunc);
 	}
 	else
 	{
