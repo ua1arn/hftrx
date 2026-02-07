@@ -1,0 +1,139 @@
+#type; CPU_SUBSYS_CTRL;
+#base; CPU_SUBSYS_CTRL 0x08000000; CPU Subsystem Control Register
+#typeend;
+
+#type; TIMESTAMP_STA;
+#base; TIMESTAMP_STA 0x08010000; Timestamp Status Register
+#typeend;
+
+#type; TIMESTAMP_CTRL;
+#base; TIMESTAMP_CTRL 0x08020000; Timestamp Control Register
+#typeend;
+
+#type; CLUSTER_CFG;
+#base; CLUSTER_CFG 0x08860000; Cluster Configuration Register
+#typeend;
+
+#type; CPU_PLL_CFG;
+#base; CPU_PLL_CFG 0x08870000; CPU PLL Configuration Register
+#typeend;
+
+## Register s
+
+#type; CPU_SUBSYS_CTRL;
+
+#regdef; GENER_CTRL_REG0; 0x0000; General Control Register 0
+#regdef; CPU_SYS_RST_CTRL; 0x000C; CPU Subsystem Reset Control Register
+#regdef; PLL_CTRL_REG0; 0x0140; PLL Control Register 0
+#regdef; PLL_CTRL_REG1; 0x0144; PLL Control Register 1
+#regdef; CPU_DA_DDR_CTRL_REG; 0x0200; CPU Direct Access DDR Control Register
+
+#aggreg; CLU0; 0x1000 8; Cluster 0 CPUx Control Register
+#regdef; CPU_CTRL_REG; 0x0000; Cluster 0 CPU0 Control Register
+#regdef; RVBARADDR_L; 0x0004; Cluster0 Reset Vector Base Address Register 0_L
+#regdef; RVBARADDR_H; 0x0008; Cluster0 Reset Vector Base Address Register 0_H
+#regdef; padding 0; 0x1000; Need for address arithmetics
+#aggregend;
+
+#typeend;
+
+#type; TIMESTAMP_STA;
+
+#regdef; CNT_LOW_REG; 0x0000; Counter Low Register
+#regdef; CNT_HI_REG; 0x0004; Counter High Register
+
+#typeend;
+
+#type; TIMESTAMP_CTRL;
+
+#regdef; TSTAMP_CTRL_REG; 0x0000; Timestamp Control Register
+#regdef; CNT_CTRL_LOW_REG; 0x0008; Counter Low Register
+#regdef; CNT_CTRL_HI_REG; 0x000C; Counter High Register
+#regdef; CNT_FREQID_REG; 0x0020; Counte rBase Frequency ID Register
+
+#typeend;
+
+#type; CLUSTER_CFG;
+
+#aggreg; C0_CPU; 0x0000 8; Cluster0 CPUx Control Register
+#regdef; C0_CPUx_CTRL_REG; 0x0000; Cluster0 CPUx Control Register
+#regdef; C0_CPUx_STATUS0; 0x0004; Cluster0 CPUx Status 0 Register
+#regdef; padding 0; 0x1000; Need for address arithmetics
+#aggregend;
+
+#regdef; C0_RST_CTRL; 0x8000; Cluster 0 Reset Control Register
+#regdef; C0_CTRL_REG0; 0x8004; Cluster 0 Control Register 0
+#regdef; C0_CTRL_REG1; 0x8008; Cluster 0 Control Register 1
+#regdef; CLK_FORCE_CFG_REG; 0x800C; Clk Control ForceConfiguration Register
+#regdef; CLUSTER_SPRAM_CFG_REG; 0x8010; CPU cluster sprammemoryConfiguration Register
+#regdef; CLUSTER_RF2P_CFG_REG; 0x8014; CPU cluster rf2pmemoryConfiguration Register
+#regdef; CLUSTER_RFP2P_CFG_REG; 0x8018; CPU cluster rfp2pmemoryConfiguration Register
+#regdef; CLUSTER_SYSSPRAM_CFG_REG; 0x801C; CPU cluster syssprammemoryConfiguration Register
+#regdef; DSU_AXI_TH_CFG_REG; 0x8020; DSUAXI2TO1THConfiguration Register
+#regdef; CLU_DSU_STATUS_REG; 0x8030; ClusterDSU Status Register
+#regdef; CLU_DSU_RST_CTRL; 0x80A4; ClusterDSUresetselfrelease Register
+#regdef; AXI0_MNT_CTRL_REG; 0x80B0; DSUAXI0MONITOR Control Register
+#regdef; AXI0_MNT_PRD_REG; 0x80B4; DSUAXI0MONITORPeriod Register
+#regdef; AXI0_MNT_RLTCY_REG; 0x80B8; DSUAXI0MONITORReadTotalLatency Register
+#regdef; AXI0_MNT_WLTCY_REG; 0x80BC; DSUAXI0MONITORWriteTotalLatency Register
+#regdef; DSU_AXI0_MNT_RREQ_REG; 0x80C0; DSUAXI0MONITORReadRequesttimes Register
+#regdef; DSU_AXI0_MNT_WREQ_REG; 0x80C4; DSUAXI0MONITORWriteRequesttimes Register
+#regdef; DSU_AXI0_MNT_RBD_REG; 0x80C8; DSUAXI0MONITORReadBandwidth Register
+#regdef; DSU_AXI0_MNT_WBD_REG; 0x80CC; DSUAXI0MONITORWriteBandwidth Register
+#regdef; DSU_AXI1_MNT_CTRL_REG; 0x80D0; DSUAXI1MONITOR Control Register
+#regdef; DSU_AXI1_MNT_PRD_REG; 0x80D4; DSUAXI1MONITORPeriod Register
+#regdef; DSU_AXI1_MNT_RLTCY_REG; 0x80D8; DSUAXI1MONITORReadTotalLatency Register
+#regdef; DSU_AXI1_MNT_WLTCY_REG; 0x80DC; DSUAXI1MONITORWriteTotalLatency Register
+#regdef; DSU_AXI1_MNT_RREQ_REG; 0x80E0; DSUAXI1MONITORReadRequesttimes Register
+#regdef; DSU_AXI1_MNT_WREQ_REG; 0x80E4; DSUAXI1MONITORWriteRequesttimes Register
+#regdef; DSU_AXI1_MNT_RBD_REG; 0x80E8; DSUAXI1MONITORReadBandwidth Register
+#regdef; DSU_AXI1_MNT_WBD_REG; 0x80EC; DSUAXI1MONITORWriteBandwidth Register
+
+#typeend;
+
+#type; CPU_PLL_CFG;
+
+#regdef; CPU_BACK_PLL_CTRL_REG; 0x0000; CPU_BACK_PLL Control Register
+#regdef; CPU_BACK_PLL_LOCK_CTRL_REG; 0x0004; CPU_BACK_PLLlock Control Register
+#regdef; CPU_BACK_PLL_PAT0_CTRL_REG; 0x0008; CPU_BACK_PLL Pattern 0 Control Register
+#regdef; CPU_BACK_PLL_PAT1_CTRL_REG; 0x000C; CPU_BACK_PLL Pattern 1 Control Register
+#regdef; CPU_BACK_PLL_BIAS_REG; 0x0010; CPU_BACK_PLLBias Register
+#regdef; CPU_L_PLL_CTRL_REG; 0x1000; CPU_L_PLL Control Register
+#regdef; CPU_L_PLL_PAT0_CTRL_REG; 0x1004; CPU_L_PLL Pattern 0 Control Register
+#regdef; CPU_L_PLL_PAT1_CTRL_REG; 0x1008; CPU_L_PLL Pattern 1 Control Register
+#regdef; CPU_L_PLL_BIAS_REG; 0x100C; CPU_L_PLLBias Register
+#regdef; CPU_L_PLL_TUN0_REG; 0x1010; CPU_L_PLLTuning0 Register
+#regdef; CPU_L_PLL_TUN1_REG; 0x1014; CPU_L_PLLTuning1 Register
+#regdef; CPU_L_PLL_LFM_REG; 0x1018; CPU_L_PLLLFM Register
+#regdef; CPU_L_PLL_CLK_REG; 0x101C; CPU_L_PLLClock Register
+#regdef; CPU_L_PLL_GATING_REG; 0x1020; CPU_L_PLLGatingConfiguration Register
+#regdef; CPU_L_PLL_UNLOCK_IRQEN_REG; 0x1024; CPU_L_PLLUnlockIRQEnable Register
+#regdef; CPU_L_PLL_UNLOCK_STAT_REG; 0x1028; CPU_L_PLLUnlock Status Register
+#regdef; CPU_L_PLL_CTRL_STAT_REG; 0x102C; CPU_L_PLL Control Status Register
+#regdef; CPU_B_PLL_CTRL_REG; 0x2000; CPU_B_PLL Control Register
+#regdef; CPU_B_PLL_PAT0_CTRL_REG; 0x2004; CPU_B_PLL Pattern 0 Control Register
+#regdef; CPU_B_PLL_PAT1_CTRL_REG; 0x2008; CPU_B_PLL Pattern 1 Control Register
+#regdef; CPU_B_PLL_BIAS_REG; 0x200C; CPU_B_PLLBias Register
+#regdef; CPU_B_PLL_TUN0_REG; 0x2010; CPU_B_PLLTuning0 Register
+#regdef; CPU_B_PLL_TUN1_REG; 0x2014; CPU_B_PLLTuning1 Register
+#regdef; CPU_B_PLL_LFM_REG; 0x2018; CPU_B_PLLLFM Register
+#regdef; CPU_B_PLL_CLK_REG; 0x201C; CPU_B_PLLClock Register
+#regdef; CPU_B_PLL_GATING_REG; 0x2020; CPU_B_PLLGatingConfiguration Register
+#regdef; CPU_B_PLL_UNLOCK_IRQEN_REG; 0x2024; CPU_B_PLLUnlockIRQEnable Register
+#regdef; CPU_B_PLL_UNLOCK_STAT_REG; 0x2028; CPU_B_PLLUnlock Status Register
+#regdef; CPU_B_PLL_CTRL_STAT_REG; 0x202C; CPU_B_PLL Control Status Register
+#regdef; CPU_DSU_PLL_CTRL_REG; 0x3000; CPU_DSU_PLL Control Register
+#regdef; CPU_DSU_PLL_PAT0_CTRL_REG; 0x3004; CPU_DSU_PLL Pattern 0 Control Register
+#regdef; CPU_DSU_PLL_PAT1_CTRL_REG; 0x3008; CPU_DSU_PLL Pattern 1 Control Register
+#regdef; CPU_DSU_PLL_BIAS_REG; 0x300C; CPU_DSU_PLLBias Register
+#regdef; CPU_DSU_PLL_TUN0_REG; 0x3010; CPU_DSU_PLLTuning0 Register
+#regdef; CPU_DSU_PLL_TUN1_REG; 0x3014; CPU_DSU_PLLTuning1 Register
+#regdef; CPU_DSU_PLL_LFM_REG; 0x3018; CPU_DSU_PLLLFM Register
+#regdef; CPU_DSU_PLL_CLK_REG; 0x301C; CPU_DSU_PLLClock Register
+#regdef; CPU_DSU_PLL_GATING_REG; 0x3020; CPU_DSU_PLLGatingConfiguration Register
+#regdef; CPU_DSU_PLL_UNLOCK_IRQEN_REG; 0x3024; CPU_DSU_PLLUnlockIRQEnable Register
+#regdef; CPU_DSU_PLL_UNLOCK_STAT_REG; 0x3028; CPU_DSU_PLLUnlock Status Register
+#regdef; CPU_DSU_PLL_CTRL_STAT_REG; 0x302C; CPU_DSU_PLL Control Status Register
+#regdef; CPU_SLOW_CLK_SEL_REG; 0x3034; CPUSlowClockSelect Register
+
+#typeend;

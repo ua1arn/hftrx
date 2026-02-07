@@ -179,6 +179,11 @@ typedef enum IRQn
 #define S_TWI2_BASE ((uintptr_t) 0x07085000)          /*!< TWI Two Wire Interface (TWI) Base */
 #define Timer0_CPUS_BASE ((uintptr_t) 0x07091000)     /*!< TIMER0  Base */
 #define S_SPI_BASE ((uintptr_t) 0x07092000)           /*!< SPI Serial Peripheral Interface Base */
+#define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08000000) /*!< CPU_SUBSYS_CTRL  Base */
+#define TIMESTAMP_STA_BASE ((uintptr_t) 0x08010000)   /*!< TIMESTAMP_STA  Base */
+#define TIMESTAMP_CTRL_BASE ((uintptr_t) 0x08020000)  /*!< TIMESTAMP_CTRL  Base */
+#define CLUSTER_CFG_BASE ((uintptr_t) 0x08860000)     /*!< CLUSTER_CFG  Base */
+#define CPU_PLL_CFG_BASE ((uintptr_t) 0x08870000)     /*!< CPU_PLL_CFG  Base */
 
 #if __aarch64__
     #include <core64_ca.h>
@@ -604,6 +609,125 @@ typedef struct CCU_Type
     __IO uint32_t CCMU_FAN_REG;                       /*!< Offset 0x1F3C CCMU FANOUT Register */
 } CCU_TypeDef; /* size of structure = 0x1F40 */
 /*
+ * @brief CLUSTER_CFG
+ */
+/*!< CLUSTER_CFG  */
+typedef struct CLUSTER_CFG_Type
+{
+    struct
+    {
+        __IO uint32_t C0_CPUx_CTRL_REG;               /*!< Offset 0x000 Cluster0 CPUx Control Register */
+        __IO uint32_t C0_CPUx_STATUS0;                /*!< Offset 0x004 Cluster0 CPUx Status 0 Register */
+             RESERVED(0x008[0x1000 - 0x0008], uint8_t)
+    } C0_CPU [0x008];                                 /*!< Offset 0x000 Cluster0 CPUx Control Register */
+    __IO uint32_t C0_RST_CTRL;                        /*!< Offset 0x8000 Cluster 0 Reset Control Register */
+    __IO uint32_t C0_CTRL_REG0;                       /*!< Offset 0x8004 Cluster 0 Control Register 0 */
+    __IO uint32_t C0_CTRL_REG1;                       /*!< Offset 0x8008 Cluster 0 Control Register 1 */
+    __IO uint32_t CLK_FORCE_CFG_REG;                  /*!< Offset 0x800C Clk Control ForceConfiguration Register */
+    __IO uint32_t CLUSTER_SPRAM_CFG_REG;              /*!< Offset 0x8010 CPU cluster sprammemoryConfiguration Register */
+    __IO uint32_t CLUSTER_RF2P_CFG_REG;               /*!< Offset 0x8014 CPU cluster rf2pmemoryConfiguration Register */
+    __IO uint32_t CLUSTER_RFP2P_CFG_REG;              /*!< Offset 0x8018 CPU cluster rfp2pmemoryConfiguration Register */
+    __IO uint32_t CLUSTER_SYSSPRAM_CFG_REG;           /*!< Offset 0x801C CPU cluster syssprammemoryConfiguration Register */
+    __IO uint32_t DSU_AXI_TH_CFG_REG;                 /*!< Offset 0x8020 DSUAXI2TO1THConfiguration Register */
+         RESERVED(0x8024[0x8030 - 0x8024], uint8_t)
+    __IO uint32_t CLU_DSU_STATUS_REG;                 /*!< Offset 0x8030 ClusterDSU Status Register */
+         RESERVED(0x8034[0x80A4 - 0x8034], uint8_t)
+    __IO uint32_t CLU_DSU_RST_CTRL;                   /*!< Offset 0x80A4 ClusterDSUresetselfrelease Register */
+         RESERVED(0x80A8[0x80B0 - 0x80A8], uint8_t)
+    __IO uint32_t AXI0_MNT_CTRL_REG;                  /*!< Offset 0x80B0 DSUAXI0MONITOR Control Register */
+    __IO uint32_t AXI0_MNT_PRD_REG;                   /*!< Offset 0x80B4 DSUAXI0MONITORPeriod Register */
+    __IO uint32_t AXI0_MNT_RLTCY_REG;                 /*!< Offset 0x80B8 DSUAXI0MONITORReadTotalLatency Register */
+    __IO uint32_t AXI0_MNT_WLTCY_REG;                 /*!< Offset 0x80BC DSUAXI0MONITORWriteTotalLatency Register */
+    __IO uint32_t DSU_AXI0_MNT_RREQ_REG;              /*!< Offset 0x80C0 DSUAXI0MONITORReadRequesttimes Register */
+    __IO uint32_t DSU_AXI0_MNT_WREQ_REG;              /*!< Offset 0x80C4 DSUAXI0MONITORWriteRequesttimes Register */
+    __IO uint32_t DSU_AXI0_MNT_RBD_REG;               /*!< Offset 0x80C8 DSUAXI0MONITORReadBandwidth Register */
+    __IO uint32_t DSU_AXI0_MNT_WBD_REG;               /*!< Offset 0x80CC DSUAXI0MONITORWriteBandwidth Register */
+    __IO uint32_t DSU_AXI1_MNT_CTRL_REG;              /*!< Offset 0x80D0 DSUAXI1MONITOR Control Register */
+    __IO uint32_t DSU_AXI1_MNT_PRD_REG;               /*!< Offset 0x80D4 DSUAXI1MONITORPeriod Register */
+    __IO uint32_t DSU_AXI1_MNT_RLTCY_REG;             /*!< Offset 0x80D8 DSUAXI1MONITORReadTotalLatency Register */
+    __IO uint32_t DSU_AXI1_MNT_WLTCY_REG;             /*!< Offset 0x80DC DSUAXI1MONITORWriteTotalLatency Register */
+    __IO uint32_t DSU_AXI1_MNT_RREQ_REG;              /*!< Offset 0x80E0 DSUAXI1MONITORReadRequesttimes Register */
+    __IO uint32_t DSU_AXI1_MNT_WREQ_REG;              /*!< Offset 0x80E4 DSUAXI1MONITORWriteRequesttimes Register */
+    __IO uint32_t DSU_AXI1_MNT_RBD_REG;               /*!< Offset 0x80E8 DSUAXI1MONITORReadBandwidth Register */
+    __IO uint32_t DSU_AXI1_MNT_WBD_REG;               /*!< Offset 0x80EC DSUAXI1MONITORWriteBandwidth Register */
+} CLUSTER_CFG_TypeDef; /* size of structure = 0x80F0 */
+/*
+ * @brief CPU_PLL_CFG
+ */
+/*!< CPU_PLL_CFG  */
+typedef struct CPU_PLL_CFG_Type
+{
+    __IO uint32_t CPU_BACK_PLL_CTRL_REG;              /*!< Offset 0x000 CPU_BACK_PLL Control Register */
+    __IO uint32_t CPU_BACK_PLL_LOCK_CTRL_REG;         /*!< Offset 0x004 CPU_BACK_PLLlock Control Register */
+    __IO uint32_t CPU_BACK_PLL_PAT0_CTRL_REG;         /*!< Offset 0x008 CPU_BACK_PLL Pattern 0 Control Register */
+    __IO uint32_t CPU_BACK_PLL_PAT1_CTRL_REG;         /*!< Offset 0x00C CPU_BACK_PLL Pattern 1 Control Register */
+    __IO uint32_t CPU_BACK_PLL_BIAS_REG;              /*!< Offset 0x010 CPU_BACK_PLLBias Register */
+         RESERVED(0x014[0x1000 - 0x0014], uint8_t)
+    __IO uint32_t CPU_L_PLL_CTRL_REG;                 /*!< Offset 0x1000 CPU_L_PLL Control Register */
+    __IO uint32_t CPU_L_PLL_PAT0_CTRL_REG;            /*!< Offset 0x1004 CPU_L_PLL Pattern 0 Control Register */
+    __IO uint32_t CPU_L_PLL_PAT1_CTRL_REG;            /*!< Offset 0x1008 CPU_L_PLL Pattern 1 Control Register */
+    __IO uint32_t CPU_L_PLL_BIAS_REG;                 /*!< Offset 0x100C CPU_L_PLLBias Register */
+    __IO uint32_t CPU_L_PLL_TUN0_REG;                 /*!< Offset 0x1010 CPU_L_PLLTuning0 Register */
+    __IO uint32_t CPU_L_PLL_TUN1_REG;                 /*!< Offset 0x1014 CPU_L_PLLTuning1 Register */
+    __IO uint32_t CPU_L_PLL_LFM_REG;                  /*!< Offset 0x1018 CPU_L_PLLLFM Register */
+    __IO uint32_t CPU_L_PLL_CLK_REG;                  /*!< Offset 0x101C CPU_L_PLLClock Register */
+    __IO uint32_t CPU_L_PLL_GATING_REG;               /*!< Offset 0x1020 CPU_L_PLLGatingConfiguration Register */
+    __IO uint32_t CPU_L_PLL_UNLOCK_IRQEN_REG;         /*!< Offset 0x1024 CPU_L_PLLUnlockIRQEnable Register */
+    __IO uint32_t CPU_L_PLL_UNLOCK_STAT_REG;          /*!< Offset 0x1028 CPU_L_PLLUnlock Status Register */
+    __IO uint32_t CPU_L_PLL_CTRL_STAT_REG;            /*!< Offset 0x102C CPU_L_PLL Control Status Register */
+         RESERVED(0x1030[0x2000 - 0x1030], uint8_t)
+    __IO uint32_t CPU_B_PLL_CTRL_REG;                 /*!< Offset 0x2000 CPU_B_PLL Control Register */
+    __IO uint32_t CPU_B_PLL_PAT0_CTRL_REG;            /*!< Offset 0x2004 CPU_B_PLL Pattern 0 Control Register */
+    __IO uint32_t CPU_B_PLL_PAT1_CTRL_REG;            /*!< Offset 0x2008 CPU_B_PLL Pattern 1 Control Register */
+    __IO uint32_t CPU_B_PLL_BIAS_REG;                 /*!< Offset 0x200C CPU_B_PLLBias Register */
+    __IO uint32_t CPU_B_PLL_TUN0_REG;                 /*!< Offset 0x2010 CPU_B_PLLTuning0 Register */
+    __IO uint32_t CPU_B_PLL_TUN1_REG;                 /*!< Offset 0x2014 CPU_B_PLLTuning1 Register */
+    __IO uint32_t CPU_B_PLL_LFM_REG;                  /*!< Offset 0x2018 CPU_B_PLLLFM Register */
+    __IO uint32_t CPU_B_PLL_CLK_REG;                  /*!< Offset 0x201C CPU_B_PLLClock Register */
+    __IO uint32_t CPU_B_PLL_GATING_REG;               /*!< Offset 0x2020 CPU_B_PLLGatingConfiguration Register */
+    __IO uint32_t CPU_B_PLL_UNLOCK_IRQEN_REG;         /*!< Offset 0x2024 CPU_B_PLLUnlockIRQEnable Register */
+    __IO uint32_t CPU_B_PLL_UNLOCK_STAT_REG;          /*!< Offset 0x2028 CPU_B_PLLUnlock Status Register */
+    __IO uint32_t CPU_B_PLL_CTRL_STAT_REG;            /*!< Offset 0x202C CPU_B_PLL Control Status Register */
+         RESERVED(0x2030[0x3000 - 0x2030], uint8_t)
+    __IO uint32_t CPU_DSU_PLL_CTRL_REG;               /*!< Offset 0x3000 CPU_DSU_PLL Control Register */
+    __IO uint32_t CPU_DSU_PLL_PAT0_CTRL_REG;          /*!< Offset 0x3004 CPU_DSU_PLL Pattern 0 Control Register */
+    __IO uint32_t CPU_DSU_PLL_PAT1_CTRL_REG;          /*!< Offset 0x3008 CPU_DSU_PLL Pattern 1 Control Register */
+    __IO uint32_t CPU_DSU_PLL_BIAS_REG;               /*!< Offset 0x300C CPU_DSU_PLLBias Register */
+    __IO uint32_t CPU_DSU_PLL_TUN0_REG;               /*!< Offset 0x3010 CPU_DSU_PLLTuning0 Register */
+    __IO uint32_t CPU_DSU_PLL_TUN1_REG;               /*!< Offset 0x3014 CPU_DSU_PLLTuning1 Register */
+    __IO uint32_t CPU_DSU_PLL_LFM_REG;                /*!< Offset 0x3018 CPU_DSU_PLLLFM Register */
+    __IO uint32_t CPU_DSU_PLL_CLK_REG;                /*!< Offset 0x301C CPU_DSU_PLLClock Register */
+    __IO uint32_t CPU_DSU_PLL_GATING_REG;             /*!< Offset 0x3020 CPU_DSU_PLLGatingConfiguration Register */
+    __IO uint32_t CPU_DSU_PLL_UNLOCK_IRQEN_REG;       /*!< Offset 0x3024 CPU_DSU_PLLUnlockIRQEnable Register */
+    __IO uint32_t CPU_DSU_PLL_UNLOCK_STAT_REG;        /*!< Offset 0x3028 CPU_DSU_PLLUnlock Status Register */
+    __IO uint32_t CPU_DSU_PLL_CTRL_STAT_REG;          /*!< Offset 0x302C CPU_DSU_PLL Control Status Register */
+         RESERVED(0x3030[0x3034 - 0x3030], uint8_t)
+    __IO uint32_t CPU_SLOW_CLK_SEL_REG;               /*!< Offset 0x3034 CPUSlowClockSelect Register */
+} CPU_PLL_CFG_TypeDef; /* size of structure = 0x3038 */
+/*
+ * @brief CPU_SUBSYS_CTRL
+ */
+/*!< CPU_SUBSYS_CTRL  */
+typedef struct CPU_SUBSYS_CTRL_Type
+{
+    __IO uint32_t GENER_CTRL_REG0;                    /*!< Offset 0x000 General Control Register 0 */
+         RESERVED(0x004[0x000C - 0x0004], uint8_t)
+    __IO uint32_t CPU_SYS_RST_CTRL;                   /*!< Offset 0x00C CPU Subsystem Reset Control Register */
+         RESERVED(0x010[0x0140 - 0x0010], uint8_t)
+    __IO uint32_t PLL_CTRL_REG0;                      /*!< Offset 0x140 PLL Control Register 0 */
+    __IO uint32_t PLL_CTRL_REG1;                      /*!< Offset 0x144 PLL Control Register 1 */
+         RESERVED(0x148[0x0200 - 0x0148], uint8_t)
+    __IO uint32_t CPU_DA_DDR_CTRL_REG;                /*!< Offset 0x200 CPU Direct Access DDR Control Register */
+         RESERVED(0x204[0x1000 - 0x0204], uint8_t)
+    struct
+    {
+        __IO uint32_t CPU_CTRL_REG;                   /*!< Offset 0x1000 Cluster 0 CPU0 Control Register */
+        __IO uint32_t RVBARADDR_L;                    /*!< Offset 0x1004 Cluster0 Reset Vector Base Address Register 0_L */
+        __IO uint32_t RVBARADDR_H;                    /*!< Offset 0x1008 Cluster0 Reset Vector Base Address Register 0_H */
+             RESERVED(0x00C[0x1000 - 0x000C], uint8_t)
+    } CLU0 [0x008];                                   /*!< Offset 0x1000 Cluster 0 CPUx Control Register */
+} CPU_SUBSYS_CTRL_TypeDef; /* size of structure = 0x9000 */
+/*
  * @brief GICD
  */
 /*!< GICD GIC Distributor */
@@ -1014,6 +1138,28 @@ typedef struct TIMER_Type
          RESERVED(0x0D0[0x0400 - 0x00D0], uint8_t)
 } TIMER_TypeDef; /* size of structure = 0x400 */
 /*
+ * @brief TIMESTAMP_CTRL
+ */
+/*!< TIMESTAMP_CTRL  */
+typedef struct TIMESTAMP_CTRL_Type
+{
+    __IO uint32_t TSTAMP_CTRL_REG;                    /*!< Offset 0x000 Timestamp Control Register */
+         RESERVED(0x004[0x0008 - 0x0004], uint8_t)
+    __IO uint32_t CNT_CTRL_LOW_REG;                   /*!< Offset 0x008 Counter Low Register */
+    __IO uint32_t CNT_CTRL_HI_REG;                    /*!< Offset 0x00C Counter High Register */
+         RESERVED(0x010[0x0020 - 0x0010], uint8_t)
+    __IO uint32_t CNT_FREQID_REG;                     /*!< Offset 0x020 Counte rBase Frequency ID Register */
+} TIMESTAMP_CTRL_TypeDef; /* size of structure = 0x024 */
+/*
+ * @brief TIMESTAMP_STA
+ */
+/*!< TIMESTAMP_STA  */
+typedef struct TIMESTAMP_STA_Type
+{
+    __IO uint32_t CNT_LOW_REG;                        /*!< Offset 0x000 Counter Low Register */
+    __IO uint32_t CNT_HI_REG;                         /*!< Offset 0x004 Counter High Register */
+} TIMESTAMP_STA_TypeDef; /* size of structure = 0x008 */
+/*
  * @brief TWI
  */
 /*!< TWI Two Wire Interface (TWI) */
@@ -1311,6 +1457,11 @@ typedef struct USB_OHCI_Capability_Type
 #define S_TWI1 ((TWI_TypeDef *) S_TWI1_BASE)          /*!< S_TWI1 Two Wire Interface (TWI) register set access pointer */
 #define S_TWI2 ((TWI_TypeDef *) S_TWI2_BASE)          /*!< S_TWI2 Two Wire Interface (TWI) register set access pointer */
 #define S_SPI ((SPI_TypeDef *) S_SPI_BASE)            /*!< S_SPI Serial Peripheral Interface register set access pointer */
+#define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL  register set access pointer */
+#define TIMESTAMP_STA ((TIMESTAMP_STA_TypeDef *) TIMESTAMP_STA_BASE)/*!< TIMESTAMP_STA  register set access pointer */
+#define TIMESTAMP_CTRL ((TIMESTAMP_CTRL_TypeDef *) TIMESTAMP_CTRL_BASE)/*!< TIMESTAMP_CTRL  register set access pointer */
+#define CLUSTER_CFG ((CLUSTER_CFG_TypeDef *) CLUSTER_CFG_BASE)/*!< CLUSTER_CFG  register set access pointer */
+#define CPU_PLL_CFG ((CPU_PLL_CFG_TypeDef *) CPU_PLL_CFG_BASE)/*!< CPU_PLL_CFG  register set access pointer */
 
 #ifdef __cplusplus
  }
