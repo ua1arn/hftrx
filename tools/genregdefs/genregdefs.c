@@ -22,6 +22,8 @@ static int flag_cortexm4 = 0;
 static int flag_cortexm7 = 0;
 static int flag_cortexa5x = 0;
 static const char *guardstring = "00003039";
+static const char *string_cortexa5x = "undefined.h";
+
 /* debug stuff */
 #if 0
 
@@ -1724,7 +1726,7 @@ static void generate_cmsis(void)
 		else if (flag_cortexa5x)
 		{
 			emitline(0, "#if __aarch64__\n");
-			emitline(4, "#include <core64_ca.h>\n");
+			emitline(4, "#include <%s>\n", string_cortexa5x);
 			emitline(0, "#else\n");
 			emitline(4, "#include <core_ca.h>\n");
 			emitline(0, "#endif\n");
@@ -1852,8 +1854,9 @@ int main(int argc, char *argv[], char *envp[])
 		else if (argc > 1 && strcmp(argv[1], "--cortexa5x") == 0)
 		{
 			flag_cortexa5x = 1;
-			--argc;
-			++argv;
+			string_cortexa5x = argv[2];
+			argc -= 2;
+			argv += 2;
 		}
 		else if (argc > 1 && strcmp(argv[1], "--debug") == 0)
 		{
