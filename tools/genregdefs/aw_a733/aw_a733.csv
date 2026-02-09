@@ -129,7 +129,6 @@
 
 #type; TIMER1
 
-#base; TIMER 0x02052000 
 #base; Timer1_CPUX 0x02052000 
 
 #irq; TIMER1_0 131
@@ -159,6 +158,20 @@
 #irq; S_UART1 234
 #typeend;
 
+
+#type; GIC
+#base; GIC  0x03400000
+#typeend;
+
+## https://github.com/Rabs9/radxa-cubie-a7a-maximum-overclock/blob/175a3bc09d0434d883ff5696fd09844a07ecedf6/dts/source/radxa-cubie-a7a.dts#L405
+
+#type; GIC_DISTRIBUTOR; GICD GIC Distributor
+#base; GIC_DISTRIBUTOR  0x03400000; GICD GIC Distributor
+#typeend;
+
+#type; GIC_INTERFACE; GICC GIC CPU Interface
+#base; GIC_INTERFACE 0x03460000; GICC GIC CPU Interface
+#typeend;
 
 #type; GICD; GIC Distributor
 #base; GICD 0x03400000; GIC Distributor 

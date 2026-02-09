@@ -133,7 +133,6 @@ typedef enum IRQn
 #define GPIOK_BASE ((uintptr_t) 0x02000580)           /*!< GPIO Port Controller Base */
 #define GPIOINTK_BASE ((uintptr_t) 0x020005C0)        /*!< GPIOINT  Base */
 #define CCU_BASE ((uintptr_t) 0x02002000)             /*!< CCU Clock Controller Unit (CCU) Base */
-#define TIMER_BASE ((uintptr_t) 0x02052000)           /*!< TIMER1  Base */
 #define Timer1_CPUX_BASE ((uintptr_t) 0x02052000)     /*!< TIMER1  Base */
 #define UART0_BASE ((uintptr_t) 0x02500000)           /*!< UART  Base */
 #define UART1_BASE ((uintptr_t) 0x02501000)           /*!< UART  Base */
@@ -165,9 +164,9 @@ typedef enum IRQn
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03400000) /*!< GIC_DISTRIBUTOR GICD GIC Distributor Base */
 #define GICT_BASE ((uintptr_t) 0x03420000)            /*!< GICT GIC ITS translation Base */
 #define GICP_BASE ((uintptr_t) 0x03430000)            /*!< GICP GIC Performance Monitoring Unit Base */
-#define GIC_INTERFACE_BASE ((uintptr_t) 0x03440000)   /*!< GIC_INTERFACE GICC GIC CPU Interface Base */
 #define GITS_BASE ((uintptr_t) 0x03440000)            /*!< GITS GIC Secure Access Control Base */
 #define GICR0_BASE ((uintptr_t) 0x03460000)           /*!< GICR GIC Redistributor  Base */
+#define GIC_INTERFACE_BASE ((uintptr_t) 0x03460000)   /*!< GIC_INTERFACE GICC GIC CPU Interface Base */
 #define GICR1_BASE ((uintptr_t) 0x03480000)           /*!< GICR GIC Redistributor  Base */
 #define GICR2_BASE ((uintptr_t) 0x034A0000)           /*!< GICR GIC Redistributor  Base */
 #define GICR3_BASE ((uintptr_t) 0x034C0000)           /*!< GICR GIC Redistributor  Base */
@@ -1428,7 +1427,6 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOK ((GPIO_TypeDef *) GPIOK_BASE)           /*!< GPIOK Port Controller register set access pointer */
 #define GPIOINTK ((GPIOINT_TypeDef *) GPIOINTK_BASE)  /*!< GPIOINTK  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
-#define TIMER ((TIMER1_TypeDef *) TIMER_BASE)         /*!< TIMER  register set access pointer */
 #define Timer1_CPUX ((TIMER1_TypeDef *) Timer1_CPUX_BASE)/*!< Timer1_CPUX  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */

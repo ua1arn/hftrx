@@ -6367,7 +6367,7 @@
   <baseAddress>0x07025030</baseAddress>
   </peripheral>
   <peripheral>
-  <name>TIMER</name>
+  <name>Timer1_CPUX</name>
   <description></description>
   <baseAddress>0x02052000</baseAddress>
   <interrupt>
@@ -6444,30 +6444,6 @@
     <dimIncrement>0x040</dimIncrement>
    </cluster>
   </registers>
-  </peripheral>
-  <peripheral derivedFrom="TIMER">
-  <name>Timer1_CPUX</name>
-  <baseAddress>0x02052000</baseAddress>
-  <interrupt>
-   <name>TIMER1_0</name>
-   <value>131</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>TIMER1_1</name>
-   <value>132</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>TIMER1_2</name>
-   <value>133</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>TIMER1_3</name>
-   <value>134</value>
-   <description></description>
-  </interrupt>
   </peripheral>
   <peripheral>
   <name>TIMESTAMP_CTRL</name>

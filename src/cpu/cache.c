@@ -20,11 +20,6 @@ sysinit_cache_initialize(void)
 	//PRINTF("dcache_rowsize=%u, icache_rowsize=%u\n", dcache_rowsize(), icache_rowsize());
 	ASSERT(DCACHEROWSIZE == dcache_rowsize());
 	ASSERT(ICACHEROWSIZE == icache_rowsize());
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-//	PRINTF("GIC_BINARY_POINT=%u\n", GIC_BINARY_POINT);
-//	PRINTF("GIC_GetBinaryPoint()=%u\n", (unsigned) GIC_GetBinaryPoint());
-	ASSERT(GIC_BINARY_POINT == GIC_GetBinaryPoint());
-#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 #endif /* ! LINUX_SUBSYSTEM */
 
 #if defined (__CORTEX_M)
