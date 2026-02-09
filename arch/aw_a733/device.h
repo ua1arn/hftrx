@@ -161,6 +161,7 @@ typedef enum IRQn
 #define Timer0_CPUX_BASE ((uintptr_t) 0x03009000)     /*!< TIMER0  Base */
 #define GIC_BASE ((uintptr_t) 0x03400000)             /*!< GIC  Base */
 #define GICD_BASE ((uintptr_t) 0x03400000)            /*!< GICD GIC Distributor Base */
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03400000) /*!< GIC_DISTRIBUTOR GICD Base */
 #define GIC_REDISTRIBUTOR_BASE ((uintptr_t) 0x03400000)/*!< GIC_REDISTRIBUTOR GICD GIC Distributor Base */
 #define GICT_BASE ((uintptr_t) 0x03420000)            /*!< GICT GIC ITS translation Base */
 #define GICP_BASE ((uintptr_t) 0x03430000)            /*!< GICP GIC Performance Monitoring Unit Base */

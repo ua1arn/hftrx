@@ -1493,8 +1493,19 @@ void Undef_Handler(void)
 	{
 		PRINTF("marker[%2d]=%08X\n", i, (unsigned) (& marker) [i]);
 	}
+#if defined (BOARD_BLINK_INITIALIZE)
+	BOARD_BLINK_INITIALIZE();;
+	for (;;)
+	{
+		BOARD_BLINK_SETSTATE(1);
+		local_delay_ms(250);
+		BOARD_BLINK_SETSTATE(0);
+		local_delay_ms(1250);
+	}
+#else
 	for (;;)
 		;
+#endif /* defined (BOARD_BLINK_INITIALIZE) */
 }
 
 void SWI_Handler(void)
@@ -1566,15 +1577,19 @@ void PAbort_Handler(void)
 //	{
 //		PRINTF("marker [%2d] = %08X\n", i, (unsigned) (& marker) [i]);
 //	}
+#if defined (BOARD_BLINK_INITIALIZE)
+	BOARD_BLINK_INITIALIZE();;
 	for (;;)
 	{
-#if defined (BOARD_BLINK_SETSTATE)
 		BOARD_BLINK_SETSTATE(1);
-		local_delay_ms(250);
+		local_delay_ms(750);
 		BOARD_BLINK_SETSTATE(0);
-		local_delay_ms(250);
-#endif /* defined (BOARD_BLINK_SETSTATE) */
+		local_delay_ms(1250);
 	}
+#else
+	for (;;)
+		;
+#endif /* defined (BOARD_BLINK_INITIALIZE) */
 }
 
 // Data Abort.
@@ -1632,15 +1647,19 @@ void DAbort_Handler(void)
 	{
 		PRINTF("marker [%2d] = %08X\n", i, (unsigned) (& marker) [i]);
 	}
+#if defined (BOARD_BLINK_INITIALIZE)
+	BOARD_BLINK_INITIALIZE();;
 	for (;;)
 	{
-#if defined (BOARD_BLINK_SETSTATE)
 		BOARD_BLINK_SETSTATE(1);
 		local_delay_ms(1250);
 		BOARD_BLINK_SETSTATE(0);
 		local_delay_ms(1250);
-#endif /* defined (BOARD_BLINK_SETSTATE) */
 	}
+#else
+	for (;;)
+		;
+#endif /* defined (BOARD_BLINK_INITIALIZE) */
 }
 
 void FIQ_Handler(void)
@@ -2148,11 +2167,13 @@ SystemInit(void)
 #if CPUSTYLE_VM14
 	resetCPU(1);
 #endif /* CPUSTYLE_VM14 */
+//	sysinit_gpio_initialize();
+//	sysinit_debug_initialize();
 	sysinit_fpu_initialize();
+	sysinit_vbar_initialize();		// interrupt vectors relocate
 	stsinit_irql_initialize();
 	sysinit_smp_initialize();
 	sysinit_perfmeter_initialize();
-	sysinit_vbar_initialize();		// interrupt vectors relocate
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
@@ -2679,10 +2700,10 @@ static LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 __NO_RETURN void Reset_CPUn_Handler(void)
 {
 	sysinit_fpu_initialize();
+	sysinit_vbar_initialize();		// interrupt vectors relocate
 	stsinit_irql_initialize();
 	sysinit_smp_initialize();
 	sysinit_perfmeter_initialize();
-	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_ttbr_initialize();		// Загрузка TTBR, инвалидация кеш памяти и включение MMU
 

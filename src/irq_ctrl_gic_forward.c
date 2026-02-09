@@ -406,7 +406,7 @@ uint32_t IRQ_GetPriority (IRQn_ID_t irqn) {
 
 /// Set priority masking threshold.
 int32_t IRQ_SetPriorityMask (uint32_t priority) {
-  GIC_SetInterfacePriorityMask (GICInterface_PMR_Priority(priority));
+  GIC_SetInterfacePriorityMask (priority);
   return (0);
 }
 
