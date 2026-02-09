@@ -23,7 +23,9 @@ struct axp_regulator_plat {
 	uint8_t		split;
 	const uint16_t	*table;
 };
+#ifndef BIT
 #define BIT(x)              (1 << (x))
+#endif
 
 int pmic_bus_read(uint8_t reg, uint8_t * data);
 
