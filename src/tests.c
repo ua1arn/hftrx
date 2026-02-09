@@ -2377,6 +2377,10 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) && 0
 
+#if ! __aarch64__ || WITHOLDCMSIS
+    #include "a-profile/irq_ctrl.h" // CMSIS_6 file
+#endif
+
 static void disableAllIRQs(void)
 {
 	IRQ_Disable(43);	// DMA1_Stream0_IRQn
@@ -9030,7 +9034,7 @@ void hightests(void)
 					label,
 					GICR_CFGID0, GICR_CFGID1,
 					(void *) comp_base,
-					comp_size
+					(unsigned) comp_size
 					);
 			//printhex32(b, (void *) b, 48);
 			//PRINTF("ncpus=%u\n", (unsigned) ((* (const volatile uint32_t *) (comp_base + 0xF004)) >> 4) & 0xFF);
