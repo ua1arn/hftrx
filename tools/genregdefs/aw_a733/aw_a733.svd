@@ -6367,6 +6367,109 @@
   <baseAddress>0x07025030</baseAddress>
   </peripheral>
   <peripheral>
+  <name>TIMER</name>
+  <description></description>
+  <baseAddress>0x02052000</baseAddress>
+  <interrupt>
+   <name>TIMER1_0</name>
+   <value>131</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TIMER1_1</name>
+   <value>132</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TIMER1_2</name>
+   <value>133</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TIMER1_3</name>
+   <value>134</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>TMR_IRQ_EN_REG</name>
+    <displayName>TMR_IRQ_EN_REG</displayName>
+    <description>Timer IRQ Enable Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TMR_IRQ_STA_REG</name>
+    <displayName>TMR_IRQ_STA_REG</displayName>
+    <description>Timer Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000010</addressOffset>
+    <registers>
+     <register>
+      <name>CTRL_REG</name>
+      <displayName>CTRL_REG</displayName>
+      <description>Timer n Control Register</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>INTV_VALUE_REG</name>
+      <displayName>INTV_VALUE_REG</displayName>
+      <description>Timer n Interval Value Register</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CUR_VALUE_REG</name>
+      <displayName>CUR_VALUE_REG</displayName>
+      <description>Timer n Current Value Register</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x040</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="TIMER">
+  <name>Timer1_CPUX</name>
+  <baseAddress>0x02052000</baseAddress>
+  <interrupt>
+   <name>TIMER1_0</name>
+   <value>131</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TIMER1_1</name>
+   <value>132</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TIMER1_2</name>
+   <value>133</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TIMER1_3</name>
+   <value>134</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral>
   <name>TIMESTAMP_CTRL</name>
   <description></description>
   <baseAddress>0x08020000</baseAddress>

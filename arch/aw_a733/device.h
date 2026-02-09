@@ -82,6 +82,20 @@ typedef enum IRQn
     GPIOJ_S_IRQn = 118,                               /*!< GPIOINT  */
     GPIOK_IRQn = 119,                                 /*!< GPIOINT GPIOK_NS */
     GPIOK_S_IRQn = 120,                               /*!< GPIOINT  */
+    TIMER0_IRQn = 121,                                /*!< TIMER0  */
+    TIMER1_IRQn = 122,                                /*!< TIMER0  */
+    TIMER2_IRQn = 123,                                /*!< TIMER0  */
+    TIMER3_IRQn = 124,                                /*!< TIMER0  */
+    TIMER4_IRQn = 125,                                /*!< TIMER0  */
+    TIMER5_IRQn = 126,                                /*!< TIMER0  */
+    TIMER6_IRQn = 127,                                /*!< TIMER0  */
+    TIMER7_IRQn = 128,                                /*!< TIMER0  */
+    TIMER8_IRQn = 129,                                /*!< TIMER0  */
+    TIMER9_IRQn = 130,                                /*!< TIMER0  */
+    TIMER1_0_IRQn = 131,                              /*!< TIMER1  */
+    TIMER1_1_IRQn = 132,                              /*!< TIMER1  */
+    TIMER1_2_IRQn = 133,                              /*!< TIMER1  */
+    TIMER1_3_IRQn = 134,                              /*!< TIMER1  */
     S_GPIOL_S_IRQn = 229,                             /*!< GPIOINT  */
     S_GPIOL_IRQn = 230,                               /*!< GPIOINT S_GPIOL_NS */
     S_GPIOM_S_IRQn = 231,                             /*!< GPIOINT  */
@@ -119,6 +133,7 @@ typedef enum IRQn
 #define GPIOK_BASE ((uintptr_t) 0x02000580)           /*!< GPIO Port Controller Base */
 #define GPIOINTK_BASE ((uintptr_t) 0x020005C0)        /*!< GPIOINT  Base */
 #define CCU_BASE ((uintptr_t) 0x02002000)             /*!< CCU Clock Controller Unit (CCU) Base */
+#define TIMER_BASE ((uintptr_t) 0x02052000)           /*!< TIMER1  Base */
 #define Timer1_CPUX_BASE ((uintptr_t) 0x02052000)     /*!< TIMER1  Base */
 #define UART0_BASE ((uintptr_t) 0x02500000)           /*!< UART  Base */
 #define UART1_BASE ((uintptr_t) 0x02501000)           /*!< UART  Base */
@@ -1115,6 +1130,28 @@ typedef struct TIMER_Type
 {
     __IO uint32_t TMR_IRQ_EN_REG;                     /*!< Offset 0x000 Timer IRQ Enable Register */
     __IO uint32_t TMR_IRQ_STA_REG;                    /*!< Offset 0x004 Timer Status Register */
+    __IO uint32_t TIMER_SEC_REG;                      /*!< Offset 0x008 Timer Secure Register */
+         RESERVED(0x00C[0x0020 - 0x000C], uint8_t)
+    struct
+    {
+        __IO uint32_t CTRL_REG;                       /*!< Offset 0x020 Timer n Control Register */
+        __IO uint32_t TIMER_IVL_REG;                  /*!< Offset 0x024 TimerLowIntervalValueRegister */
+        __IO uint32_t TIMER_CVL_REG;                  /*!< Offset 0x028 TimerLowCurrentValueRegister */
+        __IO uint32_t TIMER_IVH_REG;                  /*!< Offset 0x02C TimerHighIntervalValueRegiste */
+        __IO uint32_t TIMER_CVH_REG;                  /*!< Offset 0x030 TimerHighCurrentValueRegister */
+        __IO uint32_t TIMER_CV_READ_SEL_REG;          /*!< Offset 0x034 TimerCurrentValueReadSelectRegister */
+             RESERVED(0x018[0x0020 - 0x0018], uint8_t)
+    } TMR [0x002];                                    /*!< Offset 0x020 Timer */
+         RESERVED(0x060[0x0400 - 0x0060], uint8_t)
+} TIMER_TypeDef; /* size of structure = 0x400 */
+/*
+ * @brief TIMER1
+ */
+/*!< TIMER1  */
+typedef struct TIMER1_Type
+{
+    __IO uint32_t TMR_IRQ_EN_REG;                     /*!< Offset 0x000 Timer IRQ Enable Register */
+    __IO uint32_t TMR_IRQ_STA_REG;                    /*!< Offset 0x004 Timer Status Register */
          RESERVED(0x008[0x0010 - 0x0008], uint8_t)
     struct
     {
@@ -1122,21 +1159,9 @@ typedef struct TIMER_Type
         __IO uint32_t INTV_VALUE_REG;                 /*!< Offset 0x014 Timer n Interval Value Register */
         __IO uint32_t CUR_VALUE_REG;                  /*!< Offset 0x018 Timer n Current Value Register */
              RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
-    } TMR [0x002];                                    /*!< Offset 0x010 Timer */
-         RESERVED(0x030[0x00A0 - 0x0030], uint8_t)
-    __IO uint32_t WDOG_IRQ_EN_REG;                    /*!< Offset 0x0A0 Watchdog IRQ Enable Register */
-    __IO uint32_t WDOG_IRQ_STA_REG;                   /*!< Offset 0x0A4 Watchdog Status Register */
-         RESERVED(0x0A8[0x00B0 - 0x00A8], uint8_t)
-    __IO uint32_t WDOG_CTRL_REG;                      /*!< Offset 0x0B0 Watchdog Control Register */
-    __IO uint32_t WDOG_CFG_REG;                       /*!< Offset 0x0B4 Watchdog Configuration Register */
-    __IO uint32_t WDOG_MODE_REG;                      /*!< Offset 0x0B8 Watchdog Mode Register */
-         RESERVED(0x0BC[0x00C0 - 0x00BC], uint8_t)
-    __IO uint32_t AVS_CNT_CTL_REG;                    /*!< Offset 0x0C0 AVS Control Register */
-    __IO uint32_t AVS_CNT0_REG;                       /*!< Offset 0x0C4 AVS Counter 0 Register */
-    __IO uint32_t AVS_CNT1_REG;                       /*!< Offset 0x0C8 AVS Counter 1 Register */
-    __IO uint32_t AVS_CNT_DIV_REG;                    /*!< Offset 0x0CC AVS Divisor Register */
-         RESERVED(0x0D0[0x0400 - 0x00D0], uint8_t)
-} TIMER_TypeDef; /* size of structure = 0x400 */
+    } TMR [0x004];                                    /*!< Offset 0x010 Timer */
+         RESERVED(0x050[0x0400 - 0x0050], uint8_t)
+} TIMER1_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief TIMESTAMP_CTRL
  */
@@ -1403,6 +1428,8 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOK ((GPIO_TypeDef *) GPIOK_BASE)           /*!< GPIOK Port Controller register set access pointer */
 #define GPIOINTK ((GPIOINT_TypeDef *) GPIOINTK_BASE)  /*!< GPIOINTK  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
+#define TIMER ((TIMER1_TypeDef *) TIMER_BASE)         /*!< TIMER  register set access pointer */
+#define Timer1_CPUX ((TIMER1_TypeDef *) Timer1_CPUX_BASE)/*!< Timer1_CPUX  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */

@@ -2865,6 +2865,7 @@ void arm_hardware_reset(void)
 /* разрешение сторожевого таймера в устройстве */
 void watchdog_initialize(void)
 {
+#if WITHWATCHDOG
 #if CPUSTYLE_STM32MP1
 #elif CPUSTYLE_ALLWINNER && defined (TIMER)
 	TIMER->WDOG_MODE_REG =
@@ -2873,11 +2874,13 @@ void watchdog_initialize(void)
 		0;
 	TIMER->WDOG_CFG_REG = 0x01;	// To whole system
 #endif /*  */
+#endif /* WITHWATCHDOG */
 }
 
 /* перезапуск сторожевого таймера */
 void watchdog_ping(void)
 {
+#if WITHWATCHDOG
 #if CPUSTYLE_STM32MP1
 #elif CPUSTYLE_ALLWINNER && defined (TIMER)
 	TIMER->WDOG_CTRL_REG =
@@ -2885,6 +2888,7 @@ void watchdog_ping(void)
 		0x01 * (UINT32_C(1) << 0) |
 		0;
 #endif /* */
+#endif /* WITHWATCHDOG */
 }
 
 #if ! LINUX_SUBSYSTEM && ((__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV)

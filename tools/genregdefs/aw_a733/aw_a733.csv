@@ -111,12 +111,31 @@
 #typeend;
 
 #type; TIMER0
+
 #base; Timer0_CPUX 0x03009000 
 #base; Timer0_CPUS 0x07091000
+
+#irq; TIMER0 121
+#irq; TIMER1 122
+#irq; TIMER2 123
+#irq; TIMER3 124
+#irq; TIMER4 125
+#irq; TIMER5 126
+#irq; TIMER6 127
+#irq; TIMER7 128
+#irq; TIMER8 129
+#irq; TIMER9 130
 #typeend;
 
 #type; TIMER1
+
+#base; TIMER 0x02052000 
 #base; Timer1_CPUX 0x02052000 
+
+#irq; TIMER1_0 131
+#irq; TIMER1_1 132
+#irq; TIMER1_2 133
+#irq; TIMER1_3 134
 #typeend;
 
 #type; UART

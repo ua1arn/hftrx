@@ -4284,6 +4284,11 @@ void sysinit_pll_initialize(int forced)
 {
 }
 
+uint_fast32_t allwnr_a733_get_hosc_freq(void)
+{
+	return WITHCPUXTAL;
+}
+
 uint_fast32_t allwnr_a733_get_cpux_freq(void)
 {
 	return 24000000;
