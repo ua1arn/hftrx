@@ -166,7 +166,6 @@ typedef enum IRQn
 #define GICP_BASE ((uintptr_t) 0x03430000)            /*!< GICP GIC Performance Monitoring Unit Base */
 #define GITS_BASE ((uintptr_t) 0x03440000)            /*!< GITS GIC Secure Access Control Base */
 #define GICR0_BASE ((uintptr_t) 0x03460000)           /*!< GICR GIC Redistributor  Base */
-#define GIC_INTERFACE_BASE ((uintptr_t) 0x03460000)   /*!< GIC_INTERFACE GICC GIC CPU Interface Base */
 #define GICR1_BASE ((uintptr_t) 0x03480000)           /*!< GICR GIC Redistributor  Base */
 #define GICR2_BASE ((uintptr_t) 0x034A0000)           /*!< GICR GIC Redistributor  Base */
 #define GICR3_BASE ((uintptr_t) 0x034C0000)           /*!< GICR GIC Redistributor  Base */

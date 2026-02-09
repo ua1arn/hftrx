@@ -169,9 +169,9 @@
 #base; GIC_REDISTRIBUTOR  0x03400000; GICD GIC Distributor
 #typeend;
 
-#type; GIC_INTERFACE; GICC GIC CPU Interface
-#base; GIC_INTERFACE 0x03460000; GICC GIC CPU Interface
-#typeend;
+##type; GIC_INTERFACE; GICC GIC CPU Interface
+##base; GIC_INTERFACE 0x03460000; GICC GIC CPU Interface
+##typeend;
 
 #type; GICD; GIC Distributor
 #base; GICD 0x03400000; GIC Distributor 
