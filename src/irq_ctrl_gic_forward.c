@@ -7,6 +7,7 @@
 
 #include "hardware.h"
 
+
 #if (__CORTEX_A != 0)
 
 /**************************************************************************//**
@@ -38,9 +39,12 @@
 #include "RTE_Components.h"
 #include CMSIS_device_header
 
-#include "a-profile/irq_ctrl.h"
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+
+#if ! __aarch64__ || WITHOLDCMSIS
+    #include "a-profile/irq_ctrl.h" // CMSIS_6 file
+#endif
 
 /// Number of implemented interrupt lines
 #ifndef IRQ_GIC_LINE_COUNT

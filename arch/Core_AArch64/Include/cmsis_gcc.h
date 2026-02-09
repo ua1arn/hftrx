@@ -52,12 +52,12 @@
 
 #ifndef __MSR
   #define __MSR(sysreg, val) \
-    __asm volatile ("msr "__STRINGIFY(sysreg)", %0\n" : : "r"((uint64_t)(val)))
+    __asm volatile ("msr " __STRINGIFY(sysreg)", %0\n" : : "r"((uint64_t)(val)))
 #endif
 
 #ifndef __MRS
 #define __MRS(sysreg, pVal) \
-  __asm volatile ("mrs  %0, "__STRINGIFY(sysreg)"\n" : "=r"((*pVal)))
+  __asm volatile ("mrs  %0, " __STRINGIFY(sysreg)"\n" : "=r"((*pVal)))
 #endif
 
 #ifndef __WFI

@@ -1749,7 +1749,7 @@ stsinit_irql_initialize(void)
 //	PRINTF("GIC_GetBinaryPoint()=%u\n", (unsigned) GIC_GetBinaryPoint());
 	ASSERT(GIC_BINARY_POINT == GIC_GetBinaryPoint());
 
-	GIC_Enable();
+	GIC_Enable();	// self
 
 #endif
 	InitializeIrql(IRQL_USER);	// nested interrupts support
@@ -2686,7 +2686,8 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_ttbr_initialize();		// Загрузка TTBR, инвалидация кеш памяти и включение MMU
 
-	GIC_Enable();
+	unsigned core = arm_hardware_cpuid();
+	GIC_Enable();	// self
 	InitializeIrql(IRQL_IPC_ONLY);	// nested interrupts support
 
 	cortexa_cpuinfo();
@@ -2694,7 +2695,6 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	global_enableIRQ();	//  __ASM volatile ("cpsie i" : : : "memory");
 	LCLSPIN_UNLOCK(& cpu1init);
 
-	unsigned core = arm_hardware_cpuid();
 	LCLSPIN_LOCK(& cpu1userstart [core]);		/* ждем пока основной user thread не разрешит выполняться */
 	LCLSPIN_UNLOCK(& cpu1userstart [core]);
 	InitializeIrql(IRQL_USER);	// nested interrupts support

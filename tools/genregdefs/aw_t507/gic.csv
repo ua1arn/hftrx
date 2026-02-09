@@ -26,37 +26,3 @@
 #regdef; padding 0; 512; Placeholder for 0x200 alignment
 
 #typeend;
-
-#type; GIC_DISTRIBUTOR; GICD
-#base; GIC_DISTRIBUTOR  0x03021000; GICD
-
-#typeend;
-
-#type; GIC_INTERFACE; GICC GIC CPU Interface
-#base; GIC_INTERFACE 0x03022000; GICC GIC CPU Interface
-
-#irq; SGI0 0
-#irq; SGI1 1
-#irq; SGI2 2
-#irq; SGI3 3
-#irq; SGI4 4
-#irq; SGI5 5
-#irq; SGI6 6
-#irq; SGI7 7
-#irq; SGI8 8
-#irq; SGI9 9
-#irq; SGI10 10
-#irq; SGI11 11
-#irq; SGI12 12
-#irq; SGI13 13
-#irq; SGI14 14
-#irq; SGI15 15
-#irq; VirtualMaintenanceInterrupt 25
-#irq; HypervisorTimer 26
-#irq; VirtualTimer 27
-#irq; Legacy_nFIQ 28
-#irq; SecurePhysicalTimer 29
-#irq; NonSecurePhysicalTimer 30
-#irq; Legacy_nIRQ 31
-
-#typeend;

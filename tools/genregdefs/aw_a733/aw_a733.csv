@@ -165,8 +165,8 @@
 
 ## https://github.com/Rabs9/radxa-cubie-a7a-maximum-overclock/blob/175a3bc09d0434d883ff5696fd09844a07ecedf6/dts/source/radxa-cubie-a7a.dts#L405
 
-#type; GIC_DISTRIBUTOR; GICD GIC Distributor
-#base; GIC_DISTRIBUTOR  0x03400000; GICD GIC Distributor
+#type; GIC_REDISTRIBUTOR; GICD GIC Distributor
+#base; GIC_REDISTRIBUTOR  0x03400000; GICD GIC Distributor
 #typeend;
 
 #type; GIC_INTERFACE; GICC GIC CPU Interface

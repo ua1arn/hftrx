@@ -2375,7 +2375,7 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 
 #endif
 
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) && 0
 
 static void disableAllIRQs(void)
 {
