@@ -64,7 +64,8 @@ CORE = -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=vfpv4 --specs=nosys.specs
 OPT = -Ofast -flto
 #OPT = -Ofast
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
+#CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
+CMSISDIR = $(PRJROOT)/arch/Core_AArch64
 USBXDIR = $(PRJROOT)/src/hal
 
 # List all default C defines here, like -D_DEBUG=1
@@ -76,7 +77,7 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(ARCHDIR) \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source
+	$(CMSISDIR)/Include $(CMSISDIR)/Source
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC

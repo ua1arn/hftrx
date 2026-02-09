@@ -74,7 +74,7 @@ ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7010_zm
 ZYNQLIB = zynq7010.a
 
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
@@ -90,7 +90,7 @@ DINCDIR = \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source \
+	$(CMSISDIR)/Include $(CMSISDIR)/Source \
 	$(ZYNQLIBSRC)
 
 # List the default directory to look for the libraries here

@@ -63,7 +63,7 @@ CORE += -mfpu=neon-vfpv3
 #OPT = -Ofast -flto -mlong-calls
 OPT = -Ofast -flto
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
@@ -80,7 +80,7 @@ DINCDIR = \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source \
+	$(CMSISDIR)/Include $(CMSISDIR)/Source \
 	$(CMSISDIR)/Core_A/Source
 
 # List the default directory to look for the libraries here
