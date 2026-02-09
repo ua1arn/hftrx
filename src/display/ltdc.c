@@ -3604,14 +3604,7 @@ static void t113_lvds_set_digital_logic(const videomode_t * vdmode)
 static void t113_dsi_set_digital_logic(const videomode_t * vdmode)
 {
 #if defined (TCONLCD_PTR)
-
-#if CPUSTYLE_H3
-	// No LVDS outpit
-
-#elif CPUSTYLE_A64
-	// No LVDS outpit
-
-#else
+#if CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// Сперва сбрасываем всё
 	TCONLCD_PTR->LCD_CPU_IF_REG = 0;
@@ -3621,6 +3614,15 @@ static void t113_dsi_set_digital_logic(const videomode_t * vdmode)
 	PRINTF("Before: DSI_DPHY->DPHY_GCTL_REG=%08X\n", (unsigned) DSI_DPHY->DPHY_GCTL_REG);
 	DSI_DPHY->DPHY_GCTL_REG = UINT32_C(1) << 0;
 	PRINTF("After: DSI_DPHY->DPHY_GCTL_REG=%08X\n", (unsigned) DSI_DPHY->DPHY_GCTL_REG);
+
+#elif CPUSTYLE_H3
+	// No LVDS outpit
+
+#elif CPUSTYLE_A64
+	// No LVDS outpit
+
+#else
+	//#error No DSI hardware
 #endif /* CPUSTYLE_xxx */
 #endif /* defined (TCONLCD_PTR) */
 }
