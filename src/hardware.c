@@ -1764,6 +1764,8 @@ static void
 stsinit_irql_initialize(void)
 {
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	GIC_SetBinaryPoint(GIC_BINARY_POINT);
+
 //	PRINTF("GIC_BINARY_POINT=%u\n", GIC_BINARY_POINT);
 //	PRINTF("GIC_GetBinaryPoint()=%u\n", (unsigned) GIC_GetBinaryPoint());
 	ASSERT(GIC_BINARY_POINT == GIC_GetBinaryPoint());
@@ -2030,9 +2032,6 @@ sysinit_vbar_initialize(void)
 	csr_set_bits_sie(MIE_MEI_BIT_MASK);	// MEI
 
 #endif /* CPUSTYLE_RISCV */
-#if (__GIC_PRESENT == 1)
-	GIC_SetBinaryPoint(GIC_BINARY_POINT);
-#endif /* (__GIC_PRESENT == 1) */
 }
 
 // SystemInit (on Core #0)
@@ -2167,8 +2166,6 @@ SystemInit(void)
 #if CPUSTYLE_VM14
 	resetCPU(1);
 #endif /* CPUSTYLE_VM14 */
-//	sysinit_gpio_initialize();
-//	sysinit_debug_initialize();
 	sysinit_fpu_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	stsinit_irql_initialize();

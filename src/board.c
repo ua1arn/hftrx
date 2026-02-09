@@ -6333,6 +6333,9 @@ void board_rgrbeep_enable(uint_fast8_t state)
 {
 }
 
+void board_errbeep_enable(uint_fast8_t state)
+{
+}
 #endif /* WITHINTEGRATEDDSP */
 
 
