@@ -171,8 +171,10 @@
 #typeend;
 
 #type; GIC_REDISTRIBUTOR; GICD GIC Distributor
-#base; GIC_REDISTRIBUTOR  0x03400000; GICD GIC Distributor
+#base; GIC_REDISTRIBUTOR  0x03460000; GIC Redistributor 
 #typeend;
+
+## GIC_INTERFACE_BASE not need - access via cp15
 
 ##type; GIC_INTERFACE; GICC GIC CPU Interface
 ##base; GIC_INTERFACE 0x03460000; GICC GIC CPU Interface

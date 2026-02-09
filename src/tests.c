@@ -8989,7 +8989,7 @@ void hightests(void)
 	{
 		// GIC600 specs
 		uintptr_t base = GIC_BASE;
-		for (;base < (GIC_BASE + (64 * 1024 * 1024)); base += 4 * 1024)
+		for (;base < (GIC_BASE + (25 * 64 * 1024)); base += 4 * 1024)
 		{
 			//const uint32_t v = * (volatile uint32_t *) (base + 0xFFD0);
 			//PRINTF("0x%08X at 0x%08X\n", (unsigned) v, (unsigned) base);
