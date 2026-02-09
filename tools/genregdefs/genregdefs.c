@@ -291,11 +291,11 @@ static const char * textbyacc(enum regsccess flag)
 	{
 	default:
 	case REGRW:
-		return "__IO";	/* read/write access */
+		return "__IOM";	/* read/write access */
 	case REGRO:
-		return "__I ";	/* read only access */
+		return "__IM ";	/* read only access */
 	case REGWO:
-		return "__O ";	/* write only access */
+		return "__OM ";	/* write only access */
 	}
 }
 /* Generate list of registers. Return last offset */

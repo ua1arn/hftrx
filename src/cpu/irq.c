@@ -24,13 +24,13 @@
 void xcz_ipi_sendmsg_c0(uint8_t msg)
 {
 	ft8.int_core0 = msg;
-	GIC_SendSGI(ft8_interrupt_core0, TARGETCPU_CPU0, 0x00);
+	GIC_SendSGI(ft8_interrupt_core0, TARGETCPU_CPU0, 0x00); // Forward the interrupt to the CPU interfaces specified in the CPUTargetList field
 }
 
 void xcz_ipi_sendmsg_c1(uint8_t msg)
 {
 	ft8.int_core1 = msg;
-	GIC_SendSGI(ft8_interrupt_core1, TARGETCPU_CPU1, 0x00);
+	GIC_SendSGI(ft8_interrupt_core1, TARGETCPU_CPU1, 0x00); // Forward the interrupt to the CPU interfaces specified in the CPUTargetList field
 }
 
 #endif
@@ -2112,13 +2112,7 @@ uint_fast8_t arm_hardware_cpuid(void)
 	// Cortex-A53 computers
 	return __get_MPIDR_EL1() & 0xFF;	// Aff0
 
-#elif (__CORTEX_A == 55U)
-	// Cortex-A computers
-
-	return 0;
-	return __get_MPIDR() & 0xFF;
-
-#elif (__CORTEX_A == 53U)
+#elif ((__CORTEX_A == 55U) || (__CORTEX_A == 53U))
 	// Cortex-A computers
 
 	return __get_MPIDR() & 0xFF;
