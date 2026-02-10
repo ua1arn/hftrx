@@ -827,7 +827,7 @@ typedef struct GICP_Type
 typedef struct GICR_Type
 {
     __IOM uint32_t CTLR;                              /*!< Offset 0x000 Redistributor Control Register */
-    __IOM uint32_t IIDR;                              /*!< Offset 0x004  */
+    __IM  uint32_t IIDR;                              /*!< Offset 0x004  */
     __IOM uint32_t TYPER;                             /*!< Offset 0x008  */
          RESERVED(0x00C[0x0014 - 0x000C], uint8_t)
     __IOM uint32_t WAKER;                             /*!< Offset 0x014  */
@@ -847,18 +847,18 @@ typedef struct GICR_Type
          RESERVED(0x0B0[0x00C0 - 0x00B0], uint8_t)
     __IOM uint32_t SYNCR;                             /*!< Offset 0x0C0  */
          RESERVED(0x0C4[0xFFD0 - 0x00C4], uint8_t)
-    __IOM uint32_t PIDR4;                             /*!< Offset 0xFFD0 Peripheral ID 4 Register */
-    __IOM uint32_t PIDR5;                             /*!< Offset 0xFFD4 Peripheral ID 5 Register */
-    __IOM uint32_t PIDR6;                             /*!< Offset 0xFFD8 Peripheral ID 6 Register */
-    __IOM uint32_t PIDR7;                             /*!< Offset 0xFFDC Peripheral ID 7 Register */
-    __IOM uint32_t PIDR0;                             /*!< Offset 0xFFE0 Peripheral ID 0 Register */
-    __IOM uint32_t PIDR1;                             /*!< Offset 0xFFE4 Peripheral ID 1 Register */
-    __IOM uint32_t PIDR2;                             /*!< Offset 0xFFE8 Peripheral ID 2 Register */
-    __IOM uint32_t PIDR3;                             /*!< Offset 0xFFEC Peripheral ID 3 Register */
-    __IOM uint32_t CIDR0;                             /*!< Offset 0xFFF0 Component ID 0 Register */
-    __IOM uint32_t CIDR1;                             /*!< Offset 0xFFF4 Component ID 1 Register */
-    __IOM uint32_t CIDR2;                             /*!< Offset 0xFFF8 Component ID 2 Register */
-    __IOM uint32_t CIDR3;                             /*!< Offset 0xFFFC Component ID 3 Register */
+    __IM  uint32_t PIDR4;                             /*!< Offset 0xFFD0 Peripheral ID 4 Register */
+    __IM  uint32_t PIDR5;                             /*!< Offset 0xFFD4 Peripheral ID 5 Register */
+    __IM  uint32_t PIDR6;                             /*!< Offset 0xFFD8 Peripheral ID 6 Register */
+    __IM  uint32_t PIDR7;                             /*!< Offset 0xFFDC Peripheral ID 7 Register */
+    __IM  uint32_t PIDR0;                             /*!< Offset 0xFFE0 Peripheral ID 0 Register */
+    __IM  uint32_t PIDR1;                             /*!< Offset 0xFFE4 Peripheral ID 1 Register */
+    __IM  uint32_t PIDR2;                             /*!< Offset 0xFFE8 Peripheral ID 2 Register */
+    __IM  uint32_t PIDR3;                             /*!< Offset 0xFFEC Peripheral ID 3 Register */
+    __IM  uint32_t CIDR0;                             /*!< Offset 0xFFF0 Component ID 0 Register */
+    __IM  uint32_t CIDR1;                             /*!< Offset 0xFFF4 Component ID 1 Register */
+    __IM  uint32_t CIDR2;                             /*!< Offset 0xFFF8 Component ID 2 Register */
+    __IM  uint32_t CIDR3;                             /*!< Offset 0xFFFC Component ID 3 Register */
 } GICR_TypeDef; /* size of structure = 0x10000 */
 /*
  * @brief GICT

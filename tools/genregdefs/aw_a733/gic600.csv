@@ -1,5 +1,9 @@
 ## corelink_gic600_generic_interrupt_controller_technical_reference_manual_100336_0106_00_en.pdf
 
+## 4.4.1 Redistributor Implementation Identification Register, GICR_IIDR
+## GIC_DistributorImplementer()=0201643B
+##  GIC-600 0x1 = r1 0x6 = p4. 0x43B = Arm.
+
 #type; GICD; GIC Distributor
 
 #regdef;	CTLR;			0x0000;		Distributor Control Register
@@ -105,10 +109,13 @@
 
 #typeend;
 
+## corelink_gic600_generic_interrupt_controller_technical_reference.pdf
+## 4.4 Redistributor registers for control and physical LPIs summary
+
 #type; GICR; GIC Redistributor 
 
 #regdef;  CTLR;  			0x0000; 	Redistributor Control Register
-#regdef;  IIDR; 			0x0004; 
+#regdefr;  IIDR; 			0x0004; 
 #regdef;  TYPER; 			0x0008; 
 #regdef;  WAKER; 			0x0014; 
 #regdef;  FCTLR; 			0x0020; 
@@ -122,20 +129,23 @@
 #regdef;  INVALLR 8; 		0x00A8; 
 #regdef;  SYNCR; 			0x00C0; 
 
-#regdef; 	PIDR4;			0xFFD0;		Peripheral ID 4 Register
-#regdef; 	PIDR5;			0xFFD4;		Peripheral ID 5 Register
-#regdef; 	PIDR6;			0xFFD8;		Peripheral ID 6 Register
-#regdef; 	PIDR7;			0xFFDC;		Peripheral ID 7 Register
-#regdef; 	PIDR0;			0xFFE0;		Peripheral ID 0 Register
-#regdef; 	PIDR1;			0xFFE4;		Peripheral ID 1 Register
-#regdef; 	PIDR2;			0xFFE8;		Peripheral ID 2 Register
-#regdef; 	PIDR3;			0xFFEC;		Peripheral ID 3 Register
-#regdef; 	CIDR0;			0xFFF0;		Component ID 0 Register
-#regdef; 	CIDR1;			0xFFF4;		Component ID 1 Register
-#regdef; 	CIDR2;			0xFFF8;		Component ID 2 Register
-#regdef; 	CIDR3;			0xFFFC;		Component ID 3 Register
+#regdefr; 	PIDR4;			0xFFD0;		Peripheral ID 4 Register
+#regdefr; 	PIDR5;			0xFFD4;		Peripheral ID 5 Register
+#regdefr; 	PIDR6;			0xFFD8;		Peripheral ID 6 Register
+#regdefr; 	PIDR7;			0xFFDC;		Peripheral ID 7 Register
+#regdefr; 	PIDR0;			0xFFE0;		Peripheral ID 0 Register
+#regdefr; 	PIDR1;			0xFFE4;		Peripheral ID 1 Register
+#regdefr; 	PIDR2;			0xFFE8;		Peripheral ID 2 Register
+#regdefr; 	PIDR3;			0xFFEC;		Peripheral ID 3 Register
+#regdefr; 	CIDR0;			0xFFF0;		Component ID 0 Register
+#regdefr; 	CIDR1;			0xFFF4;		Component ID 1 Register
+#regdefr; 	CIDR2;			0xFFF8;		Component ID 2 Register
+#regdefr; 	CIDR3;			0xFFFC;		Component ID 3 Register
 
 #typeend;
+
+## corelink_gic600_generic_interrupt_controller_technical_reference.pdf
+## 4.4 Redistributor registers for control and physical LPIs summary
 
 #type; GITS; GIC Secure Access Control
 #regdef; pad 0; 0x10000; alignment
