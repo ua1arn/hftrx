@@ -2082,6 +2082,7 @@ static void sysinit_smp_initialize(void)
 {
 #if CPUSTYLE_A733
 	#warning To be done
+	return;
 	/**
 	 * DDI0500J_cortex_a53_r0p4_trm.pdf
 	 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
@@ -2098,18 +2099,18 @@ static void sysinit_smp_initialize(void)
 	__ISB();
 	__DSB();
 
-	PRINTF("__get_ACTLRx()=0x%08" PRIx32 "\n", __get_ACTLRx());
-	PRINTF("__get_CPUACTLRx()=0x%016" PRIx64 "\n", __get_CPUACTLRx());
+//	PRINTF("__get_ACTLRx()=0x%08" PRIx32 "\n", __get_ACTLRx());
+//	PRINTF("__get_CPUACTLRx()=0x%016" PRIx64 "\n", __get_CPUACTLRx());
 	////PRINTF("__get_CPUMERRSRx()=0x%016" PRIx64 "\n", __get_CPUMERRSRx());
 	////PRINTF("__get_CPUECTLRx()=0x%016" PRIx64 "\n", __get_CPUECTLRx());
 	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
 
 	// set the CPUECTLR.SMPEN
 	////__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
-	PRINTF("__get_ACTLR()=0x%08" PRIx32 "\n", __get_ACTLR());
-	PRINTF("__get_CPUACTLRx()=0x%016" PRIx64 "\n", __get_CPUACTLRx());
+//	PRINTF("__get_ACTLR()=0x%08" PRIx32 "\n", __get_ACTLR());
+//	PRINTF("__get_CPUACTLRx()=0x%016" PRIx64 "\n", __get_CPUACTLRx());
 	////PRINTF("__get_CPUECTLRx()=0x%016" PRIx64 "\n", __get_CPUECTLRx());
-	dbg_flush();
+//	dbg_flush();
 	return;
 #endif
 #if (__CORTEX_A == 9U)
@@ -2226,7 +2227,6 @@ void softdevay(void)
 		__NOP();
 	}
 }
-void disableAllIRQs(void);
 
 // watchdog disable, clock initialize, cache enable
 void

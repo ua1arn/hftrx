@@ -261,18 +261,18 @@ ddrinit_a733: ddrinit_a733_lpddr4.bin
 	$(XFEL) write 0x00074000 ddrinit_a733_lpddr4.bin
 	$(XFEL) exec $(SystemDRAMInit)
 
-_app_run: $(PROJECT)_app.alw32 $(DDRINIT)
+app_run: $(PROJECT)_app.alw32
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
-	$(XFEL) exec $(SystemExecAARCH64)
+	$(XFEL) exec 0x40000100
 
 app_run64: $(PROJECT)_app.alw32 $(DDRINIT)
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec $(SystemExecAARCH64)
 
 # debug for bootloader - check .ld file
-app_run: bootloader
-	$(XFEL) write 0x00074000 fsbl.bt0
-	$(XFEL) exec 0x00074000 
+_app_run: bootloader
+	$(XFEL) write 0x00078000 fsbl.bt0
+	$(XFEL) exec 0x00078000 
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.bt0
