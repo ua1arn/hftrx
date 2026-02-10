@@ -729,7 +729,7 @@ __STATIC_INLINE void GIC_RedistInit(void)
     }
 }
 
-#ifdef GICInterface
+#ifdef GIC_INTERFACE_BASE
 
 /** \brief Enable the CPU's interrupt interface.
 */

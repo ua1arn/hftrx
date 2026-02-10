@@ -2099,7 +2099,7 @@ static void sysinit_smp_initialize(void)
 	__ISB();
 	__DSB();
 
-	PRINTF("__get_ACTLR_EL3()=0x%08" PRIx32 "\n", __get_ACTLR_EL3());
+	//PRINTF("__get_ACTLR_EL3()=0x%08" PRIx32 "\n", __get_ACTLR_EL3());
 	//PRINTF("__get_CPUACTLR_EL1()=0x%016" PRIx64 "\n", __get_CPUACTLR_EL1());
 	//PRINTF("__get_CPUMERRSRx()=0x%016" PRIx64 "\n", __get_CPUMERRSRx());
 	//PRINTF("__get_CPUECTLR_EL1()=0x%016" PRIx64 "\n", __get_CPUECTLR_EL1());
@@ -2110,7 +2110,7 @@ static void sysinit_smp_initialize(void)
 	//	PRINTF("__get_ACTLR()=0x%08" PRIx32 "\n", __get_ACTLR());
 	//	PRINTF("__get_CPUACTLRx()=0x%016" PRIx64 "\n", __get_CPUACTLRx());
 	////PRINTF("__get_CPUECTLRx()=0x%016" PRIx64 "\n", __get_CPUECTLRx());
-	dbg_flush();
+	//dbg_flush();
 
 #elif (__CORTEX_A == 55U) && ! defined(__aarch64__)
 	// Всё что надо делается в sysinit_fpu_initialize
@@ -2142,7 +2142,7 @@ static void sysinit_smp_initialize(void)
 //    PRINTF("__get_ACTLR()=0x%08" PRIx32 "\n", __get_ACTLR());
 //    PRINTF("__get_CPUACTLRx()=0x%016" PRIx64 "\n", __get_CPUACTLRx());
 	////PRINTF("__get_CPUECTLRx()=0x%016" PRIx64 "\n", __get_CPUECTLRx());
-    dbg_flush();
+//    dbg_flush();
 
 #elif (__CORTEX_A == 53U) && defined(__aarch64__)
 	// Всё что надо делается в sysinit_fpu_initialize
