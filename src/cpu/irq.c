@@ -2070,6 +2070,7 @@ void LowerIrql_DEBUG(IRQL_t newIRQL, const char * file, int line)
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
     ASSERT2(newIRQL != 0, file, line);
 	GIC_SetInterfacePriorityMask(newIRQL);
+	ASSERT2(GIC_GetInterfacePriorityMask() == newIRQL, file, line);
 #elif defined (__CORTEX_M)
 	__set_BASEPRI(newIRQL);
 #elif CPUSTYLE_RISCV
