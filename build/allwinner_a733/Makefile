@@ -61,8 +61,8 @@ CORE = -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=vfpv4 --specs=nosys.specs
 
 # Define optimisation level here
 #OPT = -Og
-OPT = -Ofast -flto
-#OPT = -Ofast
+#OPT = -Ofast -flto
+OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 #CMSISDIR = $(PRJROOT)/arch/Core_AArch64
@@ -271,8 +271,8 @@ app_run64: $(PROJECT)_app.alw32 $(DDRINIT)
 
 # debug for bootloader - check .ld file
 _app_run: bootloader
-	$(XFEL) write 0x00078000 fsbl.bt0
-	$(XFEL) exec 0x00078000 
+	$(XFEL) write 0x00074000 fsbl.bt0
+	$(XFEL) exec 0x00074000 
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.bt0

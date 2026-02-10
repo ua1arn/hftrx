@@ -199,7 +199,7 @@ typedef enum IRQn
 #define CPU_PLL_CFG_BASE ((uintptr_t) 0x08870000)     /*!< CPU_PLL_CFG  Base */
 
 #if __aarch64__
-    #include <core64_ca.h>
+    #include <core_ca55.h>
 #else
     #include <core_ca.h>
 #endif

@@ -33,9 +33,17 @@
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
 
-//#include "cmsis_compat1.h"
-#include "device.h"
-//#include "cmsis_compat2.h"
+#if __aarch64__
+
+	#include "cmsis_compat1.h"
+	#include "device.h"
+	#include "cmsis_compat2.h"
+
+#else
+
+	#include "device.h"
+
+#endif
 
 #include "system_allwnr_a733.h"
 

@@ -2080,54 +2080,74 @@ uint32_t __get_ACTLRx(void)
 // Reset_CPUn_Handler ((on Core #1..)
 static void sysinit_smp_initialize(void)
 {
-#if CPUSTYLE_A733
+#if (__CORTEX_A == 55U) && defined(__aarch64__)
+	// Всё что надо делается в sysinit_fpu_initialize
 	#warning To be done
-	return;
-//	/**
-//	 * DDI0500J_cortex_a53_r0p4_trm.pdf
-//	 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
-//	 */
-//	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 0));	// CPUACTLR write access control. The possible
-//	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
-//
-//	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
-//	// set the CPUECTLR.SMPEN
-//////	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
-//	// 4.5.28 Auxiliary Control Register
-//	// bit6: L2ACTLR write access control
-//	__set_ACTLR(__get_ACTLR() & ~ (UINT32_C(1) << 6));	/* не надо - но стояло как результат запуcка из UBOOT */
-//	__ISB();
-//	__DSB();
-//
-////	PRINTF("__get_ACTLRx()=0x%08" PRIx32 "\n", __get_ACTLRx());
-////	PRINTF("__get_CPUACTLRx()=0x%016" PRIx64 "\n", __get_CPUACTLRx());
-//	////PRINTF("__get_CPUMERRSRx()=0x%016" PRIx64 "\n", __get_CPUMERRSRx());
-//	////PRINTF("__get_CPUECTLRx()=0x%016" PRIx64 "\n", __get_CPUECTLRx());
-//	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
-//
-//	// set the CPUECTLR.SMPEN
-//	////__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
-////	PRINTF("__get_ACTLR()=0x%08" PRIx32 "\n", __get_ACTLR());
-////	PRINTF("__get_CPUACTLRx()=0x%016" PRIx64 "\n", __get_CPUACTLRx());
-//	////PRINTF("__get_CPUECTLRx()=0x%016" PRIx64 "\n", __get_CPUECTLRx());
-////	dbg_flush();
-	return;
-#endif
-#if (__CORTEX_A == 9U)
-	// not set the ACTLR.SMP
-	// 0x02: L2 Prefetch hint enable
-	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | (UINT32_C(1) << 1));
-	#if WITHSMPSYSTEM
-		__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
-	#else /* WITHSMPSYSTEM */
-		__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);
-	#endif /* WITHSMPSYSTEM */
+	/**
+	 * DDI0500J_cortex_a53_r0p4_trm.pdf
+	 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
+	 */
+	__set_ACTLR_EL3(__get_ACTLR_EL3() | (UINT32_C(1) << 0));	// CPUACTLR write access control. The possible
+	__set_ACTLR_EL3(__get_ACTLR_EL3() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
+	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
+
+	// set the CPUECTLR.SMPEN
+	////	__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+	// 4.5.28 Auxiliary Control Register
+	// bit6: L2ACTLR write access control
+	__set_ACTLR_EL3(__get_ACTLR_EL3() & ~ (UINT32_C(1) << 6));	/* не надо - но стояло как результат запуcка из UBOOT */
 	__ISB();
 	__DSB();
-#elif ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && defined(__aarch64__)
+
+	PRINTF("__get_ACTLR_EL3()=0x%08" PRIx32 "\n", __get_ACTLR_EL3());
+	//PRINTF("__get_CPUACTLR_EL1()=0x%016" PRIx64 "\n", __get_CPUACTLR_EL1());
+	//PRINTF("__get_CPUMERRSRx()=0x%016" PRIx64 "\n", __get_CPUMERRSRx());
+	//PRINTF("__get_CPUECTLR_EL1()=0x%016" PRIx64 "\n", __get_CPUECTLR_EL1());
+	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
+
+	// set the CPUECTLR.SMPEN
+	////__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+	//	PRINTF("__get_ACTLR()=0x%08" PRIx32 "\n", __get_ACTLR());
+	//	PRINTF("__get_CPUACTLRx()=0x%016" PRIx64 "\n", __get_CPUACTLRx());
+	////PRINTF("__get_CPUECTLRx()=0x%016" PRIx64 "\n", __get_CPUECTLRx());
+	dbg_flush();
+
+#elif (__CORTEX_A == 55U) && ! defined(__aarch64__)
+	// Всё что надо делается в sysinit_fpu_initialize
+	#warning To be done
+	/**
+	 * DDI0500J_cortex_a53_r0p4_trm.pdf
+	 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
+	 */
+	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 0));    // CPUACTLR write access control. The possible
+	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));    // [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
+
+	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));    // CPUECTLR write access control. The possible
+	// set the CPUECTLR.SMPEN
+////    __set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+	// 4.5.28 Auxiliary Control Register
+	// bit6: L2ACTLR write access control
+	__set_ACTLR(__get_ACTLR() & ~ (UINT32_C(1) << 6));    /* не надо - но стояло как результат запуcка из UBOOT */
+	__ISB();
+	__DSB();
+
+//    PRINTF("__get_ACTLRx()=0x%08" PRIx32 "\n", __get_ACTLRx());
+//    PRINTF("__get_CPUACTLRx()=0x%016" PRIx64 "\n", __get_CPUACTLRx());
+	////PRINTF("__get_CPUMERRSRx()=0x%016" PRIx64 "\n", __get_CPUMERRSRx());
+	////PRINTF("__get_CPUECTLRx()=0x%016" PRIx64 "\n", __get_CPUECTLRx());
+	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));    // [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
+
+	// set the CPUECTLR.SMPEN
+	////__set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+//    PRINTF("__get_ACTLR()=0x%08" PRIx32 "\n", __get_ACTLR());
+//    PRINTF("__get_CPUACTLRx()=0x%016" PRIx64 "\n", __get_CPUACTLRx());
+	////PRINTF("__get_CPUECTLRx()=0x%016" PRIx64 "\n", __get_CPUECTLRx());
+    dbg_flush();
+
+#elif (__CORTEX_A == 53U) && defined(__aarch64__)
 	// Всё что надо делается в sysinit_fpu_initialize
 
-#elif ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && ! defined(__aarch64__)
+#elif (__CORTEX_A == 53U) && ! defined(__aarch64__)
 	/**
 	 * DDI0500J_cortex_a53_r0p4_trm.pdf
 	 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
@@ -2154,6 +2174,19 @@ static void sysinit_smp_initialize(void)
 	#endif /* WITHSMPSYSTEM */
 	__ISB();
 	__DSB();
+
+#elif (__CORTEX_A == 9U)
+	// not set the ACTLR.SMP
+	// 0x02: L2 Prefetch hint enable
+	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | (UINT32_C(1) << 1));
+	#if WITHSMPSYSTEM
+		__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+	#else /* WITHSMPSYSTEM */
+		__set_ACTLR(__get_ACTLR() & ~ ACTLR_SMP_Msk);
+	#endif /* WITHSMPSYSTEM */
+	__ISB();
+	__DSB();
+
 #else
 	#warning Unhandled __CORTEX_A
 #endif /* (__CORTEX_A == 9U) */
