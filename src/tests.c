@@ -7131,6 +7131,12 @@ void hightests(void)
 	gxstyle_t dbstylev;
 	gxstyle_initialize(& dbstylev);
 #endif /* LCDMODE_LTDC */
+#if 1 && defined (__GNUC__)
+	{
+
+		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
+	}
+#endif
 
 #if WITHLTDCHW && LCDMODE_LTDC
 	{
@@ -8939,12 +8945,6 @@ void hightests(void)
 		const time_t t = time(NULL);
 
 		PRINTF("sizeof (time_t) == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
-	}
-#endif
-#if 1 && defined (__GNUC__)
-	{
-
-		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
 #if 0 && (__CORTEX_A != 0)
