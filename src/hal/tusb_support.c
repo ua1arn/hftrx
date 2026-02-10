@@ -1168,6 +1168,9 @@ void usbdevice_clk_init(void)
 	arm_hardware_set_handler_system(USB20_OTG_DEVICE_IRQn, USBDxx_IRQHandler);
 	arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_7133 To be done
+
 #else
 	#error usbdevice_clk_init should be implemented
 

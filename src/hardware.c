@@ -2044,7 +2044,7 @@ sysinit_vbar_initialize(void)
 #endif /* CPUSTYLE_RISCV */
 }
 
-#if CPUSTYLE_A733
+#if CPUSTYLE_A733 && ! __aarch64__
 /** \brief  Get CPUACTLR
     \return                CPU Auxiliary Control Register
  */

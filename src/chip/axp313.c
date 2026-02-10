@@ -59,7 +59,9 @@ enum axp313a_reg {
 
 // #define AXP_SHUTDOWN_REG	0x27
 // #define AXP_SHUTDOWN_MASK	BIT(0)
+#ifndef BIT
 #define BIT(x)              (1 << (x))
+#endif
 
 #if WITHSDRAM_AXP313				/* AXP313 */
 

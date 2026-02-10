@@ -392,7 +392,7 @@ __STATIC_INLINE void GIC_EnableIRQ(IRQn_Type IRQn)
     GIC_SetTarget(IRQn, mpidr & MPIDR_AFFINITY_MASK);
 
   if (IRQn < 32) {
-        s_RedistPPIBaseAddrs = GIC_GetRdistSGIBase(GIC_GetRdist());
+        s_RedistPPIBaseAddrs = (GICDistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
         s_RedistPPIBaseAddrs->ISENABLER[0] = 1U << IRQn;
   } else {
         GICDistributor->ISENABLER[IRQn / 32U] = 1U << (IRQn % 32U);
@@ -416,7 +416,7 @@ __STATIC_INLINE void GIC_DisableIRQ(IRQn_Type IRQn)
     GICDistributor_Type *s_RedistPPIBaseAddrs;
 
   if (IRQn < 32) {
-        s_RedistPPIBaseAddrs = GIC_GetRdistSGIBase(GIC_GetRdist());
+        s_RedistPPIBaseAddrs = (GICDistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
         s_RedistPPIBaseAddrs->ICENABLER[0] = 1U << IRQn;
         GIC_WaitRWP(GICR_RWP);
   } else {
@@ -505,7 +505,7 @@ __STATIC_INLINE uint32_t GIC_GetConfiguration(IRQn_Type IRQn)
 
 __STATIC_INLINE void GIC_SetRedistPriority(IRQn_Type IRQn, uint32_t priority)
 {
-    GICDistributor_Type *s_RedistPPIBaseAddrs = GIC_GetRdistSGIBase(GIC_GetRdist());
+    GICDistributor_Type *s_RedistPPIBaseAddrs = (GICDistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
     uint32_t mask = s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
 
     s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
@@ -546,7 +546,7 @@ __STATIC_INLINE uint32_t GIC_GetRedistPriority(IRQn_Type IRQn)
 {
     GICDistributor_Type *s_RedistPPIBaseAddrs;
 
-    s_RedistPPIBaseAddrs = GIC_GetRdistSGIBase(GIC_GetRdist());
+    s_RedistPPIBaseAddrs = (GICDistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
     return (s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
 }
 
@@ -640,7 +640,7 @@ __STATIC_INLINE void GIC_SetRedistGroup(IRQn_Type IRQn, uint32_t group)
     uint32_t shift = (IRQn % 32U);
     uint32_t igroupr;
 
-    s_RedistPPIBaseAddrs = GIC_GetRdistSGIBase(GIC_GetRdist());
+    s_RedistPPIBaseAddrs = (GICDistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
     igroupr = s_RedistPPIBaseAddrs->IGROUPR[IRQn / 32U];
 
     igroupr &= (~(1U << shift));
@@ -690,7 +690,7 @@ __STATIC_INLINE void GIC_DistInit(void)
     for (i = 32U; i < num_irq; i++)
     {
       /* Use non secure group1 for all SPI */
-        GIC_SetGroup(i, 1);
+        GIC_SetGroup((IRQn_Type) i, 1);
       //Disable the SPI interrupt
         GIC_DisableIRQ((IRQn_Type)i);
       //Set level-sensitive (and N-N model)
