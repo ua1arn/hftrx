@@ -64,8 +64,8 @@ CORE = -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=vfpv4 --specs=nosys.specs
 OPT = -Ofast -flto
 #OPT = -Ofast
 
-#CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
-CMSISDIR = $(PRJROOT)/arch/Core_AArch64
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
+#CMSISDIR = $(PRJROOT)/arch/Core_AArch64
 USBXDIR = $(PRJROOT)/src/hal
 
 # List all default C defines here, like -D_DEBUG=1
