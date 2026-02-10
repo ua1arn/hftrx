@@ -61,11 +61,12 @@ CORE = -mcpu=cortex-a55+fp+simd -momit-leaf-frame-pointer --specs=nosys.specs
 #OPT = -Ofast -flto
 OPT = -Ofast
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
+#CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
+CMSISDIR = $(PRJROOT)/arch/Core_AArch64
 USBXDIR = $(PRJROOT)/src/hal
 
 # List all default C defines here, like -D_DEBUG=1
-DDEFS = -D"WITHOLDCMSIS=1"
+#DDEFS = -D"WITHOLDCMSIS=1"
 
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS = -D__ASSEMBLY__=1
@@ -245,20 +246,21 @@ bootloader: BOOT2
 # Take from tc1_a733_boot.map - address of SystemDRAMInit, SystemExecAARCH64
 ifeq (1, 1)
 # A733
-SystemDRAMInit = 0x0002d890
-SystemExecAARCH64 = 0x00029510
+SystemDRAMInit = 0x0007a354
+SystemExecAARCH64 = 0x00077bb8
 DDRINIT=ddrinit_a733
 endif
 
 # Invoke SystemInit 
 
 ddrinit_a733: ddrinit_a733_lpddr4.bin
-	$(XFEL) write 0x00028000 ddrinit_a733_lpddr4.bin
+	$(XFEL) write 0x00074000 ddrinit_a733_lpddr4.bin
 	$(XFEL) exec $(SystemDRAMInit)
 	$(BUSYBOX) sleep 2s
 
-app_run64: $(PROJECT)_app.alw32 $(DDRINIT)
+app_run64: $(PROJECT)_app.alw32
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
+	$(XFEL) write 0x00074000 ddrinit_a733_lpddr4.bin
 	$(XFEL) exec $(SystemExecAARCH64)
 
 # debug for bootloader - check .ld file

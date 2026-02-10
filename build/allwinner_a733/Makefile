@@ -248,8 +248,8 @@ bootloader: BOOT2
 # Take from tc1_a733_boot.map - address of SystemDRAMInit, SystemExecAARCH64
 ifeq (1, 1)
 # A733
-SystemDRAMInit = 0x0002d890
-SystemExecAARCH64 = 0x00029510
+SystemDRAMInit = 0x0007a354
+SystemExecAARCH64 = 0x00077bb8
 DDRINIT=ddrinit_a733
 endif
 
