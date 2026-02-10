@@ -38,13 +38,10 @@ static i2cp_t i2cp_2 =
 /* задержка обепечивает скорость обмена по I2C при программной реализации протокола - 1/2 периода частоты 400 кГц */
 static void i2c_delay(const i2cp_t * p)
 {
-	local_delay_us(p->usdelayv);
+	local_delay_us_nocache(25);
 #if LCDMODEX_SII9022A
 	local_delay_us(25);
 #endif /* LCDMODEX_SII9022A */
-#if PCF8576C
-	local_delay_us(15);
-#endif /* PCF8576C */
 }
 
 #if CPUSTYLE_XC7Z
@@ -111,7 +108,7 @@ static uint32_t i2c_sys_now(const TWI_TypeDef * twi)
 {
 #if WITHISBOOTLOADER
 	static uint32_t n = 100;
-	local_delay_ms(1);
+	local_delay_ms_nocache(1);
 	return ++ n;
 	return 0;//cpu_getdebugticks();// / (cpu_getdebugticksfreq() / 1000);
 #elif CPUSTYLE_ALLWINNER

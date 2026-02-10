@@ -2841,7 +2841,7 @@ void testpng_no_stretch(const void * pngbuffer, int useKeyColor)
     \return               Configuration Base Address Register
     MRC p15, 1, <Rt>, c15, c3, 0; Read CBAR into Rt
  */
-__STATIC_FORCEINLINE uint32_t __get_CA53_CBAR(void)
+uint32_t __get_CA53_CBAR(void)
 {
 	uint32_t result;
   __get_CP(15, 1, result, 15, 3, 0);
@@ -2850,7 +2850,7 @@ __STATIC_FORCEINLINE uint32_t __get_CA53_CBAR(void)
 
 // G8.2.112 MIDR, Main ID Register
 // FAULT!!!
-__STATIC_FORCEINLINE uint32_t __get_MIDR(void)
+uint32_t __get_MIDR(void)
 {
 	uint32_t result;
   __get_CP(15, 0, result, 0, 0, 0);
@@ -2858,6 +2858,13 @@ __STATIC_FORCEINLINE uint32_t __get_MIDR(void)
 }
 
 #endif /* ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) */
+
+//uint32_t __get_CA53_CBAR64(void)
+//{
+//	uint32_t result;
+//  __get_CP(15, 1, result, 15, 3, 0);
+//  return(result);
+//}
 
 #if (CPUSTYLE_T113 || CPUSTYLE_F133) && 0
 
@@ -7995,7 +8002,7 @@ void hightests(void)
 #if 0 && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
 	{
 #if defined(__aarch64__)
-		const uint_fast32_t ca53_cbar = __get_CA53_CBAR();
+		const uint_fast32_t ca53_cbar = __get_CA53_CBAR64();
 		PRINTF("__get_CBAR()=%08X\n", ca53_cbar);
 		PRINTF("__get_CPUACTLR_EL1()=%08X\n", (unsigned) __get_CPUACTLR_EL1());
 		PRINTF("__get_CPUECTLR_EL1()=%08X\n", (unsigned) __get_CPUECTLR_EL1());
@@ -8011,7 +8018,10 @@ void hightests(void)
 
 		PRINTF("GIC_DISTRIBUTOR_BASE=%08X\n", (unsigned) GIC_DISTRIBUTOR_BASE);
 		PRINTF("GIC_INTERFACE_BASE=%08X\n", (unsigned) GIC_INTERFACE_BASE);
-		//printhex32(GIC_INTERFACE_BASE, (void *) GIC_INTERFACE_BASE, 4096);
+		PRINTF("periphbase:\n");
+		printhex32(periphbase, (void *) periphbase, 4096 + 4);
+		PRINTF("GIC_INTERFACE_BASE:\n");
+		printhex32(GIC_INTERFACE_BASE, (void *) GIC_INTERFACE_BASE, 4096);
 
 //		ASSERT(GIC_DISTRIBUTOR_BASE == (periphbase + 0x81000));
 //		ASSERT(GIC_INTERFACE_BASE == (periphbase + 0x82000));
@@ -9740,158 +9750,6 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && CPUSTYLE_R7S721
-	{
-		// RZ board leds test
-		//i2c_initialize();
-
-		arm_hardware_pio7_outputs(LEDBIT, LEDBIT);	/* ---- P7_1 : LED0 direct connection to IP */
-		arm_hardware_pio1_inputs(SW1BIT);	/*  */
-		ledsinit();
-
-		for (;;)
-		{
-			leds(0x01);
-			local_delay_ms(100);
-			leds(0x02);
-			local_delay_ms(100);
-			leds(0x04);
-			local_delay_ms(100);
-	#if 1
-			if (GPIO.PPR1 & SW1BIT)
-			{
-				GPIO.P7 |= LEDBIT;
-				leds(1);
-			}
-			else
-			{
-				GPIO.P7 &= ~ LEDBIT;
-				leds(0);
-			}
-			continue;
-	#endif
-			//R_LED_On();
-			//GPIO.PNOT7 = LEDBIT;
-			LED_TARGET_PORT_S(LEDBIT);	// Led OFF
-			__DSB();
-			local_delay_ms(1000);
-			//R_LED_Off();
-			//GPIO.PNOT7 = LEDBIT;
-			LED_TARGET_PORT_C(LEDBIT);	// Led ON
-			__DSB();
-			local_delay_ms(5000);
-		}
-	}
-#endif
-#if 0 && ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
-	// note: rdx0154 should be enabled (for I2C functions include).
-	{
-		test_cpu_pwron(1);
-		eink_lcd_backlight(1);
-		// M9546 (PCF8576C) support functions
-		LCD1x9_Initialize();
-
-		if (0)
-		{
-			// получение номеров сегментов LCD
-			int segment = 0;
-			LCD1x9_seg(segment, 1);
-			for (;;)
-			{
-
-				uint_fast8_t kbch, repeat;
-
-				if ((repeat = kbd_scan(& kbch)) != 0)
-				{
-					switch (kbch)
-					{
-					case KBD_CODE_0:
-						LCD1x9_seg(segment, 0);
-						if (++ segment >= MAXSEGMENT)
-							segment = 0;
-						LCD1x9_seg(segment, 1);
-						PRINTF(PSTR("seg = %d\n"), segment);
-						break;
-
-					case KBD_CODE_1:
-						LCD1x9_seg(segment, 0);
-						if (segment == 0)
-							segment = MAXSEGMENT - 1;
-						else
-							-- segment;
-						LCD1x9_seg(segment, 1);
-						PRINTF(PSTR("seg = %d\n"), segment);
-						break;
-					}
-				}
-			}
-		}
-		for (;;)
-		{
-
-			lcd_outarray(pe2014, sizeof pe2014 / sizeof pe2014 [0]);
-			int t;
-			for (t = 0; t < 100; ++ t)
-			{
-				local_delay_ms(50);
-				check_poweroff();
-			}
-			LCD1x9_clear();
-			{
-				// Зажигаем все сегменты
-				uint_fast8_t comIndex;
-				for (comIndex = 0; comIndex < 4; ++ comIndex)
-				{
-					uint_fast8_t bitIndex;
-					for (bitIndex = 0; bitIndex < 40; ++ bitIndex)
-					{
-						check_poweroff();
-						LCD1x9_enableSegment(comIndex, bitIndex);
-						LCD1x9_Update();
-						local_delay_ms(50);
-					}
-				}
-			}
-			{
-				// Гасим все сегменты
-				uint_fast8_t comIndex;
-				for (comIndex = 0; comIndex < 4; ++ comIndex)
-				{
-					uint_fast8_t bitIndex;
-					for (bitIndex = 0; bitIndex < 40; ++ bitIndex)
-					{
-						check_poweroff();
-						LCD1x9_disableSegment(comIndex, bitIndex);
-						LCD1x9_Update();
-						local_delay_ms(50);
-					}
-				}
-			}
-		}
-
-		for (;;)
-			;
-	}
-#endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
-#if 0 && ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
-	{
-		test_cpu_pwron(1);
-		// EM027BS013 tests
-		eink_initialize();
-		for (;;)
-			;
-	}
-#endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
-#if 0 && ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
-	{
-		// проверка кнопок включения-выключени я питания
-		test_cpu_pwron(1);
-		for (;;)
-		{
-			local_delay_ms_spool(1000);
-		}
-	}
-#endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
 #if 1 && ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED
 	{
 		test_cpu_pwron(1);
