@@ -160,10 +160,9 @@ typedef struct
     RESERVED(2, uint32_t)
     __OM uint32_t CLRLPIR;              /*!< \brief  Offset: 0x048 ( /W) Clear LPI Pending Register */
         RESERVED(3[9], uint32_t)
-    __IOM uint32_t PROPBASER;            /*!< \brief  Offset: 0x070 (R/W) Redistributor Properties Base Address Register */
-    RESERVED(4, uint32_t)
-    __IOM uint32_t PENDBASER;            /*!< \brief  Offset: 0x078 (R/W) Redistributor LPI Pending Table Base Address Register */
-        RESERVED(5[9], uint32_t)
+    __IOM uint64_t PROPBASER;            /*!< \brief  Offset: 0x070 (R/W) Redistributor Properties Base Address Register */
+    __IOM uint64_t PENDBASER;            /*!< \brief  Offset: 0x078 (R/W) Redistributor LPI Pending Table Base Address Register */
+        RESERVED(5[8], uint32_t)
     __OM uint32_t INVLPIR;              /*!< \brief  Offset: 0x0A0 ( /W) Redistributor Invalidate LPI Register */
         RESERVED(6[3], uint32_t)
     __OM uint32_t INVALLR;              /*!< \brief  Offset: 0x0B0 ( /W) Redistributor Invalidate All Register */
