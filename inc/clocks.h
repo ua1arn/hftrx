@@ -321,6 +321,11 @@ uint_fast32_t allwnr_a733_get_uart_freq(void);
 uint_fast32_t allwnr_a733_get_s_uart_freq(void);
 uint_fast32_t allwnr_a733_get_twi_freq(void);
 uint_fast32_t allwnr_a733_get_s_twi_freq(void);
+uint_fast32_t allwnr_a733_get_spi0_freq(void);
+uint_fast32_t allwnr_a733_get_spi1_freq(void);
+uint_fast32_t allwnr_a733_get_spi2_freq(void);
+uint_fast32_t allwnr_a733_get_spif_freq(void);
+uint_fast32_t allwnr_a733_get_spi23_freq(void);
 #endif /* CPUSTYLE_T507 */
 
 #if CPUSTYLE_T507

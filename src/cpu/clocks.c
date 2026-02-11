@@ -4355,14 +4355,51 @@ uint_fast32_t allwnr_a733_get_cpus_freq(void)
 	return 24000000;
 }
 
-uint_fast32_t allwnr_a733_get_uart_freq(void)
+uint_fast32_t allwnr_a733_get_apb_uart_freq(void)
 {
 	return 24000000;
 }
 
-uint_fast32_t allwnr_a733_get_s_twi_freq(void)
+uint_fast32_t allwnr_a733_get_apb1_freq(void)
 {
 	return 24000000;
+}
+
+// NOTE:UART0..UARG5 working clock sources from APB_UART
+uint_fast32_t allwnr_a733_get_uart_freq(void)
+{
+	return allwnr_a733_get_apb_uart_freq();
+}
+
+// NOTE: TWI0..TWI12 working clock sources from APB1.
+uint_fast32_t allwnr_a733_get_twi_freq(void)
+{
+	return allwnr_a733_get_apb1_freq();
+}
+
+uint_fast32_t allwnr_a733_get_s_twi_freq(void)
+{
+	return allwnr_a733_get_apb1_freq();
+}
+
+uint_fast32_t allwnr_a733_get_spi0_freq(void)
+{
+	return allwnr_a733_get_sysclk24M_freq();
+}
+
+uint_fast32_t allwnr_a733_get_spi1_freq(void)
+{
+	return allwnr_a733_get_sysclk24M_freq();
+}
+
+uint_fast32_t allwnr_a733_get_spi2_freq(void)
+{
+	return allwnr_a733_get_sysclk24M_freq();
+}
+
+uint_fast32_t allwnr_a733_get_spi3_freq(void)
+{
+	return allwnr_a733_get_sysclk24M_freq();
 }
 
 #elif (CPUSTYLE_A133)
