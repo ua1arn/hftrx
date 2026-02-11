@@ -310,10 +310,12 @@ uint_fast32_t allwnr_h3_get_hdmi_slow_freq(void);
 #endif /* CPUSTYLE_H3 */
 
 #if CPUSTYLE_A733
-// Allwinner A133
+// Allwinner A733
+uint_fast32_t allwnr_a733_get_sysclk24M_freq(void);
 uint_fast32_t allwnr_a733_get_hosc_freq(void);
 uint_fast32_t allwnr_a733_get_losc_freq(void);
-uint_fast32_t allwnr_a733_get_cpux_freq(void);
+uint_fast32_t allwnr_a733_get_cpux_freq(void);	// ARM CPUs
+uint_fast32_t allwnr_a733_get_cpus_freq(void);	// RISC-V CPU
 uint_fast32_t allwnr_a733_get_uart_freq(void);
 uint_fast32_t allwnr_a733_get_s_uart_freq(void);
 uint_fast32_t allwnr_a733_get_twi_freq(void);

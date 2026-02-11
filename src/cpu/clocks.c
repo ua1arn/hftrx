@@ -4284,12 +4284,24 @@ void sysinit_pll_initialize(int forced)
 {
 }
 
+uint_fast32_t allwnr_a733_get_sysclk24M_freq(void)
+{
+	return WITHCPUXTAL;
+}
+
 uint_fast32_t allwnr_a733_get_hosc_freq(void)
 {
 	return WITHCPUXTAL;
 }
 
+// CPUX -  ARMCortexTM-A76x2 ARMCortexTM-A55x6
 uint_fast32_t allwnr_a733_get_cpux_freq(void)
+{
+	return 24000000;
+}
+
+// CPUS - RISC-V core
+uint_fast32_t allwnr_a733_get_cpus_freq(void)
 {
 	return 24000000;
 }
