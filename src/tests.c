@@ -7123,7 +7123,7 @@ static void enctest(void)
 
 #endif
 
-#if (__CORTEX_A == 53U) && __aarch64__
+#if (__CORTEX_A == 55U) && __aarch64__
 
 uint32_t __get_ICC_SRE_EL1(void)
 {
@@ -7160,7 +7160,7 @@ void __set_ICC_SRE_EL3(uint32_t value)
 {
 	__MSR(ICC_SRE_EL3, value);
 }
-#endif /* (__CORTEX_A == 53U) && defined(__aarch64__) */
+#endif /* (__CORTEX_A == 55U) && defined(__aarch64__) */
 
 void hightests(void)
 {
@@ -9094,15 +9094,17 @@ void hightests(void)
 			default:	label = "????"; break;
 			}
 			unsigned size = (GICR_PIDR4 >> 4) & 0x0F;
-			uintptr_t comp_size = UINT64_C(1) << (size + 12);
-			uintptr_t comp_base = base & ~ (comp_size - 1);
+			const uintptr_t comp_size = UINT64_C(1) << (size + 12);
+			const uintptr_t comp_base = base & ~ (comp_size - 1);
 			const unsigned GICR_CFGID0 = * (volatile uint32_t *) (base + 0x000);
 			const unsigned GICR_CFGID1 = * (volatile uint32_t *) (base + 0x004);
-			PRINTF("%p: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X (%s) GICR_CFGID0=%08X GICR_CFGID1=%08X %p comp_size=%u\n",
+			const unsigned typer = ((GICR_TypeDef *) comp_base)->TYPER;
+			PRINTF("%p: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X (%s) typer=%08X GICR_CFGID0=%08X GICR_CFGID1=%08X %p comp_size=%u\n",
 					(void *) base,
 					GICR_PIDR4, GICR_PIDR5, GICR_PIDR6, GICR_PIDR7, GICR_PIDR0, GICR_PIDR1, GICR_PIDR2, GICR_PIDR3,
 					GICR_CIDR0, GICR_CIDR1, GICR_CIDR2, GICR_CIDR3,
 					label,
+					typer,
 					GICR_CFGID0, GICR_CFGID1,
 					(void *) comp_base,
 					(unsigned) comp_size
