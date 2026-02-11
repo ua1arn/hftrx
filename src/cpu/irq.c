@@ -2030,6 +2030,7 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 {
 #if LINUX_SUBSYSTEM
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+
 	const IRQL_t oldv = GIC_GetInterfacePriorityMask();
 	ASSERT2(oldv != 0, file, line);
 	if (oldv >= newIRQL)
@@ -2043,6 +2044,8 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	}
 	* oldIrql = oldv;
 	GIC_SetInterfacePriorityMask(newIRQL);
+	ASSERT2(GIC_GetInterfacePriorityMask() == newIRQL, file, line);
+
 #elif defined (__CORTEX_M)
 	////ASSERT2(__get_BASEPRI() >= newIRQL, file, line);	/* Не понижаем приоритет */
 	* oldIrql = __get_BASEPRI();
@@ -2058,8 +2061,10 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	//oldIrql * = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);
 	* oldIrql = PLIC->PLIC_MTH_REG;
 	PLIC->PLIC_MTH_REG = newIRQL;
+
 #else
 	#warning Implement RiseIrql
+
 #endif
 }
 
@@ -2068,16 +2073,21 @@ void LowerIrql_DEBUG(IRQL_t newIRQL, const char * file, int line)
 {
 #if LINUX_SUBSYSTEM
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+
     ASSERT2(newIRQL != 0, file, line);
 	GIC_SetInterfacePriorityMask(newIRQL);
 	ASSERT2(GIC_GetInterfacePriorityMask() == newIRQL, file, line);
+
 #elif defined (__CORTEX_M)
 	__set_BASEPRI(newIRQL);
+
 #elif CPUSTYLE_RISCV
 	//	csr_write_mie(irql);
 	PLIC->PLIC_MTH_REG = newIRQL;
+
 #else
 	#warning Implement LowerIrql
+
 #endif
 }
 

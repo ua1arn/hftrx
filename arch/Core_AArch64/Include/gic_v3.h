@@ -810,7 +810,7 @@ __STATIC_INLINE uint32_t GIC_GetInterfaceId(void)
     return GICInterface->IIDR;
 }
 
-#else /* GICInterface */
+#else /* GIC_INTERFACE_BASE */
 
 /** \brief Enable the CPU's interrupt interface.
 */
@@ -890,7 +890,7 @@ __STATIC_INLINE uint32_t GIC_GetHighPendingIRQ(void)
     return result;
 }
 
-#endif
+#endif /* GIC_INTERFACE_BASE */
 
 __STATIC_INLINE void GIC_CPUInterfaceInit(void)
 {
