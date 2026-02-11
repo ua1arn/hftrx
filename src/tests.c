@@ -2377,7 +2377,7 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) && 0
 
-#if ! __aarch64__ || WITHOLDCMSIS
+#if ! defined(__aarch64__) || WITHOLDCMSIS
     #include "a-profile/irq_ctrl.h" // CMSIS_6 file
 #endif
 
@@ -2834,7 +2834,7 @@ void testpng_no_stretch(const void * pngbuffer, int useKeyColor)
 
 #endif
 
-#if ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && (! __aarch64__)
+#if ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && (! defined(__aarch64__))
 
 // 4.5.80 Configuration Base Address Register
 /** \brief  Get CBAR
@@ -7160,7 +7160,7 @@ void __set_ICC_SRE_EL3(uint32_t value)
 {
 	__MSR(ICC_SRE_EL3, value);
 }
-#endif /* (__CORTEX_A == 53U) && __aarch64__ */
+#endif /* (__CORTEX_A == 53U) && defined(__aarch64__) */
 
 void hightests(void)
 {
@@ -7176,7 +7176,7 @@ void hightests(void)
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
-#if 0 && (__CORTEX_A == 53U) && __aarch64__
+#if 0 && (__CORTEX_A == 53U) && defined(__aarch64__)
 	{
 		arm_hardware_set_handler_system(188, NULL);
 		GIC_SetPendingIRQ(188);
@@ -8055,7 +8055,7 @@ void hightests(void)
 #if 0 && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
 	{
 		// H9.2.46 MIDR_EL1, Main ID Register
-	#if __aarch64__
+	#if defined(__aarch64__)
 		const unsigned midr = __get_MIDR_EL1();
 	#else
 		const unsigned midr = __get_MIDR();
@@ -8068,7 +8068,7 @@ void hightests(void)
 #endif
 #if 0 && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
 	{
-#if __aarch64__
+#if defined(__aarch64__)
 		const uint_fast32_t ca53_cbar = __get_CA53_CBAR64();
 		PRINTF("__get_CBAR()=%08X\n", ca53_cbar);
 		PRINTF("__get_CPUACTLR_EL1()=%08X\n", (unsigned) __get_CPUACTLR_EL1());

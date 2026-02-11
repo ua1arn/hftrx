@@ -87,9 +87,9 @@ extern "C" {
 
 #if WITHINTEGRATEDDSP
 
-	#if __aarch64__
+	#if defined(__aarch64__)
 		//#define ARM_MATH_MVEF 1
-	#endif /* __aarch64__ */
+	#endif /* defined(__aarch64__) */
 	#if __ARM_FEATURE_DSP
 		#define ARM_MATH_DSP 1
 	#endif /* __ARM_FEATURE_DSP */

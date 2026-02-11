@@ -1770,6 +1770,7 @@ sysinit_fpu_initialize(void)
 #endif /*  */
 }
 
+// GIC CPU Interface
 static void
 stsinit_irql_initialize(void)
 {
@@ -2044,7 +2045,7 @@ sysinit_vbar_initialize(void)
 #endif /* CPUSTYLE_RISCV */
 }
 
-#if CPUSTYLE_A733 && ! __aarch64__
+#if CPUSTYLE_A733 && ! defined(__aarch64__)
 /** \brief  Get CPUACTLR
     \return                CPU Auxiliary Control Register
  */

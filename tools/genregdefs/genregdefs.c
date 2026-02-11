@@ -1725,7 +1725,7 @@ static void generate_cmsis(void)
 		}
 		else if (flag_cortexa5x)
 		{
-			emitline(0, "#if __aarch64__\n");
+			emitline(0, "#if defined(__aarch64__)\n");
 			emitline(4, "#include <%s>\n", string_cortexa5x);
 			emitline(0, "#else\n");
 			emitline(4, "#include <core_ca.h>\n");
