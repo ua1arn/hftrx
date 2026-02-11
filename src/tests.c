@@ -2834,7 +2834,7 @@ void testpng_no_stretch(const void * pngbuffer, int useKeyColor)
 
 #endif
 
-#if ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && (! defined(__aarch64__))
+#if ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && (! __aarch64__)
 
 // 4.5.80 Configuration Base Address Register
 /** \brief  Get CBAR
@@ -7123,6 +7123,45 @@ static void enctest(void)
 
 #endif
 
+#if (__CORTEX_A == 53U) && __aarch64__
+
+uint32_t __get_ICC_SRE_EL1(void)
+{
+	uint32_t result;
+	__MRS(ICC_SRE_EL1, & result);
+	return result;
+}
+
+void __set_ICC_SRE_EL1(uint32_t value)
+{
+	__MSR(ICC_SRE_EL1, value);
+}
+
+uint32_t __get_ICC_SRE_EL2(void)
+{
+	uint32_t result;
+	__MRS(ICC_SRE_EL2, & result);
+	return result;
+}
+
+void __set_ICC_SRE_EL2(uint32_t value)
+{
+	__MSR(ICC_SRE_EL2, value);
+}
+
+uint32_t __get_ICC_SRE_EL3(void)
+{
+	uint32_t result;
+	__MRS(ICC_SRE_EL3, & result);
+	return result;
+}
+
+void __set_ICC_SRE_EL3(uint32_t value)
+{
+	__MSR(ICC_SRE_EL3, value);
+}
+#endif /* (__CORTEX_A == 53U) && __aarch64__ */
+
 void hightests(void)
 {
 #if LCDMODE_LTDC
@@ -7137,7 +7176,29 @@ void hightests(void)
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
+#if 0 && (__CORTEX_A == 53U) && __aarch64__
+	{
+		arm_hardware_set_handler_system(188, NULL);
+		GIC_SetPendingIRQ(188);
+		ASSERT(GIC_GetPendingIRQ(188));
 
+		PRINTF("get_ICC_SRE_EL3=%08X\n", (unsigned) __get_ICC_SRE_EL3());
+		//PRINTF("get_ICC_SRE_EL2=%08X\n", (unsigned) __get_ICC_SRE_EL2());
+		PRINTF("get_ICC_SRE_EL1=%08X\n", (unsigned) __get_ICC_SRE_EL1());
+		__set_ICC_SRE_EL3(__get_ICC_SRE_EL3() | 0x04);	// DIB IRQ bypass disabled
+		//__set_ICC_SRE_EL2(__get_ICC_SRE_EL2() | 0x04);	// DIB IRQ bypass disabled
+		__set_ICC_SRE_EL1(__get_ICC_SRE_EL1() | 0x04);	// DIB IRQ bypass disabled
+		PRINTF("get_ICC_SRE_EL3=%08X\n", (unsigned) __get_ICC_SRE_EL3());
+		//PRINTF("get_ICC_SRE_EL2=%08X\n", (unsigned) __get_ICC_SRE_EL2());
+		PRINTF("get_ICC_SRE_EL1=%08X\n", (unsigned) __get_ICC_SRE_EL1());
+
+//		global_disableIRQ();
+//		PRINTF("pstate=%08X\n", (unsigned) __get_PSTATE());
+//		global_EnableRQ();
+//		PRINTF("pstate=%08X\n", (unsigned) __get_PSTATE());
+//		global_disableIRQ();
+	}
+#endif
 #if WITHLTDCHW && LCDMODE_LTDC
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -7994,7 +8055,7 @@ void hightests(void)
 #if 0 && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
 	{
 		// H9.2.46 MIDR_EL1, Main ID Register
-	#if defined(__aarch64__)
+	#if __aarch64__
 		const unsigned midr = __get_MIDR_EL1();
 	#else
 		const unsigned midr = __get_MIDR();
@@ -8007,7 +8068,7 @@ void hightests(void)
 #endif
 #if 0 && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
 	{
-#if defined(__aarch64__)
+#if __aarch64__
 		const uint_fast32_t ca53_cbar = __get_CA53_CBAR64();
 		PRINTF("__get_CBAR()=%08X\n", ca53_cbar);
 		PRINTF("__get_CPUACTLR_EL1()=%08X\n", (unsigned) __get_CPUACTLR_EL1());
