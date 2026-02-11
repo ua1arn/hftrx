@@ -233,12 +233,20 @@ __STATIC_FORCEINLINE uint64_t __get_CPUACTLR_EL1(void)
 	return result;
 }
 
+#if (__CORTEX_A == 53U)
 __STATIC_FORCEINLINE uint64_t __get_CPUECTLR_EL1(void)
 {
 	uint64_t result;
 	__get_RG64("S3_1_C15_C2_1", result);
 	return result;
 }
+
+__STATIC_FORCEINLINE void __set_CPUECTLR_EL1(uint64_t value)
+{
+	__set_RG64("S3_1_C15_C2_1", value);
+}
+
+#endif /* (__CORTEX_A == 53U) */
 
 __STATIC_FORCEINLINE uint64_t __get_MAIR_EL3(void)
 {
@@ -331,11 +339,6 @@ __STATIC_FORCEINLINE void __set_CSSELR_EL1(uint32_t value)
 __STATIC_FORCEINLINE void __set_CPUACTLR_EL1(uint64_t value)
 {
 	__set_RG64("S3_1_C15_C2_0", value);
-}
-
-__STATIC_FORCEINLINE void __set_CPUECTLR_EL1(uint64_t value)
-{
-	__set_RG64("S3_1_C15_C2_1", value);
 }
 
 //__STATIC_FORCEINLINE uint32_t __get_DAIF(void)

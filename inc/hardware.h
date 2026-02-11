@@ -933,7 +933,9 @@ __STATIC_FORCEINLINE void __set_CPUACTLR(uint64_t cpuactlr)
 {
 	__set_CP64(15, 0, cpuactlr, 15);
 }
+#endif /* ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && ! __aarch64__ */
 
+#if (__CORTEX_A == 53U) && ! __aarch64__
 // 4.5.77 CPU Extended Control Register
 
 #define CPUECTLR_SMPEN_Msk (UINT64_C(1) << 6)	// SMPEN 1: Enables data coherency with other cores in the cluster.

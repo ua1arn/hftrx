@@ -6719,7 +6719,6 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	PL1_SetControl(1);
 
 #elif CPUSTYLE_A733
-	#warning CPUSTYLE_A733 to be implemented
 	// timebase timer
 	const unsigned ix = 1;
 	Timer1_CPUX->TMR [ix].CTRL_REG = 0;
