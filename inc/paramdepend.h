@@ -501,7 +501,7 @@ extern "C" {
 
 	#define HARDWARE_CLK16M_RC_FREQ 16000000u
 
-	#define CPU_FREQ	(allwnr_a733_get_cpux_freq())	// ARM CPUs domain
+	#define CPU_FREQ	(allwnr_a733_get_cpux_0_5_freq())	// ARM CPUs domain core0..core5 - Cortex-A55
 	#define HARDWARE_UART_FREQ (allwnr_a733_get_uart_freq())
 
 	#define CPU_PL1_FREQ (allwnr_a733_get_hosc_freq())	/* PL1 times source frequency */

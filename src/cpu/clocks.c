@@ -4284,6 +4284,11 @@ void sysinit_pll_initialize(int forced)
 {
 }
 
+uint_fast32_t allwnr_a733_get_sysclk26M_freq(void)
+{
+	return 26 * 1000 * 1000;
+}
+
 uint_fast32_t allwnr_a733_get_sysclk24M_freq(void)
 {
 	return WITHCPUXTAL;
@@ -4295,10 +4300,54 @@ uint_fast32_t allwnr_a733_get_hosc_freq(void)
 }
 
 // CPUX -  ARMCortexTM-A76x2 ARMCortexTM-A55x6
-uint_fast32_t allwnr_a733_get_cpux_freq(void)
+// The primary clock sourceof core0/core1/core2/core3/core4/core5 is CPU_L_PLL;
+// and their backup clock sourceis 26MHz, CPU_BACK_PLL, and 1.2GHz.
+uint_fast32_t allwnr_a733_get_cpu_l_pll_freq(void)
 {
-	return 24000000;
+
+	const uint_fast32_t pllreg = CPU_PLL_CFG->CPU_L_PLL_CTRL_REG;
+//	const uint_fast32_t PLL_NDET = (pllreg >> 23) & 0x01;
+//	const uint_fast32_t PLL_TDIV = (pllreg >> 22) & 0x01;
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 20) & 0x03);
+	const uint_fast32_t P = UINT32_C(1) + ((pllreg >> 16) & 0x0F);
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 0) & 0x0F);
+	//	The CPU_L_PLL = InputFreq*N/P/(M0*M1).
+	//	The CPU_L_PLLVCO = InputFreq*N/P
+	return allwnr_a733_get_hosc_freq() * N / P / (M0 * M1);
 }
+
+// The primary clock source of core6/core7 is CPU_B_PLL;
+// and their backup clock source is 26MHz, CPU_BACK_PLL, and 1.2 GHz.
+uint_fast32_t allwnr_a733_get_cpu_b_pll_freq(void)
+{
+
+	const uint_fast32_t pllreg = CPU_PLL_CFG->CPU_B_PLL_CTRL_REG;
+//	const uint_fast32_t PLL_NDET = (pllreg >> 23) & 0x01;
+//	const uint_fast32_t PLL_TDIV = (pllreg >> 22) & 0x01;
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 20) & 0x03);
+	const uint_fast32_t P = UINT32_C(1) + ((pllreg >> 16) & 0x0F);
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 0) & 0x0F);
+	//	The CPU_L_PLL = InputFreq*N/P/(M0*M1).
+	//	The CPU_L_PLLVCO = InputFreq*N/P
+	return allwnr_a733_get_hosc_freq() * N / P / (M0 * M1);
+}
+
+// cores 0..5 - Cortex-A55
+uint_fast32_t allwnr_a733_get_cpux_0_5_freq(void)
+{
+	return allwnr_a733_get_cpu_l_pll_freq();
+}
+
+// cores 6..7 - Cortex-A76
+uint_fast32_t allwnr_a733_get_cpux_6_7_freq(void)
+{
+	return allwnr_a733_get_cpu_b_pll_freq();
+}
+
+// The primary clock source of core6/core7 is CPU_B_PLL;
+// and their backup clock source is 26MHz, CPU_BACK_PLL, and 1.2 GHz.
 
 // CPUS - RISC-V core
 uint_fast32_t allwnr_a733_get_cpus_freq(void)
