@@ -811,26 +811,27 @@ extern "C" {
 
 	// https://github.com/NienfengYao/armv8-bare-metal/blob/572c6f95880e70aa92fe9fed4b8ad7697082a764/aarch64.c#L63
 	#if (__CORTEX_A == 55U) && defined(__aarch64__)
+
 		// MSR DAIFCLR, #IRQ_bit
 		#define global_enableIRQ() do { \
-			__enable_irq(); \
-				/*__set_RG32C("DAIFCLR", 0x07); */ /* I bit of DAIF */ \
+		__ASM volatile("MSR DAIFClr, %0\n\t" : : "i" (2)  : "memory"); \
 			} while (0)
 		// MSR DAIFSET, #IRQ_bit
 		#define global_disableIRQ() do { \
-				__disable_irq(); \
-				/*__set_RG32C("DAIFSET", 0x07); *//* I bit of DAIF */ \
+		__ASM volatile("MSR DAIFSet, %0\n\t" : : "i" (2)  : "memory"); \
 			} while (0)
+
 	#elif (__CORTEX_A == 53U) && defined(__aarch64__)
+
 		// MSR DAIFCLR, #IRQ_bit
 		#define global_enableIRQ() do { \
 			__ASM volatile("MSR DAIFClr, %0\n\t" : : "i" (7)  : "memory"); \
-				/*__set_RG32C("DAIFCLR", 0x07); */ /* I bit of DAIF */ \
+			/*__set_RG32C("DAIFCLR", 0x07); */ /* I bit of DAIF */ \
 			} while (0)
 		// MSR DAIFSET, #IRQ_bit
 		#define global_disableIRQ() do { \
-				__ASM volatile("MSR DAIFSet, %0\n\t" : : "i" (7)  : "memory"); \
-				/*__set_RG32C("DAIFSET", 0x07); *//* I bit of DAIF */ \
+			__ASM volatile("MSR DAIFSet, %0\n\t" : : "i" (7)  : "memory"); \
+			/*__set_RG32C("DAIFSET", 0x07); */ /* I bit of DAIF */ \
 			} while (0)
 
 	#else /* defined(__aarch64__) */
@@ -841,6 +842,7 @@ extern "C" {
 		#define global_disableIRQ() do { \
 			__disable_irq(); \
 			} while (0)
+
 	#endif /* defined(__aarch64__) */
 
 #elif CPUSTYLE_RISCV
