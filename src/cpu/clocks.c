@@ -6825,7 +6825,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	Timer1_CPUX->TMR_IRQ_EN_REG |= (UINT32_C(1) << (0 + ix));	// TMR1_IRQ_EN
 
-	arm_hardware_set_handler_system(TIMER1_0_IRQn + ix, TIMER1_1_IRQHandler);	// timebase timer
+	arm_hardware_set_handler_system(TIMER1_1_IRQn, TIMER1_1_IRQHandler);	// timebase timer
 
 #elif defined (TIMER) && (CPUSTYLE_H3 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_A133 || CPUSTYLE_A733)
 
@@ -11921,7 +11921,7 @@ hardware_elkey_timer_initialize(void)
 
 	Timer1_CPUX->TMR_IRQ_EN_REG |= (UINT32_C(1) << (0 + ix));	// TMR0_IRQ_EN
 
-	arm_hardware_set_handler_overrealtime(TIMER1_1_IRQn, TIMER1_0_IRQHandler);	// elkey timer
+	arm_hardware_set_handler_overrealtime(TIMER1_0_IRQn, TIMER1_0_IRQHandler);	// elkey timer
 
 #else
 	#warning Undefined CPUSTYLE_XXX
