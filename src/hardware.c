@@ -2336,7 +2336,7 @@ static void cortexa_cpuinfo(void)
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
 	PRINTF("CPU%u: VBAR_EL3=%08X, TTBR0_EL3=%08X, SCTLR_EL1=%08X, SCTLR_EL3=%08X, TCR_EL3=%08X, sp=%08X, MPIDR_EL1=%08X\n",
-			(unsigned) (__get_MPIDR_EL1() & 0x03),
+			(unsigned) (__get_MPIDR_EL1() & 0xFF),
 			(unsigned) __get_VBAR_EL3(),
 			(unsigned) __get_TTBR0_EL3(),
 			(unsigned) __get_SCTLR_EL1(),
