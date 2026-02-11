@@ -378,7 +378,7 @@
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#if 0
 		#define WITHTPA100W_UA1CEI_V2 1	/* Есть функция автотюнера */
-	#elif 0
+	#elif 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
