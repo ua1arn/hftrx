@@ -5671,6 +5671,230 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>RTC</name>
+  <description>Real Time Clock (RTC)</description>
+  <baseAddress>0x07090000</baseAddress>
+  <interrupt>
+   <name>RTC_ALARM</name>
+   <value>228</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>LOSC_CTRL_REG</name>
+    <displayName>LOSC_CTRL_REG</displayName>
+    <description>LOSC Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>LOSC_AUTO_SWT_STA_REG</name>
+    <displayName>LOSC_AUTO_SWT_STA_REG</displayName>
+    <description>LOSC Auto Switch Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INTOSC_CLK_PRESCAL_REG</name>
+    <displayName>INTOSC_CLK_PRESCAL_REG</displayName>
+    <description>Internal OSC Clock Prescaler Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INTOSC_CLK_AUTO_CALI_REG</name>
+    <displayName>INTOSC_CLK_AUTO_CALI_REG</displayName>
+    <description>Internal OSC Clock Auto Calibration Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTC_DAY_REG</name>
+    <displayName>RTC_DAY_REG</displayName>
+    <description>RTC Year-Month-Day Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTC_HH_MM_SS_SET_REG</name>
+    <displayName>RTC_HH_MM_SS_SET_REG</displayName>
+    <description>RTC Hour-Minute-Second Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_DAY_SET_REG</name>
+    <displayName>ALARM0_DAY_SET_REG</displayName>
+    <description>Alarm 0 Day Set Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_CUR_VLU_REG</name>
+    <displayName>ALARM0_CUR_VLU_REG</displayName>
+    <description>Alarm 0 Counter Current Value Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_ENABLE_REG</name>
+    <displayName>ALARM0_ENABLE_REG</displayName>
+    <description>Alarm 0 Enable Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_IRQ_EN</name>
+    <displayName>ALARM0_IRQ_EN</displayName>
+    <description>Alarm 0 IRQ Enable Register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_IRQ_STA_REG</name>
+    <displayName>ALARM0_IRQ_STA_REG</displayName>
+    <description>Alarm 0 IRQ Status Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ALARM0_CONFIG_REG</name>
+    <displayName>ALARM0_CONFIG_REG</displayName>
+    <description>Alarm 0 Config Register</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CLK32K_FOUT_CTRL_GATING_REG</name>
+    <displayName>CLK32K_FOUT_CTRL_GATING_REG</displayName>
+    <description>RTC_32K Fanout Control register</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000100</addressOffset>
+    <register>
+     <name>GP_DATA_REGn</name>
+     <displayName>GP_DATA_REGn</displayName>
+     <description>(N=0~7) General Purpose Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x020</dimIncrement>
+   </cluster>
+   <register>
+    <name>XO_CTRL_WP_REG</name>
+    <displayName>XO_CTRL_WP_REG</displayName>
+    <description>DCXO Control Write Protect Register</description>
+    <addressOffset>0x15C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>XO_CTRL_REG</name>
+    <displayName>XO_CTRL_REG</displayName>
+    <description>DCXO Control Register</description>
+    <addressOffset>0x160</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CALI_CTRL_REG</name>
+    <displayName>CALI_CTRL_REG</displayName>
+    <description>Calibration Control Register</description>
+    <addressOffset>0x164</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>XO_GATING_REG</name>
+    <displayName>XO_GATING_REG</displayName>
+    <description>DCXO Gating Ctrl Register </description>
+    <addressOffset>0x16C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VDD_RTC_REG</name>
+    <displayName>VDD_RTC_REG</displayName>
+    <description>VDD RTC Regulation Register</description>
+    <addressOffset>0x190</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IC_CHARA_REG</name>
+    <displayName>IC_CHARA_REG</displayName>
+    <description>IC Characteristic Register</description>
+    <addressOffset>0x1F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VDD_OFF_GATING_CTRL_REG</name>
+    <displayName>VDD_OFF_GATING_CTRL_REG</displayName>
+    <description>VDD Off Gating Control Register</description>
+    <addressOffset>0x1F4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>EFUSE_HV_PWRSWT_CTRL_REG</name>
+    <displayName>EFUSE_HV_PWRSWT_CTRL_REG</displayName>
+    <description>Efuse High Voltage Power Switch Control Register</description>
+    <addressOffset>0x204</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTC_SPI_CLK_CTRL_REG</name>
+    <displayName>RTC_SPI_CLK_CTRL_REG</displayName>
+    <description>RTC SPI Clock Control Register</description>
+    <addressOffset>0x310</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>SID</name>
   <description>Security ID</description>
   <baseAddress>0x03006000</baseAddress>

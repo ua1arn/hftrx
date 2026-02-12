@@ -4284,19 +4284,41 @@ void sysinit_pll_initialize(int forced)
 {
 }
 
-uint_fast32_t allwnr_a733_get_sysclk26M_freq(void)
-{
-	return 26 * 1000 * 1000;
-}
 
-uint_fast32_t allwnr_a733_get_sysclk24M_freq(void)
+uint_fast32_t allwnr_a733_get_rc16M_freq(void)
 {
-	return WITHCPUXTAL;
+	return 16 * 1000 * 1000;
 }
 
 uint_fast32_t allwnr_a733_get_hosc_freq(void)
 {
-	return WITHCPUXTAL;
+	return WITHCPUXOSC;
+}
+
+uint_fast32_t allwnr_a733_get_dcxo_freq(void)
+{
+	return 24 * 1000 * 1000;
+}
+
+uint_fast32_t allwnr_a733_get_rtc_32k_freq(void)
+{
+	return allwnr_a733_get_rc16M_freq() / 512;
+}
+uint_fast32_t allwnr_a733_get_pll_ref_freq(void)
+{
+	const uint_fast32_t ctlreg = RTC->XO_CTRL_REG;
+
+	switch ((ctlreg >> 14) & 0x03)
+	{
+	case 0x00:
+		return 24 * 1000 * 1000;
+	case 0x01:
+		return 19200 * 1000;
+	case 0x02:
+		return 26 * 1000 * 1000;
+	case 0x03:
+		return 24 * 1000 * 1000;
+	}
 }
 
 // CPUX -  ARMCortexTM-A76x2 ARMCortexTM-A55x6
@@ -4314,7 +4336,7 @@ uint_fast32_t allwnr_a733_get_cpu_l_pll_freq(void)
 	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 0) & 0x0F);
 	//	The CPU_L_PLL = InputFreq*N/P/(M0*M1).
 	//	The CPU_L_PLLVCO = InputFreq*N/P
-	return allwnr_a733_get_hosc_freq() * N / P / (M0 * M1);
+	return allwnr_a733_get_pll_ref_freq() * N / P / (M0 * M1);
 }
 
 // The primary clock source of core6/core7 is CPU_B_PLL;
@@ -4331,7 +4353,7 @@ uint_fast32_t allwnr_a733_get_cpu_b_pll_freq(void)
 	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 0) & 0x0F);
 	//	The CPU_L_PLL = InputFreq*N/P/(M0*M1).
 	//	The CPU_L_PLLVCO = InputFreq*N/P
-	return allwnr_a733_get_hosc_freq() * N / P / (M0 * M1);
+	return allwnr_a733_get_pll_ref_freq() * N / P / (M0 * M1);
 }
 
 // cores 0..5 - Cortex-A55
@@ -4352,17 +4374,45 @@ uint_fast32_t allwnr_a733_get_cpux_6_7_freq(void)
 // CPUS - RISC-V core
 uint_fast32_t allwnr_a733_get_cpus_freq(void)
 {
-	return 24000000;
+	return 24 * 1000 * 1000;
 }
 
-uint_fast32_t allwnr_a733_get_apb_uart_freq(void)
+//	The bus frequencies are as follows.
+//	. AHB: The typical frequency is 200 MHz .The maximum frequency is no more than 200 MHz.
+//	. APB0: The typical frequency is 100 MHz .The maximum frequency is no more than 100 MHz.
+//	. APB1: The typical frequency is 100 MHz .The maximum frequency is no more than 100 MHz.
+//	. APB_UART: The frequency is configured based on UART request, which is no more than 160 MHz.
+//	. NSI: The typical frequency is 700 MHz .The maximum frequency is no more than 700 MHz.
+//	. MBUS: The typical frequency is 600 MHz .The maximum frequency is no more than 600 MHz.
+
+uint_fast32_t allwnr_a733_get_ahb_freq(void)
 {
-	return 24000000;
+	return 200 * 1000 * 1000;
+}
+
+uint_fast32_t allwnr_a733_get_apb0_freq(void)
+{
+	return 100 * 1000 * 1000;
 }
 
 uint_fast32_t allwnr_a733_get_apb1_freq(void)
 {
-	return 24000000;
+	return 100 * 1000 * 1000;
+}
+
+uint_fast32_t allwnr_a733_get_apb_uart_freq(void)
+{
+	return 24 * 1000 * 1000;
+}
+
+uint_fast32_t allwnr_a733_get_nsi_freq(void)
+{
+	return 700 * 1000 * 1000;
+}
+
+uint_fast32_t allwnr_a733_get_mbus_freq(void)
+{
+	return 600 * 1000 * 1000;
 }
 
 // NOTE:UART0..UARG5 working clock sources from APB_UART

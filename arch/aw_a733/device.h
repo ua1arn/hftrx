@@ -96,6 +96,7 @@ typedef enum IRQn
     TIMER1_1_IRQn = 132,                              /*!< TIMER1  */
     TIMER1_2_IRQn = 133,                              /*!< TIMER1  */
     TIMER1_3_IRQn = 134,                              /*!< TIMER1  */
+    RTC_ALARM_IRQn = 228,                             /*!< RTC Real Time Clock (RTC) */
     S_GPIOL_S_IRQn = 229,                             /*!< GPIOINT  */
     S_GPIOL_IRQn = 230,                               /*!< GPIOINT S_GPIOL_NS */
     S_GPIOM_S_IRQn = 231,                             /*!< GPIOINT  */
@@ -190,6 +191,7 @@ typedef enum IRQn
 #define S_TWI0_BASE ((uintptr_t) 0x07083000)          /*!< TWI Two Wire Interface (TWI) Base */
 #define S_TWI1_BASE ((uintptr_t) 0x07084000)          /*!< TWI Two Wire Interface (TWI) Base */
 #define S_TWI2_BASE ((uintptr_t) 0x07085000)          /*!< TWI Two Wire Interface (TWI) Base */
+#define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Real Time Clock (RTC) Base */
 #define Timer0_CPUS_BASE ((uintptr_t) 0x07091000)     /*!< TIMER0  Base */
 #define S_SPI_BASE ((uintptr_t) 0x07092000)           /*!< SPI Serial Peripheral Interface Base */
 #define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08000000) /*!< CPU_SUBSYS_CTRL  Base */
@@ -1037,6 +1039,46 @@ typedef struct PRCM_Type
     __IOM uint32_t CRY_EN_REG;                        /*!< Offset 0x3E8 Crypt Enable Register */
 } PRCM_TypeDef; /* size of structure = 0x3EC */
 /*
+ * @brief RTC
+ */
+/*!< RTC Real Time Clock (RTC) */
+typedef struct RTC_Type
+{
+    __IOM uint32_t LOSC_CTRL_REG;                     /*!< Offset 0x000 LOSC Control Register */
+    __IOM uint32_t LOSC_AUTO_SWT_STA_REG;             /*!< Offset 0x004 LOSC Auto Switch Status Register */
+    __IOM uint32_t INTOSC_CLK_PRESCAL_REG;            /*!< Offset 0x008 Internal OSC Clock Prescaler Register */
+    __IOM uint32_t INTOSC_CLK_AUTO_CALI_REG;          /*!< Offset 0x00C Internal OSC Clock Auto Calibration Register */
+    __IOM uint32_t RTC_DAY_REG;                       /*!< Offset 0x010 RTC Year-Month-Day Register */
+    __IOM uint32_t RTC_HH_MM_SS_SET_REG;              /*!< Offset 0x014 RTC Hour-Minute-Second Register */
+         RESERVED(0x018[0x0020 - 0x0018], uint8_t)
+    __IOM uint32_t ALARM0_DAY_SET_REG;                /*!< Offset 0x020 Alarm 0 Day Set Register */
+    __IOM uint32_t ALARM0_CUR_VLU_REG;                /*!< Offset 0x024 Alarm 0 Counter Current Value Register */
+    __IOM uint32_t ALARM0_ENABLE_REG;                 /*!< Offset 0x028 Alarm 0 Enable Register */
+    __IOM uint32_t ALARM0_IRQ_EN;                     /*!< Offset 0x02C Alarm 0 IRQ Enable Register */
+    __IOM uint32_t ALARM0_IRQ_STA_REG;                /*!< Offset 0x030 Alarm 0 IRQ Status Register */
+         RESERVED(0x034[0x0050 - 0x0034], uint8_t)
+    __IOM uint32_t ALARM0_CONFIG_REG;                 /*!< Offset 0x050 Alarm 0 Config Register */
+         RESERVED(0x054[0x0060 - 0x0054], uint8_t)
+    __IOM uint32_t CLK32K_FOUT_CTRL_GATING_REG;       /*!< Offset 0x060 RTC_32K Fanout Control register */
+         RESERVED(0x064[0x0100 - 0x0064], uint8_t)
+    __IOM uint32_t GP_DATA_REGn [0x008];              /*!< Offset 0x100 (N=0~7) General Purpose Register */
+         RESERVED(0x120[0x015C - 0x0120], uint8_t)
+    __IOM uint32_t XO_CTRL_WP_REG;                    /*!< Offset 0x15C DCXO Control Write Protect Register */
+    __IOM uint32_t XO_CTRL_REG;                       /*!< Offset 0x160 DCXO Control Register */
+    __IOM uint32_t CALI_CTRL_REG;                     /*!< Offset 0x164 Calibration Control Register */
+         RESERVED(0x168[0x016C - 0x0168], uint8_t)
+    __IOM uint32_t XO_GATING_REG;                     /*!< Offset 0x16C DCXO Gating Ctrl Register  */
+         RESERVED(0x170[0x0190 - 0x0170], uint8_t)
+    __IOM uint32_t VDD_RTC_REG;                       /*!< Offset 0x190 VDD RTC Regulation Register */
+         RESERVED(0x194[0x01F0 - 0x0194], uint8_t)
+    __IOM uint32_t IC_CHARA_REG;                      /*!< Offset 0x1F0 IC Characteristic Register */
+    __IOM uint32_t VDD_OFF_GATING_CTRL_REG;           /*!< Offset 0x1F4 VDD Off Gating Control Register */
+         RESERVED(0x1F8[0x0204 - 0x01F8], uint8_t)
+    __IOM uint32_t EFUSE_HV_PWRSWT_CTRL_REG;          /*!< Offset 0x204 Efuse High Voltage Power Switch Control Register */
+         RESERVED(0x208[0x0310 - 0x0208], uint8_t)
+    __IOM uint32_t RTC_SPI_CLK_CTRL_REG;              /*!< Offset 0x310 RTC SPI Clock Control Register */
+} RTC_TypeDef; /* size of structure = 0x314 */
+/*
  * @brief SID
  */
 /*!< SID Security ID */
@@ -1483,6 +1525,7 @@ typedef struct USB_OHCI_Capability_Type
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0 Two Wire Interface (TWI) register set access pointer */
 #define S_TWI1 ((TWI_TypeDef *) S_TWI1_BASE)          /*!< S_TWI1 Two Wire Interface (TWI) register set access pointer */
 #define S_TWI2 ((TWI_TypeDef *) S_TWI2_BASE)          /*!< S_TWI2 Two Wire Interface (TWI) register set access pointer */
+#define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock (RTC) register set access pointer */
 #define S_SPI ((SPI_TypeDef *) S_SPI_BASE)            /*!< S_SPI Serial Peripheral Interface register set access pointer */
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL  register set access pointer */
 #define TIMESTAMP_STA ((TIMESTAMP_STA_TypeDef *) TIMESTAMP_STA_BASE)/*!< TIMESTAMP_STA  register set access pointer */

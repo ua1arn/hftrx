@@ -1,0 +1,27 @@
+#type; RTC; Real Time Clock (RTC)
+
+#regdef; LOSC_CTRL_REG; 0x0000; LOSC Control Register
+#regdef; LOSC_AUTO_SWT_STA_REG; 0x0004; LOSC Auto Switch Status Register
+#regdef; INTOSC_CLK_PRESCAL_REG; 0x0008; Internal OSC Clock Prescaler Register
+#regdef; INTOSC_CLK_AUTO_CALI_REG; 0x000C; Internal OSC Clock Auto Calibration Register
+#regdef; RTC_DAY_REG; 0x0010; RTC Year-Month-Day Register
+#regdef; RTC_HH_MM_SS_SET_REG; 0x0014; RTC Hour-Minute-Second Register
+#regdef; ALARM0_DAY_SET_REG; 0x0020; Alarm 0 Day Set Register
+#regdef; ALARM0_CUR_VLU_REG; 0x0024; Alarm 0 Counter Current Value Register
+#regdef; ALARM0_ENABLE_REG; 0x0028; Alarm 0 Enable Register
+#regdef; ALARM0_IRQ_EN; 0x002C; Alarm 0 IRQ Enable Register
+#regdef; ALARM0_IRQ_STA_REG; 0x0030; Alarm 0 IRQ Status Register
+#regdef; ALARM0_CONFIG_REG; 0x0050; Alarm 0 Config Register
+#regdef; CLK32K_FOUT_CTRL_GATING_REG; 0x0060; RTC_32K Fanout Control register
+#regdef; GP_DATA_REGn; 0x0100 8; (N=0~7) General Purpose Register
+#regdef; XO_CTRL_WP_REG; 0x015C; DCXO Control Write Protect Register
+#regdef; XO_CTRL_REG; 0x0160; DCXO Control Register
+#regdef; CALI_CTRL_REG; 0x0164; Calibration Control Register
+#regdef; XO_GATING_REG; 0x016C; DCXO Gating Ctrl Register 
+#regdef; VDD_RTC_REG; 0x0190; VDD RTC Regulation Register
+#regdef; IC_CHARA_REG; 0x01F0; IC Characteristic Register
+#regdef; VDD_OFF_GATING_CTRL_REG; 0x01F4; VDD Off Gating Control Register
+#regdef; EFUSE_HV_PWRSWT_CTRL_REG; 0x0204; Efuse High Voltage Power Switch Control Register
+#regdef; RTC_SPI_CLK_CTRL_REG; 0x0310; RTC SPI Clock Control Register
+
+#typeend;

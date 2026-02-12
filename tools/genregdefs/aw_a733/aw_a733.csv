@@ -210,3 +210,10 @@
 #type; SID; Security ID
 #base; SID 0x03006000
 #typeend;
+
+#type; RTC; Real Time Clock (RTC)
+
+#base; RTC 0x07090000
+#irq; RTC_ALARM 228
+
+#typeend;
