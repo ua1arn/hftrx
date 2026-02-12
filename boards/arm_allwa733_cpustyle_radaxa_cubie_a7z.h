@@ -155,103 +155,105 @@
 		#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
 		#define WITHHDMITVHW 1			/* Second display - HDMI hardware output */
 	#endif
-	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-	#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
-	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
-	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
-	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
-	//#define WITHUSBDEV_DMAENABLE 1
+	#if 0
+		#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-//	#define WITHUSBHW_HOST		USBOTG0
-//	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
-//	#define WITHUSBHOST_DMAENABLE 1
+		#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
+		#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
+		#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+		//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
+		#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
+		//#define WITHUSBDEV_DMAENABLE 1
+
+	//	#define WITHUSBHW_HOST		USBOTG0
+	//	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
+	//	#define WITHUSBHOST_DMAENABLE 1
 
 
-	#define WITHTINYUSB 1
+		#define WITHTINYUSB 1
+
+
+		#if WITHTINYUSB
+			#define BOARD_TUH_RHPORT 1
+			#define CFG_TUH_ENABLED 1
+			//#define TUP_USBIP_OHCI 1
+			#define TUP_USBIP_EHCI 1
+		#endif /* WITHTINYUSB */
+
+		#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
+		#define WITHUSBHW_EHCI_IRQ	USB20_HOST1_EHCI_IRQn
+		#define WITHUSBHW_EHCI_IX	1
+
+		#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
+		#define WITHUSBHW_OHCI_IRQ	USB20_HOST1_OHCI_IRQn
+		#define WITHUSBHW_OHCI_IX	1
+
+		#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
+		#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
+		#define WITHOHCIHW_OHCIPORT 0
+
+		#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+		#define WITHMODEM_CDC	1
+
+		#if WITHINTEGRATEDDSP
+			#if WITHUSBDEV_HSDESC
+
+				#define WITHUAC2		1	/* UAC2 support */
+				#define UACOUT_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
+				#define UACIN_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
+				#define UACIN_RTS96_SAMPLEBYTES		4	/* должны быть 2, 3 или 4 */
+				#define UACIN_RTS192_SAMPLEBYTES	4	/* должны быть 2, 3 или 4 */
+
+				#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
+				#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+				#if WITHRTS96 || WITHRTS192
+					#define WITHUSBUACIN	1
+					#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+				#else /* WITHRTS96 || WITHRTS192 */
+					#define WITHUSBUACIN	1
+				#endif /* WITHRTS96 || WITHRTS192 */
+				//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+			#else /* WITHUSBDEV_HSDESC */
+
+				//#define WITHUAC2		1	/* UAC2 support */
+				#define UACOUT_AUDIO48_SAMPLEBYTES	2	/* должны быть 2, 3 или 4 */
+				#define UACIN_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
+				#define UACIN_RTS96_SAMPLEBYTES		3	/* должны быть 2, 3 или 4 */
+				#define UACIN_RTS192_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
+
+				#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
+				#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+				#if WITHRTS96 || WITHRTS192
+					#define WITHUSBUACIN	1
+					#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+				#else /* WITHRTS96 || WITHRTS192 */
+					#define WITHUSBUACIN	1
+				#endif /* WITHRTS96 || WITHRTS192 */
+				//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+			#endif /* WITHUSBDEV_HSDESC */
+		#endif /* WITHINTEGRATEDDSP */
+
+		#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+		#define WITHUSBCDCACM_N		1	/* количество виртуальных последовательных портов */
+		//#define WITHUSBCDCACM_NOINT	1	/* Не использовать NOTIFY endpoint - под Linux не работает */
+
+
+		#if WITHLWIP && ! WITHETHHW
+			#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+			//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+			//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+		#endif /* WITHLWIP && ! WITHETHHW */
+		//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	
+		#if WIHSPIDFHW || WIHSPIDFSW
+			#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+			#define WITHUSBWCID	1
+		#endif /* WIHSPIDFHW || WIHSPIDFSW */
 	
-	#if WITHTINYUSB
-		#define BOARD_TUH_RHPORT 1
-		#define CFG_TUH_ENABLED 1
-		//#define TUP_USBIP_OHCI 1
-		#define TUP_USBIP_EHCI 1
-	#endif /* WITHTINYUSB */
-
-	#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
-	#define WITHUSBHW_EHCI_IRQ	USB20_HOST1_EHCI_IRQn
-	#define WITHUSBHW_EHCI_IX	1
-
-	#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
-	#define WITHUSBHW_OHCI_IRQ	USB20_HOST1_OHCI_IRQn
-	#define WITHUSBHW_OHCI_IX	1
-
-	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
-	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
-	#define WITHOHCIHW_OHCIPORT 0
-
-	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-	#define WITHMODEM_CDC	1
-
-	#if WITHINTEGRATEDDSP
-		#if WITHUSBDEV_HSDESC
-
-			#define WITHUAC2		1	/* UAC2 support */
-			#define UACOUT_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
-			#define UACIN_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
-			#define UACIN_RTS96_SAMPLEBYTES		4	/* должны быть 2, 3 или 4 */
-			#define UACIN_RTS192_SAMPLEBYTES	4	/* должны быть 2, 3 или 4 */
-
-			#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
-			#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
-			#if WITHRTS96 || WITHRTS192
-				#define WITHUSBUACIN	1
-				#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-			#else /* WITHRTS96 || WITHRTS192 */
-				#define WITHUSBUACIN	1
-			#endif /* WITHRTS96 || WITHRTS192 */
-			//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
-		#else /* WITHUSBDEV_HSDESC */
-
-			//#define WITHUAC2		1	/* UAC2 support */
-			#define UACOUT_AUDIO48_SAMPLEBYTES	2	/* должны быть 2, 3 или 4 */
-			#define UACIN_AUDIO48_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
-			#define UACIN_RTS96_SAMPLEBYTES		3	/* должны быть 2, 3 или 4 */
-			#define UACIN_RTS192_SAMPLEBYTES	3	/* должны быть 2, 3 или 4 */
-
-			#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
-			#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
-			#if WITHRTS96 || WITHRTS192
-				#define WITHUSBUACIN	1
-				#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-			#else /* WITHRTS96 || WITHRTS192 */
-				#define WITHUSBUACIN	1
-			#endif /* WITHRTS96 || WITHRTS192 */
-			//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
-		#endif /* WITHUSBDEV_HSDESC */
-	#endif /* WITHINTEGRATEDDSP */
-
-	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	#define WITHUSBCDCACM_N		1	/* количество виртуальных последовательных портов */
-	//#define WITHUSBCDCACM_NOINT	1	/* Не использовать NOTIFY endpoint - под Linux не работает */
-
-
-	#if WITHLWIP && ! WITHETHHW
-		#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-		//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
-		//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
-	#endif /* WITHLWIP && ! WITHETHHW */
-	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-
-	#if WIHSPIDFHW || WIHSPIDFSW
-		#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-		#define WITHUSBWCID	1
-	#endif /* WIHSPIDFHW || WIHSPIDFSW */
-
-	//#define WITHUSBDMTP	1	/* MTP USB Device */
-	//#define WITHUSBDMSC	1	/* MSC USB device */
-
+		//#define WITHUSBDMTP	1	/* MTP USB Device */
+		//#define WITHUSBDMSC	1	/* MSC USB device */
+	#endif
 #endif /* WITHISBOOTLOADER */
 
 #if WITHENCODER
@@ -686,10 +688,6 @@
 #endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			arm_hardware_pioa_inputs(BOARD_GPIOA_ENC2BTN_BIT); \
-			arm_hardware_pioa_updown(BOARD_GPIOA_ENC2BTN_BIT, BOARD_GPIOA_ENC2BTN_BIT, 0); /* PE15: pull-up second encoder button */ \
-			/*arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); */ \
-			/*arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, TARGET_POWERBTN_BIT, 0);	*//* PAxx: pull-up second encoder button */ \
 		} while (0)
 
 #else /* WITHKEYBOARD */

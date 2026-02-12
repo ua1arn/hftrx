@@ -2496,6 +2496,20 @@ void spi_initialize(void)
 #endif /* WITHSPIHW */
 }
 
+#else /* WITHSPIHW || WITHSPISW */
+
+
+// Работа совместно с фоновым обменом SPI по прерываниям
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+void prog_spi_io(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	const uint8_t * txbuff1, unsigned int txsize1,
+	const uint8_t * txbuff2, unsigned int txsize2,
+	uint8_t * rxbuff, unsigned int rxsize
+	)
+{
+}
+
 #endif /* WITHSPIHW || WITHSPISW */
 
 
