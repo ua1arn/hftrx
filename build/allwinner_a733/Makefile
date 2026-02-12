@@ -114,7 +114,7 @@ UINCDIR += $(PRJROOT) $(PRJROOT)/inc
 ULIBDIR +=
 
 # List all user libraries here
-ULIBS += 
+ULIBS += libdram.a
 
 # taken from
 # https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352

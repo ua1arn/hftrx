@@ -44,11 +44,11 @@
 
 #if WITHISBOOTLOADER
 
-	//#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
+	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
 	#define CONFIG_DRAM_CLK 720
 	#define CONFIG_MACH_SUN50I_H616 1
-	#define CONFIG_SUNXI_DRAM_H618_LPDDR4 1
+	//#define CONFIG_SUNXI_DRAM_H618_LPDDR4 1
 	// szbaijie HelperBoard 1.2 with LPDDR4
 	#define BOARD_DDR_PHY_INIT_DATA \
 		0x02, 0x00, 0x17, 0x05, 0x04, 0x19, 0x06, 0x07, \
