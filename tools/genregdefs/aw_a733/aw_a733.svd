@@ -3343,73 +3343,73 @@
   <baseAddress>0x03430000</baseAddress>
   <registers>
    <cluster>
-    <dim>11</dim>
+    <dim>5</dim>
     <addressOffset>0x00000000</addressOffset>
     <register>
-     <name>EVCNTRn</name>
-     <displayName>EVCNTRn</displayName>
+     <name>GICP_EVCNTRn</name>
+     <displayName>GICP_EVCNTRn</displayName>
      <description>Event Counter Registers</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x02C</dimIncrement>
+    <dimIncrement>0x014</dimIncrement>
    </cluster>
    <cluster>
-    <dim>11</dim>
+    <dim>5</dim>
     <addressOffset>0x00000400</addressOffset>
     <register>
-     <name>EVTYPERn</name>
-     <displayName>EVTYPERn</displayName>
+     <name>GICP_EVTYPERn</name>
+     <displayName>GICP_EVTYPERn</displayName>
      <description>Event Type Configuration Registers</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x02C</dimIncrement>
+    <dimIncrement>0x014</dimIncrement>
    </cluster>
    <cluster>
-    <dim>11</dim>
+    <dim>5</dim>
     <addressOffset>0x00000600</addressOffset>
     <register>
-     <name>SVRn</name>
-     <displayName>SVRn</displayName>
+     <name>GICP_SVRn</name>
+     <displayName>GICP_SVRn</displayName>
      <description>Shadow Value Registers</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x02C</dimIncrement>
+    <dimIncrement>0x014</dimIncrement>
    </cluster>
    <cluster>
-    <dim>11</dim>
+    <dim>5</dim>
     <addressOffset>0x00000A00</addressOffset>
     <register>
-     <name>FRn</name>
-     <displayName>FRn</displayName>
+     <name>GICP_FRn</name>
+     <displayName>GICP_FRn</displayName>
      <description>Filter Registers</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x02C</dimIncrement>
+    <dimIncrement>0x014</dimIncrement>
    </cluster>
    <register>
-    <name>CNTENSET0</name>
-    <displayName>CNTENSET0</displayName>
-    <description>Counter Enable Set Register</description>
+    <name>GICP_CNTENSET0</name>
+    <displayName>GICP_CNTENSET0</displayName>
+    <description>Counter Enable Set Register 0</description>
     <addressOffset>0xC00</addressOffset>
     <size>0x40</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CNTENCLR0</name>
-    <displayName>CNTENCLR0</displayName>
+    <name>GICP_CNTENCLR0</name>
+    <displayName>GICP_CNTENCLR0</displayName>
     <description>Counter Enable Clear Register 0</description>
     <addressOffset>0xC20</addressOffset>
     <size>0x40</size>
@@ -3417,8 +3417,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>INTENSET0</name>
-    <displayName>INTENSET0</displayName>
+    <name>GICP_INTENSET0</name>
+    <displayName>GICP_INTENSET0</displayName>
     <description>Interrupt Contribution Enable Set Register 0</description>
     <addressOffset>0xC40</addressOffset>
     <size>0x40</size>
@@ -3426,8 +3426,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>INTENCLR0</name>
-    <displayName>INTENCLR0</displayName>
+    <name>GICP_INTENCLR0</name>
+    <displayName>GICP_INTENCLR0</displayName>
     <description>Interrupt Contribution Enable Clear Register 0</description>
     <addressOffset>0xC60</addressOffset>
     <size>0x40</size>
@@ -3435,8 +3435,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>OVSCLR0</name>
-    <displayName>OVSCLR0</displayName>
+    <name>GICP_OVSCLR0</name>
+    <displayName>GICP_OVSCLR0</displayName>
     <description>Overflow Status Clear Register 0</description>
     <addressOffset>0xC80</addressOffset>
     <size>0x40</size>
@@ -3444,8 +3444,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>OVSSET0</name>
-    <displayName>OVSSET0</displayName>
+    <name>GICP_OVSSET0</name>
+    <displayName>GICP_OVSSET0</displayName>
     <description>Overflow Status Set Register 0</description>
     <addressOffset>0xCC0</addressOffset>
     <size>0x40</size>
@@ -3453,8 +3453,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CAPR</name>
-    <displayName>CAPR</displayName>
+    <name>GICP_CAPR</name>
+    <displayName>GICP_CAPR</displayName>
     <description>Counter Shadow Value Capture Register</description>
     <addressOffset>0xD88</addressOffset>
     <size>0x20</size>
@@ -3462,8 +3462,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CFGR</name>
-    <displayName>CFGR</displayName>
+    <name>GICP_CFGR</name>
+    <displayName>GICP_CFGR</displayName>
     <description>Configuration Information Register</description>
     <addressOffset>0xE00</addressOffset>
     <size>0x20</size>
@@ -3471,8 +3471,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CR</name>
-    <displayName>CR</displayName>
+    <name>GICP_CR</name>
+    <displayName>GICP_CR</displayName>
     <description>Control Register</description>
     <addressOffset>0xE04</addressOffset>
     <size>0x20</size>
@@ -3480,8 +3480,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>IRQCR</name>
-    <displayName>IRQCR</displayName>
+    <name>GICP_IRQCR</name>
+    <displayName>GICP_IRQCR</displayName>
     <description>Interrupt Configuration Register</description>
     <addressOffset>0xE50</addressOffset>
     <size>0x20</size>
@@ -3489,8 +3489,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR4</name>
-    <displayName>PIDR4</displayName>
+    <name>GICP_PIDR4</name>
+    <displayName>GICP_PIDR4</displayName>
     <description>Peripheral ID 4 Register</description>
     <addressOffset>0xFFD0</addressOffset>
     <size>0x20</size>
@@ -3498,8 +3498,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR5</name>
-    <displayName>PIDR5</displayName>
+    <name>GICP_PIDR5</name>
+    <displayName>GICP_PIDR5</displayName>
     <description>Peripheral ID 5 Register</description>
     <addressOffset>0xFFD4</addressOffset>
     <size>0x20</size>
@@ -3507,8 +3507,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR6</name>
-    <displayName>PIDR6</displayName>
+    <name>GICP_PIDR6</name>
+    <displayName>GICP_PIDR6</displayName>
     <description>Peripheral ID 6 Register</description>
     <addressOffset>0xFFD8</addressOffset>
     <size>0x20</size>
@@ -3516,8 +3516,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR7</name>
-    <displayName>PIDR7</displayName>
+    <name>GICP_PIDR7</name>
+    <displayName>GICP_PIDR7</displayName>
     <description>Peripheral ID 7 Register</description>
     <addressOffset>0xFFDC</addressOffset>
     <size>0x20</size>
@@ -3525,8 +3525,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR0</name>
-    <displayName>PIDR0</displayName>
+    <name>GICP_PIDR0</name>
+    <displayName>GICP_PIDR0</displayName>
     <description>Peripheral ID 0 Register</description>
     <addressOffset>0xFFE0</addressOffset>
     <size>0x20</size>
@@ -3534,8 +3534,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR1</name>
-    <displayName>PIDR1</displayName>
+    <name>GICP_PIDR1</name>
+    <displayName>GICP_PIDR1</displayName>
     <description>Peripheral ID 1 Register</description>
     <addressOffset>0xFFE4</addressOffset>
     <size>0x20</size>
@@ -3543,8 +3543,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR2</name>
-    <displayName>PIDR2</displayName>
+    <name>GICP_PIDR2</name>
+    <displayName>GICP_PIDR2</displayName>
     <description>Peripheral ID 2 Register</description>
     <addressOffset>0xFFE8</addressOffset>
     <size>0x20</size>
@@ -3552,8 +3552,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR3</name>
-    <displayName>PIDR3</displayName>
+    <name>GICP_PIDR3</name>
+    <displayName>GICP_PIDR3</displayName>
     <description>Peripheral ID 3 Register</description>
     <addressOffset>0xFFEC</addressOffset>
     <size>0x20</size>
@@ -3561,8 +3561,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CIDR0</name>
-    <displayName>CIDR0</displayName>
+    <name>GICP_CIDR0</name>
+    <displayName>GICP_CIDR0</displayName>
     <description>Component ID 0 Register</description>
     <addressOffset>0xFFF0</addressOffset>
     <size>0x20</size>
@@ -3570,8 +3570,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CIDR1</name>
-    <displayName>CIDR1</displayName>
+    <name>GICP_CIDR1</name>
+    <displayName>GICP_CIDR1</displayName>
     <description>Component ID 1 Register</description>
     <addressOffset>0xFFF4</addressOffset>
     <size>0x20</size>
@@ -3579,8 +3579,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CIDR2</name>
-    <displayName>CIDR2</displayName>
+    <name>GICP_CIDR2</name>
+    <displayName>GICP_CIDR2</displayName>
     <description>Component ID 2 Register</description>
     <addressOffset>0xFFF8</addressOffset>
     <size>0x20</size>
@@ -3588,8 +3588,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CIDR3</name>
-    <displayName>CIDR3</displayName>
+    <name>GICP_CIDR3</name>
+    <displayName>GICP_CIDR3</displayName>
     <description>Component ID 3 Register</description>
     <addressOffset>0xFFFC</addressOffset>
     <size>0x20</size>
@@ -3604,8 +3604,8 @@
   <baseAddress>0x03460000</baseAddress>
   <registers>
    <register>
-    <name>CTLR</name>
-    <displayName>CTLR</displayName>
+    <name>GICR_CTLR</name>
+    <displayName>GICR_CTLR</displayName>
     <description>Redistributor Control Register</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
@@ -3613,8 +3613,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>IIDR</name>
-    <displayName>IIDR</displayName>
+    <name>GICR_IIDR</name>
+    <displayName>GICR_IIDR</displayName>
     <description></description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
@@ -3622,8 +3622,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TYPER</name>
-    <displayName>TYPER</displayName>
+    <name>GICR_TYPER</name>
+    <displayName>GICR_TYPER</displayName>
     <description></description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>
@@ -3631,8 +3631,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>WAKER</name>
-    <displayName>WAKER</displayName>
+    <name>GICR_WAKER</name>
+    <displayName>GICR_WAKER</displayName>
     <description></description>
     <addressOffset>0x014</addressOffset>
     <size>0x20</size>
@@ -3640,8 +3640,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>FCTLR</name>
-    <displayName>FCTLR</displayName>
+    <name>GICR_FCTLR</name>
+    <displayName>GICR_FCTLR</displayName>
     <description></description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
@@ -3649,8 +3649,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PWRR</name>
-    <displayName>PWRR</displayName>
+    <name>GICR_PWRR</name>
+    <displayName>GICR_PWRR</displayName>
     <description></description>
     <addressOffset>0x024</addressOffset>
     <size>0x20</size>
@@ -3658,8 +3658,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CLASS</name>
-    <displayName>CLASS</displayName>
+    <name>GICR_CLASS</name>
+    <displayName>GICR_CLASS</displayName>
     <description></description>
     <addressOffset>0x028</addressOffset>
     <size>0x20</size>
@@ -3667,8 +3667,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SETLPIR</name>
-    <displayName>SETLPIR</displayName>
+    <name>GICR_SETLPIR</name>
+    <displayName>GICR_SETLPIR</displayName>
     <description></description>
     <addressOffset>0x040</addressOffset>
     <size>0x40</size>
@@ -3676,8 +3676,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CLRLPIR</name>
-    <displayName>CLRLPIR</displayName>
+    <name>GICR_CLRLPIR</name>
+    <displayName>GICR_CLRLPIR</displayName>
     <description></description>
     <addressOffset>0x048</addressOffset>
     <size>0x40</size>
@@ -3685,8 +3685,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PROPBASER</name>
-    <displayName>PROPBASER</displayName>
+    <name>GICR_PROPBASER</name>
+    <displayName>GICR_PROPBASER</displayName>
     <description>Redistributor Properties Base Address Register</description>
     <addressOffset>0x070</addressOffset>
     <size>0x40</size>
@@ -3694,8 +3694,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PENDBASER</name>
-    <displayName>PENDBASER</displayName>
+    <name>GICR_PENDBASER</name>
+    <displayName>GICR_PENDBASER</displayName>
     <description>Redistributor LPI Pending Table Base Address Register</description>
     <addressOffset>0x078</addressOffset>
     <size>0x40</size>
@@ -3703,8 +3703,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>INVLPIR</name>
-    <displayName>INVLPIR</displayName>
+    <name>GICR_INVLPIR</name>
+    <displayName>GICR_INVLPIR</displayName>
     <description></description>
     <addressOffset>0x0A0</addressOffset>
     <size>0x40</size>
@@ -3712,8 +3712,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>INVALLR</name>
-    <displayName>INVALLR</displayName>
+    <name>GICR_INVALLR</name>
+    <displayName>GICR_INVALLR</displayName>
     <description></description>
     <addressOffset>0x0A8</addressOffset>
     <size>0x40</size>
@@ -3721,31 +3721,17 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>SYNCR</name>
-    <displayName>SYNCR</displayName>
+    <name>GICR_SYNCR</name>
+    <displayName>GICR_SYNCR</displayName>
     <description></description>
     <addressOffset>0x0C0</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <cluster>
-    <dim>256</dim>
-    <addressOffset>0x00000400</addressOffset>
-    <register>
-     <name>IPRIORITYR</name>
-     <displayName>IPRIORITYR</displayName>
-     <description>SGIs and PPIs - Interrupt Priority Registers</description>
-     <addressOffset>0x000</addressOffset>
-     <size>0x20</size>
-     <access>read-write</access>
-     <resetValue>0x00000000</resetValue>
-    </register>
-    <dimIncrement>0x400</dimIncrement>
-   </cluster>
    <register>
-    <name>PIDR4</name>
-    <displayName>PIDR4</displayName>
+    <name>GICR_PIDR4</name>
+    <displayName>GICR_PIDR4</displayName>
     <description>Peripheral ID 4 Register</description>
     <addressOffset>0xFFD0</addressOffset>
     <size>0x20</size>
@@ -3753,8 +3739,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR5</name>
-    <displayName>PIDR5</displayName>
+    <name>GICR_PIDR5</name>
+    <displayName>GICR_PIDR5</displayName>
     <description>Peripheral ID 5 Register</description>
     <addressOffset>0xFFD4</addressOffset>
     <size>0x20</size>
@@ -3762,8 +3748,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR6</name>
-    <displayName>PIDR6</displayName>
+    <name>GICR_PIDR6</name>
+    <displayName>GICR_PIDR6</displayName>
     <description>Peripheral ID 6 Register</description>
     <addressOffset>0xFFD8</addressOffset>
     <size>0x20</size>
@@ -3771,8 +3757,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR7</name>
-    <displayName>PIDR7</displayName>
+    <name>GICR_PIDR7</name>
+    <displayName>GICR_PIDR7</displayName>
     <description>Peripheral ID 7 Register</description>
     <addressOffset>0xFFDC</addressOffset>
     <size>0x20</size>
@@ -3780,8 +3766,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR0</name>
-    <displayName>PIDR0</displayName>
+    <name>GICR_PIDR0</name>
+    <displayName>GICR_PIDR0</displayName>
     <description>Peripheral ID 0 Register</description>
     <addressOffset>0xFFE0</addressOffset>
     <size>0x20</size>
@@ -3789,8 +3775,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR1</name>
-    <displayName>PIDR1</displayName>
+    <name>GICR_PIDR1</name>
+    <displayName>GICR_PIDR1</displayName>
     <description>Peripheral ID 1 Register</description>
     <addressOffset>0xFFE4</addressOffset>
     <size>0x20</size>
@@ -3798,8 +3784,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR2</name>
-    <displayName>PIDR2</displayName>
+    <name>GICR_PIDR2</name>
+    <displayName>GICR_PIDR2</displayName>
     <description>Peripheral ID 2 Register</description>
     <addressOffset>0xFFE8</addressOffset>
     <size>0x20</size>
@@ -3807,8 +3793,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR3</name>
-    <displayName>PIDR3</displayName>
+    <name>GICR_PIDR3</name>
+    <displayName>GICR_PIDR3</displayName>
     <description>Peripheral ID 3 Register</description>
     <addressOffset>0xFFEC</addressOffset>
     <size>0x20</size>
@@ -3816,8 +3802,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CIDR0</name>
-    <displayName>CIDR0</displayName>
+    <name>GICR_CIDR0</name>
+    <displayName>GICR_CIDR0</displayName>
     <description>Component ID 0 Register</description>
     <addressOffset>0xFFF0</addressOffset>
     <size>0x20</size>
@@ -3825,8 +3811,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CIDR1</name>
-    <displayName>CIDR1</displayName>
+    <name>GICR_CIDR1</name>
+    <displayName>GICR_CIDR1</displayName>
     <description>Component ID 1 Register</description>
     <addressOffset>0xFFF4</addressOffset>
     <size>0x20</size>
@@ -3834,8 +3820,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CIDR2</name>
-    <displayName>CIDR2</displayName>
+    <name>GICR_CIDR2</name>
+    <displayName>GICR_CIDR2</displayName>
     <description>Component ID 2 Register</description>
     <addressOffset>0xFFF8</addressOffset>
     <size>0x20</size>
@@ -3843,8 +3829,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CIDR3</name>
-    <displayName>CIDR3</displayName>
+    <name>GICR_CIDR3</name>
+    <displayName>GICR_CIDR3</displayName>
     <description>Component ID 3 Register</description>
     <addressOffset>0xFFFC</addressOffset>
     <size>0x20</size>
@@ -3853,42 +3839,14 @@
    </register>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="GICR0">
-  <name>GICR1</name>
-  <baseAddress>0x03480000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="GICR0">
-  <name>GICR2</name>
-  <baseAddress>0x034A0000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="GICR0">
-  <name>GICR3</name>
-  <baseAddress>0x034C0000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="GICR0">
-  <name>GICR4</name>
-  <baseAddress>0x034E0000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="GICR0">
-  <name>GICR5</name>
-  <baseAddress>0x03500000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="GICR0">
-  <name>GICR6</name>
-  <baseAddress>0x03520000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="GICR0">
-  <name>GICR7</name>
-  <baseAddress>0x03540000</baseAddress>
-  </peripheral>
   <peripheral>
   <name>GICT</name>
   <description>GIC ITS translation</description>
   <baseAddress>0x03420000</baseAddress>
   <registers>
    <register>
-    <name>CTLR</name>
-    <displayName>CTLR</displayName>
+    <name>GICT_CTLR</name>
+    <displayName>GICT_CTLR</displayName>
     <description>Distributor Control Register</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
@@ -3896,8 +3854,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>TYPER</name>
-    <displayName>TYPER</displayName>
+    <name>GICT_TYPER</name>
+    <displayName>GICT_TYPER</displayName>
     <description>Distributor Controller Type Register</description>
     <addressOffset>0x004</addressOffset>
     <size>0x20</size>
@@ -3905,8 +3863,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>IIDR</name>
-    <displayName>IIDR</displayName>
+    <name>GICT_IIDR</name>
+    <displayName>GICT_IIDR</displayName>
     <description>Distributor Implementer Identification Register</description>
     <addressOffset>0x008</addressOffset>
     <size>0x20</size>
@@ -3914,8 +3872,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>FCTLR</name>
-    <displayName>FCTLR</displayName>
+    <name>GICT_FCTLR</name>
+    <displayName>GICT_FCTLR</displayName>
     <description>Function Control Register</description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
@@ -3923,8 +3881,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>OPR</name>
-    <displayName>OPR</displayName>
+    <name>GICT_OPR</name>
+    <displayName>GICT_OPR</displayName>
     <description>Operations Register</description>
     <addressOffset>0x028</addressOffset>
     <size>0x40</size>
@@ -3932,8 +3890,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>OPSR</name>
-    <displayName>OPSR</displayName>
+    <name>GICT_OPSR</name>
+    <displayName>GICT_OPSR</displayName>
     <description>Operation Status Register</description>
     <addressOffset>0x030</addressOffset>
     <size>0x40</size>
@@ -3941,8 +3899,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CBASER</name>
-    <displayName>CBASER</displayName>
+    <name>GICT_GICT_CBASER</name>
+    <displayName>GICT_GICT_CBASER</displayName>
     <description>Command Queue Control Register</description>
     <addressOffset>0x080</addressOffset>
     <size>0x40</size>
@@ -3950,8 +3908,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CWRITER</name>
-    <displayName>CWRITER</displayName>
+    <name>GICT_CWRITER</name>
+    <displayName>GICT_CWRITER</displayName>
     <description>Command Queue Write Pointer Register</description>
     <addressOffset>0x088</addressOffset>
     <size>0x40</size>
@@ -3959,8 +3917,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CREADR</name>
-    <displayName>CREADR</displayName>
+    <name>GICT_CREADR</name>
+    <displayName>GICT_CREADR</displayName>
     <description>Command Queue Read Pointer Register</description>
     <addressOffset>0x090</addressOffset>
     <size>0x40</size>
@@ -3968,8 +3926,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>BASER0</name>
-    <displayName>BASER0</displayName>
+    <name>GICT_BASER0</name>
+    <displayName>GICT_BASER0</displayName>
     <description>ITS Translation Table Descriptor Register0</description>
     <addressOffset>0x100</addressOffset>
     <size>0x40</size>
@@ -3977,8 +3935,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>BASER1</name>
-    <displayName>BASER1</displayName>
+    <name>GICT_BASER1</name>
+    <displayName>GICT_BASER1</displayName>
     <description>ITS Translation Table Descriptor Register0</description>
     <addressOffset>0x108</addressOffset>
     <size>0x40</size>
@@ -3986,8 +3944,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CFGID</name>
-    <displayName>CFGID</displayName>
+    <name>GICT_CFGID</name>
+    <displayName>GICT_CFGID</displayName>
     <description>Configuration ID Register</description>
     <addressOffset>0xF000</addressOffset>
     <size>0x40</size>
@@ -3995,8 +3953,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR4</name>
-    <displayName>PIDR4</displayName>
+    <name>GICT_PIDR4</name>
+    <displayName>GICT_PIDR4</displayName>
     <description>Peripheral ID 4 Register</description>
     <addressOffset>0xFFD0</addressOffset>
     <size>0x20</size>
@@ -4004,8 +3962,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR5</name>
-    <displayName>PIDR5</displayName>
+    <name>GICT_PIDR5</name>
+    <displayName>GICT_PIDR5</displayName>
     <description>Peripheral ID 5 Register</description>
     <addressOffset>0xFFD4</addressOffset>
     <size>0x20</size>
@@ -4013,8 +3971,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR6</name>
-    <displayName>PIDR6</displayName>
+    <name>GICT_PIDR6</name>
+    <displayName>GICT_PIDR6</displayName>
     <description>Peripheral ID 6 Register</description>
     <addressOffset>0xFFD8</addressOffset>
     <size>0x20</size>
@@ -4022,8 +3980,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR7</name>
-    <displayName>PIDR7</displayName>
+    <name>GICT_PIDR7</name>
+    <displayName>GICT_PIDR7</displayName>
     <description>Peripheral ID 7 Register</description>
     <addressOffset>0xFFDC</addressOffset>
     <size>0x20</size>
@@ -4031,8 +3989,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR0</name>
-    <displayName>PIDR0</displayName>
+    <name>GICT_PIDR0</name>
+    <displayName>GICT_PIDR0</displayName>
     <description>Peripheral ID 0 Register</description>
     <addressOffset>0xFFE0</addressOffset>
     <size>0x20</size>
@@ -4040,8 +3998,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR1</name>
-    <displayName>PIDR1</displayName>
+    <name>GICT_PIDR1</name>
+    <displayName>GICT_PIDR1</displayName>
     <description>Peripheral ID 1 Register</description>
     <addressOffset>0xFFE4</addressOffset>
     <size>0x20</size>
@@ -4049,8 +4007,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR2</name>
-    <displayName>PIDR2</displayName>
+    <name>GICT_PIDR2</name>
+    <displayName>GICT_PIDR2</displayName>
     <description>Peripheral ID 2 Register</description>
     <addressOffset>0xFFE8</addressOffset>
     <size>0x20</size>
@@ -4058,8 +4016,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>PIDR3</name>
-    <displayName>PIDR3</displayName>
+    <name>GICT_PIDR3</name>
+    <displayName>GICT_PIDR3</displayName>
     <description>Peripheral ID 3 Register</description>
     <addressOffset>0xFFEC</addressOffset>
     <size>0x20</size>
@@ -4067,8 +4025,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CIDR0</name>
-    <displayName>CIDR0</displayName>
+    <name>GICT_CIDR0</name>
+    <displayName>GICT_CIDR0</displayName>
     <description>Component ID 0 Register</description>
     <addressOffset>0xFFF0</addressOffset>
     <size>0x20</size>
@@ -4076,8 +4034,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CIDR1</name>
-    <displayName>CIDR1</displayName>
+    <name>GICT_CIDR1</name>
+    <displayName>GICT_CIDR1</displayName>
     <description>Component ID 1 Register</description>
     <addressOffset>0xFFF4</addressOffset>
     <size>0x20</size>
@@ -4085,8 +4043,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CIDR2</name>
-    <displayName>CIDR2</displayName>
+    <name>GICT_CIDR2</name>
+    <displayName>GICT_CIDR2</displayName>
     <description>Component ID 2 Register</description>
     <addressOffset>0xFFF8</addressOffset>
     <size>0x20</size>
@@ -4094,8 +4052,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>CIDR3</name>
-    <displayName>CIDR3</displayName>
+    <name>GICT_CIDR3</name>
+    <displayName>GICT_CIDR3</displayName>
     <description>Component ID 3 Register</description>
     <addressOffset>0xFFFC</addressOffset>
     <size>0x20</size>
