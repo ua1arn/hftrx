@@ -502,6 +502,32 @@ __STATIC_INLINE uint32_t GIC_GetConfiguration(IRQn_Type IRQn)
     return (GICDistributor->ICFGR[IRQn / 16U] >> ((IRQn % 16U) >> 1U));
 }
 
+/** \brief Set the priority for the given interrupt.
+* \param [in] IRQn The interrupt to be configured.
+* \param [in] priority The priority for the interrupt, lower values denote higher priorities.
+*/
+__STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
+{
+	if ((IRQn < 32) && (GIC_GetARE())) {
+		GIC_SetRedistPriority(IRQn, priority);
+	} else {
+		const uint32_t mask = GICDistributor->IPRIORITYR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
+		GICDistributor->IPRIORITYR[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
+	}
+}
+
+/** \brief Read the current interrupt priority from GIC's IPRIORITYR register.
+* \param [in] IRQn The interrupt to be queried.
+*/
+__STATIC_INLINE uint32_t GIC_GetPriority(IRQn_Type IRQn)
+{
+	if ((IRQn < 32) && (GIC_GetARE())) {
+		return GIC_GetRedistPriority(IRQn);
+	} else {
+		return (GICDistributor->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
+	}
+}
+
 /**
  *
  */
@@ -521,34 +547,6 @@ __STATIC_INLINE uint32_t GIC_GetRedistPriority(IRQn_Type IRQn)
     GICDistributor_Type *const s_RedistPPIBaseAddrs = (GICDistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
 
     return (s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
-}
-
-/** \brief Set the priority for the given interrupt.
-* \param [in] IRQn The interrupt to be configured.
-* \param [in] priority The priority for the interrupt, lower values denote higher priorities.
-*/
-__STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
-{
-    uint32_t mask;
-
-  if ((IRQn < 32) && (GIC_GetARE())) {
-        GIC_SetRedistPriority(IRQn, priority);
-  } else {
-        mask = GICDistributor->IPRIORITYR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
-        GICDistributor->IPRIORITYR[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
-    }
-}
-
-/** \brief Read the current interrupt priority from GIC's IPRIORITYR register.
-* \param [in] IRQn The interrupt to be queried.
-*/
-__STATIC_INLINE uint32_t GIC_GetPriority(IRQn_Type IRQn)
-{
-  if ((IRQn < 32) && (GIC_GetARE())) {
-        return GIC_GetRedistPriority(IRQn);
-  } else {
-        return (GICDistributor->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
-    }
 }
 
 __STATIC_INLINE void GIC_RedistWakeUp(void)
