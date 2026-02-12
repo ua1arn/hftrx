@@ -4310,6 +4310,7 @@ uint_fast32_t allwnr_a733_get_pll_ref_freq(void)
 
 	switch ((ctlreg >> 14) & 0x03)
 	{
+	default:
 	case 0x00:
 		return 24 * 1000 * 1000;
 	case 0x01:
