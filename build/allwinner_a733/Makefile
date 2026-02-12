@@ -57,12 +57,15 @@ OBJDUMP = $(TRGT)objdump
 
 #CORE = -mcpu=cortex-a55+fp+simd -mstrict-align -momit-leaf-frame-pointer --specs=nosys.specs
 #CORE = -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
-CORE = -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=vfpv4 --specs=nosys.specs
+
+#CORE = -mcpu=cortex-a55 -mfpu=vfpv4 --specs=nosys.specs -mfloat-abi=hard
+# for SyterKit
+CORE = -mcpu=cortex-a55 -mfpu=vfpv4 --specs=nosys.specs -mfloat-abi=softfp
 
 # Define optimisation level here
 #OPT = -Og
 #OPT = -Ofast -flto
-OPT = -Ofast
+OPT = -Os
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 #CMSISDIR = $(PRJROOT)/arch/Core_AArch64

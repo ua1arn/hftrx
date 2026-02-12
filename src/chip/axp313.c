@@ -377,7 +377,7 @@ int board_radaxa_cubie_axp318w_initialize(void)
     axp318w_set("dcdc3", 900); // VDD-CPUB 0.8-1V
     axp318w_set("dcdc4", 900); // VDD-GPU 0.8V-0.96V
     axp318w_set("dcdc5", 900); // VDD-CPUL 0.8V-1V
-    axp318w_set("dcdc6", 800); // VCC-DRAML, VDD-VDDQ [see options] 0.8/0.6/0.5V
+    axp318w_set("dcdc6", 600); // VCC-DRAML, VDD-VDDQ [see options] 0.8/0.6/0.5V
     axp318w_set("dcdc7", 1100); // VDD-DRAM, VCC-VDDQ [seee options] 1.1/1.05V
     axp318w_set("dcdc8", 1200); // VCC-UFS-IO,, VCC12-UFS, VCC18-UFS 0.8/1.2/1.8V
     axp318w_set("dcdc9", 1200); // ELDO-INPUT 1.25/1.1V
@@ -481,8 +481,8 @@ int board_orangepi4pro_axp318w_initialize(void)
     axp318w_set("dcdc3", 900); // VDD-CPUB 0.8-1V
     axp318w_set("dcdc4", 900); // VDD-GPU 0.8V-0.96V
     axp318w_set("dcdc5", 900); // VDD-CPUL 0.8V-1V
-    axp318w_set("dcdc6", 800); // VCC-DRAML, VDD-VDDQ [see options] 0.8/0.6/0.5V
-    axp318w_set("dcdc7", 1100); // VDD-DRAM, VCC-VDDQ [seee options] 1.1/1.05V
+    axp318w_set("dcdc6", 560); // SysterKIT pmu init  VCC-DRAML, VDD-VDDQ [see options] 0.8/0.6/0.5V
+    axp318w_set("dcdc7", 1080); // SysterKIT pmu init  VDD-DRAM, VCC-VDDQ [seee options] 1.1/1.05V
     axp318w_set("dcdc8", 1200); // VCC-UFS-IO,, VCC12-UFS, VCC18-UFS 0.8/1.2/1.8V
     axp318w_set("dcdc9", 1200); // ELDO-INPUT 1.25/1.1V
     axp318w_set("aldo1", 3300); // VCC-PL, VCC22-18-USB, VCC33-USB, VCC-3V3_TYPEC 3300 mV
@@ -496,6 +496,7 @@ int board_orangepi4pro_axp318w_initialize(void)
     axp318w_set("cldo5", 1800); // ... 1800 mV
     axp318w_set("dldo1", 1800); // VCC-EFUSE 1800 mV
     axp318w_set("dldo6", 2500); // VCC-UFS 2500 mV
+    axp318w_set("eldo1", 1080);	// SysterKIT pmu init
     axp318w_set("eldo6", 800); // VDD-CPUS, VDD-USB 800 mV
     axp318w_setstate("swout1", 1);
     axp318w_setstate("swout2", 1);
@@ -505,7 +506,6 @@ int board_orangepi4pro_axp318w_initialize(void)
 	PRINTF("axp318 INIT END\n");
 	dbg_flush();
 	return 0;
-
 }
 
 #endif
