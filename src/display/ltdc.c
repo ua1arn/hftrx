@@ -3025,7 +3025,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 		0 * (UINT32_C(1) << 23) |		// LCD_RB_SWAP
 		1 * (UINT32_C(1) << 20) |		// LCD_INTERLACE_EN (has no effect)
 		(start_dly & 0x1F) * (UINT32_C(1) << 4) |	// LCD_START_DLY
-		1 * (UINT32_C(1) << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
+		0 * (UINT32_C(1) << 0) |			// LCD_SRC_SEL: 000: DE, 1..7 - tests: 1: color check, 2: grayscale check
 		0;
 #endif
 #endif /* defined (TCONLCD_PTR) */
