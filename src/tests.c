@@ -2383,19 +2383,6 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 
 static void disableAllIRQs(void)
 {
-	IRQ_Disable(43);	// DMA1_Stream0_IRQn
-	IRQ_Disable(47);	// DMA1_Stream4_IRQn
-	IRQ_Disable(89);	// DMA2_Stream1_IRQn
-	IRQ_Disable(100);	// DMA2_Stream5_IRQn
-//	IRQ_Disable(106);	// USBH_OHCI_IRQn
-//	IRQ_Disable(107);	// USBH_EHCI_IRQn
-	IRQ_Disable(82);	// TIM5_IRQn systick
-//	IRQ_Disable(61);	// TIM3_IRQn elkey
-	IRQ_Disable(99);	// EXTI9_IRQn
-	IRQ_Disable(109);	// EXTI13_IRQn
-	IRQ_Disable(50);	// ADC1_IRQn
-	IRQ_Disable(122);	// ADC2_IRQn
-	IRQ_Disable(130);	// OTG_IRQn
 
 	// Get ITLinesNumber
 	const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
@@ -7176,22 +7163,77 @@ void hightests(void)
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
-#if 0 && (__CORTEX_A == 53U) && defined(__aarch64__)
+#if 0
 	{
-		arm_hardware_set_handler_system(188, NULL);
-		GIC_SetPendingIRQ(188);
-		ASSERT(GIC_GetPendingIRQ(188));
+		GIC_SendSGI(TIMER1_3_IRQn, 1 << 0, 0x00);	// CPU0, filer=0
 
-		PRINTF("get_ICC_SRE_EL3=%08X\n", (unsigned) __get_ICC_SRE_EL3());
-		//PRINTF("get_ICC_SRE_EL2=%08X\n", (unsigned) __get_ICC_SRE_EL2());
-		PRINTF("get_ICC_SRE_EL1=%08X\n", (unsigned) __get_ICC_SRE_EL1());
-		__set_ICC_SRE_EL3(__get_ICC_SRE_EL3() | 0x04);	// DIB IRQ bypass disabled
-		//__set_ICC_SRE_EL2(__get_ICC_SRE_EL2() | 0x04);	// DIB IRQ bypass disabled
-		__set_ICC_SRE_EL1(__get_ICC_SRE_EL1() | 0x04);	// DIB IRQ bypass disabled
-		PRINTF("get_ICC_SRE_EL3=%08X\n", (unsigned) __get_ICC_SRE_EL3());
-		//PRINTF("get_ICC_SRE_EL2=%08X\n", (unsigned) __get_ICC_SRE_EL2());
-		PRINTF("get_ICC_SRE_EL1=%08X\n", (unsigned) __get_ICC_SRE_EL1());
+		unsigned p0 = GIC_GetPendingIRQ(TIMER1_0_IRQn);
+		unsigned p1 = GIC_GetPendingIRQ(TIMER1_1_IRQn);
+		unsigned p2 = GIC_GetPendingIRQ(TIMER1_2_IRQn);
+		unsigned p3 = GIC_GetPendingIRQ(TIMER1_3_IRQn);
 
+		PRINTF("p 0..3: %u %u %u %u\n", p0, p1, p2, p3);
+
+		unsigned p4 = GIC_GetHighPendingIRQ();
+		unsigned p5 = GIC_AcknowledgePending();
+		PRINTF("p 4..6: %u %u\n", p4, p5);
+
+		unsigned p7 = GICRedistributor->CTLR;
+		uint64_t p8 = GICRedistributor->PENDBASER;
+		uint64_t p9 = GICRedistributor->PROPBASER;
+		PRINTF("p 7..9: %08X %" PRIX64 " %" PRIX64 "\n", p7, p8, p9);
+
+	}
+#endif
+#if 0 && (__CORTEX_A == 55U) && 1//defined(__aarch64__)
+	{
+//		const IRQn_Type irqn = 188;
+//		arm_hardware_set_handler_system(irqn, NULL);
+//		ASSERT(GIC_GetEnableIRQ(irqn));
+//		GIC_SetPendingIRQ(irqn);
+//		ASSERT(GIC_GetPendingIRQ(irqn));
+//		GIC_ClearPendingIRQ(irqn);
+//		ASSERT(! GIC_GetPendingIRQ(irqn));
+//
+//		PRINTF("get_ICC_SRE_EL3=%08X\n", (unsigned) __get_ICC_SRE_EL3());
+//		//PRINTF("get_ICC_SRE_EL2=%08X\n", (unsigned) __get_ICC_SRE_EL2());
+//		PRINTF("get_ICC_SRE_EL1=%08X\n", (unsigned) __get_ICC_SRE_EL1());
+//		__set_ICC_SRE_EL3(__get_ICC_SRE_EL3() | 0x04);	// DIB IRQ bypass disabled
+//		//__set_ICC_SRE_EL2(__get_ICC_SRE_EL2() | 0x04);	// DIB IRQ bypass disabled
+//		__set_ICC_SRE_EL1(__get_ICC_SRE_EL1() | 0x04);	// DIB IRQ bypass disabled
+//		PRINTF("get_ICC_SRE_EL3=%08X\n", (unsigned) __get_ICC_SRE_EL3());
+//		//PRINTF("get_ICC_SRE_EL2=%08X\n", (unsigned) __get_ICC_SRE_EL2());
+//		PRINTF("get_ICC_SRE_EL1=%08X\n", (unsigned) __get_ICC_SRE_EL1());
+
+		GIC_SendSGI(TIMER1_3_IRQn, 1 << 0, 0x00);	// CPU0, filer=0
+
+		unsigned p0 = GIC_GetPendingIRQ(TIMER1_0_IRQn);
+		unsigned p1 = GIC_GetPendingIRQ(TIMER1_1_IRQn);
+		unsigned p2 = GIC_GetPendingIRQ(TIMER1_2_IRQn);
+		unsigned p3 = GIC_GetPendingIRQ(TIMER1_3_IRQn);
+
+		PRINTF("p 0..3: %u %u %u %u\n", p0, p1, p2, p3);
+
+		//(void) GICInterface->HPPIR;
+		unsigned p4 = GIC_GetHighPendingIRQ();
+		unsigned p5 = GIC_AcknowledgePending();
+		GICR_TypeDef * p6 = (GICR_TypeDef *) GIC_GetRdist();
+		unsigned p7 = GICDistributor->CTLR;
+		uint64_t p8 = p6->PENDBASER;
+		uint64_t p9 = p6->PROPBASER;
+
+		PRINTF("p 4..6: %u %u %p %08X\n", p4, p5, p6, p7);
+
+		PRINTF("DAIF=%016" PRIX64 "\n", __get_DAIF());
+		PRINTF("p8=%016" PRIX64 "\n", p8);
+		PRINTF("p9=%016" PRIX64 "\n", p9);
+
+
+//
+//		GIC_EnableInterface();
+//		//GIC_EnableDistributor();
+//		GIC_Enable(1);
+//		GIC_Enable(0);
 //		global_disableIRQ();
 //		PRINTF("pstate=%08X\n", (unsigned) __get_PSTATE());
 //		global_EnableRQ();
