@@ -3342,6 +3342,152 @@
   <description>GIC Performance Monitoring Unit</description>
   <baseAddress>0x03430000</baseAddress>
   <registers>
+   <cluster>
+    <dim>11</dim>
+    <addressOffset>0x00000000</addressOffset>
+    <register>
+     <name>EVCNTRn</name>
+     <displayName>EVCNTRn</displayName>
+     <description>Event Counter Registers</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x02C</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>11</dim>
+    <addressOffset>0x00000400</addressOffset>
+    <register>
+     <name>EVTYPERn</name>
+     <displayName>EVTYPERn</displayName>
+     <description>Event Type Configuration Registers</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x02C</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>11</dim>
+    <addressOffset>0x00000600</addressOffset>
+    <register>
+     <name>SVRn</name>
+     <displayName>SVRn</displayName>
+     <description>Shadow Value Registers</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x02C</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>11</dim>
+    <addressOffset>0x00000A00</addressOffset>
+    <register>
+     <name>FRn</name>
+     <displayName>FRn</displayName>
+     <description>Filter Registers</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x02C</dimIncrement>
+   </cluster>
+   <register>
+    <name>CNTENSET0</name>
+    <displayName>CNTENSET0</displayName>
+    <description>Counter Enable Set Register</description>
+    <addressOffset>0xC00</addressOffset>
+    <size>0x40</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CNTENCLR0</name>
+    <displayName>CNTENCLR0</displayName>
+    <description>Counter Enable Clear Register 0</description>
+    <addressOffset>0xC20</addressOffset>
+    <size>0x40</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INTENSET0</name>
+    <displayName>INTENSET0</displayName>
+    <description>Interrupt Contribution Enable Set Register 0</description>
+    <addressOffset>0xC40</addressOffset>
+    <size>0x40</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INTENCLR0</name>
+    <displayName>INTENCLR0</displayName>
+    <description>Interrupt Contribution Enable Clear Register 0</description>
+    <addressOffset>0xC60</addressOffset>
+    <size>0x40</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OVSCLR0</name>
+    <displayName>OVSCLR0</displayName>
+    <description>Overflow Status Clear Register 0</description>
+    <addressOffset>0xC80</addressOffset>
+    <size>0x40</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>OVSSET0</name>
+    <displayName>OVSSET0</displayName>
+    <description>Overflow Status Set Register 0</description>
+    <addressOffset>0xCC0</addressOffset>
+    <size>0x40</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CAPR</name>
+    <displayName>CAPR</displayName>
+    <description>Counter Shadow Value Capture Register</description>
+    <addressOffset>0xD88</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CFGR</name>
+    <displayName>CFGR</displayName>
+    <description>Configuration Information Register</description>
+    <addressOffset>0xE00</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CR</name>
+    <displayName>CR</displayName>
+    <description>Control Register</description>
+    <addressOffset>0xE04</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>IRQCR</name>
+    <displayName>IRQCR</displayName>
+    <description>Interrupt Configuration Register</description>
+    <addressOffset>0xE50</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
    <register>
     <name>PIDR4</name>
     <displayName>PIDR4</displayName>
@@ -3583,6 +3729,20 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+   <cluster>
+    <dim>256</dim>
+    <addressOffset>0x00000400</addressOffset>
+    <register>
+     <name>IPRIORITYR</name>
+     <displayName>IPRIORITYR</displayName>
+     <description>SGIs and PPIs - Interrupt Priority Registers</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x400</dimIncrement>
+   </cluster>
    <register>
     <name>PIDR4</name>
     <displayName>PIDR4</displayName>

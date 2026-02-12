@@ -93,19 +93,34 @@
 
 #type; GICP; GIC Performance Monitoring Unit
 
+#regdef; 	EVCNTRn;		0x0000 11; 	Event Counter Registers
+#regdef; 	EVTYPERn;		0x0400 11; 	Event Type Configuration Registers
+#regdefr; 	SVRn;			0x0600 11; 	Shadow Value Registers
+#regdef; 	FRn;			0x0A00 11; 	Filter Registers
 
-#regdef; 	PIDR4;			0xFFD0;		Peripheral ID 4 Register
-#regdef; 	PIDR5;			0xFFD4;		Peripheral ID 5 Register
-#regdef; 	PIDR6;			0xFFD8;		Peripheral ID 6 Register
-#regdef; 	PIDR7;			0xFFDC;		Peripheral ID 7 Register
-#regdef; 	PIDR0;			0xFFE0;		Peripheral ID 0 Register
-#regdef; 	PIDR1;			0xFFE4;		Peripheral ID 1 Register
-#regdef; 	PIDR2;			0xFFE8;		Peripheral ID 2 Register
-#regdef; 	PIDR3;			0xFFEC;		Peripheral ID 3 Register
-#regdef; 	CIDR0;			0xFFF0;		Component ID 0 Register
-#regdef; 	CIDR1;			0xFFF4;		Component ID 1 Register
-#regdef; 	CIDR2;			0xFFF8;		Component ID 2 Register
-#regdef; 	CIDR3;			0xFFFC;		Component ID 3 Register
+#regdef; 	CNTENSET0 8;	0x0C00; 	Counter Enable Set Register
+#regdef; 	CNTENCLR0 8;	0x0C20;		Counter Enable Clear Register 0
+#regdef; 	INTENSET0 8;	0x0C40;		Interrupt Contribution Enable Set Register 0
+#regdef; 	INTENCLR0 8;	0x0C60;		Interrupt Contribution Enable Clear Register 0
+#regdef; 	OVSCLR0 8;		0x0C80;		Overflow Status Clear Register 0
+#regdef; 	OVSSET0 8;		0x0CC0;		Overflow Status Set Register 0
+#regdefw; 	CAPR;			0x0D88;		Counter Shadow Value Capture Register
+#regdefr; 	CFGR;			0x0E00;		Configuration Information Register
+#regdef; 	CR;				0x0E04;		Control Register
+#regdef; 	IRQCR;			0x0E50;		Interrupt Configuration Register
+
+#regdefr; 	PIDR4;			0xFFD0;		Peripheral ID 4 Register
+#regdefr; 	PIDR5;			0xFFD4;		Peripheral ID 5 Register
+#regdefr; 	PIDR6;			0xFFD8;		Peripheral ID 6 Register
+#regdefr; 	PIDR7;			0xFFDC;		Peripheral ID 7 Register
+#regdefr; 	PIDR0;			0xFFE0;		Peripheral ID 0 Register
+#regdefr; 	PIDR1;			0xFFE4;		Peripheral ID 1 Register
+#regdefr; 	PIDR2;			0xFFE8;		Peripheral ID 2 Register
+#regdefr; 	PIDR3;			0xFFEC;		Peripheral ID 3 Register
+#regdefr; 	CIDR0;			0xFFF0;		Component ID 0 Register
+#regdefr; 	CIDR1;			0xFFF4;		Component ID 1 Register
+#regdefr; 	CIDR2;			0xFFF8;		Component ID 2 Register
+#regdefr; 	CIDR3;			0xFFFC;		Component ID 3 Register
 
 #typeend;
 
@@ -129,6 +144,8 @@
 #regdef;  INVALLR 8; 		0x00A8; 
 #regdef;  SYNCR; 			0x00C0; 
 
+#regdef;	IPRIORITYR;		0x0400 256;	SGIs and PPIs - Interrupt Priority Registers
+
 #regdefr; 	PIDR4;			0xFFD0;		Peripheral ID 4 Register
 #regdefr; 	PIDR5;			0xFFD4;		Peripheral ID 5 Register
 #regdefr; 	PIDR6;			0xFFD8;		Peripheral ID 6 Register
@@ -141,6 +158,15 @@
 #regdefr; 	CIDR1;			0xFFF4;		Component ID 1 Register
 #regdefr; 	CIDR2;			0xFFF8;		Component ID 2 Register
 #regdefr; 	CIDR3;			0xFFFC;		Component ID 3 Register
+
+#typeend;
+
+## corelink_gic600_generic_interrupt_controller_technical_reference.pdf
+## 4.5 Redistributor registers for SGIs and PPIs summary
+
+#type; GICR_PPI_LPI; GIC Redistributor 
+
+#regdef;	IPRIORITYR;		0x0400 8;	SGIs and PPIs - Interrupt Priority Registers
 
 #typeend;
 
