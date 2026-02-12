@@ -4067,6 +4067,123 @@
   <description>GIC Secure Access Control</description>
   <baseAddress>0x03440000</baseAddress>
   <registers>
+   <register>
+    <name>GITS_CFGID</name>
+    <displayName>GITS_CFGID</displayName>
+    <description>Configuration ID Register</description>
+    <addressOffset>0xF000</addressOffset>
+    <size>0x40</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GITS_PIDR4</name>
+    <displayName>GITS_PIDR4</displayName>
+    <description>Peripheral ID 4 Register</description>
+    <addressOffset>0xFFD0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GITS_PIDR5</name>
+    <displayName>GITS_PIDR5</displayName>
+    <description>Peripheral ID 5 Register</description>
+    <addressOffset>0xFFD4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GITS_PIDR6</name>
+    <displayName>GITS_PIDR6</displayName>
+    <description>Peripheral ID 6 Register</description>
+    <addressOffset>0xFFD8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GITS_PIDR7</name>
+    <displayName>GITS_PIDR7</displayName>
+    <description>Peripheral ID 7 Register</description>
+    <addressOffset>0xFFDC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GITS_PIDR0</name>
+    <displayName>GITS_PIDR0</displayName>
+    <description>Peripheral ID 0 Register</description>
+    <addressOffset>0xFFE0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GITS_PIDR1</name>
+    <displayName>GITS_PIDR1</displayName>
+    <description>Peripheral ID 1 Register</description>
+    <addressOffset>0xFFE4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GITS_PIDR2</name>
+    <displayName>GITS_PIDR2</displayName>
+    <description>Peripheral ID 2 Register</description>
+    <addressOffset>0xFFE8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GITS_PIDR3</name>
+    <displayName>GITS_PIDR3</displayName>
+    <description>Peripheral ID 3 Register</description>
+    <addressOffset>0xFFEC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GITS_CIDR0</name>
+    <displayName>GITS_CIDR0</displayName>
+    <description>Component ID 0 Register</description>
+    <addressOffset>0xFFF0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GITS_CIDR1</name>
+    <displayName>GITS_CIDR1</displayName>
+    <description>Component ID 1 Register</description>
+    <addressOffset>0xFFF4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GITS_CIDR2</name>
+    <displayName>GITS_CIDR2</displayName>
+    <description>Component ID 2 Register</description>
+    <addressOffset>0xFFF8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GITS_CIDR3</name>
+    <displayName>GITS_CIDR3</displayName>
+    <description>Component ID 3 Register</description>
+    <addressOffset>0xFFFC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
   </peripheral>
   <peripheral>
