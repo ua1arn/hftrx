@@ -67,8 +67,8 @@ uint32_t dram_para [128] = {
 	0x0e0e0e0e, // dram_dx_dri
 	0x88030e0e, // dram_ca_dri
 	0, 			// dram_para0
-	0x311a, 	// dram_para1
-	0x1001, 	// dram_para2
+	0x30fa, //0x311a, 	// dram_para1
+	0x4000001, //0x1001, 	// dram_para2
 	0x0, 		// dram_mr0
 	0x8c, 		// dram_mr1
 	0, 			// dram_mr2
@@ -91,7 +91,7 @@ uint32_t dram_para [128] = {
 	0x721f0000, // dram_tpr10
 	0, 			// dram_tpr11
 	0, 			// dram_tpr12
-	0x60, 		// dram_tpr13
+	0x6063, //0x60, 		// dram_tpr13
 	0, 			// dram_tpr14
 };
 #endif /* CONFIG_SUNXI_DRAM_A733_LPDDR4 */
