@@ -609,6 +609,8 @@
 
 #endif /* WITHSPIHW */
 
+#if 1
+// Radaxa Cubie A7Z
 // WITHUART0HW
 // Используется периферийный контроллер последовательного порта UART0
 // CPUX-TX: PB9, CPUX-RX: PB10
@@ -619,7 +621,48 @@
 		arm_hardware_piob_altfn2m(RXMASK, GPIO_CFG_AF2); \
 		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
 	} while (0)
+#else
+// Orange pi 4 pro
+// WITHUART0HW
+// Используется периферийный контроллер последовательного порта UART0
+// CPUX-TX: PB9, CPUX-RX: PB10
+#define HARDWARE_UART0_INITIALIZE() do { \
+		const portholder_t TXMASK = UINT32_C(1) << 0; /* PB0 UART0_TX */ \
+		const portholder_t RXMASK = UINT32_C(1) << 1; /* PB1 UART0_RX - pull-up RX data */  \
+		arm_hardware_piob_altfn2m(TXMASK, GPIO_CFG_AF3); \
+		arm_hardware_piob_altfn2m(RXMASK, GPIO_CFG_AF3); \
+		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
+	} while (0)
 
+#endif
+
+#if 1
+	// BLINK
+	#if 1
+		// Radaxa Cubie A7Z
+		#define BOARD_BLINK_BIT0 (UINT32_C(1) << 2)	// PM2 - Green - to ground
+
+		#define BOARD_BLINK_INITIALIZE() do { \
+			s_gpioX_setstate(S_GPIOM, BOARD_BLINK_BIT0, 0 * BOARD_BLINK_BIT0); \
+			s_gpioX_prog(S_GPIOM, BOARD_BLINK_BIT0, GPIO_CFG_OUT, GPIO_DRV_3, GPIO_PULL_NONE); \
+		} while (0)
+		#define BOARD_BLINK_SETSTATE(state) do { \
+			s_gpioX_setstate(S_GPIOM, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
+		} while (0)
+	#else
+
+		// Orange pi 4 pro
+		#define BOARD_BLINK_BIT0 (UINT32_C(1) << 6)	// PB6
+
+		#define BOARD_BLINK_INITIALIZE() do { \
+			gpioX_setstate(GPIOB, BOARD_BLINK_BIT0, 0 * BOARD_BLINK_BIT0); \
+			gpioX_prog(GPIOB, BOARD_BLINK_BIT0, GPIO_CFG_OUT, GPIO_DRV_3, GPIO_PULL_NONE); \
+		} while (0)
+		#define BOARD_BLINK_SETSTATE(state) do { \
+			gpioX_setstate(GPIOB, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
+		} while (0)
+	#endif
+#endif
 
 #define BOARD_GPIOA_ENC2BTN_BIT 0//(UINT32_C(1) << 8)	// PA8 - second encoder button with pull-up
 
@@ -961,21 +1004,6 @@
 		//gt911_interrupt_handler
 
 	#endif
-
-
-#if 1
-
-	#define BOARD_BLINK_BIT0 (UINT32_C(1) << 2)	// PM2 - Green - to ground
-
-
-	#define BOARD_BLINK_INITIALIZE() do { \
-		s_gpioX_setstate(S_GPIOM, BOARD_BLINK_BIT0, 0 * BOARD_BLINK_BIT0); \
-		s_gpioX_prog(S_GPIOM, BOARD_BLINK_BIT0, GPIO_CFG_OUT, GPIO_DRV_3, GPIO_PULL_NONE); \
-	} while (0)
-	#define BOARD_BLINK_SETSTATE(state) do { \
-		s_gpioX_setstate(S_GPIOM, BOARD_BLINK_BIT0, !! (state) * BOARD_BLINK_BIT0); \
-	} while (0)
-#endif
 
 #if 1//WITHISBOOTLOADER
 

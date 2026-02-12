@@ -367,8 +367,9 @@ int board_radaxa_cubie_axp318w_initialize(void)
 	//	DLDO6 VCC-UFS 2500 mV
 	//	ELDO6 VDD-CPUS, VDD-USB 800 mV
 	//	RTCLDO-PMU VCC-RTC
-	//axpXXX_print(axp318_regulators);
-
+#if 0
+	axpXXX_print(axp318_regulators);
+#else
     axp318w_set("dcdc2", 800); // VDD-SYS, VDD-DRAM, VDD-VE, ... 800 mV
     axp318w_set("dcdc3", 900); // VDD-CPUB 0.8-1V
     axp318w_set("dcdc4", 900); // VDD-GPU 0.8V-0.96V
@@ -391,7 +392,7 @@ int board_radaxa_cubie_axp318w_initialize(void)
     axp318w_set("eldo6", 800); // VDD-CPUS, VDD-USB 800 mV
     axp318w_setstate("swout1", 1);
     axp318w_setstate("swout2", 1);
-
+#endif
 	//axpXXX_print(axp318_regulators);
 
 	PRINTF("axp318 INIT END\n");
