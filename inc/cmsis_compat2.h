@@ -1570,7 +1570,9 @@ __STATIC_FORCEINLINE uint32_t __get_CURRENTEL(void)
 */
 __STATIC_FORCEINLINE void L1C_EnableCaches(void)
 {
+#if __CORTEX_A == 53U
 	__set_CPUECTLR_EL1(__get_CPUECTLR_EL1() | (UINT32_C(1) << 6));	// // The SMP bit
+#endif
 	__set_SCTLR_EL3( __get_SCTLR_EL3() | SCTLR_EL3_I_Msk | SCTLR_EL3_C_Msk);
 	__ISB();
 }
@@ -2255,7 +2257,7 @@ __STATIC_INLINE void L2C_CleanInvPa (void *pa)
 //
 ///** \brief Initialize and enable the GIC
 //*/
-//__STATIC_INLINE void GIC_Enable(void)
+//__STATIC_INLINE void GIC_Enable(int init_dist)
 //{
 //  GIC_DistInit();
 //  GIC_CPUInterfaceInit(); //per CPU
