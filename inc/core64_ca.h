@@ -2367,8 +2367,9 @@ __STATIC_INLINE void GIC_CPUInterfaceInit(void)
 
 /** \brief Initialize and enable the GIC
 */
-__STATIC_INLINE void GIC_Enable(int init_dist)
+__STATIC_INLINE void GIC_Enable(void)
 {
+//int init_dist
   GIC_DistInit();
   GIC_CPUInterfaceInit(); //per CPU
 }

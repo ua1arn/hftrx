@@ -1721,17 +1721,19 @@ sysinit_fpu_initialize(void)
 
 	// FPU
 	//__FPU_Enable_fixed();
-	__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ SCTLR_EL3_SA_Msk & ~ SCTLR_EL3_A_Msk);	// Disable stack alignment check. The possible values are
-	__set_SCTLR_EL3(__get_SCTLR_EL3() | SCTLR_EL3_NAA_Msk);	// Unaligned accesses by the specified instructions do not generate an Alignment fault.
+	#if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
+		__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ SCTLR_EL3_SA_Msk & ~ SCTLR_EL3_A_Msk);	// Disable stack alignment check. The possible values are
+		__set_SCTLR_EL3(__get_SCTLR_EL3() | SCTLR_EL3_NAA_Msk);	// Unaligned accesses by the specified instructions do not generate an Alignment fault.
 
-	__set_SCTLR_EL2(__get_SCTLR_EL2() | SCTLR_EL3_NAA_Msk);	// Unaligned accesses by the specified instructions do not generate an Alignment fault.
-	__set_SCTLR_EL2(__get_SCTLR_EL2() & ~ SCTLR_EL3_A_Msk);	// Disable stack alignment check. The possible values are
-	//__builtin_aarch64_set_fpcr( __builtin_aarch64_get_fpcr() & 0x00086060u);
+		__set_SCTLR_EL2(__get_SCTLR_EL2() | SCTLR_EL3_NAA_Msk);	// Unaligned accesses by the specified instructions do not generate an Alignment fault.
+		__set_SCTLR_EL2(__get_SCTLR_EL2() & ~ SCTLR_EL3_A_Msk);	// Disable stack alignment check. The possible values are
+		//__builtin_aarch64_set_fpcr( __builtin_aarch64_get_fpcr() & 0x00086060u);
 
-	__set_CPACR_EL1(__get_CPACR_EL1() | 0x03 * (UINT64_C(1) << 20));	// FPEN 0x03 - 0b11 No instructions are trapped.
-	__set_SCTLR_EL1(__get_SCTLR_EL1() | 0x01 * (UINT64_C(1) << 14));	// DZE - Enables access to the DC ZVA instruction at EL0. The possible values ar
-	__set_SCTLR_EL1(__get_SCTLR_EL1() | SCTLR_EL3_NAA_Msk);	// Unaligned accesses by the specified instructions do not generate an Alignment fault.
-	__set_SCTLR_EL1(__get_SCTLR_EL1() & ~ SCTLR_EL3_A_Msk);	// Disable stack alignment check. The possible values are
+		__set_CPACR_EL1(__get_CPACR_EL1() | 0x03 * (UINT64_C(1) << 20));	// FPEN 0x03 - 0b11 No instructions are trapped.
+		__set_SCTLR_EL1(__get_SCTLR_EL1() | 0x01 * (UINT64_C(1) << 14));	// DZE - Enables access to the DC ZVA instruction at EL0. The possible values ar
+		__set_SCTLR_EL1(__get_SCTLR_EL1() | SCTLR_EL3_NAA_Msk);	// Unaligned accesses by the specified instructions do not generate an Alignment fault.
+		__set_SCTLR_EL1(__get_SCTLR_EL1() & ~ SCTLR_EL3_A_Msk);	// Disable stack alignment check. The possible values are
+	#endif
 
 	L1C_DisableCaches();
 	L1C_DisableBTAC();
@@ -1740,7 +1742,10 @@ sysinit_fpu_initialize(void)
 #elif (__CORTEX_A != 0)
 
 	// FPU
+	#if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
 	__FPU_Enable_fixed();
+	#endif
+
 	L1C_DisableCaches();
 	L1C_DisableBTAC();
 	MMU_Disable();
@@ -1782,7 +1787,7 @@ stsinit_irql_initialize(void)
 //	PRINTF("GIC_GetBinaryPoint()=%u\n", (unsigned) GIC_GetBinaryPoint());
 	ASSERT(GIC_BINARY_POINT == GIC_GetBinaryPoint());
 
-	GIC_Enable();	// self
+	GIC_Enable();
 
 #endif
 	InitializeIrql(IRQL_USER);	// nested interrupts support
@@ -2056,13 +2061,13 @@ uint64_t __get_CPUACTLRx(void)
 	__get_CP64(15, 0, result, 15);
 	return(result);
 }
-
-uint64_t __get_CPUECTLRx(void)
-{
-	uint64_t result;
-	__get_CP64(15, 1, result, 15);
-	return(result);
-}
+//
+//uint64_t __get_CPUECTLRx(void)
+//{
+//	uint64_t result;
+//	__get_CP64(15, 1, result, 15);
+//	return(result);
+//}
 
 uint64_t __get_CPUMERRSRx(void)
 {
@@ -2085,7 +2090,6 @@ static void sysinit_smp_initialize(void)
 #if (__CORTEX_A == 55U) && defined(__aarch64__)
 	/**
 	 * cortex_a55_trm_100442_0200_03_en.pdf
-	 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
 	 */
 	__set_ACTLR_EL3(__get_ACTLR_EL3() | (UINT32_C(1) << 0));	// CPUACTLR write access control. The possible
 	__set_ACTLR_EL3(__get_ACTLR_EL3() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
@@ -2124,8 +2128,8 @@ static void sysinit_smp_initialize(void)
 
 	// Access to this register depends on bit[1] of ACTLR_EL2 and ACTLR_EL3.
 	// set the CPUECTLR.SMPEN
-    __set_CPUECTLR(__get_CPUECTLR() | (UINT64_C(1) << 6));	// SMPEN 1: Enables data coherency with other cores in the cluster.
-	__set_CPUECTLR_EL1(__get_CPUECTLR_EL1() | (UINT32_C(1) << 6));	// // The SMP bit
+    //__set_CPUECTLR(__get_CPUECTLR() | (UINT64_C(1) << 6));	// SMPEN 1: Enables data coherency with other cores in the cluster.
+	//__set_CPUECTLR_EL1(__get_CPUECTLR_EL1() | (UINT32_C(1) << 6));	// // The SMP bit
 
 	// 4.5.28 Auxiliary Control Register
 	// bit6: L2ACTLR write access control
@@ -2147,7 +2151,35 @@ static void sysinit_smp_initialize(void)
 //    dbg_flush();
 
 #elif (__CORTEX_A == 53U) && defined(__aarch64__)
-	// Всё что надо делается в sysinit_fpu_initialize
+	/**
+	 * DDI0500J_cortex_a53_r0p4_trm.pdf
+	 * Set the SMPEN bit before enabling the caches, even if there is only one core in the system.
+	 */
+	__set_ACTLR_EL3(__get_ACTLR_EL3() | (UINT32_C(1) << 0));	// CPUACTLR write access control. The possible
+	__set_ACTLR_EL3(__get_ACTLR_EL3() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
+	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
+
+	// set the CPUECTLR.SMPEN
+	__set_CPUECTLR_EL1(__get_CPUECTLR_EL1() | (UINT64_C(1) << 6));	// SMPEN 1: Enables data coherency with other cores in the cluster.
+
+	// 4.5.28 Auxiliary Control Register
+	// bit6: L2ACTLR write access control
+	__set_ACTLR_EL3(__get_ACTLR_EL3() & ~ (UINT32_C(1) << 6));	/* не надо - но стояло как результат запуcка из UBOOT */
+	__ISB();
+	__DSB();
+
+	//PRINTF("__get_ACTLR_EL3()=0x%08" PRIx32 "\n", __get_ACTLR_EL3());
+	//PRINTF("__get_CPUACTLR_EL1()=0x%016" PRIx64 "\n", __get_CPUACTLR_EL1());
+	//PRINTF("__get_CPUMERRSRx()=0x%016" PRIx64 "\n", __get_CPUMERRSRx());
+	//PRINTF("__get_CPUECTLR_EL1()=0x%016" PRIx64 "\n", __get_CPUECTLR_EL1());
+	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
+
+	// set the CPUECTLR.SMPEN
+	////__set_CPUECTLR(__get_CPUECTLR() | (UINT64_C(1) << 6));	// SMPEN 1: Enables data coherency with other cores in the cluster.
+	//	PRINTF("__get_ACTLR()=0x%08" PRIx32 "\n", __get_ACTLR());
+	//	PRINTF("__get_CPUACTLRx()=0x%016" PRIx64 "\n", __get_CPUACTLRx());
+	////PRINTF("__get_CPUECTLRx()=0x%016" PRIx64 "\n", __get_CPUECTLRx());
+	//dbg_flush();
 
 #elif (__CORTEX_A == 53U) && ! defined(__aarch64__)
 	/**

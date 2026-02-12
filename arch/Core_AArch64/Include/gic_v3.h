@@ -931,8 +931,9 @@ __STATIC_INLINE void GIC_CPUInterfaceInit(void)
 
 /** \brief Initialize and enable the GIC
 */
-__STATIC_INLINE void GIC_Enable(int init_dist)
+__STATIC_INLINE void GIC_Enable(void)
 {
+	int init_dist = 1;
   /* Only one core should be responsible for the GIC distributor setup */
     if (init_dist)
         GIC_DistInit();

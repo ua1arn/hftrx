@@ -194,7 +194,7 @@ static void r7s721_intc_initializeOld(void)
     uint16_t offset;
     volatile uint32_t * addr;
 
-	//GIC_Enable();	// инициализирует не совсем так как надо для работы
+	//GIC_Enable(1);	// инициализирует не совсем так как надо для работы
 
 	/* default interrut handlers setup */
     for (offset = 0; offset < IRQ_GIC_LINE_COUNT; ++ offset)
@@ -2800,7 +2800,7 @@ void cpu_initialize(void)
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-	IRQ_Initialize();	// GIC_Enable() inside
+	IRQ_Initialize();	// GIC_Enable(0) inside
 	//GIC_Enable();
 #if CPUSTYLE_R7S721
 	r7s721_intc_initialize();
