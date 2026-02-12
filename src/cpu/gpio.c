@@ -235,7 +235,7 @@ static void r7s721_pio_onchangeinterrupt(
 		portholder_t mask = UINT32_C(1) << bitpos;
 		if ((ipins & mask) == 0)
 			continue;
-		const IRQn_ID_t int_id = irqbase + bitpos;
+		const uint_fast16_t int_id = irqbase + bitpos;
 		arm_hardware_disable_handler(int_id);
 		GIC_SetConfiguration(int_id, edge ? GIC_CONFIG_EDGE : GIC_CONFIG_LEVEL);// non-atomic operation
 		arm_hardware_set_handler(int_id, vector, priority, UINT32_C(1) << 0);	// CPU#0 is only one
@@ -656,7 +656,7 @@ void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, 
 		(edge << (irq * 2)) |
 		0;
 	{
-		const IRQn_ID_t int_id = IRQ0_IRQn + irq;
+		const uint_fast16_t int_id = IRQ0_IRQn + irq;
 		arm_hardware_disable_handler(int_id);
 		GIC_SetConfiguration(int_id, GIC_CONFIG_LEVEL);// non-atomic operation
 		arm_hardware_set_handler(int_id, r7s721_IRQn_IRQHandler, priority, UINT32_C(1) << 0);	// CPU#0 is only one
