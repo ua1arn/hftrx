@@ -52,8 +52,6 @@ uint32_t dram_para [128] = {
 };
 
 
-static uint32_t dram_size;
-
 void sunxi_smc_en_with_glitch_workaround(void) {
 	return;
 }
@@ -64,15 +62,12 @@ int set_ddr_voltage_ext(char *name, int set_vol, int on) {
 	return 0;
 }
 
-uint32_t sunxi_get_dram_size() {
-	return dram_size;
-}
+//static uint32_t dram_size;
 //
-//uint32_t sunxi_dram_init(void *para) {
-//	dram_size = init_DRAM(0, para);
+//uint32_t sunxi_get_dram_size() {
 //	return dram_size;
 //}
-//void sunxi_dram_init(void *);
+
 extern int init_DRAM(int type, void *buff);
 
 void udelay(uint32_t us)
