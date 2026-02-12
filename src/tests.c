@@ -7167,6 +7167,30 @@ void hightests(void)
 	{
 		GIC_SendSGI(TIMER1_3_IRQn, 1 << 0, 0x00);	// CPU0, filer=0
 
+		unsigned e0 = GIC_GetEnableIRQ(TIMER1_0_IRQn);
+		unsigned e1 = GIC_GetEnableIRQ(TIMER1_1_IRQn);
+		unsigned e2 = GIC_GetEnableIRQ(TIMER1_2_IRQn);
+		unsigned e3 = GIC_GetEnableIRQ(TIMER1_3_IRQn);
+
+		PRINTF("e 0..3: %u %u %u %u\n", e0, e1, e2, e3);
+
+		unsigned r0 = GIC_GetRedistPriority(TIMER1_0_IRQn);
+		unsigned r1 = GIC_GetRedistPriority(TIMER1_1_IRQn);
+		unsigned r2 = GIC_GetRedistPriority(TIMER1_2_IRQn);
+		unsigned r3 = GIC_GetRedistPriority(TIMER1_3_IRQn);
+
+		PRINTF("r 0..3: %u %u %u %u\n", r0, r1, r2, r3);
+
+		unsigned l0 = GIC_GetPriority(TIMER1_0_IRQn);
+		unsigned l1 = GIC_GetPriority(TIMER1_1_IRQn);
+		unsigned l2 = GIC_GetPriority(TIMER1_2_IRQn);
+		unsigned l3 = GIC_GetPriority(TIMER1_3_IRQn);
+
+		unsigned basepri = GIC_GetInterfacePriorityMask();
+		PRINTF("L 0..3: %u %u %u %u (%u)\n", l0, l1, l2, l3, basepri);
+
+		GIC_SetPendingIRQ(TIMER1_3_IRQn);
+
 		unsigned p0 = GIC_GetPendingIRQ(TIMER1_0_IRQn);
 		unsigned p1 = GIC_GetPendingIRQ(TIMER1_1_IRQn);
 		unsigned p2 = GIC_GetPendingIRQ(TIMER1_2_IRQn);
@@ -7178,9 +7202,9 @@ void hightests(void)
 		unsigned p5 = GIC_AcknowledgePending();
 		PRINTF("p 4..6: %u %u\n", p4, p5);
 
-		unsigned p7 = GICRedistributor->CTLR;
-		uint64_t p8 = GICRedistributor->PENDBASER;
-		uint64_t p9 = GICRedistributor->PROPBASER;
+		unsigned p7 = GICR0->GICR_CTLR;
+		uint64_t p8 = GICR0->GICR_PENDBASER;
+		uint64_t p9 = GICR0->GICR_PROPBASER;
 		PRINTF("p 7..9: %08X %" PRIX64 " %" PRIX64 "\n", p7, p8, p9);
 
 	}
@@ -9140,7 +9164,7 @@ void hightests(void)
 			const uintptr_t comp_base = base & ~ (comp_size - 1);
 			const unsigned GICR_CFGID0 = * (volatile uint32_t *) (base + 0x000);
 			const unsigned GICR_CFGID1 = * (volatile uint32_t *) (base + 0x004);
-			const unsigned typer = ((GICR_TypeDef *) comp_base)->TYPER;
+			const unsigned typer = ((GICR_TypeDef *) comp_base)->GICR_TYPER;
 			PRINTF("%p: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X (%s) typer=%08X GICR_CFGID0=%08X GICR_CFGID1=%08X %p comp_size=%u\n",
 					(void *) base,
 					GICR_PIDR4, GICR_PIDR5, GICR_PIDR6, GICR_PIDR7, GICR_PIDR0, GICR_PIDR1, GICR_PIDR2, GICR_PIDR3,
