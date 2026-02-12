@@ -2077,6 +2077,10 @@ uint32_t __get_ACTLRx(void)
 }
 #endif
 
+#if (__CORTEX_A == 53U) && defined(__aarch64__)
+#define CPUECTLR_SMPEN_Msk (UINT64_C(1) << 6)	// SMPEN 1: Enables data coherency with other cores in the cluster.
+#endif
+
 // SystemInit (on Core #0)
 // Reset_CPUn_Handler ((on Core #1..)
 static void sysinit_smp_initialize(void)
@@ -2124,8 +2128,12 @@ static void sysinit_smp_initialize(void)
 	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));    // [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
 
 	__set_ACTLR(__get_ACTLR() | (UINT32_C(1) << 1));    // CPUECTLR write access control. The possible
+
+	// Access to this register depends on bit[1] of ACTLR_EL2 and ACTLR_EL3.
 	// set the CPUECTLR.SMPEN
-////    __set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+    __set_CPUECTLR(__get_CPUECTLR() | CPUECTLR_SMPEN_Msk);
+	__set_CPUECTLR_EL1(__get_CPUECTLR_EL1() | (UINT32_C(1) << 6));	// // The SMP bit
+
 	// 4.5.28 Auxiliary Control Register
 	// bit6: L2ACTLR write access control
 	__set_ACTLR(__get_ACTLR() & ~ (UINT32_C(1) << 6));    /* не надо - но стояло как результат запуcка из UBOOT */
@@ -2274,7 +2282,7 @@ SystemInit(void)
 	sysinit_fpu_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	stsinit_irql_initialize();
-	sysinit_smp_initialize();
+	sysinit_smp_initialize();	// Set SMP bit
 	sysinit_perfmeter_initialize();
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
@@ -2318,7 +2326,7 @@ void __attribute__((used)) SystemDRAMInit(void)
 	resetCPU(1);
 #endif /* CPUSTYLE_VM14 */
 	sysinit_fpu_initialize();
-	sysinit_smp_initialize();
+	sysinit_smp_initialize();	// Set SMP bit
 	sysinit_perfmeter_initialize();
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
@@ -2804,7 +2812,7 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	sysinit_fpu_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	stsinit_irql_initialize();
-	sysinit_smp_initialize();
+	sysinit_smp_initialize();	// Set SMP bit
 	sysinit_perfmeter_initialize();
 	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_ttbr_initialize();		// Загрузка TTBR, инвалидация кеш памяти и включение MMU
