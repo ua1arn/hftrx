@@ -65,7 +65,7 @@ CORE = -mcpu=cortex-a55 -mfpu=vfpv4 --specs=nosys.specs -mfloat-abi=softfp
 # Define optimisation level here
 #OPT = -Og
 #OPT = -Ofast -flto
-OPT = -Os
+OPT = -Ofast
 
 CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 #CMSISDIR = $(PRJROOT)/arch/Core_AArch64
