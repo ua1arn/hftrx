@@ -194,7 +194,7 @@ _READ_WRITE_RETURN_TYPE __attribute__((used)) (_write)(int fd, const void * ptr,
 }
 
 
-#if CPUSTYLE_A733 && ! defined(__aarch64__) //defined(__aarch64__) && 0
+#if CPUSTYLE_A733 && WITHISBOOTLOADER && ! defined(__aarch64__) //defined(__aarch64__) && 0
 
 // Fix dc zva, xx opcode usage
 void * memset(void * dst, int v, size_t n)

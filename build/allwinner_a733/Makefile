@@ -251,24 +251,24 @@ bootloader: BOOT2
 # Take from tc1_a733_boot.map - address of SystemDRAMInit, SystemExecAARCH64
 ifeq (1, 1)
 # A733
-SystemDRAMInit = 0x0007a354
-SystemExecAARCH64 = 0x00077bb8
-DDRINIT=ddrinit_a733
+SystemDRAMInit = 0x00078714
+SystemExecAARCH64 = 0x00075124
+DDRINITBLOB=ddrinit_a733_lpddr4.bin
 endif
 
 ddrinit_a733_:
 	$(XFEL) ddr lpddr4
 	$(BUSYBOX) sleep 2s
 
-ddrinit_a733: ddrinit_a733_lpddr4.bin
-	$(XFEL) write 0x00074000 ddrinit_a733_lpddr4.bin
+ddrinit: $(DDRINITBLOB)
+	$(XFEL) write 0x00074000 $(DDRINITBLOB)
 	$(XFEL) exec $(SystemDRAMInit)
 
 app_run64: $(PROJECT)_app.alw32 $(DDRINIT)
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec $(SystemExecAARCH64)
 
-app_run: $(PROJECT)_app.alw32
+app_run: $(PROJECT)_app.alw32 ddrinit
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec 0x40000100
 

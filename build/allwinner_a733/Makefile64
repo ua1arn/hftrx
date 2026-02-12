@@ -57,9 +57,9 @@ CORE = -mcpu=cortex-a55+fp+simd -momit-leaf-frame-pointer --specs=nosys.specs
 #CORE = -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=neon-vfpv4
 
 # Define optimisation level here
-#OPT = -Og
+OPT = -Og
 #OPT = -Ofast -flto
-OPT = -Ofast
+#OPT = -Ofast
 
 #CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 CMSISDIR = $(PRJROOT)/arch/Core_AArch64
@@ -246,27 +246,26 @@ bootloader: BOOT2
 # Take from tc1_a733_boot.map - address of SystemDRAMInit, SystemExecAARCH64
 ifeq (1, 1)
 # A733
-SystemDRAMInit = 0x0007a354
-SystemExecAARCH64 = 0x00077bb8
-DDRINIT=ddrinit_a733
+SystemDRAMInit = 0x00078714
+SystemExecAARCH64 = 0x00075124
+DDRINITBLOB=ddrinit_a733_lpddr4.bin
 endif
 
 # Invoke SystemInit 
 
-ddrinit_a733: ddrinit_a733_lpddr4.bin
-	$(XFEL) write 0x00074000 ddrinit_a733_lpddr4.bin
+ddrinit: $(DDRINITBLOB)
+	$(XFEL) write 0x00074000 $(DDRINITBLOB)
 	$(XFEL) exec $(SystemDRAMInit)
 	$(BUSYBOX) sleep 2s
 
-app_run64: $(PROJECT)_app.alw32
+app_run64: $(PROJECT)_app.alw32 ddrinit
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
-	$(XFEL) write 0x00074000 ddrinit_a733_lpddr4.bin
 	$(XFEL) exec $(SystemExecAARCH64)
 
 # debug for bootloader - check .ld file
 _app_run: bootloader
-	$(XFEL) write 0x00028000 fsbl.bt0
-	$(XFEL) exec 0x00028000 
+	$(XFEL) write 0x00074000 fsbl.bt0
+	$(XFEL) exec 0x00074000 
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.bt0
