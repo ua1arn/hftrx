@@ -609,7 +609,8 @@
 
 #endif /* WITHSPIHW */
 
-#if 1
+#define CUBIEA7ZTARGET 1
+#if CUBIEA7ZTARGET
 // Radaxa Cubie A7Z
 // WITHUART0HW
 // Используется периферийный контроллер последовательного порта UART0
@@ -638,7 +639,7 @@
 
 #if 1
 	// BLINK
-	#if 1
+	#if CUBIEA7ZTARGET
 		// Radaxa Cubie A7Z
 		#define BOARD_BLINK_BIT0 (UINT32_C(1) << 2)	// PM2 - Green - to ground
 
