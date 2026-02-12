@@ -473,7 +473,7 @@ int board_orangepi4pro_axp318w_initialize(void)
 	//	DLDO6 VCC-UFS 2500 mV
 	//	ELDO6 VDD-CPUS, VDD-USB 800 mV
 	//	RTCLDO-PMU VCC-RTC
-#if 1
+#if 0
 	// skip init, print only
 	axpXXX_print(axp318_regulators);
 #else
@@ -505,6 +505,15 @@ int board_orangepi4pro_axp318w_initialize(void)
 
 	PRINTF("axp318 INIT END\n");
 	dbg_flush();
+	return 0;
+}
+
+// SysterKit callback
+int set_ddr_voltage_ext(char *name, int set_vol, int on)
+{
+	PRINTF("PMU: %s set vol %d, onoff %d\n", name, set_vol, on);
+	//pmu_axp8191_set_vol(&i2c_pmu, name, set_vol, on);
+	axp318w_set(name, set_vol);
 	return 0;
 }
 

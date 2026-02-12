@@ -9,6 +9,11 @@
 
 #include <stdint.h>
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #define NA 0xff
 
 struct axp_regulator_plat {
@@ -34,5 +39,10 @@ void axpXXX_print(const struct axp_regulator_plat * regs);
 int axpXXX_set_value(const struct axp_regulator_plat * regs, const char * name, unsigned mvolt);
 int axpXXX_set_enable(const struct axp_regulator_plat * regs, const char * name, unsigned state);
 
+int set_ddr_voltage_ext(char *name, int set_vol, int on);	// SysterKit callback
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* SRC_CHIP_AXP_REGULATOR_H_ */

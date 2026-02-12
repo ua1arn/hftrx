@@ -15,7 +15,6 @@
 #include "clocks.h"
 #include <string.h>
 
-
 uint32_t dram_para [128] = {
 		2400,	   // dram_clk
 		9,		   // dram_type
@@ -54,12 +53,6 @@ uint32_t dram_para [128] = {
 
 void sunxi_smc_en_with_glitch_workaround(void) {
 	return;
-}
-
-int set_ddr_voltage_ext(char *name, int set_vol, int on) {
-	PRINTF("PMU: %s set vol %d, onoff %d\n", name, set_vol, on);
-	//pmu_axp8191_set_vol(&i2c_pmu, name, set_vol, on);
-	return 0;
 }
 
 //static uint32_t dram_size;
