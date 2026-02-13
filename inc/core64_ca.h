@@ -1990,12 +1990,19 @@ __STATIC_INLINE void L2C_CleanInvPa (void *pa)
 /* ##########################  GIC functions  ###################################### */
 #if (defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)) || \
      defined(DOXYGEN)
+#error rr
+__STATIC_FORCEINLINE void GIC_DistributorWait(void)
+{
+	while ((GICDistributor->CTLR & (UINT32_C(1) << 31)) != 0)
+		;
+}
 
 /** \brief  Enable the interrupt distributor using the GIC's CTLR register.
 */
 __STATIC_INLINE void GIC_EnableDistributor(void)
 {
   GICDistributor->CTLR |= 1U;
+  GIC_DistributorWait();
 }
 
 /** \brief Disable the interrupt distributor using the GIC's CTLR register.
@@ -2003,6 +2010,7 @@ __STATIC_INLINE void GIC_EnableDistributor(void)
 __STATIC_INLINE void GIC_DisableDistributor(void)
 {
   GICDistributor->CTLR &=~1U;
+  GIC_DistributorWait();
 }
 
 /** \brief Read the GIC's TYPER register.

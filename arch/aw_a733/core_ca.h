@@ -792,7 +792,7 @@ typedef struct
 
 __STATIC_FORCEINLINE void GIC_RedistributorWait(void)
 {
-	while ((GICRedistributor->CTLR & (UINT32_C(1) << 31)) != 0)
+	while ((GICRedistributor->CTLR & (UINT32_C(1) << 31)) != 0)	// Bit 3 or 31 ???
 			;
 }
 

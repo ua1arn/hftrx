@@ -293,6 +293,12 @@ __STATIC_INLINE void GIC_WaitRWP(enum gic_rwp rwp)
         ;
 }
 
+__STATIC_FORCEINLINE void GIC_DistributorWait(void)
+{
+	while ((GICDistributor->CTLR & (UINT32_C(1) << 31)) != 0)
+		;
+}
+
 /** \brief Get the Affinity Routing status.
 */
 __STATIC_INLINE bool GIC_GetARE(void)
