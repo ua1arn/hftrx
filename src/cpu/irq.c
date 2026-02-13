@@ -2028,22 +2028,25 @@ void lclspin_enable(void)
 
 #endif /* CPUSTYLE_ARM && WITHSMPSYSTEM */
 
-/* newIRQL - уровень приоритета, прерывания с которым и ниже которого требуется запретить */
-/* Работа с текущим ядром */
-void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line)
-{
-#if ! LINUX_SUBSYSTEM
 
 #if WITHDEBUG
 	static const char * lastfile [HARDWARE_NCORES];
 	static int lastline [HARDWARE_NCORES];
 	static IRQL_t lastirql [HARDWARE_NCORES];
+#endif /* WITHDEBUG */
+/* newIRQL - уровень приоритета, прерывания с которым и ниже которого требуется запретить */
+/* Работа с текущим ядром */
+void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line)
+{
+#if ! LINUX_SUBSYSTEM
+#if WITHDEBUG
 	const unsigned core = arm_hardware_cpuid();
 #endif /* WITHDEBUG */
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	const IRQL_t oldv = GIC_GetInterfacePriorityMask();
 	ASSERT2(oldv != 0, file, line);
+	ASSERT2(lastirql [core] == oldv, file, line);
 	if (oldv >= newIRQL)
 	{
 		; /* Не понижаем приоритет */
@@ -2093,8 +2096,12 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 /* Работа с текущим ядром */
 void LowerIrql_DEBUG(IRQL_t newIRQL, const char * file, int line)
 {
-#if LINUX_SUBSYSTEM
-#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if ! LINUX_SUBSYSTEM
+#if WITHDEBUG
+	const unsigned core = arm_hardware_cpuid();
+#endif /* WITHDEBUG */
+
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
     ASSERT2(newIRQL != 0, file, line);
 	GIC_SetInterfacePriorityMask(newIRQL);
@@ -2109,8 +2116,15 @@ void LowerIrql_DEBUG(IRQL_t newIRQL, const char * file, int line)
 
 #else
 	#warning Implement LowerIrql
-
 #endif
+
+#if WITHDEBUG
+	lastfile [core] = file;
+	lastline [core] = line;
+	lastirql [core] = newIRQL;
+#endif /* WITHDEBUG */
+
+#endif /* ! LINUX_SUBSYSTEM */
 }
 
 void InitializeIrql(IRQL_t newIRQL)
