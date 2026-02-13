@@ -180,9 +180,9 @@
 ##base; GIC_INTERFACE 0x03460000; GICC GIC CPU Interface
 ##typeend;
 
-##type; GICD; GIC Distributor
-##base; GICD 0x03400000; GIC Distributor 
-##typeend;
+#type; GICD; GIC Distributor
+#base; GICD_ 0x03400000; GIC Distributor 
+#typeend;
 
 #type; GICT; GIC ITS translation
 #base; GICT 0x03420000; GIC ITS translation

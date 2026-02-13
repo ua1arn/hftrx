@@ -12,6 +12,6 @@ SET FILELIST= ^
 %CONVERTER% %FILELIST% > %OUTFILE%
 
 %CONVERTER% --svd %FILELIST% > aw_a733.svd
-rem %CONVERTER% --debug tconlcd.csv > aw_a733.txt
+rem %CONVERTER% --debug gic600.csv > gic600.h
 
 @pause
