@@ -277,3 +277,14 @@
 
 #irq; USB2 187; 
 #typeend;
+
+#type; DMAC
+#base; DMA0 0x04601000
+#base; DMA1 0x04024000
+
+#irq; DMA0_CPUX_NS 143
+#irq; DMA0_CPUX_S 144
+#irq; DMA1_CPUX_NS 145
+#irq; DMA1_CPUX_S 146
+
+#typeend;

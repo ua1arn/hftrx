@@ -89,6 +89,10 @@ typedef enum IRQn
     TIMER1_1_IRQn = 132,                              /*!< TIMER1  */
     TIMER1_2_IRQn = 133,                              /*!< TIMER1  */
     TIMER1_3_IRQn = 134,                              /*!< TIMER1  */
+    DMA0_CPUX_NS_IRQn = 143,                          /*!< DMAC  */
+    DMA0_CPUX_S_IRQn = 144,                           /*!< DMAC  */
+    DMA1_CPUX_NS_IRQn = 145,                          /*!< DMAC  */
+    DMA1_CPUX_S_IRQn = 146,                           /*!< DMAC  */
     USB2_IRQn = 187,                                  /*!< USB3P1_DRD  */
     USB0_DEVICE_IRQn = 188,                           /*!< USBOTG USB OTG Dual-Role Device controller */
     USB0_EHCI_IRQn = 189,                             /*!< USB_EHCI_Capability  */
@@ -166,10 +170,12 @@ typedef enum IRQn
 #define GITS_BASE ((uintptr_t) 0x03440000)            /*!< GITS GIC Secure Access Control Base */
 #define GICR0_BASE ((uintptr_t) 0x03460000)           /*!< GICR GIC Redistributor  Base */
 #define GIC_REDISTRIBUTOR_BASE ((uintptr_t) 0x03460000)/*!< GIC_REDISTRIBUTOR GICD GIC Distributor Base */
+#define DMA1_BASE ((uintptr_t) 0x04024000)            /*!< DMAC  Base */
 #define USB0_DEVICE_BASE ((uintptr_t) 0x04100000)     /*!< USBOTG USB OTG Dual-Role Device controller Base */
 #define USB0_EHCI_BASE ((uintptr_t) 0x04101000)       /*!< USB_EHCI_Capability  Base */
 #define USB1_EHCI_BASE ((uintptr_t) 0x04201000)       /*!< USB_EHCI_Capability  Base */
 #define USB1_OHCI_BASE ((uintptr_t) 0x04201400)       /*!< USB_OHCI_Capability  Base */
+#define DMA0_BASE ((uintptr_t) 0x04601000)            /*!< DMAC  Base */
 #define USB0_OHCI_BASE ((uintptr_t) 0x05101400)       /*!< USB_OHCI_Capability  Base */
 #define USB3P1_DRD_BASE ((uintptr_t) 0x06A00000)      /*!< USB3P1_DRD  Base */
 #define STBY_PRCM_BASE ((uintptr_t) 0x07010000)       /*!< PRCM  Base */
@@ -731,6 +737,39 @@ typedef struct CPU_SUBSYS_CTRL_Type
              RESERVED(0x00C[0x1000 - 0x000C], uint8_t)
     } CLU0 [0x008];                                   /*!< Offset 0x1000 Cluster 0 CPUx Control Register */
 } CPU_SUBSYS_CTRL_TypeDef; /* size of structure = 0x9000 */
+/*
+ * @brief DMAC
+ */
+/*!< DMAC  */
+typedef struct DMAC_Type
+{
+         RESERVED(0x000[0x0020 - 0x0000], uint8_t)
+    __IOM uint32_t DMAC_SEC_REG;                      /*!< Offset 0x020 DMA Security Register */
+         RESERVED(0x024[0x0028 - 0x0024], uint8_t)
+    __IOM uint32_t DMAC_AUTO_GATE_REG;                /*!< Offset 0x028 DMAC Auto Gating Register */
+         RESERVED(0x02C[0x0030 - 0x002C], uint8_t)
+    __IM  uint32_t DMAC_STA_REG;                      /*!< Offset 0x030 DMAC Status Register */
+    __IOM uint32_t DMA_IRQ_CPU_EN_REG;                /*!< Offset 0x034 DMA IRQ Transfer to CPU Field Enable Register */
+    __IOM uint32_t DMA_IRQ_CPUS_EN_REG;               /*!< Offset 0x038 DMA IRQ Transfer to CPUS Field Enable Register */
+         RESERVED(0x03C[0x0100 - 0x003C], uint8_t)
+    struct
+    {
+        __IOM uint32_t DMAC_EN_REGN;                  /*!< Offset 0x100 DMAC Channel Enable Register N (N = 0 to 15) 0x0100 + N*0x0040 */
+        __IOM uint32_t DMAC_PAU_REGN;                 /*!< Offset 0x104 DMAC Channel Pause Register N (N = 0 to 15) 0x0104 + N*0x0040 */
+        __IOM uint32_t DMAC_DESC_ADDR_REGN;           /*!< Offset 0x108 DMAC Channel Start Address Register N (N = 0 to 15) 0x0108 + N*0x0040 */
+        __IM  uint32_t DMAC_CFG_REGN;                 /*!< Offset 0x10C DMAC Channel Configuration Register N (N = 0 to 15) 0x010C + N*0x0040 */
+        __IM  uint32_t DMAC_CUR_SRC_REGN;             /*!< Offset 0x110 DMAC Channel Current Source Register N (N = 0 to 15) 0x0110 + N*0x0040 */
+        __IM  uint32_t DMAC_CUR_DEST_REGN;            /*!< Offset 0x114 DMAC Channel Current Destination Register N (N = 0 to 15) 0x0114 + N*0x0040 */
+        __IM  uint32_t DMAC_BCNT_LEFT_REGN;           /*!< Offset 0x118 DMAC Channel Byte Counter Left Register N (N = 0 to 15) 0x0118 + N*0x0040 */
+        __IM  uint32_t DMAC_PARA_REGN;                /*!< Offset 0x11C DMAC Channel Parameter Register N (N = 0 to 15) 0x011C + N*0x0040 */
+             RESERVED(0x020[0x0028 - 0x0020], uint8_t)
+        __IOM uint32_t DMAC_MODE_REGN;                /*!< Offset 0x128 DMAC Mode Register N (N = 0 to 15) 0x0128 + N*0x0040 */
+        __IM  uint32_t DMAC_FDESC_ADDR_REGN;          /*!< Offset 0x12C DMAC Former Descriptor Address Register N (N = 0 to 15) 0x012C + N*0x0040 */
+        __IM  uint32_t DMAC_PKG_NUM_REGN;             /*!< Offset 0x130 DMAC Package Number Register N (N = 0 to 15) 0x0130 + N*0x0040 */
+             RESERVED(0x034[0x0040 - 0x0034], uint8_t)
+    } CH [0x010];                                     /*!< Offset 0x100 Channel [0..15] */
+         RESERVED(0x500[0x1000 - 0x0500], uint8_t)
+} DMAC_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief GICA
  */
@@ -1566,10 +1605,12 @@ typedef struct USB_OHCI_Capability_Type
 #define GICP ((GICP_TypeDef *) GICP_BASE)             /*!< GICP GIC Performance Monitoring Unit register set access pointer */
 #define GITS ((GITS_TypeDef *) GITS_BASE)             /*!< GITS GIC Secure Access Control register set access pointer */
 #define GICR0 ((GICR_TypeDef *) GICR0_BASE)           /*!< GICR0 GIC Redistributor  register set access pointer */
+#define DMA1 ((DMAC_TypeDef *) DMA1_BASE)             /*!< DMA1  register set access pointer */
 #define USB0_DEVICE ((USBOTG_TypeDef *) USB0_DEVICE_BASE)/*!< USB0_DEVICE USB OTG Dual-Role Device controller register set access pointer */
 #define USB0_EHCI ((USB_EHCI_Capability_TypeDef *) USB0_EHCI_BASE)/*!< USB0_EHCI  register set access pointer */
 #define USB1_EHCI ((USB_EHCI_Capability_TypeDef *) USB1_EHCI_BASE)/*!< USB1_EHCI  register set access pointer */
 #define USB1_OHCI ((USB_OHCI_Capability_TypeDef *) USB1_OHCI_BASE)/*!< USB1_OHCI  register set access pointer */
+#define DMA0 ((DMAC_TypeDef *) DMA0_BASE)             /*!< DMA0  register set access pointer */
 #define USB0_OHCI ((USB_OHCI_Capability_TypeDef *) USB0_OHCI_BASE)/*!< USB0_OHCI  register set access pointer */
 #define STBY_PRCM ((PRCM_TypeDef *) STBY_PRCM_BASE)   /*!< STBY_PRCM  register set access pointer */
 #define S_GPIOL ((S_GPIO_TypeDef *) S_GPIOL_BASE)     /*!< S_GPIOL Secure Port Controller register set access pointer */
