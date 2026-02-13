@@ -19649,7 +19649,7 @@ static STTE_t hamradio_tune_step(void)
 #if WITHDEBUG
 static void keyspoolprocess(void * ctx)
 {
-#if 0 && WITHUSBHW && defined (WITHUSBHW_DEVICE)
+#if CPUSTYLE_A733 && WITHUSBHW && defined (WITHUSBHW_DEVICE)
 	{
 		IRQL_t oldIrql;
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
