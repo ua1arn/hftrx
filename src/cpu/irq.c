@@ -1070,20 +1070,24 @@ void IRQ_Handler_GIC(void)
 	{
 		const IRQHandler_t f = IRQ_GetHandler(int_id);
 
+//		static const char hex [16] = "0123456789ABCDEF";
+//		if ((int_id >> 8) & 0x0F)
+//			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
+//		dbg_putchar(hex [(int_id >> 4) & 0x0F]);
+//		dbg_putchar(hex [(int_id >> 0) & 0x0F]);
+
 		if (f != (IRQHandler_t) 0)
 		{
-//			static const char hex [16] = "0123456789ABCDEF";
-//			if ((int_id >> 8) & 0x0F)
-//				dbg_putchar(hex [(int_id >> 8) & 0x0F]);
-//			dbg_putchar(hex [(int_id >> 4) & 0x0F]);
-//			dbg_putchar(hex [(int_id >> 0) & 0x0F]);
 			global_enableIRQ();						/* modify I bit in CPSR */
 			(* f)();	    /* Call interrupt handler */
 			global_disableIRQ();					/* modify I bit in CPSR */
-			//dbg_putchar('_');
+//			dbg_putchar('_');
+		}
+		else
+		{
+//			dbg_putchar(']');
 		}
 
-		//dbg_putchar('5');
 	}
 	else
 	{
