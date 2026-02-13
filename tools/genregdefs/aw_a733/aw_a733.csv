@@ -181,7 +181,7 @@
 ##typeend;
 
 #type; GICD; GIC Distributor
-#base; GICD_ 0x03400000; GIC Distributor 
+#base; GICD 0x03400000; GIC Distributor 
 #typeend;
 
 #type; GICT; GIC ITS translation

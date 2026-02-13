@@ -3540,7 +3540,7 @@
   </interrupt>
   </peripheral>
   <peripheral>
-  <name>GICD_</name>
+  <name>GICD</name>
   <description>GIC Distributor</description>
   <baseAddress>0x03400000</baseAddress>
   <registers>

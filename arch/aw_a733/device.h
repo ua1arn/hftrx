@@ -164,7 +164,7 @@ typedef enum IRQn
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Security ID Base */
 #define Timer0_CPUX_BASE ((uintptr_t) 0x03009000)     /*!< TIMER0  Base */
 #define GIC_BASE ((uintptr_t) 0x03400000)             /*!< GIC  Base */
-#define GICD__BASE ((uintptr_t) 0x03400000)           /*!< GICD GIC Distributor Base */
+#define GICD_BASE ((uintptr_t) 0x03400000)            /*!< GICD GIC Distributor Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03400000) /*!< GIC_DISTRIBUTOR GICD Base */
 #define GICT_BASE ((uintptr_t) 0x03420000)            /*!< GICT GIC ITS translation Base */
 #define GICP_BASE ((uintptr_t) 0x03430000)            /*!< GICP GIC Performance Monitoring Unit Base */
@@ -1602,7 +1602,7 @@ typedef struct USB_OHCI_Capability_Type
 #define SPI2 ((SPI_TypeDef *) SPI2_BASE)              /*!< SPI2 Serial Peripheral Interface register set access pointer */
 #define SPI3 ((SPI_TypeDef *) SPI3_BASE)              /*!< SPI3 Serial Peripheral Interface register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
-#define GICD_ ((GICD_TypeDef *) GICD__BASE)           /*!< GICD_ GIC Distributor register set access pointer */
+#define GICD ((GICD_TypeDef *) GICD_BASE)             /*!< GICD GIC Distributor register set access pointer */
 #define GICT ((GICT_TypeDef *) GICT_BASE)             /*!< GICT GIC ITS translation register set access pointer */
 #define GICP ((GICP_TypeDef *) GICP_BASE)             /*!< GICP GIC Performance Monitoring Unit register set access pointer */
 #define GITS ((GITS_TypeDef *) GITS_BASE)             /*!< GITS GIC Secure Access Control register set access pointer */
