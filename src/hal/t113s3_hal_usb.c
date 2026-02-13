@@ -350,23 +350,23 @@ static void usb_clear_bus_interrupt_enable(pusb_struct pusb, uint32_t bm)
 
 static uint32_t usb_get_dma_interrupt_status(pusb_struct pusb)
 {
-	return WITHUSBHW_DEVICE->USB_DMA_INTS & UINT32_C(0xFF);
+	return WITHUSBHW_DEVICE->USB_DMA_INTS & UINT32_C(0xFFFF);
 }
 
 static void usb_clear_dma_interrupt_status(pusb_struct pusb, uint32_t bm)
 {
 	// Set 1 to the bit will clean it.
-	WITHUSBHW_DEVICE->USB_DMA_INTS = (bm & UINT32_C(0xFF));
+	WITHUSBHW_DEVICE->USB_DMA_INTS = (bm & UINT32_C(0xFFFF));
 }
 
 static void usb_set_dma_interrupt_enable(pusb_struct pusb, uint32_t bm)
 {
-	WITHUSBHW_DEVICE->USB_DMA_INTE |= (bm & UINT32_C(0xFF));
+	WITHUSBHW_DEVICE->USB_DMA_INTE |= (bm & UINT32_C(0xFFFF));
 }
 
 static uint32_t usb_get_dma_interrupt_enable(pusb_struct pusb)
 {
-	return WITHUSBHW_DEVICE->USB_DMA_INTE & UINT32_C(0xFF);
+	return WITHUSBHW_DEVICE->USB_DMA_INTE & UINT32_C(0xFFFF);
 }
 
 static void usb_clear_dma_interrupt_enable(pusb_struct pusb, uint32_t bm)
@@ -4718,7 +4718,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		usb_clear_dma_interrupt_status(pusb, temp);
 		if (temp != 0)
 		{
-			for (i = 0; i < 8; ++ i)
+			for (i = 0; i < 16; ++ i)
 			{
 				if (temp & (UINT32_C(1) << i))
 				{
@@ -5045,12 +5045,14 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 		if (1)
 		{
 			// USB embeddded DMA configuration test
-			usb_set_dma_interrupt_enable(pusb, 0xFF);
+			usb_set_dma_interrupt_enable(pusb, UINT32_C(0xFFFFFFFF));
 			WITHUSBHW_DEVICE->USB_DMA_INTE |= UINT32_C(0xFFFFFFFF);
-			const unsigned dman = aw_log2(WITHUSBHW_DEVICE->USB_DMA_INTE & 0xFF);
+			const unsigned dman = aw_log2(WITHUSBHW_DEVICE->USB_DMA_INTE & 0xFFFF);
 			PRINTF("USB device DMA: %u channels (USB_DMA_INTE=%08X)\n", dman, (unsigned) WITHUSBHW_DEVICE->USB_DMA_INTE);
-			usb_clear_dma_interrupt_enable(pusb, 0xFF);
+			usb_clear_dma_interrupt_enable(pusb, UINT32_C(0xFFFFFFFF));
 			WITHUSBHW_DEVICE->USB_DMA_INTE = 0;
+//			memset32(WITHUSBHW_DEVICE->USB_DMA, ~0, sizeof WITHUSBHW_DEVICE->USB_DMA);
+//			printhex32(0, WITHUSBHW_DEVICE->USB_DMA, sizeof WITHUSBHW_DEVICE->USB_DMA);
 		}
 
 	  /* Force Device Mode*/

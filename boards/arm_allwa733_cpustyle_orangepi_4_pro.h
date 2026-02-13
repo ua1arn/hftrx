@@ -106,7 +106,7 @@
 	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
 	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	//#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
+	//#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
 
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
@@ -235,7 +235,7 @@
 		#endif /* WITHINTEGRATEDDSP */
 
 		#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-		#define WITHUSBCDCACM_N		1	/* количество виртуальных последовательных портов */
+		#define WITHUSBCDCACM_N		2	/* количество виртуальных последовательных портов */
 		//#define WITHUSBCDCACM_NOINT	1	/* Не использовать NOTIFY endpoint - под Linux не работает */
 
 
