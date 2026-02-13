@@ -2381,20 +2381,21 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
     #include "a-profile/irq_ctrl.h" // CMSIS_6 file
 #endif
 
-static void disableAllIRQs(void)
+void printAllEnabledIRQs(void)
 {
 
 	// Get ITLinesNumber
 	const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
 	unsigned i;
+	PRINTF("printAllEnabledIRQs stare: n=%u\n", n);
 	// 32 - skip SGI handlers (keep enabled for CPU1 start).
 	for (i = 32; i < n; ++ i)
 	{
 		if (IRQ_GetEnableState(i))
-			PRINTF("disableAllIRQs: active=%u // IRQ_Disable(%u); \n", i, i);
-		IRQ_Disable(i);
+			PRINTF("printAllEnabledIRQs: active=%u // IRQ_Disable(%u); \n", i, i);
+		//IRQ_Disable(i);
 	}
-	PRINTF("disableAllIRQs: n=%u\n", n);
+	PRINTF("printAllEnabledIRQs: n=%u\n", n);
 
 }
 
@@ -7147,6 +7148,11 @@ void __set_ICC_SRE_EL3(uint32_t value)
 {
 	__MSR(ICC_SRE_EL3, value);
 }
+
+void __set_ICC_PMR_EL1(uint32_t value)
+{
+	__MSR(ICC_PMR_EL1, value);
+}
 #endif /* (__CORTEX_A == 55U) && defined(__aarch64__) */
 
 void hightests(void)
@@ -7165,47 +7171,118 @@ void hightests(void)
 #endif
 #if 0
 	{
-		GIC_SendSGI(TIMER1_3_IRQn, 1 << 0, 0x00);	// CPU0, filer=0
+		//GIC_SendSGI(TIMER1_3_IRQn, 1 << 0, 0x00);	// CPU0, filer=0
+
+		//arm_hardware_set_handler_system(USB0_DEVICE_IRQn, NULL);
 
 		unsigned e0 = GIC_GetEnableIRQ(TIMER1_0_IRQn);
 		unsigned e1 = GIC_GetEnableIRQ(TIMER1_1_IRQn);
 		unsigned e2 = GIC_GetEnableIRQ(TIMER1_2_IRQn);
 		unsigned e3 = GIC_GetEnableIRQ(TIMER1_3_IRQn);
+		unsigned e4 = GIC_GetEnableIRQ(USB0_DEVICE_IRQn);
 
-		PRINTF("e 0..3: %u %u %u %u\n", e0, e1, e2, e3);
-
-		unsigned r0 = GIC_GetRedistPriority(TIMER1_0_IRQn);
-		unsigned r1 = GIC_GetRedistPriority(TIMER1_1_IRQn);
-		unsigned r2 = GIC_GetRedistPriority(TIMER1_2_IRQn);
-		unsigned r3 = GIC_GetRedistPriority(TIMER1_3_IRQn);
-
-		PRINTF("r 0..3: %u %u %u %u\n", r0, r1, r2, r3);
+		PRINTF("e 0..3: %u %u %u %u %u\n", e0, e1, e2, e3, e4);
 
 		unsigned l0 = GIC_GetPriority(TIMER1_0_IRQn);
 		unsigned l1 = GIC_GetPriority(TIMER1_1_IRQn);
 		unsigned l2 = GIC_GetPriority(TIMER1_2_IRQn);
 		unsigned l3 = GIC_GetPriority(TIMER1_3_IRQn);
+		unsigned l4 = GIC_GetPriority(USB0_DEVICE_IRQn);
 
 		unsigned basepri = GIC_GetInterfacePriorityMask();
-		PRINTF("L 0..3: %u %u %u %u (%u)\n", l0, l1, l2, l3, basepri);
+		PRINTF("L 0..4: %u %u %u %u %u (%u)\n", l0, l1, l2, l3, l4, basepri);
+//
+//		GIC_SetPendingIRQ(TIMER1_3_IRQn);
 
-		GIC_SetPendingIRQ(TIMER1_3_IRQn);
-
-		unsigned p0 = GIC_GetPendingIRQ(TIMER1_0_IRQn);
-		unsigned p1 = GIC_GetPendingIRQ(TIMER1_1_IRQn);
-		unsigned p2 = GIC_GetPendingIRQ(TIMER1_2_IRQn);
-		unsigned p3 = GIC_GetPendingIRQ(TIMER1_3_IRQn);
-
-		PRINTF("p 0..3: %u %u %u %u\n", p0, p1, p2, p3);
+//		unsigned p0 = GIC_GetPendingIRQ(TIMER1_0_IRQn);
+//		unsigned p1 = GIC_GetPendingIRQ(TIMER1_1_IRQn);
+//		unsigned p2 = GIC_GetPendingIRQ(TIMER1_2_IRQn);
+//		unsigned p3 = GIC_GetPendingIRQ(TIMER1_3_IRQn);
+//
+//		PRINTF("p 0..3: %u %u %u %u\n", p0, p1, p2, p3);
 
 		unsigned p4 = GIC_GetHighPendingIRQ();
 		unsigned p5 = GIC_AcknowledgePending();
 		PRINTF("p 4..6: %u %u\n", p4, p5);
 
-		unsigned p7 = GICR0->GICR_CTLR;
-		uint64_t p8 = GICR0->GICR_PENDBASER;
-		uint64_t p9 = GICR0->GICR_PROPBASER;
-		PRINTF("p 7..9: %08X %" PRIX64 " %" PRIX64 "\n", p7, p8, p9);
+		unsigned p7 = GICDistributor->CTLR;
+		PRINTF("CTLR %08X\n", p7);
+
+		//uint64_t cfgid1 = GICD->GICD_CFGID;
+		uint64_t cfgid2 = GICD->GICD_CFGID;
+		PRINTF("cores: %u\n",
+				//(unsigned) ((cfgid1 >> 48) & 0x1F),
+				(unsigned) ((cfgid2 >> 48) & 0x1F)
+
+		);
+
+//		unsigned p7 = GICR0->GICR_CTLR;
+//		uint64_t p8 = GICR0->GICR_PENDBASER;
+//		uint64_t p9 = GICR0->GICR_PROPBASER;
+//		PRINTF("p 7..9: %08X %" PRIX64 " %" PRIX64 "\n", p7, p8, p9);
+
+	}
+#endif
+#if 1
+	{
+		if (1)
+		{
+			PRINTF("IRQ test:\n");
+
+			//global_enableIRQ();
+			//printAllEnabledIRQs();
+
+			TP();
+			{
+				const IRQn_Type irqn = USB0_DEVICE_IRQn;
+
+				GIC_SetPendingIRQ(irqn);
+				TP();
+				GIC_EnableIRQ(irqn);
+				//arm_hardware_set_handler_system(irqn, NULL);
+				ASSERT(GIC_GetEnableIRQ(irqn));
+				TP();
+
+			}
+			TP();
+			{
+				const IRQn_Type irqn = TIMER1_1_IRQn;
+
+				GIC_SetPendingIRQ(irqn);
+				TP();
+				GIC_EnableIRQ(irqn);
+				//arm_hardware_set_handler_system(irqn, NULL);
+				ASSERT(GIC_GetEnableIRQ(irqn));
+				TP();
+
+			}
+			TP();
+			{
+				const IRQn_Type irqn = USB0_DEVICE_IRQn;
+
+				GIC_SetPendingIRQ(irqn);
+				TP();
+				GIC_EnableIRQ(irqn);
+				//arm_hardware_set_handler_system(irqn, NULL);
+				ASSERT(GIC_GetEnableIRQ(irqn));
+				TP();
+
+			}
+
+//			GIC_SetPendingIRQ(irqn);
+//			TP();
+//			ASSERT(GIC_GetPendingIRQ(irqn));
+//			TP();
+
+			unsigned p4 = GIC_GetHighPendingIRQ();
+			unsigned p5 = GIC_AcknowledgePending();
+			PRINTF("p 4..6: %u %u\n", p4, p5);
+
+	//		GIC_ClearPendingIRQ(irqn);
+	//		ASSERT(! GIC_GetPendingIRQ(irqn));
+			PRINTF("IRQ test done\n");
+
+		}
 
 	}
 #endif
@@ -9952,7 +10029,7 @@ void hightests(void)
 		TP();
 		unsigned cnt;
 		display2_fillbg(db);
-		//disableAllIRQs();
+		//printAllEnabledIRQs();
 		for (cnt = 0; ; ++ cnt)
 		{
 			const time_t tstart = time(NULL);
