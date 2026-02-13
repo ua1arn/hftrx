@@ -28,13 +28,15 @@ typedef enum IRQn
     SGI13_IRQn = 13,                                  /*!< GIC_INTERFACE GICC GIC CPU Interface */
     SGI14_IRQn = 14,                                  /*!< GIC_INTERFACE GICC GIC CPU Interface */
     SGI15_IRQn = 15,                                  /*!< GIC_INTERFACE GICC GIC CPU Interface */
-    VirtualMaintenanceInterrupt_IRQn = 25,            /*!< GIC_INTERFACE GICC GIC CPU Interface */
-    HypervisorTimer_IRQn = 26,                        /*!< GIC_INTERFACE GICC GIC CPU Interface */
-    VirtualTimer_IRQn = 27,                           /*!< GIC_INTERFACE GICC GIC CPU Interface */
-    Legacy_nFIQ_IRQn = 28,                            /*!< GIC_INTERFACE GICC GIC CPU Interface */
-    SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
-    NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE GICC GIC CPU Interface */
-    Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    PPI_22_IRQn = 22,                                 /*!< GIC_INTERFACE nCOMMIRQ[7:0] Interrupt-driven debug communications operation */
+    PMU_IRQn = 23,                                    /*!< GIC_INTERFACE nPMUIRQ[7:0] PMU interrupt request */
+    CTI_IRQn = 24,                                    /*!< GIC_INTERFACE CTIIRQ[7:0] CTI interrupt */
+    VirtualMaintenanceInterrupt_IRQn = 25,            /*!< GIC_INTERFACE nVCPUMNTIRQ[7:0] Virtual CPU interface maintenance interrupt */
+    HypervisorTimer_IRQn = 26,                        /*!< GIC_INTERFACE nCNTHPIRQ[7:0] Hypervisor physical timer event */
+    VirtualTimer_IRQn = 27,                           /*!< GIC_INTERFACE nCNTVIRQ[7:0] Virtual timer event */
+    HypervisorVirtualTimer_IRQn = 28,                 /*!< GIC_INTERFACE nCNTHVIRQ[7:0] Hypervisor virtual timer event */
+    SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE nCNTPSIRQ[7:0] Secure physical timer event */
+    NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE nCNTPNSIRQ[7:0] Nonsecure physical timer event */
     UART0_IRQn = 34,                                  /*!< UART  */
     UART1_IRQn = 35,                                  /*!< UART  */
     UART2_IRQn = 36,                                  /*!< UART  */
@@ -55,15 +57,6 @@ typedef enum IRQn
     TWI10_IRQn = 53,                                  /*!< TWI Two Wire Interface (TWI) */
     TWI11_IRQn = 54,                                  /*!< TWI Two Wire Interface (TWI) */
     TWI12_IRQn = 55,                                  /*!< TWI Two Wire Interface (TWI) */
-    USB20_OTG_DEVICE_IRQn = 57,                       /*!< USBOTG USB OTG Dual-Role Device controller */
-    USB20_HOST0_EHCI_IRQn = 58,                       /*!< USB_EHCI_Capability  */
-    USB20_HOST0_OHCI_IRQn = 59,                       /*!< USB_OHCI_Capability  */
-    USB20_HOST1_EHCI_IRQn = 60,                       /*!< USB_EHCI_Capability  */
-    USB20_HOST1_OHCI_IRQn = 61,                       /*!< USB_OHCI_Capability  */
-    USB20_HOST2_EHCI_IRQn = 62,                       /*!< USB_EHCI_Capability  */
-    USB20_HOST2_OHCI_IRQn = 63,                       /*!< USB_OHCI_Capability  */
-    USB20_HOST3_EHCI_IRQn = 64,                       /*!< USB_EHCI_Capability  */
-    USB20_HOST3_OHCI_IRQn = 65,                       /*!< USB_OHCI_Capability  */
     GPIOB_IRQn = 101,                                 /*!< GPIOINT GPIOB_NS */
     GPIOB_S_IRQn = 102,                               /*!< GPIOINT  */
     GPIOC_IRQn = 103,                                 /*!< GPIOINT GPIOC_NS */
@@ -96,6 +89,12 @@ typedef enum IRQn
     TIMER1_1_IRQn = 132,                              /*!< TIMER1  */
     TIMER1_2_IRQn = 133,                              /*!< TIMER1  */
     TIMER1_3_IRQn = 134,                              /*!< TIMER1  */
+    USB2_IRQn = 187,                                  /*!< USB3P1_DRD  */
+    USB0_DEVICE_IRQn = 188,                           /*!< USBOTG USB OTG Dual-Role Device controller */
+    USB0_EHCI_IRQn = 189,                             /*!< USB_EHCI_Capability  */
+    USB0_OHCI_IRQn = 190,                             /*!< USB_OHCI_Capability  */
+    USB1_EHCI_IRQn = 191,                             /*!< USB_EHCI_Capability  */
+    USB1_OHCI_IRQn = 192,                             /*!< USB_OHCI_Capability  */
     RTC_ALARM_IRQn = 228,                             /*!< RTC Real Time Clock (RTC) */
     S_GPIOL_S_IRQn = 229,                             /*!< GPIOINT  */
     S_GPIOL_IRQn = 230,                               /*!< GPIOINT S_GPIOL_NS */
@@ -167,15 +166,12 @@ typedef enum IRQn
 #define GITS_BASE ((uintptr_t) 0x03440000)            /*!< GITS GIC Secure Access Control Base */
 #define GICR0_BASE ((uintptr_t) 0x03460000)           /*!< GICR GIC Redistributor  Base */
 #define GIC_REDISTRIBUTOR_BASE ((uintptr_t) 0x03460000)/*!< GIC_REDISTRIBUTOR GICD GIC Distributor Base */
-#define USB20_OTG_DEVICE_BASE ((uintptr_t) 0x05100000)/*!< USBOTG USB OTG Dual-Role Device controller Base */
-#define USB20_HOST0_EHCI_BASE ((uintptr_t) 0x05101000)/*!< USB_EHCI_Capability  Base */
-#define USB20_HOST0_OHCI_BASE ((uintptr_t) 0x05101400)/*!< USB_OHCI_Capability  Base */
-#define USB20_HOST1_EHCI_BASE ((uintptr_t) 0x05200000)/*!< USB_EHCI_Capability  Base */
-#define USB20_HOST1_OHCI_BASE ((uintptr_t) 0x05200400)/*!< USB_OHCI_Capability  Base */
-#define USB20_HOST2_EHCI_BASE ((uintptr_t) 0x05310000)/*!< USB_EHCI_Capability  Base */
-#define USB20_HOST2_OHCI_BASE ((uintptr_t) 0x05310400)/*!< USB_OHCI_Capability  Base */
-#define USB20_HOST3_EHCI_BASE ((uintptr_t) 0x05311000)/*!< USB_EHCI_Capability  Base */
-#define USB20_HOST3_OHCI_BASE ((uintptr_t) 0x05311400)/*!< USB_OHCI_Capability  Base */
+#define USB0_DEVICE_BASE ((uintptr_t) 0x04100000)     /*!< USBOTG USB OTG Dual-Role Device controller Base */
+#define USB0_EHCI_BASE ((uintptr_t) 0x04101000)       /*!< USB_EHCI_Capability  Base */
+#define USB1_EHCI_BASE ((uintptr_t) 0x04201000)       /*!< USB_EHCI_Capability  Base */
+#define USB1_OHCI_BASE ((uintptr_t) 0x04201400)       /*!< USB_OHCI_Capability  Base */
+#define USB0_OHCI_BASE ((uintptr_t) 0x05101400)       /*!< USB_OHCI_Capability  Base */
+#define USB3P1_DRD_BASE ((uintptr_t) 0x06A00000)      /*!< USB3P1_DRD  Base */
 #define STBY_PRCM_BASE ((uintptr_t) 0x07010000)       /*!< PRCM  Base */
 #define S_GPIOL_BASE ((uintptr_t) 0x07025000)         /*!< S_GPIO Secure Port Controller Base */
 #define S_GPIOM_BASE ((uintptr_t) 0x07025030)         /*!< S_GPIO Secure Port Controller Base */
@@ -749,7 +745,8 @@ typedef struct GICA_Type
     __OM  uint32_t GICA_SETSPI_SR;                    /*!< Offset 0x050 Aliased Secure SPI Set Register */
          RESERVED(0x054[0x0058 - 0x0054], uint8_t)
     __OM  uint32_t GICA_CLRSPI_SR;                    /*!< Offset 0x058 Aliased Secure SPI Clear Register */
-} GICA_TypeDef; /* size of structure = 0x05C */
+         RESERVED(0x05C[0x10000 - 0x005C], uint8_t)
+} GICA_TypeDef; /* size of structure = 0x10000 */
 /*
  * @brief GICD
  */
@@ -900,7 +897,8 @@ typedef struct GICR_PPI_LPI_Type
 {
          RESERVED(0x000[0x0400 - 0x0000], uint8_t)
     __IOM uint32_t GICR_PPI_LPI_IPRIORITYR [0x008];   /*!< Offset 0x400 Interrupt Priority Registers */
-} GICR_PPI_LPI_TypeDef; /* size of structure = 0x420 */
+         RESERVED(0x420[0x10000 - 0x0420], uint8_t)
+} GICR_PPI_LPI_TypeDef; /* size of structure = 0x10000 */
 /*
  * @brief GICT
  */
@@ -1564,15 +1562,11 @@ typedef struct USB_OHCI_Capability_Type
 #define GICP ((GICP_TypeDef *) GICP_BASE)             /*!< GICP GIC Performance Monitoring Unit register set access pointer */
 #define GITS ((GITS_TypeDef *) GITS_BASE)             /*!< GITS GIC Secure Access Control register set access pointer */
 #define GICR0 ((GICR_TypeDef *) GICR0_BASE)           /*!< GICR0 GIC Redistributor  register set access pointer */
-#define USB20_OTG_DEVICE ((USBOTG_TypeDef *) USB20_OTG_DEVICE_BASE)/*!< USB20_OTG_DEVICE USB OTG Dual-Role Device controller register set access pointer */
-#define USB20_HOST0_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST0_EHCI_BASE)/*!< USB20_HOST0_EHCI  register set access pointer */
-#define USB20_HOST0_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST0_OHCI_BASE)/*!< USB20_HOST0_OHCI  register set access pointer */
-#define USB20_HOST1_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST1_EHCI_BASE)/*!< USB20_HOST1_EHCI  register set access pointer */
-#define USB20_HOST1_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST1_OHCI_BASE)/*!< USB20_HOST1_OHCI  register set access pointer */
-#define USB20_HOST2_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST2_EHCI_BASE)/*!< USB20_HOST2_EHCI  register set access pointer */
-#define USB20_HOST2_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST2_OHCI_BASE)/*!< USB20_HOST2_OHCI  register set access pointer */
-#define USB20_HOST3_EHCI ((USB_EHCI_Capability_TypeDef *) USB20_HOST3_EHCI_BASE)/*!< USB20_HOST3_EHCI  register set access pointer */
-#define USB20_HOST3_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST3_OHCI_BASE)/*!< USB20_HOST3_OHCI  register set access pointer */
+#define USB0_DEVICE ((USBOTG_TypeDef *) USB0_DEVICE_BASE)/*!< USB0_DEVICE USB OTG Dual-Role Device controller register set access pointer */
+#define USB0_EHCI ((USB_EHCI_Capability_TypeDef *) USB0_EHCI_BASE)/*!< USB0_EHCI  register set access pointer */
+#define USB1_EHCI ((USB_EHCI_Capability_TypeDef *) USB1_EHCI_BASE)/*!< USB1_EHCI  register set access pointer */
+#define USB1_OHCI ((USB_OHCI_Capability_TypeDef *) USB1_OHCI_BASE)/*!< USB1_OHCI  register set access pointer */
+#define USB0_OHCI ((USB_OHCI_Capability_TypeDef *) USB0_OHCI_BASE)/*!< USB0_OHCI  register set access pointer */
 #define STBY_PRCM ((PRCM_TypeDef *) STBY_PRCM_BASE)   /*!< STBY_PRCM  register set access pointer */
 #define S_GPIOL ((S_GPIO_TypeDef *) S_GPIOL_BASE)     /*!< S_GPIOL Secure Port Controller register set access pointer */
 #define S_GPIOM ((S_GPIO_TypeDef *) S_GPIOM_BASE)     /*!< S_GPIOM Secure Port Controller register set access pointer */
