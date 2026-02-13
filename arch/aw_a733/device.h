@@ -760,13 +760,13 @@ typedef struct GICD_Type
     __IOM uint32_t GICD_FCTLR;                        /*!< Offset 0x020 Function Control Register */
     __IOM uint32_t GICD_SAC;                          /*!< Offset 0x024 Secure Access Control Register */
          RESERVED(0x028[0x0040 - 0x0028], uint8_t)
-    __IOM uint32_t GICD_SETSPI_NSR;                   /*!< Offset 0x040 Non-secure SPI Set Register */
+    __OM  uint32_t GICD_SETSPI_NSR;                   /*!< Offset 0x040 Non-secure SPI Set Register */
          RESERVED(0x044[0x0048 - 0x0044], uint8_t)
-    __IOM uint32_t GICD_CLRSPI_NSR;                   /*!< Offset 0x048 Non-secure SPI Clear Register */
+    __OM  uint32_t GICD_CLRSPI_NSR;                   /*!< Offset 0x048 Non-secure SPI Clear Register */
          RESERVED(0x04C[0x0050 - 0x004C], uint8_t)
-    __IOM uint32_t GICD_SETSPI_SR;                    /*!< Offset 0x050 Secure SPI Set Register */
+    __OM  uint32_t GICD_SETSPI_SR;                    /*!< Offset 0x050 Secure SPI Set Register */
          RESERVED(0x054[0x0058 - 0x0054], uint8_t)
-    __IOM uint32_t GICD_CLRSPI_SR;                    /*!< Offset 0x058 Non-secure SPI Set Register */
+    __OM  uint32_t GICD_CLRSPI_SR;                    /*!< Offset 0x058 Non-secure SPI Set Register */
          RESERVED(0x05C[0x0080 - 0x005C], uint8_t)
     __IOM uint32_t GICD_IGROUPR [0x020];              /*!< Offset 0x080 Interrupt Group Registers */
     __IOM uint32_t GICD_ISENABLER [0x020];            /*!< Offset 0x100 Interrupt Set-Enable Registers */
@@ -781,13 +781,17 @@ typedef struct GICD_Type
     __IOM uint32_t GICD_IGRPMODR [0x020];             /*!< Offset 0xD00 Interrupt Group Modifier Registers */
          RESERVED(0xD80[0x0E00 - 0x0D80], uint8_t)
     __IOM uint32_t GICD_NSACR [0x040];                /*!< Offset 0xE00 Non-secure Access Control Registers */
-    __OM  uint32_t GICD_SGIR;                         /*!< Offset 0xF00 GICv4 Software Generated Interrupt Register */
-         RESERVED(0xF04[0x0F10 - 0x0F04], uint8_t)
-    __IOM uint32_t GICD_CPENDSGIR [0x004];            /*!< Offset 0xF10 GICv4 SGI Clear-Pending Register */
-    __IOM uint32_t GICD_SPENDSGIR [0x004];            /*!< Offset 0xF20 GICv4 SGI Set-Pending Registers */
-         RESERVED(0xF30[0x6100 - 0x0F30], uint8_t)
+         RESERVED(0xF00[0x6100 - 0x0F00], uint8_t)
     __IOM uint64_t GICD_IROUTER [0x3DC];              /*!< Offset 0x6100 Interrupt Routing Registers. */
-         RESERVED(0x7FE0[0xF000 - 0x7FE0], uint8_t)
+         RESERVED(0x7FE0[0xC000 - 0x7FE0], uint8_t)
+    __IOM uint32_t GICD_CHIPSR;                       /*!< Offset 0xC000 Chip Status Register */
+    __IOM uint32_t GICD_DCHIPR;                       /*!< Offset 0xC004 Default Chip Register */
+    __IOM uint64_t GICD_CHIPRn [0x004];               /*!< Offset 0xC008 Chip Registers */
+         RESERVED(0xC028[0xE008 - 0xC028], uint8_t)
+    __IOM uint32_t GICD_ICLARn [0x004];               /*!< Offset 0xE008 The first register is GICD_ICLAR2. 4.2.9 Interrupt Class Registers, GICD_ICLARn on page 4-118 */
+         RESERVED(0xE018[0xE108 - 0xE018], uint8_t)
+    __IOM uint32_t GICD_IERRRn;                       /*!< Offset 0xE108 The first register is GICD_IERRR1. 4.2.10 Interrupt Error Registers, GICD_IERRRn on page 4-119 */
+         RESERVED(0xE10C[0xF000 - 0xE10C], uint8_t)
     __IM  uint64_t GICD_CFGID;                        /*!< Offset 0xF000 Configuration ID Register */
          RESERVED(0xF008[0xFFD0 - 0xF008], uint8_t)
     __IM  uint32_t GICD_PIDR4;                        /*!< Offset 0xFFD0 Peripheral ID 4 Register */
@@ -1405,8 +1409,8 @@ typedef struct USBEHCI_Type
 /*!< USBOTG USB OTG Dual-Role Device controller */
 typedef struct USBOTG_Type
 {
-    __IOM uint32_t USB_EPFIFO [0x005];                /*!< Offset 0x000 USB_EPFIFO [0..4] USB FIFO Entry for Endpoint N */
-         RESERVED(0x014[0x0040 - 0x0014], uint8_t)
+    __IOM uint32_t USB_EPFIFO [0x009];                /*!< Offset 0x000 USB_EPFIFO [0..8] USB FIFO Entry for Endpoint N */
+         RESERVED(0x024[0x0040 - 0x0024], uint8_t)
     __IOM uint32_t USB_GCS;                           /*!< Offset 0x040 USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL USB Global Control and Status Register */
     __IOM uint16_t USB_INTTX;                         /*!< Offset 0x044 USB_INTTX USB_EPINTF USB Endpoint Interrupt Flag Register */
     __IOM uint16_t USB_INTRX;                         /*!< Offset 0x046 USB_INTRX USB_EPINTF */
