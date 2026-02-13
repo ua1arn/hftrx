@@ -2032,9 +2032,16 @@ void lclspin_enable(void)
 /* Работа с текущим ядром */
 void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line)
 {
-#if LINUX_SUBSYSTEM
-#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if ! LINUX_SUBSYSTEM
 
+#if WITHDEBUG
+	static const char * lastfile [HARDWARE_NCORES];
+	static int lastline [HARDWARE_NCORES];
+	static IRQL_t lastirql [HARDWARE_NCORES];
+	const unsigned core = arm_hardware_cpuid();
+#endif /* WITHDEBUG */
+
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	const IRQL_t oldv = GIC_GetInterfacePriorityMask();
 	ASSERT2(oldv != 0, file, line);
 	if (oldv >= newIRQL)
@@ -2043,8 +2050,9 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	}
 	else
 	{
-		PRINTF("irq fail at %s/%d, newIRQLp=%u, oldp=%u, cpuid=%u\n", file, line, (unsigned) newIRQL, (unsigned) oldv, (unsigned) arm_hardware_cpuid());
-		PRINTF("irq fail at %s/%d, newIRQLv=%u, oldv=%u, cpuid=%u\n", file, line, (unsigned) GICI_DECODE_IRQL(newIRQL), (unsigned) GICI_DECODE_IRQL(oldv), (unsigned) arm_hardware_cpuid());
+		PRINTF("Last set irqlp=%u irqlv=%u by core=%u at %s/%d:\n", (unsigned) lastirql [core], (unsigned) GICI_DECODE_IRQL(lastirql [core]), core, lastfile [core], lastline [core]);
+		PRINTF("irq fail at %s/%d, newIRQLp=%u, oldp=%u\n", file, line, (unsigned) newIRQL, (unsigned) oldv);
+		PRINTF("irq fail at %s/%d, newIRQLv=%u, oldv=%u\n", file, line, (unsigned) GICI_DECODE_IRQL(newIRQL), (unsigned) GICI_DECODE_IRQL(oldv));
 		ASSERT2(oldv >= newIRQL, file, line);	/* Не понижаем приоритет */
 	}
 	* oldIrql = oldv;
@@ -2060,6 +2068,7 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 		; /* Не понижаем приоритет */
 	else
 	{
+		PRINTF("Last set irqlp=%u by core=%u at %s/%d:\n", (unsigned) lastirql [core], core, lastfile [core], lastline [core]);
 		PRINTF("irq fail at %s/%d, newIRQL=%u, old=%u\n", file, line, (unsigned) newIRQL, (unsigned) PLIC->PLIC_MTH_REG);
 		ASSERT2(PLIC->PLIC_MTH_REG <= newIRQL, file, line);	/* Не понижаем приоритет */
 	}
@@ -2071,6 +2080,14 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	#warning Implement RiseIrql
 
 #endif
+
+#if WITHDEBUG
+	lastfile [core] = file;
+	lastline [core] = line;
+	lastirql [core] = newIRQL;
+#endif /* WITHDEBUG */
+
+#endif /* ! LINUX_SUBSYSTEM */
 }
 
 /* Работа с текущим ядром */
