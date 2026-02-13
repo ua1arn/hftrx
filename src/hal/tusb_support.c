@@ -1171,6 +1171,16 @@ void usbdevice_clk_init(void)
 #elif CPUSTYLE_A733
 	#warning CPUSTYLE_7133 To be done
 
+	CCU->USB0_BGR_REG &= ~ (UINT32_C(1) << 20);	// USB0_EHCI_RST
+	CCU->USB0_BGR_REG &= ~ (UINT32_C(1) << 16);	// USB0_OHCI_RST
+
+	CCU->USB0_BGR_REG |= (UINT32_C(1) << 24);	// USB0_DEVICE_RST
+	CCU->USB0_BGR_REG |= (UINT32_C(1) << 8);	// USB0_DEVICE_GATING
+
+	CCU->USB0_CLK_REG &= (UINT32_C(1) << 31);	// USB0_CLKEN Gating􀀁Clock􀀁for􀀁USB0􀀁HOST􀀁OHCI
+	CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
+	CCU->USB0_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY0
+
 #else
 	#error usbdevice_clk_init should be implemented
 

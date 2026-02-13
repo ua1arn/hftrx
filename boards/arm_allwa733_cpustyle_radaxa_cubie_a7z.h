@@ -84,14 +84,14 @@
 		//#define TUP_USBIP_OHCI 1
 		#define TUP_USBIP_EHCI 1
 	#endif /* WITHTINYUSB */
+
+//#define WITHUSBHW_EHCI		USB1_EHCI
+//#define WITHUSBHW_EHCI_IRQ	USB1_EHCI_IRQn
+//#define WITHUSBHW_EHCI_IX	1
 //
-//	#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
-//	#define WITHUSBHW_EHCI_IRQ	USB20_HOST1_EHCI_IRQn
-//	#define WITHUSBHW_EHCI_IX	1
-//
-//	#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
-//	#define WITHUSBHW_OHCI_IRQ	USB20_HOST1_OHCI_IRQn
-//	#define WITHUSBHW_OHCI_IX	1
+//#define WITHUSBHW_OHCI		USB1_OHCI
+//#define WITHUSBHW_OHCI_IRQ	USB1_OHCI_IRQn
+//#define WITHUSBHW_OHCI_IX	1
 
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
@@ -156,10 +156,10 @@
 		#define WITHHDMITVHW 1			/* Second display - HDMI hardware output */
 	#endif
 
-	#if 0
+	#if 1
 		#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-		#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
+		#define WITHUSBHW_DEVICE	USB0_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
 		#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 		#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 		//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
@@ -181,12 +181,12 @@
 			#define TUP_USBIP_EHCI 1
 		#endif /* WITHTINYUSB */
 
-		#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
-		#define WITHUSBHW_EHCI_IRQ	USB20_HOST1_EHCI_IRQn
+		#define WITHUSBHW_EHCI		USB1_EHCI
+		#define WITHUSBHW_EHCI_IRQ	USB1_EHCI_IRQn
 		#define WITHUSBHW_EHCI_IX	1
 
-		#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
-		#define WITHUSBHW_OHCI_IRQ	USB20_HOST1_OHCI_IRQn
+		#define WITHUSBHW_OHCI		USB1_OHCI
+		#define WITHUSBHW_OHCI_IRQ	USB1_OHCI_IRQn
 		#define WITHUSBHW_OHCI_IX	1
 
 		#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
