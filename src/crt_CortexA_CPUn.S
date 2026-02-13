@@ -93,6 +93,12 @@ Reset_CPUx_Handler:
 	ldr		r2, = aarch32_stack_top
 	ldr		r2, [r2]
 	mov		r3, #STACKSIZEALL
+
+	msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r2, r3
+
 	msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
 	mov   sp, r2
 	mov   lr, #0
@@ -104,11 +110,6 @@ Reset_CPUx_Handler:
 	sub	r2, r2, r3
 
 	msr   CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
-	mov   sp, r2
-	mov   lr, #0
-	sub	r2, r2, r3
-
-	msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
 	mov   sp, r2
 	mov   lr, #0
 	sub	r2, r2, r3

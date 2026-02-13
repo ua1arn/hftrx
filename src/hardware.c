@@ -1496,7 +1496,7 @@ void Undef_Handler(void)
 {
 	const volatile uint32_t marker = 0xDEADBEEF;
 
-	PRINTF("UndefHandler trapped[%p]\n", Undef_Handler);
+	PRINTF("UndefHandler trapped[%p,sp~%p]\n", Undef_Handler, & marker);
 	PRINTF("CPUID=%d\n", (int) (arm_hardware_cpuid()));
 	unsigned i;
 	for (i = 0; i < 8; ++ i)
