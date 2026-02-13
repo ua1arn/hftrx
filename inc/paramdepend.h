@@ -790,6 +790,7 @@ extern "C" {
 
 	#define GICD_ENCODE_PRIORITY(priov) 	((uint32_t) ((priov) << (GIC_BINARY_POINT + 1)))	// Value for GICDistributor->IPRIORITYR[n]
 	#define GICI_ENCODE_IRQL(priov) 		((IRQL_t) ((priov) << (GIC_BINARY_POINT + 1)))	// value for GICInterface->PMR
+	#define GICI_DECODE_IRQL(irql) 			(((uint32_t) (irql) >> (GIC_BINARY_POINT + 1)))	// value from GICInterface->PMR
 
 	// value for GIC_SetInterfacePriorityMask
 	#define IRQL_IPC 			(GICI_ENCODE_IRQL(PRIOv_IPC))

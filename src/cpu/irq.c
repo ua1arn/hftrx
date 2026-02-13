@@ -2043,7 +2043,8 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	}
 	else
 	{
-		PRINTF("irq fail at %s/%d, newIRQL=%u, old=%u, cpuid=%u\n", file, line, (unsigned) newIRQL, (unsigned) oldv, (unsigned) arm_hardware_cpuid());
+		PRINTF("irq fail at %s/%d, newIRQLp=%u, oldp=%u, cpuid=%u\n", file, line, (unsigned) newIRQL, (unsigned) oldv, (unsigned) arm_hardware_cpuid());
+		PRINTF("irq fail at %s/%d, newIRQLv=%u, oldv=%u, cpuid=%u\n", file, line, (unsigned) GICI_DECODE_IRQL(newIRQL), (unsigned) GICI_DECODE_IRQL(oldv), (unsigned) arm_hardware_cpuid());
 		ASSERT2(oldv >= newIRQL, file, line);	/* Не понижаем приоритет */
 	}
 	* oldIrql = oldv;
