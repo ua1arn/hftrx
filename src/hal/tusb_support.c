@@ -1169,7 +1169,7 @@ void usbdevice_clk_init(void)
 	arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
 
 #elif CPUSTYLE_A733
-	#warning CPUSTYLE_7133 To be done
+	//#warning CPUSTYLE_7133 To be done
 
     arm_hardware_disable_handler(USB0_DEVICE_IRQn);
     arm_hardware_disable_handler(USB0_EHCI_IRQn);
@@ -2033,6 +2033,24 @@ void ohciehci_clk_init(void)
 		{
 			ASSERT(0);
 		}
+#if WITHTINYUSB
+	arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ);
+	arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ);
+#endif /* WITHTINYUSB */
+
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_7133 To be done
+	const unsigned ix = 0;	// 0 - EHCI0/OHCI0
+
+    arm_hardware_disable_handler(USB0_DEVICE_IRQn);
+    arm_hardware_disable_handler(USB0_EHCI_IRQn);
+    arm_hardware_disable_handler(USB0_OHCI_IRQn);
+
+    // TODO: add enable clocks
+
+#if WITHEHCIHWSOFTSPOLL == 0
+	arm_hardware_set_handler_system(WITHUSBHW_EHCI_IRQ, USBH_EHCI_IRQHandler);
+#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 #if WITHTINYUSB
 	arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ);
 	arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ);

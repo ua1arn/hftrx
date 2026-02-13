@@ -642,7 +642,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	arm_hardware_set_handler_system(USB20_OTG_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
 #elif CPUSTYLE_A733
-	#warning CPUSTYLE_7133 To be done
+	//#warning CPUSTYLE_7133 To be done
 
     arm_hardware_disable_handler(USB0_DEVICE_IRQn);
     arm_hardware_disable_handler(USB0_EHCI_IRQn);
@@ -792,7 +792,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
 
 #elif CPUSTYLE_A733
-	#warning CPUSTYLE_7133 To be done
+	//#warning CPUSTYLE_7133 To be done
 
     arm_hardware_disable_handler(USB0_DEVICE_IRQn);
     arm_hardware_disable_handler(USB0_EHCI_IRQn);
