@@ -1171,15 +1171,22 @@ void usbdevice_clk_init(void)
 #elif CPUSTYLE_A733
 	#warning CPUSTYLE_7133 To be done
 
+    arm_hardware_disable_handler(USB0_DEVICE_IRQn);
+    arm_hardware_disable_handler(USB0_EHCI_IRQn);
+    arm_hardware_disable_handler(USB0_OHCI_IRQn);
+
 	CCU->USB0_BGR_REG &= ~ (UINT32_C(1) << 20);	// USB0_EHCI_RST
 	CCU->USB0_BGR_REG &= ~ (UINT32_C(1) << 16);	// USB0_OHCI_RST
 
 	CCU->USB0_BGR_REG |= (UINT32_C(1) << 24);	// USB0_DEVICE_RST
 	CCU->USB0_BGR_REG |= (UINT32_C(1) << 8);	// USB0_DEVICE_GATING
 
-	CCU->USB0_CLK_REG &= (UINT32_C(1) << 31);	// USB0_CLKEN Gating􀀁Clock􀀁for􀀁USB0􀀁HOST􀀁OHCI
+	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN Gating Clock for USB0 HOST OHCI
 	CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
 	CCU->USB0_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY0
+
+	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, USBDxx_IRQHandler);
+	arm_hardware_disable_handler(USB0_DEVICE_IRQn);
 
 #else
 	#error usbdevice_clk_init should be implemented
