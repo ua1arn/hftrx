@@ -2054,45 +2054,7 @@ __STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
 {
   return (GICDistributor->ITARGETSR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
 }
-#endif /* GIC_DISTRIBUTOR_BASE */
 
-#if defined(GIC_INTERFACE_BASE)
-
-/** \brief Enable the CPU's interrupt interface.
-*/
-__STATIC_INLINE void GIC_EnableInterface(void)
-{
-  GICInterface->CTLR |= 1U; //enable interface
-}
-
-/** \brief Disable the CPU's interrupt interface.
-*/
-__STATIC_INLINE void GIC_DisableInterface(void)
-{
-  GICInterface->CTLR &=~1U; //disable distributor
-}
-
-/** \brief Read the CPU's IAR register.
-* \return GICInterface_Type::IAR
-*/
-__STATIC_INLINE IRQn_Type GIC_AcknowledgePending(void)
-{
-  return (IRQn_Type)(GICInterface->IAR);
-}
-
-/** \brief Writes the given interrupt number to the CPU's EOIR register.
-* \param [in] IRQn The interrupt to be signaled as finished.
-*/
-__STATIC_INLINE void GIC_EndInterrupt(IRQn_Type IRQn)
-{
-  GICInterface->EOIR = IRQn;
-}
-
-#else /* GIC_INTERFACE_BASE */
-
-#endif /* GIC_INTERFACE_BASE */
-
-#if defined(GIC_DISTRIBUTOR_BASE)
 /** \brief Enables the given interrupt using GIC's ISENABLER register.
 * \param [in] IRQn The interrupt to be enabled.
 */
@@ -2213,9 +2175,63 @@ __STATIC_INLINE uint32_t GIC_GetPriority(IRQn_Type IRQn)
 {
   return (GICDistributor->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
 }
+
+/** \brief Get the status for a given interrupt.
+* \param [in] IRQn The interrupt to get status for.
+* \return 0 - not pending/active, 1 - pending, 2 - active, 3 - pending and active
+*/
+__STATIC_INLINE uint32_t GIC_GetIRQStatus(IRQn_Type IRQn)
+{
+  uint32_t pending, active;
+
+  active = ((GICDistributor->ISACTIVER[IRQn / 32U])  >> (IRQn % 32U)) & 1UL;
+  pending = ((GICDistributor->ISPENDR[IRQn / 32U]) >> (IRQn % 32U)) & 1UL;
+
+  return ((active<<1U) | pending);
+}
+
+/** \brief Generate a software interrupt using GIC's SGIR register.
+* \param [in] IRQn Software interrupt to be generated.
+* \param [in] target_list List of CPUs the software interrupt should be forwarded to.
+* \param [in] filter_list Filter to be applied to determine interrupt receivers.
+*/
+__STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t filter_list)
+{
+  GICDistributor->SGIR = ((filter_list & 3U) << 24U) | ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
+}
 #endif /* GIC_DISTRIBUTOR_BASE */
 
 #if defined(GIC_INTERFACE_BASE)
+
+/** \brief Enable the CPU's interrupt interface.
+*/
+__STATIC_INLINE void GIC_EnableInterface(void)
+{
+  GICInterface->CTLR |= 1U; //enable interface
+}
+
+/** \brief Disable the CPU's interrupt interface.
+*/
+__STATIC_INLINE void GIC_DisableInterface(void)
+{
+  GICInterface->CTLR &=~1U; //disable distributor
+}
+
+/** \brief Read the CPU's IAR register.
+* \return GICInterface_Type::IAR
+*/
+__STATIC_INLINE IRQn_Type GIC_AcknowledgePending(void)
+{
+  return (IRQn_Type)(GICInterface->IAR);
+}
+
+/** \brief Writes the given interrupt number to the CPU's EOIR register.
+* \param [in] IRQn The interrupt to be signaled as finished.
+*/
+__STATIC_INLINE void GIC_EndInterrupt(IRQn_Type IRQn)
+{
+  GICInterface->EOIR = IRQn;
+}
 
 /** \brief Set the interrupt priority mask using CPU's PMR register.
 * \param [in] priority Priority mask to be set.
@@ -2248,36 +2264,7 @@ __STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
 {
   return GICInterface->BPR;
 }
-#endif /* GIC_INTERFACE_BASE */
 
-#if defined(GIC_DISTRIBUTOR_BASE)
-
-/** \brief Get the status for a given interrupt.
-* \param [in] IRQn The interrupt to get status for.
-* \return 0 - not pending/active, 1 - pending, 2 - active, 3 - pending and active
-*/
-__STATIC_INLINE uint32_t GIC_GetIRQStatus(IRQn_Type IRQn)
-{
-  uint32_t pending, active;
-
-  active = ((GICDistributor->ISACTIVER[IRQn / 32U])  >> (IRQn % 32U)) & 1UL;
-  pending = ((GICDistributor->ISPENDR[IRQn / 32U]) >> (IRQn % 32U)) & 1UL;
-
-  return ((active<<1U) | pending);
-}
-
-/** \brief Generate a software interrupt using GIC's SGIR register.
-* \param [in] IRQn Software interrupt to be generated.
-* \param [in] target_list List of CPUs the software interrupt should be forwarded to.
-* \param [in] filter_list Filter to be applied to determine interrupt receivers.
-*/
-__STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t filter_list)
-{
-  GICDistributor->SGIR = ((filter_list & 3U) << 24U) | ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
-}
-#endif
-
-#if defined(GIC_INTERFACE_BASE)
 /** \brief Get the interrupt number of the highest interrupt pending from CPU's HPPIR register.
 * \return GICInterface_Type::HPPIR
 */
@@ -2293,8 +2280,12 @@ __STATIC_INLINE uint32_t GIC_GetInterfaceId(void)
 {
   return GICInterface->IIDR;
 }
+
+#else /* GIC_INTERFACE_BASE */
+
 #endif /* GIC_INTERFACE_BASE */
 
+#if defined (GIC_DISTRIBUTOR_BASE)
 /** \brief Set the interrupt group from the GIC's IGROUPR register.
 * \param [in] IRQn The interrupt to be queried.
 * \param [in] group Interrupt group number: 0 - Group 0, 1 - Group 1
@@ -2357,7 +2348,9 @@ __STATIC_INLINE void GIC_DistInit(void)
   //Enable distributor
   GIC_EnableDistributor();
 }
+#endif /* GIC_DISTRIBUTOR_BASE */
 
+#if defined (GIC_INTERFACE_BASE)
 /** \brief Initialize the CPU's interrupt interface
 */
 __STATIC_INLINE void GIC_CPUInterfaceInit(void)
@@ -2396,6 +2389,7 @@ __STATIC_INLINE void GIC_CPUInterfaceInit(void)
   //Set priority mask
   GIC_SetInterfacePriorityMask(0xFFU);
 }
+#endif /* GIC_INTERFACE_BASE */
 
 /** \brief Initialize and enable the GIC
 */
@@ -2405,7 +2399,8 @@ __STATIC_INLINE void GIC_Enable(void)
   GIC_DistInit();
   GIC_CPUInterfaceInit(); //per CPU
 }
-#endif
+
+#endif /* (defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)) || defined(DOXYGEN) */
 
 /* ##########################  Generic Timer functions  ############################ */
 #if (defined(__TIM_PRESENT) && (__TIM_PRESENT == 1U)) || \
