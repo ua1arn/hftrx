@@ -477,10 +477,11 @@ void genstructprint(struct parsedfile *pfl)
 				unsigned i;
 				for (i = 0; i < 1024 && i < p->fldrept; ++i)
 				{
-					emitline(
-					INDENT,
-							"PRINTF(\"%%s->%s [%u] = 0x%%08X; /* 0x%%08X @ 0x%03X */\\n\", base, (unsigned) p->%s [%u], (unsigned) p->%s [%u]);",
+					emitline(INDENT,
+							"PRINTF(\"%%s->%s [%u] = 0x%%08X; /* 0x%%08X @ 0x%03X */\\n\", "
+							"base, (unsigned) p->%s [%u], p->%s [%u]);",
 							p->fldname, i, p->fldoffs + i * p->fldsize, p->fldname, i, p->fldname, i);
+
 					emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
 							p->fldoffs + i * p->fldsize, p->comment);
 				}
@@ -489,7 +490,7 @@ void genstructprint(struct parsedfile *pfl)
 			{
 				// Plain field
 				emitline(INDENT,
-						"PRINTF(\"%%s->%s = 0x%%08X; /* 0x%%08X @ 0x%03X */\\n\", base, (unsigned) p->%s, (unsigned) p->%s );",
+						"PRINTF(\"%%s->%s = 0x%%08X; /* 0x%%08X @ 0x%03X */\\n\", base, p->%s, p->%s );",
 						p->fldname, p->fldoffs, p->fldname, p->fldname);
 				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", p->fldoffs,
 						p->comment);
