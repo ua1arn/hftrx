@@ -2281,7 +2281,204 @@ __STATIC_INLINE uint32_t GIC_GetInterfaceId(void)
   return GICInterface->IIDR;
 }
 
+/** \brief Initialize the CPU's interrupt interface
+*/
+__STATIC_INLINE void GIC_CPUInterfaceInit(void)
+{
+  uint32_t i;
+  uint32_t priority_field;
+
+  //A reset sets all bits in the IGROUPRs corresponding to the SPIs to 0,
+  //configuring all of the interrupts as Secure.
+
+  //Disable interrupt forwarding
+  GIC_DisableInterface();
+
+  /* Priority level is implementation defined.
+   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
+   priority field and read back the value stored.*/
+  GIC_SetPriority((IRQn_Type)0U, 0xFFU);
+  priority_field = GIC_GetPriority((IRQn_Type)0U);
+
+  //SGI and PPI
+  for (i = 0U; i < 32U; i++)
+  {
+    if(i > 15U) {
+      //Set level-sensitive (and N-N model) for PPI
+      GIC_SetConfiguration((IRQn_Type)i, 0U);
+    }
+    //Disable SGI and PPI interrupts
+    GIC_DisableIRQ((IRQn_Type)i);
+    //Set priority
+    GIC_SetPriority((IRQn_Type)i, priority_field/2U);
+  }
+  //Enable interface
+  GIC_EnableInterface();
+  //Set binary point to 0
+  GIC_SetBinaryPoint(0U);
+  //Set priority mask
+  GIC_SetInterfacePriorityMask(0xFFU);
+}
+
 #else /* GIC_INTERFACE_BASE */
+
+/** \brief  AArch64 System registers to access the Generic Interrupt Controller CPU interface
+*/
+#if defined(__GNUC__)
+  #define ICC_BPR0_EL1           S3_0_C12_C8_3
+  #define ICC_BPR1_EL1           S3_0_C12_C12_3
+  #define ICC_CTLR_EL1           S3_0_C12_C12_4
+  #define ICC_CTLR_EL3           S3_6_C12_C12_4
+  #define ICC_EOIR0_EL1          S3_0_C12_C8_1
+  #define ICC_EOIR1_EL1          S3_0_C12_C12_1
+  #define ICC_HPPIR0_EL1         S3_0_C12_C8_2
+  #define ICC_HPPIR1_EL1         S3_0_C12_C12_2
+  #define ICC_IAR0_EL1           S3_0_C12_C8_0
+  #define ICC_IAR1_EL1           S3_0_C12_C12_0
+  #define ICC_IGRPEN0_EL1        S3_0_C12_C12_6
+  #define ICC_IGRPEN1_EL1        S3_0_C12_C12_7
+  #define ICC_IGRPEN1_EL3        S3_6_C12_C12_7
+  #define ICC_PMR_EL1            S3_0_C4_C6_0
+  #define ICC_RPR_EL1            S3_0_C12_C11_3
+  #define ICC_SGI0R_EL1          S3_0_C12_C11_7
+  #define ICC_SGI1R_EL1          S3_0_C12_C11_5
+  #define ICC_SRE_EL1            S3_0_C12_C12_5
+  #define ICC_SRE_EL2            S3_4_C12_C9_5
+  #define ICC_SRE_EL3            S3_6_C12_C12_5
+#endif /* __GNUC__ */
+
+#ifndef __STRINGIFY
+  #define __STRINGIFY(x)                         #x
+#endif
+
+#ifndef __MSR
+  #define __MSR(sysreg, val) \
+    __asm volatile ("msr " __STRINGIFY(sysreg) ", %0\n" : : "r"((uint64_t)(val)))
+#endif
+
+#ifndef __MRS
+#define __MRS(sysreg, pVal) \
+  __asm volatile ("mrs  %0, " __STRINGIFY(sysreg) "\n" : "=r"((*pVal)))
+#endif
+
+/* ICC_SGIR */
+#define ICC_SGIR_TARGETLIST_SHIFT (0)
+#define ICC_SGIR_TARGETLIST_MASK  (0xffff)
+#define ICC_SGIR_AFF_MASK         (0xff)
+#define ICC_SGIR_AFF1_SHIFT       (16)
+#define ICC_SGIR_INTID_SHIFT      (24)
+#define ICC_SGIR_INTID_MASK       (0xf)
+#define ICC_SGIR_AFF2_SHIFT       (32)
+#define ICC_SGIR_IRM_SHIFT        (40)
+#define ICC_SGIR_IRM_MASK         (0x1)
+#define ICC_SGIR_RS_SHIFT         (44)
+#define ICC_SGIR_RS_MASK          (0xf)
+#define ICC_SGIR_AFF3_SHIFT       (48)
+
+#define MPIDR_TO_RS(mpidr) (MPIDR_TO_AFF_LEVEL(mpidr, 0) >> 4)
+
+#define COMPOSE_ICC_SGIR_VALUE(aff3, aff2, aff1, intid, irm, rs, tlist) \
+    ((((uint64_t)(aff3) & ICC_SGIR_AFF_MASK) << ICC_SGIR_AFF3_SHIFT) |  \
+     (((uint64_t)(rs) & ICC_SGIR_RS_MASK) << ICC_SGIR_RS_SHIFT) |       \
+     (((uint64_t)(irm) & ICC_SGIR_IRM_MASK) << ICC_SGIR_IRM_SHIFT) |    \
+     (((uint64_t)(aff2) & ICC_SGIR_AFF_MASK) << ICC_SGIR_AFF2_SHIFT) |  \
+     (((intid) & ICC_SGIR_INTID_MASK) << ICC_SGIR_INTID_SHIFT) |        \
+     (((aff1) & ICC_SGIR_AFF_MASK) << ICC_SGIR_AFF1_SHIFT) |            \
+     (((tlist) & ICC_SGIR_TARGETLIST_MASK) << ICC_SGIR_TARGETLIST_SHIFT))
+
+#define GIC_REDISTRIBUTOR_STRIDE (0x20000)
+#define GICR_SGI_BASE_OFF        (0x10000)
+
+#define GICR_TYPER_LAST_SHIFT (4)
+#define GICR_TYPER_LAST_MASK  (1 << GICR_TYPER_LAST_SHIFT)
+#define GICR_TYPER_AFF_SHIFT  (32)
+
+#define GICR_WAKER_PS_SHIFT (1)
+#define GICR_WAKER_CA_SHIFT (2)
+
+/** \brief Enable the CPU's interrupt interface.
+*/
+__STATIC_INLINE void GIC_EnableInterface(void)
+{
+    __MSR(ICC_IGRPEN1_EL1, 1);
+}
+
+/** \brief Disable the CPU's interrupt interface.
+*/
+__STATIC_INLINE void GIC_DisableInterface(void)
+{
+    __MSR(ICC_IGRPEN1_EL1, 0);
+}
+
+/** \brief Read the CPU's IAR register.
+* \return GICInterface_Type::IAR
+*/
+__STATIC_INLINE IRQn_Type GIC_AcknowledgePending(void)
+{
+    uint32_t result;
+    __MRS(ICC_IAR1_EL1, &result);
+    return (IRQn_Type)(result);
+}
+
+/** \brief Writes the given interrupt number to the CPU's EOIR register.
+* \param [in] IRQn The interrupt to be signaled as finished.
+*/
+__STATIC_INLINE void GIC_EndInterrupt(IRQn_Type IRQn)
+{
+    __MSR(ICC_EOIR1_EL1, (uint32_t)IRQn);
+}
+
+/** \brief Set the interrupt priority mask using CPU's PMR register.
+* \param [in] priority Priority mask to be set.
+*/
+__STATIC_INLINE void GIC_SetInterfacePriorityMask(uint32_t priority)
+{
+    __MSR(ICC_PMR_EL1, priority & 0xFFUL);
+}
+
+/** \brief Read the current interrupt priority mask from CPU's PMR register.
+* \result GICInterface_Type::PMR
+*/
+__STATIC_INLINE uint32_t GIC_GetInterfacePriorityMask(void)
+{
+    uint32_t result;
+    __MRS(ICC_PMR_EL1, &result);
+    return result;
+}
+
+/** \brief Configures the group priority and subpriority split point using CPU's BPR register.
+* \param [in] binary_point Amount of bits used as subpriority.
+*/
+__STATIC_INLINE void GIC_SetBinaryPoint(uint32_t binary_point)
+{
+    __MSR(ICC_BPR1_EL1, binary_point & 7U);
+}
+
+/** \brief Read the current group priority and subpriority split point from CPU's BPR register.
+* \return GICInterface_Type::BPR
+*/
+__STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
+{
+    uint32_t result;
+    __MRS(ICC_BPR1_EL1, &result);
+    return result;
+}
+
+/** \brief Get the interrupt number of the highest interrupt pending from CPU's HPPIR register.
+* \return GICInterface_Type::HPPIR
+*/
+__STATIC_INLINE uint32_t GIC_GetHighPendingIRQ(void)
+{
+    uint32_t result;
+    __MRS(ICC_HPPIR1_EL1, &result);
+    return result;
+}
+
+/** \brief Initialize the CPU's interrupt interface
+*/
+__STATIC_INLINE void GIC_CPUInterfaceInit(void)
+{
+}
 
 #endif /* GIC_INTERFACE_BASE */
 
@@ -2349,47 +2546,6 @@ __STATIC_INLINE void GIC_DistInit(void)
   GIC_EnableDistributor();
 }
 #endif /* GIC_DISTRIBUTOR_BASE */
-
-#if defined (GIC_INTERFACE_BASE)
-/** \brief Initialize the CPU's interrupt interface
-*/
-__STATIC_INLINE void GIC_CPUInterfaceInit(void)
-{
-  uint32_t i;
-  uint32_t priority_field;
-
-  //A reset sets all bits in the IGROUPRs corresponding to the SPIs to 0,
-  //configuring all of the interrupts as Secure.
-
-  //Disable interrupt forwarding
-  GIC_DisableInterface();
-
-  /* Priority level is implementation defined.
-   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
-   priority field and read back the value stored.*/
-  GIC_SetPriority((IRQn_Type)0U, 0xFFU);
-  priority_field = GIC_GetPriority((IRQn_Type)0U);
-
-  //SGI and PPI
-  for (i = 0U; i < 32U; i++)
-  {
-    if(i > 15U) {
-      //Set level-sensitive (and N-N model) for PPI
-      GIC_SetConfiguration((IRQn_Type)i, 0U);
-    }
-    //Disable SGI and PPI interrupts
-    GIC_DisableIRQ((IRQn_Type)i);
-    //Set priority
-    GIC_SetPriority((IRQn_Type)i, priority_field/2U);
-  }
-  //Enable interface
-  GIC_EnableInterface();
-  //Set binary point to 0
-  GIC_SetBinaryPoint(0U);
-  //Set priority mask
-  GIC_SetInterfacePriorityMask(0xFFU);
-}
-#endif /* GIC_INTERFACE_BASE */
 
 /** \brief Initialize and enable the GIC
 */
