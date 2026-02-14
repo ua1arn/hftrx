@@ -2361,6 +2361,75 @@ __STATIC_INLINE void GIC_CPUInterfaceInit(void)
   __asm volatile ("mrs  %0, " __STRINGIFY(sysreg) "\n" : "=r"((*pVal)))
 #endif
 
+
+#if (__CORTEX_A == 55U) && __aarch64__
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL1(void)
+{
+	uint32_t result;
+	__MRS(ICC_SRE_EL1, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL1(uint32_t value)
+{
+	__MSR(ICC_SRE_EL1, value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL2(void)
+{
+	uint32_t result;
+	__MRS(ICC_SRE_EL2, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL2(uint32_t value)
+{
+	__MSR(ICC_SRE_EL2, value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL3(void)
+{
+	uint32_t result;
+	__MRS(ICC_SRE_EL3, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL3(uint32_t value)
+{
+	__MSR(ICC_SRE_EL3, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_PMR_EL1(uint32_t value)
+{
+	__MSR(ICC_PMR_EL1, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_CTLR_EL1(uint32_t value)
+{
+	__MSR(ICC_CTLR_EL1, value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_CTLR_EL1(void)
+{
+    uint32_t result;
+    __MRS(ICC_CTLR_EL1, &result);
+    return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_CTLR_EL3(uint32_t value)
+{
+	__MSR(ICC_CTLR_EL3, value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_CTLR_EL3(void)
+{
+    uint32_t result;
+    __MRS(ICC_CTLR_EL3, &result);
+    return result;
+}
+#endif
+
 /* ICC_SGIR */
 #define ICC_SGIR_TARGETLIST_SHIFT (0)
 #define ICC_SGIR_TARGETLIST_MASK  (0xffff)

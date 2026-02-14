@@ -958,6 +958,40 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
 
 #endif /* (__CORTEX_A == 53U) */
 
+#if (__CORTEX_A == 55U) && !__aarch64__
+
+// ICC_CTLR_EL3 and ICC_CTLR
+__STATIC_INLINE uint32_t __get_ICC_CTLR_EL3(void)
+{
+    uint32_t result;
+    //__MRC32(sICC_CTLR_EL3, &result);		// mrc	15, 6, r0, cr12, cr12, {4}
+	//__get_CP(15, 6, result, 12, 12, 4);	// mrc	15, 6, r0, cr12, cr12, {4}
+	__get_CP(15, 6, result, 12, 12, 4);	// mrc	15, 0, r0, cr12, cr12, {4} - недоступно в aarch64
+    return result;
+}
+__STATIC_INLINE void __set_ICC_CTLR_EL3(uint32_t value)
+{
+    //__MCR32(sICC_CTLR_EL3, value);
+	__set_CP(15, 6, value, 12, 12, 4);	// mcr	15, 6, r0, cr12, cr12, {4} - недоступно в aarch64
+	//__set_RG32("ICC_CTLR", result);
+}
+__STATIC_INLINE uint32_t __get_ICC_CTLR_EL1(void)
+{
+    uint32_t result;
+    //__MRC32(sICC_CTLR_EL1, &result);		// mrc	15, 6, r0, cr12, cr12, {4}
+	//__get_CP(15, 0, result, 12, 12, 4);	// mrc	15, 6, r0, cr12, cr12, {4}
+	__get_CP(15, 0, result, 12, 12, 4);	// mrc	15, 0, r0, cr12, cr12, {4}
+    return result;
+}
+__STATIC_INLINE void __set_ICC_CTLR_EL1(uint32_t value)
+{
+    //__MCR32(sICC_CTLR_EL1, value);
+	__set_CP(15, 0, value, 12, 12, 4);	// mcr	15, 0, r0, cr12, cr12, {4}
+	//__set_RG32("ICC_CTLR", result);
+}
+
+#endif /* (__CORTEX_A == 55U) && defined(__aarch64__) */
+
 #include "utils.h"
 // Substitutions for t507 ddr ram init
 //#define i2c_read local_i2c_read

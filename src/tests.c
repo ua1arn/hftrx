@@ -7109,107 +7109,10 @@ static void enctest(void)
 
 #endif
 
-#if CPUSTYLE_A733
-#if (__CORTEX_A == 55U) && __aarch64__
+#if CPUSTYLE_A733 && 0
 
-uint32_t __get_ICC_SRE_EL1(void)
-{
-	uint32_t result;
-	__MRS(ICC_SRE_EL1, & result);
-	return result;
-}
 
-void __set_ICC_SRE_EL1(uint32_t value)
-{
-	__MSR(ICC_SRE_EL1, value);
-}
-
-uint32_t __get_ICC_SRE_EL2(void)
-{
-	uint32_t result;
-	__MRS(ICC_SRE_EL2, & result);
-	return result;
-}
-
-void __set_ICC_SRE_EL2(uint32_t value)
-{
-	__MSR(ICC_SRE_EL2, value);
-}
-
-uint32_t __get_ICC_SRE_EL3(void)
-{
-	uint32_t result;
-	__MRS(ICC_SRE_EL3, & result);
-	return result;
-}
-
-void __set_ICC_SRE_EL3(uint32_t value)
-{
-	__MSR(ICC_SRE_EL3, value);
-}
-
-void __set_ICC_PMR_EL1(uint32_t value)
-{
-	__MSR(ICC_PMR_EL1, value);
-}
-
-__STATIC_INLINE void __set_ICC_CTLR_EL1(uint32_t value)
-{
-	__MSR(ICC_CTLR_EL1, value);
-}
-
-__STATIC_INLINE uint32_t __get_ICC_CTLR_EL1(void)
-{
-    uint32_t result;
-    __MRS(ICC_CTLR_EL1, &result);
-    return result;
-}
-
-__STATIC_INLINE void __set_ICC_CTLR_EL3(uint32_t value)
-{
-	__MSR(ICC_CTLR_EL3, value);
-}
-
-__STATIC_INLINE uint32_t __get_ICC_CTLR_EL3(void)
-{
-    uint32_t result;
-    __MRS(ICC_CTLR_EL3, &result);
-    return result;
-}
-
-#else /* (__CORTEX_A == 55U) && defined(__aarch64__) */
-
-// ICC_CTLR_EL3 and ICC_CTLR
-/*__STATIC_INLINE */uint32_t __get_ICC_CTLR_EL3(void)
-{
-    uint32_t result;
-    //__MRC32(sICC_CTLR_EL3, &result);		// mrc	15, 6, r0, cr12, cr12, {4}
-	//__get_CP(15, 6, result, 12, 12, 4);	// mrc	15, 6, r0, cr12, cr12, {4}
-	__get_CP(15, 6, result, 12, 12, 4);	// mrc	15, 0, r0, cr12, cr12, {4} - недоступно в aarch64
-    return result;
-}
-/*__STATIC_INLINE */void __set_ICC_CTLR_EL3(uint32_t value)
-{
-    //__MCR32(sICC_CTLR_EL3, value);
-	__set_CP(15, 6, value, 12, 12, 4);	// mcr	15, 6, r0, cr12, cr12, {4} - недоступно в aarch64
-	//__set_RG32("ICC_CTLR", result);
-}
-/*__STATIC_INLINE */uint32_t __get_ICC_CTLR_EL1(void)
-{
-    uint32_t result;
-    //__MRC32(sICC_CTLR_EL1, &result);		// mrc	15, 6, r0, cr12, cr12, {4}
-	//__get_CP(15, 0, result, 12, 12, 4);	// mrc	15, 6, r0, cr12, cr12, {4}
-	__get_CP(15, 0, result, 12, 12, 4);	// mrc	15, 0, r0, cr12, cr12, {4}
-    return result;
-}
-/*__STATIC_INLINE */void __set_ICC_CTLR_EL1(uint32_t value)
-{
-    //__MCR32(sICC_CTLR_EL1, value);
-	__set_CP(15, 0, value, 12, 12, 4);	// mcr	15, 0, r0, cr12, cr12, {4}
-	//__set_RG32("ICC_CTLR", result);
-}
-
-#endif /* (__CORTEX_A == 55U) && defined(__aarch64__) */
+#include "gic600.h"
 
 #define ROUTED_TO_ALL (1)
 #define ROUTED_TO_SPEC (0)
@@ -7259,8 +7162,9 @@ void hightests(void)
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
-#if 1 && CPUSTYLE_A733
+#if 0 && CPUSTYLE_A733
 	{
+		//all_Type_print("start (fresh)");
 		if (1)
 		{
 			PRINTF("IRQ test:\n");
@@ -7283,6 +7187,10 @@ void hightests(void)
 				unsigned basepri = GIC_GetInterfacePriorityMask();
 				PRINTF("L 0..4: %u %u %u %u %u (%u)\n", l0, l1, l2, l3, l4, basepri);
 			}
+		    GIC_SetPriority (USB0_DEVICE_IRQn, 0*IRQL_SYSTEM);
+			//all_Type_print("after set usb priority");
+		    //GIC_SetPriority (TIMER1_1_IRQn, 0*IRQL_SYSTEM);
+			//all_Type_print("after set timer priority");
 
 			PRINTF("Enable IRQ:\n");
 			global_enableIRQ();
