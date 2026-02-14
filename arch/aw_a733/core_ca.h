@@ -1934,6 +1934,7 @@ __STATIC_INLINE uint32_t GIC_GetInterfaceId(void)
 }
 #endif /* GIC_INTERFACE_BASE */
 
+#if defined (GIC_DISTRIBUTOR_BASE)
 /** \brief Set the interrupt group from the GIC's IGROUPR register.
 * \param [in] IRQn The interrupt to be queried.
 * \param [in] group Interrupt group number: 0 - Group 0, 1 - Group 1
@@ -1996,6 +1997,7 @@ __STATIC_INLINE void GIC_DistInit(void)
   //Enable distributor
   GIC_EnableDistributor();
 }
+#endif /* GIC_DISTRIBUTOR_BASE */
 
 /** \brief Initialize the CPU's interrupt interface
 */

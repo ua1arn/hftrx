@@ -280,7 +280,7 @@ app_run64: $(PROJECT)_app.alw32 $(DDRINIT)
 
 app_run: $(PROJECT)_app.alw32 ddrinit
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
-	$(XFEL) exec 0x40000100
+	$(XFEL) exec $(SystemExecAARCH64)
 
 # debug for bootloader - check .ld file
 _app_run: bootloader
