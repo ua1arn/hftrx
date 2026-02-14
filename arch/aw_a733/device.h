@@ -57,6 +57,10 @@ typedef enum IRQn
     TWI10_IRQn = 53,                                  /*!< TWI Two Wire Interface (TWI) */
     TWI11_IRQn = 54,                                  /*!< TWI Two Wire Interface (TWI) */
     TWI12_IRQn = 55,                                  /*!< TWI Two Wire Interface (TWI) */
+    SPI0_IRQn = 56,                                   /*!< SPI Serial Peripheral Interface */
+    SPI1_IRQn = 57,                                   /*!< SPI Serial Peripheral Interface */
+    SPI2_IRQn = 58,                                   /*!< SPI Serial Peripheral Interface */
+    SPI3_IRQn = 59,                                   /*!< SPI Serial Peripheral Interface */
     GPIOB_IRQn = 101,                                 /*!< GPIOINT GPIOB_NS */
     GPIOB_S_IRQn = 102,                               /*!< GPIOINT  */
     GPIOC_IRQn = 103,                                 /*!< GPIOINT GPIOC_NS */
@@ -109,6 +113,7 @@ typedef enum IRQn
     S_TWI0_IRQn = 235,                                /*!< TWI Two Wire Interface (TWI) */
     S_TWI1_IRQn = 236,                                /*!< TWI Two Wire Interface (TWI) */
     S_TWI2_IRQn = 237,                                /*!< TWI Two Wire Interface (TWI) */
+    S_SPI_IRQn = 242,                                 /*!< SPI Serial Peripheral Interface */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -159,6 +164,7 @@ typedef enum IRQn
 #define TWI11_BASE ((uintptr_t) 0x0251B000)           /*!< TWI Two Wire Interface (TWI) Base */
 #define TWI12_BASE ((uintptr_t) 0x0251C000)           /*!< TWI Two Wire Interface (TWI) Base */
 #define SPI0_BASE ((uintptr_t) 0x02540000)            /*!< SPI Serial Peripheral Interface Base */
+#define SPI1_BASE ((uintptr_t) 0x02541000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI2_BASE ((uintptr_t) 0x02542000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI3_BASE ((uintptr_t) 0x02543000)            /*!< SPI Serial Peripheral Interface Base */
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Security ID Base */
@@ -1599,6 +1605,7 @@ typedef struct USB_OHCI_Capability_Type
 #define TWI11 ((TWI_TypeDef *) TWI11_BASE)            /*!< TWI11 Two Wire Interface (TWI) register set access pointer */
 #define TWI12 ((TWI_TypeDef *) TWI12_BASE)            /*!< TWI12 Two Wire Interface (TWI) register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
+#define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define SPI2 ((SPI_TypeDef *) SPI2_BASE)              /*!< SPI2 Serial Peripheral Interface register set access pointer */
 #define SPI3 ((SPI_TypeDef *) SPI3_BASE)              /*!< SPI3 Serial Peripheral Interface register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */

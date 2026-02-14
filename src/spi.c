@@ -1106,6 +1106,57 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 	// De-assert hardware CS
 	//spi->SPI_TCR |= (1u << 7);
 
+#elif CPUSTYLE_A733
+
+	SPIHARD_CCU_CLK_REG =
+		SPIHARD_CCU_CLK_SRC_SEL_VAL * (UINT32_C(1) << 24) |	/* CLK_SRC_SEL */
+		0;
+	//SPIHARD_CCU_CLK_REG |= (UINT32_C(1) << 31);	// 1: Clock is ON - Allwinner all
+
+
+	// SCLK = Clock Source/M/N.
+	unsigned value;
+	const int_fast32_t upspeed = SPISPEEDUFAST * 2;	// 50 MHz
+	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, upspeed), ALLWNT_SPI_CLK_WIDTH, ALLWNT_SPI_CLK_TAPS, & value, 1);
+	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%u)\n", prei, value, (unsigned) spispeed, HARDWARE_SPI_FREQ);
+	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
+	const uint_fast32_t ccu_spi_clk_reg =
+		SPIHARD_CCU_CLK_SRC_SEL_VAL * (UINT32_C(1) << 24) |
+		factorN * (UINT32_C(1) << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+		factorM * (UINT32_C(1) << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
+		(UINT32_C(1) << 31) |	// 1: Clock is ON
+		0;
+	//ccu_spi_clk_reg_val [spispeedindex] = ccu_spi_clk_reg;
+	SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg;
+
+	/* Open the clock gate for SPI0 */
+	SPIHARD_CCU_BGR_REG |= (UINT32_C(1) << 0);
+
+
+	//CCU->SPI_BGR_REG &= ~ (UINT32_C(1) << (ix + 16));	// Assert SPIx reset
+	SPIHARD_CCU_BGR_REG |= (UINT32_C(1) << 16);	// De-assert SPIx reset
+
+	SPIHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SPI0_CLK_GATING	T507/H616
+	(void) SPIHARD_CCU_CLK_REG;
+
+	/* Do a soft reset */
+	spi->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
+	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
+		;
+
+	spi->SPI_GCR =
+		//1 * (UINT32_C(1) << 7) |	// TP_EN Transmit Pause Enable
+		1 * (UINT32_C(1) << 1) |	// MODE: 1: Master mode
+		0;
+
+	/* Enable SPIx */
+	spi->SPI_GCR |= (UINT32_C(1) << 0);	// EN SPI Module Enable Control
+
+	// De-assert hardware CS
+	//spi->SPI_TCR |= (1u << 7);
+
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507
 
 	SPIHARD_CCU_CLK_REG =

@@ -6816,6 +6816,31 @@
   <name>SPI0</name>
   <description>Serial Peripheral Interface</description>
   <baseAddress>0x02540000</baseAddress>
+  <interrupt>
+   <name>SPI0</name>
+   <value>56</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI1</name>
+   <value>57</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI2</name>
+   <value>58</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI3</name>
+   <value>59</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>S_SPI</name>
+   <value>242</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>SPI_GCR</name>
@@ -6991,16 +7016,120 @@
   </registers>
   </peripheral>
   <peripheral derivedFrom="SPI0">
+  <name>SPI1</name>
+  <baseAddress>0x02541000</baseAddress>
+  <interrupt>
+   <name>SPI0</name>
+   <value>56</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI1</name>
+   <value>57</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI2</name>
+   <value>58</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI3</name>
+   <value>59</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>S_SPI</name>
+   <value>242</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="SPI0">
   <name>SPI2</name>
   <baseAddress>0x02542000</baseAddress>
+  <interrupt>
+   <name>SPI0</name>
+   <value>56</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI1</name>
+   <value>57</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI2</name>
+   <value>58</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI3</name>
+   <value>59</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>S_SPI</name>
+   <value>242</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="SPI0">
   <name>SPI3</name>
   <baseAddress>0x02543000</baseAddress>
+  <interrupt>
+   <name>SPI0</name>
+   <value>56</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI1</name>
+   <value>57</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI2</name>
+   <value>58</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI3</name>
+   <value>59</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>S_SPI</name>
+   <value>242</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral derivedFrom="SPI0">
   <name>S_SPI</name>
   <baseAddress>0x07092000</baseAddress>
+  <interrupt>
+   <name>SPI0</name>
+   <value>56</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI1</name>
+   <value>57</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI2</name>
+   <value>58</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>SPI3</name>
+   <value>59</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>S_SPI</name>
+   <value>242</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>S_GPIOL</name>

@@ -4416,6 +4416,11 @@ uint_fast32_t allwnr_a733_get_mbus_freq(void)
 	return 600 * 1000 * 1000;
 }
 
+uint_fast32_t allwnr_a733_get_sysclk24M_freq(void)
+{
+	return 24 * 1000 * 1000;
+}
+
 // NOTE:UART0..UARG5 working clock sources from APB_UART
 uint_fast32_t allwnr_a733_get_uart_freq(void)
 {

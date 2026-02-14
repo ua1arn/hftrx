@@ -15,9 +15,7 @@
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
-
-//#define WITHSPISW 	1	/* Использование программного управления SPI. */
+#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 
 //#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 //#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
@@ -563,9 +561,10 @@
 	} while (0)
 
 	// MOSI & SCK port
-	#define	SPI_SCLK_BIT			(UINT32_C(1) << 0)	// PC0 SPI0_CLK
-	#define	SPI_MOSI_BIT			(UINT32_C(1) << 2)	// PC2 SPI0_MOSI
-	#define	SPI_MISO_BIT			(UINT32_C(1) << 4)	// PC4 SPI0_MISO
+	// PD10 SPI1_CS0
+	#define	SPI_SCLK_BIT			(UINT32_C(1) << 11)	// PD11 SPI1_CLK
+	#define	SPI_MOSI_BIT			(UINT32_C(1) << 12)	// PD12 SPI1_MOSI
+	#define	SPI_MISO_BIT			(UINT32_C(1) << 13)	// PD13 SPI1_MISO
 
 	//	spidf: ID=0xC2 devId=0x2015, mf_dlen=0xC2
 	//	SFDP: density=00FFFFFF (16384 Kbi, 2 MB)
@@ -578,13 +577,14 @@
 	//#define SPDIF_D2_BIT (UINT32_C(1) << 6)		// PC6 SPI0_WP/D2
 	//#define SPDIF_D3_BIT (UINT32_C(1) << 7)		// PC7 SPI0_HOLD/D3
 
-	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_CCU_BGR_REG (CCU->SPI1_BGR_REG)	/* 0 - SPI0, 1: SPI1... */
 	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0x03	/* t507: 000: OSC24M 001: PLL_PERI0(1X) 010: PLL_PERI1 (1X) 011: PLL_PERI0(2X) 100: PLL_PERI1 (2X) */
-	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi0_freq())
+	#define HARDWARE_SPI_FREQ (allwnr_a733_get_spi1_freq())
 
 	/* to be removed... */
-	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
-	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIDFHARD_PTR SPIHARD_PTR
 	#define SPIDFHARD_IX SPIHARD_IX
 
@@ -592,14 +592,14 @@
 	#define HARDWARE_FPGA_FIR_SPIHARD_PTR SPIHARD_PTR
 
 	// сделать зависящим от target
-	#define SPI_GET_PTR(target) ((targetnone == (target)) ? HARDWARE_FPGA_LOADER_SPIHARD_PTR : SPIHARD_PTR )
+	#define SPI_GET_PTR(target) SPIHARD_PTR//((targetnone == (target)) ? HARDWARE_FPGA_LOADER_SPIHARD_PTR : SPIHARD_PTR )
 
-	#define HARDWARE_SPI0_INITIALIZE() do { \
-		arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF4); 	/* PC0 SPI0_CLK */ \
-		arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF4); 	/* PC2 SPI0_MOSI */ \
-		arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF4); 	/* PC4 SPI0_MISO */ \
+	#define HARDWARE_SPI1_INITIALIZE() do { \
+		arm_hardware_piod_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF6); 	/* PD11 SPI0_CLK */ \
+		arm_hardware_piod_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF6); 	/* PC12 SPI0_MOSI */ \
+		arm_hardware_piod_altfn50(SPI_MISO_BIT, GPIO_CFG_AF6); 	/* PC13 SPI0_MISO */ \
 	} while (0)
-	#define WITHSPI0HW	1	// Use SPI0
+	#define WITHSPI1HW	1	// Use SPI1
 
 #else /* WITHSPIHW */
 

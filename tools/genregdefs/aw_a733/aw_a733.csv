@@ -102,12 +102,16 @@
 
 #type; SPI; Serial Peripheral Interface
 #base; SPI0 0x02540000
-##base; SPI1 0x02541000
+#base; SPI1 0x02541000
 #base; SPI2 0x02542000
 #base; SPI3 0x02543000
 #base; S_SPI 0x07092000
-##irq; SPI0 44
-##irq; SPI1 45
+
+#irq; SPI0 56
+#irq; SPI1 57
+#irq; SPI2 58
+#irq; SPI3 59
+#irq; S_SPI 242
 #typeend;
 
 #type; TIMER0
