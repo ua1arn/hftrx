@@ -251,8 +251,8 @@ bootloader: BOOT2
 # Take from tc1_a733_boot.map - address of SystemDRAMInit, SystemExecAARCH64
 ifeq (1, 1)
 # Radaxa Cubie A7Z
-SystemDRAMInit = 0x00078714
-SystemExecAARCH64 = 0x00075124
+SystemDRAMInit = 0x00078310
+SystemExecAARCH64 = 0x00075044
 DDRINITBLOB=ddrinit_a733_lpddr4.bin
 else
 # Orange pi 4 pro
