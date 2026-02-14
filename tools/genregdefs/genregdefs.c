@@ -453,6 +453,18 @@ void genstruct(struct parsedfile *pfl)
 			offs);
 }
 
+void genstructprintcalls(struct parsedfile *pfl)
+{
+	int i;
+	for (i = 0; i < pfl->base_count; ++i)
+	{
+		const char * const objname = pfl->base_xnames[i];
+		emitline(INDENT,
+				"%s_Type_print(%s, \"%s\");\n",
+				pfl->bname, objname, objname);
+	}
+}
+
 void genstructprint(struct parsedfile *pfl)
 {
 	PLIST_ENTRY t;
@@ -1222,6 +1234,14 @@ static void processfile_periphregsdebug(struct parsedfile *pfl)
 	}
 }
 
+static void processfile_periphregsdebugcalls(struct parsedfile *pfl)
+{
+	if (!IsListEmpty(&pfl->regslist))
+	{
+		genstructprintcalls(pfl);
+	}
+}
+
 static int collect_base(struct parsedfile *pfl, int n, struct basemap *v)
 {
 	/* collect base pointers */
@@ -1542,6 +1562,19 @@ static void generate_debug(void)
 				item);
 		processfile_periphregsdebug(pfl);
 	}
+
+	emitline(0,
+			"static void all_Type_print(void)\n");
+	emitline(0, "{\n");
+	/* structures */
+	for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink)
+	{
+		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile,
+				item);
+		processfile_periphregsdebugcalls(pfl);
+	}
+
+	emitline(0, "}\n");
 	emitline(0, "#endif /* PRINTF */\n");
 	emitline(0, "#endif /* %s */" "\n", headrname);
 
