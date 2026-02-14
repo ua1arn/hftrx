@@ -790,9 +790,10 @@ typedef struct
 
 #define GICRedistributor      ((GICRedistributor_Type      *)     GIC_REDISTRIBUTOR_BASE ) /*!< \brief GIC ReDistributor register set access pointer */
 
+// https://developer.arm.com/documentation/ddi0601/2025-12/External-Registers/GICR-CTLR--Redistributor-Control-Register?lang=en
 __STATIC_FORCEINLINE void GIC_RedistributorWait(void)
 {
-	while ((GICRedistributor->CTLR & (UINT32_C(1) << 31)) != 0)	// Bit 3 or 31 ???
+	while ((GICRedistributor->CTLR & (UINT32_C(1) << 3)) != 0)	// Bit 3, not a 31
 			;
 }
 
@@ -1783,7 +1784,7 @@ __STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
 	#define sICC_BPR0_EL1           "p15, 0, %0, C12, C8, 3"
 	#define sICC_BPR1_EL1           "p15, 0, %0, C12, C12, 3"
 	#define sICC_CTLR_EL1           "p15, 0, %0, C12, C12, 4"
-	#define sICC_CTLR_EL3           "p15, 6, %0, C12, C12, 4"
+	#define sICC_CTLR_EL3           "p15, 6, %0, C12, C12, 4"	// p15, op1 CRn CRm op2
 	#define sICC_EOIR0_EL1          "p15, 0, %0, C12, C8, 1"
 	#define sICC_EOIR1_EL1          "p15, 0, %0, C12, C12, 1"
 	#define sICC_HPPIR0_EL1         "p15, 0, %0, C12, C8, 2"
