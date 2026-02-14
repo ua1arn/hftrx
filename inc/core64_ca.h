@@ -463,15 +463,15 @@ __STATIC_FORCEINLINE uint32_t __get_DAIF(void)
 }
 
 // 4.3.42 Secure Configuration Register
-__STATIC_FORCEINLINE void __set_SCR_EL3(uint32_t value)
+__STATIC_FORCEINLINE void __set_SCR_EL3(uint64_t value)
 {
 	// MSR CSSELR_EL1, <Xt> ; Write Xt to CSSELR_EL1
 	__set_RG32("SCR_EL3", value);
 }
 
-__STATIC_FORCEINLINE uint32_t __get_SCR_EL3(void)
+__STATIC_FORCEINLINE uint64_t __get_SCR_EL3(void)
 {
-	uint32_t result;
+	uint64_t result;
 	__get_RG32("SCR_EL3", result);
 	return result;
 }
@@ -1645,12 +1645,12 @@ __STATIC_FORCEINLINE uint64_t __get_PMCNTENSET_EL0(void)
 
 ///////////////
 ///
-__STATIC_FORCEINLINE void __set_CPACR_EL1(uint32_t value)
+__STATIC_INLINE void __set_CPACR_EL1(uint32_t value)
 {
 	__set_RG32("CPACR_EL1", value);
 }
 
-__STATIC_FORCEINLINE uint32_t __get_CPACR_EL1(void)
+__STATIC_INLINE uint32_t __get_CPACR_EL1(void)
 {
 	uint32_t result;
 	// MRS <Xt>, CPACR_EL1 ; Read CPACR_EL1 into Xt
@@ -1658,7 +1658,7 @@ __STATIC_FORCEINLINE uint32_t __get_CPACR_EL1(void)
 	return result;
 }
 
-__STATIC_FORCEINLINE uint32_t __get_DCZID_EL0(void)
+__STATIC_INLINE uint32_t __get_DCZID_EL0(void)
 {
 	uint32_t result;
 	// MRS <Xt>, DCZID_EL0 ; Read DCZID_EL0 into Xt
@@ -1674,11 +1674,12 @@ __STATIC_FORCEINLINE uint32_t __get_DCZID_EL0(void)
 		10 EL2
 		11 EL3
 */
-__STATIC_FORCEINLINE uint32_t __get_CURRENTEL(void)
+
+__STATIC_INLINE uint64_t __get_CurrentEL(void)
 {
-	uint32_t result;
-	__get_RG32("CURRENTEL", result);
-	return result;
+	uint64_t result;
+    __get_RG32("CurrentEL", result);
+    return result;
 }
 
 
@@ -2620,6 +2621,7 @@ __STATIC_INLINE void GIC_DistInit(void)
 */
 __STATIC_INLINE void GIC_Enable(void)
 {
+	return;
 //int init_dist
   GIC_DistInit();
   GIC_CPUInterfaceInit(); //per CPU

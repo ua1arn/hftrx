@@ -944,8 +944,9 @@ __STATIC_FORCEINLINE void __set_CPUACTLR(uint64_t cpuactlr)
 __STATIC_FORCEINLINE uint64_t __get_CPUECTLR(void)
 {
 	uint64_t result;
-  __get_CP64(15, 1, result, 15);
-  return(result);
+	// cp, op1, Rt, CRm
+	__get_CP64(15, 1, result, 15);
+	return (result);
 }
 
 /** \brief  Set CPUECTLR
@@ -983,6 +984,7 @@ __STATIC_INLINE uint32_t __get_ICC_CTLR_EL1(void)
 	__get_CP(15, 0, result, 12, 12, 4);	// mrc	15, 0, r0, cr12, cr12, {4}
     return result;
 }
+
 __STATIC_INLINE void __set_ICC_CTLR_EL1(uint32_t value)
 {
     //__MCR32(sICC_CTLR_EL1, value);
@@ -990,7 +992,18 @@ __STATIC_INLINE void __set_ICC_CTLR_EL1(uint32_t value)
 	//__set_RG32("ICC_CTLR", result);
 }
 
-#endif /* (__CORTEX_A == 55U) && defined(__aarch64__) */
+
+//__STATIC_INLINE uint32_t __get_CurrentEL(void)
+//{
+//	uint32_t result;
+//	// cp, op1, Rt, CRn, CRm, op2
+//	//__get_CP(15, 0, result, 4, 2, 2);	// mrc	15, 0, r1, cr4, cr2, {2}
+//	  __ASM volatile ("MRS %0, CurrentEL" : "=r" (result) );
+//	return(result);
+//}
+
+
+#endif /* (__CORTEX_A == 55U) && !__aarch64__ */
 
 #include "utils.h"
 // Substitutions for t507 ddr ram init
