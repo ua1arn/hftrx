@@ -298,6 +298,28 @@ static const char * textbyacc(enum regsccess flag)
 		return "__OM ";	/* write only access */
 	}
 }
+
+static const char *const fldtypes[] =
+{
+	"uint0_t", "uint8_t ", "uint16_t", "uint24_t", "uint32_t",
+	"uint40_t", "uint48_t", "uint56_t", "uint64_t",
+};
+
+static const char *const fmttypes[] =
+{
+	"PRIUX0", "PRIUX8", "PRIUX16", "PRIUX24", "PRIUX32",
+	"PRIUX40", "PRIUX48", "PRIUX56", "PRIUX64",
+};
+
+const char * getcastnamebysize(unsigned fldsize)
+{
+	return fldtypes [fldsize];
+}
+const char * const getformatnamebysize(unsigned fldsize)
+{
+	return fmttypes [fldsize];
+}
+
 /* Generate list of registers. Return last offset */
 unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 {
@@ -309,9 +331,6 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 	{
 		const struct regdfn *const regp = CONTAINING_RECORD(t, struct regdfn,
 				item);
-		static const char *fldtypes[] =
-		{ "uint32_t", "uint8_t ", "uint16_t", "uint24_t", "uint32_t",
-				"uint40_t", "uint48_t", "uint56_t", "uint64_t", };
 
 		char fldtype[VNAME_MAX];
 
@@ -329,7 +348,7 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 		else
 		{
 			_snprintf(fldtype, sizeof fldtype / sizeof fldtype[0], "%s",
-					fldtypes[regp->fldsize]);
+					getcastnamebysize(regp->fldsize));
 		}
 
 		if (regp->fldoffs > offs || regp->fldsize == 0)
@@ -450,11 +469,13 @@ void genstructprint(struct parsedfile *pfl)
 
 		if (p->fldsize != 0)
 		{
+			const char * const castname = getcastnamebysize(p->fldsize);
+			const char * const formatname = getformatnamebysize(p->fldsize);
 			if (p->fldrept)
 			{
 				// Array forming
 				unsigned i;
-				for (i = 0; i < 4 && i < p->fldrept; ++i)
+				for (i = 0; i < 1024 && i < p->fldrept; ++i)
 				{
 					emitline(
 					INDENT,
