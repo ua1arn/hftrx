@@ -42,9 +42,7 @@
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-#if ! defined(__aarch64__) || WITHOLDCMSIS
-    #include "a-profile/irq_ctrl.h" // CMSIS_6 file
-#endif
+#include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
 /// Number of implemented interrupt lines
 #ifndef IRQ_GIC_LINE_COUNT

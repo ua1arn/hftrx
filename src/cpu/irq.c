@@ -13,9 +13,7 @@
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-#if ! defined(__aarch64__) || WITHOLDCMSIS
-	#include "a-profile/irq_ctrl.h" // CMSIS_6 file
-#endif
+#include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
 #if WITHFT8
 
