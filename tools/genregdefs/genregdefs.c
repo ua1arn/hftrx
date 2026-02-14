@@ -1553,6 +1553,7 @@ static void generate_debug(void)
 	emitline(0, "#define %s" "\n", headrname);
 	emitline(0, "#ifdef PRINTF\n");
 	emitline(0, "#include <stdint.h>" "\n");
+	emitline(0, "#include <inttypes.h>" "\n");
 
 	/* structures */
 
