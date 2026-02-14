@@ -1059,6 +1059,7 @@ typedef struct
 #if (defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)) || \
     defined(DOXYGEN)
 
+#if defined(GIC_DISTRIBUTOR_BASE)
 /** \brief  Structure type to access the Generic Interrupt Controller Distributor (GICD)
 */
 typedef struct
@@ -1269,7 +1270,9 @@ typedef struct
 #define GICDistributor_IROUTER_Aff3_Msk       (0xFFUL << GICDistributor_IROUTER_Aff3_Pos)          /*!< GICDistributor IROUTER: Aff3 Mask */
 #define GICDistributor_IROUTER_Aff3(x)        (((uint64_t)(((uint64_t)(x)) << GICDistributor_IROUTER_Aff3_Pos)) & GICDistributor_IROUTER_Aff3_Msk)
 
+#endif /* GIC_DISTRIBUTOR_BASE */
 
+#if defined(GIC_INTERFACE_BASE)
 
 /** \brief  Structure type to access the Generic Interrupt Controller Interface (GICC)
 */
@@ -1396,6 +1399,8 @@ typedef struct
 #define GICInterface_DIR_INTID_Msk          (0xFFFFFFU /*<< GICInterface_DIR_INTID_Pos*/)   /*!< GICInterface DIR: INTID Mask */
 #define GICInterface_DIR_INTID(x)           (((uint32_t)(((uint32_t)(x)) /*<< GICInterface_DIR_INTID_Pos*/)) & GICInterface_DIR_INTID_Msk)
 #endif /*  (__GIC_PRESENT == 1U) || defined(DOXYGEN) */
+
+#endif /* GIC_INTERFACE_BASE */
 
 #if (defined(__TIM_PRESENT) && (__TIM_PRESENT == 1U)) || \
      defined(DOXYGEN)
@@ -1991,6 +1996,8 @@ __STATIC_INLINE void L2C_CleanInvPa (void *pa)
 #if (defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)) || \
      defined(DOXYGEN)
 
+#if defined(GIC_DISTRIBUTOR_BASE)
+
 __STATIC_FORCEINLINE void GIC_DistributorWait(void)
 {
 	while ((GICDistributor->CTLR & (UINT32_C(1) << 31)) != 0)
@@ -2047,6 +2054,9 @@ __STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
 {
   return (GICDistributor->ITARGETSR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
 }
+#endif /* GIC_DISTRIBUTOR_BASE */
+
+#if defined(GIC_INTERFACE_BASE)
 
 /** \brief Enable the CPU's interrupt interface.
 */
@@ -2078,6 +2088,11 @@ __STATIC_INLINE void GIC_EndInterrupt(IRQn_Type IRQn)
   GICInterface->EOIR = IRQn;
 }
 
+#else /* GIC_INTERFACE_BASE */
+
+#endif /* GIC_INTERFACE_BASE */
+
+#if defined(GIC_DISTRIBUTOR_BASE)
 /** \brief Enables the given interrupt using GIC's ISENABLER register.
 * \param [in] IRQn The interrupt to be enabled.
 */
@@ -2198,6 +2213,9 @@ __STATIC_INLINE uint32_t GIC_GetPriority(IRQn_Type IRQn)
 {
   return (GICDistributor->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
 }
+#endif /* GIC_DISTRIBUTOR_BASE */
+
+#if defined(GIC_INTERFACE_BASE)
 
 /** \brief Set the interrupt priority mask using CPU's PMR register.
 * \param [in] priority Priority mask to be set.
@@ -2230,6 +2248,9 @@ __STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
 {
   return GICInterface->BPR;
 }
+#endif /* GIC_INTERFACE_BASE */
+
+#if defined(GIC_DISTRIBUTOR_BASE)
 
 /** \brief Get the status for a given interrupt.
 * \param [in] IRQn The interrupt to get status for.
@@ -2254,7 +2275,9 @@ __STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t 
 {
   GICDistributor->SGIR = ((filter_list & 3U) << 24U) | ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
 }
+#endif
 
+#if defined(GIC_INTERFACE_BASE)
 /** \brief Get the interrupt number of the highest interrupt pending from CPU's HPPIR register.
 * \return GICInterface_Type::HPPIR
 */
@@ -2270,6 +2293,7 @@ __STATIC_INLINE uint32_t GIC_GetInterfaceId(void)
 {
   return GICInterface->IIDR;
 }
+#endif /* GIC_INTERFACE_BASE */
 
 /** \brief Set the interrupt group from the GIC's IGROUPR register.
 * \param [in] IRQn The interrupt to be queried.
