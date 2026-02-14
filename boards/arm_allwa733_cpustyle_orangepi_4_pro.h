@@ -985,11 +985,11 @@
 	#define PMIC_I2C_W (0x36 << 1)	// 7bit: 0x36/0x37
 	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
-	int board_radaxa_cubie_axp318w_initialize(void);
+	int board_orangepi4pro_axp318w_initialize(void);
 
 	/* Контроллер питания AXP313 */
 	#define BOARD_PMIC_INITIALIZE() do { \
-		board_radaxa_cubie_axp318w_initialize(); \
+		board_orangepi4pro_axp318w_initialize(); \
 	} while (0)
 #endif /* WITHISBOOTLOADER */
 
