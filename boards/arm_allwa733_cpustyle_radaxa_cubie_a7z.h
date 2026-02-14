@@ -579,7 +579,7 @@
 
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_BGR_REG (CCU->SPI1_BGR_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0x03	/* t507: 000: OSC24M 001: PLL_PERI0(1X) 010: PLL_PERI1 (1X) 011: PLL_PERI0(2X) 100: PLL_PERI1 (2X) */
+	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0x00	/* A733: 0X00: osc24m */
 	#define HARDWARE_SPI_FREQ (allwnr_a733_get_spi1_freq())
 
 	/* to be removed... */
