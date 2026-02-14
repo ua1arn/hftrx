@@ -307,8 +307,8 @@ static const char *const fldtypes[] =
 
 static const char *const fmttypes[] =
 {
-	"PRIUX0", "PRIUX8", "PRIUX16", "PRIUX24", "PRIUX32",
-	"PRIUX40", "PRIUX48", "PRIUX56", "PRIUX64",
+	"PRIX0", "PRIX8", "PRIX16", "PRIX24", "PRIX32",
+	"PRIX40", "PRIX48", "PRIX56", "PRIX64",
 };
 
 const char * getcastnamebysize(unsigned fldsize)
@@ -469,7 +469,7 @@ void genstructprint(struct parsedfile *pfl)
 
 		if (p->fldsize != 0)
 		{
-			const char * const castname = getcastnamebysize(p->fldsize);
+			//const char * const castname = getcastnamebysize(p->fldsize);
 			const char * const formatname = getformatnamebysize(p->fldsize);
 			if (p->fldrept)
 			{
@@ -478,9 +478,9 @@ void genstructprint(struct parsedfile *pfl)
 				for (i = 0; i < 1024 && i < p->fldrept; ++i)
 				{
 					emitline(INDENT,
-							"PRINTF(\"%%s->%s [%u] = 0x%%08X; /* 0x%%08X @ 0x%03X */\\n\", "
-							"base, (unsigned) p->%s [%u], p->%s [%u]);",
-							p->fldname, i, p->fldoffs + i * p->fldsize, p->fldname, i, p->fldname, i);
+							"PRINTF(\"%%s->%s [%u] = 0x%%08\" %s \"; /* 0x%%08\" %s \" @ 0x%03X */\\n\", "
+							"base, p->%s [%u], p->%s [%u]);",
+							p->fldname, i, formatname, formatname, p->fldoffs + i * p->fldsize, p->fldname, i, p->fldname, i);
 
 					emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
 							p->fldoffs + i * p->fldsize, p->comment);
@@ -490,8 +490,8 @@ void genstructprint(struct parsedfile *pfl)
 			{
 				// Plain field
 				emitline(INDENT,
-						"PRINTF(\"%%s->%s = 0x%%08X; /* 0x%%08X @ 0x%03X */\\n\", base, p->%s, p->%s );",
-						p->fldname, p->fldoffs, p->fldname, p->fldname);
+						"PRINTF(\"%%s->%s = 0x%%08\" %s \"; /* 0x%%08\" %s \" @ 0x%03X */\\n\", base, p->%s, p->%s );",
+						p->fldname, formatname, formatname, p->fldoffs, p->fldname, p->fldname);
 				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", p->fldoffs,
 						p->comment);
 			}
@@ -1532,6 +1532,7 @@ static void generate_debug(void)
 	emitline(0, "#ifndef %s" "\n", headrname);
 	emitline(0, "#define %s" "\n", headrname);
 	emitline(0, "#ifdef PRINTF\n");
+	emitline(0, "#include <stdint.h>" "\n");
 
 	/* structures */
 
