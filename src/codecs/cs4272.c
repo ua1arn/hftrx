@@ -7,6 +7,9 @@
 //
 #include "hardware.h"
 
+
+#if (defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_CS4272)) || (defined (CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_CS4272))
+
 #include "board.h"
 
 #include "formats.h"
@@ -34,6 +37,7 @@
 	#define CS4272_ADDRESS_R(tg)	(CS4272_ADDRESS_W(tg) + 1)
 
 #endif
+
 
 //memory address pointers
 #define MODE_CONTROL_1 0x1 //memory address pointer for modeControl1
@@ -277,7 +281,7 @@ const codec2if_t * board_getfpgacodecif(void)
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_CS4272)
 
 /* требуется ли подача тактирования для инициадизации кодека */
-static uint_fast8_t nau8822_clocksneed(void)
+static uint_fast8_t cs4272_clocksneed(void)
 {
 	return 1;
 }
@@ -329,3 +333,5 @@ board_getaudiocodecif(void)
 }
 
 #endif /* defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_CS4272) */
+
+#endif /* (defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_CS4272)) || (defined (CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_CS4272)) */
