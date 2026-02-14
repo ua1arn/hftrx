@@ -7111,6 +7111,7 @@ static void enctest(void)
 
 #endif
 
+#if CPUSTYLE_A733
 #if (__CORTEX_A == 55U) && __aarch64__
 
 uint32_t __get_ICC_SRE_EL1(void)
@@ -7153,7 +7154,98 @@ void __set_ICC_PMR_EL1(uint32_t value)
 {
 	__MSR(ICC_PMR_EL1, value);
 }
+
+__STATIC_INLINE void __set_ICC_CTLR_EL1(uint32_t value)
+{
+	__MSR(ICC_CTLR_EL1, value);
+}
+
+__STATIC_INLINE uint32_t __get_ICC_CTLR_EL1(void)
+{
+    uint32_t result;
+    __MRS(ICC_CTLR_EL1, &result);
+    return result;
+}
+
+__STATIC_INLINE void __set_ICC_CTLR_EL3(uint32_t value)
+{
+	__MSR(ICC_CTLR_EL3, value);
+}
+
+__STATIC_INLINE uint32_t __get_ICC_CTLR_EL3(void)
+{
+    uint32_t result;
+    __MRS(ICC_CTLR_EL3, &result);
+    return result;
+}
+
+#else /* (__CORTEX_A == 55U) && defined(__aarch64__) */
+
+// ICC_CTLR_EL3 and ICC_CTLR
+/*__STATIC_INLINE */uint32_t __get_ICC_CTLR_EL3(void)
+{
+    uint32_t result;
+    //__MRC32(sICC_CTLR_EL3, &result);		// mrc	15, 6, r0, cr12, cr12, {4}
+	//__get_CP(15, 6, result, 12, 12, 4);	// mrc	15, 6, r0, cr12, cr12, {4}
+	__get_CP(15, 6, result, 12, 12, 4);	// mrc	15, 0, r0, cr12, cr12, {4} - недоступно в aarch64
+    return result;
+}
+/*__STATIC_INLINE */void __set_ICC_CTLR_EL3(uint32_t value)
+{
+    //__MCR32(sICC_CTLR_EL3, value);
+	__set_CP(15, 6, value, 12, 12, 4);	// mcr	15, 6, r0, cr12, cr12, {4} - недоступно в aarch64
+	//__set_RG32("ICC_CTLR", result);
+}
+/*__STATIC_INLINE */uint32_t __get_ICC_CTLR_EL1(void)
+{
+    uint32_t result;
+    //__MRC32(sICC_CTLR_EL1, &result);		// mrc	15, 6, r0, cr12, cr12, {4}
+	//__get_CP(15, 0, result, 12, 12, 4);	// mrc	15, 6, r0, cr12, cr12, {4}
+	__get_CP(15, 0, result, 12, 12, 4);	// mrc	15, 0, r0, cr12, cr12, {4}
+    return result;
+}
+/*__STATIC_INLINE */void __set_ICC_CTLR_EL1(uint32_t value)
+{
+    //__MCR32(sICC_CTLR_EL1, value);
+	__set_CP(15, 0, value, 12, 12, 4);	// mcr	15, 0, r0, cr12, cr12, {4}
+	//__set_RG32("ICC_CTLR", result);
+}
+
 #endif /* (__CORTEX_A == 55U) && defined(__aarch64__) */
+
+#define ROUTED_TO_ALL (1)
+#define ROUTED_TO_SPEC (0)
+
+/** Macro to access the Distributor Control Register (GICD_CTLR)
+*/
+#define GICD_CTLR_RWP ((unsigned int)1<<31)
+#define GICD_CTLR_E1NWF (1<<7)
+#define GICD_CTLR_DS (1<<6)     // 当两种安全模式被同时支持时，可以通过GICD_CTLR.DS==1关闭其中一个，只支持non-secure模式
+#define GICD_CTLR_ARE_NS (1<<5)
+#define GICD_CTLR_ARE_S (1<<4)
+#define GICD_CTLR_ENGRP1S (1<<2)    // secure group 1
+#define GICD_CTLR_ENGRP1NS (1<<1)   // non-secure group 1
+#define GICD_CTLR_ENGRP0 (1<<0)     // group 0
+
+/** Macro to access the Redistributor Control Register (GICR_CTLR)
+*/
+#define GICR_CTLR_UWP (1<<31)
+#define GICR_CTLR_DPG1S (1<<26)
+#define GICR_CTLR_DPG1NS (1<<25)
+#define GICR_CTLR_DPG0 (1<<24)
+#define GICR_CTLR_RWP (1<<3)
+#define GICR_CTLR_IR (1<<2)
+#define GICR_CTLR_CES (1<<1)
+#define GICR_CTLR_EnableLPI (1<<0)
+
+#define GICD_CTLR_ENGRP1A 1
+
+__STATIC_INLINE bool sGIC_GetARE(void)
+{
+    return !!(GICDistributor->CTLR & 0x30);
+}
+
+#endif
 
 void hightests(void)
 {
@@ -7169,117 +7261,125 @@ void hightests(void)
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
-#if 0
-	{
-		//GIC_SendSGI(TIMER1_3_IRQn, 1 << 0, 0x00);	// CPU0, filer=0
-
-		//arm_hardware_set_handler_system(USB0_DEVICE_IRQn, NULL);
-
-		unsigned e0 = GIC_GetEnableIRQ(TIMER1_0_IRQn);
-		unsigned e1 = GIC_GetEnableIRQ(TIMER1_1_IRQn);
-		unsigned e2 = GIC_GetEnableIRQ(TIMER1_2_IRQn);
-		unsigned e3 = GIC_GetEnableIRQ(TIMER1_3_IRQn);
-		unsigned e4 = GIC_GetEnableIRQ(USB0_DEVICE_IRQn);
-
-		PRINTF("e 0..3: %u %u %u %u %u\n", e0, e1, e2, e3, e4);
-
-		unsigned l0 = GIC_GetPriority(TIMER1_0_IRQn);
-		unsigned l1 = GIC_GetPriority(TIMER1_1_IRQn);
-		unsigned l2 = GIC_GetPriority(TIMER1_2_IRQn);
-		unsigned l3 = GIC_GetPriority(TIMER1_3_IRQn);
-		unsigned l4 = GIC_GetPriority(USB0_DEVICE_IRQn);
-
-		unsigned basepri = GIC_GetInterfacePriorityMask();
-		PRINTF("L 0..4: %u %u %u %u %u (%u)\n", l0, l1, l2, l3, l4, basepri);
-//
-//		GIC_SetPendingIRQ(TIMER1_3_IRQn);
-
-//		unsigned p0 = GIC_GetPendingIRQ(TIMER1_0_IRQn);
-//		unsigned p1 = GIC_GetPendingIRQ(TIMER1_1_IRQn);
-//		unsigned p2 = GIC_GetPendingIRQ(TIMER1_2_IRQn);
-//		unsigned p3 = GIC_GetPendingIRQ(TIMER1_3_IRQn);
-//
-//		PRINTF("p 0..3: %u %u %u %u\n", p0, p1, p2, p3);
-
-		unsigned p4 = GIC_GetHighPendingIRQ();
-		unsigned p5 = GIC_AcknowledgePending();
-		PRINTF("p 4..6: %u %u\n", p4, p5);
-
-		unsigned p7 = GICDistributor->CTLR;
-		PRINTF("CTLR %08X\n", p7);
-
-		//uint64_t cfgid1 = GICD->GICD_CFGID;
-		uint64_t cfgid2 = GICD->GICD_CFGID;
-		PRINTF("cores: %u\n",
-				//(unsigned) ((cfgid1 >> 48) & 0x1F),
-				(unsigned) ((cfgid2 >> 48) & 0x1F)
-
-		);
-
-//		unsigned p7 = GICR0->GICR_CTLR;
-//		uint64_t p8 = GICR0->GICR_PENDBASER;
-//		uint64_t p9 = GICR0->GICR_PROPBASER;
-//		PRINTF("p 7..9: %08X %" PRIX64 " %" PRIX64 "\n", p7, p8, p9);
-
-	}
-#endif
-#if 1
+#if 1 && CPUSTYLE_A733
 	{
 		if (1)
 		{
 			PRINTF("IRQ test:\n");
+			{
+				unsigned e0 = GIC_GetEnableIRQ(TIMER1_0_IRQn);
+				unsigned e1 = GIC_GetEnableIRQ(TIMER1_1_IRQn);
+				unsigned e2 = GIC_GetEnableIRQ(TIMER1_2_IRQn);
+				unsigned e3 = GIC_GetEnableIRQ(TIMER1_3_IRQn);
+				unsigned e4 = GIC_GetEnableIRQ(USB0_DEVICE_IRQn);
 
-			//global_enableIRQ();
-			//printAllEnabledIRQs();
+				PRINTF("e 0..3: %u %u %u %u %u\n", e0, e1, e2, e3, e4);
+			}
+			{
+				unsigned l0 = GIC_GetPriority(TIMER1_0_IRQn);
+				unsigned l1 = GIC_GetPriority(TIMER1_1_IRQn);
+				unsigned l2 = GIC_GetPriority(TIMER1_2_IRQn);
+				unsigned l3 = GIC_GetPriority(TIMER1_3_IRQn);
+				unsigned l4 = GIC_GetPriority(USB0_DEVICE_IRQn);
 
+				unsigned basepri = GIC_GetInterfacePriorityMask();
+				PRINTF("L 0..4: %u %u %u %u %u (%u)\n", l0, l1, l2, l3, l4, basepri);
+			}
+
+			PRINTF("Enable IRQ:\n");
+			global_enableIRQ();
+			//GIC_SetInterfacePriorityMask(255);
+#if 0
+
+			PRINTF("GIC_GetARE()=%u, CTLR=%08x\n", (unsigned) sGIC_GetARE(), (unsigned) GICDistributor->CTLR);
+		    GICDistributor->CTLR = ((GICD_CTLR_ARE_NS) | (1U << GICD_CTLR_ENGRP1A));
+//			GIC_DistributorWait();
+			GICDistributor->CTLR |= UINT32_C(0x40);
+			GIC_DistributorWait();
+			GICDistributor->CTLR |= UINT32_C(1);
+			GIC_DistributorWait();
+
+			PRINTF("GIC_GetARE()=%u, CTLR=%08x\n", (unsigned) sGIC_GetARE(), (unsigned) GICDistributor->CTLR);
+
+//			If ext-GICD_CTLR.DS == 0, this bit is read-only.
+//			If ext-GICD_CTLR.DS == 1, this bit is read/write.
+
+			// __get_ICC_CTLR_EL1()=00008400
+			PRINTF("__get_ICC_CTLR_EL1()=%08X\n", (unsigned) __get_ICC_CTLR_EL1());
+			__set_ICC_CTLR_EL1(__get_ICC_CTLR_EL1() | (UINT32_C(1) << 6));	// не модифицируется
+			PRINTF("__get_ICC_CTLR_EL1()=%08X\n", (unsigned) __get_ICC_CTLR_EL1());
+
+			// __get_ICC_CTLR_EL3()=00028400
+//			PRINTF("__get_ICC_CTLR_EL3()=%08X\n", (unsigned) __get_ICC_CTLR_EL3());
+//			__set_ICC_CTLR_EL3(__get_ICC_CTLR_EL3() | (UINT32_C(1) << 6));
+//			__set_ICC_CTLR_EL3(__get_ICC_CTLR_EL3() | (UINT32_C(1) << 0));
+//			__set_ICC_CTLR_EL3(__get_ICC_CTLR_EL3() | (UINT32_C(1) << 6));
+//			PRINTF("__get_ICC_CTLR_EL3()=%08X\n", (unsigned) __get_ICC_CTLR_EL3());
+#endif
+
+			PRINTF("Set priority\n");
+			//arm_hardware_set_handler_system(USB0_DEVICE_IRQn, NULL);
+//		    GIC_SetPriority (TIMER1_1_IRQn, 0*IRQL_SYSTEM);
+		    GIC_SetPriority (USB0_DEVICE_IRQn, 0*IRQL_SYSTEM);
 			TP();
 			{
 				const IRQn_Type irqn = USB0_DEVICE_IRQn;
 
-				GIC_SetPendingIRQ(irqn);
-				TP();
 				GIC_EnableIRQ(irqn);
-				//arm_hardware_set_handler_system(irqn, NULL);
+				GIC_SetPendingIRQ(irqn);
 				ASSERT(GIC_GetEnableIRQ(irqn));
-				TP();
+			}
+			TP();
+			{
+				const IRQn_Type irqn = USB0_DEVICE_IRQn;
 
+				GIC_EnableIRQ(irqn);
+				GIC_SetPendingIRQ(irqn);
+				ASSERT(GIC_GetEnableIRQ(irqn));
+			}
+			TP();
+			{
+				const IRQn_Type irqn = TIMER1_1_IRQn;
+
+				GIC_EnableIRQ(irqn);
+				GIC_SetPendingIRQ(irqn);
+				ASSERT(GIC_GetEnableIRQ(irqn));
 			}
 			TP();
 			{
 				const IRQn_Type irqn = TIMER1_1_IRQn;
 
 				GIC_SetPendingIRQ(irqn);
-				TP();
 				GIC_EnableIRQ(irqn);
-				//arm_hardware_set_handler_system(irqn, NULL);
 				ASSERT(GIC_GetEnableIRQ(irqn));
-				TP();
-
 			}
 			TP();
 			{
 				const IRQn_Type irqn = USB0_DEVICE_IRQn;
 
-				GIC_SetPendingIRQ(irqn);
-				TP();
 				GIC_EnableIRQ(irqn);
-				//arm_hardware_set_handler_system(irqn, NULL);
+				GIC_SetPendingIRQ(irqn);
 				ASSERT(GIC_GetEnableIRQ(irqn));
-				TP();
-
 			}
+			{
+				unsigned e0 = GIC_GetEnableIRQ(TIMER1_0_IRQn);
+				unsigned e1 = GIC_GetEnableIRQ(TIMER1_1_IRQn);
+				unsigned e2 = GIC_GetEnableIRQ(TIMER1_2_IRQn);
+				unsigned e3 = GIC_GetEnableIRQ(TIMER1_3_IRQn);
+				unsigned e4 = GIC_GetEnableIRQ(USB0_DEVICE_IRQn);
 
-//			GIC_SetPendingIRQ(irqn);
-//			TP();
-//			ASSERT(GIC_GetPendingIRQ(irqn));
-//			TP();
+				PRINTF("e 0..3: %u %u %u %u %u\n", e0, e1, e2, e3, e4);
+			}
+			{
+				unsigned l0 = GIC_GetPriority(TIMER1_0_IRQn);
+				unsigned l1 = GIC_GetPriority(TIMER1_1_IRQn);
+				unsigned l2 = GIC_GetPriority(TIMER1_2_IRQn);
+				unsigned l3 = GIC_GetPriority(TIMER1_3_IRQn);
+				unsigned l4 = GIC_GetPriority(USB0_DEVICE_IRQn);
 
-			unsigned p4 = GIC_GetHighPendingIRQ();
-			unsigned p5 = GIC_AcknowledgePending();
-			PRINTF("p 4..6: %u %u\n", p4, p5);
-
-	//		GIC_ClearPendingIRQ(irqn);
-	//		ASSERT(! GIC_GetPendingIRQ(irqn));
+				unsigned basepri = GIC_GetInterfacePriorityMask();
+				PRINTF("L 0..4: %u %u %u %u %u (%u)\n", l0, l1, l2, l3, l4, basepri);
+			}
 			PRINTF("IRQ test done\n");
 
 		}

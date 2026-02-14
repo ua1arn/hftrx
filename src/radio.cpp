@@ -8512,11 +8512,13 @@ const char * hamradio_get_mode_b_value_P(uint_fast8_t * flag)
 {
 	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
 	{
-	default:
 	case VFOMODES_VFOINIT:	/* no SPLIT -  Обычная перестройка */
 		* flag = 0;
+		break;
+	default:
 	case VFOMODES_VFOSPLIT:
 		* flag = 1;
+		break;
 		//return (gvfoab != tx) ? b : a;
 	}
 	return submodes [getsubmode(getbankindex_ab_fordisplay(1))].qlabel;	/* VFO B modifications */

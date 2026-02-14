@@ -100,7 +100,7 @@ static void cs4272_setreg(
 
 	#if WITHTWIHW
 		uint8_t buff [] = { mapv, datav, };
-		i2chw_write(CS4272_ADDRESS_W(tg), buff, ARRAY_SIZE(buff));
+		i2chwx_write(TWIHARD_PTR, CS4272_ADDRESS_W(tg), buff, ARRAY_SIZE(buff));
 	#elif WITHTWISW
 		// кодек управляется по I2C
 		i2c_start(CS4272_ADDRESS_W(tg));
@@ -137,8 +137,8 @@ static uint_fast8_t cs4272_getreg(
 
 	#if WITHTWIHW
 		uint8_t buff [] = { mapv, };
-		i2chw_write(CS4272_ADDRESS_W(tg), buff, ARRAY_SIZE(buff));
-		i2chw_read(CS4272_ADDRESS_R(tg), & v, 1);
+		i2chwx_write(TWIHARD_PTR, CS4272_ADDRESS_W(tg), buff, ARRAY_SIZE(buff));
+		i2chwx_read(TWIHARD_PTR, CS4272_ADDRESS_R(tg), & v, 1);
 	#elif WITHTWISW
 
 		// кодек управляется по I2C

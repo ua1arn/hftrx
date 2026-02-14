@@ -194,7 +194,7 @@ __STATIC_FORCEINLINE uint32_t __LDAXRB(const volatile uint8_t *ptr)
 {
 	uint32_t result;
 
-	__ASM volatile ("ldaxrb %w0, %1" : "=r" (result) : "Q" (*ptr) : );
+	__ASM volatile ("ldaxrb %w0, %1" : "=r" (result) : "Q" (*ptr) : "memory");
 	return result;    /* Add explicit type cast here */
 }
 
@@ -210,7 +210,7 @@ __STATIC_FORCEINLINE uint32_t __STXRB(uint32_t value, volatile uint8_t *ptr)
 {
 	uint32_t result;
 
-	__ASM volatile ("stxrb %w0, %w2, %1" : "=&r" (result), "=Q" (*ptr) : "r" (value) : "memory" );
+	__ASM volatile ("stxrb %w0, %w2, %1" : "=&r" (result), "=Q" (*ptr) : "r" (value) : "memory");
 	return (result);
 }
 
@@ -1990,7 +1990,7 @@ __STATIC_INLINE void L2C_CleanInvPa (void *pa)
 /* ##########################  GIC functions  ###################################### */
 #if (defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)) || \
      defined(DOXYGEN)
-#error rr
+
 __STATIC_FORCEINLINE void GIC_DistributorWait(void)
 {
 	while ((GICDistributor->CTLR & (UINT32_C(1) << 31)) != 0)

@@ -403,6 +403,7 @@ static uint_fast64_t aarch64_2M_addrmaskmem(uint_fast64_t addr)
 	const uint_fast64_t mask48 = UINT64_C(0xFFFFFFFFFFFF);	// bits 47..0
 	switch (vTG0)
 	{
+	default:
 	case 0x00:	// 4KB
 		return (addr >> 21 << 21) & mask48;
 	case 0x02:	// 16KB
@@ -418,6 +419,7 @@ static uint_fast64_t aarch64_2M_addrmasktable(uint_fast64_t addr)
 	const uint_fast64_t mask48 = UINT64_C(0xFFFFFFFFFFFF);	// bits 47..0
 	switch (vTG0)
 	{
+	default:
 	case 0x00:	// 4KB
 		return (addr >> 12 << 12) & mask48;
 	case 0x02:	// 16KB

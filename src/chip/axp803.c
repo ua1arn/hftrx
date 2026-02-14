@@ -855,15 +855,13 @@ static int axp858_getaldor(int aldo_num)
 {
 	switch (aldo_num)
 	{
+	default:
+		ASSERT(0);
 	case 1:	return AXP858_ALDO1_CTRL;
 	case 2:	return AXP858_ALDO2_CTRL;
 	case 3:	return AXP858_ALDO3_CTRL;
 	case 4:	return AXP858_ALDO4_CTRL;
 	case 5:	return AXP858_ALDO5_CTRL;
-	default:
-		ASSERT(0);
-		for (;;)
-			;
 	}
 }
 

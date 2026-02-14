@@ -69,36 +69,6 @@
   #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(addr))->v)
 #endif
 
-/** \brief Calculate log2 rounded up
-*  - log(0)  => 0
-*  - log(1)  => 0
-*  - log(2)  => 1
-*  - log(3)  => 2
-*  - log(4)  => 2
-*  - log(5)  => 3
-*        :      :
-*  - log(16) => 4
-*  - log(32) => 5
-*        :      :
-* \param [in] n input value parameter
-* \return log2(n)
-*/
-//__STATIC_FORCEINLINE uint8_t __log2_up(uint32_t n)
-//{
-//  if (n < 2U) {
-//    return 0U;
-//  }
-//  uint8_t log = 0U;
-//  uint32_t t = n;
-//  while(t > 1U)
-//  {
-//    log++;
-//    t >>= 1U;
-//  }
-//  if (n & 1U) { log++; }
-//  return log;
-//}
-
 
 /**
 \brief   Signed Saturate
@@ -162,31 +132,5 @@ typedef int32_t IRQn_ID_t;
 #define __WFE()    __asm__ volatile ("wfe":::"memory")
 
 #define __SEV()    __asm__ volatile ("sev")
-
-//__STATIC_FORCEINLINE  void __ISB(void)
-//{
-//    __asm__ volatile ("isb 0xF":::"memory");
-//}
-//
-///**
-//  \brief   Data Synchronization Barrier
-//  \details Acts as a special kind of Data Memory Barrier.
-//           It completes when all explicit memory accesses before this instruction complete.
-// */
-//__STATIC_FORCEINLINE  void __DSB(void)
-//{
-//    __asm__ volatile ("dsb 0xF":::"memory");
-//}
-//
-///**
-//  \brief   Data Memory Barrier
-//  \details Ensures the apparent order of the explicit memory operations before
-//           and after the instruction, without ensuring their completion.
-// */
-//
-//__STATIC_FORCEINLINE  void __DMB(void)
-//{
-//    __asm__ volatile ("dmb 0xF":::"memory");
-//}
 
 #endif /* ARCH_AW_T507_NEW_CMSIS_COMPAT_H_ */

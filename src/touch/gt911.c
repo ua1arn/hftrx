@@ -86,7 +86,7 @@ int gt911_set_reg(uint_fast16_t reg)
 {
 #if WITHTWIHW
 	uint8_t buf[2] = { (reg >> 8), (reg & 0xFF), };
-	return i2chw_write(gt911_addr, buf, 2);
+	return i2chwx_write(TWIHARD_PTR, gt911_addr, buf, 2);
 #elif WITHTWISW
 	i2c_start(gt911_addr);
 	i2c_write(reg >> 8);
@@ -142,7 +142,7 @@ int gt911_write_reg(uint_fast16_t reg, uint8_t val)
 {
 #if WITHTWIHW
 	uint8_t buf[3] = { (reg >> 8), (reg & 0xFF), val, };
-	return i2chw_write(gt911_addr, buf, 3);
+	return i2chwx_write(TWIHARD_PTR, gt911_addr, buf, 3);
 #elif WITHTWISW
 	i2c_start(gt911_addr);
 	i2c_write(reg >> 8);

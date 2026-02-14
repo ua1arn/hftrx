@@ -270,9 +270,9 @@ tc358768_rd_reg_16or32bits(unsigned register_id)
 		const uint8_t bufw [2] = { register_id >> 8, register_id >> 0, };
 		uint8_t bufr [2];
 
-		if (i2chw_write(i2caddr | 0x00, bufw, ARRAY_SIZE(bufw)))
+		if (i2chwx_write(TWIHARD_PTR, i2caddr | 0x00, bufw, ARRAY_SIZE(bufw)))
 			return 1;
-		if (i2chw_read(i2caddr | 0x01, bufr, ARRAY_SIZE(bufr)))
+		if (i2chwx_read(TWIHARD_PTR, i2caddr | 0x01, bufr, ARRAY_SIZE(bufr)))
 			return 1;
 
 		return
@@ -302,9 +302,9 @@ tc358768_rd_reg_16or32bits(unsigned register_id)
 		const uint8_t bufw [2] = { register_id >> 8, register_id >> 0, };
 		uint8_t bufr [4];
 
-		if (i2chw_write(i2caddr | 0x00, bufw, ARRAY_SIZE(bufw)))
+		if (i2chwx_write(TWIHARD_PTR, i2caddr | 0x00, bufw, ARRAY_SIZE(bufw)))
 			return 1;
-		if (i2chw_read(i2caddr | 0x01, bufr, ARRAY_SIZE(bufr)))
+		if (i2chwx_read(TWIHARD_PTR, i2caddr | 0x01, bufr, ARRAY_SIZE(bufr)))
 			return 1;
 
 		return
@@ -350,7 +350,7 @@ tc358768_wr_reg_16bits(unsigned long value)
 		value >> 8, value >> 0,
 	};
 
-	return i2chw_write(i2caddr | 0x00, bufw, ARRAY_SIZE(bufw));
+	return i2chwx_write(TWIHARD_PTR, i2caddr | 0x00, bufw, ARRAY_SIZE(bufw));
 
 #elif WITHTWISW
 	i2c_start(i2caddr | 0x00);
@@ -397,7 +397,7 @@ static int tc358768_write(
 			val >> 8, val >> 0,
 		};
 
-		return i2chw_write(i2caddr | 0x00, bufw, ARRAY_SIZE(bufw));
+		return i2chwx_write(TWIHARD_PTR, i2caddr | 0x00, bufw, ARRAY_SIZE(bufw));
 
 #elif WITHTWISW
 		i2c_start(i2caddr | 0x00);
@@ -420,7 +420,7 @@ static int tc358768_write(
 			val >> 24, val >> 16,
 		};
 
-		return i2chw_write(i2caddr | 0x00, bufw, ARRAY_SIZE(bufw));
+		return i2chwx_write(TWIHARD_PTR, i2caddr | 0x00, bufw, ARRAY_SIZE(bufw));
 
 #elif WITHTWISW
 		i2c_start(i2caddr | 0x00);
@@ -453,9 +453,9 @@ static int tc358768_read(
 		const uint8_t bufw [2] = { register_id >> 8, register_id >> 0, };
 		uint8_t bufr [2];
 
-		if (i2chw_write(i2caddr | 0x00, bufw, ARRAY_SIZE(bufw)))
+		if (i2chwx_write(TWIHARD_PTR, i2caddr | 0x00, bufw, ARRAY_SIZE(bufw)))
 			return 1;
-		if (i2chw_read(i2caddr | 0x01, bufr, ARRAY_SIZE(bufr)))
+		if (i2chwx_read(TWIHARD_PTR, i2caddr | 0x01, bufr, ARRAY_SIZE(bufr)))
 			return 1;
 
 		* val =
@@ -486,9 +486,9 @@ static int tc358768_read(
 		const uint8_t bufw [2] = { register_id >> 8, register_id >> 0, };
 		uint8_t bufr [4];
 
-		if (i2chw_write(i2caddr | 0x00, bufw, ARRAY_SIZE(bufw)))
+		if (i2chwx_write(TWIHARD_PTR, i2caddr | 0x00, bufw, ARRAY_SIZE(bufw)))
 			return 1;
-		if (i2chw_read(i2caddr | 0x01, bufr, ARRAY_SIZE(bufr)))
+		if (i2chwx_read(TWIHARD_PTR, i2caddr | 0x01, bufr, ARRAY_SIZE(bufr)))
 			return 1;
 
 		* val =

@@ -82,7 +82,7 @@ __STATIC_FORCEINLINE uint32_t __LDAXRB(const volatile uint8_t *ptr)
 {
 	uint32_t result;
 
-	__ASM volatile ("ldaxrb %w0, %1" : "=r" (result) : "Q" (*ptr) : );
+	__ASM volatile ("ldaxrb %w0, %1" : "=r" (result) : "Q" (*ptr) : "memory");
 	return result;    /* Add explicit type cast here */
 }
 
@@ -98,7 +98,7 @@ __STATIC_FORCEINLINE uint32_t __STXRB(uint32_t value, volatile uint8_t *ptr)
 {
 	uint32_t result;
 
-	__ASM volatile ("stxrb %w0, %w2, %1" : "=&r" (result), "=Q" (*ptr) : "r" (value) : "memory" );
+	__ASM volatile ("stxrb %w0, %w2, %1" : "=&r" (result), "=Q" (*ptr) : "r" (value) : "memory");
 	return (result);
 }
 
@@ -110,7 +110,7 @@ __STATIC_FORCEINLINE uint32_t __STXRB(uint32_t value, volatile uint8_t *ptr)
 */
 __STATIC_FORCEINLINE void __STLRB(uint32_t value, volatile uint8_t *ptr)
 {
-	__ASM volatile ("stlrb %w1, %0" : "=Q" (*ptr) : "r" (value) : "memory" );
+	__ASM volatile ("stlrb %w1, %0" : "=Q" (*ptr) : "r" (value) : "memory");
 }
 
 
