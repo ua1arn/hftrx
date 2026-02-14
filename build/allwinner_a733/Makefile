@@ -248,11 +248,16 @@ bootloader: BOOT2
 	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
 	./egontool -base 0x00040000 -reset 0x00040100 $(PROJECT)_boot.bin fsbl.bt0
 	
+lib: bootloader
+	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort >bootparam.mak
+	$(BUSYBOX) cp fsbl.bt0 $(DDRINITBLOB)
+
 # Take from tc1_a733_boot.map - address of SystemDRAMInit, SystemExecAARCH64
 ifeq (1, 1)
 # Radaxa Cubie A7Z
-SystemDRAMInit = 0x00078310
-SystemExecAARCH64 = 0x00075044
+-include ./bootparam.mak
+#SystemDRAMInit = 0x0007809c
+#SystemExecAARCH64 = 0x0007500c
 DDRINITBLOB=ddrinit_a733_lpddr4.bin
 else
 # Orange pi 4 pro

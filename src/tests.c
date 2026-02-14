@@ -7162,7 +7162,7 @@ void hightests(void)
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
-#if 0 && CPUSTYLE_A733
+#if WITHDEBUG && CPUSTYLE_A733
 	{
 		//all_Type_print("start (fresh)");
 		if (1)
