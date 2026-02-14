@@ -1565,8 +1565,9 @@ static void generate_debug(void)
 	}
 
 	emitline(0,
-			"static void all_Type_print(void)\n");
+			"static void all_Type_print(const char * label)\n");
 	emitline(0, "{\n");
+	emitline(INDENT, "PRINTF(\"%%s\\n\", label);" "\n");
 	/* structures */
 	for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink)
 	{
