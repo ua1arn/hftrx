@@ -2730,7 +2730,7 @@ void testsloopprocessing(void)
 #endif /* WITHWATCHDOG */
 }
 
-// Вызывается из main
+// Вызывается из main - для CORE0
 void cpu_initialize(void)
 {
 	//PRINTF("cpu_initialize\n");
