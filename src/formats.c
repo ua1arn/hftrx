@@ -22,13 +22,13 @@
 
 #define FETCH(c, fmt) ((c) = * (fmt) ++)
 #define LOOK(fmt) (* (fmt))
+typedef long long signed int 	FMT_SLONGLONG;
+typedef long long unsigned int 	FMT_ULONGLONG;
 
 static	char *
-uconvert(long unsigned n, uint_fast8_t base, char * s, const FLASHMEM char * dg)
+uconvert(FMT_ULONGLONG n, uint_fast8_t base, char * s, const FLASHMEM char * dg)
 {	do
 	{
-		//const ldiv_t v = ldiv(n, base);	// AVR GCC: нельзя применять ldiv - при переполнении (числа вроде -1L) неправильно считает
-
 		* -- s = dg[(int) (n % base)];
 		n = n / base;
 	} while (n != 0);
@@ -68,20 +68,15 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 	int maxwidth, width, i;
 	union
 	{
-#ifdef	__NOLONG__
-		int	lval;
-#else
-		signed long 	lval;
-		//unsigned long 	ulval;
-#endif
+		FMT_SLONGLONG lval;
 		void * pval;
 		/* double dval;	*/
 	} u;
 	char	 	* cp;
 	char		s [TMP_S_SIZE + 1];
 	int		len;
-	static const FLASHMEM char	lcase[17] = { "0123456789abcdef" };
-	static const FLASHMEM char	ucase[17] = { "0123456789ABCDEF" };
+	static const char	lcase[17] = { "0123456789abcdef" };
+	static const char	ucase[17] = { "0123456789ABCDEF" };
 	static char null_s[] = "(null)";
 
 	u.lval = 0;	/* Supress GCC warning. */
@@ -128,8 +123,10 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 				rj = 0, width = - width; /* fillc ? */
 		}
 		else
+		{
 			for (width = 0; local_isdigit((unsigned char) c); FETCH(c, pfmt))
 				width = width * 10 + c - '0';
+		}
 		/*************************************/
 
 		/*	Has prec.	*/
