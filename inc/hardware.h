@@ -962,15 +962,15 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
 #if (__CORTEX_A == 55U) && !__aarch64__
 
 // ICC_CTLR_EL3 and ICC_CTLR
-__STATIC_INLINE uint32_t __get_ICC_CTLR_EL3(void)
+__STATIC_INLINE uint64_t __get_ICC_CTLR_EL3(void)
 {
-    uint32_t result;
+	uint64_t result;
     //__MRC32(sICC_CTLR_EL3, &result);		// mrc	15, 6, r0, cr12, cr12, {4}
 	//__get_CP(15, 6, result, 12, 12, 4);	// mrc	15, 6, r0, cr12, cr12, {4}
 	__get_CP(15, 6, result, 12, 12, 4);	// mrc	15, 0, r0, cr12, cr12, {4} - недоступно в aarch64
     return result;
 }
-__STATIC_INLINE void __set_ICC_CTLR_EL3(uint32_t value)
+__STATIC_INLINE void __set_ICC_CTLR_EL3(uint64_t value)
 {
     //__MCR32(sICC_CTLR_EL3, value);
 	__set_CP(15, 6, value, 12, 12, 4);	// mcr	15, 6, r0, cr12, cr12, {4} - недоступно в aarch64

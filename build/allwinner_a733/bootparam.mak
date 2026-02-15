@@ -1,2 +1,2 @@
-SystemDRAMInit = 0x00078250
-SystemExecAARCH64 = 0x00074fe4
+SystemDRAMInit = 0x000787c0
+SystemExecAARCH64 = 0x00075264
