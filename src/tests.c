@@ -7145,7 +7145,71 @@ __STATIC_INLINE bool sGIC_GetARE(void)
 }
 
 #endif
+#if 0
+#define SUNXI_SID_BASE 0x03006000
+#define SUNXI_SID_SRAM_BASE (SUNXI_SID_BASE + 0x200)
+#define SUNXI_SYSCTRL_BASE 0x03000000
+#define SUNXI_SOC_VER_REG (SUNXI_SYSCTRL_BASE + 0x24)
+#define SUNXI_SOC_VER_MASK (0x7)
 
+typedef enum {
+	SUNXI_SOC_VER_INVALID = -1,
+	SUNXI_SOC_VER_A = 0,
+	SUNXI_SOC_VER_B = 1,
+	SUNXI_SOC_VER_C = 2,
+} sunxi_soc_version_t;
+
+static inline uint32_t read32(uint32_t addr)
+{
+    return (*((volatile uint32_t*)(addr)));
+}
+
+static inline void write32(void *addr, uint32_t value)
+{
+    (*((volatile uint32_t*)(addr))) = value;
+}
+
+void show_chip() {
+	unsigned chip_sid[4];
+	chip_sid[0] = read32(SUNXI_SID_SRAM_BASE + 0x0);
+	chip_sid[1] = read32(SUNXI_SID_SRAM_BASE + 0x4);
+	chip_sid[2] = read32(SUNXI_SID_SRAM_BASE + 0x8);
+	chip_sid[3] = read32(SUNXI_SID_SRAM_BASE + 0xc);
+
+	///PRINTF("Model: Radxa Cubie A7A board.\n");
+	PRINTF("Model: Orangepi 4 pro board.\n");
+	PRINTF("Core: Arm Dual-Core Cortex-A76 + Arm Hexa-Core Cortex-A55\n");
+	PRINTF("Chip SID = %08x%08x%08x%08x\n", chip_sid[0], chip_sid[1], chip_sid[2], chip_sid[3]);
+
+	uint32_t chip_markid_sid = chip_sid[0] & 0xffff;
+
+	switch (chip_markid_sid) {
+		case 0x5100:
+			PRINTF("Chip type = A733MX-HN3");
+			break;
+		case 0x5f00:
+			PRINTF("Chip type = A733MX-N3X");
+			break;
+		default:
+			PRINTF("Chip type = UNKNOW");
+			break;
+	}
+
+	///setbits_le32(SUNXI_SYSCTRL_BASE + 0x24, BIT(15));
+	write32((void *) (SUNXI_SYSCTRL_BASE + 0x24), 1 << 15);
+	unsigned version = (read32(SUNXI_SYSCTRL_BASE + 0x24) & 0xFFFF0007) >> 16;
+	PRINTF(" Chip Version = 0x%04x \n", version);
+}
+
+static sunxi_soc_version_t sunxi_get_soc_ver(void) {
+	uint32_t value;
+
+	value = read32(SUNXI_SOC_VER_REG);
+	value &= SUNXI_SOC_VER_MASK;
+
+	return SUNXI_SOC_VER_A + value;
+}
+#endif
 void hightests(void)
 {
 #if LCDMODE_LTDC
@@ -7158,6 +7222,11 @@ void hightests(void)
 	{
 
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
+	}
+#endif
+#if 0
+	{
+		show_chip();
 	}
 #endif
 #if WITHDEBUG && CPUSTYLE_A733
