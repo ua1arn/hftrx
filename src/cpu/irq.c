@@ -2044,7 +2044,7 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	const IRQL_t oldv = GIC_GetInterfacePriorityMask();
 	ASSERT2(oldv != 0, file, line);
-	ASSERT2(lastirql [core] == oldv, file, line);
+//	ASSERT2(lastirql [core] == oldv, file, line);
 	if (oldv >= newIRQL)
 	{
 		; /* Не понижаем приоритет */

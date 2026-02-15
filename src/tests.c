@@ -7109,10 +7109,10 @@ static void enctest(void)
 
 #endif
 
-#if CPUSTYLE_A733 && 1
+#if CPUSTYLE_A733 && __aarch64__
 
 
-#include "gic600.h"
+//#include "gic600.h"
 
 #define ROUTED_TO_ALL (1)
 #define ROUTED_TO_SPEC (0)
@@ -7236,6 +7236,12 @@ void hightests(void)
 		show_chip();
 	}
 #endif
+#if 1
+	{
+		PRINTF("GICDistributor->CTLR=%08x\n", (unsigned) GICDistributor->CTLR);
+
+	}
+#endif
 #if WITHDEBUG && CPUSTYLE_A733
 	{
 		//all_Type_print("start (fresh)");
@@ -7257,9 +7263,12 @@ void hightests(void)
 		PRINTF("ICC_IGRPEN1_EL3=%08" PRIX32 "\n", __get_ICC_IGRPEN1_EL3());
 		//PRINTF("IRQ test:, __get_CurrentEL()=%u\n", (unsigned) (__get_CurrentEL() >> 2) & 0x03);
 #endif
-		GIC_SetInterfacePriorityMask(240);
-		GIC_EnableInterface();
-
+//		GIC_SetInterfacePriorityMask(240);
+//		GIC_EnableInterface();
+		//GIC_EnableIRQ(USB0_DEVICE_IRQn);
+//		GIC_SetPriority (TIMER1_1_IRQn, 1*IRQL_SYSTEM);
+		GIC_SetPriority (USB0_DEVICE_IRQn, 0*IRQL_SYSTEM);
+	#if 1
 		{
 			unsigned e0 = GIC_GetEnableIRQ(TIMER1_0_IRQn);
 			unsigned e1 = GIC_GetEnableIRQ(TIMER1_1_IRQn);
@@ -7279,11 +7288,9 @@ void hightests(void)
 			unsigned basepri = GIC_GetInterfacePriorityMask();
 			PRINTF("L 0..4: %u %u %u %u %u (%u)\n", l0, l1, l2, l3, l4, basepri);
 		}
-//		GIC_SetPriority (TIMER1_1_IRQn, 1*IRQL_SYSTEM);
-//		GIC_SetPriority (USB0_DEVICE_IRQn, 1*IRQL_SYSTEM);
 		//all_Type_print("after set usb priority");
 		//all_Type_print("after set timer priority");
-
+	#endif
 		PRINTF("Enable IRQ:\n");
 		global_enableIRQ();
 		//GIC_SetInterfacePriorityMask(255);
@@ -7300,6 +7307,7 @@ void hightests(void)
 		PRINTF("GIC_GetARE()=%u, CTLR=%08x\n", (unsigned) sGIC_GetARE(), (unsigned) GICDistributor->CTLR);
 	#endif
 
+	#if 0
 		//			If ext-GICD_CTLR.DS == 0, this bit is read-only.
 		//			If ext-GICD_CTLR.DS == 1, this bit is read/write.
 
@@ -7308,6 +7316,7 @@ void hightests(void)
 		__set_ICC_CTLR_EL1(__get_ICC_CTLR_EL1() | (UINT32_C(1) << 6));	// не модифицируется
 		PRINTF("__get_ICC_CTLR_EL1()=%016" PRIX64 "\n", __get_ICC_CTLR_EL1());
 		dbg_flush();
+	#endif
 	#if 0
 		// Этот кусок прекращает отработку прерываний на aarch32
 		PRINTF("GIC_GetARE()=%u, CTLR=%08x\n", (unsigned) sGIC_GetARE(), (unsigned) GICDistributor->CTLR);
@@ -7322,6 +7331,7 @@ void hightests(void)
 		PRINTF("GIC_GetARE()=%u, CTLR=%08x\n", (unsigned) sGIC_GetARE(), (unsigned) GICDistributor->CTLR);
 	#endif
 
+#if 0
 //		PRINTF("Set priority\n");
 //		//arm_hardware_set_handler_system(USB0_DEVICE_IRQn, NULL);
 		GIC_SetPriority (USB0_DEVICE_IRQn, 16 * 8);	// При 9 и менее - работает
@@ -7412,6 +7422,7 @@ void hightests(void)
 			unsigned basepri = GIC_GetInterfacePriorityMask();
 			PRINTF("L 0..4: %u %u %u %u %u (%u)\n", l0, l1, l2, l3, l4, basepri);
 		}
+#endif
 		PRINTF("IRQ test done\n");
 
 	}

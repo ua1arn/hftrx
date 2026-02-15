@@ -2040,11 +2040,19 @@ void ohciehci_clk_init(void)
 
 #elif CPUSTYLE_A733
 	#warning CPUSTYLE_7133 To be done
-	const unsigned ix = 0;	// 0 - EHCI0/OHCI0
-
-    arm_hardware_disable_handler(USB0_DEVICE_IRQn);
-    arm_hardware_disable_handler(USB0_EHCI_IRQn);
-    arm_hardware_disable_handler(USB0_OHCI_IRQn);
+	const unsigned ix = WITHUSBHW_EHCI_IX;	// 0 - EHCI0/OHCI0
+	switch (ix)
+	{
+	case 0:
+		arm_hardware_disable_handler(USB0_DEVICE_IRQn);
+		arm_hardware_disable_handler(USB0_EHCI_IRQn);
+		arm_hardware_disable_handler(USB0_OHCI_IRQn);
+		break;
+	case 1:
+		arm_hardware_disable_handler(USB1_EHCI_IRQn);
+		arm_hardware_disable_handler(USB1_OHCI_IRQn);
+		break;
+	}
 
     // TODO: add enable clocks
 

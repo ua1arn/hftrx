@@ -6,7 +6,7 @@
 //
 
 #include "hardware.h"
-
+#include "formats.h"
 
 #if (__CORTEX_A != 0)
 
