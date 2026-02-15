@@ -2406,26 +2406,28 @@ __STATIC_FORCEINLINE void __set_ICC_PMR_EL1(uint32_t value)
 	__MSR(ICC_PMR_EL1, value);
 }
 
-__STATIC_FORCEINLINE void __set_ICC_CTLR_EL1(uint32_t value)
+// ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
+__STATIC_FORCEINLINE void __set_ICC_CTLR_EL1(uint64_t value)
 {
 	__MSR(ICC_CTLR_EL1, value);
 }
 
-__STATIC_FORCEINLINE uint32_t __get_ICC_CTLR_EL1(void)
+// ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
+__STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL1(void)
 {
-    uint32_t result;
+	uint64_t result;
     __MRS(ICC_CTLR_EL1, &result);
     return result;
 }
 
-__STATIC_FORCEINLINE void __set_ICC_CTLR_EL3(uint32_t value)
+__STATIC_FORCEINLINE void __set_ICC_CTLR_EL3(uint64_t value)
 {
 	__MSR(ICC_CTLR_EL3, value);
 }
 
-__STATIC_FORCEINLINE uint32_t __get_ICC_CTLR_EL3(void)
+__STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL3(void)
 {
-    uint32_t result;
+	uint64_t result;
     __MRS(ICC_CTLR_EL3, &result);
     return result;
 }

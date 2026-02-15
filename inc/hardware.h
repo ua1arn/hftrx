@@ -976,6 +976,8 @@ __STATIC_INLINE void __set_ICC_CTLR_EL3(uint32_t value)
 	__set_CP(15, 6, value, 12, 12, 4);	// mcr	15, 6, r0, cr12, cr12, {4} - недоступно в aarch64
 	//__set_RG32("ICC_CTLR", result);
 }
+
+// ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
 __STATIC_INLINE uint32_t __get_ICC_CTLR_EL1(void)
 {
     uint32_t result;
@@ -985,6 +987,7 @@ __STATIC_INLINE uint32_t __get_ICC_CTLR_EL1(void)
     return result;
 }
 
+// ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
 __STATIC_INLINE void __set_ICC_CTLR_EL1(uint32_t value)
 {
     //__MCR32(sICC_CTLR_EL1, value);
