@@ -7279,9 +7279,9 @@ void hightests(void)
 		//			If ext-GICD_CTLR.DS == 1, this bit is read/write.
 
 		// __get_ICC_CTLR_EL1()=00008400
-		PRINTF("__get_ICC_CTLR_EL1()=%" PRIX64 "\n", __get_ICC_CTLR_EL1());
+		PRINTF("__get_ICC_CTLR_EL1()=%16" PRIX64 "\n", __get_ICC_CTLR_EL1());
 		__set_ICC_CTLR_EL1(__get_ICC_CTLR_EL1() | (UINT32_C(1) << 6));	// не модифицируется
-		PRINTF("__get_ICC_CTLR_EL1()=%" PRIX64 "\n", __get_ICC_CTLR_EL1());
+		PRINTF("__get_ICC_CTLR_EL1()=%16" PRIX64 "\n", __get_ICC_CTLR_EL1());
 		dbg_flush();
 	#if 0
 		// Этот кусок прекращает отработку прерываний на aarch32
