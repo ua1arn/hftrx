@@ -2065,7 +2065,7 @@ sysinit_vbar_initialize(void)
 #endif /* CPUSTYLE_RISCV */
 }
 
-#if CPUSTYLE_A733 && ! defined(__aarch64__)
+#if (__CORTEX_A == 55U) && ! defined(__aarch64__)
 /** \brief  Get CPUACTLR
     \return                CPU Auxiliary Control Register
  */

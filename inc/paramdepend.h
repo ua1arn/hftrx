@@ -816,10 +816,12 @@ extern "C" {
 		// MSR DAIFCLR, #IRQ_bit
 		#define global_enableIRQ() do { \
 		__ASM volatile("MSR DAIFClr, %0\n\t" : : "i" (2)  : "memory"); \
+		__ASM volatile("MSR DAIFClr, %0\n\t" : : "i" (7)  : "memory"); \
 			} while (0)
 		// MSR DAIFSET, #IRQ_bit
 		#define global_disableIRQ() do { \
 		__ASM volatile("MSR DAIFSet, %0\n\t" : : "i" (2)  : "memory"); \
+		__ASM volatile("MSR DAIFSet, %0\n\t" : : "i" (7)  : "memory"); \
 			} while (0)
 
 	#elif (__CORTEX_A == 53U) && defined(__aarch64__)
