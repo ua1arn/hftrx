@@ -7367,6 +7367,24 @@ void hightests(void)
 			ASSERT(GIC_GetEnableIRQ(irqn));
 		}
 		{
+			unsigned c0 = GIC_GetConfiguration(TIMER1_0_IRQn);
+			unsigned c1 = GIC_GetConfiguration(TIMER1_1_IRQn);
+			unsigned c2 = GIC_GetConfiguration(TIMER1_2_IRQn);
+			unsigned c3 = GIC_GetConfiguration(TIMER1_3_IRQn);
+			unsigned c4 = GIC_GetConfiguration(USB0_DEVICE_IRQn);
+
+			PRINTF("c 0..3: %u %u %u %u %u\n", c0, c1, c2, c3, c4);
+		}
+		{
+			unsigned t0 = GIC_GetTarget(TIMER1_0_IRQn);
+			unsigned t1 = GIC_GetTarget(TIMER1_1_IRQn);
+			unsigned t2 = GIC_GetTarget(TIMER1_2_IRQn);
+			unsigned t3 = GIC_GetTarget(TIMER1_3_IRQn);
+			unsigned t4 = GIC_GetTarget(USB0_DEVICE_IRQn);
+
+			PRINTF("t 0..3: %u %u %u %u %u\n", t0, t1, t2, t3, t4);
+		}
+		{
 			unsigned e0 = GIC_GetEnableIRQ(TIMER1_0_IRQn);
 			unsigned e1 = GIC_GetEnableIRQ(TIMER1_1_IRQn);
 			unsigned e2 = GIC_GetEnableIRQ(TIMER1_2_IRQn);
