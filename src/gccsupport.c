@@ -242,6 +242,21 @@ size_t strlen(const char * s1)
 		++ n;
 	return n;
 }
+
+int strcmp(const char * s1, const char * s2)
+{
+	volatile const char * vs1 = s1;
+	volatile const char * vs2 = s2;
+	while (* vs1 && * vs2)
+	{
+		int r = (unsigned char) * vs1 - (unsigned char) * vs2;
+		if (r)
+			return r;
+		++ vs1;
+		++ vs2;
+	}
+	return (unsigned char) * vs1 - (unsigned char) * vs2;
+}
 #endif /* defined(__aarch64__) */
 
 #if 0
