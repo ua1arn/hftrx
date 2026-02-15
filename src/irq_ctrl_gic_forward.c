@@ -445,4 +445,4 @@ uint32_t IRQ_GetPriorityGroupBits (void) {
 
 #endif
 
-#endif /* (__CORTEX_A != 0) && CPUSTYLE_ARM && (! defined(__aarch64__)) */
+#endif /* (__CORTEX_A != 0) */

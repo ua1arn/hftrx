@@ -7254,8 +7254,8 @@ void hightests(void)
 		//all_Type_print("start (fresh)");
 
 		PRINTF("IRQ test:\n");
-		memset32(GICR0, 0, 1 * 2 * 65536);
-#if defined __aarch64__
+		//memset32(GICR0, 0, 1 * 2 * 65536);
+#if defined __aarch64__ && 0
 		PRINTF("ICC_IGRPEN0_EL1=%08" PRIX32 "\n", __get_ICC_IGRPEN0_EL1());
 		PRINTF("ICC_IGRPEN1_EL1=%08" PRIX32 "\n", __get_ICC_IGRPEN1_EL1());
 		PRINTF("ICC_IGRPEN1_EL3=%08" PRIX32 "\n", __get_ICC_IGRPEN1_EL3());
