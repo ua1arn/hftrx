@@ -7324,9 +7324,8 @@ void hightests(void)
 
 //		PRINTF("Set priority\n");
 //		//arm_hardware_set_handler_system(USB0_DEVICE_IRQn, NULL);
-//		GIC_SetPriority (TIMER1_1_IRQn, 1*IRQL_SYSTEM);
-		GIC_SetPriority (USB0_DEVICE_IRQn, 0*IRQL_SYSTEM);
-//		GIC_SetPriority (TIMER1_1_IRQn, 1*IRQL_SYSTEM);
+		GIC_SetPriority (USB0_DEVICE_IRQn, 16 * 8);	// При 9 и менее - работает
+		GIC_SetPriority (TIMER1_1_IRQn, 16 * 9);
 		TP();
 		{
 			const IRQn_Type irqn = USB0_DEVICE_IRQn;
