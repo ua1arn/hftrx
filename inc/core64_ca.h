@@ -2468,6 +2468,17 @@ __STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL3(void)
 #define GICR_WAKER_PS_SHIFT (1)
 #define GICR_WAKER_CA_SHIFT (2)
 
+#define ioreg32(name) \
+	__STATIC_INLINE void __set_ ## name (uint32_t value) \
+	{ \
+		__MSR(name, (value)); \
+	} \
+	__STATIC_INLINE uint32_t __get_ ## name (void) \
+	{ 	uint32_t resut;\
+	__MRS(name, (& resut)); \
+		return resut; \
+	}
+
 /** \brief Enable the CPU's interrupt interface.
 */
 __STATIC_INLINE void GIC_EnableInterface(void)

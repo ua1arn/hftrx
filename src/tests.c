@@ -7143,8 +7143,14 @@ __STATIC_INLINE bool sGIC_GetARE(void)
 {
     return !!(GICDistributor->CTLR & 0x30);
 }
+#if defined __aarch64__
+ioreg32(ICC_IGRPEN0_EL1)
+ioreg32(ICC_IGRPEN1_EL1)
+ioreg32(ICC_IGRPEN1_EL3)
 
 #endif
+#endif
+
 #if 0
 #define SUNXI_SID_BASE 0x03006000
 #define SUNXI_SID_SRAM_BASE (SUNXI_SID_BASE + 0x200)
@@ -7210,6 +7216,7 @@ static sunxi_soc_version_t sunxi_get_soc_ver(void) {
 	return SUNXI_SOC_VER_A + value;
 }
 #endif
+
 void hightests(void)
 {
 #if LCDMODE_LTDC
@@ -7234,7 +7241,25 @@ void hightests(void)
 		//all_Type_print("start (fresh)");
 
 		PRINTF("IRQ test:\n");
+#if defined __aarch64__
+		PRINTF("ICC_IGRPEN0_EL1=%08" PRIX32 "\n", __get_ICC_IGRPEN0_EL1());
+		PRINTF("ICC_IGRPEN1_EL1=%08" PRIX32 "\n", __get_ICC_IGRPEN1_EL1());
+		PRINTF("ICC_IGRPEN1_EL3=%08" PRIX32 "\n", __get_ICC_IGRPEN1_EL3());
+
+		PRINTF("GIC_GetInterfacePriorityMask()=%u\n", (unsigned) GIC_GetInterfacePriorityMask());
+		PRINTF("GIC_GetInterfacePriorityMask()=%u\n", (unsigned) GIC_GetInterfacePriorityMask());
+		GIC_SetInterfacePriorityMask(240);
+		PRINTF("GIC_GetInterfacePriorityMask()=%u\n", (unsigned) GIC_GetInterfacePriorityMask());
+		PRINTF("GIC_GetInterfacePriorityMask()=%u\n", (unsigned) GIC_GetInterfacePriorityMask());
+		GIC_EnableInterface();
+		PRINTF("ICC_IGRPEN0_EL1=%08" PRIX32 "\n", __get_ICC_IGRPEN0_EL1());
+		PRINTF("ICC_IGRPEN1_EL1=%08" PRIX32 "\n", __get_ICC_IGRPEN1_EL1());
+		PRINTF("ICC_IGRPEN1_EL3=%08" PRIX32 "\n", __get_ICC_IGRPEN1_EL3());
 		//PRINTF("IRQ test:, __get_CurrentEL()=%u\n", (unsigned) (__get_CurrentEL() >> 2) & 0x03);
+#endif
+		GIC_SetInterfacePriorityMask(240);
+		GIC_EnableInterface();
+
 		{
 			unsigned e0 = GIC_GetEnableIRQ(TIMER1_0_IRQn);
 			unsigned e1 = GIC_GetEnableIRQ(TIMER1_1_IRQn);
@@ -7254,8 +7279,8 @@ void hightests(void)
 			unsigned basepri = GIC_GetInterfacePriorityMask();
 			PRINTF("L 0..4: %u %u %u %u %u (%u)\n", l0, l1, l2, l3, l4, basepri);
 		}
-		GIC_SetPriority (TIMER1_1_IRQn, 1*IRQL_SYSTEM);
-		GIC_SetPriority (USB0_DEVICE_IRQn, 1*IRQL_SYSTEM);
+//		GIC_SetPriority (TIMER1_1_IRQn, 1*IRQL_SYSTEM);
+//		GIC_SetPriority (USB0_DEVICE_IRQn, 1*IRQL_SYSTEM);
 		//all_Type_print("after set usb priority");
 		//all_Type_print("after set timer priority");
 
@@ -7279,9 +7304,9 @@ void hightests(void)
 		//			If ext-GICD_CTLR.DS == 1, this bit is read/write.
 
 		// __get_ICC_CTLR_EL1()=00008400
-		PRINTF("__get_ICC_CTLR_EL1()=%16" PRIX64 "\n", __get_ICC_CTLR_EL1());
+		PRINTF("__get_ICC_CTLR_EL1()=%016" PRIX64 "\n", __get_ICC_CTLR_EL1());
 		__set_ICC_CTLR_EL1(__get_ICC_CTLR_EL1() | (UINT32_C(1) << 6));	// не модифицируется
-		PRINTF("__get_ICC_CTLR_EL1()=%16" PRIX64 "\n", __get_ICC_CTLR_EL1());
+		PRINTF("__get_ICC_CTLR_EL1()=%016" PRIX64 "\n", __get_ICC_CTLR_EL1());
 		dbg_flush();
 	#if 0
 		// Этот кусок прекращает отработку прерываний на aarch32
@@ -7297,11 +7322,11 @@ void hightests(void)
 		PRINTF("GIC_GetARE()=%u, CTLR=%08x\n", (unsigned) sGIC_GetARE(), (unsigned) GICDistributor->CTLR);
 	#endif
 
-		PRINTF("Set priority\n");
-		//arm_hardware_set_handler_system(USB0_DEVICE_IRQn, NULL);
-		GIC_SetPriority (TIMER1_1_IRQn, 1*IRQL_SYSTEM);
+//		PRINTF("Set priority\n");
+//		//arm_hardware_set_handler_system(USB0_DEVICE_IRQn, NULL);
+//		GIC_SetPriority (TIMER1_1_IRQn, 1*IRQL_SYSTEM);
 		GIC_SetPriority (USB0_DEVICE_IRQn, 0*IRQL_SYSTEM);
-		GIC_SetPriority (TIMER1_1_IRQn, 1*IRQL_SYSTEM);
+//		GIC_SetPriority (TIMER1_1_IRQn, 1*IRQL_SYSTEM);
 		TP();
 		{
 			const IRQn_Type irqn = USB0_DEVICE_IRQn;
