@@ -840,7 +840,7 @@ static USBD_StatusTypeDef USBD_UAC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 {
 	switch (epnum)
 	{
-#if WITHUSBUACOUT
+#if WITHUSBUACOUT && WITHINTEGRATEDDSP
 	case USBD_EP_AUDIO_OUT:
 		/* UAC EP OUT */
 		{
@@ -935,7 +935,7 @@ static USBD_StatusTypeDef USBD_UAC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 	//PRINTF(PSTR("USBD_LL_DataInStage: IN: epnum=%02X\n"), epnum);
 	switch (epnum)
 	{
-#if WITHUSBUACIN
+#if WITHUSBUACIN && WITHINTEGRATEDDSP
 	case ((USBD_EP_AUDIO_IN) & 0x7F):
 		{
 			unsigned uacinsize;

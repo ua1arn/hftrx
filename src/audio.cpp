@@ -5291,36 +5291,6 @@ dsp_get_samplerate100(void)
 {
 	return ARMI2SRATE100;
 }
-// UAC IN samplerate
-// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
-int_fast32_t dsp_get_samplerateuacin_audio48(void)
-{
-	return dsp_get_sampleraterx();
-}
-// UAC IN samplerate
-// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
-int_fast32_t dsp_get_samplerateuacin_RTS96(void)
-{
-	return dsp_get_sampleraterxscaled(2);
-}
-
-// UAC IN samplerate
-// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
-int_fast32_t dsp_get_samplerateuacin_RTS192(void)
-{
-	return dsp_get_sampleraterxscaled(4);
-}
-
-int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
-{
-#if WITHRTS192
-	return dsp_get_samplerateuacin_RTS192();
-#elif WITHRTS96
-	return dsp_get_samplerateuacin_RTS96();
-#else
-	return dsp_get_samplerateuacin_audio48();
-#endif
-}
 
 
 // Передача параметров в DSP модуль
@@ -5564,6 +5534,36 @@ prog_fltlreg(void)
 
 	modem_update();
 }
+// UAC IN samplerate
+// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
+int_fast32_t dsp_get_samplerateuacin_audio48(void)
+{
+	return dsp_get_sampleraterx();
+}
+// UAC IN samplerate
+// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
+int_fast32_t dsp_get_samplerateuacin_RTS96(void)
+{
+	return dsp_get_sampleraterxscaled(2);
+}
+
+// UAC IN samplerate
+// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
+int_fast32_t dsp_get_samplerateuacin_RTS192(void)
+{
+	return dsp_get_sampleraterxscaled(4);
+}
+
+int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
+{
+#if WITHRTS192
+	return dsp_get_samplerateuacin_RTS192();
+#elif WITHRTS96
+	return dsp_get_samplerateuacin_RTS96();
+#else
+	return dsp_get_samplerateuacin_audio48();
+#endif
+}
 
 #else
 
@@ -5583,6 +5583,30 @@ int_fast32_t
 dsp_get_sampleraterx(void)
 {
 	return 48000;
+}
+// UAC IN samplerate
+// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
+int_fast32_t dsp_get_samplerateuacin_audio48(void)
+{
+	return 48000;
+}
+// UAC IN samplerate
+// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
+int_fast32_t dsp_get_samplerateuacin_RTS96(void)
+{
+	return 96000;
+}
+
+// UAC IN samplerate
+// todo: сделать нормальный расчёт для некруглых значений ARMI2SRATE
+int_fast32_t dsp_get_samplerateuacin_RTS192(void)
+{
+	return 192000;
+}
+
+int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
+{
+	return 96000;
 }
 
 #endif /* WITHINTEGRATEDDSP */
