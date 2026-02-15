@@ -7216,6 +7216,7 @@ static sunxi_soc_version_t sunxi_get_soc_ver(void) {
 	return SUNXI_SOC_VER_A + value;
 }
 #endif
+//ioreg32(DAIF)
 
 void hightests(void)
 {
@@ -7236,8 +7237,14 @@ void hightests(void)
 		show_chip();
 	}
 #endif
-#if 1
+#if 0
 	{
+		PRINTF("before disable __get_DAIF=%08" PRIX32 "\n", __get_DAIF());
+		global_disableIRQ();
+		PRINTF("before enable  __get_DAIF=%08" PRIX32 "\n", __get_DAIF());
+		global_enableIRQ();
+		PRINTF("after enable   __get_DAIF=%08" PRIX32 "\n", __get_DAIF());
+
 		PRINTF("GICDistributor->CTLR=%08x\n", (unsigned) GICDistributor->CTLR);
 
 	}
@@ -7247,6 +7254,7 @@ void hightests(void)
 		//all_Type_print("start (fresh)");
 
 		PRINTF("IRQ test:\n");
+		memset32(GICR0, 0, 1 * 2 * 65536);
 #if defined __aarch64__
 		PRINTF("ICC_IGRPEN0_EL1=%08" PRIX32 "\n", __get_ICC_IGRPEN0_EL1());
 		PRINTF("ICC_IGRPEN1_EL1=%08" PRIX32 "\n", __get_ICC_IGRPEN1_EL1());
@@ -7254,15 +7262,16 @@ void hightests(void)
 
 		PRINTF("GIC_GetInterfacePriorityMask()=%u\n", (unsigned) GIC_GetInterfacePriorityMask());
 		PRINTF("GIC_GetInterfacePriorityMask()=%u\n", (unsigned) GIC_GetInterfacePriorityMask());
-		GIC_SetInterfacePriorityMask(240);
+//		GIC_SetInterfacePriorityMask(240);
 		PRINTF("GIC_GetInterfacePriorityMask()=%u\n", (unsigned) GIC_GetInterfacePriorityMask());
 		PRINTF("GIC_GetInterfacePriorityMask()=%u\n", (unsigned) GIC_GetInterfacePriorityMask());
-		GIC_EnableInterface();
+//		GIC_EnableInterface();
 		PRINTF("ICC_IGRPEN0_EL1=%08" PRIX32 "\n", __get_ICC_IGRPEN0_EL1());
 		PRINTF("ICC_IGRPEN1_EL1=%08" PRIX32 "\n", __get_ICC_IGRPEN1_EL1());
 		PRINTF("ICC_IGRPEN1_EL3=%08" PRIX32 "\n", __get_ICC_IGRPEN1_EL3());
 		//PRINTF("IRQ test:, __get_CurrentEL()=%u\n", (unsigned) (__get_CurrentEL() >> 2) & 0x03);
 #endif
+
 //		GIC_SetInterfacePriorityMask(240);
 //		GIC_EnableInterface();
 		//GIC_EnableIRQ(USB0_DEVICE_IRQn);
@@ -7292,8 +7301,7 @@ void hightests(void)
 		//all_Type_print("after set timer priority");
 	#endif
 		PRINTF("Enable IRQ:\n");
-		global_enableIRQ();
-		//GIC_SetInterfacePriorityMask(255);
+
 	#if 0
 		// Этот кусок прекращает отработку прерываний на aarch32
 		PRINTF("GIC_GetARE()=%u, CTLR=%08x\n", (unsigned) sGIC_GetARE(), (unsigned) GICDistributor->CTLR);
