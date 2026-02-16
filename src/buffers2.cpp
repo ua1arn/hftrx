@@ -108,11 +108,11 @@ transform_t if2rts192out;	// преобразование из выхода па
 
 #if WITHINTEGRATEDDSP
 
+#if WITHUSBHW && WITHUSBUAC
+
 static volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
 static volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
 static volatile uint_fast8_t uacoutalt = UACOUTALT_NONE;
-
-#if WITHUSBHW && WITHUSBUAC
 
 #else /* WITHUSBHW && WITHUSBUAC */
 
