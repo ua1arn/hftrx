@@ -3402,14 +3402,11 @@ enum
 #define DMAC_REG0_MASK(ch) ((ch) >= 8 ? UINT32_C(0) : (UINT32_C(1) << ((ch) * 4)))
 #define DMAC_REG1_MASK(ch) ((ch) < 8 ? UINT32_C(0) : (UINT32_C(1) << (((ch) - 8) * 4)))
 
+
 /* Обработчики прерываний от DMAC в зависимости от номера канала */
 #if CPUSTYLE_A64 || CPUSTYLE_V3S
-	#define DMAC_DEST_ADDR_MODE_Pos 21	// DMA Destination Address Mode 0x0: Linear Mode 0x1: IO Mode
-	#define DMAC_SRC_ADDR_MODE_Pos 5	// DMA Source Address Mode Address Mode 0x0: Linear Mode 0x1: IO Mode
 	static void (* dmac_handlers [8])(unsigned dmach);
 #else
-	#define DMAC_DEST_ADDR_MODE_Pos 24	// DMA Destination Address Mode
-	#define DMAC_SRC_ADDR_MODE_Pos 8	// DMA Source Address Mode
 	static void (* dmac_handlers [16])(unsigned dmach);
 #endif
 

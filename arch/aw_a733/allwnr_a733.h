@@ -53,14 +53,17 @@ typedef enum DMAC_SrcReqType
 {
 	DMAC_SrcReqSRAM = 0,
 	DMAC_SrcReqDRAM = 1,
+	DMAC_SrcReqOWA = 2,
 
-	DMAC_SrcReqAHUB_drqr0_RX = 3,
-	DMAC_SrcReqAHUB_drqr1_RX,
-	DMAC_SrcReqAHUB_drqr2_RX,
+	DMAC_SrcReqI2S0_RX = 3,
+	DMAC_SrcReqI2S1_RX,
+	DMAC_SrcReqI2S2_RX,
+	DMAC_SrcReqI2S3_RX,
+	DMAC_SrcReqI2S4_RX,
 
-	DMAC_SrcReqDMIC = 7,
+	DMAC_SrcReqDMIC = 9,
 	DMAC_SrcReqNAND = 10,
-	DMAC_SrcReqGPADC = 12,
+	DMAC_SrcReqGPADC = 11,
 
 	DMAC_SrcReqUART0_RX = 14,
 	DMAC_SrcReqUART1_RX,
@@ -68,23 +71,47 @@ typedef enum DMAC_SrcReqType
 	DMAC_SrcReqUART3_RX,
 	DMAC_SrcReqUART4_RX,
 	DMAC_SrcReqUART5_RX,
+	DMAC_SrcReqUART6_RX,
 
-	DMAC_SrcReqSPI0_RX = 22,
+	DMAC_SrcReqSPI0_RX = 23,
 	DMAC_SrcReqSPI1_RX,
+	DMAC_SrcReqSPI2_RX,
+	DMAC_SrcReqSPI3_RX,
 
-	DMAC_SrcReqUSB0_EP1 = 30,
+	DMAC_SrcReqUSB0_EP1 = 27,
 	DMAC_SrcReqUSB0_EP2,
 	DMAC_SrcReqUSB0_EP3,
 	DMAC_SrcReqUSB0_EP4,
-	DMAC_SrcReqUSB0_EP5,	// ?
+	DMAC_SrcReqUSB0_EP5,
+	DMAC_SrcReqUSB0_EP6,
+	DMAC_SrcReqUSB0_EP7,
+	DMAC_SrcReqUSB0_EP8,
 
-	DMAC_SrcReqTWI0_RX = 43,
+	DMAC_SrcReqTWI0_RX = 37,
 	DMAC_SrcReqTWI1_RX,
 	DMAC_SrcReqTWI2_RX,
 	DMAC_SrcReqTWI3_RX,
 	DMAC_SrcReqTWI4_RX,
+	DMAC_SrcReqTWI5_RX,
+	DMAC_SrcReqTWI6_RX,
+	DMAC_SrcReqTWI7_RX,
+	DMAC_SrcReqTWI8_RX,
 
-	DMAC_SrcReqS_TWI0_RX = 48	// S_TWI0
+	DMAC_SrcReqS_TWI0_RX = 47,	// S_TWI0
+	DMAC_SrcReqS_TWI1_RX,	// S_TWI1
+	DMAC_SrcReqS_TWI2_RX,	// S_TWI2
+
+	DMAC_SrcReqS_UART0_RX = 50,
+	DMAC_SrcReqS_UART1,
+
+	DMAC_SrcReqS_SPI = 53,
+
+	DMAC_SrcReqTWI9_RX = 58,
+	DMAC_SrcReqTWI10_RX,
+	DMAC_SrcReqTWI11_RX,
+	DMAC_SrcReqTWI12_RX,
+
+	DMAC_SrcReqSMHC3 = 63
 } DMAC_SrcReq_TypeDef;
 
 typedef enum DMAC_DstReqType
@@ -93,13 +120,15 @@ typedef enum DMAC_DstReqType
 	DMAC_DstReqDRAM = 1,
 	DMAC_DstReqOWA = 2,
 
-	DMAC_DstReqAHUB_drqt0_TX = 3,
-	DMAC_DstReqAHUB_drqt1_TX,
-	DMAC_DstReqAHUB_drqt2_TX,
-
-	DMAC_DstReqAudioCodec = 6,
+	DMAC_DstReqI2S0_TX = 3,
+	DMAC_DstReqI2S1_TX,
+	DMAC_DstReqI2S2_TX,
+	DMAC_DstReqI2S3_TX,
+	DMAC_DstReqI2S4_TX,
 
 	DMAC_DstReqNAND = 10,
+
+	DMAC_DstReqIR_TX = 13,
 
 	DMAC_DstReqUART0_TX = 14,
 	DMAC_DstReqUART1_TX,
@@ -107,24 +136,53 @@ typedef enum DMAC_DstReqType
 	DMAC_DstReqUART3_TX,
 	DMAC_DstReqUART4_TX,
 	DMAC_DstReqUART5_TX,
+	DMAC_DstReqUART6_TX,
 
-	DMAC_DstReqSPI0_TX = 22,
+	DMAC_DstReqSPI0_TX = 23,
 	DMAC_DstReqSPI1_TX,
+	DMAC_DstReqSPI2_TX,
+	DMAC_DstReqSPI3_TX,
 
-	DMAC_DstReqUSB0_EP1 = 30,
+	DMAC_DstReqUSB0_EP1 = 27,
 	DMAC_DstReqUSB0_EP2,
 	DMAC_DstReqUSB0_EP3,
 	DMAC_DstReqUSB0_EP4,
-	DMAC_DstReqUSB0_EP5,	// ?
+	DMAC_DstReqUSB0_EP5,
+	DMAC_DstReqUSB0_EP6,
+	DMAC_DstReqUSB0_EP7,
+	DMAC_DstReqUSB0_EP8,
 
-	DMAC_DstReqTWI0_TX = 43,
+	DMAC_DstReqTWI0_TX = 37,
 	DMAC_DstReqTWI1_TX,
 	DMAC_DstReqTWI2_TX,
 	DMAC_DstReqTWI3_TX,
 	DMAC_DstReqTWI4_TX,
+	DMAC_DstReqTWI5_TX,
+	DMAC_DstReqTWI6_TX,
+	DMAC_DstReqTWI7_TX,
+	DMAC_DstReqTWI8_TX,
 
-	DMAC_SrcReqS_TWI0_TX = 48	// S_TWI0
+	MAC_DstReqS_LEDC = 46,
+
+	DMAC_SrcReqS_TWI0_TX = 47,	// S_TWI0
+	DMAC_SrcReqS_TWI1_TX,		// S_TWI1
+	DMAC_SrcReqS_TWI2_TX,		// S_TWI2
+
+	DMAC_DstReqS_UART0_TX = 50,
+	DMAC_DstReqS_UART1,
+
+	DMAC_DstReqS_SPI = 53,
+
+	DMAC_DstReqTWI9_TX = 58,
+	DMAC_DstReqTWI10_TX,
+	DMAC_DstReqTWI11_TX,
+	DMAC_DstReqTWI12_TX,
+
+	DMAC_DstReqSMHC3 = 63
 } DMAC_DstReq_TypeDef;
+
+#define DMAC_DEST_ADDR_MODE_Pos 24	// DMA_ADDR_MODE DMA Destination Address Mode
+#define DMAC_SRC_ADDR_MODE_Pos 8	// DMA_SRC_ADDR_MODE DMA Source Address Mode
 
 typedef enum
 {

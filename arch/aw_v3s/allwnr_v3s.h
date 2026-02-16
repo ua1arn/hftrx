@@ -77,6 +77,9 @@ enum DMAC_DstReqType
 	DMAC_DstReqSPI_TX = 23
 };
 
+#define DMAC_DEST_ADDR_MODE_Pos 21	// DMA Destination Address Mode 0x0: Linear Mode 0x1: IO Mode
+#define DMAC_SRC_ADDR_MODE_Pos 5	// DMA Source Address Mode Address Mode 0x0: Linear Mode 0x1: IO Mode
+
 typedef enum {
 	GPIO_CFG_IN  = 0x00,
 	GPIO_CFG_OUT = 0x01,

@@ -118,6 +118,9 @@ typedef enum DMAC_DstReqType
 	DMAC_SrcReqS_TWI0_TX = 48	// S_TWI0
 } DMAC_DstReq_TypeDef;
 
+#define DMAC_DEST_ADDR_MODE_Pos 24	// DMA Destination Address Mode
+#define DMAC_SRC_ADDR_MODE_Pos 8	// DMA Source Address Mode
+
 typedef enum
 {
 	GPIO_CFG_IN  = 0x00,
