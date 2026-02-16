@@ -254,7 +254,7 @@ SystemExecAARCH64 = 0x0001aa04
 ddr_init: fsbl_frz.alw32
 	$(XFEL) write 0x00018000 fsbl_frz.alw32
 	$(XFEL) exec $(SystemDRAMInit)
-	$(BUSYBOX) sleep 1s
+	$(BUSYBOX) sleep 2s
 
 # test bootloader
 _app_run: fsbl.bt0

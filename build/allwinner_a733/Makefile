@@ -273,6 +273,7 @@ ddrinit_a733_:
 ddrinit: $(DDRINITBLOB)
 	$(XFEL) write 0x00074000 $(DDRINITBLOB)
 	$(XFEL) exec $(SystemDRAMInit)
+	$(BUSYBOX) sleep 2s
 
 app_run64: $(PROJECT)_app.alw32 $(DDRINIT)
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32

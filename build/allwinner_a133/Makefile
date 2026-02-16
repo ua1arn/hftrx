@@ -251,6 +251,7 @@ endif
 ddrinit_a133: ddrinit_a133_lpddr4.bin
 	$(XFEL) write 0x00028000 ddrinit_a133_lpddr4.bin
 	$(XFEL) exec $(SystemDRAMInit)
+	$(BUSYBOX) sleep 2s
 
 app_run: $(PROJECT)_app.alw32 ddrinit_a133
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32

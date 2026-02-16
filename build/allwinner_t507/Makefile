@@ -279,6 +279,7 @@ ddrinit_t507_:
 ddrinit_t507: ddrinit_t507_lpddr4.bin
 	$(XFEL) write 0x00028000 ddrinit_t507_lpddr4.bin
 	$(XFEL) exec $(SystemDRAMInit)
+	$(BUSYBOX) sleep 2s
 
 app_run: $(PROJECT)_app.alw32 $(DDRINIT)
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32

@@ -261,7 +261,7 @@ DDR_INIT=ddr_init_s4
 ddr_init_s4:
 	$(XFEL) write 0x00028000 fsbl_frz_s4.alw32
 	$(XFEL) exec $(SystemDRAMInit) 
-	$(BUSYBOX) sleep 1s
+	$(BUSYBOX) sleep 2s
 
 app_run64: $(PROJECT)_app.alw32 $(DDR_INIT)
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32

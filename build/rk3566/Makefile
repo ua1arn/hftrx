@@ -258,15 +258,16 @@ endif
 ddrinit_h616: ddrinit_h616_lpddr3.bin
 	$(XROCK) write 0x00028000 ddrinit_h616_lpddr3.bin
 	$(XROCK) exec $(SystemDRAMInit)
+	$(BUSYBOX) sleep 2s
 
 ddrinit_t507_:
 	$(XROCK) ddr lpddr4
-	$(BUSYBOX) sleep 1s
+	$(BUSYBOX) sleep 2s
 
 ddrinit_t507:
 	$(XROCK) write 0x00028000 ddrinit_t507_lpddr4.bin
 	$(XROCK) exec $(SystemDRAMInit)
-
+	$(BUSYBOX) sleep 2s
 
 _app_run:
 	$(XROCK) maskrom rk3566_ddr_1056MHz_v1.16.bin rk356x_usbplug_v1.17.bin --rc4-off
