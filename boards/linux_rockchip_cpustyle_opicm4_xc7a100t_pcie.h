@@ -35,6 +35,7 @@
 #define	AXI_LITE_STREAM_POS			0x00009000
 #define	AXI_LITE_FIR_COEFFS			0x0000C000
 #define	AXI_LITE_PL_CONTROL			0x00031000
+#define AXI_LITE_PL_STATUS			0x00033000
 
 #define CALIBRATION_IQ_FIR_RX_SHIFT		56	// 56 - sw FIR, 50 - hw FIR
 #define CALIBRATION_IQ_CIC_RX_SHIFT		60
@@ -52,6 +53,13 @@
 #define NVRAM_DB_FILE				"/usr/hftrx_data/nvram.db"
 
 #define AXI_IRQ_CONTROL	1
+
+#if NEORV32_RT
+	#define NEORV32_FW_NAME			"/root/neorv32_raw_exe.bin"
+	#define NEORV32_FW_LOAD_ADDR	0xC0030000
+	#define NEORV32_RESET_MASK		(1 << 9)
+	#define NEORV32_RUN_MASK		(1 << 0)
+#endif /* NEORV32_RT */
 
 // первые 8 бит регистра AXI_LITE_PL_CONTROL для прерываний
 enum {
