@@ -1787,7 +1787,15 @@ stsinit_irql_initialize(void)
 //	PRINTF("GIC_GetBinaryPoint()=%u\n", (unsigned) GIC_GetBinaryPoint());
 	ASSERT(GIC_BINARY_POINT == GIC_GetBinaryPoint());
 
+//	if (arm_hardware_cpuid() == 0)
+//	{
+//		GIC_DistInit();
+//	#if defined(GIC_REDISTRIBUTOR_BASE)
+//		GIC_RedistInit();
+//	#endif /* GIC_REDISTRIBUTOR_BASE */
+//	}
 	GIC_Enable();
+	GIC_CPUInterfaceInit(); //per CPU
 
 #endif
 	InitializeIrql(IRQL_USER);	// nested interrupts support
@@ -2273,7 +2281,7 @@ SystemInit_BOOT0(void)
 {
 	resetCPU(1);
 	sysinit_fpu_initialize();	// FPU access enable, disable caches
-	stsinit_irql_initialize();
+	stsinit_irql_initialize();	// GIC CPU Interface
 	sysinit_gpio_initialize();
 	local_delay_initialize();
 }
@@ -2316,7 +2324,7 @@ SystemInit(void)
 #endif /* CPUSTYLE_VM14 */
 	sysinit_fpu_initialize();	// FPU access enable, disable caches
 	sysinit_vbar_initialize();		// interrupt vectors relocate
-	stsinit_irql_initialize();
+	stsinit_irql_initialize();	// GIC CPU Interface
 	sysinit_smp_initialize();	// Set SMP bit
 	sysinit_perfmeter_initialize();
 #ifdef USE_HAL_DRIVER
@@ -2846,7 +2854,7 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 {
 	sysinit_fpu_initialize();		// FPU access enable, disable caches
 	sysinit_vbar_initialize();		// interrupt vectors relocate
-	stsinit_irql_initialize();
+	stsinit_irql_initialize();	// GIC CPU Interface
 	sysinit_smp_initialize();	// Set SMP bit
 	sysinit_perfmeter_initialize();
 	sysinit_cache_initialize();	// caches iniitialize

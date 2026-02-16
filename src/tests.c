@@ -7280,7 +7280,7 @@ void hightests(void)
 			;
 	}
 #endif
-#if 1 && CPUSTYLE_A733
+#if 0 && CPUSTYLE_A733
 	{
 		//GIC_SetPriority (TIMER1_1_IRQn, 0*IRQL_SYSTEM);
 		GIC_SetPriority (USB0_DEVICE_IRQn, 0*IRQL_SYSTEM);	// в aarch64 и без этой строки работает
