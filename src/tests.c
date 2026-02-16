@@ -2375,7 +2375,7 @@ static void RAMFUNC_NONILINE cplxmlasave(cplxf *d, int len) {
 
 #endif
 
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) && 0
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) && 1
 
 #include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
@@ -7108,11 +7108,11 @@ static void enctest(void)
 }
 
 #endif
+//#include "gic600.h"
 
 #if CPUSTYLE_A733 && __aarch64__
 
 
-//#include "gic600.h"
 
 #define ROUTED_TO_ALL (1)
 #define ROUTED_TO_SPEC (0)
@@ -7249,7 +7249,47 @@ void hightests(void)
 
 	}
 #endif
-#if WITHDEBUG && CPUSTYLE_A733
+#if 0
+	{
+		all_Type_print("test");
+	}
+#endif
+#if 0 && CPUSTYLE_A733
+	{
+	PRINTF("CTLR=%08x\n", (unsigned) GICDistributor->CTLR);
+#if CPUSTYLE_A733 && 9
+	CLUSTER_CFG->C0_RST_CTRL &= ~ (UINT32_C(1) << 4); // GIC_RST
+	CLUSTER_CFG->C0_RST_CTRL |= (UINT32_C(1) << 4); // GIC_RST
+#endif
+	printAllEnabledIRQs();
+	PRINTF("CTLR=%08x\n", (unsigned) GICDistributor->CTLR);
+	}
+#endif
+#if 0 && CPUSTYLE_A733
+	{
+		global_disableIRQ();
+		GIC_SetPriority (TIMER1_1_IRQn, 0*IRQL_SYSTEM);
+		//GIC_SetPriority (USB0_DEVICE_IRQn, 0*IRQL_SYSTEM);	// в aarch64 и без этой строки работает
+		GIC_DisableIRQ(USB0_DEVICE_IRQn);
+		GIC_ClearPendingIRQ(USB0_DEVICE_IRQn);
+		GIC_SetPendingIRQ(TIMER1_1_IRQn);
+		unsigned p4 = GIC_GetHighPendingIRQ();
+		unsigned p5 = GIC_AcknowledgePending();
+		PRINTF("P 4..5: %u %u\n", p4, p5);
+		for (;;)
+			;
+	}
+#endif
+#if 1 && CPUSTYLE_A733
+	{
+		//GIC_SetPriority (TIMER1_1_IRQn, 0*IRQL_SYSTEM);
+		GIC_SetPriority (USB0_DEVICE_IRQn, 0*IRQL_SYSTEM);	// в aarch64 и без этой строки работает
+		//GIC_SetGroup(TIMER1_1_IRQn, 0);
+		GIC_SetGroup(USB0_DEVICE_IRQn, 0);
+
+	}
+#endif
+#if 0 && WITHDEBUG && CPUSTYLE_A733
 	{
 		//all_Type_print("start (fresh)");
 
