@@ -4697,7 +4697,7 @@ void buffers_initialize(void)
 void
 buffers_set_uacinalt(uint_fast8_t v, uint_fast8_t ep)	/* выбор альтернативной конфигурации для UAC IN interface */
 {
-#if WITHINTEGRATEDDSP
+#if WITHUSBHW && WITHUSBUAC
 	//PRINTF(PSTR("buffers_set_uacinalt: v=%d\n"), (int) v);
 	uacinalt = v;
 #endif /* WITHINTEGRATEDDSP */
@@ -4706,7 +4706,7 @@ buffers_set_uacinalt(uint_fast8_t v, uint_fast8_t ep)	/* выбор альтер
 void
 buffers_set_uacinrtsalt(uint_fast8_t v, uint_fast8_t ep)	/* выбор альтернативной конфигурации для UAC IN interface */
 {
-#if WITHINTEGRATEDDSP
+#if WITHUSBHW && WITHUSBUAC
 	//PRINTF(PSTR("buffers_set_uacinrtsalt: v=%d\n"), (int) v);
 	uacinrtsalt = v;
 #endif /* WITHINTEGRATEDDSP */
@@ -4714,7 +4714,7 @@ buffers_set_uacinrtsalt(uint_fast8_t v, uint_fast8_t ep)	/* выбор альт�
 
 uint_fast8_t buffers_get_uacoutactive(void)
 {
-#if WITHINTEGRATEDDSP
+#if WITHUSBHW && WITHUSBUAC
 	return uacoutalt != UACOUTALT_NONE;
 #else /* WITHINTEGRATEDDSP */
 	return 0;
@@ -4724,7 +4724,7 @@ uint_fast8_t buffers_get_uacoutactive(void)
 void
 buffers_set_uacoutalt(uint_fast8_t v, uint_fast8_t ep)	/* выбор альтернативной конфигурации для UAC OUT interface */
 {
-#if WITHINTEGRATEDDSP
+#if WITHUSBHW && WITHUSBUAC
 	//PRINTF(PSTR("buffers_set_uacoutalt: v=%d\n"), (int) v);
 	uacoutalt = v;
 #endif /* WITHINTEGRATEDDSP */
