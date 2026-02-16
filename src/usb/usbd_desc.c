@@ -5967,12 +5967,59 @@ void usbd_descriptors_initialize(uint_fast8_t HSdescv, uint_fast8_t ft8cnv)
 	{
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_sn;
-		char b [64];
+		char b [256];
+		int n = 0;
 #ifdef USER_BUILD_ID
-		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("SN:19640302_%lu_%u"), (unsigned long) (REFERENCE_FREQ * DDS1_CLK_MUL), (unsigned) USER_BUILD_ID);
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, PSTR("SN:19640302_%lu_%u"), (unsigned long) (REFERENCE_FREQ * DDS1_CLK_MUL), (unsigned) USER_BUILD_ID);
 #else
-		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("SN:19640302_%lu_%u"), (unsigned long) (REFERENCE_FREQ * DDS1_CLK_MUL), (unsigned) BUILD_ID);
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, PSTR("SN:19640302_%lu_%u"), (unsigned long) (REFERENCE_FREQ * DDS1_CLK_MUL), (unsigned) BUILD_ID);
 #endif
+
+	#if WITHUSBCDCACM
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, "_UARTx%d", (int) WITHUSBCDCACM_N);
+	#endif /* WITHUSBCDCACM */
+#if WITHUSBDFU
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, "_DFU");
+#endif /* WWITHUSBDFU */
+	#if WITHUAC2
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, "_UAC2");
+	#endif /* WITHUAC2 */
+	#if WITHRTS96
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, "_RTS96");
+	#endif /* WITHRTS96 */
+	#if WITHRTS192
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, "_RTS192");
+	#endif /* WITHRTS192 */
+	#if WITHUSBUACINOUTRENESAS
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, "_UACRNS");
+	#elif WITHUSBUACINOUT
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, "_UACINOUT");
+	#elif WITHUSBUAC
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, "_UAC");
+	#endif
+	#if WITHUSBDMTP
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, "_MTP");
+	#endif /* WITHUSBDMTP */
+	#if WITHUSBDMSC
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, "_MSC");
+	#endif /* WITHUSBDMSC */
+	#if WITHUSBHID
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, "_HID");
+	#endif /* WITHUSBDMSC */
+	#if (WITHUSBCDCEEM)
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, "_EEM");
+	#endif /* (WITHUSBCDCEEM) */
+	#if (WITHUSBCDCECM)
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, "_ECM");
+	#endif /* (WITHUSBCDCECM) */
+	#if (WITHUSBCDCNCM)
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, "_NCM");
+	#endif /* (WITHUSBCDCNCM) */
+	#if (WITHUSBRNDIS)
+		n += local_snprintf_P(b + n, ARRAY_SIZE(b) - n, "_RNDIS");
+	#endif /* (WITHUSBRNDIS) */
+
+
 		// Unic serial number
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
