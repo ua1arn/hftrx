@@ -499,6 +499,7 @@ _curr_el_spx_sync:
 	pop_trapframe
 	ERET
 
+// IRQ/vIRQ
 	text_align
 _curr_el_spx_irq:
 	push_trapframe
@@ -515,7 +516,8 @@ _curr_el_spx_fiq:
 	push_trapframe
 	build_trapframe AARCH64_EXC_FIQ_SPX
 	store_nested_sp
-	call_common_trap_handler 7
+	//call_common_trap_handler 7
+	BL FIRQ_Handler		// Calls from EL3 system
 	restore_trapframe
 	pop_trapframe
 	ERET

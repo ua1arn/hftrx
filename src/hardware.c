@@ -1996,11 +1996,9 @@ sysinit_vbar_initialize(void)
 	//__set_VBAR_EL2(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
 	__set_VBAR_EL3(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
 
+	// D24.2.169 SCR_EL3, Secure Configuration Register
 	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
-//	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 2));	// Physical IRQ while executing at all exception levels are taken in EL3
-//	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 3));	// Physical IRQ while executing at all exception levels are taken in EL3
-//	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 62));	// Physical IRQ while executing at all exception levels are taken in EL3
-//	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 0));	// Physical IRQ while executing at all exception levels are taken in EL3
+	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 2));	// Physical FIQ while executing at all exception levels are taken in EL3
 
 #if 0
 	// Added for A55
@@ -2111,9 +2109,7 @@ static void sysinit_smp_initialize(void)
 
 	// set the CPUECTLR.SMPEN
 	////	__set_CPUECTLR(__get_CPUECTLR() | (UINT64_C(1) << 6));	// SMPEN 1: Enables data coherency with other cores in the cluster.
-	// 4.5.28 Auxiliary Control Register
-	// bit6: L2ACTLR write access control
-	__set_ACTLR_EL3(__get_ACTLR_EL3() & ~ (UINT32_C(1) << 6));	/* не надо - но стояло как результат запуcка из UBOOT */
+
 	__ISB();
 	__DSB();
 

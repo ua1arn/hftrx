@@ -1740,7 +1740,7 @@ void uncommon_trap_handler_3(void * frame) { PRINTF("uncommon_trap_handler_3:\n"
 void uncommon_trap_handler_4(void * frame) { PRINTF("uncommon_trap_handler_4:\n"); for (;;) ; }	// 0x180
 //void uncommon_trap_handler_5(void * frame) { PRINTF("uncommon_trap_handler_5:\n"); for (;;) ; }	// 0x200 Current EL with SPx Synchronous
 //void uncommon_trap_handler_6(void * frame) { PRINTF("uncommon_trap_handler_6:\n"); for (;;) ; }	// 0x280 VIRQ EL3
-void uncommon_trap_handler_7(void * frame) { PRINTF("uncommon_trap_handler_7:\n"); for (;;) ; }	// 0x300
+//void uncommon_trap_handler_7(void * frame) { PRINTF("uncommon_trap_handler_7:\n"); for (;;) ; }	// 0x300 FIQ EL3
 void uncommon_trap_handler_8(void * frame) { PRINTF("uncommon_trap_handler_8:\n"); for (;;) ; }	// 0x380
 void uncommon_trap_handler_9(void * frame) { PRINTF("uncommon_trap_handler_9:\n"); for (;;) ; }	// 0x400
 void uncommon_trap_handler_10(void * frame) { PRINTF("uncommon_trap_handler_10:\n"); for (;;) ; }	// 0x480
@@ -1755,6 +1755,15 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 // Current EL with SPx VIRQ
 // 0x280
 void VIRQ_Handler(void * frame)
+{
+	//dbg_putchar('.');
+	IRQ_Handler_GIC();
+}
+
+// was: uncommon_trap_handler_7
+// Current EL with SPx VIRQ
+// 0x300
+void FIRQ_Handler(void * frame)
 {
 	//dbg_putchar('.');
 	IRQ_Handler_GIC();
