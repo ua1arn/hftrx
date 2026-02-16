@@ -2249,6 +2249,9 @@ void linux_subsystem_init(void)
 	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
 	iq_shift_tx(CALIBRATION_TX_SHIFT);
 #endif /* WITHIQSHIFT */
+#if NEORV32_RT
+	neorv32_load_firmware();
+#endif /* NEORV32_RT */
 }
 
 void linux_user_init(void)
@@ -2843,6 +2846,9 @@ void linux_exit(void)
 	munmap((void *) fir_reload, sysconf(_SC_PAGESIZE));
 #endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) */
 #endif
+#if NEORV32_RT
+	neorv32_reset_assert();
+#endif /* NEORV32_RT */
 #if IQ_VIA_XDMA
 	xdma_close();
 #endif /* IQ_VIA_XDMA */

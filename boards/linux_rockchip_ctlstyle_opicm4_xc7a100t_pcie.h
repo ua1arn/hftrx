@@ -121,6 +121,7 @@
 //	#define MOUSE_EVDEV				1
 //	#define MOUSE_CURSOR_PATH		"./arrow.png"
 //	#define BLUETOOTH_ALSA			1
+	#define NEORV32_RT				1	// синтезированный процессор neorv32 для critical realtime tasks (LFM, например)
 
 	#define WITHTX	1
 	#if WITHTX
