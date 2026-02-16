@@ -11955,7 +11955,7 @@ hardware_elkey_timer_initialize(void)
 
 	arm_hardware_set_handler_overrealtime(TIM3_IRQn, TIM3_IRQHandler);
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_A133
 
 	// elkey timer
 	const unsigned ix = 0;
@@ -11964,9 +11964,6 @@ hardware_elkey_timer_initialize(void)
 	TIMER->TMR_IRQ_EN_REG |= (UINT32_C(1) << (0 + ix));	// TMR0_IRQ_EN
 
 	arm_hardware_set_handler_overrealtime(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer
-
-#elif CPUSTYLE_A133
-	#warning CPUSTYLE_A133 to be implemented
 
 #elif CPUSTYLE_A733
 	#warning CPUSTYLE_A733 to be implemented
@@ -12051,7 +12048,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		1 * (UINT32_C(1) << 0) |	// Enables the interrupts when counting starts.
 		0;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H3
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H3 || CPUSTYLE_A133
 
 	const unsigned ix = 0;
 	unsigned value;

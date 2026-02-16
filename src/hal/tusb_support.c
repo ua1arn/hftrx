@@ -2038,6 +2038,9 @@ void ohciehci_clk_init(void)
 	arm_hardware_disable_handler(WITHUSBHW_OHCI_IRQ);
 #endif /* WITHTINYUSB */
 
+#elif CPUSTYLE_A133
+	#warning CPUSTYLE_A133 To be done
+
 #elif CPUSTYLE_A733
 	#warning CPUSTYLE_7133 To be done
 	const unsigned ix = WITHUSBHW_EHCI_IX;	// 0 - EHCI0/OHCI0
