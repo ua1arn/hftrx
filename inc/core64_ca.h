@@ -2569,7 +2569,7 @@ __STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
 __STATIC_INLINE uint32_t GIC_GetHighPendingIRQ(void)
 {
     uint32_t result;
-    __MRS(ICC_HPPIR1_EL1, &result);
+    __MRS(ICC_HPPIR0_EL1, &result);
     return result;
 }
 
