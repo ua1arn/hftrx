@@ -93,7 +93,7 @@ PAbortAddr: .word PAbort_Handler
 DAbortAddr: .word DAbort_Handler
 HypAddr:  	.word Hyp_Handler
 IRQAddr:    .word VIRQ_Handler
-FIQAddr:    .word FIQ_Handler
+FIQAddr:    .word VFRQ_Handler
 
 	/* Force link */
 	.word SystemExecAARCH64
@@ -378,6 +378,7 @@ ExitFunction:
  	.align 	4, 0
     .func   VIRQ_Handler
 VIRQ_Handler:
+VFRQ_Handler:
 
 	sub     lr, lr, #4                  // Pre-adjust LR
 	srsfd   sp!, #ARM_MODE_SYS              // Save LR_irq and SPSR_irq on to the SYS stack

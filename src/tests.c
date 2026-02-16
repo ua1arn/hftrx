@@ -7276,7 +7276,7 @@ void hightests(void)
 //		GIC_EnableInterface();
 		//GIC_EnableIRQ(USB0_DEVICE_IRQn);
 //		GIC_SetPriority (TIMER1_1_IRQn, 1*IRQL_SYSTEM);
-		GIC_SetPriority (USB0_DEVICE_IRQn, 0*IRQL_SYSTEM);
+		GIC_SetPriority (USB0_DEVICE_IRQn, 0*IRQL_SYSTEM);	// в aarch64 и без этой строки работает
 	#if 1
 		{
 			unsigned e0 = GIC_GetEnableIRQ(TIMER1_0_IRQn);
@@ -7285,7 +7285,16 @@ void hightests(void)
 			unsigned e3 = GIC_GetEnableIRQ(TIMER1_3_IRQn);
 			unsigned e4 = GIC_GetEnableIRQ(USB0_DEVICE_IRQn);
 
-			PRINTF("e 0..3: %u %u %u %u %u\n", e0, e1, e2, e3, e4);
+			PRINTF("e 0..4: %u %u %u %u %u\n", e0, e1, e2, e3, e4);
+		}
+		{
+			unsigned g0 = GIC_GetGroup(TIMER1_0_IRQn);
+			unsigned g1 = GIC_GetGroup(TIMER1_1_IRQn);
+			unsigned g2 = GIC_GetGroup(TIMER1_2_IRQn);
+			unsigned g3 = GIC_GetGroup(TIMER1_3_IRQn);
+			unsigned g4 = GIC_GetGroup(USB0_DEVICE_IRQn);
+
+			PRINTF("g 0..4: %u %u %u %u %u\n", g0, g1, g2, g3, g4);
 		}
 		{
 			unsigned l0 = GIC_GetPriority(TIMER1_0_IRQn);
@@ -7297,8 +7306,20 @@ void hightests(void)
 			unsigned basepri = GIC_GetInterfacePriorityMask();
 			PRINTF("L 0..4: %u %u %u %u %u (%u)\n", l0, l1, l2, l3, l4, basepri);
 		}
+		{
+			unsigned p4 = GIC_GetHighPendingIRQ();
+			unsigned p5 = GIC_AcknowledgePending();
+			PRINTF("P 4..5: %u %u\n", p4, p5);
+		}
 		//all_Type_print("after set usb priority");
 		//all_Type_print("after set timer priority");
+		{
+			const IRQn_Type irqn = TIMER1_1_IRQn;
+
+			GIC_EnableIRQ(irqn);
+			GIC_SetPendingIRQ(irqn);
+			ASSERT(GIC_GetEnableIRQ(irqn));
+		}
 	#endif
 		PRINTF("Enable IRQ:\n");
 
@@ -7463,16 +7484,6 @@ void hightests(void)
 		unsigned p3 = GIC_GetPendingIRQ(TIMER1_3_IRQn);
 
 		PRINTF("p 0..3: %u %u %u %u\n", p0, p1, p2, p3);
-
-		//(void) GICInterface->HPPIR;
-		unsigned p4 = GIC_GetHighPendingIRQ();
-		unsigned p5 = GIC_AcknowledgePending();
-		GICR_TypeDef * p6 = (GICR_TypeDef *) GIC_GetRdist();
-		unsigned p7 = GICDistributor->CTLR;
-		uint64_t p8 = p6->PENDBASER;
-		uint64_t p9 = p6->PROPBASER;
-
-		PRINTF("p 4..6: %u %u %p %08X\n", p4, p5, p6, p7);
 
 		PRINTF("DAIF=%016" PRIX64 "\n", __get_DAIF());
 		PRINTF("p8=%016" PRIX64 "\n", p8);

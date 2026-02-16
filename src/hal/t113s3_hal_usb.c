@@ -4289,7 +4289,7 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 
 	//pusb->ep0_flag = 0;
 	pusb->ep0_xfer_state = USB_EP0_SETUP;
-
+#if ! CPUSTYLE_A133
 	// Инициализация DMA не мешает, так как разрешение DRQ у endpoint ставится не тут
 #if WITHUSBUACIN && WITHINTEGRATEDDSP
 	{
@@ -4315,7 +4315,7 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 		DMAC_USB_RX_initialize_UACOUT48(ep_no, 1);
 	}
 #endif /* WITHUSBUACOUT */
-
+#endif
 }
 
 static void usb_struct_init(usb_struct * const pusb)
