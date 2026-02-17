@@ -980,7 +980,7 @@ void IRQ_Handler_GIC(void)
 /* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
 // See ARM IHI 0048B.b document
 
-// Только в aarch64 Cortex-A55
+// Только в aarch32 Cortex-A55
 void FIQ_Handler_GIC_G0(void)
 {
 	// per-cpu:
@@ -2288,7 +2288,11 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 	/* do not change edge/level settings of specified interrupts - leave initialized at start-up */
 	GIC_SetConfiguration(int_id, cfg);// non-atomic operation
 #endif /* ! CPUSTYLE_R7S721 */
+#if (__CORTEX_A == 55U) && __aarch64__
+	GIC_SetGroup(int_id, 1);
+#else /* (__CORTEX_A == 55U) && __aarch64__ */
 	GIC_SetGroup(int_id, 0);
+#endif /* (__CORTEX_A == 55U) && __aarch64__ */
 
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
 
