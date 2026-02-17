@@ -1131,9 +1131,10 @@ void IRQ_Handler_GIC_G0(void)
 	//(void) GICInterface->HPPIR;
 	(void) GIC_GetHighPendingIRQ();
 	const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
-	const uint_fast32_t gicc_iarg0 = GIC_AcknowledgePendingG0(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
+	//const uint_fast32_t gicc_iarg0 = GIC_AcknowledgePendingG0(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
 
-	PRINTF("iar=%04X, iarg0=%04X ", gicc_iar, gicc_iarg0);
+	//BC_iar=00BC, iarg0=03FF
+	//PRINTF("iar=%04X, iarg0=%04X ", gicc_iar, gicc_iarg0);
 	const IRQn_ID_t int_id = gicc_iar & UINT32_C(0x3FF);
 
 	// IHI0048B_b_gic_architecture_specification.pdf
@@ -1157,22 +1158,22 @@ void IRQ_Handler_GIC_G0(void)
 	{
 		const IRQHandler_t f = IRQ_GetHandler(int_id);
 
-		static const char hex [16] = "0123456789ABCDEF";
-		if ((int_id >> 8) & 0x0F)
-			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
-		dbg_putchar(hex [(int_id >> 4) & 0x0F]);
-		dbg_putchar(hex [(int_id >> 0) & 0x0F]);
+//		static const char hex [16] = "0123456789ABCDEF";
+//		if ((int_id >> 8) & 0x0F)
+//			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
+//		dbg_putchar(hex [(int_id >> 4) & 0x0F]);
+//		dbg_putchar(hex [(int_id >> 0) & 0x0F]);
 
 		if (f != (IRQHandler_t) 0)
 		{
-			dbg_putchar('_');
+//			dbg_putchar('_');
 			global_enableIRQ();						/* modify I bit in CPSR */
 			(* f)();	    /* Call interrupt handler */
 			global_disableIRQ();					/* modify I bit in CPSR */
 		}
 		else
 		{
-			dbg_putchar(']');
+//			dbg_putchar(']');
 		}
 
 	}
