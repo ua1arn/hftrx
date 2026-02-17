@@ -2061,6 +2061,7 @@ void ohciehci_clk_init(void)
 
 #if WITHEHCIHWSOFTSPOLL == 0
 	arm_hardware_set_handler_system(WITHUSBHW_EHCI_IRQ, USBH_EHCI_IRQHandler);
+	arm_hardware_set_handler_system(WITHUSBHW_OHCI_IRQ, USBH_OHCI_IRQHandler);
 #endif /* WITHEHCIHWSOFTSPOLL == 0 */
 #if WITHTINYUSB
 	arm_hardware_disable_handler(WITHUSBHW_EHCI_IRQ);
