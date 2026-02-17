@@ -979,6 +979,8 @@ void IRQ_Handler_GIC(void)
 
 /* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
 // See ARM IHI 0048B.b document
+
+// Только в aarch64 Cortex-A55
 void FIQ_Handler_GIC_G0(void)
 {
 	// per-cpu:
@@ -1067,6 +1069,7 @@ void FIQ_Handler_GIC_G0(void)
 }
 #endif /* (__CORTEX_A == 55U) */
 
+// Call from vFIQ handler aarch32
 void FIQ_Handler_GIC(void)
 {
 #if (__CORTEX_A == 55U)
@@ -1740,9 +1743,9 @@ void VFIQ_Handler(void * frame)
 {
 	//dbg_putchar('F');
 #if (__CORTEX_A == 55U) && __aarch64__
-	FIQ_Handler_GIC_G1();
+	IRQ_Handler_GIC();
 #elif (__CORTEX_A == 55U)
-	FIQ_Handler_GIC();
+	FIQ_Handler_GIC();		// Group 1 handler
 #else
 	IRQ_Handler_GIC();		// Group 1 handler
 #endif /* (__CORTEX_A == 55U) */
