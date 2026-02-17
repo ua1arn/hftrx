@@ -517,7 +517,7 @@ _curr_el_spx_fiq:
 	build_trapframe AARCH64_EXC_FIQ_SPX
 	store_nested_sp
 	//call_common_trap_handler 7
-	BL FIRQ_Handler		// Calls from EL3 system
+	BL VFIQ_Handler		// Calls from EL3 system
 	restore_trapframe
 	pop_trapframe
 	ERET

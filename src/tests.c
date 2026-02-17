@@ -2390,7 +2390,14 @@ void printAllEnabledIRQs(void)
 	for (i = 32; i < n; ++ i)
 	{
 		if (IRQ_GetEnableState(i))
-			PRINTF("printAllEnabledIRQs: active=%u // IRQ_Disable(%u); \n", i, i);
+		{
+			unsigned group = GIC_GetGroup(i);
+			unsigned s = GIC_GetSecurity(i);
+			unsigned pr = GIC_GetPriority(i);
+			unsigned sts = GIC_GetIRQStatus(i);
+			unsigned cfg = GIC_GetConfiguration(i);
+			PRINTF("enabled: irq%u: g=%u; s=%u; pr=%u; sts=0x%02X; cfg=0x%02X\n", i, group, s, pr, sts, cfg);
+		}
 		//IRQ_Disable(i);
 	}
 	PRINTF("printAllEnabledIRQs: n=%u\n", n);
@@ -7256,17 +7263,6 @@ void hightests(void)
 #endif
 #if 0 && CPUSTYLE_A733
 	{
-	PRINTF("CTLR=%08x\n", (unsigned) GICDistributor->CTLR);
-#if CPUSTYLE_A733 && 9
-	CLUSTER_CFG->C0_RST_CTRL &= ~ (UINT32_C(1) << 4); // GIC_RST
-	CLUSTER_CFG->C0_RST_CTRL |= (UINT32_C(1) << 4); // GIC_RST
-#endif
-	printAllEnabledIRQs();
-	PRINTF("CTLR=%08x\n", (unsigned) GICDistributor->CTLR);
-	}
-#endif
-#if 0 && CPUSTYLE_A733
-	{
 		global_disableIRQ();
 		GIC_SetPriority (TIMER1_1_IRQn, 0*IRQL_SYSTEM);
 		//GIC_SetPriority (USB0_DEVICE_IRQn, 0*IRQL_SYSTEM);	// в aarch64 и без этой строки работает
@@ -7283,9 +7279,10 @@ void hightests(void)
 #if 0 && CPUSTYLE_A733
 	{
 		//GIC_SetPriority (TIMER1_1_IRQn, 0*IRQL_SYSTEM);
-		GIC_SetPriority (USB0_DEVICE_IRQn, 0*IRQL_SYSTEM);	// в aarch64 и без этой строки работает
+		GIC_DisableIRQ(TIMER1_1_IRQn);
+		//GIC_SetPriority (USB0_DEVICE_IRQn, 0*IRQL_SYSTEM);	// в aarch64 и без этой строки работает
 		//GIC_SetGroup(TIMER1_1_IRQn, 0);
-		GIC_SetGroup(USB0_DEVICE_IRQn, 0);
+		//GIC_SetGroup(USB0_DEVICE_IRQn, 0);
 
 	}
 #endif
@@ -7540,6 +7537,13 @@ void hightests(void)
 //		global_EnableRQ();
 //		PRINTF("pstate=%08X\n", (unsigned) __get_PSTATE());
 //		global_disableIRQ();
+	}
+#endif
+#if 1 && CPUSTYLE_A733
+	{
+	//PRINTF("CTLR=%08x\n", (unsigned) GICDistributor->CTLR);
+	printAllEnabledIRQs();
+	//PRINTF("CTLR=%08x\n", (unsigned) GICDistributor->CTLR);
 	}
 #endif
 #if WITHLTDCHW && LCDMODE_LTDC

@@ -1076,14 +1076,14 @@ void IRQ_Handler_GIC(void)
 
 		if (f != (IRQHandler_t) 0)
 		{
+//			dbg_putchar('#');
 			global_enableIRQ();						/* modify I bit in CPSR */
 			(* f)();	    /* Call interrupt handler */
 			global_disableIRQ();					/* modify I bit in CPSR */
-//			dbg_putchar('_');
 		}
 		else
 		{
-//			dbg_putchar(']');
+//			dbg_putchar('$');
 		}
 
 	}
@@ -1101,6 +1101,96 @@ void IRQ_Handler_GIC(void)
 	GIC_EndInterrupt((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
 	//GICInterface->EOIR = gicc_iar;
 }
+
+#if (__CORTEX_A == 55U)
+/* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
+// See ARM IHI 0048B.b document
+void IRQ_Handler_GIC_G0(void)
+{
+	// per-cpu:
+	// GICC_AHPPIR
+	// GICC_HPPIR
+	// GICC_IAR
+	// GICC_EOIR
+	// GICC_BPR
+	// GICC_PMR
+	//
+	// global:
+	// GICD_IPRIORITYR
+
+//	const unsigned int gicver = (GIC_GetInterfaceId() >> 16) & 0x0F;
+//	switch (gicver)
+//	{
+//	case 0x01:	// GICv1
+//		/* Dummy read to avoid GIC 390 errata 801120 */
+//		(void) GICInterface->HPPIR;
+//		break;
+//	default:
+//		break;
+//	}
+	//(void) GICInterface->HPPIR;
+	(void) GIC_GetHighPendingIRQ();
+	const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
+	const uint_fast32_t gicc_iarg0 = GIC_AcknowledgePendingG0(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
+
+	PRINTF("iar=%04X, iarg0=%04X ", gicc_iar, gicc_iarg0);
+	const IRQn_ID_t int_id = gicc_iar & UINT32_C(0x3FF);
+
+	// IHI0048B_b_gic_architecture_specification.pdf
+	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
+
+	if (int_id == 1022)
+	{
+	}
+
+	if (int_id >= 1020)
+	{
+		//dbg_putchar('X');
+		//LCLSPIN_LOCK(& giclock);
+		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
+		//LCLSPIN_UNLOCK(& giclock);
+
+	}
+	else if (int_id != 0 /* || GIC_GetIRQStatus(0) != 0 */)
+	{
+		const IRQHandler_t f = IRQ_GetHandler(int_id);
+
+		static const char hex [16] = "0123456789ABCDEF";
+		if ((int_id >> 8) & 0x0F)
+			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
+		dbg_putchar(hex [(int_id >> 4) & 0x0F]);
+		dbg_putchar(hex [(int_id >> 0) & 0x0F]);
+
+		if (f != (IRQHandler_t) 0)
+		{
+			dbg_putchar('_');
+			global_enableIRQ();						/* modify I bit in CPSR */
+			(* f)();	    /* Call interrupt handler */
+			global_disableIRQ();					/* modify I bit in CPSR */
+		}
+		else
+		{
+			dbg_putchar(']');
+		}
+
+	}
+	else
+	{
+		//dbg_putchar('3');
+		//LCLSPIN_LOCK(& giclock);
+		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
+		//LCLSPIN_UNLOCK(& giclock);
+	}
+	//dbg_putchar(' ');
+
+	GIC_EndInterrupt((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
+	//GICInterface->EOIR = gicc_iar;
+}
+#endif /* (__CORTEX_A == 55U) */
 
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
@@ -1752,21 +1842,26 @@ void uncommon_trap_handler_15(void * frame) { PRINTF("uncommon_trap_handler_15:\
 void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\n"); for (;;) ; }	// 0x780
 
 // was: uncommon_trap_handler_6
-// Current EL with SPx VIRQ
+// Current EL with SPx IRQ/vIRQ
 // 0x280
 void VIRQ_Handler(void * frame)
 {
-	//dbg_putchar('.');
+	//dbg_putchar('-');
 	IRQ_Handler_GIC();
 }
 
 // was: uncommon_trap_handler_7
-// Current EL with SPx VIRQ
+// Current EL with SPx FIQ/vFIQ
 // 0x300
-void FIRQ_Handler(void * frame)
+void VFIQ_Handler(void * frame)
 {
-	//dbg_putchar('.');
+	//dbg_putchar('+');
+#if (__CORTEX_A == 55U)
+	IRQ_Handler_GIC_G0();
+#else
 	IRQ_Handler_GIC();
+#endif /* (__CORTEX_A == 55U) */
+
 }
 
 // was: uncommon_trap_handler_5

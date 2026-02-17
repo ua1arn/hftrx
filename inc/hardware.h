@@ -619,7 +619,7 @@ void uncommon_trap_handler_16(void * frame);
 
 void SError_Handler(void * frame);
 void VIRQ_Handler(void * frame);
-void FIRQ_Handler(void * frame);
+void VFIQ_Handler(void * frame);
 
 void IRQ_Handler_GIC(void);
 
