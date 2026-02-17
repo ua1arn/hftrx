@@ -2500,7 +2500,7 @@ __STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL3(void)
 __STATIC_INLINE void GIC_EnableInterface(void)
 {
     __MSR(ICC_IGRPEN1_EL1, 1);
-    __MSR(ICC_IGRPEN0_EL1, 1);
+    //__MSR(ICC_IGRPEN0_EL1, 1);
 }
 
 /** \brief Disable the CPU's interrupt interface.
@@ -2508,7 +2508,7 @@ __STATIC_INLINE void GIC_EnableInterface(void)
 __STATIC_INLINE void GIC_DisableInterface(void)
 {
     __MSR(ICC_IGRPEN1_EL1, 0);
-    __MSR(ICC_IGRPEN0_EL1, 0);
+    //__MSR(ICC_IGRPEN0_EL1, 0);
 }
 
 /** \brief Configures the group priority and subpriority split point using CPU's BPR register.
