@@ -2722,6 +2722,7 @@ __STATIC_INLINE void GIC_RedistInit(void)
 * \param [in] IRQn The interrupt to be queried.
 * \param [in] group Interrupt group number: 0 - Group 0, 1 - Group 1
 */
+// Group 0 (Secure) and Group 1 (Non-secure).
 __STATIC_INLINE void GIC_SetGroup(IRQn_Type IRQn, uint32_t group)
 {
   uint32_t igroupr = GICDistributor->IGROUPR[IRQn / 32U];
