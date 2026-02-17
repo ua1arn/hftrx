@@ -2519,7 +2519,7 @@ __STATIC_INLINE void GIC_DisableInterface(void)
 __STATIC_INLINE void GIC_SetBinaryPoint(uint32_t binary_point)
 {
     __MSR(ICC_BPR1_EL1, binary_point & 7U);
-    __MSR(ICC_BPR0_EL1, binary_point & 7U);
+//    __MSR(ICC_BPR0_EL1, binary_point & 7U);
 }
 
 /** \brief Get the interrupt number of the highest interrupt pending from CPU's HPPIR register.

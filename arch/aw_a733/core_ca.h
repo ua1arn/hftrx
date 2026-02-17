@@ -1815,6 +1815,7 @@ __STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
 */
 __STATIC_INLINE void GIC_EnableInterface(void)
 {
+    __MCR32(sICC_IGRPEN0_EL1, 1);
     __MCR32(sICC_IGRPEN1_EL1, 1);
 }
 
@@ -1822,6 +1823,7 @@ __STATIC_INLINE void GIC_EnableInterface(void)
 */
 __STATIC_INLINE void GIC_DisableInterface(void)
 {
+    __MCR32(sICC_IGRPEN0_EL1, 0);
     __MCR32(sICC_IGRPEN1_EL1, 0);
 }
 
@@ -1835,12 +1837,30 @@ __STATIC_INLINE IRQn_Type GIC_AcknowledgePending(void)
     return (IRQn_Type)(result);
 }
 
+/** \brief Read the CPU's IAR register.
+* \return GICInterface_Type::IAR
+*/
+__STATIC_INLINE IRQn_Type GIC_AcknowledgePendingG0(void)
+{
+    uint32_t result;
+    __MRC32(sICC_IAR0_EL1, &result);
+    return (IRQn_Type)(result);
+}
+
 /** \brief Writes the given interrupt number to the CPU's EOIR register.
 * \param [in] IRQn The interrupt to be signaled as finished.
 */
 __STATIC_INLINE void GIC_EndInterrupt(IRQn_Type IRQn)
 {
     __MCR32(sICC_EOIR1_EL1, (uint32_t)IRQn);
+}
+
+/** \brief Writes the given interrupt number to the CPU's EOIR register.
+* \param [in] IRQn The interrupt to be signaled as finished.
+*/
+__STATIC_INLINE void GIC_EndInterruptG0(IRQn_Type IRQn)
+{
+    __MCR32(sICC_EOIR0_EL1, (uint32_t)IRQn);
 }
 
 /** \brief Set the interrupt priority mask using CPU's PMR register.
@@ -1866,6 +1886,7 @@ __STATIC_INLINE uint32_t GIC_GetInterfacePriorityMask(void)
 */
 __STATIC_INLINE void GIC_SetBinaryPoint(uint32_t binary_point)
 {
+    __MCR32(sICC_BPR0_EL1, binary_point & 7U);
     __MCR32(sICC_BPR1_EL1, binary_point & 7U);
 }
 
@@ -1886,6 +1907,16 @@ __STATIC_INLINE uint32_t GIC_GetHighPendingIRQ(void)
 {
     uint32_t result;
     __MRC32(sICC_HPPIR1_EL1, &result);
+    return result;
+}
+
+/** \brief Get the interrupt number of the highest interrupt pending from CPU's HPPIR register.
+* \return GICInterface_Type::HPPIR
+*/
+__STATIC_INLINE uint32_t GIC_GetHighPendingIRQG0(void)
+{
+    uint32_t result;
+    __MRC32(sICC_HPPIR0_EL1, &result);
     return result;
 }
 

@@ -622,6 +622,8 @@ void VIRQ_Handler(void * frame);
 void VFIQ_Handler(void * frame);
 
 void IRQ_Handler_GIC(void);
+void FIQ_Handler_GIC_G0(void);
+void FIQ_Handler_GIC_G1(void);
 
 /* Отображение номеров каналов АЦП процессоров STM32Fxxx в каналы процессора STM32H7 */
 typedef struct adcinmap_tag

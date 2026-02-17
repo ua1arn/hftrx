@@ -2008,16 +2008,6 @@ sysinit_vbar_initialize(void)
 	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
 	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 2));	// Physical FIQ while executing at all exception levels are taken in EL3
 
-#if 0
-	// Added for A55
-	// __get_ICC_CTLR_EL3()=00028400
-	//	PRINTF("__get_ICC_CTLR_EL3()=%08" PRIX64 "\n", __get_ICC_CTLR_EL3());
-	__set_ICC_CTLR_EL3(__get_ICC_CTLR_EL3() | (UINT32_C(1) << 6));
-	//		__set_ICC_CTLR_EL3(__get_ICC_CTLR_EL3() | (UINT32_C(1) << 0));
-	//		__set_ICC_CTLR_EL3(__get_ICC_CTLR_EL3() | (UINT32_C(1) << 6));
-	//	PRINTF("__get_ICC_CTLR_EL3()=%08" PRIX64 "\n", __get_ICC_CTLR_EL3());
-	//	dbg_flush();
-#endif
 #elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 	extern unsigned long __Vectors;

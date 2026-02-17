@@ -7539,7 +7539,7 @@ void hightests(void)
 //		global_disableIRQ();
 	}
 #endif
-#if 1 && CPUSTYLE_A733
+#if 0 && CPUSTYLE_A733
 	{
 	//PRINTF("CTLR=%08x\n", (unsigned) GICDistributor->CTLR);
 	printAllEnabledIRQs();

@@ -119,134 +119,6 @@ static void Userdef_INTC_Dummy_Interrupt(void)
 	ASSERT(0);
 }
 
-#if 0
-
-/******************************************************************************
-* Function Name: r7s721_intc_initialize
-* Description  : Executes initial setting for the INTC.
-*              : The interrupt mask level is set to 31 to receive interrupts
-*              : with the interrupt priority level 0 to 30.
-* Arguments    : none
-* Return Value : none
-******************************************************************************/
-static void r7s721_intc_initializeOld(void)
-{
-
-	/* ==== Total number of registers ==== */
-	enum { INTC_ICDISR_REG_TOTAL   = (IRQ_GIC_LINE_COUNT + 31) / 32 };	// 19 == INTC_ICDISR0_COUNT
-	enum { INTC_ICDICFR_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 15) / 16 };	// 37 == INTC_ICDICFR0_COUNT
-	enum { INTC_ICDIPR_REG_TOTAL   = (IRQ_GIC_LINE_COUNT + 3) /  4 };	// 147 == INTC_ICDIPR0_COUNT
-	enum { INTC_ICDIPTR_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 3) /  4 };	// 147 == INTC_ICDIPTR0_COUNT
-	//enum { INTC_ICDISER_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 31) / 32 };	// 19 == INTC_ICDISER0_COUNT
-	enum { INTC_ICDICER_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 31) / 32 };	// 19 == INTC_ICDICER0_COUNT
-
-	/* Initial value table of Interrupt Configuration Registers */
-	// Table 4-19 GICD_ICFGR Int_config[0] encoding in some early GIC implementations
-	// каждая пара бит кодирует:
-
-	// [0] == 0: Corresponding interrupt is handled using the N-N model.
-	// [0] == 1: Corresponding interrupt is handled using the 1-N model.
-	// [1] == 0: Corresponding interrupt is level-sensitive.
-	// [1] == 1: Corresponding interrupt is edge-triggered.
-	static const uint32_t intc_icdicfrn_table [INTC_ICDICFR_REG_TOTAL] =
-	{                          /*           Interrupt ID */
-		0xAAAAAAAA,            /* ICDICFR0  :  15 to   0 */
-		0x00000055,            /* ICDICFR1  :  19 to  16 */
-		0xFFFD5555,            /* ICDICFR2  :  47 to  32 */
-		0x555FFFFF,            /* ICDICFR3  :  63 to  48 */
-		0x55555555,            /* ICDICFR4  :  79 to  64 */
-		0x55555555,            /* ICDICFR5  :  95 to  80 */
-		0x55555555,            /* ICDICFR6  : 111 to  96 */
-		0x55555555,            /* ICDICFR7  : 127 to 112 */
-		0x5555F555,            /* ICDICFR8  : 143 to 128 */
-		0x55555555,            /* ICDICFR9  : 159 to 144 */
-		0x55555555,            /* ICDICFR10 : 175 to 160 */
-		0xF5555555,            /* ICDICFR11 : 191 to 176 */
-		0xF555F555,            /* ICDICFR12 : 207 to 192 */
-		0x5555F555,            /* ICDICFR13 : 223 to 208 */
-		0x55555555,            /* ICDICFR14 : 239 to 224 */
-		0x55555555,            /* ICDICFR15 : 255 to 240 */
-		0x55555555,            /* ICDICFR16 : 271 to 256 */
-		0xFD555555,            /* ICDICFR17 : 287 to 272 */
-		0x55555557,            /* ICDICFR18 : 303 to 288 */
-		0x55555555,            /* ICDICFR19 : 319 to 304 */
-		0x55555555,            /* ICDICFR20 : 335 to 320 */
-		0x5F555555,            /* ICDICFR21 : 351 to 336 */
-		0xFD55555F,            /* ICDICFR22 : 367 to 352 */
-		0x55555557,            /* ICDICFR23 : 383 to 368 */
-		0x55555555,            /* ICDICFR24 : 399 to 384 */
-		0x55555555,            /* ICDICFR25 : 415 to 400 */
-		0x55555555,            /* ICDICFR26 : 431 to 416 */
-		0x55555555,            /* ICDICFR27 : 447 to 432 */
-		0x55555555,            /* ICDICFR28 : 463 to 448 */
-		0x55555555,            /* ICDICFR29 : 479 to 464 */
-		0x55555555,            /* ICDICFR30 : 495 to 480 */
-		0x55555555,            /* ICDICFR31 : 511 to 496 */
-		0x55555555,            /* ICDICFR32 : 527 to 512 */
-		0x55555555,            /* ICDICFR33 : 543 to 528 */
-		0x55555555,            /* ICDICFR34 : 559 to 544 */
-		0x55555555,            /* ICDICFR35 : 575 to 560 */
-		0x00155555             /* ICDICFR36 : 586 to 576 */
-	};
-
-    uint16_t offset;
-    volatile uint32_t * addr;
-
-	//GIC_Enable(1);	// инициализирует не совсем так как надо для работы
-
-	/* default interrut handlers setup */
-    for (offset = 0; offset < IRQ_GIC_LINE_COUNT; ++ offset)
-    {
-        //intc_func_table [offset] = Userdef_INTC_Dummy_Interrupt;    /* Set all interrupts default handlers */
-    }
-
-    /* ==== Initial setting 1 to receive GIC interrupt request ==== */
-    /* Interrupt Security Registers setting */
-    addr = (volatile uint32_t *) & INTC.ICDISR0;
-    for (offset = 0; offset < INTC_ICDISR_REG_TOTAL; ++ offset)
-    {
-        * (addr + offset) = 0x00000000uL;    /* Set all interrupts to be secured */
-    }
-
-    /* Interrupt Configuration Registers setting */
-    addr = (volatile uint32_t *) & INTC.ICDICFR0;
-    for (offset = 0; offset < INTC_ICDICFR_REG_TOTAL; ++ offset)
-    {
-        * (addr + offset) = intc_icdicfrn_table [offset];
-    }
-
-    /* Interrupt Priority Registers setting */
-    addr = (volatile uint32_t *) & GICD_IPRIORITYRn(0);
-    for (offset = 0; offset < INTC_ICDIPR_REG_TOTAL; ++ offset)
-    {
-        /* Set the priority for all interrupts to 31 */
-        * (addr + offset) = 31 * 0x01010101uL;
-    }
-
-    /* Interrupt Processor Targets Registers setting */
-    /* Initialise ICDIPTR8 to ICDIPTRn                     */
-    /* (n = The number of interrupt sources / 4)           */
-    /*   - ICDIPTR0 to ICDIPTR4 are dedicated for main CPU */
-    /*   - ICDIPTR5 is dedicated for sub CPU               */
-    /*   - ICDIPTR6 to 7 are reserved                      */
-    addr = (volatile uint32_t *) & INTC.ICDIPTR0;
-    for (offset = 8; offset < INTC_ICDIPTR_REG_TOTAL; ++ offset)
-    {
-    	/* Set the target for all interrupts to main CPU */
-        * (addr + offset) = 0x01010101uL;
-    }
-
-    /* Interrupt Clear-Enable Registers setting */
-    addr = (volatile uint32_t *) & INTC.ICDICER0;
-    for (offset = 0; offset < INTC_ICDICER_REG_TOTAL; ++ offset)
-    {
-    	 /* Set all interrupts to be disabled */
-    	* (addr + offset) = 0xFFFFFFFFuL;
-    }
-}
-
-#endif
-
 /******************************************************************************
 * Function Name: r7s721_intc_initialize
 * Description  : Executes initial setting for the INTC.
@@ -1105,7 +977,7 @@ void IRQ_Handler_GIC(void)
 #if (__CORTEX_A == 55U)
 /* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
 // See ARM IHI 0048B.b document
-void IRQ_Handler_GIC_G0(void)
+void FIQ_Handler_GIC_G1(void)
 {
 	// per-cpu:
 	// GICC_AHPPIR
@@ -1131,10 +1003,7 @@ void IRQ_Handler_GIC_G0(void)
 	//(void) GICInterface->HPPIR;
 	(void) GIC_GetHighPendingIRQ();
 	const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
-	//const uint_fast32_t gicc_iarg0 = GIC_AcknowledgePendingG0(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
 
-	//BC_iar=00BC, iarg0=03FF
-	//PRINTF("iar=%04X, iarg0=%04X ", gicc_iar, gicc_iarg0);
 	const IRQn_ID_t int_id = gicc_iar & UINT32_C(0x3FF);
 
 	// IHI0048B_b_gic_architecture_specification.pdf
@@ -1191,8 +1060,105 @@ void IRQ_Handler_GIC_G0(void)
 	GIC_EndInterrupt((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
 	//GICInterface->EOIR = gicc_iar;
 }
+
+/* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
+// See ARM IHI 0048B.b document
+void FIQ_Handler_GIC_G0(void)
+{
+	// per-cpu:
+	// GICC_AHPPIR
+	// GICC_HPPIR
+	// GICC_IAR
+	// GICC_EOIR
+	// GICC_BPR
+	// GICC_PMR
+	//
+	// global:
+	// GICD_IPRIORITYR
+
+//	const unsigned int gicver = (GIC_GetInterfaceId() >> 16) & 0x0F;
+//	switch (gicver)
+//	{
+//	case 0x01:	// GICv1
+//		/* Dummy read to avoid GIC 390 errata 801120 */
+//		(void) GICInterface->HPPIR;
+//		break;
+//	default:
+//		break;
+//	}
+	//(void) GICInterface->HPPIR;
+	(void) GIC_GetHighPendingIRQG0();
+	const uint_fast32_t gicc_iar = GIC_AcknowledgePendingG0(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
+	//const uint_fast32_t gicc_iarg0 = GIC_AcknowledgePendingG0(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
+
+	//BC_iar=00BC, iarg0=03FF
+//	PRINTF("iar=%04X, iarg0=%04X ", gicc_iar, gicc_iarg0);
+	const IRQn_ID_t int_id = gicc_iar & UINT32_C(0x3FF);
+
+	// IHI0048B_b_gic_architecture_specification.pdf
+	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
+
+	if (int_id == 1022)
+	{
+	}
+
+	if (int_id >= 1020)
+	{
+		//dbg_putchar('X');
+		//LCLSPIN_LOCK(& giclock);
+		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
+		//LCLSPIN_UNLOCK(& giclock);
+
+	}
+	else if (int_id != 0 /* || GIC_GetIRQStatus(0) != 0 */)
+	{
+		const IRQHandler_t f = IRQ_GetHandler(int_id);
+
+//		static const char hex [16] = "0123456789ABCDEF";
+//		if ((int_id >> 8) & 0x0F)
+//			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
+//		dbg_putchar(hex [(int_id >> 4) & 0x0F]);
+//		dbg_putchar(hex [(int_id >> 0) & 0x0F]);
+
+		if (f != (IRQHandler_t) 0)
+		{
+//			dbg_putchar('_');
+			global_enableIRQ();						/* modify I bit in CPSR */
+			(* f)();	    /* Call interrupt handler */
+			global_disableIRQ();					/* modify I bit in CPSR */
+		}
+		else
+		{
+//			dbg_putchar(']');
+		}
+
+	}
+	else
+	{
+		//dbg_putchar('3');
+		//LCLSPIN_LOCK(& giclock);
+		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
+		//LCLSPIN_UNLOCK(& giclock);
+	}
+	//dbg_putchar(' ');
+
+	GIC_EndInterruptG0((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
+	//GICInterface->EOIR = gicc_iar;
+}
 #endif /* (__CORTEX_A == 55U) */
 
+void FIQ_Handler_GIC(void)
+{
+#if (__CORTEX_A == 55U)
+	FIQ_Handler_GIC_G0();
+#else /* (__CORTEX_A == 55U) */
+	FIQ_Handler_GIC_G1();
+#endif /* (__CORTEX_A == 55U) */
+}
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
@@ -1847,7 +1813,7 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 // 0x280
 void VIRQ_Handler(void * frame)
 {
-	//dbg_putchar('-');
+	//dbg_putchar('I');
 	IRQ_Handler_GIC();
 }
 
@@ -1856,9 +1822,11 @@ void VIRQ_Handler(void * frame)
 // 0x300
 void VFIQ_Handler(void * frame)
 {
-	//dbg_putchar('+');
-#if (__CORTEX_A == 55U)
-	IRQ_Handler_GIC_G0();
+	//dbg_putchar('F');
+#if (__CORTEX_A == 55U) && __aarch64__
+	FIQ_Handler_GIC_G1();
+#elif (__CORTEX_A == 55U)
+	FIQ_Handler_GIC();
 #else
 	IRQ_Handler_GIC();
 #endif /* (__CORTEX_A == 55U) */

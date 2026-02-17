@@ -824,10 +824,12 @@ extern "C" {
 	#else /* defined(__aarch64__) */
 
 		#define global_enableIRQ() do { \
+			__enable_fault_irq(); \
 			__enable_irq(); \
 			} while (0)
 		#define global_disableIRQ() do { \
 			__disable_irq(); \
+			__disable_fault_irq(); \
 			} while (0)
 
 	#endif /* defined(__aarch64__) */
