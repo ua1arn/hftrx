@@ -220,9 +220,7 @@ int32_t IRQ_SetMode (IRQn_ID_t irqn, uint32_t mode) {
       GIC_SetConfiguration((IRQn_Type)irqn, cfg);
       GIC_SetTarget       ((IRQn_Type)irqn, cpu);
 
-      if (secure != 0U) {
-        GIC_SetGroup ((IRQn_Type)irqn, secure);
-      }
+      GIC_SetGroup ((IRQn_Type)irqn, !! secure);
     }
   }
 

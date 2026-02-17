@@ -729,7 +729,7 @@ void r7s721_intc_initialize(void)
 		VERIFY(0 == IRQ_SetMode(irqn, modes [irqn]));
 		VERIFY(0 == IRQ_SetPriority(irqn, 31));	// non-atomic operation
 		VERIFY(0 == IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt));
-		GIC_SetGroup(irqn, 0);
+		GIC_SetGroup(irqn, 0);	// Interrupt group number: 0 - Group 0, 1 - Group 1
 	}
 
 }
@@ -2288,11 +2288,7 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 	/* do not change edge/level settings of specified interrupts - leave initialized at start-up */
 	GIC_SetConfiguration(int_id, cfg);// non-atomic operation
 #endif /* ! CPUSTYLE_R7S721 */
-#if (__CORTEX_A == 55U) && __aarch64__
-	GIC_SetGroup(int_id, 1);
-#else
 	GIC_SetGroup(int_id, 0);
-#endif
 
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
 
