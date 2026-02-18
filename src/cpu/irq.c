@@ -1711,7 +1711,7 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if 0 && defined(__aarch64__) && ! LINUX_SUBSYSTEM
+#if 0 && ! LINUX_SUBSYSTEM
 
 typedef struct task_item_tag
 {
@@ -1734,7 +1734,6 @@ static int task1(void * ctx)
 {
 	global_disableIRQ();
 	PRINTF("task1: ctx=%p\n", ctx);
-	* (volatile unsigned char *) 0 = 0;
 	for (;;)
 		;
 	dbg_putchar('1');
@@ -1756,10 +1755,13 @@ static LIST_ENTRY run_list [HARDWARE_NCORES];
 static task_item_t idle_tasks [HARDWARE_NCORES];
 static task_item_t * startedtask [HARDWARE_NCORES];
 
-#define CPUCTX_SIZE (104 + 8)
+#if defined(__aarch64__)
+
+#define CPUCTX_ELEMENTS (104)
+#define CPUCTX_SIZE (104 * 8)
 #define TASKRAM_SIZE (1024 * 1024)
 
-static uint64_t stack_template_aarch64 [104] =
+static uint64_t stack_template [CPUCTX_ELEMENTS] =
 {
 	0x0000000000000012, 0x00000000243092E3, 0x000000007FFFBDC0, 0x000000004002C274,
 	0x000000008000030D, 0x000000007FFFBFE0, 0x0000000000000000, 0x0000000000000011,
@@ -1788,17 +1790,28 @@ static uint64_t stack_template_aarch64 [104] =
 	0xD0009C92804AB251, 0x71379A4732C0A196, 0x1114C4070830A809, 0x0156052A2010204F,
 	0x414B0405D262EC96, 0xDA080DE3A4A47225, 0x0000000000001000, 0x000000004002C270,
 };
+#define ELEMENT_PC 3
+#define ELEMENT_CTX 5
+#else
+
+#endif
 
 // Установить параметры задачи для запуска
-void task_setfunc(void * oldframe, void * fn, void * arg)
+void task_setfunc(void * __restrict oldframe, void * fn, void * arg)
 {
-	uint64_t * const pc = (uint64_t *) oldframe + 3;
-	uint64_t * const ctx = (uint64_t *) oldframe + 5;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
 
-	memcpy(oldframe, stack_template_aarch64, CPUCTX_SIZE);	// FPU registers,
+	uint64_t * const pc = (uint64_t *) oldframe + ELEMENT_PC;
+	uint64_t * const ctx = (uint64_t *) oldframe + ELEMENT_CTX;
+
+	memcpy(oldframe, stack_template, CPUCTX_SIZE);	// FPU registers,
 
 	* pc = (uintptr_t) fn;
 	* ctx = (uintptr_t) arg;
+
+#pragma GCC diagnostic pop
 }
 
 void task_scheduler_initialize(void)
@@ -1842,7 +1855,7 @@ void * task_scheduler(void * oldframe)
 	const unsigned core = arm_hardware_cpuid();
 	if (startedtask [core])
 	{
-		ASSERT(0);
+		//ASSERT(0);
 		return oldframe;
 	}
 	return oldframe;
@@ -1895,17 +1908,15 @@ void uncommon_trap_handler_14(void * frame) { PRINTF("uncommon_trap_handler_14:\
 void uncommon_trap_handler_15(void * frame) { PRINTF("uncommon_trap_handler_15:\n"); for (;;) ; }	// 0x700
 void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\n"); for (;;) ; }	// 0x780
 
-#define skipwords 1
+#define skipwords 2
 // was: uncommon_trap_handler_6
 // Current EL with SPx IRQ/vIRQ
 // 0x280
 void VIRQ_Handler(void * frame)
 {
-	void * marker;
-	//PRINTF("%p ", frame);
 	//dbg_putchar('I');
 	IRQ_Handler_GIC();		// Group 1 handler
-	run_task_curr(task_scheduler(& marker + skipwords));
+	run_task_curr(task_scheduler((uint64_t *) __get_SP64() + skipwords));
 }
 
 // was: uncommon_trap_handler_7
@@ -1913,7 +1924,6 @@ void VIRQ_Handler(void * frame)
 // 0x300
 void VFIQ_Handler(void * frame)
 {
-	void * marker;
 	//dbg_putchar('F');
 #if (__CORTEX_A == 55U) && __aarch64__
 	IRQ_Handler_GIC();
@@ -1922,7 +1932,7 @@ void VFIQ_Handler(void * frame)
 #else
 	IRQ_Handler_GIC();		// Group 1 handler
 #endif /* (__CORTEX_A == 55U) */
-	run_task_curr(task_scheduler(& marker + skipwords));
+	run_task_curr(task_scheduler((uint64_t *) __get_SP64() + skipwords));
 }
 
 // was: uncommon_trap_handler_5
