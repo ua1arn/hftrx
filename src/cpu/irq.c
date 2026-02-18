@@ -1711,11 +1711,12 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if 0 && ! LINUX_SUBSYSTEM && defined(__aarch64__)
+#if 1 && ! LINUX_SUBSYSTEM && defined(__aarch64__)
 
 #if defined(__aarch64__)
 
-#define CPUCTX_ELEMENTS (104)
+/* Total 832 bytes */
+#define CPUCTX_ELEMENTS ((48 + 544 + 480) / 8)
 #define CPUCTX_SIZE (CPUCTX_ELEMENTS * 8)
 #define TASKRAM_SIZE (1024 * 1024)
 
@@ -1748,6 +1749,7 @@ static uint64_t stack_template [CPUCTX_ELEMENTS] =
 	0xD0009C92804AB251, 0x71379A4732C0A196, 0x1114C4070830A809, 0x0156052A2010204F,
 	0x414B0405D262EC96, 0xDA080DE3A4A47225, 0x0000000000001000, 0x000000004002C270,
 };
+#define ELEMENT_SP 2
 #define ELEMENT_PC 3
 #define ELEMENT_CTX 5
 #else
@@ -1755,19 +1757,18 @@ static uint64_t stack_template [CPUCTX_ELEMENTS] =
 #endif
 
 // Установить параметры задачи для запуска
-void task_setfunc(void * __restrict oldframe, void * fn, void * arg)
+void task_construct(void * __restrict oldframe, void * fn, void * arg)
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 
-	uint64_t * const pc = (uint64_t *) oldframe + ELEMENT_PC;
-	uint64_t * const ctx = (uint64_t *) oldframe + ELEMENT_CTX;
-
+	volatile uint64_t * const f = (volatile uint64_t *) oldframe;
 	memcpy(oldframe, stack_template, CPUCTX_SIZE);	// FPU registers,
-
-	* pc = (uintptr_t) fn;
-	* ctx = (uintptr_t) arg;
+	f [ELEMENT_SP] = (uintptr_t) f + (0x000000007FFFBDC0 - 0x7FFFBCA0);
+	f [5         ] = (uintptr_t) f + (0x000000007FFFBFE0 - 0x7FFFBCA0);
+	f [ELEMENT_PC] = (uintptr_t) fn;
+	f [ELEMENT_CTX] = (uintptr_t) arg;
 
 #pragma GCC diagnostic pop
 }
@@ -1812,13 +1813,15 @@ static int task2(void * ctx)
 	return 0;
 }
 
-static int testtask(void * ctx)
+static int testtaskfn(void * ctx)
 {
+	const unsigned core = arm_hardware_cpuid();
+	local_delay_ms(100 + 50 * core);
 	dbg_putchar('$');
 	for (;;)
 	{
-		local_delay_ms(500);
-		dbg_putchar('#');
+		local_delay_ms(500 + 50 * core);
+		dbg_putchar('a' + core);
 	}
 	return 0;
 }
@@ -1843,7 +1846,7 @@ void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * 
 	uintptr_t top = (uintptr_t) p + ramsize;
 	void * stackframe = (void *) (top - CPUCTX_SIZE);
 	// Установить параметры задачи для запуска
-	task_setfunc(stackframe, task_idle, NULL);
+	task_construct(stackframe, task_idle, NULL);
 	task->cpuframe = stackframe;
 	task->guard = task;
 
@@ -1870,7 +1873,7 @@ void task_scheduler_initialize(void)
 		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
 	}
 	// тестовые задачи для ядра
-	task_addtask(& task3, 1u << 0, testtask, NULL, TASKRAM_SIZE, IRQL_USER);
+	task_addtask(& task3, 1u << 0, testtaskfn, NULL, TASKRAM_SIZE, IRQL_USER);
 }
 
 // получить готовую у выполнению задачу
@@ -1879,7 +1882,7 @@ task_item_t * task_getready(unsigned affinity, task_item_t * task)
 	ASSERT(task);
 	ASSERT(affinity);
 	IRQL_t oldIrql;
-	task_item_t * task0 = task;
+//	task_item_t * task0 = task;
 	IRQLSPIN_LOCK(& taskslock, & oldIrql, IRQL_IPC_ONLY);
 	const unsigned prio = GICI_DECODE_IRQL(oldIrql);
 	ASSERT(ARRAY_SIZE(tasks_list) > prio);
@@ -1900,10 +1903,6 @@ task_item_t * task_getready(unsigned affinity, task_item_t * task)
 			break;
 		}
 	}
-	if (task != task0)
-		dbg_putchar('.');
-	if (task == & task3)
-		dbg_putchar('!');
 	IRQLSPIN_UNLOCK(& taskslock, oldIrql);
 	return task;
 }
@@ -1925,6 +1924,11 @@ void __NO_RETURN task_scheduler_othercores(void)
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 void * task_scheduler(void * oldframe)
 {
+//	printhex64((uintptr_t) oldframe, oldframe, CPUCTX_SIZE + 128);
+//	for (;;)
+//		;
+//	task_construct(oldframe, testtaskfn, NULL);
+//	return oldframe;
 	const unsigned core = arm_hardware_cpuid();
 	if (startedtask [core] == NULL)
 	{
@@ -1934,6 +1938,7 @@ void * task_scheduler(void * oldframe)
 		// получаем состояние процесора при первом перрывании
 		task->affinity = 1U << core;
 		startedtask [core] = task;
+		task_construct(oldframe, testtaskfn, NULL);
 	}
 	startedtask [core]->cpuframe = oldframe;
 	startedtask [core] = task_getready(1U << core, startedtask [core]);

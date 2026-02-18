@@ -199,6 +199,7 @@ Reset_Handler:
 #define EXC_EXC_SPSR_OFFSET (32)/* __asm_offsetof(struct _exception_frame, exc_spsr) */
 
 .macro push_trapframe_int
+	/* total 480 bytes */
 	/*
 	 * store generic registers from (x29,x30) pair to (x1,x2) pair.
 	 */
@@ -220,12 +221,14 @@ Reset_Handler:
 .endm
 
 .macro push_trapframe_float
+	/* total 544 bytes */
 	/* Wait for FPU operation done */
  	mrs	x1, FPSR
 
 	/*
 	 * store floating point registers from (q30,q31) pair to (q0,q1) pair.
 	 */
+	/* 512 bytes */
 	stp q30, q31, [sp, #-32]!
 	stp q28, q29, [sp, #-32]!
 	stp q26, q27, [sp, #-32]!
@@ -244,6 +247,7 @@ Reset_Handler:
 	stp q0, q1, [sp, #-32]!
 
 	/* Save VFP control state */
+	 /* 32 bytes */
 	mrs	x1, FPCR
 	mrs x2, FPEXC32_EL2
 	stp	x1, x2, [sp, #-16]!
@@ -270,7 +274,7 @@ Reset_Handler:
 .endm
 
 .macro build_trapframe exc_type
-
+	/* Total 48 bytes */
 	/*
 	 * Store (spsr, x0)
 	 */
@@ -290,7 +294,7 @@ Reset_Handler:
 .endm
 
 .macro restore_trapframe
-
+	/* Total 48 bytes */
 	/*
 	 * Drop exception type, esr,
 	 */
@@ -309,7 +313,7 @@ Reset_Handler:
 .endm
 
 .macro pop_trapframe_float
-
+	/* total 544 bytes */
 	/* Wait for FPU operation done */
  	mrs	x1, FPSR
 	/* Restore VFP control state */
@@ -322,8 +326,9 @@ Reset_Handler:
 	msr FPEXC32_EL2, x2
 
 	/*
-	 * Restore gstore floating point registers from (q0,q1) pair to (q30,q31) pair.
+	 * Restore floating point registers from (q0,q1) pair to (q30,q31) pair.
 	 */
+	 /* 512 bytes */
 	ldp q0, q1, [sp], #32
 	ldp q2, q3, [sp], #32
 	ldp q4, q5, [sp], #32
@@ -343,9 +348,11 @@ Reset_Handler:
 .endm
 
 .macro pop_trapframe_int
+	/* total 480 bytes */
 	/*
 	 * Restore generic registers from (x29,x30) pair to (x1,x2) pair.
 	 */
+	 /* 15 * 2 * 8 bytes = 480 bytes */
 	ldp	x1, x2, [sp], #16
 	ldp	x3, x4, [sp], #16
 	ldp	x5, x6, [sp], #16
@@ -380,7 +387,7 @@ _curr_el_sp0_sync:
 	call_common_trap_handler 1
 	restore_traped_sp
 	restore_trapframe
-	pop_trapframe_float
+	pop_trapframe_float	/* total 544 bytes */
 	pop_trapframe_int
 	ERET
 
@@ -466,9 +473,9 @@ _curr_el_spx_fiq:
 	text_align
 run_task_curr:
 	mov	sp, x0
-	restore_trapframe
-	pop_trapframe_float
-	pop_trapframe_int
+	restore_trapframe	/* Total 48 bytes */
+	pop_trapframe_float	/* total 544 bytes */
+	pop_trapframe_int	/* total 480 bytes */
 	ERET
 
 	text_align
