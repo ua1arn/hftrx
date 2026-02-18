@@ -461,7 +461,7 @@ VFRQ_Handler:
 	AND     R1,R1,R3
 	VMSR    FPSCR,R1	// Initialise FPSCR to a known state
 
- 	LDR		R0, =FIQ_Handler_GIC	// Multiplex to FIQ_Handler_GIC_G0 or FIQ_Handler_GIC_G1 (for cortex-A55)
+ 	LDR		R0, =FIQ_Handler_GIC
 	MOV		LR, PC
 	BX		R0     /* and jump... */
 

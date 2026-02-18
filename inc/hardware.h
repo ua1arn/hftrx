@@ -620,6 +620,7 @@ void uncommon_trap_handler_16(void * frame);
 void SError_Handler(void * frame);
 void VIRQ_Handler(void * frame);
 void VFIQ_Handler(void * frame);
+void run_task_curr(void * frame);	// run task with frame
 
 void IRQ_Handler_GIC(void);
 void FIQ_Handler_GIC_G0(void);
