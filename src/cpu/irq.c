@@ -1731,27 +1731,12 @@ static uint64_t stack_template [CPUCTX_ELEMENTS] =
 	0x0000000000000000, 0x0000000000000000, 0xFD0ABC3EFCFB9977, 0x0000000000000000,
 	0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
 	0x000000AA00000050, 0x0000000000000000, 0xFEC96F8EFE2CBD66, 0x0000000000000000,
-	0xFEC96E96FE2CBCB6, 0x0000000000000000, 0x000000F8000000B0, 0x0000000000000000,
-	0x0000000000000000, 0x0000000000000000, 0x3C1E1BE83C1460D2, 0x3C31786B3C27D073,
-	0x0000040000000200, 0x0000100000000800, 0xFFFFFFFF00000000, 0x0000000000000000,
-	0x00000000FFFFFFFF, 0x00000000FFFFFFFF, 0x0000001700000018, 0x0000001500000016,
-	0x0000000900000008, 0x0000000B0000000A, 0x0000400000002000, 0x0001000000008000,
-	0xFFFFFFFF00000000, 0x0000000000000000, 0x00000000FFFFFFFF, 0x00000000FFFFFFFF,
-	0x0000001300000014, 0x0000001100000012, 0x0000000D0000000C, 0x0000000F0000000E,
-	0x0004000000020000, 0x0010000000080000, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF,
-	0xFFFFFFFF00000000, 0xFFFFFFFF00000000, 0x000000007FFFBFE0, 0x000000007FFFBFE0,
-	0x000000007FFFBFA0, 0xFFFFFF80FFFFFFC8, 0x00000000000000E5, 0xFFFFFFFFFFFFFFF0,
-	0x000000007FFFC390, 0x000000007FFFC3E0, 0x0000000000000040, 0x0000000000000007,
-	0x0000000000000007, 0x0000000000000007, 0x0000000000000007, 0x00000000FFFFFF80,
-	0x000000007FFFBFE0, 0x00000000400ADE40, 0x0000000040130B80, 0x0000000000000008,
-	0x0000000000000008, 0x0000000000000001, 0x0000000000000008, 0x0000000000000007,
-	0x000000007FFFBFE0, 0x3E04C911111E0C0B, 0x8521F426420D0020, 0x7CA91C51C994105C,
-	0xD0009C92804AB251, 0x71379A4732C0A196, 0x1114C4070830A809, 0x0156052A2010204F,
-	0x414B0405D262EC96, 0xDA080DE3A4A47225, 0x0000000000001000, 0x000000004002C270,
 };
-#define ELEMENT_SP 2
-#define ELEMENT_PC 3
-#define ELEMENT_CTX 5
+
+#define ELEMENT_SP 2	// SPSR_EL3
+#define ELEMENT_PC 3	// ELR_EL3
+#define ELEMENT_CTX 5	// X0
+
 #else
 
 #endif
@@ -1764,9 +1749,8 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 
 	volatile uint64_t * const f = (volatile uint64_t *) oldframe;
-	memcpy(oldframe, stack_template, CPUCTX_SIZE);	// FPU registers,
-	f [ELEMENT_SP] = (uintptr_t) f + (0x000000007FFFBDC0 - 0x7FFFBCA0);
-	f [5         ] = (uintptr_t) f + (0x000000007FFFBFE0 - 0x7FFFBCA0);
+	memcpy(oldframe, stack_template, CPUCTX_SIZE);	// CPU/FPU registers,
+	f [ELEMENT_SP] = (uintptr_t) & f [36];
 	f [ELEMENT_PC] = (uintptr_t) fn;
 	f [ELEMENT_CTX] = (uintptr_t) arg;
 
@@ -1870,7 +1854,7 @@ void task_scheduler_initialize(void)
 	{
 		task_item_t * const task = & idle_tasks [i];
 		//
-		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
+		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_USER/*IRQL_IDLE*/);
 	}
 	// тестовые задачи для ядра
 	task_addtask(& task3, 1u << 0, testtaskfn, NULL, TASKRAM_SIZE, IRQL_USER);
@@ -1924,7 +1908,7 @@ void __NO_RETURN task_scheduler_othercores(void)
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 void * task_scheduler(void * oldframe)
 {
-//	printhex64((uintptr_t) oldframe, oldframe, CPUCTX_SIZE + 128);
+//	printhex64((uintptr_t) oldframe, oldframe, 56);
 //	for (;;)
 //		;
 //	task_construct(oldframe, testtaskfn, NULL);
@@ -1938,7 +1922,7 @@ void * task_scheduler(void * oldframe)
 		// получаем состояние процесора при первом перрывании
 		task->affinity = 1U << core;
 		startedtask [core] = task;
-		task_construct(oldframe, testtaskfn, NULL);
+		//task_construct(oldframe, testtaskfn, NULL);
 	}
 	startedtask [core]->cpuframe = oldframe;
 	startedtask [core] = task_getready(1U << core, startedtask [core]);
