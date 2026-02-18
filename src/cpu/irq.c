@@ -1713,48 +1713,6 @@ void IRQ15_Handler(void)
 
 #if 0 && ! LINUX_SUBSYSTEM
 
-typedef struct task_item_tag
-{
-	LIST_ENTRY item;
-	unsigned affinity;
-	void * frame;	// cpu state
-} task_item_t;
-
-static task_item_t t0;
-static task_item_t t1;
-
-static int task_idle(void * ctx)
-{
-	for (;;)
-		__WFI();
-	return 0;
-}
-
-static int task1(void * ctx)
-{
-	global_disableIRQ();
-	PRINTF("task1: ctx=%p\n", ctx);
-	for (;;)
-		;
-	dbg_putchar('1');
-	return 0;
-}
-
-static int task2(void * ctx)
-{
-	global_disableIRQ();
-	PRINTF("task2: ctx=%p\n", ctx);
-	for (;;)
-		;
-	dbg_putchar('2');
-	return 0;
-}
-
-static LIST_ENTRY task_list;
-static LIST_ENTRY run_list [HARDWARE_NCORES];
-static task_item_t idle_tasks [HARDWARE_NCORES];
-static task_item_t * startedtask [HARDWARE_NCORES];
-
 #if defined(__aarch64__)
 
 #define CPUCTX_ELEMENTS (104)
@@ -1814,26 +1772,128 @@ void task_setfunc(void * __restrict oldframe, void * fn, void * arg)
 #pragma GCC diagnostic pop
 }
 
+
+
+typedef struct task_item_tag
+{
+	LIST_ENTRY item;
+	unsigned affinity;
+	void * cpuframe;	// cpu state
+	void * guard;
+} task_item_t;
+
+static task_item_t t0;
+static task_item_t t1;
+
+static int task_idle(void * ctx)
+{
+	for (;;)
+		__WFI();
+	return 0;
+}
+
+static int task1(void * ctx)
+{
+	global_disableIRQ();
+	PRINTF("task1: ctx=%p\n", ctx);
+	for (;;)
+		;
+	dbg_putchar('1');
+	return 0;
+}
+
+static int task2(void * ctx)
+{
+	global_disableIRQ();
+	PRINTF("task2: ctx=%p\n", ctx);
+	for (;;)
+		;
+	dbg_putchar('2');
+	return 0;
+}
+
+static int testtask(void * ctx)
+{
+	for (;;)
+	{
+		dbg_putchar('#');
+		local_delay_ms(500);
+	}
+	return 0;
+}
+
+static IRQLSPINLOCK_t taskslock = IRQLSPINLOCK_INIT;
+static LIST_ENTRY tasks_list;
+static LIST_ENTRY run_list [HARDWARE_NCORES];
+static task_item_t idle_tasks [HARDWARE_NCORES];
+static task_item_t base_tasks [HARDWARE_NCORES];	// состояения получаем при первом прерывании
+static task_item_t * startedtask [HARDWARE_NCORES];
+static task_item_t task3;
+
+void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize)
+{
+	task->affinity = affinity;
+	void * const p = aligned_alloc(DCACHEROWSIZE, ramsize);
+	//void * const p = malloc(TASKRAM_SIZE);
+	while (p == NULL)
+		;
+	uintptr_t top = (uintptr_t) p + ramsize;
+	void * stackframe = (void *) (top - CPUCTX_SIZE);
+	// Установить параметры задачи для запуска
+	task_setfunc(stackframe, task_idle, NULL);
+	task->cpuframe = stackframe;
+	task->guard = task;
+
+	// включаем в список задач
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& taskslock, & oldIrql, IRQL_IPC_ONLY);
+	InsertTailList(& tasks_list, & task->item);
+	IRQLSPIN_UNLOCK(& taskslock, oldIrql);
+}
+
 void task_scheduler_initialize(void)
 {
 	unsigned i;
-	InitializeListHead(& task_list);
+	InitializeListHead(& tasks_list);
+	IRQLSPINLOCK_INITIALIZE(& taskslock);
 	for (i = 0; i < HARDWARE_NCORES; ++ i)
 	{
 		task_item_t * const task = & idle_tasks [i];
 		//
-		task->affinity = 1u << i;
-		void * const p = aligned_alloc(DCACHEROWSIZE, TASKRAM_SIZE);
-		//void * const p = malloc(TASKRAM_SIZE);
-		while (p == NULL)
-			;
-		uintptr_t top = (uintptr_t) p + TASKRAM_SIZE;
-		void * stackframe = (void *) (top - CPUCTX_SIZE);
-		// Установить параметры задачи для запуска
-		task_setfunc(stackframe, task_idle, NULL);
-		task->frame = stackframe;
-		PRINTF("assigned stack: core=%u %p..%p, frame=%p\n", i, p, (void *) top, stackframe);
+		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE);
 	}
+	// тестовые задачи для ядра
+	task_addtask(& task3, 1u << 3, testtask, NULL, TASKRAM_SIZE);
+}
+
+// получить готовую у выполнению задачу
+task_item_t * task_getready(unsigned affinity, task_item_t * oldtask)
+{
+	ASSERT(oldtask);
+	ASSERT(affinity);
+	ASSERT(oldtask->guard == oldtask);
+	task_item_t * task = oldtask;
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& taskslock, & oldIrql, IRQL_IPC_ONLY);
+	// Возвращаем в список задач
+	InsertTailList(& tasks_list, & oldtask->item);
+
+//	PRLIST_ENTRY t;
+//	PRLIST_ENTRY tnext;
+//	for (t = tasks_list.Flink; t != & tasks_list; t = tnext)
+//	{
+//		tnext = t->Flink;
+//		task_item_t * const tp = CONTAINING_RECORD(t, task_item_t, item);
+//		if (tp->affinity & affinity)
+//		{
+//			task = tp;
+//			RemoveEntryList(& tp->item);
+//			break;
+//		}
+//	}
+	RemoveEntryList(& task->item);
+	IRQLSPIN_UNLOCK(& taskslock, oldIrql);
+	return task;
 }
 
 void task_scheduler_start(void)
@@ -1853,12 +1913,18 @@ void __NO_RETURN task_scheduler_othercores(void)
 void * task_scheduler(void * oldframe)
 {
 	const unsigned core = arm_hardware_cpuid();
-	if (startedtask [core])
+	if (startedtask [core] == NULL)
 	{
-		//ASSERT(0);
-		return oldframe;
+		task_item_t * const task = & base_tasks [core];
+		task->guard = task;
+		//
+		// получаем состояние процесора при первом перрывании
+		task->affinity = 1U << core;
+		startedtask [core] = task;
 	}
-	return oldframe;
+	startedtask [core]->cpuframe = oldframe;
+	startedtask [core] = task_getready(1U << core, startedtask [core]);
+	return startedtask [core]->cpuframe;
 }
 
 #else /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
