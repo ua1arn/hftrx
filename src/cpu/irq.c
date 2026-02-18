@@ -1711,12 +1711,12 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if 0 && ! LINUX_SUBSYSTEM
+#if 0 && ! LINUX_SUBSYSTEM && defined(__aarch64__)
 
 #if defined(__aarch64__)
 
 #define CPUCTX_ELEMENTS (104)
-#define CPUCTX_SIZE (104 * 8)
+#define CPUCTX_SIZE (CPUCTX_ELEMENTS * 8)
 #define TASKRAM_SIZE (1024 * 1024)
 
 static uint64_t stack_template [CPUCTX_ELEMENTS] =
@@ -1814,24 +1814,27 @@ static int task2(void * ctx)
 
 static int testtask(void * ctx)
 {
+	dbg_putchar('$');
 	for (;;)
 	{
-		dbg_putchar('#');
 		local_delay_ms(500);
+		dbg_putchar('#');
 	}
 	return 0;
 }
 
 static IRQLSPINLOCK_t taskslock = IRQLSPINLOCK_INIT;
-static LIST_ENTRY tasks_list;
-static LIST_ENTRY run_list [HARDWARE_NCORES];
+static LIST_ENTRY tasks_list [PRIOv_count];
+
 static task_item_t idle_tasks [HARDWARE_NCORES];
 static task_item_t base_tasks [HARDWARE_NCORES];	// состояения получаем при первом прерывании
 static task_item_t * startedtask [HARDWARE_NCORES];
 static task_item_t task3;
 
-void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize)
+void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql)
 {
+	const unsigned prio = GICI_DECODE_IRQL(irql);
+	ASSERT(ARRAY_SIZE(tasks_list) > prio);
 	task->affinity = affinity;
 	void * const p = aligned_alloc(DCACHEROWSIZE, ramsize);
 	//void * const p = malloc(TASKRAM_SIZE);
@@ -1847,57 +1850,67 @@ void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * 
 	// включаем в список задач
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& taskslock, & oldIrql, IRQL_IPC_ONLY);
-	InsertTailList(& tasks_list, & task->item);
+	InsertTailList(& tasks_list [prio], & task->item);
 	IRQLSPIN_UNLOCK(& taskslock, oldIrql);
+	PRINTF("Added task at prio=%u, affinity=%02X\n", prio, affinity);
 }
 
 void task_scheduler_initialize(void)
 {
 	unsigned i;
-	InitializeListHead(& tasks_list);
 	IRQLSPINLOCK_INITIALIZE(& taskslock);
+	for (i = 0; i < PRIOv_count; ++ i)
+	{
+		InitializeListHead(& tasks_list [i]);
+	}
 	for (i = 0; i < HARDWARE_NCORES; ++ i)
 	{
 		task_item_t * const task = & idle_tasks [i];
 		//
-		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE);
+		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
 	}
 	// тестовые задачи для ядра
-	task_addtask(& task3, 1u << 3, testtask, NULL, TASKRAM_SIZE);
+	task_addtask(& task3, 1u << 0, testtask, NULL, TASKRAM_SIZE, IRQL_USER);
 }
 
 // получить готовую у выполнению задачу
-task_item_t * task_getready(unsigned affinity, task_item_t * oldtask)
+task_item_t * task_getready(unsigned affinity, task_item_t * task)
 {
-	ASSERT(oldtask);
+	ASSERT(task);
 	ASSERT(affinity);
-	ASSERT(oldtask->guard == oldtask);
-	task_item_t * task = oldtask;
 	IRQL_t oldIrql;
+	task_item_t * task0 = task;
 	IRQLSPIN_LOCK(& taskslock, & oldIrql, IRQL_IPC_ONLY);
-	// Возвращаем в список задач
-	InsertTailList(& tasks_list, & oldtask->item);
+	const unsigned prio = GICI_DECODE_IRQL(oldIrql);
+	ASSERT(ARRAY_SIZE(tasks_list) > prio);
 
-//	PRLIST_ENTRY t;
-//	PRLIST_ENTRY tnext;
-//	for (t = tasks_list.Flink; t != & tasks_list; t = tnext)
-//	{
-//		tnext = t->Flink;
-//		task_item_t * const tp = CONTAINING_RECORD(t, task_item_t, item);
-//		if (tp->affinity & affinity)
-//		{
-//			task = tp;
-//			RemoveEntryList(& tp->item);
-//			break;
-//		}
-//	}
-	RemoveEntryList(& task->item);
+	PRLIST_ENTRY list = & tasks_list [prio];
+	// Возвращаем в список задач
+	InsertTailList(& tasks_list [prio], & task->item);
+	// ищем с большим или текущим IRQL
+	PRLIST_ENTRY t;
+	PRLIST_ENTRY tnext;
+	for (t = list->Flink; t != list; t = tnext)
+	{
+		tnext = t->Flink;
+		task = CONTAINING_RECORD(t, task_item_t, item);
+		if (task->affinity & affinity)
+		{
+			RemoveEntryList(& task->item);
+			break;
+		}
+	}
+	if (task != task0)
+		dbg_putchar('.');
+	if (task == & task3)
+		dbg_putchar('!');
 	IRQLSPIN_UNLOCK(& taskslock, oldIrql);
 	return task;
 }
 
 void task_scheduler_start(void)
 {
+
 }
 
 void __NO_RETURN task_scheduler_othercores(void)

@@ -771,6 +771,7 @@ extern "C" {
 		PRIOv_SYS,		/* таймеры, USB */
 		PRIOv_BRD,		/* папаметы фильттров, board_set_xxx */
 		PRIOv_USER,
+		PRIOv_IDLE,
 		//
 		PRIOv_count
 	};
@@ -800,6 +801,7 @@ extern "C" {
 	#define IRQL_SYSTEM 		(GICI_ENCODE_IRQL(PRIOv_SYS))
 	#define IRQL_BOARD			(GICI_ENCODE_IRQL(PRIOv_BRD))
 	#define IRQL_USER 			(GICI_ENCODE_IRQL(PRIOv_USER))
+	#define IRQL_IDLE 			(GICI_ENCODE_IRQL(PRIOv_IDLE))
 
 	// A lower priority value indicating a higher priority
 	// Value for GICD
