@@ -1711,14 +1711,13 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if defined(__aarch64__) && ! LINUX_SUBSYSTEM
+#if 1 && defined(__aarch64__) && ! LINUX_SUBSYSTEM
 
 typedef struct task_item_tag
 {
 	LIST_ENTRY item;
-	int (* func)(void * ctx);
-	void * ctx;
 	unsigned affinity;
+	void * frame;	// cpu state
 } task_item_t;
 
 static task_item_t t0;
@@ -1758,7 +1757,6 @@ static task_item_t idle_tasks [HARDWARE_NCORES];
 
 #define CPUCTX_SIZE (104 + 8)
 #define TASKRAM_SIZE (1024 * 1024)
-static void * newtask;
 
 static uint64_t stack_template_aarch64 [104] =
 {
@@ -1811,11 +1809,6 @@ void task_scheduler_initialize(void)
 		task_item_t * const task = & idle_tasks [i];
 		//
 		task->affinity = 1u << i;
-		task->func = task_idle;
-		task->ctx = NULL;
-	}
-
-	{
 		void * const p = aligned_alloc(DCACHEROWSIZE, TASKRAM_SIZE);
 		//void * const p = malloc(TASKRAM_SIZE);
 		while (p == NULL)
@@ -1823,10 +1816,14 @@ void task_scheduler_initialize(void)
 		uintptr_t top = (uintptr_t) p + TASKRAM_SIZE;
 		void * stackframe = (void *) (top - CPUCTX_SIZE);
 		// Установить параметры задачи для запуска
-		task_setfunc(stackframe, task1, (void *) 0xDEADBEEFABBA1980);
-		newtask = stackframe;
-		PRINTF("assigned stack: %p..%p, frame=%p\n", p, (void *) top, stackframe);
+		task_setfunc(stackframe, task_idle, NULL);
+		task->frame = stackframe;
+		PRINTF("assigned stack: core=%u %p..%p, frame=%p\n", i, p, (void *) top, stackframe);
 	}
+}
+
+void task_scheduler_start(void)
+{
 }
 
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
@@ -1842,6 +1839,11 @@ void task_scheduler_initialize(void)
 {
 
 }
+
+void task_scheduler_start(void)
+{
+}
+
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 void * task_scheduler(void * oldframe)
 {

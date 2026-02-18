@@ -2939,6 +2939,7 @@ void cpump_runuser(void)
 	{
 		LCLSPIN_UNLOCK(& cpu1userstart [core]);
 	}
+	task_scheduler_start();
 }
 
 #else /* WITHSMPSYSTEM */

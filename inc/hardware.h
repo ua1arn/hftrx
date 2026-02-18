@@ -624,6 +624,7 @@ void VFIQ_Handler(void * frame);
 void __NO_RETURN run_task_curr(void * frame);	// run task with frame
 
 void task_scheduler_initialize(void);
+void task_scheduler_start(void);
 void * task_scheduler(void * oldframe);	/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 
 void IRQ_Handler_GIC(void);
