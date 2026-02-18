@@ -1839,7 +1839,7 @@ void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * 
 	IRQLSPIN_LOCK(& taskslock, & oldIrql, IRQL_IPC_ONLY);
 	InsertTailList(& tasks_list [prio], & task->item);
 	IRQLSPIN_UNLOCK(& taskslock, oldIrql);
-	PRINTF("Added task at prio=%u, affinity=%02X\n", prio, affinity);
+	PRINTF("Added task at prio=%u, affinity=%02X (frame=%p)\n", prio, affinity, stackframe);
 }
 
 void task_scheduler_initialize(void)
@@ -1888,6 +1888,7 @@ task_item_t * task_getready(unsigned affinity, task_item_t * task)
 		}
 	}
 	IRQLSPIN_UNLOCK(& taskslock, oldIrql);
+	PRINTF(("Rady: %p\n"), task->cpuframe);
 	return task;
 }
 
