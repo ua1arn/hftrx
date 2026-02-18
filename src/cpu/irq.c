@@ -1711,7 +1711,7 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if 1 && defined(__aarch64__) && ! LINUX_SUBSYSTEM
+#if 0 && defined(__aarch64__) && ! LINUX_SUBSYSTEM
 
 typedef struct task_item_tag
 {
@@ -1754,6 +1754,7 @@ static int task2(void * ctx)
 static LIST_ENTRY task_list;
 static LIST_ENTRY run_list [HARDWARE_NCORES];
 static task_item_t idle_tasks [HARDWARE_NCORES];
+static task_item_t * startedtask [HARDWARE_NCORES];
 
 #define CPUCTX_SIZE (104 + 8)
 #define TASKRAM_SIZE (1024 * 1024)
@@ -1826,14 +1827,24 @@ void task_scheduler_start(void)
 {
 }
 
-void task_scheduler_othercores(void)
+void __NO_RETURN task_scheduler_othercores(void)
 {
+	for (;;)
+	{
+		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
+		__DMB();
+	}
 }
 
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 void * task_scheduler(void * oldframe)
 {
-	//return newtask;
+	const unsigned core = arm_hardware_cpuid();
+	if (startedtask [core])
+	{
+		ASSERT(0);
+		return oldframe;
+	}
 	return oldframe;
 }
 
@@ -1848,8 +1859,13 @@ void task_scheduler_start(void)
 {
 }
 
-void task_scheduler_othercores(void)
+void __NO_RETURN task_scheduler_othercores(void)
 {
+	for (;;)
+	{
+		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
+		__DMB();
+	}
 }
 
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
