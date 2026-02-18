@@ -1713,6 +1713,77 @@ void IRQ15_Handler(void)
 
 #if defined(__aarch64__) && ! LINUX_SUBSYSTEM
 
+typedef struct task_item_tag
+{
+	LIST_ENTRY item;
+	int (* func)(void * ctx);
+	void * ctx;
+	unsigned affinity;
+} task_item_t;
+
+static task_item_t t0;
+static task_item_t t1;
+
+static int task_idle(void * ctx)
+{
+	for (;;)
+		__WFI();
+	return 0;
+}
+
+static int task1(void * ctx)
+{
+	dbg_putchar('1');
+	return 0;
+}
+
+static int task2(void * ctx)
+{
+	dbg_putchar('2');
+	return 0;
+}
+
+static LIST_ENTRY task_list;
+static LIST_ENTRY run_list [HARDWARE_NCORES];
+static task_item_t idle_tasks [HARDWARE_NCORES];
+
+void task_scheduler_initialize(void)
+{
+	unsigned i;
+	InitializeListHead(& task_list);
+	for (i = 0; i < HARDWARE_NCORES; ++ i)
+	{
+		task_item_t * const task = & idle_tasks [i];
+		//
+		task->affinity = 1u << i;
+		task->func = task_idle;
+		task->ctx = NULL;
+	}
+
+}
+
+/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
+void * task_scheduler(void * oldframe)
+{
+	return oldframe;
+}
+
+#else /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
+
+void task_scheduler_initialize(void)
+{
+
+}
+/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
+void * task_scheduler(void * oldframe)
+{
+	return oldframe;
+}
+
+#endif /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
+
+#if defined(__aarch64__) && ! LINUX_SUBSYSTEM
+
 void uncommon_trap_handler_1(void * frame) { PRINTF("uncommon_trap_handler_1:\n"); for (;;) ; }	// 0x000
 void uncommon_trap_handler_2(void * frame) { PRINTF("uncommon_trap_handler_2:\n"); for (;;) ; }	// 0x080
 void uncommon_trap_handler_3(void * frame) { PRINTF("uncommon_trap_handler_3:\n"); for (;;) ; }	// 0x100
@@ -1730,14 +1801,17 @@ void uncommon_trap_handler_14(void * frame) { PRINTF("uncommon_trap_handler_14:\
 void uncommon_trap_handler_15(void * frame) { PRINTF("uncommon_trap_handler_15:\n"); for (;;) ; }	// 0x700
 void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\n"); for (;;) ; }	// 0x780
 
+#define skipwords 1
 // was: uncommon_trap_handler_6
 // Current EL with SPx IRQ/vIRQ
 // 0x280
 void VIRQ_Handler(void * frame)
 {
+	void * marker;
+	//PRINTF("%p ", frame);
 	//dbg_putchar('I');
 	IRQ_Handler_GIC();		// Group 1 handler
-	//run_task_curr(frame);
+	run_task_curr(task_scheduler(& marker + skipwords));
 }
 
 // was: uncommon_trap_handler_7
@@ -1745,6 +1819,7 @@ void VIRQ_Handler(void * frame)
 // 0x300
 void VFIQ_Handler(void * frame)
 {
+	void * marker;
 	//dbg_putchar('F');
 #if (__CORTEX_A == 55U) && __aarch64__
 	IRQ_Handler_GIC();
@@ -1753,7 +1828,7 @@ void VFIQ_Handler(void * frame)
 #else
 	IRQ_Handler_GIC();		// Group 1 handler
 #endif /* (__CORTEX_A == 55U) */
-	//run_task_curr(frame);
+	run_task_curr(task_scheduler(& marker + skipwords));
 }
 
 // was: uncommon_trap_handler_5
@@ -2747,7 +2822,7 @@ void cpu_initialize(void)
 //	PRINTF(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
 
 //	ca9_ca7_cache_diag();	// print
-
+	task_scheduler_initialize();
 	board_dpc_initialize();		/* инициализация списка user-mode опросных функций */
 #if (__CORTEX_A != 0)
 
