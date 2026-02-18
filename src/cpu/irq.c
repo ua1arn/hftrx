@@ -1806,9 +1806,13 @@ static int testtaskfn(void * ctx)
 	{
 		local_delay_ms(500 + 50 * core);
 		dbg_putchar('a' + core);
+		local_delay_ms(500 + 50 * core);
+		dbg_putchar('A' + core);
 	}
 	return 0;
 }
+
+int maintaskfn(void * ctx);
 
 static IRQLSPINLOCK_t taskslock = IRQLSPINLOCK_INIT;
 static LIST_ENTRY tasks_list [PRIOv_count];
@@ -1816,7 +1820,10 @@ static LIST_ENTRY tasks_list [PRIOv_count];
 static task_item_t idle_tasks [HARDWARE_NCORES];
 static task_item_t base_tasks [HARDWARE_NCORES];	// состояения получаем при первом прерывании
 static task_item_t * startedtask [HARDWARE_NCORES];
-static task_item_t task3;
+static task_item_t demotask [HARDWARE_NCORES];
+
+static task_item_t task30;
+static task_item_t task31;
 
 void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql)
 {
@@ -1833,13 +1840,12 @@ void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * 
 	task_construct(stackframe, task_idle, NULL);
 	task->cpuframe = stackframe;
 	task->guard = task;
-
 	// включаем в список задач
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& taskslock, & oldIrql, IRQL_IPC_ONLY);
 	InsertTailList(& tasks_list [prio], & task->item);
 	IRQLSPIN_UNLOCK(& taskslock, oldIrql);
-	PRINTF("Added task at prio=%u, affinity=%02X (frame=%p)\n", prio, affinity, stackframe);
+	PRINTF("Added task at prio=%u, affinity=%02X (frame=%p), stack[%p..%p]\n", prio, affinity, stackframe, stackframe, (void *) top);
 }
 
 void task_scheduler_initialize(void)
@@ -1854,10 +1860,11 @@ void task_scheduler_initialize(void)
 	{
 		task_item_t * const task = & idle_tasks [i];
 		//
-		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_USER/*IRQL_IDLE*/);
+		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
 	}
 	// тестовые задачи для ядра
-	task_addtask(& task3, 1u << 0, testtaskfn, NULL, TASKRAM_SIZE, IRQL_USER);
+	task_addtask(& task30, 1u << 0, testtaskfn, NULL, TASKRAM_SIZE, IRQL_USER);
+	task_addtask(& task31, 1u << 0, testtaskfn, NULL, TASKRAM_SIZE, IRQL_USER);
 }
 
 // получить готовую у выполнению задачу
@@ -1888,7 +1895,8 @@ task_item_t * task_getready(unsigned affinity, task_item_t * task)
 		}
 	}
 	IRQLSPIN_UNLOCK(& taskslock, oldIrql);
-	PRINTF(("Rady: %p\n"), task->cpuframe);
+//	PRINTF(("Ready: %p\n"), task->cpuframe);
+//	printhex64((uintptr_t) task->cpuframe, task->cpuframe, 32);
 	return task;
 }
 
@@ -1909,9 +1917,9 @@ void __NO_RETURN task_scheduler_othercores(void)
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 void * task_scheduler(void * oldframe)
 {
-//	printhex64((uintptr_t) oldframe, oldframe, 56);
-//	for (;;)
-//		;
+	printhex64((uintptr_t) oldframe, oldframe, 56);
+	for (;;)
+		;
 //	task_construct(oldframe, testtaskfn, NULL);
 //	return oldframe;
 	const unsigned core = arm_hardware_cpuid();
@@ -1923,7 +1931,7 @@ void * task_scheduler(void * oldframe)
 		// получаем состояние процесора при первом перрывании
 		task->affinity = 1U << core;
 		startedtask [core] = task;
-		//task_construct(oldframe, testtaskfn, NULL);
+		task_construct(oldframe, core == 0 ? maintaskfn : testtaskfn, NULL);
 	}
 	startedtask [core]->cpuframe = oldframe;
 	startedtask [core] = task_getready(1U << core, startedtask [core]);
