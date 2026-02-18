@@ -1737,6 +1737,7 @@ void VIRQ_Handler(void * frame)
 {
 	//dbg_putchar('I');
 	IRQ_Handler_GIC();		// Group 1 handler
+	//run_task_curr(frame);
 }
 
 // was: uncommon_trap_handler_7
@@ -1752,7 +1753,7 @@ void VFIQ_Handler(void * frame)
 #else
 	IRQ_Handler_GIC();		// Group 1 handler
 #endif /* (__CORTEX_A == 55U) */
-
+	//run_task_curr(frame);
 }
 
 // was: uncommon_trap_handler_5

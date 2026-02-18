@@ -90,6 +90,8 @@ __Vectors64:
    	//.code 64
    
 	.global Reset_Handler
+	.global run_task_curr
+
    	.extern addr64_preparedata
    	.extern SystemInit
    	.extern _start
@@ -541,6 +543,14 @@ _curr_el_spx_fiq:
 	ERET
 
 	text_align
+run_task_curr:
+	mov	sp, x0
+	restore_trapframe
+	pop_trapframe_float
+	pop_trapframe_int
+	ERET
+
+	text_align
 _curr_el_spx_serror:
 	push_trapframe_int
 	push_trapframe_float
@@ -652,14 +662,6 @@ _lower_el_aarch32_serror:
 	store_traped_sp
 	call_common_trap_handler 16
 	restore_traped_sp
-	restore_trapframe
-	pop_trapframe_float
-	pop_trapframe_int
-	ERET
-
-	text_align
-run_task_curr:
-	mov	sp, x0
 	restore_trapframe
 	pop_trapframe_float
 	pop_trapframe_int
