@@ -226,6 +226,13 @@ __STATIC_FORCEINLINE void __STLRB(uint32_t value, volatile uint8_t *ptr)
 }
 
 
+__STATIC_FORCEINLINE uint64_t __get_SP64(void)
+{
+	uint64_t result;
+	__ASM volatile("MOV  %0, sp" : "=r" (result) : : "memory");
+	return result;
+}
+
 __STATIC_FORCEINLINE uint32_t __get_MIDR_EL1(void)
 {
 	uint32_t result;
