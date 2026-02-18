@@ -2876,6 +2876,7 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	}
 #endif /* CPUSTYLE_VM14 */
 
+	task_scheduler_othercores();
 	for (;;)
 	{
 		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре

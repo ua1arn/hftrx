@@ -1826,6 +1826,10 @@ void task_scheduler_start(void)
 {
 }
 
+void task_scheduler_othercores(void)
+{
+}
+
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 void * task_scheduler(void * oldframe)
 {
@@ -1841,6 +1845,10 @@ void task_scheduler_initialize(void)
 }
 
 void task_scheduler_start(void)
+{
+}
+
+void task_scheduler_othercores(void)
 {
 }
 
