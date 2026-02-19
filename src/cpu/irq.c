@@ -1778,10 +1778,10 @@ typedef struct exception_frame_tag
 {
 	uint32_t vfpregs [64];
 	uint32_t fpscr, fpexc;
-	uint32_t old_sp, r4_doubled;
+	uint32_t sp_adjmod4, r4_doubled;
 	uint32_t r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11;	// 68..71: R0, R1 R2 R3
 	uint32_t lr;
-	uint32_t SPSR_irq;
+	uint32_t SPSR_irq;	// 0
 	uint32_t LR_irq;
 	uint32_t cpsr;	// saved by irq
 } exception_frame_t;
@@ -1802,6 +1802,8 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 	exception_frame_t * const f = (exception_frame_t *) oldframe;
 	//memcpy(oldframe, stack_template, CPUCTX_SIZE);	// CPU/FPU registers,
 	memset(oldframe, 0, CPUCTX_SIZE);	// CPU/FPU registers,
+	f->SPSR_irq = 0;
+	f->sp_adjmod4 = 0;
 	f->fpscr = 0;
 	f->fpexc = 0x40000700;
 	f->cpsr = 0x6003019F;
