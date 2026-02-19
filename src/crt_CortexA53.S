@@ -453,11 +453,12 @@ _curr_el_spx_irq:
 	store_nested_sp
 	//call_common_trap_handler 6
 	mov	x0, sp
-	BL VIRQ_Handler		// Calls from EL3 system
-	restore_trapframe
-	pop_trapframe_float
-	pop_trapframe_int
-	ERET
+	B VIRQ_Handler		// Calls from EL3 system
+//	BL VIRQ_Handler		// Calls from EL3 system
+//	restore_trapframe
+//	pop_trapframe_float
+//	pop_trapframe_int
+//	ERET
 
 	text_align
 _curr_el_spx_fiq:
@@ -467,11 +468,12 @@ _curr_el_spx_fiq:
 	store_nested_sp
 	//call_common_trap_handler 7
 	mov	x0, sp
-	BL VFIQ_Handler		// Calls from EL3 system
-	restore_trapframe
-	pop_trapframe_float
-	pop_trapframe_int
-	ERET
+	B VFIQ_Handler		// Calls from EL3 system
+//	BL VFIQ_Handler		// Calls from EL3 system
+//	restore_trapframe
+//	pop_trapframe_float
+//	pop_trapframe_int
+//	ERET
 
 	text_align
 run_task_curr:

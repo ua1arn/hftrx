@@ -408,48 +408,7 @@ VIRQ_Handler:
 
 	MOV		R0, SP
  	LDR		R2, =IRQ_Handler_aarch32
-	MOV		LR, PC
 	BX		R2     /* and jump... */
-
- 	VMRS	R1, FPSID
-	VMSR	FPSID, R1
-
-	VPOP.F32	{D16-D31}
- 	VPOP.F32	{D0-D15}
-	POP 	{R1, R2}
-	VMSR	FPSCR, R1
-	VMSR	FPEXC, R2
-
-	pop     {r3, r4}                    // Restore stack adjustment(R3) and user data(R4)
-	add     sp, sp, r3                  // Unadjust stack
-	//clrex                               // Clear exclusive monitor for interrupted code
-	pop     {r0-r3, r4-r11, r12, lr}            // Restore stacked APCS registers
-	rfefd   sp!                         // Return from IRQ handler - RFEIA instruction
-
-	.endfunc
-   	.ltorg
-
- 	.align 	4, 0
-    .func   run_task_curr
-    .global run_task_curr
-run_task_curr:
-	MOV		SP, R0
-
- 	VMRS	R1, FPSID
-	VMSR	FPSID, R1
-
-	VPOP.F32	{D16-D31}
- 	VPOP.F32	{D0-D15}
-	POP 	{R1, R2}
-	VMSR	FPSCR, R1
-	VMSR	FPEXC, R2
-
-	pop     {r3, r4}                    // Restore stack adjustment(R3) and user data(R4)
-	add     sp, sp, r3                  // Unadjust stack
-	//clrex                               // Clear exclusive monitor for interrupted code
-	pop     {r0-r3, r4-r11, r12, lr}            // Restore stacked APCS registers
-	rfefd   sp!                         // Return from IRQ handler - RFEIA instruction
-
 	.endfunc
    	.ltorg
 
@@ -486,8 +445,17 @@ VFRQ_Handler:
 
  	MOV		R0, SP
 	LDR		R2, =FIQ_Handler_aarch32
-	MOV		LR, PC
+	//MOV		LR, PC
 	BX		R2     /* and jump... */
+
+	.endfunc
+   	.ltorg
+
+ 	.align 	4, 0
+    .func   run_task_curr
+    .global run_task_curr
+run_task_curr:
+	MOV		SP, R0
 
  	VMRS	R1, FPSID
 	VMSR	FPSID, R1
