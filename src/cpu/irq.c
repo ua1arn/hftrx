@@ -1711,7 +1711,7 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if 0 && ! LINUX_SUBSYSTEM && defined(__aarch64__)
+#if 1 && ! LINUX_SUBSYSTEM && defined(__aarch64__)
 
 #if defined(__aarch64__)
 
@@ -1817,8 +1817,8 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 
 	volatile exception_frame_t * const f = (volatile exception_frame_t *) oldframe;
 	memcpy(oldframe, stack_template, CPUCTX_SIZE);	// CPU/FPU registers,
-	//memset(oldframe, 0, CPUCTX_SIZE);	// CPU/FPU registers,
-	f->exc_spsr_el3 = 0x00000;
+
+	f->exc_spsr_el3 = 0x000000006000030D;
 	f->exc_elr_el3 = (uintptr_t) fn;
 	f->x0 = (uintptr_t) arg;
 
@@ -1840,41 +1840,20 @@ static task_item_t t1;
 
 static int task_idle(void * ctx)
 {
-	const unsigned core = arm_hardware_cpuid();
 	for (;;)
 	{
-		//__WFI();
-		dbg_putchar('Q' + core);
-		local_delay_ms(200 + 100 * core);
+		__WFI();
 	}
 	return 0;
 }
 
+
 static int task1(void * ctx)
-{
-	global_disableIRQ();
-	PRINTF("task1: ctx=%p\n", ctx);
-	for (;;)
-		;
-	dbg_putchar('1');
-	return 0;
-}
-
-static int task2(void * ctx)
-{
-	global_disableIRQ();
-	PRINTF("task2: ctx=%p\n", ctx);
-	for (;;)
-		;
-	dbg_putchar('2');
-	return 0;
-}
-
-static int testtaskfn(void * ctx)
 {
 	const unsigned core = arm_hardware_cpuid();
 	local_delay_ms(100 + 50 * core);
 	dbg_putchar('$');
+	PRINTF("task core=%u: ctx=%p\n", core, ctx);
 	for (;;)
 	{
 		local_delay_ms(500 + 50 * core);
@@ -1893,8 +1872,7 @@ static task_item_t base_tasks [HARDWARE_NCORES];	// состояения пол�
 static task_item_t * startedtask [HARDWARE_NCORES];
 static task_item_t demotask [HARDWARE_NCORES];
 
-static task_item_t task30;
-static task_item_t task31;
+static task_item_t task30, task31, task32, task33;
 
 void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql)
 {
@@ -1908,7 +1886,7 @@ void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * 
 	uintptr_t top = (uintptr_t) p + ramsize;
 	void * stackframe = (void *) (top - CPUCTX_SIZE);
 	// Установить параметры задачи для запуска
-	//task_construct(stackframe, task_idle, NULL);
+	task_construct(stackframe, fn, ctx);
 	task->cpuframe = stackframe;
 	task->guard = task;
 	// включаем в список задач
@@ -1934,9 +1912,10 @@ void task_scheduler_initialize(void)
 		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
 	}
 	// тестовые задачи для ядра0
-//	task_addtask(& task30, 1u << 0, testtaskfn, NULL, TASKRAM_SIZE, IRQL_USER);
-//	task_addtask(& task31, 1u << 0, testtaskfn, NULL, TASKRAM_SIZE, IRQL_USER);
-//	run_task_curr(task30.cpuframe);
+	task_addtask(& task30, 1u << 0, task1, (void *) 0xDEADBEEF, TASKRAM_SIZE, IRQL_USER);
+	task_addtask(& task31, 1u << 1, task1, (void *) 0x111111, TASKRAM_SIZE, IRQL_USER);
+	task_addtask(& task32, 1u << 2, task1, (void *) 0x222222, TASKRAM_SIZE, IRQL_USER);
+	task_addtask(& task33, 1u << 3, task1, (void *) 0x333333, TASKRAM_SIZE, IRQL_USER);
 }
 
 // получить готовую у выполнению задачу
