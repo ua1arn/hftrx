@@ -1722,20 +1722,43 @@ void IRQ15_Handler(void)
 
 static uint64_t stack_template [CPUCTX_ELEMENTS] =
 {
-	0x0000000000000012, 0x00000000243092E3, 0x000000007FFFBDC0, 0x000000004002C274,
-	0x000000008000030D, 0x000000007FFFBFE0, 0x0000000000000000, 0x0000000000000011,
-	0x0000000000000000, 0x0000000000000700, 0xE5E5E5E5E5E5E5E5, 0xE5E5E5E5E5E5E5E5,
+	0x0000000000000012, 0x00000000243092E3, 0x000000007FFFBDC0, 0x0000000040014564,
+	0x000000006000030D, 0x0000000000000000, 0x0000000000000000, 0x0000000000000011,
+	0x0000000000000000, 0x0000000000000700, 0x0000000000000000, 0x0000000000000000,
 	0x0000000000000000, 0x0000000000000000, 0x00000000FFFFFFFF, 0x00000000FFFFFFFF,
 	0x0000000B0000000C, 0x000000090000000A, 0x0000004000000020, 0x0000010000000080,
 	0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
-	0x0000000000000000, 0x0000000000000000, 0xFD0ABC3EFCFB9977, 0x0000000000000000,
+	0x0000000000000000, 0x0000000000000000, 0xFDF5177BFDF09B99, 0x0000000000000000,
 	0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
-	0x000000AA00000050, 0x0000000000000000, 0xFEC96F8EFE2CBD66, 0x0000000000000000,
+	0x000000C700000050, 0x0000000000000000, 0xFF1C7E79FED111A8, 0x0000000000000000,
+	0xFF1C7DFBFED110D8, 0x0000000000000000, 0x0000007E000000D0, 0x0000000000000000,
+	0x0000000000000000, 0x0000000000000000, 0x3C1E1BE83C1460D2, 0x3C31786B3C27D073,
+	0x0000040000000200, 0x0000100000000800, 0xFFFFFFFF00000000, 0x0000000000000000,
+	0x00000000FFFFFFFF, 0x00000000FFFFFFFF, 0x0000001700000018, 0x0000001500000016,
+	0x0000000900000008, 0x0000000B0000000A, 0x0000400000002000, 0x0001000000008000,
+	0xFFFFFFFF00000000, 0x0000000000000000, 0x00000000FFFFFFFF, 0x00000000FFFFFFFF,
+	0x0000001300000014, 0x0000001100000012, 0x0000000D0000000C, 0x0000000F0000000E,
+	0x0004000000020000, 0x0010000000080000, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF,
+	0xFFFFFFFF00000000, 0xFFFFFFFF00000000, 0x0000040000000400, 0x0000040000000400,
+	0x0000000100000003, 0x0000000000000000, 0x000000000000000A, 0x0000000005000000,
+	0x0000000000000003, 0x00000000400470A8, 0x0000000080000000, 0x0000000003022000,
+	0x0000000000000038, 0x0000000000000124, 0x0000000000000000, 0x00000000400D90A0,
+	0x00000000400D9090, 0x00000000400D9000, 0x00000000400D9080, 0x0000000000000028,
+	0x0000000000000028, 0x0000000000000000, 0x00000000400D9000, 0x00000000401AE000,
+	0x6C00E93600053F9C, 0x3C04C011111E0803, 0x8431F626420D0020, 0x5C891C51C914100C,
+	0xD0009C92004AB253, 0x21379A573080A59E, 0x1014C4070A10AC09, 0x0356052A2010004F,
+	0x410B041CD642EC96, 0xDA080DE284A47225, 0x0000000000001000, 0x0000000040014590,
 };
 
-#define ELEMENT_SP 2	// SPSR_EL3
-#define ELEMENT_PC 3	// ELR_EL3
-#define ELEMENT_CTX 5	// X0
+// trap frame offsets (see src/crt_CortexA53.S)
+enum aarch64_frame_offsets
+{
+	offs_SPSR_EL3 = 2,
+	offs_ELR_EL3 = 3,
+	offs_SPSR_X0 = 5,
+	//
+	offs_unised
+};
 
 #else
 
@@ -1750,9 +1773,9 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 
 	volatile uint64_t * const f = (volatile uint64_t *) oldframe;
 	memcpy(oldframe, stack_template, CPUCTX_SIZE);	// CPU/FPU registers,
-	f [ELEMENT_SP] = (uintptr_t) & f [36];
-	f [ELEMENT_PC] = (uintptr_t) fn;
-	f [ELEMENT_CTX] = (uintptr_t) arg;
+	f [offs_SPSR_EL3] = (uintptr_t) & f [40];
+	f [offs_ELR_EL3] = (uintptr_t) fn;
+	f [offs_SPSR_X0] = (uintptr_t) arg;
 
 #pragma GCC diagnostic pop
 }
@@ -1772,8 +1795,13 @@ static task_item_t t1;
 
 static int task_idle(void * ctx)
 {
+	const unsigned core = arm_hardware_cpuid();
 	for (;;)
-		__WFI();
+	{
+		//__WFI();
+		dbg_putchar('Q' + core);
+		local_delay_ms(200 + 100 * core);
+	}
 	return 0;
 }
 
@@ -1812,8 +1840,6 @@ static int testtaskfn(void * ctx)
 	return 0;
 }
 
-int maintaskfn(void * ctx);
-
 static IRQLSPINLOCK_t taskslock = IRQLSPINLOCK_INIT;
 static LIST_ENTRY tasks_list [PRIOv_count];
 
@@ -1837,7 +1863,7 @@ void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * 
 	uintptr_t top = (uintptr_t) p + ramsize;
 	void * stackframe = (void *) (top - CPUCTX_SIZE);
 	// Установить параметры задачи для запуска
-	task_construct(stackframe, task_idle, NULL);
+	//task_construct(stackframe, task_idle, NULL);
 	task->cpuframe = stackframe;
 	task->guard = task;
 	// включаем в список задач
@@ -1862,9 +1888,10 @@ void task_scheduler_initialize(void)
 		//
 		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
 	}
-	// тестовые задачи для ядра
-	task_addtask(& task30, 1u << 0, testtaskfn, NULL, TASKRAM_SIZE, IRQL_USER);
-	task_addtask(& task31, 1u << 0, testtaskfn, NULL, TASKRAM_SIZE, IRQL_USER);
+//	// тестовые задачи для ядра
+//	task_addtask(& task30, 1u << 0, testtaskfn, NULL, TASKRAM_SIZE, IRQL_USER);
+//	task_addtask(& task31, 1u << 0, testtaskfn, NULL, TASKRAM_SIZE, IRQL_USER);
+//	run_task_curr(task30.cpuframe);
 }
 
 // получить готовую у выполнению задачу
@@ -1917,9 +1944,13 @@ void __NO_RETURN task_scheduler_othercores(void)
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 void * task_scheduler(void * oldframe)
 {
-	printhex64((uintptr_t) oldframe, oldframe, 56);
-	for (;;)
-		;
+//	static unsigned cpunter;
+//	if (arm_hardware_cpuid() == 1 && cpunter ++ == 0xFF)
+//	{
+//		printhex64((uintptr_t) oldframe, oldframe, CPUCTX_SIZE);
+//		for (;;)
+//			;
+//	}
 //	task_construct(oldframe, testtaskfn, NULL);
 //	return oldframe;
 	const unsigned core = arm_hardware_cpuid();
@@ -1931,7 +1962,7 @@ void * task_scheduler(void * oldframe)
 		// получаем состояние процесора при первом перрывании
 		task->affinity = 1U << core;
 		startedtask [core] = task;
-		task_construct(oldframe, core == 0 ? maintaskfn : testtaskfn, NULL);
+		//task_construct(oldframe, testtaskfn, NULL);
 	}
 	startedtask [core]->cpuframe = oldframe;
 	startedtask [core] = task_getready(1U << core, startedtask [core]);
@@ -1985,7 +2016,6 @@ void uncommon_trap_handler_14(void * frame) { PRINTF("uncommon_trap_handler_14:\
 void uncommon_trap_handler_15(void * frame) { PRINTF("uncommon_trap_handler_15:\n"); for (;;) ; }	// 0x700
 void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\n"); for (;;) ; }	// 0x780
 
-#define skipwords 2
 // was: uncommon_trap_handler_6
 // Current EL with SPx IRQ/vIRQ
 // 0x280
@@ -1993,7 +2023,7 @@ void VIRQ_Handler(void * frame)
 {
 	//dbg_putchar('I');
 	IRQ_Handler_GIC();		// Group 1 handler
-	run_task_curr(task_scheduler((uint64_t *) __get_SP64() + skipwords));
+	run_task_curr(task_scheduler(frame));
 }
 
 // was: uncommon_trap_handler_7
@@ -2009,7 +2039,7 @@ void VFIQ_Handler(void * frame)
 #else
 	IRQ_Handler_GIC();		// Group 1 handler
 #endif /* (__CORTEX_A == 55U) */
-	run_task_curr(task_scheduler((uint64_t *) __get_SP64() + skipwords));
+	run_task_curr(task_scheduler(frame));
 }
 
 // was: uncommon_trap_handler_5
@@ -2017,10 +2047,9 @@ void VFIQ_Handler(void * frame)
 // 0x200
 void SError_Handler(void * frame)
 {
-	uint64_t marker = 0xDEADBEEFABBA1980;
 	TP();
-	PRINTF("SError_Handler (core=%u), stack~%p:\n", (unsigned) arm_hardware_cpuid(), & marker);
-	printhex64((uintptr_t) & marker, & marker, 512);
+	PRINTF("SError_Handler (core=%u), stack~%p:\n", (unsigned) arm_hardware_cpuid(), frame);
+	printhex64((uintptr_t) frame, frame, 512);
 	unsigned esr_el3 = __get_ESR_EL3();
 	unsigned ec = (esr_el3 >> 26) & 0x1F;
 	unsigned il = (esr_el3 >> 5) & 0x01;
