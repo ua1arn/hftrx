@@ -1768,17 +1768,29 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 
 #else
 
+typedef struct exception_frame_tagX
+{
+	uint32_t v [84];	// 68..71: R0, R1 R2 R3
+
+} exception_frame_tX;
+
 typedef struct exception_frame_tag
 {
-	uint32_t v [84];	// 68..71: R0, R1 R2 R3
-
+	uint32_t vfpregs [64];
+	uint32_t fpscr, fpexc;
+	uint32_t old_sp, r4_doubled;
+	uint32_t r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11;	// 68..71: R0, R1 R2 R3
+	uint32_t lr;
+	uint32_t SPSR_irq;
+	uint32_t LR_irq;
+	uint32_t cpsr;	// saved by irq
 } exception_frame_t;
-
-typedef struct exception_frame_tagS
-{
-	uint32_t v [84];	// 68..71: R0, R1 R2 R3
-
-} exception_frame_tS;
+// Save LR_irq and SPSR_irq on to the SYS stack
+//push    {r0-r3, r4-r11, r12, lr}            // Save APCS corruptible registers
+// Store stack adjustment(R3) and user data(R4)
+// FPSCR, FPEXC
+//VPUSH.F32	{D0-D15}
+//VPUSH.F32	{D16-D31}
 
 //#define CPUCTX_SIZE (84 * 4)
 #define CPUCTX_SIZE (sizeof (exception_frame_t))
@@ -1790,13 +1802,14 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 	exception_frame_t * const f = (exception_frame_t *) oldframe;
 	//memcpy(oldframe, stack_template, CPUCTX_SIZE);	// CPU/FPU registers,
 	memset(oldframe, 0, CPUCTX_SIZE);	// CPU/FPU registers,
-	f-> v[82] = (uintptr_t) fn;
-	f-> v[68] = (uintptr_t) arg;
+	f->fpscr = 0;
+	f->fpexc = 0x40000700;
+	f->cpsr = 0x6003019F;
+	f->LR_irq = (uintptr_t) fn;
+	f->r0 = (uintptr_t) arg;
 }
 
 #endif
-
-
 
 typedef struct task_item_tag
 {
@@ -1861,7 +1874,8 @@ void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * 
 	// Установить параметры задачи для запуска
 	task_construct(stackframe, fn, ctx);
 	task->cpuframe = stackframe;
-	task->guard = task;
+	task->guard = task;	// debug signature
+
 	// включаем в список задач
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& taskslock, & oldIrql, IRQL_IPC_ONLY);
