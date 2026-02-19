@@ -1717,36 +1717,6 @@ void IRQ15_Handler(void)
 
 #define TASKRAM_SIZE (1024 * 1024)
 
-static uint64_t stack_template [CPUCTX_ELEMENTS] =
-{
-	0x0000000000000012, 0x00000000243092E3, 0x000000007FFFBDC0, 0x0000000040014564,
-	0x000000006000030D, 0x0000000000000000, 0x0000000000000000, 0x0000000000000011,
-	0x0000000000000000, 0x0000000000000700, 0x0000000000000000, 0x0000000000000000,
-	0x0000000000000000, 0x0000000000000000, 0x00000000FFFFFFFF, 0x00000000FFFFFFFF,
-	0x0000000B0000000C, 0x000000090000000A, 0x0000004000000020, 0x0000010000000080,
-	0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
-	0x0000000000000000, 0x0000000000000000, 0xFDF5177BFDF09B99, 0x0000000000000000,
-	0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
-	0x000000C700000050, 0x0000000000000000, 0xFF1C7E79FED111A8, 0x0000000000000000,
-	0xFF1C7DFBFED110D8, 0x0000000000000000, 0x0000007E000000D0, 0x0000000000000000,
-	0x0000000000000000, 0x0000000000000000, 0x3C1E1BE83C1460D2, 0x3C31786B3C27D073,
-	0x0000040000000200, 0x0000100000000800, 0xFFFFFFFF00000000, 0x0000000000000000,
-	0x00000000FFFFFFFF, 0x00000000FFFFFFFF, 0x0000001700000018, 0x0000001500000016,
-	0x0000000900000008, 0x0000000B0000000A, 0x0000400000002000, 0x0001000000008000,
-	0xFFFFFFFF00000000, 0x0000000000000000, 0x00000000FFFFFFFF, 0x00000000FFFFFFFF,
-	0x0000001300000014, 0x0000001100000012, 0x0000000D0000000C, 0x0000000F0000000E,
-	0x0004000000020000, 0x0010000000080000, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF,
-	0xFFFFFFFF00000000, 0xFFFFFFFF00000000, 0x0000040000000400, 0x0000040000000400,
-	0x0000000100000003, 0x0000000000000000, 0x000000000000000A, 0x0000000005000000,
-	0x0000000000000003, 0x00000000400470A8, 0x0000000080000000, 0x0000000003022000,
-	0x0000000000000038, 0x0000000000000124, 0x0000000000000000, 0x00000000400D90A0,
-	0x00000000400D9090, 0x00000000400D9000, 0x00000000400D9080, 0x0000000000000028,
-	0x0000000000000028, 0x0000000000000000, 0x00000000400D9000, 0x00000000401AE000,
-	0x6C00E93600053F9C, 0x3C04C011111E0803, 0x8431F626420D0020, 0x5C891C51C914100C,
-	0xD0009C92004AB253, 0x21379A573080A59E, 0x1014C4070A10AC09, 0x0356052A2010004F,
-	0x410B041CD642EC96, 0xDA080DE284A47225, 0x0000000000001000, 0x0000000040014590,
-};
-
 //	restore_trapframe	/* Total 48 bytes = 6 qwords */
 //	pop_trapframe_float	/* total 544 bytes = 68 qwords */
 //	pop_trapframe_int	/* total 240 bytes = 30 qwords */
@@ -1767,36 +1737,9 @@ typedef struct exception_frame_tag
 	uint64_t x0;
 	uint64_t vfpstate [2];	// FPCR, FPEXC32_EL2 (check order)
 	uint64_t vfpregs [64];	// 32 128-bit registers
-	uint64_t x1;
-	uint64_t x2;
-	uint64_t x3;
-	uint64_t x4;
-	uint64_t x5;
-	uint64_t x6;
-	uint64_t x7;
-	uint64_t x8;
-	uint64_t x9;
-	uint64_t x10;
-	uint64_t x11;
-	uint64_t x12;
-	uint64_t x13;
-	uint64_t x14;
-	uint64_t x15;
-	uint64_t x16;
-	uint64_t x17;
-	uint64_t x18;
-	uint64_t x19;
-	uint64_t x20;
-	uint64_t x21;
-	uint64_t x22;
-	uint64_t x23;
-	uint64_t x24;
-	uint64_t x25;
-	uint64_t x26;
-	uint64_t x27;
-	uint64_t x28;
-	uint64_t x29;
-	uint64_t x30;
+	uint64_t x1, x2, x3, x4, x5, x6, x7, x8, x9, x10;
+	uint64_t x11, x12, x13, x14, x15, x16, x17, x18, x19, x20;
+	uint64_t x21, x22, x23, x24, x25, x26, x27, x28, x29, x30;
 } exception_frame_t;
 
 #else
@@ -1815,19 +1758,23 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 #pragma GCC diagnostic ignored "-Warray-bounds"
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 
-	volatile exception_frame_t * const f = (volatile exception_frame_t *) oldframe;
-	memcpy(oldframe, stack_template, CPUCTX_SIZE);	// CPU/FPU registers,
+	exception_frame_t * const f = (exception_frame_t *) oldframe;
+	//memcpy(oldframe, stack_template, CPUCTX_SIZE);	// CPU/FPU registers,
+	memset(oldframe, 0, CPUCTX_SIZE);	// CPU/FPU registers,
 
 	// (spsr<4> == '1');
 	f->exc_spsr_el3 =
 //		1 * (UINT64_C(1) << 30) |	// Zero Condition flag.
 //		1 * (UINT64_C(1) << 29) |	// Carry Condition flag
-		1 * (UINT64_C(1) << 9) |	// Debug exception mask.
-		1 * (UINT64_C(1) << 8) |	// SError exception mask
+//		1 * (UINT64_C(1) << 9) |	// Debug exception mask.
+//		1 * (UINT64_C(1) << 8) |	// SError exception mask
 		0x0D * (UINT64_C(1) << 0) |	// 0x0D: EL3 with SP_EL3 AArch64 Exception level and selected Stack Pointer
 		0;
 //    f->exc_spsr_el3 = 0x000000006000030D;
 //    ASSERT(f->exc_spsr_el3 == 0x000000006000030D);
+
+	f->vfpstate [0] = 0;
+	f->vfpstate [1] = 0;
 	f->exc_elr_el3 = (uintptr_t) fn;
 	f->x0 = (uintptr_t) arg;
 
@@ -1842,6 +1789,7 @@ typedef struct task_item_tag
 	unsigned affinity;
 	void * cpuframe;	// cpu state
 	void * guard;
+	void * allocated;
 } task_item_t;
 
 static task_item_t t0;
@@ -1888,11 +1836,12 @@ void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * 
 	const unsigned prio = GICI_DECODE_IRQL(irql);
 	ASSERT(ARRAY_SIZE(tasks_list) > prio);
 	task->affinity = affinity;
-	void * const p = aligned_alloc(DCACHEROWSIZE, ramsize);
-	//void * const p = malloc(TASKRAM_SIZE);
-	while (p == NULL)
+	task->allocated = aligned_alloc(DCACHEROWSIZE, ramsize);
+	//task->allocated = malloc(TASKRAM_SIZE);
+	ASSERT(task->allocated != NULL);
+	while (task->allocated == NULL)
 		;
-	uintptr_t top = (uintptr_t) p + ramsize;
+	uintptr_t top = (uintptr_t) task->allocated + ramsize;
 	void * stackframe = (void *) (top - CPUCTX_SIZE);
 	// Установить параметры задачи для запуска
 	task_construct(stackframe, fn, ctx);
@@ -1960,10 +1909,11 @@ task_item_t * task_getready(unsigned affinity, task_item_t * task)
 	for (t = list->Flink; t != list; t = tnext)
 	{
 		tnext = t->Flink;
-		task = CONTAINING_RECORD(t, task_item_t, item);
-		if (task->affinity & affinity && task_isready(task))
+		task_item_t * const tp = CONTAINING_RECORD(t, task_item_t, item);
+		if (tp->affinity & affinity && task_isready(tp))
 		{
-			RemoveEntryList(& task->item);
+			RemoveEntryList(& tp->item);
+			task = tp;
 			break;
 		}
 	}
@@ -1988,6 +1938,10 @@ void __NO_RETURN task_scheduler_othercores(void)
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 void * task_scheduler(void * oldframe)
 {
+//	exception_frame_t * const f = (exception_frame_t *) oldframe;
+//	PRINTF("vfpstate [0, 1] = 0x%016lX 0x%016lX \n", f->vfpstate [0], f->vfpstate [1]);
+//	for (;;)
+//			;
 //	static unsigned cpunter;
 //	if (arm_hardware_cpuid() == 1 && cpunter ++ == 0xFF)
 //	{
