@@ -1749,14 +1749,26 @@ static uint64_t stack_template [CPUCTX_ELEMENTS] =
 
 //	restore_trapframe	/* Total 48 bytes = 6 qwords */
 //	pop_trapframe_float	/* total 544 bytes = 68 qwords */
-//	pop_trapframe_int	/* total 480 bytes = 60 qwords */
+//	pop_trapframe_int	/* total 240 bytes = 30 qwords */
 // trap frame offsets (see src/crt_CortexA53.S)
 enum aarch64_frame_offsets
 {
 	offs_SPSR_EL3 = 2,
 	offs_ELR_EL3 = 3,
+
 	offs_X0 = 5,
-	//offs_X21 = 4,
+	offs_X1 = 74,
+	offs_X10 = 83,
+	offs_X11 = 84,
+	offs_X12,
+	offs_X13,
+	offs_X14,
+	offs_X15,
+	offs_X16,
+	offs_X17,
+	offs_X18,
+	offs_X19,
+	// VFP
 	//
 	offs_unised
 };
@@ -1929,7 +1941,7 @@ task_item_t * task_getready(unsigned affinity, task_item_t * task)
 	}
 	IRQLSPIN_UNLOCK(& taskslock, oldIrql);
 //	PRINTF(("Ready: %p\n"), task->cpuframe);
-//	printhex64((uintptr_t) task->cpuframe, task->cpuframe, 32);
+//	printhex64((uintptr_t) task->cpuframe, task->cpuframe, CPUCTX_SIZE);
 	return task;
 }
 
@@ -2054,7 +2066,7 @@ void SError_Handler(void * frame)
 {
 	TP();
 	PRINTF("SError_Handler (core=%u), stack~%p:\n", (unsigned) arm_hardware_cpuid(), frame);
-	printhex64((uintptr_t) frame, frame, 512);
+	printhex64((uintptr_t) frame, frame, CPUCTX_SIZE);
 	unsigned esr_el3 = __get_ESR_EL3();
 	unsigned ec = (esr_el3 >> 26) & 0x1F;
 	unsigned il = (esr_el3 >> 5) & 0x01;

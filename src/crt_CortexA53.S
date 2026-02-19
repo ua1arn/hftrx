@@ -191,7 +191,7 @@ Reset_Handler:
 /*
  * exception_frame offset definitions
  */
-#define EXC_FRAME_SIZE (288)	/* sizeof(struct _exception_frame) */
+#define EXC_FRAME_SIZE (784)	/* sizeof(struct _exception_frame) */
 #define EXC_EXC_TYPE_OFFSET (0)	/* __asm_offsetof(struct _exception_frame, exc_type) */
 #define EXC_EXC_ESR_OFFSET (8)	/* __asm_offsetof(struct _exception_frame, exc_esr) */
 #define EXC_EXC_SP_OFFSET (16)	/* __asm_offsetof(struct _exception_frame, exc_sp) */
@@ -199,7 +199,7 @@ Reset_Handler:
 #define EXC_EXC_SPSR_OFFSET (32)/* __asm_offsetof(struct _exception_frame, exc_spsr) */
 
 .macro push_trapframe_int
-	/* total 480 bytes = 60 qwords */
+	/* total 240 bytes = 30 qwords */
 	/*
 	 * store generic registers from (x29,x30) pair to (x1,x2) pair.
 	 */
@@ -221,11 +221,11 @@ Reset_Handler:
 .endm
 
 .macro pop_trapframe_int
-	/* total 480 bytes = 60 qwords */
+	/* total 240 bytes = 30 qwords */
 	/*
 	 * Restore generic registers from (x29,x30) pair to (x1,x2) pair.
 	 */
-	 /* 15 * 2 * 8 bytes = 480 bytes */
+	 /* 15 * 2 * 8 bytes = 240 bytes */
 	ldp	x1, x2, [sp], #16
 	ldp	x3, x4, [sp], #16
 	ldp	x5, x6, [sp], #16
@@ -478,7 +478,7 @@ run_task_curr:
 	mov	sp, x0
 	restore_trapframe	/* Total 48 bytes = 6 qwords */
 	pop_trapframe_float	/* total 544 bytes = 68 qwords */
-	pop_trapframe_int	/* total 480 bytes = 60 qwords */
+	pop_trapframe_int	/* total 240 bytes = 30 qwords */
 	ERET
 
 	text_align
