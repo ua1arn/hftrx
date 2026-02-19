@@ -1953,9 +1953,9 @@ void __NO_RETURN task_scheduler_othercores(void)
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 void * task_scheduler(void * oldframe)
 {
-	printhex32((uintptr_t) oldframe, oldframe, CPUCTX_SIZE);
-	for (;;)
-		;
+//	printhex32((uintptr_t) oldframe, oldframe, CPUCTX_SIZE);
+//	for (;;)
+//		;
 //	exception_frame_t * const f = (exception_frame_t *) oldframe;
 //	PRINTF("vfpstate [0, 1] = 0x%016lX 0x%016lX \n", f->vfpstate [0], f->vfpstate [1]);
 //	for (;;)
