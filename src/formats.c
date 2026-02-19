@@ -533,10 +533,14 @@ int dbg_getchar(char * r)
 	return HARDWARE_DEBUG_GETCHAR(r);
 }
 
+static LCLSPINLOCK_t printloack = LCLSPINLOCK_INIT;
+
 int dbg_writechar(int c)
 {
+	LCLSPIN_LOCK(& printloack);
 	while (HARDWARE_DEBUG_PUTCHAR(c) == 0)
 		;
+	LCLSPIN_UNLOCK(& printloack);
 	return c;
 }
 
