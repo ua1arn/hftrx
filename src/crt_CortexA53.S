@@ -220,6 +220,30 @@ Reset_Handler:
 	stp	x1, x2, [sp, #-16]!
 .endm
 
+.macro pop_trapframe_int
+	/* total 480 bytes */
+	/*
+	 * Restore generic registers from (x29,x30) pair to (x1,x2) pair.
+	 */
+	 /* 15 * 2 * 8 bytes = 480 bytes */
+	ldp	x1, x2, [sp], #16
+	ldp	x3, x4, [sp], #16
+	ldp	x5, x6, [sp], #16
+	ldp	x7, x8, [sp], #16
+	ldp	x9, x10, [sp], #16
+	ldp	x11, x12, [sp], #16
+	ldp	x13, x14, [sp], #16
+	ldp	x15, x16, [sp], #16
+	ldp	x17, x18, [sp], #16
+	ldp	x19, x20, [sp], #16
+	ldp	x21, x22, [sp], #16
+	ldp	x23, x24, [sp], #16
+	ldp	x25, x26, [sp], #16
+	ldp	x27, x28, [sp], #16
+	ldp	x29, x30, [sp], #16
+
+.endm
+
 .macro push_trapframe_float
 	/* total 544 bytes */
 	/* Wait for FPU operation done */
@@ -255,6 +279,41 @@ Reset_Handler:
 	//mrs	x1, FPCR
 	mrs x2, FPSR
 	stp	x1, x2, [sp, #-16]!
+.endm
+
+.macro pop_trapframe_float
+	/* total 544 bytes */
+	/* Wait for FPU operation done */
+ 	mrs	x1, FPSR
+	/* Restore VFP control state */
+	ldp	x1, x2, [sp], #16
+	//msr	FPCR, x1
+	msr FPSR, x2
+
+	ldp	x1, x2, [sp], #16
+	msr	FPCR, x1
+	msr FPEXC32_EL2, x2
+
+	/*
+	 * Restore floating point registers from (q0,q1) pair to (q30,q31) pair.
+	 */
+	 /* 512 bytes */
+	ldp q0, q1, [sp], #32
+	ldp q2, q3, [sp], #32
+	ldp q4, q5, [sp], #32
+	ldp q6, q7, [sp], #32
+	ldp q8, q9, [sp], #32
+	ldp q10, q11, [sp], #32
+	ldp q12, q13, [sp], #32
+	ldp q14, q15, [sp], #32
+	ldp q16, q17, [sp], #32
+	ldp q18, q19, [sp], #32
+	ldp q20, q21, [sp], #32
+	ldp q22, q23, [sp], #32
+	ldp q24, q25, [sp], #32
+	ldp q26, q27, [sp], #32
+	ldp q28, q29, [sp], #32
+	ldp q30, q31, [sp], #32
 .endm
 
 .macro store_traped_sp
@@ -310,65 +369,6 @@ Reset_Handler:
 	 */
 	ldp	x21, x0, [sp], #16
 	msr	SPSR_EL3, x21
-.endm
-
-.macro pop_trapframe_float
-	/* total 544 bytes */
-	/* Wait for FPU operation done */
- 	mrs	x1, FPSR
-	/* Restore VFP control state */
-	ldp	x1, x2, [sp], #16
-	//msr	FPCR, x1
-	msr FPSR, x2
-
-	ldp	x1, x2, [sp], #16
-	msr	FPCR, x1
-	msr FPEXC32_EL2, x2
-
-	/*
-	 * Restore floating point registers from (q0,q1) pair to (q30,q31) pair.
-	 */
-	 /* 512 bytes */
-	ldp q0, q1, [sp], #32
-	ldp q2, q3, [sp], #32
-	ldp q4, q5, [sp], #32
-	ldp q6, q7, [sp], #32
-	ldp q8, q9, [sp], #32
-	ldp q10, q11, [sp], #32
-	ldp q12, q13, [sp], #32
-	ldp q14, q15, [sp], #32
-	ldp q16, q17, [sp], #32
-	ldp q18, q19, [sp], #32
-	ldp q20, q21, [sp], #32
-	ldp q22, q23, [sp], #32
-	ldp q24, q25, [sp], #32
-	ldp q26, q27, [sp], #32
-	ldp q28, q29, [sp], #32
-	ldp q30, q31, [sp], #32
-.endm
-
-.macro pop_trapframe_int
-	/* total 480 bytes */
-	/*
-	 * Restore generic registers from (x29,x30) pair to (x1,x2) pair.
-	 */
-	 /* 15 * 2 * 8 bytes = 480 bytes */
-	ldp	x1, x2, [sp], #16
-	ldp	x3, x4, [sp], #16
-	ldp	x5, x6, [sp], #16
-	ldp	x7, x8, [sp], #16
-	ldp	x9, x10, [sp], #16
-	ldp	x11, x12, [sp], #16
-	ldp	x13, x14, [sp], #16
-	ldp	x15, x16, [sp], #16
-	ldp	x17, x18, [sp], #16
-	ldp	x19, x20, [sp], #16
-	ldp	x21, x22, [sp], #16
-	ldp	x23, x24, [sp], #16
-	ldp	x25, x26, [sp], #16
-	ldp	x27, x28, [sp], #16
-	ldp	x29, x30, [sp], #16
-
 .endm
 
 .macro call_common_trap_handler, codeN, tail=fname
@@ -437,6 +437,7 @@ _curr_el_spx_sync:
 	build_trapframe AARCH64_EXC_SYNC_SPX
 	store_nested_sp
 	//call_common_trap_handler 5
+	mov	x0, sp
 	BL SError_Handler
 	restore_trapframe
 	pop_trapframe_float
@@ -451,6 +452,7 @@ _curr_el_spx_irq:
 	build_trapframe AARCH64_EXC_IRQ_SPX
 	store_nested_sp
 	//call_common_trap_handler 6
+	mov	x0, sp
 	BL VIRQ_Handler		// Calls from EL3 system
 	restore_trapframe
 	pop_trapframe_float
@@ -464,6 +466,7 @@ _curr_el_spx_fiq:
 	build_trapframe AARCH64_EXC_FIQ_SPX
 	store_nested_sp
 	//call_common_trap_handler 7
+	mov	x0, sp
 	BL VFIQ_Handler		// Calls from EL3 system
 	restore_trapframe
 	pop_trapframe_float
