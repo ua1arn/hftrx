@@ -184,6 +184,13 @@
 */
 #define __SEVL()         do { __ASM volatile ("sevl"); } while (0)
 
+ /**
+  * This instruction is a hint instruction. Software with a multithreading capability can use a YIELD instruction to indicate to
+  * the PE that it is performing a task, for example a spin-lock, that could be swapped out to improve overall system
+  * performance. The PE can use this hint to suspend and resume multiple software threads if it supports the capability.
+  */
+#define __YIELD()         do { __ASM volatile ("YIELD"); } while (0)
+
 /**
 \brief   Load-acquire exclusive register byte (8 bit)
 \details Executes a LDAB exclusive instruction for 8 bit value.

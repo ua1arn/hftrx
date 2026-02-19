@@ -1711,7 +1711,7 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if 1 && ! LINUX_SUBSYSTEM && defined(__aarch64__)
+#if 0 && ! LINUX_SUBSYSTEM && defined(__aarch64__)
 
 #if defined(__aarch64__)
 
@@ -1818,7 +1818,15 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 	volatile exception_frame_t * const f = (volatile exception_frame_t *) oldframe;
 	memcpy(oldframe, stack_template, CPUCTX_SIZE);	// CPU/FPU registers,
 
-	f->exc_spsr_el3 = 0x000000006000030D;
+	// (spsr<4> == '1');
+	f->exc_spsr_el3 =
+		1 * (UINT64_C(1) << 30) |
+		1 * (UINT64_C(1) << 29) |
+		1 * (UINT64_C(1) << 9) |	// Debug exception mask.
+		1 * (UINT64_C(1) << 8) |	// SError exception mask
+		0x0D * (UINT64_C(1) << 0) |	// 0x0D: EL3 with SP_EL3 AArch64 Exception level and selected Stack Pointer
+		0;
+    f->exc_spsr_el3 = 0x000000006000030D;
 	f->exc_elr_el3 = (uintptr_t) fn;
 	f->x0 = (uintptr_t) arg;
 
@@ -1918,6 +1926,19 @@ void task_scheduler_initialize(void)
 	task_addtask(& task33, 1u << 3, task1, (void *) 0x333333, TASKRAM_SIZE, IRQL_USER);
 }
 
+// проверка условий отдачи управления задаче
+int task_isready(task_item_t * task)
+{
+	return 1;
+}
+
+// хотим завешить выполнение кванта, не дожидаясь прерывания
+void task_yield(void)
+{
+	__WFI();	// пока так
+	__SEV();
+}
+
 // получить готовую у выполнению задачу
 task_item_t * task_getready(unsigned affinity, task_item_t * task)
 {
@@ -1939,15 +1960,13 @@ task_item_t * task_getready(unsigned affinity, task_item_t * task)
 	{
 		tnext = t->Flink;
 		task = CONTAINING_RECORD(t, task_item_t, item);
-		if (task->affinity & affinity)
+		if (task->affinity & affinity && task_isready(task))
 		{
 			RemoveEntryList(& task->item);
 			break;
 		}
 	}
 	IRQLSPIN_UNLOCK(& taskslock, oldIrql);
-//	PRINTF(("Ready: %p\n"), task->cpuframe);
-//	printhex64((uintptr_t) task->cpuframe, task->cpuframe, CPUCTX_SIZE);
 	return task;
 }
 
