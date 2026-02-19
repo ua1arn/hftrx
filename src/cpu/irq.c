@@ -2069,6 +2069,18 @@ void SError_Handler(void * frame)
 		;
 }
 
+#elif ! defined(__aarch64__) && ! LINUX_SUBSYSTEM
+
+// AARCH32
+void IRQ_Handler_aarch32(void * frame)
+{
+	IRQ_Handler_GIC();
+}
+
+void FIQ_Handler_aarch32(void * frame)
+{
+	FIQ_Handler_GIC();
+}
 
 #endif
 

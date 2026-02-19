@@ -121,7 +121,7 @@ PAbortAddr_rtos:    .word PAbort_Handler
 DAbortAddr_rtos:    .word DAbort_Handler
 HypAddr_rtos:  	 .word Hyp_Handler
 IRQAddr_rtos:       .word FreeRTOS_IRQ_Handler
-FIQAddr_rtos:       .word FIQ_Handler
+FIQAddr_rtos:       .word FreeRTOS_FIQ_Handler
    .ltorg
 
 
@@ -406,9 +406,10 @@ VIRQ_Handler:
 	AND     R1,R1,R3
 	VMSR    FPSCR,R1	// Initialise FPSCR to a known state
 
- 	LDR		R0, =IRQ_Handler_GIC
+ 	LDR		R2, =IRQ_Handler_aarch32
+	//MOV		R0, SP
 	MOV		LR, PC
-	BX		R0     /* and jump... */
+	BX		R2     /* and jump... */
 
  	VMRS	R1, FPSID
 	VMSR	FPSID, R1
@@ -461,9 +462,10 @@ VFRQ_Handler:
 	AND     R1,R1,R3
 	VMSR    FPSCR,R1	// Initialise FPSCR to a known state
 
- 	LDR		R0, =FIQ_Handler_GIC
+ 	LDR		R2, =FIQ_Handler_aarch32
 	MOV		LR, PC
-	BX		R0     /* and jump... */
+	//MOV		R0, SP
+	BX		R2     /* and jump... */
 
  	VMRS	R1, FPSID
 	VMSR	FPSID, R1

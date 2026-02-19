@@ -11729,6 +11729,11 @@ void __WEAK FreeRTOS_IRQ_Handler(void)
 	ASSERT(0);
 }
 
+void __WEAK FreeRTOS_FIQ_Handler(void)
+{
+	ASSERT(0);
+}
+
 #endif /* WITHRTOS */
 
 // Вызывается перед инициализацией NVRAM, но после инициализации SPI

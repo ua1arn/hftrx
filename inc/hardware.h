@@ -629,6 +629,9 @@ void SError_Handler(void * frame);
 void VIRQ_Handler(void * frame);
 void VFIQ_Handler(void * frame);
 
+void IRQ_Handler_aarch32(void * frame);	// crt_CortexA.S
+void FIQ_Handler_aarch32(void * frame);	// crt_CortexA.S
+
 void __NO_RETURN run_task_curr(void * frame);	// run task with frame
 
 void task_scheduler_initialize(void);
@@ -637,7 +640,7 @@ void __NO_RETURN task_scheduler_othercores(void);
 void * task_scheduler(void * oldframe);	/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 
 void IRQ_Handler_GIC(void);
-void FIQ_Handler_GIC_G0(void);
+void FIQ_Handler_GIC(void);
 
 /* Отображение номеров каналов АЦП процессоров STM32Fxxx в каналы процессора STM32H7 */
 typedef struct adcinmap_tag

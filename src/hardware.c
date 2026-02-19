@@ -1672,15 +1672,6 @@ void DAbort_Handler(void)
 #endif /* defined (BOARD_BLINK_INITIALIZE) */
 }
 
-void FIQ_Handler(void)
-{
-	dbg_puts_impl("FIQ_Handler trapped. CPUID=");
-	dbg_putchar('0' + (arm_hardware_cpuid()));
-	dbg_putchar('\n');
-	for (;;)
-		;
-}
-
 void Hyp_Handler(void)
 {
 	dbg_puts_impl(PSTR("Hyp_Handler trapped. CPUID="));
