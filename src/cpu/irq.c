@@ -1068,6 +1068,7 @@ void FIQ_Handler_GIC_G0(void)
 	//GICInterface->EOIR = gicc_iar;
 }
 #endif /* (__CORTEX_A == 55U) */
+
 void IRQ_Handler_GIC(void)
 {
 	IRQ_Handler_GIC_G1();
@@ -1806,7 +1807,10 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 	f->sp_adjmod4 = 0;
 	f->fpscr = 0;
 	f->fpexc = 0x40000700;
-	f->cpsr = 0x6003019F;
+	f->cpsr =
+		0x60030100 |
+		0x1F * (UINT32_C(1) << 0) |	// System sys 11111
+		0;
 	f->LR_irq = (uintptr_t) fn;
 	f->r0 = (uintptr_t) arg;
 }
