@@ -1711,7 +1711,7 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if 1 && ! LINUX_SUBSYSTEM && defined(__aarch64__)
+#if 0 && ! LINUX_SUBSYSTEM
 
 
 #define TASKRAM_SIZE (1024 * 1024)
@@ -1768,11 +1768,30 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 
 #else
 
-#define CPUCTX_SIZE (512)
+typedef struct exception_frame_tag
+{
+	uint32_t v [84];	// 68..71: R0, R1 R2 R3
+
+} exception_frame_t;
+
+typedef struct exception_frame_tagS
+{
+	uint32_t v [84];	// 68..71: R0, R1 R2 R3
+
+} exception_frame_tS;
+
+//#define CPUCTX_SIZE (84 * 4)
+#define CPUCTX_SIZE (sizeof (exception_frame_t))
 
 // Установить параметры задачи для запуска
 void task_construct(void * __restrict oldframe, void * fn, void * arg)
 {
+
+	exception_frame_t * const f = (exception_frame_t *) oldframe;
+	//memcpy(oldframe, stack_template, CPUCTX_SIZE);	// CPU/FPU registers,
+	memset(oldframe, 0, CPUCTX_SIZE);	// CPU/FPU registers,
+	f-> v[82] = (uintptr_t) fn;
+	f-> v[68] = (uintptr_t) arg;
 }
 
 #endif
@@ -1934,6 +1953,9 @@ void __NO_RETURN task_scheduler_othercores(void)
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 void * task_scheduler(void * oldframe)
 {
+	printhex32((uintptr_t) oldframe, oldframe, CPUCTX_SIZE);
+	for (;;)
+		;
 //	exception_frame_t * const f = (exception_frame_t *) oldframe;
 //	PRINTF("vfpstate [0, 1] = 0x%016lX 0x%016lX \n", f->vfpstate [0], f->vfpstate [1]);
 //	for (;;)
