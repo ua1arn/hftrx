@@ -1751,27 +1751,7 @@ static uint64_t stack_template [CPUCTX_ELEMENTS] =
 //	pop_trapframe_float	/* total 544 bytes = 68 qwords */
 //	pop_trapframe_int	/* total 240 bytes = 30 qwords */
 // trap frame offsets (see src/crt_CortexA53.S)
-enum aarch64_frame_offsets
-{
-	offs_SPSR_EL3 = 2,
-	offs_ELR_EL3 = 3,
 
-	offs_X0 = 5,
-	offs_X1 = 74,
-	offs_X10 = 83,
-	offs_X11 = 84,
-	offs_X12,
-	offs_X13,
-	offs_X14,
-	offs_X15,
-	offs_X16,
-	offs_X17,
-	offs_X18,
-	offs_X19,
-	// VFP
-	//
-	offs_unised
-};
 #define EXC_EXC_ESR_OFFSET (8 / 8)	/* __asm_offsetof(struct _exception_frame, exc_esr) */
 #define EXC_EXC_SP_OFFSET (16 / 8)	/* __asm_offsetof(struct _exception_frame, exc_sp) */
 #define EXC_EXC_ELR_OFFSET (24 / 8)	/* __asm_offsetof(struct _exception_frame, exc_elr) */
@@ -1780,10 +1760,10 @@ enum aarch64_frame_offsets
 typedef struct exception_frame_tag
 {
 	uint64_t exc_type;
-	uint64_t exc_esr;
-	uint64_t exc_sp;
-	uint64_t exc_elr;
-	uint64_t exc_spsr;
+	uint64_t exc_esr_el3;
+	uint64_t exc_sp_el0;	// reserved
+	uint64_t exc_elr_el3;
+	uint64_t exc_spsr_el3;		// Store (spsr, x0)
 	uint64_t x0;
 	uint64_t vfpstate [2];	// FPCR, FPEXC32_EL2 (check order)
 	uint64_t vfpregs [64];	// 32 128-bit registers
@@ -1822,6 +1802,11 @@ typedef struct exception_frame_tag
 #else
 
 #endif
+//uint64_t exc_type;
+//uint64_t exc_esr;
+//uint64_t exc_sp;
+//uint64_t exc_elr;
+//uint64_t exc_spsr;
 
 // Установить параметры задачи для запуска
 void task_construct(void * __restrict oldframe, void * fn, void * arg)
@@ -1830,12 +1815,12 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 #pragma GCC diagnostic ignored "-Warray-bounds"
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 
-	volatile uint64_t * const f = (volatile uint64_t *) oldframe;
+	volatile exception_frame_t * const f = (volatile exception_frame_t *) oldframe;
 	memcpy(oldframe, stack_template, CPUCTX_SIZE);	// CPU/FPU registers,
 	//memset(oldframe, 0, CPUCTX_SIZE);	// CPU/FPU registers,
-	f [offs_SPSR_EL3] = (uintptr_t) & f [40];
-	f [offs_ELR_EL3] = (uintptr_t) fn;
-	f [offs_X0] = (uintptr_t) arg;
+	f->exc_spsr_el3 = 0x00000;
+	f->exc_elr_el3 = (uintptr_t) fn;
+	f->x0 = (uintptr_t) arg;
 
 #pragma GCC diagnostic pop
 }
