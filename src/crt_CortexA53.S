@@ -199,7 +199,7 @@ Reset_Handler:
 #define EXC_EXC_SPSR_OFFSET (32)/* __asm_offsetof(struct _exception_frame, exc_spsr) */
 
 .macro push_trapframe_int
-	/* total 480 bytes */
+	/* total 480 bytes = 60 qwords */
 	/*
 	 * store generic registers from (x29,x30) pair to (x1,x2) pair.
 	 */
@@ -221,7 +221,7 @@ Reset_Handler:
 .endm
 
 .macro pop_trapframe_int
-	/* total 480 bytes */
+	/* total 480 bytes = 60 qwords */
 	/*
 	 * Restore generic registers from (x29,x30) pair to (x1,x2) pair.
 	 */
@@ -245,7 +245,7 @@ Reset_Handler:
 .endm
 
 .macro push_trapframe_float
-	/* total 544 bytes */
+	/* total 544 bytes = 68 qwords */
 	/* Wait for FPU operation done */
  	mrs	x1, FPSR
 
@@ -282,7 +282,7 @@ Reset_Handler:
 .endm
 
 .macro pop_trapframe_float
-	/* total 544 bytes */
+	/* total 544 bytes = 68 qwords */
 	/* Wait for FPU operation done */
  	mrs	x1, FPSR
 	/* Restore VFP control state */
@@ -333,7 +333,7 @@ Reset_Handler:
 .endm
 
 .macro build_trapframe exc_type
-	/* Total 48 bytes */
+	/* Total 48 bytes = 6 qwords */
 	/*
 	 * Store (spsr, x0)
 	 */
@@ -353,11 +353,11 @@ Reset_Handler:
 .endm
 
 .macro restore_trapframe
-	/* Total 48 bytes */
+	/* Total 48 bytes = 6 qwords */
 	/*
 	 * Drop exception type, esr,
 	 */
-	add	sp, sp, #16
+	add	sp, sp, #16	/* 0, 1 */
 	/*
 	 * Drop exception stack pointer and restore ELR_EL3
 	 */
@@ -387,7 +387,7 @@ _curr_el_sp0_sync:
 	call_common_trap_handler 1
 	restore_traped_sp
 	restore_trapframe
-	pop_trapframe_float	/* total 544 bytes */
+	pop_trapframe_float	/* total 544 bytes = 68 qwords */
 	pop_trapframe_int
 	ERET
 
@@ -476,9 +476,9 @@ _curr_el_spx_fiq:
 	text_align
 run_task_curr:
 	mov	sp, x0
-	restore_trapframe	/* Total 48 bytes */
-	pop_trapframe_float	/* total 544 bytes */
-	pop_trapframe_int	/* total 480 bytes */
+	restore_trapframe	/* Total 48 bytes = 6 qwords */
+	pop_trapframe_float	/* total 544 bytes = 68 qwords */
+	pop_trapframe_int	/* total 480 bytes = 60 qwords */
 	ERET
 
 	text_align

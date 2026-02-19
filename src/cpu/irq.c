@@ -943,7 +943,7 @@ void IRQ_Handler_GIC_G1(void)
 
 //		static const char hex [16] = "0123456789ABCDEF";
 //		if ((int_id >> 8) & 0x0F)
-//			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
+//			dbgdbg_putchar(hex [(int_id >> 8) & 0x0F]);
 //		dbg_putchar(hex [(int_id >> 4) & 0x0F]);
 //		dbg_putchar(hex [(int_id >> 0) & 0x0F]);
 
@@ -1711,13 +1711,10 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if 1 && ! LINUX_SUBSYSTEM && defined(__aarch64__)
+#if 0 && ! LINUX_SUBSYSTEM && defined(__aarch64__)
 
 #if defined(__aarch64__)
 
-/* Total 832 bytes */
-#define CPUCTX_ELEMENTS ((48 + 544 + 480) / 8)
-#define CPUCTX_SIZE (CPUCTX_ELEMENTS * 8)
 #define TASKRAM_SIZE (1024 * 1024)
 
 static uint64_t stack_template [CPUCTX_ELEMENTS] =
@@ -1750,15 +1747,23 @@ static uint64_t stack_template [CPUCTX_ELEMENTS] =
 	0x410B041CD642EC96, 0xDA080DE284A47225, 0x0000000000001000, 0x0000000040014590,
 };
 
+//	restore_trapframe	/* Total 48 bytes = 6 qwords */
+//	pop_trapframe_float	/* total 544 bytes = 68 qwords */
+//	pop_trapframe_int	/* total 480 bytes = 60 qwords */
 // trap frame offsets (see src/crt_CortexA53.S)
 enum aarch64_frame_offsets
 {
 	offs_SPSR_EL3 = 2,
 	offs_ELR_EL3 = 3,
-	offs_SPSR_X0 = 5,
+	offs_X0 = 5,
+	//offs_X21 = 4,
 	//
 	offs_unised
 };
+#define EXC_EXC_ESR_OFFSET (8 / 8)	/* __asm_offsetof(struct _exception_frame, exc_esr) */
+#define EXC_EXC_SP_OFFSET (16 / 8)	/* __asm_offsetof(struct _exception_frame, exc_sp) */
+#define EXC_EXC_ELR_OFFSET (24 / 8)	/* __asm_offsetof(struct _exception_frame, exc_elr) */
+#define EXC_EXC_SPSR_OFFSET (32 / 8)/* __asm_offsetof(struct _exception_frame, exc_spsr) */
 
 #else
 
@@ -1773,9 +1778,10 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 
 	volatile uint64_t * const f = (volatile uint64_t *) oldframe;
 	memcpy(oldframe, stack_template, CPUCTX_SIZE);	// CPU/FPU registers,
+	//memset(oldframe, 0, CPUCTX_SIZE);	// CPU/FPU registers,
 	f [offs_SPSR_EL3] = (uintptr_t) & f [40];
 	f [offs_ELR_EL3] = (uintptr_t) fn;
-	f [offs_SPSR_X0] = (uintptr_t) arg;
+	f [offs_X0] = (uintptr_t) arg;
 
 #pragma GCC diagnostic pop
 }
@@ -1888,7 +1894,7 @@ void task_scheduler_initialize(void)
 		//
 		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
 	}
-//	// тестовые задачи для ядра
+	// тестовые задачи для ядра0
 //	task_addtask(& task30, 1u << 0, testtaskfn, NULL, TASKRAM_SIZE, IRQL_USER);
 //	task_addtask(& task31, 1u << 0, testtaskfn, NULL, TASKRAM_SIZE, IRQL_USER);
 //	run_task_curr(task30.cpuframe);
@@ -1962,7 +1968,6 @@ void * task_scheduler(void * oldframe)
 		// получаем состояние процесора при первом перрывании
 		task->affinity = 1U << core;
 		startedtask [core] = task;
-		//task_construct(oldframe, testtaskfn, NULL);
 	}
 	startedtask [core]->cpuframe = oldframe;
 	startedtask [core] = task_getready(1U << core, startedtask [core]);
@@ -1999,22 +2004,22 @@ void * task_scheduler(void * oldframe)
 
 #if defined(__aarch64__) && ! LINUX_SUBSYSTEM
 
-void uncommon_trap_handler_1(void * frame) { PRINTF("uncommon_trap_handler_1:\n"); for (;;) ; }	// 0x000
-void uncommon_trap_handler_2(void * frame) { PRINTF("uncommon_trap_handler_2:\n"); for (;;) ; }	// 0x080
-void uncommon_trap_handler_3(void * frame) { PRINTF("uncommon_trap_handler_3:\n"); for (;;) ; }	// 0x100
-void uncommon_trap_handler_4(void * frame) { PRINTF("uncommon_trap_handler_4:\n"); for (;;) ; }	// 0x180
-//void uncommon_trap_handler_5(void * frame) { PRINTF("uncommon_trap_handler_5:\n"); for (;;) ; }	// 0x200 Current EL with SPx Synchronous
-//void uncommon_trap_handler_6(void * frame) { PRINTF("uncommon_trap_handler_6:\n"); for (;;) ; }	// 0x280 VIRQ EL3
-//void uncommon_trap_handler_7(void * frame) { PRINTF("uncommon_trap_handler_7:\n"); for (;;) ; }	// 0x300 FIQ EL3
-void uncommon_trap_handler_8(void * frame) { PRINTF("uncommon_trap_handler_8:\n"); for (;;) ; }	// 0x380
-void uncommon_trap_handler_9(void * frame) { PRINTF("uncommon_trap_handler_9:\n"); for (;;) ; }	// 0x400
-void uncommon_trap_handler_10(void * frame) { PRINTF("uncommon_trap_handler_10:\n"); for (;;) ; }	// 0x480
-void uncommon_trap_handler_11(void * frame) { PRINTF("uncommon_trap_handler_11:\n"); for (;;) ; }	// 0x500
-void uncommon_trap_handler_12(void * frame) { PRINTF("uncommon_trap_handler_12:\n"); for (;;) ; }	// 0x580
-void uncommon_trap_handler_13(void * frame) { PRINTF("uncommon_trap_handler_13:\n"); for (;;) ; }	// 0x600
-void uncommon_trap_handler_14(void * frame) { PRINTF("uncommon_trap_handler_14:\n"); for (;;) ; }	// 0x680
-void uncommon_trap_handler_15(void * frame) { PRINTF("uncommon_trap_handler_15:\n"); for (;;) ; }	// 0x700
-void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\n"); for (;;) ; }	// 0x780
+void uncommon_trap_handler_1(void * frame) { PRINTF("uncommon_trap_handler_1:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x000
+void uncommon_trap_handler_2(void * frame) { PRINTF("uncommon_trap_handler_2:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x080
+void uncommon_trap_handler_3(void * frame) { PRINTF("uncommon_trap_handler_3:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x100
+void uncommon_trap_handler_4(void * frame) { PRINTF("uncommon_trap_handler_4:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x180
+//void uncommon_trap_handler_5(void * frame) { PRINTF("uncommon_trap_handler_5:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x200 Current EL with SPx Synchronous
+//void uncommon_trap_handler_6(void * frame) { PRINTF("uncommon_trap_handler_6:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x280 VIRQ EL3
+//void uncommon_trap_handler_7(void * frame) { PRINTF("uncommon_trap_handler_7:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x300 FIQ EL3
+void uncommon_trap_handler_8(void * frame) { PRINTF("uncommon_trap_handler_8:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x380
+void uncommon_trap_handler_9(void * frame) { PRINTF("uncommon_trap_handler_9:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x400
+void uncommon_trap_handler_10(void * frame) { PRINTF("uncommon_trap_handler_10:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x480
+void uncommon_trap_handler_11(void * frame) { PRINTF("uncommon_trap_handler_11:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x500
+void uncommon_trap_handler_12(void * frame) { PRINTF("uncommon_trap_handler_12:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x580
+void uncommon_trap_handler_13(void * frame) { PRINTF("uncommon_trap_handler_13:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x600
+void uncommon_trap_handler_14(void * frame) { PRINTF("uncommon_trap_handler_14:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x680
+void uncommon_trap_handler_15(void * frame) { PRINTF("uncommon_trap_handler_15:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x700
+void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x780
 
 // was: uncommon_trap_handler_6
 // Current EL with SPx IRQ/vIRQ
