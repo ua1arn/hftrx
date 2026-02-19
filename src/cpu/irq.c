@@ -1711,21 +1711,12 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if 0 && ! LINUX_SUBSYSTEM && defined(__aarch64__)
+#if 1 && ! LINUX_SUBSYSTEM && defined(__aarch64__)
 
-#if defined(__aarch64__)
 
 #define TASKRAM_SIZE (1024 * 1024)
 
-//	restore_trapframe	/* Total 48 bytes = 6 qwords */
-//	pop_trapframe_float	/* total 544 bytes = 68 qwords */
-//	pop_trapframe_int	/* total 240 bytes = 30 qwords */
-// trap frame offsets (see src/crt_CortexA53.S)
-
-#define EXC_EXC_ESR_OFFSET (8 / 8)	/* __asm_offsetof(struct _exception_frame, exc_esr) */
-#define EXC_EXC_SP_OFFSET (16 / 8)	/* __asm_offsetof(struct _exception_frame, exc_sp) */
-#define EXC_EXC_ELR_OFFSET (24 / 8)	/* __asm_offsetof(struct _exception_frame, exc_elr) */
-#define EXC_EXC_SPSR_OFFSET (32 / 8)/* __asm_offsetof(struct _exception_frame, exc_spsr) */
+#if defined(__aarch64__)
 
 typedef struct exception_frame_tag
 {
@@ -1742,14 +1733,8 @@ typedef struct exception_frame_tag
 	uint64_t x21, x22, x23, x24, x25, x26, x27, x28, x29, x30;
 } exception_frame_t;
 
-#else
+#define CPUCTX_SIZE (sizeof (exception_frame_t))
 
-#endif
-//uint64_t exc_type;
-//uint64_t exc_esr;
-//uint64_t exc_sp;
-//uint64_t exc_elr;
-//uint64_t exc_spsr;
 
 // Установить параметры задачи для запуска
 void task_construct(void * __restrict oldframe, void * fn, void * arg)
@@ -1780,6 +1765,17 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 
 #pragma GCC diagnostic pop
 }
+
+#else
+
+#define CPUCTX_SIZE (512)
+
+// Установить параметры задачи для запуска
+void task_construct(void * __restrict oldframe, void * fn, void * arg)
+{
+}
+
+#endif
 
 
 
@@ -1870,10 +1866,10 @@ void task_scheduler_initialize(void)
 		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
 	}
 	// тестовые задачи для ядра0
-	task_addtask(& task30, 1u << 0, task1, (void *) 0xDEADBEEF, TASKRAM_SIZE, IRQL_USER);
-	task_addtask(& task31, 1u << 1, task1, (void *) 0x111111, TASKRAM_SIZE, IRQL_USER);
-	task_addtask(& task32, 1u << 2, task1, (void *) 0x222222, TASKRAM_SIZE, IRQL_USER);
-	task_addtask(& task33, 1u << 3, task1, (void *) 0x333333, TASKRAM_SIZE, IRQL_USER);
+//	task_addtask(& task30, 1u << 0, task1, (void *) 0xDEADBEEF, TASKRAM_SIZE, IRQL_USER);
+//	task_addtask(& task31, 1u << 1, task1, (void *) 0x111111, TASKRAM_SIZE, IRQL_USER);
+//	task_addtask(& task32, 1u << 2, task1, (void *) 0x222222, TASKRAM_SIZE, IRQL_USER);
+//	task_addtask(& task33, 1u << 3, task1, (void *) 0x333333, TASKRAM_SIZE, IRQL_USER);
 }
 
 // проверка условий отдачи управления задаче
@@ -2075,13 +2071,13 @@ void SError_Handler(void * frame)
 void IRQ_Handler_aarch32(void * frame)
 {
 	IRQ_Handler_GIC();
-	run_task_curr(frame);
+	run_task_curr_aarch32(task_scheduler(frame));
 }
 
 void FIQ_Handler_aarch32(void * frame)
 {
 	FIQ_Handler_GIC();
-	run_task_curr(frame);
+	run_task_curr_aarch32(task_scheduler(frame));
 }
 
 #endif

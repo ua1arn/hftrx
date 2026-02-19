@@ -452,9 +452,9 @@ VFRQ_Handler:
    	.ltorg
 
  	.align 	4, 0
-    .func   run_task_curr
-    .global run_task_curr
-run_task_curr:
+    .func   run_task_curr_aarch32
+    .global run_task_curr_aarch32
+run_task_curr_aarch32:
 	MOV		SP, R0
 
  	VMRS	R1, FPSID

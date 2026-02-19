@@ -601,13 +601,6 @@ void GPU_IRQHandler(void);	// STM32MP1 specific
 void r7s721_intc_initialize(void);
 
 
-#if defined(__aarch64__)
-/* uint64 array indexes in frame */
-/* Total 832 bytes */
-#define CPUCTX_ELEMENTS ((48 + 544 + 480) / 8)	// 134 elements
-#define CPUCTX_SIZE (CPUCTX_ELEMENTS * 8)
-#endif
-
 void uncommon_trap_handler_1(void * frame);
 void uncommon_trap_handler_2(void * frame);
 void uncommon_trap_handler_3(void * frame);
@@ -629,10 +622,11 @@ void SError_Handler(void * frame);
 void __NO_RETURN VIRQ_Handler(void * frame);
 void __NO_RETURN VFIQ_Handler(void * frame);
 
+void __NO_RETURN run_task_curr(void * frame);	// run task with frame
+
 void __NO_RETURN IRQ_Handler_aarch32(void * frame);	// crt_CortexA.S
 void __NO_RETURN FIQ_Handler_aarch32(void * frame);	// crt_CortexA.S
-
-void __NO_RETURN run_task_curr(void * frame);	// run task with frame
+void __NO_RETURN run_task_curr_aarch32(void * frame);	// run task with frame
 
 void task_scheduler_initialize(void);
 void task_scheduler_start(void);
