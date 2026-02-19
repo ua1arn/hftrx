@@ -1819,14 +1819,15 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 	memcpy(oldframe, stack_template, CPUCTX_SIZE);	// CPU/FPU registers,
 
 	// (spsr<4> == '1');
-	f->exc_spsr_el3 =
-		1 * (UINT64_C(1) << 30) |
-		1 * (UINT64_C(1) << 29) |
+//	f->exc_spsr_el3 =
+//		1 * (UINT64_C(1) << 30) |	// Zero Condition flag.
+//		1 * (UINT64_C(1) << 29) |	// Carry Condition flag
 		1 * (UINT64_C(1) << 9) |	// Debug exception mask.
 		1 * (UINT64_C(1) << 8) |	// SError exception mask
 		0x0D * (UINT64_C(1) << 0) |	// 0x0D: EL3 with SP_EL3 AArch64 Exception level and selected Stack Pointer
 		0;
-    f->exc_spsr_el3 = 0x000000006000030D;
+//    f->exc_spsr_el3 = 0x000000006000030D;
+//    ASSERT(f->exc_spsr_el3 == 0x000000006000030D);
 	f->exc_elr_el3 = (uintptr_t) fn;
 	f->x0 = (uintptr_t) arg;
 
