@@ -2016,7 +2016,7 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 // was: uncommon_trap_handler_6
 // Current EL with SPx IRQ/vIRQ
 // 0x280
-void VIRQ_Handler(void * frame)
+void __NO_RETURN VIRQ_Handler(void * frame)
 {
 	//dbg_putchar('I');
 	IRQ_Handler_GIC();		// Group 1 handler
@@ -2026,7 +2026,7 @@ void VIRQ_Handler(void * frame)
 // was: uncommon_trap_handler_7
 // Current EL with SPx FIQ/vFIQ
 // 0x300
-void VFIQ_Handler(void * frame)
+void __NO_RETURN VFIQ_Handler(void * frame)
 {
 	//dbg_putchar('F');
 #if (__CORTEX_A == 55U) && __aarch64__
@@ -2075,11 +2075,13 @@ void SError_Handler(void * frame)
 void IRQ_Handler_aarch32(void * frame)
 {
 	IRQ_Handler_GIC();
+	run_task_curr(frame);
 }
 
 void FIQ_Handler_aarch32(void * frame)
 {
 	FIQ_Handler_GIC();
+	run_task_curr(frame);
 }
 
 #endif

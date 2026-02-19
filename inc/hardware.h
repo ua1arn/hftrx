@@ -626,11 +626,11 @@ void uncommon_trap_handler_15(void * frame);
 void uncommon_trap_handler_16(void * frame);
 
 void SError_Handler(void * frame);
-void VIRQ_Handler(void * frame);
-void VFIQ_Handler(void * frame);
+void __NO_RETURN VIRQ_Handler(void * frame);
+void __NO_RETURN VFIQ_Handler(void * frame);
 
-void IRQ_Handler_aarch32(void * frame);	// crt_CortexA.S
-void FIQ_Handler_aarch32(void * frame);	// crt_CortexA.S
+void __NO_RETURN IRQ_Handler_aarch32(void * frame);	// crt_CortexA.S
+void __NO_RETURN FIQ_Handler_aarch32(void * frame);	// crt_CortexA.S
 
 void __NO_RETURN run_task_curr(void * frame);	// run task with frame
 
