@@ -1819,7 +1819,7 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 	memcpy(oldframe, stack_template, CPUCTX_SIZE);	// CPU/FPU registers,
 
 	// (spsr<4> == '1');
-//	f->exc_spsr_el3 =
+	f->exc_spsr_el3 =
 //		1 * (UINT64_C(1) << 30) |	// Zero Condition flag.
 //		1 * (UINT64_C(1) << 29) |	// Carry Condition flag
 		1 * (UINT64_C(1) << 9) |	// Debug exception mask.
