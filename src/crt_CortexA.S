@@ -406,8 +406,8 @@ VIRQ_Handler:
 	AND     R1,R1,R3
 	VMSR    FPSCR,R1	// Initialise FPSCR to a known state
 
+	MOV		R0, SP
  	LDR		R2, =IRQ_Handler_aarch32
-	//MOV		R0, SP
 	MOV		LR, PC
 	BX		R2     /* and jump... */
 
@@ -462,9 +462,9 @@ VFRQ_Handler:
 	AND     R1,R1,R3
 	VMSR    FPSCR,R1	// Initialise FPSCR to a known state
 
- 	LDR		R2, =FIQ_Handler_aarch32
+ 	MOV		R0, SP
+	LDR		R2, =FIQ_Handler_aarch32
 	MOV		LR, PC
-	//MOV		R0, SP
 	BX		R2     /* and jump... */
 
  	VMRS	R1, FPSID
