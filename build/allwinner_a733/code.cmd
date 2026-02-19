@@ -6,3 +6,6 @@ aarch64-none-elf-gcc -o defs_a55_64bit.txt -Ofast -mcpu=cortex-a55+fp+simd --spe
 
 arm-none-eabi-gcc -o defs_a53_32bit.txt -Ofast -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs -dM -E - < NUL
 aarch64-none-elf-gcc -o defs_a53_64bit.txt -Ofast -mcpu=cortex-a53+fp+simd --specs=nosys.specs -dM -E - < NUL
+
+arm-none-eabi-gcc -o defs_a76_32bit.txt -Ofast -mcpu=cortex-a76 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs -dM -E - < NUL
+aarch64-none-elf-gcc -o defs_a76_64bit.txt -Ofast -mcpu=cortex-a76+fp+simd --specs=nosys.specs -dM -E - < NUL
