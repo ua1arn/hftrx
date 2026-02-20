@@ -143,6 +143,8 @@ typedef enum IRQn
 #define GPIOINTK_BASE ((uintptr_t) 0x020005C0)        /*!< GPIOINT  Base */
 #define CCU_BASE ((uintptr_t) 0x02002000)             /*!< CCU Clock Controller Unit (CCU) Base */
 #define Timer1_CPUX_BASE ((uintptr_t) 0x02052000)     /*!< TIMER1  Base */
+#define CPUS_INTERRUPT_CTRL_BASE ((uintptr_t) 0x02055000)/*!< CPUS_INTERRUPT_CTRL  Base */
+#define RV_INTERRUPT_CTRL_BASE ((uintptr_t) 0x02056000)/*!< RV_INTERRUPT_CTRL  Base */
 #define UART0_BASE ((uintptr_t) 0x02500000)           /*!< UART  Base */
 #define UART1_BASE ((uintptr_t) 0x02501000)           /*!< UART  Base */
 #define UART2_BASE ((uintptr_t) 0x02502000)           /*!< UART  Base */
@@ -668,6 +670,17 @@ typedef struct CLUSTER_CFG_Type
     __IOM uint32_t DSU_AXI1_MNT_RBD_REG;              /*!< Offset 0x80E8 DSUAXI1MONITORReadBandwidth Register */
     __IOM uint32_t DSU_AXI1_MNT_WBD_REG;              /*!< Offset 0x80EC DSUAXI1MONITORWriteBandwidth Register */
 } CLUSTER_CFG_TypeDef; /* size of structure = 0x80F0 */
+/*
+ * @brief CPUS_INTERRUPT_CTRL
+ */
+/*!< CPUS_INTERRUPT_CTRL  */
+typedef struct CPUS_INTERRUPT_CTRL_Type
+{
+         RESERVED(0x000[0x0010 - 0x0000], uint8_t)
+    __IOM uint32_t INTC_CONFIG_REG [0x008];           /*!< Offset 0x010 Group Interrupt Configuration Register 0..7 */
+         RESERVED(0x030[0x0100 - 0x0030], uint8_t)
+    __IM  uint32_t SYS_INT_STATE [0x007];             /*!< Offset 0x100 System Interrput0..Interrput6 State Registers */
+} CPUS_INTERRUPT_CTRL_TypeDef; /* size of structure = 0x11C */
 /*
  * @brief CPU_PLL_CFG
  */
@@ -1584,6 +1597,7 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOINTK ((GPIOINT_TypeDef *) GPIOINTK_BASE)  /*!< GPIOINTK  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define Timer1_CPUX ((TIMER1_TypeDef *) Timer1_CPUX_BASE)/*!< Timer1_CPUX  register set access pointer */
+#define CPUS_INTERRUPT_CTRL ((CPUS_INTERRUPT_CTRL_TypeDef *) CPUS_INTERRUPT_CTRL_BASE)/*!< CPUS_INTERRUPT_CTRL  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
 #define UART1 ((UART_TypeDef *) UART1_BASE)           /*!< UART1  register set access pointer */
 #define UART2 ((UART_TypeDef *) UART2_BASE)           /*!< UART2  register set access pointer */

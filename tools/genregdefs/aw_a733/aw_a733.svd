@@ -2867,6 +2867,41 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>CPUS_INTERRUPT_CTRL</name>
+  <description></description>
+  <baseAddress>0x02055000</baseAddress>
+  <registers>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000010</addressOffset>
+    <register>
+     <name>INTC_CONFIG_REG</name>
+     <displayName>INTC_CONFIG_REG</displayName>
+     <description>Group Interrupt Configuration Register 0..7</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x020</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>7</dim>
+    <addressOffset>0x00000100</addressOffset>
+    <register>
+     <name>SYS_INT_STATE</name>
+     <displayName>SYS_INT_STATE</displayName>
+     <description>System Interrput0..Interrput6 State Registers</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x01C</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>CPU_PLL_CFG</name>
   <description></description>
   <baseAddress>0x08870000</baseAddress>

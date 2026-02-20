@@ -1,0 +1,14 @@
+#type; RV_INTERRUPT_CTRL;
+#base; RV_INTERRUPT_CTRL 0x02056000
+#typeend;
+
+#type; CPUS_INTERRUPT_CTRL;
+
+#regdef; INTC_CONFIG_REG; 0x0010 8; Group Interrupt Configuration Register 0..7
+#regdefr; SYS_INT_STATE; 0x0100 7; System Interrput0..Interrput6 State Registers
+
+#typeend;
+
+#type; RV_INTERRUPT_CTRL;
+
+#typeend;

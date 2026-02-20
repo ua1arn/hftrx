@@ -292,3 +292,9 @@
 #irq; DMA1_CPUX_S 146
 
 #typeend;
+
+#type; CPUS_INTERRUPT_CTRL;
+#base; CPUS_INTERRUPT_CTRL 0x02055000
+#typeend;
+
+
