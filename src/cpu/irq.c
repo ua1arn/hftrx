@@ -1769,12 +1769,6 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 
 #else
 
-typedef struct exception_frame_tagX
-{
-	uint32_t v [84];	// 68..71: R0, R1 R2 R3
-
-} exception_frame_tX;
-
 typedef struct exception_frame_tag
 {
 	uint32_t vfpregs [64];
@@ -1808,7 +1802,7 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 	f->fpscr = 0;
 	f->fpexc = 0x40000700;
 	f->cpsr =
-		0x60030100 |
+		1 * (UINT32_C(1) << 8) |	// A - SError exception mask
 		0x1F * (UINT32_C(1) << 0) |	// System sys 11111
 		0;
 	f->LR_irq = (uintptr_t) fn;
