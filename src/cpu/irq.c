@@ -2131,12 +2131,14 @@ void FIQ_Handler_aarch32(void * frame)
 
 #if CPUSTYLE_ARM && WITHSMPSYSTEM && ! LINUX_SUBSYSTEM
 
+#define SPINLOCKLOOPS 0xFFFFFFFF
+
 #if defined(__aarch64__) //defined(__ARM_ARCH) && (__ARM_ARCH == 8)
 
 static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, int line)
 {
 #if WITHDEBUG
-	unsigned v = 0xFFFFFFFF;
+	unsigned v = SPINLOCKLOOPS;
 #endif /* WITHDEBUG */
 	// Note:__SEVL,  __LDAXRB and __STXRB are CMSIS functions
 //	.func spin_lock
@@ -2163,8 +2165,10 @@ static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, i
 				for (;;)
 					;
 			}
-#endif /* WITHDEBUG */
+			//dbg_putchar('.');
+#else /* WITHDEBUG */
 			__WFE();
+#endif /* WITHDEBUG */
 			//__NOP();	// !!!! strange, but unstable work without this line...
 		}
 		// Lock_Variable is free
@@ -2194,7 +2198,7 @@ static int lclspin_traylock_work(lclspinlock_t * __restrict p, const char * file
 //		ret
 //	.endfunc //spin_lock
 	__SEVL();
-	__WFE();
+	//__WFE();
 	if (__LDAXRB(& p->lock) != 0)// Wait until
 		return 0;
 	// Lock_Variable is free
@@ -2244,7 +2248,7 @@ static int lclspin_traylock_work(lclspinlock_t * __restrict p, const char * file
 static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, int line)
 {
 #if WITHDEBUG
-	unsigned v = 0xFFFFFFFF;
+	unsigned v = SPINLOCKLOOPS;
 #endif /* WITHDEBUG */
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	int status;
