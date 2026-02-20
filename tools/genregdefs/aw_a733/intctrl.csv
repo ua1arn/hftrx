@@ -1,6 +1,3 @@
-#type; RV_INTERRUPT_CTRL;
-#base; RV_INTERRUPT_CTRL 0x02056000
-#typeend;
 
 #type; CPUS_INTERRUPT_CTRL;
 
