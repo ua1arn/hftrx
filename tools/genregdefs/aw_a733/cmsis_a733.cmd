@@ -5,6 +5,7 @@ SET OUTFILE=..\..\..\arch\aw_a733\device.h
 SET FILELIST= ^
 	timer.csv gic600.csv gpio.csv twi.csv spi.csv uart.csv ^
 	dmac.csv ^
+	i2s_pcm.csv ^
 	usb_ehci_capability.csv usb_ohci_capability.csv usbehci.csv usbotg.csv ^
 	ccu.csv rtc.csv prcm.csv sid.csv cpu_subsys.csv intctrl.csv ^
 	aw_a733.csv
