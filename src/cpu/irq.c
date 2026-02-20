@@ -2469,6 +2469,9 @@ void InitializeIrql(IRQL_t newIRQL)
 
 uint_fast8_t arm_hardware_clustersize(void)
 {
+#if CPUSTYLE_A733
+	return HARDWARE_NCORES;
+#endif
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	// Cortex-A computers
 
