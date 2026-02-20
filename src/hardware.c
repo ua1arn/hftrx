@@ -2894,6 +2894,7 @@ void cpump_initialize(void)
 		extern void Reset_CPUx_Handler(void);		/* crt_CortexA53_CPUn.S */
 		void * const p = aligned_alloc(DCACHEROWSIZE, aarch64_stack_size);
 		//void * const p = malloc(aarch64_stack_size);
+		ASSERT(p);
 		while (p == NULL)
 			;
 		aarch64_stack_top = (uint64_t) (uintptr_t) p + aarch64_stack_size;
@@ -2906,6 +2907,7 @@ void cpump_initialize(void)
 
 		void * const p = aligned_alloc(DCACHEROWSIZE, aarch32_stack_size);
 		//void * const p = malloc(aarch32_stack_size);
+		ASSERT(p);
 		while (p == NULL)
 			;
 		aarch32_stack_top = (uint32_t) (uintptr_t) p + aarch32_stack_size;
