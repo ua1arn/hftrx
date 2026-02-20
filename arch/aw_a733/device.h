@@ -61,6 +61,11 @@ typedef enum IRQn
     SPI1_IRQn = 57,                                   /*!< SPI Serial Peripheral Interface */
     SPI2_IRQn = 58,                                   /*!< SPI Serial Peripheral Interface */
     SPI3_IRQn = 59,                                   /*!< SPI Serial Peripheral Interface */
+    I2S_PCM4_IRQn = 61,                               /*!< I2S_PCM  */
+    I2S_PCM0_IRQn = 74,                               /*!< I2S_PCM  */
+    I2S_PCM1_IRQn = 75,                               /*!< I2S_PCM  */
+    I2S_PCM2_IRQn = 76,                               /*!< I2S_PCM  */
+    I2S_PCM3_IRQn = 77,                               /*!< I2S_PCM  */
     GPIOB_IRQn = 101,                                 /*!< GPIOINT GPIOB_NS */
     GPIOB_S_IRQn = 102,                               /*!< GPIOINT  */
     GPIOC_IRQn = 103,                                 /*!< GPIOINT GPIOC_NS */
@@ -142,6 +147,11 @@ typedef enum IRQn
 #define GPIOK_BASE ((uintptr_t) 0x02000580)           /*!< GPIO Port Controller Base */
 #define GPIOINTK_BASE ((uintptr_t) 0x020005C0)        /*!< GPIOINT  Base */
 #define CCU_BASE ((uintptr_t) 0x02002000)             /*!< CCU Clock Controller Unit (CCU) Base */
+#define I2S0_BASE ((uintptr_t) 0x02033000)            /*!< I2S_PCM  Base */
+#define I2S1_BASE ((uintptr_t) 0x02033000)            /*!< I2S_PCM  Base */
+#define I2S2_BASE ((uintptr_t) 0x02034000)            /*!< I2S_PCM  Base */
+#define I2S3_BASE ((uintptr_t) 0x02034000)            /*!< I2S_PCM  Base */
+#define I2S4_BASE ((uintptr_t) 0x02034000)            /*!< I2S_PCM  Base */
 #define Timer1_CPUX_BASE ((uintptr_t) 0x02052000)     /*!< TIMER1  Base */
 #define CPUS_INTERRUPT_CTRL_BASE ((uintptr_t) 0x02055000)/*!< CPUS_INTERRUPT_CTRL  Base */
 #define RV_INTERRUPT_CTRL_BASE ((uintptr_t) 0x02056000)/*!< RV_INTERRUPT_CTRL  Base */
@@ -1093,6 +1103,50 @@ typedef struct GPIOINT_Type
          RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
 /*
+ * @brief I2S_PCM
+ */
+/*!< I2S_PCM  */
+typedef struct I2S_PCM_Type
+{
+    __IOM uint32_t I2S_PCM_CTL;                       /*!< Offset 0x000 I2S/PCM Control Register */
+    __IOM uint32_t I2S_PCM_FMT0;                      /*!< Offset 0x004 I2S/PCM Format Register 0 */
+    __IOM uint32_t I2S_PCM_FMT1;                      /*!< Offset 0x008 I2S/PCM Format Register 1 */
+    __IOM uint32_t I2S_PCM_ISTA;                      /*!< Offset 0x00C I2S/PCM Interrupt Status Register */
+    __IOM uint32_t I2S_PCM_RXFIFO;                    /*!< Offset 0x010 I2S/PCM RXFIFO Register */
+    __IOM uint32_t I2S_PCM_FCTL;                      /*!< Offset 0x014 I2S/PCM FIFO Control Register */
+    __IOM uint32_t I2S_PCM_FSTA;                      /*!< Offset 0x018 I2S/PCM FIFO Status Register */
+    __IOM uint32_t I2S_PCM_INT;                       /*!< Offset 0x01C I2S/PCM DMA & Interrupt Control Register */
+    __IOM uint32_t I2S_PCM_TXFIFO;                    /*!< Offset 0x020 I2S/PCM TXFIFO Register */
+    __IOM uint32_t I2S_PCM_CLKD;                      /*!< Offset 0x024 I2S/PCM Clock Divide Register */
+    __IOM uint32_t I2S_PCM_TXCNT;                     /*!< Offset 0x028 I2S/PCM TX Sample Counter Register */
+    __IOM uint32_t I2S_PCM_RXCNT;                     /*!< Offset 0x02C I2S/PCM RX Sample Counter Register */
+    __IOM uint32_t I2S_PCM_CHCFG;                     /*!< Offset 0x030 I2S/PCM Channel Configuration Register */
+    __IOM uint32_t I2S_PCM_TX0CHSEL;                  /*!< Offset 0x034 I2S/PCM TX0 Channel Select Register */
+    __IOM uint32_t I2S_PCM_TX1CHSEL;                  /*!< Offset 0x038 I2S/PCM TX1 Channel Select Register */
+    __IOM uint32_t I2S_PCM_TX2CHSEL;                  /*!< Offset 0x03C I2S/PCM TX2 Channel Select Register */
+    __IOM uint32_t I2S_PCM_TX3CHSEL;                  /*!< Offset 0x040 I2S/PCM TX3 Channel Select Register */
+    __IOM uint32_t I2S_PCM_TX0CHMAP0;                 /*!< Offset 0x044 I2S/PCM TX0 Channel Mapping Register0 */
+    __IOM uint32_t I2S_PCM_TX0CHMAP1;                 /*!< Offset 0x048 I2S/PCM TX0 Channel Mapping Register1 */
+    __IOM uint32_t I2S_PCM_TX1CHMAP0;                 /*!< Offset 0x04C I2S/PCM TX1 Channel Mapping Register0 */
+    __IOM uint32_t I2S_PCM_TX1CHMAP1;                 /*!< Offset 0x050 I2S/PCM TX1 Channel Mapping Register1 */
+    __IOM uint32_t I2S_PCM_TX2CHMAP0;                 /*!< Offset 0x054 I2S/PCM TX2 Channel Mapping Register0 */
+    __IOM uint32_t I2S_PCM_TX2CHMAP1;                 /*!< Offset 0x058 I2S/PCM TX2 Channel Mapping Register1 */
+    __IOM uint32_t I2S_PCM_TX3CHMAP0;                 /*!< Offset 0x05C I2S/PCM TX3 Channel Mapping Register0 */
+    __IOM uint32_t I2S_PCM_TX3CHMAP1;                 /*!< Offset 0x060 I2S/PCM TX3 Channel Mapping Register1 */
+    __IOM uint32_t I2S_PCM_RXCHSEL;                   /*!< Offset 0x064 I2S/PCM RX Channel Select Register */
+    __IOM uint32_t I2S_PCM_RXCHMAP [0x004];           /*!< Offset 0x068 I2S/PCM RX Channel Mapping Register0..3 */
+         RESERVED(0x078[0x0080 - 0x0078], uint8_t)
+    __IOM uint32_t MCLKCFG;                           /*!< Offset 0x080 ASRC MCLK Configuration Register */
+    __IOM uint32_t FsoutCFG;                          /*!< Offset 0x084 ASRC Out Sample Rate Configuration Register */
+    __IOM uint32_t FsinEXTCFG;                        /*!< Offset 0x088 ASRC Input Sample Pulse Extend Configuration Register */
+    __IOM uint32_t ASRCEN;                            /*!< Offset 0x08C ASRC Enable Configure Register */
+    __IOM uint32_t ASRCMANCFG;                        /*!< Offset 0x090 ASRC Manual Ratio Configuration Register */
+    __IOM uint32_t ASRCRATIOSTAT;                     /*!< Offset 0x094 ASRC Status Register */
+    __IOM uint32_t ASRCFIFOSTAT;                      /*!< Offset 0x098 ASRC FIFO Level Status Register */
+    __IOM uint32_t ASRCMBISTCFG;                      /*!< Offset 0x09C ASRC MBIST Test Configuration Register */
+    __IOM uint32_t ASRCMBISTSTAT;                     /*!< Offset 0x0A0 ASRC MBIST Test Status Register */
+} I2S_PCM_TypeDef; /* size of structure = 0x0A4 */
+/*
  * @brief PRCM
  */
 /*!< PRCM  */
@@ -1596,6 +1650,11 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOK ((GPIO_TypeDef *) GPIOK_BASE)           /*!< GPIOK Port Controller register set access pointer */
 #define GPIOINTK ((GPIOINT_TypeDef *) GPIOINTK_BASE)  /*!< GPIOINTK  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
+#define I2S0 ((I2S_PCM_TypeDef *) I2S0_BASE)          /*!< I2S0  register set access pointer */
+#define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1  register set access pointer */
+#define I2S2 ((I2S_PCM_TypeDef *) I2S2_BASE)          /*!< I2S2  register set access pointer */
+#define I2S3 ((I2S_PCM_TypeDef *) I2S3_BASE)          /*!< I2S3  register set access pointer */
+#define I2S4 ((I2S_PCM_TypeDef *) I2S4_BASE)          /*!< I2S4  register set access pointer */
 #define Timer1_CPUX ((TIMER1_TypeDef *) Timer1_CPUX_BASE)/*!< Timer1_CPUX  register set access pointer */
 #define CPUS_INTERRUPT_CTRL ((CPUS_INTERRUPT_CTRL_TypeDef *) CPUS_INTERRUPT_CTRL_BASE)/*!< CPUS_INTERRUPT_CTRL  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */

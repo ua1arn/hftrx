@@ -301,4 +301,19 @@
 #base; RV_INTERRUPT_CTRL 0x02056000
 #typeend;
 
+#type; I2S_PCM
+
+#base; I2S0 0x02033000
+#base; I2S1 0x02033000
+#base; I2S2 0x02034000
+#base; I2S3 0x02034000
+#base; I2S4 0x02034000
+
+#irq; I2S_PCM0 74
+#irq; I2S_PCM1 75
+#irq; I2S_PCM2 76
+#irq; I2S_PCM3 77
+#irq; I2S_PCM4 61
+
+#typeend;
 
