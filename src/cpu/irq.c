@@ -1712,12 +1712,11 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if 0 && ! LINUX_SUBSYSTEM
-
+#if ! LINUX_SUBSYSTEM
 
 #define TASKRAM_SIZE (1024 * 1024)
 
-#if defined(__aarch64__)
+#if CPUSTYLE_ARM && defined(__aarch64__)
 
 typedef struct exception_frame_tag
 {
@@ -1767,7 +1766,7 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 #pragma GCC diagnostic pop
 }
 
-#else
+#elif CPUSTYLE_ARM && ! defined(__aarch64__)
 
 typedef struct exception_frame_tag
 {
@@ -1809,7 +1808,19 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 	f->r0 = (uintptr_t) arg;
 }
 
+#elif __CORTEX_A
+	#error unsupported CPU
+
+#elif __riscv
+	#error unsupported CPU
+
+#else
+	#error unsupported CPU
 #endif
+
+#endif /* ! LINUX_SUBSYSTEM */
+
+#if 0 && ! LINUX_SUBSYSTEM
 
 typedef struct task_item_tag
 {
