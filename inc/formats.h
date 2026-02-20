@@ -28,6 +28,7 @@ void printhex(uintptr_t offs, const void * buff, unsigned length);
 void printhex16(uintptr_t voffs, const void * vbuff, unsigned length);
 void printhex32(uintptr_t voffs, const void * vbuff, unsigned length);
 void printhex64(uintptr_t voffs, const void * vbuff, unsigned length);
+void mem2hex(uintptr_t address, unsigned size);
 
 // spool-based functions for debug
 int dbg_puts_impl(const char * s);	/* печать строки без использования форматных преоьразования */
