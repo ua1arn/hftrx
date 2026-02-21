@@ -2200,7 +2200,7 @@ void usbd_cdc_send(const void * buff, size_t length)
 
 	const uint_fast8_t dmach = CDC_PIPEINDMA(offset);
 	const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
-	static __ALIGNED(4) uint8_t tdata [VIRTUAL_COM_PORT_IN_DATA_SIZE];
+	static __ALIGNED(DCACHEROWSIZE) uint8_t tdata [VIRTUAL_COM_PORT_IN_DATA_SIZE];
 	const unsigned count = AWUSB_MIN(sizeof tdata, length);
 	unsigned count4 = (count + 3) / 4 * 4;
 	memcpy(tdata, buff, count);
