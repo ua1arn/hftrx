@@ -603,7 +603,7 @@ static void usb_set_eprx_fifo_size(pusb_struct pusb, uint32_t is_dpb, uint32_t s
 	ASSERT(sz <= 9);
 	reg_val = 0;
 	if (is_dpb) reg_val |= UINT32_C(1) << 4;
-	reg_val |= sz & 0xf;
+	reg_val |= sz & 0x0F;
 	WITHUSBHW_DEVICE->USB_RXFIFO = (WITHUSBHW_DEVICE->USB_RXFIFO & ~ (UINT32_C(0x1F) << 0)) | reg_val;
 	//PRINTF("usb_set_eprx_fifo_size: sz=%u (size=%u)\n", (unsigned) sz, (unsigned) size);
 }
@@ -2094,7 +2094,7 @@ enum
 #define CDC_PIPEOUTDMA(offset) (cdc_pipeoutdma0 + (offset))
 #define CDC_PIPEINTDMA(offset) (cdc_pipeintdma0 + (offset))
 
-static __ALIGNED(4) uint8_t cdc_out_datas [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_OUT_DATA_SIZE];
+static __ALIGNED(DCACHEROWSIZE) uint8_t cdc_out_datas [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_OUT_DATA_SIZE];
 
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
 //static uint8_t altinterfaces [INTERFACE_count];
@@ -2789,7 +2789,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				// Dedicated DMA Transfer data from host to device
 				const uint_fast8_t dmach = CDC_PIPEOUTDMA(offset);
 				set_dma_ep_embedded(pusb, pipeout, 0, dmach);
-				memset(cdc_out_datas [offset], 0xE5, sizeof cdc_out_datas [offset]);
+				//memset(cdc_out_datas [offset], 0xE5, sizeof cdc_out_datas [offset]);
 				WITHUSBHW_DEVICE->USB_DMA [dmach].BC = sizeof cdc_out_datas [offset];
 				dcache_clean_invalidate((uintptr_t) cdc_out_datas [offset], sizeof cdc_out_datas [offset]);
 				WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = (uintptr_t) cdc_out_datas [offset];
@@ -2805,7 +2805,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			}
 #if ! WITHUSBCDCACM_NOINT
 			// Transfer interrupt data from device to host
-			if (1 || SOFTSERVICE_IN)
+			if (SOFTSERVICE_IN)
 			{
 				usb_set_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipeint));
 				ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << pipeint));
@@ -4892,24 +4892,15 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 					if (out_drection)
 					{
 						const unsigned offset = USBD_CDCACM_OFFSET_BY_OUT_EP(pipe & 0x7F, USBD_EP_CDCACM_OUT);
-//						// OUT direction
-//						//printhex((uintptr_t) cdc_out_data, cdc_out_data, sizeof cdc_out_data);
-//						uint8_t * const end = (uint8_t *) memchr(cdc_out_data, ';', sizeof cdc_out_data);
-//						if (end != NULL)
-//				  			cdcXout_buffer_save(cdc_out_data, end - cdc_out_data + 1, offset);
-//
-//						dcache_clean_invalidate((uintptr_t) cdc_out_data, sizeof cdc_out_data);
-//						WITHUSBHW_DEVICE->USB_DMA [i].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
-						//USB0_SetActiveEP(USB0_EP1);
-						//unsigned count = (USB0_REG_RXCOUNT & 0x1FFF);
+						// OUT direction
 						unsigned count = usb_get_eprx_count(pusb);
 						BIT_CLEAR(USB0_REG_RXCSR, BIT_RXCSR_RX_PKT_READY);
+						const uint_fast32_t mask = (UINT32_C(1) << ((WITHUSBHW_DEVICE->USB_RXFIFO & 0x0F) + 3)) - 1;
+						count &= mask;
+						count = (count == 0) ? mask + 1 : count;
 
-						count &= (VIRTUAL_COM_PORT_OUT_DATA_SIZE - 1);
-						count = (count == 0) ? VIRTUAL_COM_PORT_OUT_DATA_SIZE : count;
-
-#if 1
-					PRINTF("out DMA%u: pipe=%u, BC=%u, SDRAM_ADD=0x%08X, RESIDUAL_BC=%u, CHAN_CFG=0x%08X, count=%u, out_dir=%u\n",
+#if 0
+					PRINTF("out DMA%u: pipe=%u, BC=%u, SDRAM_ADD=0x%08X, RESIDUAL_BC=%u, CHAN_CFG=0x%08X, count=%u, mask=0x%08X, out_dir=%u\n",
 							(unsigned) dmach,
 							(unsigned) pipe,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [dmach].BC,
@@ -4917,11 +4908,13 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [dmach].RESIDUAL_BC,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG,
 							count,
+							mask,
 							out_drection);
 #endif
 					//USB0_BulkRXCallBack((uint8_t*)bufEP1Rx, len);
-						printhex(0, cdc_out_datas [offset], count);
+						//printhex(0, cdc_out_datas [offset], count);
 						cdcXout_buffer_save(cdc_out_datas [offset], count, offset);
+						//memset(cdc_out_datas [offset], 0xE5, sizeof cdc_out_datas [offset]);
 						dcache_clean_invalidate((uintptr_t) cdc_out_datas [offset], sizeof cdc_out_datas [offset]);
 						WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
 					}
