@@ -2203,6 +2203,7 @@ void usbd_cdc_send(const void * buff, size_t length)
 	static __ALIGNED(DCACHEROWSIZE) uint8_t tdata [VIRTUAL_COM_PORT_IN_DATA_SIZE];
 	const unsigned count = AWUSB_MIN(sizeof tdata, length);
 	unsigned count4 = (count + 3) / 4 * 4;
+	memset(tdata, '#', sizeof tdata);
 	memcpy(tdata, buff, count);
 //	PRINTF("cdc_acm Send:\n");
 //	printhex((uintptr_t) tdata, tdata, count);
@@ -2563,18 +2564,21 @@ static void set_dma_ep_embedded(pusb_struct pusb, uint32_t ep_no, uint32_t ep_di
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
 		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
-
-		BIT_SET(USB0_REG_RXCSR, BIT_RXCSR_CLEAR_DATA_TOGGLE);
-		BIT_SET(USB0_REG_RXCSR, BIT_RXCSR_FLUSH_FIFO);
-		BIT_SET(USB0_REG_RXCSR, BIT_RXCSR_FLUSH_FIFO);		// two times for dual buffer
-		BIT_CLEAR(USB0_REG_RXCSR, BIT_RXCSR_ISO);			// bulk != iso -)
-
-		BIT_CLEAR(USB0_REG_RXCSR, BIT_RXCSR_DMA_REQ_MODE);	// 0 = internal, 1 = external DMA
-		BIT_CLEAR(USB0_REG_RXCSR, BIT_RXCSR_AUTO_CLEAR);	// to recognize packet < 512
-		BIT_SET(USB0_REG_RXCSR, BIT_RXCSR_DMA_REQ_EN); 		// enable DMA
+#if 0
+		USB0_REG_TXCSR = 0x0; 								// 512 is max packet size for BULK
+		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_CLEAR_DATA_TOGGLE);
+		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_MODE);
+		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_FLUSH_FIFO);
+		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_FLUSH_FIFO);
+		BIT_CLEAR(USB0_REG_TXCSR, BIT_TXCSR_ISO);
 
 		BIT_SET(USB0_REG_DMA_INTE, dmach);			// enable  DMA int
 		BIT_CLEAR(USB0_REG_EPINTE, ep_no);		// disable EP int
+
+		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_AUTOSET);
+		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_DMA_REQ_MODE);
+		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_DMA_REQ_EN); // DMA
+
 
 //		USB0_SetupDMA(USB_DMA_CH1, USB_BULK_EPSIZE, USB_DMA_FIFO_TO_SDRAM, USB0_EP1); // BULK RX
 //
@@ -2587,6 +2591,8 @@ static void set_dma_ep_embedded(pusb_struct pusb, uint32_t ep_no, uint32_t ep_di
 //		BIT_SET(USB0_REG_DMA_CFG(USB_DMA_CH1), BIT_USB_DMA_EN);		// enable DMA
 
 		//USB0_SetupDMA(USB_DMA_CH0, USB_BULK_EPSIZE, USB_DMA_SDRAM_TO_FIFO, USB0_EP1); // BULK TX
+
+#endif
 
 	}
 	else
@@ -2613,8 +2619,8 @@ static void set_dma_ep_embedded(pusb_struct pusb, uint32_t ep_no, uint32_t ep_di
 		BIT_CLEAR(USB0_REG_RXCSR, BIT_RXCSR_AUTO_CLEAR);	// to recognize packet < 512
 		BIT_SET(USB0_REG_RXCSR, BIT_RXCSR_DMA_REQ_EN); 		// enable DMA
 
-		BIT_SET(USB0_REG_DMA_INTE, dmach);			// enable  DMA int
-		BIT_CLEAR(USB0_REG_EPINTE, ep_no);		// disable EP int
+//		BIT_SET(USB0_REG_DMA_INTE, dmach);			// enable  DMA int
+//		BIT_CLEAR(USB0_REG_EPINTE, ep_no);		// disable EP int
 
 		//USB0_SetupDMA(USB_DMA_CH2, USB_BULK_EPSIZE, USB_DMA_FIFO_TO_SDRAM, USB0_EP2); // BULK RX
 
@@ -2773,8 +2779,9 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				const uint_fast8_t dmach = CDC_PIPEINDMA(offset);
 				set_dma_ep_embedded(pusb, pipein, 1, dmach);
 				usb_fifo_accessed_by_dma(pusb, pipein, 1);
-//				usb_set_dma_interrupt_enable(pusb, (UINT32_C(1) << dmach));
-//				ASSERT(usb_get_dma_interrupt_enable(pusb) & (UINT32_C(1) << dmach));
+				usb_clear_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipein));
+				usb_set_dma_interrupt_enable(pusb, (UINT32_C(1) << dmach));
+				ASSERT(usb_get_dma_interrupt_enable(pusb) & (UINT32_C(1) << dmach));
 			}
 
 			// Transfer data from host to device
@@ -2800,6 +2807,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 					0;
 				WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
 				usb_fifo_accessed_by_dma(pusb, pipeout, 1);
+				usb_clear_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipeout));
 				usb_set_dma_interrupt_enable(pusb, (UINT32_C(1) << dmach));
 				ASSERT(usb_get_dma_interrupt_enable(pusb) & (UINT32_C(1) << dmach));
 			}
@@ -2814,6 +2822,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			{
 				// stub
 				const uint_fast8_t dmach = CDC_PIPEINTDMA(offset);
+				usb_clear_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipeint));
 				set_dma_ep_embedded(pusb, pipeint, 0, dmach);
 //				usb_set_dma_interrupt_enable(pusb, (UINT32_C(1) << dmach));
 //				ASSERT(usb_get_dma_interrupt_enable(pusb) & (UINT32_C(1) << dmach));
