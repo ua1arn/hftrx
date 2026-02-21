@@ -1792,12 +1792,16 @@ stsinit_irql_initialize(void)
 	InitializeIrql(IRQL_USER);	// nested interrupts support
 }
 
-static void
+// non-zero if error
+static int
 sysinit_sdram_initialize(void)
 {
+	int ec = 0;
 #if WITHSDRAMHW && WITHISBOOTLOADER
-	arm_hardware_sdram_initialize();
+	ec = arm_hardware_sdram_initialize();
 #endif /* WITHSDRAMHW && WITHISBOOTLOADER */
+	if (ec)
+		return ec;
 #if CPUSTYLE_T113 && ! WITHISBOOTLOADER
 	// На 0x00028000:
 	// При 0 видим память DSP
@@ -1813,6 +1817,7 @@ sysinit_sdram_initialize(void)
 	/* Все 160 килобайт на 0x00020000 доступны процссору */
 	SYS_CFG->DSP_BOOT_RAMMAP_REG = 1;
 #endif /* CPUSTYLE_F133 */
+	return ec;
 }
 
 static void
@@ -2331,7 +2336,13 @@ SystemInit(void)
 #endif /* USE_HAL_DRIVER */
 	local_delay_initialize();
 	sysinit_debug_initialize();
-	sysinit_sdram_initialize();
+	int ec = sysinit_sdram_initialize();
+	if (ec)
+	{
+		PRINTF("sysinit_sdram_initialize() failure.\n");
+		for (;;)
+			;
+	}
 	sysinit_mmu_tables();			// Инициализация таблиц. */
 	sysinit_cache_initialize();		// caches iniitialize
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
@@ -2355,7 +2366,11 @@ void __attribute__((used)) SystemDRAMInit(void)
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
 	sysinit_pmic_initialize();
-	sysinit_sdram_initialize();
+	int ec = sysinit_sdram_initialize();
+	if (ec)
+	{
+		PRINTF("sysinit_sdram_initialize() failure.\n");
+	}
 }
 
 #endif /* LINUX_SUBSYSTEM */

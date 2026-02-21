@@ -822,14 +822,14 @@ int sys_dram_init(void)
 ///
 
 
-void arm_hardware_sdram_initialize(void)
+int arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
 
 //	dram_clock_init();
 //	init_dram_controller();
 
-	sys_dram_init();
+	int ec = sys_dram_init();
 //	TP();
 //
 //	printhex(0x40000000, (void *) 0x40000000, 256);
@@ -841,6 +841,7 @@ void arm_hardware_sdram_initialize(void)
 //	printhex(0x70000000, (void *) 0x70000000, 256);
 
 	PRINTF("arm_hardware_sdram_initialize done\n");
+	return ! ec;
 
 }
 

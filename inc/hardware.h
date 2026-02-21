@@ -502,7 +502,7 @@ uint32_t hardware_get_random(void);
 void arm_hardware_dma2d_initialize(void);	// Graphic 2D engine
 void arm_hardware_mdma_initialize(void);	// Graphic 2D engine
 void arm_hardware_awg2d_initialize(void);	// Graphic 2D engine
-void arm_hardware_sdram_initialize(void);	// External memory region(s)
+int arm_hardware_sdram_initialize(void);	// External memory region(s) - non-zero if error
 
 
 typedef struct videomode_tag

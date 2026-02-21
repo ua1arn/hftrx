@@ -138,7 +138,7 @@ int mctl_mem_matches_original(uint64_t offset)
 }
 #endif
 
-void arm_hardware_sdram_initialize(void)
+int arm_hardware_sdram_initialize(void)
 {
 	uint64_t memsizeB;
 	unsigned memsizeMB;
@@ -188,6 +188,7 @@ void arm_hardware_sdram_initialize(void)
 	//printhex32(CONFIG_SYS_SDRAM_BASE, (void *) CONFIG_SYS_SDRAM_BASE, 2 * 0x80);
 
 	PRINTF("arm_hardware_sdram_initialize done, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
+	return ! memsizeMB;
 }
 
 #endif /* WITHSDRAMHW && CPUSTYLE_T507 */

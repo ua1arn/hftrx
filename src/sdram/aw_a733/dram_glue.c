@@ -130,7 +130,7 @@ int printf_dram(const char *format, ...)
 //	IRQLSPIN_UNLOCK(& printflock, irql);
 	return n;
 }
-void arm_hardware_sdram_initialize(void)
+int arm_hardware_sdram_initialize(void)
 {
 	uint64_t memsizeB ;
 
@@ -141,6 +141,7 @@ void arm_hardware_sdram_initialize(void)
 	memsizeMB = init_DRAM(0, dram_para);
 	PRINTF("arm_hardware_sdram_initialize: result=%d MB\n", memsizeMB);
 	PRINTF("arm_hardware_sdram_initialize done\n");
+	return ! memsizeMB;
 }
 
 #endif

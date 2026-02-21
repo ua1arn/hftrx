@@ -1767,16 +1767,17 @@ uint64_t sunxi_dram_init(void)
 	return size;
 };
 
-void arm_hardware_sdram_initialize(void)
+int arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
-	uint64_t v = sunxi_dram_init();
-	PRINTF("arm_hardware_sdram_initialize: %u MB\n", (unsigned) (v / 1024 / 1024));
+	uint64_t memsize = sunxi_dram_init();
+	PRINTF("arm_hardware_sdram_initialize: %u MB\n", (unsigned) (memsize / 1024 / 1024));
 
 //	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x00, 0xE5, 0x80);
 //	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x80, 0xDF, 0x80);
 //	printhex(CONFIG_SYS_SDRAM_BASE, (void *) CONFIG_SYS_SDRAM_BASE, 2 * 0x80);
 
 	PRINTF("arm_hardware_sdram_initialize done, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
+	return ! memsize;
 }
 #endif /* WITHSDRAMHW */
