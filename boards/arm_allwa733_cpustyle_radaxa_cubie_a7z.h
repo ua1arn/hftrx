@@ -62,7 +62,7 @@
 	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
 	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
 
-	////#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	//#define WITHUSBHW_DEVICE	USB0_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
@@ -103,13 +103,13 @@
 	//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
 	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
-	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	//#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
+	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
 
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 	
-	#define WITHUSBWCID	1
+	//#define WITHUSBWCID	1
 
 	//#define WITHLWIP 1
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
