@@ -2079,12 +2079,20 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 
 enum
 {
-	cdc_pipeindma = 0,
-	cdc_pipeoutdma,
-	cdc_pipeintdma,
+#if WITHUSBCDCACM
+	cdc_pipeindma0,
+	cdc_pipeindma_LAST = cdc_pipeindma0 + WITHUSBCDCACM_N - 1,
+	cdc_pipeoutdma0,
+	cdc_pipeoutdma_LAST = cdc_pipeoutdma0 + WITHUSBCDCACM_N - 1,
+	cdc_pipeintdma0,
+	cdc_pipeintdma_LAST = cdc_pipeintdma0 + WITHUSBCDCACM_N - 1,
+#endif /* WITHUSBCDCACM */
 	//
 	cdc_pipe_count
 };
+#define CDC_PIPEINDMA(offset) (cdc_pipeindma0 + (offset))
+#define CDC_PIPEOUTDMA(offset) (cdc_pipeoutdma0 + (offset))
+#define CDC_PIPEINTDMA(offset) (cdc_pipeintdma0 + (offset))
 
 static __ALIGNED(4) uint8_t cdc_out_data [VIRTUAL_COM_PORT_OUT_DATA_SIZE];
 
@@ -2190,7 +2198,7 @@ void usbd_cdc_send(const void * buff, size_t length)
 		return;
 #if WITHCDCWITHDMA_IN
 
-	const uint_fast8_t dmach = cdc_pipeindma;
+	const uint_fast8_t dmach = CDC_PIPEINDMA(offset);
 	const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
 	static __ALIGNED(4) uint8_t tdata [VIRTUAL_COM_PORT_IN_DATA_SIZE];
 	const unsigned count = AWUSB_MIN(sizeof tdata, length);
@@ -2252,12 +2260,12 @@ void usbd_cdc_send(const void * buff, size_t length)
 
 uint_fast8_t usbd_cdc_ready(void)	/* временное решение для передачи */
 {
+	const unsigned offset = MAIN_CDC_OFFSET;
 	IRQL_t oldIrql;
 #if WITHCDCWITHDMA_IN
-	return ! (WITHUSBHW_DEVICE->USB_DMA [cdc_pipeindma].CHAN_CFG & (UINT32_C(1) << 31));	// DMA Channel Enable
+	return ! (WITHUSBHW_DEVICE->USB_DMA [CDC_PIPEINDMA(offset)].CHAN_CFG & (UINT32_C(1) << 31));	// DMA Channel Enable
 #else
 	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
-	const unsigned offset = MAIN_CDC_OFFSET;
 	if (gpusb != NULL)
 	{
 		usb_struct * const pusb = gpusb;
@@ -2606,7 +2614,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			else
 			{
 				// Dedicated DMA Transfer data from device to host
-				const uint_fast8_t dmach = cdc_pipeindma;
+				const uint_fast8_t dmach = CDC_PIPEINDMA(offset);
 				set_dma_ep(pusb, pipein, 1);
 				usb_fifo_accessed_by_dma(pusb, pipein, 1);
 //				usb_set_dma_interrupt_enable(pusb, (UINT32_C(1) << dmach));
@@ -2623,7 +2631,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			else
 			{
 				// Dedicated DMA Transfer data from host to device
-				const uint_fast8_t dmach = cdc_pipeoutdma;
+				const uint_fast8_t dmach = CDC_PIPEOUTDMA(offset);
 				set_dma_ep(pusb, pipeout, 0);
 				memset(cdc_out_data, 0xE5, sizeof cdc_out_data);
 				WITHUSBHW_DEVICE->USB_DMA [dmach].BC = sizeof cdc_out_data;
@@ -2649,7 +2657,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 			else
 			{
 				// stub
-				const uint_fast8_t dmach = cdc_pipeintdma;
+				const uint_fast8_t dmach = CDC_PIPEINTDMA(offset);
 				set_dma_ep(pusb, pipeint, 0);
 //				usb_set_dma_interrupt_enable(pusb, (UINT32_C(1) << dmach));
 //				ASSERT(usb_get_dma_interrupt_enable(pusb) & (UINT32_C(1) << dmach));
