@@ -556,6 +556,49 @@ static int axp_set_dcdcd(unsigned int mvolt)
 //}
 //#endif
 
+#if 0
+// axp803
+// https://github.com/ARM-software/arm-trusted-firmware/blob/master/drivers/allwinner/axp/axp803.c
+const struct axp_regulator axp_regulators[] = {
+	{"aldo1",  700, 3300, 100, NA, 0x28, 0x13, 5},
+	{"dcdc1", 1600, 3400, 100, NA, 0x20, 0x10, 0},
+	{"dcdc5",  800, 1840,  10, 32, 0x24, 0x10, 4},
+	{"dcdc6",  600, 1520,  10, 50, 0x25, 0x10, 5},
+	{"dldo1",  700, 3300, 100, NA, 0x15, 0x12, 3},
+	{"dldo2",  700, 4200, 100, 27, 0x16, 0x12, 4},
+	{"dldo3",  700, 3300, 100, NA, 0x17, 0x12, 5},
+	{"dldo4",  700, 3300, 100, NA, 0x18, 0x12, 6},
+	{"fldo1",  700, 1450,  50, NA, 0x1c, 0x13, 2},
+	{}
+};
+#endif
+#if 0
+// https://github.com/ARM-software/arm-trusted-firmware/blob/master/drivers/allwinner/axp/axp805.c
+// AXP805
+/*
+ * The "dcdcd" split changes the step size by a factor of 5, not 2;
+ * disallow values above the split to maintain accuracy.
+ */
+const struct axp_regulator axp_regulators[] = {
+	{"dcdca",  600, 1520,  10, 50, 0x12, 0x10, 0},
+	{"dcdcb", 1000, 2550,  50, NA, 0x13, 0x10, 1},
+	{"dcdcc",  600, 1520,  10, 50, 0x14, 0x10, 2},
+	{"dcdcd",  600, 1500,  20, NA, 0x15, 0x10, 3},
+	{"dcdce", 1100, 3400, 100, NA, 0x16, 0x10, 4},
+	{"aldo1",  700, 3300, 100, NA, 0x17, 0x10, 5},
+	{"aldo2",  700, 3300, 100, NA, 0x18, 0x10, 6},
+	{"aldo3",  700, 3300, 100, NA, 0x19, 0x10, 7},
+	{"bldo1",  700, 1900, 100, NA, 0x20, 0x11, 0},
+	{"bldo2",  700, 1900, 100, NA, 0x21, 0x11, 1},
+	{"bldo3",  700, 1900, 100, NA, 0x22, 0x11, 2},
+	{"bldo4",  700, 1900, 100, NA, 0x23, 0x11, 3},
+	{"cldo1",  700, 3300, 100, NA, 0x24, 0x11, 4},
+	{"cldo2",  700, 4200, 100, 27, 0x25, 0x11, 5},
+	{"cldo3",  700, 3300, 100, NA, 0x26, 0x11, 6},
+	{}
+};
+#endif
+
 // AXP 305 - контроллер питания производства Allwinner - аналог Datasheet AXP805
 
 int board_orangepi_zero2_axp305_initialize(void)
