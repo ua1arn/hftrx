@@ -369,3 +369,91 @@
 #irq; HDMI 93
 #typeend;
 
+#type; DE; Display Engine (DE)
+#base; DE 0x05000000
+#typeend;
+
+#type; DE_TOP; Display Engine (DE) TOP (APB)
+#base; DE_TOP 0x05008000
+#irq; DE 82; DE interrupt
+#typeend;
+
+#type; DE_GLB; Display Engine (DE) - Global Control
+#base; DE_MIXER0_GLB 0x05008100; RT-Mixer0
+#base; DE_MIXER1_GLB 0x05008140; RT-Mixer1
+#typeend;
+
+# DE0 dedicated for TCON_LCD0/TCON_TV0, 
+# DE1 dedicated for TCON_LCD1/TCON_TV1 tv output blocks
+# 7.1.2. Block Diagram - Allwinner_T5_Series_User_Manual-v1.3.pdf
+
+#type; DE_BLD; Display Engine (DE) - Blender
+#base; DE_MIXER0_BLD 0x05281000
+#base; DE_MIXER1_BLD 0x052A1000
+#typeend;
+
+#type; RTWB_RCQ
+#base; RTWB_RCQ 0x05008200
+#typeend;
+
+
+#type; DE_VI; Display Engine (DE) - VI surface
+
+#base; DE_VI1 0x05101000
+#base; DE_VI2 0x05121000
+#base; DE_VI3 0x05141000
+
+#typeend;
+
+#type; DE_UI; Display Engine (DE) - UI surface
+
+#base; DE_UI1   0x051C1000
+#base; DE_UI2   0x051E1000
+#base; DE_UI3   0x05201000  
+#typeend;
+
+#type; DE_VSU; Video Scaler Unit (VSU)
+
+#base; DE_VSU1 0x05104000; VI1 Scaler
+#base; DE_VSU2 0x05124000; VI2 Scaler
+#base; DE_VSU3 0x05144000; VI3 Scaler
+#typeend;
+
+#type; DE_UIS; UI Scaler(UIS) provides RGB format image resizing function
+
+#base; DE_UIS1 0x051C4000; UI1 Scaler
+#base; DE_UIS2 0x051E4000; UI2 Scaler
+#base; DE_UIS3 0x05204000; UI3 Scaler
+#typeend;
+
+# define SUN50I_MIXER_FCE_EN			0x70000: 10A0000
+#type; DE_FCE; Fresh and Contrast Enhancement (FCE)
+
+#base; DE_FCE1 0x05110000; VI1 FCE
+#base; DE_FCE2 0x05130000; VI2 FCE
+#base; DE_FCE3 0x05150000; VI3 FCE
+#base; DE_FCE4 0x051D0000; UI1 FCE
+#base; DE_FCE5 0x051F0000; UI2 FCE
+#base; DE_FCE6 0x05210000; UI3 FCE
+#typeend;
+
+# define SUN50I_MIXER_BLS_EN			0x71800
+#type; DE_BLS; Blue Level Stretch (BLS)
+
+#base; DE_BLS1 0x05111000; VI1 BLS
+#base; DE_BLS2 0x05131000; VI2 BLS
+#base; DE_BLS3 0x05151000; VI3 BLS
+#base; DE_BLS4 0x051D1000; UI1 BLS
+#base; DE_BLS5 0x051F1000; UI2 BLS
+#base; DE_BLS6 0x05211000; UI3 BLS
+#typeend;
+
+#type; DE_FCC; Fancy color curvature (FCC)
+
+#base; DE_FCC1 0x05111400; VI1 FCC
+#base; DE_FCC2 0x05131400; VI2 FCC
+#base; DE_FCC3 0x05151400; VI3 FCC
+#base; DE_FCC4 0x051D1400; UI1 FCC
+#base; DE_FCC5 0x051F1400; UI2 FCC
+#base; DE_FCC6 0x05211400; UI3 FCC
+#typeend;

@@ -66,6 +66,7 @@ typedef enum IRQn
     I2S_PCM1_IRQn = 75,                               /*!< I2S_PCM  */
     I2S_PCM2_IRQn = 76,                               /*!< I2S_PCM  */
     I2S_PCM3_IRQn = 77,                               /*!< I2S_PCM  */
+    DE_IRQn = 82,                                     /*!< DE_TOP DE interrupt */
     TCON0_LCD0_IRQn = 86,                             /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */
     TCON0_LCD1_IRQn = 87,                             /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */
     TCON_TV0_IRQn = 89,                               /*!< TCON_TV TV Output */
@@ -91,7 +92,6 @@ typedef enum IRQn
     GPIOJ_IRQn = 117,                                 /*!< GPIOINT GPIOJ_NS */
     GPIOJ_S_IRQn = 118,                               /*!< GPIOINT  */
     GPIOK_IRQn = 119,                                 /*!< GPIOINT GPIOK_NS */
-    DE_IRQn = 120,                                    /*!< DE_TOP DE interrupt */
     GPIOK_S_IRQn = 120,                               /*!< GPIOINT  */
     TIMER0_IRQn = 121,                                /*!< TIMER0  */
     TIMER1_IRQn = 122,                                /*!< TIMER0  */
@@ -137,49 +137,12 @@ typedef enum IRQn
 /* Peripheral and RAM base address */
 
 #define GPIOINTD_BASE ((uintptr_t) 0x00020002)        /*!< GPIOINT  Base */
-#define DE_BASE ((uintptr_t) 0x01000000)              /*!< DE Display Engine (DE) Base */
-#define DE_TOP_BASE ((uintptr_t) 0x01008000)          /*!< DE_TOP Display Engine (DE) TOP (APB) Base */
-#define DE_MIXER0_GLB_BASE ((uintptr_t) 0x01008100)   /*!< DE_GLB Display Engine (DE) - Global Control Base */
-#define DE_MIXER1_GLB_BASE ((uintptr_t) 0x01008140)   /*!< DE_GLB Display Engine (DE) - Global Control Base */
-#define RTWB_RCQ_BASE ((uintptr_t) 0x01008200)        /*!< RTWB_RCQ  Base */
-#define DE_VI1_BASE ((uintptr_t) 0x01101000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
-#define DE_VSU1_BASE ((uintptr_t) 0x01104000)         /*!< DE_VSU Video Scaler Unit (VSU) Base */
-#define DE_FCE1_BASE ((uintptr_t) 0x01110000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
-#define DE_BLS1_BASE ((uintptr_t) 0x01111000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
-#define DE_FCC1_BASE ((uintptr_t) 0x01111400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
 #define DE_DNS1_BASE ((uintptr_t) 0x01114000)         /*!< DE_DNS Denoise (DNS) Base */
-#define DE_VI2_BASE ((uintptr_t) 0x01121000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
-#define DE_VSU2_BASE ((uintptr_t) 0x01124000)         /*!< DE_VSU Video Scaler Unit (VSU) Base */
-#define DE_FCE2_BASE ((uintptr_t) 0x01130000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
-#define DE_BLS2_BASE ((uintptr_t) 0x01131000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
-#define DE_FCC2_BASE ((uintptr_t) 0x01131400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
 #define DE_DNS2_BASE ((uintptr_t) 0x01134000)         /*!< DE_DNS Denoise (DNS) Base */
-#define DE_VI3_BASE ((uintptr_t) 0x01141000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
-#define DE_VSU3_BASE ((uintptr_t) 0x01144000)         /*!< DE_VSU Video Scaler Unit (VSU) Base */
-#define DE_FCE3_BASE ((uintptr_t) 0x01150000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
-#define DE_BLS3_BASE ((uintptr_t) 0x01151000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
 #define DE_DNS3_BASE ((uintptr_t) 0x01151400)         /*!< DE_DNS Denoise (DNS) Base */
-#define DE_FCC3_BASE ((uintptr_t) 0x01151400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
-#define DE_UI1_BASE ((uintptr_t) 0x011C1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
-#define DE_UIS1_BASE ((uintptr_t) 0x011C4000)         /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
-#define DE_FCE4_BASE ((uintptr_t) 0x011D0000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
-#define DE_BLS4_BASE ((uintptr_t) 0x011D1000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
-#define DE_FCC4_BASE ((uintptr_t) 0x011D1400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
 #define DE_DNS4_BASE ((uintptr_t) 0x011D4000)         /*!< DE_DNS Denoise (DNS) Base */
-#define DE_UI2_BASE ((uintptr_t) 0x011E1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
-#define DE_UIS2_BASE ((uintptr_t) 0x011E4000)         /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
-#define DE_FCE5_BASE ((uintptr_t) 0x011F0000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
-#define DE_BLS5_BASE ((uintptr_t) 0x011F1000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
-#define DE_FCC5_BASE ((uintptr_t) 0x011F1400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
 #define DE_DNS5_BASE ((uintptr_t) 0x011F4000)         /*!< DE_DNS Denoise (DNS) Base */
-#define DE_UI3_BASE ((uintptr_t) 0x01201000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
-#define DE_UIS3_BASE ((uintptr_t) 0x01204000)         /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
-#define DE_FCE6_BASE ((uintptr_t) 0x01210000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
-#define DE_BLS6_BASE ((uintptr_t) 0x01211000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
-#define DE_FCC6_BASE ((uintptr_t) 0x01211400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
 #define DE_DNS6_BASE ((uintptr_t) 0x01214000)         /*!< DE_DNS Denoise (DNS) Base */
-#define DE_MIXER0_BLD_BASE ((uintptr_t) 0x01281000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
-#define DE_MIXER1_BLD_BASE ((uintptr_t) 0x012A1000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x02000080)       /*!< GPIOBLOCK Port Controller Base */
 #define GPIOB_BASE ((uintptr_t) 0x02000100)           /*!< GPIO Port Controller Base */
 #define GPIOINTB_BASE ((uintptr_t) 0x02000140)        /*!< GPIOINT  Base */
@@ -247,7 +210,44 @@ typedef enum IRQn
 #define USB1_EHCI_BASE ((uintptr_t) 0x04201000)       /*!< USB_EHCI_Capability  Base */
 #define USB1_OHCI_BASE ((uintptr_t) 0x04201400)       /*!< USB_OHCI_Capability  Base */
 #define DMA0_BASE ((uintptr_t) 0x04601000)            /*!< DMAC  Base */
+#define DE_BASE ((uintptr_t) 0x05000000)              /*!< DE Display Engine (DE) Base */
+#define DE_TOP_BASE ((uintptr_t) 0x05008000)          /*!< DE_TOP Display Engine (DE) TOP (APB) Base */
+#define DE_MIXER0_GLB_BASE ((uintptr_t) 0x05008100)   /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define DE_MIXER1_GLB_BASE ((uintptr_t) 0x05008140)   /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define RTWB_RCQ_BASE ((uintptr_t) 0x05008200)        /*!< RTWB_RCQ  Base */
+#define DE_VI1_BASE ((uintptr_t) 0x05101000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
 #define USB0_OHCI_BASE ((uintptr_t) 0x05101400)       /*!< USB_OHCI_Capability  Base */
+#define DE_VSU1_BASE ((uintptr_t) 0x05104000)         /*!< DE_VSU Video Scaler Unit (VSU) Base */
+#define DE_FCE1_BASE ((uintptr_t) 0x05110000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
+#define DE_BLS1_BASE ((uintptr_t) 0x05111000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_FCC1_BASE ((uintptr_t) 0x05111400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define DE_VI2_BASE ((uintptr_t) 0x05121000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DE_VSU2_BASE ((uintptr_t) 0x05124000)         /*!< DE_VSU Video Scaler Unit (VSU) Base */
+#define DE_FCE2_BASE ((uintptr_t) 0x05130000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
+#define DE_BLS2_BASE ((uintptr_t) 0x05131000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_FCC2_BASE ((uintptr_t) 0x05131400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define DE_VI3_BASE ((uintptr_t) 0x05141000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DE_VSU3_BASE ((uintptr_t) 0x05144000)         /*!< DE_VSU Video Scaler Unit (VSU) Base */
+#define DE_FCE3_BASE ((uintptr_t) 0x05150000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
+#define DE_BLS3_BASE ((uintptr_t) 0x05151000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_FCC3_BASE ((uintptr_t) 0x05151400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define DE_UI1_BASE ((uintptr_t) 0x051C1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
+#define DE_UIS1_BASE ((uintptr_t) 0x051C4000)         /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
+#define DE_FCE4_BASE ((uintptr_t) 0x051D0000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
+#define DE_BLS4_BASE ((uintptr_t) 0x051D1000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_FCC4_BASE ((uintptr_t) 0x051D1400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define DE_UI2_BASE ((uintptr_t) 0x051E1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
+#define DE_UIS2_BASE ((uintptr_t) 0x051E4000)         /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
+#define DE_FCE5_BASE ((uintptr_t) 0x051F0000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
+#define DE_BLS5_BASE ((uintptr_t) 0x051F1000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_FCC5_BASE ((uintptr_t) 0x051F1400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define DE_UI3_BASE ((uintptr_t) 0x05201000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
+#define DE_UIS3_BASE ((uintptr_t) 0x05204000)         /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
+#define DE_FCE6_BASE ((uintptr_t) 0x05210000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
+#define DE_BLS6_BASE ((uintptr_t) 0x05211000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_FCC6_BASE ((uintptr_t) 0x05211400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define DE_MIXER0_BLD_BASE ((uintptr_t) 0x05281000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define DE_MIXER1_BLD_BASE ((uintptr_t) 0x052A1000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define DISPLAY0_TOP_BASE ((uintptr_t) 0x05500000)    /*!< DISPLAY0_TOP  Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x05501000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_LCD1_BASE ((uintptr_t) 0x05502000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
@@ -2644,48 +2644,12 @@ typedef struct USB_OHCI_Capability_Type
 /* Access pointers */
 
 #define GPIOINTD ((GPIOINT_TypeDef *) GPIOINTD_BASE)  /*!< GPIOINTD  register set access pointer */
-#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP (APB) register set access pointer */
-#define DE_MIXER0_GLB ((DE_GLB_TypeDef *) DE_MIXER0_GLB_BASE)/*!< DE_MIXER0_GLB Display Engine (DE) - Global Control register set access pointer */
-#define DE_MIXER1_GLB ((DE_GLB_TypeDef *) DE_MIXER1_GLB_BASE)/*!< DE_MIXER1_GLB Display Engine (DE) - Global Control register set access pointer */
-#define RTWB_RCQ ((RTWB_RCQ_TypeDef *) RTWB_RCQ_BASE) /*!< RTWB_RCQ  register set access pointer */
-#define DE_VI1 ((DE_VI_TypeDef *) DE_VI1_BASE)        /*!< DE_VI1 Display Engine (DE) - VI surface register set access pointer */
-#define DE_VSU1 ((DE_VSU_TypeDef *) DE_VSU1_BASE)     /*!< DE_VSU1 Video Scaler Unit (VSU) register set access pointer */
-#define DE_FCE1 ((DE_FCE_TypeDef *) DE_FCE1_BASE)     /*!< DE_FCE1 Fresh and Contrast Enhancement (FCE) register set access pointer */
-#define DE_BLS1 ((DE_BLS_TypeDef *) DE_BLS1_BASE)     /*!< DE_BLS1 Blue Level Stretch (BLS) register set access pointer */
-#define DE_FCC1 ((DE_FCC_TypeDef *) DE_FCC1_BASE)     /*!< DE_FCC1 Fancy color curvature (FCC) register set access pointer */
 #define DE_DNS1 ((DE_DNS_TypeDef *) DE_DNS1_BASE)     /*!< DE_DNS1 Denoise (DNS) register set access pointer */
-#define DE_VI2 ((DE_VI_TypeDef *) DE_VI2_BASE)        /*!< DE_VI2 Display Engine (DE) - VI surface register set access pointer */
-#define DE_VSU2 ((DE_VSU_TypeDef *) DE_VSU2_BASE)     /*!< DE_VSU2 Video Scaler Unit (VSU) register set access pointer */
-#define DE_FCE2 ((DE_FCE_TypeDef *) DE_FCE2_BASE)     /*!< DE_FCE2 Fresh and Contrast Enhancement (FCE) register set access pointer */
-#define DE_BLS2 ((DE_BLS_TypeDef *) DE_BLS2_BASE)     /*!< DE_BLS2 Blue Level Stretch (BLS) register set access pointer */
-#define DE_FCC2 ((DE_FCC_TypeDef *) DE_FCC2_BASE)     /*!< DE_FCC2 Fancy color curvature (FCC) register set access pointer */
 #define DE_DNS2 ((DE_DNS_TypeDef *) DE_DNS2_BASE)     /*!< DE_DNS2 Denoise (DNS) register set access pointer */
-#define DE_VI3 ((DE_VI_TypeDef *) DE_VI3_BASE)        /*!< DE_VI3 Display Engine (DE) - VI surface register set access pointer */
-#define DE_VSU3 ((DE_VSU_TypeDef *) DE_VSU3_BASE)     /*!< DE_VSU3 Video Scaler Unit (VSU) register set access pointer */
-#define DE_FCE3 ((DE_FCE_TypeDef *) DE_FCE3_BASE)     /*!< DE_FCE3 Fresh and Contrast Enhancement (FCE) register set access pointer */
-#define DE_BLS3 ((DE_BLS_TypeDef *) DE_BLS3_BASE)     /*!< DE_BLS3 Blue Level Stretch (BLS) register set access pointer */
 #define DE_DNS3 ((DE_DNS_TypeDef *) DE_DNS3_BASE)     /*!< DE_DNS3 Denoise (DNS) register set access pointer */
-#define DE_FCC3 ((DE_FCC_TypeDef *) DE_FCC3_BASE)     /*!< DE_FCC3 Fancy color curvature (FCC) register set access pointer */
-#define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
-#define DE_UIS1 ((DE_UIS_TypeDef *) DE_UIS1_BASE)     /*!< DE_UIS1 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
-#define DE_FCE4 ((DE_FCE_TypeDef *) DE_FCE4_BASE)     /*!< DE_FCE4 Fresh and Contrast Enhancement (FCE) register set access pointer */
-#define DE_BLS4 ((DE_BLS_TypeDef *) DE_BLS4_BASE)     /*!< DE_BLS4 Blue Level Stretch (BLS) register set access pointer */
-#define DE_FCC4 ((DE_FCC_TypeDef *) DE_FCC4_BASE)     /*!< DE_FCC4 Fancy color curvature (FCC) register set access pointer */
 #define DE_DNS4 ((DE_DNS_TypeDef *) DE_DNS4_BASE)     /*!< DE_DNS4 Denoise (DNS) register set access pointer */
-#define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2 Display Engine (DE) - UI surface register set access pointer */
-#define DE_UIS2 ((DE_UIS_TypeDef *) DE_UIS2_BASE)     /*!< DE_UIS2 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
-#define DE_FCE5 ((DE_FCE_TypeDef *) DE_FCE5_BASE)     /*!< DE_FCE5 Fresh and Contrast Enhancement (FCE) register set access pointer */
-#define DE_BLS5 ((DE_BLS_TypeDef *) DE_BLS5_BASE)     /*!< DE_BLS5 Blue Level Stretch (BLS) register set access pointer */
-#define DE_FCC5 ((DE_FCC_TypeDef *) DE_FCC5_BASE)     /*!< DE_FCC5 Fancy color curvature (FCC) register set access pointer */
 #define DE_DNS5 ((DE_DNS_TypeDef *) DE_DNS5_BASE)     /*!< DE_DNS5 Denoise (DNS) register set access pointer */
-#define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3 Display Engine (DE) - UI surface register set access pointer */
-#define DE_UIS3 ((DE_UIS_TypeDef *) DE_UIS3_BASE)     /*!< DE_UIS3 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
-#define DE_FCE6 ((DE_FCE_TypeDef *) DE_FCE6_BASE)     /*!< DE_FCE6 Fresh and Contrast Enhancement (FCE) register set access pointer */
-#define DE_BLS6 ((DE_BLS_TypeDef *) DE_BLS6_BASE)     /*!< DE_BLS6 Blue Level Stretch (BLS) register set access pointer */
-#define DE_FCC6 ((DE_FCC_TypeDef *) DE_FCC6_BASE)     /*!< DE_FCC6 Fancy color curvature (FCC) register set access pointer */
 #define DE_DNS6 ((DE_DNS_TypeDef *) DE_DNS6_BASE)     /*!< DE_DNS6 Denoise (DNS) register set access pointer */
-#define DE_MIXER0_BLD ((DE_BLD_TypeDef *) DE_MIXER0_BLD_BASE)/*!< DE_MIXER0_BLD Display Engine (DE) - Blender register set access pointer */
-#define DE_MIXER1_BLD ((DE_BLD_TypeDef *) DE_MIXER1_BLD_BASE)/*!< DE_MIXER1_BLD Display Engine (DE) - Blender register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK Port Controller register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB Port Controller register set access pointer */
 #define GPIOINTB ((GPIOINT_TypeDef *) GPIOINTB_BASE)  /*!< GPIOINTB  register set access pointer */
@@ -2748,7 +2712,43 @@ typedef struct USB_OHCI_Capability_Type
 #define USB1_EHCI ((USB_EHCI_Capability_TypeDef *) USB1_EHCI_BASE)/*!< USB1_EHCI  register set access pointer */
 #define USB1_OHCI ((USB_OHCI_Capability_TypeDef *) USB1_OHCI_BASE)/*!< USB1_OHCI  register set access pointer */
 #define DMA0 ((DMAC_TypeDef *) DMA0_BASE)             /*!< DMA0  register set access pointer */
+#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP (APB) register set access pointer */
+#define DE_MIXER0_GLB ((DE_GLB_TypeDef *) DE_MIXER0_GLB_BASE)/*!< DE_MIXER0_GLB Display Engine (DE) - Global Control register set access pointer */
+#define DE_MIXER1_GLB ((DE_GLB_TypeDef *) DE_MIXER1_GLB_BASE)/*!< DE_MIXER1_GLB Display Engine (DE) - Global Control register set access pointer */
+#define RTWB_RCQ ((RTWB_RCQ_TypeDef *) RTWB_RCQ_BASE) /*!< RTWB_RCQ  register set access pointer */
+#define DE_VI1 ((DE_VI_TypeDef *) DE_VI1_BASE)        /*!< DE_VI1 Display Engine (DE) - VI surface register set access pointer */
 #define USB0_OHCI ((USB_OHCI_Capability_TypeDef *) USB0_OHCI_BASE)/*!< USB0_OHCI  register set access pointer */
+#define DE_VSU1 ((DE_VSU_TypeDef *) DE_VSU1_BASE)     /*!< DE_VSU1 Video Scaler Unit (VSU) register set access pointer */
+#define DE_FCE1 ((DE_FCE_TypeDef *) DE_FCE1_BASE)     /*!< DE_FCE1 Fresh and Contrast Enhancement (FCE) register set access pointer */
+#define DE_BLS1 ((DE_BLS_TypeDef *) DE_BLS1_BASE)     /*!< DE_BLS1 Blue Level Stretch (BLS) register set access pointer */
+#define DE_FCC1 ((DE_FCC_TypeDef *) DE_FCC1_BASE)     /*!< DE_FCC1 Fancy color curvature (FCC) register set access pointer */
+#define DE_VI2 ((DE_VI_TypeDef *) DE_VI2_BASE)        /*!< DE_VI2 Display Engine (DE) - VI surface register set access pointer */
+#define DE_VSU2 ((DE_VSU_TypeDef *) DE_VSU2_BASE)     /*!< DE_VSU2 Video Scaler Unit (VSU) register set access pointer */
+#define DE_FCE2 ((DE_FCE_TypeDef *) DE_FCE2_BASE)     /*!< DE_FCE2 Fresh and Contrast Enhancement (FCE) register set access pointer */
+#define DE_BLS2 ((DE_BLS_TypeDef *) DE_BLS2_BASE)     /*!< DE_BLS2 Blue Level Stretch (BLS) register set access pointer */
+#define DE_FCC2 ((DE_FCC_TypeDef *) DE_FCC2_BASE)     /*!< DE_FCC2 Fancy color curvature (FCC) register set access pointer */
+#define DE_VI3 ((DE_VI_TypeDef *) DE_VI3_BASE)        /*!< DE_VI3 Display Engine (DE) - VI surface register set access pointer */
+#define DE_VSU3 ((DE_VSU_TypeDef *) DE_VSU3_BASE)     /*!< DE_VSU3 Video Scaler Unit (VSU) register set access pointer */
+#define DE_FCE3 ((DE_FCE_TypeDef *) DE_FCE3_BASE)     /*!< DE_FCE3 Fresh and Contrast Enhancement (FCE) register set access pointer */
+#define DE_BLS3 ((DE_BLS_TypeDef *) DE_BLS3_BASE)     /*!< DE_BLS3 Blue Level Stretch (BLS) register set access pointer */
+#define DE_FCC3 ((DE_FCC_TypeDef *) DE_FCC3_BASE)     /*!< DE_FCC3 Fancy color curvature (FCC) register set access pointer */
+#define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
+#define DE_UIS1 ((DE_UIS_TypeDef *) DE_UIS1_BASE)     /*!< DE_UIS1 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
+#define DE_FCE4 ((DE_FCE_TypeDef *) DE_FCE4_BASE)     /*!< DE_FCE4 Fresh and Contrast Enhancement (FCE) register set access pointer */
+#define DE_BLS4 ((DE_BLS_TypeDef *) DE_BLS4_BASE)     /*!< DE_BLS4 Blue Level Stretch (BLS) register set access pointer */
+#define DE_FCC4 ((DE_FCC_TypeDef *) DE_FCC4_BASE)     /*!< DE_FCC4 Fancy color curvature (FCC) register set access pointer */
+#define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2 Display Engine (DE) - UI surface register set access pointer */
+#define DE_UIS2 ((DE_UIS_TypeDef *) DE_UIS2_BASE)     /*!< DE_UIS2 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
+#define DE_FCE5 ((DE_FCE_TypeDef *) DE_FCE5_BASE)     /*!< DE_FCE5 Fresh and Contrast Enhancement (FCE) register set access pointer */
+#define DE_BLS5 ((DE_BLS_TypeDef *) DE_BLS5_BASE)     /*!< DE_BLS5 Blue Level Stretch (BLS) register set access pointer */
+#define DE_FCC5 ((DE_FCC_TypeDef *) DE_FCC5_BASE)     /*!< DE_FCC5 Fancy color curvature (FCC) register set access pointer */
+#define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3 Display Engine (DE) - UI surface register set access pointer */
+#define DE_UIS3 ((DE_UIS_TypeDef *) DE_UIS3_BASE)     /*!< DE_UIS3 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
+#define DE_FCE6 ((DE_FCE_TypeDef *) DE_FCE6_BASE)     /*!< DE_FCE6 Fresh and Contrast Enhancement (FCE) register set access pointer */
+#define DE_BLS6 ((DE_BLS_TypeDef *) DE_BLS6_BASE)     /*!< DE_BLS6 Blue Level Stretch (BLS) register set access pointer */
+#define DE_FCC6 ((DE_FCC_TypeDef *) DE_FCC6_BASE)     /*!< DE_FCC6 Fancy color curvature (FCC) register set access pointer */
+#define DE_MIXER0_BLD ((DE_BLD_TypeDef *) DE_MIXER0_BLD_BASE)/*!< DE_MIXER0_BLD Display Engine (DE) - Blender register set access pointer */
+#define DE_MIXER1_BLD ((DE_BLD_TypeDef *) DE_MIXER1_BLD_BASE)/*!< DE_MIXER1_BLD Display Engine (DE) - Blender register set access pointer */
 #define DISPLAY0_TOP ((DISPLAY0_TOP_TypeDef *) DISPLAY0_TOP_BASE)/*!< DISPLAY0_TOP  register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_LCD1 ((TCON_LCD_TypeDef *) TCON_LCD1_BASE)/*!< TCON_LCD1 Timing Controller_LCD (TCON_LCD) register set access pointer */
