@@ -1892,7 +1892,7 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 };
 
 #elif CPUSTYLE_A733
-	#warning Unexpected CPUSTYLE_A733
+	#warning Unimplemented CPUSTYLE_A733
 // Требуется заполнение в соответствии с инициализацией DE_PORT2CHN_MUX
 
 //	RTMIX0: VI1, UI1, [vi3]
@@ -2023,7 +2023,7 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 	#define UI_LASTIX(rtmixid) 1
 	/* BLD_EN_COLOR_CTL positions 8..13 */
 #elif CPUSTYLE_A733
-	#warning Unexpected CPUSTYLE_A733
+	#warning Unimplemented CPUSTYLE_A733
 	#define VI_LASTIX(rtmixid) 1
 	#define UI_LASTIX(rtmixid) 1
 	/* BLD_EN_COLOR_CTL positions 8..13 */
@@ -3294,7 +3294,7 @@ static void hardware_de_initialize(int rtmixid)
 
 
 #elif CPUSTYLE_A733
-	#warning Undefined CPUSTYLE_A733
+	#warning Unimplemented CPUSTYLE_A733
 	/* Global DE settings */
     const int disp = rtmixid - 1;
 
@@ -6603,7 +6603,7 @@ static void awxx_deoutmapping(int rtmixid)
 	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
 #elif CPUSTYLE_A733
-	#warning Unexpected CPUSTYLE_A733
+	#warning Unimplemented CPUSTYLE_A733
 
 #elif CPUSTYLE_T507
 	// DE_PORT2CHN_MUX [0]=9x00A98210
