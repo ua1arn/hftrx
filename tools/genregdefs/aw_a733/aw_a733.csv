@@ -330,12 +330,16 @@
 #type; TCON_LCD
 #base; TCON_LCD0 0x05501000
 #base; TCON_LCD1 0x05502000 TCON_LCD1 register is the same with TCON_LCD0
+#irq; TCON0_LCD0 86
+#irq; TCON0_LCD1 87
 #typeend;
 
 ## TCON_TV Controller
 #type; TCON_TV
 #base; TCON_TV0 0x05730000
 #base; TCON_TV1 0x05731000
+#irq; TV0 89
+#irq; TV1 90
 #typeend;
 
 ## eDP
@@ -345,6 +349,7 @@
 
 #type; eDP_REG_PAD
 #base; eDP_REG_PAD 0x05760000
+#irq; EDP 94
 #typeend;
 
 
@@ -353,4 +358,13 @@
 #type; MIPI_DSI
 #base; COMBO_PHY_TX_DSI0 0x05506000
 #base; COMBO_PHY_TX_DSI1 0x05508000
+
+#irq; DSI0 91
+#irq; DSI1 92
+
 #typeend;
+
+#type; HDMI_TX 
+#irq; HDMI 93
+#typeend;
+

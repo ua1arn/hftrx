@@ -7777,6 +7777,16 @@
   <name>TCON_LCD0</name>
   <description>Timing Controller_LCD (TCON_LCD)</description>
   <baseAddress>0x05501000</baseAddress>
+  <interrupt>
+   <name>TCON0_LCD0</name>
+   <value>86</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TCON0_LCD1</name>
+   <value>87</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>LCD_GCTL_REG</name>
@@ -8218,11 +8228,31 @@
   <peripheral derivedFrom="TCON_LCD0">
   <name>TCON_LCD1</name>
   <baseAddress>0x05502000</baseAddress>
+  <interrupt>
+   <name>TCON0_LCD0</name>
+   <value>86</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TCON0_LCD1</name>
+   <value>87</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>TCON_TV0</name>
   <description>TV Output</description>
   <baseAddress>0x05730000</baseAddress>
+  <interrupt>
+   <name>TV0</name>
+   <value>89</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TV1</name>
+   <value>90</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>TV_GCTL_REG</name>
@@ -8507,6 +8537,16 @@
   <peripheral derivedFrom="TCON_TV0">
   <name>TCON_TV1</name>
   <baseAddress>0x05731000</baseAddress>
+  <interrupt>
+   <name>TV0</name>
+   <value>89</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>TV1</name>
+   <value>90</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>Timer1_CPUX</name>
