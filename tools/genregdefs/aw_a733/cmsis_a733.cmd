@@ -3,7 +3,7 @@
 SET CONVERTER=..\Debug\genregdefs.exe --cortexa5x "core64_ca.h" --guid "{2A4CD94A-A755-4786-BB96-E52021B2959C}"
 SET OUTFILE=..\..\..\arch\aw_a733\device.h
 SET FILELIST= ^
-	timer.csv gic600.csv gpio.csv twi.csv spi.csv uart.csv ^
+	timer.csv gic600.csv gpio.csv twi.csv spi.csv uart.csv smhc.csv ^
 	dmac.csv ^
 	i2s_pcm.csv ^
 	..\aw_generic\usb_ehci_capability.csv ..\aw_generic\usb_ohci_capability.csv ..\aw_generic\usbehci.csv ..\aw_generic\usbotg.csv ^

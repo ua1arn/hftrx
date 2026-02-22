@@ -117,6 +117,10 @@ typedef enum IRQn
     USB0_OHCI_IRQn = 190,                             /*!< USB_OHCI_Capability  */
     USB1_EHCI_IRQn = 191,                             /*!< USB_EHCI_Capability  */
     USB1_OHCI_IRQn = 192,                             /*!< USB_OHCI_Capability  */
+    SMHC0_IRQn = 193,                                 /*!< SMHC SD-MMC Host Controller */
+    SMHC1_IRQn = 194,                                 /*!< SMHC SD-MMC Host Controller */
+    SMHC2_IRQn = 195,                                 /*!< SMHC SD-MMC Host Controller */
+    SMHC3_IRQn = 196,                                 /*!< SMHC SD-MMC Host Controller */
     RTC_ALARM_IRQn = 228,                             /*!< RTC Real Time Clock (RTC) */
     S_GPIOL_S_IRQn = 229,                             /*!< GPIOINT  */
     S_GPIOL_IRQn = 230,                               /*!< GPIOINT S_GPIOL_NS */
@@ -204,6 +208,10 @@ typedef enum IRQn
 #define GITS_BASE ((uintptr_t) 0x03440000)            /*!< GITS GIC Secure Access Control Base */
 #define GICR0_BASE ((uintptr_t) 0x03460000)           /*!< GICR GIC Redistributor  Base */
 #define GIC_REDISTRIBUTOR_BASE ((uintptr_t) 0x03460000)/*!< GIC_REDISTRIBUTOR GICD GIC Distributor Base */
+#define SMHC0_BASE ((uintptr_t) 0x04020000)           /*!< SMHC SD-MMC Host Controller Base */
+#define SMHC1_BASE ((uintptr_t) 0x04021000)           /*!< SMHC SD-MMC Host Controller Base */
+#define SMHC2_BASE ((uintptr_t) 0x04022000)           /*!< SMHC SD-MMC Host Controller Base */
+#define SMHC3_BASE ((uintptr_t) 0x04023000)           /*!< SMHC SD-MMC Host Controller Base */
 #define DMA1_BASE ((uintptr_t) 0x04024000)            /*!< DMAC  Base */
 #define USB0_DEVICE_BASE ((uintptr_t) 0x04100000)     /*!< USBOTG USB OTG Dual-Role Device controller Base */
 #define USB0_EHCI_BASE ((uintptr_t) 0x04101000)       /*!< USB_EHCI_Capability  Base */
@@ -2169,6 +2177,60 @@ typedef struct SID_Type
          RESERVED(0x600[0x1000 - 0x0600], uint8_t)
 } SID_TypeDef; /* size of structure = 0x1000 */
 /*
+ * @brief SMHC
+ */
+/*!< SMHC SD-MMC Host Controller */
+typedef struct SMHC_Type
+{
+    __IOM uint32_t SMHC_CTRL;                         /*!< Offset 0x000 Control Register */
+    __IOM uint32_t SMHC_CLKDIV;                       /*!< Offset 0x004 Clock Control Register */
+    __IOM uint32_t SMHC_TMOUT;                        /*!< Offset 0x008 Time Out Register */
+    __IOM uint32_t SMHC_CTYPE;                        /*!< Offset 0x00C Bus Width Register */
+    __IOM uint32_t SMHC_BLKSIZ;                       /*!< Offset 0x010 Block Size Register */
+    __IOM uint32_t SMHC_BYTCNT;                       /*!< Offset 0x014 Byte Count Register */
+    __IOM uint32_t SMHC_CMD;                          /*!< Offset 0x018 Command Register */
+    __IOM uint32_t SMHC_CMDARG;                       /*!< Offset 0x01C Command Argument Register */
+    __IOM uint32_t SMHC_RESP0;                        /*!< Offset 0x020 Response 0 Register */
+    __IOM uint32_t SMHC_RESP1;                        /*!< Offset 0x024 Response 1 Register */
+    __IOM uint32_t SMHC_RESP2;                        /*!< Offset 0x028 Response 2 Register */
+    __IOM uint32_t SMHC_RESP3;                        /*!< Offset 0x02C Response 3 Register */
+    __IOM uint32_t SMHC_INTMASK;                      /*!< Offset 0x030 Interrupt Mask Register */
+    __IOM uint32_t SMHC_MINTSTS;                      /*!< Offset 0x034 Masked Interrupt Status Register */
+    __IOM uint32_t SMHC_RINTSTS;                      /*!< Offset 0x038 Raw Interrupt Status Register */
+    __IOM uint32_t SMHC_STATUS;                       /*!< Offset 0x03C Status Register */
+    __IOM uint32_t SMHC_FIFOTH;                       /*!< Offset 0x040 FIFO Water Level Register */
+    __IOM uint32_t SMHC_FUNS;                         /*!< Offset 0x044 FIFO Function Select Register */
+    __IOM uint32_t SMHC_TCBCNT;                       /*!< Offset 0x048 Transferred Byte Count between Controller and Card */
+    __IOM uint32_t SMHC_TBBCNT;                       /*!< Offset 0x04C Transferred Byte Count between Host Memory and Internal FIFO */
+    __IOM uint32_t SMHC_DBGC;                         /*!< Offset 0x050 Current Debug Control Register */
+    __IOM uint32_t SMHC_CSDC;                         /*!< Offset 0x054 CRC Status Detect Control Register (Only for SMHC2) */
+    __IOM uint32_t SMHC_A12A;                         /*!< Offset 0x058 Auto Command 12 Argument Register */
+    __IOM uint32_t SMHC_NTSR;                         /*!< Offset 0x05C SD New Timing Set Register (Only for SMHC0, SMHC1) */
+         RESERVED(0x060[0x0078 - 0x0060], uint8_t)
+    __IOM uint32_t SMHC_HWRST;                        /*!< Offset 0x078 Hardware Reset Register */
+         RESERVED(0x07C[0x0080 - 0x007C], uint8_t)
+    __IOM uint32_t SMHC_IDMAC;                        /*!< Offset 0x080 IDMAC Control Register */
+    __IOM uint32_t SMHC_DLBA;                         /*!< Offset 0x084 Descriptor List Base Address Register */
+    __IOM uint32_t SMHC_IDST;                         /*!< Offset 0x088 IDMAC Status Register */
+    __IOM uint32_t SMHC_IDIE;                         /*!< Offset 0x08C IDMAC Interrupt Enable Register */
+         RESERVED(0x090[0x0100 - 0x0090], uint8_t)
+    __IOM uint32_t SMHC_THLD;                         /*!< Offset 0x100 Card Threshold Control Register */
+    __IOM uint32_t SMHC_SFC;                          /*!< Offset 0x104 Sample FIFO Control Register (Only for SMHC2) */
+    __IOM uint32_t SMHC_A23A;                         /*!< Offset 0x108 Auto Command 23 Argument Register (Only for SMHC2) */
+    __IOM uint32_t EMMC_DDR_SBIT_DET;                 /*!< Offset 0x10C eMMC4.5 DDR Start Bit Detection Control Register */
+    __IOM uint32_t SMHC_RES_CRC;                      /*!< Offset 0x110 Response CRC from Device (Only for SMHC0, SMHC1) */
+    __IOM uint32_t SMHC_D7_D0_CRC [0x008];            /*!< Offset 0x114 CRC in Data7..Data0 from Device (Only for SMHC0, SMHC1) */
+    __IOM uint32_t SMHC_CRC_STA;                      /*!< Offset 0x134 Write CRC Status Register (Only for SMHC0, SMHC1) */
+    __IOM uint32_t SMHC_EXT_CMD;                      /*!< Offset 0x138 Extended Command Register (Only for SMHC2) */
+    __IOM uint32_t SMHC_EXT_RESP;                     /*!< Offset 0x13C Extended Response Register (Only for SMHC2) */
+    __IOM uint32_t SMHC_DRV_DL;                       /*!< Offset 0x140 Drive Delay Control Register */
+    __IOM uint32_t SMHC_SAMP_DL;                      /*!< Offset 0x144 Sample Delay Control Register */
+    __IOM uint32_t SMHC_DS_DL;                        /*!< Offset 0x148 Data Strobe Delay Control Register (Only for SMHC2) */
+         RESERVED(0x14C[0x0200 - 0x014C], uint8_t)
+    __IOM uint32_t SMHC_FIFO;                         /*!< Offset 0x200 Read/Write FIFO */
+         RESERVED(0x204[0x1000 - 0x0204], uint8_t)
+} SMHC_TypeDef; /* size of structure = 0x1000 */
+/*
  * @brief SPI
  */
 /*!< SPI Serial Peripheral Interface */
@@ -2706,6 +2768,10 @@ typedef struct USB_OHCI_Capability_Type
 #define GICP ((GICP_TypeDef *) GICP_BASE)             /*!< GICP GIC Performance Monitoring Unit register set access pointer */
 #define GITS ((GITS_TypeDef *) GITS_BASE)             /*!< GITS GIC Secure Access Control register set access pointer */
 #define GICR0 ((GICR_TypeDef *) GICR0_BASE)           /*!< GICR0 GIC Redistributor  register set access pointer */
+#define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0 SD-MMC Host Controller register set access pointer */
+#define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1 SD-MMC Host Controller register set access pointer */
+#define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2 SD-MMC Host Controller register set access pointer */
+#define SMHC3 ((SMHC_TypeDef *) SMHC3_BASE)           /*!< SMHC3 SD-MMC Host Controller register set access pointer */
 #define DMA1 ((DMAC_TypeDef *) DMA1_BASE)             /*!< DMA1  register set access pointer */
 #define USB0_DEVICE ((USBOTG_TypeDef *) USB0_DEVICE_BASE)/*!< USB0_DEVICE USB OTG Dual-Role Device controller register set access pointer */
 #define USB0_EHCI ((USB_EHCI_Capability_TypeDef *) USB0_EHCI_BASE)/*!< USB0_EHCI  register set access pointer */
