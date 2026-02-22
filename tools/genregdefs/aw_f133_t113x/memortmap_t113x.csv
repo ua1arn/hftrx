@@ -134,3 +134,40 @@
 #irqrv; USB0_OHCI 47
 #irqrv; USB1_OHCI 50
 #typeend;
+
+#type; G2D_TOP; Graphic 2D top
+#base; G2D 0x05410000
+#base; G2D_TOP 0x05410000
+#irq; G2D 121
+#irqrv; G2D 105
+#typeend;
+
+#type; G2D_ROT; Graphic 2D Rotate
+#base; G2D_ROT 0x05438000
+#typeend;
+
+#type; G2D_MIXER; Graphic 2D (G2D) Engine Video Mixer
+#base; G2D_MIXER 0x05410100
+#typeend;
+
+#type; G2D_BLD; Graphic 2D (G2D) Engine Blender
+#base; G2D_BLD 0x05410400
+#typeend;
+
+#type; G2D_VI; Graphic 2D VI surface
+#base; G2D_V0 0x05410800
+#typeend;
+
+#type; G2D_WB; Graphic 2D (G2D) Engine Write Back
+#base; G2D_WB 0x05413000
+#typeend;
+
+#type; G2D_UI; Graphic 2D UI surface
+#base; G2D_UI0 0x05411000
+#base; G2D_UI1 0x05411800
+#base; G2D_UI2 0x05412000
+#typeend;
+
+#type; G2D_VSU; Graphic 2D Video Scaler
+#base; G2D_VSU 0x05418000
+#typeend;
