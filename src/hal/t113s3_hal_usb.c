@@ -2416,6 +2416,21 @@ static void set_ep_iso(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 	}
 }
 
+static void set_ep_bulk(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
+{
+	usb_select_ep(pusb, ep_no);
+	if (ep_dir)
+	{
+		// IN
+		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) & ~ USB_TXCSR_ISO);
+	}
+	else
+	{
+		// OUT
+		usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) & ~ USB_RXCSR_ISO);
+	}
+}
+
 // USB0_REG_TXCSR = CSR0
 #define  BIT_CSR0_FLUSH_FIFO				24
 #define  BIT_CSR0_SERVICED_SETUP_END		23
@@ -2470,6 +2485,7 @@ static void set_dma_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 		// IN
 
         usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_FLUSHFIFO);
+        usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_FLUSHFIFO);
 //        usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | (1u << (BIT_TXCSR_MODE - 16)));
 //        usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | (1u << (BIT_TXCSR_CLEAR_DATA_TOGGLE - 16)));
 
@@ -2480,6 +2496,7 @@ static void set_dma_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 	else
 	{
 		// OUT
+        usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_FLUSHFIFO);
         usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_FLUSHFIFO);
 
 		usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
@@ -2570,46 +2587,24 @@ static void set_dma_ep_embedded(pusb_struct pusb, uint32_t ep_no, uint32_t ep_di
 	{
 		// IN
 
-        //BIT_SET(& WITHUSBHW_DEVICE->USB_TXCSR, BIT_TXCSR_MODE);
-        //BIT_SET(& WITHUSBHW_DEVICE->USB_TXCSR, BIT_TXCSR_CLEAR_DATA_TOGGLE);
-        //BIT_SET(& WITHUSBHW_DEVICE->USB_TXCSR, BIT_TXCSR_FLUSH_FIFO);
-        //BIT_SET(& WITHUSBHW_DEVICE->USB_TXCSR, BIT_TXCSR_FLUSH_FIFO);
-        //BIT_CLEAR(& WITHUSBHW_DEVICE->USB_TXCSR, BIT_TXCSR_ISO);
-
         usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_FLUSHFIFO);
-//        usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | (1u << (BIT_TXCSR_MODE - 16)));
-//        usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | (1u << (BIT_TXCSR_CLEAR_DATA_TOGGLE - 16)));
+        usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_FLUSHFIFO);
+
+		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_CLEAR_DATA_TOGGLE);	// bit 22
+		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_MODE);
 
 		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
 		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
 		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
 #if 0
 		USB0_REG_TXCSR = 0x0; 								// 512 is max packet size for BULK
-		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_CLEAR_DATA_TOGGLE);
-		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_MODE);
 		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_FLUSH_FIFO);
 		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_FLUSH_FIFO);
-		BIT_CLEAR(USB0_REG_TXCSR, BIT_TXCSR_ISO);
-
-		BIT_SET(USB0_REG_DMA_INTE, dmach);			// enable  DMA int
-		BIT_CLEAR(USB0_REG_EPINTE, ep_no);		// disable EP int
+		BIT_CLEAR(USB0_REG_TXCSR, BIT_TXCSR_ISO);	// bulk != iso -)
 
 		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_AUTOSET);
-		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_DMA_REQ_MODE);
 		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_DMA_REQ_EN); // DMA
-
-
-//		USB0_SetupDMA(USB_DMA_CH1, USB_BULK_EPSIZE, USB_DMA_FIFO_TO_SDRAM, USB0_EP1); // BULK RX
-//
-//		DCacheInvalidateAddr(bufEP1Rx, sizeof(bufEP1Rx));
-//		USB0_REG_DMA_ADD(USB_DMA_CH1) = (uint32_t)__va_to_pa((uint32_t)&bufEP1Rx[0]);
-//
-//		USB0_REG_DMA_BC(USB_DMA_CH1) = USB_BULK_EPSIZE;
-//		USB0_REG_DMA_RESIDUAL_BC(dmach) = 0;
-//
-//		BIT_SET(USB0_REG_DMA_CFG(USB_DMA_CH1), BIT_USB_DMA_EN);		// enable DMA
-
-		//USB0_SetupDMA(USB_DMA_CH0, USB_BULK_EPSIZE, USB_DMA_SDRAM_TO_FIFO, USB0_EP1); // BULK TX
+		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_DMA_REQ_MODE);
 
 #endif
 
@@ -2617,19 +2612,14 @@ static void set_dma_ep_embedded(pusb_struct pusb, uint32_t ep_no, uint32_t ep_di
 	else
 	{
 		// OUT
-//        usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_FLUSHFIFO);
+	   usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_FLUSHFIFO);
+	   usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_FLUSHFIFO);
 //
-//		usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
-//		usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
+//		usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) & ~ USB_RXCSR_AUTOCLR);		// AutoClear
+//		usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) & ~ USB_RXCSR_DMAREQEN);	// DMAReqEnab
 //		usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | 0*USB_RXCSR_DMAREQMODE);	// DMAReqMode
-//
-//		USB0_REG_TXCSR = 0x0; 								// 512 is max packet size for BULK
-//		USB0_SetActiveEP(USB0_EP2);
-//		USB0_REG_RXFIFO = (((512 * 4) >> 3) << BIT_RXFIFO_AD0) + 6; // 2^(6+3) = 512
-//		BIT_SET(USB0_REG_RXFIFO, BIT_RXFIFO_DPB);			  // dual buffer
 
-//		USB0_REG_RXCSR = USB_BULK_EPSIZE;					 // 512
-		BIT_SET(USB0_REG_RXCSR, BIT_RXCSR_CLEAR_DATA_TOGGLE);
+		BIT_SET(USB0_REG_RXCSR, BIT_RXCSR_CLEAR_DATA_TOGGLE);	// bit 23
 		BIT_SET(USB0_REG_RXCSR, BIT_RXCSR_FLUSH_FIFO);
 		BIT_SET(USB0_REG_RXCSR, BIT_RXCSR_FLUSH_FIFO);		// two times for dual buffer
 		BIT_CLEAR(USB0_REG_RXCSR, BIT_RXCSR_ISO);			// bulk != iso -)
@@ -2637,19 +2627,6 @@ static void set_dma_ep_embedded(pusb_struct pusb, uint32_t ep_no, uint32_t ep_di
 		BIT_CLEAR(USB0_REG_RXCSR, BIT_RXCSR_DMA_REQ_MODE);	// 0 = internal, 1 = external DMA
 		BIT_CLEAR(USB0_REG_RXCSR, BIT_RXCSR_AUTO_CLEAR);	// to recognize packet < 512
 		BIT_SET(USB0_REG_RXCSR, BIT_RXCSR_DMA_REQ_EN); 		// enable DMA
-
-//		BIT_SET(USB0_REG_DMA_INTE, dmach);			// enable  DMA int
-//		BIT_CLEAR(USB0_REG_EPINTE, ep_no);		// disable EP int
-
-		//USB0_SetupDMA(USB_DMA_CH2, USB_BULK_EPSIZE, USB_DMA_FIFO_TO_SDRAM, USB0_EP2); // BULK RX
-
-		//DCacheInvalidateAddr(bufEP2Rx, sizeof(bufEP2Rx));
-		//USB0_REG_DMA_ADD(USB_DMA_CH2) = (uint32_t)__va_to_pa((uint32_t)&bufEP2Rx[0]);
-
-		//USB0_REG_DMA_BC(USB_DMA_CH2) = USB_BULK_EPSIZE;
-		//USB0_REG_DMA_RESIDUAL_BC(USB_DMA_CH2) = 0;;
-
-		//BIT_SET(USB0_REG_DMA_CFG(USB_DMA_CH2), BIT_USB_DMA_EN);		// enable DMA
 
 	}
 }
@@ -2727,6 +2704,8 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	#endif /* WITHUSBDEV_HSDESC */
 		  /* Open INTR EP IN */
 		fifo_addr = set_fifo_ep(pusb, (USBD_EP_MTP_NOTIFY & 0x0F), EP_DIR_IN, MTP_CMD_PACKET_SIZE, 1, fifo_addr);
+		set_ep_bulk(pusb, pipein, EP_DIR_IN);
+		set_ep_bulk(pusb, pipeout, EP_DIR_OUT);
 
 		//PRINTF("USBDMTP: pipein=%d, pipeout=%d, pipeint=%d\n", pipein, pipeout, pipeint);
 		usb_set_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipein));
@@ -2751,6 +2730,8 @@ static void awxx_setup_fifo(pusb_struct pusb)
 		fifo_addr = set_fifo_ep(pusb, pipein, EP_DIR_IN, MSC_DATA_MAX_PACKET_SIZE_FS, 1, fifo_addr);
 		fifo_addr = set_fifo_ep(pusb, pipeout, EP_DIR_OUT, MSC_DATA_MAX_PACKET_SIZE_FS, 1, fifo_addr);
 	#endif /* WITHUSBDEV_HSDESC */
+		set_ep_bulk(pusb, pipein, EP_DIR_IN);
+		set_ep_bulk(pusb, pipeout, EP_DIR_OUT);
 		//PRINTF("USBDMSC: pipein=%d, pipeout=%d,\n", pipein, pipeout);
 		usb_set_eptx_interrupt_enable(pusb, (1u << pipein));
 		ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << pipein));
@@ -2772,6 +2753,9 @@ static void awxx_setup_fifo(pusb_struct pusb)
 
 			fifo_addr = set_fifo_ep(pusb, pipein, EP_DIR_IN, VIRTUAL_COM_PORT_IN_DATA_SIZE, 1, fifo_addr);
 			fifo_addr = set_fifo_ep(pusb, pipeout, EP_DIR_OUT, VIRTUAL_COM_PORT_OUT_DATA_SIZE, 1, fifo_addr);
+			set_ep_bulk(pusb, pipein, EP_DIR_IN);
+			set_ep_bulk(pusb, pipeout, EP_DIR_OUT);
+			set_ep_bulk(pusb, pipeint, EP_DIR_IN);
 
 			//PRINTF("USBCDCACM: offset=%u, pipein=%d, pipeout=%d, pipeint=%d\n", offset, pipein, pipeout, pipeint);
 			// Transfer data from device to host
