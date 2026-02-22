@@ -4648,14 +4648,16 @@ static void a733_pll_enable(volatile uint32_t * reg)
 {
 	* reg |= (UINT32_C(1) << 30);	// PLL_LDO_EN
 	local_delay_ms(10);
-	* reg |= (UINT32_C(1) << 29);	// LOCK_ENABLE
-	local_delay_ms(10);
-	* reg |= (UINT32_C(1) << 31);	// PLL_EN
-	while ((* reg & (UINT32_C(1) << 28)) == 0)	// LOCK
-		;
 	* reg |= (UINT32_C(1) << 27);	// PLL_OUTPUT0_GATE
 	* reg |= (UINT32_C(1) << 26);	// PLL_OUTPUT1_GATE
 	* reg |= (UINT32_C(1) << 25);	// PLL_OUTPUT2_GATE
+
+	* reg |= (UINT32_C(1) << 31);	// PLL_EN
+	local_delay_ms(10);
+	* reg |= (UINT32_C(1) << 29);	// LOCK_ENABLE
+	while ((* reg & (UINT32_C(1) << 28)) == 0)	// LOCK
+		;
+	local_delay_ms(20);
 }
 
 void sysinit_pll_initialize(int forced)

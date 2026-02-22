@@ -3154,12 +3154,11 @@ static void hardware_de_global_initialize(void)
 //	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 //	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
 //	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
-#if 0
 	// https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
 
 	/* переключить память к DE & VI */
     // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
-	SYS_CFG->MEMMAP_REG &= ~ (UINT32_C(1) << 24);
+	////SYS_CFG->MEMMAP_REG &= ~ (UINT32_C(1) << 24);
 
 //	allwnr_a733_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 //	allwnr_a733_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
@@ -3169,20 +3168,18 @@ static void hardware_de_global_initialize(void)
 	//	Clock Source Select
 	//	0: PLL_DE
 	//	1: PLL_PERI0(2X)
-	unsigned divider = 4;
-    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
-		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
+	unsigned divider = 1;
+    CCU->DE0_CLK_REG = (CCU->DE0_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x07) << 0)) |
+		0x02 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: 010:􀀁PERI0_480M
 		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
-    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+    CCU->DE0_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
 
     local_delay_us(10);
 
 	//PRINTF("allwnr_a733_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_de_freq() / 1000 / 1000);
 	//PRINTF("allwnr_a733_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_mbus_freq() / 1000 / 1000);
-#endif
 
-    TP();
 	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
 	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
@@ -3194,7 +3191,11 @@ static void hardware_de_global_initialize(void)
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
     local_delay_us(10);
-    TP();
+
+	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+    local_delay_us(10);
+
 #elif CPUSTYLE_T507
 
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
@@ -3300,10 +3301,12 @@ static void hardware_de_initialize(int rtmixid)
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
 	// https://github.com/rvboards/linux_kernel_for_d1/blob/5703a18aa3ca12829027b0b20cd197e9741c4c0f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v33x/de330/de_top.c#L245
 	// CORE0..CORE3 bits valid - valid bits 0x01F
-
+//    memset32((void *) DE_BASE, ~0, 4096);
+//    printhex32(DE_BASE, (void *) DE_BASE, 4096);
+//    printhex32(DE_TOP_BASE, DE_TOP, 256);
  	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << disp;	// COREx_SCLK_GATE
  	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << disp;	// COREx_HCLK_GATE
- 	// Only one bit writable
+	// Only one bit writable
  	//DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
 	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
 
@@ -6230,6 +6233,9 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 		;
 	local_delay_ms(50);
 
+#elif CPUSTYLE_A733
+	#warning Unimplemented CPUSTYLE_A733
+
 #elif CPUSTYLE_T507
 
 	allwnr_t507_module_pll_spr(& CCU->PLL_VIDEO0_CTRL_REG, & CCU->PLL_VIDEO0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
@@ -6347,23 +6353,29 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
 	PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
-#if 0
+
 	// PLL_VIDEO0 as source
-	const uint_fast32_t pllout = allwnr_a733_get_pll_video0_x1_freq();
+	const uint_fast32_t pllout = allwnr_a733_get_pll_peri0_2x_freq();
 	unsigned M_HDMI = ulmax(1, ulmin(calcdivround2(pllout, dotclock), 16));
 	//PRINTF("7 dotclock=%u kHz\n", (unsigned) (dotclock / 1000));
 	//PRINTF("7 M_HDMI=%u\n", M_HDMI);
 
     // CCU_32K select as CEC clock as default
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
+
+	//	000:􀀁VIDEO0PLL4X
+	//	001:􀀁VIDEO1PLL4X
+	//	010:􀀁VIDEO2PLL4X
+	//	011:PERI0PLL2X
+
 	const freqsrc_t sources [] =
 	{
-		{ 0x00, allwnr_a733_get_pll_video0_x1_freq() }, //000: PLL_VIDEO0(1X)
+		{ 0x03, allwnr_a733_get_pll_peri0_2x_freq() }, //000: PLL_VIDEO0(1X)
 //		{ 0x01, allwnr_a733_get_pll_video0_x4_freq() }, //001: PLL_VIDEO0(4X)
 //		{ 0x02, allwnr_a733_get_pll_video1_x1_freq() }, //010: PLL_VIDEO1(1X)
 //		{ 0x03, allwnr_a733_get_pll_video1_x4_freq() }, //011: PLL_VIDEO1(4X)
 	};
-	unsigned sel = 0x00; 	// 000: PLL_VIDEO0(1X) 001: PLL_VIDEO0(4X) 010: PLL_VIDEO1(1X) 011: PLL_VIDEO1(4X)
+	unsigned sel = 0x03; 	// 000: PLL_VIDEO0(1X) 001: PLL_VIDEO0(4X) 010: PLL_VIDEO1(1X) 011: PLL_VIDEO1(4X)
 	unsigned tcontv_divider;
 	//unsigned tcontv_prei = calcdivider(calcdivround2(allwnr_a733_get_pll_video0_x1_freq(), dotclock), ALLWNR_TCONTV_WIDTH, ALLWNR_TCONTV_TAPS, & tcontv_divider, 1);
 	unsigned tcontv_prei = calcdividerselect(dotclock, sources, ARRAY_SIZE(sources), ALLWNR_TCONTV_WIDTH, ALLWNR_TCONTV_TAPS, & tcontv_divider, & sel, 1);
@@ -6376,30 +6388,30 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
     //PRINTF("TCONTV_CCU_CLK_REG=%08X\n", (unsigned) TCONTV_CCU_CLK_REG);
 
 	const unsigned HDMI_CLK_REG_M = M_HDMI;
-	CCU->HDMI0_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);	// 00: PLL_VIDEO0(1X)
-    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
+	CCU->HDMI_TV_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);	// 00: PLL_VIDEO0(1X)
+    CCU->HDMI_TV_CLK_REG |= (UINT32_C(1) << 31);
     //PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
 
     CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
     CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST (19 & 18 - hdmi1 ?)
     //PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
 
-    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
+    ////CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
     //PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
 
 	// HDCP: High-bandwidth Digital Content Protection
-    CCU->HDMI_HDCP_CLK_REG = (UINT32_C(1) << 31) | 0x00 * (UINT32_C(1) << 24) | (2 - 1);	// SCLK_GATING
+    CCU->HDMI_CEC_CLK_REG = (UINT32_C(1) << 31) | 0x00 * (UINT32_C(1) << 24) | (2 - 1);	// SCLK_GATING
     //CCU->HDMI_HDCP_CLK_REG = 0x81000001;
-    //PRINTF("CCU->HDMI_HDCP_CLK_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_CLK_REG);
+    //PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
 
-    CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
-    CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
+    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
+    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
     //PRINTF("CCU->HDMI_HDCP_BGR_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_BGR_REG);
 
-	CCU->TCON_TV_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
-	//CCU->TCON_TV_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
-	CCU->TCON_TV_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset (bits 19..16 and 3..0 writable) mask 0x000F000F
-#endif
+	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
+	//CCU->TCONTV0_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
+	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset (bits 19..16 and 3..0 writable) mask 0x000F000F
+
 	/*
 	 * First clock parent (osc32K) is unusable for CEC. But since there
 	 * is no good way to force parent switch (both run with same frequency),
