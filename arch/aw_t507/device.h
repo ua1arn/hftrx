@@ -2492,7 +2492,8 @@ typedef struct NDFC_Type
     __IOM uint32_t NDFC_DMA_CNT;                      /*!< Offset 0x214 NDFC DMA Byte Counter Register */
          RESERVED(0x218[0x0300 - 0x0218], uint8_t)
     __IOM uint32_t NDFC_IO_DATA;                      /*!< Offset 0x300 NDFC Input/Output Data Register */
-} NDFC_TypeDef; /* size of structure = 0x304 */
+         RESERVED(0x304[0x1000 - 0x0304], uint8_t)
+} NDFC_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief OWA
  */
