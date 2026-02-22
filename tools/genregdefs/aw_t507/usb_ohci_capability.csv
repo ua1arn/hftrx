@@ -1,15 +1,4 @@
 #type; USB_OHCI_Capability
-
-#base; USB20_HOST0_OHCI 0x05101400
-#base; USB20_HOST1_OHCI 0x05200400
-#base; USB20_HOST2_OHCI 0x05310400
-#base; USB20_HOST3_OHCI 0x05311400
-
-#irq; USB20_HOST0_OHCI 59
-#irq; USB20_HOST1_OHCI 61
-#irq; USB20_HOST2_OHCI 63
-#irq; USB20_HOST3_OHCI 65
-
 #regdef; O_HcRevision; 0x0000; OHCI Revision Register (not documented)
 #regdef; O_HcControl; 0x0004; OHCI Control Register
 #regdef; O_HcCommandStatus; 0x0008; OHCI Command Status Register
@@ -32,5 +21,4 @@
 #regdef; O_HcRhDesriptorB; 0x004C; OHCI Root Hub Descriptor Register B
 #regdef; O_HcRhStatus; 0x0050; OHCI Root Hub Status Register
 #regdef; O_HcRhPortStatus; 0x0054 1; OHCI Root Hub Port Status Register
-
 #typeend;

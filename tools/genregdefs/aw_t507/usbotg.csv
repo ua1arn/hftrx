@@ -1,12 +1,4 @@
 #type; USBOTG; USB OTG Dual-Role Device controller
-
-#base; USB20_OTG_DEVICE 0x05100000
-#irq; USB20_OTG_DEVICE 57
-
-#typeend;
-
-#type; USBOTG; USB OTG Dual-Role Device controller
-
 #regdef; USB_EPFIFO; 0x0000 16; USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N
 #regdef; USB_GCS; 0x0040; USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL USB Global Control and Status Register
 #regdef; USB_INTTX 2; 0x0044; USB_INTTX USB_EPINTF USB Endpoint Interrupt Flag Register
@@ -53,5 +45,4 @@
 #regdef; BC; 0x08; USB DMA Byte Counter Register
 #regdefr; RESIDUAL_BC; 0x0C; USB DMA RESIDUAL Byte Counter Register
 #aggregend;
-
 #typeend;

@@ -1,15 +1,5 @@
 #type; USB_EHCI_Capability
 
-#base; USB20_HOST0_EHCI 0x01C1A000
-#base; USB20_HOST1_EHCI 0x01C1B000
-#base; USB20_HOST2_EHCI 0x01C1C000
-#base; USB20_HOST3_EHCI 0x01C1D000
-
-#irq; USB20_HOST0_EHCI 104
-#irq; USB20_HOST1_EHCI 106
-#irq; USB20_HOST2_EHCI 108
-#irq; USB20_HOST3_EHCI 110
-
 #regdefr; HCCAPBASE; 0x0000; EHCI Capability Register (HCIVERSION and CAPLENGTH) register
 #regdefr; HCSPARAMS; 0x0004; EHCI Host Control Structural Parameter Register
 #regdefr; HCCPARAMS; 0x0008; EHCI Host Control Capability Parameter Register

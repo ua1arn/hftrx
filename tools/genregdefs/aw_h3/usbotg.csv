@@ -1,9 +1,3 @@
-#type; USBOTG; USB OTG Dual-Role Device controller
-
-#base; USB20_OTG_DEVICE 0x01C19000
-#irq; USB20_OTG_DEVICE 103
-
-#typeend;
 
 #type; USBOTG; USB OTG Dual-Role Device controller
 
