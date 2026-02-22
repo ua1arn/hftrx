@@ -220,7 +220,7 @@ int32_t IRQ_SetMode (IRQn_ID_t irqn, uint32_t mode) {
       GIC_SetConfiguration((IRQn_Type)irqn, cfg);
       GIC_SetTarget       ((IRQn_Type)irqn, cpu);
 
-      GIC_SetGroup ((IRQn_Type)irqn, !! secure);	// Group 0 (Secure) and Group 1 (Non-secure).
+      GIC_SetGroup ((IRQn_Type)irqn, secure);	// Group 0 (Secure) and Group 1 (Non-secure).
     }
   }
 
@@ -253,7 +253,7 @@ uint32_t IRQ_GetMode (IRQn_ID_t irqn) {
     // Get interrupt CPU targets
     mode |= GIC_GetTarget ((IRQn_Type)irqn) << IRQ_MODE_CPU_Pos;
 
-    mode |= !! GIC_GetGroup((IRQn_Type)irqn) * IRQ_MODE_DOMAIN_NONSECURE;
+    mode |= GIC_GetGroup((IRQn_Type)irqn) << IRQ_MODE_DOMAIN_Pos;
 
   } else {
     mode = IRQ_MODE_ERROR;
