@@ -3149,6 +3149,43 @@ static void hardware_de_global_initialize(void)
 //		PRINTF("DE_TOP->HCLK_GATE=%08X\n", (unsigned) DE_TOP->HCLK_GATE);
     }
 
+#elif CPUSTYLE_A733
+
+//	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
+//	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
+//	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
+#if 0
+	// https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
+
+	/* переключить память к DE & VI */
+    // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
+	SYS_CFG->MEMMAP_REG &= ~ (UINT32_C(1) << 24);
+
+//	allwnr_a733_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
+//	allwnr_a733_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
+
+	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
+	//	CLK_SRC_SEL.
+	//	Clock Source Select
+	//	0: PLL_DE
+	//	1: PLL_PERI0(2X)
+	unsigned divider = 4;
+    CCU->DE_CLK_REG = (CCU->DE_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x0F) << 0)) |
+		0x01 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: PLL_DE 1: PLL_PERI0(2X)
+		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
+		0;
+    CCU->DE_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+
+    local_delay_us(10);
+
+	//PRINTF("allwnr_a733_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_de_freq() / 1000 / 1000);
+	//PRINTF("allwnr_a733_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_mbus_freq() / 1000 / 1000);
+#endif
+    CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1:􀀁De-assert
+    CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+    CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+    local_delay_us(10);
+
 #elif CPUSTYLE_T507
 
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
@@ -3221,6 +3258,7 @@ static void hardware_de_global_initialize(void)
 //	printhex32(DE_TOP_BASE, DE_TOP, 0x160);
 
 #else
+	#warning Unsupported CPUSTYLE_xxx
 
 #endif
 
@@ -6286,6 +6324,109 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 //	PRINTF("7 allwnr_a64_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a64_get_hdmi_freq() / 1000));	// 148.5 MHz or 74.25 MHz
 //	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));	// 74.25 MHz
 
+#elif CPUSTYLE_A733
+
+	unsigned ix = TCONTV_IX;
+
+	//	Note: Before operating ADDA/GPADC/RES_CAL/CSI/DSI/LVDS/HDMI (only
+	//	for T507-H/T517-H)/TVOUT modules, please make sure that this bit is
+	//	configured as 1
+////    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+    local_delay_ms(10);
+    //PRINTF("PRCM->VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
+
+    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
+    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
+	PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
+#if 0
+	// PLL_VIDEO0 as source
+	const uint_fast32_t pllout = allwnr_a733_get_pll_video0_x1_freq();
+	unsigned M_HDMI = ulmax(1, ulmin(calcdivround2(pllout, dotclock), 16));
+	//PRINTF("7 dotclock=%u kHz\n", (unsigned) (dotclock / 1000));
+	//PRINTF("7 M_HDMI=%u\n", M_HDMI);
+
+    // CCU_32K select as CEC clock as default
+    // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
+	const freqsrc_t sources [] =
+	{
+		{ 0x00, allwnr_a733_get_pll_video0_x1_freq() }, //000: PLL_VIDEO0(1X)
+//		{ 0x01, allwnr_a733_get_pll_video0_x4_freq() }, //001: PLL_VIDEO0(4X)
+//		{ 0x02, allwnr_a733_get_pll_video1_x1_freq() }, //010: PLL_VIDEO1(1X)
+//		{ 0x03, allwnr_a733_get_pll_video1_x4_freq() }, //011: PLL_VIDEO1(4X)
+	};
+	unsigned sel = 0x00; 	// 000: PLL_VIDEO0(1X) 001: PLL_VIDEO0(4X) 010: PLL_VIDEO1(1X) 011: PLL_VIDEO1(4X)
+	unsigned tcontv_divider;
+	//unsigned tcontv_prei = calcdivider(calcdivround2(allwnr_a733_get_pll_video0_x1_freq(), dotclock), ALLWNR_TCONTV_WIDTH, ALLWNR_TCONTV_TAPS, & tcontv_divider, 1);
+	unsigned tcontv_prei = calcdividerselect(dotclock, sources, ARRAY_SIZE(sources), ALLWNR_TCONTV_WIDTH, ALLWNR_TCONTV_TAPS, & tcontv_divider, & sel, 1);
+	TCONTV_CCU_CLK_REG =
+			sel * (UINT32_C(1) << 24) |
+			(tcontv_prei) * (UINT32_C(1) << 8) | // prescaler code
+			(tcontv_divider) * (UINT32_C(1) << 0) |
+			0;
+	TCONTV_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+    //PRINTF("TCONTV_CCU_CLK_REG=%08X\n", (unsigned) TCONTV_CCU_CLK_REG);
+
+	const unsigned HDMI_CLK_REG_M = M_HDMI;
+	CCU->HDMI0_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);	// 00: PLL_VIDEO0(1X)
+    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
+    //PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
+
+    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
+    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST (19 & 18 - hdmi1 ?)
+    //PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
+
+    CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
+    //PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
+
+	// HDCP: High-bandwidth Digital Content Protection
+    CCU->HDMI_HDCP_CLK_REG = (UINT32_C(1) << 31) | 0x00 * (UINT32_C(1) << 24) | (2 - 1);	// SCLK_GATING
+    //CCU->HDMI_HDCP_CLK_REG = 0x81000001;
+    //PRINTF("CCU->HDMI_HDCP_CLK_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_CLK_REG);
+
+    CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
+    CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
+    //PRINTF("CCU->HDMI_HDCP_BGR_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_BGR_REG);
+
+	CCU->TCON_TV_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
+	//CCU->TCON_TV_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
+	CCU->TCON_TV_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset (bits 19..16 and 3..0 writable) mask 0x000F000F
+#endif
+	/*
+	 * First clock parent (osc32K) is unusable for CEC. But since there
+	 * is no good way to force parent switch (both run with same frequency),
+	 * just set second clock parent here.
+	 */
+	CCU->HDMI_CEC_CLK_REG = 0x01 * (UINT32_C(1) << 24);
+
+    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
+    //PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
+
+//    CCU->TVE0_CLK_REG = 0x82000001;
+//    CCU->TVE_BGR_REG = 0x00030003;
+
+    local_delay_us(10);
+
+// https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v3x/de_lcd_type.h
+//  0x200
+//	union tcon_mux_ctl_reg_t {
+//		u32 dwval;
+//		struct {
+//			u32 dsi_src:2;
+//			u32 res0:6;
+//			u32 hdmi_src:2;
+//			u32 res1:22;
+//		} bits;
+//	};
+
+	//	7 allwnr_a733_get_hdmi_hdcp_freq()=300000 kHz
+	//	7 allwnr_a733_get_hdmi_freq()=297000 kHz
+	//	7 BOARD_TCONLCDFREQ()=148500 kHz
+
+	//PRINTF("7 allwnr_a733_get_hdmi_hdcp_freq()=%u kHz\n", (unsigned) (allwnr_a733_get_hdmi_hdcp_freq() / 1000));
+	//PRINTF("7 allwnr_a733_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a733_get_hdmi0_freq() / 1000));
+	//PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
+
 #elif CPUSTYLE_T507
 
 	unsigned ix = TCONTV_IX;
@@ -6411,8 +6552,10 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 	DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 20); // enable clk for TCON_TV0
 //	DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 16); // dsi_clk_gate
 //	DISPLAY_TOP->MODULE_GATING |= (UINT32_C(1) << 17); // lcd1_dsi_clk_gate
-
+#else
+	#warning Unsupported CPUSTYLE_xxx
 #endif
+
 #endif /* defined (TCONTV_PTR) */
 }
 

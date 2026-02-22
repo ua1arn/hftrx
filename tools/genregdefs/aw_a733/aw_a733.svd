@@ -5022,33 +5022,8 @@
   </peripheral>
   <peripheral>
   <name>DISPLAY0_TOP</name>
-  <description></description>
+  <description>VIDE0_OUT1_SYS</description>
   <baseAddress>0x05500000</baseAddress>
-  <registers>
-   <register>
-    <name>TV_CLK_EDP_I2S1_SRC</name>
-    <displayName>TV_CLK_EDP_I2S1_SRC</displayName>
-    <description>TCON_TV Clock Select And EDP I2S1 Select Register</description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>VO1_MODULE_GATING</name>
-    <displayName>VO1_MODULE_GATING</displayName>
-    <description>TCON_TV Output To HDMI Gating Register</description>
-    <addressOffset>0x020</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-  </registers>
-  </peripheral>
-  <peripheral>
-  <name>DISPLAY1_TOP</name>
-  <description></description>
-  <baseAddress>0x05510000</baseAddress>
   <registers>
    <register>
     <name>DSI_SRC_SEL</name>
@@ -5081,6 +5056,31 @@
     <name>VO0_MODULE_GATING</name>
     <displayName>VO0_MODULE_GATING</displayName>
     <description>TCON_LCD Output To LVDS/DSI Gating Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>DISPLAY1_TOP</name>
+  <description>VIDEO_OUT1_SYS</description>
+  <baseAddress>0x05510000</baseAddress>
+  <registers>
+   <register>
+    <name>TV_CLK_EDP_I2S1_SRC</name>
+    <displayName>TV_CLK_EDP_I2S1_SRC</displayName>
+    <description>TCON_TV Clock Select And EDP I2S1 Select Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VO1_MODULE_GATING</name>
+    <displayName>VO1_MODULE_GATING</displayName>
+    <description>TCON_TV Output To HDMI Gating Register</description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

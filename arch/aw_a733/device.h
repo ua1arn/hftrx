@@ -248,12 +248,12 @@ typedef enum IRQn
 #define DE_FCC6_BASE ((uintptr_t) 0x05211400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
 #define DE_MIXER0_BLD_BASE ((uintptr_t) 0x05281000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define DE_MIXER1_BLD_BASE ((uintptr_t) 0x052A1000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
-#define DISPLAY0_TOP_BASE ((uintptr_t) 0x05500000)    /*!< DISPLAY0_TOP  Base */
+#define DISPLAY0_TOP_BASE ((uintptr_t) 0x05500000)    /*!< DISPLAY0_TOP VIDE0_OUT1_SYS Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x05501000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_LCD1_BASE ((uintptr_t) 0x05502000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define COMBO_PHY_TX_DSI0_BASE ((uintptr_t) 0x05506000)/*!< MIPI_DSI  Base */
 #define COMBO_PHY_TX_DSI1_BASE ((uintptr_t) 0x05508000)/*!< MIPI_DSI  Base */
-#define DISPLAY1_TOP_BASE ((uintptr_t) 0x05510000)    /*!< DISPLAY1_TOP  Base */
+#define DISPLAY1_TOP_BASE ((uintptr_t) 0x05510000)    /*!< DISPLAY1_TOP VIDEO_OUT1_SYS Base */
 #define HDMI_TX0_BASE ((uintptr_t) 0x05520000)        /*!< HDMI_TX  Base */
 #define TCON_TV0_BASE ((uintptr_t) 0x05730000)        /*!< TCON_TV TV Output Base */
 #define TCON_TV1_BASE ((uintptr_t) 0x05731000)        /*!< TCON_TV TV Output Base */
@@ -1103,18 +1103,8 @@ typedef struct DE_VSU_Type
 /*
  * @brief DISPLAY0_TOP
  */
-/*!< DISPLAY0_TOP  */
+/*!< DISPLAY0_TOP VIDE0_OUT1_SYS */
 typedef struct DISPLAY0_TOP_Type
-{
-    __IOM uint32_t TV_CLK_EDP_I2S1_SRC;               /*!< Offset 0x000 TCON_TV Clock Select And EDP I2S1 Select Register */
-         RESERVED(0x004[0x0020 - 0x0004], uint8_t)
-    __IOM uint32_t VO1_MODULE_GATING;                 /*!< Offset 0x020 TCON_TV Output To HDMI Gating Register */
-} DISPLAY0_TOP_TypeDef; /* size of structure = 0x024 */
-/*
- * @brief DISPLAY1_TOP
- */
-/*!< DISPLAY1_TOP  */
-typedef struct DISPLAY1_TOP_Type
 {
          RESERVED(0x000[0x0004 - 0x0000], uint8_t)
     __IOM uint32_t DSI_SRC_SEL;                       /*!< Offset 0x004 MIPI DSI Data Source Select Register */
@@ -1122,6 +1112,16 @@ typedef struct DISPLAY1_TOP_Type
     __IOM uint32_t LCD_CLK_SRC_COMB_CLK_SRC;          /*!< Offset 0x00C LCD Clock And Combophy Clock Source Select Register */
          RESERVED(0x010[0x0020 - 0x0010], uint8_t)
     __IOM uint32_t VO0_MODULE_GATING;                 /*!< Offset 0x020 TCON_LCD Output To LVDS/DSI Gating Register */
+} DISPLAY0_TOP_TypeDef; /* size of structure = 0x024 */
+/*
+ * @brief DISPLAY1_TOP
+ */
+/*!< DISPLAY1_TOP VIDEO_OUT1_SYS */
+typedef struct DISPLAY1_TOP_Type
+{
+    __IOM uint32_t TV_CLK_EDP_I2S1_SRC;               /*!< Offset 0x000 TCON_TV Clock Select And EDP I2S1 Select Register */
+         RESERVED(0x004[0x0020 - 0x0004], uint8_t)
+    __IOM uint32_t VO1_MODULE_GATING;                 /*!< Offset 0x020 TCON_TV Output To HDMI Gating Register */
 } DISPLAY1_TOP_TypeDef; /* size of structure = 0x024 */
 /*
  * @brief DMAC
@@ -2749,10 +2749,10 @@ typedef struct USB_OHCI_Capability_Type
 #define DE_FCC6 ((DE_FCC_TypeDef *) DE_FCC6_BASE)     /*!< DE_FCC6 Fancy color curvature (FCC) register set access pointer */
 #define DE_MIXER0_BLD ((DE_BLD_TypeDef *) DE_MIXER0_BLD_BASE)/*!< DE_MIXER0_BLD Display Engine (DE) - Blender register set access pointer */
 #define DE_MIXER1_BLD ((DE_BLD_TypeDef *) DE_MIXER1_BLD_BASE)/*!< DE_MIXER1_BLD Display Engine (DE) - Blender register set access pointer */
-#define DISPLAY0_TOP ((DISPLAY0_TOP_TypeDef *) DISPLAY0_TOP_BASE)/*!< DISPLAY0_TOP  register set access pointer */
+#define DISPLAY0_TOP ((DISPLAY0_TOP_TypeDef *) DISPLAY0_TOP_BASE)/*!< DISPLAY0_TOP VIDE0_OUT1_SYS register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_LCD1 ((TCON_LCD_TypeDef *) TCON_LCD1_BASE)/*!< TCON_LCD1 Timing Controller_LCD (TCON_LCD) register set access pointer */
-#define DISPLAY1_TOP ((DISPLAY1_TOP_TypeDef *) DISPLAY1_TOP_BASE)/*!< DISPLAY1_TOP  register set access pointer */
+#define DISPLAY1_TOP ((DISPLAY1_TOP_TypeDef *) DISPLAY1_TOP_BASE)/*!< DISPLAY1_TOP VIDEO_OUT1_SYS register set access pointer */
 #define HDMI_TX0 ((HDMI_TX_TypeDef *) HDMI_TX0_BASE)  /*!< HDMI_TX0  register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0 TV Output register set access pointer */
 #define TCON_TV1 ((TCON_TV_TypeDef *) TCON_TV1_BASE)  /*!< TCON_TV1 TV Output register set access pointer */

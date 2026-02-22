@@ -2058,6 +2058,13 @@ void ohciehci_clk_init(void)
 	}
 
     // TODO: add enable clocks
+	switch (ix)
+	{
+	case 0:
+		break;
+	case 1:
+		break;
+	}
 
 #if WITHEHCIHWSOFTSPOLL == 0
 	arm_hardware_set_handler_system(WITHUSBHW_EHCI_IRQ, USBH_EHCI_IRQHandler);

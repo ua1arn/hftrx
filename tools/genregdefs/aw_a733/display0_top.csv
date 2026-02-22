@@ -1,7 +1,9 @@
 ## DISPLAY0_TOP
-#type; DISPLAY0_TOP
+#type; DISPLAY0_TOP;	VIDE0_OUT1_SYS
 
-#regdef; TV_CLK_EDP_I2S1_SRC; 0x0000; TCON_TV Clock Select And EDP I2S1 Select Register
-#regdef; VO1_MODULE_GATING; 0x0020; TCON_TV Output To HDMI Gating Register
+#regdef; DSI_SRC_SEL; 0x0004; MIPI DSI Data Source Select Register
+#regdef; DUAL_DSI_SKEW; 0x0008; Dual MIPI DSI Data Skew Register
+#regdef; LCD_CLK_SRC_COMB_CLK_SRC; 0x000C; LCD Clock And Combophy Clock Source Select Register
+#regdef; VO0_MODULE_GATING; 0x0020; TCON_LCD Output To LVDS/DSI Gating Register
 
 #typeend;
