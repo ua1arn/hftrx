@@ -125,7 +125,18 @@
 #base; GPADC 0x05070000
 #typeend;
 
+#type; HSTIMER; High Speed Timer (HSTimer)
+#base; HSTIMER 0x03005000
+#irq; HSTIMER0 77
+#irq; HSTIMER1 78
+#typeend;
 
+#type; EMAC; The Ethernet Medium Access Controller (EMAC) enables a host to transmi
+#base; EMAC0 0x05020000
+#base; EMAC1 0x05030000; H616: connected to the internal Ethernet PHY
+#irq; EMAC0 46
+#irq; EMAC1 47
+#typeend;
 
 #type; GIC_DISTRIBUTOR; GICD
 #base; GIC_DISTRIBUTOR  0x03021000; GICD
@@ -193,3 +204,41 @@
 #irq; USB20_HOST2_OHCI 63
 #irq; USB20_HOST3_OHCI 65
 #typeend;
+
+#type; G2D_TOP; Graphic 2D top
+#base; G2D 0x01480000
+#base; G2D_TOP 0x01480000
+#irq; G2D 122
+#typeend;
+
+#type; G2D_ROT; Graphic 2D Rotate
+#base; G2D_ROT 0x014A8000
+#typeend;
+
+#type; VE; Video Encoding
+#base; VENCODER 0x01C0E000
+#irq; VE 125
+#typeend;
+
+
+
+## https://github.com/qiaoweibiao/T507_Kernel/blob/main/drivers/video/fbdev/sunxi/disp2/hdmi2/hdmi_tx.c
+#type; HDMI_TX 
+#base; HDMI_TX0 0x06000000
+#irq; HDMI_TX0 95
+#typeend;
+
+#type; TCON_LCD; Timing Controller_LCD (TCON_LCD)
+#base; TCON_LCD0 0x06511000
+#base; TCON_LCD1 0x06512000
+#irq; TCON_LCD0 96; TCON_LCD0 interrupt
+#irq; TCON_LCD1 97; TCON_LCD1 interrupt
+#typeend;
+
+#type; TCON_TV; TV Output
+#base; TCON_TV0 0x06515000
+#base; TCON_TV1 0x06516000
+#irq; TCON_TV0 98
+#irq; TCON_TV1 99
+#typeend;
+

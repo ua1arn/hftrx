@@ -1,27 +1,8 @@
-# define G2D_TOP        (0x00000)
-# define G2D_MIXER      (0x00100)
-# define G2D_BLD        (0x00400)
-# define G2D_V0         (0x00800)
-# define G2D_UI0        (0x01000)
-# define G2D_UI1        (0x01800)
-# define G2D_UI2        (0x02000)
-# define G2D_WB         (0x03000)
-# define G2D_VSU        (0x08000)
-# define G2D_ROT        (0x28000)
-# define G2D_GSU        (0x30000)
 
 
 #type; G2D_TOP; Graphic 2D top
-
-#base; G2D 0x01480000
-#base; G2D_TOP 0x01480000
-
-#irq; G2D 122
-
 # https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/arch/arm64/boot/dts/sunxi/sun50iw9p1-myir.dtsi#L1460
-
 # https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/char/sunxi_g2d/g2d_rcq/g2d_top_type.h#L111
-
 # struct g2d_top_reg
 
 #regdef; G2D_SCLK_GATE;	0x000;
@@ -44,8 +25,6 @@
 # struct g2d_mixer_glb_reg
 
 #type; G2D_ROT; Graphic 2D Rotate
-#base; G2D_ROT 0x014A8000
-
 #regdef; ROT_CTL; 0x00; ROT_CTL						
 #regdef; ROT_INT; 0x04; ROT_INT				
 #regdef; ROT_TIMEOUT; 0x08; ROT_TIMEOUT

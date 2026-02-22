@@ -1,8 +1,6 @@
-## https://github.com/qiaoweibiao/T507_Kernel/blob/main/drivers/video/fbdev/sunxi/disp2/hdmi2/hdmi_tx.c
 
+## https://github.com/qiaoweibiao/T507_Kernel/blob/main/drivers/video/fbdev/sunxi/disp2/hdmi2/hdmi_tx.c
 #type; HDMI_TX 
-#base; HDMI_TX0 0x06000000
-#irq; HDMI_TX0 95
 
 ## Taken from https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/develop/drivers/gpu/drm/bridge/dw-hdmi.h#L14
 
