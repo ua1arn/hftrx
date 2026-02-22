@@ -1,4 +1,4 @@
-## DISPLAY0_TOP
+## DISPLAY0_TOP - RGB, LVDS, and MIPI DSI
 #type; DISPLAY0_TOP;	VIDE0_OUT1_SYS
 
 #regdef; DSI_SRC_SEL; 0x0004; MIPI DSI Data Source Select Register

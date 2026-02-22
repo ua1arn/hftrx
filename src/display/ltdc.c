@@ -6353,6 +6353,15 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
     local_delay_ms(10);
     //PRINTF("PRCM->VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
 
+    // 15.2.9.1 0x0000 TCON_TV Clock Select and EDP I2S1 Select Register
+    DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC |= (UINT32_C(1) << 3);	// TCON_TV0_HDMIPHY_CCU_CK_SEL 1: TCON_TV0 clock sources from CCU
+    // page 723, Figure 15-18 TCON_TV Environment Diagram
+    // tcontv0: input 360MHz (4pixel/148.5MHz)
+    // tcontv1: input 297MHz (2pixel)
+    // test (все 32 бита могут быть установлены)
+    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE - HDMI
+    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 21);	// TV1_GATE	- DP/eDP
+
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
 	PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
@@ -6366,49 +6375,58 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
     // CCU_32K select as CEC clock as default
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
 
-	//	000:􀀁VIDEO0PLL4X
-	//	001:􀀁VIDEO1PLL4X
-	//	010:􀀁VIDEO2PLL4X
-	//	011:PERI0PLL2X
-
+	//	000: VIDEO0PLL4X
+	//	001: VIDEO1PLL4X
+	//	010: VIDEO2PLL4X
+	//	011: PERI0PLL2X
+#if 0
 	const freqsrc_t sources [] =
 	{
-		{ 0x03, allwnr_a733_get_pll_peri0_2x_freq() }, //000: PLL_VIDEO0(1X)
-//		{ 0x01, allwnr_a733_get_pll_video0_x4_freq() }, //001: PLL_VIDEO0(4X)
-//		{ 0x02, allwnr_a733_get_pll_video1_x1_freq() }, //010: PLL_VIDEO1(1X)
-//		{ 0x03, allwnr_a733_get_pll_video1_x4_freq() }, //011: PLL_VIDEO1(4X)
+//		{ 0x01, allwnr_a733_get_pll_video0_x4_freq() }, //000: VIDEO0PLL4X
+//		{ 0x02, allwnr_a733_get_pll_video1_x1_freq() }, //001: VIDEO1PLL4X
+//		{ 0x03, allwnr_a733_get_pll_video1_x4_freq() }, //010: VIDEO2PLL4X
+		{ 0x03, allwnr_a733_get_pll_peri0_2x_freq() }, //011: PERI0PLL2X
 	};
 	unsigned sel = 0x03; 	// 000: PLL_VIDEO0(1X) 001: PLL_VIDEO0(4X) 010: PLL_VIDEO1(1X) 011: PLL_VIDEO1(4X)
 	unsigned tcontv_divider;
 	//unsigned tcontv_prei = calcdivider(calcdivround2(allwnr_a733_get_pll_video0_x1_freq(), dotclock), ALLWNR_TCONTV_WIDTH, ALLWNR_TCONTV_TAPS, & tcontv_divider, 1);
 	unsigned tcontv_prei = calcdividerselect(dotclock, sources, ARRAY_SIZE(sources), ALLWNR_TCONTV_WIDTH, ALLWNR_TCONTV_TAPS, & tcontv_divider, & sel, 1);
 	TCONTV_CCU_CLK_REG =
-			sel * (UINT32_C(1) << 24) |
-			(tcontv_prei) * (UINT32_C(1) << 8) | // prescaler code
-			(tcontv_divider) * (UINT32_C(1) << 0) |
-			0;
+		sel * (UINT32_C(1) << 24) |
+		(tcontv_prei) * (UINT32_C(1) << 8) | // prescaler code
+		(tcontv_divider) * (UINT32_C(1) << 0) |
+		0;
 	TCONTV_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
     //PRINTF("TCONTV_CCU_CLK_REG=%08X\n", (unsigned) TCONTV_CCU_CLK_REG);
+#endif
 
 	const unsigned HDMI_CLK_REG_M = M_HDMI;
-	CCU->HDMI_TV_CLK_REG = 0x00 * (UINT32_C(1) << 24) | (HDMI_CLK_REG_M - 1);	// 00: PLL_VIDEO0(1X)
+	CCU->HDMI_TV_CLK_REG =
+		0x00 * (UINT32_C(1) << 24) | 	// 000:􀀁VIDEO0PLL4X
+		(HDMI_CLK_REG_M - 1) |
+		0;
     CCU->HDMI_TV_CLK_REG |= (UINT32_C(1) << 31);
     //PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
 
-    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
+    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_GATING
+    //CCU->HDMI_BGR_REG |= (UINT32_C(1) << 18);	// HDMI_HDCP_RST
     CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST (19 & 18 - hdmi1 ?)
     //PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
 
     ////CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
     //PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
 
-	// HDCP: High-bandwidth Digital Content Protection
-    CCU->HDMI_CEC_CLK_REG = (UINT32_C(1) << 31) | 0x00 * (UINT32_C(1) << 24) | (2 - 1);	// SCLK_GATING
+	//---- HDCP: High-bandwidth Digital Content Protection
+    CCU->HDMI_CEC_CLK_REG =
+		(UINT32_C(1) << 31) |	// HDMI_CEC_CLK_GATING.
+		(UINT32_C(1) << 30) |	// PERI_GATING.
+		0x00 * (UINT32_C(1) << 24) |	// 000:􀀁RTC_32K
+		0;
     //CCU->HDMI_HDCP_CLK_REG = 0x81000001;
     //PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
 
-    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
-    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
+//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
+//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
     //PRINTF("CCU->HDMI_HDCP_BGR_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_BGR_REG);
 
 	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
@@ -6448,8 +6466,8 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 	//	7 BOARD_TCONLCDFREQ()=148500 kHz
 
 	//PRINTF("7 allwnr_a733_get_hdmi_hdcp_freq()=%u kHz\n", (unsigned) (allwnr_a733_get_hdmi_hdcp_freq() / 1000));
-	//PRINTF("7 allwnr_a733_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a733_get_hdmi0_freq() / 1000));
-	//PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
+//	PRINTF("7 allwnr_a733_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a733_get_hdmi_tv_freq() / 1000));
+//	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
 
 #elif CPUSTYLE_T507
 
@@ -6504,7 +6522,7 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 
     CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
     //PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
-
+#if 0
 	// HDCP: High-bandwidth Digital Content Protection
     CCU->HDMI_HDCP_CLK_REG = (UINT32_C(1) << 31) | 0x00 * (UINT32_C(1) << 24) | (2 - 1);	// SCLK_GATING
     //CCU->HDMI_HDCP_CLK_REG = 0x81000001;
@@ -6513,6 +6531,7 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
     CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
     CCU->HDMI_HDCP_BGR_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
     //PRINTF("CCU->HDMI_HDCP_BGR_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_BGR_REG);
+#endif
 
 	CCU->TCON_TV_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
 	//CCU->TCON_TV_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset

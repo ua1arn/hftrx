@@ -4626,6 +4626,12 @@ uint_fast32_t allwnr_a733_get_hdmi_tv_freq(void)
 	}
 }
 
+//uint_fast32_t allwnr_a733_get_tcon_tv0_freq(void)
+//{
+//	const uint_fast32_t ctlreg = CCU->TCON_TV0_CLK_REG;
+//
+//}
+
 uint_fast32_t allwnr_a733_get_de_freq(void)
 {
 	const uint_fast32_t ctlreg = RTC->XO_CTRL_REG;
@@ -4647,13 +4653,13 @@ void sysinit_boot_disconnect(void)
 static void a733_pll_enable(volatile uint32_t * reg)
 {
 	* reg |= (UINT32_C(1) << 30);	// PLL_LDO_EN
-	local_delay_ms(10);
+	local_delay_ms(1);
 	* reg |= (UINT32_C(1) << 27);	// PLL_OUTPUT0_GATE
 	* reg |= (UINT32_C(1) << 26);	// PLL_OUTPUT1_GATE
 	* reg |= (UINT32_C(1) << 25);	// PLL_OUTPUT2_GATE
 
 	* reg |= (UINT32_C(1) << 31);	// PLL_EN
-	local_delay_ms(10);
+	local_delay_ms(1);
 	* reg |= (UINT32_C(1) << 29);	// LOCK_ENABLE
 	while ((* reg & (UINT32_C(1) << 28)) == 0)	// LOCK
 		;
@@ -4667,6 +4673,11 @@ void sysinit_pll_initialize(int forced)
 	CCU->CCMU_SEC_SWITCH_REG |= (UINT32_C(1) << 0);	// PLL_SEC
 
 	a733_pll_enable(& CCU->PLL_PERI0_CTRL_REG);
+	a733_pll_enable(& CCU->PLL_DE_CTRL_REG);
+	a733_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
+	a733_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
+	a733_pll_enable(& CCU->PLL_VIDEO2_CTRL_REG);
+	//a733_pll_enable(& CCU->HDMI);
 }
 
 #elif (CPUSTYLE_A133)
