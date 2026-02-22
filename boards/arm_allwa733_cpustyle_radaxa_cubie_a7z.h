@@ -147,9 +147,9 @@
 	#endif /* WITHINTEGRATEDDSP */
 
 	#if ! LCDMODE_DUMMY
-		#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
+		//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 		#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
-		#define WITHGPUHW	1	/* Graphic processor unit */
+		//#define WITHGPUHW	1	/* Graphic processor unit */
 		#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
 		#define WITHHDMITVHW 1			/* Second display - HDMI hardware output */
 	#endif
@@ -281,11 +281,11 @@
 #endif
 
 	#define I2S0HW_INITIALIZE(master) do { \
-		/*arm_hardware_pioi_altfn20(UINT32_C(1) << 3,	GPIO_CFG_AF3); *//* PB3 I2S0-MCLK	*/ \
-		arm_hardware_pioi_altfn20(UINT32_C(1) << 2,	GPIO_CFG_AF3); /* PI2 I2S0-SYNC	*/ \
-		arm_hardware_pioi_altfn20(UINT32_C(1) << 1,	GPIO_CFG_AF3); /* PI1 I2S0-BCLK	*/ \
-		arm_hardware_pioi_altfn20(UINT32_C(1) << 3,	GPIO_CFG_AF3); /* PI3 I2S0-DOUT to FPGA */ \
-		arm_hardware_pioi_altfn20(UINT32_C(1) << 4,	GPIO_CFG_AF3); /* PI4 I2S0-DIN from FPGA */ \
+		arm_hardware_pioi_altfn20(UINT32_C(1) << 4,	GPIO_CFG_AF3); /* PB4 I2S0-MCLK	*/ \
+		arm_hardware_pioi_altfn20(UINT32_C(1) << 6,	GPIO_CFG_AF3); /* PB6 I2S0-LRCK	*/ \
+		arm_hardware_pioi_altfn20(UINT32_C(1) << 5,	GPIO_CFG_AF3); /* PB5 I2S0-BCLK	*/ \
+		arm_hardware_pioi_altfn20(UINT32_C(1) << 7,	GPIO_CFG_AF3); /* PB7 I2S0-DOUT0 to FPGA */ \
+		arm_hardware_pioi_altfn20(UINT32_C(1) << 8,	GPIO_CFG_AF3); /* PB8 I2S0-DIN0 from FPGA */ \
 	} while (0)
 	#define HARDWARE_I2S0HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S0HW_DOUT 0	/* DOUT0 used */
@@ -356,7 +356,7 @@
 	#define	SMHCHARD_PTR SMHC0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC0_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC0_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnr_t507_get_smhc0_freq())
+	#define SMHCHARD_FREQ (allwnr_a733_get_smhc0_freq())
 
 	#if WITHSDHCHW4BIT
 		#define HARDWARE_SDIO_INITIALIZE() do { \
@@ -714,7 +714,7 @@
 		s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWD, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL1 - S_TWI0_SDA */ \
 	} while (0)
 	#define TWIHARD_S_PTR S_TWI0
-	#define	TWIHARD_S_TWI0_FREQ (allwnr_a733_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_S_TWI0_FREQ (allwnr_a733_get_s_twi_freq()) // APBS2_CLK allwnr_a733_get_apb2_freq() or allwnr_a733_get_apbs2_freq()
 #endif
 
 #if 0
@@ -734,7 +734,7 @@
 		arm_hardware_pioh_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF5);		/* PH5 TWI3-SDA */ \
 	} while (0)
 	#define	TWIHARD_PTR TWI3	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnr_a733_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_a733_get_twi_freq()) // APBS2_CLK allwnr_a733_get_apb2_freq() or allwnr_a733_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
 
@@ -906,16 +906,6 @@
 		0)
 
 	#define HARDWARE_LVDS_INITIALIZE() do { \
-		arm_hardware_piod_altfn50(0*UINT32_C(1) << 0, GPIO_CFG_AF3); 	/* PD0 LVDS0_V0P */ \
-		arm_hardware_piod_altfn50(0*UINT32_C(1) << 1, GPIO_CFG_AF3); 	/* PD1 LVDS0_V0N */ \
-		arm_hardware_piod_altfn50(0*UINT32_C(1) << 2, GPIO_CFG_AF3); 	/* PD2 LVDS0_V1P */ \
-		arm_hardware_piod_altfn50(0*UINT32_C(1) << 3, GPIO_CFG_AF3); 	/* PD3 LVDS0_V1N */ \
-		arm_hardware_piod_altfn50(0*UINT32_C(1) << 4, GPIO_CFG_AF3); 	/* PD4 LVDS0_V2P */ \
-		arm_hardware_piod_altfn50(0*UINT32_C(1) << 5, GPIO_CFG_AF3); 	/* PD5 LVDS0_V2N */ \
-		arm_hardware_piod_altfn50(0*UINT32_C(1) << 6, GPIO_CFG_AF3); 	/* PD6 LVDS0_CKP */ \
-		arm_hardware_piod_altfn50(0*UINT32_C(1) << 7, GPIO_CFG_AF3); 	/* PD7 LVDS0_CKN */ \
-		arm_hardware_piod_altfn50(0*UINT32_C(1) << 8, GPIO_CFG_AF3); 	/* PD8 LVDS0_V3P */ \
-		arm_hardware_piod_altfn50(0*UINT32_C(1) << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
 	} while (0)
 	#define HARDWARE_HDMI_INITIALIZE() do { \
 	} while (0)
@@ -928,7 +918,7 @@
 		#define	TCONTV_CCU_BGR_REG (CCU->TCON_TV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define TCONTV_IRQ TCON_TV0_IRQn
 		#define TCONTV_GINT0_REG (TCON_TV0->TV_GINT0_REG)
-		#define BOARD_TCONTVFREQ (allwnr_t507_get_tcon_tv0_freq())
+		#define BOARD_TCONTVFREQ (allwnr_a733_get_tcon_tv0_freq())
 		#define RTMIXIDTV 2	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
 	#endif
 	#if 0
@@ -937,7 +927,7 @@
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_CCU_BGR_REG (CCU->TCON_LCD_BGR_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-		#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
+		#define BOARD_TCONLCDFREQ (allwnr_a733_get_tcon_lcd0_freq())
 		#define TCONLCD_IRQ TCON_LCD0_IRQn
 		#define TCONLCD_GINT0_REG (TCON_LCD0->LCD_GINT0_REG)
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
@@ -950,7 +940,7 @@
 		#define	TVENCODER_BASE TVE0_BASE	/* 0 - TVE0 */
 		#define	TVE_CCU_CLK_REG (CCU->TVE0_CLK_REG)	/* 0 - TVE0, 1: TVE1 */
 		#define	TVE_CCU_BGR_REG (CCU->TVE_BGR_REG)	/* 0 - TVE0, 1: TVE1 */
-		#define BOARD_TVEFREQ (allwnr_t507_get_tve0_freq())
+		#define BOARD_TVEFREQ (allwnr_a733_get_tve0_freq())
 	#endif
 
 #endif /* WITHLTDCHW */

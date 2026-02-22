@@ -4327,7 +4327,6 @@ uint_fast32_t allwnr_a733_get_pll_ref_freq(void)
 // and their backup clock sourceis 26MHz, CPU_BACK_PLL, and 1.2GHz.
 uint_fast32_t allwnr_a733_get_cpu_l_pll_freq(void)
 {
-
 	const uint_fast32_t pllreg = CPU_PLL_CFG->CPU_L_PLL_CTRL_REG;
 //	const uint_fast32_t PLL_NDET = (pllreg >> 23) & 0x01;
 //	const uint_fast32_t PLL_TDIV = (pllreg >> 22) & 0x01;
@@ -4344,7 +4343,6 @@ uint_fast32_t allwnr_a733_get_cpu_l_pll_freq(void)
 // and their backup clock source is 26MHz, CPU_BACK_PLL, and 1.2 GHz.
 uint_fast32_t allwnr_a733_get_cpu_b_pll_freq(void)
 {
-
 	const uint_fast32_t pllreg = CPU_PLL_CFG->CPU_B_PLL_CTRL_REG;
 //	const uint_fast32_t PLL_NDET = (pllreg >> 23) & 0x01;
 //	const uint_fast32_t PLL_TDIV = (pllreg >> 22) & 0x01;
@@ -4356,6 +4354,166 @@ uint_fast32_t allwnr_a733_get_cpu_b_pll_freq(void)
 	//	The CPU_L_PLLVCO = InputFreq*N/P
 	return allwnr_a733_get_pll_ref_freq() * N / P / (M0 * M1);
 }
+
+uint_fast32_t allwnr_a733_get_pll_video0_4x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	VIDEO0PLL4X = InputFreq *N/M1/P0.
+	//	VIDEO0PLL3X = InputFreq *N/M1/P1.
+	return allwnr_a733_get_pll_ref_freq() * N / P0;
+}
+
+uint_fast32_t allwnr_a733_get_pll_video1_4x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	VIDEO1PLL4X = InputFreq *N/M1/P0.
+	//	VIDEO1PLL3X = InputFreq *N/M1/P1.
+	return allwnr_a733_get_pll_ref_freq() * N / P0;
+}
+
+uint_fast32_t allwnr_a733_get_pll_video2_4x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_VIDEO2_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	VIDEO2PLL4X = InputFreq *N/M1/P0.
+	//	VIDEO2PLL3X = InputFreq *N/M1/P1.
+	return allwnr_a733_get_pll_ref_freq() * N / P0;
+}
+
+uint_fast32_t allwnr_a733_get_pll_video0_3x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	VIDEO0PLL4X = InputFreq *N/M1/P0.
+	//	VIDEO0PLL3X = InputFreq *N/M1/P1.
+	return allwnr_a733_get_pll_ref_freq() * N / P1;
+}
+
+// Default: 1200 MHz
+uint_fast32_t allwnr_a733_get_pll_peri0_2x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_PERI0_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t P2 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	PERI0PLL2X = 24MHz*N/M1/P0.
+	//	PERI0_800M = 24MHz*N/M1/P1.
+	//	PERI0_480M = 24MHz*N/M1/P2.
+	//	PERI0_600M = PERI0PLL2X/2.
+	//	PERI0_400M = PERI0PLL2X/3.
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_pll_ref_freq() * N / (M1 * P0);
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_800M_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_PERI0_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t P2 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	PERI0PLL2X = 24MHz*N/M1/P0.
+	//	PERI0_800M = 24MHz*N/M1/P1.
+	//	PERI0_480M = 24MHz*N/M1/P2.
+	//	PERI0_600M = PERI0PLL2X/2.
+	//	PERI0_400M = PERI0PLL2X/3.
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_pll_ref_freq() * N / (M1 * P1);
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_480M_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_PERI0_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t P2 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	PERI0PLL2X = 24MHz*N/M1/P0.
+	//	PERI0_800M = 24MHz*N/M1/P1.
+	//	PERI0_480M = 24MHz*N/M1/P2.
+	//	PERI0_600M = PERI0PLL2X/2.
+	//	PERI0_400M = PERI0PLL2X/3.
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_pll_ref_freq() * N / (M1 * P2);
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_600M_freq(void)
+{
+	//	PERI0_600M = PERI0PLL2X/2.
+	//	PERI0_400M = PERI0PLL2X/3.
+	return allwnr_a733_get_pll_peri0_2x_freq() / 2;
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_400M_freq(void)
+{
+	//	PERI0_600M = PERI0PLL2X/2.
+	//	PERI0_400M = PERI0PLL2X/3.
+	return allwnr_a733_get_pll_peri0_2x_freq() / 3;
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_300M_freq(void)
+{
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_pll_peri0_600M_freq() / 2;
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_200M_freq(void)
+{
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_pll_peri0_400M_freq() / 2;
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_160M_freq(void)
+{
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_pll_peri0_480M_freq() / 3;
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_150M_freq(void)
+{
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_pll_peri0_300M_freq() / 2;
+}
+
 
 // cores 0..5 - Cortex-A55
 uint_fast32_t allwnr_a733_get_cpux_0_5_freq(void)
@@ -4456,6 +4614,38 @@ uint_fast32_t allwnr_a733_get_spi2_freq(void)
 uint_fast32_t allwnr_a733_get_spi3_freq(void)
 {
 	return allwnr_a733_get_sysclk24M_freq();
+}
+
+uint_fast32_t allwnr_a733_get_hdmi_tv_freq(void)
+{
+	const uint_fast32_t ctlreg = CCU->HDMI_TV_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) + ((ctlreg >> 8) & 0x1F);
+	const uint_fast32_t M = UINT32_C(1) + ((ctlreg >> 0) & 0x1F);
+	//	HDMI_TV_CLK = Clock Source/M/N.
+	//	CLK_SRC_SEL.
+	//	Clock Source Select
+	//	000: VIDEO0PLL4X
+	//	001: VIDEO1PLL4X
+	//	010: VIDEO2PLL4X
+	//	011: PERI0PLL2X
+	switch ((ctlreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		return allwnr_a733_get_pll_video0_4x_freq() / (M * N);
+	case 0x01:
+		return allwnr_a733_get_pll_video1_4x_freq() / (M * N);
+	case 0x02:
+		return allwnr_a733_get_pll_video2_4x_freq() / (M * N);
+	case 0x03:
+		return allwnr_a733_get_pll_peri0_2x_freq() / (M * N);
+	}
+}
+
+uint_fast32_t allwnr_a733_get_de_freq(void)
+{
+	const uint_fast32_t ctlreg = RTC->XO_CTRL_REG;
+	return 1;
 }
 
 #elif (CPUSTYLE_A133)

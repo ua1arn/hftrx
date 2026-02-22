@@ -338,8 +338,8 @@
 #type; TCON_TV
 #base; TCON_TV0 0x05730000
 #base; TCON_TV1 0x05731000
-#irq; TV0 89
-#irq; TV1 90
+#irq; TCON_TV0 89
+#irq; TCON_TV1 90
 #typeend;
 
 ## eDP
@@ -365,6 +365,7 @@
 #typeend;
 
 #type; HDMI_TX 
+#base; HDMI_TX0 0x05520000
 #irq; HDMI 93
 #typeend;
 

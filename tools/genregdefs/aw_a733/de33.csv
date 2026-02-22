@@ -1,17 +1,16 @@
 #type; DE; Display Engine (DE)
 #base; DE 0x01000000
-#typeend;
+
+# Allwinner_DE3.0_Spec_V1.0.pdf
+
+# https://linux-sunxi.org/images/d/dd/Allwinner_DE3.0_Spec_V1.0.pdf
+# https://github.com/dumtux/Allwinner-H616/blob/e900407aca767f1429ba4a6a990b8b7c9f200914/kernel/drivers/gpu/drm/sun4i/sun8i_mixer.h#L23
 
 #type; DE_TOP; Display Engine (DE) TOP (APB)
 #base; DE_TOP 0x01008000
 
 #irq; DE 120; DE interrupt
 #typeend;
-
-# Allwinner_DE3.0_Spec_V1.0.pdf
-
-# https://linux-sunxi.org/images/d/dd/Allwinner_DE3.0_Spec_V1.0.pdf
-# https://github.com/dumtux/Allwinner-H616/blob/e900407aca767f1429ba4a6a990b8b7c9f200914/kernel/drivers/gpu/drm/sun4i/sun8i_mixer.h#L23
 
 #type; DE_TOP; Display Engine (DE) TOP (APB)
 
@@ -56,6 +55,7 @@
 #typeend;
 
 #type; RTWB_RCQ
+
 #regdef; RTWB_RCQ_IRQ; 0x00; RTWB_RCQ_IRQ_OFFSET          (0x8200)
 #regdef; RTWB_RCQ_STS; 0x04; RTWB_RCQ_STS_OFFSET          (0x8204)
 #regdef; RTWB_RCQ_CTL; 0x10; RTWB_RCQ_CTL_OFFSET          (0x8210)
@@ -66,7 +66,6 @@
 
 #base; DE_MIXER0_GLB 0x01008100; RT-Mixer0
 #base; DE_MIXER1_GLB 0x01008140; RT-Mixer1
-
 #typeend;
 
 #type; DE_GLB; Display Engine (DE) - Global Control

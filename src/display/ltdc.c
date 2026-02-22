@@ -1891,6 +1891,53 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 		DE_UIS2,
 };
 
+#elif CPUSTYLE_A733
+	#warning Unexpected CPUSTYLE_A733
+// Требуется заполнение в соответствии с инициализацией DE_PORT2CHN_MUX
+
+//	RTMIX0: VI1, UI1, [vi3]
+//	RTMIX1: VI2, UI2, UI3
+
+static DE_VI_TypeDef * const rtmix0_vimap [] =
+{
+		DE_VI1,
+};
+
+static DE_VI_TypeDef * const rtmix1_vimap [] =
+{
+		DE_VI2,
+};
+
+static DE_UI_TypeDef * const rtmix0_uimap [] =
+{
+		DE_UI1,
+};
+
+static DE_UI_TypeDef * const rtmix1_uimap [] =
+{
+		DE_UI2,
+};
+
+static DE_VSU_TypeDef * const rtmix0_vsumap [] =
+{
+		DE_VSU1,
+};
+
+static DE_VSU_TypeDef * const rtmix1_vsumap [] =
+{
+		DE_VSU2,
+};
+
+static DE_UIS_TypeDef * const rtmix0_uismap [] =
+{
+		DE_UIS1,
+};
+
+static DE_UIS_TypeDef * const rtmix1_uismap [] =
+{
+		DE_UIS2,
+};
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 static DE_VI_TypeDef * const rtmix0_vimap [] =
@@ -1975,12 +2022,17 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 	#define VI_LASTIX(rtmixid) 1
 	#define UI_LASTIX(rtmixid) 1
 	/* BLD_EN_COLOR_CTL positions 8..13 */
+#elif CPUSTYLE_A733
+	#warning Unexpected CPUSTYLE_A733
+	#define VI_LASTIX(rtmixid) 1
+	#define UI_LASTIX(rtmixid) 1
+	/* BLD_EN_COLOR_CTL positions 8..13 */
 #elif CPUSTYLE_A64 || CPUSTYLE_H3
 	#define VI_LASTIX(rtmixid) 1
 	#define UI_LASTIX(rtmixid) 3
 	/* BLD_EN_COLOR_CTL positions 8..13 */
 #else
-	#error Unexpected CPUSTYLE_xxx
+	#warning Unexpected CPUSTYLE_xxx
 	#define VI_LASTIX(rtmixid) 1
 	#define UI_LASTIX(rtmixid) 1
 #endif
@@ -3192,6 +3244,22 @@ static void hardware_de_initialize(int rtmixid)
  	//DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
 	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
 
+
+#elif CPUSTYLE_A733
+	#warning Undefined CPUSTYLE_A733
+	/* Global DE settings */
+    const int disp = rtmixid - 1;
+
+	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
+	// https://github.com/rvboards/linux_kernel_for_d1/blob/5703a18aa3ca12829027b0b20cd197e9741c4c0f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v33x/de330/de_top.c#L245
+	// CORE0..CORE3 bits valid - valid bits 0x01F
+
+ 	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << disp;	// COREx_SCLK_GATE
+ 	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << disp;	// COREx_HCLK_GATE
+ 	// Only one bit writable
+ 	//DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
+	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 #if 0
@@ -3289,7 +3357,7 @@ static void hardware_de_initialize(int rtmixid)
 
 
 #else
-	#error Undefined CPUSTYLE_xxx
+	#warning Undefined CPUSTYLE_xxx
 #endif
 }
 
@@ -6370,6 +6438,9 @@ static void awxx_deoutmapping(int rtmixid)
 	DE_TOP->DE2TCON_MUX = 0x01;
 	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
+#elif CPUSTYLE_A733
+	#warning Unexpected CPUSTYLE_A733
+
 #elif CPUSTYLE_T507
 	// DE_PORT2CHN_MUX [0]=9x00A98210
 	// bits 3:0 - BLD_EN_COLOR_CTL bit 8 (pipe0)
@@ -6528,7 +6599,7 @@ static void awxx_deoutmapping(int rtmixid)
 //	}
 
 #else
-	#error Undefined CPUSTYLE_xxx
+	#warning Undefined CPUSTYLE_xxx
 #endif
 }
 
@@ -7888,6 +7959,8 @@ static uint_fast32_t hdmi_realclock(const videomode_t * vdmode)
 	return allwnr_a64_get_hdmi_freq();
 #elif CPUSTYLE_T507
 	return allwnr_t507_get_hdmi0_freq();
+#elif CPUSTYLE_A733
+	return allwnr_a733_get_hdmi_tv_freq();
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	return allwnr_t113_get_hdmi_freq();
 #endif
@@ -7904,7 +7977,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	const uint_fast32_t dotclock = hdmi_realclock(vdmode);
 
-#if CPUSTYLE_T507
+#if CPUSTYLE_T507 || CPUSTYLE_A733
 	t507_hdmi_phy_init(dotclock);
 #else
 	h3_hdmi_phy_init(dotclock);

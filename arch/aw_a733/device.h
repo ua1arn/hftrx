@@ -66,6 +66,14 @@ typedef enum IRQn
     I2S_PCM1_IRQn = 75,                               /*!< I2S_PCM  */
     I2S_PCM2_IRQn = 76,                               /*!< I2S_PCM  */
     I2S_PCM3_IRQn = 77,                               /*!< I2S_PCM  */
+    TCON0_LCD0_IRQn = 86,                             /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */
+    TCON0_LCD1_IRQn = 87,                             /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */
+    TCON_TV0_IRQn = 89,                               /*!< TCON_TV TV Output */
+    TCON_TV1_IRQn = 90,                               /*!< TCON_TV TV Output */
+    DSI0_IRQn = 91,                                   /*!< MIPI_DSI  */
+    DSI1_IRQn = 92,                                   /*!< MIPI_DSI  */
+    HDMI_IRQn = 93,                                   /*!< HDMI_TX  */
+    EDP_IRQn = 94,                                    /*!< eDP_REG_PAD  */
     GPIOB_IRQn = 101,                                 /*!< GPIOINT GPIOB_NS */
     GPIOB_S_IRQn = 102,                               /*!< GPIOINT  */
     GPIOC_IRQn = 103,                                 /*!< GPIOINT GPIOC_NS */
@@ -83,6 +91,7 @@ typedef enum IRQn
     GPIOJ_IRQn = 117,                                 /*!< GPIOINT GPIOJ_NS */
     GPIOJ_S_IRQn = 118,                               /*!< GPIOINT  */
     GPIOK_IRQn = 119,                                 /*!< GPIOINT GPIOK_NS */
+    DE_IRQn = 120,                                    /*!< DE_TOP DE interrupt */
     GPIOK_S_IRQn = 120,                               /*!< GPIOINT  */
     TIMER0_IRQn = 121,                                /*!< TIMER0  */
     TIMER1_IRQn = 122,                                /*!< TIMER0  */
@@ -128,6 +137,49 @@ typedef enum IRQn
 /* Peripheral and RAM base address */
 
 #define GPIOINTD_BASE ((uintptr_t) 0x00020002)        /*!< GPIOINT  Base */
+#define DE_BASE ((uintptr_t) 0x01000000)              /*!< DE Display Engine (DE) Base */
+#define DE_TOP_BASE ((uintptr_t) 0x01008000)          /*!< DE_TOP Display Engine (DE) TOP (APB) Base */
+#define DE_MIXER0_GLB_BASE ((uintptr_t) 0x01008100)   /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define DE_MIXER1_GLB_BASE ((uintptr_t) 0x01008140)   /*!< DE_GLB Display Engine (DE) - Global Control Base */
+#define RTWB_RCQ_BASE ((uintptr_t) 0x01008200)        /*!< RTWB_RCQ  Base */
+#define DE_VI1_BASE ((uintptr_t) 0x01101000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DE_VSU1_BASE ((uintptr_t) 0x01104000)         /*!< DE_VSU Video Scaler Unit (VSU) Base */
+#define DE_FCE1_BASE ((uintptr_t) 0x01110000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
+#define DE_BLS1_BASE ((uintptr_t) 0x01111000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_FCC1_BASE ((uintptr_t) 0x01111400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define DE_DNS1_BASE ((uintptr_t) 0x01114000)         /*!< DE_DNS Denoise (DNS) Base */
+#define DE_VI2_BASE ((uintptr_t) 0x01121000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DE_VSU2_BASE ((uintptr_t) 0x01124000)         /*!< DE_VSU Video Scaler Unit (VSU) Base */
+#define DE_FCE2_BASE ((uintptr_t) 0x01130000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
+#define DE_BLS2_BASE ((uintptr_t) 0x01131000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_FCC2_BASE ((uintptr_t) 0x01131400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define DE_DNS2_BASE ((uintptr_t) 0x01134000)         /*!< DE_DNS Denoise (DNS) Base */
+#define DE_VI3_BASE ((uintptr_t) 0x01141000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
+#define DE_VSU3_BASE ((uintptr_t) 0x01144000)         /*!< DE_VSU Video Scaler Unit (VSU) Base */
+#define DE_FCE3_BASE ((uintptr_t) 0x01150000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
+#define DE_BLS3_BASE ((uintptr_t) 0x01151000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_DNS3_BASE ((uintptr_t) 0x01151400)         /*!< DE_DNS Denoise (DNS) Base */
+#define DE_FCC3_BASE ((uintptr_t) 0x01151400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define DE_UI1_BASE ((uintptr_t) 0x011C1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
+#define DE_UIS1_BASE ((uintptr_t) 0x011C4000)         /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
+#define DE_FCE4_BASE ((uintptr_t) 0x011D0000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
+#define DE_BLS4_BASE ((uintptr_t) 0x011D1000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_FCC4_BASE ((uintptr_t) 0x011D1400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define DE_DNS4_BASE ((uintptr_t) 0x011D4000)         /*!< DE_DNS Denoise (DNS) Base */
+#define DE_UI2_BASE ((uintptr_t) 0x011E1000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
+#define DE_UIS2_BASE ((uintptr_t) 0x011E4000)         /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
+#define DE_FCE5_BASE ((uintptr_t) 0x011F0000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
+#define DE_BLS5_BASE ((uintptr_t) 0x011F1000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_FCC5_BASE ((uintptr_t) 0x011F1400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define DE_DNS5_BASE ((uintptr_t) 0x011F4000)         /*!< DE_DNS Denoise (DNS) Base */
+#define DE_UI3_BASE ((uintptr_t) 0x01201000)          /*!< DE_UI Display Engine (DE) - UI surface Base */
+#define DE_UIS3_BASE ((uintptr_t) 0x01204000)         /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
+#define DE_FCE6_BASE ((uintptr_t) 0x01210000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
+#define DE_BLS6_BASE ((uintptr_t) 0x01211000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
+#define DE_FCC6_BASE ((uintptr_t) 0x01211400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
+#define DE_DNS6_BASE ((uintptr_t) 0x01214000)         /*!< DE_DNS Denoise (DNS) Base */
+#define DE_MIXER0_BLD_BASE ((uintptr_t) 0x01281000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define DE_MIXER1_BLD_BASE ((uintptr_t) 0x012A1000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x02000080)       /*!< GPIOBLOCK Port Controller Base */
 #define GPIOB_BASE ((uintptr_t) 0x02000100)           /*!< GPIO Port Controller Base */
 #define GPIOINTB_BASE ((uintptr_t) 0x02000140)        /*!< GPIOINT  Base */
@@ -202,6 +254,7 @@ typedef enum IRQn
 #define COMBO_PHY_TX_DSI0_BASE ((uintptr_t) 0x05506000)/*!< MIPI_DSI  Base */
 #define COMBO_PHY_TX_DSI1_BASE ((uintptr_t) 0x05508000)/*!< MIPI_DSI  Base */
 #define DISPLAY1_TOP_BASE ((uintptr_t) 0x05510000)    /*!< DISPLAY1_TOP  Base */
+#define HDMI_TX0_BASE ((uintptr_t) 0x05520000)        /*!< HDMI_TX  Base */
 #define TCON_TV0_BASE ((uintptr_t) 0x05730000)        /*!< TCON_TV TV Output Base */
 #define TCON_TV1_BASE ((uintptr_t) 0x05731000)        /*!< TCON_TV TV Output Base */
 #define eDP_CTRL_BASE ((uintptr_t) 0x05740000)        /*!< eDP_CTRL  Base */
@@ -777,6 +830,276 @@ typedef struct CPU_SUBSYS_CTRL_Type
              RESERVED(0x00C[0x1000 - 0x000C], uint8_t)
     } CLU0 [0x008];                                   /*!< Offset 0x1000 Cluster 0 CPUx Control Register */
 } CPU_SUBSYS_CTRL_TypeDef; /* size of structure = 0x9000 */
+/*
+ * @brief DE_BLD
+ */
+/*!< DE_BLD Display Engine (DE) - Blender */
+typedef struct DE_BLD_Type
+{
+    __IOM uint32_t BLD_EN_COLOR_CTL;                  /*!< Offset 0x000 BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
+    struct
+    {
+        __IOM uint32_t BLD_FILL_COLOR;                /*!< Offset 0x004 BLD fill color register */
+        __IOM uint32_t BLD_CH_ISIZE;                  /*!< Offset 0x008 BLD input memory size register */
+        __IOM uint32_t BLD_CH_OFFSET;                 /*!< Offset 0x00C BLD input memory offset register */
+             RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
+    } CH [0x006];                                     /*!< Offset 0x004 Pipe [0..5] */
+         RESERVED(0x064[0x0080 - 0x0064], uint8_t)
+    __IOM uint32_t ROUTE;                             /*!< Offset 0x080 BLD_CH_RTCTL BLD routing control register (default value 0x00543210) */
+    __IOM uint32_t PREMULTIPLY;                       /*!< Offset 0x084 BLD pre-multiply control register */
+    __IOM uint32_t BKCOLOR;                           /*!< Offset 0x088  */
+    __IOM uint32_t OUTPUT_SIZE;                       /*!< Offset 0x08C  */
+    __IOM uint32_t BLD_MODE [0x006];                  /*!< Offset 0x090 BLD_CTL SUN8I_MIXER_BLEND_MODE blender0..blaener3 (or more) */
+         RESERVED(0x0A8[0x00B0 - 0x00A8], uint8_t)
+    __IOM uint32_t CK_CTL;                            /*!< Offset 0x0B0  */
+    __IOM uint32_t CK_CFG;                            /*!< Offset 0x0B4  */
+         RESERVED(0x0B8[0x00C0 - 0x00B8], uint8_t)
+    __IOM uint32_t CK_MAX [0x004];                    /*!< Offset 0x0C0  */
+         RESERVED(0x0D0[0x00E0 - 0x00D0], uint8_t)
+    __IOM uint32_t CK_MIN [0x004];                    /*!< Offset 0x0E0  */
+         RESERVED(0x0F0[0x00FC - 0x00F0], uint8_t)
+    __IOM uint32_t OUT_CTL;                           /*!< Offset 0x0FC  */
+    __IOM uint32_t CSC_CTL;                           /*!< Offset 0x100 SUN50I_MIXER_BLEND_CSC_CTL  */
+         RESERVED(0x104[0x0110 - 0x0104], uint8_t)
+    __IOM uint32_t CSC_COEFF [0x00C];                 /*!< Offset 0x110 SUN50I_MIXER_BLEND_CSC_COEFF(base, layer, x) ((base) + 0x110 + (layer)*0x30 + (x)*4) */
+} DE_BLD_TypeDef; /* size of structure = 0x140 */
+/*
+ * @brief DE_BLS
+ */
+/*!< DE_BLS Blue Level Stretch (BLS) */
+typedef struct DE_BLS_Type
+{
+    __IOM uint32_t BLS_CTRL_REG;                      /*!< Offset 0x000 BLS module control register */
+    __IOM uint32_t BLS_SIZE_REG;                      /*!< Offset 0x004 BLS size register */
+    __IOM uint32_t BLS_WIN0_REG;                      /*!< Offset 0x008 BLS window setting register0 */
+    __IOM uint32_t BLS_WIN1_REG;                      /*!< Offset 0x00C BLS window setting register1 */
+    __IOM uint32_t BLS_ATTLUT_REG [0x004];            /*!< Offset 0x010 0x10+N*0x4 BLS attenuation LUT register, +N*0x4 (N = 0,1,2,3) */
+    __IOM uint32_t BLS_POS_REG;                       /*!< Offset 0x020 BLS blue zone position register */
+         RESERVED(0x024[0x0030 - 0x0024], uint8_t)
+    __IOM uint32_t BLS_GAINLUT_REG [0x004];           /*!< Offset 0x030 0x30+N*0x4 BLS GainLUT access register, +N*0x4, Total 16byte, 16*8bit (N = 0,1,2,3) */
+} DE_BLS_TypeDef; /* size of structure = 0x040 */
+/*
+ * @brief DE_DNS
+ */
+/*!< DE_DNS Denoise (DNS) */
+typedef struct DE_DNS_Type
+{
+    __IOM uint32_t DNS_CTL;                           /*!< Offset 0x000 DNS module control register */
+    __IOM uint32_t DNS_SIZE;                          /*!< Offset 0x004 DNS size register */
+} DE_DNS_TypeDef; /* size of structure = 0x008 */
+/*
+ * @brief DE_FCC
+ */
+/*!< DE_FCC Fancy color curvature (FCC) */
+typedef struct DE_FCC_Type
+{
+    __IOM uint32_t FCC_CTL_REG;                       /*!< Offset 0x000 FCC Control Register */
+    __IOM uint32_t FCC_INPUT_SIZE_REG;                /*!< Offset 0x004 FCC Input Size Register */
+    __IOM uint32_t FCC_OUTPUT_WIN0_REG;               /*!< Offset 0x008 FCC Output Window0 Register */
+    __IOM uint32_t FCC_OUTPUT_WIN1_REG;               /*!< Offset 0x00C FCC Output Window1 Register */
+} DE_FCC_TypeDef; /* size of structure = 0x010 */
+/*
+ * @brief DE_FCE
+ */
+/*!< DE_FCE Fresh and Contrast Enhancement (FCE) */
+typedef struct DE_FCE_Type
+{
+    __IOM uint32_t GCTRL_REG;                         /*!< Offset 0x000 Control register */
+    __IOM uint32_t FCE_SIZE_REG;                      /*!< Offset 0x004 Size setting register */
+    __IOM uint32_t FCE_WIN0_REG;                      /*!< Offset 0x008 Window setting 0 register */
+    __IOM uint32_t FCE_WIN1_REG;                      /*!< Offset 0x00C Window setting 1 register */
+         RESERVED(0x010[0x0020 - 0x0010], uint8_t)
+    __IOM uint32_t HIST_SUM_REG;                      /*!< Offset 0x020 Histogram sum register */
+    __IOM uint32_t HIST_STATUS_REG;                   /*!< Offset 0x024 Histogram status register */
+    __IOM uint32_t CE_STATUS_REG;                     /*!< Offset 0x028 CE LUT status register */
+    __IOM uint32_t CE_CC_REG;                         /*!< Offset 0x02C CE chroma compensation function setting register */
+    __IOM uint32_t FTC_GAIN_REG;                      /*!< Offset 0x030 FTC gain setting register */
+    __IOM uint32_t FTD_HUE_THR_REG;                   /*!< Offset 0x034 FTD hue threshold setting register */
+    __IOM uint32_t FTD_CHROMA_THR_REG;                /*!< Offset 0x038 FTD chroma threshold setting register */
+    __IOM uint32_t FTD_SLP_REG;                       /*!< Offset 0x03C FTD slop setting register */
+    __IOM uint32_t CSC_ENABLE_REG;                    /*!< Offset 0x040 CSC enable setting register */
+    __IOM uint32_t CSC_D0_REG;                        /*!< Offset 0x044 CSC Constant D0 Register */
+    __IOM uint32_t CSC_D1_REG;                        /*!< Offset 0x048 CSC Constant D1 Register */
+    __IOM uint32_t CSC_D2_REG;                        /*!< Offset 0x04C CSC Constant D2 Register */
+    __IOM uint32_t CSC_C00_REG;                       /*!< Offset 0x050 CSC Coefficient 00 Register */
+    __IOM uint32_t CSC_C01_REG;                       /*!< Offset 0x054 CSC Coefficient 01 Register */
+    __IOM uint32_t CSC_C02_REG;                       /*!< Offset 0x058 CSC Coefficient 02 Register */
+    __IOM uint32_t CSC_C03_REG;                       /*!< Offset 0x05C CSC Constant 03 Register */
+    __IOM uint32_t CSC_C10_REG;                       /*!< Offset 0x060 CSC Coefficient 10 Register */
+    __IOM uint32_t CSC_C11_REG;                       /*!< Offset 0x064 CSC Coefficient 11 Register */
+    __IOM uint32_t CSC_C12_REG;                       /*!< Offset 0x068 CSC Coefficient 12 Register */
+    __IOM uint32_t CSC_C13_REG;                       /*!< Offset 0x06C CSC Constant 13 Register */
+    __IOM uint32_t CSC_C20_REG;                       /*!< Offset 0x070 CSC Coefficient 20 Register */
+    __IOM uint32_t CSC_C21_REG;                       /*!< Offset 0x074 CSC Coefficient 21 Register */
+    __IOM uint32_t CSC_C22_REG;                       /*!< Offset 0x078 CSC Coefficient 22 Register */
+    __IOM uint32_t CSC_C23_REG;                       /*!< Offset 0x07C CSC Constant 23 Register */
+         RESERVED(0x080[0x0200 - 0x0080], uint8_t)
+    __IOM uint32_t CE_LUT_REGN [0x080];               /*!< Offset 0x200 0x200+N*4 CE LUT register N (N=0:127) */
+    __IOM uint32_t HIST_CNT_REGN [0x100];             /*!< Offset 0x400 0x400+N*4 Histogram count register N (N=0:255) */
+} DE_FCE_TypeDef; /* size of structure = 0x800 */
+/*
+ * @brief DE_GLB
+ */
+/*!< DE_GLB Display Engine (DE) - Global Control */
+typedef struct DE_GLB_Type
+{
+    __IOM uint32_t GLB_CTL;                           /*!< Offset 0x000 Global control register */
+    __IOM uint32_t GLB_STS;                           /*!< Offset 0x004 Global status register */
+    __IOM uint32_t GLB_SIZE;                          /*!< Offset 0x008 Global size register */
+    __IOM uint32_t GLB_CLK;                           /*!< Offset 0x00C Global clock register */
+    __IOM uint32_t GLB_DBUFFER;                       /*!< Offset 0x010 Global double buffer control register */
+         RESERVED(0x014[0x0040 - 0x0014], uint8_t)
+} DE_GLB_TypeDef; /* size of structure = 0x040 */
+/*
+ * @brief DE_TOP
+ */
+/*!< DE_TOP Display Engine (DE) TOP (APB) */
+typedef struct DE_TOP_Type
+{
+    __IOM uint32_t DE_SCLK_GATE;                      /*!< Offset 0x000 DE SCLK Gating Register */
+    __IOM uint32_t DE_HCLK_GATE;                      /*!< Offset 0x004 DE HCLK Gating Register */
+    __IOM uint32_t DE_AHB_RESET;                      /*!< Offset 0x008 DE AHB Reset Register DE_MBUS_CLOCK_ADDR */
+    __IOM uint32_t DE_SCLK_DIV;                       /*!< Offset 0x00C DE SCLK Division Register  */
+    __IOM uint32_t DE2TCON_MUX;                       /*!< Offset 0x010 DE MUX Register DE2TCON_MUX_OFFSET */
+    __IOM uint32_t DE_VER_CTL;                        /*!< Offset 0x014 DE_VER_CTL_OFFSET */
+         RESERVED(0x018[0x0020 - 0x0018], uint8_t)
+    __IOM uint32_t DE_RTWB_MUX;                       /*!< Offset 0x020 DE_RTWB_MUX_OFFSET */
+    __IOM uint32_t DE_CHN2CORE_MUX;                   /*!< Offset 0x024 DE_CHN2CORE_MUX_OFFSET */
+    __IOM uint32_t DE_PORT2CHN_MUX [0x004];           /*!< Offset 0x028 DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4) */
+         RESERVED(0x038[0x00E0 - 0x0038], uint8_t)
+    __IOM uint32_t DE_DEBUG_CTL;                      /*!< Offset 0x0E0 DE_DEBUG_CTL_OFFSET */
+} DE_TOP_TypeDef; /* size of structure = 0x0E4 */
+/*
+ * @brief DE_UI
+ */
+/*!< DE_UI Display Engine (DE) - UI surface */
+typedef struct DE_UI_Type
+{
+    struct
+    {
+        __IOM uint32_t ATTR;                          /*!< Offset 0x000  */
+        __IOM uint32_t SIZE;                          /*!< Offset 0x004  */
+        __IOM uint32_t COORD;                         /*!< Offset 0x008  */
+        __IOM uint32_t PITCH;                         /*!< Offset 0x00C  */
+        __IOM uint32_t TOP_LADDR;                     /*!< Offset 0x010  */
+        __IOM uint32_t BOT_LADDR;                     /*!< Offset 0x014  */
+        __IOM uint32_t FCOLOR;                        /*!< Offset 0x018  */
+             RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
+    } CFG [0x004];                                    /*!< Offset 0x000  */
+    __IOM uint32_t TOP_HADDR;                         /*!< Offset 0x080  */
+    __IOM uint32_t BOT_HADDR;                         /*!< Offset 0x084  */
+    __IOM uint32_t OVL_SIZE;                          /*!< Offset 0x088  */
+         RESERVED(0x08C[0x0800 - 0x008C], uint8_t)
+} DE_UI_TypeDef; /* size of structure = 0x800 */
+/*
+ * @brief DE_UIS
+ */
+/*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function */
+typedef struct DE_UIS_Type
+{
+    __IOM uint32_t UIS_CTRL_REG;                      /*!< Offset 0x000 Control register */
+         RESERVED(0x004[0x0008 - 0x0004], uint8_t)
+    __IOM uint32_t UIS_STATUS_REG;                    /*!< Offset 0x008 Status register */
+    __IOM uint32_t UIS_FIELD_CTRL_REG;                /*!< Offset 0x00C Field control register */
+    __IOM uint32_t UIS_BIST_REG;                      /*!< Offset 0x010 BIST control register */
+         RESERVED(0x014[0x0040 - 0x0014], uint8_t)
+    __IOM uint32_t UIS_OUTSIZE_REG;                   /*!< Offset 0x040 Output size register */
+    __IOM uint32_t UIS_GLOBAL_ALPHA_REG;              /*!< Offset 0x044 VSU Output Global Alpha Register */
+         RESERVED(0x048[0x0080 - 0x0048], uint8_t)
+    __IOM uint32_t UIS_Y_INSIZE_REG;                  /*!< Offset 0x080 Y Channel Input size register */
+         RESERVED(0x084[0x0088 - 0x0084], uint8_t)
+    __IOM uint32_t UIS_Y_HSTEP_REG;                   /*!< Offset 0x088 Y Channel Horizontal step register */
+    __IOM uint32_t UIS_Y_VSTEP_REG;                   /*!< Offset 0x08C Y Channel Vertical step register */
+    __IOM uint32_t UIS_Y_HPHASE_REG;                  /*!< Offset 0x090 Y Channel Horizontal initial phase register */
+         RESERVED(0x094[0x0098 - 0x0094], uint8_t)
+    __IOM uint32_t UIS_Y_VPHASE_REG;                  /*!< Offset 0x098 Y Channel Vertical initial phase 0 register */
+         RESERVED(0x09C[0x00C0 - 0x009C], uint8_t)
+    __IOM uint32_t UIS_C_INSIZE_REG;                  /*!< Offset 0x0C0 C Channel Input size register */
+         RESERVED(0x0C4[0x00C8 - 0x00C4], uint8_t)
+    __IOM uint32_t UIS_C_HSTEP_REG;                   /*!< Offset 0x0C8 C Channel Horizontal step register */
+    __IOM uint32_t UIS_C_VSTEP_REG;                   /*!< Offset 0x0CC C Channel Vertical step register */
+    __IOM uint32_t UIS_C_HPHASE_REG;                  /*!< Offset 0x0D0 C Channel Horizontal initial phase register */
+         RESERVED(0x0D4[0x00D8 - 0x00D4], uint8_t)
+    __IOM uint32_t UIS_C_VPHASE_REG;                  /*!< Offset 0x0D8 C Channel Vertical initial phase 0 register */
+         RESERVED(0x0DC[0x0200 - 0x00DC], uint8_t)
+    __IOM uint32_t UIS_Y_HCOEF0_REGN [0x040];         /*!< Offset 0x200 0x200+N*4 Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+         RESERVED(0x300[0x0400 - 0x0300], uint8_t)
+    __IOM uint32_t UIS_Y_VCOEF_REGN [0x040];          /*!< Offset 0x400 0x400+N*4 Y Channel Vertical Filter Coefficient Register N N = M 1)) */
+         RESERVED(0x500[0x0600 - 0x0500], uint8_t)
+    __IOM uint32_t UIS_C_HCOEF0_REGN [0x040];         /*!< Offset 0x600 0x600+N*4 C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+} DE_UIS_TypeDef; /* size of structure = 0x700 */
+/*
+ * @brief DE_VI
+ */
+/*!< DE_VI Display Engine (DE) - VI surface */
+typedef struct DE_VI_Type
+{
+    struct
+    {
+        __IOM uint32_t ATTR;                          /*!< Offset 0x000  */
+        __IOM uint32_t SIZE;                          /*!< Offset 0x004  */
+        __IOM uint32_t COORD;                         /*!< Offset 0x008  */
+        __IOM uint32_t PITCH [0x003];                 /*!< Offset 0x00C ix=0: Y, ix=1: U/UV channel, ix=3: V channel  */
+        __IOM uint32_t TOP_LADDR [0x003];             /*!< Offset 0x018  */
+        __IOM uint32_t BOT_LADDR [0x003];             /*!< Offset 0x024  */
+    } CFG [0x004];                                    /*!< Offset 0x000  */
+    __IOM uint32_t FCOLOR [0x004];                    /*!< Offset 0x0C0  */
+    __IOM uint32_t TOP_HADDR [0x003];                 /*!< Offset 0x0D0  */
+    __IOM uint32_t BOT_HADDR [0x003];                 /*!< Offset 0x0DC  */
+    __IOM uint32_t OVL_SIZE [0x002];                  /*!< Offset 0x0E8 OVL_Y, OVL_UV overlay window size register */
+    __IOM uint32_t HORI [0x002];                      /*!< Offset 0x0F0 OVL_V horizontal down sample control register */
+    __IOM uint32_t VERT [0x002];                      /*!< Offset 0x0F8 OVL_V vertical down sample control register */
+         RESERVED(0x100[0x0300 - 0x0100], uint8_t)
+    __IOM uint32_t FBD_V_CTL;                         /*!< Offset 0x300 OVL_V FBD control register */
+         RESERVED(0x304[0x0800 - 0x0304], uint8_t)
+} DE_VI_TypeDef; /* size of structure = 0x800 */
+/*
+ * @brief DE_VSU
+ */
+/*!< DE_VSU Video Scaler Unit (VSU) */
+typedef struct DE_VSU_Type
+{
+    __IOM uint32_t VSU_CTRL_REG;                      /*!< Offset 0x000 VSU Module Control Register */
+         RESERVED(0x004[0x0008 - 0x0004], uint8_t)
+    __IOM uint32_t VSU_STATUS_REG;                    /*!< Offset 0x008 VSU Status Register */
+    __IOM uint32_t VSU_FIELD_CTRL_REG;                /*!< Offset 0x00C VSU Field Control Register */
+    __IOM uint32_t VSU_SCALE_MODE_REG;                /*!< Offset 0x010 VSU Scale Mode Setting Register */
+         RESERVED(0x014[0x0020 - 0x0014], uint8_t)
+    __IOM uint32_t VSU_DIRECTION_THR_REG;             /*!< Offset 0x020 VSU Direction Detection Threshold Register */
+    __IOM uint32_t VSU_EDGE_THR_REG;                  /*!< Offset 0x024 VSU Edge Detection Setting Register */
+    __IOM uint32_t VSU_EDSCALER_CTRL_REG;             /*!< Offset 0x028 VSU Edge-Direction Scaler Control Register */
+    __IOM uint32_t VSU_ANGLE_THR_REG;                 /*!< Offset 0x02C VSU Angle Reliability Setting Register */
+    __IOM uint32_t VSU_SHARP_EN_REG;                  /*!< Offset 0x030 VSU Sharpness Control Enable Register */
+    __IOM uint32_t VSU_SHARP_CORING_REG;              /*!< Offset 0x034 VSU Sharpness Control Coring Setting Register */
+    __IOM uint32_t VSU_SHARP_GAIN0_REG;               /*!< Offset 0x038 VSU Sharpness Control Gain Setting 0 Register */
+    __IOM uint32_t VSU_SHARP_GAIN1_REG;               /*!< Offset 0x03C VSU Sharpness Control Gain Setting 1 Register */
+    __IOM uint32_t VSU_OUT_SIZE_REG;                  /*!< Offset 0x040 VSU Output Size Register */
+    __IOM uint32_t VSU_GLOBAL_ALPHA_REG;              /*!< Offset 0x044 VSU Output Global Alpha Register */
+         RESERVED(0x048[0x0080 - 0x0048], uint8_t)
+    __IOM uint32_t VSU_Y_SIZE_REG;                    /*!< Offset 0x080 VSU Y Channel Size Register */
+         RESERVED(0x084[0x0088 - 0x0084], uint8_t)
+    __IOM uint32_t VSU_Y_HSTEP_REG;                   /*!< Offset 0x088 VSU Y Channel Horizontal Step Register */
+    __IOM uint32_t VSU_Y_VSTEP_REG;                   /*!< Offset 0x08C VSU Y Channel Vertical Step Register */
+    __IOM uint32_t VSU_Y_HPHASE_REG;                  /*!< Offset 0x090 VSU Y Channel Horizontal Initial Phase Register */
+         RESERVED(0x094[0x0098 - 0x0094], uint8_t)
+    __IOM uint32_t VSU_Y_VPHASE0_REG;                 /*!< Offset 0x098 VSU Y Channel Vertical Initial Phase 0 Register */
+    __IOM uint32_t VSU_Y_VPHASE1_REG;                 /*!< Offset 0x09C VSU Y Channel Vertical Initial Phase 1 Register */
+         RESERVED(0x0A0[0x00C0 - 0x00A0], uint8_t)
+    __IOM uint32_t VSU_C_SIZE_REG;                    /*!< Offset 0x0C0 VSU C Channel Size Register */
+         RESERVED(0x0C4[0x00C8 - 0x00C4], uint8_t)
+    __IOM uint32_t VSU_C_HSTEP_REG;                   /*!< Offset 0x0C8 VSU C Channel Horizontal Step Register */
+    __IOM uint32_t VSU_C_VSTEP_REG;                   /*!< Offset 0x0CC VSU C Channel Vertical Step Register */
+    __IOM uint32_t VSU_C_HPHASE_REG;                  /*!< Offset 0x0D0 VSU C Channel Horizontal Initial Phase Register */
+         RESERVED(0x0D4[0x00D8 - 0x00D4], uint8_t)
+    __IOM uint32_t VSU_C_VPHASE0_REG;                 /*!< Offset 0x0D8 VSU C Channel Vertical Initial Phase 0 Register */
+    __IOM uint32_t VSU_C_VPHASE1_REG;                 /*!< Offset 0x0DC VSU C Channel Vertical Initial Phase 1 Register */
+         RESERVED(0x0E0[0x0200 - 0x00E0], uint8_t)
+    __IOM uint32_t VSU_Y_HCOEF0_REGN [0x040];         /*!< Offset 0x200 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+         RESERVED(0x300[0x0400 - 0x0300], uint8_t)
+    __IOM uint32_t VSU_Y_VCOEF_REGN [0x040];          /*!< Offset 0x400 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1)) */
+         RESERVED(0x500[0x0600 - 0x0500], uint8_t)
+    __IOM uint32_t VSU_C_HCOEF0_REGN [0x040];         /*!< Offset 0x600 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+} DE_VSU_TypeDef; /* size of structure = 0x700 */
 /*
  * @brief DISPLAY0_TOP
  */
@@ -1821,6 +2144,17 @@ typedef struct RTC_Type
     __IOM uint32_t RTC_SPI_CLK_CTRL_REG;              /*!< Offset 0x310 RTC SPI Clock Control Register */
 } RTC_TypeDef; /* size of structure = 0x314 */
 /*
+ * @brief RTWB_RCQ
+ */
+/*!< RTWB_RCQ  */
+typedef struct RTWB_RCQ_Type
+{
+    __IOM uint32_t RTWB_RCQ_IRQ;                      /*!< Offset 0x000 RTWB_RCQ_IRQ_OFFSET          (0x8200) */
+    __IOM uint32_t RTWB_RCQ_STS;                      /*!< Offset 0x004 RTWB_RCQ_STS_OFFSET          (0x8204) */
+         RESERVED(0x008[0x0010 - 0x0008], uint8_t)
+    __IOM uint32_t RTWB_RCQ_CTL;                      /*!< Offset 0x010 RTWB_RCQ_CTL_OFFSET          (0x8210) */
+} RTWB_RCQ_TypeDef; /* size of structure = 0x014 */
+/*
  * @brief SID
  */
 /*!< SID Security ID */
@@ -2310,6 +2644,48 @@ typedef struct USB_OHCI_Capability_Type
 /* Access pointers */
 
 #define GPIOINTD ((GPIOINT_TypeDef *) GPIOINTD_BASE)  /*!< GPIOINTD  register set access pointer */
+#define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP (APB) register set access pointer */
+#define DE_MIXER0_GLB ((DE_GLB_TypeDef *) DE_MIXER0_GLB_BASE)/*!< DE_MIXER0_GLB Display Engine (DE) - Global Control register set access pointer */
+#define DE_MIXER1_GLB ((DE_GLB_TypeDef *) DE_MIXER1_GLB_BASE)/*!< DE_MIXER1_GLB Display Engine (DE) - Global Control register set access pointer */
+#define RTWB_RCQ ((RTWB_RCQ_TypeDef *) RTWB_RCQ_BASE) /*!< RTWB_RCQ  register set access pointer */
+#define DE_VI1 ((DE_VI_TypeDef *) DE_VI1_BASE)        /*!< DE_VI1 Display Engine (DE) - VI surface register set access pointer */
+#define DE_VSU1 ((DE_VSU_TypeDef *) DE_VSU1_BASE)     /*!< DE_VSU1 Video Scaler Unit (VSU) register set access pointer */
+#define DE_FCE1 ((DE_FCE_TypeDef *) DE_FCE1_BASE)     /*!< DE_FCE1 Fresh and Contrast Enhancement (FCE) register set access pointer */
+#define DE_BLS1 ((DE_BLS_TypeDef *) DE_BLS1_BASE)     /*!< DE_BLS1 Blue Level Stretch (BLS) register set access pointer */
+#define DE_FCC1 ((DE_FCC_TypeDef *) DE_FCC1_BASE)     /*!< DE_FCC1 Fancy color curvature (FCC) register set access pointer */
+#define DE_DNS1 ((DE_DNS_TypeDef *) DE_DNS1_BASE)     /*!< DE_DNS1 Denoise (DNS) register set access pointer */
+#define DE_VI2 ((DE_VI_TypeDef *) DE_VI2_BASE)        /*!< DE_VI2 Display Engine (DE) - VI surface register set access pointer */
+#define DE_VSU2 ((DE_VSU_TypeDef *) DE_VSU2_BASE)     /*!< DE_VSU2 Video Scaler Unit (VSU) register set access pointer */
+#define DE_FCE2 ((DE_FCE_TypeDef *) DE_FCE2_BASE)     /*!< DE_FCE2 Fresh and Contrast Enhancement (FCE) register set access pointer */
+#define DE_BLS2 ((DE_BLS_TypeDef *) DE_BLS2_BASE)     /*!< DE_BLS2 Blue Level Stretch (BLS) register set access pointer */
+#define DE_FCC2 ((DE_FCC_TypeDef *) DE_FCC2_BASE)     /*!< DE_FCC2 Fancy color curvature (FCC) register set access pointer */
+#define DE_DNS2 ((DE_DNS_TypeDef *) DE_DNS2_BASE)     /*!< DE_DNS2 Denoise (DNS) register set access pointer */
+#define DE_VI3 ((DE_VI_TypeDef *) DE_VI3_BASE)        /*!< DE_VI3 Display Engine (DE) - VI surface register set access pointer */
+#define DE_VSU3 ((DE_VSU_TypeDef *) DE_VSU3_BASE)     /*!< DE_VSU3 Video Scaler Unit (VSU) register set access pointer */
+#define DE_FCE3 ((DE_FCE_TypeDef *) DE_FCE3_BASE)     /*!< DE_FCE3 Fresh and Contrast Enhancement (FCE) register set access pointer */
+#define DE_BLS3 ((DE_BLS_TypeDef *) DE_BLS3_BASE)     /*!< DE_BLS3 Blue Level Stretch (BLS) register set access pointer */
+#define DE_DNS3 ((DE_DNS_TypeDef *) DE_DNS3_BASE)     /*!< DE_DNS3 Denoise (DNS) register set access pointer */
+#define DE_FCC3 ((DE_FCC_TypeDef *) DE_FCC3_BASE)     /*!< DE_FCC3 Fancy color curvature (FCC) register set access pointer */
+#define DE_UI1 ((DE_UI_TypeDef *) DE_UI1_BASE)        /*!< DE_UI1 Display Engine (DE) - UI surface register set access pointer */
+#define DE_UIS1 ((DE_UIS_TypeDef *) DE_UIS1_BASE)     /*!< DE_UIS1 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
+#define DE_FCE4 ((DE_FCE_TypeDef *) DE_FCE4_BASE)     /*!< DE_FCE4 Fresh and Contrast Enhancement (FCE) register set access pointer */
+#define DE_BLS4 ((DE_BLS_TypeDef *) DE_BLS4_BASE)     /*!< DE_BLS4 Blue Level Stretch (BLS) register set access pointer */
+#define DE_FCC4 ((DE_FCC_TypeDef *) DE_FCC4_BASE)     /*!< DE_FCC4 Fancy color curvature (FCC) register set access pointer */
+#define DE_DNS4 ((DE_DNS_TypeDef *) DE_DNS4_BASE)     /*!< DE_DNS4 Denoise (DNS) register set access pointer */
+#define DE_UI2 ((DE_UI_TypeDef *) DE_UI2_BASE)        /*!< DE_UI2 Display Engine (DE) - UI surface register set access pointer */
+#define DE_UIS2 ((DE_UIS_TypeDef *) DE_UIS2_BASE)     /*!< DE_UIS2 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
+#define DE_FCE5 ((DE_FCE_TypeDef *) DE_FCE5_BASE)     /*!< DE_FCE5 Fresh and Contrast Enhancement (FCE) register set access pointer */
+#define DE_BLS5 ((DE_BLS_TypeDef *) DE_BLS5_BASE)     /*!< DE_BLS5 Blue Level Stretch (BLS) register set access pointer */
+#define DE_FCC5 ((DE_FCC_TypeDef *) DE_FCC5_BASE)     /*!< DE_FCC5 Fancy color curvature (FCC) register set access pointer */
+#define DE_DNS5 ((DE_DNS_TypeDef *) DE_DNS5_BASE)     /*!< DE_DNS5 Denoise (DNS) register set access pointer */
+#define DE_UI3 ((DE_UI_TypeDef *) DE_UI3_BASE)        /*!< DE_UI3 Display Engine (DE) - UI surface register set access pointer */
+#define DE_UIS3 ((DE_UIS_TypeDef *) DE_UIS3_BASE)     /*!< DE_UIS3 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
+#define DE_FCE6 ((DE_FCE_TypeDef *) DE_FCE6_BASE)     /*!< DE_FCE6 Fresh and Contrast Enhancement (FCE) register set access pointer */
+#define DE_BLS6 ((DE_BLS_TypeDef *) DE_BLS6_BASE)     /*!< DE_BLS6 Blue Level Stretch (BLS) register set access pointer */
+#define DE_FCC6 ((DE_FCC_TypeDef *) DE_FCC6_BASE)     /*!< DE_FCC6 Fancy color curvature (FCC) register set access pointer */
+#define DE_DNS6 ((DE_DNS_TypeDef *) DE_DNS6_BASE)     /*!< DE_DNS6 Denoise (DNS) register set access pointer */
+#define DE_MIXER0_BLD ((DE_BLD_TypeDef *) DE_MIXER0_BLD_BASE)/*!< DE_MIXER0_BLD Display Engine (DE) - Blender register set access pointer */
+#define DE_MIXER1_BLD ((DE_BLD_TypeDef *) DE_MIXER1_BLD_BASE)/*!< DE_MIXER1_BLD Display Engine (DE) - Blender register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK Port Controller register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB Port Controller register set access pointer */
 #define GPIOINTB ((GPIOINT_TypeDef *) GPIOINTB_BASE)  /*!< GPIOINTB  register set access pointer */
@@ -2377,6 +2753,7 @@ typedef struct USB_OHCI_Capability_Type
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_LCD1 ((TCON_LCD_TypeDef *) TCON_LCD1_BASE)/*!< TCON_LCD1 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define DISPLAY1_TOP ((DISPLAY1_TOP_TypeDef *) DISPLAY1_TOP_BASE)/*!< DISPLAY1_TOP  register set access pointer */
+#define HDMI_TX0 ((HDMI_TX_TypeDef *) HDMI_TX0_BASE)  /*!< HDMI_TX0  register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0 TV Output register set access pointer */
 #define TCON_TV1 ((TCON_TV_TypeDef *) TCON_TV1_BASE)  /*!< TCON_TV1 TV Output register set access pointer */
 #define STBY_PRCM ((PRCM_TypeDef *) STBY_PRCM_BASE)   /*!< STBY_PRCM  register set access pointer */
