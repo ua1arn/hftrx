@@ -3192,11 +3192,11 @@ static void hardware_de_global_initialize(void)
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
     local_delay_us(10);
 
-	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
-	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+	TCONTV_CCU_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+	TCONTV_CCU_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
     local_delay_us(10);
 
-    // Разрешает доступ к HDMI_T0
+    // Разрешает доступ к HDMI_TX0
     CCU->HDMI_SFR_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
 
 #elif CPUSTYLE_T507
@@ -6429,9 +6429,9 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 //    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
     //PRINTF("CCU->HDMI_HDCP_BGR_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_BGR_REG);
 
-	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
-	//CCU->TCONTV0_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
-	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << (16 + ix));	// De-assert Reset (bits 19..16 and 3..0 writable) mask 0x000F000F
+	TCONTV_CCU_BGR_REG |= (UINT32_C(1) << 0);	// Clock Gating
+	//TCONTV_CCU_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert Reset
+	TCONTV_CCU_BGR_REG |= (UINT32_C(1) << 16);	// De-assert Reset (bits 19..16 and 3..0 writable) mask 0x000F000F
 
 	/*
 	 * First clock parent (osc32K) is unusable for CEC. But since there
