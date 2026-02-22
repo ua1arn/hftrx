@@ -24,3 +24,54 @@
 #irq; USB20_HOST1_OHCI 66
 
 #typeend;
+
+#type; SPI; Serial Peripheral Interface
+#base; SPI0 0x05010000
+#base; SPI1 0x05011000
+#base; SPI2 0x05012000
+#irq; SPI0 45
+#irq; SPI1 46
+#irq; SPI2 47
+#typeend;
+
+#type; UART
+
+#base; UART0 0x05000000
+#base; UART1 0x05000400
+#base; UART2 0x05000800
+#base; UART3 0x05000C00
+#base; UART4 0x05001000
+#base; R_UART 0x07080000
+
+#irq; UART0 32
+#irq; UART1 33
+#irq; UART2 34
+#irq; UART3 35
+#irq; UART4 36
+
+
+# 
+# https://github.com/MotorolaMobilityLLC/kernel-msm/blob/0df9925d29dec5ada24e08238cec2a16e5fd38e0/arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi#L307
+#
+
+#base; R_UART	0x07080000; R_UART
+#irq; R_UART 144; R_UART
+
+#typeend;
+
+#type; TWI
+
+#base; TWI0 0x05002000
+#base; TWI1 0x05002400
+#base; TWI2 0x05002800
+#base; TWI3 0x05002C00
+#base; S_TWI0 0x07081400
+#base; S_TWI1 0x07081800
+
+#irq; TWI0 39
+#irq; TWI1 40
+#irq; TWI2 41
+#irq; TWI3 42
+#irq; S_TWI0 145
+#irq; S_TWI1 146
+#typeend;

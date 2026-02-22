@@ -1,12 +1,5 @@
+
 #type; UART
-
-#base; UART0 0x01C28000
-#base; UART1 0x01C28400
-#base; UART2 0x01C28800
-
-#irq; UART0 32
-#irq; UART1 33
-#irq; UART2 34
 
 #regdef; UART_RBR_THR_DLL; 0x0000; UART Receive Buffer Register/Transmit Holding Register
 #regdef; UART_DLH_IER; 0x0004; ; UART Divisor Latch High Register/UART Interrupt Enable Register

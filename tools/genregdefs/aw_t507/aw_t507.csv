@@ -45,6 +45,13 @@
 
 #typeend;
 
+#type; SPI; Serial Peripheral Interface
+#base; SPI0 0x05010000
+#base; SPI1 0x05011000
+#irq; SPI0 44
+#irq; SPI1 45
+#typeend;
+
 #type; LRADC; The Low Rate ADC(LRADC
 #irq; LRADC 52
 #base; LRADC 0x05070800

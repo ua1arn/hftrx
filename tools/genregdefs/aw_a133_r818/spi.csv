@@ -1,11 +1,5 @@
-#type; SPI; Serial Peripheral Interface
-#base; SPI0 0x05010000
-#base; SPI1 0x05011000
-#base; SPI2 0x05012000
-#irq; SPI0 45
-#irq; SPI1 46
-#irq; SPI2 47
 
+#type; SPI; Serial Peripheral Interface
 
 #regdef; SPI_GCR; 0x0004; SPI Global Control Register
 #regdef; SPI_TCR; 0x0008; SPI Transfer Control Register
