@@ -97,6 +97,8 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
+#define DSP_MSGBOX_BASE ((uintptr_t) 0x01701000)      /*!< MSGBOX Message Box Base */
+#define xDSP_MSGBOX_BASE ((uintptr_t) 0x01701000)     /*!< xDSP_MSGBOX  Base */
 #define VENCODER_BASE ((uintptr_t) 0x01C0E000)        /*!< VE Video Encoding Base */
 #define GPIOBLOCK_BASE ((uintptr_t) 0x02000000)       /*!< GPIOBLOCK  Base */
 #define GPIOB_BASE ((uintptr_t) 0x02000030)           /*!< GPIO  Base */
@@ -139,6 +141,8 @@ typedef enum IRQn
 #define CAN1_BASE ((uintptr_t) 0x02504400)            /*!< CAN CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) Base */
 #define SYS_CFG_BASE ((uintptr_t) 0x03000000)         /*!< SYS_CFG  Base */
 #define DMAC_BASE ((uintptr_t) 0x03002000)            /*!< DMAC  Base */
+#define CPUX_MSGBOX_BASE ((uintptr_t) 0x03003000)     /*!< MSGBOX Message Box Base */
+#define SPINLOCK_BASE ((uintptr_t) 0x03005000)        /*!< SPINLOCK Spin Lock module Base */
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Security ID Base */
 #define HSTIMER_BASE ((uintptr_t) 0x03008000)         /*!< HSTIMER High Speed Timer (HSTimer) Base */
 #define CE_NS_BASE ((uintptr_t) 0x03040000)           /*!< CE Crypto Engine (CE) Base */
@@ -2588,6 +2592,30 @@ typedef struct MCTL_PHY_Type
     __IOM uint32_t MCTL_PHY_ACIOCR1 [0x010];          /*!< Offset 0x210 0x210 + 0x4 * x */
 } MCTL_PHY_TypeDef; /* size of structure = 0x250 */
 /*
+ * @brief MSGBOX
+ */
+/*!< MSGBOX Message Box */
+typedef struct MSGBOX_Type
+{
+         RESERVED(0x000[0x0020 - 0x0000], uint8_t)
+    struct
+    {
+        __IOM uint32_t MSGBOX_RD_IRQ_EN_REG;          /*!< Offset 0x020 0x0020+N*0x0100 (N=0-1) MSGBOX Read IRQ Enable Register */
+        __IOM uint32_t MSGBOX_RD_IRQ_STATUS_REG;      /*!< Offset 0x024 0x0024+N*0x0100 (N=0-1) MSGBOX Read IRQ Status Register */
+             RESERVED(0x008[0x0010 - 0x0008], uint8_t)
+        __IOM uint32_t MSGBOX_WR_IRQ_EN_REG;          /*!< Offset 0x030 0x0030+N*0x0100 (N=0-1) MSGBOX Write IRQ Enable Register */
+        __IOM uint32_t MSGBOX_WR_IRQ_STATUS_REG;      /*!< Offset 0x034 0x0034+N*0x0100 (N=0-1) MSGBOX Write IRQ Status Register */
+             RESERVED(0x018[0x0020 - 0x0018], uint8_t)
+        __IOM uint32_t MSGBOX_DEBUG_REG;              /*!< Offset 0x040 0x0040+N*0x0100 (N=0-1) MSGBOX Debug Register */
+             RESERVED(0x024[0x0030 - 0x0024], uint8_t)
+        __IOM uint32_t MSGBOX_FIFO_STATUS_REG [0x004];/*!< Offset 0x050 0x0050+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX FIFO Status Register */
+        __IOM uint32_t MSGBOX_MSG_STATUS_REG [0x004]; /*!< Offset 0x060 0x0060+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Message Status Register */
+        __IOM uint32_t MSGBOX_MSG_REG [0x004];        /*!< Offset 0x070 0x0070+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Message Queue Register */
+        __IOM uint32_t MSGBOX_WR_INT_THRESHOLD_REG [0x004];/*!< Offset 0x080 0x0080+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Write IRQ Threshold Register */
+             RESERVED(0x070[0x0100 - 0x0070], uint8_t)
+    } N [0x002];                                      /*!< Offset 0x020 MSGBOX (N=0-1) */
+} MSGBOX_TypeDef; /* size of structure = 0x220 */
+/*
  * @brief OWA
  */
 /*!< OWA One Wire Audio (TX only) */
@@ -2879,6 +2907,28 @@ typedef struct SPI_Type
     __IOM uint32_t SPI_RXD;                           /*!< Offset 0x300 SPI RX Data Register */
          RESERVED(0x304[0x1000 - 0x0304], uint8_t)
 } SPI_TypeDef; /* size of structure = 0x1000 */
+/*
+ * @brief SPINLOCK
+ */
+/*!< SPINLOCK Spin Lock module */
+typedef struct SPINLOCK_Type
+{
+    __IOM uint32_t SPINLOCK_SYSTATUS_REG;             /*!< Offset 0x000 Spinlock System Status Register */
+         RESERVED(0x004[0x0010 - 0x0004], uint8_t)
+    __IOM uint32_t SPINLOCK_STATUS_REG;               /*!< Offset 0x010 Spinlock Status Register */
+         RESERVED(0x014[0x0020 - 0x0014], uint8_t)
+    __IOM uint32_t SPINLOCK_IRQ_EN_REG;               /*!< Offset 0x020 Spinlock Interrupt Enable Register */
+         RESERVED(0x024[0x0040 - 0x0024], uint8_t)
+    __IOM uint32_t SPINLOCK_IRQ_STA_REG;              /*!< Offset 0x040 Spinlock Interrupt Status Register */
+         RESERVED(0x044[0x0080 - 0x0044], uint8_t)
+    __IOM uint32_t SPINLOCK_LOCKID0_REG;              /*!< Offset 0x080 Spinlock Lockid0 Register */
+    __IOM uint32_t SPINLOCK_LOCKID1_REG;              /*!< Offset 0x084 Spinlock Lockid1 Register */
+    __IOM uint32_t SPINLOCK_LOCKID2_REG;              /*!< Offset 0x088 Spinlock Lockid2 Register */
+    __IOM uint32_t SPINLOCK_LOCKID3_REG;              /*!< Offset 0x08C Spinlock Lockid3 Register */
+    __IOM uint32_t SPINLOCK_LOCKID4_REG;              /*!< Offset 0x090 Spinlock Lockid4 Register */
+         RESERVED(0x094[0x0100 - 0x0094], uint8_t)
+    __IOM uint32_t SPINLOCK_LOCK_REG [0x020];         /*!< Offset 0x100 Spinlock Register N (N = 0 to 31) */
+} SPINLOCK_TypeDef; /* size of structure = 0x180 */
 /*
  * @brief SYSMAP
  */
@@ -3858,6 +3908,7 @@ typedef struct VE_Type
 
 /* Access pointers */
 
+#define DSP_MSGBOX ((MSGBOX_TypeDef *) DSP_MSGBOX_BASE)/*!< DSP_MSGBOX Message Box register set access pointer */
 #define VENCODER ((VE_TypeDef *) VENCODER_BASE)       /*!< VENCODER Video Encoding register set access pointer */
 #define GPIOBLOCK ((GPIOBLOCK_TypeDef *) GPIOBLOCK_BASE)/*!< GPIOBLOCK  register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB  register set access pointer */
@@ -3900,6 +3951,8 @@ typedef struct VE_Type
 #define CAN1 ((CAN_TypeDef *) CAN1_BASE)              /*!< CAN1 CAN (see Allwinner_T3_User_Manual_V1.0_cleaned.pdf as part of documentation) register set access pointer */
 #define SYS_CFG ((SYS_CFG_TypeDef *) SYS_CFG_BASE)    /*!< SYS_CFG  register set access pointer */
 #define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
+#define CPUX_MSGBOX ((MSGBOX_TypeDef *) CPUX_MSGBOX_BASE)/*!< CPUX_MSGBOX Message Box register set access pointer */
+#define SPINLOCK ((SPINLOCK_TypeDef *) SPINLOCK_BASE) /*!< SPINLOCK Spin Lock module register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
 #define HSTIMER ((HSTIMER_TypeDef *) HSTIMER_BASE)    /*!< HSTIMER High Speed Timer (HSTimer) register set access pointer */
 #define CE_NS ((CE_TypeDef *) CE_NS_BASE)             /*!< CE_NS Crypto Engine (CE) register set access pointer */

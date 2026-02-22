@@ -8,6 +8,7 @@ SET FILELIST=risc_cfg.csv risc_wdg.csv risc_timestamp.csv ccu.csv plic.csv sysma
 	..\aw_generic\usbehci.csv ..\aw_generic\usbotg.csv usbphyc.csv ..\aw_generic\usb_ehci_capability.csv ..\aw_generic\usb_ohci_capability.csv ^
 	de2.csv di.csv g2d.csv dsi.csv hdmi.csv display_if_top.csv tcon_lcd.csv tcon_tv.csv tve.csv csi.csv tvd.csv ^
 	ve.csv ^
+	spinlock.csv msgbox.csv dsp_msgbox.csv ^
 	ddrphyc.csv sid.csv dmac.csv pwm.csv ^
 	emac.csv clint.csv mctl_com.csv mctl_phy.csv r_ccu.csv r_cpucfg.csv c0_cpux_cfg.csv c0_cpux_mbist.csv ^
 	memortmap_t113x.csv

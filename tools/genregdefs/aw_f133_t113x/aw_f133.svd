@@ -16066,6 +16066,125 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>CPUX_MSGBOX</name>
+  <description>Message Box</description>
+  <baseAddress>0x03003000</baseAddress>
+  <registers>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x00000020</addressOffset>
+    <registers>
+     <register>
+      <name>MSGBOX_RD_IRQ_EN_REG</name>
+      <displayName>MSGBOX_RD_IRQ_EN_REG</displayName>
+      <description>0x0020+N*0x0100 (N=0-1) MSGBOX Read IRQ Enable Register</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>MSGBOX_RD_IRQ_STATUS_REG</name>
+      <displayName>MSGBOX_RD_IRQ_STATUS_REG</displayName>
+      <description>0x0024+N*0x0100 (N=0-1) MSGBOX Read IRQ Status Register</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>MSGBOX_WR_IRQ_EN_REG</name>
+      <displayName>MSGBOX_WR_IRQ_EN_REG</displayName>
+      <description>0x0030+N*0x0100 (N=0-1) MSGBOX Write IRQ Enable Register</description>
+      <addressOffset>0x010</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>MSGBOX_WR_IRQ_STATUS_REG</name>
+      <displayName>MSGBOX_WR_IRQ_STATUS_REG</displayName>
+      <description>0x0034+N*0x0100 (N=0-1) MSGBOX Write IRQ Status Register</description>
+      <addressOffset>0x014</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>MSGBOX_DEBUG_REG</name>
+      <displayName>MSGBOX_DEBUG_REG</displayName>
+      <description>0x0040+N*0x0100 (N=0-1) MSGBOX Debug Register</description>
+      <addressOffset>0x020</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <cluster>
+      <dim>4</dim>
+      <addressOffset>0x00000030</addressOffset>
+      <register>
+       <name>MSGBOX_FIFO_STATUS_REG</name>
+       <displayName>MSGBOX_FIFO_STATUS_REG</displayName>
+       <description>0x0050+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX FIFO Status Register</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x010</dimIncrement>
+     </cluster>
+     <cluster>
+      <dim>4</dim>
+      <addressOffset>0x00000040</addressOffset>
+      <register>
+       <name>MSGBOX_MSG_STATUS_REG</name>
+       <displayName>MSGBOX_MSG_STATUS_REG</displayName>
+       <description>0x0060+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Message Status Register</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x010</dimIncrement>
+     </cluster>
+     <cluster>
+      <dim>4</dim>
+      <addressOffset>0x00000050</addressOffset>
+      <register>
+       <name>MSGBOX_MSG_REG</name>
+       <displayName>MSGBOX_MSG_REG</displayName>
+       <description>0x0070+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Message Queue Register</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x010</dimIncrement>
+     </cluster>
+     <cluster>
+      <dim>4</dim>
+      <addressOffset>0x00000060</addressOffset>
+      <register>
+       <name>MSGBOX_WR_INT_THRESHOLD_REG</name>
+       <displayName>MSGBOX_WR_INT_THRESHOLD_REG</displayName>
+       <description>0x0080+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Write IRQ Threshold Register</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x010</dimIncrement>
+     </cluster>
+    </registers>
+    <dimIncrement>0x200</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="CPUX_MSGBOX">
+  <name>DSP_MSGBOX</name>
+  <baseAddress>0x01701000</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>OWA</name>
   <description>One Wire Audio (TX only)</description>
   <baseAddress>0x02036000</baseAddress>
@@ -17774,6 +17893,108 @@
    <value>32</value>
    <description></description>
   </interrupt>
+  </peripheral>
+  <peripheral>
+  <name>SPINLOCK</name>
+  <description>Spin Lock module</description>
+  <baseAddress>0x03005000</baseAddress>
+  <registers>
+   <register>
+    <name>SPINLOCK_SYSTATUS_REG</name>
+    <displayName>SPINLOCK_SYSTATUS_REG</displayName>
+    <description>Spinlock System Status Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_STATUS_REG</name>
+    <displayName>SPINLOCK_STATUS_REG</displayName>
+    <description>Spinlock Status Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_IRQ_EN_REG</name>
+    <displayName>SPINLOCK_IRQ_EN_REG</displayName>
+    <description>Spinlock Interrupt Enable Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_IRQ_STA_REG</name>
+    <displayName>SPINLOCK_IRQ_STA_REG</displayName>
+    <description>Spinlock Interrupt Status Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_LOCKID0_REG</name>
+    <displayName>SPINLOCK_LOCKID0_REG</displayName>
+    <description>Spinlock Lockid0 Register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_LOCKID1_REG</name>
+    <displayName>SPINLOCK_LOCKID1_REG</displayName>
+    <description>Spinlock Lockid1 Register</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_LOCKID2_REG</name>
+    <displayName>SPINLOCK_LOCKID2_REG</displayName>
+    <description>Spinlock Lockid2 Register</description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_LOCKID3_REG</name>
+    <displayName>SPINLOCK_LOCKID3_REG</displayName>
+    <description>Spinlock Lockid3 Register</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_LOCKID4_REG</name>
+    <displayName>SPINLOCK_LOCKID4_REG</displayName>
+    <description>Spinlock Lockid4 Register</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000100</addressOffset>
+    <register>
+     <name>SPINLOCK_LOCK_REG</name>
+     <displayName>SPINLOCK_LOCK_REG</displayName>
+     <description>Spinlock Register N (N = 0 to 31)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+  </registers>
   </peripheral>
   <peripheral>
   <name>SYSMAP</name>

@@ -1,4 +1,3 @@
-
 #type; SPI; Serial Peripheral Interface
 
 #regdef; SPI_GCR; 0x0004; SPI Global Control Register
