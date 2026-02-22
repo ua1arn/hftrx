@@ -2167,6 +2167,34 @@ uint_fast8_t usbd_cdc2_getrts(void)
 #endif /* WITHUSBCDCACM_N > 1 */
 }
 
+static void setup_dma_rx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t burst, uint_fast16_t size)
+{
+	dcache_clean_invalidate(addr, size);
+
+	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = size;
+	WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = addr;
+	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG =
+		(0xFFFF & burst) * (UINT32_C(1) << 16) |	// DMA Burst Length
+		0x01 * (UINT32_C(1) << 4) |	// 1: USB FIFO to SDRAM
+		(0x0F & pipe) * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
+		0;
+	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
+}
+
+static void setup_dma_tx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t burst, uint_fast16_t size)
+{
+	dcache_clean_invalidate(addr, burst);
+
+	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = size;
+	WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = addr;
+	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG =
+		(0xFFFF & burst) * (UINT32_C(1) << 16) |	// DMA Burst Length
+		0x00 * (UINT32_C(1) << 4) |		// 0: SDRAM to USB FIFO
+		(0x0F & pipe) * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
+		0;
+	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
+}
+
 // Обычно используется для телеграфной манипуляции (KEYDOWN)
 // вызывается в конексте system interrupt
 uint_fast8_t usbd_cdc2_getdtr(void)
@@ -2550,34 +2578,6 @@ static void set_dma_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 
 #define BIT_SET(var, pos) do { (var) |= (UINT32_C(1) << (pos)); } while (0)
 #define BIT_CLEAR(var, pos) do { (var) &= ~ (UINT32_C(1) << (pos)); } while (0)
-
-static void setup_dma_rx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t burst, uint_fast16_t size)
-{
-	dcache_clean_invalidate(addr, size);
-
-	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = size;
-	WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = addr;
-	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG =
-		(0xFFFF & burst) * (UINT32_C(1) << 16) |	// DMA Burst Length
-		0x01 * (UINT32_C(1) << 4) |	// 1: USB FIFO to SDRAM
-		(0x0F & pipe) * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
-		0;
-	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
-}
-
-static void setup_dma_tx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t burst, uint_fast16_t size)
-{
-	dcache_clean_invalidate(addr, burst);
-
-	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = size;
-	WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = addr;
-	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG =
-		(0xFFFF & burst) * (UINT32_C(1) << 16) |	// DMA Burst Length
-		0x00 * (UINT32_C(1) << 4) |		// 0: SDRAM to USB FIFO
-		(0x0F & pipe) * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
-		0;
-	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
-}
 
 // Настройка для обмена с DMA (EMBEDDED USB DMA)
 static void set_dma_ep_embedded(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint_fast8_t dmach)
