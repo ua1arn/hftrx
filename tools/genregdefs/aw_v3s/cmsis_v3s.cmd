@@ -6,8 +6,9 @@ SET FILELIST=gic.csv ccu.csv rtc.csv ^
 	uart.csv gpio.csv twi.csv spi.csv ^
 	timer.csv pwm.csv dmac.csv ^
 	ve.csv ^
-	usbehci.csv usbotg.csv usbphyc.csv usb_ehci_capability.csv usb_ohci_capability.csv ^
-	dram.csv sys_cfg.csv
+	..\aw_generic\usbehci.csv ..\aw_generic\usbotg.csv usbphyc.csv ..\aw_generic\usb_ehci_capability.csv ..\aw_generic\usb_ohci_capability.csv ^
+	dram.csv sys_cfg.csv ^
+	aw_v3s.csv
 
 %CONVERTER% %FILELIST% > %OUTFILE%
 

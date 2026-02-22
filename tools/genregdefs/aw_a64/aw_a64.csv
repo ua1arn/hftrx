@@ -3,3 +3,24 @@
 #irq; GPADC 89
 #irqrv; GPADC 73
 #typeend;
+
+#type; USBOTG; USB OTG Dual-Role Device controller
+#base; USBOTG0 0x01C19000
+#irq; USBOTG0 103
+
+#typeend;
+#type; USB_EHCI_Capability
+#base; USBEHCI0 0x01C1A000
+#base; USBEHCI1 0x01C1B000
+#irq; USBEHCI0 104
+#irq; USBEHCI1 106
+
+#typeend;
+
+#type; USB_OHCI_Capability
+#base; USBOHCI0 0x01C1A400
+#base; USBOHCI1 0x01C1B400
+#irq; USBOHCI0 105
+#irq; USBOHCI1 107
+
+#typeend;

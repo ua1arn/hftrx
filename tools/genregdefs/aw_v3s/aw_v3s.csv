@@ -1,0 +1,20 @@
+#type; USBOTG
+#base; USBOTG 0x01C19000
+
+#irq; USB_DEVICE 103
+
+#typeend;
+
+#type; USB_EHCI_Capability
+#base; USBEHCI 0x01C1A000
+
+#irq; USB_EHCI 104
+
+#typeend;
+
+#type; USB_OHCI_Capability
+#base; USBOHCI 0x01C1A400
+
+#irq; USB_OHCI 105
+
+#typeend;
