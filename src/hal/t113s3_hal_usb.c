@@ -348,28 +348,28 @@ static void usb_clear_bus_interrupt_enable(pusb_struct pusb, uint32_t bm)
 
 static uint32_t usb_get_dma_interrupt_status(pusb_struct pusb)
 {
-	return WITHUSBHW_DEVICE->USB_DMA_INTS & UINT32_C(0xFFFF);
+	return WITHUSBHW_DEVICE->USB_DMA_INTS;
 }
 
 static void usb_clear_dma_interrupt_status(pusb_struct pusb, uint32_t bm)
 {
 	// Set 1 to the bit will clean it.
-	WITHUSBHW_DEVICE->USB_DMA_INTS = (bm & UINT32_C(0xFFFF));
+	WITHUSBHW_DEVICE->USB_DMA_INTS = bm;
 }
 
 static void usb_set_dma_interrupt_enable(pusb_struct pusb, uint32_t bm)
 {
-	WITHUSBHW_DEVICE->USB_DMA_INTE |= (bm & UINT32_C(0xFFFF));
+	WITHUSBHW_DEVICE->USB_DMA_INTE |= bm;
 }
 
 static uint32_t usb_get_dma_interrupt_enable(pusb_struct pusb)
 {
-	return WITHUSBHW_DEVICE->USB_DMA_INTE & UINT32_C(0xFFFF);
+	return WITHUSBHW_DEVICE->USB_DMA_INTE;
 }
 
 static void usb_clear_dma_interrupt_enable(pusb_struct pusb, uint32_t bm)
 {
-	WITHUSBHW_DEVICE->USB_DMA_INTE &= ~ (bm & UINT32_C(0xFF));
+	WITHUSBHW_DEVICE->USB_DMA_INTE &= ~ bm;
 }
 
 static uint32_t usb_get_frame_number(pusb_struct pusb)
@@ -2167,14 +2167,15 @@ uint_fast8_t usbd_cdc2_getrts(void)
 #endif /* WITHUSBCDCACM_N > 1 */
 }
 
-static void setup_dma_rx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t burst, uint_fast16_t size)
+static void setup_dma_rx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t size)
 {
+	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG = 0;
 	dcache_clean_invalidate(addr, size);
 
-	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = size;
+	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = size;	// 18 bit
 	WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = addr;
 	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG =
-		(0xFFFF & burst) * (UINT32_C(1) << 16) |	// DMA Burst Length
+		(0x07FF & size) * (UINT32_C(1) << 16) |	// DMA Burst Length - 11 bit
 		0x01 * (UINT32_C(1) << 4) |	// 1: USB FIFO to SDRAM
 		(0x0F & pipe) * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
 		0;
@@ -2183,12 +2184,13 @@ static void setup_dma_rx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, 
 
 static void setup_dma_tx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t burst, uint_fast16_t size)
 {
-	dcache_clean_invalidate(addr, burst);
+	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG = 0;
+	dcache_clean(addr, size);
 
-	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = size;
+	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = size;	// 18 bit
 	WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = addr;
 	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG =
-		(0xFFFF & burst) * (UINT32_C(1) << 16) |	// DMA Burst Length
+		(0x07FF & size) * (UINT32_C(1) << 16) |	// DMA Burst Length - 11 bit
 		0x00 * (UINT32_C(1) << 4) |		// 0: SDRAM to USB FIFO
 		(0x0F & pipe) * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
 		0;
@@ -2504,6 +2506,24 @@ static void set_ep_bulk(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 #define  BIT_RXCSR_RX_PKT_READY		    16
 #define  BIT_RXCSR_PACKET_COUNT0		11
 
+// USB0_REG_GCS
+#define  BIT_GCS_TXEDMA					31
+#define  BIT_GCS_RXEDMA					30
+#define  BIT_GCS_FIFO_BUS_SEL			24
+#define  BIT_GCS_EPIND3					19
+#define  BIT_GCS_EPIND2					18
+#define  BIT_GCS_EPIND1					17
+#define  BIT_GCS_EPIND0					16
+#define  BIT_GCS_SESSION				8
+#define  BIT_GCS_ISO_UPDATE_EN			7
+#define  BIT_GCS_SOFT_CONNECT			6
+#define  BIT_GCS_HIGH_SPEED_EN			5
+#define  BIT_GCS_HIGH_SPEED_FLAG		4
+#define  BIT_GCS_RESET_FLAG				3
+#define  BIT_GCS_RESUME					2
+#define  BIT_GCS_SUSPEND				1
+#define  BIT_GCS_ENABLE_SUSPENDM		0
+
 // Настройка для обмена с DMA (DMAC)
 static void set_dma_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 {
@@ -2688,6 +2708,14 @@ static void awxx_setup_fifo(pusb_struct pusb)
 	uint32_t fifo_addr = fifo_base;
 	enum { EP_DIR_IN = 1, EP_DIR_OUT = 0 };
 
+//	BIT_SET(USB0_REG_GCS, BIT_GCS_FIFO_BUS_SEL);
+//
+//	// wait for an SOF for Isochronous transfer
+//	BIT_SET(USB0_REG_GCS, BIT_GCS_ISO_UPDATE_EN);
+//	// 0 = late DMA,  1 = DMA-8
+//	BIT_SET(USB0_REG_GCS, BIT_GCS_RXEDMA);
+//	BIT_SET(USB0_REG_GCS, BIT_GCS_TXEDMA);
+
 #if WITHUSBDMTP
 	{
 		const uint_fast8_t pipein = USBD_EP_MTP_IN & 0x0F;
@@ -2790,7 +2818,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				const uint_fast8_t dmach = CDC_PIPEOUTDMA(offset);
 				set_dma_ep_embedded(pusb, pipeout, 0, dmach);
 				//memset(cdc_out_datas [offset], 0xE5, sizeof cdc_out_datas [offset]);
-				setup_dma_rx(dmach, pipeout, (uintptr_t) cdc_out_datas [offset], VIRTUAL_COM_PORT_OUT_DATA_SIZE, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
+				setup_dma_rx(dmach, pipeout, (uintptr_t) cdc_out_datas [offset], VIRTUAL_COM_PORT_OUT_DATA_SIZE);
 				usb_fifo_accessed_by_dma(pusb, pipeout, 1);
 				usb_clear_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipeout));
 				usb_set_dma_interrupt_enable(pusb, (UINT32_C(1) << dmach));
@@ -4434,11 +4462,6 @@ static void usb_params_init(PCD_HandleTypeDef *hpcd)
 
 	//usb_clock_init();
 
-//	pusb->index = 0;
-//	pusb->reg_base = USBOTG0_BASE;
-//	pusb->irq_no = GIC_SRC_USB0;
-//	pusb->drq_no = 0x04;
-
 	pusb->speed = USB0_SPEED;	// USB_SPEED_HS or USB_SPEED_FS
 
 #if WITHUSBDMSC && WITHWAWXXUSB
@@ -4903,7 +4926,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 					//USB0_BulkRXCallBack((uint8_t*)bufEP1Rx, len);
 						//printhex(0, cdc_out_datas [offset], count);
 						cdcXout_buffer_save(cdc_out_datas [offset], count, offset);
-						setup_dma_rx(dmach, pipe, (uintptr_t) cdc_out_datas [offset], VIRTUAL_COM_PORT_OUT_DATA_SIZE, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
+						setup_dma_rx(dmach, pipe, (uintptr_t) cdc_out_datas [offset], VIRTUAL_COM_PORT_OUT_DATA_SIZE);
 					}
 					else
 					{
@@ -5088,6 +5111,8 @@ HAL_StatusTypeDef USB_DevInit(USBOTG_TypeDef *USBx, USB_OTG_CfgTypeDef cfg)
 
 HAL_StatusTypeDef USB_CoreInit(USBOTG_TypeDef * USBx, USB_OTG_CfgTypeDef cfg)
 {
+	USBx->USB_GCS = 0;
+
 //	// P1 clock (66.7 MHz max) period = 15 ns
 //	// The cycle period required to consecutively access registers of this controller must be at least 67 ns.
 //	// TODO: compute BWAIT value on-the-fly
