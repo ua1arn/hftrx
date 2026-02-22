@@ -3187,7 +3187,7 @@ static void hardware_de_global_initialize(void)
 	CCU->VIDEO_OUT0_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT0_RST 1: De-assert
 	CCU->VIDEO_OUT1_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT1_RST 1: De-assert
 
-	CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1:􀀁De-assert
+	CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1: De-assert
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
     local_delay_us(10);
@@ -3195,6 +3195,9 @@ static void hardware_de_global_initialize(void)
 	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
     local_delay_us(10);
+
+    // Разрешает доступ к HDMI_T0
+    CCU->HDMI_SFR_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
 
 #elif CPUSTYLE_T507
 
