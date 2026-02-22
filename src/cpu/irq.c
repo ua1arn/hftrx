@@ -1812,10 +1812,10 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 	#error unsupported CPU
 
 #elif __riscv
-	#error unsupported CPU
+	#warning unsupported context switch on this CPU
 
 #else
-	#error unsupported CPU
+	#warning unsupported context switch on this CPU
 #endif
 
 #endif /* ! LINUX_SUBSYSTEM */
