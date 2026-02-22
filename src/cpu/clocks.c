@@ -4268,22 +4268,6 @@ void sysinit_pll_initialize(int forced)
 
 #elif CPUSTYLE_A733
 
-void sysinit_boot_disconnect(void)
-{
-	CCU->USB0_BGR_REG = 0;
-	CCU->USB1_BGR_REG = 0;
-	CCU->USB2_BGR_REG = 0;
-
-	CCU->SMHC0_BGR_REG = 0;
-	CCU->SMHC1_BGR_REG = 0;
-	CCU->SMHC2_BGR_REG = 0;
-	CCU->SMHC3_BGR_REG = 0;
-}
-
-void sysinit_pll_initialize(int forced)
-{
-}
-
 
 uint_fast32_t allwnr_a733_get_rc16M_freq(void)
 {
@@ -4646,6 +4630,41 @@ uint_fast32_t allwnr_a733_get_de_freq(void)
 {
 	const uint_fast32_t ctlreg = RTC->XO_CTRL_REG;
 	return 1;
+}
+
+void sysinit_boot_disconnect(void)
+{
+	CCU->USB0_BGR_REG = 0;
+	CCU->USB1_BGR_REG = 0;
+	CCU->USB2_BGR_REG = 0;
+
+	CCU->SMHC0_BGR_REG = 0;
+	CCU->SMHC1_BGR_REG = 0;
+	CCU->SMHC2_BGR_REG = 0;
+	CCU->SMHC3_BGR_REG = 0;
+}
+
+static void a733_pll_enable(volatile uint32_t * reg)
+{
+	* reg |= (UINT32_C(1) << 30);	// PLL_LDO_EN
+	local_delay_ms(10);
+	* reg |= (UINT32_C(1) << 29);	// LOCK_ENABLE
+	local_delay_ms(10);
+	* reg |= (UINT32_C(1) << 31);	// PLL_EN
+	while ((* reg & (UINT32_C(1) << 28)) == 0)	// LOCK
+		;
+	* reg |= (UINT32_C(1) << 27);	// PLL_OUTPUT0_GATE
+	* reg |= (UINT32_C(1) << 26);	// PLL_OUTPUT1_GATE
+	* reg |= (UINT32_C(1) << 25);	// PLL_OUTPUT2_GATE
+}
+
+void sysinit_pll_initialize(int forced)
+{
+	CCU->CCMU_SEC_SWITCH_REG |= (UINT32_C(1) << 2);	// MBUS_SEC
+	CCU->CCMU_SEC_SWITCH_REG |= (UINT32_C(1) << 1);	// BUS_SEC
+	CCU->CCMU_SEC_SWITCH_REG |= (UINT32_C(1) << 0);	// PLL_SEC
+
+	a733_pll_enable(& CCU->PLL_PERI0_CTRL_REG);
 }
 
 #elif (CPUSTYLE_A133)
