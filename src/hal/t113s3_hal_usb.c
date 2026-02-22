@@ -4901,7 +4901,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 						count &= mask;
 						count = (count == 0) ? mask + 1 : count;
 
-#if 1
+#if 0
 					PRINTF("out DMA%u: pipe=%u, BC=%u, SDRAM_ADD=0x%08X, RESIDUAL_BC=%u, CHAN_CFG=0x%08X, maxpkt=%u, count=%u, mask=0x%08X, out_dir=%u\n",
 							(unsigned) dmach,
 							(unsigned) pipe,
