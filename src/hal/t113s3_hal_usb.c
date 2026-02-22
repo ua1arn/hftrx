@@ -263,62 +263,62 @@ static void usb_suspendm_disable(pusb_struct pusb)
 
 static uint32_t usb_get_ep0_interrupt_status(pusb_struct pusb)
 {
-	return WITHUSBHW_DEVICE->USB_INTTX & 0x1;
+	return WITHUSBHW_DEVICE->USB_EPINTF & 0x1;
 }
 
 static void usb_clear_ep0_interrupt_status(pusb_struct pusb)
 {
-	WITHUSBHW_DEVICE->USB_INTTX = 0x1;
+	WITHUSBHW_DEVICE->USB_EPINTF = 0x1;
 }
 
 static uint32_t usb_get_eptx_interrupt_status(pusb_struct pusb)
 {
-	return WITHUSBHW_DEVICE->USB_INTTX & 0xFFFF;
+	return WITHUSBHW_DEVICE->USB_EPINTF & 0xFFFF;
 }
 
 static void usb_clear_eptx_interrupt_status(pusb_struct pusb, uint32_t bm)
 {
-	WITHUSBHW_DEVICE->USB_INTTX = bm & 0xFFFF;
+	WITHUSBHW_DEVICE->USB_EPINTF = bm & 0xFFFF;
 }
 
 static uint32_t usb_get_eprx_interrupt_status(pusb_struct pusb)
 {
-	return WITHUSBHW_DEVICE->USB_INTRX & UINT32_C(0xFFFF);
+	return (WITHUSBHW_DEVICE->USB_EPINTF >> 16) & UINT32_C(0xFFFF);
 }
 
 static void usb_clear_eprx_interrupt_status(pusb_struct pusb, uint32_t bm)
 {
-	WITHUSBHW_DEVICE->USB_INTRX = bm & UINT32_C(0xFFFF);
+	WITHUSBHW_DEVICE->USB_EPINTF = (bm & UINT32_C(0xFFFF)) << 16;
 }
 
 static uint32_t usb_get_eprx_interrupt_enable(pusb_struct pusb)
 {
-	return WITHUSBHW_DEVICE->USB_INTRXE & UINT32_C(0xFFFF);
+	return (WITHUSBHW_DEVICE->USB_EPINTE >> 16) & UINT32_C(0xFFFF);
 }
 
 static void usb_set_eptx_interrupt_enable(pusb_struct pusb, uint32_t bm)
 {
-	WITHUSBHW_DEVICE->USB_INTTXE |= (bm & UINT32_C(0xFFFF));
+	WITHUSBHW_DEVICE->USB_EPINTE |= (bm & UINT32_C(0xFFFF));
 }
 
 static void usb_clear_eptx_interrupt_enable(pusb_struct pusb, uint32_t bm)
 {
-	WITHUSBHW_DEVICE->USB_INTTXE &= ~ (bm & UINT32_C(0xFFFF));
+	WITHUSBHW_DEVICE->USB_EPINTE &= ~ (bm & UINT32_C(0xFFFF));
 }
 
 static uint32_t usb_get_eptx_interrupt_enable(pusb_struct pusb)
 {
-	return WITHUSBHW_DEVICE->USB_INTTXE & UINT32_C(0xFFFF);
+	return WITHUSBHW_DEVICE->USB_EPINTE & UINT32_C(0xFFFF);
 }
 
 static void usb_set_eprx_interrupt_enable(pusb_struct pusb, uint32_t bm)
 {
-	WITHUSBHW_DEVICE->USB_INTRXE |= (bm & UINT32_C(0xFFFF));
+	WITHUSBHW_DEVICE->USB_EPINTE |= (bm & UINT32_C(0xFFFF)) << 16;
 }
 
 static void usb_clear_eprx_interrupt_enable(pusb_struct pusb, uint32_t bm)
 {
-	WITHUSBHW_DEVICE->USB_INTRXE &= ~ (bm & UINT32_C(0xFFFF));
+	WITHUSBHW_DEVICE->USB_EPINTE &= ~ ((bm & UINT32_C(0xFFFF)) << 16);
 }
 
 static uint32_t usb_get_bus_interrupt_status(pusb_struct pusb)
@@ -5206,9 +5206,9 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 			// Endpoints configuration test
 			usb_set_eprx_interrupt_enable(pusb, 0xFFFF);
 			usb_set_eptx_interrupt_enable(pusb, 0xFFFF);
-			const unsigned epn = aw_log2(WITHUSBHW_DEVICE->USB_INTTXE);
+			const unsigned epn = aw_log2(usb_get_eptx_interrupt_enable(pusb));
 			pusb->lastepn = epn - 1;	// последний номер EP, который можно использовать
-			PRINTF("USB device endpoints: RX IRQs=%04X, TX IRQs=%04X (%u endpoints, IN/OUT EP%u..EP%u and EP0)\n", (unsigned) WITHUSBHW_DEVICE->USB_INTRXE, (unsigned) WITHUSBHW_DEVICE->USB_INTTXE, epn, epn - 1, 1);
+			PRINTF("USB device: %u endpoints, IN/OUT EP%u..EP%u and EP0\n", epn, epn - 1, 1);
 			usb_clear_eprx_interrupt_enable(pusb, 0xFFFF);
 			usb_clear_eptx_interrupt_enable(pusb, 0xFFFF);
 		}

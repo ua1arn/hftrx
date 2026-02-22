@@ -1,10 +1,8 @@
 #type; USBOTG; USB OTG Dual-Role Device controller
 #regdef; USB_EPFIFO; 0x0000 16; USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N
 #regdef; USB_GCS; 0x0040; USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL USB Global Control and Status Register
-#regdef; USB_INTTX 2; 0x0044; USB_INTTX USB_EPINTF USB Endpoint Interrupt Flag Register
-#regdef; USB_INTRX 2; 0x0046; USB_INTRX USB_EPINTF
-#regdef; USB_INTTXE 2; 0x0048; USB_INTTXE USB_EPINTE USB Endpoint Interrupt Enable Register
-#regdef; USB_INTRXE 2; 0x004a; USB_INTRXE USB_EPINTE
+#regdef; USB_EPINTF; 0x0044; USB_INTTX - lower 16, USB_INTRX - high 16, USB_EPINTF USB Endpoint Interrupt Flag Register
+#regdef; USB_EPINTE; 0x0048; USB_INTTXE - lower 16, USB_INTRXE - high 16,  USB_EPINTE USB Endpoint Interrupt Enable Register
 #regdef; USB_INTUSB; 0x004c; USB_INTUSB USB_BUSINTF USB Bus Interrupt Flag Register
 #regdef; USB_INTUSBE; 0x0050; USB_INTUSBE USB_BUSINTE USB Bus Interrupt Enable Register
 #regdef; USB_FNUM; 0x0054; USB Frame Number Register
