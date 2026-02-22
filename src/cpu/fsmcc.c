@@ -1,4 +1,4 @@
-
+#if __ARM_ARCH == 8
 
 struct FSmcccRes {
     unsigned long a0;
@@ -205,3 +205,5 @@ void FSmcccSmcCall(unsigned long arg0, unsigned long arg1,
 }
 
 #endif
+
+#endif /* __ARM_ARCH == 8 */

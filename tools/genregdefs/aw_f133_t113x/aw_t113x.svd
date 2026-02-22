@@ -20966,7 +20966,7 @@
   </peripheral>
   <peripheral>
   <name>USBOTG0</name>
-  <description></description>
+  <description>USB OTG Dual-Role Device controller</description>
   <baseAddress>0x04100000</baseAddress>
   <interrupt>
    <name>USB0_DEVICE</name>
@@ -20975,7 +20975,7 @@
   </interrupt>
   <registers>
    <cluster>
-    <dim>6</dim>
+    <dim>16</dim>
     <addressOffset>0x00000000</addressOffset>
     <register>
      <name>USB_EPFIFO</name>
@@ -20986,7 +20986,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x018</dimIncrement>
+    <dimIncrement>0x040</dimIncrement>
    </cluster>
    <register>
     <name>USB_GCS</name>

@@ -27,7 +27,7 @@
 #include "src/usb/usbch9.h"
 
 #define WITHCDCWITHDMA_IN 0	// эксперементальная опция, пока в работе не использовать
-#define WITHCDCWITHDMA_OUT 0	// эксперементальная опция, пока в работе не использовать
+#define WITHCDCWITHDMA_OUT 1	// эксперементальная опция, пока в работе не использовать
 
 #define CDC_SET_LINE_CODING                     0x20
 #define CDC_GET_LINE_CODING                     0x21
@@ -480,12 +480,12 @@ static void usb_set_ep0_csr(pusb_struct pusb, uint32_t csr)
 	 WITHUSBHW_DEVICE->USB_TXCSRHI = csr;
 }
 
-static uint32_t usb_get_eptx_csr(pusb_struct pusb)
+static uint32_t usb_get_eptx_csr_hi(pusb_struct pusb)
 {
 	return WITHUSBHW_DEVICE->USB_TXCSRHI;
 }
 
-static void usb_set_eptx_csr(pusb_struct pusb, uint32_t csr)
+static void usb_set_eptx_csr_hi(pusb_struct pusb, uint32_t csr)
 {
 	 WITHUSBHW_DEVICE->USB_TXCSRHI = csr;	// TXCSR bits 31..16
 }
@@ -510,12 +510,12 @@ static uint32_t usb_get_eprx_maxpkt(pusb_struct pusb)
 	return (v & 0x7ff) * (((v & 0xf800) >> 11) + 1);
 }
 
-static uint32_t usb_get_eprx_csr(pusb_struct pusb)
+static uint32_t usb_get_eprx_csr_hi(pusb_struct pusb)
 {
 	return WITHUSBHW_DEVICE->USB_RXCSRHI;
 }
 
-static void usb_set_eprx_csr(pusb_struct pusb, uint32_t csr)
+static void usb_set_eprx_csr_hi(pusb_struct pusb, uint32_t csr)
 {
 	WITHUSBHW_DEVICE->USB_RXCSRHI = csr;
 }
@@ -675,16 +675,16 @@ static void usb_set_eprx_hport(pusb_struct pusb, uint32_t fifo, uint32_t hport)
 	WITHUSBHW_DEVICE->FIFO [fifo].USB_RXHUBPORT = hport & 0x7F;
 	//put_bvalue(USBOTG0_BASE + USB_bRXHPORT_OFF, hport & 0x7F);
 }
-
-static void usb_set_reqpkt_count(pusb_struct pusb, uint32_t count)
-{
-	WITHUSBHW_DEVICE->USB_RXPKTCNT = count;
-}
-
-static uint32_t usb_get_reqpkt_count(pusb_struct pusb)
-{
-	 return WITHUSBHW_DEVICE->USB_RXPKTCNT;
-}
+//
+//static void usb_set_reqpkt_count(pusb_struct pusb, uint32_t count)
+//{
+//	WITHUSBHW_DEVICE->USB_RXPKTCNT = count;
+//}
+//
+//static uint32_t usb_get_reqpkt_count(pusb_struct pusb)
+//{
+//	 return WITHUSBHW_DEVICE->USB_RXPKTCNT & 0xFFFF;
+//}
 
 static uint32_t usb_get_lsvbusvld(pusb_struct pusb)
 {
@@ -1164,7 +1164,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 				pusb->eprx_xfer_state[ep_no-1] = USB_EPX_DATA;
 #else
 			    xfer_count = ulmin32(pusb->eprx_xfer_residuev[ep_no-1], maxpkt);
-			    if (usb_get_eprx_csr(pusb) & USB_RXCSR_RXPKTRDY)
+			    if (usb_get_eprx_csr_hi(pusb) & USB_RXCSR_RXPKTRDY)
 				{
 					//usb_fifo_accessed_by_cpu(pusb);
 //					if (usb_get_fifo_access_config(pusb) & 0x1)
@@ -1172,7 +1172,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 //						PRINTF("Error: CPU Access Failed!!\n");
 //					}
 					usb_read_ep_fifo(pusb, ep_no, pusb->eprx_xfer_addrv[ep_no-1], xfer_count);
-					usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) & USB_RXCSR_ISO); //Clear RxPktRdy
+					usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) & USB_RXCSR_ISO); //Clear RxPktRdy
 					pusb->eprx_xfer_residuev[ep_no-1] -= xfer_count;
 					pusb->eprx_xfer_addrv[ep_no-1] += xfer_count;
 					pusb->eprx_xfer_tranferredv[ep_no-1]  += xfer_count;
@@ -1197,7 +1197,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 			}
 			else
 			{
-				if (usb_get_eprx_csr(pusb) & USB_RXCSR_RXPKTRDY)
+				if (usb_get_eprx_csr_hi(pusb) & USB_RXCSR_RXPKTRDY)
 				{
 //					usb_fifo_accessed_by_cpu(pusb);
 //					if (usb_get_fifo_access_config(pusb) & 0x1)
@@ -1205,7 +1205,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 //						PRINTF("Error: CPU Access Failed!!\n");
 //					}
 					usb_read_ep_fifo(pusb, ep_no, pusb->eprx_xfer_addrv[ep_no-1], byte_count);
-					usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) & USB_RXCSR_ISO); //Clear RxPktRdy
+					usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) & USB_RXCSR_ISO); //Clear RxPktRdy
 					pusb->eprx_xfer_residuev[ep_no-1] -= byte_count;
 					pusb->eprx_xfer_tranferredv[ep_no-1]  += byte_count;
 					pusb->eprx_xfer_state[ep_no-1] = USB_EPX_SETUP;
@@ -1274,11 +1274,11 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 		  	{
 		  		if (byte_count&0x1ff)
 			    {
-				    usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) & USB_RXCSR_ISO);
+				    usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) & USB_RXCSR_ISO);
 			    }
 			    else
 			   	{
-				   usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) & (USB_RXCSR_ISO|USB_RXCSR_RXPKTRDY));
+				   usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) & (USB_RXCSR_ISO|USB_RXCSR_RXPKTRDY));
 			   	}
 			    pusb->eprx_xfer_state[ep_no-1] = USB_EPX_SETUP;
 			    ret = USB_RETVAL_COMPOK;
@@ -1303,7 +1303,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 #else
 		if (pusb->eprx_xfer_residuev[ep_no-1]>0)
 		{
-			if (usb_get_eprx_csr(pusb) & USB_RXCSR_RXPKTRDY)
+			if (usb_get_eprx_csr_hi(pusb) & USB_RXCSR_RXPKTRDY)
 			{
 				uint32_t xfer_count = ulmin32(pusb->eprx_xfer_residuev[ep_no-1], maxpkt);
 
@@ -1313,7 +1313,7 @@ static USB_RETVAL epx_out_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_
 //					PRINTF("Error: CPU Access Failed!!\n");
 //				}
 				usb_read_ep_fifo(pusb, ep_no, pusb->eprx_xfer_addrv[ep_no-1], xfer_count);
-				usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) & USB_RXCSR_ISO); //Clear RxPktRdy
+				usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) & USB_RXCSR_ISO); //Clear RxPktRdy
 				pusb->eprx_xfer_residuev[ep_no-1] -= xfer_count;
 				pusb->eprx_xfer_addrv[ep_no-1] += xfer_count;
 				pusb->eprx_xfer_tranferredv[ep_no-1]  += xfer_count;
@@ -1450,7 +1450,7 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 			    	pusb->dmatx_last_transferv[ep_no-1] = 0;
 		    	}
 
-		    	usb_set_eptx_csr(pusb, USB_TXCSR_AUTOSET|USB_TXCSR_TXFIFO|USB_TXCSR_DMAREQEN|USB_TXCSR_DMAREQMODE);
+		    	usb_set_eptx_csr_hi(pusb, USB_TXCSR_AUTOSET|USB_TXCSR_TXFIFO|USB_TXCSR_DMAREQEN|USB_TXCSR_DMAREQMODE);
 
 				pusb->eptx_xfer_state[ep_no-1] = USB_EPX_DATA;
 #else
@@ -1459,8 +1459,8 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 				pusb->eptx_xfer_residuev[ep_no-1] -= maxpkt;
 			  	pusb->eptx_xfer_tranferredv[ep_no-1] += maxpkt;
 			  	pusb->eptx_xfer_addrv[ep_no-1] += maxpkt;
-				usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
-		    	while ((usb_get_eptx_csr(pusb) & USB_TXCSR_TXPKTRDY) != 0)	// waiting done sending
+				usb_set_eptx_csr_hi(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
+		    	while ((usb_get_eptx_csr_hi(pusb) & USB_TXCSR_TXPKTRDY) != 0)	// waiting done sending
 		    		;
 			    pusb->eptx_xfer_state[ep_no-1] = USB_EPX_DATA;
 #endif
@@ -1474,8 +1474,8 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 //				{
 //					PRINTF("Error: FIFO Access Config Error!!\n");
 //			  	}
-				usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
-		    	while ((usb_get_eptx_csr(pusb) & USB_TXCSR_TXPKTRDY) != 0)	// waiting done sending
+				usb_set_eptx_csr_hi(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
+		    	while ((usb_get_eptx_csr_hi(pusb) & USB_TXCSR_TXPKTRDY) != 0)	// waiting done sending
 		    		;
 				pusb->eptx_xfer_state[ep_no-1] = USB_EPX_END;
 			  	pusb->eptx_xfer_residuev[ep_no-1] = 0;
@@ -1543,15 +1543,15 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 			    	maxpkt = usb_get_eptx_maxpkt(pusb);
 			    	if (aw_module(byte_count, maxpkt))
 			    	{
-				   		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb)|USB_TXCSR_TXPKTRDY);
-				    	while ((usb_get_eptx_csr(pusb) & USB_TXCSR_TXPKTRDY) != 0)	// waiting done sending
+				   		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb)|USB_TXCSR_TXPKTRDY);
+				    	while ((usb_get_eptx_csr_hi(pusb) & USB_TXCSR_TXPKTRDY) != 0)	// waiting done sending
 				    		;
 			   	 	}
 			    	pusb->eptx_xfer_state[ep_no-1] = USB_EPX_END;
 	 			}
 		 	}
 #else
-			if (!(usb_get_eptx_csr(pusb) & USB_TXCSR_TXPKTRDY))
+			if (!(usb_get_eptx_csr_hi(pusb) & USB_TXCSR_TXPKTRDY))
 			{
 				if (pusb->eptx_xfer_residuev[ep_no-1] > 0)   //Data is not transfered over
 				{
@@ -1562,12 +1562,12 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 					pusb->eptx_xfer_residuev[ep_no-1] -= xfer_count;
 			  		pusb->eptx_xfer_tranferredv[ep_no-1] += xfer_count;
 			  		pusb->eptx_xfer_addrv[ep_no-1] += xfer_count;
-					usb_set_eptx_csr(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
-			    	while ((usb_get_eptx_csr(pusb) & USB_TXCSR_TXPKTRDY) != 0)	// waiting done sending
+					usb_set_eptx_csr_hi(pusb, USB_TXCSR_TXFIFO|USB_TXCSR_TXPKTRDY);
+			    	while ((usb_get_eptx_csr_hi(pusb) & USB_TXCSR_TXPKTRDY) != 0)	// waiting done sending
 			    		;
 			    	pusb->eptx_xfer_state[ep_no-1] = USB_EPX_DATA;
 				}
-				else if (!(usb_get_eptx_csr(pusb) & USB_TXCSR_FIFONOTEMP))
+				else if (!(usb_get_eptx_csr_hi(pusb) & USB_TXCSR_FIFONOTEMP))
 				{
 					pusb->eptx_xfer_state[ep_no-1] = USB_EPX_END;
 				}
@@ -1577,9 +1577,9 @@ static USB_RETVAL epx_in_handler_dev(pusb_struct pusb, uint32_t ep_no, uintptr_t
 		break;
 
 		case USB_EPX_END:
-			if (!(usb_get_eptx_csr(pusb) & 0x3))
+			if (!(usb_get_eptx_csr_hi(pusb) & 0x3))
 			{
-				usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) & USB_TXCSR_ISO);
+				usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) & USB_TXCSR_ISO);
 				pusb->eptx_xfer_state[ep_no-1] = USB_EPX_SETUP;
 				ret = USB_RETVAL_COMPOK;
 			}
@@ -1908,7 +1908,7 @@ static USB_RETVAL usb_dev_bulk_xfer_msc(pusb_struct pusb)
 
 			pusb->eprx_flag[bo_ep_out-1] = 0;
 	  		usb_select_ep(pusb, bo_ep_out);
-	  		if (!(usb_get_eprx_csr(pusb) & USB_RXCSR_RXPKTRDY))
+	  		if (!(usb_get_eprx_csr_hi(pusb) & USB_RXCSR_RXPKTRDY))
 	  		{
 	  			break;
 	  		}
@@ -2336,7 +2336,7 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 		pusb->eprx_flag[bo_ep_out-1] = 0;
 
   		usb_select_ep(pusb, bo_ep_out);
-  		if (!(usb_get_eprx_csr(pusb) & USB_RXCSR_RXPKTRDY))
+  		if (!(usb_get_eprx_csr_hi(pusb) & USB_RXCSR_RXPKTRDY))
   		{
   			break;
   		}
@@ -2405,12 +2405,12 @@ static void set_ep_iso(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 	if (ep_dir)
 	{
 		// IN
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_ISO);
+		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_ISO);
 	}
 	else
 	{
 		// OUT
-		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_ISO);
+		usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_ISO);
 	}
 }
 
@@ -2467,22 +2467,22 @@ static void set_dma_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir)
 	{
 		// IN
 
-        usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_FLUSHFIFO);
-//        usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | (1u << (BIT_TXCSR_MODE - 16)));
-//        usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | (1u << (BIT_TXCSR_CLEAR_DATA_TOGGLE - 16)));
+        usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_FLUSHFIFO);
+//        usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | (1u << (BIT_TXCSR_MODE - 16)));
+//        usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | (1u << (BIT_TXCSR_CLEAR_DATA_TOGGLE - 16)));
 
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
+		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
+		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
+		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
 	}
 	else
 	{
 		// OUT
-        usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_FLUSHFIFO);
+        usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_FLUSHFIFO);
 
-		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
-		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
-		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 0*USB_RXCSR_DMAREQMODE);	// DMAReqMode
+		usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
+		usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
+		usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | 0*USB_RXCSR_DMAREQMODE);	// DMAReqMode
 	}
 }
 
@@ -2574,13 +2574,13 @@ static void set_dma_ep_embedded(pusb_struct pusb, uint32_t ep_no, uint32_t ep_di
         //BIT_SET(& WITHUSBHW_DEVICE->USB_TXCSR, BIT_TXCSR_FLUSH_FIFO);
         //BIT_CLEAR(& WITHUSBHW_DEVICE->USB_TXCSR, BIT_TXCSR_ISO);
 
-        usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_FLUSHFIFO);
-//        usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | (1u << (BIT_TXCSR_MODE - 16)));
-//        usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | (1u << (BIT_TXCSR_CLEAR_DATA_TOGGLE - 16)));
+        usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_FLUSHFIFO);
+//        usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | (1u << (BIT_TXCSR_MODE - 16)));
+//        usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | (1u << (BIT_TXCSR_CLEAR_DATA_TOGGLE - 16)));
 
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
-		usb_set_eptx_csr(pusb, usb_get_eptx_csr(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
+		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
+		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
+		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
 #if 0
 		USB0_REG_TXCSR = 0x0; 								// 512 is max packet size for BULK
 		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_CLEAR_DATA_TOGGLE);
@@ -2615,11 +2615,11 @@ static void set_dma_ep_embedded(pusb_struct pusb, uint32_t ep_no, uint32_t ep_di
 	else
 	{
 		// OUT
-//        usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_FLUSHFIFO);
+//        usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_FLUSHFIFO);
 //
-//		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
-//		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
-//		usb_set_eprx_csr(pusb, usb_get_eprx_csr(pusb) | 0*USB_RXCSR_DMAREQMODE);	// DMAReqMode
+//		usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_AUTOCLR);		// AutoClear
+//		usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_DMAREQEN);	// DMAReqEnab
+//		usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | 0*USB_RXCSR_DMAREQMODE);	// DMAReqMode
 //
 //		USB0_REG_TXCSR = 0x0; 								// 512 is max packet size for BULK
 //		USB0_SetActiveEP(USB0_EP2);
@@ -4896,18 +4896,20 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 						// OUT direction
 						unsigned count = usb_get_eprx_count(pusb);
 						BIT_CLEAR(USB0_REG_RXCSR, BIT_RXCSR_RX_PKT_READY);
+						const uint_fast32_t maxpkt = usb_get_eprx_maxpkt(pusb);
 						const uint_fast32_t mask = (UINT32_C(1) << ((WITHUSBHW_DEVICE->USB_RXFIFO & 0x0F) + 3)) - 1;
 						count &= mask;
 						count = (count == 0) ? mask + 1 : count;
 
-#if 0
-					PRINTF("out DMA%u: pipe=%u, BC=%u, SDRAM_ADD=0x%08X, RESIDUAL_BC=%u, CHAN_CFG=0x%08X, count=%u, mask=0x%08X, out_dir=%u\n",
+#if 1
+					PRINTF("out DMA%u: pipe=%u, BC=%u, SDRAM_ADD=0x%08X, RESIDUAL_BC=%u, CHAN_CFG=0x%08X, maxpkt=%u, count=%u, mask=0x%08X, out_dir=%u\n",
 							(unsigned) dmach,
 							(unsigned) pipe,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [dmach].BC,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [dmach].RESIDUAL_BC,
 							(unsigned) WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG,
+							maxpkt,
 							count,
 							mask,
 							out_drection);

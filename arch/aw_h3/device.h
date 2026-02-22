@@ -154,119 +154,119 @@ typedef enum IRQn
 /*!< CCU Clock Controller Unit (CCU) */
 typedef struct CCU_Type
 {
-    __IO uint32_t PLL_CPUX_CTRL_REG;                  /*!< Offset 0x000 PLL_CPUX Control Register */
+    __IOM uint32_t PLL_CPUX_CTRL_REG;                 /*!< Offset 0x000 PLL_CPUX Control Register */
          RESERVED(0x004[0x0008 - 0x0004], uint8_t)
-    __IO uint32_t PLL_AUDIO_CTRL_REG;                 /*!< Offset 0x008 PLL_AUDIO Control Register */
+    __IOM uint32_t PLL_AUDIO_CTRL_REG;                /*!< Offset 0x008 PLL_AUDIO Control Register */
          RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
-    __IO uint32_t PLL_VIDEO_CTRL_REG;                 /*!< Offset 0x010 PLL_VIDEO Control Register */
+    __IOM uint32_t PLL_VIDEO_CTRL_REG;                /*!< Offset 0x010 PLL_VIDEO Control Register */
          RESERVED(0x014[0x0018 - 0x0014], uint8_t)
-    __IO uint32_t PLL_VE_CTRL_REG;                    /*!< Offset 0x018 PLL_VE Control Register */
+    __IOM uint32_t PLL_VE_CTRL_REG;                   /*!< Offset 0x018 PLL_VE Control Register */
          RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
-    __IO uint32_t PLL_DDR_CTRL_REG;                   /*!< Offset 0x020 PLL_DDR Control Register */
+    __IOM uint32_t PLL_DDR_CTRL_REG;                  /*!< Offset 0x020 PLL_DDR Control Register */
          RESERVED(0x024[0x0028 - 0x0024], uint8_t)
-    __IO uint32_t PLL_PERIPH0_CTRL_REG;               /*!< Offset 0x028 PLL_PERIPH0 Control Register */
+    __IOM uint32_t PLL_PERIPH0_CTRL_REG;              /*!< Offset 0x028 PLL_PERIPH0 Control Register */
          RESERVED(0x02C[0x0038 - 0x002C], uint8_t)
-    __IO uint32_t PLL_GPU_CTRL_REG;                   /*!< Offset 0x038 PLL_GPU Control Register */
+    __IOM uint32_t PLL_GPU_CTRL_REG;                  /*!< Offset 0x038 PLL_GPU Control Register */
          RESERVED(0x03C[0x0044 - 0x003C], uint8_t)
-    __IO uint32_t PLL_PERIPH1_CTRL_REG;               /*!< Offset 0x044 PLL_PERIPH1_CTRL_REG */
-    __IO uint32_t PLL_DE_CTRL_REG;                    /*!< Offset 0x048 PLL_DE Control Register */
+    __IOM uint32_t PLL_PERIPH1_CTRL_REG;              /*!< Offset 0x044 PLL_PERIPH1_CTRL_REG */
+    __IOM uint32_t PLL_DE_CTRL_REG;                   /*!< Offset 0x048 PLL_DE Control Register */
          RESERVED(0x04C[0x0050 - 0x004C], uint8_t)
-    __IO uint32_t CPUX_AXI_CFG_REG;                   /*!< Offset 0x050 CPUX/AXI Configuration Register */
-    __IO uint32_t AHB1_APB1_CFG_REG;                  /*!< Offset 0x054 AHB1/APB1 Configuration Register */
-    __IO uint32_t APB2_CFG_REG;                       /*!< Offset 0x058 APB2 Configuration Register */
-    __IO uint32_t AHB2_CFG_REG;                       /*!< Offset 0x05C AHB2 Configuration Register */
-    __IO uint32_t BUS_CLK_GATING_REG0;                /*!< Offset 0x060 Bus Clock Gating Register 0 */
-    __IO uint32_t BUS_CLK_GATING_REG1;                /*!< Offset 0x064 Bus Clock Gating Register 1 */
-    __IO uint32_t BUS_CLK_GATING_REG2;                /*!< Offset 0x068 Bus Clock Gating Register 2 */
-    __IO uint32_t BUS_CLK_GATING_REG3;                /*!< Offset 0x06C Bus Clock Gating Register 3 */
-    __IO uint32_t BUS_CLK_GATING_REG4;                /*!< Offset 0x070 Bus Clock Gating Register4 */
-    __IO uint32_t THS_CLK_REG;                        /*!< Offset 0x074 THS Clock Register */
+    __IOM uint32_t CPUX_AXI_CFG_REG;                  /*!< Offset 0x050 CPUX/AXI Configuration Register */
+    __IOM uint32_t AHB1_APB1_CFG_REG;                 /*!< Offset 0x054 AHB1/APB1 Configuration Register */
+    __IOM uint32_t APB2_CFG_REG;                      /*!< Offset 0x058 APB2 Configuration Register */
+    __IOM uint32_t AHB2_CFG_REG;                      /*!< Offset 0x05C AHB2 Configuration Register */
+    __IOM uint32_t BUS_CLK_GATING_REG0;               /*!< Offset 0x060 Bus Clock Gating Register 0 */
+    __IOM uint32_t BUS_CLK_GATING_REG1;               /*!< Offset 0x064 Bus Clock Gating Register 1 */
+    __IOM uint32_t BUS_CLK_GATING_REG2;               /*!< Offset 0x068 Bus Clock Gating Register 2 */
+    __IOM uint32_t BUS_CLK_GATING_REG3;               /*!< Offset 0x06C Bus Clock Gating Register 3 */
+    __IOM uint32_t BUS_CLK_GATING_REG4;               /*!< Offset 0x070 Bus Clock Gating Register4 */
+    __IOM uint32_t THS_CLK_REG;                       /*!< Offset 0x074 THS Clock Register */
          RESERVED(0x078[0x0080 - 0x0078], uint8_t)
-    __IO uint32_t NAND_CLK_REG;                       /*!< Offset 0x080 NAND Clock Register */
+    __IOM uint32_t NAND_CLK_REG;                      /*!< Offset 0x080 NAND Clock Register */
          RESERVED(0x084[0x0088 - 0x0084], uint8_t)
-    __IO uint32_t SDMMC0_CLK_REG;                     /*!< Offset 0x088 SDMMC0 Clock Register */
-    __IO uint32_t SDMMC1_CLK_REG;                     /*!< Offset 0x08C SDMMC1 Clock Register */
-    __IO uint32_t SDMMC2_CLK_REG;                     /*!< Offset 0x090 SDMMC2 Clock Register */
+    __IOM uint32_t SDMMC0_CLK_REG;                    /*!< Offset 0x088 SDMMC0 Clock Register */
+    __IOM uint32_t SDMMC1_CLK_REG;                    /*!< Offset 0x08C SDMMC1 Clock Register */
+    __IOM uint32_t SDMMC2_CLK_REG;                    /*!< Offset 0x090 SDMMC2 Clock Register */
          RESERVED(0x094[0x009C - 0x0094], uint8_t)
-    __IO uint32_t CE_CLK_REG;                         /*!< Offset 0x09C CE Clock Register */
-    __IO uint32_t SPI0_CLK_REG;                       /*!< Offset 0x0A0 SPI0 Clock Register */
-    __IO uint32_t SPI1_CLK_REG;                       /*!< Offset 0x0A4 SPI1 Clock Register */
+    __IOM uint32_t CE_CLK_REG;                        /*!< Offset 0x09C CE Clock Register */
+    __IOM uint32_t SPI0_CLK_REG;                      /*!< Offset 0x0A0 SPI0 Clock Register */
+    __IOM uint32_t SPI1_CLK_REG;                      /*!< Offset 0x0A4 SPI1 Clock Register */
          RESERVED(0x0A8[0x00B0 - 0x00A8], uint8_t)
-    __IO uint32_t I2S_PCM0_CLK_REG;                   /*!< Offset 0x0B0 I2S/PCM0 Clock Register */
-    __IO uint32_t I2S_PCM1_CLK_REG;                   /*!< Offset 0x0B4 I2S/PCM1 Clock Register */
-    __IO uint32_t I2S_PCM2_CLK_REG;                   /*!< Offset 0x0B8 I2S/PCM2 Clock Register */
+    __IOM uint32_t I2S_PCM0_CLK_REG;                  /*!< Offset 0x0B0 I2S/PCM0 Clock Register */
+    __IOM uint32_t I2S_PCM1_CLK_REG;                  /*!< Offset 0x0B4 I2S/PCM1 Clock Register */
+    __IOM uint32_t I2S_PCM2_CLK_REG;                  /*!< Offset 0x0B8 I2S/PCM2 Clock Register */
          RESERVED(0x0BC[0x00C0 - 0x00BC], uint8_t)
-    __IO uint32_t OWA_CLK_REG;                        /*!< Offset 0x0C0 OWA Clock Register */
+    __IOM uint32_t OWA_CLK_REG;                       /*!< Offset 0x0C0 OWA Clock Register */
          RESERVED(0x0C4[0x00CC - 0x00C4], uint8_t)
-    __IO uint32_t USBPHY_CFG_REG;                     /*!< Offset 0x0CC USBPHY Configuration Register */
+    __IOM uint32_t USBPHY_CFG_REG;                    /*!< Offset 0x0CC USBPHY Configuration Register */
          RESERVED(0x0D0[0x00F4 - 0x00D0], uint8_t)
-    __IO uint32_t DRAM_CFG_REG;                       /*!< Offset 0x0F4 DRAM Configuration Register */
+    __IOM uint32_t DRAM_CFG_REG;                      /*!< Offset 0x0F4 DRAM Configuration Register */
          RESERVED(0x0F8[0x00FC - 0x00F8], uint8_t)
-    __IO uint32_t MBUS_RST_REG;                       /*!< Offset 0x0FC MBUS Reset Register */
-    __IO uint32_t DRAM_CLK_GATING_REG;                /*!< Offset 0x100 DRAM Clock Gating Register */
-    __IO uint32_t DE_CLK_REG;                         /*!< Offset 0x104 DE Clock Register */
+    __IOM uint32_t MBUS_RST_REG;                      /*!< Offset 0x0FC MBUS Reset Register */
+    __IOM uint32_t DRAM_CLK_GATING_REG;               /*!< Offset 0x100 DRAM Clock Gating Register */
+    __IOM uint32_t DE_CLK_REG;                        /*!< Offset 0x104 DE Clock Register */
          RESERVED(0x108[0x0118 - 0x0108], uint8_t)
-    __IO uint32_t TCON0_CLK_REG;                      /*!< Offset 0x118 TCON0 Clock Register */
+    __IOM uint32_t TCON0_CLK_REG;                     /*!< Offset 0x118 TCON0 Clock Register */
          RESERVED(0x11C[0x0120 - 0x011C], uint8_t)
-    __IO uint32_t TVE_CLK_REG;                        /*!< Offset 0x120 TVE Clock Register */
-    __IO uint32_t DEINTERLACE_CLK_REG;                /*!< Offset 0x124 DEINTERLACE Clock Register */
+    __IOM uint32_t TVE_CLK_REG;                       /*!< Offset 0x120 TVE Clock Register */
+    __IOM uint32_t DEINTERLACE_CLK_REG;               /*!< Offset 0x124 DEINTERLACE Clock Register */
          RESERVED(0x128[0x0130 - 0x0128], uint8_t)
-    __IO uint32_t CSI_MISC_CLK_REG;                   /*!< Offset 0x130 CSI_MISC Clock Register */
-    __IO uint32_t CSI_CLK_REG;                        /*!< Offset 0x134 CSI Clock Register */
+    __IOM uint32_t CSI_MISC_CLK_REG;                  /*!< Offset 0x130 CSI_MISC Clock Register */
+    __IOM uint32_t CSI_CLK_REG;                       /*!< Offset 0x134 CSI Clock Register */
          RESERVED(0x138[0x013C - 0x0138], uint8_t)
-    __IO uint32_t VE_CLK_REG;                         /*!< Offset 0x13C VE Clock Register */
-    __IO uint32_t AC_DIG_CLK_REG;                     /*!< Offset 0x140 AC Digital Clock Register */
-    __IO uint32_t AVS_CLK_REG;                        /*!< Offset 0x144 AVS Clock Register */
+    __IOM uint32_t VE_CLK_REG;                        /*!< Offset 0x13C VE Clock Register */
+    __IOM uint32_t AC_DIG_CLK_REG;                    /*!< Offset 0x140 AC Digital Clock Register */
+    __IOM uint32_t AVS_CLK_REG;                       /*!< Offset 0x144 AVS Clock Register */
          RESERVED(0x148[0x0150 - 0x0148], uint8_t)
-    __IO uint32_t HDMI_CLK_REG;                       /*!< Offset 0x150 HDMI Clock Register */
-    __IO uint32_t HDMI_SLOW_CLK_REG;                  /*!< Offset 0x154 HDMI Slow Clock Register */
+    __IOM uint32_t HDMI_CLK_REG;                      /*!< Offset 0x150 HDMI Clock Register */
+    __IOM uint32_t HDMI_SLOW_CLK_REG;                 /*!< Offset 0x154 HDMI Slow Clock Register */
          RESERVED(0x158[0x015C - 0x0158], uint8_t)
-    __IO uint32_t MBUS_CLK_REG;                       /*!< Offset 0x15C MBUS Clock Register */
+    __IOM uint32_t MBUS_CLK_REG;                      /*!< Offset 0x15C MBUS Clock Register */
          RESERVED(0x160[0x01A0 - 0x0160], uint8_t)
-    __IO uint32_t GPU_CLK_REG;                        /*!< Offset 0x1A0 GPU Clock Register */
+    __IOM uint32_t GPU_CLK_REG;                       /*!< Offset 0x1A0 GPU Clock Register */
          RESERVED(0x1A4[0x0200 - 0x01A4], uint8_t)
-    __IO uint32_t PLL_STABLE_TIME_REG0;               /*!< Offset 0x200 PLL Stable Time Register 0 */
-    __IO uint32_t PLL_STABLE_TIME_REG1;               /*!< Offset 0x204 PLL Stable Time Register 1 */
+    __IOM uint32_t PLL_STABLE_TIME_REG0;              /*!< Offset 0x200 PLL Stable Time Register 0 */
+    __IOM uint32_t PLL_STABLE_TIME_REG1;              /*!< Offset 0x204 PLL Stable Time Register 1 */
          RESERVED(0x208[0x0220 - 0x0208], uint8_t)
-    __IO uint32_t PLL_CPUX_BIAS_REG;                  /*!< Offset 0x220 PLL_CPUX Bias Register */
-    __IO uint32_t PLL_AUDIO_BIAS_REG;                 /*!< Offset 0x224 PLL_AUDIO Bias Register */
-    __IO uint32_t PLL_VIDEO_BIAS_REG;                 /*!< Offset 0x228 PLL_VIDEO Bias Register */
-    __IO uint32_t PLL_VE_BIAS_REG;                    /*!< Offset 0x22C PLL_VE Bias Register */
-    __IO uint32_t PLL_DDR_BIAS_REG;                   /*!< Offset 0x230 PLL_DDR Bias Register */
-    __IO uint32_t PLL_PERIPH0_BIAS_REG;               /*!< Offset 0x234 PLL_PERIPH0 Bias Register */
+    __IOM uint32_t PLL_CPUX_BIAS_REG;                 /*!< Offset 0x220 PLL_CPUX Bias Register */
+    __IOM uint32_t PLL_AUDIO_BIAS_REG;                /*!< Offset 0x224 PLL_AUDIO Bias Register */
+    __IOM uint32_t PLL_VIDEO_BIAS_REG;                /*!< Offset 0x228 PLL_VIDEO Bias Register */
+    __IOM uint32_t PLL_VE_BIAS_REG;                   /*!< Offset 0x22C PLL_VE Bias Register */
+    __IOM uint32_t PLL_DDR_BIAS_REG;                  /*!< Offset 0x230 PLL_DDR Bias Register */
+    __IOM uint32_t PLL_PERIPH0_BIAS_REG;              /*!< Offset 0x234 PLL_PERIPH0 Bias Register */
          RESERVED(0x238[0x023C - 0x0238], uint8_t)
-    __IO uint32_t PLL_GPU_BIAS_REG;                   /*!< Offset 0x23C PLL_GPU Bias Register */
+    __IOM uint32_t PLL_GPU_BIAS_REG;                  /*!< Offset 0x23C PLL_GPU Bias Register */
          RESERVED(0x240[0x0244 - 0x0240], uint8_t)
-    __IO uint32_t PLL_PERIPH1_BIAS_REG;               /*!< Offset 0x244 PLL_PERIPH1 Bias Register */
-    __IO uint32_t PLL_DE_BIAS_REG;                    /*!< Offset 0x248 PLL_DE Bias Register */
+    __IOM uint32_t PLL_PERIPH1_BIAS_REG;              /*!< Offset 0x244 PLL_PERIPH1 Bias Register */
+    __IOM uint32_t PLL_DE_BIAS_REG;                   /*!< Offset 0x248 PLL_DE Bias Register */
          RESERVED(0x24C[0x0250 - 0x024C], uint8_t)
-    __IO uint32_t PLL_CPUX_TUN_REG;                   /*!< Offset 0x250 PLL_CPUX Tuning Register */
+    __IOM uint32_t PLL_CPUX_TUN_REG;                  /*!< Offset 0x250 PLL_CPUX Tuning Register */
          RESERVED(0x254[0x0260 - 0x0254], uint8_t)
-    __IO uint32_t PLL_DDR_TUN_REG;                    /*!< Offset 0x260 PLL_DDR Tuning Register */
+    __IOM uint32_t PLL_DDR_TUN_REG;                   /*!< Offset 0x260 PLL_DDR Tuning Register */
          RESERVED(0x264[0x0280 - 0x0264], uint8_t)
-    __IO uint32_t PLL_CPUX_PAT_CTRL_REG;              /*!< Offset 0x280 PLL_CPUX Pattern Control Register */
-    __IO uint32_t PLL_AUDIO_PAT_CTRL_REG0;            /*!< Offset 0x284 PLL_AUDIO Pattern Control Register */
-    __IO uint32_t PLL_VIDEO_PAT_CTRL_REG0;            /*!< Offset 0x288 PLL_VIDEO Pattern Control Register */
-    __IO uint32_t PLL_VE_PAT_CTRL_REG;                /*!< Offset 0x28C PLL_VE Pattern Control Register */
-    __IO uint32_t PLL_DDR_PAT_CTRL_REG0;              /*!< Offset 0x290 PLL_DDR Pattern Control Register */
+    __IOM uint32_t PLL_CPUX_PAT_CTRL_REG;             /*!< Offset 0x280 PLL_CPUX Pattern Control Register */
+    __IOM uint32_t PLL_AUDIO_PAT_CTRL_REG0;           /*!< Offset 0x284 PLL_AUDIO Pattern Control Register */
+    __IOM uint32_t PLL_VIDEO_PAT_CTRL_REG0;           /*!< Offset 0x288 PLL_VIDEO Pattern Control Register */
+    __IOM uint32_t PLL_VE_PAT_CTRL_REG;               /*!< Offset 0x28C PLL_VE Pattern Control Register */
+    __IOM uint32_t PLL_DDR_PAT_CTRL_REG0;             /*!< Offset 0x290 PLL_DDR Pattern Control Register */
          RESERVED(0x294[0x029C - 0x0294], uint8_t)
-    __IO uint32_t PLL_GPU_PAT_CTRL_REG;               /*!< Offset 0x29C PLL_GPU Pattern Control Register */
+    __IOM uint32_t PLL_GPU_PAT_CTRL_REG;              /*!< Offset 0x29C PLL_GPU Pattern Control Register */
          RESERVED(0x2A0[0x02A4 - 0x02A0], uint8_t)
-    __IO uint32_t PLL_PERIPH1_PAT_CTRL_REG1;          /*!< Offset 0x2A4 PLL_PERIPH1 Pattern Control Register */
-    __IO uint32_t PLL_DE_PAT_CTRL_REG;                /*!< Offset 0x2A8 PLL_DE Pattern Control Register */
+    __IOM uint32_t PLL_PERIPH1_PAT_CTRL_REG1;         /*!< Offset 0x2A4 PLL_PERIPH1 Pattern Control Register */
+    __IOM uint32_t PLL_DE_PAT_CTRL_REG;               /*!< Offset 0x2A8 PLL_DE Pattern Control Register */
          RESERVED(0x2AC[0x02C0 - 0x02AC], uint8_t)
-    __IO uint32_t BUS_SOFT_RST_REG0;                  /*!< Offset 0x2C0 Bus Software Reset Register 0 */
-    __IO uint32_t BUS_SOFT_RST_REG1;                  /*!< Offset 0x2C4 Bus Software Reset Register 1 */
-    __IO uint32_t BUS_SOFT_RST_REG2;                  /*!< Offset 0x2C8 Bus Software Reset Register 2 */
+    __IOM uint32_t BUS_SOFT_RST_REG0;                 /*!< Offset 0x2C0 Bus Software Reset Register 0 */
+    __IOM uint32_t BUS_SOFT_RST_REG1;                 /*!< Offset 0x2C4 Bus Software Reset Register 1 */
+    __IOM uint32_t BUS_SOFT_RST_REG2;                 /*!< Offset 0x2C8 Bus Software Reset Register 2 */
          RESERVED(0x2CC[0x02D0 - 0x02CC], uint8_t)
-    __IO uint32_t BUS_SOFT_RST_REG3;                  /*!< Offset 0x2D0 Bus Software Reset Register 3 */
+    __IOM uint32_t BUS_SOFT_RST_REG3;                 /*!< Offset 0x2D0 Bus Software Reset Register 3 */
          RESERVED(0x2D4[0x02D8 - 0x02D4], uint8_t)
-    __IO uint32_t BUS_SOFT_RST_REG4;                  /*!< Offset 0x2D8 Bus Software Reset Register 4 */
+    __IOM uint32_t BUS_SOFT_RST_REG4;                 /*!< Offset 0x2D8 Bus Software Reset Register 4 */
          RESERVED(0x2DC[0x02F0 - 0x02DC], uint8_t)
-    __IO uint32_t CCU_SEC_SWITCH_REG;                 /*!< Offset 0x2F0 CCU Security Switch Register */
+    __IOM uint32_t CCU_SEC_SWITCH_REG;                /*!< Offset 0x2F0 CCU Security Switch Register */
          RESERVED(0x2F4[0x0300 - 0x02F4], uint8_t)
-    __IO uint32_t PS_CTRL_REG;                        /*!< Offset 0x300 PS Control Register */
-    __IO uint32_t PS_CNT_REG;                         /*!< Offset 0x304 PS Counter Register */
+    __IOM uint32_t PS_CTRL_REG;                       /*!< Offset 0x300 PS Control Register */
+    __IOM uint32_t PS_CNT_REG;                        /*!< Offset 0x304 PS Counter Register */
          RESERVED(0x308[0x0400 - 0x0308], uint8_t)
 } CCU_TypeDef; /* size of structure = 0x400 */
 /*
@@ -275,26 +275,26 @@ typedef struct CCU_Type
 /*!< CPUCFG CPU Configuration */
 typedef struct CPUCFG_Type
 {
-    __IO uint32_t CPUS_RST_CTRL_REG;                  /*!< Offset 0x000 CPUS reset control register */
+    __IOM uint32_t CPUS_RST_CTRL_REG;                 /*!< Offset 0x000 CPUS reset control register */
          RESERVED(0x004[0x0040 - 0x0004], uint8_t)
     struct
     {
-        __IO uint32_t CPU_RST_CTRL_REG;               /*!< Offset 0x040 CPU0 reset control */
-        __IO uint32_t CPU_CTRL_REG;                   /*!< Offset 0x044 CPU0 control register */
-        __IO uint32_t CPU_STATUS_REG;                 /*!< Offset 0x048 CPU0 status register */
+        __IOM uint32_t CPU_RST_CTRL_REG;              /*!< Offset 0x040 CPU0 reset control */
+        __IOM uint32_t CPU_CTRL_REG;                  /*!< Offset 0x044 CPU0 control register */
+        __IOM uint32_t CPU_STATUS_REG;                /*!< Offset 0x048 CPU0 status register */
              RESERVED(0x00C[0x0040 - 0x000C], uint8_t)
     } CPU [0x004];                                    /*!< Offset 0x040 CPU control [0..3] */
-    __IO uint32_t CPU_SYS_RST_REG;                    /*!< Offset 0x140 CPU System Reset Register */
-    __IO uint32_t CPU_CLK_GATING_REG;                 /*!< Offset 0x144 CPU clock gating Register */
+    __IOM uint32_t CPU_SYS_RST_REG;                   /*!< Offset 0x140 CPU System Reset Register */
+    __IOM uint32_t CPU_CLK_GATING_REG;                /*!< Offset 0x144 CPU clock gating Register */
          RESERVED(0x148[0x0184 - 0x0148], uint8_t)
-    __IO uint32_t GENER_CTRL_REG;                     /*!< Offset 0x184 General Control Register */
+    __IOM uint32_t GENER_CTRL_REG;                    /*!< Offset 0x184 General Control Register */
          RESERVED(0x188[0x01A0 - 0x0188], uint8_t)
-    __IO uint32_t SUP_STAN_FLAG_REG;                  /*!< Offset 0x1A0 Super Standby Flag Register */
-    __IO uint32_t RVADDR;                             /*!< Offset 0x1A4 Hot plugin start address */
+    __IOM uint32_t SUP_STAN_FLAG_REG;                 /*!< Offset 0x1A0 Super Standby Flag Register */
+    __IOM uint32_t RVADDR;                            /*!< Offset 0x1A4 Hot plugin start address */
          RESERVED(0x1A8[0x0280 - 0x01A8], uint8_t)
-    __IO uint32_t CNT64_CTRL_REG;                     /*!< Offset 0x280 64-bit Counter Control Register */
-    __IO uint32_t CNT64_LOW_REG;                      /*!< Offset 0x284 64-bit Counter Low Register */
-    __IO uint32_t CNT64_HIGH_REG;                     /*!< Offset 0x288 64-bit Counter High Register */
+    __IOM uint32_t CNT64_CTRL_REG;                    /*!< Offset 0x280 64-bit Counter Control Register */
+    __IOM uint32_t CNT64_LOW_REG;                     /*!< Offset 0x284 64-bit Counter Low Register */
+    __IOM uint32_t CNT64_HIGH_REG;                    /*!< Offset 0x288 64-bit Counter High Register */
 } CPUCFG_TypeDef; /* size of structure = 0x28C */
 /*
  * @brief DE_BLD
@@ -302,29 +302,29 @@ typedef struct CPUCFG_Type
 /*!< DE_BLD  */
 typedef struct DE_BLD_Type
 {
-    __IO uint32_t BLD_EN_COLOR_CTL;                   /*!< Offset 0x000 BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
+    __IOM uint32_t BLD_EN_COLOR_CTL;                  /*!< Offset 0x000 BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register */
     struct
     {
-        __IO uint32_t BLD_FILL_COLOR;                 /*!< Offset 0x004 BLD fill color register */
-        __IO uint32_t BLD_CH_ISIZE;                   /*!< Offset 0x008 BLD input memory size register */
-        __IO uint32_t BLD_CH_OFFSET;                  /*!< Offset 0x00C BLD input memory offset register */
+        __IOM uint32_t BLD_FILL_COLOR;                /*!< Offset 0x004 BLD fill color register */
+        __IOM uint32_t BLD_CH_ISIZE;                  /*!< Offset 0x008 BLD input memory size register */
+        __IOM uint32_t BLD_CH_OFFSET;                 /*!< Offset 0x00C BLD input memory offset register */
              RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
     } CH [0x006];                                     /*!< Offset 0x004 Pipe [0..5] */
          RESERVED(0x064[0x0080 - 0x0064], uint8_t)
-    __IO uint32_t ROUTE;                              /*!< Offset 0x080 BLD_CH_RTCTL BLD routing control register (default value 0x00543210) */
-    __IO uint32_t PREMULTIPLY;                        /*!< Offset 0x084 BLD pre-multiply control register */
-    __IO uint32_t BKCOLOR;                            /*!< Offset 0x088  */
-    __IO uint32_t OUTPUT_SIZE;                        /*!< Offset 0x08C  */
-    __IO uint32_t BLD_MODE [0x006];                   /*!< Offset 0x090 BLD_CTL SUN8I_MIXER_BLEND_MODE blender0..blaener3 (or more) */
+    __IOM uint32_t ROUTE;                             /*!< Offset 0x080 BLD_CH_RTCTL BLD routing control register (default value 0x00543210) */
+    __IOM uint32_t PREMULTIPLY;                       /*!< Offset 0x084 BLD pre-multiply control register */
+    __IOM uint32_t BKCOLOR;                           /*!< Offset 0x088  */
+    __IOM uint32_t OUTPUT_SIZE;                       /*!< Offset 0x08C  */
+    __IOM uint32_t BLD_MODE [0x006];                  /*!< Offset 0x090 BLD_CTL SUN8I_MIXER_BLEND_MODE blender0..blaener3 (or more) */
          RESERVED(0x0A8[0x00B0 - 0x00A8], uint8_t)
-    __IO uint32_t CK_CTL;                             /*!< Offset 0x0B0  */
-    __IO uint32_t CK_CFG;                             /*!< Offset 0x0B4  */
+    __IOM uint32_t CK_CTL;                            /*!< Offset 0x0B0  */
+    __IOM uint32_t CK_CFG;                            /*!< Offset 0x0B4  */
          RESERVED(0x0B8[0x00C0 - 0x00B8], uint8_t)
-    __IO uint32_t CK_MAX [0x004];                     /*!< Offset 0x0C0  */
+    __IOM uint32_t CK_MAX [0x004];                    /*!< Offset 0x0C0  */
          RESERVED(0x0D0[0x00E0 - 0x00D0], uint8_t)
-    __IO uint32_t CK_MIN [0x004];                     /*!< Offset 0x0E0  */
+    __IOM uint32_t CK_MIN [0x004];                    /*!< Offset 0x0E0  */
          RESERVED(0x0F0[0x00FC - 0x00F0], uint8_t)
-    __IO uint32_t OUT_CTL;                            /*!< Offset 0x0FC  */
+    __IOM uint32_t OUT_CTL;                           /*!< Offset 0x0FC  */
 } DE_BLD_TypeDef; /* size of structure = 0x100 */
 /*
  * @brief DE_CSR
@@ -332,35 +332,35 @@ typedef struct DE_BLD_Type
 /*!< DE_CSR Copy & Rotation */
 typedef struct DE_CSR_Type
 {
-    __IO uint32_t CSR_CTL;                            /*!< Offset 0x000  */
-    __IO uint32_t INT;                                /*!< Offset 0x004 Interrupt register */
+    __IOM uint32_t CSR_CTL;                           /*!< Offset 0x000  */
+    __IOM uint32_t INT;                               /*!< Offset 0x004 Interrupt register */
          RESERVED(0x008[0x0020 - 0x0008], uint8_t)
-    __IO uint32_t IFMT;                               /*!< Offset 0x020 Input data attribute register */
-    __IO uint32_t IDATA_SIZE;                         /*!< Offset 0x024 Input data size register */
+    __IOM uint32_t IFMT;                              /*!< Offset 0x020 Input data attribute register */
+    __IOM uint32_t IDATA_SIZE;                        /*!< Offset 0x024 Input data size register */
          RESERVED(0x028[0x0030 - 0x0028], uint8_t)
-    __IO uint32_t IDATA_MEN_PITCH0;                   /*!< Offset 0x030 Input Y/RGB/ARGB memory pitch register */
-    __IO uint32_t IDATA_MEN_PITCH1;                   /*!< Offset 0x034 Input U/UV memory pitch register */
-    __IO uint32_t IDATA_MEN_PITCH2;                   /*!< Offset 0x038 Input V memory pitch register */
+    __IOM uint32_t IDATA_MEN_PITCH0;                  /*!< Offset 0x030 Input Y/RGB/ARGB memory pitch register */
+    __IOM uint32_t IDATA_MEN_PITCH1;                  /*!< Offset 0x034 Input U/UV memory pitch register */
+    __IOM uint32_t IDATA_MEN_PITCH2;                  /*!< Offset 0x038 Input V memory pitch register */
          RESERVED(0x03C[0x0040 - 0x003C], uint8_t)
-    __IO uint32_t IMEN_LADD0;                         /*!< Offset 0x040 Input Y/RGB/ARGB memory address register0 */
-    __IO uint32_t IMEN_HADD0;                         /*!< Offset 0x044 Input Y/RGB/ARGB memory address register1 */
-    __IO uint32_t IMEN_LADD1;                         /*!< Offset 0x048 Input U/UV memory address register0 */
-    __IO uint32_t IMEN_HADD1;                         /*!< Offset 0x04C Input U/UV memory address register1 */
-    __IO uint32_t IMEN_LADD2;                         /*!< Offset 0x050 Input V memory address register0 */
-    __IO uint32_t IMEN_HADD2;                         /*!< Offset 0x054 Input V memory address register1 */
+    __IOM uint32_t IMEN_LADD0;                        /*!< Offset 0x040 Input Y/RGB/ARGB memory address register0 */
+    __IOM uint32_t IMEN_HADD0;                        /*!< Offset 0x044 Input Y/RGB/ARGB memory address register1 */
+    __IOM uint32_t IMEN_LADD1;                        /*!< Offset 0x048 Input U/UV memory address register0 */
+    __IOM uint32_t IMEN_HADD1;                        /*!< Offset 0x04C Input U/UV memory address register1 */
+    __IOM uint32_t IMEN_LADD2;                        /*!< Offset 0x050 Input V memory address register0 */
+    __IOM uint32_t IMEN_HADD2;                        /*!< Offset 0x054 Input V memory address register1 */
          RESERVED(0x058[0x0084 - 0x0058], uint8_t)
-    __IO uint32_t ODATA_SIZE;                         /*!< Offset 0x084 Output data size register */
+    __IOM uint32_t ODATA_SIZE;                        /*!< Offset 0x084 Output data size register */
          RESERVED(0x088[0x0090 - 0x0088], uint8_t)
-    __IO uint32_t ODATA_MEN_PITCH0;                   /*!< Offset 0x090  */
-    __IO uint32_t ODATA_MEN_PITCH1;                   /*!< Offset 0x094  */
-    __IO uint32_t ODATA_MEN_PITCH2;                   /*!< Offset 0x098  */
+    __IOM uint32_t ODATA_MEN_PITCH0;                  /*!< Offset 0x090  */
+    __IOM uint32_t ODATA_MEN_PITCH1;                  /*!< Offset 0x094  */
+    __IOM uint32_t ODATA_MEN_PITCH2;                  /*!< Offset 0x098  */
          RESERVED(0x09C[0x00A0 - 0x009C], uint8_t)
-    __IO uint32_t OMEN_LADD0;                         /*!< Offset 0x0A0 Output Y/RGB/ARGB memory address register0 */
-    __IO uint32_t OMEN_HADD0;                         /*!< Offset 0x0A4 Output Y/RGB/ARGB memory address register1 */
-    __IO uint32_t OMEN_LADD1;                         /*!< Offset 0x0A8 Output U/UV memory address register0 */
-    __IO uint32_t OMEN_HADD1;                         /*!< Offset 0x0AC Output U/UV memory address register1 */
-    __IO uint32_t OMEN_LADD2;                         /*!< Offset 0x0B0 Output V memory address register0 */
-    __IO uint32_t OMEN_HADD2;                         /*!< Offset 0x0B4 Output V memory address register1 */
+    __IOM uint32_t OMEN_LADD0;                        /*!< Offset 0x0A0 Output Y/RGB/ARGB memory address register0 */
+    __IOM uint32_t OMEN_HADD0;                        /*!< Offset 0x0A4 Output Y/RGB/ARGB memory address register1 */
+    __IOM uint32_t OMEN_LADD1;                        /*!< Offset 0x0A8 Output U/UV memory address register0 */
+    __IOM uint32_t OMEN_HADD1;                        /*!< Offset 0x0AC Output U/UV memory address register1 */
+    __IOM uint32_t OMEN_LADD2;                        /*!< Offset 0x0B0 Output V memory address register0 */
+    __IOM uint32_t OMEN_HADD2;                        /*!< Offset 0x0B4 Output V memory address register1 */
 } DE_CSR_TypeDef; /* size of structure = 0x0B8 */
 /*
  * @brief DE_GLB
@@ -368,10 +368,10 @@ typedef struct DE_CSR_Type
 /*!< DE_GLB  */
 typedef struct DE_GLB_Type
 {
-    __IO uint32_t GLB_CTL;                            /*!< Offset 0x000 Global control register */
-    __IO uint32_t GLB_STS;                            /*!< Offset 0x004 Global status register */
-    __IO uint32_t GLB_DBUFFER;                        /*!< Offset 0x008 Global double buffer control register */
-    __IO uint32_t GLB_SIZE;                           /*!< Offset 0x00C Global size register */
+    __IOM uint32_t GLB_CTL;                           /*!< Offset 0x000 Global control register */
+    __IOM uint32_t GLB_STS;                           /*!< Offset 0x004 Global status register */
+    __IOM uint32_t GLB_DBUFFER;                       /*!< Offset 0x008 Global double buffer control register */
+    __IOM uint32_t GLB_SIZE;                          /*!< Offset 0x00C Global size register */
 } DE_GLB_TypeDef; /* size of structure = 0x010 */
 /*
  * @brief DE_TOP
@@ -379,12 +379,12 @@ typedef struct DE_GLB_Type
 /*!< DE_TOP Display Engine Top */
 typedef struct DE_TOP_Type
 {
-    __IO uint32_t SCLK_GATE;                          /*!< Offset 0x000 DE SCLK Gating Register */
-    __IO uint32_t HCLK_GATE;                          /*!< Offset 0x004 DE HCLK Gating Register */
-    __IO uint32_t AHB_RESET;                          /*!< Offset 0x008 DE AHB Reset register */
-    __IO uint32_t SCLK_DIV;                           /*!< Offset 0x00C DE SCLK Division register */
-    __IO uint32_t DE2TCON_MUX;                        /*!< Offset 0x010 MUX register */
-    __IO uint32_t CMD_CTL;                            /*!< Offset 0x014  */
+    __IOM uint32_t SCLK_GATE;                         /*!< Offset 0x000 DE SCLK Gating Register */
+    __IOM uint32_t HCLK_GATE;                         /*!< Offset 0x004 DE HCLK Gating Register */
+    __IOM uint32_t AHB_RESET;                         /*!< Offset 0x008 DE AHB Reset register */
+    __IOM uint32_t SCLK_DIV;                          /*!< Offset 0x00C DE SCLK Division register */
+    __IOM uint32_t DE2TCON_MUX;                       /*!< Offset 0x010 MUX register */
+    __IOM uint32_t CMD_CTL;                           /*!< Offset 0x014  */
 } DE_TOP_TypeDef; /* size of structure = 0x018 */
 /*
  * @brief DE_UI
@@ -394,18 +394,18 @@ typedef struct DE_UI_Type
 {
     struct
     {
-        __IO uint32_t ATTR;                           /*!< Offset 0x000  */
-        __IO uint32_t SIZE;                           /*!< Offset 0x004  */
-        __IO uint32_t COORD;                          /*!< Offset 0x008  */
-        __IO uint32_t PITCH;                          /*!< Offset 0x00C  */
-        __IO uint32_t TOP_LADDR;                      /*!< Offset 0x010  */
-        __IO uint32_t BOT_LADDR;                      /*!< Offset 0x014  */
-        __IO uint32_t FCOLOR;                         /*!< Offset 0x018  */
+        __IOM uint32_t ATTR;                          /*!< Offset 0x000  */
+        __IOM uint32_t SIZE;                          /*!< Offset 0x004  */
+        __IOM uint32_t COORD;                         /*!< Offset 0x008  */
+        __IOM uint32_t PITCH;                         /*!< Offset 0x00C  */
+        __IOM uint32_t TOP_LADDR;                     /*!< Offset 0x010  */
+        __IOM uint32_t BOT_LADDR;                     /*!< Offset 0x014  */
+        __IOM uint32_t FCOLOR;                        /*!< Offset 0x018  */
              RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
     } CFG [0x004];                                    /*!< Offset 0x000  */
-    __IO uint32_t TOP_HADDR;                          /*!< Offset 0x080  */
-    __IO uint32_t BOT_HADDR;                          /*!< Offset 0x084  */
-    __IO uint32_t OVL_SIZE;                           /*!< Offset 0x088  */
+    __IOM uint32_t TOP_HADDR;                         /*!< Offset 0x080  */
+    __IOM uint32_t BOT_HADDR;                         /*!< Offset 0x084  */
+    __IOM uint32_t OVL_SIZE;                          /*!< Offset 0x088  */
 } DE_UI_TypeDef; /* size of structure = 0x08C */
 /*
  * @brief DE_UIS
@@ -413,24 +413,24 @@ typedef struct DE_UI_Type
 /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function */
 typedef struct DE_UIS_Type
 {
-    __IO uint32_t UIS_CTRL_REG;                       /*!< Offset 0x000 Control register */
+    __IOM uint32_t UIS_CTRL_REG;                      /*!< Offset 0x000 Control register */
          RESERVED(0x004[0x0008 - 0x0004], uint8_t)
-    __IO uint32_t UIS_STATUS_REG;                     /*!< Offset 0x008 Status register */
-    __IO uint32_t UIS_FIELD_CTRL_REG;                 /*!< Offset 0x00C Field control register */
-    __IO uint32_t UIS_BIST_REG;                       /*!< Offset 0x010 BIST control register */
+    __IOM uint32_t UIS_STATUS_REG;                    /*!< Offset 0x008 Status register */
+    __IOM uint32_t UIS_FIELD_CTRL_REG;                /*!< Offset 0x00C Field control register */
+    __IOM uint32_t UIS_BIST_REG;                      /*!< Offset 0x010 BIST control register */
          RESERVED(0x014[0x0040 - 0x0014], uint8_t)
-    __IO uint32_t UIS_OUTSIZE_REG;                    /*!< Offset 0x040 Output size register */
+    __IOM uint32_t UIS_OUTSIZE_REG;                   /*!< Offset 0x040 Output size register */
          RESERVED(0x044[0x0080 - 0x0044], uint8_t)
-    __IO uint32_t UIS_INSIZE_REG;                     /*!< Offset 0x080 Input size register */
+    __IOM uint32_t UIS_INSIZE_REG;                    /*!< Offset 0x080 Input size register */
          RESERVED(0x084[0x0088 - 0x0084], uint8_t)
-    __IO uint32_t UIS_HSTEP_REG;                      /*!< Offset 0x088 Horizontal step register */
-    __IO uint32_t UIS_VSTEP_REG;                      /*!< Offset 0x08C Vertical step register */
-    __IO uint32_t UIS_HPHASE_REG;                     /*!< Offset 0x090 Horizontal initial phase register */
+    __IOM uint32_t UIS_HSTEP_REG;                     /*!< Offset 0x088 Horizontal step register */
+    __IOM uint32_t UIS_VSTEP_REG;                     /*!< Offset 0x08C Vertical step register */
+    __IOM uint32_t UIS_HPHASE_REG;                    /*!< Offset 0x090 Horizontal initial phase register */
          RESERVED(0x094[0x0098 - 0x0094], uint8_t)
-    __IO uint32_t UIS_VPHASE0_REG;                    /*!< Offset 0x098 Vertical initial phase 0 register */
-    __IO uint32_t UIS_VPHASE1_REG;                    /*!< Offset 0x09C Vertical initial phase 1 register */
+    __IOM uint32_t UIS_VPHASE0_REG;                   /*!< Offset 0x098 Vertical initial phase 0 register */
+    __IOM uint32_t UIS_VPHASE1_REG;                   /*!< Offset 0x09C Vertical initial phase 1 register */
          RESERVED(0x0A0[0x0200 - 0x00A0], uint8_t)
-    __IO uint32_t UIS_HCOEF_REGN [0x010];             /*!< Offset 0x200 Horizontal filter coefficient register N (N=0:15) */
+    __IOM uint32_t UIS_HCOEF_REGN [0x010];            /*!< Offset 0x200 Horizontal filter coefficient register N (N=0:15) */
 } DE_UIS_TypeDef; /* size of structure = 0x240 */
 /*
  * @brief DE_VI
@@ -440,19 +440,19 @@ typedef struct DE_VI_Type
 {
     struct
     {
-        __IO uint32_t ATTR;                           /*!< Offset 0x000  */
-        __IO uint32_t SIZE;                           /*!< Offset 0x004  */
-        __IO uint32_t COORD;                          /*!< Offset 0x008  */
-        __IO uint32_t PITCH [0x003];                  /*!< Offset 0x00C ix=0: Y, ix=1: U/UV channel, ix=3: V channel  */
-        __IO uint32_t TOP_LADDR [0x003];              /*!< Offset 0x018  */
-        __IO uint32_t BOT_LADDR [0x003];              /*!< Offset 0x024  */
+        __IOM uint32_t ATTR;                          /*!< Offset 0x000  */
+        __IOM uint32_t SIZE;                          /*!< Offset 0x004  */
+        __IOM uint32_t COORD;                         /*!< Offset 0x008  */
+        __IOM uint32_t PITCH [0x003];                 /*!< Offset 0x00C ix=0: Y, ix=1: U/UV channel, ix=3: V channel  */
+        __IOM uint32_t TOP_LADDR [0x003];             /*!< Offset 0x018  */
+        __IOM uint32_t BOT_LADDR [0x003];             /*!< Offset 0x024  */
     } CFG [0x004];                                    /*!< Offset 0x000  */
-    __IO uint32_t FCOLOR [0x004];                     /*!< Offset 0x0C0  */
-    __IO uint32_t TOP_HADDR [0x003];                  /*!< Offset 0x0D0  */
-    __IO uint32_t BOT_HADDR [0x003];                  /*!< Offset 0x0DC  */
-    __IO uint32_t OVL_SIZE [0x002];                   /*!< Offset 0x0E8 OVL_Y, OVL_UV overlay window size register */
-    __IO uint32_t HORI [0x002];                       /*!< Offset 0x0F0 OVL_V horizontal down sample control register */
-    __IO uint32_t VERT [0x002];                       /*!< Offset 0x0F8 OVL_V vertical down sample control register */
+    __IOM uint32_t FCOLOR [0x004];                    /*!< Offset 0x0C0  */
+    __IOM uint32_t TOP_HADDR [0x003];                 /*!< Offset 0x0D0  */
+    __IOM uint32_t BOT_HADDR [0x003];                 /*!< Offset 0x0DC  */
+    __IOM uint32_t OVL_SIZE [0x002];                  /*!< Offset 0x0E8 OVL_Y, OVL_UV overlay window size register */
+    __IOM uint32_t HORI [0x002];                      /*!< Offset 0x0F0 OVL_V horizontal down sample control register */
+    __IOM uint32_t VERT [0x002];                      /*!< Offset 0x0F8 OVL_V vertical down sample control register */
 } DE_VI_TypeDef; /* size of structure = 0x100 */
 /*
  * @brief DE_VSU
@@ -460,52 +460,52 @@ typedef struct DE_VI_Type
 /*!< DE_VSU Video Scaler Unit (VSU), VS */
 typedef struct DE_VSU_Type
 {
-    __IO uint32_t VSU_CTRL_REG;                       /*!< Offset 0x000 VSU Module Control Register */
+    __IOM uint32_t VSU_CTRL_REG;                      /*!< Offset 0x000 VSU Module Control Register */
          RESERVED(0x004[0x0008 - 0x0004], uint8_t)
-    __IO uint32_t VSU_STATUS_REG;                     /*!< Offset 0x008 VSU Status Register */
-    __IO uint32_t VSU_FIELD_CTRL_REG;                 /*!< Offset 0x00C VSU Field Control Register */
-    __IO uint32_t VSU_SCALE_MODE_REG;                 /*!< Offset 0x010 VSU Scale Mode Setting Register */
+    __IOM uint32_t VSU_STATUS_REG;                    /*!< Offset 0x008 VSU Status Register */
+    __IOM uint32_t VSU_FIELD_CTRL_REG;                /*!< Offset 0x00C VSU Field Control Register */
+    __IOM uint32_t VSU_SCALE_MODE_REG;                /*!< Offset 0x010 VSU Scale Mode Setting Register */
          RESERVED(0x014[0x0020 - 0x0014], uint8_t)
-    __IO uint32_t VSU_DIRECTION_THR_REG;              /*!< Offset 0x020 VSU Direction Detection Threshold Register */
-    __IO uint32_t VSU_EDGE_THR_REG;                   /*!< Offset 0x024 VSU Edge Detection Setting Register */
-    __IO uint32_t VSU_EDSCALER_CTRL_REG;              /*!< Offset 0x028 VSU Edge-Direction Scaler Control Register */
-    __IO uint32_t VSU_ANGLE_THR_REG;                  /*!< Offset 0x02C VSU Angle Reliability Setting Register */
-    __IO uint32_t VSU_SHARP_EN_REG;                   /*!< Offset 0x030 VSU Sharpness Control Enable Register */
-    __IO uint32_t VSU_SHARP_CORING_REG;               /*!< Offset 0x034 VSU Sharpness Control Coring Setting Register */
-    __IO uint32_t VSU_SHARP_GAIN0_REG;                /*!< Offset 0x038 VSU Sharpness Control Gain Setting 0 Register */
-    __IO uint32_t VSU_SHARP_GAIN1_REG;                /*!< Offset 0x03C VSU Sharpness Control Gain Setting 1 Register */
-    __IO uint32_t VSU_OUT_SIZE_REG;                   /*!< Offset 0x040 VSU Output Size Register */
-    __IO uint32_t VSU_GLOBAL_ALPHA_REG;               /*!< Offset 0x044 VSU Output Global Alpha Register */
+    __IOM uint32_t VSU_DIRECTION_THR_REG;             /*!< Offset 0x020 VSU Direction Detection Threshold Register */
+    __IOM uint32_t VSU_EDGE_THR_REG;                  /*!< Offset 0x024 VSU Edge Detection Setting Register */
+    __IOM uint32_t VSU_EDSCALER_CTRL_REG;             /*!< Offset 0x028 VSU Edge-Direction Scaler Control Register */
+    __IOM uint32_t VSU_ANGLE_THR_REG;                 /*!< Offset 0x02C VSU Angle Reliability Setting Register */
+    __IOM uint32_t VSU_SHARP_EN_REG;                  /*!< Offset 0x030 VSU Sharpness Control Enable Register */
+    __IOM uint32_t VSU_SHARP_CORING_REG;              /*!< Offset 0x034 VSU Sharpness Control Coring Setting Register */
+    __IOM uint32_t VSU_SHARP_GAIN0_REG;               /*!< Offset 0x038 VSU Sharpness Control Gain Setting 0 Register */
+    __IOM uint32_t VSU_SHARP_GAIN1_REG;               /*!< Offset 0x03C VSU Sharpness Control Gain Setting 1 Register */
+    __IOM uint32_t VSU_OUT_SIZE_REG;                  /*!< Offset 0x040 VSU Output Size Register */
+    __IOM uint32_t VSU_GLOBAL_ALPHA_REG;              /*!< Offset 0x044 VSU Output Global Alpha Register */
          RESERVED(0x048[0x0080 - 0x0048], uint8_t)
-    __IO uint32_t VSU_Y_SIZE_REG;                     /*!< Offset 0x080 VSU Y Channel Size Register */
+    __IOM uint32_t VSU_Y_SIZE_REG;                    /*!< Offset 0x080 VSU Y Channel Size Register */
          RESERVED(0x084[0x0088 - 0x0084], uint8_t)
-    __IO uint32_t VSU_Y_HSTEP_REG;                    /*!< Offset 0x088 VSU Y Channel Horizontal Step Register */
-    __IO uint32_t VSU_Y_VSTEP_REG;                    /*!< Offset 0x08C VSU Y Channel Vertical Step Register */
-    __IO uint32_t VSU_Y_HPHASE_REG;                   /*!< Offset 0x090 VSU Y Channel Horizontal Initial Phase Register */
+    __IOM uint32_t VSU_Y_HSTEP_REG;                   /*!< Offset 0x088 VSU Y Channel Horizontal Step Register */
+    __IOM uint32_t VSU_Y_VSTEP_REG;                   /*!< Offset 0x08C VSU Y Channel Vertical Step Register */
+    __IOM uint32_t VSU_Y_HPHASE_REG;                  /*!< Offset 0x090 VSU Y Channel Horizontal Initial Phase Register */
          RESERVED(0x094[0x0098 - 0x0094], uint8_t)
-    __IO uint32_t VSU_Y_VPHASE0_REG;                  /*!< Offset 0x098 VSU Y Channel Vertical Initial Phase 0 Register */
-    __IO uint32_t VSU_Y_VPHASE1_REG;                  /*!< Offset 0x09C VSU Y Channel Vertical Initial Phase 1 Register */
+    __IOM uint32_t VSU_Y_VPHASE0_REG;                 /*!< Offset 0x098 VSU Y Channel Vertical Initial Phase 0 Register */
+    __IOM uint32_t VSU_Y_VPHASE1_REG;                 /*!< Offset 0x09C VSU Y Channel Vertical Initial Phase 1 Register */
          RESERVED(0x0A0[0x00C0 - 0x00A0], uint8_t)
-    __IO uint32_t VSU_C_SIZE_REG;                     /*!< Offset 0x0C0 VSU C Channel Size Register */
+    __IOM uint32_t VSU_C_SIZE_REG;                    /*!< Offset 0x0C0 VSU C Channel Size Register */
          RESERVED(0x0C4[0x00C8 - 0x00C4], uint8_t)
-    __IO uint32_t VSU_C_HSTEP_REG;                    /*!< Offset 0x0C8 VSU C Channel Horizontal Step Register */
-    __IO uint32_t VSU_C_VSTEP_REG;                    /*!< Offset 0x0CC VSU C Channel Vertical Step Register */
-    __IO uint32_t VSU_C_HPHASE_REG;                   /*!< Offset 0x0D0 VSU C Channel Horizontal Initial Phase Register */
+    __IOM uint32_t VSU_C_HSTEP_REG;                   /*!< Offset 0x0C8 VSU C Channel Horizontal Step Register */
+    __IOM uint32_t VSU_C_VSTEP_REG;                   /*!< Offset 0x0CC VSU C Channel Vertical Step Register */
+    __IOM uint32_t VSU_C_HPHASE_REG;                  /*!< Offset 0x0D0 VSU C Channel Horizontal Initial Phase Register */
          RESERVED(0x0D4[0x00D8 - 0x00D4], uint8_t)
-    __IO uint32_t VSU_C_VPHASE0_REG;                  /*!< Offset 0x0D8 VSU C Channel Vertical Initial Phase 0 Register */
-    __IO uint32_t VSU_C_VPHASE1_REG;                  /*!< Offset 0x0DC VSU C Channel Vertical Initial Phase 1 Register */
+    __IOM uint32_t VSU_C_VPHASE0_REG;                 /*!< Offset 0x0D8 VSU C Channel Vertical Initial Phase 0 Register */
+    __IOM uint32_t VSU_C_VPHASE1_REG;                 /*!< Offset 0x0DC VSU C Channel Vertical Initial Phase 1 Register */
          RESERVED(0x0E0[0x0200 - 0x00E0], uint8_t)
-    __IO uint32_t VSU_Y_HCOEF0_REGN [0x020];          /*!< Offset 0x200 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+    __IOM uint32_t VSU_Y_HCOEF0_REGN [0x020];         /*!< Offset 0x200 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
          RESERVED(0x280[0x0300 - 0x0280], uint8_t)
-    __IO uint32_t VSU_Y_HCOEF1_REGN [0x020];          /*!< Offset 0x300 0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1 */
+    __IOM uint32_t VSU_Y_HCOEF1_REGN [0x020];         /*!< Offset 0x300 0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1 */
          RESERVED(0x380[0x0400 - 0x0380], uint8_t)
-    __IO uint32_t VSU_Y_VCOEF_REGN [0x020];           /*!< Offset 0x400 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1)) */
+    __IOM uint32_t VSU_Y_VCOEF_REGN [0x020];          /*!< Offset 0x400 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1)) */
          RESERVED(0x480[0x0600 - 0x0480], uint8_t)
-    __IO uint32_t VSU_C_HCOEF0_REGN [0x020];          /*!< Offset 0x600 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
+    __IOM uint32_t VSU_C_HCOEF0_REGN [0x020];         /*!< Offset 0x600 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
          RESERVED(0x680[0x0700 - 0x0680], uint8_t)
-    __IO uint32_t VSU_C_HCOEF1_REGN [0x020];          /*!< Offset 0x700 0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1)) */
+    __IOM uint32_t VSU_C_HCOEF1_REGN [0x020];         /*!< Offset 0x700 0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1)) */
          RESERVED(0x780[0x0800 - 0x0780], uint8_t)
-    __IO uint32_t VSU_C_VCOEF_REGN [0x020];           /*!< Offset 0x800 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1)) */
+    __IOM uint32_t VSU_C_VCOEF_REGN [0x020];          /*!< Offset 0x800 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1)) */
 } DE_VSU_TypeDef; /* size of structure = 0x880 */
 /*
  * @brief DE_WB
@@ -513,41 +513,41 @@ typedef struct DE_VSU_Type
 /*!< DE_WB Real-time write-back controller (RT-WB) */
 typedef struct DE_WB_Type
 {
-    __IO uint32_t WB_GCTRL_REG;                       /*!< Offset 0x000 Module general control register */
-    __IO uint32_t WB_SIZE_REG;                        /*!< Offset 0x004 Input size register */
-    __IO uint32_t WB_CROP_COORD_REG;                  /*!< Offset 0x008 Cropping coordinate register */
-    __IO uint32_t WB_CROP_SIZE_REG;                   /*!< Offset 0x00C Cropping size register */
-    __IO uint32_t WB_A_CH0_ADDR_REG;                  /*!< Offset 0x010 Write-back Group A channel 0 address register */
-    __IO uint32_t WB_A_CH1_ADDR_REG;                  /*!< Offset 0x014 Write-back Group A channel 1 address register */
-    __IO uint32_t WB_A_CH2_ADDR_REG;                  /*!< Offset 0x018 Write-back Group A channel 2 address register */
-    __IO uint32_t WB_A_HIGH_ADDR_REG;                 /*!< Offset 0x01C Write-back Group A address high bit register */
-    __IO uint32_t WB_B_CH0_ADDR_REG;                  /*!< Offset 0x020 Write-back Group B channel 0 address register */
-    __IO uint32_t WB_B_CH1_ADDR_REG;                  /*!< Offset 0x024 Write-back Group B channel 1 address register */
-    __IO uint32_t WB_B_CH2_ADDR_REG;                  /*!< Offset 0x028 Write-back Group B channel 2 address register */
-    __IO uint32_t WB_B_HIGH_ADDR_REG;                 /*!< Offset 0x02C Write-back Group B address high bit register */
-    __IO uint32_t WB_CH0_PITCH_REG;                   /*!< Offset 0x030 Write-back channel 0 pitch register */
-    __IO uint32_t WB_CH12_PITCH_REG;                  /*!< Offset 0x034 Write-back channel 1/2 pitch register */
+    __IOM uint32_t WB_GCTRL_REG;                      /*!< Offset 0x000 Module general control register */
+    __IOM uint32_t WB_SIZE_REG;                       /*!< Offset 0x004 Input size register */
+    __IOM uint32_t WB_CROP_COORD_REG;                 /*!< Offset 0x008 Cropping coordinate register */
+    __IOM uint32_t WB_CROP_SIZE_REG;                  /*!< Offset 0x00C Cropping size register */
+    __IOM uint32_t WB_A_CH0_ADDR_REG;                 /*!< Offset 0x010 Write-back Group A channel 0 address register */
+    __IOM uint32_t WB_A_CH1_ADDR_REG;                 /*!< Offset 0x014 Write-back Group A channel 1 address register */
+    __IOM uint32_t WB_A_CH2_ADDR_REG;                 /*!< Offset 0x018 Write-back Group A channel 2 address register */
+    __IOM uint32_t WB_A_HIGH_ADDR_REG;                /*!< Offset 0x01C Write-back Group A address high bit register */
+    __IOM uint32_t WB_B_CH0_ADDR_REG;                 /*!< Offset 0x020 Write-back Group B channel 0 address register */
+    __IOM uint32_t WB_B_CH1_ADDR_REG;                 /*!< Offset 0x024 Write-back Group B channel 1 address register */
+    __IOM uint32_t WB_B_CH2_ADDR_REG;                 /*!< Offset 0x028 Write-back Group B channel 2 address register */
+    __IOM uint32_t WB_B_HIGH_ADDR_REG;                /*!< Offset 0x02C Write-back Group B address high bit register */
+    __IOM uint32_t WB_CH0_PITCH_REG;                  /*!< Offset 0x030 Write-back channel 0 pitch register */
+    __IOM uint32_t WB_CH12_PITCH_REG;                 /*!< Offset 0x034 Write-back channel 1/2 pitch register */
          RESERVED(0x038[0x0040 - 0x0038], uint8_t)
-    __IO uint32_t WB_ADDR_SWITCH_REG;                 /*!< Offset 0x040 Write-back address switch setting register */
-    __IO uint32_t WB_FORMAT_REG;                      /*!< Offset 0x044 Output format register */
-    __IO uint32_t WB_INT_REG;                         /*!< Offset 0x048 Interrupt control register */
-    __IO uint32_t WB_STATUS_REG;                      /*!< Offset 0x04C Module status register */
+    __IOM uint32_t WB_ADDR_SWITCH_REG;                /*!< Offset 0x040 Write-back address switch setting register */
+    __IOM uint32_t WB_FORMAT_REG;                     /*!< Offset 0x044 Output format register */
+    __IOM uint32_t WB_INT_REG;                        /*!< Offset 0x048 Interrupt control register */
+    __IOM uint32_t WB_STATUS_REG;                     /*!< Offset 0x04C Module status register */
          RESERVED(0x050[0x0054 - 0x0050], uint8_t)
-    __IO uint32_t WB_BYPASS_REG;                      /*!< Offset 0x054 Bypass control register */
+    __IOM uint32_t WB_BYPASS_REG;                     /*!< Offset 0x054 Bypass control register */
          RESERVED(0x058[0x0070 - 0x0058], uint8_t)
-    __IO uint32_t WB_CS_HORZ_REG;                     /*!< Offset 0x070 Coarse scaling horizontal setting register */
-    __IO uint32_t WB_CS_VERT_REG;                     /*!< Offset 0x074 Coarse scaling vertical setting register */
+    __IOM uint32_t WB_CS_HORZ_REG;                    /*!< Offset 0x070 Coarse scaling horizontal setting register */
+    __IOM uint32_t WB_CS_VERT_REG;                    /*!< Offset 0x074 Coarse scaling vertical setting register */
          RESERVED(0x078[0x0080 - 0x0078], uint8_t)
-    __IO uint32_t WB_FS_INSIZE_REG;                   /*!< Offset 0x080 Fine scaling input size register */
-    __IO uint32_t WB_FS_OUTSIZE_REG;                  /*!< Offset 0x084 Fine scaling output size register */
-    __IO uint32_t WB_FS_HSTEP_REG;                    /*!< Offset 0x088 Fine scaling horizontal step registe */
-    __IO uint32_t WB_FS_VSTEP_REG;                    /*!< Offset 0x08C Fine scaling vertical step register */
+    __IOM uint32_t WB_FS_INSIZE_REG;                  /*!< Offset 0x080 Fine scaling input size register */
+    __IOM uint32_t WB_FS_OUTSIZE_REG;                 /*!< Offset 0x084 Fine scaling output size register */
+    __IOM uint32_t WB_FS_HSTEP_REG;                   /*!< Offset 0x088 Fine scaling horizontal step registe */
+    __IOM uint32_t WB_FS_VSTEP_REG;                   /*!< Offset 0x08C Fine scaling vertical step register */
          RESERVED(0x090[0x00FC - 0x0090], uint8_t)
-    __IO uint32_t WB_DEBUG_REG;                       /*!< Offset 0x0FC Debug register */
+    __IOM uint32_t WB_DEBUG_REG;                      /*!< Offset 0x0FC Debug register */
          RESERVED(0x100[0x0200 - 0x0100], uint8_t)
-    __IO uint32_t WB_CH0_HCOEF_REGN [0x010];          /*!< Offset 0x200 0x200 + N*4 Channel 0 horizontal coefficient register N ( N = 0,1,2,...,15) */
+    __IOM uint32_t WB_CH0_HCOEF_REGN [0x010];         /*!< Offset 0x200 0x200 + N*4 Channel 0 horizontal coefficient register N ( N = 0,1,2,...,15) */
          RESERVED(0x240[0x0280 - 0x0240], uint8_t)
-    __IO uint32_t WB_CH1_HCOEF_REGN [0x010];          /*!< Offset 0x280 0x280 + N*4 Channel 1/2 horizontal coefficient register N ( N = 0,1,2,...,15) */
+    __IOM uint32_t WB_CH1_HCOEF_REGN [0x010];         /*!< Offset 0x280 0x280 + N*4 Channel 1/2 horizontal coefficient register N ( N = 0,1,2,...,15) */
 } DE_WB_TypeDef; /* size of structure = 0x2C0 */
 /*
  * @brief GICV
@@ -555,22 +555,22 @@ typedef struct DE_WB_Type
 /*!< GICV  */
 typedef struct GICV_Type
 {
-    __IO uint32_t GICH_HCR;                           /*!< Offset 0x000 RW 0x00000000 Hypervisor Control Register */
-    __IO uint32_t GICH_VTR;                           /*!< Offset 0x004 RO 0x90000003 VGIC Type Register, GICH_VTR on page 3-13 */
-    __IO uint32_t GICH_VMCR;                          /*!< Offset 0x008 RW 0x004C0000 Virtual Machine Control Register */
+    __IOM uint32_t GICH_HCR;                          /*!< Offset 0x000 RW 0x00000000 Hypervisor Control Register */
+    __IOM uint32_t GICH_VTR;                          /*!< Offset 0x004 RO 0x90000003 VGIC Type Register, GICH_VTR on page 3-13 */
+    __IOM uint32_t GICH_VMCR;                         /*!< Offset 0x008 RW 0x004C0000 Virtual Machine Control Register */
          RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
-    __IO uint32_t GICH_MISR;                          /*!< Offset 0x010 RO 0x00000000 Maintenance Interrupt Status Register */
+    __IOM uint32_t GICH_MISR;                         /*!< Offset 0x010 RO 0x00000000 Maintenance Interrupt Status Register */
          RESERVED(0x014[0x0020 - 0x0014], uint8_t)
-    __IO uint32_t GICH_EISR0;                         /*!< Offset 0x020 RO 0x00000000 End of Interrupt Status Register */
+    __IOM uint32_t GICH_EISR0;                        /*!< Offset 0x020 RO 0x00000000 End of Interrupt Status Register */
          RESERVED(0x024[0x0030 - 0x0024], uint8_t)
-    __IO uint32_t GICH_ELSR0;                         /*!< Offset 0x030 RO 0x0000000F Empty List register Status Register */
+    __IOM uint32_t GICH_ELSR0;                        /*!< Offset 0x030 RO 0x0000000F Empty List register Status Register */
          RESERVED(0x034[0x00F0 - 0x0034], uint8_t)
-    __IO uint32_t GICH_APR0;                          /*!< Offset 0x0F0 RW 0x00000000 Active Priority Register */
+    __IOM uint32_t GICH_APR0;                         /*!< Offset 0x0F0 RW 0x00000000 Active Priority Register */
          RESERVED(0x0F4[0x0100 - 0x00F4], uint8_t)
-    __IO uint32_t GICH_LR0;                           /*!< Offset 0x100 RW 0x00000000 List Register 0 */
-    __IO uint32_t GICH_LR1;                           /*!< Offset 0x104 RW 0x00000000 List Register 1 */
-    __IO uint32_t GICH_LR2;                           /*!< Offset 0x108 RW 0x00000000 List Register 2 */
-    __IO uint32_t GICH_LR3;                           /*!< Offset 0x10C RW 0x00000000 List Register 3 */
+    __IOM uint32_t GICH_LR0;                          /*!< Offset 0x100 RW 0x00000000 List Register 0 */
+    __IOM uint32_t GICH_LR1;                          /*!< Offset 0x104 RW 0x00000000 List Register 1 */
+    __IOM uint32_t GICH_LR2;                          /*!< Offset 0x108 RW 0x00000000 List Register 2 */
+    __IOM uint32_t GICH_LR3;                          /*!< Offset 0x10C RW 0x00000000 List Register 3 */
          RESERVED(0x110[0x0200 - 0x0110], uint8_t)
 } GICV_TypeDef; /* size of structure = 0x200 */
 /*
@@ -579,10 +579,10 @@ typedef struct GICV_Type
 /*!< GPIO  */
 typedef struct GPIO_Type
 {
-    __IO uint32_t CFG [0x004];                        /*!< Offset 0x000 Configure Register */
-    __IO uint32_t DATA;                               /*!< Offset 0x010 Data Register */
-    __IO uint32_t DRV [0x002];                        /*!< Offset 0x014 Multi_Driving Register */
-    __IO uint32_t PULL [0x002];                       /*!< Offset 0x01C Pull Register */
+    __IOM uint32_t CFG [0x004];                       /*!< Offset 0x000 Configure Register */
+    __IOM uint32_t DATA;                              /*!< Offset 0x010 Data Register */
+    __IOM uint32_t DRV [0x002];                       /*!< Offset 0x014 Multi_Driving Register */
+    __IOM uint32_t PULL [0x002];                      /*!< Offset 0x01C Pull Register */
 } GPIO_TypeDef; /* size of structure = 0x024 */
 /*
  * @brief GPIOBLOCK
@@ -592,19 +592,19 @@ typedef struct GPIOBLOCK_Type
 {
     struct
     {
-        __IO uint32_t CFG [0x004];                    /*!< Offset 0x000 Configure Register */
-        __IO uint32_t DATA;                           /*!< Offset 0x010 Data Register */
-        __IO uint32_t DRV [0x002];                    /*!< Offset 0x014 Multi_Driving Register */
-        __IO uint32_t PULL [0x002];                   /*!< Offset 0x01C Pull Register */
+        __IOM uint32_t CFG [0x004];                   /*!< Offset 0x000 Configure Register */
+        __IOM uint32_t DATA;                          /*!< Offset 0x010 Data Register */
+        __IOM uint32_t DRV [0x002];                   /*!< Offset 0x014 Multi_Driving Register */
+        __IOM uint32_t PULL [0x002];                  /*!< Offset 0x01C Pull Register */
              RESERVED(0x024[0x0024 - 0x0024], uint8_t)
     } GPIO_PINS [0x008];                              /*!< Offset 0x000 GPIO pin control */
          RESERVED(0x120[0x0200 - 0x0120], uint8_t)
     struct
     {
-        __IO uint32_t EINT_CFG [0x004];               /*!< Offset 0x200 External Interrupt Configure Registers */
-        __IO uint32_t EINT_CTL;                       /*!< Offset 0x210 External Interrupt Control Register */
-        __IO uint32_t EINT_STATUS;                    /*!< Offset 0x214 External Interrupt Status Register */
-        __IO uint32_t EINT_DEB;                       /*!< Offset 0x218 External Interrupt Debounce Register */
+        __IOM uint32_t EINT_CFG [0x004];              /*!< Offset 0x200 External Interrupt Configure Registers */
+        __IOM uint32_t EINT_CTL;                      /*!< Offset 0x210 External Interrupt Control Register */
+        __IOM uint32_t EINT_STATUS;                   /*!< Offset 0x214 External Interrupt Status Register */
+        __IOM uint32_t EINT_DEB;                      /*!< Offset 0x218 External Interrupt Debounce Register */
              RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
     } GPIO_INTS [0x002];                              /*!< Offset 0x200 GPIOA & GPIOG interrupt control */
 } GPIOBLOCK_TypeDef; /* size of structure = 0x240 */
@@ -614,10 +614,10 @@ typedef struct GPIOBLOCK_Type
 /*!< GPIOINT  */
 typedef struct GPIOINT_Type
 {
-    __IO uint32_t EINT_CFG [0x004];                   /*!< Offset 0x000 External Interrupt Configure Registers */
-    __IO uint32_t EINT_CTL;                           /*!< Offset 0x010 External Interrupt Control Register */
-    __IO uint32_t EINT_STATUS;                        /*!< Offset 0x014 External Interrupt Status Register */
-    __IO uint32_t EINT_DEB;                           /*!< Offset 0x018 External Interrupt Debounce Register */
+    __IOM uint32_t EINT_CFG [0x004];                  /*!< Offset 0x000 External Interrupt Configure Registers */
+    __IOM uint32_t EINT_CTL;                          /*!< Offset 0x010 External Interrupt Control Register */
+    __IOM uint32_t EINT_STATUS;                       /*!< Offset 0x014 External Interrupt Status Register */
+    __IOM uint32_t EINT_DEB;                          /*!< Offset 0x018 External Interrupt Debounce Register */
          RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
 /*
@@ -626,22 +626,22 @@ typedef struct GPIOINT_Type
 /*!< HDMI_PHY  */
 typedef struct HDMI_PHY_Type
 {
-    __IO uint32_t HDMI_PHY_POL;                       /*!< Offset 0x000 tbd */
+    __IOM uint32_t HDMI_PHY_POL;                      /*!< Offset 0x000 tbd */
          RESERVED(0x004[0x0010 - 0x0004], uint8_t)
-    __IO uint32_t HDMI_PHY_READ_EN;                   /*!< Offset 0x010 tbd */
-    __IO uint32_t HDMI_PHY_UNSCRAMBLE;                /*!< Offset 0x014 tbd */
+    __IOM uint32_t HDMI_PHY_READ_EN;                  /*!< Offset 0x010 tbd */
+    __IOM uint32_t HDMI_PHY_UNSCRAMBLE;               /*!< Offset 0x014 tbd */
          RESERVED(0x018[0x0020 - 0x0018], uint8_t)
-    __IO uint32_t HDMI_PHY_CFG1;                      /*!< Offset 0x020 tbd */
-    __IO uint32_t HDMI_PHY_CFG2;                      /*!< Offset 0x024 tbd */
-    __IO uint32_t HDMI_PHY_CFG3;                      /*!< Offset 0x028 tbd */
-    __IO uint32_t HDMI_PHY_PLL1;                      /*!< Offset 0x02C tbd */
-    __IO uint32_t HDMI_PHY_PLL2;                      /*!< Offset 0x030 tbd */
-    __IO uint32_t HDMI_PHY_PLL3;                      /*!< Offset 0x034 tbd */
-    __IO uint32_t HDMI_PHY_STS;                       /*!< Offset 0x038 tbd */
-    __IO uint32_t HDMI_PHY_CEC;                       /*!< Offset 0x03C tbd */
+    __IOM uint32_t HDMI_PHY_CFG1;                     /*!< Offset 0x020 tbd */
+    __IOM uint32_t HDMI_PHY_CFG2;                     /*!< Offset 0x024 tbd */
+    __IOM uint32_t HDMI_PHY_CFG3;                     /*!< Offset 0x028 tbd */
+    __IOM uint32_t HDMI_PHY_PLL1;                     /*!< Offset 0x02C tbd */
+    __IOM uint32_t HDMI_PHY_PLL2;                     /*!< Offset 0x030 tbd */
+    __IOM uint32_t HDMI_PHY_PLL3;                     /*!< Offset 0x034 tbd */
+    __IOM uint32_t HDMI_PHY_STS;                      /*!< Offset 0x038 tbd */
+    __IOM uint32_t HDMI_PHY_CEC;                      /*!< Offset 0x03C tbd */
          RESERVED(0x040[0x0FF8 - 0x0040], uint8_t)
-    __IO uint32_t CEC_VERSION;                        /*!< Offset 0xFF8 Controller Version Register(Default Value: 0x0100_0000) */
-    __IO uint32_t VERSION;                            /*!< Offset 0xFFC PHY Version Register(Default Value: 0x0101_0000) */
+    __IOM uint32_t CEC_VERSION;                       /*!< Offset 0xFF8 Controller Version Register(Default Value: 0x0100_0000) */
+    __IOM uint32_t VERSION;                           /*!< Offset 0xFFC PHY Version Register(Default Value: 0x0101_0000) */
 } HDMI_PHY_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief HDMI_TX
@@ -649,530 +649,530 @@ typedef struct HDMI_PHY_Type
 /*!< HDMI_TX  */
 typedef struct HDMI_TX_Type
 {
-    __I  uint8_t  HDMI_DESIGN_ID;                     /*!< Offset 0x000  */
-    __I  uint8_t  HDMI_REVISION_ID;                   /*!< Offset 0x001  */
-    __I  uint8_t  HDMI_PRODUCT_ID0;                   /*!< Offset 0x002  */
-    __I  uint8_t  HDMI_PRODUCT_ID1;                   /*!< Offset 0x003  */
-    __I  uint8_t  HDMI_CONFIG0_ID;                    /*!< Offset 0x004  */
-    __I  uint8_t  HDMI_CONFIG1_ID;                    /*!< Offset 0x005  */
-    __I  uint8_t  HDMI_CONFIG2_ID;                    /*!< Offset 0x006  */
-    __I  uint8_t  HDMI_CONFIG3_ID;                    /*!< Offset 0x007  */
+    __IM  uint8_t  HDMI_DESIGN_ID;                    /*!< Offset 0x000  */
+    __IM  uint8_t  HDMI_REVISION_ID;                  /*!< Offset 0x001  */
+    __IM  uint8_t  HDMI_PRODUCT_ID0;                  /*!< Offset 0x002  */
+    __IM  uint8_t  HDMI_PRODUCT_ID1;                  /*!< Offset 0x003  */
+    __IM  uint8_t  HDMI_CONFIG0_ID;                   /*!< Offset 0x004  */
+    __IM  uint8_t  HDMI_CONFIG1_ID;                   /*!< Offset 0x005  */
+    __IM  uint8_t  HDMI_CONFIG2_ID;                   /*!< Offset 0x006  */
+    __IM  uint8_t  HDMI_CONFIG3_ID;                   /*!< Offset 0x007  */
          RESERVED(0x008[0x0100 - 0x0008], uint8_t)
-    __IO uint8_t  HDMI_IH_FC_STAT0;                   /*!< Offset 0x100  */
-    __IO uint8_t  HDMI_IH_FC_STAT1;                   /*!< Offset 0x101  */
-    __IO uint8_t  HDMI_IH_FC_STAT2;                   /*!< Offset 0x102  */
-    __IO uint8_t  HDMI_IH_AS_STAT0;                   /*!< Offset 0x103  */
-    __IO uint8_t  HDMI_IH_PHY_STAT0;                  /*!< Offset 0x104  */
-    __IO uint8_t  HDMI_IH_I2CM_STAT0;                 /*!< Offset 0x105  */
-    __IO uint8_t  HDMI_IH_CEC_STAT0;                  /*!< Offset 0x106  */
-    __IO uint8_t  HDMI_IH_VP_STAT0;                   /*!< Offset 0x107  */
-    __IO uint8_t  HDMI_IH_I2CMPHY_STAT0;              /*!< Offset 0x108  */
-    __IO uint8_t  HDMI_IH_AHBDMAAUD_STAT0;            /*!< Offset 0x109  */
+    __IOM uint8_t  HDMI_IH_FC_STAT0;                  /*!< Offset 0x100  */
+    __IOM uint8_t  HDMI_IH_FC_STAT1;                  /*!< Offset 0x101  */
+    __IOM uint8_t  HDMI_IH_FC_STAT2;                  /*!< Offset 0x102  */
+    __IOM uint8_t  HDMI_IH_AS_STAT0;                  /*!< Offset 0x103  */
+    __IOM uint8_t  HDMI_IH_PHY_STAT0;                 /*!< Offset 0x104  */
+    __IOM uint8_t  HDMI_IH_I2CM_STAT0;                /*!< Offset 0x105  */
+    __IOM uint8_t  HDMI_IH_CEC_STAT0;                 /*!< Offset 0x106  */
+    __IOM uint8_t  HDMI_IH_VP_STAT0;                  /*!< Offset 0x107  */
+    __IOM uint8_t  HDMI_IH_I2CMPHY_STAT0;             /*!< Offset 0x108  */
+    __IOM uint8_t  HDMI_IH_AHBDMAAUD_STAT0;           /*!< Offset 0x109  */
          RESERVED(0x10A[0x0180 - 0x010A], uint8_t)
-    __IO uint8_t  HDMI_IH_MUTE_FC_STAT0;              /*!< Offset 0x180  */
-    __IO uint8_t  HDMI_IH_MUTE_FC_STAT1;              /*!< Offset 0x181  */
-    __IO uint8_t  HDMI_IH_MUTE_FC_STAT2;              /*!< Offset 0x182  */
-    __IO uint8_t  HDMI_IH_MUTE_AS_STAT0;              /*!< Offset 0x183  */
-    __IO uint8_t  HDMI_IH_MUTE_PHY_STAT0;             /*!< Offset 0x184  */
-    __IO uint8_t  HDMI_IH_MUTE_I2CM_STAT0;            /*!< Offset 0x185  */
-    __IO uint8_t  HDMI_IH_MUTE_CEC_STAT0;             /*!< Offset 0x186  */
-    __IO uint8_t  HDMI_IH_MUTE_VP_STAT0;              /*!< Offset 0x187  */
-    __IO uint8_t  HDMI_IH_MUTE_I2CMPHY_STAT0;         /*!< Offset 0x188  */
-    __IO uint8_t  HDMI_IH_MUTE_AHBDMAAUD_STAT0;       /*!< Offset 0x189  */
+    __IOM uint8_t  HDMI_IH_MUTE_FC_STAT0;             /*!< Offset 0x180  */
+    __IOM uint8_t  HDMI_IH_MUTE_FC_STAT1;             /*!< Offset 0x181  */
+    __IOM uint8_t  HDMI_IH_MUTE_FC_STAT2;             /*!< Offset 0x182  */
+    __IOM uint8_t  HDMI_IH_MUTE_AS_STAT0;             /*!< Offset 0x183  */
+    __IOM uint8_t  HDMI_IH_MUTE_PHY_STAT0;            /*!< Offset 0x184  */
+    __IOM uint8_t  HDMI_IH_MUTE_I2CM_STAT0;           /*!< Offset 0x185  */
+    __IOM uint8_t  HDMI_IH_MUTE_CEC_STAT0;            /*!< Offset 0x186  */
+    __IOM uint8_t  HDMI_IH_MUTE_VP_STAT0;             /*!< Offset 0x187  */
+    __IOM uint8_t  HDMI_IH_MUTE_I2CMPHY_STAT0;        /*!< Offset 0x188  */
+    __IOM uint8_t  HDMI_IH_MUTE_AHBDMAAUD_STAT0;      /*!< Offset 0x189  */
          RESERVED(0x18A[0x01FF - 0x018A], uint8_t)
-    __IO uint8_t  HDMI_IH_MUTE;                       /*!< Offset 0x1FF  */
-    __IO uint8_t  HDMI_TX_INVID0;                     /*!< Offset 0x200  */
-    __IO uint8_t  HDMI_TX_INSTUFFING;                 /*!< Offset 0x201  */
-    __IO uint8_t  HDMI_TX_GYDATA0;                    /*!< Offset 0x202  */
-    __IO uint8_t  HDMI_TX_GYDATA1;                    /*!< Offset 0x203  */
-    __IO uint8_t  HDMI_TX_RCRDATA0;                   /*!< Offset 0x204  */
-    __IO uint8_t  HDMI_TX_RCRDATA1;                   /*!< Offset 0x205  */
-    __IO uint8_t  HDMI_TX_BCBDATA0;                   /*!< Offset 0x206  */
-    __IO uint8_t  HDMI_TX_BCBDATA1;                   /*!< Offset 0x207  */
+    __IOM uint8_t  HDMI_IH_MUTE;                      /*!< Offset 0x1FF  */
+    __IOM uint8_t  HDMI_TX_INVID0;                    /*!< Offset 0x200  */
+    __IOM uint8_t  HDMI_TX_INSTUFFING;                /*!< Offset 0x201  */
+    __IOM uint8_t  HDMI_TX_GYDATA0;                   /*!< Offset 0x202  */
+    __IOM uint8_t  HDMI_TX_GYDATA1;                   /*!< Offset 0x203  */
+    __IOM uint8_t  HDMI_TX_RCRDATA0;                  /*!< Offset 0x204  */
+    __IOM uint8_t  HDMI_TX_RCRDATA1;                  /*!< Offset 0x205  */
+    __IOM uint8_t  HDMI_TX_BCBDATA0;                  /*!< Offset 0x206  */
+    __IOM uint8_t  HDMI_TX_BCBDATA1;                  /*!< Offset 0x207  */
          RESERVED(0x208[0x0800 - 0x0208], uint8_t)
-    __IO uint8_t  HDMI_VP_STATUS;                     /*!< Offset 0x800  */
-    __IO uint8_t  HDMI_VP_PR_CD;                      /*!< Offset 0x801  */
-    __IO uint8_t  HDMI_VP_STUFF;                      /*!< Offset 0x802  */
-    __IO uint8_t  HDMI_VP_REMAP;                      /*!< Offset 0x803  */
-    __IO uint8_t  HDMI_VP_CONF;                       /*!< Offset 0x804  */
-    __IO uint8_t  HDMI_VP_STAT;                       /*!< Offset 0x805  */
-    __IO uint8_t  HDMI_VP_INT;                        /*!< Offset 0x806  */
-    __IO uint8_t  HDMI_VP_MASK;                       /*!< Offset 0x807  */
-    __IO uint8_t  HDMI_VP_POL;                        /*!< Offset 0x808  */
+    __IOM uint8_t  HDMI_VP_STATUS;                    /*!< Offset 0x800  */
+    __IOM uint8_t  HDMI_VP_PR_CD;                     /*!< Offset 0x801  */
+    __IOM uint8_t  HDMI_VP_STUFF;                     /*!< Offset 0x802  */
+    __IOM uint8_t  HDMI_VP_REMAP;                     /*!< Offset 0x803  */
+    __IOM uint8_t  HDMI_VP_CONF;                      /*!< Offset 0x804  */
+    __IOM uint8_t  HDMI_VP_STAT;                      /*!< Offset 0x805  */
+    __IOM uint8_t  HDMI_VP_INT;                       /*!< Offset 0x806  */
+    __IOM uint8_t  HDMI_VP_MASK;                      /*!< Offset 0x807  */
+    __IOM uint8_t  HDMI_VP_POL;                       /*!< Offset 0x808  */
          RESERVED(0x809[0x1000 - 0x0809], uint8_t)
-    __IO uint8_t  HDMI_FC_INVIDCONF;                  /*!< Offset 0x1000  */
-    __IO uint8_t  HDMI_FC_INHACTV0;                   /*!< Offset 0x1001  */
-    __IO uint8_t  HDMI_FC_INHACTV1;                   /*!< Offset 0x1002  */
-    __IO uint8_t  HDMI_FC_INHBLANK0;                  /*!< Offset 0x1003  */
-    __IO uint8_t  HDMI_FC_INHBLANK1;                  /*!< Offset 0x1004  */
-    __IO uint8_t  HDMI_FC_INVACTV0;                   /*!< Offset 0x1005  */
-    __IO uint8_t  HDMI_FC_INVACTV1;                   /*!< Offset 0x1006  */
-    __IO uint8_t  HDMI_FC_INVBLANK;                   /*!< Offset 0x1007  */
-    __IO uint8_t  HDMI_FC_HSYNCINDELAY0;              /*!< Offset 0x1008  */
-    __IO uint8_t  HDMI_FC_HSYNCINDELAY1;              /*!< Offset 0x1009  */
-    __IO uint8_t  HDMI_FC_HSYNCINWIDTH0;              /*!< Offset 0x100A  */
-    __IO uint8_t  HDMI_FC_HSYNCINWIDTH1;              /*!< Offset 0x100B  */
-    __IO uint8_t  HDMI_FC_VSYNCINDELAY;               /*!< Offset 0x100C  */
-    __IO uint8_t  HDMI_FC_VSYNCINWIDTH;               /*!< Offset 0x100D  */
-    __IO uint8_t  HDMI_FC_INFREQ0;                    /*!< Offset 0x100E  */
-    __IO uint8_t  HDMI_FC_INFREQ1;                    /*!< Offset 0x100F  */
-    __IO uint8_t  HDMI_FC_INFREQ2;                    /*!< Offset 0x1010  */
-    __IO uint8_t  HDMI_FC_CTRLDUR;                    /*!< Offset 0x1011  */
-    __IO uint8_t  HDMI_FC_EXCTRLDUR;                  /*!< Offset 0x1012  */
-    __IO uint8_t  HDMI_FC_EXCTRLSPAC;                 /*!< Offset 0x1013  */
-    __IO uint8_t  HDMI_FC_CH0PREAM;                   /*!< Offset 0x1014  */
-    __IO uint8_t  HDMI_FC_CH1PREAM;                   /*!< Offset 0x1015  */
-    __IO uint8_t  HDMI_FC_CH2PREAM;                   /*!< Offset 0x1016  */
-    __IO uint8_t  HDMI_FC_AVICONF3;                   /*!< Offset 0x1017  */
-    __IO uint8_t  HDMI_FC_GCP;                        /*!< Offset 0x1018  */
-    __IO uint8_t  HDMI_FC_AVICONF0;                   /*!< Offset 0x1019  */
-    __IO uint8_t  HDMI_FC_AVICONF1;                   /*!< Offset 0x101A  */
-    __IO uint8_t  HDMI_FC_AVICONF2;                   /*!< Offset 0x101B  */
-    __IO uint8_t  HDMI_FC_AVIVID;                     /*!< Offset 0x101C  */
-    __IO uint8_t  HDMI_FC_AVIETB0;                    /*!< Offset 0x101D  */
-    __IO uint8_t  HDMI_FC_AVIETB1;                    /*!< Offset 0x101E  */
-    __IO uint8_t  HDMI_FC_AVISBB0;                    /*!< Offset 0x101F  */
-    __IO uint8_t  HDMI_FC_AVISBB1;                    /*!< Offset 0x1020  */
-    __IO uint8_t  HDMI_FC_AVIELB0;                    /*!< Offset 0x1021  */
-    __IO uint8_t  HDMI_FC_AVIELB1;                    /*!< Offset 0x1022  */
-    __IO uint8_t  HDMI_FC_AVISRB0;                    /*!< Offset 0x1023  */
-    __IO uint8_t  HDMI_FC_AVISRB1;                    /*!< Offset 0x1024  */
-    __IO uint8_t  HDMI_FC_AUDICONF0;                  /*!< Offset 0x1025  */
-    __IO uint8_t  HDMI_FC_AUDICONF1;                  /*!< Offset 0x1026  */
-    __IO uint8_t  HDMI_FC_AUDICONF2;                  /*!< Offset 0x1027  */
-    __IO uint8_t  HDMI_FC_AUDICONF3;                  /*!< Offset 0x1028  */
-    __IO uint8_t  HDMI_FC_VSDIEEEID0;                 /*!< Offset 0x1029  */
-    __IO uint8_t  HDMI_FC_VSDSIZE;                    /*!< Offset 0x102A  */
+    __IOM uint8_t  HDMI_FC_INVIDCONF;                 /*!< Offset 0x1000  */
+    __IOM uint8_t  HDMI_FC_INHACTV0;                  /*!< Offset 0x1001  */
+    __IOM uint8_t  HDMI_FC_INHACTV1;                  /*!< Offset 0x1002  */
+    __IOM uint8_t  HDMI_FC_INHBLANK0;                 /*!< Offset 0x1003  */
+    __IOM uint8_t  HDMI_FC_INHBLANK1;                 /*!< Offset 0x1004  */
+    __IOM uint8_t  HDMI_FC_INVACTV0;                  /*!< Offset 0x1005  */
+    __IOM uint8_t  HDMI_FC_INVACTV1;                  /*!< Offset 0x1006  */
+    __IOM uint8_t  HDMI_FC_INVBLANK;                  /*!< Offset 0x1007  */
+    __IOM uint8_t  HDMI_FC_HSYNCINDELAY0;             /*!< Offset 0x1008  */
+    __IOM uint8_t  HDMI_FC_HSYNCINDELAY1;             /*!< Offset 0x1009  */
+    __IOM uint8_t  HDMI_FC_HSYNCINWIDTH0;             /*!< Offset 0x100A  */
+    __IOM uint8_t  HDMI_FC_HSYNCINWIDTH1;             /*!< Offset 0x100B  */
+    __IOM uint8_t  HDMI_FC_VSYNCINDELAY;              /*!< Offset 0x100C  */
+    __IOM uint8_t  HDMI_FC_VSYNCINWIDTH;              /*!< Offset 0x100D  */
+    __IOM uint8_t  HDMI_FC_INFREQ0;                   /*!< Offset 0x100E  */
+    __IOM uint8_t  HDMI_FC_INFREQ1;                   /*!< Offset 0x100F  */
+    __IOM uint8_t  HDMI_FC_INFREQ2;                   /*!< Offset 0x1010  */
+    __IOM uint8_t  HDMI_FC_CTRLDUR;                   /*!< Offset 0x1011  */
+    __IOM uint8_t  HDMI_FC_EXCTRLDUR;                 /*!< Offset 0x1012  */
+    __IOM uint8_t  HDMI_FC_EXCTRLSPAC;                /*!< Offset 0x1013  */
+    __IOM uint8_t  HDMI_FC_CH0PREAM;                  /*!< Offset 0x1014  */
+    __IOM uint8_t  HDMI_FC_CH1PREAM;                  /*!< Offset 0x1015  */
+    __IOM uint8_t  HDMI_FC_CH2PREAM;                  /*!< Offset 0x1016  */
+    __IOM uint8_t  HDMI_FC_AVICONF3;                  /*!< Offset 0x1017  */
+    __IOM uint8_t  HDMI_FC_GCP;                       /*!< Offset 0x1018  */
+    __IOM uint8_t  HDMI_FC_AVICONF0;                  /*!< Offset 0x1019  */
+    __IOM uint8_t  HDMI_FC_AVICONF1;                  /*!< Offset 0x101A  */
+    __IOM uint8_t  HDMI_FC_AVICONF2;                  /*!< Offset 0x101B  */
+    __IOM uint8_t  HDMI_FC_AVIVID;                    /*!< Offset 0x101C  */
+    __IOM uint8_t  HDMI_FC_AVIETB0;                   /*!< Offset 0x101D  */
+    __IOM uint8_t  HDMI_FC_AVIETB1;                   /*!< Offset 0x101E  */
+    __IOM uint8_t  HDMI_FC_AVISBB0;                   /*!< Offset 0x101F  */
+    __IOM uint8_t  HDMI_FC_AVISBB1;                   /*!< Offset 0x1020  */
+    __IOM uint8_t  HDMI_FC_AVIELB0;                   /*!< Offset 0x1021  */
+    __IOM uint8_t  HDMI_FC_AVIELB1;                   /*!< Offset 0x1022  */
+    __IOM uint8_t  HDMI_FC_AVISRB0;                   /*!< Offset 0x1023  */
+    __IOM uint8_t  HDMI_FC_AVISRB1;                   /*!< Offset 0x1024  */
+    __IOM uint8_t  HDMI_FC_AUDICONF0;                 /*!< Offset 0x1025  */
+    __IOM uint8_t  HDMI_FC_AUDICONF1;                 /*!< Offset 0x1026  */
+    __IOM uint8_t  HDMI_FC_AUDICONF2;                 /*!< Offset 0x1027  */
+    __IOM uint8_t  HDMI_FC_AUDICONF3;                 /*!< Offset 0x1028  */
+    __IOM uint8_t  HDMI_FC_VSDIEEEID0;                /*!< Offset 0x1029  */
+    __IOM uint8_t  HDMI_FC_VSDSIZE;                   /*!< Offset 0x102A  */
          RESERVED(0x102B[0x1030 - 0x102B], uint8_t)
-    __IO uint8_t  HDMI_FC_VSDIEEEID1;                 /*!< Offset 0x1030  */
-    __IO uint8_t  HDMI_FC_VSDIEEEID2;                 /*!< Offset 0x1031  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD0;                /*!< Offset 0x1032  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD1;                /*!< Offset 0x1033  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD2;                /*!< Offset 0x1034  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD3;                /*!< Offset 0x1035  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD4;                /*!< Offset 0x1036  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD5;                /*!< Offset 0x1037  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD6;                /*!< Offset 0x1038  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD7;                /*!< Offset 0x1039  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD8;                /*!< Offset 0x103A  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD9;                /*!< Offset 0x103B  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD10;               /*!< Offset 0x103C  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD11;               /*!< Offset 0x103D  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD12;               /*!< Offset 0x103E  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD13;               /*!< Offset 0x103F  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD14;               /*!< Offset 0x1040  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD15;               /*!< Offset 0x1041  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD16;               /*!< Offset 0x1042  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD17;               /*!< Offset 0x1043  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD18;               /*!< Offset 0x1044  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD19;               /*!< Offset 0x1045  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD20;               /*!< Offset 0x1046  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD21;               /*!< Offset 0x1047  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD22;               /*!< Offset 0x1048  */
-    __IO uint8_t  HDMI_FC_VSDPAYLOAD23;               /*!< Offset 0x1049  */
-    __IO uint8_t  HDMI_FC_SPDVENDORNAME0;             /*!< Offset 0x104A  */
-    __IO uint8_t  HDMI_FC_SPDVENDORNAME1;             /*!< Offset 0x104B  */
-    __IO uint8_t  HDMI_FC_SPDVENDORNAME2;             /*!< Offset 0x104C  */
-    __IO uint8_t  HDMI_FC_SPDVENDORNAME3;             /*!< Offset 0x104D  */
-    __IO uint8_t  HDMI_FC_SPDVENDORNAME4;             /*!< Offset 0x104E  */
-    __IO uint8_t  HDMI_FC_SPDVENDORNAME5;             /*!< Offset 0x104F  */
-    __IO uint8_t  HDMI_FC_SPDVENDORNAME6;             /*!< Offset 0x1050  */
-    __IO uint8_t  HDMI_FC_SPDVENDORNAME7;             /*!< Offset 0x1051  */
-    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME0;            /*!< Offset 0x1052  */
-    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME1;            /*!< Offset 0x1053  */
-    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME2;            /*!< Offset 0x1054  */
-    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME3;            /*!< Offset 0x1055  */
-    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME4;            /*!< Offset 0x1056  */
-    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME5;            /*!< Offset 0x1057  */
-    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME6;            /*!< Offset 0x1058  */
-    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME7;            /*!< Offset 0x1059  */
-    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME8;            /*!< Offset 0x105A  */
-    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME9;            /*!< Offset 0x105B  */
-    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME10;           /*!< Offset 0x105C  */
-    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME11;           /*!< Offset 0x105D  */
-    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME12;           /*!< Offset 0x105E  */
-    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME13;           /*!< Offset 0x105F  */
-    __IO uint8_t  HDMI_FC_SDPPRODUCTNAME14;           /*!< Offset 0x1060  */
-    __IO uint8_t  HDMI_FC_SPDPRODUCTNAME15;           /*!< Offset 0x1061  */
-    __IO uint8_t  HDMI_FC_SPDDEVICEINF;               /*!< Offset 0x1062  */
-    __IO uint8_t  HDMI_FC_AUDSCONF;                   /*!< Offset 0x1063  */
-    __IO uint8_t  HDMI_FC_AUDSSTAT;                   /*!< Offset 0x1064  */
+    __IOM uint8_t  HDMI_FC_VSDIEEEID1;                /*!< Offset 0x1030  */
+    __IOM uint8_t  HDMI_FC_VSDIEEEID2;                /*!< Offset 0x1031  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD0;               /*!< Offset 0x1032  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD1;               /*!< Offset 0x1033  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD2;               /*!< Offset 0x1034  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD3;               /*!< Offset 0x1035  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD4;               /*!< Offset 0x1036  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD5;               /*!< Offset 0x1037  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD6;               /*!< Offset 0x1038  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD7;               /*!< Offset 0x1039  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD8;               /*!< Offset 0x103A  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD9;               /*!< Offset 0x103B  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD10;              /*!< Offset 0x103C  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD11;              /*!< Offset 0x103D  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD12;              /*!< Offset 0x103E  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD13;              /*!< Offset 0x103F  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD14;              /*!< Offset 0x1040  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD15;              /*!< Offset 0x1041  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD16;              /*!< Offset 0x1042  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD17;              /*!< Offset 0x1043  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD18;              /*!< Offset 0x1044  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD19;              /*!< Offset 0x1045  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD20;              /*!< Offset 0x1046  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD21;              /*!< Offset 0x1047  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD22;              /*!< Offset 0x1048  */
+    __IOM uint8_t  HDMI_FC_VSDPAYLOAD23;              /*!< Offset 0x1049  */
+    __IOM uint8_t  HDMI_FC_SPDVENDORNAME0;            /*!< Offset 0x104A  */
+    __IOM uint8_t  HDMI_FC_SPDVENDORNAME1;            /*!< Offset 0x104B  */
+    __IOM uint8_t  HDMI_FC_SPDVENDORNAME2;            /*!< Offset 0x104C  */
+    __IOM uint8_t  HDMI_FC_SPDVENDORNAME3;            /*!< Offset 0x104D  */
+    __IOM uint8_t  HDMI_FC_SPDVENDORNAME4;            /*!< Offset 0x104E  */
+    __IOM uint8_t  HDMI_FC_SPDVENDORNAME5;            /*!< Offset 0x104F  */
+    __IOM uint8_t  HDMI_FC_SPDVENDORNAME6;            /*!< Offset 0x1050  */
+    __IOM uint8_t  HDMI_FC_SPDVENDORNAME7;            /*!< Offset 0x1051  */
+    __IOM uint8_t  HDMI_FC_SDPPRODUCTNAME0;           /*!< Offset 0x1052  */
+    __IOM uint8_t  HDMI_FC_SDPPRODUCTNAME1;           /*!< Offset 0x1053  */
+    __IOM uint8_t  HDMI_FC_SDPPRODUCTNAME2;           /*!< Offset 0x1054  */
+    __IOM uint8_t  HDMI_FC_SDPPRODUCTNAME3;           /*!< Offset 0x1055  */
+    __IOM uint8_t  HDMI_FC_SDPPRODUCTNAME4;           /*!< Offset 0x1056  */
+    __IOM uint8_t  HDMI_FC_SDPPRODUCTNAME5;           /*!< Offset 0x1057  */
+    __IOM uint8_t  HDMI_FC_SDPPRODUCTNAME6;           /*!< Offset 0x1058  */
+    __IOM uint8_t  HDMI_FC_SDPPRODUCTNAME7;           /*!< Offset 0x1059  */
+    __IOM uint8_t  HDMI_FC_SDPPRODUCTNAME8;           /*!< Offset 0x105A  */
+    __IOM uint8_t  HDMI_FC_SDPPRODUCTNAME9;           /*!< Offset 0x105B  */
+    __IOM uint8_t  HDMI_FC_SDPPRODUCTNAME10;          /*!< Offset 0x105C  */
+    __IOM uint8_t  HDMI_FC_SDPPRODUCTNAME11;          /*!< Offset 0x105D  */
+    __IOM uint8_t  HDMI_FC_SDPPRODUCTNAME12;          /*!< Offset 0x105E  */
+    __IOM uint8_t  HDMI_FC_SDPPRODUCTNAME13;          /*!< Offset 0x105F  */
+    __IOM uint8_t  HDMI_FC_SDPPRODUCTNAME14;          /*!< Offset 0x1060  */
+    __IOM uint8_t  HDMI_FC_SPDPRODUCTNAME15;          /*!< Offset 0x1061  */
+    __IOM uint8_t  HDMI_FC_SPDDEVICEINF;              /*!< Offset 0x1062  */
+    __IOM uint8_t  HDMI_FC_AUDSCONF;                  /*!< Offset 0x1063  */
+    __IOM uint8_t  HDMI_FC_AUDSSTAT;                  /*!< Offset 0x1064  */
          RESERVED(0x1065[0x1070 - 0x1065], uint8_t)
-    __IO uint8_t  HDMI_FC_DATACH0FILL;                /*!< Offset 0x1070  */
-    __IO uint8_t  HDMI_FC_DATACH1FILL;                /*!< Offset 0x1071  */
-    __IO uint8_t  HDMI_FC_DATACH2FILL;                /*!< Offset 0x1072  */
-    __IO uint8_t  HDMI_FC_CTRLQHIGH;                  /*!< Offset 0x1073  */
-    __IO uint8_t  HDMI_FC_CTRLQLOW;                   /*!< Offset 0x1074  */
-    __IO uint8_t  HDMI_FC_ACP0;                       /*!< Offset 0x1075  */
-    __IO uint8_t  HDMI_FC_ACP28;                      /*!< Offset 0x1076  */
-    __IO uint8_t  HDMI_FC_ACP27;                      /*!< Offset 0x1077  */
-    __IO uint8_t  HDMI_FC_ACP26;                      /*!< Offset 0x1078  */
-    __IO uint8_t  HDMI_FC_ACP25;                      /*!< Offset 0x1079  */
-    __IO uint8_t  HDMI_FC_ACP24;                      /*!< Offset 0x107A  */
-    __IO uint8_t  HDMI_FC_ACP23;                      /*!< Offset 0x107B  */
-    __IO uint8_t  HDMI_FC_ACP22;                      /*!< Offset 0x107C  */
-    __IO uint8_t  HDMI_FC_ACP21;                      /*!< Offset 0x107D  */
-    __IO uint8_t  HDMI_FC_ACP20;                      /*!< Offset 0x107E  */
-    __IO uint8_t  HDMI_FC_ACP19;                      /*!< Offset 0x107F  */
-    __IO uint8_t  HDMI_FC_ACP18;                      /*!< Offset 0x1080  */
-    __IO uint8_t  HDMI_FC_ACP17;                      /*!< Offset 0x1081  */
-    __IO uint8_t  HDMI_FC_ACP16;                      /*!< Offset 0x1082  */
-    __IO uint8_t  HDMI_FC_ACP15;                      /*!< Offset 0x1083  */
-    __IO uint8_t  HDMI_FC_ACP14;                      /*!< Offset 0x1084  */
-    __IO uint8_t  HDMI_FC_ACP13;                      /*!< Offset 0x1085  */
-    __IO uint8_t  HDMI_FC_ACP12;                      /*!< Offset 0x1086  */
-    __IO uint8_t  HDMI_FC_ACP11;                      /*!< Offset 0x1087  */
-    __IO uint8_t  HDMI_FC_ACP10;                      /*!< Offset 0x1088  */
-    __IO uint8_t  HDMI_FC_ACP9;                       /*!< Offset 0x1089  */
-    __IO uint8_t  HDMI_FC_ACP8;                       /*!< Offset 0x108A  */
-    __IO uint8_t  HDMI_FC_ACP7;                       /*!< Offset 0x108B  */
-    __IO uint8_t  HDMI_FC_ACP6;                       /*!< Offset 0x108C  */
-    __IO uint8_t  HDMI_FC_ACP5;                       /*!< Offset 0x108D  */
-    __IO uint8_t  HDMI_FC_ACP4;                       /*!< Offset 0x108E  */
-    __IO uint8_t  HDMI_FC_ACP3;                       /*!< Offset 0x108F  */
-    __IO uint8_t  HDMI_FC_ACP2;                       /*!< Offset 0x1090  */
-    __IO uint8_t  HDMI_FC_ACP1;                       /*!< Offset 0x1091  */
-    __IO uint8_t  HDMI_FC_ISCR1_0;                    /*!< Offset 0x1092  */
-    __IO uint8_t  HDMI_FC_ISCR1_16;                   /*!< Offset 0x1093  */
-    __IO uint8_t  HDMI_FC_ISCR1_15;                   /*!< Offset 0x1094  */
-    __IO uint8_t  HDMI_FC_ISCR1_14;                   /*!< Offset 0x1095  */
-    __IO uint8_t  HDMI_FC_ISCR1_13;                   /*!< Offset 0x1096  */
-    __IO uint8_t  HDMI_FC_ISCR1_12;                   /*!< Offset 0x1097  */
-    __IO uint8_t  HDMI_FC_ISCR1_11;                   /*!< Offset 0x1098  */
-    __IO uint8_t  HDMI_FC_ISCR1_10;                   /*!< Offset 0x1099  */
-    __IO uint8_t  HDMI_FC_ISCR1_9;                    /*!< Offset 0x109A  */
-    __IO uint8_t  HDMI_FC_ISCR1_8;                    /*!< Offset 0x109B  */
-    __IO uint8_t  HDMI_FC_ISCR1_7;                    /*!< Offset 0x109C  */
-    __IO uint8_t  HDMI_FC_ISCR1_6;                    /*!< Offset 0x109D  */
-    __IO uint8_t  HDMI_FC_ISCR1_5;                    /*!< Offset 0x109E  */
-    __IO uint8_t  HDMI_FC_ISCR1_4;                    /*!< Offset 0x109F  */
-    __IO uint8_t  HDMI_FC_ISCR1_3;                    /*!< Offset 0x10A0  */
-    __IO uint8_t  HDMI_FC_ISCR1_2;                    /*!< Offset 0x10A1  */
-    __IO uint8_t  HDMI_FC_ISCR1_1;                    /*!< Offset 0x10A2  */
-    __IO uint8_t  HDMI_FC_ISCR2_15;                   /*!< Offset 0x10A3  */
-    __IO uint8_t  HDMI_FC_ISCR2_14;                   /*!< Offset 0x10A4  */
-    __IO uint8_t  HDMI_FC_ISCR2_13;                   /*!< Offset 0x10A5  */
-    __IO uint8_t  HDMI_FC_ISCR2_12;                   /*!< Offset 0x10A6  */
-    __IO uint8_t  HDMI_FC_ISCR2_11;                   /*!< Offset 0x10A7  */
-    __IO uint8_t  HDMI_FC_ISCR2_10;                   /*!< Offset 0x10A8  */
-    __IO uint8_t  HDMI_FC_ISCR2_9;                    /*!< Offset 0x10A9  */
-    __IO uint8_t  HDMI_FC_ISCR2_8;                    /*!< Offset 0x10AA  */
-    __IO uint8_t  HDMI_FC_ISCR2_7;                    /*!< Offset 0x10AB  */
-    __IO uint8_t  HDMI_FC_ISCR2_6;                    /*!< Offset 0x10AC  */
-    __IO uint8_t  HDMI_FC_ISCR2_5;                    /*!< Offset 0x10AD  */
-    __IO uint8_t  HDMI_FC_ISCR2_4;                    /*!< Offset 0x10AE  */
-    __IO uint8_t  HDMI_FC_ISCR2_3;                    /*!< Offset 0x10AF  */
-    __IO uint8_t  HDMI_FC_ISCR2_2;                    /*!< Offset 0x10B0  */
-    __IO uint8_t  HDMI_FC_ISCR2_1;                    /*!< Offset 0x10B1  */
-    __IO uint8_t  HDMI_FC_ISCR2_0;                    /*!< Offset 0x10B2  */
-    __IO uint8_t  HDMI_FC_DATAUTO0;                   /*!< Offset 0x10B3  */
-    __IO uint8_t  HDMI_FC_DATAUTO1;                   /*!< Offset 0x10B4  */
-    __IO uint8_t  HDMI_FC_DATAUTO2;                   /*!< Offset 0x10B5  */
-    __IO uint8_t  HDMI_FC_DATMAN;                     /*!< Offset 0x10B6  */
-    __IO uint8_t  HDMI_FC_DATAUTO3;                   /*!< Offset 0x10B7  */
-    __IO uint8_t  HDMI_FC_RDRB0;                      /*!< Offset 0x10B8  */
-    __IO uint8_t  HDMI_FC_RDRB1;                      /*!< Offset 0x10B9  */
-    __IO uint8_t  HDMI_FC_RDRB2;                      /*!< Offset 0x10BA  */
-    __IO uint8_t  HDMI_FC_RDRB3;                      /*!< Offset 0x10BB  */
-    __IO uint8_t  HDMI_FC_RDRB4;                      /*!< Offset 0x10BC  */
-    __IO uint8_t  HDMI_FC_RDRB5;                      /*!< Offset 0x10BD  */
-    __IO uint8_t  HDMI_FC_RDRB6;                      /*!< Offset 0x10BE  */
-    __IO uint8_t  HDMI_FC_RDRB7;                      /*!< Offset 0x10BF  */
+    __IOM uint8_t  HDMI_FC_DATACH0FILL;               /*!< Offset 0x1070  */
+    __IOM uint8_t  HDMI_FC_DATACH1FILL;               /*!< Offset 0x1071  */
+    __IOM uint8_t  HDMI_FC_DATACH2FILL;               /*!< Offset 0x1072  */
+    __IOM uint8_t  HDMI_FC_CTRLQHIGH;                 /*!< Offset 0x1073  */
+    __IOM uint8_t  HDMI_FC_CTRLQLOW;                  /*!< Offset 0x1074  */
+    __IOM uint8_t  HDMI_FC_ACP0;                      /*!< Offset 0x1075  */
+    __IOM uint8_t  HDMI_FC_ACP28;                     /*!< Offset 0x1076  */
+    __IOM uint8_t  HDMI_FC_ACP27;                     /*!< Offset 0x1077  */
+    __IOM uint8_t  HDMI_FC_ACP26;                     /*!< Offset 0x1078  */
+    __IOM uint8_t  HDMI_FC_ACP25;                     /*!< Offset 0x1079  */
+    __IOM uint8_t  HDMI_FC_ACP24;                     /*!< Offset 0x107A  */
+    __IOM uint8_t  HDMI_FC_ACP23;                     /*!< Offset 0x107B  */
+    __IOM uint8_t  HDMI_FC_ACP22;                     /*!< Offset 0x107C  */
+    __IOM uint8_t  HDMI_FC_ACP21;                     /*!< Offset 0x107D  */
+    __IOM uint8_t  HDMI_FC_ACP20;                     /*!< Offset 0x107E  */
+    __IOM uint8_t  HDMI_FC_ACP19;                     /*!< Offset 0x107F  */
+    __IOM uint8_t  HDMI_FC_ACP18;                     /*!< Offset 0x1080  */
+    __IOM uint8_t  HDMI_FC_ACP17;                     /*!< Offset 0x1081  */
+    __IOM uint8_t  HDMI_FC_ACP16;                     /*!< Offset 0x1082  */
+    __IOM uint8_t  HDMI_FC_ACP15;                     /*!< Offset 0x1083  */
+    __IOM uint8_t  HDMI_FC_ACP14;                     /*!< Offset 0x1084  */
+    __IOM uint8_t  HDMI_FC_ACP13;                     /*!< Offset 0x1085  */
+    __IOM uint8_t  HDMI_FC_ACP12;                     /*!< Offset 0x1086  */
+    __IOM uint8_t  HDMI_FC_ACP11;                     /*!< Offset 0x1087  */
+    __IOM uint8_t  HDMI_FC_ACP10;                     /*!< Offset 0x1088  */
+    __IOM uint8_t  HDMI_FC_ACP9;                      /*!< Offset 0x1089  */
+    __IOM uint8_t  HDMI_FC_ACP8;                      /*!< Offset 0x108A  */
+    __IOM uint8_t  HDMI_FC_ACP7;                      /*!< Offset 0x108B  */
+    __IOM uint8_t  HDMI_FC_ACP6;                      /*!< Offset 0x108C  */
+    __IOM uint8_t  HDMI_FC_ACP5;                      /*!< Offset 0x108D  */
+    __IOM uint8_t  HDMI_FC_ACP4;                      /*!< Offset 0x108E  */
+    __IOM uint8_t  HDMI_FC_ACP3;                      /*!< Offset 0x108F  */
+    __IOM uint8_t  HDMI_FC_ACP2;                      /*!< Offset 0x1090  */
+    __IOM uint8_t  HDMI_FC_ACP1;                      /*!< Offset 0x1091  */
+    __IOM uint8_t  HDMI_FC_ISCR1_0;                   /*!< Offset 0x1092  */
+    __IOM uint8_t  HDMI_FC_ISCR1_16;                  /*!< Offset 0x1093  */
+    __IOM uint8_t  HDMI_FC_ISCR1_15;                  /*!< Offset 0x1094  */
+    __IOM uint8_t  HDMI_FC_ISCR1_14;                  /*!< Offset 0x1095  */
+    __IOM uint8_t  HDMI_FC_ISCR1_13;                  /*!< Offset 0x1096  */
+    __IOM uint8_t  HDMI_FC_ISCR1_12;                  /*!< Offset 0x1097  */
+    __IOM uint8_t  HDMI_FC_ISCR1_11;                  /*!< Offset 0x1098  */
+    __IOM uint8_t  HDMI_FC_ISCR1_10;                  /*!< Offset 0x1099  */
+    __IOM uint8_t  HDMI_FC_ISCR1_9;                   /*!< Offset 0x109A  */
+    __IOM uint8_t  HDMI_FC_ISCR1_8;                   /*!< Offset 0x109B  */
+    __IOM uint8_t  HDMI_FC_ISCR1_7;                   /*!< Offset 0x109C  */
+    __IOM uint8_t  HDMI_FC_ISCR1_6;                   /*!< Offset 0x109D  */
+    __IOM uint8_t  HDMI_FC_ISCR1_5;                   /*!< Offset 0x109E  */
+    __IOM uint8_t  HDMI_FC_ISCR1_4;                   /*!< Offset 0x109F  */
+    __IOM uint8_t  HDMI_FC_ISCR1_3;                   /*!< Offset 0x10A0  */
+    __IOM uint8_t  HDMI_FC_ISCR1_2;                   /*!< Offset 0x10A1  */
+    __IOM uint8_t  HDMI_FC_ISCR1_1;                   /*!< Offset 0x10A2  */
+    __IOM uint8_t  HDMI_FC_ISCR2_15;                  /*!< Offset 0x10A3  */
+    __IOM uint8_t  HDMI_FC_ISCR2_14;                  /*!< Offset 0x10A4  */
+    __IOM uint8_t  HDMI_FC_ISCR2_13;                  /*!< Offset 0x10A5  */
+    __IOM uint8_t  HDMI_FC_ISCR2_12;                  /*!< Offset 0x10A6  */
+    __IOM uint8_t  HDMI_FC_ISCR2_11;                  /*!< Offset 0x10A7  */
+    __IOM uint8_t  HDMI_FC_ISCR2_10;                  /*!< Offset 0x10A8  */
+    __IOM uint8_t  HDMI_FC_ISCR2_9;                   /*!< Offset 0x10A9  */
+    __IOM uint8_t  HDMI_FC_ISCR2_8;                   /*!< Offset 0x10AA  */
+    __IOM uint8_t  HDMI_FC_ISCR2_7;                   /*!< Offset 0x10AB  */
+    __IOM uint8_t  HDMI_FC_ISCR2_6;                   /*!< Offset 0x10AC  */
+    __IOM uint8_t  HDMI_FC_ISCR2_5;                   /*!< Offset 0x10AD  */
+    __IOM uint8_t  HDMI_FC_ISCR2_4;                   /*!< Offset 0x10AE  */
+    __IOM uint8_t  HDMI_FC_ISCR2_3;                   /*!< Offset 0x10AF  */
+    __IOM uint8_t  HDMI_FC_ISCR2_2;                   /*!< Offset 0x10B0  */
+    __IOM uint8_t  HDMI_FC_ISCR2_1;                   /*!< Offset 0x10B1  */
+    __IOM uint8_t  HDMI_FC_ISCR2_0;                   /*!< Offset 0x10B2  */
+    __IOM uint8_t  HDMI_FC_DATAUTO0;                  /*!< Offset 0x10B3  */
+    __IOM uint8_t  HDMI_FC_DATAUTO1;                  /*!< Offset 0x10B4  */
+    __IOM uint8_t  HDMI_FC_DATAUTO2;                  /*!< Offset 0x10B5  */
+    __IOM uint8_t  HDMI_FC_DATMAN;                    /*!< Offset 0x10B6  */
+    __IOM uint8_t  HDMI_FC_DATAUTO3;                  /*!< Offset 0x10B7  */
+    __IOM uint8_t  HDMI_FC_RDRB0;                     /*!< Offset 0x10B8  */
+    __IOM uint8_t  HDMI_FC_RDRB1;                     /*!< Offset 0x10B9  */
+    __IOM uint8_t  HDMI_FC_RDRB2;                     /*!< Offset 0x10BA  */
+    __IOM uint8_t  HDMI_FC_RDRB3;                     /*!< Offset 0x10BB  */
+    __IOM uint8_t  HDMI_FC_RDRB4;                     /*!< Offset 0x10BC  */
+    __IOM uint8_t  HDMI_FC_RDRB5;                     /*!< Offset 0x10BD  */
+    __IOM uint8_t  HDMI_FC_RDRB6;                     /*!< Offset 0x10BE  */
+    __IOM uint8_t  HDMI_FC_RDRB7;                     /*!< Offset 0x10BF  */
          RESERVED(0x10C0[0x10D0 - 0x10C0], uint8_t)
-    __IO uint8_t  HDMI_FC_STAT0;                      /*!< Offset 0x10D0  */
-    __IO uint8_t  HDMI_FC_INT0;                       /*!< Offset 0x10D1  */
-    __IO uint8_t  HDMI_FC_MASK0;                      /*!< Offset 0x10D2  */
-    __IO uint8_t  HDMI_FC_POL0;                       /*!< Offset 0x10D3  */
-    __IO uint8_t  HDMI_FC_STAT1;                      /*!< Offset 0x10D4  */
-    __IO uint8_t  HDMI_FC_INT1;                       /*!< Offset 0x10D5  */
-    __IO uint8_t  HDMI_FC_MASK1;                      /*!< Offset 0x10D6  */
-    __IO uint8_t  HDMI_FC_POL1;                       /*!< Offset 0x10D7  */
-    __IO uint8_t  HDMI_FC_STAT2;                      /*!< Offset 0x10D8  */
-    __IO uint8_t  HDMI_FC_INT2;                       /*!< Offset 0x10D9  */
-    __IO uint8_t  HDMI_FC_MASK2;                      /*!< Offset 0x10DA  */
-    __IO uint8_t  HDMI_FC_POL2;                       /*!< Offset 0x10DB  */
+    __IOM uint8_t  HDMI_FC_STAT0;                     /*!< Offset 0x10D0  */
+    __IOM uint8_t  HDMI_FC_INT0;                      /*!< Offset 0x10D1  */
+    __IOM uint8_t  HDMI_FC_MASK0;                     /*!< Offset 0x10D2  */
+    __IOM uint8_t  HDMI_FC_POL0;                      /*!< Offset 0x10D3  */
+    __IOM uint8_t  HDMI_FC_STAT1;                     /*!< Offset 0x10D4  */
+    __IOM uint8_t  HDMI_FC_INT1;                      /*!< Offset 0x10D5  */
+    __IOM uint8_t  HDMI_FC_MASK1;                     /*!< Offset 0x10D6  */
+    __IOM uint8_t  HDMI_FC_POL1;                      /*!< Offset 0x10D7  */
+    __IOM uint8_t  HDMI_FC_STAT2;                     /*!< Offset 0x10D8  */
+    __IOM uint8_t  HDMI_FC_INT2;                      /*!< Offset 0x10D9  */
+    __IOM uint8_t  HDMI_FC_MASK2;                     /*!< Offset 0x10DA  */
+    __IOM uint8_t  HDMI_FC_POL2;                      /*!< Offset 0x10DB  */
          RESERVED(0x10DC[0x10E0 - 0x10DC], uint8_t)
-    __IO uint8_t  HDMI_FC_PRCONF;                     /*!< Offset 0x10E0  */
+    __IOM uint8_t  HDMI_FC_PRCONF;                    /*!< Offset 0x10E0  */
          RESERVED(0x10E1[0x1100 - 0x10E1], uint8_t)
-    __IO uint8_t  HDMI_FC_GMD_STAT;                   /*!< Offset 0x1100  */
-    __IO uint8_t  HDMI_FC_GMD_EN;                     /*!< Offset 0x1101  */
-    __IO uint8_t  HDMI_FC_GMD_UP;                     /*!< Offset 0x1102  */
-    __IO uint8_t  HDMI_FC_GMD_CONF;                   /*!< Offset 0x1103  */
-    __IO uint8_t  HDMI_FC_GMD_HB;                     /*!< Offset 0x1104  */
-    __IO uint8_t  HDMI_FC_GMD_PB0;                    /*!< Offset 0x1105  */
-    __IO uint8_t  HDMI_FC_GMD_PB1;                    /*!< Offset 0x1106  */
-    __IO uint8_t  HDMI_FC_GMD_PB2;                    /*!< Offset 0x1107  */
-    __IO uint8_t  HDMI_FC_GMD_PB3;                    /*!< Offset 0x1108  */
-    __IO uint8_t  HDMI_FC_GMD_PB4;                    /*!< Offset 0x1109  */
-    __IO uint8_t  HDMI_FC_GMD_PB5;                    /*!< Offset 0x110A  */
-    __IO uint8_t  HDMI_FC_GMD_PB6;                    /*!< Offset 0x110B  */
-    __IO uint8_t  HDMI_FC_GMD_PB7;                    /*!< Offset 0x110C  */
-    __IO uint8_t  HDMI_FC_GMD_PB8;                    /*!< Offset 0x110D  */
-    __IO uint8_t  HDMI_FC_GMD_PB9;                    /*!< Offset 0x110E  */
-    __IO uint8_t  HDMI_FC_GMD_PB10;                   /*!< Offset 0x110F  */
-    __IO uint8_t  HDMI_FC_GMD_PB11;                   /*!< Offset 0x1110  */
-    __IO uint8_t  HDMI_FC_GMD_PB12;                   /*!< Offset 0x1111  */
-    __IO uint8_t  HDMI_FC_GMD_PB13;                   /*!< Offset 0x1112  */
-    __IO uint8_t  HDMI_FC_GMD_PB14;                   /*!< Offset 0x1113  */
-    __IO uint8_t  HDMI_FC_GMD_PB15;                   /*!< Offset 0x1114  */
-    __IO uint8_t  HDMI_FC_GMD_PB16;                   /*!< Offset 0x1115  */
-    __IO uint8_t  HDMI_FC_GMD_PB17;                   /*!< Offset 0x1116  */
-    __IO uint8_t  HDMI_FC_GMD_PB18;                   /*!< Offset 0x1117  */
-    __IO uint8_t  HDMI_FC_GMD_PB19;                   /*!< Offset 0x1118  */
-    __IO uint8_t  HDMI_FC_GMD_PB20;                   /*!< Offset 0x1119  */
-    __IO uint8_t  HDMI_FC_GMD_PB21;                   /*!< Offset 0x111A  */
-    __IO uint8_t  HDMI_FC_GMD_PB22;                   /*!< Offset 0x111B  */
-    __IO uint8_t  HDMI_FC_GMD_PB23;                   /*!< Offset 0x111C  */
-    __IO uint8_t  HDMI_FC_GMD_PB24;                   /*!< Offset 0x111D  */
-    __IO uint8_t  HDMI_FC_GMD_PB25;                   /*!< Offset 0x111E  */
-    __IO uint8_t  HDMI_FC_GMD_PB26;                   /*!< Offset 0x111F  */
-    __IO uint8_t  HDMI_FC_GMD_PB27;                   /*!< Offset 0x1120  */
+    __IOM uint8_t  HDMI_FC_GMD_STAT;                  /*!< Offset 0x1100  */
+    __IOM uint8_t  HDMI_FC_GMD_EN;                    /*!< Offset 0x1101  */
+    __IOM uint8_t  HDMI_FC_GMD_UP;                    /*!< Offset 0x1102  */
+    __IOM uint8_t  HDMI_FC_GMD_CONF;                  /*!< Offset 0x1103  */
+    __IOM uint8_t  HDMI_FC_GMD_HB;                    /*!< Offset 0x1104  */
+    __IOM uint8_t  HDMI_FC_GMD_PB0;                   /*!< Offset 0x1105  */
+    __IOM uint8_t  HDMI_FC_GMD_PB1;                   /*!< Offset 0x1106  */
+    __IOM uint8_t  HDMI_FC_GMD_PB2;                   /*!< Offset 0x1107  */
+    __IOM uint8_t  HDMI_FC_GMD_PB3;                   /*!< Offset 0x1108  */
+    __IOM uint8_t  HDMI_FC_GMD_PB4;                   /*!< Offset 0x1109  */
+    __IOM uint8_t  HDMI_FC_GMD_PB5;                   /*!< Offset 0x110A  */
+    __IOM uint8_t  HDMI_FC_GMD_PB6;                   /*!< Offset 0x110B  */
+    __IOM uint8_t  HDMI_FC_GMD_PB7;                   /*!< Offset 0x110C  */
+    __IOM uint8_t  HDMI_FC_GMD_PB8;                   /*!< Offset 0x110D  */
+    __IOM uint8_t  HDMI_FC_GMD_PB9;                   /*!< Offset 0x110E  */
+    __IOM uint8_t  HDMI_FC_GMD_PB10;                  /*!< Offset 0x110F  */
+    __IOM uint8_t  HDMI_FC_GMD_PB11;                  /*!< Offset 0x1110  */
+    __IOM uint8_t  HDMI_FC_GMD_PB12;                  /*!< Offset 0x1111  */
+    __IOM uint8_t  HDMI_FC_GMD_PB13;                  /*!< Offset 0x1112  */
+    __IOM uint8_t  HDMI_FC_GMD_PB14;                  /*!< Offset 0x1113  */
+    __IOM uint8_t  HDMI_FC_GMD_PB15;                  /*!< Offset 0x1114  */
+    __IOM uint8_t  HDMI_FC_GMD_PB16;                  /*!< Offset 0x1115  */
+    __IOM uint8_t  HDMI_FC_GMD_PB17;                  /*!< Offset 0x1116  */
+    __IOM uint8_t  HDMI_FC_GMD_PB18;                  /*!< Offset 0x1117  */
+    __IOM uint8_t  HDMI_FC_GMD_PB19;                  /*!< Offset 0x1118  */
+    __IOM uint8_t  HDMI_FC_GMD_PB20;                  /*!< Offset 0x1119  */
+    __IOM uint8_t  HDMI_FC_GMD_PB21;                  /*!< Offset 0x111A  */
+    __IOM uint8_t  HDMI_FC_GMD_PB22;                  /*!< Offset 0x111B  */
+    __IOM uint8_t  HDMI_FC_GMD_PB23;                  /*!< Offset 0x111C  */
+    __IOM uint8_t  HDMI_FC_GMD_PB24;                  /*!< Offset 0x111D  */
+    __IOM uint8_t  HDMI_FC_GMD_PB25;                  /*!< Offset 0x111E  */
+    __IOM uint8_t  HDMI_FC_GMD_PB26;                  /*!< Offset 0x111F  */
+    __IOM uint8_t  HDMI_FC_GMD_PB27;                  /*!< Offset 0x1120  */
          RESERVED(0x1121[0x1200 - 0x1121], uint8_t)
-    __IO uint8_t  HDMI_FC_DBGFORCE;                   /*!< Offset 0x1200  */
-    __IO uint8_t  HDMI_FC_DBGAUD0CH0;                 /*!< Offset 0x1201  */
-    __IO uint8_t  HDMI_FC_DBGAUD1CH0;                 /*!< Offset 0x1202  */
-    __IO uint8_t  HDMI_FC_DBGAUD2CH0;                 /*!< Offset 0x1203  */
-    __IO uint8_t  HDMI_FC_DBGAUD0CH1;                 /*!< Offset 0x1204  */
-    __IO uint8_t  HDMI_FC_DBGAUD1CH1;                 /*!< Offset 0x1205  */
-    __IO uint8_t  HDMI_FC_DBGAUD2CH1;                 /*!< Offset 0x1206  */
-    __IO uint8_t  HDMI_FC_DBGAUD0CH2;                 /*!< Offset 0x1207  */
-    __IO uint8_t  HDMI_FC_DBGAUD1CH2;                 /*!< Offset 0x1208  */
-    __IO uint8_t  HDMI_FC_DBGAUD2CH2;                 /*!< Offset 0x1209  */
-    __IO uint8_t  HDMI_FC_DBGAUD0CH3;                 /*!< Offset 0x120A  */
-    __IO uint8_t  HDMI_FC_DBGAUD1CH3;                 /*!< Offset 0x120B  */
-    __IO uint8_t  HDMI_FC_DBGAUD2CH3;                 /*!< Offset 0x120C  */
-    __IO uint8_t  HDMI_FC_DBGAUD0CH4;                 /*!< Offset 0x120D  */
-    __IO uint8_t  HDMI_FC_DBGAUD1CH4;                 /*!< Offset 0x120E  */
-    __IO uint8_t  HDMI_FC_DBGAUD2CH4;                 /*!< Offset 0x120F  */
-    __IO uint8_t  HDMI_FC_DBGAUD0CH5;                 /*!< Offset 0x1210  */
-    __IO uint8_t  HDMI_FC_DBGAUD1CH5;                 /*!< Offset 0x1211  */
-    __IO uint8_t  HDMI_FC_DBGAUD2CH5;                 /*!< Offset 0x1212  */
-    __IO uint8_t  HDMI_FC_DBGAUD0CH6;                 /*!< Offset 0x1213  */
-    __IO uint8_t  HDMI_FC_DBGAUD1CH6;                 /*!< Offset 0x1214  */
-    __IO uint8_t  HDMI_FC_DBGAUD2CH6;                 /*!< Offset 0x1215  */
-    __IO uint8_t  HDMI_FC_DBGAUD0CH7;                 /*!< Offset 0x1216  */
-    __IO uint8_t  HDMI_FC_DBGAUD1CH7;                 /*!< Offset 0x1217  */
-    __IO uint8_t  HDMI_FC_DBGAUD2CH7;                 /*!< Offset 0x1218  */
-    __IO uint8_t  HDMI_FC_DBGTMDS0;                   /*!< Offset 0x1219  */
-    __IO uint8_t  HDMI_FC_DBGTMDS1;                   /*!< Offset 0x121A  */
-    __IO uint8_t  HDMI_FC_DBGTMDS2;                   /*!< Offset 0x121B  */
+    __IOM uint8_t  HDMI_FC_DBGFORCE;                  /*!< Offset 0x1200  */
+    __IOM uint8_t  HDMI_FC_DBGAUD0CH0;                /*!< Offset 0x1201  */
+    __IOM uint8_t  HDMI_FC_DBGAUD1CH0;                /*!< Offset 0x1202  */
+    __IOM uint8_t  HDMI_FC_DBGAUD2CH0;                /*!< Offset 0x1203  */
+    __IOM uint8_t  HDMI_FC_DBGAUD0CH1;                /*!< Offset 0x1204  */
+    __IOM uint8_t  HDMI_FC_DBGAUD1CH1;                /*!< Offset 0x1205  */
+    __IOM uint8_t  HDMI_FC_DBGAUD2CH1;                /*!< Offset 0x1206  */
+    __IOM uint8_t  HDMI_FC_DBGAUD0CH2;                /*!< Offset 0x1207  */
+    __IOM uint8_t  HDMI_FC_DBGAUD1CH2;                /*!< Offset 0x1208  */
+    __IOM uint8_t  HDMI_FC_DBGAUD2CH2;                /*!< Offset 0x1209  */
+    __IOM uint8_t  HDMI_FC_DBGAUD0CH3;                /*!< Offset 0x120A  */
+    __IOM uint8_t  HDMI_FC_DBGAUD1CH3;                /*!< Offset 0x120B  */
+    __IOM uint8_t  HDMI_FC_DBGAUD2CH3;                /*!< Offset 0x120C  */
+    __IOM uint8_t  HDMI_FC_DBGAUD0CH4;                /*!< Offset 0x120D  */
+    __IOM uint8_t  HDMI_FC_DBGAUD1CH4;                /*!< Offset 0x120E  */
+    __IOM uint8_t  HDMI_FC_DBGAUD2CH4;                /*!< Offset 0x120F  */
+    __IOM uint8_t  HDMI_FC_DBGAUD0CH5;                /*!< Offset 0x1210  */
+    __IOM uint8_t  HDMI_FC_DBGAUD1CH5;                /*!< Offset 0x1211  */
+    __IOM uint8_t  HDMI_FC_DBGAUD2CH5;                /*!< Offset 0x1212  */
+    __IOM uint8_t  HDMI_FC_DBGAUD0CH6;                /*!< Offset 0x1213  */
+    __IOM uint8_t  HDMI_FC_DBGAUD1CH6;                /*!< Offset 0x1214  */
+    __IOM uint8_t  HDMI_FC_DBGAUD2CH6;                /*!< Offset 0x1215  */
+    __IOM uint8_t  HDMI_FC_DBGAUD0CH7;                /*!< Offset 0x1216  */
+    __IOM uint8_t  HDMI_FC_DBGAUD1CH7;                /*!< Offset 0x1217  */
+    __IOM uint8_t  HDMI_FC_DBGAUD2CH7;                /*!< Offset 0x1218  */
+    __IOM uint8_t  HDMI_FC_DBGTMDS0;                  /*!< Offset 0x1219  */
+    __IOM uint8_t  HDMI_FC_DBGTMDS1;                  /*!< Offset 0x121A  */
+    __IOM uint8_t  HDMI_FC_DBGTMDS2;                  /*!< Offset 0x121B  */
          RESERVED(0x121C[0x3000 - 0x121C], uint8_t)
-    __IO uint8_t  HDMI_PHY_CONF0;                     /*!< Offset 0x3000  */
-    __IO uint8_t  HDMI_PHY_TST0;                      /*!< Offset 0x3001  */
-    __IO uint8_t  HDMI_PHY_TST1;                      /*!< Offset 0x3002  */
-    __IO uint8_t  HDMI_PHY_TST2;                      /*!< Offset 0x3003  */
-    __IO uint8_t  HDMI_PHY_STAT0;                     /*!< Offset 0x3004  */
-    __IO uint8_t  HDMI_PHY_INT0;                      /*!< Offset 0x3005  */
-    __IO uint8_t  HDMI_PHY_MASK0;                     /*!< Offset 0x3006  */
-    __IO uint8_t  HDMI_PHY_POL0;                      /*!< Offset 0x3007  */
+    __IOM uint8_t  HDMI_PHY_CONF0;                    /*!< Offset 0x3000  */
+    __IOM uint8_t  HDMI_PHY_TST0;                     /*!< Offset 0x3001  */
+    __IOM uint8_t  HDMI_PHY_TST1;                     /*!< Offset 0x3002  */
+    __IOM uint8_t  HDMI_PHY_TST2;                     /*!< Offset 0x3003  */
+    __IOM uint8_t  HDMI_PHY_STAT0;                    /*!< Offset 0x3004  */
+    __IOM uint8_t  HDMI_PHY_INT0;                     /*!< Offset 0x3005  */
+    __IOM uint8_t  HDMI_PHY_MASK0;                    /*!< Offset 0x3006  */
+    __IOM uint8_t  HDMI_PHY_POL0;                     /*!< Offset 0x3007  */
          RESERVED(0x3008[0x3020 - 0x3008], uint8_t)
-    __IO uint8_t  HDMI_PHY_I2CM_SLAVE_ADDR;           /*!< Offset 0x3020  */
-    __IO uint8_t  HDMI_PHY_I2CM_ADDRESS_ADDR;         /*!< Offset 0x3021  */
-    __IO uint8_t  HDMI_PHY_I2CM_DATAO_1_ADDR;         /*!< Offset 0x3022  */
-    __IO uint8_t  HDMI_PHY_I2CM_DATAO_0_ADDR;         /*!< Offset 0x3023  */
-    __IO uint8_t  HDMI_PHY_I2CM_DATAI_1_ADDR;         /*!< Offset 0x3024  */
-    __IO uint8_t  HDMI_PHY_I2CM_DATAI_0_ADDR;         /*!< Offset 0x3025  */
-    __IO uint8_t  HDMI_PHY_I2CM_OPERATION_ADDR;       /*!< Offset 0x3026  */
-    __IO uint8_t  HDMI_PHY_I2CM_INT_ADDR;             /*!< Offset 0x3027  */
-    __IO uint8_t  HDMI_PHY_I2CM_CTLINT_ADDR;          /*!< Offset 0x3028  */
-    __IO uint8_t  HDMI_PHY_I2CM_DIV_ADDR;             /*!< Offset 0x3029  */
-    __IO uint8_t  HDMI_PHY_I2CM_SOFTRSTZ_ADDR;        /*!< Offset 0x302A  */
-    __IO uint8_t  HDMI_PHY_I2CM_SS_SCL_HCNT_1_ADDR;   /*!< Offset 0x302B  */
-    __IO uint8_t  HDMI_PHY_I2CM_SS_SCL_HCNT_0_ADDR;   /*!< Offset 0x302C  */
-    __IO uint8_t  HDMI_PHY_I2CM_SS_SCL_LCNT_1_ADDR;   /*!< Offset 0x302D  */
-    __IO uint8_t  HDMI_PHY_I2CM_SS_SCL_LCNT_0_ADDR;   /*!< Offset 0x302E  */
-    __IO uint8_t  HDMI_PHY_I2CM_FS_SCL_HCNT_1_ADDR;   /*!< Offset 0x302F  */
-    __IO uint8_t  HDMI_PHY_I2CM_FS_SCL_HCNT_0_ADDR;   /*!< Offset 0x3030  */
-    __IO uint8_t  HDMI_PHY_I2CM_FS_SCL_LCNT_1_ADDR;   /*!< Offset 0x3031  */
-    __IO uint8_t  HDMI_PHY_I2CM_FS_SCL_LCNT_0_ADDR;   /*!< Offset 0x3032  */
+    __IOM uint8_t  HDMI_PHY_I2CM_SLAVE_ADDR;          /*!< Offset 0x3020  */
+    __IOM uint8_t  HDMI_PHY_I2CM_ADDRESS_ADDR;        /*!< Offset 0x3021  */
+    __IOM uint8_t  HDMI_PHY_I2CM_DATAO_1_ADDR;        /*!< Offset 0x3022  */
+    __IOM uint8_t  HDMI_PHY_I2CM_DATAO_0_ADDR;        /*!< Offset 0x3023  */
+    __IOM uint8_t  HDMI_PHY_I2CM_DATAI_1_ADDR;        /*!< Offset 0x3024  */
+    __IOM uint8_t  HDMI_PHY_I2CM_DATAI_0_ADDR;        /*!< Offset 0x3025  */
+    __IOM uint8_t  HDMI_PHY_I2CM_OPERATION_ADDR;      /*!< Offset 0x3026  */
+    __IOM uint8_t  HDMI_PHY_I2CM_INT_ADDR;            /*!< Offset 0x3027  */
+    __IOM uint8_t  HDMI_PHY_I2CM_CTLINT_ADDR;         /*!< Offset 0x3028  */
+    __IOM uint8_t  HDMI_PHY_I2CM_DIV_ADDR;            /*!< Offset 0x3029  */
+    __IOM uint8_t  HDMI_PHY_I2CM_SOFTRSTZ_ADDR;       /*!< Offset 0x302A  */
+    __IOM uint8_t  HDMI_PHY_I2CM_SS_SCL_HCNT_1_ADDR;  /*!< Offset 0x302B  */
+    __IOM uint8_t  HDMI_PHY_I2CM_SS_SCL_HCNT_0_ADDR;  /*!< Offset 0x302C  */
+    __IOM uint8_t  HDMI_PHY_I2CM_SS_SCL_LCNT_1_ADDR;  /*!< Offset 0x302D  */
+    __IOM uint8_t  HDMI_PHY_I2CM_SS_SCL_LCNT_0_ADDR;  /*!< Offset 0x302E  */
+    __IOM uint8_t  HDMI_PHY_I2CM_FS_SCL_HCNT_1_ADDR;  /*!< Offset 0x302F  */
+    __IOM uint8_t  HDMI_PHY_I2CM_FS_SCL_HCNT_0_ADDR;  /*!< Offset 0x3030  */
+    __IOM uint8_t  HDMI_PHY_I2CM_FS_SCL_LCNT_1_ADDR;  /*!< Offset 0x3031  */
+    __IOM uint8_t  HDMI_PHY_I2CM_FS_SCL_LCNT_0_ADDR;  /*!< Offset 0x3032  */
          RESERVED(0x3033[0x3100 - 0x3033], uint8_t)
-    __IO uint8_t  HDMI_AUD_CONF0;                     /*!< Offset 0x3100  */
-    __IO uint8_t  HDMI_AUD_CONF1;                     /*!< Offset 0x3101  */
-    __IO uint8_t  HDMI_AUD_INT;                       /*!< Offset 0x3102  */
-    __IO uint8_t  HDMI_AUD_CONF2;                     /*!< Offset 0x3103  */
+    __IOM uint8_t  HDMI_AUD_CONF0;                    /*!< Offset 0x3100  */
+    __IOM uint8_t  HDMI_AUD_CONF1;                    /*!< Offset 0x3101  */
+    __IOM uint8_t  HDMI_AUD_INT;                      /*!< Offset 0x3102  */
+    __IOM uint8_t  HDMI_AUD_CONF2;                    /*!< Offset 0x3103  */
          RESERVED(0x3104[0x3200 - 0x3104], uint8_t)
-    __IO uint8_t  HDMI_AUD_N1;                        /*!< Offset 0x3200  */
-    __IO uint8_t  HDMI_AUD_N2;                        /*!< Offset 0x3201  */
-    __IO uint8_t  HDMI_AUD_N3;                        /*!< Offset 0x3202  */
-    __IO uint8_t  HDMI_AUD_CTS1;                      /*!< Offset 0x3203  */
-    __IO uint8_t  HDMI_AUD_CTS2;                      /*!< Offset 0x3204  */
-    __IO uint8_t  HDMI_AUD_CTS3;                      /*!< Offset 0x3205  */
-    __IO uint8_t  HDMI_AUD_INPUTCLKFS;                /*!< Offset 0x3206  */
+    __IOM uint8_t  HDMI_AUD_N1;                       /*!< Offset 0x3200  */
+    __IOM uint8_t  HDMI_AUD_N2;                       /*!< Offset 0x3201  */
+    __IOM uint8_t  HDMI_AUD_N3;                       /*!< Offset 0x3202  */
+    __IOM uint8_t  HDMI_AUD_CTS1;                     /*!< Offset 0x3203  */
+    __IOM uint8_t  HDMI_AUD_CTS2;                     /*!< Offset 0x3204  */
+    __IOM uint8_t  HDMI_AUD_CTS3;                     /*!< Offset 0x3205  */
+    __IOM uint8_t  HDMI_AUD_INPUTCLKFS;               /*!< Offset 0x3206  */
          RESERVED(0x3207[0x3302 - 0x3207], uint8_t)
-    __IO uint8_t  HDMI_AUD_SPDIFINT;                  /*!< Offset 0x3302  */
+    __IOM uint8_t  HDMI_AUD_SPDIFINT;                 /*!< Offset 0x3302  */
          RESERVED(0x3303[0x3400 - 0x3303], uint8_t)
-    __IO uint8_t  HDMI_AUD_CONF0_HBR;                 /*!< Offset 0x3400  */
-    __IO uint8_t  HDMI_AUD_HBR_STATUS;                /*!< Offset 0x3401  */
-    __IO uint8_t  HDMI_AUD_HBR_INT;                   /*!< Offset 0x3402  */
-    __IO uint8_t  HDMI_AUD_HBR_POL;                   /*!< Offset 0x3403  */
-    __IO uint8_t  HDMI_AUD_HBR_MASK;                  /*!< Offset 0x3404  */
+    __IOM uint8_t  HDMI_AUD_CONF0_HBR;                /*!< Offset 0x3400  */
+    __IOM uint8_t  HDMI_AUD_HBR_STATUS;               /*!< Offset 0x3401  */
+    __IOM uint8_t  HDMI_AUD_HBR_INT;                  /*!< Offset 0x3402  */
+    __IOM uint8_t  HDMI_AUD_HBR_POL;                  /*!< Offset 0x3403  */
+    __IOM uint8_t  HDMI_AUD_HBR_MASK;                 /*!< Offset 0x3404  */
          RESERVED(0x3405[0x3500 - 0x3405], uint8_t)
-    __IO uint8_t  HDMI_GP_CONF0;                      /*!< Offset 0x3500  */
-    __IO uint8_t  HDMI_GP_CONF1;                      /*!< Offset 0x3501  */
-    __IO uint8_t  HDMI_GP_CONF2;                      /*!< Offset 0x3502  */
-    __IO uint8_t  HDMI_GP_STAT;                       /*!< Offset 0x3503  */
-    __IO uint8_t  HDMI_GP_INT;                        /*!< Offset 0x3504  */
-    __IO uint8_t  HDMI_GP_MASK;                       /*!< Offset 0x3505  */
-    __IO uint8_t  HDMI_GP_POL;                        /*!< Offset 0x3506  */
+    __IOM uint8_t  HDMI_GP_CONF0;                     /*!< Offset 0x3500  */
+    __IOM uint8_t  HDMI_GP_CONF1;                     /*!< Offset 0x3501  */
+    __IOM uint8_t  HDMI_GP_CONF2;                     /*!< Offset 0x3502  */
+    __IOM uint8_t  HDMI_GP_STAT;                      /*!< Offset 0x3503  */
+    __IOM uint8_t  HDMI_GP_INT;                       /*!< Offset 0x3504  */
+    __IOM uint8_t  HDMI_GP_MASK;                      /*!< Offset 0x3505  */
+    __IOM uint8_t  HDMI_GP_POL;                       /*!< Offset 0x3506  */
          RESERVED(0x3507[0x3600 - 0x3507], uint8_t)
-    __IO uint8_t  HDMI_AHB_DMA_CONF0;                 /*!< Offset 0x3600  */
-    __IO uint8_t  HDMI_AHB_DMA_START;                 /*!< Offset 0x3601  */
-    __IO uint8_t  HDMI_AHB_DMA_STOP;                  /*!< Offset 0x3602  */
-    __IO uint8_t  HDMI_AHB_DMA_THRSLD;                /*!< Offset 0x3603  */
-    __IO uint8_t  HDMI_AHB_DMA_STRADDR0;              /*!< Offset 0x3604  */
-    __IO uint8_t  HDMI_AHB_DMA_STRADDR1;              /*!< Offset 0x3605  */
-    __IO uint8_t  HDMI_AHB_DMA_STRADDR2;              /*!< Offset 0x3606  */
-    __IO uint8_t  HDMI_AHB_DMA_STRADDR3;              /*!< Offset 0x3607  */
-    __IO uint8_t  HDMI_AHB_DMA_STPADDR0;              /*!< Offset 0x3608  */
-    __IO uint8_t  HDMI_AHB_DMA_STPADDR1;              /*!< Offset 0x3609  */
-    __IO uint8_t  HDMI_AHB_DMA_STPADDR2;              /*!< Offset 0x360A  */
-    __IO uint8_t  HDMI_AHB_DMA_STPADDR3;              /*!< Offset 0x360B  */
-    __IO uint8_t  HDMI_AHB_DMA_BSTADDR0;              /*!< Offset 0x360C  */
-    __IO uint8_t  HDMI_AHB_DMA_BSTADDR1;              /*!< Offset 0x360D  */
-    __IO uint8_t  HDMI_AHB_DMA_BSTADDR2;              /*!< Offset 0x360E  */
-    __IO uint8_t  HDMI_AHB_DMA_BSTADDR3;              /*!< Offset 0x360F  */
-    __IO uint8_t  HDMI_AHB_DMA_MBLENGTH0;             /*!< Offset 0x3610  */
-    __IO uint8_t  HDMI_AHB_DMA_MBLENGTH1;             /*!< Offset 0x3611  */
-    __IO uint8_t  HDMI_AHB_DMA_STAT;                  /*!< Offset 0x3612  */
-    __IO uint8_t  HDMI_AHB_DMA_INT;                   /*!< Offset 0x3613  */
-    __IO uint8_t  HDMI_AHB_DMA_MASK;                  /*!< Offset 0x3614  */
-    __IO uint8_t  HDMI_AHB_DMA_POL;                   /*!< Offset 0x3615  */
-    __IO uint8_t  HDMI_AHB_DMA_CONF1;                 /*!< Offset 0x3616  */
-    __IO uint8_t  HDMI_AHB_DMA_BUFFSTAT;              /*!< Offset 0x3617  */
-    __IO uint8_t  HDMI_AHB_DMA_BUFFINT;               /*!< Offset 0x3618  */
-    __IO uint8_t  HDMI_AHB_DMA_BUFFMASK;              /*!< Offset 0x3619  */
-    __IO uint8_t  HDMI_AHB_DMA_BUFFPOL;               /*!< Offset 0x361A  */
+    __IOM uint8_t  HDMI_AHB_DMA_CONF0;                /*!< Offset 0x3600  */
+    __IOM uint8_t  HDMI_AHB_DMA_START;                /*!< Offset 0x3601  */
+    __IOM uint8_t  HDMI_AHB_DMA_STOP;                 /*!< Offset 0x3602  */
+    __IOM uint8_t  HDMI_AHB_DMA_THRSLD;               /*!< Offset 0x3603  */
+    __IOM uint8_t  HDMI_AHB_DMA_STRADDR0;             /*!< Offset 0x3604  */
+    __IOM uint8_t  HDMI_AHB_DMA_STRADDR1;             /*!< Offset 0x3605  */
+    __IOM uint8_t  HDMI_AHB_DMA_STRADDR2;             /*!< Offset 0x3606  */
+    __IOM uint8_t  HDMI_AHB_DMA_STRADDR3;             /*!< Offset 0x3607  */
+    __IOM uint8_t  HDMI_AHB_DMA_STPADDR0;             /*!< Offset 0x3608  */
+    __IOM uint8_t  HDMI_AHB_DMA_STPADDR1;             /*!< Offset 0x3609  */
+    __IOM uint8_t  HDMI_AHB_DMA_STPADDR2;             /*!< Offset 0x360A  */
+    __IOM uint8_t  HDMI_AHB_DMA_STPADDR3;             /*!< Offset 0x360B  */
+    __IOM uint8_t  HDMI_AHB_DMA_BSTADDR0;             /*!< Offset 0x360C  */
+    __IOM uint8_t  HDMI_AHB_DMA_BSTADDR1;             /*!< Offset 0x360D  */
+    __IOM uint8_t  HDMI_AHB_DMA_BSTADDR2;             /*!< Offset 0x360E  */
+    __IOM uint8_t  HDMI_AHB_DMA_BSTADDR3;             /*!< Offset 0x360F  */
+    __IOM uint8_t  HDMI_AHB_DMA_MBLENGTH0;            /*!< Offset 0x3610  */
+    __IOM uint8_t  HDMI_AHB_DMA_MBLENGTH1;            /*!< Offset 0x3611  */
+    __IOM uint8_t  HDMI_AHB_DMA_STAT;                 /*!< Offset 0x3612  */
+    __IOM uint8_t  HDMI_AHB_DMA_INT;                  /*!< Offset 0x3613  */
+    __IOM uint8_t  HDMI_AHB_DMA_MASK;                 /*!< Offset 0x3614  */
+    __IOM uint8_t  HDMI_AHB_DMA_POL;                  /*!< Offset 0x3615  */
+    __IOM uint8_t  HDMI_AHB_DMA_CONF1;                /*!< Offset 0x3616  */
+    __IOM uint8_t  HDMI_AHB_DMA_BUFFSTAT;             /*!< Offset 0x3617  */
+    __IOM uint8_t  HDMI_AHB_DMA_BUFFINT;              /*!< Offset 0x3618  */
+    __IOM uint8_t  HDMI_AHB_DMA_BUFFMASK;             /*!< Offset 0x3619  */
+    __IOM uint8_t  HDMI_AHB_DMA_BUFFPOL;              /*!< Offset 0x361A  */
          RESERVED(0x361B[0x4000 - 0x361B], uint8_t)
-    __IO uint8_t  HDMI_MC_SFRDIV;                     /*!< Offset 0x4000  */
-    __IO uint8_t  HDMI_MC_CLKDIS;                     /*!< Offset 0x4001  */
-    __IO uint8_t  HDMI_MC_SWRSTZ;                     /*!< Offset 0x4002  */
-    __IO uint8_t  HDMI_MC_OPCTRL;                     /*!< Offset 0x4003  */
-    __IO uint8_t  HDMI_MC_FLOWCTRL;                   /*!< Offset 0x4004  */
-    __IO uint8_t  HDMI_MC_PHYRSTZ;                    /*!< Offset 0x4005  */
-    __IO uint8_t  HDMI_MC_LOCKONCLOCK;                /*!< Offset 0x4006  */
-    __IO uint8_t  HDMI_MC_HEACPHY_RST;                /*!< Offset 0x4007  */
+    __IOM uint8_t  HDMI_MC_SFRDIV;                    /*!< Offset 0x4000  */
+    __IOM uint8_t  HDMI_MC_CLKDIS;                    /*!< Offset 0x4001  */
+    __IOM uint8_t  HDMI_MC_SWRSTZ;                    /*!< Offset 0x4002  */
+    __IOM uint8_t  HDMI_MC_OPCTRL;                    /*!< Offset 0x4003  */
+    __IOM uint8_t  HDMI_MC_FLOWCTRL;                  /*!< Offset 0x4004  */
+    __IOM uint8_t  HDMI_MC_PHYRSTZ;                   /*!< Offset 0x4005  */
+    __IOM uint8_t  HDMI_MC_LOCKONCLOCK;               /*!< Offset 0x4006  */
+    __IOM uint8_t  HDMI_MC_HEACPHY_RST;               /*!< Offset 0x4007  */
          RESERVED(0x4008[0x4100 - 0x4008], uint8_t)
-    __IO uint8_t  HDMI_CSC_CFG;                       /*!< Offset 0x4100  */
-    __IO uint8_t  HDMI_CSC_SCALE;                     /*!< Offset 0x4101  */
-    __IO uint8_t  HDMI_CSC_COEF_A1_MSB;               /*!< Offset 0x4102  */
-    __IO uint8_t  HDMI_CSC_COEF_A1_LSB;               /*!< Offset 0x4103  */
-    __IO uint8_t  HDMI_CSC_COEF_A2_MSB;               /*!< Offset 0x4104  */
-    __IO uint8_t  HDMI_CSC_COEF_A2_LSB;               /*!< Offset 0x4105  */
-    __IO uint8_t  HDMI_CSC_COEF_A3_MSB;               /*!< Offset 0x4106  */
-    __IO uint8_t  HDMI_CSC_COEF_A3_LSB;               /*!< Offset 0x4107  */
-    __IO uint8_t  HDMI_CSC_COEF_A4_MSB;               /*!< Offset 0x4108  */
-    __IO uint8_t  HDMI_CSC_COEF_A4_LSB;               /*!< Offset 0x4109  */
-    __IO uint8_t  HDMI_CSC_COEF_B1_MSB;               /*!< Offset 0x410A  */
-    __IO uint8_t  HDMI_CSC_COEF_B1_LSB;               /*!< Offset 0x410B  */
-    __IO uint8_t  HDMI_CSC_COEF_B2_MSB;               /*!< Offset 0x410C  */
-    __IO uint8_t  HDMI_CSC_COEF_B2_LSB;               /*!< Offset 0x410D  */
-    __IO uint8_t  HDMI_CSC_COEF_B3_MSB;               /*!< Offset 0x410E  */
-    __IO uint8_t  HDMI_CSC_COEF_B3_LSB;               /*!< Offset 0x410F  */
-    __IO uint8_t  HDMI_CSC_COEF_B4_MSB;               /*!< Offset 0x4110  */
-    __IO uint8_t  HDMI_CSC_COEF_B4_LSB;               /*!< Offset 0x4111  */
-    __IO uint8_t  HDMI_CSC_COEF_C1_MSB;               /*!< Offset 0x4112  */
-    __IO uint8_t  HDMI_CSC_COEF_C1_LSB;               /*!< Offset 0x4113  */
-    __IO uint8_t  HDMI_CSC_COEF_C2_MSB;               /*!< Offset 0x4114  */
-    __IO uint8_t  HDMI_CSC_COEF_C2_LSB;               /*!< Offset 0x4115  */
-    __IO uint8_t  HDMI_CSC_COEF_C3_MSB;               /*!< Offset 0x4116  */
-    __IO uint8_t  HDMI_CSC_COEF_C3_LSB;               /*!< Offset 0x4117  */
-    __IO uint8_t  HDMI_CSC_COEF_C4_MSB;               /*!< Offset 0x4118  */
-    __IO uint8_t  HDMI_CSC_COEF_C4_LSB;               /*!< Offset 0x4119  */
+    __IOM uint8_t  HDMI_CSC_CFG;                      /*!< Offset 0x4100  */
+    __IOM uint8_t  HDMI_CSC_SCALE;                    /*!< Offset 0x4101  */
+    __IOM uint8_t  HDMI_CSC_COEF_A1_MSB;              /*!< Offset 0x4102  */
+    __IOM uint8_t  HDMI_CSC_COEF_A1_LSB;              /*!< Offset 0x4103  */
+    __IOM uint8_t  HDMI_CSC_COEF_A2_MSB;              /*!< Offset 0x4104  */
+    __IOM uint8_t  HDMI_CSC_COEF_A2_LSB;              /*!< Offset 0x4105  */
+    __IOM uint8_t  HDMI_CSC_COEF_A3_MSB;              /*!< Offset 0x4106  */
+    __IOM uint8_t  HDMI_CSC_COEF_A3_LSB;              /*!< Offset 0x4107  */
+    __IOM uint8_t  HDMI_CSC_COEF_A4_MSB;              /*!< Offset 0x4108  */
+    __IOM uint8_t  HDMI_CSC_COEF_A4_LSB;              /*!< Offset 0x4109  */
+    __IOM uint8_t  HDMI_CSC_COEF_B1_MSB;              /*!< Offset 0x410A  */
+    __IOM uint8_t  HDMI_CSC_COEF_B1_LSB;              /*!< Offset 0x410B  */
+    __IOM uint8_t  HDMI_CSC_COEF_B2_MSB;              /*!< Offset 0x410C  */
+    __IOM uint8_t  HDMI_CSC_COEF_B2_LSB;              /*!< Offset 0x410D  */
+    __IOM uint8_t  HDMI_CSC_COEF_B3_MSB;              /*!< Offset 0x410E  */
+    __IOM uint8_t  HDMI_CSC_COEF_B3_LSB;              /*!< Offset 0x410F  */
+    __IOM uint8_t  HDMI_CSC_COEF_B4_MSB;              /*!< Offset 0x4110  */
+    __IOM uint8_t  HDMI_CSC_COEF_B4_LSB;              /*!< Offset 0x4111  */
+    __IOM uint8_t  HDMI_CSC_COEF_C1_MSB;              /*!< Offset 0x4112  */
+    __IOM uint8_t  HDMI_CSC_COEF_C1_LSB;              /*!< Offset 0x4113  */
+    __IOM uint8_t  HDMI_CSC_COEF_C2_MSB;              /*!< Offset 0x4114  */
+    __IOM uint8_t  HDMI_CSC_COEF_C2_LSB;              /*!< Offset 0x4115  */
+    __IOM uint8_t  HDMI_CSC_COEF_C3_MSB;              /*!< Offset 0x4116  */
+    __IOM uint8_t  HDMI_CSC_COEF_C3_LSB;              /*!< Offset 0x4117  */
+    __IOM uint8_t  HDMI_CSC_COEF_C4_MSB;              /*!< Offset 0x4118  */
+    __IOM uint8_t  HDMI_CSC_COEF_C4_LSB;              /*!< Offset 0x4119  */
          RESERVED(0x411A[0x5000 - 0x411A], uint8_t)
-    __IO uint8_t  HDMI_A_HDCPCFG0;                    /*!< Offset 0x5000  */
-    __IO uint8_t  HDMI_A_HDCPCFG1;                    /*!< Offset 0x5001  */
-    __IO uint8_t  HDMI_A_HDCPOBS0;                    /*!< Offset 0x5002  */
-    __IO uint8_t  HDMI_A_HDCPOBS1;                    /*!< Offset 0x5003  */
-    __IO uint8_t  HDMI_A_HDCPOBS2;                    /*!< Offset 0x5004  */
-    __IO uint8_t  HDMI_A_HDCPOBS3;                    /*!< Offset 0x5005  */
-    __IO uint8_t  HDMI_A_APIINTCLR;                   /*!< Offset 0x5006  */
-    __IO uint8_t  HDMI_A_APIINTSTAT;                  /*!< Offset 0x5007  */
-    __IO uint8_t  HDMI_A_APIINTMSK;                   /*!< Offset 0x5008  */
-    __IO uint8_t  HDMI_A_VIDPOLCFG;                   /*!< Offset 0x5009  */
-    __IO uint8_t  HDMI_A_OESSWCFG;                    /*!< Offset 0x500A  */
-    __IO uint8_t  HDMI_A_TIMER1SETUP0;                /*!< Offset 0x500B  */
-    __IO uint8_t  HDMI_A_TIMER1SETUP1;                /*!< Offset 0x500C  */
-    __IO uint8_t  HDMI_A_TIMER2SETUP0;                /*!< Offset 0x500D  */
-    __IO uint8_t  HDMI_A_TIMER2SETUP1;                /*!< Offset 0x500E  */
-    __IO uint8_t  HDMI_A_100MSCFG;                    /*!< Offset 0x500F  */
-    __IO uint8_t  HDMI_A_2SCFG0;                      /*!< Offset 0x5010  */
-    __IO uint8_t  HDMI_A_2SCFG1;                      /*!< Offset 0x5011  */
-    __IO uint8_t  HDMI_A_5SCFG0;                      /*!< Offset 0x5012  */
-    __IO uint8_t  HDMI_A_5SCFG1;                      /*!< Offset 0x5013  */
-    __IO uint8_t  HDMI_A_SRMVERLSB;                   /*!< Offset 0x5014  */
-    __IO uint8_t  HDMI_A_SRMVERMSB;                   /*!< Offset 0x5015  */
-    __IO uint8_t  HDMI_A_SRMCTRL;                     /*!< Offset 0x5016  */
-    __IO uint8_t  HDMI_A_SFRSETUP;                    /*!< Offset 0x5017  */
-    __IO uint8_t  HDMI_A_I2CHSETUP;                   /*!< Offset 0x5018  */
-    __IO uint8_t  HDMI_A_INTSETUP;                    /*!< Offset 0x5019  */
-    __IO uint8_t  HDMI_A_PRESETUP;                    /*!< Offset 0x501A  */
+    __IOM uint8_t  HDMI_A_HDCPCFG0;                   /*!< Offset 0x5000  */
+    __IOM uint8_t  HDMI_A_HDCPCFG1;                   /*!< Offset 0x5001  */
+    __IOM uint8_t  HDMI_A_HDCPOBS0;                   /*!< Offset 0x5002  */
+    __IOM uint8_t  HDMI_A_HDCPOBS1;                   /*!< Offset 0x5003  */
+    __IOM uint8_t  HDMI_A_HDCPOBS2;                   /*!< Offset 0x5004  */
+    __IOM uint8_t  HDMI_A_HDCPOBS3;                   /*!< Offset 0x5005  */
+    __IOM uint8_t  HDMI_A_APIINTCLR;                  /*!< Offset 0x5006  */
+    __IOM uint8_t  HDMI_A_APIINTSTAT;                 /*!< Offset 0x5007  */
+    __IOM uint8_t  HDMI_A_APIINTMSK;                  /*!< Offset 0x5008  */
+    __IOM uint8_t  HDMI_A_VIDPOLCFG;                  /*!< Offset 0x5009  */
+    __IOM uint8_t  HDMI_A_OESSWCFG;                   /*!< Offset 0x500A  */
+    __IOM uint8_t  HDMI_A_TIMER1SETUP0;               /*!< Offset 0x500B  */
+    __IOM uint8_t  HDMI_A_TIMER1SETUP1;               /*!< Offset 0x500C  */
+    __IOM uint8_t  HDMI_A_TIMER2SETUP0;               /*!< Offset 0x500D  */
+    __IOM uint8_t  HDMI_A_TIMER2SETUP1;               /*!< Offset 0x500E  */
+    __IOM uint8_t  HDMI_A_100MSCFG;                   /*!< Offset 0x500F  */
+    __IOM uint8_t  HDMI_A_2SCFG0;                     /*!< Offset 0x5010  */
+    __IOM uint8_t  HDMI_A_2SCFG1;                     /*!< Offset 0x5011  */
+    __IOM uint8_t  HDMI_A_5SCFG0;                     /*!< Offset 0x5012  */
+    __IOM uint8_t  HDMI_A_5SCFG1;                     /*!< Offset 0x5013  */
+    __IOM uint8_t  HDMI_A_SRMVERLSB;                  /*!< Offset 0x5014  */
+    __IOM uint8_t  HDMI_A_SRMVERMSB;                  /*!< Offset 0x5015  */
+    __IOM uint8_t  HDMI_A_SRMCTRL;                    /*!< Offset 0x5016  */
+    __IOM uint8_t  HDMI_A_SFRSETUP;                   /*!< Offset 0x5017  */
+    __IOM uint8_t  HDMI_A_I2CHSETUP;                  /*!< Offset 0x5018  */
+    __IOM uint8_t  HDMI_A_INTSETUP;                   /*!< Offset 0x5019  */
+    __IOM uint8_t  HDMI_A_PRESETUP;                   /*!< Offset 0x501A  */
          RESERVED(0x501B[0x5020 - 0x501B], uint8_t)
-    __IO uint8_t  HDMI_A_SRM_BASE;                    /*!< Offset 0x5020  */
+    __IOM uint8_t  HDMI_A_SRM_BASE;                   /*!< Offset 0x5020  */
          RESERVED(0x5021[0x7D00 - 0x5021], uint8_t)
-    __IO uint8_t  HDMI_CEC_CTRL;                      /*!< Offset 0x7D00  */
-    __IO uint8_t  HDMI_CEC_STAT;                      /*!< Offset 0x7D01  */
-    __IO uint8_t  HDMI_CEC_MASK;                      /*!< Offset 0x7D02  */
-    __IO uint8_t  HDMI_CEC_POLARITY;                  /*!< Offset 0x7D03  */
-    __IO uint8_t  HDMI_CEC_INT;                       /*!< Offset 0x7D04  */
-    __IO uint8_t  HDMI_CEC_ADDR_L;                    /*!< Offset 0x7D05  */
-    __IO uint8_t  HDMI_CEC_ADDR_H;                    /*!< Offset 0x7D06  */
-    __IO uint8_t  HDMI_CEC_TX_CNT;                    /*!< Offset 0x7D07  */
-    __IO uint8_t  HDMI_CEC_RX_CNT;                    /*!< Offset 0x7D08  */
+    __IOM uint8_t  HDMI_CEC_CTRL;                     /*!< Offset 0x7D00  */
+    __IOM uint8_t  HDMI_CEC_STAT;                     /*!< Offset 0x7D01  */
+    __IOM uint8_t  HDMI_CEC_MASK;                     /*!< Offset 0x7D02  */
+    __IOM uint8_t  HDMI_CEC_POLARITY;                 /*!< Offset 0x7D03  */
+    __IOM uint8_t  HDMI_CEC_INT;                      /*!< Offset 0x7D04  */
+    __IOM uint8_t  HDMI_CEC_ADDR_L;                   /*!< Offset 0x7D05  */
+    __IOM uint8_t  HDMI_CEC_ADDR_H;                   /*!< Offset 0x7D06  */
+    __IOM uint8_t  HDMI_CEC_TX_CNT;                   /*!< Offset 0x7D07  */
+    __IOM uint8_t  HDMI_CEC_RX_CNT;                   /*!< Offset 0x7D08  */
          RESERVED(0x7D09[0x7D10 - 0x7D09], uint8_t)
-    __IO uint8_t  HDMI_CEC_TX_DATA0;                  /*!< Offset 0x7D10  */
-    __IO uint8_t  HDMI_CEC_TX_DATA1;                  /*!< Offset 0x7D11  */
-    __IO uint8_t  HDMI_CEC_TX_DATA2;                  /*!< Offset 0x7D12  */
-    __IO uint8_t  HDMI_CEC_TX_DATA3;                  /*!< Offset 0x7D13  */
-    __IO uint8_t  HDMI_CEC_TX_DATA4;                  /*!< Offset 0x7D14  */
-    __IO uint8_t  HDMI_CEC_TX_DATA5;                  /*!< Offset 0x7D15  */
-    __IO uint8_t  HDMI_CEC_TX_DATA6;                  /*!< Offset 0x7D16  */
-    __IO uint8_t  HDMI_CEC_TX_DATA7;                  /*!< Offset 0x7D17  */
-    __IO uint8_t  HDMI_CEC_TX_DATA8;                  /*!< Offset 0x7D18  */
-    __IO uint8_t  HDMI_CEC_TX_DATA9;                  /*!< Offset 0x7D19  */
-    __IO uint8_t  HDMI_CEC_TX_DATA10;                 /*!< Offset 0x7D1A  */
-    __IO uint8_t  HDMI_CEC_TX_DATA11;                 /*!< Offset 0x7D1B  */
-    __IO uint8_t  HDMI_CEC_TX_DATA12;                 /*!< Offset 0x7D1C  */
-    __IO uint8_t  HDMI_CEC_TX_DATA13;                 /*!< Offset 0x7D1D  */
-    __IO uint8_t  HDMI_CEC_TX_DATA14;                 /*!< Offset 0x7D1E  */
-    __IO uint8_t  HDMI_CEC_TX_DATA15;                 /*!< Offset 0x7D1F  */
-    __IO uint8_t  HDMI_CEC_RX_DATA0;                  /*!< Offset 0x7D20  */
-    __IO uint8_t  HDMI_CEC_RX_DATA1;                  /*!< Offset 0x7D21  */
-    __IO uint8_t  HDMI_CEC_RX_DATA2;                  /*!< Offset 0x7D22  */
-    __IO uint8_t  HDMI_CEC_RX_DATA3;                  /*!< Offset 0x7D23  */
-    __IO uint8_t  HDMI_CEC_RX_DATA4;                  /*!< Offset 0x7D24  */
-    __IO uint8_t  HDMI_CEC_RX_DATA5;                  /*!< Offset 0x7D25  */
-    __IO uint8_t  HDMI_CEC_RX_DATA6;                  /*!< Offset 0x7D26  */
-    __IO uint8_t  HDMI_CEC_RX_DATA7;                  /*!< Offset 0x7D27  */
-    __IO uint8_t  HDMI_CEC_RX_DATA8;                  /*!< Offset 0x7D28  */
-    __IO uint8_t  HDMI_CEC_RX_DATA9;                  /*!< Offset 0x7D29  */
-    __IO uint8_t  HDMI_CEC_RX_DATA10;                 /*!< Offset 0x7D2A  */
-    __IO uint8_t  HDMI_CEC_RX_DATA11;                 /*!< Offset 0x7D2B  */
-    __IO uint8_t  HDMI_CEC_RX_DATA12;                 /*!< Offset 0x7D2C  */
-    __IO uint8_t  HDMI_CEC_RX_DATA13;                 /*!< Offset 0x7D2D  */
-    __IO uint8_t  HDMI_CEC_RX_DATA14;                 /*!< Offset 0x7D2E  */
-    __IO uint8_t  HDMI_CEC_RX_DATA15;                 /*!< Offset 0x7D2F  */
-    __IO uint8_t  HDMI_CEC_LOCK;                      /*!< Offset 0x7D30  */
-    __IO uint8_t  HDMI_CEC_WKUPCTRL;                  /*!< Offset 0x7D31  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA0;                 /*!< Offset 0x7D10  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA1;                 /*!< Offset 0x7D11  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA2;                 /*!< Offset 0x7D12  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA3;                 /*!< Offset 0x7D13  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA4;                 /*!< Offset 0x7D14  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA5;                 /*!< Offset 0x7D15  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA6;                 /*!< Offset 0x7D16  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA7;                 /*!< Offset 0x7D17  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA8;                 /*!< Offset 0x7D18  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA9;                 /*!< Offset 0x7D19  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA10;                /*!< Offset 0x7D1A  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA11;                /*!< Offset 0x7D1B  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA12;                /*!< Offset 0x7D1C  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA13;                /*!< Offset 0x7D1D  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA14;                /*!< Offset 0x7D1E  */
+    __IOM uint8_t  HDMI_CEC_TX_DATA15;                /*!< Offset 0x7D1F  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA0;                 /*!< Offset 0x7D20  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA1;                 /*!< Offset 0x7D21  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA2;                 /*!< Offset 0x7D22  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA3;                 /*!< Offset 0x7D23  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA4;                 /*!< Offset 0x7D24  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA5;                 /*!< Offset 0x7D25  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA6;                 /*!< Offset 0x7D26  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA7;                 /*!< Offset 0x7D27  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA8;                 /*!< Offset 0x7D28  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA9;                 /*!< Offset 0x7D29  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA10;                /*!< Offset 0x7D2A  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA11;                /*!< Offset 0x7D2B  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA12;                /*!< Offset 0x7D2C  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA13;                /*!< Offset 0x7D2D  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA14;                /*!< Offset 0x7D2E  */
+    __IOM uint8_t  HDMI_CEC_RX_DATA15;                /*!< Offset 0x7D2F  */
+    __IOM uint8_t  HDMI_CEC_LOCK;                     /*!< Offset 0x7D30  */
+    __IOM uint8_t  HDMI_CEC_WKUPCTRL;                 /*!< Offset 0x7D31  */
          RESERVED(0x7D32[0x7E00 - 0x7D32], uint8_t)
-    __IO uint8_t  HDMI_I2CM_SLAVE;                    /*!< Offset 0x7E00  */
-    __IO uint8_t  HDMI_I2CM_ADDRESS;                  /*!< Offset 0x7E01  */
-    __IO uint8_t  HDMI_I2CM_DATAO;                    /*!< Offset 0x7E02  */
-    __IO uint8_t  HDMI_I2CM_DATAI;                    /*!< Offset 0x7E03  */
-    __IO uint8_t  HDMI_I2CM_OPERATION;                /*!< Offset 0x7E04  */
-    __IO uint8_t  HDMI_I2CM_INT;                      /*!< Offset 0x7E05  */
-    __IO uint8_t  HDMI_I2CM_CTLINT;                   /*!< Offset 0x7E06  */
-    __IO uint8_t  HDMI_I2CM_DIV;                      /*!< Offset 0x7E07  */
-    __IO uint8_t  HDMI_I2CM_SEGADDR;                  /*!< Offset 0x7E08  */
-    __IO uint8_t  HDMI_I2CM_SOFTRSTZ;                 /*!< Offset 0x7E09  */
-    __IO uint8_t  HDMI_I2CM_SEGPTR;                   /*!< Offset 0x7E0A  */
-    __IO uint8_t  HDMI_I2CM_SS_SCL_HCNT_1_ADDR;       /*!< Offset 0x7E0B  */
-    __IO uint8_t  HDMI_I2CM_SS_SCL_HCNT_0_ADDR;       /*!< Offset 0x7E0C  */
-    __IO uint8_t  HDMI_I2CM_SS_SCL_LCNT_1_ADDR;       /*!< Offset 0x7E0D  */
-    __IO uint8_t  HDMI_I2CM_SS_SCL_LCNT_0_ADDR;       /*!< Offset 0x7E0E  */
-    __IO uint8_t  HDMI_I2CM_FS_SCL_HCNT_1_ADDR;       /*!< Offset 0x7E0F  */
-    __IO uint8_t  HDMI_I2CM_FS_SCL_HCNT_0_ADDR;       /*!< Offset 0x7E10  */
-    __IO uint8_t  HDMI_I2CM_FS_SCL_LCNT_1_ADDR;       /*!< Offset 0x7E11  */
-    __IO uint8_t  HDMI_I2CM_FS_SCL_LCNT_0_ADDR;       /*!< Offset 0x7E12  */
+    __IOM uint8_t  HDMI_I2CM_SLAVE;                   /*!< Offset 0x7E00  */
+    __IOM uint8_t  HDMI_I2CM_ADDRESS;                 /*!< Offset 0x7E01  */
+    __IOM uint8_t  HDMI_I2CM_DATAO;                   /*!< Offset 0x7E02  */
+    __IOM uint8_t  HDMI_I2CM_DATAI;                   /*!< Offset 0x7E03  */
+    __IOM uint8_t  HDMI_I2CM_OPERATION;               /*!< Offset 0x7E04  */
+    __IOM uint8_t  HDMI_I2CM_INT;                     /*!< Offset 0x7E05  */
+    __IOM uint8_t  HDMI_I2CM_CTLINT;                  /*!< Offset 0x7E06  */
+    __IOM uint8_t  HDMI_I2CM_DIV;                     /*!< Offset 0x7E07  */
+    __IOM uint8_t  HDMI_I2CM_SEGADDR;                 /*!< Offset 0x7E08  */
+    __IOM uint8_t  HDMI_I2CM_SOFTRSTZ;                /*!< Offset 0x7E09  */
+    __IOM uint8_t  HDMI_I2CM_SEGPTR;                  /*!< Offset 0x7E0A  */
+    __IOM uint8_t  HDMI_I2CM_SS_SCL_HCNT_1_ADDR;      /*!< Offset 0x7E0B  */
+    __IOM uint8_t  HDMI_I2CM_SS_SCL_HCNT_0_ADDR;      /*!< Offset 0x7E0C  */
+    __IOM uint8_t  HDMI_I2CM_SS_SCL_LCNT_1_ADDR;      /*!< Offset 0x7E0D  */
+    __IOM uint8_t  HDMI_I2CM_SS_SCL_LCNT_0_ADDR;      /*!< Offset 0x7E0E  */
+    __IOM uint8_t  HDMI_I2CM_FS_SCL_HCNT_1_ADDR;      /*!< Offset 0x7E0F  */
+    __IOM uint8_t  HDMI_I2CM_FS_SCL_HCNT_0_ADDR;      /*!< Offset 0x7E10  */
+    __IOM uint8_t  HDMI_I2CM_FS_SCL_LCNT_1_ADDR;      /*!< Offset 0x7E11  */
+    __IOM uint8_t  HDMI_I2CM_FS_SCL_LCNT_0_ADDR;      /*!< Offset 0x7E12  */
 } HDMI_TX_TypeDef; /* size of structure = 0x7E13 */
 /*
  * @brief RTC
@@ -1180,34 +1180,34 @@ typedef struct HDMI_TX_Type
 /*!< RTC  */
 typedef struct RTC_Type
 {
-    __IO uint32_t LOSC_CTRL_REG;                      /*!< Offset 0x000 Low Oscillator Control Register */
-    __IO uint32_t LOSC_AUTO_SWT_STA_REG;              /*!< Offset 0x004 LOSC Auto Switch Status Register */
-    __IO uint32_t INTOSC_CLK_PRESCAL_REG;             /*!< Offset 0x008 Internal OSC Clock Prescalar Register */
+    __IOM uint32_t LOSC_CTRL_REG;                     /*!< Offset 0x000 Low Oscillator Control Register */
+    __IOM uint32_t LOSC_AUTO_SWT_STA_REG;             /*!< Offset 0x004 LOSC Auto Switch Status Register */
+    __IOM uint32_t INTOSC_CLK_PRESCAL_REG;            /*!< Offset 0x008 Internal OSC Clock Prescalar Register */
          RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
-    __IO uint32_t RTC_YY_MM_DD_REG;                   /*!< Offset 0x010 RTC Year-Month-Day Register */
-    __IO uint32_t RTC_HH_MM_SS_REG;                   /*!< Offset 0x014 RTC Hour-Minute-Second Register */
+    __IOM uint32_t RTC_YY_MM_DD_REG;                  /*!< Offset 0x010 RTC Year-Month-Day Register */
+    __IOM uint32_t RTC_HH_MM_SS_REG;                  /*!< Offset 0x014 RTC Hour-Minute-Second Register */
          RESERVED(0x018[0x0020 - 0x0018], uint8_t)
-    __IO uint32_t ALARM0_COUNTER_REG;                 /*!< Offset 0x020 Alarm 0 Counter Register  */
-    __IO uint32_t ALARM0_CUR_VLU_REG;                 /*!< Offset 0x024 Alarm 0 Counter Current Value Register */
-    __IO uint32_t ALARM0_ENABLE_REG;                  /*!< Offset 0x028 Alarm 0 Enable Register */
-    __IO uint32_t ALARM0_IRQ_EN;                      /*!< Offset 0x02C Alarm 0 IRQ Enable Register */
-    __IO uint32_t ALARM0_IRQ_STA_REG;                 /*!< Offset 0x030 Alarm 0 IRQ Status Register */
+    __IOM uint32_t ALARM0_COUNTER_REG;                /*!< Offset 0x020 Alarm 0 Counter Register  */
+    __IOM uint32_t ALARM0_CUR_VLU_REG;                /*!< Offset 0x024 Alarm 0 Counter Current Value Register */
+    __IOM uint32_t ALARM0_ENABLE_REG;                 /*!< Offset 0x028 Alarm 0 Enable Register */
+    __IOM uint32_t ALARM0_IRQ_EN;                     /*!< Offset 0x02C Alarm 0 IRQ Enable Register */
+    __IOM uint32_t ALARM0_IRQ_STA_REG;                /*!< Offset 0x030 Alarm 0 IRQ Status Register */
          RESERVED(0x034[0x0040 - 0x0034], uint8_t)
-    __IO uint32_t ALARM1_WK_HH_MM_SS;                 /*!< Offset 0x040 Alarm 1 Week HMS Register  */
-    __IO uint32_t ALARM1_ENABLE_REG;                  /*!< Offset 0x044 Alarm 1 Enable Register */
-    __IO uint32_t ALARM1_IRQ_EN;                      /*!< Offset 0x048 Alarm 1 IRQ Enable Register */
-    __IO uint32_t ALARM1_IRQ_STA_REG;                 /*!< Offset 0x04C  */
-    __IO uint32_t ALARM_CONFIG_REG;                   /*!< Offset 0x050 Alarm Config Register */
+    __IOM uint32_t ALARM1_WK_HH_MM_SS;                /*!< Offset 0x040 Alarm 1 Week HMS Register  */
+    __IOM uint32_t ALARM1_ENABLE_REG;                 /*!< Offset 0x044 Alarm 1 Enable Register */
+    __IOM uint32_t ALARM1_IRQ_EN;                     /*!< Offset 0x048 Alarm 1 IRQ Enable Register */
+    __IOM uint32_t ALARM1_IRQ_STA_REG;                /*!< Offset 0x04C  */
+    __IOM uint32_t ALARM_CONFIG_REG;                  /*!< Offset 0x050 Alarm Config Register */
          RESERVED(0x054[0x0060 - 0x0054], uint8_t)
-    __IO uint32_t LOSC_OUT_GATING_REG;                /*!< Offset 0x060 LOSC output gating register */
+    __IOM uint32_t LOSC_OUT_GATING_REG;               /*!< Offset 0x060 LOSC output gating register */
          RESERVED(0x064[0x0100 - 0x0064], uint8_t)
-    __IO uint32_t GP_DATA_REG [0x008];                /*!< Offset 0x100 General Purpose Register (N=0~3) */
+    __IOM uint32_t GP_DATA_REG [0x008];               /*!< Offset 0x100 General Purpose Register (N=0~3) */
          RESERVED(0x120[0x0180 - 0x0120], uint8_t)
-    __IO uint32_t GPL_HOLD_OUTPUT_REG;                /*!< Offset 0x180 GPL Hold Output Register */
+    __IOM uint32_t GPL_HOLD_OUTPUT_REG;               /*!< Offset 0x180 GPL Hold Output Register */
          RESERVED(0x184[0x0190 - 0x0184], uint8_t)
-    __IO uint32_t VDD_RTC_REG;                        /*!< Offset 0x190 VDD RTC Regulate Register */
+    __IOM uint32_t VDD_RTC_REG;                       /*!< Offset 0x190 VDD RTC Regulate Register */
          RESERVED(0x194[0x01F0 - 0x0194], uint8_t)
-    __IO uint32_t IC_CHARA_REG;                       /*!< Offset 0x1F0 IC Characteristic Register */
+    __IOM uint32_t IC_CHARA_REG;                      /*!< Offset 0x1F0 IC Characteristic Register */
 } RTC_TypeDef; /* size of structure = 0x1F4 */
 /*
  * @brief R_PRCM
@@ -1215,38 +1215,38 @@ typedef struct RTC_Type
 /*!< R_PRCM  */
 typedef struct R_PRCM_Type
 {
-    __IO uint32_t CPUS_CLK_REG;                       /*!< Offset 0x000 CPUS Clock Register */
+    __IOM uint32_t CPUS_CLK_REG;                      /*!< Offset 0x000 CPUS Clock Register */
          RESERVED(0x004[0x000C - 0x0004], uint8_t)
-    __IO uint32_t APB0_CFG_REG;                       /*!< Offset 0x00C APB0 Configuration Register */
+    __IOM uint32_t APB0_CFG_REG;                      /*!< Offset 0x00C APB0 Configuration Register */
          RESERVED(0x010[0x0028 - 0x0010], uint8_t)
-    __IO uint32_t APB0_CLK_GATING_REG;                /*!< Offset 0x028 APB0 Clock Gating Register */
+    __IOM uint32_t APB0_CLK_GATING_REG;               /*!< Offset 0x028 APB0 Clock Gating Register */
          RESERVED(0x02C[0x0044 - 0x002C], uint8_t)
-    __IO uint32_t PLL_CTRL_REG1;                      /*!< Offset 0x044 PLL Control Register 1 */
+    __IOM uint32_t PLL_CTRL_REG1;                     /*!< Offset 0x044 PLL Control Register 1 */
          RESERVED(0x048[0x0054 - 0x0048], uint8_t)
-    __IO uint32_t R_CIR_RX_CLK_REG;                   /*!< Offset 0x054 R_CIR_RX Clock Register */
+    __IOM uint32_t R_CIR_RX_CLK_REG;                  /*!< Offset 0x054 R_CIR_RX Clock Register */
          RESERVED(0x058[0x00B0 - 0x0058], uint8_t)
-    __IO uint32_t APB0_SOFT_RST_REG;                  /*!< Offset 0x0B0 APB0 Software Reset Register */
+    __IOM uint32_t APB0_SOFT_RST_REG;                 /*!< Offset 0x0B0 APB0 Software Reset Register */
          RESERVED(0x0B4[0x0100 - 0x00B4], uint8_t)
-    __IO uint32_t C0CPUX_PWROFF_GATING_REG;           /*!< Offset 0x100 Cluster0 CPUX Power Off Gating Register */
-    __IO uint32_t C1CPUX_PWROFF_GATING_REG;           /*!< Offset 0x104 Cluster1 CPUX Power Off Gating Register */
+    __IOM uint32_t C0CPUX_PWROFF_GATING_REG;          /*!< Offset 0x100 Cluster0 CPUX Power Off Gating Register */
+    __IOM uint32_t C1CPUX_PWROFF_GATING_REG;          /*!< Offset 0x104 Cluster1 CPUX Power Off Gating Register */
          RESERVED(0x108[0x0110 - 0x0108], uint8_t)
-    __IO uint32_t VDD_SYS_PWROFF_GATING_REG;          /*!< Offset 0x110 VDD_SYS Power Off Gating Register */
+    __IOM uint32_t VDD_SYS_PWROFF_GATING_REG;         /*!< Offset 0x110 VDD_SYS Power Off Gating Register */
          RESERVED(0x114[0x0118 - 0x0114], uint8_t)
-    __IO uint32_t GPU_PWROFF_GATING_REG;              /*!< Offset 0x118 GPU Power Off Gating Register */
+    __IOM uint32_t GPU_PWROFF_GATING_REG;             /*!< Offset 0x118 GPU Power Off Gating Register */
          RESERVED(0x11C[0x0120 - 0x011C], uint8_t)
-    __IO uint32_t VDD_SYS_PWROFF_RST_REG;             /*!< Offset 0x120 VDD_SYS Power Domain Reset Register */
+    __IOM uint32_t VDD_SYS_PWROFF_RST_REG;            /*!< Offset 0x120 VDD_SYS Power Domain Reset Register */
          RESERVED(0x124[0x0140 - 0x0124], uint8_t)
-    __IO uint32_t C0_CPU0_PWR_SWITCH_CTRL;            /*!< Offset 0x140 C0_CPU0 Power Switch Control Register */
-    __IO uint32_t C0_CPU1_PWR_SWITCH_CTRL;            /*!< Offset 0x144 C0_CPU1 Power Switch Control Register */
-    __IO uint32_t C0_CPU2_PWR_SWITCH_CTRL;            /*!< Offset 0x148 C0_CPU2 Power Switch Control Register */
-    __IO uint32_t C0_CPU3_PWR_SWITCH_CTRL;            /*!< Offset 0x14C C0_CPU3 Power Switch Control Register */
-    __IO uint32_t C1_CPU0_PWR_SWITCH_CTRL;            /*!< Offset 0x150 C1_CPU0 Power Switch Control Register */
-    __IO uint32_t C1_CPU1_PWR_SWITCH_CTRL;            /*!< Offset 0x154 C1_CPU1 Power Switch Control Register */
-    __IO uint32_t C1_CPU2_PWR_SWITCH_CTRL;            /*!< Offset 0x158 C1_CPU2 Power Switch Control Register */
-    __IO uint32_t C1_CPU3_PWR_SWITCH_CTRL;            /*!< Offset 0x15C C1_CPU3 Power Switch Control Register */
+    __IOM uint32_t C0_CPU0_PWR_SWITCH_CTRL;           /*!< Offset 0x140 C0_CPU0 Power Switch Control Register */
+    __IOM uint32_t C0_CPU1_PWR_SWITCH_CTRL;           /*!< Offset 0x144 C0_CPU1 Power Switch Control Register */
+    __IOM uint32_t C0_CPU2_PWR_SWITCH_CTRL;           /*!< Offset 0x148 C0_CPU2 Power Switch Control Register */
+    __IOM uint32_t C0_CPU3_PWR_SWITCH_CTRL;           /*!< Offset 0x14C C0_CPU3 Power Switch Control Register */
+    __IOM uint32_t C1_CPU0_PWR_SWITCH_CTRL;           /*!< Offset 0x150 C1_CPU0 Power Switch Control Register */
+    __IOM uint32_t C1_CPU1_PWR_SWITCH_CTRL;           /*!< Offset 0x154 C1_CPU1 Power Switch Control Register */
+    __IOM uint32_t C1_CPU2_PWR_SWITCH_CTRL;           /*!< Offset 0x158 C1_CPU2 Power Switch Control Register */
+    __IOM uint32_t C1_CPU3_PWR_SWITCH_CTRL;           /*!< Offset 0x15C C1_CPU3 Power Switch Control Register */
          RESERVED(0x160[0x01F0 - 0x0160], uint8_t)
-    __IO uint32_t RPIO_HOLD_CTRL_REG;                 /*!< Offset 0x1F0 R_PIO Hold Control Register */
-    __IO uint32_t OSC24M_CTRL_REG;                    /*!< Offset 0x1F4 OSC24M Control Register */
+    __IOM uint32_t RPIO_HOLD_CTRL_REG;                /*!< Offset 0x1F0 R_PIO Hold Control Register */
+    __IOM uint32_t OSC24M_CTRL_REG;                   /*!< Offset 0x1F4 OSC24M Control Register */
 } R_PRCM_TypeDef; /* size of structure = 0x1F8 */
 /*
  * @brief SYSCTRL
@@ -1255,9 +1255,9 @@ typedef struct R_PRCM_Type
 typedef struct SYSCTRL_Type
 {
          RESERVED(0x000[0x0024 - 0x0000], uint8_t)
-    __I  uint32_t VER_REG;                            /*!< Offset 0x024 Version Register */
+    __IM  uint32_t VER_REG;                           /*!< Offset 0x024 Version Register */
          RESERVED(0x028[0x0030 - 0x0028], uint8_t)
-    __IO uint32_t EMAC_EPHY_CLK_REG;                  /*!< Offset 0x030 EMAC-EPHY Clock Register */
+    __IOM uint32_t EMAC_EPHY_CLK_REG;                 /*!< Offset 0x030 EMAC-EPHY Clock Register */
 } SYSCTRL_TypeDef; /* size of structure = 0x034 */
 /*
  * @brief TCON
@@ -1265,44 +1265,44 @@ typedef struct SYSCTRL_Type
 /*!< TCON TCON0, TCON1 */
 typedef struct TCON_Type
 {
-    __IO uint32_t TCON_GCTL_REG;                      /*!< Offset 0x000 TCON global control register */
-    __IO uint32_t TCON_GINT0_REG;                     /*!< Offset 0x004 TCON global interrupt register0 */
-    __IO uint32_t TCON_GINT1_REG;                     /*!< Offset 0x008 TCON global interrupt register1 */
+    __IOM uint32_t TCON_GCTL_REG;                     /*!< Offset 0x000 TCON global control register */
+    __IOM uint32_t TCON_GINT0_REG;                    /*!< Offset 0x004 TCON global interrupt register0 */
+    __IOM uint32_t TCON_GINT1_REG;                    /*!< Offset 0x008 TCON global interrupt register1 */
          RESERVED(0x00C[0x0090 - 0x000C], uint8_t)
-    __IO uint32_t TCON1_CTL_REG;                      /*!< Offset 0x090 TCON1 control register */
-    __IO uint32_t TCON1_BASIC0_REG;                   /*!< Offset 0x094 TCON1 basic timing register0 */
-    __IO uint32_t TCON1_BASIC1_REG;                   /*!< Offset 0x098 TCON1 basic timing register1 */
-    __IO uint32_t TCON1_BASIC2_REG;                   /*!< Offset 0x09C TCON1 basic timing register2 */
-    __IO uint32_t TCON1_BASIC3_REG;                   /*!< Offset 0x0A0 TCON1 basic timing register3 */
-    __IO uint32_t TCON1_BASIC4_REG;                   /*!< Offset 0x0A4 TCON1 basic timing register4 */
-    __IO uint32_t TCON1_BASIC5_REG;                   /*!< Offset 0x0A8 TCON1 basic timing register5 */
+    __IOM uint32_t TCON1_CTL_REG;                     /*!< Offset 0x090 TCON1 control register */
+    __IOM uint32_t TCON1_BASIC0_REG;                  /*!< Offset 0x094 TCON1 basic timing register0 */
+    __IOM uint32_t TCON1_BASIC1_REG;                  /*!< Offset 0x098 TCON1 basic timing register1 */
+    __IOM uint32_t TCON1_BASIC2_REG;                  /*!< Offset 0x09C TCON1 basic timing register2 */
+    __IOM uint32_t TCON1_BASIC3_REG;                  /*!< Offset 0x0A0 TCON1 basic timing register3 */
+    __IOM uint32_t TCON1_BASIC4_REG;                  /*!< Offset 0x0A4 TCON1 basic timing register4 */
+    __IOM uint32_t TCON1_BASIC5_REG;                  /*!< Offset 0x0A8 TCON1 basic timing register5 */
          RESERVED(0x0AC[0x00B0 - 0x00AC], uint8_t)
-    __IO uint32_t TCON1_PS_SYNC_REG;                  /*!< Offset 0x0B0 TCON1 sync register */
+    __IOM uint32_t TCON1_PS_SYNC_REG;                 /*!< Offset 0x0B0 TCON1 sync register */
          RESERVED(0x0B4[0x00F0 - 0x00B4], uint8_t)
-    __IO uint32_t TCON1_IO_POL_REG;                   /*!< Offset 0x0F0 TCON1 IO polarity register */
-    __IO uint32_t TCON1_IO_TRI_REG;                   /*!< Offset 0x0F4 TCON1 IO control register */
-    __IO uint32_t TCON_ECC_FIFO_REG;                  /*!< Offset 0x0F8 TCON ECC FIFO register */
+    __IOM uint32_t TCON1_IO_POL_REG;                  /*!< Offset 0x0F0 TCON1 IO polarity register */
+    __IOM uint32_t TCON1_IO_TRI_REG;                  /*!< Offset 0x0F4 TCON1 IO control register */
+    __IOM uint32_t TCON_ECC_FIFO_REG;                 /*!< Offset 0x0F8 TCON ECC FIFO register */
          RESERVED(0x0FC[0x0100 - 0x00FC], uint8_t)
-    __IO uint32_t TCON_CEU_CTL_REG;                   /*!< Offset 0x100 TCON CEU control register */
+    __IOM uint32_t TCON_CEU_CTL_REG;                  /*!< Offset 0x100 TCON CEU control register */
          RESERVED(0x104[0x0110 - 0x0104], uint8_t)
-    __IO uint32_t TCON_CEU_COEF_MUL_REG [0x00B];      /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10) */
+    __IOM uint32_t TCON_CEU_COEF_MUL_REG [0x00B];     /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10) */
          RESERVED(0x13C[0x0140 - 0x013C], uint8_t)
-    __IO uint32_t TCON_CEU_COEF_RANG_REG [0x003];     /*!< Offset 0x140 TCON CEU coefficient register2 (N=0,1,2) */
+    __IOM uint32_t TCON_CEU_COEF_RANG_REG [0x003];    /*!< Offset 0x140 TCON CEU coefficient register2 (N=0,1,2) */
          RESERVED(0x14C[0x01F0 - 0x014C], uint8_t)
-    __IO uint32_t TCON_SAFE_PERIOD_REG;               /*!< Offset 0x1F0 TCON safe period register */
+    __IOM uint32_t TCON_SAFE_PERIOD_REG;              /*!< Offset 0x1F0 TCON safe period register */
          RESERVED(0x1F4[0x0300 - 0x01F4], uint8_t)
-    __IO uint32_t TCON1_FILL_CTL_REG;                 /*!< Offset 0x300 TCON1 fill data control register */
+    __IOM uint32_t TCON1_FILL_CTL_REG;                /*!< Offset 0x300 TCON1 fill data control register */
     struct
     {
-        __IO uint32_t TCON1_FILL_BEGIN_REG;           /*!< Offset 0x304 TCON1 fill data begin register (N=0,1,2) */
-        __IO uint32_t TCON1_FILL_END_REG;             /*!< Offset 0x308 TCON1 fill data end register (N=0,1,2) */
-        __IO uint32_t TCON1_FILL_DATA0_REG;           /*!< Offset 0x30C TCON1 fill data value register (N=0,1,2) */
+        __IOM uint32_t TCON1_FILL_BEGIN_REG;          /*!< Offset 0x304 TCON1 fill data begin register (N=0,1,2) */
+        __IOM uint32_t TCON1_FILL_END_REG;            /*!< Offset 0x308 TCON1 fill data end register (N=0,1,2) */
+        __IOM uint32_t TCON1_FILL_DATA0_REG;          /*!< Offset 0x30C TCON1 fill data value register (N=0,1,2) */
              RESERVED(0x00C[0x000C - 0x000C], uint8_t)
     } TCON1_FILL [0x003];                             /*!< Offset 0x304 TCON1 fill data (N=0,1,2) */
          RESERVED(0x328[0x0400 - 0x0328], uint8_t)
-    __IO uint32_t TCON1_GAMMA_TABLE_REG [0x100];      /*!< Offset 0x400 Gamma Table 0x400-0x7FF */
+    __IOM uint32_t TCON1_GAMMA_TABLE_REG [0x100];     /*!< Offset 0x400 Gamma Table 0x400-0x7FF */
          RESERVED(0x800[0x0FFC - 0x0800], uint8_t)
-    __IO uint32_t TCON_ECC_FIFO_BIST_REG;             /*!< Offset 0xFFC tbd */
+    __IOM uint32_t TCON_ECC_FIFO_BIST_REG;            /*!< Offset 0xFFC tbd */
 } TCON_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief TIMER
@@ -1310,27 +1310,27 @@ typedef struct TCON_Type
 /*!< TIMER  */
 typedef struct TIMER_Type
 {
-    __IO uint32_t TMR_IRQ_EN_REG;                     /*!< Offset 0x000 Timer IRQ Enable Register */
-    __IO uint32_t TMR_IRQ_STA_REG;                    /*!< Offset 0x004 Timer Status Register */
+    __IOM uint32_t TMR_IRQ_EN_REG;                    /*!< Offset 0x000 Timer IRQ Enable Register */
+    __IOM uint32_t TMR_IRQ_STA_REG;                   /*!< Offset 0x004 Timer Status Register */
          RESERVED(0x008[0x0010 - 0x0008], uint8_t)
     struct
     {
-        __IO uint32_t CTRL_REG;                       /*!< Offset 0x010 Timer n Control Register */
-        __IO uint32_t INTV_VALUE_REG;                 /*!< Offset 0x014 Timer n Interval Value Register */
-        __IO uint32_t CUR_VALUE_REG;                  /*!< Offset 0x018 Timer n Current Value Register */
+        __IOM uint32_t CTRL_REG;                      /*!< Offset 0x010 Timer n Control Register */
+        __IOM uint32_t INTV_VALUE_REG;                /*!< Offset 0x014 Timer n Interval Value Register */
+        __IOM uint32_t CUR_VALUE_REG;                 /*!< Offset 0x018 Timer n Current Value Register */
              RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
     } TMR [0x002];                                    /*!< Offset 0x010 Timer */
          RESERVED(0x030[0x0080 - 0x0030], uint8_t)
-    __IO uint32_t AVS_CNT_CTL_REG;                    /*!< Offset 0x080 AVS Control Register */
-    __IO uint32_t AVS_CNT0_REG;                       /*!< Offset 0x084 AVS Counter 0 Register */
-    __IO uint32_t AVS_CNT1_REG;                       /*!< Offset 0x088 AVS Counter 1 Register */
+    __IOM uint32_t AVS_CNT_CTL_REG;                   /*!< Offset 0x080 AVS Control Register */
+    __IOM uint32_t AVS_CNT0_REG;                      /*!< Offset 0x084 AVS Counter 0 Register */
+    __IOM uint32_t AVS_CNT1_REG;                      /*!< Offset 0x088 AVS Counter 1 Register */
          RESERVED(0x08C[0x00A0 - 0x008C], uint8_t)
-    __IO uint32_t WDOG_IRQ_EN_REG;                    /*!< Offset 0x0A0 Watchdog IRQ Enable Register */
-    __IO uint32_t WDOG_IRQ_STA_REG;                   /*!< Offset 0x0A4 Watchdog Status Register */
+    __IOM uint32_t WDOG_IRQ_EN_REG;                   /*!< Offset 0x0A0 Watchdog IRQ Enable Register */
+    __IOM uint32_t WDOG_IRQ_STA_REG;                  /*!< Offset 0x0A4 Watchdog Status Register */
          RESERVED(0x0A8[0x00B0 - 0x00A8], uint8_t)
-    __IO uint32_t WDOG_CTRL_REG;                      /*!< Offset 0x0B0 Watchdog Control Register */
-    __IO uint32_t WDOG_CFG_REG;                       /*!< Offset 0x0B4 Watchdog Configuration Register */
-    __IO uint32_t WDOG_MODE_REG;                      /*!< Offset 0x0B8 Watchdog Mode Register */
+    __IOM uint32_t WDOG_CTRL_REG;                     /*!< Offset 0x0B0 Watchdog Control Register */
+    __IOM uint32_t WDOG_CFG_REG;                      /*!< Offset 0x0B4 Watchdog Configuration Register */
+    __IOM uint32_t WDOG_MODE_REG;                     /*!< Offset 0x0B8 Watchdog Mode Register */
          RESERVED(0x0BC[0x0400 - 0x00BC], uint8_t)
 } TIMER_TypeDef; /* size of structure = 0x400 */
 /*
@@ -1339,22 +1339,22 @@ typedef struct TIMER_Type
 /*!< UART  */
 typedef struct UART_Type
 {
-    __IO uint32_t UART_RBR_THR_DLL;                   /*!< Offset 0x000 UART Receive Buffer Register/Transmit Holding Register */
-    __IO uint32_t UART_DLH_IER;                       /*!< Offset 0x004  */
-    __IO uint32_t UART_IIR_FCR;                       /*!< Offset 0x008 UART Interrupt Identity Register/UART FIFO Control Register */
-    __IO uint32_t UART_LCR;                           /*!< Offset 0x00C UART Line Control Register */
-    __IO uint32_t UART_MCR;                           /*!< Offset 0x010 UART Modem Control Register */
-    __IO uint32_t UART_LSR;                           /*!< Offset 0x014 UART Line Status Register */
-    __IO uint32_t UART_MSR;                           /*!< Offset 0x018 UART Modem Status Register */
-    __IO uint32_t UART_SCH;                           /*!< Offset 0x01C UART Scratch Register */
+    __IOM uint32_t UART_RBR_THR_DLL;                  /*!< Offset 0x000 UART Receive Buffer Register/Transmit Holding Register */
+    __IOM uint32_t UART_DLH_IER;                      /*!< Offset 0x004  */
+    __IOM uint32_t UART_IIR_FCR;                      /*!< Offset 0x008 UART Interrupt Identity Register/UART FIFO Control Register */
+    __IOM uint32_t UART_LCR;                          /*!< Offset 0x00C UART Line Control Register */
+    __IOM uint32_t UART_MCR;                          /*!< Offset 0x010 UART Modem Control Register */
+    __IOM uint32_t UART_LSR;                          /*!< Offset 0x014 UART Line Status Register */
+    __IOM uint32_t UART_MSR;                          /*!< Offset 0x018 UART Modem Status Register */
+    __IOM uint32_t UART_SCH;                          /*!< Offset 0x01C UART Scratch Register */
          RESERVED(0x020[0x007C - 0x0020], uint8_t)
-    __IO uint32_t UART_USR;                           /*!< Offset 0x07C UART Status Register */
-    __IO uint32_t UART_TFL;                           /*!< Offset 0x080 UART Transmit FIFO Level Register */
-    __IO uint32_t UART_RFL;                           /*!< Offset 0x084 UART Receive FIFO Level Register */
+    __IOM uint32_t UART_USR;                          /*!< Offset 0x07C UART Status Register */
+    __IOM uint32_t UART_TFL;                          /*!< Offset 0x080 UART Transmit FIFO Level Register */
+    __IOM uint32_t UART_RFL;                          /*!< Offset 0x084 UART Receive FIFO Level Register */
          RESERVED(0x088[0x008C - 0x0088], uint8_t)
-    __IO uint32_t UART_DMA_REQ_EN;                    /*!< Offset 0x08C UART DMA Request Enable Register */
+    __IOM uint32_t UART_DMA_REQ_EN;                   /*!< Offset 0x08C UART DMA Request Enable Register */
          RESERVED(0x090[0x00A4 - 0x0090], uint8_t)
-    __IO uint32_t UART_HALT;                          /*!< Offset 0x0A4 UART Halt TX Register */
+    __IOM uint32_t UART_HALT;                         /*!< Offset 0x0A4 UART Halt TX Register */
          RESERVED(0x0A8[0x0400 - 0x00A8], uint8_t)
 } UART_TypeDef; /* size of structure = 0x400 */
 /*
@@ -1363,57 +1363,56 @@ typedef struct UART_Type
 /*!< USBOTG USB OTG Dual-Role Device controller */
 typedef struct USBOTG_Type
 {
-    __IO uint32_t USB_EPFIFO [0x006];                 /*!< Offset 0x000 USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N */
-         RESERVED(0x018[0x0040 - 0x0018], uint8_t)
-    __IO uint32_t USB_GCS;                            /*!< Offset 0x040 USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL USB Global Control and Status Register */
-    __IO uint16_t USB_INTTX;                          /*!< Offset 0x044 USB_INTTX USB_EPINTF USB Endpoint Interrupt Flag Register */
-    __IO uint16_t USB_INTRX;                          /*!< Offset 0x046 USB_INTRX USB_EPINTF */
-    __IO uint16_t USB_INTTXE;                         /*!< Offset 0x048 USB_INTTXE USB_EPINTE USB Endpoint Interrupt Enable Register */
-    __IO uint16_t USB_INTRXE;                         /*!< Offset 0x04A USB_INTRXE USB_EPINTE */
-    __IO uint32_t USB_INTUSB;                         /*!< Offset 0x04C USB_INTUSB USB_BUSINTF USB Bus Interrupt Flag Register */
-    __IO uint32_t USB_INTUSBE;                        /*!< Offset 0x050 USB_INTUSBE USB_BUSINTE USB Bus Interrupt Enable Register */
-    __IO uint32_t USB_FNUM;                           /*!< Offset 0x054 USB Frame Number Register */
+    __IOM uint32_t USB_EPFIFO [0x010];                /*!< Offset 0x000 USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N */
+    __IOM uint32_t USB_GCS;                           /*!< Offset 0x040 USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL USB Global Control and Status Register */
+    __IOM uint16_t USB_INTTX;                         /*!< Offset 0x044 USB_INTTX USB_EPINTF USB Endpoint Interrupt Flag Register */
+    __IOM uint16_t USB_INTRX;                         /*!< Offset 0x046 USB_INTRX USB_EPINTF */
+    __IOM uint16_t USB_INTTXE;                        /*!< Offset 0x048 USB_INTTXE USB_EPINTE USB Endpoint Interrupt Enable Register */
+    __IOM uint16_t USB_INTRXE;                        /*!< Offset 0x04A USB_INTRXE USB_EPINTE */
+    __IOM uint32_t USB_INTUSB;                        /*!< Offset 0x04C USB_INTUSB USB_BUSINTF USB Bus Interrupt Flag Register */
+    __IOM uint32_t USB_INTUSBE;                       /*!< Offset 0x050 USB_INTUSBE USB_BUSINTE USB Bus Interrupt Enable Register */
+    __IOM uint32_t USB_FNUM;                          /*!< Offset 0x054 USB Frame Number Register */
          RESERVED(0x058[0x007C - 0x0058], uint8_t)
-    __IO uint32_t USB_TESTC;                          /*!< Offset 0x07C USB_TESTC USB Test Control Register */
-    __IO uint16_t USB_TXMAXP;                         /*!< Offset 0x080 USB_TXMAXP USB EP1~5 Tx Control and Status Register */
-    __IO uint16_t USB_TXCSRHI;                        /*!< Offset 0x082 [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL */
-    __IO uint16_t USB_RXMAXP;                         /*!< Offset 0x084 USB_RXMAXP USB EP1~5 Rx Control and Status Register */
-    __IO uint16_t USB_RXCSRHI;                        /*!< Offset 0x086 USB_RXCSR */
-    __IO uint16_t USB_RXCOUNT;                        /*!< Offset 0x088 USB_RXCOUNT */
-    __IO uint16_t USB_RXPKTCNT;                       /*!< Offset 0x08A USB_RXPKTCNT */
-    __IO uint32_t USB_EPATTR;                         /*!< Offset 0x08C USB_EPATTR USB EP0 Attribute Register, USB EP1~5 Attribute Register */
-    __IO uint32_t USB_TXFIFO;                         /*!< Offset 0x090 USB_TXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes) */
-    __IO uint32_t USB_RXFIFO;                         /*!< Offset 0x094 USB_RXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes) */
+    __IOM uint32_t USB_TESTC;                         /*!< Offset 0x07C USB_TESTC USB Test Control Register */
+    __IOM uint16_t USB_TXMAXP;                        /*!< Offset 0x080 USB_TXMAXP USB EP1~5 Tx Control and Status Register */
+    __IOM uint16_t USB_TXCSRHI;                       /*!< Offset 0x082 [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL */
+    __IOM uint16_t USB_RXMAXP;                        /*!< Offset 0x084 USB_RXMAXP USB EP1~5 Rx Control and Status Register */
+    __IOM uint16_t USB_RXCSRHI;                       /*!< Offset 0x086 USB_RXCSR */
+    __IOM uint16_t USB_RXCOUNT;                       /*!< Offset 0x088 USB_RXCOUNT */
+    __IOM uint16_t USB_RXPKTCNT;                      /*!< Offset 0x08A USB_RXPKTCNT */
+    __IOM uint32_t USB_EPATTR;                        /*!< Offset 0x08C USB_EPATTR USB EP0 Attribute Register, USB EP1~5 Attribute Register */
+    __IOM uint32_t USB_TXFIFO;                        /*!< Offset 0x090 USB_TXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes) */
+    __IOM uint32_t USB_RXFIFO;                        /*!< Offset 0x094 USB_RXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes) */
     struct
     {
-        __IO uint16_t USB_TXFADDR;                    /*!< Offset 0x098 USB_TXFADDR */
-        __IO uint8_t  USB_TXHADDR;                    /*!< Offset 0x09A USB_TXHADDR */
-        __IO uint8_t  USB_TXHUBPORT;                  /*!< Offset 0x09B USB_TXHUBPORT */
-        __IO uint8_t  USB_RXFADDR;                    /*!< Offset 0x09C USB_RXFADDR */
+        __IOM uint16_t USB_TXFADDR;                   /*!< Offset 0x098 USB_TXFADDR */
+        __IOM uint8_t  USB_TXHADDR;                   /*!< Offset 0x09A USB_TXHADDR */
+        __IOM uint8_t  USB_TXHUBPORT;                 /*!< Offset 0x09B USB_TXHUBPORT */
+        __IOM uint8_t  USB_RXFADDR;                   /*!< Offset 0x09C USB_RXFADDR */
              RESERVED(0x005[0x0006 - 0x0005], uint8_t)
-        __IO uint8_t  USB_RXHADDR;                    /*!< Offset 0x09E USB_RXHADDR */
-        __IO uint8_t  USB_RXHUBPORT;                  /*!< Offset 0x09F USB_RXHUBPORT */
+        __IOM uint8_t  USB_RXHADDR;                   /*!< Offset 0x09E USB_RXHADDR */
+        __IOM uint8_t  USB_RXHUBPORT;                 /*!< Offset 0x09F USB_RXHUBPORT */
     } FIFO [0x010];                                   /*!< Offset 0x098 FIFOs [0..5] */
          RESERVED(0x118[0x0400 - 0x0118], uint8_t)
-    __IO uint32_t USB_ISCR;                           /*!< Offset 0x400 HCI Interface Register (HCI_Interface) */
-    __IO uint32_t USBPHY_PHYCTL;                      /*!< Offset 0x404 USBPHY_PHYCTL */
-    __IO uint32_t HCI_CTRL3;                          /*!< Offset 0x408 HCI Control 3 Register (bist) */
+    __IOM uint32_t USB_ISCR;                          /*!< Offset 0x400 HCI Interface Register (HCI_Interface) */
+    __IOM uint32_t USBPHY_PHYCTL;                     /*!< Offset 0x404 USBPHY_PHYCTL */
+    __IOM uint32_t HCI_CTRL3;                         /*!< Offset 0x408 HCI Control 3 Register (bist) */
          RESERVED(0x40C[0x0410 - 0x040C], uint8_t)
-    __IO uint32_t PHY_CTRL;                           /*!< Offset 0x410 PHY Control Register (PHY_Control) */
+    __IOM uint32_t PHY_CTRL;                          /*!< Offset 0x410 PHY Control Register (PHY_Control) */
          RESERVED(0x414[0x0420 - 0x0414], uint8_t)
-    __IO uint32_t PHY_OTGCTL;                         /*!< Offset 0x420 Control PHY routing to EHCI or OTG */
-    __IO uint32_t PHY_STATUS;                         /*!< Offset 0x424 PHY Status Register */
-    __IO uint32_t USB_SPDCR;                          /*!< Offset 0x428 HCI SIE Port Disable Control Register */
+    __IOM uint32_t PHY_OTGCTL;                        /*!< Offset 0x420 Control PHY routing to EHCI or OTG */
+    __IOM uint32_t PHY_STATUS;                        /*!< Offset 0x424 PHY Status Register */
+    __IOM uint32_t USB_SPDCR;                         /*!< Offset 0x428 HCI SIE Port Disable Control Register */
          RESERVED(0x42C[0x0500 - 0x042C], uint8_t)
-    __IO uint32_t USB_DMA_INTE;                       /*!< Offset 0x500 USB DMA Interrupt Enable Register */
-    __IO uint32_t USB_DMA_INTS;                       /*!< Offset 0x504 USB DMA Interrupt Status Register */
+    __IOM uint32_t USB_DMA_INTE;                      /*!< Offset 0x500 USB DMA Interrupt Enable Register */
+    __IOM uint32_t USB_DMA_INTS;                      /*!< Offset 0x504 USB DMA Interrupt Status Register */
          RESERVED(0x508[0x0540 - 0x0508], uint8_t)
     struct
     {
-        __IO uint32_t CHAN_CFG;                       /*!< Offset 0x540 USB DMA Channel Configuration Register */
-        __IO uint32_t SDRAM_ADD;                      /*!< Offset 0x544 USB DMA SDRAM Start Address Register  */
-        __IO uint32_t BC;                             /*!< Offset 0x548 USB DMA Byte Counter Register */
-        __I  uint32_t RESIDUAL_BC;                    /*!< Offset 0x54C USB DMA RESIDUAL Byte Counter Register */
+        __IOM uint32_t CHAN_CFG;                      /*!< Offset 0x540 USB DMA Channel Configuration Register */
+        __IOM uint32_t SDRAM_ADD;                     /*!< Offset 0x544 USB DMA SDRAM Start Address Register  */
+        __IOM uint32_t BC;                            /*!< Offset 0x548 USB DMA Byte Counter Register */
+        __IM  uint32_t RESIDUAL_BC;                   /*!< Offset 0x54C USB DMA RESIDUAL Byte Counter Register */
     } USB_DMA [0x008];                                /*!< Offset 0x540  */
 } USBOTG_TypeDef; /* size of structure = 0x5C0 */
 /*
@@ -1422,17 +1421,17 @@ typedef struct USBOTG_Type
 /*!< USB_EHCI_Capability  */
 typedef struct USB_EHCI_Capability_Type
 {
-    __I  uint32_t HCCAPBASE;                          /*!< Offset 0x000 EHCI Capability Register (HCIVERSION and CAPLENGTH) register */
-    __I  uint32_t HCSPARAMS;                          /*!< Offset 0x004 EHCI Host Control Structural Parameter Register */
-    __I  uint32_t HCCPARAMS;                          /*!< Offset 0x008 EHCI Host Control Capability Parameter Register */
-    __IO uint32_t HCSPPORTROUTE;                      /*!< Offset 0x00C EHCI Companion Port Route Description */
-    __IO uint32_t USBCMD;                             /*!< Offset 0x010 EHCI USB Command Register */
-    __IO uint32_t USBSTS;                             /*!< Offset 0x014 EHCI USB Status Register */
-    __IO uint32_t USBINTR;                            /*!< Offset 0x018 EHCI USB Interrupt Enable Register */
-    __IO uint32_t FRINDEX;                            /*!< Offset 0x01C EHCI USB Frame Index Register */
-    __IO uint32_t CTRLDSSEGMENT;                      /*!< Offset 0x020 EHCI 4G Segment Selector Register */
-    __IO uint32_t PERIODICLISTBASE;                   /*!< Offset 0x024 EHCI Frame List Base Address Register */
-    __IO uint32_t ASYNCLISTADDR;                      /*!< Offset 0x028 EHCI Next Asynchronous List Address Register */
+    __IM  uint32_t HCCAPBASE;                         /*!< Offset 0x000 EHCI Capability Register (HCIVERSION and CAPLENGTH) register */
+    __IM  uint32_t HCSPARAMS;                         /*!< Offset 0x004 EHCI Host Control Structural Parameter Register */
+    __IM  uint32_t HCCPARAMS;                         /*!< Offset 0x008 EHCI Host Control Capability Parameter Register */
+    __IOM uint32_t HCSPPORTROUTE;                     /*!< Offset 0x00C EHCI Companion Port Route Description */
+    __IOM uint32_t USBCMD;                            /*!< Offset 0x010 EHCI USB Command Register */
+    __IOM uint32_t USBSTS;                            /*!< Offset 0x014 EHCI USB Status Register */
+    __IOM uint32_t USBINTR;                           /*!< Offset 0x018 EHCI USB Interrupt Enable Register */
+    __IOM uint32_t FRINDEX;                           /*!< Offset 0x01C EHCI USB Frame Index Register */
+    __IOM uint32_t CTRLDSSEGMENT;                     /*!< Offset 0x020 EHCI 4G Segment Selector Register */
+    __IOM uint32_t PERIODICLISTBASE;                  /*!< Offset 0x024 EHCI Frame List Base Address Register */
+    __IOM uint32_t ASYNCLISTADDR;                     /*!< Offset 0x028 EHCI Next Asynchronous List Address Register */
 } USB_EHCI_Capability_TypeDef; /* size of structure = 0x02C */
 /*
  * @brief USB_OHCI_Capability
@@ -1440,28 +1439,28 @@ typedef struct USB_EHCI_Capability_Type
 /*!< USB_OHCI_Capability  */
 typedef struct USB_OHCI_Capability_Type
 {
-    __IO uint32_t O_HcRevision;                       /*!< Offset 0x000 OHCI Revision Register (not documented) */
-    __IO uint32_t O_HcControl;                        /*!< Offset 0x004 OHCI Control Register */
-    __IO uint32_t O_HcCommandStatus;                  /*!< Offset 0x008 OHCI Command Status Register */
-    __IO uint32_t O_HcInterruptStatus;                /*!< Offset 0x00C OHCI Interrupt Status Register */
-    __IO uint32_t O_HcInterruptEnable;                /*!< Offset 0x010 OHCI Interrupt Enable Register */
-    __IO uint32_t O_HcInterruptDisable;               /*!< Offset 0x014 OHCI Interrupt Disable Register */
-    __IO uint32_t O_HcHCCA;                           /*!< Offset 0x018 OHCI HCCA Base */
-    __IO uint32_t O_HcPeriodCurrentED;                /*!< Offset 0x01C OHCI Period Current ED Base */
-    __IO uint32_t O_HcControlHeadED;                  /*!< Offset 0x020 OHCI Control Head ED Base */
-    __IO uint32_t O_HcControlCurrentED;               /*!< Offset 0x024 OHCI Control Current ED Base */
-    __IO uint32_t O_HcBulkHeadED;                     /*!< Offset 0x028 OHCI Bulk Head ED Base */
-    __IO uint32_t O_HcBulkCurrentED;                  /*!< Offset 0x02C OHCI Bulk Current ED Base */
-    __IO uint32_t O_HcDoneHead;                       /*!< Offset 0x030 OHCI Done Head Base */
-    __IO uint32_t O_HcFmInterval;                     /*!< Offset 0x034 OHCI Frame Interval Register */
-    __IO uint32_t O_HcFmRemaining;                    /*!< Offset 0x038 OHCI Frame Remaining Register */
-    __IO uint32_t O_HcFmNumber;                       /*!< Offset 0x03C OHCI Frame Number Register */
-    __IO uint32_t O_HcPerioddicStart;                 /*!< Offset 0x040 OHCI Periodic Start Register */
-    __IO uint32_t O_HcLSThreshold;                    /*!< Offset 0x044 OHCI LS Threshold Register */
-    __IO uint32_t O_HcRhDescriptorA;                  /*!< Offset 0x048 OHCI Root Hub Descriptor Register A */
-    __IO uint32_t O_HcRhDesriptorB;                   /*!< Offset 0x04C OHCI Root Hub Descriptor Register B */
-    __IO uint32_t O_HcRhStatus;                       /*!< Offset 0x050 OHCI Root Hub Status Register */
-    __IO uint32_t O_HcRhPortStatus [0x001];           /*!< Offset 0x054 OHCI Root Hub Port Status Register */
+    __IOM uint32_t O_HcRevision;                      /*!< Offset 0x000 OHCI Revision Register (not documented) */
+    __IOM uint32_t O_HcControl;                       /*!< Offset 0x004 OHCI Control Register */
+    __IOM uint32_t O_HcCommandStatus;                 /*!< Offset 0x008 OHCI Command Status Register */
+    __IOM uint32_t O_HcInterruptStatus;               /*!< Offset 0x00C OHCI Interrupt Status Register */
+    __IOM uint32_t O_HcInterruptEnable;               /*!< Offset 0x010 OHCI Interrupt Enable Register */
+    __IOM uint32_t O_HcInterruptDisable;              /*!< Offset 0x014 OHCI Interrupt Disable Register */
+    __IOM uint32_t O_HcHCCA;                          /*!< Offset 0x018 OHCI HCCA Base */
+    __IOM uint32_t O_HcPeriodCurrentED;               /*!< Offset 0x01C OHCI Period Current ED Base */
+    __IOM uint32_t O_HcControlHeadED;                 /*!< Offset 0x020 OHCI Control Head ED Base */
+    __IOM uint32_t O_HcControlCurrentED;              /*!< Offset 0x024 OHCI Control Current ED Base */
+    __IOM uint32_t O_HcBulkHeadED;                    /*!< Offset 0x028 OHCI Bulk Head ED Base */
+    __IOM uint32_t O_HcBulkCurrentED;                 /*!< Offset 0x02C OHCI Bulk Current ED Base */
+    __IOM uint32_t O_HcDoneHead;                      /*!< Offset 0x030 OHCI Done Head Base */
+    __IOM uint32_t O_HcFmInterval;                    /*!< Offset 0x034 OHCI Frame Interval Register */
+    __IOM uint32_t O_HcFmRemaining;                   /*!< Offset 0x038 OHCI Frame Remaining Register */
+    __IOM uint32_t O_HcFmNumber;                      /*!< Offset 0x03C OHCI Frame Number Register */
+    __IOM uint32_t O_HcPerioddicStart;                /*!< Offset 0x040 OHCI Periodic Start Register */
+    __IOM uint32_t O_HcLSThreshold;                   /*!< Offset 0x044 OHCI LS Threshold Register */
+    __IOM uint32_t O_HcRhDescriptorA;                 /*!< Offset 0x048 OHCI Root Hub Descriptor Register A */
+    __IOM uint32_t O_HcRhDesriptorB;                  /*!< Offset 0x04C OHCI Root Hub Descriptor Register B */
+    __IOM uint32_t O_HcRhStatus;                      /*!< Offset 0x050 OHCI Root Hub Status Register */
+    __IOM uint32_t O_HcRhPortStatus [0x001];          /*!< Offset 0x054 OHCI Root Hub Port Status Register */
 } USB_OHCI_Capability_TypeDef; /* size of structure = 0x058 */
 
 
