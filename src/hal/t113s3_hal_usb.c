@@ -2088,7 +2088,7 @@ enum
 	cdc_pipeintdma_LAST = cdc_pipeintdma0 + WITHUSBCDCACM_N - 1,
 #endif /* WITHUSBCDCACM */
 	//
-	cdc_pipe_count
+	dmapipes_count
 };
 #define CDC_PIPEINDMA(offset) (cdc_pipeindma0 + (offset))
 #define CDC_PIPEOUTDMA(offset) (cdc_pipeoutdma0 + (offset))
@@ -5209,6 +5209,7 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 			WITHUSBHW_DEVICE->USB_DMA_INTE = 0;
 //			memset32(WITHUSBHW_DEVICE->USB_DMA, ~0, sizeof WITHUSBHW_DEVICE->USB_DMA);
 //			printhex32(0, WITHUSBHW_DEVICE->USB_DMA, sizeof WITHUSBHW_DEVICE->USB_DMA);
+			ASSERT(dmapipes_count <= dman);
 		}
 
 	  /* Force Device Mode*/
