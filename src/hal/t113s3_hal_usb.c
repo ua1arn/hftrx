@@ -678,11 +678,13 @@ static void usb_set_eprx_hport(pusb_struct pusb, uint32_t fifo, uint32_t hport)
 //
 //static void usb_set_reqpkt_count(pusb_struct pusb, uint32_t count)
 //{
+//	//	high 16 bit of USB_RXCOUNT
 //	WITHUSBHW_DEVICE->USB_RXPKTCNT = count;
 //}
 //
 //static uint32_t usb_get_reqpkt_count(pusb_struct pusb)
 //{
+//	//	high 16 bit of USB_RXCOUNT
 //	 return WITHUSBHW_DEVICE->USB_RXPKTCNT & 0xFFFF;
 //}
 

@@ -7,12 +7,14 @@
 #regdef; USB_INTUSBE; 0x0050; USB_INTUSBE USB_BUSINTE USB Bus Interrupt Enable Register
 #regdef; USB_FNUM; 0x0054; USB Frame Number Register
 #regdef; USB_TESTC; 0x007c; USB_TESTC USB Test Control Register
+
 #regdef; USB_TXMAXP 2; 0x0080; USB_TXMAXP USB EP1~5 Tx Control and Status Register
 #regdef; USB_TXCSRHI 2; 0x0082; [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL
+
 #regdef; USB_RXMAXP 2; 0x0084; USB_RXMAXP USB EP1~5 Rx Control and Status Register
 #regdef; USB_RXCSRHI 2; 0x0086; USB_RXCSR
-#regdef; USB_RXCOUNT 2; 0x0088; USB_RXCOUNT
-#regdef; USB_RXPKTCNT 2; 0x008a; USB_RXPKTCNT
+
+#regdef; USB_RXCOUNT; 0x0088; USB_RXCOUNT, USB_RXPKTCNT - high 16 bits
 #regdef; USB_EPATTR; 0x008C; USB_EPATTR USB EP0 Attribute Register, USB EP1~5 Attribute Register
 ##regdef; USB_TXTI 1; 0x008c; USB_TXTI
 ##regdef; USB_TXNAKLIMIT 1; 0x008d; USB_TXNAKLIMIT

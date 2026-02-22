@@ -2724,8 +2724,7 @@ typedef struct USBOTG_Type
     __IOM uint16_t USB_TXCSRHI;                       /*!< Offset 0x082 [15:8]: USB_TXCSRH, [7:0]: USB_TXCSRL */
     __IOM uint16_t USB_RXMAXP;                        /*!< Offset 0x084 USB_RXMAXP USB EP1~5 Rx Control and Status Register */
     __IOM uint16_t USB_RXCSRHI;                       /*!< Offset 0x086 USB_RXCSR */
-    __IOM uint16_t USB_RXCOUNT;                       /*!< Offset 0x088 USB_RXCOUNT */
-    __IOM uint16_t USB_RXPKTCNT;                      /*!< Offset 0x08A USB_RXPKTCNT */
+    __IOM uint32_t USB_RXCOUNT;                       /*!< Offset 0x088 USB_RXCOUNT, USB_RXPKTCNT - high 16 bits */
     __IOM uint32_t USB_EPATTR;                        /*!< Offset 0x08C USB_EPATTR USB EP0 Attribute Register, USB EP1~5 Attribute Register */
     __IOM uint32_t USB_TXFIFO;                        /*!< Offset 0x090 USB_TXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes) */
     __IOM uint32_t USB_RXFIFO;                        /*!< Offset 0x094 USB_RXFIFO (bits 28:16 Start address of the endpoint FIFO is in units of 8 bytes) */
