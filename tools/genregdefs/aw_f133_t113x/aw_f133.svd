@@ -20889,7 +20889,7 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>8</dim>
+    <dim>16</dim>
     <addressOffset>0x00000540</addressOffset>
     <registers>
      <register>
@@ -20929,7 +20929,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x080</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
   </registers>
   </peripheral>

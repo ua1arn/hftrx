@@ -1522,8 +1522,7 @@ typedef struct USBEHCI_Type
 /*!< USBOTG USB OTG Dual-Role Device controller */
 typedef struct USBOTG_Type
 {
-    __IOM uint32_t USB_EPFIFO [0x009];                /*!< Offset 0x000 USB_EPFIFO [0..8] USB FIFO Entry for Endpoint N */
-         RESERVED(0x024[0x0040 - 0x0024], uint8_t)
+    __IOM uint32_t USB_EPFIFO [0x010];                /*!< Offset 0x000 USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N */
     __IOM uint32_t USB_GCS;                           /*!< Offset 0x040 USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL USB Global Control and Status Register */
     __IOM uint16_t USB_INTTX;                         /*!< Offset 0x044 USB_INTTX USB_EPINTF USB Endpoint Interrupt Flag Register */
     __IOM uint16_t USB_INTRX;                         /*!< Offset 0x046 USB_INTRX USB_EPINTF */

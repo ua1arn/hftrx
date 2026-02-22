@@ -1,6 +1,5 @@
 #type; USBOTG; USB OTG Dual-Role Device controller
-
-#regdef; USB_EPFIFO; 0x0000 9; USB_EPFIFO [0..8] USB FIFO Entry for Endpoint N
+#regdef; USB_EPFIFO; 0x0000 16; USB_EPFIFO [0..5] USB FIFO Entry for Endpoint N
 #regdef; USB_GCS; 0x0040; USB_POWER, USB_DEVCTL, USB_EPINDEX, USB_DMACTL USB Global Control and Status Register
 #regdef; USB_INTTX 2; 0x0044; USB_INTTX USB_EPINTF USB Endpoint Interrupt Flag Register
 #regdef; USB_INTRX 2; 0x0046; USB_INTRX USB_EPINTF
@@ -40,12 +39,10 @@
 #regdef; USB_SPDCR; 0x428; HCI SIE Port Disable Control Register
 #regdef; USB_DMA_INTE; 0x0500; USB DMA Interrupt Enable Register
 #regdef; USB_DMA_INTS; 0x0504; USB DMA Interrupt Status Register
-
 #aggreg; USB_DMA; 0x0540 16; 
 #regdef; CHAN_CFG; 0x00; USB DMA Channel Configuration Register
 #regdef; SDRAM_ADD; 0x04; USB DMA SDRAM Start Address Register 
 #regdef; BC; 0x08; USB DMA Byte Counter Register
 #regdefr; RESIDUAL_BC; 0x0C; USB DMA RESIDUAL Byte Counter Register
 #aggregend;
-
 #typeend;
