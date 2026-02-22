@@ -3181,11 +3181,20 @@ static void hardware_de_global_initialize(void)
 	//PRINTF("allwnr_a733_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_de_freq() / 1000 / 1000);
 	//PRINTF("allwnr_a733_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_mbus_freq() / 1000 / 1000);
 #endif
-    CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1:􀀁De-assert
-    CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
-    CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
-    local_delay_us(10);
 
+    TP();
+	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+	CCU->VIDEO_OUT0_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT0_RST 1: De-assert
+	CCU->VIDEO_OUT1_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT1_RST 1: De-assert
+
+	CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1:􀀁De-assert
+	CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+    local_delay_us(10);
+    TP();
 #elif CPUSTYLE_T507
 
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
