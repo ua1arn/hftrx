@@ -1388,7 +1388,7 @@ void local_delay_initialize(void)
 
 // wait expected state of variable
 // return non-zero: timeout error
-int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, unsigned timeout)
+int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeout)
 {
 	if (timeout == LOCAL_WAITINFINITY)
 	{
@@ -1410,7 +1410,7 @@ int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t sta
 
 // wait expected state of variable
 // return non-zero: timeout error
-int local_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, unsigned timeout)
+int local_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeout)
 {
 	if (timeout == LOCAL_WAITINFINITY)
 	{

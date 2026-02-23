@@ -906,11 +906,11 @@ void device_OTG_FS_IRQHandler(void);
 
 void softdelay(void);
 
-#define LOCAL_WAITINFINITY UINT_MAX
+#define LOCAL_WAITINFINITY UINT32_MAX
 // wait expected state of variable
 // return non-zero: timeout error
-int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, unsigned timeout);
-int local_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, unsigned timeout);
+int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeout);
+int local_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeout);
 
 #ifdef __cplusplus
 }
