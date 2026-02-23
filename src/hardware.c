@@ -1386,6 +1386,50 @@ void local_delay_initialize(void)
 
 #endif /* */
 
+// wait expected state of variable
+// return non-zero: timeout error
+int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, unsigned timeout)
+{
+	if (timeout == LOCAL_WAITINFINITY)
+	{
+		while ((* flag & mask) != state)
+			;
+		return 0;
+	}
+	else
+	{
+		while (timeout --)
+		{
+			if ((* flag & mask) == state)
+				return 0;
+			local_delay_ms(1);
+		}
+	}
+	return 1;
+}
+
+// wait expected state of variable
+// return non-zero: timeout error
+int local_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, unsigned timeout)
+{
+	if (timeout == LOCAL_WAITINFINITY)
+	{
+		while ((* flag & mask) != state)
+			;
+		return 0;
+	}
+	else
+	{
+		while (timeout --)
+		{
+			if ((* flag & mask) == state)
+				return 0;
+			local_delay_ms(1);
+		}
+	}
+	return 1;
+}
+
 #if (__CORTEX_A != 0) && (! defined(__aarch64__))
 
 /** \brief  Enable Floating Point Unit
@@ -2290,7 +2334,7 @@ SystemInit(void)
 }
 #else /* LINUX_SUBSYSTEM */
 
-void softdevay(void)
+void softdelay(void)
 {
 	volatile int i = 100;
 	while (i --)

@@ -2794,8 +2794,9 @@ static void t113_de_update(int rtmixid)
 		return;
 
     glb->GLB_DBUFFER = UINT32_C(1);		// 1: register value be ready for update (self-cleaning bit)
-	while ((glb->GLB_DBUFFER & UINT32_C(1)) != 0)
-		;
+    local_wait32mask(& glb->GLB_DBUFFER, UINT32_C(1), UINT32_C(1), LOCAL_WAITINFINITY);
+//	while ((glb->GLB_DBUFFER & UINT32_C(1)) != 0)
+//		;
 }
 
 /* VI (VI0) */
@@ -7283,10 +7284,10 @@ static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixel
 	hdmi_phy_enable_spare(hdmi, 1);
 
 	/* wait for phy pll lock */
-	//TP();
-	while ((hdmi->HDMI_PHY_STAT0 & HDMI_PHY_TX_PHY_LOCK) == 0)
-		;
-	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+	if (local_wait8mask(& hdmi->HDMI_PHY_STAT0, HDMI_PHY_TX_PHY_LOCK, 0, 100))
+	{
+		PRINTF("HDMI PLL not statred: hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+	}
 
 //	start = get_timer(0);
 //	do {
