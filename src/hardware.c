@@ -1390,6 +1390,10 @@ void local_delay_initialize(void)
 // return non-zero: timeout error
 int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeout)
 {
+#if !WITHDEBUG
+	timeout = LOCAL_WAITINFINITY;
+#endif /* WITHDEBUG */
+
 	if (timeout == LOCAL_WAITINFINITY)
 	{
 		while ((* flag & mask) != state)
@@ -1402,7 +1406,9 @@ int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t sta
 		{
 			if ((* flag & mask) == state)
 				return 0;
+#if WITHDEBUG
 			local_delay_ms(1);
+#endif /* WITHDEBUG */
 		}
 	}
 	return 1;
@@ -1424,7 +1430,9 @@ int local_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t
 		{
 			if ((* flag & mask) == state)
 				return 0;
+#if WITHDEBUG
 			local_delay_ms(1);
+#endif /* WITHDEBUG */
 		}
 	}
 	return 1;

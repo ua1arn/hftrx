@@ -4626,6 +4626,31 @@ uint_fast32_t allwnr_a733_get_hdmi_tv_freq(void)
 	}
 }
 
+uint_fast32_t allwnr_a733_get_v0_tconlcd0_freq(void)
+{
+	const uint_fast32_t ctlreg = CCU->VO0_TCONLCD0_CLK_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((ctlreg >> 0) & 0x1F);
+	//	VO0_TCONLCD0_CLK = Clock Source/M
+	//	CLK_SRC_SEL.
+	//	Clock Source Select
+	//	000: VIDEO0PLL4X
+	//	001: VIDEO1PLL4X
+	//	010: VIDEO2PLL4X
+	//	011:PERI0PLL2X
+	switch ((ctlreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		return allwnr_a733_get_pll_video0_4x_freq() / M;
+	case 0x01:
+		return allwnr_a733_get_pll_video1_4x_freq() / M;
+	case 0x02:
+		return allwnr_a733_get_pll_video2_4x_freq() / M;
+	case 0x03:
+		return allwnr_a733_get_pll_peri0_2x_freq() / M;
+	}
+
+}
 //uint_fast32_t allwnr_a733_get_tcon_tv0_freq(void)
 //{
 //	const uint_fast32_t ctlreg = CCU->TCON_TV0_CLK_REG;
