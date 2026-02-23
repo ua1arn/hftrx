@@ -2762,15 +2762,23 @@ static void hardware_ltdc_vsync(int rtmixid)
 #if defined RTMIXIDLCD
 	case RTMIXIDLCD:
 		TCONLCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;         //clear LCD_VB_INT_FLAG
-		while ((TCONLCD_GINT0_REG & LCD_VB_INT_FLAG) == 0) //wait  LCD_VB_INT_FLAG
-			;
+		if (local_wait32mask(& TCONLCD_GINT0_REG, LCD_VB_INT_FLAG, LCD_VB_INT_FLAG, 100))
+		{
+			TP();
+		}
+//		while ((TCONLCD_GINT0_REG & LCD_VB_INT_FLAG) == 0) //wait  LCD_VB_INT_FLAG
+//			;
 		break;
 #endif
 #if defined RTMIXIDTV
 	case RTMIXIDTV:
 		TCONTV_GINT0_REG &= ~ TVOUT_VB_INT_FLAG;         //clear TCON1_VB_INT_FLAG
-	    while ((TCONTV_GINT0_REG & TVOUT_VB_INT_FLAG) == 0) //wait  TCON1_VB_INT_FLAG
-	        ;
+		if (local_wait32mask(& TCONTV_GINT0_REG, TVOUT_VB_INT_FLAG, TVOUT_VB_INT_FLAG, 100))
+		{
+			TP();
+		}
+//	    while ((TCONTV_GINT0_REG & TVOUT_VB_INT_FLAG) == 0) //wait  TCON1_VB_INT_FLAG
+//	        ;
 		break;
 #endif
 	}
