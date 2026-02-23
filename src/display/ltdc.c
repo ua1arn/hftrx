@@ -3000,6 +3000,8 @@ static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, uint
 	// BLD_CH_RTCTL
 	// 0x03020100 - default state
 
+	PRINTF("1 bld->ROUTE=%08" PRIX32 "\n", bld->ROUTE);
+	PRINTF("1 bld->BKCOLOR=%08" PRIX32 "\n", bld->BKCOLOR);
 	bld->ROUTE =
 			(UINT32_C(0) << 0) |		// pipe 0 from ch 0
 			(UINT32_C(1) << 4) |		// pipe 1 from ch 1
@@ -3011,8 +3013,8 @@ static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, uint
 	bld->PREMULTIPLY = 0;
 	bld->BKCOLOR = color24; /* 24 bit. Отображается, когда нет данных от входного pipe */
 
-//	PRINTF("2 bld->ROUTE=%08" PRIX32 "\n", bld->ROUTE);
-//	PRINTF("2 bld->BKCOLOR=%08" PRIX32 "\n", bld->BKCOLOR);
+	PRINTF("2 bld->ROUTE=%08" PRIX32 "\n", bld->ROUTE);
+	PRINTF("2 bld->BKCOLOR=%08" PRIX32 "\n", bld->BKCOLOR);
 	//printhex32(DE_BLD_BASE, DE_BLD, 256);
 	// 5.10.9.1 BLD fill color control register
 	// BLD_CTL
@@ -3167,11 +3169,18 @@ static void hardware_de_global_initialize(void)
 	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
 	//	CLK_SRC_SEL.
 	//	Clock Source Select
-	//	0: PLL_DE
-	//	1: PLL_PERI0(2X)
+	//    CLK_SRC_SEL.
+	//    Clock Source Select
+	//    000: DEPLL3X
+	//    001: DEPLL4X
+	//    010: PERI0_480M
+	//    011: PERI0_400M
+	//    100: PERI0_300M
+	//    101: VIDEO0PLL4X
+	//    110: VIDEO2PLL4X
 	unsigned divider = 1;
     CCU->DE0_CLK_REG = (CCU->DE0_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x07) << 0)) |
-		0x02 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 0: 010:􀀁PERI0_480M
+		0x04 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 100: PERI0_300M
 		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
     CCU->DE0_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
@@ -3192,6 +3201,7 @@ static void hardware_de_global_initialize(void)
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
     local_delay_us(10);
+    PRINTF("CCU->DE0_BGR_REG=%08X\n", (unsigned) CCU->DE0_BGR_REG);
 
 	TCONTV_CCU_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	TCONTV_CCU_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
@@ -3199,6 +3209,9 @@ static void hardware_de_global_initialize(void)
 
     // Разрешает доступ к HDMI_TX0
     CCU->HDMI_SFR_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+
+    memset32((void *) DE_BASE, ~0, 4096);
+    printhex32(DE_BASE, (void *) DE_BASE, 4096);
 
 #elif CPUSTYLE_T507
 
