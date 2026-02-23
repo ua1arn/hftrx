@@ -32,10 +32,10 @@
 #define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
+#define __DSP_PRESENT           1U       /* Set to 1 if DSP extension are present */
 
-//#include "new_cmsis_compat.h"
 #include "device.h"
-//#include "cmsis_compat2.h"
+#include "a-profile/gicv2.h"
 
 #include "system_allwnr_t507.h"
 
