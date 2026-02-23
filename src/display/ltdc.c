@@ -3190,18 +3190,19 @@ static void hardware_de_global_initialize(void)
 	//PRINTF("allwnr_a733_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_de_freq() / 1000 / 1000);
 	//PRINTF("allwnr_a733_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_mbus_freq() / 1000 / 1000);
 
+	CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1: De-assert
+	CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+    local_delay_us(10);
+    PRINTF("CCU->DE_SYS_BGR_REG=%08X\n", (unsigned) CCU->DE_SYS_BGR_REG);
+    PRINTF("CCU->DE0_BGR_REG=%08X\n", (unsigned) CCU->DE0_BGR_REG);
+
 	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
 	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
 	CCU->VIDEO_OUT0_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT0_RST 1: De-assert
 	CCU->VIDEO_OUT1_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT1_RST 1: De-assert
-
-	CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1: De-assert
-	CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
-	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
-    local_delay_us(10);
-    PRINTF("CCU->DE0_BGR_REG=%08X\n", (unsigned) CCU->DE0_BGR_REG);
 
 	TCONTV_CCU_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	TCONTV_CCU_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
@@ -3210,8 +3211,8 @@ static void hardware_de_global_initialize(void)
     // Разрешает доступ к HDMI_TX0
     CCU->HDMI_SFR_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
 
-    memset32((void *) DE_BASE, ~0, 4096);
-    printhex32(DE_BASE, (void *) DE_BASE, 4096);
+//    memset32((void *) DE_BASE, ~0, 4096);
+//    printhex32(DE_BASE, (void *) DE_BASE, 4096);
 
 #elif CPUSTYLE_T507
 
@@ -7297,9 +7298,14 @@ static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixel
 	hdmi_phy_enable_spare(hdmi, 1);
 
 	/* wait for phy pll lock */
-	if (local_wait8mask(& hdmi->HDMI_PHY_STAT0, HDMI_PHY_TX_PHY_LOCK, 0, 100))
+	if (local_wait8mask(& hdmi->HDMI_PHY_STAT0, HDMI_PHY_TX_PHY_LOCK, HDMI_PHY_TX_PHY_LOCK, 100))
 	{
 		PRINTF("HDMI PLL not statred: hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+	}
+	else
+	{
+		//PRINTF("HDMI PLL statred: hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+
 	}
 
 //	start = get_timer(0);
