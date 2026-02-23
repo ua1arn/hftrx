@@ -943,7 +943,7 @@ void IRQ_Handler_GIC_G1(void)
 
 //		static const char hex [16] = "0123456789ABCDEF";
 //		if ((int_id >> 8) & 0x0F)
-//			dbgdbg_putchar(hex [(int_id >> 8) & 0x0F]);
+//			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
 //		dbg_putchar(hex [(int_id >> 4) & 0x0F]);
 //		dbg_putchar(hex [(int_id >> 0) & 0x0F]);
 
