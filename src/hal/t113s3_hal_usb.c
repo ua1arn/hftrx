@@ -26,7 +26,7 @@
 #include "src/usb/usb200.h"
 #include "src/usb/usbch9.h"
 
-#define WITHCDCWITHDMA_IN 0	// эксперементальная опция, пока в работе не использовать
+#define WITHCDCWITHDMA_IN 1	// эксперементальная опция, пока в работе не использовать
 #define WITHCDCWITHDMA_OUT 1	// эксперементальная опция, пока в работе не использовать
 
 #define CDC_SET_LINE_CODING                     0x20
@@ -2184,13 +2184,18 @@ static void setup_dma_rx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, 
 
 static void setup_dma_tx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t burst, uint_fast16_t size)
 {
+	if ((size % 2) == 0)
+		burst = 4;
+	else
+		burst = size;
+
 	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG = 0;
 	dcache_clean(addr, size);
 
 	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = size;	// 18 bit
 	WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = addr;
 	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG =
-		(0x07FF & size) * (UINT32_C(1) << 16) |	// DMA Burst Length - 11 bit
+		(0x07FF & burst) * (UINT32_C(1) << 16) |	// DMA Burst Length - 11 bit
 		0x00 * (UINT32_C(1) << 4) |		// 0: SDRAM to USB FIFO
 		(0x0F & pipe) * (UINT32_C(1) << 0) |	// DMA Channel for Endpoint
 		0;
@@ -2232,8 +2237,7 @@ void usbd_cdc_send(const void * buff, size_t length)
 	const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
 	static __ALIGNED(DCACHEROWSIZE) uint8_t tdata [VIRTUAL_COM_PORT_IN_DATA_SIZE];
 	const unsigned count = ulmin32(sizeof tdata, length);
-	unsigned count4 = (count + 3) / 4 * 4;
-	memset(tdata, '#', sizeof tdata);
+	memset(tdata + count, '#', sizeof tdata - count);
 	memcpy(tdata, buff, count);
 //	PRINTF("cdc_acm Send:\n");
 //	printhex((uintptr_t) tdata, tdata, count);
@@ -2605,33 +2609,32 @@ static void set_dma_ep_embedded(pusb_struct pusb, uint32_t ep_no, uint32_t ep_di
 	usb_select_ep(pusb, ep_no);
 	if (ep_dir)
 	{
-		// IN
-
+		// IN, tx
         usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_FLUSHFIFO);
         usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_FLUSHFIFO);
 
+		USB0_REG_TXCSR = 0x0;
 		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_CLEAR_DATA_TOGGLE);	// bit 22
-		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_MODE);
+		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_MODE);	// TX mode bit 29
 
 		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_AUTOSET);		// AutoSet
 		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | USB_TXCSR_DMAREQEN);	// DMAReqEnab
-		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | 0*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
+		usb_set_eptx_csr_hi(pusb, usb_get_eptx_csr_hi(pusb) | 1*USB_TXCSR_DMAREQMODE);	// DMAReqEnab
 #if 0
-		USB0_REG_TXCSR = 0x0; 								// 512 is max packet size for BULK
+		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_FLUSH_FIFO);	// bit 19
 		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_FLUSH_FIFO);
-		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_FLUSH_FIFO);
-		BIT_CLEAR(USB0_REG_TXCSR, BIT_TXCSR_ISO);	// bulk != iso -)
+		BIT_CLEAR(USB0_REG_TXCSR, BIT_TXCSR_ISO);	// bulk != iso -) bit 30
 
-		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_AUTOSET);
-		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_DMA_REQ_EN); // DMA
-		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_DMA_REQ_MODE);
+		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_AUTOSET);	// bit 31
+		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_DMA_REQ_EN); // DMA bit 28
+		BIT_SET(USB0_REG_TXCSR, BIT_TXCSR_DMA_REQ_MODE); 26
 
 #endif
 
 	}
 	else
 	{
-		// OUT
+		// OUT, rx
 	   usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_FLUSHFIFO);
 	   usb_set_eprx_csr_hi(pusb, usb_get_eprx_csr_hi(pusb) | USB_RXCSR_FLUSHFIFO);
 //
