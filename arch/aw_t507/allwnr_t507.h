@@ -35,7 +35,7 @@
 #define __DSP_PRESENT           1U       /* Set to 1 if DSP extension are present */
 
 #include "device.h"
-#include "a-profile/gicv2.h"
+//#include "a-profile/gicv2.h"
 
 #include "system_allwnr_t507.h"
 
