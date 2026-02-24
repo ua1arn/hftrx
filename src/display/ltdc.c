@@ -3201,6 +3201,7 @@ static void hardware_de_global_initialize(void)
 	//PRINTF("allwnr_a733_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_de_freq() / 1000 / 1000);
 	//PRINTF("allwnr_a733_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_mbus_freq() / 1000 / 1000);
 
+    CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// DESYS_MBUS_GATE_SW_CFG
 	CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1: De-assert
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
@@ -3350,7 +3351,7 @@ static void hardware_de_initialize(int rtmixid)
 	//    050081C0: 000302D1 00000100 1FFF1FFF 00000001 00000001 FFFFFFFF 000000FF 0000FFFF
 	//    050081E0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
 	//    05008200: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-    TP();
+//    TP();
  	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << 0;	// COREx_SCLK_GATE
  	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << 0;	// COREx_HCLK_GATE
 	// Only one bit writable
@@ -3363,7 +3364,7 @@ static void hardware_de_initialize(int rtmixid)
  	//DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
 	DE_TOP->DE_AHB_RESET = ~0;		// CORE0_AHB_RESET
 
-    printhex32(DE_TOP_BASE, DE_TOP, 256);
+//    printhex32(DE_TOP_BASE, DE_TOP, 256);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 

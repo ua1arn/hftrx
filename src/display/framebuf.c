@@ -986,7 +986,8 @@ aw_g2d_fillrect(
 	G2D_WB->WB_PITCH0 = tstride;
 	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
 	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
-
+//	printhex32(G2D_BLD_BASE, G2D_BLD, sizeof * G2D_BLD);
+//	printhex32(G2D_WB_BASE, G2D_WB, sizeof * G2D_BLD);
 	awxx_g2d_rtmix_startandwait();		/* Запускаем и ждём завершения обработки */
 	g2d_rtmx_release();
 	return 1;
@@ -1744,12 +1745,6 @@ void arm_hardware_mdma_initialize(void)
 	CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->G2D_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
 
-    memset32((void *) (G2D_TOP_BASE + 1024), ~0, 255 * 1024);	// strange line for G2D_ROT
-    //memset32(G2D_ROT, ~0, 256);
-//	G2D_TOP->G2D_SCLK_GATE = ~0;
-//	G2D_TOP->G2D_HCLK_GATE = ~0;
-//	G2D_TOP->G2D_AHB_RST = ~0;
-
 	G2D_TOP->G2D_SCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
 	(void) G2D_TOP->G2D_SCLK_GATE;
 	G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
@@ -1759,6 +1754,15 @@ void arm_hardware_mdma_initialize(void)
 	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 	(void) G2D_TOP->G2D_AHB_RST;
 
+    memset32((void *) (G2D_TOP_BASE + 0), ~0, 256);	// strange line for G2D_ROT
+    //memset32(G2D_ROT, ~0, 256);
+//	G2D_TOP->G2D_SCLK_GATE = ~0;
+//	G2D_TOP->G2D_HCLK_GATE = ~0;
+//	G2D_TOP->G2D_AHB_RST = ~0;
+
+//	memset32((void *) (G2D_TOP_BASE + 0), ~0, 256 * 1024);	// strange line for G2D_ROT
+//    printhex32(G2D_TOP_BASE, G2D_TOP, 4 * 1024);
+//    printhex32(G2D_ROT_BASE, G2D_ROT, 1 * 1024);
 
 	local_delay_ms(10);
 //    printhex32(0x05468000, (void *) 0x05468000, 4 * 1024);

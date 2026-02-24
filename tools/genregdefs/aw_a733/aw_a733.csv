@@ -473,35 +473,37 @@
 
 
 #type; G2D_TOP; Graphic 2D top
-#base; G2D 0x05430000
-#base; G2D_TOP 0x05430000
+#base; G2D 0x05440000
+#base; G2D_TOP 0x05440000
 #irq; G2D 83
 #typeend;
 
 #type; G2D_MIXER; Graphic 2D (G2D) Engine Video Mixer
-#base; G2D_MIXER 0x05430100
+#base; G2D_MIXER 0x05440100
+#base; G2D_MIXER1 0x05440200
+#base; G2D_MIXER2 0x05440300
 #typeend;
 
 #type; G2D_BLD; Graphic 2D (G2D) Engine Blender
-#base; G2D_BLD 0x05430400
+#base; G2D_BLD 0x05440400
 #typeend;
 
 #type; G2D_VI; Graphic 2D VI surface
-#base; G2D_V0 0x05430800
+#base; G2D_V0 0x05440800
 #typeend;
 
 #type; G2D_WB; Graphic 2D (G2D) Engine Write Back
-#base; G2D_WB 0x05433000
+#base; G2D_WB 0x05443000
 #typeend;
 
 #type; G2D_UI; Graphic 2D UI surface
-#base; G2D_UI0 0x05431000
-#base; G2D_UI1 0x05431800
-#base; G2D_UI2 0x05432000
+#base; G2D_UI0 0x05441000
+#base; G2D_UI1 0x05441800
+#base; G2D_UI2 0x05442000
 #typeend;
 
 #type; G2D_VSU; Graphic 2D Video Scaler
-#base; G2D_VSU 0x05438000
+#base; G2D_VSU 0x05448000
 #typeend;
 
 #type; G2D_ROT; Graphic 2D Rotate

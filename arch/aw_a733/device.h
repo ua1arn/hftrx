@@ -257,16 +257,16 @@ typedef enum IRQn
 #define DE_FCC6_BASE ((uintptr_t) 0x05211400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
 #define DE_MIXER0_BLD_BASE ((uintptr_t) 0x05281000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define DE_MIXER1_BLD_BASE ((uintptr_t) 0x052A1000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
-#define G2D_BASE ((uintptr_t) 0x05430000)             /*!< G2D_TOP Graphic 2D top Base */
-#define G2D_TOP_BASE ((uintptr_t) 0x05430000)         /*!< G2D_TOP Graphic 2D top Base */
-#define G2D_MIXER_BASE ((uintptr_t) 0x05430100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
-#define G2D_BLD_BASE ((uintptr_t) 0x05430400)         /*!< G2D_BLD Graphic 2D (G2D) Engine Blender Base */
-#define G2D_V0_BASE ((uintptr_t) 0x05430800)          /*!< G2D_VI Graphic 2D VI surface Base */
-#define G2D_UI0_BASE ((uintptr_t) 0x05431000)         /*!< G2D_UI Graphic 2D UI surface Base */
-#define G2D_UI1_BASE ((uintptr_t) 0x05431800)         /*!< G2D_UI Graphic 2D UI surface Base */
-#define G2D_UI2_BASE ((uintptr_t) 0x05432000)         /*!< G2D_UI Graphic 2D UI surface Base */
-#define G2D_WB_BASE ((uintptr_t) 0x05433000)          /*!< G2D_WB Graphic 2D (G2D) Engine Write Back Base */
-#define G2D_VSU_BASE ((uintptr_t) 0x05438000)         /*!< G2D_VSU Graphic 2D Video Scaler Base */
+#define G2D_BASE ((uintptr_t) 0x05440000)             /*!< G2D_TOP Graphic 2D top Base */
+#define G2D_TOP_BASE ((uintptr_t) 0x05440000)         /*!< G2D_TOP Graphic 2D top Base */
+#define G2D_MIXER_BASE ((uintptr_t) 0x05440100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
+#define G2D_BLD_BASE ((uintptr_t) 0x05440400)         /*!< G2D_BLD Graphic 2D (G2D) Engine Blender Base */
+#define G2D_V0_BASE ((uintptr_t) 0x05440800)          /*!< G2D_VI Graphic 2D VI surface Base */
+#define G2D_UI0_BASE ((uintptr_t) 0x05441000)         /*!< G2D_UI Graphic 2D UI surface Base */
+#define G2D_UI1_BASE ((uintptr_t) 0x05441800)         /*!< G2D_UI Graphic 2D UI surface Base */
+#define G2D_UI2_BASE ((uintptr_t) 0x05442000)         /*!< G2D_UI Graphic 2D UI surface Base */
+#define G2D_WB_BASE ((uintptr_t) 0x05443000)          /*!< G2D_WB Graphic 2D (G2D) Engine Write Back Base */
+#define G2D_VSU_BASE ((uintptr_t) 0x05448000)         /*!< G2D_VSU Graphic 2D Video Scaler Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x05468000)         /*!< G2D_ROT Graphic 2D Rotate Base */
 #define DISPLAY0_TOP_BASE ((uintptr_t) 0x05500000)    /*!< DISPLAY0_TOP VIDE0_OUT1_SYS Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x05501000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */

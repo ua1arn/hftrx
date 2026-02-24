@@ -5293,7 +5293,7 @@
   <peripheral>
   <name>G2D_BLD</name>
   <description>Graphic 2D (G2D) Engine Blender</description>
-  <baseAddress>0x05430400</baseAddress>
+  <baseAddress>0x05440400</baseAddress>
   <registers>
    <register>
     <name>BLD_FILL_COLOR_CTL</name>
@@ -5788,7 +5788,7 @@
   <peripheral>
   <name>G2D_MIXER</name>
   <description>Graphic 2D (G2D) Engine Video Mixer</description>
-  <baseAddress>0x05430100</baseAddress>
+  <baseAddress>0x05440100</baseAddress>
   <registers>
    <register>
     <name>G2D_MIXER_CTRL</name>
@@ -6072,7 +6072,7 @@
   <peripheral>
   <name>G2D</name>
   <description>Graphic 2D top</description>
-  <baseAddress>0x05430000</baseAddress>
+  <baseAddress>0x05440000</baseAddress>
   <interrupt>
    <name>G2D</name>
    <value>83</value>
@@ -6182,7 +6182,7 @@
   </peripheral>
   <peripheral derivedFrom="G2D">
   <name>G2D_TOP</name>
-  <baseAddress>0x05430000</baseAddress>
+  <baseAddress>0x05440000</baseAddress>
   <interrupt>
    <name>G2D</name>
    <value>83</value>
@@ -6192,7 +6192,7 @@
   <peripheral>
   <name>G2D_UI0</name>
   <description>Graphic 2D UI surface</description>
-  <baseAddress>0x05431000</baseAddress>
+  <baseAddress>0x05441000</baseAddress>
   <registers>
    <register>
     <name>UI_ATTR</name>
@@ -6270,16 +6270,16 @@
   </peripheral>
   <peripheral derivedFrom="G2D_UI0">
   <name>G2D_UI1</name>
-  <baseAddress>0x05431800</baseAddress>
+  <baseAddress>0x05441800</baseAddress>
   </peripheral>
   <peripheral derivedFrom="G2D_UI0">
   <name>G2D_UI2</name>
-  <baseAddress>0x05432000</baseAddress>
+  <baseAddress>0x05442000</baseAddress>
   </peripheral>
   <peripheral>
   <name>G2D_V0</name>
   <description>Graphic 2D VI surface</description>
-  <baseAddress>0x05430800</baseAddress>
+  <baseAddress>0x05440800</baseAddress>
   <registers>
    <register>
     <name>V0_ATTCTL</name>
@@ -6430,7 +6430,7 @@
   <peripheral>
   <name>G2D_VSU</name>
   <description>Graphic 2D Video Scaler</description>
-  <baseAddress>0x05438000</baseAddress>
+  <baseAddress>0x05448000</baseAddress>
   <registers>
    <register>
     <name>VS_CTRL</name>
@@ -6596,7 +6596,7 @@
   <peripheral>
   <name>G2D_WB</name>
   <description>Graphic 2D (G2D) Engine Write Back</description>
-  <baseAddress>0x05433000</baseAddress>
+  <baseAddress>0x05443000</baseAddress>
   <registers>
    <register>
     <name>WB_ATT</name>
