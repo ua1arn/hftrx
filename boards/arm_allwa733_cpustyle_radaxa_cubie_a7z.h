@@ -922,7 +922,7 @@
 		#define BOARD_TCONTVFREQ (allwnr_a733_get_tcon_tv0_freq())
 		#define RTMIXIDTV 2	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
 	#endif
-	#if 0
+	#if 1
 		// LCD
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */

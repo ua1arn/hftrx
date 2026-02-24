@@ -327,6 +327,7 @@ static int hwacc_rtmx_waitdone(void)
 static void awxx_g2d_rtmix_startandwait(void)
 {
 	G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
+	local_wait32mask(& G2D_MIXER->G2D_MIXER_CTRL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
 	if (hwacc_rtmx_waitdone() == 0)
 	{
 		PRINTF("awxx_g2d_rtmix_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
@@ -1078,7 +1079,8 @@ static int hwacc_rot_waitdone(void)
 
 static void awxx_g2d_rot_startandwait(void)
 {
-	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);	// start
+	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);	// start module
+	local_wait32mask(& G2D_ROT->ROT_CTL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
 	if (hwacc_rot_waitdone() == 0)
 	{
 		PRINTF("awxx_g2d_rot_startandwait: timeout G2D_ROT->ROT_CTL=%08X\n", (unsigned) G2D_ROT->ROT_CTL);
