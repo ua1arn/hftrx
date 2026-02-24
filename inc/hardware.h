@@ -860,6 +860,7 @@ void linux_dds_rts(const uint_least64_t * value);		// Установка цен�
 void linux_rxtx_state(uint8_t tx);
 
 uint32_t sys_now(void);
+uint32_t tasks_sys_now(void);
 uint32_t board_millis(void);	// tinyusb
 int sys_dram_init(void);	// 0 - error
 int main(void);

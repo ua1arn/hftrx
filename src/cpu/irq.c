@@ -2017,8 +2017,11 @@ void task_scheduler_initialize(void)
 
 }
 
+static int tsaks_not_started = 999;
+
 void task_scheduler_start(void)
 {
+	tsaks_not_started = 0;
 }
 
 void __NO_RETURN task_scheduler_othercores(void)
@@ -2140,13 +2143,33 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 }
 // exactly as required
 //
+
+
+uint32_t tasks_sys_now(void)
+{
+	if (tsaks_not_started)
+	{
+		static uint32_t n = 100;
+		local_delay_ms_nocache(1);
+		return ++ n;
+	}
+	return sys_now();
+}
+
 void local_delay_ms(int timeMS)
 {
+
 #if 0 //LINUX_SUBSYSTEM
 	usleep(timeMS * 1000);
 #else
+
+	//
+	const uint32_t t0 = tasks_sys_now();
 	if (timeMS == 0)
 		return;
+	while (tasks_sys_now() - t0 < timeMS)
+		;
+	return;
 	// Частота процессора приволится к мегагерцам.
 	const uint_fast32_t top = local_delay_uscycles(1000, cpufreqMHz);
 	int n;
@@ -2190,30 +2213,12 @@ void local_delay_initialize(void)
 // return non-zero: timeout error
 int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, int timeMS)
 {
-	while ((* flag & mask) != state)
-		;
-	return 0;
-#if ! WITHDEBUG
-	timeMS = LOCAL_WAITINFINITY;
-#endif /* WITHDEBUG */
-
-	if (timeMS == LOCAL_WAITINFINITY)
+	const uint32_t t0 = tasks_sys_now();
+	do
 	{
-		while ((* flag & mask) != state)
-			;
-		return 0;
-	}
-	else
-	{
-		while (timeMS --)
-		{
-			if ((* flag & mask) == state)
-				return 0;
-#if WITHDEBUG
-			local_delay_ms(1);
-#endif /* WITHDEBUG */
-		}
-	}
+		if (((* flag & mask) == state))
+			return 0;
+	} while (tasks_sys_now() - t0 < timeMS);
 	return 1;
 }
 
@@ -2221,29 +2226,12 @@ int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t sta
 // return non-zero: timeout error
 int local_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, int timeMS)
 {
-	while ((* flag & mask) != state)
-		;
-	return 0;
-#if ! WITHDEBUG
-	timeMS = LOCAL_WAITINFINITY;
-#endif /* WITHDEBUG */
-	if (timeMS == LOCAL_WAITINFINITY)
+	const uint32_t t0 = tasks_sys_now();
+	do
 	{
-		while ((* flag & mask) != state)
-			;
-		return 0;
-	}
-	else
-	{
-		while (timeMS --)
-		{
-			if ((* flag & mask) == state)
-				return 0;
-#if WITHDEBUG
-			local_delay_ms(1);
-#endif /* WITHDEBUG */
-		}
-	}
+		if (((* flag & mask) == state))
+			return 0;
+	} while (tasks_sys_now() - t0 < timeMS);
 	return 1;
 }
 
