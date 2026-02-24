@@ -425,12 +425,6 @@ void blinkloop(void);
 
 	#define PSTR(s) (s)
 
-	void local_delay_us(int timeUS);
-	void local_delay_ms(int timeMS);
-	void local_delay_ms_nocache(int timeMS);	// задержка до того как включили MMU и cache */
-	void local_delay_us_nocache(int timeUS);
-	void local_delay_initialize(void);
-
 #elif CPUSTYLE_RISCV
 
 	/* тип для передачи параметра "адрес устройства на SPI шине" */
@@ -446,11 +440,6 @@ void blinkloop(void);
 	// Use __attribute__ ((weak, alias("Default_Handler")))
 
 	#define PSTR(s) (s)
-
-	void local_delay_us(int timeUS);
-	void local_delay_ms(int timeMS);
-	void local_delay_ms_nocache(int timeMS);	// задержка до того как включили MMU и cache */
-	void local_delay_initialize(void);
 
 #else
 	#error Undefined CPUSTYLE_xxxx
@@ -909,8 +898,14 @@ void softdelay(void);
 #define LOCAL_WAITINFINITY UINT32_MAX
 // wait expected state of variable
 // return non-zero: timeout error
-int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeout);
-int local_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeout);
+int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, int timeMS);
+int local_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, int timeMS);
+
+void local_delay_us(int timeUS);
+void local_delay_ms(int timeMS);
+void local_delay_ms_nocache(int timeMS);	// задержка до того как включили MMU и cache */
+void local_delay_us_nocache(int timeUS);
+void local_delay_initialize(void);
 
 #ifdef __cplusplus
 }

@@ -267,6 +267,7 @@ typedef enum IRQn
 #define G2D_UI2_BASE ((uintptr_t) 0x05432000)         /*!< G2D_UI Graphic 2D UI surface Base */
 #define G2D_WB_BASE ((uintptr_t) 0x05433000)          /*!< G2D_WB Graphic 2D (G2D) Engine Write Back Base */
 #define G2D_VSU_BASE ((uintptr_t) 0x05438000)         /*!< G2D_VSU Graphic 2D Video Scaler Base */
+#define G2D_ROT_BASE ((uintptr_t) 0x05468000)         /*!< G2D_ROT Graphic 2D Rotate Base */
 #define DISPLAY0_TOP_BASE ((uintptr_t) 0x05500000)    /*!< DISPLAY0_TOP VIDE0_OUT1_SYS Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x05501000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_LCD1_BASE ((uintptr_t) 0x05502000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
@@ -3059,6 +3060,7 @@ typedef struct USB_OHCI_Capability_Type
 #define G2D_UI2 ((G2D_UI_TypeDef *) G2D_UI2_BASE)     /*!< G2D_UI2 Graphic 2D UI surface register set access pointer */
 #define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB Graphic 2D (G2D) Engine Write Back register set access pointer */
 #define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Graphic 2D Video Scaler register set access pointer */
+#define G2D_ROT ((G2D_ROT_TypeDef *) G2D_ROT_BASE)    /*!< G2D_ROT Graphic 2D Rotate register set access pointer */
 #define DISPLAY0_TOP ((DISPLAY0_TOP_TypeDef *) DISPLAY0_TOP_BASE)/*!< DISPLAY0_TOP VIDE0_OUT1_SYS register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_LCD1 ((TCON_LCD_TypeDef *) TCON_LCD1_BASE)/*!< TCON_LCD1 Timing Controller_LCD (TCON_LCD) register set access pointer */

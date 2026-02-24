@@ -293,54 +293,15 @@ static void awxx_g2d_mixer_reset(unsigned scanorder)
 	G2D_BLD->BLD_KEY_CTL = 0;
 }
 
-/* Запуск и ожидание завершения работы G2D */
-/* 0 - timeout. 1 - OK */
-static int hwacc_rtmx_waitdone(void)
+/* Запускаем и ждём завершения обработки */
+static void awxx_g2d_rtmix_startandwait(void)
 {
 	G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
 	// wait for reset bit
 	if (local_wait32mask(& G2D_MIXER->G2D_MIXER_CTRL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
 	{
-		PRINTF("G2D_MIXER->G2D_MIXER_CTRL=%08X, G2D_MIXER->G2D_MIXER_INTERRUPT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL, (unsigned) G2D_MIXER->G2D_MIXER_INTERRUPT);
-		return 0;
-
-	}
-	return 1;
-//	unsigned n = 0x2000000;
-//	for (;;)
-//	{
-//		const uint_fast32_t MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
-//		const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INTERRUPT;
-//		//const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
-//		if (((mixer_int & MASK) != 0))
-//		{
-//			G2D_MIXER->G2D_MIXER_INTERRUPT = MASK;
-//			break;
-//		}
-////		if (((rot_int & MASK) != 0))
-////		{
-////			G2D_ROT->ROT_INT = MASK;
-////			break;
-////		}
-//		if (-- n == 0)
-//		{
-//			PRINTF("G2D_MIXER->G2D_MIXER_CTRL=%08X, G2D_MIXER->G2D_MIXER_INTERRUPT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL, (unsigned) G2D_MIXER->G2D_MIXER_INTERRUPT);
-//			//PRINTF("G2D_ROT->ROT_CTL=%08X, G2D_ROT->ROT_INT=%08X\n", (unsigned) G2D_ROT->ROT_CTL, (unsigned) G2D_ROT->ROT_INT);
-//			return 0;
-//		}
-//	}
-//	return 1;
-}
-
-/* Запускаем и ждём завершения обработки */
-static void awxx_g2d_rtmix_startandwait(void)
-{
-	if (hwacc_rtmx_waitdone() == 0)
-	{
 		PRINTF("awxx_g2d_rtmix_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
-		ASSERT(0);
 	}
-	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 }
 
 #if WITHRTMXRCQ
@@ -1055,51 +1016,15 @@ static uint_fast32_t g2d_rot_ctl(
 
 
 /* Запуск и ожидание завершения работы G2D  (ROT) */
-/* 0 - timeout. 1 - OK */
-static int hwacc_rot_waitdone(void)
+static void awxx_g2d_rot_startandwait(void)
 {
 	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);	// start
 	// wait for reset bit
 	if (local_wait32mask(& G2D_ROT->ROT_CTL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
 	{
-		PRINTF("G2D_ROT->ROT_CTL=%08X, G2D_ROT->ROT_INT=%08X\n", (unsigned) G2D_ROT->ROT_CTL, (unsigned) G2D_ROT->ROT_INT);
-		return 0;
-
+		PRINTF("awxx_g2d_rot_startandwait: G2D_ROT->ROT_CTL=%08X, G2D_ROT->ROT_INT=%08X\n", (unsigned) G2D_ROT->ROT_CTL, (unsigned) G2D_ROT->ROT_INT);
 	}
-	return 1;
-
-//	const uint_fast32_t MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
-//	unsigned n = 0x2000000;
-//	for (;;)
-//	{
-//		//const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INTERRUPT;
-//		const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
-//		if (((rot_int & MASK) != 0))
-//		{
-//			G2D_ROT->ROT_INT = MASK;
-//			break;
-//		}
-//		if (-- n == 0)
-//		{
-//			//PRINTF("G2D_MIXER->G2D_MIXER_CTRL=%08X, G2D_MIXER->G2D_MIXER_INTERRUPT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL, (unsigned) G2D_MIXER->G2D_MIXER_INTERRUPT);
-//			PRINTF("G2D_ROT->ROT_CTL=%08X, G2D_ROT->ROT_INT=%08X\n", (unsigned) G2D_ROT->ROT_CTL, (unsigned) G2D_ROT->ROT_INT);
-//			return 0;
-//		}
-//	}
-//	return 1;
 }
-
-static void awxx_g2d_rot_startandwait(void)
-{
-	if (hwacc_rot_waitdone() == 0)
-	{
-		PRINTF("awxx_g2d_rot_startandwait: timeout G2D_ROT->ROT_CTL=%08X\n", (unsigned) G2D_ROT->ROT_CTL);
-		ASSERT(0);
-	}
-	//ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
-}
-
-#endif /* defined (G2D_ROT) */
 
 /* Коприрование с применением блока G2D_ROT */
 static void
@@ -1152,6 +1077,8 @@ hwaccel_rotcopy(
 	g2d_rot_release();
 
 }
+
+#endif /* defined (G2D_ROT) */
 
 #if ! defined (G2D_MIXER)
 
@@ -1816,8 +1743,25 @@ void arm_hardware_mdma_initialize(void)
     CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
 	CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->G2D_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
-    memset32((void *) 0x05440000, ~0, 256);
-    printhex32(0x05440000, (void *) 0x05440000, 256);
+
+    memset32((void *) (G2D_TOP_BASE + 1024), ~0, 255 * 1024);
+    //memset32(G2D_ROT, ~0, 256);
+//	G2D_TOP->G2D_SCLK_GATE = ~0;
+//	G2D_TOP->G2D_HCLK_GATE = ~0;
+//	G2D_TOP->G2D_AHB_RST = ~0;
+
+	G2D_TOP->G2D_SCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
+	(void) G2D_TOP->G2D_SCLK_GATE;
+	G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
+	(void) G2D_TOP->G2D_HCLK_GATE;
+	G2D_TOP->G2D_AHB_RST &= ~ (UINT32_C(1) << 1) & ~ (UINT32_C(1) << 0);	// Assert reset: 0x02: rot, 0x01: mixer
+	(void) G2D_TOP->G2D_AHB_RST;
+	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+	(void) G2D_TOP->G2D_AHB_RST;
+
+
+	local_delay_ms(10);
+//    printhex32(0x05468000, (void *) 0x05468000, 4 * 1024);
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c

@@ -504,7 +504,7 @@
 #base; G2D_VSU 0x05438000
 #typeend;
 
-##type; G2D_ROT; Graphic 2D Rotate
-##base; G2D_ROT 0x05468000
-##typeend;
+#type; G2D_ROT; Graphic 2D Rotate
+#base; G2D_ROT 0x05468000
+#typeend;
 
