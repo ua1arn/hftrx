@@ -1821,6 +1821,8 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 
 #endif /* ! LINUX_SUBSYSTEM */
 
+static int tsaks_not_started = 999;
+
 #if 0 && ! LINUX_SUBSYSTEM
 
 typedef struct task_item_tag
@@ -1931,19 +1933,19 @@ void task_yield(void)
 }
 
 // получить готовую у выполнению задачу
-task_item_t * task_getready(unsigned affinity, task_item_t * task)
+task_item_t * task_getready(unsigned affinity, task_item_t * taskin)
 {
-	ASSERT(task);
+	ASSERT(taskin);
 	ASSERT(affinity);
 	IRQL_t oldIrql;
-//	task_item_t * task0 = task;
+	task_item_t * taskout = taskin;
 	IRQLSPIN_LOCK(& taskslock, & oldIrql, IRQL_IPC_ONLY);
 	const unsigned prio = GICI_DECODE_IRQL(oldIrql);
 	ASSERT(ARRAY_SIZE(tasks_list) > prio);
 
 	PRLIST_ENTRY list = & tasks_list [prio];
 	// Возвращаем в список задач
-	InsertTailList(& tasks_list [prio], & task->item);
+	InsertTailList(& tasks_list [prio], & taskin->item);
 	// ищем с большим или текущим IRQL
 	PRLIST_ENTRY t;
 	PRLIST_ENTRY tnext;
@@ -1953,18 +1955,18 @@ task_item_t * task_getready(unsigned affinity, task_item_t * task)
 		task_item_t * const tp = CONTAINING_RECORD(t, task_item_t, item);
 		if (tp->affinity & affinity && task_isready(tp))
 		{
-			RemoveEntryList(& tp->item);
-			task = tp;
+			taskout = tp;
 			break;
 		}
 	}
+	RemoveEntryList(& taskout->item);
 	IRQLSPIN_UNLOCK(& taskslock, oldIrql);
-	return task;
+	return taskout;
 }
 
 void task_scheduler_start(void)
 {
-
+	tsaks_not_started = 0;
 }
 
 void __NO_RETURN task_scheduler_othercores(void)
@@ -2000,6 +2002,7 @@ void * task_scheduler(void * oldframe)
 	{
 		task_item_t * const task = & base_tasks [core];
 		task->guard = task;
+		task->allocated = NULL;
 		//
 		// получаем состояние процесора при первом перрывании
 		task->affinity = 1U << core;
@@ -2016,8 +2019,6 @@ void task_scheduler_initialize(void)
 {
 
 }
-
-static int tsaks_not_started = 999;
 
 void task_scheduler_start(void)
 {
