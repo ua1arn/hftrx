@@ -2188,16 +2188,16 @@ void local_delay_initialize(void)
 
 // wait expected state of variable
 // return non-zero: timeout error
-int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeout)
+int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, int timeMS)
 {
 	while ((* flag & mask) != state)
 		;
 	return 0;
 #if ! WITHDEBUG
-	timeout = LOCAL_WAITINFINITY;
+	timeMS = LOCAL_WAITINFINITY;
 #endif /* WITHDEBUG */
 
-	if (timeout == LOCAL_WAITINFINITY)
+	if (timeMS == LOCAL_WAITINFINITY)
 	{
 		while ((* flag & mask) != state)
 			;
@@ -2205,7 +2205,7 @@ int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t sta
 	}
 	else
 	{
-		while (timeout --)
+		while (timeMS --)
 		{
 			if ((* flag & mask) == state)
 				return 0;
@@ -2219,12 +2219,15 @@ int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t sta
 
 // wait expected state of variable
 // return non-zero: timeout error
-int local_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeout)
+int local_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, int timeMS)
 {
 	while ((* flag & mask) != state)
 		;
 	return 0;
-	if (timeout == LOCAL_WAITINFINITY)
+#if ! WITHDEBUG
+	timeMS = LOCAL_WAITINFINITY;
+#endif /* WITHDEBUG */
+	if (timeMS == LOCAL_WAITINFINITY)
 	{
 		while ((* flag & mask) != state)
 			;
@@ -2232,7 +2235,7 @@ int local_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t
 	}
 	else
 	{
-		while (timeout --)
+		while (timeMS --)
 		{
 			if ((* flag & mask) == state)
 				return 0;
