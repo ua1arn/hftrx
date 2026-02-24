@@ -7,6 +7,7 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
+#include "clocks.h"
 #include "board.h"
 #include "formats.h"	// for debug prints
 #include <string.h>
@@ -2036,6 +2037,212 @@ void * task_scheduler(void * oldframe)
 }
 
 #endif /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
+
+
+#if CPUSTYLE_ARM || CPUSTYLE_RISCV
+
+// количество циклов на микросекунду
+static uint_fast32_t
+local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
+{
+#if CPUSTYLE_AT91SAM7S
+	#warning TODO: calibrate constant	 looks like CPUSTYLE_STM32MP1
+	const uint_fast32_t top = timeUS * 175uL / cpufreq_MHz;
+	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_ATSAM3S
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const uint_fast32_t top = timeUS * 270uL / cpufreq_MHz;
+	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_ATSAM4S
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const uint_fast32_t top = timeUS * 270uL / cpufreq_MHz;
+	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_STM32F0XX
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const uint_fast32_t top = timeUS * 190uL / cpufreq_MHz;
+	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_RP20XX
+	const uint_fast32_t top = timeUS * 1480uL / cpufreq_MHz;
+#elif CPUSTYLE_STM32L0XX
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const uint_fast32_t top = timeUS * 20uL / cpufreq_MHz;
+	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_STM32F1XX
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const uint_fast32_t top = timeUS * 345uL / cpufreq_MHz;
+	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_STM32F30X
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const uint_fast32_t top = timeUS * 430uL / cpufreq_MHz;
+	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_STM32F4XX
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const uint_fast32_t top = timeUS * 3800uL / cpufreq_MHz;
+#elif CPUSTYLE_STM32F7XX
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const uint_fast32_t top = 55uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_STM32H7XX
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const uint_fast32_t top = 77uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_R7S721
+	const uint_fast32_t top = 105uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_XC7Z
+	const uint_fast32_t top = 125uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
+	const uint_fast32_t top = 125uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_STM32MP1
+	// калибровано для 800 МГц Cortex-A7 процессора
+	const uint_fast32_t top = 120uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_H3
+	// калибровано для 800 МГц Cortex-A7 процессора
+	const uint_fast32_t top = 120uL * cpufreq_MHz * timeUS / 1000;
+#elif ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
+	// калибровано для Cortex-A53 процессора
+	const uint_fast32_t top = 145uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_T113
+	// калибровано для 1200 МГц Cortex-A7 процессора
+	const uint_fast32_t top = 120uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_V3S
+	// калибровано для 1200 МГц Cortex-A7 процессора
+	const uint_fast32_t top = 120uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_F133
+	// калибровано для 1200 МГц RISC-V C906 процессора
+	const uint_fast32_t top = 165uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_VM14
+	// калибровано для 1200 МГц процессора
+	const uint_fast32_t top = 165uL * cpufreq_MHz * timeUS / 1000;
+#else
+	#error TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const uint_fast32_t top = 55uL * cpufreq_MHz * timeUS / 1000;
+#endif
+	return top;
+}
+
+static unsigned cpufreqMHz = 10;
+// Атрибут RAMFUNC_NONILINE убран, так как функция
+// используется в инициализации SDRAM на процессорах STM32F746.
+// TODO: перекалибровать для FLASH контроллеров.
+void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
+{
+	if (timeUS == 0)
+		return;
+#if 0 //LINUX_SUBSYSTEM
+	usleep(timeUS);
+#else
+	// Частота процессора приволится к мегагерцам.
+	const uint_fast32_t top = local_delay_uscycles(timeUS, cpufreqMHz);
+	//
+	volatile uint_fast32_t t;
+	for (t = 0; t < top; ++ t)
+	{
+	}
+#endif /* LINUX_SUBSYSTEM */
+}
+// exactly as required
+//
+void local_delay_ms(int timeMS)
+{
+#if 0 //LINUX_SUBSYSTEM
+	usleep(timeMS * 1000);
+#else
+	if (timeMS == 0)
+		return;
+	// Частота процессора приволится к мегагерцам.
+	const uint_fast32_t top = local_delay_uscycles(1000, cpufreqMHz);
+	int n;
+	for (n = 0; n < timeMS; ++ n)
+	{
+		volatile uint_fast32_t t;
+		for (t = 0; t < top; ++ t)
+		{
+		}
+	}
+#endif /* LINUX_SUBSYSTEM */
+}
+
+#define TWINOCACHE_DERATE 64
+// задержка до того как включили MMU и cache */
+void local_delay_ms_nocache(int timeMS)
+{
+	int t = timeMS * 1000 / TWINOCACHE_DERATE;
+	if (t == 0)
+		t = 1;
+	local_delay_us(t);
+}
+
+// задержка до того как включили MMU и cache */
+void local_delay_us_nocache(int timeUS)
+{
+	int t = timeUS / TWINOCACHE_DERATE;
+	if (t == 0)
+		t = 1;
+	local_delay_us(t);
+}
+
+void local_delay_initialize(void)
+{
+	cpufreqMHz = CPU_FREQ / 1000000;
+}
+
+#endif /* */
+
+// wait expected state of variable
+// return non-zero: timeout error
+int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeout)
+{
+	while ((* flag & mask) != state)
+		;
+	return 0;
+#if ! WITHDEBUG
+	timeout = LOCAL_WAITINFINITY;
+#endif /* WITHDEBUG */
+
+	if (timeout == LOCAL_WAITINFINITY)
+	{
+		while ((* flag & mask) != state)
+			;
+		return 0;
+	}
+	else
+	{
+		while (timeout --)
+		{
+			if ((* flag & mask) == state)
+				return 0;
+#if WITHDEBUG
+			local_delay_ms(1);
+#endif /* WITHDEBUG */
+		}
+	}
+	return 1;
+}
+
+// wait expected state of variable
+// return non-zero: timeout error
+int local_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeout)
+{
+	while ((* flag & mask) != state)
+		;
+	return 0;
+	if (timeout == LOCAL_WAITINFINITY)
+	{
+		while ((* flag & mask) != state)
+			;
+		return 0;
+	}
+	else
+	{
+		while (timeout --)
+		{
+			if ((* flag & mask) == state)
+				return 0;
+#if WITHDEBUG
+			local_delay_ms(1);
+#endif /* WITHDEBUG */
+		}
+	}
+	return 1;
+}
 
 #if defined(__aarch64__) && ! LINUX_SUBSYSTEM
 

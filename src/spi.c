@@ -1092,8 +1092,9 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 
 	/* Do a soft reset */
 	spi->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
-	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
-		;
+	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
+//	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
+//		;
 
 	spi->SPI_GCR =
 		//1 * (UINT32_C(1) << 7) |	// TP_EN Transmit Pause Enable
@@ -1142,8 +1143,9 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 
 	/* Do a soft reset */
 	spi->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
-	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
-		;
+	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
+//	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
+//		;
 
 	spi->SPI_GCR =
 		//1 * (UINT32_C(1) << 7) |	// TP_EN Transmit Pause Enable
@@ -1193,8 +1195,9 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 
 	/* Do a soft reset */
 	spi->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
-	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
-		;
+	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
+//	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
+//		;
 
 	spi->SPI_GCR =
 		//1 * (UINT32_C(1) << 7) |	// TP_EN Transmit Pause Enable
@@ -1220,8 +1223,9 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 
 	/* Do a soft reset */
 	spi->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
-	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
-		;
+	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
+//	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
+//		;
 
 	spi->SPI_GCR =
 		//1 * (UINT32_C(1) << 7) |	// TP_EN Transmit Pause Enable
@@ -1373,8 +1377,9 @@ static void spi_transfer_b8(SPI_t * spi, spitarget_t target, const uint8_t * txb
 
 		spi->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
 		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-		while ((spi->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
-			;
+		local_wait32mask(& spi->SPI_TCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);	// XCH
+//		while ((spi->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
+//			;
 		spi->SPI_BCC &= ~ (UINT32_C(1) << 29);	/* Quad_EN */
 
 		if (! (chunk % 4))
@@ -2004,8 +2009,9 @@ portholder_t hardware_spi_complete_b8(SPI_t * spi)	/* дождаться гот�
 #elif CPUSTYLE_ALLWINNER
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((spi->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
-		;
+	local_wait32mask(& spi->SPI_TCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);	// XCH
+//	while ((spi->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
+//		;
 	return ((spiux_t *) & spi->SPI_RXD)->v8 [0];	/* 8 bit access */
 
 #else
@@ -2137,8 +2143,9 @@ portholder_t RAMFUNC hardware_spi_complete_b16(SPI_t * spi)	/* дождатьс�
 #elif CPUSTYLE_ALLWINNER
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((spi->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
-		;
+	local_wait32mask(& spi->SPI_TCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);	// XCH
+//	while ((spi->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
+//		;
 	return 0xFFFF & __REV16(((spiux_t *) & spi->SPI_RXD)->v16 [0]);
 
 #else
@@ -2301,8 +2308,9 @@ portholder_t hardware_spi_complete_b32(SPI_t * spi)	/* дождаться гот
 #elif CPUSTYLE_ALLWINNER
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	while ((spi->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
-		;
+	local_wait32mask(& spi->SPI_TCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);	// XCH
+//	while ((spi->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
+//		;
 	return __REV(spi->SPI_RXD);	/* 32-bit access */
 
 #else
