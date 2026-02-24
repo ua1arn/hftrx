@@ -2167,6 +2167,44 @@ uint_fast8_t usbd_cdc2_getrts(void)
 #endif /* WITHUSBCDCACM_N > 1 */
 }
 
+// Обычно используется для телеграфной манипуляции (KEYDOWN)
+// вызывается в конексте system interrupt
+uint_fast8_t usbd_cdc2_getdtr(void)
+{
+#if WITHUSBCDCACM_N > 1
+	const unsigned offset = SECOND_CDC_OFFSET;
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	const uint_fast8_t state =
+		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
+		0;
+	IRQLSPIN_UNLOCK(& catlock, oldIrql);
+	return state;
+#else /* WITHUSBCDCACM_N > 1 */
+	return 0;
+#endif /* WITHUSBCDCACM_N > 1 */
+}
+
+static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
+static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
+static uint32_t usbd_cdc_txlen [WITHUSBCDCACM_N];	/* количество данных в буфере */
+
+/* использование буфера принятых данных */
+static void cdcXout_buffer_save(
+	const uint8_t * data,
+	unsigned length,
+	unsigned offset
+	)
+{
+	unsigned i;
+	//PRINTF("CDC%u:%u '%*.*s'\n", offset, length, length, length, data);
+
+	for (i = 0; usbd_cdcX_rxenabled [offset] && i < length; ++ i)
+	{
+		HARDWARE_CDC_ONRXCHAR(offset, data [i]);
+	}
+}
+
 static void setup_dma_rx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t size)
 {
 	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG = 0;
@@ -2202,27 +2240,43 @@ static void setup_dma_tx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, 
 	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG |= (UINT32_C(1) << 31);	// DMA Channel Enable
 }
 
-// Обычно используется для телеграфной манипуляции (KEYDOWN)
-// вызывается в конексте system interrupt
-uint_fast8_t usbd_cdc2_getdtr(void)
+
+
+typedef struct transfer
 {
-#if WITHUSBCDCACM_N > 1
-	const unsigned offset = SECOND_CDC_OFFSET;
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
-	const uint_fast8_t state =
-		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
-		0;
-	IRQLSPIN_UNLOCK(& catlock, oldIrql);
-	return state;
-#else /* WITHUSBCDCACM_N > 1 */
-	return 0;
-#endif /* WITHUSBCDCACM_N > 1 */
+    unsigned score;
+    uintptr_t addr;
+    unsigned size;
+} transfer_t;
+
+static transfer_t t0;
+
+static void save_ep_chunk(uint_fast8_t dmach, uint_fast8_t pipe, unsigned size, int last, unsigned maxpkt)
+{
+    transfer_t * const tr = & t0;
+    unsigned chunk = ulmin(tr->size - tr->score, size);
+    tr->score += chunk;
+    if (last || tr->score >= tr->size || chunk < maxpkt)
+    {
+        cdcXout_buffer_save((const uint8_t *) tr->addr, tr->score, 0);
+        tr->score = 0;
+    }
+    setup_dma_rx(dmach, pipe, tr->addr + tr->score, ulmin(maxpkt, tr->size - tr->score));
 }
 
-static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
-static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
-static uint32_t usbd_cdc_txlen [WITHUSBCDCACM_N];	/* количество данных в буфере */
+static void setup_ep_transfer_rx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t size, unsigned maxpkt)
+{
+    transfer_t * const tr = & t0;
+    tr->addr = addr;
+    tr->size = size;
+    tr->score = 0;
+    setup_dma_rx(dmach, pipe, tr->addr + tr->score, ulmin(maxpkt, tr->size - tr->score));
+}
+
+static void setup_ep_transfer_tx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t size, unsigned maxpkt)
+{
+    setup_dma_tx(dmach, pipe, addr, maxpkt, size);
+}
 
 /* временное решение для передачи (вызывается при запрещённых прерываниях). */
 void usbd_cdc_send(const void * buff, size_t length)
@@ -2338,22 +2392,6 @@ usbd_cdc_tx(void * ctx, uint_fast8_t c)
 	ASSERT(cdcXbuffinlevel  [offset] < VIRTUAL_COM_PORT_IN_DATA_SIZE);
 	cdcXbuffin [offset] [cdcXbuffinlevel [offset] ++] = c;
 	IRQLSPIN_UNLOCK(& catlock, oldIrql);
-}
-
-/* использование буфера принятых данных */
-static void cdcXout_buffer_save(
-	const uint8_t * data,
-	unsigned length,
-	unsigned offset
-	)
-{
-	unsigned i;
-	//PRINTF("1:%u '%*.*s'", length, length, length, data);
-
-	for (i = 0; usbd_cdcX_rxenabled [offset] && i < length; ++ i)
-	{
-		HARDWARE_CDC_ONRXCHAR(offset, data [i]);
-	}
 }
 
 static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)

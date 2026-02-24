@@ -621,9 +621,9 @@ uint_fast8_t 			HAL_HCD_GetCurrentSpeedReady(HCD_HandleTypeDef *hhcd);
 /** @defgroup USB_LL_Core_MPS USB Low Layer Core MPS
   * @{
   */
-#define USB_OTG_HS_MAX_PACKET_SIZE           512U
-#define USB_OTG_FS_MAX_PACKET_SIZE            64U
-#define USB_OTG_MAX_EP0_SIZE                  64U
+//#define USB_OTG_HS_MAX_PACKET_SIZE           512U
+//#define USB_OTG_FS_MAX_PACKET_SIZE            64U
+//#define USB_OTG_MAX_EP0_SIZE                  64U
 /**
   * @}
   */
