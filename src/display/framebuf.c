@@ -300,17 +300,17 @@ static int hwacc_rtmx_waitdone(void)
 	unsigned n = 0x2000000;
 	for (;;)
 	{
-		const uint_fast32_t MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
+		const uint_fast32_t INT_MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
 		const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INTERRUPT;
 		//const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
-		if (((mixer_int & MASK) != 0))
+		if (((mixer_int & INT_MASK) != 0))
 		{
-			G2D_MIXER->G2D_MIXER_INTERRUPT = MASK;
+			G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;	// clear interrupt flag
 			break;
 		}
-//		if (((rot_int & MASK) != 0))
+//		if (((rot_int & INT_MASK) != 0))
 //		{
-//			G2D_ROT->ROT_INT = MASK;
+//			G2D_ROT->ROT_INT = INT_MASK;
 //			break;
 //		}
 		if (-- n == 0)
@@ -326,13 +326,16 @@ static int hwacc_rtmx_waitdone(void)
 /* Запускаем и ждём завершения обработки */
 static void awxx_g2d_rtmix_startandwait(void)
 {
+	const uint_fast32_t INT_MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
+	G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;	// clear interrupt flag - не работает без жиого ожидание сброса G2D_MIXER_CTRL
 	G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
 	local_wait32mask(& G2D_MIXER->G2D_MIXER_CTRL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
-	if (hwacc_rtmx_waitdone() == 0)
-	{
-		PRINTF("awxx_g2d_rtmix_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
-		ASSERT(0);
-	}
+//	local_wait32mask(& G2D_MIXER->G2D_MIXER_INTERRUPT, INT_MASK, INT_MASK, 100);
+//	if (hwacc_rtmx_waitdone() == 0)
+//	{
+//		PRINTF("awxx_g2d_rtmix_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
+//		ASSERT(0);
+//	}
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 }
 
@@ -1046,7 +1049,6 @@ static uint_fast32_t g2d_rot_ctl(
 	return rot_ctl;
 }
 
-
 /* Запуск и ожидание завершения работы G2D  (ROT) */
 /* 0 - timeout. 1 - OK */
 static int hwacc_rot_waitdone(void)
@@ -1054,17 +1056,17 @@ static int hwacc_rot_waitdone(void)
 	unsigned n = 0x2000000;
 	for (;;)
 	{
-		const uint_fast32_t MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
+		const uint_fast32_t INT_MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
 		//const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INTERRUPT;
 		const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
-//		if (((mixer_int & MASK) != 0))
+//		if (((mixer_int & INT_MASK) != 0))
 //		{
-//			G2D_MIXER->G2D_MIXER_INTERRUPT = MASK;
+//			G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;
 //			break;
 //		}
-		if (((rot_int & MASK) != 0))
+		if (((rot_int & INT_MASK) != 0))
 		{
-			G2D_ROT->ROT_INT = MASK;
+			G2D_ROT->ROT_INT = INT_MASK;
 			break;
 		}
 		if (-- n == 0)
@@ -1079,13 +1081,16 @@ static int hwacc_rot_waitdone(void)
 
 static void awxx_g2d_rot_startandwait(void)
 {
+	const uint_fast32_t INT_MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
+	G2D_ROT->ROT_INT = INT_MASK;	// clear interrupt flag
 	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);	// start module
 	local_wait32mask(& G2D_ROT->ROT_CTL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
-	if (hwacc_rot_waitdone() == 0)
-	{
-		PRINTF("awxx_g2d_rot_startandwait: timeout G2D_ROT->ROT_CTL=%08X\n", (unsigned) G2D_ROT->ROT_CTL);
-		ASSERT(0);
-	}
+//	local_wait32mask(& G2D_ROT->ROT_CTL, INT_MASK, INT_MASK, 100);
+//	if (hwacc_rot_waitdone() == 0)
+//	{
+//		PRINTF("awxx_g2d_rot_startandwait: timeout G2D_ROT->ROT_CTL=%08X\n", (unsigned) G2D_ROT->ROT_CTL);
+//		ASSERT(0);
+//	}
 	ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
 }
 
