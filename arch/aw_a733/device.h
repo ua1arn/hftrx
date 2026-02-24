@@ -67,6 +67,7 @@ typedef enum IRQn
     I2S_PCM2_IRQn = 76,                               /*!< I2S_PCM  */
     I2S_PCM3_IRQn = 77,                               /*!< I2S_PCM  */
     DE_IRQn = 82,                                     /*!< DE_TOP DE interrupt */
+    G2D_IRQn = 83,                                    /*!< G2D_TOP Graphic 2D top */
     TCON0_LCD0_IRQn = 86,                             /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */
     TCON0_LCD1_IRQn = 87,                             /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */
     TCON_TV0_IRQn = 89,                               /*!< TCON_TV TV Output */
@@ -256,6 +257,16 @@ typedef enum IRQn
 #define DE_FCC6_BASE ((uintptr_t) 0x05211400)         /*!< DE_FCC Fancy color curvature (FCC) Base */
 #define DE_MIXER0_BLD_BASE ((uintptr_t) 0x05281000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
 #define DE_MIXER1_BLD_BASE ((uintptr_t) 0x052A1000)   /*!< DE_BLD Display Engine (DE) - Blender Base */
+#define G2D_BASE ((uintptr_t) 0x05430000)             /*!< G2D_TOP Graphic 2D top Base */
+#define G2D_TOP_BASE ((uintptr_t) 0x05430000)         /*!< G2D_TOP Graphic 2D top Base */
+#define G2D_MIXER_BASE ((uintptr_t) 0x05430100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
+#define G2D_BLD_BASE ((uintptr_t) 0x05430400)         /*!< G2D_BLD Graphic 2D (G2D) Engine Blender Base */
+#define G2D_V0_BASE ((uintptr_t) 0x05430800)          /*!< G2D_VI Graphic 2D VI surface Base */
+#define G2D_UI0_BASE ((uintptr_t) 0x05431000)         /*!< G2D_UI Graphic 2D UI surface Base */
+#define G2D_UI1_BASE ((uintptr_t) 0x05431800)         /*!< G2D_UI Graphic 2D UI surface Base */
+#define G2D_UI2_BASE ((uintptr_t) 0x05432000)         /*!< G2D_UI Graphic 2D UI surface Base */
+#define G2D_WB_BASE ((uintptr_t) 0x05433000)          /*!< G2D_WB Graphic 2D (G2D) Engine Write Back Base */
+#define G2D_VSU_BASE ((uintptr_t) 0x05438000)         /*!< G2D_VSU Graphic 2D Video Scaler Base */
 #define DISPLAY0_TOP_BASE ((uintptr_t) 0x05500000)    /*!< DISPLAY0_TOP VIDE0_OUT1_SYS Base */
 #define TCON_LCD0_BASE ((uintptr_t) 0x05501000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
 #define TCON_LCD1_BASE ((uintptr_t) 0x05502000)       /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) Base */
@@ -1164,6 +1175,229 @@ typedef struct DMAC_Type
     } CH [0x010];                                     /*!< Offset 0x100 Channel [0..15] */
          RESERVED(0x500[0x1000 - 0x0500], uint8_t)
 } DMAC_TypeDef; /* size of structure = 0x1000 */
+/*
+ * @brief G2D_BLD
+ */
+/*!< G2D_BLD Graphic 2D (G2D) Engine Blender */
+typedef struct G2D_BLD_Type
+{
+    __IOM uint32_t BLD_FILL_COLOR_CTL;                /*!< Offset 0x000 BLD_EN_CTL BLD_FILL_COLOR_CTL Allwinner_DE2.0_Spec_V1.0.pdf page 106   */
+         RESERVED(0x004[0x0010 - 0x0004], uint8_t)
+    __IOM uint32_t BLD_FILL_COLOR [0x002];            /*!< Offset 0x010 BLD_FILLC  N=0..1  */
+         RESERVED(0x018[0x0020 - 0x0018], uint8_t)
+    __IOM uint32_t BLD_CH_ISIZE [0x002];              /*!< Offset 0x020 BLD_CH_ISIZE N=0..1   */
+         RESERVED(0x028[0x0030 - 0x0028], uint8_t)
+    __IOM uint32_t BLD_CH_OFFSET [0x002];             /*!< Offset 0x030 BLD_CH_OFFSET N=0..1 */
+         RESERVED(0x038[0x0040 - 0x0038], uint8_t)
+    __IOM uint32_t BLD_PREMUL_CTL;                    /*!< Offset 0x040 BLD_PREMUL_CTL      */
+    __IOM uint32_t BLD_BK_COLOR;                      /*!< Offset 0x044 BLD_BK_COLOR        */
+    __IOM uint32_t BLD_SIZE;                          /*!< Offset 0x048 BLD_SIZE            */
+    __IOM uint32_t BLD_CTL;                           /*!< Offset 0x04C BLD_CTL             */
+    __IOM uint32_t BLD_KEY_CTL;                       /*!< Offset 0x050 BLD_KEY_CTL         */
+    __IOM uint32_t BLD_KEY_CON;                       /*!< Offset 0x054 BLD_KEY_CON         */
+    __IOM uint32_t BLD_KEY_MAX;                       /*!< Offset 0x058 BLD_KEY_MAX         */
+    __IOM uint32_t BLD_KEY_MIN;                       /*!< Offset 0x05C BLD_KEY_MIN         */
+    __IOM uint32_t BLD_OUT_COLOR;                     /*!< Offset 0x060 BLD_OUT_COLOR       */
+         RESERVED(0x064[0x0080 - 0x0064], uint8_t)
+    __IOM uint32_t ROP_CTL;                           /*!< Offset 0x080 ROP_CTL             */
+    __IOM uint32_t ROP_INDEX [0x004];                 /*!< Offset 0x084 ROP_INDEX N=0..1 ch3_index0 (tina linux sources has two elements) */
+         RESERVED(0x094[0x0100 - 0x0094], uint8_t)
+    __IOM uint32_t BLD_CSC_CTL;                       /*!< Offset 0x100 BLD_CSC_CTL         */
+         RESERVED(0x104[0x0110 - 0x0104], uint8_t)
+    __IOM uint32_t BLD_CSC0_COEF00;                   /*!< Offset 0x110 BLD_CSC0_COEF00     */
+    __IOM uint32_t BLD_CSC0_COEF01;                   /*!< Offset 0x114 BLD_CSC0_COEF01     */
+    __IOM uint32_t BLD_CSC0_COEF02;                   /*!< Offset 0x118 BLD_CSC0_COEF02     */
+    __IOM uint32_t BLD_CSC0_CONST0;                   /*!< Offset 0x11C BLD_CSC0_CONST0     */
+    __IOM uint32_t BLD_CSC0_COEF10;                   /*!< Offset 0x120 BLD_CSC0_COEF10     */
+    __IOM uint32_t BLD_CSC0_COEF11;                   /*!< Offset 0x124 BLD_CSC0_COEF11     */
+    __IOM uint32_t BLD_CSC0_COEF12;                   /*!< Offset 0x128 BLD_CSC0_COEF12     */
+    __IOM uint32_t BLD_CSC0_CONST1;                   /*!< Offset 0x12C BLD_CSC0_CONST1     */
+    __IOM uint32_t BLD_CSC0_COEF20;                   /*!< Offset 0x130 BLD_CSC0_COEF20     */
+    __IOM uint32_t BLD_CSC0_COEF21;                   /*!< Offset 0x134 BLD_CSC0_COEF21     */
+    __IOM uint32_t BLD_CSC0_COEF22;                   /*!< Offset 0x138 BLD_CSC0_COEF22     */
+    __IOM uint32_t BLD_CSC0_CONST2;                   /*!< Offset 0x13C BLD_CSC0_CONST2     */
+    __IOM uint32_t BLD_CSC1_COEF00;                   /*!< Offset 0x140 BLD_CSC1_COEF00     */
+    __IOM uint32_t BLD_CSC1_COEF01;                   /*!< Offset 0x144 BLD_CSC1_COEF01     */
+    __IOM uint32_t BLD_CSC1_COEF02;                   /*!< Offset 0x148 BLD_CSC1_COEF02     */
+    __IOM uint32_t BLD_CSC1_CONST0;                   /*!< Offset 0x14C BLD_CSC1_CONST0     */
+    __IOM uint32_t BLD_CSC1_COEF10;                   /*!< Offset 0x150 BLD_CSC1_COEF10     */
+    __IOM uint32_t BLD_CSC1_COEF11;                   /*!< Offset 0x154 BLD_CSC1_COEF11     */
+    __IOM uint32_t BLD_CSC1_COEF12;                   /*!< Offset 0x158 BLD_CSC1_COEF12     */
+    __IOM uint32_t BLD_CSC1_CONST1;                   /*!< Offset 0x15C BLD_CSC1_CONST1     */
+    __IOM uint32_t BLD_CSC1_COEF20;                   /*!< Offset 0x160 BLD_CSC1_COEF20     */
+    __IOM uint32_t BLD_CSC1_COEF21;                   /*!< Offset 0x164 BLD_CSC1_COEF21     */
+    __IOM uint32_t BLD_CSC1_COEF22;                   /*!< Offset 0x168 BLD_CSC1_COEF22     */
+    __IOM uint32_t BLD_CSC1_CONST2;                   /*!< Offset 0x16C BLD_CSC1_CONST2     */
+    __IOM uint32_t BLD_CSC2_COEF00;                   /*!< Offset 0x170 BLD_CSC2_COEF00     */
+    __IOM uint32_t BLD_CSC2_COEF01;                   /*!< Offset 0x174 BLD_CSC2_COEF01     */
+    __IOM uint32_t BLD_CSC2_COEF02;                   /*!< Offset 0x178 BLD_CSC2_COEF02     */
+    __IOM uint32_t BLD_CSC2_CONST0;                   /*!< Offset 0x17C BLD_CSC2_CONST0     */
+    __IOM uint32_t BLD_CSC2_COEF10;                   /*!< Offset 0x180 BLD_CSC2_COEF10     */
+    __IOM uint32_t BLD_CSC2_COEF11;                   /*!< Offset 0x184 BLD_CSC2_COEF11     */
+    __IOM uint32_t BLD_CSC2_COEF12;                   /*!< Offset 0x188 BLD_CSC2_COEF12     */
+    __IOM uint32_t BLD_CSC2_CONST1;                   /*!< Offset 0x18C BLD_CSC2_CONST1     */
+    __IOM uint32_t BLD_CSC2_COEF20;                   /*!< Offset 0x190 BLD_CSC2_COEF20     */
+    __IOM uint32_t BLD_CSC2_COEF21;                   /*!< Offset 0x194 BLD_CSC2_COEF21     */
+    __IOM uint32_t BLD_CSC2_COEF22;                   /*!< Offset 0x198 BLD_CSC2_COEF22     */
+    __IOM uint32_t BLD_CSC2_CONST2;                   /*!< Offset 0x19C BLD_CSC2_CONST2     */
+} G2D_BLD_TypeDef; /* size of structure = 0x1A0 */
+/*
+ * @brief G2D_MIXER
+ */
+/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer */
+typedef struct G2D_MIXER_Type
+{
+    __IOM uint32_t G2D_MIXER_CTRL;                    /*!< Offset 0x000 G2D mixer control */
+    __IOM uint32_t G2D_MIXER_INTERRUPT;               /*!< Offset 0x004 G2D mixer interrupt */
+    __IOM uint32_t G2D_MIXER_CLK;                     /*!< Offset 0x008 G2D mixer clock */
+} G2D_MIXER_TypeDef; /* size of structure = 0x00C */
+/*
+ * @brief G2D_ROT
+ */
+/*!< G2D_ROT Graphic 2D Rotate */
+typedef struct G2D_ROT_Type
+{
+    __IOM uint32_t ROT_CTL;                           /*!< Offset 0x000 ROT_CTL						 */
+    __IOM uint32_t ROT_INT;                           /*!< Offset 0x004 ROT_INT				 */
+    __IOM uint32_t ROT_TIMEOUT;                       /*!< Offset 0x008 ROT_TIMEOUT */
+         RESERVED(0x00C[0x0020 - 0x000C], uint8_t)
+    __IOM uint32_t ROT_IFMT;                          /*!< Offset 0x020 Input data attribute register */
+    __IOM uint32_t ROT_ISIZE;                         /*!< Offset 0x024 Input data size register */
+         RESERVED(0x028[0x0030 - 0x0028], uint8_t)
+    __IOM uint32_t ROT_IPITCH0;                       /*!< Offset 0x030 Input Y/RGB/ARGB memory pitch register */
+    __IOM uint32_t ROT_IPITCH1;                       /*!< Offset 0x034 Input U/UV memory pitch register */
+    __IOM uint32_t ROT_IPITCH2;                       /*!< Offset 0x038 Input V memory pitch register */
+         RESERVED(0x03C[0x0040 - 0x003C], uint8_t)
+    __IOM uint32_t ROT_ILADD0;                        /*!< Offset 0x040 Input Y/RGB/ARGB memory address register0 */
+    __IOM uint32_t ROT_IHADD0;                        /*!< Offset 0x044 Input Y/RGB/ARGB memory address register1 */
+    __IOM uint32_t ROT_ILADD1;                        /*!< Offset 0x048 Input U/UV memory address register0 */
+    __IOM uint32_t ROT_IHADD1;                        /*!< Offset 0x04C Input U/UV memory address register1 */
+    __IOM uint32_t ROT_ILADD2;                        /*!< Offset 0x050 Input V memory address register0 */
+    __IOM uint32_t ROT_IHADD2;                        /*!< Offset 0x054 Input V memory address register1 */
+         RESERVED(0x058[0x0084 - 0x0058], uint8_t)
+    __IOM uint32_t ROT_OSIZE;                         /*!< Offset 0x084 Output data size register */
+         RESERVED(0x088[0x0090 - 0x0088], uint8_t)
+    __IOM uint32_t ROT_OPITCH0;                       /*!< Offset 0x090 Output Y/RGB/ARGB memory pitch register */
+    __IOM uint32_t ROT_OPITCH1;                       /*!< Offset 0x094 Output U/UV memory pitch register */
+    __IOM uint32_t ROT_OPITCH2;                       /*!< Offset 0x098 Output V memory pitch register */
+         RESERVED(0x09C[0x00A0 - 0x009C], uint8_t)
+    __IOM uint32_t ROT_OLADD0;                        /*!< Offset 0x0A0 Output Y/RGB/ARGB memory address register0 */
+    __IOM uint32_t ROT_OHADD0;                        /*!< Offset 0x0A4 Output Y/RGB/ARGB memory address register1 */
+    __IOM uint32_t ROT_OLADD1;                        /*!< Offset 0x0A8 Output U/UV memory address register0 */
+    __IOM uint32_t ROT_OHADD1;                        /*!< Offset 0x0AC Output U/UV memory address register1 */
+    __IOM uint32_t ROT_OLADD2;                        /*!< Offset 0x0B0 Output V memory address register0 */
+    __IOM uint32_t ROT_OHADD2;                        /*!< Offset 0x0B4 Output V memory address register1 */
+         RESERVED(0x0B8[0x00C8 - 0x00B8], uint8_t)
+    __IOM uint32_t LBC_ENC_CTL;                       /*!< Offset 0x0C8 Encode control (bit 31 - is lossy) */
+    __IOM uint32_t LBC_CTL;                           /*!< Offset 0x0CC  */
+    __IOM uint32_t LBC_DEC_CTL;                       /*!< Offset 0x0D0 Decode control (bit 31 - is lossy)  */
+} G2D_ROT_TypeDef; /* size of structure = 0x0D4 */
+/*
+ * @brief G2D_TOP
+ */
+/*!< G2D_TOP Graphic 2D top */
+typedef struct G2D_TOP_Type
+{
+    __IOM uint32_t G2D_SCLK_GATE;                     /*!< Offset 0x000 G2D SCLK gate   */
+    __IOM uint32_t G2D_HCLK_GATE;                     /*!< Offset 0x004 g2d HCLK gate   */
+    __IOM uint32_t G2D_AHB_RST;                       /*!< Offset 0x008 G2D AHB reset   */
+    __IOM uint32_t G2D_SCLK_DIV;                      /*!< Offset 0x00C G2D SCLK div    */
+    __IM  uint32_t G2D_VERSION;                       /*!< Offset 0x010  */
+         RESERVED(0x014[0x0020 - 0x0014], uint8_t)
+    __IOM uint32_t RCQ_IRQ_CTL;                       /*!< Offset 0x020  */
+    __IOM uint32_t RCQ_STATUS;                        /*!< Offset 0x024  */
+    __IOM uint32_t RCQ_CTRL;                          /*!< Offset 0x028  */
+    __IOM uint32_t RCQ_HEADER_LOW_ADDR;               /*!< Offset 0x02C Register Configuration Queue Header bits 31..0 */
+    __IOM uint32_t RCQ_HEADER_HIGH_ADDR;              /*!< Offset 0x030 Register Configuration Queue Header bits 39..32 */
+    __IOM uint32_t RCQ_HEADER_LEN;                    /*!< Offset 0x034 Register Configuration Queue length bits 15..0 */
+} G2D_TOP_TypeDef; /* size of structure = 0x038 */
+/*
+ * @brief G2D_UI
+ */
+/*!< G2D_UI Graphic 2D UI surface */
+typedef struct G2D_UI_Type
+{
+    __IOM uint32_t UI_ATTR;                           /*!< Offset 0x000 UIx_ATTR */
+    __IOM uint32_t UI_MBSIZE;                         /*!< Offset 0x004 UIx_MBSIZE */
+    __IOM uint32_t UI_COOR;                           /*!< Offset 0x008 UIx_COOR */
+    __IOM uint32_t UI_PITCH;                          /*!< Offset 0x00C UIx_PITCH */
+    __IOM uint32_t UI_LADD;                           /*!< Offset 0x010 UIx_LADD */
+    __IOM uint32_t UI_FILLC;                          /*!< Offset 0x014 UIx_FILLC */
+    __IOM uint32_t UI_HADD;                           /*!< Offset 0x018 UIx_HADD */
+    __IOM uint32_t UI_SIZE;                           /*!< Offset 0x01C UIx_SIZE */
+} G2D_UI_TypeDef; /* size of structure = 0x020 */
+/*
+ * @brief G2D_VI
+ */
+/*!< G2D_VI Graphic 2D VI surface */
+typedef struct G2D_VI_Type
+{
+    __IOM uint32_t V0_ATTCTL;                         /*!< Offset 0x000 V0_ATTCTL */
+    __IOM uint32_t V0_MBSIZE;                         /*!< Offset 0x004 Source rectangle size (may be empty) */
+    __IOM uint32_t V0_COOR;                           /*!< Offset 0x008 Target window position */
+    __IOM uint32_t V0_PITCH0;                         /*!< Offset 0x00C V0_PITCH0 */
+    __IOM uint32_t V0_PITCH1;                         /*!< Offset 0x010 V0_PITCH1 */
+    __IOM uint32_t V0_PITCH2;                         /*!< Offset 0x014 V0_PITCH2 */
+    __IOM uint32_t V0_LADD0;                          /*!< Offset 0x018 V0_LADD0 */
+    __IOM uint32_t V0_LADD1;                          /*!< Offset 0x01C V0_LADD1 */
+    __IOM uint32_t V0_LADD2;                          /*!< Offset 0x020 V0_LADD2 */
+    __IOM uint32_t V0_FILLC;                          /*!< Offset 0x024 V0_FILLC */
+    __IOM uint32_t V0_HADD;                           /*!< Offset 0x028 [31:24]: 0, [23:16]: LADD2 bits 40..32, [15:8]: LADD1 bits 40..32, [7:0]: LADD0 bits 40..32 */
+    __IOM uint32_t V0_SIZE;                           /*!< Offset 0x02C Source window size (may not be empty) */
+    __IOM uint32_t V0_HDS_CTL0;                       /*!< Offset 0x030 V0_HDS_CTL0 */
+    __IOM uint32_t V0_HDS_CTL1;                       /*!< Offset 0x034 V0_HDS_CTL1 */
+    __IOM uint32_t V0_VDS_CTL0;                       /*!< Offset 0x038 V0_VDS_CTL0 */
+    __IOM uint32_t V0_VDS_CTL1;                       /*!< Offset 0x03C V0_VDS_CTL1 */
+} G2D_VI_TypeDef; /* size of structure = 0x040 */
+/*
+ * @brief G2D_VSU
+ */
+/*!< G2D_VSU Graphic 2D Video Scaler */
+typedef struct G2D_VSU_Type
+{
+    __IOM uint32_t VS_CTRL;                           /*!< Offset 0x000 VS_CTRL */
+         RESERVED(0x004[0x0040 - 0x0004], uint8_t)
+    __IOM uint32_t VS_OUT_SIZE;                       /*!< Offset 0x040 VS_OUT_SIZE */
+    __IOM uint32_t VS_GLB_ALPHA;                      /*!< Offset 0x044 VS_GLB_ALPHA */
+         RESERVED(0x048[0x0080 - 0x0048], uint8_t)
+    __IOM uint32_t VS_Y_SIZE;                         /*!< Offset 0x080 VS_Y_SIZE */
+         RESERVED(0x084[0x0088 - 0x0084], uint8_t)
+    __IOM uint32_t VS_Y_HSTEP;                        /*!< Offset 0x088 VS_Y_HSTEP */
+    __IOM uint32_t VS_Y_VSTEP;                        /*!< Offset 0x08C VS_Y_VSTEP */
+    __IOM uint32_t VS_Y_HPHASE;                       /*!< Offset 0x090 VS_Y_HPHASE */
+         RESERVED(0x094[0x0098 - 0x0094], uint8_t)
+    __IOM uint32_t VS_Y_VPHASE0;                      /*!< Offset 0x098 VS_Y_VPHASE0 */
+         RESERVED(0x09C[0x00C0 - 0x009C], uint8_t)
+    __IOM uint32_t VS_C_SIZE;                         /*!< Offset 0x0C0 VS_C_SIZE */
+         RESERVED(0x0C4[0x00C8 - 0x00C4], uint8_t)
+    __IOM uint32_t VS_C_HSTEP;                        /*!< Offset 0x0C8 VS_C_HSTEP */
+    __IOM uint32_t VS_C_VSTEP;                        /*!< Offset 0x0CC VS_C_VSTEP */
+    __IOM uint32_t VS_C_HPHASE;                       /*!< Offset 0x0D0 VS_C_HPHASE */
+         RESERVED(0x0D4[0x00D8 - 0x00D4], uint8_t)
+    __IOM uint32_t VS_C_VPHASE0;                      /*!< Offset 0x0D8 VS_C_VPHASE0 */
+         RESERVED(0x0DC[0x0200 - 0x00DC], uint8_t)
+    __IOM uint32_t VS_Y_HCOEF [0x040];                /*!< Offset 0x200 VS_Y_HCOEF[N]. N=0..31 */
+    __IOM uint32_t VS_Y_VCOEF [0x040];                /*!< Offset 0x300 VS_Y_VCOEF[N]. N=0..31 */
+    __IOM uint32_t VS_C_HCOEF [0x040];                /*!< Offset 0x400 VS_C_HCOEF[N]. N=0..31 */
+} G2D_VSU_TypeDef; /* size of structure = 0x500 */
+/*
+ * @brief G2D_WB
+ */
+/*!< G2D_WB Graphic 2D (G2D) Engine Write Back */
+typedef struct G2D_WB_Type
+{
+    __IOM uint32_t WB_ATT;                            /*!< Offset 0x000 WB_ATT */
+    __IOM uint32_t WB_SIZE;                           /*!< Offset 0x004 WB_SIZE */
+    __IOM uint32_t WB_PITCH0;                         /*!< Offset 0x008 WB_PITCH0 */
+    __IOM uint32_t WB_PITCH1;                         /*!< Offset 0x00C WB_PITCH1 */
+    __IOM uint32_t WB_PITCH2;                         /*!< Offset 0x010 WB_PITCH2 */
+    __IOM uint32_t WB_LADD0;                          /*!< Offset 0x014 WB_LADD0 */
+    __IOM uint32_t WB_HADD0;                          /*!< Offset 0x018 WB_HADD0 */
+    __IOM uint32_t WB_LADD1;                          /*!< Offset 0x01C WB_LADD1 */
+    __IOM uint32_t WB_HADD1;                          /*!< Offset 0x020 WB_HADD1 */
+    __IOM uint32_t WB_LADD2;                          /*!< Offset 0x024 WB_LADD2 */
+    __IOM uint32_t WB_HADD2;                          /*!< Offset 0x028 WB_HADD2 */
+} G2D_WB_TypeDef; /* size of structure = 0x02C */
 /*
  * @brief GICA
  */
@@ -2815,6 +3049,16 @@ typedef struct USB_OHCI_Capability_Type
 #define DE_FCC6 ((DE_FCC_TypeDef *) DE_FCC6_BASE)     /*!< DE_FCC6 Fancy color curvature (FCC) register set access pointer */
 #define DE_MIXER0_BLD ((DE_BLD_TypeDef *) DE_MIXER0_BLD_BASE)/*!< DE_MIXER0_BLD Display Engine (DE) - Blender register set access pointer */
 #define DE_MIXER1_BLD ((DE_BLD_TypeDef *) DE_MIXER1_BLD_BASE)/*!< DE_MIXER1_BLD Display Engine (DE) - Blender register set access pointer */
+#define G2D ((G2D_TOP_TypeDef *) G2D_BASE)            /*!< G2D Graphic 2D top register set access pointer */
+#define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
+#define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
+#define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */
+#define G2D_V0 ((G2D_VI_TypeDef *) G2D_V0_BASE)       /*!< G2D_V0 Graphic 2D VI surface register set access pointer */
+#define G2D_UI0 ((G2D_UI_TypeDef *) G2D_UI0_BASE)     /*!< G2D_UI0 Graphic 2D UI surface register set access pointer */
+#define G2D_UI1 ((G2D_UI_TypeDef *) G2D_UI1_BASE)     /*!< G2D_UI1 Graphic 2D UI surface register set access pointer */
+#define G2D_UI2 ((G2D_UI_TypeDef *) G2D_UI2_BASE)     /*!< G2D_UI2 Graphic 2D UI surface register set access pointer */
+#define G2D_WB ((G2D_WB_TypeDef *) G2D_WB_BASE)       /*!< G2D_WB Graphic 2D (G2D) Engine Write Back register set access pointer */
+#define G2D_VSU ((G2D_VSU_TypeDef *) G2D_VSU_BASE)    /*!< G2D_VSU Graphic 2D Video Scaler register set access pointer */
 #define DISPLAY0_TOP ((DISPLAY0_TOP_TypeDef *) DISPLAY0_TOP_BASE)/*!< DISPLAY0_TOP VIDE0_OUT1_SYS register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_LCD1 ((TCON_LCD_TypeDef *) TCON_LCD1_BASE)/*!< TCON_LCD1 Timing Controller_LCD (TCON_LCD) register set access pointer */

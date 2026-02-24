@@ -8,7 +8,7 @@ SET FILELIST= ^
 	i2s_pcm.csv ^
 	..\aw_generic\usb_ehci_capability.csv ..\aw_generic\usb_ohci_capability.csv ..\aw_generic\usbehci.csv ..\aw_generic\usbotg.csv ^
 	ccu.csv rtc.csv prcm.csv sid.csv cpu_subsys.csv intctrl.csv ^
-	de33.csv tcon_tv.csv tconlcd.csv hdmi.csv ^
+	g2d.csv de33.csv tcon_tv.csv tconlcd.csv hdmi.csv ^
 	display0_top.csv display1_top.csv ^
 	aw_a733.csv
 
