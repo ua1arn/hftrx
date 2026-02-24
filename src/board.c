@@ -1376,11 +1376,11 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0071, glob_tuner_type);		// TY
 		RBBIT(0070, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
 #if WITHAUTOTUNER_AVBELNN_REV8CAPS
-		RBVAL8(0060, revbits8(glob_tuner_C));
+		RBVAL8(0060, revbits8(glob_tuner_bypass ? 0 : glob_tuner_C));
 #else /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
-		RBVAL8(0060, glob_tuner_C);
+		RBVAL8(0060, glob_tuner_bypass ? 0 : glob_tuner_C);
 #endif /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
-		RBVAL8(0050, glob_tuner_L);
+		RBVAL8(0050, glob_tuner_bypass ? 0 : glob_tuner_L);
 
 	#elif FULLSET8
 		#warning Add code
@@ -1505,11 +1505,11 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0101, glob_tuner_type);		// TY
 		RBBIT(0100, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
 #if WITHAUTOTUNER_AVBELNN_REV8CAPS
-		RBVAL8(0070, revbits8(glob_tuner_C));
+		RBVAL8(0070, revbits8(glob_tuner_bypass ? 0 : glob_tuner_C));
 #else /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
-		RBVAL8(0070, glob_tuner_C);
+		RBVAL8(0070, glob_tuner_bypass ? 0 : glob_tuner_C);
 #endif /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
-		RBVAL8(0060, glob_tuner_L);
+		RBVAL8(0060, glob_tuner_bypass ? 0 : glob_tuner_L);
 
 	#elif WITHTPA100W_UA1CEI_V2
 		#warning Add code
@@ -1622,9 +1622,9 @@ prog_ctrlreg(uint_fast8_t plane)
 	#if WITHTPA100W_UA1CEI_V2
 
 		/* 7 indictors, 7 or 8 capacitors */
-		RBVAL8(0100, glob_tuner_C);
+		RBVAL8(0100, glob_tuner_bypass ? 0 : glob_tuner_C);
 		RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
-		RBVAL(0070, glob_tuner_L, 7);
+		RBVAL(0070, glob_tuner_bypass ? 0 : glob_tuner_L, 7);
 
 		//RBBIT(0067, 0);	// UNUSED
 		RBBIT(0066, 0);	// undefined
@@ -1744,9 +1744,9 @@ prog_ctrlreg(uint_fast8_t plane)
 	#if WITHTPA100W_UA1CEI_V2
 
 		/* 7 indictors, 7 or 8 capacitors */
-		RBVAL8(0100, glob_tuner_C);
+		RBVAL8(0100, glob_tuner_bypass ? 0 : glob_tuner_C);
 		RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
-		RBVAL(0070, glob_tuner_L, 7);
+		RBVAL(0070, glob_tuner_bypass ? 0 : glob_tuner_L, 7);
 
 		//RBBIT(0067, 0);	// UNUSED
 		RBBIT(0066, 0);	// undefined
@@ -1782,11 +1782,11 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0071 + bs - 050, glob_tuner_type);		// TY
 		RBBIT(0070 + bs - 050, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
 	#if WITHAUTOTUNER_AVBELNN_REV8CAPS
-		RBVAL8(0060 + bs - 050, revbits8(glob_tuner_C));	// сборка от UA1CEI - перевернутый	порядок конденсаторв
+		RBVAL8(0060 + bs - 050, revbits8(glob_tuner_bypass ? 0 : glob_tuner_C));	// сборка от UA1CEI - перевернутый	порядок конденсаторв
 	#else /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
-		RBVAL8(0060 + bs - 050, glob_tuner_C);
+		RBVAL8(0060 + bs - 050, glob_tuner_bypass ? 0 : glob_tuner_C);
 	#endif /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
-		RBVAL8(0050 + bs - 050, glob_tuner_L);
+		RBVAL8(0050 + bs - 050, glob_tuner_bypass ? 0 : glob_tuner_L);
 
 	#elif FULLSET8
 		#warning Add code
@@ -1907,11 +1907,11 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		// TUNWER
 		/* 7 indictors, 7/8 capacitors */
-		RBVAL8(0060, glob_tuner_C);		// D0..D7: capacitors
+		RBVAL8(0060, glob_tuner_bypass ? 0 : glob_tuner_C);		// D0..D7: capacitors
 
 		// TUNWER
 		RBBIT(0057, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
-		RBVAL(0050, glob_tuner_L, 7);	// D0..D6: Inductors
+		RBVAL(0050, glob_tuner_bypass ? 0 : glob_tuner_L, 7);	// D0..D6: Inductors
 
 		// POWERAMP DD2 SN74HC595PW
 		RBBIT(0047, glob_rxantenna);			// RX ANT
@@ -1996,9 +1996,9 @@ prog_ctrlreg(uint_fast8_t plane)
 	#if WITHTPA100W_UA1CEI_V2
 
 		/* 7 indictors, 8 capacitors */
-		RBVAL8(0100, glob_tuner_C);
+		RBVAL8(0100, glob_tuner_bypass ? 0 : glob_tuner_C);
 		RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
-		RBVAL(0070, glob_tuner_L, 7);
+		RBVAL(0070, glob_tuner_bypass ? 0 : glob_tuner_L, 7);
 
 		//RBBIT(0067, 0);	// UNUSED
 		RBBIT(0066, 0);	// undefined
@@ -2034,11 +2034,11 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0071 + bs - 050, glob_tuner_type);		// TY
 		RBBIT(0070 + bs - 050, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
 	#if WITHAUTOTUNER_AVBELNN_REV8CAPS
-		RBVAL8(0060 + bs - 050, revbits8(glob_tuner_C));	// сборка от UA1CEI - перевернутый	порядок конденсаторв
+		RBVAL8(0060 + bs - 050, revbits8(glob_tuner_bypass ? 0 : glob_tuner_C));	// сборка от UA1CEI - перевернутый	порядок конденсаторв
 	#else /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
-		RBVAL8(0060 + bs - 050, glob_tuner_C);
+		RBVAL8(0060 + bs - 050, glob_tuner_bypass ? 0 : glob_tuner_C);
 	#endif /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
-		RBVAL8(0050 + bs - 050, glob_tuner_L);
+		RBVAL8(0050 + bs - 050, glob_tuner_bypass ? 0 : glob_tuner_L);
 
 	#elif FULLSET8
 		#warning Add code
@@ -2143,8 +2143,8 @@ prog_ctrlreg(uint_fast8_t plane)
 #if WITHAUTOTUNER
 	#if WITHTPA100W_UA1CEI_V2
 
-		RBVAL8(0100, glob_tuner_C);
-		RBVAL8(0070, glob_tuner_L);
+		RBVAL8(0100, glob_tuner_bypass ? 0 : glob_tuner_C);
+		RBVAL8(0070, glob_tuner_bypass ? 0 : glob_tuner_L);
 
 		//RBBIT(0067, 0);	// UNUSED
 		RBBIT(0066, 0);	// undefined
@@ -2177,11 +2177,11 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0071, glob_tuner_type);		// TY
 		RBBIT(0070, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
 #if WITHAUTOTUNER_AVBELNN_REV8CAPS
-		RBVAL8(0060, revbits8(glob_tuner_C));
+		RBVAL8(0060, revbits8(glob_tuner_bypass ? 0 : glob_tuner_C));
 #else /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
-		RBVAL8(0060, glob_tuner_C);
+		RBVAL8(0060, glob_tuner_bypass ? 0 : glob_tuner_C);
 #endif /* WITHAUTOTUNER_AVBELNN_REV8CAPS */
-		RBVAL8(0050, glob_tuner_L);
+		RBVAL8(0050, glob_tuner_bypass ? 0 : glob_tuner_L);
 
 	#elif FULLSET8
 		#warning Add code
@@ -2319,8 +2319,8 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBVAL(0042, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
 		RBBIT(0041, glob_tuner_type);		// TY
 		RBBIT(0040, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
-		RBVAL8(0030, glob_tuner_C);
-		RBVAL8(0020, glob_tuner_L);
+		RBVAL8(0030, glob_tuner_bypass ? 0 : glob_tuner_C);
+		RBVAL8(0020, glob_tuner_bypass ? 0 : glob_tuner_L);
 #endif /* WITHAUTOTUNER */
 
 		// DD16 STP08CP05TTR в управлении диапазонными фильтрами приёмника

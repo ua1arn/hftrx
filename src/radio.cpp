@@ -13481,6 +13481,7 @@ uif_key_bypasstoggle(void)
 	tunerwork = calc_next(tunerwork, 0, 1);	// переключаем в противоположное состояние
 
 	storetuner(bg, ant);
+	board_set_tuner_group();
 
 	if (tunerwork == 0)
 	{
