@@ -1744,7 +1744,7 @@ void arm_hardware_mdma_initialize(void)
 	CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->G2D_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
 
-    memset32((void *) (G2D_TOP_BASE + 1024), ~0, 255 * 1024);
+    memset32((void *) (G2D_TOP_BASE + 1024), ~0, 255 * 1024);	// strange line for G2D_ROT
     //memset32(G2D_ROT, ~0, 256);
 //	G2D_TOP->G2D_SCLK_GATE = ~0;
 //	G2D_TOP->G2D_HCLK_GATE = ~0;
