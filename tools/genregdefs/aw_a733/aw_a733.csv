@@ -268,7 +268,7 @@
 #typeend;
 
 #type; USB_OHCI_Capability
-#base; USB0_OHCI 0x05101400
+#base; USB0_OHCI 0x04101400
 #base; USB1_OHCI 0x04201400
 #irq; USB0_OHCI 190
 #irq; USB1_OHCI 192

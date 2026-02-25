@@ -5819,6 +5819,14 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral derivedFrom="G2D_MIXER">
+  <name>G2D_MIXER1</name>
+  <baseAddress>0x05440200</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="G2D_MIXER">
+  <name>G2D_MIXER2</name>
+  <baseAddress>0x05440300</baseAddress>
+  </peripheral>
   <peripheral>
   <name>G2D_ROT</name>
   <description>Graphic 2D Rotate</description>
@@ -19419,7 +19427,7 @@
   <peripheral>
   <name>USB0_OHCI</name>
   <description></description>
-  <baseAddress>0x05101400</baseAddress>
+  <baseAddress>0x04101400</baseAddress>
   <interrupt>
    <name>USB0_OHCI</name>
    <value>190</value>

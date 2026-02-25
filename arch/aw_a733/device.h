@@ -216,6 +216,7 @@ typedef enum IRQn
 #define DMA1_BASE ((uintptr_t) 0x04024000)            /*!< DMAC  Base */
 #define USB0_DEVICE_BASE ((uintptr_t) 0x04100000)     /*!< USBOTG USB OTG Dual-Role Device controller Base */
 #define USB0_EHCI_BASE ((uintptr_t) 0x04101000)       /*!< USB_EHCI_Capability  Base */
+#define USB0_OHCI_BASE ((uintptr_t) 0x04101400)       /*!< USB_OHCI_Capability  Base */
 #define USB1_EHCI_BASE ((uintptr_t) 0x04201000)       /*!< USB_EHCI_Capability  Base */
 #define USB1_OHCI_BASE ((uintptr_t) 0x04201400)       /*!< USB_OHCI_Capability  Base */
 #define DMA0_BASE ((uintptr_t) 0x04601000)            /*!< DMAC  Base */
@@ -225,7 +226,6 @@ typedef enum IRQn
 #define DE_MIXER1_GLB_BASE ((uintptr_t) 0x05008140)   /*!< DE_GLB Display Engine (DE) - Global Control Base */
 #define RTWB_RCQ_BASE ((uintptr_t) 0x05008200)        /*!< RTWB_RCQ  Base */
 #define DE_VI1_BASE ((uintptr_t) 0x05101000)          /*!< DE_VI Display Engine (DE) - VI surface Base */
-#define USB0_OHCI_BASE ((uintptr_t) 0x05101400)       /*!< USB_OHCI_Capability  Base */
 #define DE_VSU1_BASE ((uintptr_t) 0x05104000)         /*!< DE_VSU Video Scaler Unit (VSU) Base */
 #define DE_FCE1_BASE ((uintptr_t) 0x05110000)         /*!< DE_FCE Fresh and Contrast Enhancement (FCE) Base */
 #define DE_BLS1_BASE ((uintptr_t) 0x05111000)         /*!< DE_BLS Blue Level Stretch (BLS) Base */
@@ -260,6 +260,8 @@ typedef enum IRQn
 #define G2D_BASE ((uintptr_t) 0x05440000)             /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x05440000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_MIXER_BASE ((uintptr_t) 0x05440100)       /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
+#define G2D_MIXER1_BASE ((uintptr_t) 0x05440200)      /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
+#define G2D_MIXER2_BASE ((uintptr_t) 0x05440300)      /*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer Base */
 #define G2D_BLD_BASE ((uintptr_t) 0x05440400)         /*!< G2D_BLD Graphic 2D (G2D) Engine Blender Base */
 #define G2D_V0_BASE ((uintptr_t) 0x05440800)          /*!< G2D_VI Graphic 2D VI surface Base */
 #define G2D_UI0_BASE ((uintptr_t) 0x05441000)         /*!< G2D_UI Graphic 2D UI surface Base */
@@ -3010,6 +3012,7 @@ typedef struct USB_OHCI_Capability_Type
 #define DMA1 ((DMAC_TypeDef *) DMA1_BASE)             /*!< DMA1  register set access pointer */
 #define USB0_DEVICE ((USBOTG_TypeDef *) USB0_DEVICE_BASE)/*!< USB0_DEVICE USB OTG Dual-Role Device controller register set access pointer */
 #define USB0_EHCI ((USB_EHCI_Capability_TypeDef *) USB0_EHCI_BASE)/*!< USB0_EHCI  register set access pointer */
+#define USB0_OHCI ((USB_OHCI_Capability_TypeDef *) USB0_OHCI_BASE)/*!< USB0_OHCI  register set access pointer */
 #define USB1_EHCI ((USB_EHCI_Capability_TypeDef *) USB1_EHCI_BASE)/*!< USB1_EHCI  register set access pointer */
 #define USB1_OHCI ((USB_OHCI_Capability_TypeDef *) USB1_OHCI_BASE)/*!< USB1_OHCI  register set access pointer */
 #define DMA0 ((DMAC_TypeDef *) DMA0_BASE)             /*!< DMA0  register set access pointer */
@@ -3018,7 +3021,6 @@ typedef struct USB_OHCI_Capability_Type
 #define DE_MIXER1_GLB ((DE_GLB_TypeDef *) DE_MIXER1_GLB_BASE)/*!< DE_MIXER1_GLB Display Engine (DE) - Global Control register set access pointer */
 #define RTWB_RCQ ((RTWB_RCQ_TypeDef *) RTWB_RCQ_BASE) /*!< RTWB_RCQ  register set access pointer */
 #define DE_VI1 ((DE_VI_TypeDef *) DE_VI1_BASE)        /*!< DE_VI1 Display Engine (DE) - VI surface register set access pointer */
-#define USB0_OHCI ((USB_OHCI_Capability_TypeDef *) USB0_OHCI_BASE)/*!< USB0_OHCI  register set access pointer */
 #define DE_VSU1 ((DE_VSU_TypeDef *) DE_VSU1_BASE)     /*!< DE_VSU1 Video Scaler Unit (VSU) register set access pointer */
 #define DE_FCE1 ((DE_FCE_TypeDef *) DE_FCE1_BASE)     /*!< DE_FCE1 Fresh and Contrast Enhancement (FCE) register set access pointer */
 #define DE_BLS1 ((DE_BLS_TypeDef *) DE_BLS1_BASE)     /*!< DE_BLS1 Blue Level Stretch (BLS) register set access pointer */
@@ -3053,6 +3055,8 @@ typedef struct USB_OHCI_Capability_Type
 #define G2D ((G2D_TOP_TypeDef *) G2D_BASE)            /*!< G2D Graphic 2D top register set access pointer */
 #define G2D_TOP ((G2D_TOP_TypeDef *) G2D_TOP_BASE)    /*!< G2D_TOP Graphic 2D top register set access pointer */
 #define G2D_MIXER ((G2D_MIXER_TypeDef *) G2D_MIXER_BASE)/*!< G2D_MIXER Graphic 2D (G2D) Engine Video Mixer register set access pointer */
+#define G2D_MIXER1 ((G2D_MIXER_TypeDef *) G2D_MIXER1_BASE)/*!< G2D_MIXER1 Graphic 2D (G2D) Engine Video Mixer register set access pointer */
+#define G2D_MIXER2 ((G2D_MIXER_TypeDef *) G2D_MIXER2_BASE)/*!< G2D_MIXER2 Graphic 2D (G2D) Engine Video Mixer register set access pointer */
 #define G2D_BLD ((G2D_BLD_TypeDef *) G2D_BLD_BASE)    /*!< G2D_BLD Graphic 2D (G2D) Engine Blender register set access pointer */
 #define G2D_V0 ((G2D_VI_TypeDef *) G2D_V0_BASE)       /*!< G2D_V0 Graphic 2D VI surface register set access pointer */
 #define G2D_UI0 ((G2D_UI_TypeDef *) G2D_UI0_BASE)     /*!< G2D_UI0 Graphic 2D UI surface register set access pointer */
