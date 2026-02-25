@@ -6429,7 +6429,7 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 	//	for T507-H/T517-H)/TVOUT modules, please make sure that this bit is
 	//	configured as 1
 ////    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
-	fill32(STBY_PRCM_BASE, prcm_pattern, ARRAY_SIZE(prcm_pattern));
+	fill32delay(STBY_PRCM_BASE, prcm_pattern, ARRAY_SIZE(prcm_pattern));
    local_delay_ms(10);
     //PRINTF("PRCM->VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
 #if 0
