@@ -512,3 +512,17 @@ void fill32(uintptr_t addr, const uint32_t * data, unsigned count)
 		addr += 4;
 	}
 }
+
+void fill32delay(uintptr_t addr, const uint32_t * data, unsigned count)
+{
+	while (count --)
+	{
+		if (* data != * (volatile uint32_t *) addr)
+		{
+			* (volatile uint32_t *) addr = * data;
+			local_delay_us(20 * 1000);
+		}
+		++ data;
+		addr += 4;
+	}
+}

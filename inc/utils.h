@@ -213,6 +213,7 @@ void memset32(void * d, uint32_t v, unsigned sz);
 int_fast32_t iabs32(int_fast32_t v);
 int iabs(int v);
 void fill32(uintptr_t addr, const uint32_t * data, unsigned count);
+void fill32delay(uintptr_t addr, const uint32_t * data, unsigned count);
 
 #ifdef __cplusplus
 }

@@ -17,6 +17,11 @@
 #include "hardware.h"
 #include "formats.h"	// for debug prints
 
+#if CPUSTYLE_A733
+#include "pattern/tcontv0.h"
+#include "pattern/de.h"
+#endif
+
 #if WITHLTDCHW
 
 #define LTDCBIT32(x) (UINT32_C(1) << (x))
@@ -2580,10 +2585,15 @@ static void t507_hdmi_edid_test(void)
 
 	hdmi->HDMI_PHY_I2CM_DIV_ADDR;	// select FS or SS mode
 	PRINTF("t507_hdmi_edid_test before reset\n");
+
 	// I2C reset
 	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
-	while ((hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR & 0x01) == 0)
-		;
+	if (local_wait8mask(& hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR, 0x01, 0x01, 100))
+	{
+		PRINTF("t507_hdmi_edid_test: i2c reset timeout\n");
+	}
+//	while ((hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR & 0x01) == 0)
+//		;
 
 	PRINTF("t507_hdmi_edid_test after reset\n");
 	//PRINTF("hdmi->HDMI_I2CM_DIV=%02X\n", (unsigned) hdmi->HDMI_I2CM_DIV);
@@ -2764,7 +2774,7 @@ static void hardware_ltdc_vsync(int rtmixid)
 		TCONLCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;         //clear LCD_VB_INT_FLAG
 		if (local_wait32mask(& TCONLCD_GINT0_REG, LCD_VB_INT_FLAG, LCD_VB_INT_FLAG, 100))
 		{
-			TP();
+			PRINTF("hardware_ltdc_vsync: timeoutm rtmixid=%d\n", rtmixid);
 		}
 //		while ((TCONLCD_GINT0_REG & LCD_VB_INT_FLAG) == 0) //wait  LCD_VB_INT_FLAG
 //			;
@@ -2775,7 +2785,11 @@ static void hardware_ltdc_vsync(int rtmixid)
 		TCONTV_GINT0_REG &= ~ TVOUT_VB_INT_FLAG;         //clear TCON1_VB_INT_FLAG
 		if (local_wait32mask(& TCONTV_GINT0_REG, TVOUT_VB_INT_FLAG, TVOUT_VB_INT_FLAG, 100))
 		{
-			TP();
+			PRINTF("hardware_ltdc_vsync: timeoutm rtmixid=%d\n", rtmixid);
+		}
+		else
+		{
+			//dbg_putchar('+');
 		}
 //	    while ((TCONTV_GINT0_REG & TVOUT_VB_INT_FLAG) == 0) //wait  TCON1_VB_INT_FLAG
 //	        ;
@@ -2804,7 +2818,11 @@ static void t113_de_update(int rtmixid)
     glb->GLB_DBUFFER = UINT32_C(1);		// 1: register value be ready for update (self-cleaning bit)
     if (local_wait32mask(& glb->GLB_DBUFFER, UINT32_C(1), 0 * UINT32_C(1), 100))
     {
-    	PRINTF("t113_de_update timeout\n");
+    	PRINTF("t113_de_update timeout, rtmixid=%d\n", rtmixid);
+    }
+    else
+    {
+    	//dbg_putchar('!');
     }
 //	while ((glb->GLB_DBUFFER & UINT32_C(1)) != 0)
 //		;
@@ -3176,7 +3194,7 @@ static void hardware_de_global_initialize(void)
 
 //	allwnr_a733_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 //	allwnr_a733_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
-
+#if 1
 	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
 	//	CLK_SRC_SEL.
 	//	Clock Source Select
@@ -3194,14 +3212,16 @@ static void hardware_de_global_initialize(void)
 		0x04 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 100: PERI0_300M
 		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
+
+    CCU->DE0_CLK_REG = 0;	// from dump
     CCU->DE0_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
 
     local_delay_us(10);
-
+#endif
 	//PRINTF("allwnr_a733_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_de_freq() / 1000 / 1000);
 	//PRINTF("allwnr_a733_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_mbus_freq() / 1000 / 1000);
 
-    CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// DESYS_MBUS_GATE_SW_CFG
+    //CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// DESYS_MBUS_GATE_SW_CFG
 	CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1: De-assert
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
@@ -3209,8 +3229,8 @@ static void hardware_de_global_initialize(void)
     PRINTF("CCU->DE_SYS_BGR_REG=%08X\n", (unsigned) CCU->DE_SYS_BGR_REG);
     PRINTF("CCU->DE0_BGR_REG=%08X\n", (unsigned) CCU->DE0_BGR_REG);
 
-	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
-	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+	//CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+	//CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
 	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
 	CCU->VIDEO_OUT0_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT0_RST 1: De-assert
@@ -3224,6 +3244,11 @@ static void hardware_de_global_initialize(void)
 		// Разрешает доступ к HDMI_TX0
 		CCU->HDMI_SFR_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
 	#endif
+	CCU->HDCP_ESM_CLK_REG |= (UINT32_C(1) << 31);
+
+	fill32(DE_TOP_BASE, de_pattern, ARRAY_SIZE(de_pattern));
+	fill32(TCON_TV0_BASE, tcontv0_pattern, ARRAY_SIZE(tcontv0_pattern));
+	//fill32(DE_TOP_BASE, de_pattern, ARRAY_SIZE(de_pattern));
 
 #elif CPUSTYLE_T507
 
@@ -6417,6 +6442,11 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
+
+    DISPLAY1_TOP->VO1_MODULE_GATING = 0x10100000;	// from dump
+    DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC = 0;	// from dump
+    * (volatile uint32_t *) (DISPLAY1_TOP_BASE + 0x0F4) = 0x0000010d;	// from dump
+
 	PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
 
 	// PLL_VIDEO0 as source
@@ -8065,8 +8095,12 @@ static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	vsu->VSU_GLOBAL_ALPHA_REG = 0x00;
 
 	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
-	while ((vsu->VSU_CTRL_REG & (UINT32_C(1) << 4)) != 0)
-		;
+	if (local_wait32mask(& vsu->VSU_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
+	{
+		PRINTF("t507_de2_vsu_init: rtmixid=%d timeout\n", rtmixid);
+	}
+//	while ((vsu->VSU_CTRL_REG & (UINT32_C(1) << 4)) != 0)
+//		;
 }
 #endif /* CPUSTYLE_T507 */
 
@@ -8189,6 +8223,11 @@ static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 	t113_tcontv_set_and_open_interrupt_function();
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_tcontv_open_module_enable();
+
+#if CPUSTYLE_A733
+	//fill32(DE_TOP_BASE, de_pattern, ARRAY_SIZE(de_pattern));
+	fill32(TCON_TV0_BASE, tcontv0_pattern, ARRAY_SIZE(tcontv0_pattern));
+#endif
 #endif /* defined (TCONTV_PTR) */
 }
 
@@ -8220,7 +8259,6 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	const uint_fast32_t dotclock = hdmi_realclock(vdmode);
-
 #if CPUSTYLE_T507 || CPUSTYLE_A733
 	t507_hdmi_phy_init(dotclock);
 #else
@@ -8279,7 +8317,6 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	dw_hdmi_i2s_setup(hdmi);
 	dw_hdmi_clear_overflow(hdmi);
 //	t507_hdmi_edid_test();
-
 }
 #endif /* WITHHDMITVHW */
 
