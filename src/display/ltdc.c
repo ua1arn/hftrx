@@ -20,6 +20,7 @@
 #if CPUSTYLE_A733
 #include "pattern/tcontv0.h"
 #include "pattern/de.h"
+#include "pattern/prcm.h"
 #endif
 
 #if WITHLTDCHW
@@ -3194,7 +3195,7 @@ static void hardware_de_global_initialize(void)
 
 //	allwnr_a733_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 //	allwnr_a733_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
-#if 1
+#if 0
 	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
 	//	CLK_SRC_SEL.
 	//	Clock Source Select
@@ -3212,12 +3213,12 @@ static void hardware_de_global_initialize(void)
 		0x04 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 100: PERI0_300M
 		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
-
+#endif
     CCU->DE0_CLK_REG = 0;	// from dump
     CCU->DE0_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
 
     local_delay_us(10);
-#endif
+
 	//PRINTF("allwnr_a733_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_de_freq() / 1000 / 1000);
 	//PRINTF("allwnr_a733_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_mbus_freq() / 1000 / 1000);
 
@@ -3247,7 +3248,7 @@ static void hardware_de_global_initialize(void)
 	CCU->HDCP_ESM_CLK_REG |= (UINT32_C(1) << 31);
 
 	fill32(DE_TOP_BASE, de_pattern, ARRAY_SIZE(de_pattern));
-	fill32(TCON_TV0_BASE, tcontv0_pattern, ARRAY_SIZE(tcontv0_pattern));
+	//fill32(TCON_TV0_BASE, tcontv0_pattern, ARRAY_SIZE(tcontv0_pattern));
 	//fill32(DE_TOP_BASE, de_pattern, ARRAY_SIZE(de_pattern));
 
 #elif CPUSTYLE_T507
@@ -6428,9 +6429,10 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 	//	for T507-H/T517-H)/TVOUT modules, please make sure that this bit is
 	//	configured as 1
 ////    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
-    local_delay_ms(10);
+	fill32(STBY_PRCM_BASE, prcm_pattern, ARRAY_SIZE(prcm_pattern));
+   local_delay_ms(10);
     //PRINTF("PRCM->VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
-
+#if 0
     // 15.2.9.1 0x0000 TCON_TV Clock Select and EDP I2S1 Select Register
     DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC |= (UINT32_C(1) << 3);	// TCON_TV0_HDMIPHY_CCU_CK_SEL 1: TCON_TV0 clock sources from CCU
     // page 723, Figure 15-18 TCON_TV Environment Diagram
@@ -6442,7 +6444,7 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
-
+#endif
     DISPLAY1_TOP->VO1_MODULE_GATING = 0x10100000;	// from dump
     DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC = 0;	// from dump
     * (volatile uint32_t *) (DISPLAY1_TOP_BASE + 0x0F4) = 0x0000010d;	// from dump
@@ -8226,7 +8228,7 @@ static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 
 #if CPUSTYLE_A733
 	//fill32(DE_TOP_BASE, de_pattern, ARRAY_SIZE(de_pattern));
-	fill32(TCON_TV0_BASE, tcontv0_pattern, ARRAY_SIZE(tcontv0_pattern));
+	//fill32(TCON_TV0_BASE, tcontv0_pattern, ARRAY_SIZE(tcontv0_pattern));
 #endif
 #endif /* defined (TCONTV_PTR) */
 }
