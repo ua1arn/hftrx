@@ -50,7 +50,7 @@ char nameDATAFLASH [64] = "NoChip";
 
 // wait expected state of variable
 // return non-zero: timeout error
-static int spi_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state)
+static void spi_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state)
 {
 	while ((* flag & mask) != state)
 			;
