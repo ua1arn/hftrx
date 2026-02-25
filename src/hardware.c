@@ -1756,7 +1756,7 @@ uint_fast64_t cpu_getdebugticks(void)
 	return csr_read_mcycle();
 
 #else
-	#warning Wromg CPUSTYLE_xxx - cpu_getdebugticks, local_delay_us can not work
+	#warning Wrong CPUSTYLE_xxx - cpu_getdebugticks, local_delay_us can not work
 	return 0;
 
 #endif

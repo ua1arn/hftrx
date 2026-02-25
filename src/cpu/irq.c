@@ -2052,7 +2052,28 @@ void local_delay_initialize(void)
 }
 
 
-#if 0
+#if LINUX_SUBSYSTEM
+
+#include <linux/delay.h>
+
+void local_delay_us(int timeUS)
+{
+	if (timeUS == 0)
+		return;
+
+	udelay(timeUS);
+}
+
+void local_delay_ms(int timeMS)
+{
+	if (timeMS == 0)
+		return;
+
+	mdelay(timeUS);
+}
+
+#elif 0
+
 static unsigned long
 local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 {
