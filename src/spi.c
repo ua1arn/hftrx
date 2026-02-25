@@ -48,6 +48,14 @@ char nameDATAFLASH [64] = "NoChip";
 #define prog_read_byte(target, v)  ((void) (target), prog_spi_read_byte_impl(v))
 
 
+// wait expected state of variable
+// return non-zero: timeout error
+static int spi_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state)
+{
+	while ((* flag & mask) != state)
+			;
+}
+
 void prog_pulse_ioupdate(void);
 
 void prog_select_impl(
@@ -1092,7 +1100,7 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 
 	/* Do a soft reset */
 	spi->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
-	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
+	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100); // Reset
 //	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
 //		;
 
@@ -1143,7 +1151,7 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 
 	/* Do a soft reset */
 	spi->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
-	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
+	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100); // Reset
 //	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
 //		;
 
@@ -1195,7 +1203,7 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 
 	/* Do a soft reset */
 	spi->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
-	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
+	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100); // Reset
 //	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
 //		;
 
@@ -1223,7 +1231,7 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 
 	/* Do a soft reset */
 	spi->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
-	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
+	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100); // Reset
 //	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
 //		;
 
@@ -1377,7 +1385,7 @@ static void spi_transfer_b8(SPI_t * spi, spitarget_t target, const uint8_t * txb
 
 		spi->SPI_TCR |= (UINT32_C(1) << 31);	// XCH запуск обмена
 		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-		local_wait32mask(& spi->SPI_TCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);	// XCH
+		spi_wait32mask(& spi->SPI_TCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31));	// XCH
 //		while ((spi->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 //			;
 		spi->SPI_BCC &= ~ (UINT32_C(1) << 29);	/* Quad_EN */
@@ -2009,7 +2017,7 @@ portholder_t hardware_spi_complete_b8(SPI_t * spi)	/* дождаться гот�
 #elif CPUSTYLE_ALLWINNER
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	local_wait32mask(& spi->SPI_TCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);	// XCH
+	spi_wait32mask(& spi->SPI_TCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31));	// XCH
 //	while ((spi->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 //		;
 	return ((spiux_t *) & spi->SPI_RXD)->v8 [0];	/* 8 bit access */
@@ -2143,7 +2151,7 @@ portholder_t RAMFUNC hardware_spi_complete_b16(SPI_t * spi)	/* дождатьс�
 #elif CPUSTYLE_ALLWINNER
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	local_wait32mask(& spi->SPI_TCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);	// XCH
+	spi_wait32mask(& spi->SPI_TCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31));	// XCH
 //	while ((spi->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 //		;
 	return 0xFFFF & __REV16(((spiux_t *) & spi->SPI_RXD)->v16 [0]);
@@ -2308,7 +2316,7 @@ portholder_t hardware_spi_complete_b32(SPI_t * spi)	/* дождаться гот
 #elif CPUSTYLE_ALLWINNER
 
 	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-	local_wait32mask(& spi->SPI_TCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);	// XCH
+	spi_wait32mask(& spi->SPI_TCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31));	// XCH
 //	while ((spi->SPI_TCR & (UINT32_C(1) << 31)) != 0)	// XCH
 //		;
 	return __REV(spi->SPI_RXD);	/* 32-bit access */
