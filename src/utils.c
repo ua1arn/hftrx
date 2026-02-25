@@ -503,3 +503,12 @@ int iabs(int v)
 	return v > 0 ? v : - v;
 }
 
+void fill32(uintptr_t addr, const uint32_t * data, unsigned count)
+{
+	while (count --)
+	{
+		* (volatile uint32_t *) addr = * data;
+		++ data;
+		addr += 4;
+	}
+}
