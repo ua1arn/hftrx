@@ -2197,7 +2197,7 @@ static void cdcXout_buffer_save(
 	)
 {
 	unsigned i;
-	PRINTF("CDC%u:%u '%*.*s'\n", offset, length, length, length, data);
+	//PRINTF("CDC%u:%u '%*.*s'\n", offset, length, length, length, data);
 
 	for (i = 0; usbd_cdcX_rxenabled [offset] && i < length; ++ i)
 	{
@@ -2251,31 +2251,30 @@ typedef struct transfer
 
 static transfer_t t0;
 
-static void save_ep_chunk(uint_fast8_t dmach, uint_fast8_t pipe, unsigned size, int last, unsigned maxpkt, unsigned offset)
+static void setup_ep_transfer_rx(transfer_t * const tr, uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t size, unsigned maxpkt)
 {
-    transfer_t * const tr = & t0;
-
-    PRINTF("save_ep_chunk: size=%u\n", size);
-    unsigned chunk = ulmin(tr->size - tr->score, size);
-    tr->score += chunk;
-    if (last || tr->score >= tr->size || size < maxpkt)
-    {
-        cdcXout_buffer_save((const uint8_t *) tr->addr, tr->score, offset);
-        tr->score = 0;
-    }
-    setup_dma_rx(dmach, pipe, tr->addr + tr->score, ulmin(maxpkt, tr->size - tr->score));
-}
-
-static void setup_ep_transfer_rx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t size, unsigned maxpkt)
-{
-    transfer_t * const tr = & t0;
+	dcache_clean_invalidate(addr, size);
     tr->addr = addr;
     tr->size = size;
     tr->score = 0;
     setup_dma_rx(dmach, pipe, tr->addr + tr->score, ulmin(maxpkt, tr->size - tr->score));
 }
 
-static void setup_ep_transfer_tx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t size, unsigned maxpkt)
+static void save_ep_chunk(transfer_t * const tr, uint_fast8_t dmach, uint_fast8_t pipe, unsigned size, int last, unsigned maxpkt, unsigned offset)
+{
+    PRINTF("save_ep_chunk: size=%u\n", size);
+    unsigned chunk = ulmin(tr->size - tr->score, size);
+    tr->score += chunk;
+    if (last || tr->score >= tr->size || size < maxpkt)
+    {
+        cdcXout_buffer_save((const uint8_t *) tr->addr, tr->score, offset);
+        setup_ep_transfer_rx(tr, dmach, pipe, tr->addr, tr->size, maxpkt);		// restart
+        tr->score = 0;
+    }
+    setup_dma_rx(dmach, pipe, tr->addr + tr->score, ulmin(maxpkt, tr->size - tr->score));
+}
+
+static void setup_ep_transfer_tx(transfer_t * const tr, uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t size, unsigned maxpkt)
 {
     setup_dma_tx(dmach, pipe, addr, maxpkt, size);
 }
@@ -2863,7 +2862,7 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				set_dma_ep_embedded(pusb, pipeout, 0, dmach);
 				//memset(cdc_out_datas [offset], 0xE5, sizeof cdc_out_datas [offset]);
 				setup_dma_rx(dmach, pipeout, (uintptr_t) cdc_out_datas [offset], VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-				//setup_ep_transfer_rx(dmach, pipeout, (uintptr_t) cdc_out_datas [offset], VIRTUAL_COM_PORT_OUT_DATA_SIZE, maxpkt);
+				//setup_ep_transfer_rx(& t0, dmach, pipeout, (uintptr_t) cdc_out_datas [offset], VIRTUAL_COM_PORT_OUT_DATA_SIZE, maxpkt);
 				usb_fifo_accessed_by_dma(pusb, pipeout, 1);
 				usb_clear_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipeout));
 				usb_set_dma_interrupt_enable(pusb, (UINT32_C(1) << dmach));
@@ -4955,7 +4954,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 						count &= mask;
 						count = (count == 0) ? mask + 1 : count;
 						BIT_CLEAR(USB0_REG_RXCSR, BIT_RXCSR_RX_PKT_READY);
-						//PRINTF("last=%u, count=%u\n", last, count);
+						PRINTF("last=%u, count=%u\n", last, count);
 #if 0
 					PRINTF("out DMA%u: pipe=%u, BC=%u, SDRAM_ADD=0x%08X, RESIDUAL_BC=%u, CHAN_CFG=0x%08X, maxpkt=%u, count=%u, mask=0x%08X, out_dir=%u\n",
 							(unsigned) dmach,
@@ -4973,7 +4972,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 						//printhex(0, cdc_out_datas [offset], count);
 						cdcXout_buffer_save(cdc_out_datas [offset], count, offset);
 						setup_dma_rx(dmach, pipe, (uintptr_t) cdc_out_datas [offset], VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-						//save_ep_chunk(dmach, pipe, count, last, maxpkt, offset);
+						//save_ep_chunk(& t0, dmach, pipe, count, last, maxpkt, offset);
 					}
 					else
 					{
