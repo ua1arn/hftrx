@@ -2555,7 +2555,8 @@ void spi_initialize(void)
 #endif /* WITHSPIHW */
 }
 
-#else /* WITHSPIHW || WITHSPISW */
+//#else /* WITHSPIHW || WITHSPISW */
+#elif ! LINUX_SUBSYSTEM
 
 
 // Работа совместно с фоновым обменом SPI по прерываниям
