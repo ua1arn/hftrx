@@ -26,8 +26,8 @@
 #include "src/usb/usb200.h"
 #include "src/usb/usbch9.h"
 
-#define WITHCDCWITHDMA_IN 1	// эксперементальная опция, пока в работе не использовать
-#define WITHCDCWITHDMA_OUT 1	// эксперементальная опция, пока в работе не использовать
+#define WITHCDCWITHDMA_IN 0	// эксперементальная опция, пока в работе не использовать
+#define WITHCDCWITHDMA_OUT 0	// эксперементальная опция, пока в работе не использовать
 
 #define CDC_SET_LINE_CODING                     0x20
 #define CDC_GET_LINE_CODING                     0x21
@@ -2208,7 +2208,6 @@ static void cdcXout_buffer_save(
 static void setup_dma_rx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t size)
 {
 	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG = 0;
-	dcache_clean_invalidate(addr, size);
 
 	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = size;	// 18 bit
 	WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = addr;
@@ -2228,7 +2227,6 @@ static void setup_dma_tx(uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, 
 		burst = size;
 
 	WITHUSBHW_DEVICE->USB_DMA [dmach].CHAN_CFG = 0;
-	dcache_clean(addr, size);
 
 	WITHUSBHW_DEVICE->USB_DMA [dmach].BC = size;	// 18 bit
 	WITHUSBHW_DEVICE->USB_DMA [dmach].SDRAM_ADD = addr;
@@ -2276,7 +2274,8 @@ static void save_ep_chunk(transfer_t * const tr, uint_fast8_t dmach, uint_fast8_
 
 static void setup_ep_transfer_tx(transfer_t * const tr, uint_fast8_t dmach, uint_fast8_t pipe, uintptr_t addr, uint_fast16_t size, unsigned maxpkt)
 {
-    setup_dma_tx(dmach, pipe, addr, maxpkt, size);
+	dcache_clean(addr, size);
+	setup_dma_tx(dmach, pipe, addr, maxpkt, size);
 }
 
 /* временное решение для передачи (вызывается при запрещённых прерываниях). */
@@ -2308,6 +2307,7 @@ void usbd_cdc_send(const void * buff, size_t length)
 
 	if (gpusb != NULL)
 	{
+		dcache_clean((uintptr_t) tdata, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
 		IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
 		setup_dma_tx(dmach, bo_ep_in, (uintptr_t) tdata, VIRTUAL_COM_PORT_OUT_DATA_SIZE, count);
 		IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
@@ -2861,8 +2861,9 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				const uint_fast32_t maxpkt = usb_get_eprx_maxpkt(pusb);
 				set_dma_ep_embedded(pusb, pipeout, 0, dmach);
 				//memset(cdc_out_datas [offset], 0xE5, sizeof cdc_out_datas [offset]);
-				setup_dma_rx(dmach, pipeout, (uintptr_t) cdc_out_datas [offset], VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-				//setup_ep_transfer_rx(& t0, dmach, pipeout, (uintptr_t) cdc_out_datas [offset], VIRTUAL_COM_PORT_OUT_DATA_SIZE, maxpkt);
+				dcache_clean_invalidate((uintptr_t) cdc_out_datas [offset], sizeof cdc_out_datas [offset]);
+				setup_dma_rx(dmach, pipeout, (uintptr_t) cdc_out_datas [offset], sizeof cdc_out_datas [offset]);
+				//setup_ep_transfer_rx(& t0, dmach, pipeout, (uintptr_t) cdc_out_datas [offset], sizeof cdc_out_datas [offset], maxpkt);
 				usb_fifo_accessed_by_dma(pusb, pipeout, 1);
 				usb_clear_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipeout));
 				usb_set_dma_interrupt_enable(pusb, (UINT32_C(1) << dmach));
@@ -4955,6 +4956,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 						count = (count == 0) ? mask + 1 : count;
 						BIT_CLEAR(USB0_REG_RXCSR, BIT_RXCSR_RX_PKT_READY);
 						PRINTF("last=%u, count=%u\n", last, count);
+						printhex(0, cdc_out_datas [offset], count);
 #if 0
 					PRINTF("out DMA%u: pipe=%u, BC=%u, SDRAM_ADD=0x%08X, RESIDUAL_BC=%u, CHAN_CFG=0x%08X, maxpkt=%u, count=%u, mask=0x%08X, out_dir=%u\n",
 							(unsigned) dmach,
