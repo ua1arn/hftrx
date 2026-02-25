@@ -1676,6 +1676,7 @@ __STATIC_FORCEINLINE void __set_PMCCNTR_EL0(uint64_t value)
 	__set_RG64("PMCCNTR_EL0", value);
 }
 
+// PMCCNTR_EL0, Performance Monitors Cycle Count Register
 __STATIC_FORCEINLINE uint64_t __get_PMCCNTR_EL0(void)
 {
 	uint64_t result;

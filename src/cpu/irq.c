@@ -1832,6 +1832,7 @@ typedef struct task_item_tag
 	void * cpuframe;	// cpu state
 	void * guard;
 	void * allocated;
+	IRQL_t irql;
 } task_item_t;
 
 static task_item_t t0;
@@ -1888,13 +1889,11 @@ void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * 
 	// Установить параметры задачи для запуска
 	task_construct(stackframe, fn, ctx);
 	task->cpuframe = stackframe;
+	task->irql = irql;
 	task->guard = task;	// debug signature
 
 	// включаем в список задач
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& taskslock, & oldIrql, IRQL_IPC_ONLY);
 	InsertTailList(& tasks_list [prio], & task->item);
-	IRQLSPIN_UNLOCK(& taskslock, oldIrql);
 	PRINTF("Added task at prio=%u, affinity=%02X (frame=%p), stack[%p..%p]\n", prio, affinity, stackframe, stackframe, (void *) top);
 }
 
@@ -1937,10 +1936,8 @@ task_item_t * task_getready(unsigned affinity, task_item_t * taskin)
 {
 	ASSERT(taskin);
 	ASSERT(affinity);
-	IRQL_t oldIrql;
 	task_item_t * taskout = taskin;
-	IRQLSPIN_LOCK(& taskslock, & oldIrql, IRQL_IPC_ONLY);
-	const unsigned prio = GICI_DECODE_IRQL(oldIrql);
+	const unsigned prio = GICI_DECODE_IRQL(taskin->irql);
 	ASSERT(ARRAY_SIZE(tasks_list) > prio);
 
 	PRLIST_ENTRY list = & tasks_list [prio];
@@ -1960,7 +1957,6 @@ task_item_t * task_getready(unsigned affinity, task_item_t * taskin)
 		}
 	}
 	RemoveEntryList(& taskout->item);
-	IRQLSPIN_UNLOCK(& taskslock, oldIrql);
 	return taskout;
 }
 
@@ -2009,7 +2005,9 @@ void * task_scheduler(void * oldframe)
 		startedtask [core] = task;
 	}
 	startedtask [core]->cpuframe = oldframe;
+	IRQLSPIN_LOCK(& taskslock, & startedtask [core]->irql, IRQL_IPC_ONLY);
 	startedtask [core] = task_getready(1U << core, startedtask [core]);
+	IRQLSPIN_UNLOCK(& taskslock, startedtask [core]->irql);
 	return startedtask [core]->cpuframe;
 }
 
@@ -2045,84 +2043,92 @@ void * task_scheduler(void * oldframe)
 
 #if CPUSTYLE_ARM || CPUSTYLE_RISCV
 
-// количество циклов на микросекунду
-static uint_fast32_t
+static unsigned cpufreqMHz = 10;
+
+#endif
+void local_delay_initialize(void)
+{
+	cpufreqMHz = CPU_FREQ / 1000000;
+}
+
+
+#if 0
+static unsigned long
 local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 {
 #if CPUSTYLE_AT91SAM7S
 	#warning TODO: calibrate constant	 looks like CPUSTYLE_STM32MP1
-	const uint_fast32_t top = timeUS * 175uL / cpufreq_MHz;
-	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = timeUS * 175uL / cpufreq_MHz;
+	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_ATSAM3S
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const uint_fast32_t top = timeUS * 270uL / cpufreq_MHz;
-	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = timeUS * 270uL / cpufreq_MHz;
+	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_ATSAM4S
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const uint_fast32_t top = timeUS * 270uL / cpufreq_MHz;
-	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = timeUS * 270uL / cpufreq_MHz;
+	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32F0XX
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const uint_fast32_t top = timeUS * 190uL / cpufreq_MHz;
-	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = timeUS * 190uL / cpufreq_MHz;
+	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_RP20XX
-	const uint_fast32_t top = timeUS * 1480uL / cpufreq_MHz;
+	const unsigned long top = timeUS * 1480uL / cpufreq_MHz;
 #elif CPUSTYLE_STM32L0XX
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const uint_fast32_t top = timeUS * 20uL / cpufreq_MHz;
-	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = timeUS * 20uL / cpufreq_MHz;
+	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32F1XX
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const uint_fast32_t top = timeUS * 345uL / cpufreq_MHz;
-	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = timeUS * 345uL / cpufreq_MHz;
+	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32F30X
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const uint_fast32_t top = timeUS * 430uL / cpufreq_MHz;
-	//const uint_fast32_t top = 55 * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = timeUS * 430uL / cpufreq_MHz;
+	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32F4XX
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const uint_fast32_t top = timeUS * 3800uL / cpufreq_MHz;
+	const unsigned long top = timeUS * 3800uL / cpufreq_MHz;
 #elif CPUSTYLE_STM32F7XX
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const uint_fast32_t top = 55uL * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32H7XX
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const uint_fast32_t top = 77uL * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 77uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_R7S721
-	const uint_fast32_t top = 105uL * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 105uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_XC7Z
-	const uint_fast32_t top = 125uL * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
-	const uint_fast32_t top = 125uL * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32MP1
 	// калибровано для 800 МГц Cortex-A7 процессора
-	const uint_fast32_t top = 120uL * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_H3
 	// калибровано для 800 МГц Cortex-A7 процессора
-	const uint_fast32_t top = 120uL * cpufreq_MHz * timeUS / 1000;
-#elif ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
+	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
+#elif __CORTEX_A == 53
 	// калибровано для Cortex-A53 процессора
-	const uint_fast32_t top = 145uL * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_T113
 	// калибровано для 1200 МГц Cortex-A7 процессора
-	const uint_fast32_t top = 120uL * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_V3S
 	// калибровано для 1200 МГц Cortex-A7 процессора
-	const uint_fast32_t top = 120uL * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_F133
 	// калибровано для 1200 МГц RISC-V C906 процессора
-	const uint_fast32_t top = 165uL * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 165uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_VM14
 	// калибровано для 1200 МГц процессора
-	const uint_fast32_t top = 165uL * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 165uL * cpufreq_MHz * timeUS / 1000;
 #else
 	#error TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const uint_fast32_t top = 55uL * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
 #endif
 	return top;
 }
 
-static unsigned cpufreqMHz = 10;
 // Атрибут RAMFUNC_NONILINE убран, так как функция
 // используется в инициализации SDRAM на процессорах STM32F746.
 // TODO: перекалибровать для FLASH контроллеров.
@@ -2134,9 +2140,9 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 	usleep(timeUS);
 #else
 	// Частота процессора приволится к мегагерцам.
-	const uint_fast32_t top = local_delay_uscycles(timeUS, cpufreqMHz);
+	const unsigned long top = local_delay_uscycles(timeUS, cpufreqMHz);
 	//
-	volatile uint_fast32_t t;
+	volatile unsigned long t;
 	for (t = 0; t < top; ++ t)
 	{
 	}
@@ -2144,39 +2150,19 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 }
 // exactly as required
 //
-
-
-uint32_t tasks_sys_now(void)
-{
-	if (tsaks_not_started)
-	{
-		static uint32_t n = 100;
-		local_delay_ms_nocache(1);
-		return ++ n;
-	}
-	return sys_now();
-}
-
 void local_delay_ms(int timeMS)
 {
-
 #if 0 //LINUX_SUBSYSTEM
 	usleep(timeMS * 1000);
 #else
-
-	//
-	const uint32_t t0 = tasks_sys_now();
 	if (timeMS == 0)
 		return;
-	while (tasks_sys_now() - t0 < timeMS)
-		;
-	return;
 	// Частота процессора приволится к мегагерцам.
-	const uint_fast32_t top = local_delay_uscycles(1000, cpufreqMHz);
+	const unsigned long top = local_delay_uscycles(1000, cpufreqMHz);
 	int n;
 	for (n = 0; n < timeMS; ++ n)
 	{
-		volatile uint_fast32_t t;
+		volatile unsigned long t;
 		for (t = 0; t < top; ++ t)
 		{
 		}
@@ -2184,42 +2170,62 @@ void local_delay_ms(int timeMS)
 #endif /* LINUX_SUBSYSTEM */
 }
 
-#define TWINOCACHE_DERATE 64
 // задержка до того как включили MMU и cache */
 void local_delay_ms_nocache(int timeMS)
 {
-	int t = timeMS * 1000 / TWINOCACHE_DERATE;
+	int t = timeMS / 25;
 	if (t == 0)
 		t = 1;
-	local_delay_us(t);
+	local_delay_ms(t);
 }
 
-// задержка до того как включили MMU и cache */
-void local_delay_us_nocache(int timeUS)
+#else
+
+void local_delay_us(int timeUS)
 {
-	int t = timeUS / TWINOCACHE_DERATE;
-	if (t == 0)
-		t = 1;
-	local_delay_us(t);
+	if (timeUS == 0)
+		return;
+
+	const uint_fast64_t t0 = cpu_getdebugticks();	// Счетчик увеличивается с частотой процессора
+	const uint_fast64_t td = timeUS * cpu_getdebugticksfreq() / (1000 * 1000);
+	//const uint_fast64_t td = timeUS * cpufreqMHz;
+	while ((uint64_t) (cpu_getdebugticks() - t0) < td)
+		;
 }
 
-void local_delay_initialize(void)
+void local_delay_ms(int timeMS)
 {
-	cpufreqMHz = CPU_FREQ / 1000000;
+	if (timeMS == 0)
+		return;
+	const uint_fast32_t t0 = tasks_sys_now();
+	while ((uint32_t) (tasks_sys_now() - t0) < timeMS)
+		;
 }
 
-#endif /* */
+
+#endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
+
+uint32_t tasks_sys_now(void)
+{
+	if (tsaks_not_started)
+	{
+		static uint32_t n = 100;
+		local_delay_us(1000);
+		return ++ n;
+	}
+	return sys_now();
+}
 
 // wait expected state of variable
 // return non-zero: timeout error
 int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, int timeMS)
 {
-	const uint32_t t0 = tasks_sys_now();
+	const uint_fast32_t t0 = tasks_sys_now();
 	do
 	{
 		if (((* flag & mask) == state))
 			return 0;
-	} while (tasks_sys_now() - t0 < timeMS);
+	} while ((uint32_t) (tasks_sys_now() - t0) < timeMS);
 	return 1;
 }
 
@@ -2227,12 +2233,12 @@ int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t sta
 // return non-zero: timeout error
 int local_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, int timeMS)
 {
-	const uint32_t t0 = tasks_sys_now();
+	const uint_fast32_t t0 = tasks_sys_now();
 	do
 	{
 		if (((* flag & mask) == state))
 			return 0;
-	} while (tasks_sys_now() - t0 < timeMS);
+	} while ((uint32_t) (tasks_sys_now() - t0) < timeMS);
 	return 1;
 }
 

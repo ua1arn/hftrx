@@ -38,7 +38,7 @@ static i2cp_t i2cp_2 =
 /* задержка обепечивает скорость обмена по I2C при программной реализации протокола - 1/2 периода частоты 400 кГц */
 static void i2c_delay(const i2cp_t * p)
 {
-	local_delay_us_nocache(25);
+	local_delay_ms(25);
 #if LCDMODEX_SII9022A
 	local_delay_us(25);
 #endif /* LCDMODEX_SII9022A */

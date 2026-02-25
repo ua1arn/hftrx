@@ -1273,9 +1273,9 @@ int board_helperboard_t507_axp853_initialize(void)
 
 	PRINTF("PMIC: AXP853T/AXP858 ON\n");
 	local_delay_initialize();
-	local_delay_ms_nocache(100);
+	local_delay_ms(100);
 	axp858_set_sw(1);
-	local_delay_ms_nocache(100);
+	local_delay_ms(100);
 	PRINTF("PMIC: AXP853T/AXP858 done\n");
 	dbg_flush();
 
@@ -1452,9 +1452,9 @@ int board_helperboard_a133_axp707_initialize(void)
 
 	PRINTF("PMIC: axp707 ON\n");
 	local_delay_initialize();
-	local_delay_ms_nocache(100);
+	local_delay_ms(100);
 	axp707_set_sw(1);
-	local_delay_ms_nocache(100);
+	local_delay_ms(100);
 	PRINTF("PMIC: axp707 done\n");
 	dbg_flush();
 #endif

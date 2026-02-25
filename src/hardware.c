@@ -1723,7 +1723,7 @@ sysinit_debug_initialize(void)
 
 // Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 // получение частоты, с которой инкрементируется счетчик
-uint_fast32_t cpu_getdebugticksfreq(void)
+uint_fast64_t cpu_getdebugticksfreq(void)
 {
 	return CPU_FREQ;
 }
@@ -1731,12 +1731,10 @@ uint_fast32_t cpu_getdebugticksfreq(void)
 // Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 // получение из аппаратного счетчика монотонно увеличивающегося кода
 // see sysinit_perfmeter_initialize() in hardware.c
-uint_fast32_t cpu_getdebugticks(void)
+// Счетчик увеличивается с частотой процессора
+uint_fast64_t cpu_getdebugticks(void)
 {
-#if ! WITHDEBUG
-	return 0;
-
-#elif __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
+#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 	return DWT->CYCCNT;	// use TIMESTAMP_GET();
 
 #elif defined(__aarch64__) && ! LINUX_SUBSYSTEM
@@ -1755,11 +1753,10 @@ uint_fast32_t cpu_getdebugticks(void)
 
 #elif defined(__riscv)
 
-	uint64_t v = csr_read_mcycle();
-	return v;
+	return csr_read_mcycle();
 
 #else
-	//#warning Wromg CPUSTYLE_xxx - cpu_getdebugticks not work
+	#warning Wromg CPUSTYLE_xxx - cpu_getdebugticks, local_delay_us can not work
 	return 0;
 
 #endif
@@ -1769,9 +1766,7 @@ uint_fast32_t cpu_getdebugticks(void)
 static void
 sysinit_perfmeter_initialize(void)
 {
-#if ! WITHDEBUG
-	// no any actions
-#elif __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
+#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 
 	#if WITHDEBUG && __CORTEX_M == 7U
 		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
