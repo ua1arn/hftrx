@@ -2069,7 +2069,7 @@ void local_delay_ms(int timeMS)
 	if (timeMS == 0)
 		return;
 
-	mdelay(timeUS);
+	mdelay(timeMS);
 }
 
 #elif 0
