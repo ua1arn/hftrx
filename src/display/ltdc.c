@@ -3567,6 +3567,9 @@ static void t113_tconlvds_PLL_configuration(uint_fast32_t needfreq)
 	allwnr_t507_module_pll_spr(& CCU->PLL_VIDEO1_CTRL_REG, & CCU->PLL_VIDEO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG, N);
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 not implemented
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	// LVDS mode
@@ -3638,7 +3641,11 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 	CCU->VIDEO_OUT1_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT1_RST 1: De-assert
 
 	CCU->VO0_TCONLCD0_BGR_REG  |= (UINT32_C(1) << 16);
+	CCU->VO0_TCONLCD0_BGR_REG  |= (UINT32_C(1) << 0);
+
+	CCU->VO0_TCONLCD1_BGR_REG  |= (UINT32_C(1) << 16);
 	CCU->VO0_TCONLCD1_BGR_REG  |= (UINT32_C(1) << 0);
+
 	CCU->VO0_TCONLCD0_CLK_REG  |= (UINT32_C(1) << 31);
 	CCU->VO0_TCONLCD1_CLK_REG  |= (UINT32_C(1) << 31);
 
