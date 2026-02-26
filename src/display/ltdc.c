@@ -3622,6 +3622,28 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 
     TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_7133 To be done
+	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
+
+	CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1: De-assert
+	CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+
+	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+	CCU->VIDEO_OUT0_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT0_RST 1: De-assert
+	CCU->VIDEO_OUT1_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT1_RST 1: De-assert
+
+	CCU->VO0_TCONLCD0_BGR_REG  |= (UINT32_C(1) << 16);
+	CCU->VO0_TCONLCD1_BGR_REG  |= (UINT32_C(1) << 0);
+	CCU->VO0_TCONLCD0_CLK_REG  |= (UINT32_C(1) << 31);
+	CCU->VO0_TCONLCD1_CLK_REG  |= (UINT32_C(1) << 31);
+
+    TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	/* Configure TCONLCD clock */
