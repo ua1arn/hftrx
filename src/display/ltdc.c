@@ -6412,7 +6412,7 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 
 #elif CPUSTYLE_A733
 
-	unsigned ix = TCONTV_IX;
+	const unsigned ix = TCONTV_IX;
 
 	//	Note: Before operating ADDA/GPADC/RES_CAL/CSI/DSI/LVDS/HDMI (only
 	//	for T507-H/T517-H)/TVOUT modules, please make sure that this bit is
@@ -6423,12 +6423,14 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 
     // 15.2.9.1 0x0000 TCON_TV Clock Select and EDP I2S1 Select Register
     DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC |= (UINT32_C(1) << 3);	// TCON_TV0_HDMIPHY_CCU_CK_SEL 1: TCON_TV0 clock sources from CCU
+    //DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC = 0;	// from dump - станавливает работу tcontv
+
     // page 723, Figure 15-18 TCON_TV Environment Diagram
     // tcontv0: input 360MHz (4pixel/148.5MHz)
     // tcontv1: input 297MHz (2pixel)
     // test (все 32 бита могут быть установлены)
-    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE - HDMI
-    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 21);	// TV1_GATE	- DP/eDP
+//    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE - HDMI
+//    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 21);	// TV1_GATE	- DP/eDP
 
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
@@ -6539,7 +6541,7 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 
 #elif CPUSTYLE_T507
 
-	unsigned ix = TCONTV_IX;
+    const unsigned ix = TCONTV_IX;
 
 	//	Note: Before operating ADDA/GPADC/RES_CAL/CSI/DSI/LVDS/HDMI (only
 	//	for T507-H/T517-H)/TVOUT modules, please make sure that this bit is
