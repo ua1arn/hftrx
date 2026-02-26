@@ -17,12 +17,6 @@
 #include "hardware.h"
 #include "formats.h"	// for debug prints
 
-#if CPUSTYLE_A733
-#include "pattern/tcontv0.h"
-#include "pattern/de.h"
-#include "pattern/prcm.h"
-#endif
-
 #if WITHLTDCHW
 
 #define LTDCBIT32(x) (UINT32_C(1) << (x))
@@ -2989,7 +2983,7 @@ static void t113_de_rtmix_initialize(int rtmixid)
 			(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
 			(UINT32_C(1) << 0) |		// EN RT enable/disable
 			0;
-#if CPUSTYLE_T507 || CPUSTYLE_A733
+#if CPUSTYLE_T507
 	glb->GLB_CLK |= (UINT32_C(1) << 0);
 #endif /* CPUSTYLE_T507 */
 
@@ -3195,7 +3189,7 @@ static void hardware_de_global_initialize(void)
 
 //	allwnr_a733_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 //	allwnr_a733_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
-#if 0
+
 	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
 	//	CLK_SRC_SEL.
 	//	Clock Source Select
@@ -3213,7 +3207,6 @@ static void hardware_de_global_initialize(void)
 		0x04 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 100: PERI0_300M
 		(divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
-#endif
     CCU->DE0_CLK_REG = 0;	// from dump
     CCU->DE0_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
 
@@ -3230,8 +3223,8 @@ static void hardware_de_global_initialize(void)
     PRINTF("CCU->DE_SYS_BGR_REG=%08X\n", (unsigned) CCU->DE_SYS_BGR_REG);
     PRINTF("CCU->DE0_BGR_REG=%08X\n", (unsigned) CCU->DE0_BGR_REG);
 
-	//CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
-	//CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
 	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
 	CCU->VIDEO_OUT0_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT0_RST 1: De-assert
@@ -3244,12 +3237,8 @@ static void hardware_de_global_initialize(void)
 
 		// Разрешает доступ к HDMI_TX0
 		CCU->HDMI_SFR_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+		CCU->HDCP_ESM_CLK_REG |= (UINT32_C(1) << 31);	// from dump
 	#endif
-	CCU->HDCP_ESM_CLK_REG |= (UINT32_C(1) << 31);
-
-	fill32(DE_TOP_BASE, de_pattern, ARRAY_SIZE(de_pattern));
-	//fill32(TCON_TV0_BASE, tcontv0_pattern, ARRAY_SIZE(tcontv0_pattern));
-	//fill32(DE_TOP_BASE, de_pattern, ARRAY_SIZE(de_pattern));
 
 #elif CPUSTYLE_T507
 
@@ -6429,10 +6418,9 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 	//	for T507-H/T517-H)/TVOUT modules, please make sure that this bit is
 	//	configured as 1
 ////    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
-//	fill32delay(STBY_PRCM_BASE, prcm_pattern, ARRAY_SIZE(prcm_pattern));
-   local_delay_ms(10);
+    local_delay_ms(10);
     //PRINTF("PRCM->VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
-#if 1
+
     // 15.2.9.1 0x0000 TCON_TV Clock Select and EDP I2S1 Select Register
     DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC |= (UINT32_C(1) << 3);	// TCON_TV0_HDMIPHY_CCU_CK_SEL 1: TCON_TV0 clock sources from CCU
     // page 723, Figure 15-18 TCON_TV Environment Diagram
@@ -6444,11 +6432,6 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
-#endif
-    DISPLAY1_TOP->VO1_MODULE_GATING = 0x10100000;	// from dump
-    DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC = 0;	// from dump
-    //* (volatile uint32_t *) (DISPLAY1_TOP_BASE + 0x0F4) = 0x0000010d;	// from dump
-
 	PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
 
 	// PLL_VIDEO0 as source
@@ -7941,43 +7924,8 @@ static void t113_tcontv_set_sequence_parameters(const videomode_t * vdmode)
 
 	TCONTV_PTR->TCON_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);
 
-#elif CPUSTYLE_A733
-
-//	TCONTV_PTR->TV_GCTL_REG = 0;
-//	TCONTV_GINT0_REG = 0;
-	TCONTV_PTR->TV_CTL_REG =
-		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
-		ulmin16(31, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
-		0;
-
-	TCONTV_PTR->TV_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TV_XI TV_YI
-	TCONTV_PTR->TV_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// LS_XO LS_YO
-	TCONTV_PTR->TV_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TV_XO TV_YO
-	TCONTV_PTR->TV_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
-	TCONTV_PTR->TV_BASIC4_REG = ((VTOTAL * (3 - interlace)) << 16) | ((VBP - 1) << 0);	// VT VBP
-	TCONTV_PTR->TV_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
-
-//	TCONTV_PTR->TV_IO_POL_REG = 0x03000000;
-//	TCONTV_PTR->TV_IO_TRI_REG = 0x0cffffff;
-
-	//	 TV_SRC_SEL
-	//	 TV Source Select
-	//	 000: DE
-	//	 001: Color Check
-	//	 010: Grayscale Check
-	//	 011: Black by White Check
-	//	 100: Reserved
-	//	 101: Reserved
-	//	 111: Gridding Check
-
-	//TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);	// едокументированно, но требуется
-	TCONTV_PTR->TV_SRC_CTL_REG = 0;             // bit 0 - source select, bit 2:1 - test selection
-	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
-//	TCONTV_PTR->TV_DATA_IO_TRI0_REG = 0;
-//	TCONTV_PTR->TV_DATA_IO_TRI1_REG = 0;
-
 #elif CPUSTYLE_T507
-
+	// T507-H
 	TCONTV_PTR->TV_GCTL_REG = 0;
 	TCONTV_GINT0_REG = 0;
 	TCONTV_PTR->TV_CTL_REG =
@@ -8005,9 +7953,44 @@ static void t113_tcontv_set_sequence_parameters(const videomode_t * vdmode)
 	//	 101: Reserved
 	//	 111: Gridding Check
 
-	TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);	// едокументированно, но требуется
+	//TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);	// недокументированно, но требуется
 	TCONTV_PTR->TV_SRC_CTL_REG = 0;             //0 - DE, 1..7 - test
-	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
+	//TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
+//	TCONTV_PTR->TV_DATA_IO_TRI0_REG = 0;
+//	TCONTV_PTR->TV_DATA_IO_TRI1_REG = 0;
+
+#elif CPUSTYLE_A733
+	// A733
+	TCONTV_PTR->TV_GCTL_REG = 0;
+	TCONTV_GINT0_REG = 0;
+	TCONTV_PTR->TV_CTL_REG =
+		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
+		ulmin16(31, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
+		0;
+
+	TCONTV_PTR->TV_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TV_XI TV_YI
+	TCONTV_PTR->TV_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// LS_XO LS_YO
+	TCONTV_PTR->TV_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TV_XO TV_YO
+	TCONTV_PTR->TV_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
+	TCONTV_PTR->TV_BASIC4_REG = ((VTOTAL * (3 - interlace)) << 16) | ((VBP - 1) << 0);	// VT VBP
+	TCONTV_PTR->TV_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
+
+//	TCONTV_PTR->TV_IO_POL_REG = 0x03000000;
+//	TCONTV_PTR->TV_IO_TRI_REG = 0x0cffffff;
+
+	//	 TV_SRC_SEL
+	//	 TV Source Select
+	//	 000: DE
+	//	 001: Color Check
+	//	 010: Grayscale Check
+	//	 011: Black by White Check
+	//	 100: Reserved
+	//	 101: Reserved
+	//	 111: Gridding Check
+
+	//TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);	// недокументированно, но требуется
+	TCONTV_PTR->TV_SRC_CTL_REG = 0;             // bit 0 - test, bits 2..1 - type of test
+//	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
 //	TCONTV_PTR->TV_DATA_IO_TRI0_REG = 0;
 //	TCONTV_PTR->TV_DATA_IO_TRI1_REG = 0;
 
@@ -8132,12 +8115,8 @@ static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	vsu->VSU_GLOBAL_ALPHA_REG = 0x00;
 
 	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
-	if (local_wait32mask(& vsu->VSU_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
-	{
-		PRINTF("t507_de2_vsu_init: rtmixid=%d timeout\n", rtmixid);
-	}
-//	while ((vsu->VSU_CTRL_REG & (UINT32_C(1) << 4)) != 0)
-//		;
+	while ((vsu->VSU_CTRL_REG & (UINT32_C(1) << 4)) != 0)
+		;
 }
 #endif /* CPUSTYLE_T507 */
 
@@ -8260,15 +8239,11 @@ static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 	t113_tcontv_set_and_open_interrupt_function();
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_tcontv_open_module_enable();
+	PRINTF("TCONTV_PTR->TV_DEBUG_REG=0x%08X\n", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
+	local_delay_ms(10);
+	PRINTF("TCONTV_PTR->TV_DEBUG_REG=0x%08X\n", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
+	PRINTF("TCONTV_PTR->TV_DEBUG_REG=0x%08X\n", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
 
-#if CPUSTYLE_A733
-	fill32(DE_TOP_BASE, de_pattern, ARRAY_SIZE(de_pattern));
-	fill32(TCON_TV0_BASE, tcontv0_pattern, ARRAY_SIZE(tcontv0_pattern));
-	for (;1;)
-	{
-		PRINTF("TCONTV_PTR->TV_DEBUG_REG=%08X\n", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
-	}
-#endif
 #endif /* defined (TCONTV_PTR) */
 }
 
@@ -8300,6 +8275,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	const uint_fast32_t dotclock = hdmi_realclock(vdmode);
+
 #if CPUSTYLE_T507 || CPUSTYLE_A733
 	t507_hdmi_phy_init(dotclock);
 #else
@@ -8358,6 +8334,7 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	dw_hdmi_i2s_setup(hdmi);
 	dw_hdmi_clear_overflow(hdmi);
 //	t507_hdmi_edid_test();
+
 }
 #endif /* WITHHDMITVHW */
 
