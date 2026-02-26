@@ -8117,8 +8117,10 @@ static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	vsu->VSU_GLOBAL_ALPHA_REG = 0x00;
 
 	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
-	while ((vsu->VSU_CTRL_REG & (UINT32_C(1) << 4)) != 0)
-		;
+	if (local_wait32mask(& vsu->VSU_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
+		TP();
+//	while ((vsu->VSU_CTRL_REG & (UINT32_C(1) << 4)) != 0)
+//		;
 }
 #endif /* CPUSTYLE_T507 */
 
@@ -8583,8 +8585,8 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 
 #elif CPUSTYLE_A733
 
-	t507_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
-	t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
+//	t507_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
+//	t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
