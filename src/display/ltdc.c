@@ -2989,7 +2989,7 @@ static void t113_de_rtmix_initialize(int rtmixid)
 			(UINT32_C(1) << 12) |	// OUT_DATA_WB 0:RT-WB fetch data after DEP port
 			(UINT32_C(1) << 0) |		// EN RT enable/disable
 			0;
-#if CPUSTYLE_T507
+#if CPUSTYLE_T507 || CPUSTYLE_A733
 	glb->GLB_CLK |= (UINT32_C(1) << 0);
 #endif /* CPUSTYLE_T507 */
 
@@ -6429,10 +6429,10 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 	//	for T507-H/T517-H)/TVOUT modules, please make sure that this bit is
 	//	configured as 1
 ////    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
-	fill32delay(STBY_PRCM_BASE, prcm_pattern, ARRAY_SIZE(prcm_pattern));
+//	fill32delay(STBY_PRCM_BASE, prcm_pattern, ARRAY_SIZE(prcm_pattern));
    local_delay_ms(10);
     //PRINTF("PRCM->VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
-#if 0
+#if 1
     // 15.2.9.1 0x0000 TCON_TV Clock Select and EDP I2S1 Select Register
     DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC |= (UINT32_C(1) << 3);	// TCON_TV0_HDMIPHY_CCU_CK_SEL 1: TCON_TV0 clock sources from CCU
     // page 723, Figure 15-18 TCON_TV Environment Diagram
@@ -6447,7 +6447,7 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 #endif
     DISPLAY1_TOP->VO1_MODULE_GATING = 0x10100000;	// from dump
     DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC = 0;	// from dump
-    * (volatile uint32_t *) (DISPLAY1_TOP_BASE + 0x0F4) = 0x0000010d;	// from dump
+    //* (volatile uint32_t *) (DISPLAY1_TOP_BASE + 0x0F4) = 0x0000010d;	// from dump
 
 	PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
 
@@ -7941,7 +7941,42 @@ static void t113_tcontv_set_sequence_parameters(const videomode_t * vdmode)
 
 	TCONTV_PTR->TCON_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);
 
-#elif (CPUSTYLE_T507)
+#elif CPUSTYLE_A733
+
+//	TCONTV_PTR->TV_GCTL_REG = 0;
+//	TCONTV_GINT0_REG = 0;
+	TCONTV_PTR->TV_CTL_REG =
+		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
+		ulmin16(31, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
+		0;
+
+	TCONTV_PTR->TV_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TV_XI TV_YI
+	TCONTV_PTR->TV_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// LS_XO LS_YO
+	TCONTV_PTR->TV_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TV_XO TV_YO
+	TCONTV_PTR->TV_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
+	TCONTV_PTR->TV_BASIC4_REG = ((VTOTAL * (3 - interlace)) << 16) | ((VBP - 1) << 0);	// VT VBP
+	TCONTV_PTR->TV_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
+
+//	TCONTV_PTR->TV_IO_POL_REG = 0x03000000;
+//	TCONTV_PTR->TV_IO_TRI_REG = 0x0cffffff;
+
+	//	 TV_SRC_SEL
+	//	 TV Source Select
+	//	 000: DE
+	//	 001: Color Check
+	//	 010: Grayscale Check
+	//	 011: Black by White Check
+	//	 100: Reserved
+	//	 101: Reserved
+	//	 111: Gridding Check
+
+	//TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);	// едокументированно, но требуется
+	TCONTV_PTR->TV_SRC_CTL_REG = 0;             // bit 0 - source select, bit 2:1 - test selection
+	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
+//	TCONTV_PTR->TV_DATA_IO_TRI0_REG = 0;
+//	TCONTV_PTR->TV_DATA_IO_TRI1_REG = 0;
+
+#elif CPUSTYLE_T507
 
 	TCONTV_PTR->TV_GCTL_REG = 0;
 	TCONTV_GINT0_REG = 0;
@@ -8227,8 +8262,12 @@ static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 	t113_tcontv_open_module_enable();
 
 #if CPUSTYLE_A733
-	//fill32(DE_TOP_BASE, de_pattern, ARRAY_SIZE(de_pattern));
-	//fill32(TCON_TV0_BASE, tcontv0_pattern, ARRAY_SIZE(tcontv0_pattern));
+	fill32(DE_TOP_BASE, de_pattern, ARRAY_SIZE(de_pattern));
+	fill32(TCON_TV0_BASE, tcontv0_pattern, ARRAY_SIZE(tcontv0_pattern));
+	for (;1;)
+	{
+		PRINTF("TCONTV_PTR->TV_DEBUG_REG=%08X\n", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
+	}
 #endif
 #endif /* defined (TCONTV_PTR) */
 }

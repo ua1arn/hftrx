@@ -507,7 +507,10 @@ void fill32(uintptr_t addr, const uint32_t * data, unsigned count)
 {
 	while (count --)
 	{
-		* (volatile uint32_t *) addr = * data;
+		if (* data != * (volatile uint32_t *) addr)
+		{
+			* (volatile uint32_t *) addr = * data;
+		}
 		++ data;
 		addr += 4;
 	}

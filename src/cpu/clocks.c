@@ -4704,7 +4704,7 @@ void sysinit_pll_initialize(int forced)
 	a733_pll_enable(& CCU->PLL_VIDEO2_CTRL_REG);
 	//a733_pll_enable(& CCU->HDMI);
 
-	fill32delay(CCU_BASE + 0x0a0, ccu_pattern, ARRAY_SIZE(ccu_pattern));
+	//fill32delay(CCU_BASE + 0x0a0, ccu_pattern, ARRAY_SIZE(ccu_pattern));
 }
 
 #elif (CPUSTYLE_A133)
