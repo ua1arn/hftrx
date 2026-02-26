@@ -32,6 +32,7 @@
 #define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
+#define __DSP_PRESENT         		  1U       /* Set to 1 if DSP extension are present */
 
 #if __aarch64__
 
