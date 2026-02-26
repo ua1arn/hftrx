@@ -3973,6 +3973,35 @@ static void t113_LVDS_controller_configuration(const videomode_t * vdmode, unsig
 //	TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 28);	// EN_24M
 //	local_delay_ms(1);
 	//PRINTF("TCONLCD_PTR->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num]);
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 not implemented
+	// Documented as LCD_LVDS_ANA0_REG
+	//const unsigned lvds_num = 0;	/* 0: LVDS0, 1: LVDS1 */
+	// Step 5 LVDS digital logic configuration
+
+	// Step 6 LVDS controller configuration
+	// LVDS_HPREN_DRVC and LVDS_HPREN_DRV
+	TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] =
+		(UINT32_C(1) << 24) |	// LVDS_HPREN_DRVC
+		(UINT32_C(0x0F) << 20) |	// When LVDS signal is 18-bit, LVDS_HPREN_DRV=0x7; when LVDS signal is 24-bit, LVDS_HPREN_DRV=0xF;
+		(UINT32_C(0x04) << 17) |	// Configure LVDS0_REG_C (differential mode voltage) to 4; 100: 336 mV
+		(UINT32_C(3) << 8) |	// ?LVDS_REG_R Configure LVDS0_REG_V (common mode voltage) to 3;
+		0;
+	// test
+	//TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 16);	// LVDS_REG_DENC
+	//TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(0x0F) << 12);	// LVDS_REG_DEN
+
+//	TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 30);	// en_ldo
+//	local_delay_ms(1);
+
+	// 	Lastly, start module voltage, and enable EN_LVDS and EN_24M.
+	TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 31);	// ?LVDS_EN_MB start module voltage
+	local_delay_ms(1);
+//	TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 29);	// enable EN_LVDS
+//	local_delay_ms(1);
+//	TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num] |= (UINT32_C(1) << 28);	// EN_24M
+//	local_delay_ms(1);
+	//PRINTF("TCONLCD_PTR->LCD_LVDS_ANA_REG [%u]=%08X\n", lvds_num, (unsigned) TCONLCD_PTR->LCD_LVDS_ANA_REG [lvds_num]);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	// Documented as LCD_LVDS_ANA0_REG
@@ -8245,6 +8274,7 @@ static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 	t113_tcontv_set_and_open_interrupt_function();
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_tcontv_open_module_enable();
+
 	PRINTF("TCONTV_PTR->TV_DEBUG_REG=0x%08X\n", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
 	local_delay_ms(10);
 	PRINTF("TCONTV_PTR->TV_DEBUG_REG=0x%08X\n", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
@@ -8369,6 +8399,11 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_open_module_enable(vdmode);
 	//PRINTF("lvdsfreq=%u (desired dclk=%u), BOARD_TCONLCDFREQ=%u, dclk=%u\n", (unsigned) lvdsfreq, (unsigned) (lvdsfreq / 7), (unsigned) BOARD_TCONLCDFREQ, (unsigned) (BOARD_TCONLCDFREQ / 7));
+
+	PRINTF("TCONLCD_PTR->LCD_DEBUG_REG=0x%08X\n", (unsigned) TCONLCD_PTR->LCD_DEBUG_REG);
+	local_delay_ms(10);
+	PRINTF("TCONLCD_PTR->LCD_DEBUG_REG=0x%08X\n", (unsigned) TCONLCD_PTR->LCD_DEBUG_REG);
+	PRINTF("TCONLCD_PTR->LCD_DEBUG_REG=0x%08X\n", (unsigned) TCONLCD_PTR->LCD_DEBUG_REG);
 
 #endif /* defined (TCONLCD_PTR) */
 }
@@ -8549,6 +8584,13 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	t113_set_and_open_interrupt_function();
 	// step6 - Open module enable
 	t113_open_module_enable(vdmode);
+
+#if defined (TCONLCD_PTR)
+	PRINTF("TCONLCD_PTR->LCD_DEBUG_REG=0x%08X\n", (unsigned) TCONLCD_PTR->LCD_DEBUG_REG);
+	local_delay_ms(10);
+	PRINTF("TCONLCD_PTR->LCD_DEBUG_REG=0x%08X\n", (unsigned) TCONLCD_PTR->LCD_DEBUG_REG);
+	PRINTF("TCONLCD_PTR->LCD_DEBUG_REG=0x%08X\n", (unsigned) TCONLCD_PTR->LCD_DEBUG_REG);
+#endif
 }
 
 #if WITHHDMITVHW

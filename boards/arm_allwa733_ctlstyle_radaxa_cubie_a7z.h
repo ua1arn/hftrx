@@ -129,6 +129,7 @@
 	//#define LCDMODE_RGB565 1	/* Экран 16 бит */
 	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 
+	#define WITHFLATLINK 1	// lvds
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
 	//#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
