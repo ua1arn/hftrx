@@ -8067,8 +8067,10 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	uis->UIS_GLOBAL_ALPHA_REG = 0x00;
 
 	uis->UIS_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
-	while ((uis->UIS_CTRL_REG & (UINT32_C(1) << 4)) != 0)
-		;
+	if (local_wait32mask(& uis->UIS_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
+		TP();
+//	while ((uis->UIS_CTRL_REG & (UINT32_C(1) << 4)) != 0)
+//		;
 }
 
 static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int vich)
@@ -8574,7 +8576,12 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 	/* эта инициализация после корректного соединения с работающим TCON */
 	t113_de_bld_initialize(rtmixid, vdmode, defcolor);	// RED
 
-#if CPUSTYLE_T507 || CPUSTYLE_A733
+#if CPUSTYLE_T507
+
+	t507_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
+	t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
+
+#elif CPUSTYLE_A733
 
 	t507_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
 	t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
