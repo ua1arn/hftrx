@@ -17,7 +17,8 @@
 #include "hardware.h"
 #include "formats.h"	// for debug prints
 
-#if CPUSTYLE_A733
+#if CPUSTYLE_A733 && 0
+
 #include "pattern/ccu.h"
 #include "pattern/prcm.h"
 #include "pattern/de.h"
@@ -2834,7 +2835,7 @@ static void t113_de_update(int rtmixid)
     }
     else
     {
-    	//dbg_putchar('!');
+    	dbg_putchar('!');
     }
 //	while ((glb->GLB_DBUFFER & UINT32_C(1)) != 0)
 //		;
@@ -3196,7 +3197,7 @@ static void hardware_de_global_initialize(void)
 #elif CPUSTYLE_A733
     // de global
 
-    all_Type_print2("Simulation");
+    //all_Type_print2("Simulation");
 //	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 //	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
 //	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
@@ -3208,9 +3209,6 @@ static void hardware_de_global_initialize(void)
 
 //	allwnr_a733_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 //	allwnr_a733_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
-	const uint_fast32_t lvdsclock = 232848000;
-	const uint_fast32_t lcddotclock = 55000000;
-	uint_fast32_t hdmidotclock =   80291880;
 
 	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
 	//	CLK_SRC_SEL.
@@ -3232,6 +3230,40 @@ static void hardware_de_global_initialize(void)
 		0;
     CCU->DE0_CLK_REG = 0;	// from dump
     CCU->DE0_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+
+
+	CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1: De-assert
+	CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+
+
+	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << 0;	// COREx_SCLK_GATE
+	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << 0;	// COREx_HCLK_GATE
+	// Only one bit writable
+	//DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
+	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
+
+	DE_TOP->DE_SCLK_GATE = ~0;	// COREx_SCLK_GATE
+	DE_TOP->DE_HCLK_GATE = ~0;	// COREx_HCLK_GATE
+	// Only one bit writable
+	//DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
+	DE_TOP->DE_AHB_RESET = ~0;		// CORE0_AHB_RESET
+
+	// после попытки установить все биты
+	//	DE_TOP->DE_SCLK_GATE=00011111
+	//	DE_TOP->DE_HCLK_GATE=00011111
+	//	DE_TOP->DE_AHB_RESET=00000011
+	//	DE_TOP->DE_SCLK_DIV=00000000
+
+	DE_TOP->DE_SCLK_GATE |= 0x00010001; /* 0x00010001 @ 0x000 */
+	DE_TOP->DE_HCLK_GATE |= 0x00010001; /* 0x00010001 @ 0x004 */
+	DE_TOP->DE_AHB_RESET |= 0x00000011; /* 0x00000011 @ 0x008 */
+	//DE_TOP->DE_SCLK_DIV = 0x00000000; /* 0x00000000 @ 0x00C */
+
+//	PRINTF("DE_TOP->DE_SCLK_GATE=%08X\n", (unsigned) DE_TOP->DE_SCLK_GATE);
+//	PRINTF("DE_TOP->DE_HCLK_GATE=%08X\n", (unsigned) DE_TOP->DE_HCLK_GATE);
+//	PRINTF("DE_TOP->DE_AHB_RESET=%08X\n", (unsigned) DE_TOP->DE_AHB_RESET);
+//	PRINTF("DE_TOP->DE_SCLK_DIV=%08X\n", (unsigned) DE_TOP->DE_SCLK_DIV);
 
     local_delay_us(10);
 
@@ -3301,24 +3333,6 @@ static void hardware_de_global_initialize(void)
 		CCU->HDCP_ESM_CLK_REG |= (UINT32_C(1) << 31);	// from dump
 	#endif
 
-	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << 0;	// COREx_SCLK_GATE
-	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << 0;	// COREx_HCLK_GATE
-	// Only one bit writable
-	//DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
-	DE_TOP->DE_AHB_RESET |= (UINT32_C(1) << 0);		// CORE0_AHB_RESET
-
-	DE_TOP->DE_SCLK_GATE = ~0;	// COREx_SCLK_GATE
-	DE_TOP->DE_HCLK_GATE = ~0;	// COREx_HCLK_GATE
-	// Only one bit writable
-	//DE_TOP->DE_AHB_RESET &= ~ (UINT32_C(1) << 0);	// CORE0_AHB_RESET
-	DE_TOP->DE_AHB_RESET = ~0;		// CORE0_AHB_RESET
-
-	//    printhex32(DE_TOP_BASE, DE_TOP, 256);
-
-	CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1: De-assert
-	CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
-	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
-
 	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
 	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
@@ -3364,6 +3378,10 @@ static void hardware_de_global_initialize(void)
     //DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
 	PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
+
+	const uint_fast32_t lvdsclock = 232848000;
+	const uint_fast32_t lcddotclock = 55000000;
+	uint_fast32_t hdmidotclock =   80291880;
 
     // CCU_32K select as CEC clock as default
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
@@ -3485,27 +3503,6 @@ static void hardware_de_global_initialize(void)
 	//PRINTF("7 allwnr_a733_get_hdmi_hdcp_freq()=%u kHz\n", (unsigned) (allwnr_a733_get_hdmi_hdcp_freq() / 1000));
 //	PRINTF("7 allwnr_a733_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a733_get_hdmi_tv_freq() / 1000));
 //	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
-
-    if (0)
-    {
-        fill32(DE_TOP_BASE, de_pattern, ARRAY_SIZE(de_pattern));
-    }
-    else
-    {
-    	DE_TOP->DE_SCLK_GATE = 0x00010001; /* 0x00010001 @ 0x000 */
-    	DE_TOP->DE_HCLK_GATE = 0x00010001; /* 0x00010001 @ 0x004 */
-    	DE_TOP->DE_AHB_RESET = 0x00000011; /* 0x00000011 @ 0x008 */
-    	DE_TOP->DE_SCLK_DIV = 0x00000000; /* 0x00000000 @ 0x00C */
-    	DE_TOP->DE2TCON_MUX = 0x0000FFF4; /* 0x0000FFF4 @ 0x010 */
-    	//DE_TOP->DE_VER_CTL = 0x03520100; /* 0x03520100 @ 0x014 */
-    	DE_TOP->DE_RTWB_MUX = 0x00000000; /* 0x00000000 @ 0x020 */
-    	DE_TOP->DE_CHN2CORE_MUX = 0x00000000; /* 0x00000000 @ 0x024 */
-    	DE_TOP->DE_PORT2CHN_MUX [0] = 0x00000000; /* 0x00000000 @ 0x028 */
-    	DE_TOP->DE_PORT2CHN_MUX [1] = 0x00000000; /* 0x00000000 @ 0x02C */
-    	DE_TOP->DE_PORT2CHN_MUX [2] = 0x00A98210; /* 0x00A98210 @ 0x030 */
-    	DE_TOP->DE_PORT2CHN_MUX [3] = 0x00000000; /* 0x00000000 @ 0x034 */
-
-    }
 
 #elif CPUSTYLE_T507
 
@@ -6565,6 +6562,8 @@ static void t113_vi_scaler_setup(int rtmixid, const videomode_t * srcvdmode, con
 // T507: PLL_VIDEO0
 static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 {
+	PRINTF("t113_tcontv_PLL_configuration: dotclock=%u\n", (unsigned) dotclock);
+
 #if defined (TCONTV_PTR)
 #if CPUSTYLE_H3
 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
@@ -6641,6 +6640,7 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 
 static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 {
+	PRINTF("t113_tcontv_CCU_configuration: dotclock=%u\n", (unsigned) dotclock);
 #if defined (TCONTV_PTR)
 #if CPUSTYLE_H3
 
@@ -6861,6 +6861,14 @@ static void awxx_deoutmapping(int rtmixid)
 
 #elif CPUSTYLE_A733
 	#warning Unimplemented CPUSTYLE_A733
+	// from registers dump:
+	// DE ch0 - HDMI tvout 0
+	DE_TOP->DE2TCON_MUX = 0x0000FFF4; /* 0x0000FFF4 @ 0x010 */
+	DE_TOP->DE_CHN2CORE_MUX = 0x00000000; /* 0x00000000 @ 0x024 */
+	DE_TOP->DE_PORT2CHN_MUX [0] = 0x00000000; /* 0x00000000 @ 0x028 */
+	DE_TOP->DE_PORT2CHN_MUX [1] = 0x00000000; /* 0x00000000 @ 0x02C */
+	DE_TOP->DE_PORT2CHN_MUX [2] = 0x00A98210; /* 0x00A98210 @ 0x030 */
+	DE_TOP->DE_PORT2CHN_MUX [3] = 0x00000000; /* 0x00000000 @ 0x034 */
 
 #elif CPUSTYLE_T507
 	// DE_PORT2CHN_MUX [0]=9x00A98210
@@ -7427,7 +7435,9 @@ static const struct dw_hdmi_phy_config sun50i_h616_phy_config[] = {
 
 static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixelclock, unsigned res, int cscon)
 {
-	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+
+	PRINTF("hdmi_phy_configure: hdmi->mpixelclock=%u\n", (unsigned) mpixelclock);
+	//PRINTF("hdmi_phy_configure: hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
 	/* Enable csc path */
 	HDMI_TX0->HDMI_MC_FLOWCTRL = cscon ? HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_IN_PATH : HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;
@@ -8395,8 +8405,9 @@ static void t113_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 
 static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 {
-#if defined (TCONTV_PTR)
 	const uint_fast32_t dotclock = display_getdotclock(vdmode);
+	PRINTF("t113_tcontv_initsteps0: dotclock=%u\n", (unsigned) dotclock);
+#if defined (TCONTV_PTR)
 	// step0 - CCU configuration
 	t113_tcontv_PLL_configuration(dotclock);
 	t113_tcontv_CCU_configuration(dotclock);
@@ -8514,8 +8525,9 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
-#if defined (TCONLCD_PTR)
 	const uint_fast32_t lvdsfreq = display_getdotclock(vdmode) * 7;
+	PRINTF("t113_tcon_lvds_initsteps: lvdsfreq=%u\n", (unsigned) lvdsfreq);
+#if defined (TCONLCD_PTR)
 	// step0 - CCU configuration
 	t113_tconlvds_PLL_configuration(lvdsfreq);
 	t113_tconlvds_CCU_configuration(lvdsfreq);
