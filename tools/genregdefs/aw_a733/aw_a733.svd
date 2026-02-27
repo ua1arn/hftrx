@@ -16357,6 +16357,15 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
+    <name>TV_GINT2_REG</name>
+    <displayName>TV_GINT2_REG</displayName>
+    <description>TV Global Interrupt Register1</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>TV_SRC_CTL_REG</name>
     <displayName>TV_SRC_CTL_REG</displayName>
     <description>TV Source Control Register</description>
@@ -16388,15 +16397,6 @@
     <displayName>TV_CTL_REG</displayName>
     <description>TV Control Register</description>
     <addressOffset>0x090</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TV_BASIC0_REG</name>
-    <displayName>TV_BASIC0_REG</displayName>
-    <description>TV Basic Timing Register0</description>
-    <addressOffset>0x094</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -16442,15 +16442,6 @@
     <displayName>TV_BASIC5_REG</displayName>
     <description>TV Basic Timing Register5</description>
     <addressOffset>0x0A8</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>TV_ECC_FIFO_REG</name>
-    <displayName>TV_ECC_FIFO_REG</displayName>
-    <description>TV ECC FIFO Register</description>
-    <addressOffset>0x0F8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -16502,10 +16493,19 @@
     <dimIncrement>0x00C</dimIncrement>
    </cluster>
    <register>
-    <name>TV_SAFE_PERIOD_REG</name>
-    <displayName>TV_SAFE_PERIOD_REG</displayName>
-    <description>TV Safe Period Register</description>
+    <name>TV_SAFE_PERIOD0_REG</name>
+    <displayName>TV_SAFE_PERIOD0_REG</displayName>
+    <description>TV Safe Period0 Register</description>
     <addressOffset>0x1F0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_SAFE_PERIOD1_REG</name>
+    <displayName>TV_SAFE_PERIOD1_REG</displayName>
+    <description>TV Safe Period1 Register</description>
+    <addressOffset>0x1F4</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -16563,9 +16563,27 @@
     <dimIncrement>0x024</dimIncrement>
    </cluster>
    <register>
+    <name>TV_FILL_DATAH1</name>
+    <displayName>TV_FILL_DATAH1</displayName>
+    <description>TV Fill Data High1 Value Register</description>
+    <addressOffset>0x328</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TV_FILL_DATAH2</name>
+    <displayName>TV_FILL_DATAH2</displayName>
+    <description>TV Fill Data High2 Value Register</description>
+    <addressOffset>0x32C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>TV_DATA_IO_POL0_REG</name>
     <displayName>TV_DATA_IO_POL0_REG</displayName>
-    <description>TV Data IO Polarity0 Register</description>
+    <description>TV Data IO Polarity Control0 Register</description>
     <addressOffset>0x330</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -16574,7 +16592,7 @@
    <register>
     <name>TV_DATA_IO_POL1_REG</name>
     <displayName>TV_DATA_IO_POL1_REG</displayName>
-    <description>TV Data IO Polarity1 Register</description>
+    <description>TV Data IO Polarity Control1 Register</description>
     <addressOffset>0x334</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -16583,7 +16601,7 @@
    <register>
     <name>TV_DATA_IO_TRI0_REG</name>
     <displayName>TV_DATA_IO_TRI0_REG</displayName>
-    <description>TV Data IO Trigger0 Register</description>
+    <description>TV Data IO Enable Control0 Register</description>
     <addressOffset>0x338</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -16592,7 +16610,7 @@
    <register>
     <name>TV_DATA_IO_TRI1_REG</name>
     <displayName>TV_DATA_IO_TRI1_REG</displayName>
-    <description>TV Data IO Trigger1 Register</description>
+    <description>TV Data IO Enable Control1 Register</description>
     <addressOffset>0x33C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -16601,7 +16619,7 @@
    <register>
     <name>TV_PIXELDEPTH_MODE_REG</name>
     <displayName>TV_PIXELDEPTH_MODE_REG</displayName>
-    <description>TV Pixel</description>
+    <description>TV Pixeldepth Mode Control Register</description>
     <addressOffset>0x340</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

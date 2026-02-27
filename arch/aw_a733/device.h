@@ -2620,20 +2620,20 @@ typedef struct TCON_TV_Type
     __IOM uint32_t TV_GCTL_REG;                       /*!< Offset 0x000 TV Global Control Register */
     __IOM uint32_t TV_GINT0_REG;                      /*!< Offset 0x004 TV Global Interrupt Register0 */
     __IOM uint32_t TV_GINT1_REG;                      /*!< Offset 0x008 TV Global Interrupt Register1 */
-         RESERVED(0x00C[0x0040 - 0x000C], uint8_t)
+    __IOM uint32_t TV_GINT2_REG;                      /*!< Offset 0x00C TV Global Interrupt Register1 */
+         RESERVED(0x010[0x0040 - 0x0010], uint8_t)
     __IOM uint32_t TV_SRC_CTL_REG;                    /*!< Offset 0x040 TV Source Control Register */
          RESERVED(0x044[0x0088 - 0x0044], uint8_t)
     __IOM uint32_t TV_IO_POL_REG;                     /*!< Offset 0x088 TV IO Polarity Register */
     __IOM uint32_t TV_IO_TRI_REG;                     /*!< Offset 0x08C TV IO Control Register */
     __IOM uint32_t TV_CTL_REG;                        /*!< Offset 0x090 TV Control Register */
-    __IOM uint32_t TV_BASIC0_REG;                     /*!< Offset 0x094 TV Basic Timing Register0 */
+         RESERVED(0x094[0x0098 - 0x0094], uint8_t)
     __IOM uint32_t TV_BASIC1_REG;                     /*!< Offset 0x098 TV Basic Timing Register1 */
     __IOM uint32_t TV_BASIC2_REG;                     /*!< Offset 0x09C TV Basic Timing Register2 */
     __IOM uint32_t TV_BASIC3_REG;                     /*!< Offset 0x0A0 TV Basic Timing Regi ster3 */
     __IOM uint32_t TV_BASIC4_REG;                     /*!< Offset 0x0A4 TV Basic Timing Register4 */
     __IOM uint32_t TV_BASIC5_REG;                     /*!< Offset 0x0A8 TV Basic Timing Register5 */
-         RESERVED(0x0AC[0x00F8 - 0x00AC], uint8_t)
-    __IOM uint32_t TV_ECC_FIFO_REG;                   /*!< Offset 0x0F8 TV ECC FIFO Register */
+         RESERVED(0x0AC[0x00FC - 0x00AC], uint8_t)
     __IOM uint32_t TV_DEBUG_REG;                      /*!< Offset 0x0FC TV Debug Register */
     __IOM uint32_t TV_CEU_CTL_REG;                    /*!< Offset 0x100 TV CEU Control Register */
          RESERVED(0x104[0x0110 - 0x0104], uint8_t)
@@ -2641,8 +2641,9 @@ typedef struct TCON_TV_Type
          RESERVED(0x13C[0x0140 - 0x013C], uint8_t)
     __IOM uint32_t TV_CEU_COEF_RANG_REG [0x003];      /*!< Offset 0x140 TV CEU Coefficient Range R egister (N=0,1,2) */
          RESERVED(0x14C[0x01F0 - 0x014C], uint8_t)
-    __IOM uint32_t TV_SAFE_PERIOD_REG;                /*!< Offset 0x1F0 TV Safe Period Register */
-         RESERVED(0x1F4[0x0200 - 0x01F4], uint8_t)
+    __IOM uint32_t TV_SAFE_PERIOD0_REG;               /*!< Offset 0x1F0 TV Safe Period0 Register */
+    __IOM uint32_t TV_SAFE_PERIOD1_REG;               /*!< Offset 0x1F4 TV Safe Period1 Register */
+         RESERVED(0x1F8[0x0200 - 0x01F8], uint8_t)
     __IOM uint32_t tcon_mul_ctl;                      /*!< Offset 0x200 https://github.com/qiaoweibiao/T507_Kernel/blob/98fcc7d3f112e51b0edfb71536da89cb2115106f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_sun50iw1/de_lcd_type.h#L691 */
          RESERVED(0x204[0x0300 - 0x0204], uint8_t)
     __IOM uint32_t TV_FILL_CTL_REG;                   /*!< Offset 0x300 TV Fill Data Control Register */
@@ -2652,12 +2653,13 @@ typedef struct TCON_TV_Type
         __IOM uint32_t TV_FILL_END_REG;               /*!< Offset 0x308 TV Fill Data End Register  0x0308+N*0x0C(N=0..2) */
         __IOM uint32_t TV_FILL_DATA_REG;              /*!< Offset 0x30C TV Fill Data Value Register  0x030C+N*0x0C(N=0..2) */
     } TV_FILL [0x003];                                /*!< Offset 0x304 V Fill Data 0..2 */
-         RESERVED(0x328[0x0330 - 0x0328], uint8_t)
-    __IOM uint32_t TV_DATA_IO_POL0_REG;               /*!< Offset 0x330 TV Data IO Polarity0 Register */
-    __IOM uint32_t TV_DATA_IO_POL1_REG;               /*!< Offset 0x334 TV Data IO Polarity1 Register */
-    __IOM uint32_t TV_DATA_IO_TRI0_REG;               /*!< Offset 0x338 TV Data IO Trigger0 Register */
-    __IOM uint32_t TV_DATA_IO_TRI1_REG;               /*!< Offset 0x33C TV Data IO Trigger1 Register */
-    __IOM uint32_t TV_PIXELDEPTH_MODE_REG;            /*!< Offset 0x340 TV Pixel */
+    __IOM uint32_t TV_FILL_DATAH1;                    /*!< Offset 0x328 TV Fill Data High1 Value Register */
+    __IOM uint32_t TV_FILL_DATAH2;                    /*!< Offset 0x32C TV Fill Data High2 Value Register */
+    __IOM uint32_t TV_DATA_IO_POL0_REG;               /*!< Offset 0x330 TV Data IO Polarity Control0 Register */
+    __IOM uint32_t TV_DATA_IO_POL1_REG;               /*!< Offset 0x334 TV Data IO Polarity Control1 Register */
+    __IOM uint32_t TV_DATA_IO_TRI0_REG;               /*!< Offset 0x338 TV Data IO Enable Control0 Register */
+    __IOM uint32_t TV_DATA_IO_TRI1_REG;               /*!< Offset 0x33C TV Data IO Enable Control1 Register */
+    __IOM uint32_t TV_PIXELDEPTH_MODE_REG;            /*!< Offset 0x340 TV Pixeldepth Mode Control Register */
          RESERVED(0x344[0x1000 - 0x0344], uint8_t)
 } TCON_TV_TypeDef; /* size of structure = 0x1000 */
 /*

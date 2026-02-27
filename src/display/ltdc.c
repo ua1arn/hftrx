@@ -2767,7 +2767,7 @@ static void hardware_ltdc_vsync(int rtmixid)
 #if defined RTMIXIDLCD
 	case RTMIXIDLCD:
 		TCONLCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;         //clear LCD_VB_INT_FLAG
-		if (local_wait32mask(& TCONLCD_GINT0_REG, LCD_VB_INT_FLAG, LCD_VB_INT_FLAG, 500))
+		if (local_wait32mask(& TCONLCD_GINT0_REG, LCD_VB_INT_FLAG, LCD_VB_INT_FLAG, 100))
 		{
 			PRINTF("hardware_ltdc_vsync: timeoutm rtmixid=%d\n", rtmixid);
 		}
@@ -2778,13 +2778,9 @@ static void hardware_ltdc_vsync(int rtmixid)
 #if defined RTMIXIDTV
 	case RTMIXIDTV:
 		TCONTV_GINT0_REG &= ~ TVOUT_VB_INT_FLAG;         //clear TCON1_VB_INT_FLAG
-		if (local_wait32mask(& TCONTV_GINT0_REG, TVOUT_VB_INT_FLAG, TVOUT_VB_INT_FLAG, 500))
+		if (local_wait32mask(& TCONTV_GINT0_REG, TVOUT_VB_INT_FLAG, TVOUT_VB_INT_FLAG, 100))
 		{
 			PRINTF("hardware_ltdc_vsync: timeoutm rtmixid=%d\n", rtmixid);
-		}
-		else
-		{
-			//dbg_putchar('+');
 		}
 //	    while ((TCONTV_GINT0_REG & TVOUT_VB_INT_FLAG) == 0) //wait  TCON1_VB_INT_FLAG
 //	        ;
@@ -3423,7 +3419,9 @@ static void hardware_de_global_initialize(void)
 //			u32 res1:22;
 //		} bits;
 //	};
+#ifdef TCONLCD_PTR
     TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
+#endif
 
 	//	7 allwnr_a733_get_hdmi_hdcp_freq()=300000 kHz
 	//	7 allwnr_a733_get_hdmi_freq()=297000 kHz
@@ -7957,14 +7955,16 @@ static void t113_tcontv_set_sequence_parameters(const videomode_t * vdmode)
 
 //	PRINTF("LEFTMARGIN=%u\n", LEFTMARGIN);
 //	PRINTF("TOPMARGIN=%u\n", TOPMARGIN);
-//	PRINTF("HTOTAL=%u\n", HTOTAL);
-//	PRINTF("VTOTAL=%u\n", VTOTAL);
-//	PRINTF("HBLANKING=%u\n", HBLANKING);
-//	PRINTF("VBLANKING=%u\n", VBLANKING);
-//	PRINTF("HSYNC=%u\n", HSYNC);
-//	PRINTF("VSYNC=%u\n", VSYNC);
-//	PRINTF("HBP=%u\n", HBP);
-//	PRINTF("VBP=%u\n", VBP);
+	PRINTF("WIDTH=%u\n", WIDTH);
+	PRINTF("HEIGHT=%u\n", HEIGHT);
+	PRINTF("HTOTAL=%u\n", HTOTAL);
+	PRINTF("VTOTAL=%u\n", VTOTAL);
+	PRINTF("HBLANKING=%u\n", HBLANKING);
+	PRINTF("VBLANKING=%u\n", VBLANKING);
+	PRINTF("HSYNC=%u\n", HSYNC);
+	PRINTF("VSYNC=%u\n", VSYNC);
+	PRINTF("HBP=%u\n", HBP);
+	PRINTF("VBP=%u\n", VBP);
 
 	//PRINTF("start delay=%u\n", (VTOTAL - HEIGHT) / interlace - 5);
 
@@ -8060,13 +8060,18 @@ static void t113_tcontv_set_sequence_parameters(const videomode_t * vdmode)
 		(interlace == 2) * (UINT32_C(1) << 20) |	// TCON1_CTL_INTERLACE_ENABLE
 		ulmin16(31, (VTOTAL - HEIGHT) / interlace - 5) * (UINT32_C(1) << 4) | // Start_Delay
 		0;
-
-	TCONTV_PTR->TV_BASIC0_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TV_XI TV_YI
-	TCONTV_PTR->TV_BASIC1_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// LS_XO LS_YO
+	unsigned VIC39IND = 0;
+	TCONTV_PTR->TV_BASIC1_REG = (VIC39IND << 31) | (VTOTAL * (3 - interlace));	// VIC39IND VT
 	TCONTV_PTR->TV_BASIC2_REG = ((WIDTH - 1) << 16) | (HEIGHT - 1);	// TV_XO TV_YO
 	TCONTV_PTR->TV_BASIC3_REG = ((HTOTAL - 1) << 16) | ((HBP - 1) << 0);	// HT HBP
-	TCONTV_PTR->TV_BASIC4_REG = ((VTOTAL * (3 - interlace)) << 16) | ((VBP - 1) << 0);	// VT VBP
+	TCONTV_PTR->TV_BASIC4_REG = ((VBP - 1) << 0);	// VT VBP
 	TCONTV_PTR->TV_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
+
+//	TCON_TV0->TV_BASIC1_REG = 0x000004DC; /* 0x000004DC @ 0x098 */
+//	TCON_TV0->TV_BASIC2_REG = 0x03FF0257; /* 0x03FF0257 @ 0x09C */
+//	TCON_TV0->TV_BASIC3_REG = 0x051F011A; /* 0x051F011A @ 0x0A0 */
+//	TCON_TV0->TV_BASIC4_REG = 0x04DC0013; /* 0x04DC0013 @ 0x0A4 */
+//	TCON_TV0->TV_BASIC5_REG = 0x000C0002; /* 0x000C0002 @ 0x0A8 */
 
 //	TCONTV_PTR->TV_IO_POL_REG = 0x03000000;
 //	TCONTV_PTR->TV_IO_TRI_REG = 0x0cffffff;
@@ -8337,11 +8342,6 @@ static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_tcontv_open_module_enable();
 
-	PRINTF("TCONTV_PTR->TV_DEBUG_REG=0x%08X\n", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
-	local_delay_ms(10);
-	PRINTF("TCONTV_PTR->TV_DEBUG_REG=0x%08X\n", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
-	PRINTF("TCONTV_PTR->TV_DEBUG_REG=0x%08X\n", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
-
 #endif /* defined (TCONTV_PTR) */
 }
 
@@ -8461,11 +8461,6 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	// step8 - same as step6 in HV mode: Open module enable
 	t113_open_module_enable(vdmode);
 	//PRINTF("lvdsfreq=%u (desired dclk=%u), BOARD_TCONLCDFREQ=%u, dclk=%u\n", (unsigned) lvdsfreq, (unsigned) (lvdsfreq / 7), (unsigned) BOARD_TCONLCDFREQ, (unsigned) (BOARD_TCONLCDFREQ / 7));
-
-	PRINTF("TCONLCD_PTR->LCD_DEBUG_REG=0x%08X\n", (unsigned) TCONLCD_PTR->LCD_DEBUG_REG);
-	local_delay_ms(10);
-	PRINTF("TCONLCD_PTR->LCD_DEBUG_REG=0x%08X\n", (unsigned) TCONLCD_PTR->LCD_DEBUG_REG);
-	PRINTF("TCONLCD_PTR->LCD_DEBUG_REG=0x%08X\n", (unsigned) TCONLCD_PTR->LCD_DEBUG_REG);
 
 #endif /* defined (TCONLCD_PTR) */
 }
