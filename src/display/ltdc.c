@@ -7953,18 +7953,18 @@ static void t113_tcontv_set_sequence_parameters(const videomode_t * vdmode)
 	const unsigned HTOTAL = HBLANKING + WIDTH;	/* horizontal full period */
 	const unsigned VTOTAL = VBLANKING + HEIGHT;	/* vertical full period */
 
+//	PRINTF("WIDTH=%u\n", WIDTH);
+//	PRINTF("HEIGHT=%u\n", HEIGHT);
+//	PRINTF("HTOTAL=%u\n", HTOTAL);
+//	PRINTF("VTOTAL=%u\n", VTOTAL);
+//	PRINTF("HBLANKING=%u\n", HBLANKING);
+//	PRINTF("VBLANKING=%u\n", VBLANKING);
+//	PRINTF("HSYNC=%u\n", HSYNC);
+//	PRINTF("VSYNC=%u\n", VSYNC);
+//	PRINTF("HBP=%u\n", HBP);
+//	PRINTF("VBP=%u\n", VBP);
 //	PRINTF("LEFTMARGIN=%u\n", LEFTMARGIN);
 //	PRINTF("TOPMARGIN=%u\n", TOPMARGIN);
-	PRINTF("WIDTH=%u\n", WIDTH);
-	PRINTF("HEIGHT=%u\n", HEIGHT);
-	PRINTF("HTOTAL=%u\n", HTOTAL);
-	PRINTF("VTOTAL=%u\n", VTOTAL);
-	PRINTF("HBLANKING=%u\n", HBLANKING);
-	PRINTF("VBLANKING=%u\n", VBLANKING);
-	PRINTF("HSYNC=%u\n", HSYNC);
-	PRINTF("VSYNC=%u\n", VSYNC);
-	PRINTF("HBP=%u\n", HBP);
-	PRINTF("VBP=%u\n", VBP);
 
 	//PRINTF("start delay=%u\n", (VTOTAL - HEIGHT) / interlace - 5);
 
