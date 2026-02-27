@@ -17,6 +17,27 @@
 #include "hardware.h"
 #include "formats.h"	// for debug prints
 
+#if CPUSTYLE_A733
+#include "pattern/ccu.h"
+#include "pattern/prcm.h"
+#include "pattern/de.h"
+#include "pattern/tcontv0.h"
+//
+#include "pattern/diags.h"
+
+static void all_Type_print2(const char * label)
+{
+    PRINTF("%s\n", label);
+//    CCU_Type_print((CCU_TypeDef *) & ccu_pattern, "CCU");
+//    TCON_TV_Type_print((TCON_TV_TypeDef *) & tcontv0_pattern, "TCON_TV0");
+//    PRCM_Type_print((PRCM_TypeDef *) & prcm_pattern, "PRCM");
+    DE_TOP_Type_print((DE_TOP_TypeDef *) & de_pattern, "DE_TOP");
+    PRINTF("%s end\n", label);
+}
+
+
+#endif
+
 #if WITHLTDCHW
 
 #define LTDCBIT32(x) (UINT32_C(1) << (x))
@@ -3174,6 +3195,8 @@ static void hardware_de_global_initialize(void)
 
 #elif CPUSTYLE_A733
     // de global
+
+    all_Type_print2("Simulation");
 //	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 //	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
 //	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST De-assert writable mask 0x00010001
@@ -3186,7 +3209,8 @@ static void hardware_de_global_initialize(void)
 //	allwnr_a733_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 //	allwnr_a733_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
 	const uint_fast32_t lvdsclock = 232848000;
-	const uint_fast32_t dotclock =   55000000;
+	const uint_fast32_t lcddotclock = 55000000;
+	uint_fast32_t hdmidotclock =   80291880;
 
 	/* Configure DE clock (no FACTOR_N on T507/H616 CPU) */
 	//	CLK_SRC_SEL.
@@ -3235,25 +3259,41 @@ static void hardware_de_global_initialize(void)
 	CCU->COMBPHY1_CLK_REG |= (UINT32_C(1) << 31);
 
 	// calculate by lvdsclock
-	uint_fast32_t srcfreq = allwnr_a733_get_pll_video0_4x_freq();
-	unsigned lvdsdivider = calcdivround2(srcfreq, lvdsclock);
-	ASSERT(lvdsdivider >= 1 && lvdsdivider <= 32);
-	lvdsdivider = 8;
-	PRINTF("lvdsdivider=%u\n", lvdsdivider);
-	PRINTF("PLL_VIDEO0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_VIDEO0_CTRL_REG);
-	CCU->VO0_TCONLCD0_CLK_REG  = (lvdsdivider - 1);
-	CCU->VO0_TCONLCD1_CLK_REG  = (lvdsdivider - 1);
-	CCU->VO0_TCONLCD0_CLK_REG |= (UINT32_C(1) << 31);	// 000: VIDEO0PLL4X
-	CCU->VO0_TCONLCD1_CLK_REG |= (UINT32_C(1) << 31);
-	DISPLAY0_TOP->VO0_MODULE_GATING = 0;	// LCD1_DSI_GATE, LCD0_DSI_GATE
-	//DISPLAY1_TOP->VO1_MODULE_GATING;
+#ifdef TCONLCD_PTR
+		uint_fast32_t srcfreq = allwnr_a733_get_pll_video0_4x_freq();
+		unsigned lvdsdivider = calcdivround2(srcfreq, lvdsclock);
+		ASSERT(lvdsdivider >= 1 && lvdsdivider <= 32);
+		lvdsdivider = 8;
+		PRINTF("lvdsdivider=%u\n", lvdsdivider);
+		PRINTF("PLL_VIDEO0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_VIDEO0_CTRL_REG);
+		CCU->VO0_TCONLCD0_CLK_REG  = (lvdsdivider - 1);
+		CCU->VO0_TCONLCD0_CLK_REG |= (UINT32_C(1) << 31);	// 000: VIDEO0PLL4X
 
-	CCU->LVDS0_BGR_REG |= (UINT32_C(1) << 16);	// LVDS0_RST
-	CCU->LVDS1_BGR_REG |= (UINT32_C(1) << 16);	// LVDS1_RST
+		CCU->VO0_TCONLCD1_CLK_REG  = (lvdsdivider - 1);
+		CCU->VO0_TCONLCD1_CLK_REG |= (UINT32_C(1) << 31);
+		DISPLAY0_TOP->VO0_MODULE_GATING = 0;	// LCD1_DSI_GATE, LCD0_DSI_GATE
+		//DISPLAY1_TOP->VO1_MODULE_GATING;
+
+
+		CCU->LVDS0_BGR_REG |= (UINT32_C(1) << 16);	// LVDS0_RST
+		CCU->LVDS1_BGR_REG |= (UINT32_C(1) << 16);	// LVDS1_RST
+	#endif
+	#ifdef TCONLCD_PTR
+		//TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
+	#endif
+
+	//CCU->VIDEO_IN_BGR_REG = 0x00010000;
+	CCU->VIDEOPLL_GATE_EN_REG = 0x00770000; /* 0x00770000 @ 0x1910 */
 
 	#ifdef TCONTV_PTR
-		TCONTV_CCU_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
-		TCONTV_CCU_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+
+		// HDMI
+		CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+		CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 16);	// DE0_RST. De-assert reset
+
+		// eDP
+//		CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+//		CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 16);	// DE0_RST. De-assert reset
 		local_delay_us(10);
 
 		// Разрешает доступ к HDMI_TX0
@@ -3325,16 +3365,6 @@ static void hardware_de_global_initialize(void)
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
 	PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
 
-	// PLL_VIDEO0 as source
-	const uint_fast32_t pllref = allwnr_a733_get_pll_ref_freq();
-	const uint_fast32_t pllout = allwnr_a733_get_pll_peri0_2x_freq();
-	PRINTF("allwnr_a733_get_pll_ref_freq()=%u\n", (unsigned) pllref);
-	PRINTF("allwnr_a733_get_pll_peri0_2x_freq()=%u\n", (unsigned) pllout);
-	PRINTF("7 dotclock=%u kHz\n", (unsigned) (dotclock / 1000));
-
-	unsigned M_HDMI = ulmax(1, ulmin(calcdivround2(pllout, dotclock), 16));
-	//PRINTF("7 M_HDMI=%u\n", M_HDMI);
-
     // CCU_32K select as CEC clock as default
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
 
@@ -3363,45 +3393,73 @@ static void hardware_de_global_initialize(void)
     //PRINTF("TCONTV_CCU_CLK_REG=%08X\n", (unsigned) TCONTV_CCU_CLK_REG);
 #endif
 
+#ifdef TCONTV_PTR
+
+
+	// PLL_VIDEO0 as source
+	//const uint_fast32_t pllref = allwnr_a733_get_pll_ref_freq();
+	const uint_fast32_t pllout = allwnr_a733_get_pll_peri0_2x_freq();
+	//PRINTF("allwnr_a733_get_pll_ref_freq()=%u\n", (unsigned) pllref);
+	PRINTF("allwnr_a733_get_pll_peri0_2x_freq()=%u\n", (unsigned) pllout);
+	PRINTF("7 hdmidotclock=%u kHz\n", (unsigned) (hdmidotclock / 1000));
+
+	hdmidotclock = 145500000;
+	unsigned M_HDMI = ulmax(1, ulmin(calcdivround2(pllout, hdmidotclock), 16));
+	unsigned N_HDMI = 1;
+	PRINTF("7 N_HDMI=%u, M_HDMI=%u\n", N_HDMI, M_HDMI);
+	ASSERT(M_HDMI >= 1 && N_HDMI <= 32);
+	ASSERT(N_HDMI >= 1 && N_HDMI <= 32);
+
+	// HDMI_TV_CLK_REG
+	//	CLK_SRC_SEL.
+	//	Clock Source Select
+	//	000: VIDEO0PLL4X
+	//	001: VIDEO1PLL4X
+	//	010: VIDEO2PLL4X
+	//	011: PERI0PLL2X
+
 	const unsigned HDMI_CLK_REG_M = M_HDMI;
 	CCU->HDMI_TV_CLK_REG =
-		0x00 * (UINT32_C(1) << 24) | 	// 000:􀀁VIDEO0PLL4X
-		(HDMI_CLK_REG_M - 1) |
+		0x03 * (UINT32_C(1) << 24) | 	// 011: PERI0PLL2X
+		(N_HDMI - 1) * (UINT32_C(1) << 8)|
+		(M_HDMI - 1) * (UINT32_C(1) << 0)|
 		0;
-    CCU->HDMI_TV_CLK_REG |= (UINT32_C(1) << 31);
-    //PRINTF("CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
+	CCU->HDMI_TV_CLK_REG |= (UINT32_C(1) << 31);
 
-    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_GATING
-    //CCU->HDMI_BGR_REG |= (UINT32_C(1) << 18);	// HDMI_HDCP_RST
-    CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST (19 & 18 - hdmi1 ?)
-    //PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
 
-    ////CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
-    //PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
+	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_GATING
+	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 18);	// HDMI_HDCP_RST
+	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST (19 & 18 - hdmi1 ?)
+	//PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
+
+	////CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
+	//PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
 
 	//---- HDCP: High-bandwidth Digital Content Protection
-    CCU->HDMI_CEC_CLK_REG =
+	CCU->HDMI_CEC_CLK_REG =
 		(UINT32_C(1) << 31) |	// HDMI_CEC_CLK_GATING.
-		(UINT32_C(1) << 30) |	// PERI_GATING.
-		0x00 * (UINT32_C(1) << 24) |	// 000:􀀁RTC_32K
+		//(UINT32_C(1) << 30) |	// PERI_GATING.
+		0x00 * (UINT32_C(1) << 24) |	// 000: RTC_32K
 		0;
-    //CCU->HDMI_HDCP_CLK_REG = 0x81000001;
-    //PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
+	//CCU->HDMI_HDCP_CLK_REG = 0x81000001;
+	//PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
 
-//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
-//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
-    //PRINTF("CCU->HDMI_HDCP_BGR_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_BGR_REG);
+	//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
+	//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
+	//PRINTF("CCU->HDMI_HDCP_BGR_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_BGR_REG);
 
 	/*
-	 * First clock parent (osc32K) is unusable for CEC. But since there
-	 * is no good way to force parent switch (both run with same frequency),
-	 * just set second clock parent here.
-	 */
+	* First clock parent (osc32K) is unusable for CEC. But since there
+	* is no good way to force parent switch (both run with same frequency),
+	* just set second clock parent here.
+	*/
 	CCU->HDMI_CEC_CLK_REG = 0x01 * (UINT32_C(1) << 24);
 
-    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
-    //PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
+	CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+	CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
+	//PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
+
+#endif
 
 //    CCU->TVE0_CLK_REG = 0x82000001;
 //    CCU->TVE_BGR_REG = 0x00030003;
@@ -3419,9 +3477,6 @@ static void hardware_de_global_initialize(void)
 //			u32 res1:22;
 //		} bits;
 //	};
-#ifdef TCONLCD_PTR
-    TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
-#endif
 
 	//	7 allwnr_a733_get_hdmi_hdcp_freq()=300000 kHz
 	//	7 allwnr_a733_get_hdmi_freq()=297000 kHz
@@ -3430,6 +3485,27 @@ static void hardware_de_global_initialize(void)
 	//PRINTF("7 allwnr_a733_get_hdmi_hdcp_freq()=%u kHz\n", (unsigned) (allwnr_a733_get_hdmi_hdcp_freq() / 1000));
 //	PRINTF("7 allwnr_a733_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a733_get_hdmi_tv_freq() / 1000));
 //	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
+
+    if (0)
+    {
+        fill32(DE_TOP_BASE, de_pattern, ARRAY_SIZE(de_pattern));
+    }
+    else
+    {
+    	DE_TOP->DE_SCLK_GATE = 0x00010001; /* 0x00010001 @ 0x000 */
+    	DE_TOP->DE_HCLK_GATE = 0x00010001; /* 0x00010001 @ 0x004 */
+    	DE_TOP->DE_AHB_RESET = 0x00000011; /* 0x00000011 @ 0x008 */
+    	DE_TOP->DE_SCLK_DIV = 0x00000000; /* 0x00000000 @ 0x00C */
+    	DE_TOP->DE2TCON_MUX = 0x0000FFF4; /* 0x0000FFF4 @ 0x010 */
+    	//DE_TOP->DE_VER_CTL = 0x03520100; /* 0x03520100 @ 0x014 */
+    	DE_TOP->DE_RTWB_MUX = 0x00000000; /* 0x00000000 @ 0x020 */
+    	DE_TOP->DE_CHN2CORE_MUX = 0x00000000; /* 0x00000000 @ 0x024 */
+    	DE_TOP->DE_PORT2CHN_MUX [0] = 0x00000000; /* 0x00000000 @ 0x028 */
+    	DE_TOP->DE_PORT2CHN_MUX [1] = 0x00000000; /* 0x00000000 @ 0x02C */
+    	DE_TOP->DE_PORT2CHN_MUX [2] = 0x00A98210; /* 0x00A98210 @ 0x030 */
+    	DE_TOP->DE_PORT2CHN_MUX [3] = 0x00000000; /* 0x00000000 @ 0x034 */
+
+    }
 
 #elif CPUSTYLE_T507
 
