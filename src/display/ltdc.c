@@ -2835,7 +2835,7 @@ static void t113_de_update(int rtmixid)
     }
     else
     {
-    	dbg_putchar('!');
+    	//dbg_putchar('!');
     }
 //	while ((glb->GLB_DBUFFER & UINT32_C(1)) != 0)
 //		;
@@ -3290,6 +3290,12 @@ static void hardware_de_global_initialize(void)
 	CCU->COMBPHY0_CLK_REG |= (UINT32_C(1) << 31);
 	CCU->COMBPHY1_CLK_REG |= (UINT32_C(1) << 31);
 
+
+
+	const uint_fast32_t lvdsclock = 232848000;
+	const uint_fast32_t lcddotclock = 55000000;
+	uint_fast32_t hdmidotclock =   80291880;
+
 	// calculate by lvdsclock
 #ifdef TCONLCD_PTR
 		uint_fast32_t srcfreq = allwnr_a733_get_pll_video0_4x_freq();
@@ -3378,10 +3384,6 @@ static void hardware_de_global_initialize(void)
     //DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
 	PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
-
-	const uint_fast32_t lvdsclock = 232848000;
-	const uint_fast32_t lcddotclock = 55000000;
-	uint_fast32_t hdmidotclock =   80291880;
 
     // CCU_32K select as CEC clock as default
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
