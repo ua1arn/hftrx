@@ -3601,7 +3601,7 @@ static void hardware_de_initialize(int rtmixid)
 #elif CPUSTYLE_A733
 	/* One rtmix DE settings */
 	#warning Unimplemented CPUSTYLE_A733
-   const int disp = rtmixid - 1;
+	const int disp = rtmixid - 1;
 
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
 	// https://github.com/rvboards/linux_kernel_for_d1/blob/5703a18aa3ca12829027b0b20cd197e9741c4c0f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v33x/de330/de_top.c#L245
@@ -3730,6 +3730,7 @@ static void hardware_de_initialize(int rtmixid)
 #else
 	/* One rtmix DE settings */
 	#warning Undefined CPUSTYLE_xxx
+
 #endif
 }
 
@@ -3744,11 +3745,13 @@ static void t113_tconlcd_CCU_configuration(void)
 #if defined (TCONLCD_PTR)
 
 #if CPUSTYLE_H3
+	/* Configure TCONLCD clock */
 
 #elif CPUSTYLE_A64
+	/* Configure TCONLCD clock */
 
 #elif CPUSTYLE_T507
-
+	/* Configure TCONLCD clock */
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
     //DISP_IF_TOP->MODULE_GATING |= (UINT32_C(1) << 31);
@@ -3768,9 +3771,13 @@ static void t113_tconlcd_CCU_configuration(void)
 
     TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-
+#elif CPUSTYLE_A733
 	/* Configure TCONLCD clock */
+	#warning Unimplemented CPUSTYLE_A733
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	/* Configure TCONLCD clock */
+
 	ASSERT(divider >= 1 && divider <= 16);
     TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x0F) << 0)) |
 		0x02 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 010: PLL_VIDEO1(1X)
@@ -3788,6 +3795,8 @@ static void t113_tconlcd_CCU_configuration(void)
     local_delay_us(10);
 
 #else
+	/* Configure TCONLCD clock */
+	#warning Undefined CPUSTYLE_xxx
 
 #endif
 #endif /* defined (TCONLCD_PTR) */
@@ -3806,7 +3815,6 @@ static void t113_tconlvds_PLL_configuration(uint_fast32_t needfreq)
 
 
 #elif CPUSTYLE_T507
-
 	// LVDS mode
 	// The default value of PLL_VIDEO1(4X) is 1188 MHz
    	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
@@ -3877,7 +3885,7 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
     TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
 
 #elif CPUSTYLE_A733
-	#warning CPUSTYLE_7133 To be done
+	#warning CPUSTYLE_A733 To be done
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
@@ -3927,6 +3935,7 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
     local_delay_us(10);
 
 #else
+	#warning Undefined CPUSTYLE_xxx
 
 #endif
 #endif /* defined (TCONLCD_PTR) */
@@ -6594,6 +6603,7 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 	local_delay_ms(50);
 
 #elif CPUSTYLE_A733
+	// t113_tcontv_PLL
 	#warning Unimplemented CPUSTYLE_A733
 
 #elif CPUSTYLE_T507
@@ -6860,6 +6870,7 @@ static void awxx_deoutmapping(int rtmixid)
 	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
 #elif CPUSTYLE_A733
+	// awxx_deoutmapping
 	#warning Unimplemented CPUSTYLE_A733
 	// from registers dump:
 	// DE ch0 - HDMI tvout 0
