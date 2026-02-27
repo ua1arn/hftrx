@@ -2029,9 +2029,6 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 		DE_MIXER1_UI3,
 };
 
-#elif CPUSTYLE_A733
-	#warning CPUSTYLE_A733 to be implemented
-
 #else
 	#error Unsupported CPUSTYLE_xxx
 #endif
@@ -3129,6 +3126,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 }
 
 /* Инициализация системы тактирования, общей для всех видеовыходов */
+/* Global DE settings */
 static void hardware_de_global_initialize(void)
 {
 	unsigned i;
@@ -3139,8 +3137,10 @@ static void hardware_de_global_initialize(void)
 		IRQLSPINLOCK_INITIALIZE(lck);
 	}
 #if CPUSTYLE_H3
+	/* Global DE settings */
 
 #elif CPUSTYLE_A64
+	/* Global DE settings */
 
 	// https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L128
 
@@ -3195,7 +3195,7 @@ static void hardware_de_global_initialize(void)
     }
 
 #elif CPUSTYLE_A733
-    // de global
+	/* Global DE settings */
 
     //all_Type_print2("Simulation");
 //	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
@@ -3500,6 +3500,7 @@ static void hardware_de_global_initialize(void)
 //	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
 
 #elif CPUSTYLE_T507
+	/* Global DE settings */
 
 	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
@@ -3537,6 +3538,7 @@ static void hardware_de_global_initialize(void)
 
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
+	/* Global DE settings */
 
     // DISPLAY_TOP access
 	CCU->DPSS_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DPSS_TOP_GATING Open the clock gate
@@ -3574,15 +3576,15 @@ static void hardware_de_global_initialize(void)
 	#warning Unsupported CPUSTYLE_xxx
 
 #endif
-
 }
 
 static void hardware_de_initialize(int rtmixid)
 {
 #if CPUSTYLE_A64
+	/* One rtmix DE settings */
 
 #elif CPUSTYLE_T507
-	/* Global DE settings */
+	/* One rtmix DE settings */
     const int disp = rtmixid - 1;
 
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
@@ -3597,9 +3599,9 @@ static void hardware_de_initialize(int rtmixid)
 
 
 #elif CPUSTYLE_A733
+	/* One rtmix DE settings */
 	#warning Unimplemented CPUSTYLE_A733
-	/* Global DE settings */
-    const int disp = rtmixid - 1;
+   const int disp = rtmixid - 1;
 
 	// https://github.com/BPI-SINOVOIP/BPI-M2U-bsp/blob/2adcf0fe39e54b9bcacbd5bcd3ecb6077e081122/linux-sunxi/drivers/video/sunxi/disp2/disp/de/lowlevel_v3x/de_clock.c#L91
 	// https://github.com/rvboards/linux_kernel_for_d1/blob/5703a18aa3ca12829027b0b20cd197e9741c4c0f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v33x/de330/de_top.c#L245
@@ -3628,6 +3630,7 @@ static void hardware_de_initialize(int rtmixid)
 //    TP();
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
+	/* One rtmix DE settings */
 
 #if 0
 	//PRINTF("DE_TOP after:\n");
@@ -3690,6 +3693,7 @@ static void hardware_de_initialize(int rtmixid)
     }
 
 #elif CPUSTYLE_H3
+	/* One rtmix DE settings */
 
  	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
 	CCU->PLL_DE_CTRL_REG = (UINT32_C(1) << 31) | (UINT32_C(1) << 24) | ((18 - 1) * (UINT32_C(1) << 8)) | ((1 - 1) * (UINT32_C(1) << 0)); // 432MHz
@@ -3724,6 +3728,7 @@ static void hardware_de_initialize(int rtmixid)
 
 
 #else
+	/* One rtmix DE settings */
 	#warning Undefined CPUSTYLE_xxx
 #endif
 }
