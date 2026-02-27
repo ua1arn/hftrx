@@ -6876,21 +6876,47 @@ static void awxx_deoutmapping(int rtmixid)
 	DE_TOP->DE2TCON_MUX =
 		0x0000FFF4 | /* 0x0000FFF4 @ 0x010  */
 		0;
-	DE_TOP->DE_CHN2CORE_MUX =  /* 0x00000000 @ 0x024 */
+	DE_TOP->DE_CHN2CORE_MUX =  		/* 0x00000000 @ 0x024 */
 		0x00000000 |
 		0;
 	DE_TOP->DE_PORT2CHN_MUX [0] =  /* TCON_LCD0(4K45f) 0x00000000 @ 0x028 */
 		0x00000000 |
 		0;
-	DE_TOP->DE_PORT2CHN_MUX [1] =  /* TCON_LCD1(1080P) 0x00000000 @ 0x02C */
+	DE_TOP->DE_PORT2CHN_MUX [1] =  	/* TCON_LCD1(1080P) 0x00000000 @ 0x02C */
 		0x00000000 |
 		0;
 	DE_TOP->DE_PORT2CHN_MUX [2] =	/* tcontv0 HDMI 360MHz (4pixel/148.5MHz) 0x00A98210 @ 0x030 */
 		0x00A98210 |
 		0;
-	DE_TOP->DE_PORT2CHN_MUX [3] = 0x00000000; /* tcontv1 eDP 297MHz (2pixel) 0x00000000 @ 0x034 */
+	DE_TOP->DE_PORT2CHN_MUX [3] =  	/* tcontv1 eDP 297MHz (2pixel) 0x00000000 @ 0x034 */
+		0x00000000 |
+		0;
 
 #elif CPUSTYLE_T507
+	// Target codes (unconfirmed)
+	// de_top_set_de2tcon_mux
+
+	// values in fields of DE_CHN2CORE_MUX
+	enum { decore0, decore1, decore2 };
+	//
+	// Undocumented (2 bits)
+	enum
+	{
+		TG_DE2TCONLCD0 = 0,
+		TG_DE2TCONLCD1,
+		TG_DE2TCONTV0,
+		TG_DE2TCONTV1,
+	};
+	// 7.1.4.2. 0x001C DE Source Select TCON Register
+	// Documented (4 bits)
+	enum
+	{
+		TG_DE_PORT_PERH_TCONLCD0 = 0,
+		TG_DE_PORT_PERH_TCONLCD1,
+		TG_DE_PORT_PERH_TCONTV0,
+		TG_DE_PORT_PERH_TCONTV1,
+	};
+
 	// DE_PORT2CHN_MUX [0]=9x00A98210
 	// bits 3:0 - BLD_EN_COLOR_CTL bit 8 (pipe0)
 	// bits 7:4 - BLD_EN_COLOR_CTL bit 9 (pipe1)
@@ -6905,37 +6931,31 @@ static void awxx_deoutmapping(int rtmixid)
 	//	RTMIX1: VI2, UI2, [UI3]
 	// каждлая четверка битов в DE_PORT2CHN_MUX говорит, какому из битов-источников в
 	// bld->BLD_EN_COLOR_CTL соответствует оверлей. Номера оверлеев начиная с 0 - VI, с 8 - UI
-	{
-		DE_TOP->DE_PORT2CHN_MUX [0] =
-			0x00 * (UINT32_C(1) << (4 * 0)) | 	// VI1
-			0x08 * (UINT32_C(1) << (4 * 1)) | 	// UI1
-			0;
-		DE_TOP->DE_PORT2CHN_MUX [1] =
-			0x01 * (UINT32_C(1) << (4 * 0)) | 	// VI2
-			0x09 * (UINT32_C(1) << (4 * 1)) | 	// UI2
-			0;
-		// test
-		DE_TOP->DE_PORT2CHN_MUX [2] =
-			0x02 * (UINT32_C(1) << (4 * 0)) | 	// VI3
-			0x0A * (UINT32_C(1) << (4 * 1)) | 	// UI3
-			0;
-		// test
-		DE_TOP->DE_PORT2CHN_MUX [3] =
-			0;
+	DE_TOP->DE_PORT2CHN_MUX [0] =		// RTMIX0
+		0x00 * (UINT32_C(1) << (4 * 0)) | 	// VI1
+		0x08 * (UINT32_C(1) << (4 * 1)) | 	// UI1
+		0;
+	DE_TOP->DE_PORT2CHN_MUX [1] =		// RTMIX1
+		0x01 * (UINT32_C(1) << (4 * 0)) | 	// VI2
+		0x09 * (UINT32_C(1) << (4 * 1)) | 	// UI2
+		0;
+	// test
+	DE_TOP->DE_PORT2CHN_MUX [2] =		// RTMIX2	??????
+		0x02 * (UINT32_C(1) << (4 * 0)) | 	// VI3
+		0x0A * (UINT32_C(1) << (4 * 1)) | 	// UI3
+		0;
+	// test
+	DE_TOP->DE_PORT2CHN_MUX [3] =		// RTMIX3	??????
+		0;
 
-		DE_TOP->DE_CHN2CORE_MUX =
-				0x00 * (UINT32_C(1) << (2 * 0x00)) | 	// VI1 - CORE0
-				0x00 * (UINT32_C(1) << (2 * 0x08)) | 	// UI1 - CORE0
-				0x01 * (UINT32_C(1) << (2 * 0x01)) | 	// VI2 - CORE1
-				0x01 * (UINT32_C(1) << (2 * 0x09)) | 	// UI2 - CORE1
-				0x02 * (UINT32_C(1) << (2 * 0x02)) | 	// VI3 - CORE2 test
-				0x02 * (UINT32_C(1) << (2 * 0x0A)) | 	// UI3 - CORE2 test
-				0;
-
-//		PRINTF("DE_PORT2CHN_MUX[0]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [0]);
-//		PRINTF("DE_PORT2CHN_MUX[1]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [1]);
-//		PRINTF("DE_CHN2CORE_MUX=%08" PRIX32 "\n", DE_TOP->DE_CHN2CORE_MUX);
-	}
+	DE_TOP->DE_CHN2CORE_MUX =
+		decore0 * (UINT32_C(1) << (2 * 0x00)) | 	// VI1 - CORE0
+		decore0 * (UINT32_C(1) << (2 * 0x08)) | 	// UI1 - CORE0
+		decore1 * (UINT32_C(1) << (2 * 0x01)) | 	// VI2 - CORE1
+		decore1 * (UINT32_C(1) << (2 * 0x09)) | 	// UI2 - CORE1
+		decore2 * (UINT32_C(1) << (2 * 0x02)) | 	// VI3 - CORE2 test
+		decore2 * (UINT32_C(1) << (2 * 0x0A)) | 	// UI3 - CORE2 test
+		0;
 
 	/* перенаправление выхода DE */
 	// 0x000000E4 initial value
@@ -6948,25 +6968,6 @@ static void awxx_deoutmapping(int rtmixid)
 
 //	DE_TOP->DE2TCON_MUX = SET_BITS(disp * 2, 2, DE_TOP->DE2TCON_MUX, targetix);
 
-	// Target codes (unconfirmed)
-	// de_top_set_de2tcon_mux
-	//
-	// Undocumented (2 bits)
-	enum
-	{
-		TG_DE2TCONLCD0 = 0,
-		TG_DE2TCONLCD1,
-		TG_DE2TCONTV0,
-		TG_DE2TCONTV1,
-	};
-	// Documented (4 bits)
-	enum
-	{
-		TG_DE_PORT_PERH_TCONLCD0 = 0,
-		TG_DE_PORT_PERH_TCONLCD1,
-		TG_DE_PORT_PERH_TCONTV0,
-		TG_DE_PORT_PERH_TCONTV1,
-	};
 
 	// Documented
 //    DISP_IF_TOP->DE_PORT_PERH_SEL = (DISP_IF_TOP->DE_PORT_PERH_SEL & ~ (UINT32_C(0x0F) << 4) & ~ (UINT32_C(0x0F) << 0)) |
@@ -6988,23 +6989,17 @@ static void awxx_deoutmapping(int rtmixid)
 
 	// DE_PORT_PERH_SEL - all 32 bits writeable
 	DISP_IF_TOP->DE_PORT_PERH_SEL =
-			TG_DE_PORT_PERH_TCONTV1 * (UINT32_C(1) << 12) | // DE_PORT3 PERH Select. TEST
-			TG_DE_PORT_PERH_TCONLCD1 * (UINT32_C(1) << 8) |	// DE_PORT2 PERH Select. TEST
-			TG_DE_PORT_PERH_TCONTV0 * (UINT32_C(1) << 4) | // DE_PORT1 PERH Select.
-			TG_DE_PORT_PERH_TCONLCD0 * (UINT32_C(1) << 0) |	// DE_PORT0 PERH Select.
+//		TG_DE_PORT_PERH_TCONTV1 * (UINT32_C(1) << 12) | // DE_PORT3 PERH Select. undocumented
+//		TG_DE_PORT_PERH_TCONLCD1 * (UINT32_C(1) << 8) |	// DE_PORT2 PERH Select. undocumented
+		TG_DE_PORT_PERH_TCONTV0 * (UINT32_C(1) << 4) | // DE_PORT1 PERH Select.
+		TG_DE_PORT_PERH_TCONLCD0 * (UINT32_C(1) << 0) |	// DE_PORT0 PERH Select.
 		0;
 
 	// Undocumented
 	DE_TOP->DE2TCON_MUX =
-		TG_DE2TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output TEST */
-		TG_DE2TCONLCD1 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output TEST */
-		TG_DE2TCONTV1 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
-		TG_DE2TCONLCD0 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
-		0;
-	DE_TOP->DE2TCON_MUX =
-		3 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
-		2 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
-		1 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
+		TG_DE2TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
+		TG_DE2TCONTV0 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
+		TG_DE2TCONLCD1 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
 		TG_DE2TCONLCD0 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
 		0;
 //	PRINTF("4 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
@@ -7027,6 +7022,22 @@ static void awxx_deoutmapping(int rtmixid)
 //	PRINTF("3 TCONTV_PTR->tcon_mul_ctl=%08X\n", (unsigned) TCONTV_PTR->tcon_mul_ctl);
 //	memset(TCONTV_PTR, 0xFF, sizeof * TCONTV_PTR);
 //	printhex(TCONTV_PTR, TCONTV_PTR, sizeof * TCONTV_PTR);
+
+	// work state
+	//	DE2TCON_MUX=000000E4
+	//	DISP_IF_TOP->DE_PORT_PERH_SEL=00003120
+	//	 DE_PORT2CHN_MUX[0]=00000080
+	//	 DE_PORT2CHN_MUX[1]=00000091
+	//	 DE_PORT2CHN_MUX[2]=000000A2
+	//	 DE_PORT2CHN_MUX[3]=00000000
+	//	 DE_CHN2CORE_MUX=00240024
+	PRINTF("DE2TCON_MUX=%08" PRIX32 "\n", DE_TOP->DE2TCON_MUX);
+	PRINTF("DISP_IF_TOP->DE_PORT_PERH_SEL=%08" PRIX32 "\n", DISP_IF_TOP->DE_PORT_PERH_SEL);
+	PRINTF(" DE_PORT2CHN_MUX[0]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [0]);
+	PRINTF(" DE_PORT2CHN_MUX[1]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [1]);
+	PRINTF(" DE_PORT2CHN_MUX[2]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [2]);
+	PRINTF(" DE_PORT2CHN_MUX[3]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [3]);
+	PRINTF(" DE_CHN2CORE_MUX=%08" PRIX32 "\n", DE_TOP->DE_CHN2CORE_MUX);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
