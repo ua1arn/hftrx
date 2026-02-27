@@ -36,9 +36,7 @@
 
 #if __aarch64__
 
-	//#include "cmsis_compat1.h"
 	#include "device.h"
-	//#include "cmsis_compat2.h"
 
 #else
 
