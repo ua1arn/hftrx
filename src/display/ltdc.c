@@ -6871,6 +6871,9 @@ static void awxx_deoutmapping(int rtmixid)
 
 #elif CPUSTYLE_A733
 	// awxx_deoutmapping
+	// values in fields of DE_CHN2CORE_MUX
+	enum { decore0, decore1, decore2 };
+
 	enum
 	{
 		TG_DE2TCONLCD0 = 0,
@@ -6883,9 +6886,19 @@ static void awxx_deoutmapping(int rtmixid)
 	DE_TOP->DE2TCON_MUX =
 		0x0000FFF4 | /* 0x0000FFF4 @ 0x010  */
 		0;
+
+	DE_TOP->DE_CHN2CORE_MUX =
+		decore0 * (UINT32_C(1) << (2 * 0x00)) | 	// VI1 - CORE0
+		decore0 * (UINT32_C(1) << (2 * 0x08)) | 	// UI1 - CORE0
+		decore1 * (UINT32_C(1) << (2 * 0x01)) | 	// VI2 - CORE1
+		decore1 * (UINT32_C(1) << (2 * 0x09)) | 	// UI2 - CORE1
+		decore2 * (UINT32_C(1) << (2 * 0x02)) | 	// VI3 - CORE2 test
+		decore2 * (UINT32_C(1) << (2 * 0x0A)) | 	// UI3 - CORE2 test
+		0;
 	DE_TOP->DE_CHN2CORE_MUX =  		/* 0x00000000 @ 0x024 */
 		0x00000000 |
 		0;
+
 	DE_TOP->DE_PORT2CHN_MUX [0] =  /* TCON_LCD0(4K45f) 0x00000000 @ 0x028 */
 		0x00000000 |
 		0;
@@ -6898,6 +6911,14 @@ static void awxx_deoutmapping(int rtmixid)
 	DE_TOP->DE_PORT2CHN_MUX [3] =  	/* tcontv1 eDP 297MHz (2pixel) 0x00000000 @ 0x034 */
 		0x00000000 |
 		0;
+
+	//	DE2TCON_MUX=0000FFF4
+	//	DE_CHN2CORE_MUX=00000000
+	//	 DE_PORT2CHN_MUX[0]=00000000
+	//	 DE_PORT2CHN_MUX[1]=00000000
+	//	 DE_PORT2CHN_MUX[2]=00A98210
+	//	 DE_PORT2CHN_MUX[3]=00000000
+	//	 DE_CHN2CORE_MUX=00000000
 	PRINTF("DE2TCON_MUX=%08" PRIX32 "\n", DE_TOP->DE2TCON_MUX);
 	PRINTF("DE_CHN2CORE_MUX=%08" PRIX32 "\n", DE_TOP->DE_CHN2CORE_MUX);
 	PRINTF(" DE_PORT2CHN_MUX[0]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [0]);
