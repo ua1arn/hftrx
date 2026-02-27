@@ -6871,6 +6871,13 @@ static void awxx_deoutmapping(int rtmixid)
 
 #elif CPUSTYLE_A733
 	// awxx_deoutmapping
+	enum
+	{
+		TG_DE2TCONLCD0 = 0,
+		TG_DE2TCONLCD1,
+		TG_DE2TCONTV0,
+		TG_DE2TCONTV1,
+	};
 	// from registers dump:
 	// DE ch0 - HDMI tvout 0
 	DE_TOP->DE2TCON_MUX =
@@ -6891,6 +6898,13 @@ static void awxx_deoutmapping(int rtmixid)
 	DE_TOP->DE_PORT2CHN_MUX [3] =  	/* tcontv1 eDP 297MHz (2pixel) 0x00000000 @ 0x034 */
 		0x00000000 |
 		0;
+	PRINTF("DE2TCON_MUX=%08" PRIX32 "\n", DE_TOP->DE2TCON_MUX);
+	PRINTF("DE_CHN2CORE_MUX=%08" PRIX32 "\n", DE_TOP->DE_CHN2CORE_MUX);
+	PRINTF(" DE_PORT2CHN_MUX[0]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [0]);
+	PRINTF(" DE_PORT2CHN_MUX[1]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [1]);
+	PRINTF(" DE_PORT2CHN_MUX[2]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [2]);
+	PRINTF(" DE_PORT2CHN_MUX[3]=%08" PRIX32 "\n", DE_TOP->DE_PORT2CHN_MUX [3]);
+	PRINTF(" DE_CHN2CORE_MUX=%08" PRIX32 "\n", DE_TOP->DE_CHN2CORE_MUX);
 
 #elif CPUSTYLE_T507
 	// Target codes (unconfirmed)
