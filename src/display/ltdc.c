@@ -3280,24 +3280,24 @@ static void hardware_de_global_initialize(void)
     PRINTF("CCU->DE_SYS_BGR_REG=%08X\n", (unsigned) CCU->DE_SYS_BGR_REG);
     PRINTF("CCU->DE0_BGR_REG=%08X\n", (unsigned) CCU->DE0_BGR_REG);
 
-	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
-	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
-	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
-	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
 	CCU->VIDEO_OUT0_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT0_RST 1: De-assert
 	CCU->VIDEO_OUT1_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT1_RST 1: De-assert
-
-	CCU->COMBPHY0_CLK_REG |= (UINT32_C(1) << 31);
-	CCU->COMBPHY1_CLK_REG |= (UINT32_C(1) << 31);
-
 
 
 	const uint_fast32_t lvdsclock = 232848000;
 	const uint_fast32_t lcddotclock = 55000000;
 	uint_fast32_t hdmidotclock =   80291880;
 
-	// calculate by lvdsclock
 #ifdef TCONLCD_PTR
+
+		// нужно для VDS/MIPI-DSI ?
+		CCU->COMBPHY0_CLK_REG |= (UINT32_C(1) << 31);	// COMBPHY0_CLK_GATING
+		CCU->COMBPHY1_CLK_REG |= (UINT32_C(1) << 31);	// COMBPHY0_CLK_GATING
+
+		// lvds
+		CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DPSS_TOP0_GATING Open the clock gate
+		CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 16);		// DPSS_TOP0_RST. De-assert reset
+
 		uint_fast32_t srcfreq = allwnr_a733_get_pll_video0_4x_freq();
 		unsigned lvdsdivider = calcdivround2(srcfreq, lvdsclock);
 		ASSERT(lvdsdivider >= 1 && lvdsdivider <= 32);
@@ -3315,53 +3315,46 @@ static void hardware_de_global_initialize(void)
 
 		CCU->LVDS0_BGR_REG |= (UINT32_C(1) << 16);	// LVDS0_RST
 		CCU->LVDS1_BGR_REG |= (UINT32_C(1) << 16);	// LVDS1_RST
+
+
+		CCU->VO0_TCONLCD0_BGR_REG  |= (UINT32_C(1) << 16);
+		CCU->VO0_TCONLCD0_BGR_REG  |= (UINT32_C(1) << 0);
+
+		CCU->VO0_TCONLCD1_BGR_REG  |= (UINT32_C(1) << 16);
+		CCU->VO0_TCONLCD1_BGR_REG  |= (UINT32_C(1) << 0);
+
+		CCU->VO0_TCONLCD0_CLK_REG  |= (UINT32_C(1) << 31);
+		CCU->VO0_TCONLCD1_CLK_REG  |= (UINT32_C(1) << 31);
+
 	#endif
 	#ifdef TCONLCD_PTR
 		//TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
 	#endif
 
 	//CCU->VIDEO_IN_BGR_REG = 0x00010000;
-	CCU->VIDEOPLL_GATE_EN_REG = 0x00770000; /* 0x00770000 @ 0x1910 */
+	//CCU->VIDEOPLL_GATE_EN_REG = 0x00770000; /* 0x00770000 @ 0x1910 */
 
 	#ifdef TCONTV_PTR
 
+		// hdmi
+		CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 0);		// DPSS_TOP1_GATING Open the clock gate
+		CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 16);		// DPSS_TOP1_RST. De-assert reset
+
 		// HDMI
-		CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
-		CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 16);	// DE0_RST. De-assert reset
+		CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 0);		// TCONTV0_GATING Open the clock gate
+		CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 16);	// TCONTV0_RST. De-assert reset
 
 		// eDP
-//		CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
-//		CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 16);	// DE0_RST. De-assert reset
+//		CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 0);		// TCONTV1_GATING Open the clock gate
+//		CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 16);	// TCONTV1_RST. De-assert reset
 		local_delay_us(10);
 
+
 		// Разрешает доступ к HDMI_TX0
-		CCU->HDMI_SFR_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-		CCU->HDCP_ESM_CLK_REG |= (UINT32_C(1) << 31);	// from dump
+		CCU->HDMI_SFR_CLK_REG |= (UINT32_C(1) << 31);	// HDMI_SFR_CLK_GATING
+		// from dump
+		CCU->HDCP_ESM_CLK_REG |= (UINT32_C(1) << 31);	// HDCP_ESM_CLK_GATING
 	#endif
-
-	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
-	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
-	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
-	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
-	CCU->VIDEO_OUT0_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT0_RST 1: De-assert
-	CCU->VIDEO_OUT1_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT1_RST 1: De-assert
-
-	CCU->VO0_TCONLCD0_BGR_REG  |= (UINT32_C(1) << 16);
-	CCU->VO0_TCONLCD0_BGR_REG  |= (UINT32_C(1) << 0);
-
-	CCU->VO0_TCONLCD1_BGR_REG  |= (UINT32_C(1) << 16);
-	CCU->VO0_TCONLCD1_BGR_REG  |= (UINT32_C(1) << 0);
-
-	CCU->VO0_TCONLCD0_CLK_REG  |= (UINT32_C(1) << 31);
-	CCU->VO0_TCONLCD1_CLK_REG  |= (UINT32_C(1) << 31);
-
-    CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 0);	// Clock Gating
-	//TCONTV_CCU_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert Reset
-    CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 16);	// De-assert Reset (bits 19..16 and 3..0 writable) mask 0x000F000F
-
-    CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 0);	// Clock Gating
-	//TCONTV_CCU_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert Reset
-    CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 16);	// De-assert Reset (bits 19..16 and 3..0 writable) mask 0x000F000F
 
 	//	Note: Before operating ADDA/GPADC/RES_CAL/CSI/DSI/LVDS/HDMI (only
 	//	for T507-H/T517-H)/TVOUT modules, please make sure that this bit is
