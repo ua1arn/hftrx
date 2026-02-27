@@ -6871,14 +6871,17 @@ static void awxx_deoutmapping(int rtmixid)
 
 #elif CPUSTYLE_A733
 	// awxx_deoutmapping
-	//#warning Unimplemented CPUSTYLE_A733
 	// from registers dump:
 	// DE ch0 - HDMI tvout 0
-	DE_TOP->DE2TCON_MUX = 0x0000FFF4; /* 0x0000FFF4 @ 0x010 */
+	DE_TOP->DE2TCON_MUX =
+		0x0000FFF4 | /* 0x0000FFF4 @ 0x010 */
+		0;
 	DE_TOP->DE_CHN2CORE_MUX = 0x00000000; /* 0x00000000 @ 0x024 */
 	DE_TOP->DE_PORT2CHN_MUX [0] = 0x00000000; /* TCON_LCD0(4K45f) 0x00000000 @ 0x028 */
 	DE_TOP->DE_PORT2CHN_MUX [1] = 0x00000000; /* TCON_LCD1(1080P) 0x00000000 @ 0x02C */
-	DE_TOP->DE_PORT2CHN_MUX [2] = 0x00A98210; /* tcontv0 HDMI 360MHz (4pixel/148.5MHz) 0x00A98210 @ 0x030 */
+	DE_TOP->DE_PORT2CHN_MUX [2] =
+		0x00A98210 | /* tcontv0 HDMI 360MHz (4pixel/148.5MHz) 0x00A98210 @ 0x030 */
+		0;
 	DE_TOP->DE_PORT2CHN_MUX [3] = 0x00000000; /* tcontv1 eDP 297MHz (2pixel) 0x00000000 @ 0x034 */
 
 #elif CPUSTYLE_T507
