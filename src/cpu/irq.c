@@ -2052,9 +2052,9 @@ void local_delay_initialize(void)
 }
 
 
-#if LINUX_SUBSYSTEM
+#if 0 //LINUX_SUBSYSTEM
 
-#include <linux/delay.h>
+#include <linux/delay.h> // недоступно в юзерспейсе, только для модулей ядра
 
 void local_delay_us(int timeUS)
 {
@@ -2072,7 +2072,7 @@ void local_delay_ms(int timeMS)
 	mdelay(timeMS);
 }
 
-#elif 0
+#elif LINUX_SUBSYSTEM // 0
 
 static unsigned long
 local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
