@@ -7343,8 +7343,9 @@ static int hdmi_phy_wait_i2c_done(HDMI_TX_TypeDef *hdmi, unsigned msec)
 //
 	return 1;
 }
+#define HDMI_PHY_TIMEOUT 100
 
-static void hdmi_phy_i2c_write(HDMI_TX_TypeDef *hdmi, unsigned data, unsigned addr)
+static int hdmi_phy_i2c_write(HDMI_TX_TypeDef *hdmi, unsigned data, unsigned addr)
 {
 	// I2C reset
 //	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
@@ -7364,11 +7365,12 @@ static void hdmi_phy_i2c_write(HDMI_TX_TypeDef *hdmi, unsigned data, unsigned ad
 //	hdmi_write(hdmi, HDMI_PHY_I2CM_OPERATION_ADDR_WRITE,
 //		   HDMI_PHY_I2CM_OPERATION_ADDR);
 
-	hdmi_phy_wait_i2c_done(hdmi, 1000);
+	int ec = hdmi_phy_wait_i2c_done(hdmi, HDMI_PHY_TIMEOUT);
 	hdmi->HDMI_PHY_I2CM_OPERATION_ADDR = 0;
+	return ec;
 }
 
-static void hdmi_phy_i2c_read(HDMI_TX_TypeDef *hdmi, unsigned * data, unsigned addr)
+static int hdmi_phy_i2c_read(HDMI_TX_TypeDef *hdmi, unsigned * data, unsigned addr)
 {
 	// I2C reset
 //	hdmi->HDMI_PHY_I2CM_SOFTRSTZ_ADDR = 0x00;
@@ -7387,11 +7389,24 @@ static void hdmi_phy_i2c_read(HDMI_TX_TypeDef *hdmi, unsigned * data, unsigned a
 //		   HDMI_PHY_I2CM_OPERATION_ADDR);
 
 	* data = 0xDEADBEEF;
-	if (0 == hdmi_phy_wait_i2c_done(hdmi, 1000))
+	int ec = hdmi_phy_wait_i2c_done(hdmi, HDMI_PHY_TIMEOUT);
+	if (0 == ec)
 	{
 		* data = hdmi->HDMI_PHY_I2CM_DATAI_1_ADDR * 256 + hdmi->HDMI_PHY_I2CM_DATAI_0_ADDR;
 	}
 	hdmi->HDMI_PHY_I2CM_OPERATION_ADDR = 0;
+	return ec;
+}
+
+static int hdmi_phy_i2c_write_verify(HDMI_TX_TypeDef *hdmi, unsigned data, unsigned addr)
+{
+	unsigned datav;
+	if (hdmi_phy_i2c_write(hdmi, data, addr))
+		return 1;
+	if (hdmi_phy_i2c_read(hdmi, & datav, addr))
+		return 1;
+	ASSERT(data == datav);
+	return 0;
 }
 
 enum {
