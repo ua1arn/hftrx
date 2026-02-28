@@ -304,17 +304,6 @@ void colpip_point_xor(
 	COLORPIP_T color
 	);
 
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-uint_fast16_t
-colpip_string_small(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLORPIP_T fg		// цвет вывода текста
-	);
-
 void display_bar(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,
