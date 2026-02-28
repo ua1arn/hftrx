@@ -9414,7 +9414,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	// step6 - Open module enable
 	t113_open_module_enable(vdmode);
 
-#if defined (TCONLCD_PTR)
+#if defined (TCONLCD_PTR) && 0
 	PRINTF("TCONLCD_PTR->LCD_DEBUG_REG=0x%08X\n", (unsigned) TCONLCD_PTR->LCD_DEBUG_REG);
 	local_delay_ms(10);
 	PRINTF("TCONLCD_PTR->LCD_DEBUG_REG=0x%08X\n", (unsigned) TCONLCD_PTR->LCD_DEBUG_REG);
