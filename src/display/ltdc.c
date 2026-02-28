@@ -7312,7 +7312,7 @@ static int hdmi_phy_wait_i2c_done(HDMI_TX_TypeDef *hdmi, unsigned msec)
 	const int ec = local_wait8mask(& hdmi->HDMI_IH_I2CMPHY_STAT0, 0x02, 0x02, msec);
 	const uint32_t val = hdmi->HDMI_IH_I2CMPHY_STAT0;
 	hdmi->HDMI_IH_I2CMPHY_STAT0 = val & 0x03;
-	return (val & 0x01) ? 1 : 0;	// i2cmphyerror chack
+	return ec || (val & 0x01) ? 1 : 0;	// i2cmphyerror check
 
 //	local_delay_ms(msec);
 //	return 0;
