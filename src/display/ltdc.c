@@ -8532,8 +8532,10 @@ static void t113_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	}
 
 	uis->UIS_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
-	while ((uis->UIS_CTRL_REG & (UINT32_C(1) << 4)) != 0)
-		;
+	if (local_wait32mask(& uis->UIS_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
+		TP();
+//	while ((uis->UIS_CTRL_REG & (UINT32_C(1) << 4)) != 0)
+//		;
 }
 
 
@@ -8587,8 +8589,10 @@ static void t113_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	vsu->VSU_GLOBAL_ALPHA_REG = 0x00;
 
 	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
-	while ((vsu->VSU_CTRL_REG & (UINT32_C(1) << 4)) != 0)
-		;
+	if (local_wait32mask(& vsu->VSU_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
+		TP();
+//	while ((vsu->VSU_CTRL_REG & (UINT32_C(1) << 4)) != 0)
+//		;
 }
 
 #endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
