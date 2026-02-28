@@ -7877,6 +7877,11 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 {
 	HDMI_PHY_TypeDef * const phy = HDMI_PHY;
 
+	/* enable read access to HDMI controller */
+	phy->HDMI_PHY_READ_EN = 0x54524545;
+	/* descramble register offsets */
+	phy->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
+
 
 //	/* enable read access to HDMI controller */
 //	HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
@@ -7909,9 +7914,13 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 	local_delay_us(100);
 	phy->HDMI_PHY_CFG1 |= (UINT32_C(1) << 18);
 	phy->HDMI_PHY_CFG1 |= (7 << 4);
-	int z = 0;
-	while (z ++ < 10 && (phy->HDMI_PHY_STS & 0x80) == 0)
-		local_delay_ms(10);
+	if (local_wait32mask(& phy->HDMI_PHY_STS, 0x80, 0x80, 100))
+	{
+		PRINTF("h3_hdmi_phy_init: timeout error\n");
+	}
+//	int z = 0;
+//	while (z ++ < 10 && (phy->HDMI_PHY_STS & 0x80) == 0)
+//		local_delay_ms(10);
 	//PRINTF("phy->HDMI_PHY_STS=%08X\n", (unsigned) phy->HDMI_PHY_STS);
 
 	phy->HDMI_PHY_CFG1 |= (0xf << 4);
@@ -8000,11 +8009,6 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 //		break;
 
 	}
-
-	/* enable read access to HDMI controller */
-	phy->HDMI_PHY_READ_EN = 0x54524545;
-	/* descramble register offsets */
-	phy->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
 }
 #endif /* defined (HDMI_PHY) */
 
@@ -8117,6 +8121,10 @@ static void hdmi_version(void)
 	// T507-H
 	//	Detected HDMI controller 0x21:0x2a:0xa0:0xc1
 	//	 Config 0x9f:0x62:0xf3:0x0
+	//
+	// A64
+	//	Detected HDMI controller 0x13:0x2a:0xa0:0xc1
+	//	 Config 0xbf:0x2:0xfe:0x0
 
 	// iMX6-HDMI (new).pdf
 	// HDMI_CONFIG2_ID field descriptions
@@ -9325,6 +9333,7 @@ static void t113_hdmi_initsteps(const videomode_t * vdmode)
 {
 	t113_tcontv_initsteps0(vdmode);
 	t113_hdmi_init(vdmode);	// PHY initialize
+	hdmi_version();
 }
 #endif /* WITHHDMITVHW */
 
