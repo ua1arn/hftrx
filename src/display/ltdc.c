@@ -8597,6 +8597,53 @@ static void t113_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 
 #endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
 
+
+static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int vich)
+{
+	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid, vich);
+	if (vsu == NULL)
+		return;
+
+//	ASSERT(DIM_X == vdmodeDESIGN->width);
+//	ASSERT(DIM_Y == vdmodeDESIGN->height);
+	if (vdmodeDESIGN->width == vdmodeHDMI->width && vdmodeDESIGN->height == vdmodeHDMI->height)
+	{
+		vsu->VSU_CTRL_REG = 0;	// EN Video Scaler Unit disable
+		return;
+	}
+	enum { FRAСTWIDTH = 19 };	// При масштабе 1:1 о ширине изображения нет - для теста делаю уменьшение на 0.9
+	const unsigned HEIGHT = vdmodeHDMI->height;	/* height */
+	const unsigned WIDTH = vdmodeHDMI->width;	/* width */
+	const uint32_t APPDIMS_SIZE = ((vdmodeDESIGN->height - 1) << 16) | (vdmodeDESIGN->width - 1);	// source size
+
+	const uint_fast32_t HSTEP = (((uint_fast64_t) vdmodeDESIGN->width << FRAСTWIDTH) / WIDTH) << 1;
+	const uint_fast32_t VSTEP = (((uint_fast64_t) vdmodeDESIGN->height << FRAСTWIDTH) / HEIGHT) << 1;
+
+	vsu->VSU_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
+	vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+
+	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0);
+	vsu->VSU_OUT_SIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	vsu->VSU_Y_SIZE_REG = APPDIMS_SIZE;
+	vsu->VSU_Y_HSTEP_REG = HSTEP;
+	vsu->VSU_Y_VSTEP_REG = VSTEP;
+	vsu->VSU_C_SIZE_REG = APPDIMS_SIZE;
+	vsu->VSU_C_HSTEP_REG = HSTEP;
+	vsu->VSU_C_VSTEP_REG = VSTEP;
+
+	for (int n = 0; n < 32; n ++)
+	{
+		vsu->VSU_Y_HCOEF0_REGN [n] = 0x40000000;	// 0x200
+		vsu->VSU_Y_HCOEF1_REGN [n] = 0;			// 0x300
+		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000;	// 0x400
+		vsu->VSU_C_HCOEF0_REGN [n] = 0x40000000;	// 0x600
+		vsu->VSU_C_HCOEF1_REGN [n] = 0;			// 0x700
+		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000;	// 0x800
+	}
+
+	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
+}
+
 static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 {
 	const uint_fast32_t dotclock = display_getdotclock(vdmode);
@@ -9376,6 +9423,11 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 
 	t113_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
 	t113_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
+
+#elif CPUSTYLE_A64 || CPUSTYLE_H3
+
+	h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
+	//h3_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
 
 #else
 	#warning NO UI scaler
