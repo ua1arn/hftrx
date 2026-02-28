@@ -8076,6 +8076,16 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 
 }
 
+enum dw_hdmi_phy_type {
+	DW_HDMI_PHY_DWC_HDMI_TX_PHY = 0x00,
+	DW_HDMI_PHY_DWC_MHL_PHY_HEAC = 0xb2,
+	DW_HDMI_PHY_DWC_MHL_PHY = 0xc2,
+	DW_HDMI_PHY_DWC_HDMI_3D_TX_PHY_HEAC = 0xe2,
+	DW_HDMI_PHY_DWC_HDMI_3D_TX_PHY = 0xf2,
+	DW_HDMI_PHY_DWC_HDMI20_TX_PHY = 0xf3,
+	DW_HDMI_PHY_VENDOR_PHY = 0xfe,
+};
+
 static void hdmi_version(void)
 {
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
@@ -8095,15 +8105,6 @@ static void hdmi_version(void)
 	//	F2h PHY_Gen2 (HDMI 3D TX PHY)
 	//	E2h PHY_Gen2 (HDMI 3D TX PHY) + HEAC PHY
 
-	enum dw_hdmi_phy_type {
-		DW_HDMI_PHY_DWC_HDMI_TX_PHY = 0x00,
-		DW_HDMI_PHY_DWC_MHL_PHY_HEAC = 0xb2,
-		DW_HDMI_PHY_DWC_MHL_PHY = 0xc2,
-		DW_HDMI_PHY_DWC_HDMI_3D_TX_PHY_HEAC = 0xe2,
-		DW_HDMI_PHY_DWC_HDMI_3D_TX_PHY = 0xf2,
-		DW_HDMI_PHY_DWC_HDMI20_TX_PHY = 0xf3,
-		DW_HDMI_PHY_VENDOR_PHY = 0xfe,
-	};
 
 	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
 			hdmi->HDMI_DESIGN_ID,
@@ -8622,6 +8623,14 @@ static void t113_hdmi_init(const videomode_t * vdmode)
 	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	const uint_fast32_t dotclock = hdmi_realclock(vdmode);
 
+	hdmi_version();
+
+	switch (hdmi->HDMI_CONFIG2_ID)
+	{
+	default:
+		break;
+	}
+
 #if CPUSTYLE_T507 || CPUSTYLE_A733
 	t507_hdmi_phy_init(dotclock);
 #else
@@ -8903,7 +8912,6 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 static void t113_hdmi_initsteps(const videomode_t * vdmode)
 {
 	t113_tcontv_initsteps0(vdmode);
-	hdmi_version();
 	t113_hdmi_init(vdmode);	// PHY initialize
 }
 #endif /* WITHHDMITVHW */
