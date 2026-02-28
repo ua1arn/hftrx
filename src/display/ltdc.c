@@ -3286,7 +3286,7 @@ static void hardware_de_global_initialize(void)
 
 	const uint_fast32_t lvdsclock = 232848000;
 	const uint_fast32_t lcddotclock = 55000000;
-	uint_fast32_t hdmidotclock =   80291880;
+	uint_fast32_t hdmidotclock = 360 * 1000 * 1000; //  80291880;
 
 #ifdef TCONLCD_PTR
 
@@ -3354,6 +3354,26 @@ static void hardware_de_global_initialize(void)
 		CCU->HDMI_SFR_CLK_REG |= (UINT32_C(1) << 31);	// HDMI_SFR_CLK_GATING
 		// from dump
 		CCU->HDCP_ESM_CLK_REG |= (UINT32_C(1) << 31);	// HDCP_ESM_CLK_GATING
+
+
+
+	    // page 723, Figure 15-18 TCON_TV Environment Diagram
+	    // tcontv0: input 360MHz (4pixel/148.5MHz)
+	    // tcontv1: input 297MHz (2pixel)
+	    // test (все 32 бита могут быть установлены)
+	    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE - HDMI
+	    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 21);	// TV1_GATE	- DP/eDP
+
+	    //DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
+	    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
+
+	    // from dump
+	    //DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC = 0;	// станавливает работу tcontv
+	    DISPLAY1_TOP->VO1_MODULE_GATING = 0x10100000;
+	// from dump
+		* (volatile uint32_t *) (DISPLAY1_TOP_BASE + 0x0F4) = 0x0000010d;
+		PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
+
 	#endif
 
 	//	Note: Before operating ADDA/GPADC/RES_CAL/CSI/DSI/LVDS/HDMI (only
@@ -3362,21 +3382,6 @@ static void hardware_de_global_initialize(void)
 ////    PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
     local_delay_ms(10);
     //PRINTF("PRCM->VDD_SYS_PWROFF_GATING_REG=%08X\n", (unsigned) PRCM->VDD_SYS_PWROFF_GATING_REG);
-
-    // 15.2.9.1 0x0000 TCON_TV Clock Select and EDP I2S1 Select Register
-    DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC |= (UINT32_C(1) << 3);	// TCON_TV0_HDMIPHY_CCU_CK_SEL 1: TCON_TV0 clock sources from CCU
-    //DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC = 0;	// from dump - станавливает работу tcontv
-
-    // page 723, Figure 15-18 TCON_TV Environment Diagram
-    // tcontv0: input 360MHz (4pixel/148.5MHz)
-    // tcontv1: input 297MHz (2pixel)
-    // test (все 32 бита могут быть установлены)
-    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE - HDMI
-    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 21);	// TV1_GATE	- DP/eDP
-
-    //DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
-    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
-	PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
 
     // CCU_32K select as CEC clock as default
     // https://github.com/intel/mOS/blob/f67dfb38e6805f01ab96387597b24d4e3c285562/drivers/clk/sunxi-ng/ccu-sun50i-h616.c#L1135
@@ -3438,6 +3443,8 @@ static void hardware_de_global_initialize(void)
 		(M_HDMI - 1) * (UINT32_C(1) << 0)|
 		0;
 	CCU->HDMI_TV_CLK_REG |= (UINT32_C(1) << 31);
+    // 15.2.9.1 0x0000 TCON_TV Clock Select and EDP I2S1 Select Register
+    DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC |= (UINT32_C(1) << 3);	// TCON_TV0_HDMIPHY_CCU_CK_SEL 1: TCON_TV0 clock sources from CCU
 
 
 	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_GATING
@@ -7302,6 +7309,11 @@ static void hdmi_set_cts_n(HDMI_TX_TypeDef * const hdmi, unsigned int cts,
 
 static int hdmi_phy_wait_i2c_done(HDMI_TX_TypeDef *hdmi, unsigned msec)
 {
+	const int ec = local_wait8mask(& hdmi->HDMI_IH_I2CMPHY_STAT0, 0x02, 0x02, msec);
+	const uint32_t val = hdmi->HDMI_IH_I2CMPHY_STAT0;
+	hdmi->HDMI_IH_I2CMPHY_STAT0 = val & 0x03;
+	return (val & 0x01) ? 1 : 0;	// i2cmphyerror chack
+
 //	local_delay_ms(msec);
 //	return 0;
 	for (;;)
@@ -7410,6 +7422,11 @@ struct dw_hdmi_phy_config {
 };
 
 // https://github.com/EchoHeim/Allwinner-H616/blob/c499413803e4128439cadf2f56972e207721abe4/kernel/drivers/gpu/drm/sun4i/sun8i_hdmi_phy.c#L18
+// https://github.com/EchoHeim/Allwinner-H616/blob/master/kernel/drivers/gpu/drm/sun4i/sun8i_hdmi_phy.c
+
+#if CPUSTYLE_A733 && 0
+
+#elif CPUSTYLE_T507 || CPUSTYLE_A733
 
 static const struct dw_hdmi_mpll_config sun50i_h616_mpll_cfg[] = {
     {
@@ -7496,6 +7513,10 @@ static const struct dw_hdmi_phy_config sun50i_h616_phy_config[] = {
     {297000000, 0x8039, 0x0004, 0x022b},
     {594000000, 0x8029, 0x0000, 0x008a},
     {~0UL, 0x0000, 0x0000, 0x0000}};
+#else
+	#warning Undefined CPUSTYLE_xxx
+
+#endif
 
 // See also https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/bridge/dw-hdmi.c#L733
 
@@ -7554,14 +7575,28 @@ static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixel
 		return -1;
 	}
 
+	unsigned datav;	// debug variable
 
 	const int resix = DW_HDMI_RES_8;
 	hdmi_phy_i2c_write(hdmi, mpll_config->res[resix].cpce, PHY_OPMODE_PLLCFG);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_OPMODE_PLLCFG);
+	ASSERT(datav == mpll_config->res[resix].cpce);
+
 	hdmi_phy_i2c_write(hdmi, mpll_config->res[resix].gmp, PHY_PLLGMPCTRL);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_PLLGMPCTRL);
+	ASSERT(datav == mpll_config->res[resix].gmp);
+
 	hdmi_phy_i2c_write(hdmi, curr_ctrl->curr[resix], PHY_PLLCURRCTRL);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_PLLCURRCTRL);
+	ASSERT(datav == curr_ctrl->curr[resix]);
 
 	hdmi_phy_i2c_write(hdmi, 0x0000, PHY_PLLPHBYCTRL);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_PLLPHBYCTRL);
+	ASSERT(datav == 0x0000);
+
 	hdmi_phy_i2c_write(hdmi, 0x0006, PHY_PLLCLKBISTPHASE);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_PLLCLKBISTPHASE);
+	ASSERT(datav == 0x0006);
 
 //	for (i = 0; hdmi->phy_cfg[i].mpixelclock != (~0ul); i++)
 //		if (mpixelclock <= hdmi->phy_cfg[i].mpixelclock)
@@ -7573,11 +7608,22 @@ static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixel
 	 * tx/ck lvl 10
 	 */
 	hdmi_phy_i2c_write(hdmi, phy_config->term, PHY_TXTERM);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_TXTERM);
+	ASSERT(datav == phy_config->term);
+
 	hdmi_phy_i2c_write(hdmi, phy_config->sym_ctr, PHY_CKSYMTXCTRL);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_CKSYMTXCTRL);
+	ASSERT(datav == phy_config->sym_ctr);
+
 	hdmi_phy_i2c_write(hdmi, phy_config->vlev_ctr, PHY_VLEVCTRL);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_VLEVCTRL);
+	ASSERT(datav == phy_config->vlev_ctr);
+
 
 	/* remove clk term */
 	hdmi_phy_i2c_write(hdmi, 0x8000, PHY_CKCALCTRL);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_CKCALCTRL);
+	ASSERT(datav == 0x8000);
 
 	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
