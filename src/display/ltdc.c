@@ -8597,6 +8597,45 @@ static void t113_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 
 #endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
 
+#if CPUSTYLE_A64 || CPUSTYLE_H3
+
+static void h3_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int uich)
+{
+	DE_UIS_TypeDef * const uis = de3_getuis(rtmixid, uich);
+	if (uis == NULL)
+		return;
+
+	//printhex32((uintptr_t) uis, uis, 0x300);
+	if (vdmodeDESIGN->width == vdmodeHDMI->width && vdmodeDESIGN->height == vdmodeHDMI->height)
+	{
+		uis->UIS_CTRL_REG = 0;	// EN Video Scaler Unit disable
+		return;
+	}
+
+	enum { FRAСTWIDTH = 18 };
+	const unsigned HEIGHT = vdmodeHDMI->height;	/* height */
+	const unsigned WIDTH = vdmodeHDMI->width;	/* width */
+
+	uis->UIS_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
+	uis->UIS_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+
+	uis->UIS_OUTSIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+
+	uis->UIS_INSIZE_REG = ((vdmodeDESIGN->height - 1) << 16) | (vdmodeDESIGN->width - 1);	// source size
+	uis->UIS_HSTEP_REG = (((uint_fast64_t) vdmodeDESIGN->width << FRAСTWIDTH) / WIDTH) << 2;
+	uis->UIS_VSTEP_REG = (((uint_fast64_t) vdmodeDESIGN->height << FRAСTWIDTH) / HEIGHT) << 2;
+
+	for (int n = 0; n < 16; n ++)
+	{
+		uis->UIS_HCOEF_REGN [n] = 0x40000000;	// 0x200
+	}
+
+	uis->UIS_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
+//	if (local_wait32mask(& uis->UIS_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
+//		TP();
+//	while ((uis->UIS_CTRL_REG & (UINT32_C(1) << 4)) != 0)
+//		;
+}
 
 static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int vich)
 {
@@ -8642,7 +8681,11 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 	}
 
 	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
+//	if (local_wait32mask(& vsu->VSU_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
+//		TP();
 }
+
+#endif /* CPUSTYLE_A64 || CPUSTYLE_H3 */
 
 static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 {
@@ -9409,25 +9452,26 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 	/* эта инициализация после корректного соединения с работающим TCON */
 	t113_de_bld_initialize(rtmixid, vdmode, defcolor);	// RED
 
+	const videomode_t * const design = get_videomode_DESIGN();
 #if CPUSTYLE_T507
 
-	t507_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
-	t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
+	t507_de2_vsu_init(rtmixid, design, vdmode, 1);
+	t507_de2_uis_init(rtmixid, design, vdmode, 1);
 
 #elif CPUSTYLE_A733
 
-//	t507_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
-//	t507_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
+//	t507_de2_vsu_init(rtmixid, design, vdmode, 1);
+//	t507_de2_uis_init(rtmixid, design, vdmode, 1);
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
-	t113_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
-	t113_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
+	t113_de2_vsu_init(rtmixid, design, vdmode, 1);
+	t113_de2_uis_init(rtmixid, design, vdmode, 1);
 
 #elif CPUSTYLE_A64 || CPUSTYLE_H3
 
-	h3_de2_vsu_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
-	//h3_de2_uis_init(rtmixid, get_videomode_DESIGN(), vdmode, 1);
+	h3_de2_vsu_init(rtmixid, design, vdmode, 1);
+	h3_de2_uis_init(rtmixid, design, vdmode, 1);	// not tested
 
 #else
 	#warning NO UI scaler
