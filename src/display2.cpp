@@ -1364,7 +1364,7 @@ void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t
 	local_strtrim(buf);
 
 	uint_fast16_t height_str;
-	const uint_fast16_t width_str = unifont_textsize(font, buf, TEZXTSZIE_AUTO, & height_str);
+	const uint_fast16_t width_str = unifont_textsize(font, buf, TEXTSIZE_AUTO, & height_str);
 	const uint_fast16_t width_p = chars_W2 * SMALLCHARW2;
 
 	if (! width_str)
@@ -1398,7 +1398,7 @@ void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t
 	if (width_p >= width_str)
 	{
 		//PRINTF("%s: xx=%d, width_p=%d, width_str=%d, buf='%s'\n", __func__, xx, width_p, width_str, buf);
-		unifont_text(db, xx + (width_p - width_str) / 2 , yy + 2, font, buf, TEZXTSZIE_AUTO, color_fg);
+		unifont_text(db, xx + (width_p - width_str) / 2 , yy + 2, font, buf, TEXTSIZE_AUTO, color_fg);
 	}
 
 }
@@ -2569,8 +2569,8 @@ display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 	colpip_line(db, smpr->gm, smpr->r1, smpr->ge, smpr->r1, COLORPIP_RED, 0);
 	static const char sm_text [] = "Sm";
 	uint_fast16_t shx;
-	const uint_fast16_t swx = unifont_textsize(fontsm2, sm_text, TEZXTSZIE_AUTO, & shx);
-	unifont_text(db, smpr->gs - swx / 2, smpr->r1 - shx - 2, fontsm2, sm_text, TEZXTSZIE_AUTO, COLORPIP_YELLOW);
+	const uint_fast16_t swx = unifont_textsize(fontsm2, sm_text, TEXTSIZE_AUTO, & shx);
+	unifont_text(db, smpr->gs - swx / 2, smpr->r1 - shx - 2, fontsm2, sm_text, TEXTSIZE_AUTO, COLORPIP_YELLOW);
 
 	for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 	{
@@ -8004,7 +8004,7 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
 		            lv_area_t labelcoord;
 		            lv_area_set(& labelcoord, coord->x1 + xmarker - 100, coord->y1, coord->x1 + xmarker + 100, coord->y2);
 		            lv_draw_label(layer, & label, & labelcoord);
-		            //unifont_text(db, xtext, y, font, buf2, TEZXTSZIE_AUTO, colordigits);
+		            //unifont_text(db, xtext, y, font, buf2, TEXTSIZE_AUTO, colordigits);
     			}
     		}
     	}
@@ -8967,7 +8967,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 		            lv_area_t labelcoord;
 		            lv_area_set(& labelcoord, coord->x1 + xmarker - 100, coord->y1, coord->x1 + xmarker + 100, coord->y2);
 		            lv_draw_label(layer, & label, & labelcoord);
-		            //unifont_text(db, xtext, y, font, buf2, TEZXTSZIE_AUTO, colordigits);
+		            //unifont_text(db, xtext, y, font, buf2, TEXTSIZE_AUTO, colordigits);
     			}
     		}
     	}
@@ -9299,7 +9299,7 @@ pixel_t hftrxgd::text_width(const char *text, litehtml::uint_ptr hFont)
 	const unifont_t * const font = (const unifont_t *) hFont;
 	//PRINTF("text_width: text='%s'\n", text);
 	uint_fast16_t height_str;
-	const uint_fast16_t width_str = unifont_textsize(font, text, TEZXTSZIE_AUTO, & height_str);
+	const uint_fast16_t width_str = unifont_textsize(font, text, TEXTSIZE_AUTO, & height_str);
 	return width_str;
 }
 
@@ -9310,7 +9310,7 @@ void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint
 	//PRINTF("draw_text: text='%s'\n", text);
 
 	//colpip_fillrect(db, pos.left(), pos.top(), pos.width, pos.height, getCOLORPIP(color));
-	unifont_text(db, pos.left(), pos.top(), font, text, TEZXTSZIE_AUTO, getCOLORPIP(color));
+	unifont_text(db, pos.left(), pos.top(), font, text, TEXTSIZE_AUTO, getCOLORPIP(color));
 }
 
 pixel_t hftrxgd::pt_to_px(float pt) const

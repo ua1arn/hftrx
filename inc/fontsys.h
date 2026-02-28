@@ -104,7 +104,7 @@ typedef struct unifont_tag
 	const char * label;		// название для диагностики
 } unifont_t;
 
-#define TEZXTSZIE_AUTO UINT16_MAX
+#define TEXTSIZE_AUTO UINT16_MAX
 
 // печать строки
 uint_fast16_t
@@ -114,7 +114,7 @@ unifont_text(
 	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	const unifont_t * font,
 	const char * s,
-	size_t slength,		// количество символов для печати или TEZXTSZIE_AUTO - если до '\0'
+	size_t slength,		// количество символов для печати или TEXTSIZE_AUTO - если до '\0'
 	COLORPIP_T fg		// цвет вывода текста
 	);
 
@@ -123,7 +123,7 @@ uint_fast16_t
 unifont_textsize(
 	const unifont_t * font,
 	const char * s,
-	size_t slength,		// количество символов для печати или TEZXTSZIE_AUTO - если до '\0'
+	size_t slength,		// количество символов для печати или TEXTSIZE_AUTO - если до '\0'
 	uint_fast16_t * height
 	);
 

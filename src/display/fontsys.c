@@ -22,12 +22,12 @@ unifont_text(
 	uint_fast16_t ypix,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	const unifont_t * font,
 	const char * s,
-	size_t slength,		// количество символов для печати или TEZXTSZIE_AUTO - если до '\0'
+	size_t slength,		// количество символов для печати или TEXTSIZE_AUTO - если до '\0'
 	COLORPIP_T fg		// цвет вывода текста
 	)
 {
 	ASSERT(s != NULL);
-    slength = (slength == TEZXTSZIE_AUTO) ? strlen(s) : slength;
+    slength = (slength == TEXTSIZE_AUTO) ? strlen(s) : slength;
 	while (slength --)
 	{
 		xpix = font->font_drawci(db, xpix, ypix, font, font->decode(font, * s ++), fg);
@@ -40,7 +40,7 @@ uint_fast16_t
 unifont_textsize(
 	const unifont_t * font,
 	const char * s,
-	size_t slength,		// количество символов для печати или TEZXTSZIE_AUTO - если до '\0'
+	size_t slength,		// количество символов для печати или TEXTSIZE_AUTO - если до '\0'
 	uint_fast16_t * height
 	)
 {
@@ -49,7 +49,7 @@ unifont_textsize(
 	ASSERT(s);
 	ASSERT(height);
 
-	slength = (slength == TEZXTSZIE_AUTO) ? strlen(s) : slength;
+	slength = (slength == TEXTSIZE_AUTO) ? strlen(s) : slength;
 	* height = font->font_drawheight(font);
 	while (slength --)
 		w += font->font_drawwidthci(font, font->decode(font, * s ++));

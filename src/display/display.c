@@ -341,7 +341,7 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 //		ASSERT(dbstylep->font_width);
 		char c;
 		uint_fast16_t stringheight;
-		const uint_fast16_t stringwidth = unifont_textsize(font, s, TEZXTSZIE_AUTO, & stringheight);
+		const uint_fast16_t stringwidth = unifont_textsize(font, s, TEXTSIZE_AUTO, & stringheight);
 		ASSERT(font);
 		switch (dbstylep->textvalign)
 		{
