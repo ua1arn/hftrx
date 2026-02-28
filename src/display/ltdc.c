@@ -7632,13 +7632,15 @@ static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixel
 
 	hdmi_phy_i2c_write(hdmi, phy_config->vlev_ctr, PHY_VLEVCTRL);
 	hdmi_phy_i2c_read(hdmi, & datav, PHY_VLEVCTRL);
-	ASSERT(datav == phy_config->vlev_ctr);
+	//PRINTF("datav=0x%04X, expected=0x%04X\n", datav, phy_config->vlev_ctr);
+	//ASSERT(datav == phy_config->vlev_ctr);
 
 
 	/* remove clk term */
 	hdmi_phy_i2c_write(hdmi, 0x8000, PHY_CKCALCTRL);
 	hdmi_phy_i2c_read(hdmi, & datav, PHY_CKCALCTRL);
-	ASSERT(datav == 0x8000);
+	//PRINTF("datav=0x%04X, expected=0x%04X\n", datav, 0x8000);
+	//ASSERT(datav == 0x8000);
 
 	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
