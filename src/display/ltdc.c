@@ -8498,7 +8498,7 @@ static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 }
 #endif /* CPUSTYLE_T507 */
 
-#if CPUSTYLE_T113 || CPUSTYLE_F133
+#if CPUSTYLE_T113 || CPUSTYLE_F133 ||  CPUSTYLE_A64 || CPUSTYLE_H3
 
 static void t113_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int uich)
 {
@@ -8595,9 +8595,9 @@ static void t113_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 //		;
 }
 
-#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
+#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 ||  CPUSTYLE_A64 || CPUSTYLE_H3 */
 
-#if CPUSTYLE_A64 || CPUSTYLE_H3
+#if 0//CPUSTYLE_A64 || CPUSTYLE_H3
 
 static void h3_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int uich)
 {
@@ -9463,12 +9463,12 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 //	t507_de2_vsu_init(rtmixid, design, vdmode, 1);
 //	t507_de2_uis_init(rtmixid, design, vdmode, 1);
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 ||  CPUSTYLE_A64 || CPUSTYLE_H3
 
 	t113_de2_vsu_init(rtmixid, design, vdmode, 1);
 	t113_de2_uis_init(rtmixid, design, vdmode, 1);
 
-#elif CPUSTYLE_A64 || CPUSTYLE_H3
+#elif 0 //CPUSTYLE_A64 || CPUSTYLE_H3
 
 	h3_de2_vsu_init(rtmixid, design, vdmode, 1);
 	h3_de2_uis_init(rtmixid, design, vdmode, 1);	// not tested
