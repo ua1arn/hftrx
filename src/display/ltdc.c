@@ -8626,13 +8626,13 @@ static uint_fast32_t hdmi_realclock(const videomode_t * vdmode)
  * @desc: sunxi hdmi level struct
  *****************************************************************/
 struct sunxi_hdmi_rescal_s {
-	unsigned long rescal_ctrl_pa;
+	uintptr_t rescal_ctrl_pa;
 	uint32_t bit_hdmi_res_sel;
 	uint32_t bit_rescal_mode;
 	uint32_t bit_cal_ana_en;
 	uint32_t bit_cal_en;
 
-	unsigned long res0_ctrl_pa;
+	uintptr_t res0_ctrl_pa;
 	uint32_t res0_ctrl_bitmask;
 };
 
@@ -8832,107 +8832,128 @@ enum dw_hdcp_state_e {
 	DW_HDCP_SUCCESS   = 3,
 };
 
-int aw_phy_init(void)
+static int aw_phy_init(void)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
-int aw_phy_resume(void)
+static int aw_phy_resume(void)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
-int aw_phy_reset(void)
+static int aw_phy_reset(void)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
-int aw_phy_disconfig(void)
+static int aw_phy_disconfig(void)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
-int aw_phy_config(void)
+static int aw_phy_config(void)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
-int aw_phy_read(uint8_t addr, void *data)
+static int aw_phy_read(uint8_t addr, void *data)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
-int aw_phy_write(uint8_t addr, void *data)
+static int aw_phy_write(uint8_t addr, void *data)
 {
-	return -1;
-}
-
-ssize_t aw_phy_dump(char *buf)
-{
-	return -1;
-}
-int snps_phy_init(void)
-{
-	return -1;
-}
-int snps_phy_resume(void)
-{
-	return -1;
-}
-int snps_phy_reset(void)
-{
-	return -1;
-}
-int snps_phy_disconfig(void)
-{
-	return -1;
-}
-int snps_phy_config(void)
-{
-	return -1;
-}
-int snps_phy_read(uint8_t addr, void *data)
-{
-	return -1;
-}
-int snps_phy_write(uint8_t addr, void *data)
-{
-	return -1;
-}
-ssize_t snps_phy_dump(char *buf)
-{
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
 
-ssize_t snps__phy_dump(char *buf)
+static ssize_t aw_phy_dump(char *buf)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
+	return -1;
+}
+//
+static int snps_phy_init(void)
+{
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
+	return -1;
+}
+static int snps_phy_resume(void)
+{
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
+	return -1;
+}
+static int snps_phy_reset(void)
+{
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
+	return -1;
+}
+static int snps_phy_disconfig(void)
+{
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
+	return -1;
+}
+static int snps_phy_config(void)
+{
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
+	return -1;
+}
+static int snps_phy_read(uint8_t addr, void *data)
+{
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
+	return -1;
+}
+static int snps_phy_write(uint8_t addr, void *data)
+{
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
+	return -1;
+}
+static ssize_t snps_phy_dump(char *buf)
+{
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
 
-int inno_phy_init(void)
+//
+static int inno_phy_init(void)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
-int inno_phy_resume(void)
+static int inno_phy_resume(void)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
-int inno_phy_reset(void)
+static int inno_phy_reset(void)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
-int inno_phy_disconfig(void)
+static int inno_phy_disconfig(void)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
-int inno_phy_config(void)
+static int inno_phy_config(void)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
-int inno_phy_read(uint8_t addr, void *data)
+static int inno_phy_read(uint8_t addr, void *data)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
-int inno_phy_write(uint8_t addr, void *data)
+static int inno_phy_write(uint8_t addr, void *data)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
-ssize_t inno_phy_dump(char *buf)
+static ssize_t inno_phy_dump(char *buf)
 {
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
 	return -1;
 }
 
