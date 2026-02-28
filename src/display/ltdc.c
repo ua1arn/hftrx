@@ -2029,6 +2029,26 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 		DE_MIXER1_UI3,
 };
 
+static DE_VSU_TypeDef * const rtmix0_vsumap [] =
+{
+		DE_MIXER0_VSU1,
+};
+
+static DE_VSU_TypeDef * const rtmix1_vsumap [] =
+{
+		DE_MIXER1_VSU1,
+};
+
+static DE_UIS_TypeDef * const rtmix0_uismap [] =
+{
+		DE_MIXER0_UIS1,
+};
+
+static DE_UIS_TypeDef * const rtmix1_uismap [] =
+{
+		NULL,//DE_MIXER1_UIS1,
+};
+
 #else
 	#error Unsupported CPUSTYLE_xxx
 #endif
@@ -7443,7 +7463,7 @@ struct dw_hdmi_phy_config {
 // https://github.com/radxa/allwinner-bsp/blob/cubie-aiot-v1.4.6/drivers/drm/sunxi_device/sunxi_hdmi.c
 // https://github.com/radxa/allwinner-bsp/blob/bf1d47a3b42d906cdfbfd7937f316a97b9919ae5/drivers/drm/sunxi_device/sunxi_hdmi.c#L64
 
-#elif CPUSTYLE_T507 || CPUSTYLE_A733
+#elif CPUSTYLE_T507 || CPUSTYLE_A733 || 1
 
 static const struct dw_hdmi_mpll_config sun50i_h616_mpll_cfg[] = {
     {
