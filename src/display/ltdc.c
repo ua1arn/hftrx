@@ -7440,6 +7440,8 @@ struct dw_hdmi_phy_config {
 // https://github.com/EchoHeim/Allwinner-H616/blob/master/kernel/drivers/gpu/drm/sun4i/sun8i_hdmi_phy.c
 
 #if CPUSTYLE_A733 && 0
+// https://github.com/radxa/allwinner-bsp/blob/cubie-aiot-v1.4.6/drivers/drm/sunxi_device/sunxi_hdmi.c
+// https://github.com/radxa/allwinner-bsp/blob/bf1d47a3b42d906cdfbfd7937f316a97b9919ae5/drivers/drm/sunxi_device/sunxi_hdmi.c#L64
 
 #elif CPUSTYLE_T507 || CPUSTYLE_A733
 
@@ -7659,12 +7661,11 @@ static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixel
 	/* wait for phy pll lock */
 	if (local_wait8mask(& hdmi->HDMI_PHY_STAT0, HDMI_PHY_TX_PHY_LOCK, HDMI_PHY_TX_PHY_LOCK, 100))
 	{
-		PRINTF("HDMI PLL not statred: hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+		PRINTF("HDMI PLL not statred: hdmi->HDMI_PHY_STAT0=0x%02X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 	}
 	else
 	{
-		//PRINTF("HDMI PLL statred: hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
-
+		//PRINTF("HDMI PLL statred: hdmi->HDMI_PHY_STAT0=0x%02X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 	}
 
 //	start = get_timer(0);
@@ -8073,21 +8074,52 @@ static void h3_hdmi_init(const videomode_t * vdmode)
 //	hdmi->HDMI_MC_FLOWCTRL = HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;    // Main Controller Feed Through Control
 //	hdmi->HDMI_MC_CLKDIS = 0x74; // Main Controller Synchronous Clock Domain Disable
 
-//	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
-//			hdmi->HDMI_DESIGN_ID,
-//			hdmi->HDMI_REVISION_ID,
-//			hdmi->HDMI_PRODUCT_ID0,
-//			hdmi->HDMI_PRODUCT_ID1
-//			);
-//
-//	PRINTF(" Config 0x%x:0x%x:0x%x:0x%x\n",
-//			hdmi->HDMI_CONFIG0_ID,
-//			hdmi->HDMI_CONFIG1_ID,
-//			hdmi->HDMI_CONFIG2_ID,
-//			hdmi->HDMI_CONFIG3_ID
-//			);
 }
 
+static void hdmi_version(void)
+{
+	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
+
+	// A733
+	//	Detected HDMI controller 0x21:0x2a:0xa0:0xc1
+	//	 Config 0x9f:0x62:0xfe:0x0
+	//
+	// T507-H
+	//	Detected HDMI controller 0x21:0x2a:0xa0:0xc1
+	//	 Config 0x9f:0x62:0xf3:0x0
+
+	// iMX6-HDMI (new).pdf
+	// HDMI_CONFIG2_ID field descriptions
+	//	Indicates the type of PHY interface selected:
+	//	00h Legacy PHY (HDMI TX PHY)
+	//	F2h PHY_Gen2 (HDMI 3D TX PHY)
+	//	E2h PHY_Gen2 (HDMI 3D TX PHY) + HEAC PHY
+
+	enum dw_hdmi_phy_type {
+		DW_HDMI_PHY_DWC_HDMI_TX_PHY = 0x00,
+		DW_HDMI_PHY_DWC_MHL_PHY_HEAC = 0xb2,
+		DW_HDMI_PHY_DWC_MHL_PHY = 0xc2,
+		DW_HDMI_PHY_DWC_HDMI_3D_TX_PHY_HEAC = 0xe2,
+		DW_HDMI_PHY_DWC_HDMI_3D_TX_PHY = 0xf2,
+		DW_HDMI_PHY_DWC_HDMI20_TX_PHY = 0xf3,
+		DW_HDMI_PHY_VENDOR_PHY = 0xfe,
+	};
+
+	PRINTF("Detected HDMI controller 0x%x:0x%x:0x%x:0x%x\n",
+			hdmi->HDMI_DESIGN_ID,
+			hdmi->HDMI_REVISION_ID,
+			hdmi->HDMI_PRODUCT_ID0,
+			hdmi->HDMI_PRODUCT_ID1
+			);
+
+	PRINTF(" Config 0x%x:0x%x:0x%x:0x%x\n",
+			hdmi->HDMI_CONFIG0_ID,
+			hdmi->HDMI_CONFIG1_ID,
+			hdmi->HDMI_CONFIG2_ID,
+			hdmi->HDMI_CONFIG3_ID
+			);
+
+}
 #endif /* defined (HDMI_TX0) */
 
 #if 0
@@ -8871,6 +8903,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 static void t113_hdmi_initsteps(const videomode_t * vdmode)
 {
 	t113_tcontv_initsteps0(vdmode);
+	hdmi_version();
 	t113_hdmi_init(vdmode);	// PHY initialize
 }
 #endif /* WITHHDMITVHW */
