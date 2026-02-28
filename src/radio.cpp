@@ -16967,7 +16967,9 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
 		& xgnoisereduct,
 		& xgsquelchNFM,
 	#endif /* WITHIF4DSP */
+	#if WITHTX
 		& xgnfmdeviation,
+	#endif /* WITHTX */
 	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
 		& xgzoomxpow2,
 	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
