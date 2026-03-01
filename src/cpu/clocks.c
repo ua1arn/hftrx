@@ -2210,6 +2210,12 @@ uint_fast32_t allwnr_h3_get_hdmi_slow_freq(void)
 }
 
 // Allwinner H3
+void sysinit_boot_disconnect(void)
+{
+
+
+}
+// Allwinner H3
 void sysinit_pll_initialize(int forced)
 {
 

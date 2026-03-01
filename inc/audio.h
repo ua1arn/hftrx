@@ -146,7 +146,26 @@ enum
 #define WITHADAPTERHDMISHIFT 8
 typedef int32_t hdmi48bufv_t;
 
-#if CPUSTYLE_XC7Z || CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
+#if defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGA_NONE)
+	// заглушка
+	/* параметры входного/выходного адаптеров */
+	// IF RX
+	#define WITHADAPTERIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERIFADCSHIFT	0		// количество незанятых битов справа.
+	// RTS96
+	#define WITHADAPTERRTS96_WIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERRTS96_SHIFT	0		// количество незанятых битов справа.
+	// RTS192
+	#define WITHADAPTERRTS192_WIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERRTS192_SHIFT	0		// количество незанятых битов справа.
+	// IF TX
+	#define WITHADAPTERIFDACWIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
+	typedef int32_t IFADCvalue_t;
+	typedef int16_t IFDACvalue_t;
+
+
+#elif CPUSTYLE_XC7Z || CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
 	/* параметры входного/выходного адаптеров */
 	// IF RX
 	#define WITHADAPTERIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
