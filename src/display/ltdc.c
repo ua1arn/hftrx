@@ -3626,13 +3626,33 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 
 	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
 
-	//PRINTF("t113_tconlvds_CCU_configuration: needfreq=%u MHz, N=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) N);
-	const unsigned sel = 0x02; // 000: PLL_VIDEO0(1X), 001: PLL_VIDEO0(4X), 010: PLL_VIDEO1(1X),  011: PLL_VIDEO1(4X)
-	TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-		sel * (UINT32_C(1) << 24) |
-		0;
- 	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
-	//PRINTF("t113_tconlvds_CCU_configuration: BOARD_TCONLCDFREQ=%" PRIuFAST32 " MHz\n", (uint_fast32_t) BOARD_TCONLCDFREQ / 1000 / 1000);
+//	PRINTF("t113_tconlvds_CCU_configuration: needfreq=%u MHz\n", (unsigned) (needfreq / 1000 / 1000));
+//	PRINTF("t113_tconlvds_CCU_configuration: allwnr_t507_get_pll_video1_x4_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_pll_video1_x4_freq() / 1000 / 1000));
+//	PRINTF("t113_tconlvds_CCU_configuration: allwnr_t507_get_pll_video1_x1_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_pll_video1_x1_freq() / 1000 / 1000));
+	{
+		// PLL_VIDEO1 as source
+		const freqsrc_t sources [] =
+		{
+//			{ 0x01, allwnr_t507_get_pll_video0_x4_freq() }, //001: PLL_VIDEO0(4X)
+//			{ 0x00, allwnr_t507_get_pll_video0_x1_freq() }, //000: PLL_VIDEO0(1X)
+			{ 0x03, allwnr_t507_get_pll_video1_x4_freq() }, //011: PLL_VIDEO1(4X)
+			{ 0x02, allwnr_t507_get_pll_video1_x1_freq() }, //010: PLL_VIDEO1(1X)
+		};
+		unsigned lcd_sel = UINT_MAX; 		// 000: PLL_VIDEO0(1X) 001: PLL_VIDEO0(4X) 010: PLL_VIDEO1(1X) 011: PLL_VIDEO1(4X)
+		unsigned lcd_divider;
+		unsigned lcd_prei = calcdividerselect(needfreq, sources, ARRAY_SIZE(sources), 0, 1, & lcd_divider, & lcd_sel, 1);
+		// TCON_LCD0_CLK_REG
+		ASSERT(lcd_sel != UINT_MAX);
+		// в t507 TCON_LCD0_CLK_REG/TCON_LCD1_CLK_REG не позволяют устанавливать делители
+		TCONLCD_CCU_CLK_REG =
+			lcd_sel * (UINT32_C(1) << 24) | 	// 01: PLL_VIDEO0(4X)
+			//(lcd_prei) * (UINT32_C(1) << 8) | // prescaler code
+			//(lcd_divider) * (UINT32_C(1) << 0) |
+			0;
+		TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+//	    PRINTF("7 TCONLCD_CCU_CLK_REG=%08X\n", (unsigned) TCONLCD_CCU_CLK_REG);
+//		PRINTF("t113_tconlvds_CCU_configuration: allwnr_t507_get_tcon_lcd0_freq()=%u MHz\n", (unsigned) (allwnr_t507_get_tcon_lcd0_freq() / 1000 / 1000));
+	}
 
 	TCONLCD_CCU_BGR_REG |= (UINT32_C(1) << (0 + ix));	// Clock Gating
 	TCONLCD_CCU_BGR_REG &= ~ (UINT32_C(1) << (16 + ix));	// Assert Reset
@@ -6419,13 +6439,14 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 {
 	PRINTF("t113_tcontv_CCU_configuration: dotclock=%u\n", (unsigned) dotclock);
+	uint_fast32_t hdmiclock = 1 * dotclock;
 #if defined (TCONTV_PTR)
 #if CPUSTYLE_H3
 
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << 11) | (UINT32_C(1) << 3); // Enable DE, HDMI, TCON0
 	CCU->BUS_SOFT_RST_REG1 |= ( UINT32_C(1) << 11) | ( UINT32_C(1) << 10) | (UINT32_C(1) << 3); // De-assert reset of DE, HDMI0/1, TCON0
 
-	unsigned M = calcdivround2(allwnr_h3_get_pll_video_freq(), dotclock);
+	unsigned M = calcdivround2(allwnr_h3_get_pll_video_freq(), hdmiclock);
 	CCU->HDMI_CLK_REG = (UINT32_C(1) << 31) | (M - 1); // Enable HDMI clk (use PLL_VIDEO)
 	CCU->TCON0_CLK_REG = (UINT32_C(1) << 31) | (M - 1); // (use PLL_VIDEO) Enable TCONLCD_PTR clk, divide by 2
 	CCU->HDMI_SLOW_CLK_REG = (UINT32_C(1) << 31); // Enable HDMI slow clk
@@ -6517,7 +6538,7 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 			(tcontv_divider) * (UINT32_C(1) << 0) |
 			0;
 		TCONTV_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
-	    PRINTF("7 TCONTV_CCU_CLK_REG=%08X\n", (unsigned) TCONTV_CCU_CLK_REG);
+	    //PRINTF("7 TCONTV_CCU_CLK_REG=%08X\n", (unsigned) TCONTV_CCU_CLK_REG);
 	}
 
 	{
@@ -6531,7 +6552,7 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 		};
 		unsigned sel = 0x00; 	// 000: PLL_VIDEO0(1X) 001: PLL_VIDEO0(4X) 010: PLL_VIDEO1(1X) 011: PLL_VIDEO1(4X)
 		unsigned hdmi_divider;
-		unsigned hdmi_prei = calcdividerselect(dotclock, sources, ARRAY_SIZE(sources), ALLWNR_TCONTV_WIDTH, ALLWNR_TCONTV_TAPS, & hdmi_divider, & sel, 1);
+		unsigned hdmi_prei = calcdividerselect(hdmiclock, sources, ARRAY_SIZE(sources), ALLWNR_TCONTV_WIDTH, ALLWNR_TCONTV_TAPS, & hdmi_divider, & sel, 1);
 
 		CCU->HDMI0_CLK_REG =
 			sel * (UINT32_C(1) << 24) | 	// 01: PLL_VIDEO0(4X)
@@ -6539,7 +6560,7 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 			(hdmi_divider) * (UINT32_C(1) << 0) |
 			0;
 	    CCU->HDMI0_CLK_REG |= (UINT32_C(1) << 31);
-	    PRINTF("7 CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
+	    //PRINTF("7 CCU->HDMI0_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_CLK_REG);
 	}
 
     CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI0_GATING
