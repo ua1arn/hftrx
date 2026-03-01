@@ -6,13 +6,14 @@
 //
 
 #include "hardware.h"
+
+#if defined (HDMI_TX0) && WITHHDMITVHW
 #include "formats.h"	// for debug prints
 #include "display.h"
 #include "audio.h"
 
-#if defined (HDMI_TX0) && WITHHDMITVHW
-
-#include "dw-hdmi.h"
+#include <string.h>
+#include "dw-hdmi_modified.h"
 
 
 /* hdmi initialization step b.4 */

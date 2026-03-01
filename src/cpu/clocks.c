@@ -4839,7 +4839,7 @@ static void a733_pll_enable(volatile uint32_t * reg)
 //	* reg |= (UINT32_C(1) << 24);	// ???
 	local_delay_ms(20);
 }
-#include "pattern/ccu.h"
+
 void sysinit_pll_initialize(int forced)
 {
 	//fill32delay(CCU_BASE + 0x0a0, ccu_pattern, ARRAY_SIZE(ccu_pattern));

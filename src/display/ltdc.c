@@ -7041,7 +7041,10 @@ static void t113_tcontv_set_sequence_parameters(const videomode_t * vdmode)
 
 	//TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);	// недокументированно, но требуется
 	TCONTV_PTR->TV_SRC_CTL_REG = 0;             //0 - DE, 1..7 - test
-	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает EDID
+	TCONTV_PTR->TV_GCTL_REG =
+		0 * (UINT32_C(1) << 5) | // a733: PIXEL_MODE
+		1 * (UINT32_C(1) << 1) | // t507: enable TCONTV - не документирвано, но без этого не работает EDID
+		0;
 //	TCONTV_PTR->TV_DATA_IO_TRI0_REG = 0;
 //	TCONTV_PTR->TV_DATA_IO_TRI1_REG = 0;
 
@@ -7081,7 +7084,10 @@ static void t113_tcontv_set_sequence_parameters(const videomode_t * vdmode)
 
 	//TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);	// недокументированно, но требуется
 	TCONTV_PTR->TV_SRC_CTL_REG = 0;             // bit 0 - test, bits 2..1 - type of test
-//	TCONTV_PTR->TV_GCTL_REG |= (UINT32_C(1) << 1); //enable TCONTV - не документирвано, но без жтого не работает
+	TCONTV_PTR->TV_GCTL_REG =
+		0 * (UINT32_C(1) << 5) | // a733: PIXEL_MODE
+		1 * (UINT32_C(1) << 1) | // t507: enable TCONTV - не документирвано, но без этого не работает EDID
+		0;
 //	TCONTV_PTR->TV_DATA_IO_TRI0_REG = 0;
 //	TCONTV_PTR->TV_DATA_IO_TRI1_REG = 0;
 
