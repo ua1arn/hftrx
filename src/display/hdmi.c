@@ -421,10 +421,165 @@ static const struct dw_hdmi_phy_config sun50i_h616_phy_config[] = {
 
 // See also https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/gpu/drm/bridge/dw-hdmi.c#L733
 
-static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixelclock, unsigned res, int cscon)
+static int t507_hdmi_phy_configure(
+	HDMI_TX_TypeDef * const hdmi,
+	uint_fast32_t mpixelclock,
+	unsigned res, 	// 8
+	int cscon	// cscon
+	)
 {
 
-	PRINTF("hdmi_phy_configure: hdmi->mpixelclock=%u\n", (unsigned) mpixelclock);
+	//t507_hdmi_phy_configure: hdmi->mpixelclock=74250000
+	PRINTF("t507_hdmi_phy_configure: hdmi->mpixelclock=%u\n", (unsigned) mpixelclock);
+	//PRINTF("hdmi_phy_configure: hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+
+	/* Enable csc path */
+	HDMI_TX0->HDMI_MC_FLOWCTRL = cscon ? HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_IN_PATH : HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS;
+
+	/* gen2 tx power off */
+	hdmi_phy_gen2_txpwron(hdmi, 0);
+//
+//	/* gen2 pddq */
+	hdmi_phy_gen2_pddq(hdmi, 1);
+
+	/* phy reset */
+	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_DEASSERT;
+	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_ASSERT;
+	HDMI_TX0->HDMI_MC_HEACPHY_RST = HDMI_MC_HEACPHY_RST_ASSERT;
+
+//	HDMI_TX0->HDMI_MC_PHYRSTZ = HDMI_MC_PHYRSTZ_DEASSERT;
+//	HDMI_TX0->HDMI_MC_HEACPHY_RST = HDMI_MC_HEACPHY_RST_DEASSERT;
+
+	hdmi_phy_test_clear(hdmi, 1);
+	hdmi->HDMI_PHY_I2CM_SLAVE_ADDR = HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2;
+	hdmi_phy_test_clear(hdmi, 0);
+
+	const struct dw_hdmi_mpll_config *mpll_config = sun50i_h616_mpll_cfg;
+	const struct dw_hdmi_curr_ctrl *curr_ctrl = sun50i_h616_cur_ctr;
+	const struct dw_hdmi_phy_config *phy_config = sun50i_h616_phy_config;
+
+	/* PLL/MPLL Cfg - always match on final entry */
+	for (; mpll_config->mpixelclock != ~0UL; mpll_config++)
+		if (mpixelclock <=
+		    mpll_config->mpixelclock)
+			break;
+
+	for (; curr_ctrl->mpixelclock != ~0UL; curr_ctrl++)
+		if (mpixelclock <=
+		    curr_ctrl->mpixelclock)
+			break;
+
+	for (; phy_config->mpixelclock != ~0UL; phy_config++)
+		if (mpixelclock <=
+		    phy_config->mpixelclock)
+			break;
+
+	if (mpll_config->mpixelclock == ~0UL ||
+	    curr_ctrl->mpixelclock == ~0UL ||
+	    phy_config->mpixelclock == ~0UL) {
+		PRINTF("Pixel clock %u - unsupported by HDMI\n",
+			(unsigned) mpixelclock);
+		return -1;
+	}
+
+	unsigned datav;	// debug variable
+
+	const int resix = DW_HDMI_RES_8;
+	hdmi_phy_i2c_write(hdmi, mpll_config->res[resix].cpce, PHY_OPMODE_PLLCFG);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_OPMODE_PLLCFG);
+	ASSERT(datav == mpll_config->res[resix].cpce);
+
+	hdmi_phy_i2c_write(hdmi, mpll_config->res[resix].gmp, PHY_PLLGMPCTRL);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_PLLGMPCTRL);
+	ASSERT(datav == mpll_config->res[resix].gmp);
+
+	hdmi_phy_i2c_write(hdmi, curr_ctrl->curr[resix], PHY_PLLCURRCTRL);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_PLLCURRCTRL);
+	ASSERT(datav == curr_ctrl->curr[resix]);
+
+	hdmi_phy_i2c_write(hdmi, 0x0000, PHY_PLLPHBYCTRL);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_PLLPHBYCTRL);
+	ASSERT(datav == 0x0000);
+
+	hdmi_phy_i2c_write(hdmi, 0x0006, PHY_PLLCLKBISTPHASE);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_PLLCLKBISTPHASE);
+	ASSERT(datav == 0x0006);
+
+//	for (i = 0; hdmi->phy_cfg[i].mpixelclock != (~0ul); i++)
+//		if (mpixelclock <= hdmi->phy_cfg[i].mpixelclock)
+//			break;
+
+	/*
+	 * resistance term 133ohm cfg
+	 * preemp cgf 0.00
+	 * tx/ck lvl 10
+	 */
+	hdmi_phy_i2c_write(hdmi, phy_config->term, PHY_TXTERM);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_TXTERM);
+	ASSERT(datav == phy_config->term);
+
+	hdmi_phy_i2c_write(hdmi, phy_config->sym_ctr, PHY_CKSYMTXCTRL);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_CKSYMTXCTRL);
+	ASSERT(datav == phy_config->sym_ctr);
+
+	hdmi_phy_i2c_write(hdmi, phy_config->vlev_ctr, PHY_VLEVCTRL);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_VLEVCTRL);
+	//PRINTF("datav=0x%04X, expected=0x%04X\n", datav, phy_config->vlev_ctr);
+	//ASSERT(datav == phy_config->vlev_ctr);
+
+
+	/* remove clk term */
+	hdmi_phy_i2c_write(hdmi, 0x8000, PHY_CKCALCTRL);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_CKCALCTRL);
+	//PRINTF("datav=0x%04X, expected=0x%04X\n", datav, 0x8000);
+	//ASSERT(datav == 0x8000);
+
+	//PRINTF("hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+
+	hdmi_phy_enable_power(hdmi, 1);
+
+	/* toggle tmds enable */
+	hdmi_phy_enable_tmds(hdmi, 0);
+	hdmi_phy_enable_tmds(hdmi, 1);
+
+	/* gen2 tx power on */
+	hdmi_phy_gen2_txpwron(hdmi, 1);
+	hdmi_phy_gen2_pddq(hdmi, 0);
+
+	hdmi_phy_enable_spare(hdmi, 1);
+
+	/* wait for phy pll lock */
+	if (local_wait8mask(& hdmi->HDMI_PHY_STAT0, HDMI_PHY_TX_PHY_LOCK, HDMI_PHY_TX_PHY_LOCK, 100))
+	{
+		PRINTF("HDMI PLL not statred: hdmi->HDMI_PHY_STAT0=0x%02X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+	}
+	else
+	{
+		//PRINTF("HDMI PLL statred: hdmi->HDMI_PHY_STAT0=0x%02X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
+	}
+
+//	start = get_timer(0);
+//	do {
+//		val = hdmi_read(hdmi, HDMI_PHY_STAT0);
+//		if (!(val & HDMI_PHY_TX_PHY_LOCK))
+//			return 0;
+//
+//		udelay(100);
+//	} while (get_timer(start) < 5);
+	return 0;	// OK
+}
+
+// https://github.com/radxa/allwinner-bsp/blob/bf1d47a3b42d906cdfbfd7937f316a97b9919ae5/drivers/drm/sunxi_device/sunxi_hdmi.c#L64
+
+static int a733_hdmi_phy_configure(
+	HDMI_TX_TypeDef * const hdmi,
+	uint_fast32_t mpixelclock,
+	unsigned res, 	// 8
+	int cscon	// cscon
+	)
+{
+
+	PRINTF("a733_hdmi_phy_configure: hdmi->mpixelclock=%u\n", (unsigned) mpixelclock);
 	//PRINTF("hdmi_phy_configure: hdmi->HDMI_PHY_STAT0=%08X\n", (unsigned) hdmi->HDMI_PHY_STAT0);
 
 	/* Enable csc path */
@@ -887,12 +1042,17 @@ static void t507_hdmi_phy_init(uint_fast32_t dotclock)
 		hdmi_phy_sel_interface_control(hdmi, 0);
 		hdmi_phy_enable_tmds(hdmi, 0);
 		hdmi_phy_enable_power(hdmi, 0);
-
-		int ret = hdmi_phy_configure(hdmi, dotclock, 8, cscon);
-//		if (ret) {
-//			debug("hdmi phy config failure %d\n", ret);
-//			return ret;
-//		}
+#if CPUSTYLE_T507
+		const int ret = t507_hdmi_phy_configure(hdmi, dotclock, 8, cscon);
+#elif CPUSTYLE_A733
+		const int ret = a733_hdmi_phy_configure(hdmi, dotclock, 8, cscon);
+#else
+		const int ret = - 1;
+#endif
+		if (ret) {
+			PRINTF("hdmi phy config failure %d\n", ret);
+			return;
+		}
 	}
 
 }
@@ -1013,7 +1173,7 @@ static void hdmi_version(void)
 
 #if WITHHDMITVHW
 
-
+// dotclock - частота на входе HDMI блока
 
 void awxxx_hdmi_init(const videomode_t * vdmode, uint_fast32_t dotclock)
 {

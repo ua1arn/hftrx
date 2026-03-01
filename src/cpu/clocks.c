@@ -3899,9 +3899,14 @@ uint_fast64_t allwnr_t507_get_tcon_tv1_freq(void)
 uint_fast64_t allwnr_t507_get_hdmi0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->HDMI0_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
 	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
-	const uint_fast32_t pgdiv = M;
-	// SCLK = Clock Source/M
+	const uint_fast32_t pgdiv = M * N;
+	// SCLK = Clock Source/M/Т
+	//	000: PLL_VIDEO0(1X)
+	//	001: PLL_VIDEO0(4X)
+	//	010: PLL_VIDEO1(1X)
+	//	011: PLL_VIDEO1(4X)
 	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
 	{
 	default:
