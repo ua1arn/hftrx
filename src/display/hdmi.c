@@ -700,8 +700,12 @@ static void dw_hdmi_clear_overflow(HDMI_TX_TypeDef * const hdmi)
 
 	/* TMDS software reset */
 	hdmi->HDMI_MC_SWRSTZ = (uint8_t) ~ HDMI_MC_SWRSTZ_TMDSSWRST_REQ;
-	while ((hdmi->HDMI_MC_SWRSTZ & HDMI_MC_SWRSTZ_TMDSSWRST_REQ) == 0)
-		;
+	if (local_wait8mask(& hdmi->HDMI_MC_SWRSTZ, HDMI_MC_SWRSTZ_TMDSSWRST_REQ, 1 * HDMI_MC_SWRSTZ_TMDSSWRST_REQ, 100))
+	{
+		TP();
+	}
+//	while ((hdmi->HDMI_MC_SWRSTZ & HDMI_MC_SWRSTZ_TMDSSWRST_REQ) == 0)
+//		;
 
 	val = hdmi->HDMI_FC_INVIDCONF;
 //	if (hdmi->dev_type == IMX6DL_HDMI) {
@@ -751,21 +755,6 @@ static void h3_hdmi_phy_init(uint_fast32_t dotclock)
 	phy->HDMI_PHY_READ_EN = 0x54524545;
 	/* descramble register offsets */
 	phy->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
-
-
-//	/* enable read access to HDMI controller */
-//	HDMI_PHY->HDMI_PHY_READ_EN = 0x54524545;
-//	/* descramble register offsets */
-//	HDMI_PHY->HDMI_PHY_UNSCRAMBLE = 0x42494E47;
-//#if CPUSTYLE_T507
-//	PRINTF("phy->REXT_CTRL=%08X\n", (unsigned) phy->REXT_CTRL);
-//	local_delay_ms(10);
-//	phy->REXT_CTRL |= SUN8I_HDMI_PHY_REXT_CTRL_REXT_EN;
-//	local_delay_ms(10);
-//	phy->REXT_CTRL = (HDMI_PHY->REXT_CTRL & 0xFFFF0000) | 0x80C00000;
-//	local_delay_ms(10);
-//	PRINTF("phy->REXT_CTRL=%08X\n", (unsigned) phy->REXT_CTRL);
-//#endif
 
 	//PRINTF("phy->HDMI_PHY_STS=%08X\n", (unsigned) phy->HDMI_PHY_STS);
 	// HDMI PHY init, the following black magic is based on the procedure documented at:
