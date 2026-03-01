@@ -7418,17 +7418,6 @@ static int hdmi_phy_i2c_read(HDMI_TX_TypeDef *hdmi, unsigned * data, unsigned ad
 	return ec;
 }
 
-static int hdmi_phy_i2c_write_verify(HDMI_TX_TypeDef *hdmi, unsigned data, unsigned addr)
-{
-	unsigned datav;
-	if (hdmi_phy_i2c_write(hdmi, data, addr))
-		return 1;
-	if (hdmi_phy_i2c_read(hdmi, & datav, addr))
-		return 1;
-	ASSERT(data == datav);
-	return 0;
-}
-
 enum {
 	DW_HDMI_RES_8,
 	DW_HDMI_RES_10,
@@ -7619,9 +7608,16 @@ static int hdmi_phy_configure(HDMI_TX_TypeDef * const hdmi, uint_fast32_t mpixel
 	hdmi_phy_i2c_read(hdmi, & datav, PHY_OPMODE_PLLCFG);
 	ASSERT(datav == mpll_config->res[resix].cpce);
 
+#if CPUSTYLE_A733
+	enum { PHY_PLLGMPCTRL_11 = 0x11 };
+	hdmi_phy_i2c_write(hdmi, mpll_config->res[resix].gmp, PHY_PLLGMPCTRL_11);
+	hdmi_phy_i2c_read(hdmi, & datav, PHY_PLLGMPCTRL_11);
+	ASSERT(datav == mpll_config->res[resix].gmp);
+#else
 	hdmi_phy_i2c_write(hdmi, mpll_config->res[resix].gmp, PHY_PLLGMPCTRL);
 	hdmi_phy_i2c_read(hdmi, & datav, PHY_PLLGMPCTRL);
 	ASSERT(datav == mpll_config->res[resix].gmp);
+#endif
 
 	hdmi_phy_i2c_write(hdmi, curr_ctrl->curr[resix], PHY_PLLCURRCTRL);
 	hdmi_phy_i2c_read(hdmi, & datav, PHY_PLLCURRCTRL);
@@ -8443,8 +8439,6 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	uis->UIS_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 	if (local_wait32mask(& uis->UIS_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
 		TP();
-//	while ((uis->UIS_CTRL_REG & (UINT32_C(1) << 4)) != 0)
-//		;
 }
 
 static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int vich)
@@ -8493,12 +8487,10 @@ static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 	if (local_wait32mask(& vsu->VSU_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
 		TP();
-//	while ((vsu->VSU_CTRL_REG & (UINT32_C(1) << 4)) != 0)
-//		;
 }
 #endif /* CPUSTYLE_T507 */
 
-#if CPUSTYLE_T113 || CPUSTYLE_F133 ||  CPUSTYLE_A64 || CPUSTYLE_H3
+#if CPUSTYLE_T113 || CPUSTYLE_F133
 
 static void t113_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int uich)
 {
@@ -8534,8 +8526,6 @@ static void t113_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	uis->UIS_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 	if (local_wait32mask(& uis->UIS_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
 		TP();
-//	while ((uis->UIS_CTRL_REG & (UINT32_C(1) << 4)) != 0)
-//		;
 }
 
 
@@ -8591,14 +8581,13 @@ static void t113_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 	if (local_wait32mask(& vsu->VSU_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
 		TP();
-//	while ((vsu->VSU_CTRL_REG & (UINT32_C(1) << 4)) != 0)
-//		;
 }
 
-#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 ||  CPUSTYLE_A64 || CPUSTYLE_H3 */
+#endif /* CPUSTYLE_T113 || CPUSTYLE_F133 */
 
-#if 0//CPUSTYLE_A64 || CPUSTYLE_H3
+#if CPUSTYLE_A64 || CPUSTYLE_H3
 
+// Такое же как в t113, только без ожидания сбросв бита в конце
 static void h3_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int uich)
 {
 	DE_UIS_TypeDef * const uis = de3_getuis(rtmixid, uich);
@@ -8633,10 +8622,9 @@ static void h3_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 	uis->UIS_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 //	if (local_wait32mask(& uis->UIS_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
 //		TP();
-//	while ((uis->UIS_CTRL_REG & (UINT32_C(1) << 4)) != 0)
-//		;
 }
 
+// Такое же как в t113, только без ожидания сбросв бита в конце
 static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int vich)
 {
 	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid, vich);
@@ -8650,6 +8638,10 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 		vsu->VSU_CTRL_REG = 0;	// EN Video Scaler Unit disable
 		return;
 	}
+//	memset32(vsu, 0xFFFFFFFF, 0x1000);
+//	printhex32((uintptr_t) vsu, vsu, 0x1000);	// вызывает сбой цветов на HDMI
+//	for (;;)
+//		;
 	enum { FRAСTWIDTH = 19 };	// При масштабе 1:1 о ширине изображения нет - для теста делаю уменьшение на 0.9
 	const unsigned HEIGHT = vdmodeHDMI->height;	/* height */
 	const unsigned WIDTH = vdmodeHDMI->width;	/* width */
@@ -8679,6 +8671,8 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 		vsu->VSU_C_HCOEF1_REGN [n] = 0;			// 0x700
 		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000;	// 0x800
 	}
+
+	vsu->VSU_GLOBAL_ALPHA_REG = 0x00;
 
 	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 //	if (local_wait32mask(& vsu->VSU_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
@@ -8741,396 +8735,6 @@ static uint_fast32_t hdmi_realclock(const videomode_t * vdmode)
 }
 
 
-#define SUNXI_HDMI_ENABLE   			(0x1)
-#define SUNXI_HDMI_DISABLE  			(0x0)
-
-/******************************************************************
- * @desc: sunxi hdmi level struct
- *****************************************************************/
-struct sunxi_hdmi_rescal_s {
-	uintptr_t rescal_ctrl_pa;
-	uint32_t bit_hdmi_res_sel;
-	uint32_t bit_rescal_mode;
-	uint32_t bit_cal_ana_en;
-	uint32_t bit_cal_en;
-
-	uintptr_t res0_ctrl_pa;
-	uint32_t res0_ctrl_bitmask;
-};
-
-struct dw_phy_ops_s {
-	int (*phy_init)(void);
-	int (*phy_resume)(void);
-	int (*phy_reset)(void);
-	int (*phy_disconfig)(void);
-	int (*phy_config)(void);
-	int (*phy_read)(uint8_t addr, void *data);
-	int (*phy_write)(uint8_t addr, void *data);
-	ssize_t (*phy_dump)(char *buf);
-};
-
-struct sunxi_hdmi_plat_s {
-	unsigned char version;
-	unsigned char use_top_phy;
-	/* resistance calibration */
-	unsigned char need_res_cal;
-	struct sunxi_hdmi_rescal_s  rescal_regs;
-
-	struct dw_phy_ops_s  phy_func;
-};
-
-struct sunxi_hdmi_s {
-	struct device         *dev;
-	struct drm_connector  *connect;
-	struct i2c_adapter    *i2c_adap;
-
-	uint8_t smooth_boot;
-	uint8_t clock_src;
-	uint8_t resistor_src;
-	uintptr_t reg_base;
-
-	struct sunxi_hdmi_plat_s    *plat_data;
-//	struct disp_device_config	disp_info;
-//	struct dw_hdmi_dev_s    	dw_hdmi;
-//
-//	struct mutex  lock_config;
-};
-
-#define BITS_PER_LONG (__CHAR_BIT__ * __SIZEOF_LONG__)
-#define GENMASK(h, l) \
-    (((~0UL) - (1UL << (l)) + 1) & (~0UL >> (BITS_PER_LONG - 1 - (h))))
-#ifndef BIT
-#define BIT(x)              (1 << (x))
-#endif
-
-
-#define DW_HDMI_ENABLE         (1)
-#define DW_HDMI_DISABLE        (0)
-
-#define DW_EDID_MAC_HDMI_VIC		16
-#define DW_EDID_MAX_HDMI_3DSTRUCT	16
-#define DW_EDID_MAX_VIC_WITH_3D		16
-
-enum sunxi_platform_version {
-	HDMI_SUN8I_W20_P1 = 0,
-	HDMI_SUN50I_W9_P1,
-	HDMI_SUN55I_W3_P1,
-	HDMI_SUN60I_W2_P1,
-};
-
-typedef enum {
-	DW_PHY_ACCESS_NULL = 0,
-	DW_PHY_ACCESS_I2C  = 1,
-	DW_PHY_ACCESS_JTAG = 2
-} dw_phy_access_t;
-
-typedef enum {
-	DW_AUDIO_INTERFACE_NULL  = -1,
-	DW_AUDIO_INTERFACE_I2S   = 0,
-	DW_AUDIO_INTERFACE_SPDIF = 1,
-	DW_AUDIO_INTERFACE_HBR   = 2,
-	DW_AUDIO_INTERFACE_GPA   = 3,
-	DW_AUDIO_INTERFACE_DMA   = 4,
-	DW_AUDIO_INTERFACE_MAX
-} dw_aud_interface_t;
-
-typedef enum {
-	DW_AUD_CODING_NULL               = -1,
-	DW_AUD_CODING_PCM                = 1,
-	DW_AUD_CODING_AC3                = 2,
-	DW_AUD_CODING_MPEG1              = 3,
-	DW_AUD_CODING_MP3                = 4,
-	DW_AUD_CODING_MPEG2              = 5,
-	DW_AUD_CODING_AAC                = 6,
-	DW_AUD_CODING_DTS                = 7,
-	DW_AUD_CODING_ATRAC              = 8,
-	DW_AUD_CODING_ONE_BIT_AUDIO      = 9,
-	DW_AUD_CODING_DOLBY_DIGITAL_PLUS = 10,
-	DW_AUD_CODING_DTS_HD             = 11,
-	DW_AUD_CODING_MAT                = 12,
-	DW_AUD_CODING_DST                = 13,
-	DW_AUD_CODING_WMAPRO             = 14
-} dw_aud_coding_t;
-
-typedef enum {
-	DW_TMDS_MODE_NULL = -1,
-	DW_TMDS_MODE_DVI  = 0,
-	DW_TMDS_MODE_HDMI = 1
-} dw_tmds_mode_t;
-
-typedef enum {
-	DW_HW_COLOR_DEPTH_8    = 4,
-	DW_HW_COLOR_DEPTH_10   = 5,
-	DW_HW_COLOR_DEPTH_12   = 6,
-	DW_HW_COLOR_DEPTH_16   = 7
-} dw_hw_color_depth_t;
-
-typedef enum {
-	DW_COLOR_DEPTH_NULL = 0,
-	DW_COLOR_DEPTH_8    = 8,
-	DW_COLOR_DEPTH_10   = 10,
-	DW_COLOR_DEPTH_12   = 12,
-	DW_COLOR_DEPTH_16   = 16
-} dw_color_depth_t;
-
-typedef enum {
-	DW_PIXEL_REPETITION_OFF = 0,
-	DW_PIXEL_REPETITION_1   = 1,
-	DW_PIXEL_REPETITION_2   = 2,
-	DW_PIXEL_REPETITION_3   = 3,
-	DW_PIXEL_REPETITION_4   = 4,
-	DW_PIXEL_REPETITION_5   = 5,
-	DW_PIXEL_REPETITION_6   = 6,
-	DW_PIXEL_REPETITION_7   = 7,
-	DW_PIXEL_REPETITION_8   = 8,
-	DW_PIXEL_REPETITION_9   = 9,
-	DW_PIXEL_REPETITION_10  = 10
-} dw_pixel_repetition_t;
-
-typedef enum {
-	DW_PHY_OPMODE_HDMI14           = 1,
-	DW_PHY_OPMODE_HDMI_20          = 2,
-	DW_PHY_OPMODE_MHL_24           = 3,
-	DW_PHY_OPMODE_MHL_PACKEDPIXEL  = 4
-} dw_phy_operation_mode_t;
-
-typedef enum {
-	DW_COLOR_FORMAT_NULL   = -1,
-	DW_COLOR_FORMAT_RGB    = 0,
-	DW_COLOR_FORMAT_YCC444 = 1,
-	DW_COLOR_FORMAT_YCC422 = 2,
-	DW_COLOR_FORMAT_YCC420 = 3
-} dw_color_format_t;
-
-typedef enum {
-	DW_METRY_NULL     = 0,
-	DW_METRY_ITU601   = 1,
-	DW_METRY_ITU709   = 2,
-	DW_METRY_EXTENDED = 3
-} dw_colorimetry_t;
-
-typedef enum {
-	DW_METRY_EXT_XV_YCC601         = 0,
-	DW_METRY_EXT_XV_YCC709         = 1,
-	DW_METRY_EXT_S_YCC601          = 2,
-	DW_METRY_EXT_ADOBE_YCC601      = 3,
-	DW_METRY_EXT_ADOBE_RGB         = 4,
-	DW_METRY_EXT_BT2020_Yc_Cbc_Crc = 5,
-	DW_METRY_EXT_BT2020_Y_CB_CR    = 6
-} dw_ext_colorimetry_t;
-
-typedef enum {
-	DW_EOTF_SDR       = 0,
-	DW_EOTF_HDR       = 1,
-	DW_EOTF_SMPTE2084 = 2,
-	DW_EOTF_HLG       = 3
-} dw_eotf_t;
-
-enum dw_range_type_e {
-	DW_RGB_RANGE_DEFAULT = 0,
-	DW_RGB_RANGE_LIMIT   = 1,
-	DW_RGB_RANGE_FULL    = 2
-};
-
-enum dw_video_format_e {
-	DW_VIDEO_FORMAT_NONE = 0,
-	DW_VIDEO_FORMAT_HDMI14_4K = 1,
-	DW_VIDEO_FORMAT_3D = 2
-};
-
-enum dw_hdcp_type_e {
-	DW_HDCP_TYPE_NULL   = -1,
-	DW_HDCP_TYPE_HDCP14 = 0,
-	DW_HDCP_TYPE_HDCP22 = 1
-};
-
-/**
- * @desc: dw hdcp state
- */
-enum dw_hdcp_state_e {
-	DW_HDCP_DISABLE   = 0,
-	DW_HDCP_ING       = 1,
-	DW_HDCP_FAILED    = 2,
-	DW_HDCP_SUCCESS   = 3,
-};
-
-static int aw_phy_init(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int aw_phy_resume(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int aw_phy_reset(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int aw_phy_disconfig(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int aw_phy_config(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int aw_phy_read(uint8_t addr, void *data)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int aw_phy_write(uint8_t addr, void *data)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-
-static ssize_t aw_phy_dump(char *buf)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-//
-static int snps_phy_init(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int snps_phy_resume(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int snps_phy_reset(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int snps_phy_disconfig(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int snps_phy_config(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int snps_phy_read(uint8_t addr, void *data)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int snps_phy_write(uint8_t addr, void *data)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static ssize_t snps_phy_dump(char *buf)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-
-//
-static int inno_phy_init(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int inno_phy_resume(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int inno_phy_reset(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int inno_phy_disconfig(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int inno_phy_config(void)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int inno_phy_read(uint8_t addr, void *data)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static int inno_phy_write(uint8_t addr, void *data)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-static ssize_t inno_phy_dump(char *buf)
-{
-	HDMI_TX_TypeDef * const hdmi = HDMI_TX0;
-	return -1;
-}
-
-struct sunxi_hdmi_plat_s sun8i_hdmi = {
-	.version = HDMI_SUN8I_W20_P1,
-	.use_top_phy            = 0x0,
-	.phy_func.phy_init      = aw_phy_init,
-	.phy_func.phy_config    = aw_phy_config,
-	.phy_func.phy_resume    = aw_phy_resume,
-	.phy_func.phy_reset     = aw_phy_reset,
-	.phy_func.phy_read      = aw_phy_read,
-	.phy_func.phy_write     = aw_phy_write,
-};
-
-struct sunxi_hdmi_plat_s sun50i_hdmi = {
-	.version = HDMI_SUN50I_W9_P1,
-	.use_top_phy            = 0x0,
-	.phy_func.phy_init      = snps_phy_init,
-	.phy_func.phy_config    = snps_phy_config,
-	.phy_func.phy_disconfig = snps_phy_disconfig,
-	.phy_func.phy_read      = snps_phy_read,
-	.phy_func.phy_write     = snps_phy_write,
-	.phy_func.phy_dump      = snps_phy_dump,
-};
-
-struct sunxi_hdmi_plat_s sun55i_hdmi = {
-	.version = HDMI_SUN55I_W3_P1,
-	.use_top_phy            = 0x0,
-	.phy_func.phy_init      = inno_phy_init,
-	.phy_func.phy_config    = inno_phy_config,
-	.phy_func.phy_read      = inno_phy_read,
-	.phy_func.phy_write     = inno_phy_write,
-	.phy_func.phy_dump      = inno_phy_dump,
-};
-
-struct sunxi_hdmi_plat_s sun60i_hdmi = {
-	.version = HDMI_SUN60I_W2_P1,
-	.use_top_phy            = SUNXI_HDMI_ENABLE,
-	.phy_func.phy_init      = snps_phy_init,
-	.phy_func.phy_config    = snps_phy_config,
-	.phy_func.phy_disconfig = snps_phy_disconfig,
-	.phy_func.phy_read      = snps_phy_read,
-	.phy_func.phy_write     = snps_phy_write,
-	.phy_func.phy_dump      = snps_phy_dump,
-
-	/* config sun60i res cal and register and bitmask */
-	.need_res_cal        = SUNXI_HDMI_ENABLE,
-	.rescal_regs.rescal_ctrl_pa   = 0x03000160,
-	.rescal_regs.bit_hdmi_res_sel = (uint32_t)BIT(12),
-	.rescal_regs.bit_rescal_mode  = (uint32_t)BIT(2),
-	.rescal_regs.bit_cal_ana_en   = (uint32_t)BIT(1),
-	.rescal_regs.bit_cal_en       = (uint32_t)BIT(0),
-	.rescal_regs.res0_ctrl_pa        = 0x03000164,
-	.rescal_regs.res0_ctrl_bitmask   = (uint32_t)GENMASK(31, 24),
-};
 
 static void t113_hdmi_init(const videomode_t * vdmode)
 {
@@ -9450,25 +9054,21 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 	//PRINTF("Init rtmixid=%d\n", rtmixid);
 	//TP();
 	/* эта инициализация после корректного соединения с работающим TCON */
-	t113_de_bld_initialize(rtmixid, vdmode, defcolor);	// RED
+	t113_de_bld_initialize(rtmixid, vdmode, defcolor);
 
-	const videomode_t * const design = get_videomode_DESIGN();
-#if CPUSTYLE_T507
+	const videomode_t * const design = get_videomode_DESIGN();	// Из какого режима масштабируем
+
+#if CPUSTYLE_T507 || CPUSTYLE_A733
 
 	t507_de2_vsu_init(rtmixid, design, vdmode, 1);
 	t507_de2_uis_init(rtmixid, design, vdmode, 1);
 
-#elif CPUSTYLE_A733
-
-//	t507_de2_vsu_init(rtmixid, design, vdmode, 1);
-//	t507_de2_uis_init(rtmixid, design, vdmode, 1);
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 ||  CPUSTYLE_A64 || CPUSTYLE_H3
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	t113_de2_vsu_init(rtmixid, design, vdmode, 1);
 	t113_de2_uis_init(rtmixid, design, vdmode, 1);
 
-#elif 0 //CPUSTYLE_A64 || CPUSTYLE_H3
+#elif CPUSTYLE_A64 || CPUSTYLE_H3
 
 	h3_de2_vsu_init(rtmixid, design, vdmode, 1);
 	h3_de2_uis_init(rtmixid, design, vdmode, 1);	// not tested
