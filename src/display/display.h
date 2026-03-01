@@ -267,6 +267,8 @@ void panel_initialize(const videomode_t * vdmode);
 void panel_wakeup(void);
 void panel_deinitialize(void);
 
+void awxxx_hdmi_init(const videomode_t * vdmode, uint_fast32_t inputclock);
+
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(const gxdrawb_t * db);	// Заполниить цветом фона
 
