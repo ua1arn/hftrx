@@ -3507,8 +3507,6 @@ static void hardware_de_initialize(int rtmixid)
 // T507: PLL_VIDEO1
 static void t113_tconlcd_CCU_configuration(void)
 {
-	const unsigned prei = 0;
-	const unsigned divider = 1;
 
 #if defined (TCONLCD_PTR)
 
@@ -3545,12 +3543,14 @@ static void t113_tconlcd_CCU_configuration(void)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	/* Configure TCONLCD clock */
-
-	ASSERT(divider >= 1 && divider <= 16);
+    // TCONLCD_CLK_REG
+	const unsigned lcd_prei = 0;
+	const unsigned lcd_divider = 1;
+	ASSERT(lcd_divider >= 1 && lcd_divider <= 16);
     TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x0F) << 0)) |
 		0x02 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 010: PLL_VIDEO1(1X)
-		prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
-		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
+		lcd_prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
+		((lcd_divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
 		0;
     TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
 	//PRINTF("t113_tconlcd_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000 / 1000));
@@ -3679,47 +3679,85 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	/* Configure TCONLCD clock */
-	unsigned prei = 0;
-	const unsigned sel = 0x03;	// CLK_SRC_SEL 011: PLL_VIDEO1(4X)
-	const unsigned divider = calcdivround2(allwnr_t113_get_video1pllx4_freq(), needfreq);
-	//PRINTF("t113_tconlvds_CCU_configuration: needfreq=%u MHz, prei=%u, divider=%u\n", (unsigned) (needfreq / 1000 / 1000), (unsigned) prei, (unsigned) divider);
-	ASSERT(divider >= 1 && divider <= 16);
 	// LVDS
-    TCONLCD_CCU_CLK_REG = (TCONLCD_CCU_CLK_REG & ~ (UINT32_C(0x07) << 24) & ~ (UINT32_C(0x03) << 8) & ~ (UINT32_C(0x0F) << 0)) |
-		sel * (UINT32_C(1) << 24) |
-		prei * (UINT32_C(1) << 8) |	// FACTOR_N 0..3: 1..8
-		((divider - 1) << 0) |	// FACTOR_M (0x00..0x0F: 1..16)
-		0;
-    TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
+	// TCONLCD_CLK_REG
+    {
+		//000: PLL_VIDEO0(1X)
+		//001: PLL_VIDEO0(4X)
+		//010: PLL_VIDEO1(1X)
+		//011: PLL_VIDEO1(4X)
+		//100: PLL_PERI(2X)
+		//101: PLL_AUDIO1(DIV2)
+    	const freqsrc_t sources [] =
+    	{
+//    		{ 0x00, allwnr_t113_get_video0_x1_freq() }, //000: PLL_VIDEO0(1X)
+//    		{ 0x01, allwnr_t113_get_video0_x4_freq() }, //001: PLL_VIDEO0(4X)
+    		{ 0x02, allwnr_t113_get_video1_x1_freq() }, //010: PLL_VIDEO1(1X)
+    		{ 0x03, allwnr_t113_get_video1_x4_freq() }, //011: PLL_VIDEO1(4X)
+    		{ 0x04, allwnr_t113_get_peripll2x_freq() }, //100: PLL_PERI(2X)
+//    		{ 0x05, allwnr_t113_get_audio1pll_div2_freq() }, //101: PLL_AUDIO1(DIV2)
+    	};
+    	unsigned lvds_sel = UINT_MAX;
+    	unsigned lvds_divider;
+     	unsigned lvds_prei = calcdividerselect(needfreq, sources, ARRAY_SIZE(sources), ALLWNT113_TCONLCD_WIDTH, ALLWNT113_TCONLCD_TAPS, & lvds_divider, & lvds_sel, 1);
+     	ASSERT(lvds_sel != UINT_MAX);
+    	ASSERT(lvds_divider >= 1 && lvds_divider <= 16);
+     	TCONLCD_CCU_CLK_REG =
+			lvds_sel * (UINT32_C(1) << 24) |
+    		(lvds_prei) * (UINT32_C(1) << 8) | // prescaler code
+    		(lvds_divider) * (UINT32_C(1) << 0) |
+    		0;
+    	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+
+
+		CCU->TCONLCD_BGR_REG &= ~ (UINT32_C(1) << 16);	// Set the LVDS reset of TCON LCD BUS GATING RESET register;
+		CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
+
+		CCU->LVDS_BGR_REG &= ~ (UINT32_C(1) << 16); // LVDS0_RST: Assert reset
+		CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset
+
 	//PRINTF("t113_tconlvds_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000 / 1000));
+    }
     local_delay_us(10);
 
     CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
+#if WITHDSIHW
+    // DSI_CLK_REG
+    {
+    	PRINTF("t113_tconlvds_CCU_configuration(): setup DSI_CLK_REG\n");
+		//	000: HOSC
+		//	001: PLL_PERI(1X)
+		//	010: PLL_VIDEO0(2X)
+		//	011: PLL_VIDEO1(2X)
+		//	100: PLL_AUDIO1(DIV2)
+    	const freqsrc_t sources [] =
+    	{
+    		{ 0x00, allwnr_t113_get_hosc_freq() }, 		//	000: HOSC
+    		{ 0x01, allwnr_t113_get_peripll1x_freq()}, 	//	001: PLL_PERI(1X)
+    		{ 0x02, allwnr_t113_get_video0_x2_freq() }, // 010: PLL_VIDEO0(2X)
+    		{ 0x03, allwnr_t113_get_video1_x2_freq() }, // 011: PLL_VIDEO1(2X)
+     		{ 0x04, allwnr_t113_get_audio1pll_div2_freq() }, //100: PLL_AUDIO1(DIV2)
+    	};
+    	unsigned dsi_sel = UINT_MAX;
+    	unsigned dsi_divider;
+     	unsigned dsi_prei = calcdividerselect(needfreq, sources, ARRAY_SIZE(sources), ALLWNT113_DSI_WIDTH, ALLWNT113_DSI_TAPS, & dsi_divider, & dsi_sel, 1);
+     	ASSERT(dsi_sel != UINT_MAX);
+     	ASSERT(dsi_prei == 0);
+     	CCU->DSI_CLK_REG =
+			dsi_sel * (UINT32_C(1) << 24) |
+    		//(dsi_prei) * (UINT32_C(1) << 8) | // prescaler code
+    		(dsi_divider) * (UINT32_C(1) << 0) |
+    		0;
+    	CCU->DSI_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 
-	PRINTF("t113_tconlvds_CCU_configuration(): setup DSI_CLK_REG\n");
-    const unsigned dsidivider = 2;
-	// T113
-	//	000: HOSC
-	//	001: PLL_PERI(1X)
-	//	010: PLL_VIDEO0(2X)
-	//	011: PLL_VIDEO1(2X)
-	//	100: PLL_AUDIO1(DIV2)
-	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | UINT32_C(0x0F) << 0)) |
-		0x03 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL PLL_VIDEO1(2X)
-		(dsidivider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M
-		0;
 
-	CCU->DSI_CLK_REG |= UINT32_C(1) << 31;		// DSI_CLK_GATING
+    	CCU->DSI_CLK_REG |= UINT32_C(1) << 31;		// DSI_CLK_GATING
 
-	CCU->DSI_BGR_REG |= UINT32_C(1) << 0;	// DSI_GATING
-	CCU->DSI_BGR_REG |= UINT32_C(1) << 16;	// DSI_RST
+    	CCU->DSI_BGR_REG |= UINT32_C(1) << 0;	// DSI_GATING
+    	CCU->DSI_BGR_REG |= UINT32_C(1) << 16;	// DSI_RST
 
-
-    CCU->LVDS_BGR_REG &= ~ (UINT32_C(1) << 16); // LVDS0_RST: Assert reset
-    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset
-
-    CCU->TCONLCD_BGR_REG &= ~ (UINT32_C(1) << 16);	// Set the LVDS reset of TCON LCD BUS GATING RESET register;
-    CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
+   }
+#endif /* WITHDSIHW */
     local_delay_us(10);
 
 #else
@@ -6550,12 +6588,12 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 	//		{ 0x02, allwnr_t507_get_pll_video1_x1_freq() }, //010: PLL_VIDEO1(1X)
 	//		{ 0x03, allwnr_t507_get_pll_video1_x4_freq() }, //011: PLL_VIDEO1(4X)
 		};
-		unsigned sel = 0x00; 	// 000: PLL_VIDEO0(1X) 001: PLL_VIDEO0(4X) 010: PLL_VIDEO1(1X) 011: PLL_VIDEO1(4X)
+		unsigned hdmi_sel = UINT_MAX; 	// 000: PLL_VIDEO0(1X) 001: PLL_VIDEO0(4X) 010: PLL_VIDEO1(1X) 011: PLL_VIDEO1(4X)
 		unsigned hdmi_divider;
-		unsigned hdmi_prei = calcdividerselect(hdmiclock, sources, ARRAY_SIZE(sources), ALLWNR_TCONTV_WIDTH, ALLWNR_TCONTV_TAPS, & hdmi_divider, & sel, 1);
-
+		unsigned hdmi_prei = calcdividerselect(hdmiclock, sources, ARRAY_SIZE(sources), ALLWNR_TCONTV_WIDTH, ALLWNR_TCONTV_TAPS, & hdmi_divider, & hdmi_sel, 1);
+		ASSERT(hdmi_sel != UINT_MAX);
 		CCU->HDMI0_CLK_REG =
-			sel * (UINT32_C(1) << 24) | 	// 01: PLL_VIDEO0(4X)
+			hdmi_sel * (UINT32_C(1) << 24) | 	// 01: PLL_VIDEO0(4X)
 			(hdmi_prei) * (UINT32_C(1) << 8) | // prescaler code
 			(hdmi_divider) * (UINT32_C(1) << 0) |
 			0;

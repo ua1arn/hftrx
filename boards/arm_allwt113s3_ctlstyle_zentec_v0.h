@@ -321,6 +321,10 @@
 	#define FORMATFROMLIBRARY 	1
 	//#define WITHUSBHEADSET	1
 
+	#define COLORSTYLE_GREEN	1
+	//#define COLORSTYLE_RED	1
+	//#define COLORSTYLE_BLUE	1
+	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	
