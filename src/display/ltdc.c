@@ -7737,7 +7737,7 @@ void hardware_tvout_set_format(void)
 	#elif defined (TVENCODER_PTR)
 		hardware_rtmix_set_format(RTMIXIDTV, get_videomode_TVOUT(), t113_composite_initsteps, COLOR24(255, 0, 0));
 	#endif /* WITHHDMITVHW */
-#endif /* WITHHDMITVHW */
+#endif /* RTMIXIDTV */
 }
 
 void hardware_ltdc_initialize(void)
