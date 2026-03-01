@@ -524,25 +524,25 @@
 #define HDMI_CEC_WKUPCTRL                       0x7D31
 
 /* I2C Master Registers (E-DDC) */
-#define HDMI_I2CM_SLAVE                         0x7E00
-#define HDMI_I2CM_ADDRESS                       0x7E01
-#define HDMI_I2CM_DATAO                         0x7E02
-#define HDMI_I2CM_DATAI                         0x7E03
-#define HDMI_I2CM_OPERATION                     0x7E04
-#define HDMI_I2CM_INT                           0x7E05
-#define HDMI_I2CM_CTLINT                        0x7E06
-#define HDMI_I2CM_DIV                           0x7E07
-#define HDMI_I2CM_SEGADDR                       0x7E08
-#define HDMI_I2CM_SOFTRSTZ                      0x7E09
-#define HDMI_I2CM_SEGPTR                        0x7E0A
-#define HDMI_I2CM_SS_SCL_HCNT_1_ADDR            0x7E0B
-#define HDMI_I2CM_SS_SCL_HCNT_0_ADDR            0x7E0C
-#define HDMI_I2CM_SS_SCL_LCNT_1_ADDR            0x7E0D
-#define HDMI_I2CM_SS_SCL_LCNT_0_ADDR            0x7E0E
-#define HDMI_I2CM_FS_SCL_HCNT_1_ADDR            0x7E0F
-#define HDMI_I2CM_FS_SCL_HCNT_0_ADDR            0x7E10
-#define HDMI_I2CM_FS_SCL_LCNT_1_ADDR            0x7E11
-#define HDMI_I2CM_FS_SCL_LCNT_0_ADDR            0x7E12
+//#define HDMI_I2CM_SLAVE                         0x7E00
+//#define HDMI_I2CM_ADDRESS                       0x7E01
+//#define HDMI_I2CM_DATAO                         0x7E02
+//#define HDMI_I2CM_DATAI                         0x7E03
+//#define HDMI_I2CM_OPERATION                     0x7E04
+//#define HDMI_I2CM_INT                           0x7E05
+//#define HDMI_I2CM_CTLINT                        0x7E06
+//#define HDMI_I2CM_DIV                           0x7E07
+//#define HDMI_I2CM_SEGADDR                       0x7E08
+//#define HDMI_I2CM_SOFTRSTZ                      0x7E09
+//#define HDMI_I2CM_SEGPTR                        0x7E0A
+//#define HDMI_I2CM_SS_SCL_HCNT_1_ADDR            0x7E0B
+//#define HDMI_I2CM_SS_SCL_HCNT_0_ADDR            0x7E0C
+//#define HDMI_I2CM_SS_SCL_LCNT_1_ADDR            0x7E0D
+//#define HDMI_I2CM_SS_SCL_LCNT_0_ADDR            0x7E0E
+//#define HDMI_I2CM_FS_SCL_HCNT_1_ADDR            0x7E0F
+//#define HDMI_I2CM_FS_SCL_HCNT_0_ADDR            0x7E10
+//#define HDMI_I2CM_FS_SCL_LCNT_1_ADDR            0x7E11
+//#define HDMI_I2CM_FS_SCL_LCNT_0_ADDR            0x7E12
 
 enum {
 /* CONFIG1_ID field values */
