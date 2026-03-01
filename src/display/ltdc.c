@@ -3690,10 +3690,10 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 		//101: PLL_AUDIO1(DIV2)
     	const freqsrc_t sources [] =
     	{
-//    		{ 0x00, allwnr_t113_get_video0_x1_freq() }, //000: PLL_VIDEO0(1X)
 //    		{ 0x01, allwnr_t113_get_video0_x4_freq() }, //001: PLL_VIDEO0(4X)
-    		{ 0x02, allwnr_t113_get_video1_x1_freq() }, //010: PLL_VIDEO1(1X)
+//    		{ 0x00, allwnr_t113_get_video0_x1_freq() }, //000: PLL_VIDEO0(1X)
     		{ 0x03, allwnr_t113_get_video1_x4_freq() }, //011: PLL_VIDEO1(4X)
+    		{ 0x02, allwnr_t113_get_video1_x1_freq() }, //010: PLL_VIDEO1(1X)
     		{ 0x04, allwnr_t113_get_peripll2x_freq() }, //100: PLL_PERI(2X)
 //    		{ 0x05, allwnr_t113_get_audio1pll_div2_freq() }, //101: PLL_AUDIO1(DIV2)
     	};
@@ -3732,11 +3732,11 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 		//	100: PLL_AUDIO1(DIV2)
     	const freqsrc_t sources [] =
     	{
-    		{ 0x00, allwnr_t113_get_hosc_freq() }, 		//	000: HOSC
+    		//{ 0x00, allwnr_t113_get_hosc_freq() }, 		//	000: HOSC
     		{ 0x01, allwnr_t113_get_peripll1x_freq()}, 	//	001: PLL_PERI(1X)
-    		{ 0x02, allwnr_t113_get_video0_x2_freq() }, // 010: PLL_VIDEO0(2X)
+    		//{ 0x02, allwnr_t113_get_video0_x2_freq() }, // 010: PLL_VIDEO0(2X)
     		{ 0x03, allwnr_t113_get_video1_x2_freq() }, // 011: PLL_VIDEO1(2X)
-     		{ 0x04, allwnr_t113_get_audio1pll_div2_freq() }, //100: PLL_AUDIO1(DIV2)
+     		//{ 0x04, allwnr_t113_get_audio1pll_div2_freq() }, //100: PLL_AUDIO1(DIV2)
     	};
     	unsigned dsi_sel = UINT_MAX;
     	unsigned dsi_divider;
