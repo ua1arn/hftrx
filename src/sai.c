@@ -8219,7 +8219,7 @@ static const codechw_t fpgaspectrumhw_ssif2_rx_slave =
 
 #endif /* WITHSAI2HW */
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z && defined (XPAR_IQ_MODEM_MODEM_CONTROL_BASEADDR)
 
 	static const codechw_t audiocodechw_xc7z =
 	{

@@ -769,11 +769,13 @@ int arm_hardware_sdram_initialize(void)
 
 
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
+// External memory region(s) - non-zero if error
 int arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
-	VERIFY(PS7_INIT_SUCCESS == ps7_init());
+	int ec = ps7_init();
 	PRINTF("arm_hardware_sdram_initialize done\n");
+	return ec != PS7_INIT_SUCCESS;
 }
 
 #elif CPUSTYLE_A64

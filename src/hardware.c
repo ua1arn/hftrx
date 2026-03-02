@@ -50,7 +50,7 @@ void xtrap(void)
 }
 #endif
 
-#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM && defined (XPAR_XGPIOPS_0_DEVICE_ID)
 
 extern uint8_t bd_space[];
 
@@ -238,6 +238,12 @@ void xc7z_gpio_output(uint8_t pin)
 	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
 			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
 			XGPIOPS_OUTEN_OFFSET, OpEnableReg);
+}
+#else
+
+
+void xc7z_hardware_initialize(void)
+{
 }
 
 #endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */

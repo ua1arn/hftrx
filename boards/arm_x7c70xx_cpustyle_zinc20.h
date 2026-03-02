@@ -83,7 +83,7 @@
 	#define WITHUSBHOST_HIGHSPEEDULPI	1
 	//#define WITHUSBHOST_DMAENABLE 1
 
-#if 1
+#if 0
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	
 	#define WITHUSBHW_EHCI		EHCI0
@@ -140,7 +140,7 @@
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBDEV_DMAENABLE 1
 
-#if 1
+#if 0
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	
 	#define WITHUSBHW_EHCI		EHCI0
