@@ -3876,11 +3876,26 @@ static unsigned getAPBIFtx(unsigned ix)
 
 void T507_AHUB_handler(void)
 {
+#if WITHI2S0HW
 	unsigned ix = 0;	// 0: I2S0
+#endif /* WITHI2S0HW */
+	const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
+	const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
+	const uint_fast32_t rxsts = AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_STS & AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL;
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_STS = rxsts;	// reset inerrupts
+	if (rxsts & (UINT32_C(1) << 2))	// RXnU_INT
+	{
+		dbg_putchar('r');
+	}
+	const uint_fast32_t txsts = AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_STS & AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL;
+	AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_STS = txsts;	// reset inerrupts
+	if (txsts & (UINT32_C(1) << 1))	// TXnU_INT
+	{
+		dbg_putchar('t');
+	}
 	if (1)
 	{
 		// TX (to AHUB) stream
-		const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
 		volatile uint32_t * const fifo = & AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO;
 		unsigned cc = AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_STS & 0x7F;
 
@@ -3937,7 +3952,6 @@ void T507_AHUB_handler(void)
 	if (1)
 	{
 		// RX (from AHUB) stream
-		const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
 		volatile uint32_t * const fifo = & AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO;
 		unsigned cc = AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_STS & 0xFF;	// RXnA_CNT
 
@@ -4321,18 +4335,16 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 		AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL =
 			!! useDMA * (UINT32_C(1) << 3) |	// RXn_DRQ
+			1 * (UINT32_C(1) << 2) |    // RXn_UI - Overrun ?
 			! useDMA * (UINT32_C(1) << 0) |    // RXnAI_EN
 			0;
 
 		AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL =
 			!! useDMA * (UINT32_C(1) << 3) |	// TXn_DRQ
+			1 * (UINT32_C(1) << 1) |    // TXn_UI - underrun
 			! useDMA * (UINT32_C(1) << 0) |	// TXnE_INT
 			0;
-
-		if (! useDMA)
-		{
-		    arm_hardware_set_handler_realtime(AHUB_IRQn, T507_AHUB_handler);
-		}
+		arm_hardware_set_handler_realtime(AHUB_IRQn, T507_AHUB_handler);
 	}
 
 	{

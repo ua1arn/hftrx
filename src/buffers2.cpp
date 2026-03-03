@@ -3443,8 +3443,8 @@ static unsigned seqAfterError;
 static unsigned seqValidateSkip;
 static int iMAX, qMAX, deltaMAX;
 
-static int historyStop;
-
+static volatile int historyStop;
+static const int testSlot = 2;
 static void historyUserPrint(void * ctx)
 {
 	PRINTF("seqErrors=%d, seqTotal=%d, seqRun=%d\n", seqErrors, seqTotal, seqRun);
@@ -3459,6 +3459,12 @@ static void historyUserPrint(void * ctx)
 			PRINTF("%08X ", (unsigned) seqHist [ix] [col]);
 		PRINTF("\n");
 	}
+	seqValidateSkip = 0;
+	seqRun = 0;
+	seqAfterError = 0;
+	seqErrors = 0;
+	seqValid [testSlot] = 0;
+	historyStop = 0;
 }
 
 static dpcobj_t userprintdpc;
@@ -3506,7 +3512,7 @@ static void rangeValidate(const int32_t * b)
 
 static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
 {
-	if (seqValidateSkip < 60000)
+	if (seqValidateSkip < 6000)
 	{
 		++ seqValidateSkip;
 		return;
@@ -3643,7 +3649,7 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 		//
 #if 0
 	historySave(b);	// Save data for history
-	rangeValidate(b);
+//	rangeValidate(b);
 	if (0)
 	{
 		// Проверка качества линии передачи от FPGA
@@ -3651,10 +3657,9 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 		for (slot = 0; slot < DMABUFFSTEP32RX; ++ slot)
 			validateSeq(slot, b [slot], b);
 	}
-	else if (0)
+	else if (1)
 	{
-		uint_fast8_t slot = 0;	// slot 4
-		validateSeq(slot, b [slot], b);
+		validateSeq(testSlot, b [testSlot], b);
 	}
 #endif
 #if 0
