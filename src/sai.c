@@ -3422,8 +3422,8 @@ static void DMAC_set_dst(volatile uint32_t * desc, uintptr_t addr)
 	{
 		uint_fast32_t param = desc [DMAC_DESC_PRM]; // 19:18  DMA transfers the higher 2 bits of the 34-bit destination address
 		ASSERT(addr < 0x400000000);
-		param &= ~ (UINT32_C(0x03) << 18);
-		param |= (ptr_hi32(addr) & 0x03) << 18;
+		param &= ~ (UINT32_C(0x07) << 18);	// higher 3 bits of 35 bit address A733, 2 bits of 34 bit address in T507
+		param |= (ptr_hi32(addr) & 0x07) << 18;
 		desc [DMAC_DESC_PRM] = param;
 		desc [DMAC_DESC_DST] = ptr_lo32(addr);	// Destination Address
 	}
@@ -3441,8 +3441,8 @@ static void DMAC_set_src(volatile uint32_t * desc, uintptr_t addr)
 	{
 		uint_fast32_t param = desc [DMAC_DESC_PRM]; 	// 17:16 DMA transfers the high 2 bits of the 34-bit source address
 		ASSERT(addr < 0x400000000);
-		param &= ~ (UINT32_C(0x03) << 16);
-		param |= (ptr_hi32(addr) & 0x03) << 16;
+		param &= ~ (UINT32_C(0x07) << 16);
+		param |= (ptr_hi32(addr) & 0x07) << 16;
 		desc [DMAC_DESC_PRM] = param;
 		desc [DMAC_DESC_SRC] = ptr_lo32(addr);	// Source Address
 	}
@@ -3458,7 +3458,7 @@ static uintptr_t DMAC_get_src(const volatile uint32_t * desc)
 	{
 		const uint32_t param = desc [DMAC_DESC_PRM]; // 17:16 DMA transfers the high 2 bits of the 34-bit source address
 		const uint32_t addr = desc [DMAC_DESC_SRC];	// Source Address
-		return (((param >> 16) & UINT64_C(0x03)) << 32) | addr;
+		return (((param >> 16) & UINT64_C(0x07)) << 32) | addr;
 	}
 }
 
@@ -3472,7 +3472,7 @@ static uintptr_t DMAC_get_dst(const volatile uint32_t * desc)
 	{
 		const uint32_t param = desc [DMAC_DESC_PRM]; // 19:18  DMA transfers the higher 2 bits of the 34-bit destination address
 		const uint32_t addr = desc [DMAC_DESC_DST];	// Destination Address
-		return (((param >> 16) & UINT64_C(0x03)) << 32) | addr;
+		return (((param >> 18) & UINT64_C(0x07)) << 32) | addr;
 	}
 }
 
