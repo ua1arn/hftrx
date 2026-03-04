@@ -3448,7 +3448,7 @@ static volatile int historyStop;
 static const int testSlot = 2;
 static void historyUserPrint(void * ctx)
 {
-	PRINTF("seqErrors=%d, seqTotal=%d, seqPresent=%08X, seqExpected=%08X\n", seqErrors, seqTotal, seqPresent, seqExpected);
+	PRINTF("seqErrors=%d, seqTotal=%d, seqPresent=%08X, seqExpected=%08X\n", seqErrors, seqTotal, (unsigned) seqPresent, (unsigned) seqExpected);
 	//PRINTF("iMAX=%d(0x%08X), qMAX=%d(0x%08X), deltaMAX=%d\n", iMAX, iMAX, qMAX, qMAX, deltaMAX);
 	unsigned i;
 	for (i = 0; i < MAXSEQHIST; ++ i)
