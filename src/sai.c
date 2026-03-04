@@ -15,6 +15,9 @@
 #include "gpio.h"
 #include "clocks.h"
 
+#undef RAMNC
+#define RAMNC
+
 typedef struct codechw
 {
 	void (* initialize_rx)(void);	/* инициализация периферии процессора для приёма данных от кодека */
@@ -3476,6 +3479,7 @@ static uintptr_t DMAC_get_dst(const volatile uint32_t * desc)
 	}
 }
 
+// A733: bit 9 of Parameter word in descriptor parameter is bit33 of next descriptor address
 static uintptr_t DMAC_get_link(uint_fast32_t regv)
 {
 	if (sizeof (uintptr_t) == sizeof (uint32_t))

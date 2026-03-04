@@ -13,8 +13,8 @@
 #include "display/display.h"
 #include <atomic>
 
-//#undef RAMNC
-//#define RAMNC
+#undef RAMNC
+#define RAMNC
 
 //#define WITHBUFFERSDEBUG WITHDEBUG
 #ifndef BUFOVERSIZE
@@ -3428,10 +3428,9 @@ saverts192quad(const IFADCvalue_t * buff)
 
 // Проверка качества линии передачи от FPGA
 static int32_t seqNext [DMABUFFSTEP32RX];
-static uint_fast8_t  seqValid [DMABUFFSTEP32RX];
+static uint_fast8_t  seqNextValid [DMABUFFSTEP32RX];
 static int seqErrors;
 static int seqTotal;
-static int seqRun;
 static int seqDone;
 
 enum { MAXSEQHIST = DMABUFCLUSTER + 5 };
@@ -3442,13 +3441,14 @@ static unsigned seqPos;
 static unsigned seqAfterError;
 static unsigned seqValidateSkip;
 static int iMAX, qMAX, deltaMAX;
+static int32_t seqPresent, seqExpected;
 
 static volatile int historyStop;
 static const int testSlot = 2;
 static void historyUserPrint(void * ctx)
 {
-	PRINTF("seqErrors=%d, seqTotal=%d, seqRun=%d\n", seqErrors, seqTotal, seqRun);
-	PRINTF("iMAX=%d(0x%08X), qMAX=%d(0x%08X), deltaMAX=%d\n", iMAX, iMAX, qMAX, qMAX, deltaMAX);
+	PRINTF("seqErrors=%d, seqTotal=%d, seqPresent=%08X, seqExpected=%08X\n", seqErrors, seqTotal, seqPresent, seqExpected);
+	//PRINTF("iMAX=%d(0x%08X), qMAX=%d(0x%08X), deltaMAX=%d\n", iMAX, iMAX, qMAX, qMAX, deltaMAX);
 	unsigned i;
 	for (i = 0; i < MAXSEQHIST; ++ i)
 	{
@@ -3460,10 +3460,11 @@ static void historyUserPrint(void * ctx)
 		PRINTF("\n");
 	}
 //	seqValidateSkip = 0;
-	seqRun = 0;
 	seqAfterError = 0;
 	seqErrors = 0;
-	seqValid [testSlot] = 0;
+	seqNextValid [testSlot] = 0;
+	seqPos = 0;
+	memset(seqHist, 0xE5, sizeof seqHist);
 	historyStop = 0;
 }
 
@@ -3490,6 +3491,8 @@ static void historySave(const int32_t * base)
 
 static void rangeValidate(const int32_t * b)
 {
+	if (historyStop)
+		return;
 	int32_t i = b [DMABUF32RX0I] << 4;
 	int32_t q = b [DMABUF32RX0Q] << 4;
 	const int32_t delta = INT32_MAX / 100;
@@ -3512,6 +3515,8 @@ static void rangeValidate(const int32_t * b)
 
 static void validateSeq(uint_fast8_t slot)
 {
+	if (historyStop)
+		return;
 	if (seqValidateSkip < 6000)
 	{
 		++ seqValidateSkip;
@@ -3521,8 +3526,7 @@ static void validateSeq(uint_fast8_t slot)
 	// Was error, record tail
 	if (seqAfterError)
 	{
-		seqAfterError = seqAfterError - 1;
-		if (seqAfterError == 0)
+		if (-- seqAfterError == 0)
 		{
 			historyPrint();
 		}
@@ -3531,23 +3535,16 @@ static void validateSeq(uint_fast8_t slot)
 
 	if (seqDone)
 		return;
-	int32_t v = seqHist [seqPos] [slot];
-	if (! seqValid [slot])
-	{
-		seqValid [slot] = 1;
-	}
-	else
+
+	const int32_t v = seqHist [seqPos] [slot];
+	if (seqNextValid [slot])
 	{
 		if (seqNext [slot] != v)
 		{
+			seqPresent = v;
+			seqExpected = seqNext [slot];
 			++ seqErrors;
-			seqRun = 0;
-			if (seqErrors == 2 && seqAfterError == 0)
-				seqAfterError = 4;	// Еще четыре фрейма и стоп
-		}
-		else
-		{
-			++ seqRun;
+			seqAfterError = 4;	// Еще четыре фрейма и стоп
 		}
 		++ seqTotal;
 	}
