@@ -1631,6 +1631,7 @@ void save_dmabuffer32rx(uintptr_t addr)
 	voice32rx.save_readybuffer(p);
 	// dsphftrxproc_spool_user on other CPUs
 #if TXSPOOLCOND
+	#warning rx process in interrupt
 	dsphftrxproc_spool_user(NULL);
 #endif /* TXSPOOLCOND */
 }
@@ -3548,6 +3549,7 @@ static void validateSeq(uint_fast8_t slot)
 		}
 		++ seqTotal;
 	}
+	seqNextValid [slot] = 1;
 	seqNext [slot] = v + 1;
 }
 #endif
@@ -4602,6 +4604,7 @@ void buffers_initialize(void)
 
 #if ! TXSPOOLCOND
 
+	#warning rx process in spool
 	static dpcobj_t dsphftrxproc_spool_dpc;
 	dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, NULL);
 	board_dpc_addentry(& dsphftrxproc_spool_dpc, TXSPOOLCORE);
