@@ -205,19 +205,19 @@ void * memset(void * dst, int v, size_t n)
 	return dst;
 }
 
-void * memcpy(void * dst, const void * src, size_t n)
+void * memcpy(void * __RESTRICT  dst, const void * __RESTRICT  src, size_t n)
 {
-	volatile uint8_t * d = (volatile uint8_t *) dst;
-	const volatile uint8_t * s = (const volatile uint8_t *) src;
+	volatile uint8_t * __RESTRICT  d = (volatile uint8_t *) dst;
+	const volatile uint8_t * __RESTRICT  s = (const volatile uint8_t *) src;
 	while (n --)
 		* d ++ = * s ++;
 	return dst;
 }
 
-void * memmove(void * dst, const void * src, size_t n)
+void * memmove(void * __RESTRICT  dst, const void * __RESTRICT  src, size_t n)
 {
-	volatile uint8_t * d = (volatile uint8_t *) dst;
-	const volatile uint8_t * s = (const volatile uint8_t *) src;
+	volatile uint8_t * __RESTRICT  d = (volatile uint8_t *) dst;
+	const volatile uint8_t * __RESTRICT  s = (const volatile uint8_t *) src;
 	if (s >= d && s < (d + n))
 	{
 		// If overlaps
@@ -234,19 +234,19 @@ void * memmove(void * dst, const void * src, size_t n)
 	return dst;
 }
 
-size_t strlen(const char * s1)
+size_t strlen(const char  * __RESTRICT s1)
 {
-	volatile const char * s = s1;
+	volatile const char * __RESTRICT  s = s1;
 	size_t n = 0;
 	while (* s ++ != '\0')
 		++ n;
 	return n;
 }
 
-int strcmp(const char * s1, const char * s2)
+int strcmp(const char * __RESTRICT  s1, const char * __RESTRICT  s2)
 {
-	volatile const char * vs1 = s1;
-	volatile const char * vs2 = s2;
+	volatile const char * __RESTRICT  vs1 = s1;
+	volatile const char * __RESTRICT  vs2 = s2;
 	while (* vs1 && * vs2)
 	{
 		int r = (unsigned char) * vs1 - (unsigned char) * vs2;
