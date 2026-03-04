@@ -3595,7 +3595,7 @@ static uintptr_t DMAC_RX_swap(unsigned dmach, uintptr_t newaddr)
 	return DMAC_swap(dmach, newaddr, DMAC_DESC_DST);
 }
 
-static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler)(unsigned dmach))
+static void DMAC_SetHandler(unsigned dmach, void * ctx, unsigned flag, void (* handler)(unsigned dmach))
 {
 	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
 	dmac_handlers [dmach] = handler;
@@ -5002,7 +5002,24 @@ static unsigned I2Sx_TX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 #endif
 }
 
+typedef struct damc_list_tag
+{
+	ALIGNX_BEGIN volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	unsigned start;
+	unsigned end;
+	unsigned dmach;
+} damc_list_t;
+
+void damc_list_initilaize(damc_list_t * dl, volatile uint32_t descr [] [DMAC_DESC_SIZE], unsigned dmach)
+{
+	dl->dmach = dmach;
+	dl->start = 0;
+	dl->end = 0;
+}
+
 #if defined (I2S0) && WITHI2S0HW
+
+static damc_list_t DMAC_I2S0_RX_codec1;
 
 static void DMAC_I2S0_RX_initialize_codec1(void)
 {
@@ -5031,6 +5048,7 @@ static void DMAC_I2S0_RX_initialize_codec1(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_I2S0_RX_codec1, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -5053,12 +5071,14 @@ static void DMAC_I2S0_RX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
+	DMAC_SetHandler(dmach, & DMAC_I2S0_RX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+
+static damc_list_t DMAC_I2S0_TX_codec1;
 
 static void DMAC_I2S0_TX_initialize_codec1(void)
 {
@@ -5087,6 +5107,7 @@ static void DMAC_I2S0_TX_initialize_codec1(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_I2S0_TX_codec1, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -5109,7 +5130,7 @@ static void DMAC_I2S0_TX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
+	DMAC_SetHandler(dmach, & DMAC_I2S0_TX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5119,6 +5140,8 @@ static void DMAC_I2S0_TX_initialize_codec1(void)
 #endif /* defined (I20) && WITHI2S0HW */
 
 #if defined (I2S1) && WITHI2S1HW
+
+static damc_list_t DMAC_I2S1_RX_codec1;
 
 static void DMAC_I2S1_RX_initialize_codec1(void)
 {
@@ -5147,6 +5170,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_I2S1_RX_codec1, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -5169,12 +5193,14 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
+	DMAC_SetHandler(dmach, & DMAC_I2S1_RX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+
+static damc_list_t DMAC_I2S1_TX_codec1;
 
 static void DMAC_I2S1_TX_initialize_codec1(void)
 {
@@ -5203,6 +5229,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_I2S1_TX_codec1, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -5225,12 +5252,14 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
+	DMAC_SetHandler(dmach, & DMAC_I2S1_TX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+
+static damc_list_t DMAC_I2S1_TX_hdmi48;
 
 static void DMAC_I2S1_TX_initialize_hdmi48(void)
 {
@@ -5259,6 +5288,7 @@ static void DMAC_I2S1_TX_initialize_hdmi48(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_I2S1_TX_hdmi48, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -5281,12 +5311,14 @@ static void DMAC_I2S1_TX_initialize_hdmi48(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_hdmi48);
+	DMAC_SetHandler(dmach, & DMAC_I2S1_TX_hdmi48, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_hdmi48);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+
+static damc_list_t DMAC_I2S1_RX_codec1_8k;
 
 static void DMAC_I2S1_RX_initialize_codec1_8k(void)
 {
@@ -5315,6 +5347,7 @@ static void DMAC_I2S1_RX_initialize_codec1_8k(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_I2S1_RX_codec1_8k, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -5337,12 +5370,14 @@ static void DMAC_I2S1_RX_initialize_codec1_8k(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1_8k);
+	DMAC_SetHandler(dmach, & DMAC_I2S1_RX_codec1_8k, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1_8k);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+
+static damc_list_t DMAC_I2S1_TX_codec1_8k;
 
 static void DMAC_I2S1_TX_initialize_codec1_8k(void)
 {
@@ -5371,6 +5406,7 @@ static void DMAC_I2S1_TX_initialize_codec1_8k(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_I2S1_TX_codec1_8k, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -5393,7 +5429,7 @@ static void DMAC_I2S1_TX_initialize_codec1_8k(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1_8k);
+	DMAC_SetHandler(dmach, & DMAC_I2S1_TX_codec1_8k, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1_8k);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5403,6 +5439,8 @@ static void DMAC_I2S1_TX_initialize_codec1_8k(void)
 #endif /* defined (I2S1) && WITHI2S1HW */
 
 #if defined (I2S2) && WITHI2S2HW
+
+static damc_list_t DMAC_I2S2_TX_codec1;
 
 static void DMAC_I2S2_TX_initialize_codec1(void)
 {
@@ -5431,6 +5469,7 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_I2S2_TX_codec1, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -5453,7 +5492,7 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
+	DMAC_SetHandler(dmach, & DMAC_I2S2_TX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5463,6 +5502,8 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 #endif /* defined (I2S2) && WITHI2S2HW */
 
 #if defined (I2S1) && WITHI2S1HW
+
+static damc_list_t DMAC_I2S1_RX_fpga;
 
 static void DMAC_I2S1_RX_initialize_fpga(void)
 {
@@ -5491,6 +5532,7 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_I2S1_RX_fpga, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -5513,7 +5555,7 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpga);
+	DMAC_SetHandler(dmach, & DMAC_I2S1_RX_fpga, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5526,6 +5568,8 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 
 // Allwinner A64 not support RX on I2S2
 #if ! defined (CPUSTYLE_A64) && ! defined (CPUSTYLE_T507)
+
+static damc_list_t DMAC_I2S2_RX_codec1;
 
 static void DMAC_I2S2_RX_initialize_codec1(void)
 {
@@ -5554,6 +5598,7 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_I2S2_RX_codec1, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -5576,12 +5621,14 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
+	DMAC_SetHandler(dmach, & DMAC_I2S2_RX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+
+static damc_list_t DMAC_I2S2_RX_fpga;
 
 static void DMAC_I2S2_RX_initialize_fpga(void)
 {
@@ -5610,6 +5657,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_I2S2_RX_fpga, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -5632,7 +5680,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpga);
+	DMAC_SetHandler(dmach, & DMAC_I2S2_RX_fpga, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5644,6 +5692,9 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 #endif /* defined (I2S2) */
 
 #if WITHI2S1HW
+
+static damc_list_t DMAC_I2S1_TX_fpga;
+
 static void DMAC_I2S1_TX_initialize_fpga(void)
 {
 	const unsigned ix = 1;	// I2S1
@@ -5671,6 +5722,7 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_I2S1_TX_fpga, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -5693,7 +5745,7 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
+	DMAC_SetHandler(dmach, & DMAC_I2S1_TX_fpga, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5702,6 +5754,9 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 #endif
 
 #if WITHI2S2HW
+
+static damc_list_t DMAC_I2S2_TX_fpga;
+
 static void DMAC_I2S2_TX_initialize_fpga(void)
 {
 	const unsigned ix = 2;	// I2S2
@@ -5729,6 +5784,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_I2S2_TX_fpga, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -5751,7 +5807,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
+	DMAC_SetHandler(dmach, & DMAC_I2S2_TX_fpga, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5827,6 +5883,8 @@ static void DMAC_USB_RX_handler_UACOUT48(unsigned dmach)
 	save_dmabufferuacout48(addr);
 }
 
+static damc_list_t DMAC_USB_RX_UACOUT48;
+
 void DMAC_USB_RX_initialize_UACOUT48(uint_fast8_t ep, int start)
 {
 	const unsigned NBYTES = datasize_dmabufferuacout48();
@@ -5853,6 +5911,7 @@ void DMAC_USB_RX_initialize_UACOUT48(uint_fast8_t ep, int start)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_USB_RX_UACOUT48, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -5875,7 +5934,7 @@ void DMAC_USB_RX_initialize_UACOUT48(uint_fast8_t ep, int start)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_RX_handler_UACOUT48);
+	DMAC_SetHandler(dmach, & DMAC_USB_RX_UACOUT48, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_RX_handler_UACOUT48);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = DMAC_MODE_REGN_VALUE_UACOUT;
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5901,6 +5960,8 @@ static void DMAC_USB_TX_handler_UACIN48(unsigned dmach)
 	/* Работа с только что передаными данными */
 	release_dmabufferuacin48(addr);
 }
+
+static damc_list_t DMAC_USB_TX_UACIN48;
 
 void DMAC_USB_TX_initialize_UACIN48(uint_fast8_t ep_no, int start)
 {
@@ -5928,6 +5989,7 @@ void DMAC_USB_TX_initialize_UACIN48(uint_fast8_t ep_no, int start)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_USB_TX_UACIN48, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -5950,7 +6012,7 @@ void DMAC_USB_TX_initialize_UACIN48(uint_fast8_t ep_no, int start)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_TX_handler_UACIN48);
+	DMAC_SetHandler(dmach, & DMAC_USB_TX_UACIN48, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_TX_handler_UACIN48);
 
 	// DMA_DST_MODE потребовался на Allwinner A64
 	DMAC->CH [dmach].DMAC_MODE_REGN = DMAC_MODE_REGN_VALUE_UACIN;
@@ -5974,6 +6036,8 @@ static void DMAC_USB_TX_handler_UACINRTS96(unsigned dmach)
 	/* Работа с только что передаными данными */
 	release_dmabufferuacinrts96(addr);
 }
+
+static damc_list_t DMAC_USB_TX_UACINRTS96;
 
 void DMAC_USB_TX_initialize_UACINRTS96(uint_fast8_t ep_no, int start)
 {
@@ -6001,6 +6065,7 @@ void DMAC_USB_TX_initialize_UACINRTS96(uint_fast8_t ep_no, int start)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_USB_TX_UACINRTS96, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -6023,7 +6088,7 @@ void DMAC_USB_TX_initialize_UACINRTS96(uint_fast8_t ep_no, int start)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_TX_handler_UACINRTS96);
+	DMAC_SetHandler(dmach, & DMAC_USB_TX_UACINRTS96, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_TX_handler_UACINRTS96);
 
 	// DMA_DST_MODE потребовался на Allwinner A64
 	DMAC->CH [dmach].DMAC_MODE_REGN = DMAC_MODE_REGN_VALUE_UACIN;
@@ -6046,6 +6111,8 @@ static void DMAC_USB_TX_handler_UACINRTS192(unsigned dmach)
 	/* Работа с только что передаными данными */
 	release_dmabufferuacinrts192(addr);
 }
+
+static damc_list_t DMAC_USB_TX_UACINRTS192;
 
 void DMAC_USB_TX_initialize_UACINRTS192(uint_fast8_t ep_no, int start)
 {
@@ -6073,6 +6140,7 @@ void DMAC_USB_TX_initialize_UACINRTS192(uint_fast8_t ep_no, int start)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_USB_TX_UACINRTS192, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -6095,7 +6163,7 @@ void DMAC_USB_TX_initialize_UACINRTS192(uint_fast8_t ep_no, int start)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_TX_handler_UACINRTS192);
+	DMAC_SetHandler(dmach, & DMAC_USB_TX_UACINRTS192, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_TX_handler_UACINRTS192);
 
 	// DMA_DST_MODE потребовался на Allwinner A64
 	DMAC->CH [dmach].DMAC_MODE_REGN = DMAC_MODE_REGN_VALUE_UACIN;
@@ -6731,6 +6799,8 @@ static void hardware_AudioCodec_enable_codec1(uint_fast8_t state)
 
 #if (CPUSTYLE_T113 || CPUSTYLE_F133)
 
+static damc_list_t DMAC_AudioCodec_RX_codec1;
+
 static void DMAC_AudioCodec_RX_initialize_codec1(void)
 {
 	const size_t dw = sizeof (aubufv_t);
@@ -6756,6 +6826,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_AudioCodec_RX_codec1, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -6778,7 +6849,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
+	DMAC_SetHandler(dmach, & DMAC_AudioCodec_RX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -6800,6 +6871,8 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 #else
 
 #endif /* (CPUSTYLE_T113 || CPUSTYLE_F133) */
+
+static damc_list_t DMAC_AudioCodec_TX_codec1;
 
 static void DMAC_AudioCodec_TX_initialize_codec1(void)
 {
@@ -6826,6 +6899,7 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_AudioCodec_TX_codec1, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -6848,7 +6922,7 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
+	DMAC_SetHandler(dmach, & DMAC_AudioCodec_TX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -6972,6 +7046,8 @@ static void hardware_DMIC_enable_codec1(uint_fast8_t state)
 
 #if (CPUSTYLE_T113 || CPUSTYLE_F133)
 
+static damc_list_t DMAC_DMIC_RX_codec1;
+
 static void DMAC_DMIC_RX_initialize_codec1(void)
 {
 	const size_t dw = sizeof (aubufv_t);
@@ -6997,6 +7073,7 @@ static void DMAC_DMIC_RX_initialize_codec1(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_DMIC_RX_codec1, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -7019,7 +7096,7 @@ static void DMAC_DMIC_RX_initialize_codec1(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
+	DMAC_SetHandler(dmach, & DMAC_DMIC_RX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -7253,6 +7330,8 @@ static const codechw_t fpgacodechw_i2s1_duplex_slave =
 
 #if defined(I2S0) && WITHI2S0HW
 
+static damc_list_t DMAC_I2S0_RX_fpga;
+
 static void DMAC_I2S0_RX_initialize_fpga(void)
 {
 	unsigned ix = 0;	// I2S0
@@ -7280,6 +7359,7 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_I2S0_RX_fpga, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -7302,12 +7382,14 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpga);
+	DMAC_SetHandler(dmach, & DMAC_I2S0_RX_fpga, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 }
+
+static damc_list_t DMAC_I2S0_TX_fpga;
 
 static void DMAC_I2S0_TX_initialize_fpga(void)
 {
@@ -7336,6 +7418,7 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 
 	DMAC_clock_initialize();
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	damc_list_initilaize(& DMAC_I2S0_TX_fpga, descr0, dmach);
 
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
@@ -7358,7 +7441,7 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 		;
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
+	DMAC_SetHandler(dmach, & DMAC_I2S0_TX_fpga, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
