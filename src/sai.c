@@ -3556,12 +3556,29 @@ static void DMAC_NS_IRQHandler(void)
 #endif /* CPUSTYLE_A64 */
 }
 
+typedef struct damc_list_tag
+{
+	ALIGNX_BEGIN volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	unsigned start;
+	unsigned end;
+	unsigned dmach;
+} damc_list_t;
+
+void damc_list_initilaize(damc_list_t * dl, volatile uint32_t descr [] [DMAC_DESC_SIZE], unsigned dmach)
+{
+	dl->dmach = dmach;
+	dl->start = 0;
+	dl->end = 0;
+}
+
 // TODO: старшие биты адреса получателя и адреса источника находяться в поле descraddr [DMAC_DESC_PRM]
 // 19:18 DMA transfers the higher 2 bits of the 34-bit destination address
 // 17:16 DMA transfers the high 2 bits of the 34-bit source address
 
 static uintptr_t DMAC_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsigned ix)
 {
+	damc_list_t * const tl = (damc_list_t *) ctx;
+	ASSERT(tl->dmach == dmach);
 	// Ждём, пока канал приступит к следующему дескриптору
 	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
 		;
@@ -5003,21 +5020,6 @@ static unsigned I2Sx_TX_DRQ(I2S_PCM_TypeDef * i2s, unsigned ix)
 #else
 	return DMAC_DstReqI2S1_TX + ix - 1;
 #endif
-}
-
-typedef struct damc_list_tag
-{
-	ALIGNX_BEGIN volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
-	unsigned start;
-	unsigned end;
-	unsigned dmach;
-} damc_list_t;
-
-void damc_list_initilaize(damc_list_t * dl, volatile uint32_t descr [] [DMAC_DESC_SIZE], unsigned dmach)
-{
-	dl->dmach = dmach;
-	dl->start = 0;
-	dl->end = 0;
 }
 
 #if defined (I2S0) && WITHI2S0HW
