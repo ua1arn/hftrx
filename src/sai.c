@@ -3881,38 +3881,80 @@ static void I2S_fill_TXxCHMAP(
 
 #if defined (AHUB) && CPUSTYLE_T507
 
-//	#define WITHAPBIFMAP_RX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_RX для I2S0, I2S1, I2S2, I2S3.
-//	#define WITHAPBIFMAP_TX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_TX для I2S0, I2S1, I2S2, I2S3.
-
-// Return 0..2
-static unsigned getAPBIFrx(unsigned ix)
+static void T507_AHUB_handler_RX(unsigned apbifrxix)
 {
-	static const uint8_t map [] = { WITHAPBIFMAP_RX };
-	return map [ix];
-}
-
-// Return 0..2
-static unsigned getAPBIFtx(unsigned ix)
-{
-	static const uint8_t map [] = { WITHAPBIFMAP_TX };
-	return map [ix];
-}
-
-void T507_AHUB_handler(void)
-{
-#if WITHI2S0HW
-	unsigned ix = 0;	// 0: I2S0
-#endif /* WITHI2S0HW */
-	const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
-	const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
+	if (! (AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL & (UINT32_C(1) << 4)))	// RXn_START
+		return;
 	const uint_fast32_t rxsts = AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_STS & AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL;
-	AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_STS = rxsts;	// reset inerrupts
+	AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_STS = rxsts;	// reset interrupts
 	if (rxsts & (UINT32_C(1) << 2))	// RXnU_INT
 	{
 		dbg_putchar('r');
 	}
+	if (1)
+	{
+		// RX (from AHUB) stream
+		volatile uint32_t * const fifo = & AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO;
+		unsigned cc = AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_STS & 0xFF;	// RXnA_CNT
+
+		while (cc)	// RXnA
+		{
+			static unsigned n;
+			static uintptr_t addr;
+
+			if (addr == 0)
+			{
+				addr = allocate_dmabuffer32rx();
+				n = 0;
+			}
+
+			const unsigned chunk = ulmin16(cc, ulmin16(DMABUFFSIZE32RX - n, 8));
+			switch (chunk)
+			{
+			case 8:
+				((IFADCvalue_t *) addr) [n + 0] = * fifo;
+				((IFADCvalue_t *) addr) [n + 1] = * fifo;
+				((IFADCvalue_t *) addr) [n + 2] = * fifo;
+				((IFADCvalue_t *) addr) [n + 3] = * fifo;
+				((IFADCvalue_t *) addr) [n + 4] = * fifo;
+				((IFADCvalue_t *) addr) [n + 5] = * fifo;
+				((IFADCvalue_t *) addr) [n + 6] = * fifo;
+				((IFADCvalue_t *) addr) [n + 7] = * fifo;
+				n += 8;
+				break;
+			case 7:
+				((IFADCvalue_t *) addr) [n ++] = * fifo;
+			case 6:
+				((IFADCvalue_t *) addr) [n ++] = * fifo;
+			case 5:
+				((IFADCvalue_t *) addr) [n ++] = * fifo;
+			case 4:
+				((IFADCvalue_t *) addr) [n ++] = * fifo;
+			case 3:
+				((IFADCvalue_t *) addr) [n ++] = * fifo;
+			case 2:
+				((IFADCvalue_t *) addr) [n ++] = * fifo;
+			case 1:
+				((IFADCvalue_t *) addr) [n ++] = * fifo;
+				break;
+			}
+			cc -= chunk;
+
+			if (n >= DMABUFFSIZE32RX)
+			{
+				save_dmabuffer32rx(addr);
+				addr = 0;
+			}
+		}
+	}
+}
+
+static void T507_AHUB_handler_TX(unsigned apbiftxix)
+{
+	if (! (AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL & (UINT32_C(1) << 4)))	// TXn_START
+		return;
 	const uint_fast32_t txsts = AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_STS & AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_CTRL;
-	AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_STS = txsts;	// reset inerrupts
+	AHUB->APBIF_TX [apbiftxix].APBIF_TXnIRQ_STS = txsts;	// reset interrupts
 	if (txsts & (UINT32_C(1) << 1))	// TXnU_INT
 	{
 		dbg_putchar('t');
@@ -3973,62 +4015,38 @@ void T507_AHUB_handler(void)
 			}
 		}
 	}
-	if (1)
-	{
-		// RX (from AHUB) stream
-		volatile uint32_t * const fifo = & AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO;
-		unsigned cc = AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_STS & 0xFF;	// RXnA_CNT
+}
 
-		while (cc)	// RXnA
-		{
-			static unsigned n;
-			static uintptr_t addr;
+//	#define WITHAPBIFMAP_RX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_RX для I2S0, I2S1, I2S2, I2S3.
+//	#define WITHAPBIFMAP_TX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_TX для I2S0, I2S1, I2S2, I2S3.
 
-			if (addr == 0)
-			{
-				addr = allocate_dmabuffer32rx();
-				n = 0;
-			}
+// Return 0..2
+static unsigned getAPBIFrx(unsigned ix)
+{
+	static const uint8_t map [] = { WITHAPBIFMAP_RX };
+	return map [ix];
+}
 
-			const unsigned chunk = ulmin16(cc, ulmin16(DMABUFFSIZE32RX - n, 8));
-			switch (chunk)
-			{
-			case 8:
-				((IFADCvalue_t *) addr) [n + 0] = * fifo;
-				((IFADCvalue_t *) addr) [n + 1] = * fifo;
-				((IFADCvalue_t *) addr) [n + 2] = * fifo;
-				((IFADCvalue_t *) addr) [n + 3] = * fifo;
-				((IFADCvalue_t *) addr) [n + 4] = * fifo;
-				((IFADCvalue_t *) addr) [n + 5] = * fifo;
-				((IFADCvalue_t *) addr) [n + 6] = * fifo;
-				((IFADCvalue_t *) addr) [n + 7] = * fifo;
-				n += 8;
-				break;
-			case 7:
-				((IFADCvalue_t *) addr) [n ++] = * fifo;
-			case 6:
-				((IFADCvalue_t *) addr) [n ++] = * fifo;
-			case 5:
-				((IFADCvalue_t *) addr) [n ++] = * fifo;
-			case 4:
-				((IFADCvalue_t *) addr) [n ++] = * fifo;
-			case 3:
-				((IFADCvalue_t *) addr) [n ++] = * fifo;
-			case 2:
-				((IFADCvalue_t *) addr) [n ++] = * fifo;
-			case 1:
-				((IFADCvalue_t *) addr) [n ++] = * fifo;
-				break;
-			}
-			cc -= chunk;
+// Return 0..2
+static unsigned getAPBIFtx(unsigned ix)
+{
+	static const uint8_t map [] = { WITHAPBIFMAP_TX };
+	return map [ix];
+}
 
-			if (n >= DMABUFFSIZE32RX)
-			{
-				save_dmabuffer32rx(addr);
-				addr = 0;
-			}
-		}
-	}
+void T507_AHUB_handler(void)
+{
+#if WITHI2S0HW
+	unsigned ix = 0;	// 0: I2S0
+#endif /* WITHI2S0HW */
+#if WITHI2S1HW
+	unsigned ix = 1;	// 0: I2S1
+#endif /* WITHI2S1HW */
+	const unsigned apbifrxix = getAPBIFrx(ix);	// APBIF_RXn index
+	const unsigned apbiftxix = getAPBIFtx(ix);	// APBIF_TXn index
+
+	T507_AHUB_handler_RX(apbifrxix);
+	T507_AHUB_handler_TX(apbiftxix);
 }
 
 
@@ -4354,8 +4372,20 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		(void) AHUB->AHUB_RST;
 		//PRINTF("NSLOTS=%d, ix=%d, apbifrxix=%d, apbiftxix=%d\n", NSLOTS, ix, apbifrxix, apbiftxix);
 
-		AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
-		AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | ((NSLOTS - 1) << 8);
+		const unsigned txchannum = 0;	// TXn_CHAN_NUM
+		const unsigned rxchannum = 0;	// RXn_CHAN_NUM
+
+		AHUB->APBIF_RX [apbifrxix].APBIF_RXn_CTRL = (ws << 16) | (rxchannum << 8) | ((NSLOTS - 1) << 8);
+		AHUB->APBIF_TX [apbiftxix].APBIF_TXn_CTRL = (ws << 16) | (txchannum << 8) | ((NSLOTS - 1) << 8);
+
+//		PRINTF("APBIF_RX%uFIFO_CTRL=%08X\n", apbifrxix, (unsigned) AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_CTRL);	// APBIF_RXnFIFO_CTRL=00000400
+//		PRINTF("APBIF_TX%uFIFO_CTRL=%08X\n", apbiftxix, (unsigned) AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_CTRL);	// APBIF_TXnFIFO_CTRL=00000200
+//
+//		AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_CTRL = 0x00000100;
+		AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_CTRL = 0x00000100;
+//
+//		PRINTF("APBIF_RX%uFIFO_CTRL=%08X\n", apbifrxix, (unsigned) AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_CTRL);	// APBIF_RXnFIFO_CTRL=00000400
+//		PRINTF("APBIF_TX%uFIFO_CTRL=%08X\n", apbiftxix, (unsigned) AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_CTRL);	// APBIF_TXnFIFO_CTRL=00000200
 
 		AHUB->APBIF_RX [apbifrxix].APBIF_RXnIRQ_CTRL =
 			!! useDMA * (UINT32_C(1) << 3) |	// RXn_DRQ
