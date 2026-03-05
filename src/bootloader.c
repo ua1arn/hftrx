@@ -418,7 +418,7 @@ void bootloader_fatfs_mainloop(void)
 
 #if BOOTLOADER_RAMSIZE
 	uintptr_t ip;
-	uint_fast64_t ip64;
+	uint_fast8_t x64bit;
 	if (bootloader_get_start((uintptr_t) header, & ip, & x64bit) != 0)	/* проверка сигнатуры и получение стартового адреса */
 	{
 		PRINTF("bootloader_fatfs_mainloop start: can not load '%s'\n", IMAGENAME);
