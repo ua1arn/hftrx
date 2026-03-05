@@ -3425,7 +3425,9 @@ saverts192quad(const IFADCvalue_t * buff)
 }
 #endif /* WITHDSPEXTDDC && WITHRTS192 */
 
-#if 0
+#define WITHSEQTEST (1 && WITHDEBUG)
+
+#if WITHSEQTEST
 
 // Проверка качества линии передачи от FPGA
 static int32_t seqNext [DMABUFFSTEP32RX];
@@ -3646,7 +3648,7 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 	{
 		const IFADCvalue_t * const b = buff + i;
 		//
-#if 0
+#if WITHSEQTEST
 	historySave(b);	// Save data for history
 //	rangeValidate(b);
 	if (0)
