@@ -774,7 +774,7 @@ int arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
 	int ec = ps7_init();
-	PRINTF("arm_hardware_sdram_initialize done\n");
+	PRINTF("arm_hardware_sdram_initialize done, ec=%d\n", ec);
 	return ec != PS7_INIT_SUCCESS;
 }
 

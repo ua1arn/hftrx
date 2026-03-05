@@ -295,6 +295,13 @@
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
+	// Выбор используемой цветовой палитры
+
+	#define COLORSTYLE_GREEN	1
+	//#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_BLUE2	1
+	//#define COLORSTYLE_WHITE	1
+	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 
 	//#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
@@ -485,7 +492,7 @@
 	
 	//#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
-	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	//#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 	// ST LM235Z
