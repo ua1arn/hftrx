@@ -3618,7 +3618,7 @@ static void DMAC_SetHandler(unsigned dmach, void * ctx, unsigned flag, void (* h
 {
 	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
 	dmac_handlers [dmach] = handler;
-	dmac_ctx [dmach] = handler;
+	dmac_ctx [dmach] = ctx;
 
 #if CPUSTYLE_A64 || CPUSTYLE_V3S
 
