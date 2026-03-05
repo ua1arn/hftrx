@@ -3425,7 +3425,7 @@ saverts192quad(const IFADCvalue_t * buff)
 }
 #endif /* WITHDSPEXTDDC && WITHRTS192 */
 
-#define WITHSEQTEST (1 && WITHDEBUG)
+//#define WITHSEQTEST (1 && WITHDEBUG)
 
 #if WITHSEQTEST
 
