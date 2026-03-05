@@ -3387,7 +3387,7 @@ enum
 
 #define DMAC_IRQ_EN_FLAG_VALUE (UINT32_C(1) << 1)	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
-#define DMAC_delay 7
+#define DMAC_delay 0//(UINT32_C(1) << 8)
 
 #define DMAC_MODE_REGN_VALUE_UACIN (0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2))	// mode: DMA_DST_MODE, DMA_SRC_MODE
 #define DMAC_MODE_REGN_VALUE_UACOUT (0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2))	// // mode: DMA_DST_MODE, DMA_SRC_MODE
@@ -5037,17 +5037,19 @@ static void DMAC_I2S0_RX_initialize_codec1(void)
 	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S0, ix);
 	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S0, ix);
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -5096,17 +5098,19 @@ static void DMAC_I2S0_TX_initialize_codec1(void)
 	const unsigned NBYTES = DMABUFFSIZE16TX * dw;
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S0, ix);
 	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S0, ix);
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -5159,17 +5163,19 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S1, ix);
 	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S1, ix);
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -5218,17 +5224,19 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	const unsigned NBYTES = DMABUFFSIZE16TX * dw;
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S1, ix);
 	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S1, ix);
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -5277,17 +5285,19 @@ static void DMAC_I2S1_TX_initialize_hdmi48(void)
 	const unsigned NBYTES = DMABUFFSIZEHDMI48TX * dw;
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S1, ix);
 	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S1, ix);
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -5336,17 +5346,19 @@ static void DMAC_I2S1_RX_initialize_codec1_8k(void)
 	const unsigned NBYTES = DMABUFFSIZE16RX8K * dw;
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S1, ix);
 	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S1, ix);
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -5395,17 +5407,19 @@ static void DMAC_I2S1_TX_initialize_codec1_8k(void)
 	const unsigned NBYTES = DMABUFFSIZE16TX8K * dw;
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S1, ix);
 	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S1, ix);
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -5458,17 +5472,19 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 	const unsigned NBYTES = DMABUFFSIZE16TX * dw;
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S2, ix);
 	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S2, ix);
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -5521,17 +5537,19 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S1, ix);
 	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S1, ix);
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -5587,17 +5605,19 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S2, ix);
 	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S2, ix);
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -5646,17 +5666,19 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S2, ix);
 	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S2, ix);
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -5711,17 +5733,19 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S1, ix);
 	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S1, ix);
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -5773,17 +5797,19 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S2, ix);
 	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S2, ix);
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -5900,17 +5926,19 @@ void DMAC_USB_RX_initialize_UACOUT48(uint_fast8_t ep, int start)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep];
 	const unsigned srcDRQ = DMAC_SrcReqUSB0_EP1 + ep - 1;
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -5978,17 +6006,19 @@ void DMAC_USB_TX_initialize_UACIN48(uint_fast8_t ep_no, int start)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep_no];
 	const unsigned dstDRQ = DMAC_DstReqUSB0_EP1 + ep_no - 1;
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -6054,17 +6084,19 @@ void DMAC_USB_TX_initialize_UACINRTS96(uint_fast8_t ep_no, int start)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep_no];
 	const unsigned dstDRQ = DMAC_DstReqUSB0_EP1 + ep_no - 1;
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -6129,17 +6161,19 @@ void DMAC_USB_TX_initialize_UACINRTS192(uint_fast8_t ep_no, int start)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const uintptr_t portaddr = (uintptr_t) & WITHUSBHW_DEVICE->USB_EPFIFO [ep_no];
 	const unsigned dstDRQ = DMAC_DstReqUSB0_EP1 + ep_no - 1;
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -6815,17 +6849,19 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
 	const uintptr_t portaddr = (uintptr_t) & AUDIO_CODEC->AC_ADC_RXDATA;
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqAudioCodec * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -6888,17 +6924,19 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE16TX * dw;
 	const uintptr_t portaddr = (uintptr_t) & AUDIO_CODEC->AC_DAC_TXDATA;
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqAudioCodec * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -7062,17 +7100,19 @@ static void DMAC_DMIC_RX_initialize_codec1(void)
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE16RX * dw;
 	const uintptr_t portaddr = (uintptr_t) & DMIC->DMIC_DATA;
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDMIC * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -7348,17 +7388,19 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
 	const uintptr_t portaddr = I2Sx_RX_portaddr(I2S0, ix);
 	const unsigned srcDRQ = I2Sx_RX_DRQ(I2S0, ix);
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
@@ -7407,17 +7449,19 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
 	const uintptr_t portaddr = I2Sx_TX_portaddr(I2S0, ix);
 	const unsigned dstDRQ = I2Sx_TX_DRQ(I2S0, ix);
+	const unsigned dsbs = 2;	// DMA Source Block Size
+	const unsigned ddbs = 2;	// DMA Destination Block Size
 
 	const uint_fast32_t parameterDMAC = DMAC_delay | 0;
 	const uint_fast32_t configDMAC =
 		0 * (UINT32_C(1) << 30) |	// BMODE_SEL
 		ddwt * (UINT32_C(1) << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (UINT32_C(1) << DMAC_DEST_ADDR_MODE_Pos) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 22) |	// DMA Destination Block Size
+		ddbs * (UINT32_C(1) << 22) |	// DMA Destination Block Size
 		dstDRQ * (UINT32_C(1) << 16) |	// DMA Destination DRQ Type
 		sdwt * (UINT32_C(1) << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (UINT32_C(1) << DMAC_SRC_ADDR_MODE_Pos) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
-		0 * (UINT32_C(1) << 6) |	// DMA Source Block Size
+		dsbs * (UINT32_C(1) << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
