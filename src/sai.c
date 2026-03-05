@@ -4381,8 +4381,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 //		PRINTF("APBIF_RX%uFIFO_CTRL=%08X\n", apbifrxix, (unsigned) AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_CTRL);	// APBIF_RXnFIFO_CTRL=00000400
 //		PRINTF("APBIF_TX%uFIFO_CTRL=%08X\n", apbiftxix, (unsigned) AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_CTRL);	// APBIF_TXnFIFO_CTRL=00000200
 //
-//		AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_CTRL = 0x00000100;
-		AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_CTRL = 0x00000100;
+//		AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_CTRL = 0x00000400;
+//		AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_CTRL = 0x00000400;
 //
 //		PRINTF("APBIF_RX%uFIFO_CTRL=%08X\n", apbifrxix, (unsigned) AHUB->APBIF_RX [apbifrxix].APBIF_RXnFIFO_CTRL);	// APBIF_RXnFIFO_CTRL=00000400
 //		PRINTF("APBIF_TX%uFIFO_CTRL=%08X\n", apbiftxix, (unsigned) AHUB->APBIF_TX [apbiftxix].APBIF_TXnFIFO_CTRL);	// APBIF_TXnFIFO_CTRL=00000200
