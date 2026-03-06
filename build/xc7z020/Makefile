@@ -23,7 +23,7 @@ TRGT = $(TRGT2)-
 PRJROOT := ../..
 OBJDIR = obj
 
-ZINQ_BOOT_DIR := E:
+ZINQ_BOOT_DIR := F:
 XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_Y7Z020.elf
 
 #
