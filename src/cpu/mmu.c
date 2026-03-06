@@ -510,6 +510,124 @@ static const getmmudesc_t aarch32_table_1M =
 	.mtable = aarch32_v7_1M_mtable
 };
 
+#if 1//(__CORTEX_A == 9U)
+// Short-descriptor format memory region attributes, without TEX remap
+// When using the Short-descriptor translation table formats, TEX remap is disabled when SCTLR.TRE is set to 0.
+
+// For TRE - see
+// B4.1.127 PRRR, Primary Region Remap Register, VMSA
+
+#define APRWval 		0x03	/* Full access */
+#define APROval 		0x06	/* All write accesses generate Permission faults */
+#define DOMAINval		0x0F
+#define SECTIONval		0x02	/* 0b10, Section or Supersection */
+
+/* Table B3-10 TEX, C, and B encodings when TRE == 0 */
+
+/* Outer and Inner Write-Back, Write-Allocate */
+// Cacheable memory attributes, without TEX remap
+// DDI0406C_d_armv7ar_arm.pdf
+// Table B3-11 Inner and Outer cache attribute encoding
+
+#define MKATTR_TEXval(cacheattr) (0x04u | ((cacheattr) & 0x03u))
+#define MKATTR_Cval(cacheattr) (!! ((cacheattr) & 0x02u))
+#define MKATTR_Bval(cacheattr) (!! ((cacheattr) & 0x01u))
+
+// Also see __set_TTBR0 parameter
+#define CACHEATTR_NOCACHE 0x00		// Non-cacheable
+#define CACHEATTR_WB_WA_CACHE 0x01	// Write-Back, Write-Allocate
+#define CACHEATTR_WT_NWA_CACHE 0x02	// Write-Through, no Write-Allocate
+#define CACHEATTR_WB_NWA_CACHE 0x03	// Write-Back, no Write-Allocate
+
+/* атрибуты для разных областей памяти (при TEX[2]=1 способе задания) */
+#define RAM_ATTRS CACHEATTR_WB_WA_CACHE
+//#define RAM_ATTRS CACHEATTR_WB_NWA_CACHE
+#define DEVICE_ATTRS CACHEATTR_NOCACHE
+
+#define TEXval_RAM		MKATTR_TEXval(RAM_ATTRS)
+#define Cval_RAM		MKATTR_Cval(RAM_ATTRS)
+#define Bval_RAM		MKATTR_Bval(RAM_ATTRS)
+
+#if WITHSMPSYSTEM
+	#define SHAREDval_RAM 1		// required for ldrex.. and strex.. functionality
+#else /* WITHSMPSYSTEM */
+	#define SHAREDval_RAM 0		// If non-zero, Renesas Cortex-A9 hung by buffers
+#endif /* WITHSMPSYSTEM */
+
+#define APRWval 		0x03	/* Full access */
+#define APROval 		0x06	/* All write accesses generate Permission faults */
+#define DOMAINval		0x0F
+#define SECTIONval		0x02	/* 0b10, Section or Supersection */
+/* Shareable Device */
+#define TEXval_DEVICE       0x00
+#define Cval_DEVICE         0
+#define Bval_DEVICE         1
+#define SHAREDval_DEVICE 	0
+
+// Cortex-A9
+// See B3.5.2 in DDI0406C_C_arm_architecture_reference_manual.pdf
+
+#define	A9TTB_PARA(TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
+		(SECTIONval) * (1u << 0) |	/* 0b10, Section or Supersection */ \
+		!! (Bv) * (1u << 2) |	/* B */ \
+		!! (Cv) * (1u << 3) |	/* C */ \
+		!! (XNv) * (1u << 4) |	/* XN The Execute-never bit. */ \
+		(DOMAINv) * (1u << 5) |	/* DOMAIN */ \
+		0 * (1u << 9) |	/* implementation defined */ \
+		(((APv) >> 0) & 0x03) * (1u << 10) |	/* AP [1..0] */ \
+		((TEXv) & 0x07) * (1u << 12) |	/* TEX */ \
+		(((APv) >> 2) & 0x01) * (1u << 15) |	/* AP[2] */ \
+		!! (SHAREDv) * (1u << 16) |	/* S */ \
+		0 * (1u << 17) |	/* nG */ \
+		0 * (1u << 18) |	/* 0 */ \
+		0 * (1u << 19) |	/* NS */ \
+		0 \
+	)
+
+#define	A9TTB_PARA_CACHED(ro, xn) A9TTB_PARA(TEXval_RAM, Bval_RAM, Cval_RAM, DOMAINval, SHAREDval_RAM, (ro) ? APROval : APRWval, (xn) != 0)
+#define	A9TTB_PARA_DEVICE 		A9TTB_PARA(TEXval_DEVICE, Bval_DEVICE, Cval_DEVICE, DOMAINval, SHAREDval_DEVICE, APRWval, 1 /* XN=1 */)
+#define	A9TTB_PARA_NO_ACCESS 		0
+
+///////////////
+///
+static unsigned a9aarch32_v7_1M_mcached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
+{
+	const uint32_t addrbase = addr & 0xFFF00000;
+	return USBD_poke_u32(b, addrbase | A9TTB_PARA_CACHED(ro, xn));
+}
+static unsigned a9aarch32_v7_1M_mncached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
+{
+	const uint32_t addrbase = addr & 0xFFF00000;
+	return USBD_poke_u32(b, addrbase | A9TTB_PARA_DEVICE);
+}
+static unsigned a9aarch32_v7_1M_mdevice(uint8_t * b, uint_fast64_t addr)
+{
+	const uint32_t addrbase = addr & 0xFFF00000;
+	return USBD_poke_u32(b, addrbase | A9TTB_PARA_DEVICE);
+}
+static unsigned a9aarch32_v7_1M_mnoaccess(uint8_t * b, uint_fast64_t addr)
+{
+	const uint32_t addrbase = addr & 0xFFF00000;
+	return USBD_poke_u32(b, UINT64_C(0));
+}
+static unsigned a9aarch32_v7_1M_mtable(uint8_t * b, uint_fast64_t addr, int level)
+{
+	const uint32_t addrbase = addr & 0xFFF00000;
+	// Next level table - dummy
+	ASSERT(0);
+	return USBD_poke_u32(b, UINT64_C(0));
+}
+
+static const getmmudesc_t a9aarch32_table_1M =
+{
+	.mcached = a9aarch32_v7_1M_mcached,
+	.mncached = a9aarch32_v7_1M_mncached,
+	.mdevice = a9aarch32_v7_1M_mdevice,
+	.mnoaccess = a9aarch32_v7_1M_mnoaccess,
+	.mtable = a9aarch32_v7_1M_mtable
+};
+#endif
+
 ///////////////
 ///
 static unsigned aarch32_v7_16M_mcached(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn)
@@ -1275,7 +1393,11 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 	static const mmulayout_t mmuinfo [] =
 	{
 		{
+#if (__CORTEX_A == 9U)
+			.arch = & a9aarch32_table_1M,
+#else
 			.arch = & aarch32_table_1M,
+#endif
 			.phyaddr = 0x00000000,	/* Начало физической памяти */
 			.phybytes = NULL,
 			.phypageszlog2 = 20,	// 1MB
