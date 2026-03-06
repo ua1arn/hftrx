@@ -7225,6 +7225,267 @@ static sunxi_soc_version_t sunxi_get_soc_ver(void) {
 #endif
 //ioreg32(DAIF)
 
+
+#if (WITHNANDHW || WITHNANDSW)
+
+#if WITHNANDSW
+
+// поддержка работы с NAND по bit-bang
+
+// Get Ready/Busy# pin state
+static uint_fast8_t nand_rbc_get(void)
+{
+	return HARDWARE_NAND_RBC_GET();
+}
+
+// Chip enable
+static void nand_csb_set(uint_fast8_t state)
+{
+	HARDWARE_NAND_CSB_SET(state);
+}
+
+// Address latch enable
+static void nand_ale_set(uint_fast8_t state)
+{
+	HARDWARE_NAND_ALE_SET(state);
+}
+
+// Command latch enable
+static void nand_cle_set(uint_fast8_t state)
+{
+	HARDWARE_NAND_CLE_SET(state);
+}
+
+// Read enable: Gates transfers from the NAND Flash device to the host system.
+static void nand_reb_set(uint_fast8_t state)
+{
+	HARDWARE_NAND_REB_SET(state);
+}
+
+// Write enable: Gates transfers from the host system to the NAND Flash device
+static void nand_web_set(uint_fast8_t state)
+{
+	HARDWARE_NAND_WEB_SET(state);
+}
+
+static void nand_wp_set(uint_fast8_t state)
+{
+#if defined (HARDWARE_NAND_WPB)
+	HARDWARE_NAND_WPB_SET(state);
+#endif
+}
+
+// bus programming: write data to chip
+static void nand_data_bus_write(void)
+{
+	HARDWARE_NAND_BUS_WRITE();
+}
+
+// bus programming: write data to chip
+static void nand_data_bus_read(void)
+{
+	HARDWARE_NAND_BUS_READ();
+}
+
+
+static void nand_data_out(uint_fast8_t v)
+{
+	HARDWARE_NAND_DATA_SET(v);
+}
+
+//
+static uint_fast8_t nand_data_in(void)
+{
+	return HARDWARE_NAND_DATA_GET();
+}
+
+#elif WITHNANDHW
+//	Аппаратная поддержка работы с NAND
+
+#endif
+
+
+/////////////////////
+///
+static void nand_cs_activate(void)
+{
+	nand_csb_set(0);
+}
+
+static void nand_cs_deactivate(void)
+{
+	nand_csb_set(1);
+	nand_data_out(0xFF);
+}
+
+static void nand_write(uint_fast8_t v)
+{
+	//PRINTF("nand_write: %02X\n", v);
+	nand_data_bus_write(); // OUT direction
+	nand_web_set(0);
+	nand_data_out(v);
+	nand_web_set(1);
+}
+
+static void nand_write_command(uint_fast8_t v)
+{
+	//PRINTF("nand_write_command: %02X\n", v);
+	nand_cle_set(1);
+	nand_write(v);
+	nand_cle_set(0);
+}
+
+static void nand_write_address(uint_fast8_t v)
+{
+	//PRINTF("nand_write_address: %02X\n", v);
+	nand_ale_set(1);
+	nand_write(v);
+	nand_ale_set(0);
+}
+
+// Sequential data read
+static void nand_read(uint8_t * buff, unsigned count)
+{
+	nand_data_bus_read();	// IN direction
+	while (count --)
+	{
+		nand_reb_set(0);
+		* buff ++ = nand_data_in();
+		nand_reb_set(1);
+	}
+}
+
+static void nand_waitbusy(void)
+{
+	local_delay_us(10);
+	while (nand_rbc_get() == 0)
+		;
+}
+
+///////////////////////////
+///
+
+void nand_reset(void)
+{
+	// Reset
+	PRINTF("nand_reset\n");
+
+	nand_cs_activate();
+	nand_write_command(0xFF);	// RESET command
+	nand_cs_deactivate();
+
+	nand_waitbusy();
+
+	PRINTF("nand_reset done\n");
+}
+
+void nand_read_id(void)
+{
+	//PRINTF("nand_read_id:\n");
+#if WITHDEBUG
+	uint8_t v [4];
+
+	// Read ID
+	nand_cs_activate();
+	nand_write_command(0x90);
+	nand_write_address(0x00);
+	nand_read(v, ARRAY_SIZE(v));
+	nand_cs_deactivate();
+
+	// NAND IDs = 2C DA 90 95
+	// DA == MT29F2G08AAC
+	PRINTF("NAND IDs = %02X %02X %02X %02X\n", v [0], v [1], v [2], v [3]);
+#endif /* WITHDEBUG */
+	//PRINTF("nand_read_id: done\n");
+}
+
+
+void nand_read_status(void)
+{
+	uint8_t v [1];
+	// Read Status
+	nand_cs_activate();
+	nand_write_command(0x70);
+	nand_read(v, ARRAY_SIZE(v));
+	nand_cs_deactivate();
+
+	PRINTF("NAND status=%02X\n", v [0]);
+}
+
+void nand_readfull(void)
+{
+	//PRINTF("nand_readfull:\n");
+	unsigned long columnaddr = 0;
+	unsigned long blockaddr = 0;	// 0..2047
+	unsigned long pageaddr = 0;		// 0..31
+	// Memory x8
+	// of blocks 0..2047
+	// of pages 0..31
+	// of bytes 0..2047 and 2048..2111 spare area
+	static uint8_t buff [512];
+	unsigned i;
+	nand_cs_activate();
+	nand_write_command(0x00);	// PAGE READ command
+	nand_write_address((columnaddr >> 0) & 0xFF);	// Col Addr 1: ca7..ca0
+	nand_write_address((columnaddr >> 8) & 0x0F);	// Col Addr 2: 0,0,0,0, ca11..ca8
+	nand_write_address((((blockaddr >> 6) & 0x03) << 6) | ((pageaddr >> 0) & 0x3F));	// Row Addr 1: ba7..ba6, pa5..pa0
+	nand_write_address((blockaddr >> 8) & 0xFF);	// Row Addr 2: ba15..ba8
+	nand_write_address((blockaddr >> 16) & 0x01);	// Row Addr 3, 0,0,0,0,0,0,0, ba16
+	nand_write_command(0x30);	// 0x30 command
+
+	nand_waitbusy();
+
+	unsigned long pagesize = 2 * 1024uL;
+	unsigned long offset = 0;
+
+	for (;offset < pagesize;)
+	{
+		nand_read(buff, ARRAY_SIZE(buff));
+		printhex(offset, buff, 512);
+		offset += 512;
+	}
+
+	nand_cs_deactivate();
+	//PRINTF("nand_readfull: done\n");
+}
+
+void nand_initialize(void)
+{
+	PRINTF("nand_initialize:\n");
+	HARDWARE_NAND_INITIALIZE();
+
+	nand_wp_set(0);		// CHip write protected
+
+	nand_csb_set(1);
+	nand_cle_set(0);
+	nand_ale_set(0);
+	nand_reb_set(1);
+	nand_web_set(1);
+
+	nand_reset();
+
+	PRINTF("nand_initialize: done\n");
+}
+
+void nand_tests(void)
+{
+	PRINTF("nand_tests:\n");
+	//nand_read_status();
+	nand_read_id();
+	nand_read_status();
+	nand_read_id();
+
+	//nand_readfull();
+	PRINTF("nand_tests: done\n");
+}
+
+void zynqnandtest(void)
+{
+
+}
+
+#endif /* (WITHNANDHW || WITHNANDSW) */
+
 void hightests(void)
 {
 #if LCDMODE_LTDC
