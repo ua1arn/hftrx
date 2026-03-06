@@ -1400,10 +1400,7 @@ void linux_iq_init(void)
 	iq_rx_blkmem =  (uint32_t *) get_blockmem_ptr(XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR, 1);
 #endif /* DDS1_TYPE == DDS_TYPE_ZYNQ_PL */
 #if IQ_VIA_XDMA
-	pcie_init();
-	pcie_status = pcie_open();
-	if (pcie_status < 0)
-		linux_exit();
+	pcie_status = pcie_init();
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 #if WITHEXTIO_LAN
 #if IQ_VIA_ZYNQ_PL
@@ -2250,7 +2247,8 @@ void linux_subsystem_init(void)
 	iq_shift_tx(CALIBRATION_TX_SHIFT);
 #endif /* WITHIQSHIFT */
 #if NEORV32_RT
-	neorv32_load_firmware();
+	if (pcie_status > 0)
+		neorv32_load_firmware();
 #endif /* NEORV32_RT */
 }
 

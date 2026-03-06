@@ -24,7 +24,6 @@ extern "C" {
 #include <sys/types.h>
 
 int pcie_init();
-int pcie_open();
 void pcie_close();
 long xdma_h2c_transfer(long offset, unsigned long size, char* snd_content);
 long xdma_c2h_transfer(long offset, unsigned long size, char* rcv_content);
