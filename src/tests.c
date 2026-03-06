@@ -7344,7 +7344,7 @@ static void nand_write_address(uint_fast8_t v)
 }
 
 // Sequential data read
-static void nand_read(uint8_t * buff, unsigned count)
+static void nand_read_blockdata(uint8_t * buff, unsigned count)
 {
 	nand_data_bus_read();	// IN direction
 	while (count --)
@@ -7389,14 +7389,86 @@ void nand_read_id(void)
 	nand_cs_activate();
 	nand_write_command(0x90);
 	nand_write_address(0x00);
-	nand_read(v, ARRAY_SIZE(v));
+	nand_read_blockdata(v, ARRAY_SIZE(v));
 	nand_cs_deactivate();
 
 	// NAND IDs = 2C DA 90 95
 	// DA == MT29F2G08AAC
 	PRINTF("NAND IDs = %02X %02X %02X %02X\n", v [0], v [1], v [2], v [3]);
+	switch (v [1])
+	{
+	default:
+		PRINTF("id1 = 0x%02X\n", v [1]); break;
+	case 0xAA:
+		PRINTF("MT29F2G08ABBEA\n"); break;
+	case 0xBA:
+		PRINTF("MT29F2G16ABBEA\n"); break;
+	case 0xDA:
+		PRINTF("MT29F2G08ABAEA\n"); break;
+	case 0xCA:
+		PRINTF("MT29F2G16ABAEA\n"); break;
+	case 0xF1:
+		PRINTF("MT29F1G08ABADA\n"); break;
+	case 0xA1:
+		PRINTF("MT29F1G08ABBDA\n"); break;
+	case 0xB1:
+		PRINTF("MT29F1G16ABBDA\n"); break;
+
+	// BGA
+	case 0xDC: PRINTF("MT29F4G08ABADA\n"); break;
+	case 0xCC: PRINTF("MT29F4G08ABADA\n"); break;
+	case 0xAC: PRINTF("MT29F4G08ABADA\n"); break;
+	case 0xBC: PRINTF("MT29F4G08ABADA\n"); break;
+
+	case 0xA3: PRINTF("MT29F8G08ADBDA\n"); break;
+	case 0xB3: PRINTF("MT29F8G16ADBDA\n"); break;
+	case 0xC3: PRINTF("MT29F8G16ADADA\n"); break;
+	case 0xD3: PRINTF("MT29F8G08ADADA, MT29F16G08AJADA\n"); break;
+	}
+
+
 #endif /* WITHDEBUG */
 	//PRINTF("nand_read_id: done\n");
+}
+
+void nand_read_onfi(void)
+{
+	//PRINTF("nand_read_onfi:\n");
+#if WITHDEBUG
+	uint8_t v [5];
+
+	// Read ID
+	nand_cs_activate();
+	nand_write_command(0x90);
+	nand_write_address(0x20);
+	nand_read_blockdata(v, ARRAY_SIZE(v));
+	nand_cs_deactivate();
+
+	PRINTF("nand_read_onfi:\n");
+	printhex(0, v, sizeof v);
+
+#endif /* WITHDEBUG */
+	//PRINTF("nand_read_onfi: done\n");
+}
+
+void nand_read_parameters(void)
+{
+	//PRINTF("nand_read_parameters:\n");
+#if WITHDEBUG
+	uint8_t v [256];
+
+	// Read ID
+	nand_cs_activate();
+	nand_write_command(0xEC);	// READ PARAMETER PAGE (ECh
+	nand_write_address(0x00);
+	nand_read_blockdata(v, ARRAY_SIZE(v));
+	nand_cs_deactivate();
+
+	PRINTF("nand_read_parameters:\n");
+	printhex(0, v, sizeof v);
+
+#endif /* WITHDEBUG */
+	//PRINTF("nand_read_parameters: done\n");
 }
 
 
@@ -7406,23 +7478,22 @@ void nand_read_status(void)
 	// Read Status
 	nand_cs_activate();
 	nand_write_command(0x70);
-	nand_read(v, ARRAY_SIZE(v));
+	nand_read_blockdata(v, ARRAY_SIZE(v));
 	nand_cs_deactivate();
 
 	PRINTF("NAND status=%02X\n", v [0]);
 }
 
-void nand_readfull(void)
+void nand_readfull(uint_fast32_t block, uint8_t * data)
 {
 	//PRINTF("nand_readfull:\n");
-	unsigned long columnaddr = 0;
+	unsigned long columnaddr = 0;	// смещает начало чстения в байтах
 	unsigned long blockaddr = 0;	// 0..2047
-	unsigned long pageaddr = 0;		// 0..31
+	unsigned long pageaddr = block;		// 0..31
 	// Memory x8
 	// of blocks 0..2047
 	// of pages 0..31
-	// of bytes 0..2047 and 2048..2111 spare area
-	static uint8_t buff [512];
+	// of bytes 0..2047 and 2048..2111 - 64 bytespare area
 	unsigned i;
 	nand_cs_activate();
 	nand_write_command(0x00);	// PAGE READ command
@@ -7435,17 +7506,11 @@ void nand_readfull(void)
 
 	nand_waitbusy();
 
-	unsigned long pagesize = 2 * 1024uL;
-	unsigned long offset = 0;
-
-	for (;offset < pagesize;)
-	{
-		nand_read(buff, ARRAY_SIZE(buff));
-		printhex(offset, buff, 512);
-		offset += 512;
-	}
-
+	nand_read_blockdata(data, 2048);
 	nand_cs_deactivate();
+
+	//printhex(0, buff, ARRAY_SIZE(buff));
+
 	//PRINTF("nand_readfull: done\n");
 }
 
@@ -7469,13 +7534,26 @@ void nand_initialize(void)
 
 void nand_tests(void)
 {
+	HARDWARE_NAND_INITIALIZE();
+	nand_read_status();
 	PRINTF("nand_tests:\n");
 	//nand_read_status();
 	nand_read_id();
 	nand_read_status();
-	nand_read_id();
+	nand_read_onfi();
+	nand_read_parameters();
 
-	//nand_readfull();
+	static uint8_t buff [2048];
+
+	unsigned addr;
+	for (addr = 0; addr < 16; ++ addr)
+	{
+		TP();
+		nand_readfull(addr, buff);
+		printhex(0, buff, 256);
+	}
+
+
 	PRINTF("nand_tests: done\n");
 }
 

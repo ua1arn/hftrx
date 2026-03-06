@@ -19,7 +19,7 @@
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 
 	// Варианты конфигурации тактирования
-	#define WITHCPUXOSC 33333000uL	/* На процессоре установлен генератор 33.333 МГц */
+	#define WITHCPUXOSC 33333333uL	/* На процессоре установлен генератор 33.333 МГц */
 	#define ARM_PLL_MUL	40
 	#define ARM_PLL_DIV	2
 	#define IO_PLL_MUL 48	// IO_PLL_CTRL.PLL_FDIV value
