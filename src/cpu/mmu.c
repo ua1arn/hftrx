@@ -497,7 +497,7 @@ static unsigned aarch32_v7_1M_mnoaccess(uint8_t * b, uint_fast64_t addr)
 static unsigned aarch32_v7_1M_mtable(uint8_t * b, uint_fast64_t addr, int level)
 {
 	// Next level table - dummy
-	ASSERT(0);
+//	ASSERT(0);
 	return USBD_poke_u32(b, UINT64_C(0));
 }
 
@@ -614,7 +614,7 @@ static unsigned a9aarch32_v7_1M_mtable(uint8_t * b, uint_fast64_t addr, int leve
 {
 	const uint32_t addrbase = addr & 0xFFF00000;
 	// Next level table - dummy
-	ASSERT(0);
+	//ASSERT(0);
 	return USBD_poke_u32(b, UINT64_C(0));
 }
 
@@ -627,6 +627,33 @@ static const getmmudesc_t a9aarch32_table_1M =
 	.mtable = a9aarch32_v7_1M_mtable
 };
 #endif
+
+//	9aarch32_table_1M: mcached = 00005DE6
+//	a9aarch32_table_1M: mncached = 00000DF6
+//	a9aarch32_table_1M: mdevice = 00000DF6
+//	a9aarch32_table_1M: mnoaccess = 00000000
+//	a9aarch32_table_1M: mtable = 00000000
+//	aarch32_table_1M: mcached = 00005C07
+//	aarch32_table_1M: mncached = 00004C03
+//	aarch32_table_1M: mdevice = 00010C17
+//	aarch32_table_1M: mnoaccess = 00000000
+//	aarch32_table_1M: mtable = 00000000
+
+static void const getmmudesc_print(const getmmudesc_t * md, const char * label)
+{
+	uint8_t v [8];
+
+	md->mcached(v, 0, 0, 0);
+	PRINTF("%s: mcached = %08X\n", label, (unsigned) USBD_peek_u32(v));
+	md->mncached(v, 0, 0, 0);
+	PRINTF("%s: mncached = %08X\n", label, (unsigned) USBD_peek_u32(v));
+	md->mdevice(v, 0);
+	PRINTF("%s: mdevice = %08X\n", label, (unsigned) USBD_peek_u32(v));
+	md->mnoaccess(v, 0);
+	PRINTF("%s: mnoaccess = %08X\n", label, (unsigned) USBD_peek_u32(v));
+	md->mtable(v, 0, 0);
+	PRINTF("%s: mtable = %08X\n", label, (unsigned) USBD_peek_u32(v));
+}
 
 ///////////////
 ///
@@ -1449,7 +1476,8 @@ sysinit_mmu_tables(void)
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
 	// MMU tables iniitialize
 	fillmmu(mmuinfo, ARRAY_SIZE(mmuinfo), ttb_mempage_accessbits);
-
+//	getmmudesc_print(& a9aarch32_table_1M, "a9aarch32_table_1M");
+//	getmmudesc_print(& aarch32_table_1M, "aarch32_table_1M");
 #elif defined (__CORTEX_M)
 
 #endif
