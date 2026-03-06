@@ -21,7 +21,7 @@ TRGT2 = arm-none-eabi
 TRGT = $(TRGT2)-
 
 PRJROOT := ../..
-OBJDIR = obj
+OBJDIR = o
 
 ZINQ_BOOT_DIR := F:
 XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_Y7Z010.elf
