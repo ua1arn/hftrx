@@ -217,11 +217,9 @@
 	//
 	
 
-	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
-
-//	#define WITHISBOOTLOADERFATFS 1
-//	#define WITHISBOOTLOADERIMAGE "tc1_xc7z020_app_xyl32.bin"
+	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	#define WITHISBOOTLOADERFATFS 1
+	#define WITHISBOOTLOADERIMAGE "tc1_xc7z020_app_xyl32.bin"
 
 #else /* WITHISBOOTLOADER */
 
