@@ -605,26 +605,14 @@ static unsigned a9aarch32_v7_1M_mdevice(uint8_t * b, uint_fast64_t addr)
 	const uint32_t addrbase = addr & 0xFFF00000;
 	return USBD_poke_u32(b, addrbase | A9TTB_PARA_DEVICE);
 }
-static unsigned a9aarch32_v7_1M_mnoaccess(uint8_t * b, uint_fast64_t addr)
-{
-	const uint32_t addrbase = addr & 0xFFF00000;
-	return USBD_poke_u32(b, UINT64_C(0));
-}
-static unsigned a9aarch32_v7_1M_mtable(uint8_t * b, uint_fast64_t addr, int level)
-{
-	const uint32_t addrbase = addr & 0xFFF00000;
-	// Next level table - dummy
-	//ASSERT(0);
-	return USBD_poke_u32(b, UINT64_C(0));
-}
 
 static const getmmudesc_t a9aarch32_table_1M =
 {
 	.mcached = a9aarch32_v7_1M_mcached,
 	.mncached = a9aarch32_v7_1M_mncached,
 	.mdevice = a9aarch32_v7_1M_mdevice,
-	.mnoaccess = a9aarch32_v7_1M_mnoaccess,
-	.mtable = a9aarch32_v7_1M_mtable
+	.mnoaccess = aarch32_v7_1M_mnoaccess,
+	.mtable = aarch32_v7_1M_mtable
 };
 #endif
 
