@@ -4033,7 +4033,7 @@ static unsigned getAPBIFtx(unsigned ix)
 	static const uint8_t map [] = { WITHAPBIFMAP_TX };
 	return map [ix];
 }
-
+#if 0
 void T507_AHUB_handler(void)
 {
 #if WITHI2S0HW
@@ -4048,7 +4048,7 @@ void T507_AHUB_handler(void)
 	T507_AHUB_handler_RX(apbifrxix);
 	T507_AHUB_handler_TX(apbiftxix);
 }
-
+#endif
 
 static void t507_audiopll_initialize(uint_fast32_t mclkf, unsigned X)
 {
@@ -4398,7 +4398,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 			1 * (UINT32_C(1) << 1) |    // TXn_UI - underrun
 			! useDMA * (UINT32_C(1) << 0) |	// TXnE_INT
 			0;
-		arm_hardware_set_handler_realtime(AHUB_IRQn, T507_AHUB_handler);
+		//arm_hardware_set_handler_realtime(AHUB_IRQn, T507_AHUB_handler);
 	}
 
 	{
