@@ -3408,15 +3408,41 @@ enum
 
 /* Обработчики прерываний от DMAC в зависимости от номера канала */
 #if CPUSTYLE_A64 || CPUSTYLE_V3S
-	static void (* dmac_handlers [8])(void * ctx, unsigned dmach);
+	static void (* dmac_handlers [8])(void * ctx, unsigned dmach, unsigned irqbits);
 	static void * dmac_ctx [16];
 #else
-	static void (* dmac_handlers [16])(void * ctx, unsigned dmach);
+	static void (* dmac_handlers [16])(void * ctx, unsigned dmach, unsigned irqbits);
 	static void * dmac_ctx [16];
 #endif
 
 
-static void DMAC_set_dst(volatile uint32_t * desc, uintptr_t addr)
+// A733: bit 9 of Parameter word in descriptor parameter is bit33 of next descriptor address
+static uintptr_t DMAC_get_linkreg(uint_fast32_t regv)
+{
+	if (sizeof (uintptr_t) == sizeof (uint32_t))
+	{
+		return regv;				// Link Address
+	}
+	else
+	{
+		return ((UINT64_C(0x03) & regv) << 32) | (regv & ~ (UINT32_C(0x03)));				// Link Address
+	}
+}
+
+static uint_fast32_t DMAC_set_linkreg(uintptr_t addr)
+{
+	ASSERT((addr & UINT32_C(0x03)) == 0);
+	if (sizeof (uintptr_t) == sizeof (uint32_t))
+	{
+		return addr;				// Link Address
+	}
+	else
+	{
+		return (ptr_lo32(addr) & ~ UINT32_C(0x03)) | (ptr_hi32(addr) & 0x03);				// Link Address
+	}
+}
+
+static void DMAC_desc_set_dst(volatile uint32_t * desc, uintptr_t addr)
 {
 	if (sizeof (uintptr_t) == sizeof (uint32_t))
 	{
@@ -3435,7 +3461,7 @@ static void DMAC_set_dst(volatile uint32_t * desc, uintptr_t addr)
 
 }
 
-static void DMAC_set_src(volatile uint32_t * desc, uintptr_t addr)
+static void DMAC_desc_set_src(volatile uint32_t * desc, uintptr_t addr)
 {
 	if (sizeof (uintptr_t) == sizeof (uint32_t))
 	{
@@ -3445,7 +3471,6 @@ static void DMAC_set_src(volatile uint32_t * desc, uintptr_t addr)
 	else
 	{
 		uint_fast32_t param = desc [DMAC_DESC_PRM]; 	// 17:16 DMA transfers the high 2 bits of the 34-bit source address
-		ASSERT(addr < 0x400000000);
 		param &= ~ (UINT32_C(0x07) << 16);
 		param |= (ptr_hi32(addr) & 0x07) << 16;
 		desc [DMAC_DESC_PRM] = param;
@@ -3481,31 +3506,31 @@ static uintptr_t DMAC_get_dst(const volatile uint32_t * desc)
 	}
 }
 
-// A733: bit 9 of Parameter word in descriptor parameter is bit33 of next descriptor address
-static uintptr_t DMAC_get_link(uint_fast32_t regv)
+static void DMAC_desc_set_link(volatile uint32_t * desc, uintptr_t next)
 {
+	const uint_fast32_t reg = DMAC_set_linkreg(next);
 	if (sizeof (uintptr_t) == sizeof (uint32_t))
 	{
-		return regv;				// Link Address
+		// A733: bit 9 of Parameter word in descriptor parameter is bit33 of next descriptor address
+		desc [DMAC_DESC_LINK] = reg;
+		desc [DMAC_DESC_PRM] &= ~ (UINT32_C(1) << 9);
 	}
 	else
 	{
-		return ((UINT64_C(0x03) & regv) << 32) | (regv & ~ (UINT32_C(0x03)));				// Link Address
+		// A733: bit 9 of Parameter word in descriptor parameter is bit33 of next descriptor address
+		// True link address (in byte mode) = { Parameter [9], Link[1:0], Link[31:2],2’b00}.
+		const unsigned bit33 = (next >> 35) & 0x01;
+		desc [DMAC_DESC_LINK] = reg;
+		desc [DMAC_DESC_PRM] = (desc [DMAC_DESC_PRM] & ~ (UINT32_C(1) << 9)) | bit33 * (UINT32_C(1) << 9);
 	}
 }
 
-static uint_fast32_t DMAC_set_link(uintptr_t addr)
+static void DMAC_SetLink(unsigned dmach, uintptr_t descraddr)
 {
-	ASSERT((addr & UINT32_C(0x03)) == 0);
-	if (sizeof (uintptr_t) == sizeof (uint32_t))
-	{
-		return addr;				// Link Address
-	}
-	else
-	{
-		ASSERT(addr < 0x400000000);
-		return (ptr_lo32(addr) & ~ UINT32_C(0x03)) | (ptr_hi32(addr) & 0x03);				// Link Address
-	}
+	const uint_fast32_t reg = DMAC_set_linkreg(descraddr);
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = reg;
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != reg)
+		;
 }
 
 /* Обработчик прерывания от DMAC */
@@ -3541,7 +3566,7 @@ static void DMAC_NS_IRQHandler(void)
 		const portholder_t maskreg0 = DMAC_REG0_MASK(dmach) * flag;
 		if ((reg0 & maskreg0) != 0)
 		{
-			dmac_handlers [dmach](dmac_ctx [dmach], dmach);
+			dmac_handlers [dmach](dmac_ctx [dmach], dmach, reg0 >> (dmach - 0) * 4);
 		}
 	}
 	for (dmach = 8; dmach < 16; ++ dmach)
@@ -3549,7 +3574,7 @@ static void DMAC_NS_IRQHandler(void)
 		const portholder_t maskreg1 = DMAC_REG1_MASK(dmach) * flag;
 		if ((reg1 & maskreg1) != 0)
 		{
-			dmac_handlers [dmach](dmac_ctx [dmach], dmach);
+			dmac_handlers [dmach](dmac_ctx [dmach], dmach, reg1 >> (dmach - 8) * 4);
 		}
 	}
 
@@ -3571,11 +3596,18 @@ void damc_list_initilaize(damc_list_t * dl, volatile uint32_t descr [] [DMAC_DES
 	dl->end = 0;
 }
 
+static uintptr_t damc_list_next(volatile uint32_t descr0 [] [DMAC_DESC_SIZE], unsigned len, unsigned i)
+{
+	const unsigned inext = (i + 1) % len;
+	return (uintptr_t) descr0 [inext];
+}
+
 // TODO: старшие биты адреса получателя и адреса источника находяться в поле descraddr [DMAC_DESC_PRM]
 // 19:18 DMA transfers the higher 2 bits of the 34-bit destination address
 // 17:16 DMA transfers the high 2 bits of the 34-bit source address
 
-static uintptr_t DMAC_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsigned ix)
+// irqbits: 0x04: Queue, 0x02: Pkq, 0x01: half
+static uintptr_t DMAC_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsigned ix, unsigned irqbits)
 {
 	damc_list_t * const tl = (damc_list_t *) ctx;
 	ASSERT(tl->dmach == dmach);
@@ -3583,13 +3615,13 @@ static uintptr_t DMAC_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsign
 	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
 		;
 
-	const uintptr_t descraddr = DMAC_get_link(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN);	// только что обработанный дескриптор
+	const uintptr_t descraddr = DMAC_get_linkreg(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN);	// только что обработанный дескриптор
 	volatile uint32_t * const desc = (volatile uint32_t *) descraddr;
 
 	if (DMAC_DESC_DST == ix)
 	{
 		const uintptr_t addr = DMAC_get_dst(desc);
-		DMAC_set_dst(desc, newaddr);
+		DMAC_desc_set_dst(desc, newaddr);
 		dcache_clean(descraddr, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 		return addr;
@@ -3597,24 +3629,26 @@ static uintptr_t DMAC_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsign
 	else
 	{
 		const uintptr_t addr = DMAC_get_src(desc);
-		DMAC_set_src(desc, newaddr);
+		DMAC_desc_set_src(desc, newaddr);
 		dcache_clean(descraddr, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 		return addr;
 	}
 }
 
-static uintptr_t DMAC_TX_swap(void * ctx, unsigned dmach, uintptr_t newaddr)
+static uintptr_t DMAC_TX_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsigned irqbits)
 {
-	return DMAC_swap(ctx, dmach, newaddr, DMAC_DESC_SRC);
+	const unsigned ix = DMAC_DESC_SRC;
+	return DMAC_swap(ctx, dmach, newaddr, ix, irqbits);
 }
 
-static uintptr_t DMAC_RX_swap(void * ctx, unsigned dmach, uintptr_t newaddr)
+static uintptr_t DMAC_RX_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsigned irqbits)
 {
-	return DMAC_swap(ctx, dmach, newaddr, DMAC_DESC_DST);
+	const unsigned ix = DMAC_DESC_DST;
+	return DMAC_swap(ctx, dmach, newaddr, ix, irqbits);
 }
 
-static void DMAC_SetHandler(unsigned dmach, void * ctx, unsigned flag, void (* handler)(void * ctx, unsigned dmach))
+static void DMAC_SetHandler(unsigned dmach, void * ctx, unsigned flag, void (* handler)(void * ctx, unsigned dmach, unsigned irqbits))
 {
 	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
 	dmac_handlers [dmach] = handler;
@@ -4927,10 +4961,10 @@ static uint_fast32_t dmac_desc_datawidth(unsigned width)
 
 /* Приём от кодека */
 /* от встроенного в процессор или подключенного по I2S */
-static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(void * ctx, unsigned dmach)
+static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(void * ctx, unsigned dmach, unsigned irqbits)
 {
 	const uintptr_t newaddr = dma_invalidate16rx(allocate_dmabuffer16rx());
-	const uintptr_t addr = DMAC_RX_swap(ctx, dmach, newaddr);
+	const uintptr_t addr = DMAC_RX_swap(ctx, dmach, newaddr, irqbits);
 
 	/* Работа с только что принятыми данными */
 	save_dmabuffer16rx(addr);
@@ -4939,10 +4973,10 @@ static void DMA_I2Sx_AudioCodec_RX_Handler_codec1(void * ctx, unsigned dmach)
 
 /* Передача в кодек */
 /* на встроенный в процессор или подключенный по I2S */
-static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(void * ctx, unsigned dmach)
+static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(void * ctx, unsigned dmach, unsigned irqbits)
 {
 	const uintptr_t newaddr = dma_flush16tx(getfilled_dmabuffer16tx());
-	const uintptr_t addr = DMAC_TX_swap(ctx, dmach, newaddr);
+	const uintptr_t addr = DMAC_TX_swap(ctx, dmach, newaddr, irqbits);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer16tx(addr);
@@ -4950,10 +4984,10 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_codec1(void * ctx, unsigned dmach)
 
 
 /* Передача звука в HDMI */
-static void DMA_I2Sx_AudioCodec_TX_Handler_hdmi48(void * ctx, unsigned dmach)
+static void DMA_I2Sx_AudioCodec_TX_Handler_hdmi48(void * ctx, unsigned dmach, unsigned irqbits)
 {
 	const uintptr_t newaddr = dma_flushhdmi48tx(getfilled_dmabufferhdmi48tx());
-	const uintptr_t addr = DMAC_TX_swap(ctx, dmach, newaddr);
+	const uintptr_t addr = DMAC_TX_swap(ctx, dmach, newaddr, irqbits);
 
 	/* Работа с только что передаными данными */
 	release_dmabufferhdmi48tx(addr);
@@ -4961,10 +4995,10 @@ static void DMA_I2Sx_AudioCodec_TX_Handler_hdmi48(void * ctx, unsigned dmach)
 
 /* Приём от кодека на скорости 8000 */
 /* от встроенного в процессор или подключенного по I2S */
-static void DMA_I2Sx_AudioCodec_RX_Handler_codec1_8k(void * ctx, unsigned dmach)
+static void DMA_I2Sx_AudioCodec_RX_Handler_codec1_8k(void * ctx, unsigned dmach, unsigned irqbits)
 {
 	const uintptr_t newaddr = dma_invalidate16rx8k(allocate_dmabuffer16rx8k());
-	const uintptr_t addr = DMAC_RX_swap(ctx, dmach, newaddr);
+	const uintptr_t addr = DMAC_RX_swap(ctx, dmach, newaddr, irqbits);
 
 	/* Работа с только что принятыми данными */
 	save_dmabuffer16rx8k(addr);
@@ -4973,30 +5007,30 @@ static void DMA_I2Sx_AudioCodec_RX_Handler_codec1_8k(void * ctx, unsigned dmach)
 
 /* Передача в кодек на скорости 8000 */
 /* на встроенный в процессор или подключенный по I2S */
-static void DMA_I2Sx_AudioCodec_TX_Handler_codec1_8k(void * ctx, unsigned dmach)
+static void DMA_I2Sx_AudioCodec_TX_Handler_codec1_8k(void * ctx, unsigned dmach, unsigned irqbits)
 {
 	const uintptr_t newaddr = dma_flush16tx8k(getfilled_dmabuffer16tx8k());
-	const uintptr_t addr = DMAC_TX_swap(ctx, dmach, newaddr);
+	const uintptr_t addr = DMAC_TX_swap(ctx, dmach, newaddr, irqbits);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer16tx8k(addr);
 }
 
 /* Приём от FPGA */
-static void DMA_I2Sx_RX_Handler_fpga(void * ctx, unsigned dmach)
+static void DMA_I2Sx_RX_Handler_fpga(void * ctx, unsigned dmach, unsigned irqbits)
 {
 	const uintptr_t newaddr = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
-	const uintptr_t addr = DMAC_RX_swap(ctx, dmach, newaddr);
+	const uintptr_t addr = DMAC_RX_swap(ctx, dmach, newaddr, irqbits);
 
 	/* Работа с только что принятыми данными */
 	save_dmabuffer32rx(addr);
 }
 
 /* Передача в FPGA */
-static void DMA_I2Sx_TX_Handler_fpga(void * ctx, unsigned dmach)
+static void DMA_I2Sx_TX_Handler_fpga(void * ctx, unsigned dmach, unsigned irqbits)
 {
 	const uintptr_t newaddr = dma_flush32tx(getfilled_dmabuffer32tx());
-	const uintptr_t addr = DMAC_TX_swap(ctx, dmach, newaddr);
+	const uintptr_t addr = DMAC_TX_swap(ctx, dmach, newaddr, irqbits);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer32tx(addr);
@@ -5090,22 +5124,19 @@ static void DMAC_I2S0_RX_initialize_codec1(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], portaddr);				// Source Address
-		DMAC_set_dst(descr0 [i], dma_invalidate16rx(allocate_dmabuffer16rx()));				// Destination Address
+		DMAC_desc_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_desc_set_dst(descr0 [i], dma_invalidate16rx(allocate_dmabuffer16rx()));				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_I2S0_RX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
@@ -5151,22 +5182,19 @@ static void DMAC_I2S0_TX_initialize_codec1(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], dma_flush16tx(allocate_dmabuffer16tx()));			// Source Address
-		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		DMAC_desc_set_src(descr0 [i], dma_flush16tx(allocate_dmabuffer16tx()));			// Source Address
+		DMAC_desc_set_dst(descr0 [i], portaddr);				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_I2S0_TX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
@@ -5216,22 +5244,19 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], portaddr);				// Source Address
-		DMAC_set_dst(descr0 [i], dma_invalidate16rx(allocate_dmabuffer16rx()));				// Destination Address
+		DMAC_desc_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_desc_set_dst(descr0 [i], dma_invalidate16rx(allocate_dmabuffer16rx()));				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_I2S1_RX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
@@ -5277,22 +5302,19 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], dma_flush16tx(allocate_dmabuffer16tx()));			// Source Address
-		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		DMAC_desc_set_src(descr0 [i], dma_flush16tx(allocate_dmabuffer16tx()));			// Source Address
+		DMAC_desc_set_dst(descr0 [i], portaddr);				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_I2S1_TX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
@@ -5338,22 +5360,19 @@ static void DMAC_I2S1_TX_initialize_hdmi48(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], dma_flushhdmi48tx(allocate_dmabufferhdmi48tx()));			// Source Address
-		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		DMAC_desc_set_src(descr0 [i], dma_flushhdmi48tx(allocate_dmabufferhdmi48tx()));			// Source Address
+		DMAC_desc_set_dst(descr0 [i], portaddr);				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_I2S1_TX_hdmi48, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_hdmi48);
@@ -5399,22 +5418,19 @@ static void DMAC_I2S1_RX_initialize_codec1_8k(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], portaddr);				// Source Address
-		DMAC_set_dst(descr0 [i], dma_invalidate16rx8k(allocate_dmabuffer16rx8k()));				// Destination Address
+		DMAC_desc_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_desc_set_dst(descr0 [i], dma_invalidate16rx8k(allocate_dmabuffer16rx8k()));				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_I2S1_RX_codec1_8k, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1_8k);
@@ -5460,22 +5476,19 @@ static void DMAC_I2S1_TX_initialize_codec1_8k(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], dma_flush16tx8k(allocate_dmabuffer16tx8k()));			// Source Address
-		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		DMAC_desc_set_src(descr0 [i], dma_flush16tx8k(allocate_dmabuffer16tx8k()));			// Source Address
+		DMAC_desc_set_dst(descr0 [i], portaddr);				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_I2S1_TX_codec1_8k, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1_8k);
@@ -5525,22 +5538,18 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], dma_flush16tx(allocate_dmabuffer16tx()));			// Source Address
-		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		DMAC_desc_set_src(descr0 [i], dma_flush16tx(allocate_dmabuffer16tx()));			// Source Address
+		DMAC_desc_set_dst(descr0 [i], portaddr);				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_I2S2_TX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
@@ -5590,22 +5599,19 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], portaddr);				// Source Address
-		DMAC_set_dst(descr0 [i], dma_invalidate32rx(allocate_dmabuffer32rx()));		// Destination Address
+		DMAC_desc_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_desc_set_dst(descr0 [i], dma_invalidate32rx(allocate_dmabuffer32rx()));		// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_I2S1_RX_fpga, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpga);
@@ -5658,22 +5664,19 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], portaddr);				// Source Address
-		DMAC_set_dst(descr0 [i], dma_invalidate16rx(allocate_dmabuffer16rx()));				// Destination Address
+		DMAC_desc_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_desc_set_dst(descr0 [i], dma_invalidate16rx(allocate_dmabuffer16rx()));				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_I2S2_RX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
@@ -5719,22 +5722,19 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], portaddr);				// Source Address
-		DMAC_set_dst(descr0 [i], dma_invalidate32rx(allocate_dmabuffer32rx()));		// Destination Address
+		DMAC_desc_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_desc_set_dst(descr0 [i], dma_invalidate32rx(allocate_dmabuffer32rx()));		// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_I2S2_RX_fpga, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpga);
@@ -5786,22 +5786,19 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], dma_flush32tx(allocate_dmabuffer32tx()));				// Source Address
-		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		DMAC_desc_set_src(descr0 [i], dma_flush32tx(allocate_dmabuffer32tx()));				// Source Address
+		DMAC_desc_set_dst(descr0 [i], portaddr);				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_I2S1_TX_fpga, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
@@ -5850,22 +5847,19 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], dma_flush32tx(allocate_dmabuffer32tx()));				// Source Address
-		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		DMAC_desc_set_src(descr0 [i], dma_flush32tx(allocate_dmabuffer32tx()));				// Source Address
+		DMAC_desc_set_dst(descr0 [i], portaddr);				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_I2S2_TX_fpga, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
@@ -5935,10 +5929,10 @@ static uintptr_t dma_invalidateuacout48(uintptr_t addr)
 }
 
 /* Приём от USB */
-static void DMAC_USB_RX_handler_UACOUT48(void * ctx, unsigned dmach)
+static void DMAC_USB_RX_handler_UACOUT48(void * ctx, unsigned dmach, unsigned irqbits)
 {
 	const uintptr_t newaddr = dma_invalidateuacout48(allocate_dmabufferuacout48());
-	const uintptr_t addr = DMAC_RX_swap(ctx, dmach, newaddr);
+	const uintptr_t addr = DMAC_RX_swap(ctx, dmach, newaddr, irqbits);
 
 	/* Работа с только что принятыми данными */
 	save_dmabufferuacout48(addr);
@@ -5979,22 +5973,19 @@ void DMAC_USB_RX_initialize_UACOUT48(uint_fast8_t ep, int start)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], portaddr);				// Source Address
-		DMAC_set_dst(descr0 [i], dma_invalidateuacout48(allocate_dmabufferuacout48()));				// Destination Address
+		DMAC_desc_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_desc_set_dst(descr0 [i], dma_invalidateuacout48(allocate_dmabufferuacout48()));				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_USB_RX_UACOUT48, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_RX_handler_UACOUT48);
@@ -6015,10 +6006,10 @@ static uintptr_t dma_flushuacin48(uintptr_t addr)
 }
 
 /* Передача в host */
-static void DMAC_USB_TX_handler_UACIN48(void * ctx, unsigned dmach)
+static void DMAC_USB_TX_handler_UACIN48(void * ctx, unsigned dmach, unsigned irqbits)
 {
 	const uintptr_t newaddr = dma_flushuacin48(getfilled_dmabufferuacin48());
-	const uintptr_t addr = DMAC_TX_swap(ctx, dmach, newaddr);
+	const uintptr_t addr = DMAC_TX_swap(ctx, dmach, newaddr, irqbits);
 
 	/* Работа с только что передаными данными */
 	release_dmabufferuacin48(addr);
@@ -6059,22 +6050,19 @@ void DMAC_USB_TX_initialize_UACIN48(uint_fast8_t ep_no, int start)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], dma_flushuacin48(allocate_dmabufferuacin48()));			// Source Address
-		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		DMAC_desc_set_src(descr0 [i], dma_flushuacin48(allocate_dmabufferuacin48()));			// Source Address
+		DMAC_desc_set_dst(descr0 [i], portaddr);				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_USB_TX_UACIN48, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_TX_handler_UACIN48);
@@ -6093,10 +6081,10 @@ static uintptr_t dma_flushuacinrts96(uintptr_t addr)
 }
 
 /* Передача в host */
-static void DMAC_USB_TX_handler_UACINRTS96(void * ctx, unsigned dmach)
+static void DMAC_USB_TX_handler_UACINRTS96(void * ctx, unsigned dmach, unsigned irqbits)
 {
 	const uintptr_t newaddr = dma_flushuacinrts96(getfilled_dmabufferuacinrts96());
-	const uintptr_t addr = DMAC_TX_swap(ctx, dmach, newaddr);
+	const uintptr_t addr = DMAC_TX_swap(ctx, dmach, newaddr, irqbits);
 
 	/* Работа с только что передаными данными */
 	release_dmabufferuacinrts96(addr);
@@ -6137,22 +6125,19 @@ void DMAC_USB_TX_initialize_UACINRTS96(uint_fast8_t ep_no, int start)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], dma_flushuacinrts96(allocate_dmabufferuacinrts96()));			// Source Address
-		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		DMAC_desc_set_src(descr0 [i], dma_flushuacinrts96(allocate_dmabufferuacinrts96()));			// Source Address
+		DMAC_desc_set_dst(descr0 [i], portaddr);				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_USB_TX_UACINRTS96, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_TX_handler_UACINRTS96);
@@ -6170,10 +6155,10 @@ static uintptr_t dma_flushuacinrts192(uintptr_t addr)
 }
 
 /* Передача в host */
-static void DMAC_USB_TX_handler_UACINRTS192(void * ctx, unsigned dmach)
+static void DMAC_USB_TX_handler_UACINRTS192(void * ctx, unsigned dmach, unsigned irqbits)
 {
 	const uintptr_t newaddr = dma_flushuacinrts192(getfilled_dmabufferuacinrts192());
-	const uintptr_t addr = DMAC_TX_swap(ctx, dmach, newaddr);
+	const uintptr_t addr = DMAC_TX_swap(ctx, dmach, newaddr, irqbits);
 
 	/* Работа с только что передаными данными */
 	release_dmabufferuacinrts192(addr);
@@ -6214,22 +6199,18 @@ void DMAC_USB_TX_initialize_UACINRTS192(uint_fast8_t ep_no, int start)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], dma_flushuacinrts192(allocate_dmabufferuacinrts192()));			// Source Address
-		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		DMAC_desc_set_src(descr0 [i], dma_flushuacinrts192(allocate_dmabufferuacinrts192()));			// Source Address
+		DMAC_desc_set_dst(descr0 [i], portaddr);				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_USB_TX_UACINRTS192, DMAC_IRQ_EN_FLAG_VALUE, DMAC_USB_TX_handler_UACINRTS192);
@@ -6902,22 +6883,19 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], portaddr);				// Source Address
-		DMAC_set_dst(descr0 [i], dma_invalidate16rx(allocate_dmabuffer16rx()));				// Destination Address
+		DMAC_desc_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_desc_set_dst(descr0 [i], dma_invalidate16rx(allocate_dmabuffer16rx()));				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_AudioCodec_RX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
@@ -6977,22 +6955,19 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], dma_flush16tx(allocate_dmabuffer16tx()));			// Source Address
-		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		DMAC_desc_set_src(descr0 [i], dma_flush16tx(allocate_dmabuffer16tx()));			// Source Address
+		DMAC_desc_set_dst(descr0 [i], portaddr);				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_AudioCodec_TX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_TX_Handler_codec1);
@@ -7153,22 +7128,19 @@ static void DMAC_DMIC_RX_initialize_codec1(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], portaddr);				// Source Address
-		DMAC_set_dst(descr0 [i], dma_invalidate16rx(allocate_dmabuffer16rx()));				// Destination Address
+		DMAC_desc_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_desc_set_dst(descr0 [i], dma_invalidate16rx(allocate_dmabuffer16rx()));				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_DMIC_RX_codec1, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_AudioCodec_RX_Handler_codec1);
@@ -7441,22 +7413,19 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], portaddr);				// Source Address
-		DMAC_set_dst(descr0 [i], dma_invalidate32rx(allocate_dmabuffer32rx()));		// Destination Address
+		DMAC_desc_set_src(descr0 [i], portaddr);				// Source Address
+		DMAC_desc_set_dst(descr0 [i], dma_invalidate32rx(allocate_dmabuffer32rx()));		// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_I2S0_RX_fpga, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_RX_Handler_fpga);
@@ -7502,22 +7471,19 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(descr0); ++ i)
 	{
-		const unsigned inext = (i + 1) % ARRAY_SIZE(descr0);
+		const uintptr_t linkvalue = damc_list_next(descr0, ARRAY_SIZE(descr0), i);
 		// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 		descr0 [i] [DMAC_DESC_CFG] = configDMAC;			// Cofigurarion
 		descr0 [i] [DMAC_DESC_PRM] = parameterDMAC;			// Parameter
-		DMAC_set_src(descr0 [i], dma_flush32tx(allocate_dmabuffer32tx()));				// Source Address
-		DMAC_set_dst(descr0 [i], portaddr);				// Destination Address
+		DMAC_desc_set_src(descr0 [i], dma_flush32tx(allocate_dmabuffer32tx()));				// Source Address
+		DMAC_desc_set_dst(descr0 [i], portaddr);				// Destination Address
 		descr0 [i] [DMAC_DESC_LEN] = NBYTES;				// Byte Counter
-		descr0 [i] [DMAC_DESC_LINK] = DMAC_set_link((uintptr_t) descr0 [inext]);	// Link to next
+		DMAC_desc_set_link(descr0 [i], linkvalue);	// Link to next - also set parameter
 	}
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	dcache_clean(descraddr, sizeof descr0);
-
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = DMAC_set_link(descraddr);
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != DMAC_set_link(descraddr))
-		;
+	DMAC_SetLink(dmach, descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	DMAC_SetHandler(dmach, & DMAC_I2S0_TX_fpga, DMAC_IRQ_EN_FLAG_VALUE, DMA_I2Sx_TX_Handler_fpga);
