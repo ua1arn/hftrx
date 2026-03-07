@@ -3385,7 +3385,7 @@ enum
 	DMAC_Ch_Total
 };
 
-#define DMAC_IRQ_EN_FLAG_VALUE (UINT32_C(1) << 1)	// 0x04: Queue, 0x02: Pkq, 0x01: half
+#define DMAC_IRQ_EN_FLAG_VALUE ((UINT32_C(1) << 2) | (UINT32_C(1) << 1))	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
 #define DMAC_delay 0//(UINT32_C(1) << 8)
 
@@ -3452,7 +3452,6 @@ static void DMAC_desc_set_dst(volatile uint32_t * desc, uintptr_t addr)
 	else
 	{
 		uint_fast32_t param = desc [DMAC_DESC_PRM]; // 19:18  DMA transfers the higher 2 bits of the 34-bit destination address
-		ASSERT(addr < 0x400000000);
 		param &= ~ (UINT32_C(0x07) << 18);	// higher 3 bits of 35 bit address A733, 2 bits of 34 bit address in T507
 		param |= (ptr_hi32(addr) & 0x07) << 18;
 		desc [DMAC_DESC_PRM] = param;
@@ -3598,6 +3597,7 @@ void damc_list_initilaize(damc_list_t * dl, volatile uint32_t descr [] [DMAC_DES
 	dl->end = DMAC_DESC_SIZE - 1;
 }
 
+// Link=0xFFFFF800 for last
 static uintptr_t damc_list_next(volatile uint32_t descr0 [] [DMAC_DESC_SIZE], unsigned len, unsigned i)
 {
 	const unsigned inext = (i + 1) % len;
