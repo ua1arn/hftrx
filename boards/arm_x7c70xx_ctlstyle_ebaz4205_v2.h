@@ -62,7 +62,7 @@
 	// +++ вариации прошивки, специфические для разных частот опорного генератора
 
 	//#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
-	#define DIRECT_61M440_X1	1
+	#define DIRECT_49M152_X1	1
 	#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..56 MHz */
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
@@ -232,7 +232,7 @@
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#if 1
-			#define REALREFERENCE_FREQ 		61439600L
+//			#define REALREFERENCE_FREQ 		61439600L
 			#define WITHTOUCHGUI			1
 			#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 			#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
@@ -331,7 +331,7 @@
 	#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
 	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
-	#define RTC1_TYPE RTC_TYPE_DS1307
+//	#define RTC1_TYPE RTC_TYPE_DS1307
 
 	// End of NVRAM definitions section
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */

@@ -7,17 +7,18 @@
 
 #if CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM && WITHINTEGRATEDDSP && defined (XPAR_IQ_MODEM_MODEM_CONTROL_BASEADDR)
 
-#include "xc7z_inc.h"
-
 enum {
 	rx_fir_shift_pos 	= 0,
 	tx_shift_pos 		= 8,
 	rx_cic_shift_pos 	= 16,
 	tx_state_pos 		= 24,
 	resetn_modem_pos 	= 25,
-	hw_vfo_sel_pos		= 26,
+	adc_driver_pos		= 26,
 	adc_rand_pos 		= 27,
 	iq_test_pos			= 28,
+	wnb_pos				= 29,
+	stream_reset_pos 	= 30,
+	fir_load_reset_pos 	= 31,
 };
 
 static uintptr_t addr32rx;
@@ -53,7 +54,7 @@ void update_modem_ctrl(void)
 {
 	uint32_t v = ((rx_fir_shift & 0xFF) << rx_fir_shift_pos) 	| ((tx_shift & 0xFF) << tx_shift_pos)
 			| ((rx_cic_shift & 0xFF) << rx_cic_shift_pos) 		| (!! tx_state << tx_state_pos)
-			| (!! resetn_modem << resetn_modem_pos) 			| (!! hw_vfo_sel << hw_vfo_sel_pos)
+			| (!! resetn_modem << resetn_modem_pos)
 			| (hamradio_get_gadcrand() << adc_rand_pos) 		| (iq_test << iq_test_pos)
 			| 0;
 
@@ -74,8 +75,10 @@ void xcz_dds_ftw(const uint_least64_t * val)
 
 void xcz_dds_ftw_sub(const uint_least64_t * val)
 {
+#if WITHUSEDUALWATCH
 	Xil_Out32(XPAR_IQ_MODEM_AXI_DDS_FTW_SUB_BASEADDR, * val);
 	mirror_nco2 = * val;
+#endif
 }
 
 void xcz_dds_rts(const uint_least64_t * val)

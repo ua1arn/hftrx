@@ -8572,7 +8572,7 @@ static const codechw_t * const channels [] =
 
 #elif WITHINTEGRATEDDSP
 
-	#if CPUSTYLE_XC7Z
+	#if CPUSTYLE_XC7Z && defined (XPAR_IQ_MODEM_MODEM_CONTROL_BASEADDR)
 		& audiocodechw_xc7z,				// Интерфейс к НЧ кодеку
 		& ifcodechw_xc7z,					// Интерфейс к IF кодеку/FPGA
 		//& fpgaspectrumhw_dummy,				// Интерфейс к FPGA - широкополосный канал (WFM)

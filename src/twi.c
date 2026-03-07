@@ -989,6 +989,8 @@ void i2c_initialize(void)
 #include "xc7z_inc.h"
 static XIicPs xc7z_iicps;
 
+void hardware_twi_master_configure(void) {}
+
 void hardware_iicps_configure(void)
 {
 	XIicPs_Config *Config = XIicPs_LookupConfig(XPAR_XIICPS_0_DEVICE_ID);

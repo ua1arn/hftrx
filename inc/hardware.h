@@ -5,6 +5,8 @@
 // UA1ARN
 //
 
+#include "xc7z_inc.h"
+
 #ifndef HARDWARE_H_INCLUDED
 #define HARDWARE_H_INCLUDED
 

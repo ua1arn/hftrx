@@ -258,7 +258,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 all: bitstreams $(PROJECT)_app_xyl32.bin
 	-sh -c "cp $(PROJECT)_app_xyl32.bin $(ZINQ_BOOT_DIR)/$(PROJECT)_app_xyl32.bin"
 
-bitstreams: bitstream_ant_20.h bitstream_myir7020.h bitstream_ebaz7020.h   
+bitstreams: bitstream_ant_20.h bitstream_myir7020.h bitstream_4205v2.h   
 
 bitstream_ant_20.h: bitstream_ant_20.bit
 	./bit2c bitstream_ant_20.bit bitstream_ant_20.h
@@ -266,8 +266,8 @@ bitstream_ant_20.h: bitstream_ant_20.bit
 bitstream_myir7020.h: bitstream_myir7020.bit
 	./bit2c  bitstream_myir7020.bit bitstream_myir7020.h 
   
-bitstream_ebaz7020.h: bitstream_ebaz7020.bit
-	./bit2c  bitstream_ebaz7020.bit bitstream_ebaz7020.h
+bitstream_4205v2.h: bitstream_4205v2.bit
+	./bit2c  bitstream_4205v2.bit bitstream_4205v2.h
 	
 bootloader: bitstreams BOOT2
  
@@ -275,8 +275,8 @@ ifeq (1, 0)
 app_run: $(PROJECT)_app.elf bitstream_myir7020.bit app_run_myir7020.tcl
 	xsct.bat app_run_myir7020.tcl 
 else  
-app_run: $(PROJECT)_app.elf bitstream_ebaz7020.bit app_run_ebaz7020.tcl
-	xsct.bat app_run_ebaz7020.tcl
+app_run: $(PROJECT)_app.elf bitstream_4205v2.bit app_run_4205v2.tcl
+	xsct.bat app_run_4205v2.tcl
 endif
 
 lib: $(ZYNQLIB)
