@@ -3478,7 +3478,7 @@ static void DMAC_desc_set_src(volatile uint32_t * desc, uintptr_t addr)
 	}
 }
 
-static uintptr_t DMAC_get_src(const volatile uint32_t * desc)
+static uintptr_t DMAC_desc_get_src(const volatile uint32_t * desc)
 {
 	if (sizeof (uintptr_t) == sizeof (uint32_t))
 	{
@@ -3492,7 +3492,7 @@ static uintptr_t DMAC_get_src(const volatile uint32_t * desc)
 	}
 }
 
-static uintptr_t DMAC_get_dst(const volatile uint32_t * desc)
+static uintptr_t DMAC_desc_get_dst(const volatile uint32_t * desc)
 {
 	if (sizeof (uintptr_t) == sizeof (uint32_t))
 	{
@@ -3519,7 +3519,7 @@ static void DMAC_desc_set_link(volatile uint32_t * desc, uintptr_t next)
 	{
 		// A733: bit 9 of Parameter word in descriptor parameter is bit33 of next descriptor address
 		// True link address (in byte mode) = { Parameter [9], Link[1:0], Link[31:2],2’b00}.
-		const unsigned bit33 = (next >> 35) & 0x01;
+		const unsigned bit33 = (ptr_hi32(next) >> 3) & 0x01;
 		desc [DMAC_DESC_LINK] = reg;
 		desc [DMAC_DESC_PRM] = (desc [DMAC_DESC_PRM] & ~ (UINT32_C(1) << 9)) | bit33 * (UINT32_C(1) << 9);
 	}
@@ -3583,7 +3583,8 @@ static void DMAC_NS_IRQHandler(void)
 
 typedef struct damc_list_tag
 {
-	ALIGNX_BEGIN volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	//ALIGNX_BEGIN volatile uint32_t descr0 [DMACRINGSTAGES] [DMAC_DESC_SIZE] ALIGNX_END;
+	volatile uint32_t (* descr0) [DMAC_DESC_SIZE];
 	unsigned start;
 	unsigned end;
 	unsigned dmach;
@@ -3591,9 +3592,10 @@ typedef struct damc_list_tag
 
 void damc_list_initilaize(damc_list_t * dl, volatile uint32_t descr [] [DMAC_DESC_SIZE], unsigned dmach)
 {
+	dl->descr0 = descr;
 	dl->dmach = dmach;
 	dl->start = 0;
-	dl->end = 0;
+	dl->end = DMAC_DESC_SIZE - 1;
 }
 
 static uintptr_t damc_list_next(volatile uint32_t descr0 [] [DMAC_DESC_SIZE], unsigned len, unsigned i)
@@ -3611,6 +3613,7 @@ static uintptr_t DMAC_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsign
 {
 	damc_list_t * const tl = (damc_list_t *) ctx;
 	ASSERT(tl->dmach == dmach);
+	ASSERT(irqbits & 0x02);
 	// Ждём, пока канал приступит к следующему дескриптору
 	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
 		;
@@ -3620,7 +3623,7 @@ static uintptr_t DMAC_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsign
 
 	if (DMAC_DESC_DST == ix)
 	{
-		const uintptr_t addr = DMAC_get_dst(desc);
+		const uintptr_t addr = DMAC_desc_get_dst(desc);
 		DMAC_desc_set_dst(desc, newaddr);
 		dcache_clean(descraddr, DMAC_DESC_SIZE * sizeof (uint32_t));
 
@@ -3628,7 +3631,7 @@ static uintptr_t DMAC_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsign
 	}
 	else
 	{
-		const uintptr_t addr = DMAC_get_src(desc);
+		const uintptr_t addr = DMAC_desc_get_src(desc);
 		DMAC_desc_set_src(desc, newaddr);
 		dcache_clean(descraddr, DMAC_DESC_SIZE * sizeof (uint32_t));
 
