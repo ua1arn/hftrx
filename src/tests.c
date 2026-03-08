@@ -7489,7 +7489,8 @@ void nand_readfull(uint_fast32_t block, uint8_t * data)
 	//PRINTF("nand_readfull:\n");
 	unsigned long columnaddr = 0;	// смещает начало чстения в байтах
 	unsigned long blockaddr = 0;	// 0..2047
-	unsigned long pageaddr = block;		// 0..31
+	unsigned long pageaddr = 0;		// 0..31
+	unsigned long row = block;
 	// Memory x8
 	// of blocks 0..2047
 	// of pages 0..31
@@ -7499,9 +7500,12 @@ void nand_readfull(uint_fast32_t block, uint8_t * data)
 	nand_write_command(0x00);	// PAGE READ command
 	nand_write_address((columnaddr >> 0) & 0xFF);	// Col Addr 1: ca7..ca0
 	nand_write_address((columnaddr >> 8) & 0x0F);	// Col Addr 2: 0,0,0,0, ca11..ca8
-	nand_write_address((((blockaddr >> 6) & 0x03) << 6) | ((pageaddr >> 0) & 0x3F));	// Row Addr 1: ba7..ba6, pa5..pa0
-	nand_write_address((blockaddr >> 8) & 0xFF);	// Row Addr 2: ba15..ba8
-	nand_write_address((blockaddr >> 16) & 0x01);	// Row Addr 3, 0,0,0,0,0,0,0, ba16
+//	nand_write_address((((blockaddr >> 6) & 0x03) << 6) | ((pageaddr >> 0) & 0x3F));	// Row Addr 1: ba7..ba6, pa5..pa0
+//	nand_write_address((blockaddr >> 8) & 0xFF);	// Row Addr 2: ba15..ba8
+//	nand_write_address((blockaddr >> 16) & 0x01);	// Row Addr 3, 0,0,0,0,0,0,0, ba16
+	nand_write_address((row >> 0) & 0xFF);
+	nand_write_address((row >> 8) & 0xFF);
+	nand_write_address((row >> 16) & 0xFF);
 	nand_write_command(0x30);	// 0x30 command
 
 	nand_waitbusy();
@@ -7532,6 +7536,8 @@ void nand_initialize(void)
 	PRINTF("nand_initialize: done\n");
 }
 
+#include "fatfs/ff.h"
+
 void nand_tests(void)
 {
 	HARDWARE_NAND_INITIALIZE();
@@ -7545,21 +7551,42 @@ void nand_tests(void)
 
 	static uint8_t buff [2048];
 
-	unsigned addr;
-	for (addr = 0; addr < 16; ++ addr)
+	static FIL Fil;
+	unsigned i;
+	FRESULT rc;				/* Result code */
+	static const char fname [] = "save.bin";
+
+	static FATFS wave_Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	f_mount(& wave_Fatfs, "", 0);
+
+	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
+	if (rc)
 	{
-		TP();
-		nand_readfull(addr, buff);
-		printhex(0, buff, 256);
+		PRINTF(PSTR("CVan not creqate file\n"));
+		return;	//die(rc);
 	}
+	const unsigned top = (1u << 30) / 2048;
+	PRINTF(PSTR("Write the file content: '%s', total blocks=%u\n"), fname, top);
+	unsigned addr;
+	for (addr = 0; addr < top; ++ addr)
+	{
+		//PRINTF("Block %u (0x%08X)\n", addr, addr);
+		nand_readfull(addr, buff);
+		//printhex(0, buff, 2048);
+		UINT bw;
+		rc = f_write(& Fil, buff, 2048, & bw);
+		if (rc != 0 || bw == 0)
+		{
+			PRINTF("Error while read file");
+			break;
+		}
+		if ((addr % 1000) == 0)
+			dbg_putchar('.');
 
-
+	}
+	rc = f_close(& Fil);
+	PRINTF("\n %u blocks written\n", addr);
 	PRINTF("nand_tests: done\n");
-}
-
-void zynqnandtest(void)
-{
-
 }
 
 #endif /* (WITHNANDHW || WITHNANDSW) */
