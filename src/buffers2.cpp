@@ -13,8 +13,8 @@
 #include "display/display.h"
 #include <atomic>
 
-#undef RAMNC
-#define RAMNC
+//#undef RAMNC
+//#define RAMNC
 
 //#define WITHBUFFERSDEBUG WITHDEBUG
 #ifndef BUFOVERSIZE

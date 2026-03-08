@@ -15,8 +15,8 @@
 #include "gpio.h"
 #include "clocks.h"
 
-#undef RAMNC
-#define RAMNC
+//#undef RAMNC
+//#define RAMNC
 
 typedef struct codechw
 {
