@@ -3494,9 +3494,9 @@ static uintptr_t DMAC_desc_get_src(const volatile uint32_t * desc)
 	}
 	else
 	{
-		const uint32_t param = desc [DMAC_DESC_PRM]; // 17:16 DMA transfers the high 2 bits of the 34-bit source address
-		const uint32_t addr = desc [DMAC_DESC_SRC];	// Source Address
-		return (uintptr_t) ((param & DMAC_PARAM_SRC_ADDR_HIBITS_Msk) << (32 - DMAC_PARAM_SRC_ADDR_HIBITS_Pos)) | addr;
+		const uint_fast32_t param = desc [DMAC_DESC_PRM]; // 17:16 DMA transfers the high 2 bits of the 34-bit source address
+		const uint_fast32_t addr = desc [DMAC_DESC_SRC];	// Source Address
+		return ((uintptr_t) (param & DMAC_PARAM_SRC_ADDR_HIBITS_Msk) << (32 - DMAC_PARAM_SRC_ADDR_HIBITS_Pos)) | addr;
 	}
 }
 
@@ -3508,9 +3508,9 @@ static uintptr_t DMAC_desc_get_dst(const volatile uint32_t * desc)
 	}
 	else
 	{
-		const uint32_t param = desc [DMAC_DESC_PRM]; // 19:18  DMA transfers the higher 2 bits of the 34-bit destination address
-		const uint32_t addr = desc [DMAC_DESC_DST];	// Destination Address
-		return (uintptr_t) ((param & DMAC_PARAM_DEST_ADDR_HIBITS_Msk) << (32 - DMAC_PARAM_DEST_ADDR_HIBITS_Pos)) | addr;
+		const uint_fast32_t param = desc [DMAC_DESC_PRM]; // 19:18  DMA transfers the higher 2 bits of the 34-bit destination address
+		const uint_fast32_t addr = desc [DMAC_DESC_DST];	// Destination Address
+		return ((uintptr_t) (param & DMAC_PARAM_DEST_ADDR_HIBITS_Msk) << (32 - DMAC_PARAM_DEST_ADDR_HIBITS_Pos)) | addr;
 	}
 }
 
@@ -3521,15 +3521,19 @@ static void DMAC_desc_set_link(volatile uint32_t * desc, uintptr_t next)
 	{
 		// A733: bit 9 of Parameter word in descriptor parameter is bit33 of next descriptor address
 		desc [DMAC_DESC_LINK] = reg;
-		desc [DMAC_DESC_PRM] &= ~ (UINT32_C(1) << 9);
+#if defined DMAC_PARAM_LINK_ADDR33_Msk
+		desc [DMAC_DESC_PRM] &= ~ DMAC_PARAM_LINK_ADDR33_Msk;
+#endif /* defined DMAC_PARAM_LINK_ADDR33_Msk */
 	}
 	else
 	{
+#if defined DMAC_PARAM_LINK_ADDR33_Msk
 		// A733: bit 9 of Parameter word in descriptor parameter is bit33 of next descriptor address
 		// True link address (in byte mode) = { Parameter [9], Link[1:0], Link[31:2],2’b00}.
 		const unsigned bit33 = (ptr_hi32(next) >> 3) & 0x01;
+		desc [DMAC_DESC_PRM] = (desc [DMAC_DESC_PRM] & ~ DMAC_PARAM_LINK_ADDR33_Msk) | bit33 * (UINT32_C(1) << DMAC_PARAM_LINK_ADDR33_Pos);
+#endif /* defined DMAC_PARAM_LINK_ADDR33_Msk */
 		desc [DMAC_DESC_LINK] = reg;
-		desc [DMAC_DESC_PRM] = (desc [DMAC_DESC_PRM] & ~ (UINT32_C(1) << 9)) | bit33 * (UINT32_C(1) << 9);
 	}
 }
 

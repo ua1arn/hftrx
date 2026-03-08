@@ -186,6 +186,8 @@ typedef enum DMAC_DstReqType
 #define DMAC_PARAM_DEST_ADDR_HIBITS_Msk (UINT32_C(0x07) << DMAC_PARAM_DEST_ADDR_HIBITS_Pos)
 #define DMAC_PARAM_SRC_ADDR_HIBITS_Pos 11	// The higher 3 bits of 35-bit byte source address of DMA transfer
 #define DMAC_PARAM_SRC_ADDR_HIBITS_Msk (UINT32_C(0x07) << DMAC_PARAM_SRC_ADDR_HIBITS_Pos)
+#define DMAC_PARAM_LINK_ADDR33_Pos 9	// The higher 3 bits of 35-bit byte destination address of DMA transfer
+#define DMAC_PARAM_LINK_ADDR33_Msk (UINT32_C(0x01) << DMAC_PARAM_LINK_ADDR33_Pos)
 
 
 typedef enum
