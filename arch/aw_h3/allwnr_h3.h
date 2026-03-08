@@ -130,8 +130,8 @@ typedef enum
 	GPIO_PULL_DOWN = 0x02	// Pull-down. Other codes reserved
 } GPIOPull_TypeDef;
 
-#define DMAC_DEST_ADDR_MODE_Pos 24	// DMA Destination Address Mode
-#define DMAC_SRC_ADDR_MODE_Pos 8	// DMA Source Address Mode
+#define DMAC_CONFIG_DEST_ADDR_MODE_Pos 24	// DMA Destination Address Mode
+#define DMAC_CONFIG_SRC_ADDR_MODE_Pos 8	// DMA Source Address Mode
 
 #if defined (USE_HAL_DRIVER)
  #include "t113s3_hal.h"

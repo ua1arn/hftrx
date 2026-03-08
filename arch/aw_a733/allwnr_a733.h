@@ -180,8 +180,13 @@ typedef enum DMAC_DstReqType
 	DMAC_DstReqSMHC3 = 63
 } DMAC_DstReq_TypeDef;
 
-#define DMAC_DEST_ADDR_MODE_Pos 24	// DMA_ADDR_MODE DMA Destination Address Mode
-#define DMAC_SRC_ADDR_MODE_Pos 8	// DMA_SRC_ADDR_MODE DMA Source Address Mode
+#define DMAC_CONFIG_DEST_ADDR_MODE_Pos 24	// DMA_ADDR_MODE DMA Destination Address Mode
+#define DMAC_CONFIG_SRC_ADDR_MODE_Pos 8	// DMA_SRC_ADDR_MODE DMA Source Address Mode
+#define DMAC_PARAM_DEST_ADDR_HIBITS_Pos 15	// The higher 3 bits of 35-bit byte destination address of DMA transfer
+#define DMAC_PARAM_DEST_ADDR_HIBITS_Msk (UINT32_C(0x07) << DMAC_PARAM_DEST_ADDR_HIBITS_Pos)
+#define DMAC_PARAM_SRC_ADDR_HIBITS_Pos 11	// The higher 3 bits of 35-bit byte source address of DMA transfer
+#define DMAC_PARAM_SRC_ADDR_HIBITS_Msk (UINT32_C(0x07) << DMAC_PARAM_SRC_ADDR_HIBITS_Pos)
+
 
 typedef enum
 {
