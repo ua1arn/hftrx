@@ -7354,6 +7354,17 @@ static void nand_read_blockdata(uint8_t * buff, unsigned count)
 		nand_reb_set(1);
 	}
 }
+// Sequential data write
+static void nand_write_blockdata(const uint8_t * buff, unsigned count)
+{
+	nand_data_bus_write(); // OUT direction
+	while (count --)
+	{
+		nand_web_set(0);
+		nand_data_out(* buff ++);
+		nand_web_set(1);
+	}
+}
 
 static void nand_waitbusy(void)
 {
@@ -7484,6 +7495,33 @@ void nand_read_status(void)
 	PRINTF("NAND status=%02X\n", v [0]);
 }
 
+
+void nand_read_statussilent(void)
+{
+	uint8_t v [1];
+	// Read Status
+	nand_cs_activate();
+	nand_write_command(0x70);
+	nand_read_blockdata(v, ARRAY_SIZE(v));
+	nand_cs_deactivate();
+
+	//PRINTF("NAND status=%02X\n", v [0]);
+}
+
+void nand_eraseblock(uint_fast32_t row)
+{
+	nand_cs_activate();
+	nand_write_command(0x60);	//
+	nand_write_address((row >> 0) & 0xFF);
+	nand_write_address((row >> 8) & 0xFF);
+	nand_write_address((row >> 16) & 0xFF);
+	nand_write_command(0xD0);
+
+	nand_waitbusy();
+	nand_cs_deactivate();
+
+}
+
 void nand_readfull(uint_fast32_t block, uint8_t * data)
 {
 	//PRINTF("nand_readfull:\n");
@@ -7518,6 +7556,65 @@ void nand_readfull(uint_fast32_t block, uint8_t * data)
 	//PRINTF("nand_readfull: done\n");
 }
 
+static void nand_writefull(uint_fast32_t block, const uint8_t * data)
+{
+	//PRINTF("nand_readfull:\n");
+	unsigned long columnaddr = 0;	// смещает начало чстения в байтах
+	unsigned long blockaddr = 0;	// 0..2047
+	unsigned long pageaddr = 0;		// 0..31
+	unsigned long row = block;
+	// Memory x8
+	// of blocks 0..2047
+	// of pages 0..31
+	// of bytes 0..2047 and 2048..2111 - 64 bytespare area
+	unsigned i;
+	nand_cs_activate();
+	nand_write_command(0x80);	// PROGRAM PAGE (80h-10h) Operation
+	nand_write_address((columnaddr >> 0) & 0xFF);	// Col Addr 1: ca7..ca0
+	nand_write_address((columnaddr >> 8) & 0x0F);	// Col Addr 2: 0,0,0,0, ca11..ca8
+//	nand_write_address((((blockaddr >> 6) & 0x03) << 6) | ((pageaddr >> 0) & 0x3F));	// Row Addr 1: ba7..ba6, pa5..pa0
+//	nand_write_address((blockaddr >> 8) & 0xFF);	// Row Addr 2: ba15..ba8
+//	nand_write_address((blockaddr >> 16) & 0x01);	// Row Addr 3, 0,0,0,0,0,0,0, ba16
+	nand_write_address((row >> 0) & 0xFF);
+	nand_write_address((row >> 8) & 0xFF);
+	nand_write_address((row >> 16) & 0xFF);
+
+	nand_write_blockdata(data, 2048);
+
+	nand_write_command(0x10);	// 0x10 command
+
+	nand_waitbusy();
+
+	nand_read_statussilent();
+
+	nand_cs_deactivate();
+
+	//printhex(0, buff, ARRAY_SIZE(buff));
+
+	//PRINTF("nand_readfull: done\n");
+}
+
+static void nand_unlock(uint_fast32_t block)
+{
+	unsigned low = 0;
+	unsigned high = 4095;
+	nand_cs_activate();
+	nand_write_command(0x23);
+	nand_write_address((low >> 0) & 0xC0);
+	nand_write_address((low >> 8) & 0xFF);
+	nand_write_address((low >> 16) & 0xFF);
+//	nand_write_command(0x23);
+//	nand_write_address((high >> 0) & 0xC0);
+//	nand_write_address((high >> 8) & 0xFF);
+//	nand_write_address((high >> 16) & 0xFF);
+	//nand_waitbusy();
+	nand_cs_deactivate();
+
+	//nand_read_statussilent();
+
+
+}
+
 void nand_initialize(void)
 {
 	PRINTF("nand_initialize:\n");
@@ -7550,6 +7647,7 @@ void nand_tests(void)
 	nand_read_parameters();
 
 	static uint8_t buff [2048];
+	static uint8_t vfybuff [2048];
 
 	static FIL Fil;
 	unsigned i;
@@ -7559,33 +7657,93 @@ void nand_tests(void)
 	static FATFS wave_Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	f_mount(& wave_Fatfs, "", 0);
 
-	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
-	if (rc)
+	if (0)
 	{
-		PRINTF(PSTR("CVan not creqate file\n"));
-		return;	//die(rc);
-	}
-	const unsigned top = (1u << 30) / 2048;
-	PRINTF(PSTR("Write the file content: '%s', total blocks=%u\n"), fname, top);
-	unsigned addr;
-	for (addr = 0; addr < top; ++ addr)
-	{
-		//PRINTF("Block %u (0x%08X)\n", addr, addr);
-		nand_readfull(addr, buff);
-		//printhex(0, buff, 2048);
-		UINT bw;
-		rc = f_write(& Fil, buff, 2048, & bw);
-		if (rc != 0 || bw == 0)
+		unsigned addr;
+		const unsigned top = (1u << 30) / 2048;
+#if 1
+		PRINTF("Unlock...\n");
+		nand_unlock(0);
+		PRINTF("Erase...\n");
+		for (addr = 0; addr < 512; ++ addr)
 		{
-			PRINTF("Error while read file");
-			break;
+			nand_eraseblock(addr);
 		}
-		if ((addr % 1000) == 0)
-			dbg_putchar('.');
+		PRINTF("Erase done\n");
+#endif
+		// запись в NAND файла
+		rc = f_open(& Fil, fname, FA_READ | FA_OPEN_EXISTING);
+		if (rc)
+		{
+			PRINTF(PSTR("Can not creqate file\n"));
+			return;	//die(rc);
+		}
+		PRINTF(PSTR("Write the file content: '%s', total blocks=%u\n"), fname, top);
+		for (addr = 0; addr < top; ++ addr)
+		{
+			//PRINTF("Block %u (0x%08X)\n", addr, addr);
+			//printhex(0, buff, 2048);
+			UINT bw;
+			rc = f_read(& Fil, buff, 2048, & bw);
+			if (rc != 0 || bw == 0)
+			{
+				PRINTF("Error while read file");
+				break;
+			}
+			nand_writefull(addr, buff);
+			nand_readfull(addr, vfybuff);
+			if (! memcmp(buff, vfybuff, sizeof vfybuff))
+			{
+				PRINTF("Write non equal at block %u (0x%08X)\n", addr, addr);
+				printhex(0, vfybuff, 2048);
+			}
+			if ((addr % 1000) == 0)
+				dbg_putchar('.');
 
+		}
+		rc = f_close(& Fil);
+		PRINTF("\n %u blocks written\n", addr);
 	}
-	rc = f_close(& Fil);
-	PRINTF("\n %u blocks written\n", addr);
+	else
+	{
+		rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
+		if (rc)
+		{
+			PRINTF(PSTR("Can not creqate file\n"));
+			return;	//die(rc);
+		}
+		// 136976
+		//const unsigned top = (1u << 30) / 2048;
+		const unsigned top = (136976 | 2047) / 2048;
+		PRINTF(PSTR("Write the file content: '%s', total blocks=%u\n"), fname, top);
+		unsigned addr;
+		for (addr = 0; addr < top; ++ addr)
+		{
+			//PRINTF("Block %u (0x%08X)\n", addr, addr);
+			nand_readfull(addr, buff);
+			//printhex(0, buff, 2048);
+			UINT bw;
+			rc = f_write(& Fil, buff, 2048, & bw);
+			if (rc != 0 || bw == 0)
+			{
+				PRINTF("Error while save file");
+				break;
+			}
+			if ((addr % 1000) == 0)
+			{
+				dbg_putchar('.');
+				rc = f_sync(& Fil);
+				if (rc != FR_OK)
+				{
+					PRINTF("Error while sync file");
+					break;
+				}
+			}
+
+		}
+		rc = f_close(& Fil);
+		PRINTF("\n %u blocks written\n", addr);
+	}
 	PRINTF("nand_tests: done\n");
 }
 
