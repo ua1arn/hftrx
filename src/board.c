@@ -3711,6 +3711,8 @@ prog_dds1_ftw_sub(const ftw_t * value)
 	linux_dds_ftw_sub(value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq2(targetfpga1, value);
+#elif (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
+	xcz_dds_ftw_sub(value);
 #endif
 }
 
@@ -3769,6 +3771,8 @@ prog_dds1_ftw(const ftw_t * value)
 		prog_ad9835_freq(targetdds1, value, & dds1_profile);
 	#elif (DDS1_TYPE == DDS_TYPE_ATTINY2313)
 		prog_softdds_freq(targetdds1, value);
+	#elif (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
+		xcz_dds_rts(value);
 	#else
 		//(void) target;
 
@@ -3785,6 +3789,8 @@ prog_rts1_ftw(const ftw_t * value)
 	linux_dds_rts(value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq1_rts(targetfpga1, value);
+#elif (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
+	xcz_dds_ftw(value);
 #endif
 }
 

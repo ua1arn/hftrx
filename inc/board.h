@@ -435,6 +435,7 @@ void nmeamodem_sendchar(void * ctx);							/* вызывается из обра
 
 void xcz_rxtx_state(uint8_t tx);
 void xcz_dds_ftw(const uint_least64_t * val);
+void xcz_dds_ftw_sub(const uint_least64_t * val);
 void xcz_dds_rts(const uint_least64_t * val);
 
 void board_savefpgastatus(uint_fast32_t status0, uint_fast32_t status1);

@@ -115,6 +115,8 @@ SRCDIRS += $(ARCHDIR)
 # cmsis-dsp
 include ../cmsis_dsp.mak
 
+ifeq (1, 0) 
+
 # CherryUSB
 include ../cherryusb.mak
 
@@ -144,6 +146,8 @@ include ../lwip.mak
 
 # custom application
 include ../custom0.mak
+
+endif
 
 # Define project name here
 PROJECT = tc1_xc7z020
