@@ -3643,7 +3643,9 @@ static uintptr_t DMAC_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsign
 		0;
 	while (DMAC->DMAC_STA_REG & mask)
 		;
-
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+	while (DMAC->CH [dmach].DMAC_EN_REGN)
+		;
 #else
 //	ASSERT(tl->dmach == dmach);
 //	ASSERT(irqbits & 0x02);
