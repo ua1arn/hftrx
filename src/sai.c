@@ -4439,12 +4439,12 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		const uint_fast32_t APBIF_TXDIFn_GAT = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
 		const uint_fast32_t APBIF_RXDIFn_GAT = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
 		const uint_fast32_t I2Sx_GAT = UINT32_C(1) << (23 - ix);	// bita 23..20
-		const uint_fast32_t DAMx_GAT = UINT32_C(1) << (15 - damix);	// bita 15..14
+		const uint_fast32_t DAMx_GAT = 0*UINT32_C(1) << (15 - damix);	// bita 15..14
 
 		const uint_fast32_t APBIF_TXDIFn_RST = UINT32_C(1) << (31 - apbiftxix);	// bita 31..29
 		const uint_fast32_t APBIF_RXDIFn_RST = UINT32_C(1) << (27 - apbifrxix);	// bita 27..25
 		const uint_fast32_t I2Sx_RST = UINT32_C(1) << (23 - ix);	// bita 23..20
-		const uint_fast32_t DAMx_RST = UINT32_C(1) << (15 - damix);	// bita 15..14
+		const uint_fast32_t DAMx_RST = 0*UINT32_C(1) << (15 - damix);	// bita 15..14
 
 		AHUB->AHUB_GAT |= APBIF_TXDIFn_GAT | APBIF_RXDIFn_GAT | I2Sx_GAT | DAMx_GAT;
 		(void) AHUB->AHUB_GAT;
