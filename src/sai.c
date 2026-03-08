@@ -3636,10 +3636,14 @@ static uintptr_t DMAC_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsign
 #if WITHSHORTLIST
 	volatile uint32_t * const desc = tl->descr0 [0];
 	const uintptr_t descraddr = (uintptr_t) desc;
-//	while (DMAC->DMAC_STA_REG & (UINT32_C(1) << 31))	// T507, T113: MBUS FIFO Status
-//		;
-	while (DMAC->DMAC_STA_REG & (UINT32_C(1) << dmach))	// 1: Busy
+	// Дождаться завершения операций
+	const uint_fast32_t mask =
+		(UINT32_C(1) << 31) |	// MBUS FIFO Status - есть несеолько каналов... как с остальнымми?
+		(UINT32_C(1) << dmach) |	// 1: Busy
+		0;
+	while (DMAC->DMAC_STA_REG & mask)
 		;
+
 #else
 //	ASSERT(tl->dmach == dmach);
 //	ASSERT(irqbits & 0x02);
