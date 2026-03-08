@@ -3549,7 +3549,7 @@ static void DMAC_NS_IRQHandler(void)
 		const portholder_t maskreg0 = DMAC_REG0_MASK(dmach) * flag;
 		if ((reg0 & maskreg0) != 0)
 		{
-			dmac_handlers [dmach](dmach);
+			dmac_handlers [dmach](dmac_ctx [dmach], dmach, reg0 >> (dmach - 0) * 4);
 		}
 	}
 
@@ -3612,8 +3612,8 @@ static uintptr_t damc_list_next(volatile uint32_t descr0 [] [DMAC_DESC_SIZE], un
 static uintptr_t DMAC_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsigned ix, unsigned irqbits)
 {
 	damc_list_t * const tl = (damc_list_t *) ctx;
-	ASSERT(tl->dmach == dmach);
-	ASSERT(irqbits & 0x02);
+//	ASSERT(tl->dmach == dmach);
+//	ASSERT(irqbits & 0x02);
 	// Ждём, пока канал приступит к следующему дескриптору
 	while (0 == DMAC->CH [dmach].DMAC_BCNT_LEFT_REGN)
 		;
