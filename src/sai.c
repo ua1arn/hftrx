@@ -3363,7 +3363,17 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #elif CPUSTYLE_ALLWINNER && defined (DMAC)
 
-#define DMACRINGSTAGES 2
+
+//#define WITHSHORTLIST 1
+
+#if WITHSHORTLIST
+	#define DMAC_IRQ_EN_FLAG_VALUE (1*(UINT32_C(1) << 2) | 0*(UINT32_C(1) << 1))	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	#define DMACRINGSTAGES 1
+#else
+	#define DMAC_IRQ_EN_FLAG_VALUE (0*(UINT32_C(1) << 2) | 1*(UINT32_C(1) << 1))	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	#define DMACRINGSTAGES 2
+#endif
+
 #define RAMNCDESC RAMNC
 
 /* DMA каналы на Allwinner T113-s3. 0..7
@@ -3385,7 +3395,6 @@ enum
 	DMAC_Ch_Total
 };
 
-#define DMAC_IRQ_EN_FLAG_VALUE ((UINT32_C(1) << 2) | (UINT32_C(1) << 1))	// 0x04: Queue, 0x02: Pkq, 0x01: half
 
 #define DMAC_delay 0//(UINT32_C(1) << 8)
 
@@ -3600,8 +3609,12 @@ void damc_list_initilaize(damc_list_t * dl, volatile uint32_t descr [] [DMAC_DES
 // Link=0xFFFFF800 for last
 static uintptr_t damc_list_next(volatile uint32_t descr0 [] [DMAC_DESC_SIZE], unsigned len, unsigned i)
 {
+#if WITHSHORTLIST
+	return 0xFFFFF800;
+#else
 	const unsigned inext = (i + 1) % len;
 	return (uintptr_t) descr0 [inext];
+#endif
 }
 
 // TODO: старшие биты адреса получателя и адреса источника находяться в поле descraddr [DMAC_DESC_PRM]
@@ -3612,6 +3625,10 @@ static uintptr_t damc_list_next(volatile uint32_t descr0 [] [DMAC_DESC_SIZE], un
 static uintptr_t DMAC_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsigned ix, unsigned irqbits)
 {
 	damc_list_t * const tl = (damc_list_t *) ctx;
+#if WITHSHORTLIST
+	volatile uint32_t * const desc = tl->descr0 [0];
+	const uintptr_t descraddr = (uintptr_t) desc;
+#else
 //	ASSERT(tl->dmach == dmach);
 //	ASSERT(irqbits & 0x02);
 	// Ждём, пока канал приступит к следующему дескриптору
@@ -3620,13 +3637,17 @@ static uintptr_t DMAC_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsign
 
 	const uintptr_t descraddr = DMAC_get_linkreg(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN);	// только что обработанный дескриптор
 	volatile uint32_t * const desc = (volatile uint32_t *) descraddr;
+#endif
 
 	if (DMAC_DESC_DST == ix)
 	{
 		const uintptr_t addr = DMAC_desc_get_dst(desc);
 		DMAC_desc_set_dst(desc, newaddr);
 		dcache_clean(descraddr, DMAC_DESC_SIZE * sizeof (uint32_t));
-
+#if WITHSHORTLIST
+		DMAC_SetLink(dmach, descraddr);
+		DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+#endif
 		return addr;
 	}
 	else
@@ -3635,6 +3656,10 @@ static uintptr_t DMAC_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsign
 		DMAC_desc_set_src(desc, newaddr);
 		dcache_clean(descraddr, DMAC_DESC_SIZE * sizeof (uint32_t));
 
+#if WITHSHORTLIST
+		DMAC_SetLink(dmach, descraddr);
+		DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
+#endif
 		return addr;
 	}
 }
