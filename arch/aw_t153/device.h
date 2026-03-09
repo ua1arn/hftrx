@@ -20,6 +20,8 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
+#define GIC_INTERFACE_BASE 0
+#define GIC_DISTRIBUTOR_BASE 0
 
 #include <core_ca.h>
 

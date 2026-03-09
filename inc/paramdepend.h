@@ -553,6 +553,34 @@ extern "C" {
 	#define HARDWARE_NCORES 2
 	#define WITHCPUNAME "Allw T113-s3"
 
+
+#elif CPUSTYLE_T153
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
+
+	#define CPU_FREQ	(allwnr_t113_get_arm_freq())
+	#define HARDWARE_UART_FREQ (allwnr_t113_get_uart_freq())
+	#define CPU_PL1_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
+	#define HARDWARE_HOSC_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
+
+	#define TICKS_FREQUENCY 1000	// Hz
+
+	#define SEQ_TICKS_PERIOD	1	// 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
+	#define ENC_TICKS_PERIOD	5	// 5 ms
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+
+	#define HARDWARE_NCORES 4
+	#define WITHCPUNAME "Allw T153"
+
 #elif CPUSTYLE_H3
 
 	typedef uint_fast16_t adcvalholder_t;

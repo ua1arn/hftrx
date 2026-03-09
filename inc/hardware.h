@@ -285,6 +285,21 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 
+#elif CPUSTYLE_T153
+
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+	#define CPUSTYLE_ALLWINNER	1		/* */
+
+	#include "allwnr_t153.h"
+	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __ALIGNED(64)
+	#define ALIGNX_END /* nothing */
+
+
 #elif CPUSTYLE_V3S
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */

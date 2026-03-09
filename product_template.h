@@ -22,7 +22,7 @@
 //#define WITHUACPLAYER 1	/* проигрывание с USB по умолчанию включено */
 //#define DEBUGSPEED 500000
 #define DEBUGSPEED 115200
-//#define DEFAULTDIALFREQ	18112000
+//#define DEFAULTDIALFREQ	44880000
 //#define DEFAULTDIALFREQ	225000
 //#define DEFAULTDIALFREQ	14021000
 
@@ -75,10 +75,10 @@
 	#include "boards/arm_stm32mp1xx_cpustyle_PanGuBoard_v1p2.h"
 #elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7 && 1	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c.h"
-	#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_falcon.h"
+	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_falcon.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_lfm.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_qrp.h"
-	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_r1ab.h"
+	#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_r1ab.h"
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9c_r1cbu.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9c.h"	// rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
@@ -120,7 +120,7 @@
 	#include "boards/arm_allwh618_ctlstyle_orangepi_zero2w.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwh618_cpustyle_orangepi_zero2w.h"
-#elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
+#elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_allwh618_ctlstyle_orangepi_zero3.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwh618_cpustyle_orangepi_zero3.h"
@@ -129,8 +129,8 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwh616_cpustyle_orangepi_zero2.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_allwt507_ctlstyle_veloci_v0.h"
-	//#include "boards/arm_allwt507_ctlstyle_veloci_v0_UA1CEI.h"
+	//#include "boards/arm_allwt507_ctlstyle_veloci_v0.h"
+	#include "boards/arm_allwt507_ctlstyle_veloci_v0_UA1CEI.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt507_cpustyle_veloci_v0.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
@@ -162,7 +162,7 @@
 	//#include "boards/arm_allwt113s3_ctlstyle_storch_v9w_ua1cei.h"	// rmainunit_sv9w.pcb, rmainunit_sv9x.pcb  Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_storch_v9w.h"	// rmainunit_sv9w.pcb, rmainunit_sv9x.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_allwt113s3_ctlstyle_storch_v9x2.h"	// rmainunit_sv9x1.pcb, rmainunit_sv9x2.pcb, rmainunit_sv9x3.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_allwt113s3_ctlstyle_storch_v9x2_veryoldlazy.h"	// rmainunit_sv9x1.pcb, rmainunit_sv9x2.pcb, rmainunit_sv9x3.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_allwt113s3_ctlstyle_storch_v9x2_ud4ijr.h"	// rmainunit_sv9x1.pcb, rmainunit_sv9x2.pcb, rmainunit_sv9x3.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
@@ -173,11 +173,15 @@
 	#include "boards/arm_allwt113s3_ctlstyle_mango_pi.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_mango_pi.h"
+#elif (CPUSTYLE_T153) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwt153_ctlstyle_tronlong_tl153.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwt153_cpustyle_tronlong_tl153.h"
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_allwt113s3_ctlstyle_mango_pi_sdboot.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_mango_pi_sdboot.h"
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_allwt113s3_ctlstyle_zentec_v0.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_zentec_v0.h"
@@ -197,16 +201,16 @@
 	#include "boards/arm_ctlstyle_allw_v3s_lichee0.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_cpustyle_allw_v3s_lichee0.h"
-#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
-	#include "boards/arm_x7c70xx_ctlstyle_antminer_20_v1p1.h"	// 7020
-	//#include "boards/arm_x7c70xx_ctlstyle_antminer_10_v1p1.h"	// 7020
+#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && defined(XC7Z010)
+	//#include "boards/arm_x7c70xx_ctlstyle_antminer_20_v1p1.h"	// 7020
+	#include "boards/arm_x7c70xx_ctlstyle_antminer_10_v1p1.h"	// 7020
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_antminer_v1p1.h"
-#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
+#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && defined(XC7Z020) && 1
 	#include "boards/arm_x7c70xx_ctlstyle_zinc20.h"	// 7020 Плата Цник20 от НПК ООО "АТРИ" http://www.a3.spb.ru/
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_zinc20.h"	// 7020 Плата Цник20 от НПК ООО "АТРИ" http://www.a3.spb.ru/
-#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
+#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && defined(XC7Z020) && 0
 	#include "boards/arm_x7c70xx_ctlstyle_storch_sv9.h"	// 7020
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_storch_sv9.h"
