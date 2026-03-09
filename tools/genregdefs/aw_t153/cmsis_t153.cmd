@@ -3,7 +3,7 @@
 SET CONVERTER=..\Debug\genregdefs.exe --guid "{858514A9-1AE9-4033-9FAD-BC80BB4264BB}"
 SET OUTFILE=..\..\..\arch\aw_t153\device.h
 SET FILELIST= ^
-	timer.csv gic600.csv gpio.csv twi.csv spi.csv uart.csv smhc.csv ^
+	timer.csv gic.csv gpio.csv twi.csv spi.csv uart.csv smhc.csv ^
 	dmac.csv ^
 	i2s_pcm.csv ^
 	..\aw_generic\usb_ehci_capability.csv ..\aw_generic\usb_ohci_capability.csv ..\aw_generic\usbehci.csv ..\aw_generic\usbotg.csv ^

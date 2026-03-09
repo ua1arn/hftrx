@@ -1,0 +1,51 @@
+
+#type; TWI; Two Wire Interface (TWI)
+#base; TWI0 0x02510000
+#base; TWI1 0x02511000
+#base; TWI2 0x02512000
+#base; TWI3 0x02513000
+#base; TWI4 0x02514000
+#base; TWI5 0x02515000
+
+#irq; TWI0 42
+#irq; TWI1 43
+#irq; TWI2 44
+#irq; TWI3 45
+#irq; TWI4 46
+#irq; TWI5 47
+#typeend;
+
+#type; SPI; Serial Peripheral Interface
+#base; SPI0 0x04025000
+#base; SPI1 0x04026000
+#base; SPI2 0x04027000
+#base; SPI3 0x04028000
+
+#irq; SPI0 48
+#irq; SPI1 49
+#irq; SPI2 50
+#irq; SPI3 53
+#typeend;
+
+#type; UART
+#base; UART0 0x02600000 
+#base; UART1 0x02610000 
+#base; UART2 0x02620000 
+#base; UART3 0x02630000 
+#base; UART4 0x02640000 
+#base; UART5 0x02650000 
+#base; UART6 0x02660000 
+#base; UART7 0x02670000 
+#base; UART8 0x02680000 
+#base; UART9 0x02690000 
+#irq; UART0 34
+#irq; UART1 35
+#irq; UART2 36
+#irq; UART3 37
+#irq; UART4 38
+#irq; UART5 39
+#irq; UART6 40
+#irq; UART7 41
+#irq; UART8 180
+#irq; UART9 181
+#typeend;
