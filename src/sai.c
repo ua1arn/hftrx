@@ -15,9 +15,6 @@
 #include "gpio.h"
 #include "clocks.h"
 
-//#undef RAMNC
-//#define RAMNC
-
 typedef struct codechw
 {
 	void (* initialize_rx)(void);	/* инициализация периферии процессора для приёма данных от кодека */
@@ -3364,7 +3361,7 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 #elif CPUSTYLE_ALLWINNER && defined (DMAC)
 
 
-//#define WITHSHORTLIST 1
+#define WITHSHORTLIST 1
 
 #if WITHSHORTLIST
 	#define DMAC_IRQ_EN_FLAG_VALUE (1*(UINT32_C(1) << 2) | 0*(UINT32_C(1) << 1))	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -3374,7 +3371,7 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 	#define DMACRINGSTAGES 2
 #endif
 
-#define RAMNCDESC RAMNC
+#define RAMNCDESC //RAMNC
 
 /* DMA каналы на Allwinner T113-s3. 0..7
  * T507/H616 - 0..15
