@@ -367,7 +367,7 @@
 	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
 	//#define WITHLFM		1	/* LFM MODE */
 	
-	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
+	
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	//#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */

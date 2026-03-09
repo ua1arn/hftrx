@@ -13063,7 +13063,6 @@ static void
 uif_key_click_bandjump(uint_fast32_t f)
 {
 	const uint_fast8_t bandset_no_check = 0;
-#if	WITHDIRECTBANDS
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
@@ -13093,7 +13092,6 @@ uif_key_click_bandjump(uint_fast32_t f)
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
 	updateboard();
-#endif /* WITHDIRECTBANDS */
 }
 
 /* переход на указанную частоту без задействования механизма bandgroup */
@@ -18222,8 +18220,6 @@ process_key_menuset0(uint_fast8_t kbch)
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_4F */
 
-#if WITHDIRECTBANDS
-
 	case KBD_CODE_BAND_1M8:
 		uif_key_click_bandjump(1800000L);
 		return 1;	// требуется обновление индикатора
@@ -18257,7 +18253,6 @@ process_key_menuset0(uint_fast8_t kbch)
 	case KBD_CODE_BAND_50M0:
 		uif_key_click_bandjump(50100000L);
 		return 1;	// требуется обновление индикатора
-#endif /* WITHDIRECTBANDS */
 
 	default:
 		return 0;	// не требуется обновления индикатора
@@ -18516,8 +18511,6 @@ process_key_menuset_common(uint_fast8_t kbch)
 		uif_key_hold_modecol();
 		return 1;	/* клавиша уже обработана */
 
-#if WITHDIRECTBANDS
-
 	case KBD_CODE_MODE_0:
 		/* переход по "столбцу" режимов - быстрое нажатие */
 		/* switch to next moderow */
@@ -18565,8 +18558,6 @@ process_key_menuset_common(uint_fast8_t kbch)
 		// step to next modecol
 		uif_key_hold_modecols(3);
 		return 1;	/* клавиша уже обработана */
-
-#endif /* WITHDIRECTBANDS */
 
 	case KBD_CODE_LOCK:
 		/* блокировка валкодера
