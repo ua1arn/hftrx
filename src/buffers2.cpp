@@ -1618,7 +1618,7 @@ static void dsphftrxproc_spool_user(void * ctx)
 {
 	voice32rx_t * dest;
 	(void) ctx;
-	if (voice32rx.get_readybuffer(& dest))
+	while (voice32rx.get_readybuffer(& dest))
 	{
 		process_dmabuffer32rx(dest->buff);
 		voice32rx.release_buffer(dest);
