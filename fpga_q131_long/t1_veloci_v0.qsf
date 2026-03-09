@@ -115,7 +115,7 @@ set_global_assignment -name TOP_LEVEL_ENTITY tc1_top_veloci_v0
 # Fitter Assignments
 # ==================
 set_global_assignment -name DEVICE EP4CE22E22I7
-set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVCMOS"
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "2.5 V"
 set_global_assignment -name ENABLE_CONFIGURATION_PINS OFF
 set_global_assignment -name ENABLE_NCE_PIN OFF
 set_global_assignment -name ENABLE_BOOT_SEL_PIN OFF
