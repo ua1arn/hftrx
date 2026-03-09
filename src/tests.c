@@ -7772,6 +7772,56 @@ void nand_tests(void)
 					PRINTF("\n %u blocks written\n", addr);
 				}
 				continue;
+
+			case 'V':
+				PRINTF("VERIFY test:\n");
+				{
+					static FIL Fil;
+					unsigned i;
+					FRESULT rc;				/* Result code */
+					unsigned addr;
+					// запись в NAND файла
+					rc = f_open(& Fil, fname, FA_READ | FA_OPEN_EXISTING);
+					if (rc)
+					{
+						PRINTF("Can not open source file '%s'\n", fname);
+						return;	//die(rc);
+					}
+					PRINTF(PSTR("Verify the file content: '%s', total blocks=%u\n"), fname, top);
+					for (addr = 0; addr < top; ++ addr)
+					{
+						char ch;
+						if (dbg_getchar(& ch) && ch == 0x1b)
+						{
+							PRINTF("Write operation aborted\n");
+							break;
+						}
+						//PRINTF("Block %u (0x%08X)\n", addr, addr);
+						//printhex(0, buff, 2048);
+						UINT bw;
+						rc = f_read(& Fil, buff, 2048, & bw);
+						if (rc != 0 || bw == 0)
+						{
+							PRINTF("End of file\n");
+							break;
+						}
+						nand_readfull(addr, vfybuff);
+						if (memcmp(buff, vfybuff, sizeof vfybuff))
+						{
+							PRINTF("Raad back non equal at block %u (0x%08X)\n", addr, addr);
+							printhex(0, vfybuff, 2048);
+							PRINTF("Data from file at block %u (0x%08X)\n", addr, addr);
+							printhex(0, buff, 2048);
+						}
+						if ((addr % 1000) == 0)
+							dbg_putchar('.');
+
+					}
+					rc = f_close(& Fil);
+					PRINTF("\n %u blocks written\n", addr);
+
+				}
+				continue;
 			case 'W':
 				PRINTF("Write test:\n");
 				{
@@ -7801,7 +7851,7 @@ void nand_tests(void)
 						rc = f_read(& Fil, buff, 2048, & bw);
 						if (rc != 0 || bw == 0)
 						{
-							PRINTF("Error while read file");
+							PRINTF("Error while read file\n");
 							break;
 						}
 						nand_writefull(addr, buff);
