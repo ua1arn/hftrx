@@ -7343,6 +7343,16 @@ static void nand_write_address(uint_fast8_t v)
 	nand_ale_set(0);
 }
 
+static void nand_write_address3(uint_fast8_t v1, uint_fast8_t v2, uint_fast8_t v3)
+{
+	//PRINTF("nand_write_address: %02X\n", v);
+	nand_ale_set(1);
+	nand_write(v1);
+	nand_write(v2);
+	nand_write(v3);
+	nand_ale_set(0);
+}
+
 // Sequential data read
 static void nand_read_blockdata(uint8_t * buff, unsigned count)
 {
@@ -7508,8 +7518,24 @@ void nand_read_statussilent(void)
 	//PRINTF("NAND status=%02X\n", v [0]);
 }
 
+static void nand_unlock(uint_fast32_t block)
+{
+	unsigned low = 0;
+	unsigned high = 4095;
+	nand_cs_activate();
+	nand_write_command(0x23);
+	nand_write_address3((low >> 0) & 0xC0, (low >> 8) & 0xFF, (low >> 16) & 0xFF);
+	nand_write_command(0x24);
+	nand_write_address3((high >> 0) & 0xC0, (high >> 8) & 0xFF, (high >> 16) & 0xFF);
+	nand_waitbusy();
+	nand_cs_deactivate();
+
+	nand_read_status();
+}
+
 void nand_eraseblock(uint_fast32_t row)
 {
+	nand_wp_set(1);
 	nand_cs_activate();
 	nand_write_command(0x60);	//
 	nand_write_address((row >> 0) & 0xFF);
@@ -7519,6 +7545,7 @@ void nand_eraseblock(uint_fast32_t row)
 
 	nand_waitbusy();
 	nand_cs_deactivate();
+	nand_read_statussilent();
 
 }
 
@@ -7594,33 +7621,12 @@ static void nand_writefull(uint_fast32_t block, const uint8_t * data)
 	//PRINTF("nand_readfull: done\n");
 }
 
-static void nand_unlock(uint_fast32_t block)
-{
-	unsigned low = 0;
-	unsigned high = 4095;
-	nand_cs_activate();
-	nand_write_command(0x23);
-	nand_write_address((low >> 0) & 0xC0);
-	nand_write_address((low >> 8) & 0xFF);
-	nand_write_address((low >> 16) & 0xFF);
-//	nand_write_command(0x23);
-//	nand_write_address((high >> 0) & 0xC0);
-//	nand_write_address((high >> 8) & 0xFF);
-//	nand_write_address((high >> 16) & 0xFF);
-	//nand_waitbusy();
-	nand_cs_deactivate();
-
-	//nand_read_statussilent();
-
-
-}
-
 void nand_initialize(void)
 {
 	PRINTF("nand_initialize:\n");
 	HARDWARE_NAND_INITIALIZE();
 
-	nand_wp_set(0);		// CHip write protected
+	nand_wp_set(1);		// CHip write unprotected
 
 	nand_csb_set(1);
 	nand_cle_set(0);
@@ -7630,6 +7636,7 @@ void nand_initialize(void)
 
 	nand_reset();
 
+	nand_read_status();
 	PRINTF("nand_initialize: done\n");
 }
 
@@ -7637,112 +7644,192 @@ void nand_initialize(void)
 
 void nand_tests(void)
 {
-	HARDWARE_NAND_INITIALIZE();
-	nand_read_status();
+	nand_initialize();
 	PRINTF("nand_tests:\n");
 	//nand_read_status();
-	nand_read_id();
-	nand_read_status();
-	nand_read_onfi();
-	nand_read_parameters();
+
+	// Antminer: MT29F2G08ABAEA
+	// Zinc20:
 
 	static uint8_t buff [2048];
 	static uint8_t vfybuff [2048];
 
-	static FIL Fil;
-	unsigned i;
-	FRESULT rc;				/* Result code */
 	static const char fname [] = "save.bin";
 
+	unsigned blockaddr = 0;
+	const unsigned top = (1u << 30) / 2048;
 	static FATFS wave_Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	f_mount(& wave_Fatfs, "", 0);
 
-	if (0)
+	for (;;)
 	{
-		unsigned addr;
-		const unsigned top = (1u << 30) / 2048;
-#if 1
-		PRINTF("Unlock...\n");
-		nand_unlock(0);
-		PRINTF("Erase...\n");
-		for (addr = 0; addr < 512; ++ addr)
-		{
-			nand_eraseblock(addr);
-		}
-		PRINTF("Erase done\n");
-#endif
-		// запись в NAND файла
-		rc = f_open(& Fil, fname, FA_READ | FA_OPEN_EXISTING);
-		if (rc)
-		{
-			PRINTF(PSTR("Can not creqate file\n"));
-			return;	//die(rc);
-		}
-		PRINTF(PSTR("Write the file content: '%s', total blocks=%u\n"), fname, top);
-		for (addr = 0; addr < top; ++ addr)
-		{
-			//PRINTF("Block %u (0x%08X)\n", addr, addr);
-			//printhex(0, buff, 2048);
-			UINT bw;
-			rc = f_read(& Fil, buff, 2048, & bw);
-			if (rc != 0 || bw == 0)
-			{
-				PRINTF("Error while read file");
-				break;
-			}
-			nand_writefull(addr, buff);
-			nand_readfull(addr, vfybuff);
-			if (! memcmp(buff, vfybuff, sizeof vfybuff))
-			{
-				PRINTF("Write non equal at block %u (0x%08X)\n", addr, addr);
-				printhex(0, vfybuff, 2048);
-			}
-			if ((addr % 1000) == 0)
-				dbg_putchar('.');
+		char kbch;
 
-		}
-		rc = f_close(& Fil);
-		PRINTF("\n %u blocks written\n", addr);
-	}
-	else
-	{
-		rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
-		if (rc)
+		if (dbg_getchar(& kbch))
 		{
-			PRINTF(PSTR("Can not creqate file\n"));
-			return;	//die(rc);
-		}
-		// 136976
-		//const unsigned top = (1u << 30) / 2048;
-		const unsigned top = (136976 | 2047) / 2048;
-		PRINTF(PSTR("Write the file content: '%s', total blocks=%u\n"), fname, top);
-		unsigned addr;
-		for (addr = 0; addr < top; ++ addr)
-		{
-			//PRINTF("Block %u (0x%08X)\n", addr, addr);
-			nand_readfull(addr, buff);
-			//printhex(0, buff, 2048);
-			UINT bw;
-			rc = f_write(& Fil, buff, 2048, & bw);
-			if (rc != 0 || bw == 0)
+			switch (kbch)
 			{
-				PRINTF("Error while save file");
+			default:
+				PRINTF("unknown key 0x%02X\n", (unsigned) kbch);
+				continue;
+
+			case 'x':
+				PRINTF("Done trests\n");
 				break;
-			}
-			if ((addr % 1000) == 0)
-			{
-				dbg_putchar('.');
-				rc = f_sync(& Fil);
-				if (rc != FR_OK)
+			case 'q':
 				{
-					PRINTF("Error while sync file");
-					break;
-				}
-			}
+					nand_read_id();
+					nand_read_status();
+					nand_read_onfi();
+					nand_read_parameters();
 
+				}
+				continue;
+			case 'E':
+				PRINTF("ERASE...\n");
+				for (unsigned i = 0; i < top; i += 64)	// 128 kB
+				{
+					nand_eraseblock(i);
+				}
+				PRINTF("ERASE done\n");
+				continue;
+			case 'r':
+				PRINTF("Read block %u (0x%08X)\n", blockaddr, blockaddr);
+				{
+					nand_readfull(blockaddr, buff);
+					printhex(0, buff, 2048);
+				}
+				continue;
+			case 'w':
+				PRINTF("Write block %u (0x%08X)\n", blockaddr, blockaddr);
+				{
+					nand_writefull(blockaddr, buff);
+					//printhex(0, buff, 2048);
+				}
+				continue;
+			case '0':
+				PRINTF("Fil test data 0x00\n");
+				memset(buff, 0x00, sizeof buff);
+				continue;
+			case '1':
+				PRINTF("Fil test data 0xE5\n");
+				memset(buff, 0xE5, sizeof buff);
+				continue;
+			case 'n':
+				blockaddr = (blockaddr + 1 < top) ? blockaddr + 1 : 0;
+				PRINTF("block %u (0x%08X)\n", blockaddr, blockaddr);
+				continue;
+			case 'p':
+				blockaddr = blockaddr ? blockaddr - 1 : top - 1;
+				PRINTF("block %u (0x%08X)\n", blockaddr, blockaddr);
+				continue;
+
+			case 'R':
+				PRINTF("read test:\n");
+				{
+					static FIL Fil;
+					unsigned i;
+					FRESULT rc;				/* Result code */
+					rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
+					if (rc)
+					{
+						PRINTF("Can not create output file '%s'\n", fname);
+						return;	//die(rc);
+					}
+					PRINTF(PSTR("Write the file content: '%s', total blocks=%u\n"), fname, top);
+					unsigned addr;
+					for (addr = 0; addr < top; ++ addr)
+					{
+						char ch;
+						if (dbg_getchar(& ch) && ch == 0x1b)
+						{
+							PRINTF("Read operation aborted\n");
+							break;
+						}
+						//PRINTF("Block %u (0x%08X)\n", addr, addr);
+						nand_readfull(addr, buff);
+						//printhex(0, buff, 2048);
+						UINT bw;
+						rc = f_write(& Fil, buff, 2048, & bw);
+						if (rc != 0 || bw == 0)
+						{
+							PRINTF("Error while save file");
+							break;
+						}
+						if ((addr % 1000) == 0)
+						{
+							dbg_putchar('.');
+							rc = f_sync(& Fil);
+							if (rc != FR_OK)
+							{
+								PRINTF("Error while sync file");
+								break;
+							}
+						}
+
+					}
+					rc = f_close(& Fil);
+					PRINTF("\n %u blocks written\n", addr);
+				}
+				continue;
+			case 'W':
+				PRINTF("Write test:\n");
+				{
+					static FIL Fil;
+					unsigned i;
+					FRESULT rc;				/* Result code */
+					unsigned addr;
+					// запись в NAND файла
+					rc = f_open(& Fil, fname, FA_READ | FA_OPEN_EXISTING);
+					if (rc)
+					{
+						PRINTF("Can not open source file '%s'\n", fname);
+						return;	//die(rc);
+					}
+					PRINTF(PSTR("Write the file content: '%s', total blocks=%u\n"), fname, top);
+					for (addr = 0; addr < top; ++ addr)
+					{
+						char ch;
+						if (dbg_getchar(& ch) && ch == 0x1b)
+						{
+							PRINTF("Write operation aborted\n");
+							break;
+						}
+						//PRINTF("Block %u (0x%08X)\n", addr, addr);
+						//printhex(0, buff, 2048);
+						UINT bw;
+						rc = f_read(& Fil, buff, 2048, & bw);
+						if (rc != 0 || bw == 0)
+						{
+							PRINTF("Error while read file");
+							break;
+						}
+						nand_writefull(addr, buff);
+						nand_readfull(addr, vfybuff);
+						if (memcmp(buff, vfybuff, sizeof vfybuff))
+						{
+							PRINTF("Raad back non equal at block %u (0x%08X)\n", addr, addr);
+							printhex(0, vfybuff, 2048);
+							PRINTF("Data for write at block %u (0x%08X)\n", addr, addr);
+							printhex(0, buff, 2048);
+						}
+						if ((addr % 1000) == 0)
+							dbg_putchar('.');
+
+					}
+					rc = f_close(& Fil);
+					PRINTF("\n %u blocks written\n", addr);
+
+				}
+				continue;
+			}
+			break;
 		}
-		rc = f_close(& Fil);
-		PRINTF("\n %u blocks written\n", addr);
+		else
+		{
+			continue;
+		}
+		break;
 	}
 	PRINTF("nand_tests: done\n");
 }
