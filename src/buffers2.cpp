@@ -13,9 +13,6 @@
 #include "display/display.h"
 #include <atomic>
 
-//#undef RAMNC
-//#define RAMNC
-
 //#define WITHBUFFERSDEBUG WITHDEBUG
 #ifndef BUFOVERSIZE
 	#define BUFOVERSIZE 1
@@ -1037,9 +1034,13 @@ typedef buffitem<voice16tx_t> voice16txbuf_t;
 typedef dmahandle<FLOAT_t, voice16rxbuf_t, VOICE16RX_RESAMPLING, 1, SKIPSAMPLES_HDMI> voice16rxdma_t;
 typedef dmahandle<FLOAT_t, voice16txbuf_t, VOICE16TX_RESAMPLING, 1, SKIPSAMPLES_HDMI> voice16txdma_t;
 
+#if WITHFPGAPIPE_CODEC1
+static voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
+static voice16txbuf_t voice16txbuf [VOICE16TX_CAPACITY];
+#else
 static RAMNC voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
 static RAMNC voice16txbuf_t voice16txbuf [VOICE16TX_CAPACITY];
-
+#endif
 
 static voice16rxdma_t codec16rx(IRQL_REALTIME, "16rx", voice16rxbuf, ARRAY_SIZE(voice16rxbuf));		// from codec
 static voice16txdma_t codec16tx(IRQL_REALTIME, "16tx", voice16txbuf, ARRAY_SIZE(voice16txbuf));		// to codec
