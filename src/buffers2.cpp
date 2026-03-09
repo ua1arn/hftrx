@@ -13,9 +13,6 @@
 #include "display/display.h"
 #include <atomic>
 
-//#undef RAMNC
-//#define RAMNC
-
 //#define WITHBUFFERSDEBUG WITHDEBUG
 #ifndef BUFOVERSIZE
 	#define BUFOVERSIZE 1
@@ -48,7 +45,7 @@ static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
-#define VOICE32RX_CAPACITY (4 * BUFOVERSIZE)
+#define VOICE32RX_CAPACITY (8 * BUFOVERSIZE)
 #define VOICE32TX_CAPACITY (16 * BUFOVERSIZE)
 
 #define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
@@ -1037,9 +1034,13 @@ typedef buffitem<voice16tx_t> voice16txbuf_t;
 typedef dmahandle<FLOAT_t, voice16rxbuf_t, VOICE16RX_RESAMPLING, 1, SKIPSAMPLES_HDMI> voice16rxdma_t;
 typedef dmahandle<FLOAT_t, voice16txbuf_t, VOICE16TX_RESAMPLING, 1, SKIPSAMPLES_HDMI> voice16txdma_t;
 
+#if WITHFPGAPIPE_CODEC1
+static voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
+static voice16txbuf_t voice16txbuf [VOICE16TX_CAPACITY];
+#else
 static RAMNC voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
 static RAMNC voice16txbuf_t voice16txbuf [VOICE16TX_CAPACITY];
-
+#endif
 
 static voice16rxdma_t codec16rx(IRQL_REALTIME, "16rx", voice16rxbuf, ARRAY_SIZE(voice16rxbuf));		// from codec
 static voice16txdma_t codec16tx(IRQL_REALTIME, "16tx", voice16txbuf, ARRAY_SIZE(voice16txbuf));		// to codec
@@ -1609,6 +1610,7 @@ uintptr_t getfilled_dmabuffer32rx(void)
 
 // Обработка сразу в прерывании
 #define TXSPOOLCOND (LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 4) || ! WITHSMPSYSTEM)))
+//#define TXSPOOLCOND 1	// Force in-interrupt 32rx stream parsing
 #if ! TXSPOOLCOND
 #define TXSPOOLCORE 3
 #endif
@@ -1617,7 +1619,7 @@ static void dsphftrxproc_spool_user(void * ctx)
 {
 	voice32rx_t * dest;
 	(void) ctx;
-	if (voice32rx.get_readybuffer(& dest))
+	while (voice32rx.get_readybuffer(& dest))
 	{
 		process_dmabuffer32rx(dest->buff);
 		voice32rx.release_buffer(dest);

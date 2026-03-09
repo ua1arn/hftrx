@@ -169,8 +169,8 @@ static const getmmudesc_t gpu_MaliG31_table4k =
 
 // G5.7 Memory region attributes
 // Table G5-16 SH[1:0] field encoding for Normal memory, Long-descriptor format
-//#define AARCH64_SH_MEMORY 0x03		// 0x03 - inner shareable
-#define AARCH64_SH_MEMORY 0x02		// 0x02 - Outer shareable
+#define AARCH64_SH_MEMORY 0x03		// 0x03 - inner shareable
+//#define AARCH64_SH_MEMORY 0x02		// 0x02 - Outer shareable
 #define AARCH64_SH_DEVICE 0x02		// 0x02 - Outer shareable
 
 // Lower attributes

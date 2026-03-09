@@ -15,9 +15,6 @@
 #include "gpio.h"
 #include "clocks.h"
 
-//#undef RAMNC
-//#define RAMNC
-
 typedef struct codechw
 {
 	void (* initialize_rx)(void);	/* инициализация периферии процессора для приёма данных от кодека */
@@ -3364,7 +3361,7 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 #elif CPUSTYLE_ALLWINNER && defined (DMAC)
 
 
-//#define WITHSHORTLIST 1
+#define WITHSHORTLIST 1
 
 #if WITHSHORTLIST
 	#define DMAC_IRQ_EN_FLAG_VALUE (1*(UINT32_C(1) << 2) | 0*(UINT32_C(1) << 1))	// 0x04: Queue, 0x02: Pkq, 0x01: half
@@ -3374,7 +3371,7 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 	#define DMACRINGSTAGES 2
 #endif
 
-#define RAMNCDESC RAMNC
+#define RAMNCDESC //RAMNC
 
 /* DMA каналы на Allwinner T113-s3. 0..7
  * T507/H616 - 0..15
@@ -3638,14 +3635,15 @@ static uintptr_t DMAC_swap(void * ctx, unsigned dmach, uintptr_t newaddr, unsign
 	const uintptr_t descraddr = (uintptr_t) desc;
 	// Дождаться завершения операций
 	const uint_fast32_t mask =
-		(UINT32_C(1) << 31) |	// MBUS FIFO Status - есть несеолько каналов... как с остальнымми?
+		//(UINT32_C(1) << 31) |	// MBUS FIFO Status - есть несеолько каналов... как с остальнымми?
 		(UINT32_C(1) << dmach) |	// 1: Busy
 		0;
 	while (DMAC->DMAC_STA_REG & mask)
 		;
-	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
-	while (DMAC->CH [dmach].DMAC_EN_REGN)
-		;
+//	ASSERT(!(DMAC->CH [dmach].DMAC_EN_REGN & (UINT32_C(1) << 0));
+//	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+//	while (DMAC->CH [dmach].DMAC_EN_REGN & (UINT32_C(1) << 0))
+//		;
 #else
 //	ASSERT(tl->dmach == dmach);
 //	ASSERT(irqbits & 0x02);
