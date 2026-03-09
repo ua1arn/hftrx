@@ -383,8 +383,8 @@
 		gpio_peripherial(HARDWARE_SDIO_CLK_MIO, miopin_ctl);	/*  SD_CLK */ \
 		gpio_input2(HARDWARE_SDIO_CDN, miopin_sense);	/*  SD_CDN */ \
 		gpio_input2(HARDWARE_SDIO_WP, miopin_sense);	/*  SD_WP */ \
-		PRINTF("HARDWARE_SDIO_INITIALIZE: miopin_ctl=%08lX\n", miopin_ctl); \
-		PRINTF("HARDWARE_SDIO_INITIALIZE: miopin_sense=%08lX\n", miopin_sense); \
+		PRINTF("HARDWARE_SDIO_INITIALIZE: miopin_ctl=%08X\n", (unsigned) miopin_ctl); \
+		PRINTF("HARDWARE_SDIO_INITIALIZE: miopin_sense=%08X\n", (unsigned) miopin_sense); \
 	} while (0)
 	#define HARDWARE_SDIOSENSE_INITIALIZE() do { \
 	} while (0)
@@ -1171,6 +1171,7 @@
 			} while (0)
 
 			#define HARDWARE_NAND_DATA_GET() ( \
+				__DSB(), \
 				gpio_readpin(HARDWARE_NAND_D7_MIO) * (1u << 7) + \
 				gpio_readpin(HARDWARE_NAND_D6_MIO) * (1u << 6) + \
 				gpio_readpin(HARDWARE_NAND_D5_MIO) * (1u << 5) + \
@@ -1192,17 +1193,18 @@
 				gpio_input2(HARDWARE_NAND_D2_MIO, pinmode_input); \
 				gpio_input2(HARDWARE_NAND_D1_MIO, pinmode_input); \
 				gpio_input2(HARDWARE_NAND_D0_MIO, pinmode_input); \
+				__DSB(); \
 			} while (0)
 
 			#define HARDWARE_NAND_BUS_WRITE() do { \
 			} while (0)
 
-			#define HARDWARE_NAND_CSB_SET(state) do { gpio_writepin(HARDWARE_NAND_CSB_MIO, !! (state)); } while (0)
-			#define HARDWARE_NAND_ALE_SET(state) do { gpio_writepin(HARDWARE_NAND_ALE_MIO, !! (state)); } while (0)
-			#define HARDWARE_NAND_CLE_SET(state) do { gpio_writepin(HARDWARE_NAND_CLE_MIO, !! (state)); } while (0)
-			#define HARDWARE_NAND_WEB_SET(state) do { gpio_writepin(HARDWARE_NAND_WEB_MIO, !! (state)); } while (0)
-			#define HARDWARE_NAND_REB_SET(state) do { gpio_writepin(HARDWARE_NAND_REB_MIO, !! (state)); } while (0)
-			#define HARDWARE_NAND_WPB_SET(state) do { gpio_writepin(HARDWARE_NAND_WPB_MIO, !! (state)); } while (0) /* optional */
+			#define HARDWARE_NAND_CSB_SET(state) do { gpio_writepin(HARDWARE_NAND_CSB_MIO, !! (state)); __DSB(); } while (0)
+			#define HARDWARE_NAND_ALE_SET(state) do { gpio_writepin(HARDWARE_NAND_ALE_MIO, !! (state)); __DSB(); } while (0)
+			#define HARDWARE_NAND_CLE_SET(state) do { gpio_writepin(HARDWARE_NAND_CLE_MIO, !! (state)); __DSB(); } while (0)
+			#define HARDWARE_NAND_WEB_SET(state) do { gpio_writepin(HARDWARE_NAND_WEB_MIO, !! (state)); __DSB(); } while (0)
+			#define HARDWARE_NAND_REB_SET(state) do { gpio_writepin(HARDWARE_NAND_REB_MIO, !! (state)); __DSB(); } while (0)
+			#define HARDWARE_NAND_WPB_SET(state) do { gpio_writepin(HARDWARE_NAND_WPB_MIO, !! (state)); __DSB(); } while (0) /* optional */
 
 		#elif WITHNANDHW
 
