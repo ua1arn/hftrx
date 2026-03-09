@@ -7493,7 +7493,7 @@ void nand_read_parameters(void)
 }
 
 
-void nand_read_status(void)
+static unsigned nand_read_status(void)
 {
 	uint8_t v [1];
 	// Read Status
@@ -7503,10 +7503,11 @@ void nand_read_status(void)
 	nand_cs_deactivate();
 
 	PRINTF("NAND status=%02X\n", v [0]);
+	return v [0];
 }
 
 
-void nand_read_statussilent(void)
+static unsigned nand_read_statussilent(void)
 {
 	uint8_t v [1];
 	// Read Status
@@ -7516,6 +7517,7 @@ void nand_read_statussilent(void)
 	nand_cs_deactivate();
 
 	//PRINTF("NAND status=%02X\n", v [0]);
+	return v [0];
 }
 
 static void nand_unlock(uint_fast32_t block)
@@ -7855,6 +7857,7 @@ void nand_tests(void)
 							break;
 						}
 						nand_writefull(addr, buff);
+#if 0
 						nand_readfull(addr, vfybuff);
 						if (memcmp(buff, vfybuff, sizeof vfybuff))
 						{
@@ -7863,6 +7866,7 @@ void nand_tests(void)
 							PRINTF("Data for write at block %u (0x%08X)\n", addr, addr);
 							printhex(0, buff, 2048);
 						}
+#endif
 						if ((addr % 1000) == 0)
 							dbg_putchar('.');
 
