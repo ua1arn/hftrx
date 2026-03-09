@@ -13,7 +13,9 @@
 #include "display/display.h"
 #include <atomic>
 
-//#define WITHBUFFERSDEBUG WITHDEBUG
+//#define WITHSEQTEST (1 && WITHDEBUG)
+//#define WITHBUFFERSDEBUG (1 && WITHDEBUG)
+
 #ifndef BUFOVERSIZE
 	#define BUFOVERSIZE 1
 #endif /* BUFOVERSIZE */
@@ -3426,8 +3428,6 @@ saverts192quad(const IFADCvalue_t * buff)
 	}
 }
 #endif /* WITHDSPEXTDDC && WITHRTS192 */
-
-//#define WITHSEQTEST (1 && WITHDEBUG)
 
 #if WITHSEQTEST
 
