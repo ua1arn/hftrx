@@ -49,3 +49,22 @@
 #irq; UART8 180
 #irq; UART9 181
 #typeend;
+
+#type; GIC
+#base; GIC 0x03400000
+#typeend;
+
+
+#type; GPIO
+#base; GPIOA 0x03604080
+#base; GPIOB 0x03604100
+#base; GPIOC 0x03604180
+#base; GPIOD 0x03604200
+#base; GPIOE 0x03604280
+#base; GPIOF 0x03604300
+#base; GPIOG 0x03604380
+#base; GPIOJ 0x03604500
+#base; GPIOK 0x03604580
+
+#typeend;
+

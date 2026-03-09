@@ -561,10 +561,10 @@ extern "C" {
 
 	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
 
-	#define CPU_FREQ	(allwnr_t113_get_arm_freq())
-	#define HARDWARE_UART_FREQ (allwnr_t113_get_uart_freq())
-	#define CPU_PL1_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
-	#define HARDWARE_HOSC_FREQ (allwnr_t113_get_hosc_freq())	/* PL1 times source frequency */
+	#define CPU_FREQ	(allwnr_t153_get_arm_freq())
+	#define HARDWARE_UART_FREQ (allwnr_t153_get_uart_freq())
+	#define CPU_PL1_FREQ (allwnr_t153_get_hosc_freq())	/* PL1 times source frequency */
+	#define HARDWARE_HOSC_FREQ (allwnr_t153_get_hosc_freq())	/* PL1 times source frequency */
 
 	#define TICKS_FREQUENCY 1000	// Hz
 

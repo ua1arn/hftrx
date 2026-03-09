@@ -129,7 +129,7 @@ void user_uart5_onoverflow(void);
 #define HARDWARE_UART5_ONTXCHAR(port)	do { user_uart5_ontxchar((port)); } while (0)
 #define HARDWARE_UART5_ONOVERFLOW()	do { user_uart5_onoverflow(); } while (0)
 
-#define WITHCAN0HW 1
+//#define WITHCAN0HW 1
 
 // WITHCAN0HW
 #define HARDWARE_CAN0_INITIALIZE() do { \
@@ -354,7 +354,7 @@ void user_uart5_onoverflow(void);
 	#define	SMHCHARD_PTR SMHC0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC0_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC0_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnr_t113_get_smhc0_freq())
+	#define SMHCHARD_FREQ (allwnr_t153_get_smhc0_freq())
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	#define HARDWARE_SDIO_INITIALIZE() do { \
@@ -412,7 +412,7 @@ void user_uart5_onoverflow(void);
 	#define	SMHCHARD_PTR SMHC2	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC2_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC2_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnr_t113_get_smhc2_freq())
+	#define SMHCHARD_FREQ (allwnr_t153_get_smhc2_freq())
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	#define HARDWARE_SDIO_INITIALIZE() do { \
@@ -532,7 +532,7 @@ void user_uart5_onoverflow(void);
 	#define	SPIHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
 	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0x02	/* t113: 000: HOSC 001: PLL_PERI(1X) 010: PLL_PERI(2X) 011: PLL_AUDIO1(DIV2) 100: PLL_AUDIO1(DIV5) */
-	#define HARDWARE_SPI_FREQ (allwnr_t113_get_spi0_freq())
+	#define HARDWARE_SPI_FREQ (allwnr_t153_get_spi0_freq())
 	#define	SPIDFHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 
 	#define SPIIO_INITIALIZE() do { \
@@ -610,7 +610,7 @@ void user_uart5_onoverflow(void);
 		} while (0)
 	//#define	TWIHARD_IX 2	/* 0 - TWI0, 1: TWI1... */
 	//#define	TWIHARD_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t153_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 #endif
 
 #if 1
@@ -631,7 +631,7 @@ void user_uart5_onoverflow(void);
 		} while (0) 
 	//#define	TWIHARD_IX 1	/* 0 - TWI0, 1: TWI1... */
 	//#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_t153_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
 
@@ -874,7 +874,7 @@ void user_uart5_onoverflow(void);
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_TV0 */
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCONLCD_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_TV0 */
-		#define BOARD_TCONLCDFREQ (allwnr_t113_get_tconlcd_freq())
+		#define BOARD_TCONLCDFREQ (allwnr_t153_get_tconlcd_freq())
 		#define TCONLCD_GINT0_REG (TCON_LCD0->LCD_GINT0_REG)
 		#define TCONLCD_IRQ TCON_LCD0_IRQn
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
@@ -888,7 +888,7 @@ void user_uart5_onoverflow(void);
 		#define	TCONTV_CCU_BGR_REG (CCU->TCONTV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define TCONTV_IRQ TCON_TV0_IRQn
 		#define TCONTV_GINT0_REG (TCON_TV0->TV_GINT0_REG)
-		#define BOARD_TCONTVFREQ (allwnr_t113_get_tcontv_freq())
+		#define BOARD_TCONTVFREQ (allwnr_t153_get_tcontv_freq())
 		#define RTMIXIDTV 2	/* 1 or 2 for RTMIX0 or RTMIX1 */
 	#endif
 
@@ -898,7 +898,7 @@ void user_uart5_onoverflow(void);
 		#define	TVENCODER_BASE TVE0_BASE	/* 0 - TVE0 */
 		#define	TVE_CCU_CLK_REG (CCU->TVE_CLK_REG)	/* 0 - TVE0, 1: TVE1 */
 		#define	TVE_CCU_BGR_REG (CCU->TVE_BGR_REG)	/* 0 - TVE0, 1: TVE1 */
-		#define BOARD_TVEFREQ (allwnr_t113_get_tve_freq())
+		#define BOARD_TVEFREQ (allwnr_t153_get_tve_freq())
 	#endif
 
 	#if 0

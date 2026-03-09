@@ -12,6 +12,29 @@
 
 typedef enum IRQn
 {
+    SGI0_IRQn = 0,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI1_IRQn = 1,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI2_IRQn = 2,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI3_IRQn = 3,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI4_IRQn = 4,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI5_IRQn = 5,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI6_IRQn = 6,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI7_IRQn = 7,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI8_IRQn = 8,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI9_IRQn = 9,                                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI10_IRQn = 10,                                  /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI11_IRQn = 11,                                  /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI12_IRQn = 12,                                  /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI13_IRQn = 13,                                  /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI14_IRQn = 14,                                  /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SGI15_IRQn = 15,                                  /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    VirtualMaintenanceInterrupt_IRQn = 25,            /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    HypervisorTimer_IRQn = 26,                        /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    VirtualTimer_IRQn = 27,                           /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    Legacy_nFIQ_IRQn = 28,                            /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    SecurePhysicalTimer_IRQn = 29,                    /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    NonSecurePhysicalTimer_IRQn = 30,                 /*!< GIC_INTERFACE GICC GIC CPU Interface */
+    Legacy_nIRQ_IRQn = 31,                            /*!< GIC_INTERFACE GICC GIC CPU Interface */
     UART0_IRQn = 34,                                  /*!< UART  */
     UART1_IRQn = 35,                                  /*!< UART  */
     UART2_IRQn = 36,                                  /*!< UART  */
@@ -40,8 +63,6 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
-#define GIC_INTERFACE_BASE 0
-#define GIC_DISTRIBUTOR_BASE 0
 #define TWI0_BASE ((uintptr_t) 0x02510000)            /*!< TWI Two Wire Interface (TWI) Base */
 #define TWI1_BASE ((uintptr_t) 0x02511000)            /*!< TWI Two Wire Interface (TWI) Base */
 #define TWI2_BASE ((uintptr_t) 0x02512000)            /*!< TWI Two Wire Interface (TWI) Base */
@@ -58,6 +79,19 @@ typedef enum IRQn
 #define UART7_BASE ((uintptr_t) 0x02670000)           /*!< UART  Base */
 #define UART8_BASE ((uintptr_t) 0x02680000)           /*!< UART  Base */
 #define UART9_BASE ((uintptr_t) 0x02690000)           /*!< UART  Base */
+#define GIC_BASE ((uintptr_t) 0x03400000)             /*!< GIC  Base */
+#define GIC_BASE ((uintptr_t) 0x03400000)             /*!< GIC  Base */
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03400000) /*!< GIC_DISTRIBUTOR GIC DISTRIBUTOR; GICD Base */
+#define GIC_INTERFACE_BASE ((uintptr_t) 0x03401000)   /*!< GIC_INTERFACE GICC GIC CPU Interface Base */
+#define GPIOA_BASE ((uintptr_t) 0x03604080)           /*!< GPIO Port Controller Base */
+#define GPIOB_BASE ((uintptr_t) 0x03604100)           /*!< GPIO Port Controller Base */
+#define GPIOC_BASE ((uintptr_t) 0x03604180)           /*!< GPIO Port Controller Base */
+#define GPIOD_BASE ((uintptr_t) 0x03604200)           /*!< GPIO Port Controller Base */
+#define GPIOE_BASE ((uintptr_t) 0x03604280)           /*!< GPIO Port Controller Base */
+#define GPIOF_BASE ((uintptr_t) 0x03604300)           /*!< GPIO Port Controller Base */
+#define GPIOG_BASE ((uintptr_t) 0x03604380)           /*!< GPIO Port Controller Base */
+#define GPIOJ_BASE ((uintptr_t) 0x03604500)           /*!< GPIO Port Controller Base */
+#define GPIOK_BASE ((uintptr_t) 0x03604580)           /*!< GPIO Port Controller Base */
 #define SPI0_BASE ((uintptr_t) 0x04025000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI1_BASE ((uintptr_t) 0x04026000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI2_BASE ((uintptr_t) 0x04027000)            /*!< SPI Serial Peripheral Interface Base */
@@ -65,6 +99,67 @@ typedef enum IRQn
 
 #include <core_ca.h>
 
+/*
+ * @brief GPIO
+ */
+/*!< GPIO Port Controller */
+typedef struct GPIO_Type
+{
+    __IOM uint32_t CFG [0x004];                       /*!< Offset 0x000 Configure Register */
+    __IOM uint32_t DATA;                              /*!< Offset 0x010 Data Register */
+    __IOM uint32_t DATA_SET;                          /*!< Offset 0x014 Data Set Register */
+    __IOM uint32_t DATA_CLR;                          /*!< Offset 0x018 Data Clear Register */
+         RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
+    __IOM uint32_t DRV [0x002];                       /*!< Offset 0x020 Multi_Driving Register */
+         RESERVED(0x028[0x0030 - 0x0028], uint8_t)
+    __IOM uint32_t PULL [0x002];                      /*!< Offset 0x030 Pull Register */
+         RESERVED(0x038[0x0040 - 0x0038], uint8_t)
+    __IOM uint32_t INT_CFG [0x004];                   /*!< Offset 0x040 External Interrupt Configure Register */
+    __IOM uint32_t INT_CTL;                           /*!< Offset 0x050 External Interrupt Control Register */
+    __IOM uint32_t INT_STA;                           /*!< Offset 0x054 External Interrupt Status Register */
+    __IOM uint32_t INT_DEB;                           /*!< Offset 0x058 External Debounce Configure Register */
+         RESERVED(0x05C[0x0070 - 0x005C], uint8_t)
+    __IOM uint32_t SECURE;                            /*!< Offset 0x070 SECURE Configure Register */
+         RESERVED(0x074[0x0080 - 0x0074], uint8_t)
+} GPIO_TypeDef; /* size of structure = 0x080 */
+/*
+ * @brief GPIOBLOCK
+ */
+/*!< GPIOBLOCK Port Controller */
+typedef struct GPIOBLOCK_Type
+{
+    struct
+    {
+        __IOM uint32_t CFG [0x004];                   /*!< Offset 0x000 Configure Register */
+        __IOM uint32_t DATA;                          /*!< Offset 0x010 Data Register */
+        __IOM uint32_t DATA_SET;                      /*!< Offset 0x014 Data Set Register */
+        __IOM uint32_t DATA_CLR;                      /*!< Offset 0x018 Data Clear Register */
+             RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
+        __IOM uint32_t DRV [0x002];                   /*!< Offset 0x020 Multi_Driving Register */
+             RESERVED(0x028[0x0030 - 0x0028], uint8_t)
+        __IOM uint32_t PULL [0x002];                  /*!< Offset 0x030 Pull Register */
+             RESERVED(0x038[0x0040 - 0x0038], uint8_t)
+        __IOM uint32_t INT_CFG [0x004];               /*!< Offset 0x040 External Interrupt Configure Register */
+        __IOM uint32_t INT_CTL;                       /*!< Offset 0x050 External Interrupt Control Register */
+        __IOM uint32_t INT_STA;                       /*!< Offset 0x054 External Interrupt Status Register */
+        __IOM uint32_t INT_DEB;                       /*!< Offset 0x058 External Debounce Configure Register */
+             RESERVED(0x05C[0x0070 - 0x005C], uint8_t)
+        __IOM uint32_t SECURE;                        /*!< Offset 0x070 SECURE Configure Register */
+             RESERVED(0x074[0x0080 - 0x0074], uint8_t)
+    } GPIO_PINS [0x009];                              /*!< Offset 0x000 GPIO pin control B, C, D. E, F, G, H, I, J, K */
+} GPIOBLOCK_TypeDef; /* size of structure = 0x480 */
+/*
+ * @brief GPIOINT
+ */
+/*!< GPIOINT  */
+typedef struct GPIOINT_Type
+{
+    __IOM uint32_t EINT_CFG [0x004];                  /*!< Offset 0x000 External Interrupt Configure Registers */
+    __IOM uint32_t EINT_CTL;                          /*!< Offset 0x010 External Interrupt Control Register */
+    __IOM uint32_t EINT_STATUS;                       /*!< Offset 0x014 External Interrupt Status Register */
+    __IOM uint32_t EINT_DEB;                          /*!< Offset 0x018 External Interrupt Debounce Register */
+         RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
+} GPIOINT_TypeDef; /* size of structure = 0x020 */
 /*
  * @brief SPI
  */
@@ -109,6 +204,46 @@ typedef struct SPI_Type
     __IOM uint32_t SPI_RXD;                           /*!< Offset 0x300 SPI RX Data Register */
          RESERVED(0x304[0x1000 - 0x0304], uint8_t)
 } SPI_TypeDef; /* size of structure = 0x1000 */
+/*
+ * @brief S_GPIO
+ */
+/*!< S_GPIO Port Controller */
+typedef struct S_GPIO_Type
+{
+    __IOM uint32_t CFG [0x004];                       /*!< Offset 0x000 Configure Register */
+    __IOM uint32_t DATA;                              /*!< Offset 0x010 Data Register */
+    __IOM uint32_t DRV [0x004];                       /*!< Offset 0x014 Multi_Driving Register */
+    __IOM uint32_t PULL [0x002];                      /*!< Offset 0x024 Pull Register */
+         RESERVED(0x02C[0x0030 - 0x002C], uint8_t)
+} S_GPIO_TypeDef; /* size of structure = 0x030 */
+/*
+ * @brief S_GPIOBLOCK
+ */
+/*!< S_GPIOBLOCK S_GPIO Port Controller */
+typedef struct S_GPIOBLOCK_Type
+{
+    struct
+    {
+        __IOM uint32_t CFG [0x004];                   /*!< Offset 0x000 Configure Register */
+        __IOM uint32_t DATA;                          /*!< Offset 0x010 Data Register */
+        __IOM uint32_t DRV [0x004];                   /*!< Offset 0x014 Multi_Driving Register */
+        __IOM uint32_t PULL [0x002];                  /*!< Offset 0x024 Pull Register */
+             RESERVED(0x02C[0x0030 - 0x002C], uint8_t)
+    } GPIO_PINS [0x002];                              /*!< Offset 0x000 GPIO pin control L, M */
+         RESERVED(0x060[0x0200 - 0x0060], uint8_t)
+    struct
+    {
+        __IOM uint32_t EINT_CFG [0x004];              /*!< Offset 0x200 External Interrupt Configure Registers */
+        __IOM uint32_t EINT_CTL;                      /*!< Offset 0x210 External Interrupt Control Register */
+        __IOM uint32_t EINT_STATUS;                   /*!< Offset 0x214 External Interrupt Status Register */
+        __IOM uint32_t EINT_DEB;                      /*!< Offset 0x218 External Interrupt Debounce Register */
+             RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
+    } GPIO_INTS [0x002];                              /*!< Offset 0x200 GPIO interrupt control */
+         RESERVED(0x240[0x0340 - 0x0240], uint8_t)
+    __IOM uint32_t GPIO_POW_MOD_SEL;                  /*!< Offset 0x340 PIO Group Withstand Voltage Mode Select Register */
+    __IOM uint32_t GPIO_POW_MS_CTL;                   /*!< Offset 0x344 PIO Group Withstand Voltage Mode Select Control Register */
+    __IOM uint32_t GPIO_POW_VAL;                      /*!< Offset 0x348 PIO Group Power Value Register */
+} S_GPIOBLOCK_TypeDef; /* size of structure = 0x34C */
 /*
  * @brief TWI
  */
@@ -354,6 +489,15 @@ typedef struct USB_OHCI_Capability_Type
 #define UART7 ((UART_TypeDef *) UART7_BASE)           /*!< UART7  register set access pointer */
 #define UART8 ((UART_TypeDef *) UART8_BASE)           /*!< UART8  register set access pointer */
 #define UART9 ((UART_TypeDef *) UART9_BASE)           /*!< UART9  register set access pointer */
+#define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA Port Controller register set access pointer */
+#define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB Port Controller register set access pointer */
+#define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC Port Controller register set access pointer */
+#define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)           /*!< GPIOD Port Controller register set access pointer */
+#define GPIOE ((GPIO_TypeDef *) GPIOE_BASE)           /*!< GPIOE Port Controller register set access pointer */
+#define GPIOF ((GPIO_TypeDef *) GPIOF_BASE)           /*!< GPIOF Port Controller register set access pointer */
+#define GPIOG ((GPIO_TypeDef *) GPIOG_BASE)           /*!< GPIOG Port Controller register set access pointer */
+#define GPIOJ ((GPIO_TypeDef *) GPIOJ_BASE)           /*!< GPIOJ Port Controller register set access pointer */
+#define GPIOK ((GPIO_TypeDef *) GPIOK_BASE)           /*!< GPIOK Port Controller register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define SPI2 ((SPI_TypeDef *) SPI2_BASE)              /*!< SPI2 Serial Peripheral Interface register set access pointer */

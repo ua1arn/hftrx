@@ -11,6 +11,164 @@
  <resetMask>0xFFFFFFFF</resetMask>
  <peripherals>
   <peripheral>
+  <name>GPIOA</name>
+  <description>Port Controller</description>
+  <baseAddress>0x03604080</baseAddress>
+  <registers>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000000</addressOffset>
+    <register>
+     <name>CFG</name>
+     <displayName>CFG</displayName>
+     <description>Configure Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <register>
+    <name>DATA</name>
+    <displayName>DATA</displayName>
+    <description>Data Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DATA_SET</name>
+    <displayName>DATA_SET</displayName>
+    <description>Data Set Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DATA_CLR</name>
+    <displayName>DATA_CLR</displayName>
+    <description>Data Clear Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x00000020</addressOffset>
+    <register>
+     <name>DRV</name>
+     <displayName>DRV</displayName>
+     <description>Multi_Driving Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x008</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x00000030</addressOffset>
+    <register>
+     <name>PULL</name>
+     <displayName>PULL</displayName>
+     <description>Pull Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x008</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000040</addressOffset>
+    <register>
+     <name>INT_CFG</name>
+     <displayName>INT_CFG</displayName>
+     <description>External Interrupt Configure Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <register>
+    <name>INT_CTL</name>
+    <displayName>INT_CTL</displayName>
+    <description>External Interrupt Control Register</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INT_STA</name>
+    <displayName>INT_STA</displayName>
+    <description>External Interrupt Status Register</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>INT_DEB</name>
+    <displayName>INT_DEB</displayName>
+    <description>External Debounce Configure Register</description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SECURE</name>
+    <displayName>SECURE</displayName>
+    <description>SECURE Configure Register</description>
+    <addressOffset>0x070</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
+  <name>GPIOB</name>
+  <baseAddress>0x03604100</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
+  <name>GPIOC</name>
+  <baseAddress>0x03604180</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
+  <name>GPIOD</name>
+  <baseAddress>0x03604200</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
+  <name>GPIOE</name>
+  <baseAddress>0x03604280</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
+  <name>GPIOF</name>
+  <baseAddress>0x03604300</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
+  <name>GPIOG</name>
+  <baseAddress>0x03604380</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
+  <name>GPIOJ</name>
+  <baseAddress>0x03604500</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="GPIOA">
+  <name>GPIOK</name>
+  <baseAddress>0x03604580</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>SPI0</name>
   <description>Serial Peripheral Interface</description>
   <baseAddress>0x04025000</baseAddress>
