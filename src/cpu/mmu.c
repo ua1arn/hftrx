@@ -554,10 +554,6 @@ static const getmmudesc_t aarch32_table_1M =
 	#define SHAREDval_RAM 0		// If non-zero, Renesas Cortex-A9 hung by buffers
 #endif /* WITHSMPSYSTEM */
 
-#define APRWval 		0x03	/* Full access */
-#define APROval 		0x06	/* All write accesses generate Permission faults */
-#define DOMAINval		0x0F
-#define SECTIONval		0x02	/* 0b10, Section or Supersection */
 /* Shareable Device */
 #define TEXval_DEVICE       0x00
 #define Cval_DEVICE         0
