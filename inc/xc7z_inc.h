@@ -1,3 +1,5 @@
+#ifndef XC7Z_INC_H_INCLUDED   /* prevent circular inclusions */
+#define XC7Z_INC_H_INCLUDED   /* by using protection macros */
 #if LINUX_SUBSYSTEM
 	/* No Vivado headers used */
 
@@ -61,3 +63,4 @@
 	#include "lib/zynq/src_7020_ebaz/xadcps_v2_6/xadcps.h"
 	#include "lib/zynq/src_7020_ebaz/dmaps_v2_8/xdmaps.h"
 #endif /*  */
+#endif  /* end of protection macro */
