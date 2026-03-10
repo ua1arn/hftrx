@@ -173,6 +173,9 @@ uint8_t gui_obj_create(const char * name, ...)
 		lh->width = va_arg(arg, uint32_t);
 		memset(lh->text, '*', lh->width);		// для совместимости, потом убрать
 		lh->width_pix = get_strwidth_mono(lh->text, lh->font);
+#if GUI_USE_CACHE
+		lh->cache = NULL;
+#endif /* GUI_USE_CACHE */
 
 		idx = win->lh_count;
 		win->lh_count ++;
@@ -519,6 +522,11 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 			lh->height_pix = lh->font->height;
 			lh->width_pix = get_strwidth_mono(lh->text, lh->font);
 		}
+
+#if GUI_USE_CACHE
+		if (prop & NEED_INVALIDATION_MASK) gui_objects_cache_invalidate(lh->cache);
+#endif /* GUI_USE_CACHE */
+
 		break;
 
 	case TYPE_BUTTON:
@@ -539,7 +547,9 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_LONG_PRESS) bh->is_long_press = !! va_arg(arg, int);
 		else if (prop == GUI_OBJ_FONT) bh->font = va_arg(arg, gui_prop_font_t *);
 
-		if (prop & NEED_INVALIDATION_MASK) invalidate_button_cache(bh);
+#if GUI_USE_CACHE
+		if (prop & NEED_INVALIDATION_MASK) gui_objects_cache_invalidate(bh->cache);
+#endif /* GUI_USE_CACHE */
 
 		break;
 

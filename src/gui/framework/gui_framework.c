@@ -569,6 +569,9 @@ void objects_state (window_t * win)
 			close_button.parent = win->window_id;
 			close_button.visible = VISIBLE;
 			close_button.state = CANCELLED;
+#if GUI_USE_CACHE
+			close_button.cache = NULL;
+#endif /* GUI_USE_CACHE */
 
 			gui_object_t * new_obj = (gui_object_t *) calloc(1, sizeof(gui_object_t));
 			GUI_MEM_ASSERT(new_obj);
@@ -583,6 +586,14 @@ void objects_state (window_t * win)
 		}
 		else
 		{
+#if GUI_USE_CACHE
+            if (close_button.cache != NULL)
+            {
+                gui_objects_cache_destroy(close_button.cache);
+                close_button.cache = NULL;
+            }
+#endif /* GUI_USE_CACHE */
+
 			VERIFY(remove_from_gui_list(& close_button));
 			debug_num --;
 			gui_object_count--;
@@ -725,7 +736,7 @@ static void draw_button(button_t * bh)
 	uint16_t y1 = win->y1 + bh->y1;
 
 #if GUI_USE_CACHE
-#if DEBUG_BUTTON_CACHE
+#if DEBUG_BUTTONS_CACHE
 	static uint32_t cache_hits = 0, cache_misses = 0;
 
 	if (bh->cache != NULL && ! gui_objects_cache_needs_render(bh->cache, bh->state, bh->is_locked, bh->text))
@@ -735,11 +746,11 @@ static void draw_button(button_t * bh)
 
 	if ((cache_hits + cache_misses) % 60 == 0)
 	{
-		printf("Button cache: hits=%u, misses=%u, hit_rate=%.1f%%\n", cache_hits, cache_misses,
+		printf("Buttons cache: hits=%u, misses=%u, hit_rate=%.1f%%\n", cache_hits, cache_misses,
 				100.0f * cache_hits / (cache_hits + cache_misses));
 		cache_hits = cache_misses = 0;
 	}
- #endif /* DEBUG_BUTTON_CACHE */
+ #endif /* DEBUG_BUTTONS_CACHE */
 
 	if (bh->cache != NULL && ! gui_objects_cache_needs_render(bh->cache, bh->state, bh->is_locked, bh->text))
 	{
@@ -749,13 +760,15 @@ static void draw_button(button_t * bh)
 	}
 
 	/* Кэш недействителен - создаём/обновляем */
-	if (bh->cache == NULL) {
+	if (bh->cache == NULL)
+	{
 		bh->cache = gui_objects_cache_create(bh->w, bh->h, GUI_CACHE_TYPE_BUTTON);
 		if (bh->cache == NULL) goto fallback_render;
 	}
 
 	/* Рендерим кнопку в кэш через абстракции gui_port.h */
-	if (gui_objects_cache_begin_render(bh->cache)) {
+	if (gui_objects_cache_begin_render(bh->cache))
+	{
 		const gui_drawbuf_t * cache_db = __gui_get_drawbuf();
 
 		/* Отрисовка фона кнопки */
@@ -775,27 +788,31 @@ static void draw_button(button_t * bh)
 		const gui_color_t textcolor = COLORPIP_BLACK;
 		static const char delimeters[] = "|";
 
-		if (strchr(bh->text, delimeters[0]) == NULL) {
+		if (strchr(bh->text, delimeters[0]) == NULL)
+		{
 			int strlenP = get_strwidth_prop(bh->text, bh->font);
 			__gui_print_prop(cache_db, shiftX + (bh->w - strlenP) / 2,
 					shiftY + (bh->h - bh->font->height) / 2,
 					bh->text, bh->font, textcolor);
-		} else {
+		} else
+		{
 			char buf[TEXT_ARRAY_SIZE];
 			strncpy(buf, bh->text, TEXT_ARRAY_SIZE - 1);
 			buf[TEXT_ARRAY_SIZE - 1] = '\0';
 			uint8_t j = (bh->h - bh->font->height * 2) / 2;
 			char * saveptr = NULL;
-			char * text2 = strtok_r(buf, delimeters, &saveptr);
-			if (text2 != NULL) {
+			char * text2 = strtok_r(buf, delimeters, & saveptr);
+			if (text2 != NULL)
+			{
 				int strlenP = get_strwidth_prop(text2, bh->font);
 				__gui_print_prop(cache_db,
 						shiftX + (bh->w - strlenP) / 2,
 						shiftY + j,
 						text2, bh->font, textcolor);
 			}
-			text2 = strtok_r(NULL, delimeters, &saveptr);
-			if (text2 != NULL) {
+			text2 = strtok_r(NULL, delimeters, & saveptr);
+			if (text2 != NULL)
+			{
 				int strlenP = get_strwidth_prop(text2, bh->font);
 				__gui_print_prop(cache_db,
 						shiftX + (bh->w - strlenP) / 2,
@@ -871,10 +888,13 @@ fallback_render:
 	const gui_color_t textcolor = COLORPIP_BLACK;
 	static const char delimeters[] = "|";
 
-	if (strchr(bh->text, delimeters[0]) == NULL) {
+	if (strchr(bh->text, delimeters[0]) == NULL)
+	{
+		/* Однострочная надпись */
 		int strlenP = get_strwidth_prop(bh->text, bh->font);
 		__gui_print_prop(gdb, shiftX + x1 + (bh->w - strlenP) / 2, shiftY + y1 + (bh->h - bh->font->height) / 2, bh->text, bh->font, textcolor);
-	} else {
+	} else
+	{
 		/* Двухстрочная надпись */
 		char * next;
 		uint8_t j = (bh->h - bh->font->height * 2) / 2;
@@ -902,15 +922,109 @@ fallback_render:
 		gui_drawDashedRectangle(x1 + 4, y1 + 4, bh->w - 8, bh->h - 8, 4, COLOR_BLACK);
 }
 
-void invalidate_button_cache(button_t * bh)
+static void draw_label(label_t * lh)
 {
-    if (bh == NULL) return;
+	window_t * win = get_win(lh->parent);
+	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
+	uint16_t x = win->x1 + lh->x;
+	uint16_t y = win->y1 + lh->y;
 
 #if GUI_USE_CACHE
-    if (bh->cache != NULL) {
-    	gui_objects_cache_invalidate(bh->cache);
-    }
+#if DEBUG_LABELS_CACHE
+	static uint32_t cache_hits = 0, cache_misses = 0;
+
+	if (lh->cache != NULL && ! gui_objects_cache_needs_render(lh->cache, 0, 0, lh->text))
+		cache_hits++;
+	else
+		cache_misses++;
+
+	if ((cache_hits + cache_misses) % 60 == 0)
+	{
+		printf("Labels cache: hits=%u, misses=%u, hit_rate=%.1f%%\n", cache_hits, cache_misses,
+				100.0f * cache_hits / (cache_hits + cache_misses));
+		cache_hits = cache_misses = 0;
+	}
+ #endif /* DEBUG_LABELS_CACHE */
+
+	if (lh->cache != NULL && ! gui_objects_cache_needs_render(lh->cache, 0, 0, lh->text))
+	{
+		/* Кэш действителен - копируем готовую текстуру */
+		gui_objects_cache_draw(lh->cache, x, y);
+		return;
+	}
+
+	/* Кэш недействителен - создаём/обновляем */
+	if (lh->cache == NULL)
+	{
+		lh->cache = gui_objects_cache_create(lh->width_pix, lh->height_pix, GUI_CACHE_TYPE_LABEL);
+		if (lh->cache == NULL) goto fallback_render;
+	}
+
+	if (gui_objects_cache_begin_render(lh->cache))
+	{
+		const gui_drawbuf_t * cache_db = __gui_get_drawbuf();
+
+		__gui_print_mono(cache_db, 0, 0, lh->text, lh->font, lh->color);
+
+		gui_objects_cache_end_render(lh->cache, 0, 0, lh->text);
+	}
+
+	/* Копируем из кэша на экран */
+	gui_objects_cache_draw(lh->cache, x, y);
+	return;
+
+fallback_render:
 #endif /* GUI_USE_CACHE */
+
+	__gui_print_mono(gdb, x, y, lh->text, lh->font, lh->color);
+}
+
+static void draw_close_button(button_t * bh)
+{
+	window_t * win = get_win(bh->parent);
+	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
+
+	uint16_t x = win->x1 + bh->x1;
+	uint16_t y = win->y1 + bh->y1;
+	uint16_t w = bh->w;
+	uint16_t h = bh->h;
+
+#if GUI_USE_CACHE
+	if (bh->cache != NULL && ! gui_objects_cache_needs_render(bh->cache, bh->state, bh->is_locked, bh->text))
+	{
+		/* Кэш действителен - копируем готовую текстуру */
+		gui_objects_cache_draw(bh->cache, x, y);
+		return;
+	}
+
+	/* Кэш недействителен - создаём/обновляем */
+	if (bh->cache == NULL)
+	{
+		bh->cache = gui_objects_cache_create(bh->w, bh->h, GUI_CACHE_TYPE_BUTTON);
+		if (bh->cache == NULL) goto fallback_render;
+	}
+
+	if (gui_objects_cache_begin_render(bh->cache))
+	{
+		const gui_drawbuf_t * cache_db = __gui_get_drawbuf();
+
+		__gui_draw_rect(cache_db, 0, 0, w, h, COLORPIP_BLACK, 0);
+		__gui_draw_line(cache_db, 0, 0, w, h, COLORPIP_BLACK);
+		__gui_draw_line(cache_db, 0, h, w, 0, COLORPIP_BLACK);
+
+		gui_objects_cache_end_render(bh->cache, bh->state, bh->is_locked, bh->text);
+	}
+
+	/* Копируем из кэша на экран */
+	gui_objects_cache_draw(bh->cache, x, y);
+	return;
+
+fallback_render:
+#endif /* GUI_USE_CACHE */
+
+	__gui_draw_rect(gdb, x, y, w,  h, COLORPIP_BLACK, 0);
+	__gui_draw_line(gdb, x, y, x + w, y + h, COLORPIP_BLACK);
+	__gui_draw_line(gdb, x, y + h, x + w, y, COLORPIP_BLACK);
 }
 
 static void objects_init(void)
@@ -1017,6 +1131,9 @@ static void set_state_record(gui_object_t * val)
 			GUI_ASSERT(val->link != NULL);
 			button_t * bh = (button_t *) val->link;
 			bh->state = val->state;
+#if GUI_USE_CACHE
+			gui_objects_cache_invalidate(bh->cache);
+#endif /* GUI_USE_CACHE */
 			if (bh->state == RELEASED) close_all_windows();
 		}
 			break;
@@ -1026,7 +1143,9 @@ static void set_state_record(gui_object_t * val)
 			GUI_ASSERT(val->link != NULL);
 			button_t * bh = (button_t *) val->link;
 			bh->state = val->state;
-			invalidate_button_cache(bh);
+#if GUI_USE_CACHE
+			gui_objects_cache_invalidate(bh->cache);
+#endif /* GUI_USE_CACHE */
 			if (bh->state == RELEASED || bh->state == LONG_PRESSED || bh->state == PRESS_REPEATING)
 			{
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh->state == LONG_PRESSED ? LONG_PRESSED : PRESSED, bh->name))
@@ -1040,6 +1159,9 @@ static void set_state_record(gui_object_t * val)
 			GUI_ASSERT(val->link != NULL);
 			label_t * lh = (label_t *) val->link;
 			lh->state = val->state;
+#if GUI_USE_CACHE
+			gui_objects_cache_invalidate(lh->cache);
+#endif /* GUI_USE_CACHE */
 			if (lh->state == RELEASED)
 			{
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, PRESSED, lh->name))
@@ -1372,21 +1494,13 @@ void process_gui(void)
 					{
 						button_t * bh = (button_t *) p->link;
 						if (bh->visible && bh->parent == win->window_id)
-						{
-							__gui_draw_rect(drawbuf, win->x1 + bh->x1, win->y1 + bh->y1,
-									bh->w,  bh->h, COLORPIP_BLACK, 0);
-							__gui_draw_line(drawbuf, win->x1 + bh->x1, win->y1 + bh->y1,
-									win->x1 + bh->x1 + bh->w, win->y1 + bh->y1 + bh->h, COLORPIP_BLACK);
-							__gui_draw_line(drawbuf, win->x1 + bh->x1, win->y1 + bh->y1 + bh->h,
-									win->x1 + bh->x1 + bh->w, win->y1 + bh->y1, COLORPIP_BLACK);
-						}
+							draw_close_button(bh);
 					}
 					else if (p->type == TYPE_LABEL)
 					{
 						label_t * lh = (label_t *) p->link;
 						if (lh->visible && lh->parent == win->window_id)
-							__gui_print_mono(drawbuf, win->x1 + lh->x, win->y1 + lh->y,
-									lh->text, lh->font, lh->color);
+							draw_label(lh);
 					}
 					else if (p->type == TYPE_SLIDER)
 					{

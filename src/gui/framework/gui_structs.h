@@ -212,6 +212,9 @@ typedef struct {
 	uint16_t x;
 	uint16_t y;
 	const gui_mono_font_t * font;
+#if GUI_USE_CACHE
+	gui_objects_cache_t * cache;
+#endif /* GUI_USE_CACHE */
 } label_t;
 
 typedef enum  {

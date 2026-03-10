@@ -19,8 +19,6 @@ uint8_t get_current_drawing_window(void);
 void set_parent_window(uint8_t p);
 void get_gui_tracking(int_fast16_t * x, int_fast16_t * y);
 
-void invalidate_button_cache(button_t * bh);
-
 uint8_t put_to_wm_queue(window_t * win, wm_message_t message, ...);
 wm_message_t get_from_wm_queue(uint8_t win_id, uint8_t * type, int32_t * action, char * name);
 void dump_queue(window_t * win);

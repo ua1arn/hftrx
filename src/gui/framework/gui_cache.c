@@ -42,7 +42,6 @@ gui_objects_cache_t * gui_objects_cache_create(uint16_t w, uint16_t h, gui_cache
     cache->custom_data = NULL;
     cache->custom_hash = 0;
 
-    /* Создаём кэш-текстуру через новую функцию */
     cache->buffer = __gui_cache_texture_create(w, h);
     if (cache->buffer == NULL) {
         free(cache);
