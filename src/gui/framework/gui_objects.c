@@ -199,6 +199,9 @@ uint8_t gui_obj_create(const char * name, ...)
 		bh->x1 = 0;
 		bh->y1 = 0;
 		bh->font = & BUTTONS_FONTP_DEFAULT;
+#if GUI_USE_CACHE
+		bh->cache = NULL;
+#endif /* GUI_USE_CACHE */
 
 		idx = win->bh_count;
 		win->bh_count ++;
@@ -535,6 +538,9 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_REPEAT) bh->is_repeating = !! va_arg(arg, int);
 		else if (prop == GUI_OBJ_LONG_PRESS) bh->is_long_press = !! va_arg(arg, int);
 		else if (prop == GUI_OBJ_FONT) bh->font = va_arg(arg, gui_prop_font_t *);
+
+		if (prop & NEED_INVALIDATION_MASK) invalidate_button_cache(bh);
+
 		break;
 
 	case TYPE_SLIDER:

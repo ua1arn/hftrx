@@ -320,6 +320,95 @@ static inline void __gui_draw_semitransparent_rect(const gui_drawbuf_t * buf, un
 	SDL_RenderFillRect(buf->renderer, & rect);
 }
 
+#if GUI_USE_CACHE
+
+/* Создание кэш-текстуры для отрисовки */
+static inline gui_objbgbuf_t * __gui_cache_texture_create(unsigned int w, unsigned int h)
+{
+    gui_objbgbuf_t * buf = calloc(1, sizeof(gui_objbgbuf_t));
+    ASSERT(buf);
+
+    const gui_drawbuf_t * db = __gui_get_drawbuf();
+    ASSERT(db && db->renderer);
+
+    buf->renderer = db->renderer;
+    buf->texture = SDL_CreateTexture(db->renderer,
+                                      SDL_PIXELFORMAT_ARGB8888,
+                                      SDL_TEXTUREACCESS_TARGET,
+                                      w, h);
+    ASSERT(buf->texture);
+
+    /* Устанавливаем режим смешивания для прозрачности */
+    SDL_SetTextureBlendMode(buf->texture, SDL_BLENDMODE_BLEND);
+
+    return buf;
+}
+
+/* Начало отрисовки в кэш-текстуру */
+static inline void __gui_cache_texture_begin(gui_objbgbuf_t * cache)
+{
+    ASSERT(cache && cache->texture);
+
+    const gui_drawbuf_t * db = __gui_get_drawbuf();
+    ASSERT(db && db->renderer);
+
+    /* Сохраняем текущий render target */
+    cache->slave = (uint8_t)(uintptr_t)SDL_GetRenderTarget(db->renderer);
+
+    /* Переключаемся на кэш-текстуру */
+    SDL_SetRenderTarget(db->renderer, cache->texture);
+
+    /* Очищаем прозрачным цветом */
+    SDL_SetRenderDrawBlendMode(db->renderer, SDL_BLENDMODE_NONE);
+    SDL_SetRenderDrawColor(db->renderer, 0, 0, 0, 0);
+    SDL_RenderClear(db->renderer);
+}
+
+/* Завершение отрисовки в кэш-текстуру */
+static inline void __gui_cache_texture_end(gui_objbgbuf_t * cache)
+{
+    ASSERT(cache);
+
+    const gui_drawbuf_t * db = __gui_get_drawbuf();
+    ASSERT(db && db->renderer);
+
+    /* Восстанавливаем предыдущий render target */
+    SDL_SetRenderTarget(db->renderer, (SDL_Texture *)(uintptr_t)cache->slave);
+}
+
+/* Отрисовка кэш-текстуры на экран в указанных координатах */
+static inline void __gui_cache_texture_draw(gui_objbgbuf_t * cache,
+                                             unsigned int dst_x,
+                                             unsigned int dst_y)
+{
+    ASSERT(cache && cache->texture);
+
+    const gui_drawbuf_t * db = __gui_get_drawbuf();
+    ASSERT(db && db->renderer);
+
+    int w, h;
+    SDL_QueryTexture(cache->texture, NULL, NULL, &w, &h);
+
+    SDL_Rect dstRect = { dst_x, dst_y, w, h };
+
+    /* Копируем текстуру на экран */
+    SDL_RenderCopy(db->renderer, cache->texture, NULL, &dstRect);
+}
+
+/* Уничтожение кэш-текстуры */
+static inline void __gui_cache_texture_destroy(gui_objbgbuf_t * cache)
+{
+    if (cache) {
+        if (cache->texture) {
+            SDL_DestroyTexture(cache->texture);
+            cache->texture = NULL;
+        }
+        free(cache);
+    }
+}
+
+#endif /* GUI_USE_CACHE */
+
 #ifdef GUI_TIME_PROFILER
 
     #define TIME_PROFILE_START(label) \
@@ -422,6 +511,9 @@ static inline void __gui_draw_semitransparent_rect(const gui_drawbuf_t * buf, un
 {
 	display_transparency(buf, x1, y1, x2, y2, alpha);
 }
+
+#define TIME_PROFILE_START(label)      ((void)0)
+#define TIME_PROFILE_STOP(label, desc) ((void)0)
 
 #endif /*  */
 

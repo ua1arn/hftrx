@@ -22,6 +22,10 @@ enum {
 	common_btn_interval = 3,
 	common_btn_width = WITHGUIMAXX / 9 + 1 - common_btn_interval,
 	common_btn_height = FOOTER_HEIGHT - 6,
+	NAME_ARRAY_SIZE = 40,
+	MENU_ARRAY_SIZE = 50,
+	TEXT_ARRAY_SIZE = 70,
+	GUI_OBJECTS_ARRAY_SIZE = 60
 };
 
 #define COMMON_BUTTON_STYLE		common_btn_width, common_btn_height

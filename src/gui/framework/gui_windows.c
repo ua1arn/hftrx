@@ -80,6 +80,18 @@ void open_window(window_t * win)
 /* Освободить выделенную память в куче и обнулить счетчики элементов окна */
 static void free_win_ptr (window_t * win)
 {
+#if GUI_USE_CACHE
+    if (win->bh_ptr != NULL) {
+        for (uint8_t i = 0; i < win->bh_count; i++) {
+            /* Освобождение кэша кнопки */
+            if (win->bh_ptr[i].cache != NULL) {
+                gui_objects_cache_destroy(win->bh_ptr[i].cache);
+                win->bh_ptr[i].cache = NULL;
+            }
+        }
+    }
+#endif /* GUI_USE_CACHE */
+
 	free(win->bh_ptr);
 	free(win->lh_ptr);
 	free(win->sh_ptr);

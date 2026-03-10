@@ -94,6 +94,7 @@
 	#define WITHAFSPECTRE			1		/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHFFTSIZEAF 			512		/* Отображение спектра НЧ сигнвлв */
 	#define WITHTOUCHGUI			1
+	#define GUI_USE_CACHE			1
 	#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 	#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHALPHA				192

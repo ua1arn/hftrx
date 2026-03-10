@@ -14,6 +14,9 @@ extern "C" {
 #define GUI_TRANSPARENT_WINDOWS	1
 #define FOOTER_HEIGHT			(WITHGUIMAXX / 16)
 
+//#define GUI_TIME_PROFILER		1
+//#define DEBUG_BUTTON_CACHE	1
+
 typedef struct {
 	char param[20];
 	char val[20];

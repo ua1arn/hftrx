@@ -7,6 +7,7 @@
 
 #include "gui_system.h"
 #include "gui_settings.h"
+#include "gui_cache.h"
 #include "../gui_port.h"
 
 #define IS_BUTTON_PRESS			(type == TYPE_BUTTON && action == PRESSED)
@@ -21,6 +22,8 @@
 								int32_t action;	\
 								char name[NAME_ARRAY_SIZE];		\
 								switch (get_from_wm_queue(W, & type, & action, name))
+
+#define NEED_INVALIDATION_MASK	0x80
 
 typedef enum {
 	TYPE_DUMMY,
@@ -82,13 +85,6 @@ typedef enum {
 	TITLE_ALIGNMENT_CENTER
 } title_align_t;
 
-enum {
-	NAME_ARRAY_SIZE = 40,
-	MENU_ARRAY_SIZE = 50,
-	TEXT_ARRAY_SIZE = 70,
-	GUI_OBJECTS_ARRAY_SIZE = 60
-};
-
 typedef enum {
 	UP,
 	DOWN,
@@ -104,23 +100,26 @@ typedef enum {
 } object_alignment_t;
 
 typedef enum {
+	// свойства, не требующие инвалидации кеша
 	GUI_OBJ_VISIBLE,
-	GUI_OBJ_TEXT,
-	GUI_OBJ_TEXT_FMT,
 	GUI_OBJ_POS_X,
 	GUI_OBJ_POS_Y,
 	GUI_OBJ_POS,
+	GUI_OBJ_REPEAT,
+	GUI_OBJ_INDEX,
+	GUI_OBJ_LONG_PRESS,
+
+	// свойства, при изменении которых требуется инвалидация кеша
+	GUI_OBJ_FONT = NEED_INVALIDATION_MASK + 1,
+	GUI_OBJ_TEXT,
+	GUI_OBJ_TEXT_FMT,
 	GUI_OBJ_PAYLOAD,
 	GUI_OBJ_STATE,
 	GUI_OBJ_LOCK,
 	GUI_OBJ_COLOR,
 	GUI_OBJ_WIDTH,
 	GUI_OBJ_HEIGHT,
-	GUI_OBJ_SIZE,
-	GUI_OBJ_REPEAT,
-	GUI_OBJ_INDEX,
-	GUI_OBJ_LONG_PRESS,
-	GUI_OBJ_FONT,
+	GUI_OBJ_SIZE
 } object_prop_t;
 
 enum {
@@ -192,6 +191,9 @@ typedef struct {
 	uint16_t x1;					// координаты от начала окна
 	uint16_t y1;
 	const gui_prop_font_t * font;
+#if GUI_USE_CACHE
+	gui_objects_cache_t * cache;
+#endif /* GUI_USE_CACHE */
 } button_t;
 
 typedef struct {

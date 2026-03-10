@@ -18,6 +18,7 @@
 #include "gui_windows.h"
 #include "gui_objects.h"
 #include "gui_events.h"
+#include "gui_cache.h"
 #include "utils.h"
 #include "../gui_user.h"
 #include "../gui_port.h"
@@ -716,81 +717,166 @@ static void fill_button_bg_buf(btn_bg_t * v)
 	}
 }
 
-static void draw_button(const button_t * const bh)
+static void draw_button(button_t * bh)
 {
-	gui_objbgbuf_t * bg = NULL;
 	window_t * win = get_win(bh->parent);
 	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
-	uint8_t i = 0;
-	static const char delimeters[] = "|";
 	uint16_t x1 = win->x1 + bh->x1;
 	uint16_t y1 = win->y1 + bh->y1;
 
-	if ((x1 + bh->w >= WITHGUIMAXX) || (y1 + bh->h >= WITHGUIMAXY))
+#if GUI_USE_CACHE
+#if DEBUG_BUTTON_CACHE
+	static uint32_t cache_hits = 0, cache_misses = 0;
+
+	if (bh->cache != NULL && ! gui_objects_cache_needs_render(bh->cache, bh->state, bh->is_locked, bh->text))
+		cache_hits++;
+	else
+		cache_misses++;
+
+	if ((cache_hits + cache_misses) % 60 == 0)
 	{
-		PRINTF("%s %s x+w: %d y+h: %d\n", bh->name, bh->text, x1 + bh->w, y1 + bh->h);
-		GUI_ASSERT(0);
+		printf("Button cache: hits=%u, misses=%u, hit_rate=%.1f%%\n", cache_hits, cache_misses,
+				100.0f * cache_hits / (cache_hits + cache_misses));
+		cache_hits = cache_misses = 0;
+	}
+ #endif /* DEBUG_BUTTON_CACHE */
+
+	if (bh->cache != NULL && ! gui_objects_cache_needs_render(bh->cache, bh->state, bh->is_locked, bh->text))
+	{
+		/* Кэш действителен - копируем готовую текстуру */
+		gui_objects_cache_draw(bh->cache, x1, y1);
+		return;
 	}
 
+	/* Кэш недействителен - создаём/обновляем */
+	if (bh->cache == NULL) {
+		bh->cache = gui_objects_cache_create(bh->w, bh->h, GUI_CACHE_TYPE_BUTTON);
+		if (bh->cache == NULL) goto fallback_render;
+	}
+
+	/* Рендерим кнопку в кэш через абстракции gui_port.h */
+	if (gui_objects_cache_begin_render(bh->cache)) {
+		const gui_drawbuf_t * cache_db = __gui_get_drawbuf();
+
+		/* Отрисовка фона кнопки */
+		gui_color_t c1, c2;
+		c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED :
+			 (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
+		c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED :
+			 (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
+
+		__gui_draw_rounded_rect(cache_db, 0, 0, bh->w - 1, bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
+		__gui_draw_rounded_rect(cache_db, 1, 1, bh->w - 3, bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		__gui_draw_rounded_rect(cache_db, 2, 2, bh->w - 5, bh->h - 5, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
+
+		/* Отрисовка текста кнопки */
+		const uint16_t shiftX = bh->state == PRESSED ? 1 : 0;
+		const uint16_t shiftY = bh->state == PRESSED ? 1 : 0;
+		const gui_color_t textcolor = COLORPIP_BLACK;
+		static const char delimeters[] = "|";
+
+		if (strchr(bh->text, delimeters[0]) == NULL) {
+			int strlenP = get_strwidth_prop(bh->text, bh->font);
+			__gui_print_prop(cache_db, shiftX + (bh->w - strlenP) / 2,
+					shiftY + (bh->h - bh->font->height) / 2,
+					bh->text, bh->font, textcolor);
+		} else {
+			char buf[TEXT_ARRAY_SIZE];
+			strncpy(buf, bh->text, TEXT_ARRAY_SIZE - 1);
+			buf[TEXT_ARRAY_SIZE - 1] = '\0';
+			uint8_t j = (bh->h - bh->font->height * 2) / 2;
+			char * saveptr = NULL;
+			char * text2 = strtok_r(buf, delimeters, &saveptr);
+			if (text2 != NULL) {
+				int strlenP = get_strwidth_prop(text2, bh->font);
+				__gui_print_prop(cache_db,
+						shiftX + (bh->w - strlenP) / 2,
+						shiftY + j,
+						text2, bh->font, textcolor);
+			}
+			text2 = strtok_r(NULL, delimeters, &saveptr);
+			if (text2 != NULL) {
+				int strlenP = get_strwidth_prop(text2, bh->font);
+				__gui_print_prop(cache_db,
+						shiftX + (bh->w - strlenP) / 2,
+						shiftY + bh->h - bh->font->height - j,
+						text2, bh->font, textcolor);
+			}
+		}
+		gui_objects_cache_end_render(bh->cache, bh->state, bh->is_locked, bh->text);
+	}
+
+	/* Копируем из кэша на экран */
+	gui_objects_cache_draw(bh->cache, x1, y1);
+	return;
+
+fallback_render:
+#endif /* defined(GUI_USE_CACHE) */
+
+	/* Поиск кэшированного фона по размерам */
 	btn_bg_t * b1 = NULL;
+	uint8_t i = 0;
 	do {
 		if (bh->h == btn_bg[i].h && bh->w == btn_bg[i].w)
 		{
-			b1 = & btn_bg[i];
+			b1 = &btn_bg[i];
 			break;
 		}
-	} while ( ++i < BG_DEF_COUNT);
+	} while (++i < BG_DEF_COUNT);
 
-	// если не найден заполненный буфер фона по размерам, программная отрисовка
 	if (b1 == NULL)
 	{
+		/* Программная отрисовка фона */
 		gui_color_t c1, c2;
-		c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
-		c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
+		c1 = bh->state == DISABLED ?
+				COLOR_BUTTON_DISABLED :
+				(bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
+		c2 = bh->state == DISABLED ?
+				COLOR_BUTTON_DISABLED :
+				(bh->is_locked ?
+						COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
 
 		__gui_draw_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, GUI_DEFAULTCOLOR, 1);
 		__gui_draw_rounded_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		__gui_draw_rounded_rect(gdb, x1 + 1, y1 + 1, bh->w - 3, bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
 		__gui_draw_rounded_rect(gdb, x1 + 2, y1 + 2, bh->w - 5, bh->h - 5, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
-	}
-	else
+	} else
 	{
+		/* Копирование кэшированного фона */
+		gui_objbgbuf_t * bg = NULL;
+
 		if (bh->state == DISABLED)
 			bg = b1->bgs[BG_DISABLED];
 		else if (bh->is_locked && bh->state == PRESSED)
 			bg = b1->bgs[BG_LOCKED_PRESED];
 		else if (bh->is_locked && bh->state != PRESSED)
 			bg = b1->bgs[BG_LOCKED];
-		else if (! bh->is_locked && bh->state == PRESSED)
+		else if (!bh->is_locked && bh->state == PRESSED)
 			bg = b1->bgs[BG_PRESSED];
-		else if (! bh->is_locked && bh->state != PRESSED)
+		else if (!bh->is_locked && bh->state != PRESSED)
 			bg = b1->bgs[BG_NON_PRESSED];
-		GUI_ASSERT(bg != NULL);
 
-		gui_drawbuf_t bgv;
-		__gui_drawbuf_init(& bgv, bg, bh->w, bh->h);
-		__gui_drawbuf_copy(gdb, & bgv, x1, y1, bh->w, bh->h);
-		__gui_drawbuf_end(& bgv);
+		if (bg != NULL)
+		{
+			gui_drawbuf_t bgv;
+			__gui_drawbuf_init(&bgv, bg, bh->w, bh->h);
+			__gui_drawbuf_copy(gdb, &bgv, x1, y1, bh->w, bh->h);
+			__gui_drawbuf_end(&bgv);
+		}
 	}
 
+	/* Отрисовка текста */
 	const uint16_t shiftX = bh->state == PRESSED ? 1 : 0;
 	const uint16_t shiftY = bh->state == PRESSED ? 1 : 0;
 	const gui_color_t textcolor = COLORPIP_BLACK;
+	static const char delimeters[] = "|";
 
-	if (strchr(bh->text, delimeters[0]) == NULL)
-	{
-		/* Однострочная надпись */
+	if (strchr(bh->text, delimeters[0]) == NULL) {
 		int strlenP = get_strwidth_prop(bh->text, bh->font);
-		__gui_print_prop(gdb,
-				shiftX + x1 + (bh->w - strlenP) / 2,
-				shiftY + y1 + (bh->h - bh->font->height) / 2,
-				bh->text, bh->font, textcolor
-				);
-	}
-	else
-	{
-		char * next;
+		__gui_print_prop(gdb, shiftX + x1 + (bh->w - strlenP) / 2, shiftY + y1 + (bh->h - bh->font->height) / 2, bh->text, bh->font, textcolor);
+	} else {
 		/* Двухстрочная надпись */
+		char * next;
 		uint8_t j = (bh->h - bh->font->height * 2) / 2;
 		char buf[TEXT_ARRAY_SIZE];
 		strcpy(buf, bh->text);
@@ -814,6 +900,17 @@ static void draw_button(const button_t * const bh)
 
 	if (bh->is_focus)
 		gui_drawDashedRectangle(x1 + 4, y1 + 4, bh->w - 8, bh->h - 8, 4, COLOR_BLACK);
+}
+
+void invalidate_button_cache(button_t * bh)
+{
+    if (bh == NULL) return;
+
+#if GUI_USE_CACHE
+    if (bh->cache != NULL) {
+    	gui_objects_cache_invalidate(bh->cache);
+    }
+#endif /* GUI_USE_CACHE */
 }
 
 static void objects_init(void)
@@ -929,6 +1026,7 @@ static void set_state_record(gui_object_t * val)
 			GUI_ASSERT(val->link != NULL);
 			button_t * bh = (button_t *) val->link;
 			bh->state = val->state;
+			invalidate_button_cache(bh);
 			if (bh->state == RELEASED || bh->state == LONG_PRESSED || bh->state == PRESS_REPEATING)
 			{
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh->state == LONG_PRESSED ? LONG_PRESSED : PRESSED, bh->name))
@@ -1199,6 +1297,8 @@ void process_gui(void)
 	uint8_t str_len = 0;
 	const gui_drawbuf_t * drawbuf = __gui_get_drawbuf();
 
+	TIME_PROFILE_START(gui);
+
 	for(uint8_t i = 0; i < opened_windows_count; i ++)
 	{
 		const window_t * const win = get_win(gui.win[i]);
@@ -1317,6 +1417,7 @@ void process_gui(void)
 			}
 		}
 	}
+	TIME_PROFILE_STOP(gui, "");
 }
 
 #endif /* WITHTOUCHGUI */
