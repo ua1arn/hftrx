@@ -986,7 +986,6 @@ void i2c_initialize(void)
 
 #elif (CPUSTYLE_XC7Z) && WITHTWIHW
 
-#include "xc7z_inc.h"
 static XIicPs xc7z_iicps;
 
 void hardware_twi_master_configure(void) {}

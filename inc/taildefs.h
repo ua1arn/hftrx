@@ -717,6 +717,10 @@ void InitializeIrql(IRQL_t newIRQL);
 
 #endif
 
+#if CPUSTYLE_XC7Z
+#include "xc7z_inc.h"
+#endif
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -4543,8 +4543,6 @@ static void board_fpga_loader_XDCFG(void)
 
 static adapter_t plfircoefsout;
 
-#include "xc7z_inc.h"
-
 void board_fpga_fir_initialize(void)
 {
 	/* FPGA FIR коэффициенты */

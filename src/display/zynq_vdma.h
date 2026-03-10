@@ -2,7 +2,6 @@
 #define ZYNQ_VDMA_H_INCLUDED
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
-#include "xc7z_inc.h"
 
 #if 0
 typedef struct {

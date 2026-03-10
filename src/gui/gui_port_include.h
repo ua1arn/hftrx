@@ -10,7 +10,6 @@
 #include "src/touch/touch.h"
 #include "keyboard.h"
 #include "codecs.h"
-#include "xc7z_inc.h"
 #include "mslist.h"
 
 #include <string.h>
