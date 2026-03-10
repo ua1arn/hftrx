@@ -709,10 +709,9 @@ static void fill_button_bg_buf(btn_bg_t * v)
 
 		gui_drawbuf_t butdbv;
 		__gui_drawbuf_init(& butdbv, v->bgs[i], w, h);
-		__gui_draw_rect(& butdbv, 0, 0, w - 1, h - 1, GUI_DEFAULTCOLOR, 1);
-		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, btn_bg_colors[i], 1);
 		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		__gui_draw_rounded_rect(& butdbv, 1, 1, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		__gui_draw_rounded_rect(& butdbv, 2, 2, w - 5, h - 5, button_round_radius, btn_bg_colors[i], 1);
 		__gui_drawbuf_end(& butdbv);
 	}
 }
@@ -734,7 +733,6 @@ static void draw_button(const button_t * const bh)
 	}
 
 	btn_bg_t * b1 = NULL;
-#if ! WITHSDL2VIDEO // копирование буферов нормально не работает
 	do {
 		if (bh->h == btn_bg[i].h && bh->w == btn_bg[i].w)
 		{
@@ -742,7 +740,6 @@ static void draw_button(const button_t * const bh)
 			break;
 		}
 	} while ( ++i < BG_DEF_COUNT);
-#endif
 
 	// если не найден заполненный буфер фона по размерам, программная отрисовка
 	if (b1 == NULL)
@@ -752,9 +749,9 @@ static void draw_button(const button_t * const bh)
 		c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
 
 		__gui_draw_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, GUI_DEFAULTCOLOR, 1);
-		__gui_draw_rounded_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
 		__gui_draw_rounded_rect(gdb, x1, y1, bh->w - 1, bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
 		__gui_draw_rounded_rect(gdb, x1 + 1, y1 + 1, bh->w - 3, bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		__gui_draw_rounded_rect(gdb, x1 + 2, y1 + 2, bh->w - 5, bh->h - 5, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
 	}
 	else
 	{

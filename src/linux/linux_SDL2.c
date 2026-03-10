@@ -44,6 +44,9 @@ int sdl2_render_init(void)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 #endif /* ! X11 */
 
+    SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
+    SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
+
     window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, DIM_X, DIM_Y,
     		SDL_WINDOW_FULLSCREEN_DESKTOP
 #if ! X11
@@ -142,19 +145,12 @@ void sdl2_render_update(uintptr_t frame)
 	SDL_RenderCopy(renderer, texture, NULL, & destRect);
 
 #if WITHTOUCHGUI
-	SDL_Texture * guitex = SDL_CreateTexture(renderer,
-	    SDL_PIXELFORMAT_ARGB8888,
-	    SDL_TEXTUREACCESS_TARGET,
-	    DIM_X, DIM_Y);
 	SDL_Texture * old_target = SDL_GetRenderTarget(renderer);
-	SDL_SetRenderTarget(renderer, guitex);
+	if (old_target != NULL) SDL_SetRenderTarget(renderer, NULL);
 
 	gui_sdl2_walkthrough();
 
-	SDL_SetRenderTarget(renderer, old_target);
-	SDL_SetTextureBlendMode(guitex, SDL_BLENDMODE_BLEND);
-	SDL_RenderCopy(renderer, guitex, NULL, & destRect);
-	SDL_DestroyTexture(guitex);
+	if (old_target != NULL) SDL_SetRenderTarget(renderer, old_target);
 #endif /* WITHTOUCHGUI */
 
 #if MOUSE_EVDEV

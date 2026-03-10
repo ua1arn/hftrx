@@ -70,7 +70,7 @@ static inline void __gui_set_drawbuf(const void * buf)
 {
 	if (drawbuf == NULL) drawbuf = malloc(sizeof(gui_drawbuf_t));
 	drawbuf->renderer = (SDL_Renderer *) buf;
-	drawbuf->texture = SDL_GetRenderTarget(drawbuf->renderer);
+	drawbuf->texture = NULL;
 }
 
 static inline const gui_drawbuf_t * __gui_get_drawbuf(void)
@@ -82,18 +82,21 @@ static inline const gui_drawbuf_t * __gui_get_drawbuf(void)
 static inline void __gui_drawbuf_init(gui_drawbuf_t * buf, gui_drawbuf_t * extbuf,
 		unsigned int w, unsigned int h)
 {
+	(void)w; (void)h;
 	ASSERT(buf);
 	ASSERT(extbuf);
-	ASSERT(extbuf->texture);
-
-	if (extbuf->slave)
-	{
-		extbuf->slave = 0;
-		SDL_SetRenderTarget(extbuf->renderer, extbuf->texture);
-	}
 
 	buf->renderer = extbuf->renderer;
 	buf->texture = extbuf->texture;
+
+	if (extbuf->slave)
+	{
+		SDL_SetRenderTarget(extbuf->renderer, extbuf->texture);
+		buf->slave = 1;
+		extbuf->slave = 0;
+	} else {
+		buf->slave = 0;
+	}
 }
 
 static inline void __gui_drawbuf_copy(const gui_drawbuf_t * dstbuf, gui_drawbuf_t * srcbuf,
@@ -106,9 +109,7 @@ static inline void __gui_drawbuf_copy(const gui_drawbuf_t * dstbuf, gui_drawbuf_
 static inline void __gui_drawbuf_end(gui_drawbuf_t * buf)
 {
 	ASSERT(buf);
-
-	const gui_drawbuf_t * db = __gui_get_drawbuf();
-	SDL_SetRenderTarget(db->renderer, db->texture);
+	if (buf->slave) SDL_SetRenderTarget(buf->renderer, NULL);
 }
 
 static inline gui_objbgbuf_t * __gui_object_bgbuf_init(unsigned int w, unsigned int h)
@@ -117,13 +118,23 @@ static inline gui_objbgbuf_t * __gui_object_bgbuf_init(unsigned int w, unsigned 
 	ASSERT(buf);
 
 	const gui_drawbuf_t * db = __gui_get_drawbuf();
+	ASSERT(db && db->renderer);
 
 	buf->slave = 1;
 	buf->renderer = db->renderer;
+
 	buf->texture = SDL_CreateTexture(db->renderer, SDL_PIXELFORMAT_ARGB8888,
-		    SDL_TEXTUREACCESS_TARGET, w, h);
+			SDL_TEXTUREACCESS_TARGET, w, h);
 	ASSERT(buf->texture);
+
 	SDL_SetTextureBlendMode(buf->texture, SDL_BLENDMODE_BLEND);
+
+	SDL_SetRenderTarget(db->renderer, buf->texture);
+	SDL_SetRenderDrawBlendMode(db->renderer, SDL_BLENDMODE_NONE);
+	SDL_SetRenderDrawColor(db->renderer, 0, 0, 0, 0);
+	SDL_RenderClear(db->renderer);
+
+	SDL_SetRenderTarget(db->renderer, db->texture);
 
 	return buf;
 }
@@ -139,22 +150,19 @@ static inline void __gui_draw_rect(const gui_drawbuf_t * buf, unsigned int x, un
 	uint8_t b = (color >> 0) & 0xFF;
 	uint8_t a = (color >> 24) & 0xFF;
 
-	SDL_Rect rect = {
-		.x = x,
-		.y = y,
-		.w = w,
-		.h = h
-	};
+	SDL_Rect rect = { .x = x, .y = y, .w = w, .h = h };
 
-	SDL_SetRenderDrawBlendMode(buf->renderer, SDL_BLENDMODE_BLEND);
+	if (a < 255)
+		SDL_SetRenderDrawBlendMode(buf->renderer, SDL_BLENDMODE_BLEND);
+	else
+		SDL_SetRenderDrawBlendMode(buf->renderer, SDL_BLENDMODE_NONE);
+
 	SDL_SetRenderDrawColor(buf->renderer, r, g, b, a);
 
 	if (fill)
 		SDL_RenderFillRect(buf->renderer, & rect);
 	else
 		SDL_RenderDrawRect(buf->renderer, & rect);
-
-	SDL_SetRenderDrawBlendMode(buf->renderer, SDL_BLENDMODE_NONE);
 }
 
 // Отрисовка прямоугольника со скругленными углами
@@ -177,34 +185,44 @@ static inline void __gui_draw_rounded_rect(const gui_drawbuf_t * buf, unsigned i
 	uint8_t ca = (color >> 24) & 0xFF;
 	SDL_SetRenderDrawColor(buf->renderer, cr, cg, cb, ca);
 
-	int x0 = (int)x;
-	int y0 = (int)y;
-	int x1 = x0 + (int)w - 1;
-	int y1 = y0 + (int)h - 1;
+	int x0 = x;
+	int y0 = y;
+	int x1 = x0 + w - 1;
+	int y1 = y0 + h - 1;
 
 	if (fill) {
-		// Центральные прямоугольники
-		SDL_RenderFillRect(buf->renderer, &(SDL_Rect){x0 + r, y0, (int)w - 2 * r, (int)h});
-		SDL_RenderFillRect(buf->renderer, &(SDL_Rect){x0, y0 + r, r, (int)h - 2 * r});
-		SDL_RenderFillRect(buf->renderer, &(SDL_Rect){x1 - r + 1, y0 + r, r, (int)h - 2 * r});
-
-		// Углы
-		for (int dy = 0; dy <= r; dy ++)
-		{
-			int dx = (int)sqrt(r * r - dy * dy);
-			// Top-left
-			SDL_RenderDrawLine(buf->renderer,
-					x0 + r - dx, y0 + r - dy, x0 + r, y0 + r - dy);
-			// Top-right
-			SDL_RenderDrawLine(buf->renderer,
-					x1 - r, y0 + r - dy, x1 - r + dx, y0 + r - dy);
-			// Bottom-left
-			SDL_RenderDrawLine(buf->renderer,
-					x0 + r - dx, y1 - r + dy, x0 + r, y1 - r + dy);
-			// Bottom-right
-			SDL_RenderDrawLine(buf->renderer,
-					x1 - r, y1 - r + dy, x1 - r + dx, y1 - r + dy);
+		/* 1. Центральные прямоугольники (без углов) */
+		if (w > 2 * r) {
+			SDL_RenderFillRect(buf->renderer, &(SDL_Rect) {x0 + r, y0, w - 2 * r, h});
 		}
+		if (h > 2 * r) {
+			SDL_RenderFillRect(buf->renderer, &(SDL_Rect) {x0, y0 + r, r, h - 2 * r});
+			SDL_RenderFillRect(buf->renderer, &(SDL_Rect) {x1 - r + 1, y0 + r, r, h - 2 * r});
+		}
+
+		/* Вспомогательная функция для заливки четверти круга */
+#define FILL_QUARTER_CIRCLE(cx, cy, sign_x, sign_y) 				\
+            do { 													\
+                for (int dy = 0; dy <= r; dy++) { 					\
+                    int dx = (int)sqrt((double)(r * r - dy * dy)); 	\
+                    for (int dx2 = 0; dx2 <= dx; dx2++) { 			\
+                        SDL_RenderDrawPoint(buf->renderer, 			\
+                            (cx) + (sign_x) * dx2, 					\
+                            (cy) + (sign_y) * dy); 					\
+                    }												\
+                } 													\
+            } while(0)
+
+		/* Top-left corner */
+		FILL_QUARTER_CIRCLE(x0 + r, y0 + r, -1, -1);
+		/* Top-right corner */
+		FILL_QUARTER_CIRCLE(x1 - r, y0 + r, 1, -1);
+		/* Bottom-left corner */
+		FILL_QUARTER_CIRCLE(x0 + r, y1 - r, -1, 1);
+		/* Bottom-right corner */
+		FILL_QUARTER_CIRCLE(x1 - r, y1 - r, 1, 1);
+
+#undef FILL_QUARTER_CIRCLE
 	}
 	else
 	{
@@ -293,20 +311,35 @@ static inline void __gui_draw_semitransparent_rect(const gui_drawbuf_t * buf, un
 	uint8_t r = (COLORPIP_DARKGRAY >> 16) & 0xFF;
 	uint8_t g = (COLORPIP_DARKGRAY >> 8) & 0xFF;
 	uint8_t b = (COLORPIP_DARKGRAY >> 0) & 0xFF;
-	uint8_t a = WITHALPHA;
+	uint8_t a = (uint8_t)alpha;
 
-	SDL_Rect rect = {
-		.x = x1,
-		.y = y1,
-		.w = x2 - x1,
-		.h = y2 - y1
-	};
+	SDL_Rect rect = { .x = x1, .y = y1, .w = (x2 - x1), .h = (y2 - y1)};
 
 	SDL_SetRenderDrawBlendMode(buf->renderer, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor(buf->renderer, r, g, b, a);
 	SDL_RenderFillRect(buf->renderer, & rect);
-	SDL_SetRenderDrawBlendMode(buf->renderer, SDL_BLENDMODE_NONE);
 }
+
+#ifdef GUI_TIME_PROFILER
+
+    #define TIME_PROFILE_START(label) \
+        uint32_t _tp_start_##label = SDL_GetTicks(); \
+        const char *_tp_name_##label = #label
+
+    #define TIME_PROFILE_STOP(label, description) \
+        do { \
+            uint32_t _tp_end_##label = SDL_GetTicks(); \
+            uint32_t _tp_elapsed_##label = _tp_end_##label - _tp_start_##label; \
+            printf("[PROFILE] %-24s | %s:%d | %s | elapsed: %u ms\n", \
+                   _tp_name_##label, __FILE__, __LINE__, \
+                   (description), _tp_elapsed_##label); \
+        } while(0)
+
+#else
+    /* Заглушки при отключённом профилировании */
+    #define TIME_PROFILE_START(label)      ((void)0)
+    #define TIME_PROFILE_STOP(label, desc) ((void)0)
+#endif /* GUI_TIME_PROFILER */
 
 #else
 
