@@ -1062,6 +1062,13 @@
 
 #endif /* WITHETHHW */
 
+	/* Вентилятор */
+	#define BOARD_SETFANSTATE(state) do { \
+		const uint_fast32_t mask = UINT32_C(1) << 27;	/* PJ27_PWM1-9 - AF3 */ \
+		gpioX_prog(GPIOJ, mask, GPIO_CFG_OUT, GPIO_DRV_3, GPIO_PULL_NONE); \
+		gpioX_setstate(GPIOJ, mask, !! (state) * mask); \
+		} while (0)
+
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 		BOARD_BLINK_INITIALIZE(); \
@@ -1073,6 +1080,7 @@
 		TUNE_INITIALIZE(); \
 		BOARD_USERBOOT_INITIALIZE(); \
 		USBD_EHCI_INITIALIZE(); \
+		BOARD_SETFANSTATE(0); \
 	} while (0)
 
 	// TUSB parameters
