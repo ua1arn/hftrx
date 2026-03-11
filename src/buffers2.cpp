@@ -13,7 +13,7 @@
 #include "display/display.h"
 #include <atomic>
 
-#define WITHSEQTEST (1 && WITHDEBUG)
+//#define WITHSEQTEST (1 && WITHDEBUG)
 //#define WITHBUFFERSDEBUG (1 && WITHDEBUG)
 
 #ifndef BUFOVERSIZE
