@@ -84,7 +84,7 @@ void draw_label(label_t * lh)
 	if (lh->cache != NULL && ! gui_objects_cache_needs_render(lh->cache, 0, 0, lh->text))
 	{
 		/* Кэш действителен - копируем готовую текстуру */
-		gui_objects_cache_draw(lh->cache, x, y);
+		if (gui_objects_cache_draw(lh->cache, x, y)) goto fallback_render;
 		return;
 	}
 
@@ -226,7 +226,7 @@ void draw_button(button_t * bh)
 	if (bh->cache != NULL && ! gui_objects_cache_needs_render(bh->cache, bh->state, bh->is_locked, bh->text))
 	{
 		/* Кэш действителен - копируем готовую текстуру */
-		gui_objects_cache_draw(bh->cache, x1, y1);
+		if (gui_objects_cache_draw(bh->cache, x1, y1)) goto fallback_render;
 		return;
 	}
 
@@ -278,7 +278,7 @@ void draw_close_button(button_t * bh)
 	if (bh->cache != NULL && ! gui_objects_cache_needs_render(bh->cache, bh->state, bh->is_locked, bh->text))
 	{
 		/* Кэш действителен - копируем готовую текстуру */
-		gui_objects_cache_draw(bh->cache, x, y);
+		if (gui_objects_cache_draw(bh->cache, x, y)) goto fallback_render;
 		return;
 	}
 
@@ -385,7 +385,7 @@ void draw_textfield(text_field_t * tf)
 #if DEBUG_TFS_CACHE
 	static uint32_t cache_hits = 0, cache_misses = 0;
 
-	if (tf->cache != NULL && ! gui_objects_cache_needs_render(tf->cache, 0, tf->change, ""))
+	if (tf->cache != NULL && ! gui_objects_cache_needs_render(tf->cache, 0, tf->cache->flags, ""))
 		cache_hits++;
 	else
 		cache_misses++;
@@ -398,10 +398,10 @@ void draw_textfield(text_field_t * tf)
 	}
  #endif /* DEBUG_TFS_CACHE */
 
-	if (tf->cache != NULL && ! gui_objects_cache_needs_render(tf->cache, 0, tf->change, ""))
+	if (tf->cache != NULL && ! gui_objects_cache_needs_render(tf->cache, 0, tf->cache->flags, ""))
 	{
 		/* Кэш действителен - копируем готовую текстуру */
-		gui_objects_cache_draw(tf->cache, x, y);
+		if (gui_objects_cache_draw(tf->cache, x, y)) goto fallback_render;
 		return;
 	}
 
@@ -410,7 +410,7 @@ void draw_textfield(text_field_t * tf)
 	{
 		tf->cache = gui_objects_cache_create(tf->w, tf->h, GUI_CACHE_TYPE_TF);
 		if (tf->cache == NULL) goto fallback_render;
-		tf->change = 0;
+		tf->cache->flags = 0;
 	}
 
 	/* Рендерим в кэш */
@@ -420,7 +420,7 @@ void draw_textfield(text_field_t * tf)
 
 		__draw_textfield(tf, 0, 0, cache_db);
 
-		gui_objects_cache_end_render(tf->cache, 0, tf->change, "");
+		gui_objects_cache_end_render(tf->cache, 0, tf->cache->flags, "");
 	}
 
 	/* Копируем из кэша на экран */
@@ -926,7 +926,7 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		if (prop & NEED_INVALIDATION_MASK)
 		{
 			gui_objects_cache_invalidate(tf->cache);
-			tf->change = 1;
+			tf->cache->flags = 1;
 		}
 #endif /* GUI_USE_CACHE */
 		break;

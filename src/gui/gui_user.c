@@ -368,6 +368,7 @@ void window_infobar_menu_process(void)
 		}
 
 		calculate_window_position(WINDOW_POSITION_MANUAL_POSITION, infobar_selected * infobar_label_width, infobar_2nd_str_y + SMALLCHARH2);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_INFOBAR_MENU)
@@ -581,8 +582,6 @@ void gui_main_process(void)
 		hamradio_set_lfmmode(0);
 #endif /* WITHLFM */
 
-		calculate_window_position(WINDOW_POSITION_FULLSCREEN);
-
 #if WITHGUIDEBUG
 		uint16_t winw = gui_get_window_draw_width();
 		uint16_t winh = gui_get_window_draw_height();
@@ -592,6 +591,9 @@ void gui_main_process(void)
 		for (uint8_t i = 0; i < tmpstr_index; i ++)
 			textfield_add_string("tf_debug", tmpbuf[i].text, COLORPIP_WHITE);
 #endif /* WITHGUIDEBUG */
+
+		calculate_window_position(WINDOW_POSITION_FULLSCREEN);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_MAIN)
@@ -1260,6 +1262,7 @@ void window_memory_process(void)
 		gui_obj_set_prop("lbl_note1", GUI_OBJ_FONT, & msgothic_11x13_mono);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_MEMORY)
@@ -1396,6 +1399,7 @@ void window_bands_process(void)
 		gui_arrange_objects_from(btn0, j - i, 3, 6);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_BANDS)
@@ -1456,6 +1460,7 @@ void window_options_process(void)
 
 		hamradio_disable_keyboard_redirect();
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_OPTIONS)
@@ -1532,6 +1537,7 @@ void window_display_process(void)
 
 		hamradio_enable_encoder2_redirect();
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_DISPLAY)
@@ -1622,6 +1628,7 @@ void window_utilites_process(void)
 #endif /* WITHGUIDEBUG */
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_UTILS)
@@ -1852,6 +1859,7 @@ void window_tx_process(void)
 #endif /* ! WITHPOWERTRIM */
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_TX_SETTINGS)
@@ -1901,6 +1909,7 @@ void window_tx_power_process(void)
 		gui_obj_align_to("btn_ok", "sl_tune", ALIGN_DOWN_RIGHT, interval);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_TX_POWER)
@@ -1968,6 +1977,7 @@ void window_audiosettings_process(void)
 #endif /* ! defined(CODEC1_TYPE) && (CODEC1_TYPE != CODEC_TYPE_ALSA) || BLUETOOTH_ALSA == 0 */
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_AUDIOSETTINGS)
@@ -2060,6 +2070,7 @@ void window_ap_reverb_process(void)
 		gui_obj_align_to("btn_ok", "btn_en", ALIGN_DOWN_LEFT, interval);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_AP_REVERB_SETT)
@@ -2160,6 +2171,7 @@ void window_af_eq_process(void)
 		mid_y = gui_obj_get_int_prop("sl_eq400", GUI_OBJ_POS_Y) + gui_obj_get_int_prop("sl_eq400", GUI_OBJ_SIZE) / 2;
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_AF_EQ)
@@ -2262,6 +2274,7 @@ void window_ap_mic_process(void)
 #endif /* WITHAFCODEC1HAVEPROC */
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_AP_MIC_SETT)
@@ -2343,6 +2356,7 @@ void window_ap_mic_prof_process(void)
 		gui_arrange_objects_from("btn_mic_profile_0", NMICPROFCELLS, 3, 6);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_AP_MIC_PROF)
@@ -2426,6 +2440,7 @@ void window_notch_process(void)
 		gui_obj_set_prop("btn_sub", GUI_OBJ_PAYLOAD, -1);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_NOTCH)
@@ -2503,6 +2518,7 @@ void window_gui_settings_process(void)
 		gui_arrange_objects_from("btn_enc2_step", 3, 3, 6);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_GUI_SETTINGS)
@@ -2577,6 +2593,7 @@ void window_shift_process(void)
 		gui_obj_align_to("btn_test", "btn_m", ALIGN_DOWN_LEFT, 15);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_SHIFT)
@@ -2692,6 +2709,7 @@ void window_uif_process(void)
 
 		hamradio_enable_keyboard_redirect();
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_UIF)
@@ -2819,6 +2837,7 @@ void window_ft8_bands_process(void)
 		gui_arrange_objects_from("btn_bands_00", ft8_bands_count, cols, interval);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_FT8_BANDS)
@@ -2867,6 +2886,7 @@ void window_ft8_settings_process(void)
 		gui_obj_set_prop("btn_freq_eq", GUI_OBJ_LOCK, gui_nvram.ft8_txfreq_equal);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_FT8_SETTINGS)
@@ -2978,9 +2998,9 @@ void window_ft8_process(void)
 		gui_obj_set_prop("btn_tx", GUI_OBJ_STATE, DISABLED);
 #endif
 
-		calculate_window_position(WINDOW_POSITION_FULLSCREEN);
 		local_snprintf_P(buf, NAME_ARRAY_SIZE, "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands[gui_nvram.ft8_band] / 1000, hour, minute, seconds);
 		window_set_title(buf);
+		calculate_window_position(WINDOW_POSITION_FULLSCREEN);
 
 		if (! work)
 		{
@@ -3178,6 +3198,7 @@ void window_af_process(void)
 
 		hamradio_enable_encoder2_redirect();
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_AF)
@@ -3277,6 +3298,7 @@ void window_mode_process(void)
 		gui_arrange_objects_from("btn_ModeLSB", 8, 4, 6);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_MODES)
@@ -3326,6 +3348,7 @@ void window_receive_process(void)
 #endif /* WITHWNB */
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_RECEIVE)
@@ -3411,6 +3434,7 @@ void window_freq_process (void)
 		window_set_title_align(TITLE_ALIGNMENT_CENTER);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_FREQ)
@@ -3534,6 +3558,7 @@ void window_time_process(void)
 
 		board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute,	& second);
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_TIME)
@@ -3680,6 +3705,7 @@ void window_kbd_process(void)
 		window_set_title_align(TITLE_ALIGNMENT_CENTER);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_KBD)
@@ -3778,6 +3804,7 @@ void window_kbd_test_process(void)
 		gui_obj_set_prop("lbl_num", GUI_OBJ_TEXT_FMT, "%d", num_lbl1);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_KBD_TEST)
@@ -3811,6 +3838,7 @@ void window_3d_process(void)
 		gui_obj_create("tf_3d", 60, 22, UP, & msgothic_11x13_mono);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_3D)
@@ -3942,9 +3970,10 @@ void window_menu_params_process(void)
 		gui_obj_set_prop("btn_m", GUI_OBJ_PAYLOAD, -1);
 #endif
 
-		calculate_window_position(WINDOW_POSITION_AUTO);
 		window_set_title("Edit param: choose...");
 		window_set_title_align(TITLE_ALIGNMENT_CENTER);
+		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_MENU_PARAMS)
@@ -4017,6 +4046,7 @@ void window_menu_process(void)
 		gui_arrange_objects(btn_names, count, 4, 6);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_MENU)
@@ -4076,6 +4106,7 @@ void window_lfm_process(void)
 		hamradio_enable_encoder2_redirect();
 		enable_window_move();
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_LFM)
@@ -4301,6 +4332,7 @@ void window_wnbconfig_process(void)
 		hamradio_enable_encoder2_redirect();
 		enable_window_move();
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_WNBCONFIG)
@@ -4381,6 +4413,7 @@ void window_ad936x_process(void)
 		enable_window_move();
 		calculate_window_position(WINDOW_POSITION_AUTO);
 		update = 1;
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_AD936X)
@@ -4471,6 +4504,7 @@ void window_ad936x_process(void)
 		}
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_AD936X)
@@ -4527,6 +4561,7 @@ void window_as_process(void)
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
 		update = 1;
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_AS)
@@ -4615,6 +4650,7 @@ void window_fanpwm_process(void)
 		gui_obj_set_prop("lbl_pwm", GUI_OBJ_TEXT_FMT, "Duty: %d", duty);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
+		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_FANPWM)

@@ -18,6 +18,7 @@ void close_all_windows(void);
 void calculate_window_position(uint8_t mode, ...);
 uint8_t is_win_init(void);
 uint8_t is_winmain_init(void);
+void draw_window(window_t * win);
 
 typedef enum {
     #define X(window_id, parent_id, align_mode, title, is_close, onVisibleProcess) WINDOW_##window_id,

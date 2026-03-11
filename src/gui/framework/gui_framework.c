@@ -904,7 +904,8 @@ static void set_state_record(gui_object_t * val)
 			}
 			else if (ta->state == PRESSED && ta->is_trackable)
 			{
-				if (! strcmp(ta->name, "ta_winmove"))
+
+				if (strstr(ta->name, "ta_winmove"))
 				{
 					move_window(val->win, gui.vector_move_x, gui.vector_move_y);
 					gui.vector_move_x = 0;
@@ -1117,69 +1118,20 @@ void process_gui(void)
 		is_long_press = 1;				// долгое нажатие обработано
 	}
 
-	uint8_t alpha = DEFAULT_ALPHA; // на сколько затемнять цвета
-	char buf[TEXT_ARRAY_SIZE];
-	uint8_t str_len = 0;
-	const gui_drawbuf_t * drawbuf = __gui_get_drawbuf();
-
 	TIME_PROFILE_START(gui);
 
 	for(uint8_t i = 0; i < opened_windows_count; i ++)
 	{
-		const window_t * const win = get_win(gui.win[i]);
-		uint8_t f = win->first_call;
+		window_t * win = get_win(gui.win[i]);
 		gui.current_drawing_window = gui.win[i];
 
 		if (win->state == VISIBLE)
 		{
-			if (! f) 	// при открытии окна рассчитываются экранные координаты самого окна и его child элементов
-			{
-				if (win->window_id != WINDOW_MAIN)
-				{
-					GUI_ASSERT(win->w > 0 || win->h > 0);
-#if GUI_TRANSPARENT_WINDOWS
-					__gui_draw_semitransparent_rect(drawbuf, win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) :
-							win->y1, win->x1 + win->w - 1, win->y1 + win->h - 1, alpha);
-#else
-					__gui_draw_rect(drawbuf, win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) :
-							win->y1, win->w, win->h, GUI_WINDOWBGCOLOR, 1);
-#endif /* GUI_TRANSPARENT_WINDOWS */
-				}
-			}
-
 			win->onVisibleProcess();	// запуск процедуры фоновой обработки для окна
 
-			if (! f)
+			if (! win->first_call)
 			{
-				// вывод заголовка окна
-				if (strcmp(win->title, ""))
-				{
-					uint16_t title_lenght = strlen(win->title) * SMALLCHARW;
-					uint16_t xt = 0;
-
-					switch(win->title_align)
-					{
-					case TITLE_ALIGNMENT_LEFT:
-						xt = win->x1 + window_title_indent;
-						break;
-
-					case TITLE_ALIGNMENT_RIGHT:
-						xt = win->x1 + win->w - title_lenght - window_title_indent - (win->is_close ? window_close_button_size : 0);
-						break;
-
-					case TITLE_ALIGNMENT_CENTER:
-						xt = win->x1 + win->w / 2 - title_lenght / 2;
-						break;
-
-					default:
-						PRINTF("Title alignment value %d incorrect for window %s\n", win->title_align, win->title);
-						GUI_ASSERT(0);
-						break;
-					}
-
-					__gui_draw_rect(drawbuf, win->x1, win->y1, win->w, window_title_height, GUI_WINDOWTITLECOLOR, 1);
-					__gui_print_prop(drawbuf, xt, win->y1 + 5, win->title, & WINDOW_TITLE_FONTP, COLORPIP_BLACK);
-				}
+				draw_window(win);
 
 				// отрисовка принадлежащих окну элементов
 				PLIST_ENTRY current_entry = gui_objects_list.Flink;

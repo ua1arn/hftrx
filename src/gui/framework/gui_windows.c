@@ -75,6 +75,10 @@ void open_window(window_t * win)
 	win->first_call = 1;
 	win->is_moving = 0;
 	set_parent_window(win->window_id);
+
+#if GUI_USE_CACHE
+	win->cache = NULL;
+#endif /* GUI_USE_CACHE */
 }
 
 /* Освободить выделенную память в куче и обнулить счетчики элементов окна */
@@ -156,6 +160,11 @@ void close_window(uint8_t parent_action) // 0 - не открывать parent w
 
 		free_win_ptr(win);
 		set_parent_window(NO_PARENT_WINDOW);
+
+#if GUI_USE_CACHE
+        gui_objects_cache_destroy(win->cache);
+        win->cache = NULL;
+#endif /* GUI_USE_CACHE */
 
 		if (win->parent_id != NO_PARENT_WINDOW && parent_action)	// При закрытии child window открыть parent window, если есть и если разрешено
 			open_window(get_win(win->parent_id));
@@ -457,6 +466,108 @@ void window_set_title_align(title_align_t align)
 {
 	window_t * win = get_win(get_parent_window());
 	win->title_align = align;
+}
+
+static void __draw_window(window_t * win, uint16_t x, uint16_t y, const gui_drawbuf_t * db)
+{
+	GUI_ASSERT(win->w > 0 || win->h > 0);
+
+#if GUI_TRANSPARENT_WINDOWS
+	__gui_draw_semitransparent_rect(drawbuf, x, strcmp(win->title, "") ? (y + window_title_height) :
+			y, x + win->w - 1, y + win->h - 1, DEFAULT_ALPHA);
+#else
+	__gui_draw_rect(drawbuf, x, strcmp(win->title, "") ? (y + window_title_height) :
+			y, win->w, win->h, GUI_WINDOWBGCOLOR, 1);
+#endif /* GUI_TRANSPARENT_WINDOWS */
+
+	// вывод заголовка окна
+	if (strcmp(win->title, ""))
+	{
+		uint16_t title_lenght = strlen(win->title) * SMALLCHARW;
+		uint16_t xt = 0;
+
+		switch(win->title_align)
+		{
+		case TITLE_ALIGNMENT_LEFT:
+			xt = x + window_title_indent;
+			break;
+
+		case TITLE_ALIGNMENT_RIGHT:
+			xt = x + win->w - title_lenght - window_title_indent - (win->is_close ? window_close_button_size : 0);
+			break;
+
+		case TITLE_ALIGNMENT_CENTER:
+			xt = x + win->w / 2 - title_lenght / 2;
+			break;
+
+		default:
+			PRINTF("Title alignment value %d incorrect for window %s\n", win->title_align, win->title);
+			GUI_ASSERT(0);
+			break;
+		}
+
+		__gui_draw_rect(drawbuf, x, y, win->w, window_title_height, GUI_WINDOWTITLECOLOR, 1);
+		__gui_print_prop(drawbuf, xt, y + 5, win->title, & WINDOW_TITLE_FONTP, COLORPIP_BLACK);
+	}
+}
+
+void draw_window(window_t * win)
+{
+	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
+	uint16_t x = win->x1;
+	uint16_t y = win->y1;
+
+	if (win->window_id == WINDOW_MAIN) return;
+
+#if GUI_USE_CACHE
+#if DEBUG_WINDOW_CACHE
+	static uint32_t cache_hits = 0, cache_misses = 0;
+
+	if (win->cache != NULL && ! gui_objects_cache_needs_render(win->cache, 0, win->title_align, win->title))
+		cache_hits++;
+	else
+		cache_misses++;
+
+	if ((cache_hits + cache_misses) % 60 == 0)
+	{
+		printf("win cache: hits=%u, misses=%u, hit_rate=%.1f%%\n", cache_hits, cache_misses,
+				100.0f * cache_hits / (cache_hits + cache_misses));
+		cache_hits = cache_misses = 0;
+	}
+ #endif /* DEBUG_WINDOW_CACHE */
+
+	if (win->cache != NULL && ! gui_objects_cache_needs_render(win->cache, 0, win->title_align, win->title))
+	{
+		/* Кэш действителен - копируем готовую текстуру */
+		if (gui_objects_cache_draw(win->cache, x, y)) goto fallback_render;
+		return;
+	}
+
+	/* Кэш недействителен - создаём/обновляем */
+	if (win->cache == NULL)
+	{
+		win->cache = gui_objects_cache_create(win->w, win->h, GUI_CACHE_TYPE_WINDOW);
+		if (win->cache == NULL) goto fallback_render;
+	}
+
+	/* Рендерим в кэш */
+	if (gui_objects_cache_begin_render(win->cache))
+	{
+		const gui_drawbuf_t * cache_db = __gui_get_drawbuf();
+
+		__draw_window(win, 0, 0, cache_db);
+
+		gui_objects_cache_end_render(win->cache, 0, win->title_align, win->title);
+	}
+
+	/* Копируем из кэша на экран */
+	if (gui_objects_cache_draw(win->cache, x, y)) goto fallback_render;
+	return;
+
+fallback_render:
+#endif /* GUI_USE_CACHE */
+
+	__draw_window(win, x, y, gdb);
 }
 
 #endif /* WITHTOUCHGUI */

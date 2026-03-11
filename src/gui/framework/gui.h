@@ -15,6 +15,7 @@ extern "C" {
 #define FOOTER_HEIGHT			(WITHGUIMAXX / 16)
 
 //#define GUI_TIME_PROFILER		1
+//#define DEBUG_WINDOW_CACHE	1
 //#define DEBUG_BUTTONS_CACHE	1
 //#define DEBUG_LABELS_CACHE	1
 //#define DEBUG_TFS_CACHE		1
