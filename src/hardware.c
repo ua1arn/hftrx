@@ -1948,10 +1948,13 @@ static void sysinit_smp_initialize(void)
 #if (__CORTEX_A == 55U) && defined(__aarch64__)
 	/**
 	 * cortex_a55_trm_100442_0200_03_en.pdf
+	 * dsu_trm_100453_0401_05_en.pdf - Arm® DynamIQ™ Shared Unit Technical Reference Manual
 	 */
-	__set_ACTLR_EL3(__get_ACTLR_EL3() | (UINT32_C(1) << 0));	// CPUACTLR write access control. The possible
-	__set_ACTLR_EL3(__get_ACTLR_EL3() | (UINT32_C(1) << 1));	// CPUECTLR write access control. The possible
-	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
+	__set_ACTLR_EL3(__get_ACTLR_EL3() | (UINT32_C(1) << 0));	// ACTLREN - Auxiliary Control Registers enable. CPUACTLR and CLUSTERACTLR
+	__set_ACTLR_EL3(__get_ACTLR_EL3() | (UINT32_C(1) << 1));	// ECTLREN - Extended Control Registers enable. CPUECTLR and CLUSTERECTLR
+	__set_ACTLR_EL3(__get_ACTLR_EL3() | (UINT32_C(1) << 7));	// PWREN, Power Control Registers enable - CPUPWRCTLR, CLUSTERPWRCTLR, CLUSTERPWRDN, CLUSTERPWRSTAT, CLUSTERL3HIT and CLUSTERL3MISS
+	__set_ACTLR_EL3(__get_ACTLR_EL3() | (UINT32_C(1) << 11));	// SMEN, Scheme Management Registers enable
+	__set_ACTLR_EL3(__get_ACTLR_EL3() | (UINT32_C(1) << 12));	// CLUSTERPMUEN, Performance Management Registers enable
 
 	// set the CPUECTLR.SMPEN
 	////	__set_CPUECTLR(__get_CPUECTLR() | (UINT64_C(1) << 6));	// SMPEN 1: Enables data coherency with other cores in the cluster.
@@ -2151,6 +2154,16 @@ void softdelay(void)
 	}
 }
 
+
+// Arm® DynamIQ™ Shared Unit
+static void sysinit_dsu_initialize()
+{
+#if (__CORTEX_A == 55U)
+	unsigned CLUSTERCFR = __get_CLUSTERCFR_EL1();
+	PRINTF("CLUSTERCFR=%08X\n", (unsigned) CLUSTERCFR);
+#endif /* (__CORTEX_A == 55U) */
+}
+
 // watchdog disable, clock initialize, cache enable
 void
 SystemInit(void)
@@ -2199,6 +2212,7 @@ SystemInit(void)
 	sysinit_cache_initialize();		// caches iniitialize
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 	sysinit_ttbr_initialize();		/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
+	sysinit_dsu_initialize();
 }
 
 // Вызывается из main, при работающих прерываниях

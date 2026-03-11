@@ -2699,12 +2699,12 @@ void InitializeIrql(IRQL_t newIRQL)
 
 uint_fast8_t arm_hardware_clustersize(void)
 {
-#if CPUSTYLE_A733
-	return HARDWARE_NCORES;
-#endif
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if (__CORTEX_A == 55U) && __aarch64__
+	return (__get_CLUSTERCFR_EL1() & 0x07) + 1;
+#elif (__CORTEX_A == 55U) && ! __aarch64__
+	return (__get_CLUSTERCFR() & 0x07) + 1;
+#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	// Cortex-A computers
-
 	return ((GIC_DistributorInfo() >> 5) & 0x07) + 1;	// CPUNumber Indicates the number of implemented processors:
 
 #else

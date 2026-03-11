@@ -2462,7 +2462,18 @@ __STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL3(void)
     __MRS(ICC_CTLR_EL3, &result);
     return result;
 }
-#endif
+
+// AArch32 (CLUSTERCFR) and AArch64 (CLUSTERCFR_EL1)
+// MRS <Xt>, S3_0_C15_C3_0; Read CLUSTERCFR_EL1 into Xt
+// MRC p15, 0, <Rt>, c15, c3, 0; Read CLUSTERCFR into Rt
+__STATIC_FORCEINLINE uint64_t __get_CLUSTERCFR_EL1(void)
+{
+	uint64_t result;
+	// MRS <Xt>, MIDR_EL1 ; Read MIDR_EL1 into Xt
+	__get_RG32("S3_0_C15_C3_0", result);
+	return result;
+}
+#endif /* (__CORTEX_A == 55U) */
 
 /* ICC_SGIR */
 #define ICC_SGIR_TARGETLIST_SHIFT (0)
