@@ -63,6 +63,7 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
+#define CCU_BASE ((uintptr_t) 0x02002000)             /*!< CCU Clock Controller Unit (CCU) Base */
 #define TWI0_BASE ((uintptr_t) 0x02510000)            /*!< TWI Two Wire Interface (TWI) Base */
 #define TWI1_BASE ((uintptr_t) 0x02511000)            /*!< TWI Two Wire Interface (TWI) Base */
 #define TWI2_BASE ((uintptr_t) 0x02512000)            /*!< TWI Two Wire Interface (TWI) Base */
@@ -99,6 +100,318 @@ typedef enum IRQn
 
 #include <core_ca.h>
 
+/*
+ * @brief CCU
+ */
+/*!< CCU Clock Controller Unit (CCU) */
+typedef struct CCU_Type
+{
+         RESERVED(0x000[0x00A0 - 0x0000], uint8_t)
+    __IOM uint32_t PLL_PERI0_CTRL_REG;                /*!< Offset 0x0A0 PLL_PERI0 Control Register */
+         RESERVED(0x0A4[0x00A8 - 0x00A4], uint8_t)
+    __IOM uint32_t PLL_PERI0_PAT0_CTRL_REG;           /*!< Offset 0x0A8 PLL_PERI0 Pattern0 Control Register */
+    __IOM uint32_t PLL_PERI0_PAT1_CTRL_REG;           /*!< Offset 0x0AC PLL_PERI0 Pattern1 Control Register */
+    __IOM uint32_t PLL_PERI0_BIAS_REG;                /*!< Offset 0x0B0 PLL_PERI0 Bias Register */
+         RESERVED(0x0B4[0x00C0 - 0x00B4], uint8_t)
+    __IOM uint32_t PLL_PERI1_CTRL_REG;                /*!< Offset 0x0C0 PLL_PERI1 Control Register */
+         RESERVED(0x0C4[0x00C8 - 0x00C4], uint8_t)
+    __IOM uint32_t PLL_PERI1_PAT0_CTRL_REG;           /*!< Offset 0x0C8 PLL_PERI1 Pattern0 Control Register */
+    __IOM uint32_t PLL_PERI1_PAT1_CTRL_REG;           /*!< Offset 0x0CC PLL_PERI1 Pattern1 Control Register */
+    __IOM uint32_t PLL_PERI1_BIAS_REG;                /*!< Offset 0x0D0 PLL_PERI1 Bias Register */
+         RESERVED(0x0D4[0x0120 - 0x00D4], uint8_t)
+    __IOM uint32_t PLL_VIDEO0_CTRL_REG;               /*!< Offset 0x120 PLL_VIDEO0 Control Register */
+         RESERVED(0x124[0x0128 - 0x0124], uint8_t)
+    __IOM uint32_t PLL_VIDEO0_PAT0_CTRL_REG;          /*!< Offset 0x128 PLL_VIDEO0 Pattern0 Control Register */
+    __IOM uint32_t PLL_VIDEO0_PAT1_CTRL_REG;          /*!< Offset 0x12C PLL_VIDEO0 Pattern1 Control Register */
+    __IOM uint32_t PLL_VIDEO0_BIAS_REG;               /*!< Offset 0x130 PLL_VIDEO0 Bias Register */
+         RESERVED(0x134[0x0260 - 0x0134], uint8_t)
+    __IOM uint32_t PLL_AUDIO0_CTRL_REG;               /*!< Offset 0x260 PLL_AUDIO0 Control Register */
+         RESERVED(0x264[0x0268 - 0x0264], uint8_t)
+    __IOM uint32_t PLL_AUDIO0_PAT0_CTRL_REG;          /*!< Offset 0x268 PLL_AUDIO0 Pattern0 Control Register */
+    __IOM uint32_t PLL_AUDIO0_PAT1_CTRL_REG;          /*!< Offset 0x26C PLL_AUDIO0 Pattern1 Control Register */
+    __IOM uint32_t PLL_AUDIO0_BIAS_REG;               /*!< Offset 0x270 PLL_AUDIO0 Bias Register */
+         RESERVED(0x274[0x0340 - 0x0274], uint8_t)
+    __IOM uint32_t PLL_CPU_CTRL_REG;                  /*!< Offset 0x340 PLL_CPU Control Register */
+    __IOM uint32_t PLL_CPU_PAT0_CTRL_REG;             /*!< Offset 0x344 PLL_CPU Pattern0 Control Register */
+    __IOM uint32_t PLL_CPU_PAT1_CTRL_REG;             /*!< Offset 0x348 PLL_CPU Pattern1 Control Register */
+    __IOM uint32_t PLL_CPU_BIAS_REG;                  /*!< Offset 0x34C PLL_CPU Bias Register */
+    __IOM uint32_t PLL_CPU_TUN1_REG;                  /*!< Offset 0x350 PLL_CPU Tuning1 Control Register */
+    __IOM uint32_t PLL_CPU_SSC_REG;                   /*!< Offset 0x354 PLL_CPU SSC Register */
+    __IOM uint32_t PLL_CPU_ECHO_REG;                  /*!< Offset 0x358 PLL_CPU Echo Register */
+         RESERVED(0x35C[0x0500 - 0x035C], uint8_t)
+    __IOM uint32_t AHB_CLK_REG;                       /*!< Offset 0x500 AHB Clock Register */
+         RESERVED(0x504[0x0510 - 0x0504], uint8_t)
+    __IOM uint32_t APB0_CLK_REG;                      /*!< Offset 0x510 APB0 Clock Register */
+         RESERVED(0x514[0x0518 - 0x0514], uint8_t)
+    __IOM uint32_t APB1_CLK_REG;                      /*!< Offset 0x518 APB1 Clock Register */
+         RESERVED(0x51C[0x0538 - 0x051C], uint8_t)
+    __IOM uint32_t APB_UART_CLK_REG;                  /*!< Offset 0x538 APB_UART Clock Register */
+         RESERVED(0x53C[0x0588 - 0x053C], uint8_t)
+    __IOM uint32_t MBUS_CLK_REG;                      /*!< Offset 0x588 MBUS Clock Register */
+         RESERVED(0x58C[0x05C0 - 0x058C], uint8_t)
+    __IOM uint32_t AHB_MAT_CLK_GATE_EN_REG;           /*!< Offset 0x5C0 AHB Master Clock Gate Enable Register */
+         RESERVED(0x5C4[0x05D0 - 0x05C4], uint8_t)
+    __IOM uint32_t PERI_MAT_CLK_GATE_EN_REG;          /*!< Offset 0x5D0 PERI Master Clock Gate Enable Register */
+         RESERVED(0x5D4[0x05E0 - 0x05D4], uint8_t)
+    __IOM uint32_t MBUS_CLK_GATE_EN_REG;              /*!< Offset 0x5E0 MBUS Clock Gate Enable Register */
+    __IOM uint32_t MBUS_MAT_CLK_GATE_EN_REG;          /*!< Offset 0x5E4 MBUS Master Clock Gate Enable Register */
+         RESERVED(0x5E8[0x05F0 - 0x05E8], uint8_t)
+    __IOM uint32_t AHB_MAT_CLK_AUTO_GATE_EN_REG;      /*!< Offset 0x5F0 AHB Master Clock Auto Gate Enable Register */
+    __IOM uint32_t MBUS_MAT_CLK_AUTO_GATE_EN_REG;     /*!< Offset 0x5F4 MBUS Master Clock Auto Gate Enable Register */
+    __IOM uint32_t AHB_MAT_CLK_GATE_STAT_REG;         /*!< Offset 0x5F8 AHB Master Clock Gate Status Register */
+    __IOM uint32_t MBUS_MAT_CLK_GATE_STAT_REG;        /*!< Offset 0x5FC MBUS Master Clock Gate Status Register */
+         RESERVED(0x600[0x0704 - 0x0600], uint8_t)
+    __IOM uint32_t DMA0_GAR_REG;                      /*!< Offset 0x704 DMA0 Gating And Reset Register */
+         RESERVED(0x708[0x070C - 0x0708], uint8_t)
+    __IOM uint32_t DMA1_GAR_REG;                      /*!< Offset 0x70C DMA1 Gating And Reset Register */
+         RESERVED(0x710[0x0724 - 0x0710], uint8_t)
+    __IOM uint32_t SPINLOCK_GAR_REG;                  /*!< Offset 0x724 SPINLOCK Gating And Reset Register */
+         RESERVED(0x728[0x0744 - 0x0728], uint8_t)
+    __IOM uint32_t MSGBOX_CPUX_GAR_REG;               /*!< Offset 0x744 MSGBOX_CPUX Gating And Reset Register */
+         RESERVED(0x748[0x074C - 0x0748], uint8_t)
+    __IOM uint32_t MSGBOX_CORE0_GAR_REG;              /*!< Offset 0x74C MSGBOX_CORE0 Gating And Reset Register */
+         RESERVED(0x750[0x0754 - 0x0750], uint8_t)
+    __IOM uint32_t MSGBOX_CORE1_GAR_REG;              /*!< Offset 0x754 MSGBOX_CORE1 Gating And Reset Register */
+         RESERVED(0x758[0x075C - 0x0758], uint8_t)
+    __IOM uint32_t MSGBOX_CORE2_GAR_REG;              /*!< Offset 0x75C MSGBOX_CORE2 Gating And Reset Register */
+         RESERVED(0x760[0x0764 - 0x0760], uint8_t)
+    __IOM uint32_t MSGBOX_CORE3_GAR_REG;              /*!< Offset 0x764 MSGBOX_CORE3 Gating And Reset Register */
+         RESERVED(0x768[0x076C - 0x0768], uint8_t)
+    __IOM uint32_t MSGBOX_MCU_GAR_REG;                /*!< Offset 0x76C MSGBOX_MCU Gating And Reset Register */
+         RESERVED(0x770[0x0794 - 0x0770], uint8_t)
+    __IOM uint32_t PWM2_GAR_REG;                      /*!< Offset 0x794 PWM2 Gating And Reset Register */
+         RESERVED(0x798[0x07A4 - 0x0798], uint8_t)
+    __IOM uint32_t DCU_GAR_REG;                       /*!< Offset 0x7A4 DCU Gating And Reset Register */
+         RESERVED(0x7A8[0x07AC - 0x07A8], uint8_t)
+    __IOM uint32_t DAP_GAR_REG;                       /*!< Offset 0x7AC DAP Gating And Reset Register */
+         RESERVED(0x7B0[0x07C0 - 0x07B0], uint8_t)
+    __IOM uint32_t PWMCS0_CLK_REG;                    /*!< Offset 0x7C0 PWMCS0 Clock Register */
+    __IOM uint32_t PWMCS0_GAR_REG;                    /*!< Offset 0x7C4 PWMCS0 Gating And Reset Register */
+    __IOM uint32_t PWMCS1_CLK_REG;                    /*!< Offset 0x7C8 PWMCS1 Clock Register */
+    __IOM uint32_t PWMCS1_GAR_REG;                    /*!< Offset 0x7CC PWMCS1 Gating And Reset Register */
+         RESERVED(0x7D0[0x0800 - 0x07D0], uint8_t)
+    __IOM uint32_t TIMER0_CPUX_0_CLK_REG;             /*!< Offset 0x800 TIMER0_CPUX_0 Clock Register */
+    __IOM uint32_t TIMER0_CPUX_1_CLK_REG;             /*!< Offset 0x804 TIMER0_CPUX_1 Clock Register */
+    __IOM uint32_t TIMER0_CPUX_2_CLK_REG;             /*!< Offset 0x808 TIMER0_CPUX_2 Clock Register */
+    __IOM uint32_t TIMER0_CPUX_3_CLK_REG;             /*!< Offset 0x80C TIMER0_CPUX_3 Clock Register */
+    __IOM uint32_t TIMER0_CPUX_4_CLK_REG;             /*!< Offset 0x810 TIMER0_CPUX_4 Clock Register */
+    __IOM uint32_t TIMER0_CPUX_5_CLK_REG;             /*!< Offset 0x814 TIMER0_CPUX_5 Clock Register */
+    __IOM uint32_t TIMER0_CPUX_6_CLK_REG;             /*!< Offset 0x818 TIMER0_CPUX_6 Clock Register */
+    __IOM uint32_t TIMER0_CPUX_7_CLK_REG;             /*!< Offset 0x81C TIMER0_CPUX_7 Clock Register */
+         RESERVED(0x820[0x0850 - 0x0820], uint8_t)
+    __IOM uint32_t TIMER0_CPUX_GAR_REG;               /*!< Offset 0x850 TIMER0_CPUX Gating And Reset Register */
+         RESERVED(0x854[0x0860 - 0x0854], uint8_t)
+    __IOM uint32_t TIEMR0_MCU_0_CLK_REG;              /*!< Offset 0x860 TIEMR0_MCU_0 Clock Register */
+    __IOM uint32_t TIEMR0_MCU_1_CLK_REG;              /*!< Offset 0x864 TIEMR0_MCU_1 Clock Register */
+    __IOM uint32_t TIEMR0_MCU_2_CLK_REG;              /*!< Offset 0x868 TIEMR0_MCU_2 Clock Register */
+    __IOM uint32_t TIEMR0_MCU_3_CLK_REG;              /*!< Offset 0x86C TIEMR0_MCU_3 Clock Register */
+    __IOM uint32_t TIMER0_MCU_GAR_REG;                /*!< Offset 0x870 TIMER0_MCU Gating And Reset Register */
+         RESERVED(0x874[0x0A00 - 0x0874], uint8_t)
+    __IOM uint32_t DE0_CLK_REG;                       /*!< Offset 0xA00 DE0 Clock Register */
+    __IOM uint32_t DE0_GAR_REG;                       /*!< Offset 0xA04 DE0 Gating And Reset Register */
+         RESERVED(0xA08[0x0A40 - 0x0A08], uint8_t)
+    __IOM uint32_t G2D_CLK_REG;                       /*!< Offset 0xA40 G2D Clock Register */
+    __IOM uint32_t G2D_GAR_REG;                       /*!< Offset 0xA44 G2D Gating And Reset Register */
+         RESERVED(0xA48[0x0AC0 - 0x0A48], uint8_t)
+    __IOM uint32_t CE_SYS_CLK_REG;                    /*!< Offset 0xAC0 CE_SYS Clock Register */
+    __IOM uint32_t CE_SYS_GAR_REG;                    /*!< Offset 0xAC4 CE_SYS Gating And Reset Register */
+         RESERVED(0xAC8[0x0B80 - 0x0AC8], uint8_t)
+    __IOM uint32_t MCU_CORE_CLK_REG;                  /*!< Offset 0xB80 MCU_CORE Clock Register */
+         RESERVED(0xB84[0x0B88 - 0x0B84], uint8_t)
+    __IOM uint32_t MCU_TS_CLK_REG;                    /*!< Offset 0xB88 MCU_TS Clock Register */
+         RESERVED(0xB8C[0x0B94 - 0x0B8C], uint8_t)
+    __IOM uint32_t MCU_SYS_GAR_REG;                   /*!< Offset 0xB94 MCU_SYS Gating And Reset Register */
+         RESERVED(0xB98[0x0B9C - 0x0B98], uint8_t)
+    __IOM uint32_t MCU_CFG_GAR_REG;                   /*!< Offset 0xB9C MCU_CFG Gating And Reset Register */
+         RESERVED(0xBA0[0x0C0C - 0x0BA0], uint8_t)
+    __IOM uint32_t DRAMC_GAR_REG;                     /*!< Offset 0xC0C DRAMC Gating And Reset Register */
+         RESERVED(0xC10[0x0D00 - 0x0C10], uint8_t)
+    __IOM uint32_t SMHC0_CLK_REG;                     /*!< Offset 0xD00 SMHC0 Clock Register */
+         RESERVED(0xD04[0x0D0C - 0x0D04], uint8_t)
+    __IOM uint32_t SMHC0_GAR_REG;                     /*!< Offset 0xD0C SMHC0 Gating And Reset Register */
+    __IOM uint32_t SMHC1_CLK_REG;                     /*!< Offset 0xD10 SMHC1 Clock Register */
+         RESERVED(0xD14[0x0D1C - 0x0D14], uint8_t)
+    __IOM uint32_t SMHC1_GAR_REG;                     /*!< Offset 0xD1C SMHC1 Gating And Reset Register */
+    __IOM uint32_t SMHC2_CLK_REG;                     /*!< Offset 0xD20 SMHC2 Clock Register */
+         RESERVED(0xD24[0x0D2C - 0x0D24], uint8_t)
+    __IOM uint32_t SMHC2_GAR_REG;                     /*!< Offset 0xD2C SMHC2 Gating And Reset Register */
+    __IOM uint32_t SMHC3_CLK_REG;                     /*!< Offset 0xD30 SMHC3 Clock Register */
+         RESERVED(0xD34[0x0D3C - 0x0D34], uint8_t)
+    __IOM uint32_t SMHC3_GAR_REG;                     /*!< Offset 0xD3C SMHC3 Gating And Reset Register */
+         RESERVED(0xD40[0x0E00 - 0x0D40], uint8_t)
+    __IOM uint32_t UART0_GAR_REG;                     /*!< Offset 0xE00 UART0 Gating And Reset Register */
+    __IOM uint32_t UART1_GAR_REG;                     /*!< Offset 0xE04 UART1 Gating And Reset Register */
+    __IOM uint32_t UART2_GAR_REG;                     /*!< Offset 0xE08 UART2 Gating And Reset Register */
+    __IOM uint32_t UART3_GAR_REG;                     /*!< Offset 0xE0C UART3 Gating And Reset Register */
+    __IOM uint32_t UART4_GAR_REG;                     /*!< Offset 0xE10 UART4 Gating And Reset Register */
+    __IOM uint32_t UART5_GAR_REG;                     /*!< Offset 0xE14 UART5 Gating And Reset Register */
+    __IOM uint32_t UART6_GAR_REG;                     /*!< Offset 0xE18 UART6 Gating And Reset Register */
+         RESERVED(0xE1C[0x0E20 - 0x0E1C], uint8_t)
+    __IOM uint32_t UART7_GAR_REG;                     /*!< Offset 0xE20 UART7 Gating And Reset Register */
+    __IOM uint32_t UART8_GAR_REG;                     /*!< Offset 0xE24 UART8 Gating And Reset Register */
+    __IOM uint32_t UART9_GAR_REG;                     /*!< Offset 0xE28 UART9 Gating And Reset Register */
+         RESERVED(0xE2C[0x0E80 - 0x0E2C], uint8_t)
+    __IOM uint32_t TWI0_GAR_REG;                      /*!< Offset 0xE80 TWI0 Gating And Reset Register */
+    __IOM uint32_t TWI1_GAR_REG;                      /*!< Offset 0xE84 TWI1 Gating And Reset Register */
+    __IOM uint32_t TWI2_GAR_REG;                      /*!< Offset 0xE88 TWI2 Gating And Reset Register */
+    __IOM uint32_t TWI3_GAR_REG;                      /*!< Offset 0xE8C TWI3 Gating And Reset Register */
+    __IOM uint32_t TWI4_GAR_REG;                      /*!< Offset 0xE90 TWI4 Gating And Reset Register */
+    __IOM uint32_t TWI5_GAR_REG;                      /*!< Offset 0xE94 TWI5 Gating And Reset Register */
+         RESERVED(0xE98[0x0F00 - 0x0E98], uint8_t)
+    __IOM uint32_t SPI0_CLK_REG;                      /*!< Offset 0xF00 SPI0 Clock Register */
+    __IOM uint32_t SPI0_GAR_REG;                      /*!< Offset 0xF04 SPI0 Gating And Reset Register */
+    __IOM uint32_t SPI1_CLK_REG;                      /*!< Offset 0xF08 SPI1 Clock Register */
+    __IOM uint32_t SPI1_GAR_REG;                      /*!< Offset 0xF0C SPI1 Gating And Reset Register */
+    __IOM uint32_t SPI2_CLK_REG;                      /*!< Offset 0xF10 SPI2 Clock Register */
+    __IOM uint32_t SPI2_GAR_REG;                      /*!< Offset 0xF14 SPI2 Gating And Reset Register */
+    __IOM uint32_t SPIF_CLK_REG;                      /*!< Offset 0xF18 SPIF Clock Register */
+    __IOM uint32_t SPIF_GAR_REG;                      /*!< Offset 0xF1C SPIF Gating And Reset Register */
+    __IOM uint32_t SPI3_CLK_REG;                      /*!< Offset 0xF20 SPI3 Clock Register */
+    __IOM uint32_t SPI3_GAR_REG;                      /*!< Offset 0xF24 SPI3 Gating And Reset Register */
+         RESERVED(0xF28[0x0F80 - 0x0F28], uint8_t)
+    __IOM uint32_t CAN0_CLK_REG;                      /*!< Offset 0xF80 CAN0 Clock Register */
+    __IOM uint32_t CAN0_GAR_REG;                      /*!< Offset 0xF84 CAN0 Gating And Reset Register */
+    __IOM uint32_t CAN1_CLK_REG;                      /*!< Offset 0xF88 CAN1 Clock Register */
+    __IOM uint32_t CAN1_GAR_REG;                      /*!< Offset 0xF8C CAN1 Gating And Reset Register */
+         RESERVED(0xF90[0x0FBC - 0x0F90], uint8_t)
+    __IOM uint32_t CAN_SYS_GAR_REG;                   /*!< Offset 0xFBC CAN_SYS Gating And Reset Register */
+    __IOM uint32_t GPADC0_CLK_REG;                    /*!< Offset 0xFC0 GPADC0 Clock Register */
+    __IOM uint32_t GPADC0_GAR_REG;                    /*!< Offset 0xFC4 GPADC0 Gating And Reset Register */
+    __IOM uint32_t GPADC1_CLK_REG;                    /*!< Offset 0xFC8 GPADC1 Clock Register */
+    __IOM uint32_t GPADC1_GAR_REG;                    /*!< Offset 0xFCC GPADC1 Gating And Reset Register */
+    __IOM uint32_t GPADC2_CLK_REG;                    /*!< Offset 0xFD0 GPADC2 Clock Register */
+    __IOM uint32_t GPADC2_GAR_REG;                    /*!< Offset 0xFD4 GPADC2 Gating And Reset Register */
+    __IOM uint32_t THS_ADC_CLK_REG;                   /*!< Offset 0xFD8 THS_ADC Clock Register  */
+    __IOM uint32_t THS_ADC_GAR_REG;                   /*!< Offset 0xFDC THS_ADC Gating And Reset Register  */
+         RESERVED(0xFE0[0x0FE4 - 0x0FE0], uint8_t)
+    __IOM uint32_t THS_GAR_REG;                       /*!< Offset 0xFE4 THS Gating And Reset Register */
+         RESERVED(0xFE8[0x1000 - 0x0FE8], uint8_t)
+    __IOM uint32_t IR_RX0_CLK_REG;                    /*!< Offset 0x1000 IR_RX0 Clock Register */
+    __IOM uint32_t IR_RX0_GAR_REG;                    /*!< Offset 0x1004 IR_RX0 Gating And Reset Register */
+    __IOM uint32_t IR_TX_CLK_REG;                     /*!< Offset 0x1008 IR_TX Clock Register */
+    __IOM uint32_t IR_TX_GAR_REG;                     /*!< Offset 0x100C IR_TX Gating And Reset Register */
+         RESERVED(0x1010[0x1030 - 0x1010], uint8_t)
+    __IOM uint32_t TPADC_CLK_REG;                     /*!< Offset 0x1030 TPADC Clock Register */
+    __IOM uint32_t TPADC_GAR_REG;                     /*!< Offset 0x1034 TPADC Gating And Reset Register */
+         RESERVED(0x1038[0x1040 - 0x1038], uint8_t)
+    __IOM uint32_t LBC_CLK_REG;                       /*!< Offset 0x1040 LBC Clock Register */
+         RESERVED(0x1044[0x104C - 0x1044], uint8_t)
+    __IOM uint32_t LBC_GAR_REG;                       /*!< Offset 0x104C LBC Gating And Reset Register */
+         RESERVED(0x1050[0x1100 - 0x1050], uint8_t)
+    __IOM uint32_t IR_RX1_CLK_REG;                    /*!< Offset 0x1100 IR_RX1 Clock Register */
+    __IOM uint32_t IR_RX1_GAR_REG;                    /*!< Offset 0x1104 IR_RX1 Gating And Reset Register */
+    __IOM uint32_t IR_RX2_CLK_REG;                    /*!< Offset 0x1108 IR_RX2 Clock Register */
+    __IOM uint32_t IR_RX2_GAR_REG;                    /*!< Offset 0x110C IR_RX2 Gating And Reset Register */
+    __IOM uint32_t IR_RX3_CLK_REG;                    /*!< Offset 0x1110 IR_RX3 Clock Register */
+    __IOM uint32_t IR_RX3_GAR_REG;                    /*!< Offset 0x1114 IR_RX3 Gating And Reset Register */
+         RESERVED(0x1118[0x1200 - 0x1118], uint8_t)
+    __IOM uint32_t I2S0_CLK_REG;                      /*!< Offset 0x1200 I2S0 Clock Register */
+         RESERVED(0x1204[0x120C - 0x1204], uint8_t)
+    __IOM uint32_t I2S0_GAR_REG;                      /*!< Offset 0x120C I2S0 Gating And Reset Register */
+    __IOM uint32_t I2S1_CLK_REG;                      /*!< Offset 0x1210 I2S1 Clock Register */
+         RESERVED(0x1214[0x121C - 0x1214], uint8_t)
+    __IOM uint32_t I2S1_GAR_REG;                      /*!< Offset 0x121C I2S1 Gating And Reset Register */
+    __IOM uint32_t I2S2_CLK_REG;                      /*!< Offset 0x1220 I2S2 Clock Register */
+         RESERVED(0x1224[0x122C - 0x1224], uint8_t)
+    __IOM uint32_t I2S2_GAR_REG;                      /*!< Offset 0x122C I2S2 Gating And Reset Register */
+         RESERVED(0x1230[0x1280 - 0x1230], uint8_t)
+    __IOM uint32_t OWA0_TX_CLK_REG;                   /*!< Offset 0x1280 OWA0 TX Clock Register */
+    __IOM uint32_t OWA0_RX_CLK_REG;                   /*!< Offset 0x1284 OWA0 RX Clock Register */
+         RESERVED(0x1288[0x128C - 0x1288], uint8_t)
+    __IOM uint32_t OWA0_GAR_REG;                      /*!< Offset 0x128C OWA0 Gating And Reset Register */
+         RESERVED(0x1290[0x12C0 - 0x1290], uint8_t)
+    __IOM uint32_t DMIC_CLK_REG;                      /*!< Offset 0x12C0 DMIC Clock Register */
+         RESERVED(0x12C4[0x12CC - 0x12C4], uint8_t)
+    __IOM uint32_t DMIC_GAR_REG;                      /*!< Offset 0x12CC DMIC Gating And Reset Register */
+         RESERVED(0x12D0[0x12E0 - 0x12D0], uint8_t)
+    __IOM uint32_t AUDIOCODEC0_DAC_CLK_REG;           /*!< Offset 0x12E0 AUDIOCODEC0 DAC Clock Register */
+         RESERVED(0x12E4[0x12EC - 0x12E4], uint8_t)
+    __IOM uint32_t AUDIOCODEC0_GAR_REG;               /*!< Offset 0x12EC AUDIOCODEC0 Gating And Reset Register */
+         RESERVED(0x12F0[0x1300 - 0x12F0], uint8_t)
+    __IOM uint32_t USB0_CLK_REG;                      /*!< Offset 0x1300 USB0 Clock Register */
+    __IOM uint32_t USB0_GAR_REG;                      /*!< Offset 0x1304 USB0 Gating And Reset Register */
+    __IOM uint32_t USB1_CLK_REG;                      /*!< Offset 0x1308 USB1 Clock Register */
+    __IOM uint32_t USB1_GAR_REG;                      /*!< Offset 0x130C USB1 Gating And Reset Register */
+         RESERVED(0x1310[0x1340 - 0x1310], uint8_t)
+    __IOM uint32_t USB2P0_SYS_PHY_REF_CLK_REG;        /*!< Offset 0x1340 USB2P0_SYS PHY Reference Clock Register */
+    __IOM uint32_t USB2P0_SYS_GAR_REG;                /*!< Offset 0x1344 USB2P0_SYS Gating And Reset Register */
+         RESERVED(0x1348[0x1400 - 0x1348], uint8_t)
+    __IOM uint32_t GMAC0_PHY_CLK_REG;                 /*!< Offset 0x1400 GMAC0 PHY Clock Register */
+    __IOM uint32_t GMAC0_PTP_REF_CLK_REG;             /*!< Offset 0x1404 GMAC0 PTP Reference Clock Register */
+         RESERVED(0x1408[0x140C - 0x1408], uint8_t)
+    __IOM uint32_t GMAC0_GAR_REG;                     /*!< Offset 0x140C GMAC0 Gating And Reset Register */
+    __IOM uint32_t GMAC1_PHY_CLK_REG;                 /*!< Offset 0x1410 GMAC1 PHY Clock Register */
+    __IOM uint32_t GMAC1_PTP_REF_CLK_REG;             /*!< Offset 0x1414 GMAC1 PTP Reference Clock Register */
+         RESERVED(0x1418[0x141C - 0x1418], uint8_t)
+    __IOM uint32_t GMAC1_GAR_REG;                     /*!< Offset 0x141C GMAC1 Gating And Reset Register */
+    __IOM uint32_t GMAC2_PHY_CLK_REG;                 /*!< Offset 0x1420 GMAC2 PHY Clock Register */
+    __IOM uint32_t GMAC2_PTP_REF_CLK_REG;             /*!< Offset 0x1424 GMAC2 PTP Reference Clock Register */
+         RESERVED(0x1428[0x142C - 0x1428], uint8_t)
+    __IOM uint32_t GMAC2_GAR_REG;                     /*!< Offset 0x142C GMAC2 Gating And Reset Register */
+         RESERVED(0x1430[0x1500 - 0x1430], uint8_t)
+    __IOM uint32_t TCON_LCD0_CLK_REG;                 /*!< Offset 0x1500 TCON_LCD0 Clock Register */
+    __IOM uint32_t TCON_LCD0_GAR_REG;                 /*!< Offset 0x1504 TCON_LCD0 Gating And Reset Register */
+         RESERVED(0x1508[0x1544 - 0x1508], uint8_t)
+    __IOM uint32_t LVDS0_GAR_REG;                     /*!< Offset 0x1544 LVDS0 Gating And Reset Register */
+         RESERVED(0x1548[0x1580 - 0x1548], uint8_t)
+    __IOM uint32_t MIPI_DSI0_CLK_REG;                 /*!< Offset 0x1580 MIPI_DSI0 Clock Register */
+    __IOM uint32_t MIPI_DSI0_GAR_REG;                 /*!< Offset 0x1584 MIPI_DSI0 Gating And Reset Register */
+         RESERVED(0x1588[0x15C0 - 0x1588], uint8_t)
+    __IOM uint32_t COMBOPHY0_CLK_REG;                 /*!< Offset 0x15C0 COMBOPHY0 Clock Register */
+         RESERVED(0x15C4[0x16C4 - 0x15C4], uint8_t)
+    __IOM uint32_t VO0_REG_GAR_REG;                   /*!< Offset 0x16C4 VO0_REG Gating And Reset Register */
+         RESERVED(0x16C8[0x16E4 - 0x16C8], uint8_t)
+    __IOM uint32_t VIDEO_OUT0_GAR_REG;                /*!< Offset 0x16E4 VIDEO_OUT0 Gating And Reset Register */
+         RESERVED(0x16E8[0x1700 - 0x16E8], uint8_t)
+    __IOM uint32_t LEDC_CLK_REG;                      /*!< Offset 0x1700 LEDC Clock Register */
+    __IOM uint32_t LEDC_GAR_REG;                      /*!< Offset 0x1704 LEDC Gating And Reset Register */
+         RESERVED(0x1708[0x1800 - 0x1708], uint8_t)
+    __IOM uint32_t CSI_MASTER0_CLK_REG;               /*!< Offset 0x1800 CSI Master0 Clock Register */
+    __IOM uint32_t CSI_MASTER1_CLK_REG;               /*!< Offset 0x1804 CSI Master1 Clock Register */
+    __IOM uint32_t CSI_MASTER2_CLK_REG;               /*!< Offset 0x1808 CSI Master2 Clock Register */
+         RESERVED(0x180C[0x1840 - 0x180C], uint8_t)
+    __IOM uint32_t CSI_CLK_REG;                       /*!< Offset 0x1840 CSI Clock Register */
+         RESERVED(0x1844[0x1860 - 0x1844], uint8_t)
+    __IOM uint32_t ISP_CLK_REG;                       /*!< Offset 0x1860 ISP Clock Register */
+         RESERVED(0x1864[0x1884 - 0x1864], uint8_t)
+    __IOM uint32_t VIDEO_IN_GAR_REG;                  /*!< Offset 0x1884 VIDEO_IN Gating And Reset Register */
+         RESERVED(0x1888[0x1908 - 0x1888], uint8_t)
+    __IOM uint32_t PERI0PLL_GATE_EN_REG;              /*!< Offset 0x1908 PERI0PLL Gate Enable Register */
+    __IOM uint32_t PERI1PLL_GATE_EN_REG;              /*!< Offset 0x190C PERI1PLL Gate Enable Register */
+    __IOM uint32_t VIDEOPLL_GATE_EN_REG;              /*!< Offset 0x1910 VIDEOPLL Gate Enable Register */
+         RESERVED(0x1914[0x191C - 0x1914], uint8_t)
+    __IOM uint32_t AUDIOPLL_GATE_EN_REG;              /*!< Offset 0x191C AUDIOPLL Gate Enable Register */
+         RESERVED(0x1920[0x1988 - 0x1920], uint8_t)
+    __IOM uint32_t PERI0PLL_GATE_STAT_REG;            /*!< Offset 0x1988 PERI0PLL Gate Status Register */
+    __IOM uint32_t PERI1PLL_GATE_STAT_REG;            /*!< Offset 0x198C PERI1PLL Gate Status Register */
+    __IOM uint32_t VIDEOPLL_GATE_STAT_REG;            /*!< Offset 0x1990 VIDEOPLL Gate Status Register */
+         RESERVED(0x1994[0x199C - 0x1994], uint8_t)
+    __IOM uint32_t AUDIOPLL_GATE_STAT_REG;            /*!< Offset 0x199C AUDIOPLL Gate Status Register */
+         RESERVED(0x19A0[0x1A20 - 0x19A0], uint8_t)
+    __IOM uint32_t PLL_OPG_BYPASS_REG;                /*!< Offset 0x1A20 PLL Output Gate Bypass Register */
+         RESERVED(0x1A24[0x1C00 - 0x1A24], uint8_t)
+    __IOM uint32_t AXI_MON_GAR_REG;                   /*!< Offset 0x1C00 AXI MON Gating And Reset Register */
+    __IOM uint32_t AHB_MON_GAR_REG;                   /*!< Offset 0x1C04 AHB MON Gating And Reset Register */
+         RESERVED(0x1C08[0x1F00 - 0x1C08], uint8_t)
+    __IOM uint32_t CCU_SEC_SWITCH_REG;                /*!< Offset 0x1F00 CCU Security Switch Register */
+         RESERVED(0x1F04[0x1F10 - 0x1F04], uint8_t)
+    __IOM uint32_t DAP_REQ_CTRL_REG;                  /*!< Offset 0x1F10 DAP REQ Control Register */
+         RESERVED(0x1F14[0x1F20 - 0x1F14], uint8_t)
+    __IOM uint32_t PLL_CFG0_REG;                      /*!< Offset 0x1F20 PLL Configuration0 Register */
+    __IOM uint32_t PLL_CFG1_REG;                      /*!< Offset 0x1F24 PLL Configuration1 Register */
+    __IOM uint32_t PLL_CFG2_REG;                      /*!< Offset 0x1F28 PLL Configuration2 Register */
+         RESERVED(0x1F2C[0x1F30 - 0x1F2C], uint8_t)
+    __IOM uint32_t CCU_FAN_GATE_REG;                  /*!< Offset 0x1F30 CCU Fanout Clock Gate Register */
+    __IOM uint32_t CLK27M_FAN_REG;                    /*!< Offset 0x1F34 CLK27M Fanout Register */
+    __IOM uint32_t CLK_FAN_REG;                       /*!< Offset 0x1F38 CLK Fanout Register */
+    __IOM uint32_t CCU_FAN_REG;                       /*!< Offset 0x1F3C CCU Fanout Register */
+         RESERVED(0x1F40[0x1F50 - 0x1F40], uint8_t)
+    __IOM uint32_t CLK_DBG_REG;                       /*!< Offset 0x1F50 Clock Debug Register */
+         RESERVED(0x1F54[0x1F60 - 0x1F54], uint8_t)
+    __IOM uint32_t FRE_DET_CTRL_REG;                  /*!< Offset 0x1F60 Frequency Detect Control Register */
+    __IOM uint32_t FRE_UP_LIM_REG;                    /*!< Offset 0x1F64 Frequency Up Limit Register */
+    __IOM uint32_t FRE_DOWN_LIM_REG;                  /*!< Offset 0x1F68 Frequency Down Limit Register */
+} CCU_TypeDef; /* size of structure = 0x1F6C */
 /*
  * @brief GPIO
  */
@@ -473,6 +786,7 @@ typedef struct USB_OHCI_Capability_Type
 
 /* Access pointers */
 
+#define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
 #define TWI0 ((TWI_TypeDef *) TWI0_BASE)              /*!< TWI0 Two Wire Interface (TWI) register set access pointer */
 #define TWI1 ((TWI_TypeDef *) TWI1_BASE)              /*!< TWI1 Two Wire Interface (TWI) register set access pointer */
 #define TWI2 ((TWI_TypeDef *) TWI2_BASE)              /*!< TWI2 Two Wire Interface (TWI) register set access pointer */
