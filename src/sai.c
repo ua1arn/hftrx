@@ -3371,10 +3371,12 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 	#define DMACRINGSTAGES 2
 #endif
 
-#define RAMNCDESC //RAMNC
+#define RAMNCDESC RAMNC
 
-/* DMA каналы на Allwinner T113-s3. 0..7
- * T507/H616 - 0..15
+/* DMA каналы на...
+ * Allwinner T113-s3. 0..7
+ * Allwinner T507/H616 - 0..15
+ * Allwinner A733 - 0..15 (два DMAC)
  *
  * */
 enum

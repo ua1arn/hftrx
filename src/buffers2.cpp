@@ -13,12 +13,14 @@
 #include "display/display.h"
 #include <atomic>
 
-//#define WITHSEQTEST (1 && WITHDEBUG)
+#define WITHSEQTEST (1 && WITHDEBUG)
 //#define WITHBUFFERSDEBUG (1 && WITHDEBUG)
 
 #ifndef BUFOVERSIZE
 	#define BUFOVERSIZE 1
 #endif /* BUFOVERSIZE */
+//#undef RAMNC
+//#define RAMNC
 
 // Одна из задач resampler - привести частоту кодека к требуемой для 48 кГц (lrckf=24576000, (clk=24571428)) = 0.99981396484375
 // Для USB - исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
