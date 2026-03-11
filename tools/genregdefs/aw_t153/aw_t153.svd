@@ -2039,6 +2039,223 @@
   <baseAddress>0x03604580</baseAddress>
   </peripheral>
   <peripheral>
+  <name>PRCM</name>
+  <description></description>
+  <baseAddress>0x07010000</baseAddress>
+  <registers>
+   <register>
+    <name>AHBS_CLK_REG</name>
+    <displayName>AHBS_CLK_REG</displayName>
+    <description>AHBS Clock Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>APBS0_CLK_REG</name>
+    <displayName>APBS0_CLK_REG</displayName>
+    <description>APBS0 Clock Register </description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>TWD_BGR_REG</name>
+    <displayName>TWD_BGR_REG</displayName>
+    <description>TWD Bus Gating Reset Register</description>
+    <addressOffset>0x12C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RTC_BGR_REG</name>
+    <displayName>RTC_BGR_REG</displayName>
+    <description>RTC Bus Gating Reset Register</description>
+    <addressOffset>0x20C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CPUIDLE_BGR_REG</name>
+    <displayName>CPUIDLE_BGR_REG</displayName>
+    <description>CPUIDLE Bus Gating Reset Register</description>
+    <addressOffset>0x22C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRCM_PLL_CTRL_REG0</name>
+    <displayName>PRCM_PLL_CTRL_REG0</displayName>
+    <description>PRCM PLL Control Register 0</description>
+    <addressOffset>0x240</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRCM_PLL_CTRL_REG1</name>
+    <displayName>PRCM_PLL_CTRL_REG1</displayName>
+    <description>PRCM PLL Control Register 1</description>
+    <addressOffset>0x244</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ANA_PWR_RST_REG</name>
+    <displayName>ANA_PWR_RST_REG</displayName>
+    <description>ANALOG Power Off Gating Register</description>
+    <addressOffset>0x254</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>VDD_SYS_PWR_RST_REG</name>
+    <displayName>VDD_SYS_PWR_RST_REG</displayName>
+    <description>VDD_SYS Power Domain Reset Register </description>
+    <addressOffset>0x260</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RAMP2P_CFG_REG</name>
+    <displayName>RAMP2P_CFG_REG</displayName>
+    <description>RAMP2P Configuration Register </description>
+    <addressOffset>0x270</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RAM2P_CFG_REG</name>
+    <displayName>RAM2P_CFG_REG</displayName>
+    <description>RAM2P Configuration Register </description>
+    <addressOffset>0x274</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RAMSP_CFG_REG</name>
+    <displayName>RAMSP_CFG_REG</displayName>
+    <description>RAMSP Configuration Register </description>
+    <addressOffset>0x278</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ROM_CFG_REG</name>
+    <displayName>ROM_CFG_REG</displayName>
+    <description>ROM Configuration Register </description>
+    <addressOffset>0x27C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PRCM_SEC_SWITCH_REG</name>
+    <displayName>PRCM_SEC_SWITCH_REG</displayName>
+    <description>PRCM Security Switch Register </description>
+    <addressOffset>0x290</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NMI_INT_CTRL_REG</name>
+    <displayName>NMI_INT_CTRL_REG</displayName>
+    <description>NMI Interrupt Control Register</description>
+    <addressOffset>0x320</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NMI_INT_EN_REG</name>
+    <displayName>NMI_INT_EN_REG</displayName>
+    <description>NMI Interrupt Enable Register</description>
+    <addressOffset>0x324</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>NMI_INT_PEND_REG</name>
+    <displayName>NMI_INT_PEND_REG</displayName>
+    <description>NMI Interrupt Pending Register</description>
+    <addressOffset>0x328</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>BUS_ACG_REG</name>
+    <displayName>BUS_ACG_REG</displayName>
+    <description>Bus Auto Clock Gating Register</description>
+    <addressOffset>0x33C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>AHBS_RDY_TOUT_CTRL_REG</name>
+    <displayName>AHBS_RDY_TOUT_CTRL_REG</displayName>
+    <description>AHBS Ready Timeout Control Register</description>
+    <addressOffset>0x378</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>SID</name>
+  <description>Security ID</description>
+  <baseAddress>0x03006000</baseAddress>
+  <registers>
+   <register>
+    <name>SID_PRCTL</name>
+    <displayName>SID_PRCTL</displayName>
+    <description></description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SID_RDKEY</name>
+    <displayName>SID_RDKEY</displayName>
+    <description></description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>256</dim>
+    <addressOffset>0x00000200</addressOffset>
+    <register>
+     <name>SID_DATA</name>
+     <displayName>SID_DATA</displayName>
+     <description>SID data (xfel display as &apos;sid&apos; replay)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x400</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>SPI0</name>
   <description>Serial Peripheral Interface</description>
   <baseAddress>0x04025000</baseAddress>

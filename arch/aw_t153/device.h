@@ -80,6 +80,7 @@ typedef enum IRQn
 #define UART7_BASE ((uintptr_t) 0x02670000)           /*!< UART  Base */
 #define UART8_BASE ((uintptr_t) 0x02680000)           /*!< UART  Base */
 #define UART9_BASE ((uintptr_t) 0x02690000)           /*!< UART  Base */
+#define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Security ID Base */
 #define GIC_BASE ((uintptr_t) 0x03400000)             /*!< GIC  Base */
 #define GIC_BASE ((uintptr_t) 0x03400000)             /*!< GIC  Base */
 #define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03400000) /*!< GIC_DISTRIBUTOR GIC DISTRIBUTOR; GICD Base */
@@ -97,6 +98,7 @@ typedef enum IRQn
 #define SPI1_BASE ((uintptr_t) 0x04026000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI2_BASE ((uintptr_t) 0x04027000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI3_BASE ((uintptr_t) 0x04028000)            /*!< SPI Serial Peripheral Interface Base */
+#define PRCM_BASE ((uintptr_t) 0x07010000)            /*!< PRCM  Base */
 
 #include <core_ca.h>
 
@@ -474,6 +476,57 @@ typedef struct GPIOINT_Type
          RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
 /*
+ * @brief PRCM
+ */
+/*!< PRCM  */
+typedef struct PRCM_Type
+{
+    __IOM uint32_t AHBS_CLK_REG;                      /*!< Offset 0x000 AHBS Clock Register */
+         RESERVED(0x004[0x000C - 0x0004], uint8_t)
+    __IOM uint32_t APBS0_CLK_REG;                     /*!< Offset 0x00C APBS0 Clock Register  */
+         RESERVED(0x010[0x012C - 0x0010], uint8_t)
+    __IOM uint32_t TWD_BGR_REG;                       /*!< Offset 0x12C TWD Bus Gating Reset Register */
+         RESERVED(0x130[0x020C - 0x0130], uint8_t)
+    __IOM uint32_t RTC_BGR_REG;                       /*!< Offset 0x20C RTC Bus Gating Reset Register */
+         RESERVED(0x210[0x022C - 0x0210], uint8_t)
+    __IOM uint32_t CPUIDLE_BGR_REG;                   /*!< Offset 0x22C CPUIDLE Bus Gating Reset Register */
+         RESERVED(0x230[0x0240 - 0x0230], uint8_t)
+    __IOM uint32_t PRCM_PLL_CTRL_REG0;                /*!< Offset 0x240 PRCM PLL Control Register 0 */
+    __IOM uint32_t PRCM_PLL_CTRL_REG1;                /*!< Offset 0x244 PRCM PLL Control Register 1 */
+         RESERVED(0x248[0x0254 - 0x0248], uint8_t)
+    __IOM uint32_t ANA_PWR_RST_REG;                   /*!< Offset 0x254 ANALOG Power Off Gating Register */
+         RESERVED(0x258[0x0260 - 0x0258], uint8_t)
+    __IOM uint32_t VDD_SYS_PWR_RST_REG;               /*!< Offset 0x260 VDD_SYS Power Domain Reset Register  */
+         RESERVED(0x264[0x0270 - 0x0264], uint8_t)
+    __IOM uint32_t RAMP2P_CFG_REG;                    /*!< Offset 0x270 RAMP2P Configuration Register  */
+    __IOM uint32_t RAM2P_CFG_REG;                     /*!< Offset 0x274 RAM2P Configuration Register  */
+    __IOM uint32_t RAMSP_CFG_REG;                     /*!< Offset 0x278 RAMSP Configuration Register  */
+    __IOM uint32_t ROM_CFG_REG;                       /*!< Offset 0x27C ROM Configuration Register  */
+         RESERVED(0x280[0x0290 - 0x0280], uint8_t)
+    __IOM uint32_t PRCM_SEC_SWITCH_REG;               /*!< Offset 0x290 PRCM Security Switch Register  */
+         RESERVED(0x294[0x0320 - 0x0294], uint8_t)
+    __IOM uint32_t NMI_INT_CTRL_REG;                  /*!< Offset 0x320 NMI Interrupt Control Register */
+    __IOM uint32_t NMI_INT_EN_REG;                    /*!< Offset 0x324 NMI Interrupt Enable Register */
+    __IOM uint32_t NMI_INT_PEND_REG;                  /*!< Offset 0x328 NMI Interrupt Pending Register */
+         RESERVED(0x32C[0x033C - 0x032C], uint8_t)
+    __IOM uint32_t BUS_ACG_REG;                       /*!< Offset 0x33C Bus Auto Clock Gating Register */
+         RESERVED(0x340[0x0378 - 0x0340], uint8_t)
+    __IOM uint32_t AHBS_RDY_TOUT_CTRL_REG;            /*!< Offset 0x378 AHBS Ready Timeout Control Register */
+} PRCM_TypeDef; /* size of structure = 0x37C */
+/*
+ * @brief SID
+ */
+/*!< SID Security ID */
+typedef struct SID_Type
+{
+         RESERVED(0x000[0x0040 - 0x0000], uint8_t)
+    __IOM uint32_t SID_PRCTL;                         /*!< Offset 0x040  */
+         RESERVED(0x044[0x0060 - 0x0044], uint8_t)
+    __IOM uint32_t SID_RDKEY;                         /*!< Offset 0x060  */
+         RESERVED(0x064[0x0200 - 0x0064], uint8_t)
+    __IOM uint32_t SID_DATA [0x100];                  /*!< Offset 0x200 SID data (xfel display as 'sid' replay) */
+} SID_TypeDef; /* size of structure = 0x600 */
+/*
  * @brief SPI
  */
 /*!< SPI Serial Peripheral Interface */
@@ -803,6 +856,7 @@ typedef struct USB_OHCI_Capability_Type
 #define UART7 ((UART_TypeDef *) UART7_BASE)           /*!< UART7  register set access pointer */
 #define UART8 ((UART_TypeDef *) UART8_BASE)           /*!< UART8  register set access pointer */
 #define UART9 ((UART_TypeDef *) UART9_BASE)           /*!< UART9  register set access pointer */
+#define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA Port Controller register set access pointer */
 #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)           /*!< GPIOB Port Controller register set access pointer */
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC Port Controller register set access pointer */
@@ -816,6 +870,7 @@ typedef struct USB_OHCI_Capability_Type
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define SPI2 ((SPI_TypeDef *) SPI2_BASE)              /*!< SPI2 Serial Peripheral Interface register set access pointer */
 #define SPI3 ((SPI_TypeDef *) SPI3_BASE)              /*!< SPI3 Serial Peripheral Interface register set access pointer */
+#define PRCM ((PRCM_TypeDef *) PRCM_BASE)             /*!< PRCM  register set access pointer */
 
 #ifdef __cplusplus
  }
