@@ -81,12 +81,38 @@ void open_window(window_t * win)
 static void free_win_ptr (window_t * win)
 {
 #if GUI_USE_CACHE
-    if (win->bh_ptr != NULL) {
-        for (uint8_t i = 0; i < win->bh_count; i++) {
-            /* Освобождение кэша кнопки */
-            if (win->bh_ptr[i].cache != NULL) {
+    if (win->bh_ptr != NULL) // Освобождение кэша кнопок
+    {
+        for (uint8_t i = 0; i < win->bh_count; i++)
+        {
+            if (win->bh_ptr[i].cache != NULL)
+            {
                 gui_objects_cache_destroy(win->bh_ptr[i].cache);
                 win->bh_ptr[i].cache = NULL;
+            }
+        }
+    }
+
+    if (win->lh_ptr != NULL) // Освобождение кэша меток
+    {
+        for (uint8_t i = 0; i < win->lh_count; i++)
+        {
+            if (win->lh_ptr[i].cache != NULL)
+            {
+                gui_objects_cache_destroy(win->lh_ptr[i].cache);
+                win->lh_ptr[i].cache = NULL;
+            }
+        }
+    }
+
+    if (win->tf_ptr != NULL) // Освобождение кэша текстовых полей
+    {
+        for (uint8_t i = 0; i < win->tf_count; i++)
+        {
+            if (win->tf_ptr[i].cache != NULL)
+            {
+                gui_objects_cache_destroy(win->tf_ptr[i].cache);
+                win->tf_ptr[i].cache = NULL;
             }
         }
     }

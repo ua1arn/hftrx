@@ -336,7 +336,7 @@ static inline gui_objbgbuf_t * __gui_cache_texture_create(unsigned int w, unsign
                                       SDL_PIXELFORMAT_ARGB8888,
                                       SDL_TEXTUREACCESS_TARGET,
                                       w, h);
-    ASSERT(buf->texture);
+    if (buf->texture == NULL) printf("%s: %s\n", __func__, SDL_GetError());
 
     /* Устанавливаем режим смешивания для прозрачности */
     SDL_SetTextureBlendMode(buf->texture, SDL_BLENDMODE_BLEND);

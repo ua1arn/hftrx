@@ -179,16 +179,17 @@ void gui_objects_cache_end_render(gui_objects_cache_t * cache,
  * ОТРИСОВКА КЭША НА ЭКРАН
  * ========================================================================== */
 
-void gui_objects_cache_draw(gui_objects_cache_t * cache,
+int gui_objects_cache_draw(gui_objects_cache_t * cache,
                              uint16_t dst_x,
                              uint16_t dst_y)
 {
     if (cache == NULL || cache->buffer == NULL || !cache->valid) {
-        return;
+        return 1;
     }
 
     /* Отрисовываем кэш-текстуру на экран в указанных координатах */
     __gui_cache_texture_draw(cache->buffer, dst_x, dst_y);
+    return 0;
 }
 
 /* ============================================================================

@@ -3017,13 +3017,14 @@ void window_ft8_process(void)
 			gui_color_t colorline;
 			uint8_t cq_flag = 0;
 			parse_ft8_answer(msg, & colorline, & cq_flag);
-			if (cq_filter)
+
+			if (cq_filter)	// выводить только общие вызовы
 			{
 				if (cq_flag)
-					textfield_add_string("tf_ft8", msg, colorline);
+					gui_obj_set_prop("tf_ft8", GUI_OBJ_TEXT, msg, colorline);
 			}
-			else
-				textfield_add_string("tf_ft8", msg, colorline);
+			else			// выводить все сообщения
+				gui_obj_set_prop("tf_ft8", GUI_OBJ_TEXT, msg, colorline);
 		}
 
 		update = 1;
@@ -3840,9 +3841,9 @@ void window_3d_process(void)
 		}
 	}
 
-	textfield_clean("tf_3d");
+	gui_obj_set_prop("tf_3d", GUI_OBJ_CLEAN);
 	for (int k = 0; k < 22; k ++)
-		textfield_add_string("tf_3d", b[k], COLORPIP_WHITE);
+		gui_obj_set_prop("tf_3d", GUI_OBJ_TEXT, b[k], COLORPIP_WHITE);
 
 	A += 0.08;
 	B += 0.04;

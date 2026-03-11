@@ -119,7 +119,8 @@ typedef enum {
 	GUI_OBJ_COLOR,
 	GUI_OBJ_WIDTH,
 	GUI_OBJ_HEIGHT,
-	GUI_OBJ_SIZE
+	GUI_OBJ_SIZE,
+	GUI_OBJ_CLEAN
 } object_prop_t;
 
 enum {
@@ -158,6 +159,10 @@ typedef struct {
 	uint16_t y1;
 	uint16_t w;
 	uint16_t h;
+#if GUI_USE_CACHE
+	uint8_t change;
+	gui_objects_cache_t * cache;
+#endif /* GUI_USE_CACHE */
 } text_field_t;
 
 typedef struct {

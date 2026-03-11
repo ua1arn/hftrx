@@ -52,6 +52,263 @@ uint16_t get_label_height2(const char * name)
 	return lh->height_pix;
 }
 
+static void __draw_label(label_t * lh, uint16_t x, uint16_t y, const gui_drawbuf_t * db)
+{
+	__gui_print_mono(db, x, y, lh->text, lh->font, lh->color);
+}
+
+void draw_label(label_t * lh)
+{
+	window_t * win = get_win(lh->parent);
+	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
+	uint16_t x = win->x1 + lh->x;
+	uint16_t y = win->y1 + lh->y;
+
+#if GUI_USE_CACHE
+#if DEBUG_LABELS_CACHE
+	static uint32_t cache_hits = 0, cache_misses = 0;
+
+	if (lh->cache != NULL && ! gui_objects_cache_needs_render(lh->cache, 0, 0, lh->text))
+		cache_hits++;
+	else
+		cache_misses++;
+
+	if ((cache_hits + cache_misses) % 60 == 0)
+	{
+		printf("Labels cache: hits=%u, misses=%u, hit_rate=%.1f%%\n", cache_hits, cache_misses,
+				100.0f * cache_hits / (cache_hits + cache_misses));
+		cache_hits = cache_misses = 0;
+	}
+ #endif /* DEBUG_LABELS_CACHE */
+
+	if (lh->cache != NULL && ! gui_objects_cache_needs_render(lh->cache, 0, 0, lh->text))
+	{
+		/* Кэш действителен - копируем готовую текстуру */
+		gui_objects_cache_draw(lh->cache, x, y);
+		return;
+	}
+
+	/* Кэш недействителен - создаём/обновляем */
+	if (lh->cache == NULL)
+	{
+		lh->cache = gui_objects_cache_create(lh->width_pix, lh->height_pix, GUI_CACHE_TYPE_LABEL);
+		if (lh->cache == NULL) goto fallback_render;
+	}
+
+	/* Рендерим в кэш */
+	if (gui_objects_cache_begin_render(lh->cache))
+	{
+		const gui_drawbuf_t * cache_db = __gui_get_drawbuf();
+
+		__draw_label(lh, 0, 0, cache_db);
+
+		gui_objects_cache_end_render(lh->cache, 0, 0, lh->text);
+	}
+
+	/* Копируем из кэша на экран */
+	if (gui_objects_cache_draw(lh->cache, x, y)) goto fallback_render;
+	return;
+
+fallback_render:
+#endif /* GUI_USE_CACHE */
+
+	__draw_label(lh, x, y, gdb);
+}
+
+// *************** Buttons ****************
+
+static void __draw_button(button_t * bh, uint16_t x, uint16_t y, const gui_drawbuf_t * db)
+{
+	window_t * win = get_win(bh->parent);
+
+	/* Поиск кэшированного фона по размерам */
+	btn_bg_t * b1 = NULL;
+#if ! GUI_USE_CACHE
+	uint8_t i = 0;
+	do {
+		if (bh->h == btn_bg[i].h && bh->w == btn_bg[i].w)
+		{
+			b1 = & btn_bg[i];
+			break;
+		}
+	} while (++i < BG_DEF_COUNT);
+#endif /* ! GUI_USE_CACHE */
+
+	if (b1 == NULL)
+	{
+		/* Программная отрисовка фона */
+		gui_color_t c1, c2;
+		c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
+		c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
+
+		__gui_draw_rect(db, x, y, bh->w - 1, bh->h - 1, GUI_DEFAULTCOLOR, 1);
+		__gui_draw_rounded_rect(db, x, y, bh->w - 1, bh->h - 1, button_round_radius, COLORPIP_GRAY, 0);
+		__gui_draw_rounded_rect(db, x + 1, y + 1, bh->w - 3, bh->h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		__gui_draw_rounded_rect(db, x + 2, y + 2, bh->w - 5, bh->h - 5, button_round_radius, bh->state == PRESSED ? c2 : c1, 1);
+	} else
+	{
+		/* Копирование кэшированного фона */
+		gui_objbgbuf_t * bg = NULL;
+
+		if (bh->state == DISABLED) bg = b1->bgs[BG_DISABLED];
+		else if (bh->is_locked && bh->state == PRESSED) bg = b1->bgs[BG_LOCKED_PRESED];
+		else if (bh->is_locked && bh->state != PRESSED) bg = b1->bgs[BG_LOCKED];
+		else if (!bh->is_locked && bh->state == PRESSED) bg = b1->bgs[BG_PRESSED];
+		else if (!bh->is_locked && bh->state != PRESSED) bg = b1->bgs[BG_NON_PRESSED];
+
+		if (bg != NULL)
+		{
+			gui_drawbuf_t bgv;
+			__gui_drawbuf_init(& bgv, bg, bh->w, bh->h);
+			__gui_drawbuf_copy(db, & bgv, x, y, bh->w, bh->h);
+			__gui_drawbuf_end(& bgv);
+		}
+	}
+
+	/* Отрисовка текста кнопки */
+	const uint16_t shiftX = bh->state == PRESSED ? 1 : 0;
+	const uint16_t shiftY = bh->state == PRESSED ? 1 : 0;
+	const gui_color_t textcolor = COLORPIP_BLACK;
+	static const char delimeters[] = "|";
+
+	if (strchr(bh->text, delimeters[0]) == NULL)
+	{
+		/* Однострочная надпись */
+		int strlenP = get_strwidth_prop(bh->text, bh->font);
+		__gui_print_prop(db, shiftX + x + (bh->w - strlenP) / 2, shiftY + y + (bh->h - bh->font->height) / 2,
+				bh->text, bh->font, textcolor);
+	} else
+	{
+		/* Двухстрочная надпись */
+		char * next;
+		uint8_t j = (bh->h - bh->font->height * 2) / 2;
+		char buf[TEXT_ARRAY_SIZE];
+		strcpy(buf, bh->text);
+		char * text2 = strtok_r(buf, delimeters, & next);
+
+		int strlenP = get_strwidth_prop(text2, bh->font);
+		__gui_print_prop(db, shiftX + x + (bh->w - strlenP) / 2, shiftY + y + j, text2, bh->font, textcolor);
+
+		text2 = strtok_r(NULL, delimeters, & next);
+		strlenP = get_strwidth_prop(text2, bh->font);
+		__gui_print_prop(db, shiftX + x + (bh->w - strlenP) / 2, shiftY + bh->h + y - bh->font->height - j,
+				text2, bh->font, textcolor);
+	}
+
+	if (bh->is_focus)
+		gui_drawDashedRectangle(x + 4, y + 4, bh->w - 8, bh->h - 8, 4, COLOR_BLACK);
+}
+
+void draw_button(button_t * bh)
+{
+	window_t * win = get_win(bh->parent);
+	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
+	uint16_t x1 = win->x1 + bh->x1;
+	uint16_t y1 = win->y1 + bh->y1;
+
+#if GUI_USE_CACHE
+#if DEBUG_BUTTONS_CACHE
+	static uint32_t cache_hits = 0, cache_misses = 0;
+
+	if (bh->cache != NULL && ! gui_objects_cache_needs_render(bh->cache, bh->state, bh->is_locked, bh->text))
+		cache_hits++;
+	else
+		cache_misses++;
+
+	if ((cache_hits + cache_misses) % 60 == 0)
+	{
+		printf("Buttons cache: hits=%u, misses=%u, hit_rate=%.1f%%\n", cache_hits, cache_misses,
+				100.0f * cache_hits / (cache_hits + cache_misses));
+		cache_hits = cache_misses = 0;
+	}
+ #endif /* DEBUG_BUTTONS_CACHE */
+
+	if (bh->cache != NULL && ! gui_objects_cache_needs_render(bh->cache, bh->state, bh->is_locked, bh->text))
+	{
+		/* Кэш действителен - копируем готовую текстуру */
+		gui_objects_cache_draw(bh->cache, x1, y1);
+		return;
+	}
+
+	/* Кэш недействителен - создаём/обновляем */
+	if (bh->cache == NULL)
+	{
+		bh->cache = gui_objects_cache_create(bh->w, bh->h, GUI_CACHE_TYPE_BUTTON);
+		if (bh->cache == NULL) goto fallback_render;
+	}
+
+	/* Рендерим в кэш */
+	if (gui_objects_cache_begin_render(bh->cache))
+	{
+		const gui_drawbuf_t * cache_db = __gui_get_drawbuf();
+
+		__draw_button(bh, 0, 0, cache_db);
+
+		gui_objects_cache_end_render(bh->cache, bh->state, bh->is_locked, bh->text);
+	}
+
+	/* Копируем из кэша на экран */
+	if (gui_objects_cache_draw(bh->cache, x1, y1)) goto fallback_render;
+	return;
+
+fallback_render:
+#endif /* defined(GUI_USE_CACHE) */
+
+	__draw_button(bh, x1, y1, gdb);
+}
+
+static void __draw_close_button(button_t * bh, uint16_t x, uint16_t y, const gui_drawbuf_t * db)
+{
+	uint16_t w = bh->w;
+	uint16_t h = bh->h;
+
+	__gui_draw_rect(db, x, y, w,  h, COLORPIP_BLACK, 0);
+	__gui_draw_line(db, x, y, x + w, y + h, COLORPIP_BLACK);
+	__gui_draw_line(db, x, y + h, x + w, y, COLORPIP_BLACK);
+}
+
+void draw_close_button(button_t * bh)
+{
+	window_t * win = get_win(bh->parent);
+	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
+	uint16_t x = win->x1 + bh->x1;
+	uint16_t y = win->y1 + bh->y1;
+
+#if GUI_USE_CACHE
+	if (bh->cache != NULL && ! gui_objects_cache_needs_render(bh->cache, bh->state, bh->is_locked, bh->text))
+	{
+		/* Кэш действителен - копируем готовую текстуру */
+		gui_objects_cache_draw(bh->cache, x, y);
+		return;
+	}
+
+	/* Кэш недействителен - создаём/обновляем */
+	if (bh->cache == NULL)
+	{
+		bh->cache = gui_objects_cache_create(bh->w, bh->h, GUI_CACHE_TYPE_BUTTON);
+		if (bh->cache == NULL) goto fallback_render;
+	}
+
+	/* Рендерим в кэш */
+	if (gui_objects_cache_begin_render(bh->cache))
+	{
+		const gui_drawbuf_t * cache_db = __gui_get_drawbuf();
+
+		__draw_close_button(bh, 0, 0, cache_db);
+
+		gui_objects_cache_end_render(bh->cache, bh->state, bh->is_locked, bh->text);
+	}
+
+	/* Копируем из кэша на экран */
+	if (gui_objects_cache_draw(bh->cache, x, y)) goto fallback_render;
+	return;
+
+fallback_render:
+#endif /* GUI_USE_CACHE */
+
+	__draw_close_button(bh, x, y, gdb);
+}
+
 // *************** Text fields ***************
 
 /* Рассчитать размеры текстового поля */
@@ -99,6 +356,81 @@ void textfield_clean(const char * name)
 
 	tf->index = 0;
 	memset(tf->string, 0, tf->h_str * sizeof(tf_entry_t));
+}
+
+static void __draw_textfield(text_field_t * tf, uint16_t x, uint16_t y, const gui_drawbuf_t * db)
+{
+	int_fast8_t j = tf->index - 1;
+
+	for (uint8_t i = 0; i < tf->h_str; i ++)
+	{
+		uint8_t pos = tf->direction ? i : (tf->h_str - i - 1);
+		j = j < 0 ? (tf->h_str - 1) : j;
+
+		__gui_print_mono(drawbuf, x, y + tf->font->height * pos,
+				tf->string[j].text, tf->font, tf->string[j].color_line);
+
+		j --;
+	}
+}
+
+void draw_textfield(text_field_t * tf)
+{
+	window_t * win = get_win(tf->parent);
+	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
+	uint16_t x = win->x1 + tf->x1;
+	uint16_t y = win->y1 + tf->y1;
+
+#if GUI_USE_CACHE
+#if DEBUG_TFS_CACHE
+	static uint32_t cache_hits = 0, cache_misses = 0;
+
+	if (tf->cache != NULL && ! gui_objects_cache_needs_render(tf->cache, 0, tf->change, ""))
+		cache_hits++;
+	else
+		cache_misses++;
+
+	if ((cache_hits + cache_misses) % 60 == 0)
+	{
+		printf("TFs cache: hits=%u, misses=%u, hit_rate=%.1f%%\n", cache_hits, cache_misses,
+				100.0f * cache_hits / (cache_hits + cache_misses));
+		cache_hits = cache_misses = 0;
+	}
+ #endif /* DEBUG_TFS_CACHE */
+
+	if (tf->cache != NULL && ! gui_objects_cache_needs_render(tf->cache, 0, tf->change, ""))
+	{
+		/* Кэш действителен - копируем готовую текстуру */
+		gui_objects_cache_draw(tf->cache, x, y);
+		return;
+	}
+
+	/* Кэш недействителен - создаём/обновляем */
+	if (tf->cache == NULL)
+	{
+		tf->cache = gui_objects_cache_create(tf->w, tf->h, GUI_CACHE_TYPE_TF);
+		if (tf->cache == NULL) goto fallback_render;
+		tf->change = 0;
+	}
+
+	/* Рендерим в кэш */
+	if (gui_objects_cache_begin_render(tf->cache))
+	{
+		const gui_drawbuf_t * cache_db = __gui_get_drawbuf();
+
+		__draw_textfield(tf, 0, 0, cache_db);
+
+		gui_objects_cache_end_render(tf->cache, 0, tf->change, "");
+	}
+
+	/* Копируем из кэша на экран */
+	if (gui_objects_cache_draw(tf->cache, x, y)) goto fallback_render;
+	return;
+
+fallback_render:
+#endif /* GUI_USE_CACHE */
+
+__draw_textfield(tf, x, y, gdb);
 }
 
 // *************** Common ***************
@@ -172,7 +504,7 @@ uint8_t gui_obj_create(const char * name, ...)
 		strncpy(lh->name, obj_name, NAME_ARRAY_SIZE);
 		lh->width = va_arg(arg, uint32_t);
 		memset(lh->text, '*', lh->width);		// для совместимости, потом убрать
-		lh->width_pix = get_strwidth_mono(lh->text, lh->font);
+		lh->width_pix = get_strwidth_mono(" ", lh->font) * lh->width;
 #if GUI_USE_CACHE
 		lh->cache = NULL;
 #endif /* GUI_USE_CACHE */
@@ -229,6 +561,9 @@ uint8_t gui_obj_create(const char * name, ...)
 		tf->index = win->tf_count;
 		tf->x1 = 0;
 		tf->y1 = 0;
+#if GUI_USE_CACHE
+		tf->cache = NULL;
+#endif /* GUI_USE_CACHE */
 
 		tf->string = (tf_entry_t *) calloc(tf->h_str, sizeof(tf_entry_t));
 		GUI_MEM_ASSERT(tf->string);
@@ -512,7 +847,7 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_PAYLOAD) lh->payload = va_arg(arg, int);
 		else if (prop == GUI_OBJ_TEXT) {
 			strncpy(lh->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
-			lh->width_pix = get_strwidth_mono(lh->text, lh->font);
+			//lh->width_pix = get_strwidth_mono(lh->text, lh->font); // todo: разделить свойства ширины метки и ширины текста в ней
 		}
 		else if (prop == GUI_OBJ_TEXT_FMT) vsnprintf(lh->text, TEXT_ARRAY_SIZE - 1, va_arg(arg, char *), arg);
 		else if (prop == GUI_OBJ_STATE) lh->state = va_arg(arg, int);
@@ -520,7 +855,7 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_FONT) {
 			lh->font = va_arg(arg, gui_mono_font_t *);
 			lh->height_pix = lh->font->height;
-			lh->width_pix = get_strwidth_mono(lh->text, lh->font);
+			lh->width_pix = get_strwidth_mono(" ", lh->font) * lh->width;
 		}
 
 #if GUI_USE_CACHE
@@ -568,6 +903,32 @@ void gui_obj_set_prop(const char * name, object_prop_t prop, ...)
 		else if (prop == GUI_OBJ_POS_X) tf->x1 = va_arg(arg, int);
 		else if (prop == GUI_OBJ_POS_Y) tf->y1 = va_arg(arg, int);
 		else if (prop == GUI_OBJ_POS) { tf->x1 = va_arg(arg, int); tf->y1 = va_arg(arg, int); }
+		else if (prop == GUI_OBJ_TEXT) {
+			tf_entry_t * rec = &  tf->string[tf->index];
+			strncpy(rec->text, va_arg(arg, char *), TEXT_ARRAY_SIZE - 1);
+			rec->color_line = va_arg(arg, int);
+			tf->index ++;
+			tf->index = tf->index >= tf->h_str ? 0 : tf->index;
+		}
+		else if (prop == GUI_OBJ_TEXT_FMT) {
+			tf_entry_t * rec = &  tf->string[tf->index];
+			vsnprintf(rec->text, TEXT_ARRAY_SIZE - 1, va_arg(arg, char *), arg);
+			rec->color_line = va_arg(arg, int);
+			tf->index ++;
+			tf->index = tf->index >= tf->h_str ? 0 : tf->index;
+		}
+		else if (prop == GUI_OBJ_CLEAN) {
+			tf->index = 0;
+			memset(tf->string, 0, tf->h_str * sizeof(tf_entry_t));
+		}
+
+#if GUI_USE_CACHE
+		if (prop & NEED_INVALIDATION_MASK)
+		{
+			gui_objects_cache_invalidate(tf->cache);
+			tf->change = 1;
+		}
+#endif /* GUI_USE_CACHE */
 		break;
 
 	default:

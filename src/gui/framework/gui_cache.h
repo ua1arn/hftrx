@@ -17,7 +17,7 @@ typedef enum {
     GUI_CACHE_TYPE_NONE = 0,
     GUI_CACHE_TYPE_BUTTON,
     GUI_CACHE_TYPE_LABEL,
-    GUI_CACHE_TYPE_ICON,
+    GUI_CACHE_TYPE_TF,
     GUI_CACHE_TYPE_CUSTOM
 } gui_cache_type_t;
 
@@ -68,7 +68,7 @@ void gui_objects_cache_end_render(gui_objects_cache_t * cache,
                                    const char * text);
 
 /* Отрисовка кэша на экран */
-void gui_objects_cache_draw(gui_objects_cache_t * cache,
+int gui_objects_cache_draw(gui_objects_cache_t * cache,
                             uint16_t dst_x,
                             uint16_t dst_y);
 
