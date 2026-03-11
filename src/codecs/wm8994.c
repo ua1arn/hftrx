@@ -51,39 +51,16 @@ static void wm8994_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
-	#if WITHSPILOWSUPPORTT || 1
-		// Работа совместно с фоновым обменом SPI по прерываниям
-		const uint8_t txbuf [4] =
-		{
-			(regv >> 8) & 0x7F,
-			regv >> 0,
-			datav >> 8,
-			datav >> 0,
-		};
+	// Работа совместно с фоновым обменом SPI по прерываниям
+	const uint8_t txbuf [4] =
+	{
+		(regv >> 8) & 0x7F,
+		regv >> 0,
+		datav >> 8,
+		datav >> 0,
+	};
 
-		prog_spi_io(target, WM8994_SPISPEED, WM8994_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
-
-	#elif WITHSPIEXT16
-
-		hardware_spi_connect_b16(WM8994_SPISPEED, WM8994_SPIMODE);
-		prog_select(target);	/* start sending data to target chip */
-		hardware_spi_b16_p1(regv & 0x7FFF);	// b15==0: write to register
-		hardware_spi_b16_p2(datav);
-		hardware_spi_complete_b16();
-		prog_unselect(target);
-		hardware_spi_disconnect();
-
-	#else /* WITHSPIEXT16 */
-
-		spi_select(target, WM8994_SPIMODE);
-		spi_progval8_p1(target, (regv >> 8) & 0x7F);	// b15==0: write to register
-		spi_progval8_p2(target, regv >> 0);
-		spi_progval8_p2(target, datav >> 8);
-		spi_progval8_p2(target, datav >> 0);
-		spi_complete(target);
-		spi_unselect(target);
-
-	#endif /* WITHSPIEXT16 */
+	prog_spi_io(target, WM8994_SPISPEED, WM8994_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
 
 #else /* CODEC_TYPE_WM8994_USE_SPI */
 
