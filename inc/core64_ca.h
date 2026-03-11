@@ -2473,6 +2473,24 @@ __STATIC_FORCEINLINE uint64_t __get_CLUSTERCFR_EL1(void)
 	__get_RG32("S3_0_C15_C3_0", result);
 	return result;
 }
+
+// AArch32 (CLUSTERECTLR) and AArch64 (CLUSTERECTLR_EL1)
+// MRS <Xt>, S3_0_C15_C3_4; Read CLUSTERECTLR_EL1 into Xt
+// MSR S3_0_C15_C3_4, <Xt>; Write Xt into CLUSTERECTLR_EL1
+// MRC p15, 0, <Rt>, c15, c3, 4; Read CLUSTERECTLR into Rt
+// MCR p15, 0, <Rt>, c15, c3, 4; Write Rt into CLUSTERECTLR
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERECTLR_EL1(void)
+{
+	uint64_t result;
+	__get_RG32("S3_0_C15_C3_4", result);
+	return result;
+}
+__STATIC_FORCEINLINE void __set_CLUSTERECTLR_EL1(uint32_t v)
+{
+	uint64_t value = v;
+	__set_RG32("S3_0_C15_C3_4", value);
+}
+
 #endif /* (__CORTEX_A == 55U) */
 
 /* ICC_SGIR */

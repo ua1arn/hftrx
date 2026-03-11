@@ -2159,8 +2159,10 @@ void softdelay(void)
 static void sysinit_dsu_initialize()
 {
 #if (__CORTEX_A == 55U)
-	unsigned CLUSTERCFR = __get_CLUSTERCFR_EL1();
-	PRINTF("CLUSTERCFR=%08X\n", (unsigned) CLUSTERCFR);
+	//	__get_CLUSTERCFR_EL1()=073FC237
+	//	__get_CLUSTERECTLR_EL1()=00000500
+	PRINTF("__get_CLUSTERCFR_EL1()=%08X\n", (unsigned) __get_CLUSTERCFR_EL1());
+	PRINTF("__get_CLUSTERECTLR_EL1()=%08X\n", (unsigned) __get_CLUSTERECTLR_EL1());
 #endif /* (__CORTEX_A == 55U) */
 }
 
