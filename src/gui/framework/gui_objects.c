@@ -470,6 +470,121 @@ fallback_render:
 __draw_textfield(tf, x, y, gdb);
 }
 
+// *************** Sliders ****************
+
+static void slider_update(slider_t * sl, uint16_t x, uint16_t y)
+{
+	if (sl->orientation == ORIENTATION_HORIZONTAL)
+	{
+		sl->value_p = sl->scale_x + sl->scale_size * sl->value / 100;
+		sl->x1_p = sl->value_p - sliders_w;
+		sl->y1_p = 0;
+		sl->x2_p = sl->value_p + sliders_w;
+		sl->y2_p = sliders_h * 2;
+	}
+	else if (sl->orientation == ORIENTATION_VERTICAL)
+	{
+		sl->value_p = sl->scale_y + sl->scale_size * sl->value / 100;
+		sl->x1_p = 0;
+		sl->y1_p = sl->value_p - sliders_w;
+		sl->x2_p = sliders_h * 2;
+		sl->y2_p = sl->value_p + sliders_w;
+	}
+}
+
+static void __draw_slider(slider_t * sl, uint16_t x, uint16_t y, const gui_drawbuf_t * db)
+{
+	if (sl->orientation == ORIENTATION_HORIZONTAL)
+	{
+		// temp background
+		//__gui_draw_rect(db, x, y,  sl->size, sliders_h * 2, COLORPIP_YELLOW, 1);
+
+		// scale
+		__gui_draw_rect(db, x + sl->scale_x, y + sl->scale_y, sl->scale_size, sliders_scale_thickness, COLORPIP_WHITE, 0);
+		__gui_draw_rect(db, x + sl->scale_x + 1, y + sl->scale_y + 1, sl->scale_size - 2, sliders_scale_thickness - 2, COLORPIP_BLACK, 1);
+
+		// handle
+		__gui_draw_rect(db, sl->x1_p, sl->y1_p,  sl->x2_p - sl->x1_p, sl->y2_p - sl->y1_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
+		__gui_draw_line(db, x + sl->value_p, sl->y1_p, x + sl->value_p, sl->y2_p - 1, COLORPIP_WHITE);
+	}
+	else if (sl->orientation == ORIENTATION_VERTICAL)
+	{
+		// temp background
+		//__gui_draw_rect(db, x, y, sliders_h * 2, sl->size, COLORPIP_YELLOW, 1);
+
+		// scale
+		__gui_draw_rect(db, x + sl->scale_x, y + sl->scale_y, sliders_scale_thickness, sl->scale_size, COLORPIP_WHITE, 0);
+		__gui_draw_rect(db, x + sl->scale_x + 1, y + sl->scale_y + 1, sliders_scale_thickness - 2, sl->scale_size - 2, COLORPIP_BLACK, 1);
+
+		// handle
+		__gui_draw_rect(db, sl->x1_p, sl->y1_p,  sl->x2_p - sl->x1_p, sl->y2_p - sl->y1_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
+		__gui_draw_line(db, sl->x1_p, y + sl->value_p, sl->x2_p - 1, y + sl->value_p, COLORPIP_WHITE);
+	}
+}
+
+/* Отрисовка слайдера */
+void draw_slider(slider_t * sl)
+{
+	window_t * win = get_win(sl->parent);
+	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
+
+	uint16_t x = win->x1 + sl->x;
+	uint16_t y = win->y1 + sl->y;
+
+	slider_update(sl, x, y);
+
+#if GUI_USE_CACHE
+#if DEBUG_SLIDERS_CACHE
+	static uint32_t cache_hits = 0, cache_misses = 0;
+
+	if (sl->cache != NULL && ! gui_objects_cache_needs_render(sl->cache, sl->state, sl->value, ""))
+		cache_hits++;
+	else
+		cache_misses++;
+
+	if ((cache_hits + cache_misses) % 60 == 0)
+	{
+		printf("Sliders cache: hits=%u, misses=%u, hit_rate=%.1f%%\n", cache_hits, cache_misses,
+				100.0f * cache_hits / (cache_hits + cache_misses));
+		cache_hits = 0;
+		cache_misses = 0;
+	}
+ #endif /* DEBUG_BUTTONS_CACHE */
+
+	if (sl->cache != NULL && ! gui_objects_cache_needs_render(sl->cache, sl->state, sl->value, ""))
+	{
+		/* Кэш действителен - копируем готовую текстуру */
+		if (gui_objects_cache_draw(sl->cache, x, y)) goto fallback_render;
+		return;
+	}
+
+	/* Кэш недействителен - создаём/обновляем */
+	if (sl->cache == NULL)
+	{
+		sl->cache = gui_objects_cache_create(sl->width, sl->height, GUI_CACHE_TYPE_SLIDER);
+		if (sl->cache == NULL) goto fallback_render;
+	}
+
+	/* Рендерим в кэш */
+	if (gui_objects_cache_begin_render(sl->cache))
+	{
+		const gui_drawbuf_t * cache_db = __gui_get_drawbuf();
+
+		__draw_slider(sl, 0, 0, cache_db);
+
+		gui_objects_cache_end_render(sl->cache, sl->state, sl->value, "");
+	}
+
+	/* Копируем из кэша на экран */
+	if (gui_objects_cache_draw(sl->cache, x, y)) goto fallback_render;
+	return;
+
+fallback_render:
+#endif /* defined(GUI_USE_CACHE) */
+
+	__draw_slider(sl, x, y, gdb);
+}
+
 // *************** Common ***************
 
 static obj_type_t parse_obj_name(const char * name)
@@ -658,13 +773,23 @@ uint8_t gui_obj_create(const char * name, ...)
 		if (sh->orientation)	// ORIENTATION_HORIZONTAL
 		{
 			sh->width = sh->size;
-			sh->height = sliders_scale_thickness;
+			sh->height = sliders_h * 2;
+			sh->scale_x = sliders_w;
+			sh->scale_y = sliders_h - sliders_scale_thickness / 2;
+			sh->scale_size = sh->size - sliders_w * 2;
 		}
 		else					// ORIENTATION_VERTICAL
 		{
-			sh->width = sliders_w;
+			sh->width = sliders_h * 2;
 			sh->height = sh->size;
+			sh->scale_x = sliders_h - sliders_scale_thickness / 2;
+			sh->scale_y = sliders_w;
+			sh->scale_size = sh->size - sliders_h * 2;
 		}
+
+#if GUI_USE_CACHE
+		sh->cache = NULL;
+#endif /* GUI_USE_CACHE */
 
 		idx = win->sh_count;
 		win->sh_count ++;

@@ -120,6 +120,18 @@ static void free_win_ptr (window_t * win)
             }
         }
     }
+
+    if (win->sh_ptr != NULL) // Освобождение кэша слайдеров
+    {
+        for (uint8_t i = 0; i < win->sh_count; i++)
+        {
+            if (win->sh_ptr[i].cache != NULL)
+            {
+                gui_objects_cache_destroy(win->sh_ptr[i].cache);
+                win->sh_ptr[i].cache = NULL;
+            }
+        }
+    }
 #endif /* GUI_USE_CACHE */
 
 	free(win->bh_ptr);
@@ -272,7 +284,7 @@ void calculate_window_position(uint8_t mode, ...)
 				{
 					const text_field_t * tf = & win->tf_ptr[i];
 					xmax = (xmax > tf->x1 + tf->w) ? xmax : (tf->x1 + tf->w);
-					ymax = (ymax > tf->y1 + tf->h) ? ymax : (tf->y1+ tf->h);
+					ymax = (ymax > tf->y1 + tf->h) ? ymax : (tf->y1 + tf->h);
 					GUI_ASSERT(xmax < WITHGUIMAXX);
 					GUI_ASSERT(ymax < WITHGUIMAXY);
 				}

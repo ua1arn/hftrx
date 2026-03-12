@@ -19,6 +19,7 @@ extern "C" {
 //#define DEBUG_BUTTONS_CACHE	1
 //#define DEBUG_LABELS_CACHE	1
 //#define DEBUG_TFS_CACHE		1
+//#define DEBUG_SLIDERS_CACHE	1
 
 typedef struct {
 	char param[20];

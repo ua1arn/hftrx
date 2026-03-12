@@ -641,48 +641,6 @@ void gui_put_event(gui_event_type type, uint16_t code)
 	}
 }
 
-/* Отрисовка слайдера */
-static void draw_slider(slider_t * sl)
-{
-	window_t * win = get_win(sl->parent);
-	const gui_drawbuf_t * gdb = __gui_get_drawbuf();
-
-	if (sl->orientation)		// ORIENTATION_HORIZONTAL
-	{
-		if (sl->value_old != sl->value)
-		{
-			uint16_t mid_w = sl->y + sliders_scale_thickness / 2;
-			sl->value_p = sl->x + sl->size * sl->value / 100;
-			sl->y1_p = mid_w - sliders_w;
-			sl->x1_p = sl->value_p - sliders_h;
-			sl->y2_p = mid_w + sliders_w;
-			sl->x2_p = sl->value_p + sliders_h;
-			sl->value_old = sl->value;
-		}
-		__gui_draw_rect(gdb, win->x1 + sl->x, win->y1 + sl->y,  sl->size, sliders_scale_thickness, COLORPIP_BLACK, 1);
-		__gui_draw_rect(gdb, win->x1 + sl->x, win->y1 + sl->y,  sl->size, sliders_scale_thickness, COLORPIP_WHITE, 0);
-		__gui_draw_rect(gdb, win->x1 + sl->x1_p, win->y1 + sl->y1_p,  sl->x2_p - sl->x1_p, sl->y2_p - sl->y1_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
-		__gui_draw_line(gdb, win->x1 + sl->value_p, win->y1 + sl->y1_p,  win->x1 + sl->value_p, win->y1 + sl->y2_p, COLORPIP_WHITE);
-	}
-	else						// ORIENTATION_VERTICAL
-	{
-		if (sl->value_old != sl->value)
-		{
-			uint16_t mid_w = sl->x + sliders_scale_thickness / 2;
-			sl->value_p = sl->y + sl->size * sl->value / 100;
-			sl->x1_p = mid_w - sliders_w;
-			sl->y1_p = sl->value_p - sliders_h;
-			sl->x2_p = mid_w + sliders_w;
-			sl->y2_p = sl->value_p + sliders_h;
-			sl->value_old = sl->value;
-		}
-		__gui_draw_rect(gdb, win->x1 + sl->x + 1, win->y1 + sl->y + 1, sliders_scale_thickness - 1, sl->size - 1, COLORPIP_BLACK, 1);
-		__gui_draw_rect(gdb, win->x1 + sl->x, win->y1 + sl->y, sliders_scale_thickness, sl->size, COLORPIP_WHITE, 0);
-		__gui_draw_rect(gdb, win->x1 + sl->x1_p, win->y1 + sl->y1_p, sl->x2_p - sl->x1_p, sl->y2_p - sl->y1_p, sl->state == PRESSED ? COLOR_BUTTON_PR_NON_LOCKED : COLOR_BUTTON_NON_LOCKED, 1);
-		__gui_draw_line(gdb, win->x1 + sl->x1_p, win->y1 + sl->value_p, win->x1 + sl->x2_p, win->y1 + sl->value_p, COLORPIP_WHITE);
-	}
-}
-
 /* Системный обработчик слайдера в момент его перемещения */
 static void slider_process(slider_t * sl)
 {
@@ -740,10 +698,11 @@ static void update_gui_objects_list(void)
 		else if (p->type == TYPE_SLIDER)
 		{
 			slider_t * sh = (slider_t *) p->link;
-			p->x1 = (sh->x1_p - touch_area_enlarge) < 0 ? 0 : (sh->x1_p - touch_area_enlarge);
-			p->x2 = (sh->x2_p + touch_area_enlarge) > WITHGUIMAXX ? WITHGUIMAXX : (sh->x2_p + touch_area_enlarge);
-			p->y1 = (sh->y1_p - touch_area_enlarge) < 0 ? 0 : (sh->y1_p - touch_area_enlarge);
-			p->y2 = (sh->y2_p + touch_area_enlarge) > WITHGUIMAXY ? WITHGUIMAXY : (sh->y2_p + touch_area_enlarge);
+			window_t * win = get_win(sh->parent);
+			p->x1 = (sh->x + sh->x1_p - touch_area_enlarge) < 0 ? 0 : (sh->x + sh->x1_p - touch_area_enlarge);
+			p->x2 = (sh->x + sh->x2_p + touch_area_enlarge) > WITHGUIMAXX ? WITHGUIMAXX : (sh->x + sh->x2_p + touch_area_enlarge);
+			p->y1 = (sh->y + sh->y1_p - touch_area_enlarge) < 0 ? 0 : (sh->y + sh->y1_p - touch_area_enlarge);
+			p->y2 = (sh->y + sh->y2_p + touch_area_enlarge) > WITHGUIMAXY ? WITHGUIMAXY : (sh->y + sh->y2_p + touch_area_enlarge);
 			p->state = sh->state;
 			p->visible = sh->visible;
 			p->is_trackable = 1;
@@ -846,6 +805,9 @@ static void set_state_record(gui_object_t * val)
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_SLIDER, PRESSED, sh->name))
 					dump_queue(val->win);
 			}
+#if GUI_USE_CACHE
+			gui_objects_cache_invalidate(sh->cache);
+#endif /* GUI_USE_CACHE */
 		}
 			break;
 
