@@ -532,7 +532,8 @@ void draw_window(window_t * win)
 	{
 		printf("win cache: hits=%u, misses=%u, hit_rate=%.1f%%\n", cache_hits, cache_misses,
 				100.0f * cache_hits / (cache_hits + cache_misses));
-		cache_hits = cache_misses = 0;
+		cache_hits = 0;
+		cache_misses = 0;
 	}
  #endif /* DEBUG_WINDOW_CACHE */
 

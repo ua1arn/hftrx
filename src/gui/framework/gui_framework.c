@@ -23,22 +23,6 @@
 #include "../gui_user.h"
 #include "../gui_port.h"
 
-static btn_bg_t btn_bg[] = {
-	{ COMMON_BUTTON_STYLE, },
-	{ SMALL_BUTTON_STYLE, },
-	{ LONG_BUTTON_STYLE, },
-};
-enum { BG_DEF_COUNT = ARRAY_SIZE(btn_bg) };
-
-const gui_color_t btn_bg_colors[BG_COUNT] =
-		{
-				COLOR_BUTTON_NON_LOCKED,
-				COLOR_BUTTON_PR_NON_LOCKED,
-				COLOR_BUTTON_LOCKED,
-				COLOR_BUTTON_PR_LOCKED,
-				COLOR_BUTTON_DISABLED,
-		};
-
 static gui_t gui = { 0, 0, CANCELLED, 0, 0, 0, 0, 0, };
 static LIST_ENTRY gui_objects_list;
 static uint8_t gui_object_count = 0;
@@ -710,38 +694,11 @@ static void slider_process(slider_t * sl)
 	gui.vector_move_y = 0;
 }
 
-static void fill_button_bg_buf(btn_bg_t * v)
-{
-	const uint16_t w = v->w;
-	const uint16_t h = v->h;
-
-	for (int i = 0; i < BG_COUNT; i ++)
-	{
-		v->bgs[i] = __gui_object_bgbuf_init(w, h);
-
-		gui_drawbuf_t butdbv;
-		__gui_drawbuf_init(& butdbv, v->bgs[i], w, h);
-		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
-		__gui_draw_rounded_rect(& butdbv, 1, 1, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
-		__gui_draw_rounded_rect(& butdbv, 2, 2, w - 5, h - 5, button_round_radius, btn_bg_colors[i], 1);
-		__gui_drawbuf_end(& butdbv);
-	}
-}
-
-static void objects_init(void)
-{
-#if ! GUI_USE_CACHE
-	// Buttons background init
-	for (int i = 0; i < BG_DEF_COUNT; i ++)
-		fill_button_bg_buf(& btn_bg[i]);
-#endif /* ! GUI_USE_CACHE */
-}
-
 /* Инициализация GUI */
 void gui_initialize (void)
 {
 	InitializeListHead(& gui_objects_list);
-	objects_init();
+	gui_objects_init();
 
 	open_window(get_win(WINDOW_MAIN));
 }

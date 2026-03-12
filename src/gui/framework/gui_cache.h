@@ -14,11 +14,12 @@
 
 /* Типы кэшируемых объектов */
 typedef enum {
-    GUI_CACHE_TYPE_NONE = 0,
-    GUI_CACHE_TYPE_BUTTON,
-    GUI_CACHE_TYPE_LABEL,
-    GUI_CACHE_TYPE_TF,
-    GUI_CACHE_TYPE_WINDOW
+	GUI_CACHE_TYPE_NONE = 0,
+	GUI_CACHE_TYPE_BUTTON,
+	GUI_CACHE_TYPE_LABEL,
+	GUI_CACHE_TYPE_TF,
+	GUI_CACHE_TYPE_SLIDER,
+	GUI_CACHE_TYPE_WINDOW
 } gui_cache_type_t;
 
 /* Структура кэша объекта (универсальная) */

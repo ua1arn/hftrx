@@ -22,6 +22,7 @@ void draw_textfield(text_field_t * tf);
 void draw_button(button_t * bh);
 void draw_close_button(button_t * bh);
 
+void gui_objects_init(void);
 uint8_t gui_obj_create(const char * obj_name, ...);
 void gui_obj_align_to(const char * name1, const char * name2, object_alignment_t align, uint16_t offset);
 void gui_obj_set_prop(const char * name, object_prop_t prop, ...);

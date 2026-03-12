@@ -368,7 +368,6 @@ void window_infobar_menu_process(void)
 		}
 
 		calculate_window_position(WINDOW_POSITION_MANUAL_POSITION, infobar_selected * infobar_label_width, infobar_2nd_str_y + SMALLCHARH2);
-		return;
 	}
 
 	GET_FROM_WM_QUEUE(WINDOW_INFOBAR_MENU)
@@ -1893,8 +1892,8 @@ void window_tx_power_process(void)
 
 		hamradio_get_tx_power_limits(& power_min, & power_max);
 
-		gui_obj_create("lbl_power", COLORPIP_WHITE, 14);
-		gui_obj_create("lbl_tune", COLORPIP_WHITE, 14);
+		gui_obj_create("lbl_power", COLORPIP_WHITE, 16);
+		gui_obj_create("lbl_tune", COLORPIP_WHITE, 16);
 		gui_obj_create("sl_power", ORIENTATION_HORIZONTAL, 300, 3);
 		gui_obj_create("sl_tune", ORIENTATION_HORIZONTAL, 300, 3);
 		gui_obj_create("btn_ok", SMALL_BUTTON_STYLE, 0, 0, "OK");

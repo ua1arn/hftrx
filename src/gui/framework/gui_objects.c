@@ -22,6 +22,22 @@ const button_t button_default = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 1, 0, 0
 const text_field_t tf_default = { 0, 0, CANCELLED, 0, NON_VISIBLE, UP, NULL, "", };
 const touch_area_t ta_default = { 0, 0, 0, 0, 0, "", 0, 0, 0, 0, 0, };
 
+const gui_color_t btn_bg_colors[BG_COUNT] =
+		{
+				COLOR_BUTTON_NON_LOCKED,
+				COLOR_BUTTON_PR_NON_LOCKED,
+				COLOR_BUTTON_LOCKED,
+				COLOR_BUTTON_PR_LOCKED,
+				COLOR_BUTTON_DISABLED,
+		};
+
+static btn_bg_t btn_bg[] = {
+	{ COMMON_BUTTON_STYLE, },
+	{ SMALL_BUTTON_STYLE, },
+	{ LONG_BUTTON_STYLE, },
+};
+enum { BG_DEF_COUNT = ARRAY_SIZE(btn_bg) };
+
 // *************** Labels ***************
 
 /* Получение ширины метки в пикселях  */
@@ -77,7 +93,8 @@ void draw_label(label_t * lh)
 	{
 		printf("Labels cache: hits=%u, misses=%u, hit_rate=%.1f%%\n", cache_hits, cache_misses,
 				100.0f * cache_hits / (cache_hits + cache_misses));
-		cache_hits = cache_misses = 0;
+		cache_hits = 0;
+		cache_misses = 0;
 	}
  #endif /* DEBUG_LABELS_CACHE */
 
@@ -116,6 +133,24 @@ fallback_render:
 }
 
 // *************** Buttons ****************
+
+static void fill_button_bg_buf(btn_bg_t * v)
+{
+	const uint16_t w = v->w;
+	const uint16_t h = v->h;
+
+	for (int i = 0; i < BG_COUNT; i ++)
+	{
+		v->bgs[i] = __gui_object_bgbuf_init(w, h);
+
+		gui_drawbuf_t butdbv;
+		__gui_drawbuf_init(& butdbv, v->bgs[i], w, h);
+		__gui_draw_rounded_rect(& butdbv, 0, 0, w - 1, h - 1, button_round_radius, COLORPIP_GRAY, 0);
+		__gui_draw_rounded_rect(& butdbv, 1, 1, w - 3, h - 3, button_round_radius, COLORPIP_BLACK, 0);
+		__gui_draw_rounded_rect(& butdbv, 2, 2, w - 5, h - 5, button_round_radius, btn_bg_colors[i], 1);
+		__gui_drawbuf_end(& butdbv);
+	}
+}
 
 static void __draw_button(button_t * bh, uint16_t x, uint16_t y, const gui_drawbuf_t * db)
 {
@@ -219,7 +254,8 @@ void draw_button(button_t * bh)
 	{
 		printf("Buttons cache: hits=%u, misses=%u, hit_rate=%.1f%%\n", cache_hits, cache_misses,
 				100.0f * cache_hits / (cache_hits + cache_misses));
-		cache_hits = cache_misses = 0;
+		cache_hits = 0;
+		cache_misses = 0;
 	}
  #endif /* DEBUG_BUTTONS_CACHE */
 
@@ -394,7 +430,8 @@ void draw_textfield(text_field_t * tf)
 	{
 		printf("TFs cache: hits=%u, misses=%u, hit_rate=%.1f%%\n", cache_hits, cache_misses,
 				100.0f * cache_hits / (cache_hits + cache_misses));
-		cache_hits = cache_misses = 0;
+		cache_hits = 0;
+		cache_misses = 0;
 	}
  #endif /* DEBUG_TFS_CACHE */
 
@@ -1059,6 +1096,15 @@ void gui_arrange_objects_from(const char * name, uint8_t count, uint8_t cols, ui
 		gui_obj_set_prop(obj, GUI_OBJ_POS_X, x + (w + interval) * col);
 		gui_obj_set_prop(obj, GUI_OBJ_POS_Y, y + (h + interval) * row);
 	}
+}
+
+void gui_objects_init(void)
+{
+#if ! GUI_USE_CACHE
+	// Buttons background init
+	for (int i = 0; i < BG_DEF_COUNT; i ++)
+		fill_button_bg_buf(& btn_bg[i]);
+#endif /* ! GUI_USE_CACHE */
 }
 
 #endif /* WITHTOUCHGUI */

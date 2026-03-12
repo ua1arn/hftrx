@@ -246,6 +246,9 @@ typedef struct {
 	uint16_t y1_p;					// для update_touch_list_list
 	uint16_t x2_p;
 	uint16_t y2_p;
+#if GUI_USE_CACHE
+	gui_objects_cache_t * cache;
+#endif /* GUI_USE_CACHE */
 } slider_t;
 
 typedef enum {
