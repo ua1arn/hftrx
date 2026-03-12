@@ -2734,6 +2734,16 @@ void cpump_initialize(void)
 
 	SystemCoreClock = CPU_FREQ;
 	cortexa_cpuinfo();
+
+#if CPUSTYLE_A733
+	// diags
+	for (core = 0; core < arm_hardware_clustersize(); ++ core)
+	{
+		PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
+	}
+
+#endif
+
 	lclspin_enable();	// Allwinner H3 - может работать с блокировками только после включения MMU
 	LCLSPINLOCK_INITIALIZE(& cpu1init);
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
