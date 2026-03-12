@@ -1518,6 +1518,15 @@ __STATIC_FORCEINLINE uint32_t __get_CLUSTERECTLR(void)
 	__get_CP(15, 0, result, 15, 3, 4);
 	return result;
 }
+
+// MRS <Xt>, S3_0_C15_C3_5; Read CLUSTERPWRCTLR_EL1 into Xt
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRCTLR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 15, 3, 5);
+	return result;
+}
+
 #endif /* (__CORTEX_A == 55U)  */
  /*******************************************************************************
   *                Hardware Abstraction Layer

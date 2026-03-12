@@ -2490,6 +2490,18 @@ __STATIC_FORCEINLINE void __set_CLUSTERECTLR_EL1(uint32_t v)
 	uint64_t value = v;
 	__set_RG32("S3_0_C15_C3_4", value);
 }
+// MRS <Xt>, S3_0_C15_C3_5; Read CLUSTERPWRCTLR_EL1 into Xt
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRCTLR_EL1(void)
+{
+	uint64_t result;
+	__get_RG32("S3_0_C15_C3_5", result);
+	return result;
+}
+__STATIC_FORCEINLINE void __set_CLUSTERPWRCTLR_EL1(uint32_t v)
+{
+	uint64_t value = v;
+	__set_RG32("S3_0_C15_C3_5", value);
+}
 
 #endif /* (__CORTEX_A == 55U) */
 
