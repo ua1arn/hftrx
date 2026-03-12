@@ -2158,11 +2158,17 @@ void softdelay(void)
 // Arm® DynamIQ™ Shared Unit
 static void sysinit_dsu_initialize()
 {
-#if (__CORTEX_A == 55U)
+#if (__CORTEX_A == 55U) && defined(__aarch64__)
 	//	__get_CLUSTERCFR_EL1()=073FC237
 	//	__get_CLUSTERECTLR_EL1()=00000500
 	PRINTF("__get_CLUSTERCFR_EL1()=%08X\n", (unsigned) __get_CLUSTERCFR_EL1());
 	PRINTF("__get_CLUSTERECTLR_EL1()=%08X\n", (unsigned) __get_CLUSTERECTLR_EL1());
+#endif /* (__CORTEX_A == 55U) */
+#if (__CORTEX_A == 55U) && ! defined(__aarch64__)
+	//	__get_CLUSTERCFR_EL1()=073FC237
+	//	__get_CLUSTERECTLR_EL1()=00000500
+	PRINTF("__get_CLUSTERCFR()=%08X\n", (unsigned) __get_CLUSTERCFR());
+	PRINTF("__get_CLUSTERECTLR()=%08X\n", (unsigned) __get_CLUSTERECTLR());
 #endif /* (__CORTEX_A == 55U) */
 }
 

@@ -1214,6 +1214,311 @@ typedef struct
 #endif /* ((__CORTEX_A == 5U) || (__CORTEX_A == 9U)) || defined(DOXYGEN) */
 #endif /* (__TIM_PRESENT == 1U) || defined(DOXYGEN) */
 
+
+/** \brief  Get TTBR0
+
+    This function returns the value of the Translation Table Base Register 0.
+
+    \return               Translation Table Base Register 0 value
+ */
+__STATIC_FORCEINLINE uint32_t __get_TTBR0(void)
+{
+  uint32_t result;
+  __get_CP(15, 0, result, 2, 0, 0);
+  return result;
+}
+
+/** \brief  Set TTBR0
+
+    This function assigns the given value to the Translation Table Base Register 0.
+
+    \param [in]    ttbr0  Translation Table Base Register 0 value to set
+ */
+__STATIC_FORCEINLINE void __set_TTBR0(uint32_t ttbr0)
+{
+  __set_CP(15, 0, ttbr0, 2, 0, 0);
+}
+
+/** \brief  Get DACR
+
+    This function returns the value of the Domain Access Control Register.
+
+    \return               Domain Access Control Register value
+ */
+__STATIC_FORCEINLINE uint32_t __get_DACR(void)
+{
+  uint32_t result;
+  __get_CP(15, 0, result, 3, 0, 0);
+  return result;
+}
+
+/** \brief  Set DACR
+
+    This function assigns the given value to the Domain Access Control Register.
+
+    \param [in]    dacr   Domain Access Control Register value to set
+ */
+__STATIC_FORCEINLINE void __set_DACR(uint32_t dacr)
+{
+  __set_CP(15, 0, dacr, 3, 0, 0);
+}
+
+/** \brief  Set SCTLR
+
+    This function assigns the given value to the System Control Register.
+
+    \param [in]    sctlr  System Control Register value to set
+ */
+__STATIC_FORCEINLINE void __set_SCTLR(uint32_t sctlr)
+{
+  __set_CP(15, 0, sctlr, 1, 0, 0);
+}
+
+/** \brief  Get SCTLR
+    \return               System Control Register value
+ */
+__STATIC_FORCEINLINE uint32_t __get_SCTLR(void)
+{
+  uint32_t result;
+  __get_CP(15, 0, result, 1, 0, 0);
+  return result;
+}
+
+/** \brief  Get MPIDR
+
+    This function returns the value of the Multiprocessor Affinity Register.
+
+    \return               Multiprocessor Affinity Register value
+ */
+__STATIC_FORCEINLINE uint32_t __get_MPIDR(void)
+{
+  uint32_t result;
+  __get_CP(15, 0, result, 0, 0, 5);
+  return result;
+}
+
+/** \brief  Set TLBIALL
+
+  TLB Invalidate All
+ */
+__STATIC_FORCEINLINE void __set_TLBIALL(uint32_t value)
+{
+  __set_CP(15, 0, value, 8, 7, 0);
+}
+
+/** \brief  Set BPIALL.
+
+  Branch Predictor Invalidate All
+ */
+__STATIC_FORCEINLINE void __set_BPIALL(uint32_t value)
+{
+  __set_CP(15, 0, value, 7, 5, 6);
+}
+
+/** \brief  Set ICIALLU
+
+  Instruction Cache Invalidate All
+ */
+__STATIC_FORCEINLINE void __set_ICIALLU(uint32_t value)
+{
+  __set_CP(15, 0, value, 7, 5, 0);
+}
+
+/** \brief  Set ICIMVAC
+
+  Instruction Cache Invalidate
+ */
+__STATIC_FORCEINLINE void __set_ICIMVAC(uint32_t value)
+{
+  __set_CP(15, 0, value, 7, 5, 1);
+}
+
+/** \brief  Set DCCMVAC
+
+  Data cache clean
+ */
+__STATIC_FORCEINLINE void __set_DCCMVAC(uint32_t value)
+{
+  __set_CP(15, 0, value, 7, 10, 1);
+}
+
+/** \brief  Set DCIMVAC
+
+  Data cache invalidate
+ */
+__STATIC_FORCEINLINE void __set_DCIMVAC(uint32_t value)
+{
+  __set_CP(15, 0, value, 7, 6, 1);
+}
+
+/** \brief  Set DCCIMVAC
+
+  Data cache clean and invalidate
+ */
+__STATIC_FORCEINLINE void __set_DCCIMVAC(uint32_t value)
+{
+  __set_CP(15, 0, value, 7, 14, 1);
+}
+
+/** \brief  Set CSSELR
+ */
+__STATIC_FORCEINLINE void __set_CSSELR(uint32_t value)
+{
+  __set_CP(15, 2, value, 0, 0, 0);
+}
+
+/** \brief  Get CSSELR
+    \return CSSELR Register value
+ */
+__STATIC_FORCEINLINE uint32_t __get_CSSELR(void)
+{
+  uint32_t result;
+  __get_CP(15, 2, result, 0, 0, 0);
+  return result;
+}
+
+/** \brief  Get CCSIDR
+    \return CCSIDR Register value
+ */
+__STATIC_FORCEINLINE uint32_t __get_CCSIDR(void)
+{
+  uint32_t result;
+  __get_CP(15, 1, result, 0, 0, 0);
+  return result;
+}
+
+/** \brief  Get CLIDR
+    \return CLIDR Register value
+ */
+__STATIC_FORCEINLINE uint32_t __get_CLIDR(void)
+{
+  uint32_t result;
+  __get_CP(15, 1, result, 0, 0, 1);
+  return result;
+}
+
+/** \brief  Set DCISW
+ */
+__STATIC_FORCEINLINE void __set_DCISW(uint32_t value)
+{
+  __set_CP(15, 0, value, 7, 6, 2);
+}
+
+/** \brief  Set DCCSW
+ */
+__STATIC_FORCEINLINE void __set_DCCSW(uint32_t value)
+{
+  __set_CP(15, 0, value, 7, 10, 2);
+}
+
+/** \brief  Set DCCISW
+ */
+__STATIC_FORCEINLINE void __set_DCCISW(uint32_t value)
+{
+  __set_CP(15, 0, value, 7, 14, 2);
+}
+
+/** \brief  Get VBAR
+
+    This function returns the value of the Vector Base Address Register.
+
+    \return               Vector Base Address Register
+ */
+__STATIC_FORCEINLINE uint32_t __get_VBAR(void)
+{
+  uint32_t result;
+  __get_CP(15, 0, result, 12, 0, 0);
+  return result;
+}
+
+/** \brief  Set VBAR
+
+    This function assigns the given value to the Vector Base Address Register.
+
+    \param [in]    vbar  Vector Base Address Register value to set
+ */
+__STATIC_FORCEINLINE void __set_VBAR(uint32_t vbar)
+{
+  __set_CP(15, 0, vbar, 12, 0, 0);
+}
+
+/** \brief  Get DFSR
+    \return               Data Fault Status Register value
+ */
+__STATIC_FORCEINLINE uint32_t __get_DFSR(void)
+{
+  uint32_t result;
+  __get_CP(15, 0, result, 5, 0, 0);
+  return result;
+}
+
+/** \brief  Set DFSR
+    \param [in]    dfsr  Data Fault Status value to set
+ */
+__STATIC_FORCEINLINE void __set_DFSR(uint32_t dfsr)
+{
+  __set_CP(15, 0, dfsr, 5, 0, 0);
+}
+
+/** \brief  Get IFSR
+    \return               Instruction Fault Status Register value
+ */
+__STATIC_FORCEINLINE uint32_t __get_IFSR(void)
+{
+  uint32_t result;
+  __get_CP(15, 0, result, 5, 0, 1);
+  return result;
+}
+
+/** \brief  Set IFSR
+    \param [in]    ifsr  Instruction Fault Status value to set
+ */
+__STATIC_FORCEINLINE void __set_IFSR(uint32_t ifsr)
+{
+  __set_CP(15, 0, ifsr, 5, 0, 1);
+}
+
+/** \brief  Get ACTLR
+    \return               Auxiliary Control register value
+ */
+__STATIC_FORCEINLINE uint32_t __get_ACTLR(void)
+{
+  uint32_t result;
+  __get_CP(15, 0, result, 1, 0, 1);
+  return(result);
+}
+
+/** \brief  Set ACTLR
+    \param [in]    actlr  Auxiliary Control value to set
+ */
+__STATIC_FORCEINLINE void __set_ACTLR(uint32_t actlr)
+{
+  __set_CP(15, 0, actlr, 1, 0, 1);
+}
+
+#if (__CORTEX_A == 55U)
+// AArch32 (CLUSTERCFR) and AArch64 (CLUSTERCFR_EL1)
+// MRS <Xt>, S3_0_C15_C3_0; Read CLUSTERCFR_EL1 into Xt
+// MRC p15, 0, <Rt>, c15, c3, 0; Read CLUSTERCFR into Rt
+__STATIC_FORCEINLINE uint64_t __get_CLUSTERCFR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 15, 3, 0);
+	return result;
+}
+
+// AArch32 (CLUSTERECTLR) and AArch64 (CLUSTERECTLR_EL1)
+// MRS <Xt>, S3_0_C15_C3_4; Read CLUSTERECTLR_EL1 into Xt
+// MSR S3_0_C15_C3_4, <Xt>; Write Xt into CLUSTERECTLR_EL1
+// MRC p15, 0, <Rt>, c15, c3, 4; Read CLUSTERECTLR into Rt
+// MCR p15, 0, <Rt>, c15, c3, 4; Write Rt into CLUSTERECTLR
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERECTLR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 15, 3, 4);
+	return result;
+}
+#endif /* (__CORTEX_A == 55U)  */
  /*******************************************************************************
   *                Hardware Abstraction Layer
    Core Function Interface contains:
