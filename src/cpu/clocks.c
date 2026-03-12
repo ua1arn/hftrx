@@ -4828,13 +4828,28 @@ void sysinit_boot_disconnect(void)
 	CCU->SMHC3_BGR_REG = 0;
 }
 
-static void a733_pll_enable(volatile uint32_t * reg)
+static void a733_ccu_pll_enable(volatile uint32_t * reg)
 {
 	* reg |= (UINT32_C(1) << 30);	// PLL_LDO_EN
 	local_delay_ms(1);
 	* reg |= (UINT32_C(1) << 27);	// PLL_OUTPUT0_GATE
 	* reg |= (UINT32_C(1) << 26);	// PLL_OUTPUT1_GATE
 	* reg |= (UINT32_C(1) << 25);	// PLL_OUTPUT2_GATE
+
+	* reg |= (UINT32_C(1) << 31);	// PLL_EN
+	local_delay_ms(1);
+	* reg |= (UINT32_C(1) << 29);	// LOCK_ENABLE
+	while ((* reg & (UINT32_C(1) << 28)) == 0)	// LOCK
+		;
+//	* reg |= (UINT32_C(1) << 24);	// ???
+	local_delay_ms(20);
+}
+
+static void a733_cpu_pll_enable(volatile uint32_t * reg)
+{
+	* reg |= (UINT32_C(1) << 30);	// PLL_LDO_EN
+	local_delay_ms(1);
+	* reg |= (UINT32_C(1) << 27);	// PLL_OUTPUT_GATE
 
 	* reg |= (UINT32_C(1) << 31);	// PLL_EN
 	local_delay_ms(1);
@@ -4852,13 +4867,15 @@ void sysinit_pll_initialize(int forced)
 	CCU->CCMU_SEC_SWITCH_REG |= (UINT32_C(1) << 1);	// BUS_SEC
 	CCU->CCMU_SEC_SWITCH_REG |= (UINT32_C(1) << 0);	// PLL_SEC
 
-	a733_pll_enable(& CCU->PLL_PERI0_CTRL_REG);
-	a733_pll_enable(& CCU->PLL_PERI1_CTRL_REG);
-	a733_pll_enable(& CCU->PLL_DE_CTRL_REG);
-	a733_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
-	a733_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
-	a733_pll_enable(& CCU->PLL_VIDEO2_CTRL_REG);
-	//a733_pll_enable(& CCU->HDMI);
+	a733_cpu_pll_enable(& CPU_PLL_CFG->CPU_DSU_PLL_CTRL_REG);
+	//a733_cpu_pll_enable(& CPU_PLL_CFG->CPU_L_PLL_CTRL_REG);	// cores 0..5
+	a733_cpu_pll_enable(& CPU_PLL_CFG->CPU_B_PLL_CTRL_REG);	// cores 6..7
+	a733_ccu_pll_enable(& CCU->PLL_PERI0_CTRL_REG);
+	a733_ccu_pll_enable(& CCU->PLL_PERI1_CTRL_REG);
+	a733_ccu_pll_enable(& CCU->PLL_DE_CTRL_REG);
+	a733_ccu_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
+	a733_ccu_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
+	a733_ccu_pll_enable(& CCU->PLL_VIDEO2_CTRL_REG);
 
 
 	// test
