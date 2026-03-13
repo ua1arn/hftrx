@@ -177,6 +177,45 @@
 #define __set_RG64(reg, Rs)         __ASM volatile("MSR " reg ", %0" : : "r" (Rs) : "memory" )
 
 
+ /** \brief  AArch64 System registers to access the Generic Interrupt Controller CPU interface
+ */
+ #if defined(__GNUC__)
+   #define ICC_BPR0_EL1           S3_0_C12_C8_3
+   #define ICC_BPR1_EL1           S3_0_C12_C12_3
+   #define ICC_CTLR_EL1           S3_0_C12_C12_4
+   #define ICC_CTLR_EL3           S3_6_C12_C12_4
+   #define ICC_EOIR0_EL1          S3_0_C12_C8_1
+   #define ICC_EOIR1_EL1          S3_0_C12_C12_1
+   #define ICC_HPPIR0_EL1         S3_0_C12_C8_2
+   #define ICC_HPPIR1_EL1         S3_0_C12_C12_2
+   #define ICC_IAR0_EL1           S3_0_C12_C8_0
+   #define ICC_IAR1_EL1           S3_0_C12_C12_0
+   #define ICC_IGRPEN0_EL1        S3_0_C12_C12_6
+   #define ICC_IGRPEN1_EL1        S3_0_C12_C12_7
+   #define ICC_IGRPEN1_EL3        S3_6_C12_C12_7
+   #define ICC_PMR_EL1            S3_0_C4_C6_0
+   #define ICC_RPR_EL1            S3_0_C12_C11_3
+   #define ICC_SGI0R_EL1          S3_0_C12_C11_7
+   #define ICC_SGI1R_EL1          S3_0_C12_C11_5
+   #define ICC_SRE_EL1            S3_0_C12_C12_5
+   #define ICC_SRE_EL2            S3_4_C12_C9_5
+   #define ICC_SRE_EL3            S3_6_C12_C12_5
+ #endif /* __GNUC__ */
+
+ #ifndef __STRINGIFY
+   #define __STRINGIFY(x)                         #x
+ #endif
+
+ #ifndef __MSR
+   #define __MSR(sysreg, val) \
+     __asm volatile ("msr " __STRINGIFY(sysreg) ", %0\n" : : "r"((uint64_t)(val)))
+ #endif
+
+ #ifndef __MRS
+ #define __MRS(sysreg, pVal) \
+   __asm volatile ("mrs  %0, " __STRINGIFY(sysreg) "\n" : "=r"((*pVal)))
+ #endif
+
 
 /**
 \brief   Send Event Local
@@ -1752,6 +1791,131 @@ __STATIC_INLINE uint64_t __get_CurrentEL(void)
     return result;
 }
 
+// todo: add __DUP_PRESENT in CMSIS header
+#if (__CORTEX_A == 55U) && __aarch64__
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL1(void)
+{
+	uint32_t result;
+	__MRS(ICC_SRE_EL1, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL1(uint32_t value)
+{
+	__MSR(ICC_SRE_EL1, value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL2(void)
+{
+	uint32_t result;
+	__MRS(ICC_SRE_EL2, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL2(uint32_t value)
+{
+	__MSR(ICC_SRE_EL2, value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL3(void)
+{
+	uint32_t result;
+	__MRS(ICC_SRE_EL3, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL3(uint32_t value)
+{
+	__MSR(ICC_SRE_EL3, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_PMR_EL1(uint32_t value)
+{
+	__MSR(ICC_PMR_EL1, value);
+}
+
+// ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
+__STATIC_FORCEINLINE void __set_ICC_CTLR_EL1(uint64_t value)
+{
+	__MSR(ICC_CTLR_EL1, value);
+}
+
+// ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
+__STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL1(void)
+{
+	uint64_t result;
+    __MRS(ICC_CTLR_EL1, &result);
+    return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_CTLR_EL3(uint64_t value)
+{
+	__MSR(ICC_CTLR_EL3, value);
+}
+
+__STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL3(void)
+{
+	uint64_t result;
+    __MRS(ICC_CTLR_EL3, &result);
+    return result;
+}
+
+// AArch32 (CLUSTERCFR) and AArch64 (CLUSTERCFR_EL1)
+// MRS <Xt>, S3_0_C15_C3_0; Read CLUSTERCFR_EL1 into Xt
+// MRC p15, 0, <Rt>, c15, c3, 0; Read CLUSTERCFR into Rt
+__STATIC_FORCEINLINE uint64_t __get_CLUSTERCFR_EL1(void)
+{
+	uint64_t result;
+	// MRS <Xt>, MIDR_EL1 ; Read MIDR_EL1 into Xt
+	__get_RG32("S3_0_C15_C3_0", result);
+	return result;
+}
+
+// AArch32 (CLUSTERECTLR) and AArch64 (CLUSTERECTLR_EL1)
+// MRS <Xt>, S3_0_C15_C3_4; Read CLUSTERECTLR_EL1 into Xt
+// MSR S3_0_C15_C3_4, <Xt>; Write Xt into CLUSTERECTLR_EL1
+// MRC p15, 0, <Rt>, c15, c3, 4; Read CLUSTERECTLR into Rt
+// MCR p15, 0, <Rt>, c15, c3, 4; Write Rt into CLUSTERECTLR
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERECTLR_EL1(void)
+{
+	uint64_t result;
+	__get_RG32("S3_0_C15_C3_4", result);
+	return result;
+}
+__STATIC_FORCEINLINE void __set_CLUSTERECTLR_EL1(uint32_t v)
+{
+	uint64_t value = v;
+	__set_RG32("S3_0_C15_C3_4", value);
+}
+// MRS <Xt>, S3_0_C15_C3_5; Read CLUSTERPWRCTLR_EL1 into Xt
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRCTLR_EL1(void)
+{
+	uint64_t result;
+	__get_RG32("S3_0_C15_C3_5", result);
+	return result;
+}
+__STATIC_FORCEINLINE void __set_CLUSTERPWRCTLR_EL1(uint32_t v)
+{
+	uint64_t value = v;
+	__set_RG32("S3_0_C15_C3_5", value);
+}
+// MSR S3_0_C15_C3_6, <Xt>; Write Xt into CLUSTERPWRDN_EL1
+__STATIC_FORCEINLINE void __set_CLUSTERPWRDN_EL1(uint32_t v)
+{
+	uint64_t value = v;
+	__set_RG32("S3_0_C15_C3_6", value);
+}
+// MRS <Xt>, S3_0_C15_C3_6; Read CLUSTERPWRDN_EL1 into Xt
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRDN_EL1(void)
+{
+	uint64_t result;
+	__get_RG32("S3_0_C15_C3_6", result);
+	return result;
+}
+
+#endif /* (__CORTEX_A == 55U) */
+
 
 /* ##########################  L1 Cache functions  ################################# */
 
@@ -2354,169 +2518,6 @@ __STATIC_INLINE uint32_t GIC_GetInterfaceId(void)
 
 #else /* GIC_INTERFACE_BASE */
 
-/** \brief  AArch64 System registers to access the Generic Interrupt Controller CPU interface
-*/
-#if defined(__GNUC__)
-  #define ICC_BPR0_EL1           S3_0_C12_C8_3
-  #define ICC_BPR1_EL1           S3_0_C12_C12_3
-  #define ICC_CTLR_EL1           S3_0_C12_C12_4
-  #define ICC_CTLR_EL3           S3_6_C12_C12_4
-  #define ICC_EOIR0_EL1          S3_0_C12_C8_1
-  #define ICC_EOIR1_EL1          S3_0_C12_C12_1
-  #define ICC_HPPIR0_EL1         S3_0_C12_C8_2
-  #define ICC_HPPIR1_EL1         S3_0_C12_C12_2
-  #define ICC_IAR0_EL1           S3_0_C12_C8_0
-  #define ICC_IAR1_EL1           S3_0_C12_C12_0
-  #define ICC_IGRPEN0_EL1        S3_0_C12_C12_6
-  #define ICC_IGRPEN1_EL1        S3_0_C12_C12_7
-  #define ICC_IGRPEN1_EL3        S3_6_C12_C12_7
-  #define ICC_PMR_EL1            S3_0_C4_C6_0
-  #define ICC_RPR_EL1            S3_0_C12_C11_3
-  #define ICC_SGI0R_EL1          S3_0_C12_C11_7
-  #define ICC_SGI1R_EL1          S3_0_C12_C11_5
-  #define ICC_SRE_EL1            S3_0_C12_C12_5
-  #define ICC_SRE_EL2            S3_4_C12_C9_5
-  #define ICC_SRE_EL3            S3_6_C12_C12_5
-#endif /* __GNUC__ */
-
-#ifndef __STRINGIFY
-  #define __STRINGIFY(x)                         #x
-#endif
-
-#ifndef __MSR
-  #define __MSR(sysreg, val) \
-    __asm volatile ("msr " __STRINGIFY(sysreg) ", %0\n" : : "r"((uint64_t)(val)))
-#endif
-
-#ifndef __MRS
-#define __MRS(sysreg, pVal) \
-  __asm volatile ("mrs  %0, " __STRINGIFY(sysreg) "\n" : "=r"((*pVal)))
-#endif
-
-
-#if (__CORTEX_A == 55U) && __aarch64__
-
-__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL1(void)
-{
-	uint32_t result;
-	__MRS(ICC_SRE_EL1, & result);
-	return result;
-}
-
-__STATIC_FORCEINLINE void __set_ICC_SRE_EL1(uint32_t value)
-{
-	__MSR(ICC_SRE_EL1, value);
-}
-
-__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL2(void)
-{
-	uint32_t result;
-	__MRS(ICC_SRE_EL2, & result);
-	return result;
-}
-
-__STATIC_FORCEINLINE void __set_ICC_SRE_EL2(uint32_t value)
-{
-	__MSR(ICC_SRE_EL2, value);
-}
-
-__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL3(void)
-{
-	uint32_t result;
-	__MRS(ICC_SRE_EL3, & result);
-	return result;
-}
-
-__STATIC_FORCEINLINE void __set_ICC_SRE_EL3(uint32_t value)
-{
-	__MSR(ICC_SRE_EL3, value);
-}
-
-__STATIC_FORCEINLINE void __set_ICC_PMR_EL1(uint32_t value)
-{
-	__MSR(ICC_PMR_EL1, value);
-}
-
-// ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
-__STATIC_FORCEINLINE void __set_ICC_CTLR_EL1(uint64_t value)
-{
-	__MSR(ICC_CTLR_EL1, value);
-}
-
-// ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
-__STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL1(void)
-{
-	uint64_t result;
-    __MRS(ICC_CTLR_EL1, &result);
-    return result;
-}
-
-__STATIC_FORCEINLINE void __set_ICC_CTLR_EL3(uint64_t value)
-{
-	__MSR(ICC_CTLR_EL3, value);
-}
-
-__STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL3(void)
-{
-	uint64_t result;
-    __MRS(ICC_CTLR_EL3, &result);
-    return result;
-}
-
-// AArch32 (CLUSTERCFR) and AArch64 (CLUSTERCFR_EL1)
-// MRS <Xt>, S3_0_C15_C3_0; Read CLUSTERCFR_EL1 into Xt
-// MRC p15, 0, <Rt>, c15, c3, 0; Read CLUSTERCFR into Rt
-__STATIC_FORCEINLINE uint64_t __get_CLUSTERCFR_EL1(void)
-{
-	uint64_t result;
-	// MRS <Xt>, MIDR_EL1 ; Read MIDR_EL1 into Xt
-	__get_RG32("S3_0_C15_C3_0", result);
-	return result;
-}
-
-// AArch32 (CLUSTERECTLR) and AArch64 (CLUSTERECTLR_EL1)
-// MRS <Xt>, S3_0_C15_C3_4; Read CLUSTERECTLR_EL1 into Xt
-// MSR S3_0_C15_C3_4, <Xt>; Write Xt into CLUSTERECTLR_EL1
-// MRC p15, 0, <Rt>, c15, c3, 4; Read CLUSTERECTLR into Rt
-// MCR p15, 0, <Rt>, c15, c3, 4; Write Rt into CLUSTERECTLR
-__STATIC_FORCEINLINE uint32_t __get_CLUSTERECTLR_EL1(void)
-{
-	uint64_t result;
-	__get_RG32("S3_0_C15_C3_4", result);
-	return result;
-}
-__STATIC_FORCEINLINE void __set_CLUSTERECTLR_EL1(uint32_t v)
-{
-	uint64_t value = v;
-	__set_RG32("S3_0_C15_C3_4", value);
-}
-// MRS <Xt>, S3_0_C15_C3_5; Read CLUSTERPWRCTLR_EL1 into Xt
-__STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRCTLR_EL1(void)
-{
-	uint64_t result;
-	__get_RG32("S3_0_C15_C3_5", result);
-	return result;
-}
-__STATIC_FORCEINLINE void __set_CLUSTERPWRCTLR_EL1(uint32_t v)
-{
-	uint64_t value = v;
-	__set_RG32("S3_0_C15_C3_5", value);
-}
-// MSR S3_0_C15_C3_6, <Xt>; Write Xt into CLUSTERPWRDN_EL1
-__STATIC_FORCEINLINE void __set_CLUSTERPWRDN_EL1(uint32_t v)
-{
-	uint64_t value = v;
-	__set_RG32("S3_0_C15_C3_6", value);
-}
-// MRS <Xt>, S3_0_C15_C3_6; Read CLUSTERPWRDN_EL1 into Xt
-__STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRDN_EL1(void)
-{
-	uint64_t result;
-	__get_RG32("S3_0_C15_C3_6", result);
-	return result;
-}
-
-#endif /* (__CORTEX_A == 55U) */
 
 /* ICC_SGIR */
 #define ICC_SGIR_TARGETLIST_SHIFT (0)
