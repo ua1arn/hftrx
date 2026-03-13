@@ -40,7 +40,7 @@
 #define CALIBRATION_IQ_CIC_RX_SHIFT		63
 #define CALIBRATION_TX_SHIFT			23
 
-#define WITHUART0HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
+//#define WITHUART0HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
 #define WITHUART1HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 
 //#define WITHCAT_UART1		1
