@@ -1527,6 +1527,14 @@ __STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRCTLR(void)
 	return result;
 }
 
+//MRC p15, 0, <Rt>, c15, c3, 6; Read CLUSTERPWRDN into Rt
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRDN(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 15, 3, 6);
+	return result;
+}
+
 #endif /* (__CORTEX_A == 55U)  */
  /*******************************************************************************
   *                Hardware Abstraction Layer

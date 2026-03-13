@@ -2502,6 +2502,19 @@ __STATIC_FORCEINLINE void __set_CLUSTERPWRCTLR_EL1(uint32_t v)
 	uint64_t value = v;
 	__set_RG32("S3_0_C15_C3_5", value);
 }
+// MSR S3_0_C15_C3_6, <Xt>; Write Xt into CLUSTERPWRDN_EL1
+__STATIC_FORCEINLINE void __set_CLUSTERPWRDN_EL1(uint32_t v)
+{
+	uint64_t value = v;
+	__set_RG32("S3_0_C15_C3_6", value);
+}
+// MRS <Xt>, S3_0_C15_C3_6; Read CLUSTERPWRDN_EL1 into Xt
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRDN_EL1(void)
+{
+	uint64_t result;
+	__get_RG32("S3_0_C15_C3_6", result);
+	return result;
+}
 
 #endif /* (__CORTEX_A == 55U) */
 
