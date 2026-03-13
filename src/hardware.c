@@ -2723,13 +2723,19 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 1 | UINT32_C(1) << 0;	// CPUX_CORE_RESET | CPU0_RESET.
+	const uint32_t CORE_RESET_MASK =
+		UINT32_C(1) << 2 | 	// CPU0_ETM_RST
+		UINT32_C(1) << 1 | 	// CPU0_DBG_RST
+		UINT32_C(1) << 0 |	// CPUX_CORE_RESET.
+		0;
+	const uint32_t CORE_PWRON_MASK = UINT32_C(1) << 8;
 	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
 
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
 
 	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= CORE_PWRON_MASK;
 
 	R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
 	ASSERT(R_CPUCFG->SOFTENTRY [targetcore] == startfunc);
@@ -2741,7 +2747,12 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	const uintptr_t startfunc32 = (uintptr_t) trampoline32;
-	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 1 | UINT32_C(1) << 0;	// CPUX_CORE_RESET | CPU0_RESET.
+	const uint32_t CORE_RESET_MASK =
+		UINT32_C(1) << 2 | 	// CPU0_ETM_RST
+		UINT32_C(1) << 1 | 	// CPU0_DBG_RST
+		UINT32_C(1) << 0 |	// CPUX_CORE_RESET.
+		0;
+	const uint32_t CORE_PWRON_MASK = UINT32_C(1) << 8;
 	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
 
 	ASSERT(startfunc32 != 0);
@@ -2750,6 +2761,7 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	ASSERT(targetcore != 0);
 
 	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= CORE_PWRON_MASK;
 
 	R_CPUCFG->SOFTENTRY [targetcore] = startfunc32;
 	ASSERT(R_CPUCFG->SOFTENTRY [targetcore] == startfunc32);
