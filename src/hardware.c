@@ -2609,7 +2609,7 @@ void sunxi_cpu_on(unsigned targetcore)
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
-	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_R_PRCM_BASE + 0x1C4 + targetcore * 4));
+	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
 
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
@@ -2664,7 +2664,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	// https://github.com/apritzel/u-boot/blob/3aaabfe9ff4bbcd11096513b1b28d1fb0a40800f/arch/arm/cpu/armv8/fel_utils.S#L39
 
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << targetcore;	// CPU0_CORE_RESET
-	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
+	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
 	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_RTC_BASE + 0x5c4 + targetcore * 4));
 
 	/* Не влияет: */
@@ -2676,8 +2676,8 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 	C0_CPUX_CFG_H616->C0_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
 
-	* rvaddr = startfunc;
-	ASSERT(* rvaddr == startfunc);
+	R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
+	ASSERT(R_CPUCFG->SOFTENTRY [targetcore] == startfunc);
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
@@ -2754,7 +2754,7 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	R_CPUCFG->SOFTENTRY [targetcore] = startfunc32;
 	ASSERT(R_CPUCFG->SOFTENTRY [targetcore] == startfunc32);
 
-	CPU_SUBSYS_CTRL->CPUx_CTRL_REG [targetcore] = (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
+	CPU_SUBSYS_CTRL->CPUx_CTRL_REG [targetcore] |= (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
 	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
 	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
