@@ -2723,7 +2723,7 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
+	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 1 | UINT32_C(1) << 0;	// CPUX_CORE_RESET | CPU0_RESET.
 	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
 
 	ASSERT(startfunc != 0);
@@ -2741,7 +2741,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	const uintptr_t startfunc32 = (uintptr_t) trampoline32;
-	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
+	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 1 | UINT32_C(1) << 0;	// CPUX_CORE_RESET | CPU0_RESET.
 	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
 
 	ASSERT(startfunc32 != 0);
