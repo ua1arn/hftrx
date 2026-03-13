@@ -15,7 +15,7 @@
 
 #include <string.h>
 #include <math.h>
-#include "gui/framework/gui.h"
+#include "gui/gui.h"
 #include "src/touch/touch.h"
 #include <atomic>
 

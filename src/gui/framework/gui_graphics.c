@@ -10,12 +10,7 @@
 
 #if WITHTOUCHGUI
 
-#include "gui.h"
-#include "gui_system.h"
-#include "gui_structs.h"
-#include "gui_settings.h"
-#include "gui_windows.h"
-#include "../gui_port.h"
+#include "gui_includes.h"
 
 uint16_t gui_get_window_draw_width(void)
 {

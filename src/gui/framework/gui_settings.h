@@ -1,11 +1,23 @@
 #ifndef GUI_SETTINGS_H_INCLUDED
 #define GUI_SETTINGS_H_INCLUDED
 
-#include "src/gui/gui_port_include.h"
+#include "../gui_port_include.h"
 
 #if WITHTOUCHGUI
 
-#include "gui.h"
+#include "../gui.h"
+
+#define WITHGUIMAXX				DIM_X
+#define WITHGUIMAXY				DIM_Y
+#define GUI_TRANSPARENT_WINDOWS	1
+#define FOOTER_HEIGHT			(WITHGUIMAXX / 16)
+
+//#define GUI_TIME_PROFILER		1
+//#define DEBUG_WINDOW_CACHE	1
+//#define DEBUG_BUTTONS_CACHE	1
+//#define DEBUG_LABELS_CACHE	1
+//#define DEBUG_TFS_CACHE		1
+//#define DEBUG_SLIDERS_CACHE	1
 
 enum {
 	sliders_scale_thickness = 8,// ширина шкалы слайдера

@@ -2,7 +2,7 @@
 
 #if WITHTOUCHGUI && ! GUI_EXTERNAL_FONTS
 
-#include "../gui.h"
+#include "../../gui.h"
 #include "../gui_system.h"
 #include "../gui_structs.h"
 #include "../gui_settings.h"

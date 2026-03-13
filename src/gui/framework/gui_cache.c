@@ -10,7 +10,7 @@
 
 #if WITHTOUCHGUI && GUI_USE_CACHE
 
-#include "gui.h"
+#include "../gui.h"
 #include "gui_system.h"
 #include "gui_structs.h"
 #include "gui_settings.h"

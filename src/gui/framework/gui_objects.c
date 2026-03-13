@@ -10,12 +10,7 @@
 
 #if WITHTOUCHGUI
 
-#include "gui.h"
-#include "gui_system.h"
-#include "gui_structs.h"
-#include "gui_settings.h"
-#include "gui_windows.h"
-#include "../gui_user.h"
+#include "gui_includes.h"
 
 const label_t label_default = 	{ 0, CANCELLED, 0, NON_VISIBLE, "", "", COLORPIP_WHITE, };
 const button_t button_default = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 1, 0, 0, NON_VISIBLE, INT32_MAX, "", "", };
@@ -605,7 +600,7 @@ static obj_type_t parse_obj_name(const char * name)
 		return TYPE_TEXT_FIELD;
 	else
 	{
-		PRINTF("Unrecognized GUI object type: %s\n", name);
+		GUI_DEBUG_PRINT("Unrecognized GUI object type: %s\n", name);
 		GUI_ASSERT(0);
 		return TYPE_DUMMY;
 	}
@@ -1115,7 +1110,7 @@ void gui_arrange_objects(const char names[][NAME_ARRAY_SIZE], uint8_t count, uin
 	obj_type_t type = parse_obj_name(names[0]);
 	if (type != TYPE_BUTTON && type != TYPE_LABEL && type != TYPE_SLIDER)
 	{
-		PRINTF("%s: idx %d unsupported object type to arrange\n", __func__, 0);
+		GUI_DEBUG_PRINT("%s: idx %d unsupported object type to arrange\n", __func__, 0);
 		GUI_ASSERT(0);
 	}
 
@@ -1134,7 +1129,7 @@ void gui_arrange_objects(const char names[][NAME_ARRAY_SIZE], uint8_t count, uin
 		obj_type_t typex = parse_obj_name(obj);
 		if (typex != type)
 		{
-			PRINTF("%s: idx %d - arrange various objects not supported\n", __func__, i);
+			GUI_DEBUG_PRINT("%s: idx %d - arrange various objects not supported\n", __func__, i);
 			GUI_ASSERT(0);
 		}
 
@@ -1201,7 +1196,7 @@ void gui_arrange_objects_from(const char * name, uint8_t count, uint8_t cols, ui
 	obj_type_t type = parse_obj_name(name);
 	if (type != TYPE_BUTTON && type != TYPE_LABEL && type != TYPE_SLIDER)
 	{
-		PRINTF("%s: idx %d unsupported object type to arrange\n", __func__, 0);
+		GUI_DEBUG_PRINT("%s: idx %d unsupported object type to arrange\n", __func__, 0);
 		GUI_ASSERT(0);
 	}
 

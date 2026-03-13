@@ -5,7 +5,7 @@
 
 #if WITHTOUCHGUI
 
-#include "framework/gui.h"
+#include "gui.h"
 #include "framework/gui_structs.h"
 
 void gui_user_actions_after_close_window(void);

@@ -43,11 +43,47 @@
 
 #endif /* LCDMODE_MAIN_L8 */
 
-#define GUI_ASSERT(v) 		ASSERT(v)
-#define GUI_MEM_ASSERT(v) 	do { if (((v) == NULL)) { \
-		PRINTF("%s: %d ('%s') - memory allocate failed!\n", __FILE__, __LINE__, (# v)); \
+#if LINUX_SUBSYSTEM
+	#define GUI_DEBUG_PRINT	printf
+#else
+	#define GUI_DEBUG_PRINT	PRINTF
+#endif
+
+#define GUI_ASSERT(v) do { if ((v) == 0) { \
+		GUI_DEBUG_PRINT("%s(%d): Assert '%s'\n", __FILE__, __LINE__, (# v)); \
 		for (;;) ; \
 		} } while (0)
+
+#define GUI_MEM_ASSERT(v) 	do { if (((v) == NULL)) { \
+		GUI_DEBUG_PRINT("%s: %d ('%s') - memory allocate failed!\n", __FILE__, __LINE__, (# v)); \
+		for (;;) ; \
+		} } while (0)
+
+// 10 ms non-blocking delay - is need refactor?
+static inline uint8_t lp_delay_10ms(uint8_t init)
+{
+#if LINUX_SUBSYSTEM
+	static uint32_t oldt = 0;
+
+	if (init)
+	{
+		oldt = sys_now();
+		return 0;
+	}
+	else
+	{
+		uint32_t t = sys_now();
+		if (t - oldt > 10)
+		{
+			oldt = t;
+			return 1;
+		}
+		return 0;
+	}
+#else
+	return 1;
+#endif /* LINUX_SUBSYSTEM */
+}
 
 #if WITHSDL2VIDEO
 

@@ -1,25 +1,13 @@
 #ifndef GUI_H_INCLUDED
 #define GUI_H_INCLUDED
 
-#include "../gui_port_include.h"
+#include "gui_port_include.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
 #if WITHTOUCHGUI
-
-#define WITHGUIMAXX				DIM_X
-#define WITHGUIMAXY				DIM_Y
-#define GUI_TRANSPARENT_WINDOWS	1
-#define FOOTER_HEIGHT			(WITHGUIMAXX / 16)
-
-//#define GUI_TIME_PROFILER		1
-//#define DEBUG_WINDOW_CACHE	1
-//#define DEBUG_BUTTONS_CACHE	1
-//#define DEBUG_LABELS_CACHE	1
-//#define DEBUG_TFS_CACHE		1
-//#define DEBUG_SLIDERS_CACHE	1
 
 typedef struct {
 	char param[20];
@@ -64,7 +52,7 @@ uint16_t wnb_get_threshold(void);
 
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
 void gui_initialize(void);
-void gui_set_encoder2_rotate(int_least16_t rotate);
+void gui_set_encoder2_rotate(int16_t rotate);
 void gui_put_keyb_code(uint8_t kbch);
 void gui_uif_editmenu(const char * name, uint16_t menupos, uint8_t exitkey);
 void gui_open_sys_menu(void);

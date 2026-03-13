@@ -10,7 +10,7 @@
 
 #if WITHTOUCHGUI
 
-#include "framework/gui.h"
+#include "gui.h"
 #include "framework/gui_system.h"
 #include "framework/gui_structs.h"
 #include "framework/gui_settings.h"
@@ -1171,7 +1171,7 @@ void gui_main_process(void)
 	{
 		const ldiv_t t = ldiv(hamradio_get_PAtemp_value(), 10);
 		local_snprintf_P(buf, buflen, "%d.%dC ", t.quot, t.rem);
-		PRINTF("%s\n", buf);		// пока вывод в консоль
+		GUI_DEBUG_PRINT("%s\n", buf);		// пока вывод в консоль
 	}
 #endif /* WITHTHERMOLEVEL */
 

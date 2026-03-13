@@ -11,17 +11,7 @@
 
 #if WITHTOUCHGUI
 
-#include "gui.h"
-#include "gui_system.h"
-#include "gui_structs.h"
-#include "gui_settings.h"
-#include "gui_windows.h"
-#include "gui_objects.h"
-#include "gui_events.h"
-#include "gui_cache.h"
-#include "utils.h"
-#include "../gui_user.h"
-#include "../gui_port.h"
+#include "gui_includes.h"
 
 static gui_t gui = { 0, 0, CANCELLED, 0, 0, 0, 0, 0, };
 static LIST_ENTRY gui_objects_list;
@@ -50,7 +40,7 @@ void set_parent_window(uint8_t p)
 	opened_windows_count = p == NO_PARENT_WINDOW ? 1 : 2;
 }
 
-void gui_set_encoder2_rotate (int_least16_t rotate)
+void gui_set_encoder2_rotate (int16_t rotate)
 {
 	if (rotate != 0)
 	{
@@ -67,33 +57,33 @@ void dump_queue(window_t * win)
 	if (! win->queue.size)
 		return;
 
-	PRINTF("dump WM queue window '%s'\n", win->title);
+	GUI_DEBUG_PRINT("dump WM queue window '%s'\n", win->title);
 
 	if (win->queue.size == WM_MAX_QUEUE_SIZE)
-		PRINTF("WM stack full!\n");
+		GUI_DEBUG_PRINT("WM stack full!\n");
 
 	for (uint8_t i = 0; i < win->queue.size; i ++)
 	{
 		switch(win->queue.data[i].message)
 		{
 		case WM_MESSAGE_UPDATE:
-			PRINTF("%d: WM_MESSAGE_UPDATE\n", i);
+			GUI_DEBUG_PRINT("%d: WM_MESSAGE_UPDATE\n", i);
 			break;
 
 		case WM_MESSAGE_ACTION:
-			PRINTF("%d: WM_MESSAGE_ACTION: object type - %d, action - %d\n", i, (int) win->queue.data[i].type, (int) win->queue.data[i].action);
+			GUI_DEBUG_PRINT("%d: WM_MESSAGE_ACTION: object type - %d, action - %d\n", i, (int) win->queue.data[i].type, (int) win->queue.data[i].action);
 			break;
 
 		case WM_MESSAGE_ENC2_ROTATE:
-			PRINTF("%d: WM_MESSAGE_ENC2_ROTATE: direction - %d\n", i, (int) win->queue.data[i].action);
+			GUI_DEBUG_PRINT("%d: WM_MESSAGE_ENC2_ROTATE: direction - %d\n", i, (int) win->queue.data[i].action);
 			break;
 
 		case WM_MESSAGE_KEYB_CODE:
-			PRINTF("%d: WM_MESSAGE_KEYB_CODE: code - %d\n", i, (int) win->queue.data[i].action);
+			GUI_DEBUG_PRINT("%d: WM_MESSAGE_KEYB_CODE: code - %d\n", i, (int) win->queue.data[i].action);
 			break;
 
 		default:
-			PRINTF("%d: unknown message type! - %d\n", i, (int) win->queue.data[i].message);
+			GUI_DEBUG_PRINT("%d: unknown message type! - %d\n", i, (int) win->queue.data[i].message);
 			break;
 		}
 	}
@@ -213,7 +203,7 @@ uint8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		break;
 	}
 
-	PRINTF("put_to_wm_queue: no valid type of messages found\n");
+	GUI_DEBUG_PRINT("put_to_wm_queue: no valid type of messages found\n");
 	GUI_ASSERT(0);
 	return 0;
 }
@@ -338,7 +328,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 		break;
 
 	default:
-		PRINTF("%s: undefined type %d\n", __func__, type);
+		GUI_DEBUG_PRINT("%s: undefined type %d\n", __func__, type);
 		GUI_ASSERT(0);
 		return NULL;
 	}
@@ -346,7 +336,7 @@ void * find_gui_obj(obj_type_t type, window_t * win, const char * name)
 not_found:
 	if (win->window_id == WINDOW_MAIN)
 	{
-		PRINTF("%s: object '%s' not found\n", __func__, name);
+		GUI_DEBUG_PRINT("%s: object '%s' not found\n", __func__, name);
 		GUI_ASSERT(0);
 		return NULL;
 	}
@@ -394,7 +384,7 @@ void objects_state (window_t * win)
 			{
 				if (bh->is_long_press && bh->is_repeating)
 				{
-					PRINTF("ERROR: invalid combination of properties 'is_long_press' and 'is_repeating' on button %s\n", bh->name);
+					GUI_DEBUG_PRINT("ERROR: invalid combination of properties 'is_long_press' and 'is_repeating' on button %s\n", bh->name);
 					GUI_ASSERT(0);
 				}
 				gui_object_t * new_obj = (gui_object_t *) calloc(1, sizeof(gui_object_t));
@@ -585,7 +575,7 @@ void objects_state (window_t * win)
 			GUI_ASSERT(gui_object_count >= footer_buttons_count);
 		}
 	}
-//	PRINTF("%s: %s, gui_object_count: %d %+d\n", __func__, win->title, gui_object_count, debug_num);
+//	GUI_DEBUG_PRINT("%s: %s, gui_object_count: %d %+d\n", __func__, win->title, gui_object_count, debug_num);
 	clean_wm_queue(win);
 }
 
@@ -841,37 +831,11 @@ static void set_state_record(gui_object_t * val)
 
 		default:
 		{
-			PRINTF("set_state_record: undefined type %d\n", val->type);
+			GUI_DEBUG_PRINT("set_state_record: undefined type %d\n", val->type);
 			GUI_ASSERT(0);
 		}
 			break;
 	}
-}
-
-// 10 ms non-blocking delay
-uint8_t lp_delay_10ms(uint8_t init)
-{
-#if LINUX_SUBSYSTEM
-	static uint32_t oldt = 0;
-
-	if (init)
-	{
-		oldt = sys_now();
-		return 0;
-	}
-	else
-	{
-		uint32_t t = sys_now();
-		if (t - oldt > 10)
-		{
-			oldt = t;
-			return 1;
-		}
-		return 0;
-	}
-#else
-	return 1;
-#endif /* LINUX_SUBSYSTEM */
 }
 
 /* GUI state mashine */
@@ -890,7 +854,7 @@ void process_gui(void)
 		gui.last_pressed_x = tx;
 		gui.last_pressed_y = ty;
 		gui.is_touching_screen = 1;
-//		PRINTF("last x/y=%d/%d\n", gui.last_pressed_x, gui.last_pressed_y);
+//		GUI_DEBUG_PRINT("last x/y=%d/%d\n", gui.last_pressed_x, gui.last_pressed_y);
 		update_gui_objects_list();
 	}
 	else
@@ -948,7 +912,7 @@ void process_gui(void)
 			if (gui.vector_move_x != 0 || gui.vector_move_y != 0)
 			{
 				gui.is_tracking = 1;
-//				PRINTF("move x: %d, move y: %d\n", gui.vector_move_x, gui.vector_move_y);
+//				GUI_DEBUG_PRINT("move x: %d, move y: %d\n", gui.vector_move_x, gui.vector_move_y);
 			}
 
 			p->state = PRESSED;

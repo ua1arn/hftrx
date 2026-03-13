@@ -10,13 +10,7 @@
 
 #if WITHTOUCHGUI
 
-#include "gui.h"
-#include "gui_system.h"
-#include "gui_structs.h"
-#include "gui_settings.h"
-#include "gui_windows.h"
-#include "gui_objects.h"
-#include "../gui_user.h"
+#include "gui_includes.h"
 
 void gui_user_actions_after_close_window(void);
 
@@ -151,7 +145,7 @@ static void free_win_ptr (window_t * win)
 	win->sh_ptr = NULL;
 	win->ta_ptr = NULL;
 	win->tf_ptr = NULL;
-//	PRINTF("free: %d %s\n", win->window_id, win->title);
+//	GUI_DEBUG_PRINT("free: %d %s\n", win->window_id, win->title);
 }
 
 /* Установка признака видимости окна */
@@ -464,7 +458,7 @@ void calculate_window_position(uint8_t mode, ...)
 		tm->state = CANCELLED;
 	}
 
-	//PRINTF("%d %d %d %d\n", win->x1, win->y1, win->h, win->w);
+	//GUI_DEBUG_PRINT("%d %d %d %d\n", win->x1, win->y1, win->h, win->w);
 	objects_state(win);
 }
 
@@ -513,7 +507,7 @@ static void __draw_window(window_t * win, uint16_t x, uint16_t y, const gui_draw
 			break;
 
 		default:
-			PRINTF("Title alignment value %d incorrect for window %s\n", win->title_align, win->title);
+			GUI_DEBUG_PRINT("Title alignment value %d incorrect for window %s\n", win->title_align, win->title);
 			GUI_ASSERT(0);
 			break;
 		}
