@@ -2723,36 +2723,36 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	const uint32_t CORE_RESET_MASK =
+	const uint32_t C0_CORE_RESET_MASK =
 		UINT32_C(1) << 2 | 	// CPU0_ETM_RST
 		UINT32_C(1) << 1 | 	// CPU0_DBG_RST
 		UINT32_C(1) << 0 |	// CPUX_CORE_RESET.
 		0;
-	const uint32_t CORE_PWRON_MASK = UINT32_C(1) << 8;
+	const uint32_t C0_CORE_PWRON_MASK = UINT32_C(1) << 8;	// CPU1_DBGPWRDUP
 	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
 
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
 
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= CORE_PWRON_MASK;
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] &= ~ C0_CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= C0_CORE_PWRON_MASK;
 
 	R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
 	ASSERT(R_CPUCFG->SOFTENTRY [targetcore] == startfunc);
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= C0_CORE_RESET_MASK;	// CORE_RESET 1: de-assert
 }
 
 void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	const uintptr_t startfunc32 = (uintptr_t) trampoline32;
-	const uint32_t CORE_RESET_MASK =
+	const uint32_t C0_CORE_RESET_MASK =
 		UINT32_C(1) << 2 | 	// CPU0_ETM_RST
 		UINT32_C(1) << 1 | 	// CPU0_DBG_RST
 		UINT32_C(1) << 0 |	// CPUX_CORE_RESET.
 		0;
-	const uint32_t CORE_PWRON_MASK = UINT32_C(1) << 8;
+	const uint32_t C0_CORE_PWRON_MASK = UINT32_C(1) << 8;	// CPU1_DBGPWRDUP
 	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
 
 	ASSERT(startfunc32 != 0);
@@ -2760,8 +2760,8 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
 
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= CORE_PWRON_MASK;
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] &= ~ C0_CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= C0_CORE_PWRON_MASK;
 
 	R_CPUCFG->SOFTENTRY [targetcore] = startfunc32;
 	ASSERT(R_CPUCFG->SOFTENTRY [targetcore] == startfunc32);
@@ -2771,7 +2771,7 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
+	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= C0_CORE_RESET_MASK;	// CORE_RESET 1: de-assert
 }
 
 #elif CPUSTYLE_T113
