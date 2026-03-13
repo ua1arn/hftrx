@@ -2665,6 +2665,15 @@ typedef struct R_CAN_Type
     __IOM uint32_t CAN_RBUF_RBACK [0x030];            /*!< Offset 0x180 CAN transmit buffer for read back register (0x0180 ~0x1b0) */
 } R_CAN_TypeDef; /* size of structure = 0x240 */
 /*
+ * @brief R_CPUCFG
+ */
+/*!< R_CPUCFG  */
+typedef struct R_CPUCFG_Type
+{
+         RESERVED(0x000[0x01C4 - 0x0000], uint8_t)
+    __IOM uint32_t SOFTENTRY [0x004];                 /*!< Offset 0x1C4 The Soft Entry Address Register of CPUx (x=0..1) */
+} R_CPUCFG_TypeDef; /* size of structure = 0x1D4 */
+/*
  * @brief SID
  */
 /*!< SID Security ID */
@@ -3868,6 +3877,7 @@ typedef struct VE_Type
 #define CSIC_CCI0 ((CSI_CCI_TypeDef *) CSIC_CCI0_BASE)/*!< CSIC_CCI0  register set access pointer */
 #define CSIC_CCI1 ((CSI_CCI_TypeDef *) CSIC_CCI1_BASE)/*!< CSIC_CCI1  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */
+#define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG  register set access pointer */
 #define PRCM ((PRCM_TypeDef *) PRCM_BASE)             /*!< PRCM Power Reset Clock Management module register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL Port Controller register set access pointer */
 #define R_UART ((UART_TypeDef *) R_UART_BASE)         /*!< R_UART  register set access pointer */

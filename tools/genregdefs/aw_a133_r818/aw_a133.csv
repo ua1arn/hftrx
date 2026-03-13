@@ -89,3 +89,8 @@
 #irq; DSI0 100; DSI0 interrupt
 #typeend;
 
+
+#type; R_CPUCFG
+#base; R_CPUCFG	0x07000400
+
+#typeend;

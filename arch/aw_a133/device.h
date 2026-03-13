@@ -138,6 +138,7 @@ typedef enum IRQn
 #define USB20_HOST1_OHCI_BASE ((uintptr_t) 0x05200400)/*!< USB_OHCI_Capability  Base */
 #define USBPHYC1_BASE ((uintptr_t) 0x05200800)        /*!< USBPHYC HCI Contgroller and PHY Interface Description Base */
 #define DSI0_BASE ((uintptr_t) 0x06504000)            /*!< DSI0 MIPI DSI System (A133/R818) Base */
+#define R_CPUCFG_BASE ((uintptr_t) 0x07000400)        /*!< R_CPUCFG  Base */
 #define PRCM_BASE ((uintptr_t) 0x07010000)            /*!< PRCM Power Reset Clock Management module Base */
 #define R_WDG_BASE ((uintptr_t) 0x07020400)           /*!< TIMER  Base */
 #define R_TWDG_BASE ((uintptr_t) 0x07020800)          /*!< TIMER  Base */
@@ -738,6 +739,15 @@ typedef struct PRCM_Type
     __IOM uint32_t PRCM_VERSION_REG;                  /*!< Offset 0x3F0 PRCM Version Register */
 } PRCM_TypeDef; /* size of structure = 0x3F4 */
 /*
+ * @brief R_CPUCFG
+ */
+/*!< R_CPUCFG  */
+typedef struct R_CPUCFG_Type
+{
+         RESERVED(0x000[0x01C4 - 0x0000], uint8_t)
+    __IOM uint32_t SOFTENTRY [0x004];                 /*!< Offset 0x1C4 The Soft Entry Address Register of CPUx (x=0..1) */
+} R_CPUCFG_TypeDef; /* size of structure = 0x1D4 */
+/*
  * @brief SPI
  */
 /*!< SPI Serial Peripheral Interface */
@@ -1080,6 +1090,7 @@ typedef struct USB_OHCI_Capability_Type
 #define USB20_HOST1_OHCI ((USB_OHCI_Capability_TypeDef *) USB20_HOST1_OHCI_BASE)/*!< USB20_HOST1_OHCI  register set access pointer */
 #define USBPHYC1 ((USBPHYC_TypeDef *) USBPHYC1_BASE)  /*!< USBPHYC1 HCI Contgroller and PHY Interface Description register set access pointer */
 #define DSI0 ((DSI0_TypeDef *) DSI0_BASE)             /*!< DSI0 MIPI DSI System (A133/R818) register set access pointer */
+#define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG  register set access pointer */
 #define PRCM ((PRCM_TypeDef *) PRCM_BASE)             /*!< PRCM Power Reset Clock Management module register set access pointer */
 #define R_WDG ((TIMER_TypeDef *) R_WDG_BASE)          /*!< R_WDG  register set access pointer */
 #define R_TWDG ((TIMER_TypeDef *) R_TWDG_BASE)        /*!< R_TWDG  register set access pointer */

@@ -2212,6 +2212,15 @@ typedef struct RTC_Type
     __IOM uint32_t CRY_ENABLE_REG;                    /*!< Offset 0x218 Crypt Enable Register */
 } RTC_TypeDef; /* size of structure = 0x21C */
 /*
+ * @brief R_CPUCFG
+ */
+/*!< R_CPUCFG  */
+typedef struct R_CPUCFG_Type
+{
+         RESERVED(0x000[0x01A4 - 0x0000], uint8_t)
+    __IOM uint32_t SOFTENTRY [0x004];                 /*!< Offset 0x1A4 The Soft Entry Address Register of CPUx (x=0..1) */
+} R_CPUCFG_TypeDef; /* size of structure = 0x1B4 */
+/*
  * @brief R_PRCM
  */
 /*!< R_PRCM  */
@@ -3289,6 +3298,7 @@ typedef struct VE_Type
 #define R_TIMER ((R_TIMER_TypeDef *) R_TIMER_BASE)    /*!< R_TIMER  register set access pointer */
 #define R_WDOG ((R_WDOG_TypeDef *) R_WDOG_BASE)       /*!< R_WDOG  register set access pointer */
 #define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
+#define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define R_TWI ((TWI_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
 #define R_UART ((UART_TypeDef *) R_UART_BASE)         /*!< R_UART  register set access pointer */

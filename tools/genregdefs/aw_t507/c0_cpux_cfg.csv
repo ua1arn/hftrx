@@ -66,3 +66,13 @@
 
 #typeend;
 
+## used as:
+## volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
+
+#type; R_CPUCFG
+
+#regdef; SOFTENTRY; 0x01C4 4; The Soft Entry Address Register of CPUx (x=0..1)
+
+#typeend;
+
+

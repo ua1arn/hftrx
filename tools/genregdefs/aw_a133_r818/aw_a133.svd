@@ -3870,6 +3870,27 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>R_CPUCFG</name>
+  <description></description>
+  <baseAddress>0x07000400</baseAddress>
+  <registers>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x000001C4</addressOffset>
+    <register>
+     <name>SOFTENTRY</name>
+     <displayName>SOFTENTRY</displayName>
+     <description>The Soft Entry Address Register of CPUx (x=0..1)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>SPI0</name>
   <description>Serial Peripheral Interface</description>
   <baseAddress>0x05010000</baseAddress>
