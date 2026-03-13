@@ -7,7 +7,6 @@
 
 #include "hardware.h"
 #include "buffers.h"
-#include "gui/gui.h"
 #include "synthcalcs.h"
 #include "board.h"
 #include "keyboard.h"

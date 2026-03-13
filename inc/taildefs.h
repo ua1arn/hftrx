@@ -721,6 +721,10 @@ void InitializeIrql(IRQL_t newIRQL);
 #include "xc7z_inc.h"
 #endif
 
+#if WITHTOUCHGUI
+#include "gui.h"
+#endif /* WITHTOUCHGUI */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

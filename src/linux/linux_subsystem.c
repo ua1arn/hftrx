@@ -13,7 +13,6 @@
 #include "buffers.h"
 #include "audio.h"
 #include "ft8.h"
-#include "gui/gui.h"
 #include "display2.h"
 
 #include <pthread.h>

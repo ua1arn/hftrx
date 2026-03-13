@@ -67,7 +67,8 @@ ARCHDIR = $(PRJROOT)/arch/zynq
 
 #ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_myir
 ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_ebaz
-#ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
+#ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
+GUILIBDIR = $(PRJROOT)/lib/simple-gui
 
 # full qualified name
 ZYNQLIB = zynq7020.a
@@ -89,7 +90,8 @@ DINCDIR = \
 	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
 	$(CMSISDIR)/Include $(CMSISDIR)/Source \
-	$(ZYNQLIBSRC)
+	$(ZYNQLIBSRC) \
+ 	$(GUILIBDIR)
 
 # List all default libraries here
 #DLIBS = -lm -larm_cortexA9lneon_math
@@ -111,6 +113,7 @@ SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 #SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
 #SRCDIRS += $(OPENVGDIR)/src
+SRCDIRS += $(GUILIBDIR)
 
 # cmsis-dsp
 include ../cmsis_dsp.mak
