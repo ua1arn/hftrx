@@ -9312,18 +9312,15 @@ void hightests(void)
 		/* полупрозрачный фон */
 		unsigned fgalpha = 128;
 		colpip_fillrect(& dbv_layer1, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLORPIP_GREEN));	/* opaque color transparent black */
-		unifont_text(& dbv_layer1, 0, DIM_Y - 16 * 1, & unifont_small, "ly1", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_GREEN));
 		colpip_fillrect(& dbv_layer1, 110, 110, DIM_X - 200, DIM_Y - 200, TFTALPHA(fgalpha, COLORPIP_BLUE));	/* transparent black */
 		/* полупрозрачный прямоугольник на фоне */
 		colpip_fillrect(& dbv_layer1, 120, 120, 200, 200, TFTALPHA(fgalpha, COLORPIP_GREEN));	// GREEN
 		/* прозрачный слой */
 		unsigned l2alpha = 0;
 		colpip_fillrect(& dbv_layer2, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_RED));	/* opaque color transparent black */
-		unifont_text(& dbv_layer2, 0, DIM_Y - 16 * 2, & unifont_small, "ly2", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_RED));
 		/* прозрачный слой */
 		unsigned l3alpha = 0;
 		colpip_fillrect(& dbv_layer3, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_GREEN));	/* opaque color transparent black */
-		unifont_text(& dbv_layer3, 0, DIM_Y - 16 * 3, & unifont_small, "ly3", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_GREEN));
 
 		TP();
 		/* копируем изображение в верхний слой с цветовым ключем */
@@ -9429,6 +9426,13 @@ void hightests(void)
 				BITBLT_FLAG_NONE | BITBLT_FLAG_CKEY, keycolor
 				);
 
+		// Названия слоёв
+		uint_fast16_t ht;
+		uint_fast16_t wt = unifont_textsize(& unifont_small, "X", TEXTSIZE_AUTO, & ht);
+		unifont_text(& dbv_layer1, 22, DIM_Y / 2 - ht * 2, & unifont_small, "ly1", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
+		unifont_text(& dbv_layer2, 22, DIM_Y / 2 - ht * 3, & unifont_small, "ly2", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
+		unifont_text(& dbv_layer3, 22, DIM_Y / 2 - ht * 4, & unifont_small, "ly3", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
+
 		// нужно если программно заполняли
 		dcache_clean(dbv_layer0_a.cachebase, dbv_layer0_a.cachesize);
 		dcache_clean(dbv_layer0_b.cachebase, dbv_layer0_b.cachesize);
@@ -9457,6 +9461,8 @@ void hightests(void)
 			 * поскольку потом меняется еще аппаратурой - invalidate
 			 * */
 			colpip_fillrect(drawlayer, x0 + xpos, y, 1, h, TFTALPHA(bgalpha, COLORPIP_WHITE));
+			unifont_text(drawlayer, 22, DIM_Y / 2 - ht * 1, & unifont_small, "ly0", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
+
 			dcache_clean_invalidate(drawlayer->cachebase, drawlayer->cachesize);
 
 		#ifdef RTMIXIDTV
