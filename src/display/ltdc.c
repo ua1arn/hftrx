@@ -1846,10 +1846,6 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 
 #if CPUSTYLE_T507
 
-#define VI_LASTIX(rtmixid) 1
-#define UI_LASTIX(rtmixid) 1
-/* BLD_EN_COLOR_CTL positions 8..13 */
-
 // Требуется заполнение в соответствии с инициализацией DE_PORT2CHN_MUX
 
 //	RTMIX0: VI1, UI1, [vi3]
@@ -1894,12 +1890,14 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 {
 		DE_UIS2,
 };
+
+/* BLD_EN_COLOR_CTL positions 8..11 */
+#define VI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_vimap) : ARRAY_SIZE(rtmix1_vimap))
+#define UI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_uimap) : ARRAY_SIZE(rtmix1_uimap))
 
 #elif CPUSTYLE_A733
 	#warning Unimplemented CPUSTYLE_A733
-	#define VI_LASTIX(rtmixid) 1
-	#define UI_LASTIX(rtmixid) 1
-/* BLD_EN_COLOR_CTL positions 8..13 */
+
 // Требуется заполнение в соответствии с инициализацией DE_PORT2CHN_MUX
 
 //	RTMIX0: VI1, UI1, [vi3]
@@ -1945,11 +1943,11 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 		DE_UIS2,
 };
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-
-#define VI_LASTIX(rtmixid) 1
-#define UI_LASTIX(rtmixid) 1	// В RT-Mixer 1 отсутствуют UI
 /* BLD_EN_COLOR_CTL positions 8..11 */
+#define VI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_vimap) : ARRAY_SIZE(rtmix1_vimap))
+#define UI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_uimap) : ARRAY_SIZE(rtmix1_uimap))
+
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 static DE_VI_TypeDef * const rtmix0_vimap [] =
 {
@@ -1992,11 +1990,11 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 };
 
 
-#elif CPUSTYLE_A64 || CPUSTYLE_H3
+/* BLD_EN_COLOR_CTL positions 8..11 */
+#define VI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_vimap) : ARRAY_SIZE(rtmix1_vimap))
+#define UI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_uimap) : ARRAY_SIZE(rtmix1_uimap))
 
-#define VI_LASTIX(rtmixid) 1
-#define UI_LASTIX(rtmixid) ((rtmixid == 1) ? 3 : 1)
-/* BLD_EN_COLOR_CTL positions 8..13 */
+#elif CPUSTYLE_A64 || CPUSTYLE_H3
 
 static DE_VI_TypeDef * const rtmix0_vimap [] =
 {
@@ -2041,6 +2039,10 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 {
 		DE_MIXER1_UIS1,
 };
+
+/* BLD_EN_COLOR_CTL positions 8..11 */
+#define VI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_vimap) : ARRAY_SIZE(rtmix1_vimap))
+#define UI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_uimap) : ARRAY_SIZE(rtmix1_uimap))
 
 #else
 	#warning Unexpected CPUSTYLE_xxx
@@ -7778,7 +7780,7 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 
 	const videomode_t * const design = get_videomode_DESIGN();	// Из какого режима масштабируем
 
-	PRINTF("rtmixid=%d: vilast=%d, uilast=%d\n", rtmixid, VI_LASTIX(rtmixid), UI_LASTIX(rtmixid));
+	PRINTF("rtmixid=%d: vilast=%d, uilast=%d\n", rtmixid, (int) VI_LASTIX(rtmixid), (int) UI_LASTIX(rtmixid));
 	int vich;
 	for (vich = 1; vich <= VI_LASTIX(rtmixid); ++ vich)
 	{
