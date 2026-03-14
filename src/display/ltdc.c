@@ -2750,6 +2750,7 @@ static void t113_de_set_layerval(int rtmixid, uint_fast32_t val)
 		IRQL_t oldIrql;
 		de3_lockbld(rtmixid, & oldIrql);
 		bld->BLD_EN_COLOR_CTL = val;
+		ASSERT(bld->BLD_EN_COLOR_CTL == val);
 		de3_unlockbld(rtmixid, oldIrql);
 	}
 }
