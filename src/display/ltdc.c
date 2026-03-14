@@ -2841,10 +2841,12 @@ static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, uint
 
 	for (i = 1; de3_getui(rtmixid, i); ++ i)
 	{
+		memset32(de3_getui(rtmixid, i), 0, 4096);	// Требуется на H3
 		t113_de_set_address_ui(rtmixid, (uintptr_t) 0, i);
 	}
 	for (i = 1; de3_getvi(rtmixid, i); ++ i)
 	{
+		memset32(de3_getvi(rtmixid, i), 0, 4096);	// Требуется на H3
 		t113_de_set_address_vi(rtmixid, (uintptr_t) 0, i);
 	}
 	de3_unlockbld(rtmixid, oldIrql);
@@ -7835,6 +7837,7 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 	for (vich = 1; vich <= VI_LASTIX(rtmixid); ++ vich)
 	{
 		memset32(de3_getvi(rtmixid, vich), 0, sizeof * de3_getvi(rtmixid, vich));	// Требуется на H3
+		memset32(de3_getvi(rtmixid, vich), 0, 4096);	// Требуется на H3
 		t113_de_set_address_vi(rtmixid, (uintptr_t) 0, vich);
 		de2_vsu_init(rtmixid, design, vdmode, vich);
 	}
@@ -7843,6 +7846,7 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 	for (uich = 1; uich <= UI_LASTIX(rtmixid); ++ uich)
 	{
 		memset32(de3_getui(rtmixid, uich), 0, sizeof * de3_getui(rtmixid, uich));	// Требуется на H3
+		memset32(de3_getui(rtmixid, uich), 0, 4096);	// Требуется на H3
 		t113_de_set_address_ui(rtmixid, (uintptr_t) 0, uich);
 		de2_uis_init(rtmixid, design, vdmode, uich);
 	}

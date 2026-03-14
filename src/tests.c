@@ -9225,6 +9225,7 @@ void hightests(void)
 #endif
 #if 0 && LCDMODE_LTDC && LCDMODE_ARGB8888
 	{
+		// DE overlays test
 		enum { picy = 110, picx = 150 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
