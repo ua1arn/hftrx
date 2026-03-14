@@ -2626,6 +2626,7 @@ static void t113_de_set_address_vi(int rtmixid, uintptr_t vram, int vich)
 	vi->CFG [VI_CFG_INDEX].COORD = 0;
 	vi->CFG [VI_CFG_INDEX].PITCH [0] = uipitch;	// PLANE 0 - The setting of this register is Y channel.
 	vi->OVL_SIZE [0] = ovl_ui_mbsize;	// Y
+	vi->FCOLOR [0] = 0;
 //	vi->HORI [0] = 0;
 //	vi->VERT [0] = 0;
 
@@ -2718,7 +2719,7 @@ static void t113_de_set_address_ui(int rtmixid, uintptr_t vram, int uich)
 	ui->CFG [UI_CFG_INDEX].SIZE = ovl_ui_mbsize;
 	ui->CFG [UI_CFG_INDEX].COORD = 0;
 	ui->CFG [UI_CFG_INDEX].PITCH = uipitch;
-	ui->CFG [UI_CFG_INDEX].FCOLOR = 0xFF0000FF;	// Opaque BLUE
+	ui->CFG [UI_CFG_INDEX].FCOLOR = 0;//0xFF0000FF;	// Opaque BLUE
 	ui->CFG [UI_CFG_INDEX].ATTR = attr;
 
 	ui->OVL_SIZE = ovl_ui_mbsize;
