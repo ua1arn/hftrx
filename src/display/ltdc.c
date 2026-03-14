@@ -2002,14 +2002,14 @@ static DE_UI_TypeDef * const rtmix0_uimap [] =
 {
 		DE_MIXER0_UI1,
 		DE_MIXER0_UI2,
-		//DE_MIXER0_UI3,
+		DE_MIXER0_UI3,
 };
 
 static DE_UIS_TypeDef * const rtmix0_uismap [] =
 {
 		DE_MIXER0_UIS1,
 		DE_MIXER0_UIS2,
-		//DE_MIXER0_UIS3,
+		DE_MIXER0_UIS3,
 };
 
 static DE_VI_TypeDef * const rtmix1_vimap [] =
@@ -2758,7 +2758,6 @@ static void t113_de_rtmix_initialize(int rtmixid)
 #endif /* CPUSTYLE_T507 */
 
 	ASSERT(glb->GLB_CTL & (UINT32_C(1) << 0));
-	memset32(de3_getvi(rtmixid, 1), 0, sizeof * de3_getvi(rtmixid, 1));	// Требуется на H3
 }
 
 static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, uint_least32_t color24)
@@ -7831,12 +7830,14 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 	int vich;
 	for (vich = 1; vich <= VI_LASTIX(rtmixid); ++ vich)
 	{
+		memset32(de3_getvi(rtmixid, vich), 0, sizeof * de3_getvi(rtmixid, vich));	// Требуется на H3
 		de2_vsu_init(rtmixid, design, vdmode, vich);
 	}
 
 	int uich;
 	for (uich = 1; uich <= UI_LASTIX(rtmixid); ++ uich)
 	{
+		memset32(de3_getui(rtmixid, uich), 0, sizeof * de3_getui(rtmixid, uich));	// Требуется на H3
 		de2_uis_init(rtmixid, design, vdmode, uich);
 	}
 
