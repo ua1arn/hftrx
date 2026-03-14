@@ -7481,6 +7481,32 @@ static void h3_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 
 #endif /* CPUSTYLE_A64 || CPUSTYLE_H3 */
 
+static void de2_vsu_init(int rtmixid, const videomode_t * design, const videomode_t * vdmode, int vich)
+{
+#if CPUSTYLE_T507 || CPUSTYLE_A733
+	t507_de2_vsu_init(rtmixid, design, vdmode, vich);
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	t113_de2_vsu_init(rtmixid, design, vdmode, vich);
+#elif CPUSTYLE_A64 || CPUSTYLE_H3
+	h3_de2_vsu_init(rtmixid, design, vdmode, vich);
+#else
+	#warning NO VI scaler
+#endif
+}
+
+static void de2_uis_init(int rtmixid, const videomode_t * design, const videomode_t * vdmode, int uich)
+{
+#if CPUSTYLE_T507 || CPUSTYLE_A733
+	t507_de2_uis_init(rtmixid, design, vdmode, uich);
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+	t113_de2_uis_init(rtmixid, design, vdmode, uich);
+#elif CPUSTYLE_A64 || CPUSTYLE_H3
+	h3_de2_uis_init(rtmixid, design, vdmode, uich);
+#else
+	#warning NO UI scaler
+#endif
+}
+
 static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 {
 	const uint_fast32_t dotclock = display_getdotclock(vdmode);
@@ -7784,29 +7810,13 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 	int vich;
 	for (vich = 1; vich <= VI_LASTIX(rtmixid); ++ vich)
 	{
-	#if CPUSTYLE_T507 || CPUSTYLE_A733
-		t507_de2_vsu_init(rtmixid, design, vdmode, vich);
-	#elif CPUSTYLE_T113 || CPUSTYLE_F133
-		t113_de2_vsu_init(rtmixid, design, vdmode, vich);
-	#elif CPUSTYLE_A64 || CPUSTYLE_H3
-		h3_de2_vsu_init(rtmixid, design, vdmode, vich);
-	#else
-		#warning NO VI scaler
-	#endif
+		de2_vsu_init(rtmixid, design, vdmode, vich);
 	}
 
 	int uich;
 	for (uich = 1; uich <= UI_LASTIX(rtmixid); ++ uich)
 	{
-	#if CPUSTYLE_T507 || CPUSTYLE_A733
-		t507_de2_uis_init(rtmixid, design, vdmode, uich);
-	#elif CPUSTYLE_T113 || CPUSTYLE_F133
-		t113_de2_uis_init(rtmixid, design, vdmode, uich);
-	#elif CPUSTYLE_A64 || CPUSTYLE_H3
-		h3_de2_uis_init(rtmixid, design, vdmode, uich);
-	#else
-		#warning NO UI scaler
-	#endif
+		de2_uis_init(rtmixid, design, vdmode, uich);
 	}
 
 	// save settings
