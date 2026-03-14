@@ -7778,6 +7778,7 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 
 	const videomode_t * const design = get_videomode_DESIGN();	// Из какого режима масштабируем
 
+	PRINTF("rtmixid=%d: vilast=%d, uilast=%d\n", rtmixid, VI_LASTIX(rtmixid), UI_LASTIX(rtmixid));
 	int vich;
 	for (vich = 1; vich <= VI_LASTIX(rtmixid); ++ vich)
 	{
@@ -7793,7 +7794,7 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 	}
 
 	int uich;
-	for (uich = 1; uich <= VI_LASTIX(rtmixid); ++ uich)
+	for (uich = 1; uich <= UI_LASTIX(rtmixid); ++ uich)
 	{
 	#if CPUSTYLE_T507 || CPUSTYLE_A733
 		t507_de2_uis_init(rtmixid, design, vdmode, uich);
