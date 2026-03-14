@@ -2046,7 +2046,7 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 	/* BLD_EN_COLOR_CTL positions 8..13 */
 #elif CPUSTYLE_A64 || CPUSTYLE_H3
 	#define VI_LASTIX(rtmixid) 1
-	#define UI_LASTIX(rtmixid) 3
+	#define UI_LASTIX(rtmixid) ((rtmixid == 1) ? 3 : 1)
 	/* BLD_EN_COLOR_CTL positions 8..13 */
 #else
 	#warning Unexpected CPUSTYLE_xxx
