@@ -1941,9 +1941,28 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
+// VI surfaces
 static DE_VI_TypeDef * const rtmix0_vimap [] =
 {
 		DE_MIXER0_VI1,
+};
+
+// VI scalers
+static DE_VSU_TypeDef * const rtmix0_vsumap [] =
+{
+		DE_MIXER0_VSU1,
+};
+
+// UI surfaces
+static DE_UI_TypeDef * const rtmix0_uimap [] =
+{
+		DE_MIXER0_UI1,
+};
+
+// UI scalers
+static DE_UIS_TypeDef * const rtmix0_uismap [] =
+{
+		DE_MIXER0_UIS1,
 };
 
 static DE_VI_TypeDef * const rtmix1_vimap [] =
@@ -1951,9 +1970,9 @@ static DE_VI_TypeDef * const rtmix1_vimap [] =
 		DE_MIXER1_VI1,
 };
 
-static DE_UI_TypeDef * const rtmix0_uimap [] =
+static DE_VSU_TypeDef * const rtmix1_vsumap [] =
 {
-		DE_MIXER0_UI1,
+		DE_MIXER1_VSU1,
 };
 
 static DE_UI_TypeDef * const rtmix1_uimap [] =
@@ -1961,24 +1980,9 @@ static DE_UI_TypeDef * const rtmix1_uimap [] =
 		NULL,
 };
 
-static DE_VSU_TypeDef * const rtmix0_vsumap [] =
-{
-		DE_MIXER0_VSU1,
-};
-
-static DE_VSU_TypeDef * const rtmix1_vsumap [] =
-{
-		DE_MIXER1_VSU1,
-};
-
-static DE_UIS_TypeDef * const rtmix0_uismap [] =
-{
-		DE_MIXER0_UIS1,
-};
-
 static DE_UIS_TypeDef * const rtmix1_uismap [] =
 {
-		NULL,//DE_MIXER1_UIS1,
+		NULL,
 };
 
 
@@ -1989,21 +1993,28 @@ static DE_VI_TypeDef * const rtmix0_vimap [] =
 		DE_MIXER0_VI1,
 };
 
-static DE_VI_TypeDef * const rtmix1_vimap [] =
+static DE_VSU_TypeDef * const rtmix0_vsumap [] =
 {
-		DE_MIXER1_VI1,
+		DE_MIXER0_VSU1,
 };
 
 static DE_UI_TypeDef * const rtmix0_uimap [] =
 {
 		DE_MIXER0_UI1,
 		DE_MIXER0_UI2,
-		DE_MIXER0_UI3,
+		//DE_MIXER0_UI3,
 };
 
-static DE_VSU_TypeDef * const rtmix0_vsumap [] =
+static DE_UIS_TypeDef * const rtmix0_uismap [] =
 {
-		DE_MIXER0_VSU1,
+		DE_MIXER0_UIS1,
+		DE_MIXER0_UIS2,
+		//DE_MIXER0_UIS3,
+};
+
+static DE_VI_TypeDef * const rtmix1_vimap [] =
+{
+		DE_MIXER1_VI1,
 };
 
 static DE_VSU_TypeDef * const rtmix1_vsumap [] =
@@ -2011,25 +2022,16 @@ static DE_VSU_TypeDef * const rtmix1_vsumap [] =
 		DE_MIXER1_VSU1,
 };
 
-static DE_UIS_TypeDef * const rtmix0_uismap [] =
-{
-		DE_MIXER0_UIS1,
-		DE_MIXER0_UIS2,
-		DE_MIXER0_UIS3,
-};
-
+// UI surfaces
 static DE_UI_TypeDef * const rtmix1_uimap [] =
 {
 		DE_MIXER1_UI1,
-		//DE_MIXER1_UI2,
-		//DE_MIXER1_UI3,
 };
 
+// UI scalers
 static DE_UIS_TypeDef * const rtmix1_uismap [] =
 {
 		DE_MIXER1_UIS1,
-		//DE_MIXER1_UIS2,
-		//DE_MIXER1_UIS3,
 };
 
 #else
@@ -2042,7 +2044,7 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 #define UI_LASTIX(rtmixid) (((rtmixid) == 1) ? ARRAY_SIZE(rtmix0_uimap) : ARRAY_SIZE(rtmix1_uimap))
 
 #define VI_POS_BIT(rtmixid, vi) (UINT32_C(1) << ((vi) - 1 + 8))
-#define UI_POS_BIT(rtmixid, ui) (UINT32_C(1) << ((ui) - 1 + (8 + VI_LASTIX(rtmixid))))
+#define UI_POS_BIT(rtmixid, ui) (UINT32_C(1) << ((ui) - 1 + (8 + VI_LASTIX((rtmixid)))))
 
 
 #ifndef SETMASK
