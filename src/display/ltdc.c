@@ -2043,8 +2043,8 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 #define VI_LASTIX(rtmixid) (((rtmixid) == 1) ? ARRAY_SIZE(rtmix0_vimap) : ARRAY_SIZE(rtmix1_vimap))
 #define UI_LASTIX(rtmixid) (((rtmixid) == 1) ? ARRAY_SIZE(rtmix0_uimap) : ARRAY_SIZE(rtmix1_uimap))
 
-#define VI_POS_BIT(rtmixid, vi) (UINT32_C(1) << ((vi) - 1 + 8))
-#define UI_POS_BIT(rtmixid, ui) (UINT32_C(1) << ((ui) - 1 + (8 + VI_LASTIX((rtmixid)))))
+#define VI_POS_BIT(rtmixid, vi) (UINT32_C(0x100) << ((vi) - 1))
+#define UI_POS_BIT(rtmixid, ui) (UINT32_C(0x100) << ((ui) - 1 + VI_LASTIX((rtmixid))))
 
 
 #ifndef SETMASK
@@ -2828,12 +2828,13 @@ static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, uint
 	bld->CK_CTL = 0;
 	for (i = 0; i < ARRAY_SIZE(bld->CH); i++)
 	{
+		const uint_fast32_t fillcolor = 0xff000000;
 		//PRINTF("BLD_CH rtmixid=%d, %u\n", rtmixid, i);
-		bld->CH [i].BLD_FILL_COLOR = 0xff000000;
+		bld->CH [i].BLD_FILL_COLOR = fillcolor;
 		bld->CH [i].BLD_CH_ISIZE = ovl_ui_mbsize;
 		bld->CH [i].BLD_CH_OFFSET = 0;
 		ASSERT(bld->CH [i].BLD_CH_ISIZE == ovl_ui_mbsize);
-		ASSERT(bld->CH [i].BLD_FILL_COLOR == 0xff000000);
+		ASSERT(bld->CH [i].BLD_FILL_COLOR == fillcolor);
 	}
 
 	for (i = 1; de3_getui(rtmixid, i); ++ i)
