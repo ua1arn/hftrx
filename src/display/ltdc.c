@@ -2802,7 +2802,9 @@ static void t113_de_bld_initialize(int rtmixid, const videomode_t * vdmode, uint
 			(UINT32_C(2) << 8) |		// pipe 2 from ch 2
 			(UINT32_C(3) << 12) |		// pipe 3 from ch 3
 			(UINT32_C(4) << 16) |		// pipe 4 from ch 4
-			(UINT32_C(5) << 18) |		// pipe 5 from ch 5
+			(UINT32_C(5) << 20) |		// pipe 5 from ch 5
+//			(UINT32_C(6) << 24) |		// pipe 6 from ch 6
+//			(UINT32_C(7) << 28) |		// pipe 7 from ch 7
 			0;
 	bld->PREMULTIPLY = 0;
 	bld->BKCOLOR = color24; /* 24 bit. Отображается, когда нет данных от входного pipe */
@@ -7833,6 +7835,7 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 	for (vich = 1; vich <= VI_LASTIX(rtmixid); ++ vich)
 	{
 		memset32(de3_getvi(rtmixid, vich), 0, sizeof * de3_getvi(rtmixid, vich));	// Требуется на H3
+		t113_de_set_address_vi(rtmixid, (uintptr_t) 0, vich);
 		de2_vsu_init(rtmixid, design, vdmode, vich);
 	}
 
@@ -7840,6 +7843,7 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 	for (uich = 1; uich <= UI_LASTIX(rtmixid); ++ uich)
 	{
 		memset32(de3_getui(rtmixid, uich), 0, sizeof * de3_getui(rtmixid, uich));	// Требуется на H3
+		t113_de_set_address_ui(rtmixid, (uintptr_t) 0, uich);
 		de2_uis_init(rtmixid, design, vdmode, uich);
 	}
 
