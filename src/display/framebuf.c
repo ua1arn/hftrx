@@ -3502,7 +3502,7 @@ void colpip_fillrect(
 	COLORPIP_T color	// цвет
 	)
 {
-	colpip_rectangle(db, x, y, w, h, color, FILL_FLAG_NONE, 0);
+	colpip_rectangle(db, x, y, w, h, color, FILL_FLAG_NONE, 0 /* alpha */);
 }
 
 // копирование с поворотом
