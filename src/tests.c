@@ -9229,6 +9229,57 @@ void hightests(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		TP();
+		static PACKEDCOLORPIP_T layer0 [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORPIP_T layer1 [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORPIP_T layer2 [GXSIZE(DIM_X, DIM_Y)];
+		static PACKEDCOLORPIP_T layer3 [GXSIZE(DIM_X, DIM_Y)];
+		gxdrawb_t dbv_layer0;
+		gxdrawb_t dbv_layer1;
+		gxdrawb_t dbv_layer2;
+		gxdrawb_t dbv_layer3;
+
+		gxdrawb_initialize(& dbv_layer0, layer0, DIM_X, DIM_Y);
+		gxdrawb_initialize(& dbv_layer1, layer1, DIM_X, DIM_Y);
+		gxdrawb_initialize(& dbv_layer2, layer2, DIM_X, DIM_Y);
+		gxdrawb_initialize(& dbv_layer3, layer3, DIM_X, DIM_Y);
+
+		colpip_fillrect(& dbv_layer0, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLORPIP_GREEN));	/* opaque color transparent black */
+		colpip_fillrect(& dbv_layer1, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLORPIP_GREEN));	/* opaque color transparent black */
+		colpip_fillrect(& dbv_layer2, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLORPIP_GREEN));	/* opaque color transparent black */
+		colpip_fillrect(& dbv_layer3, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLORPIP_GREEN));	/* opaque color transparent black */
+		// Названия слоёв
+		uint_fast16_t ht;
+		uint_fast16_t wt = unifont_textsize(& unifont_small, "X", TEXTSIZE_AUTO, & ht);
+		unifont_text(& dbv_layer0, 48, DIM_Y / 2 - ht * 1, & unifont_small, "ly0", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
+		unifont_text(& dbv_layer1, 48, DIM_Y / 2 - ht * 2, & unifont_small, "ly1", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
+		unifont_text(& dbv_layer2, 48, DIM_Y / 2 - ht * 3, & unifont_small, "ly2", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
+		unifont_text(& dbv_layer3, 48, DIM_Y / 2 - ht * 4, & unifont_small, "ly3", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
+
+		// нужно если программно заполняли
+		dcache_clean(dbv_layer0.cachebase, dbv_layer0.cachesize);
+		dcache_clean(dbv_layer1.cachebase, dbv_layer1.cachesize);
+		dcache_clean(dbv_layer2.cachebase, dbv_layer2.cachesize);
+		dcache_clean(dbv_layer3.cachebase, dbv_layer3.cachesize);
+
+	#ifdef RTMIXIDTV
+		hardware_ltdc_main_set4(RTMIXIDTV, 1*(uintptr_t) dbv_layer0.buffer, 1*(uintptr_t) dbv_layer1.buffer, 1*(uintptr_t) dbv_layer2.buffer, 1*(uintptr_t) dbv_layer3.buffer);
+	#endif
+	#ifdef RTMIXIDLCD
+		hardware_ltdc_main_set4(RTMIXIDLCD, 1*(uintptr_t) dbv_layer0.buffer, 1*(uintptr_t) dbv_layer1.buffer, 1*(uintptr_t) dbv_layer2.buffer, 1*(uintptr_t) dbv_layer3.buffer);
+	#endif
+		for (;;)
+		{
+			testsloopprocessing();		// обработка отложенного вызова user mode функций
+		}
+
+	}
+#endif
+#if 0 && LCDMODE_LTDC && LCDMODE_ARGB8888
+	{
+		enum { picy = 110, picx = 150 };
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		TP();
 		static PACKEDCOLORPIP_T layer0_a [GXSIZE(DIM_X, DIM_Y)];
 		static PACKEDCOLORPIP_T layer0_b [GXSIZE(DIM_X, DIM_Y)];
 		static PACKEDCOLORPIP_T layer1 [GXSIZE(DIM_X, DIM_Y)];
