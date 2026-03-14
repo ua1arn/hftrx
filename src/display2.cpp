@@ -12,6 +12,7 @@
 #include "keyboard.h"
 #include "encoder.h"
 #include "formats.h"
+#include "fontsys.h"
 
 #include <string.h>
 #include <math.h>
