@@ -2392,6 +2392,7 @@ static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 
 static DE_GLB_TypeDef * de3_getglb(int rtmixid)
 {
+	ASSERT(rtmixid >= 1);
 	switch (rtmixid)
 	{
 	default: return NULL;
@@ -2445,6 +2446,7 @@ static void de3_unlockbld(int rtmixid, IRQL_t oldIrql)
 
 static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 {
+	ASSERT(rtmixid >= 1);
 	switch (rtmixid)
 	{
 	default: return NULL;
@@ -2456,6 +2458,7 @@ static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 // Video Scaler Unit (VSU)
 static DE_VSU_TypeDef * de3_getvsu(int rtmixid, int id)
 {
+	ASSERT(rtmixid >= 1);
 	switch (rtmixid)
 	{
 	default: return NULL;
@@ -2467,6 +2470,7 @@ static DE_VSU_TypeDef * de3_getvsu(int rtmixid, int id)
 // UI Scaler(UIS) provides RGB format image resizing function
 static DE_UIS_TypeDef * de3_getuis(int rtmixid, int id)
 {
+	ASSERT(rtmixid >= 1);
 	switch (rtmixid)
 	{
 	default: return NULL;
