@@ -1891,10 +1891,6 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 		DE_UIS2,
 };
 
-/* BLD_EN_COLOR_CTL positions 8..11 */
-#define VI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_vimap) : ARRAY_SIZE(rtmix1_vimap))
-#define UI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_uimap) : ARRAY_SIZE(rtmix1_uimap))
-
 #elif CPUSTYLE_A733
 	#warning Unimplemented CPUSTYLE_A733
 
@@ -1943,10 +1939,6 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 		DE_UIS2,
 };
 
-/* BLD_EN_COLOR_CTL positions 8..11 */
-#define VI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_vimap) : ARRAY_SIZE(rtmix1_vimap))
-#define UI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_uimap) : ARRAY_SIZE(rtmix1_uimap))
-
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 static DE_VI_TypeDef * const rtmix0_vimap [] =
@@ -1989,10 +1981,6 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 		NULL,//DE_MIXER1_UIS1,
 };
 
-
-/* BLD_EN_COLOR_CTL positions 8..11 */
-#define VI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_vimap) : ARRAY_SIZE(rtmix1_vimap))
-#define UI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_uimap) : ARRAY_SIZE(rtmix1_uimap))
 
 #elif CPUSTYLE_A64 || CPUSTYLE_H3
 
@@ -2044,18 +2032,17 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 		//DE_MIXER1_UIS3,
 };
 
-/* BLD_EN_COLOR_CTL positions 8..11 */
-#define VI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_vimap) : ARRAY_SIZE(rtmix1_vimap))
-#define UI_LASTIX(rtmixid) ((rtmixid == 1) ? ARRAY_SIZE(rtmix0_uimap) : ARRAY_SIZE(rtmix1_uimap))
-
 #else
 	#warning Unexpected CPUSTYLE_xxx
-	#define VI_LASTIX(rtmixid) 1
-	#define UI_LASTIX(rtmixid) 1
+
 #endif
 
-#define VI_POS_BIT(rtmixid, vi) (UINT32_C(1) << ((vi) + 8 - 1))
-#define UI_POS_BIT(rtmixid, ui) (UINT32_C(1) << ((ui) + (8 + VI_LASTIX(rtmixid)) - 1))
+/* BLD_EN_COLOR_CTL positions 8..11 */
+#define VI_LASTIX(rtmixid) (((rtmixid) == 1) ? ARRAY_SIZE(rtmix0_vimap) : ARRAY_SIZE(rtmix1_vimap))
+#define UI_LASTIX(rtmixid) (((rtmixid) == 1) ? ARRAY_SIZE(rtmix0_uimap) : ARRAY_SIZE(rtmix1_uimap))
+
+#define VI_POS_BIT(rtmixid, vi) (UINT32_C(1) << ((vi) - 1 + 8))
+#define UI_POS_BIT(rtmixid, ui) (UINT32_C(1) << ((ui) - 1 + (8 + VI_LASTIX(rtmixid))))
 
 
 #ifndef SETMASK
