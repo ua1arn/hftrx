@@ -2013,11 +2013,6 @@ static DE_UI_TypeDef * const rtmix0_uimap [] =
 		DE_MIXER0_UI3,
 };
 
-static DE_UI_TypeDef * const rtmix1_uimap [] =
-{
-		DE_MIXER1_UI1,
-};
-
 static DE_VSU_TypeDef * const rtmix0_vsumap [] =
 {
 		DE_MIXER0_VSU1,
@@ -2035,9 +2030,18 @@ static DE_UIS_TypeDef * const rtmix0_uismap [] =
 		DE_MIXER0_UIS3,
 };
 
+static DE_UI_TypeDef * const rtmix1_uimap [] =
+{
+		DE_MIXER1_UI1,
+		//DE_MIXER1_UI2,
+		//DE_MIXER1_UI3,
+};
+
 static DE_UIS_TypeDef * const rtmix1_uismap [] =
 {
 		DE_MIXER1_UIS1,
+		//DE_MIXER1_UIS2,
+		//DE_MIXER1_UIS3,
 };
 
 /* BLD_EN_COLOR_CTL positions 8..11 */
