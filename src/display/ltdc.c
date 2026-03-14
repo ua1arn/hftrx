@@ -1846,6 +1846,10 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 
 #if CPUSTYLE_T507
 
+#define VI_LASTIX(rtmixid) 1
+#define UI_LASTIX(rtmixid) 1
+/* BLD_EN_COLOR_CTL positions 8..13 */
+
 // Требуется заполнение в соответствии с инициализацией DE_PORT2CHN_MUX
 
 //	RTMIX0: VI1, UI1, [vi3]
@@ -1893,6 +1897,9 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 
 #elif CPUSTYLE_A733
 	#warning Unimplemented CPUSTYLE_A733
+	#define VI_LASTIX(rtmixid) 1
+	#define UI_LASTIX(rtmixid) 1
+/* BLD_EN_COLOR_CTL positions 8..13 */
 // Требуется заполнение в соответствии с инициализацией DE_PORT2CHN_MUX
 
 //	RTMIX0: VI1, UI1, [vi3]
@@ -1940,6 +1947,10 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
+#define VI_LASTIX(rtmixid) 1
+#define UI_LASTIX(rtmixid) 1	// В RT-Mixer 1 отсутствуют UI
+/* BLD_EN_COLOR_CTL positions 8..11 */
+
 static DE_VI_TypeDef * const rtmix0_vimap [] =
 {
 		DE_MIXER0_VI1,
@@ -1982,6 +1993,10 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 
 
 #elif CPUSTYLE_A64 || CPUSTYLE_H3
+
+#define VI_LASTIX(rtmixid) 1
+#define UI_LASTIX(rtmixid) ((rtmixid == 1) ? 3 : 1)
+/* BLD_EN_COLOR_CTL positions 8..13 */
 
 static DE_VI_TypeDef * const rtmix0_vimap [] =
 {
@@ -2027,27 +2042,6 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 		DE_MIXER1_UIS1,
 };
 
-#else
-	#error Unsupported CPUSTYLE_xxx
-#endif
-
-#if CPUSTYLE_T113 || CPUSTYLE_F133
-	#define VI_LASTIX(rtmixid) 1
-	#define UI_LASTIX(rtmixid) 1	// В RT-Mixer 1 отсутствуют UI
-	/* BLD_EN_COLOR_CTL positions 8..11 */
-#elif CPUSTYLE_T507
-	#define VI_LASTIX(rtmixid) 1
-	#define UI_LASTIX(rtmixid) 1
-	/* BLD_EN_COLOR_CTL positions 8..13 */
-#elif CPUSTYLE_A733
-	#warning Unimplemented CPUSTYLE_A733
-	#define VI_LASTIX(rtmixid) 1
-	#define UI_LASTIX(rtmixid) 1
-	/* BLD_EN_COLOR_CTL positions 8..13 */
-#elif CPUSTYLE_A64 || CPUSTYLE_H3
-	#define VI_LASTIX(rtmixid) 1
-	#define UI_LASTIX(rtmixid) ((rtmixid == 1) ? 3 : 1)
-	/* BLD_EN_COLOR_CTL positions 8..13 */
 #else
 	#warning Unexpected CPUSTYLE_xxx
 	#define VI_LASTIX(rtmixid) 1
