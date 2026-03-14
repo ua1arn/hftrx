@@ -962,6 +962,18 @@
 	} while (0)
 
 
+	#if 0
+		/* TCON0 connected to MIPI-DSI */
+		#define	TCONLCD_IX 0	/* 0 - TCON0, 1: TCON1 */
+		#define	TCONLCD_PTR TCON0	/* TCON0 or TCON1 */
+		#define	TCONLCD_CCU_CLK_REG (CCU->TCON1_CLK_REG)	/* TCON0 or TCON1 */
+		#define BOARD_TCONLCDFREQ (allwnr_a64_get_tcon0_freq())	/* TCON0 or TCON1 */
+		#define TCONLCD_IRQ TCON0_IRQn
+		#define TCONLCD_GINT0_REG (TCON0->TCON_GINT0_REG)
+		#define RTMIXIDLCD 1	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
+		#define TCONLCD_LVDSIX 0	// stub
+	#endif
+
 	#if WITHHDMITVHW
 		/* TCON1 connected to HDMI */
 		#define	TCONTV_IX 1	/* 0 - TCON0, 1: TCON1 */
