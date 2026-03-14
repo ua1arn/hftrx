@@ -7778,25 +7778,33 @@ static void hardware_rtmix_set_format(int rtmixid, const videomode_t * vdmode, v
 
 	const videomode_t * const design = get_videomode_DESIGN();	// Из какого режима масштабируем
 
-#if CPUSTYLE_T507 || CPUSTYLE_A733
+	int vich;
+	for (vich = 1; vich <= VI_LASTIX(rtmixid); ++ vich)
+	{
+	#if CPUSTYLE_T507 || CPUSTYLE_A733
+		t507_de2_vsu_init(rtmixid, design, vdmode, vich);
+	#elif CPUSTYLE_T113 || CPUSTYLE_F133
+		t113_de2_vsu_init(rtmixid, design, vdmode, vich);
+	#elif CPUSTYLE_A64 || CPUSTYLE_H3
+		h3_de2_vsu_init(rtmixid, design, vdmode, vich);
+	#else
+		#warning NO VI scaler
+	#endif
+	}
 
-	t507_de2_vsu_init(rtmixid, design, vdmode, 1);
-	t507_de2_uis_init(rtmixid, design, vdmode, 1);
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
-
-	t113_de2_vsu_init(rtmixid, design, vdmode, 1);
-	t113_de2_uis_init(rtmixid, design, vdmode, 1);
-
-#elif CPUSTYLE_A64 || CPUSTYLE_H3
-
-	h3_de2_vsu_init(rtmixid, design, vdmode, 1);
-	h3_de2_uis_init(rtmixid, design, vdmode, 1);	// not tested
-
-#else
-	#warning NO UI scaler
-
-#endif
+	int uich;
+	for (uich = 1; uich <= VI_LASTIX(rtmixid); ++ uich)
+	{
+	#if CPUSTYLE_T507 || CPUSTYLE_A733
+		t507_de2_uis_init(rtmixid, design, vdmode, uich);
+	#elif CPUSTYLE_T113 || CPUSTYLE_F133
+		t113_de2_uis_init(rtmixid, design, vdmode, uich);
+	#elif CPUSTYLE_A64 || CPUSTYLE_H3
+		h3_de2_uis_init(rtmixid, design, vdmode, uich);
+	#else
+		#warning NO UI scaler
+	#endif
+	}
 
 	// save settings
 	t113_de_update(rtmixid);	/* Update registers */
