@@ -3973,14 +3973,6 @@
   <name>DE_MIXER1_UI1</name>
   <baseAddress>0x01203000</baseAddress>
   </peripheral>
-  <peripheral derivedFrom="DE_MIXER0_UI1">
-  <name>DE_MIXER1_UI2</name>
-  <baseAddress>0x01204000</baseAddress>
-  </peripheral>
-  <peripheral derivedFrom="DE_MIXER0_UI1">
-  <name>DE_MIXER1_UI3</name>
-  <baseAddress>0x01205000</baseAddress>
-  </peripheral>
   <peripheral>
   <name>DE_MIXER0_UIS1</name>
   <description>UI Scaler(UIS) provides RGB format image resizing function</description>

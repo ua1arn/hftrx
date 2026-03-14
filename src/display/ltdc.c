@@ -2003,8 +2003,6 @@ static DE_UI_TypeDef * const rtmix0_uimap [] =
 static DE_UI_TypeDef * const rtmix1_uimap [] =
 {
 		DE_MIXER1_UI1,
-		DE_MIXER1_UI2,
-		DE_MIXER1_UI3,
 };
 
 static DE_VSU_TypeDef * const rtmix0_vsumap [] =
@@ -2020,11 +2018,13 @@ static DE_VSU_TypeDef * const rtmix1_vsumap [] =
 static DE_UIS_TypeDef * const rtmix0_uismap [] =
 {
 		DE_MIXER0_UIS1,
+		DE_MIXER0_UIS2,
+		DE_MIXER0_UIS3,
 };
 
 static DE_UIS_TypeDef * const rtmix1_uismap [] =
 {
-		NULL,//DE_MIXER1_UIS1,
+		DE_MIXER1_UIS1,
 };
 
 #else
@@ -2549,7 +2549,7 @@ static void hardware_ltdc_vsync(int rtmixid)
 		TCONLCD_GINT0_REG &= ~ LCD_VB_INT_FLAG;         //clear LCD_VB_INT_FLAG
 		if (local_wait32mask(& TCONLCD_GINT0_REG, LCD_VB_INT_FLAG, LCD_VB_INT_FLAG, 100))
 		{
-			PRINTF("hardware_ltdc_vsync: timeoutm rtmixid=%d\n", rtmixid);
+			PRINTF("hardware_ltdc_vsync: timeout RTMIXIDLCD rtmixid=%d\n", rtmixid);
 		}
 //		while ((TCONLCD_GINT0_REG & LCD_VB_INT_FLAG) == 0) //wait  LCD_VB_INT_FLAG
 //			;
@@ -2560,7 +2560,7 @@ static void hardware_ltdc_vsync(int rtmixid)
 		TCONTV_GINT0_REG &= ~ TVOUT_VB_INT_FLAG;         //clear TCON1_VB_INT_FLAG
 		if (local_wait32mask(& TCONTV_GINT0_REG, TVOUT_VB_INT_FLAG, TVOUT_VB_INT_FLAG, 100))
 		{
-			PRINTF("hardware_ltdc_vsync: timeoutm rtmixid=%d\n", rtmixid);
+			PRINTF("hardware_ltdc_vsync: timeout RTMIXIDTV rtmixid=%d\n", rtmixid);
 		}
 //	    while ((TCONTV_GINT0_REG & TVOUT_VB_INT_FLAG) == 0) //wait  TCON1_VB_INT_FLAG
 //	        ;

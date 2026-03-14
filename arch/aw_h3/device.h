@@ -101,8 +101,6 @@ typedef enum IRQn
 #define DE_MIXER1_BLD_BASE ((uintptr_t) 0x01201000)   /*!< DE_BLD  Base */
 #define DE_MIXER1_VI1_BASE ((uintptr_t) 0x01202000)   /*!< DE_VI  Base */
 #define DE_MIXER1_UI1_BASE ((uintptr_t) 0x01203000)   /*!< DE_UI  Base */
-#define DE_MIXER1_UI2_BASE ((uintptr_t) 0x01204000)   /*!< DE_UI  Base */
-#define DE_MIXER1_UI3_BASE ((uintptr_t) 0x01205000)   /*!< DE_UI  Base */
 #define DE_MIXER1_VSU1_BASE ((uintptr_t) 0x01220000)  /*!< DE_VSU Video Scaler Unit (VSU), VS Base */
 #define DE_MIXER1_UIS1_BASE ((uintptr_t) 0x01240000)  /*!< DE_UIS UI Scaler(UIS) provides RGB format image resizing function Base */
 #define SYSCTRL_BASE ((uintptr_t) 0x01C00000)         /*!< SYSCTRL  Base */
@@ -1529,8 +1527,6 @@ typedef struct USB_OHCI_Capability_Type
 #define DE_MIXER1_BLD ((DE_BLD_TypeDef *) DE_MIXER1_BLD_BASE)/*!< DE_MIXER1_BLD  register set access pointer */
 #define DE_MIXER1_VI1 ((DE_VI_TypeDef *) DE_MIXER1_VI1_BASE)/*!< DE_MIXER1_VI1  register set access pointer */
 #define DE_MIXER1_UI1 ((DE_UI_TypeDef *) DE_MIXER1_UI1_BASE)/*!< DE_MIXER1_UI1  register set access pointer */
-#define DE_MIXER1_UI2 ((DE_UI_TypeDef *) DE_MIXER1_UI2_BASE)/*!< DE_MIXER1_UI2  register set access pointer */
-#define DE_MIXER1_UI3 ((DE_UI_TypeDef *) DE_MIXER1_UI3_BASE)/*!< DE_MIXER1_UI3  register set access pointer */
 #define DE_MIXER1_VSU1 ((DE_VSU_TypeDef *) DE_MIXER1_VSU1_BASE)/*!< DE_MIXER1_VSU1 Video Scaler Unit (VSU), VS register set access pointer */
 #define DE_MIXER1_UIS1 ((DE_UIS_TypeDef *) DE_MIXER1_UIS1_BASE)/*!< DE_MIXER1_UIS1 UI Scaler(UIS) provides RGB format image resizing function register set access pointer */
 #define SYSCTRL ((SYSCTRL_TypeDef *) SYSCTRL_BASE)    /*!< SYSCTRL  register set access pointer */
