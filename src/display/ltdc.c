@@ -2867,7 +2867,7 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 		start_dly * (UINT32_C(1) << 4) |	// Start_Delay (was: 60)
 		0;
 #elif CPUSTYLE_A64
-	TCONLCD_PTR->TCON1_CTL_REG =
+	TCONLCD_PTR->TCON0_CTL_REG =
 		0;
 #else
     // Сперва сбрасываем всё
@@ -3625,6 +3625,30 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 #if CPUSTYLE_H3
 
 #elif CPUSTYLE_A64
+	#warning CPUSTYLE_A64: TODO: fix used PLL for MIPI DSI/LCDS
+	unsigned TCONLCD_DIV = calcdivround2(allwnr_a64_get_pll_video0_x1_freq(), needfreq / 2);	// TCONTV divider
+	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << (3 + TCONLCD_IX));	// TCONx_GATING
+	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << (3 + TCONLCD_IX));	// TCONx_RST De-assert
+
+	if (TCONLCD_IX == 0)
+	{
+		// Делителя нет
+		CCU->TCON0_CLK_REG = 0;
+		CCU->TCON0_CLK_REG = (CCU->TCON0_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+			0x02 * (UINT32_C(1) << 24) | // 000: PLL_MIPI, 010: PLL_VIDEO0(2X)
+			0;
+		CCU->TCON0_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+	}
+	else if (TCONLCD_IX == 1)
+	{
+		CCU->TCON1_CLK_REG = 0;
+		CCU->TCON1_CLK_REG = (CCU->TCON1_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+			0x00 * (UINT32_C(1) << 24) | // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
+			(TCONLCD_DIV - 1) * (UINT32_C(1) << 0) | // dvcider / 2
+			0;
+		CCU->TCON1_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+	}
+
 
 #elif CPUSTYLE_T507
 
@@ -4161,21 +4185,21 @@ static void t113_tconlcd_set_sequence_parameters(const videomode_t * vdmode)
 	TCONLCD_PTR->TCON1_BASIC5_REG = ((HSYNC - 1) << 16) | ((VSYNC - 1) << 0);			// HSPW VSPW
 #elif CPUSTYLE_A64
 	// timing0 (window)
-	TCONLCD_PTR->TCON1_BASIC0_REG = (
+	TCONLCD_PTR->TCON0_BASIC0_REG = (
 		((WIDTH - 1) << 16) | ((HEIGHT - 1) << 0)
 		);
 	// timing1
-	TCONLCD_PTR->TCON1_BASIC1_REG =
+	TCONLCD_PTR->TCON0_BASIC1_REG =
 		((HTOTAL - 1) << 16) |		// TOTAL
 		((LEFTMARGIN - 1) << 0) |	// HBP
 		0;
 	// timing2
-	TCONLCD_PTR->TCON1_BASIC2_REG =
+	TCONLCD_PTR->TCON0_BASIC2_REG =
 		((VTOTAL * 2) << 16) | 	// VT Tvt = (VT)/2 * Thsync
 		((TOPMARGIN - 1) << 0) |		// VBP Tvbp = (VBP+1) * Thsync
 		0;
 	// timing3
-	TCONLCD_PTR->TCON1_BASIC3_REG =
+	TCONLCD_PTR->TCON0_BASIC3_REG =
 		((HSYNC - 1) << 16) |	// HSPW Thspw = (HSPW+1) * Tdclk
 		((VSYNC - 1) << 0) |	// VSPW Tvspw = (VSPW+1) * Thsync
 		0;
@@ -4205,23 +4229,6 @@ static void t113_tconlcd_set_sequence_parameters(const videomode_t * vdmode)
 #endif /* defined (TCONLCD_PTR) */
 }
 
-
-// Open module enable
-static void t113_open_module_enable(const videomode_t * vdmode)
-{
-#if defined (TCONLCD_PTR)
-#if CPUSTYLE_H3
-	TCONLCD_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-	TCONLCD_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-#elif CPUSTYLE_A64
-	TCONLCD_PTR->TCON1_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-	TCONLCD_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-#else
-	TCONLCD_PTR->LCD_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-	TCONLCD_PTR->LCD_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
-#endif
-#endif /* defined (TCONLCD_PTR) */
-}
 
 // Step4 - Open volatile output
 static void t113_open_IO_output(const videomode_t * vdmode)
@@ -7194,6 +7201,26 @@ static void t113_tcontv_open_module_enable(void)
 #endif /* defined (TCONTV_PTR) */
 }
 
+// Open module enable
+static void t113_tconlcd_open_module_enable(const videomode_t * vdmode)
+{
+#if defined (TCONLCD_PTR)
+#if CPUSTYLE_H3
+	TCONLCD_PTR->TCON0_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONLCD_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	ASSERT(TCONLCD_PTR->TCON_GCTL_REG & (UINT32_C(1) << 31));
+#elif CPUSTYLE_A64
+	TCONLCD_PTR->TCON0_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONLCD_PTR->TCON_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	ASSERT(TCONLCD_PTR->TCON_GCTL_REG & (UINT32_C(1) << 31));
+#else
+	TCONLCD_PTR->LCD_CTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	TCONLCD_PTR->LCD_GCTL_REG |= (UINT32_C(1) << 31);	// LCD_EN
+	ASSERT(TCONLCD_PTR->LCD_GCTL_REG & (UINT32_C(1) << 31));
+#endif
+#endif /* defined (TCONLCD_PTR) */
+}
+
 #if CPUSTYLE_T507 || CPUSTYLE_A733
 
 static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int uich)
@@ -7564,7 +7591,7 @@ static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 	// step7 - same as step5 in HV mode: Set and open interrupt function
 	t113_set_and_open_interrupt_function();
 	// step8 - same as step6 in HV mode: Open module enable
-	t113_open_module_enable(vdmode);
+	t113_tconlcd_open_module_enable(vdmode);
 	//PRINTF("lvdsfreq=%u (desired dclk=%u), BOARD_TCONLCDFREQ=%u, dclk=%u\n", (unsigned) lvdsfreq, (unsigned) (lvdsfreq / 7), (unsigned) BOARD_TCONLCDFREQ, (unsigned) (BOARD_TCONLCDFREQ / 7));
 
 #endif /* defined (TCONLCD_PTR) */
@@ -7682,7 +7709,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	// step7 - same as step5 in HV mode: Set and open interrupt function
 	t113_set_and_open_interrupt_function();
 	// step8 - same as step6 in HV mode: Open module enable
-	t113_open_module_enable(vdmode);
+	t113_tconlcd_open_module_enable(vdmode);
 
 }
 #endif
@@ -7745,7 +7772,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	// step5 - Set and open interrupt function
 	t113_set_and_open_interrupt_function();
 	// step6 - Open module enable
-	t113_open_module_enable(vdmode);
+	t113_tconlcd_open_module_enable(vdmode);
 
 #if defined (TCONLCD_PTR) && 0
 	PRINTF("TCONLCD_PTR->LCD_DEBUG_REG=0x%08X\n", (unsigned) TCONLCD_PTR->LCD_DEBUG_REG);
