@@ -9290,7 +9290,7 @@ void hightests(void)
 		colpip_fillrect(& dbv_fbpic2, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic2alpha, COLORPIP_WHITE));
 		colpip_line(& dbv_fbpic2, 0, 0, picx - 1, picy - 1, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
 		colpip_line(& dbv_fbpic2, 0, picy - 1, picx - 1, 0, TFTALPHA(pic2alpha, COLORPIP_WHITE), 0);
-		unifont_text(& dbv_fbpic2, 5, 6, & unifont_small, "LY2", TEXTSIZE_AUTO, TFTALPHA(pic2alpha, COLORPIP_WHITE));
+		//unifont_text(& dbv_fbpic2, 5, 6, & unifont_small, "=LY2=", TEXTSIZE_AUTO, TFTALPHA(pic2alpha, COLORPIP_WHITE));
 		dcache_clean(dbv_fbpic2.cachebase, dbv_fbpic2.cachesize);
 
 		unsigned pic3alpha = 33;
@@ -9298,7 +9298,7 @@ void hightests(void)
 		colpip_fillrect(& dbv_fbpic3, picx / 4, picy / 4, picx / 2, picy / 2, TFTALPHA(pic3alpha, COLORPIP_WHITE));
 		colpip_line(& dbv_fbpic3, 0, 0, picx - 1, picy - 1, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
 		colpip_line(& dbv_fbpic3, 0, picy - 1, picx - 1, 0, TFTALPHA(pic3alpha, COLORPIP_WHITE), 0);
-		unifont_text(& dbv_fbpic3, 5, 6, & unifont_small, "LY3", TEXTSIZE_AUTO, TFTALPHA(pic3alpha, COLORPIP_WHITE));
+		//unifont_text(& dbv_fbpic3, 5, 6, & unifont_small, "=LY3=", TEXTSIZE_AUTO, TFTALPHA(pic3alpha, COLORPIP_WHITE));
 		dcache_clean(dbv_fbpic3.cachebase, dbv_fbpic3.cachesize);
 
 		/* непрозрачный фон */
@@ -9466,10 +9466,10 @@ void hightests(void)
 			dcache_clean_invalidate(drawlayer->cachebase, drawlayer->cachesize);
 
 		#ifdef RTMIXIDTV
-			hardware_ltdc_main_set4(RTMIXIDTV, (uintptr_t) drawlayer->buffer, 1*(uintptr_t) dbv_layer1.buffer, 1*(uintptr_t) dbv_layer2.buffer, 1*(uintptr_t) dbv_layer3.buffer);
+			hardware_ltdc_main_set4(RTMIXIDTV, 1*(uintptr_t) drawlayer->buffer, 1*(uintptr_t) dbv_layer1.buffer, 1*(uintptr_t) dbv_layer2.buffer, 1*(uintptr_t) dbv_layer3.buffer);
 		#endif
 		#ifdef RTMIXIDLCD
-			hardware_ltdc_main_set4(RTMIXIDLCD, (uintptr_t) drawlayer->buffer, 1*(uintptr_t) dbv_layer1.buffer, 1*(uintptr_t) dbv_layer2.buffer, 1*(uintptr_t) dbv_layer3.buffer);
+			hardware_ltdc_main_set4(RTMIXIDLCD, 1*(uintptr_t) drawlayer->buffer, 1*(uintptr_t) dbv_layer1.buffer, 1*(uintptr_t) dbv_layer2.buffer, 1*(uintptr_t) dbv_layer3.buffer);
 		#endif
 
 			phase = ! phase;
