@@ -3975,26 +3975,7 @@ void hwaccel_stretchblt(
 	unsigned keyflag, COLORPIP_T keycolor
 	)
 {
-#if WITHMDMAHW && CPUSTYLE_ALLWINNER && ! defined (G2D_MIXER)
-
-	//#warning T507/H616 STRETCH BLT should be implemented
-
-	const unsigned srcFormat = awxx_get_srcformat(keyflag);
-	enum { PIXEL_SIZE = sizeof (PACKEDCOLORPIP_T) };
-	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
-	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
-	const unsigned sstride = sdb->stride;
-	const unsigned tstride = tdb->stride;
-	const uintptr_t srclinear = (uintptr_t) sdb->buffer;
-	const uintptr_t dstlinear = (uintptr_t) tdb->buffer;
-
-
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
-
-	hwaccel_rotcopy(srclinear, sstride, ssizehw, dstlinear, tstride, tsizehw, 0);
-
-#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && defined (G2D_MIXER)
+#if WITHMDMAHW && CPUSTYLE_ALLWINNER && defined (G2D_MIXER)
 	/* Использование G2D для формирования изображений */
 
 //	memset32(G2D_V0, 0, sizeof * G2D_V0);
@@ -4192,10 +4173,8 @@ void hwaccel_stretchblt(
 	g2d_rtmx_release();
 
 #else
-
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	colpip_fillrect(tdb, 0, 0, w, h, COLORPIP_GREEN);
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	PRINTF("hwaccel_stretchblt: Used stub\n");
+	hwaccel_bitblt(dstinvalidateaddr, dstinvalidatesize, tdb, srcinvalidateaddr, srcinvalidatesize, sdb, ulmin(w, sw), ulmin16(h, sh), keyflag, keycolor);
 
 #endif
 }
