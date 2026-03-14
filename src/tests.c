@@ -9301,26 +9301,19 @@ void hightests(void)
 		//unifont_text(& dbv_fbpic3, 5, 6, & unifont_small, "=LY3=", TEXTSIZE_AUTO, TFTALPHA(pic3alpha, COLORPIP_WHITE));
 		dcache_clean(dbv_fbpic3.cachebase, dbv_fbpic3.cachesize);
 
-		/* непрозрачный фон */
-		unsigned bgalpha = 255;
-		colpip_fillrect(& dbv_layer0_a, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
-		colpip_fillrect(& dbv_layer0_b, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
-		/* непрозрачный прямоугольник на фоне */
-		colpip_fillrect(& dbv_layer0_a, 10, 10, 400, 300, TFTALPHA(bgalpha, COLORPIP_RED));	// RED - нижний слой не учитывает прозрачность
-		colpip_fillrect(& dbv_layer0_b, 10, 10, 400, 300, TFTALPHA(bgalpha, COLORPIP_RED));	// RED - нижний слой не учитывает прозрачность
 
 		/* полупрозрачный фон */
 		unsigned fgalpha = 128;
 		colpip_fillrect(& dbv_layer1, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLORPIP_GREEN));	/* opaque color transparent black */
-		colpip_fillrect(& dbv_layer1, 110, 110, DIM_X - 200, DIM_Y - 200, TFTALPHA(fgalpha, COLORPIP_BLUE));	/* transparent black */
+		colpip_fillrect(& dbv_layer1, 110, 110, DIM_X - 200, DIM_Y - 200, TFTALPHA(fgalpha, COLORPIP_DARKGREEN));	/* transparent black */
 		/* полупрозрачный прямоугольник на фоне */
-		colpip_fillrect(& dbv_layer1, 120, 120, 200, 200, TFTALPHA(fgalpha, COLORPIP_GREEN));	// GREEN
+		colpip_fillrect(& dbv_layer1, 120, 120, 200, 200, TFTALPHA(fgalpha, COLORPIP_YELLOW));	// GREEN
 		/* прозрачный слой */
 		unsigned l2alpha = 0;
 		colpip_fillrect(& dbv_layer2, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_RED));	/* opaque color transparent black */
 		/* прозрачный слой */
 		unsigned l3alpha = 0;
-		colpip_fillrect(& dbv_layer3, 0, 0, DIM_X, DIM_Y, TFTALPHA(l2alpha, COLORPIP_GREEN));	/* opaque color transparent black */
+		colpip_fillrect(& dbv_layer3, 0, 0, DIM_X, DIM_Y, TFTALPHA(l3alpha, COLORPIP_BLUE));	/* opaque color transparent black */
 
 		TP();
 		/* копируем изображение в верхний слой с цветовым ключем */
@@ -9429,9 +9422,9 @@ void hightests(void)
 		// Названия слоёв
 		uint_fast16_t ht;
 		uint_fast16_t wt = unifont_textsize(& unifont_small, "X", TEXTSIZE_AUTO, & ht);
-		unifont_text(& dbv_layer1, 22, DIM_Y / 2 - ht * 2, & unifont_small, "ly1", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
-		unifont_text(& dbv_layer2, 22, DIM_Y / 2 - ht * 3, & unifont_small, "ly2", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
-		unifont_text(& dbv_layer3, 22, DIM_Y / 2 - ht * 4, & unifont_small, "ly3", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
+		unifont_text(& dbv_layer1, 48, DIM_Y / 2 - ht * 2, & unifont_small, "ly1", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
+		unifont_text(& dbv_layer2, 48, DIM_Y / 2 - ht * 3, & unifont_small, "ly2", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
+		unifont_text(& dbv_layer3, 48, DIM_Y / 2 - ht * 4, & unifont_small, "ly3", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
 
 		// нужно если программно заполняли
 		dcache_clean(dbv_layer0_a.cachebase, dbv_layer0_a.cachesize);
@@ -9456,12 +9449,17 @@ void hightests(void)
 
 			gxdrawb_t * const drawlayer = phase ? & dbv_layer0_a : & dbv_layer0_b;
 
-			colpip_fillrect(drawlayer, x0, y, w, h, TFTALPHA(bgalpha, COLORPIP_BLACK));
+			/* непрозрачный фон */
+			unsigned bgalpha = 255;
+			colpip_fillrect(drawlayer, 0, 0, DIM_X, DIM_Y, TFTALPHA(bgalpha, COLORPIP_BLACK));	/* opaque color transparent black */
+			/* непрозрачный прямоугольник на фоне */
+			colpip_fillrect(drawlayer, 10, 10, 400, 300, TFTALPHA(bgalpha, COLORPIP_DARKGRAY));	// RED - нижний слой не учитывает прозрачность
+			colpip_fillrect(drawlayer, x0, y, w, h, TFTALPHA(bgalpha, COLORPIP_GRAY));
 			/* линия в один пиксель рисуется прораммно - за ней требуется flush,
 			 * поскольку потом меняется еще аппаратурой - invalidate
 			 * */
 			colpip_fillrect(drawlayer, x0 + xpos, y, 1, h, TFTALPHA(bgalpha, COLORPIP_WHITE));
-			unifont_text(drawlayer, 22, DIM_Y / 2 - ht * 1, & unifont_small, "ly0", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
+			unifont_text(drawlayer, 48, DIM_Y / 2 - ht * 1, & unifont_small, "ly0", TEXTSIZE_AUTO, TFTALPHA(255, COLORPIP_WHITE));
 
 			dcache_clean_invalidate(drawlayer->cachebase, drawlayer->cachesize);
 
