@@ -2262,7 +2262,7 @@ static void cortexa_cpuinfo(void)
 #if defined (__CORTEX_A) && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
 
 // see also __set_RVBAR_EL3(startfunc);
-static void arm_hardware_setrvaddr(uint_fast64_t startfunc, unsigned cluster, unsigned targetcore)
+static void arm_hardware_setrvaddr(uint_fast64_t startfunc, unsigned cluster, unsigned targetcore, unsigned AA64NAA32)
 {
 #if CPUSTYLE_A64
 	CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
@@ -2277,6 +2277,10 @@ static void arm_hardware_setrvaddr(uint_fast64_t startfunc, unsigned cluster, un
 	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
 	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
 #elif CPUSTYLE_A733
+	if (AA64NAA32)
+		CPU_SUBSYS_CTRL->CLU0 [targetcore].CPU_CTRL_REG &= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
+	else
+		CPU_SUBSYS_CTRL->CLU0 [targetcore].CPU_CTRL_REG |= (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
 	CPU_SUBSYS_CTRL->CLU0 [targetcore].RVBARADDR_L = ptr_lo32(startfunc);
 	CPU_SUBSYS_CTRL->CLU0 [targetcore].RVBARADDR_H = ptr_hi32(startfunc);
 #else
@@ -2298,7 +2302,7 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 		0xEAFFFFFD,	// 	b	10 <trampoline32+0x10>
 	};
 
-	arm_hardware_setrvaddr(startfunc, 0, targetcore);
+	arm_hardware_setrvaddr(startfunc, 0, targetcore, 1);
 	aarch32_mp_cpuN_start((uintptr_t) trampoline32, targetcore);
 }
 
@@ -2326,20 +2330,36 @@ void arm_hardware_core_poweron(unsigned cluster, unsigned core)
 void __NO_RETURN
 run64(uint_fast64_t startfunc)
 {
+	unsigned AA64NAA32 = 1;
 	// Start aarch64 core as application
 	//__set_RVBAR_EL3(startfunc);
-	arm_hardware_setrvaddr(startfunc, 0, arm_hardware_cpuid());	// запуск на своём же ядре
+	arm_hardware_setrvaddr(startfunc, 0, arm_hardware_cpuid(), AA64NAA32);	// запуск на своём же ядре
 	// RMR - Reset Management Register
 	// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
-	enum { CODE = 0x03 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
-	//enum { CODE = 0x02 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+	if (AA64NAA32)
+	{
+		uint32_t CODE = 0x03;	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+		//uint32_t CODE = 0x02;	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
 
-	//__set_CP(15, 0, result, 12, 0, 2);
-	//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
-	// G8.2.123 RMR, Reset Management Register
-	__set_CP(15, 0, CODE, 12, 0, 2);	// RMR_EL1 - work okay
-	//__set_CP(15, 3, result, 12, 0, 2);	// RMR_EL2 - UndefHandler
-	//__set_CP(15, 6, result, 12, 0, 2);	// RMR_EL3 - UndefHandler
+		//__set_CP(15, 0, result, 12, 0, 2);
+		//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
+		// G8.2.123 RMR, Reset Management Register
+		__set_CP(15, 0, CODE, 12, 0, 2);	// RMR_EL1 - work okay
+		//__set_CP(15, 3, result, 12, 0, 2);	// RMR_EL2 - UndefHandler
+		//__set_CP(15, 6, result, 12, 0, 2);	// RMR_EL3 - UndefHandler
+	}
+	else
+	{
+		//uint32_t CODE = 0x03;	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+		uint32_t CODE = 0x02;	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+
+		//__set_CP(15, 0, result, 12, 0, 2);
+		//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
+		// G8.2.123 RMR, Reset Management Register
+		__set_CP(15, 0, CODE, 12, 0, 2);	// RMR_EL1 - work okay
+		//__set_CP(15, 3, result, 12, 0, 2);	// RMR_EL2 - UndefHandler
+		//__set_CP(15, 6, result, 12, 0, 2);	// RMR_EL3 - UndefHandler
+	}
 
 	__ISB();
 	__WFI();
