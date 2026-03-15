@@ -1519,12 +1519,17 @@ __STATIC_FORCEINLINE uint32_t __get_CLUSTERECTLR(void)
 	return result;
 }
 
-// MRS <Xt>, S3_0_C15_C3_5; Read CLUSTERPWRCTLR_EL1 into Xt
+// MRC p15, 0, <Rt>, c15, c3, 5; Read CLUSTERPWRCTLR into Rt
 __STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRCTLR(void)
 {
 	uint32_t result;
 	__get_CP(15, 0, result, 15, 3, 5);
 	return result;
+}
+// MCR p15, 0, <Rt>, c15, c3, 5; Write Rt into CLUSTERPWRCTLR
+__STATIC_FORCEINLINE void __set_CLUSTERPWRCTLR(uint32_t value)
+{
+	__set_CP(15, 0, value, 15, 3, 5);
 }
 
 //MRC p15, 0, <Rt>, c15, c3, 6; Read CLUSTERPWRDN into Rt
