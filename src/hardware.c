@@ -2306,7 +2306,9 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 void arm_hardware_core_poweron(unsigned cluster, unsigned core)
 {
-#if CPUSTYLE_A733
+#if CPUSTYLE_A733 && 0
+	if (mmio_read_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core)) == 0)
+		return;
 	PRINTF("PSCI: Enabling power to cluster %d core %d\n", cluster, core);
 
 	/* Power enable sequence from original Allwinner sources */
