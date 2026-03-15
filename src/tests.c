@@ -9244,10 +9244,10 @@ void hightests(void)
 		gxdrawb_initialize(& dbv_layer2, layer2, DIM_X, DIM_Y);
 		gxdrawb_initialize(& dbv_layer3, layer3, DIM_X, DIM_Y);
 
-		colpip_fillrect(& dbv_layer0, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLORPIP_GREEN));	/* opaque color transparent black */
+		colpip_fillrect(& dbv_layer0, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLORPIP_RED));	/* opaque color transparent black */
 		colpip_fillrect(& dbv_layer1, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLORPIP_GREEN));	/* opaque color transparent black */
-		colpip_fillrect(& dbv_layer2, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLORPIP_GREEN));	/* opaque color transparent black */
-		colpip_fillrect(& dbv_layer3, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLORPIP_GREEN));	/* opaque color transparent black */
+		colpip_fillrect(& dbv_layer2, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLORPIP_BLUE));	/* opaque color transparent black */
+		colpip_fillrect(& dbv_layer3, 0, 0, DIM_X, DIM_Y, TFTALPHA(0, COLORPIP_YELLOW));	/* opaque color transparent black */
 		// Названия слоёв
 		uint_fast16_t ht;
 		uint_fast16_t wt = unifont_textsize(& unifont_small, "X", TEXTSIZE_AUTO, & ht);
