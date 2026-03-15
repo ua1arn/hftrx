@@ -2258,6 +2258,33 @@ static void cortexa_cpuinfo(void)
 #endif
 }
 
+
+#if defined (__CORTEX_A) && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
+
+// see also __set_RVBAR_EL3(startfunc);
+static void arm_hardware_setrvaddr(uint_fast64_t startfunc, unsigned targetcore)
+{
+#if CPUSTYLE_A64
+	CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+#elif CPUSTYLE_H616
+	C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+#elif CPUSTYLE_T507
+	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+#elif CPUSTYLE_A133
+	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
+	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
+#elif CPUSTYLE_A733
+	CPU_SUBSYS_CTRL->CLU0 [targetcore].RVBARADDR_L = ptr_lo32(startfunc);
+	CPU_SUBSYS_CTRL->CLU0 [targetcore].RVBARADDR_H = ptr_hi32(startfunc);
+#else
+	#error Unexpected CPUSTYLE_xxx
+#endif
+
+}
+
 // aarch32 opcodes for switch to 64-bit mode
 static __ALIGNED(4) const uint32_t trampoline32 [] =
 {
@@ -2268,6 +2295,49 @@ static __ALIGNED(4) const uint32_t trampoline32 [] =
 	0xE320F002,	// 	wfe
 	0xEAFFFFFD,	// 	b	10 <trampoline32+0x10>
 };
+
+void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
+{
+	arm_hardware_setrvaddr(startfunc, targetcore);
+	aarch32_mp_cpuN_start((uintptr_t) trampoline32, targetcore);
+}
+
+#endif
+
+void arm_hardware_core_poweron(unsigned targetcore)
+{
+
+}
+
+#if ! defined(__aarch64__)
+
+void __NO_RETURN
+run64(uint_fast64_t startfunc)
+{
+	// Start aarch64 core as application
+	//__set_RVBAR_EL3(startfunc);
+	arm_hardware_setrvaddr(startfunc, arm_hardware_cpuid());	// запуск на своём же ядре
+	// RMR - Reset Management Register
+	// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
+	enum { CODE = 0x03 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+	//enum { CODE = 0x02 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
+
+	//__set_CP(15, 0, result, 12, 0, 2);
+	//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
+	// G8.2.123 RMR, Reset Management Register
+	__set_CP(15, 0, CODE, 12, 0, 2);	// RMR_EL1 - work okay
+	//__set_CP(15, 3, result, 12, 0, 2);	// RMR_EL2 - UndefHandler
+	//__set_CP(15, 6, result, 12, 0, 2);	// RMR_EL3 - UndefHandler
+
+	__ISB();
+	__WFI();
+
+	for (;;)
+	{
+		__WFE();
+	}
+}
+#endif
 
 #if CPUSTYLE_STM32MP1
 
@@ -2379,33 +2449,6 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	CPUX_CFG->C_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
 
 	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
-
-	// Не влияют
-	// Register width state.Determines which execution state the processor boots into after a cold reset.
-	//C0_CPUX_CFG->C_CTRL_REG0 &= ~ (UINT32_C(1) << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
-	//C0_CPUX_CFG->C_CTRL_REG0 |=  (UINT32_C(1) << (24 + targetcore));	// AA64nAA32 0: AArch32 1: AArch64
-
-	CPUX_CFG->C_RST_CTRL |= CORE_RESET_MASK;	// CORE_RESET (3..0) de-assert
-}
-
-void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
-{
-	const uintptr_t startfunc32 = (uintptr_t) trampoline32;
-	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
-	const uint32_t CORE_RESET_MASK = UINT32_C(1) << (0 + targetcore);
-
-	ASSERT(startfunc32 != 0);
-	ASSERT(ptr_hi32(startfunc32) == 0);
-	ASSERT(startfunc != 0);
-	ASSERT(targetcore != 0);
-
-	CPUX_CFG->C_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
-
-	* rvaddr = startfunc32;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
-	CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-	CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
-
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
 	// Не влияют
@@ -2627,30 +2670,6 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	CLUSTER_CFG->C0_CPU  [targetcore].C0_CPUx_CTRL_REG |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
 }
 
-void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
-{
-	const uintptr_t startfunc32 = (uintptr_t) trampoline32;
-	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
-	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
-
-	ASSERT(startfunc32 != 0);
-	ASSERT(ptr_hi32(startfunc32) == 0);
-	ASSERT(startfunc != 0);
-	ASSERT(targetcore != 0);
-
-	CLUSTER_CFG->C0_CPU [targetcore].C0_CPUx_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET 0: assert
-
-	* rvaddr = ptr_lo32(startfunc32);
-	ASSERT(* rvaddr == startfunc32);
-
-	CPU_SUBSYS_CTRL->CLU0 [targetcore].CPU_CTRL_REG |= (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
-	CPU_SUBSYS_CTRL->CLU0 [targetcore].RVBARADDR_L = ptr_lo32(startfunc);
-	CPU_SUBSYS_CTRL->CLU0 [targetcore].RVBARADDR_H = ptr_hi32(startfunc);
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
-
-	CLUSTER_CFG->C0_CPU [targetcore].C0_CPUx_CTRL_REG |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
-}
-
 #elif CPUSTYLE_H616
 // AWUSBFEX ID=0x00182300(H616) dflag=0x44 dlength=0x08 scratchpad=0x00027e00
 // H616 version
@@ -2684,38 +2703,6 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	C0_CPUX_CFG_H616->C0_RST_CTRL |= CORE_RESET_MASK;	// 60... CORE_RESET 1: de-assert
 }
 
-void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
-{
-	const uintptr_t startfunc32 = (uintptr_t) trampoline32;
-	// AWUSBFEX ID=0x00182300(H616) dflag=0x44 dlength=0x08 scratchpad=0x00027e00
-	// CPUSTYLE_H616
-	// https://github.com/apritzel/u-boot/blob/3aaabfe9ff4bbcd11096513b1b28d1fb0a40800f/arch/arm/cpu/armv8/fel_utils.S#L39
-
-	const uint32_t CORE_RESET_MASK = UINT32_C(1) << targetcore;	// CPU0_CORE_RESET
-	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
-	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_RTC_BASE + 0x5c4 + targetcore * 4));
-
-	/* Не влияет: */
-//	C0_CPUX_CFG_H616->C0_CTRL_REG0 &= ~ (UINT32_C(1) << (targetcore + 24)); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
-//	C0_CPUX_CFG_H616->C0_CTRL_REG0 |= (UINT32_C(1) << (targetcore + 24)); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
-
-	ASSERT(startfunc32 != 0);
-	ASSERT(ptr_hi32(startfunc32) == 0);
-	ASSERT(startfunc != 0);
-	ASSERT(targetcore != 0);
-
-	C0_CPUX_CFG_H616->C0_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
-	C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-	C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
-
-	R_CPUCFG->SOFTENTRY [targetcore] = startfunc32;
-	ASSERT(R_CPUCFG->SOFTENTRY [targetcore] == startfunc32);
-
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
-
-	C0_CPUX_CFG_H616->C0_RST_CTRL |= CORE_RESET_MASK;	// 60... CORE_RESET 1: de-assert
-}
-
 #elif CPUSTYLE_T507 || CPUSTYLE_A133
 
 // https://github.com/renesas-rcar/arm-trusted-firmware/blob/b5ad4738d907ce3e98586b453362db767b86f45d/plat/allwinner/sun50i_h616/include/sunxi_mmap.h#L42
@@ -2739,36 +2726,6 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 	R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
 	ASSERT(R_CPUCFG->SOFTENTRY [targetcore] == startfunc);
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
-
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= C0_CORE_RESET_MASK;	// CORE_RESET 1: de-assert
-}
-
-void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
-{
-	const uintptr_t startfunc32 = (uintptr_t) trampoline32;
-	const uint32_t C0_CORE_RESET_MASK =
-		UINT32_C(1) << 2 | 	// CPU0_ETM_RST
-		UINT32_C(1) << 1 | 	// CPU0_DBG_RST
-		UINT32_C(1) << 0 |	// CPUX_CORE_RESET.
-		0;
-	const uint32_t C0_CORE_PWRON_MASK = UINT32_C(1) << 8;	// CPU1_DBGPWRDUP
-	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
-
-	ASSERT(startfunc32 != 0);
-	ASSERT(ptr_hi32(startfunc32) == 0);
-	ASSERT(startfunc != 0);
-	ASSERT(targetcore != 0);
-
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] &= ~ C0_CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
-	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= C0_CORE_PWRON_MASK;
-
-	R_CPUCFG->SOFTENTRY [targetcore] = startfunc32;
-	ASSERT(R_CPUCFG->SOFTENTRY [targetcore] == startfunc32);
-
-	CPU_SUBSYS_CTRL->CPUx_CTRL_REG [targetcore] |= (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
-	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-	CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
 	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= C0_CORE_RESET_MASK;	// CORE_RESET 1: de-assert
@@ -2942,6 +2899,8 @@ void cpump_initialize(void)
 		LCLSPINLOCK_INITIALIZE(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1init);
+
+		arm_hardware_core_poweron(core);
 
 #if defined(__aarch64__)
 

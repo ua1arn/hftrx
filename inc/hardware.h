@@ -756,7 +756,7 @@ void adcdone_del(adcdone_t * p);
 
 void bootloader_deffereddetach(void * arg);
 int bootloader_withusb(void);
-void __NO_RETURN run64(unsigned targetcore, uintptr_t startfunc);
+void __NO_RETURN run64(uint_fast64_t startfunc);
 void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore);
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore);
 
