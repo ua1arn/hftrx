@@ -510,6 +510,12 @@
 #base; G2D_ROT 0x05468000
 #typeend;
 
+
+#type; CPUIDLE; 
+#base; CPUIDLE 0x07050000; 
+
+#typeend;
+
 #type; PPU; PCK-600 S_PPU (PCK600).
 #base; PPU 0x07060000; 
 

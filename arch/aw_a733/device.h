@@ -287,6 +287,7 @@ typedef enum IRQn
 #define S_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< PRCM Power Reset Clock Management (PRCM) Base */
 #define S_GPIOL_BASE ((uintptr_t) 0x07025000)         /*!< S_GPIO Secure Port Controller Base */
 #define S_GPIOM_BASE ((uintptr_t) 0x07025030)         /*!< S_GPIO Secure Port Controller Base */
+#define CPUIDLE_BASE ((uintptr_t) 0x07050000)         /*!< CPUIDLE  Base */
 #define PPU_BASE ((uintptr_t) 0x07060000)             /*!< PPU PCK-600 S_PPU (PCK600). Base */
 #define S_UART0_BASE ((uintptr_t) 0x07080000)         /*!< UART  Base */
 #define S_UART1_BASE ((uintptr_t) 0x07081000)         /*!< UART  Base */
