@@ -58,6 +58,7 @@
 #aggreg; C0_CPU; 0x0000 8; Cluster0 CPUx Control Register
 #regdef; C0_CPUx_CTRL_REG; 0x0000; Cluster0 CPUx Control Register
 #regdef; C0_CPUx_STATUS0; 0x0004; Cluster0 CPUx Status 0 Register
+#regdef; C0_CPUx_UNC_008; 0x0008; Cluster0 CPUx Status 0 Register
 #regdef; padding 0; 0x1000; Need for address arithmetics
 #aggregend;
 

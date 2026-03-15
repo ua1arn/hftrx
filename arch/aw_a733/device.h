@@ -282,7 +282,7 @@ typedef enum IRQn
 #define eDP_CTRL_BASE ((uintptr_t) 0x05740000)        /*!< eDP_CTRL  Base */
 #define eDP_REG_PAD_BASE ((uintptr_t) 0x05760000)     /*!< eDP_REG_PAD  Base */
 #define USB3P1_DRD_BASE ((uintptr_t) 0x06A00000)      /*!< USB3P1_DRD  Base */
-#define STBY_PRCM_BASE ((uintptr_t) 0x07010000)       /*!< PRCM  Base */
+#define S_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< PRCM Power Reset Clock Management (PRCM) Base */
 #define S_GPIOL_BASE ((uintptr_t) 0x07025000)         /*!< S_GPIO Secure Port Controller Base */
 #define S_GPIOM_BASE ((uintptr_t) 0x07025030)         /*!< S_GPIO Secure Port Controller Base */
 #define S_UART0_BASE ((uintptr_t) 0x07080000)         /*!< UART  Base */
@@ -732,7 +732,8 @@ typedef struct CLUSTER_CFG_Type
     {
         __IOM uint32_t C0_CPUx_CTRL_REG;              /*!< Offset 0x000 Cluster0 CPUx Control Register */
         __IOM uint32_t C0_CPUx_STATUS0;               /*!< Offset 0x004 Cluster0 CPUx Status 0 Register */
-             RESERVED(0x008[0x1000 - 0x0008], uint8_t)
+        __IOM uint32_t C0_CPUx_UNC_008;               /*!< Offset 0x008 Cluster0 CPUx Status 0 Register */
+             RESERVED(0x00C[0x1000 - 0x000C], uint8_t)
     } C0_CPU [0x008];                                 /*!< Offset 0x000 Cluster0 CPUx Control Register */
     __IOM uint32_t C0_RST_CTRL;                       /*!< Offset 0x8000 Cluster 0 Reset Control Register */
     __IOM uint32_t C0_CTRL_REG0;                      /*!< Offset 0x8004 Cluster 0 Control Register 0 */
@@ -2281,7 +2282,7 @@ typedef struct I2S_PCM_Type
 /*
  * @brief PRCM
  */
-/*!< PRCM  */
+/*!< PRCM Power Reset Clock Management (PRCM) */
 typedef struct PRCM_Type
 {
     __IOM uint32_t AHBS_CLK_REG;                      /*!< Offset 0x000 AHBS Clock Register  */
@@ -2347,7 +2348,8 @@ typedef struct PRCM_Type
     __IOM uint32_t CRY_CONFIG_REG;                    /*!< Offset 0x3E0 Crypt Configuration Register */
     __IOM uint32_t CRY_KEY_REG;                       /*!< Offset 0x3E4 Crypt Key Register */
     __IOM uint32_t CRY_EN_REG;                        /*!< Offset 0x3E8 Crypt Enable Register */
-} PRCM_TypeDef; /* size of structure = 0x3EC */
+         RESERVED(0x3EC[0x0400 - 0x03EC], uint8_t)
+} PRCM_TypeDef; /* size of structure = 0x400 */
 /*
  * @brief RTC
  */
@@ -3074,7 +3076,7 @@ typedef struct USB_OHCI_Capability_Type
 #define HDMI_TX0 ((HDMI_TX_TypeDef *) HDMI_TX0_BASE)  /*!< HDMI_TX0  register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0 TV Output register set access pointer */
 #define TCON_TV1 ((TCON_TV_TypeDef *) TCON_TV1_BASE)  /*!< TCON_TV1 TV Output register set access pointer */
-#define STBY_PRCM ((PRCM_TypeDef *) STBY_PRCM_BASE)   /*!< STBY_PRCM  register set access pointer */
+#define S_PRCM ((PRCM_TypeDef *) S_PRCM_BASE)         /*!< S_PRCM Power Reset Clock Management (PRCM) register set access pointer */
 #define S_GPIOL ((S_GPIO_TypeDef *) S_GPIOL_BASE)     /*!< S_GPIOL Secure Port Controller register set access pointer */
 #define S_GPIOM ((S_GPIO_TypeDef *) S_GPIOM_BASE)     /*!< S_GPIOM Secure Port Controller register set access pointer */
 #define S_UART0 ((UART_TypeDef *) S_UART0_BASE)       /*!< S_UART0  register set access pointer */

@@ -2618,6 +2618,15 @@
       <access>read-write</access>
       <resetValue>0x00000000</resetValue>
      </register>
+     <register>
+      <name>C0_CPUx_UNC_008</name>
+      <displayName>C0_CPUx_UNC_008</displayName>
+      <description>Cluster0 CPUx Status 0 Register</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
     </registers>
     <dimIncrement>0x8000</dimIncrement>
    </cluster>
@@ -14331,8 +14340,8 @@
   </interrupt>
   </peripheral>
   <peripheral>
-  <name>STBY_PRCM</name>
-  <description></description>
+  <name>S_PRCM</name>
+  <description>Power Reset Clock Management (PRCM)</description>
   <baseAddress>0x07010000</baseAddress>
   <registers>
    <register>
