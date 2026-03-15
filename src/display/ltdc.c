@@ -2862,7 +2862,9 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 		start_dly * (UINT32_C(1) << 4) |	// Start_Delay (was: 60)
 		0;
 #elif CPUSTYLE_A64
+	uint32_t start_dly = 2; //0x1F;	// 1,2 - need for 4.3 inch panel 272*480 - should be tested
 	TCONLCD_PTR->TCON0_CTL_REG =
+		start_dly * (UINT32_C(1) << 4) |	// Start_Delay (was: 60)
 		0;
 #else
     // Сперва сбрасываем всё
@@ -3644,6 +3646,7 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 		CCU->TCON1_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 	}
 
+	CCU->BUS_SOFT_RST_REG2 |= (UINT32_C(1) << 0);	// LVDS_RST
 
 #elif CPUSTYLE_T507
 
@@ -7661,6 +7664,11 @@ static void t113_tcondsi_CCU_configuration(uint_fast32_t needfreq)
 			0;
 		CCU->TCON1_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 	}
+
+	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 1);	// MIPI_DSI_RST
+
+	CCU->MIPI_DSI_CLK_REG |= (UINT32_C(1) << 15);	// DSI_DPHY_GATING. todo: select PLL
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	PRINTF("t113_tcondsi_CCU_configuration: setup DSI_CLK_REG\n");
 

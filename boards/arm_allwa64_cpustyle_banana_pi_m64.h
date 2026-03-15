@@ -157,7 +157,7 @@
 		//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 		#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 		//#define WITHGPUHW	1	/* Graphic processor unit */
-		#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
+		//#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
 		#define WITHHDMITVHW 1	/* HDMI hardware output */
 	#endif
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
@@ -962,7 +962,7 @@
 	} while (0)
 
 
-	#if 0
+	#if 1
 		/* TCON0 connected to MIPI-DSI */
 		#define	TCONLCD_IX 0	/* 0 - TCON0, 1: TCON1 */
 		#define	TCONLCD_PTR TCON0	/* TCON0 or TCON1 */
