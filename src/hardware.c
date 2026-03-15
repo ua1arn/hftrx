@@ -2262,7 +2262,7 @@ static void cortexa_cpuinfo(void)
 #if defined (__CORTEX_A) && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
 
 // see also __set_RVBAR_EL3(startfunc);
-static void arm_hardware_setrvaddr(uint_fast64_t startfunc, unsigned targetcore)
+static void arm_hardware_setrvaddr(uint_fast64_t startfunc, unsigned cluster, unsigned targetcore)
 {
 #if CPUSTYLE_A64
 	CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
@@ -2285,28 +2285,38 @@ static void arm_hardware_setrvaddr(uint_fast64_t startfunc, unsigned targetcore)
 
 }
 
-// aarch32 opcodes for switch to 64-bit mode
-static __ALIGNED(4) const uint32_t trampoline32 [] =
-{
-	0xE3A03003,	// 	mov	r3, #3
-	0xEE0C3F50,	// 	mcr	15, 0, r3, cr12, cr0, {2}
-	0xF57FF06F,	// 	isb	sy
-	0xE320F003,	// 	wfi
-	0xE320F002,	// 	wfe
-	0xEAFFFFFD,	// 	b	10 <trampoline32+0x10>
-};
-
 void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
-	arm_hardware_setrvaddr(startfunc, targetcore);
+	// aarch32 opcodes for switch to 64-bit mode
+	static __ALIGNED(4) const uint32_t trampoline32 [] =
+	{
+		0xE3A03003,	// 	mov	r3, #3
+		0xEE0C3F50,	// 	mcr	15, 0, r3, cr12, cr0, {2}
+		0xF57FF06F,	// 	isb	sy
+		0xE320F003,	// 	wfi
+		0xE320F002,	// 	wfe
+		0xEAFFFFFD,	// 	b	10 <trampoline32+0x10>
+	};
+
+	arm_hardware_setrvaddr(startfunc, 0, targetcore);
 	aarch32_mp_cpuN_start((uintptr_t) trampoline32, targetcore);
 }
 
 #endif
 
-void arm_hardware_core_poweron(unsigned targetcore)
+void arm_hardware_core_poweron(unsigned cluster, unsigned core)
 {
+#if CPUSTYLE_A733
+	PRINTF("PSCI: Enabling power to cluster %d core %d\n", cluster, core);
 
+	/* Power enable sequence from original Allwinner sources */
+	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0xfe);
+	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0xf8);
+	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0xe0);
+	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0x80);
+	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0x00);
+	local_delay_us(1);
+#endif
 }
 
 #if ! defined(__aarch64__)
@@ -2316,7 +2326,7 @@ run64(uint_fast64_t startfunc)
 {
 	// Start aarch64 core as application
 	//__set_RVBAR_EL3(startfunc);
-	arm_hardware_setrvaddr(startfunc, arm_hardware_cpuid());	// запуск на своём же ядре
+	arm_hardware_setrvaddr(startfunc, 0, arm_hardware_cpuid());	// запуск на своём же ядре
 	// RMR - Reset Management Register
 	// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
 	enum { CODE = 0x03 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
@@ -2893,6 +2903,7 @@ void cpump_initialize(void)
 
 	lclspin_enable();	// Allwinner H3 - может работать с блокировками только после включения MMU
 	LCLSPINLOCK_INITIALIZE(& cpu1init);
+	const unsigned cluster = 0;
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
 
@@ -2900,7 +2911,7 @@ void cpump_initialize(void)
 		LCLSPIN_LOCK(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1init);
 
-		arm_hardware_core_poweron(core);
+		arm_hardware_core_poweron(cluster, core);
 
 #if defined(__aarch64__)
 
