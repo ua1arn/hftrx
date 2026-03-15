@@ -2866,6 +2866,10 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 	TCONLCD_PTR->TCON0_CTL_REG =
 		start_dly * (UINT32_C(1) << 4) |	// Start_Delay (was: 60)
 		0;
+    TCONLCD_PTR->TCON0_CPU_IF_REG = 0;
+    TCONLCD_PTR->TCON0_HV_IF_REG = 0;
+	TCONLCD_PTR->TCON0_LVDS_IF_REG = 0;
+
 #else
     // Сперва сбрасываем всё
     TCONLCD_PTR->LCD_CPU_IF_REG = 0;
@@ -3582,6 +3586,7 @@ static void t113_tconlvds_PLL_configuration(uint_fast32_t needfreq)
 
 #elif CPUSTYLE_A64
 
+	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
 
 #elif CPUSTYLE_T507
 	// LVDS mode
@@ -3881,6 +3886,14 @@ static void t113_lvds_set_digital_logic(const videomode_t * vdmode)
 
 #elif CPUSTYLE_A64
 	// No LVDS outpit
+	// Сперва сбрасываем всё
+	TCONLCD_PTR->TCON0_CPU_IF_REG = 0;
+	TCONLCD_PTR->TCON0_HV_IF_REG = 0;
+	TCONLCD_PTR->TCON0_LVDS_IF_REG = 0;
+
+	// ставим нужное
+	TCONLCD_PTR->TCON0_LVDS_IF_REG = LCD_LVDS_IF_REG_VALUE;
+
 
 #else
 
@@ -7610,6 +7623,9 @@ static void t113_tcondsi_PLL_configuration(uint_fast32_t needfreq)
 
 #if CPUSTYLE_A133
 #elif CPUSTYLE_A64
+
+	allwnr_a64_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
+
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
 	allwnr_t113_module_pll_spr(& CCU->PLL_VIDEO1_CTRL_REG, & CCU->PLL_VIDEO1_PAT0_CTRL_REG);	// Set Spread Frequency Mode
@@ -7661,7 +7677,7 @@ static void t113_tcondsi_CCU_configuration(uint_fast32_t needfreq)
 	case 1:
 		CCU->TCON1_CLK_REG = 0;
 		CCU->TCON1_CLK_REG = (CCU->TCON1_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
-			0x00 * (UINT32_C(1) << 24) | // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
+			0x02 * (UINT32_C(1) << 24) | // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
 			(TCONLCD_DIV - 1) * (UINT32_C(1) << 0) | // dvcider / 2
 			0;
 		CCU->TCON1_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
@@ -7670,7 +7686,7 @@ static void t113_tcondsi_CCU_configuration(uint_fast32_t needfreq)
 
 	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 1);	// MIPI_DSI_RST
 
-	CCU->MIPI_DSI_CLK_REG |= (UINT32_C(1) << 15);	// DSI_DPHY_GATING. todo: select PLL
+	CCU->MIPI_DSI_CLK_REG |= (UINT32_C(1) << 15);	// DSI_DPHY_GATING. todo: select PLL VIDEO1
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	PRINTF("t113_tcondsi_CCU_configuration: setup DSI_CLK_REG\n");
@@ -7697,7 +7713,7 @@ static void t113_tcondsi_CCU_configuration(uint_fast32_t needfreq)
 #else
 #endif
 }
-#ifdef WITHMIPIDSISHW_LANES
+#ifdef WITHMIPIDSISHW
 //	disp 0, clk: pll(792000000),clk(792000000),dclk(33000000) dsi_rate(33000000)
 //	clk real:pll(792000000),clk(792000000),dclk(198000000) dsi_rate(150000000)
 static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
@@ -7727,6 +7743,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	// step5 - set LVDS digital logic configuration
 	t113_dsi_set_digital_logic(vdmode);
 	// step6 - LVDS controller configuration
+
 #if CPUSTYLE_T507
 	// These CPUs not support DSI at all
 
@@ -7735,9 +7752,13 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 	//DSI0->DSI_CTL_REG = UINT32_C(1) << 0;
 	(void) DSI0->DSI_CTL_REG;
 
+#elif CPUSTYLE_A64
+	#warning To be implemented for CPUSTYLE_A64
+
 #else
 
 #endif
+
 	t113_DSI_controller_configuration(vdmode);
 	//t113_LVDS_controller_configuration(vdmode, TCONLCD_LVDSIX);
 	// step7 - same as step5 in HV mode: Set and open interrupt function
@@ -7752,7 +7773,7 @@ static void t113_tcon_dsi_initsteps(const videomode_t * vdmode)
 // A64: PLL_VIDEO0
 // T113: PLL_VIDEO1
 // T507: PLL_VIDEO1
-static void t113_tcon_PLL_configuration(void)
+static void t113_tcon_HV_PLL_configuration(void)
 {
 #if CPUSTYLE_H3
 	// Set up shared and dedicated clocks for HDMI, LCD/TCON and DE2
@@ -7793,7 +7814,7 @@ static void t113_tcon_PLL_configuration(void)
 static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 {
 	// step0 - CCU configuration
-	t113_tcon_PLL_configuration();
+	t113_tcon_HV_PLL_configuration();
 	t113_tconlcd_CCU_configuration();
 	// step1 - Select HV interface type
 	t113_select_HV_interface_type(vdmode);

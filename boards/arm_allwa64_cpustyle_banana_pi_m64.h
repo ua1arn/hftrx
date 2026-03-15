@@ -947,15 +947,24 @@
 	#define TCON_FRM_MODE_VAL 0//((UINT32_C(1) << 31) | (0u << 6) | (0u << 5)| (0u << 4))	// 18 bit panel connected
 	//#define TCON_FRM_MODE_VAL 0	// 24 bit panel
 
-	/* demode values: 0: static signal, 1: DE controlled */
-	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
-	} while (0)
-
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
 	// PD0..PD21 (RGB666)
 	#define HARDWARE_LTDC_SET_DISP(state) do { \
 	} while (0)
+
+	#define LCD_LVDS_IF_REG_VALUE ( \
+		(UINT32_C(1) << 31) |	/* LCD_LVDS_EN */ \
+		0 * (UINT32_C(1) << 30) |	/* LCD_LVDS_LINK: 0: single link */ \
+		0 * (UINT32_C(1) << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0: NS MODE for THC63LVDF84B converter) */ \
+		0 * (UINT32_C(1) << 26) |	/* LCD_LVDS_BITWIDTH 0: 24-bit */ \
+		(UINT32_C(1) << 20) |	/* LCD_LVDS_CLK_SEL 1: LCD CLK */ \
+		0 * (UINT32_C(1) << 25) |		/* LCD_LVDS_DEBUG_EN */ \
+		0 * (UINT32_C(1) << 24) |		/* LCD_LVDS_DEBUG_MODE */ \
+		/* младшие 5 бит имеют неправильное описание - на самом деле "0" - нормально разведенные пары. */ \
+		0 * (UINT32_C(1) << 4) |				/* LCD_LVDS_CLK_POL: 0: reverse, 1: normal */ \
+		0 * 0x0F * (UINT32_C(1) << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */ \
+		0)
 
 	// PD12..PD21
 	#define HARDWARE_LVDS_INITIALIZE() do { \
