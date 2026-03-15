@@ -507,6 +507,42 @@ __STATIC_FORCEINLINE void __set_CPUACTLR_EL1(uint64_t value)
 	__set_RG64("S3_1_C15_C2_0", value);
 }
 
+// RVBAR_EL1, Reset Vector Base Address Register (if EL2 and EL3 not implemented)
+__STATIC_FORCEINLINE void __set_RVBAR_EL1(uint64_t value)
+{
+	__set_RG64("RVBAR_EL1", value);
+}
+__STATIC_FORCEINLINE uint64_t __get_RVBAR_EL1(void)
+{
+	uint64_t result;
+	__get_RG64("RVBAR_EL1", result);
+	return result;
+}
+
+// RVBAR_EL2, Reset Vector Base Address Register (if EL3 not implemented)
+__STATIC_FORCEINLINE void __set_RVBAR_EL2(uint64_t value)
+{
+	__set_RG64("RVBAR_EL2", value);
+}
+__STATIC_FORCEINLINE uint64_t __get_RVBAR_EL2(void)
+{
+	uint64_t result;
+	__get_RG64("RVBAR_EL2", result);
+	return result;
+}
+
+// RVBAR_EL3, Reset Vector Base Address Register (if EL3 implemented)
+__STATIC_FORCEINLINE void __set_RVBAR_EL3(uint64_t value)
+{
+	__set_RG64("RVBAR_EL3", value);
+}
+__STATIC_FORCEINLINE uint64_t __get_RVBAR_EL3(void)
+{
+	uint64_t result;
+	__get_RG64("RVBAR_EL3", result);
+	return result;
+}
+
 __STATIC_FORCEINLINE uint32_t __get_DAIF(void)
 {
 	uint32_t result;
