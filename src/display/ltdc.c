@@ -3831,7 +3831,12 @@ static void t113_LVDS_clock_configuration(const videomode_t * vdmode)
 #if CPUSTYLE_H3
 	// No LVDS outpit
 #elif CPUSTYLE_A64
-	// No LVDS outpit
+	// No LVDS outpit. MIPI-DSY init
+    TCONLCD_PTR->TCON0_DCLK_REG =
+		0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
+		7 * (UINT32_C(1) << 0) |			// LCD_DCLK_DIV
+		0;
+    local_delay_us(10);
 #else
     TCONLCD_PTR->LCD_DCLK_REG =
 		0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
@@ -7633,6 +7638,29 @@ static void t113_tcondsi_CCU_configuration(uint_fast32_t needfreq)
 {
 #if CPUSTYLE_A133
 #elif CPUSTYLE_A64
+	#warning CPUSTYLE_A64: TODO: fix used PLL for MIPI DSI/LCDS
+	unsigned TCONLCD_DIV = calcdivround2(allwnr_a64_get_pll_video0_x1_freq(), needfreq / 2);	// TCONTV divider
+	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << (3 + TCONLCD_IX));	// TCONx_GATING
+	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << (3 + TCONLCD_IX));	// TCONx_RST De-assert
+
+	if (TCONLCD_IX == 0)
+	{
+		// Делителя нет
+		CCU->TCON0_CLK_REG = 0;
+		CCU->TCON0_CLK_REG = (CCU->TCON0_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+			0x02 * (UINT32_C(1) << 24) | // 000: PLL_MIPI, 010: PLL_VIDEO0(2X)
+			0;
+		CCU->TCON0_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+	}
+	else if (TCONLCD_IX == 1)
+	{
+		CCU->TCON1_CLK_REG = 0;
+		CCU->TCON1_CLK_REG = (CCU->TCON1_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
+			0x00 * (UINT32_C(1) << 24) | // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
+			(TCONLCD_DIV - 1) * (UINT32_C(1) << 0) | // dvcider / 2
+			0;
+		CCU->TCON1_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+	}
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 	PRINTF("t113_tcondsi_CCU_configuration: setup DSI_CLK_REG\n");
 
