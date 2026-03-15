@@ -1297,7 +1297,7 @@
    <register>
     <name>GENER_CTRL_REG0</name>
     <displayName>GENER_CTRL_REG0</displayName>
-    <description>General Control Register0</description>
+    <description>General Control Register0 (bits 7:4 - SUNXI_AA64nAA32_OFFSET for cores)</description>
     <addressOffset>0x000</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

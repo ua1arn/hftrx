@@ -406,7 +406,7 @@ typedef struct CCU_Type
 /*!< CPU_SUBSYS_CTRL A133 CPU Subsystem Control Register List */
 typedef struct CPU_SUBSYS_CTRL_Type
 {
-    __IOM uint32_t GENER_CTRL_REG0;                   /*!< Offset 0x000 General Control Register0 */
+    __IOM uint32_t GENER_CTRL_REG0;                   /*!< Offset 0x000 General Control Register0 (bits 7:4 - SUNXI_AA64nAA32_OFFSET for cores) */
          RESERVED(0x004[0x000C - 0x0004], uint8_t)
     __IOM uint32_t GIC_JTAG_RST_CTRL;                 /*!< Offset 0x00C GIC and Jtag Reset Control Register */
     __IOM uint32_t C0_INT_EN;                         /*!< Offset 0x010 Cluster0 Interrupt Enable Control Register */

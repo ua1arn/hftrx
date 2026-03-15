@@ -98,6 +98,10 @@ enum DMAC_DstReqType
 
 #define DMAC_CONFIG_DEST_ADDR_MODE_Pos 24	// DMA Destination Address Mode 0x0: Linear Mode 0x1: IO Mode
 #define DMAC_CONFIG_SRC_ADDR_MODE_Pos 8	// DMA Source Address Mode Address Mode 0x0: Linear Mode 0x1: IO Mode
+#define DMAC_PARAM_DEST_ADDR_HIBITS_Pos 18	// DMA transfers the higher 1 bits of the 33-bit destination address
+#define DMAC_PARAM_DEST_ADDR_HIBITS_Msk (UINT32_C(0x03) << DMAC_PARAM_DEST_ADDR_HIBITS_Pos)
+#define DMAC_PARAM_SRC_ADDR_HIBITS_Pos 16	// DMA transfers the high 1 bits of the 33-bit source address
+#define DMAC_PARAM_SRC_ADDR_HIBITS_Msk (UINT32_C(0x03) << DMAC_PARAM_SRC_ADDR_HIBITS_Pos)
 
 typedef enum {
 	GPIO_CFG_IN  = 0x00,

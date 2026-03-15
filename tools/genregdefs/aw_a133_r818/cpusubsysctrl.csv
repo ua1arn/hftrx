@@ -1,7 +1,7 @@
 #type; CPU_SUBSYS_CTRL; A133 CPU Subsystem Control Register List
 #base; CPU_SUBSYS_CTRL 0x08100000
 
-#regdef; GENER_CTRL_REG0; 0x0000; General Control Register0
+#regdef; GENER_CTRL_REG0; 0x0000; General Control Register0 (bits 7:4 - SUNXI_AA64nAA32_OFFSET for cores)
 #regdef; GIC_JTAG_RST_CTRL; 0x000C; GIC and Jtag Reset Control Register
 #regdef; C0_INT_EN; 0x0010; Cluster0 Interrupt Enable Control Register
 #regdef; IRQ_FIQ_STATUS; 0x0014; IRQ/FIQ Status Register
