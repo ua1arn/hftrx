@@ -1,5 +1,6 @@
 ## Arm® CoreLink™ PCK‑600 Power Control Kit
 ## corelink_pck600_power_control_kit_trm_101150_0005_01_en.pdf
+## https://github.com/ARM-software/SCP-firmware/blob/master/module/ppu_v1/src/ppu_v1.h
 
 #type; PPU; PCK-600 S_PPU (PCK600)
 
