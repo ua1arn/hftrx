@@ -7662,6 +7662,7 @@ static void t113_tcondsi_PLL_configuration(uint_fast32_t needfreq)
 
 static void t113_tcondsi_CCU_configuration(uint_fast32_t needfreq)
 {
+#if defined (TCONLCD_PTR)
 #if CPUSTYLE_A133
 #elif CPUSTYLE_A64
 	#warning CPUSTYLE_A64: TODO: fix used PLL for MIPI DSI/LCDS
@@ -7717,6 +7718,7 @@ static void t113_tcondsi_CCU_configuration(uint_fast32_t needfreq)
 
 #else
 #endif
+#endif /* defined (TCONLCD_PTR) */
 }
 #ifdef WITHMIPIDSISHW
 //	disp 0, clk: pll(792000000),clk(792000000),dclk(33000000) dsi_rate(33000000)

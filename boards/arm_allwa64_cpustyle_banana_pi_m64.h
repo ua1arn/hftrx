@@ -973,7 +973,7 @@
 	} while (0)
 
 
-	#if 1
+	#if 0
 		/* TCON0 connected to MIPI-DSI */
 		#define	TCONLCD_IX 0	/* 0 - TCON0, 1: TCON1 */
 		#define	TCONLCD_PTR TCON0	/* TCON0 or TCON1 */
