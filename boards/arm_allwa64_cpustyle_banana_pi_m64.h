@@ -27,7 +27,6 @@
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
-//#define WITHETHHW 1	/* Hardware Ethernet controller */
 #if WITHDEBUG
 	#define WITHUART0HW	1	/* tx: PB8 rx: PB9 Используется периферийный контроллер последовательного порта #0 UART0 */
 	//#define WITHUART0HW_FIFO	1	/* испольование FIFO */
@@ -64,6 +63,7 @@
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 
+	//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #if 0
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
@@ -257,6 +257,8 @@
 
 	//#define WITHUSBDMTP	1	/* MTP USB Device */
 	//#define WITHUSBDMSC	1	/* MSC USB device */
+
+	#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #endif /* WITHISBOOTLOADER */
 
@@ -986,6 +988,51 @@
 	#endif
 
 #endif /* WITHLTDCHW */
+
+#if WITHETHHW
+	#define HARDWARE_ETH_INITIALIZE() do { \
+		const portholder_t NRSTB = UINT32_C(1) << 6; /* PI6 PHYRSTB */ \
+		\
+		arm_hardware_piod_outputs(UINT32_C(1) << 8, 1 * UINT32_C(1) << 0); /* PD8 RGMII_RXD3 */ \
+		arm_hardware_piod_outputs(UINT32_C(1) << 9, 0 * UINT32_C(1) << 1); /* PD9 RGMII_RXD2 */ \
+		arm_hardware_piod_outputs(UINT32_C(1) << 10, 0 * UINT32_C(1) << 2); /* PD10 RGMII_RXD1 */ \
+		arm_hardware_piod_outputs(UINT32_C(1) << 11, 1 * UINT32_C(1) << 3); /* PD11 RGMII_RXD0 */ \
+		arm_hardware_piod_outputs(UINT32_C(1) << 12, 0 * UINT32_C(1) << 4); /* PD12 RGMII_RXCK */ \
+		arm_hardware_piod_outputs(UINT32_C(1) << 13, 0 * UINT32_C(1) << 5); /* PD13 RGMII_RXCTL */ \
+		\
+		arm_hardware_piod_outputs(NRSTB, 0 * NRSTB); /* PI6 PHYRSTB */ \
+		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
+		arm_hardware_piod_outputs(NRSTB, 1 * NRSTB); /* PI6 PHYRSTB */ \
+		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
+		\
+		arm_hardware_piod_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF4); 	/* PD8 RGMII_RXD3 */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF4); 	/* PD9 RGMII_RXD2 */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF4); /* PD10 RGMII_RXD1 */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF4); /* PD11 RGMII_RXD0 */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 12, GPIO_CFG_AF4); /* PD12 RGMII_RXCK */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF4); /* PD13 RGMII_RXCTL */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF4); /* PD15 RGMII_TXD3 */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 16, GPIO_CFG_AF4); /* PD16 RGMII_TXD2 */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 17, GPIO_CFG_AF4); /* PD17 RGMII_TXD1 */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 18, GPIO_CFG_AF4); /* PD18 RGMII_TXD0 */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 19, GPIO_CFG_AF4); /* PD19 RGMII_TXCK */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 20, GPIO_CFG_AF4); /* PD20 RGMII_TXCTL */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 21, GPIO_CFG_AF4); /* PD21 RGMII_CLKIN */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 22, GPIO_CFG_AF4); /* PD22 MDC */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 23, GPIO_CFG_AF4); /* PD23 MDIO */ \
+		arm_hardware_piod_updown(UINT32_C(1) << 22, UINT32_C(1) << 22, 0); /* PI14 MDC */ \
+		arm_hardware_piod_updown(UINT32_C(1) << 23, UINT32_C(1) << 23, 0); /*  PI15 MDIO */ \
+		\
+	} while (0)
+	// T507:
+	// 	EMAC0: 10/100/1000 Mbps Ethernet port with RGMII and RMII interfaces;
+	// 	EMAC1: 10/100 Mbps Ethernet port with RMII interface
+	#define HARDWARE_EMAC_IX 0	// 0: EMAC0, 1: EMAC1
+	#define HARDWARE_EMAC_PTR EMAC0
+	#define HARDWARE_EMAC_EPHY_CLK_REG (SYS_CFG->EMAC_EPHY_CLK_REG0)
+	#define HARDWARE_EMAC_IRQ EMAC0_IRQn
+
+#endif /* WITHETHHW */
 
 	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 
