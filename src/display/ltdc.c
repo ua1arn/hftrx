@@ -3627,23 +3627,24 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << (3 + TCONLCD_IX));	// TCONx_GATING
 	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << (3 + TCONLCD_IX));	// TCONx_RST De-assert
 
-	if (TCONLCD_IX == 0)
+	switch (TCONLCD_IX)
 	{
+	case 0:
 		// Делителя нет
 		CCU->TCON0_CLK_REG = 0;
 		CCU->TCON0_CLK_REG = (CCU->TCON0_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 			0x02 * (UINT32_C(1) << 24) | // 000: PLL_MIPI, 010: PLL_VIDEO0(2X)
 			0;
 		CCU->TCON0_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
-	}
-	else if (TCONLCD_IX == 1)
-	{
+		break;
+	case 1:
 		CCU->TCON1_CLK_REG = 0;
 		CCU->TCON1_CLK_REG = (CCU->TCON1_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 			0x00 * (UINT32_C(1) << 24) | // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
 			(TCONLCD_DIV - 1) * (UINT32_C(1) << 0) | // dvcider / 2
 			0;
 		CCU->TCON1_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+		break;
 	}
 
 	CCU->BUS_SOFT_RST_REG2 |= (UINT32_C(1) << 0);	// LVDS_RST
@@ -6521,23 +6522,24 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << (3 + TCONTV_IX));	// TCONx_GATING
 	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << (3 + TCONTV_IX));	// TCONx_RST De-assert
 
-	if (TCONTV_IX == 0)
+	switch (TCONTV_IX)
 	{
+	case 0:
 		// Делителя нет
 		CCU->TCON0_CLK_REG = 0;
 		CCU->TCON0_CLK_REG = (CCU->TCON0_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 			0x02 * (UINT32_C(1) << 24) | // 000: PLL_MIPI, 010: PLL_VIDEO0(2X)
 			0;
 		CCU->TCON0_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
-	}
-	else if (TCONTV_IX == 1)
-	{
+		break;
+	case 1:
 		CCU->TCON1_CLK_REG = 0;
 		CCU->TCON1_CLK_REG = (CCU->TCON1_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 			0x00 * (UINT32_C(1) << 24) | // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
 			(TCONTV_DIV - 1) * (UINT32_C(1) << 0) | // dvcider / 2
 			0;
 		CCU->TCON1_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+		break;
 	}
 
 
@@ -7646,23 +7648,24 @@ static void t113_tcondsi_CCU_configuration(uint_fast32_t needfreq)
 	CCU->BUS_CLK_GATING_REG1 |= (UINT32_C(1) << (3 + TCONLCD_IX));	// TCONx_GATING
 	CCU->BUS_SOFT_RST_REG1 |= (UINT32_C(1) << (3 + TCONLCD_IX));	// TCONx_RST De-assert
 
-	if (TCONLCD_IX == 0)
+	switch (TCONLCD_IX)
 	{
+	case 0:
 		// Делителя нет
 		CCU->TCON0_CLK_REG = 0;
 		CCU->TCON0_CLK_REG = (CCU->TCON0_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 			0x02 * (UINT32_C(1) << 24) | // 000: PLL_MIPI, 010: PLL_VIDEO0(2X)
 			0;
 		CCU->TCON0_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
-	}
-	else if (TCONLCD_IX == 1)
-	{
+		break;
+	case 1:
 		CCU->TCON1_CLK_REG = 0;
 		CCU->TCON1_CLK_REG = (CCU->TCON1_CLK_REG & ~ (UINT32_C(0x07) << 24)) |
 			0x00 * (UINT32_C(1) << 24) | // 00: PLL_VIDEO0(1X), 10: PLL_VIDEO1(1X)
 			(TCONLCD_DIV - 1) * (UINT32_C(1) << 0) | // dvcider / 2
 			0;
 		CCU->TCON1_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+		break;
 	}
 
 	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 1);	// MIPI_DSI_RST
