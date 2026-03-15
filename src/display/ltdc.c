@@ -3865,7 +3865,12 @@ static void t113_MIPIDSI_clock_configuration(const videomode_t * vdmode, unsigne
 #if CPUSTYLE_H3
 	// No MIPIDSI outpit
 #elif CPUSTYLE_A64
-	// TODO: init MIPIDSI outpit
+	// TODO: init MIPIDSI output
+    TCONLCD_PTR->TCON0_DCLK_REG =
+		0x0F * (UINT32_C(1) << 28) |		// 4 bit: TCON0_Dclk_En
+		7 * (UINT32_C(1) << 0) |			// 7 bit: TCON0_Dclk_Div
+		0;
+    local_delay_us(10);
 #else
     TCONLCD_PTR->LCD_DCLK_REG =
 		0x0F * (UINT32_C(1) << 28) |		// LCD_DCLK_EN
