@@ -14340,6 +14340,365 @@
   </interrupt>
   </peripheral>
   <peripheral>
+  <name>PPU</name>
+  <description>PCK-600 S_PPU (PCK600).</description>
+  <baseAddress>0x07060000</baseAddress>
+  <interrupt>
+   <name>PCK600_QCHANNEL</name>
+   <value>221</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>PCK600_CPU</name>
+   <value>244</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>PPU_PWPR</name>
+    <displayName>PPU_PWPR</displayName>
+    <description>RW 32 Power Policy Register.</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_PMER</name>
+    <displayName>PPU_PMER</displayName>
+    <description>RW 32 Power Mode Emulation Register.</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_PWSR</name>
+    <displayName>PPU_PWSR</displayName>
+    <description>RO 32 Power Status Register.</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_DISR</name>
+    <displayName>PPU_DISR</displayName>
+    <description>RO 32 Device Interface Input Current Status Register.</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_MISR</name>
+    <displayName>PPU_MISR</displayName>
+    <description>RO 32 Miscellaneous Input Current Status Register.</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_STSR</name>
+    <displayName>PPU_STSR</displayName>
+    <description>RO 32 Stored Status Register.</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_UNLK</name>
+    <displayName>PPU_UNLK</displayName>
+    <description>RW 32 Unlock register.</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_PWCR</name>
+    <displayName>PPU_PWCR</displayName>
+    <description>RW 32 Power Configuration Register.</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_PTCR</name>
+    <displayName>PPU_PTCR</displayName>
+    <description>RW 32 Power Mode Transition Configuration Register.</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_IMR</name>
+    <displayName>PPU_IMR</displayName>
+    <description>RW 32 Interrupt Mask Register.</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_AIMR</name>
+    <displayName>PPU_AIMR</displayName>
+    <description>RW 32 Additional Interrupt Mask Register.</description>
+    <addressOffset>0x034</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_ISR</name>
+    <displayName>PPU_ISR</displayName>
+    <description>RW 32 Interrupt Status Register.</description>
+    <addressOffset>0x038</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_AISR</name>
+    <displayName>PPU_AISR</displayName>
+    <description>RW 32 Additional Interrupt Status Register.</description>
+    <addressOffset>0x03C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_IESR</name>
+    <displayName>PPU_IESR</displayName>
+    <description>RW 32 Input Edge Sensitivity Register.</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_OPSR</name>
+    <displayName>PPU_OPSR</displayName>
+    <description>RW 32 Operating Mode Active Edge Sensitivity Register.</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_FUNRR</name>
+    <displayName>PPU_FUNRR</displayName>
+    <description>RW 32 Functional Retention RAM Configuration Register.</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_FULRR</name>
+    <displayName>PPU_FULRR</displayName>
+    <description>RW 32 Full Retention RAM Configuration Register.</description>
+    <addressOffset>0x054</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_MEMRR</name>
+    <displayName>PPU_MEMRR</displayName>
+    <description>RW 32 Memory Retention RAM Configuration Register.</description>
+    <addressOffset>0x058</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_EDTR0</name>
+    <displayName>PPU_EDTR0</displayName>
+    <description>RW 32 Power Mode Entry Delay Register 0.</description>
+    <addressOffset>0x160</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_EDTR1</name>
+    <displayName>PPU_EDTR1</displayName>
+    <description>RW 32 Power Mode Entry Delay Register 1.</description>
+    <addressOffset>0x164</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_DCDR0</name>
+    <displayName>PPU_DCDR0</displayName>
+    <description>RW 32 Device Control Delay Configuration Register 0.</description>
+    <addressOffset>0x170</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_DCDR1</name>
+    <displayName>PPU_DCDR1</displayName>
+    <description>RW 32 Device Control Delay Configuration Register 1.</description>
+    <addressOffset>0x174</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_IDR0</name>
+    <displayName>PPU_IDR0</displayName>
+    <description>RO 32 PPU Identification Register 0.</description>
+    <addressOffset>0xFB0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_IDR1</name>
+    <displayName>PPU_IDR1</displayName>
+    <description>RO 32 PPU Identification Register 1.</description>
+    <addressOffset>0xFB4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_IIDR</name>
+    <displayName>PPU_IIDR</displayName>
+    <description>RO 32 4.3 Implementation Identification Register, PPU_IIDR on page 43.</description>
+    <addressOffset>0xFC8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PPU_AIDR</name>
+    <displayName>PPU_AIDR</displayName>
+    <description>RO 32 Architecture Identification Register.</description>
+    <addressOffset>0xFCC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PID4</name>
+    <displayName>PID4</displayName>
+    <description>RO 32 4.4.1 Peripheral ID 4 on page 44.</description>
+    <addressOffset>0xFD0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PID5</name>
+    <displayName>PID5</displayName>
+    <description>RO 32 4.4.2 Peripheral ID 5 on page 44.</description>
+    <addressOffset>0xFD4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PID6</name>
+    <displayName>PID6</displayName>
+    <description>RO 32 4.4.3 Peripheral ID 6 on page 45.</description>
+    <addressOffset>0xFD8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PID7</name>
+    <displayName>PID7</displayName>
+    <description>RO 32 4.4.4 Peripheral ID 7 on page 46.</description>
+    <addressOffset>0xFDC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PID0</name>
+    <displayName>PID0</displayName>
+    <description>RO 32 4.4.5 Peripheral ID 0 on page 46.</description>
+    <addressOffset>0xFE0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PID1</name>
+    <displayName>PID1</displayName>
+    <description>RO 32 4.4.6 Peripheral ID 1 on page 47.</description>
+    <addressOffset>0xFE4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PID2</name>
+    <displayName>PID2</displayName>
+    <description>RO 32 4.4.7 Peripheral ID 2 on page 48.</description>
+    <addressOffset>0xFE8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PID3</name>
+    <displayName>PID3</displayName>
+    <description>RO 32 4.4.8 Peripheral ID 3 on page 48.</description>
+    <addressOffset>0xFEC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ID0</name>
+    <displayName>ID0</displayName>
+    <description>RO 32 4.4.9 Component ID 0 on page 49.</description>
+    <addressOffset>0xFF0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ID1</name>
+    <displayName>ID1</displayName>
+    <description>RO 32 4.4.10 Component ID 1 on page 50.</description>
+    <addressOffset>0xFF4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ID2</name>
+    <displayName>ID2</displayName>
+    <description>RO 32 4.4.11 Component ID 2 on page 50.</description>
+    <addressOffset>0xFF8</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>ID3</name>
+    <displayName>ID3</displayName>
+    <description>RO 32 4.4.12 Component ID 3 on page 51.</description>
+    <addressOffset>0xFFC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>S_PRCM</name>
   <description>Power Reset Clock Management (PRCM)</description>
   <baseAddress>0x07010000</baseAddress>

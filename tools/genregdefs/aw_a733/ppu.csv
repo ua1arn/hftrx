@@ -1,0 +1,45 @@
+## Arm® CoreLink™ PCK‑600 Power Control Kit
+## corelink_pck600_power_control_kit_trm_101150_0005_01_en.pdf
+
+#type; PPU; PCK-600 S_PPU (PCK600)
+
+#regdef; PPU_PWPR; 0x000; RW 32 Power Policy Register.
+#regdef; PPU_PMER; 0x004; RW 32 Power Mode Emulation Register.
+#regdefr; PPU_PWSR; 0x008; RO 32 Power Status Register.
+#regdefr; PPU_DISR; 0x010; RO 32 Device Interface Input Current Status Register.
+#regdefr; PPU_MISR; 0x014; RO 32 Miscellaneous Input Current Status Register.
+#regdefr; PPU_STSR; 0x018; RO 32 Stored Status Register.
+#regdef; PPU_UNLK; 0x01C; RW 32 Unlock register.
+#regdef; PPU_PWCR; 0x020; RW 32 Power Configuration Register.
+#regdef; PPU_PTCR; 0x024; RW 32 Power Mode Transition Configuration Register.
+#regdef; PPU_IMR; 0x030; RW 32 Interrupt Mask Register.
+#regdef; PPU_AIMR; 0x034; RW 32 Additional Interrupt Mask Register.
+#regdef; PPU_ISR; 0x038; RW 32 Interrupt Status Register.
+#regdef; PPU_AISR; 0x03C; RW 32 Additional Interrupt Status Register.
+#regdef; PPU_IESR; 0x040; RW 32 Input Edge Sensitivity Register.
+#regdef; PPU_OPSR; 0x044; RW 32 Operating Mode Active Edge Sensitivity Register.
+#regdef; PPU_FUNRR; 0x050; RW 32 Functional Retention RAM Configuration Register.
+#regdef; PPU_FULRR; 0x054; RW 32 Full Retention RAM Configuration Register.
+#regdef; PPU_MEMRR; 0x058; RW 32 Memory Retention RAM Configuration Register.
+#regdef; PPU_EDTR0; 0x160; RW 32 Power Mode Entry Delay Register 0.
+#regdef; PPU_EDTR1; 0x164; RW 32 Power Mode Entry Delay Register 1.
+#regdef; PPU_DCDR0; 0x170; RW 32 Device Control Delay Configuration Register 0.
+#regdef; PPU_DCDR1; 0x174; RW 32 Device Control Delay Configuration Register 1.
+#regdefr; PPU_IDR0; 0xFB0; RO 32 PPU Identification Register 0.
+#regdefr; PPU_IDR1; 0xFB4; RO 32 PPU Identification Register 1.
+#regdefr; PPU_IIDR; 0xFC8; RO 32 4.3 Implementation Identification Register, PPU_IIDR on page 43.
+#regdefr; PPU_AIDR; 0xFCC; RO 32 Architecture Identification Register.
+#regdefr; PID4; 0xFD0; RO 32 4.4.1 Peripheral ID 4 on page 44.
+#regdefr; PID5; 0xFD4; RO 32 4.4.2 Peripheral ID 5 on page 44.
+#regdefr; PID6; 0xFD8; RO 32 4.4.3 Peripheral ID 6 on page 45.
+#regdefr; PID7; 0xFDC; RO 32 4.4.4 Peripheral ID 7 on page 46.
+#regdefr; PID0; 0xFE0; RO 32 4.4.5 Peripheral ID 0 on page 46.
+#regdefr; PID1; 0xFE4; RO 32 4.4.6 Peripheral ID 1 on page 47.
+#regdefr; PID2; 0xFE8; RO 32 4.4.7 Peripheral ID 2 on page 48.
+#regdefr; PID3; 0xFEC; RO 32 4.4.8 Peripheral ID 3 on page 48.
+#regdefr; ID0; 0xFF0; RO 32 4.4.9 Component ID 0 on page 49.
+#regdefr; ID1; 0xFF4; RO 32 4.4.10 Component ID 1 on page 50.
+#regdefr; ID2; 0xFF8; RO 32 4.4.11 Component ID 2 on page 50.
+#regdefr; ID3; 0xFFC; RO 32 4.4.12 Component ID 3 on page 51.
+
+#typeend;

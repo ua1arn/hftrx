@@ -2283,6 +2283,58 @@ typedef struct I2S_PCM_Type
     __IOM uint32_t ASRCMBISTSTAT;                     /*!< Offset 0x0A0 ASRC MBIST Test Status Register */
 } I2S_PCM_TypeDef; /* size of structure = 0x0A4 */
 /*
+ * @brief PPU
+ */
+/*!< PPU PCK-600 S_PPU (PCK600). */
+typedef struct PPU_Type
+{
+    __IOM uint32_t PPU_PWPR;                          /*!< Offset 0x000 RW 32 Power Policy Register. */
+    __IOM uint32_t PPU_PMER;                          /*!< Offset 0x004 RW 32 Power Mode Emulation Register. */
+    __IM  uint32_t PPU_PWSR;                          /*!< Offset 0x008 RO 32 Power Status Register. */
+         RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
+    __IM  uint32_t PPU_DISR;                          /*!< Offset 0x010 RO 32 Device Interface Input Current Status Register. */
+    __IM  uint32_t PPU_MISR;                          /*!< Offset 0x014 RO 32 Miscellaneous Input Current Status Register. */
+    __IM  uint32_t PPU_STSR;                          /*!< Offset 0x018 RO 32 Stored Status Register. */
+    __IOM uint32_t PPU_UNLK;                          /*!< Offset 0x01C RW 32 Unlock register. */
+    __IOM uint32_t PPU_PWCR;                          /*!< Offset 0x020 RW 32 Power Configuration Register. */
+    __IOM uint32_t PPU_PTCR;                          /*!< Offset 0x024 RW 32 Power Mode Transition Configuration Register. */
+         RESERVED(0x028[0x0030 - 0x0028], uint8_t)
+    __IOM uint32_t PPU_IMR;                           /*!< Offset 0x030 RW 32 Interrupt Mask Register. */
+    __IOM uint32_t PPU_AIMR;                          /*!< Offset 0x034 RW 32 Additional Interrupt Mask Register. */
+    __IOM uint32_t PPU_ISR;                           /*!< Offset 0x038 RW 32 Interrupt Status Register. */
+    __IOM uint32_t PPU_AISR;                          /*!< Offset 0x03C RW 32 Additional Interrupt Status Register. */
+    __IOM uint32_t PPU_IESR;                          /*!< Offset 0x040 RW 32 Input Edge Sensitivity Register. */
+    __IOM uint32_t PPU_OPSR;                          /*!< Offset 0x044 RW 32 Operating Mode Active Edge Sensitivity Register. */
+         RESERVED(0x048[0x0050 - 0x0048], uint8_t)
+    __IOM uint32_t PPU_FUNRR;                         /*!< Offset 0x050 RW 32 Functional Retention RAM Configuration Register. */
+    __IOM uint32_t PPU_FULRR;                         /*!< Offset 0x054 RW 32 Full Retention RAM Configuration Register. */
+    __IOM uint32_t PPU_MEMRR;                         /*!< Offset 0x058 RW 32 Memory Retention RAM Configuration Register. */
+         RESERVED(0x05C[0x0160 - 0x005C], uint8_t)
+    __IOM uint32_t PPU_EDTR0;                         /*!< Offset 0x160 RW 32 Power Mode Entry Delay Register 0. */
+    __IOM uint32_t PPU_EDTR1;                         /*!< Offset 0x164 RW 32 Power Mode Entry Delay Register 1. */
+         RESERVED(0x168[0x0170 - 0x0168], uint8_t)
+    __IOM uint32_t PPU_DCDR0;                         /*!< Offset 0x170 RW 32 Device Control Delay Configuration Register 0. */
+    __IOM uint32_t PPU_DCDR1;                         /*!< Offset 0x174 RW 32 Device Control Delay Configuration Register 1. */
+         RESERVED(0x178[0x0FB0 - 0x0178], uint8_t)
+    __IM  uint32_t PPU_IDR0;                          /*!< Offset 0xFB0 RO 32 PPU Identification Register 0. */
+    __IM  uint32_t PPU_IDR1;                          /*!< Offset 0xFB4 RO 32 PPU Identification Register 1. */
+         RESERVED(0xFB8[0x0FC8 - 0x0FB8], uint8_t)
+    __IM  uint32_t PPU_IIDR;                          /*!< Offset 0xFC8 RO 32 4.3 Implementation Identification Register, PPU_IIDR on page 43. */
+    __IM  uint32_t PPU_AIDR;                          /*!< Offset 0xFCC RO 32 Architecture Identification Register. */
+    __IM  uint32_t PID4;                              /*!< Offset 0xFD0 RO 32 4.4.1 Peripheral ID 4 on page 44. */
+    __IM  uint32_t PID5;                              /*!< Offset 0xFD4 RO 32 4.4.2 Peripheral ID 5 on page 44. */
+    __IM  uint32_t PID6;                              /*!< Offset 0xFD8 RO 32 4.4.3 Peripheral ID 6 on page 45. */
+    __IM  uint32_t PID7;                              /*!< Offset 0xFDC RO 32 4.4.4 Peripheral ID 7 on page 46. */
+    __IM  uint32_t PID0;                              /*!< Offset 0xFE0 RO 32 4.4.5 Peripheral ID 0 on page 46. */
+    __IM  uint32_t PID1;                              /*!< Offset 0xFE4 RO 32 4.4.6 Peripheral ID 1 on page 47. */
+    __IM  uint32_t PID2;                              /*!< Offset 0xFE8 RO 32 4.4.7 Peripheral ID 2 on page 48. */
+    __IM  uint32_t PID3;                              /*!< Offset 0xFEC RO 32 4.4.8 Peripheral ID 3 on page 48. */
+    __IM  uint32_t ID0;                               /*!< Offset 0xFF0 RO 32 4.4.9 Component ID 0 on page 49. */
+    __IM  uint32_t ID1;                               /*!< Offset 0xFF4 RO 32 4.4.10 Component ID 1 on page 50. */
+    __IM  uint32_t ID2;                               /*!< Offset 0xFF8 RO 32 4.4.11 Component ID 2 on page 50. */
+    __IM  uint32_t ID3;                               /*!< Offset 0xFFC RO 32 4.4.12 Component ID 3 on page 51. */
+} PPU_TypeDef; /* size of structure = 0x1000 */
+/*
  * @brief PRCM
  */
 /*!< PRCM Power Reset Clock Management (PRCM) */
@@ -3082,6 +3134,7 @@ typedef struct USB_OHCI_Capability_Type
 #define S_PRCM ((PRCM_TypeDef *) S_PRCM_BASE)         /*!< S_PRCM Power Reset Clock Management (PRCM) register set access pointer */
 #define S_GPIOL ((S_GPIO_TypeDef *) S_GPIOL_BASE)     /*!< S_GPIOL Secure Port Controller register set access pointer */
 #define S_GPIOM ((S_GPIO_TypeDef *) S_GPIOM_BASE)     /*!< S_GPIOM Secure Port Controller register set access pointer */
+#define PPU ((PPU_TypeDef *) PPU_BASE)                /*!< PPU PCK-600 S_PPU (PCK600). register set access pointer */
 #define S_UART0 ((UART_TypeDef *) S_UART0_BASE)       /*!< S_UART0  register set access pointer */
 #define S_UART1 ((UART_TypeDef *) S_UART1_BASE)       /*!< S_UART1  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0 Two Wire Interface (TWI) register set access pointer */
