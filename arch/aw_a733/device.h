@@ -122,6 +122,7 @@ typedef enum IRQn
     SMHC1_IRQn = 194,                                 /*!< SMHC SD-MMC Host Controller */
     SMHC2_IRQn = 195,                                 /*!< SMHC SD-MMC Host Controller */
     SMHC3_IRQn = 196,                                 /*!< SMHC SD-MMC Host Controller */
+    PCK600_QCHANNEL_IRQn = 221,                       /*!< PPU STBY PCK600 Q-CHANNEL interrupt. */
     RTC_ALARM_IRQn = 228,                             /*!< RTC Real Time Clock (RTC) */
     S_GPIOL_S_IRQn = 229,                             /*!< GPIOINT  */
     S_GPIOL_IRQn = 230,                               /*!< GPIOINT S_GPIOL_NS */
@@ -133,6 +134,7 @@ typedef enum IRQn
     S_TWI1_IRQn = 236,                                /*!< TWI Two Wire Interface (TWI) */
     S_TWI2_IRQn = 237,                                /*!< TWI Two Wire Interface (TWI) */
     S_SPI_IRQn = 242,                                 /*!< SPI Serial Peripheral Interface */
+    PCK600_CPU_IRQn = 244,                            /*!< PPU CPUIDLE interrupt */
 
     MAX_IRQ_n,
     Force_IRQn_enum_size = 1048 /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
@@ -285,6 +287,7 @@ typedef enum IRQn
 #define S_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< PRCM Power Reset Clock Management (PRCM) Base */
 #define S_GPIOL_BASE ((uintptr_t) 0x07025000)         /*!< S_GPIO Secure Port Controller Base */
 #define S_GPIOM_BASE ((uintptr_t) 0x07025030)         /*!< S_GPIO Secure Port Controller Base */
+#define PPU_BASE ((uintptr_t) 0x07060000)             /*!< PPU PCK-600 S_PPU (PCK600). Base */
 #define S_UART0_BASE ((uintptr_t) 0x07080000)         /*!< UART  Base */
 #define S_UART1_BASE ((uintptr_t) 0x07081000)         /*!< UART  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07083000)          /*!< TWI Two Wire Interface (TWI) Base */

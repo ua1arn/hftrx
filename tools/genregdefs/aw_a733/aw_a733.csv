@@ -510,3 +510,14 @@
 #base; G2D_ROT 0x05468000
 #typeend;
 
+#type; PPU; PCK-600 S_PPU (PCK600).
+#base; PPU 0x07060000; 
+
+#irq; PCK600_QCHANNEL 221; STBY PCK600 Q-CHANNEL interrupt.
+#irq; PCK600_CPU 244; CPUIDLE interrupt
+
+#irqv; PCK600_QCHANNEL 17; STBY PCK600 Q-CHANNEL interrupt.
+#irqv; PCK600_CPU 40; CPUIDLE interrupt
+
+#typeend;
+
