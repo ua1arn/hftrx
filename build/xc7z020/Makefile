@@ -69,6 +69,7 @@ ARCHDIR = $(PRJROOT)/arch/zynq
 ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_ebaz
 #ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
 GUILIBDIR = $(PRJROOT)/lib/simple-gui
+GUIUSERDIR = $(PRJROOT)/src/simple-gui
 
 # full qualified name
 ZYNQLIB = zynq7020.a
@@ -91,7 +92,8 @@ DINCDIR = \
 	$(USBXDIR) \
 	$(CMSISDIR)/Include $(CMSISDIR)/Source \
 	$(ZYNQLIBSRC) \
- 	$(GUILIBDIR)
+ 	$(GUILIBDIR)  \
+ 	$(GUIUSERDIR)
 
 # List all default libraries here
 #DLIBS = -lm -larm_cortexA9lneon_math
