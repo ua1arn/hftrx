@@ -15,6 +15,7 @@
 
 	#define WITHBRANDSTR "Falcon"
 	#define WITHBANDR1BBU 1
+	#define DEFAULTDIALFREQ	44880000
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -460,7 +461,8 @@
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
-	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
+	//#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
+	#define WITHLOCKFULL	1	/* блокировка всего управления а не только перестройки */
 
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */

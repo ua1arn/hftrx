@@ -346,7 +346,7 @@ processmessages(
 	releasemsgbuffer(buff);
 }
 
-void inputevent_fill(inputevent_t * e)
+void inputevent_fill(inputevent_t * e, uint_fast8_t locked)
 {
 	processmessages(& e->frontkeyevent.kbch, & e->frontkeyevent.kbready);
 	e->dtmfkeyevent.kbready = dtmf_scan(& e->dtmfkeyevent.kbch);
@@ -383,6 +383,22 @@ void inputevent_fill(inputevent_t * e)
 	e->encF4.jumpsize = 0;
 #endif /* WITHENCODER_4F */
 #endif /* WITHENCODER */
+	/* блокировка всего управления, а не только перестройки */
+#if WITHLOCKFULL
+	if (locked && e->frontkeyevent.kbready && e->frontkeyevent.kbch != KBD_CODE_LOCK)
+	{
+		e->frontkeyevent.kbready = 0;
+	}
+	if (locked)
+	{
+		e->encMAIN.delta = 0;
+		e->encSUB.delta = 0;
+		e->encF1.delta = 0;
+		e->encF2.delta = 0;
+		e->encF3.delta = 0;
+		e->encF4.delta = 0;
+	}
+#endif
 }
 
 // Определения для работ по оптимизации быстродействия
@@ -20055,9 +20071,11 @@ processmainlooptuneknobs(inputevent_t * ev)
 static STTE_t
 hamradio_main_step(void)
 {
+	const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
+	const uint_fast8_t locked = glocks [bi_main];
 	inputevent_t event;
 	inputevent_initialize(& event);
-	inputevent_fill(& event);
+	inputevent_fill(& event, locked);
 
 	txreq_process();	/* обработка запросов */
 	switch (sthrl)
@@ -20076,7 +20094,7 @@ hamradio_main_step(void)
 			/* валкодер перестал вращаться - если было изменение частоты - сохраняем конфигурацию */
 			if (refreshenabled_freqs())
 			{
-				const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
+				//const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
 				const uint_fast8_t bi_sub = getbankindexsub();		/* состояние выбора банков может измениться */
 				/* в случае внутренней памяти микроконтроллера - частоту не запоминать (очень мал ресурс). */
 
