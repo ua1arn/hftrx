@@ -2521,11 +2521,14 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 // https://github.com/yodaos-project/yodaos/blob/d0d7bbc277c0fc1c64e2e0a1c82fe6e63f6eb954/boot/rpi/arch/arm/include/asm/psci.h#L63
 // https://github.com/ARM-software/arm-trusted-firmware/blob/master/plat/allwinner/common/sunxi_native_pm.c#L69
 // https://github.com/ARM-software/arm-trusted-firmware/blob/master/plat/allwinner/common/sunxi_cpu_ops.c#L88
-
+#define PLATFORM_CLUSTER_COUNT 1
+#define PLATFORM_MAX_CPUS_PER_CLUSTER 6
+typedef uint32_t u_register_t;
 
 #define SUNXI_R_PRCM_BASE		((uintptr_t) 0x07010000)
 #define SUNXI_R_CPUCFG_BASE		((uintptr_t) 0x07050000)
 #define SUNXI_CPUCFG_BASE		((uintptr_t) 0x08000000)
+#define SUNXI_CLUSTERCFG_BASE	((uintptr_t) 0x08860000)
 
 
 /* c = cluster, n = core */
@@ -2585,7 +2588,68 @@ static inline uint32_t mmio_read_32(uintptr_t addr)
 #define BIT(n) (1UL << (n))
 #endif
 
-#if 1
+#define ULL(s) UINT64_C(s)
+#define U(s) UINT32_C(s)
+
+/*******************************************************************************
+ * MPIDR macros
+ ******************************************************************************/
+#define MPIDR_MT_MASK		(ULL(1) << 24)
+#define MPIDR_CPU_MASK		MPIDR_AFFLVL_MASK
+#define MPIDR_CLUSTER_MASK	(MPIDR_AFFLVL_MASK << MPIDR_AFFINITY_BITS)
+#define MPIDR_AFFINITY_BITS	U(8)
+#define MPIDR_AFFLVL_MASK	ULL(0xff)
+#define MPIDR_AFF0_SHIFT	U(0)
+#define MPIDR_AFF1_SHIFT	U(8)
+#define MPIDR_AFF2_SHIFT	U(16)
+#define MPIDR_AFF3_SHIFT	U(32)
+#define MPIDR_AFF_SHIFT(_n)	MPIDR_AFF##_n##_SHIFT
+#define MPIDR_AFFINITY_MASK	ULL(0xff00ffffff)
+#define MPIDR_AFFLVL_SHIFT	U(3)
+#define MPIDR_AFFLVL0		ULL(0x0)
+#define MPIDR_AFFLVL1		ULL(0x1)
+#define MPIDR_AFFLVL2		ULL(0x2)
+#define MPIDR_AFFLVL3		ULL(0x3)
+#define MPIDR_AFFLVL(_n)	MPIDR_AFFLVL##_n
+#define MPIDR_AFFLVL0_VAL(mpidr) \
+		(((mpidr) >> MPIDR_AFF0_SHIFT) & MPIDR_AFFLVL_MASK)
+#define MPIDR_AFFLVL1_VAL(mpidr) \
+		(((mpidr) >> MPIDR_AFF1_SHIFT) & MPIDR_AFFLVL_MASK)
+#define MPIDR_AFFLVL2_VAL(mpidr) \
+		(((mpidr) >> MPIDR_AFF2_SHIFT) & MPIDR_AFFLVL_MASK)
+#define MPIDR_AFFLVL3_VAL(mpidr) \
+		(((mpidr) >> MPIDR_AFF3_SHIFT) & MPIDR_AFFLVL_MASK)
+/*
+ * The MPIDR_MAX_AFFLVL count starts from 0. Take care to
+ * add one while using this macro to define array sizes.
+ * TODO: Support only the first 3 affinity levels for now.
+ */
+#define MPIDR_MAX_AFFLVL	U(2)
+
+#define MPID_MASK		(MPIDR_MT_MASK				 | \
+				 (MPIDR_AFFLVL_MASK << MPIDR_AFF3_SHIFT) | \
+				 (MPIDR_AFFLVL_MASK << MPIDR_AFF2_SHIFT) | \
+				 (MPIDR_AFFLVL_MASK << MPIDR_AFF1_SHIFT) | \
+				 (MPIDR_AFFLVL_MASK << MPIDR_AFF0_SHIFT))
+
+#define MPIDR_AFF_ID(mpid, n)					\
+	(((mpid) >> MPIDR_AFF_SHIFT(n)) & MPIDR_AFFLVL_MASK)
+
+/*
+ * An invalid MPID. This value can be used by functions that return an MPID to
+ * indicate an error.
+ */
+#define INVALID_MPID		U(0xFFFFFFFF)
+
+
+#define read_mpidr() (__get_MPIDR())
+
+#ifndef SUNXI_C0_CPU_CTRL_REG
+#define SUNXI_C0_CPU_CTRL_REG(n)	0
+#define SUNXI_CPU_UNK_REG(n)		0
+#define SUNXI_CPU_CTRL_REG(n)		0
+#endif
+
 static void sunxi_cpu_disable_power(unsigned int cluster, unsigned int core)
 {
 	if (mmio_read_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core)) == 0xff)
@@ -2612,16 +2676,50 @@ static void sunxi_cpu_enable_power(unsigned int cluster, unsigned int core)
 	local_delay_us(1);
 }
 
-void sunxi_cpu_on(unsigned targetcore)
+/* We can't turn ourself off like this, but it works for other cores. */
+static void sunxi_cpu_off(u_register_t mpidr)
 {
-	unsigned int cluster = 0;//MPIDR_AFFLVL1_VAL(mpidr);
-	unsigned int core    = targetcore;//MPIDR_AFFLVL0_VAL(mpidr);
+	unsigned int cluster = MPIDR_AFFLVL1_VAL(mpidr);
+	unsigned int core    = MPIDR_AFFLVL0_VAL(mpidr);
+
+	PRINTF("PSCI: Powering off cluster %d core %d\n", cluster, core);
+
+	if (sunxi_cpucfg_has_per_cluster_regs()) {
+		/* Deassert DBGPWRDUP */
+		////mmio_clrbits_32(SUNXI_CPUCFG_DBG_REG0, BIT(core));
+		/* Activate the core output clamps, but not for core 0. */
+		if (core != 0) {
+			mmio_setbits_32(SUNXI_POWEROFF_GATING_REG(cluster),
+					BIT(core));
+		}
+		/* Assert CPU power-on reset */
+		mmio_clrbits_32(SUNXI_POWERON_RST_REG(cluster), BIT(core));
+		/* Remove power from the CPU */
+		sunxi_cpu_disable_power(cluster, core);
+	} else {
+		/* power down(?) debug core */
+		mmio_clrbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(8));
+		/* ??? Activate the core output clamps, but not for core 0 */
+		if (core != 0) {
+			mmio_setbits_32(SUNXI_CPU_UNK_REG(core), BIT(1));
+		}
+		/* ??? Assert CPU power-on reset ??? */
+		mmio_clrbits_32(SUNXI_CPU_UNK_REG(core), BIT(0));
+		/* Remove power from the CPU */
+		sunxi_cpu_disable_power(cluster, core);
+	}
+}
+
+void sunxi_cpu_on(u_register_t mpidr)
+{
+	unsigned int cluster = MPIDR_AFFLVL1_VAL(mpidr);
+	unsigned int core    = MPIDR_AFFLVL0_VAL(mpidr);
 
 	PRINTF("PSCI: Powering on cluster %d core %d\n", cluster, core);
 
 	if (sunxi_cpucfg_has_per_cluster_regs()) {
 		/* Assert CPU core reset */
-		mmio_clrbits_32(SUNXI_CPUCFG_RST_CTRL_REG(cluster), BIT(core));
+		mmio_clrbits_32(SUNXI_CPUCFG_RST_CTRL_REG(cluster, core), BIT(core));
 		/* Assert CPU power-on reset */
 		mmio_clrbits_32(SUNXI_POWERON_RST_REG(cluster), BIT(core));
 		/* Set CPU to start in AArch64 mode */
@@ -2634,32 +2732,48 @@ void sunxi_cpu_on(unsigned targetcore)
 		/* Deassert CPU power-on reset */
 		mmio_setbits_32(SUNXI_POWERON_RST_REG(cluster), BIT(core));
 		/* Deassert CPU core reset */
-		mmio_setbits_32(SUNXI_CPUCFG_RST_CTRL_REG(cluster), BIT(core));
+		mmio_setbits_32(SUNXI_CPUCFG_RST_CTRL_REG(cluster, core), BIT(core));
 		/* Assert DBGPWRDUP */
-		mmio_setbits_32(SUNXI_CPUCFG_DBG_REG0, BIT(core));
+		////mmio_setbits_32(SUNXI_CPUCFG_DBG_REG0, BIT(core));
 	} else {
-//		/* Assert CPU core reset */
-//		mmio_clrbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(0));
-//		/* ??? Assert CPU power-on reset ??? */
-//		mmio_clrbits_32(SUNXI_CPU_UNK_REG(core), BIT(0));
-//
-//		/* Set CPU to start in AArch64 mode */
-//		mmio_setbits_32(SUNXI_CPU_CTRL_REG(core), BIT(0));
-//
-//		/* Apply power to the CPU */
-//		sunxi_cpu_enable_power(cluster, core);
-//
-//		/* ??? Release the core output clamps ??? */
-//		mmio_clrbits_32(SUNXI_CPU_UNK_REG(core), BIT(1));
-//		/* ??? Deassert CPU power-on reset ??? */
-//		mmio_setbits_32(SUNXI_CPU_UNK_REG(core), BIT(0));
-//		/* Deassert CPU core reset */
-//		mmio_setbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(0));
-//		/* power up(?) debug core */
-//		mmio_setbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(8));
+		/* Assert CPU core reset */
+		mmio_clrbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(0));
+		/* ??? Assert CPU power-on reset ??? */
+		mmio_clrbits_32(SUNXI_CPU_UNK_REG(core), BIT(0));
+
+		/* Set CPU to start in AArch64 mode */
+		mmio_setbits_32(SUNXI_CPU_CTRL_REG(core), BIT(0));
+
+		/* Apply power to the CPU */
+		sunxi_cpu_enable_power(cluster, core);
+
+		/* ??? Release the core output clamps ??? */
+		mmio_clrbits_32(SUNXI_CPU_UNK_REG(core), BIT(1));
+		/* ??? Deassert CPU power-on reset ??? */
+		mmio_setbits_32(SUNXI_CPU_UNK_REG(core), BIT(0));
+		/* Deassert CPU core reset */
+		mmio_setbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(0));
+		/* power up(?) debug core */
+		mmio_setbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(8));
 	}
 }
-#endif
+
+void sunxi_cpu_power_off_others(void)
+{
+	u_register_t self = read_mpidr();
+	unsigned int cluster;
+	unsigned int core;
+
+	for (cluster = 0; cluster < PLATFORM_CLUSTER_COUNT; ++cluster) {
+		for (core = 0; core < PLATFORM_MAX_CPUS_PER_CLUSTER; ++core) {
+			u_register_t mpidr = (cluster << MPIDR_AFF1_SHIFT) |
+					     (core    << MPIDR_AFF0_SHIFT) |
+					     BIT(31);
+			if (mpidr != self)
+				sunxi_cpu_off(mpidr);
+		}
+	}
+}
 
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
@@ -2897,10 +3011,10 @@ void cpump_initialize(void)
 	}
 	PRINTF("CLU_DSU_STATUS_REG=%08X, CLU_DSU_RST_CTRL=%08X\n", (unsigned) CLUSTER_CFG->CLU_DSU_STATUS_REG, (unsigned) CLUSTER_CFG->CLU_DSU_RST_CTRL);
 	//memset32((void *) (SUNXI_R_PRCM_BASE + 0x140), ~0, 64);
-	PRINTF("SUNXI_R_PRCM_BASE:\n");
-	printhex32(SUNXI_R_PRCM_BASE, (void *) SUNXI_R_PRCM_BASE, 1024);
-	PRINTF("SUNXI_R_CPUCFG_BASE:\n");
-	printhex32(SUNXI_R_CPUCFG_BASE, (void *) SUNXI_R_CPUCFG_BASE, 1024);
+//	PRINTF("SUNXI_R_PRCM_BASE:\n");
+//	printhex32(SUNXI_R_PRCM_BASE, (void *) SUNXI_R_PRCM_BASE, 1024);
+//	PRINTF("SUNXI_R_CPUCFG_BASE:\n");
+//	printhex32(SUNXI_R_CPUCFG_BASE, (void *) SUNXI_R_CPUCFG_BASE, 1024);
 #endif
 
 	lclspin_enable();	// Allwinner H3 - может работать с блокировками только после включения MMU
