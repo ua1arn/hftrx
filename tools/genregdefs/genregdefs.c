@@ -47,6 +47,12 @@ struct defdfn
 	char *comment;
 };
 
+struct commendfn
+{
+	LIST_ENTRY item;
+	char *line;
+};
+
 enum regsccess
 {
 	REGRW,
@@ -95,6 +101,7 @@ struct parsedfile
 	LIST_ENTRY item;
 	LIST_ENTRY regslist;
 	LIST_ENTRY defineslist;
+	LIST_ENTRY commentslist;
 
 	char bname[VNAME_MAX];
 	char *comment;
@@ -432,6 +439,19 @@ void gendefines(struct parsedfile *pfl)
 		else
 			emitline(0, "#define %s %s\n", defp->name, defp->value);
 	}
+}
+
+void gencomments(struct parsedfile *pfl)
+{
+	LIST_ENTRY * const head = & pfl->commentslist;
+	LIST_ENTRY * t;
+	emitline(0, "/*\n");
+	for (t = head->Flink; t != head; t = t->Flink)
+	{
+		struct commendfn *const p = CONTAINING_RECORD(t, struct commendfn, item);
+		emitline(0, " * %s\n", p->line);
+	}
+	emitline(0, " */\n");
 }
 
 void genstruct(struct parsedfile *pfl)
@@ -826,6 +846,17 @@ static void parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead)
 	}
 }
 
+// Peripherial block multi-line comments
+static void storecomments(struct parsedfile *pfl, const char * s)
+{
+	struct commendfn * const p = malloc(sizeof (struct commendfn));
+	if (p == NULL)
+		return;
+	p->line = strdup(s);
+	InsertTailList(& pfl->commentslist, & p->item);
+	//fprintf(stderr, "Parsed [%s]: typname='%s', comment='%s'\n", token0, typname, comment);
+}
+
 // 0 - end of file
 // 1 - register definition ok
 static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file)
@@ -871,10 +902,21 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file)
 	{
 		//fprintf(stderr, "0 token0=%s\n", token0);
 		memset(comment, 0, sizeof comment);
-		if (1 == sscanf(token0, "#comment; %1023[^\n]\n", comment))
+		if (0)
+		{
+
+		}
+		else if (1 == sscanf(token0, "#rem; %1023[^\n]\n", comment))
 		{
 			//fprintf(stderr, "Parsed comment='%s'\n", comment);
-			pfl->comment = strdup(comment);
+			storecomments(pfl, comment);
+			if (nextline(fp) == 0)
+				break;
+		}
+		else if (1 == sscanf(token0, "#comment; %1023[^\n]\n", comment))
+		{
+			//fprintf(stderr, "Parsed comment='%s'\n", comment);
+			storecomments(pfl, comment);
 			if (nextline(fp) == 0)
 				break;
 		}
@@ -988,6 +1030,7 @@ static int loadregs(struct parsedfile *pfl, FILE *fp, const char *file)
 
 	InitializeListHead(&pfl->regslist);
 	InitializeListHead(&pfl->defineslist);
+	InitializeListHead(&pfl->commentslist);
 
 	pfl->file = strdup(file);
 	pfl->comment = NULL;
@@ -1060,6 +1103,20 @@ static void freedefines(PLIST_ENTRY p)
 	}
 }
 
+/* release memory of comments */
+static void freecomments(PLIST_ENTRY p)
+{
+	PLIST_ENTRY t;
+	//fprintf(stderr, "Release memory\n");
+	for (t = p->Flink; t != p;)
+	{
+		struct commendfn *const defp = CONTAINING_RECORD(t, struct commendfn, item);
+		t = t->Flink;
+		free(defp->line);
+		free(defp);
+	}
+}
+
 static void freeregs(struct parsedfile *pfl)
 {
 	int i;
@@ -1081,6 +1138,7 @@ static void freeregs(struct parsedfile *pfl)
 	//free(pfl->sss);
 	freeregdfn(&pfl->regslist);
 	freedefines(&pfl->defineslist);
+	freecomments(&pfl->commentslist);
 	free(pfl->comment);
 	free(pfl->file);
 }
@@ -1201,14 +1259,13 @@ static void loadfile(const char *file)
 
 static void processfile_periphregs(struct parsedfile *pfl)
 {
-
 	if (!IsListEmpty(&pfl->regslist))
 	{
+		if (!IsListEmpty(&pfl->commentslist))
+		{
+			gencomments(pfl);
+		}
 		genstruct(pfl);
-	}
-	else
-	{
-		//fprintf(stderr, "#error No registers in '%s'\n", pfl->bname);
 	}
 }
 

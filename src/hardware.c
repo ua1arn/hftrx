@@ -2522,8 +2522,8 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 // https://github.com/ARM-software/arm-trusted-firmware/blob/master/plat/allwinner/common/sunxi_native_pm.c#L69
 // https://github.com/ARM-software/arm-trusted-firmware/blob/master/plat/allwinner/common/sunxi_cpu_ops.c#L88
 
-#define SUNXI_R_CPUCFG_BASE		((uintptr_t) 0x07000400)	// TBD: update this!!!
-#define SUNXI_R_PRCM_BASE ((uintptr_t) 0x07010000)
+#define SUNXI_R_CPUCFG_BASE		((uintptr_t) 0x07050000)
+#define SUNXI_R_PRCM_BASE 		((uintptr_t) 0x07010000)
 
 
 //#ifndef SUNXI_C0_CPU_CTRL_REG

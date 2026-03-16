@@ -287,7 +287,7 @@ typedef enum IRQn
 #define S_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< PRCM Power Reset Clock Management (PRCM) Base */
 #define S_GPIOL_BASE ((uintptr_t) 0x07025000)         /*!< S_GPIO Secure Port Controller Base */
 #define S_GPIOM_BASE ((uintptr_t) 0x07025030)         /*!< S_GPIO Secure Port Controller Base */
-#define CPUIDLE_BASE ((uintptr_t) 0x07050000)         /*!< CPUIDLE  Base */
+#define R_CPUCFG_BASE ((uintptr_t) 0x07050000)        /*!< R_CPUCFG SUNXI_R_CPUCFG_BASE Base */
 #define PPU_BASE ((uintptr_t) 0x07060000)             /*!< PPU PCK-600 S_PPU (PCK600). Base */
 #define S_UART0_BASE ((uintptr_t) 0x07080000)         /*!< UART  Base */
 #define S_UART1_BASE ((uintptr_t) 0x07081000)         /*!< UART  Base */
@@ -2458,6 +2458,19 @@ typedef struct RTWB_RCQ_Type
     __IOM uint32_t RTWB_RCQ_CTL;                      /*!< Offset 0x010 RTWB_RCQ_CTL_OFFSET          (0x8210) */
 } RTWB_RCQ_TypeDef; /* size of structure = 0x014 */
 /*
+ * taken from:
+ * git clone https://github.com/dlan17/trusted-firmware-a/
+ * git checkout "A733"
+ */
+/*
+ * @brief R_CPUCFG
+ */
+/*!< R_CPUCFG SUNXI_R_CPUCFG_BASE */
+typedef struct R_CPUCFG_Type
+{
+    __IOM uint32_t ttt;                               /*!< Offset 0x000  */
+} R_CPUCFG_TypeDef; /* size of structure = 0x004 */
+/*
  * @brief SID
  */
 /*!< SID Security ID */
@@ -3135,6 +3148,7 @@ typedef struct USB_OHCI_Capability_Type
 #define S_PRCM ((PRCM_TypeDef *) S_PRCM_BASE)         /*!< S_PRCM Power Reset Clock Management (PRCM) register set access pointer */
 #define S_GPIOL ((S_GPIO_TypeDef *) S_GPIOL_BASE)     /*!< S_GPIOL Secure Port Controller register set access pointer */
 #define S_GPIOM ((S_GPIO_TypeDef *) S_GPIOM_BASE)     /*!< S_GPIOM Secure Port Controller register set access pointer */
+#define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG SUNXI_R_CPUCFG_BASE register set access pointer */
 #define PPU ((PPU_TypeDef *) PPU_BASE)                /*!< PPU PCK-600 S_PPU (PCK600). register set access pointer */
 #define S_UART0 ((UART_TypeDef *) S_UART0_BASE)       /*!< S_UART0  register set access pointer */
 #define S_UART1 ((UART_TypeDef *) S_UART1_BASE)       /*!< S_UART1  register set access pointer */

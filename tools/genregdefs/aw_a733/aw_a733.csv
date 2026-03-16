@@ -511,8 +511,8 @@
 #typeend;
 
 
-#type; CPUIDLE; 
-#base; CPUIDLE 0x07050000; 
+#type; R_CPUCFG; SUNXI_R_CPUCFG_BASE
+#base; R_CPUCFG 0x07050000; 
 
 #typeend;
 

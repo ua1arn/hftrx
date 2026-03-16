@@ -15315,6 +15315,22 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>R_CPUCFG</name>
+  <description>SUNXI_R_CPUCFG_BASE</description>
+  <baseAddress>0x07050000</baseAddress>
+  <registers>
+   <register>
+    <name>ttt</name>
+    <displayName>ttt</displayName>
+    <description></description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>SID</name>
   <description>Security ID</description>
   <baseAddress>0x03006000</baseAddress>

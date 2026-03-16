@@ -1,0 +1,14 @@
+## https://linux-sunxi.org/CPUIDLE
+
+## git clone https://github.com/dlan17/trusted-firmware-a/
+## git checkout "A733"
+
+#type; R_CPUCFG; SUNXI_R_CPUCFG_BASE
+
+#rem; taken from:
+#rem; git clone https://github.com/dlan17/trusted-firmware-a/
+#rem; git checkout "A733"
+
+#regdef; ttt; 0x00;
+
+#typeend;
