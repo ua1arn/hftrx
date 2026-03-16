@@ -2522,49 +2522,30 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 // https://github.com/ARM-software/arm-trusted-firmware/blob/master/plat/allwinner/common/sunxi_native_pm.c#L69
 // https://github.com/ARM-software/arm-trusted-firmware/blob/master/plat/allwinner/common/sunxi_cpu_ops.c#L88
 
+
+#define SUNXI_R_PRCM_BASE		((uintptr_t) 0x07010000)
 #define SUNXI_R_CPUCFG_BASE		((uintptr_t) 0x07050000)
-#define SUNXI_R_PRCM_BASE 		((uintptr_t) 0x07010000)
+#define SUNXI_CPUCFG_BASE		((uintptr_t) 0x08000000)
 
 
-//#ifndef SUNXI_C0_CPU_CTRL_REG
-//#define SUNXI_C0_CPU_CTRL_REG(n)	0
-//#define SUNXI_CPU_UNK_REG(n)		0
-//#define SUNXI_CPU_CTRL_REG(n)		0
-//#endif
-
-#if 0
-// https://github.com/ARM-software/arm-trusted-firmware/blob/master/plat/allwinner/common/include/sunxi_cpucfg_ncat.h#L31
 /* c = cluster, n = core */
-#define SUNXI_CPUCFG_CLS_CTRL_REG0(c)	(SUNXI_CPUCFG_BASE + 0x0010 + (c) * 0x10)
-#define SUNXI_CPUCFG_CLS_CTRL_REG1(c)	(SUNXI_CPUCFG_BASE + 0x0014 + (c) * 0x10)
-#define SUNXI_CPUCFG_CACHE_CFG_REG	(SUNXI_CPUCFG_BASE + 0x0024)
-/* The T507 datasheet does not mention this register. */
-#define SUNXI_CPUCFG_DBG_REG0		(SUNXI_CPUCFG_BASE + 0x00c0)
-
-#define SUNXI_CPUCFG_RST_CTRL_REG(c)	(SUNXI_CPUCFG_BASE + 0x0000 + (c) * 4)
-#define SUNXI_CPUCFG_RVBAR_LO_REG(n)	(SUNXI_CPUCFG_BASE + 0x0040 + (n) * 8)
-#define SUNXI_CPUCFG_RVBAR_HI_REG(n)	(SUNXI_CPUCFG_BASE + 0x0044 + (n) * 8)
-
-#define SUNXI_C0_CPU_CTRL_REG(n)	(SUNXI_CPUCFG_BASE + 0x0060 + (n) * 4)
-
-#define SUNXI_CPU_CTRL_REG(n)		(SUNXI_CPUSUBSYS_BASE + 0x20 + (n) * 4)
-#define SUNXI_ALT_RVBAR_LO_REG(n)	(SUNXI_CPUSUBSYS_BASE + 0x40 + (n) * 8)
-#define SUNXI_ALT_RVBAR_HI_REG(n)	(SUNXI_CPUSUBSYS_BASE + 0x44 + (n) * 8)
+#define SUNXI_CPUCFG_RST_CTRL_REG(c, n)	(SUNXI_CLUSTERCFG_BASE + (n) * 0x1000)
+#define SUNXI_CPUCFG_GEN_CTRL_REG0(c)	(SUNXI_CPUCFG_BASE + 0x0000)
+#define SUNXI_CPUCFG_RVBAR_LO_REG(n)	(SUNXI_CPUCFG_BASE + 0x4 + ((n) + 1) * 0x1000)
+#define SUNXI_CPUCFG_RVBAR_HI_REG(n)	(SUNXI_CPUCFG_BASE + 0x8 + ((n) + 1) * 0x1000)
 
 #define SUNXI_POWERON_RST_REG(c)	(SUNXI_R_CPUCFG_BASE + 0x0040 + (c) * 4)
 #define SUNXI_POWEROFF_GATING_REG(c)	(SUNXI_R_CPUCFG_BASE + 0x0044 + (c) * 4)
 #define SUNXI_CPU_POWER_CLAMP_REG(c, n)	(SUNXI_R_CPUCFG_BASE + 0x0050 + \
 					(c) * 0x10 + (n) * 4)
-#define SUNXI_CPU_UNK_REG(n)		(SUNXI_R_CPUCFG_BASE + 0x0070 + (n) * 4)
 
-#define SUNXI_CPUIDLE_EN_REG		(SUNXI_R_CPUCFG_BASE + 0x0100)
-#define SUNXI_CORE_CLOSE_REG		(SUNXI_R_CPUCFG_BASE + 0x0104)
-#define SUNXI_PWR_SW_DELAY_REG		(SUNXI_R_CPUCFG_BASE + 0x0140)
-#define SUNXI_CONFIG_DELAY_REG		(SUNXI_R_CPUCFG_BASE + 0x0144)
+#define SUNXI_AA64nAA32_REG		SUNXI_CPUCFG_GEN_CTRL_REG0
+#define SUNXI_AA64nAA32_OFFSET		4
 
-#define SUNXI_AA64nAA32_REG		SUNXI_CPUCFG_CLS_CTRL_REG0
-#define SUNXI_AA64nAA32_OFFSET		24
-#endif
+static inline bool sunxi_cpucfg_has_per_cluster_regs(void)
+{
+	return true;
+}
 
 static inline void writel(uint32_t val, volatile void *addr)
 {
@@ -2585,6 +2566,18 @@ static inline void mmio_setbits_32(uintptr_t addr, uint32_t set)
 {
     writel(readl((void *) addr) | set , (void *) addr);
 }
+
+
+static inline void mmio_write_32(uintptr_t addr, uint32_t value)
+{
+    writel(value, (void *) addr);
+}
+
+static inline uint32_t mmio_read_32(uintptr_t addr)
+{
+    return readl((void *) addr);
+}
+
 #ifdef BIT
 #undef BIT
 #define BIT(n) (1UL << (n))
@@ -2592,7 +2585,7 @@ static inline void mmio_setbits_32(uintptr_t addr, uint32_t set)
 #define BIT(n) (1UL << (n))
 #endif
 
-#if 0
+#if 1
 static void sunxi_cpu_disable_power(unsigned int cluster, unsigned int core)
 {
 	if (mmio_read_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core)) == 0xff)
@@ -2617,19 +2610,6 @@ static void sunxi_cpu_enable_power(unsigned int cluster, unsigned int core)
 	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0x80);
 	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0x00);
 	local_delay_us(1);
-}
-
-// A64: 1
-
-static int sunxi_cpucfg_has_per_cluster_regs(void)
-{
-	return 1;
-}
-
-// H616
-static inline bool ZZsunxi_cpucfg_has_per_cluster_regs(void)
-{
-	return (plat_get_soc_revision() != 2);
 }
 
 void sunxi_cpu_on(unsigned targetcore)
@@ -2658,7 +2638,7 @@ void sunxi_cpu_on(unsigned targetcore)
 		/* Assert DBGPWRDUP */
 		mmio_setbits_32(SUNXI_CPUCFG_DBG_REG0, BIT(core));
 	} else {
-		/* Assert CPU core reset */
+//		/* Assert CPU core reset */
 //		mmio_clrbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(0));
 //		/* ??? Assert CPU power-on reset ??? */
 //		mmio_clrbits_32(SUNXI_CPU_UNK_REG(core), BIT(0));
