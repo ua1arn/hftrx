@@ -2644,11 +2644,26 @@ static inline uint32_t mmio_read_32(uintptr_t addr)
 
 #define read_mpidr() (__get_MPIDR())
 
-#ifndef SUNXI_C0_CPU_CTRL_REG
-#define SUNXI_C0_CPU_CTRL_REG(n)	0
-#define SUNXI_CPU_UNK_REG(n)		0
-#define SUNXI_CPU_CTRL_REG(n)		0
+
+
+#ifdef SUNXI_CPUCFG_STEP
+#define SUNXI_INITARCH_REG(n)		(SUNXI_CPUCFG_BASE + SUNXI_CPUCFG_OFFSET + (n) * SUNXI_CPUCFG_STEP)
+#else
+#define SUNXI_INITARCH_REG(n)		(SUNXI_CPUCFG_BASE + 0x0020 + (n) * 4)
 #endif
+#define HOTPLUG_CONTROL_REG(n)		(SUNXI_R_CPUCFG_BASE + 0x200 + (n) * 4)
+#define HOTPLUG_POWERMODE_REG(n)	(SUNXI_R_CPUCFG_BASE + 0x220 + (n) * 4)
+#define PPU_PWSR(n)			(SUNXI_R_CPUCFG_BASE + (n) * 0x1000 + 0x1008)
+
+#define SUNXI_CPU_CTRL_REG(n)		(SUNXI_CPUSUBSYS_BASE + 0x20 + (n) * 4)
+#define SUNXI_ALT_RVBAR_LO_REG(n)	(SUNXI_CPUSUBSYS_BASE + 0x40 + (n) * 8)
+#define SUNXI_ALT_RVBAR_HI_REG(n)	(SUNXI_CPUSUBSYS_BASE + 0x44 + (n) * 8)
+//
+//#ifndef SUNXI_C0_CPU_CTRL_REG
+//#define SUNXI_C0_CPU_CTRL_REG(n)	0
+//#define SUNXI_CPU_UNK_REG(n)		0
+//#define SUNXI_CPU_CTRL_REG(n)		0
+//#endif
 
 static void sunxi_cpu_disable_power(unsigned int cluster, unsigned int core)
 {
@@ -2697,16 +2712,16 @@ static void sunxi_cpu_off(u_register_t mpidr)
 		/* Remove power from the CPU */
 		sunxi_cpu_disable_power(cluster, core);
 	} else {
-		/* power down(?) debug core */
-		mmio_clrbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(8));
-		/* ??? Activate the core output clamps, but not for core 0 */
-		if (core != 0) {
-			mmio_setbits_32(SUNXI_CPU_UNK_REG(core), BIT(1));
-		}
-		/* ??? Assert CPU power-on reset ??? */
-		mmio_clrbits_32(SUNXI_CPU_UNK_REG(core), BIT(0));
-		/* Remove power from the CPU */
-		sunxi_cpu_disable_power(cluster, core);
+//		/* power down(?) debug core */
+//		mmio_clrbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(8));
+//		/* ??? Activate the core output clamps, but not for core 0 */
+//		if (core != 0) {
+//			mmio_setbits_32(SUNXI_CPU_UNK_REG(core), BIT(1));
+//		}
+//		/* ??? Assert CPU power-on reset ??? */
+//		mmio_clrbits_32(SUNXI_CPU_UNK_REG(core), BIT(0));
+//		/* Remove power from the CPU */
+//		sunxi_cpu_disable_power(cluster, core);
 	}
 }
 
@@ -2736,25 +2751,25 @@ void sunxi_cpu_on(u_register_t mpidr)
 		/* Assert DBGPWRDUP */
 		////mmio_setbits_32(SUNXI_CPUCFG_DBG_REG0, BIT(core));
 	} else {
-		/* Assert CPU core reset */
-		mmio_clrbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(0));
-		/* ??? Assert CPU power-on reset ??? */
-		mmio_clrbits_32(SUNXI_CPU_UNK_REG(core), BIT(0));
-
-		/* Set CPU to start in AArch64 mode */
-		mmio_setbits_32(SUNXI_CPU_CTRL_REG(core), BIT(0));
-
-		/* Apply power to the CPU */
-		sunxi_cpu_enable_power(cluster, core);
-
-		/* ??? Release the core output clamps ??? */
-		mmio_clrbits_32(SUNXI_CPU_UNK_REG(core), BIT(1));
-		/* ??? Deassert CPU power-on reset ??? */
-		mmio_setbits_32(SUNXI_CPU_UNK_REG(core), BIT(0));
-		/* Deassert CPU core reset */
-		mmio_setbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(0));
-		/* power up(?) debug core */
-		mmio_setbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(8));
+//		/* Assert CPU core reset */
+//		mmio_clrbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(0));
+//		/* ??? Assert CPU power-on reset ??? */
+//		mmio_clrbits_32(SUNXI_CPU_UNK_REG(core), BIT(0));
+//
+//		/* Set CPU to start in AArch64 mode */
+//		mmio_setbits_32(SUNXI_CPU_CTRL_REG(core), BIT(0));
+//
+//		/* Apply power to the CPU */
+//		sunxi_cpu_enable_power(cluster, core);
+//
+//		/* ??? Release the core output clamps ??? */
+//		mmio_clrbits_32(SUNXI_CPU_UNK_REG(core), BIT(1));
+//		/* ??? Deassert CPU power-on reset ??? */
+//		mmio_setbits_32(SUNXI_CPU_UNK_REG(core), BIT(0));
+//		/* Deassert CPU core reset */
+//		mmio_setbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(0));
+//		/* power up(?) debug core */
+//		mmio_setbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(8));
 	}
 }
 
@@ -2775,6 +2790,7 @@ void sunxi_cpu_power_off_others(void)
 	}
 }
 
+
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
@@ -2789,8 +2805,17 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 //	* rvaddr = startfunc;
 //	ASSERT(* rvaddr == startfunc);
 	CPU_SUBSYS_CTRL->CLU0 [targetcore].CPU_CTRL_REG &= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
-	CPU_SUBSYS_CTRL->CLU0 [targetcore].RVBARADDR_L = ptr_lo32(startfunc);
-	CPU_SUBSYS_CTRL->CLU0 [targetcore].RVBARADDR_H = ptr_hi32(startfunc);
+	if (sunxi_cpucfg_has_per_cluster_regs()) {
+		mmio_write_32(SUNXI_CPUCFG_RVBAR_LO_REG(targetcore),
+				startfunc & 0xffffffff);
+		mmio_write_32(SUNXI_CPUCFG_RVBAR_HI_REG(targetcore),
+				startfunc >> 32);
+	} else {
+//		mmio_write_32(SUNXI_ALT_RVBAR_LO_REG(targetcore),
+//				startfunc & 0xffffffff);
+//		mmio_write_32(SUNXI_ALT_RVBAR_HI_REG(targetcore),
+//				startfunc >> 32);
+	}
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
 	CLUSTER_CFG->C0_CPU  [targetcore].C0_CPUx_CTRL_REG |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
@@ -3005,8 +3030,10 @@ void cpump_initialize(void)
 
 #if CPUSTYLE_A733
 	// diags
-	for (core = 0; core < arm_hardware_clustersize(); ++ core)
+	for (core = 1; core < arm_hardware_clustersize(); ++ core)
 	{
+		PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
+		sunxi_cpu_on(core);
 		PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
 	}
 	PRINTF("CLU_DSU_STATUS_REG=%08X, CLU_DSU_RST_CTRL=%08X\n", (unsigned) CLUSTER_CFG->CLU_DSU_STATUS_REG, (unsigned) CLUSTER_CFG->CLU_DSU_RST_CTRL);
