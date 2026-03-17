@@ -39,25 +39,9 @@
 *                   Therefore partial copyright by egnite Software GmbH.
 ****************************************************************************/
 
-/*
- * Some defines for the program status registers
- */
-   ARM_MODE_USER  = 0x10      /* Normal User Mode                             */ 
-   ARM_MODE_FIQ   = 0x11      /* FIQ Fast Interrupts Mode                     */
-   ARM_MODE_IRQ   = 0x12      /* IRQ Standard Interrupts Mode                 */
-   ARM_MODE_SVC   = 0x13      /* Supervisor Interrupts Mode            		  */
-   ARM_MODE_MON   = 0x16      /* Monitor Interrupts Mode (With Security Extensions) */
-   ARM_MODE_ABORT = 0x17      /* Abort Processing memory Faults Mode          */
-   //CA53 not have ARM_MODE_HYP	  = 0x1A      /* Hypervisor Interrupts Mode            		  */
-   ARM_MODE_UNDEF = 0x1B      /* Undefined Instructions Mode                  */
-   ARM_MODE_SYS   = 0x1F      /* System Running in Priviledged Operating Mode */
-   
-	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
-	I_BIT          = 0x80      /* disable IRQ when I bit is set */
-	F_BIT          = 0x40      /* disable FIQ when F bit is set */
 	STACKSIZEALL = 4096
 
-	.section ".text"
+	.section ".noinit"
 
 	.align 4, 0
 	.global aarch64_stack_top

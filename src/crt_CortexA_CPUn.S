@@ -57,7 +57,7 @@
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  	STACKSIZEALL = 512
 
-	.section ".text"
+	.section ".noinit"
 	.code 32
 
 	.align 4, 0
