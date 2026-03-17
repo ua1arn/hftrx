@@ -723,6 +723,7 @@ void InitializeIrql(IRQL_t newIRQL);
 
 #if WITHTOUCHGUI
 #include "gui.h"
+#include "gui_user_ext.h"
 #endif /* WITHTOUCHGUI */
 
 #ifdef __cplusplus

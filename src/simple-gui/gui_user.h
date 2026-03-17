@@ -6,7 +6,8 @@
 #if WITHTOUCHGUI
 
 #include "gui.h"
-#include "framework/gui_structs.h"
+#include "framework/gui_settings.h"
+#include "gui_user_ext.h"
 
 void gui_user_actions_after_close_window(void);
 void footer_buttons_state(uint_fast8_t state, ...);
@@ -60,17 +61,6 @@ enum {
 
 	MENU_COUNT
 };
-
-typedef struct {
-	uint8_t first_id;			// первое вхождение номера метки уровня
-	uint8_t last_id;			// последнее вхождение номера метки уровня
-	uint8_t num_rows;			// число меток уровня
-	uint8_t count;				// число значений уровня
-	int8_t selected_str;		// выбранная строка уровня
-	int8_t selected_label;		// выбранная метка уровня
-	uint8_t add_id;				// номер строки уровня, отображаемой первой
-	menu_names_t menu_block[MENU_ARRAY_SIZE];	// массив значений уровня меню
-} menu_t;
 
 typedef struct {
 	char name[TEXT_ARRAY_SIZE];
