@@ -15431,6 +15431,38 @@
   <description>SUNXI_R_CPUCFG_BASE</description>
   <baseAddress>0x07050000</baseAddress>
   <registers>
+   <register>
+    <name>POWERON_RST_REG</name>
+    <displayName>POWERON_RST_REG</displayName>
+    <description>Cluster0 poweron register (bit0 - core0)</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>POWEROFF_GATING_REG</name>
+    <displayName>POWEROFF_GATING_REG</displayName>
+    <description>Cluster0 poweron register (bit0 - core0)</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000050</addressOffset>
+    <register>
+     <name>CPU_POWER_CLAMP_REG</name>
+     <displayName>CPU_POWER_CLAMP_REG</displayName>
+     <description>Cluster0 power clamp registers (for each core)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x020</dimIncrement>
+   </cluster>
    <cluster>
     <dim>8</dim>
     <addressOffset>0x00000200</addressOffset>

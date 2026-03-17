@@ -2725,10 +2725,11 @@ static void sunxi_cpu_off(u_register_t mpidr)
 	}
 }
 
-void sunxi_cpu_on(u_register_t mpidr)
+//void sunxi_cpu_on(u_register_t mpidr)
+void sunxi_cpu_on(unsigned cluster, unsigned core)
 {
-	unsigned int cluster = MPIDR_AFFLVL1_VAL(mpidr);
-	unsigned int core    = MPIDR_AFFLVL0_VAL(mpidr);
+//	unsigned int cluster = MPIDR_AFFLVL1_VAL(mpidr);
+//	unsigned int core    = MPIDR_AFFLVL0_VAL(mpidr);
 
 	PRINTF("PSCI: Powering on cluster %d core %d\n", cluster, core);
 
@@ -2800,11 +2801,11 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	ASSERT(targetcore != 0);
 
 	CLUSTER_CFG->C0_CPU  [targetcore].C0_CPUx_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET 0: assert
-	//sunxi_cpu_on(targetcore);
+	sunxi_cpu_on(0, targetcore);
+	CPU_SUBSYS_CTRL->CLU0 [targetcore].CPU_CTRL_REG |= 1;//&= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
 
 //	* rvaddr = startfunc;
 //	ASSERT(* rvaddr == startfunc);
-	CPU_SUBSYS_CTRL->CLU0 [targetcore].CPU_CTRL_REG &= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
 	if (sunxi_cpucfg_has_per_cluster_regs()) {
 		mmio_write_32(SUNXI_CPUCFG_RVBAR_LO_REG(targetcore),
 				startfunc & 0xffffffff);
@@ -3028,26 +3029,33 @@ void cpump_initialize(void)
 	SystemCoreClock = CPU_FREQ;
 	cortexa_cpuinfo();
 
-#if CPUSTYLE_A733
+#if CPUSTYLE_A733 && 1
 	// diags
-	for (core = 1; core < arm_hardware_clustersize(); ++ core)
+	static uint8_t ss [4096];
+	memcpy(ss, PPU, 4096);
+	for (core = 0; core < arm_hardware_clustersize(); ++ core)
 	{
 		PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
-		sunxi_cpu_on(core);
-		PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
+		//sunxi_cpu_on(core);
+		//PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
+
+		const PPU_TypeDef * const p = PPU0 + core;
+		PRINTF("PPU%u: PPU_PWSR=%08X\n", core, p->PPU_PWSR);
+		PRINTF("R_CPUCFG->CPU_POWER_CLAMP_REG[%u]=%08X\n", core, (unsigned) R_CPUCFG->CPU_POWER_CLAMP_REG [core]);
 	}
+	PRINTF("POWERON_RST_REG=%08X, POWEROFF_GATING_REG=%08X\n", (unsigned) R_CPUCFG->POWERON_RST_REG, (unsigned) R_CPUCFG->POWEROFF_GATING_REG);
 	PRINTF("CLU_DSU_STATUS_REG=%08X, CLU_DSU_RST_CTRL=%08X\n", (unsigned) CLUSTER_CFG->CLU_DSU_STATUS_REG, (unsigned) CLUSTER_CFG->CLU_DSU_RST_CTRL);
 	//memset32((void *) (SUNXI_R_PRCM_BASE + 0x140), ~0, 64);
 //	PRINTF("SUNXI_R_PRCM_BASE:\n");
 //	printhex32(SUNXI_R_PRCM_BASE, (void *) SUNXI_R_PRCM_BASE, 1024);
-//	PRINTF("SUNXI_R_CPUCFG_BASE:\n");
-//	printhex32(SUNXI_R_CPUCFG_BASE, (void *) SUNXI_R_CPUCFG_BASE, 1024);
+	PRINTF("SUNXI_R_CPUCFG_BASE:\n");
+	printhex32(SUNXI_R_CPUCFG_BASE, (void *) SUNXI_R_CPUCFG_BASE, 1024);
+	return;
 #endif
-
 	lclspin_enable();	// Allwinner H3 - может работать с блокировками только после включения MMU
 	LCLSPINLOCK_INITIALIZE(& cpu1init);
 	const unsigned cluster = 0;
-	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
+	for (core = 6; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
 
 		LCLSPINLOCK_INITIALIZE(& cpu1userstart [core]);

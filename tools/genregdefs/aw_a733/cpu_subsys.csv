@@ -18,7 +18,7 @@
 #base; CPU_PLL_CFG 0x08870000; CPU PLL Configuration Register
 #typeend;
 
-## Register s
+## Registers
 
 #type; CPU_SUBSYS_CTRL;
 
