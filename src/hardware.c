@@ -2642,9 +2642,9 @@ static inline uint32_t mmio_read_32(uintptr_t addr)
 #define HOTPLUG_POWERMODE_REG(n)	(SUNXI_R_CPUCFG_BASE + 0x220 + (n) * 4)
 #define PPU_PWSR(n)			(SUNXI_R_CPUCFG_BASE + (n) * 0x1000 + 0x1008)
 
-#define SUNXI_CPU_CTRL_REG(n)		(SUNXI_CPUSUBSYS_BASE + 0x20 + (n) * 4)
-#define SUNXI_ALT_RVBAR_LO_REG(n)	(SUNXI_CPUSUBSYS_BASE + 0x40 + (n) * 8)
-#define SUNXI_ALT_RVBAR_HI_REG(n)	(SUNXI_CPUSUBSYS_BASE + 0x44 + (n) * 8)
+//#define SUNXI_CPU_CTRL_REG(n)		(SUNXI_CPUSUBSYS_BASE + 0x20 + (n) * 4)
+//#define SUNXI_ALT_RVBAR_LO_REG(n)	(SUNXI_CPUSUBSYS_BASE + 0x40 + (n) * 8)
+//#define SUNXI_ALT_RVBAR_HI_REG(n)	(SUNXI_CPUSUBSYS_BASE + 0x44 + (n) * 8)
 
 #ifdef SUNXI_CPUCFG_STEP
 #define SUNXI_INITARCH_REG(n)		(SUNXI_CPUCFG_BASE + SUNXI_CPUCFG_OFFSET + (n) * SUNXI_CPUCFG_STEP)
@@ -2684,7 +2684,7 @@ void sunxi_cpu_on(u_register_t mpidr)
 
 	PRINTF("PSCI: Powering on cluster %d core %d\n", cluster, core);
 
-	mmio_setbits_32(SUNXI_INITARCH_REG(core), AARCH64);
+	mmio_setbits_32(SUNXI_INITARCH_REG(core), AARCH64);	// На что влияет?
 
 	while ((mmio_read_32(PPU_PWSR(core + 1)) & 0xf) != STATE_OFF)
 		;
