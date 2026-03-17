@@ -19,8 +19,11 @@
 #ifndef BUFOVERSIZE
 	#define BUFOVERSIZE 1
 #endif /* BUFOVERSIZE */
-#undef RAMNC
-#define RAMNC
+
+//#undef RAMNC
+//#define RAMNC
+#define RAMNCRX RAMNC	// память буферов приёма откуда-либо
+#define RAMNCTX RAMNC	// память буферов передачи куда-либо
 
 // Одна из задач resampler - привести частоту кодека к требуемой для 48 кГц (lrckf=24576000, (clk=24571428)) = 0.99981396484375
 // Для USB - исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
@@ -1042,8 +1045,8 @@ typedef dmahandle<FLOAT_t, voice16txbuf_t, VOICE16TX_RESAMPLING, 1, SKIPSAMPLES_
 static voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
 static voice16txbuf_t voice16txbuf [VOICE16TX_CAPACITY];
 #else
-static RAMNC voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
-static RAMNC voice16txbuf_t voice16txbuf [VOICE16TX_CAPACITY];
+static RAMNCRX voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
+static RAMNCTX voice16txbuf_t voice16txbuf [VOICE16TX_CAPACITY];
 #endif
 
 static voice16rxdma_t codec16rx(IRQL_REALTIME, "16rx", voice16rxbuf, ARRAY_SIZE(voice16rxbuf));		// from codec
@@ -1256,7 +1259,7 @@ typedef buffitem<hdmi48tx_t> hdmi48txbuf_t;
 
 typedef dmahandle<FLOAT_t, hdmi48txbuf_t, HDMI48TX_RESAMPLING, 1, SKIPSAMPLES_HDMI> hdmi48txdma_t;
 
-static RAMNC hdmi48txbuf_t hdmi48txbuf [HDMI48TX_CAPACITY];
+static RAMNCTX hdmi48txbuf_t hdmi48txbuf [HDMI48TX_CAPACITY];
 
 
 static hdmi48txdma_t hdmi48tx(IRQL_REALTIME, "hdtx", hdmi48txbuf, ARRAY_SIZE(hdmi48txbuf));		// to codec
@@ -1422,7 +1425,7 @@ typedef ALIGNX_BEGIN struct voices32tx_tag
 
 typedef buffitem<voice32tx_t> voice32txbuf_t;
 
-static RAMNC voice32txbuf_t voice32txbuf [VOICE32TX_CAPACITY];
+static RAMNCTX voice32txbuf_t voice32txbuf [VOICE32TX_CAPACITY];
 
 typedef dmahandle<FLOAT_t, voice32txbuf_t, 0, 1, SKIPSAMPLES_NORESAMPLER> voice32txdma_t;
 
@@ -1570,7 +1573,7 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 
 typedef buffitem<voice32rx_t> voice32rxbuf_t;
 
-static RAMNC voice32rxbuf_t voice32rxbuf [VOICE32RX_CAPACITY];
+static RAMNCRX voice32rxbuf_t voice32rxbuf [VOICE32RX_CAPACITY];
 
 typedef dmahandle<int_fast32_t, voice32rxbuf_t, 0, 1, SKIPSAMPLES_NORESAMPLER> voice32rxdma_t;
 
@@ -1658,7 +1661,7 @@ typedef struct
 
 typedef buffitem<uacout48_t> uacout48buf_t;
 
-static RAMNC uacout48buf_t uacout48buf [UACOUT48_CAPACITY];
+static RAMNCRX uacout48buf_t uacout48buf [UACOUT48_CAPACITY];
 
 typedef dmahandle<FLOAT_t, uacout48buf_t, 1, 1, SKIPSAMPLES_USB> uacout48dma_t;
 
@@ -2497,7 +2500,7 @@ typedef enum
 	} uacinrts192_t;
 
 	typedef buffitem<uacinrts192_t> uacinrts192buf_t;
-	static RAMNC uacinrts192buf_t uacinrts192buf [UACINRTS192_CAPACITY];
+	static RAMNCTX uacinrts192buf_t uacinrts192buf [UACINRTS192_CAPACITY];
 
 	typedef dmahandle<int_fast32_t, uacinrts192buf_t, 1, 1, SKIPSAMPLES_USB> uacinrts192dma_t;
 
@@ -2577,7 +2580,7 @@ typedef enum
 	} uacinrts96_t;
 
 	typedef buffitem<uacinrts96_t> uacinrts96buf_t;
-	static RAMNC uacinrts96buf_t uacinrts96buf [UACINRTS96_CAPACITY];
+	static RAMNCTX uacinrts96buf_t uacinrts96buf [UACINRTS96_CAPACITY];
 
 	typedef dmahandle<int_fast32_t, uacinrts96buf_t, 1, 1, SKIPSAMPLES_USB> uacinrts96dma_t;
 
@@ -2657,7 +2660,7 @@ typedef struct
 
 typedef buffitem<uacin48_t> uacin48buf_t;
 
-static RAMNC uacin48buf_t uacin48buf [UACIN48_CAPACITY];
+static RAMNCTX uacin48buf_t uacin48buf [UACIN48_CAPACITY];
 
 typedef dmahandle<FLOAT_t, uacin48buf_t, 1, 1, SKIPSAMPLES_USB> uacin48dma_t;
 
