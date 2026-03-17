@@ -2230,7 +2230,7 @@ static void cortexa_cpuinfo(void)
 #if defined(__aarch64__)
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
-	PRINTF("CPU%u: VBAR_EL3=%08X, TTBR0_EL3=%08X, SCTLR_EL1=%08X, SCTLR_EL3=%08X, TCR_EL3=%08X, sp=%08X, MPIDR_EL1=%08X\n",
+	PRINTF("CPU%u: VBAR_EL3=%08X, TTBR0_EL3=%08X, SCTLR_EL1=%08X, SCTLR_EL3=%08X, TCR_EL3=%08X, sp=%08X, MPIDR_EL1=%08" PRIX64 "\n",
 			(unsigned) (__get_MPIDR_EL1() & 0xFF),
 			(unsigned) __get_VBAR_EL3(),
 			(unsigned) __get_TTBR0_EL3(),
@@ -2238,7 +2238,7 @@ static void cortexa_cpuinfo(void)
 			(unsigned) __get_SCTLR_EL3(),
 			(unsigned) __get_TCR_EL3(),
 			(unsigned) (uintptr_t) & vvv,
-			(unsigned) __get_MPIDR_EL1()
+			__get_MPIDR_EL1()
 			);
 	dbg_flush();
 #else
@@ -2307,12 +2307,6 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 }
 
 #endif
-
-void arm_hardware_core_poweron(unsigned cluster, unsigned core)
-{
-#if CPUSTYLE_A733 && 0
-#endif
-}
 
 #if ! defined(__aarch64__)
 
@@ -2550,7 +2544,7 @@ static inline void writel(uint32_t val, volatile void *addr)
 
 static inline uint32_t readl(const volatile void *addr)
 {
-	return * (uint32_t volatile *) addr;
+	return * (const uint32_t volatile *) addr;
 }
 
 static inline void mmio_clrbits_32(uintptr_t addr, uint32_t clear)
@@ -2734,7 +2728,6 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	ASSERT(targetcore != 0);
 
 	CLUSTER_CFG->C0_CPU  [targetcore].C0_CPUx_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET 0: assert
-	sunxi_cpu_on(0);
 	CPU_SUBSYS_CTRL->CLU0 [targetcore].CPU_CTRL_REG |= 1;//&= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
 
 //	* rvaddr = startfunc;
@@ -2943,6 +2936,18 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	task_scheduler_othercores();
 }
 
+void arm_hardware_core_poweron(unsigned core)
+{
+	const unsigned cluster = 0;
+#if CPUSTYLE_A733 && 1
+	u_register_t mpidr = (cluster << MPIDR_AFF2_SHIFT) |
+			     (core    << MPIDR_AFF1_SHIFT) |
+			     BIT(24) | BIT(31);
+
+	sunxi_cpu_on(mpidr);
+#endif
+}
+
 // Вызывается из main
 // Запуск остальных процессоров
 void cpump_initialize(void)
@@ -2952,7 +2957,7 @@ void cpump_initialize(void)
 	SystemCoreClock = CPU_FREQ;
 	cortexa_cpuinfo();
 
-#if CPUSTYLE_A733 && 1
+#if CPUSTYLE_A733 && 0
 	// diags
 	for (core = 0; core < arm_hardware_clustersize(); ++ core)
 	{
@@ -2961,9 +2966,18 @@ void cpump_initialize(void)
 		//PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
 
 		PPU_TypeDef * const p = PPU0 + core;
-		p->PPU_UNLK = 1;
+		//p->PPU_UNLK = 1;
 		PRINTF("PPU%u: PPU_PWSR=%08X ", core, (unsigned) p->PPU_PWSR);
 		PRINTF("R_CPUCFG->CPU_POWER_CLAMP_REG[%u]=%08X\n", core, (unsigned) R_CPUCFG->CPU_POWER_CLAMP_REG [core]);
+		if (core)
+		{
+			unsigned cluster = 0;
+			u_register_t mpidr = (cluster << MPIDR_AFF2_SHIFT) |
+					     (core    << MPIDR_AFF1_SHIFT) |
+					     BIT(24) | BIT(31);
+
+			sunxi_cpu_on(mpidr);
+		}
 	}
 	PRINTF("POWERON_RST_REG=%08X, POWEROFF_GATING_REG=%08X\n", (unsigned) R_CPUCFG->POWERON_RST_REG, (unsigned) R_CPUCFG->POWEROFF_GATING_REG);
 	PRINTF("CLU_DSU_STATUS_REG=%08X, CLU_DSU_RST_CTRL=%08X\n", (unsigned) CLUSTER_CFG->CLU_DSU_STATUS_REG, (unsigned) CLUSTER_CFG->CLU_DSU_RST_CTRL);
@@ -2972,8 +2986,8 @@ void cpump_initialize(void)
 //	printhex32(SUNXI_R_PRCM_BASE, (void *) SUNXI_R_PRCM_BASE, 1024);
 //	PRINTF("SUNXI_R_CPUCFG_BASE:\n");
 //	printhex32(SUNXI_R_CPUCFG_BASE, (void *) SUNXI_R_CPUCFG_BASE, 1024);
-	sunxi_cpu_off(0);
-	sunxi_cpu_power_off_others();
+//	sunxi_cpu_off(0);
+//	sunxi_cpu_power_off_others();
 	// diags
 	for (core = 0; core < arm_hardware_clustersize(); ++ core)
 	{
@@ -2987,19 +3001,20 @@ void cpump_initialize(void)
 	}
 	PRINTF("POWERON_RST_REG=%08X, POWEROFF_GATING_REG=%08X\n", (unsigned) R_CPUCFG->POWERON_RST_REG, (unsigned) R_CPUCFG->POWEROFF_GATING_REG);
 	PRINTF("CLU_DSU_STATUS_REG=%08X, CLU_DSU_RST_CTRL=%08X\n", (unsigned) CLUSTER_CFG->CLU_DSU_STATUS_REG, (unsigned) CLUSTER_CFG->CLU_DSU_RST_CTRL);
-	return;
+//	return;
 #endif
 	lclspin_enable();	// Allwinner H3 - может работать с блокировками только после включения MMU
 	LCLSPINLOCK_INITIALIZE(& cpu1init);
-	const unsigned cluster = 0;
-	for (core = 6; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
+	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
 
 		LCLSPINLOCK_INITIALIZE(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1init);
 
-		arm_hardware_core_poweron(cluster, core);
+		PRINTF("1 core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
+		arm_hardware_core_poweron(core);
+		PRINTF("2 core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
 
 #if defined(__aarch64__)
 
