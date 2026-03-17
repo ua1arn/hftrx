@@ -2311,17 +2311,6 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 void arm_hardware_core_poweron(unsigned cluster, unsigned core)
 {
 #if CPUSTYLE_A733 && 0
-	if (mmio_read_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core)) == 0)
-		return;
-	PRINTF("PSCI: Enabling power to cluster %d core %d\n", cluster, core);
-
-	/* Power enable sequence from original Allwinner sources */
-	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0xfe);
-	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0xf8);
-	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0xe0);
-	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0x80);
-	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0x00);
-	local_delay_us(1);
 #endif
 }
 
@@ -2522,14 +2511,17 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 // https://github.com/ARM-software/arm-trusted-firmware/blob/master/plat/allwinner/common/sunxi_native_pm.c#L69
 // https://github.com/ARM-software/arm-trusted-firmware/blob/master/plat/allwinner/common/sunxi_cpu_ops.c#L88
 #define PLATFORM_CLUSTER_COUNT 1
-#define PLATFORM_MAX_CPUS_PER_CLUSTER 6
+#define PLATFORM_MAX_CPUS_PER_CLUSTER 8
 typedef uint32_t u_register_t;
 
 #define SUNXI_R_PRCM_BASE		((uintptr_t) 0x07010000)
 #define SUNXI_R_CPUCFG_BASE		((uintptr_t) 0x07050000)
 #define SUNXI_CPUCFG_BASE		((uintptr_t) 0x08000000)
 #define SUNXI_CLUSTERCFG_BASE	((uintptr_t) 0x08860000)
+#define SUNXI_SPC_BASE			((uintptr_t) 0x02054000)
 
+#define  SUNXI_CPUCFG_OFFSET	0x1000
+#define  SUNXI_CPUCFG_STEP		0x1000
 
 /* c = cluster, n = core */
 #define SUNXI_CPUCFG_RST_CTRL_REG(c, n)	(SUNXI_CLUSTERCFG_BASE + (n) * 0x1000)
@@ -2539,16 +2531,17 @@ typedef uint32_t u_register_t;
 
 #define SUNXI_POWERON_RST_REG(c)	(SUNXI_R_CPUCFG_BASE + 0x0040 + (c) * 4)
 #define SUNXI_POWEROFF_GATING_REG(c)	(SUNXI_R_CPUCFG_BASE + 0x0044 + (c) * 4)
-#define SUNXI_CPU_POWER_CLAMP_REG(c, n)	(SUNXI_R_CPUCFG_BASE + 0x0050 + \
-					(c) * 0x10 + (n) * 4)
+#define SUNXI_CPU_POWER_CLAMP_REG(c, n)	(SUNXI_R_CPUCFG_BASE + 0x0050 + (c) * 0x10 + (n) * 4)
 
 #define SUNXI_AA64nAA32_REG		SUNXI_CPUCFG_GEN_CTRL_REG0
 #define SUNXI_AA64nAA32_OFFSET		4
 
-static inline bool sunxi_cpucfg_has_per_cluster_regs(void)
-{
-	return true;
-}
+/* Get by REing stock ATF and checking initialization loop boundary */
+#define SUNXI_SPC_NUM_PORTS		14
+
+#define SUNXI_SPC_DECPORT_STA_REG(p)	(SUNXI_SPC_BASE + 0x0000 + 0x10 * (p))
+#define SUNXI_SPC_DECPORT_SET_REG(p)	(SUNXI_SPC_BASE + 0x0004 + 0x10 * (p))
+#define SUNXI_SPC_DECPORT_CLR_REG(p)	(SUNXI_SPC_BASE + 0x0008 + 0x10 * (p))
 
 static inline void writel(uint32_t val, volatile void *addr)
 {
@@ -2658,120 +2651,60 @@ static inline uint32_t mmio_read_32(uintptr_t addr)
 #define SUNXI_CPU_CTRL_REG(n)		(SUNXI_CPUSUBSYS_BASE + 0x20 + (n) * 4)
 #define SUNXI_ALT_RVBAR_LO_REG(n)	(SUNXI_CPUSUBSYS_BASE + 0x40 + (n) * 8)
 #define SUNXI_ALT_RVBAR_HI_REG(n)	(SUNXI_CPUSUBSYS_BASE + 0x44 + (n) * 8)
-//
-//#ifndef SUNXI_C0_CPU_CTRL_REG
-//#define SUNXI_C0_CPU_CTRL_REG(n)	0
-//#define SUNXI_CPU_UNK_REG(n)		0
-//#define SUNXI_CPU_CTRL_REG(n)		0
-//#endif
 
-static void sunxi_cpu_disable_power(unsigned int cluster, unsigned int core)
+#ifdef SUNXI_CPUCFG_STEP
+#define SUNXI_INITARCH_REG(n)		(SUNXI_CPUCFG_BASE + SUNXI_CPUCFG_OFFSET + (n) * SUNXI_CPUCFG_STEP)
+#else
+#define SUNXI_INITARCH_REG(n)		(SUNXI_CPUCFG_BASE + 0x0020 + (n) * 4)
+#endif
+#define HOTPLUG_CONTROL_REG(n)		(SUNXI_R_CPUCFG_BASE + 0x200 + (n) * 4)
+#define HOTPLUG_POWERMODE_REG(n)	(SUNXI_R_CPUCFG_BASE + 0x220 + (n) * 4)
+#define PPU_PWSR(n)			(SUNXI_R_CPUCFG_BASE + (n) * 0x1000 + 0x1008)
+
+#define STATE_ON			8
+#define STATE_OFF			0
+
+#define GIC_WAKEUP_DISABLE		BIT(1)
+#define POWER_ON			BIT(0)
+
+#define HOTPLUG_EN			BIT(0)
+
+#define AARCH64				BIT(0)
+
+void sunxi_cpu_off(u_register_t mpidr)
 {
-	if (mmio_read_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core)) == 0xff)
-		return;
-
-	PRINTF("PSCI: Disabling power to cluster %d core %d\n", cluster, core);
-
-	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0xff);
-}
-
-static void sunxi_cpu_enable_power(unsigned int cluster, unsigned int core)
-{
-	if (mmio_read_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core)) == 0)
-		return;
-
-	PRINTF("PSCI: Enabling power to cluster %d core %d\n", cluster, core);
-
-	/* Power enable sequence from original Allwinner sources */
-	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0xfe);
-	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0xf8);
-	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0xe0);
-	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0x80);
-	mmio_write_32(SUNXI_CPU_POWER_CLAMP_REG(cluster, core), 0x00);
-	local_delay_us(1);
-}
-
-/* We can't turn ourself off like this, but it works for other cores. */
-static void sunxi_cpu_off(u_register_t mpidr)
-{
-	unsigned int cluster = MPIDR_AFFLVL1_VAL(mpidr);
-	unsigned int core    = MPIDR_AFFLVL0_VAL(mpidr);
+	unsigned int cluster = MPIDR_AFFLVL2_VAL(mpidr);
+	unsigned int core    = MPIDR_AFFLVL1_VAL(mpidr);
 
 	PRINTF("PSCI: Powering off cluster %d core %d\n", cluster, core);
 
-	if (sunxi_cpucfg_has_per_cluster_regs()) {
-		/* Deassert DBGPWRDUP */
-		////mmio_clrbits_32(SUNXI_CPUCFG_DBG_REG0, BIT(core));
-		/* Activate the core output clamps, but not for core 0. */
-		if (core != 0) {
-			mmio_setbits_32(SUNXI_POWEROFF_GATING_REG(cluster),
-					BIT(core));
-		}
-		/* Assert CPU power-on reset */
-		mmio_clrbits_32(SUNXI_POWERON_RST_REG(cluster), BIT(core));
-		/* Remove power from the CPU */
-		sunxi_cpu_disable_power(cluster, core);
-	} else {
-//		/* power down(?) debug core */
-//		mmio_clrbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(8));
-//		/* ??? Activate the core output clamps, but not for core 0 */
-//		if (core != 0) {
-//			mmio_setbits_32(SUNXI_CPU_UNK_REG(core), BIT(1));
-//		}
-//		/* ??? Assert CPU power-on reset ??? */
-//		mmio_clrbits_32(SUNXI_CPU_UNK_REG(core), BIT(0));
-//		/* Remove power from the CPU */
-//		sunxi_cpu_disable_power(cluster, core);
-	}
+	mmio_clrbits_32(HOTPLUG_POWERMODE_REG(core), POWER_ON);
+
+	mmio_setbits_32(HOTPLUG_CONTROL_REG(core), GIC_WAKEUP_DISABLE);
 }
 
-//void sunxi_cpu_on(u_register_t mpidr)
-void sunxi_cpu_on(unsigned cluster, unsigned core)
+void sunxi_cpu_on(u_register_t mpidr)
 {
-//	unsigned int cluster = MPIDR_AFFLVL1_VAL(mpidr);
-//	unsigned int core    = MPIDR_AFFLVL0_VAL(mpidr);
+	unsigned int cluster = MPIDR_AFFLVL2_VAL(mpidr);
+	unsigned int core    = MPIDR_AFFLVL1_VAL(mpidr);
 
 	PRINTF("PSCI: Powering on cluster %d core %d\n", cluster, core);
 
-	if (sunxi_cpucfg_has_per_cluster_regs()) {
-		/* Assert CPU core reset */
-		mmio_clrbits_32(SUNXI_CPUCFG_RST_CTRL_REG(cluster, core), BIT(core));
-		/* Assert CPU power-on reset */
-		mmio_clrbits_32(SUNXI_POWERON_RST_REG(cluster), BIT(core));
-		/* Set CPU to start in AArch64 mode */
-		mmio_setbits_32(SUNXI_AA64nAA32_REG(cluster),
-				BIT(SUNXI_AA64nAA32_OFFSET + core));
-		/* Apply power to the CPU */
-		sunxi_cpu_enable_power(cluster, core);
-		/* Release the core output clamps */
-		mmio_clrbits_32(SUNXI_POWEROFF_GATING_REG(cluster), BIT(core));
-		/* Deassert CPU power-on reset */
-		mmio_setbits_32(SUNXI_POWERON_RST_REG(cluster), BIT(core));
-		/* Deassert CPU core reset */
-		mmio_setbits_32(SUNXI_CPUCFG_RST_CTRL_REG(cluster, core), BIT(core));
-		/* Assert DBGPWRDUP */
-		////mmio_setbits_32(SUNXI_CPUCFG_DBG_REG0, BIT(core));
-	} else {
-//		/* Assert CPU core reset */
-//		mmio_clrbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(0));
-//		/* ??? Assert CPU power-on reset ??? */
-//		mmio_clrbits_32(SUNXI_CPU_UNK_REG(core), BIT(0));
-//
-//		/* Set CPU to start in AArch64 mode */
-//		mmio_setbits_32(SUNXI_CPU_CTRL_REG(core), BIT(0));
-//
-//		/* Apply power to the CPU */
-//		sunxi_cpu_enable_power(cluster, core);
-//
-//		/* ??? Release the core output clamps ??? */
-//		mmio_clrbits_32(SUNXI_CPU_UNK_REG(core), BIT(1));
-//		/* ??? Deassert CPU power-on reset ??? */
-//		mmio_setbits_32(SUNXI_CPU_UNK_REG(core), BIT(0));
-//		/* Deassert CPU core reset */
-//		mmio_setbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(0));
-//		/* power up(?) debug core */
-//		mmio_setbits_32(SUNXI_C0_CPU_CTRL_REG(core), BIT(8));
-	}
+	mmio_setbits_32(SUNXI_INITARCH_REG(core), AARCH64);
+
+	while ((mmio_read_32(PPU_PWSR(core + 1)) & 0xf) != STATE_OFF)
+		;
+
+	mmio_setbits_32(HOTPLUG_POWERMODE_REG(core), POWER_ON);
+	mmio_setbits_32(HOTPLUG_CONTROL_REG(core), HOTPLUG_EN);
+
+	while ((mmio_read_32(PPU_PWSR(core + 1)) & 0xf) != STATE_ON)
+		;
+
+	mmio_clrbits_32(HOTPLUG_CONTROL_REG(core), HOTPLUG_EN);
+	mmio_clrbits_32(HOTPLUG_POWERMODE_REG(core), POWER_ON);
+
+	mmio_clrbits_32(HOTPLUG_CONTROL_REG(core), GIC_WAKEUP_DISABLE);
 }
 
 void sunxi_cpu_power_off_others(void)
@@ -2782,9 +2715,9 @@ void sunxi_cpu_power_off_others(void)
 
 	for (cluster = 0; cluster < PLATFORM_CLUSTER_COUNT; ++cluster) {
 		for (core = 0; core < PLATFORM_MAX_CPUS_PER_CLUSTER; ++core) {
-			u_register_t mpidr = (cluster << MPIDR_AFF1_SHIFT) |
-					     (core    << MPIDR_AFF0_SHIFT) |
-					     BIT(31);
+			u_register_t mpidr = (cluster << MPIDR_AFF2_SHIFT) |
+					     (core    << MPIDR_AFF1_SHIFT) |
+					     BIT(24) | BIT(31);
 			if (mpidr != self)
 				sunxi_cpu_off(mpidr);
 		}
@@ -2801,22 +2734,12 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	ASSERT(targetcore != 0);
 
 	CLUSTER_CFG->C0_CPU  [targetcore].C0_CPUx_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET 0: assert
-	sunxi_cpu_on(0, targetcore);
+	sunxi_cpu_on(0);
 	CPU_SUBSYS_CTRL->CLU0 [targetcore].CPU_CTRL_REG |= 1;//&= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
 
 //	* rvaddr = startfunc;
 //	ASSERT(* rvaddr == startfunc);
-	if (sunxi_cpucfg_has_per_cluster_regs()) {
-		mmio_write_32(SUNXI_CPUCFG_RVBAR_LO_REG(targetcore),
-				startfunc & 0xffffffff);
-		mmio_write_32(SUNXI_CPUCFG_RVBAR_HI_REG(targetcore),
-				startfunc >> 32);
-	} else {
-//		mmio_write_32(SUNXI_ALT_RVBAR_LO_REG(targetcore),
-//				startfunc & 0xffffffff);
-//		mmio_write_32(SUNXI_ALT_RVBAR_HI_REG(targetcore),
-//				startfunc >> 32);
-	}
+
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
 	CLUSTER_CFG->C0_CPU  [targetcore].C0_CPUx_CTRL_REG |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
@@ -3031,16 +2954,15 @@ void cpump_initialize(void)
 
 #if CPUSTYLE_A733 && 1
 	// diags
-	static uint8_t ss [4096];
-	memcpy(ss, PPU, 4096);
 	for (core = 0; core < arm_hardware_clustersize(); ++ core)
 	{
-		PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
+		PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X ", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
 		//sunxi_cpu_on(core);
 		//PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
 
-		const PPU_TypeDef * const p = PPU0 + core;
-		PRINTF("PPU%u: PPU_PWSR=%08X\n", core, p->PPU_PWSR);
+		PPU_TypeDef * const p = PPU0 + core;
+		p->PPU_UNLK = 1;
+		PRINTF("PPU%u: PPU_PWSR=%08X ", core, (unsigned) p->PPU_PWSR);
 		PRINTF("R_CPUCFG->CPU_POWER_CLAMP_REG[%u]=%08X\n", core, (unsigned) R_CPUCFG->CPU_POWER_CLAMP_REG [core]);
 	}
 	PRINTF("POWERON_RST_REG=%08X, POWEROFF_GATING_REG=%08X\n", (unsigned) R_CPUCFG->POWERON_RST_REG, (unsigned) R_CPUCFG->POWEROFF_GATING_REG);
@@ -3048,8 +2970,23 @@ void cpump_initialize(void)
 	//memset32((void *) (SUNXI_R_PRCM_BASE + 0x140), ~0, 64);
 //	PRINTF("SUNXI_R_PRCM_BASE:\n");
 //	printhex32(SUNXI_R_PRCM_BASE, (void *) SUNXI_R_PRCM_BASE, 1024);
-	PRINTF("SUNXI_R_CPUCFG_BASE:\n");
-	printhex32(SUNXI_R_CPUCFG_BASE, (void *) SUNXI_R_CPUCFG_BASE, 1024);
+//	PRINTF("SUNXI_R_CPUCFG_BASE:\n");
+//	printhex32(SUNXI_R_CPUCFG_BASE, (void *) SUNXI_R_CPUCFG_BASE, 1024);
+	sunxi_cpu_off(0);
+	sunxi_cpu_power_off_others();
+	// diags
+	for (core = 0; core < arm_hardware_clustersize(); ++ core)
+	{
+		PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X ", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
+		//sunxi_cpu_on(core);
+		//PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
+
+		const PPU_TypeDef * const p = PPU0 + core;
+		PRINTF("PPU%u: PPU_PWSR=%08X ", core, (unsigned) p->PPU_PWSR);
+		PRINTF("R_CPUCFG->CPU_POWER_CLAMP_REG[%u]=%08X\n", core, (unsigned) R_CPUCFG->CPU_POWER_CLAMP_REG [core]);
+	}
+	PRINTF("POWERON_RST_REG=%08X, POWEROFF_GATING_REG=%08X\n", (unsigned) R_CPUCFG->POWERON_RST_REG, (unsigned) R_CPUCFG->POWEROFF_GATING_REG);
+	PRINTF("CLU_DSU_STATUS_REG=%08X, CLU_DSU_RST_CTRL=%08X\n", (unsigned) CLUSTER_CFG->CLU_DSU_STATUS_REG, (unsigned) CLUSTER_CFG->CLU_DSU_RST_CTRL);
 	return;
 #endif
 	lclspin_enable();	// Allwinner H3 - может работать с блокировками только после включения MMU
