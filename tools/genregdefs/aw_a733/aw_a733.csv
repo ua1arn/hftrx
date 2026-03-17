@@ -518,6 +518,14 @@
 
 #type; PPU; PCK-600 S_PPU (PCK600).
 #base; PPU 0x07060000; 
+#base; PPU0 0x07060000; 
+#base; PPU1 0x07061000; 
+#base; PPU2 0x07062000; 
+#base; PPU3 0x07063000; 
+#base; PPU4 0x07064000; 
+#base; PPU5 0x07065000; 
+#base; PPU6 0x07066000; 
+#base; PPU7 0x07067000; 
 
 #irq; PCK600_QCHANNEL 221; STBY PCK600 Q-CHANNEL interrupt.
 #irq; PCK600_CPU 244; CPUIDLE interrupt

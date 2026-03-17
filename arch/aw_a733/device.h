@@ -289,6 +289,14 @@ typedef enum IRQn
 #define S_GPIOM_BASE ((uintptr_t) 0x07025030)         /*!< S_GPIO Secure Port Controller Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07050000)        /*!< R_CPUCFG SUNXI_R_CPUCFG_BASE Base */
 #define PPU_BASE ((uintptr_t) 0x07060000)             /*!< PPU PCK-600 S_PPU (PCK600). Base */
+#define PPU0_BASE ((uintptr_t) 0x07060000)            /*!< PPU PCK-600 S_PPU (PCK600). Base */
+#define PPU1_BASE ((uintptr_t) 0x07061000)            /*!< PPU PCK-600 S_PPU (PCK600). Base */
+#define PPU2_BASE ((uintptr_t) 0x07062000)            /*!< PPU PCK-600 S_PPU (PCK600). Base */
+#define PPU3_BASE ((uintptr_t) 0x07063000)            /*!< PPU PCK-600 S_PPU (PCK600). Base */
+#define PPU4_BASE ((uintptr_t) 0x07064000)            /*!< PPU PCK-600 S_PPU (PCK600). Base */
+#define PPU5_BASE ((uintptr_t) 0x07065000)            /*!< PPU PCK-600 S_PPU (PCK600). Base */
+#define PPU6_BASE ((uintptr_t) 0x07066000)            /*!< PPU PCK-600 S_PPU (PCK600). Base */
+#define PPU7_BASE ((uintptr_t) 0x07067000)            /*!< PPU PCK-600 S_PPU (PCK600). Base */
 #define S_UART0_BASE ((uintptr_t) 0x07080000)         /*!< UART  Base */
 #define S_UART1_BASE ((uintptr_t) 0x07081000)         /*!< UART  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07083000)          /*!< TWI Two Wire Interface (TWI) Base */
@@ -1709,6 +1717,10 @@ typedef struct GPIOINT_Type
          RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
 } GPIOINT_TypeDef; /* size of structure = 0x020 */
 /*
+ * https://github.com/qiaoweibiao/T507_Kernel/blob/main/drivers/video/fbdev/sunxi/disp2/hdmi2/hdmi_tx.c
+ * Taken from https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/develop/drivers/gpu/drm/bridge/dw-hdmi.h#L14
+ */
+/*
  * @brief HDMI_TX
  */
 /*!< HDMI_TX  */
@@ -2458,6 +2470,7 @@ typedef struct RTWB_RCQ_Type
     __IOM uint32_t RTWB_RCQ_CTL;                      /*!< Offset 0x010 RTWB_RCQ_CTL_OFFSET          (0x8210) */
 } RTWB_RCQ_TypeDef; /* size of structure = 0x014 */
 /*
+ * https://linux-sunxi.org/CPUIDLE
  * taken from:
  * git clone https://github.com/dlan17/trusted-firmware-a/
  * git checkout "A733"
@@ -2468,8 +2481,14 @@ typedef struct RTWB_RCQ_Type
 /*!< R_CPUCFG SUNXI_R_CPUCFG_BASE */
 typedef struct R_CPUCFG_Type
 {
-    __IOM uint32_t ttt;                               /*!< Offset 0x000  */
-} R_CPUCFG_TypeDef; /* size of structure = 0x004 */
+         RESERVED(0x000[0x0200 - 0x0000], uint8_t)
+    __IOM uint32_t HOTPLUG_CONTROL_REG [0x008];       /*!< Offset 0x200  */
+    __IOM uint32_t HOTPLUG_POWERMODE [0x008];         /*!< Offset 0x220  */
+} R_CPUCFG_TypeDef; /* size of structure = 0x240 */
+/*
+ * https://github.com/torvalds/linux/blob/master/drivers/nvmem/sunxi_sid.c#L62
+ * Registers and special values for doing register-based SID readout on H3
+ */
 /*
  * @brief SID
  */
@@ -3150,6 +3169,14 @@ typedef struct USB_OHCI_Capability_Type
 #define S_GPIOM ((S_GPIO_TypeDef *) S_GPIOM_BASE)     /*!< S_GPIOM Secure Port Controller register set access pointer */
 #define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG SUNXI_R_CPUCFG_BASE register set access pointer */
 #define PPU ((PPU_TypeDef *) PPU_BASE)                /*!< PPU PCK-600 S_PPU (PCK600). register set access pointer */
+#define PPU0 ((PPU_TypeDef *) PPU0_BASE)              /*!< PPU0 PCK-600 S_PPU (PCK600). register set access pointer */
+#define PPU1 ((PPU_TypeDef *) PPU1_BASE)              /*!< PPU1 PCK-600 S_PPU (PCK600). register set access pointer */
+#define PPU2 ((PPU_TypeDef *) PPU2_BASE)              /*!< PPU2 PCK-600 S_PPU (PCK600). register set access pointer */
+#define PPU3 ((PPU_TypeDef *) PPU3_BASE)              /*!< PPU3 PCK-600 S_PPU (PCK600). register set access pointer */
+#define PPU4 ((PPU_TypeDef *) PPU4_BASE)              /*!< PPU4 PCK-600 S_PPU (PCK600). register set access pointer */
+#define PPU5 ((PPU_TypeDef *) PPU5_BASE)              /*!< PPU5 PCK-600 S_PPU (PCK600). register set access pointer */
+#define PPU6 ((PPU_TypeDef *) PPU6_BASE)              /*!< PPU6 PCK-600 S_PPU (PCK600). register set access pointer */
+#define PPU7 ((PPU_TypeDef *) PPU7_BASE)              /*!< PPU7 PCK-600 S_PPU (PCK600). register set access pointer */
 #define S_UART0 ((UART_TypeDef *) S_UART0_BASE)       /*!< S_UART0  register set access pointer */
 #define S_UART1 ((UART_TypeDef *) S_UART1_BASE)       /*!< S_UART1  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0 Two Wire Interface (TWI) register set access pointer */

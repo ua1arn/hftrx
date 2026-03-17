@@ -14698,6 +14698,118 @@
    </register>
   </registers>
   </peripheral>
+  <peripheral derivedFrom="PPU">
+  <name>PPU0</name>
+  <baseAddress>0x07060000</baseAddress>
+  <interrupt>
+   <name>PCK600_QCHANNEL</name>
+   <value>221</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>PCK600_CPU</name>
+   <value>244</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="PPU">
+  <name>PPU1</name>
+  <baseAddress>0x07061000</baseAddress>
+  <interrupt>
+   <name>PCK600_QCHANNEL</name>
+   <value>221</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>PCK600_CPU</name>
+   <value>244</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="PPU">
+  <name>PPU2</name>
+  <baseAddress>0x07062000</baseAddress>
+  <interrupt>
+   <name>PCK600_QCHANNEL</name>
+   <value>221</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>PCK600_CPU</name>
+   <value>244</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="PPU">
+  <name>PPU3</name>
+  <baseAddress>0x07063000</baseAddress>
+  <interrupt>
+   <name>PCK600_QCHANNEL</name>
+   <value>221</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>PCK600_CPU</name>
+   <value>244</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="PPU">
+  <name>PPU4</name>
+  <baseAddress>0x07064000</baseAddress>
+  <interrupt>
+   <name>PCK600_QCHANNEL</name>
+   <value>221</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>PCK600_CPU</name>
+   <value>244</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="PPU">
+  <name>PPU5</name>
+  <baseAddress>0x07065000</baseAddress>
+  <interrupt>
+   <name>PCK600_QCHANNEL</name>
+   <value>221</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>PCK600_CPU</name>
+   <value>244</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="PPU">
+  <name>PPU6</name>
+  <baseAddress>0x07066000</baseAddress>
+  <interrupt>
+   <name>PCK600_QCHANNEL</name>
+   <value>221</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>PCK600_CPU</name>
+   <value>244</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="PPU">
+  <name>PPU7</name>
+  <baseAddress>0x07067000</baseAddress>
+  <interrupt>
+   <name>PCK600_QCHANNEL</name>
+   <value>221</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>PCK600_CPU</name>
+   <value>244</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
   <peripheral>
   <name>S_PRCM</name>
   <description>Power Reset Clock Management (PRCM)</description>
@@ -15319,15 +15431,34 @@
   <description>SUNXI_R_CPUCFG_BASE</description>
   <baseAddress>0x07050000</baseAddress>
   <registers>
-   <register>
-    <name>ttt</name>
-    <displayName>ttt</displayName>
-    <description></description>
-    <addressOffset>0x000</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000200</addressOffset>
+    <register>
+     <name>HOTPLUG_CONTROL_REG</name>
+     <displayName>HOTPLUG_CONTROL_REG</displayName>
+     <description></description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x020</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>8</dim>
+    <addressOffset>0x00000220</addressOffset>
+    <register>
+     <name>HOTPLUG_POWERMODE</name>
+     <displayName>HOTPLUG_POWERMODE</displayName>
+     <description></description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x020</dimIncrement>
+   </cluster>
   </registers>
   </peripheral>
   <peripheral>

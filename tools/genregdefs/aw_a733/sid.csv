@@ -1,6 +1,6 @@
 #type; SID; Security ID
-## https://github.com/torvalds/linux/blob/master/drivers/nvmem/sunxi_sid.c#L62
-## Registers and special values for doing register-based SID readout on H3
+#rem; https://github.com/torvalds/linux/blob/master/drivers/nvmem/sunxi_sid.c#L62
+#rem; Registers and special values for doing register-based SID readout on H3
 
 #regdef; SID_PRCTL; 0x0040;
 #regdef; SID_RDKEY; 0x0060;

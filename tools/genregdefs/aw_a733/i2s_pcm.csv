@@ -1,4 +1,3 @@
-
 #type; I2S_PCM
 
 #regdef; I2S_PCM_CTL; 0x0000; I2S/PCM Control Register

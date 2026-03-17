@@ -1,14 +1,11 @@
-## https://linux-sunxi.org/CPUIDLE
-
-## git clone https://github.com/dlan17/trusted-firmware-a/
-## git checkout "A733"
-
 #type; R_CPUCFG; SUNXI_R_CPUCFG_BASE
 
+#rem; https://linux-sunxi.org/CPUIDLE
 #rem; taken from:
 #rem; git clone https://github.com/dlan17/trusted-firmware-a/
 #rem; git checkout "A733"
 
-#regdef; ttt; 0x00;
+#regdef; HOTPLUG_CONTROL_REG; 0x0200 8;
+#regdef; HOTPLUG_POWERMODE; 0x0220 8;
 
 #typeend;
