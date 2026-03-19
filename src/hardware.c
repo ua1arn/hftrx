@@ -2308,7 +2308,7 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 
 #endif
 
-#if ! defined(__aarch64__)
+#if ! defined(__aarch64__) && defined (__CORTEX_A) && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
 
 void __NO_RETURN
 run64(uint_fast64_t startfunc)
@@ -3012,9 +3012,9 @@ void cpump_initialize(void)
 		LCLSPIN_LOCK(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1init);
 
-		PRINTF("1 core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
+//		PRINTF("1 core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
 		arm_hardware_core_poweron(core);
-		PRINTF("2 core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
+//		PRINTF("2 core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
 
 #if defined(__aarch64__)
 
