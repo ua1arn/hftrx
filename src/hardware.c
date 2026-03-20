@@ -2728,16 +2728,32 @@ void sunxi_cpu_power_off_others(void)
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 {
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
-	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_R_CPUCFG_BASE + 0x1C4 + core * 4));
 
+	// 0x01C0..0x01CF - registers...
+	// 0x01E0..0x01EF - registers...
+	volatile uint32_t * rvaddr;
+//	memset32((void *) (R_CPUCFG_BASE + 0x01C0), startfunc, 32);
+//	memset32((void *) (R_CPUCFG_BASE + 0x01E0), startfunc, 4 * 4);
 	ASSERT(startfunc != 0);
 	ASSERT(core != 0);
-
+	switch (core)
+	{
+	case 1: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01C8); break;
+	case 2: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01CC); break;
+	case 3: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01D0); break;
+	case 4: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01E0); break;
+	case 5: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01E4); break;
+	case 6: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01E8); break;
+	case 7: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01EC); break;
+	default: ASSERT(0); break;
+	}
+	//PRINTF("core%u: rvaddr=%p\n", core, rvaddr);
 	CLUSTER_CFG->C0_CPU  [core].C0_CPUx_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET 0: assert
 //	CPU_SUBSYS_CTRL->CLU0 [core].CPU_CTRL_REG &= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
 
-//	* rvaddr = startfunc;
-//	ASSERT(* rvaddr == startfunc);
+	* rvaddr = startfunc;
+	//PRINTF("core%u: rvaddr=%p setted...\n", core, rvaddr);
+	ASSERT(* rvaddr == startfunc);
 	// see 0xfa50392f
 //	R_CPUCFG->HOTPLUGFLAGz = 0*0xFA50392F;
 //	R_CPUCFG->SOFTENTRYz [core] = startfunc;
