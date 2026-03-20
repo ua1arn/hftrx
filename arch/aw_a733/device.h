@@ -2473,12 +2473,7 @@ typedef struct RTWB_RCQ_Type
 /*!< R_CPUCFG SUNXI_R_CPUCFG_BASE */
 typedef struct R_CPUCFG_Type
 {
-         RESERVED(0x000[0x0040 - 0x0000], uint8_t)
-    __IOM uint32_t POWERON_RST_REG;                   /*!< Offset 0x040 Cluster0 poweron register (bit0 - core0) */
-    __IOM uint32_t POWEROFF_GATING_REG;               /*!< Offset 0x044 Cluster0 poweron register (bit0 - core0) */
-         RESERVED(0x048[0x0050 - 0x0048], uint8_t)
-    __IOM uint32_t CPU_POWER_CLAMP_REG [0x008];       /*!< Offset 0x050 Cluster0 power clamp registers (for each core) */
-         RESERVED(0x070[0x0200 - 0x0070], uint8_t)
+         RESERVED(0x000[0x0200 - 0x0000], uint8_t)
     __IOM uint32_t HOTPLUG_CONTROL_REG [0x008];       /*!< Offset 0x200  */
     __IOM uint32_t HOTPLUG_POWERMODE_REG [0x008];     /*!< Offset 0x220  */
 } R_CPUCFG_TypeDef; /* size of structure = 0x240 */

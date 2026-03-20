@@ -5,9 +5,9 @@
 #rem; git clone https://github.com/dlan17/trusted-firmware-a/
 #rem; git checkout "A733"
 
-#regdef; POWERON_RST_REG; 0x0040; Cluster0 poweron register (bit0 - core0)
-#regdef; POWEROFF_GATING_REG; 0x0044; Cluster0 poweron register (bit0 - core0)
-#regdef; CPU_POWER_CLAMP_REG; 0x0050 8;	Cluster0 power clamp registers (for each core)
+##regdef; POWERON_RST_REG; 0x0040; Cluster0 poweron register (bit0 - core0)
+##regdef; POWEROFF_GATING_REG; 0x0044; Cluster0 poweron register (bit0 - core0)
+##regdef; CPU_POWER_CLAMP_REG; 0x0050 8;	Cluster0 power clamp registers (for each core)
 
 ##regdef; HOTPLUGFLAGx; 0x01A0; Check for value 0xFA50392F ?
 ##regdef; SOFTENTRYx; 0x01A4 4; The Soft Entry Address Register of CPUx (x=0..1) ??

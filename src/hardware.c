@@ -2969,60 +2969,23 @@ void cpump_initialize(void)
 
 #if CPUSTYLE_A733 && 0
 	// diags
-	for (core = 0; core < arm_hardware_clustersize(); ++ core)
-	{
-		PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X ", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
-		//sunxi_cpu_on(core);
-		//PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
-
-		PPU_TypeDef * const p = PPU0 + core;
-		//p->PPU_UNLK = 1;
-		PRINTF("PPU%u: PPU_PWSR=%08X ", core, (unsigned) p->PPU_PWSR);
-		PRINTF("R_CPUCFG->CPU_POWER_CLAMP_REG[%u]=%08X\n", core, (unsigned) R_CPUCFG->CPU_POWER_CLAMP_REG [core]);
-		if (core)
-		{
-			unsigned cluster = 0;
-			u_register_t mpidr = (cluster << MPIDR_AFF2_SHIFT) |
-					     (core    << MPIDR_AFF1_SHIFT) |
-					     BIT(24) | BIT(31);
-
-			sunxi_cpu_on(mpidr);
-		}
-	}
-	PRINTF("POWERON_RST_REG=%08X, POWEROFF_GATING_REG=%08X\n", (unsigned) R_CPUCFG->POWERON_RST_REG, (unsigned) R_CPUCFG->POWEROFF_GATING_REG);
+	//PRINTF("POWERON_RST_REG=%08X, POWEROFF_GATING_REG=%08X\n", (unsigned) R_CPUCFG->POWERON_RST_REG, (unsigned) R_CPUCFG->POWEROFF_GATING_REG);
 	PRINTF("CLU_DSU_STATUS_REG=%08X, CLU_DSU_RST_CTRL=%08X\n", (unsigned) CLUSTER_CFG->CLU_DSU_STATUS_REG, (unsigned) CLUSTER_CFG->CLU_DSU_RST_CTRL);
-	//memset32((void *) (SUNXI_R_PRCM_BASE + 0x140), ~0, 64);
-//	PRINTF("SUNXI_R_PRCM_BASE:\n");
-//	printhex32(SUNXI_R_PRCM_BASE, (void *) SUNXI_R_PRCM_BASE, 1024);
-//	PRINTF("SUNXI_R_CPUCFG_BASE:\n");
-//	printhex32(SUNXI_R_CPUCFG_BASE, (void *) SUNXI_R_CPUCFG_BASE, 1024);
-//	sunxi_cpu_off(0);
-//	sunxi_cpu_power_off_others();
-	// diags
 	for (core = 0; core < arm_hardware_clustersize(); ++ core)
 	{
 		PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X ", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
-		//sunxi_cpu_on(core);
-		//PRINTF("core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
-
-		const PPU_TypeDef * const p = PPU0 + core;
+		const PPU_TypeDef * const p = PPU + core + 1;
 		PRINTF("PPU%u: PPU_PWSR=%08X ", core, (unsigned) p->PPU_PWSR);
-		PRINTF("R_CPUCFG->CPU_POWER_CLAMP_REG[%u]=%08X\n", core, (unsigned) R_CPUCFG->CPU_POWER_CLAMP_REG [core]);
+		//PRINTF("R_CPUCFG->CPU_POWER_CLAMP_REG[%u]=%08X\n", core, (unsigned) R_CPUCFG->CPU_POWER_CLAMP_REG [core]);
 	}
-	PRINTF("POWERON_RST_REG=%08X, POWEROFF_GATING_REG=%08X\n", (unsigned) R_CPUCFG->POWERON_RST_REG, (unsigned) R_CPUCFG->POWEROFF_GATING_REG);
+
+	PRINTF("CPU_L_PLL_CTRL_REG=%08X, CPU_B_PLL_CTRL_REG=%08X\n", (unsigned) CPU_PLL_CFG->CPU_L_PLL_CTRL_REG, (unsigned) CPU_PLL_CFG->CPU_B_PLL_CTRL_REG);
+	//PRINTF("POWERON_RST_REG=%08X, POWEROFF_GATING_REG=%08X\n", (unsigned) R_CPUCFG->POWERON_RST_REG, (unsigned) R_CPUCFG->POWEROFF_GATING_REG);
 	PRINTF("CLU_DSU_STATUS_REG=%08X, CLU_DSU_RST_CTRL=%08X\n", (unsigned) CLUSTER_CFG->CLU_DSU_STATUS_REG, (unsigned) CLUSTER_CFG->CLU_DSU_RST_CTRL);
 //	return;
 #endif
 	lclspin_enable();	// Allwinner H3 - может работать с блокировками только после включения MMU
 	LCLSPINLOCK_INITIALIZE(& cpu1init);
-	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
-	{
-
-//		PRINTF("1 core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
-		//arm_hardware_core_poweron(core);
-//		PRINTF("2 core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
-	}
-	local_delay_ms(1);
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
 
