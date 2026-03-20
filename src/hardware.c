@@ -2508,6 +2508,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 #define PLATFORM_MAX_CPUS_PER_CLUSTER 8
 typedef uint32_t u_register_t;
 
+#if 0
 //#define SUNXI_R_PRCM_BASE		((uintptr_t) 0x07010000)
 #define SUNXI_R_CPUCFG_BASE		R_CPUCFG_BASE//((uintptr_t) 0x07050000)
 #define SUNXI_CPUCFG_BASE		CPU_SUBSYS_CTRL_BASE//((uintptr_t) 0x08000000)
@@ -2565,6 +2566,7 @@ static inline uint32_t mmio_read_32(uintptr_t addr)
 {
     return readl((void *) addr);
 }
+#endif
 
 #ifdef BIT
 #undef BIT
@@ -2629,6 +2631,7 @@ static inline uint32_t mmio_read_32(uintptr_t addr)
 
 #define read_mpidr() (__get_MPIDR())
 
+#if 0
 #define  SUNXI_CPUCFG_OFFSET	0x1000
 #define  SUNXI_CPUCFG_STEP		0x1000
 
@@ -2641,6 +2644,7 @@ static inline uint32_t mmio_read_32(uintptr_t addr)
 #define HOTPLUG_CONTROL_REG(n)		(SUNXI_R_CPUCFG_BASE + 0x200 + (n) * 4)
 #define HOTPLUG_POWERMODE_REG(n)	(SUNXI_R_CPUCFG_BASE + 0x220 + (n) * 4)
 #define PPU_PWSR(n)			(SUNXI_R_CPUCFG_BASE + (n) * 0x1000 + 0x1008)
+#endif
 
 #define STATE_ON			8
 #define STATE_OFF			0
@@ -2659,10 +2663,10 @@ void sunxi_cpu_off(u_register_t mpidr)
 
 	PRINTF("PSCI: Powering off cluster %d core %d\n", cluster, core);
 
-	mmio_clrbits_32(HOTPLUG_POWERMODE_REG(core), POWER_ON);
+	//mmio_clrbits_32(HOTPLUG_POWERMODE_REG(core), POWER_ON);
 	R_CPUCFG->HOTPLUG_POWERMODE_REG [core] &= ~ POWER_ON;
 
-	mmio_setbits_32(HOTPLUG_CONTROL_REG(core), GIC_WAKEUP_DISABLE);
+	//mmio_setbits_32(HOTPLUG_CONTROL_REG(core), GIC_WAKEUP_DISABLE);
 	R_CPUCFG->HOTPLUG_CONTROL_REG [core] |= GIC_WAKEUP_DISABLE;
 }
 
