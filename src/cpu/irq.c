@@ -2239,7 +2239,7 @@ uint32_t tasks_sys_now(void)
 
 // wait expected state of variable
 // return non-zero: timeout error
-int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, int timeMS)
+int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, int timeMS)
 {
 	const uint_fast32_t t0 = tasks_sys_now();
 	do
@@ -2252,7 +2252,7 @@ int local_wait8mask(volatile uint8_t * flag, uint_fast8_t mask, uint_fast8_t sta
 
 // wait expected state of variable
 // return non-zero: timeout error
-int local_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, int timeMS)
+int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, int timeMS)
 {
 	const uint_fast32_t t0 = tasks_sys_now();
 	do
