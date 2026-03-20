@@ -2739,9 +2739,9 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 //	* rvaddr = startfunc;
 //	ASSERT(* rvaddr == startfunc);
 	// see 0xfa50392f
-	R_CPUCFG->HOTPLUGFLAG = 0*0xFA50392F;
-	R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
-	ASSERT(R_CPUCFG->SOFTENTRY [targetcore] == startfunc);
+	R_CPUCFG->HOTPLUGFLAGz = 0*0xFA50392F;
+	R_CPUCFG->SOFTENTRYz [targetcore] = startfunc;
+	ASSERT(R_CPUCFG->SOFTENTRYz [targetcore] == startfunc);
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
