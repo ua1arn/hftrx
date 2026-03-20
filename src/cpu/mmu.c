@@ -1630,9 +1630,12 @@ static void progdomain(void)
 	const uint_fast32_t dacr32v =
 		UINT32_C(0x55555555) * 0x03 |	// domain 15..0: Manager. Accesses are not checked against the permission bits in the translation tables.
 		0;
-	if (arm_hardware_aarch32implemented())
+	// поскольуre в этом проекте не виртуальных машин в aarch32 при работе в aarch64, устаноыка жтого регистра не требуется
+	if (0 && arm_hardware_aarch32implemented())
 	{
+		//PRINTF("1 __get_DACR32_EL2()=%08X\n", (unsigned) __get_DACR32_EL2());
 		__set_DACR32_EL2(dacr32v);
+		//PRINTF("2 __get_DACR32_EL2()=%08X\n", (unsigned) __get_DACR32_EL2());
 	}
 #else
 	// Program the domain access register

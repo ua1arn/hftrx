@@ -490,10 +490,17 @@ __STATIC_FORCEINLINE void __set_VBAR_EL3(uint64_t value)
 	__set_RG64("VBAR_EL3", value);
 }
 
-__STATIC_FORCEINLINE void __set_DACR32_EL2(uint32_t value)
+__STATIC_FORCEINLINE void __set_DACR32_EL2(uint64_t value)
 {
 	// MSR DACR32_EL2, <Xt> ; Write Xt to DACR32_EL2
-	__set_RG32("DACR32_EL2", value);
+	__set_RG64("DACR32_EL2", value);
+}
+
+__STATIC_FORCEINLINE uint64_t __get_DACR32_EL2(void)
+{
+	uint64_t result;
+	__get_RG64("DACR32_EL2", result);
+	return result;
 }
 
 __STATIC_FORCEINLINE void __set_CSSELR_EL1(uint32_t value)
