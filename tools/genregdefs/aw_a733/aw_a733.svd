@@ -15319,6 +15319,43 @@
   <description>SUNXI_R_CPUCFG_BASE</description>
   <baseAddress>0x07050000</baseAddress>
   <registers>
+   <register>
+    <name>HOTPLUGFLAG</name>
+    <displayName>HOTPLUGFLAG</displayName>
+    <description>Check for value 0xFA50392F ?</description>
+    <addressOffset>0x1C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x000001C4</addressOffset>
+    <register>
+     <name>SOFTENTRY0_3</name>
+     <displayName>SOFTENTRY0_3</displayName>
+     <description>The Soft Entry Address Register of core0..core3</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x000001E0</addressOffset>
+    <register>
+     <name>SOFTENTRY4_7</name>
+     <displayName>SOFTENTRY4_7</displayName>
+     <description>The Soft Entry Address Register of core4..core7</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
    <cluster>
     <dim>8</dim>
     <addressOffset>0x00000200</addressOffset>

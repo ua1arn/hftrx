@@ -2473,7 +2473,12 @@ typedef struct RTWB_RCQ_Type
 /*!< R_CPUCFG SUNXI_R_CPUCFG_BASE */
 typedef struct R_CPUCFG_Type
 {
-         RESERVED(0x000[0x0200 - 0x0000], uint8_t)
+         RESERVED(0x000[0x01C0 - 0x0000], uint8_t)
+    __IOM uint32_t HOTPLUGFLAG;                       /*!< Offset 0x1C0 Check for value 0xFA50392F ? */
+    __IOM uint32_t SOFTENTRY0_3 [0x004];              /*!< Offset 0x1C4 The Soft Entry Address Register of core0..core3 */
+         RESERVED(0x1D4[0x01E0 - 0x01D4], uint8_t)
+    __IOM uint32_t SOFTENTRY4_7 [0x004];              /*!< Offset 0x1E0 The Soft Entry Address Register of core4..core7 */
+         RESERVED(0x1F0[0x0200 - 0x01F0], uint8_t)
     __IOM uint32_t HOTPLUG_CONTROL_REG [0x008];       /*!< Offset 0x200  */
     __IOM uint32_t HOTPLUG_POWERMODE_REG [0x008];     /*!< Offset 0x220  */
 } R_CPUCFG_TypeDef; /* size of structure = 0x240 */
