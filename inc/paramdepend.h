@@ -519,7 +519,7 @@ extern "C" {
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
-	#define HARDWARE_NCORES 8
+	#define HARDWARE_NCORES 6
 	#if defined(__aarch64__)
 		#define WITHCPUNAME "Allw A733_64"
 	#else
