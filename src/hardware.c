@@ -2229,29 +2229,28 @@ static void cortexa_cpuinfo(void)
 {
 #if defined(__aarch64__)
 	dbg_putchar('$');
-	PRINTF("CPU%u: VBAR_EL3=%08" PRIX64 ", TTBR0_EL3=%08" PRIX64 ", SCTLR_EL1=%08" PRIX64 ", SCTLR_EL3=%08" PRIX64 ", TCR_EL3=%08X, sp=%08X, MPIDR_EL1=%08" PRIX64 "\n",
-			(unsigned) (arm_hardware_cpuid()),
+	PRINTF("CPU%u: VBAR_EL3=%08" PRIX64 ", TTBR0_EL3=%08" PRIX64 ", SCTLR_EL1=%08" PRIX64 ", SCTLR_EL3=%08" PRIX64 ", TCR_EL3=%08X, sp=%08" PRIX64 ", MPIDR_EL1=%08" PRIX64 "\n",
+			(unsigned) arm_hardware_cpuid(),
 			__get_VBAR_EL3(),
 			__get_TTBR0_EL3(),
 			__get_SCTLR_EL1(),
 			__get_SCTLR_EL3(),
 			(unsigned) __get_TCR_EL3(),
-			(unsigned) __get_SP64(),
+			__get_SP64(),
 			__get_MPIDR_EL1()
 			);
 	dbg_flush();
 #else
-	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
-	PRINTF("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08X, SCTLR=%08X, ACTLR=%08X, sp=%08X, MPIDR=%08X\n",
-			(unsigned) (arm_hardware_cpuid()),
+	PRINTF("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08X, SCTLR=%08X, ACTLR=%08X, sp=%08" PRIX32 ", MPIDR=%08" PRIX32 "X\n",
+			(unsigned) arm_hardware_cpuid(),
 			(void *) __get_VBAR(),
 			(void *) __get_TTBR0(),
 			(unsigned) __get_CPSR(),
 			(unsigned) __get_SCTLR(),
 			(unsigned) __get_ACTLR(),
-			(unsigned) __get_SP(),
-			(unsigned) __get_MPIDR()
+			__get_SP(),
+			__get_MPIDR()
 			);
 	dbg_flush();
 #endif
