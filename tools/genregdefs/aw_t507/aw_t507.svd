@@ -15687,6 +15687,15 @@
   <description></description>
   <baseAddress>0x07000400</baseAddress>
   <registers>
+   <register>
+    <name>HOTPLUGFLAG</name>
+    <displayName>HOTPLUGFLAG</displayName>
+    <description>Check for value 0xFA50392F ?</description>
+    <addressOffset>0x1C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
    <cluster>
     <dim>4</dim>
     <addressOffset>0x000001C4</addressOffset>

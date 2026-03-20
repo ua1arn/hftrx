@@ -71,6 +71,7 @@
 
 #type; R_CPUCFG
 
+#regdef; HOTPLUGFLAG; 0x01C0; Check for value 0xFA50392F ?
 #regdef; SOFTENTRY; 0x01C4 4; The Soft Entry Address Register of CPUx (x=0..1)
 
 #typeend;

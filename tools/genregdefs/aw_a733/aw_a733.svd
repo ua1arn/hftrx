@@ -14342,7 +14342,7 @@
   <peripheral>
   <name>PPU</name>
   <description>PCK-600 S_PPU (PCK600).</description>
-  <baseAddress>0x07060000</baseAddress>
+  <baseAddress>0x07051000</baseAddress>
   <interrupt>
    <name>PCK600_QCHANNEL</name>
    <value>221</value>
@@ -14697,118 +14697,6 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
-  </peripheral>
-  <peripheral derivedFrom="PPU">
-  <name>PPU0</name>
-  <baseAddress>0x07060000</baseAddress>
-  <interrupt>
-   <name>PCK600_QCHANNEL</name>
-   <value>221</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PCK600_CPU</name>
-   <value>244</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="PPU">
-  <name>PPU1</name>
-  <baseAddress>0x07061000</baseAddress>
-  <interrupt>
-   <name>PCK600_QCHANNEL</name>
-   <value>221</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PCK600_CPU</name>
-   <value>244</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="PPU">
-  <name>PPU2</name>
-  <baseAddress>0x07062000</baseAddress>
-  <interrupt>
-   <name>PCK600_QCHANNEL</name>
-   <value>221</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PCK600_CPU</name>
-   <value>244</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="PPU">
-  <name>PPU3</name>
-  <baseAddress>0x07063000</baseAddress>
-  <interrupt>
-   <name>PCK600_QCHANNEL</name>
-   <value>221</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PCK600_CPU</name>
-   <value>244</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="PPU">
-  <name>PPU4</name>
-  <baseAddress>0x07064000</baseAddress>
-  <interrupt>
-   <name>PCK600_QCHANNEL</name>
-   <value>221</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PCK600_CPU</name>
-   <value>244</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="PPU">
-  <name>PPU5</name>
-  <baseAddress>0x07065000</baseAddress>
-  <interrupt>
-   <name>PCK600_QCHANNEL</name>
-   <value>221</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PCK600_CPU</name>
-   <value>244</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="PPU">
-  <name>PPU6</name>
-  <baseAddress>0x07066000</baseAddress>
-  <interrupt>
-   <name>PCK600_QCHANNEL</name>
-   <value>221</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PCK600_CPU</name>
-   <value>244</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="PPU">
-  <name>PPU7</name>
-  <baseAddress>0x07067000</baseAddress>
-  <interrupt>
-   <name>PCK600_QCHANNEL</name>
-   <value>221</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>PCK600_CPU</name>
-   <value>244</value>
-   <description></description>
-  </interrupt>
   </peripheral>
   <peripheral>
   <name>S_PRCM</name>
@@ -15462,6 +15350,52 @@
      <resetValue>0x00000000</resetValue>
     </register>
     <dimIncrement>0x020</dimIncrement>
+   </cluster>
+   <register>
+    <name>HOTPLUGFLAGx</name>
+    <displayName>HOTPLUGFLAGx</displayName>
+    <description>Check for value 0xFA50392F ?</description>
+    <addressOffset>0x1A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x000001A4</addressOffset>
+    <register>
+     <name>SOFTENTRYx</name>
+     <displayName>SOFTENTRYx</displayName>
+     <description>The Soft Entry Address Register of CPUx (x=0..1) ??</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <register>
+    <name>HOTPLUGFLAGz</name>
+    <displayName>HOTPLUGFLAGz</displayName>
+    <description>Check for value 0xFA50392F ?</description>
+    <addressOffset>0x1C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x000001C4</addressOffset>
+    <register>
+     <name>SOFTENTRYz</name>
+     <displayName>SOFTENTRYz</displayName>
+     <description>The Soft Entry Address Register of CPUx (x=0..1) ??</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
    </cluster>
    <cluster>
     <dim>8</dim>

@@ -2722,16 +2722,20 @@ void sunxi_cpu_power_off_others(void)
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
-	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
+	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (SUNXI_R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
 
 	ASSERT(startfunc != 0);
 	ASSERT(targetcore != 0);
 
 	CLUSTER_CFG->C0_CPU  [targetcore].C0_CPUx_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET 0: assert
-	CPU_SUBSYS_CTRL->CLU0 [targetcore].CPU_CTRL_REG |= 1;//&= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
+	CPU_SUBSYS_CTRL->CLU0 [targetcore].CPU_CTRL_REG &= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
 
 //	* rvaddr = startfunc;
 //	ASSERT(* rvaddr == startfunc);
+	// see 0xfa50392f
+	R_CPUCFG->HOTPLUGFLAG = 0*0xFA50392F;
+	R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
+	ASSERT(R_CPUCFG->SOFTENTRY [targetcore] == startfunc);
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
@@ -2792,6 +2796,8 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] &= ~ C0_CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
 	C0_CPUX_CFG->C0_CPUx_CTRL_REG [targetcore] |= C0_CORE_PWRON_MASK;
 
+	// see 0xfa50392f
+	//R_CPUCFG->HOTPLUGFLAG = 0xFA50392F;
 	R_CPUCFG->SOFTENTRY [targetcore] = startfunc;
 	ASSERT(R_CPUCFG->SOFTENTRY [targetcore] == startfunc);
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
@@ -3008,13 +3014,17 @@ void cpump_initialize(void)
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
 
-		LCLSPINLOCK_INITIALIZE(& cpu1userstart [core]);
-		LCLSPIN_LOCK(& cpu1userstart [core]);
-		LCLSPIN_LOCK(& cpu1init);
-
 //		PRINTF("1 core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
 		arm_hardware_core_poweron(core);
 //		PRINTF("2 core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
+	}
+	local_delay_ms(1);
+	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
+	{
+
+		LCLSPINLOCK_INITIALIZE(& cpu1userstart [core]);
+		LCLSPIN_LOCK(& cpu1userstart [core]);
+		LCLSPIN_LOCK(& cpu1init);
 
 #if defined(__aarch64__)
 

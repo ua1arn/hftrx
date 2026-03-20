@@ -2670,7 +2670,8 @@ typedef struct R_CAN_Type
 /*!< R_CPUCFG  */
 typedef struct R_CPUCFG_Type
 {
-         RESERVED(0x000[0x01C4 - 0x0000], uint8_t)
+         RESERVED(0x000[0x01C0 - 0x0000], uint8_t)
+    __IOM uint32_t HOTPLUGFLAG;                       /*!< Offset 0x1C0 Check for value 0xFA50392F ? */
     __IOM uint32_t SOFTENTRY [0x004];                 /*!< Offset 0x1C4 The Soft Entry Address Register of CPUx (x=0..1) */
 } R_CPUCFG_TypeDef; /* size of structure = 0x1D4 */
 /*
