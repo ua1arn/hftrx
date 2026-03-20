@@ -2262,7 +2262,7 @@ static void cortexa_cpuinfo(void)
 #if defined (__CORTEX_A) && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
 
 // see also __set_RVBAR_EL3(startfunc);
-static void arm_hardware_setrvaddr(uint_fast64_t startfunc, unsigned core, unsigned AA64NAA32)
+static void arm_hardware_setrvaddr(uint_fast64_t startfunc, unsigned core)
 {
 #if CPUSTYLE_A64
 	CPUX_CFG->RVBARADDR [core].LOW = ptr_lo32(startfunc);
@@ -2277,10 +2277,7 @@ static void arm_hardware_setrvaddr(uint_fast64_t startfunc, unsigned core, unsig
 	CPU_SUBSYS_CTRL->RVBARADDR [core].LOW = ptr_lo32(startfunc);
 	CPU_SUBSYS_CTRL->RVBARADDR [core].HIGH = ptr_hi32(startfunc);
 #elif CPUSTYLE_A733
-	if (AA64NAA32)
-		CPU_SUBSYS_CTRL->CLU0 [core].CPU_CTRL_REG |= (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
-	else
-		CPU_SUBSYS_CTRL->CLU0 [core].CPU_CTRL_REG &= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
+	CPU_SUBSYS_CTRL->CLU0 [core].CPU_CTRL_REG |= (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
 	CPU_SUBSYS_CTRL->CLU0 [core].RVBARADDR_L = ptr_lo32(startfunc);
 	CPU_SUBSYS_CTRL->CLU0 [core].RVBARADDR_H = ptr_hi32(startfunc);
 #else
@@ -2302,7 +2299,7 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 		0xEAFFFFFD,	// 	b	10 <trampoline32+0x10>
 	};
 
-	arm_hardware_setrvaddr(startfunc, core, 1);
+	arm_hardware_setrvaddr(startfunc, core);
 	aarch32_mp_cpuN_start((uintptr_t) trampoline32, core);
 }
 
@@ -2313,10 +2310,10 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 void __NO_RETURN
 run64(uint_fast64_t startfunc)
 {
-	unsigned AA64NAA32 = 1;
+	const int AA64NAA32 = 1;
 	// Start aarch64 core as application
 	//__set_RVBAR_EL3(startfunc);
-	arm_hardware_setrvaddr(startfunc, arm_hardware_cpuid(), AA64NAA32);	// запуск на своём же ядре
+	arm_hardware_setrvaddr(startfunc, arm_hardware_cpuid());	// запуск на своём же ядре
 	// RMR - Reset Management Register
 	// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
 	if (AA64NAA32)
