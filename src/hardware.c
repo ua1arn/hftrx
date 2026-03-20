@@ -2231,7 +2231,7 @@ static void cortexa_cpuinfo(void)
 	volatile uint_fast32_t vvv;
 	dbg_putchar('$');
 	PRINTF("CPU%u: VBAR_EL3=%08X, TTBR0_EL3=%08X, SCTLR_EL1=%08X, SCTLR_EL3=%08X, TCR_EL3=%08X, sp=%08X, MPIDR_EL1=%08" PRIX64 "\n",
-			(unsigned) (__get_MPIDR_EL1() & 0xFF),
+			(unsigned) (arm_hardware_cpuid()),
 			(unsigned) __get_VBAR_EL3(),
 			(unsigned) __get_TTBR0_EL3(),
 			(unsigned) __get_SCTLR_EL1(),
@@ -2682,7 +2682,7 @@ void sunxi_cpu_on(u_register_t mpidr)
 	unsigned int cluster = MPIDR_AFFLVL2_VAL(mpidr);
 	unsigned int core    = MPIDR_AFFLVL1_VAL(mpidr);
 
-	PRINTF("PSCI: Powering on cluster %d core %d\n", cluster, core);
+	//PRINTF("PSCI: Powering on cluster %d core %d\n", cluster, core);
 
 	mmio_setbits_32(SUNXI_INITARCH_REG(core), AARCH64);	// На что влияет?
 
@@ -2723,6 +2723,7 @@ void sunxi_cpu_power_off_others(void)
 	}
 }
 
+void arm_hardware_core_poweron(unsigned core);
 
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
@@ -2739,12 +2740,14 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 //	ASSERT(* rvaddr == startfunc);
 	// see 0xfa50392f
 	R_CPUCFG->HOTPLUGFLAGz = 0*0xFA50392F;
-	R_CPUCFG->SOFTENTRYz [targetcore] = startfunc;
-	ASSERT(R_CPUCFG->SOFTENTRYz [targetcore] == startfunc);
+//	R_CPUCFG->SOFTENTRYz [targetcore] = startfunc;
+//	ASSERT(R_CPUCFG->SOFTENTRYz [targetcore] == startfunc);
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
 	CLUSTER_CFG->C0_CPU  [targetcore].C0_CPUx_CTRL_REG |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
+	arm_hardware_core_poweron(targetcore);
+
 }
 
 #elif CPUSTYLE_H616
@@ -3020,7 +3023,7 @@ void cpump_initialize(void)
 	{
 
 //		PRINTF("1 core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
-		arm_hardware_core_poweron(core);
+		//arm_hardware_core_poweron(core);
 //		PRINTF("2 core%u: C0_CPUx_STATUS0=%08X, C0_CPUx_CTRL_REG=%08X\n", core, (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_STATUS0,  (unsigned) CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG);
 	}
 	local_delay_ms(1);
