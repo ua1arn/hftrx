@@ -9,16 +9,16 @@
 #regdef; POWEROFF_GATING_REG; 0x0044; Cluster0 poweron register (bit0 - core0)
 #regdef; CPU_POWER_CLAMP_REG; 0x0050 8;	Cluster0 power clamp registers (for each core)
 
-#regdef; HOTPLUGFLAGx; 0x01A0; Check for value 0xFA50392F ?
-#regdef; SOFTENTRYx; 0x01A4 4; The Soft Entry Address Register of CPUx (x=0..1) ??
+##regdef; HOTPLUGFLAGx; 0x01A0; Check for value 0xFA50392F ?
+##regdef; SOFTENTRYx; 0x01A4 4; The Soft Entry Address Register of CPUx (x=0..1) ??
 
 ##regdef; HOTPLUGFLAGy; 0x01B0; Check for value 0xFA50392F ?
 ##regdef; SOFTENTRYy; 0x01B4 4; The Soft Entry Address Register of CPUx (x=0..1) ??
 
-#regdef; HOTPLUGFLAGz; 0x01C0; Check for value 0xFA50392F ?
-#regdef; SOFTENTRYz; 0x01C4 4; The Soft Entry Address Register of CPUx (x=0..1) ??
+##regdef; HOTPLUGFLAGz; 0x01C0; Check for value 0xFA50392F ?
+##regdef; SOFTENTRYz; 0x01C4 4; The Soft Entry Address Register of CPUx (x=0..1) ??
 
 #regdef; HOTPLUG_CONTROL_REG; 0x0200 8;
-#regdef; HOTPLUG_POWERMODE; 0x0220 8;
+#regdef; HOTPLUG_POWERMODE_REG; 0x0220 8;
 
 #typeend;

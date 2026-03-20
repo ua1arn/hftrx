@@ -2508,34 +2508,32 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 #define PLATFORM_MAX_CPUS_PER_CLUSTER 8
 typedef uint32_t u_register_t;
 
-#define SUNXI_R_PRCM_BASE		((uintptr_t) 0x07010000)
-#define SUNXI_R_CPUCFG_BASE		((uintptr_t) 0x07050000)
-#define SUNXI_CPUCFG_BASE		((uintptr_t) 0x08000000)
-#define SUNXI_CLUSTERCFG_BASE	((uintptr_t) 0x08860000)
-#define SUNXI_SPC_BASE			((uintptr_t) 0x02054000)
-
-#define  SUNXI_CPUCFG_OFFSET	0x1000
-#define  SUNXI_CPUCFG_STEP		0x1000
-
-/* c = cluster, n = core */
-#define SUNXI_CPUCFG_RST_CTRL_REG(c, n)	(SUNXI_CLUSTERCFG_BASE + (n) * 0x1000)
-#define SUNXI_CPUCFG_GEN_CTRL_REG0(c)	(SUNXI_CPUCFG_BASE + 0x0000)
-#define SUNXI_CPUCFG_RVBAR_LO_REG(n)	(SUNXI_CPUCFG_BASE + 0x4 + ((n) + 1) * 0x1000)
-#define SUNXI_CPUCFG_RVBAR_HI_REG(n)	(SUNXI_CPUCFG_BASE + 0x8 + ((n) + 1) * 0x1000)
-
-#define SUNXI_POWERON_RST_REG(c)	(SUNXI_R_CPUCFG_BASE + 0x0040 + (c) * 4)
-#define SUNXI_POWEROFF_GATING_REG(c)	(SUNXI_R_CPUCFG_BASE + 0x0044 + (c) * 4)
-#define SUNXI_CPU_POWER_CLAMP_REG(c, n)	(SUNXI_R_CPUCFG_BASE + 0x0050 + (c) * 0x10 + (n) * 4)
-
-#define SUNXI_AA64nAA32_REG		SUNXI_CPUCFG_GEN_CTRL_REG0
-#define SUNXI_AA64nAA32_OFFSET		4
-
-/* Get by REing stock ATF and checking initialization loop boundary */
-#define SUNXI_SPC_NUM_PORTS		14
-
-#define SUNXI_SPC_DECPORT_STA_REG(p)	(SUNXI_SPC_BASE + 0x0000 + 0x10 * (p))
-#define SUNXI_SPC_DECPORT_SET_REG(p)	(SUNXI_SPC_BASE + 0x0004 + 0x10 * (p))
-#define SUNXI_SPC_DECPORT_CLR_REG(p)	(SUNXI_SPC_BASE + 0x0008 + 0x10 * (p))
+//#define SUNXI_R_PRCM_BASE		((uintptr_t) 0x07010000)
+#define SUNXI_R_CPUCFG_BASE		R_CPUCFG_BASE//((uintptr_t) 0x07050000)
+#define SUNXI_CPUCFG_BASE		CPU_SUBSYS_CTRL_BASE//((uintptr_t) 0x08000000)
+//#define SUNXI_CLUSTERCFG_BASE	((uintptr_t) 0x08860000)
+//#define SUNXI_SPC_BASE			((uintptr_t) 0x02054000)
+//
+//
+///* c = cluster, n = core */
+//#define SUNXI_CPUCFG_RST_CTRL_REG(c, n)	(SUNXI_CLUSTERCFG_BASE + (n) * 0x1000)
+//#define SUNXI_CPUCFG_GEN_CTRL_REG0(c)	(SUNXI_CPUCFG_BASE + 0x0000)
+//#define SUNXI_CPUCFG_RVBAR_LO_REG(n)	(SUNXI_CPUCFG_BASE + 0x4 + ((n) + 1) * 0x1000)
+//#define SUNXI_CPUCFG_RVBAR_HI_REG(n)	(SUNXI_CPUCFG_BASE + 0x8 + ((n) + 1) * 0x1000)
+//
+//#define SUNXI_POWERON_RST_REG(c)	(SUNXI_R_CPUCFG_BASE + 0x0040 + (c) * 4)
+//#define SUNXI_POWEROFF_GATING_REG(c)	(SUNXI_R_CPUCFG_BASE + 0x0044 + (c) * 4)
+//#define SUNXI_CPU_POWER_CLAMP_REG(c, n)	(SUNXI_R_CPUCFG_BASE + 0x0050 + (c) * 0x10 + (n) * 4)
+//
+//#define SUNXI_AA64nAA32_REG		SUNXI_CPUCFG_GEN_CTRL_REG0
+//#define SUNXI_AA64nAA32_OFFSET		4
+//
+///* Get by REing stock ATF and checking initialization loop boundary */
+//#define SUNXI_SPC_NUM_PORTS		14
+//
+//#define SUNXI_SPC_DECPORT_STA_REG(p)	(SUNXI_SPC_BASE + 0x0000 + 0x10 * (p))
+//#define SUNXI_SPC_DECPORT_SET_REG(p)	(SUNXI_SPC_BASE + 0x0004 + 0x10 * (p))
+//#define SUNXI_SPC_DECPORT_CLR_REG(p)	(SUNXI_SPC_BASE + 0x0008 + 0x10 * (p))
 
 static inline void writel(uint32_t val, volatile void *addr)
 {
@@ -2631,26 +2629,15 @@ static inline uint32_t mmio_read_32(uintptr_t addr)
 
 #define read_mpidr() (__get_MPIDR())
 
-
-
-#ifdef SUNXI_CPUCFG_STEP
-#define SUNXI_INITARCH_REG(n)		(SUNXI_CPUCFG_BASE + SUNXI_CPUCFG_OFFSET + (n) * SUNXI_CPUCFG_STEP)
-#else
-#define SUNXI_INITARCH_REG(n)		(SUNXI_CPUCFG_BASE + 0x0020 + (n) * 4)
-#endif
-#define HOTPLUG_CONTROL_REG(n)		(SUNXI_R_CPUCFG_BASE + 0x200 + (n) * 4)
-#define HOTPLUG_POWERMODE_REG(n)	(SUNXI_R_CPUCFG_BASE + 0x220 + (n) * 4)
-#define PPU_PWSR(n)			(SUNXI_R_CPUCFG_BASE + (n) * 0x1000 + 0x1008)
-
-//#define SUNXI_CPU_CTRL_REG(n)		(SUNXI_CPUSUBSYS_BASE + 0x20 + (n) * 4)
-//#define SUNXI_ALT_RVBAR_LO_REG(n)	(SUNXI_CPUSUBSYS_BASE + 0x40 + (n) * 8)
-//#define SUNXI_ALT_RVBAR_HI_REG(n)	(SUNXI_CPUSUBSYS_BASE + 0x44 + (n) * 8)
+#define  SUNXI_CPUCFG_OFFSET	0x1000
+#define  SUNXI_CPUCFG_STEP		0x1000
 
 #ifdef SUNXI_CPUCFG_STEP
 #define SUNXI_INITARCH_REG(n)		(SUNXI_CPUCFG_BASE + SUNXI_CPUCFG_OFFSET + (n) * SUNXI_CPUCFG_STEP)
 #else
 #define SUNXI_INITARCH_REG(n)		(SUNXI_CPUCFG_BASE + 0x0020 + (n) * 4)
 #endif
+
 #define HOTPLUG_CONTROL_REG(n)		(SUNXI_R_CPUCFG_BASE + 0x200 + (n) * 4)
 #define HOTPLUG_POWERMODE_REG(n)	(SUNXI_R_CPUCFG_BASE + 0x220 + (n) * 4)
 #define PPU_PWSR(n)			(SUNXI_R_CPUCFG_BASE + (n) * 0x1000 + 0x1008)
@@ -2673,8 +2660,10 @@ void sunxi_cpu_off(u_register_t mpidr)
 	PRINTF("PSCI: Powering off cluster %d core %d\n", cluster, core);
 
 	mmio_clrbits_32(HOTPLUG_POWERMODE_REG(core), POWER_ON);
+	R_CPUCFG->HOTPLUG_POWERMODE_REG [core] &= ~ POWER_ON;
 
 	mmio_setbits_32(HOTPLUG_CONTROL_REG(core), GIC_WAKEUP_DISABLE);
+	R_CPUCFG->HOTPLUG_CONTROL_REG [core] |= GIC_WAKEUP_DISABLE;
 }
 
 void sunxi_cpu_on(u_register_t mpidr)
@@ -2684,7 +2673,8 @@ void sunxi_cpu_on(u_register_t mpidr)
 
 	//PRINTF("PSCI: Powering on cluster %d core %d\n", cluster, core);
 
-	mmio_setbits_32(SUNXI_INITARCH_REG(core), AARCH64);	// На что влияет?
+	CPU_SUBSYS_CTRL->CLU0 [core].CPU_CTRL_REG |= (UINT32_C(1) << 0);	// Действительно влияет, в каком режиме запускаеится
+//	mmio_setbits_32(SUNXI_INITARCH_REG(core), AARCH64);	// Действительно влияет, в каком режиме запускаеится
 
 //	PRINTF("new: %p old: %p\n", & PPU [core + 1].PPU_PWSR, (void *) PPU_PWSR(core + 1));
 	if (local_wait32mask(& PPU [core + 1].PPU_PWSR, 0xf, STATE_OFF, 100))
@@ -2692,18 +2682,23 @@ void sunxi_cpu_on(u_register_t mpidr)
 //	while ((mmio_read_32(PPU_PWSR(core + 1)) & 0xf) != STATE_OFF)
 //		;
 
-	mmio_setbits_32(HOTPLUG_POWERMODE_REG(core), POWER_ON);
-	mmio_setbits_32(HOTPLUG_CONTROL_REG(core), HOTPLUG_EN);
+	//mmio_setbits_32(HOTPLUG_POWERMODE_REG(core), POWER_ON);
+	R_CPUCFG->HOTPLUG_POWERMODE_REG [core] |= POWER_ON;
+	//mmio_setbits_32(HOTPLUG_CONTROL_REG(core), HOTPLUG_EN);
+	R_CPUCFG->HOTPLUG_CONTROL_REG [core] |= HOTPLUG_EN;
 
 	if (local_wait32mask(& PPU [core + 1].PPU_PWSR, 0xf, STATE_ON, 100))
 		TP();
 //	while ((mmio_read_32(PPU_PWSR(core + 1)) & 0xf) != STATE_ON)
 //		;
 
-	mmio_clrbits_32(HOTPLUG_CONTROL_REG(core), HOTPLUG_EN);
-	mmio_clrbits_32(HOTPLUG_POWERMODE_REG(core), POWER_ON);
+	//mmio_clrbits_32(HOTPLUG_CONTROL_REG(core), HOTPLUG_EN);
+	R_CPUCFG->HOTPLUG_CONTROL_REG [core] &= ~ HOTPLUG_EN;
+	//mmio_clrbits_32(HOTPLUG_POWERMODE_REG(core), POWER_ON);
+	R_CPUCFG->HOTPLUG_POWERMODE_REG [core] &= ~ POWER_ON;
 
-	mmio_clrbits_32(HOTPLUG_CONTROL_REG(core), GIC_WAKEUP_DISABLE);
+	//mmio_clrbits_32(HOTPLUG_CONTROL_REG(core), GIC_WAKEUP_DISABLE);
+	R_CPUCFG->HOTPLUG_CONTROL_REG [core] &= ~ GIC_WAKEUP_DISABLE;
 }
 
 void sunxi_cpu_power_off_others(void)
@@ -2723,8 +2718,6 @@ void sunxi_cpu_power_off_others(void)
 	}
 }
 
-void arm_hardware_core_poweron(unsigned core);
-
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 {
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
@@ -2739,14 +2732,13 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore)
 //	* rvaddr = startfunc;
 //	ASSERT(* rvaddr == startfunc);
 	// see 0xfa50392f
-	R_CPUCFG->HOTPLUGFLAGz = 0*0xFA50392F;
+//	R_CPUCFG->HOTPLUGFLAGz = 0*0xFA50392F;
 //	R_CPUCFG->SOFTENTRYz [targetcore] = startfunc;
 //	ASSERT(R_CPUCFG->SOFTENTRYz [targetcore] == startfunc);
 
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
 	CLUSTER_CFG->C0_CPU  [targetcore].C0_CPUx_CTRL_REG |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
-	arm_hardware_core_poweron(targetcore);
 
 }
 
@@ -3047,6 +3039,7 @@ void cpump_initialize(void)
 		aarch64_stack_top = (uint64_t) (uintptr_t) p + aarch64_stack_size;
 		//PRINTF("core%u stack: 0x%08X..0x%08X\n", core, (unsigned) ((uintptr_t) p), (unsigned) aarch64_stack_top);
 		aarch64_mp_cpuN_start((uintptr_t) Reset_CPUx_Handler, core);
+		arm_hardware_core_poweron(core);
 #else
 		static const uint64_t aarch32_stack_size = UINT32_C(16) * 1024 * 1024;	/* crt_CortexA_CPUn.S */
 		extern uint32_t aarch32_stack_top;			/* crt_CortexA_CPUn.S */
@@ -3060,6 +3053,7 @@ void cpump_initialize(void)
 		aarch32_stack_top = (uint32_t) (uintptr_t) p + aarch32_stack_size;
 		//PRINTF("core%u stack: 0x%08X..0x%08X\n", core, (unsigned) ((uintptr_t) p), (unsigned) aarch32_stack_top);
 		aarch32_mp_cpuN_start((uintptr_t) Reset_CPUx_Handler, core);
+		arm_hardware_core_poweron(core);
 #endif
 
 		LCLSPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освободит этот spinlock */

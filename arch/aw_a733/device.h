@@ -2478,15 +2478,9 @@ typedef struct R_CPUCFG_Type
     __IOM uint32_t POWEROFF_GATING_REG;               /*!< Offset 0x044 Cluster0 poweron register (bit0 - core0) */
          RESERVED(0x048[0x0050 - 0x0048], uint8_t)
     __IOM uint32_t CPU_POWER_CLAMP_REG [0x008];       /*!< Offset 0x050 Cluster0 power clamp registers (for each core) */
-         RESERVED(0x070[0x01A0 - 0x0070], uint8_t)
-    __IOM uint32_t HOTPLUGFLAGx;                      /*!< Offset 0x1A0 Check for value 0xFA50392F ? */
-    __IOM uint32_t SOFTENTRYx [0x004];                /*!< Offset 0x1A4 The Soft Entry Address Register of CPUx (x=0..1) ?? */
-         RESERVED(0x1B4[0x01C0 - 0x01B4], uint8_t)
-    __IOM uint32_t HOTPLUGFLAGz;                      /*!< Offset 0x1C0 Check for value 0xFA50392F ? */
-    __IOM uint32_t SOFTENTRYz [0x004];                /*!< Offset 0x1C4 The Soft Entry Address Register of CPUx (x=0..1) ?? */
-         RESERVED(0x1D4[0x0200 - 0x01D4], uint8_t)
+         RESERVED(0x070[0x0200 - 0x0070], uint8_t)
     __IOM uint32_t HOTPLUG_CONTROL_REG [0x008];       /*!< Offset 0x200  */
-    __IOM uint32_t HOTPLUG_POWERMODE [0x008];         /*!< Offset 0x220  */
+    __IOM uint32_t HOTPLUG_POWERMODE_REG [0x008];     /*!< Offset 0x220  */
 } R_CPUCFG_TypeDef; /* size of structure = 0x240 */
 /*
  * https://github.com/torvalds/linux/blob/master/drivers/nvmem/sunxi_sid.c#L62
