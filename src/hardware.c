@@ -2695,8 +2695,7 @@ void sunxi_cpu_on(u_register_t mpidr)
 	mmio_setbits_32(HOTPLUG_POWERMODE_REG(core), POWER_ON);
 	mmio_setbits_32(HOTPLUG_CONTROL_REG(core), HOTPLUG_EN);
 
-	if (local_wait32mask(& PPU [core + 1].PPU_PWSR, 0xf, STATE_ON, 100
-			))
+	if (local_wait32mask(& PPU [core + 1].PPU_PWSR, 0xf, STATE_ON, 100))
 		TP();
 //	while ((mmio_read_32(PPU_PWSR(core + 1)) & 0xf) != STATE_ON)
 //		;
