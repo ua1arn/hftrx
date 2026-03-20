@@ -2278,9 +2278,9 @@ static void arm_hardware_setrvaddr(uint_fast64_t startfunc, unsigned core, unsig
 	CPU_SUBSYS_CTRL->RVBARADDR [core].HIGH = ptr_hi32(startfunc);
 #elif CPUSTYLE_A733
 	if (AA64NAA32)
-		CPU_SUBSYS_CTRL->CLU0 [core].CPU_CTRL_REG &= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
-	else
 		CPU_SUBSYS_CTRL->CLU0 [core].CPU_CTRL_REG |= (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
+	else
+		CPU_SUBSYS_CTRL->CLU0 [core].CPU_CTRL_REG &= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
 	CPU_SUBSYS_CTRL->CLU0 [core].RVBARADDR_L = ptr_lo32(startfunc);
 	CPU_SUBSYS_CTRL->CLU0 [core].RVBARADDR_H = ptr_hi32(startfunc);
 #else
@@ -2677,8 +2677,11 @@ void sunxi_cpu_on(u_register_t mpidr)
 
 	//PRINTF("PSCI: Powering on cluster %d core %d\n", cluster, core);
 
+	// поставили ранее
+#if 0
 	CPU_SUBSYS_CTRL->CLU0 [core].CPU_CTRL_REG |= (UINT32_C(1) << 0);	// Действительно влияет, в каком режиме запускаеится
 //	mmio_setbits_32(SUNXI_INITARCH_REG(core), AARCH64);	// Действительно влияет, в каком режиме запускаеится
+#endif
 
 //	PRINTF("new: %p old: %p\n", & PPU [core + 1].PPU_PWSR, (void *) PPU_PWSR(core + 1));
 	if (local_wait32mask(& PPU [core + 1].PPU_PWSR, 0xf, STATE_OFF, 100))
@@ -2731,7 +2734,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	ASSERT(core != 0);
 
 	CLUSTER_CFG->C0_CPU  [core].C0_CPUx_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET 0: assert
-	CPU_SUBSYS_CTRL->CLU0 [core].CPU_CTRL_REG &= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
+//	CPU_SUBSYS_CTRL->CLU0 [core].CPU_CTRL_REG &= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
 
 //	* rvaddr = startfunc;
 //	ASSERT(* rvaddr == startfunc);
