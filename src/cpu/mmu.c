@@ -1621,6 +1621,7 @@ static void progmair(void)
 	__set_MAIR(mairv);
 #endif
 }
+
 static void progdomain(void)
 {
 #if defined(__aarch64__)
@@ -1629,7 +1630,10 @@ static void progdomain(void)
 	const uint_fast32_t dacr32v =
 		UINT32_C(0x55555555) * 0x03 |	// domain 15..0: Manager. Accesses are not checked against the permission bits in the translation tables.
 		0;
-	__set_DACR32_EL2(dacr32v);
+	if (arm_hardware_aarch32implemented())
+	{
+		__set_DACR32_EL2(dacr32v);
+	}
 #else
 	// Program the domain access register
 	__set_DACR(0xFFFFFFFF); // domain 15: access are not checked

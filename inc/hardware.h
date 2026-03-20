@@ -802,6 +802,7 @@ void arm_hardware_enable_handler(uint_fast16_t int_id);
 void arm_hardware_disable_handler(uint_fast16_t int_id);
 uint_fast8_t arm_hardware_cpuid(void);	// This processor index (0..n-1)
 uint_fast8_t arm_hardware_clustersize(void);
+int arm_hardware_aarch32implemented(void);
 void arm_hardware_populte_second_initialize(void);
 
 void hardware_set_dotclock(uint_fast32_t dotfreq);

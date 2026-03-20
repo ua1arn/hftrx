@@ -2959,6 +2959,15 @@ void arm_hardware_core_poweron(unsigned core)
 #endif
 }
 
+// Поддержтвается ли на текущем CORE aarch32
+int arm_hardware_aarch32implemented(void)
+{
+#if CPUSTYLE_A733
+	return arm_hardware_cpuid() < 6;
+#else /* CPUSTYLE_A733 */
+#endif /* CPUSTYLE_A733 */
+}
+
 // Вызывается из main
 // Запуск остальных процессоров
 void cpump_initialize(void)
