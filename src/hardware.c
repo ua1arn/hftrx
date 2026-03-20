@@ -2727,6 +2727,7 @@ void sunxi_cpu_power_off_others(void)
 
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 {
+//#if 1
 #ifndef __aarch64__
 	// A733 не требует использования 32 bit trampoline
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
@@ -2734,7 +2735,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	ASSERT(startfunc != 0);
 	ASSERT(core != 0);
 	CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET 0: assert
-//	CPU_SUBSYS_CTRL->CLU0 [core].CPU_CTRL_REG &= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
+	CPU_SUBSYS_CTRL->CLU0 [core].CPU_CTRL_REG &= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
 
 	// writeble registers:
 	//	070501C0: FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFF0000 FFFFFFFF FFFFFFFF
