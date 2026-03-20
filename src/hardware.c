@@ -2129,20 +2129,20 @@ static void sysinit_dsu_initialize()
 	//	__get_CLUSTERCFR_EL1()=073FC237
 	//	__get_CLUSTERECTLR_EL1()=00000500
 	//	__get_CLUSTERPWRCTLR_EL1()=000000F0
-	PRINTF("__get_CLUSTERCFR_EL1()=%08X\n", (unsigned) __get_CLUSTERCFR_EL1());
-	PRINTF("__get_CLUSTERECTLR_EL1()=%08X\n", (unsigned) __get_CLUSTERECTLR_EL1());
-	PRINTF("__get_CLUSTERPWRCTLR_EL1()=%08X\n", (unsigned) __get_CLUSTERPWRCTLR_EL1());
-	PRINTF("__get_CLUSTERPWRDN_EL1()=%08X\n", (unsigned) __get_CLUSTERPWRDN_EL1());
+//	PRINTF("__get_CLUSTERCFR_EL1()=%08X\n", (unsigned) __get_CLUSTERCFR_EL1());
+//	PRINTF("__get_CLUSTERECTLR_EL1()=%08X\n", (unsigned) __get_CLUSTERECTLR_EL1());
+//	PRINTF("__get_CLUSTERPWRCTLR_EL1()=%08X\n", (unsigned) __get_CLUSTERPWRCTLR_EL1());
+//	PRINTF("__get_CLUSTERPWRDN_EL1()=%08X\n", (unsigned) __get_CLUSTERPWRDN_EL1());
 #endif /* (__CORTEX_A == 55U) */
 #if (__CORTEX_A == 55U) && ! defined(__aarch64__)
 	//	__get_CLUSTERCFR()=073FC237
 	//	__get_CLUSTERECTLR()=00000500
 	//	__get_CLUSTERPWRCTLR()=000000F0
 	//	__get_CLUSTERPWRDN()=00000000
-	PRINTF("__get_CLUSTERCFR()=%08X\n", (unsigned) __get_CLUSTERCFR());
-	PRINTF("__get_CLUSTERECTLR()=%08X\n", (unsigned) __get_CLUSTERECTLR());
-	PRINTF("__get_CLUSTERPWRCTLR()=%08X\n", (unsigned) __get_CLUSTERPWRCTLR());
-	PRINTF("__get_CLUSTERPWRDN()=%08X\n", (unsigned) __get_CLUSTERPWRDN());
+//	PRINTF("__get_CLUSTERCFR()=%08X\n", (unsigned) __get_CLUSTERCFR());
+//	PRINTF("__get_CLUSTERECTLR()=%08X\n", (unsigned) __get_CLUSTERECTLR());
+//	PRINTF("__get_CLUSTERPWRCTLR()=%08X\n", (unsigned) __get_CLUSTERPWRCTLR());
+//	PRINTF("__get_CLUSTERPWRDN()=%08X\n", (unsigned) __get_CLUSTERPWRDN());
 #endif /* (__CORTEX_A == 55U) */
 }
 
@@ -2727,42 +2727,47 @@ void sunxi_cpu_power_off_others(void)
 
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 {
+#ifndef __aarch64__
+	// A733 не требует использования 32 bit trampoline
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
-
-	// 0x01C0..0x01CF - registers...
-	// 0x01E0..0x01EF - registers...
-	volatile uint32_t * rvaddr;
-//	memset32((void *) (R_CPUCFG_BASE + 0x01C0), startfunc, 32);
-//	memset32((void *) (R_CPUCFG_BASE + 0x01E0), startfunc, 4 * 4);
+	volatile uint32_t * rvaddr = NULL;
 	ASSERT(startfunc != 0);
 	ASSERT(core != 0);
+	// writeble registers:
+	//	070501C0: FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFF0000 FFFFFFFF FFFFFFFF
+	//	070501E0: FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF 00000000 00000000 00000000 00000000
 	switch (core)
 	{
+	case 0: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01C4); break; // ???
 	case 1: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01C8); break;
 	case 2: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01CC); break;
 	case 3: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01D0); break;
 	case 4: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01E0); break;
 	case 5: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01E4); break;
-	case 6: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01E8); break;
-	case 7: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01EC); break;
+	case 6: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01E8); break; // unconfirmed
+	case 7: rvaddr = (volatile uint32_t *) (R_CPUCFG_BASE + 0x01EC); break; // unconfirmed
 	default: ASSERT(0); break;
 	}
 	//PRINTF("core%u: rvaddr=%p\n", core, rvaddr);
-	CLUSTER_CFG->C0_CPU  [core].C0_CPUx_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET 0: assert
+	CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET 0: assert
 //	CPU_SUBSYS_CTRL->CLU0 [core].CPU_CTRL_REG &= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
 
-	* rvaddr = startfunc;
-	//PRINTF("core%u: rvaddr=%p setted...\n", core, rvaddr);
-	ASSERT(* rvaddr == startfunc);
-	// see 0xfa50392f
-//	R_CPUCFG->HOTPLUGFLAGz = 0*0xFA50392F;
-//	R_CPUCFG->SOFTENTRYz [core] = startfunc;
-//	ASSERT(R_CPUCFG->SOFTENTRYz [core] == startfunc);
-
+	if (rvaddr)
+	{
+		* rvaddr = startfunc;
+		//PRINTF("core%u: rvaddr=%p setted...\n", core, rvaddr);
+		ASSERT(* rvaddr == startfunc);
+		// see 0xfa50392f
+	//	R_CPUCFG->HOTPLUGFLAGz = 0*0xFA50392F;
+	//	R_CPUCFG->SOFTENTRYz [core] = startfunc;
+	//	ASSERT(R_CPUCFG->SOFTENTRYz [core] == startfunc);
+	}
 	dcache_clean_all();	// startup code should be copied in to sysram for example.
 
-	CLUSTER_CFG->C0_CPU  [core].C0_CPUx_CTRL_REG |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
-
+	CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
+#else
+	dcache_clean_all();	// startup code should be copied in to sysram for example.
+#endif
 }
 
 #elif CPUSTYLE_H616
