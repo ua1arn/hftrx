@@ -2858,7 +2858,10 @@ int arm_hardware_aarch32implemented(void)
 {
 #if CPUSTYLE_A733
 	return arm_hardware_cpuid() < 6;
+#elif defined (__CORTEX_A)
+	return 1;
 #else /* CPUSTYLE_A733 */
+	return 0;
 #endif /* CPUSTYLE_A733 */
 }
 
