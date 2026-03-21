@@ -222,6 +222,7 @@ typedef enum IRQn
 #define USB1_EHCI_BASE ((uintptr_t) 0x04201000)       /*!< USB_EHCI_Capability  Base */
 #define USB1_OHCI_BASE ((uintptr_t) 0x04201400)       /*!< USB_OHCI_Capability  Base */
 #define DMA0_BASE ((uintptr_t) 0x04601000)            /*!< DMAC  Base */
+#define DMAC_BASE ((uintptr_t) 0x04601000)            /*!< DMAC  Base */
 #define DE_BASE ((uintptr_t) 0x05000000)              /*!< DE Display Engine (DE) Base */
 #define DE_TOP_BASE ((uintptr_t) 0x05008000)          /*!< DE_TOP Display Engine (DE) TOP (APB) Base */
 #define DE_MIXER0_GLB_BASE ((uintptr_t) 0x05008100)   /*!< DE_GLB Display Engine (DE) - Global Control Base */
@@ -3105,6 +3106,7 @@ typedef struct USB_OHCI_Capability_Type
 #define USB1_EHCI ((USB_EHCI_Capability_TypeDef *) USB1_EHCI_BASE)/*!< USB1_EHCI  register set access pointer */
 #define USB1_OHCI ((USB_OHCI_Capability_TypeDef *) USB1_OHCI_BASE)/*!< USB1_OHCI  register set access pointer */
 #define DMA0 ((DMAC_TypeDef *) DMA0_BASE)             /*!< DMA0  register set access pointer */
+#define DMAC ((DMAC_TypeDef *) DMAC_BASE)             /*!< DMAC  register set access pointer */
 #define DE_TOP ((DE_TOP_TypeDef *) DE_TOP_BASE)       /*!< DE_TOP Display Engine (DE) TOP (APB) register set access pointer */
 #define DE_MIXER0_GLB ((DE_GLB_TypeDef *) DE_MIXER0_GLB_BASE)/*!< DE_MIXER0_GLB Display Engine (DE) - Global Control register set access pointer */
 #define DE_MIXER1_GLB ((DE_GLB_TypeDef *) DE_MIXER1_GLB_BASE)/*!< DE_MIXER1_GLB Display Engine (DE) - Global Control register set access pointer */

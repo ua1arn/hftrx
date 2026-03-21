@@ -5098,7 +5098,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DMA0</name>
+  <name>DMAC</name>
   <description></description>
   <baseAddress>0x04601000</baseAddress>
   <interrupt>
@@ -5275,7 +5275,31 @@
    </cluster>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="DMA0">
+  <peripheral derivedFrom="DMAC">
+  <name>DMA0</name>
+  <baseAddress>0x04601000</baseAddress>
+  <interrupt>
+   <name>DMA0_CPUX_NS</name>
+   <value>143</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>DMA0_CPUX_S</name>
+   <value>144</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>DMA1_CPUX_NS</name>
+   <value>145</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>DMA1_CPUX_S</name>
+   <value>146</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="DMAC">
   <name>DMA1</name>
   <baseAddress>0x04024000</baseAddress>
   <interrupt>

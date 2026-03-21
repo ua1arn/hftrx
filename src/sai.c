@@ -3565,6 +3565,9 @@ static void DMAC_NS_IRQHandler(void)
 		}
 	}
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
+
 #else /* CPUSTYLE_A64 || CPUSTYLE_V3S */
 
 	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
@@ -3721,13 +3724,16 @@ static void DMAC_SetHandler(unsigned dmach, void * ctx, unsigned flag, void (* h
 #elif CPUSTYLE_A133
     #warning CPUSTYLE_A133 to be implemented
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
+
 #else
 	#error Unhandled CPUSTYLE_xxx
 
 #endif /* CPUSTYLE_A64 */
 }
 
-static void DMAC_clock_initialize(void)
+static void DMAC_clock_initialize(DMAC_TypeDef * dmac)
 {
 #if CPUSTYLE_T507
 
@@ -3754,6 +3760,9 @@ static void DMAC_clock_initialize(void)
 
 #elif CPUSTYLE_A133
     #warning CPUSTYLE_A133 to be implemented
+
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
 
 #else
 	#error Unhandled CPUSTYLE_xxx
@@ -3868,6 +3877,10 @@ static void aw_i2s_setchsrc(I2S_PCM_TypeDef * i2s, unsigned ch, unsigned slot, u
 	i2s->I2S_PCM_RXCHMAP [1] = (i2s->I2S_PCM_RXCHMAP [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
 	i2s->I2S_PCM_RXCHMAP [2] = (i2s->I2S_PCM_RXCHMAP [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
 	i2s->I2S_PCM_RXCHMAP [3] = (i2s->I2S_PCM_RXCHMAP [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
+
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
+
 #else
 	#warning Unexpected CPUSTYLE_xxx
 #endif
@@ -4416,6 +4429,9 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 #elif CPUSTYLE_A133
     #warning CPUSTYLE_A133 to be implemented
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
+
 #else
 	#error Unhandled CPUSTYLE_xxx
 
@@ -4820,6 +4836,9 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 #elif CPUSTYLE_A133
     #warning CPUSTYLE_A133 to be implemented
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
+
 #else
 	#error Unhandled CPUSTYLE_xxx
 #endif
@@ -5163,7 +5182,7 @@ static void DMAC_I2S0_RX_initialize_codec1(void)
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5221,7 +5240,7 @@ static void DMAC_I2S0_TX_initialize_codec1(void)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5283,7 +5302,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5341,7 +5360,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5399,7 +5418,7 @@ static void DMAC_I2S1_TX_initialize_hdmi48(void)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5457,7 +5476,7 @@ static void DMAC_I2S1_RX_initialize_codec1_8k(void)
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5515,7 +5534,7 @@ static void DMAC_I2S1_TX_initialize_codec1_8k(void)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5577,7 +5596,7 @@ static void DMAC_I2S2_TX_initialize_codec1(void)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5638,7 +5657,7 @@ static void DMAC_I2S1_RX_initialize_fpga(void)
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5703,7 +5722,7 @@ static void DMAC_I2S2_RX_initialize_codec1(void)
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5761,7 +5780,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5825,7 +5844,7 @@ static void DMAC_I2S1_TX_initialize_fpga(void)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -5886,7 +5905,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -6012,7 +6031,7 @@ void DMAC_USB_RX_initialize_UACOUT48(uint_fast8_t ep, int start)
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = DMAC_MODE_REGN_VALUE_UACOUT;
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -6089,7 +6108,7 @@ void DMAC_USB_TX_initialize_UACIN48(uint_fast8_t ep_no, int start)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = DMAC_MODE_REGN_VALUE_UACIN;
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -6163,7 +6182,7 @@ void DMAC_USB_TX_initialize_UACINRTS96(uint_fast8_t ep_no, int start)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = DMAC_MODE_REGN_VALUE_UACIN;
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -6236,7 +6255,7 @@ void DMAC_USB_TX_initialize_UACINRTS192(uint_fast8_t ep_no, int start)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = DMAC_MODE_REGN_VALUE_UACIN;
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -6919,7 +6938,7 @@ static void DMAC_AudioCodec_RX_initialize_codec1(void)
 		DMAC_SrcReqAudioCodec * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -6991,7 +7010,7 @@ static void DMAC_AudioCodec_TX_initialize_codec1(void)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -7164,7 +7183,7 @@ static void DMAC_DMIC_RX_initialize_codec1(void)
 		DMAC_SrcReqDMIC * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -7449,7 +7468,7 @@ static void DMAC_I2S0_RX_initialize_fpga(void)
 		srcDRQ * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
@@ -7507,7 +7526,7 @@ static void DMAC_I2S0_TX_initialize_fpga(void)
 		DMAC_SrcReqDRAM * (UINT32_C(1) << 0) |	// DMA Source DRQ Type
 		0;
 
-	DMAC_clock_initialize();
+	DMAC_clock_initialize(DMAC);
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 	DMAC->CH [dmach].DMAC_MODE_REGN = 0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2);	// mode: DMA_DST_MODE, DMA_SRC_MODE
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring

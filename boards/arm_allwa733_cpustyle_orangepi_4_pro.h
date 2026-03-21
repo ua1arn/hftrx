@@ -15,7 +15,7 @@
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 
 //#define WITHSPISW 	1	/* Использование программного управления SPI. */
 
@@ -356,7 +356,7 @@
 	#define	SMHCHARD_PTR SMHC0	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_BASE SMHC0_BASE	/* 0 - SMHC0, 1: SMHC1... */
 	#define	SMHCHARD_CCU_CLK_REG (CCU->SMHC0_CLK_REG)	/* 0 - SMHC0, 1: SMHC1... */
-	#define SMHCHARD_FREQ (allwnr_t507_get_smhc0_freq())
+	#define SMHCHARD_FREQ (allwnr_a733_get_smhc0_freq())
 
 	#if WITHSDHCHW4BIT
 		#define HARDWARE_SDIO_INITIALIZE() do { \
@@ -579,8 +579,9 @@
 	//#define SPDIF_D3_BIT (UINT32_C(1) << 7)		// PC7 SPI0_HOLD/D3
 
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI0_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_CCU_BGR_REG (CCU->SPI0_BGR_REG)	/* 0 - SPI0, 1: SPI1... */
 	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0x03	/* t507: 000: OSC24M 001: PLL_PERI0(1X) 010: PLL_PERI1 (1X) 011: PLL_PERI0(2X) 100: PLL_PERI1 (2X) */
-	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi0_freq())
+	#define HARDWARE_SPI_FREQ (allwnr_a733_get_spi0_freq())
 
 	/* to be removed... */
 	#define	SPIHARD_IX 0	/* 0 - SPI0, 1: SPI1... */
@@ -684,10 +685,10 @@
 		s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWD, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL1 - S_TWI0_SDA */ \
 	} while (0)
 	#define TWIHARD_S_PTR S_TWI0
-	#define	TWIHARD_S_TWI0_FREQ (allwnr_a733_get_s_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_S_TWI0_FREQ (allwnr_a733_get_s_twi_freq()) // APBS2_CLK allwnr_a733_get_apb2_freq() or allwnr_a733_get_apbs2_freq()
 #endif
 
-#if 0
+#if 1
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	#define WITHTWI3HW 1
 
@@ -704,7 +705,7 @@
 		arm_hardware_pioh_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF5);		/* PH5 TWI3-SDA */ \
 	} while (0)
 	#define	TWIHARD_PTR TWI3	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnr_a733_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
+	#define	TWIHARD_FREQ (allwnr_a733_get_twi_freq()) // APBS2_CLK allwnr_a733_get_apb2_freq() or allwnr_a733_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
 
@@ -898,7 +899,7 @@
 		#define	TCONTV_CCU_BGR_REG (CCU->TCON_TV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define TCONTV_IRQ TCON_TV0_IRQn
 		#define TCONTV_GINT0_REG (TCON_TV0->TV_GINT0_REG)
-		#define BOARD_TCONTVFREQ (allwnr_t507_get_tcon_tv0_freq())
+		#define BOARD_TCONTVFREQ (allwnr_a733_get_tcon_tv0_freq())
 		#define RTMIXIDTV 2	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
 	#endif
 	#if 0
@@ -907,7 +908,7 @@
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_CCU_BGR_REG (CCU->TCON_LCD_BGR_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-		#define BOARD_TCONLCDFREQ (allwnr_t507_get_tcon_lcd0_freq())
+		#define BOARD_TCONLCDFREQ (allwnr_a733_get_tcon_lcd0_freq())
 		#define TCONLCD_IRQ TCON_LCD0_IRQn
 		#define TCONLCD_GINT0_REG (TCON_LCD0->LCD_GINT0_REG)
 		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
@@ -920,7 +921,7 @@
 		#define	TVENCODER_BASE TVE0_BASE	/* 0 - TVE0 */
 		#define	TVE_CCU_CLK_REG (CCU->TVE0_CLK_REG)	/* 0 - TVE0, 1: TVE1 */
 		#define	TVE_CCU_BGR_REG (CCU->TVE_BGR_REG)	/* 0 - TVE0, 1: TVE1 */
-		#define BOARD_TVEFREQ (allwnr_t507_get_tve0_freq())
+		#define BOARD_TVEFREQ (allwnr_a733_get_tve0_freq())
 	#endif
 
 #endif /* WITHLTDCHW */

@@ -283,6 +283,7 @@
 #typeend;
 
 #type; DMAC
+#base; DMAC 0x04601000
 #base; DMA0 0x04601000
 #base; DMA1 0x04024000
 
