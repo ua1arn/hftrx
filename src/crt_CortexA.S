@@ -413,6 +413,42 @@ VIRQ_Handler:
    	.ltorg
 
  	.align 	4, 0
+    .func   SWI_Handler
+SWI_Handler:
+
+	srsfd   sp!, #ARM_MODE_SYS              // SRSDB, Save LR_irq and SPSR_irq on to the SYS stack
+	//cps		#ARM_MODE_SYS                   // Change to SYS mode
+	cpsid   if,#ARM_MODE_SYS                   // Change to SYS mode and disable interrupts
+	push    {r0-r3, r4-r11, r12, lr}            // Save APCS corruptible registers
+
+	mov     r3, sp                      // Move SP into R3
+	and     r3, r3, #7                  // Get stack adjustment to ensure 8-byte alignment
+	sub     sp, sp, r3                  // Adjust stack
+	push    {r3, r4}                    // Store stack adjustment(R3) and user data(R4)
+
+ 	VMRS	R1, FPSID
+	VMSR	FPSID, R1
+
+	VMRS	R1, FPSCR
+	VMRS	R2, FPEXC
+ 	PUSH 	{R1, R2}
+
+	VPUSH.F32	{D0-D15}
+	VPUSH.F32	{D16-D31}
+
+    // Initialise FPSCR to a known state
+    // FPSCR Loaded in to R1
+ 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
+	AND     R1,R1,R3
+	VMSR    FPSCR,R1	// Initialise FPSCR to a known state
+
+	MOV		R0, SP
+ 	LDR		R2, =SWI_Handler_aarch32
+	BX		R2     /* and jump... */
+	.endfunc
+   	.ltorg
+
+ 	.align 	4, 0
     .func   VFRQ_Handler
 VFRQ_Handler:
 

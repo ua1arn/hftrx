@@ -7909,14 +7909,23 @@ void hightests(void)
 		show_chip();
 	}
 #endif
-#if 0
+#if 1
 	{
+	#if __aarch54__
 		asm volatile (
 				"ldr x0,  =0x1234123412341234\n"
 				"ldr x1,  =0x2121212121212121\n"
 				"ldr x2,  =0x2222222222222222\n"
 				"SVC 0xDEAD\n"
 				);
+	#else
+		asm volatile (
+				"ldr r0,  =0x12341234\n"
+				"ldr r1,  =0x21212121\n"
+				"ldr r2,  =0x22222222\n"
+				"SVC 0xDEAD\n"
+				);
+	#endif
 	}
 #endif
 #if 0

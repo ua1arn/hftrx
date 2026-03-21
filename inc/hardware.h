@@ -779,10 +779,9 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned targetcore);
 
 // Cortex-A7/A9 handlers
 void Undef_Handler(void);
-void SWI_Handler(void);
+void __NO_RETURN SWI_Handler_aarch32(void * frame);
 void PAbort_Handler(void);
 void DAbort_Handler(void);
-void FIQ_Handler(void);
 void Hyp_Handler(void);
 
 void IRQ_Handler_GICv1(void);
