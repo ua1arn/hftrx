@@ -2312,23 +2312,34 @@ void __NO_RETURN VFIQ_Handler(void * frame)
 	run_task_curr(task_scheduler(frame));
 }
 
+static void svc_handler(unsigned code, void * frame)
+{
+	exception_frame_t * const f = (exception_frame_t *) frame;
+	PRINTF("svc call: 0x%04X, x0=%08X x1=%08X x2=%08X\n", code, (unsigned) f->x0, (unsigned) f->x1, (unsigned) f->x2);
+}
 // was: uncommon_trap_handler_5
 // Current EL with SPx Synchronous
 // 0x200
 void SError_Handler(void * frame)
 {
-	TP();
-	PRINTF("SError_Handler (core=%u), stack~%p:\n", (unsigned) arm_hardware_cpuid(), frame);
-	printhex64((uintptr_t) frame, frame, CPUCTX_SIZE);
 	unsigned esr_el3 = __get_ESR_EL3();
 	unsigned ec = (esr_el3 >> 26) & 0x1F;
 	unsigned il = (esr_el3 >> 5) & 0x01;
 	unsigned iss = (esr_el3 >> 0) & 0x1FFFFFF;
+	if (ec == 0x15)
+	{
+		// SVC instruction execution in AArch64 state.
+		svc_handler(esr_el3 & 0xFFFF, frame);
+		run_task_curr(task_scheduler(frame));
+	}
+	TP();
+	PRINTF("SError_Handler (core=%u), stack~%p:\n", (unsigned) arm_hardware_cpuid(), frame);
+	printhex64((uintptr_t) frame, frame, CPUCTX_SIZE);
 	PRINTF("ESR_EL3=%08X\n", (unsigned) esr_el3);
 	PRINTF("ELR_EL3=0x%016" PRIX64 " (where)\n", __get_ELR_EL3());
 	PRINTF("FAR_EL3=0x%016" PRIX64 " (access)\n", __get_FAR_EL3());
 
-	PRINTF("ec=%02X, il=%02X\n", ec, il);
+	PRINTF("ec=0x%02X, il=0x%02X\n", ec, il);
 	switch (ec)
 	{
 	case 0x01:	PRINTF("Trapped WF* instruction execution\n"); break;
@@ -2338,8 +2349,6 @@ void SError_Handler(void * frame)
 	case 0x06:	PRINTF("Trapped LDC or STC access.\n"); break;
 	default: break;
 	}
-	for (;;)
-		;
 }
 
 #elif ! defined(__aarch64__) && ! LINUX_SUBSYSTEM

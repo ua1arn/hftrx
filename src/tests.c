@@ -7911,6 +7911,16 @@ void hightests(void)
 #endif
 #if 0
 	{
+		asm volatile (
+				"ldr x0,  =0x1234123412341234\n"
+				"ldr x1,  =0x2121212121212121\n"
+				"ldr x2,  =0x2222222222222222\n"
+				"SVC 0xDEAD\n"
+				);
+	}
+#endif
+#if 0
+	{
 		PRINTF("before disable __get_DAIF=%08" PRIX32 "\n", __get_DAIF());
 		global_disableIRQ();
 		PRINTF("before enable  __get_DAIF=%08" PRIX32 "\n", __get_DAIF());
