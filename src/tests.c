@@ -7909,9 +7909,9 @@ void hightests(void)
 		show_chip();
 	}
 #endif
-#if 1
+#if 0
 	{
-	#if __aarch54__
+	#if __aarch64__
 		asm volatile (
 				"ldr x0,  =0x1234123412341234\n"
 				"ldr x1,  =0x2121212121212121\n"
