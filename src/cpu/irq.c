@@ -1727,8 +1727,11 @@ typedef struct exception_frame_tag
 	uint64_t exc_elr_el3;
 	uint64_t exc_spsr_el3;		// Store (spsr, x0)
 	uint64_t x0;
-	uint64_t vfpstate [2];	// FPCR, FPEXC32_EL2 (check order)
+	// saved by push_trapframe_float -  total 544 bytes = 68 qwords
+	uint64_t xx, fpsr;	// xx, FPSR (check order)
+	uint64_t fpcr, fpexc32_el2;	// FPCR, FPEXC32_EL2 (check order)
 	uint64_t vfpregs [64];	// 32 128-bit registers
+	// saved by push_trapframe_int - total 240 bytes = 30 qwords
 	uint64_t x1, x2, x3, x4, x5, x6, x7, x8, x9, x10;
 	uint64_t x11, x12, x13, x14, x15, x16, x17, x18, x19, x20;
 	uint64_t x21, x22, x23, x24, x25, x26, x27, x28, x29, x30;
@@ -1759,8 +1762,9 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 //    f->exc_spsr_el3 = 0x000000006000030D;
 //    ASSERT(f->exc_spsr_el3 == 0x000000006000030D);
 
-	f->vfpstate [0] = 0;
-	f->vfpstate [1] = 0;
+	f->fpsr = 0;
+	f->fpcr = 0;
+	f->fpexc32_el2 = 0;
 	f->exc_elr_el3 = (uintptr_t) fn;
 	f->x0 = (uintptr_t) arg;
 
