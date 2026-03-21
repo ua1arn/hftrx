@@ -4879,8 +4879,8 @@ void sysinit_pll_initialize(int forced)
 
 
 	// test
-	S_PRCM->CPUX_ISO_EN_REG = 0x19030000;
-	S_PRCM->CPUX_ISO_EN_REG = 0x00000000;
+//	S_PRCM->CPUX_ISO_EN_REG = 0x19030000;
+//	S_PRCM->CPUX_ISO_EN_REG = 0x00000000;
 
 }
 
