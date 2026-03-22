@@ -1828,7 +1828,7 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 
 static int tsaks_not_started = 999;
 
-#if 1 && ! LINUX_SUBSYSTEM
+#if 0 && ! LINUX_SUBSYSTEM
 
 typedef struct task_item_tag
 {
@@ -1897,6 +1897,7 @@ void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * 
 	task->cpuframe = stackframe;
 	task->irql = irql;
 	task->guard = task;	// debug signature
+	task->suspend = 0;
 
 	// включаем в список задач
 	InsertTailList(& tasks_list [prio], & task->item);
@@ -1926,18 +1927,36 @@ void task_scheduler_initialize(void)
 
 void task_ticker(void)
 {
-
+	IRQL_t irql;
+	unsigned prio;
+	IRQLSPIN_LOCK(& taskslock, & irql, IRQL_IPC_ONLY);
+	for (prio = 0; prio < PRIOv_count; ++ prio)
+	{
+		PRLIST_ENTRY list = & tasks_list [prio];
+		PRLIST_ENTRY t;
+		for (t = list->Flink; t != list; t = t->Flink)
+		{
+			task_item_t * const tp = CONTAINING_RECORD(t, task_item_t, item);
+			if (tp->suspend)
+			{
+				tp->suspend -= 1;
+			}
+		}
+	}
+	IRQLSPIN_UNLOCK(& taskslock, irql);
 }
 
 void task_suspend(task_item_t * task, unsigned ticks)
 {
-
+	task->suspend = ticks;
 }
 
 // проверка условий отдачи управления задаче
 int task_isready(task_item_t * task)
 {
-	return 1;
+	return
+		task->suspend == 0 &&
+		1;
 }
 
 // хотим завешить выполнение кванта, не дожидаясь прерывания
@@ -1990,8 +2009,53 @@ void __NO_RETURN task_scheduler_othercores(void)
 	}
 }
 
+enum
+{
+	TASKFN_NOP,
+	TASKFN_SUSPEND,
+	//
+	TASKFN_count
+};
+
+void task_handler(task_item_t * task, unsigned arg0, void * arg1)
+{
+	switch (arg0)
+	{
+	default:
+	case TASKFN_NOP:
+		break;
+
+	case TASKFN_SUSPEND:
+
+	}
+}
+
+// scheduler-mode entry
+static void task_svc(task_item_t * task, unsigned code)
+{
+	exception_frame_t * const f = task->cpuframe;
+#if __aarch64__
+	//PRINTF("svc call: 0x%04X, x0=%08X x1=%08X x2=%08X\n", code, (unsigned) f->x0, (unsigned) f->x1, (unsigned) f->x2);
+	task_handler(task, (unsigned) f->x0, (void *) f->x1);
+#else
+	//PRINTF("svc call: 0x%04X, r0=%08X r1=%08x r2=%08x\n", code, (unsigned) f->r0, (unsigned) f->r1, (unsigned) f->r2);
+	task_handler(task, (unsigned) f->r0, (void *) f->r1);
+#endif
+}
+
+// user-mode entry
+void task_sysfn(unsigned arg0, void * arg1)
+{
+#if __aarch64__
+
+#else
+
+#endif
+}
+
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
-void * task_scheduler(void * oldframe)
+static void *
+task_scheduler0(void * oldframe, unsigned flag, unsigned code)
 {
 //	printhex32((uintptr_t) oldframe, oldframe, CPUCTX_SIZE);
 //	for (;;)
@@ -2022,19 +2086,23 @@ void * task_scheduler(void * oldframe)
 	}
 	startedtask [core]->cpuframe = oldframe;
 	IRQLSPIN_LOCK(& taskslock, & startedtask [core]->irql, IRQL_IPC_ONLY);
+	if (flag)
+	{
+		task_svc(startedtask [core], code);
+	}
 	startedtask [core] = task_getready(1U << core, startedtask [core]);
 	IRQLSPIN_UNLOCK(& taskslock, startedtask [core]->irql);
 	return startedtask [core]->cpuframe;
 }
 
-static void task_svc(unsigned code, void * frame)
+void * task_scheduler2(unsigned code, void * oldframe)
 {
-	exception_frame_t * const f = (exception_frame_t *) frame;
-#if __aarch64__
-	PRINTF("svc call: 0x%04X, x0=%08X x1=%08X x2=%08X\n", code, (unsigned) f->x0, (unsigned) f->x1, (unsigned) f->x2);
-#else
-	PRINTF("svc call: 0x%04X, r0=%08X r1=%08x r2=%08x\n", code, (unsigned) f->r0, (unsigned) f->r1, (unsigned) f->r2);
-#endif
+	return task_scheduler0(oldframe, 1, code);
+}
+
+void * task_scheduler(void * oldframe)
+{
+	return task_scheduler0(oldframe, 0, 0);
 }
 
 #else /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
@@ -2060,6 +2128,11 @@ void __NO_RETURN task_scheduler_othercores(void)
 
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 void * task_scheduler(void * oldframe)
+{
+	return oldframe;
+}
+
+void * task_scheduler2(unsigned code, void * oldframe)
 {
 	return oldframe;
 }
@@ -2361,8 +2434,7 @@ void SError_Handler(void * frame)
 	if (ec == 0x15)
 	{
 		// SVC instruction execution in AArch64 state.
-		task_svc(esr_el3 & 0xFFFF, frame);
-		run_task_curr(task_scheduler(frame));
+		run_task_curr(task_scheduler2(esr_el3 & 0xFFFF, frame));
 	}
 	TP();
 	PRINTF("SError_Handler (core=%u), stack~%p:\n", (unsigned) arm_hardware_cpuid(), frame);
@@ -2454,8 +2526,7 @@ void __NO_RETURN SWI_Handler_aarch32(void * frame)
 {
 	exception_frame_t * const f = (exception_frame_t *) frame;
 	const unsigned esr_el3 = 0;//__get_DFSR();
-	task_svc(esr_el3 & 0xFFFF, frame);
-	run_task_curr_aarch32(task_scheduler(frame));
+	run_task_curr_aarch32(task_scheduler2(esr_el3 & 0xFFFF, frame));
 }
 
 // Prefetch Abort

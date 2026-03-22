@@ -635,8 +635,11 @@ void __NO_RETURN run_task_curr_aarch32(void * frame);	// run task with frame
 void task_scheduler_initialize(void);
 void task_scheduler_start(void);
 void task_ticker(void);
+void task_sysfn(unsigned arg0, void * arg1);
 void __NO_RETURN task_scheduler_othercores(void);
 void * task_scheduler(void * oldframe);	/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
+void * task_scheduler2(unsigned code, void * oldframe);	/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
+void task_sysfn(unsigned arg0, void * arg1);	// user-mode entry
 
 void IRQ_Handler_GIC(void);
 void FIQ_Handler_GIC(void);
