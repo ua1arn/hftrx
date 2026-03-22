@@ -4331,7 +4331,7 @@ uint_fast32_t allwnr_a733_get_cpu_l_pll_freq(void)
 	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
 	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 0) & 0x0F);
 	//	The CPU_L_PLL = InputFreq*N/P/(M0*M1).
-	//	The CPU_L_PLLVCO = InputFreq*N/P
+	//	The CPU_L_PLL VCO = InputFreq*N/P
 	return allwnr_a733_get_pll_ref_freq() * N / P / (M0 * M1);
 }
 
@@ -4347,7 +4347,21 @@ uint_fast32_t allwnr_a733_get_cpu_b_pll_freq(void)
 	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
 	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 0) & 0x0F);
 	//	The CPU_L_PLL = InputFreq*N/P/(M0*M1).
-	//	The CPU_L_PLLVCO = InputFreq*N/P
+	//	The CPU_L_PLL VCO = InputFreq*N/P
+	return allwnr_a733_get_pll_ref_freq() * N / P / (M0 * M1);
+}
+
+uint_fast32_t allwnr_a733_get_dsu_pll_freq(void)
+{
+	const uint_fast32_t pllreg = CPU_PLL_CFG->CPU_DSU_PLL_CTRL_REG;
+//	const uint_fast32_t PLL_NDET = (pllreg >> 23) & 0x01;
+//	const uint_fast32_t PLL_TDIV = (pllreg >> 22) & 0x01;
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 20) & 0x03);
+	const uint_fast32_t P = UINT32_C(1) + ((pllreg >> 16) & 0x0F);
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 0) & 0x0F);
+	//	The CPU_DSU_PLL = InputFreq*N/P/(M0*M1).
+	//	The CPU_DSU_PLL VCO = InputFreq*N/P
 	return allwnr_a733_get_pll_ref_freq() * N / P / (M0 * M1);
 }
 
@@ -4571,6 +4585,11 @@ uint_fast32_t allwnr_a733_get_cpux_L_freq(void)
 uint_fast32_t allwnr_a733_get_cpux_B_freq(void)
 {
 	return allwnr_a733_get_cpu_b_pll_freq();
+}
+
+uint_fast32_t allwnr_a733_get_dsu_freq(void)
+{
+	return allwnr_a733_get_dsu_pll_freq();
 }
 
 // The primary clock source of core6/core7 is CPU_B_PLL;
@@ -4970,8 +4989,8 @@ static void a733_set_pll_cpux_axi(void)
 		a733_enable_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
 		a733_set_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(dsufreq), 0x0, 0x0);
 	} else {
-		const unsigned cpuLfreq = 1200;//1014;
-		const unsigned cpuBfreq = 1200;//1014;
+		const unsigned cpuLfreq = 1300;//1014;
+		const unsigned cpuBfreq = 1300;//1014;
 		const unsigned dsufreq = 780;
 		/* Set A76 Core 1.014GHz, A55 Core 1.014GHz, DSU 780MHz */
 		a733_enable_pll(CCU_PLL_CPU_L_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(480), 0x0, 0x0);

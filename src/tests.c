@@ -7911,7 +7911,10 @@ void hightests(void)
 #endif
 #if 0
 	{
-		PRINTF("FREQ_L=%u MHz FREQ_B=%u MHz\n", (unsigned) (allwnr_a733_get_cpux_0_5_freq() / 1000 / 1000), (unsigned) (allwnr_a733_get_cpux_6_7_freq() / 1000 / 1000));
+		PRINTF("FREQ_DSU=%u MHz, FREQ_L=%u MHz, FREQ_B=%u MHz\n",
+				(unsigned) (allwnr_a733_get_dsu_freq() / 1000 / 1000),
+				(unsigned) (allwnr_a733_get_cpux_L_freq() / 1000 / 1000),
+				(unsigned) (allwnr_a733_get_cpux_B_freq() / 1000 / 1000));
 	}
 #endif
 #if 0
