@@ -2016,6 +2016,16 @@ void * task_scheduler(void * oldframe)
 	return startedtask [core]->cpuframe;
 }
 
+static void task_svc(unsigned code, void * frame)
+{
+	exception_frame_t * const f = (exception_frame_t *) frame;
+#if __aarch64__
+	PRINTF("svc call: 0x%04X, x0=%08X x1=%08X x2=%08X\n", code, (unsigned) f->x0, (unsigned) f->x1, (unsigned) f->x2);
+#else
+	PRINTF("svc call: 0x%04X, r0=%08X r1=%08x r2=%08x\n", code, (unsigned) f->r0, (unsigned) f->r1, (unsigned) f->r2);
+#endif
+}
+
 #else /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
 
 void task_scheduler_initialize(void)
@@ -2041,6 +2051,16 @@ void __NO_RETURN task_scheduler_othercores(void)
 void * task_scheduler(void * oldframe)
 {
 	return oldframe;
+}
+
+static void task_svc(unsigned code, void * frame)
+{
+	exception_frame_t * const f = (exception_frame_t *) frame;
+#if __aarch64__
+	PRINTF("svc call: 0x%04X, x0=%08X x1=%08X x2=%08X\n", code, (unsigned) f->x0, (unsigned) f->x1, (unsigned) f->x2);
+#else
+	PRINTF("svc call: 0x%04X, r0=%08X r1=%08x r2=%08x\n",  code, (unsigned) f->r0, (unsigned) f->r1, (unsigned) f->r2);
+#endif
 }
 
 #endif /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
@@ -2313,11 +2333,6 @@ void __NO_RETURN VFIQ_Handler(void * frame)
 	run_task_curr(task_scheduler(frame));
 }
 
-static void svc_handler(unsigned code, void * frame)
-{
-	exception_frame_t * const f = (exception_frame_t *) frame;
-	PRINTF("svc call: 0x%04X, x0=%08X x1=%08X x2=%08X\n", code, (unsigned) f->x0, (unsigned) f->x1, (unsigned) f->x2);
-}
 // was: uncommon_trap_handler_5
 // Current EL with SPx Synchronous
 // 0x200
@@ -2330,7 +2345,7 @@ void SError_Handler(void * frame)
 	if (ec == 0x15)
 	{
 		// SVC instruction execution in AArch64 state.
-		svc_handler(esr_el3 & 0xFFFF, frame);
+		task_svc(esr_el3 & 0xFFFF, frame);
 		run_task_curr(task_scheduler(frame));
 	}
 	TP();
@@ -2422,9 +2437,9 @@ void Undef_Handler(void)
 void __NO_RETURN SWI_Handler_aarch32(void * frame)
 {
 	exception_frame_t * const f = (exception_frame_t *) frame;
-	const unsigned dfsr = __get_DFSR();
-	PRINTF("SWI_Handler_aarch32: CPU%d:, dfsr=%08X r0=%08X r1=%08x r2=%08x\n", (int) arm_hardware_cpuid(), dfsr, (unsigned) f->r0, (unsigned) f->r1, (unsigned) f->r2);
-	run_task_curr_aarch32(frame);
+	const unsigned esr_el3 = 0;//__get_DFSR();
+	task_svc(esr_el3 & 0xFFFF, frame);
+	run_task_curr_aarch32(task_scheduler(frame));
 }
 
 // Prefetch Abort
