@@ -7911,6 +7911,11 @@ void hightests(void)
 #endif
 #if 0
 	{
+		PRINTF("FREQ_L=%u MHz FREQ_B=%u MHz\n", (unsigned) (allwnr_a733_get_cpux_0_5_freq() / 1000 / 1000), (unsigned) (allwnr_a733_get_cpux_6_7_freq() / 1000 / 1000));
+	}
+#endif
+#if 0
+	{
 	#if __aarch64__
 		asm volatile (
 				"ldr x0,  =0x1234123412341234\n"
