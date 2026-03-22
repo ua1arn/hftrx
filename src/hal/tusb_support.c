@@ -1169,7 +1169,7 @@ void usbdevice_clk_init(void)
 	arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
 
 #elif CPUSTYLE_A733
-	//#warning CPUSTYLE_7133 To be done
+	//#warning CPUSTYLE_A733 To be done
 
     arm_hardware_disable_handler(USB0_DEVICE_IRQn);
     arm_hardware_disable_handler(USB0_EHCI_IRQn);
@@ -2042,12 +2042,12 @@ void ohciehci_clk_init(void)
 	#warning CPUSTYLE_A133 To be done
 
 #elif CPUSTYLE_A733
-	#warning CPUSTYLE_7133 To be done
+	#warning CPUSTYLE_A733 To be done
 	const unsigned ix = WITHUSBHW_EHCI_IX;	// 0 - EHCI0/OHCI0
 	switch (ix)
 	{
 	case 0:
-		arm_hardware_disable_handler(USB0_DEVICE_IRQn);
+		//arm_hardware_disable_handler(USB0_DEVICE_IRQn);
 		arm_hardware_disable_handler(USB0_EHCI_IRQn);
 		arm_hardware_disable_handler(USB0_OHCI_IRQn);
 		break;

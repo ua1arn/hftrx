@@ -6462,7 +6462,7 @@ static void t113_tcontv_PLL_configuration(uint_fast32_t dotclock)
 	local_delay_ms(50);
 
 #elif CPUSTYLE_A733
-	// t113_tcontv_PLL
+	// a733_tcontv_PLL
 	#warning Unimplemented CPUSTYLE_A733
 
 #elif CPUSTYLE_T507
