@@ -7909,7 +7909,7 @@ void hightests(void)
 		show_chip();
 	}
 #endif
-#if 1
+#if 0
 	{
 		static dpcobj_t userprintdpc;
 		void coremark_wrapper(void * ctx);
