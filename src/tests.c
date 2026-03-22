@@ -7919,7 +7919,7 @@ void hightests(void)
 				(unsigned) (allwnr_a733_get_cpux_B_freq() / 1000 / 1000));
 
 		dpcobj_initialize(& userprintdpc, coremark_wrapper, NULL);
-		board_dpc_call(& userprintdpc, 0);
+		board_dpc_call(& userprintdpc, 6);
 	}
 #endif
 #if 0
