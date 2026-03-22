@@ -4828,25 +4828,18 @@ void sysinit_boot_disconnect(void)
 	CCU->SMHC3_BGR_REG = 0;
 }
 
-// +++
-#if 1
 
-#define SUNXI_CPU_PLL_CFG_BASE ((uintptr_t) 0x08870000)
-
-#define CCU_PLL_CPU_L_CTRL_REG (SUNXI_CPU_PLL_CFG_BASE + 0x1000)
-#define CCU_PLL_CPU_L_CLK_REG (SUNXI_CPU_PLL_CFG_BASE + 0x101c)
-#define CCU_PLL_CPU_B_CTRL_REG (SUNXI_CPU_PLL_CFG_BASE + 0x2000)
-#define CCU_PLL_CPU_B_CLK_REG (SUNXI_CPU_PLL_CFG_BASE + 0x201c)
-#define CCU_PLL_CPU_DSU_CTRL_REG (SUNXI_CPU_PLL_CFG_BASE + 0x3000)
-#define CCU_PLL_DSU_CLK_REG (SUNXI_CPU_PLL_CFG_BASE + 0x301c)
+#define CCU_PLL_CPU_L_CTRL_REG (CPU_PLL_CFG_BASE + 0x1000)
+#define CCU_PLL_CPU_L_CLK_REG (CPU_PLL_CFG_BASE + 0x101c)
+#define CCU_PLL_CPU_B_CTRL_REG (CPU_PLL_CFG_BASE + 0x2000)
+#define CCU_PLL_CPU_B_CLK_REG (CPU_PLL_CFG_BASE + 0x201c)
+#define CCU_PLL_CPU_DSU_CTRL_REG (CPU_PLL_CFG_BASE + 0x3000)
+#define CCU_PLL_DSU_CLK_REG (CPU_PLL_CFG_BASE + 0x301c)
 
 #define  sunxi_clk_get_hosc_type() 26///
 
-#define PLL_REG_CONF(x) \
-	{ x, (1 << x##_PLL_FREF_SEL_OFFSET) }
-
-#define CPU_PLL_FACTOR_N_24M(x) (((x) + (24) - 1) / (24))
-#define CPU_PLL_FACTOR_N_26M(x) (((x) + (26) - 1) / (26))
+#define CPU_PLL_FACTOR_N_24M(x) calcdivround2((x), 24)//(((x) + (24) - 1) / (24))
+#define CPU_PLL_FACTOR_N_26M(x) calcdivround2((x), 26)//(((x) + (26) - 1) / (26))
 
 static uint32_t read32(uintptr_t addr)
 {
@@ -4876,7 +4869,7 @@ static void write32(uintptr_t addr, uint32_t value)
 #endif
 
 static void
-enable_pll(uint32_t addr, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p)
+a733_enable_pll(uint32_t addr, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p)
 {
 	uint32_t reg_val;
 
@@ -4912,7 +4905,8 @@ enable_pll(uint32_t addr, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p)
 	local_delay_us(20);
 }
 
-static inline void set_pll(uint32_t addr, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p) {
+static void
+a733_set_pll(uint32_t addr, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p) {
 	uint32_t reg_val;
 
 	/* set pll source to 24M */
@@ -4942,48 +4936,47 @@ static inline void set_pll(uint32_t addr, uint32_t m0, uint32_t n, uint32_t m1, 
 	for (int i = 0; i < 3; i++) {
 		while (!(read32(addr) & BIT(28)))
 			;
+		local_delay_us(5);
 	}
 	local_delay_us(20);
 
 	/* enable pll output */
 	setbits_le32(addr, BIT(PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_OFFSET));
-//	PRINTF("CLK: PLL CPU 0x%08x: 0x%08x\n", addr, read32(addr));
 	local_delay_us(20);
 }
 
 static void a733_set_pll_cpux_axi(void)
 {
+	// DynamIQ big.LITTLE Architecture Arm® CPU, up to 2.0 GHz
 	if (sunxi_clk_get_hosc_type() == 24)
 	{
 		const unsigned cpuLfreq = 1008;
 		const unsigned cpuBfreq = 1008;
 		const unsigned dsufreq = 744;
 		/* Set A76 Core 1.008GHz, A55 Core 1.008GHz, DSU 744MHz */
-		enable_pll(CCU_PLL_CPU_L_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
-		set_pll(CCU_PLL_CPU_L_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(cpuLfreq), 0x0, 0x0);
+		a733_enable_pll(CCU_PLL_CPU_L_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
+		a733_set_pll(CCU_PLL_CPU_L_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(cpuLfreq), 0x0, 0x0);
 
-		enable_pll(CCU_PLL_CPU_B_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
-		set_pll(CCU_PLL_CPU_B_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(cpuBfreq), 0x0, 0x0);
+		a733_enable_pll(CCU_PLL_CPU_B_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
+		a733_set_pll(CCU_PLL_CPU_B_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(cpuBfreq), 0x0, 0x0);
 
-		enable_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
-		set_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(dsufreq), 0x0, 0x0);
+		a733_enable_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
+		a733_set_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(dsufreq), 0x0, 0x0);
 	} else {
 		const unsigned cpuLfreq = 1200;//1014;
 		const unsigned cpuBfreq = 1200;//1014;
 		const unsigned dsufreq = 780;
 		/* Set A76 Core 1.014GHz, A55 Core 1.014GHz, DSU 780MHz */
-		enable_pll(CCU_PLL_CPU_L_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(480), 0x0, 0x0);
-		set_pll(CCU_PLL_CPU_L_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(cpuLfreq), 0x0, 0x0);
+		a733_enable_pll(CCU_PLL_CPU_L_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(480), 0x0, 0x0);
+		a733_set_pll(CCU_PLL_CPU_L_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(cpuLfreq), 0x0, 0x0);
 
-		enable_pll(CCU_PLL_CPU_B_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(480), 0x0, 0x0);
-		set_pll(CCU_PLL_CPU_B_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(cpuBfreq), 0x0, 0x0);
+		a733_enable_pll(CCU_PLL_CPU_B_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(480), 0x0, 0x0);
+		a733_set_pll(CCU_PLL_CPU_B_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(cpuBfreq), 0x0, 0x0);
 
-		enable_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(480), 0x0, 0x0);
-		set_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(dsufreq), 0x0, 0x0);
+		a733_enable_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(480), 0x0, 0x0);
+		a733_set_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(dsufreq), 0x0, 0x0);
 	}
-//	PRINTF("CLK: PLL CPU_L: 0x%08x\n", read32(CCU_PLL_CPU_L_CTRL_REG));
-//	PRINTF("CLK: PLL CPU_B: 0x%08x\n", read32(CCU_PLL_CPU_B_CTRL_REG));
-//	PRINTF("CLK: PLL CPU_DSU: 0x%08x\n", read32(CCU_PLL_CPU_DSU_CTRL_REG));
+
 	local_delay_us(20);
 	clrsetbits_le32(CCU_PLL_CPU_L_CLK_REG, (0x07 << 24) | (0x03 << 16), (0x03 << 24) | (0x00 << 16));
 	local_delay_us(20);
@@ -4991,7 +4984,7 @@ static void a733_set_pll_cpux_axi(void)
 	local_delay_us(20);
 	clrsetbits_le32(CCU_PLL_DSU_CLK_REG, (0x07 << 24) | (0x03 << 16), (0x03 << 24) | (0x00 << 16));
 }
-#endif
+
 // ---
 
 static void a733_ccu_pll_enable(volatile uint32_t * reg)
