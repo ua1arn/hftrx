@@ -1828,7 +1828,7 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 
 static int tsaks_not_started = 999;
 
-#if 0 && ! LINUX_SUBSYSTEM
+#if 1 && ! LINUX_SUBSYSTEM
 
 typedef struct task_item_tag
 {
@@ -1946,11 +1946,6 @@ void task_ticker(void)
 	IRQLSPIN_UNLOCK(& taskslock, irql);
 }
 
-void task_suspend(task_item_t * task, unsigned ticks)
-{
-	task->suspend = ticks;
-}
-
 // проверка условий отдачи управления задаче
 int task_isready(task_item_t * task)
 {
@@ -2026,7 +2021,8 @@ void task_handler(task_item_t * task, unsigned arg0, void * arg1)
 		break;
 
 	case TASKFN_SUSPEND:
-
+		task->suspend = * (unsigned *) arg1;
+		break;
 	}
 }
 
@@ -2105,6 +2101,14 @@ void * task_scheduler(void * oldframe)
 	return task_scheduler0(oldframe, 0, 0);
 }
 
+void local_delay_ms(int timeMS)
+{
+	if (timeMS == 0)
+		return;
+	unsigned nticks = NTICKS(timeMS);
+	task_sysfn(TASKFN_SUSPEND, & nticks);
+}
+
 #else /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
 
 void task_scheduler_initialize(void)
@@ -2150,6 +2154,15 @@ static void task_svc(unsigned code, void * frame)
 void task_ticker(void)
 {
 
+}
+
+void local_delay_ms(int timeMS)
+{
+	if (timeMS == 0)
+		return;
+	const uint_fast32_t t0 = tasks_sys_now();
+	while ((uint32_t) (tasks_sys_now() - t0) < timeMS)
+		;
 }
 
 #endif /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
@@ -2305,15 +2318,6 @@ void local_delay_ms(int timeMS)
 #endif /* LINUX_SUBSYSTEM */
 }
 
-// задержка до того как включили MMU и cache */
-void local_delay_ms_nocache(int timeMS)
-{
-	int t = timeMS / 25;
-	if (t == 0)
-		t = 1;
-	local_delay_ms(t);
-}
-
 #else
 
 void local_delay_us(int timeUS)
@@ -2325,15 +2329,6 @@ void local_delay_us(int timeUS)
 	const uint_fast64_t td = timeUS * cpu_getdebugticksfreq() / (1000 * 1000);
 	//const uint_fast64_t td = timeUS * cpufreqMHz;
 	while ((uint64_t) (cpu_getdebugticks() - t0) < td)
-		;
-}
-
-void local_delay_ms(int timeMS)
-{
-	if (timeMS == 0)
-		return;
-	const uint_fast32_t t0 = tasks_sys_now();
-	while ((uint32_t) (tasks_sys_now() - t0) < timeMS)
 		;
 }
 
