@@ -4953,28 +4953,33 @@ static inline void set_pll(uint32_t addr, uint32_t m0, uint32_t n, uint32_t m1, 
 
 static void a733_set_pll_cpux_axi(void)
 {
-	//const unsigned cpufreq = 1008;
 	if (sunxi_clk_get_hosc_type() == 24)
 	{
+		const unsigned cpuLfreq = 1008;
+		const unsigned cpuBfreq = 1008;
+		const unsigned dsufreq = 744;
 		/* Set A76 Core 1.008GHz, A55 Core 1.008GHz, DSU 744MHz */
 		enable_pll(CCU_PLL_CPU_L_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
-		set_pll(CCU_PLL_CPU_L_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(1008), 0x0, 0x0);
+		set_pll(CCU_PLL_CPU_L_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(cpuLfreq), 0x0, 0x0);
 
 		enable_pll(CCU_PLL_CPU_B_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
-		set_pll(CCU_PLL_CPU_B_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(1008), 0x0, 0x0);
+		set_pll(CCU_PLL_CPU_B_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(cpuBfreq), 0x0, 0x0);
 
 		enable_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
-		set_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(744), 0x0, 0x0);
+		set_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(dsufreq), 0x0, 0x0);
 	} else {
+		const unsigned cpuLfreq = 1200;//1014;
+		const unsigned cpuBfreq = 1200;//1014;
+		const unsigned dsufreq = 780;
 		/* Set A76 Core 1.014GHz, A55 Core 1.014GHz, DSU 780MHz */
 		enable_pll(CCU_PLL_CPU_L_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(480), 0x0, 0x0);
-		set_pll(CCU_PLL_CPU_L_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(1014), 0x0, 0x0);
+		set_pll(CCU_PLL_CPU_L_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(cpuLfreq), 0x0, 0x0);
 
 		enable_pll(CCU_PLL_CPU_B_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(480), 0x0, 0x0);
-		set_pll(CCU_PLL_CPU_B_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(1014), 0x0, 0x0);
+		set_pll(CCU_PLL_CPU_B_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(cpuBfreq), 0x0, 0x0);
 
 		enable_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(480), 0x0, 0x0);
-		set_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(780), 0x0, 0x0);
+		set_pll(CCU_PLL_CPU_DSU_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_26M(dsufreq), 0x0, 0x0);
 	}
 //	PRINTF("CLK: PLL CPU_L: 0x%08x\n", read32(CCU_PLL_CPU_L_CTRL_REG));
 //	PRINTF("CLK: PLL CPU_B: 0x%08x\n", read32(CCU_PLL_CPU_B_CTRL_REG));
