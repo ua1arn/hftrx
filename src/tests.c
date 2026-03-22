@@ -7909,20 +7909,24 @@ void hightests(void)
 		show_chip();
 	}
 #endif
-#if 0
+#if 0 && ! WITHISBOOTLOADER
 	{
-		static dpcobj_t userprintdpc;
-		void coremark_wrapper(void * ctx);
-		PRINTF("FREQ_DSU=%u MHz, FREQ_L=%u MHz, FREQ_B=%u MHz\n",
-				(unsigned) (allwnr_a733_get_dsu_freq() / 1000 / 1000),
-				(unsigned) (allwnr_a733_get_cpux_L_freq() / 1000 / 1000),
-				(unsigned) (allwnr_a733_get_cpux_B_freq() / 1000 / 1000));
+		static dpcobj_t userprintdpc0;
+		static dpcobj_t userprintdpc7;
 
-		dpcobj_initialize(& userprintdpc, coremark_wrapper, NULL);
-		board_dpc_call(& userprintdpc, 6);
+		void coremark_wrapper(void * ctx);
+//		PRINTF("FREQ_DSU=%u MHz, FREQ_L=%u MHz, FREQ_B=%u MHz\n",
+//				(unsigned) (allwnr_a733_get_dsu_freq() / 1000 / 1000),
+//				(unsigned) (allwnr_a733_get_cpux_L_freq() / 1000 / 1000),
+//				(unsigned) (allwnr_a733_get_cpux_B_freq() / 1000 / 1000));
+
+		dpcobj_initialize(& userprintdpc0, coremark_wrapper, NULL);
+		board_dpc_call(& userprintdpc0, 0);
+		dpcobj_initialize(& userprintdpc7, coremark_wrapper, NULL);
+		board_dpc_call(& userprintdpc7, 7);
 	}
 #endif
-#if 0
+#if 0 && ! WITHISBOOTLOADER
 	{
 	#if __aarch64__
 		asm volatile (
