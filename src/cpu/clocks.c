@@ -4866,45 +4866,47 @@ static void write32(volatile uint32_t * addr, uint32_t value)
 #define PLL_CPU_CTRL_REG_PLL_LDO_EN_OFFSET 30
 #define PLL_CPU_CTRL_REG_LOCK_ENABLE_OFFSET 29
 #define PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_OFFSET 27
+#define PLL_CPU_CTRL_REG_PLL_UPDATE_OFFSET 26
+#define PLL_CPU_CTRL_REG_PLL_LOCK_OFFSET 28
 
 #ifdef BIT
-#undef BIT
-#define BIT(n) (1UL << (n))
+	#undef BIT
+	#define BIT(n) (UINT32_C(1) << (n))
 #else
-#define BIT(n) (1UL << (n))
+	#define BIT(n) (UINT32_C(1) << (n))
 #endif
 
 static void
-a733_enable_pll(volatile uint32_t * clkreg, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p)
+a733_enable_pll(volatile uint32_t * ctrlreg, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p)
 {
 	uint32_t reg_val;
 
-	setbits_le32(clkreg, BIT(PLL_CPU_CTRL_REG_PLL_LDO_EN_OFFSET));
-	setbits_le32(clkreg, BIT(PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_OFFSET));
+	setbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_PLL_LDO_EN_OFFSET));
+	setbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_OFFSET));
 
-	reg_val = read32(clkreg);
+	reg_val = read32(ctrlreg);
 	reg_val &= ~((0x3 << 20) | (0xf << 16) | (0xff << 8) | (0xf << 0));
 	reg_val |= ((m0 << 20) | (p << 16) | (n << 8) | (m1 << 0));
-	write32(clkreg, reg_val);
+	write32(ctrlreg, reg_val);
 
 	/* delay for pll */
 	local_delay_us(20);
 
 	/* pll enable */
-	setbits_le32(clkreg, BIT(PLL_CPU_CTRL_REG_PLL_EN_OFFSET));
+	setbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_PLL_EN_OFFSET));
 
 	/* lock enable */
-	setbits_le32(clkreg, BIT(PLL_CPU_CTRL_REG_LOCK_ENABLE_OFFSET));
+	setbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_LOCK_ENABLE_OFFSET));
 
 	/* enable update bit */
-	setbits_le32(clkreg, BIT(26));
+	setbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_PLL_UPDATE_OFFSET));
 	/* wait update done */
-	while (read32(clkreg) & BIT(26))
+	while (read32(ctrlreg) & BIT(PLL_CPU_CTRL_REG_PLL_UPDATE_OFFSET))
 		;
 
 	/* wait PLL_CPUX lockbit */
 	for (int i = 0; i < 3; i++) {
-		while (!(read32(clkreg) & BIT(28)))
+		while (!(read32(ctrlreg) & BIT(PLL_CPU_CTRL_REG_PLL_LOCK_OFFSET)))
 			;
 		local_delay_us(5);
 	}
@@ -4912,11 +4914,9 @@ a733_enable_pll(volatile uint32_t * clkreg, uint32_t m0, uint32_t n, uint32_t m1
 }
 
 static void
-a733_set_pll(volatile uint32_t * ctrlreg, volatile uint32_t * clkreg, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p) {
+a733_set_pll(volatile uint32_t * ctrlreg, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p)
+{
 	uint32_t reg_val;
-
-	/* set pll source to 24M */
-	clrbits_le32(clkreg, 0x3 << 24);
 
 	/* clear pll lock */
 	clrbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_OFFSET) | BIT(PLL_CPU_CTRL_REG_LOCK_ENABLE_OFFSET));
@@ -4934,14 +4934,14 @@ a733_set_pll(volatile uint32_t * ctrlreg, volatile uint32_t * clkreg, uint32_t m
 	setbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_LOCK_ENABLE_OFFSET));
 
 	/* enable update bit */
-	setbits_le32(ctrlreg, BIT(26));
+	setbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_PLL_UPDATE_OFFSET));
 	/* wait update done */
-	while (read32(ctrlreg) & BIT(26))
+	while (read32(ctrlreg) & BIT(PLL_CPU_CTRL_REG_PLL_UPDATE_OFFSET))
 		;
 
 	/* wait PLL_CPUX lockbit */
 	for (int i = 0; i < 3; i++) {
-		while (!(read32(ctrlreg) & BIT(28)))
+		while (!(read32(ctrlreg) & BIT(PLL_CPU_CTRL_REG_PLL_LOCK_OFFSET)))
 			;
 		local_delay_us(5);
 	}
@@ -4952,6 +4952,7 @@ a733_set_pll(volatile uint32_t * ctrlreg, volatile uint32_t * clkreg, uint32_t m
 	local_delay_us(20);
 }
 
+
 #define  sunxi_clk_get_hosc_type() 26///
 
 #define CPU_PLL_FACTOR_N_24M(x) calcdivround2((x), sunxi_clk_get_hosc_type())//(((x) + (24) - 1) / (24))
@@ -4959,26 +4960,55 @@ a733_set_pll(volatile uint32_t * ctrlreg, volatile uint32_t * clkreg, uint32_t m
 static void a733_set_pll_cpux_axi(void)
 {
 	// DynamIQ big.LITTLE Architecture Arm® CPU, up to 2.0 GHz
-	const unsigned cpuLfreq = (sunxi_clk_get_hosc_type() == 24) ? 1008 : 1300; // 1014
-	const unsigned cpuBfreq = (sunxi_clk_get_hosc_type() == 24) ? 1008 : 1300; // 1014
+	/* Set A76 Core 1.008GHz, A55 Core 1.008GHz, DSU 744MHz */
+	const unsigned cpuLfreq = (sunxi_clk_get_hosc_type() == 24) ? 1008 : 2000; // 1014
+	const unsigned cpuBfreq = (sunxi_clk_get_hosc_type() == 24) ? 1008 : 2000; // 1014
 	const unsigned dsufreq = (sunxi_clk_get_hosc_type() == 24) ? 744 : 780;
 
-	/* Set A76 Core 1.008GHz, A55 Core 1.008GHz, DSU 744MHz */
-	a733_enable_pll(& CPU_PLL_CFG->CPU_L_PLL_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
-	a733_set_pll(& CPU_PLL_CFG->CPU_L_PLL_CTRL_REG, & CPU_PLL_CFG->CPU_L_PLL_CLK_REG, 0x0, CPU_PLL_FACTOR_N_24M(cpuLfreq), 0x0, 0x0);
+	// CPU_L
+	{
+		a733_enable_pll(& CPU_PLL_CFG->CPU_L_PLL_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
+		clrsetbits_le32(& CPU_PLL_CFG->CPU_L_PLL_CLK_REG,
+			(0x07 << 24) | (0x03 << 16),	//
+			(0x00 << 24) | (0x00 << 16)	// 000: CPU_SLOW_CLK, FACTOR_P = 1
+			);
+		a733_set_pll(& CPU_PLL_CFG->CPU_L_PLL_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(cpuLfreq), 0x0, 0x0);
+		local_delay_us(20);
+		clrsetbits_le32(& CPU_PLL_CFG->CPU_L_PLL_CLK_REG,
+			(0x07 << 24) | (0x03 << 16),
+			(0x03 << 24) | (0x00 << 16)	// 011: CPU_L_PLL/P, FACTOR_P = 1
+			);
+	}
 
-	a733_enable_pll(& CPU_PLL_CFG->CPU_B_PLL_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
-	a733_set_pll(& CPU_PLL_CFG->CPU_B_PLL_CTRL_REG, & CPU_PLL_CFG->CPU_B_PLL_CLK_REG, 0x0, CPU_PLL_FACTOR_N_24M(cpuBfreq), 0x0, 0x0);
+	// CPU_B
+	{
+		a733_enable_pll(& CPU_PLL_CFG->CPU_B_PLL_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
+		clrsetbits_le32(& CPU_PLL_CFG->CPU_B_PLL_CLK_REG,
+			(0x07 << 24) | (0x03 << 16),	//
+			(0x00 << 24) | (0x00 << 16)	// 000: CPU_SLOW_CLK, FACTOR_P = 1
+			);
+		a733_set_pll(& CPU_PLL_CFG->CPU_B_PLL_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(cpuBfreq), 0x0, 0x0);
+		local_delay_us(20);
+		clrsetbits_le32(& CPU_PLL_CFG->CPU_B_PLL_CLK_REG,
+			(0x07 << 24) | (0x03 << 16),
+			(0x03 << 24) | (0x00 << 16)	// 011: CPU_B_PLL/P, FACTOR_P = 1
+			);
+	}
 
-	a733_enable_pll(& CPU_PLL_CFG->CPU_DSU_PLL_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
-	a733_set_pll(& CPU_PLL_CFG->CPU_DSU_PLL_CTRL_REG, & CPU_PLL_CFG->CPU_DSU_PLL_CLK_REG, 0x0, CPU_PLL_FACTOR_N_24M(dsufreq), 0x0, 0x0);
-
-	local_delay_us(20);
-	clrsetbits_le32(& CPU_PLL_CFG->CPU_L_PLL_CLK_REG, (0x07 << 24) | (0x03 << 16), (0x03 << 24) | (0x00 << 16));
-	local_delay_us(20);
-	clrsetbits_le32(& CPU_PLL_CFG->CPU_B_PLL_CLK_REG, (0x07 << 24) | (0x03 << 16), (0x03 << 24) | (0x00 << 16));
-	local_delay_us(20);
-	clrsetbits_le32(& CPU_PLL_CFG->CPU_DSU_PLL_CLK_REG, (0x07 << 24) | (0x03 << 16), (0x03 << 24) | (0x00 << 16));
+	// DSU
+	{
+		a733_enable_pll(& CPU_PLL_CFG->CPU_DSU_PLL_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
+		clrsetbits_le32(& CPU_PLL_CFG->CPU_DSU_PLL_CLK_REG,
+			(0x07 << 24) | (0x03 << 16),	//
+			(0x00 << 24) | (0x00 << 16)	// 000: CPU_SLOW_CLK, FACTOR_P = 1
+			);
+		a733_set_pll(& CPU_PLL_CFG->CPU_DSU_PLL_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(dsufreq), 0x0, 0x0);
+		local_delay_us(20);
+		clrsetbits_le32(& CPU_PLL_CFG->CPU_DSU_PLL_CLK_REG,
+			(0x07 << 24) | (0x03 << 16),
+			(0x03 << 24) | (0x00 << 16)	// 011: CPU_DSU_PLL/P, FACTOR_P = 1
+			);
+	}
 }
 
 // ---
