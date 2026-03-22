@@ -314,8 +314,8 @@ uint_fast32_t allwnr_h3_get_hdmi_slow_freq(void);
 uint_fast32_t allwnr_a733_get_sysclk24M_freq(void);
 uint_fast32_t allwnr_a733_get_hosc_freq(void);
 uint_fast32_t allwnr_a733_get_losc_freq(void);
-uint_fast32_t allwnr_a733_get_cpux_0_5_freq(void);	// ARM CPUs core0..core5 - Cortex-A55
-uint_fast32_t allwnr_a733_get_cpux_6_7_freq(void);	// ARM CPUs core6..core7 - Cortex-A76
+uint_fast32_t allwnr_a733_get_cpux_L_freq(void);	// ARM CPUs core0..core5 - Cortex-A55
+uint_fast32_t allwnr_a733_get_cpux_B_freq(void);	// ARM CPUs core6..core7 - Cortex-A76
 uint_fast32_t allwnr_a733_get_cpus_freq(void);	// RISC-V CPU
 uint_fast32_t allwnr_a733_get_uart_freq(void);
 uint_fast32_t allwnr_a733_get_s_uart_freq(void);

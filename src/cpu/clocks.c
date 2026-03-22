@@ -4562,13 +4562,13 @@ uint_fast32_t allwnr_a733_get_pll_peri0_150M_freq(void)
 
 
 // cores 0..5 - Cortex-A55
-uint_fast32_t allwnr_a733_get_cpux_0_5_freq(void)
+uint_fast32_t allwnr_a733_get_cpux_L_freq(void)
 {
 	return allwnr_a733_get_cpu_l_pll_freq();
 }
 
 // cores 6..7 - Cortex-A76
-uint_fast32_t allwnr_a733_get_cpux_6_7_freq(void)
+uint_fast32_t allwnr_a733_get_cpux_B_freq(void)
 {
 	return allwnr_a733_get_cpu_b_pll_freq();
 }
