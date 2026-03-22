@@ -252,8 +252,8 @@ ifeq (1, 1)
 DDRINITBLOB=ddrinit_a733_lpddr4.bin
 else
 # Orange pi 4 pro
-SystemDRAMInit = 0x00078a60
-SystemExecAARCH64 = 0x00075124
+SystemDRAMInit = 0x00079e30
+SystemExecAARCH64 = 0x000750d4
 DDRINITBLOB=ddrinit_a733_lpddr5.bin
 endif
 
