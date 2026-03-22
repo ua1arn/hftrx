@@ -7909,12 +7909,17 @@ void hightests(void)
 		show_chip();
 	}
 #endif
-#if 0
+#if 1
 	{
+		static dpcobj_t userprintdpc;
+		void coremark_wrapper(void * ctx);
 		PRINTF("FREQ_DSU=%u MHz, FREQ_L=%u MHz, FREQ_B=%u MHz\n",
 				(unsigned) (allwnr_a733_get_dsu_freq() / 1000 / 1000),
 				(unsigned) (allwnr_a733_get_cpux_L_freq() / 1000 / 1000),
 				(unsigned) (allwnr_a733_get_cpux_B_freq() / 1000 / 1000));
+
+		dpcobj_initialize(& userprintdpc, coremark_wrapper, NULL);
+		board_dpc_call(& userprintdpc, 0);
 	}
 #endif
 #if 0

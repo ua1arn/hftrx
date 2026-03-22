@@ -53,7 +53,7 @@ OBJDUMP = $(TRGT)objdump
 
 # ARM Cortex-A53 Quad-Core (r0p4, revidr=0x80)
 
-CORE = -mcpu=cortex-a55+fp+simd -momit-leaf-frame-pointer --specs=nosys.specs
+CORE = -mcpu=cortex-a76+fp+simd -momit-leaf-frame-pointer --specs=nosys.specs
 #CORE = -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=neon-vfpv4
 
 # Define optimisation level here
