@@ -7911,19 +7911,20 @@ void hightests(void)
 #endif
 #if 0 && ! WITHISBOOTLOADER
 	{
-		static dpcobj_t userprintdpc0;
-		static dpcobj_t userprintdpc7;
+		static dpcobj_t userprintdpcs [HARDWARE_NCORES];
 
 		void coremark_wrapper(void * ctx);
-//		PRINTF("FREQ_DSU=%u MHz, FREQ_L=%u MHz, FREQ_B=%u MHz\n",
-//				(unsigned) (allwnr_a733_get_dsu_freq() / 1000 / 1000),
-//				(unsigned) (allwnr_a733_get_cpux_L_freq() / 1000 / 1000),
-//				(unsigned) (allwnr_a733_get_cpux_B_freq() / 1000 / 1000));
+		PRINTF("FREQ_DSU=%u MHz, FREQ_L=%u MHz, FREQ_B=%u MHz\n",
+				(unsigned) (allwnr_a733_get_dsu_freq() / 1000 / 1000),
+				(unsigned) (allwnr_a733_get_cpux_L_freq() / 1000 / 1000),
+				(unsigned) (allwnr_a733_get_cpux_B_freq() / 1000 / 1000));
 
-		dpcobj_initialize(& userprintdpc0, coremark_wrapper, NULL);
-		board_dpc_call(& userprintdpc0, 0);
-		dpcobj_initialize(& userprintdpc7, coremark_wrapper, NULL);
-		board_dpc_call(& userprintdpc7, 7);
+		unsigned core;
+		for (core = 0; core < ARRAY_SIZE(userprintdpcs); ++ core)
+		{
+			dpcobj_initialize(& userprintdpcs [core], coremark_wrapper, NULL);
+			board_dpc_addentry(& userprintdpcs [core], core);
+		}
 	}
 #endif
 #if 0 && ! WITHISBOOTLOADER
