@@ -1828,7 +1828,7 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 
 static int tsaks_not_started = 999;
 
-#if 0 && ! LINUX_SUBSYSTEM
+#if 1 && ! LINUX_SUBSYSTEM
 
 typedef struct task_item_tag
 {
@@ -1838,6 +1838,7 @@ typedef struct task_item_tag
 	void * guard;
 	void * allocated;
 	IRQL_t irql;
+	unsigned suspend;
 } task_item_t;
 
 static task_item_t t0;
@@ -1921,6 +1922,16 @@ void task_scheduler_initialize(void)
 //	task_addtask(& task31, 1u << 1, task1, (void *) 0x111111, TASKRAM_SIZE, IRQL_USER);
 //	task_addtask(& task32, 1u << 2, task1, (void *) 0x222222, TASKRAM_SIZE, IRQL_USER);
 //	task_addtask(& task33, 1u << 3, task1, (void *) 0x333333, TASKRAM_SIZE, IRQL_USER);
+}
+
+void task_ticker(void)
+{
+
+}
+
+void task_suspend(task_item_t * task, unsigned ticks)
+{
+
 }
 
 // проверка условий отдачи управления задаче
@@ -2061,6 +2072,11 @@ static void task_svc(unsigned code, void * frame)
 #else
 	PRINTF("svc call: 0x%04X, r0=%08X r1=%08x r2=%08x\n",  code, (unsigned) f->r0, (unsigned) f->r1, (unsigned) f->r2);
 #endif
+}
+
+void task_ticker(void)
+{
+
 }
 
 #endif /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */

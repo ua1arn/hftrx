@@ -634,6 +634,7 @@ void __NO_RETURN run_task_curr_aarch32(void * frame);	// run task with frame
 
 void task_scheduler_initialize(void);
 void task_scheduler_start(void);
+void task_ticker(void);
 void __NO_RETURN task_scheduler_othercores(void);
 void * task_scheduler(void * oldframe);	/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 
