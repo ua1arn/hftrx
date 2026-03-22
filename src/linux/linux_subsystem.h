@@ -238,6 +238,7 @@ void dcache_clean_all(void);
 
 int get_voltage_1117(void);
 int get_current_1117(void);
+int ams1117_get_channel(uint8_t ch);
 
 int neorv32_load_firmware(void);
 void neorv32_reset_assert(void);
