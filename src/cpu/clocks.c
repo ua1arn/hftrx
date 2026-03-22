@@ -4836,6 +4836,13 @@ void sysinit_boot_disconnect(void)
 #define CCU_PLL_CPU_DSU_CTRL_REG (CPU_PLL_CFG_BASE + 0x3000)
 #define CCU_PLL_DSU_CLK_REG (CPU_PLL_CFG_BASE + 0x301c)
 
+//#define CCU_PLL_CPU_L_CTRL_REG 	(& CPU_PLL_CFG->CPU_L_PLL_CTRL_REG) //CCU_PLL_CPU_L_CTRL_REG (CPU_PLL_CFG_BASE + 0x1000)	// CPU_L_PLL_CTRL_REG
+//#define CCU_PLL_CPU_L_CLK_REG 	(& CPU_PLL_CFG->CPU_L_PLL_CLK_REG) //CCU_PLL_CPU_L_CLK_REG (CPU_PLL_CFG_BASE + 0x101c)	// CPU_L_PLL_CLK_REG
+//#define CCU_PLL_CPU_B_CTRL_REG 	(& CPU_PLL_CFG->CPU_B_PLL_CTRL_REG) //CCU_PLL_CPU_B_CTRL_REG (CPU_PLL_CFG_BASE + 0x2000)	// CPU_B_PLL_CTRL_REG
+//#define CCU_PLL_CPU_B_CLK_REG 	(& CPU_PLL_CFG->CPU_B_PLL_CLK_REG) //CCU_PLL_CPU_B_CLK_REG (CPU_PLL_CFG_BASE + 0x201c)	// CPU_B_PLL_CLK_REG
+//#define CCU_PLL_CPU_DSU_CTRL_REG (& CPU_PLL_CFG->CPU_DSU_PLL_CTRL_REG) //CCU_PLL_CPU_DSU_CTRL_REG (CPU_PLL_CFG_BASE + 0x3000)	// CPU_DSU_PLL_CTRL_REG
+//#define CCU_PLL_DSU_CLK_REG 	(& CPU_PLL_CFG->CPU_DSU_PLL_CLK_REG) //CCU_PLL_DSU_CLK_REG (CPU_PLL_CFG_BASE + 0x301c)		// CPU_DSU_PLL_CLK_REG
+
 #define  sunxi_clk_get_hosc_type() 26///
 
 #define CPU_PLL_FACTOR_N_24M(x) calcdivround2((x), 24)//(((x) + (24) - 1) / (24))
@@ -4869,7 +4876,7 @@ static void write32(uintptr_t addr, uint32_t value)
 #endif
 
 static void
-a733_enable_pll(uint32_t addr, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p)
+a733_enable_pll(uintptr_t addr, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p)
 {
 	uint32_t reg_val;
 
@@ -4892,21 +4899,21 @@ a733_enable_pll(uint32_t addr, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p)
 
 	/* enable update bit */
 	setbits_le32(addr, BIT(26));
-
-	/* wait PLL_CPUX lockbit */
+	/* wait update done */
 	while (read32(addr) & BIT(26))
 		;
 
-
+	/* wait PLL_CPUX lockbit */
 	for (int i = 0; i < 3; i++) {
 		while (!(read32(addr) & BIT(28)))
 			;
+		local_delay_us(5);
 	}
 	local_delay_us(20);
 }
 
 static void
-a733_set_pll(uint32_t addr, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p) {
+a733_set_pll(uintptr_t addr, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p) {
 	uint32_t reg_val;
 
 	/* set pll source to 24M */
@@ -4928,11 +4935,11 @@ a733_set_pll(uint32_t addr, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p) {
 
 	/* enable update bit */
 	setbits_le32(addr, BIT(26));
-
-	/* wait PLL_CPUX lockbit */
+	/* wait update done */
 	while (read32(addr) & BIT(26))
 		;
 
+	/* wait PLL_CPUX lockbit */
 	for (int i = 0; i < 3; i++) {
 		while (!(read32(addr) & BIT(28)))
 			;
