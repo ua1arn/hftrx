@@ -1909,7 +1909,7 @@ void task_scheduler_initialize(void)
 	{
 		task_item_t * const task = & idle_tasks [i];
 		//
-		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_USER);
+		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
 	}
 }
 
@@ -1968,10 +1968,11 @@ static task_item_t * task_getready(unsigned affinity, task_item_t * taskin)
 			if ((tp->affinity & affinity) && task_isready(tp))
 			{
 				taskout = tp;
-				break;
+				goto done;
 			}
 		}
 	}
+done:
 	RemoveEntryList(& taskout->item);
 	return taskout;
 }
