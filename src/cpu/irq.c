@@ -1835,14 +1835,18 @@ typedef struct task_item_tag
 	LIST_ENTRY item;
 	unsigned affinity;
 	void * cpuframe;	// cpu state
-	void * guard;
 	void * allocated;
 	IRQL_t irql;
 	unsigned suspend;
+	void * guard;	// debug signature
 } task_item_t;
 
-static task_item_t t0;
-static task_item_t t1;
+typedef struct event_item_tag
+{
+	LIST_ENTRY item;
+	unsigned timeout;
+	void * guard;	// debug signature
+} event_item_t;
 
 static int task_idle(void * ctx)
 {
@@ -1889,7 +1893,7 @@ static void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(
 
 void * task_create(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize)
 {
-	task_item_t * const task = malloc(sizeof (task_item_t));
+	task_item_t * const task = (task_item_t *) malloc(sizeof (task_item_t));
 	if (task != NULL)
 	{
 		task_addtask(task, affinity, fn, ctx, ramsize, IRQL_USER);
@@ -1899,16 +1903,26 @@ void * task_create(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigne
 
 void * event_create(void)
 {
-	return NULL;
+	event_item_t * event = (event_item_t *) malloc(sizeof (event_item_t));
+	if (event != NULL)
+	{
+		event->guard = event;	// debug signature
+		event->timeout = 0;
+	}
+	return event;
 }
 
 int event_wait(void * evt, unsigned ms)
 {
+	event_item_t * event = (event_item_t *) evt;
+	ASSERT(event->guard == event);
 	return 0;
 }
 
 int event_signal(void * evt)
 {
+	event_item_t * event = (event_item_t *) evt;
+	ASSERT(event->guard == event);
 	return 0;
 }
 
