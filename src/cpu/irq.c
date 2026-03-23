@@ -1929,6 +1929,9 @@ void task_ticker(void)
 {
 	IRQL_t irql;
 	unsigned prio;
+	const uint_fast8_t coreid = board_dpc_coreid();
+	if (coreid != 0)
+		return;
 	IRQLSPIN_LOCK(& taskslock, & irql, IRQL_IPC_ONLY);
 	for (prio = 0; prio < PRIOv_count; ++ prio)
 	{
@@ -2014,7 +2017,6 @@ enum
 
 static int task_handler(task_item_t * task, unsigned arg0, void * arg1)
 {
-	PRINTF("task_handler: arg0=%u, arg1=%p\n", arg0, arg1);
 	switch (arg0)
 	{
 	default:
@@ -2022,7 +2024,6 @@ static int task_handler(task_item_t * task, unsigned arg0, void * arg1)
 		return 0;
 
 	case TASKFN_SUSPEND:
-		PRINTF("suspend: t=%u\n", * (unsigned *) arg1);
 		task->suspend = * (unsigned *) arg1;
 		return 0;
 	}
@@ -2043,7 +2044,7 @@ static void task_svc(task_item_t * task, unsigned code)
 }
 
 // user-mode entry
-int task_sysfn(unsigned arg0, void * __RESTRICT arg1)
+int task_sysfn(unsigned arg0, volatile void * arg1)
 {
 #if __aarch64__
 	uint64_t result = 0;
@@ -2137,8 +2138,9 @@ void local_delay_ms(int timeMS)
 	}
 	else
 	{
-		unsigned nticks = 333;//NTICKS(timeMS);
-		task_sysfn(TASKFN_SUSPEND, & nticks);
+		volatile unsigned v = NTICKS(timeMS);
+		//PRINTF("test2: %p\n", & v);
+		task_sysfn(TASKFN_SUSPEND, & v);
 	}
 }
 
