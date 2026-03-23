@@ -640,6 +640,10 @@ void __NO_RETURN task_scheduler_othercores(void);
 void * task_create(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize);
 void task_yield(void);	// хотим завешить выполнение кванта, не дожидаясь прерывания
 
+void * event_create(void);
+int event_wait(void * evt, unsigned ms);
+int event_signal(void * evt);
+
 void IRQ_Handler_GIC(void);
 void FIQ_Handler_GIC(void);
 

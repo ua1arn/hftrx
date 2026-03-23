@@ -1897,6 +1897,21 @@ void * task_create(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigne
 	return task;
 }
 
+void * event_create(void)
+{
+
+}
+
+int event_wait(void * evt, unsigned ms)
+{
+
+}
+
+int event_signal(void * evt)
+{
+
+}
+
 void task_scheduler_initialize(void)
 {
 	unsigned i;
