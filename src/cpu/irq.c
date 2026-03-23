@@ -1848,25 +1848,7 @@ static int task_idle(void * ctx)
 {
 	for (;;)
 	{
-		task_sysfn(0, NULL);
-		//__WFI();
-	}
-	return 0;
-}
-
-
-static int task1(void * ctx)
-{
-	const unsigned core = arm_hardware_cpuid();
-	local_delay_ms(100 + 50 * core);
-	dbg_putchar('$');
-	PRINTF("task core=%u: ctx=%p\n", core, ctx);
-	for (;;)
-	{
-		local_delay_ms(500 + 50 * core);
-		dbg_putchar('a' + core);
-		local_delay_ms(500 + 50 * core);
-		dbg_putchar('A' + core);
+		task_yield();
 	}
 	return 0;
 }
@@ -1881,7 +1863,7 @@ static task_item_t demotask [HARDWARE_NCORES];
 
 static task_item_t task30, task31, task32, task33;
 
-void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql)
+static void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql)
 {
 	const unsigned prio = GICI_DECODE_IRQL(irql);
 	ASSERT(ARRAY_SIZE(tasks_list) > prio);
@@ -1956,23 +1938,15 @@ void task_ticker(void)
 }
 
 // проверка условий отдачи управления задаче
-int task_isready(task_item_t * task)
+static int task_isready(task_item_t * task)
 {
 	return
 		task->suspend == 0 &&
 		1;
 }
 
-// хотим завешить выполнение кванта, не дожидаясь прерывания
-void task_yield(void)
-{
-	__WFI();	// пока так
-	__SEV();
-	task_sysfn(0, NULL);
-}
-
 // получить готовую у выполнению задачу
-task_item_t * task_getready(unsigned affinity, task_item_t * taskin)
+static task_item_t * task_getready(unsigned affinity, task_item_t * taskin)
 {
 	ASSERT(taskin);
 	ASSERT(affinity);
@@ -2053,7 +2027,7 @@ static void task_svc(task_item_t * task, unsigned code)
 }
 
 // user-mode entry
-int task_sysfn(unsigned arg0, volatile void * arg1)
+static int task_sysfn(unsigned arg0, volatile void * arg1)
 {
 #if __aarch64__
 	uint64_t result = 0;
@@ -2110,14 +2084,22 @@ task_scheduler0(void * oldframe, unsigned flag, unsigned code)
 	return startedtask [core]->cpuframe;
 }
 
-void * task_scheduler2(unsigned code, void * oldframe)
+static void * task_scheduler2(unsigned code, void * oldframe)
 {
 	return task_scheduler0(oldframe, 1, code);
 }
 
-void * task_scheduler(void * oldframe)
+static void * task_scheduler(void * oldframe)
 {
 	return task_scheduler0(oldframe, 0, 0);
+}
+
+// хотим завешить выполнение кванта, не дожидаясь прерывания
+void task_yield(void)
+{
+//	__WFI();	// пока так
+//	__SEV();
+	task_sysfn(0, NULL);
 }
 
 void local_delay_ms(int timeMS)

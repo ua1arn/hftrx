@@ -637,10 +637,8 @@ void task_scheduler_initialize(void);
 void task_scheduler_start(void);
 void task_ticker(void);
 void __NO_RETURN task_scheduler_othercores(void);
-void * task_scheduler(void * oldframe);	/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
-void * task_scheduler2(unsigned code, void * oldframe);	/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
-int task_sysfn(unsigned arg0, volatile void * arg1);	// user-mode entry
 void * task_create(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize);
+void task_yield(void);	// хотим завешить выполнение кванта, не дожидаясь прерывания
 
 void IRQ_Handler_GIC(void);
 void FIQ_Handler_GIC(void);
