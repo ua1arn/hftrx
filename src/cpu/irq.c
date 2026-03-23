@@ -1905,6 +1905,16 @@ void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * 
 	PRINTF("Added task at prio=%u, affinity=%02X (frame=%p), stack[%p..%p]\n", prio, affinity, stackframe, stackframe, (void *) top);
 }
 
+void * task_create(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize)
+{
+	task_item_t * const task = malloc(sizeof (task_item_t));
+	if (task != NULL)
+	{
+		task_addtask(task, affinity, fn, ctx, ramsize, IRQL_USER);
+	}
+	return task;
+}
+
 void task_scheduler_initialize(void)
 {
 	unsigned i;
@@ -2146,6 +2156,11 @@ void __NO_RETURN task_scheduler_othercores(void)
 		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
 		__DMB();
 	}
+}
+
+void * task_create(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize)
+{
+	return NULL;
 }
 
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */

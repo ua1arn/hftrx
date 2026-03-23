@@ -632,6 +632,7 @@ void __NO_RETURN IRQ_Handler_aarch32(void * frame);	// crt_CortexA.S
 void __NO_RETURN FIQ_Handler_aarch32(void * frame);	// crt_CortexA.S
 void __NO_RETURN run_task_curr_aarch32(void * frame);	// run task with frame
 
+#define TASK_AFFINITY_ALL (~0U)
 void task_scheduler_initialize(void);
 void task_scheduler_start(void);
 void task_ticker(void);
@@ -639,6 +640,7 @@ void __NO_RETURN task_scheduler_othercores(void);
 void * task_scheduler(void * oldframe);	/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 void * task_scheduler2(unsigned code, void * oldframe);	/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 int task_sysfn(unsigned arg0, volatile void * arg1);	// user-mode entry
+void * task_create(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize);
 
 void IRQ_Handler_GIC(void);
 void FIQ_Handler_GIC(void);

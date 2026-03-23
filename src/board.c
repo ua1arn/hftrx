@@ -5005,6 +5005,23 @@ static void blinktest(void * ctx)
 	BOARD_BLINK_SETSTATE(state);
 }
 
+static int blinktest2(void * ctx)
+{
+#if WITHISBOOTLOADER
+	const unsigned thalf = 100;	// Toggle every 100 ms
+#else /* WITHISBOOTLOADER */
+	const unsigned thalf = 500;	// Toggle every 500 ms
+#endif /* WITHISBOOTLOADER */
+	for (;;)
+	{
+		BOARD_BLINK_SETSTATE(1);
+		local_delay_ms(thalf);
+		BOARD_BLINK_SETSTATE(0);
+		local_delay_ms(thalf);
+	}
+	return 0;
+}
+
 #endif /* defined (BOARD_BLINK_SETSTATE) */
 
 static void adcfilters_initialize(void);
@@ -5069,15 +5086,20 @@ void board_initialize(void)
 	board_adc_initialize();
 
 #if defined (BOARD_BLINK_SETSTATE)
+	if (task_create(TASK_AFFINITY_ALL, blinktest2, NULL, 8192))
+	{
+
+	}
+	else
 	{
 #if WITHISBOOTLOADER
 	const unsigned thalf = 100;	// Toggle every 100 ms
 #else /* WITHISBOOTLOADER */
 	const unsigned thalf = 500;	// Toggle every 500 ms
 #endif /* WITHISBOOTLOADER */
-	static ticker_t ticker_blinks;
-	ticker_initialize(& ticker_blinks, NTICKS(thalf), blinktest, NULL);
-	ticker_add(& ticker_blinks);
+		static ticker_t ticker_blinks;
+		ticker_initialize(& ticker_blinks, NTICKS(thalf), blinktest, NULL);
+		ticker_add(& ticker_blinks);
 	}
 #endif /* defined (BOARD_BLINK_SETSTATE) */
 
