@@ -2113,6 +2113,12 @@ void local_delay_ms(int timeMS)
 	}
 }
 
+#elif LINUX_SUBSYSTEM
+
+// заглушки для компиляции
+void task_scheduler_initialize(void) {}
+void task_ticker(void) {}
+
 #else /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
 
 void task_scheduler_initialize(void)
