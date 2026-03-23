@@ -1,4 +1,4 @@
-arm-none-eabi-gcc -Ofast -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs -I "../../CMSIS_6/CMSIS/Core/Include" -I "../../CMSIS_6/CMSIS/Core/Include/A-PROFILE"  -D"NDEBUG"=1 -D"CPUSTYLE_A733"=1 -c code.c
+arm-none-eabi-gcc -o code.o -Ofast -mcpu=cortex-a76 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs -I "../../inc"  -I "../../CMSIS_6/CMSIS/Core/Include" -I "../../CMSIS_6/CMSIS/Core/Include/A-PROFILE"  -D"NDEBUG"=1 -D"CPUSTYLE_A733"=1 -c code.c
 arm-none-eabi-objdump -d code.o >code.txt
 
 arm-none-eabi-gcc -o defs_a55_32bit.txt -Ofast -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs -dM -E - < NUL

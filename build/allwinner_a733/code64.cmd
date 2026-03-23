@@ -1,4 +1,4 @@
-aarch64-none-elf-gcc -Ofast -mcpu=cortex-a55 --specs=nosys.specs -I "../../inc"  -I "../../CMSIS_6/CMSIS/Core/Include" -I "../../CMSIS_6/CMSIS/Core/Include/A-PROFILE"  -D"NDEBUG"=1 -D"CPUSTYLE_A733"=1 -c code.c
+aarch64-none-elf-gcc -Ofast -mcpu=cortex-a76 --specs=nosys.specs -I "../../inc"  -I "../../CMSIS_6/CMSIS/Core/Include" -I "../../CMSIS_6/CMSIS/Core/Include/A-PROFILE"  -D"NDEBUG"=1 -D"CPUSTYLE_A733"=1 -c code.c
 aarch64-none-elf-objdump -d code.o >code.txt
 pause
 
