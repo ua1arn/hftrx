@@ -6533,6 +6533,9 @@ adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t adci)
 /* получить значение от АЦП */
 adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)	
 {
+#if AMS1117_ONBOARDADC
+	return ams1117_get_channel(adci);
+#endif
 	boardadc_t * const padcs = & badcst [adci];
 	// targetadc2 - on-board ADC MCP3208-BI/SL chip select (potentiometers)
 	// targetadck - on-board ADC MCP3208-BI/SL chip select (KEYBOARD)

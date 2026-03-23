@@ -2124,6 +2124,17 @@ double raw_to_voltage(int16_t raw)
     return ((double) raw * 4.096) / 32768.0;
 }
 
+int ams1117_get_channel(uint8_t ch)
+{
+	if(ch >= ams1117_channels_count) return 0;
+
+	pthread_mutex_lock(& g_adc_mutex);
+	int c = v_adc[ch] * 1000;
+	pthread_mutex_unlock(& g_adc_mutex);
+
+	return c;
+}
+
 #if WITHCURRLEVEL_1117
 double acs712_vzero = 2.5;
 

@@ -120,8 +120,6 @@
 	#define WITHSWRSCAN				1
 	#define WITHREVERB				1
 
-	
-
 	#define WITHTX	1
 	#if WITHTX
 		#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
@@ -172,6 +170,7 @@
 	#define WITHVOLTLEVEL_1117	1
 	#define VBUS_DIVIDER_RATIO  5.61 * 10.0
 	#define ACS712_SENSITIVITY  0.00066
+	#define WITHMAXPWRCALI		23
 
 	enum {
 		ams1117_cnannel_fwd,
@@ -209,16 +208,16 @@
 
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
-			FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
+			FWD = 1, REF = 0,	// PC4, PC5	SWR-meter
 
 		#endif /* WITHSWRMTR */
 
 
 		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
-		REFMRRIX = BOARD_ADCMRRIN(2),
+		REFMRRIX = REF, //BOARD_ADCMRRIN(2),
 		FWDMRRIX = BOARD_ADCMRRIN(3),
-		PWRMRRIX = BOARD_ADCMRRIN(7),
+		PWRMRRIX = FWD, //BOARD_ADCMRRIN(7),
 		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
 		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
