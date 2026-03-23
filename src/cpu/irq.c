@@ -1828,7 +1828,7 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 
 static int tsaks_not_started = 999;
 
-#if 1 && ! LINUX_SUBSYSTEM
+#if 0 && ! LINUX_SUBSYSTEM
 
 typedef struct task_item_tag
 {
