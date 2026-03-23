@@ -1979,7 +1979,6 @@ static task_item_t * task_getready(unsigned affinity, task_item_t * taskin)
 {
 	ASSERT(taskin);
 	ASSERT(affinity);
-	task_item_t * taskout = taskin;
 	unsigned prio = GICI_DECODE_IRQL(taskin->irql);
 	ASSERT(ARRAY_SIZE(tasks_list) > prio);
 	// Возвращаем в список задач
@@ -1996,14 +1995,14 @@ static task_item_t * task_getready(unsigned affinity, task_item_t * taskin)
 			task_item_t * const tp = CONTAINING_RECORD(t, task_item_t, item);
 			if ((tp->affinity & affinity) && task_isready(tp))
 			{
-				taskout = tp;
-				goto done;
+				// Нашли подходящий поток
+				RemoveEntryList(& tp->item);
+				return tp;
 			}
 		}
 	}
-done:
-	RemoveEntryList(& taskout->item);
-	return taskout;
+	RemoveEntryList(& taskin->item);
+	return taskin;
 }
 
 void task_scheduler_start(void)
