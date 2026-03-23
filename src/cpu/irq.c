@@ -2037,7 +2037,7 @@ static int task_sysfn(unsigned arg0, void * arg1)
 			"\t" "mov x1,%2\n"
 			"\t" "SVC 0xDEAD\n"
 			"\t" "mov %0,x0\n":
-			"=r"(result) : "r"(arg0), "r"(arg1) : "x0", "memory");
+			"=r"(result) : "r"(arg0), "r"(arg1) : "x0", "x1", "memory");
 #else
 	uint32_t result = 0;
 	__ASM volatile(
@@ -2045,7 +2045,7 @@ static int task_sysfn(unsigned arg0, void * arg1)
 		"\t" "mov r1,%2\n"
 		"\t" "SVC 0xDEAD\n"
 		"\t" "mov %0,r0\n":
-		"=r"(result) : "r"(arg0), "r"(arg1) : "r0", "memory");
+		"=r"(result) : "r"(arg0), "r"(arg1) : "r0", "r1", "memory");
 #endif
 
 	return result;
