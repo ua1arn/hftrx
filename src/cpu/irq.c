@@ -1820,6 +1820,11 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 #elif __riscv
 	#warning unsupported context switch on this CPU
 
+	typedef struct exception_frame_tag
+	{
+		uint64_t xx [32];
+	} exception_frame_t;
+
 #else
 	#warning unsupported context switch on this CPU
 #endif
@@ -2195,6 +2200,7 @@ static void task_svc(unsigned code, void * frame)
 	exception_frame_t * const f = (exception_frame_t *) frame;
 #if __aarch64__
 	PRINTF("svc call: 0x%04X, x0=%08X x1=%08X x2=%08X\n", code, (unsigned) f->x0, (unsigned) f->x1, (unsigned) f->x2);
+#elif __riscv
 #else
 	PRINTF("svc call: 0x%04X, r0=%08X r1=%08x r2=%08x\n",  code, (unsigned) f->r0, (unsigned) f->r1, (unsigned) f->r2);
 #endif
@@ -2499,7 +2505,7 @@ void SError_Handler(void * frame)
 	}
 }
 
-#elif defined(__CORTEX_A) && ! defined(__aarch64__) && ! LINUX_SUBSYSTEM
+#elif defined(__CORTEX_A) && ! defined(__aarch64__) && ! defined(__riscv) && ! LINUX_SUBSYSTEM
 
 //	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
 //	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
@@ -2565,6 +2571,9 @@ void Undef_Handler(void)
 		;
 #endif /* defined (BOARD_BLINK_INITIALIZE) */
 }
+
+#if defined __CORTEX_A && ! defined __riscv
+
 
 void __NO_RETURN SWI_Handler_aarch32(void * frame)
 {
@@ -2721,7 +2730,7 @@ void Hyp_Handler(void)
 	for (;;)
 		;
 }
-
+#endif /* __CORTEX_A */
 #endif
 
 #if CPUSTYLE_ARM && WITHSMPSYSTEM && ! LINUX_SUBSYSTEM
