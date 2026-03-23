@@ -1828,7 +1828,7 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 
 static int tsaks_not_started = 999;
 
-#if 0 && ! LINUX_SUBSYSTEM
+#if 1 && ! LINUX_SUBSYSTEM
 
 typedef struct task_item_tag
 {
@@ -2028,33 +2028,26 @@ static void task_svc(task_item_t * task, unsigned code)
 }
 
 // user-mode entry
-static int task_sysfn(unsigned arg0, volatile void * arg1)
+static int task_sysfn(unsigned arg0, void * arg1)
 {
 #if __aarch64__
-	uint64_t result = 0;
+	uint64_t result;
 	__ASM volatile(
-			"\t" "mov x0,%0\n"
-			"\t" "mov x1,%1\n"
+			"\t" "mov x0,%1\n"
+			"\t" "mov x1,%2\n"
 			"\t" "SVC 0xDEAD\n"
-			:: "r"(arg0), "r"(arg1): );
+			"\t" "mov %0,x0\n":
+			"=r"(result) : "r"(arg0), "r"(arg1) : "x0", "memory");
 #else
-	asm volatile (
-//			"ldr r0,  =0x12341234\n"
-//			"ldr r1,  =0x21212121\n"
-//			"ldr r2,  =0x22222222\n"
-			"SVC 0xDEAD\n"
-			);
+	uint32_t result = 0;
+	__ASM volatile(
+		"\t" "mov r0,%1\n"
+		"\t" "mov r1,%2\n"
+		"\t" "SVC 0xDEAD\n"
+		"\t" "mov %0,r0\n":
+		"=r"(result) : "r"(arg0), "r"(arg1) : "r0", "memory");
 #endif
 
-#if __aarch64__
-//	__ASM volatile (
-//			"ldaxrb %w0, %1" :
-//			"=r" (result) : "Q" (*arg1) : "memory");
-//	return result;    /* Add explicit type cast here */
-
-#else
-
-#endif
 	return result;
 }
 
@@ -2115,7 +2108,7 @@ void local_delay_ms(int timeMS)
 	}
 	else
 	{
-		volatile unsigned v = NTICKS(timeMS);
+		unsigned v = NTICKS(timeMS);
 		task_sysfn(TASKFN_SUSPEND, & v);
 	}
 }
