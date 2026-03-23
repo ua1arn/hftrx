@@ -1828,7 +1828,7 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 
 static int tsaks_not_started = 999;
 
-#if 1 && ! LINUX_SUBSYSTEM
+#if 0 && ! LINUX_SUBSYSTEM
 
 typedef struct task_item_tag
 {
@@ -2012,18 +2012,21 @@ enum
 	TASKFN_count
 };
 
-void task_handler(task_item_t * task, unsigned arg0, void * arg1)
+static int task_handler(task_item_t * task, unsigned arg0, void * arg1)
 {
+	PRINTF("task_handler: arg0=%u, arg1=%p\n", arg0, arg1);
 	switch (arg0)
 	{
 	default:
 	case TASKFN_NOP:
-		break;
+		return 0;
 
 	case TASKFN_SUSPEND:
+		PRINTF("suspend: t=%u\n", * (unsigned *) arg1);
 		task->suspend = * (unsigned *) arg1;
-		break;
+		return 0;
 	}
+	return 0;
 }
 
 // scheduler-mode entry
@@ -2032,21 +2035,42 @@ static void task_svc(task_item_t * task, unsigned code)
 	exception_frame_t * const f = task->cpuframe;
 #if __aarch64__
 	//PRINTF("svc call: 0x%04X, x0=%08X x1=%08X x2=%08X\n", code, (unsigned) f->x0, (unsigned) f->x1, (unsigned) f->x2);
-	task_handler(task, (unsigned) f->x0, (void *) f->x1);
+	f->x0 = task_handler(task, (unsigned) f->x0, (void *) f->x1);
 #else
 	//PRINTF("svc call: 0x%04X, r0=%08X r1=%08x r2=%08x\n", code, (unsigned) f->r0, (unsigned) f->r1, (unsigned) f->r2);
-	task_handler(task, (unsigned) f->r0, (void *) f->r1);
+	f->r0 = task_handler(task, (unsigned) f->r0, (void *) f->r1);
 #endif
 }
 
 // user-mode entry
-void task_sysfn(unsigned arg0, void * arg1)
+int task_sysfn(unsigned arg0, void * __RESTRICT arg1)
 {
 #if __aarch64__
+	uint64_t result = 0;
+	__ASM volatile(
+			"\t" "mov x0,%0\n"
+			"\t" "mov x1,%1\n"
+			"\t" "SVC 0xDEAD\n"
+			:: "r"(arg0), "r"(arg1): );
+#else
+	asm volatile (
+//			"ldr r0,  =0x12341234\n"
+//			"ldr r1,  =0x21212121\n"
+//			"ldr r2,  =0x22222222\n"
+			"SVC 0xDEAD\n"
+			);
+#endif
+
+#if __aarch64__
+//	__ASM volatile (
+//			"ldaxrb %w0, %1" :
+//			"=r" (result) : "Q" (*arg1) : "memory");
+//	return result;    /* Add explicit type cast here */
 
 #else
 
 #endif
+	return result;
 }
 
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
@@ -2105,8 +2129,17 @@ void local_delay_ms(int timeMS)
 {
 	if (timeMS == 0)
 		return;
-	unsigned nticks = NTICKS(timeMS);
-	task_sysfn(TASKFN_SUSPEND, & nticks);
+	if (tsaks_not_started)
+	{
+		const uint_fast32_t t0 = tasks_sys_now();
+		while ((uint32_t) (tasks_sys_now() - t0) < timeMS)
+			;
+	}
+	else
+	{
+		unsigned nticks = 333;//NTICKS(timeMS);
+		task_sysfn(TASKFN_SUSPEND, & nticks);
+	}
 }
 
 #else /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
