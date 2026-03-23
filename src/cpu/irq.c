@@ -1228,7 +1228,7 @@ HardFault_Handler(void)
 	//if ((SCB->HFSR & SCB_HFSR_FORCED_Msk) != 0)
 	//{
 	//}
-	//local_delay_ms(10);
+	//local_delay_us(10 * 1000)
 #endif /* WITHDEBUG */
 
 	for (;;)
@@ -1899,17 +1899,17 @@ void * task_create(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigne
 
 void * event_create(void)
 {
-
+	return NULL;
 }
 
 int event_wait(void * evt, unsigned ms)
 {
-
+	return 0;
 }
 
 int event_signal(void * evt)
 {
-
+	return 0;
 }
 
 void task_scheduler_initialize(void)
@@ -2161,12 +2161,12 @@ void * task_create(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigne
 }
 
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
-void * task_scheduler(void * oldframe)
+static void * task_scheduler(void * oldframe)
 {
 	return oldframe;
 }
 
-void * task_scheduler2(unsigned code, void * oldframe)
+static void * task_scheduler2(unsigned code, void * oldframe)
 {
 	return oldframe;
 }
@@ -2537,9 +2537,9 @@ void Undef_Handler(void)
 	for (;;)
 	{
 		BOARD_BLINK_SETSTATE(1);
-		local_delay_ms(250);
+		local_delay_us(250 * 1000);
 		BOARD_BLINK_SETSTATE(0);
-		local_delay_ms(1250);
+		local_delay_us(1250 * 1000);
 	}
 #else
 	for (;;)
@@ -2614,9 +2614,9 @@ void PAbort_Handler(void)
 	for (;;)
 	{
 		BOARD_BLINK_SETSTATE(1);
-		local_delay_ms(750);
+		local_delay_us(750 * 1000);
 		BOARD_BLINK_SETSTATE(0);
-		local_delay_ms(1250);
+		local_delay_us(1250 * 1000);
 	}
 #else
 	for (;;)
@@ -2684,9 +2684,9 @@ void DAbort_Handler(void)
 	for (;;)
 	{
 		BOARD_BLINK_SETSTATE(1);
-		local_delay_ms(1250);
+		local_delay_us(1250 * 1000);
 		BOARD_BLINK_SETSTATE(0);
-		local_delay_ms(1250);
+		local_delay_us(1250 * 1000);
 	}
 #else
 	for (;;)
@@ -3743,7 +3743,7 @@ void cpu_initialize(void)
 	(void) CPG.STBCR7;			/* Dummy read */
 	USB200.SYSCFG0 |= USB_SYSCFG_UCKSEL; // UCKSEL 1: The 12-MHz EXTAL clock is selected.
 	(void) USB200.SYSCFG0;			/* Dummy read */
-	local_delay_ms(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
+	llocal_delay_us(2 * 1000);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 	CPG.STBCR7 |= CPG_STBCR7_MSTP71;	// Module Stop 71 1: Channel 0 of the USB 2.0 host/function module halts.
 	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 71 1: Channel 0 of the USB 2.0 host/function module halts.
 
@@ -3751,7 +3751,7 @@ void cpu_initialize(void)
 	(void) CPG.STBCR7;			/* Dummy read */
 	USB201.SYSCFG0 |= USB_SYSCFG_UCKSEL; // UCKSEL 1: The 12-MHz EXTAL clock is selected.
 	(void) USB201.SYSCFG0;			/* Dummy read */
-	local_delay_ms(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
+	llocal_delay_us(2 * 1000);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 70 1: Channel 1 of the USB 2.0 host/function module halts.
 #endif
 

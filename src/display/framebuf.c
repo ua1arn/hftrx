@@ -476,7 +476,7 @@ static void awxx_g2d_top_set_rcq_head(void * addr, unsigned len)
 	//awxx_g2d_top_rcq_irq_en(1);
 	//G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
 	//G2D_TOP->RCQ_CTRL;
-	//local_delay_ms(50);
+
 	if (hwacc_rcq_waitdone() == 0)
 	{
 		//PRINTF("awxx_g2d_rcq_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);

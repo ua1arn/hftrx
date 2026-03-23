@@ -2278,7 +2278,7 @@ void set_a64_pll_cpux_axi(unsigned n, unsigned k, unsigned m, unsigned p)
 //	val = CCU->PLL_CPU_CTRL_REG;
 //	val &= ~(1 << 29);
 //	CCU->PLL_CPU_CTRL_REG = val;
-	//local_delay_ms(1);
+	//local_delay_us(1 * 1000);
 
 	/* Set and change cpu clk src */
 	val = CCU->CPUX_AXI_CFG_REG;
@@ -2290,7 +2290,7 @@ void set_a64_pll_cpux_axi(unsigned n, unsigned k, unsigned m, unsigned p)
 		0;
 	CCU->CPUX_AXI_CFG_REG = val;
 
-	//local_delay_ms(1);
+	//local_delay_us(1 * 1000);
 	//sys_uart_puts("set_pll_cpux_axi Ok \n");
 //	TP();
 //    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnr_a64_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
@@ -2339,7 +2339,7 @@ void allwnr_a64_module_pll_enable(volatile uint32_t * reg)
 		/* Wait pll stable */
 		while(!(* reg & (UINT32_C(1) << 28)))
 			;
-		//local_delay_ms(20);
+		//local_delay_us(20 * 1000);
 
 		/* Lock disable */
 //		val = * reg;
@@ -3056,7 +3056,7 @@ void allwnr_t507_module_pll_enable(volatile uint32_t * ctrlreg, unsigned N)
 		/* Wait pll stable */
 		while(! (* ctrlreg & (UINT32_C(1) << 28)))	// LOCK
 			;
-		//local_delay_ms(20);
+		//local_delay_us(20 * 1000);
 
 		/* Lock disable */
 //		val = * ctrlreg;
@@ -5016,18 +5016,18 @@ static void a733_set_pll_cpux_axi(void)
 static void a733_ccu_pll_enable(volatile uint32_t * reg)
 {
 	* reg |= (UINT32_C(1) << 30);	// PLL_LDO_EN
-	local_delay_ms(1);
+	local_delay_us(1 * 1000);
 	* reg |= (UINT32_C(1) << 27);	// PLL_OUTPUT0_GATE
 	* reg |= (UINT32_C(1) << 26);	// PLL_OUTPUT1_GATE
 	* reg |= (UINT32_C(1) << 25);	// PLL_OUTPUT2_GATE
 
 	* reg |= (UINT32_C(1) << 31);	// PLL_EN
-	local_delay_ms(1);
+	local_delay_us(1 * 1000);
 	* reg |= (UINT32_C(1) << 29);	// LOCK_ENABLE
 	while ((* reg & (UINT32_C(1) << 28)) == 0)	// LOCK
 		;
 //	* reg |= (UINT32_C(1) << 24);	// ???
-	local_delay_ms(20);
+	local_delay_us(20 * 1000);
 }
 
 void sysinit_pll_initialize(int forced)
@@ -5160,7 +5160,7 @@ sysinit_pll_initialize(int forced)
 	CCU->PSI_AHB1_AHB2_CFG_REG = 0;
 
 	CCU->MBUS_CFG_REG = 0x80000000;
-	local_delay_ms(1);
+	local_delay_us(1 * 1000);
 	CCU->MBUS_CFG_REG = 0xC0000000;
 
 	PRCM->CPUS_CFG_REG = 0;
@@ -5182,7 +5182,7 @@ static void t113_set_pll_cpu(unsigned N)
 	CCU->PLL_CPU_CTRL_REG = 0x4A001000;
 #endif
 	(void) CCU->PLL_CPU_CTRL_REG;
-	local_delay_ms(10);
+	local_delay_us(10 * 1000);
 
 	/* Set default clk to 1008mhz */
 	val = CCU->PLL_CPU_CTRL_REG;
@@ -5203,7 +5203,7 @@ static void t113_set_pll_cpu(unsigned N)
 	(void) CCU->PLL_CPU_CTRL_REG;
 
 	/* Wait pll stable */
-	//local_delay_ms(100);
+	//local_delay_us(100 * 1000)
 	while((CCU->PLL_CPU_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 		;
 
@@ -11990,7 +11990,7 @@ void hardware_adc_initialize(void)
 		adc->CR |= ADC_CR_ADVREGEN;		// Enable ADC regulator
 
 	}
-	local_delay_ms(5); // Wait for regulator is on
+	local_delay_us(5 * 1000); // Wait for regulator is on
 
 	// Initialize ADCs
 	for (i = 0; i < board_get_adcinputs(); ++ i)

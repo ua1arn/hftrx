@@ -33,9 +33,9 @@ void blinkloop(void)
 		for (;;)
 		{
 			BOARD_BLINK_SETSTATE(1);
-			local_delay_ms(100);
+			local_delay_us(100 * 1000);
 			BOARD_BLINK_SETSTATE(0);
-			local_delay_ms(100);
+			local_delay_us(100 * 1000);
 		}
 	}
 #endif
@@ -2612,9 +2612,9 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 		for (;;)
 		{
 			arm_hardware_pioc_outputs(mask, 1 * mask);
-			local_delay_ms(200);
+			local_delay_us(200 * 1000);
 			arm_hardware_pioc_outputs(mask, 0 * mask);
-			local_delay_ms(200);
+			local_delay_us(200 * 1000);
 		}
 	}
 #endif /* CPUSTYLE_VM14 */
@@ -2769,7 +2769,7 @@ void cpu_initdone(void)
 		SPIBSC0.DRCR |= (UINT32_C(1) << SPIBSC_DRCR_RCF_SHIFT);	// RCF bit
 		(void) SPIBSC0.DRCR;		/* Dummy read */
 
-		local_delay_ms(50);
+		local_delay_us(50 * 1000);
 
 		SPIBSC0.SMCR = 0;
 		(void) SPIBSC0.SMCR;	/* Dummy read */
