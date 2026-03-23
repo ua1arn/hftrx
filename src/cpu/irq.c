@@ -1848,7 +1848,8 @@ static int task_idle(void * ctx)
 {
 	for (;;)
 	{
-		__WFI();
+		task_sysfn(0, NULL);
+		//__WFI();
 	}
 	return 0;
 }
@@ -1916,13 +1917,8 @@ void task_scheduler_initialize(void)
 	{
 		task_item_t * const task = & idle_tasks [i];
 		//
-		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
+		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_USER);
 	}
-	// тестовые задачи для ядра0
-//	task_addtask(& task30, 1u << 0, task1, (void *) 0xDEADBEEF, TASKRAM_SIZE, IRQL_USER);
-//	task_addtask(& task31, 1u << 1, task1, (void *) 0x111111, TASKRAM_SIZE, IRQL_USER);
-//	task_addtask(& task32, 1u << 2, task1, (void *) 0x222222, TASKRAM_SIZE, IRQL_USER);
-//	task_addtask(& task33, 1u << 3, task1, (void *) 0x333333, TASKRAM_SIZE, IRQL_USER);
 }
 
 void task_ticker(void)
@@ -1962,6 +1958,7 @@ void task_yield(void)
 {
 	__WFI();	// пока так
 	__SEV();
+	task_sysfn(0, NULL);
 }
 
 // получить готовую у выполнению задачу
@@ -1970,23 +1967,25 @@ task_item_t * task_getready(unsigned affinity, task_item_t * taskin)
 	ASSERT(taskin);
 	ASSERT(affinity);
 	task_item_t * taskout = taskin;
-	const unsigned prio = GICI_DECODE_IRQL(taskin->irql);
+	unsigned prio = GICI_DECODE_IRQL(taskin->irql);
 	ASSERT(ARRAY_SIZE(tasks_list) > prio);
-
-	PRLIST_ENTRY list = & tasks_list [prio];
 	// Возвращаем в список задач
 	InsertTailList(& tasks_list [prio], & taskin->item);
-	// ищем с большим или текущим IRQL
-	PRLIST_ENTRY t;
-	PRLIST_ENTRY tnext;
-	for (t = list->Flink; t != list; t = tnext)
+
+	for (prio = 0; prio < PRIOv_count; ++ prio)
 	{
-		tnext = t->Flink;
-		task_item_t * const tp = CONTAINING_RECORD(t, task_item_t, item);
-		if (tp->affinity & affinity && task_isready(tp))
+		PRLIST_ENTRY const list = & tasks_list [prio];
+		PRLIST_ENTRY t;
+		PRLIST_ENTRY tnext;
+		for (t = list->Flink; t != list; t = tnext)
 		{
-			taskout = tp;
-			break;
+			tnext = t->Flink;
+			task_item_t * const tp = CONTAINING_RECORD(t, task_item_t, item);
+			if ((tp->affinity & affinity) && task_isready(tp))
+			{
+				taskout = tp;
+				break;
+			}
 		}
 	}
 	RemoveEntryList(& taskout->item);
@@ -2078,28 +2077,13 @@ int task_sysfn(unsigned arg0, volatile void * arg1)
 static void *
 task_scheduler0(void * oldframe, unsigned flag, unsigned code)
 {
-//	printhex32((uintptr_t) oldframe, oldframe, CPUCTX_SIZE);
-//	for (;;)
-//		;
-//	exception_frame_t * const f = (exception_frame_t *) oldframe;
-//	PRINTF("vfpstate [0, 1] = 0x%016lX 0x%016lX \n", f->vfpstate [0], f->vfpstate [1]);
-//	for (;;)
-//			;
-//	static unsigned cpunter;
-//	if (arm_hardware_cpuid() == 1 && cpunter ++ == 0xFF)
-//	{
-//		printhex64((uintptr_t) oldframe, oldframe, CPUCTX_SIZE);
-//		for (;;)
-//			;
-//	}
-//	task_construct(oldframe, testtaskfn, NULL);
-//	return oldframe;
 	const unsigned core = arm_hardware_cpuid();
 	if (startedtask [core] == NULL)
 	{
 		task_item_t * const task = & base_tasks [core];
 		task->guard = task;
 		task->allocated = NULL;
+		task->suspend = 0;
 		//
 		// получаем состояние процесора при первом перрывании
 		task->affinity = 1U << core;
@@ -2139,7 +2123,6 @@ void local_delay_ms(int timeMS)
 	else
 	{
 		volatile unsigned v = NTICKS(timeMS);
-		//PRINTF("test2: %p\n", & v);
 		task_sysfn(TASKFN_SUSPEND, & v);
 	}
 }

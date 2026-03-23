@@ -638,7 +638,7 @@ void task_ticker(void);
 void __NO_RETURN task_scheduler_othercores(void);
 void * task_scheduler(void * oldframe);	/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 void * task_scheduler2(unsigned code, void * oldframe);	/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
-int task_sysfn(unsigned arg0, void * arg1);	// user-mode entry
+int task_sysfn(unsigned arg0, volatile void * arg1);	// user-mode entry
 
 void IRQ_Handler_GIC(void);
 void FIQ_Handler_GIC(void);
