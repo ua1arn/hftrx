@@ -1718,7 +1718,7 @@ void IRQ15_Handler(void)
 
 #define TASKRAM_SIZE (1024 * 1024)
 
-#if CPUSTYLE_ARM && defined(__aarch64__)
+#if defined(__aarch64__)
 
 typedef struct exception_frame_tag
 {
@@ -2032,17 +2032,34 @@ enum
 	TASKFN_count
 };
 
+struct taskfnparam_nop
+{
+	int dummy;
+};
+
+struct taskfnparam_suspend
+{
+	unsigned niicks;
+};
+
 static int task_handler(task_item_t * task, unsigned arg0, void * arg1)
 {
 	switch (arg0)
 	{
 	default:
+		break;
 	case TASKFN_NOP:
-		return 0;
+		{
+			struct taskfnparam_nop * const param = (struct taskfnparam_nop *) arg1;
+			return 0;
+		}
 
 	case TASKFN_SUSPEND:
-		task->suspend = * (unsigned *) arg1;
-		return 0;
+		{
+			struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
+			task->suspend = param->niicks;
+			return 0;
+		}
 	}
 	return 0;
 }
@@ -2147,7 +2164,8 @@ void local_delay_ms(int timeMS)
 	}
 	else
 	{
-		unsigned v = NTICKS(timeMS);
+		struct taskfnparam_suspend v;
+		v.niicks = NTICKS(timeMS);
 		task_sysfn(TASKFN_SUSPEND, & v);
 	}
 }
