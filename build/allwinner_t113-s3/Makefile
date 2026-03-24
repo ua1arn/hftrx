@@ -63,7 +63,7 @@ CORE = -mcpu=cortex-a7 --specs=nosys.specs -mfloat-abi=hard -mfpu=neon-vfpv4
 CORE += -mlong-calls
 
 # Define optimisation level here
-#OPT = -Og
+#OPT = -Os -flto
 #OPT = -Ofast -flto -save-temps
 OPT = -Ofast -flto
 #OPT = -Ofast
@@ -252,14 +252,16 @@ allZ:
 bootloader: BOOT2 fsbl.bt0
 
 # Take from tc1_t113s3_boot.map
-SystemExecAARCH64 = 0x000291a4
-SystemDRAMInit = 0x0002ce24
+-include ./bootparam.mak
+#SystemDRAMInit = 0x0007809c
+#SystemExecAARCH64 = 0x0007500c
+DDRINITBLOB=fsbl_frz_s4.alw32
 
 DDR_INIT=ddr_init_s4
 
 # Load image and exec to SystemInit address
 ddr_init_s4:
-	$(XFEL) write 0x00028000 fsbl_frz_s4.alw32
+	$(XFEL) write 0x00028000 $(DDRINITBLOB)
 	$(XFEL) exec $(SystemDRAMInit) 
 	$(BUSYBOX) sleep 2s
 
@@ -299,6 +301,10 @@ APP2: $(PROJECT)_app.elf $(PROJECT)_app.bin
 fsbl.bt0: $(PROJECT)_boot.bin
 	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
 	./egontool -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
+	
+lib: bootloader
+	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort >bootparam.mak
+	$(BUSYBOX) cp fsbl.bt0 $(DDRINITBLOB)
 	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin
 	./stm32image -v 0 -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
