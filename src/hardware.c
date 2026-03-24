@@ -2085,9 +2085,7 @@ void aarch64_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	aarch32_mp_cpuN_start((uintptr_t) trampoline32, core);
 }
 
-#endif
-
-#if ! defined(__aarch64__) && defined (__CORTEX_A) && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
+#if ! defined(__aarch64__)
 
 void __NO_RETURN
 run64(uint_fast64_t startfunc)
@@ -2131,7 +2129,10 @@ run64(uint_fast64_t startfunc)
 		__WFE();
 	}
 }
-#endif
+
+#endif /* ! defined(__aarch64__) */
+
+#endif /* (__CORTEX_A == 53U) || (__CORTEX_A == 55U) */
 
 #if CPUSTYLE_STM32MP1
 
