@@ -222,7 +222,7 @@ bootloader_launch_app(uintptr_t startfunc, uint_fast8_t x64bit)
 		}
 	}
 
-#elif defined (__CORTEX_A) && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && (! defined(__aarch64__))
+#elif ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && (! defined(__aarch64__))
 
 	if (x64bit)
 	{

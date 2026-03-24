@@ -1814,7 +1814,7 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 	f->r0 = (uintptr_t) arg;
 }
 
-#elif __CORTEX_A
+#elif __CORTEX_A != 0
 	#error unsupported CPU
 
 #elif __riscv
@@ -2313,6 +2313,9 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif __CORTEX_A == 53
 	// калибровано для Cortex-A53 процессора
 	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
+#elif __CORTEX_A == 55
+	// калибровано для Cortex-A53 процессора
+	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_T113
 	// калибровано для 1200 МГц Cortex-A7 процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
@@ -2505,7 +2508,7 @@ void SError_Handler(void * frame)
 	}
 }
 
-#elif defined(__CORTEX_A) && ! defined(__aarch64__) && ! defined(__riscv) && ! LINUX_SUBSYSTEM
+#elif (__CORTEX_A != 0) && ! defined(__aarch64__) && ! defined(__riscv) && ! LINUX_SUBSYSTEM
 
 //	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
 //	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
@@ -2572,7 +2575,7 @@ void Undef_Handler(void)
 #endif /* defined (BOARD_BLINK_INITIALIZE) */
 }
 
-#if defined __CORTEX_A && ! defined __riscv
+#if (__CORTEX_A != 0) && ! defined __riscv
 
 
 void __NO_RETURN SWI_Handler_aarch32(void * frame)

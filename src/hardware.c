@@ -2039,7 +2039,7 @@ static void cortexa_cpuinfo(void)
 }
 
 
-#if defined (__CORTEX_A) && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
+#if (__CORTEX_A == 53U) || (__CORTEX_A == 55U)
 
 // see also __set_RVBAR_EL3(startfunc);
 static void arm_hardware_setrvaddr(uint_fast64_t startfunc, unsigned core)
@@ -2640,7 +2640,7 @@ int arm_hardware_aarch32implemented(void)
 {
 #if CPUSTYLE_A733
 	return arm_hardware_cpuid() < 6;
-#elif defined (__CORTEX_A)
+#elif (__CORTEX_A != 0)
 	return 1;
 #else /* CPUSTYLE_A733 */
 	return 0;
