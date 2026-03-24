@@ -2068,14 +2068,7 @@ static void usb_dev_bulk_xfer_msc_initialize(pusb_struct pusb)
 
 #endif /* WITHUSBDMSC */
 
-#if WITHUSBCDCACM && WITHWAWXXUSB
 
-
-
-// Control signal bitmap values for the SetControlLineState request
-// (usbcdc11.pdf, 6.2.14, Table 51)
-#define CDC_DTE_PRESENT                         (1 << 0)
-#define CDC_ACTIVATE_CARRIER                    (1 << 1)
 
 enum
 {
@@ -2090,6 +2083,14 @@ enum
 	//
 	dmapipes_count
 };
+
+#if WITHUSBCDCACM && WITHWAWXXUSB
+
+// Control signal bitmap values for the SetControlLineState request
+// (usbcdc11.pdf, 6.2.14, Table 51)
+#define CDC_DTE_PRESENT                         (1 << 0)
+#define CDC_ACTIVATE_CARRIER                    (1 << 1)
+
 #define CDC_PIPEINDMA(offset) (cdc_pipeindma0 + (offset))
 #define CDC_PIPEOUTDMA(offset) (cdc_pipeoutdma0 + (offset))
 #define CDC_PIPEINTDMA(offset) (cdc_pipeintdma0 + (offset))
