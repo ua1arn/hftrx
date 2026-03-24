@@ -1835,7 +1835,7 @@ __STATIC_INLINE uint64_t __get_CurrentEL(void)
 }
 
 // todo: add __DUP_PRESENT in CMSIS header
-#if (__CORTEX_A == 55U) && __aarch64__
+#if (__ARM_ARCH == 8)
 
 __STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL1(void)
 {
@@ -1957,7 +1957,7 @@ __STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRDN_EL1(void)
 	return result;
 }
 
-#endif /* (__CORTEX_A == 55U) */
+#endif /* (__ARM_ARCH == 8) */
 
 
 /* ##########################  L1 Cache functions  ################################# */
