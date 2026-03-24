@@ -947,7 +947,7 @@ void local_delay_initialize(void);
 	#include <src/linux/linux_subsystem.h>
 #endif /* LINUX_SUBSYSTEM */
 
-#if ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && ! defined(__aarch64__)
+#if (__ARM_ARCH == 8) && ! defined(__aarch64__)
 
 // DDI0500J_cortex_a53_r0p4_trm.pdf
 
@@ -970,9 +970,7 @@ __STATIC_FORCEINLINE void __set_CPUACTLR(uint64_t cpuactlr)
 {
 	__set_CP64(15, 0, cpuactlr, 15);
 }
-#endif /* ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && ! defined(__aarch64__) */
 
-#if (__CORTEX_A == 53U) && ! defined(__aarch64__)
 // 4.5.77 CPU Extended Control Register
 
 /** \brief  Get CPUECTLR
@@ -993,10 +991,6 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
 {
 	__set_CP64(15, 1, cpuectlr, 15);
 }
-
-#endif /* (__CORTEX_A == 53U) */
-
-#if (__CORTEX_A == 55U) && !__aarch64__
 
 // ICC_CTLR_EL3 and ICC_CTLR
 __STATIC_INLINE uint64_t __get_ICC_CTLR_EL3(void)
@@ -1043,7 +1037,7 @@ __STATIC_INLINE void __set_ICC_CTLR_EL1(uint32_t value)
 //}
 
 
-#endif /* (__CORTEX_A == 55U) && !__aarch64__ */
+#endif /* (__ARM_ARCH == 8) && ! defined(__aarch64__) */
 
 #include "utils.h"
 // Substitutions for t507 ddr ram init

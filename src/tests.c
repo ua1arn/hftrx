@@ -2827,7 +2827,7 @@ void testpng_no_stretch(const void * pngbuffer, int useKeyColor)
 
 #endif
 
-#if ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) && (! defined(__aarch64__))
+#if (__ARM_ARCH == 8) && (! defined(__aarch64__))
 
 // 4.5.80 Configuration Base Address Register
 /** \brief  Get CBAR
@@ -2850,7 +2850,7 @@ uint32_t __get_MIDR(void)
   return(result);
 }
 
-#endif /* ((__CORTEX_A == 53U) || (__CORTEX_A == 55U)) */
+#endif /* (__ARM_ARCH == 8) */
 
 //uint32_t __get_CA53_CBAR64(void)
 //{
@@ -9101,7 +9101,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
+#if 0 && (__ARM_ARCH == 8)
 	{
 		// H9.2.46 MIDR_EL1, Main ID Register
 	#if defined(__aarch64__)
@@ -9115,7 +9115,7 @@ void hightests(void)
 		PRINTF("midr=0x%08X (partNum=0x%03X (%u)\n", midr, partNum, partNum);
 	}
 #endif
-#if 0 && ((__CORTEX_A == 53U) || (__CORTEX_A == 55U))
+#if 0 && (__ARM_ARCH == 8)
 	{
 #if defined(__aarch64__)
 		const uint_fast32_t ca53_cbar = __get_CA53_CBAR64();

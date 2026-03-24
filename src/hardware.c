@@ -2039,7 +2039,7 @@ static void cortexa_cpuinfo(void)
 }
 
 
-#if (__CORTEX_A == 53U) || (__CORTEX_A == 55U)
+#if (__ARM_ARCH == 8)
 
 // see also __set_RVBAR_EL3(startfunc);
 static void arm_hardware_setrvaddr(uint_fast64_t startfunc, unsigned core)
@@ -2132,7 +2132,7 @@ run64(uint_fast64_t startfunc)
 
 #endif /* ! defined(__aarch64__) */
 
-#endif /* (__CORTEX_A == 53U) || (__CORTEX_A == 55U) */
+#endif /* (__ARM_ARCH == 8) */
 
 #if CPUSTYLE_STM32MP1
 

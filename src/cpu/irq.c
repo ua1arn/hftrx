@@ -3131,7 +3131,7 @@ uint_fast8_t arm_hardware_cpuid(void)
 	// Cortex-A53 computers
 	return __get_MPIDR_EL1() & 0xFF;	// Aff0
 
-#elif ((__CORTEX_A == 55U) || (__CORTEX_A == 53U))
+#elif (__ARM_ARCH == 8)
 	// Cortex-A computers
 
 	return __get_MPIDR() & 0xFF;
