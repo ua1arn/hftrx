@@ -2045,15 +2045,17 @@ static void cortexa_cpuinfo(void)
 static void arm_hardware_setrvaddr(uint_fast64_t startfunc, unsigned core)
 {
 #if CPUSTYLE_A64
+	CPUX_CFG->C_CTRL_REG0 |= UINT32_C(1) << (24 + core);	// AA64nAA32 - не помогает обойтись без trampoline32
 	CPUX_CFG->RVBARADDR [core].LOW = ptr_lo32(startfunc);
 	CPUX_CFG->RVBARADDR [core].HIGH = ptr_hi32(startfunc);
 #elif CPUSTYLE_H616
+	C0_CPUX_CFG_H616->C0_CTRL_REG0 |= UINT32_C(1) << (24 + core);	// AA64nAA32 - This pin is sampled only during reset of the processor
 	C0_CPUX_CFG_H616->RVBARADDR [core].LOW = ptr_lo32(startfunc);
 	C0_CPUX_CFG_H616->RVBARADDR [core].HIGH = ptr_hi32(startfunc);
-#elif CPUSTYLE_T507
-	CPU_SUBSYS_CTRL->RVBARADDR [core].LOW = ptr_lo32(startfunc);
-	CPU_SUBSYS_CTRL->RVBARADDR [core].HIGH = ptr_hi32(startfunc);
-#elif CPUSTYLE_A133
+#elif CPUSTYLE_T507 || CPUSTYLE_A133
+	// AA64nAA32 - не помогает обойтись без trampoline32
+	C0_CPUX_CFG->C0_CTRL_REG0 |= UINT32_C(1) << (24 + core);	// AA64nAA32 - This pin is sampled only during reset of the processor
+	CPU_SUBSYS_CTRL->CPUx_CTRL_REG [core] |= UINT32_C(1) << 0;	// AA64nAA32 - This pin is sampled only during reset of the processor.
 	CPU_SUBSYS_CTRL->RVBARADDR [core].LOW = ptr_lo32(startfunc);
 	CPU_SUBSYS_CTRL->RVBARADDR [core].HIGH = ptr_hi32(startfunc);
 #elif CPUSTYLE_A733
@@ -2166,7 +2168,7 @@ run64(uint_fast64_t startfunc)
 
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 {
-	ASSERT(startfunc != 0);
+	//ASSERT(startfunc != 0);
 	ASSERT(core != 0);
 
 	PWR->CR1 |= PWR_CR1_DBP;	// 1: Write access to RTC and backup domain registers enabled.
@@ -2212,7 +2214,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 {
-	ASSERT(startfunc != 0);
+	//ASSERT(startfunc != 0);
 	ASSERT(core != 0);
 
 	* (volatile uint32_t *) 0xFFFFFFF0 = startfunc;	// Invoke at SVC context
@@ -2235,7 +2237,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << (0 + core);
 
-	ASSERT(startfunc != 0);
+//	//ASSERT(startfunc != 0);
 	ASSERT(core != 0);
 
 	CPUX_CFG->C_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
@@ -2264,7 +2266,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
 	const uint32_t CORE_RESET_MASK = UINT32_C(3) << (0);
 
-	ASSERT(startfunc != 0);
+	//ASSERT(startfunc != 0);
 	ASSERT(core != 0);
 
 	CPUCFG->CPU [core].CPU_RST_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
@@ -2404,7 +2406,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	// A733 не требует использования 32 bit trampoline
 	const uint32_t CORE_RESET_MASK = UINT32_C(1) << 0;	// CPUX_CORE_RESET
 	volatile uint32_t * const rvaddr = core < 4 ? & R_CPUCFG->SOFTENTRY0_3 [core] : & R_CPUCFG->SOFTENTRY4_7 [core - 4];
-	ASSERT(startfunc != 0);
+	//ASSERT(startfunc != 0);
 	ASSERT(core != 0);
 	CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET 0: assert
 	CPU_SUBSYS_CTRL->CLU0 [core].CPU_CTRL_REG &= ~ (UINT32_C(1) << 0); // Register width state AA64NAA32 0: AArch32 1: AArch64
@@ -2442,7 +2444,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 //	C0_CPUX_CFG_H616->C0_CTRL_REG0 &= ~ (UINT32_C(1) << (core + 24)); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
 //	C0_CPUX_CFG_H616->C0_CTRL_REG0 |= (UINT32_C(1) << (core + 24)); // 20, 24... AA64NAA32 0: AArch32 1: AArch64
 
-	ASSERT(startfunc != 0);
+	//ASSERT(startfunc != 0);
 	ASSERT(core != 0);
 
 	C0_CPUX_CFG_H616->C0_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
@@ -2470,7 +2472,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	const uint32_t C0_CORE_PWRON_MASK = UINT32_C(1) << 8;	// CPU1_DBGPWRDUP
 	//volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1C4 + core * 4));
 
-	ASSERT(startfunc != 0);
+	//ASSERT(startfunc != 0);
 	ASSERT(core != 0);
 
 	C0_CPUX_CFG->C0_CPUx_CTRL_REG [core] &= ~ C0_CORE_RESET_MASK;	// CORE_RESET (3..0) 0: assert
@@ -2543,7 +2545,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 
 void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 {
-	ASSERT(startfunc != 0);
+	//ASSERT(startfunc != 0);
 	ASSERT(core != 0);
 
     const uint32_t psmask = 0x03u << (core * 8);	/* SCU_PWR mask */
