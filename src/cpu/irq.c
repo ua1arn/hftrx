@@ -1867,8 +1867,6 @@ static task_item_t idle_tasks [HARDWARE_NCORES];
 static task_item_t base_tasks [HARDWARE_NCORES];	// состояения получаем при первом прерывании
 static task_item_t * startedtask [HARDWARE_NCORES];
 
-static task_item_t task30, task31, task32, task33;
-
 static void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql)
 {
 	const unsigned prio = GICI_DECODE_IRQL(irql);
