@@ -740,7 +740,256 @@ void r7s721_intc_initialize(void)
 
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
+
 #if defined (__CORTEX_M)
+
+/*----------------------------------------------------------------------------
+ *        Exported variables
+ *----------------------------------------------------------------------------*/
+
+/* Initialize segments */
+void Default_Handler(void)
+{
+	PRINTF(PSTR("Default_Handler trapped, ICSR=%08X (IRQn=%u).\n"), (unsigned) SCB->ICSR, (unsigned) ((SCB->ICSR & 0xFF) - 16));
+	for (;;)
+		;
+}
+////////////////////////////
+
+#if WITHDEBUG && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3)
+
+//Эта функция извлекает из стека регистры сохраненные при возникновении исключения.
+static void
+__attribute__((used))
+prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
+{
+// Эти переменные объявлены как volatile для предотвращения оптимизации компилятором/линкером, так как компилятор
+//предположит, что пременные никогда не используются и может устранить их из кода. Если отладчик не показывает
+//значения этих переменных, тогда нужно сделать их глобальными, выснеся их определения за пределы этой фукнкции.
+volatile uint32_t r0;
+volatile uint32_t r1;
+volatile uint32_t r2;
+volatile uint32_t r3;
+volatile uint32_t r12;
+volatile uint32_t lr; // Регистры связи.
+volatile uint32_t pc; // Программный счетчик.
+volatile uint32_t psr;// Регистр статуса программы.
+
+    r0 = pulFaultStackAddress [0];
+    r1 = pulFaultStackAddress [1];
+    r2 = pulFaultStackAddress [2];
+    r3 = pulFaultStackAddress [3];
+
+    r12 = pulFaultStackAddress [4];
+    lr = pulFaultStackAddress [5];
+    pc = pulFaultStackAddress [6];
+    psr = pulFaultStackAddress [7];
+
+
+	PRINTF(PSTR("HardFault_Handler trapped.\n"));
+ 	PRINTF(PSTR(" CPUID=%08lx\n"), SCB->CPUID);
+	PRINTF(PSTR(" HFSR=%08lx\n"), SCB->HFSR);
+	PRINTF(PSTR(" CFSR=%08lx\n"), SCB->CFSR);
+	PRINTF(PSTR(" BFAR=%08lx\n"), SCB->BFAR);
+
+	PRINTF(PSTR(" R0=%08lx\n"), r0);
+	PRINTF(PSTR(" R1=%08lx\n"), r1);
+	PRINTF(PSTR(" R2=%08lx\n"), r2);
+	PRINTF(PSTR(" R3=%08lx\n"), r3);
+
+	PRINTF(PSTR(" R12=%08lx\n"), r12);
+	PRINTF(PSTR(" LR=%08lx\n"), lr);
+	PRINTF(PSTR(" PC=%08lx\n"), pc);
+	PRINTF(PSTR(" PSR=%08lx\n"), psr);
+
+    // Когда мы добрались до этой строки, то в переменных содержатся значения регистров.
+    for( ;; )
+		;
+}
+
+static const void * volatile const ph =  prvGetRegistersFromStack;	// 'used' ignored...
+
+
+#endif /* WITHDEBUG && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3) */
+
+
+///////////////////////////
+//
+// taken from: http://forum.easyelectronics.ru/viewtopic.php?p=396176#p396176
+
+/*=================================================================================================================================
+*  Обработчик HardFault исключений. В нем вызывается функция prvGetRegistersFromStack(), которая сохраняет в переменных, значения
+* регистров программы, в момент возникновения исключения и входит в бесконечный цикл. Таким образом, можно по значениям переменных
+* узнать причину возникновения исключения.
+=================================================================================================================================*/
+
+
+void
+HardFault_Handler(void)
+{
+#if WITHDEBUG
+#if 0 && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3)
+
+   __asm volatile
+   (
+        " tst lr, #4                                                \n"
+        " ite eq                                                    \n"
+        " mrseq r0, msp                                             \n"
+        " mrsne r0, psp                                             \n"
+        " ldr r1, [r0, #24]                                         \n"
+        " ldr r2, handler2_address_const                            \n"
+        " bx r2                                                     \n"
+        " handler2_address_const: .word prvGetRegistersFromStack    \n"
+    );
+
+#elif CPUSTYLE_ARM_CM0
+
+	PRINTF(PSTR("HardFault_Handler trapped.\n"));
+	PRINTF(PSTR(" CPUID=%08lx\n"), SCB->CPUID);
+
+#else
+
+//	dbg_putchar('S');	// "SK"
+//	dbg_putchar('K');
+	PRINTF(PSTR("HardFault_Handler trapped.\n"));
+	PRINTF(PSTR(" HFSR=%08lx\n"), SCB->HFSR);
+	// 0x02000000 - DIVZERO
+	// 0x01000000 - unaligned
+	PRINTF(PSTR(" CFSR=%08lx %c %c\n"), SCB->CFSR, (SCB->CFSR & 0x02000000) != 0 ? 'Z' : ' ', (SCB->CFSR & 0x01000000) != 0 ? 'U' : ' ');
+	PRINTF(PSTR(" BFAR=%08lx\n"), SCB->BFAR);
+
+#endif
+	//PRINTF(PSTR("HardFault_Handler trapped. HFSR=%08lx\n"), SCB->HFSR);
+	//PRINTF(PSTR("HardFault_Handler trapped"));
+	//return;
+	//if ((SCB->HFSR & SCB_HFSR_FORCED_Msk) != 0)
+	//{
+	//}
+	//local_delay_us(10 * 1000)
+#endif /* WITHDEBUG */
+
+	for (;;)
+		; // WDT->WDT_CR = WDT_CR_WDRSTT | WDT_CR_KEY(0xA5);
+
+}
+
+void
+NMI_Handler(void)
+{
+	PRINTF(PSTR("NMI_Handler trapped\n"));
+	for (;;)
+		; // WDT->WDT_CR = WDT_CR_WDRSTT | WDT_CR_KEY(0xA5);
+}
+
+void
+MemManage_Handler(void)
+{
+	PRINTF(PSTR("MemManage_Handler trapped\n"));
+	for (;;)
+		;
+}
+
+void
+BusFault_Handler(void)
+{
+	PRINTF(PSTR("BusFault_Handler trapped\n"));
+	for (;;)
+		;
+}
+
+void
+UsageFault_Handler(void)
+{
+	PRINTF(PSTR("UsageFault_Handler trapped\n"));
+	for (;;)
+		;
+}
+
+void
+SVC_Handler(void)
+{
+	PRINTF(PSTR("SVC_Handler trapped\n"));
+	for (;;)
+		;
+}
+
+void
+DebugMon_Handler(void)
+{
+	PRINTF(PSTR("DebugMon_Handler trapped\n"));
+	for (;;)
+		;
+}
+
+void
+PendSV_Handler(void)
+{
+	PRINTF(PSTR("PendSV_Handler trapped\n"));
+	for (;;)
+		;
+}
+
+typedef void (* IntFunc)(void);
+
+extern unsigned long __stack;
+
+/**
+ * \brief This is the code that gets called on processor reset.
+ * To initialize the device, and call the main() routine.
+ */
+
+void Reset_Handler(void)
+{
+	  SystemInit();                             /* CMSIS System Initialization */
+	  __PROGRAM_START();                        /* Enter PreMain (C library entry point) */
+}
+/*------------------------------------------------------------------------------
+ *         Exception Table
+ *------------------------------------------------------------------------------*/
+
+
+const IntFunc __VECTOR_TABLE [NVIC_USER_IRQ_OFFSET] __VECTOR_TABLE_ATTRIBUTE = {
+
+    /* Configure Initial Stack Pointer, using linker-generated symbols */
+    (IntFunc)(& __stack),
+    Reset_Handler,
+    NMI_Handler,
+    HardFault_Handler,
+    MemManage_Handler,
+    BusFault_Handler,
+    UsageFault_Handler,
+    NULL,         /* Reserved */
+	NULL,         /* Reserved */
+	NULL,         /* Reserved */
+	NULL,         /* Reserved */
+    SVC_Handler,
+    DebugMon_Handler,
+	NULL,                  /* Reserved  */
+    PendSV_Handler,		/* -2 */
+    SysTick_Handler,	/* -1 */
+};
+
+// Таблица находится в области вне Data Cache
+// Отладочная печать тут еще недопустима.
+static VTRATTR volatile IntFunc ramVectors [256];
+
+static void vectors_relocate(void)
+{
+	unsigned i;
+
+	//PRINTF(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
+	memcpy((void *) ramVectors, __VECTOR_TABLE, NVIC_USER_IRQ_OFFSET * 4);
+	for (i = NVIC_USER_IRQ_OFFSET; i < (sizeof ramVectors / sizeof ramVectors [0]); ++ i)
+	{
+		ramVectors [i] = Default_Handler;
+	}
+	SCB->VTOR = (uint32_t) & ramVectors;
+
+	// Отладочная печать тут еще недопустима.
+	//PRINTF(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
+	//ASSERT(memcmp((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4) == 0);
+	//ASSERT(SCB->VTOR == (uint32_t) & ramVectors);
+}
 
 uint32_t gARM_OVERREALTIME_PRIORITY;
 uint32_t gARM_REALTIME_PRIORITY;
@@ -1103,257 +1352,6 @@ void FIQ_Handler_GIC(void)
 
 
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
-
-#if defined (__CORTEX_M)
-
-/*----------------------------------------------------------------------------
- *        Exported variables
- *----------------------------------------------------------------------------*/
-
-/* Initialize segments */
-void Default_Handler(void)
-{
-	PRINTF(PSTR("Default_Handler trapped, ICSR=%08X (IRQn=%u).\n"), (unsigned) SCB->ICSR, (unsigned) ((SCB->ICSR & 0xFF) - 16));
-	for (;;)
-		;
-}
-////////////////////////////
-
-#if WITHDEBUG && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3)
-
-//Эта функция извлекает из стека регистры сохраненные при возникновении исключения.
-static void
-__attribute__((used))
-prvGetRegistersFromStack( uint32_t *pulFaultStackAddress )
-{
-// Эти переменные объявлены как volatile для предотвращения оптимизации компилятором/линкером, так как компилятор
-//предположит, что пременные никогда не используются и может устранить их из кода. Если отладчик не показывает
-//значения этих переменных, тогда нужно сделать их глобальными, выснеся их определения за пределы этой фукнкции.
-volatile uint32_t r0;
-volatile uint32_t r1;
-volatile uint32_t r2;
-volatile uint32_t r3;
-volatile uint32_t r12;
-volatile uint32_t lr; // Регистры связи.
-volatile uint32_t pc; // Программный счетчик.
-volatile uint32_t psr;// Регистр статуса программы.
-
-    r0 = pulFaultStackAddress [0];
-    r1 = pulFaultStackAddress [1];
-    r2 = pulFaultStackAddress [2];
-    r3 = pulFaultStackAddress [3];
-
-    r12 = pulFaultStackAddress [4];
-    lr = pulFaultStackAddress [5];
-    pc = pulFaultStackAddress [6];
-    psr = pulFaultStackAddress [7];
-
-
-	PRINTF(PSTR("HardFault_Handler trapped.\n"));
- 	PRINTF(PSTR(" CPUID=%08lx\n"), SCB->CPUID);
-	PRINTF(PSTR(" HFSR=%08lx\n"), SCB->HFSR);
-	PRINTF(PSTR(" CFSR=%08lx\n"), SCB->CFSR);
-	PRINTF(PSTR(" BFAR=%08lx\n"), SCB->BFAR);
-
-	PRINTF(PSTR(" R0=%08lx\n"), r0);
-	PRINTF(PSTR(" R1=%08lx\n"), r1);
-	PRINTF(PSTR(" R2=%08lx\n"), r2);
-	PRINTF(PSTR(" R3=%08lx\n"), r3);
-
-	PRINTF(PSTR(" R12=%08lx\n"), r12);
-	PRINTF(PSTR(" LR=%08lx\n"), lr);
-	PRINTF(PSTR(" PC=%08lx\n"), pc);
-	PRINTF(PSTR(" PSR=%08lx\n"), psr);
-
-    // Когда мы добрались до этой строки, то в переменных содержатся значения регистров.
-    for( ;; )
-		;
-}
-
-static const void * volatile const ph =  prvGetRegistersFromStack;	// 'used' ignored...
-
-
-#endif /* WITHDEBUG && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3) */
-
-
-///////////////////////////
-//
-// taken from: http://forum.easyelectronics.ru/viewtopic.php?p=396176#p396176
-
-/*=================================================================================================================================
-*  Обработчик HardFault исключений. В нем вызывается функция prvGetRegistersFromStack(), которая сохраняет в переменных, значения
-* регистров программы, в момент возникновения исключения и входит в бесконечный цикл. Таким образом, можно по значениям переменных
-* узнать причину возникновения исключения.
-=================================================================================================================================*/
-
-
-void
-HardFault_Handler(void)
-{
-#if WITHDEBUG
-#if 0 && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3)
-
-   __asm volatile
-   (
-        " tst lr, #4                                                \n"
-        " ite eq                                                    \n"
-        " mrseq r0, msp                                             \n"
-        " mrsne r0, psp                                             \n"
-        " ldr r1, [r0, #24]                                         \n"
-        " ldr r2, handler2_address_const                            \n"
-        " bx r2                                                     \n"
-        " handler2_address_const: .word prvGetRegistersFromStack    \n"
-    );
-
-#elif CPUSTYLE_ARM_CM0
-
-	PRINTF(PSTR("HardFault_Handler trapped.\n"));
-	PRINTF(PSTR(" CPUID=%08lx\n"), SCB->CPUID);
-
-#else
-
-//	dbg_putchar('S');	// "SK"
-//	dbg_putchar('K');
-	PRINTF(PSTR("HardFault_Handler trapped.\n"));
-	PRINTF(PSTR(" HFSR=%08lx\n"), SCB->HFSR);
-	// 0x02000000 - DIVZERO
-	// 0x01000000 - unaligned
-	PRINTF(PSTR(" CFSR=%08lx %c %c\n"), SCB->CFSR, (SCB->CFSR & 0x02000000) != 0 ? 'Z' : ' ', (SCB->CFSR & 0x01000000) != 0 ? 'U' : ' ');
-	PRINTF(PSTR(" BFAR=%08lx\n"), SCB->BFAR);
-
-#endif
-	//PRINTF(PSTR("HardFault_Handler trapped. HFSR=%08lx\n"), SCB->HFSR);
-	//PRINTF(PSTR("HardFault_Handler trapped"));
-	//return;
-	//if ((SCB->HFSR & SCB_HFSR_FORCED_Msk) != 0)
-	//{
-	//}
-	//local_delay_us(10 * 1000)
-#endif /* WITHDEBUG */
-
-	for (;;)
-		; // WDT->WDT_CR = WDT_CR_WDRSTT | WDT_CR_KEY(0xA5);
-
-}
-
-void
-NMI_Handler(void)
-{
-	PRINTF(PSTR("NMI_Handler trapped\n"));
-	for (;;)
-		; // WDT->WDT_CR = WDT_CR_WDRSTT | WDT_CR_KEY(0xA5);
-}
-
-void
-MemManage_Handler(void)
-{
-	PRINTF(PSTR("MemManage_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void
-BusFault_Handler(void)
-{
-	PRINTF(PSTR("BusFault_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void
-UsageFault_Handler(void)
-{
-	PRINTF(PSTR("UsageFault_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void
-SVC_Handler(void)
-{
-	PRINTF(PSTR("SVC_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void
-DebugMon_Handler(void)
-{
-	PRINTF(PSTR("DebugMon_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-void
-PendSV_Handler(void)
-{
-	PRINTF(PSTR("PendSV_Handler trapped\n"));
-	for (;;)
-		;
-}
-
-typedef void (* IntFunc)(void);
-
-extern unsigned long __stack;
-
-/**
- * \brief This is the code that gets called on processor reset.
- * To initialize the device, and call the main() routine.
- */
-
-void Reset_Handler(void)
-{
-	  SystemInit();                             /* CMSIS System Initialization */
-	  __PROGRAM_START();                        /* Enter PreMain (C library entry point) */
-}
-/*------------------------------------------------------------------------------
- *         Exception Table
- *------------------------------------------------------------------------------*/
-
-
-const IntFunc __VECTOR_TABLE [NVIC_USER_IRQ_OFFSET] __VECTOR_TABLE_ATTRIBUTE = {
-
-    /* Configure Initial Stack Pointer, using linker-generated symbols */
-    (IntFunc)(& __stack),
-    Reset_Handler,
-    NMI_Handler,
-    HardFault_Handler,
-    MemManage_Handler,
-    BusFault_Handler,
-    UsageFault_Handler,
-    NULL,         /* Reserved */
-	NULL,         /* Reserved */
-	NULL,         /* Reserved */
-	NULL,         /* Reserved */
-    SVC_Handler,
-    DebugMon_Handler,
-	NULL,                  /* Reserved  */
-    PendSV_Handler,		/* -2 */
-    SysTick_Handler,	/* -1 */
-};
-
-// Таблица находится в области вне Data Cache
-// Отладочная печать тут еще недопустима.
-static VTRATTR volatile IntFunc ramVectors [256];
-
-static void vectors_relocate(void)
-{
-	unsigned i;
-
-	//PRINTF(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
-	memcpy((void *) ramVectors, __VECTOR_TABLE, NVIC_USER_IRQ_OFFSET * 4);
-	for (i = NVIC_USER_IRQ_OFFSET; i < (sizeof ramVectors / sizeof ramVectors [0]); ++ i)
-	{
-		ramVectors [i] = Default_Handler;
-	}
-	SCB->VTOR = (uint32_t) & ramVectors;
-
-	// Отладочная печать тут еще недопустима.
-	//PRINTF(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
-	//ASSERT(memcmp((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4) == 0);
-	//ASSERT(SCB->VTOR == (uint32_t) & ramVectors);
-}
-#endif /* defined (__CORTEX_M) */
 
 #if 0//( __ARM_ARCH == 8)
 // Armv8.1-M Mainline
@@ -1868,7 +1866,6 @@ static LIST_ENTRY tasks_list [PRIOv_count];
 static task_item_t idle_tasks [HARDWARE_NCORES];
 static task_item_t base_tasks [HARDWARE_NCORES];	// состояения получаем при первом прерывании
 static task_item_t * startedtask [HARDWARE_NCORES];
-static task_item_t demotask [HARDWARE_NCORES];
 
 static task_item_t task30, task31, task32, task33;
 
@@ -2071,6 +2068,7 @@ static void task_svc(task_item_t * task, unsigned code)
 #if __aarch64__
 	//PRINTF("svc call: 0x%04X, x0=%08X x1=%08X x2=%08X\n", code, (unsigned) f->x0, (unsigned) f->x1, (unsigned) f->x2);
 	f->x0 = task_handler(task, (unsigned) f->x0, (void *) f->x1);
+#elif __CORTEX_M
 #else
 	//PRINTF("svc call: 0x%04X, r0=%08X r1=%08x r2=%08x\n", code, (unsigned) f->r0, (unsigned) f->r1, (unsigned) f->r2);
 	f->r0 = task_handler(task, (unsigned) f->r0, (void *) f->r1);
@@ -2085,18 +2083,29 @@ static int task_sysfn(unsigned arg0, void * arg1)
 	__ASM volatile(
 			"\t" "mov x0,%1\n"
 			"\t" "mov x1,%2\n"
-			"\t" "SVC 0xDEAD\n"
+			"\t" "SVC 0x0000\n"
 			"\t" "mov %0,x0\n":
 			"=r"(result) : 		// OutputOperands
 			"r"(arg0), "ra"(arg1) :  // InputOperands
 			"x0", "x1", "memory"	// Clobbers
+	);
+#elif __CORTEX_M
+	uint32_t result = 0;
+	__ASM volatile(
+		"\t" "mov r0,%1\n"
+		"\t" "mov r1,%2\n"
+		"\t" "SVC 0x00\n"
+		"\t" "mov %0,r0\n":
+		"=r"(result) :		// OutputOperands
+		"r"(arg0), "ra"(arg1) : // InputOperands
+		"r0", "r1", "memory"	// Clobbers
 	);
 #else
 	uint32_t result = 0;
 	__ASM volatile(
 		"\t" "mov r0,%1\n"
 		"\t" "mov r1,%2\n"
-		"\t" "SVC 0xDEAD\n"
+		"\t" "SVC 0x0000\n"
 		"\t" "mov %0,r0\n":
 		"=r"(result) :		// OutputOperands
 		"r"(arg0), "ra"(arg1) : // InputOperands

@@ -772,11 +772,29 @@ extern "C" {
 	#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
 	#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
-	#define IRQL_USER 0xFF	// TODO: verify value
-	#define IRQL_BOARD ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 3, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
-	#define IRQL_SYSTEM ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
-	#define IRQL_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
-	#define IRQL_OVERREALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+
+	enum
+	{
+		PRIOv_IPC_ONLY,
+		PRIOv_OVERREALTIME,
+		PRIOv_REALTIME,
+		PRIOv_SYSTEM,
+		PRIOv_BOARD,
+		PRIOv_USER,
+		PRIOv_IDLE,
+		//
+		PRIOv_count
+	};
+
+	#define IRQL_IDLE 0xFF	// TODO: verify value
+	#define IRQL_USER ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_USER, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+	#define IRQL_BOARD ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_BOARD, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+	#define IRQL_SYSTEM ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_SYSTEM, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+	#define IRQL_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_REALTIME, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+	#define IRQL_OVERREALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_OVERREALTIME, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+	#define IRQL_IPC_ONLY ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_IPC_ONLY, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+
+	#define GICI_DECODE_IRQL(irql) (0)	// TODO: use NVIC_DecodePriority
 
 	#define global_enableIRQ() do { __enable_irq(); } while (0)
 	#define global_disableIRQ() do { __disable_irq(); } while (0)

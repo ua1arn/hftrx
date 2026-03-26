@@ -7914,10 +7914,12 @@ void hightests(void)
 		static dpcobj_t userprintdpcs [HARDWARE_NCORES];
 
 		void coremark_wrapper(void * ctx);
-		PRINTF("FREQ_DSU=%u MHz, FREQ_L=%u MHz, FREQ_B=%u MHz\n",
-				(unsigned) (allwnr_a733_get_dsu_freq() / 1000 / 1000),
-				(unsigned) (allwnr_a733_get_cpux_L_freq() / 1000 / 1000),
-				(unsigned) (allwnr_a733_get_cpux_B_freq() / 1000 / 1000));
+//		PRINTF("FREQ_DSU=%u MHz, FREQ_L=%u MHz, FREQ_B=%u MHz\n",
+//				(unsigned) (allwnr_a733_get_dsu_freq() / 1000 / 1000),
+//				(unsigned) (allwnr_a733_get_cpux_L_freq() / 1000 / 1000),
+//				(unsigned) (allwnr_a733_get_cpux_B_freq() / 1000 / 1000));
+		PRINTF("CPU_FREQ=%u MHz\n",
+				(unsigned) (CPU_FREQ / 1000 / 1000));
 
 		unsigned core;
 		for (core = 0; core < ARRAY_SIZE(userprintdpcs); ++ core)
