@@ -28,9 +28,11 @@ static float rx_buf[2][ft8_sample_rate * ft8_length];
 static uint8_t buf_num = 0;	// current filling buffer
 static uint32_t idx = 0;
 
+extern int global_stop;
+
 void * ft8_processing_thread(void * args)
 {
-	while(1)
+	while(! global_stop)
 	{
 		safe_cond_wait(& ct_ft8);
 		board_rtc_cached_gettime(& ts.hour, & ts.minute, & ts.second);
@@ -53,7 +55,7 @@ void * ft8_sync_thread(void * args)
 	uint32_t uwait = 15000000 - usec;
 	printf("FT8: wait for time sync (start in %d sec)\n", uwait / 1000000);
 
-	while(1)
+	while(! global_stop)
 	{
 		gettimeofday(& lTime, NULL);
 		sec   = lTime.tv_sec % 15;

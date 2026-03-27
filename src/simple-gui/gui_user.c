@@ -478,7 +478,7 @@ void window_infobar_menu_process(void)
 // *********************************************************************************************************************************************************************
 
 /* Установки статуса основных кнопок */
-/* При DISABLED в качестве необязательного параметра передать указатель на активную кнопку или NULL для блокирования всех */
+/* При DISABLED в качестве необязательного параметра передать имя активной кнопки или NULL для блокирования всех */
 void footer_buttons_state(uint_fast8_t state, ...)
 {
 	char name[NAME_ARRAY_SIZE];
@@ -1191,7 +1191,7 @@ static uint32_t mems[memory_cells_count];
 
 static uint32_t load_mems(uint_fast8_t cell, uint_fast8_t set)
 {
-#if LINUX_SUBSYSTEM
+#if LINUX_SUBSYSTEM && defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX)
 	if (cell == 0)
 		load_memory_cells(mems, memory_cells_count);
 
@@ -1201,29 +1201,29 @@ static uint32_t load_mems(uint_fast8_t cell, uint_fast8_t set)
 	return mems[cell];
 #else
 	return hamradio_load_memory_cells(cell, set);
-#endif /* LINUX_SUBSYSTEM */
+#endif /* LINUX_SUBSYSTEM && defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX) */
 }
 
 static void clean_mems(uint_fast8_t cell)
 {
-#if LINUX_SUBSYSTEM
+#if LINUX_SUBSYSTEM && defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX)
 	GUI_ASSERT(cell < memory_cells_count);
 	mems[cell] = 0;
 	write_memory_cells(mems, memory_cells_count);
 #else
 	hamradio_clean_memory_cells(cell);
-#endif /* LINUX_SUBSYSTEM */
+#endif /* LINUX_SUBSYSTEM && defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX) */
 }
 
 static void write_mems(uint_fast8_t cell)
 {
-#if LINUX_SUBSYSTEM
+#if LINUX_SUBSYSTEM && defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX)
 	GUI_ASSERT(cell < memory_cells_count);
 	mems[cell] = hamradio_get_freq_rx();
 	write_memory_cells(mems, memory_cells_count);
 #else
 	hamradio_save_memory_cells(cell);
-#endif /* LINUX_SUBSYSTEM */
+#endif /* LINUX_SUBSYSTEM && defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX) */
 }
 
 void window_memory_process(void)

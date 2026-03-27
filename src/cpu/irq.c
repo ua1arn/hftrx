@@ -1823,6 +1823,14 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 		uint64_t xx [32];
 	} exception_frame_t;
 
+#define CPUCTX_SIZE (sizeof (exception_frame_t))
+
+
+// Установить параметры задачи для запуска
+void task_construct(void * __restrict oldframe, void * fn, void * arg)
+{
+}
+
 #else
 	#warning unsupported context switch on this CPU
 #endif

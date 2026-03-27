@@ -250,14 +250,16 @@ allZ:
 bootloader: BOOT2 fsbl.bt0
 
 # Take from tc1_t113s3_boot.map
-SystemExecAARCH64 = 0x000291a4
-SystemDRAMInit = 0x0002ce24
+-include ./bootparam.mak
+#SystemDRAMInit = 0x0007809c
+#SystemExecAARCH64 = 0x0007500c
+DDRINITBLOB=fsbl_frz_s4.alw32
 
 DDR_INIT=ddr_init_s4
 
 # Load image and exec to SystemInit address
 ddr_init_s4:
-	$(XFEL) write 0x00028000 fsbl_frz_s4.alw32
+	$(XFEL) write 0x00028000 $(DDRINITBLOB)
 	$(XFEL) exec $(SystemDRAMInit) 
 	$(BUSYBOX) sleep 2s
 

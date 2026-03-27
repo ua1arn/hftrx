@@ -200,14 +200,15 @@ bootloader_launch_app(uintptr_t startfunc, uint_fast8_t x64bit)
 
 	if (allwnr_t113_get_chipid() == CHIPID_T113M4020DC0 && x64bit)
 	{
+		const unsigned core = 0;
 		// start RV64 core as application
 		CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);				// RISC-V_MCLK_EN
 		CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
-		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0 * ((UINT32_C(1) << targetcore));	/* Assert rv64 reset */
+		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0 * ((UINT32_C(1) << core));	/* Assert rv64 reset */
 		CCU->RISC_GATING_REG = (UINT32_C(1) << 31) | (UINT32_C(0x16AA) << 0);	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
 		RISC_CFG->RISC_STA_ADD0_REG = ptr_lo32(startfunc);
 		RISC_CFG->RISC_STA_ADD1_REG = ptr_hi32(startfunc);
-		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 1 * ((UINT32_C(1) << targetcore));	/* De-assert rv64 reset */
+		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 1 * ((UINT32_C(1) << core));	/* De-assert rv64 reset */
 		C0_CPUX_CFG->C0_RST_CTRL &= ~ UINT32_C(0x03);		// CORE_RESET assert for aarch32 core1 and core0
 	}
 	else

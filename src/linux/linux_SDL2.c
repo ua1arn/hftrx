@@ -22,6 +22,7 @@ SDL_Window * window;
 SDL_Texture * texture;
 SDL_Texture * mouse_cursor;
 int cursor_width, cursor_height;
+extern int global_stop;
 
 int sdl2_render_init(void)
 {
@@ -189,7 +190,7 @@ void * sdl2_events_thread(void * args)
 {
 	SDL_Event e;
 
-	while(1)
+	while(! global_stop)
 	{
 		while (SDL_PollEvent(& e) != 0)
 		{
