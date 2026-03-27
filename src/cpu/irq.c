@@ -1770,6 +1770,12 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 #pragma GCC diagnostic pop
 }
 
+static void task_ec(void * __restrict cpuframe, unsigned ec)
+{
+	exception_frame_t * const f = cpuframe;
+	f->x0 = ec;
+}
+
 #elif CPUSTYLE_ARM && ! defined(__aarch64__)
 
 typedef struct exception_frame_tag
@@ -1812,8 +1818,22 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 	f->r0 = (uintptr_t) arg;
 }
 
+// scheduler-mode entry
+static void task_ec(void * __restrict cpuframe, unsigned ec)
+{
+	exception_frame_t * const f = cpuframe;
+	f->r0 = ec;
+}
+
 #elif __CORTEX_A != 0
 	#error unsupported CPU
+
+// scheduler-mode entry
+static void task_ec(void * __restrict cpuframe, unsigned ec)
+{
+	exception_frame_t * const f = cpuframe;
+	f->r0 = ec;
+}
 
 #elif __riscv
 	#warning unsupported context switch on this CPU
@@ -1822,6 +1842,12 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 	{
 		uint64_t xx [32];
 	} exception_frame_t;
+
+	static void task_ec(void * __restrict cpuframe, unsigned ec)
+	{
+		exception_frame_t * const f = cpuframe;
+		f->r0 = ec;
+	}
 
 #define CPUCTX_SIZE (sizeof (exception_frame_t))
 
@@ -1848,7 +1874,7 @@ typedef struct task_item_tag
 	void * cpuframe;	// cpu state
 	void * allocated;
 	IRQL_t irql;
-	int (* check_ready)(uint_fast64_t tn, void * readyobj);
+	int (* check_ready)(struct task_item_tag * task, uint_fast64_t tn, void * arg1);
 	void * check_ready_obj;
 	void * guard;	// debug signature
 } task_item_t;
@@ -1874,7 +1900,6 @@ struct taskfnparam_suspend
 {
 	uint64_t t0;
 	uint64_t td;
-	volatile int ec;
 };
 
 struct taskfnparam_wait32
@@ -1883,7 +1908,6 @@ struct taskfnparam_wait32
 	uint32_t mask, state;
 	uint64_t t0;
 	uint64_t td;
-	volatile int ec;
 };
 
 struct taskfnparam_wait8
@@ -1892,7 +1916,6 @@ struct taskfnparam_wait8
 	uint8_t mask, state;
 	uint64_t t0;
 	uint64_t td;
-	volatile int ec;
 };
 
 struct taskfnparam_event
@@ -1900,7 +1923,6 @@ struct taskfnparam_event
 	volatile uint8_t * flag;
 	uint64_t t0;
 	uint64_t td;
-	volatile int ec;
 };
 
 typedef struct event_item_tag
@@ -2026,11 +2048,12 @@ void task_ticker(void)
 }
 
 // проверка условий отдачи управления задаче
+// Если нашли - ставим error code
 static int task_isready(uint_fast64_t tn, task_item_t * task)
 {
 	if (task->check_ready != NULL)
 	{
-		if (task->check_ready(tn, task->check_ready_obj))
+		if (task->check_ready(task, tn, task->check_ready_obj))
 		{
 			task->check_ready = NULL;	// признак готовности
 			return 1;
@@ -2086,25 +2109,45 @@ void __NO_RETURN task_scheduler_othercores(void)
 	}
 }
 
-static int readyfn_suspend(uint_fast64_t tn, void * arg1)
+static int readyfn_suspend(task_item_t * task, uint_fast64_t tn, void * arg1)
 {
 	struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
 	return (uint64_t) (tn - param->t0) >= param->td;
 }
 
-static int readyfn_wait32(uint_fast64_t tn, void * arg1)
+static int readyfn_wait32(task_item_t * task, uint_fast64_t tn, void * arg1)
 {
 	struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
-	return (* param->flag & param->mask) == param->state;
+	if ((* param->flag & param->mask) == param->state)
+	{
+		task_ec(task->cpuframe, 0);
+		return 1;
+	}
+	if ((uint64_t) (tn - param->t0) >= param->td)
+	{
+		task_ec(task->cpuframe, 1);
+		return 1;
+	}
+	return 0;
 }
 
-static int readyfn_wait8(uint_fast64_t tn, void * arg1)
+static int readyfn_wait8(task_item_t * task, uint_fast64_t tn, void * arg1)
 {
 	struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
-	return (* param->flag & param->mask) == param->state;
+	if ((* param->flag & param->mask) == param->state)
+	{
+		task_ec(task->cpuframe, 0);
+		return 1;
+	}
+	if ((uint64_t) (tn - param->t0) >= param->td)
+	{
+		task_ec(task->cpuframe, 1);
+		return 1;
+	}
+	return 0;
 }
 
-static int readyfn_event(uint_fast64_t tn, void * arg1)
+static int readyfn_event(task_item_t * task, uint_fast64_t tn, void * arg1)
 {
 	struct taskfnparam_event * const param = (struct taskfnparam_event *) arg1;
 	const uint8_t r = * param->flag;
@@ -2112,46 +2155,42 @@ static int readyfn_event(uint_fast64_t tn, void * arg1)
 	return !! r;
 }
 
-static int task_handler(task_item_t * task, unsigned arg0, void * arg1)
+static void task_handler(task_item_t * task, unsigned arg0, void * arg1)
 {
 	switch (arg0)
 	{
 	default:
-		return 0;
+		return;
 	case TASKFN_NOP:
 		{
 			struct taskfnparam_nop * const param = (struct taskfnparam_nop *) arg1;
-			return 0;
+			return;
 		}
 
 	case TASKFN_SUSPEND:
 		{
 			struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
-			task->check_ready = readyfn_suspend;
 			task->check_ready_obj = param;
-			param->ec = 0;
-			return 0;
+			task->check_ready = readyfn_suspend;
+			return;
 		}
 
 	case TASKFN_WAIT32:
 		{
 			struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
-			task->check_ready = readyfn_wait32;
 			task->check_ready_obj = param;
-			param->ec = 0;
-			return 0;
+			task->check_ready = readyfn_wait32;
+			return;
 		}
 
 	case TASKFN_WAIT8:
 		{
 			struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
-			task->check_ready = readyfn_wait8;
 			task->check_ready_obj = param;
-			param->ec = 0;
-			return 0;
+			task->check_ready = readyfn_wait8;
+			return;
 		}
 	}
-	return 0;
 }
 
 // scheduler-mode entry
@@ -2160,11 +2199,12 @@ static void task_svc(task_item_t * task, unsigned code)
 	exception_frame_t * const f = task->cpuframe;
 #if __aarch64__
 	//PRINTF("svc call: 0x%04X, x0=%08X x1=%08X x2=%08X\n", code, (unsigned) f->x0, (unsigned) f->x1, (unsigned) f->x2);
-	f->x0 = task_handler(task, (unsigned) f->x0, (void *) f->x1);
+	task_handler(task, (unsigned) f->x0, (void *) f->x1);
 #elif __CORTEX_M
+	task_handler(task, (unsigned) f->r0, (void *) f->r1);
 #else
 	//PRINTF("svc call: 0x%04X, r0=%08X r1=%08x r2=%08x\n", code, (unsigned) f->r0, (unsigned) f->r1, (unsigned) f->r2);
-	f->r0 = task_handler(task, (unsigned) f->r0, (void *) f->r1);
+	task_handler(task, (unsigned) f->r0, (void *) f->r1);
 #endif
 }
 
@@ -2263,7 +2303,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 {
 	if (timeMS == 0)
 		return;
-	if (tasaks_not_started || 1)
+	if (tasaks_not_started)
 	{
 
 		const uint_fast64_t t0 = cpu_getdebugticks();
@@ -2286,7 +2326,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 {
 	if (timeMS == 0)
 		return 0;
-	if (tasaks_not_started || 1)
+	if (tasaks_not_started)
 	{
 		const uint_fast64_t t0 = cpu_getdebugticks();
 		const uint_fast64_t td = get_td_ms(timeMS);
@@ -2305,8 +2345,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
-		task_sysfn(TASKFN_WAIT8, & v);
-		return v.ec;
+		return task_sysfn(TASKFN_WAIT8, & v);
 	}
 }
 
@@ -2316,7 +2355,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 {
 	if (timeMS == 0)
 		return 0;
-	if (tasaks_not_started || 1)
+	if (tasaks_not_started)
 	{
 		const uint_fast64_t t0 = cpu_getdebugticks();
 		const uint_fast64_t td = get_td_ms(timeMS);
@@ -2335,8 +2374,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
-		task_sysfn(TASKFN_WAIT32, & v);
-		return v.ec;
+		return task_sysfn(TASKFN_WAIT32, & v);
 	}
 }
 
@@ -2350,8 +2388,7 @@ int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS)
 	v.t0 = cpu_getdebugticks();	// Счетчик увеличивается с частотой процессора
 	v.td = get_td_ms(timeMS);
 	v.flag = flag;
-	task_sysfn(TASKFN_EVENT, & v);
-	return v.ec;
+	return task_sysfn(TASKFN_EVENT, & v);
 }
 
 #elif LINUX_SUBSYSTEM
