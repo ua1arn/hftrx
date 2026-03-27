@@ -1837,7 +1837,7 @@ void task_construct(void * __restrict oldframe, void * fn, void * arg)
 
 #endif /* ! LINUX_SUBSYSTEM */
 
-static int tsaks_not_started = 999;
+static int tasaks_not_started = 999;
 
 #if 0 && ! LINUX_SUBSYSTEM
 
@@ -1849,7 +1849,7 @@ typedef struct task_item_tag
 	void * allocated;
 	IRQL_t irql;
 	uint32_t suspend;	// number of ticks
-	int (* check_ready)(void * readyobj);
+	int (* check_ready)(uint_fast64_t tn, void * readyobj);
 	void * check_ready_obj;
 	void * guard;	// debug signature
 } task_item_t;
@@ -1874,6 +1874,8 @@ struct taskfnparam_nop
 struct taskfnparam_suspend
 {
 	unsigned nticks;
+	uint64_t t0;
+	uint64_t td;
 	volatile int ec;
 };
 
@@ -1882,6 +1884,8 @@ struct taskfnparam_wait32
 	const volatile uint32_t * flag;
 	uint32_t mask, state;
 	unsigned nticks;
+	uint64_t t0;
+	uint64_t td;
 	volatile int ec;
 };
 
@@ -1890,6 +1894,8 @@ struct taskfnparam_wait8
 	const volatile uint8_t * flag;
 	uint8_t mask, state;
 	unsigned nticks;
+	uint64_t t0;
+	uint64_t td;
 	volatile int ec;
 };
 
@@ -1897,6 +1903,8 @@ struct taskfnparam_event
 {
 	volatile uint8_t * flag;
 	unsigned nticks;
+	uint64_t t0;
+	uint64_t td;
 	volatile int ec;
 };
 
@@ -1942,7 +1950,6 @@ static void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(
 	task->guard = task;	// debug signature
 	task->suspend = 0;
 	task->check_ready = NULL;
-	task->check_ready_obj = NULL;
 
 	// включаем в список задач
 	InsertTailList(& tasks_list [prio], & task->item);
@@ -2025,9 +2032,9 @@ void task_ticker(void)
 }
 
 // проверка условий отдачи управления задаче
-static int task_isready(task_item_t * task)
+static int task_isready(uint_fast64_t tn, task_item_t * task)
 {
-	if (task->check_ready != NULL && task->check_ready(task->check_ready_obj))
+	if (task->check_ready != NULL && task->check_ready(tn, task->check_ready_obj))
 		return 1;
 	return
 		task->suspend == 0 &&
@@ -2039,6 +2046,7 @@ static task_item_t * task_getready(unsigned affinity, task_item_t * taskin)
 {
 	ASSERT(taskin);
 	ASSERT(affinity);
+	const uint_fast64_t tn = cpu_getdebugticks();	// Счетчик увеличивается с частотой процессора
 	unsigned prio = GICI_DECODE_IRQL(taskin->irql);
 	ASSERT(ARRAY_SIZE(tasks_list) > prio);
 	// Возвращаем в список задач
@@ -2053,10 +2061,9 @@ static task_item_t * task_getready(unsigned affinity, task_item_t * taskin)
 		{
 			tnext = t->Flink;
 			task_item_t * const tp = CONTAINING_RECORD(t, task_item_t, item);
-			if ((tp->affinity & affinity) && task_isready(tp))
+			if ((tp->affinity & affinity) && task_isready(tn, tp))
 			{
 				tp->check_ready = NULL;
-				tp->check_ready_obj = NULL;
 				tp->suspend = 0;
 				// Нашли подходящий поток
 				RemoveEntryList(& tp->item);
@@ -2070,7 +2077,7 @@ static task_item_t * task_getready(unsigned affinity, task_item_t * taskin)
 
 void task_scheduler_start(void)
 {
-	tsaks_not_started = 0;
+	tasaks_not_started = 0;
 }
 
 void __NO_RETURN task_scheduler_othercores(void)
@@ -2082,19 +2089,25 @@ void __NO_RETURN task_scheduler_othercores(void)
 	}
 }
 
-static int readyfn_wait32(void * arg1)
+static int readyfn_suspend(uint_fast64_t tn, void * arg1)
+{
+	struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
+	return 1;//(* param->flag & param->mask) == param->state;
+}
+
+static int readyfn_wait32(uint_fast64_t tn, void * arg1)
 {
 	struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
 	return (* param->flag & param->mask) == param->state;
 }
 
-static int readyfn_wait8(void * arg1)
+static int readyfn_wait8(uint_fast64_t tn, void * arg1)
 {
 	struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
 	return (* param->flag & param->mask) == param->state;
 }
 
-static int readyfn_event(void * arg1)
+static int readyfn_event(uint_fast64_t tn, void * arg1)
 {
 	struct taskfnparam_event * const param = (struct taskfnparam_event *) arg1;
 	const uint8_t r = * param->flag;
@@ -2117,6 +2130,8 @@ static int task_handler(task_item_t * task, unsigned arg0, void * arg1)
 	case TASKFN_SUSPEND:
 		{
 			struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
+			//task->check_ready = readyfn_suspend;
+			task->check_ready_obj = param;
 			task->suspend = param->nticks;
 			param->ec = 0;
 			return 0;
@@ -2212,7 +2227,6 @@ task_scheduler0(void * oldframe, unsigned flag, unsigned code)
 		task->allocated = NULL;
 		task->suspend = 0;
 		task->check_ready = NULL;
-		task->check_ready_obj = NULL;
 		//
 		// получаем состояние процесора при первом перрывании
 		task->affinity = 1U << core;
@@ -2251,7 +2265,7 @@ void local_delay_ms(int timeMS)
 {
 	if (timeMS == 0)
 		return;
-	if (tsaks_not_started)
+	if (tasaks_not_started)
 	{
 		const uint_fast32_t t0 = tasks_sys_now();
 		while ((uint32_t) (tasks_sys_now() - t0) < timeMS)
@@ -2261,6 +2275,8 @@ void local_delay_ms(int timeMS)
 	{
 		struct taskfnparam_suspend v;
 		v.nticks = timeMS == LOCAL_WAITINFINITY ? UINT32_MAX : NTICKS(timeMS);
+		v.t0 = cpu_getdebugticks();	// Счетчик увеличивается с частотой процессора
+		v.td = timeMS * 1000 * cpu_getdebugticksfreq() / (1000 * 1000);
 		task_sysfn(TASKFN_SUSPEND, & v);
 	}
 }
@@ -2271,7 +2287,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 {
 	if (timeMS == 0)
 		return 0;
-	if (tsaks_not_started)
+	if (tasaks_not_started)
 	{
 		const uint_fast32_t t0 = tasks_sys_now();
 		do
@@ -2285,6 +2301,8 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 	{
 		struct taskfnparam_wait8 v;
 		v.nticks = timeMS == LOCAL_WAITINFINITY ? UINT32_MAX : NTICKS(timeMS);
+		v.t0 = cpu_getdebugticks();	// Счетчик увеличивается с частотой процессора
+		v.td = timeMS * 1000 * cpu_getdebugticksfreq() / (1000 * 1000);
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
@@ -2299,7 +2317,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 {
 	if (timeMS == 0)
 		return 0;
-	if (tsaks_not_started)
+	if (tasaks_not_started)
 	{
 		return 0;
 	}
@@ -2307,6 +2325,8 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 	{
 		struct taskfnparam_wait32 v;
 		v.nticks = timeMS == LOCAL_WAITINFINITY ? UINT32_MAX : NTICKS(timeMS);
+		v.t0 = cpu_getdebugticks();	// Счетчик увеличивается с частотой процессора
+		v.td = timeMS * 1000 * cpu_getdebugticksfreq() / (1000 * 1000);
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
@@ -2323,6 +2343,8 @@ int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS)
 		return 0;
 	struct taskfnparam_event v;
 	v.nticks = timeMS == LOCAL_WAITINFINITY ? UINT32_MAX : NTICKS(timeMS);
+	v.t0 = cpu_getdebugticks();	// Счетчик увеличивается с частотой процессора
+	v.td = timeMS * 1000 * cpu_getdebugticksfreq() / (1000 * 1000);
 	v.flag = flag;
 	task_sysfn(TASKFN_EVENT, & v);
 	return v.ec;
@@ -2345,7 +2367,7 @@ void task_scheduler_initialize(void)
 
 void task_scheduler_start(void)
 {
-	tsaks_not_started = 0;
+	tasaks_not_started = 0;
 }
 
 void __NO_RETURN task_scheduler_othercores(void)
@@ -2600,7 +2622,7 @@ void local_delay_us(int timeUS)
 
 uint32_t tasks_sys_now(void)
 {
-	if (tsaks_not_started)
+	if (tasaks_not_started)
 	{
 		static uint32_t n = 100;
 		local_delay_us(1000);
