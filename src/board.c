@@ -5086,7 +5086,7 @@ void board_initialize(void)
 	board_adc_initialize();
 
 #if defined (BOARD_BLINK_SETSTATE)
-	if (task_create(TASK_AFFINITY_ALL, blinktest2, NULL, 8192))
+	if (thread_create_user(TASK_AFFINITY_ALL, blinktest2, NULL, 8192))
 	{
 
 	}
