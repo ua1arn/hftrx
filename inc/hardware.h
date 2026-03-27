@@ -648,12 +648,17 @@ int event_signal(void * evt);
 #define LOCAL_WAITINFINITY UINT32_MAX
 // wait expected state of variable
 // return non-zero: timeout error
+// timeMS may be LOCAL_WAITINFINITY
 int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS);
 int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS);
+// wait non-zero state of variable
+// return non-zero: timeout error
+// timeMS may be LOCAL_WAITINFINITY
+int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS);
 
-void local_delay_us(int timeUS);
-void local_delay_ms(int timeMS);	// may be UINT_MAX
-void local_delay_initialize(void);
+void local_delay_us(int timeUS);	// may be LOCAL_WAITINFINITY
+void local_delay_ms(int timeMS);	// may be LOCAL_WAITINFINITY
+void local_delay_initialize(void);	// setup parameters for loop-nased delays
 
 
 void IRQ_Handler_GIC(void);

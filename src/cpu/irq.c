@@ -1854,6 +1854,52 @@ typedef struct task_item_tag
 	void * guard;	// debug signature
 } task_item_t;
 
+
+enum
+{
+	TASKFN_NOP,
+	TASKFN_SUSPEND,
+	TASKFN_WAIT32,
+	TASKFN_WAIT8,
+	TASKFN_EVENT,
+	//
+	TASKFN_count
+};
+
+struct taskfnparam_nop
+{
+	int dummy;
+};
+
+struct taskfnparam_suspend
+{
+	unsigned nticks;
+	volatile int ec;
+};
+
+struct taskfnparam_wait32
+{
+	const volatile uint32_t * flag;
+	uint32_t mask, state;
+	unsigned nticks;
+	volatile int ec;
+};
+
+struct taskfnparam_wait8
+{
+	const volatile uint8_t * flag;
+	uint8_t mask, state;
+	unsigned nticks;
+	volatile int ec;
+};
+
+struct taskfnparam_event
+{
+	volatile uint8_t * flag;
+	unsigned nticks;
+	volatile int ec;
+};
+
 typedef struct event_item_tag
 {
 	LIST_ENTRY item;
@@ -2009,6 +2055,9 @@ static task_item_t * task_getready(unsigned affinity, task_item_t * taskin)
 			task_item_t * const tp = CONTAINING_RECORD(t, task_item_t, item);
 			if ((tp->affinity & affinity) && task_isready(tp))
 			{
+				tp->check_ready = NULL;
+				tp->check_ready_obj = NULL;
+				tp->suspend = 0;
 				// Нашли подходящий поток
 				RemoveEntryList(& tp->item);
 				return tp;
@@ -2033,30 +2082,32 @@ void __NO_RETURN task_scheduler_othercores(void)
 	}
 }
 
-enum
+static int readyfn_wait32(void * arg1)
 {
-	TASKFN_NOP,
-	TASKFN_SUSPEND,
-	//
-	TASKFN_count
-};
+	struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
+	return (* param->flag & param->mask) == param->state;
+}
 
-struct taskfnparam_nop
+static int readyfn_wait8(void * arg1)
 {
-	int dummy;
-};
+	struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
+	return (* param->flag & param->mask) == param->state;
+}
 
-struct taskfnparam_suspend
+static int readyfn_event(void * arg1)
 {
-	unsigned niicks;
-};
+	struct taskfnparam_event * const param = (struct taskfnparam_event *) arg1;
+	const uint8_t r = * param->flag;
+	* param->flag = 0;
+	return !! r;
+}
 
 static int task_handler(task_item_t * task, unsigned arg0, void * arg1)
 {
 	switch (arg0)
 	{
 	default:
-		break;
+		return 0;
 	case TASKFN_NOP:
 		{
 			struct taskfnparam_nop * const param = (struct taskfnparam_nop *) arg1;
@@ -2066,7 +2117,28 @@ static int task_handler(task_item_t * task, unsigned arg0, void * arg1)
 	case TASKFN_SUSPEND:
 		{
 			struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
-			task->suspend = param->niicks;
+			task->suspend = param->nticks;
+			param->ec = 0;
+			return 0;
+		}
+
+	case TASKFN_WAIT32:
+		{
+			struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
+			task->check_ready = readyfn_wait32;
+			task->check_ready_obj = param;
+			task->suspend = param->nticks;
+			param->ec = 0;
+			return 0;
+		}
+
+	case TASKFN_WAIT8:
+		{
+			struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
+			task->check_ready = readyfn_wait8;
+			task->check_ready_obj = param;
+			task->suspend = param->nticks;
+			param->ec = 0;
 			return 0;
 		}
 	}
@@ -2188,7 +2260,7 @@ void local_delay_ms(int timeMS)
 	else
 	{
 		struct taskfnparam_suspend v;
-		v.niicks = timeMS == LOCAL_WAITINFINITY ? UINT32_MAX : NTICKS(timeMS);
+		v.nticks = timeMS == LOCAL_WAITINFINITY ? UINT32_MAX : NTICKS(timeMS);
 		task_sysfn(TASKFN_SUSPEND, & v);
 	}
 }
@@ -2197,26 +2269,63 @@ void local_delay_ms(int timeMS)
 // return non-zero: timeout error
 int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS)
 {
-	const uint_fast32_t t0 = tasks_sys_now();
-	do
+	if (timeMS == 0)
+		return 0;
+	if (tsaks_not_started)
 	{
-		if (((* flag & mask) == state))
-			return 0;
-	} while ((uint32_t) (tasks_sys_now() - t0) < timeMS);
-	return 1;
+		const uint_fast32_t t0 = tasks_sys_now();
+		do
+		{
+			if (((* flag & mask) == state))
+				return 0;
+		} while ((uint32_t) (tasks_sys_now() - t0) < timeMS);
+		return 1;
+	}
+	else
+	{
+		struct taskfnparam_wait8 v;
+		v.nticks = timeMS == LOCAL_WAITINFINITY ? UINT32_MAX : NTICKS(timeMS);
+		v.flag = flag;
+		v.mask = mask;
+		v.state = state;
+		task_sysfn(TASKFN_WAIT8, & v);
+		return v.ec;
+	}
 }
 
 // wait expected state of variable
 // return non-zero: timeout error
 int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS)
 {
-	const uint_fast32_t t0 = tasks_sys_now();
-	do
+	if (timeMS == 0)
+		return 0;
+	if (tsaks_not_started)
 	{
-		if (((* flag & mask) == state))
-			return 0;
-	} while ((uint32_t) (tasks_sys_now() - t0) < timeMS);
-	return 1;
+		return 0;
+	}
+	else
+	{
+		struct taskfnparam_wait32 v;
+		v.nticks = timeMS == LOCAL_WAITINFINITY ? UINT32_MAX : NTICKS(timeMS);
+		v.flag = flag;
+		v.mask = mask;
+		v.state = state;
+		task_sysfn(TASKFN_WAIT32, & v);
+		return v.ec;
+	}
+}
+
+// wait expected state of variable
+// return non-zero: timeout error
+int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS)
+{
+	if (timeMS == 0)
+		return 0;
+	struct taskfnparam_event v;
+	v.nticks = timeMS == LOCAL_WAITINFINITY ? UINT32_MAX : NTICKS(timeMS);
+	v.flag = flag;
+	task_sysfn(TASKFN_EVENT, & v);
+	return v.ec;
 }
 
 #elif LINUX_SUBSYSTEM
