@@ -637,7 +637,8 @@ void task_scheduler_initialize(void);
 void task_scheduler_start(void);
 void task_ticker(void);
 void __NO_RETURN task_scheduler_othercores(void);
-void * task_create(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize);
+void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize);
+void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize);
 void task_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
 
 void * event_create(void);
@@ -899,7 +900,6 @@ void linux_dds_rts(const uint_least64_t * value);		// Установка цен�
 void linux_rxtx_state(uint8_t tx);
 
 uint32_t sys_now(void);
-uint32_t tasks_sys_now(void);
 uint32_t board_millis(void);	// tinyusb
 int sys_dram_init(void);	// 0 - error
 int main(void);
