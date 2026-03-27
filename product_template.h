@@ -234,6 +234,10 @@
 	#include "boards/linux_rockchip_ctlstyle_opicm4_xc7a100t_pcie.h"
 	#include "paramdepend.h"
 	#include "boards/linux_rockchip_cpustyle_opicm4_xc7a100t_pcie.h"
+#elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7 && LINUX_SUBSYSTEM && 0
+	#include "boards/linux_allwinner_ctlstyle_opi4pro_xc7a100t.h"
+	#include "paramdepend.h"
+	#include "boards/linux_allwinner_cpustyle_opi4pro_xc7a100t.h"
 #else
 	#define LCDMODE_DUMMY	1
 	#define	BOARDPOWERMAX 1
