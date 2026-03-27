@@ -1691,38 +1691,6 @@ sysinit_vbar_initialize(void)
 #endif /* CPUSTYLE_RISCV */
 }
 
-#if (__CORTEX_A == 55U) && ! defined(__aarch64__)
-/** \brief  Get CPUACTLR
-    \return                CPU Auxiliary Control Register
- */
-uint64_t __get_CPUACTLRx(void)
-{
-	uint64_t result;
-	__get_CP64(15, 0, result, 15);
-	return(result);
-}
-//
-//uint64_t __get_CPUECTLRx(void)
-//{
-//	uint64_t result;
-//	__get_CP64(15, 1, result, 15);
-//	return(result);
-//}
-
-uint64_t __get_CPUMERRSRx(void)
-{
-	uint64_t result;
-	__get_CP64(15, 2, result, 15);
-	return(result);
-}
-uint32_t __get_ACTLRx(void)
-{
-	uint32_t result;
-	__get_CP(15, 0, result, 1, 0, 1);
-	return(result);
-}
-#endif
-
 // SystemInit (on Core #0)
 // Reset_CPUn_Handler ((on Core #1..)
 static void sysinit_smp_initialize(void)
@@ -1775,19 +1743,6 @@ static void sysinit_smp_initialize(void)
 	__set_ACTLR_EL3(__get_ACTLR_EL3() & ~ (UINT32_C(1) << 6));	/* не надо - но стояло как результат запуcка из UBOOT */
 	__ISB();
 	__DSB();
-
-	//PRINTF("__get_ACTLR_EL3()=0x%08" PRIx32 "\n", __get_ACTLR_EL3());
-	//PRINTF("__get_CPUACTLR_EL1()=0x%016" PRIx64 "\n", __get_CPUACTLR_EL1());
-	//PRINTF("__get_CPUMERRSRx()=0x%016" PRIx64 "\n", __get_CPUMERRSRx());
-	//PRINTF("__get_CPUECTLR_EL1()=0x%016" PRIx64 "\n", __get_CPUECTLR_EL1());
-	//__set_CPUACTLR(__get_CPUACTLR() | (UINT64_C(1) << 44));	// [44] ENDCCASCI Enable data cache clean as data cache clean/invalidate.
-
-	// set the CPUECTLR.SMPEN
-	////__set_CPUECTLR(__get_CPUECTLR() | (UINT64_C(1) << 6));	// SMPEN 1: Enables data coherency with other cores in the cluster.
-	//	PRINTF("__get_ACTLR()=0x%08" PRIx32 "\n", __get_ACTLR());
-	//	PRINTF("__get_CPUACTLRx()=0x%016" PRIx64 "\n", __get_CPUACTLRx());
-	////PRINTF("__get_CPUECTLRx()=0x%016" PRIx64 "\n", __get_CPUECTLRx());
-	//dbg_flush();
 
 #elif (__CORTEX_A == 53U) && ! defined(__aarch64__)
 	/**
