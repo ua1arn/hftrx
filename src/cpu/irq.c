@@ -1848,7 +1848,7 @@ typedef struct task_item_tag
 	void * cpuframe;	// cpu state
 	void * allocated;
 	IRQL_t irql;
-	unsigned suspend;
+	uint32_t suspend;	// number of ticks
 	void * guard;	// debug signature
 } task_item_t;
 
@@ -1965,7 +1965,7 @@ void task_ticker(void)
 		for (t = list->Flink; t != list; t = t->Flink)
 		{
 			task_item_t * const tp = CONTAINING_RECORD(t, task_item_t, item);
-			if (tp->suspend)
+			if (tp->suspend != 0 && tp->suspend != UINT32_MAX)
 			{
 				tp->suspend -= 1;
 			}
@@ -2180,9 +2180,35 @@ void local_delay_ms(int timeMS)
 	else
 	{
 		struct taskfnparam_suspend v;
-		v.niicks = NTICKS(timeMS);
+		v.niicks = timeMS == LOCAL_WAITINFINITY ? UINT32_MAX : NTICKS(timeMS);
 		task_sysfn(TASKFN_SUSPEND, & v);
 	}
+}
+
+// wait expected state of variable
+// return non-zero: timeout error
+int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS)
+{
+	const uint_fast32_t t0 = tasks_sys_now();
+	do
+	{
+		if (((* flag & mask) == state))
+			return 0;
+	} while ((uint32_t) (tasks_sys_now() - t0) < timeMS);
+	return 1;
+}
+
+// wait expected state of variable
+// return non-zero: timeout error
+int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS)
+{
+	const uint_fast32_t t0 = tasks_sys_now();
+	do
+	{
+		if (((* flag & mask) == state))
+			return 0;
+	} while ((uint32_t) (tasks_sys_now() - t0) < timeMS);
+	return 1;
 }
 
 #elif LINUX_SUBSYSTEM
@@ -2192,6 +2218,8 @@ void task_scheduler_initialize(void) {}
 void task_ticker(void) {}
 
 #else /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
+
+// Non-linux, non-scheduler
 
 void task_scheduler_initialize(void)
 {
@@ -2251,6 +2279,33 @@ void local_delay_ms(int timeMS)
 	const uint_fast32_t t0 = tasks_sys_now();
 	while ((uint32_t) (tasks_sys_now() - t0) < timeMS)
 		;
+}
+
+
+// wait expected state of variable
+// return non-zero: timeout error
+int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS)
+{
+	const uint_fast32_t t0 = tasks_sys_now();
+	do
+	{
+		if (((* flag & mask) == state))
+			return 0;
+	} while ((uint32_t) (tasks_sys_now() - t0) < timeMS);
+	return 1;
+}
+
+// wait expected state of variable
+// return non-zero: timeout error
+int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS)
+{
+	const uint_fast32_t t0 = tasks_sys_now();
+	do
+	{
+		if (((* flag & mask) == state))
+			return 0;
+	} while ((uint32_t) (tasks_sys_now() - t0) < timeMS);
+	return 1;
 }
 
 #endif /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
@@ -2435,32 +2490,6 @@ uint32_t tasks_sys_now(void)
 		return ++ n;
 	}
 	return sys_now();
-}
-
-// wait expected state of variable
-// return non-zero: timeout error
-int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, int timeMS)
-{
-	const uint_fast32_t t0 = tasks_sys_now();
-	do
-	{
-		if (((* flag & mask) == state))
-			return 0;
-	} while ((uint32_t) (tasks_sys_now() - t0) < timeMS);
-	return 1;
-}
-
-// wait expected state of variable
-// return non-zero: timeout error
-int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, int timeMS)
-{
-	const uint_fast32_t t0 = tasks_sys_now();
-	do
-	{
-		if (((* flag & mask) == state))
-			return 0;
-	} while ((uint32_t) (tasks_sys_now() - t0) < timeMS);
-	return 1;
 }
 
 #if defined(__aarch64__) && ! LINUX_SUBSYSTEM
