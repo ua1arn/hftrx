@@ -1715,6 +1715,8 @@ void IRQ15_Handler(void)
 #if ! LINUX_SUBSYSTEM
 
 #define TASKRAM_SIZE (1024 * 1024)
+struct task_item_tag;
+
 
 #if defined(__aarch64__)
 
@@ -1776,7 +1778,31 @@ static void task_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 	f->x0 = ec;
 }
 
-#elif CPUSTYLE_ARM && ! defined(__aarch64__)
+static void task_handler(struct task_item_tag * task, unsigned arg0, void * arg1);
+// scheduler-mode entry
+static void task_svc(struct task_item_tag * task, unsigned code, exception_frame_t * f)
+{
+	task_handler(task, (unsigned) f->x0, (void *) f->x1);
+}
+
+// user-mode entry
+static int task_sysfn(unsigned arg0, void * arg1)
+{
+	uint64_t result;
+	__ASM volatile(
+			"\t" "mov x0,%1\n"
+			"\t" "mov x1,%2\n"
+			"\t" "SVC 0x0000\n"
+			"\t" "mov %0,x0\n":
+			"=r"(result) : 		// OutputOperands
+			"r"(arg0), "ra"(arg1) :  // InputOperands
+			"x0", "x1", "memory"	// Clobbers
+	);
+
+	return result;
+}
+
+#elif __CORTEX_A != 0 && ! defined(__aarch64__)
 
 typedef struct exception_frame_tag
 {
@@ -1825,14 +1851,80 @@ static void task_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 	f->r0 = ec;
 }
 
-#elif __CORTEX_A != 0
-	#error unsupported CPU
+static void task_handler(struct task_item_tag * task, unsigned arg0, void * arg1);
 
 // scheduler-mode entry
-static void task_ec(void * __restrict cpuframe, unsigned ec)
+static void task_svc(struct task_item_tag * task, unsigned code, exception_frame_t * f)
+{
+	task_handler(task, (unsigned) f->r0, (void *) f->r1);
+}
+
+// user-mode entry
+static int task_sysfn(unsigned arg0, void * arg1)
+{
+	uint32_t result = 0;
+	__ASM volatile(
+		"\t" "mov r0,%1\n"
+		"\t" "mov r1,%2\n"
+		"\t" "SVC 0x0000\n"
+		"\t" "mov %0,r0\n":
+		"=r"(result) :		// OutputOperands
+		"r"(arg0), "ra"(arg1) : // InputOperands
+		"r0", "r1", "memory"	// Clobbers
+	);
+
+	return result;
+}
+
+#elif __CORTEX_M != 0
+
+#warning unsupported context switch on this CPU
+
+typedef struct exception_frame_tag
+{
+	uint32_t r0, r1, r2;
+	uint32_t xx [32];
+} exception_frame_t;
+
+
+// scheduler-mode entry
+static void task_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 {
 	exception_frame_t * const f = cpuframe;
 	f->r0 = ec;
+}
+
+static void task_handler(struct task_item_tag * task, unsigned arg0, void * arg1);
+
+// scheduler-mode entry
+static void task_svc(struct task_item_tag * task, unsigned code, exception_frame_t * f)
+{
+	task_handler(task, (unsigned) f->r0, (void *) f->r1);
+}
+
+// user-mode entry
+static int task_sysfn(unsigned arg0, void * arg1)
+{
+	uint32_t result = 0;
+	__ASM volatile(
+		"\t" "mov r0,%1\n"
+		"\t" "mov r1,%2\n"
+		"\t" "SVC 0x0000\n"
+		"\t" "mov %0,r0\n":
+		"=r"(result) :		// OutputOperands
+		"r"(arg0), "ra"(arg1) : // InputOperands
+		"r0", "r1", "memory"	// Clobbers
+	);
+
+	return result;
+}
+
+#define CPUCTX_SIZE (sizeof (exception_frame_t))
+
+
+// Установить параметры задачи для запуска
+void task_construct(exception_frame_t * __restrict oldframe, void * fn, void * arg)
+{
 }
 
 #elif __riscv
@@ -1847,6 +1939,55 @@ static void task_ec(void * __restrict cpuframe, unsigned ec)
 	{
 		exception_frame_t * const f = cpuframe;
 		f->r0 = ec;
+	}
+
+	static void task_handler(struct task_item_tag * task, unsigned arg0, void * arg1);
+
+	// scheduler-mode entry
+	static void task_svc(struct task_item_tag * task, unsigned code, exception_frame_t * f)
+	{
+		task_handler(task, (unsigned) f->r0, (void *) f->r1);
+	}
+
+	// user-mode entry
+	static int task_sysfn(unsigned arg0, void * arg1)
+	{
+	#if __aarch64__
+		uint64_t result;
+		__ASM volatile(
+				"\t" "mov x0,%1\n"
+				"\t" "mov x1,%2\n"
+				"\t" "SVC 0x0000\n"
+				"\t" "mov %0,x0\n":
+				"=r"(result) : 		// OutputOperands
+				"r"(arg0), "ra"(arg1) :  // InputOperands
+				"x0", "x1", "memory"	// Clobbers
+		);
+	#elif __CORTEX_M
+		uint32_t result = 0;
+		__ASM volatile(
+			"\t" "mov r0,%1\n"
+			"\t" "mov r1,%2\n"
+			"\t" "SVC 0x00\n"
+			"\t" "mov %0,r0\n":
+			"=r"(result) :		// OutputOperands
+			"r"(arg0), "ra"(arg1) : // InputOperands
+			"r0", "r1", "memory"	// Clobbers
+		);
+	#else
+		uint32_t result = 0;
+		__ASM volatile(
+			"\t" "mov r0,%1\n"
+			"\t" "mov r1,%2\n"
+			"\t" "SVC 0x0000\n"
+			"\t" "mov %0,r0\n":
+			"=r"(result) :		// OutputOperands
+			"r"(arg0), "ra"(arg1) : // InputOperands
+			"r0", "r1", "memory"	// Clobbers
+		);
+	#endif
+
+		return result;
 	}
 
 #define CPUCTX_SIZE (sizeof (exception_frame_t))
@@ -2204,62 +2345,6 @@ static void task_handler(task_item_t * task, unsigned arg0, void * arg1)
 	}
 }
 
-// scheduler-mode entry
-static void task_svc(task_item_t * task, unsigned code)
-{
-	exception_frame_t * const f = task->cpuframe;
-#if __aarch64__
-	//PRINTF("svc call: 0x%04X, x0=%08X x1=%08X x2=%08X\n", code, (unsigned) f->x0, (unsigned) f->x1, (unsigned) f->x2);
-	task_handler(task, (unsigned) f->x0, (void *) f->x1);
-#elif __CORTEX_M
-	task_handler(task, (unsigned) f->r0, (void *) f->r1);
-#else
-	//PRINTF("svc call: 0x%04X, r0=%08X r1=%08x r2=%08x\n", code, (unsigned) f->r0, (unsigned) f->r1, (unsigned) f->r2);
-	task_handler(task, (unsigned) f->r0, (void *) f->r1);
-#endif
-}
-
-// user-mode entry
-static int task_sysfn(unsigned arg0, void * arg1)
-{
-#if __aarch64__
-	uint64_t result;
-	__ASM volatile(
-			"\t" "mov x0,%1\n"
-			"\t" "mov x1,%2\n"
-			"\t" "SVC 0x0000\n"
-			"\t" "mov %0,x0\n":
-			"=r"(result) : 		// OutputOperands
-			"r"(arg0), "ra"(arg1) :  // InputOperands
-			"x0", "x1", "memory"	// Clobbers
-	);
-#elif __CORTEX_M
-	uint32_t result = 0;
-	__ASM volatile(
-		"\t" "mov r0,%1\n"
-		"\t" "mov r1,%2\n"
-		"\t" "SVC 0x00\n"
-		"\t" "mov %0,r0\n":
-		"=r"(result) :		// OutputOperands
-		"r"(arg0), "ra"(arg1) : // InputOperands
-		"r0", "r1", "memory"	// Clobbers
-	);
-#else
-	uint32_t result = 0;
-	__ASM volatile(
-		"\t" "mov r0,%1\n"
-		"\t" "mov r1,%2\n"
-		"\t" "SVC 0x0000\n"
-		"\t" "mov %0,r0\n":
-		"=r"(result) :		// OutputOperands
-		"r"(arg0), "ra"(arg1) : // InputOperands
-		"r0", "r1", "memory"	// Clobbers
-	);
-#endif
-
-	return result;
-}
-
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 static void *
 task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
@@ -2280,7 +2365,7 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 	IRQLSPIN_LOCK(& taskslock, & startedtask [core]->irql, IRQL_IPC_ONLY);
 	if (flag)
 	{
-		task_svc(startedtask [core], code);
+		task_svc(startedtask [core], code, oldframe);
 	}
 	startedtask [core] = task_getready(1U << core, startedtask [core]);
 	IRQLSPIN_UNLOCK(& taskslock, startedtask [core]->irql);
@@ -2442,18 +2527,12 @@ static void * task_scheduler2(unsigned code, void * oldframe)
 	return oldframe;
 }
 
-static void task_svc(unsigned code, void * frame)
+void task_ticker(void)
 {
-	exception_frame_t * const f = (exception_frame_t *) frame;
-#if __aarch64__
-	PRINTF("svc call: 0x%04X, x0=%08X x1=%08X x2=%08X\n", code, (unsigned) f->x0, (unsigned) f->x1, (unsigned) f->x2);
-#elif __riscv
-#else
-	PRINTF("svc call: 0x%04X, r0=%08X r1=%08x r2=%08x\n",  code, (unsigned) f->r0, (unsigned) f->r1, (unsigned) f->r2);
-#endif
+
 }
 
-void task_ticker(void)
+static void task_handler(struct task_item_tag * task, unsigned arg0, void * arg1)
 {
 
 }
