@@ -890,21 +890,30 @@ extern "C" {
 
 	typedef uint_xlen_t IRQL_t;
 
-	#define ARM_IPC_PRIORITY			5
-	#define ARM_OVERREALTIME_PRIORITY	4	/* валкодер и телеграф */
-	#define ARM_REALTIME_PRIORITY		3	/* звук */
-	#define ARM_SYSTEM_PRIORITY			2	/* таймеры, USB */
-	#define ARM_BOARD_PRIORITY			1	/* установка параметров */
-	#define ARM_USER_PRIORITY			0	/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
+	#define ARM_IPC_ONLY_PRIORITY		6
+	#define ARM_OVERREALTIME_PRIORITY	5	/* валкодер и телеграф */
+	#define ARM_REALTIME_PRIORITY		4	/* звук */
+	#define ARM_SYSTEM_PRIORITY			3	/* таймеры, USB */
+	#define ARM_BOARD_PRIORITY			2	/* установка параметров */
+	#define ARM_USER_PRIORITY			1	/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
+	#define ARM_IDLE_PRIORITY			0	/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
+
+	#define PRIOv_count 7
 
 	#define global_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
 	#define global_disableIRQ() do { csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
 
+	#define IRQL_IDLE				ARM_IDLE_PRIORITY
 	#define IRQL_USER				ARM_USER_PRIORITY
 	#define IRQL_SYSTEM 			ARM_SYSTEM_PRIORITY
 	#define IRQL_BOARD				ARM_BOARD_PRIORITY
 	#define IRQL_REALTIME 			ARM_REALTIME_PRIORITY
 	#define IRQL_OVERREALTIME		ARM_OVERREALTIME_PRIORITY
+	#define IRQL_IPC_ONLY			ARM_IPC_ONLY_PRIORITY
+
+	#define GICD_ENCODE_PRIORITY(priov) 	(priov)	// Value for GICDistributor->IPRIORITYR[n]
+	#define GICI_ENCODE_IRQL(priov) 		(priov)	// value for GICInterface->PMR
+	#define GICI_DECODE_IRQL(irql) 			(irql)	// value from GICInterface->PMR
 
 #else /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 */
 

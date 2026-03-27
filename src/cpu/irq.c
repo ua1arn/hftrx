@@ -1932,13 +1932,14 @@ void task_construct(exception_frame_t * __restrict oldframe, void * fn, void * a
 
 	typedef struct exception_frame_tag
 	{
+		uint64_t x0, x1, x2, x3, x4;
 		uint64_t xx [32];
 	} exception_frame_t;
 
 	static void task_ec(void * __restrict cpuframe, unsigned ec)
 	{
 		exception_frame_t * const f = cpuframe;
-		f->r0 = ec;
+		f->x3 = ec;
 	}
 
 	static void task_handler(struct thread_item_tag * task, unsigned arg0, void * arg1);
@@ -1946,47 +1947,22 @@ void task_construct(exception_frame_t * __restrict oldframe, void * fn, void * a
 	// scheduler-mode entry
 	static void task_svc(struct thread_item_tag * task, unsigned code, exception_frame_t * f)
 	{
-		task_handler(task, (unsigned) f->r0, (void *) f->r1);
+		task_handler(task, (unsigned) f->x3, (void *) f->x4);
 	}
 
 	// user-mode entry
 	static int task_sysfn(unsigned arg0, void * arg1)
 	{
-	#if __aarch64__
-		uint64_t result;
-		__ASM volatile(
-				"\t" "mov x0,%1\n"
-				"\t" "mov x1,%2\n"
-				"\t" "SVC 0x0000\n"
-				"\t" "mov %0,x0\n":
-				"=r"(result) : 		// OutputOperands
-				"r"(arg0), "ra"(arg1) :  // InputOperands
-				"x0", "x1", "memory"	// Clobbers
-		);
-	#elif __CORTEX_M
 		uint32_t result = 0;
 		__ASM volatile(
-			"\t" "mov r0,%1\n"
-			"\t" "mov r1,%2\n"
-			"\t" "SVC 0x00\n"
-			"\t" "mov %0,r0\n":
+			"\t" "mv x3,%1\n"
+			"\t" "mv x4,%2\n"
+			//"\t" "SVC 0x0000\n"
+			"\t" "mv %0,x3\n":
 			"=r"(result) :		// OutputOperands
 			"r"(arg0), "ra"(arg1) : // InputOperands
-			"r0", "r1", "memory"	// Clobbers
+			"x3", "x4", "memory"	// Clobbers
 		);
-	#else
-		uint32_t result = 0;
-		__ASM volatile(
-			"\t" "mov r0,%1\n"
-			"\t" "mov r1,%2\n"
-			"\t" "SVC 0x0000\n"
-			"\t" "mov %0,r0\n":
-			"=r"(result) :		// OutputOperands
-			"r"(arg0), "ra"(arg1) : // InputOperands
-			"r0", "r1", "memory"	// Clobbers
-		);
-	#endif
-
 		return result;
 	}
 
