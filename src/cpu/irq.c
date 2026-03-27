@@ -1849,6 +1849,8 @@ typedef struct task_item_tag
 	void * allocated;
 	IRQL_t irql;
 	uint32_t suspend;	// number of ticks
+	int (* check_ready)(void * readyobj);
+	void * check_ready_obj;
 	void * guard;	// debug signature
 } task_item_t;
 
@@ -1893,6 +1895,8 @@ static void task_addtask(task_item_t * const task, unsigned affinity, int (*fn)(
 	task->irql = irql;
 	task->guard = task;	// debug signature
 	task->suspend = 0;
+	task->check_ready = NULL;
+	task->check_ready_obj = NULL;
 
 	// включаем в список задач
 	InsertTailList(& tasks_list [prio], & task->item);
@@ -1977,6 +1981,8 @@ void task_ticker(void)
 // проверка условий отдачи управления задаче
 static int task_isready(task_item_t * task)
 {
+	if (task->check_ready != NULL && task->check_ready(task->check_ready_obj))
+		return 1;
 	return
 		task->suspend == 0 &&
 		1;
@@ -2133,6 +2139,8 @@ task_scheduler0(void * oldframe, unsigned flag, unsigned code)
 		task->guard = task;
 		task->allocated = NULL;
 		task->suspend = 0;
+		task->check_ready = NULL;
+		task->check_ready_obj = NULL;
 		//
 		// получаем состояние процесора при первом перрывании
 		task->affinity = 1U << core;
