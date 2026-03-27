@@ -8,7 +8,7 @@
 #include "utils.h"
 #include "board.h"
 
-#if LINUX_SUBSYSTEM
+#if LINUX_SUBSYSTEM && defined (NVRAM_TYPE) && NVRAM_TYPE == NVRAM_TYPE_LINUX
 
 #include <stdio.h>
 #include <string.h>
@@ -83,8 +83,6 @@ void write_memory_cells(uint32_t * mem, uint8_t cnt)
 	sqlite3_finalize(stmt);
 	sqlite3_close(db);
 }
-
-#if defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX)
 
 #define BITFIELD_SIZE NVRAM_END
 
@@ -237,6 +235,4 @@ void nvram_initialize(void)
 	init_database();
 }
 
-#endif /* defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX) */
-
-#endif /* LINUX_SUBSYSTEM */
+#endif /* LINUX_SUBSYSTEM && defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX)*/

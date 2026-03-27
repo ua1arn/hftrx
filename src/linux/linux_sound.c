@@ -24,12 +24,13 @@ snd_pcm_uframes_t alsa_buffer_size = ARMI2SRATE * 50 / 1000; // 50 мс
 unsigned int actual_sample_rate = ARMI2SRATE;
 snd_pcm_sframes_t error;
 uint8_t vol_shift = 0;
+extern int global_stop;
 
 void * alsa_play_thread(void * args)
 {
 	const snd_pcm_uframes_t half_buf = alsa_buffer_size / 2;
 
-	while(1)
+	while(! global_stop)
 	{
 		snd_pcm_sframes_t avail = snd_pcm_avail_update(pcm_ph);
 
@@ -72,7 +73,7 @@ void * alsa_capture_thread(void * args)
 {
 	const snd_pcm_uframes_t half_buf = alsa_buffer_size / 2;
 
-	while(1)
+	while(! global_stop)
 	{
 		snd_pcm_sframes_t avail = snd_pcm_avail_update(pcm_ca);
 

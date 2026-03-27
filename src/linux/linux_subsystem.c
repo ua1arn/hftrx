@@ -115,6 +115,7 @@ void uartlite_reset(void)
 pthread_t timer_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t, audio_interrupt_t;
 static struct cond_thread ct_iq;
 int pcie_status = 0;
+int global_stop = 0;
 
 void linux_wait_iq(void)
 {
@@ -389,7 +390,7 @@ void * process_linux_timer_spool(void * args)
 {
 	const int delay = (1000 / TICKS_FREQUENCY) * 1000;
 
-	while(1)
+	while(! global_stop)
 	{
 		spool_systimerbundle();
 		usleep(delay);
@@ -409,7 +410,7 @@ void * linux_nmea_spool(void * args)
 	const int bufsize = 256;
 	char buf[bufsize];
 
-	while(1)
+	while(! global_stop)
 	{
 		usleep(5000);
 		memset(buf, 0, bufsize);
@@ -433,7 +434,7 @@ void * linux_pps_thread(void * args)
         return 0;
     }
 
-    while(1)
+    while(! global_stop)
     {
         //Acknowledge IRQ
         if (write(fd_pps, &uio_key, sizeof(uio_key)) < 0) {
@@ -1195,7 +1196,7 @@ void * eth_main_thread(void * args)
 	local_snprintf_P(strbuf, ARRAY_SIZE(strbuf), "Accepted TCP connection from %s:%d", inet_ntoa(addrClient.sin_addr), TCP_PORT);
 	stream_log(strbuf);
 
-	while(1)
+	while(! global_stop)
 	{
 		if(ioctl(sockClient, FIONREAD, & size) < 0) perror("FIONREAD");
 		if(size >= 4)
@@ -1684,7 +1685,7 @@ void * linux_iq_interrupt_thread(void * args)
         return NULL;
     }
 
-    while(1)
+    while(! global_stop)
     {
 #if 1
     	uint32_t intr = 1; /* unmask */
@@ -1731,7 +1732,7 @@ void * audio_interrupt_thread(void * args)
 	for (int i = 0; i < DMABUFFSIZE16TX; i ++)
 		* ph_fifo = 1;
 
-    while(1)
+    while(! global_stop)
     {
     	uint32_t intr = 1; /* unmask */
 
@@ -1963,6 +1964,7 @@ void linux_cancel_thread(pthread_t tid)
 static void handle_sig(int sig)
 {
 	printf("Waiting for process to finish... Got signal %d\n", sig);
+	global_stop = 1;
 	linux_exit();
 }
 
@@ -2141,7 +2143,6 @@ double acs712_vzero = 2.5;
 void asc712_offset_calibrate(void)
 {
     // Калибровка смещения ACS712
-    printf("Calibrating ACS712 zero offset...\n");
     double vsum = 0.0;
     int valid = 0;
     for (int i = 0; i < 10; i ++)
@@ -2155,7 +2156,7 @@ void asc712_offset_calibrate(void)
     }
 
     acs712_vzero = (valid > 0) ? vsum / valid : 0.0;
-    printf("Calibration done: Vzero = %.4f V\n", acs712_vzero);
+    printf("ACS712 zero offset: %.4f V\n", acs712_vzero);
 }
 
 int get_current_1117(void)
@@ -2811,8 +2812,12 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 
 void linux_exit(void)
 {
-	//linux_usb_stop();
+	hamradio_set_moxmode(0);
 
+	usleep(50000);
+#if IQ_VIA_USB
+	linux_usb_stop();
+#endif /* IQ_VIA_USB */
 #if WITHAD936XIIO
 	iio_stop_stream();
 #endif /* WITHAD936XIIO */
@@ -2845,11 +2850,13 @@ void linux_exit(void)
 	munmap((void *) modem_ctrl, sysconf(_SC_PAGESIZE));
 	munmap((void *) ph_fifo, sysconf(_SC_PAGESIZE));
 	munmap((void *) iq_count_rx, sysconf(_SC_PAGESIZE));
-	munmap((void *) iq_count_tx, sysconf(_SC_PAGESIZE));
 	munmap((void *) iq_fifo_tx, sysconf(_SC_PAGESIZE));
+#if defined (AXI_XGPO_ADDR)
 	munmap((void *) xgpo, sysconf(_SC_PAGESIZE));
+#endif /* defined (AXI_XGPO_ADDR) */
+#if defined (AXI_XGPI_ADDR)
 	munmap((void *) xgpi, sysconf(_SC_PAGESIZE));
-
+#endif /* defined (AXI_XGPI_ADDR) */
 #if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR)
 	munmap((void *) fir_reload, sysconf(_SC_PAGESIZE));
 #endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) */
