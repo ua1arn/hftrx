@@ -1510,7 +1510,7 @@ sysinit_debug_initialize(void)
 
 // Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 // получение частоты, с которой инкрементируется счетчик
-uint_fast64_t cpu_getdebugticksfreq(void)
+uint_fast32_t cpu_getdebugticksfreq(void)
 {
 	return CPU_FREQ;
 }
@@ -1519,13 +1519,13 @@ uint_fast64_t cpu_getdebugticksfreq(void)
 // получение из аппаратного счетчика монотонно увеличивающегося кода
 // see sysinit_perfmeter_initialize() in hardware.c
 // Счетчик увеличивается с частотой процессора
-uint_fast64_t cpu_getdebugticks(void)
+uint_fast32_t cpu_getdebugticks(void)
 {
 #if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 	return DWT->CYCCNT;	// use TIMESTAMP_GET();
 
 #elif defined(__aarch64__) && ! LINUX_SUBSYSTEM
-	return __get_PMCCNTR_EL0();
+	return (uint32_t) __get_PMCCNTR_EL0();
 
 #elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
 	{
@@ -1540,7 +1540,7 @@ uint_fast64_t cpu_getdebugticks(void)
 
 #elif defined(__riscv)
 
-	return csr_read_mcycle();
+	return (uint32_t) csr_read_mcycle();
 
 #else
 	#warning Wrong CPUSTYLE_xxx - cpu_getdebugticks, local_delay_us can not work
