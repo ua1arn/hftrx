@@ -2472,13 +2472,12 @@ void local_delay_ms(uint_fast32_t timeMS)
 // return non-zero: timeout error
 int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS)
 {
-	const uint_fast64_t t0 = cpu_getdebugticks();
-	const uint_fast64_t td = get_td_ms(timeMS);
+	const uint_fast32_t t0 = tasks_sys_now();
 	do
 	{
 		if (((* flag & mask) == state))
 			return 0;
-	} while ((uint64_t) (cpu_getdebugticks() - t0) < td);
+	} while ((uint32_t) (tasks_sys_now() - t0) < timeMS);
 	return 1;
 }
 
@@ -2486,13 +2485,12 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 // return non-zero: timeout error
 int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS)
 {
-	const uint_fast64_t t0 = cpu_getdebugticks();
-	const uint_fast64_t td = get_td_ms(timeMS);
+	const uint_fast32_t t0 = tasks_sys_now();
 	do
 	{
 		if (((* flag & mask) == state))
 			return 0;
-	} while ((uint64_t) (cpu_getdebugticks() - t0) < td);
+	} while ((uint32_t) (tasks_sys_now() - t0) < timeMS);
 	return 1;
 }
 
