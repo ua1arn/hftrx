@@ -638,7 +638,7 @@ void task_scheduler_start(void);
 void task_ticker(void);
 void __NO_RETURN task_scheduler_othercores(void);
 void * task_create(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize);
-void task_yield(void);	// хотим завешить выполнение кванта, не дожидаясь прерывания
+void task_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
 
 void * event_create(void);
 int event_wait(void * evt, unsigned ms);
