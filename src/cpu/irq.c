@@ -1884,9 +1884,8 @@ typedef struct task_item_tag
 	exception_frame_t * cpuframe;	// cpu state
 	void * allocated;
 	IRQL_t irql;
-	int (* check_ready)(struct task_item_tag * task, uint_fast64_t tn, void * arg1);
+	int (* check_ready)(struct task_item_tag * task, uint_fast32_t tn, void * arg1);
 	void * check_ready_obj;
-	unsigned timeout;
 	void * guard;	// debug signature
 } task_item_t;
 
@@ -1909,27 +1908,31 @@ struct taskfnparam_nop
 
 struct taskfnparam_suspend
 {
-	unsigned timeout;
+	uint32_t t0;
+	uint32_t td;
 };
 
 struct taskfnparam_wait32
 {
 	const volatile uint32_t * flag;
 	uint32_t mask, state;
-	unsigned timeout;
+	uint32_t t0;
+	uint32_t td;
 };
 
 struct taskfnparam_wait8
 {
 	const volatile uint8_t * flag;
 	uint8_t mask, state;
-	unsigned timeout;
+	uint32_t t0;
+	uint32_t td;
 };
 
 struct taskfnparam_event
 {
 	volatile uint8_t * flag;
-	unsigned timeout;
+	uint32_t t0;
+	uint32_t td;
 };
 
 typedef struct event_item_tag
@@ -2032,35 +2035,35 @@ void task_scheduler_initialize(void)
 
 void task_ticker(void)
 {
-	IRQL_t irql;
-	unsigned prio;
-	const uint_fast8_t coreid = board_dpc_coreid();
-	if (coreid != 0)
-		return;
-	IRQLSPIN_LOCK(& taskslock, & irql, IRQL_IPC_ONLY);
-	for (prio = 0; prio < PRIOv_count; ++ prio)
-	{
-		PRLIST_ENTRY list = & tasks_list [prio];
-		PRLIST_ENTRY t;
-		for (t = list->Flink; t != list; t = t->Flink)
-		{
-			task_item_t * const tp = CONTAINING_RECORD(t, task_item_t, item);
-			if (tp->check_ready != NULL)
-			{
-
-			}
-			if (tp->timeout != 0 && tp->timeout != UINT32_MAX)
-			{
-				tp->timeout -= 1;
-			}
-		}
-	}
-	IRQLSPIN_UNLOCK(& taskslock, irql);
+//	IRQL_t irql;
+//	unsigned prio;
+//	const uint_fast8_t coreid = board_dpc_coreid();
+//	if (coreid != 0)
+//		return;
+//	IRQLSPIN_LOCK(& taskslock, & irql, IRQL_IPC_ONLY);
+//	for (prio = 0; prio < PRIOv_count; ++ prio)
+//	{
+//		PRLIST_ENTRY list = & tasks_list [prio];
+//		PRLIST_ENTRY t;
+//		for (t = list->Flink; t != list; t = t->Flink)
+//		{
+//			task_item_t * const tp = CONTAINING_RECORD(t, task_item_t, item);
+//			if (tp->check_ready != NULL)
+//			{
+//
+//			}
+//			if (tp->timeout != 0 && tp->timeout != UINT32_MAX)
+//			{
+//				tp->timeout -= 1;
+//			}
+//		}
+//	}
+//	IRQLSPIN_UNLOCK(& taskslock, irql);
 }
 
 // проверка условий отдачи управления задаче
 // Если нашли - ставим error code
-static int task_isready(uint_fast64_t tn, task_item_t * task)
+static int task_isready(uint_fast32_t tn, task_item_t * task)
 {
 	if (task->check_ready != NULL)
 	{
@@ -2079,7 +2082,7 @@ static task_item_t * task_getready(unsigned affinity, task_item_t * taskin)
 {
 	ASSERT(taskin);
 	ASSERT(affinity);
-	const uint_fast64_t tn = cpu_getdebugticks();	// Счетчик увеличивается с частотой процессора
+	const uint_fast32_t tn = tasks_sys_now();
 	unsigned prio = GICI_DECODE_IRQL(taskin->irql);
 	ASSERT(ARRAY_SIZE(tasks_list) > prio);
 	// Возвращаем в список задач
@@ -2120,13 +2123,13 @@ void __NO_RETURN task_scheduler_othercores(void)
 	}
 }
 
-static int readyfn_suspend(task_item_t * task, uint_fast64_t tn, void * arg1)
+static int readyfn_suspend(task_item_t * task, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
-	return task->timeout == 0;
+	return (uint32_t) (tn - param->t0) >= param->td;
 }
 
-static int readyfn_wait32(task_item_t * task, uint_fast64_t tn, void * arg1)
+static int readyfn_wait32(task_item_t * task, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
 	if ((* param->flag & param->mask) == param->state)
@@ -2134,7 +2137,7 @@ static int readyfn_wait32(task_item_t * task, uint_fast64_t tn, void * arg1)
 		task_ec(task->cpuframe, 0);
 		return 1;
 	}
-	if (task->timeout == 0)
+	if ((uint32_t) (tn - param->t0) >= param->td)
 	{
 		task_ec(task->cpuframe, 1);
 		return 1;
@@ -2142,7 +2145,7 @@ static int readyfn_wait32(task_item_t * task, uint_fast64_t tn, void * arg1)
 	return 0;
 }
 
-static int readyfn_wait8(task_item_t * task, uint_fast64_t tn, void * arg1)
+static int readyfn_wait8(task_item_t * task, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
 	if ((* param->flag & param->mask) == param->state)
@@ -2150,7 +2153,7 @@ static int readyfn_wait8(task_item_t * task, uint_fast64_t tn, void * arg1)
 		task_ec(task->cpuframe, 0);
 		return 1;
 	}
-	if (task->timeout == 0)
+	if ((uint32_t) (tn - param->t0) >= param->td)
 	{
 		task_ec(task->cpuframe, 1);
 		return 1;
@@ -2158,7 +2161,7 @@ static int readyfn_wait8(task_item_t * task, uint_fast64_t tn, void * arg1)
 	return 0;
 }
 
-static int readyfn_event(task_item_t * task, uint_fast64_t tn, void * arg1)
+static int readyfn_event(task_item_t * task, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_event * const param = (struct taskfnparam_event *) arg1;
 	const uint8_t r = * param->flag;
@@ -2180,27 +2183,21 @@ static void task_handler(task_item_t * task, unsigned arg0, void * arg1)
 
 	case TASKFN_SUSPEND:
 		{
-			struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
-			task->check_ready_obj = param;
-			task->timeout = param->timeout;
+			task->check_ready_obj = arg1;
 			task->check_ready = readyfn_suspend;
 			return;
 		}
 
 	case TASKFN_WAIT32:
 		{
-			struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
-			task->check_ready_obj = param;
-			task->timeout = param->timeout;
+			task->check_ready_obj = arg1;
 			task->check_ready = readyfn_wait32;
 			return;
 		}
 
 	case TASKFN_WAIT8:
 		{
-			struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
-			task->check_ready_obj = param;
-			task->timeout = param->timeout;
+			task->check_ready_obj = arg1;
 			task->check_ready = readyfn_wait8;
 			return;
 		}
@@ -2323,7 +2320,8 @@ void local_delay_ms(uint_fast32_t timeMS)
 	else
 	{
 		struct taskfnparam_suspend v;
-		v.timeout = NTICKS(timeMS);
+		v.t0 = tasks_sys_now();
+		v.td = NTICKS(timeMS);
 		task_sysfn(TASKFN_SUSPEND, & v);
 	}
 }
@@ -2336,23 +2334,24 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 		return 0;
 	if (tasaks_not_started)
 	{
-		const uint_fast64_t t0 = cpu_getdebugticks();
-		const uint_fast64_t td = get_td_ms(timeMS);
+		const uint_fast32_t t0 = tasks_sys_now();
+		const uint_fast32_t td = NTICKS(timeMS);
 		do
 		{
 			if (((* flag & mask) == state))
 				return 0;
-		} while ((uint64_t) (cpu_getdebugticks() - t0) < td);
+		} while ((uint32_t) (tasks_sys_now() - t0) < td);
 		return 1;
 	}
 	else
 	{
 		struct taskfnparam_wait8 v;
-		v.timeout = NTICKS(timeMS);
+		v.t0 = tasks_sys_now();
+		v.td = NTICKS(timeMS);
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
-		return task_sysfn(TASKFN_WAIT8, & v);
+		return task_sysfn(TASKFN_WAIT32, & v);
 	}
 }
 
@@ -2364,19 +2363,20 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		return 0;
 	if (tasaks_not_started)
 	{
-		const uint_fast64_t t0 = cpu_getdebugticks();
-		const uint_fast64_t td = get_td_ms(timeMS);
+		const uint_fast32_t t0 = tasks_sys_now();
+		const uint_fast32_t td = NTICKS(timeMS);
 		do
 		{
 			if (((* flag & mask) == state))
 				return 0;
-		} while ((uint64_t) (cpu_getdebugticks() - t0) < td);
+		} while ((uint32_t) (tasks_sys_now() - t0) < td);
 		return 1;
 	}
 	else
 	{
 		struct taskfnparam_wait32 v;
-		v.timeout = NTICKS(timeMS);
+		v.t0 = tasks_sys_now();
+		v.td = NTICKS(timeMS);
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
@@ -2391,7 +2391,8 @@ int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS)
 	if (timeMS == 0)
 		return 0;
 	struct taskfnparam_event v;
-	v.timeout = NTICKS(timeMS);
+	v.t0 = tasks_sys_now();
+	v.td = NTICKS(timeMS);
 	v.flag = flag;
 	return task_sysfn(TASKFN_EVENT, & v);
 }
