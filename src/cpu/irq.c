@@ -1778,11 +1778,11 @@ static void task_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 	f->x0 = ec;
 }
 
-static void task_handler(struct thread_item_tag * task, unsigned arg0, void * arg1);
+static void task_handler(struct thread_item_tag * thread, unsigned arg0, void * arg1);
 // scheduler-mode entry
-static void task_svc(struct thread_item_tag * task, unsigned code, exception_frame_t * f)
+static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 {
-	task_handler(task, (unsigned) f->x0, (void *) f->x1);
+	task_handler(thread, (unsigned) f->x0, (void *) f->x1);
 }
 
 // user-mode entry
@@ -1851,12 +1851,12 @@ static void task_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 	f->r0 = ec;
 }
 
-static void task_handler(struct thread_item_tag * task, unsigned arg0, void * arg1);
+static void task_handler(struct thread_item_tag * thread, unsigned arg0, void * arg1);
 
 // scheduler-mode entry
-static void task_svc(struct thread_item_tag * task, unsigned code, exception_frame_t * f)
+static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 {
-	task_handler(task, (unsigned) f->r0, (void *) f->r1);
+	task_handler(thread, (unsigned) f->r0, (void *) f->r1);
 }
 
 // user-mode entry
@@ -1894,12 +1894,12 @@ static void task_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 	f->r0 = ec;
 }
 
-static void task_handler(struct thread_item_tag * task, unsigned arg0, void * arg1);
+static void task_handler(struct thread_item_tag * thread, unsigned arg0, void * arg1);
 
 // scheduler-mode entry
-static void task_svc(struct thread_item_tag * task, unsigned code, exception_frame_t * f)
+static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 {
-	task_handler(task, (unsigned) f->r0, (void *) f->r1);
+	task_handler(thread, (unsigned) f->r0, (void *) f->r1);
 }
 
 // user-mode entry
@@ -1942,12 +1942,12 @@ void task_construct(exception_frame_t * __restrict oldframe, void * fn, void * a
 		f->x3 = ec;
 	}
 
-	static void task_handler(struct thread_item_tag * task, unsigned arg0, void * arg1);
+	static void task_handler(struct thread_item_tag * thread, unsigned arg0, void * arg1);
 
 	// scheduler-mode entry
-	static void task_svc(struct thread_item_tag * task, unsigned code, exception_frame_t * f)
+	static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 	{
-		task_handler(task, (unsigned) f->x3, (void *) f->x4);
+		task_handler(thread, (unsigned) f->x3, (void *) f->x4);
 	}
 
 	// user-mode entry
@@ -2012,7 +2012,7 @@ typedef struct thread_item_tag
 	exception_frame_t * cpuframe;	// cpu state
 	void * allocated;
 	IRQL_t irql;
-	int (* check_ready)(struct thread_item_tag * task, uint_fast32_t tn, void * arg1);
+	int (* check_ready)(struct thread_item_tag * thread, uint_fast32_t tn, void * arg1);
 	void * check_ready_obj;
 	void * guard;	// debug signature
 } thread_item_t;
@@ -2086,48 +2086,48 @@ static thread_item_t idle_threads [HARDWARE_NCORES];
 static thread_item_t base_threads [HARDWARE_NCORES];	// состояения получаем при первом прерывании
 static thread_item_t * startedtask [HARDWARE_NCORES];
 
-static void task_addtask(thread_item_t * const task, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql)
+static void task_addtask(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql)
 {
 	const unsigned prio = GICI_DECODE_IRQL(irql);
 	ASSERT(ARRAY_SIZE(threads_list) > prio);
-	task->affinity = affinity;
-	task->allocated = aligned_alloc(DCACHEROWSIZE, ramsize);
-	//task->allocated = malloc(TASKRAM_SIZE);
-	ASSERT(task->allocated != NULL);
-	while (task->allocated == NULL)
+	thread->affinity = affinity;
+	thread->allocated = aligned_alloc(DCACHEROWSIZE, ramsize);
+	//thread->allocated = malloc(TASKRAM_SIZE);
+	ASSERT(thread->allocated != NULL);
+	while (thread->allocated == NULL)
 		;
-	uintptr_t top = (uintptr_t) task->allocated + ramsize;
+	uintptr_t top = (uintptr_t) thread->allocated + ramsize;
 	exception_frame_t * stackframe = (exception_frame_t *) (top - CPUCTX_SIZE);
 	// Установить параметры задачи для запуска
 	task_construct(stackframe, fn, ctx);
-	task->cpuframe = stackframe;
-	task->irql = irql;
-	task->guard = task;	// debug signature
-	task->check_ready = NULL;
+	thread->cpuframe = stackframe;
+	thread->irql = irql;
+	thread->guard = thread;	// debug signature
+	thread->check_ready = NULL;
 
 	// включаем в список задач
-	InsertTailList(& threads_list [prio], & task->item);
-	PRINTF("Added task at prio=%u, affinity=%02X (frame=%p), stack[%p..%p]\n", prio, affinity, stackframe, stackframe, (void *) top);
+	InsertTailList(& threads_list [prio], & thread->item);
+	PRINTF("Added thread at prio=%u, affinity=%02X (frame=%p), stack[%p..%p]\n", prio, affinity, stackframe, stackframe, (void *) top);
 }
 
 void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize)
 {
-	thread_item_t * const task = (thread_item_t *) malloc(sizeof (thread_item_t));
-	if (task != NULL)
+	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
+	if (thread != NULL)
 	{
-		task_addtask(task, affinity, fn, ctx, ramsize, IRQL_USER);
+		task_addtask(thread, affinity, fn, ctx, ramsize, IRQL_USER);
 	}
-	return task;
+	return thread;
 }
 
 void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize)
 {
-	thread_item_t * const task = (thread_item_t *) malloc(sizeof (thread_item_t));
-	if (task != NULL)
+	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
+	if (thread != NULL)
 	{
-		task_addtask(task, affinity, fn, ctx, ramsize, IRQL_REALTIME);
+		task_addtask(thread, affinity, fn, ctx, ramsize, IRQL_REALTIME);
 	}
-	return task;
+	return thread;
 }
 
 void * event_create(void)
@@ -2165,9 +2165,9 @@ void task_scheduler_initialize(void)
 	}
 	for (i = 0; i < HARDWARE_NCORES; ++ i)
 	{
-		thread_item_t * const task = & idle_threads [i];
+		thread_item_t * const thread = & idle_threads [i];
 		//
-		task_addtask(task, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
+		task_addtask(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
 	}
 }
 
@@ -2201,13 +2201,13 @@ void task_ticker(void)
 
 // проверка условий отдачи управления задаче
 // Если нашли - ставим error code
-static int task_isready(uint_fast32_t tn, thread_item_t * task)
+static int task_isready(uint_fast32_t tn, thread_item_t * thread)
 {
-	if (task->check_ready != NULL)
+	if (thread->check_ready != NULL)
 	{
-		if (task->check_ready(task, tn, task->check_ready_obj))
+		if (thread->check_ready(thread, tn, thread->check_ready_obj))
 		{
-			task->check_ready = NULL;	// признак готовности
+			thread->check_ready = NULL;	// признак готовности
 			return 1;
 		}
 		return 0;
@@ -2220,7 +2220,7 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 {
 	ASSERT(taskin);
 	ASSERT(affinity);
-	const uint_fast32_t tn = threads_sys_now();
+	const uint_fast32_t tn = sys_now();
 	unsigned prio = GICI_DECODE_IRQL(taskin->irql);
 	ASSERT(ARRAY_SIZE(threads_list) > prio);
 	// Возвращаем в список задач
@@ -2262,45 +2262,45 @@ void __NO_RETURN task_scheduler_othercores(void)
 	}
 }
 
-static int readyfn_suspend(thread_item_t * task, uint_fast32_t tn, void * arg1)
+static int readyfn_suspend(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
 	return (uint32_t) (tn - param->t0) >= param->td;
 }
 
-static int readyfn_wait32(thread_item_t * task, uint_fast32_t tn, void * arg1)
+static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
 	if ((* param->flag & param->mask) == param->state)
 	{
-		task_ec(task->cpuframe, 0);
+		task_ec(thread->cpuframe, 0);
 		return 1;
 	}
 	if ((uint32_t) (tn - param->t0) >= param->td)
 	{
-		task_ec(task->cpuframe, 1);
+		task_ec(thread->cpuframe, 1);
 		return 1;
 	}
 	return 0;
 }
 
-static int readyfn_wait8(thread_item_t * task, uint_fast32_t tn, void * arg1)
+static int readyfn_wait8(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
 	if ((* param->flag & param->mask) == param->state)
 	{
-		task_ec(task->cpuframe, 0);
+		task_ec(thread->cpuframe, 0);
 		return 1;
 	}
 	if ((uint32_t) (tn - param->t0) >= param->td)
 	{
-		task_ec(task->cpuframe, 1);
+		task_ec(thread->cpuframe, 1);
 		return 1;
 	}
 	return 0;
 }
 
-static int readyfn_event(thread_item_t * task, uint_fast32_t tn, void * arg1)
+static int readyfn_event(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_event * const param = (struct taskfnparam_event *) arg1;
 	const uint8_t r = * param->flag;
@@ -2308,7 +2308,7 @@ static int readyfn_event(thread_item_t * task, uint_fast32_t tn, void * arg1)
 	return !! r;
 }
 
-static void task_handler(thread_item_t * task, unsigned arg0, void * arg1)
+static void task_handler(thread_item_t * thread, unsigned arg0, void * arg1)
 {
 	switch (arg0)
 	{
@@ -2322,22 +2322,22 @@ static void task_handler(thread_item_t * task, unsigned arg0, void * arg1)
 
 	case TASKFN_SUSPEND:
 		{
-			task->check_ready_obj = arg1;
-			task->check_ready = readyfn_suspend;
+			thread->check_ready_obj = arg1;
+			thread->check_ready = readyfn_suspend;
 			return;
 		}
 
 	case TASKFN_WAIT32:
 		{
-			task->check_ready_obj = arg1;
-			task->check_ready = readyfn_wait32;
+			thread->check_ready_obj = arg1;
+			thread->check_ready = readyfn_wait32;
 			return;
 		}
 
 	case TASKFN_WAIT8:
 		{
-			task->check_ready_obj = arg1;
-			task->check_ready = readyfn_wait8;
+			thread->check_ready_obj = arg1;
+			thread->check_ready = readyfn_wait8;
 			return;
 		}
 	}
@@ -2350,14 +2350,14 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 	const unsigned core = arm_hardware_cpuid();
 	if (startedtask [core] == NULL)
 	{
-		thread_item_t * const task = & base_threads [core];
-		task->guard = task;
-		task->allocated = NULL;
-		task->check_ready = NULL;
+		thread_item_t * const thread = & base_threads [core];
+		thread->guard = thread;
+		thread->allocated = NULL;
+		thread->check_ready = NULL;
 		//
 		// получаем состояние процесора при первом перрывании
-		task->affinity = 1U << core;
-		startedtask [core] = task;
+		thread->affinity = 1U << core;
+		startedtask [core] = thread;
 	}
 	startedtask [core]->cpuframe = oldframe;
 	IRQLSPIN_LOCK(& threadslock, & startedtask [core]->irql, IRQL_IPC_ONLY);
@@ -2403,8 +2403,8 @@ void local_delay_ms(uint_fast32_t timeMS)
 	else
 	{
 		struct taskfnparam_suspend v;
-		v.t0 = threads_sys_now();
-		v.td = NTICKS(timeMS);
+		v.t0 = sys_now();
+		v.td = timeMS;
 		task_sysfn(TASKFN_SUSPEND, & v);
 	}
 }
@@ -2429,8 +2429,8 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 	else
 	{
 		struct taskfnparam_wait8 v;
-		v.t0 = threads_sys_now();
-		v.td = NTICKS(timeMS);
+		v.t0 = sys_now();
+		v.td = timeMS;
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
@@ -2458,8 +2458,8 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 	else
 	{
 		struct taskfnparam_wait32 v;
-		v.t0 = threads_sys_now();
-		v.td = NTICKS(timeMS);
+		v.t0 = sys_now();
+		v.td = timeMS;
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
@@ -2474,8 +2474,8 @@ int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS)
 	if (timeMS == 0)
 		return 0;
 	struct taskfnparam_event v;
-	v.t0 = threads_sys_now();
-	v.td = NTICKS(timeMS);
+	v.t0 = sys_now();
+	v.td = timeMS;
 	v.flag = flag;
 	return task_sysfn(TASKFN_EVENT, & v);
 }
@@ -2535,7 +2535,7 @@ void task_ticker(void)
 
 }
 
-static void task_handler(struct thread_item_tag * task, unsigned arg0, void * arg1)
+static void task_handler(struct thread_item_tag * thread, unsigned arg0, void * arg1)
 {
 
 }
