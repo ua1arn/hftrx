@@ -151,6 +151,11 @@
     #define __L2C_PRESENT             0U
     #warning "__L2C_PRESENT not defined in device header file; using default!"
   #endif
+
+	#ifndef __L3C_PRESENT
+	  #define __L3C_PRESENT             0U
+	  #warning "__L3C_PRESENT not defined in device header file; using default!"
+	#endif
 #endif
 
 /* IO definitions (access restrictions to peripheral registers) */

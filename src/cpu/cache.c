@@ -275,6 +275,18 @@ int_fast32_t icache_rowsize(void)
 #define __set_DCCIMVAC(v) __set_DCCIVAC(v)
 #define __set_DCIMVAC(v) __set_DCIVAC(v)
 #define __get_CTR() (__get_CTR_EL0())
+
+#else
+
+/** \brief  Get CTR
+\return		Cache Type Register value
+*/
+__STATIC_INLINE uint32_t __get_CTR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 0, 0, 1);
+	return result;
+}
 #endif
 
 //	MVA
