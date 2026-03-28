@@ -1777,8 +1777,6 @@ __STATIC_FORCEINLINE uint64_t __get_PMCNTENSET_EL0(void)
 	return result;
 }
 
-///////////////
-///
 __STATIC_INLINE void __set_CPACR_EL1(uint32_t value)
 {
 	__set_RG32("CPACR_EL1", value);
