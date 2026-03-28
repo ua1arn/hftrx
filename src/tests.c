@@ -7909,6 +7909,23 @@ void hightests(void)
 		show_chip();
 	}
 #endif
+#if 0
+	{
+		// formats.c test
+		uint32_t v = 0x80000000;
+		static char fmt [] = "v = %08" PRIX32 "\n";
+		uint64_t v64 = 0x8000000000000000;
+		static char fmt64 [] = "v64 = %08" PRIX64 "\n";
+		printf("Format:\n");
+		printhex(0, fmt, sizeof fmt);
+		printf(fmt, v);
+		PRINTF(fmt, v);
+		printf("Format64:\n");
+		printhex(0, fmt64, sizeof fmt64);
+		printf(fmt64, v64);
+		PRINTF(fmt64, v64);
+	}
+#endif
 #if 0 && ! WITHISBOOTLOADER
 	{
 		static dpcobj_t userprintdpcs [HARDWARE_NCORES];
