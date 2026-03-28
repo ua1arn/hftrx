@@ -1738,19 +1738,22 @@ typedef struct exception_frame_tag
 	uint64_t x21, x22, x23, x24, x25, x26, x27, x28, x29, x30;
 } exception_frame_t;
 
-#define CPUCTX_SIZE (sizeof (exception_frame_t))
+
+static size_t context_size(void)
+{
+	return sizeof (exception_frame_t);
+}
 
 
-// Установить параметры задачи для запуска
-void task_construct(exception_frame_t * __restrict oldframe, void * fn, void * arg)
+// Установить параметры потока для запуска
+static void context_init(exception_frame_t * __restrict oldframe, void * fn, void * arg)
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 
 	exception_frame_t * const f = (exception_frame_t *) oldframe;
-	//memcpy(oldframe, stack_template, CPUCTX_SIZE);	// CPU/FPU registers,
-	memset(oldframe, 0, CPUCTX_SIZE);	// CPU/FPU registers,
+	memset(oldframe, 0, context_size());	// CPU/FPU registers,
 
 	// (spsr<4> == '1');
 	f->exc_spsr_el3 =
@@ -1772,7 +1775,7 @@ void task_construct(exception_frame_t * __restrict oldframe, void * fn, void * a
 #pragma GCC diagnostic pop
 }
 
-static void task_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
+static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 {
 	exception_frame_t * const f = cpuframe;
 	f->x0 = ec;
@@ -1822,16 +1825,17 @@ typedef struct exception_frame_tag
 //VPUSH.F32	{D0-D15}
 //VPUSH.F32	{D16-D31}
 
-//#define CPUCTX_SIZE (84 * 4)
-#define CPUCTX_SIZE (sizeof (exception_frame_t))
+static size_t context_size(void)
+{
+	return sizeof (exception_frame_t);
+}
 
-// Установить параметры задачи для запуска
-void task_construct(exception_frame_t * __restrict oldframe, void * fn, void * arg)
+// Установить параметры потока для запуска
+static void context_init(exception_frame_t * __restrict oldframe, void * fn, void * arg)
 {
 
 	exception_frame_t * const f = (exception_frame_t *) oldframe;
-	//memcpy(oldframe, stack_template, CPUCTX_SIZE);	// CPU/FPU registers,
-	memset(oldframe, 0, CPUCTX_SIZE);	// CPU/FPU registers,
+	memset(oldframe, 0, context_size());	// CPU/FPU registers,
 	f->SPSR_irq = 0;
 	f->sp_adjmod4 = 0;
 	f->fpscr = 0;
@@ -1845,7 +1849,7 @@ void task_construct(exception_frame_t * __restrict oldframe, void * fn, void * a
 }
 
 // scheduler-mode entry
-static void task_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
+static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 {
 	exception_frame_t * const f = cpuframe;
 	f->r0 = ec;
@@ -1888,7 +1892,7 @@ typedef struct exception_frame_tag
 
 
 // scheduler-mode entry
-static void task_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
+static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 {
 	exception_frame_t * const f = cpuframe;
 	f->r0 = ec;
@@ -1919,58 +1923,66 @@ static int task_sysfn(unsigned arg0, void * arg1)
 	return result;
 }
 
-#define CPUCTX_SIZE (sizeof (exception_frame_t))
+
+static size_t context_size(void)
+{
+	return sizeof (exception_frame_t);
+}
 
 
-// Установить параметры задачи для запуска
-void task_construct(exception_frame_t * __restrict oldframe, void * fn, void * arg)
+// Установить параметры потока для запуска
+static void context_init(exception_frame_t * __restrict oldframe, void * fn, void * arg)
 {
 }
 
 #elif __riscv
 	#warning unsupported context switch on this CPU
 
-	typedef struct exception_frame_tag
-	{
-		uint64_t x0, x1, x2, x3, x4;
-		uint64_t xx [32];
-	} exception_frame_t;
+typedef struct exception_frame_tag
+{
+	uint64_t x0, x1, x2, x3, x4;
+	uint64_t xx [32];
+} exception_frame_t;
 
-	static void task_ec(void * __restrict cpuframe, unsigned ec)
-	{
-		exception_frame_t * const f = cpuframe;
-		f->x3 = ec;
-	}
+static void context_set_ec(void * __restrict cpuframe, unsigned ec)
+{
+	exception_frame_t * const f = cpuframe;
+	f->x3 = ec;
+}
 
-	static void task_handler(struct thread_item_tag * thread, unsigned arg0, void * arg1);
+static void task_handler(struct thread_item_tag * thread, unsigned arg0, void * arg1);
 
-	// scheduler-mode entry
-	static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
-	{
-		task_handler(thread, (unsigned) f->x3, (void *) f->x4);
-	}
+// scheduler-mode entry
+static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
+{
+	task_handler(thread, (unsigned) f->x3, (void *) f->x4);
+}
 
-	// user-mode entry
-	static int task_sysfn(unsigned arg0, void * arg1)
-	{
-		uint32_t result = 0;
-		__ASM volatile(
-			"\t" "mv x3,%1\n"
-			"\t" "mv x4,%2\n"
-			//"\t" "SVC 0x0000\n"
-			"\t" "mv %0,x3\n":
-			"=r"(result) :		// OutputOperands
-			"r"(arg0), "ra"(arg1) : // InputOperands
-			"x3", "x4", "memory"	// Clobbers
-		);
-		return result;
-	}
-
-#define CPUCTX_SIZE (sizeof (exception_frame_t))
+// user-mode entry
+static int task_sysfn(unsigned arg0, void * arg1)
+{
+	uint32_t result = 0;
+	__ASM volatile(
+		"\t" "mv x3,%1\n"
+		"\t" "mv x4,%2\n"
+		//"\t" "SVC 0x0000\n"
+		"\t" "mv %0,x3\n":
+		"=r"(result) :		// OutputOperands
+		"r"(arg0), "ra"(arg1) : // InputOperands
+		"x3", "x4", "memory"	// Clobbers
+	);
+	return result;
+}
 
 
-// Установить параметры задачи для запуска
-void task_construct(exception_frame_t * __restrict oldframe, void * fn, void * arg)
+static size_t context_size(void)
+{
+	return sizeof (exception_frame_t);
+}
+
+
+// Установить параметры потока для запуска
+static void context_init(exception_frame_t * __restrict oldframe, void * fn, void * arg)
 {
 }
 
@@ -2086,7 +2098,7 @@ static thread_item_t idle_threads [HARDWARE_NCORES];
 static thread_item_t base_threads [HARDWARE_NCORES];	// состояения получаем при первом прерывании
 static thread_item_t * startedtask [HARDWARE_NCORES];
 
-static void task_addtask(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql)
+static void thread_addtask(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql)
 {
 	const unsigned prio = GICI_DECODE_IRQL(irql);
 	ASSERT(ARRAY_SIZE(threads_list) > prio);
@@ -2097,9 +2109,9 @@ static void task_addtask(thread_item_t * const thread, unsigned affinity, int (*
 	while (thread->allocated == NULL)
 		;
 	uintptr_t top = (uintptr_t) thread->allocated + ramsize;
-	exception_frame_t * stackframe = (exception_frame_t *) (top - CPUCTX_SIZE);
-	// Установить параметры задачи для запуска
-	task_construct(stackframe, fn, ctx);
+	exception_frame_t * stackframe = (exception_frame_t *) (top - context_size());
+	// Установить параметры потока для запуска
+	context_init(stackframe, fn, ctx);
 	thread->cpuframe = stackframe;
 	thread->irql = irql;
 	thread->guard = thread;	// debug signature
@@ -2115,7 +2127,7 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
 	if (thread != NULL)
 	{
-		task_addtask(thread, affinity, fn, ctx, ramsize, IRQL_USER);
+		thread_addtask(thread, affinity, fn, ctx, ramsize, IRQL_USER);
 	}
 	return thread;
 }
@@ -2125,7 +2137,7 @@ void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * c
 	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
 	if (thread != NULL)
 	{
-		task_addtask(thread, affinity, fn, ctx, ramsize, IRQL_REALTIME);
+		thread_addtask(thread, affinity, fn, ctx, ramsize, IRQL_REALTIME);
 	}
 	return thread;
 }
@@ -2167,7 +2179,7 @@ void task_scheduler_initialize(void)
 	{
 		thread_item_t * const thread = & idle_threads [i];
 		//
-		task_addtask(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
+		thread_addtask(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
 	}
 }
 
@@ -2273,12 +2285,12 @@ static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 	struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
 	if ((* param->flag & param->mask) == param->state)
 	{
-		task_ec(thread->cpuframe, 0);
+		context_set_ec(thread->cpuframe, 0);
 		return 1;
 	}
 	if ((uint32_t) (tn - param->t0) >= param->td)
 	{
-		task_ec(thread->cpuframe, 1);
+		context_set_ec(thread->cpuframe, 1);
 		return 1;
 	}
 	return 0;
@@ -2289,12 +2301,12 @@ static int readyfn_wait8(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 	struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
 	if ((* param->flag & param->mask) == param->state)
 	{
-		task_ec(thread->cpuframe, 0);
+		context_set_ec(thread->cpuframe, 0);
 		return 1;
 	}
 	if ((uint32_t) (tn - param->t0) >= param->td)
 	{
-		task_ec(thread->cpuframe, 1);
+		context_set_ec(thread->cpuframe, 1);
 		return 1;
 	}
 	return 0;
@@ -2750,22 +2762,22 @@ void local_delay_us(uint_fast32_t timeUS)
 
 #if defined(__aarch64__) && ! LINUX_SUBSYSTEM
 
-void uncommon_trap_handler_1(void * frame) { PRINTF("uncommon_trap_handler_1:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x000
-void uncommon_trap_handler_2(void * frame) { PRINTF("uncommon_trap_handler_2:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x080
-void uncommon_trap_handler_3(void * frame) { PRINTF("uncommon_trap_handler_3:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x100
-void uncommon_trap_handler_4(void * frame) { PRINTF("uncommon_trap_handler_4:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x180
-//void uncommon_trap_handler_5(void * frame) { PRINTF("uncommon_trap_handler_5:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x200 Current EL with SPx Synchronous
-//void uncommon_trap_handler_6(void * frame) { PRINTF("uncommon_trap_handler_6:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x280 VIRQ EL3
-//void uncommon_trap_handler_7(void * frame) { PRINTF("uncommon_trap_handler_7:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x300 FIQ EL3
-void uncommon_trap_handler_8(void * frame) { PRINTF("uncommon_trap_handler_8:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x380
-void uncommon_trap_handler_9(void * frame) { PRINTF("uncommon_trap_handler_9:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x400
-void uncommon_trap_handler_10(void * frame) { PRINTF("uncommon_trap_handler_10:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x480
-void uncommon_trap_handler_11(void * frame) { PRINTF("uncommon_trap_handler_11:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x500
-void uncommon_trap_handler_12(void * frame) { PRINTF("uncommon_trap_handler_12:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x580
-void uncommon_trap_handler_13(void * frame) { PRINTF("uncommon_trap_handler_13:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x600
-void uncommon_trap_handler_14(void * frame) { PRINTF("uncommon_trap_handler_14:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x680
-void uncommon_trap_handler_15(void * frame) { PRINTF("uncommon_trap_handler_15:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x700
-void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\n"); printhex64((uintptr_t) frame, frame, CPUCTX_SIZE); for (;;) ; }	// 0x780
+void uncommon_trap_handler_1(void * frame) { PRINTF("uncommon_trap_handler_1:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x000
+void uncommon_trap_handler_2(void * frame) { PRINTF("uncommon_trap_handler_2:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x080
+void uncommon_trap_handler_3(void * frame) { PRINTF("uncommon_trap_handler_3:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x100
+void uncommon_trap_handler_4(void * frame) { PRINTF("uncommon_trap_handler_4:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x180
+//void uncommon_trap_handler_5(void * frame) { PRINTF("uncommon_trap_handler_5:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x200 Current EL with SPx Synchronous
+//void uncommon_trap_handler_6(void * frame) { PRINTF("uncommon_trap_handler_6:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x280 VIRQ EL3
+//void uncommon_trap_handler_7(void * frame) { PRINTF("uncommon_trap_handler_7:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x300 FIQ EL3
+void uncommon_trap_handler_8(void * frame) { PRINTF("uncommon_trap_handler_8:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x380
+void uncommon_trap_handler_9(void * frame) { PRINTF("uncommon_trap_handler_9:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x400
+void uncommon_trap_handler_10(void * frame) { PRINTF("uncommon_trap_handler_10:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x480
+void uncommon_trap_handler_11(void * frame) { PRINTF("uncommon_trap_handler_11:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x500
+void uncommon_trap_handler_12(void * frame) { PRINTF("uncommon_trap_handler_12:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x580
+void uncommon_trap_handler_13(void * frame) { PRINTF("uncommon_trap_handler_13:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x600
+void uncommon_trap_handler_14(void * frame) { PRINTF("uncommon_trap_handler_14:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x680
+void uncommon_trap_handler_15(void * frame) { PRINTF("uncommon_trap_handler_15:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x700
+void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x780
 
 // was: uncommon_trap_handler_6
 // Current EL with SPx IRQ/vIRQ
@@ -2809,7 +2821,7 @@ void SError_Handler(void * frame)
 	}
 	TP();
 	PRINTF("SError_Handler (core=%u), stack~%p:\n", (unsigned) arm_hardware_cpuid(), frame);
-	printhex64((uintptr_t) frame, frame, CPUCTX_SIZE);
+	printhex64((uintptr_t) frame, frame, context_size());
 	PRINTF("ESR_EL3=%08X\n", (unsigned) esr_el3);
 	PRINTF("ELR_EL3=0x%016" PRIX64 " (where)\n", __get_ELR_EL3());
 	PRINTF("FAR_EL3=0x%016" PRIX64 " (access)\n", __get_FAR_EL3());
