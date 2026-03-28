@@ -2445,7 +2445,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
-		return task_sysfn(TASKFN_WAIT32, & v);
+		return task_sysfn(TASKFN_WAIT8, & v);
 	}
 }
 
