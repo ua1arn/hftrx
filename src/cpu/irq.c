@@ -2036,6 +2036,7 @@ enum
 	TASKFN_SUSPEND,
 	TASKFN_WAIT32,
 	TASKFN_WAIT8,
+	TASKFN_WAITLIST,
 	TASKFN_EVENT,
 	//
 	TASKFN_count
@@ -2064,6 +2065,13 @@ struct taskfnparam_wait8
 {
 	const volatile uint8_t * flag;
 	uint8_t mask, state;
+	uint32_t t0;
+	uint32_t td;
+};
+
+struct taskfnparam_waitlist
+{
+	PRLIST_ENTRY list;
 	uint32_t t0;
 	uint32_t td;
 };
@@ -2312,6 +2320,22 @@ static int readyfn_wait8(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 	return 0;
 }
 
+static int readyfn_waitlist(thread_item_t * thread, uint_fast32_t tn, void * arg1)
+{
+	struct taskfnparam_waitlist * const param = (struct taskfnparam_waitlist *) arg1;
+	if (! IsListEmpty(param->list))
+	{
+		context_set_ec(thread->cpuframe, 0);
+		return 1;
+	}
+	if ((uint32_t) (tn - param->t0) >= param->td)
+	{
+		context_set_ec(thread->cpuframe, 1);
+		return 1;
+	}
+	return 0;
+}
+
 static int readyfn_event(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_event * const param = (struct taskfnparam_event *) arg1;
@@ -2350,6 +2374,13 @@ static void task_handler(thread_item_t * thread, unsigned arg0, void * arg1)
 		{
 			thread->check_ready_obj = arg1;
 			thread->check_ready = readyfn_wait8;
+			return;
+		}
+
+	case TASKFN_WAITLIST:
+		{
+			thread->check_ready_obj = arg1;
+			thread->check_ready = readyfn_waitlist;
 			return;
 		}
 	}
@@ -2475,6 +2506,19 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		v.state = state;
 		return task_sysfn(TASKFN_WAIT32, & v);
 	}
+}
+
+// wait expected state of variable
+// return non-zero: timeout error
+int local_waitlist(PRLIST_ENTRY list, uint_fast32_t timeMS)
+{
+	if (timeMS == 0)
+		return 0;
+	struct taskfnparam_waitlist v;
+	v.t0 = sys_now();
+	v.td = timeMS;
+	v.list = list;
+	return task_sysfn(TASKFN_WAITLIST, & v);
 }
 
 // wait expected state of variable
