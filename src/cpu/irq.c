@@ -1994,14 +1994,14 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 
 static int threads_not_started = 999;
 
-static uint_fast64_t get_td_us(uint_fast32_t timeUS)
+static uint_fast32_t get_td_us(uint_fast32_t timeUS)
 {
-	return timeUS * cpu_getdebugticksfreq() / (1000 * 1000);
+	return timeUS * (uint_fast64_t) cpu_getdebugticksfreq() / (1000 * 1000);
 }
 
-static uint_fast64_t get_td_ms(uint_fast32_t timeMS)
+static uint_fast32_t get_td_ms(uint_fast32_t timeMS)
 {
-	return timeMS * cpu_getdebugticksfreq() / 1000;
+	return timeMS * (uint_fast64_t) cpu_getdebugticksfreq() / 1000;
 }
 
 static uint32_t threads_sys_now(void)
@@ -2407,9 +2407,9 @@ void local_delay_ms(uint_fast32_t timeMS)
 	if (threads_not_started)
 	{
 
-		const uint_fast64_t t0 = cpu_getdebugticks();
-		const uint_fast64_t td = get_td_ms(timeMS);
-		while ((uint64_t) (cpu_getdebugticks() - t0) < td)
+		const uint_fast32_t t0 = cpu_getdebugticks();
+		const uint_fast32_t td = get_td_ms(timeMS);
+		while ((uint32_t) (cpu_getdebugticks() - t0) < td)
 			;
 	}
 	else
@@ -2554,9 +2554,9 @@ void local_delay_ms(uint_fast32_t timeMS)
 {
 	if (timeMS == 0)
 		return;
-	const uint_fast64_t t0 = cpu_getdebugticks();
-	const uint_fast64_t td = get_td_ms(timeMS);
-	while ((uint64_t) (threads_sys_now() - t0) < td)
+	const uint_fast32_t t0 = cpu_getdebugticks();
+	const uint_fast32_t td = get_td_ms(timeMS);
+	while ((uint32_t) (threads_sys_now() - t0) < td)
 		;
 }
 
@@ -2750,10 +2750,10 @@ void local_delay_us(uint_fast32_t timeUS)
 	if (timeUS == 0)
 		return;
 
-	const uint_fast64_t t0 = cpu_getdebugticks();	// Счетчик увеличивается с частотой процессора
-	const uint_fast64_t td = get_td_us(timeUS);
+	const uint_fast32_t t0 = cpu_getdebugticks();	// Счетчик увеличивается с частотой процессора
+	const uint_fast32_t td = get_td_us(timeUS);
 	//const uint_fast64_t td = timeUS * cpufreqMHz;
-	while ((uint64_t) (cpu_getdebugticks() - t0) < td)
+	while ((uint32_t) (cpu_getdebugticks() - t0) < td)
 		;
 }
 
