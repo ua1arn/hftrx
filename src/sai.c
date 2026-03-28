@@ -3394,7 +3394,7 @@ enum
 	DMAC_Ch_Total
 };
 
-
+// Field in parameterDMAC
 #define DMAC_delay 0//(UINT32_C(1) << 8)
 
 #define DMAC_MODE_REGN_VALUE_UACIN (0*(UINT32_C(1) << 3) | 0*(UINT32_C(1) << 2))	// mode: DMA_DST_MODE, DMA_SRC_MODE
