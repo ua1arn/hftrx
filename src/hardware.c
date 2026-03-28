@@ -1979,7 +1979,7 @@ static void cortexa_cpuinfo(void)
 	dbg_flush();
 #else
 	dbg_putchar('$');
-	PRINTF("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08X, SCTLR=%08X, ACTLR=%08X, sp=%08" PRIX32 ", MPIDR=%08" PRIX32 "X\n",
+	PRINTF("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08X, SCTLR=%08X, ACTLR=%08X, sp=%08" PRIX32 ", MPIDR=%08" PRIX32 "\n",
 			(unsigned) arm_hardware_cpuid(),
 			(void *) __get_VBAR(),
 			(void *) __get_TTBR0(),

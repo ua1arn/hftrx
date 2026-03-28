@@ -1046,6 +1046,18 @@ __STATIC_INLINE void __set_ICC_CTLR_EL1(uint32_t value)
 
 #endif /* (__ARM_ARCH == 8) && ! defined(__aarch64__) */
 
+#if ! defined(__aarch64__)
+/** \brief  Get CTR
+\return		Cache Type Register value
+*/
+__STATIC_INLINE uint32_t __get_CTR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 0, 0, 1);
+	return result;
+}
+#endif
+
 #include "utils.h"
 // Substitutions for t507 ddr ram init
 //#define i2c_read local_i2c_read

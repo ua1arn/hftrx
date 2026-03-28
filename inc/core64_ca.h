@@ -398,8 +398,6 @@ __STATIC_FORCEINLINE uint64_t __get_CPUACTLR_EL1(void)
 	return result;
 }
 
-#if (__CORTEX_A == 53U)
-
 __STATIC_FORCEINLINE uint64_t __get_CPUECTLR_EL1(void)
 {
 	uint64_t result;
@@ -411,8 +409,6 @@ __STATIC_FORCEINLINE void __set_CPUECTLR_EL1(uint64_t value)
 {
 	__set_RG64("S3_1_C15_C2_1", value);
 }
-
-#endif /* (__CORTEX_A == 53U) */
 
 __STATIC_FORCEINLINE uint64_t __get_MAIR_EL3(void)
 {
@@ -571,12 +567,6 @@ __STATIC_FORCEINLINE uint64_t __get_SCR_EL3(void)
 	__get_RG32("SCR_EL3", result);
 	return result;
 }
-
-#define __get_MPIDR() 	(__get_MPIDR_EL1())
-#define __get_IFAR() 	(__get_FAR_EL1())
-#define __get_DFAR() 	(__get_FAR_EL2())
-#define __get_DFSR() 	(__get_ESR_EL1())
-
 
 #define __set_DCCMVAC(v) __set_DCCVAC64(v)
 #define __set_DCCIMVAC(v) __set_DCCIVAC64(v)
@@ -1684,8 +1674,6 @@ __STATIC_FORCEINLINE void __set_DCZVA64(uint64_t value)
 	__ASM volatile("DC ZVA, %0" : : "r" (value) : "memory");
 }
 
-///////////////
-///
 __STATIC_FORCEINLINE void __set_SCTLR_EL1(uint64_t value)
 {
 	__set_RG64("SCTLR_EL1", value);
@@ -1699,8 +1687,6 @@ __STATIC_FORCEINLINE uint64_t __get_SCTLR_EL1(void)
 	return result;
 }
 
-///////////////
-///
 __STATIC_FORCEINLINE void __set_SCTLR_EL2(uint64_t value)
 {
 	__set_RG64("SCTLR_EL2", value);
@@ -1714,8 +1700,6 @@ __STATIC_FORCEINLINE uint64_t __get_SCTLR_EL2(void)
 	return result;
 }
 
-
-
 __STATIC_FORCEINLINE uint64_t __get_ID_AA64MMFR2_EL1(void)
 {
 	uint64_t result;
@@ -1723,8 +1707,7 @@ __STATIC_FORCEINLINE uint64_t __get_ID_AA64MMFR2_EL1(void)
 	__get_RG64("ID_AA64MMFR2_EL1", result);
 	return result;
 }
-///////////////
-///
+
 __STATIC_FORCEINLINE void __set_SCTLR_EL3(uint64_t value)
 {
 	__set_RG64("SCTLR_EL3", value);
@@ -1737,8 +1720,7 @@ __STATIC_FORCEINLINE uint64_t __get_SCTLR_EL3(void)
 	__get_RG64("SCTLR_EL3", result);
 	return result;
 }
-///////////////
-///
+
 __STATIC_FORCEINLINE void __set_ACTLR_EL3(uint32_t value)
 {
 	__set_RG32("ACTLR_EL3", value);
@@ -1833,9 +1815,6 @@ __STATIC_INLINE uint64_t __get_CurrentEL(void)
     __get_RG32("CurrentEL", result);
     return result;
 }
-
-// todo: add __DUP_PRESENT in CMSIS header
-#if (__ARM_ARCH == 8)
 
 __STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL1(void)
 {
@@ -1956,8 +1935,6 @@ __STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRDN_EL1(void)
 	__get_RG32("S3_0_C15_C3_6", result);
 	return result;
 }
-
-#endif /* (__ARM_ARCH == 8) */
 
 
 /* ##########################  L1 Cache functions  ################################# */

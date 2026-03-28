@@ -324,18 +324,6 @@ void L1_InvalidateDCache_by_Addr(void * addr, int32_t op_size)
 	}
 }
 
-#if (! defined(__aarch64__))
-/** \brief  Get CTR
-\return		Cache Type Register value
-*/
-uint32_t __get_CTR(void)
-{
-	uint32_t result;
-	__get_CP(15, 0, result, 0, 0, 1);
-	return result;
-}
-#endif
-
 int_fast32_t dcache_rowsize(void)
 {
 	const uint32_t v = __get_CTR();
