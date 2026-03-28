@@ -2428,7 +2428,7 @@ void task_yield(void)
 {
 //	__WFI();	// пока так
 //	__SEV();
-	task_sysfn(0, NULL);
+	task_sysfn(TASKFN_NOP, NULL);
 }
 
 void local_delay_ms(uint_fast32_t timeMS)
