@@ -2418,12 +2418,11 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 	if (threads_not_started)
 	{
 		const uint_fast32_t t0 = threads_sys_now();
-		const uint_fast32_t td = NTICKS(timeMS);
 		do
 		{
 			if (((* flag & mask) == state))
 				return 0;
-		} while ((uint32_t) (threads_sys_now() - t0) < td);
+		} while ((uint32_t) (threads_sys_now() - t0) < timeMS);
 		return 1;
 	}
 	else
@@ -2447,12 +2446,11 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 	if (threads_not_started)
 	{
 		const uint_fast32_t t0 = threads_sys_now();
-		const uint_fast32_t td = NTICKS(timeMS);
 		do
 		{
 			if (((* flag & mask) == state))
 				return 0;
-		} while ((uint32_t) (threads_sys_now() - t0) < td);
+		} while ((uint32_t) (threads_sys_now() - t0) < timeMS);
 		return 1;
 	}
 	else
