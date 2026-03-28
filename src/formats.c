@@ -25,7 +25,7 @@ typedef long long signed int 	FMT_SLONGLONG;
 typedef long long unsigned int 	FMT_ULONGLONG;
 
 static	char *
-uconvert(FMT_ULONGLONG n, uint_fast8_t base, char * s, const FLASHMEM char * dg)
+uconvert(FMT_ULONGLONG n, uint_fast8_t base, char * s, const char * dg)
 {	do
 	{
 		* -- s = dg[(int) (n % base)];
@@ -61,7 +61,7 @@ static uint_fast8_t local_isdigit(char c)
 static int
 local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pfmt, va_list args)
 {
-	enum { TMP_S_SIZE = 14 };
+	enum { TMP_S_SIZE = 64 };
 	int	rj, altern;
 	char c, signc, fillc;
 	int maxwidth, width, i;
@@ -154,7 +154,17 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 			else
 			{
 				FETCH(c, pfmt);
-				u.lval = va_arg(args, long);
+				switch (c)
+				{
+				case 'x':
+				case 'X':
+				case 'u':
+					u.lval = va_arg(args, unsigned long);
+					break;
+				default:
+					u.lval = va_arg(args, signed long);
+					break;
+				}
 			}
 			break;
 		case 'h':
@@ -197,7 +207,7 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 		case 'd':
 		case 'i':
 			if (u.lval < 0)
-			{	cp = uconvert((unsigned long) (- u.lval), 10, s + TMP_S_SIZE, lcase);
+			{	cp = uconvert(- u.lval, 10, s + TMP_S_SIZE, lcase);
 				* -- cp = '-';
 				break;
 			}
