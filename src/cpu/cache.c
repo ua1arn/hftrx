@@ -269,6 +269,14 @@ int_fast32_t icache_rowsize(void)
 
 #elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
 
+
+#if __aarch64__
+#define __set_DCCMVAC(v) __set_DCCVAC(v)
+#define __set_DCCIMVAC(v) __set_DCCIVAC(v)
+#define __set_DCIMVAC(v) __set_DCIVAC(v)
+#define __get_CTR() (__get_CTR_EL0())
+#endif
+
 //	MVA
 //	For more information about the possible meaning when the table shows that an MVA is required
 // 	see Terms used in describing the maintenance operations on page B2-1272.

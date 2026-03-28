@@ -568,12 +568,6 @@ __STATIC_FORCEINLINE uint64_t __get_SCR_EL3(void)
 	return result;
 }
 
-#define __set_DCCMVAC(v) __set_DCCVAC64(v)
-#define __set_DCCIMVAC(v) __set_DCCIVAC64(v)
-#define __set_DCIMVAC(v) __set_DCIVAC64(v)
-#define __get_CTR() (__get_CTR_EL0())
-
-
  /*******************************************************************************
   *                 Register Abstraction
    Core Register contain:
@@ -1627,49 +1621,49 @@ typedef struct
 
 /** \brief  Set DCISW
  */
-__STATIC_FORCEINLINE void __set_DCISW64(uint64_t value)
+__STATIC_FORCEINLINE void __set_DCISW(uint64_t value)
 {
 	__ASM volatile("DC ISW, %0" : : "r" (value) : "memory");
 }
 
 /** \brief Clean by Set/Way DCCSW
  */
-__STATIC_FORCEINLINE void __set_DCCSW64(uint64_t value)
+__STATIC_FORCEINLINE void __set_DCCSW(uint64_t value)
 {
 	__ASM volatile("DC CSW, %0" : : "r" (value) : "memory");
 }
 
 /** \brief CISW Clean and invalidate by Set/Way DCCISW
  */
-__STATIC_FORCEINLINE void __set_DCCISW64(uint64_t value)
+__STATIC_FORCEINLINE void __set_DCCISW(uint64_t value)
 {
 	__ASM volatile("DC CISW, %0" : : "r" (value) : "memory");
 }
 
 /** \brief CIVAC Clean and Invalidate by Virtual Address to Point of Coherency DCCIMVAC
  */
-__STATIC_FORCEINLINE void __set_DCCIVAC64(uint64_t value)
+__STATIC_FORCEINLINE void __set_DCCIVAC(uint64_t value)
 {
 	__ASM volatile("DC CIVAC, %0" : : "r" (value) : "memory");
 }
 
 /** \brief CVAC Clean by Virtual Address to Point of Coherency DCCMVAC
  */
-__STATIC_FORCEINLINE void __set_DCCVAC64(uint64_t value)
+__STATIC_FORCEINLINE void __set_DCCVAC(uint64_t value)
 {
 	__ASM volatile("DC CVAC, %0" : : "r" (value) : "memory");
 }
 
 /** \brief IVAC Invalidate by Virtual Address, to Point of Coherency DCIMVAC
  */
-__STATIC_FORCEINLINE void __set_DCIVAC64(uint64_t value)
+__STATIC_FORCEINLINE void __set_DCIVAC(uint64_t value)
 {
 	__ASM volatile("DC IVAC, %0" : : "r" (value) : "memory");
 }
 
 /** \brief  ZVA Cache zero by Virtual Address
  */
-__STATIC_FORCEINLINE void __set_DCZVA64(uint64_t value)
+__STATIC_FORCEINLINE void __set_DCZVA(uint64_t value)
 {
 	__ASM volatile("DC ZVA, %0" : : "r" (value) : "memory");
 }
@@ -2006,7 +2000,7 @@ __STATIC_FORCEINLINE void L1C_InvalidateICacheAll(void) {
 * \param [in] va Pointer to data to clear the cache for.
 */
 __STATIC_FORCEINLINE void L1C_CleanDCacheMVA(void *va) {
-  __set_DCCVAC64((uintptr_t)va);
+  __set_DCCVAC((uintptr_t)va);
   __DMB();     //ensure the ordering of data cache maintenance operations and their effects
 }
 
@@ -2014,7 +2008,7 @@ __STATIC_FORCEINLINE void L1C_CleanDCacheMVA(void *va) {
 * \param [in] va Pointer to data to invalidate the cache for.
 */
 __STATIC_FORCEINLINE void L1C_InvalidateDCacheMVA(void *va) {
-  __set_DCIVAC64((uintptr_t)va);
+  __set_DCIVAC((uintptr_t)va);
   __DMB();     //ensure the ordering of data cache maintenance operations and their effects
 }
 
@@ -2022,7 +2016,7 @@ __STATIC_FORCEINLINE void L1C_InvalidateDCacheMVA(void *va) {
 * \param [in] va Pointer to data to invalidate the cache for.
 */
 __STATIC_FORCEINLINE void L1C_CleanInvalidateDCacheMVA(void *va) {
-	__set_DCCIVAC64((uintptr_t)va);
+	__set_DCCIVAC((uintptr_t)va);
 	__DMB();     //ensure the ordering of data cache maintenance operations and their effects
 }
 
@@ -2090,9 +2084,9 @@ __STATIC_FORCEINLINE void __L1C_MaintainDCacheSetWay(uint32_t level, uint32_t ma
     	uint64_t Dummy = (level << 1U) | (((uint32_t)set) << log2_linesize) | (((uint32_t)way) << shift_way);
       switch (maint)
       {
-        case 0U: __set_DCISW64(Dummy);  break;
-        case 1U: __set_DCCSW64(Dummy);  break;
-        default: __set_DCCISW64(Dummy); break;
+        case 0U: __set_DCISW(Dummy);  break;
+        case 1U: __set_DCCSW(Dummy);  break;
+        default: __set_DCCISW(Dummy); break;
       }
     }
   }
