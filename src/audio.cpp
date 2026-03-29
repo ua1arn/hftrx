@@ -5474,17 +5474,21 @@ void dsp_initialize(void)
 		gwprof = spf;
 	}
 
-	static dpcobj_t user_audioproc_dpc;
-	dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL);
+	if (thread_create_user(TASK_AFFINITY_ALL, user_audioproc_thread, NULL, 16 * 1024 * 1024) == NULL)
+	{
+		static dpcobj_t user_audioproc_dpc;
+		dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL);
 
-	// CPUSTYLE_STM32MP1: DSP обработка выполняется в обработчике REALTIME прерываний от DMA - CORE #1 - потому туда помещать ещё аудиообработку проблематично по произволдительности
-#if LINUX_SUBSYSTEM || ! WITHINTEGRATEDDSP || ! WITHSMPSYSTEM || CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1
-	board_dpc_addentry(& user_audioproc_dpc, 0);
-#elif (HARDWARE_NCORES == 2)
-	board_dpc_addentry(& user_audioproc_dpc, 1);
-#elif WITHINTEGRATEDDSP
-	board_dpc_addentry(& user_audioproc_dpc, 2);
-#endif /* WITHINTEGRATEDDSP */
+		// CPUSTYLE_STM32MP1: DSP обработка выполняется в обработчике REALTIME прерываний от DMA - CORE #1 - потому туда помещать ещё аудиообработку проблематично по произволдительности
+	#if LINUX_SUBSYSTEM || ! WITHINTEGRATEDDSP || ! WITHSMPSYSTEM || CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1
+		board_dpc_addentry(& user_audioproc_dpc, 0);
+	#elif (HARDWARE_NCORES == 2)
+		board_dpc_addentry(& user_audioproc_dpc, 1);
+	#elif WITHINTEGRATEDDSP
+		board_dpc_addentry(& user_audioproc_dpc, 2);
+	#endif /* WITHINTEGRATEDDSP */
+	}
+
 
 	modem_update();
 

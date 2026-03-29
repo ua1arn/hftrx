@@ -2300,6 +2300,7 @@ static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
 	ASSERT(param != NULL);
+	ASSERT(param->flag != NULL);
 	if ((* param->flag & param->mask) == param->state)
 	{
 		context_set_ec(thread->cpuframe, 0);
@@ -2317,6 +2318,7 @@ static int readyfn_wait8(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
 	ASSERT(param != NULL);
+	ASSERT(param->flag != NULL);
 	if ((* param->flag & param->mask) == param->state)
 	{
 		context_set_ec(thread->cpuframe, 0);
@@ -2464,7 +2466,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 	}
 	else
 	{
-		struct taskfnparam_suspend v;
+		volatile struct taskfnparam_suspend v;
 		v.t0 = sys_now();
 		v.td = timeMS;
 		task_sysfn(TASKFN_SUSPEND, & v);
@@ -2489,7 +2491,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 	}
 	else
 	{
-		struct taskfnparam_wait8 v;
+		volatile struct taskfnparam_wait8 v;
 		v.t0 = sys_now();
 		v.td = timeMS;
 		v.flag = flag;
@@ -2505,7 +2507,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 {
 	if (timeMS == 0)
 		return 0;
-	if (threads_not_started || 1)
+	if (threads_not_started)
 	{
 		const uint_fast32_t t0 = threads_sys_now();
 		do
@@ -2517,13 +2519,13 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 	}
 	else
 	{
-		struct taskfnparam_wait32 v;
+		volatile struct taskfnparam_wait32 v;
 		v.t0 = sys_now();
 		v.td = timeMS;
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
-		PRINTF("local_wait32mask: flag=%p, mask=0x%08X, state=0x%08X, t0=0x%08X, td=0x%08X\n", flag, (unsigned) mask, (unsigned) state, (unsigned) v.t0, (unsigned) v.td);
+		//PRINTF("local_wait32mask: flag=%p, mask=0x%08X, state=0x%08X, t0=0x%08X, td=0x%08X\n", flag, (unsigned) mask, (unsigned) state, (unsigned) v.t0, (unsigned) v.td);
 		return task_sysfn(TASKFN_WAIT32, & v);
 	}
 }
@@ -2534,7 +2536,7 @@ int local_waitlist(PRLIST_ENTRY list, uint_fast32_t timeMS)
 {
 	if (timeMS == 0)
 		return 0;
-	struct taskfnparam_waitlist v;
+	volatile struct taskfnparam_waitlist v;
 	v.t0 = sys_now();
 	v.td = timeMS;
 	v.list = list;
@@ -2547,7 +2549,7 @@ int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS)
 {
 	if (timeMS == 0)
 		return 0;
-	struct taskfnparam_event v;
+	volatile struct taskfnparam_event v;
 	v.t0 = sys_now();
 	v.td = timeMS;
 	v.flag = flag;

@@ -592,6 +592,7 @@ void dsp_fillphones(unsigned nsamples);			// перед передачей по 
 
 typedef FLOAT_t speexel_t;
 uint_fast8_t takespeexready(speexel_t * * dest);
+uint_fast8_t waitspeexready(speexel_t * * dest);
 void releasespeexbuffer(speexel_t * t);
 speexel_t * allocatespeexbuffer(void);
 void savespeexbuffer(speexel_t * t);
@@ -739,6 +740,7 @@ extern volatile phase_t mirror_nco4;
 extern volatile phase_t mirror_ncorts;
 
 void user_audioproc(void * ctx);	// user-mode processing - NR, эквалайзер приёмника
+int user_audioproc_thread(void * ctx);	// user-mode processing - NR, эквалайзер приёмника
 
 #ifdef __cplusplus
 }
