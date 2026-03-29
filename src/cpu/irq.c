@@ -2505,7 +2505,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 {
 	if (timeMS == 0)
 		return 0;
-	if (threads_not_started)
+	if (threads_not_started || 1)
 	{
 		const uint_fast32_t t0 = threads_sys_now();
 		do
@@ -2523,6 +2523,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
+		PRINTF("local_wait32mask: flag=%p, mask=0x%08X, state=0x%08X, t0=0x%08X, td=0x%08X\n", flag, (unsigned) mask, (unsigned) state, (unsigned) v.t0, (unsigned) v.td);
 		return task_sysfn(TASKFN_WAIT32, & v);
 	}
 }
