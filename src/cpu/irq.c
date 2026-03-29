@@ -2282,21 +2282,31 @@ void __NO_RETURN task_scheduler_othercores(void)
 	}
 }
 
+static int ready_timeout(uint_fast32_t tn, uint_fast32_t t0, uint_fast32_t td)
+{
+	if (td == UINT32_MAX)
+		return 0;
+	//return 0;	// без выходов по timeout
+	return (uint32_t) (tn - t0) >= td;
+}
+
 static int readyfn_suspend(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
-	return (uint32_t) (tn - param->t0) >= param->td;
+	ASSERT(param != NULL);
+	return ready_timeout(tn, param->t0, param->td);
 }
 
 static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
+	ASSERT(param != NULL);
 	if ((* param->flag & param->mask) == param->state)
 	{
 		context_set_ec(thread->cpuframe, 0);
 		return 1;
 	}
-	if ((uint32_t) (tn - param->t0) >= param->td)
+	if (ready_timeout(tn, param->t0, param->td))
 	{
 		context_set_ec(thread->cpuframe, 1);
 		return 1;
@@ -2307,12 +2317,13 @@ static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 static int readyfn_wait8(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
+	ASSERT(param != NULL);
 	if ((* param->flag & param->mask) == param->state)
 	{
 		context_set_ec(thread->cpuframe, 0);
 		return 1;
 	}
-	if ((uint32_t) (tn - param->t0) >= param->td)
+	if (ready_timeout(tn, param->t0, param->td))
 	{
 		context_set_ec(thread->cpuframe, 1);
 		return 1;
@@ -2323,12 +2334,13 @@ static int readyfn_wait8(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 static int readyfn_waitlist(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_waitlist * const param = (struct taskfnparam_waitlist *) arg1;
+	ASSERT(param != NULL);
 	if (! IsListEmpty(param->list))
 	{
 		context_set_ec(thread->cpuframe, 0);
 		return 1;
 	}
-	if ((uint32_t) (tn - param->t0) >= param->td)
+	if (ready_timeout(tn, param->t0, param->td))
 	{
 		context_set_ec(thread->cpuframe, 1);
 		return 1;
@@ -2339,9 +2351,17 @@ static int readyfn_waitlist(thread_item_t * thread, uint_fast32_t tn, void * arg
 static int readyfn_event(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 {
 	struct taskfnparam_event * const param = (struct taskfnparam_event *) arg1;
+	ASSERT(param != NULL);
 	const uint8_t r = * param->flag;
 	* param->flag = 0;
-	return !! r;
+	if (r)
+		return 1;
+	if (ready_timeout(tn, param->t0, param->td))
+	{
+		context_set_ec(thread->cpuframe, 1);
+		return 1;
+	}
+	return 0;
 }
 
 static void task_handler(thread_item_t * thread, unsigned arg0, void * arg1)
@@ -2796,7 +2816,6 @@ void local_delay_us(uint_fast32_t timeUS)
 
 	const uint_fast32_t t0 = cpu_getdebugticks();	// Счетчик увеличивается с частотой процессора
 	const uint_fast32_t td = get_td_us(timeUS);
-	//const uint_fast64_t td = timeUS * cpufreqMHz;
 	while ((uint32_t) (cpu_getdebugticks() - t0) < td)
 		;
 }
