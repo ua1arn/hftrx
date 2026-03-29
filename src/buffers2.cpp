@@ -544,9 +544,9 @@ public:
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 	}
 
-	bool waut_readybuffer_raw()
+	bool waut_readybuffer_raw(uint_fast32_t timeMS)
 	{
-		return local_waitlist(& readylist, LOCAL_WAITINFINITY) == 0;
+		return local_waitlist(& readylist, timeMS) == 0;
 	}
 
 	// получить из списка готовых
@@ -638,7 +638,7 @@ public:
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 	}
 
-	bool wait_readybuffer()
+	bool wait_readybuffer(uint_fast32_t timeMS)
 	{
 		if (hasresample)
 		{
@@ -649,7 +649,7 @@ public:
 			const bool stoutready = outready;
 			if (HASCHECKREADY && ! stoutready)
 				return false;
-			return waut_readybuffer_raw();
+			return waut_readybuffer_raw(timeMS);
 
 		}
 
@@ -1656,14 +1656,15 @@ static void dsphftrxproc_spool_user(void * ctx)
 	}
 }
 
-static int dsphftrxproc_spool_user_thresd(void * ctx)
+static int dsphftrxproc_spool_user_thread(void * ctx)
 {
 	voice32rx_t * dest;
 	(void) ctx;
 	for (;;)
 	{
-		voice32rx.wait_readybuffer();
-		if (voice32rx.get_readybuffer(& dest) == 0)
+		if (voice32rx.wait_readybuffer(LOCAL_WAITINFINITY) == false)
+			continue;
+		if (voice32rx.get_readybuffer(& dest) == false)
 			continue;
 		process_dmabuffer32rx(dest->buff);
 		voice32rx.release_buffer(dest);
@@ -4652,11 +4653,7 @@ void buffers_initialize(void)
 #if ! TXSPOOLCOND
 
 	#warning rx process in spool
-	if (thread_create_realtime(TASK_AFFINITY_ALL, dsphftrxproc_spool_user_thresd, NULL, 16 * 1024 * 1024))
-	{
-
-	}
-	else
+	if (! thread_create_user(TASK_AFFINITY_ALL, dsphftrxproc_spool_user_thread, NULL, 16 * 1024 * 1024))
 	{
 		static dpcobj_t dsphftrxproc_spool_dpc;
 		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, NULL);
