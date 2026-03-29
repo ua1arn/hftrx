@@ -2221,13 +2221,13 @@ void task_ticker(void)
 
 // проверка условий отдачи управления задаче
 // Если нашли - ставим error code
-static int task_isready(uint_fast32_t tn, thread_item_t * thread)
+static int task_isready(uint_fast32_t tn, thread_item_t * tp)
 {
-	if (thread->check_ready != NULL)
+	if (tp->check_ready != NULL)
 	{
-		if (thread->check_ready(thread, tn, thread->check_ready_obj))
+		if (tp->check_ready(tp, tn, tp->check_ready_obj))
 		{
-			thread->check_ready = NULL;	// признак готовности
+			tp->check_ready = NULL;	// признак готовности
 			return 1;
 		}
 		return 0;
