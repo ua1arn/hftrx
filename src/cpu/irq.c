@@ -2286,7 +2286,14 @@ static int ready_timeout(uint_fast32_t tn, uint_fast32_t t0, uint_fast32_t td)
 {
 	if (td == UINT32_MAX)
 		return 0;
-	//return 0;	// без выходов по timeout
+	return 0;	// без выходов по timeout
+	return (uint32_t) (tn - t0) >= td;
+}
+
+static int ready_timeouttrue(uint_fast32_t tn, uint_fast32_t t0, uint_fast32_t td)
+{
+	if (td == UINT32_MAX)
+		return 0;
 	return (uint32_t) (tn - t0) >= td;
 }
 
@@ -2294,7 +2301,7 @@ static int readyfn_suspend(thread_item_t * thread, uint_fast32_t tn, void * arg1
 {
 	struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
 	ASSERT(param != NULL);
-	return ready_timeout(tn, param->t0, param->td);
+	return ready_timeouttrue(tn, param->t0, param->td);
 }
 
 static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, void * arg1)
