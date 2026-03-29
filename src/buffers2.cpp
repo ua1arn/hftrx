@@ -544,6 +544,11 @@ public:
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 	}
 
+	bool waut_readybuffer_raw()
+	{
+		return local_waitlist(& readylist, LOCAL_WAITINFINITY) == 0;
+	}
+
 	// получить из списка готовых
 	bool get_readybuffer_raw(element_t * * dest)
 	{
@@ -631,6 +636,23 @@ public:
 			++ freecount;
 		}
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+	}
+
+	bool wait_readybuffer()
+	{
+		if (hasresample)
+		{
+			return false;
+		}
+		else
+		{
+			const bool stoutready = outready;
+			if (HASCHECKREADY && ! stoutready)
+				return false;
+			return waut_readybuffer_raw();
+
+		}
+
 	}
 
 	bool get_readybuffer(element_t * * dest)
@@ -1632,6 +1654,22 @@ static void dsphftrxproc_spool_user(void * ctx)
 		voice32rx.release_buffer(dest);
 		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 	}
+}
+
+static int dsphftrxproc_spool_user_thresd(void * ctx)
+{
+	voice32rx_t * dest;
+	(void) ctx;
+	for (;;)
+	{
+		voice32rx.wait_readybuffer();
+		if (voice32rx.get_readybuffer(& dest) == 0)
+			continue;
+		process_dmabuffer32rx(dest->buff);
+		voice32rx.release_buffer(dest);
+		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
+	}
+	return 0;
 }
 
 void save_dmabuffer32rx(uintptr_t addr)
@@ -4614,9 +4652,16 @@ void buffers_initialize(void)
 #if ! TXSPOOLCOND
 
 	#warning rx process in spool
-	static dpcobj_t dsphftrxproc_spool_dpc;
-	dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, NULL);
-	board_dpc_addentry(& dsphftrxproc_spool_dpc, TXSPOOLCORE);
+	if (thread_create_realtime(TASK_AFFINITY_ALL, dsphftrxproc_spool_user_thresd, NULL, 16 * 1024 * 1024))
+	{
+
+	}
+	else
+	{
+		static dpcobj_t dsphftrxproc_spool_dpc;
+		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, NULL);
+		board_dpc_addentry(& dsphftrxproc_spool_dpc, TXSPOOLCORE);
+	}
 
 #endif /* ! TXSPOOLCOND */
 

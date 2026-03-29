@@ -2657,6 +2657,12 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 	} while ((uint32_t) (threads_sys_now() - t0) < timeMS);
 	return 1;
 }
+// wait expected state of variable
+// return non-zero: timeout error
+int local_waitlist(PRLIST_ENTRY list, uint_fast32_t timeMS)
+{
+	return 1;
+}
 
 #endif /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
 
