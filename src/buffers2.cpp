@@ -1000,7 +1000,7 @@ static RAMFRAMEBUFF denoise16buf_t denoise16buf [SPEEX_CAPACITY];
 static denoise16dma_t denoise16list(IRQL_REALTIME, "denoise16", denoise16buf, ARRAY_SIZE(denoise16buf));
 
 // получить готоввый
-uint_fast8_t takespeexready(speexel_t * * dest)
+uint_fast8_t takespeexready(speexel_t * * dest, uint_fast32_t timeMS)
 {
 	denoise16_t * addr;
 	if (denoise16list.get_readybuffer(& addr))

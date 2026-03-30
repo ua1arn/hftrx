@@ -1781,7 +1781,7 @@ static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 	f->x0 = ec;
 }
 
-static void task_handler(struct thread_item_tag * thread, unsigned arg0, void * arg1);
+static void task_handler(struct thread_item_tag * thread, unsigned arg0, volatile void * arg1);
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 {
@@ -1789,7 +1789,7 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static int task_sysfn(unsigned arg0, void * arg1)
+static int task_sysfn(unsigned arg0, volatile void * arg1)
 {
 	uint64_t result;
 	__ASM volatile(
@@ -1855,7 +1855,7 @@ static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 	f->r0 = ec;
 }
 
-static void task_handler(struct thread_item_tag * thread, unsigned arg0, void * arg1);
+static void task_handler(struct thread_item_tag * thread, unsigned arg0, volatile void * arg1);
 
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
@@ -1864,7 +1864,7 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static int task_sysfn(unsigned arg0, void * arg1)
+static int task_sysfn(unsigned arg0, volatile void * arg1)
 {
 	uint32_t result = 0;
 	__ASM volatile(
@@ -1907,7 +1907,7 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static int task_sysfn(unsigned arg0, void * arg1)
+static int task_sysfn(unsigned arg0, volatile void * arg1)
 {
 	uint32_t result = 0;
 	__ASM volatile(
@@ -1959,7 +1959,7 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static int task_sysfn(unsigned arg0, void * arg1)
+static int task_sysfn(unsigned arg0, volatile void * arg1)
 {
 	uint32_t result = 0;
 	__ASM volatile(
@@ -2024,8 +2024,8 @@ typedef struct thread_item_tag
 	exception_frame_t * cpuframe;	// cpu state
 	void * allocated;
 	IRQL_t irql;
-	int (* check_ready)(struct thread_item_tag * thread, uint_fast32_t tn, void * arg1);
-	void * check_ready_obj;
+	int (* check_ready)(struct thread_item_tag * thread, uint_fast32_t tn, volatile void * arg1);
+	volatile void * check_ready_obj;
 	void * guard;	// debug signature
 } thread_item_t;
 
@@ -2290,16 +2290,16 @@ static int ready_timeout(uint_fast32_t tn, uint_fast32_t t0, uint_fast32_t td)
 	return (uint32_t) (tn - t0) >= td;
 }
 
-static int readyfn_suspend(thread_item_t * thread, uint_fast32_t tn, void * arg1)
+static int readyfn_suspend(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
 {
-	struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
+	volatile struct taskfnparam_suspend * const param = (volatile struct taskfnparam_suspend *) arg1;
 	ASSERT(param != NULL);
 	return ready_timeout(tn, param->t0, param->td);
 }
 
-static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, void * arg1)
+static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
 {
-	struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
+	volatile struct taskfnparam_wait32 * const param = (volatile struct taskfnparam_wait32 *) arg1;
 	ASSERT(param != NULL);
 	ASSERT(param->flag != NULL);
 	if ((* param->flag & param->mask) == param->state)
@@ -2315,9 +2315,9 @@ static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 	return 0;
 }
 
-static int readyfn_wait8(thread_item_t * thread, uint_fast32_t tn, void * arg1)
+static int readyfn_wait8(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
 {
-	struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
+	volatile struct taskfnparam_wait8 * const param = (volatile struct taskfnparam_wait8 *) arg1;
 	ASSERT(param != NULL);
 	ASSERT(param->flag != NULL);
 	if ((* param->flag & param->mask) == param->state)
@@ -2333,9 +2333,9 @@ static int readyfn_wait8(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 	return 0;
 }
 
-static int readyfn_waitlist(thread_item_t * thread, uint_fast32_t tn, void * arg1)
+static int readyfn_waitlist(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
 {
-	struct taskfnparam_waitlist * const param = (struct taskfnparam_waitlist *) arg1;
+	volatile struct taskfnparam_waitlist * const param = (volatile struct taskfnparam_waitlist *) arg1;
 	ASSERT(param != NULL);
 	if (LCLSPIN_TRAYLOCK(param->lock))
 	{
@@ -2355,9 +2355,9 @@ static int readyfn_waitlist(thread_item_t * thread, uint_fast32_t tn, void * arg
 	return 0;
 }
 
-static int readyfn_event(thread_item_t * thread, uint_fast32_t tn, void * arg1)
+static int readyfn_event(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
 {
-	struct taskfnparam_event * const param = (struct taskfnparam_event *) arg1;
+	volatile struct taskfnparam_event * const param = (volatile struct taskfnparam_event *) arg1;
 	ASSERT(param != NULL);
 	const uint8_t r = * param->flag;
 	* param->flag = 0;
@@ -2371,7 +2371,7 @@ static int readyfn_event(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 	return 0;
 }
 
-static void task_handler(thread_item_t * thread, unsigned arg0, void * arg1)
+static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
 {
 	switch (arg0)
 	{
@@ -2379,7 +2379,7 @@ static void task_handler(thread_item_t * thread, unsigned arg0, void * arg1)
 		return;
 	case TASKFN_NOP:
 		{
-			struct taskfnparam_nop * const param = (struct taskfnparam_nop *) arg1;
+			volatile struct taskfnparam_nop * const param = (volatile struct taskfnparam_nop *) arg1;
 			return;
 		}
 
@@ -2618,7 +2618,7 @@ void task_ticker(void)
 
 }
 
-static void task_handler(struct thread_item_tag * thread, unsigned arg0, void * arg1)
+static void task_handler(struct thread_item_tag * thread, unsigned arg0, volatile void * arg1)
 {
 
 }
@@ -3617,7 +3617,7 @@ void arm_hardware_populte_second_initialize(void)
 #endif /* WITHSMPSYSTEM */
 #endif
 
-#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
+#if ! LINUX_SUBSYSTEM
 
 // Set interrupt vector wrapper
 void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)

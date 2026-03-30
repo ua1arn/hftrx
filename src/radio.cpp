@@ -11701,7 +11701,7 @@ user_audioproc(void * ctx)
 #endif /* LINUX_SUBSYSTEM */
 #if ! WITHSKIPUSERMODE
 	speexel_t * p;
-	while (takespeexready(& p))
+	while (takespeexready(& p, 0))
 	{
 		// обработка и сохранение в savesampleout16stereo_user()
 		unsigned score;
@@ -11749,6 +11749,68 @@ user_audioproc(void * ctx)
 		releasespeexbuffer(p);
 	}
 #endif /* ! WITHSKIPUSERMODE */
+}
+
+int user_audioproc_thread(void * ctx)	// user-mode processing - NR, эквалайзер приёмника
+{
+	for (;;)
+	{
+		(void) ctx;
+	#if LINUX_SUBSYSTEM
+		linux_wait_iq();
+	#endif /* LINUX_SUBSYSTEM */
+	#if ! WITHSKIPUSERMODE
+		speexel_t * p;
+		if (takespeexready(& p, LOCAL_WAITINFINITY))
+		{
+			// обработка и сохранение в savesampleout16stereo_user()
+			unsigned score;
+			for (score = 0; score < FIRBUFSIZE; )
+			{
+				const unsigned len = 256;
+				const unsigned rest = (FIRBUFSIZE - score);
+				const unsigned chunk = rest >= len ? len : rest;
+		#if WITHUSEDUALWATCH
+				deliveryfloat_buffer(& speexinfloat, p + FIRBUFSIZE + score, p + score, chunk);	// to AUDIO codec
+		#else /* WITHUSEDUALWATCH */
+				deliveryfloat_buffer(& speexinfloat, p + score, p + score, chunk);	// to AUDIO codec
+		#endif /* WITHUSEDUALWATCH */
+				score += chunk;
+			}
+			uint_fast8_t pathi;
+			FLOAT_t * outsp [NTRX];
+			for (pathi = 0; pathi < NTRX; ++ pathi)
+			{
+				rxaproc_t * const nrp = & rxaprocs [pathi];
+				//const uint_fast8_t amode = getamode(pathi);
+				// nrp->outsp указывает на результат обработки
+				//outsp [pathi] = mdt [amode].afproc(pathi, nrp, p + pathi * FIRBUFSIZE);
+				outsp [pathi] = afpcw(pathi, nrp, p + pathi * FIRBUFSIZE);
+			#if WITHAFEQUALIZER
+				audio_rx_equalizer(outsp [pathi], FIRBUFSIZE);
+			#endif /* WITHAFEQUALIZER */
+			}
+			//////////////////////////////////////////////
+			// Save results
+			//unsigned score;
+			for (score = 0; score < FIRBUFSIZE; )
+			{
+				const unsigned len = 256;
+				const unsigned rest = (FIRBUFSIZE - score);
+				const unsigned chunk = rest >= len ? len : rest;
+		#if WITHUSEDUALWATCH
+				deliveryfloat_buffer(& speexoutfloat, outsp [0] + score, outsp [1] + score, chunk);	// to AUDIO codec
+		#else /* WITHUSEDUALWATCH */
+				deliveryfloat_buffer(& speexoutfloat, outsp [0] + score, outsp [0] + score, chunk);	// to AUDIO codec
+		#endif /* WITHUSEDUALWATCH */
+				score += chunk;
+			}
+			// Освобождаем буфер
+			releasespeexbuffer(p);
+		}
+	#endif /* ! WITHSKIPUSERMODE */
+	}
+	return 0;
 }
 
 #else /* WITHINTEGRATEDDSP */
