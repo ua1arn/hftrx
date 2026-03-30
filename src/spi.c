@@ -1100,7 +1100,7 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 
 	/* Do a soft reset */
 	spi->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
-	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100); // Reset
+	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100); // Wait de-assert Reset
 //	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
 //		;
 
@@ -1151,7 +1151,7 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 
 	/* Do a soft reset */
 	spi->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
-	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100); // Reset
+	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100); // Wait de-assert Reset
 //	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
 //		;
 
@@ -1203,7 +1203,7 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 
 	/* Do a soft reset */
 	spi->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
-	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100); // Reset
+	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100); // Wait de-assert Reset
 //	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
 //		;
 
@@ -1231,7 +1231,7 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 
 	/* Do a soft reset */
 	spi->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
-	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100); // Reset
+	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100); // Wait de-assert Reset
 //	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
 //		;
 
