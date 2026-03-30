@@ -2041,11 +2041,6 @@ enum
 	TASKFN_count
 };
 
-struct taskfnparam_nop
-{
-	int dummy;
-};
-
 struct taskfnparam_suspend
 {
 	uint32_t t0;
@@ -2331,7 +2326,7 @@ static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * 
 		return;
 	case TASKFN_NOP:
 		{
-			volatile struct taskfnparam_nop * const param = (volatile struct taskfnparam_nop *) arg1;
+			ASSERT(arg1 == NULL);
 			return;
 		}
 
@@ -2387,6 +2382,7 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 	{
 		task_svc(startedtask [core], code, oldframe);
 	}
+	// смена текущего потока на данном ядре
 	startedtask [core] = task_getready(1U << core, startedtask [core]);
 	IRQLSPIN_UNLOCK(& threadslock, startedtask [core]->irql);
 	return startedtask [core]->cpuframe;
