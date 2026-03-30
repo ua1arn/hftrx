@@ -2119,6 +2119,11 @@ static void thread_addtask(thread_item_t * const thread, unsigned affinity, int 
 
 void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
 {
+	if (threads_not_started)
+	{
+		PRINTF("Wrong call of thread_create_user: '%s'\n", name);
+	}
+	ASSERT(threads_not_started == 0);
 	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
 	if (thread != NULL)
 	{
@@ -2129,6 +2134,11 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 
 void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
 {
+	if (threads_not_started)
+	{
+		PRINTF("Wrong call of thread_create_realtime: '%s'\n", name);
+	}
+	ASSERT(threads_not_started == 0);
 	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
 	if (thread != NULL)
 	{

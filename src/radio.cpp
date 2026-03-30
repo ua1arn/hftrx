@@ -19298,6 +19298,34 @@ applowinitialize(void)
 #endif /* ! WITHRTOS */
 }
 
+#if defined (BOARD_BLINK_SETSTATE)
+
+static void blinktest(void * ctx)
+{
+	static uint_fast8_t state;
+	state = ! state;
+	BOARD_BLINK_SETSTATE(state);
+}
+
+static int blinktest2(void * ctx)
+{
+#if WITHISBOOTLOADER
+	const unsigned thalf = 100;	// Toggle every 100 ms
+#else /* WITHISBOOTLOADER */
+	const unsigned thalf = 500;	// Toggle every 500 ms
+#endif /* WITHISBOOTLOADER */
+	for (;;)
+	{
+		BOARD_BLINK_SETSTATE(1);
+		local_delay_ms(thalf);
+		BOARD_BLINK_SETSTATE(0);
+		local_delay_ms(thalf);
+	}
+	return 0;
+}
+
+#endif /* defined (BOARD_BLINK_SETSTATE) */
+
 static uint_fast8_t
 keyboard_test(void)
 {
@@ -19610,6 +19638,26 @@ void initialize2(void)
 #endif /* NVRAM_TYPE == NVRAM_TYPE_FM25XXXX */
 
 	(void) mclearnvram;
+
+#if defined (BOARD_BLINK_SETSTATE)
+	if (thread_create_user(TASK_AFFINITY_ALL, blinktest2, NULL, 8 * 1024, "blinktest2") == NULL)
+	{
+#if WITHISBOOTLOADER
+	const unsigned thalf = 100;	// Toggle every 100 ms
+#else /* WITHISBOOTLOADER */
+	const unsigned thalf = 500;	// Toggle every 500 ms
+#endif /* WITHISBOOTLOADER */
+		static ticker_t ticker_blinks;
+		ticker_initialize(& ticker_blinks, NTICKS(thalf), blinktest, NULL);
+		ticker_add(& ticker_blinks);
+	}
+#endif /* defined (BOARD_BLINK_SETSTATE) */
+
+	buffers_start();
+
+#if WITHMGLOOP
+	ua1cei_magloop_initialize();
+#endif /* WITHMGLOOP */
 
 #if WITHDEBUG
 	dbg_puts_impl("initialize2: finished.\n");
