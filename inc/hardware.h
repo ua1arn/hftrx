@@ -662,11 +662,6 @@ void local_delay_us(uint_fast32_t timeUS);	// may be LOCAL_WAITINFINITY
 void local_delay_ms(uint_fast32_t timeMS);	// may be LOCAL_WAITINFINITY
 void local_delay_initialize(void);	// setup parameters for loop-nased delays
 
-// wait expected state of variable
-// return non-zero: timeout error
-// timeMS may be LOCAL_WAITINFINITY
-int local_waitlist(PRLIST_ENTRY list, uint_fast32_t timeMS);
-
 
 void IRQ_Handler_GIC(void);
 void FIQ_Handler_GIC(void);

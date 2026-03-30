@@ -321,7 +321,7 @@ void InitializeIrql(IRQL_t newIRQL);
 	void lclspin_enable(void);	// Allwinner H3 - может работать с блокировками только после включения MMU
 
 	#define LCLSPIN_LOCK(p) do { lclspin_lock(p, __FILE__, __LINE__); } while (0)
-	#define LCLSPIN_TRAYLOCK(p) do { lclspin_traylock(p, __FILE__, __LINE__); } while (0)
+	#define LCLSPIN_TRAYLOCK(p) (lclspin_traylock(p, __FILE__, __LINE__))
 	#define LCLSPIN_UNLOCK(p) do { lclspin_unlock(p); } while (0)
 
 #else /* WITHSMPSYSTEM */
@@ -354,6 +354,11 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK(p); } while (0)
 
 #endif  /* ! LINUX_SUBSYSTEM */
+
+	// wait expected state of variable
+	// return non-zero: timeout error
+	// timeMS may be LOCAL_WAITINFINITY
+	int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS);
 
 	#define USBSYS_IRQL IRQL_SYSTEM
 	#define CATSYS_IRQL IRQL_SYSTEM

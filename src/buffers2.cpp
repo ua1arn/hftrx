@@ -546,7 +546,7 @@ public:
 
 	bool waut_readybuffer_raw(uint_fast32_t timeMS)
 	{
-		return local_waitlist(& readylist, timeMS) == 0;
+		return local_waitlist(& readylist, & irqllocl.lock, timeMS) == 0;
 	}
 
 	// получить из списка готовых

@@ -2072,6 +2072,7 @@ struct taskfnparam_wait8
 struct taskfnparam_waitlist
 {
 	PRLIST_ENTRY list;
+	LCLSPINLOCK_t * lock;
 	uint32_t t0;
 	uint32_t td;
 };
@@ -2336,10 +2337,15 @@ static int readyfn_waitlist(thread_item_t * thread, uint_fast32_t tn, void * arg
 {
 	struct taskfnparam_waitlist * const param = (struct taskfnparam_waitlist *) arg1;
 	ASSERT(param != NULL);
-	if (! IsListEmpty(param->list))
+	if (LCLSPIN_TRAYLOCK(param->lock))
 	{
-		context_set_ec(thread->cpuframe, 0);
-		return 1;
+		const int f = IsListEmpty(param->list);
+		LCLSPIN_UNLOCK(param->lock);
+		if (! f)
+		{
+			context_set_ec(thread->cpuframe, 0);
+			return 1;
+		}
 	}
 	if (ready_timeout(tn, param->t0, param->td))
 	{
@@ -2532,7 +2538,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 
 // wait expected state of variable
 // return non-zero: timeout error
-int local_waitlist(PRLIST_ENTRY list, uint_fast32_t timeMS)
+int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS)
 {
 	if (timeMS == 0)
 		return 0;
@@ -2540,6 +2546,7 @@ int local_waitlist(PRLIST_ENTRY list, uint_fast32_t timeMS)
 	v.t0 = sys_now();
 	v.td = timeMS;
 	v.list = list;
+	v.lock = lock;
 	return task_sysfn(TASKFN_WAITLIST, & v);
 }
 
