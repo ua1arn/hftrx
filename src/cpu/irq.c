@@ -1992,7 +1992,7 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 
 #endif /* ! LINUX_SUBSYSTEM */
 
-static int threads_not_started = 999;
+static volatile int threads_not_started = 999;
 
 static uint_fast32_t get_td_us(uint_fast32_t timeUS)
 {
@@ -2114,7 +2114,7 @@ static void thread_addtask(thread_item_t * const thread, unsigned affinity, int 
 
 	// включаем в список задач
 	InsertTailList(& threads_list [prio], & thread->item);
-	//PRINTF("Added thread at prio=%u, affinity=%02X (frame=%p), stack[%p..%p]\n", prio, affinity, stackframe, stackframe, (void *) top);
+	PRINTF("Added thread at prio=%u, affinity=%02X (frame=%p), stack[%p..%p]\n", prio, affinity, stackframe, stackframe, (void *) top);
 }
 
 void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
@@ -2161,6 +2161,7 @@ void task_scheduler_initialize(void)
 		//
 		thread_addtask(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE, "idle");
 	}
+	threads_not_started = 0;
 }
 
 void task_ticker(void)
@@ -2261,11 +2262,6 @@ void tasks_print(void)
 	PRINTF("tasks_print done\n");
 }
 
-void task_scheduler_start(void)
-{
-	threads_not_started = 0;
-}
-
 void __NO_RETURN task_scheduler_othercores(void)
 {
 	ASSERT(threads_not_started == 0);
@@ -2295,6 +2291,11 @@ static int readyfn_suspend(thread_item_t * thread, uint_fast32_t tn, volatile vo
 static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
 {
 	volatile struct taskfnparam_wait32 * const param = (volatile struct taskfnparam_wait32 *) arg1;
+	if (param == NULL || param->guard != param)
+	{
+		PRINTF("readyfn_wait32: '%s' aff=%08X\n", thread->name, thread->affinity);
+		tasks_print();
+	}
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	ASSERT(param->flag != NULL);
@@ -2355,6 +2356,7 @@ static int readyfn_waitlist(thread_item_t * thread, uint_fast32_t tn, volatile v
 
 static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
 {
+	ASSERT(threads_not_started == 0);
 	switch (arg0)
 	{
 	default:
@@ -2400,6 +2402,7 @@ static void *
 task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 {
 	const unsigned core = arm_hardware_cpuid();
+	ASSERT(threads_not_started == 0);
 	if (startedtask [core] == NULL)
 	{
 		thread_item_t * const thread = & base_threads [core];
@@ -2411,6 +2414,7 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 		// получаем состояние процесора при первом перрывании
 		thread->affinity = 1U << core;
 		startedtask [core] = thread;
+		PRINTF("task_scheduler0: add default %p, flag=%u, core=%u\n", thread, flag, core);
 	}
 	startedtask [core]->cpuframe = oldframe;
 	IRQLSPIN_LOCK(& threadslock, & startedtask [core]->irql, IRQL_IPC_ONLY);
@@ -2551,11 +2555,6 @@ void task_ticker(void) {}
 void task_scheduler_initialize(void)
 {
 
-}
-
-void task_scheduler_start(void)
-{
-	threads_not_started = 0;
 }
 
 void __NO_RETURN task_scheduler_othercores(void)

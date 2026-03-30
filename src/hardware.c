@@ -2554,7 +2554,7 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	unsigned core = arm_hardware_cpuid();
 	GIC_Enable();	// self
 	InitializeIrql(IRQL_IPC_ONLY);	// nested interrupts support
-
+	global_enableIRQ();
 	cortexa_cpuinfo();
 	arm_hardware_populte_second_initialize();
 	global_enableIRQ();	//  __ASM volatile ("cpsie i" : : : "memory");
@@ -2666,7 +2666,6 @@ void cpump_runuser(void)
 	{
 		LCLSPIN_UNLOCK(& cpu1userstart [core]);
 	}
-	task_scheduler_start();
 }
 
 #else /* WITHSMPSYSTEM */
