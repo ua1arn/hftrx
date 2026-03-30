@@ -641,10 +641,6 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize);
 void task_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
 
-void * event_create(void);
-int event_wait(void * evt, unsigned ms);
-int event_signal(void * evt);
-
 
 #define LOCAL_WAITINFINITY UINT32_MAX
 // wait expected state of variable

@@ -2037,7 +2037,6 @@ enum
 	TASKFN_WAIT32,
 	TASKFN_WAIT8,
 	TASKFN_WAITLIST,
-	TASKFN_EVENT,
 	//
 	TASKFN_count
 };
@@ -2051,6 +2050,7 @@ struct taskfnparam_suspend
 {
 	uint32_t t0;
 	uint32_t td;
+	volatile void * guard;
 };
 
 struct taskfnparam_wait32
@@ -2059,6 +2059,7 @@ struct taskfnparam_wait32
 	uint32_t mask, state;
 	uint32_t t0;
 	uint32_t td;
+	volatile void * guard;
 };
 
 struct taskfnparam_wait8
@@ -2067,6 +2068,7 @@ struct taskfnparam_wait8
 	uint8_t mask, state;
 	uint32_t t0;
 	uint32_t td;
+	volatile void * guard;
 };
 
 struct taskfnparam_waitlist
@@ -2075,21 +2077,8 @@ struct taskfnparam_waitlist
 	LCLSPINLOCK_t * lock;
 	uint32_t t0;
 	uint32_t td;
+	volatile void * guard;
 };
-
-struct taskfnparam_event
-{
-	volatile uint8_t * flag;
-	uint32_t t0;
-	uint32_t td;
-};
-
-typedef struct event_item_tag
-{
-	LIST_ENTRY item;
-	unsigned timeout;
-	void * guard;	// debug signature
-} event_item_t;
 
 static int task_idle(void * ctx)
 {
@@ -2149,31 +2138,6 @@ void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * c
 		thread_addtask(thread, affinity, fn, ctx, ramsize, IRQL_REALTIME);
 	}
 	return thread;
-}
-
-void * event_create(void)
-{
-	event_item_t * event = (event_item_t *) malloc(sizeof (event_item_t));
-	if (event != NULL)
-	{
-		event->guard = event;	// debug signature
-		event->timeout = 0;
-	}
-	return event;
-}
-
-int event_wait(void * evt, unsigned ms)
-{
-	event_item_t * event = (event_item_t *) evt;
-	ASSERT(event->guard == event);
-	return 0;
-}
-
-int event_signal(void * evt)
-{
-	event_item_t * event = (event_item_t *) evt;
-	ASSERT(event->guard == event);
-	return 0;
 }
 
 void task_scheduler_initialize(void)
@@ -2294,6 +2258,7 @@ static int readyfn_suspend(thread_item_t * thread, uint_fast32_t tn, volatile vo
 {
 	volatile struct taskfnparam_suspend * const param = (volatile struct taskfnparam_suspend *) arg1;
 	ASSERT(param != NULL);
+	ASSERT(param->guard == param);
 	return ready_timeout(tn, param->t0, param->td);
 }
 
@@ -2301,6 +2266,7 @@ static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, volatile voi
 {
 	volatile struct taskfnparam_wait32 * const param = (volatile struct taskfnparam_wait32 *) arg1;
 	ASSERT(param != NULL);
+	ASSERT(param->guard == param);
 	ASSERT(param->flag != NULL);
 	if ((* param->flag & param->mask) == param->state)
 	{
@@ -2319,6 +2285,7 @@ static int readyfn_wait8(thread_item_t * thread, uint_fast32_t tn, volatile void
 {
 	volatile struct taskfnparam_wait8 * const param = (volatile struct taskfnparam_wait8 *) arg1;
 	ASSERT(param != NULL);
+	ASSERT(param->guard == param);
 	ASSERT(param->flag != NULL);
 	if ((* param->flag & param->mask) == param->state)
 	{
@@ -2337,6 +2304,7 @@ static int readyfn_waitlist(thread_item_t * thread, uint_fast32_t tn, volatile v
 {
 	volatile struct taskfnparam_waitlist * const param = (volatile struct taskfnparam_waitlist *) arg1;
 	ASSERT(param != NULL);
+	ASSERT(param->guard == param);
 	if (LCLSPIN_TRAYLOCK(param->lock))
 	{
 		const int f = IsListEmpty(param->list);
@@ -2347,22 +2315,6 @@ static int readyfn_waitlist(thread_item_t * thread, uint_fast32_t tn, volatile v
 			return 1;
 		}
 	}
-	if (ready_timeout(tn, param->t0, param->td))
-	{
-		context_set_ec(thread->cpuframe, 1);
-		return 1;
-	}
-	return 0;
-}
-
-static int readyfn_event(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
-{
-	volatile struct taskfnparam_event * const param = (volatile struct taskfnparam_event *) arg1;
-	ASSERT(param != NULL);
-	const uint8_t r = * param->flag;
-	* param->flag = 0;
-	if (r)
-		return 1;
 	if (ready_timeout(tn, param->t0, param->td))
 	{
 		context_set_ec(thread->cpuframe, 1);
@@ -2475,6 +2427,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 		volatile struct taskfnparam_suspend v;
 		v.t0 = sys_now();
 		v.td = timeMS;
+		v.guard = & v;
 		task_sysfn(TASKFN_SUSPEND, & v);
 	}
 }
@@ -2503,6 +2456,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
+		v.guard = & v;
 		return task_sysfn(TASKFN_WAIT8, & v);
 	}
 }
@@ -2532,6 +2486,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		v.mask = mask;
 		v.state = state;
 		//PRINTF("local_wait32mask: flag=%p, mask=0x%08X, state=0x%08X, t0=0x%08X, td=0x%08X\n", flag, (unsigned) mask, (unsigned) state, (unsigned) v.t0, (unsigned) v.td);
+		v.guard = & v;
 		return task_sysfn(TASKFN_WAIT32, & v);
 	}
 }
@@ -2547,20 +2502,8 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 	v.td = timeMS;
 	v.list = list;
 	v.lock = lock;
+	v.guard = & v;
 	return task_sysfn(TASKFN_WAITLIST, & v);
-}
-
-// wait expected state of variable
-// return non-zero: timeout error
-int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS)
-{
-	if (timeMS == 0)
-		return 0;
-	volatile struct taskfnparam_event v;
-	v.t0 = sys_now();
-	v.td = timeMS;
-	v.flag = flag;
-	return task_sysfn(TASKFN_EVENT, & v);
 }
 
 #elif LINUX_SUBSYSTEM
