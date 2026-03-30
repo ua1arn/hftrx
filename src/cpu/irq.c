@@ -2092,7 +2092,7 @@ static thread_item_t idle_threads [HARDWARE_NCORES];
 static thread_item_t base_threads [HARDWARE_NCORES];	// состояения получаем при первом прерывании
 static thread_item_t * startedtask [HARDWARE_NCORES];
 
-static void thread_addtask(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql, const char * name)
+static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql, const char * name)
 {
 	const unsigned prio = GICI_DECODE_IRQL(irql);
 	ASSERT(ARRAY_SIZE(threads_list) > prio);
@@ -2114,7 +2114,7 @@ static void thread_addtask(thread_item_t * const thread, unsigned affinity, int 
 
 	// включаем в список задач
 	InsertTailList(& threads_list [prio], & thread->item);
-	PRINTF("Added thread at prio=%u, affinity=%02X (frame=%p), stack[%p..%p]\n", prio, affinity, stackframe, stackframe, (void *) top);
+	//PRINTF("Added thread at prio=%u, affinity=%02X (frame=%p), stack[%p..%p]\n", prio, affinity, stackframe, stackframe, (void *) top);
 }
 
 void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
@@ -2127,7 +2127,7 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
 	if (thread != NULL)
 	{
-		thread_addtask(thread, affinity, fn, ctx, ramsize, IRQL_USER, name);
+		thread_add(thread, affinity, fn, ctx, ramsize, IRQL_USER, name);
 	}
 	return thread;
 }
@@ -2142,7 +2142,7 @@ void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * c
 	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
 	if (thread != NULL)
 	{
-		thread_addtask(thread, affinity, fn, ctx, ramsize, IRQL_REALTIME, name);
+		thread_add(thread, affinity, fn, ctx, ramsize, IRQL_REALTIME, name);
 	}
 	return thread;
 }
@@ -2159,7 +2159,7 @@ void task_scheduler_initialize(void)
 	{
 		thread_item_t * const thread = & idle_threads [i];
 		//
-		thread_addtask(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE, "idle");
+		thread_add(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE, "idle");
 	}
 	threads_not_started = 0;
 }
@@ -2240,10 +2240,21 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 	return taskin;
 }
 
+static void thread_print(const thread_item_t * const tp)
+{
+	PRINTF("    task %p: name='%s', irql=%u (prio=%u), affinity=%08X, cond=%p(%p)\n", tp, tp->name, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity, tp->check_ready, tp->check_ready_obj);
+
+}
 void tasks_print(void)
 {
 	unsigned prio;
-	PRINTF("tasks_print:\n");
+	unsigned core;
+	PRINTF("tasks_print: running\n");
+	for (core = 0; core < ARRAY_SIZE(base_threads); ++ core)
+	{
+		thread_print(& base_threads [core]);
+	}
+	PRINTF("tasks_print: lists\n");
 	for (prio = 0; prio < PRIOv_count; ++ prio)
 	{
 		PRLIST_ENTRY const list = & threads_list [prio];
@@ -2256,7 +2267,7 @@ void tasks_print(void)
 		{
 			tnext = t->Flink;
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-			PRINTF("    task %p: name='%s', irql=%u, affinity=%08X, cond=%p\n", tp, tp->name, (unsigned) tp->irql, (unsigned) tp->affinity, tp->check_ready);
+			thread_print(tp);
 		}
 	}
 	PRINTF("tasks_print done\n");
@@ -2414,7 +2425,7 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 		// получаем состояние процесора при первом перрывании
 		thread->affinity = 1U << core;
 		startedtask [core] = thread;
-		PRINTF("task_scheduler0: add default %p, flag=%u, core=%u\n", thread, flag, core);
+		//PRINTF("task_scheduler0: add default %p, flag=%u, core=%u\n", thread, flag, core);
 	}
 	startedtask [core]->cpuframe = oldframe;
 	IRQLSPIN_LOCK(& threadslock, & startedtask [core]->irql, IRQL_IPC_ONLY);
