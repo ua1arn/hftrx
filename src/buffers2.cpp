@@ -4657,7 +4657,7 @@ void buffers_initialize(void)
 #if ! TXSPOOLCOND
 
 	#warning rx process in spool
-	if (thread_create_user(TASK_AFFINITY_ALL, dsphftrxproc_spool_user_thread, NULL, 1 * 1024 * 1024) == NULL)
+	if (thread_create_user(TASK_AFFINITY_ALL, dsphftrxproc_spool_user_thread, NULL, 1 * 1024 * 1024, "dsphftrxproc_spool_user_thread") == NULL)
 	{
 		static dpcobj_t dsphftrxproc_spool_dpc;
 		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, NULL);

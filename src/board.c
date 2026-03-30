@@ -5086,7 +5086,7 @@ void board_initialize(void)
 	board_adc_initialize();
 
 #if defined (BOARD_BLINK_SETSTATE)
-	if (thread_create_user(TASK_AFFINITY_ALL, blinktest2, NULL, 8192) == NULL)
+	if (thread_create_user(TASK_AFFINITY_ALL, blinktest2, NULL, 8192, "blinktest2") == NULL)
 	{
 #if WITHISBOOTLOADER
 	const unsigned thalf = 100;	// Toggle every 100 ms

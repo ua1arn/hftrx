@@ -637,8 +637,8 @@ void task_scheduler_initialize(void);
 void task_scheduler_start(void);
 void task_ticker(void);
 void __NO_RETURN task_scheduler_othercores(void);
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize);
-void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize);
+void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name);
+void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name);
 void task_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
 
 

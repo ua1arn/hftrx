@@ -2026,6 +2026,7 @@ typedef struct thread_item_tag
 	IRQL_t irql;
 	int (* check_ready)(struct thread_item_tag * thread, uint_fast32_t tn, volatile void * arg1);
 	volatile void * check_ready_obj;
+	const char * name;
 	void * guard;	// debug signature
 } thread_item_t;
 
@@ -2091,7 +2092,7 @@ static thread_item_t idle_threads [HARDWARE_NCORES];
 static thread_item_t base_threads [HARDWARE_NCORES];	// состояения получаем при первом прерывании
 static thread_item_t * startedtask [HARDWARE_NCORES];
 
-static void thread_addtask(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql)
+static void thread_addtask(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql, const char * name)
 {
 	const unsigned prio = GICI_DECODE_IRQL(irql);
 	ASSERT(ARRAY_SIZE(threads_list) > prio);
@@ -2109,28 +2110,29 @@ static void thread_addtask(thread_item_t * const thread, unsigned affinity, int 
 	thread->irql = irql;
 	thread->guard = thread;	// debug signature
 	thread->check_ready = NULL;
+	thread->name = name;
 
 	// включаем в список задач
 	InsertTailList(& threads_list [prio], & thread->item);
 	//PRINTF("Added thread at prio=%u, affinity=%02X (frame=%p), stack[%p..%p]\n", prio, affinity, stackframe, stackframe, (void *) top);
 }
 
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize)
+void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
 {
 	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
 	if (thread != NULL)
 	{
-		thread_addtask(thread, affinity, fn, ctx, ramsize, IRQL_USER);
+		thread_addtask(thread, affinity, fn, ctx, ramsize, IRQL_USER, name);
 	}
 	return thread;
 }
 
-void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize)
+void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
 {
 	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
 	if (thread != NULL)
 	{
-		thread_addtask(thread, affinity, fn, ctx, ramsize, IRQL_REALTIME);
+		thread_addtask(thread, affinity, fn, ctx, ramsize, IRQL_REALTIME, name);
 	}
 	return thread;
 }
@@ -2147,7 +2149,7 @@ void task_scheduler_initialize(void)
 	{
 		thread_item_t * const thread = & idle_threads [i];
 		//
-		thread_addtask(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
+		thread_addtask(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE, "idle");
 	}
 }
 
@@ -2371,6 +2373,7 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 		thread->guard = thread;
 		thread->allocated = NULL;
 		thread->check_ready = NULL;
+		thread->name = "default";
 		//
 		// получаем состояние процесора при первом перрывании
 		thread->affinity = 1U << core;
@@ -2531,12 +2534,12 @@ void __NO_RETURN task_scheduler_othercores(void)
 	}
 }
 
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize)
+void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
 {
 	return NULL;
 }
 
-void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize)
+void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
 {
 	return NULL;
 }
