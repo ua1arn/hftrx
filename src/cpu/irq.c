@@ -2239,6 +2239,28 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 	return taskin;
 }
 
+void tasks_print(void)
+{
+	unsigned prio;
+	PRINTF("tasks_print:\n");
+	for (prio = 0; prio < PRIOv_count; ++ prio)
+	{
+		PRLIST_ENTRY const list = & threads_list [prio];
+		if (IsListEmpty(list))
+			continue;
+		PRINTF("tasks_print: prio=%u\n", prio);
+		PRLIST_ENTRY t;
+		PRLIST_ENTRY tnext;
+		for (t = list->Flink; t != list; t = tnext)
+		{
+			tnext = t->Flink;
+			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
+			PRINTF("    task %p: name='%s', irql=%u, affinity=%08X, cond=%p\n", tp, tp->name, (unsigned) tp->irql, (unsigned) tp->affinity, tp->check_ready);
+		}
+	}
+	PRINTF("tasks_print done\n");
+}
+
 void task_scheduler_start(void)
 {
 	threads_not_started = 0;
@@ -2246,6 +2268,7 @@ void task_scheduler_start(void)
 
 void __NO_RETURN task_scheduler_othercores(void)
 {
+	ASSERT(threads_not_started == 0);
 	for (;;)
 	{
 		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
@@ -2571,6 +2594,10 @@ void task_ticker(void)
 }
 
 static void task_handler(struct thread_item_tag * thread, unsigned arg0, volatile void * arg1)
+{
+
+}
+void tasks_print(void)
 {
 
 }
