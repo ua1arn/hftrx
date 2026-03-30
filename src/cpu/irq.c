@@ -2569,7 +2569,7 @@ int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS)
 void task_scheduler_initialize(void) {}
 void task_ticker(void) {}
 
-#else /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
+#else /* ! LINUX_SUBSYSTEM */
 
 // Non-linux, non-scheduler
 
@@ -2666,7 +2666,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 	return 1;
 }
 
-#endif /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
+#endif /* ! LINUX_SUBSYSTEM */
 
 
 #if CPUSTYLE_ARM || CPUSTYLE_RISCV
