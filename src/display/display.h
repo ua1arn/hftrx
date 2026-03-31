@@ -577,14 +577,6 @@ void hwaccel_bitblt(
 	unsigned keyflag, COLORPIP_T keycolor
 	);
 
-// копирование буфера с поворотом вправо на 90 градусов (четверть оборота).
-void hwaccel_ra90(
-	const gxdrawb_t * tdb,	// получатель
-	uint_fast16_t tx,	// горизонтальная координата пикселя (0..dx-1) слева направо - в исходном нижний
-	uint_fast16_t ty,	// вертикальная координата пикселя (0..dy-1) сверху вниз - в исходном левый
-	const gxdrawb_t * sdb	// источник
-	);
-
 // Установить прозрачность для прямоугольника
 void display_transparency(const gxdrawb_t * db,
 	uint_fast16_t x1, uint_fast16_t y1,
