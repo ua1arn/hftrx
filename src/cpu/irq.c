@@ -4182,7 +4182,7 @@ void cpu_initialize(void)
 	(void) CPG.STBCR7;			/* Dummy read */
 	USB200.SYSCFG0 |= USB_SYSCFG_UCKSEL; // UCKSEL 1: The 12-MHz EXTAL clock is selected.
 	(void) USB200.SYSCFG0;			/* Dummy read */
-	llocal_delay_us(2 * 1000);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
+	local_delay_us(2 * 1000);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 	CPG.STBCR7 |= CPG_STBCR7_MSTP71;	// Module Stop 71 1: Channel 0 of the USB 2.0 host/function module halts.
 	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 71 1: Channel 0 of the USB 2.0 host/function module halts.
 
@@ -4190,7 +4190,7 @@ void cpu_initialize(void)
 	(void) CPG.STBCR7;			/* Dummy read */
 	USB201.SYSCFG0 |= USB_SYSCFG_UCKSEL; // UCKSEL 1: The 12-MHz EXTAL clock is selected.
 	(void) USB201.SYSCFG0;			/* Dummy read */
-	llocal_delay_us(2 * 1000);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
+	local_delay_us(2 * 1000);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 	CPG.STBCR7 |= CPG_STBCR7_MSTP70;	// Module Stop 70 1: Channel 1 of the USB 2.0 host/function module halts.
 #endif
 
