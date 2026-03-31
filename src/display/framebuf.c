@@ -615,10 +615,10 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		ui2->UI_HADD = ptr_hi32(saddr);
 		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
 		awg2d_set_vi_oneplan(vi0, awxx_g2d_get_vi_attr(VI_ImageFormat), tstride, taddr);
-		vi0->V0_ATTCTL = awxx_g2d_get_vi_attr(VI_ImageFormat);
-		vi0->V0_PITCH0 = tstride;
-		vi0->V0_LADD0 = ptr_lo32(taddr);
-		vi0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
+//		vi0->V0_ATTCTL = awxx_g2d_get_vi_attr(VI_ImageFormat);
+//		vi0->V0_PITCH0 = tstride;
+//		vi0->V0_LADD0 = ptr_lo32(taddr);
+//		vi0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
 		vi0->V0_FILLC = 0;
 		vi0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		vi0->V0_MBSIZE = tsizehw; // сколько брать от исходного буфера
@@ -653,10 +653,10 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
 		//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
 		awg2d_set_vi_oneplan(vi0, awxx_g2d_get_vi_attr(srcFormat), sstride, saddr);
-		vi0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
-		vi0->V0_PITCH0 = sstride;
-		vi0->V0_LADD0 = ptr_lo32(saddr);
-		vi0->V0_HADD = (ptr_hi32(saddr) & 0xFF) << 0;
+//		vi0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
+//		vi0->V0_PITCH0 = sstride;
+//		vi0->V0_LADD0 = ptr_lo32(saddr);
+//		vi0->V0_HADD = (ptr_hi32(saddr) & 0xFF) << 0;
 		vi0->V0_FILLC = 0; //TFTRGB(255, 0, 0);    // unused
 		vi0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		vi0->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера
@@ -867,10 +867,11 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		G2D_UI2->UI_LADD = ptr_lo32(saddr);
 		G2D_UI2->UI_HADD = ptr_hi32(saddr);
 		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
-		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(VI_ImageFormat);
-		G2D_V0->V0_PITCH0 = tstride;
-		G2D_V0->V0_LADD0 = ptr_lo32(taddr);
-		G2D_V0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
+		awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(VI_ImageFormat), tstride, taddr);
+//		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(VI_ImageFormat);
+//		G2D_V0->V0_PITCH0 = tstride;
+//		G2D_V0->V0_LADD0 = ptr_lo32(taddr);
+//		G2D_V0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = tsizehw; // сколько брать от исходного буфера
@@ -904,10 +905,10 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
 		//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
 		awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(srcFormat), sstride, saddr);
-		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
-		G2D_V0->V0_PITCH0 = sstride;
-		G2D_V0->V0_LADD0 = ptr_lo32(saddr);
-		G2D_V0->V0_HADD = (ptr_hi32(saddr) & 0xFF) << 0;
+//		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
+//		G2D_V0->V0_PITCH0 = sstride;
+//		G2D_V0->V0_LADD0 = ptr_lo32(saddr);
+//		G2D_V0->V0_HADD = (ptr_hi32(saddr) & 0xFF) << 0;
 		G2D_V0->V0_FILLC = 0; //TFTRGB(255, 0, 0);    // unused
 		G2D_V0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера
@@ -4115,10 +4116,10 @@ void hwaccel_stretchblt(
 
 		/* Подача данных на вход VSU */
 		awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(srcFormat), sstride, srclinear);
-		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
-		G2D_V0->V0_PITCH0 = sstride;
-		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
-		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) << 0;
+//		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
+//		G2D_V0->V0_PITCH0 = sstride;
+//		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
+//		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) << 0;
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
@@ -4162,10 +4163,10 @@ void hwaccel_stretchblt(
 	else
 	{
 		awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(srcFormat), sstride, srclinear);
-		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
-		G2D_V0->V0_PITCH0 = sstride;
-		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
-		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) << 0;
+//		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
+//		G2D_V0->V0_PITCH0 = sstride;
+//		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
+//		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) << 0;
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
