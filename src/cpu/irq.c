@@ -1715,7 +1715,7 @@ void IRQ15_Handler(void)
 #if ! LINUX_SUBSYSTEM
 
 #define TASKRAM_SIZE (1024 * 1024)
-struct thread_item_tag;
+typedef struct thread_item_tag thread_item_t;
 
 
 #if defined(__aarch64__)
