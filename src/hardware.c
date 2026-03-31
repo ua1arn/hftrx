@@ -2296,8 +2296,14 @@ typedef uint64_t  u_register_t;
  */
 #define INVALID_MPID		U(0xFFFFFFFF)
 
-
-#define read_mpidr() (__get_MPIDR())
+static u_register_t read_mpidr(void)
+{
+#if __aarch64__
+	return __get_MPIDR_EL1();
+#else
+	return __get_MPIDR();
+#endif
+}
 
 #define STATE_ON			8
 #define STATE_OFF			0

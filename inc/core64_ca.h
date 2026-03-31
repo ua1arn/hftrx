@@ -4068,6 +4068,32 @@ __STATIC_INLINE void MMU_InvalidateTLB(void)
 }
 
 
+/** \brief  Enable Floating Point Unit */
+__STATIC_INLINE void __FPU_Enable(void)
+{
+  uint32_t temp=0;
+  __ASM volatile
+  (
+    // In AArch64, you do not need to enable access to the NEON and FP registers.
+    // However, access to  the NEON and FP registers can still be trapped.
+
+    // Disable trapping of   accessing in EL3 and EL2.
+    "        MSR    CPTR_EL3, XZR    \n"
+    "        MSR    CPTR_EL2, XZR    \n"
+
+    // Disable access trapping in EL1 and EL0.
+    "        MOV    %0, #(0x3 << 20) \n"
+
+    // FPEN disables trapping to EL1.
+    "        MSR    CPACR_EL1, %0    \n"
+
+    //Ensure that subsequent instructions occur in the context of VFP/NEON access permitted
+    "        ISB                       "
+
+    : : "r"(temp): "cc"
+  );
+}
+
 #ifdef __cplusplus
 }
 #endif
