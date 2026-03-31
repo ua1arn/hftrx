@@ -339,6 +339,23 @@ static void awxx_g2d_rtmix_startandwait(void)
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 }
 
+static void awg2d_set_vi_oneplan(G2D_VI_TypeDef * vi, unsigned attr, uint_fast32_t stride, uintptr_t addr)
+{
+	G2D_V0->V0_ATTCTL = attr;
+	vi->V0_PITCH0 = stride;	// Y/RGB/ARGB data memory
+	vi->V0_LADD0 = ptr_lo32(addr);
+	vi->V0_PITCH1 = stride;	// U/UV data memory
+	vi->V0_LADD1 = ptr_lo32(addr);
+	vi->V0_PITCH2 = stride;	// V data memory
+	vi->V0_LADD2 = ptr_lo32(addr);
+	vi->V0_HADD =
+		((ptr_hi32(addr) & 0xFF) << 0) |	// part of V0_LADD0 - Y/RGB/ARGB data memory
+		((ptr_hi32(addr) & 0xFF) << 8) |	// part of V0_LADD1 - U/UV data memory
+		((ptr_hi32(addr) & 0xFF) << 16) |	// part of V0_LADD2 - V data memory
+		0;
+
+}
+
 #if WITHRTMXRCQ
 
 //	union g2d_rcq_irq_ctl {
@@ -597,6 +614,7 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		ui2->UI_LADD = ptr_lo32(saddr);
 		ui2->UI_HADD = ptr_hi32(saddr);
 		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
+		awg2d_set_vi_oneplan(vi0, awxx_g2d_get_vi_attr(VI_ImageFormat), tstride, taddr);
 		vi0->V0_ATTCTL = awxx_g2d_get_vi_attr(VI_ImageFormat);
 		vi0->V0_PITCH0 = tstride;
 		vi0->V0_LADD0 = ptr_lo32(taddr);
@@ -634,6 +652,7 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		//		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
 		//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
 		//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
+		awg2d_set_vi_oneplan(vi0, awxx_g2d_get_vi_attr(srcFormat), sstride, saddr);
 		vi0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
 		vi0->V0_PITCH0 = sstride;
 		vi0->V0_LADD0 = ptr_lo32(saddr);
@@ -884,6 +903,7 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		//		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
 		//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
 		//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
+		awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(srcFormat), sstride, saddr);
 		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
 		G2D_V0->V0_PITCH0 = sstride;
 		G2D_V0->V0_LADD0 = ptr_lo32(saddr);
@@ -4094,6 +4114,7 @@ void hwaccel_stretchblt(
 		G2D_UI2->UI_SIZE = tsizehw;		// параметры окна исходного буфера
 
 		/* Подача данных на вход VSU */
+		awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(srcFormat), sstride, srclinear);
 		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
 		G2D_V0->V0_PITCH0 = sstride;
 		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
@@ -4140,6 +4161,7 @@ void hwaccel_stretchblt(
 	}
 	else
 	{
+		awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(srcFormat), sstride, srclinear);
 		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
 		G2D_V0->V0_PITCH0 = sstride;
 		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
