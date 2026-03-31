@@ -341,7 +341,7 @@ static void awxx_g2d_rtmix_startandwait(void)
 
 static void awg2d_set_vi_oneplan(G2D_VI_TypeDef * vi, unsigned attr, uint_fast32_t stride, uintptr_t addr)
 {
-	G2D_V0->V0_ATTCTL = attr;
+	vi->V0_ATTCTL = attr;
 	vi->V0_PITCH0 = stride;	// Y/RGB/ARGB data memory
 	vi->V0_LADD0 = ptr_lo32(addr);
 	vi->V0_PITCH1 = stride;	// U/UV data memory
