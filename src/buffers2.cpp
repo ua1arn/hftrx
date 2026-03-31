@@ -4572,6 +4572,7 @@ int64_t transform_do64(
 
 void buffers_start(void)
 {
+#if WITHINTEGRATEDDSP
 
 #if ! TXSPOOLCOND
 
@@ -4585,6 +4586,7 @@ void buffers_start(void)
 
 #endif /* ! TXSPOOLCOND */
 
+#endif /* WITHINTEGRATEDDSP */
 }
 // инициализация системы буферов
 void buffers_initialize(void)
