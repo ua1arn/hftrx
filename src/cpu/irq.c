@@ -1781,7 +1781,7 @@ static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 	f->x0 = ec;
 }
 
-static void task_handler(struct thread_item_tag * thread, unsigned arg0, void * arg1);
+static void task_handler(struct thread_item_tag * thread, unsigned arg0, volatile void * arg1);
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 {
@@ -1789,7 +1789,7 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static int task_sysfn(unsigned arg0, void * arg1)
+static int task_sysfn(unsigned arg0, volatile void * arg1)
 {
 	uint64_t result;
 	__ASM volatile(
@@ -1855,7 +1855,7 @@ static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 	f->r0 = ec;
 }
 
-static void task_handler(struct thread_item_tag * thread, unsigned arg0, void * arg1);
+static void task_handler(struct thread_item_tag * thread, unsigned arg0, volatile void * arg1);
 
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
@@ -1864,7 +1864,7 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static int task_sysfn(unsigned arg0, void * arg1)
+static int task_sysfn(unsigned arg0, volatile void * arg1)
 {
 	uint32_t result = 0;
 	__ASM volatile(
@@ -1907,7 +1907,7 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static int task_sysfn(unsigned arg0, void * arg1)
+static int task_sysfn(unsigned arg0, volatile void * arg1)
 {
 	uint32_t result = 0;
 	__ASM volatile(
@@ -1959,7 +1959,7 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static int task_sysfn(unsigned arg0, void * arg1)
+static int task_sysfn(unsigned arg0, volatile void * arg1)
 {
 	uint32_t result = 0;
 	__ASM volatile(
@@ -1992,7 +1992,7 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 
 #endif /* ! LINUX_SUBSYSTEM */
 
-static int threads_not_started = 999;
+static volatile int threads_not_started = 999;
 
 static uint_fast32_t get_td_us(uint_fast32_t timeUS)
 {
@@ -2024,8 +2024,9 @@ typedef struct thread_item_tag
 	exception_frame_t * cpuframe;	// cpu state
 	void * allocated;
 	IRQL_t irql;
-	int (* check_ready)(struct thread_item_tag * thread, uint_fast32_t tn, void * arg1);
-	void * check_ready_obj;
+	int (* check_ready)(struct thread_item_tag * thread, uint_fast32_t tn, volatile void * arg1);
+	volatile void * check_ready_obj;
+	const char * name;
 	void * guard;	// debug signature
 } thread_item_t;
 
@@ -2037,20 +2038,15 @@ enum
 	TASKFN_WAIT32,
 	TASKFN_WAIT8,
 	TASKFN_WAITLIST,
-	TASKFN_EVENT,
 	//
 	TASKFN_count
-};
-
-struct taskfnparam_nop
-{
-	int dummy;
 };
 
 struct taskfnparam_suspend
 {
 	uint32_t t0;
 	uint32_t td;
+	volatile void * guard;
 };
 
 struct taskfnparam_wait32
@@ -2059,6 +2055,7 @@ struct taskfnparam_wait32
 	uint32_t mask, state;
 	uint32_t t0;
 	uint32_t td;
+	volatile void * guard;
 };
 
 struct taskfnparam_wait8
@@ -2067,6 +2064,7 @@ struct taskfnparam_wait8
 	uint8_t mask, state;
 	uint32_t t0;
 	uint32_t td;
+	volatile void * guard;
 };
 
 struct taskfnparam_waitlist
@@ -2075,21 +2073,8 @@ struct taskfnparam_waitlist
 	LCLSPINLOCK_t * lock;
 	uint32_t t0;
 	uint32_t td;
+	volatile void * guard;
 };
-
-struct taskfnparam_event
-{
-	volatile uint8_t * flag;
-	uint32_t t0;
-	uint32_t td;
-};
-
-typedef struct event_item_tag
-{
-	LIST_ENTRY item;
-	unsigned timeout;
-	void * guard;	// debug signature
-} event_item_t;
 
 static int task_idle(void * ctx)
 {
@@ -2107,7 +2092,7 @@ static thread_item_t idle_threads [HARDWARE_NCORES];
 static thread_item_t base_threads [HARDWARE_NCORES];	// состояения получаем при первом прерывании
 static thread_item_t * startedtask [HARDWARE_NCORES];
 
-static void thread_addtask(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql)
+static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql, const char * name)
 {
 	const unsigned prio = GICI_DECODE_IRQL(irql);
 	ASSERT(ARRAY_SIZE(threads_list) > prio);
@@ -2125,55 +2110,41 @@ static void thread_addtask(thread_item_t * const thread, unsigned affinity, int 
 	thread->irql = irql;
 	thread->guard = thread;	// debug signature
 	thread->check_ready = NULL;
+	thread->name = name;
 
 	// включаем в список задач
 	InsertTailList(& threads_list [prio], & thread->item);
 	//PRINTF("Added thread at prio=%u, affinity=%02X (frame=%p), stack[%p..%p]\n", prio, affinity, stackframe, stackframe, (void *) top);
 }
 
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize)
+void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
 {
+	if (threads_not_started)
+	{
+		PRINTF("Wrong call of thread_create_user: '%s'\n", name);
+	}
+	ASSERT(threads_not_started == 0);
 	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
 	if (thread != NULL)
 	{
-		thread_addtask(thread, affinity, fn, ctx, ramsize, IRQL_USER);
+		thread_add(thread, affinity, fn, ctx, ramsize, IRQL_USER, name);
 	}
 	return thread;
 }
 
-void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize)
+void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
 {
+	if (threads_not_started)
+	{
+		PRINTF("Wrong call of thread_create_realtime: '%s'\n", name);
+	}
+	ASSERT(threads_not_started == 0);
 	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
 	if (thread != NULL)
 	{
-		thread_addtask(thread, affinity, fn, ctx, ramsize, IRQL_REALTIME);
+		thread_add(thread, affinity, fn, ctx, ramsize, IRQL_REALTIME, name);
 	}
 	return thread;
-}
-
-void * event_create(void)
-{
-	event_item_t * event = (event_item_t *) malloc(sizeof (event_item_t));
-	if (event != NULL)
-	{
-		event->guard = event;	// debug signature
-		event->timeout = 0;
-	}
-	return event;
-}
-
-int event_wait(void * evt, unsigned ms)
-{
-	event_item_t * event = (event_item_t *) evt;
-	ASSERT(event->guard == event);
-	return 0;
-}
-
-int event_signal(void * evt)
-{
-	event_item_t * event = (event_item_t *) evt;
-	ASSERT(event->guard == event);
-	return 0;
 }
 
 void task_scheduler_initialize(void)
@@ -2188,8 +2159,9 @@ void task_scheduler_initialize(void)
 	{
 		thread_item_t * const thread = & idle_threads [i];
 		//
-		thread_addtask(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE);
+		thread_add(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE, "idle");
 	}
+	threads_not_started = 0;
 }
 
 void task_ticker(void)
@@ -2268,13 +2240,42 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 	return taskin;
 }
 
-void task_scheduler_start(void)
+static void thread_print(const thread_item_t * const tp)
 {
-	threads_not_started = 0;
+	PRINTF("    task %p: name='%s', irql=%u (prio=%u), affinity=%08X, cond=%p(%p)\n", tp, tp->name, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity, tp->check_ready, tp->check_ready_obj);
+
+}
+void tasks_print(void)
+{
+	unsigned prio;
+	unsigned core;
+	PRINTF("tasks_print: running\n");
+	for (core = 0; core < ARRAY_SIZE(base_threads); ++ core)
+	{
+		thread_print(& base_threads [core]);
+	}
+	PRINTF("tasks_print: lists\n");
+	for (prio = 0; prio < PRIOv_count; ++ prio)
+	{
+		PRLIST_ENTRY const list = & threads_list [prio];
+		if (IsListEmpty(list))
+			continue;
+		PRINTF("tasks_print: prio=%u\n", prio);
+		PRLIST_ENTRY t;
+		PRLIST_ENTRY tnext;
+		for (t = list->Flink; t != list; t = tnext)
+		{
+			tnext = t->Flink;
+			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
+			thread_print(tp);
+		}
+	}
+	PRINTF("tasks_print done\n");
 }
 
 void __NO_RETURN task_scheduler_othercores(void)
 {
+	ASSERT(threads_not_started == 0);
 	for (;;)
 	{
 		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
@@ -2290,17 +2291,24 @@ static int ready_timeout(uint_fast32_t tn, uint_fast32_t t0, uint_fast32_t td)
 	return (uint32_t) (tn - t0) >= td;
 }
 
-static int readyfn_suspend(thread_item_t * thread, uint_fast32_t tn, void * arg1)
+static int readyfn_suspend(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
 {
-	struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
+	volatile struct taskfnparam_suspend * const param = (volatile struct taskfnparam_suspend *) arg1;
 	ASSERT(param != NULL);
+	ASSERT(param->guard == param);
 	return ready_timeout(tn, param->t0, param->td);
 }
 
-static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, void * arg1)
+static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
 {
-	struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
+	volatile struct taskfnparam_wait32 * const param = (volatile struct taskfnparam_wait32 *) arg1;
+	if (param == NULL || param->guard != param)
+	{
+		PRINTF("readyfn_wait32: '%s' aff=%08X\n", thread->name, thread->affinity);
+		tasks_print();
+	}
 	ASSERT(param != NULL);
+	ASSERT(param->guard == param);
 	ASSERT(param->flag != NULL);
 	if ((* param->flag & param->mask) == param->state)
 	{
@@ -2315,10 +2323,11 @@ static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 	return 0;
 }
 
-static int readyfn_wait8(thread_item_t * thread, uint_fast32_t tn, void * arg1)
+static int readyfn_wait8(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
 {
-	struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
+	volatile struct taskfnparam_wait8 * const param = (volatile struct taskfnparam_wait8 *) arg1;
 	ASSERT(param != NULL);
+	ASSERT(param->guard == param);
 	ASSERT(param->flag != NULL);
 	if ((* param->flag & param->mask) == param->state)
 	{
@@ -2333,10 +2342,11 @@ static int readyfn_wait8(thread_item_t * thread, uint_fast32_t tn, void * arg1)
 	return 0;
 }
 
-static int readyfn_waitlist(thread_item_t * thread, uint_fast32_t tn, void * arg1)
+static int readyfn_waitlist(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
 {
-	struct taskfnparam_waitlist * const param = (struct taskfnparam_waitlist *) arg1;
+	volatile struct taskfnparam_waitlist * const param = (volatile struct taskfnparam_waitlist *) arg1;
 	ASSERT(param != NULL);
+	ASSERT(param->guard == param);
 	if (LCLSPIN_TRAYLOCK(param->lock))
 	{
 		const int f = IsListEmpty(param->list);
@@ -2355,31 +2365,16 @@ static int readyfn_waitlist(thread_item_t * thread, uint_fast32_t tn, void * arg
 	return 0;
 }
 
-static int readyfn_event(thread_item_t * thread, uint_fast32_t tn, void * arg1)
+static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
 {
-	struct taskfnparam_event * const param = (struct taskfnparam_event *) arg1;
-	ASSERT(param != NULL);
-	const uint8_t r = * param->flag;
-	* param->flag = 0;
-	if (r)
-		return 1;
-	if (ready_timeout(tn, param->t0, param->td))
-	{
-		context_set_ec(thread->cpuframe, 1);
-		return 1;
-	}
-	return 0;
-}
-
-static void task_handler(thread_item_t * thread, unsigned arg0, void * arg1)
-{
+	ASSERT(threads_not_started == 0);
 	switch (arg0)
 	{
 	default:
 		return;
 	case TASKFN_NOP:
 		{
-			struct taskfnparam_nop * const param = (struct taskfnparam_nop *) arg1;
+			ASSERT(arg1 == NULL);
 			return;
 		}
 
@@ -2418,16 +2413,19 @@ static void *
 task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 {
 	const unsigned core = arm_hardware_cpuid();
+	ASSERT(threads_not_started == 0);
 	if (startedtask [core] == NULL)
 	{
 		thread_item_t * const thread = & base_threads [core];
 		thread->guard = thread;
 		thread->allocated = NULL;
 		thread->check_ready = NULL;
+		thread->name = "default";
 		//
 		// получаем состояние процесора при первом перрывании
 		thread->affinity = 1U << core;
 		startedtask [core] = thread;
+		//PRINTF("task_scheduler0: add default %p, flag=%u, core=%u\n", thread, flag, core);
 	}
 	startedtask [core]->cpuframe = oldframe;
 	IRQLSPIN_LOCK(& threadslock, & startedtask [core]->irql, IRQL_IPC_ONLY);
@@ -2435,6 +2433,7 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 	{
 		task_svc(startedtask [core], code, oldframe);
 	}
+	// смена текущего потока на данном ядре
 	startedtask [core] = task_getready(1U << core, startedtask [core]);
 	IRQLSPIN_UNLOCK(& threadslock, startedtask [core]->irql);
 	return startedtask [core]->cpuframe;
@@ -2475,6 +2474,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 		volatile struct taskfnparam_suspend v;
 		v.t0 = sys_now();
 		v.td = timeMS;
+		v.guard = & v;
 		task_sysfn(TASKFN_SUSPEND, & v);
 	}
 }
@@ -2503,6 +2503,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
+		v.guard = & v;
 		return task_sysfn(TASKFN_WAIT8, & v);
 	}
 }
@@ -2532,6 +2533,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		v.mask = mask;
 		v.state = state;
 		//PRINTF("local_wait32mask: flag=%p, mask=0x%08X, state=0x%08X, t0=0x%08X, td=0x%08X\n", flag, (unsigned) mask, (unsigned) state, (unsigned) v.t0, (unsigned) v.td);
+		v.guard = & v;
 		return task_sysfn(TASKFN_WAIT32, & v);
 	}
 }
@@ -2547,20 +2549,8 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 	v.td = timeMS;
 	v.list = list;
 	v.lock = lock;
+	v.guard = & v;
 	return task_sysfn(TASKFN_WAITLIST, & v);
-}
-
-// wait expected state of variable
-// return non-zero: timeout error
-int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS)
-{
-	if (timeMS == 0)
-		return 0;
-	volatile struct taskfnparam_event v;
-	v.t0 = sys_now();
-	v.td = timeMS;
-	v.flag = flag;
-	return task_sysfn(TASKFN_EVENT, & v);
 }
 
 #elif LINUX_SUBSYSTEM
@@ -2569,18 +2559,13 @@ int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS)
 void task_scheduler_initialize(void) {}
 void task_ticker(void) {}
 
-#else /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
+#else /* ! LINUX_SUBSYSTEM */
 
 // Non-linux, non-scheduler
 
 void task_scheduler_initialize(void)
 {
 
-}
-
-void task_scheduler_start(void)
-{
-	threads_not_started = 0;
 }
 
 void __NO_RETURN task_scheduler_othercores(void)
@@ -2592,12 +2577,12 @@ void __NO_RETURN task_scheduler_othercores(void)
 	}
 }
 
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize)
+void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
 {
 	return NULL;
 }
 
-void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize)
+void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
 {
 	return NULL;
 }
@@ -2618,7 +2603,11 @@ void task_ticker(void)
 
 }
 
-static void task_handler(struct thread_item_tag * thread, unsigned arg0, void * arg1)
+static void task_handler(struct thread_item_tag * thread, unsigned arg0, volatile void * arg1)
+{
+
+}
+void tasks_print(void)
 {
 
 }
@@ -2666,7 +2655,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 	return 1;
 }
 
-#endif /* defined(__aarch64__) && ! LINUX_SUBSYSTEM */
+#endif /* ! LINUX_SUBSYSTEM */
 
 
 #if CPUSTYLE_ARM || CPUSTYLE_RISCV
@@ -3617,7 +3606,7 @@ void arm_hardware_populte_second_initialize(void)
 #endif /* WITHSMPSYSTEM */
 #endif
 
-#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
+#if ! LINUX_SUBSYSTEM
 
 // Set interrupt vector wrapper
 void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)

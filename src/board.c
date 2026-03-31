@@ -4996,34 +4996,6 @@ uint_fast8_t boad_mike_adcoverflow(void)
 #endif /* WITHIF4DSP */
 }
 
-#if defined (BOARD_BLINK_SETSTATE)
-
-static void blinktest(void * ctx)
-{
-	static uint_fast8_t state;
-	state = ! state;
-	BOARD_BLINK_SETSTATE(state);
-}
-
-static int blinktest2(void * ctx)
-{
-#if WITHISBOOTLOADER
-	const unsigned thalf = 100;	// Toggle every 100 ms
-#else /* WITHISBOOTLOADER */
-	const unsigned thalf = 500;	// Toggle every 500 ms
-#endif /* WITHISBOOTLOADER */
-	for (;;)
-	{
-		BOARD_BLINK_SETSTATE(1);
-		local_delay_ms(thalf);
-		BOARD_BLINK_SETSTATE(0);
-		local_delay_ms(thalf);
-	}
-	return 0;
-}
-
-#endif /* defined (BOARD_BLINK_SETSTATE) */
-
 static void adcfilters_initialize(void);
 
 /* инициализация при запрещённых прерываниях.
@@ -5084,28 +5056,6 @@ void board_initialize(void)
 	adcfilters_initialize();	// раотают даже если нет аппаратного АЦП в процссоре
 
 	board_adc_initialize();
-
-#if defined (BOARD_BLINK_SETSTATE)
-	if (thread_create_user(TASK_AFFINITY_ALL, blinktest2, NULL, 8192))
-	{
-
-	}
-	else
-	{
-#if WITHISBOOTLOADER
-	const unsigned thalf = 100;	// Toggle every 100 ms
-#else /* WITHISBOOTLOADER */
-	const unsigned thalf = 500;	// Toggle every 500 ms
-#endif /* WITHISBOOTLOADER */
-		static ticker_t ticker_blinks;
-		ticker_initialize(& ticker_blinks, NTICKS(thalf), blinktest, NULL);
-		ticker_add(& ticker_blinks);
-	}
-#endif /* defined (BOARD_BLINK_SETSTATE) */
-
-#if WITHMGLOOP
-	ua1cei_magloop_initialize();
-#endif /* WITHMGLOOP */
 }
 
 static uint_fast16_t board_rtc_cached_year = 2000;

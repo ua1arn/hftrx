@@ -591,8 +591,7 @@ void savemonistereo(FLOAT_t ch0, FLOAT_t ch1);
 void dsp_fillphones(unsigned nsamples);			// перед передачей по DMA в аудиокодек
 
 typedef FLOAT_t speexel_t;
-uint_fast8_t takespeexready(speexel_t * * dest);
-uint_fast8_t waitspeexready(speexel_t * * dest);
+uint_fast8_t takespeexready(speexel_t * * dest, uint_fast32_t timeMS);
 void releasespeexbuffer(speexel_t * t);
 speexel_t * allocatespeexbuffer(void);
 void savespeexbuffer(speexel_t * t);

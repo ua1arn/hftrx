@@ -634,16 +634,12 @@ void __NO_RETURN run_task_curr_aarch32(void * frame);	// run task with frame
 
 #define TASK_AFFINITY_ALL (~0U)
 void task_scheduler_initialize(void);
-void task_scheduler_start(void);
 void task_ticker(void);
 void __NO_RETURN task_scheduler_othercores(void);
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize);
-void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize);
+void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name);
+void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name);
 void task_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
-
-void * event_create(void);
-int event_wait(void * evt, unsigned ms);
-int event_signal(void * evt);
+void tasks_print(void);
 
 
 #define LOCAL_WAITINFINITY UINT32_MAX

@@ -550,9 +550,15 @@ public:
 	}
 
 	// получить из списка готовых
-	bool get_readybuffer_raw(element_t * * dest)
+	bool get_readybuffer_raw(element_t * * dest, uint_fast32_t timeMS = 0)
 	{
 		IRQL_t oldIrql;
+		if (timeMS != 0)
+		{
+			// Запрос с ненулевым аргументром timeMS может возникнуть только из выделенных потоков
+			if (local_waitlist(& readylist, & irqllocl.lock, timeMS) != 0)	// timeot
+				return false;
+		}
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& readylist))
 		{
@@ -655,7 +661,7 @@ public:
 
 	}
 
-	bool get_readybuffer(element_t * * dest)
+	bool get_readybuffer(element_t * * dest, uint_fast32_t timeMS = 0)
 	{
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
@@ -697,7 +703,7 @@ public:
 		{
 			if (HASCHECKREADY && ! stoutready)
 				return false;
-			return get_readybuffer_raw(dest);
+			return get_readybuffer_raw(dest, timeMS);
 		}
 	}
 
@@ -1000,7 +1006,7 @@ static RAMFRAMEBUFF denoise16buf_t denoise16buf [SPEEX_CAPACITY];
 static denoise16dma_t denoise16list(IRQL_REALTIME, "denoise16", denoise16buf, ARRAY_SIZE(denoise16buf));
 
 // получить готоввый
-uint_fast8_t takespeexready(speexel_t * * dest)
+uint_fast8_t takespeexready(speexel_t * * dest, uint_fast32_t timeMS)
 {
 	denoise16_t * addr;
 	if (denoise16list.get_readybuffer(& addr))
@@ -1662,9 +1668,7 @@ static int dsphftrxproc_spool_user_thread(void * ctx)
 	(void) ctx;
 	for (;;)
 	{
-		if (voice32rx.wait_readybuffer(LOCAL_WAITINFINITY) == false)
-			continue;
-		if (voice32rx.get_readybuffer(& dest) == false)
+		if (voice32rx.get_readybuffer(& dest, LOCAL_WAITINFINITY) == false)
 			continue;
 		process_dmabuffer32rx(dest->buff);
 		voice32rx.release_buffer(dest);
@@ -4566,7 +4570,22 @@ int64_t transform_do64(
 	return (v << tfm->lshift64) >> tfm->rshift64;
 }
 
+void buffers_start(void)
+{
 
+#if ! TXSPOOLCOND
+
+	#warning rx process in spool
+	if (thread_create_user(TASK_AFFINITY_ALL, dsphftrxproc_spool_user_thread, NULL, 1 * 1024 * 1024, "dsphftrxproc_spool_user_thread") == NULL)
+	{
+		static dpcobj_t dsphftrxproc_spool_dpc;
+		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, NULL);
+		board_dpc_addentry(& dsphftrxproc_spool_dpc, TXSPOOLCORE);
+	}
+
+#endif /* ! TXSPOOLCOND */
+
+}
 // инициализация системы буферов
 void buffers_initialize(void)
 {
@@ -4649,18 +4668,6 @@ void buffers_initialize(void)
 	subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
 
 #endif /* WITHRTS192 */
-
-#if ! TXSPOOLCOND
-
-	#warning rx process in spool
-	if (! thread_create_user(TASK_AFFINITY_ALL, dsphftrxproc_spool_user_thread, NULL, 16 * 1024 * 1024))
-	{
-		static dpcobj_t dsphftrxproc_spool_dpc;
-		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, NULL);
-		board_dpc_addentry(& dsphftrxproc_spool_dpc, TXSPOOLCORE);
-	}
-
-#endif /* ! TXSPOOLCOND */
 
 #if WITHUSEUSBBT
 

@@ -5474,7 +5474,7 @@ void dsp_initialize(void)
 		gwprof = spf;
 	}
 
-	//if (thread_create_user(TASK_AFFINITY_ALL, user_audioproc_thread, NULL, 16 * 1024 * 1024) == NULL)
+	if (thread_create_user(TASK_AFFINITY_ALL, user_audioproc_thread, NULL, 16 * 1024 * 1024, "user_audioproc_thread") == NULL)
 	{
 		static dpcobj_t user_audioproc_dpc;
 		dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL);
