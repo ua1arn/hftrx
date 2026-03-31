@@ -199,6 +199,7 @@ typedef struct gxdrawb_tag
 } gxdrawb_t;
 
 void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy);
+void gxdrawb_initialize_yuv(gxdrawb_t * db, const void * buffer, uint_fast16_t dx, uint_fast16_t dy);
 void gxdrawb_initlvgl(gxdrawb_t * db, void * layer);
 
 enum gxstyle_texthalign
@@ -371,7 +372,8 @@ colpip_rectangle(
 #define BITBLT_FLAG_CKEY			(1u << 0)	// colpip_bitblt use keycolor parameter
 #define BITBLT_FLAG_XMIRROR			(1u << 1)
 #define BITBLT_FLAG_YMIRROR			(1u << 2)
-#define BITBLT_FLAG_SRC_ABGR8888	(1u << 3)	/* исходный имедж - ABGR8888 (от LuPng) */
+#define BITBLT_FLAG_SRC_ABGR8888	(1u << 3)	/* исходный видеобуфер - ABGR8888 (от LuPng) */
+#define BITBLT_FLAG_SRC_YUV420		(1u << 4)	/* исходный видеобуфер - 0x01 Interleaved YUV422( Y1V0Y0U0, 0x0A Planar YUV420 (думаю) */
 
 // скоприовать прямоугольник
 void colpip_bitblt(

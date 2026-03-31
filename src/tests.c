@@ -2824,6 +2824,70 @@ void testpng_no_stretch(const void * pngbuffer, int useKeyColor)
 
 	luImageRelease(png, NULL);
 }
+#endif
+
+#if 0 && LCDMODE_LTDC
+
+// YUV images test
+
+// YUV videobuffer test
+void testyuv(const void * yuvbuffer)
+{
+	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
+	const COLORPIP_T keycolor = COLORPIP_GRAY;//TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
+	const unsigned picw = 720;
+	const unsigned picdx = picw;	// Совпадает со stride
+	const unsigned pich = 576;
+	gxdrawb_t dbv_fb;
+	gxdrawb_initialize(& dbv_fb, fb, DIM_X, DIM_Y);
+	gxdrawb_t dbv_fbpic;
+	gxdrawb_initialize_yuv(& dbv_fbpic, yuvbuffer, picw, pich);
+
+	colpip_fillrect(& dbv_fb, 0, 0, DIM_X, DIM_Y, COLORPIP_GRAY);
+
+	colpip_stretchblt(
+		dbv_fb.cachebase, dbv_fb.cachesize,
+		& dbv_fb,
+		0, 0, picw / 4, pich / 4,		/* позиция и размеры прямоугольника - получателя */
+		dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+		& dbv_fbpic,
+		0, 0, picdx, pich,
+		BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_YUV420, keycolor
+		);
+
+	colpip_stretchblt(
+		dbv_fb.cachebase, dbv_fb.cachesize,
+		& dbv_fb,
+		30, 0, picw / 2, pich / 2,		/* позиция и размеры прямоугольника - получателя */
+		dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+		& dbv_fbpic,
+		0, 0, picdx, pich,
+		BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_YUV420, keycolor
+		);
+
+	colpip_stretchblt(
+		dbv_fb.cachebase, dbv_fb.cachesize,
+		& dbv_fb,
+		30, pich / 2, picw / 2, pich / 2,		/* позиция и размеры прямоугольника - получателя */
+		dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+		& dbv_fbpic,
+		0, 0, picdx, pich,
+		BITBLT_FLAG_NONE | !1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_YUV420, keycolor
+		);
+
+	colpip_stretchblt(
+		dbv_fb.cachebase, dbv_fb.cachesize,
+		& dbv_fb,
+		300, 100, picw / 1, pich / 1,		/* позиция и размеры прямоугольника - получателя */
+		dbv_fbpic.cachebase, dbv_fbpic.cachesize,
+		& dbv_fbpic,
+		0, 0, picdx, pich,
+		BITBLT_FLAG_NONE | !1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_YUV420, keycolor
+		);
+
+	dcache_clean((uintptr_t) fb,  GXSIZE(DIM_X, DIM_Y) * sizeof fb [0]);
+	hardware_ltdc_main_set4(RTMIXIDLCD, (uintptr_t) fb, (uintptr_t) 0, 0*(uintptr_t) 0, 0*(uintptr_t) 0);
+}
 
 #endif
 
@@ -9193,6 +9257,22 @@ void hightests(void)
 		#include "src/testdata/Cobra.png.h"
 
 		testpng(Cobra_png);
+		for (;;)
+		{
+			testsloopprocessing();		// обработка отложенного вызова user mode функций
+		}
+	}
+#endif
+#if 0 && LCDMODE_LTDC
+	{
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		TP();
+
+		static const uint8_t picture [] = {
+		#include "src/testdata/picture.h"
+		};
+		testyuv(picture);
 		for (;;)
 		{
 			testsloopprocessing();		// обработка отложенного вызова user mode функций

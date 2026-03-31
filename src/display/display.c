@@ -802,6 +802,18 @@ void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t
 	db->layerv = NULL;
 }
 
+void gxdrawb_initialize_yuv(gxdrawb_t * db, const void * buffer, uint_fast16_t dx, uint_fast16_t dy)
+{
+	ASSERT(buffer);
+	db->buffer = (PACKEDCOLORPIP_T *) buffer;
+	db->dx = dx;
+	db->dy = dy;
+	db->cachebase = (uintptr_t) buffer;
+	db->cachesize = (((dx * dy * 3) / 2) + DCACHEROWSIZE - 1) & ~ (DCACHEROWSIZE - 1);
+	db->stride = dx;
+	db->layerv = NULL;
+}
+
 #endif /* LCDMODE_LTDC */
 
 #if WITHLTDCHW || 1
