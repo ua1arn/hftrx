@@ -1716,6 +1716,7 @@ void IRQ15_Handler(void)
 
 #define TASKRAM_SIZE (1024 * 1024)
 typedef struct thread_item_tag thread_item_t;
+static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1);
 
 
 #if defined(__aarch64__)
@@ -1781,7 +1782,6 @@ static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 	f->x0 = ec;
 }
 
-static void task_handler(struct thread_item_tag * thread, unsigned arg0, volatile void * arg1);
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 {
@@ -1855,8 +1855,6 @@ static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 	f->r0 = ec;
 }
 
-static void task_handler(struct thread_item_tag * thread, unsigned arg0, volatile void * arg1);
-
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 {
@@ -1897,8 +1895,6 @@ static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 	exception_frame_t * const f = cpuframe;
 	f->r0 = ec;
 }
-
-static void task_handler(struct thread_item_tag * thread, unsigned arg0, void * arg1);
 
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
@@ -1949,8 +1945,6 @@ static void context_set_ec(void * __restrict cpuframe, unsigned ec)
 	exception_frame_t * const f = cpuframe;
 	f->x3 = ec;
 }
-
-static void task_handler(struct thread_item_tag * thread, unsigned arg0, void * arg1);
 
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
@@ -2603,7 +2597,7 @@ void task_ticker(void)
 
 }
 
-static void task_handler(struct thread_item_tag * thread, unsigned arg0, volatile void * arg1)
+static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
 {
 
 }

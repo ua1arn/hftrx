@@ -1784,8 +1784,11 @@ static void sysinit_smp_initialize(void)
 	__ISB();
 	__DSB();
 
+#elif defined(__riscv)
+
 #else
-	#warning Unhandled __CORTEX_A
+	#warning Unhandled CPU
+
 #endif /* (__CORTEX_A == 9U) */
 }
 
