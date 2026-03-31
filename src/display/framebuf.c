@@ -155,7 +155,7 @@ static unsigned awxx_g2d_get_vi_attr(unsigned srcFormat)
 	unsigned vi_attr = 0;
 	vi_attr = UINT32_C(255) << 24;
 	vi_attr |= srcFormat << 8;
-	vi_attr |= UINT32_C(1) << 15;
+	vi_attr |= UINT32_C(1) << 15;	// UI Overlay - using UI overlay layer input data format
 	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	vi_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	//vi_attr |= (UINT32_C(1) << 4);	/* Use FILLC register */
