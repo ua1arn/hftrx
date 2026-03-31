@@ -599,12 +599,12 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
 		vi0->V0_ATTCTL = awxx_g2d_get_vi_attr(VI_ImageFormat);
 		vi0->V0_PITCH0 = tstride;
+		vi0->V0_LADD0 = ptr_lo32(taddr);
+		vi0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
 		vi0->V0_FILLC = 0;
 		vi0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		vi0->V0_MBSIZE = tsizehw; // сколько брать от исходного буфера
 		vi0->V0_SIZE = tsizehw; // параметры окна исходного буфера
-		vi0->V0_LADD0 = ptr_lo32(taddr);
-		vi0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
 		bld->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
 		/* источник когда есть совпадние */
 		bld->BLD_CH_ISIZE[0] = tsizehw;
@@ -636,12 +636,12 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
 		vi0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
 		vi0->V0_PITCH0 = sstride;
+		vi0->V0_LADD0 = ptr_lo32(saddr);
+		vi0->V0_HADD = (ptr_hi32(saddr) & 0xFF) << 0;
 		vi0->V0_FILLC = 0; //TFTRGB(255, 0, 0);    // unused
 		vi0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		vi0->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера
 		vi0->V0_SIZE = ssizehw; // параметры окна исходного буфера
-		vi0->V0_LADD0 = ptr_lo32(saddr);
-		vi0->V0_HADD = ptr_hi32(saddr);
 		bld->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
 		bld->BLD_CH_ISIZE[0] = ssizehw;
 		bld->BLD_CH_OFFSET[0] = 0; // ((row) << 16) | ((col) << 0);
@@ -850,12 +850,12 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
 		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(VI_ImageFormat);
 		G2D_V0->V0_PITCH0 = tstride;
+		G2D_V0->V0_LADD0 = ptr_lo32(taddr);
+		G2D_V0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = tsizehw; // сколько брать от исходного буфера
 		G2D_V0->V0_SIZE = tsizehw; // параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = ptr_lo32(taddr);
-		G2D_V0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
 		G2D_BLD->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
 		/* источник когда есть совпадние */
 		G2D_BLD->BLD_CH_ISIZE[0] = tsizehw;
@@ -886,12 +886,12 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
 		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
 		G2D_V0->V0_PITCH0 = sstride;
+		G2D_V0->V0_LADD0 = ptr_lo32(saddr);
+		G2D_V0->V0_HADD = (ptr_hi32(saddr) & 0xFF) << 0;
 		G2D_V0->V0_FILLC = 0; //TFTRGB(255, 0, 0);    // unused
 		G2D_V0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера
 		G2D_V0->V0_SIZE = ssizehw; // параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = ptr_lo32(saddr);
-		G2D_V0->V0_HADD = ptr_hi32(saddr);
 		G2D_BLD->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
 		G2D_BLD->BLD_CH_ISIZE[0] = ssizehw;
 		G2D_BLD->BLD_CH_OFFSET[0] = 0; // ((row) << 16) | ((col) << 0);
@@ -4086,22 +4086,22 @@ void hwaccel_stretchblt(
 		/* Данные для замены совпавших с keycolor */
 		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(VI_ImageFormat);
 		G2D_UI2->UI_PITCH = tstride;
+		G2D_UI2->UI_LADD = ptr_lo32(dstlinear);
+		G2D_UI2->UI_HADD = ptr_hi32(dstlinear);
 		G2D_UI2->UI_FILLC = 0;
 		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_UI2->UI_MBSIZE = tsizehw; // сколько брать от исходного буфера
 		G2D_UI2->UI_SIZE = tsizehw;		// параметры окна исходного буфера
-		G2D_UI2->UI_LADD = ptr_lo32(dstlinear);
-		G2D_UI2->UI_HADD = ptr_hi32(dstlinear);
 
 		/* Подача данных на вход VSU */
 		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
 		G2D_V0->V0_PITCH0 = sstride;
+		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
+		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) << 0;
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
 		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
-		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) << 0;
 
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 		/* источник когда есть совпадние ??? */
@@ -4142,12 +4142,12 @@ void hwaccel_stretchblt(
 	{
 		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
 		G2D_V0->V0_PITCH0 = sstride;
+		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
+		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) << 0;
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
 		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
-		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) << 0;
 
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
