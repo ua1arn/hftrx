@@ -2834,7 +2834,7 @@ void testpng_no_stretch(const void * pngbuffer, int useKeyColor)
 void testyuv(const void * yuvbuffer)
 {
 	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
-	const COLORPIP_T keycolor = COLORPIP_GRAY;//TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
+	const COLORPIP_T keycolor = COLORPIP_KEY;//TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
 	const unsigned picw = 720;
 	const unsigned picdx = picw;	// Совпадает со stride
 	const unsigned pich = 576;
@@ -2843,7 +2843,7 @@ void testyuv(const void * yuvbuffer)
 	gxdrawb_t dbv_fbpic;
 	gxdrawb_initialize_yuv(& dbv_fbpic, yuvbuffer, picw, pich);
 
-	colpip_fillrect(& dbv_fb, 0, 0, DIM_X, DIM_Y, COLORPIP_GRAY);
+	colpip_fillrect(& dbv_fb, 0, 0, DIM_X, DIM_Y, COLORPIP_KEY);
 
 	colpip_stretchblt(
 		dbv_fb.cachebase, dbv_fb.cachesize,
