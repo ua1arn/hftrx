@@ -8063,7 +8063,7 @@
    <register>
     <name>V0_PITCH0</name>
     <displayName>V0_PITCH0</displayName>
-    <description>V0_PITCH0</description>
+    <description>V0_PITCH0 Y/RGB/ARGB data memory</description>
     <addressOffset>0x00C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -8072,7 +8072,7 @@
    <register>
     <name>V0_PITCH1</name>
     <displayName>V0_PITCH1</displayName>
-    <description>V0_PITCH1</description>
+    <description>V0_PITCH1 U/UV data memory</description>
     <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -8081,7 +8081,7 @@
    <register>
     <name>V0_PITCH2</name>
     <displayName>V0_PITCH2</displayName>
-    <description>V0_PITCH2</description>
+    <description>V0_PITCH2 V data memory</description>
     <addressOffset>0x014</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -8090,7 +8090,7 @@
    <register>
     <name>V0_LADD0</name>
     <displayName>V0_LADD0</displayName>
-    <description>V0_LADD0</description>
+    <description>V0_LADD0 Y/RGB/ARGB data memory</description>
     <addressOffset>0x018</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -8099,7 +8099,7 @@
    <register>
     <name>V0_LADD1</name>
     <displayName>V0_LADD1</displayName>
-    <description>V0_LADD1</description>
+    <description>V0_LADD1 U/UV data memory</description>
     <addressOffset>0x01C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -8108,7 +8108,7 @@
    <register>
     <name>V0_LADD2</name>
     <displayName>V0_LADD2</displayName>
-    <description>V0_LADD2</description>
+    <description>V0_LADD2 V data memory</description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

@@ -1636,12 +1636,12 @@ typedef struct G2D_VI_Type
     __IOM uint32_t V0_ATTCTL;                         /*!< Offset 0x000 V0_ATTCTL */
     __IOM uint32_t V0_MBSIZE;                         /*!< Offset 0x004 Source rectangle size (may be empty) */
     __IOM uint32_t V0_COOR;                           /*!< Offset 0x008 Target window position */
-    __IOM uint32_t V0_PITCH0;                         /*!< Offset 0x00C V0_PITCH0 */
-    __IOM uint32_t V0_PITCH1;                         /*!< Offset 0x010 V0_PITCH1 */
-    __IOM uint32_t V0_PITCH2;                         /*!< Offset 0x014 V0_PITCH2 */
-    __IOM uint32_t V0_LADD0;                          /*!< Offset 0x018 V0_LADD0 */
-    __IOM uint32_t V0_LADD1;                          /*!< Offset 0x01C V0_LADD1 */
-    __IOM uint32_t V0_LADD2;                          /*!< Offset 0x020 V0_LADD2 */
+    __IOM uint32_t V0_PITCH0;                         /*!< Offset 0x00C V0_PITCH0 Y/RGB/ARGB data memory */
+    __IOM uint32_t V0_PITCH1;                         /*!< Offset 0x010 V0_PITCH1 U/UV data memory */
+    __IOM uint32_t V0_PITCH2;                         /*!< Offset 0x014 V0_PITCH2 V data memory */
+    __IOM uint32_t V0_LADD0;                          /*!< Offset 0x018 V0_LADD0 Y/RGB/ARGB data memory */
+    __IOM uint32_t V0_LADD1;                          /*!< Offset 0x01C V0_LADD1 U/UV data memory */
+    __IOM uint32_t V0_LADD2;                          /*!< Offset 0x020 V0_LADD2 V data memory */
     __IOM uint32_t V0_FILLC;                          /*!< Offset 0x024 V0_FILLC */
     __IOM uint32_t V0_HADD;                           /*!< Offset 0x028 [31:24]: 0, [23:16]: LADD2 bits 40..32, [15:8]: LADD1 bits 40..32, [7:0]: LADD0 bits 40..32 */
     __IOM uint32_t V0_SIZE;                           /*!< Offset 0x02C Source window size (may not be empty) */
