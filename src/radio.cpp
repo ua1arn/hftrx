@@ -1039,6 +1039,7 @@ param_keyclick(const struct paramdefdef * pd)
 	return 1;
 }
 
+#if WITHENCODER
 /* модификация и сохранение параметра по валкодеру
  * - возврат не-0  в случае модификации */
 static uint_fast8_t
@@ -1054,11 +1055,7 @@ param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e)
 	const uint_fast16_t step = (pd->qistep == ISTEPLARGE_1) ? 1 : pd->qistep;
 	uint_fast8_t jumpsize_main;
 
-#if WITHENCODER
 	const int_least16_t nrotate = pd->qistep == ISTEPLARGE_1 ? event_getRotateHiRes(e, & jumpsize_main, genc1div) : event_getRotate_Menu(e);
-#else
-	const int_least16_t nrotate = 0;
-#endif
 
 	if (nrotate == 0)
 		return 0;
@@ -1100,6 +1097,7 @@ param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e)
 	savemenuvalue(pd);
 	return 1;
 }
+#endif
 
 /* модификация и сохранение параметра по валкодеру
  * - возврат не-0  в случае модификации */
