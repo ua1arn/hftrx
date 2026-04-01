@@ -1052,9 +1052,13 @@ param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e)
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 	const uint_fast16_t step = (pd->qistep == ISTEPLARGE_1) ? 1 : pd->qistep;
-	uint_fast8_t jumpsize_main = 1;
+	uint_fast8_t jumpsize_main;
 
+#if WITHENCODER
 	const int_least16_t nrotate = pd->qistep == ISTEPLARGE_1 ? event_getRotateHiRes(e, & jumpsize_main, genc1div) : event_getRotate_Menu(e);
+#else
+	const int_least16_t nrotate = 0;
+#endif
 
 	if (nrotate == 0)
 		return 0;
