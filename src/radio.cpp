@@ -1027,7 +1027,7 @@ param_keyclick(const struct paramdefdef * pd)
 	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
-	const uint_fast16_t step = pd->qistep;
+	const uint_fast16_t step = (pd->qistep == ISTEPLARGE_1) ? 1 : pd->qistep;
 
 	if (! ismenukinddp(pd, ITEM_VALUE) || step == ISTEP_RO)
 		return 0;
@@ -1044,6 +1044,64 @@ param_keyclick(const struct paramdefdef * pd)
 /* модификация и сохранение параметра по валкодеру
  * - возврат не-0  в случае модификации */
 static uint_fast8_t
+param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e)
+{
+	/* редактирование паратметра */
+	unsigned nvalues;
+	const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
+	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+	const ptrdiff_t offs = pd->valoffs(sel);
+	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
+	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
+	const uint_fast16_t step = (pd->qistep == ISTEPLARGE_1) ? 1 : pd->qistep;
+	uint_fast8_t jumpsize_main = 1;
+
+	const int_least16_t nrotate = pd->qistep == ISTEPLARGE_1 ? event_getRotateHiRes(e, & jumpsize_main, genc1div * gencderate) : event_getRotate_Menu(e);
+
+	if (nrotate == 0)
+		return 0;
+	if (! ismenukinddp(pd, ITEM_VALUE) || step == ISTEP_RO)
+		return 0;
+
+	if (nrotate == 0)
+		return 0;
+	if (nrotate < 0)
+	{
+		// negative change value
+		const uint_fast32_t bottom = pd->qbottom;
+		if (pv16 != NULL)
+		{
+			* pv16 =
+				prevfreq(* pv16, * pv16 - (- nrotate * step), step, bottom);
+		}
+		else
+		{
+			* pv8 =
+				prevfreq(* pv8, * pv8 - (- nrotate * step), step, bottom);
+		}
+	}
+	else
+	{
+		// positive change value
+		const uint_fast32_t upper = pd->qupper;
+		if (pv16 != NULL)
+		{
+			* pv16 =
+				nextfreq(* pv16, * pv16 + (nrotate * step), step, upper + (uint_fast32_t) step);
+		}
+		else
+		{
+			* pv8 =
+				nextfreq(* pv8, * pv8 + (nrotate * step), step, upper + (uint_fast32_t) step);
+		}
+	}
+	savemenuvalue(pd);
+	return 1;
+}
+
+/* модификация и сохранение параметра по валкодеру
+ * - возврат не-0  в случае модификации */
+static uint_fast8_t
 param_rotate(const struct paramdefdef * pd, int_least16_t nrotate)
 {
 	/* редактирование паратметра */
@@ -1053,7 +1111,7 @@ param_rotate(const struct paramdefdef * pd, int_least16_t nrotate)
 	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
-	const uint_fast16_t step = pd->qistep;
+	const uint_fast16_t step = (pd->qistep == ISTEPLARGE_1) ? 1 : pd->qistep;
 
 	if (! ismenukinddp(pd, ITEM_VALUE) || step == ISTEP_RO)
 		return 0;
@@ -3566,12 +3624,14 @@ struct onerxant_tag {
 	uint8_t att;		/* режим аттенюатора */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
+#define MLAPARAMC_MAX 10000
 struct onetxant_tag {
 #if WITHAUTOTUNER
 	uint8_t tunercap;
 	uint8_t tunerind;
 	uint8_t tunertype;
 	uint8_t tunerwork;
+	uint16_t mlaparamc;
 #else /* WITHAUTOTUNER */
 	uint8_t dummy_paramm;
 #endif /* WITHAUTOTUNER */
@@ -5325,6 +5385,7 @@ enum
 	static uint_fast8_t tunertype;
 	static uint_fast8_t tunerwork;	/* начинаем работу с выключенным тюнером */
 	static uint_fast8_t gtunerdelay = 25;
+	static uint_fast16_t mlaparamc;
 #if WITHAUTOTUNER_N7DDCALGO
 	static uint_fast8_t gn7ddclinearC = 1;
 	static uint_fast8_t gn7ddclinearL;
@@ -6781,6 +6842,7 @@ static void board_set_tuner_group(void)
 	board_set_tuner_L(tunerind);
 	board_set_tuner_type(tunertype);
 	board_set_tuner_bypass(! tunerwork);
+	board_set_mla_paramC(mlaparamc);
 }
 
 // выдача параметров на тюнер
@@ -6884,6 +6946,7 @@ static void storetuner(uint_fast8_t bg, uint_fast8_t ant)
 	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerind), tunerind);
 	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunertype), tunertype);
 	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerwork), tunerwork);
+	save_i16(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].mlaparamc), mlaparamc);
 }
 
 static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
@@ -6892,6 +6955,7 @@ static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
 	tunerind = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerind), LMIN, LMAX, tunerind);
 	tunertype = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
 	tunerwork = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerwork), 0, 1, 0);	// в новых диапазонах - тоюнер не включаем по умолчанию
+	mlaparamc = loadvfy16up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].mlaparamc), 0, MLAPARAMC_MAX, 0);	// в новых диапазонах - тоюнер не включаем по умолчанию
 }
 
 #if WITHAUTOTUNER_N7DDCALGO
@@ -17735,18 +17799,13 @@ processmenukeyandencoder(inputevent_t * ev)
 #endif /* WITHENCODER2 */
 
 #if WITHENCODER
+	/* редактирование значения с помощью поворота валкодера. */
+	if (param_rotate_knob(mp->pd, & ev->encMAIN))	// модификация и сохранение параметра
 	{
-		/* редактирование значения с помощью поворота валкодера. */
-		const int_least16_t nrotate = event_getRotate_Menu(& ev->encMAIN);
-
-		if (nrotate != 0 && ismenukinddp(mp->pd, ITEM_VALUE))
-		{
-			param_rotate(mp->pd, nrotate);	// модификация и сохранение параметра
-			/* обновление отображения пункта */
-			board_wakeup();
-			updateboard();
-			return 1;
-		}
+		/* обновление отображения пункта */
+		board_wakeup();
+		updateboard();
+		return 1;
 	}
 #endif /* WITHENCODER */
 

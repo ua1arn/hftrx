@@ -3400,6 +3400,7 @@ enum
 	ISTEP10 = 10,
 	ISTEP50 = 50,
 	ISTEP100 = 100,
+	ISTEPLARGE_1 = 255
 	//ISTEPG,
 	//
 };

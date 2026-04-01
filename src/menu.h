@@ -122,6 +122,19 @@ const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHAUTOTUNER_N7DDCALGOT */
+#if WITHMGLOOP
+	(const struct paramdefdef [1]) {
+		QLABEL("MLA C"), 7, 0, RJ_UNSIGNED,	ISTEPLARGE_1,
+		ITEM_VALUE,
+		0, MLAPARAMC_MAX,
+		OFFSETOF(struct nvmap, bandgroups [0].otxants [0].mlaparamc),
+		getselector_bandgroupant, nvramoffs_bandgroupant, valueoffs0,
+		& mlaparamc,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+#endif /* WITHMGLOOP */
 #endif /* WITHAUTOTUNER */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
@@ -3205,7 +3218,7 @@ const struct menudef menutable [] =
 	},
 #endif /* defined (DAC1_TYPE) */
 	(const struct paramdefdef [1]) {
-		QLABEL("REF FREQ"), 9, 3, RJ_UNSIGNED, ISTEP1,		/* ввод реальной частоты опорного генератора через меню. */
+		QLABEL("REF FREQ"), 9, 3, RJ_UNSIGNED, ISTEPLARGE_1,		/* ввод реальной частоты опорного генератора через меню. */
 		ITEM_VALUE,
 		0, OSCSHIFT * 2 - 1, 
 		OFFSETOF(struct nvmap, refbias),
