@@ -184,10 +184,9 @@ static uint_fast8_t genc2dynamic = 0;
 
 
 
-static int_least16_t event_getRotateHiRes(knobevent_t * e, uint_fast8_t * jsize, unsigned derate)
+static int_least16_t event_getRotateHiRes(knobevent_t * e, uint_fast8_t * jsize, int derate)
 {
-	div_t d;
-	d = div(e->delta, derate);
+	const div_t d = div(e->delta, derate);
 	encoder_pushback(e->enc, d.rem);
 	* jsize = e->jumpsize;
 	e->delta = 0;
@@ -201,8 +200,7 @@ static int_least16_t event_getRotateHiRes(knobevent_t * e, uint_fast8_t * jsize,
 static int_least16_t event_getRotate_Menu(knobevent_t * e)
 {
 	const int derate = encoder_get_actualresolution(e->enc) * genc1div / ENCODER_MENU_STEPS;
-	div_t d;
-	d = div(e->delta, derate);
+	const div_t d = div(e->delta, derate);
 	encoder_pushback(e->enc, d.rem);
 	e->delta = 0;
 	return d.quot;
@@ -1056,7 +1054,7 @@ param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e)
 	const uint_fast16_t step = (pd->qistep == ISTEPLARGE_1) ? 1 : pd->qistep;
 	uint_fast8_t jumpsize_main = 1;
 
-	const int_least16_t nrotate = pd->qistep == ISTEPLARGE_1 ? event_getRotateHiRes(e, & jumpsize_main, genc1div * gencderate) : event_getRotate_Menu(e);
+	const int_least16_t nrotate = pd->qistep == ISTEPLARGE_1 ? event_getRotateHiRes(e, & jumpsize_main, genc1div) : event_getRotate_Menu(e);
 
 	if (nrotate == 0)
 		return 0;
@@ -3228,7 +3226,7 @@ static struct bandrange  const bandsmap [] =
 #endif
 
 #if WITHBANDR1BBU
-	{ BMF(41000000 - BANDPAD), 	BMF(49000000 + BANDPAD), 	BMF(44880000), 		BANDMAPSUBMODE_NFM | BANDSETF_HAM, BANDGROUP_45MHz, "LowBand"},
+	{ BMF(41000000 - BANDPAD), 	BMF(49000000 + BANDPAD), 	BMF(44900000), 		BANDMAPSUBMODE_NFM | BANDSETF_HAM, BANDGROUP_45MHz, "LowBand"},
 #endif /* WITHBANDR1BBU */
 #if TUNE_6MBAND
 	{ BMF(50000000 - BANDPAD), 	BMF(54000000 + BANDPAD), 	BMF(50100000), 	BANDMAPSUBMODE_USB | BANDSETF_6M, 		BANDGROUP_50MHz, "50M SSB", },			/* 6 meters HAM band */
@@ -9532,8 +9530,10 @@ setgsubmode(
 		gstep_ENC_MAIN = pmodet->step10 [0] * 10;
 		gstep_ENC2 = pmodet->step10 [1] * 10;
 		gencderate = gstep_ENC_MAIN / STEP_MINIMAL;
+		gencderate = 1;	// TODO: need fix
 	}
 #endif
+	//PRINTF("gstep_ENC_MAIN=%u, gstep_ENC2=%u, gencderate=%u\n", (unsigned) gstep_ENC_MAIN, (unsigned) gstep_ENC2, (unsigned) gencderate);
 }
 #if ! WITHAGCMODENONE
 #endif /* ! WITHAGCMODENONE */
@@ -20181,6 +20181,10 @@ processmainlooptuneknobs(inputevent_t * ev)
 
 	if (glocks [bi_main] == 0)
 	{
+		if (nrotate_main || nrotate_sub)
+		{
+			//PRINTF("m=%d J=%d  ", nrotate_main, jumpsize_main);
+		}
 		uint_fast32_t * const pimain = & gfreqs [bi_main];
 		uint_fast32_t * const pisub = & gfreqs [bi_sub];
 		/* Обработка накопленного количества импульсов от валкодера */

@@ -128,8 +128,8 @@
 		{	0,	DLES,	(BDTH_ALLRX), BDCV_ALLRX, display2_gcombo,	& dzi_compat, PG0, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 
-		{	0,	DLE1,	13, 5, display2_datetime12,	& dzi_compat, PGALL,	},	// DATE&TIME Jan-01 13:40
-		{	13,	DLE1,	10, 5, display2_span9,		& dzi_compat, PG0, },	/* Получить информацию об ошибке настройки в режиме SAM */
+//		{	0,	DLE1,	13, 5, display2_datetime12,	& dzi_compat, PGALL,	},	// DATE&TIME Jan-01 13:40
+//		{	13,	DLE1,	10, 5, display2_span9,		& dzi_compat, PG0, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	6, 5, display2_thermo,		& dzi_compat, PG0, },	// thermo sensor
 		{	29, DLE1,	4, 5, display2_usbsts3,		& dzi_compat, PG0, },	// USB host status
 		{	33, DLE1,	3, 5, display2_btsts2,		& dzi_compat, PG0, },	// USB host status
@@ -139,7 +139,7 @@
 	#if WITHMENU
 		{	0,				DLES,	BDTH_ALLRX, (DLE1 - DLES) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 	#if WITHAUTOTUNER
-		{	0, 			DLE1,	28, 5, display2_mla28,	& dzi_compat, REDRSUBSET_MENU, },	// SWR METER display
+		{	0, 			DLE1,	28, 5, display2_mla28,	& dzi_compat, PGALL, },	// SWR METER display
 		{	28, 			DLE1,	20, 5, display2_swrsts20,	& dzi_compat, REDRSUBSET_MENU, },	// SWR METER display
 	#endif /* WITHAUTOTUNER */
 	#endif /* WITHMENU */
