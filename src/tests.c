@@ -9272,6 +9272,7 @@ void hightests(void)
 		static const uint8_t picture [] = {
 		#include "src/testdata/picture.h"
 		};
+		PRINTF("YUV test image siae=%u bytes\n", (unsigned) sizeof picture);
 		testyuv(picture, 720, 576);
 		for (;;)
 		{

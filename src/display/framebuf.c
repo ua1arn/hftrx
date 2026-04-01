@@ -163,20 +163,6 @@ static uint_fast32_t awxx_g2d_get_vi_attr(unsigned srcFormat)
 	return vi_attr;
 }
 
-static uint_fast32_t awxx_g2d_get_vi_attr_yuv(unsigned srcFormat)
-{
-	srcFormat = 0x0A;	// 0x0A Planar YUV420
-	uint_fast32_t vi_attr = 0;
-	vi_attr = UINT32_C(255) << 24;	// ????? is a need?
-	vi_attr |= (srcFormat & 0x1F) * (UINT32_C(1) << 8);
-	//vi_attr |= UINT32_C(1) << 15;	// UI Overlay - using UI overlay layer input data format
-	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	vi_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
-	//vi_attr |= (UINT32_C(1) << 4);	/* Use FILLC register */
-	vi_attr |= 1;	// Layer enable
-	return vi_attr;
-}
-
 /* Получение RGB888, который нужен для работы функций сравынния ключевого цвета.
  * Должно совпадать с алгоритмом выборки из памяти UIx_ и VI0_
  * */
@@ -375,6 +361,20 @@ static void awg2d_set_vi_oneplan(
 
 }
 
+static uint_fast32_t awxx_g2d_get_vi_attr_yuv(unsigned srcFormat)
+{
+	srcFormat = 0x0A;	// 0x0A Planar YUV420
+	uint_fast32_t vi_attr = 0;
+	vi_attr = UINT32_C(255) << 24;	// ????? is a need?
+	vi_attr |= (srcFormat & 0x1F) * (UINT32_C(1) << 8);
+	//vi_attr |= UINT32_C(1) << 15;	// UI Overlay - using UI overlay layer input data format
+	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	vi_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	//vi_attr |= (UINT32_C(1) << 4);	/* Use FILLC register */
+	vi_attr |= 1;	// Layer enable
+	return vi_attr;
+}
+
 static void awg2d_set_vi_yuv(
 	G2D_VI_TypeDef * vi,
 	uint_fast32_t attr,
@@ -383,14 +383,14 @@ static void awg2d_set_vi_yuv(
 	)
 {
 	const uintptr_t addr0 = addr;
-	const uintptr_t addr1 = addr + (sw * sh);
-	const uintptr_t addr2 = addr;
+	const uintptr_t addr1 = addr + (sw * 1 * sh);
+	const uintptr_t addr2 = addr1;
 	vi->V0_ATTCTL = attr;
-	vi->V0_PITCH0 = sw;	// Y/RGB/ARGB data memory
+	vi->V0_PITCH0 = sw * 1;	// Y/RGB/ARGB data memory
 	vi->V0_LADD0 = ptr_lo32(addr0);
-	vi->V0_PITCH1 = sw;	// U/UV data memory
+	vi->V0_PITCH1 = sw * 1;	// U/UV data memory
 	vi->V0_LADD1 = ptr_lo32(addr1);
-	vi->V0_PITCH2 = sw;	// V data memory
+	vi->V0_PITCH2 = sw * 1;	// V data memory
 	vi->V0_LADD2 = ptr_lo32(addr2);
 	vi->V0_HADD =
 		((ptr_hi32(addr0) & 0xFF) << 0) |	// part of V0_LADD0 - Y/RGB/ARGB data memory
