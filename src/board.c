@@ -20,8 +20,6 @@
 #include <string.h>
 #include <math.h>
 
-static void ua1cei_magloop_initialize(void);
-
 #define CTLREG_SPIMODE	SPIC_MODE3
 #ifndef CTLREG_SPEEDC
 	#define CTLREG_SPEEDC	SPIC_SPEED400k
@@ -5478,7 +5476,7 @@ static dpcobj_t nmeaX_dpc_timed;
 static ticker_t nmeaX_ticker;
 
 
-static void ua1cei_magloop_initialize(void)
+void ua1cei_magloop_initialize(void)
 {
 	static uint8_t txb [2048];
 	static uint8_t rxb [512];

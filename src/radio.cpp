@@ -19264,6 +19264,10 @@ applowinitialize(void)
 
 #endif /* WITHMODEM */
 
+#if WITHMGLOOP
+	ua1cei_magloop_initialize();
+#endif /* WITHMGLOOP */
+
 #if WITHWATCHDOG
 	watchdog_initialize();	/* разрешение сторожевого таймера в устройстве */
 #endif /* WITHWATCHDOG */
@@ -19654,10 +19658,6 @@ void initialize2(void)
 #endif /* defined (BOARD_BLINK_SETSTATE) */
 
 	buffers_start();
-
-#if WITHMGLOOP
-	ua1cei_magloop_initialize();
-#endif /* WITHMGLOOP */
 
 #if WITHDEBUG
 	dbg_puts_impl("initialize2: finished.\n");

@@ -3363,6 +3363,7 @@ int n7ddc_tune(int linearC, int linearL, int (* cb)(void * ctx), void * ctx);	//
 void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type);
 unsigned n7ddc_get_swr(void);
 
+#define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
 unsigned get_swr_cached(unsigned rangemax);
 
 void gui_update(void);
