@@ -5313,12 +5313,8 @@ enum
 	//	ответ:
 	NMF_CODE, //	$ANSW,
 
-//	NMF_STATE, //	состояние устройства
-//	NMF_FWD, //	V_FWD, //ADC датчик апрямой волны
-//	NMF_REF, //	V_REF, //ADC датчика отраженной волны
-//	NMF_C_SENS, //	C_SENS, //ADC датчика тока ACS712
-//	NMF_12V_SENS, //	U_SENS, //ADC входного напряжения питания 12V
-//	NMF_T_SENS, //	T_SENS, //ADC датчика температуры LM235
+	P_POS,
+	P_STATE,
 
 	NMEA_PARAMS
 };
@@ -5424,15 +5420,14 @@ void nmeatuner_onrxchar(uint_fast8_t c)
 		nmeaparser_state = NMEAST_INITIALIZED;
 		if (nmeaparser_checksum == (nmeaparser_chsval + hex2int(c)))	// для тесто проверка контрольной суммы отключена
 		{
-			if (strcmp(nmeaparser_get_buff(NMF_CODE), "ANSW") == 0)
+			if (strcmp(nmeaparser_get_buff(NMF_CODE), "MLA") == 0)
 			{
 				struct _reent treent = { 0 };
 				//
 				const adcvalholder_t EXTFS = 0x0FFF;	// в тюнере стоит 12-бит АЦП
 				// board_adc_store_data
-				const adcvalholder_t FS = board_getadc_fsval(FWD);
-				nmeamgloop_status = 1;
-				nmeamgloop_position = 2;
+				nmeamgloop_status = _strtoul_r(& treent, nmeaparser_get_buff(P_STATE), NULL, 10);
+				nmeamgloop_position = _strtoul_r(& treent, nmeaparser_get_buff(P_POS), NULL, 10);
 
 //				board_adc_store_data(FWD, _strtoul_r(& treent, nmeaparser_get_buff(NMF_FWD), NULL, 10) * FS / EXTFS);
 //				board_adc_store_data(REF, _strtoul_r(& treent, nmeaparser_get_buff(NMF_REF), NULL, 10) * FS / EXTFS);
