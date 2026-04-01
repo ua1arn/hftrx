@@ -2831,19 +2831,19 @@ void testpng_no_stretch(const void * pngbuffer, int useKeyColor)
 // YUV images test
 
 // YUV videobuffer test
-void testyuv(const void * yuvbuffer)
+void testyuv(const void * yuvbuffer, unsigned w, unsigned h)
 {
 	PACKEDCOLORPIP_T * const fb = colmain_fb_draw();
 	const COLORPIP_T keycolor = COLORPIP_KEY;//TFTRGB(png->data [0], png->data [1], png->data [2]);	/* угловой пиксель - надо правильно преобразовать из ABGR*/
-	const unsigned picw = 720;
+	const unsigned picw = w;
 	const unsigned picdx = picw;	// Совпадает со stride
-	const unsigned pich = 576;
+	const unsigned pich = h;
 	gxdrawb_t dbv_fb;
 	gxdrawb_initialize(& dbv_fb, fb, DIM_X, DIM_Y);
 	gxdrawb_t dbv_fbpic;
 	gxdrawb_initialize_yuv(& dbv_fbpic, yuvbuffer, picw, pich);
 
-	colpip_fillrect(& dbv_fb, 0, 0, DIM_X, DIM_Y, COLORPIP_KEY);
+	colpip_fillrect(& dbv_fb, 0, 0, DIM_X, DIM_Y, COLORPIP_BLACK);
 
 	colpip_stretchblt(
 		dbv_fb.cachebase, dbv_fb.cachesize,
@@ -9272,7 +9272,7 @@ void hightests(void)
 		static const uint8_t picture [] = {
 		#include "src/testdata/picture.h"
 		};
-		testyuv(picture);
+		testyuv(picture, 720, 576);
 		for (;;)
 		{
 			testsloopprocessing();		// обработка отложенного вызова user mode функций

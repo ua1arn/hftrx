@@ -382,17 +382,20 @@ static void awg2d_set_vi_yuv(
 	uint_fast16_t sw, uint_fast16_t sh	// Размеры окна источника
 	)
 {
+	const uintptr_t addr0 = addr;
+	const uintptr_t addr1 = addr + (sw * sh);
+	const uintptr_t addr2 = addr;
 	vi->V0_ATTCTL = attr;
-	vi->V0_PITCH0 = stride;	// Y/RGB/ARGB data memory
-	vi->V0_LADD0 = ptr_lo32(addr);
-	vi->V0_PITCH1 = stride;	// U/UV data memory
-	vi->V0_LADD1 = ptr_lo32(addr);
-	vi->V0_PITCH2 = stride;	// V data memory
-	vi->V0_LADD2 = ptr_lo32(addr);
+	vi->V0_PITCH0 = sw;	// Y/RGB/ARGB data memory
+	vi->V0_LADD0 = ptr_lo32(addr0);
+	vi->V0_PITCH1 = sw;	// U/UV data memory
+	vi->V0_LADD1 = ptr_lo32(addr1);
+	vi->V0_PITCH2 = sw;	// V data memory
+	vi->V0_LADD2 = ptr_lo32(addr2);
 	vi->V0_HADD =
-		((ptr_hi32(addr) & 0xFF) << 0) |	// part of V0_LADD0 - Y/RGB/ARGB data memory
-		((ptr_hi32(addr) & 0xFF) << 8) |	// part of V0_LADD1 - U/UV data memory
-		((ptr_hi32(addr) & 0xFF) << 16) |	// part of V0_LADD2 - V data memory
+		((ptr_hi32(addr0) & 0xFF) << 0) |	// part of V0_LADD0 - Y/RGB/ARGB data memory
+		((ptr_hi32(addr1) & 0xFF) << 8) |	// part of V0_LADD1 - U/UV data memory
+		((ptr_hi32(addr2) & 0xFF) << 16) |	// part of V0_LADD2 - V data memory
 		0;
 
 }
@@ -937,7 +940,14 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		//		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
 		//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
 		//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
-		awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(srcFormat), sstride, saddr, sw, sh);
+		if (keyflag & BITBLT_FLAG_SRC_YUV420)
+		{
+			awg2d_set_vi_yuv(G2D_V0, awxx_g2d_get_vi_attr_yuv(srcFormat), sstride, saddr, sw, sh);
+		}
+		else
+		{
+			awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(srcFormat), sstride, saddr, sw, sh);
+		}
 		G2D_V0->V0_FILLC = 0; //TFTRGB(255, 0, 0);    // unused
 		G2D_V0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера
@@ -4144,7 +4154,14 @@ void hwaccel_stretchblt(
 		G2D_UI2->UI_SIZE = tsizehw;		// параметры окна исходного буфера
 
 		/* Подача данных на вход VSU */
-		awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(srcFormat), sstride, srclinear, sw, sh);
+		if (keyflag & BITBLT_FLAG_SRC_YUV420)
+		{
+			awg2d_set_vi_yuv(G2D_V0, awxx_g2d_get_vi_attr_yuv(srcFormat), sstride, srclinear, sw, sh);
+		}
+		else
+		{
+			awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(srcFormat), sstride, srclinear, sw, sh);
+		}
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
@@ -4187,7 +4204,14 @@ void hwaccel_stretchblt(
 	}
 	else
 	{
-		awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(srcFormat), sstride, srclinear, sw, sh);
+		if (keyflag & BITBLT_FLAG_SRC_YUV420)
+		{
+			awg2d_set_vi_yuv(G2D_V0, awxx_g2d_get_vi_attr_yuv(srcFormat), sstride, srclinear, sw, sh);
+		}
+		else
+		{
+			awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(srcFormat), sstride, srclinear, sw, sh);
+		}
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
