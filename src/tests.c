@@ -2848,13 +2848,13 @@ void testyuv(const void * yuvbuffer, unsigned w, unsigned h)
 	colpip_stretchblt(
 		dbv_fb.cachebase, dbv_fb.cachesize,
 		& dbv_fb,
-		0, 0, picw / 4, pich / 4,		/* позиция и размеры прямоугольника - получателя */
+		DIM_X / 4, DIM_Y / 4, DIM_X / 2, DIM_Y / 2,		/* позиция и размеры прямоугольника - получателя */
 		dbv_fbpic.cachebase, dbv_fbpic.cachesize,
 		& dbv_fbpic,
 		0, 0, picdx, pich,
 		BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_YUV420, keycolor
 		);
-
+#if 0
 	colpip_stretchblt(
 		dbv_fb.cachebase, dbv_fb.cachesize,
 		& dbv_fb,
@@ -2884,9 +2884,12 @@ void testyuv(const void * yuvbuffer, unsigned w, unsigned h)
 		0, 0, picdx, pich,
 		BITBLT_FLAG_NONE | !1*BITBLT_FLAG_CKEY | 1*BITBLT_FLAG_SRC_YUV420, keycolor
 		);
-
+#endif
+	TP();
 	dcache_clean((uintptr_t) fb,  GXSIZE(DIM_X, DIM_Y) * sizeof fb [0]);
+	TP();
 	hardware_ltdc_main_set4(RTMIXIDLCD, (uintptr_t) fb, (uintptr_t) 0, 0*(uintptr_t) 0, 0*(uintptr_t) 0);
+	TP();
 }
 
 #endif
