@@ -4245,6 +4245,21 @@ static void display2_siglevel4(
 #endif /* WITHIF4DSP */
 }
 
+unsigned volatile nmeamgloop_status, nmeamgloop_position;
+
+void display2_mla28(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+#if WITHMGLOOP
+	char b [xspan + 1];
+
+	local_snprintf_P(b, ARRAY_SIZE(b), "S=%u C=%u",
+		(unsigned) nmeamgloop_status,
+		(unsigned) nmeamgloop_position
+		);
+	display_text(db, x, y, b, xspan, yspan, & dbstylev_1statePSU);
+#endif /* WITHMGLOOP */
+}
+
 // Отображение КСВ в меню
 void display2_swrsts20(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {

@@ -5281,6 +5281,177 @@ static void prog_rfadc_initialize(void)
 
 #endif /* WITHMGLOOP_UART4 */
 
+
+#include <ctype.h>
+
+enum nmeaparser_states
+{
+	NMEAST_INITIALIZED,
+	NMEAST_OPENED,	// встретился символ '$'
+	NMEAST_CHSHI,	// прём старшего символа контрольной суммы
+	NMEAST_CHSLO,	// приём младшего символа контрольной суммы
+
+
+	//
+	NMEAST_COUNTSTATES
+
+};
+
+
+static uint_fast8_t nmeaparser_state = NMEAST_INITIALIZED;
+static uint_fast8_t nmeaparser_checksum;
+static uint_fast8_t nmeaparser_chsval;
+static uint_fast8_t nmeaparser_param;		// номер принимаемого параметра в строке
+static uint_fast8_t nmeaparser_chars;		// количество символов, помещённых в буфер
+
+#define NMEA_CHARSSMALL		24
+#define NMEA_CHARSBIG		257
+#define NMEA_BIGFIELD		255	// номер большого поля
+
+enum
+{
+	//	ответ:
+	NMF_CODE, //	$ANSW,
+
+//	NMF_STATE, //	состояние устройства
+//	NMF_FWD, //	V_FWD, //ADC датчик апрямой волны
+//	NMF_REF, //	V_REF, //ADC датчика отраженной волны
+//	NMF_C_SENS, //	C_SENS, //ADC датчика тока ACS712
+//	NMF_12V_SENS, //	U_SENS, //ADC входного напряжения питания 12V
+//	NMF_T_SENS, //	T_SENS, //ADC датчика температуры LM235
+
+	NMEA_PARAMS
+};
+
+static char nmeaparser_buffsmall [NMEA_PARAMS] [NMEA_CHARSSMALL];
+static char nmeaparser_buffbig [NMEA_CHARSBIG];
+
+static unsigned nmeaparser_get_buffsize(uint_fast8_t field)
+{
+	switch (field)
+	{
+	case NMEA_BIGFIELD:
+		return NMEA_CHARSBIG;
+	default:
+		return NMEA_CHARSSMALL;
+	}
+}
+
+static char * nmeaparser_get_buff(uint_fast8_t field)
+{
+	switch (field)
+	{
+	case NMEA_BIGFIELD:
+		return nmeaparser_buffbig;
+	default:
+		return nmeaparser_buffsmall [field];
+	}
+}
+
+static uint_fast8_t hex2int(uint_fast8_t c)
+{
+	if (isdigit((unsigned char) c))
+		return c - '0';
+	if (isupper((unsigned char) c))
+		return c - 'A' + 10;
+	if (islower((unsigned char) c))
+		return c - 'a' + 10;
+	return 0;
+}
+
+/* вызывается из обработчика прерываний */
+// произошла потеря символа (символов) при получении данных с компорта
+void nmeatuner_rxoverflow(void)
+{
+	nmeaparser_state = NMEAST_INITIALIZED;
+}
+/* вызывается из обработчика прерываний */
+void nmeatuner_disconnect(void)
+{
+	nmeaparser_state = NMEAST_INITIALIZED;
+}
+
+/* вызывается из обработчика прерываний */
+// принятый символ с последовательного порта
+void nmeatuner_onrxchar(uint_fast8_t c)
+{
+	switch (nmeaparser_state)
+	{
+	case NMEAST_INITIALIZED:
+		if (c == '$')
+		{
+			nmeaparser_checksum = '*';
+			nmeaparser_state = NMEAST_OPENED;
+			nmeaparser_param = 0;		// номер принимаемого параметра в строке
+			nmeaparser_chars = 0;		// количество символов, помещённых в буфер
+		}
+		break;
+
+	case NMEAST_OPENED:
+		nmeaparser_checksum ^= c;
+		if (c == ',')
+		{
+			// закрываем буфер параметра, переходим к следующему параметру
+			nmeaparser_get_buff(nmeaparser_param) [nmeaparser_chars] = '\0';
+			nmeaparser_param += 1;
+			nmeaparser_chars = 0;
+		}
+		else if (c == '*')
+		{
+			// закрываем буфер параметра, переходим к следующему параметру
+			nmeaparser_get_buff(nmeaparser_param) [nmeaparser_chars] = '\0';
+			nmeaparser_param += 1;
+			// переходим к приёму контрольной суммы
+			nmeaparser_state = NMEAST_CHSHI;
+		}
+		else if (nmeaparser_param < NMEA_PARAMS && nmeaparser_chars < (nmeaparser_get_buffsize(nmeaparser_param) - 1))
+		{
+			nmeaparser_get_buff(nmeaparser_param) [nmeaparser_chars] = c;
+			nmeaparser_chars += 1;
+			//stat_l1 = stat_l1 > nmeaparser_chars ? stat_l1 : nmeaparser_chars;
+		}
+		else
+			nmeaparser_state = NMEAST_INITIALIZED;	// при ошибках формата строки
+		break;
+
+	case NMEAST_CHSHI:
+		nmeaparser_chsval = hex2int(c) * 16;
+		nmeaparser_state = NMEAST_CHSLO;
+		break;
+
+	case NMEAST_CHSLO:
+		//debugstate();
+		nmeaparser_state = NMEAST_INITIALIZED;
+		if (nmeaparser_checksum == (nmeaparser_chsval + hex2int(c)))	// для тесто проверка контрольной суммы отключена
+		{
+			if (strcmp(nmeaparser_get_buff(NMF_CODE), "ANSW") == 0)
+			{
+				struct _reent treent = { 0 };
+				//
+				const adcvalholder_t EXTFS = 0x0FFF;	// в тюнере стоит 12-бит АЦП
+				// board_adc_store_data
+				const adcvalholder_t FS = board_getadc_fsval(FWD);
+				nmeamgloop_status = 1;
+				nmeamgloop_position = 2;
+
+//				board_adc_store_data(FWD, _strtoul_r(& treent, nmeaparser_get_buff(NMF_FWD), NULL, 10) * FS / EXTFS);
+//				board_adc_store_data(REF, _strtoul_r(& treent, nmeaparser_get_buff(NMF_REF), NULL, 10) * FS / EXTFS);
+//				// для WITHTDIRECTDATA -  значения параметров напрямую получаются от контроллера усилителя мощности
+//				board_adc_store_data(PASENSEIX, _strtol_r(& treent, nmeaparser_get_buff(NMF_C_SENS), NULL, 10));
+//				board_adc_store_data(XTHERMOIX, _strtol_r(& treent, nmeaparser_get_buff(NMF_T_SENS), NULL, 10));
+//				board_adc_store_data(VOLTSOURCE, _strtol_r(& treent, nmeaparser_get_buff(NMF_12V_SENS), NULL, 10));
+
+//				VERIFY(board_dpc_call(& dpc_ua1ceituner, board_dpc_coreid()));
+
+			}
+		}
+		break;
+
+	default:
+		break;
+	}
+}
+
 // Очереди символов для обмена
 
 // Очередь символов для передачи в канал обмена
@@ -5332,12 +5503,13 @@ void nmeaX_puts_impl(const char * s, size_t len)
 	}
 }
 
+
 static uint_fast8_t calcxorv(
 	const char * s,
 	size_t len
 	)
 {
-	uint_fast8_t r = '*';
+	unsigned char r = '*';
 	while (len --)
 		r ^= (unsigned char) * s ++;
 	return r & 0xff;
@@ -5364,7 +5536,8 @@ void USER_NMEAX_ONRXCHAR(uint_fast8_t c)
 	IRQL_t oldIrql;
 
 	RiseIrql(IRQL_SYSTEM, & oldIrql);
-	uint8_queue_put(& rxq, c);
+	nmeatuner_onrxchar(c);
+	//uint8_queue_put(& rxq, c);
 	LowerIrql(oldIrql);
 }
 

@@ -139,6 +139,7 @@
 	#if WITHMENU
 		{	0,				DLES,	BDTH_ALLRX, (DLE1 - DLES) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 	#if WITHAUTOTUNER
+		{	0, 			DLE1,	28, 5, display2_mla28,	& dzi_compat, REDRSUBSET_MENU, },	// SWR METER display
 		{	28, 			DLE1,	20, 5, display2_swrsts20,	& dzi_compat, REDRSUBSET_MENU, },	// SWR METER display
 	#endif /* WITHAUTOTUNER */
 	#endif /* WITHMENU */

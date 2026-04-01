@@ -3735,6 +3735,7 @@ param_load(
 	);
 
 
+extern unsigned volatile nmeamgloop_status, nmeamgloop_position;
 
 #ifdef __cplusplus
 }
