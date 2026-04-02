@@ -150,7 +150,8 @@ static uint_fast32_t awxx_g2d_get_ui_attr(unsigned srcFormat)
 	return ui_attr;
 }
 
-static uint_fast32_t awxx_g2d_get_vi_attr(unsigned srcFormat)
+// UI Overlay - using UI overlay layer input data format
+static uint_fast32_t awxx_g2d_get_vi_as_ui_attr(unsigned srcFormat)
 {
 	uint_fast32_t vi_attr = 0;
 	vi_attr = UINT32_C(255) << 24;	// ????? is a need?
@@ -361,9 +362,9 @@ static void awg2d_set_vi_oneplan(
 
 }
 
-static uint_fast32_t awxx_g2d_get_vi_attr_yuv(unsigned srcFormat)
+static uint_fast32_t awxx_g2d_get_vi_attr_yuv(void)
 {
-	srcFormat = 0x0A;	// 0x0A Planar YUV420
+	const uint_fast32_t srcFormat = 0x0A;	// 0x0A Planar YUV420
 	uint_fast32_t vi_attr = 0;
 	vi_attr = UINT32_C(255) << 24;	// ????? is a need?
 	vi_attr |= (srcFormat & 0x1F) * (UINT32_C(1) << 8);
@@ -660,7 +661,7 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		ui2->UI_LADD = ptr_lo32(saddr);
 		ui2->UI_HADD = ptr_hi32(saddr);
 		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
-		awg2d_set_vi_oneplan(vi0, awxx_g2d_get_vi_attr(VI_ImageFormat), tstride, taddr, dx, dy);
+		awg2d_set_vi_oneplan(vi0, awxx_g2d_get_vi_as_ui_attr(VI_ImageFormat), tstride, taddr, dx, dy);
 		vi0->V0_FILLC = 0;
 		vi0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		vi0->V0_MBSIZE = tsizehw; // сколько брать от исходного буфера
@@ -694,7 +695,7 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		//		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
 		//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
 		//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
-		awg2d_set_vi_oneplan(vi0, awxx_g2d_get_vi_attr(srcFormat), sstride, saddr, sw, sh);
+		awg2d_set_vi_oneplan(vi0, awxx_g2d_get_vi_as_ui_attr(srcFormat), sstride, saddr, sw, sh);
 		vi0->V0_FILLC = 0; //TFTRGB(255, 0, 0);    // unused
 		vi0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		vi0->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера
@@ -781,14 +782,14 @@ aw_g2d_fillrect(
 	if (fillmask & FILL_FLAG_MIXBG)
 	{
 		/* установка поверхности - источника (анализируется) */
-		ui2->UI_ATTR = awxx_g2d_get_ui_attr(VI_ImageFormat);
+		ui2->UI_ATTR = awxx_g2d_get_ui_attr(UI_ImageFormat);
 		ui2->UI_PITCH = tstride;
+		ui2->UI_LADD = ptr_lo32(taddr);
+		ui2->UI_HADD = ptr_hi32(taddr);
 		ui2->UI_FILLC = 0;
 		ui2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		ui2->UI_MBSIZE = tsizehw; // сколько брать от исходного буфера
 		ui2->UI_SIZE = tsizehw;		// параметры окна исходного буфера
-		ui2->UI_LADD = ptr_lo32(taddr);
-		ui2->UI_HADD = ptr_hi32(taddr);
 
 		bld->BLD_FILL_COLOR [0] =
 			alpha * (UINT32_C(1) << 24) |
@@ -868,7 +869,7 @@ aw_g2d_fillrect(
 
 static void
 awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
-		unsigned srcFormat, unsigned sstride,
+		unsigned srcUIFormat, unsigned sstride,
 		uint_fast32_t ssizehw, uintptr_t saddr,
 		uint_fast16_t sw, uint_fast16_t sh,	// Размеры окна источника
 		unsigned tstride, uint_fast32_t tsizehw,
@@ -898,7 +899,7 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		G2D_BLD->BLD_KEY_MAX = keycolor24;
 		G2D_BLD->BLD_KEY_MIN = keycolor24;
 		/* установка поверхности - источника (анализируется) */
-		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(srcFormat);
+		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(srcUIFormat);
 		G2D_UI2->UI_PITCH = sstride;
 		G2D_UI2->UI_FILLC = 0;
 		G2D_UI2->UI_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -907,7 +908,7 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		G2D_UI2->UI_LADD = ptr_lo32(saddr);
 		G2D_UI2->UI_HADD = ptr_hi32(saddr);
 		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
-		awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(VI_ImageFormat), tstride, taddr, tw, th);
+		awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_as_ui_attr(VI_ImageFormat), tstride, taddr, tw, th);
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = tsizehw; // сколько брать от исходного буфера
@@ -932,21 +933,21 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 	{
 		/* без keycolor */
 		/* установка поверхности - источника (безусловно) */
-		//		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr();
-		//		G2D_UI2->UI_PITCH = sstride;
-		//		G2D_UI2->UI_FILLC = 0;
-		//		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		//		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
-		//		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
-		//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
-		//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
+//		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(UI_ImageFormat);
+//		G2D_UI2->UI_PITCH = sstride;
+//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
+//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
+//		G2D_UI2->UI_FILLC = 0;
+//		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+//		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
+//		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
 		if (keyflag & BITBLT_FLAG_SRC_YUV420)
 		{
-			awg2d_set_vi_yuv(G2D_V0, awxx_g2d_get_vi_attr_yuv(srcFormat), sstride, saddr, sw, sh);
+			awg2d_set_vi_yuv(G2D_V0, awxx_g2d_get_vi_attr_yuv(), sstride, saddr, sw, sh);
 		}
 		else
 		{
-			awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(srcFormat), sstride, saddr, sw, sh);
+			awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_as_ui_attr(srcUIFormat), sstride, saddr, sw, sh);
 		}
 		G2D_V0->V0_FILLC = 0; //TFTRGB(255, 0, 0);    // unused
 		G2D_V0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -1013,7 +1014,7 @@ aw_g2d_fillrect(
 	if (fillmask & FILL_FLAG_MIXBG)
 	{
 		/* установка поверхности - источника (анализируется) */
-		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(VI_ImageFormat);
+		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(UI_ImageFormat);
 		G2D_UI2->UI_PITCH = tstride;
 		G2D_UI2->UI_FILLC = 0;
 		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -4144,7 +4145,7 @@ void hwaccel_stretchblt(
 		G2D_BLD->BLD_KEY_MIN = keycolor24;
 
 		/* Данные для замены совпавших с keycolor */
-		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(VI_ImageFormat);
+		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(UI_ImageFormat);
 		G2D_UI2->UI_PITCH = tstride;
 		G2D_UI2->UI_LADD = ptr_lo32(dstlinear);
 		G2D_UI2->UI_HADD = ptr_hi32(dstlinear);
@@ -4156,11 +4157,11 @@ void hwaccel_stretchblt(
 		/* Подача данных на вход VSU */
 		if (keyflag & BITBLT_FLAG_SRC_YUV420)
 		{
-			awg2d_set_vi_yuv(G2D_V0, awxx_g2d_get_vi_attr_yuv(srcFormat), sstride, srclinear, sw, sh);
+			awg2d_set_vi_yuv(G2D_V0, awxx_g2d_get_vi_attr_yuv(), sstride, srclinear, sw, sh);
 		}
 		else
 		{
-			awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(srcFormat), sstride, srclinear, sw, sh);
+			awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_as_ui_attr(srcFormat), sstride, srclinear, sw, sh);
 		}
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -4206,11 +4207,11 @@ void hwaccel_stretchblt(
 	{
 		if (keyflag & BITBLT_FLAG_SRC_YUV420)
 		{
-			awg2d_set_vi_yuv(G2D_V0, awxx_g2d_get_vi_attr_yuv(srcFormat), sstride, srclinear, sw, sh);
+			awg2d_set_vi_yuv(G2D_V0, awxx_g2d_get_vi_attr_yuv(), sstride, srclinear, sw, sh);
 		}
 		else
 		{
-			awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_attr(srcFormat), sstride, srclinear, sw, sh);
+			awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_as_ui_attr(srcFormat), sstride, srclinear, sw, sh);
 		}
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
