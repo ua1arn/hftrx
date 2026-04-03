@@ -2018,6 +2018,7 @@ typedef struct thread_item_tag
 	exception_frame_t * cpuframe;	// cpu state
 	void * allocated;
 	IRQL_t irql;
+	unsigned uprio;
 	int (* check_ready)(struct thread_item_tag * thread, uint_fast32_t tn, volatile void * arg1);
 	volatile void * check_ready_obj;
 	const char * name;
@@ -2101,6 +2102,7 @@ static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn
 	context_init(stackframe, fn, ctx);
 	thread->cpuframe = stackframe;
 	thread->irql = IRQL_USER;
+	thread->uprio = uprio;
 	thread->guard = thread;	// debug signature
 	thread->check_ready = NULL;
 	thread->name = name;
@@ -2152,37 +2154,13 @@ void task_scheduler_initialize(void)
 	{
 		thread_item_t * const thread = & idle_threads [i];
 		//
-		thread_add(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, IRQL_IDLE, "idle");
+		thread_add(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, UPRIO_IDLE, "idle");
 	}
 	threads_not_started = 0;
 }
 
 void task_ticker(void)
 {
-//	IRQL_t irql;
-//	unsigned prio;
-//	const uint_fast8_t coreid = board_dpc_coreid();
-//	if (coreid != 0)
-//		return;
-//	IRQLSPIN_LOCK(& threadslock, & irql, IRQL_IPC_ONLY);
-//	for (prio = 0; prio < PRIOv_count; ++ prio)
-//	{
-//		PRLIST_ENTRY list = & threads_list [prio];
-//		PRLIST_ENTRY t;
-//		for (t = list->Flink; t != list; t = t->Flink)
-//		{
-//			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-//			if (tp->check_ready != NULL)
-//			{
-//
-//			}
-//			if (tp->timeout != 0 && tp->timeout != UINT32_MAX)
-//			{
-//				tp->timeout -= 1;
-//			}
-//		}
-//	}
-//	IRQLSPIN_UNLOCK(& threadslock, irql);
 }
 
 // проверка условий отдачи управления задаче
@@ -2207,15 +2185,12 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 	ASSERT(taskin);
 	ASSERT(affinity);
 	const uint_fast32_t tn = sys_now();
-	//unsigned prio = GICI_DECODE_IRQL(taskin->irql);
-	unsigned prio = GICI_DECODE_IRQL(IRQL_USER);	// FIXME
-	ASSERT(ARRAY_SIZE(threads_list) > prio);
 	// Возвращаем в список задач
-	InsertTailList(& threads_list [prio], & taskin->item);
-
-	for (prio = 0; prio < PRIOv_count; ++ prio)
+	InsertTailList(& threads_list [taskin->uprio], & taskin->item);
+	unsigned uprio;
+	for (uprio = 0; uprio < ARRAY_SIZE(threads_list); ++ uprio)
 	{
-		PRLIST_ENTRY const list = & threads_list [prio];
+		PRLIST_ENTRY const list = & threads_list [uprio];
 		PRLIST_ENTRY t;
 		PRLIST_ENTRY tnext;
 		for (t = list->Flink; t != list; t = tnext)
@@ -2241,7 +2216,7 @@ static void thread_print(const thread_item_t * const tp)
 }
 void tasks_print(void)
 {
-	unsigned prio;
+	unsigned uprio;
 	unsigned core;
 	PRINTF("tasks_print: base\n");
 	for (core = 0; core < ARRAY_SIZE(base_threads); ++ core)
@@ -2254,12 +2229,12 @@ void tasks_print(void)
 		thread_print(startedtask [core]);
 	}
 	PRINTF("tasks_print: lists\n");
-	for (prio = 0; prio < ARRAY_SIZE(threads_list); ++ prio)
+	for (uprio = 0; uprio < ARRAY_SIZE(threads_list); ++ uprio)
 	{
-		PRLIST_ENTRY const list = & threads_list [prio];
+		PRLIST_ENTRY const list = & threads_list [uprio];
 		if (IsListEmpty(list))
 			continue;
-		PRINTF("tasks_print: prio=%u\n", prio);
+		PRINTF("tasks_print: uprio=%u\n", uprio);
 		PRLIST_ENTRY t;
 		PRLIST_ENTRY tnext;
 		for (t = list->Flink; t != list; t = tnext)
@@ -2424,6 +2399,7 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 		thread->guard = thread;
 		thread->allocated = NULL;
 		thread->check_ready = NULL;
+		thread->uprio = UPRIO_USER;
 		thread->name = "default";
 		//
 		// получаем состояние процесора при первом перрывании
