@@ -930,6 +930,41 @@ extern "C" {
 
 #endif /* CPUSTYLE_ARM_CM3 */
 
+enum
+{
+	UPRIO_REALTIME,
+	UPRIO_USER,
+	UPRIO_IDLE,
+	//
+	UPRIO_count
+};
+
+#define TASK_AFFINITY_ALL (~0U)
+void task_scheduler_initialize(void);
+void task_ticker(void);
+void __NO_RETURN task_scheduler_othercores(void);
+void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name);
+void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name);
+void task_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
+void tasks_print(void);
+
+
+#define LOCAL_WAITINFINITY UINT32_MAX
+// wait expected state of variable
+// return non-zero: timeout error
+// timeMS may be LOCAL_WAITINFINITY
+int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS);
+int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS);
+
+// wait non-zero state of variable
+// return non-zero: timeout error
+// timeMS may be LOCAL_WAITINFINITY
+int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS);
+
+void local_delay_us(uint_fast32_t timeUS);	// may be LOCAL_WAITINFINITY
+void local_delay_ms(uint_fast32_t timeMS);	// may be LOCAL_WAITINFINITY
+void local_delay_initialize(void);	// setup parameters for loop-nased delays
+
 /* STM32: In HS mode and when the DMA is used, all variables and data structures dealing
    with the DMA during the transaction process should be 4-bytes aligned */    
 
