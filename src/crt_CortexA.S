@@ -99,30 +99,7 @@ FIQAddr:    .word VFRQ_Handler
 	.word SystemExecAARCH64
 	.word SystemDRAMInit
 
-   .ltorg
-
-	.align 6
-	.global __Vectors_rtos
-__Vectors_rtos:
-	ldr pc, ResetAddr_rtos    /* Reset                 */
-	ldr pc, UndefAddr_rtos    /* Undefined instruction */
-	ldr pc, SWIAddr_rtos      /* Software interrupt    */
-	ldr pc, PAbortAddr_rtos   /* Prefetch abort        */
-	ldr pc, DAbortAddr_rtos   /* Data abort            */
-	ldr pc, HypAddr_rtos 		/* Entry to Hyp mode	 */
-	ldr pc, IRQAddr_rtos      /* IRQ interrupt         */
-	ldr pc, FIQAddr_rtos      /* FIQ interrupt         */
-
-
-ResetAddr_rtos:     .word Reset_Handler
-UndefAddr_rtos:     .word Undef_Handler
-SWIAddr_rtos:       .word FreeRTOS_SWI_Handler
-PAbortAddr_rtos:    .word PAbort_Handler
-DAbortAddr_rtos:    .word DAbort_Handler
-HypAddr_rtos:  	 .word Hyp_Handler
-IRQAddr_rtos:       .word FreeRTOS_IRQ_Handler
-FIQAddr_rtos:       .word FreeRTOS_FIQ_Handler
-   .ltorg
+    .ltorg
 
 
    	.section ".startup0", "ax"

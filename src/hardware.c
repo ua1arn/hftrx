@@ -19,11 +19,6 @@
 #include <stdlib.h>	 // For aligned_alloc
 #include <math.h>
 
-#if WITHRTOS
-#include "FreeRTOS.h"
-//#include "task.h"
-#endif /* WITHRTOS */
-
 #if 0
 void blinkloop(void)
 {

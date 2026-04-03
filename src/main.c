@@ -15,7 +15,6 @@
 void
 lowinitialize(void)
 {
-#if ! WITHRTOS
 	board_beep_initialize();
 	//hardware_cw_diagnostics_noirq(1, 0, 1);	// 'K'
 #if WITHDEBUG
@@ -47,8 +46,6 @@ lowinitialize(void)
 
 	board_initialize();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
 	cpu_initdone();			/* секция init (в которой лежит образ для загрузки в FPGA) больше не нужна */
-#endif /* ! WITHRTOS */
-
 }
 
 /* Главная функция программы */

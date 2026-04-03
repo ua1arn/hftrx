@@ -19297,7 +19297,6 @@ static void dpc_0p1_s_timer_fn(void * ctx)
 void
 applowinitialize(void)
 {
-#if ! WITHRTOS
 
 #if WITHCAT
 
@@ -19360,7 +19359,6 @@ applowinitialize(void)
 	//for (;;);
 	//hardware_cw_diagnostics_noirq(1, 1, 0);	// 'S'
 	//board_testsound_enable(0);	// Выключить 1 кГц на самоконтроле
-#endif /* ! WITHRTOS */
 }
 
 #if defined (BOARD_BLINK_SETSTATE)

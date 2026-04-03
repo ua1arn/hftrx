@@ -2564,6 +2564,8 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 // заглушки для компиляции
 void task_scheduler_initialize(void) {}
 void task_ticker(void) {}
+// хотим завершить выполнение кванта, не дожидаясь прерывания
+void task_yield(void) {}
 
 #else /* ! LINUX_SUBSYSTEM */
 
@@ -2664,6 +2666,10 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS)
 {
 	return 1;
+}
+// хотим завершить выполнение кванта, не дожидаясь прерывания
+void task_yield(void)
+{
 }
 
 #endif /* ! LINUX_SUBSYSTEM */
