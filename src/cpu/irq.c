@@ -2189,7 +2189,7 @@ void task_ticker(void)
 
 // проверка условий отдачи управления задаче
 // Если нашли - ставим error code
-static int task_isready(uint_fast32_t tn, thread_item_t * tp)
+static int task_isready(thread_item_t * tp, uint_fast32_t tn)
 {
 	if (tp->check_ready != NULL)
 	{
@@ -2223,7 +2223,7 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 		{
 			tnext = t->Flink;
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-			if ((tp->affinity & affinity) && task_isready(tn, tp))
+			if ((tp->affinity & affinity) && task_isready(tp, tn))
 			{
 				// Нашли подходящий поток
 				RemoveEntryList(& tp->item);
