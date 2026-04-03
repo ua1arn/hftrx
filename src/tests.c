@@ -6826,6 +6826,14 @@ static void lv_example_canvas_7(lv_obj_t * parent)
 
     }
 }
+
+void lv_demo_args_init(lv_demo_args_t * args)
+{
+    LV_ASSERT_NULL(args);
+    lv_memzero(args, sizeof(lv_demo_args_t));
+    args->parent = lv_screen_active();
+}
+
 #endif /* WITHLVGL */
 
 #if 0
