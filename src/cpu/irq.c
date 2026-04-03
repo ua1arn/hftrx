@@ -2088,6 +2088,7 @@ static thread_item_t * startedtask [HARDWARE_NCORES];
 
 static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql, const char * name)
 {
+	irql = IRQL_USER;
 	const unsigned prio = GICI_DECODE_IRQL(irql);
 	ASSERT(ARRAY_SIZE(threads_list) > prio);
 	thread->affinity = affinity;
@@ -2243,10 +2244,15 @@ void tasks_print(void)
 {
 	unsigned prio;
 	unsigned core;
-	PRINTF("tasks_print: running\n");
+	PRINTF("tasks_print: base\n");
 	for (core = 0; core < ARRAY_SIZE(base_threads); ++ core)
 	{
 		thread_print(& base_threads [core]);
+	}
+	PRINTF("tasks_print: started\n");
+	for (core = 0; core < ARRAY_SIZE(startedtask); ++ core)
+	{
+		thread_print(startedtask [core]);
 	}
 	PRINTF("tasks_print: lists\n");
 	for (prio = 0; prio < PRIOv_count; ++ prio)
@@ -2288,6 +2294,11 @@ static int ready_timeout(uint_fast32_t tn, uint_fast32_t t0, uint_fast32_t td)
 static int readyfn_suspend(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
 {
 	volatile struct taskfnparam_suspend * const param = (volatile struct taskfnparam_suspend *) arg1;
+	if (param == NULL || param->guard != param)
+	{
+		PRINTF("readyfn_suspend: '%s' aff=%08X\n", thread->name, thread->affinity);
+		tasks_print();
+	}
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	return ready_timeout(tn, param->t0, param->td);
