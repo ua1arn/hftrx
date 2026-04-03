@@ -297,7 +297,6 @@ processmessages(
 			;
 	}
 
-	task_yield();
 	board_dpc_processing();		// обработка отложенного вызова user mode функций
 	watchdog_ping();
 

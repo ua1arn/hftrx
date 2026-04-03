@@ -2254,7 +2254,6 @@ void __NO_RETURN task_scheduler_othercores(void)
 	{
 		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
 		__DMB();
-		task_yield();
 	}
 }
 
@@ -2432,6 +2431,9 @@ static void * task_scheduler(void * oldframe)
 // хотим завершить выполнение кванта, не дожидаясь прерывания
 void task_yield(void)
 {
+	const uint_fast8_t coreid = board_dpc_coreid();
+	if (coreid >= 6)
+		return;
 //	__WFI();	// пока так
 //	__SEV();
 	task_sysfn(TASKFN_NOP, NULL);
@@ -4005,6 +4007,7 @@ void board_dpc_processing(void)
 	ASSERT(coreid < HARDWARE_NCORES);
 	ASSERT(dpc == dpc->tag1);
 	ASSERT(dpc == dpc->tag2);
+	task_yield();
 	// Выполнение периодического вызова user-mode функций по списку
 	//if (coreid == 1) dbg_putchar('+');
 	{
