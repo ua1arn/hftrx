@@ -2610,10 +2610,15 @@ void local_delay_ms(uint_fast32_t timeMS)
 {
 	if (timeMS == 0)
 		return;
-	const uint_fast32_t t0 = cpu_getdebugticks();
-	const uint_fast32_t td = get_td_ms(timeMS);
-	while ((uint32_t) (threads_sys_now() - t0) < td)
-		;
+
+    const uint_fast32_t t0 = cpu_getdebugticks();
+    const uint_fast32_t td = get_td_ms(timeMS);
+    while ((uint32_t) (cpu_getdebugticks() - t0) < td)
+    	;
+
+//	const uint_fast32_t t0 = threads_sys_now();
+//	while ((uint32_t) (threads_sys_now() - t0) < timeMS)
+//		;
 }
 
 
