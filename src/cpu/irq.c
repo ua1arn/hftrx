@@ -2075,17 +2075,17 @@ static int task_idle(void * ctx)
 {
 	for (;;)
 	{
-		task_yield();
+		task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	}
 	return 0;
 }
 
+static thread_item_t idle_threads [HARDWARE_NCORES];
+static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
+static thread_item_t * startedtask [HARDWARE_NCORES];
+
 static IRQLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
 static LIST_ENTRY threads_list [UPRIO_count];
-
-static thread_item_t idle_threads [HARDWARE_NCORES];
-static thread_item_t base_threads [HARDWARE_NCORES];	// состояения получаем при первом прерывании
-static thread_item_t * startedtask [HARDWARE_NCORES];
 
 static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, unsigned uprio, const char * name)
 {
@@ -4007,7 +4007,7 @@ void board_dpc_processing(void)
 	ASSERT(coreid < HARDWARE_NCORES);
 	ASSERT(dpc == dpc->tag1);
 	ASSERT(dpc == dpc->tag2);
-	task_yield();
+	task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	// Выполнение периодического вызова user-mode функций по списку
 	//if (coreid == 1) dbg_putchar('+');
 	{
