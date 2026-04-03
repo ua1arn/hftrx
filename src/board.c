@@ -493,6 +493,12 @@ static int nmeaX_putc(int c)
 	IRQL_t oldIrql;
 	uint_fast8_t f;
 
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	f = uint8_queue_put(& txq, c);
+	LowerIrql(oldIrql);
+	hardware_uart2_enabletx(1);
+	return f ? c : (-1);
+
 	do {
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		f = uint8_queue_put(& txq, c);
@@ -5459,6 +5465,11 @@ static int nmeaX_putc(int c)
 {
 	IRQL_t oldIrql;
 	uint_fast8_t f;
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	f = uint8_queue_put(& txq, c);
+	LowerIrql(oldIrql);
+	HARDWARE_NMEAX_ENABLETX(1);
+	return f ? c : (-1);
 
 	do {
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
@@ -5566,7 +5577,7 @@ static void ua1cei_magloop_send(void)
 	if (! ua1cei_magloop_inited)
 		return;
 	// Буфер для формирования ответа в канал управления
-	static char state [1024];
+	char state [1024];
 	unsigned len = local_snprintf_P(state, ARRAY_SIZE(state),
 			"TRX,%u,%u,%u,%u,%u,%u,%u"
 			"*",

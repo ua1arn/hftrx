@@ -200,6 +200,12 @@ static int nmeaX_putc(int c)
 	IRQL_t oldIrql;
 	uint_fast8_t f;
 
+	RiseIrql(IRQL_SYSTEM, & oldIrql);
+	f = uint8_queue_put(& txq, c);
+	LowerIrql(oldIrql);
+	hardware_uart5_enabletx(1);
+	return c;
+
 	do {
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
 		f = uint8_queue_put(& txq, c);
