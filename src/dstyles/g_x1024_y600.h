@@ -7,7 +7,7 @@
 
 	enum {
 		DLES = 35,		// spectrum window upper line
-        DLE1 = 120 - GRID2Y(1),		// 96-5
+        DLE1 = 120 - GRID2Y(1) - 1,		// 96-5
 		DLE_unused
 	};
 
@@ -16,7 +16,7 @@
 		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
 
 		BDTH_ALLRX = 64, 		// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = (79 /* DLE1 - DLES */),	// количество строк, отведенное под панораму и волопад.
+		BDCV_ALLRX = DLE1 - DLES - 1,	// количество строк, отведенное под панораму и волопад.
 
 		BDTH_LEFTRX = 17,	// ширина индикатора баллов (без плюсов)
 		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
@@ -137,11 +137,11 @@
 		{	0,	DLES,	(BDTH_ALLRX),	BDCV_ALLRX, display2_gcombo,	& dzi_default, PGSPE, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 
-		{	0,	DLE1,	12, 4, display2_datetime12,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
-		{	13,	DLE1,	9, 4, display2_span9,		& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	23, DLE1,	4, 4, display2_thermo,	& dzi_default, PGALL, },	// thermo sensor
-		{	28, DLE1,	3, 4, display2_usbsts3,		& dzi_default, PG0, },	// USB host status
-		{	32, DLE1,	7, 4, display2_classa7,		& dzi_default, PG0, },	// Class-A power amplifier
+		{	0,	DLE1,	12, 5, display2_datetime12,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
+		{	13,	DLE1,	9, 5, display2_span9,		& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	23, DLE1,	6, 5, display2_thermo,		& dzi_default, PGALL, },	// thermo sensor
+		{	30, DLE1,	3, 5, display2_usbsts3,		& dzi_default, PG0, },	// USB host status
+		{	34, DLE1,	7, 5, display2_classa7,		& dzi_default, PG0, },	// Class-A power amplifier
 		//{	28, DLE1,	10, 4, display2_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
