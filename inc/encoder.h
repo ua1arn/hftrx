@@ -29,10 +29,10 @@ typedef struct encoder_tag encoder_t;
 
 void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void));
 
-int_least16_t encoder_get_delta(encoder_t * e);
-void encoder_pushback(encoder_t * const e, int outsteps);
+int32_t encoder_get_delta(encoder_t * e);
+void encoder_pushback(encoder_t * const e, int32_t outsteps);
 
-int_least16_t
+int32_t
 encoder_getrotatehires(
 	encoder_t * const e,
 	uint_fast8_t * jumpsize	/* jumpsize - во сколько раз увеличивается скорость перестройки */
@@ -47,7 +47,7 @@ void encoder_kbdctl(
 	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор
 	);
 
-void encoder_set_resolution(encoder_t * e, uint_fast8_t resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.
+void encoder1_set_resolution(unsigned resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.
 unsigned encoder_get_actualresolution(encoder_t * e);	// возвращает количество инкрементов на оборот
 
 #define ENCODER_NORMALIZED_RESOLUTION (1440)	// виртуальных импульсов за оборот в секунду - нормализованная скорость

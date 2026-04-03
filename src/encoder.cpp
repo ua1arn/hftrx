@@ -30,6 +30,7 @@ static atomicpos_t position_kbd;	/* накопитель от клавиатур
 struct encoder_tag
 {
 	atomicpos_t position;	// обновляется по прерыванию
+	atomicpos_t account;	// обновляется по прерыванию
 	uint8_t old_val;
 	uint_fast8_t (* getpins)(void);
 
@@ -45,8 +46,8 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	e->old_val = agetpins();
 	e->getpins = agetpins;
 	e->position = 0;
+	e->account = 0;
 
-	//e->rotate = 0;
 	e->enchistindex = 0;
 	e->enchist [0] = e->enchist [1] = e->enchist [2] = e->enchist [3] = 0;
 	ASSERT(HISTLEN == 4);
@@ -146,6 +147,7 @@ static void encoder_clear(encoder_t * e)
 	IRQL_t oldIrql;
 
 	e->position = 0;
+	e->account = 0;
 	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
 	e->enchist [0] = e->enchist [1] = e->enchist [2] = e->enchist [3] = 0;
 	ASSERT(HISTLEN == 4);
@@ -172,9 +174,8 @@ static uint_fast8_t encoder1_dynamic = 1;
 //#define ENCODER_ACTUAL_RESOLUTION (encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
 //static uint_fast8_t encoder_resolution;
 
-void encoder_set_resolution(encoder_t * e, uint_fast8_t v, uint_fast8_t encdynamic)
+void encoder1_set_resolution(unsigned v, uint_fast8_t encdynamic)
 {
-	//encoder_resolution = v;	/* используется учетверение шагов */
 	encoder1_actual_resolution = v * 4 * ENCRESSCALE;	/* используется учетверение шагов */
 	encoder1_dynamic = encdynamic;
 }
@@ -183,6 +184,32 @@ void encoder_set_resolution(encoder_t * e, uint_fast8_t v, uint_fast8_t encdynam
 unsigned encoder_get_actualresolution(encoder_t * e)
 {
 	return encoder1_actual_resolution;
+}
+
+/* получение количества шагов, накопленного с момента предыдущего опроса */
+int32_t
+encoder_get_delta(
+	encoder_t * const e
+	)
+{
+	return
+		(int32_t) std::atomic_exchange(& e->position, 0) +
+		(int32_t) std::atomic_exchange(& e->account, 0) +
+		0;
+}
+
+/* получение количества шагов, накопленного с момента предыдущего опроса */
+static int32_t
+encoder_get_deltaspeed(
+	encoder_t * const e
+	)
+{
+	return (int32_t) std::atomic_exchange(& e->position, 0);
+}
+
+void encoder_pushback(encoder_t * const e, int32_t outsteps)
+{
+	e->account += outsteps;
 }
 
 static int local_iabs(int v)
@@ -195,7 +222,7 @@ static void
 encspeed_spool(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
-	const int p1 = encoder_get_delta(e);	// получить накопленные шаги и сбросить их
+	const int p1 = encoder_get_deltaspeed(e);	// получить накопленные шаги и сбросить их
 	const int p1kbd = safegetposition_kbd();
 	const int p1sum = p1 + p1kbd;
 	encoder_pushback(e, p1sum);	// обратно внести накопленные шаги
@@ -271,20 +298,6 @@ encoder_get_snapshotproportional(
 }
 
 
-/* получение количества шагов, накопленного с момента предыдущего опроса */
-int_least16_t
-encoder_get_delta(
-	encoder_t * const e
-	)
-{
-	return std::atomic_exchange(& e->position, 0);
-}
-
-void encoder_pushback(encoder_t * const e, int outsteps)
-{
-	e->position += outsteps;
-}
-
 encoder_t encoder1;	// Main RX tuning knob
 #if WITHENCODER2
 encoder_t encoder2;	// FN knob or Sub RX tuning knob
@@ -313,7 +326,7 @@ void encoder_kbdctl(
 }
 /* получение накопленного значения прерываний от валкодера.
 		накопитель сбрасывается */
-int_least16_t 
+int32_t
 encoder_getrotatehires(
 	encoder_t * const e,
 	uint_fast8_t * jumpsize	/* jumpsize - во сколько раз увеличивается скорость перестройки */
@@ -335,7 +348,11 @@ encoder_getrotatehires(
 
 
 	unsigned speed;
-	int_least16_t nrotate = encoder_get_snapshotproportional(e, & speed);
+	const int32_t nrotate = encoder_get_snapshotproportional(e, & speed);
+	if (nrotate)
+	{
+		//PRINTF("n=%d s=%d  ", (int) nrotate, (int) speed);
+	}
 
 	if (encoder1_dynamic != 0)
 	{

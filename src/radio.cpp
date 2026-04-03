@@ -9532,7 +9532,6 @@ setgsubmode(
 		gstep_ENC_MAIN = pmodet->step10 [0] * 10;
 		gstep_ENC2 = pmodet->step10 [1] * 10;
 		gencderate = gstep_ENC_MAIN / STEP_MINIMAL;
-		gencderate = 1;	// TODO: need fix
 	}
 #endif
 	//PRINTF("gstep_ENC_MAIN=%u, gstep_ENC2=%u, gencderate=%u\n", (unsigned) gstep_ENC_MAIN, (unsigned) gstep_ENC2, (unsigned) gencderate);
@@ -10558,7 +10557,7 @@ static void
 updateboard2(void)
 {
 #if WITHENCODER
-	encoder_set_resolution(& encoder1, encresols [genc1pulses], genc1dynamic);
+	encoder1_set_resolution(encresols [genc1pulses], genc1dynamic);
 #endif /* WITHENCODER */
 	display2_setbgcolor(gbluebgnd ? COLORPIP_BLUE : COLORPIP_BLACK);
 }
