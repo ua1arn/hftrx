@@ -19705,6 +19705,7 @@ void initialize2(void)
 	(void) mclearnvram;
 
 #if defined (BOARD_BLINK_SETSTATE)
+	// работа на всех ядрах, кроме нулевого
 	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, blinktest2, NULL, 8 * 1024, "blinktest2") == NULL)
 	{
 #if WITHISBOOTLOADER

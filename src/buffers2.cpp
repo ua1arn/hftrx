@@ -4577,6 +4577,7 @@ void buffers_start(void)
 #if ! TXSPOOLCOND
 
 	#warning rx process in spool
+	// работа на всех ядрах, кроме нулевого
 	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, dsphftrxproc_spool_user_thread, NULL, 1 * 1024 * 1024, "dsphftrxproc_spool_user_thread") == NULL)
 	{
 		static dpcobj_t dsphftrxproc_spool_dpc;

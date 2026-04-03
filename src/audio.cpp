@@ -5474,6 +5474,7 @@ void dsp_initialize(void)
 		gwprof = spf;
 	}
 
+	// работа на всех ядрах, кроме нулевого
 	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, user_audioproc_thread, NULL, 16 * 1024 * 1024, "user_audioproc_thread") == NULL)
 	{
 		static dpcobj_t user_audioproc_dpc;
