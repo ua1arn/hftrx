@@ -2109,7 +2109,7 @@ static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn
 
 	// включаем в список задач
 	InsertTailList(& threads_list [uprio], & thread->item);
-	//PRINTF("Added thread at prio=%u, affinity=%02X (frame=%p), stack[%p..%p]\n", prio, affinity, stackframe, stackframe, (void *) top);
+	//PRINTF("Added thread at uprio=%u, affinity=%02X (frame=%p), stack[%p..%p]\n", uprio, affinity, stackframe, stackframe, (void *) top);
 }
 
 void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
