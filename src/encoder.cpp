@@ -195,9 +195,10 @@ static void
 encspeed_spool(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
-	const int p1 = encoder_get_delta(e);
+	const int p1 = encoder_get_delta(e);	// получить накопленные шаги и сбросить их
 	const int p1kbd = safegetposition_kbd();
-	encoder_pushback(e, p1 + p1kbd);
+	const int p1sum = p1 + p1kbd;
+	encoder_pushback(e, p1sum);	// обратно внести накопленные шаги
 
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
@@ -207,7 +208,7 @@ encspeed_spool(void * ctx)
 	   включившемся ускорении пользователь меняет направление - движется назад к пропущенной частоте. при этом для
 	   предсказуемости перестройки ускорение не должно изменяться.
 	*/
-	e->enchist [e->enchistindex] += local_iabs(p1) + local_iabs(p1kbd);
+	e->enchist [e->enchistindex] += local_iabs(p1sum);
 	if (++ e->tichist >= ENCTICKSMAX)	// уменьшение предела - уменьшает "постояную времени" измерителя скорости валкодера
 	{	
 		e->tichist  = 0;
