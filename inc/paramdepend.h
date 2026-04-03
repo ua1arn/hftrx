@@ -781,13 +781,11 @@ extern "C" {
 		PRIOv_SYSTEM,
 		PRIOv_BOARD,
 		PRIOv_USER,
-		PRIOv_IDLE,
 		//
 		PRIOv_count
 	};
 
-	#define IRQL_IDLE 0xFF	// TODO: verify value
-	#define IRQL_USER ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_USER, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+	#define IRQL_USER 0xFF//((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_USER, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 	#define IRQL_BOARD ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_BOARD, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 	#define IRQL_SYSTEM ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_SYSTEM, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 	#define IRQL_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_REALTIME, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
@@ -821,7 +819,6 @@ extern "C" {
 		PRIOv_SYS,		/* таймеры, USB */
 		PRIOv_BRD,		/* папаметы фильттров, board_set_xxx */
 		PRIOv_USER,
-		PRIOv_IDLE,
 		//
 		PRIOv_count
 	};
@@ -851,7 +848,6 @@ extern "C" {
 	#define IRQL_SYSTEM 		(GICI_ENCODE_IRQL(PRIOv_SYS))
 	#define IRQL_BOARD			(GICI_ENCODE_IRQL(PRIOv_BRD))
 	#define IRQL_USER 			(GICI_ENCODE_IRQL(PRIOv_USER))
-	#define IRQL_IDLE 			(GICI_ENCODE_IRQL(PRIOv_IDLE))
 
 	// A lower priority value indicating a higher priority
 	// Value for GICD
@@ -890,20 +886,18 @@ extern "C" {
 
 	typedef uint_xlen_t IRQL_t;
 
-	#define ARM_IPC_ONLY_PRIORITY		6
-	#define ARM_OVERREALTIME_PRIORITY	5	/* валкодер и телеграф */
-	#define ARM_REALTIME_PRIORITY		4	/* звук */
-	#define ARM_SYSTEM_PRIORITY			3	/* таймеры, USB */
-	#define ARM_BOARD_PRIORITY			2	/* установка параметров */
-	#define ARM_USER_PRIORITY			1	/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
-	#define ARM_IDLE_PRIORITY			0	/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
+	enum
+	{
+		ARM_USER_PRIORITY = 0,		/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
+		ARM_BOARD_PRIORITY,			/* установка параметров */
+		ARM_SYSTEM_PRIORITY,		/* таймеры, USB */
+		ARM_REALTIME_PRIORITY,		/* звук */
+		ARM_OVERREALTIME_PRIORITY,	/* валкодер и телеграф */
+		ARM_IPC_ONLY_PRIORITY,
+		//
+		PRIOv_count
+	};
 
-	#define PRIOv_count 7
-
-	#define global_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
-	#define global_disableIRQ() do { csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
-
-	#define IRQL_IDLE				ARM_IDLE_PRIORITY
 	#define IRQL_USER				ARM_USER_PRIORITY
 	#define IRQL_SYSTEM 			ARM_SYSTEM_PRIORITY
 	#define IRQL_BOARD				ARM_BOARD_PRIORITY
@@ -914,6 +908,9 @@ extern "C" {
 	#define GICD_ENCODE_PRIORITY(priov) 	(priov)	// Value for GICDistributor->IPRIORITYR[n]
 	#define GICI_ENCODE_IRQL(priov) 		(priov)	// value for GICInterface->PMR
 	#define GICI_DECODE_IRQL(irql) 			(irql)	// value from GICInterface->PMR
+
+	#define global_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
+	#define global_disableIRQ() do { csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
 
 #else /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 */
 
