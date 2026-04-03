@@ -297,6 +297,7 @@ processmessages(
 			;
 	}
 
+	task_yield();
 	board_dpc_processing();		// обработка отложенного вызова user mode функций
 	watchdog_ping();
 
@@ -19704,7 +19705,7 @@ void initialize2(void)
 	(void) mclearnvram;
 
 #if defined (BOARD_BLINK_SETSTATE)
-	if (thread_create_user(TASK_AFFINITY_ALL, blinktest2, NULL, 8 * 1024, "blinktest2") == NULL)
+	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, blinktest2, NULL, 8 * 1024, "blinktest2") == NULL)
 	{
 #if WITHISBOOTLOADER
 	const unsigned thalf = 100;	// Toggle every 100 ms

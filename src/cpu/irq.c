@@ -2088,7 +2088,7 @@ static thread_item_t * startedtask [HARDWARE_NCORES];
 
 static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, IRQL_t irql, const char * name)
 {
-	irql = IRQL_USER;
+	irql = IRQL_USER;	// FIXME
 	const unsigned prio = GICI_DECODE_IRQL(irql);
 	ASSERT(ARRAY_SIZE(threads_list) > prio);
 	thread->affinity = affinity;
@@ -2209,7 +2209,8 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 	ASSERT(taskin);
 	ASSERT(affinity);
 	const uint_fast32_t tn = sys_now();
-	unsigned prio = GICI_DECODE_IRQL(taskin->irql);
+	//unsigned prio = GICI_DECODE_IRQL(taskin->irql);
+	unsigned prio = GICI_DECODE_IRQL(IRQL_USER);	// FIXME
 	ASSERT(ARRAY_SIZE(threads_list) > prio);
 	// Возвращаем в список задач
 	InsertTailList(& threads_list [prio], & taskin->item);
@@ -2286,7 +2287,7 @@ void __NO_RETURN task_scheduler_othercores(void)
 
 static int ready_timeout(uint_fast32_t tn, uint_fast32_t t0, uint_fast32_t td)
 {
-	if (td == UINT32_MAX)
+	if (td == LOCAL_WAITINFINITY)
 		return 0;
 	return (uint32_t) (tn - t0) >= td;
 }
