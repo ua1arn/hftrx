@@ -292,7 +292,8 @@ encoder_get_snapshotproportional(
 	// Расчёт скорости. Результат - (1 / ENCODER_NORMALIZED_RESOLUTION) долей оборота за секунду
 	// Если результат ENCODER_NORMALIZED_RESOLUTION это обозначает один оборот в секунду
 	// ((s * ENCTICKS_FREQUENCY) / t) - результат в размерности "импульсов в секунду".
-	* speed = ((s * (uint_fast32_t) ENCTICKS_FREQUENCY * ENCODER_NORMALIZED_RESOLUTION) / (tdelta * (uint_fast32_t) encoder_get_actualresolution(e)));
+	* speed = (s * (uint_fast32_t) ENCTICKS_FREQUENCY * ENCODER_NORMALIZED_RESOLUTION) /
+			(tdelta * (uint_fast32_t) encoder_get_actualresolution(e));
 
 	return hrotate;
 }
@@ -341,18 +342,16 @@ encoder_getrotatehires(
 	static const accel velotable [] =
 	{
 		{	ENCODER_NORMALIZED_RESOLUTION * 45U / 10U,	200U },	// 4.5 оборота в секунду
-		{	ENCODER_NORMALIZED_RESOLUTION * 25U / 10U,	20U },	// 2.5 оборота в секунду
-		{	ENCODER_NORMALIZED_RESOLUTION * 16U / 10U,	5U },	// 1.6 оборота в секунду
-		{	ENCODER_NORMALIZED_RESOLUTION * 8U / 10U, 2U },	// 0.8 оборота в секунду - удвоение шага
+		{	ENCODER_NORMALIZED_RESOLUTION * 30U / 10U,	100U },	// 3 оборота в секунду
+		{	ENCODER_NORMALIZED_RESOLUTION * 20U / 10U,	20U },	// 2 оборота в секунду
+		{	ENCODER_NORMALIZED_RESOLUTION * 10U / 10U,	10U },	// 1.6 оборота в секунду
+		{	ENCODER_NORMALIZED_RESOLUTION * 8U / 10U, 5U },	// 0.8 оборота в секунду
+		{	ENCODER_NORMALIZED_RESOLUTION * 5U / 10U, 2U },	// 0.5 оборота в секунду - удвоение шага
 	};
 
 
 	unsigned speed;
 	const int32_t nrotate = encoder_get_snapshotproportional(e, & speed);
-	if (nrotate)
-	{
-		//PRINTF("n=%d s=%d  ", (int) nrotate, (int) speed);
-	}
 
 	if (encoder1_dynamic != 0)
 	{
@@ -366,6 +365,10 @@ encoder_getrotatehires(
 			if (speed >= vtspeed)
 			{
 				* jumpsize = velotable [i].muliplier;
+				if (nrotate)
+				{
+					//PRINTF("[%d] n=%d s=%d\n", i, (int) nrotate, (int) speed);
+				}
 				return nrotate;
 			}
 		}
