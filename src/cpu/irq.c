@@ -2574,6 +2574,13 @@ void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * c
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 static void * task_scheduler(void * oldframe)
 {
+//	if (arm_hardware_cpuid() >= 1)
+//	{
+//		PRINTF("core%d:\n", (int) arm_hardware_cpuid());
+//		printhex64(0, oldframe, context_size());
+//		for (;;)
+//			;
+//	}
 	return oldframe;
 }
 
@@ -3633,6 +3640,7 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 
 	VERIFY(IRQ_SetPriority(int_id, priority) == 0);	// non-atomic operation
 	GIC_SetTarget(int_id, targetcpu);	// non-atomic operation
+	//ASSERT(GIC_GetTarget(int_id) == targetcpu);
 
 	// peripherial (hardware) interrupts using the GIC 1-N model.
 	uint_fast32_t cfg = GIC_GetConfiguration(int_id) & 0x03u;
@@ -3641,6 +3649,8 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 #if ! CPUSTYLE_R7S721
 	/* do not change edge/level settings of specified interrupts - leave initialized at start-up */
 	GIC_SetConfiguration(int_id, cfg);// non-atomic operation
+	//PRINTF("cfg[%u]: set=%02X get=%02X\n", int_id, cfg, (0x03 & GIC_GetConfiguration(int_id)));
+	//ASSERT((0x03 & GIC_GetConfiguration(int_id)) == cfg);
 #endif /* ! CPUSTYLE_R7S721 */
 #if (__CORTEX_A == 55U) && __aarch64__
 	GIC_SetGroup(int_id, 1);
