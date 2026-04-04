@@ -1412,13 +1412,13 @@ stsinit_irql_initialize(void)
 //	PRINTF("GIC_GetBinaryPoint()=%u\n", (unsigned) GIC_GetBinaryPoint());
 	ASSERT(GIC_BINARY_POINT == GIC_GetBinaryPoint());
 
-//	if (arm_hardware_cpuid() == 0)
-//	{
-//		GIC_DistInit();
-//	#if defined(GIC_REDISTRIBUTOR_BASE)
-//		GIC_RedistInit();
-//	#endif /* GIC_REDISTRIBUTOR_BASE */
-//	}
+	if (arm_hardware_cpuid() == 0)
+	{
+		GIC_DistInit();
+	#if defined(GIC_REDISTRIBUTOR_BASE)
+		GIC_RedistInit();
+	#endif /* GIC_REDISTRIBUTOR_BASE */
+	}
 	GIC_Enable();
 	GIC_CPUInterfaceInit(); //per CPU
 
