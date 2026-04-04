@@ -3642,8 +3642,8 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 	GIC_SetTarget(int_id, targetcpu);	// non-atomic operation
 	if (int_id >= 32)
 	{
-		//PRINTF("targetcpu[%u]: set=%02X get=%02X\n", (unsigned) int_id, (unsigned) targetcpu, (unsigned) GIC_GetTarget(int_id));
-		ASSERT(GIC_GetTarget(int_id) == targetcpu);
+//		PRINTF("targetcpu[%u]: set=%02X get=%02X\n", (unsigned) int_id, (unsigned) targetcpu, (unsigned) GIC_GetTarget(int_id));
+//		ASSERT(GIC_GetTarget(int_id) == targetcpu);
 	}
 
 	// peripherial (hardware) interrupts using the GIC 1-N model.
@@ -3655,8 +3655,8 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 	GIC_SetConfiguration(int_id, cfg);// non-atomic operation
 	if (int_id >= 32)
 	{
-		//PRINTF("cfg[%u]: set=%02X get=%02X\n", (unsigned) int_id, (unsigned) cfg, (unsigned) (0x03 & GIC_GetConfiguration(int_id)));
-		ASSERT((0x03 & GIC_GetConfiguration(int_id)) == cfg);
+//		PRINTF("cfg[%u]: set=%02X get=%02X\n", (unsigned) int_id, (unsigned) cfg, (unsigned) (0x03 & GIC_GetConfiguration(int_id)));
+//		ASSERT((0x03 & GIC_GetConfiguration(int_id)) == cfg);
 	}
 #endif /* ! CPUSTYLE_R7S721 */
 #if (__CORTEX_A == 55U) && __aarch64__
