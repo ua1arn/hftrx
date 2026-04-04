@@ -1401,6 +1401,110 @@ sysinit_fpu_initialize(void)
 #endif /*  */
 }
 
+#if defined(GIC_REDISTRIBUTOR_BASE) && 	! __aarch64__
+
+#define GIC_REDISTRIBUTOR_STRIDE (0x20000)
+#define GICR_SGI_BASE_OFF        (0x10000)
+#define GICR_WAKER_PS_SHIFT (1)
+#define GICR_WAKER_CA_SHIFT (2)
+
+/** \brief Get the Redistributor base.
+*/
+__STATIC_INLINE GICRedistributor_Type *GIC_GetRdist(void)
+{
+#if 1
+	return (GICRedistributor_Type *) GICR0_BASE;
+#else
+    uintptr_t rd_addr = GIC_REDISTRIBUTOR_BASE;
+    uint32_t rd_aff, aff = GIC_MPIDRtoAffinity();
+    uint64_t rd_typer;
+
+  do {
+        rd_typer = ((GICRedistributor_Type *)rd_addr)->TYPER;
+        rd_aff = rd_typer >> GICR_TYPER_AFF_SHIFT;
+
+        if (rd_aff == aff)
+            return (GICRedistributor_Type *)rd_addr;
+
+        rd_addr += GIC_REDISTRIBUTOR_STRIDE;
+    } while (!(rd_typer & GICR_TYPER_LAST_MASK));
+
+    return NULL;
+#endif
+}
+
+/** \brief Get the Redistributor SGI_base.
+*/
+__STATIC_INLINE void *GIC_GetRdistSGIBase(void *rd_base)
+{
+    return (void *)((uintptr_t)rd_base + GICR_SGI_BASE_OFF);
+}
+
+/**
+ *
+ */
+__STATIC_INLINE uint32_t GIC_GetRedistPriority(IRQn_Type IRQn)
+{
+    GICDistributor_Type *const s_RedistPPIBaseAddrs = (GICDistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
+
+    return (s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
+}
+
+/**
+ *
+ */
+__STATIC_INLINE void GIC_RedistWakeUp(void)
+{
+  GICRedistributor_Type *const s_RedistBaseAddrs = GIC_GetRdist();
+
+    if (!s_RedistBaseAddrs)
+        return;
+
+    if (!(s_RedistBaseAddrs->WAKER & (1 << GICR_WAKER_CA_SHIFT)))
+        return;
+
+  s_RedistBaseAddrs->WAKER &= ~ (1 << GICR_WAKER_PS_SHIFT);
+    while (s_RedistBaseAddrs->WAKER & (1 << GICR_WAKER_CA_SHIFT))
+        ;
+}
+
+/**
+ *
+ */
+__STATIC_INLINE void GIC_SetRedistPriority(IRQn_Type IRQn, uint32_t priority)
+{
+    GICDistributor_Type *const s_RedistPPIBaseAddrs = (GICDistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
+    const uint32_t mask = s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
+
+    s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
+}
+
+/** \brief Initialize the interrupt redistributor.
+*/
+__STATIC_INLINE void GIC_RedistInit(void)
+{
+    uint32_t i;
+    uint32_t priority_field;
+
+  /* Priority level is implementation defined.
+   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
+   priority field and read back the value stored.*/
+    GIC_SetRedistPriority((IRQn_Type)31U, 0xFFU);
+    priority_field = GIC_GetRedistPriority((IRQn_Type)31U);
+
+  /* Wakeup the GIC */
+    GIC_RedistWakeUp();
+
+    for (i = 0; i < 32; i++)
+    {
+      //Disable the SPI interrupt
+        GIC_DisableIRQ((IRQn_Type)i);
+      //Set priority
+      GIC_SetRedistPriority((IRQn_Type)i, priority_field*2U/3U);
+    }
+}
+#endif /* GIC_REDISTRIBUTOR_BASE */
+
 // GIC CPU Interface
 static void
 stsinit_irql_initialize(void)
