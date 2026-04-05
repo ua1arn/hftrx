@@ -20,7 +20,6 @@ extern "C" {
 #define ENCODER_SLOW_STEPS 48	/* шагов на один оборот валкодера на минимальной скорости вращения  */
 #define ENCODER_MENU_STEPS 24	/* количество изменений настраиваемого параметра на один оборот валкодера */
 
-#define HISTLEN 4		// кое-где дальше есть код, в неявном виде использующий это значение
 #define ENCTICKSMAX ENCNTICKS(125)
 #define ENCNTICKS(v) ((v + (ENC_TICKS_PERIOD - 1)) / ENC_TICKS_PERIOD)
 #define ENCTICKS_FREQUENCY (1000 / ENC_TICKS_PERIOD)

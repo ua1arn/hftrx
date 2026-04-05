@@ -29,6 +29,8 @@ static atomicpos_t position_kbd;	/* накопитель от клавиатур
 
 #include "arm_math.h"
 
+#define HISTLEN 4	// размер окна фильтра скорости
+
 struct encoder_tag
 {
 	atomicpos_t position;	// обновляется по прерыванию
@@ -50,9 +52,22 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	e->position = 0;
 	e->account = 0;
 
+	e->tichist = 0;
 	e->enchistindex = 0;
 	arm_fill_q31(0, e->enchist, HISTLEN);
 	IRQLSPINLOCK_INITIALIZE(& e->encspeedlock);
+}
+
+static void encoder_clear(encoder_t * e)
+{
+	IRQL_t oldIrql;
+
+	e->position = 0;
+	e->account = 0;
+	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
+	arm_fill_q31(0, e->enchist, HISTLEN);
+	e->tichist = 0;
+	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
 }
 
 /* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
@@ -142,18 +157,6 @@ void spool_encinterrupts_ccw(void * ctx)
 	e->old_val = new_val;
 }
 
-static void encoder_clear(encoder_t * e)
-{
-	IRQL_t oldIrql;
-
-	e->position = 0;
-	e->account = 0;
-	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
-	arm_fill_q31(0, e->enchist, HISTLEN);
-	e->tichist = 0;
-	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
-}
-
 static int safegetposition_kbd(void)
 {
 #if WITHKBDENCODER
@@ -192,8 +195,8 @@ encoder_get_delta(
 	)
 {
 	return
-		(int32_t) std::atomic_exchange(& e->position, 0) +
-		(int32_t) std::atomic_exchange(& e->account, 0) +
+		std::atomic_exchange(& e->position, 0) +
+		std::atomic_exchange(& e->account, 0) +
 		0;
 }
 
@@ -237,7 +240,7 @@ encspeed_spool(void * ctx)
 	e->enchist [e->enchistindex] += local_iabs(p1sum);
 	if (++ e->tichist >= ENCTICKSMAX)	// уменьшение предела - уменьшает "постояную времени" измерителя скорости валкодера
 	{	
-		e->tichist  = 0;
+		e->tichist = 0;
 		e->enchistindex = (e->enchistindex + 1) % HISTLEN;
 		e->enchist [e->enchistindex] = 0;		// Очередная ячейка накопления шагов очищается перед использованием.
 	}
