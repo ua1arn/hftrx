@@ -9,6 +9,9 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "encoder.h"
+
+#if WITHENCODER
+
 #include "keyboard.h"	/* функция опроса электронного ключа */
 //#include "display.h"	/* test */
 #include "formats.h"	// for debug prints
@@ -499,3 +502,13 @@ void encoder_indev_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 }
 
 #endif /* WITHLVGL */
+
+#else /* WITHENCODER */
+/* STUB */
+/* вызывается при запрещённых прерываниях */
+void encoders_initialize(void)
+{
+
+}
+
+#endif /* WITHENCODER */
