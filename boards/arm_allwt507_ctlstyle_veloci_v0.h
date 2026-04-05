@@ -579,7 +579,7 @@
 	#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 
 	#define WITHTHERMOLEVEL		1	/* отображение данных с датчика температуры */
-	//#define WITHTHERMOLEVEL2	1	/* отображение данных с датчика температуры с помощью двух каналов ацп */
+	#define WITHTHERMOLEVEL2	1	/* отображение данных с датчика температуры с помощью двух каналов ацп */
 
 	#if WITHTHERMOLEVEL
 		#if WITHTHERMOLEVEL2
