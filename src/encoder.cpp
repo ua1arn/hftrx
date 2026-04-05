@@ -27,6 +27,8 @@ typedef std::atomic<int32_t> atomicpos_t;
 static atomicpos_t position_kbd;	/* накопитель от клавиатуры - знаковое число */
 #endif /* WITHKBDENCODER */
 
+#include "arm_math.h"
+
 struct encoder_tag
 {
 	atomicpos_t position;	// обновляется по прерыванию
@@ -36,7 +38,7 @@ struct encoder_tag
 
 	/* перенесено из глобальной области видимости */
 	IRQLSPINLOCK_t encspeedlock;
-	unsigned enchist [HISTLEN];
+	q31_t enchist [HISTLEN];
 	uint_fast8_t tichist;	// Должно поместиться число от 0 до TICKSMAX включительно
 	uint_fast8_t enchistindex;
 };
@@ -49,9 +51,7 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	e->account = 0;
 
 	e->enchistindex = 0;
-	e->enchist [0] = e->enchist [1] = e->enchist [2] = e->enchist [3] = 0;
-	ASSERT(HISTLEN == 4);
-
+	arm_fill_q31(0, e->enchist, HISTLEN);
 	IRQLSPINLOCK_INITIALIZE(& e->encspeedlock);
 }
 
@@ -149,8 +149,7 @@ static void encoder_clear(encoder_t * e)
 	e->position = 0;
 	e->account = 0;
 	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
-	e->enchist [0] = e->enchist [1] = e->enchist [2] = e->enchist [3] = 0;
-	ASSERT(HISTLEN == 4);
+	arm_fill_q31(0, e->enchist, HISTLEN);
 	e->tichist = 0;
 	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
 }
@@ -263,6 +262,15 @@ void encoders_clear(void)
 	encoder_clear(& encoder_ENC4F);
 }
 
+// в cmsis dsp нет функции arm_accumulate_q31, пока делаем свою.
+static void accumulate_q31(const q31_t * pSrc, uint32_t blockSize, q31_t * pResult)
+{
+	int32_t v = 0;
+	while (blockSize --)
+		v += * pSrc ++;
+	* pResult = v;
+}
+
 /* получение количества шагов и скорости вращения. */
 static int_least16_t
 encoder_get_snapshotproportional(
@@ -272,7 +280,7 @@ encoder_get_snapshotproportional(
 {
 	const int hrotate = encoder_get_delta(e);
 	
-	unsigned s;				// количество шагов за время измерения
+	q31_t s;				// количество шагов за время измерения
 	unsigned tdelta;	// Время измерения
 
 	IRQL_t oldIrql;
@@ -280,11 +288,9 @@ encoder_get_snapshotproportional(
 
 	// параметры изменерения скорости не модифицируем
 	// 1. количество шагов за время измерения
-	// HISTLEN == 4
-	s = e->enchist [0] + e->enchist [1] + e->enchist [2] + e->enchist [3]; // количество шагов валкодера за время наблюдений
-	ASSERT(HISTLEN == 4);
+	accumulate_q31(e->enchist, HISTLEN, & s);	// количество шагов валкодера за время наблюдений
 	// 2. Время измерения
-	tdelta = e->tichist + ENCTICKSMAX * (HISTLEN - 1); // во всех остальных слотах, кроме текущего, количество тиков максимальное.
+	tdelta = e->tichist + ENCTICKSMAX * HISTLEN; // во всех остальных слотах, кроме текущего, количество тиков максимальное.
 	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
 
 
