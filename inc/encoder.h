@@ -42,7 +42,7 @@ void encoders_clear(void);	/* накопитель сбрасывается */
 void encoders_initialize(void);
 
 void encoder_kbdctl(
-	uint_fast8_t code, 		// код клавиши
+	uint_fast16_t code, 		// код клавиши
 	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор
 	);
 

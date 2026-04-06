@@ -1466,6 +1466,47 @@ const videomode_t * get_videomode_DESIGN(void)
 {
 	return & vdmode0;
 }
+#else
+
+
+/* AT070TN90 panel (800*480) - 7" display HV mode */
+static const videomode_t vdmode0 =
+{
+	.width = 800,			/* LCD PIXEL WIDTH            */
+	.height = 480,			/* LCD PIXEL HEIGHT           */
+	/**
+	  * @brief  AT070TN90 Timing
+	  * MODE=0 (DE)
+	  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
+	  * MODE=1 (SYNC)
+	  * When selected sync mode, de must be grounded.
+	  */
+	.hsync = 40,				/* Horizontal synchronization 1..40 */
+	.hbp = 6,				/* Horizontal back porch      */
+	.hfp = 210,				/* Horizontal front porch  16..354   */
+
+	.vsync = 20,				/* Vertical synchronization 1..20  */
+	.vbp = 3,				/* Vertical back porch      */
+	.vfp = 22,				/* Vertical front porch  7..147     */
+
+	// MODE: DE/SYNC mode select.
+	// DE MODE: MODE="1", VS and HS must pull high.
+	// SYNC MODE: MODE="0". DE must be grounded
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
+	.fps = 60,	/* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
+};
+
+/* для эесперементов с масштабиованием в DE - когда DIM_X & DIM_Y не соответствуют подключённому дисплею */
+const videomode_t * get_videomode_LCD(void)
+{
+	//return & vdmode_800x480;
+	return & vdmode0;
+}
 
 #endif /* WITHLTDCHW */
 

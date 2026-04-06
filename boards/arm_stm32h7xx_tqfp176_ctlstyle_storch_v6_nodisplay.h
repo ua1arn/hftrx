@@ -130,7 +130,10 @@
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	
 	
-	
+	/* Заглушка для работы без дисплея */
+	#define WITHLCDBACKLIGHTMIN	0
+	#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
+
 
 	
 	#define WITHPABIASMIN		0
@@ -221,8 +224,14 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 // прямой ввод частоты с клавиш
-	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
+//	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	
+	#define COLORSTYLE_GREEN	1
+	//#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_BLUE2 1
+	//#define COLORSTYLE_WHITE	1
+	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
+	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 	
 
 	/* Board hardware configuration */
@@ -341,7 +350,7 @@
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
-	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
+	//#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 
 	#if 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
@@ -381,8 +390,8 @@
 	//
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	#define WITHVOX			1	/* используется VOX */
-	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-	#define WITHSWRMTR	1		/* Измеритель КСВ */
+	//#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	//#define WITHSWRMTR	1		/* Измеритель КСВ */
 	
 	
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */

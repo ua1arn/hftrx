@@ -326,7 +326,7 @@ encoder_t encoder_kbd;
 
 // вызывается из обработчика таймерного прерывания - клавиатура.
 void encoder_kbdctl(
-	uint_fast8_t code, 		// код клавиши
+	uint_fast16_t code, 		// код клавиши
 	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор
 	)
 {
@@ -509,6 +509,23 @@ void encoder_indev_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 void encoders_initialize(void)
 {
 
+}
+/* накопитель сбрасывается */
+void encoders_clear(void)
+{
+}
+
+void encoder_pushback(encoder_t * const e, int32_t outsteps)
+{
+}
+
+
+// вызывается из обработчика таймерного прерывания - клавиатура.
+void encoder_kbdctl(
+	uint_fast16_t code, 		// код клавиши
+	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор
+	)
+{
 }
 
 #endif /* WITHENCODER */
