@@ -898,20 +898,21 @@
 	#define targetfpga1mask	(UINT32_C(1) << 11)		// PE11 data gate for all FPGA SPI operations (0: active)
 	#define targetfpga1		((UINT32_C(1) << 17) | targetfpga1mask)	// PE17 FPGA control registers CS1
 
+	#define SPI_DRIVE_CODEC1 GPIO_DRV_0
 	#define SPI_DRIVE(drv) do { \
 		gpioX_prog(GPIOH, SPI_SCLK_BIT, GPIO_CFG_AF4, (drv), GPIO_PULL_NONE); 	/* PH6 SPI1_CLK */ \
 		gpioX_prog(GPIOH, SPI_MOSI_BIT, GPIO_CFG_AF4, (drv), GPIO_PULL_NONE); 	/* PH7 SPI1_MOSI */ \
-		gpioX_prog(GPIOH, SPI_MISO_BIT, GPIO_CFG_AF4, (drv), GPIO_PULL_UP); 	/* PH8 SPI1_MISO */ \
 	} while (0)
+
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target) do { \
 		switch (target) { \
-		case targetcodec1pulse: break; /* on-board codec1 NAU8822L */ \
+		case targetcodec1pulse: SPI_DRIVE(SPI_DRIVE_CODEC1); break; /* on-board codec1 NAU8822L */ \
+		case targetcodec1: { SPI_DRIVE(SPI_DRIVE_CODEC1); gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
 		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); } break; *//* PC3 SPI0_CS */ \
 		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 1 * (target)); } break; */\
 		case targetctl1: { SPI_DRIVE(GPIO_DRV_1); gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
 		case targettsc1: { SPI_DRIVE(GPIO_DRV_1); gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
-		case targetcodec1: { SPI_DRIVE(GPIO_DRV_1); gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
 		default: { SPI_DRIVE(GPIO_DRV_2); gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
 		case targetnone: break; \
 		} \
@@ -980,6 +981,9 @@
 	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
 
 	#define HARDWARE_SPI1_INITIALIZE() do { \
+		gpioX_prog(GPIOH, SPI_SCLK_BIT, GPIO_CFG_AF4, (GPIO_DRV_2), GPIO_PULL_NONE); 	/* PH6 SPI1_CLK */ \
+		gpioX_prog(GPIOH, SPI_MOSI_BIT, GPIO_CFG_AF4, (GPIO_DRV_2), GPIO_PULL_NONE); 	/* PH7 SPI1_MOSI */ \
+		gpioX_prog(GPIOH, SPI_MISO_BIT, GPIO_CFG_AF4, (GPIO_DRV_2), GPIO_PULL_UP); 	/* PH8 SPI1_MISO */ \
 		SPI_DRIVE(GPIO_DRV_2); \
 	} while (0)
 	#define WITHSPI1HW	1	// Use SPI1
