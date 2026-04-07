@@ -173,10 +173,6 @@
 	#include "boards/arm_allwt113s3_ctlstyle_mango_pi.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_mango_pi.h"
-#elif (CPUSTYLE_T153) && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_allwt153_ctlstyle_tronlong_tl153.h"
-	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_allwt153_cpustyle_tronlong_tl153.h"
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_allwt113s3_ctlstyle_mango_pi_sdboot.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
@@ -197,6 +193,10 @@
 	#include "boards/arm_allwt113s3_ctlstyle_yo6puc.h"	// sabi project
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_yo6puc.h"	// sabi project
+#elif (CPUSTYLE_T153) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwt153_ctlstyle_tronlong_tl153.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwt153_cpustyle_tronlong_tl153.h"
 #elif (CPUSTYLE_V3S) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_ctlstyle_allw_v3s_lichee0.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
