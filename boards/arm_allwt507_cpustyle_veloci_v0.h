@@ -914,7 +914,7 @@
 		case targetctl1: { SPI_DRIVE(GPIO_DRV_1); gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
 		case targettsc1: { SPI_DRIVE(GPIO_DRV_1); gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
 		default: { SPI_DRIVE(GPIO_DRV_2); gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
-		case targetnone: break; \
+		case targetnone: { SPI_DRIVE(GPIO_DRV_2); } break; /* FPGA image loader */ \
 		} \
 	} while (0)
 
@@ -979,7 +979,10 @@
 	#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
 	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0x03	/* t507: 000: OSC24M 001: PLL_PERI0(1X) 010: PLL_PERI1 (1X) 011: PLL_PERI0(2X) 100: PLL_PERI1 (2X) */
 	#define HARDWARE_SPI_FREQ (allwnr_t507_get_spi1_freq())
-
+	// FPGA FIR loader
+	#define HARDWARE_SPI_CONNECT() do { \
+			SPI_DRIVE(GPIO_DRV_2); \
+	} while (0)
 	#define HARDWARE_SPI1_INITIALIZE() do { \
 		gpioX_prog(GPIOH, SPI_SCLK_BIT, GPIO_CFG_AF4, (GPIO_DRV_2), GPIO_PULL_NONE); 	/* PH6 SPI1_CLK */ \
 		gpioX_prog(GPIOH, SPI_MOSI_BIT, GPIO_CFG_AF4, (GPIO_DRV_2), GPIO_PULL_NONE); 	/* PH7 SPI1_MOSI */ \

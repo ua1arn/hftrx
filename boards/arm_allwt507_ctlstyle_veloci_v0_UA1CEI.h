@@ -15,7 +15,8 @@
 
 	#define WITHBRANDSTR "Falcon"
 	#define WITHBANDR1BBU 1
-	#define DEFAULTDIALFREQ	44880000
+	//#define DEFAULTDIALFREQ	44900000
+	#define DEFAULTDIALFREQ	14130000
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
