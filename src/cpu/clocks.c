@@ -7264,7 +7264,7 @@ void hardware_spi_io_delay(void)
 	{
 	}
 
-	void RAMFUNC_NONILINE
+	void
 	SysTick_Handler_Active(void)
 	{
 		spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
@@ -7316,6 +7316,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	arm_hardware_set_handler_system(SysTick_IRQn, SysTick_Handler_Active);		// разрешение прерывания игнорируется для системныз векторов
 	SysTick_Config(calcdivround2(BOARD_SYSTICK_FREQ, ticksfreq));	// CMSIS устанавливает SysTick_CTRL_CLKSOURCE_Msk
+	arm_hardware_set_handler_system(SysTick_IRQn, SysTick_Handler_Active);		// разрешение прерывания игнорируется для системныз векторов
 
 #elif CPUSTYLE_ATMEGA328
 
