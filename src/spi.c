@@ -1789,6 +1789,7 @@ void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, 
 #endif
 }
 
+/* Вызывается до выдачи chip select */
 static void hardware_spi_pinsconnect(SPI_t * spi)
 {
 #ifdef HARDWARE_SPI_CONNECT
@@ -1796,6 +1797,7 @@ static void hardware_spi_pinsconnect(SPI_t * spi)
 #endif
 }
 
+/* Вызывается после снятия chip select */
 static void hardware_spi_pinsdisconnect(SPI_t * spi)
 {
 #ifdef HARDWARE_SPI_DISCONNECT
