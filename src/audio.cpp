@@ -5570,7 +5570,7 @@ int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
 #endif
 }
 
-#else
+#else /* WITHINTEGRATEDDSP */
 
 void 
 prog_dsplreg(void)
@@ -5612,6 +5612,16 @@ int_fast32_t dsp_get_samplerateuacin_RTS192(void)
 int_fast32_t dsp_get_samplerateuacin_rts(void)		// RTS samplerate
 {
 	return 96000;
+}
+/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+int_fast16_t dsp_rssi10(int_fast16_t * tracemax, uint_fast8_t pathi)
+{
+	FLOAT_t tmaxf;
+	const int_fast16_t rssi10 = 0;
+	int_fast16_t tracemaxi10 = 0;
+	tracemaxi10 = rssi10 > tracemaxi10 ? rssi10 : tracemaxi10;	// защита от рассогласования значений
+	* tracemax = tracemaxi10;
+	return rssi10;
 }
 
 #endif /* WITHINTEGRATEDDSP */
