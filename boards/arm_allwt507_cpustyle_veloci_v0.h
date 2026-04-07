@@ -906,7 +906,7 @@
 
 	/* Вызывается до выдачи chip select */
 	#define HARDWARE_SPI_CONNECT() do { \
-			SPI_DRIVE(GPIO_DRV_2); /* FPGA image loader, FIR loaeder. */ \
+			SPI_DRIVE(GPIO_DRV_2); /* FPGA image loader, FIR parameters loader. */ \
 	} while (0)
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target) do { \
