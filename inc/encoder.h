@@ -55,7 +55,7 @@ unsigned encoder_get_actualresolution(encoder_t * e);	// возвращает к
 #define ENCRESSCALE 4U
 
 #define ENC_DYNA_MAX 4
-
+#if WITHENCODER
 extern encoder_t encoder1;	// Main RX tuning knob
 #if WITHENCODER_SUB
 extern encoder_t encoder_sub;	// Sub RX tuning knob
@@ -67,6 +67,7 @@ extern encoder_t encoder_ENC1F;
 extern encoder_t encoder_ENC2F;
 extern encoder_t encoder_ENC3F;
 extern encoder_t encoder_ENC4F;
+#endif /* WITHENCODER */
 extern encoder_t encoder_kbd;
 
 

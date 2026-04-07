@@ -16389,16 +16389,20 @@ processcatmsg(
 	{
 		if (cathasparam)
 		{
+#if WITHENCODER
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
 			encoder_pushback(& encoder1, steps * (int) genc1div);
+#endif /* WITHENCODER */
 		}
 	}
 	else if (pcmd == packcmd2('D', 'N'))
 	{
 		if (cathasparam)
 		{
+#if WITHENCODER
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
 			encoder_pushback(& encoder1, 0 - steps * (int) genc1div);
+#endif /* WITHENCODER */
 		}
 	}
 #if 0
