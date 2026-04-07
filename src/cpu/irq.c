@@ -1998,17 +1998,7 @@ static uint_fast32_t get_td_ms(uint_fast32_t timeMS)
 	return timeMS * (uint_fast64_t) cpu_getdebugticksfreq() / 1000;
 }
 
-static uint32_t threads_sys_now(void)
-{
-	if (threads_not_started)
-	{
-		static uint32_t n = 100;
-		local_delay_us(1000);
-		return ++ n;
-	}
-	return sys_now();
-}
-
+// WITHRTOS
 #if 0 && ! LINUX_SUBSYSTEM
 
 typedef struct thread_item_tag
@@ -2469,12 +2459,13 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 		return 0;
 	if (threads_not_started)
 	{
-		const uint_fast32_t t0 = threads_sys_now();
+		const uint_fast32_t t0 = cpu_getdebugticks();
+		const uint_fast32_t td = get_td_ms(timeMS);
 		do
 		{
 			if (((* flag & mask) == state))
 				return 0;
-		} while ((uint32_t) (threads_sys_now() - t0) < timeMS);
+		} while ((uint32_t) (cpu_getdebugticks() - t0) < td);
 		return 1;
 	}
 	else
@@ -2498,12 +2489,13 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		return 0;
 	if (threads_not_started)
 	{
-		const uint_fast32_t t0 = threads_sys_now();
+		const uint_fast32_t t0 = cpu_getdebugticks();
+		const uint_fast32_t td = get_td_ms(timeMS);
 		do
 		{
 			if (((* flag & mask) == state))
 				return 0;
-		} while ((uint32_t) (threads_sys_now() - t0) < timeMS);
+		} while ((uint32_t) (cpu_getdebugticks() - t0) < td);
 		return 1;
 	}
 	else
@@ -2612,10 +2604,6 @@ void local_delay_ms(uint_fast32_t timeMS)
     const uint_fast32_t td = get_td_ms(timeMS);
     while ((uint32_t) (cpu_getdebugticks() - t0) < td)
     	;
-
-//	const uint_fast32_t t0 = threads_sys_now();
-//	while ((uint32_t) (threads_sys_now() - t0) < timeMS)
-//		;
 }
 
 
@@ -2623,12 +2611,13 @@ void local_delay_ms(uint_fast32_t timeMS)
 // return non-zero: timeout error
 int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS)
 {
-	const uint_fast32_t t0 = threads_sys_now();
+	const uint_fast32_t t0 = cpu_getdebugticks();
+	const uint_fast32_t td = get_td_ms(timeMS);
 	do
 	{
 		if (((* flag & mask) == state))
 			return 0;
-	} while ((uint32_t) (threads_sys_now() - t0) < timeMS);
+	} while ((uint32_t) (cpu_getdebugticks() - t0) < td);
 	return 1;
 }
 
@@ -2636,12 +2625,13 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 // return non-zero: timeout error
 int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS)
 {
-	const uint_fast32_t t0 = threads_sys_now();
+	const uint_fast32_t t0 = cpu_getdebugticks();
+	const uint_fast32_t td = get_td_ms(timeMS);
 	do
 	{
 		if (((* flag & mask) == state))
 			return 0;
-	} while ((uint32_t) (threads_sys_now() - t0) < timeMS);
+	} while ((uint32_t) (cpu_getdebugticks() - t0) < td);
 	return 1;
 }
 // wait expected state of variable
