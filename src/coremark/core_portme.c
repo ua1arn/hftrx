@@ -19,7 +19,7 @@ Original Author: Shay Gal-on
 #include <stdio.h>
 #include <stdlib.h>
 #include "coremark.h"
-#define ITERATIONS 200000
+#define ITERATIONS 500000
 
 #if VALIDATION_RUN
 volatile ee_s32 seed1_volatile = 0x3415;
