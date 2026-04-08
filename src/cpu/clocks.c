@@ -2030,7 +2030,14 @@ static void clock_set_pll_cpu(uint32_t clk)
 	val = (2 << 0) | (1 << 8) | (2 << 16);
 	CCU->CPU_AXI_CFG_REG = val;
 }
+
 ///
+// V3s
+void sysinit_boot_disconnect(void)
+{
+
+
+}
 
 // V3s
 void allwnr_v3s_pll_initialize(void)
@@ -6725,6 +6732,12 @@ void vm14_pll_initialize(void)
 #endif
 }
 
+void sysinit_boot_disconnect(void)
+{
+
+
+}
+
 // 1892ВМ14Я PLL initialize
 void
 sysinit_pll_initialize(int forced)
@@ -10894,6 +10907,12 @@ sysinit_pll_initialize(int forced)
 #endif /* CPUSTYLE_STM32H7XX */
 
 #if CPUSTYLE_STM32F7XX
+
+void sysinit_boot_disconnect(void)
+{
+
+
+}
 
 // STM32F7xx PLL initialize
 void
