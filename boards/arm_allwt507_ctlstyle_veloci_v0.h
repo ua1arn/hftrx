@@ -15,7 +15,8 @@
 
 	#define WITHBRANDSTR "Falcon"
 	#define WITHBANDR1BBU 1
-	#define DEFAULTDIALFREQ	44880000
+	//#define DEFAULTDIALFREQ	44900000
+	#define DEFAULTDIALFREQ	14130000
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -134,6 +135,7 @@
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
 	//#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
 	//#define BOARD_DSTYLE "g_x800_y480.h"
+	//#define BOARD_DSTYLE "g_x480_y272_spectrum_notouch.h"
 	#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
 	//#define BOARD_DSTYLE "g_x800_y480_linux.h"
 	//#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
@@ -220,7 +222,10 @@
 	#define WITHISBOOTLOADERRAWDISK	1	// чтение application с предопределённого смещения на накопителе
 	#define WITHISBOOTLOADERRAWDISK_DEV 0	// device для FatFS diskio
 
+	//#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
+
 #else /* WITHISBOOTLOADER */
+	//#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
 
 	//#define WITHUSBHEADSET	1	/* Функциональность USB микрофона */
 	
@@ -246,7 +251,7 @@
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	
 	#define WITHENCODER_SUB	1		/* есть второй валкодер */
-	#define ENCDIV_DEFAULT 2
+	#define ENCDIV_DEFAULT 4
 	#define ENCDYNAMIC_DEFAULT 0
 	#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
 
@@ -339,6 +344,9 @@
 
 	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
+//	#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+//	#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+//	#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
@@ -347,7 +355,6 @@
 		#if 0
 			#define WITHTOUCHGUI		1
 			#define WITHGUIDEBUG		1	/* вывод отладочной информации на экран по удержанию Break-In */
-			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHDISPLAY_FPS		15
 			#define WITHDISPLAYSWR_FPS	15
 			#define WITHALPHA			24
@@ -385,8 +392,12 @@
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
-
 	#if 0
+		// DTMF/CTCSS tests
+		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
+		#define WITHBBOXSUBMODE	SUBMODE_NFM	// единственный режим работы
+		#define WITHBBOXFREQ	(136025000 - 122880000)
+	#elif 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		#define WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
@@ -508,7 +519,6 @@
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	
-
 	/* что за память настроек и частот используется в контроллере */
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25XXXX	// SERIAL FRAM AUTODETECT
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L04	// Так же при использовании FM25040A - 5 вольт, 512 байт
@@ -537,7 +547,7 @@
 	//#define WITHRTCLSI	1				/* тестирование без кварца 32.768 кГц */
 
 	#define WITHTSC5PCALIBRATE 1	/* Калибровка по пяти точкам */
-	#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
+	#define TSC1_TYPE TSC_TYPE_XPT2046	/* Resistive touch screen controller XPTEK XPT2046 */
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
 	//#define WITH_STMPE811_INTERRUPTS	1
@@ -596,7 +606,6 @@
 			#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 		#endif /* WITHTHERMOLEVEL2 */
 	#endif /* WITHTHERMOLEVEL */
-
 
 	// Назначения входов АЦП процессора.
 	enum
