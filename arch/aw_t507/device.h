@@ -2665,12 +2665,27 @@ typedef struct R_CAN_Type
     __IOM uint32_t CAN_RBUF_RBACK [0x030];            /*!< Offset 0x180 CAN transmit buffer for read back register (0x0180 ~0x1b0) */
 } R_CAN_TypeDef; /* size of structure = 0x240 */
 /*
+ * https://linux-sunxi.org/CPUIDLE
+ */
+/*
  * @brief R_CPUCFG
  */
 /*!< R_CPUCFG  */
 typedef struct R_CPUCFG_Type
 {
-         RESERVED(0x000[0x01C0 - 0x0000], uint8_t)
+         RESERVED(0x000[0x0100 - 0x0000], uint8_t)
+    __IOM uint32_t CPUIDLE_EN_REG;                    /*!< Offset 0x100  */
+    __IOM uint32_t CLOSE_FLAG_REG;                    /*!< Offset 0x104  */
+    __IOM uint32_t CPUIDLE_PEND_REG;                  /*!< Offset 0x108  */
+    __IOM uint32_t CPUIDLE_WAKE_REG;                  /*!< Offset 0x10C  */
+    __IOM uint32_t CPUIDLE_STAT_REG;                  /*!< Offset 0x110  */
+         RESERVED(0x114[0x0140 - 0x0114], uint8_t)
+    __IOM uint32_t PWR_SW_DELAY_REG;                  /*!< Offset 0x140  */
+    __IOM uint32_t CONFIG_DELAY_REG;                  /*!< Offset 0x144  */
+    __IOM uint32_t PWR_DOWN_CFG_REG;                  /*!< Offset 0x148  */
+         RESERVED(0x14C[0x0150 - 0x014C], uint8_t)
+    __IOM uint32_t PWR_UP_CFG_REGn [0x004];           /*!< Offset 0x150  */
+         RESERVED(0x160[0x01C0 - 0x0160], uint8_t)
     __IOM uint32_t HOTPLUGFLAG;                       /*!< Offset 0x1C0 Check for value 0xFA50392F ? */
     __IOM uint32_t SOFTENTRY [0x004];                 /*!< Offset 0x1C4 The Soft Entry Address Register of CPUx (x=0..1) */
 } R_CPUCFG_TypeDef; /* size of structure = 0x1D4 */

@@ -70,6 +70,18 @@
 ## volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1C4 + targetcore * 4));
 
 #type; R_CPUCFG
+#rem; https://linux-sunxi.org/CPUIDLE
+
+#regdef; CPUIDLE_EN_REG;	0x100;
+#regdef; CLOSE_FLAG_REG;	0x104;
+#regdef; CPUIDLE_PEND_REG;	0x108;
+#regdef; CPUIDLE_WAKE_REG;	0x10C;
+#regdef; CPUIDLE_STAT_REG;	0x110;
+#regdef; PWR_SW_DELAY_REG;	0x140;
+#regdef; CONFIG_DELAY_REG;	0x144;
+#regdef; PWR_DOWN_CFG_REG;	0x148;
+#regdef; PWR_UP_CFG_REGn;	0x150 4;
+
 
 #regdef; HOTPLUGFLAG; 0x01C0; Check for value 0xFA50392F ?
 #regdef; SOFTENTRY; 0x01C4 4; The Soft Entry Address Register of CPUx (x=0..1)

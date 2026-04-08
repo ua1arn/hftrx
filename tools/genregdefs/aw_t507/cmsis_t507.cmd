@@ -19,6 +19,6 @@ SET FILELIST= ^
 %CONVERTER% %FILELIST% > %OUTFILE%
 
 %CONVERTER% --svd %FILELIST% > aw_t507.svd
-rem %CONVERTER% --debug tconlcd.csv > aw_t507.txt
+rem %CONVERTER% --debug c0_cpux_cfg.csv cpusubsysctrl.csv > aw_t507.txt
 
 @pause

@@ -7985,6 +7985,14 @@ void hightests(void)
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
+#if 0 && defined (R_CPUCFG) && WITHDEBUG
+	{
+		#include "aw_t507.txt"
+		R_CPUCFG->CPUIDLE_EN_REG = 0x16aa0001;
+		R_CPUCFG->CPUIDLE_EN_REG = 0xaa160001;
+		R_CPUCFG_Type_print(R_CPUCFG, "R_CPUCFG");
+	}
+#endif
 #if 0
 	{
 		show_chip();
