@@ -903,6 +903,7 @@ void device_OTG_HS_IRQHandler(void);
 void device_OTG_FS_IRQHandler(void);
 
 void softdelay(void);
+void mpu6500_test(void);
 
 #ifdef __cplusplus
 }
