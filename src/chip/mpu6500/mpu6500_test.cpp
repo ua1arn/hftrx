@@ -55,17 +55,17 @@ void mpu6500_test(void)
 
 		if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer))
 		{
-		// переменные для расчёта (ypr можно вынести в глобал)
-		Quaternion q;
-		VectorFloat gravity;
-		float ypr[3];
-		// расчёты
-		mpu.dmpGetQuaternion(&q, fifoBuffer);
-		mpu.dmpGetGravity(&gravity, &q);
-		mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+			// переменные для расчёта (ypr можно вынести в глобал)
+			Quaternion q;
+			VectorFloat gravity;
+			float ypr[3];
+			// расчёты
+			mpu.dmpGetQuaternion(&q, fifoBuffer);
+			mpu.dmpGetGravity(&gravity, &q);
+			mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
 
-		// выводим результат в радианах (-3.14, 3.14)
-		PRINTF("z/y/x: %f %f %f\n", ypr[0], ypr[1], ypr[2]); // вокруг оси Z, Y, Z
+			// выводим результат в радианах (-3.14, 3.14)
+			PRINTF("z/y/x: %f %f %f\n", ypr[0], ypr[1], ypr[2]); // вокруг оси Z, Y, Z
 		}
 	}
 }

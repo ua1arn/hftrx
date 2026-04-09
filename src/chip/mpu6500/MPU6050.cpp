@@ -2842,7 +2842,7 @@ void MPU6050_Base::setStandbyZGyroEnabled(bool enabled) {
  * @return Current FIFO buffer size
  */
 uint16_t MPU6050_Base::getFIFOCount() {
-    I2Cdev::readBytes(devAddr, MPU6050_RA_FIFO_COUNTH, 2, buffer, I2Cdev::readTimeout, wireObj);
+    VERIFY(I2Cdev::readBytes(devAddr, MPU6050_RA_FIFO_COUNTH, 2, buffer, I2Cdev::readTimeout, wireObj) == 2);
     return (((uint16_t)buffer[0]) << 8) | buffer[1];
 }
 

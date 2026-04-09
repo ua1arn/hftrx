@@ -105,11 +105,11 @@ THE SOFTWARE.
 //#define DEBUG
 /* Control whether debugging macros are active at compile time */
 #undef DB_ACTIVE
-#ifdef DEBUG
+//#ifdef DEBUG
 #define DB_ACTIVE 1
-#else
-#define DB_ACTIVE 0
-#endif /* DEBUG */
+//#else
+//#define DB_ACTIVE 0
+//#endif /* DEBUG */
 
 /*
 ** Usage:  DB_PRINT((...));

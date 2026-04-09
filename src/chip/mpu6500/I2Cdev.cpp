@@ -345,7 +345,7 @@ bool I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16
  */
 int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data, uint16_t timeout, void *wireObj)
 {
-	return i2chwx_exchange(TWIHARD_PTR, devAddr << 1, & regAddr, 1, data, length);
+	return i2chwx_exchange(TWIHARD_PTR, devAddr << 1, & regAddr, 1, data, length) ? -1 : length;
 }
 
 /** Read multiple words from a 16-bit device register.
@@ -358,7 +358,7 @@ int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8
  */
 int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t *data, uint16_t timeout, void *wireObj)
 {
-	return i2chwx_exchange(TWIHARD_PTR, devAddr << 1, & regAddr, 1, (uint8_t *) data, length * 2);
+	return i2chwx_exchange(TWIHARD_PTR, devAddr << 1, & regAddr, 1, (uint8_t *) data, length * 2) ? -1 : length;
 }
 
 /** Default timeout value for read operations.
