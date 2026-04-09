@@ -45,8 +45,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ===============================================
 */
-
+#include "hardware.h"
 #include "I2Cdev.h"
+#include <string.h>	// memcpy
 
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE || I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_SBWIRE
 
@@ -198,32 +199,6 @@ int8_t I2Cdev::readWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data, uint16
     return readWords(devAddr, regAddr, 1, data, timeout, wireObj);
 }
 
-/** Read multiple bytes from an 8-bit device register.
- * @param devAddr I2C slave device address
- * @param regAddr First register regAddr to read from
- * @param length Number of bytes to read
- * @param data Buffer to store read data in
- * @param timeout Optional read timeout in milliseconds (0 to disable, leave off to use default class value in I2Cdev::readTimeout)
- * @return Number of bytes read (-1 indicates failure)
- */
-int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data, uint16_t timeout, void *wireObj)
-{
-	return 0;	// stub
-}
-
-/** Read multiple words from a 16-bit device register.
- * @param devAddr I2C slave device address
- * @param regAddr First register regAddr to read from
- * @param length Number of words to read
- * @param data Buffer to store read data in
- * @param timeout Optional read timeout in milliseconds (0 to disable, leave off to use default class value in I2Cdev::readTimeout)
- * @return Number of words read (-1 indicates failure)
- */
-int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t *data, uint16_t timeout, void *wireObj)
-{
-	return 0;	// stub
-}
-
 /** write a single bit in an 8-bit device register.
  * @param devAddr I2C slave device address
  * @param regAddr Register regAddr to write to
@@ -339,7 +314,10 @@ bool I2Cdev::writeWord(uint8_t devAddr, uint8_t regAddr, uint16_t data, void *wi
  */
 bool I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data, void *wireObj)
 {
-	return 0;	// stub
+	uint8_t b [1 + length];
+	b [0] = regAddr;
+	memcpy(b + 1, data, length);
+	return i2chwx_write(TWIHARD_PTR, devAddr << 1, b, sizeof b) >= 0;
 }
 
 /** Write multiple words to a 16-bit device register.
@@ -351,8 +329,36 @@ bool I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_
  */
 bool I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t* data, void *wireObj)
 {
-	return 0;	// stub
+	uint8_t b [1 + length * 2];
+	b [0] = regAddr;
+	memcpy(b + 1, data, length * 2);
+	return i2chwx_write(TWIHARD_PTR, devAddr << 1, b, sizeof b) >= 0;
+}
 
+/** Read multiple bytes from an 8-bit device register.
+ * @param devAddr I2C slave device address
+ * @param regAddr First register regAddr to read from
+ * @param length Number of bytes to read
+ * @param data Buffer to store read data in
+ * @param timeout Optional read timeout in milliseconds (0 to disable, leave off to use default class value in I2Cdev::readTimeout)
+ * @return Number of bytes read (-1 indicates failure)
+ */
+int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data, uint16_t timeout, void *wireObj)
+{
+	return i2chwx_exchange(TWIHARD_PTR, devAddr << 1, & regAddr, 1, data, length);
+}
+
+/** Read multiple words from a 16-bit device register.
+ * @param devAddr I2C slave device address
+ * @param regAddr First register regAddr to read from
+ * @param length Number of words to read
+ * @param data Buffer to store read data in
+ * @param timeout Optional read timeout in milliseconds (0 to disable, leave off to use default class value in I2Cdev::readTimeout)
+ * @return Number of words read (-1 indicates failure)
+ */
+int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t *data, uint16_t timeout, void *wireObj)
+{
+	return i2chwx_exchange(TWIHARD_PTR, devAddr << 1, & regAddr, 1, (uint8_t *) data, length * 2);
 }
 
 /** Default timeout value for read operations.

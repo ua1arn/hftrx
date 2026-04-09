@@ -7,8 +7,8 @@
 #include "Kalman.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 
-#define addr7bit 0x68
-static const unsigned addr8bit = addr7bit << 1;
+//#define addr7bit 0x68
+//static const unsigned addr8bit = addr7bit << 1;
 
 static MPU6050 mpu;
 static volatile bool mpuFlag = false;  // флаг прерывания готовности
