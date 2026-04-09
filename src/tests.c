@@ -7971,6 +7971,22 @@ void nand_tests(void)
 
 #endif /* (WITHNANDHW || WITHNANDSW) */
 
+#if 1
+// board GY-6500. chip TDK MPU6500 test
+// addr8bit=0xD0, addr7bit=0x68
+// AD0 = 0: 0x68
+// AD0 = 1: 0x69
+// https://alexgyver.ru/arduino-mpu6050/
+void mpu6050_test(void)
+{
+	const unsigned addr7bit = 0x68;
+	const unsigned addr8bit = addr7bit << 1;
+	for (;;)
+	{
+
+	}
+}
+#endif
 void hightests(void)
 {
 #if LCDMODE_LTDC
@@ -8912,6 +8928,11 @@ void hightests(void)
 	}
 #endif
 #if 0
+	{
+		mpu6050_test();
+	}
+#endif
+#if 1
 	{
 		// i2c bus test i2c test twi bus test twi test
 		unsigned n = 3;
